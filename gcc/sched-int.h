@@ -68,19 +68,20 @@ struct deps
      too large.  */
   rtx last_pending_memory_flush;
 
-  /* The last function call we have seen.  All hard regs, and, of course,
-     the last function call, must depend on this.  */
+  /* A list of the last function calls we have seen.  We use a list to
+     represent last function calls from multiple predecessor blocks.
+     Used to prevent register lifetimes from expanding unnecessarily.  */
   rtx last_function_call;
+
+  /* A list of insns which use a pseudo register that does not already
+     cross a call.  We create dependencies between each of those insn
+     and the next call insn, to ensure that they won't cross a call after
+     scheduling is done.  */
+  rtx sched_before_next_call;
 
   /* Used to keep post-call psuedo/hard reg movements together with
      the call.  */
-  int in_post_call_group_p;
-
-  /* The LOG_LINKS field of this is a list of insns which use a pseudo
-     register that does not already cross a call.  We create
-     dependencies between each of those insn and the next call insn,
-     to ensure that they won't cross a call after scheduling is done.  */
-  rtx sched_before_next_call;
+  bool in_post_call_group_p;
 
   /* The maximum register number for the following arrays.  Before reload
      this is max_reg_num; after reload it is FIRST_PSEUDO_REGISTER.  */
@@ -274,7 +275,6 @@ extern void free_deps PARAMS ((struct deps *));
 extern void init_deps_global PARAMS ((void));
 extern void finish_deps_global PARAMS ((void));
 extern void compute_forward_dependences PARAMS ((rtx, rtx));
-extern int find_insn_mem_list PARAMS ((rtx, rtx, rtx, rtx));
 extern rtx find_insn_list PARAMS ((rtx, rtx));
 extern void init_dependency_caches PARAMS ((int));
 extern void free_dependency_caches PARAMS ((void));
