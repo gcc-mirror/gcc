@@ -2898,7 +2898,6 @@
   return \"depi %3,%2+%1-1,%1,%0\";
 }")
 
-;; The dbra pattern from hell.  
 ;; This insn is used for some loop tests, typically loops reversed when
 ;; strength reduction is used.  It is actually created when the instruction
 ;; combination phase combines the special loop test.  Since this insn
@@ -2918,72 +2917,7 @@
 	(plus:SI (match_dup 0) (match_dup 1)))
    (clobber (match_scratch:SI 4 "=X,r,r"))]
   ""
-"*
-{
-
-  if (which_alternative == 0)
-    {
-      int nullify = INSN_ANNULLED_BRANCH_P (insn);
-      int length = get_attr_length (insn);
-
-      /* If this is a long branch with its delay slot unfilled, set `nullify'
-	 as it can nullify the delay slot and save a nop.  */
-      if (length == 2 && dbr_sequence_length () == 0)
-	nullify = 1;
-
-      /* If this is a short forward conditional branch which did not get
-	 its delay slot filled, the delay slot can still be nullified.  */
-      if (! nullify && length == 1 && dbr_sequence_length () == 0)
-	nullify = forward_branch_p (insn);
-
-      /* Handle short versions first.  */
-      if (length == 1 && nullify)
-	return \"addib,%C2,n %1,%0,%3\";
-      else if (length == 1 && ! nullify)
-	return \"addib,%C2 %1,%0,%3\";
-      else if (length == 2)
-	{
-	  /* Handle weird backwards branch with a fulled delay slot 
-	     which is nullified.  */
-	  if (dbr_sequence_length () != 0
-	      && ! forward_branch_p (insn)
-	      && nullify)
-	    return \"addib,%N2,n %1,%0,.+12\;bl %3,0\";
-	  
-	  /* Handle normal cases.  */  
-	  if (nullify)
-	    return \"addi,%N2 %1,%0,%0\;bl,n %3,0\";
-	  else
-	    return \"addi,%N2 %1,%0,%0\;bl %3,0\";
-	}
-      else
-	abort();
-    }
-  /* Deal with gross reload from FP register case.  */
-  else if (which_alternative == 1)
-    {
-      /* Move loop counter from FP register to MEM then into a GR,
-	 increment the GR, store the GR into MEM, and finally reload
-	 the FP register from MEM from within the branch's delay slot.  */ 
-      output_asm_insn (\"fstws %0,-16(0,%%r30)\;ldw -16(0,%%r30),%4\",operands);
-      output_asm_insn (\"ldo %1(%4),%4\;stw %4,-16(0,%%r30)\", operands);
-      if (get_attr_length (insn) == 6)
-	return \"comb,%S2 0,%4,%3\;fldws -16(0,%%r30),%0\";
-      else
-	return \"comclr,%B2 0,%4,0\;bl %3,0\;fldws -16(0,%%r30),%0\";
-    }
-  /* Deal with gross reload from memory case.  */
-  else
-    {
-      /* Reload loop counter from memory, the store back to memory
-	 happens in the branch's delay slot.   */
-      output_asm_insn (\"ldw %0,%4\", operands);
-      if (get_attr_length (insn) == 3)
-	return \"addib,%C2 %1,%4,%3;stw %4,%0\";
-      else
-	return \"addi,%N2 %1,%4,%0\;bl %3,0\;stw %4,%0\";
-    }
-}"
+"* output_dbra (operands, insn, which_alternative); "
 ;; Do not expect to understand this the first time through.  
 [(set_attr "type" "cbranch,multi,multi")
  (set (attr "length")
@@ -3023,6 +2957,153 @@
 		(const_int 2047))
 	    (const_int 3)
 	    (const_int 4))))))])
+
+;; Simply another variant of the dbra pattern.  More restrictive 
+;; in testing the comparison operator as it must worry about overflow
+;; problems.
+(define_insn ""
+  [(set (pc)
+	(if_then_else
+	  (match_operator 2 "eq_neq_comparison_operator"
+	   [(match_operand:SI 0 "register_operand" "+!r,!*fx,!*m")
+	    (match_operand:SI 5 "const_int_operand" "")])
+	  (label_ref (match_operand 3 "" ""))
+	  (pc)))
+   (set (match_dup 0)
+	(plus:SI (match_dup 0) (match_operand:SI 1 "int5_operand" "L,L,L")))
+   (clobber (match_scratch:SI 4 "=X,r,r"))]
+  "INTVAL (operands[5]) == - INTVAL (operands[1])"
+"* return output_dbra (operands, insn, which_alternative);"
+;; Do not expect to understand this the first time through.  
+[(set_attr "type" "cbranch,multi,multi")
+ (set (attr "length")
+      (if_then_else (eq_attr "alternative" "0")
+;; Loop counter in register case
+;; Short branch has length of 1
+;; Long branch has length of 2
+	(if_then_else (lt (abs (minus (match_dup 3) (plus (pc) (const_int 2))))
+		      (const_int 2047))
+           (const_int 1)
+	   (const_int 2))
+
+;; Loop counter in FP reg case.
+;; Extra goo to deal with additional reload insns.
+	(if_then_else (eq_attr "alternative" "1")
+	  (if_then_else (lt (match_dup 3) (pc))
+	    (if_then_else 
+	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 6))))
+		  (const_int 2047))
+	      (const_int 6)
+	      (const_int 7))
+	    (if_then_else 
+	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 2))))
+		  (const_int 2047))
+	      (const_int 6)
+	      (const_int 7)))
+;; Loop counter in memory case.
+;; Extra goo to deal with additional reload insns.
+	(if_then_else (lt (match_dup 3) (pc))
+	  (if_then_else 
+	    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 3))))
+		(const_int 2047))
+	    (const_int 3)
+	    (const_int 4))
+	  (if_then_else 
+	    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 2))))
+		(const_int 2047))
+	    (const_int 3)
+	    (const_int 4))))))])
+
+(define_insn ""
+  [(set (pc)
+	(if_then_else
+	  (match_operator 2 "movb_comparison_operator"
+	   [(match_operand:SI 1 "register_operand" "r,r,r") (const_int 0)])
+	  (label_ref (match_operand 3 "" ""))
+	  (pc)))
+   (set (match_operand:SI 0 "register_operand" "=!r,!*fx,!*m")
+	(match_dup 1))]
+  ""
+"* return output_movb (operands, insn, which_alternative, 0); "
+;; Do not expect to understand this the first time through.  
+[(set_attr "type" "cbranch,multi,multi")
+ (set (attr "length")
+      (if_then_else (eq_attr "alternative" "0")
+;; Loop counter in register case
+;; Short branch has length of 1
+;; Long branch has length of 2
+	(if_then_else (lt (abs (minus (match_dup 3) (plus (pc) (const_int 2))))
+		      (const_int 2047))
+           (const_int 1)
+	   (const_int 2))
+
+;; Loop counter in FP reg case.
+;; Extra goo to deal with additional reload insns.
+	(if_then_else (eq_attr "alternative" "1")
+	  (if_then_else (lt (match_dup 3) (pc))
+	    (if_then_else 
+	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 3))))
+		  (const_int 2047))
+	      (const_int 3)
+	      (const_int 4))
+	    (if_then_else 
+	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 2))))
+		  (const_int 2047))
+	      (const_int 3)
+	      (const_int 4)))
+;; Loop counter in memory case.
+;; Extra goo to deal with additional reload insns.
+	(if_then_else 
+	  (lt (abs (minus (match_dup 3) (plus (pc) (const_int 2))))
+	      (const_int 2047))
+	  (const_int 2)
+	  (const_int 3)))))])
+
+;; Handle negated branch.
+(define_insn ""
+  [(set (pc)
+	(if_then_else
+	  (match_operator 2 "movb_comparison_operator"
+	   [(match_operand:SI 1 "register_operand" "r,r,r") (const_int 0)])
+	  (pc)
+	  (label_ref (match_operand 3 "" ""))))
+   (set (match_operand:SI 0 "register_operand" "=!r,!*fx,!*m")
+	(match_dup 1))]
+  ""
+"* return output_movb (operands, insn, which_alternative, 1); "
+;; Do not expect to understand this the first time through.  
+[(set_attr "type" "cbranch,multi,multi")
+ (set (attr "length")
+      (if_then_else (eq_attr "alternative" "0")
+;; Loop counter in register case
+;; Short branch has length of 1
+;; Long branch has length of 2
+	(if_then_else (lt (abs (minus (match_dup 3) (plus (pc) (const_int 2))))
+		      (const_int 2047))
+           (const_int 1)
+	   (const_int 2))
+
+;; Loop counter in FP reg case.
+;; Extra goo to deal with additional reload insns.
+	(if_then_else (eq_attr "alternative" "1")
+	  (if_then_else (lt (match_dup 3) (pc))
+	    (if_then_else 
+	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 3))))
+		  (const_int 2047))
+	      (const_int 3)
+	      (const_int 4))
+	    (if_then_else 
+	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 2))))
+		  (const_int 2047))
+	      (const_int 3)
+	      (const_int 4)))
+;; Loop counter in memory case.
+;; Extra goo to deal with additional reload insns.
+	(if_then_else 
+	  (lt (abs (minus (match_dup 3) (plus (pc) (const_int 2))))
+	      (const_int 2047))
+	  (const_int 2)
+	  (const_int 3)))))])
 
 ;; The next four peepholes take advantage of the new 5 operand 
 ;; fmpy{add,sub} instructions available on 1.1 CPUS.  Basically
