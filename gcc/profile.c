@@ -289,16 +289,12 @@ index_counts_file ()
   unsigned magic, version, ix, checksum;
   long *summary;
 
+  /* No .da file, no data.  */
   if (!da_file)
     return 0;
   counts_file_index = htab_create (10, htab_counts_index_hash, htab_counts_index_eq, htab_counts_index_del);
 
-  /* No .da file, no data.  */
-  if (!da_file)
-    return 0;
-
   /* Now index all profile sections.  */
-
   rewind (da_file);
 
   summary = NULL;
