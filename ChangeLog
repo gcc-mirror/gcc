@@ -1,5 +1,10 @@
 2003-08-27  Daniel Jacobowitz  <drow@mvista.com>
 
+	* configure.in: Set RAW_CXX_FOR_TARGET if unset.
+	* configure: Regenerated.
+
+2003-08-27  Daniel Jacobowitz  <drow@mvista.com>
+
 	* config/no-executables.m4: New file.
 
 2003-08-23  Marek Michalkiewicz  <marekm@amelek.gda.pl>
