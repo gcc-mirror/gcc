@@ -1,3 +1,7 @@
+2002-05-07  Jan Hubicka  <jh@suse.cz>
+
+	* target.h (FFETARGET_32bit_longs): Undefine for x86-64.
+
 2002-04-29  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* invoke.texi: Use @gol at ends of lines inside @gccoptlist.
@@ -35,7 +39,7 @@ Mon Apr 15 10:59:14 2002  Mark Mitchell  <mark@codesourcery.com>
 
 	* Make-lang.in (f/target.o): Depend on diagnostic.h.
 	* target.c: Include diagnostic.h.
- 	(ffetarget_memcpy_): Call sorry if host and target endians are
+	(ffetarget_memcpy_): Call sorry if host and target endians are
 	not matching.
 
 Thu Apr  4 23:29:48 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
@@ -175,7 +179,7 @@ Thu Feb 28 07:53:46 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
 	* intrin.def: Use 'N' constraints in table of intrinsics.
 	* intdoc.c: Document this constraint.
 	* intdoc.texi: Regenerated.
-	
+
 2002-02-04  Philipp Thomas  <pthomas@suse.de>
 
 	* implic.c lex.c stb.c ste.c stu.c: Update copyright dates.
