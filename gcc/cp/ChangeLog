@@ -1,5 +1,8 @@
 1999-07-27  Mark Mitchell  <mark@codesourcery.com>
 
+	* class.c (override_one_vtable): Adjust the use of BINFO_VIRTUALS
+	here too.
+
 	* cp-tree.h (BINFO_VIRTUALS): Document new format.
 	* class.c (modify_one_vtable): Change prototype accordingly.
 	(modify_all_vtables): Likewise.
@@ -15,6 +18,7 @@
 	(fixup_vtable_deltas): Likewise.
 	(override_one_vtable): Likewise.
 	(finish_struct_1): Likewise.
+
 	* error.c (dump_expr): Likewise.
 	* search.c (get_abstract_virtuals_1): Likewise.
 	(get_abstract_virtuals): Likewise.
