@@ -981,7 +981,7 @@ documented_lang_options[] =
   { "-Wno-bad-function-cast", "" },
   { "-Wcast-qual", "Warn about casts which discard qualifiers"},
   { "-Wno-cast-qual", "" },
-  { "-Wchar-subscripts", "Warn about subscripts whoes type is 'char'"},
+  { "-Wchar-subscripts", "Warn about subscripts whose type is 'char'"},
   { "-Wno-char-subscripts", "" },
   { "-Wcomment", "Warn if nested comments are detected" },
   { "-Wno-comment", },
@@ -1030,7 +1030,7 @@ documented_lang_options[] =
   { "-Wno-unknown-pragmas", "" },
   { "-Wstrict-prototypes", "Warn about non-prototyped function decls" },
   { "-Wno-strict-prototypes", "" },
-  { "-Wtraditional", "Warn about constructs whoes meaning change in ANSI C"},
+  { "-Wtraditional", "Warn about constructs whose meaning change in ANSI C"},
   { "-Wno-traditional", "" },
   { "-Wtrigraphs", "Warn when trigraphs are encountered" },
   { "-Wno-trigraphs", "" },
@@ -4037,7 +4037,7 @@ display_help ()
      If the description is empty, do not display anything.  (This allows
      options to be deliberately undocumented, for whatever reason).
      If the option string is missing, then this is a marker, indicating
-     that the description string is in fact the name of a language, whoes
+     that the description string is in fact the name of a language, whose
      language specific options are to follow.  */
   
   if (NUM_ELEM (documented_lang_options) > 1)
