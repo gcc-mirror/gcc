@@ -1,3 +1,15 @@
+Mon Feb 22 13:33:47 1999  Mark Mitchell  <mark@markmitchell.com>
+
+	* cse.c (dump_class): New function.
+	(invalidate_memory): Fix typo in comment.
+	* function.c (temp_slot): Add an alias set field.  
+	(assign_stack_temp): Only reuse slots if they will have the
+	same alias set as before.
+	(combine_temp_slots): Don't combine if -fstrict-aliasing;
+	that's unsafe.
+	* rtl.c (copy_rtx): Copy all the flags (in particular,
+	MEM_SCALAR_P).
+
 Mon Feb 22 14:13:23 1999  Vladimir N. Makarov  <vmakarov@cygnus.com>
 
 	* configure.in (i[34567]86-*-linux-gnu*,

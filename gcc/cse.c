@@ -663,9 +663,29 @@ static void cse_check_loop_start PROTO((rtx, rtx));
 static void cse_set_around_loop	PROTO((rtx, rtx, rtx));
 static rtx cse_basic_block	PROTO((rtx, rtx, struct branch_path *, int));
 static void count_reg_usage	PROTO((rtx, int *, rtx, int));
+static void dump_class          PROTO((struct table_elt*));
 
 extern int rtx_equal_function_value_matters;
 
+/* Dump the expressions in the equivalence class indicated by CLASSP.
+   This function is used only for debugging.  */
+void
+dump_class (classp)
+     struct table_elt *classp;
+{
+  struct table_elt *elt;
+
+  fprintf (stderr, "Equivalence chain for ");
+  print_rtl (stderr, classp->exp);
+  fprintf (stderr, ": \n");
+  
+  for (elt = classp->first_same_value; elt; elt = elt->next_same_value)
+    {
+      print_rtl (stderr, elt->exp);
+      fprintf (stderr, "\n");
+    }
+}
+
 /* Return an estimate of the cost of computing rtx X.
    One use is in cse, to decide which expression to keep in the hash table.
    Another is in rtl generation, to pick the cheapest way to multiply.
@@ -7821,7 +7841,7 @@ cse_insn (insn, libcall_insn)
   prev_insn = insn;
 }
 
-/* Remove from the ahsh table all expressions that reference memory.  */
+/* Remove from the hash table all expressions that reference memory.  */
 static void
 invalidate_memory ()
 {
