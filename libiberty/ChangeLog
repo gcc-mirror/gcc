@@ -1,3 +1,7 @@
+2003-02-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* physmem.c: Formatting changes from upstream.
+
 2003-02-24  Danny Smith  <dannysmith@users.source.forge.net>
 
 	* physmem.c (physmem_total): Add _WIN32 support.
