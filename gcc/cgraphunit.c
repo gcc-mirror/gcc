@@ -122,7 +122,8 @@ record_call_1 (tree *tp, int *walk_subtrees, void *data)
 	     taken by something that is not a function call.  So only
 	     walk the function parameter list, skip the other subtrees.  */
 
-	  walk_tree (&TREE_OPERAND (*tp, 1), record_call_1, data, NULL);
+	  walk_tree_without_duplicates (&TREE_OPERAND (*tp, 1),
+					record_call_1, data);
 	  *walk_subtrees = 0;
 	}
     }
@@ -292,7 +293,7 @@ cgraph_optimize_function (struct cgraph_node *node)
 
   timevar_push (TV_INTEGRATION);
   /* optimize_inline_calls avoids inlining of current_function_decl.  */
-  current_function_decl = 0;
+  current_function_decl = decl;
   if (flag_inline_trees)
     optimize_inline_calls (decl);
   if (node->nested)
