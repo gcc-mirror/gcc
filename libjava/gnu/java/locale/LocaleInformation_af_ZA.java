@@ -4,26 +4,26 @@ package gnu.java.locale;
 
 import java.util.ListResourceBundle;
 
-public class LocaleInformation_en_US extends ListResourceBundle
+public class LocaleInformation_af_ZA extends ListResourceBundle
 {
-  static final String decimalSeparator = ".";
-  static final String groupingSeparator = ",";
+  static final String decimalSeparator = ",";
+  static final String groupingSeparator = ".";
   static final String numberFormat = "#,###,##0.###";
   static final String percentFormat = "#,###,##0%";
-  static final String[] weekdays = { null, "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+  static final String[] weekdays = { null, "Sondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrydag", "Saterdag" };
 
-  static final String[] shortWeekdays = { null, "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+  static final String[] shortWeekdays = { null, "So", "Ma", "Di", "Wo", "Do", "Vr", "Sa" };
 
-  static final String[] shortMonths = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", null };
+  static final String[] shortMonths = { "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Des", null };
 
-  static final String[] months = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December", null };
+  static final String[] months = { "Januarie", "Februarie", "Maart", "April", "Mei", "Junie", "Julie", "Augustus", "September", "Oktober", "November", "Desember", null };
 
-  static final String[] ampms = { "AM", "PM" };
+  static final String[] ampms = { "VM", "NM" };
 
-  static final String shortDateFormat = "MM/dd/yyyy";
-  static final String defaultTimeFormat = "hh:m:s a";
-  static final String currencySymbol = "$";
-  static final String intlCurrencySymbol = "USD";
+  static final String shortDateFormat = "dd/MM/yy";
+  static final String defaultTimeFormat = "";
+  static final String currencySymbol = "R";
+  static final String intlCurrencySymbol = "ZAR";
   static final String currencyFormat = "$#,###,##0.00;-$#,###,##0.00";
 
   private static final Object[][] contents =

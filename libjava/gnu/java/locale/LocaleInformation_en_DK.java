@@ -4,10 +4,10 @@ package gnu.java.locale;
 
 import java.util.ListResourceBundle;
 
-public class LocaleInformation_en_US extends ListResourceBundle
+public class LocaleInformation_en_DK extends ListResourceBundle
 {
-  static final String decimalSeparator = ".";
-  static final String groupingSeparator = ",";
+  static final String decimalSeparator = ",";
+  static final String groupingSeparator = ".";
   static final String numberFormat = "#,###,##0.###";
   static final String percentFormat = "#,###,##0%";
   static final String[] weekdays = { null, "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
@@ -18,12 +18,12 @@ public class LocaleInformation_en_US extends ListResourceBundle
 
   static final String[] months = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December", null };
 
-  static final String[] ampms = { "AM", "PM" };
+  static final String[] ampms = { "", "" };
 
-  static final String shortDateFormat = "MM/dd/yyyy";
-  static final String defaultTimeFormat = "hh:m:s a";
-  static final String currencySymbol = "$";
-  static final String intlCurrencySymbol = "USD";
+  static final String shortDateFormat = "yyyy-MM-dd";
+  static final String defaultTimeFormat = "";
+  static final String currencySymbol = "\u00A4";
+  static final String intlCurrencySymbol = "DKK";
   static final String currencyFormat = "$#,###,##0.00;-$#,###,##0.00";
 
   private static final Object[][] contents =

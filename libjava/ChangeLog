@@ -1,5 +1,144 @@
 2002-01-08  Tom Tromey  <tromey@redhat.com>
 
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ordinary_java_source_files): Added new files.
+	* gnu/java/locale/LocaleInformation.java: Extend
+	LocaleInformation_en.
+	* gnu/java/locale/LocaleInformation_en.java: Added zone strings
+	and time/date formats.
+	* gnu/java/locale/LocaleInformation_en_US.java: Now automatically
+	generated.
+	* gnu/java/locale/LocaleInformation_af_ZA.java: New file.
+	* gnu/java/locale/LocaleInformation_ar_AE.java: New file.
+	* gnu/java/locale/LocaleInformation_ar_BH.java: New file.
+	* gnu/java/locale/LocaleInformation_ar_DZ.java: New file.
+	* gnu/java/locale/LocaleInformation_ar_EG.java: New file.
+	* gnu/java/locale/LocaleInformation_ar_IN.java: New file.
+	* gnu/java/locale/LocaleInformation_ar_IQ.java: New file.
+	* gnu/java/locale/LocaleInformation_ar_JO.java: New file.
+	* gnu/java/locale/LocaleInformation_ar_KW.java: New file.
+	* gnu/java/locale/LocaleInformation_ar_LB.java: New file.
+	* gnu/java/locale/LocaleInformation_ar_LY.java: New file.
+	* gnu/java/locale/LocaleInformation_ar_MA.java: New file.
+	* gnu/java/locale/LocaleInformation_ar_OM.java: New file.
+	* gnu/java/locale/LocaleInformation_ar_QA.java: New file.
+	* gnu/java/locale/LocaleInformation_ar_SD.java: New file.
+	* gnu/java/locale/LocaleInformation_ar_SY.java: New file.
+	* gnu/java/locale/LocaleInformation_ar_TN.java: New file.
+	* gnu/java/locale/LocaleInformation_ar_YE.java: New file.
+	* gnu/java/locale/LocaleInformation_be_BY.java: New file.
+	* gnu/java/locale/LocaleInformation_bn_IN.java: New file.
+	* gnu/java/locale/LocaleInformation_br_FR.java: New file.
+	* gnu/java/locale/LocaleInformation_bs_BA.java: New file.
+	* gnu/java/locale/LocaleInformation_ca_ES.java: New file.
+	* gnu/java/locale/LocaleInformation_cs_CZ.java: New file.
+	* gnu/java/locale/LocaleInformation_cy_GB.java: New file.
+	* gnu/java/locale/LocaleInformation_da_DK.java: New file.
+	* gnu/java/locale/LocaleInformation_de_AT.java: New file.
+	* gnu/java/locale/LocaleInformation_de_BE.java: New file.
+	* gnu/java/locale/LocaleInformation_de_CH.java: New file.
+	* gnu/java/locale/LocaleInformation_de_DE.java: New file.
+	* gnu/java/locale/LocaleInformation_de_LU.java: New file.
+	* gnu/java/locale/LocaleInformation_el_GR.java: New file.
+	* gnu/java/locale/LocaleInformation_en_AU.java: New file.
+	* gnu/java/locale/LocaleInformation_en_BW.java: New file.
+	* gnu/java/locale/LocaleInformation_en_CA.java: New file.
+	* gnu/java/locale/LocaleInformation_en_DK.java: New file.
+	* gnu/java/locale/LocaleInformation_en_GB.java: New file.
+	* gnu/java/locale/LocaleInformation_en_HK.java: New file.
+	* gnu/java/locale/LocaleInformation_en_IE.java: New file.
+	* gnu/java/locale/LocaleInformation_en_IN.java: New file.
+	* gnu/java/locale/LocaleInformation_en_NZ.java: New file.
+	* gnu/java/locale/LocaleInformation_en_PH.java: New file.
+	* gnu/java/locale/LocaleInformation_en_SG.java: New file.
+	* gnu/java/locale/LocaleInformation_en_ZA.java: New file.
+	* gnu/java/locale/LocaleInformation_en_ZW.java: New file.
+	* gnu/java/locale/LocaleInformation_es_AR.java: New file.
+	* gnu/java/locale/LocaleInformation_es_BO.java: New file.
+	* gnu/java/locale/LocaleInformation_es_CL.java: New file.
+	* gnu/java/locale/LocaleInformation_es_CO.java: New file.
+	* gnu/java/locale/LocaleInformation_es_CR.java: New file.
+	* gnu/java/locale/LocaleInformation_es_DO.java: New file.
+	* gnu/java/locale/LocaleInformation_es_EC.java: New file.
+	* gnu/java/locale/LocaleInformation_es_ES.java: New file.
+	* gnu/java/locale/LocaleInformation_es_GT.java: New file.
+	* gnu/java/locale/LocaleInformation_es_HN.java: New file.
+	* gnu/java/locale/LocaleInformation_es_MX.java: New file.
+	* gnu/java/locale/LocaleInformation_es_NI.java: New file.
+	* gnu/java/locale/LocaleInformation_es_PA.java: New file.
+	* gnu/java/locale/LocaleInformation_es_PE.java: New file.
+	* gnu/java/locale/LocaleInformation_es_PR.java: New file.
+	* gnu/java/locale/LocaleInformation_es_PY.java: New file.
+	* gnu/java/locale/LocaleInformation_es_SV.java: New file.
+	* gnu/java/locale/LocaleInformation_es_US.java: New file.
+	* gnu/java/locale/LocaleInformation_es_UY.java: New file.
+	* gnu/java/locale/LocaleInformation_es_VE.java: New file.
+	* gnu/java/locale/LocaleInformation_et_EE.java: New file.
+	* gnu/java/locale/LocaleInformation_eu_ES.java: New file.
+	* gnu/java/locale/LocaleInformation_fa_IR.java: New file.
+	* gnu/java/locale/LocaleInformation_fi_FI.java: New file.
+	* gnu/java/locale/LocaleInformation_fo_FO.java: New file.
+	* gnu/java/locale/LocaleInformation_fr_BE.java: New file.
+	* gnu/java/locale/LocaleInformation_fr_CA.java: New file.
+	* gnu/java/locale/LocaleInformation_fr_CH.java: New file.
+	* gnu/java/locale/LocaleInformation_fr_FR.java: New file.
+	* gnu/java/locale/LocaleInformation_fr_LU.java: New file.
+	* gnu/java/locale/LocaleInformation_ga_IE.java: New file.
+	* gnu/java/locale/LocaleInformation_gd_GB.java: New file.
+	* gnu/java/locale/LocaleInformation_gl_ES.java: New file.
+	* gnu/java/locale/LocaleInformation_gv_GB.java: New file.
+	* gnu/java/locale/LocaleInformation_he_IL.java: New file.
+	* gnu/java/locale/LocaleInformation_hi_IN.java: New file.
+	* gnu/java/locale/LocaleInformation_hr_HR.java: New file.
+	* gnu/java/locale/LocaleInformation_hu_HU.java: New file.
+	* gnu/java/locale/LocaleInformation_id_ID.java: New file.
+	* gnu/java/locale/LocaleInformation_it_CH.java: New file.
+	* gnu/java/locale/LocaleInformation_it_IT.java: New file.
+	* gnu/java/locale/LocaleInformation_iw_IL.java: New file.
+	* gnu/java/locale/LocaleInformation_ja_JP.java: New file.
+	* gnu/java/locale/LocaleInformation_ka_GE.java: New file.
+	* gnu/java/locale/LocaleInformation_kl_GL.java: New file.
+	* gnu/java/locale/LocaleInformation_ko_KR.java: New file.
+	* gnu/java/locale/LocaleInformation_kw_GB.java: New file.
+	* gnu/java/locale/LocaleInformation_lt_LT.java: New file.
+	* gnu/java/locale/LocaleInformation_lv_LV.java: New file.
+	* gnu/java/locale/LocaleInformation_mi_NZ.java: New file.
+	* gnu/java/locale/LocaleInformation_mk_MK.java: New file.
+	* gnu/java/locale/LocaleInformation_mr_IN.java: New file.
+	* gnu/java/locale/LocaleInformation_mt_MT.java: New file.
+	* gnu/java/locale/LocaleInformation_nl_BE.java: New file.
+	* gnu/java/locale/LocaleInformation_nl_NL.java: New file.
+	* gnu/java/locale/LocaleInformation_nn_NO.java: New file.
+	* gnu/java/locale/LocaleInformation_no_NO.java: New file.
+	* gnu/java/locale/LocaleInformation_oc_FR.java: New file.
+	* gnu/java/locale/LocaleInformation_pl_PL.java: New file.
+	* gnu/java/locale/LocaleInformation_pt_BR.java: New file.
+	* gnu/java/locale/LocaleInformation_pt_PT.java: New file.
+	* gnu/java/locale/LocaleInformation_ro_RO.java: New file.
+	* gnu/java/locale/LocaleInformation_ru_RU.java: New file.
+	* gnu/java/locale/LocaleInformation_ru_UA.java: New file.
+	* gnu/java/locale/LocaleInformation_se_NO.java: New file.
+	* gnu/java/locale/LocaleInformation_sk_SK.java: New file.
+	* gnu/java/locale/LocaleInformation_sl_SI.java: New file.
+	* gnu/java/locale/LocaleInformation_sq_AL.java: New file.
+	* gnu/java/locale/LocaleInformation_sr_YU.java: New file.
+	* gnu/java/locale/LocaleInformation_sv_FI.java: New file.
+	* gnu/java/locale/LocaleInformation_sv_SE.java: New file.
+	* gnu/java/locale/LocaleInformation_ta_IN.java: New file.
+	* gnu/java/locale/LocaleInformation_te_IN.java: New file.
+	* gnu/java/locale/LocaleInformation_tg_TJ.java: New file.
+	* gnu/java/locale/LocaleInformation_tl_PH.java: New file.
+	* gnu/java/locale/LocaleInformation_tr_TR.java: New file.
+	* gnu/java/locale/LocaleInformation_uk_UA.java: New file.
+	* gnu/java/locale/LocaleInformation_ur_PK.java: New file.
+	* gnu/java/locale/LocaleInformation_uz_UZ.java: New file.
+	* gnu/java/locale/LocaleInformation_vi_VN.java: New file.
+	* gnu/java/locale/LocaleInformation_yi_US.java: New file.
+	* gnu/java/locale/LocaleInformation_zh_CN.java: New file.
+	* gnu/java/locale/LocaleInformation_zh_HK.java: New file.
+	* gnu/java/locale/LocaleInformation_zh_SG.java: New file.
+	* gnu/java/locale/LocaleInformation_zh_TW.java: New file.
+
 	For PR libgcj/5031:
 	* java/lang/natSystem.cc (init_properties): Use LC_MESSAGES to
 	choose default locale.
