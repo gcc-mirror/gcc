@@ -81,10 +81,18 @@ DEF_MACHMODE (DFmode, "DF", MODE_FLOAT, 8, 8, XFmode)
 DEF_MACHMODE (XFmode, "XF", MODE_FLOAT, 12, 12, TFmode)   /* IEEE extended */
 DEF_MACHMODE (TFmode, "TF", MODE_FLOAT, 16, 16, VOIDmode)
 
+/* Complex modes.  */
 DEF_MACHMODE (SCmode, "SC", MODE_COMPLEX_FLOAT, 8, 4, DCmode)
 DEF_MACHMODE (DCmode, "DC", MODE_COMPLEX_FLOAT, 16, 8, XCmode)
 DEF_MACHMODE (XCmode, "XC", MODE_COMPLEX_FLOAT, 24, 12, TCmode)
 DEF_MACHMODE (TCmode, "TC", MODE_COMPLEX_FLOAT, 32, 16, VOIDmode)
+
+DEF_MACHMODE (CQImode, "CQI", MODE_COMPLEX_INT, 2, 1, CHImode)
+DEF_MACHMODE (CHImode, "CHI", MODE_COMPLEX_INT, 4, 2, CSImode)
+DEF_MACHMODE (CSImode, "CSI", MODE_COMPLEX_INT, 8, 4, CDImode)
+DEF_MACHMODE (CDImode, "CDI", MODE_COMPLEX_INT, 16, 8, CTImode)
+DEF_MACHMODE (CTImode, "CTI", MODE_COMPLEX_INT, 32, 16, COImode)
+DEF_MACHMODE (COImode, "COI", MODE_COMPLEX_INT, 64, 32, VOIDmode)
 
 /* BLKmode is used for structures, arrays, etc.
    that fit no more specific mode.  */
