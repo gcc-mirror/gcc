@@ -1711,7 +1711,7 @@ invalidate_for_call ()
 	if (reg_tick[regno] >= 0)
 	  reg_tick[regno]++;
 
-	in_table |= TEST_HARD_REG_BIT (hard_regs_in_table, regno);
+	in_table |= (TEST_HARD_REG_BIT (hard_regs_in_table, regno) != 0);
       }
 
   /* In the case where we have no call-clobbered hard registers in the
