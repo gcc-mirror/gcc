@@ -1,3 +1,9 @@
+Fri Sep  5 14:04:59 1997  Philippe De Muyter  <phdm@info.ucl.ac.be>
+
+	* integrate.c (save_for_inline_copying): Use 0, not NULL_PTR,
+	as initial value for real_label_map.
+	(copy_for_inline): Likewise.
+
 Fri Sep  5 13:36:44 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sched.c (update_flow_info) When looking if to set found_split_dest
