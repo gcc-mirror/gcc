@@ -1,3 +1,9 @@
+Fri May 23 21:19:31 CEST 2003  Jan Hubicka  <jh@suse.cz>
+			       Andreas Jaeger  <aj@suse.de>
+
+	* i386.h (TARGET_CPU_CPP_BUILTINS): Define __amd64 and __amd64__;
+	do not use assertion.
+
 2003-05-23  Mike Stump  <mrs@apple.com>
 
 	* tlink.c (scan_linker_output): Add support for darwin linker, as it
