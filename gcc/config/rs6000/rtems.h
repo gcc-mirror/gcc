@@ -28,4 +28,6 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "-DPPC -Drtems -D__rtems__ \
    -Asystem(rtems) -Acpu(powerpc) -Amachine(powerpc)"
 
+/* rtems is in the SUBTARGET_SWITCHES in rs6000/sysv4.h */
+
 /* end of powerpc-rtems.h */
