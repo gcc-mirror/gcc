@@ -21,11 +21,11 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include <stdio.h>
-#include <assert.h>
 #include <sys/types.h>
 #include <time.h>
 #include <ctype.h>
 
+#include "assert.h"
 #include "config.h"
 #include "rtl.h"
 #include "regs.h"
@@ -47,7 +47,7 @@ extern char *ctime ();
 extern int flag_traditional;
 extern FILE *asm_out_file;
 
-static char out_sccs_id[] = "@(#)m88k.c	2.2.14.3 10/28/92 15:20:54";
+static char out_sccs_id[] = "@(#)m88k.c	2.2.14.4 10/29/92 05:37:46";
 static char tm_sccs_id [] = TM_SCCS_ID;
 
 char *m88k_pound_sign = "";	/* Either # for SVR4 or empty for SVR3 */
