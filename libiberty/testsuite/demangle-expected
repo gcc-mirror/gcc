@@ -127,31 +127,31 @@ VOrder__9ivTSolverUiRP12ivInteractorT2
 ivTSolver::VOrder(unsigned int, ivInteractor *&, ivInteractor *&)
 #
 --format=gnu
-_10PageButton\$__both
+_10PageButton$__both
 PageButton::__both
 #
 --format=gnu
-_3RNG\$singleMantissa
+_3RNG$singleMantissa
 RNG::singleMantissa
 #
 --format=gnu
-_5IComp\$_release
+_5IComp$_release
 IComp::_release
 #
 --format=gnu
-_\$_10BitmapComp
+_$_10BitmapComp
 BitmapComp::~BitmapComp(void)
 #
 --format=gnu
-_\$_9__io_defs
+_$_9__io_defs
 __io_defs::~__io_defs(void)
 #
 --format=gnu
-_\$_Q23foo3bar
+_$_Q23foo3bar
 foo::bar::~bar(void)
 #
 --format=gnu
-_\$_Q33foo3bar4bell
+_$_Q33foo3bar4bell
 foo::bar::bell::~bell(void)
 #
 --format=gnu
@@ -435,11 +435,11 @@ _vt.foo.bar
 foo::bar virtual table
 #
 --format=gnu
-_vt\$foo
+_vt$foo
 foo virtual table
 #
 --format=gnu
-_vt\$foo\$bar
+_vt$foo$bar
 foo::bar virtual table
 #
 --format=gnu
@@ -647,11 +647,11 @@ zero__8osMemoryPvUi
 osMemory::zero(void *, unsigned int)
 #
 --format=gnu
-_2T4\$N
+_2T4$N
 T4::N
 #
 --format=gnu
-_Q22T42t1\$N
+_Q22T42t1$N
 T4::t1::N
 #
 --format=gnu
@@ -727,11 +727,11 @@ __t6vector1Zii
 vector<int>::vector(int)
 #
 --format=gnu
-_\$_t6vector1Zdi
+_$_t6vector1Zdi
 vector<double>::~vector(int)
 #
 --format=gnu
-_\$_t6vector1Zii
+_$_t6vector1Zii
 vector<int>::~vector(int)
 #
 --format=gnu
@@ -827,11 +827,11 @@ next__Ct4List1Z10VHDLEntityRQ2t4List1Z10VHDLEntity3Pix
 List<VHDLEntity>::next(List<VHDLEntity>::Pix &) const
 #
 --format=gnu
-_GLOBAL_\$D\$set
+_GLOBAL_$D$set
 global destructors keyed to set
 #
 --format=gnu
-_GLOBAL_\$I\$set
+_GLOBAL_$I$set
 global constructors keyed to set
 #
 --format=gnu
@@ -875,7 +875,7 @@ __t8BDDHookV1ZPcRCPc
 BDDHookV<char *>::BDDHookV(char *const &)
 #
 --format=gnu
-_vt\$t8BDDHookV1ZPc
+_vt$t8BDDHookV1ZPc
 BDDHookV<char *> virtual table
 #
 --format=gnu
@@ -2564,7 +2564,7 @@ _27_GLOBAL_.N.__12burst_app_ct.app_instance
 {anonymous}::app_instance
 #
 --format=gnu
-_26_GLOBAL_\$N\$_tmp_n.iilg4Gya\$app_instance
+_26_GLOBAL_$N$_tmp_n.iilg4Gya$app_instance
 {anonymous}::app_instance
 #
 --format=java

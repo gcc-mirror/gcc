@@ -1,3 +1,9 @@
+2002-09-11  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in: Remove all references to s-under and underscore.c.
+	* collect2.c, tlink.c: Change all uses of prepends_underscore
+	to look directly at USER_LABEL_PREFIX.
+
 2002-09-11  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_xcoff_asm_named_section): Append

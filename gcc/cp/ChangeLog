@@ -1,3 +1,11 @@
+2002-09-11  Zack Weinberg  <zack@codesourcery.com>
+
+	* Make-lang.in: Build cp/cxxfilt.o from $(srcdir)/cp/cxxfilt.c,
+	and c++filt from cxxfilt.o + version.o + $(LIBDEPS).
+	* cxxfilt.c: New file: split from libiberty/cplus-dem.c, with
+	minor adjustments (use version_string, eliminate yet another
+	duplicate of xmalloc)
+
 2002-09-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cp-tree.h (require_complete_eh_spec_types): Add prototype.
