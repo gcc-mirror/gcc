@@ -1,3 +1,11 @@
+2005-02-02  Jeff Law  <law@redhat.com>
+
+	* gcse.c (struct reg_set): Store the block index where the register
+	was set rather than the setting insn.
+	(record_one_set, compute_transp): Corresponding changes.
+	(pre_insert_copy_insn): Do not call replace_one_set.
+	(replace_one_set): Remove.
+
 2005-02-02  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR other/15514

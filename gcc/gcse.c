@@ -436,8 +436,8 @@ typedef struct reg_set
 {
   /* The next setting of this register.  */
   struct reg_set *next;
-  /* The insn where it was set.  */
-  rtx insn;
+  /* The index of the block where it was set.  */
+  int bb_index;
 } reg_set;
 
 static reg_set **reg_set_table;
@@ -535,7 +535,6 @@ static void free_gcse_mem (void);
 static void alloc_reg_set_mem (int);
 static void free_reg_set_mem (void);
 static void record_one_set (int, rtx);
-static void replace_one_set (int, rtx, rtx);
 static void record_set_info (rtx, rtx, void *);
 static void compute_sets (rtx);
 static void hash_scan_insn (rtx, struct hash_table *, int);
@@ -1104,24 +1103,6 @@ free_reg_set_mem (void)
   obstack_free (&reg_set_obstack, NULL);
 }
 
-/* An OLD_INSN that used to set REGNO was replaced by NEW_INSN.
-   Update the corresponding `reg_set_table' entry accordingly.
-   We assume that NEW_INSN is not already recorded in reg_set_table[regno].  */
-
-static void
-replace_one_set (int regno, rtx old_insn, rtx new_insn)
-{
-  struct reg_set *reg_info;
-  if (regno >= reg_set_table_size)
-    return;
-  for (reg_info = reg_set_table[regno]; reg_info; reg_info = reg_info->next)
-    if (reg_info->insn == old_insn)
-      {
-        reg_info->insn = new_insn;
-        break;
-      }
-}
-
 /* Record REGNO in the reg_set table.  */
 
 static void
@@ -1144,7 +1125,7 @@ record_one_set (int regno, rtx insn)
 
   new_reg_info = obstack_alloc (&reg_set_obstack, sizeof (struct reg_set));
   bytes_used += sizeof (struct reg_set);
-  new_reg_info->insn = insn;
+  new_reg_info->bb_index = BLOCK_NUM (insn);
   new_reg_info->next = reg_set_table[regno];
   reg_set_table[regno] = new_reg_info;
 }
@@ -2468,7 +2449,7 @@ compute_transp (rtx x, int indx, sbitmap *bmap, int set_p)
 	  else
 	    {
 	      for (r = reg_set_table[REGNO (x)]; r != NULL; r = r->next)
-		SET_BIT (bmap[BLOCK_NUM (r->insn)], indx);
+		SET_BIT (bmap[r->bb_index], indx);
 	    }
 	}
       else
@@ -2482,7 +2463,7 @@ compute_transp (rtx x, int indx, sbitmap *bmap, int set_p)
 	  else
 	    {
 	      for (r = reg_set_table[REGNO (x)]; r != NULL; r = r->next)
-		RESET_BIT (bmap[BLOCK_NUM (r->insn)], indx);
+		RESET_BIT (bmap[r->bb_index], indx);
 	    }
 	}
 
@@ -4260,7 +4241,6 @@ pre_insert_copy_insn (struct expr *expr, rtx insn)
           new_insn = emit_insn_after (new_insn, insn);
 
           /* Keep register set table up to date.  */
-          replace_one_set (REGNO (old_reg), insn, new_insn);
           record_one_set (regno, insn);
         }
       else
