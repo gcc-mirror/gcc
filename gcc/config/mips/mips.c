@@ -5564,7 +5564,8 @@ mips_function_value (valtype, func)
 	    break;
 	}
 	  
-      if (! field)
+      /* Must check i, so that we reject structures with no elements.  */
+      if (! field && i > 0)
 	reg = FP_RETURN;
     }
 
