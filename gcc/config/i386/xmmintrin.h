@@ -1979,6 +1979,22 @@ _mm_srai_epi32 (__m128i __A, int __B)
   return (__m128i)__builtin_ia32_psradi128 ((__v4si)__A, __B);
 }
 
+#if 0
+static __m128i __attribute__((__always_inline__))
+_mm_srli_si128 (__m128i __A, const int __B)
+{
+  return ((__m128i)__builtin_ia32_psrldqi128 (__A, __B))
+}
+
+static __m128i __attribute__((__always_inline__))
+_mm_srli_si128 (__m128i __A, const int __B)
+{
+  return ((__m128i)__builtin_ia32_pslldqi128 (__A, __B))
+}
+#endif
+#define _mm_srli_si128(__A, __B) ((__m128i)__builtin_ia32_psrldqi128 (__A, __B))
+#define _mm_slli_si128(__A, __B) ((__m128i)__builtin_ia32_pslldqi128 (__A, __B))
+
 static __inline __m128i
 _mm_srli_epi16 (__m128i __A, int __B)
 {

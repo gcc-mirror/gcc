@@ -1,3 +1,11 @@
+2002-10-20  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	PR other/8202
+	* i386.c (ix86_init_mmx_sse_builtins, ix86_expand_builtin): Define and
+	expand __builtin_ia32_pslldqi128 and __builtin_ia32_psrldqi128.
+	* i386.h (IX86_BUILTIN_PSLLDQI128, IX86_BUILTIN_PSRLDQI128): New.
+	* xmmintrin.h (_mm_srli_si128, _mm_slli_si128): New.
+
 2002-10-20  Roger Sayle  <roger@eyesopen.com>
 
 	PR c/761
