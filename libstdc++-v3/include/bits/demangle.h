@@ -335,8 +335,8 @@ namespace __gnu_cxx
 	bool get_style_sizeof_typename(void) const
 	    { return (M_style & style_sizeof_typename); }
         // This can be overridden by user implementations.
-	virtual bool decode_real(char* output, unsigned long* input,
-                                 size_t size_of_real) const { return false; }
+	virtual bool decode_real(char*, unsigned long*, size_t) const
+            { return false; }
     };
 
     template<typename Allocator>
