@@ -393,8 +393,9 @@ AC_ARG_ENABLE(checking,
 [  --enable-checking[=LIST]
 			  enable expensive run-time checks.  With LIST,
 			  enable only specific categories of checks.
-			  Categories are: assert,fold,gc,gcac,misc,
-			  rtlflag,rtl,runtime,tree,valgrind,release,yes,all;],
+			  Categories are: yes,no,all,none,release.
+			  Flags are: assert,fold,gc,gcac,misc,
+			  rtlflag,rtl,runtime,tree,valgrind.],
 [ac_checking_flags="${enableval}"],[
 # Determine the default checks.
 if test x$is_release = x ; then
@@ -404,40 +405,50 @@ else
 fi])
 ac_assert_checking=1
 ac_checking=
-ac_tree_checking=
+ac_fold_checking=
+ac_gc_checking=
+ac_gc_always_collect=
 ac_rtl_checking=
 ac_rtlflag_checking=
 ac_runtime_checking=1
-ac_gc_checking=
-ac_gc_always_collect=
-ac_fold_checking=
+ac_tree_checking=
+ac_valgrind_checking=
 IFS="${IFS= 	}"; ac_save_IFS="$IFS"; IFS="$IFS,"
 for check in $ac_checking_flags
 do
 	case $check in
+	# these set all the flags to specific states
 	yes)		ac_assert_checking=1 ; ac_checking=1 ;
-			ac_tree_checking=1 ; ac_gc_checking=1 ;
-			ac_rtlflag_checking=1 ; ac_runtime_checking=1 ;;
-	no)		ac_assert_checking= ; ac_checking= ;
-			ac_tree_checking= ; ac_rtl_checking= ;
-			ac_rtlflag_checking= ; ac_gc_checking= ;
-			ac_gc_always_collect= ; ac_fold_checking= ;;
+			ac_fold_checking= ; ac_gc_checking=1 ;
+			ac_gc_always_collect= ; ac_rtl_checking= ;
+			ac_rtlflag_checking=1 ; ac_runtime_chacking=1 ;
+			ac_tree_checking=1 ; ac_valgrind_checking= ;;
+	no|none)	ac_assert_checking= ; ac_checking= ;
+			ac_fold_checking= ; ac_gc_checking= ;
+			ac_gc_always_collect= ; ac_rtl_checking= ;
+			ac_rtlflag_checking= ; ac_runtime_chacking= ;
+			ac_tree_checking= ; ac_valgrind_checking= ;;
 	all)		ac_assert_checking=1 ; ac_checking=1 ;
-			ac_tree_checking=1 ; ac_rtl_checking=1 ;
-			ac_rtlflag_checking=1 ; ac_runtime_checking=1;
-			ac_gc_checking=1 ; ac_gc_always_collect=1 ;
-			ac_fold_checking=1 ;;
-        release)	ac_assert_checking=1 ; ac_runtime_checking=1 ;;
+			ac_fold_checking=1 ; ac_gc_checking=1 ;
+			ac_gc_always_collect=1 ; ac_rtl_checking=1 ;
+			ac_rtlflag_checking=1 ; ac_runtime_checking=1 ;
+			ac_tree_checking=1 ; ac_valgrind_checking= ;;
+	release)	ac_assert_checking=1 ; ac_checking= ;
+			ac_fold_checking= ; ac_gc_checking= ;
+			ac_gc_always_collect= ; ac_rtl_checking= ;
+			ac_rtlflag_checking= ; ac_runtime_checking=1 ;
+			ac_tree_checking= ; ac_valgrind_checking= ;;
+	# these enable particular checks
 	assert) 	ac_assert_checking=1 ;;
 	fold)		ac_fold_checking=1 ;;
 	gc)		ac_gc_checking=1 ;;
 	gcac)		ac_gc_always_collect=1 ;;
 	misc)		ac_checking=1 ;;
-	rtlflag)	ac_rtlflag_checking=1 ;;
 	rtl)		ac_rtl_checking=1 ;;
+	rtlflag)	ac_rtlflag_checking=1 ;;
 	runtime)	ac_runtime_checking=1 ;;
 	tree)		ac_tree_checking=1 ;;
-	valgrind)	ac_checking_valgrind=1 ;;
+	valgrind)	ac_valgrind_checking=1 ;;
 	*)	AC_MSG_ERROR(unknown check category $check) ;;
 	esac
 done
@@ -505,7 +516,7 @@ dnl # an if statement.  This was the source of very frustrating bugs
 dnl # in converting to autoconf 2.5x!
 AC_CHECK_HEADER(valgrind.h, have_valgrind_h=yes, have_valgrind_h=no)
 
-if test x$ac_checking_valgrind != x ; then
+if test x$ac_valgrind_checking != x ; then
   # It is certainly possible that there's valgrind but no valgrind.h.
   # GCC relies on making annotations so we must have both.
   AC_MSG_CHECKING(for VALGRIND_DISCARD in <valgrind/memcheck.h>)

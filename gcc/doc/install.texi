@@ -1099,30 +1099,29 @@ controlled by the Makefiles.
 
 @item --enable-checking
 @itemx --enable-checking=@var{list}
-When you specify this option, the compiler is built to perform checking
-of tree node types when referencing fields of that node, and some other
-internal consistency checks.  This does not change the generated code,
-but adds error checking within the compiler.  This will slow down the
-compiler and may only work properly if you are building the compiler
-with GCC@.  This is on by default when building from CVS or snapshots,
-but off for releases.  More control over the checks may be had by
-specifying @var{list}; the categories of checks available are
-@samp{release}, @samp{assert}, @samp{misc}, @samp{tree}, @samp{gc},
-@samp{rtl}, @samp{rtlflag}, @samp{runtime}, @samp{fold}, @samp{gcac} and
-@samp{valgrind}.  The @samp{release} category enables only those checks
-suitable for release builds, currently this is @samp{assert} and
-@samp{runtime}.  The check @samp{valgrind} requires the external
-@command{valgrind} simulator, available from
-@uref{http://valgrind.kde.org/}.  The checks @samp{rtl}, @samp{gcac} and
-@samp{valgrind} are very expensive.  The default when @var{list} is not
-specified is @samp{assert,misc,tree,gc,rtlflag,runtime}.  That is also
-the default for development builds, when @samp{--enable-checking} is not
-specified.  For release builds the default, when
-@samp{--enable-checking} is not given, is @samp{release}.  To disable
-all checking, @samp{--disable-checking} must be explicitly requested.
-Disabling assertions will make the compiler and runtime slightly faster
-but increase the risk of undetected internal errors causing wrong code
-to be generated.
+When you specify this option, the compiler is built to perform internal
+constency checks of the requested complexity.  This does not change the
+generated code, but adds error checking within the compiler.  This will
+slow down the compiler and may only work properly if you are building
+the compiler with GCC@.  This is @samp{yes} by default when building
+from CVS or snapshots, but @samp{release} for releases.  More control
+over the checks may be had by specifying @var{list}.  The categories of
+checks available are @samp{yes} (most common checks
+@samp{assert,misc,tree,gc,rtlflag,runtime}), @samp{no} (no checks at
+all), @samp{all} (all but @samp{valgrind}), @samp{release} (cheapest
+checks @samp{assert,runtime}) or @samp{none} (same as @samp{no}).
+Individual checks can be enabled with these flags @samp{assert},
+@samp{fold}, @samp{gc}, @samp{gcac} @samp{misc}, @samp{rtl},
+@samp{rtlflag}, @samp{runtime}, @samp{tree}, and @samp{valgrind}.
+
+The @samp{valgrind} check requires the external @command{valgrind}
+simulator, available from @uref{http://valgrind.kde.org/}.  The
+@samp{rtl}, @samp{gcac} and @samp{valgrind} checks are very expensive.
+To disable all checking, @samp{--disable-checking} or
+@samp{--enable-checking=none} must be explicitly requested.  Disabling
+assertions will make the compiler and runtime slightly faster but
+increase the risk of undetected internal errors causing wrong code to be
+generated.
 
 @item --enable-coverage
 @itemx --enable-coverage=@var{level}

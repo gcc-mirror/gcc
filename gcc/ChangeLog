@@ -1,3 +1,12 @@
+2005-04-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* configure.ac (enable-checking): Explicitly set all variables for
+	collective switch values.  Alphabetize variables. Rename
+	ac_checking_valgrind to ac_valgrind_checking.  Allow 'none' as
+	synonym for 'no'.
+	* doc/install.texi (enable-checking): Update documentation.
+	* configure: Rebuilt.
+
 2005-04-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-inline.c (copy_body_r): Use CONSTANT_CLASS_P where
