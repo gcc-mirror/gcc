@@ -3,11 +3,11 @@
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
 --                             M L I B . T G T                              --
---                              (VMS Version)                               --
+--                         (Integrity VMS Version)                          --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2004, Free Software Foundation, Inc.         --
+--              Copyright (C) 2004, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,7 +25,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the VMS version of the body
+--  This is the Integrity VMS version of the body
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 
@@ -254,8 +254,7 @@ package body MLib.Tgt is
          Link_With_Shared_Libgcc := No_Shared_Libgcc_Switch'Access;
       end if;
 
-      --  If option file name does not ends with ".opt", append "/OPTIONS"
-      --  to its specification for the VMS linker.
+      --  Option file must end with ".opt"
 
       if Opt_File_Name'Length > 4
         and then
@@ -263,8 +262,7 @@ package body MLib.Tgt is
       then
          For_Linker_Opt := new String'("--for-linker=" & Opt_File_Name);
       else
-         For_Linker_Opt :=
-           new String'("--for-linker=" & Opt_File_Name & "/OPTIONS");
+         Fail ("Options File """, Opt_File_Name, """ must end with .opt");
       end if;
 
       VMS_Options (VMS_Options'First) := For_Linker_Opt;
@@ -317,11 +315,25 @@ package body MLib.Tgt is
 
             declare
                First_Line : constant String :=
-                              ASCII.HT & ".section LIB$INITIALIZE,GBL,NOWRT" &
-               ASCII.LF;
+                 ASCII.HT &
+                 ".type " & Init_Proc & "#, @function" &
+                 ASCII.LF;
                Second_Line : constant String :=
-                               ASCII.HT & ".long " & Init_Proc & ASCII.LF;
-               --  First and second lines of the auto-init assembly file
+                 ASCII.HT &
+                 ".global " & Init_Proc & "#" &
+                 ASCII.LF;
+               Third_Line : constant String :=
+                 ASCII.HT &
+                 ".global LIB$INITIALIZE#" &
+                 ASCII.LF;
+               Fourth_Line : constant String :=
+                 ASCII.HT &
+                 ".section LIB$INITIALIZE#,""a"",@progbits" &
+                 ASCII.LF;
+               Fifth_Line : constant String :=
+                 ASCII.HT &
+                 "data4 @fptr(" & Init_Proc & "#)" &
+                  ASCII.LF;
 
             begin
                Macro_File := Create_File (Macro_File_Name, Text);
@@ -339,6 +351,27 @@ package body MLib.Tgt is
                     (Macro_File, Second_Line (Second_Line'First)'Address,
                      Second_Line'Length);
                   OK := Len = Second_Line'Length;
+               end if;
+
+               if OK then
+                  Len := Write
+                    (Macro_File, Third_Line (Third_Line'First)'Address,
+                     Third_Line'Length);
+                  OK := Len = Third_Line'Length;
+               end if;
+
+               if OK then
+                  Len := Write
+                    (Macro_File, Fourth_Line (Fourth_Line'First)'Address,
+                     Fourth_Line'Length);
+                  OK := Len = Fourth_Line'Length;
+               end if;
+
+               if OK then
+                  Len := Write
+                    (Macro_File, Fifth_Line (Fifth_Line'First)'Address,
+                     Fifth_Line'Length);
+                  OK := Len = Fifth_Line'Length;
                end if;
 
                if OK then

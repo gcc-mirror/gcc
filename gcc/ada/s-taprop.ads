@@ -307,9 +307,8 @@ package System.Task_Primitives.Operations is
    --  The effect should be consistent with the Ada Reference Manual.
    --  In particular, when a task lowers its priority due to the loss of
    --  inherited priority, it goes at the head of the queue for its new
-   --  priority (RM D.2.2 par 9).
-   --  Loss_Of_Inheritance helps the underlying implementation to do it
-   --  right when the OS doesn't.
+   --  priority (RM D.2.2 par 9). Loss_Of_Inheritance helps the underlying
+   --  implementation to do it right when the OS doesn't.
 
    function Get_Priority (T : ST.Task_Id) return System.Any_Priority;
    pragma Inline (Get_Priority);
@@ -317,14 +316,13 @@ package System.Task_Primitives.Operations is
 
    function Monotonic_Clock return Duration;
    pragma Inline (Monotonic_Clock);
-   --  Returns "absolute" time, represented as an offset
-   --  relative to "the Epoch", which is Jan 1, 1970.
-   --  This clock implementation is immune to the system's clock changes.
+   --  Returns "absolute" time, represented as an offset relative to "the
+   --  Epoch", which is Jan 1, 1970. This clock implementation is immune to
+   --  the system's clock changes.
 
    function RT_Resolution return Duration;
    pragma Inline (RT_Resolution);
-   --  Returns the resolution of the underlying clock used to implement
-   --  RT_Clock.
+   --  Returns resolution of the underlying clock used to implement RT_Clock
 
    ----------------
    -- Extensions --
@@ -477,8 +475,7 @@ package System.Task_Primitives.Operations is
 
    function Suspend_Task
      (T           : ST.Task_Id;
-      Thread_Self : OSI.Thread_Id)
-      return        Boolean;
+      Thread_Self : OSI.Thread_Id) return Boolean;
    --  Suspend a specific task when the underlying thread library provides
    --  such functionality, unless the thread associated with T is Thread_Self.
    --  Such functionality is needed by gdb on some targets (e.g VxWorks)
@@ -486,8 +483,7 @@ package System.Task_Primitives.Operations is
 
    function Resume_Task
      (T           : ST.Task_Id;
-      Thread_Self : OSI.Thread_Id)
-      return        Boolean;
+      Thread_Self : OSI.Thread_Id) return Boolean;
    --  Resume a specific task when the underlying thread library provides
    --  such functionality, unless the thread associated with T is Thread_Self.
    --  Such functionality is needed by gdb on some targets (e.g VxWorks)

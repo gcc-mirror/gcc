@@ -388,7 +388,7 @@ package body Ch3 is
          case Token is
 
             when Tok_Access |
-                 Tok_Not    => --  Ada 0Y (AI-231)
+                 Tok_Not    => --  Ada 2005 (AI-231)
                Typedef_Node := P_Access_Type_Definition;
                TF_Semicolon;
                exit;
@@ -564,7 +564,7 @@ package body Ch3 is
                --  LIMITED RECORD or LIMITED NULL RECORD
 
                if Token = Tok_Record or else Token = Tok_Null then
-                  if Ada_83 then
+                  if Ada_Version = Ada_83 then
                      Error_Msg_SP
                        ("(Ada 83) limited record declaration not allowed!");
                   end if;
@@ -741,7 +741,7 @@ package body Ch3 is
          Scan; -- past NEW
       end if;
 
-      Not_Null_Present := P_Null_Exclusion; --  Ada 0Y (AI-231)
+      Not_Null_Present := P_Null_Exclusion; --  Ada 2005 (AI-231)
       Set_Null_Exclusion_Present (Decl_Node, Not_Null_Present);
 
       Set_Subtype_Indication
@@ -765,10 +765,10 @@ package body Ch3 is
          return False;
 
       else
-         if not Extensions_Allowed then
+         if Ada_Version < Ada_05 then
             Error_Msg_SP
-              ("null-excluding access is an Ada 0Y extension");
-            Error_Msg_SP ("\unit must be compiled with -gnatX switch");
+              ("null-excluding access is an Ada 2005 extension");
+            Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
          end if;
 
          Scan; --  past NOT
@@ -776,7 +776,7 @@ package body Ch3 is
          if Token = Tok_Null then
             Scan; --  past NULL
          else
-            Error_Msg_SP ("(Ada 0Y) missing NULL");
+            Error_Msg_SP ("NULL expected");
          end if;
 
          return True;
@@ -826,7 +826,7 @@ package body Ch3 is
          return Subtype_Mark;
       else
          if Not_Null_Present then
-            Error_Msg_SP ("(Ada 0Y) constrained null-exclusion not allowed");
+            Error_Msg_SP ("constrained null-exclusion not allowed");
          end if;
 
          Indic_Node := New_Node (N_Subtype_Indication, Sloc (Subtype_Mark));
@@ -1280,7 +1280,7 @@ package body Ch3 is
 
             if Present (Init_Expr) then
                if Not_Null_Present then
-                  Error_Msg_SP ("(Ada 0Y) null-exclusion not allowed in "
+                  Error_Msg_SP ("null-exclusion not allowed in "
                                 & "numeric expression");
                end if;
 
@@ -1309,7 +1309,7 @@ package body Ch3 is
                     (Decl_Node, P_Array_Type_Definition);
 
                else
-                  Not_Null_Present := P_Null_Exclusion; --  Ada 0Y (AI-231)
+                  Not_Null_Present := P_Null_Exclusion; --  Ada 2005 (AI-231)
                   Set_Null_Exclusion_Present (Decl_Node, Not_Null_Present);
 
                   Set_Object_Definition (Decl_Node,
@@ -1357,7 +1357,7 @@ package body Ch3 is
                  (Decl_Node, P_Array_Type_Definition);
 
             else
-               Not_Null_Present := P_Null_Exclusion; --  Ada 0Y (AI-231)
+               Not_Null_Present := P_Null_Exclusion; --  Ada 2005 (AI-231)
                Set_Null_Exclusion_Present (Decl_Node, Not_Null_Present);
                Set_Object_Definition (Decl_Node,
                   P_Subtype_Indication (Not_Null_Present));
@@ -1369,7 +1369,7 @@ package body Ch3 is
             Decl_Node := New_Node (N_Object_Declaration, Ident_Sloc);
             Set_Object_Definition (Decl_Node, P_Array_Type_Definition);
 
-         --  Ada 0Y (AI-254)
+         --  Ada 2005 (AI-254)
 
          elsif Token = Tok_Not then
 
@@ -1381,14 +1381,14 @@ package body Ch3 is
             --    ...
             --  | DEFINING_IDENTIFIER : ACCESS_DEFINITION renames object_NAME;
 
-            Not_Null_Present := P_Null_Exclusion; --  Ada 0Y (AI-231)
+            Not_Null_Present := P_Null_Exclusion; --  Ada 2005 (AI-231)
 
             if Token = Tok_Access then
-               if not Extensions_Allowed then
+               if Ada_Version < Ada_05 then
                   Error_Msg_SP
                     ("generalized use of anonymous access types " &
-                     "is an Ada 0Y extension");
-                  Error_Msg_SP ("\unit must be compiled with -gnatX switch");
+                     "is an Ada 2005 extension");
+                  Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
                end if;
 
                Acc_Node := P_Access_Definition (Not_Null_Present);
@@ -1411,8 +1411,8 @@ package body Ch3 is
                --  Object renaming declaration
 
                if Token_Is_Renames then
-                  Error_Msg_SP ("(Ada 0Y) null-exclusion not allowed in "
-                                & "object renamings");
+                  Error_Msg_SP
+                    ("null-exclusion not allowed in object renamings");
                   raise Error_Resync;
 
                --  Object declaration
@@ -1437,14 +1437,14 @@ package body Ch3 is
                end if;
             end if;
 
-         --  Ada 0Y (AI-230): Access Definition case
+         --  Ada 2005 (AI-230): Access Definition case
 
          elsif Token = Tok_Access then
-            if not Extensions_Allowed then
+            if Ada_Version < Ada_05 then
                Error_Msg_SP
                  ("generalized use of anonymous access types " &
-                  "is an Ada 0Y extension");
-               Error_Msg_SP ("\unit must be compiled with -gnatX switch");
+                  "is an Ada 2005 extension");
+               Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
             end if;
 
             Acc_Node := P_Access_Definition (Null_Exclusion_Present => False);
@@ -1601,7 +1601,7 @@ package body Ch3 is
          Scan;
       end if;
 
-      Not_Null_Present := P_Null_Exclusion; --  Ada 0Y (AI-231)
+      Not_Null_Present := P_Null_Exclusion; --  Ada 2005 (AI-231)
       Set_Null_Exclusion_Present (Typedef_Node, Not_Null_Present);
       Set_Subtype_Indication (Typedef_Node,
          P_Subtype_Indication (Not_Null_Present));
@@ -1915,7 +1915,7 @@ package body Ch3 is
       Typedef_Node : Node_Id;
 
    begin
-      if Ada_83 then
+      if Ada_Version = Ada_83 then
          Error_Msg_SC ("(Ada 83): modular types not allowed");
       end if;
 
@@ -2044,7 +2044,7 @@ package body Ch3 is
       Check_Simple_Expression_In_Ada_83 (Delta_Node);
 
       if Token = Tok_Digits then
-         if Ada_83 then
+         if Ada_Version = Ada_83 then
             Error_Msg_SC ("(Ada 83) decimal fixed type not allowed!");
          end if;
 
@@ -2246,16 +2246,16 @@ package body Ch3 is
          Scan; -- past ALIASED
       end if;
 
-      Not_Null_Present := P_Null_Exclusion; --  Ada 0Y (AI-231/AI-254)
+      Not_Null_Present := P_Null_Exclusion; --  Ada 2005 (AI-231/AI-254)
 
-      --  Ada 0Y (AI-230): Access Definition case
+      --  Ada 2005 (AI-230): Access Definition case
 
       if Token = Tok_Access then
-         if not Extensions_Allowed then
+         if Ada_Version < Ada_05 then
             Error_Msg_SP
               ("generalized use of anonymous access types " &
-               "is an Ada 0Y extension");
-            Error_Msg_SP ("\unit must be compiled with -gnatX switch");
+               "is an Ada 2005 extension");
+            Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
          end if;
 
          if Aliased_Present then
@@ -2415,7 +2415,7 @@ package body Ch3 is
          Scan; -- past the left paren
 
          if Token = Tok_Box then
-            if Ada_83 then
+            if Ada_Version = Ada_83 then
                Error_Msg_SC ("(Ada 83) unknown discriminant not allowed!");
             end if;
 
@@ -2496,10 +2496,10 @@ package body Ch3 is
                Specification_Node :=
                  New_Node (N_Discriminant_Specification, Ident_Sloc);
                Set_Defining_Identifier (Specification_Node, Idents (Ident));
-               Not_Null_Present := P_Null_Exclusion;       --  Ada 0Y (AI-231)
+               Not_Null_Present := P_Null_Exclusion; -- Ada 2005 (AI-231)
 
                if Token = Tok_Access then
-                  if Ada_83 then
+                  if Ada_Version = Ada_83 then
                      Error_Msg_SC
                        ("(Ada 83) access discriminant not allowed!");
                   end if;
@@ -2512,7 +2512,7 @@ package body Ch3 is
                   Set_Discriminant_Type
                     (Specification_Node, P_Subtype_Mark);
                   No_Constraint;
-                  Set_Null_Exclusion_Present               --  Ada 0Y (AI-231)
+                  Set_Null_Exclusion_Present  -- Ada 2005 (AI-231)
                     (Specification_Node, Not_Null_Present);
                end if;
 
@@ -2995,16 +2995,16 @@ package body Ch3 is
                Scan; -- past ALIASED
             end if;
 
-            Not_Null_Present := P_Null_Exclusion; --  Ada 0Y (AI-231/AI-254)
+            Not_Null_Present := P_Null_Exclusion; -- Ada 2005 (AI-231/AI-254)
 
-            --  Ada 0Y (AI-230): Access Definition case
+            --  Ada 2005 (AI-230): Access Definition case
 
             if Token = Tok_Access then
-               if not Extensions_Allowed then
+               if Ada_Version < Ada_05 then
                   Error_Msg_SP
-                    ("Generalized use of anonymous access types " &
-                     "is an Ada 0Y extension");
-                  Error_Msg_SP ("\unit must be compiled with -gnatX switch");
+                    ("generalized use of anonymous access types " &
+                     "is an Ada 2005 extension");
+                  Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
                end if;
 
                if Aliased_Present then
@@ -3288,7 +3288,7 @@ package body Ch3 is
 
    --  PARAMETER_AND_RESULT_PROFILE ::= [FORMAL_PART] RETURN SUBTYPE_MARK
 
-   --  Ada 0Y (AI-254): If Header_Already_Parsed then the caller has already
+   --  Ada 2005 (AI-254): If Header_Already_Parsed then the caller has already
    --  parsed the null_exclusion part and has also removed the ACCESS token;
    --  otherwise the caller has just checked that the initial token is ACCESS
 
@@ -3327,7 +3327,7 @@ package body Ch3 is
 
    begin
       if not Header_Already_Parsed then
-         Not_Null_Present := P_Null_Exclusion;         --  Ada 0Y (AI-231)
+         Not_Null_Present := P_Null_Exclusion;         --  Ada 2005 (AI-231)
          Scan; -- past ACCESS
       end if;
 
@@ -3347,7 +3347,7 @@ package body Ch3 is
       end if;
 
       if Token = Tok_Procedure then
-         if Ada_83 then
+         if Ada_Version = Ada_83 then
             Error_Msg_SC ("(Ada 83) access to procedure not allowed!");
          end if;
 
@@ -3359,7 +3359,7 @@ package body Ch3 is
          Set_Protected_Present (Type_Def_Node, Prot_Flag);
 
       elsif Token = Tok_Function then
-         if Ada_83 then
+         if Ada_Version = Ada_83 then
             Error_Msg_SC ("(Ada 83) access to function not allowed!");
          end if;
 
@@ -3379,7 +3379,7 @@ package body Ch3 is
          Set_Null_Exclusion_Present (Type_Def_Node, Not_Null_Present);
 
          if Token = Tok_All or else Token = Tok_Constant then
-            if Ada_83 then
+            if Ada_Version = Ada_83 then
                Error_Msg_SC ("(Ada 83) access modifier not allowed!");
             end if;
 
@@ -3445,11 +3445,11 @@ package body Ch3 is
       Def_Node := New_Node (N_Access_Definition, Token_Ptr);
       Scan; -- past ACCESS
 
-      --  Ada 0Y (AI-254/AI-231)
+      --  Ada 2005 (AI-254/AI-231)
 
-      if Extensions_Allowed then
+      if Ada_Version >= Ada_05 then
 
-         --  Ada 0Y (AI-254): Access_To_Subprogram_Definition
+         --  Ada 2005 (AI-254): Access_To_Subprogram_Definition
 
          if Token = Tok_Protected
            or else Token = Tok_Procedure
@@ -3460,7 +3460,7 @@ package body Ch3 is
             Set_Null_Exclusion_Present (Subp_Node, Null_Exclusion_Present);
             Set_Access_To_Subprogram_Definition (Def_Node, Subp_Node);
 
-         --  Ada 0Y (AI-231)
+         --  Ada 2005 (AI-231)
          --  [NULL_EXCLUSION] access [GENERAL_ACCESS_MODIFIER] SUBTYPE_MARK
 
          else
@@ -3482,7 +3482,7 @@ package body Ch3 is
       --  Ada 95
 
       else
-         --  Ada 0Y (AI-254): The null-exclusion present is never present
+         --  Ada 2005 (AI-254): The null-exclusion present is never present
          --  in Ada 83 and Ada 95
 
          pragma Assert (Null_Exclusion_Present = False);

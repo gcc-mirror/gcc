@@ -1524,7 +1524,7 @@ package body Sem_Attr is
 
       if Comes_From_Source (N) then
          if not Attribute_83 (Attr_Id) then
-            if Ada_83 and then Comes_From_Source (N) then
+            if Ada_Version = Ada_83 and then Comes_From_Source (N) then
                Error_Msg_Name_1 := Aname;
                Error_Msg_N ("(Ada 83) attribute% is not standard?", N);
             end if;
@@ -1920,7 +1920,7 @@ package body Sem_Attr is
          Find_Type (P);
          Typ := Entity (P);
 
-         if Ada_95
+         if Ada_Version >= Ada_95
            and then not Is_Scalar_Type (Typ)
            and then not Is_Generic_Type (Typ)
          then
@@ -2644,7 +2644,7 @@ package body Sem_Attr is
          Check_Scalar_Type;
 
          if Is_Real_Type (P_Type) then
-            if Ada_83 and then Comes_From_Source (N) then
+            if Ada_Version = Ada_83 and then Comes_From_Source (N) then
                Error_Msg_Name_1 := Aname;
                Error_Msg_N
                  ("(Ada 83) % attribute not allowed for real types", N);
@@ -3150,7 +3150,7 @@ package body Sem_Attr is
       when Attribute_Range =>
          Check_Array_Or_Scalar_Type;
 
-         if Ada_83
+         if Ada_Version = Ada_83
            and then Is_Scalar_Type (P_Type)
            and then Comes_From_Source (N)
          then
@@ -4573,7 +4573,7 @@ package body Sem_Attr is
          --  Again we compute the variable Static for easy reference later
          --  (note that no array attributes are static in Ada 83).
 
-         Static := Ada_95;
+         Static := Ada_Version >= Ada_95;
 
          declare
             N : Node_Id;
@@ -6624,16 +6624,16 @@ package body Sem_Attr is
               and then (Ekind (Btyp) = E_General_Access_Type
                           or else Ekind (Btyp) = E_Anonymous_Access_Type)
             then
-               --  Ada 0Y (AI-230): Check the accessibility of anonymous access
-               --  types in record and array components. For a component defini
-               --  tion the level is the same of the enclosing composite type.
+               --  Ada 2005 (AI-230): Check the accessibility of anonymous
+               --  access types in record and array components. For a
+               --  component definition the level is the same of the
+               --  enclosing composite type.
 
-               if Extensions_Allowed
+               if Ada_Version >= Ada_05
                  and then Ekind (Btyp) = E_Anonymous_Access_Type
                  and then (Is_Array_Type (Scope (Btyp))
                              or else Ekind (Scope (Btyp)) = E_Record_Type)
-                 and then Object_Access_Level (P)
-                            > Type_Access_Level (Btyp)
+                 and then Object_Access_Level (P) > Type_Access_Level (Btyp)
                then
                   --  In an instance, this is a runtime check, but one we
                   --  know will fail, so generate an appropriate warning.

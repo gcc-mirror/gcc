@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -770,7 +770,7 @@ package body Ch9 is
          --  Exception handlers not allowed in Ada 95 node
 
          if Present (Exception_Handlers (Hand_Seq)) then
-            if Ada_83 then
+            if Ada_Version = Ada_83 then
                Error_Msg_N
                  ("(Ada 83) exception handlers in accept not allowed",
                   First_Non_Pragma (Exception_Handlers (Hand_Seq)));
@@ -1258,7 +1258,7 @@ package body Ch9 is
          --  Else error
 
          else
-            if Ada_83 then
+            if Ada_Version = Ada_83 then
                Error_Msg_BC ("OR or ELSE expected");
             else
                Error_Msg_BC ("OR or ELSE or THEN ABORT expected");
@@ -1578,7 +1578,7 @@ package body Ch9 is
       Abortable_Part_Node := New_Node (N_Abortable_Part, Token_Ptr);
       T_Abort; -- scan past ABORT
 
-      if Ada_83 then
+      if Ada_Version = Ada_83 then
          Error_Msg_SP ("(Ada 83) asynchronous select not allowed!");
       end if;
 

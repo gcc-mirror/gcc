@@ -94,8 +94,9 @@ DEFTREECODE (NULL_STMT, "null_stmt", 's', 0)
 DEFTREECODE (DECL_STMT, "decl_stmt", 's', 1)
 
 /* This represents a list of statements.  BLOCK_STMT_LIST is a list
-   statement tree, chained via TREE_CHAIN.  */
-DEFTREECODE (BLOCK_STMT, "block_stmt", 's', 1)
+   statement tree, chained via TREE_CHAIN.  BLOCK_STMT_BLOCK, if nonzero,
+   is the BLOCK node for these statements.  */
+DEFTREECODE (BLOCK_STMT, "block_stmt", 's', 2)
 
 /* This is an IF statement.  IF_STMT_COND is the condition being tested,
    IF_STMT_TRUE is the statement to be executed if the condition is
@@ -117,3 +118,6 @@ DEFTREECODE (RETURN_STMT, "return_stmt", 's', 1)
 /* An "asm" statement.  The operands are ASM_STMT_TEMPLATE, ASM_STMT_OUTPUT,
    ASM_STMT_ORIG_OUT, ASM_STMT_INPUT, and ASM_STMT_CLOBBER.  */
 DEFTREECODE (ASM_STMT, "asm_stmt", 's', 5)
+
+/* An analog to the C "break" statement.  */
+DEFTREECODE (BREAK_STMT, "break_stmt", 's', 0)

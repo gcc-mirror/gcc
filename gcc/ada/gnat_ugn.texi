@@ -14413,8 +14413,12 @@ error message; no output file will be generated.
 If the compilation unit
 contained in the input source depends semantically upon units located
 outside the current directory, you have to provide the source search path
-when invoking @command{gnatpp}; see the description of the @command{gnatpp}
-switches below.
+when invoking @command{gnatpp}, if these units are contained in files with
+names that do not follow the GNAT file naming rules, you have to provide
+the configuration file describing the corresponding naming scheme;
+see the description of the @command{gnatpp}
+switches below. Another possibility is to use a project file and to
+call @command{gnatpp} through the @command{gnat} driver
 
 The @command{gnatpp} command has the form
 
@@ -16306,10 +16310,11 @@ where @code{gnatclean} was invoked.
 @cindex Library, building, installing, using
 
 @noindent
-This chapter addresses the issues related to building and using
-libraries with GNAT. It also shows how the GNAT run-time library can be
-recompiled. It is recommended that the user understands how to use the
-@ref{GNAT Project Manager} facility before reading this chapter.
+This chapter describes how to build and use
+libraries with GNAT, and also shows how to recompile the GNAT run-time library.
+You should be familiar with the
+Project Manager facility (see @ref{GNAT Project Manager}) before reading this
+chapter.
 
 @menu
 * Introduction to Libraries in GNAT::
@@ -16327,34 +16332,41 @@ own main thread of execution, but rather provides certain services to the
 applications that use it. A library can be either statically linked with the
 application, in which case its code is directly included in the application,
 or, on platforms that support it, be dynamically linked, in which case
-its code is shared by all applications making use of this library. GNAT
-supports both types of libraries. In the static case, the compiled code can
-be provided in different ways. The simplest way is to provide directly the
-set of objects produced by the compiler during the compilation of the library.
-It is also possible to group the objects into an archive using whatever
-commands are provided by the operating system. For the later case, the objects
-are grouped into a shared library.
+its code is shared by all applications making use of this library.
+
+GNAT supports both types of libraries.
+In the static case, the compiled code can be provided in different ways.
+The simplest approach is to provide directly the
+set of objects resulting from compilation of the library source files.
+Alternatively, you can group the objects into an archive using whatever
+commands are provided by the operating system. For the latter case,
+the objects are grouped into a shared library.
 
 In the GNAT environment, a library has two types of components:
 @itemize @bullet
 @item
 Source files.
 @item
-Compiled code and Ali files. See @ref{The Ada Library Information Files}.
+Compiled code and @file{ALI} files.
+See @ref{The Ada Library Information Files}.
 @end itemize
 
 @noindent
-GNAT libraries can either completely expose their source files to the
-compilation context of the user's application, or alternatively only expose
-a limited set of source files, called interface units, in which case they are
-called @ref{Stand-alone Ada Libraries}. In addition, GNAT provides full support
-for foreign libraries which are only available in the object format.
+A GNAT library may either completely expose its source files to the
+compilation context of the user's application.
+Alternatively, it may expose
+a limited subset of its source files, called @emph{interface units},
+in which case the library is referred to as a @emph{stand-alone library}
+(see @ref{Stand-alone Ada Libraries}). In addition, GNAT fully supports
+foreign libraries, which are only available in the object format.
 
-Ada semantics requires that all compilation units comprising the application
-are elaborated in the timely fashion. Where possible, GNAT provides facilities
+All compilation units comprising
+an application are elaborated, in an order partially defined by Ada language
+semantics.
+Where possible, GNAT provides facilities
 to ensure that compilation units of a library are automatically elaborated;
 however, there are cases where this must be responsibility of a user. This will
-be addressed in greater detail further on.
+be addressed in greater detail below.
 
 @node General Ada Libraries
 @section General Ada Libraries
@@ -16369,56 +16381,56 @@ be addressed in greater detail further on.
 @subsection Building the library
 
 @noindent
-The easiest way to build a library is to use the @ref{GNAT Project Manager},
-which supports a special type of projects called @ref{Library Projects}.
+The easiest way to build a library is to use the Project Manager,
+which supports a special type of projects called Library Projects
+(see @ref{Library Projects}).
 
 A project is considered a library project, when two project-level attributes
 are defined in it: @code{Library_Name} and @code{Library_Dir}. In order to
 control different aspects of library configuration, additional optional
 project-level attributes can be specified:
-@itemize
-@item @code{Library_Kind}
+@table @code
+@item Library_Kind
 This attribute controls whether the library is to be static or shared
-@item @code{Library_Version}
+
+@item Library_Version
 This attribute specifies what is the library version; this value is used
 during dynamic linking of shared libraries to determine if the currently
 installed versions of the binaries are compatible.
-@item @code{Library_Options}, @code{Library_GCC}
+
+@item Library_Options
+@item Library_GCC
 These attributes specify additional low-level options to be used during
 library generation, and redefine the actual application used to generate
 library.
-@end itemize
+@end table
 
 @noindent
-GNAT Project Manager takes full care of the library maintenance task,
+The GNAT Project Manager takes full care of the library maintenance task,
 including recompilation of the source files for which objects do not exist
 or are not up to date, assembly of the library archive, and installation of
-the library, i.e. the copy of associated source, object and ALI files to the
-specific location.
+the library, i.e. copying associated source, object and @file{ALI} files
+to the specified location.
 
-It is not entirely trivial to correctly do all the steps required to
-produce a library. We recommend that you use @ref{GNAT Project Manager}
+It is not entirely trivial to correctly perform all the steps required to
+produce a library. We recommend that you use the GNAT Project Manager
 for this task. In special cases where this is not desired, the necessary
 steps are discussed below.
 
 There are various possibilities for compiling the units that make up the
-library: for example with a Makefile @ref{Using the GNU make Utility},
+library: for example with a Makefile (see @ref{Using the GNU make Utility})
 or with a conventional script.
 For simple libraries, it is also possible to create a
 dummy main program which depends upon all the packages that comprise the
 interface of the library. This dummy main program can then be given to
-gnatmake, which will ensure that all necessary objects are built.
+@command{gnatmake}, which will ensure that all necessary objects are built.
 
-After this task is accomplished, the user should follow the standard procedure
+After this task is accomplished, you should follow the standard procedure
 of the underlying operating system to produce the static or shared library.
 
-Below is an example of such a dummy program and the generic commands used to
-build an archive or a shared library.
-
+Here is an example of such a dummy program:
 @smallexample @c ada
-@iftex
-@leftskip=.7cm
-@end iftex
+@group
 with My_Lib.Service1;
 with My_Lib.Service2;
 with My_Lib.Service3;
@@ -16426,7 +16438,11 @@ procedure My_Lib_Dummy is
 begin
    null;
 end;
+@end group
 @end smallexample
+
+@noindent
+Here are the generic commands that will build an archive or a shared library.
 
 @smallexample
 # compiling the library
@@ -16449,13 +16465,12 @@ $ rm *.o
 # Make the ALI files read-only so that gnatmake will not try to
 # regenerate the objects that are in the library
 $ chmod -w *.ali
-
 @end smallexample
 
 @noindent
-Please note that the library must have a name of the form libxxx.a or
-libxxx.so in order to be accessed by the directive -lxxx at link
-time.
+Please note that the library must have a name of the form @file{libxxx.a} or
+@file{libxxx.so} in order to be accessed by the directive @option{-lxxx}
+at link time.
 
 @node Installing the library
 @subsection Installing the library
@@ -16464,16 +16479,16 @@ time.
 In the GNAT model, installing a library consists in copying into a specific
 location the files that make up this library. When the library is built using
 projects, it is automatically installed in the location specified in the
-project by means of the attribute @code{Library_Dir}, otherwise it is
-responsibility of the user. GNAT also supports installing the sources in a
-different directory from the other files (ALI, objects, archives) since the
-source path and the object path can be specified separately.
+project by means of the attribute @code{Library_Dir},
+otherwise the user must specify the destination.
+GNAT also supports installing the sources in a
+different directory from the other files (@file{ALI}, objects, archives)
+since the source path and the object path can be specified separately.
 
-For general purpose libraries, it is possible for the system
-administrator to put those libraries in the default compiler paths. To
-achieve this, he must specify their location in the configuration files
-@file{ada_source_path} and @file{ada_object_path} that must be located in
-the GNAT
+The system administrator can place general purpose libraries in the default
+compiler paths, by specifying the libraries' location in the configuration
+files @file{ada_source_path} and @file{ada_object_path}.
+These configuration files must be located in the GNAT
 installation tree at the same place as the gcc spec file. The location of
 the gcc spec file can be determined as follows:
 @smallexample
@@ -16481,29 +16496,30 @@ $ gcc -v
 @end smallexample
 
 @noindent
-The configuration files mentioned above have simple format: each line in them
-must contain one unique
-directory name. Those names are added to the corresponding path
+The configuration files mentioned above have a simple format: each line
+must contain one unique directory name.
+Those names are added to the corresponding path
 in their order of appearance in the file. The names can be either absolute
-or relative, in the latter case, they are relative to where theses files
+or relative; in the latter case, they are relative to where theses files
 are located.
 
-@file{ada_source_path} and @file{ada_object_path} might actually not be
+The files @file{ada_source_path} and @file{ada_object_path} might not be
 present in a
 GNAT installation, in which case, GNAT will look for its run-time library in
-he directories @file{adainclude} for the sources and @file{adalib} for the
-objects and @file{ALI} files. When the files exist, the compiler does not
-look in @file{adainclude} and @file{adalib} at all, and thus the
+the directories @file{adainclude} (for the sources) and @file{adalib} (for the
+objects and @file{ALI} files). When the files exist, the compiler does not
+look in @file{adainclude} and @file{adalib}, and thus the
 @file{ada_source_path} file
 must contain the location for the GNAT run-time sources (which can simply
 be @file{adainclude}). In the same way, the @file{ada_object_path} file must
 contain the location for the GNAT run-time objects (which can simply
 be @file{adalib}).
 
-You can also specify a new default path to the runtime library at compilation
-time with the switch @option{--RTS=rts-path}. You can easily choose and change
-the runtime you want your program to be compiled with. This switch is
-recognized by gcc, gnatmake, gnatbind, gnatls, gnatfind and gnatxref.
+You can also specify a new default path to the run-time library at compilation
+time with the switch @option{--RTS=rts-path}. You can thus choose / change
+the run-time library you want your program to be compiled with. This switch is
+recognized by @command{gcc}, @command{gnatmake}, @command{gnatbind},
+@command{gnatls}, @command{gnatfind} and @command{gnatxref}.
 
 It is possible to install a library before or after the standard GNAT
 library, by reordering the lines in the configuration files. In general, a
@@ -16517,14 +16533,14 @@ any part of it.
 @noindent
 Once again, the project facility greatly simplifies the addition of libraries
 to the compilation. If the project file for an application lists a library
-project in its @code{with} clause, the project manager will ensure that the
-library files are consistent, and are considered during compilation and
-linking of the main application.
+project in its @code{with} clause, the Project Manager will ensure that the
+library files are consistent, and that they are considered during the
+compilation and linking of the application.
 
-Even if you have a third-party, non-Ada library, you can still use GNAT
-Project facility to provide a wrapper for it. The following project for
-example, when "withed" in your main project, will link with the third-party
-library liba.a:
+Even if you have a third-party, non-Ada library, you can still use GNAT's
+Project Manager facility to provide a wrapper for it. The following project for
+example, when @code{with}ed in your main project, will link with the
+third-party library @file{liba.a}:
 
 @smallexample @c projectfile
 @group
@@ -16540,12 +16556,12 @@ end Liba;
 @noindent
 In order to use an Ada library manually, you need to make sure that this
 library is on both your source and object path
-@ref{Search Paths and the Run-Time Library (RTL)}
-and @ref{Search Paths for gnatbind}. Furthermore, when the objects are grouped
-in an archive or a shared library, the user needs to specify the desired
+(see @ref{Search Paths and the Run-Time Library (RTL)},
+and @ref{Search Paths for gnatbind}). Furthermore, when the objects are grouped
+in an archive or a shared library, you need to specify the desired
 library at link time.
 
-By means of example, you can use the library @file{mylib} installed in
+For example, you can use the library @file{mylib} installed in
 @file{/dir/my_lib_src} and @file{/dir/my_lib_obj} with the following commands:
 
 @smallexample
@@ -16554,10 +16570,11 @@ $ gnatmake -aI/dir/my_lib_src -aO/dir/my_lib_obj my_appl \
 @end smallexample
 
 @noindent
-This can be simplified down to the following:
+This can be expressed more simply:
 @smallexample
 $ gnatmake my_appl
 @end smallexample
+@noindent
 when the following conditions are met:
 @itemize @bullet
 @item
@@ -16569,7 +16586,7 @@ variable @code{ADA_INCLUDE_PATH}, or by the administrator to the file
 variable @code{ADA_OBJECTS_PATH}, or by the administrator to the file
 @file{ada_object_path}
 @item
-a pragma @code{Linker_Options}, has been added to one of the sources.
+a pragma @code{Linker_Options} has been added to one of the sources.
 For example:
 
 @smallexample @c ada
@@ -16583,50 +16600,55 @@ pragma Linker_Options ("-lmy_lib");
 @cindex Stand-alone library, building, using
 
 @menu
-* Introduction to Stand-Alone Libraries::
-* Building SAL::
-* Creating SAL to be used in a non-Ada context::
-* Restrictions in SALs::
+* Introduction to Stand-alone Libraries::
+* Building a Stand-alone Library::
+* Creating a Stand-alone Library to be used in a non-Ada context::
+* Restrictions in Stand-alone Libraries::
 @end menu
 
-@node Introduction to Stand-Alone Libraries
-@subsection Introduction to Stand-Alone Libraries
+@node Introduction to Stand-alone Libraries
+@subsection Introduction to Stand-alone Libraries
 
 @noindent
 A Stand-alone Library (SAL) is a library that contains the necessary code to
-elaborate the Ada units that are included in the library. Different from
-ordinary libraries, which consist of all sources, objects and ALI files of the
-library, the SAL creator can specify a restricted subset of compilation units
-comprising SAL to serve as a library interface. In this case, the fully
-self-sufficient set of files of such library will normally consist of objects
-archive, sources of interface units specs, and ALI files of interface units.
-Note that if interface specs contain generics or inlined subprograms, body
+elaborate the Ada units that are included in the library. In contrast with
+an ordinary library, which consists of all sources, objects and @file{ALI}
+files of the
+library, a SAL may specify a restricted subset of compilation units
+to serve as a library interface. In this case, the fully
+self-sufficient set of files will normally consist of an objects
+archive, the sources of interface units' specs, and the @file{ALI}
+files of interface units.
+If an interface spec contains a generic unit or an inlined subprogram,
+the body's
 source must also be provided; if the units that must be provided in the source
-form depend on other units, the source and ALIs of those must also be provided.
+form depend on other units, the source and @file{ALI} files of those must
+also be provided.
 
-The main purpose of SAL is to minimize the recompilation overhead of client
-applications when the new version of the library is installed. Specifically,
+The main purpose of a SAL is to minimize the recompilation overhead of client
+applications when a new version of the library is installed. Specifically,
 if the interface sources have not changed, client applications do not need to
-be recompiled. If, furthermore, SAL is provided in the shared form and its
-version, controlled by @code{Library_Version} attribute, is not changed, the
-clients don't need to be relinked, either.
+be recompiled. If, furthermore, a SAL is provided in the shared form and its
+version, controlled by @code{Library_Version} attribute, is not changed,
+then the clients do not need to be relinked.
 
-SALs also allow the library providers to minimize amount of library source
-text exposed to the clients, which might be necessary for different reasons.
+SALs also allow the library providers to minimize the amount of library source
+text exposed to the clients.  Such ``information hiding'' might be useful or
+necessary for various reasons.
 
-Stand-alone libraries are also well suited to be used in an executable which
-main is not written in Ada.
+Stand-alone libraries are also well suited to be used in an executable whose
+main routine is not written in Ada.
 
-@node Building SAL
-@subsection Building SAL
+@node Building a Stand-alone Library
+@subsection Building a Stand-alone Library
 
 @noindent
-GNAT Project facility provides a simple way of building and installing
-stand-alone libraries, see @ref{Stand-alone Library Projects}.
+GNAT's Project facility provides a simple way of building and installing
+stand-alone libraries; see @ref{Stand-alone Library Projects}.
 To be a Stand-alone Library Project, in addition to the two attributes
 that make a project a Library Project (@code{Library_Name} and
-@code{Library_Dir}, see @ref{Library Projects}), the attribute
-@code{Library_Interface} must be defined.
+@code{Library_Dir}; see @ref{Library Projects}), the attribute
+@code{Library_Interface} must be defined.  For example:
 
 @smallexample @c projectfile
 @group
@@ -16636,21 +16658,25 @@ that make a project a Library Project (@code{Library_Name} and
 @end group
 @end smallexample
 
+@noindent
 Attribute @code{Library_Interface} has a non empty string list value,
 each string in the list designating a unit contained in an immediate source
 of the project file.
 
 When a Stand-alone Library is built, first the binder is invoked to build
 a package whose name depends on the library name
-(^b~dummy.ads/b^B$DUMMY.ADS/B^ in the example above).
+(@file{^b~dummy.ads/b^B$DUMMY.ADS/B^} in the example above).
 This binder-generated package includes initialization and
 finalization procedures whose
-names depend on the library name (dummyinit and dummyfinal in the example
+names depend on the library name (@code{dummyinit} and @code{dummyfinal}
+in the example
 above). The object corresponding to this package is included in the library.
 
-The user must ensure timely (e.g. prior to any use of interfaces in the SAL)
-calling of these procedures if static SAL is built, or shared SAL is built
-with project-level attribute @code{Library_Auto_Init} set to "false".
+You must ensure timely (e.g., prior to any use of interfaces in the SAL)
+calling of these procedures if a static SAL is built, or if a shared SAL
+is built
+with the project-level attribute @code{Library_Auto_Init} set to
+@code{"false"}.
 
 For a Stand-Alone Library, only the @file{ALI} files of the Interface Units
 (those that are listed in attribute @code{Library_Interface}) are copied to
@@ -16658,60 +16684,65 @@ the Library Directory. As a consequence, only the Interface Units may be
 imported from Ada units outside of the library. If other units are imported,
 the binding phase will fail.
 
-The attribute @code{Library_Src_Dir}, may be specified for a
+The attribute @code{Library_Src_Dir} may be specified for a
 Stand-Alone Library. @code{Library_Src_Dir} is a simple attribute that has a
 single string value. Its value must be the path (absolute or relative to the
 project directory) of an existing directory. This directory cannot be the
 object directory or one of the source directories, but it can be the same as
 the library directory. The sources of the Interface
-Units of the library, necessary to an Ada client of the library, will be
-copied to the designated directory, called Interface Copy directory.
+Units of the library that are needed by an Ada client of the library will be
+copied to the designated directory, called the Interface Copy directory.
 These sources includes the specs of the Interface Units, but they may also
 include bodies and subunits, when pragmas @code{Inline} or @code{Inline_Always}
-are used, or when there is a generic units in the spec. Before the sources
+are used, or when there is a generic unit in the spec. Before the sources
 are copied to the Interface Copy directory, an attempt is made to delete all
 files in the Interface Copy directory.
 
-Building stand-alone libraries by hand is difficult. Below are listed the steps
-necessary to be done by the user:
+Building stand-alone libraries by hand is somewhat tedious, but for those
+occasions when it is necessary here are the steps that you need to perform:
 @itemize @bullet
 @item
-compile all library sources
+Compile all library sources.
+
 @item
-invoke the binder with the switch -n (No Ada main program),
-with all the ALI files of the interfaces, and
-with the switch -L to give specific names to the init and final
-procedure.
+Invoke the binder with the switch @option{-n} (No Ada main program),
+with all the @file{ALI} files of the interfaces, and
+with the switch @option{-L} to give specific names to the @code{init}
+and @code{final} procedures.  For example:
 @smallexample
   gnatbind -n int1.ali int2.ali -Lsal1
 @end smallexample
+
 @item
-compile the binder generated file
+Compile the binder generated file:
 @smallexample
   gcc -c b~int2.adb
 @end smallexample
+
 @item
-link the dynamic library with all the necessary object files,
-indicating to the linker the names of the init (and possibly
-final) procedures for automatic initialization (and finalization).
-The built library should be put in a directory different from
+Link the dynamic library with all the necessary object files,
+indicating to the linker the names of the @code{init} (and possibly
+@code{final}) procedures for automatic initialization (and finalization).
+The built library should be placed in a directory different from
 the object directory.
+
 @item
-copy the ALI files of the interface to the library directory,
-add in the copy the indication that it is an interface to a SAL
-(i.e. add a word @option{SL} on the line in ALI file that starts
-with letter P) and make the modified copy of the ALI file read-only.
+Copy the @code{ALI} files of the interface to the library directory,
+add in this copy an indication that it is an interface to a SAL
+(i.e. add a word @option{SL} on the line in the @file{ALI} file that starts
+with letter ``P'') and make the modified copy of the @file{ALI} file
+read-only.
 @end itemize
 
 @noindent
 Using SALs is not different from using other libraries
 (see @ref{Using the library}).
 
-@node Creating SAL to be used in a non-Ada context
-@subsection Creating SAL to be used in a non-Ada context
+@node Creating a Stand-alone Library to be used in a non-Ada context
+@subsection Creating a Stand-alone Library to be used in a non-Ada context
 
 @noindent
-It is easy to adapt SAL build procedure discussed above for use of SAL in
+It is easy to adapt the SAL build procedure discussed above for use of a SAL in
 a non-Ada context.
 
 The only extra step required is to ensure that library interface subprograms
@@ -16734,8 +16765,8 @@ end Interface;
 
 @noindent
 On the foreign language side, you must provide a ``foreign'' view of the
-library interface; remeber that it should contain elaboration routines in
-addition to interface subrporams.
+library interface; remember that it should contain elaboration routines in
+addition to interface subprograms.
 
 The example below shows the content of @code{mylib_interface.h} (note
 that there is no rule for the naming of this file, any name can be used)
@@ -16758,7 +16789,7 @@ example) are called before the library services are used. Any number of
 libraries can be used simultaneously, as long as the elaboration
 procedure of each library is called.
 
-Below is an example of C program that uses our @code{mylib} library.
+Below is an example of C program that uses the @code{mylib} library.
 
 @smallexample
 #include "mylib_interface.h"
@@ -16781,13 +16812,14 @@ main (void)
 
 @noindent
 Note that invoking any library finalization procedure generated by
-@code{gnatbind} shuts down the Ada run time permanently. Consequently, the
+@code{gnatbind} shuts down the Ada run-time environment.
+Consequently, the
 finalization of all Ada libraries must be performed at the end of the program.
-No call to these libraries nor the Ada run time should be made past the
-finalization phase.
+No call to these libraries nor to the Ada run-time library should be made
+after the finalization phase.
 
-@node Restrictions in SALs
-@subsection Restrictions in SALs
+@node Restrictions in Stand-alone Libraries
+@subsection Restrictions in Stand-alone Libraries
 
 @noindent
 The pragmas listed below should be used with caution inside libraries,
@@ -16798,21 +16830,23 @@ as they can create incompatibilities with other Ada libraries:
 @item pragma @code{Task_Dispatching_Policy}
 @item pragma @code{Unreserve_All_Interrupts}
 @end itemize
+
+@noindent
 When using a library that contains such pragmas, the user must make sure
 that all libraries use the same pragmas with the same values. Otherwise,
-a @code{Program_Error} will
+@code{Program_Error} will
 be raised during the elaboration of the conflicting
 libraries. The usage of these pragmas and its consequences for the user
 should therefore be well documented.
 
-Similarly, the traceback in exception occurrences mechanism should be
+Similarly, the traceback in the exception occurrence mechanism should be
 enabled or disabled in a consistent manner across all libraries.
-Otherwise, a Program_Error will be raised during the elaboration of the
+Otherwise, Program_Error will be raised during the elaboration of the
 conflicting libraries.
 
-If the @code{'Version} and @code{'Body_Version}
-attributes are used inside a library, then it is necessary to
-perform a @code{gnatbind} step that mentions all @file{ALI} files in all
+If the @code{Version} or @code{Body_Version}
+attributes are used inside a library, then you need to
+perform a @code{gnatbind} step that specifies all @file{ALI} files in all
 libraries, so that version identifiers can be properly computed.
 In practice these attributes are rarely used, so this is unlikely
 to be a consideration.
@@ -21288,12 +21322,14 @@ compared to other native thread libraries:
 @noindent
 On AIX, the resolver library initializes some internal structure on
 the first call to @code{get*by*} functions, which are used to implement
-@code{GNAT.Sockets.Get_Host_By_Name} and @code{GNAT.Sockets.Get_Host_By_Addrss}.
+@code{GNAT.Sockets.Get_Host_By_Name} and
+@code{GNAT.Sockets.Get_Host_By_Addrss}.
 If such initialization occurs within an Ada task, and the stack size for
 the task is the default size, a stack overflow may occur.
 
 To avoid this overflow, the user should either ensure that the first call
-to @code{GNAT.Sockets.Get_Host_By_Name} or @code{GNAT.Sockets.Get_Host_By_Addrss}
+to @code{GNAT.Sockets.Get_Host_By_Name} or
+@code{GNAT.Sockets.Get_Host_By_Addrss}
 occurs in the environment task, or use @code{pragma Storage_Size} to
 specify a sufficiently large size for the stack of the task that contains
 this call.
@@ -26682,7 +26718,8 @@ $ dll2def API.dll > API.def
 to standard output the list of entry points in the DLL. Note that if
 some routines in the DLL have the @code{Stdcall} convention
 (@pxref{Windows Calling Conventions}) with stripped @code{@@}@i{nn}
-suffix then you'll have to edit @file{api.def} to add it.
+suffix then you'll have to edit @file{api.def} to add it, and specify
+@code{-k} to @code{gnatdll} when creating the import library.
 
 @noindent
 Here are some hints to find the right @code{@@}@i{nn} suffix.
@@ -27182,10 +27219,11 @@ object files needed to build the DLL.
 @item -k
 @cindex @option{-k} (@code{gnatdll})
 Removes the @code{@@}@i{nn} suffix from the import library's exported
-names. You must specified this option if you want to use a
-@code{Stdcall} function in a DLL for which the @code{@@}@i{nn} suffix
-has been removed. This is the case for most of the Windows NT DLL for
-example. This option has no effect when @option{-n} option is specified.
+names, but keeps them for the link names. You must specify this
+option if you want to use a @code{Stdcall} function in a DLL for which
+the @code{@@}@i{nn} suffix has been removed. This is the case for most
+of the Windows NT DLL for example. This option has no effect when
+@option{-n} option is specified.
 
 @item -l @var{file}
 @cindex @option{-l} (@code{gnatdll})

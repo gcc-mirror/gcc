@@ -1898,8 +1898,8 @@ package Sinfo is
       --  directly in the tree as a subtype mark. The N_Subtype_Indication
       --  node is used only if a constraint is present.
 
-      --  Note: [For Ada 0Y (AI-231)]: Because Ada 0Y extends this rule with
-      --  the null-exclusion part (see AI-231), we had to introduce a new
+      --  Note: [For Ada 2005 (AI-231)]: Because Ada 2005 extends this rule
+      --  with the null-exclusion part (see AI-231), we had to introduce a new
       --  attribute in all the parents of subtype_indication nodes to indicate
       --  if the null-exclusion is present.
 
@@ -2340,8 +2340,8 @@ package Sinfo is
       --  with an appropriate message), it is possible for anonymous arrays
       --  to appear as component definitions. The semantics and back end handle
       --  this case properly, and the expander in fact generates such cases.
-      --  Access_Definition is an optional field that gives support to Ada 0Y
-      --  (AI-230). The parser generates nodes that have either the
+      --  Access_Definition is an optional field that gives support to
+      --  Ada 2005 (AI-230). The parser generates nodes that have either the
       --  Subtype_Indication field or else the Access_Definition field.
 
       --  N_Component_Definition
@@ -2707,7 +2707,7 @@ package Sinfo is
       --    [NULL_EXCLUSION] access [GENERAL_ACCESS_MODIFIER] SUBTYPE_MARK
       --  | ACCESS_TO_SUBPROGRAM_DEFINITION
 
-      --  Note: access to subprograms are an Ada 0Y (AI-254) extension
+      --  Note: access to subprograms are an Ada 2005 (AI-254) extension
 
       --  N_Access_Definition
       --  Sloc points to ACCESS
@@ -3063,7 +3063,7 @@ package Sinfo is
       --  list of selector names in the record aggregate case, or a list of
       --  discrete choices in the array aggregate case or an N_Others_Choice
       --  node (which appears as a singleton list). Box_Present gives support
-      --  to Ada 0Y (AI-287).
+      --  to Ada 2005 (AI-287).
 
       ------------------------------------
       --  4.3.1  Commponent Choice List --
@@ -4331,7 +4331,7 @@ package Sinfo is
       --  | DEFINING_IDENTIFIER : ACCESS_DEFINITION renames object_NAME;
 
       --  Note: Access_Definition is an optional field that gives support to
-      --  Ada 0Y (AI-230). The parser generates nodes that have either the
+      --  Ada 2005 (AI-230). The parser generates nodes that have either the
       --  Subtype_Indication field or else the Access_Definition field.
 
       --  N_Object_Renaming_Declaration
@@ -5151,7 +5151,7 @@ package Sinfo is
       --  No_Entities_Ref_In_Spec (Flag8-Sem)
 
       --  Note: Limited_Present and Limited_View_Installed give support to
-      --        Ada 0Y (AI-50217).
+      --        Ada 2005 (AI-50217).
       --  Similarly, Private_Present gives support to AI-50262.
 
       ----------------------

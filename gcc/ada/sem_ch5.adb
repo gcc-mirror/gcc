@@ -397,9 +397,9 @@ package body Sem_Ch5 is
          Propagate_Tag (Lhs, Rhs);
       end if;
 
-      --  Ada 0Y (AI-231)
+      --  Ada 2005 (AI-231)
 
-      if Extensions_Allowed
+      if Ada_Version >= Ada_05
         and then Nkind (Rhs) = N_Null
         and then Is_Access_Type (T1)
         and then not Assignment_OK (Lhs)
@@ -408,7 +408,7 @@ package body Sem_Ch5 is
                    or else Can_Never_Be_Null (Etype (Lhs)))
       then
          Error_Msg_N
-           ("(Ada 0Y) NULL not allowed in null-excluding objects", Lhs);
+           ("(Ada 2005) NULL not allowed in null-excluding objects", Lhs);
       end if;
 
       if Is_Scalar_Type (T1) then
@@ -685,7 +685,7 @@ package body Sem_Ch5 is
            ("character literal as case expression is ambiguous", Exp);
          return;
 
-      elsif Ada_83
+      elsif Ada_Version = Ada_83
         and then (Is_Generic_Type (Exp_Btype)
                     or else Is_Generic_Type (Root_Type (Exp_Btype)))
       then

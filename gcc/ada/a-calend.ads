@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1997 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -67,8 +67,21 @@ package Ada.Calendar is
      (Year    : Year_Number;
       Month   : Month_Number;
       Day     : Day_Number;
-      Seconds : Day_Duration := 0.0)
-      return    Time;
+      Seconds : Day_Duration := 0.0) return Time;
+   --  GNAT Note: Normally when procedure Split is called on a Time value
+   --  result of a call to function Time_Of, the out parameters of procedure
+   --  Split are identical to the in parameters of function Time_Of. However,
+   --  when a non-existent time of day is specified, the values for Seconds
+   --  may or may not be different. This may happen when Daylight Saving Time
+   --  (DST) is in effect, on the day when switching to DST, if Seconds
+   --  specifies a time of day in the hour that does not exist. For example,
+   --  in New York:
+   --
+   --    Time_Of (Year => 1998, Month => 4, Day => 5, Seconds => 10740.0)
+   --
+   --  will return a Time value T. If Split is called on T, the resulting
+   --  Seconds may be 14340.0 (3:59:00) instead of 10740.0 (2:59:00 being
+   --  a time that not exist).
 
    function "+" (Left : Time;     Right : Duration) return Time;
    function "+" (Left : Duration; Right : Time)     return Time;

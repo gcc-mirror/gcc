@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------------
---                                                                          --
+--                                                                        --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --                      A D A . D I R E C T O R I E S                       --
@@ -36,8 +36,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Ada0Y: Implementation of Ada.Directories (AI95-00248). Note that this
---  unit is available without -gnatX. That seems reasonable, since you only
+--  Ada 2005: Implementation of Ada.Directories (AI95-00248). Note that this
+--  unit is available without -gnat05. That seems reasonable, since you only
 --  get it if you explicitly ask for it.
 
 --  External files may be classified as directories, special files, or ordinary
@@ -137,7 +137,7 @@ package Ada.Directories is
    --  all of its contents (possibly including other directories) are deleted.
    --  The exception Name_Error is propagated if the string given as Directory
    --  does not identify an existing directory. The exception Use_Error is
-   --  propagatedi f the external environment does not support the deletion of
+   --  propagated if the external environment does not support the deletion of
    --  the directory or some portion of its contents with the given name (in
    --  the absence of Name_Error). If Use_Error is propagated, it is
    --  unspecified if a portion of the contents of the directory are deleted.

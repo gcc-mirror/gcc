@@ -222,7 +222,6 @@ package body System.Task_Primitives.Operations is
    procedure Stack_Guard (T : ST.Task_Id; On : Boolean) is
       pragma Unreferenced (T);
       pragma Unreferenced (On);
-
    begin
       null;
    end Stack_Guard;
@@ -601,7 +600,6 @@ package body System.Task_Primitives.Operations is
    function Monotonic_Clock return Duration is
       TS     : aliased timespec;
       Result : Interfaces.C.int;
-
    begin
       Result := clock_gettime (CLOCK_REALTIME, TS'Unchecked_Access);
       pragma Assert (Result = 0);
@@ -979,7 +977,6 @@ package body System.Task_Primitives.Operations is
 
    function Check_Exit (Self_ID : ST.Task_Id) return Boolean is
       pragma Unreferenced (Self_ID);
-
    begin
       return True;
    end Check_Exit;
@@ -990,7 +987,6 @@ package body System.Task_Primitives.Operations is
 
    function Check_No_Locks (Self_ID : ST.Task_Id) return Boolean is
       pragma Unreferenced (Self_ID);
-
    begin
       return True;
    end Check_No_Locks;
@@ -1032,7 +1028,6 @@ package body System.Task_Primitives.Operations is
    is
       pragma Warnings (Off, T);
       pragma Warnings (Off, Thread_Self);
-
    begin
       return False;
    end Suspend_Task;
@@ -1047,7 +1042,6 @@ package body System.Task_Primitives.Operations is
    is
       pragma Warnings (Off, T);
       pragma Warnings (Off, Thread_Self);
-
    begin
       return False;
    end Resume_Task;

@@ -38,17 +38,11 @@ pragma Restrictions (No_Elaboration_Code);
 --  We want to guarantee the absence of elaboration code because the
 --  binder does not handle references to this package.
 
-with System.Storage_Elements;
-
 pragma Polling (Off);
 --  Turn off polling, we do not want polling to take place during stack
 --  checking operations. It causes infinite loops and other problems.
 
 package System.Stack_Checking.Operations is
-   procedure Set_Stack_Size
-     (Stack_Size : System.Storage_Elements.Storage_Offset);
-   --  Specify the stack size for the current task.
-
    procedure Update_Stack_Cache (Stack : Stack_Access);
    --  Set the stack cache for the current task. Note that this is only
    --  for optimization purposes, nothing can be assumed about the

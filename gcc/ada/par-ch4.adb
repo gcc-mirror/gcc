@@ -1126,7 +1126,7 @@ package body Ch4 is
    --  Error recovery: can raise Error_Resync
 
    --  Note: POSITIONAL_ARRAY_AGGREGATE rule has been extended to give support
-   --        to Ada0Y limited aggregates (AI-287)
+   --        to Ada 2005 limited aggregates (AI-287)
 
    function P_Aggregate_Or_Paren_Expr return Node_Id is
       Aggregate_Node : Node_Id;
@@ -1165,14 +1165,14 @@ package body Ch4 is
             end if;
          end if;
 
-         --  Ada0Y (AI-287): The box notation is allowed only with named
+         --  Ada 2005 (AI-287): The box notation is allowed only with named
          --  notation because positional notation might be error prone. For
          --  example, in "(X, <>, Y, <>)", there is no type associated with
          --  the boxes, so you might not be leaving out the components you
          --  thought you were leaving out.
 
-         if Extensions_Allowed and then Token = Tok_Box then
-            Error_Msg_SC ("(Ada 0Y) box notation only allowed with "
+         if Ada_Version >= Ada_05 and then Token = Tok_Box then
+            Error_Msg_SC ("(Ada 2005) box notation only allowed with "
                           & "named notation");
             Scan; --  past BOX
             Aggregate_Node := New_Node (N_Aggregate, Lparen_Sloc);
@@ -1192,7 +1192,7 @@ package body Ch4 is
                return Error;
             end if;
 
-            if Ada_83 then
+            if Ada_Version = Ada_83 then
                Error_Msg_SC ("(Ada 83) extension aggregate not allowed");
             end if;
 
@@ -1389,7 +1389,7 @@ package body Ch4 is
    --  Error recovery: can raise Error_Resync
 
    --  Note: RECORD_COMPONENT_ASSOCIATION and ARRAY_COMPONENT_ASSOCIATION
-   --        rules have been extended to give support to Ada0Y limited
+   --        rules have been extended to give support to Ada 2005 limited
    --        aggregates (AI-287)
 
    function P_Record_Or_Array_Component_Association return Node_Id is
@@ -1403,13 +1403,13 @@ package body Ch4 is
 
       if Token = Tok_Box then
 
-         --  Ada0Y (AI-287): The box notation is used to indicate the default
-         --  initialization of limited aggregate components
+         --  Ada 2005(AI-287): The box notation is used to indicate the
+         --  default initialization of limited aggregate components
 
-         if not Extensions_Allowed then
+         if Ada_Version < Ada_05 then
             Error_Msg_SP
-              ("(Ada 0Y) limited aggregates are an Ada0X extension");
-            Error_Msg_SP ("\unit must be compiled with -gnatX switch");
+              ("limited aggregate is an Ada 2005 extension");
+            Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
          end if;
 
          Set_Box_Present (Assoc_Node);
@@ -2335,7 +2335,7 @@ package body Ch4 is
       Alloc_Node := New_Node (N_Allocator, Token_Ptr);
       T_New;
 
-      --  Scan Null_Exclusion if present (Ada 0Y (AI-231))
+      --  Scan Null_Exclusion if present (Ada 2005 (AI-231))
 
       Null_Exclusion_Present := P_Null_Exclusion;
       Set_Null_Exclusion_Present (Alloc_Node, Null_Exclusion_Present);

@@ -514,7 +514,7 @@ package body Ch10 is
             Unit_Node := Specification (Unit_Node);
 
          elsif Nkind (Unit_Node) = N_Subprogram_Renaming_Declaration then
-            if Ada_83 then
+            if Ada_Version = Ada_83 then
                Error_Msg_N
                  ("(Ada 83) library unit renaming not allowed", Unit_Node);
             end if;
@@ -608,7 +608,7 @@ package body Ch10 is
 
       --  Ada 83 error checks
 
-      if Ada_83 then
+      if Ada_Version = Ada_83 then
 
          --  Check we did not with any child units
 
@@ -763,7 +763,7 @@ package body Ch10 is
 
    --  WITH_CLAUSE ::=
    --  [LIMITED] [PRIVATE]  with library_unit_NAME {,library_unit_NAME};
-   --  Note: the two qualifiers are ADA0Y extensions.
+   --  Note: the two qualifiers are Ada 2005 extensions.
 
    --  WITH_TYPE_CLAUSE ::=
    --    with type type_NAME is access; | with type type_NAME is tagged;
@@ -799,7 +799,7 @@ package body Ch10 is
 
          --  Processing for WITH clause
 
-         --  Ada0Y (AI-50217, AI-262): First check for LIMITED WITH,
+         --  Ada 2005 (AI-50217, AI-262): First check for LIMITED WITH,
          --  PRIVATE WITH, or both.
 
          if Token = Tok_Limited then
@@ -818,11 +818,10 @@ package body Ch10 is
                Error_Msg_SC ("unexpected LIMITED ignored");
             end if;
 
-            if not Extensions_Allowed then
-               Error_Msg_SP ("`LIMITED WITH` is an Ada0X extension");
+            if Ada_Version < Ada_05 then
+               Error_Msg_SP ("LIMITED WITH is an Ada 2005 extension");
                Error_Msg_SP
-                 ("\unit must be compiled with -gnatX switch");
-
+                 ("\unit must be compiled with -gnat05 switch");
             end if;
 
          elsif Token = Tok_Private then
@@ -838,10 +837,10 @@ package body Ch10 is
                Restore_Scan_State (Scan_State); -- to PRIVATE
                return Item_List;
 
-            elsif not Extensions_Allowed then
-               Error_Msg_SP ("`PRIVATE WITH` is an Ada0X extension");
+            elsif Ada_Version < Ada_05 then
+               Error_Msg_SP ("PRIVATE WITH is an Ada 2005 extension");
                Error_Msg_SP
-                 ("\unit must be compiled with -gnatX switch");
+                 ("\unit must be compiled with -gnat05 switch");
             end if;
 
          else
@@ -854,10 +853,10 @@ package body Ch10 is
 
             if Token = Tok_Type then
 
-               --  WITH TYPE is an extension
+               --  WITH TYPE is an GNAT specific extension
 
                if not Extensions_Allowed then
-                  Error_Msg_SP ("`WITH TYPE` is a non-standard extension");
+                  Error_Msg_SP ("`WITH TYPE` is a 'G'N'A'T extension");
                   Error_Msg_SP ("\unit must be compiled with -gnatX switch");
                end if;
 

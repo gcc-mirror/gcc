@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1992-2003 Free Software Foundation, Inc.         --
+--           Copyright (C) 1992-2004 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -58,8 +58,7 @@ package Exp_Ch3 is
       In_Init_Proc      : Boolean := False;
       Enclos_Type       : Entity_Id := Empty;
       Discr_Map         : Elist_Id := New_Elmt_List;
-      With_Default_Init : Boolean := False)
-      return              List_Id;
+      With_Default_Init : Boolean := False) return List_Id;
    --  Builds a call to the initialization procedure of the Id entity. Id_Ref
    --  is either a new reference to Id (for record fields), or an indexed
    --  component (for array elements). Loc is the source location for the
@@ -78,9 +77,9 @@ package Exp_Ch3 is
    --  can appear within expressions in array bounds (not as stand-alone
    --  identifiers) and a general replacement is necessary.
    --
-   --  Ada0Y (AI-287): With_Default_Init is used to indicate that the initia-
-   --  lization call corresponds to a default initialized component of an
-   --  aggregate.
+   --  Ada 2005 (AI-287): With_Default_Init is used to indicate that the
+   --  initialization call corresponds to a default initialized component
+   --  of an aggregate.
 
    procedure Freeze_Type (N : Node_Id);
    --  This procedure executes the freezing actions associated with the given
@@ -97,8 +96,7 @@ package Exp_Ch3 is
 
    function Get_Simple_Init_Val
      (T    : Entity_Id;
-      Loc  : Source_Ptr)
-      return Node_Id;
+      Loc  : Source_Ptr) return Node_Id;
    --  For a type which Needs_Simple_Initialization (see above), prepares
    --  the tree for an expression representing the required initial value.
    --  Loc is the source location used in constructing this tree which is

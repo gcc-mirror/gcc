@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -761,7 +761,7 @@ package body Sem_Cat is
          return;
       end if;
 
-      --  Ada0Y (AI-50217): Process explicit with_clauses that are not limited
+      --  Ada 2005 (AI-50217): Process explicit non-limited with_clauses
 
       declare
          Item             : Node_Id;

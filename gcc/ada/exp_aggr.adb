@@ -74,7 +74,7 @@ package body Exp_Aggr is
 
    function Has_Default_Init_Comps (N : Node_Id) return Boolean;
    --  N is an aggregate (record or array). Checks the presence of default
-   --  initialization (<>) in any component (Ada 0Y: AI-287)
+   --  initialization (<>) in any component (Ada 2005: AI-287)
 
    ------------------------------------------------------
    -- Local subprograms for Record Aggregate Expansion --
@@ -443,8 +443,8 @@ package body Exp_Aggr is
       --
       --  Otherwise we call Build_Code recursively.
       --
-      --  Ada 0Y (AI-287): In case of default initialized component, Expr is
-      --  empty and we generate a call to the corresponding IP subprogram.
+      --  Ada 2005 (AI-287): In case of default initialized component, Expr
+      --  is empty and we generate a call to the corresponding IP subprogram.
 
       function Gen_Loop (L, H : Node_Id; Expr : Node_Id) return List_Id;
       --  Nodes L and H must be side-effect free expressions.
@@ -671,7 +671,7 @@ package body Exp_Aggr is
             Res : List_Id;
 
          begin
-            --  Ada 0Y (AI-287): Do nothing else in case of default
+            --  Ada 2005 (AI-287): Do nothing else in case of default
             --  initialized component.
 
             if not Present (Expr) then
@@ -739,7 +739,7 @@ package body Exp_Aggr is
 
          Set_Assignment_OK (Indexed_Comp);
 
-         --  Ada 0Y (AI-287): In case of default initialized component, Expr
+         --  Ada 2005 (AI-287): In case of default initialized component, Expr
          --  is not present (and therefore we also initialize Expr_Q to empty).
 
          if not Present (Expr) then
@@ -758,7 +758,7 @@ package body Exp_Aggr is
 
          elsif Present (Next (First (New_Indices))) then
 
-            --  Ada 0Y (AI-287): Do nothing in case of default initialized
+            --  Ada 2005 (AI-287): Do nothing in case of default initialized
             --  component because we have received the component type in
             --  the formal parameter Ctype.
 
@@ -792,7 +792,7 @@ package body Exp_Aggr is
             end if;
          end if;
 
-         --  Ada 0Y (AI-287): We only analyze the expression in case of non
+         --  Ada 2005 (AI-287): We only analyze the expression in case of non-
          --  default initialized components (otherwise Expr_Q is not present).
 
          if Present (Expr_Q)
@@ -818,7 +818,7 @@ package body Exp_Aggr is
             end if;
          end if;
 
-         --  Ada 0Y (AI-287): In case of default initialized component, call
+         --  Ada 2005 (AI-287): In case of default initialized component, call
          --  the initialization subprogram associated with the component type.
 
          if not Present (Expr) then
@@ -918,7 +918,7 @@ package body Exp_Aggr is
          if Empty_Range (L, H) then
             Append_To (S, Make_Null_Statement (Loc));
 
-            --  Ada 0Y (AI-287): Nothing else need to be done in case of
+            --  Ada 2005 (AI-287): Nothing else need to be done in case of
             --  default initialized component.
 
             if not Present (Expr) then
@@ -1337,7 +1337,7 @@ package body Exp_Aggr is
          if Present (Component_Associations (N)) then
             Assoc := Last (Component_Associations (N));
 
-            --  Ada 0Y (AI-287)
+            --  Ada 2005 (AI-287)
 
             if Box_Present (Assoc) then
                Append_List (Gen_While (Add (Nb_Elements, To => Aggr_L),
@@ -1632,8 +1632,8 @@ package body Exp_Aggr is
              Selector_Name => Make_Identifier (Loc, Name_uController));
          Set_Assignment_OK (Ref);
 
-         --  Ada 0Y (AI-287): Give support to default initialization of limited
-         --  types and components.
+         --  Ada 2005 (AI-287): Give support to default initialization of
+         --  limited types and components.
 
          if (Nkind (Target) = N_Identifier
               and then Present (Etype (Target))
@@ -1790,7 +1790,7 @@ package body Exp_Aggr is
                   Check_Ancestor_Discriminants (Entity (A));
                end if;
 
-            --  Ada 0Y (AI-287): If the ancestor part is a limited type,
+            --  Ada 2005 (AI-287): If the ancestor part is a limited type,
             --  a recursive call expands the ancestor.
 
             elsif Is_Limited_Type (Etype (A)) then
@@ -1924,15 +1924,15 @@ package body Exp_Aggr is
       while Present (Comp) loop
          Selector := Entity (First (Choices (Comp)));
 
-         --  Ada 0Y (AI-287): Default initialization of a limited component
+         --  Ada 2005 (AI-287): Default initialization of a limited component
 
          if Box_Present (Comp)
             and then Is_Limited_Type (Etype (Selector))
          then
-            --  Ada 0Y (AI-287): If the component type has tasks then generate
-            --  the activation chain and master entities (except in case of an
-            --  allocator because in that case these entities are generated
-            --  by Build_Task_Allocate_Block_With_Init_Stmts).
+            --  Ada 2005 (AI-287): If the component type has tasks then
+            --  generate the activation chain and master entities (except
+            --  in case of an allocator because in that case these entities
+            --  are generated by Build_Task_Allocate_Block_With_Init_Stmts).
 
             declare
                Ctype            : constant Entity_Id := Etype (Selector);
@@ -2868,7 +2868,7 @@ package body Exp_Aggr is
    --  Start of processing for Convert_To_Positional
 
    begin
-      --  Ada 0Y (AI-287): Do not convert in case of default initialized
+      --  Ada 2005 (AI-287): Do not convert in case of default initialized
       --  components because in this case will need to call the corresponding
       --  IP procedure.
 
@@ -4120,7 +4120,7 @@ package body Exp_Aggr is
 
             if Has_Default_Init_Comps (N) then
 
-               --  Ada 0Y (AI-287): This case has not been analyzed???
+               --  Ada 2005 (AI-287): This case has not been analyzed???
 
                raise Program_Error;
             end if;
@@ -4333,8 +4333,8 @@ package body Exp_Aggr is
       then
          Convert_To_Assignments (N, Typ);
 
-      --  Ada 0Y (AI-287): In case of default initialized components we convert
-      --  the aggregate into assignments.
+         --  Ada 2005 (AI-287): In case of default initialized components we
+         --  convert the aggregate into assignments.
 
       elsif Has_Default_Init_Comps (N) then
          Convert_To_Assignments (N, Typ);

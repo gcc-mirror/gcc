@@ -241,24 +241,33 @@ begin
       ------------
 
       --  This pragma must be processed at parse time, since we want to set
-      --  the Ada 83 and Ada 95 switches properly at parse time to recognize
-      --  Ada 83 syntax or Ada 95 syntax as appropriate.
+      --  the Ada version properly at parse time to recognize the appropriate
+      --  Ada version syntax.
 
       when Pragma_Ada_83 =>
-         Ada_83 := True;
-         Ada_95 := False;
+         Ada_Version := Ada_83;
 
       ------------
       -- Ada_95 --
       ------------
 
       --  This pragma must be processed at parse time, since we want to set
-      --  the Ada 83 and Ada_95 switches properly at parse time to recognize
-      --  Ada 83 syntax or Ada 95 syntax as appropriate.
+      --  the Ada version properly at parse time to recognize the appropriate
+      --  Ada version syntax.
 
       when Pragma_Ada_95 =>
-         Ada_83 := False;
-         Ada_95 := True;
+         Ada_Version := Ada_95;
+
+      ------------
+      -- Ada_05 --
+      ------------
+
+      --  This pragma must be processed at parse time, since we want to set
+      --  the Ada version properly at parse time to recognize the appropriate
+      --  Ada version syntax.
+
+      when Pragma_Ada_05 =>
+         Ada_Version := Ada_05;
 
       -----------
       -- Debug --
@@ -307,7 +316,14 @@ begin
          Check_Arg_Count (1);
          Check_No_Identifier (Arg1);
          Check_Arg_Is_On_Or_Off (Arg1);
-         Opt.Extensions_Allowed := (Chars (Expression (Arg1)) = Name_On);
+
+         if Chars (Expression (Arg1)) = Name_On then
+            Extensions_Allowed := True;
+            Ada_Version := Ada_Version_Type'Last;
+         else
+            Extensions_Allowed := False;
+            Ada_Version := Ada_Version_Type'Min (Ada_Version, Ada_95);
+         end if;
 
       ----------------
       -- List (2.8) --

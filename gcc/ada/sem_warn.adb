@@ -1483,6 +1483,23 @@ package body Sem_Warn is
                   then
                      if Warn_On_Modified_Unread
                        and then not Is_Imported (E)
+
+                        --  Suppress the message for aliased, renamed
+                        --  and access variables since there may be
+                        --  other entities that read the memory location.
+
+                       and then not Is_Aliased (E)
+                       and then No (Renamed_Object (E))
+                       and then not (Is_Access_Type (Etype (E))
+                                       or else
+
+                        --  Case of private access type, must examine the
+                        --  full view due to visibility issues.
+
+                                       (Is_Private_Type (Etype (E))
+                                          and then
+                                          Is_Access_Type
+                                            (Full_View (Etype (E)))))
                      then
                         Error_Msg_N
                           ("variable & is assigned but never read?", E);

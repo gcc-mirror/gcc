@@ -2432,7 +2432,7 @@ package body Checks is
          if Has_Null_Exclusion
            and then not Is_Access_Type (Typ)
          then
-            Error_Msg_N ("(Ada 0Y) must be an access type", Related_Nod);
+            Error_Msg_N ("(Ada 2005) must be an access type", Related_Nod);
          end if;
       end Check_Must_Be_Access;
 
@@ -2450,7 +2450,7 @@ package body Checks is
            and then Can_Never_Be_Null (Typ)
          then
             Error_Msg_N
-              ("(Ada 0Y) already a null-excluding type", Related_Nod);
+              ("(Ada 2005) already a null-excluding type", Related_Nod);
          end if;
       end Check_Already_Null_Excluding_Type;
 
@@ -2472,17 +2472,17 @@ package body Checks is
             case Msg_K is
                when Components =>
                   Error_Msg_N
-                    ("(Ada 0Y) null-excluding components must be initialized",
-                     Related_Nod);
+                    ("(Ada 2005) null-excluding components must be " &
+                     "initialized", Related_Nod);
 
                when Formals =>
                   Error_Msg_N
-                    ("(Ada 0Y) null-excluding formals must be initialized",
+                    ("(Ada 2005) null-excluding formals must be initialized",
                      Related_Nod);
 
                when Objects =>
                   Error_Msg_N
-                    ("(Ada 0Y) null-excluding objects must be initialized",
+                    ("(Ada 2005) null-excluding objects must be initialized",
                      Related_Nod);
             end case;
          end if;
@@ -2502,17 +2502,17 @@ package body Checks is
             case Msg_K is
                when Components =>
                   Error_Msg_N
-                    ("(Ada 0Y) NULL not allowed in null-excluding components",
-                     Expr);
+                    ("(Ada 2005) NULL not allowed in null-excluding " &
+                     "components", Expr);
 
                when Formals =>
                   Error_Msg_N
-                    ("(Ada 0Y) NULL not allowed in null-excluding formals",
+                    ("(Ada 2005) NULL not allowed in null-excluding formals",
                      Expr);
 
                when Objects =>
                   Error_Msg_N
-                    ("(Ada 0Y) NULL not allowed in null-excluding objects",
+                    ("(Ada 2005) NULL not allowed in null-excluding objects",
                      Expr);
             end case;
          end if;

@@ -933,14 +933,18 @@ package VMS_Data is
    --   Ada 95 program.
 
    S_GCC_Ada_95  : aliased constant S := "/95 "                            &
-                                             "!-gnat83";
+                                             "-gnat95";
    --        /95 (D)
    --
-   --   Same as /NO83.
+   --   Allows GNAT to recognize the full range of Ada 95 constructs.
+   --   This is the normal default for GNAT Pro.
+
+   S_GCC_Ada_05 : aliased constant S := "/05 "                            &
+                                             "-gnat05";
+   --        /05 (D)
    --
-   --        /NO95
-   --
-   --   Same as /83.
+   --   Allows GNAT to recognize all implemented proposed Ada 2005
+   --   extensions. See features file for list of implemented features.
 
    S_GCC_Asm     : aliased constant S := "/ASM "                           &
                                              "-S,!-c";
@@ -948,7 +952,7 @@ package VMS_Data is
    --        /ASM
    --
    --   Use to cause the assembler source file to be generated, using S as the
-   --   filetype, instead of the object file.  This may be useful if you need
+   --   filetype, instead of the object file. This may be useful if you need
    --   to examine the generated assembly code.
 
    S_GCC_Checks  : aliased constant S := "/CHECKS="                        &
@@ -2795,6 +2799,7 @@ package VMS_Data is
    GCC_Switches : aliased constant Switches :=
      (S_GCC_Ada_83  'Access,
       S_GCC_Ada_95  'Access,
+      S_GCC_Ada_05  'Access,
       S_GCC_Asm     'Access,
       S_GCC_Checks  'Access,
       S_GCC_ChecksX 'Access,
@@ -4013,6 +4018,174 @@ package VMS_Data is
       S_Make_Unique  'Access,
       S_Make_Use_Map 'Access,
       S_Make_Verbose 'Access);
+
+   ------------------------------
+   -- Switches for GNAT METRIC --
+   ------------------------------
+
+   S_Metric_Config  : aliased constant S := "/CONFIGURATION_PRAGMAS_FILE=<" &
+                                              "-gnatec>";
+   --        /CONFIGURATION_PRAGMAS_FILE=file
+   --
+   --   Specify a configuration pragmas file that need to be taken into account
+
+   S_Metric_Current : aliased constant S := "/CURRENT_DIRECTORY "           &
+                                             "!-I-";
+   --        /CURRENT_DIRECTORY (D)
+   --
+   --   Look for files in the directory where GNAT METRIC was invoked
+   --
+   --        /NOCURRENT_DIRECTORY
+   --
+   --   Do not look for files in the directory where GNAT METRIC was invoked
+
+   S_Metric_Debug    : aliased constant S := "/DEBUG_OUTPUT "               &
+                                             "-dv";
+   --      /DEBUG_OUTPUT
+
+   S_Metric_Element : aliased constant S := "/ELEMENT_METRICS="             &
+                                             "ALL "                         &
+                                              "!-ed,!-es,!-enl,!-eis,"      &
+                                              "!-eas,!-eit,!-eat,!-enu "    &
+                                             "DECLARATION_TOTAL "           &
+                                              "-ed "                        &
+                                             "STATEMENT_TOTAL "             &
+                                              "-es "                        &
+                                             "LOOP_NESTING_MAX "            &
+                                              "-enl "                       &
+                                             "INT_SUBPROGRAMS "             &
+                                              "-eis "                       &
+                                             "SUBPROGRAMS_ALL "             &
+                                              "-eas "                       &
+                                             "INT_TYPES "                   &
+                                              "-eit "                       &
+                                             "TYPES_ALL "                   &
+                                              "-eat "                       &
+                                             "PROGRAM_NESTING_MAX "         &
+                                              "-enu";
+   --       /ELEMENT_METRICS=(option, option ...)
+
+   S_Metric_Ext     : aliased constant S := "/EXTERNAL_REFERENCE=" & '"'    &
+                                             "-X" & '"';
+   --       /EXTERNAL_REFERENCE="name=val"
+   --
+   --   Specifies an external reference to the project manager. Useful only if
+   --   /PROJECT_FILE is used.
+   --
+   --   Example:
+   --      /EXTERNAL_REFERENCE="DEBUG=TRUE"
+
+   S_Metric_Format  : aliased constant S := "/FORMAT_OUTPUT="               &
+                                             "DEFAULT "                     &
+                                              "!-x,!-nt,!-sfn "             &
+                                             "XML "                         &
+                                              "-x "                         &
+                                             "NO_TEXT "                     &
+                                              "-nt "                        &
+                                             "SHORT_SOURCE_FILE_NAME "      &
+                                              "-sfn";
+   --       /FORMAT_OUTPUT=(option, option ...)
+
+   S_Metric_Globout : aliased constant S := "/GLOBAL_OUTPUT=@"              &
+                                             "-og@";
+   --        /GLOBAL_OUTPUT=filename
+
+   S_Metric_Line     : aliased constant S := "/LINE_METRICS="               &
+                                                "ALL "                      &
+                                                 "!-la,!-lcode,!-lcomm,"    &
+                                                 "!-leol,!-lb "             &
+                                                "LINES_ALL "                &
+                                                 "-la "                     &
+                                                "CODE_LINES "               &
+                                                 "-lcode "                  &
+                                                "COMENT_LINES "             &
+                                                 "-lcomm "                  &
+                                                "MIXED_CODE_COMMENTS "      &
+                                                 "-leol "                   &
+                                                "BLANK_LINES "              &
+                                                 "-lb ";
+   --      /LINE_METRICS=(option, option ...)
+
+   S_Metric_Mess    : aliased constant S := "/MESSAGES_PROJECT_FILE="       &
+                                             "DEFAULT "                     &
+                                                "-vP0 "                     &
+                                             "MEDIUM "                      &
+                                                "-vP1 "                     &
+                                             "HIGH "                        &
+                                                "-vP2";
+   --        /MESSAGES_PROJECT_FILE[=messages-option]
+   --
+   --   Specifies the "verbosity" of the parsing of project files.
+   --   messages-option may be one of the following:
+   --
+   --      DEFAULT (D)  No messages are output if there is no error or warning.
+   --
+   --      MEDIUM       A small number of messages are output.
+   --
+   --      HIGH         A great number of messages are output, most of them not
+   --                   being useful for the user.
+
+   S_Metric_Project : aliased constant S := "/PROJECT_FILE=<"               &
+                                             "-P>";
+   --        /PROJECT_FILE=filename
+   --
+   --   Specifies the main project file to be used. The project files rooted
+   --   at the main project file will be parsed before the invocation of the
+   --   binder.
+
+   S_Metric_Quiet    : aliased constant S := "/QUIET "                      &
+                                             "-q";
+   --      /QUIET
+
+   S_Metric_Search  : aliased constant S := "/SEARCH=*"                     &
+                                             "-I*";
+   --        /SEARCH=(directory[,...])
+
+   S_Metric_Suffix  : aliased constant S := "/SUFFIX_DETAILS=" & '"'        &
+                                             "-o" & '"';
+   --        /SUFFIX_DETAILS=suffix
+
+   S_Metric_Suppress : aliased constant S :=  "/SUPPRESS="                  &
+                                               "NOTHING "                   &
+                                                "!-nocc,!-noec,!-nonl,"     &
+                                                "!-ne,!-nolocal "           &
+                                               "CYCLOMATIC_COMPLEXITY "     &
+                                                "-nocc "                    &
+                                               "ESSENTIAL_COMPLEXITY "      &
+                                                "-noec "                    &
+                                               "MAXIMAL_LOOP_NESTING "      &
+                                                "-nonl "                    &
+                                               "EXITS_AS_GOTOS "            &
+                                                "-ne "                      &
+                                               "LOCAL_DETAILS "             &
+                                                "-nolocal ";
+   --      /SUPPRESS=(option, option ...)
+
+   S_Metric_Verbose  : aliased constant S := "/VERBOSE "                    &
+                                             "-v";
+   --      /VERBOSE
+
+   S_Metric_XMLout  : aliased constant S := "/XML_OUTPUT=@"                 &
+                                             "-ox@";
+   --        /XML_OUTPUT=filename
+
+   Metric_Switches : aliased constant Switches :=
+     (S_Metric_Config   'Access,
+      S_Metric_Current  'Access,
+      S_Metric_Debug    'Access,
+      S_Metric_Element  'Access,
+      S_Metric_Ext      'Access,
+      S_Metric_Format   'Access,
+      S_Metric_Globout  'Access,
+      S_Metric_Line     'Access,
+      S_Metric_Mess     'Access,
+      S_Metric_Project  'Access,
+      S_Metric_Quiet    'Access,
+      S_Metric_Search   'Access,
+      S_Metric_Suffix   'Access,
+      S_Metric_Suppress 'Access,
+      S_Metric_Verbose  'Access,
+      S_Metric_XMLout   'Access);
 
    ----------------------------
    -- Switches for GNAT NAME --

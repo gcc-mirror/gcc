@@ -576,12 +576,12 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
 
       function P_Access_Definition
         (Null_Exclusion_Present : Boolean) return Node_Id;
-      --  Ada 0Y (AI-231/AI-254): The caller parses the null-exclusion part
+      --  Ada 2005 (AI-231/AI-254): The caller parses the null-exclusion part
       --  and indicates if it was present
 
       function P_Access_Type_Definition
         (Header_Already_Parsed : Boolean := False) return Node_Id;
-      --  Ada 0Y (AI-254): The formal is used to indicate if the caller has
+      --  Ada 2005 (AI-254): The formal is used to indicate if the caller has
       --  parsed the null_exclusion part. In this case the caller has also
       --  removed the ACCESS token
 
@@ -597,12 +597,12 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  declaration of this type for details.
 
       function P_Null_Exclusion return Boolean;
-      --  Ada 0Y (AI-231): Parse the null-excluding part. True indicates
+      --  Ada 2005 (AI-231): Parse the null-excluding part. True indicates
       --  that the null-excluding part was present.
 
       function P_Subtype_Indication
         (Not_Null_Present : Boolean := False) return Node_Id;
-      --  Ada 0Y (AI-231): The flag Not_Null_Present indicates that the
+      --  Ada 2005 (AI-231): The flag Not_Null_Present indicates that the
       --  null-excluding part has been scanned out and it was present.
 
       function Init_Expr_Opt (P : Boolean := False) return Node_Id;
@@ -624,7 +624,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
          Not_Null_Present : Boolean := False) return Node_Id;
       --  This version of P_Subtype_Indication is called when the caller has
       --  already scanned out the subtype mark which is passed as a parameter.
-      --  Ada 0Y (AI-231): The flag Not_Null_Present indicates that the
+      --  Ada 2005 (AI-231): The flag Not_Null_Present indicates that the
       --  null-excluding part has been scanned out and it was present.
 
       function P_Subtype_Mark_Attribute (Type_Node : Node_Id) return Node_Id;

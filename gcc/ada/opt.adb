@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,7 +49,7 @@ package body Opt is
 
    procedure Register_Opt_Config_Switches is
    begin
-      Ada_83_Config                         := Ada_83;
+      Ada_Version_Config                    := Ada_Version;
       Dynamic_Elaboration_Checks_Config     := Dynamic_Elaboration_Checks;
       Exception_Locations_Suppressed_Config := Exception_Locations_Suppressed;
       Extensions_Allowed_Config             := Extensions_Allowed;
@@ -65,8 +65,7 @@ package body Opt is
 
    procedure Restore_Opt_Config_Switches (Save : Config_Switches_Type) is
    begin
-      Ada_83                         := Save.Ada_83;
-      Ada_95                         := not Ada_83;
+      Ada_Version                    := Save.Ada_Version;
       Dynamic_Elaboration_Checks     := Save.Dynamic_Elaboration_Checks;
       Exception_Locations_Suppressed := Save.Exception_Locations_Suppressed;
       Extensions_Allowed             := Save.Extensions_Allowed;
@@ -82,7 +81,7 @@ package body Opt is
 
    procedure Save_Opt_Config_Switches (Save : out Config_Switches_Type) is
    begin
-      Save.Ada_83                         := Ada_83;
+      Save.Ada_Version                    := Ada_Version;
       Save.Dynamic_Elaboration_Checks     := Dynamic_Elaboration_Checks;
       Save.Exception_Locations_Suppressed := Exception_Locations_Suppressed;
       Save.Extensions_Allowed             := Extensions_Allowed;
@@ -99,8 +98,7 @@ package body Opt is
    procedure Set_Opt_Config_Switches (Internal_Unit : Boolean) is
    begin
       if Internal_Unit then
-         Ada_83                     := False;
-         Ada_95                     := True;
+         Ada_Version                := Ada_Version_Default;
          Dynamic_Elaboration_Checks := False;
          Extensions_Allowed         := True;
          External_Name_Exp_Casing   := As_Is;
@@ -108,8 +106,7 @@ package body Opt is
          Use_VADS_Size              := False;
 
       else
-         Ada_83                     := Ada_83_Config;
-         Ada_95                     := not Ada_83_Config;
+         Ada_Version                := Ada_Version_Config;
          Dynamic_Elaboration_Checks := Dynamic_Elaboration_Checks_Config;
          Extensions_Allowed         := Extensions_Allowed_Config;
          External_Name_Exp_Casing   := External_Name_Exp_Casing_Config;
@@ -127,6 +124,7 @@ package body Opt is
 
    procedure Tree_Read is
       Tree_Version_String_Len : Nat;
+      Ada_Version_Config_Val  : Nat;
 
    begin
       Tree_Read_Int  (Tree_ASIS_Version_Number);
@@ -139,11 +137,13 @@ package body Opt is
       Tree_Read_Bool (Verbose_Mode);
       Tree_Read_Data (Warning_Mode'Address,
                       Warning_Mode_Type'Object_Size / Storage_Unit);
-      Tree_Read_Bool (Ada_83_Config);
+      Tree_Read_Int  (Ada_Version_Config_Val);
       Tree_Read_Bool (All_Errors_Mode);
       Tree_Read_Bool (Assertions_Enabled);
       Tree_Read_Bool (Enable_Overflow_Checks);
       Tree_Read_Bool (Full_List);
+
+      Ada_Version_Config := Ada_Version_Type'Val (Ada_Version_Config_Val);
 
       --  Read version string: we have to check the length first
 
@@ -198,7 +198,7 @@ package body Opt is
       Tree_Write_Bool (Verbose_Mode);
       Tree_Write_Data (Warning_Mode'Address,
                        Warning_Mode_Type'Object_Size / Storage_Unit);
-      Tree_Write_Bool (Ada_83_Config);
+      Tree_Write_Int  (Ada_Version_Type'Pos (Ada_Version_Config));
       Tree_Write_Bool (All_Errors_Mode);
       Tree_Write_Bool (Assertions_Enabled);
       Tree_Write_Bool (Enable_Overflow_Checks);

@@ -631,8 +631,7 @@ package body Exp_Dbug is
    -- Get_External_Name --
    -----------------------
 
-   procedure Get_External_Name (Entity : Entity_Id; Has_Suffix : Boolean)
-   is
+   procedure Get_External_Name (Entity : Entity_Id; Has_Suffix : Boolean) is
       E    : Entity_Id := Entity;
       Kind : Entity_Kind;
 

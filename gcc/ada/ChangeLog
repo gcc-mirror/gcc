@@ -1,3 +1,207 @@
+2004-06-07  Robert Dewar  <dewar@gnat.com>
+
+	* a-direct.ads, einfo.ads: Minor comment updates
+
+	* s-taprop-lynxos.adb, s-taprop-tru64.adb, s-taprop-irix.adb,
+	s-taprop-irix-athread.adb, s-taprop-hpux-dce.adb, s-taprop-linux.adb,
+	s-taprop-dummy.adb, s-taprop-os2.adb, s-taprop-solaris.adb,
+	s-taprop-vms.adb, s-taprop-mingw.adb, s-taprop-vxworks.adb,
+	s-taprop-posix.adb, s-taprop.ads, exp_dbug.adb: Minor reformatting.
+
+	* s-interr-sigaction.adb: Remove unreferenced variable
+	(Attached_Interrupts).  Minor reformatting.
+	Avoid use of variable I (replace by J).
+
+	* par-ch10.adb: Fix text of one error message
+
+	* checks.adb, checks.ads, cstand.adb, vms_data.ads, errout.ads,
+	exp_aggr.adb, exp_ch3.adb, exp_ch3.ads, exp_ch5.adb, exp_ch6.adb,
+	exp_ch9.adb, exp_code.adb, gnat1drv.adb, lib-load.adb, lib-writ.adb,
+	opt.adb, par.adb, opt.ads, par-ch11.adb, par-ch3.adb, par-ch4.adb,
+	par-ch5.adb, par-ch6.adb, par-ch8.adb, par-ch9.adb, par-prag.adb,
+	par-util.adb, scng.adb, sem_aggr.adb, sem_attr.adb, sem_cat.adb,
+        sem_ch10.adb, sem_ch10.adb, sem_ch11.adb, sem_ch12.adb, sem_ch2.adb,
+	sem_ch3.adb, sem_ch3.ads, sem_ch4.adb, sem_ch5.adb, sem_ch6.adb,
+	sem_ch7.adb, sem_ch8.adb, sem_ch9.adb, sem_eval.adb, sem_prag.adb,
+	sem_res.adb, sem_type.adb, sem_util.adb, sinfo.ads, snames.adb,
+	snames.ads, snames.h, sprint.adb, switch-c.adb: Modifications for Ada
+	2005 support.
+
+2004-06-07  Doug Rupp  <rupp@gnat.com>
+
+	* mlib-tgt-vms.adb: Rename mlib-tgt-vms.adb mlib-tgt-vms-alpha.adb
+
+	* s-vaflop-vms.adb: Rename s-vaflop-vms.adb to s-vaflop-vms-alpha.adb
+
+	* mlib-tgt-vms-ia64.adb: New file.
+
+	* Makefile.in: Rename mlib-tgt-vms.adb to mlib-tgt-vms-alpha.adb
+	Add mlib-tgt-vms-ia64.adb
+	Rename s-vaflop-vms.adb to s-vaflop-vms-alpha.adb.
+	Move to alpha specific ifeq section.
+	Add VMS specific versions of symbols.adb
+	Renaming of 5q vms files.
+
+	* 5qsystem.ads renamed to system-vms_64.ads.
+
+2004-06-07  Vincent Celier  <celier@gnat.com>
+
+	* a-calend.ads: Add a GNAT Note comment after function Time_Of to
+	explain that when a time of day corresponding to the non existing hour
+	on the day switching to DST is specified, Split may return a different
+	value for Seconds.
+
+	* gnatcmd.adb: Add processing of GNAT METRIC (for gnatmetric), similar
+	to GNAT PRETTY.
+
+	* g-os_lib.adb (OpenVMS): New Boolean value imported from System.
+	(Normalize_Pathname): Only resolve VMS logical names when on VMS.
+
+	* mlib-prj.adb (Build_Library): New flag Gtrasymobj_Needed, initialize
+	to False.
+	If Gtrasymobj_Needed is True, add the full path of g-trasym.obj to
+	the linking options.
+	(Build_Library.Check_Libs): On VMS, if there is a dependency on
+	g-trasym.ads, set Gtrasymobj_Needed to True.
+
+	* prj-attr.adb: Add new package Metrics for gnatmetric
+
+	* prj-nmsc.adb (Record_Other_Sources): Put source file names in
+	canonical case to take into account files with upper case characters on
+	Windows.
+	(Ada_Check): Load the reference symbol file name in the name buffer to
+	check it, not the symbol file name.
+
+	* snames.ads, snames.adb: Add standard name Metrics (name of project
+	file package for gnatmetric).
+
+	* vms_conv.ads: Add Metric to Comment_Type
+
+	* vms_conv.adb (Initialize): Add component dor Metric in Command_List
+
+	* vms_data.ads: Add qualifiers for GNAT METRIC
+
+	* makegpr.adb (Link_Executables): Take into account the switches
+	specified in package Linker of the main project.
+
+2004-06-07  Thomas Quinot  <quinot@act-europe.fr>
+
+	* bindgen.adb (Set_Unit_Number): Units is an instance of Table, and so
+	the index of the last element is Units.Last, not Units.Table'Last
+	(which is usually not a valid index within the actually allocated
+	storage for the table).
+
+	* exp_ch4.adb (Insert_Dereference_Action): Change predicate that
+	determines whether to generate a call to a checked storage pool
+	Dereference action.
+	Generate such a call only for a dereference that either comes from
+	source, or is the result of rewriting a dereference that comes from
+	source.
+
+2004-06-07  Romain Berrendonner  <berrendo@act-europe.fr>
+
+	* bindgen.adb (Gen_Output_File): Add support for GAP builds.
+
+2004-06-07  Eric Botcazou  <ebotcazou@act-europe.fr>
+
+	(gnat_to_gnu_entity) <E_Array_Subtype>: For multi-dimensional arrays at
+	file level, elaborate the stride for inner dimensions in alignment
+	units, not bytes.
+
+	* exp_ch5.adb: Correct wrong reference to Component_May_Be_Bit_Aligned
+	in a comment.
+
+2004-06-07  Javier Miranda  <miranda@gnat.com>
+
+	* exp_ch6.adb: Correct wrong modification in previous patch
+
+2004-06-07  Vasiliy Fofanov  <fofanov@act-europe.fr>
+
+	* g-trasym.ads: Corrected comment to properly reflect level of support
+	on VMS.
+
+2004-06-07  Hristian Kirtchev  <kirtchev@gnat.com>
+
+	* lib-xref.adb (Generate_Reference): Add nested function Is_On_LHS. It
+	includes case of a variable referenced on the left hand side of an
+	assignment, therefore remove redundant code. Variables and prefixes of
+	indexed or selected components are now marked as referenced on left
+	hand side. Warnings are now properly emitted when variables or prefixes
+	are assigned but not read.
+
+	* sem_warn.adb (Output_Unreferenced_Messages): Add additional checks to
+	left hand side referenced variables. Private access types do not
+	produce the warning "variable ... is assigned but never read".
+	Add also additional checks to left hand side referenced variables.
+	Aliased, renamed objects and access types do not produce the warning
+	"variable ... is assigned but never read" since other entities may read
+	the memory location.
+
+2004-06-07  Jerome Guitton  <guitton@act-europe.fr>
+
+	* Makefile.in: In the powerpc/vxworks-specific section, restore
+	EXTRA_GNATRTL_NONTASKING_OBJS and EXTRA_GNATRTL_TASKING_OBJS (removed
+	by mistake).
+
+2004-06-07  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_ch4.adb (Remove_Abstract_Operations): Refine the removal of
+	predefined operators.
+	Removes spurious type errors from g-trasym-vms.adb.
+
+	* sem_res.adb (Rewrite_Renamed_Operator): If intrinsic operator is
+	distinct from the operator appearing in the source, call appropriate
+	routine to insert conversions when needed, and complete resolution of
+	node.
+	(Resolve_Intrinsic_Operator): Fix cut-and-paste bug on transfer of
+	interpretations for rewritten right operand.
+	(Set_Mixed_Mode_Operand): Handle properly a universal real operand when
+	the other operand is overloaded and the context is a type conversion.
+
+2004-06-07  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* ada-tree.def (BLOCK_STMT): Now has two operands.
+	(BREAK_STMT): New.
+
+	* ada-tree.h: (BLOCK_STMT_BLOCK): New macro.
+
+	* gigi.h: (gnat_poplevel): Now returns a tree.
+
+	* trans.c (end_block_stmt): Add arg; all callers changed.
+	(tree_transform, case N_Case_Statement): Make a BLOCK_STMT for a WHEN.
+	(start_block_stmt): Clear BLOCK_STMT_BLOCK.
+	(add_stmt): Set TREE_TYPE.
+	(gnat_expand_stmt, case BLOCK_STMT): Handle BLOCK_STMT_BLOCK.
+	(gnat_expand_stmt, case BREAK_STMT): New case.
+
+	* utils.c (gnat_poplevel): Return a BLOCK, if we made one.
+
+2004-06-07  Jose Ruiz  <ruiz@act-europe.fr>
+
+	* s-stchop.adsm s-stchop.adb, s-stchop-vxworks.adb: Remove the
+	procedure Set_Stack_Size that is not needed.
+
+2004-06-07  Sergey Rybin  <rybin@act-europe.fr>
+
+	* gnat_ugn.texi: Clarify the case when non-standard naming scheme is
+	used for gnatpp input file and for the files upon which it depends
+
+2004-06-07  Ben Brosgol  <brosgol@gnat.com>
+
+	* gnat_ugn.texi: Wordsmithing of "GNAT and Libraries" chapter
+
+2004-06-07  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* gnatvsn.ads: Bump version numbers appropriately.
+	Add new build type.
+
+2004-06-07  Pascal Obry  <obry@gnat.com>
+
+	* gnat_ugn.texi: Improve comments about imported names and link names
+	on Windows. Add a note about the requirement to use -k gnatdll's option
+	when working with a DLL which has stripped stdcall symbols (no @nn
+	suffix).
+
 2004-05-27  Vincent Celier  <celier@gnat.com>
 
 	* vms_data.ads: Add new GNAT PRETTY qualifiers /NO_BACKUP and

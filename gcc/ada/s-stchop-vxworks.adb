@@ -165,28 +165,6 @@ package body System.Stack_Checking.Operations is
       return My_Stack; -- Never trust the cached value, but return local copy!
    end Set_Stack_Info;
 
-   --------------------
-   -- Set_Stack_Size --
-   --------------------
-
-   --  Specify the stack size for the current frame.
-
-   procedure Set_Stack_Size
-     (Stack_Size : System.Storage_Elements.Storage_Offset)
-   is
-      My_Stack      : Stack_Access;
-      Frame_Address : constant System.Address := My_Stack'Address;
-
-   begin
-      My_Stack := Stack_Check (Frame_Address);
-
-      if Stack_Grows_Down then
-         My_Stack.Limit := My_Stack.Base - Stack_Size;
-      else
-         My_Stack.Limit := My_Stack.Base + Stack_Size;
-      end if;
-   end Set_Stack_Size;
-
    -----------------
    -- Stack_Check --
    -----------------

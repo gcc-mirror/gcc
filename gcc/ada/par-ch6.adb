@@ -735,7 +735,7 @@ package body Ch6 is
             Error_Msg_SP ("child unit allowed only at library level");
             raise Error_Resync;
 
-         elsif Ada_83 then
+         elsif Ada_Version = Ada_83 then
             Error_Msg_SP ("(Ada 83) child unit not allowed!");
 
          end if;
@@ -953,13 +953,13 @@ package body Ch6 is
                Specification_Node :=
                  New_Node (N_Parameter_Specification, Ident_Sloc);
                Set_Defining_Identifier (Specification_Node, Idents (Ident));
-               Not_Null_Present := P_Null_Exclusion;     --  Ada 0Y (AI-231)
+               Not_Null_Present := P_Null_Exclusion;     --  Ada 2005 (AI-231)
 
                if Token = Tok_Access then
                   Set_Null_Exclusion_Present
                     (Specification_Node, Not_Null_Present);
 
-                  if Ada_83 then
+                  if Ada_Version = Ada_83 then
                      Error_Msg_SC ("(Ada 83) access parameters not allowed");
                   end if;
 
@@ -974,7 +974,7 @@ package body Ch6 is
                      end if;
 
                      P_Mode (Specification_Node);
-                     Not_Null_Present := P_Null_Exclusion; --  Ada 0Y (AI-231)
+                     Not_Null_Present := P_Null_Exclusion; -- Ada 2005 (AI-231)
                   end if;
 
                   Set_Null_Exclusion_Present

@@ -113,7 +113,7 @@ static GTY(()) tree gnu_return_label_stack;
 static tree tree_transform (Node_Id);
 static rtx first_nondeleted_insn (rtx);
 static tree start_block_stmt (void);
-static tree end_block_stmt (void);
+static tree end_block_stmt (bool);
 static tree build_block_stmt (List_Id);
 static tree make_expr_stmt_from_rtl (rtx, Node_Id);
 static void elaborate_all_entities (Node_Id);
@@ -249,7 +249,7 @@ gnat_to_code (Node_Id gnat_node)
 
   start_block_stmt ();
   gnu_root = tree_transform (gnat_node);
-  gnat_expand_stmt (end_block_stmt ());
+  gnat_expand_stmt (end_block_stmt (false));
 
   /* If we return a statement, generate code for it.  */
   if (IS_STMT (gnu_root))
@@ -291,7 +291,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
   start_block_stmt ();
   gnu_root = tree_transform (gnat_node);
-  gnat_expand_stmt (end_block_stmt ());
+  gnat_expand_stmt (end_block_stmt (false));
 
   if (gnu_root == error_mark_node)
     {
@@ -327,8 +327,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	      tree gnu_expr_stmt = make_expr_stmt_from_rtl (insns, gnat_node);
 
 	      TREE_CHAIN (gnu_expr_stmt) = gnu_root;
-	      gnu_root = build_nt (BLOCK_STMT, gnu_expr_stmt);
-	      TREE_TYPE (gnu_root) = void_type_node;
+	      gnu_root = build_nt (BLOCK_STMT, gnu_expr_stmt, NULL_TREE);
 	      TREE_SLOC (gnu_root) = Sloc (gnat_node);
 	    }
 	  else
@@ -2212,6 +2211,8 @@ tree_transform (Node_Id gnat_node)
 	     Present (gnat_when);
 	     gnat_when = Next_Non_Pragma (gnat_when))
 	  {
+	    tree gnu_temp_stmt, gnu_block;
+
 	    /* First compile all the different case choices for the  current
 	       WHEN alternative.  */
 
@@ -2293,17 +2294,25 @@ tree_transform (Node_Id gnat_node)
 	       set of statements instead of the block containing the Case
 	       statement.  */
 	    gnat_pushlevel ();
-	    expand_start_bindings (0);
+	    start_block_stmt ();
+
 	    for (gnat_statement = First (Statements (gnat_when));
 		 Present (gnat_statement);
 		 gnat_statement = Next (gnat_statement))
-	      gnat_to_code (gnat_statement);
+	      add_stmt (gnat_to_gnu (gnat_statement));
 
 	    /* Communicate to GCC that we are done with the current WHEN,
 	       i.e. insert a "break" statement.  */
-	    expand_exit_something ();
-	    expand_end_bindings (NULL_TREE, block_has_vars (), -1);
-	    gnat_poplevel ();
+	    gnu_temp_stmt = build_nt (BREAK_STMT);
+	    TREE_SLOC (gnu_temp_stmt) = Sloc (gnat_when);
+	    add_stmt (gnu_temp_stmt);
+
+	    gnu_block = gnat_poplevel ();
+	    gnu_temp_stmt = end_block_stmt (gnu_block != 0);
+	    if (gnu_block)
+	      BLOCK_STMT_BLOCK (gnu_temp_stmt) = gnu_block;
+
+	    expand_expr_stmt (gnu_temp_stmt);
 	  }
 
 	expand_end_case (gnu_expr);
@@ -2377,7 +2386,7 @@ tree_transform (Node_Id gnat_node)
 	    /* Declare the loop index and set it to its initial value.  */
 	    start_block_stmt ();
 	    gnu_loop_var = gnat_to_gnu_entity (gnat_loop_var, gnu_first, 1);
-	    expand_expr_stmt (end_block_stmt ());
+	    expand_expr_stmt (end_block_stmt (false));
 	    if (DECL_BY_REF_P (gnu_loop_var))
 	      gnu_loop_var = build_unary_op (INDIRECT_REF, NULL_TREE,
 					     gnu_loop_var);
@@ -2487,7 +2496,7 @@ tree_transform (Node_Id gnat_node)
       expand_start_bindings (0);
       start_block_stmt ();
       process_decls (Declarations (gnat_node), Empty, Empty, 1, 1);
-      gnat_expand_stmt (end_block_stmt ());
+      gnat_expand_stmt (end_block_stmt (false));
       gnat_to_code (Handled_Statement_Sequence (gnat_node));
       expand_end_bindings (NULL_TREE, block_has_vars (), -1);
       gnat_poplevel ();
@@ -2768,10 +2777,10 @@ tree_transform (Node_Id gnat_node)
 			   gnat_to_gnu_entity (gnat_param, NULL_TREE, 1));
 	    }
 
-	gnat_expand_stmt (end_block_stmt());
+	gnat_expand_stmt (end_block_stmt (false));
 	start_block_stmt ();
 	process_decls (Declarations (gnat_node), Empty, Empty, 1, 1);
-	gnat_expand_stmt (end_block_stmt ());
+	gnat_expand_stmt (end_block_stmt (false));
 
 	/* Generate the code of the subprogram itself.  A return statement
 	   will be present and any OUT parameters will be handled there.  */
@@ -3299,7 +3308,7 @@ tree_transform (Node_Id gnat_node)
 	gnu_result = chainon (nreverse (gnu_before_list),
 			      nreverse (gnu_after_list));
 	if (TREE_CHAIN (gnu_result))
-	  gnu_result = build_nt (BLOCK_STMT, gnu_result);
+	  gnu_result = build_nt (BLOCK_STMT, gnu_result, NULL_TREE);
       }
       break;
 
@@ -3316,7 +3325,7 @@ tree_transform (Node_Id gnat_node)
       start_block_stmt ();
       process_decls (Visible_Declarations (gnat_node),
 		     Private_Declarations (gnat_node), Empty, 1, 1);
-      gnat_expand_stmt (end_block_stmt ());
+      gnat_expand_stmt (end_block_stmt (false));
       break;
 
     case N_Package_Body:
@@ -3327,7 +3336,7 @@ tree_transform (Node_Id gnat_node)
 
       start_block_stmt ();
       process_decls (Declarations (gnat_node), Empty, Empty, 1, 1);
-      gnat_expand_stmt (end_block_stmt ());
+      gnat_expand_stmt (end_block_stmt (false));
 
       if (Present (Handled_Statement_Sequence (gnat_node)))
 	{
@@ -3384,7 +3393,7 @@ tree_transform (Node_Id gnat_node)
       start_block_stmt();
       process_decls (Declarations (Aux_Decls_Node (gnat_node)),
 		     Empty, Empty, 1, 1);
-      gnat_expand_stmt (end_block_stmt ());
+      gnat_expand_stmt (end_block_stmt (false));
 
       gnat_to_code (Unit (gnat_node));
 
@@ -3508,7 +3517,7 @@ tree_transform (Node_Id gnat_node)
 
 	    start_block_stmt ();
 	    add_decl_stmt (gnu_cleanup_decl, gnat_node);
-	    gnat_expand_stmt (end_block_stmt ());
+	    gnat_expand_stmt (end_block_stmt (false));
 	    expand_decl_cleanup (gnu_cleanup_decl, gnu_cleanup_call);
 	  }
 
@@ -3542,7 +3551,7 @@ tree_transform (Node_Id gnat_node)
 	    start_block_stmt ();
 	    add_decl_stmt (gnu_jmpsave_decl, gnat_node);
 	    add_decl_stmt (gnu_jmpbuf_decl, gnat_node);
-	    gnat_expand_stmt (end_block_stmt ());
+	    gnat_expand_stmt (end_block_stmt (false));
 
 	    TREE_VALUE (gnu_block_stack) = gnu_jmpbuf_decl;
 
@@ -3579,7 +3588,7 @@ tree_transform (Node_Id gnat_node)
 			   gnu_except_ptr_stack);
 	    start_block_stmt ();
 	    add_decl_stmt (TREE_VALUE (gnu_except_ptr_stack), gnat_node);
-	    gnat_expand_stmt (end_block_stmt ());
+	    gnat_expand_stmt (end_block_stmt (false));
 
 	    /* Generate code for each handler. The N_Exception_Handler case
 	       below does the real work. We ignore the dummy exception handler
@@ -3630,7 +3639,7 @@ tree_transform (Node_Id gnat_node)
 	if (Present (First_Real_Statement (gnat_node)))
 	  process_decls (Statements (gnat_node), Empty,
 			 First_Real_Statement (gnat_node), 1, 1);
-	gnat_expand_stmt (end_block_stmt ());
+	gnat_expand_stmt (end_block_stmt (false));
 
 	/* Generate code for each statement in the block.  */
 	for (gnat_temp = (Present (First_Real_Statement (gnat_node))
@@ -3861,7 +3870,7 @@ tree_transform (Node_Id gnat_node)
 
 	    start_block_stmt ();
 	    add_decl_stmt (gnu_incoming_exc_ptr, gnat_node);
-	    gnat_expand_stmt (end_block_stmt ());
+	    gnat_expand_stmt (end_block_stmt (false));
 	    expand_expr_stmt
 	      (build_call_1_expr (begin_handler_decl, gnu_incoming_exc_ptr));
 	    expand_decl_cleanup
@@ -3993,7 +4002,7 @@ tree_transform (Node_Id gnat_node)
       process_freeze_entity (gnat_node);
       start_block_stmt ();
       process_decls (Actions (gnat_node), Empty, Empty, 1, 1);
-      gnat_expand_stmt (end_block_stmt ());
+      gnat_expand_stmt (end_block_stmt (false));
       break;
 
     case N_Itype_Reference:
@@ -4281,7 +4290,8 @@ start_block_stmt ()
       TREE_TYPE (gnu_block_stmt) = void_type_node;
     }
 
-  BLOCK_STMT_LIST (gnu_block_stmt) = 0;
+  BLOCK_STMT_LIST (gnu_block_stmt) = NULL_TREE;
+  BLOCK_STMT_BLOCK (gnu_block_stmt) = NULL_TREE;
   TREE_CHAIN (gnu_block_stmt) = gnu_block_stmt_node;
   gnu_block_stmt_node = gnu_block_stmt;
 
@@ -4301,6 +4311,7 @@ add_stmt (tree gnu_stmt)
     {
       TREE_CHAIN (gnu_stmt) = BLOCK_STMT_LIST (gnu_block_stmt_node);
       BLOCK_STMT_LIST (gnu_block_stmt_node) = gnu_stmt;
+      TREE_TYPE (gnu_stmt) = void_type_node;
     }
 
   /* If this is a DECL_STMT for a variable with DECL_INIT_BY_ASSIGN_P set,
@@ -4354,10 +4365,11 @@ add_decl_stmt (tree gnu_decl, Entity_Id gnat_entity)
 }
 
 /* Return the BLOCK_STMT that corresponds to the statement that add_stmt
-   has been emitting or just a single statement if only one.  */
+   has been emitting or just a single statement if only one.  If FORCE
+   is true, then always emit the BLOCK_STMT.  */
 
 static tree
-end_block_stmt ()
+end_block_stmt (bool force)
 {
   tree gnu_block_stmt = gnu_block_stmt_node;
   tree gnu_retval = gnu_block_stmt;
@@ -4368,12 +4380,12 @@ end_block_stmt ()
   /* If we have only one statement, return it and free this node.  Otherwise,
      finish setting up this node and return it.  If we have no statements,
      return a NULL_STMT.  */
-  if (BLOCK_STMT_LIST (gnu_block_stmt) == 0)
+  if (!force && BLOCK_STMT_LIST (gnu_block_stmt) == 0)
     {
       gnu_retval = build_nt (NULL_STMT);
       TREE_TYPE (gnu_retval) = void_type_node;
     }
-  else if (TREE_CHAIN (BLOCK_STMT_LIST (gnu_block_stmt)) == 0)
+  else if (!force && TREE_CHAIN (BLOCK_STMT_LIST (gnu_block_stmt)) == 0)
     gnu_retval = BLOCK_STMT_LIST (gnu_block_stmt);
   else
     {
@@ -4410,7 +4422,7 @@ build_block_stmt (List_Id gnat_list)
        gnat_node = Next (gnat_node))
     add_stmt (gnat_to_gnu (gnat_node));
 
-  gnu_result = end_block_stmt ();
+  gnu_result = end_block_stmt (false);
   return TREE_CODE (gnu_result) == NULL_STMT ? NULL_TREE : gnu_result;
 }
 
@@ -4470,9 +4482,15 @@ gnat_expand_stmt (tree gnu_stmt)
       break;
 
     case BLOCK_STMT:
+      if (BLOCK_STMT_BLOCK (gnu_stmt))
+	expand_start_bindings_and_block (0, BLOCK_STMT_BLOCK (gnu_stmt));
+
       for (gnu_elmt = BLOCK_STMT_LIST (gnu_stmt); gnu_elmt;
 	   gnu_elmt = TREE_CHAIN (gnu_elmt))
 	gnat_expand_stmt (gnu_elmt);
+
+      if (BLOCK_STMT_BLOCK (gnu_stmt))
+	expand_end_bindings (NULL_TREE, 1, -1);
       break;
 
     case IF_STMT:
@@ -4539,6 +4557,10 @@ gnat_expand_stmt (tree gnu_stmt)
 				TREE_VALUE (gnu_elmt)));
 	    free_temp_slots ();
 	  }
+      break;
+
+    case BREAK_STMT:
+      expand_exit_something ();
       break;
 
     default:
@@ -4819,7 +4841,7 @@ process_decls (List_Id gnat_decls, List_Id gnat_decls2,
 	      {
 		start_block_stmt ();
 		process_freeze_entity (gnat_decl);
-		gnat_expand_stmt (end_block_stmt ());
+		gnat_expand_stmt (end_block_stmt (false));
 		process_decls (Actions (gnat_decl), Empty, Empty, 1, 0);
 	      }
 
@@ -4867,15 +4889,14 @@ process_decls (List_Id gnat_decls, List_Id gnat_decls2,
 
 	    /* Concurrent stubs stand for the corresponding subprogram bodies,
 	       which are deferred like other bodies.  */
-	      else if (Nkind (gnat_decl) == N_Task_Body_Stub
-		       || Nkind (gnat_decl) == N_Protected_Body_Stub)
-		;
-
+	    else if (Nkind (gnat_decl) == N_Task_Body_Stub
+		     || Nkind (gnat_decl) == N_Protected_Body_Stub)
+	      ;
 	    else
 	      {
 		start_block_stmt ();
 		gnat_to_code (gnat_decl);
-		gnat_expand_stmt (end_block_stmt ());
+		gnat_expand_stmt (end_block_stmt (false));
 	      }
 	  }
 
@@ -5334,7 +5355,7 @@ process_type (Entity_Id gnat_entity)
 			 TREE_TYPE (gnu_new));
     }
 
-  gnat_expand_stmt (end_block_stmt ());
+  gnat_expand_stmt (end_block_stmt (false));
 }
 
 /* GNAT_ASSOC is the front of the Component_Associations of an N_Aggregate.

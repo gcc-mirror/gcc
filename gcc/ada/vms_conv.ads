@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2003 Free Software Foundation, Inc.               --
+--          Copyright (C) 2003-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -97,7 +97,7 @@ package VMS_Conv is
 
    type Command_Type is
      (Bind, Chop, Clean, Compile, Elim, Find, Krunch, Library, Link, List,
-      Make, Name, Preprocess, Pretty, Shared, Stub, Xref, Undefined);
+      Make, Name, Preprocess, Pretty, Shared, Stub, Metric, Xref, Undefined);
 
    type Alternate_Command is (Comp, Ls, Kr, Pp, Prep);
    --  Alternate command libel for non VMS system

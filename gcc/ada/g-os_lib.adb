@@ -39,6 +39,14 @@ with System; use System;
 
 package body GNAT.OS_Lib is
 
+   OpenVMS : Boolean;
+   --  Note: OpenVMS should be a constant, but it cannot be, because it
+   --        prevents bootstrapping on some platforms.
+
+   pragma Import (Ada, OpenVMS, "system__openvms");
+   --  Needed to avoid doing useless checks when non on a VMS platform (see
+   --  Normalize_Pathname).
+
    package SSL renames System.Soft_Links;
 
    --  The following are used by Create_Temp_File
@@ -1661,12 +1669,10 @@ package body GNAT.OS_Lib is
       --  Resolving logical names from VMS.
       --  If we have a Unix path on VMS such as /temp/..., and TEMP is a
       --  logical name, we need to resolve this logical name.
-      --  As we have no means to know if we are on VMS, we need to do that
-      --  for absolute paths starting with '/'.
       --  We find the directory, change to it, get the current directory,
       --  and change the directory to this value.
 
-      if Path_Buffer (1) = '/' then
+      if OpenVMS and then Path_Buffer (1) = '/' then
          declare
             Cur_Dir : String := Get_Directory ("");
             --  Save the current directory, so that we can change dir back to

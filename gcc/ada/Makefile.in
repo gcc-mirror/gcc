@@ -557,6 +557,9 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
     s-tratas.adb<s-tratas-default.adb \
     s-tfsetr.adb<s-tfsetr-vxworks.adb 
   endif
+
+  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o
+  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
 endif
 
 ifeq ($(strip $(filter-out sparc% wrs vx%,$(targ))),)
@@ -1145,17 +1148,18 @@ endif
 ifeq ($(strip $(filter-out alpha% ia64 dec hp vms% openvms% alphavms%,$(targ))),)
 ifeq ($(strip $(filter-out ia64 hp vms% openvms%,$(targ))),)
   LIBGNAT_TARGET_PAIRS_AUX1 = \
-  s-auxdec.ads<5qauxdec.ads \
+  s-auxdec.ads<s-auxdec-vms_64.ads \
   s-crtl.ads<s-crtl-vms.ads \
   s-osinte.adb<s-osinte-vms-ia64.adb \
   s-osinte.ads<s-osinte-vms-ia64.ads \
-  system.ads<5qsystem.ads
+  system.ads<system-vms_64.ads
 else
 ifeq ($(strip $(filter-out alpha% dec vms% openvms% alphavms%,$(targ))),)
   LIBGNAT_TARGET_PAIRS_AUX1 = \
   s-crtl.ads<s-crtl-vms.ads \
   s-osinte.adb<s-osinte-vms.adb \
   s-osinte.ads<s-osinte-vms.ads \
+  s-vaflop.adb<s-vaflop-vms-alpha.adb \
   system.ads<system-vms-zcx.ads
 endif
 endif
@@ -1197,11 +1201,18 @@ endif
   s-tpopde.ads<s-tpopde-vms.ads \
   s-traent.adb<s-traent-vms.adb \
   s-traent.ads<s-traent-vms.ads \
-  s-vaflop.adb<s-vaflop-vms.adb \
   $(LIBGNAT_TARGET_PAIRS_AUX1) \
   $(LIBGNAT_TARGET_PAIRS_AUX2)
 
-  TOOLS_TARGET_PAIRS=mlib-tgt.adb<mlib-tgt-vms.adb
+ifeq ($(strip $(filter-out ia64 hp vms% openvms%,$(targ))),)
+  TOOLS_TARGET_PAIRS= \ 
+  mlib-tgt.adb<mlib-tgt-vms-ia64.adb \ 
+  symbols.adb<symbols-vms-ia64.adb
+else
+  TOOLS_TARGET_PAIRS= \
+  mlib-tgt.adb<mlib-tgt-vms-alpha.adb \
+  symbols.adb<symbols-vms-alpha.adb
+endif
 
   GNATLIB_SHARED=gnatlib-shared-vms
 ifeq ($(strip $(filter-out alpha% dec vms% openvms% alphavms%,$(targ))),)

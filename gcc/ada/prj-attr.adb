@@ -160,6 +160,12 @@ package body Prj.Attr is
      "Ladefault_switches#" &
      "Lbswitches#" &
 
+   --  package Metrics
+
+     "Pmetrics#" &
+     "Ladefault_switches#" &
+     "Lbswitches#" &
+
    --  package Ide
 
      "Pide#" &

@@ -127,7 +127,6 @@ package body System.Task_Primitives.Operations is
    procedure Initialize_Athread_Library;
 
    function To_Task_Id is new Unchecked_Conversion (System.Address, Task_Id);
-
    function To_Address is new Unchecked_Conversion (Task_Id, System.Address);
 
    -------------------
@@ -829,7 +828,6 @@ package body System.Task_Primitives.Operations is
 
    function Check_Exit (Self_ID : ST.Task_Id) return Boolean is
       pragma Unreferenced (Self_ID);
-
    begin
       return True;
    end Check_Exit;

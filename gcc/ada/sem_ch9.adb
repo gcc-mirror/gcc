@@ -1715,7 +1715,7 @@ package body Sem_Ch9 is
       New_Scope (T);
 
       if Present (Discriminant_Specifications (N)) then
-         if Ada_83 and then Comes_From_Source (N) then
+         if Ada_Version = Ada_83 and then Comes_From_Source (N) then
             Error_Msg_N ("(Ada 83) task discriminant not allowed!", N);
          end if;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -104,7 +104,7 @@ package body Ch11 is
          Scan; -- past identifier
 
          if Token = Tok_Colon then
-            if Ada_83 then
+            if Ada_Version = Ada_83 then
                Error_Msg_SP ("(Ada 83) choice parameter not allowed!");
             end if;
 

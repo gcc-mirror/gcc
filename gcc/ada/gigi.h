@@ -383,9 +383,10 @@ extern int global_bindings_p (void);
    is in reverse order (it has to be so for back-end compatibility).  */
 extern tree getdecls (void);
 
-/* Enter and exit a new binding level. */
+/* Enter and exit a new binding level. We return the BLOCK node, if any
+   when we exit a binding level.  */
 extern void gnat_pushlevel (void);
-extern void gnat_poplevel (void);
+extern tree gnat_poplevel (void);
 
 /* Insert BLOCK at the end of the list of subblocks of the
    current binding level.  This is used when a BIND_EXPR is expanded,

@@ -970,8 +970,7 @@ package body System.Task_Primitives.Operations is
 
    function Suspend_Task
      (T           : ST.Task_Id;
-      Thread_Self : Thread_Id)
-      return        Boolean
+      Thread_Self : Thread_Id) return Boolean
    is
       pragma Unreferenced (T);
       pragma Unreferenced (Thread_Self);
@@ -986,8 +985,7 @@ package body System.Task_Primitives.Operations is
 
    function Resume_Task
      (T           : ST.Task_Id;
-      Thread_Self : Thread_Id)
-      return        Boolean
+      Thread_Self : Thread_Id) return Boolean
    is
       pragma Unreferenced (T);
       pragma Unreferenced (Thread_Self);
@@ -1006,8 +1004,8 @@ package body System.Task_Primitives.Operations is
       Tmp_Set   : aliased sigset_t;
       Result    : Interfaces.C.int;
 
-      function State (Int : System.Interrupt_Management.Interrupt_ID)
-                     return Character;
+      function State
+        (Int : System.Interrupt_Management.Interrupt_ID) return Character;
       pragma Import (C, State, "__gnat_get_interrupt_state");
       --  Get interrupt state.  Defined in a-init.c
       --  The input argument is the interrupt number,

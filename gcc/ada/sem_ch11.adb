@@ -99,7 +99,6 @@ package body Sem_Ch11 is
          Handler := First_Non_Pragma (L);
          while Present (Handler) loop
             Id1 := First (Exception_Choices (Handler));
-
             while Present (Id1) loop
 
                --  Only check against the exception choices which precede
@@ -120,7 +119,9 @@ package body Sem_Ch11 is
                        ("exception choice duplicates &#", Id, Id1);
 
                   else
-                     if Ada_83 and then Comes_From_Source (Id) then
+                     if Ada_Version = Ada_83
+                       and then Comes_From_Source (Id)
+                     then
                         Error_Msg_N
                           ("(Ada 83): duplicate exception choice&", Id);
                      end if;

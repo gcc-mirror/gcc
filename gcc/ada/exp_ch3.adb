@@ -1107,7 +1107,7 @@ package body Exp_Ch3 is
 
          Append_To (Args, Make_Identifier (Loc, Name_uChain));
 
-         --  Ada 0Y (AI-287): In case of default initialized components
+         --  Ada 2005 (AI-287): In case of default initialized components
          --  with tasks, we generate a null string actual parameter.
          --  This is just a workaround that must be improved later???
 
@@ -1215,8 +1215,8 @@ package body Exp_Ch3 is
                end if;
             end if;
 
-            --  Ada 0Y (AI-287) In case of default initialized components, we
-            --  need to generate the corresponding selected component node
+            --  Ada 2005 (AI-287) In case of default initialized components,
+            --  we need to generate the corresponding selected component node
             --  to access the discriminant value. In other cases this is not
             --  required because we are inside the init proc and we use the
             --  corresponding formal.
@@ -1491,16 +1491,15 @@ package body Exp_Ch3 is
             Exp := New_Copy_Tree (Original_Node (Exp));
          end if;
 
-         --  Ada 0Y (AI-231): Generate conversion to the null-excluding
+         --  Ada 2005 (AI-231): Generate conversion to the null-excluding
          --  type to force the corresponding run-time check
 
-         if Extensions_Allowed
+         if Ada_Version >= Ada_05
            and then Can_Never_Be_Null (Etype (Id))  -- Lhs
-           and then (Present (Etype (Exp))
-                       and then not Can_Never_Be_Null (Etype (Exp)))
+           and then Present (Etype (Exp))
+           and then not Can_Never_Be_Null (Etype (Exp))
          then
-            Rewrite (Exp, Convert_To (Etype (Id),
-                                      Relocate_Node (Exp)));
+            Rewrite (Exp, Convert_To (Etype (Id), Relocate_Node (Exp)));
             Analyze_And_Resolve (Exp, Etype (Id));
          end if;
 
@@ -3436,15 +3435,16 @@ package body Exp_Ch3 is
 
             elsif Is_Access_Type (Typ) then
 
-               --  Ada 0Y (AI-231): Generate conversion to the null-excluding
+               --  Ada 2005 (AI-231): Generate conversion to the null-excluding
                --  type to force the corresponding run-time check
 
-               if Extensions_Allowed
+               if Ada_Version >= Ada_05
                  and then (Can_Never_Be_Null (Def_Id)
-                           or else Can_Never_Be_Null (Typ))
+                             or else Can_Never_Be_Null (Typ))
                then
-                  Rewrite (Expr_Q, Convert_To (Etype (Def_Id),
-                                               Relocate_Node (Expr_Q)));
+                  Rewrite
+                    (Expr_Q,
+                     Convert_To (Etype (Def_Id), Relocate_Node (Expr_Q)));
                   Analyze_And_Resolve (Expr_Q, Etype (Def_Id));
                end if;
 

@@ -1971,14 +1971,28 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		   gnu_arr_type = TREE_TYPE (gnu_arr_type),
 		   gnu_str_name = concat_id_with_name (gnu_str_name, "ST"))
 		{
+		  tree eltype = TREE_TYPE (gnu_arr_type);
+
 		  TYPE_SIZE (gnu_arr_type)
 		    = elaborate_expression_1 (gnat_entity, gnat_entity,
 					      TYPE_SIZE (gnu_arr_type),
 					      gnu_str_name, definition, 0);
+
+		  /* ??? For now, store the size as a multiple of the
+		     alignment of the element type in bytes so that we
+		     can see the alignment from the tree.  */
 		  TYPE_SIZE_UNIT (gnu_arr_type)
-		    = elaborate_expression_1
-		      (gnat_entity, gnat_entity, TYPE_SIZE_UNIT (gnu_arr_type),
-		       concat_id_with_name (gnu_str_name, "U"), definition, 0);
+		    = build_binary_op
+		      (MULT_EXPR, sizetype,
+		       elaborate_expression_1
+		       (gnat_entity, gnat_entity,
+			build_binary_op (EXACT_DIV_EXPR, sizetype,
+					 TYPE_SIZE_UNIT (gnu_arr_type),
+					 size_int (TYPE_ALIGN (eltype)
+						   / BITS_PER_UNIT)),
+			concat_id_with_name (gnu_str_name, "A_U"),
+			definition, 0),
+		       size_int (TYPE_ALIGN (eltype) / BITS_PER_UNIT));
 		}
 	    }
 

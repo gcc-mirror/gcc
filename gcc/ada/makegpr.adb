@@ -3130,6 +3130,15 @@ package body Makegpr is
                               Get_Name_String (Source.Object_Name),
                               True);
 
+                           --  Add the switches specified in package Linker of
+                           --  the main project.
+
+                           Add_Switches
+                             (Data      => Data,
+                              Proc      => Linker,
+                              Language  => Source.Language,
+                              File_Name => Main_Id);
+
                            --  Add the switches specified in attribute
                            --  Linker_Options of packages Linker.
 
