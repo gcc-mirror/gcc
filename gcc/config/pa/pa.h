@@ -109,6 +109,9 @@ extern int target_flags;
    in shared libraries on hpux10.  */
 #define TARGET_LONG_LOAD_STORE (target_flags & 512)
 
+/* Use a faster sequence for indirect calls.  */
+#define TARGET_FAST_INDIRECT_CALLS (target_flags & 1024)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -138,6 +141,8 @@ extern int target_flags;
    {"no-soft-float", -256},	\
    {"long-load-store", 512},	\
    {"no-long-load-store", -512},\
+   {"fast-indirect-calls", 1024},\
+   {"no-fast-indirect-calls", -1024},\
    {"linker-opt", 0},		\
    { "", TARGET_DEFAULT | TARGET_CPU_DEFAULT}}
 
