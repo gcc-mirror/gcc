@@ -5431,7 +5431,7 @@ If you specify this option, you can not use the @code{asm} or
 CC cannot understand what the @code{asm} statement may do, and therefore
 cannot generate the appropriate code, so it will reject it.  However, if
 you specify the function attribute @code{no_check_memory_usage} (see
-@pxref{Functino Attributes}, GNU CC will disable memory checking within a
+@pxref{Function Attributes}, GNU CC will disable memory checking within a
 function; you may use @code{asm} statements inside such functions.  You
 may have an inline expansion of a non-checked function within a checked
 function; in that case GNU CC will not generate checks for the inlined
