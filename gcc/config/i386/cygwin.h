@@ -112,7 +112,6 @@ Boston, MA 02111-1307, USA. */
   -D__declspec(x)=__attribute__((x)) \
   -D__i386__ -D__i386 \
   %{mno-win32: %{mno-cygwin: %emno-cygwin and mno-win32 are not compatible}} \
-  %(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
   %{mno-cygwin:-D__MSVCRT__ -D__MINGW32__ %{mthreads:-D_MT} " MINGW_INCLUDES \
     " -mwin32} \
   %{!mno-cygwin:-D__CYGWIN32__ -D__CYGWIN__ -Dunix -D__unix__ -D__unix \
