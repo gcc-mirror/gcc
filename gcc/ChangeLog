@@ -1,5 +1,10 @@
 2002-12-29  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md: Give internal names to anonymous
+	insns.
+
+2002-12-29  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md: Reorder some insns.
 
 2002-12-29  Kazu Hirata  <kazu@cs.umass.edu>
