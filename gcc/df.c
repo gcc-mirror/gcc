@@ -915,7 +915,7 @@ read_modify_subreg_p (x)
     return true;
   if (isize <= UNITS_PER_WORD)
     return false;
-  if (osize >= UNITS_PER_WORD)
+  if (osize > UNITS_PER_WORD)
     return false;
   return true;
 }
