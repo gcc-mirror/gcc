@@ -1,5 +1,4 @@
 // { dg-do compile }
-// { dg-excess-errors "" }
 
 // Copyright (C) 2003 Free Software Foundation, Inc.
 //
@@ -32,11 +31,15 @@
 
 // Library defect report
 //50.  Copy constructor and assignment operator of ios_base
-class test_base : public std::ios_base { };
+struct test_base : public std::ios_base 
+{ };
 
 void test02()
 {
   // copy ctor
   test_base io1;
-  test_base io2 =  io1;
+  test_base io2 = io1; 
 }
+// { dg-error "within this context" "" { target *-*-* } 41 } 
+// { dg-error "is private" "" { target *-*-* } 663 } 
+// { dg-error "copy constructor" "" { target *-*-* } 0 } 
