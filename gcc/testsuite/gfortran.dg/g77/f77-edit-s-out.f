@@ -16,5 +16,5 @@ C ( dg-output "^" }
       write(*,40) 0           ! { dg-output " \\+0(\n|\r\n|\r)" }
 C 15.5.9 - Note 5: When SP editing is in effect, the plus sign is not optional
       write(*,50) 11          ! { dg-output "\\*\\*(\n|\r\n|\r)" }
-C { dg-output "\$" {xfail *-*-*} } gfortran PR 16434
+C { dg-output "\$" }
       end
