@@ -1,3 +1,9 @@
+2001-06-19  Bernd Schmidt  <bernds@redhat.com>
+
+	* regmove.c (optimize_reg_copy_3): Do nothing if previous insn
+	carries a REG_EQUIV note.  If it carries REG_EQUAL, delete the
+	note.
+
 2001-09-18  Philip Blundell  <philb@gnu.org>
 
 	* config/arm/lib1funcs.asm (L_dvmd_lnx): Don't rely on kernel
