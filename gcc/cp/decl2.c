@@ -2774,7 +2774,7 @@ finish_file ()
       /* Write out virtual tables as required.  Note that writing out
 	 the virtual table for a template class may cause the
 	 instantiation of members of that class.  */
-      if (walk_globals (vtable_decl_p,
+      if (walk_vtables (vtable_decl_p,
 			finish_vtable_vardecl,
 			/*data=*/0))
 	reconsider = 1;
@@ -2954,13 +2954,6 @@ finish_file ()
   /* We're done with static constructors, so we can go back to "C++"
      linkage now.  */
   pop_lang_context ();
-
-  /* Now delete from the chain of variables all virtual function tables.
-     We output them all ourselves, because each will be treated
-     specially.  We don't do this if we're just doing semantic
-     analysis, and not code-generation.  */
-  if (!flag_syntax_only)
-    walk_globals (vtable_decl_p, prune_vtable_vardecl, /*data=*/0);
 
   /* Now, issue warnings about static, but not defined, functions,
      etc., and emit debugging information.  */

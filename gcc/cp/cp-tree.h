@@ -3724,6 +3724,9 @@ typedef int (*walk_globals_fn)                  PARAMS ((tree *, void *));
 extern int walk_globals                         PARAMS ((walk_globals_pred,
 						       walk_globals_fn,
 						       void *));
+extern int walk_vtables                         PARAMS ((walk_globals_pred, 
+                                                       walk_globals_fn, 
+						       void *));
 typedef int (*walk_namespaces_fn)               PARAMS ((tree, void *));
 extern int walk_namespaces                      PARAMS ((walk_namespaces_fn,
 						       void *));

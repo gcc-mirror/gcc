@@ -108,6 +108,7 @@ static struct cp_binding_level *innermost_nonclass_level PARAMS ((void));
 static void warn_about_implicit_typename_lookup PARAMS ((tree, tree));
 static int walk_namespaces_r PARAMS ((tree, walk_namespaces_fn, void *));
 static int walk_globals_r PARAMS ((tree, void *));
+static int walk_vtables_r PARAMS ((tree, void*));
 static void add_decl_to_level PARAMS ((tree, struct cp_binding_level *));
 static tree make_label_decl PARAMS ((tree, int));
 static void use_label PARAMS ((tree));
@@ -318,6 +319,15 @@ struct cp_binding_level GTY(())
        supplied.  There may be OVERLOADs on this list, too, but they
        are wrapped in TREE_LISTs; the TREE_VALUE is the OVERLOAD.  */
     tree names;
+
+    /* Count of elements in names chain.  */
+    size_t names_size;
+
+    /* A chain of NAMESPACE_DECL nodes.  */
+    tree namespaces;
+
+    /* A chain of VTABLE_DECL nodes.  */
+    tree vtables; 
 
     /* A list of structure, union and enum definitions, for looking up
        tag names.
@@ -1007,10 +1017,25 @@ add_decl_to_level (decl, b)
      tree decl;
      struct cp_binding_level *b;
 {
-  /* We build up the list in reverse order, and reverse it later if
-     necessary.  */
-  TREE_CHAIN (decl) = b->names;
-  b->names = decl;
+  if (TREE_CODE (decl) == NAMESPACE_DECL 
+      && !DECL_NAMESPACE_ALIAS (decl))
+    {
+      TREE_CHAIN (decl) = b->namespaces;
+      b->namespaces = decl;
+    }
+  else if (TREE_CODE (decl) == VAR_DECL && DECL_VIRTUAL_P (decl))
+    {
+      TREE_CHAIN (decl) = b->vtables;
+      b->vtables = decl;
+    }
+  else       
+    {
+      /* We build up the list in reverse order, and reverse it later if
+         necessary.  */
+      TREE_CHAIN (decl) = b->names;
+      b->names = decl;
+      b->names_size++;
+    }
 }
 
 /* Bind DECL to ID in the current_binding_level, assumed to be a local
@@ -1747,6 +1772,50 @@ cp_namespace_decls (ns)
   return NAMESPACE_LEVEL (ns)->names;
 }
 
+struct walk_globals_data {
+  walk_globals_pred p;
+  walk_globals_fn f;
+  void *data;
+};
+
+/* Walk the vtable declarations in NAMESPACE.  Whenever one is found
+   for which P returns non-zero, call F with its address.  If any call
+   to F returns a non-zero value, return a non-zero value.  */
+
+static int
+walk_vtables_r (namespace, data)
+     tree namespace;
+     void *data;
+{
+  struct walk_globals_data* wgd = (struct walk_globals_data *) data;
+  walk_globals_fn f = wgd->f;
+  void *d = wgd->data;
+  tree decl = NAMESPACE_LEVEL (namespace)->vtables;
+  int result = 0;
+
+  for (; decl ; decl = TREE_CHAIN (decl))
+    result != (*f) (&decl, d);
+
+  return result;
+}
+
+/* Walk the vtable declarations.  Whenever one is found for which P
+   returns non-zero, call F with its address.  If any call to F
+   returns a non-zero value, return a non-zero value.  */
+int
+walk_vtables (p, f, data)
+     walk_globals_pred p;
+     walk_globals_fn f;
+     void *data;
+{    
+  struct walk_globals_data wgd;
+  wgd.p = p;    
+  wgd.f = f;
+  wgd.data = data;
+
+  return walk_namespaces (walk_vtables_r, &wgd);
+}
+
 /* Walk all the namespaces contained NAMESPACE, including NAMESPACE
    itself, calling F for each.  The DATA is passed to F as well.  */
 
@@ -1756,22 +1825,13 @@ walk_namespaces_r (namespace, f, data)
      walk_namespaces_fn f;
      void *data;
 {
-  tree current;
   int result = 0;
+  tree current = NAMESPACE_LEVEL (namespace)->namespaces;     
 
   result |= (*f) (namespace, data);
 
-  for (current = cp_namespace_decls (namespace);
-       current;
-       current = TREE_CHAIN (current))
-    {
-      if (TREE_CODE (current) != NAMESPACE_DECL
-	  || DECL_NAMESPACE_ALIAS (current))
-	continue;
-
-      /* We found a namespace.  */
-      result |= walk_namespaces_r (current, f, data);
-    }
+  for (; current; current = TREE_CHAIN (current))
+    result |= walk_namespaces_r (current, f, data);
 
   return result;
 }
@@ -1786,12 +1846,6 @@ walk_namespaces (f, data)
 {
   return walk_namespaces_r (global_namespace, f, data);
 }
-
-struct walk_globals_data {
-  walk_globals_pred p;
-  walk_globals_fn f;
-  void *data;
-};
 
 /* Walk the global declarations in NAMESPACE.  Whenever one is found
    for which P returns non-zero, call F with its address.  If any call
@@ -1855,7 +1909,7 @@ wrapup_globals_for_namespace (namespace, data)
      void *data;
 {
   tree globals = cp_namespace_decls (namespace);
-  int len = list_length (globals);
+  int len = NAMESPACE_LEVEL (namespace)->names_size;
   tree *vec = (tree *) alloca (sizeof (tree) * len);
   int i;
   int result;
@@ -1867,7 +1921,7 @@ wrapup_globals_for_namespace (namespace, data)
     return 0;
 
   /* Process the decls in reverse order--earliest first.
-     Put them into VEC from back to front, then take out from front.  */
+     Put them into VEC from back to front, then take out from front.  */       
   for (i = 0, decl = globals; i < len; i++, decl = TREE_CHAIN (decl))
     vec[len - i - 1] = decl;
 
@@ -1877,27 +1931,8 @@ wrapup_globals_for_namespace (namespace, data)
       return 0;
     }
 
-  /* Temporarily mark vtables as external.  That prevents
-     wrapup_global_declarations from writing them out; we must process
-     them ourselves in finish_vtable_vardecl.  */
-  for (i = 0; i < len; ++i)
-    if (vtable_decl_p (vec[i], /*data=*/0) && !DECL_EXTERNAL (vec[i]))
-      {
-	DECL_NOT_REALLY_EXTERN (vec[i]) = 1;
-	DECL_EXTERNAL (vec[i]) = 1;
-      }
-
   /* Write out any globals that need to be output.  */
   result = wrapup_global_declarations (vec, len);
-
-  /* Undo the hack to DECL_EXTERNAL above.  */
-  for (i = 0; i < len; ++i)
-    if (vtable_decl_p (vec[i], /*data=*/0)
-	&& DECL_NOT_REALLY_EXTERN (vec[i]))
-      {
-	DECL_NOT_REALLY_EXTERN (vec[i]) = 0;
-	DECL_EXTERNAL (vec[i]) = 0;
-      }
 
   return result;
 }
