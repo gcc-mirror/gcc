@@ -1,3 +1,7 @@
+2003-07-08  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* toplev.c (randomize): Correct call to time().
+
 2003-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* unroll.c (reg_dead_after_loop): Check for reg in REG_EQUAL and
