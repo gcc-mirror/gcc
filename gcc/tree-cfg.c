@@ -3885,11 +3885,6 @@ thread_jumps (void)
 	       last = EDGE_SUCC (dest, 0),
 	       dest = EDGE_SUCC (dest, 0)->dest)
 	    {
-	      /* An infinite loop detected.  We redirect the edge anyway, so
-		 that the loop is shrunk into single basic block.  */
-	      if (!bb_ann (dest)->forwardable)
-		break;
-
 	      if (EDGE_SUCC (dest, 0)->dest == EXIT_BLOCK_PTR)
 		break;
 

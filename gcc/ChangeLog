@@ -1,5 +1,10 @@
 2004-10-05  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* tree-cfg.c (thread_jumps): Remove a duplicate check for
+	an infinite loop.
+
+2004-10-05  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* tree-cfg.c (thread_jumps): Iterate with FOR_EACH_BB instead
 	of FOR_BB_BETWEEN.  Remove a useless check for unreachable
 	blocks.
