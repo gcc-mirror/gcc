@@ -1,3 +1,7 @@
+2002-03-28  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* misc.c (gnat_expand_expr): Move prototype.
+
 2002-03-27  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* misc.c (insert_default_attributes): Remove.
