@@ -1,4 +1,9 @@
 2001-12-07  Paolo Carlini  <pcarlini@unitus.it>
+        
+	* include/bits/locale_facets.tcc (num_put::_M_convert_float):
+	Extend comment, reduce __cs_size for non-fixed outputs.
+
+2001-12-07  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/basic_string.tcc (_M_mutate): Fix typo
 	in the previous check in.
