@@ -2326,6 +2326,20 @@ are set up by branch shortening and hold a label with a minimum and a
 maximum address, respectively.  @var{flags} indicates the relative
 position of @var{base}, @var{min} and @var{max} to the containing insn
 and of @var{min} and @var{max} to @var{base}.  See rtl.def for details.
+
+@findex prefetch
+@item (prefetch:@var{m} @var{addr} @var{rw} @var{locality})
+Represents prefetch of memory at address @var{addr}.
+Operand @var{rw} is 1 if the prefetch is for data to be written, 0 otherwise;
+targets that do not support write prefetches should treat this as a normal
+prefetch.
+Operand @var{locality} specifies the amount of temporal locality; 0 if there
+is none or 1, 2, or 3 for increasing levels of temporal locality;
+targets that do not support locality hints should ignore this.
+
+This insn is used to minimize cache-miss latency by moving data into a
+cache before it is accessed.  It should use only non-faulting data prefetch
+instructions.
 @end table
 
 @node Incdec
