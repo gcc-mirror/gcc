@@ -74,6 +74,12 @@ int rs6000_long_double_type_size;
 /* Whether -mabi=altivec has appeared */
 int rs6000_altivec_abi;
 
+/* Whether VRSAVE instructions should be generated.  */
+int rs6000_altivec_vrsave;
+
+/* String from -mvrsave= option.  */
+const char *rs6000_altivec_vrsave_string;
+
 /* Set to non-zero once AIX common-mode calls have been defined.  */
 static int common_mode_defined;
 
@@ -168,6 +174,7 @@ static rtx altivec_expand_predicate_builtin PARAMS ((enum insn_code, const char 
 static rtx altivec_expand_ternop_builtin PARAMS ((enum insn_code, tree, rtx));
 static rtx altivec_expand_stv_builtin PARAMS ((enum insn_code, tree));
 static void rs6000_parse_abi_options PARAMS ((void));
+static void rs6000_parse_vrsave_option PARAMS ((void));
 static int first_altivec_reg_to_save PARAMS ((void));
 static unsigned int compute_vrsave_mask PARAMS ((void));
 static void is_altivec_return_reg PARAMS ((rtx, void *));
@@ -536,6 +543,9 @@ rs6000_override_options (default_cpu)
   /* Handle -mabi= options.  */
   rs6000_parse_abi_options ();
 
+  /* Handle -mvrsave= option.  */
+  rs6000_parse_vrsave_option ();
+
 #ifdef TARGET_REGNAMES
   /* If the user desires alternate register names, copy in the
      alternate names now.  */
@@ -581,6 +591,21 @@ rs6000_override_options (default_cpu)
   /* Arrange to save and restore machine status around nested functions.  */
   init_machine_status = rs6000_init_machine_status;
   free_machine_status = rs6000_free_machine_status;
+}
+
+/* Handle -mvrsave= options.  */
+static void
+rs6000_parse_vrsave_option ()
+{
+  /* Generate VRSAVE instructions by default.  */
+  if (rs6000_altivec_vrsave_string == 0
+      || ! strcmp (rs6000_altivec_vrsave_string, "yes"))
+    rs6000_altivec_vrsave = 1;
+  else if (! strcmp (rs6000_altivec_vrsave_string, "no"))
+    rs6000_altivec_vrsave = 0;
+  else
+    error ("unknown -mvrsave= option specified: '%s'",
+	   rs6000_altivec_vrsave_string);
 }
 
 /* Handle -mabi= options.  */
@@ -7770,7 +7795,7 @@ rs6000_stack_info ()
   info_ptr->parm_size    = RS6000_ALIGN (current_function_outgoing_args_size,
 					 8);
 
-  if (TARGET_ALTIVEC_ABI)
+  if (TARGET_ALTIVEC_ABI && TARGET_ALTIVEC_VRSAVE)
     {
       info_ptr->vrsave_mask = compute_vrsave_mask ();
       info_ptr->vrsave_size  = info_ptr->vrsave_mask ? 4 : 0;

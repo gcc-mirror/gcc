@@ -1,3 +1,20 @@
+2002-04-30  Aldy Hernandez  <aldyh@redhat.com>
+
+        * doc/invoke.texi (Option Summary): Add -mvrsave=.
+        (RS/6000 and PowerPC Options): Document -mvrsave=.
+
+        * config/rs6000/rs6000.c (rs6000_altivec_vrsave): New global.
+        (rs6000_altivec_vrsave_string): Same.
+        (rs6000_override_options): Call rs6000_parse_vrsave_option.
+        (rs6000_parse_vrsave_option): New.
+        (rs6000_stack_info): Only generate vrsave instructions when
+        TARGET_ALTIVEC_VRSAVE.
+
+        * config/rs6000/rs6000.h (TARGET_OPTIONS): Add -mvrsave= option.
+        (rs6000_altivec_vrsave_string): Define extern.
+        (rs6000_altivec_vrsave): Same.
+        (TARGET_ALTIVEC_VRSAVE): New.
+
 2002-04-30  Richard Henderson  <rth@redhat.com>
 
 	PR opt/6516

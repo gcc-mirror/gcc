@@ -430,6 +430,8 @@ extern enum processor_type rs6000_cpu;
    {"abi=", &rs6000_abi_string, N_("Specify ABI to use") },		\
    {"long-double-", &rs6000_long_double_size_string,			\
     N_("Specify size of long double (64 or 128 bits)") },		\
+   {"vrsave=", &rs6000_altivec_vrsave_string,                         \
+    N_("Specify yes/no if VRSAVE instructions should be generated for AltiVec") }, \
    SUBTARGET_OPTIONS							\
 }
 
@@ -458,9 +460,12 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 extern const char *rs6000_long_double_size_string;
 extern int rs6000_long_double_type_size;
 extern int rs6000_altivec_abi;
+extern const char *rs6000_altivec_vrsave_string;
+extern int rs6000_altivec_vrsave;
 
 #define TARGET_LONG_DOUBLE_128 (rs6000_long_double_type_size == 128)
 #define TARGET_ALTIVEC_ABI rs6000_altivec_abi
+#define TARGET_ALTIVEC_VRSAVE rs6000_altivec_vrsave
 
 /* Sometimes certain combinations of command options do not make sense
    on a particular target machine.  You can define a macro
