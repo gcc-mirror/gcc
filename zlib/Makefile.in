@@ -189,7 +189,7 @@ aclocal.m4 configure configure.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 SOURCES = $(libz_a_SOURCES) $(libzgcj_convenience_la_SOURCES)
 OBJECTS = $(libz_a_OBJECTS) $(libzgcj_convenience_la_OBJECTS)
