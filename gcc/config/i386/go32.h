@@ -1,5 +1,13 @@
 /* Configuration for an i386 running MS-DOS with djgpp/go32.  */
 
+#define DBX_DEBUGGING_INFO /* support for stabs debugging info */
+#define PREFERRED_DEBUGGING_TYPE SDB_DEBUG /* leave sdb as default */
+#define NO_STAB_H /* DJGPP has no stab.h */
+#if 0 /* enable this, if '-g' should select stabs debugging */
+#undef PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+#endif
+
 /* Don't assume anything about the header files. */
 #define NO_IMPLICIT_EXTERN_C
 
@@ -53,7 +61,11 @@ dtor_section ()							\
     fprintf (FILE, "\n");			\
   } while (0)
 
-#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       	\
+/* Allow (eg) __attribute__((section "locked")) to work */
+#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME)\
+  do {						\
+    fprintf (FILE, "\t.section %s\n", NAME);	\
+  } while (0)
   do {						\
     dtor_section ();                   		\
     fprintf (FILE, "%s\t", ASM_LONG);		\
@@ -61,7 +73,46 @@ dtor_section ()							\
     fprintf (FILE, "\n");			\
   } while (0)
 
+/* Output at beginning of assembler file.  */
+/* The .file command should always begin the output.  */
+/* Use the main_input_filename instead of dump_base_name */
+
+#undef ASM_FILE_START
+#define ASM_FILE_START(FILE)						\
+  do {									\
+	output_file_directive (FILE, main_input_filename);		\
+  } while (0)
+
+/* Be function-relative for block and source line stab directives. */
+
+#define DBX_BLOCKS_FUNCTION_RELATIVE 1
+
+/* but, to make this work, functions must appear prior to line info */
+
+#define DBX_FUNCTION_FIRST
 /* Allow (eg) __attribute__((section "locked")) to work */
+/* Generate a blank trailing N_SO to mark the end of the .o file, since
+   we can't depend upon the linker to mark .o file boundaries with
+   embedded stabs.  */
+
+#define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME)			\
+  fprintf (FILE,							\
+	   "\t.text\n\t.stabs \"\",%d,0,0,Letext\nLetext:\n", N_SO)
+
+#undef  ASM_OUTPUT_SOURCE_LINE
+#define ASM_OUTPUT_SOURCE_LINE(file, line)		\
+  if ( write_symbols == DBX_DEBUG )                     \
+  { static int sym_lineno = 1;				\
+    fprintf (file, ".stabn 68,0,%d,.LM%d-",		\
+	     line, sym_lineno);				\
+    assemble_name (file,				\
+		   XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0)); \
+    fprintf (file, "\n.LM%d:\n", sym_lineno);		\
+    sym_lineno += 1; } \
+  else { \
+    fprintf (file, "\t.ln\t%d\n", \
+  	     ((sdb_begin_function_line > -1) \
+	     ? line - sdb_begin_function_line : 1)); }
 #define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME)\
   do {						\
     fprintf (FILE, "\t.section %s\n", NAME);	\
