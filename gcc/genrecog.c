@@ -1297,7 +1297,9 @@ nodes_identical (d1, d2)
     return 0;
 
   /* Check that their subnodes are at the same position, as any one set
-     of sibling decisions must be at the same position.  */
+     of sibling decisions must be at the same position.  Allowing this
+     requires complications to find_afterward and when change_state is
+     invoked.  */
   if (d1->success.first
       && d2->success.first
       && strcmp (d1->success.first->position, d2->success.first->position))
@@ -1743,7 +1745,8 @@ write_switch (start, depth)
   if (!p->next
       || p->tests->next
       || p->next->tests->type != type
-      || p->next->tests->next)
+      || p->next->tests->next
+      || nodes_identical_1 (p->tests, p->next->tests))
     return p;
 
   /* DT_code is special in that we can do interesting things with
@@ -1866,6 +1869,14 @@ write_switch (start, depth)
 
       do
 	{
+	  /* Merge trees will not unify identical nodes if their
+	     sub-nodes are at different levels.  Thus we must check
+	     for duplicate cases.  */
+	  struct decision *q;
+	  for (q = start; q != p; q = q->next)
+	    if (nodes_identical_1 (p->tests, q->tests))
+	      goto case_done;
+
 	  if (p != start && p->need_label && needs_label == NULL)
 	    needs_label = p;
 
@@ -1892,7 +1903,8 @@ write_switch (start, depth)
 	  p = p->next;
 	}
       while (p && p->tests->type == type && !p->tests->next);
-      
+
+    case_done:
       printf ("    default:\n      break;\n    }\n");
 
       return needs_label != NULL ? needs_label : p;
