@@ -1442,14 +1442,11 @@ compute_register_save_size (p_reg_saved)
 	 need to cover the possibility that such a helper function will
 	 be used, despite the fact that there might be gaps in the list of
 	 registers that need to be saved.  To detect this we note that the
-	 helper functions always push at least register r29 if the link
-	 register is not used, and at least registers r27 - r31 if the
-	 link register is used (and provided that the function is not an
-	 interrupt handler).  */
+	 helper functions always push at least register r29 (provided
+	 that the function is not an interrupt handler).  */
 	 
       if (TARGET_PROLOG_FUNCTION
-	  && (i == 2 || i >= 20)
-	  && regs_ever_live[LINK_POINTER_REGNUM] ? (i < 28) : (i < 30))
+          && (i == 2 || ((i >= 20) && (i < 30))))
 	{
 	  if (i == 2)
 	    {
