@@ -1,3 +1,34 @@
+2004-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Revert
+	2004-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (enum tree_index): Add TI_VA_LIST_GPR_COUNTER_FIELD
+	and TI_VA_LIST_FPR_COUNTER_FIELD.
+	(va_list_gpr_counter_field, va_list_fpr_counter_field): Define.
+	* tree-pass.h (pass_stdarg): Add.
+	* tree-optimize.c (init_tree_optimization_passes): Add pass_stdarg.
+	* tree-stdarg.c: New file.
+	* Makefile.in (OBJS-common): Add tree-stdarg.o.
+	(tree-stdarg.o): Add dependencies.
+	* function.h (struct function): Add va_list_gpr_size and
+	va_list_fpr_size fields.
+	* function.c (allocate_struct_function): Initialize them.
+
+	* config/i386/i386.c (ix86_build_builtin_va_list): Initialize
+	va_list_{g,f}pr_counter_field.
+	(ix86_setup_incoming_varargs): Don't do anything if reg_save
+	area will not be used.  Only save registers that tree-stdarg.c
+	detected they need saving.
+	(ix86_va_start): Don't set up fields that won't be used.
+
+	* config/rs6000/rs6000.c (rs6000_build_builtin_va_list): Initialize
+	va_list_{g,f}pr_counter_field.
+	(setup_incoming_varargs): Don't do anything if reg_save
+	area will not be used.  Only save registers that tree-stdarg.c
+	detected they need saving.
+	(rs6000_va_start): Don't set up fields that won't be used.
+
 2004-09-30  Eric Christopher  <echristo@redhat.com>
 
 	* dwarf2.h (dwarf_calling_convention): Add enum for renesas

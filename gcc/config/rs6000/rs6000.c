@@ -5384,14 +5384,8 @@ setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     }
 
   set = get_varargs_alias_set ();
-  if (! no_rtl && first_reg_offset < GP_ARG_NUM_REG
-      && cfun->va_list_gpr_size)
+  if (! no_rtl && first_reg_offset < GP_ARG_NUM_REG)
     {
-      int nregs = GP_ARG_NUM_REG - first_reg_offset;
-
-      if (nregs > cfun->va_list_gpr_size)
-        nregs = cfun->va_list_gpr_size;
-
       mem = gen_rtx_MEM (BLKmode,
 		         plus_constant (save_area,
 					first_reg_offset * reg_size)),
@@ -5399,17 +5393,16 @@ setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
       set_mem_align (mem, BITS_PER_WORD);
 
       rs6000_move_block_from_reg (GP_ARG_MIN_REG + first_reg_offset, mem,
-			          nregs);
+			          GP_ARG_NUM_REG - first_reg_offset);
     }
 
   /* Save FP registers if needed.  */
   if (DEFAULT_ABI == ABI_V4
       && TARGET_HARD_FLOAT && TARGET_FPRS
       && ! no_rtl
-      && next_cum.fregno <= FP_ARG_V4_MAX_REG
-      && cfun->va_list_fpr_size)
+      && next_cum.fregno <= FP_ARG_V4_MAX_REG)
     {
-      int fregno = next_cum.fregno, nregs;
+      int fregno = next_cum.fregno;
       rtx cr1 = gen_rtx_REG (CCmode, CR1_REGNO);
       rtx lab = gen_label_rtx ();
       int off = (GP_ARG_NUM_REG * reg_size) + ((fregno - FP_ARG_MIN_REG) * 8);
@@ -5422,14 +5415,13 @@ setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 					    gen_rtx_LABEL_REF (VOIDmode, lab),
 					    pc_rtx)));
 
-      for (nregs = 0;
-           fregno <= FP_ARG_V4_MAX_REG && nregs < cfun->va_list_fpr_size;
-           fregno++, off += 8, nregs++)
+      while (fregno <= FP_ARG_V4_MAX_REG)
 	{
-	  mem = gen_rtx_MEM (DFmode,
-	                     plus_constant (save_area, off));
+	  mem = gen_rtx_MEM (DFmode, plus_constant (save_area, off));
           set_mem_alias_set (mem, set);
 	  emit_move_insn (mem, gen_rtx_REG (DFmode, fregno));
+	  fregno++;
+	  off += 8;
 	}
 
       emit_label (lab);
@@ -5463,9 +5455,6 @@ rs6000_build_builtin_va_list (void)
 		      ptr_type_node);
   f_sav = build_decl (FIELD_DECL, get_identifier ("reg_save_area"),
 		      ptr_type_node);
-
-  va_list_gpr_counter_field = f_gpr;
-  va_list_fpr_counter_field = f_fpr;
 
   DECL_FIELD_CONTEXT (f_gpr) = record;
   DECL_FIELD_CONTEXT (f_fpr) = record;
@@ -5525,28 +5514,15 @@ rs6000_va_start (tree valist, rtx nextarg)
 	     HOST_WIDE_INT_PRINT_DEC", n_fpr = "HOST_WIDE_INT_PRINT_DEC"\n",
 	     words, n_gpr, n_fpr);
 
-  if (cfun->va_list_gpr_size)
-    {
-      t = build (MODIFY_EXPR, TREE_TYPE (gpr), gpr,
-                 build_int_cst (NULL_TREE, n_gpr));
-      TREE_SIDE_EFFECTS (t) = 1;
-      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-    }
+  t = build (MODIFY_EXPR, TREE_TYPE (gpr), gpr,
+	     build_int_cst (NULL_TREE, n_gpr));
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-  if (cfun->va_list_fpr_size)
-    {
-      t = build (MODIFY_EXPR, TREE_TYPE (fpr), fpr,
-	         build_int_cst (NULL_TREE, n_fpr));
-      TREE_SIDE_EFFECTS (t) = 1;
-      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-    }
-
-  /* If there were no va_arg invocations, don't set up anything.  */
-  if (!cfun->va_list_gpr_size
-      && !cfun->va_list_fpr_size
-      && n_gpr < GP_ARG_NUM_REG
-      && n_fpr < FP_ARG_V4_MAX_REG)
-    return;
+  t = build (MODIFY_EXPR, TREE_TYPE (fpr), fpr,
+	     build_int_cst (NULL_TREE, n_fpr));
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   /* Find the overflow area.  */
   t = make_tree (TREE_TYPE (ovf), virtual_incoming_args_rtx);

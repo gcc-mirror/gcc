@@ -1,3 +1,11 @@
+2004-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/tree-ssa/stdarg-1.c: Removed.
+	* gcc.dg/tree-ssa/stdarg-2.c: Removed.
+	* gcc.dg/tree-ssa/stdarg-3.c: Removed.
+	* gcc.dg/tree-ssa/stdarg-4.c: Removed.
+	* gcc.dg/tree-ssa/stdarg-5.c: Removed.
+
 2004-09-30  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/lvalue-2.c: New test.
