@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "insn-config.h"
 #include "integrate.h"
+#include "tree-inline.h"
 
 static tree bot_manip PARAMS ((tree *, int *, void *));
 static tree bot_replace PARAMS ((tree *, int *, void *));
@@ -49,6 +50,12 @@ static tree count_trees_r PARAMS ((tree *, int *, void *));
 static tree verify_stmt_tree_r PARAMS ((tree *, int *, void *));
 static tree find_tree_r PARAMS ((tree *, int *, void *));
 extern int cp_statement_code_p PARAMS ((enum tree_code));
+static treeopt_walk_subtrees_type cp_walk_subtrees;
+static treeopt_cannot_inline_tree_fn_type cp_cannot_inline_tree_fn;
+static treeopt_add_pending_fn_decls_type cp_add_pending_fn_decls;
+static treeopt_tree_chain_matters_p_type cp_is_overload_p;
+static treeopt_auto_var_in_fn_p_type cp_auto_var_in_fn_p;
+static treeopt_copy_res_decl_for_inlining_type cp_copy_res_decl_for_inlining;
 
 static tree handle_java_interface_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static tree handle_com_interface_attribute PARAMS ((tree *, tree, tree, int, bool *));
@@ -1154,12 +1161,13 @@ bind_template_template_parm (t, newargs)
    once.  */
 
 tree 
-walk_tree (tp, func, data, htab)
+walk_tree (tp, func, data, htab_)
      tree *tp;
      walk_tree_fn func;
      void *data;
-     htab_t htab;
+     void *htab_;
 {
+  htab_t htab = (htab_t) htab_;
   enum tree_code code;
   int walk_subtrees;
   tree result;
@@ -1204,7 +1212,8 @@ walk_tree (tp, func, data, htab)
      interesting below this point in the tree.  */
   if (!walk_subtrees)
     {
-      if (statement_code_p (code) || code == TREE_LIST || code == OVERLOAD)
+      if (statement_code_p (code) || code == TREE_LIST
+	  || LANG_TREE_CHAIN_MATTERS_P (*tp))
 	/* But we still need to check our siblings.  */
 	return walk_tree (&TREE_CHAIN (*tp), func, data, htab);
       else
@@ -1268,6 +1277,10 @@ walk_tree (tp, func, data, htab)
       return NULL_TREE;
     }
 
+  result = LANG_WALK_SUBTREES (tp, &walk_subtrees, func, data, htab);
+  if (result || ! walk_subtrees)
+    return result;
+
   /* Not one of the easy cases.  We must explicitly go through the
      children.  */
   switch (code)
@@ -1277,27 +1290,17 @@ walk_tree (tp, func, data, htab)
     case INTEGER_CST:
     case REAL_CST:
     case STRING_CST:
-    case DEFAULT_ARG:
-    case TEMPLATE_TEMPLATE_PARM:
-    case BOUND_TEMPLATE_TEMPLATE_PARM:
-    case TEMPLATE_PARM_INDEX:
-    case TEMPLATE_TYPE_PARM:
     case REAL_TYPE:
     case COMPLEX_TYPE:
     case VECTOR_TYPE:
     case VOID_TYPE:
     case BOOLEAN_TYPE:
-    case TYPENAME_TYPE:
     case UNION_TYPE:
     case ENUMERAL_TYPE:
-    case TYPEOF_TYPE:
     case BLOCK:
+    case RECORD_TYPE:
       /* None of thse have subtrees other than those already walked
          above.  */
-      break;
-
-    case PTRMEM_CST:
-      WALK_SUBTREE (TREE_TYPE (*tp));
       break;
 
     case POINTER_TYPE:
@@ -1306,16 +1309,8 @@ walk_tree (tp, func, data, htab)
       break;
 
     case TREE_LIST:
-      /* A BASELINK_P's TREE_PURPOSE is a BINFO, and hence circular.  */
-      if (!BASELINK_P (*tp))
-        WALK_SUBTREE (TREE_PURPOSE (*tp));
       WALK_SUBTREE (TREE_VALUE (*tp));
       WALK_SUBTREE (TREE_CHAIN (*tp));
-      break;
-
-    case OVERLOAD:
-      WALK_SUBTREE (OVL_FUNCTION (*tp));
-      WALK_SUBTREE (OVL_CHAIN (*tp));
       break;
 
     case TREE_VEC:
@@ -1365,13 +1360,8 @@ walk_tree (tp, func, data, htab)
       WALK_SUBTREE (TYPE_OFFSET_BASETYPE (*tp));
       break;
 
-    case RECORD_TYPE:
-      if (TYPE_PTRMEMFUNC_P (*tp))
-	WALK_SUBTREE (TYPE_PTRMEMFUNC_FN_TYPE (*tp));
-      break;
-
     default:
-      my_friendly_abort (19990803);
+      abort ();
     }
 
   /* We didn't find what we were looking for.  */
@@ -1539,7 +1529,7 @@ copy_tree_r (tp, walk_subtrees, data)
       || TREE_CODE_CLASS (code) == 's'
       || code == TREE_LIST
       || code == TREE_VEC
-      || code == OVERLOAD)
+      || LANG_TREE_CHAIN_MATTERS_P (*tp))
     {
       /* Because the chain gets clobbered when we make a copy, we save it
 	 here.  */
@@ -1550,7 +1540,8 @@ copy_tree_r (tp, walk_subtrees, data)
 
       /* Now, restore the chain, if appropriate.  That will cause
 	 walk_tree to walk into the chain as well.  */
-      if (code == PARM_DECL || code == TREE_LIST || code == OVERLOAD
+      if (code == PARM_DECL || code == TREE_LIST
+	  || LANG_TREE_CHAIN_MATTERS_P (*tp)
 	  || statement_code_p (code))
 	TREE_CHAIN (*tp) = chain;
 
@@ -2344,12 +2335,227 @@ make_ptrmem_cst (type, member)
   return ptrmem_cst;
 }
 
+/* Apply FUNC to all language-specific sub-trees of TP in a pre-order
+   traversal.  Called from walk_tree().  */
+
+static tree 
+cp_walk_subtrees (tp, walk_subtrees_p, func, data, htab)
+     tree *tp;
+     int *walk_subtrees_p;
+     walk_tree_fn func;
+     void *data;
+     void *htab;
+{
+  enum tree_code code = TREE_CODE (*tp);
+  tree result;
+  
+#define WALK_SUBTREE(NODE)				\
+  do							\
+    {							\
+      result = walk_tree (&(NODE), func, data, htab);	\
+      if (result)					\
+	return result;					\
+    }							\
+  while (0)
+
+  /* Not one of the easy cases.  We must explicitly go through the
+     children.  */
+  switch (code)
+    {
+    case DEFAULT_ARG:
+    case TEMPLATE_TEMPLATE_PARM:
+    case BOUND_TEMPLATE_TEMPLATE_PARM:
+    case TEMPLATE_PARM_INDEX:
+    case TEMPLATE_TYPE_PARM:
+    case TYPENAME_TYPE:
+    case TYPEOF_TYPE:
+      /* None of thse have subtrees other than those already walked
+         above.  */
+      *walk_subtrees_p = 0;
+      break;
+
+    case PTRMEM_CST:
+      WALK_SUBTREE (TREE_TYPE (*tp));
+      *walk_subtrees_p = 0;
+      break;
+
+    case TREE_LIST:
+      /* A BASELINK_P's TREE_PURPOSE is a BINFO, and hence circular.  */
+      if (!BASELINK_P (*tp))
+        WALK_SUBTREE (TREE_PURPOSE (*tp));
+      break;
+
+    case OVERLOAD:
+      WALK_SUBTREE (OVL_FUNCTION (*tp));
+      WALK_SUBTREE (OVL_CHAIN (*tp));
+      *walk_subtrees_p = 0;
+      break;
+
+    case RECORD_TYPE:
+      if (TYPE_PTRMEMFUNC_P (*tp))
+	WALK_SUBTREE (TYPE_PTRMEMFUNC_FN_TYPE (*tp));
+      break;
+
+    default:
+      break;
+    }
+
+  /* We didn't find what we were looking for.  */
+  return NULL_TREE;
+
+#undef WALK_SUBTREE
+}
+
+/* Decide whether there are language-specific reasons to not inline a
+   function as a tree.  */
+
+static int
+cp_cannot_inline_tree_fn (fnp)
+     tree *fnp;
+{
+  tree fn = *fnp;
+
+  /* We can inline a template instantiation only if it's fully
+     instantiated.  */
+  if (DECL_TEMPLATE_INFO (fn)
+      && TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (fn)))
+    {
+      fn = *fnp = instantiate_decl (fn, /*defer_ok=*/0);
+      return TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (fn));
+    }
+
+  if (varargs_function_p (fn))
+    {
+      DECL_UNINLINABLE (fn) = 1;
+      return 1;
+    }
+
+  if (! function_attribute_inlinable_p (fn))
+    {
+      DECL_UNINLINABLE (fn) = 1;
+      return 1;
+    }
+
+  return 0;
+}
+
+/* Add any pending functions other than the current function (already
+   handled by the caller), that thus cannot be inlined, to FNS_P, then
+   return the latest function added to the array, PREV_FN.  */
+
+static tree
+cp_add_pending_fn_decls (fns_p, prev_fn)
+     void *fns_p;
+     tree prev_fn;
+{
+  varray_type *fnsp = (varray_type *)fns_p;
+  struct saved_scope *s;
+
+  for (s = scope_chain; s; s = s->prev)
+    if (s->function_decl && s->function_decl != prev_fn)
+      {
+	VARRAY_PUSH_TREE (*fnsp, s->function_decl);
+	prev_fn = s->function_decl;
+      }
+
+  return prev_fn;
+}
+
+/* Determine whether a tree node is an OVERLOAD node.  Used to decide
+   whether to copy a node or to preserve its chain when inlining a
+   function.  */
+
+static int
+cp_is_overload_p (t)
+     tree t;
+{
+  return TREE_CODE (t) == OVERLOAD;
+}
+
+/* Determine whether VAR is a declaration of an automatic variable in
+   function FN.  */
+
+static int
+cp_auto_var_in_fn_p (var, fn)
+     tree var, fn;
+{
+  return (DECL_P (var) && DECL_CONTEXT (var) == fn
+	  && nonstatic_local_decl_p (var));
+}
+
+/* Tell whether a declaration is needed for the RESULT of a function
+   FN being inlined into CALLER or if the top node of target_exprs is
+   to be used.  */
+
+static tree
+cp_copy_res_decl_for_inlining (result, fn, caller, decl_map_,
+			       need_decl, target_exprs)
+     tree result, fn, caller;
+     void *decl_map_;
+     int *need_decl;
+     void *target_exprs;
+{
+  splay_tree decl_map = (splay_tree)decl_map_;
+  varray_type *texps = (varray_type *)target_exprs;
+  tree var;
+  int aggregate_return_p;
+
+  /* Figure out whether or not FN returns an aggregate.  */
+  aggregate_return_p = IS_AGGR_TYPE (TREE_TYPE (result));
+  *need_decl = ! aggregate_return_p;
+
+  /* If FN returns an aggregate then the caller will always create the
+     temporary (using a TARGET_EXPR) and the call will be the
+     initializing expression for the TARGET_EXPR.  If we were just to
+     create a new VAR_DECL here, then the result of this function
+     would be copied (bitwise) into the variable initialized by the
+     TARGET_EXPR.  That's incorrect, so we must transform any
+     references to the RESULT into references to the target.  */
+  if (aggregate_return_p)
+    {
+      if (VARRAY_ACTIVE_SIZE (*texps) == 0)
+	abort ();
+      var = TREE_OPERAND (VARRAY_TOP_TREE (*texps), 0);
+      if (! same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (var),
+						       TREE_TYPE (result)))
+	abort ();
+    }
+  /* Otherwise, make an appropriate copy.  */
+  else
+    var = copy_decl_for_inlining (result, fn, caller);
+
+  if (DECL_SAVED_FUNCTION_DATA (fn))
+    {
+      tree nrv = DECL_SAVED_FUNCTION_DATA (fn)->x_return_value;
+      if (nrv)
+	{
+	  /* We have a named return value; copy the name and source
+	     position so we can get reasonable debugging information, and
+	     register the return variable as its equivalent.  */
+	  DECL_NAME (var) = DECL_NAME (nrv);
+	  DECL_SOURCE_FILE (var) = DECL_SOURCE_FILE (nrv);
+	  DECL_SOURCE_LINE (var) = DECL_SOURCE_LINE (nrv);
+	  splay_tree_insert (decl_map,
+			     (splay_tree_key) nrv,
+			     (splay_tree_value) var);
+	}
+    }
+
+  return var;
+}
+
 /* Initialize tree.c.  */
 
 void
 init_tree ()
 {
   make_lang_type_fn = cp_make_lang_type;
+  lang_walk_subtrees = cp_walk_subtrees;
+  lang_cannot_inline_tree_fn = cp_cannot_inline_tree_fn;
+  lang_add_pending_fn_decls = cp_add_pending_fn_decls;
+  lang_tree_chain_matters_p = cp_is_overload_p;
+  lang_auto_var_in_fn_p = cp_auto_var_in_fn_p;
+  lang_copy_res_decl_for_inlining = cp_copy_res_decl_for_inlining;
   lang_unsave = cp_unsave;
   lang_statement_code_p = cp_statement_code_p;
   lang_set_decl_assembler_name = mangle_decl;
@@ -2365,12 +2571,13 @@ init_tree ()
    ST.  FN is the function into which the copy will be placed.  */
 
 void
-remap_save_expr (tp, st, fn, walk_subtrees)
+remap_save_expr (tp, st_, fn, walk_subtrees)
      tree *tp;
-     splay_tree st;
+     void *st_;
      tree fn;
      int *walk_subtrees;
 {
+  splay_tree st = (splay_tree) st_;
   splay_tree_node n;
 
   /* See if we already encountered this SAVE_EXPR.  */

@@ -1,3 +1,43 @@
+2001-10-04  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Make-lang.in (cp/decl.o, cp/tree.o): Depend on tree-inline.h.
+	(cp/pt.o, cp/semantics.o, cp/optimize.o): Likewise.
+	* cp-tree.h (lang_decl): Moved inlined_fns to tree_decl.
+	(TREE_READONLY_DECL_P, DECL_INLINED_FNS): Moved to ../tree.h.
+	(flag_inline_trees): Moved declaration to ../tree-inline.h.
+	(walk_tree): Moved declaration to ../tree-inline.h.
+	(walk_tree_without_duplicates, copy_tree_r): Likewise.
+	(remap_save_expr): Likewise.
+	* decl.c: Include tree-inline.h.
+	(lang_mark_tree): Don't mark inlined_fns.
+	* decl2.c (flag_inline_trees): Moved defn to ../tree-inline.c.
+	* optimize.c: Include tree-inline.h.
+	(optimize_inline_calls): Move declaration to ../tree.h, as
+	non-static.
+	(remap_decl): Use language-independent constructs and hooks.
+	(remap_block, copy_body_r, declare_return_variable): Likewise.
+	(inlinable_function_p): Likewise.  Don't test for
+	DECL_LANG_SPECIFIC before DECL_INLINED_FNS as inlined_fns is
+	no longer language-specific.
+	(optimize_inline_calls): Likewise.  Make it non-static.  Moved
+	call of dump_function to...
+	(optimize_function): Here...
+	(clone_body): New function, extracted from...
+	(maybe_clone_body): ... here.  Build decl_map locally and pass
+	it on to clone_body.
+	* pt.c, semantics.c: Include tree-inline.h.
+	* tree.c: Likewise.
+	(cp_walk_subtrees): New language-specific hook for tree inlining.
+	(cp_cannot_inline_tree_fn, cp_add_pending_fn_decls,
+	cp_is_overload_p, cp_auto_var_in_fn_p,
+	cp_copy_res_decl_for_inlining): Likewise.
+	(walk_tree): Move language-specific constructs into...
+	(cp_walk_subtrees): this new function.
+	(copy_tree_r): Use language-independent constructs and hooks.
+	(init_tree): Initialize tree inlining hooks.
+	(remap_save_expr): Adjust prototype so that the declaration
+	does not require the definition of splay_tree.
+
 2001-10-03  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* rtti.c (get_tinfo_decl): Call typeinfo_in_lib_p with the type used

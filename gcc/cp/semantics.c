@@ -28,6 +28,7 @@
 #include "system.h"
 #include "tree.h"
 #include "cp-tree.h"
+#include "tree-inline.h"
 #include "except.h"
 #include "lex.h"
 #include "toplev.h"
