@@ -1,3 +1,10 @@
+Thu May  9 18:29:24 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.c (sh_builtin_saveregs): If starting with an odd fp register,
+	make sure that buffer starts on odd word address.
+	(sh_va_arg): Skip odd fp registers when reading a double precision
+	value.
+
 2002-05-09  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* tree.h (preserve_data, object_permanent_p, type_precision):

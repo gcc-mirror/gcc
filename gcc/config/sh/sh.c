@@ -5090,6 +5090,15 @@ sh_builtin_saveregs ()
   if (TARGET_SHMEDIA)
     regbuf = gen_rtx_MEM (BLKmode,
 			  gen_rtx_REG (Pmode, ARG_POINTER_REGNUM));
+  else if (n_floatregs & 1)
+    {
+      rtx addr;
+
+      regbuf = assign_stack_local (BLKmode, bufsize + UNITS_PER_WORD, 0);
+      addr = copy_to_mode_reg (Pmode, XEXP (regbuf, 0));
+      emit_insn (gen_iorsi3 (addr, addr, GEN_INT (UNITS_PER_WORD)));
+      regbuf = change_address (regbuf, BLKmode, addr);
+    }
   else
     regbuf = assign_stack_local (BLKmode, bufsize, 0);
   alias_set = get_varargs_alias_set ();
@@ -5353,13 +5362,19 @@ sh_va_arg (valist, type)
 
       if (pass_as_float)
 	{
+	  int first_floatreg
+	    = current_function_args_info.arg_count[(int) SH_ARG_FLOAT];
+	  int n_floatregs = MAX (0, NPARM_REGS (SFmode) - first_floatreg);
+
 	  emit_cmp_and_jump_insns (expand_expr (next_fp, NULL_RTX, Pmode,
 						EXPAND_NORMAL),
 				   expand_expr (next_fp_limit, NULL_RTX,
 						Pmode, EXPAND_NORMAL),
 				   GE, const1_rtx, Pmode, 1, lab_false);
 
-	  if (TYPE_ALIGN (type) > BITS_PER_WORD)
+	  if (TYPE_ALIGN (type) > BITS_PER_WORD
+	      || (((TREE_CODE (type) == REAL_TYPE && size == 8) || size == 16)
+		  && (n_floatregs & 1)))
 	    {
 	      tmp = build (BIT_AND_EXPR, ptr_type_node, next_fp,
 			   build_int_2 (UNITS_PER_WORD, 0));
