@@ -39,7 +39,7 @@ static void construct_virtual_bases PARAMS ((tree, tree, tree, tree, tree));
 static void expand_aggr_init_1 PARAMS ((tree, tree, tree, tree, int));
 static void expand_default_init PARAMS ((tree, tree, tree, tree, int));
 static tree build_vec_delete_1 PARAMS ((tree, tree, tree, tree, int));
-static void perform_member_init PARAMS ((tree, tree, tree, int));
+static void perform_member_init PARAMS ((tree, tree, int));
 static void sort_base_init PARAMS ((tree, tree *, tree *));
 static tree build_builtin_delete_call PARAMS ((tree));
 static int member_init_ok_or_else PARAMS ((tree, tree, const char *));
@@ -52,6 +52,7 @@ static tree dfs_initialize_vtbl_ptrs PARAMS ((tree, void *));
 static tree build_new_1	PARAMS ((tree));
 static tree get_cookie_size PARAMS ((tree));
 static tree build_dtor_call PARAMS ((tree, tree, int));
+static tree build_field_list PARAMS ((tree, tree, int *));
 
 /* Set up local variable for this file.  MUST BE CALLED AFTER
    INIT_DECL_PROCESSING.  */
@@ -175,14 +176,14 @@ initialize_vtbl_ptrs (type, addr)
 /* Subroutine of emit_base_init.  */
 
 static void
-perform_member_init (member, name, init, explicit)
-     tree member, name, init;
+perform_member_init (member, init, explicit)
+     tree member, init;
      int explicit;
 {
   tree decl;
   tree type = TREE_TYPE (member);
 
-  decl = build_component_ref (current_class_ref, name, NULL_TREE, explicit);
+  decl = build_component_ref (current_class_ref, member, NULL_TREE, explicit);
 
   if (decl == error_mark_node)
     return;
@@ -192,8 +193,11 @@ perform_member_init (member, name, init, explicit)
      synthesized copy constructor.  */
   if (ANON_AGGR_TYPE_P (type))
     {
-      init = build (INIT_EXPR, type, decl, TREE_VALUE (init));
-      finish_expr_stmt (init);
+      if (init)
+	{
+	  init = build (INIT_EXPR, type, decl, TREE_VALUE (init));
+	  finish_expr_stmt (init);
+	}
     }
   else if (TYPE_NEEDS_CONSTRUCTING (type)
 	   || (init && TYPE_HAS_CONSTRUCTOR (type)))
@@ -268,7 +272,7 @@ perform_member_init (member, name, init, explicit)
     {
       tree expr;
 
-      expr = build_component_ref (current_class_ref, name, NULL_TREE,
+      expr = build_component_ref (current_class_ref, member, NULL_TREE,
 				  explicit);
       expr = build_delete (type, expr, integer_zero_node,
 			   LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR, 0);
@@ -278,91 +282,198 @@ perform_member_init (member, name, init, explicit)
     }
 }
 
+/* Returns a TREE_LIST containing (as the TREE_PURPOSE of each node) all
+   the FIELD_DECLs on the TYPE_FIELDS list for T, in reverse order.  */
+
+static tree 
+build_field_list (t, list, uses_unions_p)
+     tree t;
+     tree list;
+     int *uses_unions_p;
+{
+  tree fields;
+
+  /* Note whether or not T is a union.  */
+  if (TREE_CODE (t) == UNION_TYPE)
+    *uses_unions_p = 1;
+
+  for (fields = TYPE_FIELDS (t); fields; fields = TREE_CHAIN (fields))
+    {
+      /* Skip CONST_DECLs for enumeration constants and so forth.  */
+      if (TREE_CODE (fields) != FIELD_DECL)
+	continue;
+      
+      /* Keep track of whether or not any fields are unions.  */
+      if (TREE_CODE (TREE_TYPE (fields)) == UNION_TYPE)
+	*uses_unions_p = 1;
+
+      /* For an anonymous struct or union, we must recursively
+	 consider the fields of the anonymous type.  They can be
+	 directly initialized from the constructor.  */
+      if (ANON_AGGR_TYPE_P (TREE_TYPE (fields)))
+	{
+	  /* Add this field itself.  Synthesized copy constructors
+	     initialize the entire aggregate.  */
+	  list = tree_cons (fields, NULL_TREE, list);
+	  /* And now add the fields in the anonymous aggregate.  */
+	  list = build_field_list (TREE_TYPE (fields), list, 
+				   uses_unions_p);
+	}
+      /* Add this field.  */
+      else if (DECL_NAME (fields))
+	list = tree_cons (fields, NULL_TREE, list);
+    }
+
+  return list;
+}
+
 /* Subroutine of emit_member_init.  */
 
 static tree
 sort_member_init (t)
      tree t;
 {
-  tree x, member, name, field;
-  tree init_list = NULL_TREE;
-  int last_pos = 0;
-  tree last_field = NULL_TREE;
+  tree init_list;
+  tree last_field;
+  tree init;
+  int uses_unions_p;
 
-  for (member = TYPE_FIELDS (t); member ; member = TREE_CHAIN (member))
+  /* Build up a list of the various fields, in sorted order.  */
+  init_list = nreverse (build_field_list (t, NULL_TREE, &uses_unions_p));
+
+  /* Go through the explicit initializers, adding them to the
+     INIT_LIST.  */
+  last_field = init_list;
+  for (init = current_member_init_list; init; init = TREE_CHAIN (init))
     {
-      int pos;
+      tree f;
+      tree initialized_field;
 
-      /* member could be, for example, a CONST_DECL for an enumerated
-	 tag; we don't want to try to initialize that, since it already
-	 has a value.  */
-      if (TREE_CODE (member) != FIELD_DECL || !DECL_NAME (member))
-	continue;
+      initialized_field = TREE_PURPOSE (init);
+      my_friendly_assert (TREE_CODE (initialized_field) == FIELD_DECL,
+			  20000516);
 
-      for (x = current_member_init_list, pos = 0; x; x = TREE_CHAIN (x), ++pos)
+      /* If the explicit initializers are in sorted order, then the
+	 INITIALIZED_FIELD will be for a field following the
+	 LAST_FIELD.  */
+      for (f = last_field; f; f = TREE_CHAIN (f))
+	if (TREE_PURPOSE (f) == initialized_field)
+	  break;
+
+      /* Give a warning, if appropriate.  */
+      if (warn_reorder && !f)
 	{
-	  /* If we cleared this out, then pay no attention to it.  */
-	  if (TREE_PURPOSE (x) == NULL_TREE)
-	    continue;
-	  name = TREE_PURPOSE (x);
-
-	  if (TREE_CODE (name) == IDENTIFIER_NODE)
-	    field = IDENTIFIER_CLASS_VALUE (name);
-	  else
-	    {
-	      my_friendly_assert (TREE_CODE (name) == FIELD_DECL, 348); 
-	      field = name;
-	    }
-
-	  /* If one member shadows another, get the outermost one.  */
-	  if (TREE_CODE (field) == TREE_LIST)
-	    field = TREE_VALUE (field);
-
-	  if (field == member)
-	    {
-	      if (warn_reorder)
-		{
-		  if (pos < last_pos)
-		    {
-		      cp_warning_at ("member initializers for `%#D'", last_field);
-		      cp_warning_at ("  and `%#D'", field);
-		      warning ("  will be re-ordered to match declaration order");
-		    }
-		  last_pos = pos;
-		  last_field = field;
-		}
-
-	      /* Make sure we won't try to work on this init again.  */
-	      TREE_PURPOSE (x) = NULL_TREE;
-	      x = build_tree_list (name, TREE_VALUE (x));
-	      goto got_it;
-	    }
+	  cp_warning_at ("member initializers for `%#D'", last_field);
+	  cp_warning_at ("  and `%#D'", initialized_field);
+	  warning ("  will be re-ordered to match declaration order");
 	}
 
-      /* If we didn't find MEMBER in the list, create a dummy entry
-	 so the two lists (INIT_LIST and the list of members) will be
-	 symmetrical.  */
-      x = build_tree_list (NULL_TREE, NULL_TREE);
-    got_it:
-      init_list = chainon (init_list, x); 
+      /* Look again, from the beginning of the list.  We must find the
+	 field on this loop.  */
+      if (!f)
+	{
+	  f = init_list;
+	  while (TREE_PURPOSE (f) != initialized_field)
+	    f = TREE_CHAIN (f);
+	}
+
+      /* If there was already an explicit initializer for this field,
+	 issue an error.  */
+      if (TREE_TYPE (f))
+	cp_error ("multiple initializations given for member `%D'",
+		  initialized_field);
+      else
+	{
+	  /* Mark the field as explicitly initialized.  */
+	  TREE_TYPE (f) = error_mark_node;
+	  /* And insert the initializer.  */
+	  TREE_VALUE (f) = TREE_VALUE (init);
+	}
+
+      /* Remember the location of the last explicitly initialized
+	 field.  */
+      last_field = f;
     }
 
-  /* Initializers for base members go at the end.  */
-  for (x = current_member_init_list ; x ; x = TREE_CHAIN (x))
+  /* [class.base.init]
+
+     If a ctor-initializer specifies more than one mem-initializer for
+     multiple members of the same union (including members of
+     anonymous unions), the ctor-initializer is ill-formed.  */
+  if (uses_unions_p)
     {
-      name = TREE_PURPOSE (x);
-      if (name)
+      last_field = NULL_TREE;
+      for (init = init_list; init; init = TREE_CHAIN (init))
 	{
-	  if (purpose_member (name, init_list))
+	  tree field;
+	  tree field_type;
+	  int done;
+
+	  /* Skip uninitialized members.  */
+	  if (!TREE_TYPE (init))
+	    continue;
+	  /* See if this field is a member of a union, or a member of a
+	     structure contained in a union, etc.  */
+	  field = TREE_PURPOSE (init);
+	  for (field_type = DECL_CONTEXT (field);
+	       !same_type_p (field_type, t);
+	       field_type = TYPE_CONTEXT (field_type))
+	    if (TREE_CODE (field_type) == UNION_TYPE)
+	      break;
+	  /* If this field is not a member of a union, skip it.  */
+	  if (TREE_CODE (field_type) != UNION_TYPE)
+	    continue;
+
+	  /* It's only an error if we have two initializers for the same
+	     union type.  */
+	  if (!last_field)
 	    {
-	      cp_error ("multiple initializations given for member `%D'",
-			IDENTIFIER_CLASS_VALUE (name));
+	      last_field = field;
 	      continue;
 	    }
+
+	  /* See if LAST_FIELD and the field initialized by INIT are
+	     members of the same union.  If so, there's a problem,
+	     unless they're actually members of the same structure
+	     which is itself a member of a union.  For example, given:
+
+	       union { struct { int i; int j; }; };
+
+	     initializing both `i' and `j' makes sense.  */
+	  field_type = DECL_CONTEXT (field);
+	  done = 0;
+	  do
+	    {
+	      tree last_field_type;
+
+	      last_field_type = DECL_CONTEXT (last_field);
+	      while (1)
+		{
+		  if (same_type_p (last_field_type, field_type))
+		    {
+		      if (TREE_CODE (field_type) == UNION_TYPE)
+			cp_error ("initializations for multiple members of `%T'",
+				  last_field_type);
+		      done = 1;
+		      break;
+		    }
+
+		  if (same_type_p (last_field_type, t))
+		    break;
+
+		  last_field_type = TYPE_CONTEXT (last_field_type);
+		}
 	      
-	  init_list = chainon (init_list,
-			       build_tree_list (name, TREE_VALUE (x)));
-	  TREE_PURPOSE (x) = NULL_TREE;
+	      /* If we've reached the outermost class, then we're
+		 done.  */
+	      if (same_type_p (field_type, t))
+		break;
+
+	      field_type = TYPE_CONTEXT (field_type);
+	    }
+	  while (!done);
+
+	  last_field = field;
 	}
     }
 
@@ -586,32 +697,23 @@ emit_base_init (t)
   /* Initialize the vtable pointers for the class.  */
   initialize_vtbl_ptrs (t, current_class_ptr);
 
-  for (member = TYPE_FIELDS (t); member; member = TREE_CHAIN (member))
+  while (mem_init_list)
     {
-      tree init, name;
+      tree init;
+      tree member;
       int from_init_list;
 
-      /* member could be, for example, a CONST_DECL for an enumerated
-	 tag; we don't want to try to initialize that, since it already
-	 has a value.  */
-      if (TREE_CODE (member) != FIELD_DECL || !DECL_NAME (member))
-	continue;
+      member = TREE_PURPOSE (mem_init_list);
 
       /* See if we had a user-specified member initialization.  */
-      if (TREE_PURPOSE (mem_init_list))
+      if (TREE_TYPE (mem_init_list))
 	{
-	  name = TREE_PURPOSE (mem_init_list);
 	  init = TREE_VALUE (mem_init_list);
 	  from_init_list = 1;
-
-	  my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE
-			      || TREE_CODE (name) == FIELD_DECL, 349);
 	}
       else
 	{
-	  name = DECL_NAME (member);
 	  init = DECL_INITIAL (member);
-
 	  from_init_list = 0;
 
 	  /* Effective C++ rule 12.  */
@@ -621,35 +723,7 @@ emit_base_init (t)
 	    cp_warning ("`%D' should be initialized in the member initialization list", member);	    
 	}
 
-      perform_member_init (member, name, init, from_init_list);
-      mem_init_list = TREE_CHAIN (mem_init_list);
-    }
-
-  /* Now initialize any members from our bases.  */
-  while (mem_init_list)
-    {
-      tree name, init, field;
-
-      if (TREE_PURPOSE (mem_init_list))
-	{
-	  name = TREE_PURPOSE (mem_init_list);
-	  init = TREE_VALUE (mem_init_list);
-
-	  if (TREE_CODE (name) == IDENTIFIER_NODE)
-	    field = IDENTIFIER_CLASS_VALUE (name);
-	  else
-	    field = name;
-
-	  /* If one member shadows another, get the outermost one.  */
-	  if (TREE_CODE (field) == TREE_LIST)
-	    {
-	      field = TREE_VALUE (field);
-	      if (decl_type_context (field) != current_class_type)
-		cp_error ("field `%D' not in immediate context", field);
-	    }
-
-	  perform_member_init (field, name, init, 1);
-	}
+      perform_member_init (member, init, from_init_list);
       mem_init_list = TREE_CHAIN (mem_init_list);
     }
 }
@@ -992,7 +1066,7 @@ expand_member_init (exp, name, init)
 	  return;
 	}
 
-      member_init = build_tree_list (name, init);
+      member_init = build_tree_list (field, init);
       current_member_init_list = chainon (current_member_init_list, member_init);
     }
 }
