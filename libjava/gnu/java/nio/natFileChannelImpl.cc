@@ -28,6 +28,7 @@ details.  */
 #include <gnu/java/nio/FileChannelImpl.h>
 #include <java/io/FileDescriptor.h>
 #include <java/io/IOException.h>
+#include <java/nio/ByteBuffer.h>
 #include <java/nio/channels/FileChannel.h>
 
 jlong
@@ -47,6 +48,21 @@ gnu::java::nio::FileChannelImpl::implPosition (jlong newPosition)
 {
   fd->seek (newPosition, ::java::io::FileDescriptor::SET, true);
   return this;
+}
+
+jint
+gnu::java::nio::FileChannelImpl::implRead (JArray<jbyte>* buffer,
+                                           jint offset, jint len)
+{
+  return fd->read (buffer, offset, len);
+}
+
+jint
+gnu::java::nio::FileChannelImpl::implWrite (JArray<jbyte>* buffer,
+                                            jint offset, jint len)
+{
+  fd->write (buffer, offset, len);
+  return len;
 }
 
 java::nio::channels::FileChannel*

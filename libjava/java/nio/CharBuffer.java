@@ -83,6 +83,9 @@ public abstract class CharBuffer extends Buffer
    */
   final public static CharBuffer wrap (CharSequence a, int offset, int length)
   {
+    // FIXME: implement better handling of java.lang.String.
+    // Probably share data with String via reflection.
+	  
     if ((offset < 0)
         || (offset > a.length ())
         || (length < 0)

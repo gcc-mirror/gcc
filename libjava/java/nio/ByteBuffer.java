@@ -251,7 +251,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    */
   public int hashCode()
   {
-    // FIXME: Check what SUN calcs here
+    // FIXME: Check what SUN calculates here
     return super.hashCode();
   }
 
@@ -344,7 +344,8 @@ public abstract class ByteBuffer extends Buffer implements Comparable
   /**
    * Absolute get method.
    *
-   * @exception IndexOutOfBoundsException FIXME
+   * @exception IndexOutOfBoundsException If index &lt; 0 or index &gt;= this
+   * buffers limit.
    */
   public abstract byte get (int index);
   
@@ -352,7 +353,8 @@ public abstract class ByteBuffer extends Buffer implements Comparable
    * Absolute put method.
    *
    * @exception ReadOnlyBufferException If this buffer is read-only
-   * @exception IndexOutOfBoundsException FIXME
+   * @exception IndexOutOfBoundsException If index &lt; 0 or index &gt;= this
+   * buffers limit.
    */
   public abstract ByteBuffer put (int index, byte b);
   
