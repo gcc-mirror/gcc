@@ -4809,7 +4809,7 @@ changequote([,])dnl
 	rm -f conftest.s conftest.o
     fi
     if test x"$gcc_cv_as_instructions" != x; then
-	AC_DEFINE_UNQUOTED(HAVE_GAS_`echo "$gcc_cv_as_instructions" | tr '[a-z ]' '[A-Z_]'`)
+	AC_DEFINE_UNQUOTED(HAVE_GAS_`echo "$gcc_cv_as_instructions" | sed -e 's/ $//' | tr '[a-z ]' '[A-Z_]'`)
     fi
     AC_MSG_RESULT($gcc_cv_as_instructions)
     ;;
