@@ -2178,7 +2178,7 @@ immed_double_const (i0, i1, mode)
 	 is being broken.  */
 
       if (width <= HOST_BITS_PER_WIDE_INT)
-	i1 = (i0 < 0) ? ~0 : 0;
+	i1 = (i0 < 0) ? ~(HOST_WIDE_INT) 0 : 0;
 
       /* If this integer fits in one word, return a CONST_INT.  */
       if ((i1 == 0 && i0 >= 0)
@@ -2490,7 +2490,7 @@ const_hash (exp)
 	     Instead, we include the array size because the constructor could
 	     be shorter.  */
 	  if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE)
-	    hi = ((HOST_WIDE_INT) TREE_TYPE (exp) & ((1 << HASHBITS) - 1))
+	    hi = ((unsigned long) TREE_TYPE (exp) & ((1 << HASHBITS) - 1))
 	      % MAX_HASH_TABLE;
 	  else
 	    hi = ((5 + int_size_in_bytes (TREE_TYPE (exp)))
@@ -3257,7 +3257,7 @@ static struct pool_sym **const_rtx_sym_hash_table;
    The argument is XSTR (... , 0)  */
 
 #define SYMHASH(LABEL)	\
-  ((((HOST_WIDE_INT) (LABEL)) & ((1 << HASHBITS) - 1))  % MAX_RTX_HASH_TABLE)
+  ((((unsigned long) (LABEL)) & ((1 << HASHBITS) - 1))  % MAX_RTX_HASH_TABLE)
 
 /* Initialize constant pool hashing for next function.  */
 

@@ -272,7 +272,7 @@ static int next_type_uid = 1;
 
 /* Here is how primitive or already-canonicalized types' hash
    codes are made.  */
-#define TYPE_HASH(TYPE) ((HOST_WIDE_INT) (TYPE) & 0777777)
+#define TYPE_HASH(TYPE) ((unsigned long) (TYPE) & 0777777)
 
 extern char *mode_name[];
 

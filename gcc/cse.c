@@ -1918,12 +1918,12 @@ canon_hash (x, mode)
       /* Assume there is only one rtx object for any given label.  */
     case LABEL_REF:
       hash
-	+= ((unsigned) LABEL_REF << 7) + (unsigned HOST_WIDE_INT) XEXP (x, 0);
+	+= ((unsigned) LABEL_REF << 7) + (unsigned long) XEXP (x, 0);
       return hash;
 
     case SYMBOL_REF:
       hash
-	+= ((unsigned) SYMBOL_REF << 7) + (unsigned HOST_WIDE_INT) XSTR (x, 0);
+	+= ((unsigned) SYMBOL_REF << 7) + (unsigned long) XSTR (x, 0);
       return hash;
 
     case MEM:
