@@ -1,3 +1,15 @@
+2004-10-14  Dorit Naishlos  <dorit@il.bim.com>
+
+	* tree-vectorizer.c (get_vectype_for_scalar_type): Added debug prinouts.
+	Added check that vectype is VECTOR_MODE_P, instead of check for BLKmode.
+	(vect_analyze_operations): Make sure the vectorization factor > 1. Add
+	gcc_assert under ENABLE_CHECKING.
+	(vectorizable_operation): Remove check for VECTOR_MODE_P (moved to
+	get_vectype_for_scalar_type).
+
+	(vect_get_vec_def_for_operand): Remove redundant variables.
+	(vect_transform_loop): Likewise.
+
 2004-10-14  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/arm/arm.h (CONDITIONAL_REGISTER_USAGE): Make r11 fixed and

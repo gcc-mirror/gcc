@@ -848,8 +848,31 @@ get_vectype_for_scalar_type (tree scalar_type)
   nunits = UNITS_PER_SIMD_WORD / nbytes;
 
   vectype = build_vector_type (scalar_type, nunits);
-  if (TYPE_MODE (vectype) == BLKmode)
+  if (vect_debug_details (NULL))
+    {
+      fprintf (dump_file, "get vectype with %d units of type ", nunits);
+      print_generic_expr (dump_file, scalar_type, TDF_SLIM);
+    }
+
+  if (!vectype)
     return NULL_TREE;
+
+  if (vect_debug_details (NULL))
+    {
+      fprintf (dump_file, "vectype: ");
+      print_generic_expr (dump_file, vectype, TDF_SLIM);
+    }
+
+  if (!VECTOR_MODE_P (TYPE_MODE (vectype)))
+    {
+      /* TODO: tree-complex.c sometimes can parallelize operations
+         on generic vectors.  We can vectorize the loop in that case,
+         but then we should re-run the lowering pass.  */
+      if (vect_debug_details (NULL))
+        fprintf (dump_file, "mode not supported by target.");
+      return NULL_TREE;
+    }
+
   return vectype;
 }
 
@@ -1157,11 +1180,6 @@ vect_get_vec_def_for_operand (tree op, tree stmt)
       /* Create 'vect_cst_ = {cst,cst,...,cst}'  */
 
       tree vec_cst;
-      stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
-      tree vectype = STMT_VINFO_VECTYPE (stmt_vinfo);
-      int nunits = GET_MODE_NUNITS (TYPE_MODE (vectype));
-      tree t = NULL_TREE;
-      int i;
 
       /* Build a tree with vector elements.  */
       if (vect_debug_details (NULL))
@@ -1408,16 +1426,6 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
       return false;
     }
   vec_mode = TYPE_MODE (vectype);
-  if (!VECTOR_MODE_P (vec_mode))
-    {
-      /* TODO: tree-complex.c sometimes can parallelize operations
-	 on generic vectors.  We can vectorize the loop in that case,
-	 but then we should re-run the lowering pass.  */
-      if (vect_debug_details (NULL))
-	fprintf (dump_file, "mode not supported by target.");
-      return false;
-    }
-
   if (optab->handlers[(int) vec_mode].insn_code == CODE_FOR_nothing)
     {
       if (vect_debug_details (NULL))
@@ -1905,9 +1913,6 @@ vect_transform_loop (loop_vec_info loop_vinfo,
 	  tree stmt = bsi_stmt (si);
 	  stmt_vec_info stmt_info;
 	  bool is_store;
-#ifdef ENABLE_CHECKING
-	  tree vectype;
-#endif
 
 	  if (vect_debug_details (NULL))
 	    {
@@ -1924,8 +1929,7 @@ vect_transform_loop (loop_vec_info loop_vinfo,
 #ifdef ENABLE_CHECKING
 	  /* FORNOW: Verify that all stmts operate on the same number of
 	             units and no inner unrolling is necessary.  */
-	  vectype = STMT_VINFO_VECTYPE (stmt_info);
-	  gcc_assert (GET_MODE_NUNITS (TYPE_MODE (vectype))
+	  gcc_assert (GET_MODE_NUNITS (TYPE_MODE (STMT_VINFO_VECTYPE (stmt_info)))
 		      == vectorization_factor);
 #endif
 	  /* -------- vectorize statement ------------ */
@@ -2155,11 +2159,17 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 	    }
 	  else
 	    vectorization_factor = nunits;
+
+#ifdef ENABLE_CHECKING
+	  gcc_assert (GET_MODE_SIZE (TYPE_MODE (scalar_type))
+			* vectorization_factor == UNITS_PER_SIMD_WORD);
+#endif
 	}
     }
 
   /* TODO: Analyze cost. Decide if worth while to vectorize.  */
-  if (!vectorization_factor)
+
+  if (vectorization_factor <= 1)
     {
       if (vect_debug_stats (loop) || vect_debug_details (loop))
         fprintf (dump_file, "not vectorized: unsupported data-type");

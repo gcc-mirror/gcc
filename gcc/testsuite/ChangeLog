@@ -1,3 +1,10 @@
+2004-10-14  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* gcc.dg/vect/vect-82.c: New testcase.	
+	* gcc.dg/vect/vect-82_64.c: New testcase.	
+	* gcc.dg/vect/vect-83.c: New testcase.	
+	* gcc.dg/vect/vect-83_64.c: New testcase.	
+
 2004-10-14  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/cpp/error-1.c: New test.
