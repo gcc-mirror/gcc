@@ -1,5 +1,15 @@
 2001-10-25  Ed Schonberg <schonber@gnat.com>
 
+	* sem_res.adb (Resolve_Call): if the call is actually an indexing 
+        operation on the result of a parameterless call, perform elaboration 
+        check after the node has been properly rewritten.
+	
+	* sem_ch12.adb (Copy_Generic_Node): after the proper body has been 
+        inlined within the generic tree, the defining identifier is not a 
+        compilation_unit.
+
+2001-10-25  Ed Schonberg <schonber@gnat.com>
+
 	* sem_res.adb (Resolve): special-case resolution of Null in an 
          instance or an inlined body to avoid view conflicts.
 	

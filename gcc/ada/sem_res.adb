@@ -3130,7 +3130,6 @@ package body Sem_Res is
             Index_Node : Node_Id;
 
          begin
-            Check_Elab_Call (N);
 
             if Component_Type (Etype (Nam)) /= Any_Type then
                Index_Node :=
@@ -3147,6 +3146,7 @@ package body Sem_Res is
                Set_Etype (Prefix (N), Etype (Nam));
                Set_Etype (N, Typ);
                Resolve_Indexed_Component (N, Typ);
+               Check_Elab_Call (Prefix (N));
             end if;
 
             return;
