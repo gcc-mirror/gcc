@@ -4053,6 +4053,12 @@ assign_parms (fndecl, second_time)
 	      push_to_sequence (conversion_insns);
 	      entry_parm = convert_to_mode (nominal_mode, tempreg,
 					    TREE_UNSIGNED (TREE_TYPE (parm)));
+	      if (stack_parm)
+		{
+		  /* ??? This may need a big-endian conversion on sparc64.  */
+		  stack_parm = change_address (stack_parm, nominal_mode,
+					       NULL_RTX);
+		}
 	      conversion_insns = get_insns ();
 	      did_conversion = 1;
 	      end_sequence ();
