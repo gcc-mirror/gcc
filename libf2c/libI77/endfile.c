@@ -1,6 +1,8 @@
+#include "config.h"
 #include "f2c.h"
 #include "fio.h"
 
+#include <sys/types.h>
 #include <unistd.h>
 
 #ifdef KR_headers
