@@ -1,3 +1,9 @@
+2001-05-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/2781
+	* optimize.c (update_cloned_parm): Copy addressability and other
+	flags.
+
 2001-05-18  Jason Merrill  <jason_merrill@redhat.com>
 
 	* class.c (build_vtable): Set DECL_ASSEMBLER_NAME for vtables here.

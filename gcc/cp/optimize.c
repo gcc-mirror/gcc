@@ -1022,6 +1022,14 @@ update_cloned_parm (parm, cloned_parm)
 {
   DECL_ABSTRACT_ORIGIN (cloned_parm) = parm;
   
+  /* We may have taken its address. */
+  TREE_ADDRESSABLE (cloned_parm) = TREE_ADDRESSABLE (parm);
+  
+  /* The definition might have different constness. */
+  TREE_READONLY (cloned_parm) = TREE_READONLY (parm);
+  
+  TREE_USED (cloned_parm) = TREE_USED (parm);
+  
   /* The name may have changed from the declaration. */
   DECL_NAME (cloned_parm) = DECL_NAME (parm);
   DECL_SOURCE_FILE (cloned_parm) = DECL_SOURCE_FILE (parm);
