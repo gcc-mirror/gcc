@@ -236,7 +236,7 @@ extern int target_flags;
 
 /* ALIGN FRAMES on double word boundaries */
 
-#define SPARC_STACK_ALIGN(LOC) (((LOC)+7) & 0xfffffff8)
+#define SPARC_STACK_ALIGN(LOC) (((LOC)+7) & (~7))
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY 32
