@@ -29,6 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #include <stdio.h>
 #include "flags.h"
 #include "rtl.h"
+#include "tree.h"
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "real.h"
@@ -38,6 +39,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "recog.h"
 #include "insn-attr.h"
+#include "expr.h"
 
 static rtx find_addr_reg ();
 
@@ -1323,6 +1325,7 @@ output_block_move (operands)
   return "";
 }
 
+#if 0
 /* Output a delayed branch insn with the delay insn in its
    branch slot.  The delayed branch insn template is in TEMPLATE,
    with operands OPERANDS.  The insn in its delay slot is INSN.
@@ -1343,6 +1346,9 @@ output_block_move (operands)
 	or l%x,%0,%1
 
    */
+/* ??? Disabled because this re-recognition is incomplete and causes
+   constrain_operands to segfault.  Anyone who cares should fix up
+   the code to use the DBR pass.  */
 
 char *
 output_delayed_branch (template, operands, insn)
@@ -1512,6 +1518,7 @@ output_delay_insn (delay_insn)
   output_asm_insn (template, recog_operand);
   return "";
 }
+#endif
 
 /* Special routine to convert an SFmode value represented as a
    CONST_DOUBLE into its equivalent unsigned long bit pattern.
@@ -2094,4 +2101,251 @@ function_epilogue (asm_file, local_bytes)
   fputs(".TDESC\n", asm_file);
   text_section();
 #endif
+}
+
+
+/* Expand a library call to __builtin_saveregs.  */
+rtx
+i860_saveregs ()
+{
+  rtx fn = gen_rtx_SYMBOL_REF (Pmode, "__builtin_saveregs");
+  rtx save = gen_reg_rtx (Pmode);
+  rtx valreg = LIBCALL_VALUE (Pmode);
+  rtx ret;
+
+  /* The return value register overlaps the first argument register.
+     Save and restore it around the call.  */
+  emit_move_insn (save, valreg);
+  ret = emit_library_call_value (fn, NULL_RTX, 1, Pmode, 0);
+  if (GET_CODE (ret) != REG || REGNO (ret) < FIRST_PSEUDO_REGISTER)
+    ret = copy_to_reg (ret);
+  emit_move_insn (valreg, save);
+
+  return ret;
+}
+
+tree
+i860_build_va_list ()
+{
+  tree field_ireg_used, field_freg_used, field_reg_base, field_mem_ptr;
+  tree record;
+
+  record = make_node (RECORD_TYPE);
+
+  field_ireg_used = build_decl (FIELD_DECL, get_identifier ("__ireg_used"),
+				unsigned_type_node);
+  field_freg_used = build_decl (FIELD_DECL, get_identifier ("__freg_used"),
+				unsigned_type_node);
+  field_reg_base = build_decl (FIELD_DECL, get_identifier ("__reg_base"),
+			       ptr_type_node);
+  field_mem_ptr = build_decl (FIELD_DECL, get_identifier ("__mem_ptr"),
+			      ptr_type_node);
+
+  DECL_FIELD_CONTEXT (field_ireg_used) = record;
+  DECL_FIELD_CONTEXT (field_freg_used) = record;
+  DECL_FIELD_CONTEXT (field_reg_base) = record;
+  DECL_FIELD_CONTEXT (field_mem_ptr) = record;
+
+#ifdef I860_SVR4_VA_LIST
+  TYPE_FIELDS (record) = field_ireg_used;
+  TREE_CHAIN (field_ireg_used) = field_freg_used;
+  TREE_CHAIN (field_freg_used) = field_reg_base;
+  TREE_CHAIN (field_reg_base) = field_mem_ptr;
+#else
+  TYPE_FIELDS (record) = field_reg_base;
+  TREE_CHAIN (field_reg_base) = field_mem_ptr;
+  TREE_CHAIN (field_mem_ptr) = field_ireg_used;
+  TREE_CHAIN (field_ireg_used) = field_freg_used;
+#endif
+
+  layout_type (record);
+  return record;
+}
+
+void
+i860_va_start (stdarg_p, valist, nextarg)
+     int stdarg_p;
+     tree valist;
+     rtx nextarg;
+{
+  tree saveregs, t;
+
+  saveregs = make_tree (build_pointer_type (va_list_type_node),
+			expand_builtin_saveregs ());
+  saveregs = build1 (INDIRECT_REF, va_list_type_node, saveregs);
+
+  if (stdarg_p)
+    {
+      tree field_ireg_used, field_freg_used, field_reg_base, field_mem_ptr;
+      tree ireg_used, freg_used, reg_base, mem_ptr;
+
+#ifdef I860_SVR4_VA_LIST
+      field_ireg_used = TYPE_FIELDS (va_list_type_node);
+      field_freg_used = TREE_CHAIN (field_ireg_used);
+      field_reg_base = TREE_CHAIN (field_freg_used);
+      field_mem_ptr = TREE_CHAIN (field_reg_base);
+#else
+      field_reg_base = TYPE_FIELDS (va_list_type_node);
+      field_mem_ptr = TREE_CHAIN (field_reg_base);
+      field_ireg_used = TREE_CHAIN (field_mem_ptr);
+      field_freg_used = TREE_CHAIN (field_ireg_used);
+#endif
+
+      ireg_used = build (COMPONENT_REF, TREE_TYPE (field_ireg_used),
+			 valist, field_ireg_used);
+      freg_used = build (COMPONENT_REF, TREE_TYPE (field_freg_used),
+			 valist, field_freg_used);
+      reg_base = build (COMPONENT_REF, TREE_TYPE (field_reg_base),
+			valist, field_reg_base);
+      mem_ptr = build (COMPONENT_REF, TREE_TYPE (field_mem_ptr),
+		       valist, field_mem_ptr);
+
+      t = build_int_2 (current_function_args_info.ints, 0);
+      t = build (MODIFY_EXPR, TREE_TYPE (ireg_used), ireg_used, t);
+      TREE_SIDE_EFFECTS (t) = 1;
+      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+      
+      t = build_int_2 (ROUNDUP (current_function_args_info.floats, 8), 0);
+      t = build (MODIFY_EXPR, TREE_TYPE (freg_used), freg_used, t);
+      TREE_SIDE_EFFECTS (t) = 1;
+      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+      
+      t = build (COMPONENT_REF, TREE_TYPE (field_reg_base),
+		 saveregs, field_reg_base);
+      t = build (MODIFY_EXPR, TREE_TYPE (reg_base), reg_base, t);
+      TREE_SIDE_EFFECTS (t) = 1;
+      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+      t = make_tree (ptr_type_node, nextarg);
+      t = build (MODIFY_EXPR, TREE_TYPE (mem_ptr), mem_ptr, t);
+      TREE_SIDE_EFFECTS (t) = 1;
+      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+    }
+  else
+    {
+      t = build (MODIFY_EXPR, va_list_type_node, valist, saveregs);
+      TREE_SIDE_EFFECTS (t) = 1;
+      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+    }
+}
+
+#define NUM_PARM_FREGS	8
+#define NUM_PARM_IREGS	12
+#ifdef I860_SVR4_VARARGS
+#define FREG_OFFSET 0
+#define IREG_OFFSET (NUM_PARM_FREGS * UNITS_PER_WORD)
+#else
+#define FREG_OFFSET (NUM_PARM_IREGS * UNITS_PER_WORD)
+#define IREG_OFFSET 0
+#endif
+
+rtx
+i860_va_arg (valist, type)
+     tree valist, type;
+{
+  tree field_ireg_used, field_freg_used, field_reg_base, field_mem_ptr;
+  tree type_ptr_node, t;
+  rtx lab_over = NULL_RTX;
+  rtx ret, val;
+  HOST_WIDE_INT align;
+
+#ifdef I860_SVR4_VA_LIST
+  field_ireg_used = TYPE_FIELDS (va_list_type_node);
+  field_freg_used = TREE_CHAIN (field_ireg_used);
+  field_reg_base = TREE_CHAIN (field_freg_used);
+  field_mem_ptr = TREE_CHAIN (field_reg_base);
+#else
+  field_reg_base = TYPE_FIELDS (va_list_type_node);
+  field_mem_ptr = TREE_CHAIN (field_reg_base);
+  field_ireg_used = TREE_CHAIN (field_mem_ptr);
+  field_freg_used = TREE_CHAIN (field_ireg_used);
+#endif
+
+  field_ireg_used = build (COMPONENT_REF, TREE_TYPE (field_ireg_used),
+			   valist, field_ireg_used);
+  field_freg_used = build (COMPONENT_REF, TREE_TYPE (field_freg_used),
+			   valist, field_freg_used);
+  field_reg_base = build (COMPONENT_REF, TREE_TYPE (field_reg_base),
+			  valist, field_reg_base);
+  field_mem_ptr = build (COMPONENT_REF, TREE_TYPE (field_mem_ptr),
+			 valist, field_mem_ptr);
+
+  ret = gen_reg_rtx (Pmode);
+  type_ptr_node = build_pointer_type (type);
+
+  if (! AGGREGATE_TYPE_P (type))
+    {
+      int nparm, incr, ofs;
+      tree field;
+      rtx lab_false;
+
+      if (FLOAT_TYPE_P (type))
+	{
+	  field = field_freg_used;
+	  nparm = NUM_PARM_FREGS;
+	  incr = 2;
+	  ofs = FREG_OFFSET;
+	}
+      else
+	{
+	  field = field_ireg_used;
+	  nparm = NUM_PARM_IREGS;
+	  incr = int_size_in_bytes (type) / UNITS_PER_WORD;
+	  ofs = IREG_OFFSET;
+	}
+
+      lab_false = gen_label_rtx ();
+      lab_over = gen_label_rtx ();
+
+      emit_cmp_and_jump_insns (expand_expr (field, NULL_RTX, 0, 0),
+			       GEN_INT (nparm - incr), GT, const0_rtx,
+			       TYPE_MODE (TREE_TYPE (field)),
+			       TREE_UNSIGNED (field), 0, lab_false);
+
+      t = fold (build (POSTINCREMENT_EXPR, TREE_TYPE (field), field,
+		       build_int_2 (incr, 0)));
+      TREE_SIDE_EFFECTS (t) = 1;
+
+      t = fold (build (MULT_EXPR, TREE_TYPE (field), field,
+		       build_int_2 (UNITS_PER_WORD, 0)));
+      TREE_SIDE_EFFECTS (t) = 1;
+      
+      t = fold (build (PLUS_EXPR, ptr_type_node, field_reg_base,
+		       fold (build (PLUS_EXPR, TREE_TYPE (field), t,
+				    build_int_2 (ofs, 0)))));
+      TREE_SIDE_EFFECTS (t) = 1;
+      
+      val = expand_expr (t, ret, VOIDmode, EXPAND_NORMAL);
+      if (val != ret)
+	emit_move_insn (ret, val);
+
+      emit_jump_insn (gen_jump (lab_over));
+      emit_barrier ();
+      emit_label (lab_false);
+    }
+
+  align = TYPE_ALIGN (type);
+  if (align < BITS_PER_WORD)
+    align = BITS_PER_WORD;
+  align /= BITS_PER_UNIT;
+
+  t = build (PLUS_EXPR, ptr_type_node, field_mem_ptr,
+	     build_int_2 (align - 1, 0));
+  t = build (BIT_AND_EXPR, ptr_type_node, t, build_int_2 (-align, -1));
+
+  val = expand_expr (t, ret, VOIDmode, EXPAND_NORMAL);
+  if (val != ret)
+    emit_move_insn (ret, val);
+
+  t = fold (build (PLUS_EXPR, ptr_type_node,
+		   make_tree (ptr_type_node, ret),
+		   build_int_2 (int_size_in_bytes (type), 0)));
+  t = build (MODIFY_EXPR, ptr_type_node, field_mem_ptr, t);
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  if (lab_over)
+    emit_label (lab_over);
+
+  return ret;
 }

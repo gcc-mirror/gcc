@@ -1,3 +1,18 @@
+Sun Jul 25 23:51:59 1999  Richard Henderson  <rth@cygnus.com>
+
+	* i860.h (EXPAND_BUILTIN_SAVEREGS): New.
+	(BUILD_VA_LIST_TYPE): New.
+	(EXPAND_BUILTIN_VA_START): New.
+	(EXPAND_BUILTIN_VA_ARG): New.
+	* i860.c (output_delayed_branch): Disable.
+	(output_delay_insn): Likewise.
+	(i860_saveregs): New.
+	(i860_build_va_list): New.
+	(i860_va_start): New.
+	(i860_va_arg): New.
+	* i860.md: Disable all peepholes using output_delayed_branch.
+	* i860/sysv4.h (I860_SVR4_VA_LIST): New.
+
 Sun Jul 25 23:44:13 1999  Richard Henderson  <rth@cygnus.com>
 
 	* clipper.h (EXPAND_BUILTIN_SAVEREGS): Remove argument.

@@ -596,6 +596,22 @@ struct cumulative_args { int ints, floats; };
 
 #define FUNCTION_EPILOGUE(FILE, SIZE) function_epilogue ((FILE), (SIZE))
 
+/* Generate necessary RTL for __builtin_saveregs().  */
+#define EXPAND_BUILTIN_SAVEREGS() \
+  i860_saveregs()
+
+/* Define the `__builtin_va_list' type for the ABI.  */
+#define BUILD_VA_LIST_TYPE(VALIST) \
+  (VALIST) = i860_build_va_list ()
+
+/* Implement `va_start' for varargs and stdarg.  */
+#define EXPAND_BUILTIN_VA_START(stdarg, valist, nextarg) \
+  i860_va_start (stdarg, valist, nextarg)
+
+/* Implement `va_arg'.  */
+#define EXPAND_BUILTIN_VA_ARG(valist, type) \
+  i860_va_arg (valist, type)
+
 /* Store in the variable DEPTH the initial difference between the
    frame pointer reg contents and the stack pointer reg contents,
    as of the start of the function body.  This depends on the layout
@@ -1428,5 +1444,7 @@ extern char *output_move_double ();
 extern char *output_fp_move_double ();
 extern char *output_block_move ();
 extern char *output_delay_insn ();
+#if 0
 extern char *output_delayed_branch ();
+#endif
 extern void output_load_address ();
