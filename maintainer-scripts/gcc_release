@@ -521,7 +521,6 @@ else
   # was.
   if [ $LOCAL -ne 0 ]; then
     LAST_DATE=`cat ~/.snapshot_date`
-    PREV_LAST_DATE=`cat ~/.prev_snapshot_date`
     LAST_LONG_DATE=`date --date=$LAST_DATE +%Y-%m-%d`
     LAST_DIR=~ftp/pub/gcc/snapshots/${LAST_LONG_DATE}
     OLD_TARS=${LAST_DIR}/gcc-${LAST_DATE}.tar.gz
@@ -588,15 +587,14 @@ if [ $MODE_UPLOAD -ne 0 ]; then
   if [ $SNAPSHOT -ne 0 ] && [ $LOCAL -ne 0 ]; then
     # Update links on the FTP server.
     TEXT_DATE=`date --date=$DATE +%B\ %d,\ %Y`
-    LAST_TEXT_DATE=`date --date=$LAST_DATE +%B\ %d,\ %Y`
     cd ~ftp/pub/gcc/snapshots
-    sed -e "s%$LAST_DATE%$DATE%g" -e "s%$PREV_LAST_DATE%$LAST_DATE%g" \
-      -e "s%$LAST_LONG_DATE%$LONG_DATE%g" \
-      -e "s%$LAST_TEXT_DATE%$TEXT_DATE%g" < README > $$
+    sed -e "s%@DATE@%$DATE%g" -e "s%@LAST_DATE@%$LAST_DATE%g" \
+      -e "s%@LONG_DATE@%$LONG_DATE%g" \
+      -e "s%@TEXT_DATE@%$TEXT_DATE%g" < ~/scripts/snapshot-README > $$
     mv $$ README
-    sed -e "s%$LAST_DATE%$DATE%g" -e "s%$PREV_LAST_DATE%$LAST_DATE%g" \
-      -e "s%$LAST_LONG_DATE%$LONG_DATE%g" \
-      -e "s%$LAST_TEXT_DATE%$TEXT_DATE%g" < index.html > $$
+    sed -e "s%@DATE@%$DATE%g" -e "s%@LAST_DATE@%$LAST_DATE%g" \
+      -e "s%@LONG_DATE@%$LONG_DATE%g" \
+      -e "s%@TEXT_DATE@%$TEXT_DATE%g" < ~/scripts/snapshot-index.html > $$
     mv $$ index.html
 
     touch LATEST-IS-$LONG_DATE
@@ -604,7 +602,6 @@ if [ $MODE_UPLOAD -ne 0 ]; then
 
     # Update snapshot date file.
     changedir ~
-    mv .snapshot_date .prev_snapshot_date
     echo $DATE >.snapshot_date
 
     # Update gcc_latest_snapshot tag.
@@ -612,6 +609,7 @@ if [ $MODE_UPLOAD -ne 0 ]; then
     ${CVS} rtag -rgcc_ss_${DATE} gcc_latest_snapshot gcc
 
     # Announce the snapshot.
+    export QMAILHOST=gcc.gnu.org
     mail -s "gcc-ss-$DATE is now available" gcc@gcc.gnu.org < ~ftp/pub/gcc/snapshots/README
 
     # Remove working directory
