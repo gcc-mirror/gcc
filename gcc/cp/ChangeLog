@@ -1,3 +1,7 @@
+1998-08-14  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* rtti.c (get_tinfo_fn): Don't mess with the context for now.
+
 1998-08-13  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* decl2.c (import_export_class): Don't use dllexport
