@@ -550,6 +550,16 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
     {
       tree src = PHI_ARG_DEF_FROM_EDGE (phi, e);
       tree dst = PHI_RESULT (phi);
+
+      /* If the desired argument is not the same as this PHI's result 
+	 and it is set by a PHI in this block, then we can not thread
+	 through this block.  */
+      if (src != dst
+	  && TREE_CODE (src) == SSA_NAME
+	  && TREE_CODE (SSA_NAME_DEF_STMT (src)) == PHI_NODE
+	  && bb_for_stmt (SSA_NAME_DEF_STMT (src)) == e->dest)
+	return;
+
       record_const_or_copy (dst, src);
       register_new_def (dst, &block_defs_stack);
     }
