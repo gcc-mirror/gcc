@@ -1,3 +1,8 @@
+Wed Mar 10 00:01:24 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (reload_combine_note_store): Fix calculation of number
+	of affected registers.
+
 Tue Mar  9 15:48:15 1999  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (tidy_fallthru_edge): Be more careful finding the last
