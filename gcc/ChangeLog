@@ -1,5 +1,23 @@
 Sat Oct 27 17:32:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* dwarf2out.c (reg_number): Abort if pseudo.
+	(reg_loc_descriptor): Return 0 if pseudo.
+	(is_based_loc): Return 0 if pseudo.
+	(mem_loc_descriptor): Return 0 for pseudo and handle 0 return from
+	recursive calls.
+	(concat_loc_descriptor): Return 0 if either part's descriptor is 0.
+	(loc_descriptor): Return 0 if can't find location and handle 0
+	return from recursive calls.
+	(loc_descriptor_from_tree): Likewise.
+	Fix handling of indirect.
+	Also return 0 for PLACEHOLDER_EXPR.
+	Clean up COMPONENT_REF cases.
+	(add_AT_location_descriptor): Simplify, but handle 0 return from
+	loc_descriptor.
+	(add_const_value_attribute): Avoid shift count warning.
+	(add_bound_info): Remove test for PLACEHOLDER_EXPR here.
+	Set comp_unit_die as context if not in function.
+
 	* config/mips/mips-protos.h: Break up long lines.
 	Remove needless #ifdef/#endif blocks.
 	Don't declare functions declared in file made by genpreds or recog.h.
