@@ -1,3 +1,10 @@
+2003-05-02  Zack Weinberg  <zack@codesourcery.com>
+
+	PR c/10604
+	* c-opts.c (c_common_decode_option <OPT_Wall>): Set
+	warn_sign_compare for C++ only.
+	* doc/invoke.texi: Clarify documentation of -Wsign-compare.
+
 2003-05-03  Falk Hueffner <falk.hueffner@student.uni-tuebingen.de>
 	    Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
@@ -7,17 +14,17 @@
 2003-05-02  Richard Henderson  <rth@redhat.com>
 
 	PR c++/10570
-        * except.c: Revert 04-01 and 04-02 forced-unwind changes.
-        * flags.h, toplev.c, doc/invoke.texi: Likewise.
+	* except.c: Revert 04-01 and 04-02 forced-unwind changes.
+	* flags.h, toplev.c, doc/invoke.texi: Likewise.
 
-        * unwind-dw2.c (_Unwind_GetCFA): Fix ptr->int conversion warning.
-        * unwind.inc (_Unwind_DeleteException): Check for null
-        exception_cleanup.
-   
-        * unwind-sjlj.c (_Unwind_SjLj_Resume_or_Rethrow): New.
-        * unwind.inc (_Unwind_Resume_or_Rethrow): New.
-        * unwind.h: Declare them.
-        * libgcc-std.ver (GCC_3.3): Export them.
+	* unwind-dw2.c (_Unwind_GetCFA): Fix ptr->int conversion warning.
+	* unwind.inc (_Unwind_DeleteException): Check for null
+	exception_cleanup.
+
+	* unwind-sjlj.c (_Unwind_SjLj_Resume_or_Rethrow): New.
+	* unwind.inc (_Unwind_Resume_or_Rethrow): New.
+	* unwind.h: Declare them.
+	* libgcc-std.ver (GCC_3.3): Export them.
 
 2003-05-02  Steven Bosscher  <steven@gcc.gnu.org>
 
@@ -31,16 +38,16 @@
 	* doc/contrib.texi (Contributors): Add Daniel Berlin.
 
 2003-05-01  Rodney Brown  <rbrown64@csc.com.au>
- 
+
       * rtl.h (subreg_offset_representable_p): Prototype.
 
 2003-05-01  Roger Sayle  <roger@eyesopen.com>
 
-        PR fortran/9974
-        * gcse.c (reg_killed_on_edge): New function to test whether the
-        given reg is overwritten by any instruction queued on an edge.
-        (bypass_block): Ignore substitutions killed on incoming edges.
-        Don't bypass outgoing edges that have queued instructions.
+	PR fortran/9974
+	* gcse.c (reg_killed_on_edge): New function to test whether the
+	given reg is overwritten by any instruction queued on an edge.
+	(bypass_block): Ignore substitutions killed on incoming edges.
+	Don't bypass outgoing edges that have queued instructions.
 
 2003-04-30  Andreas Schwab  <schwab@suse.de>
 
@@ -50,13 +57,13 @@
 2003-04-29  Jason Merrill  <jason@redhat.com>
 
 	PR middle-end/10336
-	* jump.c (never_reached_warning): Really stop looking if we reach 
+	* jump.c (never_reached_warning): Really stop looking if we reach
 	the beginning of the function.
 
 Tue Apr 29 21:07:00 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cse.c (count_reg_usage): Revert my previous patch.
-	
+
 2003-04-29  Alexander Kabaev  <kan@FreeBSD.ORG>
 
 	bootstrap/10452

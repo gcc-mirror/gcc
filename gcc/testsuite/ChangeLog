@@ -1,12 +1,17 @@
+2003-05-02  Zack Weinberg  <zack@codesourcery.com>
+
+	PR c/10604
+	* gcc.dg/compare7.c, g++.dg/warn/compare1.C: New testcases.
+
 2003-05-02  Richard Henderson  <rth@redhat.com>
 
 	PR c++/10570
-        * g++.dg/eh/forced1.C: Expect catch-all handlers to run.
-        Verify exception_cleanup not called for rethrows.
-        * g++.dg/eh/forced2.C: Test that exception_cleanup is called
-        when exiting catch block without rethrowing.
-        * g++.dg/eh/forced3.C: New.
-        * g++.dg/eh/forced4.C: New.
+	* g++.dg/eh/forced1.C: Expect catch-all handlers to run.
+	Verify exception_cleanup not called for rethrows.
+	* g++.dg/eh/forced2.C: Test that exception_cleanup is called
+	when exiting catch block without rethrowing.
+	* g++.dg/eh/forced3.C: New.
+	* g++.dg/eh/forced4.C: New.
 
 2003-04-29  Mark Mitchell  <mark@codesourcery.com>
 
@@ -69,12 +74,12 @@
 
 2003-04-23  Andreas Tobler <a.tobler@schweiz.ch>
 
-        * g++.dg/other/packed1.C: Append the missing brace.
+	* g++.dg/other/packed1.C: Append the missing brace.
 
 2003-04-22  Devang Patel  <dpatel@apple.com>
 
 	* gcc.dg/cpp/trad/funlike-5.c: New test.
-	
+
 2003-04-22  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10446
@@ -87,7 +92,7 @@
 
 2003-04-22  Andreas Tobler <a.tobler@schweiz.ch>
 
-        * g++.dg/other/packed1.C: Fix dg options.
+	* g++.dg/other/packed1.C: Fix dg options.
 
 2003-04-21  Mark Mitchell  <mark@codesourcery.com>
 

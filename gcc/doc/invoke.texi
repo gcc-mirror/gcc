@@ -2634,8 +2634,8 @@ casts like @code{(unsigned) -1}.
 @cindex signed and unsigned values, comparison warning
 Warn when a comparison between signed and unsigned values could produce
 an incorrect result when the signed value is converted to unsigned.
-This warning is also enabled by @option{-W}; to get the other warnings
-of @option{-W} without this warning, use @samp{-W -Wno-sign-compare}.
+This warning is enabled by @option{-W}, and by @option{-Wall}
+in C++ only.
 
 @item -Waggregate-return
 @opindex Waggregate-return

@@ -699,7 +699,8 @@ c_common_decode_option (argc, argv)
       warn_parentheses = on;
       warn_return_type = on;
       warn_sequence_point = on;	/* Was C only.  */
-      warn_sign_compare = on;	/* Was C++ only.  */
+      if (c_language == clk_cplusplus)
+	warn_sign_compare = on;
       warn_switch = on;
       warn_strict_aliasing = on;
       
