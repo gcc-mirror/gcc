@@ -1,3 +1,8 @@
+Fri Apr 21 18:11:56 2000  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* config/mn10300/mn10300.md (movdi, movdf): Do not use `movu' when
+	the operand is not constant.
+
 Fri Apr 21 14:58:29 2000  Denis Chertykov  <denisc@overta.ru>
 
 	* reload.c (find_equiv_reg): Checks all valueno and regno regs
