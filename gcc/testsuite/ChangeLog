@@ -1,3 +1,9 @@
+2004-06-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/15211
+	* gfortran.fortran-torture/execute/intrinsic_len.f90: Also test
+	LEN of a character array.
+
 2004-06-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15096
