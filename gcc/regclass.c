@@ -757,13 +757,11 @@ regclass (f, nregs)
 		}
 
 	      /* Check for commutative in a separate loop so everything will
-		 have been initialized.  Don't bother doing anything if the
-		 second operand is a constant since that is the case
-		 for which the constraints should have been written.  */
+		 have been initialized.  We must do this even if one operand
+		 is a constant--see addsi3 in m68k.md.  */
 	      
 	      for (i = 0; i < noperands - 1; i++)
-		if (constraints[i][0] == '%'
-		    && ! CONSTANT_P (recog_operand[i+1]))
+		if (constraints[i][0] == '%')
 		  {
 		    char *xconstraints[MAX_RECOG_OPERANDS];
 		    int j;
