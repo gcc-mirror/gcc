@@ -1330,12 +1330,14 @@ const_binop (code, arg1, arg2, notrunc)
 #if ! defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
   if (TREE_CODE (arg1) == REAL_CST)
     {
-      REAL_VALUE_TYPE d1 = TREE_REAL_CST (arg1);
-      REAL_VALUE_TYPE d2 = TREE_REAL_CST (arg2);
+      REAL_VALUE_TYPE d1;
+      REAL_VALUE_TYPE d2;
       int overflow = 0;
       REAL_VALUE_TYPE value;
       tree t;
 
+      d1 = TREE_REAL_CST (arg1);
+      d2 = TREE_REAL_CST (arg2);
       if (setjmp (float_error))
 	{
 	  t = copy_node (arg1);
