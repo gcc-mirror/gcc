@@ -1,3 +1,7 @@
+2002-03-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* jcf-parse.c (get_constant): Delete unused variables.
+
 2002-03-17  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* java-tree.h (java_parse_file): New.

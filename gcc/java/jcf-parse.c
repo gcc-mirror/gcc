@@ -347,8 +347,6 @@ get_constant (jcf, index)
 	tree name = get_name_constant (jcf, JPOOL_USHORT1 (jcf, index));
 	const char *utf8_ptr = IDENTIFIER_POINTER (name);
 	int utf8_len = IDENTIFIER_LENGTH (name);
-	unsigned char *str_ptr;
-	unsigned char *str;
 	const unsigned char *utf8;
 	int i;
 
