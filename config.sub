@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
 #   Free Software Foundation, Inc.
 
-version='2000-07-06'
+version='2000-08-07'
 
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
@@ -204,7 +204,7 @@ case $basic_machine in
 	# Recognize the basic CPU types without company name.
 	# Some are omitted here because they have special meanings below.
 	tahoe | i860 | ia64 | m32r | m68k | m68000 | m88k | ns32k | arc | arm \
-		| arme[lb] | pyramid | mn10200 | mn10300 | tron | a29k \
+		| arme[lb] | armv* | pyramid | mn10200 | mn10300 | tron | a29k \
 		| 580 | i960 | h8300 \
 		| x86 | ppcbe | mipsbe | mipsle | shbe | shle | armbe | armle \
 		| hppa | hppa1.0 | hppa1.1 | hppa2.0 | hppa2.0w | hppa2.0n \
@@ -299,14 +299,14 @@ case $basic_machine in
 		os=-sysv
 		;;
 	amiga | amiga-*)
-		basic_machine=m68k-cbm
+		basic_machine=m68k-unknown
 		;;
 	amigaos | amigados)
-		basic_machine=m68k-cbm
+		basic_machine=m68k-unknown
 		os=-amigaos
 		;;
 	amigaunix | amix)
-		basic_machine=m68k-cbm
+		basic_machine=m68k-unknown
 		os=-sysv4
 		;;
 	apollo68)
@@ -987,7 +987,7 @@ case $os in
 	      | -cygwin* | -pe* | -psos* | -moss* | -proelf* | -rtems* \
 	      | -mingw32* | -linux-gnu* | -uxpv* | -beos* | -mpeix* | -udk* \
 	      | -interix* | -uwin* | -rhapsody* | -darwin* | -opened* \
-	      | -openstep* | -oskit*)
+	      | -openstep* | -oskit* | -conix*)
 	# Remember, each alternative MUST END IN *, to match a version number.
 		;;
 	-qnx*)

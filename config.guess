@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
 #   Free Software Foundation, Inc.
 
-version='2000-05-30'
+version='2000-07-27'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -119,7 +119,7 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	# object file format.
 	# Determine the machine/vendor (is the vendor relevant).
 	case "${UNAME_MACHINE}" in
-	    amiga) machine=m68k-cbm ;;
+	    amiga) machine=m68k-unknown ;;
 	    arm32) machine=arm-unknown ;;
 	    atari*) machine=m68k-atari ;;
 	    sun3*) machine=m68k-sun ;;
@@ -215,7 +215,7 @@ EOF
 	echo alpha-dec-winnt3.5
 	exit 0 ;;
     Amiga*:UNIX_System_V:4.0:*)
-	echo m68k-cbm-sysv4
+	echo m68k-unknown-sysv4
 	exit 0;;
     amiga:OpenBSD:*:*)
 	echo m68k-unknown-openbsd${UNAME_RELEASE}
@@ -687,6 +687,9 @@ EOF
     *:GNU:*:*)
 	echo `echo ${UNAME_MACHINE}|sed -e 's,[-/].*$,,'`-unknown-gnu`echo ${UNAME_RELEASE}|sed -e 's,/.*$,,'`
 	exit 0 ;;
+    i*86:Minix:*:*)
+	echo ${UNAME_MACHINE}-pc-minix
+	exit 0 ;;
     *:Linux:*:*)
 
 	# The BFD linker knows what the default object file format is, so
@@ -709,8 +712,7 @@ EOF
 		exit 0
 		;;
 	  elf_i?86)
-		echo "${UNAME_MACHINE}-pc-linux"
-		exit 0
+		TENTATIVE="${UNAME_MACHINE}-pc-linux-gnu"
 		;;
 	  i?86coff)
 		echo "${UNAME_MACHINE}-pc-linux-gnucoff"
@@ -897,6 +899,7 @@ EOF
 EOF
 	  $CC_FOR_BUILD $dummy.c -o $dummy 2>/dev/null && ./$dummy "${UNAME_MACHINE}" && rm $dummy.c $dummy && exit 0
 	  rm -f $dummy.c $dummy
+	  test x"${TENTATIVE}" != x && echo "${TENTATIVE}" && exit 0
 	fi ;;
 # ptx 4.0 does uname -s correctly, with DYNIX/ptx in there.  earlier versions
 # are messed up and put the nodename in both sysname and nodename.
@@ -1084,6 +1087,17 @@ EOF
 	exit 0 ;;
     DS/*:UNIX_System_V:*:*)
 	echo ${UNAME_MACHINE}-${UNAME_SYSTEM}-${UNAME_RELEASE}
+	exit 0 ;;
+    *:Plan9:*:*)
+	# "uname -m" is not consistent, so use $cputype instead. 386
+	# is converted to i386 for consistency with other x86
+	# operating systems.
+	if test "$cputype" = "386"; then
+	    UNAME_MACHINE=i386
+	else
+	    UNAME_MACHINE="$cputype"
+	fi
+	echo ${UNAME_MACHINE}-unknown-plan9
 	exit 0 ;;
 esac
 
