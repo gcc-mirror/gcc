@@ -8219,10 +8219,10 @@ multiple_reg_loc_descriptor (rtl, regs)
 	{
 	  dw_loc_descr_ref t;
 
-	  ++reg;
 	  t = one_reg_loc_descriptor (reg);
 	  add_loc_descr (&loc_result, t);
 	  add_loc_descr (&loc_result, new_loc_descr (DW_OP_piece, size, 0));
+	  ++reg;
 	}
       return loc_result;
     }
