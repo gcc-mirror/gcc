@@ -91,7 +91,7 @@ static GTY(()) tree methods_ident;
 static GTY(()) tree ncode_ident;
 tree dtable_ident = NULL_TREE;
 
-/* Set to non-zero value in order to emit class initilization code
+/* Set to nonzero value in order to emit class initilization code
    before static field references.  */
 int always_initialize_class_p;
 
@@ -176,7 +176,7 @@ java_truthvalue_conversion (expr)
     case ABS_EXPR:
     case FLOAT_EXPR:
     case FFS_EXPR:
-      /* These don't change whether an object is non-zero or zero.  */
+      /* These don't change whether an object is nonzero or zero.  */
       return java_truthvalue_conversion (TREE_OPERAND (expr, 0));
 
     case COND_EXPR:

@@ -160,20 +160,20 @@ extern int flag_emit_class_files;
 
 extern int flag_filelist_file;
 
-/* When non zero, assume all native functions are implemented with
+/* When nonzero, assume all native functions are implemented with
    JNI, not CNI.  */
 
 extern int flag_jni;
 
-/* When non zero, report the now deprecated empty statements.  */
+/* When nonzero, report the now deprecated empty statements.  */
 
 extern int flag_extraneous_semicolon;
 
-/* When non zero, always check for a non gcj generated classes archive.  */
+/* When nonzero, always check for a non gcj generated classes archive.  */
 
 extern int flag_force_classes_archive_check;
 
-/* When non zero, we emit xref strings. Values of the flag for xref
+/* When nonzero, we emit xref strings. Values of the flag for xref
    backends are defined in xref.h.  */
 
 extern int flag_emit_xref;
@@ -190,28 +190,28 @@ extern int flag_redundant;
 extern int flag_not_overriding;
 extern int flag_static_local_jdk1_1;
 
-/* When non zero, warn when source file is newer than matching class
+/* When nonzero, warn when source file is newer than matching class
    file.  */
 extern int flag_newer;
 
-/* When non zero, call a library routine to do integer divisions. */
+/* When nonzero, call a library routine to do integer divisions. */
 extern int flag_use_divide_subroutine;
 
-/* When non zero, generate code for the Boehm GC.  */
+/* When nonzero, generate code for the Boehm GC.  */
 extern int flag_use_boehm_gc;
 
-/* When non zero, assume the runtime uses a hash table to map an
+/* When nonzero, assume the runtime uses a hash table to map an
    object to its synchronization structure.  */
 extern int flag_hash_synchronization;
 
-/* When non zero, generate checks for references to NULL.  */
+/* When nonzero, generate checks for references to NULL.  */
 extern int flag_check_references;
 
 /* Used through STATIC_CLASS_INIT_OPT_P to check whether static
    initialization optimization should be performed.  */
 extern int flag_optimize_sci;
 
-/* When non zero, use offset tables for virtual method calls
+/* When nonzero, use offset tables for virtual method calls
    in order to improve binary compatibility. */
 extern int flag_indirect_dispatch;
 
@@ -1699,7 +1699,7 @@ extern tree *type_map;
     TREE_SIDE_EFFECTS (WHERE) = 1;				\
   }
 
-/* Non zero if TYPE is an unchecked exception */
+/* Nonzero if TYPE is an unchecked exception */
 #define IS_UNCHECKED_EXCEPTION_P(TYPE)				\
   (inherits_from_p ((TYPE), runtime_exception_type_node)	\
    || inherits_from_p ((TYPE), error_exception_type_node))

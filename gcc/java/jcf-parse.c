@@ -68,7 +68,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 extern struct obstack temporary_obstack;
 
-/* Set to non-zero value in order to emit class initilization code
+/* Set to nonzero value in order to emit class initilization code
    before static field references.  */
 extern int always_initialize_class_p;
 
@@ -378,7 +378,7 @@ get_name_constant (jcf, index)
   return name;
 }
 
-/* Handle reading innerclass attributes. If a non zero entry (denoting
+/* Handle reading innerclass attributes. If a nonzero entry (denoting
    a non anonymous entry) is found, We augment the inner class list of
    the outer context with the newly resolved innerclass.  */
 

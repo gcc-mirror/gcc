@@ -1,3 +1,18 @@
+2002-09-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ChangeLog: Follow spelling conventions.
+	* class.c: Likewise.
+	* decl.c: Likewise.
+	* expr.c: Likewise.
+	* gjavah.c: Likewise.
+	* java-tree.h: Likewise.
+	* jcf-dump.c: Likewise.
+	* jcf-parse.c: Likewise.
+	* jvspec.c: Likewise.
+	* lang.c: Likewise.
+	* mangle.c: Likewise.
+	* parse.y: Likewise.
+
 2002-09-17  Tom Tromey  <tromey@redhat.com>
 
 	* lex.c (java_read_unicode_collapsing_terminators): Handle case
@@ -2830,7 +2845,7 @@ Tue Oct 23 14:02:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(generate_classfile): Compute the attribute count, invoke
 	`append_gcj_attribute'.
 	* jcf.h (typedef struct JCF): `seen_in_zip' and `java_source'
-	turned into bit fields. New bit field `right_zip.'
+	turned into bit-fields. New bit-field `right_zip.'
 	(JCF_ZERO): Set `right_zip' to zero.
 	* lang-options.h (-fforce-classes-archive-check): Added flag.
 	* lang.c (flag_force_classes_archive_check): New flag.
@@ -6912,8 +6927,8 @@ Fri Dec 24 00:25:29 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* jcf.h (typedef struct JCF): Field `outofsynch' deleted.
 	(jcf_out_of_synch): Prototype deleted.
 	* parse.h (struct parser_ctxt): `minus_seen', `java_error_flag',
-	`deprecated' and `class_err': integer turned into bit fields.
-	New bit fields `saved_data_ctx' and `saved_data'. Fixed comments.
+	`deprecated' and `class_err': integer turned into bit-fields.
+	New bit-fields `saved_data_ctx' and `saved_data'. Fixed comments.
 	* parse.y (package_list): New global.
 	(package_declaration:): Record newly parsed package name.
 	(extra_ctxp_pushed_p): Static global deleted.
@@ -12888,7 +12903,7 @@ Mon Apr 27 10:50:05 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	this_wfl. Call to parse_error_context uses this_wfl instead of
 	relying on lookup_cl.
 	(parser_check_super): Comment reflects function's new returned
-	type (int). Function returns non zero value on error.
+	type (int). Function returns nonzero value on error.
 	(create_jdep_list, reverse_jdep_list, obtain_incomplete_type,
 	register_incomplete_type, jdep_resolve_class): New functions to
 	handle incomplete types in declarations.

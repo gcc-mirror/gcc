@@ -75,7 +75,7 @@ typedef struct assume_compiled_node_struct
   /* The class or package name.  */
   const char *ident;
 
-  /* Non-zero if this represents an exclusion.  */
+  /* Nonzero if this represents an exclusion.  */
   int excludep;
 
   /* Pointers to other nodes in the tree.  */
@@ -141,7 +141,7 @@ find_assume_compiled_node (node, ident)
 }
 
 /* Add a new IDENT to the include/exclude tree.  It's an exclusion
-   if EXCLUDEP is non-zero.  */
+   if EXCLUDEP is nonzero.  */
 
 void
 add_assume_compiled (ident, excludep)
@@ -192,7 +192,7 @@ add_assume_compiled (ident, excludep)
   parent->child = node;
 }
 
-/* Returns non-zero if IDENT is the name of a class that the compiler
+/* Returns nonzero if IDENT is the name of a class that the compiler
    should assume has been compiled to FIXME  */
 
 static int

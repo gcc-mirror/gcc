@@ -71,7 +71,7 @@ int flag_print_fields = 1;
 int flag_print_methods = 1;
 int flag_print_attributes = 1;
 
-/* When non zero, warn when source file is newer than matching class
+/* When nonzero, warn when source file is newer than matching class
    file.  */
 int flag_newer = 1;
 

@@ -57,7 +57,7 @@ static tree check_local_named_variable PARAMS ((tree, tree, int, int *));
 static tree check_local_unnamed_variable PARAMS ((tree, tree, tree));
 static void dump_function PARAMS ((enum tree_dump_index, tree));
 
-/* Set to non-zero value in order to emit class initilization code
+/* Set to nonzero value in order to emit class initilization code
    before static field references.  */
 extern int always_initialize_class_p;
 

@@ -148,7 +148,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 {
   int i, j;
 
-  /* If non-zero, the user gave us the `-v' flag.  */ 
+  /* If nonzero, the user gave us the `-v' flag.  */
   int saw_verbose_flag = 0;
 
   int saw_save_temps = 0;
@@ -188,7 +188,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   /* The new argument list will be contained in this.  */
   const char **arglist;
 
-  /* Non-zero if we saw a `-xfoo' language specification on the
+  /* Nonzero if we saw a `-xfoo' language specification on the
      command line.  Used to avoid adding our own -xc++ if the user
      already gave a language for the file.  */
   int saw_speclang = 0;
@@ -238,10 +238,10 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   /* The total number of arguments with the new stuff.  */
   int num_args = 1;
 
-  /* Non-zero if linking is supposed to happen.  */
+  /* Nonzero if linking is supposed to happen.  */
   int will_link = 1;
 
-  /* Non-zero if we want to find the spec file.  */
+  /* Nonzero if we want to find the spec file.  */
   int want_spec_file = 1;
 
   /* The argument we use to specify the spec file.  */

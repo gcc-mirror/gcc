@@ -170,7 +170,7 @@ mangle_method_decl (mdecl)
 }
 
 /* This mangles a member name, like a function name or a field
-   name. Handle cases were `name' is a C++ keyword.  Return a non zero
+   name. Handle cases were `name' is a C++ keyword.  Return a nonzero
    value if unicode encoding was required.  */
 
 static void
@@ -340,7 +340,7 @@ find_compression_record_match (type, next_current)
   return match;
 }
 
-/* Mangle a record type. If a non zero value is returned, it means
+/* Mangle a record type. If a nonzero value is returned, it means
    that a 'N' was emitted (so that a matching 'E' can be emitted if
    necessary.)  FOR_POINTER indicates that this element is for a pointer
    symbol, meaning it was preceded by a 'P'. */
