@@ -61,7 +61,7 @@ do {								\
   if (TARGET_BWX | TARGET_MAX | TARGET_FIX | TARGET_CIX)	\
     {								\
       fprintf (FILE, "\t.arch %s\n",				\
-               (alpha_cpu == PROCESSOR_EV6 ? "ev6"		\
+               (TARGET_CPU_EV6 ? "ev6"				\
                 : TARGET_MAX ? "pca56" : "ev56"));		\
     }								\
 } while (0)

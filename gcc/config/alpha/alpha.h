@@ -156,12 +156,14 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 #define MASK_CIX	(1 << 11)
 #define TARGET_CIX	(target_flags & MASK_CIX)
 
-/* This means that the processor is an EV5, EV56, or PCA56.  This is defined
-   only in TARGET_CPU_DEFAULT.  */
+/* This means that the processor is an EV5, EV56, or PCA56.
+   Unlike alpha_cpu this is not affected by -mtune= setting.  */
 #define MASK_CPU_EV5	(1 << 28)
+#define TARGET_CPU_EV5	(target_flags & MASK_CPU_EV5)
 
 /* Likewise for EV6.  */
 #define MASK_CPU_EV6	(1 << 29)
+#define TARGET_CPU_EV6	(target_flags & MASK_CPU_EV6)
 
 /* This means we support the .arch directive in the assembler.  Only
    defined in TARGET_CPU_DEFAULT.  */
@@ -249,6 +251,7 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 	#define TARGET_OPTIONS { { "short-data-", &m88k_short_data } }  */
 
 extern const char *alpha_cpu_string;	/* For -mcpu= */
+extern const char *alpha_tune_string;	/* For -mtune= */
 extern const char *alpha_fprm_string;	/* For -mfp-rounding-mode=[n|m|c|d] */
 extern const char *alpha_fptm_string;	/* For -mfp-trap-mode=[n|u|su|sui]  */
 extern const char *alpha_tp_string;	/* For -mtrap-precision=[p|f|i] */
@@ -257,7 +260,9 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
 #define TARGET_OPTIONS					\
 {							\
   {"cpu=",		&alpha_cpu_string,		\
-   N_("Generate code for a given CPU")},		\
+   N_("Use features of and schedule given CPU")},	\
+  {"tune=",		&alpha_tune_string,		\
+   N_("Schedule given CPU")},				\
   {"fp-rounding-mode=",	&alpha_fprm_string,		\
    N_("Control the generated fp rounding mode")},	\
   {"fp-trap-mode=",	&alpha_fptm_string,		\

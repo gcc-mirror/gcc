@@ -70,8 +70,8 @@ Boston, MA 02111-1307, USA.  */
   fprintf (FILE, "\t.set noat\n");				\
   if (TARGET_SUPPORT_ARCH)					\
     fprintf (FILE, "\t.arch %s\n",				\
-             alpha_cpu == PROCESSOR_EV6 ? "ev6"			\
-	     : (alpha_cpu == PROCESSOR_EV5			\
+             TARGET_CPU_EV6 ? "ev6"				\
+	     : (TARGET_CPU_EV5					\
 		? (TARGET_MAX ? "pca56" : TARGET_BWX ? "ev56" : "ev5") \
 		: "ev4"));					\
 								\

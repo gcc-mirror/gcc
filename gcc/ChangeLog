@@ -1,3 +1,16 @@
+2000-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/alpha/alpha.h (TARGET_CPU_EV5, TARGET_CPU_EV6): Define.
+	(TARGET_OPTIONS): Add tune=.
+	(alpha_tune_string): Declare.
+	* config/alpha/alpha.c (override_options): Add cpu_table.
+	Use alpha_cpu_string first to set both alpha_cpu and target_flags
+	and then alpha_tune_string to set alpha_cpu only.
+	Replace tests for PROCESSOR_EV* with TARGET_CPU_EV* tests.
+	* config/alpha/elf.h (ASM_FILE_START): Likewise.
+	* config/alpha/osf.h (ASM_FILE_START): Likewise.
+	* config/alpha/openbsd.h (ASM_FILE_START): Likewise.
+
 Fri Sep 15 19:45:55 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* i386-protos.h (no_comparison_operator, uno_comparison_operator):
