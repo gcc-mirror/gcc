@@ -143,10 +143,10 @@ proc g77_target_compile { source dest type options } {
     }
     if ![is_remote host] {
       set gccpath "[get_multilibs]"
-      set libf2c_dir [lookfor_file ${gccpath} libf2c/libf2c.a]
-      if { $libf2c_dir != "" } {
-	set libf2c_link_flags "-L[file dirname ${libf2c_dir}]"
-	lappend options "additional_flags=${libf2c_link_flags}"
+      set libg2c_dir [lookfor_file ${gccpath} libf2c/libg2c.a]
+      if { $libg2c_dir != "" } {
+	set libg2c_link_flags "-L[file dirname ${libg2c_dir}]"
+	lappend options "additional_flags=${libg2c_link_flags}"
       }
     }
     lappend options "compiler=$G77_UNDER_TEST"

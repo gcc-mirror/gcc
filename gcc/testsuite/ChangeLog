@@ -1,3 +1,8 @@
+Fri Jun 19 00:58:11 1998  Robert Lipe  <robertl@dgii.com>
+
+	*lib/g77.exp: Replace search for libf2c.a with search for newly
+	renamed libg2c.a
+
 Wed Jun 17 18:53:12 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/980617-1.c: New test.
