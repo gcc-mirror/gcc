@@ -30,6 +30,8 @@ build_modules= { module= byacc; };
 build_modules= { module= flex; };
 build_modules= { module= m4; };
 build_modules= { module= texinfo; };
+build_modules= { module= fixincludes;
+		 extra_configure_args='--target=$(target)'; };
 
 host_modules= { module= ash; };
 host_modules= { module= autoconf; };
@@ -232,6 +234,7 @@ dependencies = { module=all-build-flex; on=all-build-byacc; };
 dependencies = { module=all-build-flex; on=all-build-m4; };
 dependencies = { module=all-build-libiberty; on=all-build-texinfo; };
 dependencies = { module=all-build-m4; on=all-build-texinfo; };
+dependencies = { module=all-build-fixincludes; on=all-build-libiberty; };
 
 // Host modules specific to gcc.
 dependencies = { module=configure-gcc; on=configure-intl; };
@@ -244,6 +247,8 @@ dependencies = { module=all-gcc; on=all-build-texinfo; };
 dependencies = { module=all-gcc; on=all-build-bison; };
 dependencies = { module=all-gcc; on=all-build-byacc; };
 dependencies = { module=all-gcc; on=all-build-flex; };
+dependencies = { module=all-gcc; on=all-build-libiberty; };
+dependencies = { module=all-gcc; on=all-build-fixincludes; };
 dependencies = { module=all-gcc; on=all-binutils; };
 dependencies = { module=all-gcc; on=all-gas; };
 dependencies = { module=all-gcc; on=all-ld; };

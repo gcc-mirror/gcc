@@ -56,6 +56,9 @@ self=$0
 # colon is stripped from the output.
 files_and_dependencies () {
     sed -e 's/ *#.*//' -e '/^$/d' -e 's/://' <<\EOF
+# fixincludes
+fixincludes/configure: fixincludes/configure.ac fixincludes/aclocal.m4
+fixincludes/config.h.in: fixincludes/configure.ac fixincludes/aclocal.m4
 # intl library
 intl/plural.c: intl/plural.y
 intl/configure: intl/configure.ac intl/aclocal.m4

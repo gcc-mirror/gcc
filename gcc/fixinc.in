@@ -28,7 +28,7 @@
 #
 # # # # # # # # # # # # # # # # # # # # #
 
-# Usage: fixincl.sh output-dir input-dir
+# Usage: fixinc.sh output-dir input-dir
 #
 # Directory in which to store the results.
 # Fail if no arg to specify a directory for the output.
@@ -96,13 +96,10 @@ esac
 # Original directory.
 ORIGDIR=`${PWDCMD}`
 export ORIGDIR
-FIXINCL=${ORIGDIR}/fixinc/fixincl
+FIXINCL="@FIXINCL@"
 if [ ! -x $FIXINCL ] ; then
-  FIXINCL=${ORIGDIR}/fixincl
-  if [ ! -x $FIXINCL ] ; then
-    echo "Cannot find working fixincl" >&2
-    exit 1
-  fi
+  echo "Cannot find working fixincl" >&2
+  exit 1
 fi
 export FIXINCL
 

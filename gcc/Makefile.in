@@ -83,6 +83,8 @@ top_builddir = .
 # It's normally the absolute path to the current directory.
 objdir = @objdir@
 
+build_subdir=@build_subdir@
+
 # --------
 # Defined vpaths
 # --------
@@ -742,10 +744,9 @@ ALL_CFLAGS = $(X_CFLAGS) $(T_CFLAGS) \
 # Likewise.
 ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
 
-# Build and host support libraries.  FORBUILD is either
-# .. or ../$(build_alias) depending on whether host != build.
+# Build and host support libraries.
 LIBIBERTY = ../libiberty/libiberty.a
-BUILD_LIBIBERTY = @FORBUILD@/libiberty/libiberty.a
+BUILD_LIBIBERTY = ../$(build_subdir)/libiberty/libiberty.a
 
 # Dependencies on the intl and portability libraries.
 LIBDEPS= $(CPPLIB) $(LIBIBERTY) $(LIBINTL_DEP) $(LIBICONV_DEP) $(BANSHEELIB)
@@ -2778,28 +2779,16 @@ specs.ready: specs
 		$(STAMP) specs.ready; \
 	fi
 
-# Until someone fixes this recursive make nightmare (please note where
-# BUILD_CFLAGS is first expanded below versus which later make invocation
-# has the fine-grain -warn markings for fixinc):
-fixinc.sh-warn = -Wno-error
-
-FIXINCSRCDIR=$(srcdir)/fixinc
-fixinc.sh: $(FIXINCSRCDIR)/mkfixinc.sh $(FIXINCSRCDIR)/fixincl.c \
-	$(FIXINCSRCDIR)/procopen.c $(FIXINCSRCDIR)/server.c \
-	$(FIXINCSRCDIR)/server.h $(FIXINCSRCDIR)/inclhack.def specs.ready
-	(MAKE="$(MAKE)"; srcdir=`cd $(srcdir)/fixinc && ${PWD_COMMAND}` ; \
-	CC="$(CC_FOR_BUILD)"; CFLAGS="$(BUILD_CFLAGS)"; LDFLAGS="$(BUILD_LDFLAGS)"; \
-	LIBERTY=`${PWD_COMMAND}`/"$(BUILD_LIBIBERTY)"; \
-	export MAKE srcdir CC CFLAGS LDFLAGS LIBERTY; \
-	cd ./fixinc && \
-	$(SHELL) $${srcdir}/mkfixinc.sh $(build) $(target))
+fixinc.sh: mkfixinc.sh fixinc.in
+	build_subdir="$(build_subdir)" srcdir="$(srcdir)" \
+	  $(SHELL) $(srcdir)/mkfixinc.sh $(build) $(target)
 
 .PHONY: install-gcc-tooldir
 install-gcc-tooldir:
 	$(mkinstalldirs) $(DESTDIR)$(gcc_tooldir)
 
 # Build fixed copies of system files.
-stmp-fixinc: fixinc.sh gsyslimits.h
+stmp-fixinc: fixinc.sh gsyslimits.h specs.ready
 	@if test ! -d ${SYSTEM_HEADER_DIR}; then \
 	  echo The directory that should contain system headers does not exist: >&2 ; \
 	  echo "  ${SYSTEM_HEADER_DIR}" >&2 ; \
@@ -3042,8 +3031,7 @@ mostlyclean: lang.mostlyclean
 	-rm -rf fix-header$(build_exeext) xsys-protos.h deduced.h tmp-deduced.h \
 	  gen-protos$(build_exeext) fixproto.list fixtmp.* fixhdr.ready
 # Delete files generated for fixincl
-	-rm -rf fixincl fixinc.sh specs.ready
-	(cd fixinc && $(MAKE) clean)
+	-rm -rf fixinc.sh specs.ready
 # Delete unwanted output files from TeX.
 	-rm -f *.toc *.log *.vr *.fn *.cp *.tp *.ky *.pg
 	-rm -f */*.toc */*.log */*.vr */*.fn */*.cp */*.tp */*.ky */*.pg
@@ -3352,7 +3340,8 @@ install-mkheaders: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir \
 	  $(INSTALL_DATA) $(srcdir)/README-fixinc \
 	    $(DESTDIR)$(itoolsdatadir)/include/README ; \
 	  $(INSTALL_SCRIPT) fixinc.sh $(DESTDIR)$(itoolsdir)/fixinc.sh ; \
-	  $(INSTALL_PROGRAM) fixinc/fixincl $(DESTDIR)$(itoolsdir)/fixincl ; \
+	  $(INSTALL_PROGRAM) ../$(build_subdir)/fixincludes/fixincl$(build_exeext) \
+		$(DESTDIR)$(itoolsdir)/fixincl ; \
 	  $(INSTALL_DATA) $(srcdir)/gsyslimits.h \
 	    $(DESTDIR)$(itoolsdatadir)/gsyslimits.h ; \
 	else :; fi

@@ -1,0 +1,13 @@
+2004-08-31  Paolo Bonzini  <bonzini@gnu.org>
+
+	* .cvsignore: New.
+	* Makefile.in: From gcc/fixinc/Makefile.in, making it fully
+	autoconfiscated.
+	* configure.ac: New.
+	* config.h.in: Generate.
+	* configure: Generate.
+	* aclocal.m4: New.
+	* fixlib.h: Remove inclusions of gcc files.
+	* system.h: New.
+
+	Other files copied from gcc/fixinc.

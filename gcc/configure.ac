@@ -1330,7 +1330,6 @@ fi
 if test x$host = x$build
 then
 	build_auto=auto-host.h
-	FORBUILD=..
 else
 	# We create a subdir, then run autoconf in the subdir.
 	# To prevent recursion we set host and build for the new
@@ -1357,9 +1356,8 @@ else
 	cd ..
 	rm -rf $tempdir
 	build_auto=auto-build.h
-	FORBUILD=../${build_subdir}
 fi
-AC_SUBST(FORBUILD)
+AC_SUBST(build_subdir)
 
 tm_file="${tm_file} defaults.h"
 tm_p_file="${tm_p_file} tm-preds.h"
@@ -3035,7 +3033,7 @@ all_languages=
 all_boot_languages=
 all_compilers=
 all_stagestuff=
-all_outputs='Makefile fixinc/Makefile gccbug mklibgcc mkheaders libada-mk'
+all_outputs='Makefile gccbug mklibgcc mkheaders libada-mk'
 # List of language makefile fragments.
 all_lang_makefrags=
 # List of language subdirectory makefiles.  Deprecated.
@@ -3329,7 +3327,7 @@ done
 # This is virtually a duplicate of what happens in configure.lang; we do
 # an extra check to make sure this only happens if ln -s can be used.
 if test "$symbolic_link" = "ln -s"; then
- for d in ${subdirs} fixinc ; do
+ for d in ${subdirs} ; do
 	STARTDIR=`${PWDCMD-pwd}`
 	cd $d
 	for t in stage1 stage2 stage3 stage4 stageprofile stagefeedback include
