@@ -1,3 +1,11 @@
+2004-08-13  Bryce McKinlay  <mckinlay@redhat.com>
+
+	PR libgcj/17020
+	Reported by Robin Green.
+	* defineclass.cc (handleField): Don't throw exception on unrecognised
+	modifier. Add FIXME comments for spec compliance.
+	(handleMethod): Likewise.
+
 2004-08-10  Hans Boehm <Hans.Boehm@hp.com>
 
 	PR libgcj/16662
