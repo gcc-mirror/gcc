@@ -2514,16 +2514,21 @@ expand_stmt (t)
 	  if (!SCOPE_NO_CLEANUPS_P (t))
 	    {
 	      if (SCOPE_BEGIN_P (t))
-		expand_start_bindings (2 * SCOPE_NULLIFIED_P (t));
+		expand_start_bindings_and_block (2 * SCOPE_NULLIFIED_P (t),
+						 SCOPE_STMT_BLOCK (t));
 	      else if (SCOPE_END_P (t))
 		expand_end_bindings (NULL_TREE, !SCOPE_NULLIFIED_P (t), 
 				     SCOPE_PARTIAL_P (t));
 	    }
 	  else if (!SCOPE_NULLIFIED_P (t))
-	    emit_note (NULL,
-		       (SCOPE_BEGIN_P (t) 
-			? NOTE_INSN_BLOCK_BEG
-			: NOTE_INSN_BLOCK_END));
+	    {
+	      rtx note = emit_note (NULL,
+				    (SCOPE_BEGIN_P (t) 
+				     ? NOTE_INSN_BLOCK_BEG
+				     : NOTE_INSN_BLOCK_END));
+	      NOTE_BLOCK (note) = SCOPE_STMT_BLOCK (t);
+	    }
+	      
 	  break;
 
 	case RETURN_INIT:

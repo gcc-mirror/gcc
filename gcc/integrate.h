@@ -42,6 +42,8 @@ struct inline_remap
   union tree_node *fndecl;
   /* Place to put insns needed at start of function.  */
   rtx insns_at_start;
+  /* Mapping from old BLOCKs to new BLOCKs.  */
+  varray_type block_map;
   /* Mapping from old registers to new registers.
      It is allocated and deallocated in `expand_inline_function' */
   rtx *reg_map;

@@ -543,12 +543,6 @@ extern struct function *outer_function_chain;
    Also store in each NOTE for the beginning or end of a block
    the index of that block in the vector.  */
 extern void identify_blocks PROTO((tree, rtx));
-/* Insert the BLOCK in the block-tree, knowing that the previous
-   block-note is for OLD_BLOCK.  BEGIN_P is non-zero if the previous
-   block-note was the for the beginning of a BLOCK.  */
-extern void insert_block_after_note PROTO((tree, tree, int));
-/* Insert a new BLOCK at an appropriate place in the block tree.  */
-extern void retrofit_block PROTO((tree, rtx));
 
 /* Return size needed for stack frame based on slots so far allocated.
    This size counts from zero.  It is not rounded to STACK_BOUNDARY;

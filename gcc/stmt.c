@@ -1024,23 +1024,30 @@ expand_fixup (tree_label, rtl_label, last_insn)
         register rtx original_before_jump
           = last_insn ? last_insn : get_last_insn ();
 	rtx start;
+	rtx end;
 	tree block;
 
 	block = make_node (BLOCK);
 	TREE_USED (block) = 1;
 
-	if (current_function->x_whole_function_mode_p)
-	  {
-	    find_loop_tree_blocks ();
-	    retrofit_block (block, original_before_jump);
-	  }
-	else
+	if (!current_function->x_whole_function_mode_p)
 	  insert_block (block);
+	else
+	  {
+	    BLOCK_CHAIN (block) 
+	      = BLOCK_CHAIN (DECL_INITIAL (current_function_decl));
+	    BLOCK_CHAIN (DECL_INITIAL (current_function_decl))
+	      = block;
+	  }
 
         start_sequence ();
         start = emit_note (NULL_PTR, NOTE_INSN_BLOCK_BEG);
+	if (current_function->x_whole_function_mode_p)
+	  NOTE_BLOCK (start) = block;
 	fixup->before_jump = emit_note (NULL_PTR, NOTE_INSN_DELETED);
-	emit_note (NULL_PTR, NOTE_INSN_BLOCK_END);
+	end = emit_note (NULL_PTR, NOTE_INSN_BLOCK_END);
+	if (current_function->x_whole_function_mode_p)
+	  NOTE_BLOCK (end) = block;
         fixup->context = block;
         end_sequence ();
         emit_insns_after (start, original_before_jump);
@@ -3198,20 +3205,36 @@ tail_recursion_args (actuals, formals)
 	 will not create corresponding BLOCK nodes.  (There should be
 	 a one-to-one correspondence between NOTE_INSN_BLOCK_BEG notes
 	 and BLOCKs.)  If this flag is set, MARK_ENDS should be zero
-	 when expand_end_bindings is called.  */
+	 when expand_end_bindings is called.  
+
+    If we are creating a NOTE_INSN_BLOCK_BEG note, a BLOCK may
+    optionally be supplied.  If so, it becomes the NOTE_BLOCK for the
+    note.  */
 
 void
-expand_start_bindings (flags)
+expand_start_bindings_and_block (flags, block)
      int flags;
+     tree block;
 {
   struct nesting *thisblock = ALLOC_NESTING ();
   rtx note;
   int exit_flag = ((flags & 1) != 0);
   int block_flag = ((flags & 2) == 0);
+  
+  /* If a BLOCK is supplied, then the caller should be requesting a
+     NOTE_INSN_BLOCK_BEG note.  */
+  if (!block_flag && block)
+    abort ();
 
-  note = emit_note (NULL_PTR, 
-		    block_flag ? NOTE_INSN_BLOCK_BEG : NOTE_INSN_DELETED);
-
+  /* Create a note to mark the beginning of the block.  */
+  if (block_flag)
+    {
+      note = emit_note (NULL_PTR, NOTE_INSN_BLOCK_BEG);
+      NOTE_BLOCK (note) = block;
+    }
+  else
+    note = emit_note (NULL_PTR, NOTE_INSN_DELETED);
+    
   /* Make an entry on block_stack for the block we are entering.  */
 
   thisblock->next = block_stack;
@@ -3659,7 +3682,10 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
      just going out of scope, so they are in scope for their cleanups.  */
 
   if (mark_ends)
-    emit_note (NULL_PTR, NOTE_INSN_BLOCK_END);
+    {
+      rtx note = emit_note (NULL_PTR, NOTE_INSN_BLOCK_END);
+      NOTE_BLOCK (note) = NOTE_BLOCK (thisblock->data.block.first_insn);
+    }
   else
     /* Get rid of the beginning-mark if we don't make an end-mark.  */
     NOTE_LINE_NUMBER (thisblock->data.block.first_insn) = NOTE_INSN_DELETED;

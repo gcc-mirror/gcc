@@ -1,3 +1,29 @@
+1999-12-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (INTREGRATE_H): Rename to INTEGRATE_H.
+	* function.c (insert_block_after_note): Remove.
+	(retrofit_block): Likewise.
+	(identify_blocks): Fix indentation.
+	(reorder_blocks): Don't NULL out NOTE_SOURCE_FILE for a
+	NOTE_INSN_BLOCK_BEG or NOTE_INSN_BLOCK_END.
+	* function.h (insert_block_after_note): Remove prototype.
+	(retrofit_block): Likewise.
+	* integrate.c (expand_inline_function): Don't call
+	find_loop_tree_blocks.  Use expand_start_bindings_and_block, not
+	just expand_start_bindings.  Use the block_map to remap old
+	NOTE_BLOCKs to new ones.
+	(integrate_decl_tree): Keep track of remapped blocks.
+	* integrate.h (struct inline_remap): Add block_map.
+	* stmt.c (expand_fixup): Don't try to retrofit_blocks.  Just set
+	NOTE_BLOCK on the notes.
+	(expand_start_bindings): Rename to ...
+	(expand_start_bindings_and_block): Add parameter.  Set NOTE_BLOCK.
+	(expand_end_bindings): Set NOTE_BLOCK.
+	* toplev.c (rest_of_compilation): In function-at-a-time-mode,
+	reconstruct the BLOCK tree.
+	* tree.h (expand_start_bindings): Macroize.  Call ...
+	(expand_start_bindings_and_block): New function.
+	
 1999-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.c (print_operand): Cast fprintf arguments

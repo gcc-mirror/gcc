@@ -3605,6 +3605,14 @@ rest_of_compilation (decl)
      collector to reclaim the memory used by the notes.  */
   remove_unncessary_notes ();
 
+  /* In function-at-a-time mode, we do not attempt to keep the BLOCK
+     tree in sensible shape.  So, we just recalculate it here.  */
+  if (current_function->x_whole_function_mode_p)
+    {
+      find_loop_tree_blocks ();
+      unroll_block_trees ();
+    }
+
   /* If we are reconsidering an inline function
      at the end of compilation, skip the stuff for making it inline.  */
 

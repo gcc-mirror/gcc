@@ -1,3 +1,13 @@
+1999-12-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* optimize.c (struct inline_data): Remove scope_stmt.
+	(remap_block): Don't use insert_block_after_note.  Don't update
+	scope_stmt.
+	(expand_call_inline): Don't update scope_stmt.
+	(optimize_function): Don't initialize scope_stmt.
+	* semantics.c (expand_stmt): Set NOTE_BLOCK for newly emitted
+	NOTE_INSN_BLOCK_BEG/NOTE_INSN_BLOCK_END notes.
+
 1999-12-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (handle_using_decl): Get TYPE_FIELDS and TYPE_METHODS

@@ -5493,66 +5493,6 @@ round_trampoline_addr (tramp)
   return tramp;
 }
 
-/* Insert the BLOCK in the block-tree, knowing that the previous
-   block-note is for OLD_BLOCK.  BEGIN_P is non-zero if the previous
-   block-note was the for the beginning of a BLOCK.  */
-
-void 
-insert_block_after_note (block, old_block, begin_p)
-     tree block;
-     tree old_block;
-     int begin_p;
-{
-  if (begin_p)
-    {
-      /* If there was no previous block, something's gone terribly
-         wrong.  We used to try to use DECL_INITIAL for the current
-         function, but that will never be correct, and completely
-         hoses the block structure.  */
-      if (!old_block)
-	abort ();
-
-      BLOCK_SUPERCONTEXT (block) = old_block;
-      BLOCK_CHAIN (block) = BLOCK_SUBBLOCKS (old_block);
-      BLOCK_SUBBLOCKS (old_block) = block;
-    }
-  else
-    {
-      BLOCK_SUPERCONTEXT (block) = BLOCK_SUPERCONTEXT (old_block);
-      BLOCK_CHAIN (block) = BLOCK_CHAIN (old_block);
-      BLOCK_CHAIN (old_block) = block;
-    }
-}
-
-/* Insert the BLOCK in the block-tree before LAST_INSN.  */
-
-void
-retrofit_block (block, last_insn)
-     tree block;
-     rtx last_insn;
-{
-  rtx insn;
-
-  /* Now insert the new BLOCK at the right place in the block trees
-     for the function which called the inline function.  We just look
-     backwards for a NOTE_INSN_BLOCK_{BEG,END}.  If we find the
-     beginning of a block, then this new block becomes the first
-     subblock of that block.  If we find the end of a block, then this
-     new block follows that block in the list of blocks.  */
-  for (insn = last_insn; insn; insn = PREV_INSN (insn))
-    if (GET_CODE (insn) == NOTE
-	&& (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG
-	    || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END))
-      break;
-
-  if (insn == NULL_RTX)
-    abort ();
-
-  insert_block_after_note (block, 
-			   NOTE_BLOCK (insn),
-			   NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG);
-}
-
 /* The functions identify_blocks and reorder_blocks provide a way to
    reorder the tree of BLOCK nodes, for optimizers that reshuffle or
    duplicate portions of the RTL code.  Call identify_blocks before
@@ -5595,8 +5535,8 @@ identify_blocks (block, insns)
 	  {
 	    tree b;
 
-	      /* If there are more block notes than BLOCKs, something
-		 is badly wrong.  */
+	    /* If there are more block notes than BLOCKs, something
+	       is badly wrong.  */
 	    if (current_block_number == n_blocks)
 	      abort ();
 
@@ -5660,14 +5600,12 @@ reorder_blocks (block, insns)
 	    BLOCK_CHAIN (block) = BLOCK_SUBBLOCKS (current_block);
 	    BLOCK_SUBBLOCKS (current_block) = block;
 	    current_block = block;
-	    NOTE_SOURCE_FILE (insn) = 0;
 	  }
 	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
 	  {
 	    BLOCK_SUBBLOCKS (current_block)
 	      = blocks_nreverse (BLOCK_SUBBLOCKS (current_block));
 	    current_block = BLOCK_SUPERCONTEXT (current_block);
-	    NOTE_SOURCE_FILE (insn) = 0;
 	  }
       }
 
