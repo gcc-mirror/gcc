@@ -1,3 +1,34 @@
+2000-10-26  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/c/bits/std_cmath.h: Fix double declarations in namespace std.
+
+	Clean up naming, consistency in "C" library autoconf testing.
+	* acinclude.m4 (GLIBCPP_CHECK_CTYPE): For consistency, change to
+	GLIBCPP_CHECK_CTYPE_SUPPORT.
+	(GLIBCPP_CHECK_STDLIB_SUPPORT): Add.
+	* aclocal.m4: Regenerate.
+	* configure.in: And here. 
+	Add call to GLIBCPP_CHECK_STDLIB_SUPPORT.
+	* configure: Regenerate.
+	
+2000-10-26  David Edelsohn  <edelsohn@gnu.org>
+
+	* acinclude.m4 (GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_2): New macro.
+	(GLIBCPP_CHECK_MATH_SUPPORT): Use it to test for strtold.
+	
+2000-10-26  Phil Edwards  <pme@sources.redhat.com>  
+	    David Edelsohn  <dje@watson.ibm.com>
+
+	* acinclude.m4 (GLIBCPP_CHECK_LINKER_FEATURES): Comment out
+	--gc-sections stuff entirely to avoid misleading people.
+        (GLIBCPP_ENABLE_CSTDIO): Merge need_libio and need_xtra_libio.
+        * libio/Makefile.am (LIBIO_SRCS,LIBIO_WSRCS,LIBIO_XTRA_SRCS):
+	Rearrange and merge.
+        * libio/libio.h: Simplify, make fewer assumptions.  Define those
+	macros which must be defined.
+        * config/os/solaris/solaris2.7/bits/os_defines.h: Simplify as a
+	result.
+
 2000-10-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* include/backward/streambuf.h: New file.

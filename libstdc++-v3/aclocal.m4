@@ -1,6 +1,6 @@
 dnl aclocal.m4 generated automatically by aclocal 1.4
 
-dnl Copyright (C) 1994, 1995-8, 1999, 2000 Free Software Foundation, Inc.
+dnl Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -270,16 +270,16 @@ AC_DEFUN(GLIBCPP_CHECK_LINKER_FEATURES, [
   SECTION_LDFLAGS=''
   OPT_LDFLAGS=''
   AC_REQUIRE([AC_PROG_LD])
-  if test "$ac_cv_prog_gnu_ld" = "yes"; then
+
+  # Set --gc-sections.
+  if test "$ac_cv_prog_gnu_ld" = "broken"; then
     # GNU ld it is!  Joy and bunny rabbits!
 
     # All these tests are for C++; save the language and the compiler flags.
     # Need to do this so that g++ won't try to link in libstdc++
     ac_test_CFLAGS="${CFLAGS+set}"
     ac_save_CFLAGS="$CFLAGS"
-#    CFLAGS='-x c++  -Wl,--gc-sections'
-#XXX
-    CFLAGS=''
+    CFLAGS='-x c++  -Wl,--gc-sections'
 
     # Check for -Wl,--gc-sections
     # XXX This test is broken at the moment, as symbols required for
@@ -304,15 +304,16 @@ AC_DEFUN(GLIBCPP_CHECK_LINKER_FEATURES, [
       CFLAGS=''
     fi
     if test "$ac_sectionLDflags" = "yes"; then
-#      SECTION_LDFLAGS='-Wl,--gc-sections'
-#XXX
-      SECTION_LDFLAGS=''
+      SECTION_LDFLAGS='-Wl,--gc-sections'
     fi
     AC_MSG_RESULT($ac_sectionLDflags)
-
-    OPT_LDFLAGS='-Wl,-O1'
-
   fi
+
+  # Set linker optimization flags.
+  if test "$ac_cv_prog_gnu_ld" = "yes"; then
+    OPT_LDFLAGS='-Wl,-O1'
+  fi
+
   AC_SUBST(SECTION_LDFLAGS)
   AC_SUBST(OPT_LDFLAGS)
 ])
@@ -395,6 +396,36 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_3, [
     AC_LANG_CPLUSPLUS
     AC_TRY_COMPILE([#include <math.h>], 
                    [ $1(0, 0, 0);], 
+                   [glibcpp_cv_func_$1_use=yes], [glibcpp_cv_func_$1_use=no])
+    AC_LANG_RESTORE
+  ])
+  AC_MSG_RESULT($glibcpp_cv_func_$1_use)
+  if test x$glibcpp_cv_func_$1_use = x"yes"; then
+    AC_CHECK_FUNCS($1)    
+  fi
+])
+
+
+dnl
+dnl Check to see if the (stdlib function) argument passed is
+dnl 1) declared when using the c++ compiler
+dnl 2) has "C" linkage
+dnl
+dnl Define HAVE_STRTOLD if "strtold" is declared and links
+dnl Define HAVE_STRTOF if "strtof" is declared and links
+dnl
+dnl argument 1 is name of function to check
+dnl
+dnl ASSUMES argument is a math function with TWO parameters
+dnl
+dnl GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_2
+AC_DEFUN(GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_2, [
+  AC_MSG_CHECKING([for $1 declaration])
+  AC_CACHE_VAL(glibcpp_cv_func_$1_use, [
+    AC_LANG_SAVE
+    AC_LANG_CPLUSPLUS
+    AC_TRY_COMPILE([#include <stdlib.h>], 
+                   [ $1(0, 0);], 
                    [glibcpp_cv_func_$1_use=yes], [glibcpp_cv_func_$1_use=no])
     AC_LANG_RESTORE
   ])
@@ -513,6 +544,29 @@ AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT, [
 
 
 dnl
+dnl Check to see what the underlying c library 
+dnl These checks need to do two things: 
+dnl 1) make sure the name is declared when using the c++ compiler
+dnl 2) make sure the name has "C" linkage
+dnl This might seem like overkill but experience has shown that it's not...
+dnl
+dnl Define HAVE_STRTOF etc if "strtof" is found.
+dnl Define HAVE_STRTOLD etc if "strtold" is found.
+dnl
+dnl GLIBCPP_CHECK_STDLIB_SUPPORT
+AC_DEFUN(GLIBCPP_CHECK_STDLIB_SUPPORT, [
+  ac_test_CXXFLAGS="${CXXFLAGS+set}"
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS='-fno-builtins -D_GNU_SOURCE'
+
+  AC_CHECK_FUNCS(strtof)
+  GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_2(strtold)
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
+])
+
+
+dnl
 dnl Check to see what the underlying c library or math library is like.
 dnl These checks need to do two things: 
 dnl 1) make sure the name is declared when using the c++ compiler
@@ -531,9 +585,6 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   AC_CHECK_LIB(m, sin, libm="-lm")
   ac_save_LIBS="$LIBS"
   LIBS="$LIBS $libm"
-
-  dnl Although not math functions, needed and for some reason checked here.
-  AC_CHECK_FUNCS(strtof strtold)
 
   dnl Check to see if certain C math functions exist.
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(isinf)
@@ -794,8 +845,8 @@ dnl
 dnl Depending on what is found, select various configure/*/bits/ctype_base.h 
 dnl Depending on what is found, select various configure/*/ctype.cc
 dnl
-dnl GLIBCPP_CHECK_CTYPE
-AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
+dnl GLIBCPP_CHECK_CTYPE_SUPPORT
+AC_DEFUN(GLIBCPP_CHECK_CTYPE_SUPPORT, [
   AC_CHECK_HEADER(ctype.h, [
     
     dnl If doesn't match any specified, go with defaults.
@@ -1259,11 +1310,9 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
 
         if test x$glibc_satisfactory = x"yes"; then
            need_libio=no
-           need_xtra_libio=no
            need_wlibio=no        
         else
            need_libio=yes
-           need_xtra_libio=yes
            # bkoz XXX need to add checks to enable this
            # pme XXX here's a first pass at such a check
            if test x$enable_c_mbchar != xno; then
@@ -1273,10 +1322,9 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
            fi
         fi
 
-      # Using libio, but <libio.h> doesn't exist on the target system. . .
       else
+         # Using libio, but <libio.h> doesn't exist on the target system. . .
          need_libio=yes
-         need_xtra_libio=no
          # bkoz XXX need to add checks to enable this
          # pme XXX here's a first pass at such a check
          if test x$enable_c_mbchar != xno; then
@@ -1308,7 +1356,6 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
   # 2000-08-04 bkoz hack
 
   AM_CONDITIONAL(GLIBCPP_NEED_LIBIO, test "$need_libio" = yes)
-  AM_CONDITIONAL(GLIBCPP_NEED_XTRA_LIBIO, test "$need_xtra_libio" = yes)
   AM_CONDITIONAL(GLIBCPP_NEED_WLIBIO, test "$need_wlibio" = yes)
 ])
 
