@@ -1,7 +1,12 @@
-sinclude(../config/acx.m4)
-sinclude(../config/accross.m4)
-sinclude(../config/gettext-sister.m4)
-sinclude(../config/progtest.m4)
+m4_include(../config/accross.m4)
+m4_include(../config/acx.m4)
+m4_include(../config/gettext-sister.m4)
+m4_include(../config/iconv.m4)
+m4_include(../config/lcmessage.m4)
+m4_include(../config/lib-ld.m4)
+m4_include(../config/lib-link.m4)
+m4_include(../config/lib-prefix.m4)
+m4_include(../config/progtest.m4)
 
 dnl See whether we need a declaration for a function.
 dnl The result is highly dependent on the INCLUDES passed in, so make sure
@@ -223,49 +228,6 @@ test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 AC_SUBST(INSTALL_DATA)dnl
 ])
 
-dnl GCC_PATH_PROG(VARIABLE, PROG-TO-CHECK-FOR [, VALUE-IF-NOT-FOUND [, PATH]])
-dnl like AC_PATH_PROG but use other cache variables
-AC_DEFUN([GCC_PATH_PROG],
-[# Extract the first word of "$2", so it can be a program name with args.
-set dummy $2; ac_word=[$]2
-AC_MSG_CHECKING([for $ac_word])
-AC_CACHE_VAL(gcc_cv_path_$1,
-[case "[$]$1" in
-  /*)
-  gcc_cv_path_$1="[$]$1" # Let the user override the test with a path.
-  ;;
-  ?:/*)			 
-  gcc_cv_path_$1="[$]$1" # Let the user override the test with a dos path.
-  ;;
-  *)
-  IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
-dnl $ac_dummy forces splitting on constant user-supplied paths.
-dnl POSIX.2 word splitting is done only on the output of word expansions,
-dnl not every word.  This closes a longstanding sh security hole.
-  ac_dummy="ifelse([$4], , $PATH, [$4])"
-  for ac_dir in $ac_dummy; do 
-    test -z "$ac_dir" && ac_dir=.
-    if test -f $ac_dir/$ac_word; then
-      gcc_cv_path_$1="$ac_dir/$ac_word"
-      break
-    fi
-  done
-  IFS="$ac_save_ifs"
-dnl If no 3rd arg is given, leave the cache variable unset,
-dnl so GCC_PATH_PROGS will keep looking.
-ifelse([$3], , , [  test -z "[$]gcc_cv_path_$1" && gcc_cv_path_$1="$3"
-])dnl
-  ;;
-esac])dnl
-$1="$gcc_cv_path_$1"
-if test -n "[$]$1"; then
-  AC_MSG_RESULT([$]$1)
-else
-  AC_MSG_RESULT(no)
-fi
-AC_SUBST($1)dnl
-])
-
 # mmap(2) blacklisting.  Some platforms provide the mmap library routine
 # but don't support all of the features we need from it.
 AC_DEFUN([gcc_AC_FUNC_MMAP_BLACKLIST],
@@ -465,79 +427,6 @@ AC_CACHE_CHECK(for __int64, ac_cv_c___int64,
   fi
 ])
 
-#serial AM2
-
-dnl From Bruno Haible.
-
-AC_DEFUN([AM_ICONV],
-[
-  dnl Some systems have iconv in libc, some have it in libiconv (OSF/1 and
-  dnl those with the standalone portable GNU libiconv installed).
-
-  am_cv_lib_iconv_ldpath=
-  AC_ARG_WITH([libiconv-prefix],
-[  --with-libiconv-prefix=DIR  search for libiconv in DIR/include and DIR/lib], [
-    for dir in `echo "$withval" | tr : ' '`; do
-      if test -d $dir/include; then CPPFLAGS="$CPPFLAGS -I$dir/include"; fi
-      if test -d $dir/lib; then am_cv_lib_iconv_ldpath="-L$dir/lib"; fi
-    done
-   ])
-
-  AC_CHECK_HEADERS([iconv.h])
-
-  AC_CACHE_CHECK(for iconv, am_cv_func_iconv, [
-    am_cv_func_iconv="no, consider installing GNU libiconv"
-    am_cv_lib_iconv=no
-    AC_TRY_LINK([#include <stdlib.h>
-#include <iconv.h>],
-      [iconv_t cd = iconv_open("","");
-       iconv(cd,NULL,NULL,NULL,NULL);
-       iconv_close(cd);],
-      am_cv_func_iconv=yes)
-    if test "$am_cv_func_iconv" != yes; then
-      am_save_LIBS="$LIBS"
-      LIBS="$LIBS $am_cv_libiconv_ldpath -liconv"
-      AC_TRY_LINK([#include <stdlib.h>
-#include <iconv.h>],
-        [iconv_t cd = iconv_open("","");
-         iconv(cd,NULL,NULL,NULL,NULL);
-         iconv_close(cd);],
-        am_cv_lib_iconv=yes
-        am_cv_func_iconv=yes)
-      LIBS="$am_save_LIBS"
-    fi
-  ])
-  if test "$am_cv_func_iconv" = yes; then
-    AC_DEFINE(HAVE_ICONV, 1, [Define if you have the iconv() function.])
-    AC_MSG_CHECKING([for iconv declaration])
-    AC_CACHE_VAL(am_cv_proto_iconv, [
-      AC_TRY_COMPILE([
-#include <stdlib.h>
-#include <iconv.h>
-extern
-#ifdef __cplusplus
-"C"
-#endif
-#if defined(__STDC__) || defined(__cplusplus)
-size_t iconv (iconv_t cd, char * *inbuf, size_t *inbytesleft, char * *outbuf, size_t *outbytesleft);
-#else
-size_t iconv();
-#endif
-], [], am_cv_proto_iconv_arg1="", am_cv_proto_iconv_arg1="const")
-      am_cv_proto_iconv="extern size_t iconv (iconv_t cd, $am_cv_proto_iconv_arg1 char * *inbuf, size_t *inbytesleft, char * *outbuf, size_t *outbytesleft);"])
-    am_cv_proto_iconv=`echo "[$]am_cv_proto_iconv" | tr -s ' ' | sed -e 's/( /(/'`
-    AC_MSG_RESULT([$]{ac_t:-
-         }[$]am_cv_proto_iconv)
-    AC_DEFINE_UNQUOTED(ICONV_CONST, $am_cv_proto_iconv_arg1,
-      [Define as const if the declaration of iconv() needs const.])
-  fi
-  LIBICONV=
-  if test "$am_cv_lib_iconv" = yes; then
-    LIBICONV="$am_cv_lib_iconv_ldpath -liconv"
-  fi
-  AC_SUBST(LIBICONV)
-])
-
 AC_DEFUN([gcc_AC_INITFINI_ARRAY],
 [AC_ARG_ENABLE(initfini-array,
 	[  --enable-initfini-array	use .init_array/.fini_array sections],
@@ -643,39 +532,6 @@ ifelse([$7],,,[dnl
 if test $[$2] = yes; then
   $7
 fi])])
-
-# lcmessage.m4 serial 3 (gettext-0.11.3)
-dnl Copyright (C) 1995-2002 Free Software Foundation, Inc.
-dnl This file is free software, distributed under the terms of the GNU
-dnl General Public License.  As a special exception to the GNU General
-dnl Public License, this file may be distributed as part of a program
-dnl that contains a configuration script generated by Autoconf, under
-dnl the same distribution terms as the rest of that program.
-dnl
-dnl This file can can be used in projects which are not available under
-dnl the GNU General Public License or the GNU Library General Public
-dnl License but which still want to provide support for the GNU gettext
-dnl functionality.
-dnl Please note that the actual code of the GNU gettext library is covered
-dnl by the GNU Library General Public License, and the rest of the GNU
-dnl gettext package package is covered by the GNU General Public License.
-dnl They are *not* in the public domain.
-
-dnl Authors:
-dnl   Ulrich Drepper <drepper@cygnus.com>, 1995.
-
-# Check whether LC_MESSAGES is available in <locale.h>.
-
-AC_DEFUN([AM_LC_MESSAGES],
-[
-  AC_CACHE_CHECK([for LC_MESSAGES], am_cv_val_LC_MESSAGES,
-    [AC_TRY_LINK([#include <locale.h>], [return LC_MESSAGES],
-       am_cv_val_LC_MESSAGES=yes, am_cv_val_LC_MESSAGES=no)])
-  if test $am_cv_val_LC_MESSAGES = yes; then
-    AC_DEFINE(HAVE_LC_MESSAGES, 1,
-      [Define if your <locale.h> file defines LC_MESSAGES.])
-  fi
-])
 
 # AM_PROG_CC_C_O
 # --------------

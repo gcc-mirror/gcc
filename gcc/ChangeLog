@@ -1,5 +1,12 @@
 2004-09-22  Kelley Cook  <kcook@gcc.gnu.org>
 
+	* aclocal.m4: Add in gettext's m4 includes.
+	(AC_ICONV, AC_LCMESSAGES, GCC_PATH_PROG): Remove.
+	* configure.ac: Add in check for iconv.m4
+	* configure: Regenerate.
+	
+2004-09-22  Kelley Cook  <kcook@gcc.gnu.org>
+
 	* aclocal.m4: Update for rename of gettext-sister.m4.
 
 2004-09-22  Daniel Berlin <dberlin@dberlin.org>
