@@ -1,3 +1,8 @@
+2001-11-16  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gensupport.c (process_rtx): Don't assume filename is the first
+	argument of any rtl.
+
 2001-11-16  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* vax-protos.h (reg_was_0_p): New prototype.
