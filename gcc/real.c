@@ -3292,8 +3292,7 @@ const struct real_format ieee_extended_intel_96_round_53_format =
    range as an IEEE double precision value, but effectively 106 bits of
    significand precision.  Infinity and NaN are represented by their IEEE
    double precision value stored in the first number, the second number is
-   ignored.  Zeroes, Infinities, and NaNs are set in both doubles
-   due to precedent.  */
+   +0.0 or -0.0 for Infinity and don't-care for NaN.  */
 
 static void encode_ibm_extended (const struct real_format *fmt,
 				 long *, const REAL_VALUE_TYPE *);
