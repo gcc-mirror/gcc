@@ -1,5 +1,10 @@
 Thu Apr 26 11:15:12 2001  Jeffrey A Law  (law@cygnus.com)
 
+	* g++.dg/special/initp1.C: Moved here from g++.old-deja/g++.ext.
+	Tweak slightly to work with g++.dg framework.
+	* g++.dg/special/ecos.exp: Run initp1.C test.
+	* g++.old-deja/g++.ext/initp1.C: Moved to g++.dg/special.
+
 	* g++.old-deja/g++.ext/instantiate2.C: XFAIL for HPUX too since
 	its linker doesn't give line numbers either.
 	* g++.old-deja/g++.ext/instantiate3.C: Similarly.
