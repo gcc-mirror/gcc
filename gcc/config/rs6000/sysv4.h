@@ -350,13 +350,15 @@ do {									\
 
 /* Undefine some things which are defined by the generic svr4.h.  */
 
-#undef ASM_FILE_END
-#undef ASM_OUTPUT_EXTERNAL_LIBCALL
-#undef READONLY_DATA_SECTION
-#undef SELECT_SECTION
 #undef ASM_DECLARE_FUNCTION_NAME
+#undef ASM_FILE_END
 #undef ASM_OUTPUT_CONSTRUCTOR
 #undef ASM_OUTPUT_DESTRUCTOR
+#undef ASM_OUTPUT_DEF
+#undef ASM_OUTPUT_EXTERNAL_LIBCALL
+#undef HANDLE_PRAGMA_PACK
+#undef READONLY_DATA_SECTION
+#undef SELECT_SECTION
 
 /* Use the regular svr4 definitions.  */
 
@@ -396,6 +398,14 @@ do {									\
    will merely go slower in that case, define this macro as 0.  */
 #undef	STRICT_ALIGNMENT
 #define	STRICT_ALIGNMENT (TARGET_STRICT_ALIGN)
+
+/* Define this macro to be the value 1 if unaligned accesses have a cost
+   many times greater than aligned accesses, for example if they are
+   emulated in a trap handler.  */
+#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN)			\
+   ((STRICT_ALIGNMENT						\
+     || (((MODE) == SFmode || (MODE) == DFmode || (MODE) == DImode) \
+         && (ALIGN) < 4)) ? 1 : 0)
 
 /* Alignment in bits of the stack boundary.  Note, in order to allow building
    one set of libraries with -mno-eabi instead of eabi libraries and non-eabi

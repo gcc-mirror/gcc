@@ -1,5 +1,11 @@
 2000-01-04  David Edelsohn  <edelsohn@gnu.org>
 
+	* rs6000/sysv4.h (ASM_OUTPUT_DEF): Undefine.
+	(HANDLE_PRAGMA_PACK): Undefine.
+	(SLOW_UNALIGNED_ACCESS): Define.
+
+2000-01-04  David Edelsohn  <edelsohn@gnu.org>
+
 	* expmed.c (SLOW_UNALIGNED_ACCESS): Add mode and align parameters
 	to default definition.
 	(store_bit_field): Call SLOW_UNALIGNED_ACCESS with mode and alignment.
