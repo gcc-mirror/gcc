@@ -19,11 +19,27 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#undef SUBTARGET_SWITCHES
+#define SUBTARGET_SWITCHES				\
+  { "sio",	 MASK_SIO,				\
+     N_("Generate cpp defines for server IO") },	\
+  { "wsio",	-MASK_SIO,				\
+     N_("Generate cpp defines for workstation IO") },	\
+  {"gnu-ld",	 MASK_GNU_LD,				\
+     N_("Assume code will be linked by GNU ld") },	\
+  {"hp-ld",	-MASK_GNU_LD,				\
+     N_("Assume code will be linked by HP ld") },
+
 /* We can debug dynamically linked executables on hpux11; we also
    want dereferencing of a NULL pointer to cause a SEGV.  */
 #undef LINK_SPEC
+#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_GNU_LD)
 #define LINK_SPEC \
-  "-E %{mlinker-opt:-O} %{!shared:-u main} %{static:-a archive} %{shared:-shared}"
+  "-E %{mlinker-opt:-O} %{!shared:-u main} %{static:-a archive} %{shared:%{mhp-ld:-b}%{!mhp-ld:-shared}} %{mhp-ld:+Accept TypeMismatch}"
+#else
+#define LINK_SPEC \
+  "-E %{mlinker-opt:-O} %{!shared:-u main} %{static:-a archive} %{shared:%{mgnu-ld:-shared}%{!mgnu-ld:-b}} %{!mgnu-ld:+Accept TypeMismatch}"
+#endif
 
 /* Like the default, except no -lg.  */
 #undef LIB_SPEC

@@ -871,6 +871,10 @@ hppa*64*-*-hpux11*)
 	xmake_file="pa/x-ada"
 	target_cpu_default="(MASK_PA_11|MASK_PA_20|MASK_GAS)"
 
+	if test x$gnu_ld = xyes
+	then
+		target_cpu_default="${target_cpu_default}|MASK_GNU_LD"
+	fi
 #	if [ x$enable_threads = x ]; then
 #	    enable_threads=$have_pthread_h
 #	fi
