@@ -9479,7 +9479,7 @@ rtl_for_decl_location (tree decl)
 	      rtx inc = DECL_INCOMING_RTL (decl);
 	      if (REG_P (inc))
 		rtl = inc;
-	      else if (MEM_P (inc))
+	      else if (GET_CODE (inc) == MEM)
 		{
 		  if (BYTES_BIG_ENDIAN)
 		    rtl = adjust_address_nv (inc, dmode,

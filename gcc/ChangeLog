@@ -1,3 +1,8 @@
+2004-10-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* dwarf2out.c (rtl_for_decl_location): Do not use MEM_P but use
+	GET_CODE == MEM.
+
 2004-10-13  Richard Henderson  <rth@redhat.com>
 
         PR debug/15860
