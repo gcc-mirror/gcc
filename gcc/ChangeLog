@@ -1,3 +1,32 @@
+2002-06-11  Danny Smith  <dannysmith@users.sourforge.net>
+
+	* gthr-win32.h: Wrap functions in extern "C".
+	(__gthread_key_t): Typedef as unsigned long,
+	not win32 DWORD.
+	(__GTHREAD_ONCE_INIT): Use 0, not win32 FALSE.
+	(__gthread_mutex_t): Typedef as void*, not win32 HANDLE.
+	(__gthr_win32_once, __gthr_win32_key_create,
+	__gthr_win32_key_delete, __gthr_win32_getspecific,
+	__gthr_win32_setspecific, __gthr_win32_mutex_init_function,
+	__gthr_win32_mutex_lock,__gthr_win32_mutex_trylock,
+	__gthr_win32_mutex_unlock): Declare.
+	(__gthread_once,__gthread_key_create,
+	__gthread_key_delete, __gthread_getspecific,
+	__gthread_setspecific, __gthread_mutex_init_function,
+	__gthread_mutex_lock,__gthread_mutex_trylock,
+	__gthread_mutex_unlock): Call corresponding
+	__gthr_win32_* extern implementations if #defined
+	__GTHREAD_HIDE_WIN32API.
+	* config/i386/t-mingw32 (LIB2FUNCS_EXTRA): Set to
+	$(srcdir)/config/i386/gthr-win32.c 
+	* config/i386/gthr-win32.c: New implementation file.
+	(__gthr_win32_once, __gthr_win32_key_create,
+	__gthr_win32_key_delete, __gthr_win32_getspecific,
+	__gthr_win32_setspecific, __gthr_win32_mutex_init_function,
+	__gthr_win32_mutex_lock,__gthr_win32_mutex_trylock,
+	__gthr_win32_mutex_unlock): New functions, based on
+	static inlines in gthr-win32.h.
+
 2002-06-10  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (override_options): Don't warn about
