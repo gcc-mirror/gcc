@@ -1788,9 +1788,7 @@ are supported on Tru64 UNIX, so you must not configure GCC with
 @option{--with-gnu-as} or @option{--with-gnu-ld}.
 
 The @option{--enable-threads} options isn't supported yet.  A patch is
-in preparation for a future release.  The Java runtime library has been
-reported to work on Tru64 UNIX V4.0F, V5.0, and V5.1, so you may try
-@option{--enable-libgcj} and report your results.
+in preparation for a future release.
 
 GCC writes a @samp{.verstamp} directive to the assembler output file
 unless it is built as a cross-compiler.  It gets the version to use from

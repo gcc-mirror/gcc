@@ -1,3 +1,8 @@
+2002-03-27  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* doc/install.texi (alpha*-dec-osf*): Don't need --enable-libgcj
+	any more.
+
 Wed Mar 27 23:19:30 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i960.md (ret): Set PC.
