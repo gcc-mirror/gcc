@@ -1,3 +1,14 @@
+2004-10-08  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.md (prefetch_media, prefetch_i4): New insns.
+	(prefetch): Convert to expander.
+
+2004-10-08  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.md (tls_global_dynamic): Use MEM pattern for the
+	first argument of CALL.
+	(tls_local_dynamic): Likewise.
+
 2004-10-08  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-typeck.c (enum impl_conv): New.
