@@ -3701,7 +3701,7 @@ On some machines it may be impossible to determine the return address of
 any function other than the current one; in such cases, or when the top
 of the stack has been reached, this function will return @code{0}.
 
-This function should only be used with a non-zero argument for debugging
+This function should only be used with a nonzero argument for debugging
 purposes.
 @end deftypefn
 

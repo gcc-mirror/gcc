@@ -770,7 +770,7 @@ Other broken versions may recompile parts of the compiler when
 installing the compiler.)
 
 Some commands executed when making the compiler may fail (return a
-non-zero status) and be ignored by @code{make}.  These failures, which
+nonzero status) and be ignored by @code{make}.  These failures, which
 are often due to files that were not found, are expected, and can safely
 be ignored.
 

@@ -1714,8 +1714,8 @@ to express conditional jumps.
 @item (cond [@var{test1} @var{value1} @var{test2} @var{value2} @dots{}] @var{default})
 Similar to @code{if_then_else}, but more general.  Each of @var{test1},
 @var{test2}, @dots{} is performed in turn.  The result of this expression is
-the @var{value} corresponding to the first non-zero test, or @var{default} if
-none of the tests are non-zero expressions.
+the @var{value} corresponding to the first nonzero test, or @var{default} if
+none of the tests are nonzero expressions.
 
 This is currently not valid for instruction patterns and is supported only
 for insn attributes.  @xref{Insn Attributes}.

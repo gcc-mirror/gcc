@@ -110,7 +110,7 @@ int i = (TEST_P (t) != 0);
 @noindent
 are legal.  Macros that return @code{int} values now may be changed to
 return @code{tree} values, or other pointers in the future.  Even those
-that continue to return @code{int} may return multiple non-zero codes
+that continue to return @code{int} may return multiple nonzero codes
 where previously they returned only zero and one.  Therefore, you should
 not write code like
 @example
@@ -1201,7 +1201,7 @@ returning to the thunk.  The first parameter to the thunk is always the
 value.  (The @code{THUNK_DELTA} is an @code{int}, not an
 @code{INTEGER_CST}.)
 
-Then, if @code{THUNK_VCALL_OFFSET} (an @code{INTEGER_CST}) is non-zero
+Then, if @code{THUNK_VCALL_OFFSET} (an @code{INTEGER_CST}) is nonzero
 the adjusted @code{this} pointer must be adjusted again.  The complete
 calculation is given by the following pseudo-code:
 
@@ -2097,7 +2097,7 @@ the value of the second operand.
 
 @item COND_EXPR
 These nodes represent @code{?:} expressions.  The first operand
-is of boolean or integral type.  If it evaluates to a non-zero value,
+is of boolean or integral type.  If it evaluates to a nonzero value,
 the second operand should be evaluated, and returned as the value of the
 expression.  Otherwise, the third operand is evaluated, and returned as
 the value of the expression.  As a GNU extension, the middle operand of
@@ -2175,7 +2175,7 @@ an @code{EXIT_EXPR} is encountered.
 @item EXIT_EXPR
 These nodes represent conditional exits from the nearest enclosing
 @code{LOOP_EXPR}.  The single operand is the condition; if it is
-non-zero, then the loop should be exited.  An @code{EXIT_EXPR} will only
+nonzero, then the loop should be exited.  An @code{EXIT_EXPR} will only
 appear within a @code{LOOP_EXPR}.
 
 @item CLEANUP_POINT_EXPR

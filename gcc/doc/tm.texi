@@ -83,7 +83,7 @@ additional options.
 @item SWITCH_CURTAILS_COMPILATION (@var{char})
 A C expression which determines whether the option @option{-@var{char}}
 stops compilation before the generation of an executable.  The value is
-boolean, non-zero if the option does stop an executable from being
+boolean, nonzero if the option does stop an executable from being
 generated, zero otherwise.
 
 By default, this macro is defined as
@@ -718,7 +718,7 @@ used as the default values for the other command line options.
 @var{level} is the optimization level specified; 2 if @option{-O2} is
 specified, 1 if @option{-O} is specified, and 0 if neither is specified.
 
-@var{size} is non-zero if @option{-Os} is specified and zero otherwise.
+@var{size} is nonzero if @option{-Os} is specified and zero otherwise.
 
 You should not use this macro to change options that are not
 machine-specific.  These should uniformly selected by the same
@@ -1636,7 +1636,7 @@ exit, if the register is used within the function.
 @cindex call-used register
 @cindex call-clobbered register
 @cindex call-saved register
-A C expression that is non-zero if it is not permissible to store a
+A C expression that is nonzero if it is not permissible to store a
 value of mode @var{mode} in hard register number @var{regno} across a
 call without some part of it being clobbered.  For most machines this
 macro need not be defined.  It is only required for machines that do not
@@ -2248,7 +2248,7 @@ general registers.
 @item SECONDARY_MEMORY_NEEDED (@var{class1}, @var{class2}, @var{m})
 Certain machines have the property that some registers cannot be copied
 to some other registers without using memory.  Define this macro on
-those machines to be a C expression that is non-zero if objects of mode
+those machines to be a C expression that is nonzero if objects of mode
 @var{m} in registers of @var{class1} can only be copied to registers of
 class @var{class2} by storing a register of @var{class1} into memory
 and loading that memory location into a register of @var{class2}.
@@ -2297,14 +2297,14 @@ to be in specific registers (like an accumulator), and reload will fail
 if the required hard register is used for another purpose across such an
 insn.
 
-Define @code{SMALL_REGISTER_CLASSES} to be an expression with a non-zero
-value on these machines.  When this macro has a non-zero value, the
+Define @code{SMALL_REGISTER_CLASSES} to be an expression with a nonzero
+value on these machines.  When this macro has a nonzero value, the
 compiler will try to minimize the lifetime of hard registers.
 
-It is always safe to define this macro with a non-zero value, but if you
+It is always safe to define this macro with a nonzero value, but if you
 unnecessarily define it, you will reduce the amount of optimizations
 that can be performed in some cases.  If you do not define this macro
-with a non-zero value when it is required, the compiler will run out of
+with a nonzero value when it is required, the compiler will run out of
 spill registers and print a fatal error message.  For most machines, you
 should not define this macro at all.
 
@@ -2928,7 +2928,7 @@ specified first since that is the preferred elimination.
 
 @findex CAN_ELIMINATE
 @item CAN_ELIMINATE (@var{from-reg}, @var{to-reg})
-A C expression that returns non-zero if the compiler is allowed to try
+A C expression that returns nonzero if the compiler is allowed to try
 to replace register number @var{from-reg} with register number
 @var{to-reg}.  This macro need only be defined if @code{ELIMINABLE_REGS}
 is defined, and will usually be the constant 1, since most of the cases
@@ -3172,7 +3172,7 @@ by making @code{FUNCTION_ARG} return 0 whenever @var{named} is 0.
 You may use the macro @code{MUST_PASS_IN_STACK (@var{mode}, @var{type})}
 in the definition of this macro to determine if this argument is of a
 type that must be passed in the stack.  If @code{REG_PARM_STACK_SPACE}
-is not defined and @code{FUNCTION_ARG} returns non-zero for such an
+is not defined and @code{FUNCTION_ARG} returns nonzero for such an
 argument, the compiler will abort.  If @code{REG_PARM_STACK_SPACE} is
 defined, the argument will be computed in the stack and then loaded into
 a register.
@@ -4051,7 +4051,7 @@ By default if a function has a target specific attribute attached to it,
 it will not be inlined.  This behaviour can be overridden if the target
 defines the @samp{FUNCTION_ATTRIBUTE_INLINABLE_P} macro.  This macro
 takes one argument, a @samp{DECL} describing the function.  It should
-return non-zero if the function can be inlined, otherwise it should
+return nonzero if the function can be inlined, otherwise it should
 return 0.
 
 @node Tail Calling
@@ -4644,14 +4644,14 @@ This is about addressing modes.
 @itemx HAVE_PRE_DECREMENT
 @itemx HAVE_POST_INCREMENT
 @itemx HAVE_POST_DECREMENT
-A C expression that is non-zero if the machine supports pre-increment,
+A C expression that is nonzero if the machine supports pre-increment,
 pre-decrement, post-increment, or post-decrement addressing respectively.
 
 @findex HAVE_POST_MODIFY_DISP
 @findex HAVE_PRE_MODIFY_DISP
 @item HAVE_PRE_MODIFY_DISP
 @itemx HAVE_POST_MODIFY_DISP
-A C expression that is non-zero if the machine supports pre- or
+A C expression that is nonzero if the machine supports pre- or
 post-address side-effect generation involving constants other than
 the size of the memory operand.
 
@@ -4659,7 +4659,7 @@ the size of the memory operand.
 @findex HAVE_PRE_MODIFY_REG
 @item HAVE_PRE_MODIFY_REG
 @itemx HAVE_POST_MODIFY_REG
-A C expression that is non-zero if the machine supports pre- or
+A C expression that is nonzero if the machine supports pre- or
 post-address side-effect generation involving a register displacement.
 
 @findex CONSTANT_ADDRESS_P
@@ -5174,7 +5174,7 @@ if the @samp{mov@var{m}} pattern's constraints do not allow such copying.
 @item MEMORY_MOVE_COST (@var{mode}, @var{class}, @var{in})
 A C expression for the cost of moving data of mode @var{mode} between a
 register of class @var{class} and memory; @var{in} is zero if the value
-is to be written to memory, non-zero if it is to be read in.  This cost
+is to be written to memory, nonzero if it is to be read in.  This cost
 is relative to those in @code{REGISTER_MOVE_COST}.  If moving between
 registers and memory is more expensive than between two registers, you
 should define this macro to express the relative cost.
@@ -5243,15 +5243,15 @@ Define this macro to be the value 1 if memory accesses described by the
 than aligned accesses, for example if they are emulated in a trap
 handler.
 
-When this macro is non-zero, the compiler will act as if
-@code{STRICT_ALIGNMENT} were non-zero when generating code for block
+When this macro is nonzero, the compiler will act as if
+@code{STRICT_ALIGNMENT} were nonzero when generating code for block
 moves.  This can cause significantly more instructions to be produced.
-Therefore, do not set this macro non-zero if unaligned accesses only add a
+Therefore, do not set this macro nonzero if unaligned accesses only add a
 cycle or two to the time for a memory access.
 
 If the value of this macro is always zero, it need not be defined.  If
-this macro is defined, it should produce a non-zero value when
-@code{STRICT_ALIGNMENT} is non-zero.
+this macro is defined, it should produce a nonzero value when
+@code{STRICT_ALIGNMENT} is nonzero.
 
 @findex DONT_REDUCE_ADDR
 @item DONT_REDUCE_ADDR
@@ -5492,7 +5492,7 @@ data section.
 
 @findex JUMP_TABLES_IN_TEXT_SECTION
 @item JUMP_TABLES_IN_TEXT_SECTION
-Define this macro to be an expression with a non-zero value if jump
+Define this macro to be an expression with a nonzero value if jump
 tables (for @code{tablejump} insns) should be output in the text
 section, along with the assembler instructions.  Otherwise, the
 readonly data section is used.
@@ -5818,7 +5818,7 @@ Berkeley Unix assembler, do not define the macro
 @findex CONSTANT_POOL_BEFORE_FUNCTION
 @item CONSTANT_POOL_BEFORE_FUNCTION
 You may define this macro as a C expression.  You should define the
-expression to have a non-zero value if GCC should output the constant
+expression to have a nonzero value if GCC should output the constant
 pool for a function before the code for the function, or a zero value if
 GCC should output the constant pool after the function.  If you do
 not define this macro, the usual case, GCC will output the constant
@@ -7768,7 +7768,7 @@ or @code{MACHINE_DEPENDENT_REORG}.
 
 You can have multiple entities that are mode-switched, and select at run time
 which entities actually need it.  @code{OPTIMIZE_MODE_SWITCHING} should
-return non-zero for any @var{entity} that that needs mode-switching.
+return nonzero for any @var{entity} that that needs mode-switching.
 If you define this macro, you also have to define
 @code{NUM_MODES_FOR_MODE_SWITCHING}, @code{MODE_NEEDED},
 @code{MODE_PRIORITY_TO_MODE} and @code{EMIT_MODE_SET}.
@@ -7970,7 +7970,7 @@ at run-time.
 A C expression that is nonzero if on this machine the number of bits
 actually used for the count of a shift operation is equal to the number
 of bits needed to represent the size of the object being shifted.  When
-this macro is non-zero, the compiler will assume that it is safe to omit
+this macro is nonzero, the compiler will assume that it is safe to omit
 a sign-extend, zero-extend, and certain bitwise `and' instructions that
 truncates the count of a shift operation.  On machines that have
 instructions that act on bit-fields at variable positions, which may
@@ -8111,7 +8111,7 @@ instructions.
 
 @findex FLOAT_STORE_FLAG_VALUE
 @item FLOAT_STORE_FLAG_VALUE (@var{mode})
-A C expression that gives a non-zero @code{REAL_VALUE_TYPE} value that is
+A C expression that gives a nonzero @code{REAL_VALUE_TYPE} value that is
 returned when comparison operators with floating-point results are true.
 Define this macro on machine that have comparison operations that return
 floating-point values.  If there are no such operations, do not define
