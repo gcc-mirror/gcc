@@ -137,6 +137,9 @@ private:
       case 'Z':
 	rt = boolean_type;
 	break;
+      case 'B':
+	rt = byte_type;
+	break;
       case 'C':
 	rt = char_type;
 	break;

@@ -1,5 +1,8 @@
 2001-11-18  Tom Tromey  <tromey@redhat.com>
 
+	* verify.cc (_Jv_BytecodeVerifier::get_type_val_for_signature):
+	Added `B' case.
+
 	* verify.cc (_Jv_BytecodeVerifier::get_ushort): Use `jint' for
 	temporary values.
 	(_Jv_BytecodeVerifier::get_short): Likewise.
