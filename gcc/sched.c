@@ -2189,15 +2189,15 @@ attach_deaths_insn (insn)
 
 	      attach_deaths (SET_DEST (XVECEXP (x, 0, i)), insn, 1);
 	    }
-	  else if (code == CLOBBER)
-	    attach_deaths (XEXP (XVECEXP (x, 0, i), 0), insn, 1);
-	  else
+	  /* Flow does not add REG_DEAD notes to registers that die in
+	     clobbers, so we can't either.  */
+	  else if (code != CLOBBER)
 	    attach_deaths (XVECEXP (x, 0, i), insn, 0);
 	}
     }
-  else if (code == CLOBBER)
-    attach_deaths (XEXP (x, 0), insn, 1);
-  else
+  /* Flow does not add REG_DEAD notes to registers that die in
+     clobbers, so we can't either.  */
+  else if (code != CLOBBER)
     attach_deaths (x, insn, 0);
 }
 
