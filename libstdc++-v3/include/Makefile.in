@@ -78,7 +78,6 @@ CMESSAGES_H = @CMESSAGES_H@
 CPP = @CPP@
 CSHADOW_FLAGS = @CSHADOW_FLAGS@
 CSTDIO_H = @CSTDIO_H@
-CTIME_H = @CTIME_H@
 CXXCPP = @CXXCPP@
 C_INCLUDE_DIR = @C_INCLUDE_DIR@
 DATADIRNAME = @DATADIRNAME@
@@ -577,7 +576,6 @@ stamp-target: ${target_headers} ${target_builddir}
 	  @LN_S@ ${glibcpp_srcdir}/@CSTDIO_H@ c++io.h ;\
 	  @LN_S@ ${glibcpp_srcdir}/@CLOCALE_H@ c++locale.h ;\
 	  @LN_S@ ${glibcpp_srcdir}/@CMESSAGES_H@ messages_members.h ;\
-	  @LN_S@ ${glibcpp_srcdir}/@CTIME_H@ time_members.h ;\
 	  @LN_S@ ${glibcpp_srcdir}/@CCODECVT_H@ codecvt_specializations.h ;\
 	  echo `date` > stamp-target; \
 	fi

@@ -1078,9 +1078,12 @@ namespace std
       const _CharT* 			_M_date_era_format;
       const _CharT* 			_M_time_format;
       const _CharT* 			_M_time_era_format;
+      const _CharT*			_M_date_time_format;
+      const _CharT*			_M_date_time_era_format;
       const _CharT* 			_M_am;
       const _CharT* 			_M_pm;
-    
+      const _CharT*			_M_am_pm_format;
+
       // Day names, starting with "C"'s Sunday.
       const _CharT*  			_M_day1;
       const _CharT*  			_M_day2;
@@ -1139,20 +1142,39 @@ namespace std
       { _M_initialize_timepunct(__cloc); }
 
       void
-      _M_put_helper(char* __s, size_t __maxlen, const char* __format, 
+      _M_put_helper(_CharT* __s, size_t __maxlen, const _CharT* __format, 
 		    const tm* __tm) const;
 
-      // Not used, at the moment. Likely to be strptime-ish.
       void
-      _M_get_helper(const char* __s, const char* __format, tm* __tm) const;
+      _M_date_formats(const _CharT** __date) const
+      {
+	// Always have default first.
+	__date[0] = _M_date_format;
+	__date[1] = _M_date_era_format;	
+      }
 
-      const _CharT*
-      _M_date_formats() const
-      { return _M_date_format; }
+      void
+      _M_time_formats(const _CharT** __time) const
+      {
+	// Always have default first.
+	__time[0] = _M_time_format;
+	__time[1] = _M_time_era_format;	
+      }
 
-      const _CharT*
-      _M_time_formats() const
-      { return _M_time_format; }
+      void
+      _M_ampm(const _CharT** __ampm) const
+      { 
+	__ampm[0] = _M_am;
+	__ampm[1] = _M_pm;
+      }      
+
+      void
+      _M_date_time_formats(const _CharT** __dt) const
+      {
+	// Always have default first.
+	__dt[0] = _M_date_time_format;
+	__dt[1] = _M_date_time_era_format;	
+      }
 
       void
       _M_days(const _CharT** __days) const
@@ -1176,7 +1198,7 @@ namespace std
 	__days[4] = _M_day_a5;
 	__days[5] = _M_day_a6;
 	__days[6] = _M_day_a7;
-     }
+      }
 
       void
       _M_months(const _CharT** __months) const
@@ -1240,6 +1262,13 @@ namespace std
   template<typename _CharT>
     void
     __timepunct<_CharT>::_M_initialize_timepunct(__c_locale)
+    { }
+
+  // NB: Cannot be made generic.
+  template<typename _CharT>
+    void
+    __timepunct<_CharT>::_M_put_helper(_CharT*, size_t, const _CharT*, 
+				       const tm*) const
     { }
 
   template<> 
@@ -1327,14 +1356,12 @@ namespace std
       do_get_year(iter_type __beg, iter_type __end, ios_base& __io,
 		  ios_base::iostate& __err, tm* __tm) const;
 
-      // Extract time component in the form of
-      // [digitdigit][separator], with a maximum of two digits per
-      // separator. Used by do_get_time.
+      // Extract numeric component of length __len.
       void
-      _M_extract_time(iter_type& __beg, iter_type& __end, int& __member,
-		      int __min, int __max, const char_type __sep, 
-		      bool __extract, const ctype<_CharT>& __ctype, 
-		      ios_base::iostate& __err) const;
+      _M_extract_num(iter_type& __beg, iter_type& __end, int& __member,
+		     int __min, int __max, size_t __len,
+		     const ctype<_CharT>& __ctype, 
+		     ios_base::iostate& __err) const;
       
       // Extract day or month name, or any unique array of string
       // literals in a const _CharT* array.
@@ -1342,6 +1369,12 @@ namespace std
       _M_extract_name(iter_type& __beg, iter_type& __end, int& __member,
 		      const _CharT** __names, size_t __indexlen, 
 		      ios_base::iostate& __err) const;
+
+      // Extract on a component-by-component basis, via __format argument.
+      void
+      _M_extract_via_format(iter_type& __beg, iter_type& __end, ios_base& __io,
+			    ios_base::iostate& __err, tm* __tm, 
+			    const _CharT* __format) const;
     };
 
   template<typename _CharT, typename _InIter>
@@ -1417,9 +1450,6 @@ namespace std
       virtual 
       ~time_put_byname() { }
     };
-
-  // Include host and configuration specific messages virtual functions.
-  #include <bits/time_members.h>
 
 
   struct money_base

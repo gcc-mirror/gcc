@@ -1328,45 +1328,232 @@ namespace std
   template<typename _CharT, typename _InIter>
     void
     time_get<_CharT, _InIter>::
-    _M_extract_time(iter_type& __beg, iter_type& __end, int& __member,
-		    int __min, int __max, const char_type __sep, 
-		    bool __extract, const ctype<_CharT>& __ctype, 
-		    ios_base::iostate& __err) const
-    {
-      if (__err == ios_base::goodbit)
+    _M_extract_via_format(iter_type& __beg, iter_type& __end, ios_base& __io,
+			  ios_base::iostate& __err, tm* __tm, 
+			  const _CharT* __format) const
+    {  
+      locale __loc = __io.getloc();
+      __timepunct<_CharT> const& __tp = use_facet<__timepunct<_CharT> >(__loc);
+      const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc); 
+      size_t __len = char_traits<_CharT>::length(__format);
+
+      for (size_t __i = 0; __beg != __end && __i < __len && !__err; ++__i)
 	{
-	  size_t __i = 0;
-	  string __digits;
-	  bool __testvalid = true;
-	  const ctype_base::mask __digit = ctype_base::digit;
-	  char_type __c = *__beg;
-	  for (;__beg != __end && __ctype.is(__digit, __c) && __i < 2; ++__i)
+	  char __c = __format[__i];
+	  if (__c == '%')
 	    {
-	      __digits += __ctype.narrow(__c, 0);
-	      __c = *(++__beg);
-	    }
-	  if (__i == 2)
-	    {
-	      int __value = atoi(__digits.c_str());
-	      if (__min <= __value && __value <= __max)
-		__member = __value;
+	      // Verify valid formatting code, attempt to extract.
+	      __c = __format[++__i];
+	      char __mod = 0;
+	      int __mem = 0; 
+	      if (__c == 'E' || __c == 'O')
+		{
+		  __mod = __c;
+		  __c = __format[++__i];
+		}
+	      switch (__c)
+		{
+		  const char* __cs;
+		  _CharT __wcs[10];
+		case 'a':
+		  // Abbreviated weekday name [tm_wday]
+		  const char_type*  __days1[7];
+		  __tp._M_days_abbreviated(__days1);
+		  _M_extract_name(__beg, __end, __tm->tm_wday, __days1, 7, 
+				  __err);
+		  break;
+		case 'A':
+		  // Weekday name [tm_wday].
+		  const char_type*  __days2[7];
+		  __tp._M_days(__days2);
+		  _M_extract_name(__beg, __end, __tm->tm_wday, __days2, 7, 
+				  __err);
+		  break;
+		case 'h':
+		case 'b':
+		  // Abbreviated month name [tm_mon]
+		  const char_type*  __months1[12];
+		  __tp._M_months_abbreviated(__months1);
+		  _M_extract_name(__beg, __end, __tm->tm_mon, __months1, 12, 
+				  __err);
+		  break;
+		case 'B':
+		  // Month name [tm_mon].
+		  const char_type*  __months2[12];
+		  __tp._M_months(__months2);
+		  _M_extract_name(__beg, __end, __tm->tm_mon, __months2, 12, 
+				  __err);
+		  break;
+		case 'c':
+		  // Default time and date representation.
+		  const char_type*  __dt[2];
+		  __tp._M_date_time_formats(__dt);
+		  _M_extract_via_format(__beg, __end, __io, __err, __tm, 
+					__dt[0]);
+		  break;
+		case 'd':
+		  // Day [01, 31]. [tm_mday]
+		  _M_extract_num(__beg, __end, __tm->tm_mday, 1, 31, 2, 
+				 __ctype, __err);
+		  break;
+		case 'D':
+		  // Equivalent to %m/%d/%y.[tm_mon, tm_mday, tm_year]
+		  __cs = "%m/%d/%y";
+		  __ctype.widen(__cs, __cs + 9, __wcs);
+		  _M_extract_via_format(__beg, __end, __io, __err, __tm, 
+					__wcs);
+		  break;
+		case 'H':
+		  // Hour [00, 23]. [tm_hour]
+		  _M_extract_num(__beg, __end, __tm->tm_hour, 0, 23, 2,
+				 __ctype, __err);
+		  break;
+		case 'I':
+		  // Hour [01, 12]. [tm_hour]
+		  _M_extract_num(__beg, __end, __tm->tm_hour, 1, 12, 2,
+				 __ctype, __err);
+		  break;
+		case 'm':
+		  // Month [01, 12]. [tm_mon]
+		  _M_extract_num(__beg, __end, __mem, 1, 12, 2,
+				 __ctype, __err);
+		  if (!__err)
+		    __tm->tm_mon = __mem - 1;
+		  break;
+		case 'M':
+		  // Minute [00, 59]. [tm_min]
+		  _M_extract_num(__beg, __end, __tm->tm_min, 0, 59, 2,
+				 __ctype, __err);
+		  break;
+		case 'n':
+		  if (__ctype.narrow(*__beg, 0) == '\n')
+		    ++__beg;
+		  else
+		    __err |= ios_base::failbit;
+		  break;
+		case 'R':
+		  // Equivalent to (%H:%M).
+		  __cs = "%H:%M";
+		  __ctype.widen(__cs, __cs + 6, __wcs);
+		  _M_extract_via_format(__beg, __end, __io, __err, __tm, 
+					__wcs);
+		  break;
+		case 'S':
+		  // Seconds.
+		  _M_extract_num(__beg, __end, __tm->tm_sec, 0, 59, 2,
+				 __ctype, __err);
+		  break;
+		case 't':
+		  if (__ctype.narrow(*__beg, 0) == '\t')
+		    ++__beg;
+		  else
+		__err |= ios_base::failbit;
+		  break;
+		case 'T':
+		  // Equivalent to (%H:%M:%S).
+		  __cs = "%H:%M:%S";
+		  __ctype.widen(__cs, __cs + 9, __wcs);
+		  _M_extract_via_format(__beg, __end, __io, __err, __tm, 
+					__wcs);
+		  break;
+		case 'x':
+		  // Locale's date.
+		  const char_type*  __dates[2];
+		  __tp._M_date_formats(__dates);
+		  _M_extract_via_format(__beg, __end, __io, __err, __tm, 
+					__dates[0]);
+		  break;
+		case 'X':
+		  // Locale's time.
+		  const char_type*  __times[2];
+		  __tp._M_time_formats(__times);
+		  _M_extract_via_format(__beg, __end, __io, __err, __tm, 
+					__times[0]);
+		  break;
+		case 'y':
+		  // Two digit year. [tm_year]
+		  _M_extract_num(__beg, __end, __tm->tm_year, 0, 99, 2, 
+				 __ctype, __err);
+		  break;
+		case 'Y':
+		  // Year [1900). [tm_year]
+		  _M_extract_num(__beg, __end, __mem, 0, 
+				 numeric_limits<int>::max(), 4, 
+				 __ctype, __err);
+		  if (!__err)
+		    __tm->tm_year = __mem - 1900;
+		  break;
+		case 'Z':
+		  // Timezone info.
+		  if (__ctype.is(ctype_base::upper, *__beg))
+		    {
+		      int __tmp;
+		      _M_extract_name(__beg, __end, __tmp, 
+				      __timepunct<_CharT>::_S_timezones, 
+				      14, __err);
+		      
+		      // GMT requires special effort.
+		      char_type __c = *__beg;
+		      if (!__err && __tmp == 0 
+			  && (__c == __ctype.widen('-') 
+			      || __c == __ctype.widen('+')))
+			{
+			  _M_extract_num(__beg, __end, __tmp, 0, 23, 2,
+					  __ctype, __err);
+			  _M_extract_num(__beg, __end, __tmp, 0, 59, 2,
+					  __ctype, __err);
+			}	    
+			  }
+		      else
+			__err |= ios_base::failbit;
+		      break;
+		    default:
+		      // Not recognized.
+		      __err |= ios_base::failbit;
+		    }
+		}
 	      else
-		__testvalid = false;
-	    }
+		{
+		  // Verify format and input match, extract and discard.
+		  if (__c == __ctype.narrow(*__beg, 0))
+		    ++__beg;
+		  else
+		    __err |= ios_base::failbit;
+		}
+	}
+    }
+
+  template<typename _CharT, typename _InIter>
+    void
+    time_get<_CharT, _InIter>::
+    _M_extract_num(iter_type& __beg, iter_type& __end, int& __member,
+		   int __min, int __max, size_t __len, 
+		   const ctype<_CharT>& __ctype, 
+		   ios_base::iostate& __err) const
+    {
+      size_t __i = 0;
+      string __digits;
+      bool __testvalid = true;
+      char_type __c = *__beg;
+      while (__beg != __end && __i < __len 
+	     && __ctype.is(ctype_base::digit, __c)) 
+	{
+	  __digits += __ctype.narrow(__c, 0);
+	  __c = *(++__beg);
+	  ++__i;
+	}
+      if (__i == __len)
+	{
+	  int __value = atoi(__digits.c_str());
+	  if (__min <= __value && __value <= __max)
+	    __member = __value;
 	  else
 	    __testvalid = false;
-	  
-	  // Extract and discard separator.
-	  if (__extract && __testvalid)
-	    {
-	      if (__c == __sep)
-		++__beg;
-	      else
-		__testvalid = false;
-	    }
-	  if (!__testvalid)
-	    __err |= ios_base::failbit;
- 	}
+	}
+      else
+	__testvalid = false;
+      if (!__testvalid)
+	__err |= ios_base::failbit;
     }
 
   // Assumptions:
@@ -1439,51 +1626,12 @@ namespace std
     do_get_time(iter_type __beg, iter_type __end, ios_base& __io,
 		ios_base::iostate& __err, tm* __tm) const
     {
+      _CharT __wcs[3];
+      const char* __cs = "%X";
       locale __loc = __io.getloc();
-      __timepunct<_CharT> const& __tp = use_facet<__timepunct<_CharT> >(__loc);
-      const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc); 
-
-      const char_type __sep = __ctype.widen(':');
-      _M_extract_time(__beg, __end, __tm->tm_hour, 0, 23, __sep, true, 
-		      __ctype, __err);
-      _M_extract_time(__beg, __end, __tm->tm_min, 0, 59, __sep, true, 
-		      __ctype, __err);
-      _M_extract_time(__beg, __end, __tm->tm_sec, 0, 59, __sep, false, 
-		      __ctype, __err);
-
-      // NB: Assume Ante- and Post-meridiem affixes not part of
-      // default time format.
-
-      // NB: Some locales have a timezone component as part of the
-      // default time formatting. In these cases, attempt to extract
-      // timezone parts.
-      const __string_type  __format = __tp._M_time_formats();
-      if (__format.find(__ctype.widen('Z')) != __string_type::npos)
-	{
-	  // Some valid timezone abbreviations are:
-	  // HST, AKST, PST, MST, CST, EST, AST, NST, CET, IST, EET, CST, JST
-	  // GMT, GMT[+-][hh:mm]
-	  if (__ctype.is(ctype_base::space, *__beg))
-	    ++__beg;
-	    
-	  if (__ctype.is(ctype_base::upper, *__beg))
-	    {
-	      int __tmp;
-	      _M_extract_name(__beg, __end, __tmp, 
-			      __timepunct<_CharT>::_S_timezones, 14, __err);
-
-	      char_type __c = *__beg;
-	      if (!__err && __tmp == 0
-		  &&(__c == __ctype.widen('-') || __c == __ctype.widen('-')))
-		{
-		  // GMT requires special effort.
-		  _M_extract_time(__beg, __end, __tmp, 0, 23, __sep, true, 
-				  __ctype, __err);
-		  _M_extract_time(__beg, __end, __tmp, 0, 59, __sep, false, 
-				  __ctype, __err);
-		}	    
-	    }
-	}
+      ctype<_CharT> const& __ctype = use_facet<ctype<_CharT> >(__loc);
+      __ctype.widen(__cs, __cs + 3, __wcs);
+      _M_extract_via_format(__beg, __end, __io, __err, __tm, __wcs);
       if (__beg == __end)
 	__err |= ios_base::eofbit;
       return __beg;
@@ -1493,12 +1641,14 @@ namespace std
     _InIter
     time_get<_CharT, _InIter>::
     do_get_date(iter_type __beg, iter_type __end, ios_base& __io,
-		ios_base::iostate& __err, tm* /*__tm*/) const
+		ios_base::iostate& __err, tm* __tm) const
     {
+      _CharT __wcs[3];
+      const char* __cs = "%x";
       locale __loc = __io.getloc();
-      __timepunct<_CharT> const& __tp = use_facet<__timepunct<_CharT> >(__loc);
-      const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc); 
-
+      ctype<_CharT> const& __ctype = use_facet<ctype<_CharT> >(__loc);
+      __ctype.widen(__cs, __cs + 3, __wcs);
+      _M_extract_via_format(__beg, __end, __io, __err, __tm, __wcs);
       if (__beg == __end)
 	__err |= ios_base::eofbit;
       return __beg;
@@ -1663,39 +1813,40 @@ namespace std
     do_put(iter_type __s, ios_base& __io, char_type, const tm* __tm, 
 	   char __format, char __mod) const
     { 
+      locale __loc = __io.getloc();
+      ctype<_CharT> const& __ctype = use_facet<ctype<_CharT> >(__loc);
+      __timepunct<_CharT> const& __tp = use_facet<__timepunct<_CharT> >(__loc);
+
       // NB: This size is arbitrary. Should this be a data member,
       // initialized at construction?
       const size_t __maxlen = 64;
-      char* __res = static_cast<char*>(__builtin_alloca(__maxlen));
+      char_type* __res = static_cast<char_type*>(__builtin_alloca(__maxlen));
 
       // NB: In IEE 1003.1-200x, and perhaps other locale models, it
       // is possible that the format character will be longer than one
       // character. Possibilities include 'E' or 'O' followed by a
       // format charcter: if __mod is not the default argument, assume
       // it's a valid modifier.
-      char __fmt[4];
-      __fmt[0] = '%'; 
+      char_type __fmt[4];
+      __fmt[0] = __ctype.widen('%'); 
       if (!__mod)
 	{
 	  __fmt[1] = __format;
-	  __fmt[2] = '\0';
+	  __fmt[2] = char_type();
 	}
       else
 	{
 	  __fmt[1] = __mod;
 	  __fmt[2] = __format;
-	  __fmt[3] = '\0';
+	  __fmt[3] = char_type();
 	}
 
-      locale __loc = __io.getloc();
-      __timepunct<_CharT> const& __tp = use_facet<__timepunct<_CharT> >(__loc);
       __tp._M_put_helper(__res, __maxlen, __fmt, __tm);
 
       // Write resulting, fully-formatted string to output iterator.
-      const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc); 
-      size_t __len = strlen(__res);
+      size_t __len = char_traits<char_type>::length(__res);
       for (size_t __i = 0; __i < __len; ++__i)
-	__s = __ctype.widen(__res[__i]);
+	__s = __res[__i];
       return __s;
     }
 
