@@ -2587,25 +2587,8 @@ cfg_layout_redirect_edge_and_branch (edge e, basic_block dest)
          of conditional jump, remove it.  */
       if (EDGE_COUNT (src->succs) == 2)
 	{
-	  bool found = false;
-	  unsigned ix = 0;
-	  edge tmp, s;
-	  edge_iterator ei;
-
-	  FOR_EACH_EDGE (tmp, ei, src->succs)
-	    if (e == tmp)
-	      {
-		found = true;
-		ix = ei.index;
-		break;
-	      }
-
-	  gcc_assert (found);
-
-	  if (EDGE_COUNT (src->succs) > (ix + 1))
-	    s = EDGE_SUCC (src, ix + 1);
-	  else
-	    s = EDGE_SUCC (src, 0);
+	  /* Find the edge that is different from E.  */
+	  edge s = EDGE_SUCC (src, EDGE_SUCC (src, 0) == e);
 
 	  if (s->dest == dest
 	      && any_condjump_p (BB_END (src))
