@@ -6921,25 +6921,30 @@ nonzero_bits (x, mode)
 	nonzero &= GET_MODE_MASK (ptr_mode);
 #endif
 
-      /* We may know something about the alignment of this register.
-	 But if PUSH_ROUNDING is defined, it is possible for the
+#ifdef STACK_BOUNDARY
+      /* If this is the stack pointer, we may know something about its
+	 alignment.  If PUSH_ROUNDING is defined, it is possible for the
 	 stack to be momentarily aligned only to that amount, so we pick
 	 the least alignment.  */
 
-      if (REGNO_POINTER_ALIGN (REGNO (x)) != 0)
+      if (x == stack_pointer_rtx || x == frame_pointer_rtx
+	  || x == arg_pointer_rtx || x == hard_frame_pointer_rtx
+	  || (REGNO (x) >= FIRST_VIRTUAL_REGISTER
+	      && REGNO (x) <= LAST_VIRTUAL_REGISTER))
 	{
-	  int alignment = REGNO_POINTER_ALIGN (REGNO (x));
+	  int sp_alignment = STACK_BOUNDARY / BITS_PER_UNIT;
 
 #ifdef PUSH_ROUNDING
 	  if (REGNO (x) == STACK_POINTER_REGNUM)
-	    alignment = MIN (PUSH_ROUNDING (1), alignment);
+	    sp_alignment = MIN (PUSH_ROUNDING (1), sp_alignment);
 #endif
 
 	  /* We must return here, otherwise we may get a worse result from
 	     one of the choices below.  There is nothing useful below as
 	     far as the stack pointer is concerned.  */
-	  return nonzero &= ~ (alignment - 1);
+	  return nonzero &= ~ (sp_alignment - 1);
 	}
+#endif
 
       /* If X is a register whose nonzero bits value is current, use it.
 	 Otherwise, if X is a register whose value we can find, use that
