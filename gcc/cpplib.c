@@ -2624,6 +2624,7 @@ cpp_get_token (pfile)
 		    {
 		      if (c != '\n')
 		        break;
+		      CPP_BUMP_LINE (pfile);
 		      FORWARD (1);
 		    }
                   else
