@@ -1,5 +1,30 @@
 2001-04-13  Alan Modra  <amodra@one.net.au>
 
+	* elfos.h (SELECT_SECTION): Undef before defining.
+	* pa-linux.h (LINUX_DEFAULT_ELF, PTRDIFF_TYPE, CPP_SPEC): Remove.
+	(LIB_SPEC): Remove -lmilli.
+	(DBX_REGISTER_NUMBER): Remove.
+	(PREFERRED_DEBUGGING_TYPE, DWARF2_ASM_LINE_DEBUG_INFO,
+	(DWARF2_UNWIND_INFO, ASM_SPEC, LINK_SPEC, FUNCTION_OK_FOR_SIBCALL,
+	NO_PROFILE_COUNTERS, SELECT_RTX_SECTION, INCOMING_RETURN_ADDR_RTX,
+	DWARF_FRAME_RETURN_COLUMN, STRING_ASM_OP, TEXT_SECTION_ASM_OP,
+	DATA_SECTION_ASM_OP, BSS_SECTION_ASM_OP, ASM_FILE_START,
+	ASM_OUTPUT_DEF, ASM_OUTPUT_ADDR_VEC_ELT, ASM_OUTPUT_ADDR_DIFF_ELT,
+	ASM_OUTPUT_LABEL, ASM_GLOBALIZE_LABEL, ASM_DECLARE_FUNCTION_NAME,
+	TARGET_GAS): Define.
+	* pa.c (output_arg_descriptor): Disable for TARGET_ELF32.
+	(function_arg): If TARGET_ELF32, pass fp args in both general and fp
+	regs if we don't have a prototype.
+	* pa.md (canonicalize_funcptr_for_compare): Not for TARGET_ELF32.
+	* pa.h (TARGET_ELF32): Default to 0 if undefined.
+	(EH_RETURN_DATA_REGNO, EH_RETURN_STACKADJ_RTX,
+	EH_RETURN_HANDLER_RTX): Define.
+	* pa32-regs.h (DBX_REGISTER_NUMBER): Remove unnecessary test.
+	(DWARF_FRAME_REGNUM): Define.
+	* pa64-regs.h (DWARF_FRAME_REGNUM): Define.
+	* pa32-linux.h: New file.
+	* pa64-linux.h: New file.
+
 	* pa-64.h (WCHAR_TYPE, WCHAR_TYPE_SIZE): Define.
 	(ASM_OUTPUT_DOUBLE_INT): Format, protect macro with do..while.
 	(LINK_SPEC, LIB_SPEC, MD_EXEC_PREFIX, MD_STARTFILE_PREFIX,

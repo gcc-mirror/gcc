@@ -4552,8 +4552,8 @@ output_arg_descriptor (call_insn)
   int regno;
 
   /* We neither need nor want argument location descriptors for the
-     64bit runtime environment.  */
-  if (TARGET_64BIT)
+     64bit runtime environment or the ELF32 environment.  */
+  if (TARGET_64BIT || TARGET_ELF32)
     return;
 
   for (i = 0; i < 4; i++)
@@ -7057,7 +7057,7 @@ function_arg (cum, mode, type, named, incoming)
     }
   /* Determine if the register needs to be passed in both general and
      floating point registers.  */
-  if ((TARGET_PORTABLE_RUNTIME || TARGET_64BIT)
+  if ((TARGET_PORTABLE_RUNTIME || TARGET_64BIT || TARGET_ELF32)
       /* If we are doing soft-float with portable runtime, then there
 	 is no need to worry about FP regs.  */
       && ! TARGET_SOFT_FLOAT

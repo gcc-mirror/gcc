@@ -7021,7 +7021,7 @@
 	      (clobber (reg:SI 31))])
    (set (match_operand:SI 0 "register_operand" "")
 	(reg:SI 29))]
-  "! TARGET_PORTABLE_RUNTIME && !TARGET_64BIT"
+  "! TARGET_PORTABLE_RUNTIME && !TARGET_64BIT && !TARGET_ELF32"
   "
 {
   operands[2] = gen_reg_rtx (SImode);

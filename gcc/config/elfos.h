@@ -494,6 +494,7 @@ dtors_section ()						\
    or a constant of some sort.  RELOC indicates whether forming
    the initial value of DECL requires link-time relocations.  */
 
+#undef SELECT_SECTION
 #define SELECT_SECTION(DECL, RELOC)				\
 {								\
   if (TREE_CODE (DECL) == STRING_CST)				\
