@@ -200,9 +200,5 @@ int main()
 #if _GLIBCPP_USE_WCHAR_T
   test02();
 #endif
+  return 0;
 }
-
-
-
-
-

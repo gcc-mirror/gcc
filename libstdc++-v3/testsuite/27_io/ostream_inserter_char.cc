@@ -266,4 +266,3 @@ int main()
   test06();
   return 0;
 }
-

@@ -20,7 +20,7 @@
 
 // 17.4.1.2 Headers, streambuf
 
-#include <streambuf>            // { dg-do compile }
+#include <streambuf>
 #include <debug_assert.h>
 
 

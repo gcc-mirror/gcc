@@ -33,4 +33,5 @@ int main()
     d = (a + 2.0* b );
 
     std::cout << "d[4] = " << d[4] << std::endl;
+    return 0;
 }

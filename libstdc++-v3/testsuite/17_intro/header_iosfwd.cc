@@ -20,7 +20,7 @@
 
 // 17.4.1.2 Headers, iosfwd
 
-#include <iosfwd>               // { dg-do compile }
+#include <iosfwd> 
 #include <debug_assert.h>
 
 
@@ -28,7 +28,3 @@ int main(void)
 {
   return 0;
 }
-
-
-
-

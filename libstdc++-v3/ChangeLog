@@ -1,3 +1,8 @@
+2001-05-11   Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/*/*.cc: Remove spaces, make sure testcases return zero.
+	* testsuite/config/default.exp: Update bugs email address.
+	
 2001-05-11  Richard Henderson  <rth@redhat.com>
 
 	* libsupc++/eh_personality.cc: Include unwind-pe.h.  Remove
@@ -17,7 +22,6 @@
 	Change LDFLAGS to LIBS.
 	Consistently name procedures libstdc++-XXX.
 	* testsuite/libstdc++.tests/tests.exp: Use new procedure names.
-	* testsuite/config/default.exp: Kill spaces.
 	
 2001-05-08  Benjamin Kosnik  <bkoz@fillmore.constant.com>
 

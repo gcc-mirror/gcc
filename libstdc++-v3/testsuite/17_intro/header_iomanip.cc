@@ -20,7 +20,7 @@
 
 // 17.4.1.2 Headers, iomanip
 
-#include <iomanip>              // { dg-do compile }
+#include <iomanip>
 #include <debug_assert.h>
 
 
@@ -28,7 +28,3 @@ int main(void)
 {
   return 0;
 }
-
-
-
-
