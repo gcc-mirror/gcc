@@ -1,3 +1,7 @@
+2001-07-06  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
+
+	* gettextP.h (SWAP): Change parameter type to unsigned int.
+
 2001-05-25  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* po2tbl.sed.in: Fixed typo.
