@@ -1,3 +1,8 @@
+2001-05-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in (noconfigdirs) [*-cygwin*, *-mingw*, *-beos]: Disable
+	libgcj.
+
 Fri Apr 27 14:39:25 2001  Alexandre Oliva  <aoliva@redhat.com>
 
 	* ltcf-cxx.sh: Add -nostdlib to HP-UX GCC archive_cmds.
