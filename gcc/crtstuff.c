@@ -369,12 +369,12 @@ CTOR_LIST_BEGIN;
 static func_ptr force_to_data[1] __attribute__ ((__unused__)) = { };
 asm (CTORS_SECTION_ASM_OP);
 STATIC func_ptr __CTOR_LIST__[1]
-  __attribute__ ((__unused__))
+  __attribute__ ((__unused__, aligned(sizeof(func_ptr))))
   = { (func_ptr) (-1) };
 
 #else
 STATIC func_ptr __CTOR_LIST__[1]
-  __attribute__ ((__unused__, section(".ctors")))
+  __attribute__ ((__unused__, section(".ctors"), aligned(sizeof(func_ptr))))
   = { (func_ptr) (-1) };
 
 #endif
@@ -383,10 +383,12 @@ STATIC func_ptr __CTOR_LIST__[1]
 DTOR_LIST_BEGIN;
 #elif defined(DTORS_SECTION_ASM_OP)
 asm (DTORS_SECTION_ASM_OP);
-STATIC func_ptr __DTOR_LIST__[1] = { (func_ptr) (-1) };
+STATIC func_ptr __DTOR_LIST__[1]
+  __attribute__ ((aligned(sizeof(func_ptr))))
+  = { (func_ptr) (-1) };
 #else
 STATIC func_ptr __DTOR_LIST__[1]
-  __attribute__((section(".dtors")))
+  __attribute__((section(".dtors"), aligned(sizeof(func_ptr))))
   = { (func_ptr) (-1) };
 #endif
 
@@ -397,7 +399,7 @@ STATIC func_ptr __DTOR_LIST__[1]
 STATIC
 #endif
 char __EH_FRAME_BEGIN__[]
-     __attribute__((section(EH_FRAME_SECTION_NAME)))
+     __attribute__((section(EH_FRAME_SECTION_NAME), aligned(4)))
      = { };
 #endif /* EH_FRAME_SECTION_NAME */
 
@@ -405,7 +407,8 @@ char __EH_FRAME_BEGIN__[]
 /* Stick a label at the beginning of the java class registration info
    so we can register them properly.  */
 
-STATIC void *__JCR_LIST__[] __attribute__ ((unused, section(JCR_SECTION_NAME)))
+STATIC void *__JCR_LIST__[]
+  __attribute__ ((unused, section(JCR_SECTION_NAME), aligned(sizeof(func_ptr))))
   = { 0 };
 #endif /* JCR_SECTION_NAME */
 
@@ -533,11 +536,13 @@ CTOR_LIST_END;
    __CTOR_LIST__ does not undo our behind-the-back change to .ctors.  */
 static func_ptr force_to_data[1] __attribute__ ((__unused__)) = { };
 asm (CTORS_SECTION_ASM_OP);
-STATIC func_ptr __CTOR_END__[1] = { (func_ptr) 0 };
+STATIC func_ptr __CTOR_END__[1]
+  __attribute__((aligned(sizeof(func_ptr))))
+  = { (func_ptr) 0 };
 
 #else
 STATIC func_ptr __CTOR_END__[1]
-  __attribute__((section(".ctors")))
+  __attribute__((section(".ctors"), aligned(sizeof(func_ptr))))
   = { (func_ptr) 0 };
 #endif
 
@@ -545,11 +550,12 @@ STATIC func_ptr __CTOR_END__[1]
 DTOR_LIST_END;
 #elif defined(DTORS_SECTION_ASM_OP)
 asm (DTORS_SECTION_ASM_OP);
-STATIC func_ptr __DTOR_END__[1] __attribute__ ((unused))
+STATIC func_ptr __DTOR_END__[1]
+  __attribute__ ((unused, aligned(sizeof(func_ptr))))
   = { (func_ptr) 0 };
 #else
 STATIC func_ptr __DTOR_END__[1]
-  __attribute__((unused, section(".dtors")))
+  __attribute__((unused, section(".dtors"), aligned(sizeof(func_ptr))))
   = { (func_ptr) 0 };
 #endif
 
@@ -557,7 +563,8 @@ STATIC func_ptr __DTOR_END__[1]
 /* Terminate the frame unwind info section with a 4byte 0 as a sentinel;
    this would be the 'length' field in a real FDE.  */
 STATIC int __FRAME_END__[]
-     __attribute__ ((unused, mode(SI), section(EH_FRAME_SECTION_NAME)))
+     __attribute__ ((unused, mode(SI), section(EH_FRAME_SECTION_NAME),
+		     aligned(4)))
      = { 0 };
 #endif /* EH_FRAME_SECTION */
 
@@ -566,7 +573,9 @@ STATIC int __FRAME_END__[]
    so we can register them properly.  */
 
 STATIC void *__JCR_END__[1] 
-     __attribute__ ((unused, section(JCR_SECTION_NAME))) = { 0 };
+   __attribute__ ((unused, section(JCR_SECTION_NAME),
+		   aligned(sizeof(func_ptr))))
+   = { 0 };
 #endif /* JCR_SECTION_NAME */
 
 #endif /* defined(CRT_END) */
@@ -627,7 +636,8 @@ __dereg_frame_dtor (void)
 
 /* Terminate the frame section with a final zero.  */
 STATIC int __FRAME_END__[]
-     __attribute__ ((unused, mode(SI), section(EH_FRAME_SECTION_NAME)))
+     __attribute__ ((unused, mode(SI), section(EH_FRAME_SECTION_NAME),
+		     aligned(4)))
      = { 0 };
 #endif /* CRT_END */
 

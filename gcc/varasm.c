@@ -1474,13 +1474,16 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
     }
 
   /* On some machines, it is good to increase alignment sometimes.  */
+  if (! DECL_USER_ALIGN (decl))
+    {
 #ifdef DATA_ALIGNMENT
-  align = DATA_ALIGNMENT (TREE_TYPE (decl), align);
+      align = DATA_ALIGNMENT (TREE_TYPE (decl), align);
 #endif
 #ifdef CONSTANT_ALIGNMENT
-  if (DECL_INITIAL (decl) != 0 && DECL_INITIAL (decl) != error_mark_node)
-    align = CONSTANT_ALIGNMENT (DECL_INITIAL (decl), align);
+      if (DECL_INITIAL (decl) != 0 && DECL_INITIAL (decl) != error_mark_node)
+        align = CONSTANT_ALIGNMENT (DECL_INITIAL (decl), align);
 #endif
+    }
 
   /* Reset the alignment in case we have made it tighter, so we can benefit
      from it in get_pointer_alignment.  */
