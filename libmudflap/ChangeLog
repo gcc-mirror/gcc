@@ -1,3 +1,8 @@
+2004-06-10  Stephen Crowley  <stephen.crowley@sbcglobal.net>
+
+	PR libmudflap/13505
+	* mf-hooks2.c (semctl): Add cygwin porting hack.
+
 2004-06-09  Frank Ch. Eigler  <fche@redhat.com>
 
 	ctype support.
