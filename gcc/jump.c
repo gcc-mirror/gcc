@@ -943,6 +943,37 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 #endif /* HAVE_cc0 */
 
 #ifdef HAVE_conditional_arithmetic
+	  /* ??? This is disabled in genconfig, as this simple-minded
+	     transformation can incredibly lengthen register lifetimes.
+
+	     Consider this example from cexp.c's yyparse:
+
+		234 (set (pc)
+		      (if_then_else (ne (reg:DI 149) (const_int 0 [0x0]))
+		        (label_ref 248) (pc)))
+		237 (set (reg/i:DI 0 $0) (const_int 1 [0x1]))
+		239 (set (pc) (label_ref 2382))
+		248 (code_label ("yybackup"))
+
+	     This will be transformed to:
+
+		237 (set (reg/i:DI 0 $0)
+		      (if_then_else:DI (eq (reg:DI 149) (const_int 0 [0x0]))
+		        (const_int 1 [0x1]) (reg/i:DI 0 $0)))
+		239 (set (pc)
+		      (if_then_else (eq (reg:DI 149) (const_int 0 [0x0]))
+		        (label_ref 2382) (pc)))
+
+	     which, from this narrow viewpoint looks fine.  Except that
+	     between this and 3 other ocurrences of the same pattern, $0
+	     is now live for basically the entire function, and we'll 
+	     get an abort in caller_save.
+
+	     Any replacement for this code should recall that a set of
+	     a register that is not live need not, and indeed should not,
+	     be conditionalized.  Either that, or delay the transformation
+	     until after register allocation.  */
+
 	  /* See if this is a conditional jump around a small number of
 	     instructions that we can conditionalize.  Don't do this before
 	     the initial CSE pass or after reload.
