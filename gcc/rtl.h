@@ -1486,6 +1486,7 @@ extern void push_obstacks		PARAMS ((struct obstack *,
 /* In cse.c */
 struct cse_basic_block_data;
 extern int rtx_cost			PARAMS ((rtx, enum rtx_code));
+extern int address_cost			PARAMS ((rtx, enum machine_mode));
 extern void delete_trivially_dead_insns	PARAMS ((rtx, int));
 #ifdef BUFSIZ
 extern int cse_main			PARAMS ((rtx, int, int, FILE *));

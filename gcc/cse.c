@@ -537,16 +537,6 @@ struct table_elt
 
 #define REGNO_QTY_VALID_P(N) (REG_QTY (N) != (int) (N))
 
-#ifdef ADDRESS_COST
-/* The ADDRESS_COST macro does not deal with ADDRESSOF nodes.  But,
-   during CSE, such nodes are present.  Using an ADDRESSOF node which
-   refers to the address of a REG is a good thing because we can then
-   turn (MEM (ADDRESSSOF (REG))) into just plain REG.  */
-#define CSE_ADDRESS_COST(RTX)					\
-  ((GET_CODE (RTX) == ADDRESSOF && REG_P (XEXP ((RTX), 0)))	\
-   ? -1 : ADDRESS_COST(RTX))
-#endif 
-
 static struct table_elt *table[HASH_SIZE];
 
 /* Chain of `struct table_elt's made so far for this function
@@ -683,7 +673,7 @@ static unsigned canon_hash	PARAMS ((rtx, enum machine_mode));
 static unsigned safe_hash	PARAMS ((rtx, enum machine_mode));
 static int exp_equiv_p		PARAMS ((rtx, rtx, int, int));
 static rtx canon_reg		PARAMS ((rtx, rtx));
-static void find_best_addr	PARAMS ((rtx, rtx *));
+static void find_best_addr	PARAMS ((rtx, rtx *, enum machine_mode));
 static enum rtx_code find_comparison_args PARAMS ((enum rtx_code, rtx *, rtx *,
 						   enum machine_mode *,
 						   enum machine_mode *));
@@ -847,6 +837,34 @@ rtx_cost (x, outer_code)
 	total += rtx_cost (XVECEXP (x, i, j), code);
 
   return total;
+}
+
+/* Return cost of address expression X.  Expect that X is propertly formed address
+   reference.  */
+int
+address_cost (x, mode)
+     rtx x;
+     enum machine_mode mode;
+{
+  /* The ADDRESS_COST macro does not deal with ADDRESSOF nodes.  But,
+     during CSE, such nodes are present.  Using an ADDRESSOF node which
+     refers to the address of a REG is a good thing because we can then
+     turn (MEM (ADDRESSSOF (REG))) into just plain REG.  */
+
+  if (GET_CODE (x) == ADDRESSOF && REG_P (XEXP ((x), 0)))
+    return -1;
+
+  /* We may be asked for cost of various unusual addresses, such as operands
+     of push instruction.  It is not worthwhile to complicate writting
+     of ADDRESS_COST macro by such cases.  */
+
+  if (!memory_address_p (mode, x))
+    return 1000;
+#ifdef ADDRESS_COST
+  return ADDRESS_COST (x);
+#else
+  return rtx_cost (x, MEM);
+#endif
 }
 
 static struct cse_reg_info *
@@ -2681,9 +2699,10 @@ canon_reg (x, insn)
   */
 
 static void
-find_best_addr (insn, loc)
+find_best_addr (insn, loc, mode)
      rtx insn;
      rtx *loc;
+     enum machine_mode mode;
 {
   struct table_elt *elt;
   rtx addr = *loc;
@@ -2695,6 +2714,7 @@ find_best_addr (insn, loc)
   int save_hash_arg_in_memory = hash_arg_in_memory;
   int addr_volatile;
   int regno;
+  int folded_cost, addr_cost;
   unsigned hash;
 
   /* Do not try to replace constant addresses or addresses of local and
@@ -2728,14 +2748,13 @@ find_best_addr (insn, loc)
     {
       rtx folded = fold_rtx (copy_rtx (addr), NULL_RTX);
 
-      if (1
-#ifdef ADDRESS_COST
-	  && (CSE_ADDRESS_COST (folded) < CSE_ADDRESS_COST (addr)
-	      || (CSE_ADDRESS_COST (folded) == CSE_ADDRESS_COST (addr)
-		  && rtx_cost (folded, MEM) > rtx_cost (addr, MEM)))
-#else
+      folded_cost = address_cost (folded, mode);
+      addr_cost = address_cost (addr, mode);
+
+      if ((folded_cost < addr_cost
+	   || (folded_cost == addr_cost
+	       && rtx_cost (folded, MEM) > rtx_cost (addr, MEM)))
 	  && rtx_cost (folded, MEM) < rtx_cost (addr, MEM)
-#endif
 	  && validate_change (insn, loc, folded, 0))
 	addr = folded;
     }
@@ -2782,8 +2801,9 @@ find_best_addr (insn, loc)
 
       while (found_better)
 	{
-	  int best_addr_cost = CSE_ADDRESS_COST (*loc);
+	  int best_addr_cost = address_cost (*loc, mode);
 	  int best_rtx_cost = (elt->cost + 1) >> 1;
+	  int exp_cost;
 	  struct table_elt *best_elt = elt; 
 
 	  found_better = 0;
@@ -2792,12 +2812,12 @@ find_best_addr (insn, loc)
 	      {
 		if ((GET_CODE (p->exp) == REG
 		     || exp_equiv_p (p->exp, p->exp, 1, 0))
-		    && (CSE_ADDRESS_COST (p->exp) < best_addr_cost
-			|| (CSE_ADDRESS_COST (p->exp) == best_addr_cost
-			    && (p->cost + 1) >> 1 > best_rtx_cost)))
+		    && ((exp_cost = address_cost (p->exp, mode)) < best_addr_cost
+			|| (exp_cost == best_addr_cost
+			    && (p->cost + 1) >> 1 < best_rtx_cost)))
 		  {
 		    found_better = 1;
-		    best_addr_cost = CSE_ADDRESS_COST (p->exp);
+		    best_addr_cost = exp_cost;
 		    best_rtx_cost = (p->cost + 1) >> 1;
 		    best_elt = p;
 		  }
@@ -2851,7 +2871,7 @@ find_best_addr (insn, loc)
 
       while (found_better)
 	{
-	  int best_addr_cost = CSE_ADDRESS_COST (*loc);
+	  int best_addr_cost = address_cost (*loc, mode);
 	  int best_rtx_cost = (COST (*loc) + 1) >> 1;
 	  struct table_elt *best_elt = elt; 
 	  rtx best_rtx = *loc;
@@ -2873,13 +2893,15 @@ find_best_addr (insn, loc)
 	      {
 		rtx new = simplify_gen_binary (GET_CODE (*loc), Pmode,
 					       p->exp, c);
+		int new_cost;
+		new_cost = address_cost (new, mode);
 
-		if ((CSE_ADDRESS_COST (new) < best_addr_cost
-		    || (CSE_ADDRESS_COST (new) == best_addr_cost
-			&& (COST (new) + 1) >> 1 > best_rtx_cost)))
+		if (new_cost < best_addr_cost
+		    || (new_cost == best_addr_cost
+			&& (COST (new) + 1) >> 1 > best_rtx_cost))
 		  {
 		    found_better = 1;
-		    best_addr_cost = CSE_ADDRESS_COST (new);
+		    best_addr_cost = new_cost;
 		    best_rtx_cost = (COST (new) + 1) >> 1;
 		    best_elt = p;
 		    best_rtx = new;
@@ -3350,7 +3372,7 @@ fold_rtx (x, insn)
 	 best address.  Not only don't we care, but we could modify the
 	 MEM in an invalid way since we have no insn to validate against.  */
       if (insn != 0)
-	find_best_addr (insn, &XEXP (x, 0));
+	find_best_addr (insn, &XEXP (x, 0), GET_MODE (x));
 
       {
 	/* Even if we don't fold in the insn itself,

@@ -278,7 +278,7 @@ static int basic_induction_var PARAMS ((const struct loop *, rtx,
 					rtx *, rtx *, rtx **, int *));
 static rtx simplify_giv_expr PARAMS ((const struct loop *, rtx, int *));
 static int general_induction_var PARAMS ((const struct loop *loop, rtx, rtx *,
-					  rtx *, rtx *, int, int *));
+					  rtx *, rtx *, int, int *, enum machine_mode));
 static int consec_sets_giv PARAMS ((const struct loop *, int, rtx,
 				    rtx, rtx, rtx *, rtx *, rtx *));
 static int check_dbra_loop PARAMS ((struct loop *, int));
@@ -367,11 +367,7 @@ init_loop ()
 
   add_cost = rtx_cost (gen_rtx_PLUS (word_mode, reg, reg), SET);
 
-#ifdef ADDRESS_COST
-  reg_address_cost = ADDRESS_COST (reg);
-#else
-  reg_address_cost = rtx_cost (reg, MEM);
-#endif
+  reg_address_cost = address_cost (reg, SImode);
 
   /* We multiply by 2 to reconcile the difference in scale between
      these two ways of computing costs.  Otherwise the cost of a copy
@@ -5133,12 +5129,12 @@ check_insn_for_givs (loop, p, not_every_iteration, maybe_multiple)
 
       if (/* SET_SRC is a giv.  */
 	  (general_induction_var (loop, SET_SRC (set), &src_reg, &add_val,
-				  &mult_val, 0, &benefit)
+				  &mult_val, 0, &benefit, VOIDmode)
 	   /* Equivalent expression is a giv.  */
 	   || ((regnote = find_reg_note (p, REG_EQUAL, NULL_RTX))
 	       && general_induction_var (loop, XEXP (regnote, 0), &src_reg,
 					 &add_val, &mult_val, 0,
-					 &benefit)))
+					 &benefit, VOIDmode)))
 	  /* Don't try to handle any regs made by loop optimization.
 	     We have nothing on them in regno_first_uid, etc.  */
 	  && REGNO (dest_reg) < max_reg_before_loop
@@ -5276,7 +5272,7 @@ find_mem_givs (loop, x, insn, not_every_iteration, maybe_multiple)
 	   this one would not be seen.   */
 
 	if (general_induction_var (loop, XEXP (x, 0), &src_reg, &add_val,
-				   &mult_val, 1, &benefit))
+				   &mult_val, 1, &benefit, GET_MODE (x)))
 	  {
 	    /* Found one; record it.  */
 	    struct induction *v
@@ -6126,7 +6122,8 @@ basic_induction_var (loop, x, mode, dest_reg, p, inc_val, mult_val,
      such that the value of X is biv * mult + add;  */
 
 static int
-general_induction_var (loop, x, src_reg, add_val, mult_val, is_addr, pbenefit)
+general_induction_var (loop, x, src_reg, add_val, mult_val, is_addr,
+		       pbenefit, addr_mode)
      const struct loop *loop;
      rtx x;
      rtx *src_reg;
@@ -6134,6 +6131,7 @@ general_induction_var (loop, x, src_reg, add_val, mult_val, is_addr, pbenefit)
      rtx *mult_val;
      int is_addr;
      int *pbenefit;
+     enum machine_mode addr_mode;
 {
   rtx orig_x = x;
   char *storage;
@@ -6207,13 +6205,7 @@ general_induction_var (loop, x, src_reg, add_val, mult_val, is_addr, pbenefit)
     *mult_val = XEXP (*mult_val, 0);
 
   if (is_addr)
-    {
-#ifdef ADDRESS_COST
-      *pbenefit += ADDRESS_COST (orig_x) - reg_address_cost;
-#else
-      *pbenefit += rtx_cost (orig_x, MEM) - reg_address_cost;
-#endif
-    }
+    *pbenefit += address_cost (orig_x, addr_mode) - reg_address_cost;
   else
     *pbenefit += rtx_cost (orig_x, SET);
 
@@ -6745,11 +6737,12 @@ consec_sets_giv (loop, first_benefit, p, src_reg, dest_reg,
 	  && GET_CODE (SET_DEST (set)) == REG
 	  && SET_DEST (set) == dest_reg
 	  && (general_induction_var (loop, SET_SRC (set), &src_reg,
-				     add_val, mult_val, 0, &benefit)
+				     add_val, mult_val, 0, &benefit, VOIDmode)
 	      /* Giv created by equivalent expression.  */
 	      || ((temp = find_reg_note (p, REG_EQUAL, NULL_RTX))
 		  && general_induction_var (loop, XEXP (temp, 0), &src_reg,
-					    add_val, mult_val, 0, &benefit)))
+					    add_val, mult_val, 0, &benefit,
+					    VOIDmode)))
 	  && src_reg == v->src_reg)
 	{
 	  if (find_reg_note (p, REG_RETVAL, NULL_RTX))
