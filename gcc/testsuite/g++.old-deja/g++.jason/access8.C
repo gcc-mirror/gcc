@@ -25,6 +25,6 @@ void inh::myf(int i) {
 }
 
 void top_t::myf(int i) {
-        inh::myf(i);		// ERROR - cannot convert to inh XFAIL *-*-*
+        inh::myf(i);		// ERROR - cannot convert to inh
 	mel::myf(i);
 }
