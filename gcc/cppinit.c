@@ -623,11 +623,6 @@ cpp_destroy (pfile)
    known at build time should not be flagged BUILTIN, as then they do
    not appear in macro dumps with e.g. -dM or -dD.
 
-   Two values are not compile time constants, so we tag
-   them in the FLAGS field instead:
-   VERS		value is the global version_string, quoted
-   ULP		value is the global user_label_prefix
-
    Also, macros with CPLUS set in the flags field are entered only for C++.  */
 struct builtin
 {
@@ -638,15 +633,11 @@ struct builtin
   unsigned short flags;
   unsigned short len;
 };
-#define VERS		0x01
-#define ULP		0x02
 #define CPLUS		0x04
 #define BUILTIN		0x08
 #define OPERATOR  	0x10
 
 #define B(n, t)       { U n, 0, t, 0, BUILTIN, sizeof n - 1 }
-#define C(n, v)       { U n, v, 0, 0, 0, sizeof n - 1 }
-#define X(n, f)       { U n, 0, 0, 0, f, sizeof n - 1 }
 #define O(n, c, f)    { U n, 0, 0, c, OPERATOR | f, sizeof n - 1 }
 static const struct builtin builtin_array[] =
 {
@@ -657,16 +648,7 @@ static const struct builtin builtin_array[] =
   B("__LINE__",		 BT_SPECLINE),
   B("__INCLUDE_LEVEL__", BT_INCLUDE_LEVEL),
   B("_Pragma",		 BT_PRAGMA),
-
-  X("__VERSION__",		VERS),
-  X("__USER_LABEL_PREFIX__",	ULP),
-  C("__REGISTER_PREFIX__",	REGISTER_PREFIX),
-  C("__HAVE_BUILTIN_SETJMP__",	"1"),
-#ifdef STDC_0_IN_SYSTEM_HEADERS
   B("__STDC__",		 BT_STDC),
-#else
-  C("__STDC__",		 "1"),
-#endif
 
   /* Named operators known to the preprocessor.  These cannot be #defined
      and always have their stated meaning.  They are treated like normal
@@ -685,8 +667,6 @@ static const struct builtin builtin_array[] =
   O("xor_eq",	CPP_XOR_EQ,  CPLUS)
 };
 #undef B
-#undef C
-#undef X
 #undef O
 #define builtin_array_end (builtin_array + ARRAY_SIZE (builtin_array))
 
@@ -700,51 +680,24 @@ init_builtins (pfile)
 
   for(b = builtin_array; b < builtin_array_end; b++)
     {
+      cpp_hashnode *hp;
       if ((b->flags & CPLUS) && ! CPP_OPTION (pfile, cplusplus))
 	continue;
 
       if ((b->flags & OPERATOR) && ! CPP_OPTION (pfile, operator_names))
 	continue;
 
-      if (b->flags & (OPERATOR | BUILTIN))
+      hp = cpp_lookup (pfile, b->name, b->len);
+      if (b->flags & OPERATOR)
 	{
-	  cpp_hashnode *hp = cpp_lookup (pfile, b->name, b->len);
-	  if (b->flags & OPERATOR)
-	    {
-	      hp->flags |= NODE_OPERATOR;
-	      hp->value.operator = b->operator;
-	    }
-	  else
-	    {
-	      hp->type = NT_MACRO;
-	      hp->flags |= NODE_BUILTIN | NODE_WARN;
-	      hp->value.builtin = b->builtin;
-	    }
+	  hp->flags |= NODE_OPERATOR;
+	  hp->value.operator = b->operator;
 	}
-      else			/* A standard macro of some kind.  */
+      else
 	{
-	  const char *val;
-	  char *str;
-
-	  if (b->flags & VERS)
-	    {
-	      /* Allocate enough space for 'name "value"\n\0'.  */
-	      str = alloca (b->len + strlen (version_string) + 5);
-	      sprintf (str, "%s \"%s\"\n", b->name, version_string);
-	    }
-	  else
-	    {
-	      if (b->flags & ULP)
-		val = CPP_OPTION (pfile, user_label_prefix);
-	      else
-		val = b->value;
-
-	      /* Allocate enough space for "name value\n\0".  */
-	      str = alloca (b->len + strlen (val) + 3);
-	      sprintf(str, "%s %s\n", b->name, val);
-	    }
-
-	  _cpp_define_builtin (pfile, str);
+	  hp->type = NT_MACRO;
+	  hp->flags |= NODE_BUILTIN | NODE_WARN;
+	  hp->value.builtin = b->builtin;
 	}
     }
 
@@ -1209,8 +1162,6 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("U",                        no_mac, OPT_U)                          \
   DEF_OPT("W",                        no_arg, OPT_W)  /* arg optional */      \
   DEF_OPT("d",                        no_arg, OPT_d)                          \
-  DEF_OPT("fleading-underscore",      0,      OPT_fleading_underscore)        \
-  DEF_OPT("fno-leading-underscore",   0,      OPT_fno_leading_underscore)     \
   DEF_OPT("fno-operator-names",       0,      OPT_fno_operator_names)         \
   DEF_OPT("fno-preprocessed",         0,      OPT_fno_preprocessed)           \
   DEF_OPT("fno-show-column",          0,      OPT_fno_show_column)            \
@@ -1407,12 +1358,6 @@ cpp_handle_option (pfile, argc, argv, ignore)
       switch (opt_code)
 	{
 	case N_OPTS: /* Shut GCC up.  */
-	  break;
-	case OPT_fleading_underscore:
-	  CPP_OPTION (pfile, user_label_prefix) = "_";
-	  break;
-	case OPT_fno_leading_underscore:
-	  CPP_OPTION (pfile, user_label_prefix) = "";
 	  break;
 	case OPT_fno_operator_names:
 	  CPP_OPTION (pfile, operator_names) = 0;
@@ -1842,10 +1787,6 @@ cpp_post_options (pfile)
   /* -Wtraditional is not useful in C++ mode.  */
   if (CPP_OPTION (pfile, cplusplus))
     CPP_OPTION (pfile, warn_traditional) = 0;
-
-  /* Set this if it hasn't been set already.  */
-  if (CPP_OPTION (pfile, user_label_prefix) == NULL)
-    CPP_OPTION (pfile, user_label_prefix) = USER_LABEL_PREFIX;
 
   /* Permanently disable macro expansion if we are rescanning
      preprocessed text.  */

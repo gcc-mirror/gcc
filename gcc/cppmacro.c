@@ -172,10 +172,20 @@ builtin_macro (pfile, node)
 					      pfile->cur_token[-1].line));
       break;
 
+      /* __STDC__ has the value 1 under normal circumstances.
+	 However, if (a) we are in a system header, (b) the option
+	 stdc_0_in_system_headers is true, and (c) __STRICT_ANSI__ is
+	 not defined, then it has the value 0.  */
     case BT_STDC:
       {
-	int stdc = (!CPP_IN_SYSTEM_HEADER (pfile)
-		    || pfile->spec_nodes.n__STRICT_ANSI__->type != NT_VOID);
+	int stdc;
+	if (CPP_IN_SYSTEM_HEADER (pfile)
+	    && CPP_OPTION (pfile, stdc_0_in_system_headers)
+	    && pfile->spec_nodes.n__STRICT_ANSI__->type == NT_VOID)
+	  stdc = 0;
+	else
+	  stdc = 1;
+
 	result = new_number_token (pfile, stdc);
       }
       break;

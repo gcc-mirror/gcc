@@ -248,9 +248,6 @@ struct cpp_options
   const char *include_prefix;
   unsigned int include_prefix_len;
 
-  /* -fleading_underscore sets this to "_".  */
-  const char *user_label_prefix;
-
   /* The language we're preprocessing.  */
   enum c_lang lang;
 
@@ -397,6 +394,9 @@ struct cpp_options
 
   /* Nonzero means chars (wide chars) are unsigned.  */
   unsigned char unsigned_char, unsigned_wchar;
+
+  /* Nonzero means __STDC__ should have the value 0 in system headers.  */
+  unsigned char stdc_0_in_system_headers;
 };
 
 /* Call backs.  */

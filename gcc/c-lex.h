@@ -49,7 +49,10 @@ extern struct cpp_reader* parse_in;
    "_mips".  */
 extern void builtin_define_std PARAMS ((const char *));
 
-/* Pass an object-like macro and a value to define it to.  */
-extern void builtin_define_with_value PARAMS ((const char *, const char *));
+/* Pass an object-like macro and a value to define it to.  The third
+   parameter says whether or not to turn the value into a string
+   constant.  */
+extern void builtin_define_with_value PARAMS ((const char *, const char *,
+					       int));
 
 #endif /* ! GCC_C_LEX_H */
