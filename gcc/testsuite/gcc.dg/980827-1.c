@@ -1,6 +1,9 @@
 /* { dg-do run { target rs6000-*-linux* powerpc-*-linux*} } */
 /* { dg-options -O2 } */
 
+extern void exit (int);
+extern void abort (void);
+
 double dval = 0;
 
 void splat (double d);

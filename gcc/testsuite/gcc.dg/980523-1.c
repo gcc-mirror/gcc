@@ -1,6 +1,8 @@
 /* { dg-do run { target rs6000-*-linux* powerpc-*-linux*} } */
 /* { dg-options "-O2 -fpic" } */
 
+extern void exit (int);
+
 void foo1(int a, char *b, int c)
 {
    c =a+c+234;
