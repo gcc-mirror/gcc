@@ -4863,9 +4863,9 @@ alpha_output_lineno (stream, line)
 struct shadow_summary
 {
   struct {
-    unsigned long i     : 31;	/* Mask of int regs */
-    unsigned long fp    : 31;	/* Mask of fp regs */
-    unsigned long mem   :  1;	/* mem == imem | fpmem */
+    unsigned int i     : 31;	/* Mask of int regs */
+    unsigned int fp    : 31;	/* Mask of fp regs */
+    unsigned int mem   :  1;	/* mem == imem | fpmem */
   } used, defd;
 };
 
