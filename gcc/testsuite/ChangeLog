@@ -1,3 +1,8 @@
+2004-09-29  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/7425
+	* gcc.dg/deprecated-3.c, g++.dg/warn/deprecated-2.C: New tests.
+
 2004-09-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/stdarg-1.c: New test.

@@ -1,3 +1,7 @@
+2004-09-29  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* decl.c (duplicate_decls): Merge TREE_DEPRECATED.
+
 2004-09-29  Jason Merrill  <jason@redhat.com>
 
 	PR tree-optimization/17697
