@@ -1,3 +1,8 @@
+2001-03-28  Jim Wilson  <wilson@redhat.com>
+
+	* config/ia64/ia64.md (movtf): Change DImode to TFmode in calls to
+	operand_subword.
+
 2001-03-28  DJ Delorie  <dj@redhat.com>
 
 	* Makefile.in (stage1_build): Revert CFLAGS patch.
