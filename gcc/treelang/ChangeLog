@@ -1,3 +1,14 @@
+2004-10-02  James A. Morrison  <phython@gcc.gnu.org>
+
+	* lex.l: Remove random whitespace.
+	* parse.y: Reformat copyright notice.  Indent declarations.
+	Wrap long lines, unwrap short lines.
+	* tree1.c: Reformat copyright notice.  Wrap long lines.
+	Remove random whitespace.
+	(lookup_tree_name): Use LOCATION_LINE.
+	* treetree.c: Reformat copyright notice.  Wrap long lines.
+	Remove random whitespace.
+
 2004-10-01  James A. Morrison  <phython@gcc.gnu.org>
 
 	* parse.y (ELSE): Set tok to $1.
