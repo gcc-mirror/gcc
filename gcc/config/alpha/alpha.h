@@ -51,7 +51,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Pass "-G 8" to ld because Alpha's CC does.  Pass -O3 if we are optimizing,
    -O1 if we are not.  Pass -non_shared or -call_shared as appropriate.  */
 #define LINK_SPEC  \
-  "-G 8 %{O*:-O3} %{!O*:-O1} %{static:-non_shared} %{!static:-call_shared}"
+  "-G 8 %{O*:-O3} %{!O*:-O1} %{static:-non_shared} %{!static:-call_shared} \
+   -init __main"
 
 #define STARTFILE_SPEC  \
   "%{pg:mcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}"
@@ -2016,3 +2017,6 @@ do {							\
 
 /* The system headers under OSF/1 are C++-aware.  */
 #define NO_IMPLICIT_EXTERN_C
+
+/* The linker will stick __main into the .init section.  */
+#define HAS_INIT_SECTION
