@@ -55,6 +55,7 @@ with System.Tasking.Initialization;
 --  used for Defer_Abort
 --           Undefer_Abort
 --           Poll_Base_Priority_Change
+--           Do_Pending_Action
 
 with System.Tasking.Queuing;
 --  used for Enqueue
@@ -972,8 +973,20 @@ package body System.Tasking.Rendezvous is
                pragma Assert (Self_Id.Pending_ATC_Level = 0);
                pragma Assert (Self_Id.Awake_Count = 0);
 
-               --  Trust that it is OK to fall through.
-               null;
+               STPO.Unlock (Self_Id);
+
+               if Single_Lock then
+                  Unlock_RTS;
+               end if;
+
+               Index := Self_Id.Chosen_Index;
+               Initialization.Undefer_Abort_Nestable (Self_Id);
+
+               if Self_Id.Pending_Action then
+                  Initialization.Do_Pending_Action (Self_Id);
+               end if;
+
+               return;
 
             else
                --  Self_Id.Common.Call and Self_Id.Chosen_Index

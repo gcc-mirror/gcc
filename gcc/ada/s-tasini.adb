@@ -128,10 +128,6 @@ package body System.Tasking.Initialization is
    --  Local Subprograms --
    ------------------------
 
-   procedure Do_Pending_Action (Self_ID : Task_Id);
-   --  This is introduced to allow more efficient
-   --  in-line expansion of Undefer_Abort.
-
    ----------------------------
    -- Tasking Initialization --
    ----------------------------
@@ -777,8 +773,24 @@ package body System.Tasking.Initialization is
       end if;
 
       Self_ID := STPO.Self;
-      pragma Assert (Self_ID.Deferral_Level > 0);
 
+      if Self_ID.Deferral_Level = 0 then
+
+         --  In case there are different views on whether Abort is supported
+         --  between the expander and the run time, we may end up with
+         --  Self_ID.Deferral_Level being equal to zero, when called from
+         --  the procedure created by the expander that corresponds to a
+         --  task body.
+
+         --  In this case, there's nothing to be done
+
+         --  See related code in System.Tasking.Stages.Create_Task resetting
+         --  Deferral_Level when System.Restrictions.Abort_Allowed is False.
+
+         return;
+      end if;
+
+      pragma Assert (Self_ID.Deferral_Level > 0);
       Self_ID.Deferral_Level := Self_ID.Deferral_Level - 1;
 
       if Self_ID.Deferral_Level = 0 then

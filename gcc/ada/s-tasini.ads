@@ -131,6 +131,14 @@ package System.Tasking.Initialization is
    --  ?????
    --  Try to phase out all uses of the above versions.
 
+   procedure Do_Pending_Action (Self_ID : Task_Id);
+   --  Only call with no locks, and when Self_ID.Pending_Action = True
+   --  Perform necessary pending actions (e.g. abortion, priority change).
+   --  This procedure is usually called when needed as a result of
+   --  calling Undefer_Abort, although in the case of e.g. No_Abort
+   --  restriction, it can be necessary to force execution of pending
+   --  actions.
+
    function Check_Abort_Status return Integer;
    --  Returns Boolean'Pos (True) iff abort signal should raise
    --  Standard.Abort_Signal. Only used by IRIX currently.

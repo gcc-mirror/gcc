@@ -103,6 +103,9 @@ with System.Secondary_Stack;
 with System.Storage_Elements;
 --  used for Storage_Array
 
+with System.Restrictions;
+--  used for Abort_Allowed
+
 with System.Standard_Library;
 --  used for Exception_Trace
 
@@ -612,6 +615,16 @@ package body System.Tasking.Stages is
          Initialization.Undefer_Abort_Nestable (Self_ID);
          Raise_Exception
            (Storage_Error'Identity, "Failed to initialize task");
+      end if;
+
+      if not System.Restrictions.Abort_Allowed then
+
+         --  If Abort is not allowed, reset the deferral level since it will
+         --  not get changed by the generated code. Keeping a default value
+         --  of one would prevent some operations (e.g. select or delay) to
+         --  proceed successfully.
+
+         T.Deferral_Level := 0;
       end if;
 
       T.Master_of_Task := Master;
