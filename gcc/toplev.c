@@ -1950,7 +1950,9 @@ wrapup_global_declarations (vec, len)
 	  if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)
 	      && (! TREE_READONLY (decl)
 		  || TREE_PUBLIC (decl)
-		  || (!optimize && flag_keep_static_consts)
+		  || (!optimize 
+		      && flag_keep_static_consts
+		      && !DECL_ARTIFICIAL (decl))
 		  || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
 	    {
 	      reconsider = 1;
