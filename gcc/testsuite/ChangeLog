@@ -1,5 +1,9 @@
 2004-02-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* gcc.dg/titype-1.c: Fix pasto.
+
+2004-02-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* gcc.dg/titype-1.c: New test.
 
 2004-02-01  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
