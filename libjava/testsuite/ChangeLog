@@ -1,3 +1,9 @@
+2002-03-11  Eric Blake  <ebb9@email.byu.edu>
+
+	* libjava.compile/PR5902.java: New file.
+	* libjava.compile/PR5913.java: New file.
+	* libjava.compile/PR5913.xfail: New file.
+
 2002-02-23  Jeff Sturm  <jsturm@one-point.com>
 
 	* libjava.lang/InvokeReturn.java: New file.
