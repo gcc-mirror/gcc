@@ -1633,6 +1633,16 @@ extern void push_obstacks		PARAMS ((struct obstack *,
 						struct obstack *));
 /* In cse.c */
 struct cse_basic_block_data;
+
+/* Return the right cost to give to an operation
+   to make the cost of the corresponding register-to-register instruction
+   N times that of a fast register-to-register instruction.  */
+#define COSTS_N_INSNS(N) ((N) * 4)
+
+/* Maximum cost of a rtl expression.  This value has the special meaning
+   not to use an rtx with this cost under any circumstances.  */
+#define MAX_COST INT_MAX
+
 extern int rtx_cost			PARAMS ((rtx, enum rtx_code));
 extern int address_cost			PARAMS ((rtx, enum machine_mode));
 extern void delete_trivially_dead_insns	PARAMS ((rtx, int));

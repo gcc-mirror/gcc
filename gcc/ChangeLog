@@ -1,3 +1,18 @@
+2000-09-12  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	* cse.c (approx_reg_cost): If SMALL_REGISTER_CLASSES, return INT_MAX
+	if a reference to non-fixed hardreg is seen.  Otherwise, count hard
+	regs with a higher cost.
+	(preferrable): Deal with cases where either cost or regcost is
+	MAX_COST.
+	(cse_insn): Use MAX_COST rather than 10000.  Always initialize
+	regcost values.
+	(COSTS_N_INSNS): Move definition...
+	* rtl.h: ...here.
+	(MAX_COST): New macro.
+	* loop.c (init_loop): Use COSTS_N_INSNS macro instead of hardcoded
+	constant.
+
 2000-09-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-common.h (genrtl_clear_out_block): Remove.

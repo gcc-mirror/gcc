@@ -300,7 +300,7 @@ init_loop ()
 
   reg_address_cost = address_cost (reg, SImode);
 
-  copy_cost = 2;
+  copy_cost = COSTS_N_INSNS (1);
 
   /* Free the objects we just allocated.  */
   obfree (free_point);
