@@ -9,11 +9,125 @@ News About GNU Fortran
    Changes made to recent versions of GNU Fortran are listed below,
 with the most recent version first.
 
-   The changes are generally listed with code-generation bugs first,
-followed by compiler crashes involving valid code, new features, fixes
-to existing features, new diagnostics, internal improvements, and
-miscellany.  This order is not strict--for example, some items involve
-a combination of these elements.
+   The changes are generally listed in order:
+
+  1. Code-generation and run-time-library bugs
+
+  2. Compiler and run-time-library crashes involving valid code
+
+  3. New features
+
+  4. Fixes and enhancements to existing features
+
+  5. New diagnostics
+
+  6. Internal improvements
+
+  7. Miscellany
+
+   This order is not strict--for example, some items involve a
+combination of these elements.
+
+In 0.5.22:
+==========
+
+   * Fix code generation for iterative `DO' loops that have one or more
+     references to the iteration variable, or to aliases of it, in
+     their control expressions.  For example, `DO 10 J=2,J' now is
+     compiled correctly.
+
+   * Fix a code-generation bug that afflicted Intel x86 targets when
+     `-O2' was specified compiling, for example, an old version of the
+     `DNRM2' routine.
+
+     The x87 coprocessor stack was being mismanaged in cases involving
+     assigned `GOTO' and `ASSIGN'.
+
+   * Fix `DTime' intrinsic so as not to truncate results to integer
+     values (on some systems).
+
+   * Fix `SIGNAL' intrinsic so it offers portable support for 64-bit
+     systems (such as Digital Alphas running GNU/Linux).
+
+   * Fix run-time crash involving `NAMELIST' on 64-bit machines such as
+     Alphas.
+
+   * Fix `g77' version of `libf2c' so it no longer produces a spurious
+     `I/O recursion' diagnostic at run time when an I/O operation (such
+     as `READ *,I') is interrupted in a manner that causes the program
+     to be terminated via the `f_exit' routine (such as via `C-c').
+
+   * Fix `g77' crash triggered by `CASE' statement with an omitted
+     lower or upper bound.
+
+   * Fix `g77' crash compiling references to `CPU_Time' intrinsic.
+
+   * Fix `g77' crash (or apparently infinite run-time) when compiling
+     certain complicated expressions involving `COMPLEX' arithmetic
+     (especially multiplication).
+
+   * Fix `g77' crash on statements such as `PRINT *,
+     (REAL(Z(I)),I=1,2)', where `Z' is `DOUBLE COMPLEX'.
+
+   * Fix a `g++' crash.
+
+   * Support `FORMAT(I<EXPR>)' when EXPR is a compile-time constant
+     `INTEGER' expression.
+
+   * Fix `g77' `-g' option so procedures that use `ENTRY' can be
+     stepped through, line by line, in `gdb'.
+
+   * Fix a profiling-related bug in `gcc' back end for Intel x86
+     architecture.
+
+   * Allow any `REAL' argument to intrinsics `Second' and `CPU_Time'.
+
+   * Allow any numeric argument to intrinsics `Int2' and `Int8'.
+
+   * Use `tempnam', if available, to open scratch files (as in
+     `OPEN(STATUS='SCRATCH')' so that the `TMPDIR' environment variable,
+     if present, is used.
+
+   * Rename the `gcc' keyword `restrict' to `__restrict__', to avoid
+     rejecting valid, existing, C programs.  Support for `restrict' is
+     now more like support for `complex'.
+
+   * Fix `-fpedantic' to not reject procedure invocations such as
+     `I=J()' and `CALL FOO()'.
+
+   * Fix `-fugly-comma' to affect invocations of only external
+     procedures.  Restore rejection of gratuitous trailing omitted
+     arguments to intrinsics, as in `I=MAX(3,4,,)'.
+
+   * Fix compiler so it accepts `-fgnu-intrinsics-*' and
+     `-fbadu77-intrinsics-*' options.
+
+   * Improve diagnostic messages from `libf2c' so it is more likely
+     that the printing of the active format string is limited to the
+     string, with no trailing garbage being printed.
+
+     (Unlike `f2c', `g77' did not append a null byte to its compiled
+     form of every format string specified via a `FORMAT' statement.
+     However, `f2c' would exhibit the problem anyway for a statement
+     like `PRINT '(I)garbage', 1' by printing `(I)garbage' as the
+     format string.)
+
+   * Improve compilation of FORMAT expressions so that a null byte is
+     appended to the last operand if it is a constant.  This provides a
+     cleaner run-time diagnostic as provided by `libf2c' for statements
+     like `PRINT '(I1', 42'.
+
+   * Fix various crashes involving code with diagnosed errors.
+
+   * Fix cross-compilation bug when configuring `libf2c'.
+
+   * Improve diagnostics.
+
+   * Improve documentation and indexing.
+
+   * Upgrade to `libf2c' as of 1997-09-23.  This fixes a formatted-I/O
+     bug that afflicted 64-bit systems with 32-bit integers (such as
+     Digital Alpha running GNU/Linux).
 
 In 0.5.21:
 ==========
