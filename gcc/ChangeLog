@@ -1,3 +1,12 @@
+2002-05-13  Andreas Schwab  <schwab@suse.de>
+
+	* varasm.c (resolve_unique_section): Add third parameter
+	flag_function_or_data_sections and use it instead of
+	flag_function_sections.
+	(assemble_start_function): Pass flag_function_sections.
+	(asm_emit_uninitialised): Pass flag_data_sections.
+	(assemble_variable): Likewise.
+
 2002-05-14  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.md: Use define_constants for unspec numbers.
