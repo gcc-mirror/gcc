@@ -1,3 +1,7 @@
+2003-04-29  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/std/std_sstream.h (underflow): Change to single return.
+
 2003-04-28  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/std/std_streambuf.h (_M_buf): is currently
