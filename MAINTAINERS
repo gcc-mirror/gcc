@@ -83,6 +83,7 @@ config.sub/config.guess	Ben Elliston		bje@cygnus.com
 avr port		Denis Chertykov		denisc@overta.ru
 basic block reordering	Jason Eckhardt		jle@cygnus.com
 i18n			Philipp Thomas		pthomas@suse.de
+diagnostic messages	Gabriel Dos Reis	gdr@codesourcery.com
 
 Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
