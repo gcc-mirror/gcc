@@ -2691,6 +2691,7 @@ package body Checks is
 
    procedure Insert_Valid_Check (Expr : Node_Id) is
       Loc : constant Source_Ptr := Sloc (Expr);
+      Exp : Node_Id;
 
    begin
       --  Do not insert if checks off, or if not checking validity
@@ -2698,27 +2699,35 @@ package body Checks is
       if Range_Checks_Suppressed (Etype (Expr))
         or else (not Validity_Checks_On)
       then
-         null;
-
-      --  Otherwise insert the validity check. Note that we do this with
-      --  validity checks turned off, to avoid recursion, we do not want
-      --  validity checks on the validity checking code itself!
-
-      else
-         Validity_Checks_On := False;
-         Insert_Action
-           (Expr,
-            Make_Raise_Constraint_Error (Loc,
-              Condition =>
-                Make_Op_Not (Loc,
-                  Right_Opnd =>
-                    Make_Attribute_Reference (Loc,
-                      Prefix =>
-                        Duplicate_Subexpr (Expr, Name_Req => True),
-                      Attribute_Name => Name_Valid))),
-            Suppress => All_Checks);
-         Validity_Checks_On := True;
+         return;
       end if;
+
+      --  If we have a checked conversion, then validity check applies to
+      --  the expression inside the conversion, not the result, since if
+      --  the expression inside is valid, then so is the conversion result.
+
+      Exp := Expr;
+      while Nkind (Exp) = N_Type_Conversion loop
+         Exp := Expression (Exp);
+      end loop;
+
+      --  insert the validity check. Note that we do this with validity
+      --  checks turned off, to avoid recursion, we do not want validity
+      --  checks on the validity checking code itself!
+
+      Validity_Checks_On := False;
+      Insert_Action
+        (Expr,
+         Make_Raise_Constraint_Error (Loc,
+           Condition =>
+             Make_Op_Not (Loc,
+               Right_Opnd =>
+                 Make_Attribute_Reference (Loc,
+                   Prefix =>
+                     Duplicate_Subexpr (Exp, Name_Req => True),
+                   Attribute_Name => Name_Valid))),
+         Suppress => All_Checks);
+      Validity_Checks_On := True;
    end Insert_Valid_Check;
 
    --------------------------
