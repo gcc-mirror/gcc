@@ -1,4 +1,4 @@
-// { dg-do run  }
+// { dg-do run { xfail powerpc-ibm-aix* } }
 // Test __cxa_vec routines
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 7 Apr 2000 <nathan@nathan@codesourcery.com>

@@ -1,3 +1,19 @@
+2004-06-07  David Edelsohn  <edelsohn@gnu.org>
+
+	* g++.dg/ext/altivec-1.C: XFAIL powerpc-ibm-aix*.
+	* g++.dg/ext/altivec-10.C: Same.
+	* g++.dg/ext/altivec-2.C: Same.
+	* g++.dg/ext/altivec-3.C: Same.
+	* g++.dg/ext/altivec-4.C: Same.
+	* g++.dg/ext/altivec-5.C: Same.
+	* g++.dg/ext/altivec-6.C: Same.
+	* g++.dg/ext/altivec-7.C: Same.
+	* g++.dg/ext/altivec-8.C: Same.
+	* g++.dg/ext/altivec-9.C: Same.
+	* g++.old-deja/g++.abi/cxa_vec.C: Same.
+	* g++.old-deja/g++.brendan/new3.C: Same.
+	* gcc.c-torture/execute/eeprof-1.x: Same.
+
 2004-06-07  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/14765

@@ -1,6 +1,6 @@
 /* Test for correct handling of literal arguments. */
 /* Author: Ziemowit Laski  <zlaski@apple.com>  */
-/* { dg-do compile { target powerpc*-*-* } } */
+/* { dg-do compile { target powerpc*-*-* } { xfail powerpc-ibm-aix* } } */
 /* { dg-options "-maltivec" } */
 
 #include <altivec.h>
