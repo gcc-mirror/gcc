@@ -223,6 +223,7 @@ STAMP = echo timestamp >
 
 # Make sure the $(MAKE) variable is defined.
 @SET_MAKE@
+REMAKEFLAGS=LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)"
 
 # --------
 # UNSORTED
@@ -3468,22 +3469,22 @@ unstage1 unstage2 unstage3 unstage4 unstageprofile unstagefeedback:
 	echo $${stage}_build > stage_last
 
 restage1: unstage1
-	$(MAKE) stage1_build
+	$(MAKE) $(REMAKEFLAGS) stage1_build
 
 restage2: unstage2
-	$(MAKE) LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)" stage2_build
+	$(MAKE) $(REMAKEFLAGS) stage2_build
 
 restage3: unstage3
-	$(MAKE) LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)" stage3_build
+	$(MAKE) $(REMAKEFLAGS) stage3_build
 
 restage4: unstage4
-	$(MAKE) LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)" stage4_build
+	$(MAKE) $(REMAKEFLAGS) stage4_build
 
 restageprofile: unstageprofile
-	$(MAKE) LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)" stageprofile_build
+	$(MAKE) $(REMAKEFLAGS) stageprofile_build
 
 restagefeedback: unstagefeedback
-	$(MAKE) LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)" stagefeedback_build
+	$(MAKE) $(REMAKEFLAGS) stagefeedback_build
 
 # Bubble up a bugfix through all the stages.  Primarily useful for fixing
 # bugs that cause the compiler to crash while building stage 2.
@@ -3491,31 +3492,31 @@ bubblestrap:
 	if test -f stage_last; then \
 	  LAST=`sed -e 's/_build//' < stage_last`; \
 	  if test "$$LAST" != "stage1"; then \
-	    $(MAKE) $$LAST; \
+	    $(MAKE) $(REMAKEFLAGS) $$LAST; \
 	    $(STAMP) $${LAST}_copy; \
 	  fi; \
 	fi
 	if test -f stage1_copy; then $(MAKE) unstage1; fi
-	$(MAKE) LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)" stage1_copy
+	$(MAKE) $(REMAKEFLAGS) stage1_copy
 	if test -f stage2_copy; then $(MAKE) unstage2; fi
-	$(MAKE) LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)" stage2_copy
+	$(MAKE) $(REMAKEFLAGS) stage2_copy
 	if test -f stage3_copy; then $(MAKE) unstage3; fi
-	$(MAKE) LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)" stage3_build
+	$(MAKE) $(REMAKEFLAGS) stage3_build
 	if test -f stage4_copy; then \
-	  $(MAKE) stage3_copy; $(MAKE) unstage4; \
-	  $(MAKE) LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)" stage4_build || exit 1; \
+	  $(MAKE) $(REMAKEFLAGS) stage3_copy; $(MAKE) unstage4; \
+	  $(MAKE) $(REMAKEFLAGS) stage4_build || exit 1; \
 	fi
 
 quickstrap:
 	if test -f stage_last ; then \
-	  LAST=`cat stage_last`; rm $$LAST; $(MAKE) BOOT_CFLAGS="$(BOOT_CFLAGS)" LANGUAGES="$(LANGUAGES)" $$LAST; \
+	  LAST=`cat stage_last`; rm $$LAST; $(MAKE) $(REMAKEFLAGS) $$LAST; \
 	else \
-	  $(MAKE) stage1_build; \
+	  $(MAKE) $(REMAKEFLAGS) stage1_build; \
 	fi
 
 cleanstrap:
 	-$(MAKE) clean
-	$(MAKE) LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)" bootstrap
+	$(MAKE) $(REMAKEFLAGS) bootstrap
 
 unstrap:
 	-rm -rf stage[234]*
@@ -3526,7 +3527,7 @@ unstrap:
 # not from scratch.
 restrap:
 	$(MAKE) unstrap
-	$(MAKE) LANGUAGES="$(LANGUAGES)" BOOT_CFLAGS="$(BOOT_CFLAGS)" bootstrap
+	$(MAKE) $(REMAKEFLAGS) bootstrap
 
 # Compare the object files in the current directory with those in the
 # stage2 directory.
