@@ -1,3 +1,23 @@
+Tue Dec 14 08:11:27 1999  Richard Henderson  <rth@cygnus.com>
+
+	* configure.in (alpha-osf, alpha-linux): Handle ev6[78].
+	* alpha.c (override_options): Recognize -mcpu=ev67.
+	* alpha.h (CPP_CPU_EV67_SPEC): New.
+	(CPP_CPU_DEFAULT_SPEC): Examine TARGET_CPU_DEFAULT to use it.
+	(EXTRA_SPECS): Update.
+
+Tue Dec 14 08:04:28 1999  Richard Henderson  <rth@cygnus.com>
+
+	* cppp.c (main): Set trigraphs and __STRICT_ANSI__ as
+	appropriate for -lang-c89 and -std=*.
+	* cppinit.c (cpp_handle_option): Likewise.
+	(new_pending_define): New, split out from cpp_handle_option.
+	* gcc.c (default_compilers): Don't define __STRICT_ANSI__
+	or enable trigraphs for -ansi/-std=*.
+
+	* ginclude/stdarg.h (__va_copy): New.
+	(va_copy): Don't define for C89.
+
 Tue Dec 14 08:37:27 CST 1999 Clinton Popetz  <cpopetz@cygnus.com>
 
 	* config/arm/arm.md (mulsidi3adddi, umulsidi3adddi): New patterns
@@ -279,7 +299,7 @@ Fri Dec 10 16:12:13 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 1999-12-10  Ben Collins  <bcollins@debian.org>
 
-        * configure.in: Fix typo for "-64" in 64bit as check.
+	* configure.in: Fix typo for "-64" in 64bit as check.
 	* configure: Rebuilt.
 	
 1999-12-10  Jakub Jelinek  <jakub@redhat.com>

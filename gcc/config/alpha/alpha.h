@@ -276,11 +276,18 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
 #define CPP_CPU_EV5_SPEC	"%(cpp_im_ev5)"
 #define CPP_CPU_EV56_SPEC	"%(cpp_im_ev5) %(cpp_am_bwx)"
 #define CPP_CPU_PCA56_SPEC	"%(cpp_im_ev5) %(cpp_am_bwx) %(cpp_am_max)"
-#define CPP_CPU_EV6_SPEC	"%(cpp_im_ev6) %(cpp_am_bwx) %(cpp_am_max) %(cpp_am_fix)"
+#define CPP_CPU_EV6_SPEC \
+  "%(cpp_im_ev6) %(cpp_am_bwx) %(cpp_am_max) %(cpp_am_fix)"
+#define CPP_CPU_EV67_SPEC \
+  "%(cpp_im_ev6) %(cpp_am_bwx) %(cpp_am_max) %(cpp_am_fix) %(cpp_am_cix)"
 
 #ifndef CPP_CPU_DEFAULT_SPEC
 # if TARGET_CPU_DEFAULT & MASK_CPU_EV6
-#  define CPP_CPU_DEFAULT_SPEC		CPP_CPU_EV6_SPEC
+#  if TARGET_CPU_DEFAULT & MAX_CIX
+#    define CPP_CPU_DEFAULT_SPEC	CPP_CPU_EV67_SPEC
+#  else
+#    define CPP_CPU_DEFAULT_SPEC	CPP_CPU_EV6_SPEC
+#  endif
 # else
 #  if TARGET_CPU_DEFAULT & MASK_CPU_EV5
 #   if TARGET_CPU_DEFAULT & MASK_MAX
@@ -306,6 +313,7 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
 %{mcpu=ev56|mcpu=21164a:%(cpp_cpu_ev56) }\
 %{mcpu=pca56|mcpu=21164pc|mcpu=21164PC:%(cpp_cpu_pca56) }\
 %{mcpu=ev6|mcpu=21264:%(cpp_cpu_ev6) }\
+%{mcpu=ev67|mcpu=21264a:%(cpp_cpu_ev67) }\
 %{!mcpu*:%(cpp_cpu_default) }}"
 #endif
 
@@ -336,6 +344,7 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
   { "cpp_cpu_ev56", CPP_CPU_EV56_SPEC },	\
   { "cpp_cpu_pca56", CPP_CPU_PCA56_SPEC },	\
   { "cpp_cpu_ev6", CPP_CPU_EV6_SPEC },		\
+  { "cpp_cpu_ev67", CPP_CPU_EV67_SPEC },	\
   { "cpp_cpu_default", CPP_CPU_DEFAULT_SPEC },	\
   { "cpp_cpu", CPP_CPU_SPEC },			\
   { "cpp_subtarget", CPP_SUBTARGET_SPEC },	\

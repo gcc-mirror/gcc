@@ -6265,6 +6265,9 @@ for machine in $build $host $target; do
 		;;
 	alpha*-*-*)
 		case $machine in
+			alphaev6[78]*)
+				target_cpu_default2="MASK_CPU_EV6|MASK_BWX|MASK_MAX|MASK_FIX|MASK_CIX"
+				;;
 			alphaev6*)
 				target_cpu_default2="MASK_CPU_EV6|MASK_BWX|MASK_MAX|MASK_FIX"
 				;;
