@@ -1,3 +1,10 @@
+Tue Sep  2 14:22:43 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* local-alloc.c (contains_replace_regs): New function.
+	(update_equiv_regs): When adding a REG_EQUIV note for a set of a MEM,
+	verify that there is no existing REG_EQUIV note, and add a call to
+	contains_place_regs.
+
 Tue Sep  2 12:48:11 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
 	* config/alpha/elf.h (CPP_PREDEFINES): Add -D__PIC__ -D__pic__.
