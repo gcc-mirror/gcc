@@ -1,3 +1,8 @@
+2001-10-12  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* jatool.c (extract_jar): Account for null termination when determining
+	whether to expand "filename".
+
 2001-08-28  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* jartool.c (add_to_jar): Return 1 if `stat' initialy failed.
