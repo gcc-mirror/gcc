@@ -1,3 +1,10 @@
+2003-04-07  Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
+            Richard Henderson  <rth@redhat.com>
+
+        PR c/9516
+        * expr.c (safe_from_p): Rearrange to avoid deep recursion in
+        favour of looping and tail recursion for TREE_LIST and binops.
+
 2003-04-08  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* loop.h (REGNO_FIRST_LUID, REGNO_LAST_LUID): Provide defaults
