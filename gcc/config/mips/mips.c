@@ -5417,7 +5417,8 @@ mips_select_section (decl, reloc)
       /* For embedded applications, always put an object in read-only data
 	 if possible, in order to reduce RAM usage.  */
 
-      if (((TREE_READONLY (decl) && !TREE_SIDE_EFFECTS (decl)
+      if (((TREE_CODE (decl) == VAR_DECL
+	    && TREE_READONLY (decl) && !TREE_SIDE_EFFECTS (decl)
 	    && DECL_INITIAL (decl)
 	    && (DECL_INITIAL (decl) == error_mark_node
 		|| TREE_CONSTANT (DECL_INITIAL (decl))))
@@ -5439,7 +5440,8 @@ mips_select_section (decl, reloc)
 
       if (size > 0 && size <= mips_section_threshold)
 	sdata_section ();
-      else if (((TREE_READONLY (decl) && !TREE_SIDE_EFFECTS (decl)
+      else if (((TREE_CODE (decl) == VAR_DECL
+		 && TREE_READONLY (decl) && !TREE_SIDE_EFFECTS (decl)
 		 && DECL_INITIAL (decl)
 		 && (DECL_INITIAL (decl) == error_mark_node
 		     || TREE_CONSTANT (DECL_INITIAL (decl))))
