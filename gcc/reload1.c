@@ -5548,7 +5548,7 @@ gen_input_reload (reloadreg, in, before_insn)
 
 	 It might be better not to actually emit the insn unless it is valid,
 	 but we need to pass the insn as an operand to `recog' and
-	 `insn_extract'and it is simpler to emit and then delete the insn if
+	 `insn_extract' and it is simpler to emit and then delete the insn if
 	 not valid than to dummy things up.  */
 
       rtx op0, op1, tem, insn;

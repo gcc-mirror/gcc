@@ -415,7 +415,7 @@ xcoffout_declare_function (file, decl, name)
     {
       if (name[i] == '[')
 	{
-	  n = alloca (i + 1);
+	  n = (char *) alloca (i + 1);
 	  strncpy (n, name, i);
 	  n[i] = '\0';
 	  break;
