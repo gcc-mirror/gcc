@@ -1,3 +1,8 @@
+2002-02-20  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* Makefile.am: Re-add SUBDIRS parameter which was lost in merge.
+	* Makefile.in: Rebuilt.
+
 2002-02-13  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* dbg_mlc.c (GC_debug_generic_malloc): Removed.
