@@ -90,9 +90,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "obstack.h"
 #include "insn-config.h"	/* For REGISTER_CONSTRAINTS */
 
-static struct obstack obstack, obstack1;
+static struct obstack obstack, obstack1, obstack2;
 struct obstack *rtl_obstack = &obstack;
 struct obstack *hash_obstack = &obstack1;
+struct obstack *accum_obstack = &obstack2;
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -275,8 +276,8 @@ static rtx insert_right_side ();
 static rtx make_alternative_compare ();
 static int compute_alternative_mask ();
 static rtx evaluate_eq_attr ();
-static rtx simplify_and_tree ();
-static rtx simplify_or_tree ();
+/* static rtx simplify_and_tree ();
+static rtx simplify_or_tree (); */
 static rtx simplify_test_exp ();
 static void optimize_attrs ();
 static void gen_attr ();
@@ -1696,6 +1697,8 @@ simplify_cond (exp, insn_code, insn_index)
   /* We store the desired contents here,
      then build a new expression if they don't match EXP.  */
   rtx defval = XEXP (exp, 1);
+  rtx new_defval = XEXP (exp, 1);
+
   int len = XVECLEN (exp, 0);
   rtx *tests = (rtx *) alloca (len * sizeof (rtx));
   int allsame = 1;
@@ -1708,7 +1711,7 @@ simplify_cond (exp, insn_code, insn_index)
 
   /* See if default value needs simplification.  */
   if (GET_CODE (defval) == COND)
-    defval = simplify_cond (defval, insn_code, insn_index);
+    new_defval = simplify_cond (defval, insn_code, insn_index);
 
   /* Simplify now, just to see what tests we can get rid of.  */
 
@@ -1733,6 +1736,7 @@ simplify_cond (exp, insn_code, insn_index)
 	     and discard this + any following tests.  */
 	  len = i;
 	  defval = tests[i];
+	  new_defval = newval;
 	}
 
       else if (newtest == false_rtx)
@@ -1746,7 +1750,7 @@ simplify_cond (exp, insn_code, insn_index)
 
       /* If this is the last condition in a COND and our value is the same
 	 as the default value, our test isn't needed.  */
-      else if (i == len - 2 && rtx_equal_p (newval, defval))
+      else if (i == len - 2 && rtx_equal_p (newval, new_defval))
 	len -= 2;
     }
 
@@ -1754,7 +1758,6 @@ simplify_cond (exp, insn_code, insn_index)
 
   if (len == 0)
     {
-      defval = XEXP (exp, 1);
       if (GET_CODE (defval) == COND)
 	return simplify_cond (defval, insn_code, insn_index);
       return defval;
@@ -2063,6 +2066,288 @@ evaluate_eq_attr (exp, value, insn_code, insn_index)
     return newexp;
 }
 
+/* These are used by simplify_boolean to accumulate and sort terms.  */
+
+struct term
+{
+  rtx exp;
+  int hash;
+  int ignore;
+  struct term *next;
+};
+
+struct term *termlist;
+
+void
+extract_terms (code, exp, pnterms, insn_code, insn_index)
+     enum rtx_code code;
+     rtx exp;
+     int *pnterms;
+     int insn_code, insn_index;
+{
+  if (GET_CODE (exp) == code)
+    {
+      extract_terms (code, XEXP (exp, 0), pnterms, insn_code, insn_index);
+      extract_terms (code, XEXP (exp, 1), pnterms, insn_code, insn_index);
+    }
+  else
+    {
+      struct term *save = termlist;
+      exp = SIMPLIFY_TEST_EXP (exp, insn_code, insn_index);
+      termlist = save;
+
+      if (GET_CODE (exp) == code)
+	{
+	  extract_terms (code, XEXP (exp, 0), pnterms, insn_code, insn_index);
+	  extract_terms (code, XEXP (exp, 1), pnterms, insn_code, insn_index);
+	}
+      else
+	{
+	  struct term t;
+	  t.exp = exp;
+	  t.hash = hash_term (exp);
+	  t.ignore = 0;
+	  t.next = termlist;
+	  termlist = (struct term *) obstack_copy (accum_obstack,
+						   &t, sizeof t);
+
+	  (*pnterms)++;
+	}
+    }
+}
+
+/* Compare two terms for sorting.
+   This particular sort function treats any term and its negation as "equal"
+   so that they sort together.  */
+
+int
+compare_terms (pt1, pt2)
+     struct term *pt1, *pt2;
+{
+  return pt1->hash - pt2->hash;
+}
+
+int
+hash_term (term)
+     rtx term;
+{
+  while (GET_CODE (term) == NOT)
+    term = XEXP (term, 0);
+
+  if (RTX_UNCHANGING_P (term))
+    return (int) term;
+
+  switch (GET_CODE (term))
+    {
+    case AND:
+      return (hash_term (XEXP (term, 0))
+	      + (hash_term (XEXP (term, 1)) << 3)
+	      + (int) AND);
+
+    case IOR:
+      return (hash_term (XEXP (term, 0))
+	      + (hash_term (XEXP (term, 1)) << 4)
+	      + (int) IOR);
+
+    default:
+      return (int) term;
+    }
+}
+
+/* Simplify a boolean expression made from applying CODE (which is AND or IOR)
+   to the two expressions EXP1 and EXP2.
+
+   EXP3 is another expression we can assume is true (if CODE is AND)
+   or assume is false (if CODE is IOR).
+
+   STABLE is either true or false.
+   It is the truth value which, when input to CODE, makes itself the output.
+   UNSTABLE is the other truth value: the one which is CODE of no operands.  */
+
+rtx
+simplify_boolean (code, exp1, exp2, exp3, stable, unstable,
+		  insn_code, insn_index)
+     enum rtx_code code;
+     rtx exp1, exp2, exp3;
+     rtx stable, unstable;
+     int insn_code, insn_index;
+{
+  struct term *vector;
+  int nterms = 0;
+  int nignores = 0;
+  int i, j;
+  char *spacer = (char *) obstack_finish (accum_obstack);
+  rtx combined;
+  rtx common_term;
+  enum rtx_code other_code = (code == AND ? IOR : AND);
+  static struct term dummy = {0, 0, 0, 0};
+
+  termlist = 0;
+
+  nterms = 1; /* Count one dummy element.  */
+  extract_terms (code, exp1, &nterms, insn_code, insn_index);
+  if (exp2)
+    extract_terms (code, exp2, &nterms, insn_code, insn_index);
+
+  if (exp3)
+    extract_terms (code, exp3, &nignores, insn_code, insn_index);
+  nterms += nignores;
+
+  vector = (struct term *) alloca (nterms * sizeof (struct term));
+
+  /* Copy the terms from the list into the vector.
+     Set the ignore flag in those which came from EXP3.
+     That way, we won't include them in the final result.  */
+
+  vector[0] = dummy;
+  for (i = 1; i < nterms; i++)
+    {
+      vector[i] = *termlist;
+      if (i < nignores)
+	vector[i].ignore = 1;
+      termlist = termlist->next;
+    }
+  
+  /* Free what we used in the obstack.  */
+  obstack_free (accum_obstack, spacer);
+
+  qsort (vector, nterms, sizeof (struct term), compare_terms);
+
+  if (insn_code >= 0)
+    {
+      i = (compute_alternative_mask (exp1, code)
+	   & compute_alternative_mask (exp2, code));
+      if (i & ~insn_alternatives[insn_code])
+	fatal ("invalid alternative specified for pattern number %d",
+	       insn_index);
+
+      /* If all alternatives are excluded for AND (included for IOR),
+	 this is false (true). */
+      i ^= insn_alternatives[insn_code];
+      if (i == 0)
+	{
+	  return stable;
+	}
+      else if ((i & (i - 1)) == 0 && insn_alternatives[insn_code] > 1)
+	{
+	  /* If just one included for AND (excluded for IOR),
+	     add one term which tests for that alternative.
+	     We do not want to do this if the insn has one
+	     alternative and we have tested none of them!  */
+	  vector[0].exp = make_alternative_compare (i);
+	  if (code == IOR)
+	    vector[0].exp = attr_rtx (NOT, vector[0].exp);
+	}
+    }
+
+  /* Try distributive law in one simple way.  */
+  common_term = 0;
+  for (i = 0; i < nterms; i++)
+    if (vector[i].exp != 0)
+      {
+	if (GET_CODE (vector[i].exp) != other_code)
+	  break;
+	if (common_term == 0)
+	  common_term = XEXP (vector[i].exp, 0);
+	else if (!rtx_equal_p (XEXP (vector[i].exp, 0), common_term))
+	  break;
+      }
+  if (i != nterms)
+    common_term = 0;
+
+  /* If we found a subterm in common, remove it from each term.  */
+  if (common_term)
+    for (i = 0; i < nterms; i++)
+      if (vector[i].exp != 0)
+	vector[i].exp = XEXP (vector[i].exp, 1);
+
+  /* See if any two adjacent terms are equivalent or contrary.
+     Equivalent or contrary terms should be adjacent because of sorting.  */
+  for (i = 0; i < nterms - 1; i++)
+    {
+      rtx base0 = vector[i].exp;
+      rtx base1 = vector[i + 1].exp;
+      if (base0 != 0 && base1 != 0)
+	{
+	  if (GET_CODE (base0) == NOT)
+	    base0 = XEXP (base0, 0);
+	  if (GET_CODE (base1) == NOT)
+	    base1 = XEXP (base1, 0);
+	  if (rtx_equal_p (base0, base1))
+	    {
+	      if (! rtx_equal_p (vector[i].exp, vector[i + 1].exp))
+		{
+		  /* There are two contrary terms:
+		     The value is true for IOR, false for AND.  */
+		  return common_term ? common_term : stable;
+		}
+	      /* Delete one of a pair of equivalent terms.  */
+	      vector[i].exp = 0;
+	      vector[i].ignore |= vector[i + 1].ignore;
+	    }
+	}
+    }
+
+  /* Take advantage of the fact that two different values for the same
+     attribute are contradictory.  */
+  if (code == AND)
+    {
+      for (i = 0; i < nterms; i++)
+	if (vector[i].exp != 0 && GET_CODE (vector[i].exp) == EQ_ATTR)
+	  {
+	    char *aname = XSTR (vector[i].exp, 0);
+
+	    for (j = i + 1; j < nterms; j++)
+	      {
+		if (vector[j].exp != 0 && GET_CODE (vector[j].exp) == EQ_ATTR
+		    && XSTR (vector[i].exp, 0) == aname)
+		  {
+		    return common_term ? common_term : stable;
+		  }
+
+		if (vector[i].exp != 0 && GET_CODE (vector[i].exp) == NOT
+		    && GET_CODE (XEXP (vector[i].exp, 0)) == EQ_ATTR
+		    && XSTR (XEXP (vector[i].exp, 0), 0) == aname)
+		  vector[i].exp = 0;
+	      }
+	  }
+    }
+
+  /* Now build up rtl from the terms we didn't get rid of.  */
+  combined = unstable;
+  for (i = 0; i < nterms; i++)
+    if (vector[i].exp != 0 && ! vector[i].ignore)
+      {
+	if (combined == unstable)
+	  combined = vector[i].exp;
+	else
+	  combined = attr_rtx (code, vector[i].exp, combined);
+      }
+  if (common_term)
+    return attr_rtx (other_code, common_term, combined);
+  return combined;
+}
+
+rtx
+simplify_ands (exp1, exp2, exp3, insn_code, insn_index)
+     rtx exp1, exp2, exp3;
+     int insn_code, insn_index;
+{
+  return simplify_boolean (AND, exp1, exp2, exp3, false_rtx, true_rtx, 
+			   insn_code, insn_index);
+}
+
+rtx
+simplify_iors (exp1, exp2, exp3, insn_code, insn_index)
+     rtx exp1, exp2, exp3;
+     int insn_code, insn_index;
+{
+  return simplify_boolean (IOR, exp1, exp2, exp3, true_rtx, false_rtx,
+			   insn_code, insn_index);
+}
+
+#if 0
+
 /* This routine is called when an AND of a term with a tree of AND's is
    encountered.  If the term or its complement is present in the tree, it
    can be replaced with TRUE or FALSE, respectively.
@@ -2263,6 +2548,8 @@ simplify_or_tree (exp, pterm, insn_code, insn_index)
 
   return exp;
 }
+
+#endif
 
 /* Given an expression, see if it can be simplified for a particular insn
    code based on the values of other attributes being tested.  This can
@@ -2303,176 +2590,39 @@ simplify_test_exp (exp, insn_code, insn_index)
   switch (GET_CODE (exp))
     {
     case AND:
-      left = SIMPLIFY_TEST_EXP (XEXP (exp, 0), insn_code, insn_index);
-      right = SIMPLIFY_TEST_EXP (XEXP (exp, 1), insn_code, insn_index);
-
-      /* If either side is an IOR and we have (eq_attr "alternative" ..")
-	 present on both sides, apply the distributive law since this will
-	 yield simplifications.  */
-      if ((GET_CODE (left) == IOR || GET_CODE (right) == IOR)
-	  && compute_alternative_mask (left, IOR)
-	  && compute_alternative_mask (right, IOR))
+      exp = simplify_ands (XEXP (exp, 0), XEXP (exp, 1), 0,
+			   insn_code, insn_index);
+      if (GET_CODE (exp) == AND)
 	{
-	  if (GET_CODE (left) == IOR)
+	  left = XEXP (exp, 0);
+	  right = XEXP (exp, 1);
+
+	  /* If either side is an IOR and we have (eq_attr "alternative" ..")
+	     present on both sides, apply the distributive law since this will
+	     yield simplifications.  */
+	  if ((GET_CODE (left) == IOR || GET_CODE (right) == IOR)
+	      && compute_alternative_mask (left, IOR)
+	      && compute_alternative_mask (right, IOR))
 	    {
-	      rtx tem = left;
-	      left = right;
-	      right = tem;
-	    }
+	      if (GET_CODE (left) == IOR)
+		{
+		  rtx tem = left;
+		  left = right;
+		  right = tem;
+		}
 
-	  newexp = attr_rtx (IOR,
-			     attr_rtx (AND, left, XEXP (right, 0)),
-			     attr_rtx (AND, left, XEXP (right, 1)));
-
-	  return SIMPLIFY_TEST_EXP (newexp, insn_code, insn_index);
-	}
-
-      /* Try with the term on both sides.  */
-      right = simplify_and_tree (right, &left, insn_code, insn_index);
-      if (left == XEXP (exp, 0) && right == XEXP (exp, 1))
-	left = simplify_and_tree (left, &right, insn_code, insn_index);
-
-      if (left == false_rtx || right == false_rtx)
-	{
-	  obstack_free (rtl_obstack, spacer);
-	  return false_rtx;
-	}
-      else if (left == true_rtx)
-	{
-	  obstack_free (rtl_obstack, spacer);
-	  return SIMPLIFY_TEST_EXP (XEXP (exp, 1), insn_code, insn_index);
-	}
-      else if (right == true_rtx)
-	{
-	  obstack_free (rtl_obstack, spacer);
-	  return SIMPLIFY_TEST_EXP (XEXP (exp, 0), insn_code, insn_index);
-	}
-
-      /* See if all or all but one of the insn's alternatives are specified
-	 in this tree.  Optimize if so.  */
-
-      else if (insn_code >= 0
-	       && (GET_CODE (left) == AND
-		   || (GET_CODE (left) == NOT
-		       && GET_CODE (XEXP (left, 0)) == EQ_ATTR
-		       && XSTR (XEXP (left, 0), 0) == alternative_name)
-		   || GET_CODE (right) == AND
-		   || (GET_CODE (right) == NOT
-		       && GET_CODE (XEXP (right, 0)) == EQ_ATTR
-		       && XSTR (XEXP (right, 0), 0) == alternative_name)))
-	{
-	  i = compute_alternative_mask (exp, AND);
-	  if (i & ~insn_alternatives[insn_code])
-	    fatal ("Illegal alternative specified for pattern number %d",
-		   insn_index);
-
-	  /* If all alternatives are excluded, this is false. */
-	  i ^= insn_alternatives[insn_code];
-	  if (i == 0)
-	    return false_rtx;
-	  else if ((i & (i - 1)) == 0 && insn_alternatives[insn_code] > 1)
-	    {
-	      /* If just one excluded, AND a comparison with that one to the
-		 front of the tree.  The others will be eliminated by
-		 optimization.  We do not want to do this if the insn has one
-		 alternative and we have tested none of them!  */
-	      left = make_alternative_compare (i);
-	      right = simplify_and_tree (exp, &left, insn_code, insn_index);
-	      newexp = attr_rtx (AND, left, right);
+	      newexp = attr_rtx (IOR,
+				 attr_rtx (AND, left, XEXP (right, 0)),
+				 attr_rtx (AND, left, XEXP (right, 1)));
 
 	      return SIMPLIFY_TEST_EXP (newexp, insn_code, insn_index);
 	    }
 	}
-
-      if (left != XEXP (exp, 0) || right != XEXP (exp, 1))
-	{
-	  newexp = attr_rtx (AND, left, right);
-	  return SIMPLIFY_TEST_EXP (newexp, insn_code, insn_index);
-	}
-      break;
+      return exp;
 
     case IOR:
-      left = SIMPLIFY_TEST_EXP (XEXP (exp, 0), insn_code, insn_index);
-      right = SIMPLIFY_TEST_EXP (XEXP (exp, 1), insn_code, insn_index);
-
-      right = simplify_or_tree (right, &left, insn_code, insn_index);
-      if (left == XEXP (exp, 0) && right == XEXP (exp, 1))
-	left = simplify_or_tree (left, &right, insn_code, insn_index);
-
-      if (right == true_rtx || left == true_rtx)
-	{
-	  obstack_free (rtl_obstack, spacer);
-	  return true_rtx;
-	}
-      else if (left == false_rtx)
-	{
-	  obstack_free (rtl_obstack, spacer);
-	  return SIMPLIFY_TEST_EXP (XEXP (exp, 1), insn_code, insn_index);
-	}
-      else if (right == false_rtx)
-	{
-	  obstack_free (rtl_obstack, spacer);
-	  return SIMPLIFY_TEST_EXP (XEXP (exp, 0), insn_code, insn_index);
-	}
-
-      /* Test for simple cases where the distributive law is useful.  I.e.,
-	    convert (ior (and (x) (y))
-			 (and (x) (z)))
-	    to      (and (x)
-			 (ior (y) (z)))
-       */
-
-      else if (GET_CODE (left) == AND && GET_CODE (right) == AND
-	  && rtx_equal_p (XEXP (left, 0), XEXP (right, 0)))
-	{
-	  newexp = attr_rtx (IOR, XEXP (left, 1), XEXP (right, 1));
-
-	  left = XEXP (left, 0);
-	  right = newexp;
-	  newexp = attr_rtx (AND, left, right);
-	  return SIMPLIFY_TEST_EXP (newexp, insn_code, insn_index);
-	}
-
-      /* See if all or all but one of the insn's alternatives are specified
-	 in this tree.  Optimize if so.  */
-
-      else if (insn_code >= 0
-	  && (GET_CODE (left) == IOR
-	      || (GET_CODE (left) == EQ_ATTR
-		  && XSTR (left, 0) == alternative_name)
-	      || GET_CODE (right) == IOR
-	      || (GET_CODE (right) == EQ_ATTR
-		  && XSTR (right, 0) == alternative_name)))
-	{
-	  i = compute_alternative_mask (exp, IOR);
-	  if (i & ~insn_alternatives[insn_code])
-	    fatal ("Illegal alternative specified for pattern number %d",
-		   insn_index);
-
-	  /* If all alternatives are included, this is true. */
-	  i ^= insn_alternatives[insn_code];
-	  if (i == 0)
-	    return true_rtx;
-	  else if ((i & (i - 1)) == 0 && insn_alternatives[insn_code] > 1)
-	    {
-	      /* If just one excluded, IOR a comparison with that one to the
-		 front of the tree.  The others will be eliminated by
-		 optimization.  We do not want to do this if the insn has one
-		 alternative and we have tested none of them!  */
-	      left = make_alternative_compare (i);
-	      right = simplify_and_tree (exp, &left, insn_code, insn_index);
-	      newexp = attr_rtx (IOR, attr_rtx (NOT, left), right);
-
-	      return SIMPLIFY_TEST_EXP (newexp, insn_code, insn_index);
-	    }
-	}
-
-      if (left != XEXP (exp, 0) || right != XEXP (exp, 1))
-	{
-	  newexp = attr_rtx (IOR, left, right);
-	  return SIMPLIFY_TEST_EXP (newexp, insn_code, insn_index);
-	}
-      break;
+      return simplify_iors (XEXP (exp, 0), XEXP (exp, 1), 0,
+			    insn_code, insn_index);
 
     case NOT:
       if (GET_CODE (XEXP (exp, 0)) == NOT)
@@ -3244,22 +3394,7 @@ eliminate_known_true (known_true, exp, insn_code, insn_index)
 {
   rtx term;
 
-  known_true = SIMPLIFY_TEST_EXP (known_true, insn_code, insn_index);
-
-  if (GET_CODE (known_true) == AND)
-    {
-      exp = eliminate_known_true (XEXP (known_true, 0), exp,
-				  insn_code, insn_index);
-      exp = eliminate_known_true (XEXP (known_true, 1), exp,
-				  insn_code, insn_index);
-    }
-  else
-    {
-      term = known_true;
-      exp = simplify_and_tree (exp, &term, insn_code, insn_index);
-    }
-
-  return exp;
+  return simplify_ands (exp, 0, known_true, insn_code, insn_index);
 }
 
 /* Write out a series of tests and assignment statements to perform tests and
@@ -4014,6 +4149,7 @@ main (argc, argv)
 
   obstack_init (rtl_obstack);
   obstack_init (hash_obstack);
+  obstack_init (accum_obstack);
 
   if (argc <= 1)
     fatal ("No input file name.");
