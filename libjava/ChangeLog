@@ -1,3 +1,7 @@
+2001-10-08  Mark Wielaard  <mark@klomp.org>
+
+	* java/net/DatagramSocketImpl.java: Merge with Classpath
+
 2001-10-07  Mark Wielaard  <mark@klomp.org>
 
 	* java/net/URLDecoder.java: Remerge with Classpath
