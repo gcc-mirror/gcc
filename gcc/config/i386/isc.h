@@ -6,15 +6,20 @@
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \
   "%{!shlib:%{posix:%{pg:mcrtp1.o%s}%{!pg:%{p:mcrtp1.o%s}%{!p:crtp1.o%s}}}\
-   %{!posix:%{pg:mcrt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}}\
-   %{p:-L/lib/libp} %{pg:-L/lib/libp}}}\
-   %{shlib:%{posix:crtp1.o%s}%{!posix:crt1.o%s}} crtbegin.o%s"
+   %{Xp:%{pg:mcrtp1.o%s}%{!pg:%{p:mcrtp1.o%s}%{!p:crtp1.o%s}}}\
+   %{!posix:%{!Xp:%{pg:mcrt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}}\
+   %{p:-L/lib/libp} %{pg:-L/lib/libp}}}}\
+   %{shlib:%{Xp:crtp1.o%s}%{posix:crtp1.o%s}%{!posix:%{!Xp:crt1.o%s}}}\
+   crtbegin.o%s"
   
 #define ENDFILE_SPEC "crtend.o%s crtn.o%s"
 
 /* Library spec */
 #undef LIB_SPEC
-#define LIB_SPEC "%{shlib:-lc_s} %{posix:-lcposix} -lc -lg"
+#define LIB_SPEC "%{shlib:-lc_s} %{posix:-lcposix} %{Xp:-lcposix} -lc -lg"
+
+#undef CPP_SPEC
+#define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{Xp:-D_POSIX_SOURCE}"
 
 /* ISC 2.2 uses `char' for `wchar_t'.  */
 #undef WCHAR_TYPE
