@@ -1,3 +1,9 @@
+1999-05-15  Mark Kettenis  <kettenis@gnu.org>
+
+	* configure.in: Add shared library support for the Hurd
+	(*-*-gnu*).
+	* config/gnu.ml: New file.
+
 1999-05-12  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* configure.in (compiler_name): Don't do the skip-this-dir thing
