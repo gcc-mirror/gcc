@@ -5099,6 +5099,7 @@ main (argc, argv)
 	case arm_demangling:
 	case java_demangling:
 	case edg_demangling:
+	case gnat_demangling:
 	  valid_symbols = standard_symbol_characters ();
 	  break;
 	case hp_demangling:
