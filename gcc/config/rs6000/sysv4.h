@@ -766,7 +766,6 @@ extern int fixuplabelno;
 #define DBX_DEBUGGING_INFO 1
 
 #define TARGET_ENCODE_SECTION_INFO  rs6000_elf_encode_section_info
-#define TARGET_STRIP_NAME_ENCODING  rs6000_elf_strip_name_encoding
 #define TARGET_IN_SMALL_DATA_P  rs6000_elf_in_small_data_p
 #define TARGET_SECTION_TYPE_FLAGS  rs6000_elf_section_type_flags
 
@@ -775,25 +774,8 @@ extern int fixuplabelno;
 #define	RS6000_OUTPUT_BASENAME(FILE, NAME)	\
     assemble_name (FILE, NAME)
 
-/* This is how to output a reference to a user-level label named NAME.
-   `assemble_name' uses this.  */
-
-/* Override elfos.h definition.  */
-#undef	ASM_OUTPUT_LABELREF
-#define	ASM_OUTPUT_LABELREF(FILE,NAME)		\
-do {						\
-  const char *_name = NAME;			\
-  if (*_name == '@')				\
-    _name++;					\
- 						\
-  if (*_name == '*')				\
-    fprintf (FILE, "%s", _name + 1);		\
-  else						\
-    asm_fprintf (FILE, "%U%s", _name);		\
-} while (0)
-
-/* But, to make this work, we have to output the stabs for the function
-   name *first*...  */
+/* We have to output the stabs for the function name *first*, before
+   outputting its label.  */
 
 #define	DBX_FUNCTION_FIRST
 
@@ -1392,3 +1374,9 @@ ncrtn.o%s"
 
 /* Generate entries in .fixup for relocatable addresses.  */
 #define RELOCATABLE_NEEDS_FIXUP
+
+/* Define target-specific symbol_ref flags, beginning with
+   SYMBOL_REF_FLAG_DEP.  */
+#define SYMBOL_FLAG_SMALL_V4  (SYMBOL_FLAG_MACH_DEP << 0)
+#define SYMBOL_REF_SMALL_V4_P(RTX) \
+  ((SYMBOL_REF_FLAGS (RTX) & SYMBOL_FLAG_SMALL_V4) != 0)
