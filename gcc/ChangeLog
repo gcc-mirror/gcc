@@ -1,3 +1,8 @@
+Thu Jun  7 18:27:53 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* simplify-rtx.c (simplify_subreg):  Fix verification of
+	combined subreg.
+
 2001-06-08  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/mips.h (CPP_SPEC): Simplify .s/.S handling.
@@ -102,6 +107,7 @@ Thu Jun  7 16:17:40 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	documentation should be added to invoke.texi.  Avoid an overfull
 	hbox.
 
+>>>>>>> 1.10276
 Thu Jun  7 17:09:50 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (rest_of_compilation): Revert previous patch.

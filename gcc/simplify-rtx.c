@@ -2327,7 +2327,7 @@ simplify_subreg (outermode, op, innermode, byte)
 	}
 
       /* See whether resulting subreg will be paradoxical.  */
-      if (GET_MODE_SIZE (innermostmode) < GET_MODE_SIZE (outermode))
+      if (GET_MODE_SIZE (innermostmode) > GET_MODE_SIZE (outermode))
 	{
 	  /* In nonparadoxical subregs we can't handle negative offsets.  */
 	  if (final_offset < 0)
