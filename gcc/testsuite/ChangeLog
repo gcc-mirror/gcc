@@ -1,3 +1,8 @@
+2002-10-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7478
+	* g++.dg/template/ref1.C: New test.
+
 2002-10-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/execute/20020720-1.x: Don't XFAIL for mips.
