@@ -381,8 +381,13 @@ write_rbrac ()
   char **rptr;
 
   if (required_unseen_count)
-    fprintf (outf,
-	     "#if defined(__cplusplus) || defined(__USE_FIXED_PROTOTYPES__)\n");
+    {
+      fprintf (outf,
+	"#if defined(__cplusplus) || defined(__USE_FIXED_PROTOTYPES__)\n");
+#ifdef NO_IMPLICIT_EXTERN_C
+      fprintf (outf, "extern \"C\" {\n");
+#endif
+    }
 
   /* Now we print out prototypes for those functions that we haven't seen. */
   for (rptr = required_functions; *rptr; rptr++)
@@ -410,8 +415,13 @@ write_rbrac ()
 	fprintf (outf, "#endif\n");
     }
   if (required_unseen_count)
-    fprintf (outf,
-	     "#endif /* defined(__cplusplus) || defined(__USE_FIXED_PROTOTYPES__*/\n");
+    {
+#ifdef NO_IMPLICIT_EXTERN_C
+      fprintf (outf, "}\n");
+#endif
+      fprintf (outf,
+	"#endif /* defined(__cplusplus) || defined(__USE_FIXED_PROTOTYPES__*/\n");
+    }
 
   switch (special_file_handling)
     {
