@@ -201,6 +201,10 @@
 #   define __STL_NO_DRAND48
 # endif
 
+# if defined(__CYGWIN__)
+#   define __STL_NO_DRAND48
+# endif
+
 # if defined(_MSC_VER)
 #   define __STL_NO_DRAND48
 #   define __STL_NEED_TYPENAME
