@@ -67,7 +67,14 @@ public class InflaterInputStream extends FilterInputStream
       fill ();
     if (inf.needsDictionary())
       return -1;
-    return inf.inflate(buf, off, len);
+    try
+      {
+	return inf.inflate(buf, off, len);
+      }
+    catch (DataFormatException dfe)
+      {
+	throw new ZipException (dfe.getMessage());
+      }
   }
 
   public long skip (long n) throws IOException
