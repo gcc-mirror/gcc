@@ -149,28 +149,45 @@ must also use @samp{-pedantic}.  @xref{Invocation}.
 Most C preprocessor features are inactive unless you give specific
 directives to request their use.  (Preprocessing directives are lines
 starting with a @samp{#} token, possibly preceded by whitespace;
-@pxref{Directives}).  However, there are three transformations that the
+@pxref{Directives}).  However, there are four transformations that the
 preprocessor always makes on all the input it receives, even in the
-absence of directives.
+absence of directives.  These are, in order:
 
-@itemize @bullet
+@enumerate
 @item
 Trigraphs, if enabled, are replaced with the character they represent.
-Conceptually, this is the very first action undertaken, just before
-backslash-newline deletion.
 
 @item
 Backslash-newline sequences are deleted, no matter where.  This
 feature allows you to break long lines for cosmetic purposes without
 changing their meaning.
 
+Recently, the non-traditional preprocessor has relaxed its treatment of
+escaped newlines.  Previously, the newline had to immediately follow a
+backslash.  The current implementation allows whitespace in the form of
+spaces, horizontal and vertical tabs, and form feeds between the
+backslash and the subsequent newline.  The preprocessor issues a
+warning, but treats it as a valid escaped newline and combines the two
+lines to form a single logical line.  This works within comments and
+tokens, including multi-line strings, as well as between tokens.
+Comments are @emph{not} treated as whitespace for the purposes of this
+relaxation, since they have not yet been replaced with spaces.
+
 @item
-All C comments are replaced with single spaces.
+All comments are replaced with single spaces.
 
 @item
 Predefined macro names are replaced with their expansions
 (@pxref{Predefined}).
-@end itemize
+@end enumerate
+
+For end-of-line indicators, any of \n, \r\n, \n\r and \r are recognised,
+and treated as ending a single line.  As a result, if you mix these in a
+single file you might get incorrect line numbering, because the
+preprocessor would interpret the two-character versions as ending just
+one line.  Previous implementations would only handle UNIX-style \n
+correctly, so DOS-style \r\n would need to be passed through a filter
+first.
 
 The first three transformations are done @emph{before} all other parsing
 and before preprocessing directives are recognized.  Thus, for example,
@@ -199,7 +216,7 @@ bar"
 
 is equivalent to @code{"foo\bar"}, not to @code{"foo\\bar"}.  To avoid
 having to worry about this, do not use the GNU extension which permits
-multiline strings.  Instead, use string constant concatenation:
+multi-line strings.  Instead, use string constant concatenation:
 
 @example
    "foo\\"
@@ -208,24 +225,23 @@ multiline strings.  Instead, use string constant concatenation:
 
 Your program will be more portable this way, too.
 
-There are a few exceptions to all three transformations.
+There are a few things to note about the above four transformations.
 
 @itemize @bullet
 @item
 Comments and predefined macro names (or any macro names, for that
 matter) are not recognized inside the argument of an @samp{#include}
-directive, whether it is delimited with quotes or with @samp{<} and
+directive, when it is delimited with quotes or with @samp{<} and
 @samp{>}.
 
 @item
 Comments and predefined macro names are never recognized within a
-character or string constant.  (Strictly speaking, this is the rule,
-not an exception, but it is worth noting here anyway.)
+character or string constant.
 
 @item
 ISO ``trigraphs'' are converted before backslash-newlines are deleted.
 If you write what looks like a trigraph with a backslash-newline inside,
-the backslash-newline is deleted as usual, but it is then too late to
+the backslash-newline is deleted as usual, but it is too late to
 recognize the trigraph.
 
 This is relevant only if you use the @samp{-trigraphs} option to enable
@@ -2787,7 +2803,7 @@ of the preprocessor may subtly change such behavior or even remove the
 feature altogether.
 
 Preservation of the form of whitespace between tokens is unlikely to
-change from current behavior (see @ref{Output}), but you are advised not
+change from current behavior (@ref{Output}), but you are advised not
 to rely on it.
 
 The following are undocumented and subject to change:-
@@ -2795,25 +2811,27 @@ The following are undocumented and subject to change:-
 @itemize @bullet
 
 @item Interpretation of the filename between @samp{<} and @samp{>} tokens
- resulting from a macro-expanded @samp{#include} directive
+ resulting from a macro-expanded filename in a @samp{#include} directive
 
 The text between the @samp{<} and @samp{>} is taken literally if given
-directly within a @samp{#include} or similar directive.  If a directive
-of this form is obtained through macro expansion, however, behavior like
-preservation of whitespace, and interpretation of backslashes and quotes
+directly within a @samp{#include} or similar directive.  If the
+angle-bracketed filename is obtained through macro expansion, however,
+preservation of whitespace and interpretation of backslashes and quotes
 is undefined. @xref{Include Syntax}.
 
 @item Precedence of ## operators with respect to each other
 
-It is not defined whether a sequence of ## operators are evaluated
-left-to-right, right-to-left or indeed in a consistent direction at all.
-An example of where this might matter is pasting the arguments @samp{1},
-@samp{e} and @samp{-2}.  This would be fine for left-to-right pasting,
-but right-to-left pasting would produce an invalid token @samp{e-2}.
+Whether a sequence of ## operators is evaluated left-to-right,
+right-to-left or indeed in a consistent direction at all is not
+specified.  An example of where this might matter is pasting the
+arguments @samp{1}, @samp{e} and @samp{-2}.  This would be fine for
+left-to-right pasting, but right-to-left pasting would produce an
+invalid token @samp{e-2}.  It is possible to guarantee precedence by
+suitable use of nested macros.
 
 @item Precedence of # operator with respect to the ## operator
 
-It is undefined which of these two operators is evaluated first.
+Which of these two operators is evaluated first is not specified.
 
 @end itemize
 
@@ -3135,7 +3153,9 @@ comment, or whenever a backslash-newline appears in a @samp{//} comment.
 @item -Wtrigraphs
 @findex -Wtrigraphs
 Warn if any trigraphs are encountered.  This option used to take effect
-only if @samp{-trigraphs} was also specified, but now works independently.
+only if @samp{-trigraphs} was also specified, but now works
+independently.  Warnings are not given for trigraphs within comments, as
+we feel this is obnoxious.
 
 @item -Wwhite-space
 @findex -Wwhite-space
