@@ -423,6 +423,11 @@ extern void i386_pe_unique_section PARAMS ((TREE, int));
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START " #"
 
+/* DWARF2 Unwinding doesn't work with exception handling yet.  To make it
+   work, we need to build a libgcc_s.dll, and dcrt0.o should be changed to
+   call __register_frame_info/__deregister_frame_info.  */
+#define DWARF2_UNWIND_INFO 0
+
 /* Don't assume anything about the header files.  */
 #define NO_IMPLICIT_EXTERN_C
 
