@@ -1,3 +1,8 @@
+2001-04-13  Alan Modra  <alan@linuxcare.com.au>
+
+	* pa.h (GO_IF_LEGITIMATE_ADDRESS): Disallow PIC LO_SUM
+	fp mode addresses.
+
 2001-04-13  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* Makefile.in (CFLAGS, BOOT_CFLAGS): Partly revert 2000-10-27 patch.

@@ -1331,7 +1331,11 @@ extern int may_call_alloca;
   else if (GET_CODE (X) == LO_SUM			\
 	   && GET_CODE (XEXP (X, 0)) == REG             \
 	   && REG_OK_FOR_BASE_P (XEXP (X, 0))		\
-	   && GET_CODE (XEXP (X, 1)) == UNSPEC)		\
+	   && GET_CODE (XEXP (X, 1)) == UNSPEC		\
+	   && (TARGET_SOFT_FLOAT			\
+	       || TARGET_PA_20				\
+	       || ((MODE) != SFmode			\
+		   && (MODE) != DFmode)))		\
     goto ADDR;						\
 }
 
