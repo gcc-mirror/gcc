@@ -1,3 +1,13 @@
+2001-02-03  Danny Smith <dannysmith@users.sourceforge.net>
+
+	* gthr-win32.h: Protect against conflicting typedef for BOOL in windows
+	headers and libobjc headers.
+
+2002-02-03  Mumit Khan  <khan@nanotech.wisc.edu>
+
+	* gthr-win32.h (__mingwthr_key_dtor): Use extern "C" linkage for C++.
+	(_mingw.h): Remove duplicate include.
+
 2002-02-03  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config.gcc: Set cpu_type to m68k for 68010, as well.
