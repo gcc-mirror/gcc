@@ -1,3 +1,9 @@
+2004-10-31  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/15172
+	* typeck2.c (store_init_value): Use split_nonconstant_init even
+	for types that require construction.
+	
 2004-10-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17132
