@@ -1740,7 +1740,7 @@ tree-optimize.o : tree-optimize.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(GGC_H) output.h diagnostic.h errors.h $(FLAGS_H) \
    $(TIMEVAR_H) $(TM_H) coretypes.h $(TREE_DUMP_H) toplev.h function.h \
    langhooks.h $(FLAGS_H) $(CGRAPH_H) tree-inline.h tree-mudflap.h $(GGC_H) \
-   $(CGRAPH_H) tree-pass.h
+   $(CGRAPH_H) tree-pass.h $(CFGLOOP_H)
 c-gimplify.o : c-gimplify.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) errors.h \
    $(C_TREE_H) $(C_COMMON_H) diagnostic.h $(TREE_GIMPLE_H) varray.h $(FLAGS_H) \
    langhooks.h toplev.h rtl.h $(TREE_FLOW_H) langhooks-def.h \

@@ -1617,6 +1617,6 @@ vectorize_loops (struct loops *loops)
     }
 
   rewrite_into_ssa (false);
-  rewrite_into_loop_closed_ssa (); /* FORNOW */
+  rewrite_into_loop_closed_ssa (NULL); /* FORNOW */
   bitmap_clear (vars_to_rename);
 }

@@ -134,7 +134,7 @@ copy_loop_headers (void)
   loops = loop_optimizer_init (dump_file);
   if (!loops)
     return;
-  rewrite_into_loop_closed_ssa ();
+  rewrite_into_loop_closed_ssa (NULL);
   
   /* We do not try to keep the information about irreducible regions
      up-to-date.  */

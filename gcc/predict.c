@@ -695,7 +695,10 @@ predict_loops (struct loops *loops_info, bool rtlsimpleloops)
     }
 
   if (!rtlsimpleloops)
-    scev_finalize ();
+    {
+      scev_finalize ();
+      current_loops = NULL;
+    }
 }
 
 /* Attempt to predict probabilities of BB outgoing edges using local

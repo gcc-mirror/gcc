@@ -1,3 +1,33 @@
+2005-03-10  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* Makefile.in (tree-optimize.o): Add CFGLOOP_H dependence.
+	* cfgloop.c (flow_loop_nodes_find): Export.
+	* cfgloop.h (flow_loop_nodes_find, fix_loop_structure):
+	Declare.
+	* cfgloopmanip.c (fix_loop_structure): New function.
+	* predict.c (predict_loops): Clean up the loops information.
+	* tree-cfg.c (cleanup_tree_cfg_loop): New function.
+	(tree_can_merge_blocks_p, remove_bb, tree_forwarder_block_p): Respect
+	loop structure.
+	* tree-flow.h (cleanup_tree_cfg_loop): Declare.
+	(rewrite_into_loop_closed_ssa): Declaration changed.
+	* tree-loop-linear.c (linear_transform_loops): Add argument to
+	rewrite_into_loop_closed_ssa call.
+	* tree-ssa-loop-ch.c (copy_loop_headers): Ditto.
+	* tree-ssa-loop-im.c (move_computations): Ditto.
+	* tree-ssa-loop.c (tree_loop_optimizer_init): Ditto.
+	* tree-vectorizer.c (vectorize_loops): Ditto.
+	* tree-optimize.c: Include cfgloop.h.
+	(execute_todo): Choose whether to call cleanup_tree_cfg or
+	cleanup_tree_cfg_loop.
+	* tree-ssa-loop-ivcanon.c (canonicalize_loop_induction_variables,
+	(tree_unroll_loops_completely): Enable cleanup_tree_cfg_loop call.
+	* tree-ssa-loop-unswitch.c (tree_ssa_unswitch_loops): Enable
+	cleanup_tree_cfg_loop call.
+	* tree-ssa-loop-manip.c (find_uses_to_rename_bb): New function.
+	(find_uses_to_rename, rewrite_into_loop_closed_ssa): Support
+	work on part of cfg.
+
 2005-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/20314
