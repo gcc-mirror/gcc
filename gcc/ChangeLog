@@ -1,3 +1,17 @@
+2003-05-05  Aldy Hernandez  <aldyh@redhat.com>
+
+        * testsuite/gcc.dg/20030505.c: New.
+
+        * c-typeck.c (convert_for_assignment): Opaque pointers can
+        interconvert.
+
+        * config/rs6000/rs6000.c: New global opaque_p_V2SI_type_node.
+        (rs6000_init_builtins): Initialize opaque_p_V2SI_type_node.
+        (spe_init_builtins): Rename all pv2si_type_node to
+        opaque_p_V2SI_type_node.
+        Remove declaration of pv2si_type_node.
+        (is_ev64_opaque_type): Accept opaque pointers.
+
 2003-05-05  Geoffrey Keating  <geoffk@apple.com>
 
 	* toplev.c (check_global_declarations): Suppress not-used warning
