@@ -709,7 +709,7 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
      tree clobbers;
 {
   if (TREE_CHAIN (string))
-    combine_strings (string);
+    string = combine_strings (string);
 
   if (processing_template_decl)
     {
@@ -721,7 +721,8 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
   else
     {
       emit_line_note (input_filename, lineno);
-      if (output_operands != NULL_TREE)
+      if (output_operands != NULL_TREE || input_operands != NULL_TREE
+	  || clobbers != NULL_TREE)
 	{
 	  if (cv_qualifier != NULL_TREE
 	      && cv_qualifier != ridpointers[(int) RID_VOLATILE])
