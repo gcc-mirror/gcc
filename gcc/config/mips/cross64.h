@@ -1,8 +1,6 @@
 /* Configuration for an Irix 5 host and Irix 6 target using SGI's cross64
    package.  */
 
-#include "mips/iris6.h"
-
 #define STANDARD_INCLUDE_DIR "/usr/cross64/usr/include"
 #undef MD_EXEC_PREFIX
 #define MD_EXEC_PREFIX "/usr/cross64/usr/bin/"
