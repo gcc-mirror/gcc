@@ -1,3 +1,8 @@
+2000-11-09  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (maybe_commonize_var): Set DECL_UNINLINABLE for statics
+	in inlines.
+
 2000-11-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decl.c (grokdeclarator, save_function_data): Use memcpy, not bcopy.
@@ -28,10 +33,10 @@
 	
 2000-11-07  Eric Christopher  <echristo@redhat.com>
 
-        * decl.c (init_decl_processing): Change definition of
-        __wchar_t to wchar_t.  Remove artificial declaration of
-        wchar_t.
-        * lex.c: Change instances of __wchar_t to wchar_t.
+	* decl.c (init_decl_processing): Change definition of
+	__wchar_t to wchar_t.  Remove artificial declaration of
+	wchar_t.
+	* lex.c: Change instances of __wchar_t to wchar_t.
 
 2000-11-09  Nathan Sidwell  <nathan@codesourcery.com>
 
