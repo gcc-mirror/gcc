@@ -6456,6 +6456,20 @@ cp_parser_declaration_seq_opt (parser)
 	  continue;
 	}
 
+      /* The C lexer modifies PENDING_LANG_CHANGE when it wants the
+	 parser to enter or exit implict `extern "C"' blocks.  */
+      while (pending_lang_change > 0)
+	{
+	  push_lang_context (lang_name_c);
+	  --pending_lang_change;
+	}
+      while (pending_lang_change < 0)
+	{
+	  pop_lang_context ();
+	  ++pending_lang_change;
+	}
+
+      /* Parse the declaration itself.  */
       cp_parser_declaration (parser);
     }
 }
