@@ -173,12 +173,9 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 #define TARGET_SUPPORT_ARCH	(target_flags & MASK_SUPPORT_ARCH)
 
 /* These are for target os support and cannot be changed at runtime.  */
-#ifndef TARGET_WINDOWS_NT
-#define TARGET_WINDOWS_NT 0
-#endif
-#ifndef TARGET_OPEN_VMS
-#define TARGET_OPEN_VMS 0
-#endif
+#define TARGET_ABI_WINDOWS_NT 0
+#define TARGET_ABI_OPEN_VMS 0
+#define TARGET_ABI_OSF (!TARGET_ABI_WINDOWS_NT && !TARGET_ABI_OPEN_VMS)
 
 #ifndef TARGET_AS_CAN_SUBTRACT_LABELS
 #define TARGET_AS_CAN_SUBTRACT_LABELS TARGET_GAS
@@ -2147,7 +2144,7 @@ literal_section ()						\
 /* This is how to output an element of a case-vector that is relative.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
-  fprintf (FILE, "\t.%s $L%d\n", TARGET_WINDOWS_NT ? "long" : "gprel32", \
+  fprintf (FILE, "\t.%s $L%d\n", TARGET_ABI_WINDOWS_NT ? "long" : "gprel32", \
 	   (VALUE))
 
 /* This is how to output an assembler line
@@ -2197,7 +2194,7 @@ do {									\
   const char *fn_name = XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0);	\
   int reg;								\
 									\
-  if (! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT)				\
+  if (TARGET_ABI_OSF)							\
     fprintf (FILE, "\tldgp $29,0($27)\n");				\
 									\
   /* Mark end of prologue.  */						\
