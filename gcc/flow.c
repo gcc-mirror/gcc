@@ -761,7 +761,7 @@ update_life_info_in_dirty_blocks (extent, prop_flags)
      enum update_life_extent extent;
      int prop_flags;
 {
-  sbitmap update_life_blocks = sbitmap_alloc (n_basic_blocks);
+  sbitmap update_life_blocks = sbitmap_alloc (last_basic_block);
   int n = 0;
   basic_block bb;
   int retval = 0;
@@ -797,6 +797,7 @@ free_basic_block_vars (keep_head_end_p)
 	  VARRAY_FREE (basic_block_info);
 	}
       n_basic_blocks = 0;
+      last_basic_block = 0;
 
       ENTRY_BLOCK_PTR->aux = NULL;
       ENTRY_BLOCK_PTR->global_live_at_end = NULL;

@@ -2729,7 +2729,7 @@ split_all_insns (upd_life)
   int changed;
   basic_block bb;
 
-  blocks = sbitmap_alloc (n_basic_blocks);
+  blocks = sbitmap_alloc (last_basic_block);
   sbitmap_zero (blocks);
   changed = 0;
 
@@ -3013,7 +3013,7 @@ peephole2_optimize (dump_file)
   live = INITIALIZE_REG_SET (rs_heads[i]);
 
 #ifdef HAVE_conditional_execution
-  blocks = sbitmap_alloc (n_basic_blocks);
+  blocks = sbitmap_alloc (last_basic_block);
   sbitmap_zero (blocks);
   changed = false;
 #else

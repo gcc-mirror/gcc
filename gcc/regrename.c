@@ -1729,7 +1729,7 @@ copyprop_hardreg_forward ()
 
   need_refresh = false;
 
-  all_vd = xmalloc (sizeof (struct value_data) * n_basic_blocks);
+  all_vd = xmalloc (sizeof (struct value_data) * last_basic_block);
 
   FOR_EACH_BB (bb)
     {

@@ -1240,7 +1240,7 @@ init_resource_info (epilogue_insn)
   /* Allocate and initialize the tables used by mark_target_live_regs.  */
   target_hash_table = (struct target_info **)
     xcalloc (TARGET_HASH_PRIME, sizeof (struct target_info *));
-  bb_ticks = (int *) xcalloc (n_basic_blocks, sizeof (int));
+  bb_ticks = (int *) xcalloc (last_basic_block, sizeof (int));
 }
 
 /* Free up the resources allcated to mark_target_live_regs ().  This

@@ -295,8 +295,8 @@ make_edges (label_value_list, min, max, update_p)
      amount of time searching the edge lists for duplicates.  */
   if (forced_labels || label_value_list)
     {
-      edge_cache = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
-      sbitmap_vector_zero (edge_cache, n_basic_blocks);
+      edge_cache = sbitmap_vector_alloc (last_basic_block, last_basic_block);
+      sbitmap_vector_zero (edge_cache, last_basic_block);
 
       if (update_p)
         FOR_BB_BETWEEN (bb, min, max->next_bb, next_bb)

@@ -1712,9 +1712,9 @@ verify_flow_info ()
   basic_block bb, last_bb_seen;
 
   bb_info = (basic_block *) xcalloc (max_uid, sizeof (basic_block));
-  last_visited = (basic_block *) xcalloc (n_basic_blocks + 2,
+  last_visited = (basic_block *) xcalloc (last_basic_block + 2,
 					  sizeof (basic_block));
-  edge_checksum = (size_t *) xcalloc (n_basic_blocks + 2, sizeof (size_t));
+  edge_checksum = (size_t *) xcalloc (last_basic_block + 2, sizeof (size_t));
 
   /* Check bb chain & numbers.  */
   last_bb_seen = ENTRY_BLOCK_PTR;
@@ -2317,7 +2317,7 @@ purge_all_dead_edges (update_life_p)
 
   if (update_life_p)
     {
-      blocks = sbitmap_alloc (n_basic_blocks);
+      blocks = sbitmap_alloc (last_basic_block);
       sbitmap_zero (blocks);
     }
 

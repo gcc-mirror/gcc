@@ -403,8 +403,8 @@ build_control_flow (edge_list)
     }
 
   /* ??? We can kill these soon.  */
-  in_edges = (int *) xcalloc (n_basic_blocks, sizeof (int));
-  out_edges = (int *) xcalloc (n_basic_blocks, sizeof (int));
+  in_edges = (int *) xcalloc (last_basic_block, sizeof (int));
+  out_edges = (int *) xcalloc (last_basic_block, sizeof (int));
   edge_table = (haifa_edge *) xcalloc (num_edges, sizeof (haifa_edge));
 
   nr_edges = 0;
@@ -661,23 +661,23 @@ find_rgns (edge_list, dom)
      STACK, SP and DFS_NR are only used during the first traversal.  */
 
   /* Allocate and initialize variables for the first traversal.  */
-  max_hdr = (int *) xmalloc (n_basic_blocks * sizeof (int));
-  dfs_nr = (int *) xcalloc (n_basic_blocks, sizeof (int));
+  max_hdr = (int *) xmalloc (last_basic_block * sizeof (int));
+  dfs_nr = (int *) xcalloc (last_basic_block, sizeof (int));
   stack = (int *) xmalloc (nr_edges * sizeof (int));
 
-  inner = sbitmap_alloc (n_basic_blocks);
+  inner = sbitmap_alloc (last_basic_block);
   sbitmap_ones (inner);
 
-  header = sbitmap_alloc (n_basic_blocks);
+  header = sbitmap_alloc (last_basic_block);
   sbitmap_zero (header);
 
   passed = sbitmap_alloc (nr_edges);
   sbitmap_zero (passed);
 
-  in_queue = sbitmap_alloc (n_basic_blocks);
+  in_queue = sbitmap_alloc (last_basic_block);
   sbitmap_zero (in_queue);
 
-  in_stack = sbitmap_alloc (n_basic_blocks);
+  in_stack = sbitmap_alloc (last_basic_block);
   sbitmap_zero (in_stack);
 
   for (i = 0; i < n_basic_blocks; i++)
@@ -1197,8 +1197,8 @@ compute_trg_info (trg)
 	     add the TO block to the update block list.  This list can end
 	     up with a lot of duplicates.  We need to weed them out to avoid
 	     overrunning the end of the bblst_table.  */
-	  update_blocks = (char *) alloca (n_basic_blocks);
-	  memset (update_blocks, 0, n_basic_blocks);
+	  update_blocks = (char *) alloca (last_basic_block);
+	  memset (update_blocks, 0, last_basic_block);
 
 	  update_idx = 0;
 	  for (j = 0; j < el.nr_members; j++)
@@ -2890,8 +2890,8 @@ init_regions ()
   nr_regions = 0;
   rgn_table = (region *) xmalloc ((n_basic_blocks) * sizeof (region));
   rgn_bb_table = (int *) xmalloc ((n_basic_blocks) * sizeof (int));
-  block_to_bb = (int *) xmalloc ((n_basic_blocks) * sizeof (int));
-  containing_rgn = (int *) xmalloc ((n_basic_blocks) * sizeof (int));
+  block_to_bb = (int *) xmalloc ((last_basic_block) * sizeof (int));
+  containing_rgn = (int *) xmalloc ((last_basic_block) * sizeof (int));
 
   /* Compute regions for scheduling.  */
   if (reload_completed
@@ -2912,7 +2912,7 @@ init_regions ()
 	  sbitmap *dom;
 	  struct edge_list *edge_list;
 
-	  dom = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
+	  dom = sbitmap_vector_alloc (last_basic_block, last_basic_block);
 
 	  /* The scheduler runs after flow; therefore, we can't blindly call
 	     back into find_basic_blocks since doing so could invalidate the
@@ -2953,7 +2953,7 @@ init_regions ()
 
   if (CHECK_DEAD_NOTES)
     {
-      blocks = sbitmap_alloc (n_basic_blocks);
+      blocks = sbitmap_alloc (last_basic_block);
       deaths_in_region = (int *) xmalloc (sizeof (int) * nr_regions);
       /* Remove all death notes from the subroutine.  */
       for (rgn = 0; rgn < nr_regions; rgn++)
@@ -3021,12 +3021,12 @@ schedule_insns (dump_file)
   compute_bb_for_insn (get_max_uid ());
 
   any_large_regions = 0;
-  large_region_blocks = sbitmap_alloc (n_basic_blocks);
+  large_region_blocks = sbitmap_alloc (last_basic_block);
   sbitmap_zero (large_region_blocks);
   FOR_EACH_BB (bb)
     SET_BIT (large_region_blocks, bb->index);
 
-  blocks = sbitmap_alloc (n_basic_blocks);
+  blocks = sbitmap_alloc (last_basic_block);
   sbitmap_zero (blocks);
 
   /* Update life information.  For regions consisting of multiple blocks

@@ -412,8 +412,8 @@ estimate_probability (loops_info)
   basic_block bb;
   int i;
 
-  dominators = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
-  post_dominators = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
+  dominators = sbitmap_vector_alloc (last_basic_block, last_basic_block);
+  post_dominators = sbitmap_vector_alloc (last_basic_block, last_basic_block);
   calculate_dominance_info (NULL, dominators, CDI_DOMINATORS);
   calculate_dominance_info (NULL, post_dominators, CDI_POST_DOMINATORS);
 
@@ -756,7 +756,7 @@ process_note_prediction (bb, heads, dominators, post_dominators, pred, flags)
 
   /* Now find the edge that leads to our branch and aply the prediction.  */
 
-  if (y == n_basic_blocks)
+  if (y == last_basic_block)
     return;
   for (e = BASIC_BLOCK (y)->succ; e; e = e->succ_next)
     if (e->dest->index >= 0
@@ -841,15 +841,15 @@ note_prediction_to_br_prob ()
   add_noreturn_fake_exit_edges ();
   connect_infinite_loops_to_exit ();
 
-  dominators = xmalloc (sizeof (int) * n_basic_blocks);
-  memset (dominators, -1, sizeof (int) * n_basic_blocks);
-  post_dominators = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
+  dominators = xmalloc (sizeof (int) * last_basic_block);
+  memset (dominators, -1, sizeof (int) * last_basic_block);
+  post_dominators = sbitmap_vector_alloc (last_basic_block, last_basic_block);
   calculate_dominance_info (NULL, post_dominators, CDI_POST_DOMINATORS);
   calculate_dominance_info (dominators, NULL, CDI_DOMINATORS);
 
-  heads = xmalloc (sizeof (int) * n_basic_blocks);
-  memset (heads, -1, sizeof (int) * n_basic_blocks);
-  heads[ENTRY_BLOCK_PTR->next_bb->index] = n_basic_blocks;
+  heads = xmalloc (sizeof (int) * last_basic_block);
+  memset (heads, -1, sizeof (int) * last_basic_block);
+  heads[ENTRY_BLOCK_PTR->next_bb->index] = last_basic_block;
 
   /* Process all prediction notes.  */
 
