@@ -149,34 +149,41 @@ abstract_virtuals_error (tree decl, tree type)
 	return 0;
 
       if (TREE_CODE (decl) == VAR_DECL)
-	error ("cannot declare variable `%D' to be of type `%T'",
-		    decl, type);
+	cp_error_at ("cannot declare variable `%+D' to be of abstract "
+		     "type `%T'", decl, type);
       else if (TREE_CODE (decl) == PARM_DECL)
-	error ("cannot declare parameter `%D' to be of type `%T'",
-		    decl, type);
+	cp_error_at ("cannot declare parameter `%+D' to be of abstract "
+		     "type `%T'", decl, type);
       else if (TREE_CODE (decl) == FIELD_DECL)
-	error ("cannot declare field `%D' to be of type `%T'",
-		    decl, type);
+	cp_error_at ("cannot declare field `%+D' to be of abstract "
+		     "type `%T'", decl, type);
       else if (TREE_CODE (decl) == FUNCTION_DECL
 	       && TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
-	error ("invalid return type for member function `%#D'", decl);
+	cp_error_at ("invalid abstract return type for member function `%+#D'",
+		     decl);
       else if (TREE_CODE (decl) == FUNCTION_DECL)
-	error ("invalid return type for function `%#D'", decl);
+	cp_error_at ("invalid abstract return type for function `%+#D'", 
+		     decl);
+      else
+	cp_error_at ("invalid abstract type for `%+D'", decl);
     }
   else
-    error ("cannot allocate an object of type `%T'", type);
+    error ("cannot allocate an object of abstract type `%T'", type);
 
   /* Only go through this once.  */
   if (TREE_PURPOSE (u) == NULL_TREE)
     {
       TREE_PURPOSE (u) = error_mark_node;
 
-      error ("  because the following virtual functions are abstract:");
+      inform ("%J  because the following virtual functions are pure "
+	      "within `%T':", TYPE_MAIN_DECL (type), type);
+
       for (tu = u; tu; tu = TREE_CHAIN (tu))
-	cp_error_at ("\t%#D", TREE_VALUE (tu));
+	inform ("%J\t%#D", TREE_VALUE (tu), TREE_VALUE (tu));
     }
   else
-    error ("  since type `%T' has abstract virtual functions", type);
+    inform ("%J  since type `%T' has pure virtual functions", 
+	    TYPE_MAIN_DECL (type), type);
 
   return 1;
 }

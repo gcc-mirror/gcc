@@ -1,3 +1,8 @@
+2004-06-11  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* g++.old-deja/g++.robertl/eb4.C: Adjust error markers.
+	* g++.old-deja/g++.other/decl3.C: Likewise.
+
 2004-06-10  Brian Booth  <bbooth@redhat.com>
 
 	* gcc.dg/tree-ssa/20031015-1.c: Scan for

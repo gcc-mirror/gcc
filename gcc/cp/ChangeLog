@@ -1,3 +1,8 @@
+2004-06-11  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* typeck2.c (abstract_virtual_errors): Reword diagnostics, make them
+	appear at the correct location.
+
 2004-06-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/15875

@@ -6,8 +6,8 @@
 
 // We should not allow arrays of abstract type. [class.abstract/2]
 
-struct cow_t {
-  virtual void f()=0; // { dg-error "" } abstract
+struct cow_t { // { dg-error "" } note
+  virtual void f()=0; // { dg-error "" } pure
 };
 
 
