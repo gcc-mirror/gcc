@@ -1,3 +1,8 @@
+2005-01-27  Alan Modra  <amodra@bigpond.net.au>
+
+	* unwind-dw2.c (execute_stack_op): Add missing cases for
+	DW_OP_shl, DW_OP_shr, DW_OP_shra, DW_OP_xor.
+
 2005-01-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config.gcc (Obsolete configurations): Remove 'dummy', add
