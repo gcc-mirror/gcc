@@ -1,3 +1,8 @@
+Wed Jul 12 13:24:30 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* pa/xm-pa64.h (NO_SYS_SIGLIST): Kill.
+	* d30v/xm-d30v.h (NO_SYS_SIGLIST): Kill.
+
 2000-07-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-decl.c (define_label): Warn about identifier conflicts with

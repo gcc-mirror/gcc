@@ -124,9 +124,6 @@
 /* Define this if your system is POSIX.1 compliant.  */
 /* #define POSIX */
 
-/* Define this if your system *does not* provide the variable `sys_siglist'.  */
-/* #define NO_SYS_SIGLIST */
-
 /* Define this if your system has the variable `sys_siglist', and there is
    already a declaration of it in the system header files.  */
 /* #define DONT_DECLARE_SYS_SIGLIST */
