@@ -43,8 +43,12 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.text.CharacterIterator;
 import java.text.AttributedCharacterIterator;
+import java.text.AttributedString;
 import java.util.Map;
+import java.awt.font.TextAttribute;
+
 
 /**
  * @author Michael Koch
@@ -67,24 +71,26 @@ public final class TextLayout implements Cloneable
     }
   }
 
+  private AttributedString attributedString;
   private FontRenderContext fontRenderContext;
   
   public TextLayout (AttributedCharacterIterator text, FontRenderContext frc)
-  {
-    // FIXME
-    this.fontRenderContext = frc;
+  {    
+    attributedString = new AttributedString (text);
+    fontRenderContext = frc;
   }
 
   public TextLayout (String string, Font font, FontRenderContext frc) 
   {
-    // FIXME
-    this.fontRenderContext = frc;
+    attributedString = new AttributedString (string);
+    attributedString.addAttribute (TextAttribute.FONT, font);
+    fontRenderContext = frc;
   }
 
   public TextLayout (String string, Map attributes, FontRenderContext frc) 
   {
-    // FIXME
-    this.fontRenderContext = frc;
+    attributedString = new AttributedString (string, attributes);
+    fontRenderContext = frc;
   }
 
   protected Object clone ()
@@ -100,9 +106,147 @@ public final class TextLayout implements Cloneable
       }
   }
 
+
+  protected class CharacterIteratorProxy 
+    implements CharacterIterator
+  {
+    public CharacterIterator target;
+    public int begin;
+    public int limit;
+    public int index;
+
+    public CharacterIteratorProxy (CharacterIterator ci)
+    {
+      target = ci;
+    }
+
+    public int getBeginIndex ()
+    {
+      return begin;
+    }
+
+    public int getEndIndex ()
+    {
+      return limit;
+    }
+
+    public int getIndex ()
+    {
+      return index;
+    }
+
+    public char setIndex (int idx) 
+      throws IllegalArgumentException
+    {
+      if (idx < begin || idx >= limit)
+        throw new IllegalArgumentException ();
+      char ch = target.setIndex (idx);
+      index = idx;
+      return ch;
+    }
+
+    public char first ()
+    {
+      int save = target.getIndex ();
+      char ch = target.setIndex (begin);
+      target.setIndex (save);
+      return ch;
+    }
+
+    public char last ()
+    {
+      if (begin == limit)
+        return this.first ();
+
+      int save = target.getIndex ();
+      char ch = target.setIndex (limit - 1);
+      target.setIndex (save);
+      return ch;
+    }
+
+    public char current ()
+    {
+      return target.current();
+    }
+
+    public char next ()
+    {
+      if (index >= limit - 1)
+        return CharacterIterator.DONE;
+      else
+        {
+          index++;
+          return target.next();
+        }
+    }
+
+    public char previous ()
+    {
+      if (index <= begin)
+        return CharacterIterator.DONE;
+      else
+        {
+          index--;
+          return target.previous ();
+        }
+    }
+
+    public Object clone ()
+    {
+      CharacterIteratorProxy cip = new CharacterIteratorProxy (this.target);
+      cip.begin = this.begin;
+      cip.limit = this.limit;
+      cip.index = this.index;
+      return cip;
+    }
+    
+  }
+
+
   public void draw (Graphics2D g2, float x, float y) 
   {
-    throw new Error ("not implemented");
+    AttributedCharacterIterator ci = attributedString.getIterator ();
+    CharacterIteratorProxy proxy = new CharacterIteratorProxy (ci);
+    Font defFont = g2.getFont ();
+
+    /* Note: this implementation currently only interprets FONT text
+     * attributes. There is a reasonable argument to be made for some
+     * attributes being interpreted out here, where we have control of the
+     * Graphics2D and can construct or derive new fonts, and some
+     * attributes being interpreted by the GlyphVector itself. So far, for
+     * all attributes except FONT we do neither.
+     */
+
+    for (char c = ci.first ();
+         c != CharacterIterator.DONE;
+         c = ci.next ())
+      {                
+        proxy.begin = ci.getIndex ();
+        proxy.limit = ci.getRunLimit(TextAttribute.FONT);
+        if (proxy.limit <= proxy.begin)
+          continue;
+
+        proxy.index = proxy.begin;
+
+        Object fnt = ci.getAttribute(TextAttribute.FONT);
+        GlyphVector gv;
+        if (fnt instanceof Font)
+          gv = ((Font)fnt).createGlyphVector (fontRenderContext, proxy);
+        else
+          gv = defFont.createGlyphVector (fontRenderContext, proxy);
+
+        g2.drawGlyphVector (gv, x, y);
+
+        int n = gv.getNumGlyphs ();
+        for (int i = 0; i < n; ++i)
+          {
+            GlyphMetrics gm = gv.getGlyphMetrics (i);
+            if (gm.getAdvanceX() == gm.getAdvance ())
+              x += gm.getAdvanceX ();
+            else
+              y += gm.getAdvanceY ();
+          }
+      }
   }
 
   public boolean equals (Object obj)
