@@ -1,3 +1,27 @@
+2003-10-30  Jan Hubicka  <jh@suse.cz>
+
+	* real.c (encode_ieee_extended): Initialize whole array.
+	* reg-stack.c (move_for_stack_reg0: Use always XFmode.
+	* i386-modes.def: Change definitions of TFmode and XFmode.
+	* i386.c (classify_argument): Rename TFmodes to XFmodes; add new TFmode code.
+	(construct_container): Allow constructing of TFmode integer containers.
+	(ix86_return_in_memory):  XFmode is not returned in memory.
+	(init_ext_80387_constants): Always use XFmode.
+	(print_operand): Likewise.
+	(ix86_prepare_fp_compare_regs): Likewise.
+	(split_to_parts): Deal with TFmode.
+	(split_long_move): Simplify.
+	(ix86_init_mmx_sse_builtins): Add __float80, __float128.
+	(ix86_memory_move_cost): Do not confuse TFmode.
+	* i386.h (LONG_DOUBLE_TYPE_SIZE): Set to 96.
+	(IS_STACK_MODE): TFmode is not stack mode.
+	(HARD_REGNO_NREGS, CLASS_MAX_NREGS): Deal nicely with XFmode.
+	(VALID_SSE_REG_MODE): Allow TFmode.
+	(VALID_FP_MODE_P): Disallow TFmode.
+	(VALID_INT_MODE_P): Allow TFmode in 64bit mode.
+	* i386.md (TFmode patterns): Kill.
+	(movtf, motf_rex64): New patterns.
+
 2003-10-30  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md (adddi3): Fix typo in mips16 stack pointer code.

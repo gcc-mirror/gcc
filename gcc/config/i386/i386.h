@@ -721,16 +721,7 @@ extern int x86_prefetch_sse;
 
 /* target machine storage layout */
 
-/* Define for XFmode or TFmode extended real floating point support.
-   The XFmode is specified by i386 ABI, while TFmode may be faster
-   due to alignment and simplifications in the address calculations.  */
-#define LONG_DOUBLE_TYPE_SIZE (TARGET_128BIT_LONG_DOUBLE ? 128 : 96)
-#define MAX_LONG_DOUBLE_TYPE_SIZE 128
-#ifdef __x86_64__
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 128
-#else
-#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 96
-#endif
+#define LONG_DOUBLE_TYPE_SIZE 96
 
 /* Set the value of FLT_EVAL_METHOD in float.h.  When using only the
    FPU, assume that the fpcw is set to extended precision; when using
@@ -900,8 +891,7 @@ extern int x86_prefetch_sse;
 
 #define STACK_REGS
 #define IS_STACK_MODE(MODE)					\
-  ((MODE) == DFmode || (MODE) == SFmode || (MODE) == XFmode	\
-   || (MODE) == TFmode)
+  ((MODE) == DFmode || (MODE) == SFmode || (MODE) == XFmode)	\
 
 /* Number of actual hardware registers.
    The hardware registers are assigned numbers for the compiler
@@ -1049,9 +1039,9 @@ do {									\
 #define HARD_REGNO_NREGS(REGNO, MODE)   \
   (FP_REGNO_P (REGNO) || SSE_REGNO_P (REGNO) || MMX_REGNO_P (REGNO)	\
    ? (COMPLEX_MODE_P (MODE) ? 2 : 1)					\
-   : ((MODE) == TFmode							\
+   : ((MODE) == XFmode							\
       ? (TARGET_64BIT ? 2 : 3)						\
-      : (MODE) == TCmode						\
+      : (MODE) == XCmode						\
       ? (TARGET_64BIT ? 4 : 6)						\
       : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)))
 
@@ -1061,7 +1051,7 @@ do {									\
 
 #define VALID_SSE_REG_MODE(MODE)					\
     ((MODE) == TImode || (MODE) == V4SFmode || (MODE) == V4SImode	\
-     || (MODE) == SFmode						\
+     || (MODE) == SFmode || (MODE) == TFmode				\
      /* Always accept SSE2 modes so that xmmintrin.h compiles.  */	\
      || VALID_SSE2_REG_MODE (MODE)					\
      || (TARGET_SSE2 && ((MODE) == DFmode || VALID_MMX_REG_MODE (MODE))))
@@ -1079,21 +1069,20 @@ do {									\
      : VALID_MMX_REG_MODE_3DNOW (MODE) && TARGET_3DNOW ? 1 : 0)
 
 #define VALID_FP_MODE_P(MODE)						\
-    ((MODE) == SFmode || (MODE) == DFmode || (MODE) == TFmode		\
-     || (!TARGET_64BIT && (MODE) == XFmode)				\
-     || (MODE) == SCmode || (MODE) == DCmode || (MODE) == TCmode	\
-     || (!TARGET_64BIT && (MODE) == XCmode))
+    ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode		\
+     || (MODE) == SCmode || (MODE) == DCmode || (MODE) == XCmode)	\
 
 #define VALID_INT_MODE_P(MODE)						\
     ((MODE) == QImode || (MODE) == HImode || (MODE) == SImode		\
      || (MODE) == DImode						\
      || (MODE) == CQImode || (MODE) == CHImode || (MODE) == CSImode	\
      || (MODE) == CDImode						\
-     || (TARGET_64BIT && ((MODE) == TImode || (MODE) == CTImode)))
+     || (TARGET_64BIT && ((MODE) == TImode || (MODE) == CTImode		\
+         || (MODE) == TFmode || (MODE) == TCmode)))
 
 /* Return true for modes passed in SSE registers.  */
 #define SSE_REG_MODE_P(MODE) \
- ((MODE) == TImode || (MODE) == V16QImode				\
+ ((MODE) == TImode || (MODE) == V16QImode || (MODE) == TFmode		\
    || (MODE) == V8HImode || (MODE) == V2DFmode || (MODE) == V2DImode	\
    || (MODE) == V4SFmode || (MODE) == V4SImode)
 
@@ -1568,15 +1557,12 @@ enum reg_class
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 /* On the 80386, this is the size of MODE in words,
-   except in the FP regs, where a single reg is always enough.
-   The TFmodes are really just 80bit values, so we use only 3 registers
-   to hold them, instead of 4, as the size would suggest.
- */
+   except in the FP regs, where a single reg is always enough.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)					\
  (!MAYBE_INTEGER_CLASS_P (CLASS)					\
   ? (COMPLEX_MODE_P (MODE) ? 2 : 1)					\
-  : ((GET_MODE_SIZE ((MODE) == TFmode ? XFmode : (MODE))		\
-     + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
+  : (((((MODE) == XFmode ? 12 : GET_MODE_SIZE (MODE)))			\
+      + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 /* A C expression whose value is nonzero if pseudos that have been
    assigned to registers of class CLASS would likely be spilled
