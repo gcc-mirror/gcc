@@ -2351,7 +2351,13 @@ expand_builtin_fputs (arglist, ignore)
   switch (compare_tree_int (len, 1))
     {
     case -1: /* length is 0, delete the call entirely .  */
-      return const0_rtx;
+      {
+	/* Evaluate and ignore the argument in case it has
+           side-effects.  */
+	expand_expr (TREE_VALUE (TREE_CHAIN (arglist)), const0_rtx,
+		     VOIDmode, EXPAND_NORMAL);
+	return const0_rtx;
+      }
     case 0: /* length is 1, call fputc.  */
       {
 	tree stripped_string = TREE_VALUE (arglist);
