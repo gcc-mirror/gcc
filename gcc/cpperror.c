@@ -119,17 +119,6 @@ cpp_fatal (pfile, str, arg)
   fprintf (stderr, "%s: ", progname);
   cpp_message (pfile, 2, str, arg);
 }
-
-void
-fatal (str, arg)
-     char *str, *arg;
-{
-  fprintf (stderr, "%s: ", progname);
-  fprintf (stderr, str, arg);
-  fprintf (stderr, "\n");
-  exit (FATAL_EXIT_CODE);
-}
-
 
 void
 cpp_pfatal_with_name (pfile, name)
