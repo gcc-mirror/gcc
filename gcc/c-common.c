@@ -145,7 +145,7 @@ enum attrs {A_PACKED, A_NOCOMMON, A_COMMON, A_NORETURN, A_CONST, A_T_UNION,
 	    A_NO_CHECK_MEMORY_USAGE, A_NO_INSTRUMENT_FUNCTION,
 	    A_CONSTRUCTOR, A_DESTRUCTOR, A_MODE, A_SECTION, A_ALIGNED,
 	    A_UNUSED, A_FORMAT, A_FORMAT_ARG, A_WEAK, A_ALIAS, A_MALLOC,
-	    A_NO_LIMIT_STACK};
+	    A_NO_LIMIT_STACK, A_PURE};
 
 enum format_type { printf_format_type, scanf_format_type,
 		   strftime_format_type };
@@ -457,6 +457,7 @@ init_attributes ()
   add_attribute (A_NO_CHECK_MEMORY_USAGE, "no_check_memory_usage", 0, 0, 1);
   add_attribute (A_MALLOC, "malloc", 0, 0, 1);
   add_attribute (A_NO_LIMIT_STACK, "no_stack_limit", 0, 0, 1);
+  add_attribute (A_PURE, "pure", 0, 0, 1);
 }
 
 /* Default implementation of valid_lang_attribute, below.  By default, there
@@ -596,6 +597,7 @@ decl_attributes (node, attributes, prefix_attributes)
 	case A_MALLOC:
 	  if (TREE_CODE (decl) == FUNCTION_DECL)
 	    DECL_IS_MALLOC (decl) = 1;
+	  /* ??? TODO: Support types.  */
 	  else
 	    warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
 	  break;
@@ -624,6 +626,15 @@ decl_attributes (node, attributes, prefix_attributes)
 	  else
 	    warning ( "`%s' attribute ignored", IDENTIFIER_POINTER (name));
 	  break;
+
+	case A_PURE:
+	  if (TREE_CODE (decl) == FUNCTION_DECL)
+	    DECL_IS_PURE (decl) = 1;
+	  /* ??? TODO: Support types.  */
+	  else
+	    warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+	  break;
+
 
 	case A_T_UNION:
 	  if (is_type

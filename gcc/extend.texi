@@ -1379,21 +1379,43 @@ typedef void voidfn ();
 volatile voidfn fatal;
 @end smallexample
 
-@cindex @code{const} function attribute
-@item const
-Many functions do not examine any values except their arguments, and
-have no effects except the return value.  Such a function can be subject
+@cindex @code{pure} function attribute
+@item pure
+Many functions have no effects except the return value and their
+return value and depends only on the parameters and/or global variables.
+Such a function can be subject
 to common subexpression elimination and loop optimization just as an
 arithmetic operator would be.  These functions should be declared
-with the attribute @code{const}.  For example,
+with the attribute @code{pure}.  For example,
 
 @smallexample
-int square (int) __attribute__ ((const));
+int square (int) __attribute__ ((pure));
 @end smallexample
 
 @noindent
 says that the hypothetical function @code{square} is safe to call
 fewer times than the program says.
+
+Some of common examples of pure functions are @code{strlen} or @code{memcmp}.
+Interesting non-pure functions are functions with infinite loops or those
+depending on volatile memory or other system resource, that may change between
+two consetuctive calls (such as @code{feof} in multithreding environment).
+
+The attribute @code{pure} is not implemented in GNU C versions earlier
+than 2.96.
+@cindex @code{const} function attribute
+@item const
+Many functions do not examine any values except their arguments, and
+have no effects except the return value.  Basically this is just slightly
+more strict class than the "pure" attribute above, since function is not
+alloved to read global memory.
+
+@cindex pointer arguments
+Note that a function that has pointer arguments and examines the data
+pointed to must @emph{not} be declared @code{const}.  Likewise, a
+function that calls a non-@code{const} function usually must not be
+@code{const}.  It does not make sense for a @code{const} function to
+return @code{void}.
 
 The attribute @code{const} is not implemented in GNU C versions earlier
 than 2.5.  An alternative way to declare that a function has no side
@@ -1409,12 +1431,6 @@ extern const intfn square;
 This approach does not work in GNU C++ from 2.6.0 on, since the language
 specifies that the @samp{const} must be attached to the return value.
 
-@cindex pointer arguments
-Note that a function that has pointer arguments and examines the data
-pointed to must @emph{not} be declared @code{const}.  Likewise, a
-function that calls a non-@code{const} function usually must not be
-@code{const}.  It does not make sense for a @code{const} function to
-return @code{void}.
 
 @item format (@var{archetype}, @var{string-index}, @var{first-to-check})
 @cindex @code{format} function attribute

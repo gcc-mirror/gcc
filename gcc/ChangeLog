@@ -1,3 +1,28 @@
+Thu Apr 13 15:55:08 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* alias.c (nonlocal_reference_p): Take a care for
+	CALL_INSNS's fusage field.
+	* calls.c (ECF_PURE): New flag.
+	(emit_call_1): Handle ECF_PURE calls.
+	(initialize_argument_information): Unset ECF_PURE flag too.
+	(precompute_arguments): Precompute for ECF_PURE too.
+	(expand_call): Handle ECF_PURE calls too.
+	(emit_library_call_value_1): Rename no_queue argument to
+	fn_type, accept value of 2 as pure function.
+	(emit_library_call_value, emit_library_call): Rename no_queue argument
+	to fn_type.
+	* optabs.c (prepare_cmp_insn): Pass fn_type 2 to memcmp call.
+
+	* tree.h (DECL_IS_PURE): New macro.
+	(struct tree_decl): Add pure_flag.
+	* c-common.c (enum attrs): Add attribute "pure".
+	(init_attributes): Initialize attribute "pure"
+	(decl_attributes): Handle attribute "pure".
+	* extend.texi (Attribute "pure"): Document.
+	* calls.c (expand_call): Add (mem:BLK (scratch)) to "equal from"
+	in pure function.
+	(flags_from_decl_or_type): Support attribute "pure".
+
 2000-04-13  Jason Merrill  <jason@casey.cygnus.com>
 
 	* cpplex.c (_cpp_lex_token): Handle digraphs.  Don't null-terminate

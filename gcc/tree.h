@@ -1253,6 +1253,10 @@ struct tree_type
    not an alias.  */
 #define DECL_IS_MALLOC(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.malloc_flag)
 
+/* Nonzero in a FUNCTION_DECL means this function should be treated
+   as "pure" function (like const function, but may read global memory).  */
+#define DECL_IS_PURE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.pure_flag)
+
 /* Nonzero in a FIELD_DECL means it is a bit field, and must be accessed
    specially.  */
 #define DECL_BIT_FIELD(NODE) (FIELD_DECL_CHECK (NODE)->decl.bit_field_flag)
@@ -1392,6 +1396,7 @@ struct tree_decl
   unsigned comdat_flag : 1;
   unsigned malloc_flag : 1;
   unsigned no_limit_stack : 1;
+  unsigned pure_flag : 1;
 #ifdef ONLY_INT_FIELDS
   unsigned int built_in_class : 2;
 #else
