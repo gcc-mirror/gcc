@@ -9,5 +9,5 @@ class A {
 class B: public A {};
 class C: public A {};
 class D: public C, public B {
-  void g () { A::f(); }		// gets bogus error - wrongly ambiguous static member call, XFAIL *-*-*
+  void g () { A::f(); }		// gets bogus error - wrongly ambiguous static member call
 };
