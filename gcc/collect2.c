@@ -1372,9 +1372,10 @@ add_to_list (head_ptr, name)
      struct head *head_ptr;
      char *name;
 {
-  struct id *newid = (struct id *) xcalloc (sizeof (*newid) + strlen (name), 1);
+  struct id *newid
+    = (struct id *) xcalloc (sizeof (struct id) + strlen (name), 1);
+  struct id *p;
   static long sequence_number = 0;
-  newid->sequence = ++sequence_number;
   strcpy (newid->name, name);
 
   if (head_ptr->first)
@@ -1382,6 +1383,19 @@ add_to_list (head_ptr, name)
   else
     head_ptr->first = newid;
 
+  /* Check for duplicate symbols.  */
+  for (p = head_ptr->first;
+       strcmp (name, p->name) != 0;
+       p = p->next)
+    ;
+  if (p != newid)
+    {
+      head_ptr->last->next = 0;
+      free (newid);
+      return;
+    }
+
+  newid->sequence = ++sequence_number;
   head_ptr->last = newid;
   head_ptr->number++;
 }
@@ -1568,9 +1582,6 @@ scan_prog_file (prog_name, which_pass)
 	   end++)
 	continue;
 
-#ifdef COLLECT_QUALIFY_MATCH
-      COLLECT_QUALIFY_MATCH;
-#endif
 
       *end = '\0';
       switch (is_ctor_dtor (name))
