@@ -2039,9 +2039,37 @@ namespace std
     do_compare(const _CharT* __lo1, const _CharT* __hi1, 
 	       const _CharT* __lo2, const _CharT* __hi2) const
     { 
+      // strcoll assumes zero-terminated strings so we make a copy
+      // and then put a zero at the end.
       const string_type __one(__lo1, __hi1);
       const string_type __two(__lo2, __hi2);
-      return _M_compare(__one.c_str(), __two.c_str());
+
+      const _CharT* __p = __one.c_str();
+      const _CharT* __pend = __one.c_str() + __one.length();
+      const _CharT* __q = __two.c_str();
+      const _CharT* __qend = __two.c_str() + __two.length();
+
+      // strcoll stops when it sees a nul character so we break
+      // the strings into zero-terminated substrings and pass those
+      // to strcoll.
+      for (;;)
+	{
+	  int __res = _M_compare(__p, __q);
+	  if (__res)
+	    return __res;
+
+	  __p += char_traits<_CharT>::length(__p);
+	  __q += char_traits<_CharT>::length(__q);
+	  if (__p == __pend && __q == __qend)
+	    return 0;
+	  else if (__p == __pend)
+	    return -1;
+	  else if (__q == __qend)
+	    return 1;
+
+	  __p++;
+	  __q++;
+	}
     }
 
  template<typename _CharT>
@@ -2049,19 +2077,43 @@ namespace std
     collate<_CharT>::
     do_transform(const _CharT* __lo, const _CharT* __hi) const
     {
+      // strxfrm assumes zero-terminated strings so we make a copy
+      string_type __str(__lo, __hi);
+
+      const _CharT* __p = __str.c_str();
+      const _CharT* __pend = __str.c_str() + __str.length();
+
       size_t __len = (__hi - __lo) * 2;
-      // First try a buffer perhaps big enough.
-      _CharT* __c =
-	static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __len));
-      size_t __res = _M_transform(__c, __lo, __len);
-      // If the buffer was not large enough, try again with the correct size.
-      if (__res >= __len)
+
+      string_type __ret;
+
+      // strxfrm stops when it sees a nul character so we break
+      // the string into zero-terminated substrings and pass those
+      // to strxfrm.
+      for (;;)
 	{
-	  __c = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
-						      * (__res + 1)));
-	  _M_transform(__c, __lo, __res + 1);
+	  // First try a buffer perhaps big enough.
+	  _CharT* __c =
+	    static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __len));
+	  size_t __res = _M_transform(__c, __p, __len);
+	  // If the buffer was not large enough, try again with the
+	  // correct size.
+	  if (__res >= __len)
+	    {
+	      __len = __res + 1;
+	      __c = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
+							  * __len));
+	      __res = _M_transform(__c, __p, __res + 1);
+	    }
+
+	  __ret.append(__c, __res);
+	  __p += char_traits<_CharT>::length(__p);
+	  if (__p == __pend)
+	    return __ret;
+
+	  __p++;
+	  __ret.push_back(_CharT());
 	}
-      return string_type(__c);
     }
 
  template<typename _CharT>

@@ -1,3 +1,10 @@
+2003-03-07  Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/9817
+	* include/bits/locale_facets.tcc
+	(collate::do_compare, collate::do_transform):
+	Handle nul characters in input.
+
 2003-03-07  Jerry Quinn  <jlquinn@tiamat>
 
 	* include/bits/streambuf_iterator.h (_M_put): Set _M_failed if
