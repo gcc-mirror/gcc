@@ -1,3 +1,9 @@
+1999-11-27  Per Bothner  <per@bothner.com>
+
+	* exception.cc:  Remove prototype declarations for malloc and free.
+	These clash with recent versions of glibc, which specifies `throws ()'
+	when __cplusplus is defined.  Instead, #include <stdlib.h>.
+
 1999-11-24  Tom Tromey  <tromey@cygnus.com>
 
 	* prims.cc (_Jv_NewObjectArray): Use
