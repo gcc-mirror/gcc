@@ -1,3 +1,8 @@
+2001-10-26  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/zip/Adler32.java: Use correct class name.  (Re-merge
+	from Classpath.)
+
 2001-10-25  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/lang/VMClassLoader.java (getPrimitiveClass): Now native. Now 
