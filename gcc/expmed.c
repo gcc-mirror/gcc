@@ -694,10 +694,15 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
      rtx value;
      int align;
 {
+  int unit;
+  int bitsdone = 0;
+
   /* Make sure UNIT isn't larger than BITS_PER_WORD, we can only handle that
      much at a time.  */
-  int unit = MIN (align * BITS_PER_UNIT, BITS_PER_WORD);
-  int bitsdone = 0;
+  if (GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
+    unit = BITS_PER_WORD;
+  else
+    unit = MIN (align * BITS_PER_UNIT, BITS_PER_WORD);
 
   /* If VALUE is a constant other than a CONST_INT, get it into a register in
      WORD_MODE.  If we can do this using gen_lowpart_common, do so.  Note
@@ -767,21 +772,18 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
 	 the current word starting from the base register.  */
       if (GET_CODE (op0) == SUBREG)
 	{
-	  word = operand_subword (SUBREG_REG (op0),
-				  SUBREG_WORD (op0) + offset, 1,
-				  GET_MODE (SUBREG_REG (op0)));
+	  word = operand_subword_force (SUBREG_REG (op0),
+					SUBREG_WORD (op0) + offset,
+					GET_MODE (SUBREG_REG (op0)));
 	  offset = 0;
 	}
       else if (GET_CODE (op0) == REG)
 	{
-	  word = operand_subword (op0, offset, 1, GET_MODE (op0));
+	  word = operand_subword_force (op0, offset, GET_MODE (op0));
 	  offset = 0;
 	}
       else
 	word = op0;
-
-      if (word == 0)
-	abort ();
 
       /* OFFSET is in UNITs, and UNIT is in bits.
          store_fixed_bit_field wants offset in bytes.  */
@@ -1503,12 +1505,17 @@ extract_split_bit_field (op0, bitsize, bitpos, unsignedp, align)
      rtx op0;
      int bitsize, bitpos, unsignedp, align;
 {
-  /* Make sure UNIT isn't larger than BITS_PER_WORD, we can only handle that
-     much at a time.  */
-  int unit = MIN (align * BITS_PER_UNIT, BITS_PER_WORD);
+  int unit;
   int bitsdone = 0;
   rtx result;
   int first = 1;
+
+  /* Make sure UNIT isn't larger than BITS_PER_WORD, we can only handle that
+     much at a time.  */
+  if (GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
+    unit = BITS_PER_WORD;
+  else
+    unit = MIN (align * BITS_PER_UNIT, BITS_PER_WORD);
 
   while (bitsdone < bitsize)
     {
@@ -1546,9 +1553,6 @@ extract_split_bit_field (op0, bitsize, bitpos, unsignedp, align)
 	}
       else
 	word = op0;
-
-      if (word == 0)
-	abort ();
 
       /* Extract the parts in bit-counting order,
 	 whose meaning is determined by BYTES_PER_UNIT.
