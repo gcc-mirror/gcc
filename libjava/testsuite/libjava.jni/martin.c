@@ -2,7 +2,8 @@
 #include "martin.h"
 #include <stdio.h>
 
-void Java_martin_myNative(JNIEnv* env, jobject this, jstring s)
+JNIEXPORT void JNICALL
+Java_martin_myNative(JNIEnv* env, jobject this, jstring s)
 {
   jclass cls;
   jfieldID fid;

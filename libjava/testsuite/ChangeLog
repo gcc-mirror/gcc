@@ -1,3 +1,20 @@
+2003-01-24  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* libjava.jni/calls.c (Java_calls_docall): Define with
+	JNIEXPORT and JNICALL method attributes.
+	* libjava.jni/field.c (Java_field_fetch): Likewise.
+	* libjava.jni/final_method.c (Java_final_1method_meth): Likewise.
+	* libjava.jni/findclass.c (Java_findclass_doit): Likewise.
+	* libjava.jni/invoke.c (Java_invoke_val): Likewise.
+	* libjava.jni/martin.c (Java_martin_myNative): Likewise.
+	* libjava.jni/noclass.c (Java_noclass_find_1it): Likewise.
+	* libjava.jni/overload.c (Java_overload_over__I): Likewise.
+	(Java_overload_over__II): Likewise.
+	* libjava.jni/register.c (JNI_OnLoad): Likewise.
+	* libjava.jni/simple_int.c (Java_simple_1int_nat): Likewise.
+	* libjava.jni/throwit.c (Java_throwit_throwit): Likewise.
+	* libjava.jni/virtual.c (Java_virtual_equals): Likewise.
+
 2003-01-21  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.jacks/jacks.xfail: All 8.4.3 tests and 9.4-modifier-10
