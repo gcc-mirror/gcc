@@ -1740,48 +1740,25 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	      && (allows_mem || GET_CODE (DECL_RTL (val)) == REG)
 	      && ! (GET_CODE (DECL_RTL (val)) == REG
 		    && GET_MODE (DECL_RTL (val)) != TYPE_MODE (type)))
+	  || ! allows_reg
 	  || is_inout)
 	{
-	  enum { do_not_copy, do_copy_reg, do_copy_mem } do_copy;
-	  rtx op;
+	  output_rtx[i] = expand_expr (val, NULL_RTX, VOIDmode, EXPAND_WRITE);
 
-	  op = expand_expr (val, NULL_RTX, VOIDmode, EXPAND_WRITE);
-	  output_rtx[i] = op;
-
-	  if (! allows_reg && GET_CODE (op) != MEM)
+	  if (! allows_reg && GET_CODE (output_rtx[i]) != MEM)
 	    error ("output number %d not directly addressable", i);
-
-	  do_copy = do_not_copy;
-	  if (! allows_mem && GET_CODE (op) == MEM)
-	    do_copy = do_copy_reg;
-	  else if (GET_CODE (op) == CONCAT)
-	    do_copy = do_copy_reg;
-	  else if (asm_operand_ok (op, constraints[i]) <= 0)
+	  if ((! allows_mem && GET_CODE (output_rtx[i]) == MEM)
+	      || GET_CODE (output_rtx[i]) == CONCAT)
 	    {
-	      if (allows_reg && !register_operand (op, VOIDmode))
-		do_copy = do_copy_reg;
-	      else if (allows_mem && GET_CODE (op) != MEM)
-		do_copy = do_copy_mem;
-	      else
-		warning ("asm operand %d probably doesn't match constraints", i);
+    	      real_output_rtx[i] = protect_from_queue (output_rtx[i], 1);
+	      output_rtx[i] = gen_reg_rtx (GET_MODE (output_rtx[i]));
+	      if (is_inout)
+		emit_move_insn (output_rtx[i], real_output_rtx[i]);
 	    }
-
-	  if (do_copy == do_copy_reg)
-	    {
-    	      real_output_rtx[i] = protect_from_queue (op, 1);
-	      output_rtx[i] = gen_reg_rtx (GET_MODE (op));
-	    }
-	  else if (do_copy == do_copy_mem)
-	    {
-	      real_output_rtx[i] = op;
-	      output_rtx[i] = assign_temp (type, 0, 1, 1);
-	    }
-	  if (do_copy && is_inout)
-	    emit_move_insn (output_rtx[i], real_output_rtx[i]);
 	}
       else
 	{
-	  output_rtx[i] = assign_temp (type, 0, !allows_reg, 1);
+	  output_rtx[i] = assign_temp (type, 0, 0, 1);
 	  TREE_VALUE (tail) = make_tree (type, output_rtx[i]);
 	}
 
@@ -1835,9 +1812,9 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
       if (asm_operand_ok (op, constraint) <= 0)
 	{
-	  if (allows_reg && !register_operand (op, VOIDmode))
+	  if (allows_reg)
 	    op = force_reg (TYPE_MODE (type), op);
-	  else if (!allows_mem || GET_CODE (op) == MEM)
+	  else if (!allows_mem)
 	    warning ("asm operand %d probably doesn't match constraints",
 		     i + noutputs);
 	  else if (CONSTANT_P (op))
