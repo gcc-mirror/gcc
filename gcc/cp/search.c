@@ -3488,7 +3488,7 @@ dependent_base_p (binfo)
 {
   for (; binfo; binfo = BINFO_INHERITANCE_CHAIN (binfo))
     {
-      if (binfo == current_class_type)
+      if (TREE_TYPE (binfo) == current_class_type)
 	break;
       if (uses_template_parms (TREE_TYPE (binfo)))
 	return 1;
