@@ -1,3 +1,11 @@
+2002-05-29  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/alpha/netbsd.h (TARGET_OS_CPP_BUILTINS): Use
+	NETBSD_OS_CPP_BUILTINS_ELF and NETBSD_OS_CPP_BUILTINS_LP64. 
+	(CPP_SUBTARGET_SPEC): Define.  
+	(SUBTARGET_EXTRA_SPECS): Define. 
+	(CPP_SPEC): Remove.
+
 2002-05-29  Dale Johannesen  <dalej@apple.com>
             Michael Matz  <matz@kde.org>
             David Edelsohn  <edesohn@gnu.org>
