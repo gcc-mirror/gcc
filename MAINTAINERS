@@ -111,6 +111,7 @@ mips port               Eric Christopher        echristo@redhat.com
 predict.def		Jan Hubicka		jh@suse.cz
 Ada front end		Geert Bosch		bosch@gnat.com
 Ada front end		Robert Dewar		dewar@gnat.com
+CRIS port		Hans-Peter Nilsson	hp@axis.com
 
 Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
