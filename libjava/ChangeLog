@@ -1,3 +1,7 @@
+2002-02-12  Tom Tromey  <tromey@redhat.com>
+
+	* exception.cc (std::abort): Mark as noreturn.
+
 2002-02-12  Adam Megacz <adam@xwt.org>
 
         * java/lang/Win32Process.java: Filled in a placeholder
