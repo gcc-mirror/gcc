@@ -1,3 +1,8 @@
+2004-11-16  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* docs/html/19_diagnostics/howto.html: Document change from
+	_GLIBCPP_CONCEPT_CHECKS to _GLIBCXX_CONCEPT_CHECKS in 3.4.
+
 2004-11-08  Benjamin Kosnik  <bkoz@redhat.com>
 	    Doug Gregor  <dgregor@cs.indiana.edu>
 
