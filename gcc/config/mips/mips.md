@@ -778,7 +778,9 @@
 		 (match_operand:DI 2 "small_int" "P,J,N")))
    (clobber (match_operand:SI 3 "register_operand" "=d,d,d"))]
   "!TARGET_64BIT && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16
-   && INTVAL (operands[2]) != -32768"
+   && (TARGET_GAS
+       || GET_CODE (operands[2]) != CONST_INT
+       || INTVAL (operands[2]) != -32768)"
   "@
    addu\\t%L0,%L1,%2\;sltu\\t%3,%L0,%2\;addu\\t%M0,%M1,%3
    move\\t%L0,%L1\;move\\t%M0,%M1

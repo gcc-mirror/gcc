@@ -1,3 +1,8 @@
+Sun Feb  1 01:55:09 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* mips.md (adddi3_internal_2): Be consistent with adddi3 expander
+	with handling of -32768.
+
 Sun Feb  1 01:48:18 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* aclocal.m4 (GCC_NEED_DECLARATION): Modify macro to accept a
