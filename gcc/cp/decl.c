@@ -1,4 +1,4 @@
-/* Process declarations and variables for C compiler.
+/* Process declarations and variables for C++ compiler.
    Copyright (C) 1988, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
