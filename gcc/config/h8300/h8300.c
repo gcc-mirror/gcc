@@ -42,6 +42,8 @@ void print_operand_address ();
 char *index ();
 
 static int h8300_interrupt_function_p PROTO ((tree));
+static int h8300_monitor_function_p PROTO ((tree));
+static int h8300_os_task_function_p PROTO ((tree));
 
 /* CPU_TYPE, says what cpu we're compiling for.  */
 int cpu_type;
@@ -50,6 +52,13 @@ int cpu_type;
    (either via #pragma or an attribute specification).  */
 int interrupt_handler;
 
+/* True if the current fucntion is an OS Task
+   (via an attribute specification).  */
+int os_task;
+
+/* True if the current function is a monitor
+   (via an attribute specification).  */
+int monitor;
 
 /* True if a #pragma saveall has been seen for the current function.  */
 int pragma_saveall;
@@ -206,6 +215,26 @@ function_prologue (file, size)
   if (h8300_interrupt_function_p (current_function_decl))
     interrupt_handler = 1;
 
+  /* If the current function has the OS_Task attribute set, then
+     we have a naked prologue.  */
+  if (h8300_os_task_function_p (current_function_decl))
+    {
+      fprintf (file, ";OS_Task prologue\n");
+      os_task = 1;
+      return;
+    }
+
+  if (h8300_monitor_function_p (current_function_decl))
+    {
+      /* My understanding of monitor functions is they act just
+	 like interrupt functions, except the prologue must
+	 mask interrupts.  */
+      fprintf (file, ";monitor prologue\n");
+      interrupt_handler = 1;
+      monitor = 1;
+      fprintf (file, "\torc\t#128,ccr\n");
+    }
+
   if (frame_pointer_needed)
     {
       /* Push fp */
@@ -255,6 +284,20 @@ function_epilogue (file, size)
   int idx;
   rtx insn = get_last_insn ();
 
+  if (os_task)
+    {
+      /* OS_Task epilogues are nearly naked -- they just have an
+	 rts instruction.  */
+      fprintf (file, ";OS_task epilogue\n");
+      fprintf (file, "\trts\n");
+      goto out;
+    }
+
+  /* monitor epilogues are the same as interrupt function epilogues.
+     Just make a note that we're in an monitor epilogue.  */
+  if (monitor)
+    fprintf(file, ";monitor epilogue\n");
+
   /* If the last insn was a BARRIER, we don't have to write any code.  */
   if (GET_CODE (insn) == NOTE)
     insn = prev_nonnote_insn (insn);
@@ -295,7 +338,10 @@ function_epilogue (file, size)
   else
     fprintf (file, "\trts\n");
 
+out:
   interrupt_handler = 0;
+  os_task = 0;
+  monitor = 0;
   pragma_saveall = 0;
 }
 
@@ -2185,6 +2231,38 @@ h8300_interrupt_function_p (func)
   return a != NULL_TREE;
 }
 
+/* Return nonzero if FUNC is an OS_Task function as specified
+   by the "OS_Task" attribute.  */
+
+static int
+h8300_os_task_function_p (func)
+     tree func;
+{
+  tree a;
+
+  if (TREE_CODE (func) != FUNCTION_DECL)
+    return 0;
+
+  a = lookup_attribute ("OS_Task", DECL_MACHINE_ATTRIBUTES (func));
+  return a != NULL_TREE;
+}
+
+/* Return nonzero if FUNC is a monitor function as specified
+   by the "monitor" attribute.  */
+
+static int
+h8300_monitor_function_p (func)
+     tree func;
+{
+  tree a;
+
+  if (TREE_CODE (func) != FUNCTION_DECL)
+    return 0;
+
+  a = lookup_attribute ("monitor", DECL_MACHINE_ATTRIBUTES (func));
+  return a != NULL_TREE;
+}
+
 /* Return nonzero if FUNC is a function that should be called
    through the function vector.  */
 
@@ -2262,6 +2340,8 @@ h8300_valid_machine_decl_attribute (decl, attributes, attr, args)
     return 0;
 
   if (is_attribute_p ("interrupt_handler", attr)
+      || is_attribute_p ("OS_Task", attr)
+      || is_attribute_p ("monitor", attr)
       || is_attribute_p ("function_vector", attr))
     return TREE_CODE (decl) == FUNCTION_DECL;
 
