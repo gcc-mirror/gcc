@@ -156,6 +156,17 @@ reg_or_0_or_nonsymb_mem_operand (op, mode)
   return 0;
 }
 
+/* Accept any constant that can be moved in one instructions into a 
+   general register.  */
+int 
+cint_ok_for_move (intval)
+     int intval;
+{
+  /* OK if ldo, ldil, or zdepi, can be used.  */
+  return (VAL_14_BITS_P (intval) || (intval & 0x7ff) == 0
+	  || zdepi_cint_p (intval));
+}
+
 /* Accept anything that can be moved in one instruction into a general
    register.  */
 int
@@ -167,11 +178,7 @@ move_operand (op, mode)
     return 1;
 
   if (GET_CODE (op) == CONST_INT)
-    {
-      /* OK if ldo, ldil, or zdepi, can be used.  */
-      return (INT_14_BITS (op) || (INTVAL (op) & 0x7ff) == 0
-	      || zdepi_cint_p (INTVAL (op)));
-    }
+    return cint_ok_for_move (INTVAL (op));
 
   if (GET_MODE (op) != mode)
     return 0;
