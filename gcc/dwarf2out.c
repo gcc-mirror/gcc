@@ -9109,11 +9109,6 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
   switch (GET_CODE (rtl))
     {
     case CONST_INT:
-      /* Note that a CONST_INT rtx could represent either an integer
-	 or a floating-point constant.  A CONST_INT is used whenever
-	 the constant will fit into a single word.  In all such
-	 cases, the original mode of the constant value is wiped
-	 out, and the CONST_INT rtx is assigned VOIDmode.  */
       {
 	HOST_WIDE_INT val = INTVAL (rtl);
 
