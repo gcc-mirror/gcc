@@ -338,7 +338,7 @@ PERSONALITY_FUNCTION (int version,
 	      // The catch_type is either a (java::lang::Class*) or
 	      // is one more than a (Utf8Const*).
 	      if ((size_t)catch_type & 1)
-		catch_type = _Jv_FindClass ((Utf8Const*)catch_type - 1, NULL);
+		catch_type = _Jv_FindClass ((Utf8Const*)((size_t)catch_type ^ 1), NULL);
 
 	      if (_Jv_IsInstanceOf (xh->value, catch_type))
 		{

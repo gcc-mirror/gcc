@@ -178,6 +178,8 @@ java::lang::VMClassLoader::getPrimitiveClass (jchar type)
   return _Jv_FindClassFromSignature (sig, NULL);
 }
 
+typedef unsigned int uaddr __attribute__ ((mode (pointer)));
+
 /** This function does class-preparation for compiled classes.  
     NOTE: It contains replicated functionality from
     _Jv_ResolvePoolEntry, and this is intentional, since that function
@@ -193,6 +195,9 @@ _Jv_PrepareCompiledClass (jclass klass)
   klass->state = JV_STATE_LINKED;
 
   _Jv_Constants *pool = &klass->constants;
+
+  // Resolve class constants first, since other constant pool
+  // entries may rely on these.
   for (int index = 1; index < pool->size; ++index)
     {
       if (pool->tags[index] == JV_CONSTANT_Class)
@@ -215,7 +220,22 @@ _Jv_PrepareCompiledClass (jclass klass)
 	  pool->data[index].clazz = found;
 	  pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
 	}
-      else if (pool->tags[index] == JV_CONSTANT_String)
+    }
+
+  // If superclass looks like a constant pool entry,
+  // resolve it now.
+  if ((uaddr) klass->superclass < pool->size)
+    klass->superclass = pool->data[(int) klass->superclass].clazz;
+
+  // Likewise for interfaces.
+  for (int i = 0; i < klass->interface_count; i++)
+    if ((uaddr) klass->interfaces[i] < pool->size)
+      klass->interfaces[i] = pool->data[(int) klass->interfaces[i]].clazz;
+
+  // Resolve the remaining constant pool entries.
+  for (int index = 1; index < pool->size; ++index)
+    {
+      if (pool->tags[index] == JV_CONSTANT_String)
 	{
 	  jstring str;
 
@@ -250,12 +270,6 @@ _Jv_PrepareCompiledClass (jclass klass)
 #ifdef INTERPRETER
     }
 #endif /* INTERPRETER */
-
-  if (klass->vtable == NULL)
-    _Jv_MakeVTable(klass);
-
-  if (klass->otable != NULL && klass->otable->state == 0)
-    _Jv_LinkOffsetTable(klass);
 
   klass->notifyAll ();
 
