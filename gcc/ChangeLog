@@ -1,11 +1,38 @@
+2003-07-10  Zack Weinberg  <zack@codesourcery.com>
+
+	* cppcharset.c (one_utf8_to_cppchar, one_cppchar_to_utf8,
+	one_utf8_to_utf32, one_utf32_to_utf8, one_utf8_to_utf16,
+	one_utf16_to_utf8, conversion_loop, convert_utf8_utf16,
+	convert_utf8_utf32, convert_utf16_utf8,	convert_utf32_utf8,
+	convert_no_conversion, convert_using_iconv): New functions.
+	(APPLY_CONVERSION): New macro.
+	(struct conversion, conversion_tab): New data structure.
+	(init_iconv_desc): Check conversion_tab for a custom conversion
+	primitive before trying to use iconv.
+	(convert_cset): Deleted.
+	(cpp_init_iconv): Use UTF- terminology, not UCS-.
+	(_cpp_destroy_iconv): Update to match.
+	(_cpp_valid_ucn): We don't need iconv to implement UCNs.
+	(convert_ucn): Use one_cppchar_to_utf8 and APPLY_CONVERSION.
+	(convert_escape, cpp_interpret_string): Use APPLY_CONVERSION.
+	(_cpp_interpret_string_notranslate): New function, moved here
+	from cpplib.c.
+
+	* cpphash.h (convert_f, struct cset_converter): New types.
+	(struct cpp_reader): narrow_cset_desc and wide_cset_desc
+	are now struct cset_converter, not bare iconv_t.
+	Update prototypes.
+	* cpplib.c (interpret_string_notranslate): Moved to cppcharset.c;
+	all callers changed.
+
 2003-07-10  Kelley Cook  <kelleycook@wideopenwest.com>
-        
+
 	* Makefile.in (options.h): Depend on Makefile.  Add move-if-change
 	to opts.sh command line.
 	* opts.sh: Write to temporary files with a move-if-change at the end.
 
 2003-06-30  Denis Chertykov  <denisc@overta.ru>
-            Richard Kenner <kenner@vlsi1.ultra.nyu.edu>
+	    Richard Kenner <kenner@vlsi1.ultra.nyu.edu>
 
 	* combine.c (gen_binary): Handle the CLOBBER rtx and
 	don't build a binary operation with it.
@@ -319,7 +346,7 @@
 2003-07-09  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	PR bootstrap/11043
-	* config/arc/t-arc: Replace bogus references to "x-crtinit.o", 
+	* config/arc/t-arc: Replace bogus references to "x-crtinit.o",
 	"x-crtfini.o" with "crtinit.o", "crtfini.o".
 
 	* fixinc/inclhack.def (limits_ifndefs): Add select test.

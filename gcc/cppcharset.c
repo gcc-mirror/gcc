@@ -92,8 +92,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #error "Unrecognized basic host character set"
 #endif
 
-/* This structure is used for a resizable string buffer, mostly by
-   convert_cset and cpp_interpret_string.  */
+/* This structure is used for a resizable string buffer throughout.  */
 struct strbuf
 {
   uchar *text;
@@ -103,23 +102,545 @@ struct strbuf
 
 /* This is enough to hold any string that fits on a single 80-column
    line, even if iconv quadruples its size (e.g. conversion from
-   ASCII to UCS-4) rounded up to a power of two.  */
+   ASCII to UTF-32) rounded up to a power of two.  */
 #define OUTBUF_BLOCK_SIZE 256
 
-/* Subroutine of cpp_init_iconv: initialize and return an iconv
-   descriptor for conversion from FROM to TO.  If iconv_open() fails,
-   issue an error and return (iconv_t) -1.  Silently return
-   (iconv_t) -1 if FROM and TO are identical.  */
-static iconv_t
+/* Conversions between UTF-8 and UTF-16/32 are implemented by custom
+   logic.  This is because a depressing number of systems lack iconv,
+   or have have iconv libraries that do not do these conversions, so
+   we need a fallback implementation for them.  To ensure the fallback
+   doesn't break due to neglect, it is used on all systems.
+
+   UTF-32 encoding is nice and simple: a four-byte binary number,
+   constrained to the range 00000000-7FFFFFFF to avoid questions of
+   signedness.  We do have to cope with big- and little-endian
+   variants.
+
+   UTF-16 encoding uses two-byte binary numbers, again in big- and
+   little-endian variants, for all values in the 00000000-0000FFFF
+   range.  Values in the 00010000-0010FFFF range are encoded as pairs
+   of two-byte numbers, called "surrogate pairs": given a number S in
+   this range, it is mapped to a pair (H, L) as follows:
+
+     H = (S - 0x10000) / 0x400 + 0xD800
+     L = (S - 0x10000) % 0x400 + 0xDC00
+
+   Two-byte values in the D800...DFFF range are ill-formed except as a
+   component of a surrogate pair.  Even if the encoding within a
+   two-byte value is little-endian, the H member of the surrogate pair
+   comes first.
+
+   There is no way to encode values in the 00110000-7FFFFFFF range,
+   which is not currently a problem as there are no assigned code
+   points in that range; however, the author expects that it will
+   eventually become necessary to abandon UTF-16 due to this
+   limitation.  Note also that, because of these pairs, UTF-16 does
+   not meet the requirements of the C standard for a wide character
+   encoding (see 3.7.3 and 6.4.4.4p11).
+
+   UTF-8 encoding looks like this:
+
+   value range	       encoded as
+   00000000-0000007F   0xxxxxxx
+   00000080-000007FF   110xxxxx 10xxxxxx
+   00000800-0000FFFF   1110xxxx 10xxxxxx 10xxxxxx
+   00010000-001FFFFF   11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+   00200000-03FFFFFF   111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
+   04000000-7FFFFFFF   1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
+
+   Values in the 0000D800 ... 0000DFFF range (surrogates) are invalid,
+   which means that three-byte sequences ED xx yy, with A0 <= xx <= BF,
+   never occur.  Note also that any value that can be encoded by a
+   given row of the table can also be encoded by all successive rows,
+   but this is not done; only the shortest possible encoding for any
+   given value is valid.  For instance, the character 07C0 could be
+   encoded as any of DF 80, E0 9F 80, F0 80 9F 80, F8 80 80 9F 80, or
+   FC 80 80 80 9F 80.  Only the first is valid.
+
+   An implementation note: the transformation from UTF-16 to UTF-8, or
+   vice versa, is easiest done by using UTF-32 as an intermediary.  */
+
+/* Internal primitives which go from an UTF-8 byte stream to native-endian
+   UTF-32 in a cppchar_t, or vice versa; this avoids an extra marshal/unmarshal
+   operation in several places below.  */
+static inline int
+one_utf8_to_cppchar (const uchar **inbufp, size_t *inbytesleftp,
+		     cppchar_t *cp)
+{
+  static const uchar masks[6] = { 0x7F, 0x1F, 0x0F, 0x07, 0x02, 0x01 };
+  static const uchar patns[6] = { 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
+  
+  cppchar_t c;
+  const uchar *inbuf = *inbufp;
+  size_t nbytes, i;
+
+  if (*inbytesleftp < 1)
+    return EINVAL;
+
+  c = *inbuf;
+  if (c < 0x80)
+    {
+      *cp = c;
+      *inbytesleftp -= 1;
+      *inbufp += 1;
+      return 0;
+    }
+
+  /* The number of leading 1-bits in the first byte indicates how many
+     bytes follow.  */
+  for (nbytes = 2; nbytes < 7; nbytes++)
+    if ((c & ~masks[nbytes-1]) == patns[nbytes-1])
+      goto found;
+  return EILSEQ;
+ found:
+
+  if (*inbytesleftp < nbytes)
+    return EINVAL;
+
+  c = (c & masks[nbytes-1]);
+  inbuf++;
+  for (i = 1; i < nbytes; i++)
+    {
+      cppchar_t n = *inbuf++;
+      if ((n & 0xC0) != 0x80)
+	return EILSEQ;
+      c = ((c << 6) + (n & 0x3F));
+    }
+
+  /* Make sure the shortest possible encoding was used.  */
+  if (c <=      0x7F && nbytes > 1) return EILSEQ;
+  if (c <=     0x7FF && nbytes > 2) return EILSEQ;
+  if (c <=    0xFFFF && nbytes > 3) return EILSEQ;
+  if (c <=  0x1FFFFF && nbytes > 4) return EILSEQ;
+  if (c <= 0x3FFFFFF && nbytes > 5) return EILSEQ;
+
+  /* Make sure the character is valid.  */
+  if (c > 0x7FFFFFFF || (c >= 0xD800 && c <= 0xDFFF)) return EILSEQ;
+
+  *cp = c;
+  *inbufp = inbuf;
+  *inbytesleftp -= nbytes;
+  return 0;
+}
+
+static inline int
+one_cppchar_to_utf8 (cppchar_t c, uchar **outbufp, size_t *outbytesleftp)
+{
+  static const uchar masks[6] =  { 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
+  static const uchar limits[6] = { 0x80, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE };
+  size_t nbytes;
+  uchar buf[6], *p = &buf[6];
+  uchar *outbuf = *outbufp;
+
+  nbytes = 1;
+  if (c < 0x80)
+    *--p = c;
+  else
+    {
+      do
+	{
+	  *--p = ((c & 0x3F) | 0x80);
+	  c >>= 6;
+	  nbytes++;
+	}
+      while (c >= 0x3F || (c & limits[nbytes-1]));
+      *--p = (c | masks[nbytes-1]);
+    }
+
+  if (*outbytesleftp < nbytes)
+    return E2BIG;
+
+  while (p < &buf[6])
+    *outbuf++ = *p++;
+  *outbytesleftp -= nbytes;
+  *outbufp = outbuf;
+  return 0;
+}
+
+/* The following four functions transform one character between the two
+   encodings named in the function name.  All have the signature
+   int (*)(iconv_t bigend, const uchar **inbufp, size_t *inbytesleftp,
+           uchar **outbufp, size_t *outbytesleftp)
+
+   BIGEND must have the value 0 or 1, coerced to (iconv_t); it is
+   interpreted as a boolean indicating whether big-endian or
+   little-endian encoding is to be used for the member of the pair
+   that is not UTF-8.
+
+   INBUFP, INBYTESLEFTP, OUTBUFP, OUTBYTESLEFTP work exactly as they
+   do for iconv.
+
+   The return value is either 0 for success, or an errno value for
+   failure, which may be E2BIG (need more space), EILSEQ (ill-formed
+   input sequence), ir EINVAL (incomplete input sequence).  */
+   
+static inline int
+one_utf8_to_utf32 (iconv_t bigend, const uchar **inbufp, size_t *inbytesleftp,
+		   uchar **outbufp, size_t *outbytesleftp)
+{
+  uchar *outbuf;
+  cppchar_t s;
+  int rval;
+
+  /* Check for space first, since we know exactly how much we need.  */
+  if (*outbytesleftp < 4)
+    return E2BIG;
+
+  rval = one_utf8_to_cppchar (inbufp, inbytesleftp, &s);
+  if (rval)
+    return rval;
+
+  outbuf = *outbufp;
+  outbuf[bigend ? 3 : 0] = (s & 0x000000FF);
+  outbuf[bigend ? 2 : 1] = (s & 0x0000FF00) >> 8;
+  outbuf[bigend ? 1 : 2] = (s & 0x00FF0000) >> 16;
+  outbuf[bigend ? 0 : 3] = (s & 0xFF000000) >> 24;
+
+  *outbufp += 4;
+  *outbytesleftp -= 4;
+  return 0;
+}
+
+static inline int
+one_utf32_to_utf8 (iconv_t bigend, const uchar **inbufp, size_t *inbytesleftp,
+		   uchar **outbufp, size_t *outbytesleftp)
+{
+  cppchar_t s;
+  int rval;
+  const uchar *inbuf;
+
+  if (*inbytesleftp < 4)
+    return EINVAL;
+
+  inbuf = *inbufp;
+
+  s  = inbuf[bigend ? 0 : 3] << 24;
+  s += inbuf[bigend ? 1 : 2] << 16;
+  s += inbuf[bigend ? 2 : 1] << 8;
+  s += inbuf[bigend ? 3 : 0];
+
+  if (s >= 0x7FFFFFFF || (s >= 0xD800 && s <= 0xDFFF))
+    return EILSEQ;
+
+  rval = one_cppchar_to_utf8 (s, outbufp, outbytesleftp);
+  if (rval)
+    return rval;
+
+  *inbufp += 4;
+  *inbytesleftp -= 4;
+  return 0;
+}
+
+static inline int
+one_utf8_to_utf16 (iconv_t bigend, const uchar **inbufp, size_t *inbytesleftp,
+		   uchar **outbufp, size_t *outbytesleftp)
+{
+  int rval;
+  cppchar_t s;
+  const uchar *save_inbuf = *inbufp;
+  size_t save_inbytesleft = *inbytesleftp;
+  uchar *outbuf = *outbufp;
+
+  rval = one_utf8_to_cppchar (inbufp, inbytesleftp, &s);
+  if (rval)
+    return rval;
+
+  if (s > 0x0010FFFF)
+    {
+      *inbufp = save_inbuf;
+      *inbytesleftp = save_inbytesleft;
+      return EILSEQ;
+    }
+
+  if (s < 0xFFFF)
+    {
+      if (*outbytesleftp < 2)
+	{
+	  *inbufp = save_inbuf;
+	  *inbytesleftp = save_inbytesleft;
+	  return E2BIG;
+	}
+      outbuf[bigend ? 1 : 0] = (s & 0x00FF);
+      outbuf[bigend ? 0 : 1] = (s & 0xFF00) >> 8;
+
+      *outbufp += 2;
+      *outbytesleftp -= 2;
+      return 0;
+    }
+  else
+    {
+      cppchar_t hi, lo;
+
+      if (*outbytesleftp < 4)
+	{
+	  *inbufp = save_inbuf;
+	  *inbytesleftp = save_inbytesleft;
+	  return E2BIG;
+	}
+
+      hi = (s - 0x10000) / 0x400 + 0xD800;
+      lo = (s - 0x10000) % 0x400 + 0xDC00;
+
+      /* Even if we are little-endian, put the high surrogate first.
+	 ??? Matches practice?  */
+      outbuf[bigend ? 1 : 0] = (hi & 0x00FF);
+      outbuf[bigend ? 0 : 1] = (hi & 0xFF00) >> 8;
+      outbuf[bigend ? 3 : 2] = (lo & 0x00FF);
+      outbuf[bigend ? 2 : 3] = (lo & 0xFF00) >> 8;
+
+      *outbufp += 4;
+      *outbytesleftp -= 4;
+      return 0;
+    }
+}
+
+static inline int
+one_utf16_to_utf8 (iconv_t bigend, const uchar **inbufp, size_t *inbytesleftp,
+		   uchar **outbufp, size_t *outbytesleftp)
+{
+  cppchar_t s;
+  const uchar *inbuf = *inbufp;
+  int rval;
+
+  if (*inbytesleftp < 2)
+    return EINVAL;
+  s  = inbuf[bigend ? 0 : 1] << 8;
+  s += inbuf[bigend ? 1 : 0];
+
+  /* Low surrogate without immediately preceding high surrogate is invalid.  */
+  if (s >= 0xDC00 && s <= 0xDFFF)
+    return EILSEQ;
+  /* High surrogate must have a following low surrogate.  */
+  else if (s >= 0xD800 && s <= 0xDBFF)
+    {
+      cppchar_t hi = s, lo;
+      if (*inbytesleftp < 4)
+	return EINVAL;
+
+      lo  = inbuf[bigend ? 2 : 3] << 8;
+      lo += inbuf[bigend ? 3 : 2];
+
+      if (lo < 0xDC00 || lo > 0xDFFF)
+	return EILSEQ;
+
+      s = (hi - 0xD800) * 0x400 + (lo - 0xDC00) + 0x10000;
+    }
+
+  rval = one_cppchar_to_utf8 (s, outbufp, outbytesleftp);
+  if (rval)
+    return rval;
+
+  /* Success - update the input pointers (one_cppchar_to_utf8 has done
+     the output pointers for us).  */
+  if (s <= 0xFFFF)
+    {
+      *inbufp += 2;
+      *inbytesleftp -= 2;
+    }
+  else
+    {
+      *inbufp += 4;
+      *inbytesleftp -= 4;
+    }
+  return 0;
+}
+
+/* Helper routine for the next few functions.  The 'const' on
+   one_conversion means that we promise not to modify what function is
+   pointed to, which lets the inliner see through it. */
+
+static inline bool
+conversion_loop (int (*const one_conversion)(iconv_t, const uchar **, size_t *,
+					     uchar **, size_t *),
+		 iconv_t cd, const uchar *from, size_t flen, struct strbuf *to)
+{
+  const uchar *inbuf;
+  uchar *outbuf;
+  size_t inbytesleft, outbytesleft;
+  int rval;
+
+  inbuf = from;
+  inbytesleft = flen;
+  outbuf = to->text + to->len;
+  outbytesleft = to->asize - to->len;
+
+  for (;;)
+    {
+      do
+	rval = one_conversion (cd, &inbuf, &inbytesleft,
+			       &outbuf, &outbytesleft);
+      while (inbytesleft && !rval);
+
+      if (__builtin_expect (inbytesleft == 0, 1))
+	{
+	  to->len = to->asize - outbytesleft;
+	  return true;
+	}
+      if (rval != E2BIG)
+	{
+	  errno = rval;
+	  return false;
+	}
+
+      outbytesleft += OUTBUF_BLOCK_SIZE;
+      to->asize += OUTBUF_BLOCK_SIZE;
+      to->text = xrealloc (to->text, to->asize);
+      outbuf = to->text + to->asize - outbytesleft;
+    }
+}
+		 
+
+/* These functions convert entire strings between character sets.
+   They all have the signature
+
+   bool (*)(iconv_t cd, const uchar *from, size_t flen, struct strbuf *to);
+
+   The input string FROM is converted as specified by the function
+   name plus the iconv descriptor CD (which may be fake), and the
+   result appended to TO.  On any error, false is returned, otherwise true.  */
+
+/* These four use the custom conversion code above.  */
+static bool
+convert_utf8_utf16 (iconv_t cd, const uchar *from, size_t flen,
+		    struct strbuf *to)
+{
+  return conversion_loop (one_utf8_to_utf16, cd, from, flen, to);
+}
+
+static bool
+convert_utf8_utf32 (iconv_t cd, const uchar *from, size_t flen,
+		    struct strbuf *to)
+{
+  return conversion_loop (one_utf8_to_utf32, cd, from, flen, to);
+}
+
+static bool
+convert_utf16_utf8 (iconv_t cd, const uchar *from, size_t flen,
+		    struct strbuf *to)
+{
+  return conversion_loop (one_utf16_to_utf8, cd, from, flen, to);
+}
+
+static bool
+convert_utf32_utf8 (iconv_t cd, const uchar *from, size_t flen,
+		    struct strbuf *to)
+{
+  return conversion_loop (one_utf32_to_utf8, cd, from, flen, to);
+}
+
+/* Identity conversion, used when we have no alternative.  */
+static bool
+convert_no_conversion (iconv_t cd ATTRIBUTE_UNUSED,
+		       const uchar *from, size_t flen, struct strbuf *to)
+{
+  if (to->len + flen > to->asize)
+    {
+      to->asize = to->len + flen;
+      to->text = xrealloc (to->text, to->asize);
+    }
+  memcpy (to->text + to->len, from, flen);
+  to->len += flen;
+  return true;
+}
+
+/* And this one uses the system iconv primitive.  It's a little
+   different, since iconv's interface is a little different.  */
+
+static bool
+convert_using_iconv (iconv_t cd, const uchar *from, size_t flen,
+		     struct strbuf *to)
+{
+  ICONV_CONST char *inbuf;
+  char *outbuf;
+  size_t inbytesleft, outbytesleft;
+
+  /* Reset conversion descriptor and check that it is valid.  */
+  if (iconv (cd, 0, 0, 0, 0) == (size_t)-1)
+    return false;
+
+  inbuf = (ICONV_CONST char *)from;
+  inbytesleft = flen;
+  outbuf = (char *)to->text + to->len;
+  outbytesleft = to->asize - to->len;
+
+  for (;;)
+    {
+      iconv (cd, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
+      if (__builtin_expect (inbytesleft == 0, 1))
+	{
+	  to->len = to->asize - outbytesleft;
+	  return true;
+	}
+      if (errno != E2BIG)
+	return false;
+
+      outbytesleft += OUTBUF_BLOCK_SIZE;
+      to->asize += OUTBUF_BLOCK_SIZE;
+      to->text = xrealloc (to->text, to->asize);
+      outbuf = (char *)to->text + to->asize - outbytesleft;
+    }
+}
+
+/* Arrange for the above custom conversion logic to be used automatically
+   when conversion between a suitable pair of character sets is requested.  */
+
+#define APPLY_CONVERSION(CONVERTER, FROM, FLEN, TO) \
+   CONVERTER.func (CONVERTER.cd, FROM, FLEN, TO)
+
+struct conversion
+{
+  const char *pair;
+  convert_f func;
+  iconv_t fake_cd;
+};
+static const struct conversion conversion_tab[] = {
+  { "UTF-8/UTF-32LE", convert_utf8_utf32, (iconv_t)0 },
+  { "UTF-8/UTF-32BE", convert_utf8_utf32, (iconv_t)1 },
+  { "UTF-8/UTF-16LE", convert_utf8_utf16, (iconv_t)0 },
+  { "UTF-8/UTF-16BE", convert_utf8_utf16, (iconv_t)1 },
+  { "UTF-32LE/UTF-8", convert_utf32_utf8, (iconv_t)0 },
+  { "UTF-32BE/UTF-8", convert_utf32_utf8, (iconv_t)1 },
+  { "UTF-16LE/UTF-8", convert_utf16_utf8, (iconv_t)0 },
+  { "UTF-16BE/UTF-8", convert_utf16_utf8, (iconv_t)1 },
+};
+
+/* Subroutine of cpp_init_iconv: initialize and return a
+   cset_converter structure for conversion from FROM to TO.  If
+   iconv_open() fails, issue an error and return an identity
+   converter.  Silently return an identity converter if FROM and TO
+   are identical.  */
+static struct cset_converter
 init_iconv_desc (cpp_reader *pfile, const char *to, const char *from)
 {
-  iconv_t dsc;
+  struct cset_converter ret;
+  char *pair;
+  size_t i;
+  
+  if (!strcasecmp (to, from))
+    {
+      ret.func = convert_no_conversion;
+      ret.cd = (iconv_t) -1;
+      return ret;
+    }
 
-  if (!strcmp (to, from))
-    return (iconv_t) -1;
+  pair = alloca(strlen(to) + strlen(from) + 2);
 
-  dsc = iconv_open (to, from);
-  if (dsc == (iconv_t) -1)
+  strcpy(pair, from);
+  strcat(pair, "/");
+  strcat(pair, to);
+  for (i = 0; i < ARRAY_SIZE (conversion_tab); i++)
+    if (!strcasecmp (pair, conversion_tab[i].pair))
+      {
+	ret.func = conversion_tab[i].func;
+	ret.cd = conversion_tab[i].fake_cd;
+	return ret;
+      }
+
+  /* No custom converter - try iconv.  */
+  ret.func = convert_using_iconv;
+  ret.cd = iconv_open (to, from);
+
+  if (ret.cd == (iconv_t) -1)
     {
       if (errno == EINVAL)
 	cpp_error (pfile, DL_ERROR, /* XXX should be DL_SORRY */
@@ -127,8 +648,10 @@ init_iconv_desc (cpp_reader *pfile, const char *to, const char *from)
 		   from, to);
       else
 	cpp_errno (pfile, DL_ERROR, "iconv_open");
+
+      ret.func = convert_no_conversion;
     }
-  return dsc;
+  return ret;
 }
 
 /* If charset conversion is requested, initialize iconv(3) descriptors
@@ -146,9 +669,9 @@ cpp_init_iconv (cpp_reader *pfile)
   bool be = CPP_OPTION (pfile, bytes_big_endian);
 
   if (CPP_OPTION (pfile, wchar_precision) >= 32)
-    default_wcset = be ? "UCS-4BE" : "UCS-4LE";
+    default_wcset = be ? "UTF-32BE" : "UTF-32LE";
   else if (CPP_OPTION (pfile, wchar_precision) >= 16)
-    default_wcset = be ? "UCS-2BE" : "UCS-2LE";
+    default_wcset = be ? "UTF-16BE" : "UTF-16LE";
   else
     /* This effectively means that wide strings are not supported,
        so don't do any conversion at all.  */
@@ -181,67 +704,13 @@ _cpp_destroy_iconv (cpp_reader *pfile)
 {
   if (HAVE_ICONV)
     {
-      if (pfile->narrow_cset_desc != (iconv_t) -1)
-	iconv_close (pfile->narrow_cset_desc);
-      if (pfile->wide_cset_desc != (iconv_t) -1)
-	iconv_close (pfile->wide_cset_desc);
+      if (pfile->narrow_cset_desc.func == convert_using_iconv)
+	iconv_close (pfile->narrow_cset_desc.cd);
+      if (pfile->wide_cset_desc.func == convert_using_iconv)
+	iconv_close (pfile->wide_cset_desc.cd);
     }
 }
 
-/* iconv(3) utility wrapper.  Convert the string FROM, of length FLEN,
-   according to the iconv descriptor CD.  The result is appended to
-   the string buffer TO.  If DESC is (iconv_t)-1 or iconv is not
-   available, the string is simply copied into TO.
-
-   Returns true on success, false on error.  */
-
-static bool
-convert_cset (iconv_t cd, const uchar *from, size_t flen, struct strbuf *to)
-{
-  if (!HAVE_ICONV || cd == (iconv_t)-1)
-    {
-      if (to->len + flen > to->asize)
-	{
-	  to->asize = to->len + flen;
-	  to->text = xrealloc (to->text, to->asize);
-	}
-      memcpy (to->text + to->len, from, flen);
-      to->len += flen;
-      return true;
-    }
-  else
-    {
-      ICONV_CONST char *inbuf;
-      char *outbuf;
-      size_t inbytesleft, outbytesleft;
-
-      /* Reset conversion descriptor and check that it is valid.  */
-      if (iconv (cd, 0, 0, 0, 0) == (size_t)-1)
-	return false;
-
-      inbuf = (ICONV_CONST char *)from;
-      inbytesleft = flen;
-      outbuf = (char *)to->text + to->len;
-      outbytesleft = to->asize - to->len;
-
-      for (;;)
-	{
-	  iconv (cd, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
-	  if (__builtin_expect (inbytesleft == 0, 1))
-	    {
-	      to->len = to->asize - outbytesleft;
-	      return true;
-	    }
-	  if (errno != E2BIG)
-	    return false;
-
-	  outbytesleft += OUTBUF_BLOCK_SIZE;
-	  to->asize += OUTBUF_BLOCK_SIZE;
-	  to->text = xrealloc (to->text, to->asize);
-	  outbuf = (char *)to->text + to->asize - outbytesleft;
-	}
-    }
-}
 
 /* Utility routine that computes a mask of the form 0000...111... with
    WIDTH 1-bits.  */
@@ -390,15 +859,6 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
    "universal character %.*s is not valid at the start of an identifier",
 		   (int) (str - base), base);
     }
-  /* We don't accept UCNs if iconv is not available or will not
-     convert to the target wide character set.  */
-  else if (!HAVE_ICONV || pfile->wide_cset_desc == (iconv_t) -1)
-    {
-      /* XXX should be DL_SORRY */
-      cpp_error (pfile, DL_ERROR,
-	"universal character names are not supported in this configuration");
-    }
-
 
   if (result == 0)
     result = 1;
@@ -408,58 +868,31 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 
 /* Convert an UCN, pointed to by FROM, to UTF-8 encoding, then translate
    it to the execution character set and write the result into TBUF.
-   An advanced pointer is returned.  Issues all relevant diagnostics.
+   An advanced pointer is returned.  Issues all relevant diagnostics.  */
 
-   UTF-8 encoding looks like this:
-
-   value range	       encoded as
-   00000000-0000007F   0xxxxxxx
-   00000080-000007FF   110xxxxx 10xxxxxx
-   00000800-0000FFFF   1110xxxx 10xxxxxx 10xxxxxx
-   00010000-001FFFFF   11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-   00200000-03FFFFFF   111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-   04000000-7FFFFFFF   1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-
-   Values in the 0000D800 ... 0000DFFF range (surrogates) are invalid,
-   which means that three-byte sequences ED xx yy, with A0 <= xx <= BF,
-   never occur.  Note also that any value that can be encoded by a
-   given row of the table can also be encoded by all successive rows,
-   but this is not done; only the shortest possible encoding for any
-   given value is valid.  For instance, the character 07C0 could be
-   encoded as any of DF 80, E0 9F 80, F0 80 9F 80, F8 80 80 9F 80, or
-   FC 80 80 80 9F 80.  Only the first is valid.  */
 
 static const uchar *
 convert_ucn (cpp_reader *pfile, const uchar *from, const uchar *limit,
 	     struct strbuf *tbuf, bool wide)
 {
-  int nbytes;
-  uchar buf[6], *p = &buf[6];
-  static const uchar masks[6] = { 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
   cppchar_t ucn;
+  uchar buf[6];
+  uchar *bufp = buf;
+  size_t bytesleft = 6;
+  int rval;
+  struct cset_converter cvt
+    = wide ? pfile->wide_cset_desc : pfile->narrow_cset_desc;
 
-  from++; /* skip u/U */
+  from++;  /* skip u/U */
   ucn = _cpp_valid_ucn (pfile, &from, limit, 0);
-  if (!ucn)
-    return from;
 
-  nbytes = 1;
-  if (ucn < 0x80)
-    *--p = ucn;
-  else
+  rval = one_cppchar_to_utf8 (ucn, &bufp, &bytesleft);
+  if (rval)
     {
-      do
-	{
-	  *--p = ((ucn & 0x3F) | 0x80);
-	  ucn >>= 6;
-	  nbytes++;
-	}
-      while (ucn >= 0x3F || (ucn & masks[nbytes-1]));
-      *--p = (ucn | masks[nbytes-1]);
+      errno = rval;
+      cpp_errno (pfile, DL_ERROR, "converting UCN to source character set");
     }
-
-  if (!convert_cset (wide ? pfile->wide_cset_desc : pfile->narrow_cset_desc,
-		     p, nbytes, tbuf))
+  else if (!APPLY_CONVERSION (cvt, buf, 6 - bytesleft, tbuf))
     cpp_errno (pfile, DL_ERROR, "converting UCN to execution character set");
 
   return from;
@@ -615,6 +1048,8 @@ convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
 #endif
 
   uchar c;
+  struct cset_converter cvt
+    = wide ? pfile->wide_cset_desc : pfile->narrow_cset_desc;
 
   c = *from;
   switch (c)
@@ -676,8 +1111,7 @@ convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
     }
 
   /* Now convert what we have to the execution character set.  */
-  if (!convert_cset (wide ? pfile->wide_cset_desc : pfile->narrow_cset_desc,
-		     &c, 1, tbuf))
+  if (!APPLY_CONVERSION (cvt, &c, 1, tbuf))
     cpp_errno (pfile, DL_ERROR,
 	       "converting escape sequence to execution character set");
 
@@ -697,7 +1131,8 @@ cpp_interpret_string (cpp_reader *pfile, const cpp_string *from, size_t count,
   struct strbuf tbuf;
   const uchar *p, *base, *limit;
   size_t i;
-  iconv_t cd = wide ? pfile->wide_cset_desc : pfile->narrow_cset_desc;
+  struct cset_converter cvt
+    = wide ? pfile->wide_cset_desc : pfile->narrow_cset_desc;
 
   tbuf.asize = MAX (OUTBUF_BLOCK_SIZE, from->len);
   tbuf.text = xmalloc (tbuf.asize);
@@ -719,7 +1154,7 @@ cpp_interpret_string (cpp_reader *pfile, const cpp_string *from, size_t count,
 	    {
 	      /* We have a run of normal characters; these can be fed
 		 directly to convert_cset.  */
-	      if (!convert_cset (cd, base, p - base, &tbuf))
+	      if (!APPLY_CONVERSION (cvt, base, p - base, &tbuf))
 		goto fail;
 	    }
 	  if (p == limit)
@@ -741,6 +1176,25 @@ cpp_interpret_string (cpp_reader *pfile, const cpp_string *from, size_t count,
   free (tbuf.text);
   return false;
 }
+
+/* Subroutine of do_line and do_linemarker.  Convert escape sequences
+   in a string, but do not perform character set conversion.  */
+bool
+_cpp_interpret_string_notranslate (cpp_reader *pfile, const cpp_string *in,
+				   cpp_string *out)
+{
+  struct cset_converter save_narrow_cset_desc = pfile->narrow_cset_desc;
+  bool retval;
+
+  pfile->narrow_cset_desc.func = convert_no_conversion;
+  pfile->narrow_cset_desc.cd = (iconv_t) -1;
+
+  retval = cpp_interpret_string (pfile, in, 1, out, false);
+
+  pfile->narrow_cset_desc = save_narrow_cset_desc;
+  return retval;
+}
+
 
 /* Subroutine of cpp_interpret_charconst which performs the conversion
    to a number, for narrow strings.  STR is the string structure returned
