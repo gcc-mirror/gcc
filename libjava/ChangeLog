@@ -1,3 +1,8 @@
+1999-04-19  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natSystem.cc (init_properties): Only declare pwd_entry
+	once.  From Anthony Green.
+
 1999-04-19  Andrew Haley  <aph@cygnus.com>
 
 	* Makefile.in: Processed with new automake.

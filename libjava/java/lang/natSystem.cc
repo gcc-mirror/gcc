@@ -276,7 +276,7 @@ java::lang::System::init_properties (void)
       buf_r = (char *) _Jv_AllocBytes (len_r);
     }
 #else
-  struct passwd *pwd_entry = getpwuid (user_id);
+  pwd_entry = getpwuid (user_id);
 #endif /* HAVE_GETPWUID_R */
 
   if (pwd_entry != NULL)
