@@ -1,5 +1,5 @@
 /* Subroutines needed for unwinding stack frames via the libunwind API.
-   Copyright (C) 2002
+   Copyright (C) 2002, 2003
    Free Software Foundation, Inc.
    Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
@@ -159,6 +159,12 @@ _Unwind_GetRegionStart (struct _Unwind_Context *context)
 
   unw_get_proc_info(&context->cursor, &pi);
   return (_Unwind_Ptr) pi.start_ip;
+}
+
+void *
+_Unwind_FindEnclosingFunction (void *pc)
+{
+  return NULL;
 }
 
 #include "unwind.inc"
