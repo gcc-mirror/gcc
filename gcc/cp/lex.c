@@ -387,6 +387,10 @@ lang_init ()
   put_back (check_newline ());
   if (flag_gnu_xref) GNU_xref_begin (input_filename);
   init_repo (input_filename);
+
+  /* See comments in toplev.c before the call to lang_init.  */
+  if (flag_exceptions == 2)
+    flag_exceptions = 1;
 }
 
 void
