@@ -5,7 +5,7 @@
 @node Collect2
 @chapter @code{collect2}
 
-GNU CC uses a utility called @code{collect2} on nearly all systems to arrange
+GCC uses a utility called @code{collect2} on nearly all systems to arrange
 to call various initialization functions at start time.
 
 The program @code{collect2} works by linking the program once and
