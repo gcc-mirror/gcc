@@ -3085,19 +3085,11 @@ issue_warning_error_from_context (cl, msg, ap)
 void
 parse_error_context VPARAMS ((tree cl, const char *msg, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  tree cl;
-  const char *msg;
-#endif
-  va_list ap;
-
-  VA_START (ap, msg);
-#ifndef ANSI_PROTOTYPES
-  cl = va_arg (ap, tree);
-  msg = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msg);
+  VA_FIXEDARG (ap, tree, cl);
+  VA_FIXEDARG (ap, const char *, msg);
   issue_warning_error_from_context (cl, msg, ap);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 /* Issue a warning at a current source line CL */
@@ -3105,22 +3097,14 @@ parse_error_context VPARAMS ((tree cl, const char *msg, ...))
 static void
 parse_warning_context VPARAMS ((tree cl, const char *msg, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  tree cl;
-  const char *msg;
-#endif
-  va_list ap;
-
-  VA_START (ap, msg);
-#ifndef ANSI_PROTOTYPES
-  cl = va_arg (ap, tree);
-  msg = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msg);
+  VA_FIXEDARG (ap, tree, cl);
+  VA_FIXEDARG (ap, const char *, msg);
 
   force_error = do_warning = 1;
   issue_warning_error_from_context (cl, msg, ap);
   do_warning = force_error = 0;
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 static tree
