@@ -2133,6 +2133,7 @@ extern void purge_hard_subreg_sets (rtx);
 /* In stmt.c */
 extern void set_file_and_line_for_stmt (location_t);
 extern void expand_null_return (void);
+extern void expand_naked_return (void);
 extern void emit_jump (rtx);
 extern int preserve_subexpressions_p (void);
 

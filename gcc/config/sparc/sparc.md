@@ -7686,7 +7686,7 @@
   emit_insn (gen_rtx_USE (VOIDmode, valreg2));
 
   /* Construct the return.  */
-  expand_null_return ();
+  expand_naked_return ();
 
   DONE;
 })
