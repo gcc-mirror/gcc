@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, Mitsubishi M32R cpu.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION fprintf (stderr, " (m32r)")
 
+
 /* Switch  Recognition by gcc.c.  Add -G xx support */
 
 #undef SWITCH_TAKES_ARG
@@ -48,17 +49,18 @@ Boston, MA 02111-1307, USA.  */
 /* __M32R__ is defined by the existing compiler so we use that.  */
 #define CPP_PREDEFINES "-Acpu(m32r) -Amachine(m32r) -D__M32R__"
 
-/* Additional flags for the preprocessor.  */
-#define CPP_SPEC ""
 
 #define CC1_SPEC "%{G*}"
 
-#undef ASM_SPEC
-#if 0 /* not supported yet */
-#define ASM_SPEC "%{v} %{mrelax:-relax}"
-#else
+/* Options to pass on to the assembler.  */
+#undef  ASM_SPEC
 #define ASM_SPEC "%{v}"
+
+#if 0 /* not supported yet */
+#undef  ASM_SPEC
+#define ASM_SPEC "%{v} %{mrelax:-relax}"
 #endif
+     
 
 #undef ASM_FINAL_SPEC
 
@@ -72,9 +74,11 @@ Boston, MA 02111-1307, USA.  */
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!shared:crt0.o%s crtsysc.o%s} crtinit.o%s"
 
+
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC "crtfini.o%s"
 
+     
 #undef LIB_SPEC
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
@@ -104,6 +108,10 @@ extern int target_flags;
    Eventually it will be deleted.  */
 #define TARGET_OLD_COMPARE_MASK 8
 #define TARGET_OLD_COMPARE (target_flags & TARGET_OLD_COMPARE_MASK)
+
+/* Target machine to compile for.  */
+#define TARGET_M32R 1
+
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
@@ -147,6 +155,8 @@ extern int target_flags;
 
 extern char *m32r_model_string;
 extern char *m32r_sdata_string;
+
+
 #define TARGET_OPTIONS \
 {						\
   { "model=",	&m32r_model_string	},	\
@@ -239,10 +249,10 @@ extern enum m32r_sdata m32r_sdata;
 #define M32R_SDATA_DEFAULT "none"
 
 /* Define this macro as a C expression for the initializer of an array of
-   string to tell the driver program which options are defaults for this
+   strings to tell the driver program which options are defaults for this
    target and thus do not need to be handled specially when using
    `MULTILIB_OPTIONS'.  */
-#define MULTILIB_DEFAULTS { "mmodel=small" }
+#define MULTILIB_DEFAULTS { "mmodel=small", "m32r" }
 
 /* Sometimes certain combinations of command options do not make
    sense on a particular target machine.  You can define a macro
@@ -252,8 +262,6 @@ extern enum m32r_sdata m32r_sdata;
 
    Don't use this macro to turn on various extra optimizations for
    `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.  */
-
-extern void m32r_init ();
 
 #define OVERRIDE_OPTIONS \
 do {				\
@@ -404,7 +412,7 @@ if (GET_MODE_CLASS (MODE) == MODE_INT		\
    All registers that the compiler knows about must be given numbers,
    even those that are not normally considered general registers.  */
 #define FIRST_PSEUDO_REGISTER 18
-
+	
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
 
@@ -420,12 +428,14 @@ if (GET_MODE_CLASS (MODE) == MODE_INT		\
    16    - arg pointer
    17    - carry flag
 
+   
    By default, the extension registers are not available.  */
 
 #define FIXED_REGISTERS \
 { 0, 0, 0, 0, 0, 0, 0, 0,	\
   0, 0, 0, 0, 0, 0, 0, 1,	\
   1, 0 }
+
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -438,6 +448,7 @@ if (GET_MODE_CLASS (MODE) == MODE_INT		\
 { 1, 1, 1, 1, 1, 1, 1, 1,	\
   0, 0, 0, 0, 0, 0, 1, 1,	\
   1, 1 }
+
 
 /* Zero or more C statements that may conditionally modify two variables
    `fixed_regs' and `call_used_regs' (both of type `char []') after they
@@ -531,11 +542,12 @@ enum reg_class {
 #define REG_CLASS_CONTENTS \
 { {0}, {0x20000}, {0x1ffff}, {0x3ffff} }
 
+
 /* The same information, inverted:
    Return the class number of the smallest class containing
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
-extern enum reg_class m32r_regno_reg_class[];
+extern enum reg_class m32r_regno_reg_class[FIRST_PSEUDO_REGISTER];
 #define REGNO_REG_CLASS(REGNO) \
 (m32r_regno_reg_class[REGNO])
 
@@ -622,7 +634,11 @@ extern enum reg_class m32r_regno_reg_class[];
    C.  If C is not defined as an extra constraint, the value returned should
    be 0 regardless of VALUE.  */
 /* Q is for symbolic addresses loadable with ld24.
-   R is for symbolic addresses when ld24 can't be used.  */
+   R is for symbolic addresses when ld24 can't be used.
+   S is for an 8 bit signed integer in the range +128 to -127 */
+
+#define INVERTED_SIGNED_8BIT(VAL) ((VAL) >= -127 && (VAL) <= 128)
+
 #define EXTRA_CONSTRAINT(VALUE, C) \
 ((C) == 'Q' \
  ? ((TARGET_ADDR24 && GET_CODE (VALUE) == LABEL_REF) \
@@ -630,6 +646,8 @@ extern enum reg_class m32r_regno_reg_class[];
  : (C) == 'R' \
  ? ((TARGET_ADDR32 && GET_CODE (VALUE) == LABEL_REF) \
     || addr32_operand (VALUE, VOIDmode)) \
+ : (C) == 'S' \
+ ?  ((GET_CODE (VALUE) == CONST_INT) && INVERTED_SIGNED_8BIT (INTVAL (VALUE))) \
  : 0)
 
 /* Stack layout and stack pointer usage.  */
@@ -717,6 +735,7 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
 #define CARRY_REGNUM 17
 #define M32R_MAX_INT_REGS 16
 
+     
 #define GPR_P(REGNO) ((unsigned) (REGNO) < M32R_MAX_INT_REGS)
 
 /* Eliminating the frame and arg pointers.  */
@@ -907,7 +926,7 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
    compiler when this occurs, and how many of the words should go in
    registers.  */
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
-  function_arg_partial_nregs (&CUM, MODE, TYPE, NAMED)
+  function_arg_partial_nregs (&CUM, (int)MODE, TYPE, NAMED)
 
 /* A C expression that indicates when an argument must be passed by
    reference.  If nonzero for an argument, a copy of that argument is
@@ -1218,9 +1237,8 @@ do {					\
 
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  */
-extern enum machine_mode m32r_select_cc_mode ();
 #define SELECT_CC_MODE(OP, X, Y) \
-m32r_select_cc_mode (OP, X, Y)
+((enum machine_mode)m32r_select_cc_mode ((int)OP, X, Y))
 
 /* Return non-zero if SELECT_CC_MODE will never return MODE for a
    floating point inequality comparison.  */
@@ -1313,6 +1331,38 @@ m32r_select_cc_mode (OP, X, Y)
    the improvement wasn't significant and in a couple of cases caused a
    significant de-optimization.  */
 /* #define ENABLE_REGMOVE_PASS */
+
+/* A C statement (sans semicolon) to update the integer variable COST based on
+   the relationship between INSN that is dependent on DEP_INSN through the
+   dependence LINK.  The default is to make no adjustment to COST.  This can be
+   used for example to specify to the scheduler that an output- or
+   anti-dependence does not incur the same cost as a data-dependence.  */
+
+/* #define ADJUST_COST(INSN,LINK,DEP_INSN,COST)				\
+  (COST) = m32r_adjust_cost (INSN, LINK, DEP_INSN, COST) */
+
+/* A C statement (sans semicolon) to update the integer scheduling
+   priority `INSN_PRIORITY(INSN)'.  Reduce the priority to execute
+   the INSN earlier, increase the priority to execute INSN later.
+   Do not define this macro if you do not need to adjust the
+   scheduling priorities of insns.  */
+/* #define ADJUST_PRIORITY (INSN) */
+
+/* Macro to determine whether the Haifa scheduler is used.  */
+#ifdef HAIFA
+#define HAIFA_P 1
+#else
+#define HAIFA_P 0
+#endif
+
+/* Indicate how many instructions can be issued at the same time.  */
+#define ISSUE_RATE 2
+
+/* When the `length' insn attribute is used, this macro specifies the
+   value to be assigned to the address of the first insn in a
+   function.  If not specified, 0 is used.  */
+#define FIRST_INSN_ADDRESS m32r_first_insn_address ()
+
 
 /* Section selection.  */
 
@@ -1344,7 +1394,7 @@ DTORS_SECTION_FUNCTION \
 SDATA_SECTION_FUNCTION \
 SBSS_SECTION_FUNCTION
 
-#define SDATA_SECTION_FUNCTION \
+#define SDATA_SECTION_FUNCTION						\
 void									\
 sdata_section ()							\
 {									\
@@ -1355,7 +1405,7 @@ sdata_section ()							\
     }									\
 }									\
 
-#define SBSS_SECTION_FUNCTION \
+#define SBSS_SECTION_FUNCTION						\
 void									\
 sbss_section ()								\
 {									\
@@ -1429,7 +1479,6 @@ extern void m32r_select_section ();
  || MEDIUM_NAME_P (SYMBOL_NAME) \
  || LARGE_NAME_P (SYMBOL_NAME))
 
-extern void m32r_encode_section_info ();
 #define ENCODE_SECTION_INFO(DECL) m32r_encode_section_info (DECL)
 
 /* Decode SYM_NAME and store the real name part in VAR, sans
@@ -1487,7 +1536,6 @@ do {							\
 /* Control the assembler format that we output.  */
 
 /* Output at beginning of assembler file.  */
-extern void m32r_asm_file_start ();
 #define ASM_FILE_START(FILE) m32r_asm_file_start (FILE)
 
 /* A C string constant describing how to begin a comment in the target
@@ -1582,7 +1630,7 @@ do {				\
 #undef ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(FILE, NAME) \
 do {							\
-  char *real_name;					\
+  char * real_name;					\
   STRIP_NAME_ENCODING (real_name, (NAME));		\
   fprintf (FILE, "%s%s", USER_LABEL_PREFIX, real_name);	\
 } while (0)           
@@ -1713,8 +1761,6 @@ do {									\
    handling the required alignment of the variable.  The alignment is
    specified as the number of bits.  */
 
-extern void sbss_section ();
-
 #undef ASM_OUTPUT_ALIGNED_LOCAL
 #define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN) \
 do {									\
@@ -1833,35 +1879,146 @@ do {									\
 /* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
    is a valid machine specific attribute for DECL.
    The attributes in ATTRIBUTES have previously been assigned to TYPE.  */
-extern int m32r_valid_machine_attribute ();
 #define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, IDENTIFIER, ARGS) \
 m32r_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 
 /* A C expression that returns zero if the attributes on TYPE1 and TYPE2 are
    incompatible, one if they are compatible, and two if they are
    nearly compatible (which causes a warning to be generated).  */
-extern int m32r_comp_type_attributes ();
 #define COMP_TYPE_ATTRIBUTES(TYPE1, TYPE2) \
 m32r_comp_type_attributes (TYPE1, TYPE2)
 
 /* Give newly defined TYPE some default attributes.  */
-extern void m32r_set_default_type_attributes ();
 #define SET_DEFAULT_TYPE_ATTRIBUTES(TYPE) \
 m32r_set_default_type_attributes (TYPE)
 
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  Note that we can't use "rtx" here
    since it hasn't been defined!  */
-extern struct rtx_def *m32r_compare_op0, *m32r_compare_op1;
-
-/* Define the function that build the compare insn for scc and bcc.  */
-extern struct rtx_def *gen_compare ();
+extern struct rtx_def * m32r_compare_op0;
+extern struct rtx_def * m32r_compare_op1;
 
 /* M32R function types.   */
-enum m32r_function_type {
+enum m32r_function_type
+{
   M32R_FUNCTION_UNKNOWN, M32R_FUNCTION_NORMAL, M32R_FUNCTION_INTERRUPT
 };
 #define M32R_INTERRUPT_P(TYPE) \
 ((TYPE) == M32R_FUNCTION_INTERRUPT)
-/* Compute the type of a function from its DECL.  */
-enum m32r_function_type m32r_compute_function_type ();
+
+/* Define this if you have defined special-purpose predicates in the
+   file `MACHINE.c'.  This macro is called within an initializer of an
+   array of structures.  The first field in the structure is the name
+   of a predicate and the second field is an array of rtl codes.  For
+   each predicate, list all rtl codes that can be in expressions
+   matched by the predicate.  The list should have a trailing comma.  */
+
+#define PREDICATE_CODES							\
+{ "conditional_move_operand",	{ REG, SUBREG, CONST_INT }},		\
+{ "carry_compare_operand",	{ EQ, NE }},				\
+{ "eqne_comparison_operator",	{ EQ, NE }},				\
+{ "signed_comparison_operator", { EQ, NE, LT, LE, GT, GE }},		\
+{ "move_dest_operand",		{ REG, SUBREG, MEM }},			\
+{ "move_src_operand",		{ REG, SUBREG, MEM, CONST_INT,		\
+				  CONST_DOUBLE, LABEL_REF, CONST,	\
+				  SYMBOL_REF }},			\
+{ "move_double_src_operand",	{ REG, SUBREG, MEM, CONST_INT,		\
+				  CONST_DOUBLE }},			\
+{ "two_insn_const_operand",	{ CONST_INT }},				\
+{ "symbolic_operand",		{ SYMBOL_REF, LABEL_REF, CONST }},	\
+{ "reg_or_int16_operand",	{ REG, SUBREG, CONST_INT }},		\
+{ "reg_or_uint16_operand",	{ REG, SUBREG, CONST_INT }},		\
+{ "reg_or_cmp_int16_operand",	{ REG, SUBREG, CONST_INT }},		\
+{ "reg_or_zero_operand",	{ REG, SUBREG, CONST_INT }},		\
+{ "cmp_int16_operand",		{ CONST_INT }},				\
+{ "call_address_operand",	{ SYMBOL_REF, LABEL_REF, CONST }},	\
+{ "small_insn_p",		{ INSN, CALL_INSN, JUMP_INSN }},	\
+{ "large_insn_p",		{ INSN, CALL_INSN, JUMP_INSN }},
+
+/* Functions declared in m32r.c */
+#ifndef PROTO
+#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
+#define PROTO(ARGS) ARGS
+#else
+#define PROTO(ARGS) ()
+#endif
+#endif
+
+#ifdef BUFSIZE		/* stdio.h has been included, ok to use FILE * */
+#define STDIO_PROTO(ARGS) PROTO(ARGS)
+#else
+#define STDIO_PROTO(ARGS) ()
+#endif
+
+#ifndef TREE_CODE
+union tree_node;
+#define Tree union tree_node *
+#else
+#define Tree tree
+#endif
+
+#ifndef RTX_CODE
+struct rtx_def;
+#define Rtx struct rtx_def *
+#else
+#define Rtx rtx
+#endif
+
+extern void sbss_section			PROTO((void));
+extern void sdata_section			PROTO((void));
+extern void m32r_init				PROTO((void));
+extern int  m32r_valid_machine_decl_attribute	PROTO((Tree, Tree, Tree, Tree));
+extern int  m32r_comp_type_attributes		PROTO((Tree, Tree));
+extern void m32r_select_section			PROTO((Tree, int));
+extern void m32r_encode_section_info		PROTO((Tree));
+extern void m32r_init_expanders			PROTO((void));
+extern int  call_address_operand		PROTO((Rtx, int));
+extern int  call_operand			PROTO((Rtx, int));
+extern int  symbolic_operand			PROTO((Rtx, int));
+extern int  small_data_operand			PROTO((Rtx, int));
+extern int  addr24_operand			PROTO((Rtx, int));
+extern int  addr32_operand			PROTO((Rtx, int));
+extern int  call26_operand			PROTO((Rtx, int));
+extern int  seth_add3_operand			PROTO((Rtx, int));
+extern int  cmp_int16_operand			PROTO((Rtx, int));
+extern int  uint16_operand			PROTO((Rtx, int));
+extern int  reg_or_int16_operand		PROTO((Rtx, int));
+extern int  reg_or_uint16_operand		PROTO((Rtx, int));
+extern int  reg_or_cmp_nt16_operand		PROTO((Rtx, int));
+extern int  two_insn_const_operand		PROTO((Rtx, int));
+extern int  move_src_operand			PROTO((Rtx, int));
+extern int  move_double_src_operand		PROTO((Rtx, int));
+extern int  move_dest_operand			PROTO((Rtx, int));
+extern int  easy_di_const			PROTO((Rtx));
+extern int  easy_df_const			PROTO((Rtx));
+extern int  eqne_comparison_operator		PROTO((Rtx, int));
+extern int  signed_comparison_operator		PROTO((Rtx, int));
+extern int  memreg_operand			PROTO((Rtx, int));
+extern int  small_insn_p			PROTO((Rtx, int));
+extern int  large_insn_p			PROTO((Rtx, int));
+extern int  m32r_select_cc_mode			PROTO((int, Rtx, Rtx));
+extern Rtx  gen_compare				PROTO((int, Rtx, Rtx, int));
+extern int  function_arg_partial_nregs		PROTO((CUMULATIVE_ARGS *,
+						       int, Tree, int));
+extern void m32r_setup_incoming_varargs		PROTO((CUMULATIVE_ARGS *,
+						       int, Tree, int *,
+						       int));
+extern int  m32r_address_code			PROTO((Rtx));
+extern enum m32r_function_type m32r_compute_function_type
+						PROTO((Tree));
+extern unsigned m32r_compute_frame_size		PROTO((int));
+extern int  m32r_first_insn_address		PROTO((void));
+extern void m32r_output_function_prologue	STDIO_PROTO((FILE *, int));
+extern void m32r_output_function_epilogue	STDIO_PROTO((FILE *, int));
+extern void m32r_finalize_pic			PROTO((void));
+extern void m32r_initialize_trampoline		PROTO((Rtx, Rtx, Rtx));
+extern void m32r_asm_file_start			STDIO_PROTO((FILE *));
+extern void m32r_print_operand			STDIO_PROTO((FILE *, Rtx, int));
+extern void m32r_print_operand_address		STDIO_PROTO((FILE *, Rtx));
+extern int  zero_and_one			PROTO((Rtx, Rtx));
+extern int  conditional_move_operand		PROTO((Rtx, int));
+extern int  carry_compare_operand		PROTO((Rtx, int));
+extern char *emit_cond_move			PROTO((Rtx *, Rtx));
+
+/* Needed by a peephole optimisation.  */
+#define PRESERVE_DEATH_INFO_REGNO_P(regno) (regno < FIRST_PSEUDO_REGISTER)
