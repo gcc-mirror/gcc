@@ -825,7 +825,6 @@ c_common_decode_option (argc, argv)
       else
 	{
 	  /* C++-specific warnings.  */
-	  warn_ctor_dtor_privacy = on;
 	  warn_nonvdtor = on;
 	  warn_reorder = on;
 	  warn_nontemplate_friend = on;

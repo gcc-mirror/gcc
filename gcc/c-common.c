@@ -626,7 +626,7 @@ int warn_implicit = 1;
 /* Nonzero means warn when all ctors or dtors are private, and the class
    has no friends.  */
 
-int warn_ctor_dtor_privacy = 1;
+int warn_ctor_dtor_privacy = 0;
 
 /* Nonzero means warn in function declared in derived class has the
    same name as a virtual in the base class, but fails to match the
