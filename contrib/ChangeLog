@@ -1,3 +1,8 @@
+1999-02-04  Robert Lipe  <robertlipe@usa.net>
+
+	* egcs_update: Test return values of 'cvs update'.  Propogate 
+	to caller as exit values.     
+
 1999-01-25  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* egcs_update: Use "if" instead of "&&".  Touch generated files
