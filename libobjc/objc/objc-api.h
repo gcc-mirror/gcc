@@ -1,5 +1,5 @@
 /* GNU Objective-C Runtime API.
-   Copyright (C) 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 1997, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -261,7 +261,7 @@ typedef struct objc_method_list {
 
 struct objc_protocol_list {
   struct objc_protocol_list *next;
-  int count;
+  size_t count;
   Protocol *list[1];
 };
 
