@@ -1,3 +1,8 @@
+2002-11-04  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_decompose_address): Use arg_pointer_rtx
+	for comparison.
+
 2002-11-04  Aldy Hernandez  <aldyh@redhat.com>
 
 	* hard-reg-set.h (REG_CANNOT_CHANGE_MODE_P): New.

@@ -1605,12 +1605,11 @@ s390_decompose_address (addr, out)
 	     Thus we don't check the displacement for validity here.  If after
 	     elimination the displacement turns out to be invalid after all,
 	     this is fixed up by reload in any case.  */
-	  if ((base && REGNO (base) == ARG_POINTER_REGNUM)
-	      || (indx && REGNO (indx) == ARG_POINTER_REGNUM))
-	    ;
-
-	  else if (INTVAL (disp) < 0 || INTVAL (disp) >= 4096)
-	    return FALSE;
+	  if (base != arg_pointer_rtx && indx != arg_pointer_rtx)
+	    {
+	      if (INTVAL (disp) < 0 || INTVAL (disp) >= 4096)
+	        return FALSE;
+	    }
         }
 
       /* In the small-PIC case, the linker converts @GOT12 
