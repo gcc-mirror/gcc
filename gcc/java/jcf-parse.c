@@ -726,7 +726,7 @@ jcf_parse (JCF* jcf)
 	 -fforce-classes-archive-check was specified. */
       if (!jcf->right_zip
 	  && (!flag_emit_class_files || flag_force_classes_archive_check))
-	fatal_error ("the `java.lang.Object' that was found in `%s' didn't have the special zero-length `gnu.gcj.gcj-compiled' attribute.  This generally means that your classpath is incorrectly set.  Use `info gcj \"Input Options\"' to see the info page describing how to set the classpath", jcf->filename);
+	fatal_error ("the %<java.lang.Object%> that was found in %qs didn't have the special zero-length %<gnu.gcj.gcj-compiled%> attribute.  This generally means that your classpath is incorrectly set.  Use %<info gcj \"Input Options\"%> to see the info page describing how to set the classpath", jcf->filename);
     }
   else
     all_class_list = tree_cons (NULL_TREE,

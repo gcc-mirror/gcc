@@ -1,3 +1,24 @@
+2004-10-16  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* check-init.c: Use %<, %> and %q for quoting in diagnostics,
+	if possible, else convert `foo' to 'foo'.
+	* class.c: Likewise.
+	* decl.c: Likewise.
+	* expr.c: Likewise.
+	* jcf-io.c: Likewise.
+	* jcf-parse.c: Likewise.
+	* lang.c: Likewise.
+	* lex.c: Likewise.
+	* parse.h: Likewise.
+
+2004-10-16  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* parse.y (parse_warning_context): Remove ATTRIBUTE_PRINTF_2 and
+	rename parameter 'msg' to 'msgid' in function declaration.
+	(issue_warning_error_from_context): Likewise.
+	(yyerror): Rename parameter 'msg' to 'msgid'.
+	(all over): Use new quoting style for diagnostics.
+
 2004-10-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* boehm.c, builtins.c, java-except.h, jcf-io.c, jcf-path.c,
