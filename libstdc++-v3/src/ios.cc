@@ -38,6 +38,9 @@
 #include <fstream>
 #include <bits/atomicity.h>
 #include <ext/stdio_filebuf.h>
+#ifdef _GLIBCPP_HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 namespace __gnu_cxx
 {
