@@ -146,7 +146,7 @@ REQUIRED_OFILES = argv.o choose-temp.o concat.o cplus-dem.o cp-demangle.o     \
 	xstrdup.o xstrerror.o
 
 $(TARGETLIB): $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS) $(ALLOCA)
-	rm -f $(TARGETLIB)
+	-rm -f $(TARGETLIB)
 	$(AR) $(AR_FLAGS) $(TARGETLIB) \
 	  $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS) $(ALLOCA)
 	$(RANLIB) $(TARGETLIB)
@@ -214,19 +214,19 @@ ls:
 # Cleaning has to be done carefully to ensure that we don't clean our SUBDIRS
 # multiple times, hence our explicit recursion with an empty SUBDIRS.
 mostlyclean: mostlyclean-subdir
-	rm -rf *.o pic core errs \#* *.E a.out
-	rm -f needed.awk needed2.awk errors dummy needed-list config.h stamp-*
-	rm -f $(CONFIG_H) $(NEEDED_LIST) stamp-picdir
+	-rm -rf *.o pic core errs \#* *.E a.out
+	-rm -f needed.awk needed2.awk errors dummy needed-list config.h stamp-*
+	-rm -f $(CONFIG_H) $(NEEDED_LIST) stamp-picdir
 	@$(MULTICLEAN) multi-clean DO=mostlyclean
 clean: clean-subdir
 	$(MAKE) SUBDIRS="" mostlyclean
-	rm -f *.a required-list tmpmulti.out
+	-rm -f *.a required-list tmpmulti.out
 	@$(MULTICLEAN) multi-clean DO=clean
 distclean: distclean-subdir
 	$(MAKE) SUBDIRS="" clean
 	@$(MULTICLEAN) multi-clean DO=distclean
-	rm -f *~ Makefile config.status xhost-mkfrag TAGS multilib.out
-	rm -f config.log
+	-rm -f *~ Makefile config.status xhost-mkfrag TAGS multilib.out
+	-rm -f config.log
 	-rmdir testsuite 2>/dev/null
 maintainer-clean realclean: maintainer-clean-subdir
 	$(MAKE) SUBDIRS="" distclean
