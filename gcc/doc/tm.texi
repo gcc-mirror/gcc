@@ -8495,6 +8495,15 @@ This hook should return @code{true} if the element size should be stored in
 array cookies.  The default is to return @code{false}.
 @end deftypefn
 
+@deftypefn {Target Hook} int TARGET_CXX_IMPORT_EXPORT_CLASS (tree  @var{type}, int @var{import_export})
+If defined by a backend this hook allows the decision made to export
+class @var{type} to be overruled.  Upon entry @var{import_export}
+will contain 1 if the class is going to be exported, -1 if it is going
+to be imported and 0 otherwise.  This function should return the
+modified value and perform any other actions necessary to support the
+backend's targeted operating system.
+@end deftypefn
+
 @node Misc
 @section Miscellaneous Parameters
 @cindex parameters, miscellaneous

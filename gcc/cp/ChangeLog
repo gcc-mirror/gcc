@@ -1,3 +1,9 @@
+2004-07-01  Nick Clifton  <nickc@redhat.com>
+
+	* decl2.c (import_export_class): Invoke the
+	import_export_class field in the gcc_target structure if it is not
+	empty.
+
 2004-06-30  Richard Henderson  (rth@redhat.com>
 
 	* decl.c (start_preparsed_function): Don't set immediate_size_expand.
