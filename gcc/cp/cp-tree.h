@@ -2779,7 +2779,10 @@ struct lang_decl GTY(())
      0=normal declaration, e.g. int min (int, int);
      1=implicit template instantiation
      2=explicit template specialization, e.g. int min<int> (int, int);
-     3=explicit template instantiation, e.g. template int min<int> (int, int);  */
+     3=explicit template instantiation, e.g. template int min<int> (int, int);
+
+   If DECL_USE_TEMPLATE is non-zero, then DECL_TEMPLATE_INFO will also
+   be non-NULL.  */
 #define DECL_USE_TEMPLATE(NODE) (DECL_LANG_SPECIFIC (NODE)->decl_flags.use_template)
 
 #define DECL_TEMPLATE_INSTANTIATION(NODE) (DECL_USE_TEMPLATE (NODE) & 1)
