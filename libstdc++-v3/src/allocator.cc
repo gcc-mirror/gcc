@@ -46,4 +46,6 @@ namespace __gnu_cxx
   // Static members of __pool_alloc.
   template class __pool_alloc<char>;
   template class __pool_alloc<wchar_t>;
+
+  template class __pool_base<true>;
 } // namespace __gnu_cxx

@@ -1,3 +1,18 @@
+2004-06-17  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (time_get<>::_M_extract_name):
+	Don't use the 'magic number' 10 in the computation of __minlen;
+	never access __name past __minlen; in the loop over __i3, don't
+	decrease __nmatches and increase __i3 at once, only either of
+	the two; tidy.
+
+2004-06-17  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/pool_allocator.h: Convert to a global free-list,
+	as per the original SGI/HP design: move the implementation
+	details to struct __pool_base, from which __pool_alloc derives.
+	* src/allocator.cc: Instantiate __pool_base.
+
 2004-06-11  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/15775
