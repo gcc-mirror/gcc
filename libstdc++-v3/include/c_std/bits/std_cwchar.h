@@ -205,7 +205,7 @@ namespace std
 }
 
 #if _GLIBCPP_USE_C99
-namespace c99
+namespace __gnu_cxx
 {
   extern "C" long double wcstold(const wchar_t*, wchar_t**); 
   extern "C" long long int wcstoll(const wchar_t*, wchar_t**, int); 
@@ -214,9 +214,9 @@ namespace c99
 
 namespace std
 {
-  using c99::wcstold;
-  using c99::wcstoll;
-  using c99::wcstoull;
+  using __gnu_cxx::wcstold;
+  using __gnu_cxx::wcstoll;
+  using __gnu_cxx::wcstoull;
 }
 #endif
 

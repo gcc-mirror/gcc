@@ -572,9 +572,9 @@ namespace std
 
 #if _GLIBCPP_USE_C99
 // These are possible macros imported from C99-land. For strict
-// conformance, remove possible C99-injected names from the
-// global namespace, and sequester them in the c99 namespace. 
-namespace c99
+// conformance, remove possible C99-injected names from the global
+// namespace, and sequester them in the __gnu_cxx extension namespace. 
+namespace __gnu_cxx
 {
   template<typename _Tp>
     int 
@@ -602,32 +602,33 @@ namespace c99
 
   template<typename _Tp>
     int 
-    __capture_isgreater(_Tp __f1, _Tp __f2) { return isgreater(__f1, __f2); }
+    __capture_isgreater(_Tp __f1, _Tp __f2)
+    { return isgreater(__f1, __f2); }
 
- template<typename _Tp>
-    int 
-    __capture_isgreaterequal(_Tp __f1, _Tp __f2) 
-    { return isgreaterequal(__f1, __f2); }
+  template<typename _Tp>
+     int 
+     __capture_isgreaterequal(_Tp __f1, _Tp __f2) 
+     { return isgreaterequal(__f1, __f2); }
 
- template<typename _Tp>
-    int 
-    __capture_isless(_Tp __f1, _Tp __f2) { return isless(__f1, __f2); }
+  template<typename _Tp>
+     int 
+     __capture_isless(_Tp __f1, _Tp __f2) { return isless(__f1, __f2); }
 
- template<typename _Tp>
-    int 
-    __capture_islessequal(_Tp __f1, _Tp __f2) 
-    { return islessequal(__f1, __f2); }
+  template<typename _Tp>
+     int 
+     __capture_islessequal(_Tp __f1, _Tp __f2) 
+     { return islessequal(__f1, __f2); }
 
- template<typename _Tp>
-    int 
-    __capture_islessgreater(_Tp __f1, _Tp __f2) 
-    { return islessgreater(__f1, __f2); }
+  template<typename _Tp>
+     int 
+     __capture_islessgreater(_Tp __f1, _Tp __f2) 
+     { return islessgreater(__f1, __f2); }
 
- template<typename _Tp>
-    int 
-    __capture_isunordered(_Tp __f1, _Tp __f2) 
-    { return isunordered(__f1, __f2); }
-} // namespace c99
+  template<typename _Tp>
+     int 
+     __capture_isunordered(_Tp __f1, _Tp __f2) 
+     { return isunordered(__f1, __f2); }
+} // namespace __gnu_cxx
 #endif
 
 #undef fpclassify
@@ -644,7 +645,7 @@ namespace c99
 #undef isunordered
 
 #if _GLIBCPP_USE_C99
-namespace c99
+namespace __gnu_cxx
 {
   template<typename _Tp>
     int
@@ -701,18 +702,18 @@ namespace c99
 
 namespace std
 {
-  using c99::fpclassify;
-  using c99::isfinite;
-  using c99::isinf;
-  using c99::isnan;
-  using c99::isnormal;
-  using c99::signbit;
-  using c99::isgreater;
-  using c99::isgreaterequal;
-  using c99::isless;
-  using c99::islessequal;
-  using c99::islessgreater;
-  using c99::isunordered;
+  using __gnu_cxx::fpclassify;
+  using __gnu_cxx::isfinite;
+  using __gnu_cxx::isinf;
+  using __gnu_cxx::isnan;
+  using __gnu_cxx::isnormal;
+  using __gnu_cxx::signbit;
+  using __gnu_cxx::isgreater;
+  using __gnu_cxx::isgreaterequal;
+  using __gnu_cxx::isless;
+  using __gnu_cxx::islessequal;
+  using __gnu_cxx::islessgreater;
+  using __gnu_cxx::isunordered;
 }
 #endif
   
