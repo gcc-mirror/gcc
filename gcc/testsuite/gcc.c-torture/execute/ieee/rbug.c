@@ -19,7 +19,6 @@ main ()
   unsigned long long int k;
   double x;
 
-  /* CYGNUS LOCAL -- meissner/32bit doubles */
   if (sizeof (double) >= 8)
     {
       k = 0x8693ba6d7d220401ULL;
@@ -28,7 +27,6 @@ main ()
       if (k != 0x8693ba6d7d220800ULL)
 	abort ();
     }
-  /* END CYGNUS LOCAL -- meissner/32bit doubles */
 
   k = 0x8234508000000001ULL;
   x = s (k);
