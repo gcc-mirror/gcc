@@ -24,6 +24,7 @@
 
 -help
 Common
+Display this information
 
 -param
 Common Separate
@@ -36,12 +37,15 @@ Common
 
 G
 Common Joined Separate UInteger
+-G<number>	Put global and static data smaller than <number> bytes into a special section (on some targets)
 
 O
 Common JoinedOrMissing
+-O<number>	Set optimization level to <number>
 
 Os
 Common
+Optimize for space rather than speed
 
 W
 Common RejectNegative
@@ -63,12 +67,14 @@ Common
 
 Wextra
 Common
+Print extra (possibly unwanted) warnings
 
 Winline
 Common
 
 Wlarger-than-
 Common RejectNegative Joined UInteger
+-Wlarger-than-<number>	Warn if an object is larger than <number> bytes
 
 Wmissing-noreturn
 Common
@@ -105,6 +111,7 @@ Common
 
 Wunused
 Common
+Enable all -Wunused- warnings
 
 Wunused-function
 Common
@@ -123,6 +130,7 @@ Common
 
 aux-info
 Common Separate
+-aux-info <file>	Emit declaration information into <file>
 
 aux-info=
 Common Joined
@@ -135,9 +143,11 @@ Common Separate
 
 d
 Common Joined
+-d<letters>	Enable dumps from specific passes of the compiler
 
 dumpbase
 Common Separate
+-dumpbase <file>	Set the file basename to be used for dumps
 
 fPIC
 Common
@@ -198,9 +208,11 @@ Common
 
 fcall-saved-
 Common Joined RejectNegative
+-fcall-saved-<register>	Mark <register> as being preserved across functions
 
 fcall-used-
 Common Joined RejectNegative
+-fcall-used-<register>	Mark <register> as being corrupted by function calls
 
 fcaller-saves
 Common
@@ -234,6 +246,7 @@ Common
 
 fdiagnostics-show-location=
 Common Joined RejectNegative
+-fdiagnostics-show-location=[once|every-line]	How often to emit source location at the beginning of line-wrapped diagnostics
 
 fdump-unnumbered
 Common
@@ -261,6 +274,7 @@ Common
 
 ffixed-
 Common Joined RejectNegative
+-ffixed-<register>	Mark <register> as being unavailable to the compiler
 
 ffloat-store
 Common
@@ -315,6 +329,7 @@ Common RejectNegative Joined UInteger
 
 finline-limit=
 Common RejectNegative Joined UInteger
+-finline-limit=<number>	Limit the size of inlined functions to <number>
 
 finstrument-functions
 Common
@@ -345,6 +360,7 @@ Common
 
 fmessage-length=
 Common RejectNegative Joined UInteger
+-fmessage-length=<number>	Limit diagnostics to <number> characters per line.  0 suppresses line-wrapping
 
 fmove-all-movables
 Common
@@ -405,6 +421,7 @@ Common
 
 frandom-seed=
 Common Joined RejectNegative
+-frandom-seed=<string>	Make compile reproducible using <string>
 
 freduce-all-givs
 Common
@@ -444,6 +461,7 @@ Common
 
 fsched-verbose=
 Common RejectNegative Joined
+-fsched-verbose=<number>	Set the verbosity level of the scheduler
 
 fsched2-use-superblocks
 Common
@@ -483,9 +501,11 @@ Common
 
 fstack-limit-register=
 Common RejectNegative Joined
+-fstack-limit-register=<register>	Trap if the stack goes past <register>
 
 fstack-limit-symbol=
 Common RejectNegative Joined
+-fstack-limit-symbol=<name>	Trap if the stack goes past symbol <name>
 
 fstrength-reduce
 Common
@@ -507,6 +527,7 @@ Common
 
 ftls-model=
 Common Joined RejectNegative
+-ftls-model=[global-dynamic|local-dynamic|initial-exec|local-exec]	Set the default thread-local storage code generation model
 
 ftracer
 Common
@@ -555,23 +576,30 @@ Common Joined
 
 o
 Common Joined Separate
+-o <file>	Place output into <file>
 
 p
 Common
+Enable function profiling
 
 pedantic
 Common
+Issue warnings needed for strict compliance to the standard
 
 pedantic-errors
 Common
+Like -pedantic but issue them as errors
 
 quiet
 Common
+Do not display functions compiled or elapsed time
 
 version
 Common
+Display the compiler's version
 
 w
 Common
+Suppress warnings
 
 ; This comment is to ensure we retain the blank line above.
