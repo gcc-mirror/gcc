@@ -124,7 +124,135 @@ proc f-torture-compile { src option } {
 #
 # f-torture-execute -- utility to compile and execute a testcase
 #
-# SRC is the full pathname of the
+# SRC is the full pathname of the testcase.
+#
+# If the testcase has an associated .x file, we source that to run the
+# test instead.  We use .x so that we don't lengthen the existing filename
+# to more than 14 chars.
+#
+proc f-torture-execute { src } {
+    global tmpdir tool srcdir output compiler_conditional_xfail_data
+
+    # Check for alternate driver.
+    if [file exists [file rootname $src].x] {
+	verbose "Using alternate driver [file rootname [file tail $src]].x" 2
+	set done_p 0
+	catch "set done_p \[source [file rootname $src].x\]"
+	if { $done_p } {
+	    return
+	}
+    }
+   
+    # Look for a loop within the source code - if we don't find one,
+    # don't pass -funroll[-all]-loops.
+    global torture_with_loops torture_without_loops
+    if [expr [search_for_re $src "do *\[0-9\]"]+[search_for_re $src "end *do"]] then {
+	set option_list $torture_with_loops
+    } else {
+	set option_list $torture_without_loops
+    }
+
+    set executable $tmpdir/[file tail [file rootname $src].x]
+
+    regsub "^$srcdir/?" $src "" testcase
+    # If we couldn't rip $srcdir out of `src' then just do the best we can.
+    # The point is to reduce the unnecessary noise in the logs.  Don't strip
+    # out too much because different testcases with the same name can confuse
+    # `test-tool'.
+    if [string match "/*" $testcase] {
+	set testcase "[file tail [file dirname $src]]/[file tail $src]"
+    }
+
+    foreach option $option_list {
+	# torture_{compile,execute}_xfail are set by the .x script
+	# (if present)
+	if [info exists torture_compile_xfail] {
+	    setup_xfail $torture_compile_xfail
+	}
+
+	# torture_execute_before_{compile,execute} can be set by the .x script
+	# (if present)
+	if [info exists torture_eval_before_compile] {
+            set ignore_me [eval $torture_eval_before_compile]
+	}
+
+	remote_file build delete $executable
+	verbose "Testing $testcase, $option" 1
+
+	set options ""
+	lappend options "additional_flags=-w $option"
+	set comp_output [g77_target_compile "$src" "$executable" executable $options];
+
+	# Set a few common compiler messages.
+	set fatal_signal "*77*: Internal compiler error: program*got fatal signal"
+	
+	if [string match "$fatal_signal 6" $comp_output] then {
+	    g77_fail $testcase "Got Signal 6, $option"
+	    remote_file build delete $executable
+	    continue
+	}
+	
+	if [string match "$fatal_signal 11" $comp_output] then {
+	    g77_fail $testcase "Got Signal 11, $option"
+	    remote_file build delete $executable
+	    continue
+	}
+	
+	# We shouldn't get these because of -w, but just in case.
+	if [string match "*77*:*warning:*" $comp_output] then {
+	    warning "$testcase: (with warnings) $option"
+	    send_log "$comp_output\n"
+	    unresolved "$testcase, $option"
+	    remote_file build delete $executable
+	    continue
+	}
+	
+	set comp_output [prune_warnings $comp_output]
+	
+	set unsupported_message [g77_check_unsupported_p $comp_output]
+
+	if { $unsupported_message != "" } {
+	    unsupported "$testcase: $unsupported_message"
+	    continue
+	} elseif ![file exists $executable] {
+	    if ![is3way] {
+		fail "$testcase compilation, $option"
+		untested "$testcase execution, $option"
+		continue
+	    } else {
+		# FIXME: since we can't test for the existance of a remote
+		# file without short of doing an remote file list, we assume
+		# that since we got no output, it must have compiled.
+		pass "$testcase compilation, $option"		
+	    }
+	} else {
+	    pass "$testcase compilation, $option"
+	}
+
+	# See if this source file uses "long long" types, if it does, and
+	# no_long_long is set, skip execution of the test.
+	if [target_info exists no_long_long] then {
+	    if [expr [search_for_re $src "integer\*8"]] then {
+		untested "$testcase execution, $option"
+		continue
+	    }
+	}
+
+	if [info exists torture_execute_xfail] {
+	    setup_xfail $torture_execute_xfail
+	}
+
+	if [info exists torture_eval_before_execute] {
+            set ignore_me [eval $torture_eval_before_execute]
+	}
+
+	set result [g77_load "$executable" "" ""]
+	set status [lindex $result 0];
+	set output [lindex $result 1];
+        if { $status == "pass" } {
+	    remote_file build delete $executable
+        }
+	$status "$testcase execution, $option"
     }
 }
 
