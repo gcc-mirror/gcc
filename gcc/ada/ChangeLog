@@ -1,3 +1,7 @@
+2003-10-31  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in (ada/b_gnat1.o): Compile with -Wno-error.
+
 2003-10-31  Andreas Schwab  <schwab@suse.de>
 
 	* raise.c (get_action_description_for): Fix typo in last change.
