@@ -41,5 +41,5 @@ void test01()
   test &= itr == mapByName.end(); // { dg-error "no" } 
 }
  
-// { dg-error "candidates are" "" { target *-*-* } 209 } 
-// { dg-error "candidates are" "" { target *-*-* } 213 }
+// { dg-error "candidates are" "" { target *-*-* } 210 }
+// { dg-error "candidates are" "" { target *-*-* } 214 }

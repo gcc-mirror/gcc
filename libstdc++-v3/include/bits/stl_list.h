@@ -1,6 +1,6 @@
 // List implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -119,7 +119,8 @@ namespace _GLIBCXX_STD
       typedef _Tp*                          pointer;
       typedef _Tp&                          reference;
 
-      _List_iterator() { }
+      _List_iterator()
+      : _M_node() { }
 
       _List_iterator(_List_node_base* __x)
       : _M_node(__x) { }
@@ -195,7 +196,8 @@ namespace _GLIBCXX_STD
       typedef const _Tp*                    pointer;
       typedef const _Tp&                    reference;
 
-      _List_const_iterator() { }
+      _List_const_iterator()
+      : _M_node() { }
 
       _List_const_iterator(const _List_node_base* __x)
       : _M_node(__x) { }
