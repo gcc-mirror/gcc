@@ -2487,7 +2487,7 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp)
       tem = expand_mult (wider_mode, op0, wide_op1, NULL_RTX, unsignedp);
       tem = expand_shift (RSHIFT_EXPR, wider_mode, tem,
 			  build_int_2 (size, 0), NULL_RTX, 1);
-      return gen_lowpart (mode, tem);
+      return convert_modes (mode, wider_mode, tem, unsignedp);
     }
 
   if (target == 0)
@@ -2532,7 +2532,7 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp)
 	      /* Extract the high half of the just generated product.  */
 	      tem = expand_shift (RSHIFT_EXPR, wider_mode, tem,
 				  build_int_2 (size, 0), NULL_RTX, 1);
-	      tem = gen_lowpart (mode, tem);
+	      tem = convert_modes (mode, wider_mode, tem, unsignedp);
 	      /* We used the wrong signedness.  Adjust the result.  */
 	      return expand_mult_highpart_adjust (mode, tem, op0, op1,
 						  target, unsignedp);
@@ -2553,7 +2553,7 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp)
   /* Extract the high half of the just generated product.  */
   tem = expand_shift (RSHIFT_EXPR, wider_mode, tem,
 		      build_int_2 (size, 0), NULL_RTX, 1);
-  return gen_lowpart (mode, tem);
+  return convert_modes (mode, wider_mode, tem, unsignedp);
 }
 
 /* Emit the code to divide OP0 by OP1, putting the result in TARGET
