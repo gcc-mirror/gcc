@@ -1,3 +1,10 @@
+1998-06-07  Mark Mitchell  <mark@markmitchell.com>
+
+	* class.c (instantiate_type): Handle pointer-to-members where the
+	member is a template.
+	* init.c (build_offset_ref): Likewise.
+	* typeck.c (build_unary_op): Likewise.
+
 1998-06-07  Richard Henderson  <rth@cygnus.com>
 
 	* lex.c (lang_init_options): New function.
