@@ -1603,6 +1603,9 @@ move_block_to_reg (regno, x, nregs, mode)
   int i;
   rtx pat, last;
 
+  if (nregs == 0)
+    return;
+
   if (CONSTANT_P (x) && ! LEGITIMATE_CONSTANT_P (x))
     x = validize_mem (force_const_mem (mode, x));
 
