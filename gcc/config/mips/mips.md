@@ -1883,7 +1883,7 @@
               (clobber (match_dup 4))
               (clobber (match_dup 5))
               (clobber (match_dup 6))])
-   (set (match_dup 0) (match_dup 1))]
+   (set (match_dup 0) (unspec:SI [(match_dup 5) (match_dup 4)] UNSPEC_MFHILO))]
   "")
 
 (define_insn "*muls"
