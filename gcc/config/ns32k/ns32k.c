@@ -140,10 +140,10 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 
 #if defined(IMMEDIATE_PREFIX) && IMMEDIATE_PREFIX
 #define ADJSP(FILE, N) \
-        fprintf (FILE, "\tadjspd %c%d\n", IMMEDIATE_PREFIX, (N))
+        fprintf (FILE, "\tadjspd %c" HOST_WIDE_INT_PRINT_DEC "\n", IMMEDIATE_PREFIX, (N))
 #else
 #define ADJSP(FILE, N) \
-        fprintf (FILE, "\tadjspd %d\n", (N))
+        fprintf (FILE, "\tadjspd " HOST_WIDE_INT_PRINT_DEC "\n", (N))
 #endif
 
 static void
@@ -195,7 +195,7 @@ ns32k_output_function_prologue (file, size)
     }
 
   if (frame_pointer_needed)
-    fprintf (file, "],%d\n", size);
+    fprintf (file, "]," HOST_WIDE_INT_PRINT_DEC "\n", size);
   else if (g_regs_used)
     fprintf (file, "]\n");
 
