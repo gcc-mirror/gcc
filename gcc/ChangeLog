@@ -1,3 +1,10 @@
+2001-05-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	* tm.texi (THREAD_MODEL_SPEC): Document it.
+	* gcc.c (main): Use it.
+	* config/rs6000/aix43.h (THREAD_MODEL_SPEC): Define it.
+	* config/rs6000/aix51.h (THREAD_MODEL_SPEC): Likewise.
+
 2001-05-13  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* rtl.h (SYMBOL_REF_WEAK): New macro.
