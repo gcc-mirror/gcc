@@ -1,3 +1,15 @@
+Wed Oct 28 00:10:35 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* final.c (cleanup_subreg_operands): New function.
+	(final_scan_insn): Use it.
+	(alter_subreg): Clear the "used" field when we turn a SUBREG into
+	a REG.
+	* reload1.c (reload): Delete CLOBBER insns and also cleanup SUBREG
+	operands when reload has finished.
+	* reload.h (cleanup_subreg_operands): Declare..
+	* flow.c (life_analysis_1): No longer delete CLOBBER insns after
+	reload.  Handled in reload itself.
+
 Tue Oct 27 23:32:34 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
 	* reload.h (struct insn_chain): Add need_operand_change element.

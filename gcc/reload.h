@@ -339,3 +339,6 @@ extern void setup_save_areas PROTO((void));
 
 /* Find the places where hard regs are live across calls and save them.  */
 extern void save_call_clobbered_regs PROTO((void));
+
+/* Replace (subreg (reg)) with the appropriate (reg) for any operands.  */
+extern void cleanup_subreg_operands PROTO ((rtx));
