@@ -180,10 +180,8 @@ rtx fixunstfsi_libfunc;
 rtx fixunstfdi_libfunc;
 rtx fixunstfti_libfunc;
 
-#ifdef GPC
 /* from emit-rtl.c */
-extern rtx gen_highpart();
-#endif
+extern rtx gen_highpart ();
 
 /* Indexed by the rtx-code for a conditional (eg. EQ, LT,...)
    gives the gen_function to make a branch to test that condition.  */
@@ -1386,18 +1384,8 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
   register rtx temp;
   rtx last = get_last_insn ();
   rtx pat;
-#ifdef GPC
-  enum machine_mode submode;
-#endif
 
   class = GET_MODE_CLASS (mode);
-
-#ifdef GPC
-  if (class == MODE_COMPLEX_FLOAT || class == MODE_COMPLEX_INT)
-    submode = mode_for_size (GET_MODE_UNIT_SIZE (mode) * BITS_PER_UNIT,
-			     class == MODE_COMPLEX_INT ?
-			       MODE_INT : MODE_FLOAT, 0);
-#endif /* GPC */
 
   op0 = protect_from_queue (op0, 0);
 
@@ -1527,6 +1515,86 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
       return target;
     }
 
+  /* Open-code the complex negation operation.  */
+  else if (unoptab == neg_optab
+	   && (class == MODE_COMPLEX_FLOAT || class == MODE_COMPLEX_INT))
+    {
+      rtx target_piece;
+      rtx x;
+      rtx seq;
+
+      /* Find the correct mode for the real and imaginary parts */
+      enum machine_mode submode
+	= mode_for_size (GET_MODE_UNIT_SIZE (mode) * BITS_PER_UNIT,
+			 class == MODE_COMPLEX_INT ? MODE_INT : MODE_FLOAT,
+			 0);
+
+      if (submode == BLKmode)
+	abort ();
+
+      if (target == 0)
+	target = gen_reg_rtx (mode);
+      
+      start_sequence ();
+
+      target_piece = gen_highpart (submode, target);
+      x = expand_unop (submode, unoptab,
+		       gen_highpart (submode, op0),
+		       target_piece, unsignedp);
+      if (target_piece != x)
+	emit_move_insn (target_piece, x);
+
+      target_piece = gen_lowpart (submode, target);
+      x = expand_unop (submode, unoptab,
+		       gen_lowpart (submode, op0),
+		       target_piece, unsignedp);
+      if (target_piece != x)
+	emit_move_insn (target_piece, x);
+
+      seq = gen_sequence ();
+      end_sequence ();
+
+      emit_no_conflict_block (seq, target, op0, 0,
+			      gen_rtx (unoptab->code, mode, op0));
+      return target;
+    }
+
+  /* Open-code the complex absolute-value operation
+     if we can open-code sqrt.  Otherwise it's not worth while.  */
+  else if (unoptab == abs_optab
+	   && (class == MODE_COMPLEX_FLOAT || class == MODE_COMPLEX_INT))
+    {
+      /* Find the correct mode for the real and imaginary parts */
+      enum machine_mode submode
+	= mode_for_size (GET_MODE_UNIT_SIZE (mode) * BITS_PER_UNIT,
+			 class == MODE_COMPLEX_INT ? MODE_INT : MODE_FLOAT,
+			 0);
+
+      if (submode == BLKmode)
+	abort ();
+
+      if (sqrt_optab->handlers[(int) submode].insn_code != CODE_FOR_nothing)
+	{
+	  rtx real, imag, total;
+
+	  real = gen_highpart (submode, op0);
+	  imag = gen_lowpart (submode, op0);
+	  /* Square both parts.  */
+	  real = expand_mult (mode, real, real, NULL_RTX, 0);
+	  imag = expand_mult (mode, imag, imag, NULL_RTX, 0);
+	  /* Sum the parts.  */
+	  total = expand_binop (submode, add_optab, real, imag, 0,
+				0, OPTAB_LIB_WIDEN);
+	  /* Get sqrt in TARGET.  Set TARGET to where the result is.  */
+	  target = expand_unop (submode, sqrt_optab, total, target, 0);
+	  if (target == 0)
+	    delete_insns_since (last);
+	  else
+	    return target;
+	}
+    }
+
+  /* Now try a library call in this mode.  */
   if (unoptab->handlers[(int) mode].libfunc)
     {
       rtx insns;
@@ -3574,6 +3642,20 @@ init_floating_libfuncs (optable, opname, suffix)
   init_libfuncs (optable, SFmode, TFmode, opname, suffix);
 }
 
+/* Initialize the libfunc fields of an entire group of entries in some
+   optab which correspond to all complex floating modes.  The parameters
+   have the same meaning as similarly named ones for the `init_libfuncs'
+   routine.  (See above).  */
+
+static void
+init_complex_libfuncs (optable, opname, suffix)
+    register optab optable;
+    register char *opname;
+    register char suffix;
+{
+  init_libfuncs (optable, SCmode, TCmode, opname, suffix);
+}
+
 /* Call this once to initialize the contents of the optabs
    appropriately for the current target machine.  */
 
@@ -4477,8 +4559,9 @@ init_optabs ()
   if (HAVE_abstf2)
     abs_optab->handlers[(int) TFmode].insn_code = CODE_FOR_abstf2;
 #endif
-  /* No library calls here!  If there is no abs instruction,
+  /* No library calls here for real types.  If there is no abs instruction,
      expand_expr will generate a conditional negation.  */
+  init_complex_libfuncs (abs_optab, "abs", '2');
 
 #ifdef HAVE_sqrtqi2
   if (HAVE_sqrtqi2)
