@@ -41,28 +41,20 @@ Boston, MA 02111-1307, USA.  */
 
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS			\
-  { "netbsd_cpp_spec", NETBSD_CPP_SPEC },
+  { "netbsd_cpp_spec", NETBSD_CPP_SPEC },	\
+  { "netbsd_link_spec", NETBSD_LINK_SPEC_ELF },	\
+  { "netbsd_entry_point", NETBSD_ENTRY_POINT },
 
 
-/* Provide a LINK_SPEC appropriate for a NetBSD/alpha ELF target.
-   This is a copy of LINK_SPEC from <netbsd-elf.h> tweaked for
-   the alpha target.  */
+/* Provide a LINK_SPEC appropriate for a NetBSD/alpha ELF target.  */
 
 #undef LINK_SPEC
-#define LINK_SPEC							\
-  "%{G*} %{relax:-relax}						\
-   %{O*:-O3} %{!O*:-O1}							\
-   %{assert*} %{R*}							\
-   %{shared:-shared}							\
-   %{!shared:								\
-     -dc -dp								\
-     %{!nostdlib:							\
-       %{!r*:								\
-	 %{!e*:-e __start}}}						\
-     %{!static:								\
-       %{rdynamic:-export-dynamic}					\
-       %{!dynamic-linker:-dynamic-linker /usr/libexec/ld.elf_so}}	\
-     %{static:-static}}"
+#define LINK_SPEC \
+  "%{G*} %{relax:-relax} \
+   %{O*:-O3} %{!O*:-O1} \
+   %(netbsd_link_spec)"
+
+#define NETBSD_ENTRY_POINT "__start"
 
 
 /* Provide an ENDFILE_SPEC appropriate for NetBSD/alpha ELF.  Here we
