@@ -68,6 +68,8 @@
    (UNSPECV_SAVEW		6)
   ])
 
+(define_mode_macro P [(SI "Pmode == SImode") (DI "Pmode == DImode")])
+
 ;; The upper 32 fp regs on the v9 can't hold SFmode values.  To deal with this
 ;; a second register class, EXTRA_FP_REGS, exists for the v9 chip.  The name
 ;; is a bit of a misnomer as it covers all 64 fp regs.  The corresponding
@@ -1694,11 +1696,11 @@
 ;; value subject to a PC-relative relocation.  Operand 2 is a helper function
 ;; that adds the PC value at the call point to operand 0.
 
-(define_insn "load_pcrel_sym"
-  [(set (match_operand 0 "register_operand" "=r")
-	(unspec [(match_operand 1 "symbolic_operand" "")
-		 (match_operand 2 "call_operand_address" "")] UNSPEC_LOAD_PCREL_SYM))
-   (clobber (reg:SI 15))]
+(define_insn "load_pcrel_sym<P:mode>"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(unspec:P [(match_operand:P 1 "symbolic_operand" "")
+		   (match_operand:P 2 "call_operand_address" "")] UNSPEC_LOAD_PCREL_SYM))
+   (clobber (reg:P 15))]
   ""
 {
   if (flag_delayed_branch)
@@ -7721,23 +7723,12 @@
 ;;  (set (%sp) (unspec_volatile [(%sp) (-frame_size)] UNSPECV_SAVEW))
 ;;  (set (%i7) (%o7))]
 
-(define_insn "save_register_windowdi"
-  [(set (reg:DI 30) (reg:DI 14))
-   (set (reg:DI 14) (unspec_volatile:DI [(reg:DI 14)
-					 (match_operand:DI 0 "arith_operand" "rI")]
-				        UNSPECV_SAVEW))
-   (set (reg:DI 31) (reg:DI 15))]
-  "TARGET_ARCH64"
-  "save\t%%sp, %0, %%sp"
-  [(set_attr "type" "savew")])
-
-(define_insn "save_register_windowsi"
-  [(set (reg:SI 30) (reg:SI 14))
-   (set (reg:SI 14) (unspec_volatile:SI [(reg:SI 14)
-					 (match_operand:SI 0 "arith_operand" "rI")]
-				        UNSPECV_SAVEW))
-   (set (reg:SI 31) (reg:SI 15))]
-  "!TARGET_ARCH64"
+(define_insn "save_register_window<P:mode>"
+  [(set (reg:P 30) (reg:P 14))
+   (set (reg:P 14) (unspec_volatile:P [(reg:P 14)
+				       (match_operand:P 0 "arith_operand" "rI")] UNSPECV_SAVEW))
+   (set (reg:P 31) (reg:P 15))]
+  ""
   "save\t%%sp, %0, %%sp"
   [(set_attr "type" "savew")])
 
@@ -9102,8 +9093,6 @@
   "faligndata\t%1, %2, %0"
   [(set_attr "type" "fga")
    (set_attr "fptype" "double")])
-
-(define_mode_macro P [(SI "Pmode == SImode") (DI "Pmode == DImode")])
 
 (define_insn "alignaddr<P:mode>_vis"
   [(set (match_operand:P 0 "register_operand" "=r")

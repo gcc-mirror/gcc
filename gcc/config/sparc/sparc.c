@@ -3981,8 +3981,12 @@ load_pic_register (void)
   add_pc_to_pic_symbol = gen_rtx_SYMBOL_REF (Pmode, add_pc_to_pic_symbol_name);
 
   flag_pic = 0;
-  emit_insn (gen_load_pcrel_sym (pic_offset_table_rtx, global_offset_table,
-				 add_pc_to_pic_symbol));
+  if (TARGET_ARCH64)
+    emit_insn (gen_load_pcrel_symdi (pic_offset_table_rtx, global_offset_table,
+				     add_pc_to_pic_symbol));
+  else
+    emit_insn (gen_load_pcrel_symsi (pic_offset_table_rtx, global_offset_table,
+				     add_pc_to_pic_symbol));
   flag_pic = orig_flag_pic;
 
   /* Need to emit this whether or not we obey regdecls,
