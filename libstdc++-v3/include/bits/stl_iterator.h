@@ -196,7 +196,7 @@ namespace std
       back_insert_iterator(_Container& __x) : container(&__x) {}
 
       back_insert_iterator&
-      operator=(const typename _Container::value_type& __value) 
+      operator=(const typename _Container::const_reference __value) 
       { 
 	container->push_back(__value);
 	return *this;
@@ -230,7 +230,7 @@ namespace std
       explicit front_insert_iterator(_Container& __x) : container(&__x) {}
 
       front_insert_iterator&
-      operator=(const typename _Container::value_type& __value) 
+      operator=(const typename _Container::const_reference __value) 
       { 
 	container->push_front(__value);
 	return *this;

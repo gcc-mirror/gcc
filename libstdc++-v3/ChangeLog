@@ -1,5 +1,13 @@
 2001-06-26  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/bits/stream_iterator.h (istream_iterator): Add copy ctor.
+	(ostream_iterator): Same.
+	* include/bits/stl_iterator.h (front_insert_iterator::operator=):
+	Change argument to const_reference.
+	(back_insert_iterator): Same.
+	
+2001-06-26  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/bits/sbuf_iter.h: Change to..
 	* include/bits/streambuf_iterator.h: This.
 	* include/bits/stl_iterator.h: Take out of here...
