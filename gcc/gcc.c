@@ -539,7 +539,7 @@ static int n_default_compilers
 /* Here is the spec for running the linker, after compiling all files.  */
 
 #ifdef LINK_LIBGCC_SPECIAL
-/* Have gcc do the search.  */
+/* Have gcc do the search for libgcc.a.  */
 /* -u* was put back because both BSD and SysV seem to support it.  */
 static char *link_command_spec = "\
 %{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
@@ -547,7 +547,7 @@ static char *link_command_spec = "\
 			%{!A:%{!nostdlib:%S}} \
 			%{L*} %D %o %{!nostdlib:libgcc.a%s %L libgcc.a%s %{!A:%E}}\n }}}}}";
 #else
-/* Use -l and have the linker do the search.  */
+/* Use -L and have the linker do the search for -lgcc.  */
 static char *link_command_spec = "\
 %{!c:%{!M:%{!MM:%{!E:%{!S:ld %l %X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
 			%{r} %{s} %{T*} %{t} %{u*} %{x} %{z}\
