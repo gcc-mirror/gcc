@@ -4751,17 +4751,13 @@ build_common_tree_nodes (signed_char)
   intHI_type_node = make_signed_type (GET_MODE_BITSIZE (HImode));
   intSI_type_node = make_signed_type (GET_MODE_BITSIZE (SImode));
   intDI_type_node = make_signed_type (GET_MODE_BITSIZE (DImode));
-#if HOST_BITS_PER_WIDE_INT >= 64
   intTI_type_node = make_signed_type (GET_MODE_BITSIZE (TImode));
-#endif
 
   unsigned_intQI_type_node = make_unsigned_type (GET_MODE_BITSIZE (QImode));
   unsigned_intHI_type_node = make_unsigned_type (GET_MODE_BITSIZE (HImode));
   unsigned_intSI_type_node = make_unsigned_type (GET_MODE_BITSIZE (SImode));
   unsigned_intDI_type_node = make_unsigned_type (GET_MODE_BITSIZE (DImode));
-#if HOST_BITS_PER_WIDE_INT >= 64
   unsigned_intTI_type_node = make_unsigned_type (GET_MODE_BITSIZE (TImode));
-#endif
 }
 
 /* Call this function after calling build_common_tree_nodes and set_sizetype.
