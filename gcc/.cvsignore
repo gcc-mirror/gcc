@@ -4,6 +4,8 @@ c-parse.c
 tradcif.c
 cscope.files
 cscope.out
+cscope.in.out
+cscope.po.out
 gengtype-lex.c
 gengtype-yacc.c
 gengtype-yacc.h
