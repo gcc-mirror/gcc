@@ -34,7 +34,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 cpp_reader  parse_in;
 cpp_options parse_options;
-static enum cpp_token cpp_token;
+enum cpp_token cpp_token;
 #endif
 
 #ifndef WCHAR_TYPE_SIZE

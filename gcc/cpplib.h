@@ -136,6 +136,10 @@ struct cpp_buffer
      escapes are used only in macro buffers, and backslash-newline is removed
      from macro expansion text in collect_expansion and/or macarg.  */
   char has_escapes;
+
+  /* Used by the C++ frontend to implement redirected input (such as for
+     default argument and/or template parsing).  */
+  char manual_pop;
 };
 
 struct file_name_map_list;
@@ -453,6 +457,10 @@ struct cpp_options {
   
   /* Nonzero means give all the error messages the ANSI standard requires.  */
   char pedantic;
+
+  /* Nonzero means we're looking at already preprocessed code, so don't
+     bother trying to do macro expansion and whatnot.  */
+  char preprocessed;
 
   char done_initializing;
 

@@ -694,7 +694,7 @@ static struct compiler default_compilers[] =
    {"%{!M:%{!MM:%{!E:cc1 %i %1 %{!Q:-quiet} %{d*} %{m*} %{a*}\
 			%{g*} %{O*} %{W*} %{w} %{pedantic*} %{std*}\
 			%{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
-			%{aux-info*} %{Qn:-fno-ident}\
+			%{aux-info*} %{Qn:-fno-ident} -fpreprocessed\
 			%{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 			%{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
 		     %{!S:as %a %Y\

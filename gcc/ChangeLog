@@ -1,3 +1,20 @@
+Tue Jul 20 12:12:27 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* gcc.c (default_compilers, cpp-output): Pass -fpreprocessed.
+	* toplev.c (documented_lang_options): Add -fpreprocessed.
+	* cpplib.h (struct cpp_buffer): Add preprocessed.
+	* cppinit.c (cpp_handle_option): Handle -fpreprocessed.
+	(cpp_start_read): Don't expand macros or emit an initial #line
+	directive if -fpreprocessed.
+
+Tue Jul 20 12:12:09 1999  Michael Tiemann  <tiemann@holodeck.cygnus.com>
+
+	* cpplib.h (struct cpp_buffer): Added manual_pop for
+	better C++ tokenization.
+	* cpplib.c (cpp_get_token): Return CPP_EOF if manual_pop.
+	Also, support C++ tokenization for ->*, .*, <?, and >? operators.
+	* c-common.c (cpp_token): Make non-static.
+
 Tue Jul 20 11:24:19 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* c-common.h: New file.

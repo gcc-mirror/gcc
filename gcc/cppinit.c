@@ -961,6 +961,11 @@ cpp_start_read (pfile, fname)
       cpp_message (pfile, -1, "End of search list.\n");
     }
 
+  /* Don't bother trying to do macro expansion if we've already done
+     preprocessing.  */
+  if (opts->preprocessed)
+    pfile->no_macro_expand++;
+
   /* Open the main input file.
      We do this in nonblocking mode so we don't get stuck here if
      someone clever has asked cpp to process /dev/rmt0;
@@ -988,7 +993,13 @@ cpp_start_read (pfile, fname)
   ih_fake->limit = 0;
   if (!finclude (pfile, f, ih_fake))
     return 0;
-  output_line_command (pfile, same_file);
+  if (opts->preprocessed)
+    /* If we've already processed this code, we want to trust the #line
+       directives in the input.  But we still need to update our line
+       counter accordingly.  */
+    pfile->lineno = CPP_BUFFER (pfile)->lineno;
+  else
+    output_line_command (pfile, same_file);
   pfile->only_seen_white = 2;
 
   /* The -imacros files can be scanned now, but the -include files
@@ -1155,6 +1166,10 @@ cpp_handle_option (pfile, argc, argv)
 	  user_label_prefix = "_";
 	else if (!strcmp (argv[i], "-fno-leading-underscore"))
 	  user_label_prefix = "";
+	else if (!strcmp (argv[i], "-fpreprocessed"))
+	  opts->preprocessed = 1;
+	else if (!strcmp (argv[i], "-fno-preprocessed"))
+	  opts->preprocessed = 0;
 	break;
 
       case 'I':			/* Add directory to path for includes.  */
