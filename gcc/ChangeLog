@@ -1,3 +1,8 @@
+2004-06-18  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/t-linux64: New file.
+	* config.gcc: Add it to tmake_file for sh64*-*-linux*.
+
 2004-06-18  Paolo Bonzini  <bonzini@gnu.org>
 
 	* emit-rtl.c (unshare_all_rtl_1): New name of unshare_all_rtl.

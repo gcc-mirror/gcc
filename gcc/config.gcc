@@ -1734,7 +1734,7 @@ sh-*-linux* | sh[2346lbe]*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sh/elf.h sh/linux.h"
 	case ${target} in
 	sh64*)
-		tmake_file="${tmake_file} sh/t-sh64"
+		tmake_file="${tmake_file} sh/t-sh64 sh/t-linux64"
 		tm_file="${tm_file} sh/sh64.h"
 		extra_headers="shmedia.h ushmedia.h sshmedia.h"
 		;;
