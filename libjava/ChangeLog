@@ -1,3 +1,19 @@
+2003-06-20  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/nio/MappedByteFileBuffer.java,
+	gnu/java/nio/natMappedByteFileBuffer.cc:
+	Removed
+	* java/nio/MappedByteBufferImpl.java:
+	New file.
+	* gnu/java/nio/FileChannelImpl.java:
+	Use MappedByteBufferImpl instead of MappedByteFileBuffer.
+	* Makefile.am
+	(ordinary_java_source_files): Removed
+	gnu/java/nio/MappedByteFileBuffer.java and added
+	java/nio/MappedByteBufferImpl.java.
+	(nat_source_files): Removed gnu/java/nio/natMappedByteFileBuffer.cc
+	* Makefile.in: Regenerated.
+
 2003-06-19  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/DatagramChannelImpl.java
