@@ -4433,8 +4433,11 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type)
       if (code == MULT_EXPR
 	  || integer_zerop (const_binop (TRUNC_MOD_EXPR, op1, c, 0)))
 	{
-	  op1 = const_binop (code, convert (ctype, op1), convert (ctype, c), 0);
-	  if (op1 == 0 || TREE_OVERFLOW (op1))
+	  op1 = const_binop (code, convert (ctype, op1),
+			     convert (ctype, c), 0);
+	  /* We allow the constant to overflow with wrapping semantics.  */
+	  if (op1 == 0
+	      || (TREE_OVERFLOW (op1) && ! flag_wrapv))
 	    break;
 	}
       else
