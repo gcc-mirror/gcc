@@ -4957,7 +4957,7 @@ expand_builtin_signbit (tree exp, rtx target)
   enum machine_mode fmode, imode, rmode;
   HOST_WIDE_INT hi, lo;
   tree arg, arglist;
-  int bitpos;
+  int word, bitpos;
   rtx temp;
 
   arglist = TREE_OPERAND (exp, 1);
@@ -4971,7 +4971,8 @@ expand_builtin_signbit (tree exp, rtx target)
 
   /* For floating point formats without a sign bit, implement signbit
      as "ARG < 0.0".  */
-  if (fmt->signbit < 0)
+  bitpos = fmt->signbit;
+  if (bitpos < 0)
   {
     /* But we can't do this if the format supports signed zero.  */
     if (fmt->has_signed_zero && HONOR_SIGNED_ZEROS (fmode))
@@ -4982,41 +4983,32 @@ expand_builtin_signbit (tree exp, rtx target)
     return expand_expr (arg, target, VOIDmode, EXPAND_NORMAL);
   }
 
-  imode = int_mode_for_mode (fmode);
-  if (imode == BLKmode)
-    return 0;
-
-  bitpos = fmt->signbit;
-  /* Handle targets with different FP word orders.  */
-  if (FLOAT_WORDS_BIG_ENDIAN != WORDS_BIG_ENDIAN)
-    {
-      int nwords = GET_MODE_BITSIZE (fmode) / BITS_PER_WORD;
-      int word = nwords - (bitpos / BITS_PER_WORD) - 1;
-      bitpos = word * BITS_PER_WORD + bitpos % BITS_PER_WORD;
-    }
-
-  /* If the sign bit is not in the lowpart and the floating point format
-     is wider than an integer, check that is twice the size of an integer
-     so that we can use gen_highpart below.  */
-  if (bitpos >= GET_MODE_BITSIZE (rmode)
-      && GET_MODE_BITSIZE (imode) != 2 * GET_MODE_BITSIZE (rmode))
-    return 0;
-
   temp = expand_expr (arg, NULL_RTX, VOIDmode, 0);
-  temp = gen_lowpart (imode, temp);
-
-  if (GET_MODE_BITSIZE (imode) > GET_MODE_BITSIZE (rmode))
+  if (GET_MODE_SIZE (fmode) <= UNITS_PER_WORD)
     {
-      if (BYTES_BIG_ENDIAN)
-	bitpos = GET_MODE_BITSIZE (imode) - 1 - bitpos;
-      temp = copy_to_mode_reg (imode, temp);
-      temp = extract_bit_field (temp, 1, bitpos, 1,
-				NULL_RTX, rmode, rmode);
+      imode = int_mode_for_mode (fmode);
+      if (imode == BLKmode)
+	return 0;
+      temp = gen_lowpart (imode, temp);
     }
   else
     {
-      if (GET_MODE_BITSIZE (imode) < GET_MODE_BITSIZE (rmode))
-	temp = gen_lowpart (rmode, temp);
+      imode = word_mode;
+      /* Handle targets with different FP word orders.  */
+      if (FLOAT_WORDS_BIG_ENDIAN)
+        word = (GET_MODE_BITSIZE (fmode) - bitpos) / BITS_PER_WORD;
+      else
+        word = bitpos / BITS_PER_WORD;
+      temp = operand_subword_force (temp, word, fmode);
+      bitpos = bitpos % BITS_PER_WORD;
+    }
+
+  /* If the bitpos is within the "result mode" lowpart, the operation
+     can be implement with a single bitwise AND.  Otherwise, we need
+     a right shift and an AND.  */
+
+  if (bitpos < GET_MODE_BITSIZE (rmode))
+    {
       if (bitpos < HOST_BITS_PER_WIDE_INT)
 	{
 	  hi = 0;
@@ -5028,11 +5020,24 @@ expand_builtin_signbit (tree exp, rtx target)
 	  lo = 0;
 	}
 
-      temp = force_reg (rmode, temp);
+      if (imode != rmode)
+	temp = gen_lowpart (rmode, temp);
       temp = expand_binop (rmode, and_optab, temp,
 			   immed_double_const (lo, hi, rmode),
-			   target, 1, OPTAB_LIB_WIDEN);
+			   NULL_RTX, 1, OPTAB_LIB_WIDEN);
     }
+  else
+    {
+      /* Perform a logical right shift to place the signbit in the least
+         significant bit, then truncate the result to the desired mode
+	 and mask just this bit.  */
+      temp = expand_shift (RSHIFT_EXPR, imode, temp,
+			   build_int_cst (NULL_TREE, bitpos), NULL_RTX, 1);
+      temp = gen_lowpart (rmode, temp);
+      temp = expand_binop (rmode, and_optab, temp, const1_rtx,
+			   NULL_RTX, 1, OPTAB_LIB_WIDEN);
+    }
+
   return temp;
 }
 
