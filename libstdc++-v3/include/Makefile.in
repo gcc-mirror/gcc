@@ -296,6 +296,7 @@ bits_headers = \
 	${bits_srcdir}/char_traits.h \
 	${bits_srcdir}/codecvt.h \
 	${bits_srcdir}/concept_check.h \
+	${bits_srcdir}/concurrence.h \
 	${bits_srcdir}/cpp_type_traits.h \
 	${bits_srcdir}/demangle.h \
 	${bits_srcdir}/deque.tcc \
@@ -518,15 +519,15 @@ debug_headers = \
 	${debug_srcdir}/string \
 	${debug_srcdir}/vector
 
+@GLIBCXX_C_HEADERS_C_STD_FALSE@c_base_headers_extra = 
 
 # Some of the different "C" header models need extra files.
 # Some "C" header schemes require the "C" compatibility headers.
 # For --enable-cheaders=c_std
 @GLIBCXX_C_HEADERS_C_STD_TRUE@c_base_headers_extra = ${c_base_srcdir}/cmath.tcc
-@GLIBCXX_C_HEADERS_C_STD_FALSE@c_base_headers_extra = 
-@GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE@c_compatibility_headers_extra = 
 
 @GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE@c_compatibility_headers_extra = ${c_compatibility_headers}
+@GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE@c_compatibility_headers_extra = 
 
 host_srcdir = ${glibcxx_srcdir}/$(OS_INC_SRCDIR)
 host_builddir = ./${host_alias}/bits
