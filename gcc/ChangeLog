@@ -1,5 +1,10 @@
 2003-10-30  Richard Henderson  <rth@redhat.com>
 
+	* config/mips/mips.c (mips_build_builtin_va_list): Use runtime
+	test for irix6 rather than preprocessor test.
+
+2003-10-30  Richard Henderson  <rth@redhat.com>
+
 	* cppcharset.c (one_utf8_to_utf16): Initialize 's' to silence warning.
 
 2003-10-30  Ulrich Weigand  <uweigand@de.ibm.com>

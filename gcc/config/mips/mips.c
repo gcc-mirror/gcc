@@ -4030,16 +4030,12 @@ mips_build_builtin_va_list (void)
       layout_type (record);
       return record;
     }
+  else if (TARGET_IRIX && !TARGET_IRIX5)
+    /* On IRIX 6, this type is 'char *'.  */
+    return build_pointer_type (char_type_node);
   else
-    {
-#if defined(TARGET_IRIX) && !TARGET_IRIX5
-      /* On IRIX 6, this type is 'char *'.  */
-      return build_pointer_type (char_type_node);
-#else
-      /* Otherwise, we use 'void *'.  */
-      return ptr_type_node;
-#endif
-    }
+    /* Otherwise, we use 'void *'.  */
+    return ptr_type_node;
 }
 
 /* Implement va_start.  */
