@@ -30,7 +30,6 @@ package java.util;
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
  * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Believed complete and correct.
  */
 
 /**
@@ -38,10 +37,16 @@ package java.util;
  * or otherwise access elements from an empty stack.
  *
  * @author Warren Levy <warrenl@cygnus.com>
- * @date September 2, 1998.
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see Stack
+ * @since 1.0
+ * @status updated to 1.4
  */
 public class EmptyStackException extends RuntimeException
 {
+  /**
+   * Compatible with JDK 1.0.
+   */
   private static final long serialVersionUID = 5084686378493302095L;
 
   /**
@@ -49,6 +54,5 @@ public class EmptyStackException extends RuntimeException
    */
   public EmptyStackException()
   {
-    super();
   }
 }

@@ -504,7 +504,7 @@ public final class Double extends Number implements Comparable
    * @see #NEGATIVE_INFINITY
    * @since 1.2
    */
-  public native static double parseDouble (String s) 
+  public static native double parseDouble (String s)
     throws NumberFormatException;
 
   /**
