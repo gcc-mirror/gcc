@@ -8400,11 +8400,11 @@ fold (tree expr)
 	  && TREE_CODE (arg1) == INTEGER_CST
 	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
 	{
-	  tree dandnotc
-	    = fold (build2 (BIT_AND_EXPR, TREE_TYPE (arg0),
-			    arg1, build1 (BIT_NOT_EXPR,
-					  TREE_TYPE (TREE_OPERAND (arg0, 1)),
-					  TREE_OPERAND (arg0, 1))));
+	  tree notc = fold (build1 (BIT_NOT_EXPR,
+				    TREE_TYPE (TREE_OPERAND (arg0, 1)),
+				    TREE_OPERAND (arg0, 1)));
+	  tree dandnotc = fold (build2 (BIT_AND_EXPR, TREE_TYPE (arg0),
+					arg1, notc));
 	  tree rslt = code == EQ_EXPR ? integer_zero_node : integer_one_node;
 	  if (integer_nonzerop (dandnotc))
 	    return omit_one_operand (type, rslt, arg0);
@@ -8417,10 +8417,9 @@ fold (tree expr)
 	  && TREE_CODE (arg1) == INTEGER_CST
 	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
 	{
-	  tree candnotd
-	    = fold (build2 (BIT_AND_EXPR, TREE_TYPE (arg0),
-			    TREE_OPERAND (arg0, 1),
-			    build1 (BIT_NOT_EXPR, TREE_TYPE (arg1), arg1)));
+	  tree notd = fold (build1 (BIT_NOT_EXPR, TREE_TYPE (arg1), arg1));
+	  tree candnotd = fold (build2 (BIT_AND_EXPR, TREE_TYPE (arg0),
+					TREE_OPERAND (arg0, 1), notd));
 	  tree rslt = code == EQ_EXPR ? integer_zero_node : integer_one_node;
 	  if (integer_nonzerop (candnotd))
 	    return omit_one_operand (type, rslt, arg0);
