@@ -225,16 +225,17 @@ if test x$enable_cpplib = xno; then
   cpp_main=cccp
 fi)
 
-# Link cpplib into the compiler proper, for C/C++/ObjC.
-AC_ARG_ENABLE(c-cpplib,
-[  --enable-c-cpplib       link cpplib directly into C and C++ compilers
-                          (EXPERIMENTAL) (implies --enable-cpplib).],
-if test x$enable_c_cpplib != xno; then
-  extra_c_objs="${extra_c_objs} libcpp.a"
-  extra_cxx_objs="${extra_cxx_objs} ../libcpp.a"
-  extra_c_flags="${extra_c_flags} -DUSE_CPPLIB=1"
-  cpp_main=cppmain
-fi)
+dnl Disable this for the moment; the library interface is changing.
+dnl # Link cpplib into the compiler proper, for C/C++/ObjC.
+dnl AC_ARG_ENABLE(c-cpplib,
+dnl [  --enable-c-cpplib       link cpplib directly into C and C++ compilers
+dnl                           (EXPERIMENTAL) (implies --enable-cpplib).],
+dnl if test x$enable_c_cpplib != xno; then
+dnl  extra_c_objs="${extra_c_objs} libcpp.a"
+dnl  extra_cxx_objs="${extra_cxx_objs} ../libcpp.a"
+dnl  extra_c_flags="${extra_c_flags} -DUSE_CPPLIB=1"
+dnl  cpp_main=cppmain
+dnl fi)
 
 # Enable Multibyte Characters for C/C++
 AC_ARG_ENABLE(c-mbchar,
