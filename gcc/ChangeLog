@@ -1,3 +1,9 @@
+2003-10-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/8178
+	* config/i386/i386.md (*movsi_zero): New insn to set
+	a register to zero on TARGET_USE_MOV0 targets.
+
 2003-10-18  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.in (Makefile): Depend on the all Make-lang.in fragments.
@@ -15,7 +21,6 @@
 	PR bootstrap/12546
 	* doc/install.texi: Document that zsh does not work when 
 	configuring gcc.
-
 
 2003-10-17  Nathanael Nerode  <neroden@gcc.gnu.org>
 
