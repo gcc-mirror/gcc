@@ -1,5 +1,8 @@
 Sun Mar 15 05:10:49 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* gnu.h (GNU_CPP_PREDEFINES): Deleted; not valid in traditional C.
+	* {i386,mips}/gnu.h (CPP_PREDEFINES): Don't call GNU_CPP_PREDEFINES.
+
 	* flow.c (insn_dead_p): A CLOBBER of a dead pseudo is dead.
 
 	* alpha.h (REG_ALLOC_ORDER): Put $f1 after other nonsaved.
