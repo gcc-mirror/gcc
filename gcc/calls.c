@@ -594,6 +594,13 @@ expand_call (exp, target, ignore)
   register tree p;
   register int i, j;
 
+  /* The value of the function call can be put in a hard register.  But
+     if -fcheck-memory-usage, code which invokes functions (and thus
+     damages some hard registers) can be inserted before using the value.
+     So, target is always a pseudo-register in that case.  */
+  if (flag_check_memory_usage)
+    target = 0;
+
   /* See if we can find a DECL-node for the actual function.
      As a result, decide whether this is a call to an integrable function.  */
 
@@ -1595,6 +1602,12 @@ expand_call (exp, target, ignore)
       push_temp_slots ();
       funexp = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, VOIDmode, 0);
       pop_temp_slots ();	/* FUNEXP can't be BLKmode */
+
+      /* Check the function is executable.  */
+      if (flag_check_memory_usage)
+	emit_library_call (chkr_check_exec_libfunc, 1,
+			   VOIDmode, 1,
+			   funexp, ptr_mode);
       emit_queue ();
     }
 
@@ -1838,6 +1851,15 @@ expand_call (exp, target, ignore)
 		      force_reg (Pmode,
 				 force_operand (structure_value_addr,
 						NULL_RTX)));
+
+      /* Mark the memory for the aggregate as write-only.  */
+      if (flag_check_memory_usage)
+	emit_library_call (chkr_set_right_libfunc, 1,
+			   VOIDmode, 3,
+			   structure_value_addr, ptr_mode, 
+			   GEN_INT (struct_value_size), TYPE_MODE (sizetype),
+			   GEN_INT (MEMORY_USE_WO), QImode);
+
       if (GET_CODE (struct_value_rtx) == REG)
 	  use_reg (&call_fusage, struct_value_rtx);
     }
@@ -3531,8 +3553,20 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
     do_pending_stack_adjust ();
 
   if (arg->value == arg->stack)
-    /* If the value is already in the stack slot, we are done.  */
-    ;
+    {
+      /* If the value is already in the stack slot, we are done.  */
+      if (flag_check_memory_usage && GET_CODE (arg->stack) == MEM)
+	{
+	  if (arg->mode == BLKmode)
+	    abort ();
+
+	  emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+			     XEXP (arg->stack, 0), ptr_mode, 
+			     GEN_INT (GET_MODE_SIZE (arg->mode)),
+			     TYPE_MODE (sizetype),
+			     GEN_INT (MEMORY_USE_RW), QImode);
+	}
+    }
   else if (arg->mode != BLKmode)
     {
       register int size;
