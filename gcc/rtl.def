@@ -338,7 +338,8 @@ DEF_RTL_EXPR(VALUE, "value", "0", RTX_OBJ)
    the REGNO macro.  If this number is less than FIRST_PSEUDO_REGISTER
    than a hardware register is being referred to.  The second operand
    holds the original register number - this will be different for a
-   pseudo register that got turned into a hard register.
+   pseudo register that got turned into a hard register.  The third
+   operand points to a reg_attrs structure.
    This rtx needs to have as many (or more) fields as a MEM, since we
    can change REG rtx's into MEMs during reload.  */
 DEF_RTL_EXPR(REG, "reg", "i00", RTX_OBJ)

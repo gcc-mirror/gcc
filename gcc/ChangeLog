@@ -1,3 +1,7 @@
+2004-09-10  Geoffrey Keating  <geoffk@apple.com>
+
+	* rtl.def (REG): Add comment to describe third field.
+
 2004-09-10  Andrew Pinski  <apinski@apple.com>
 
 	* config/darwin.c (machopic_mcount_stub_name): Call
@@ -1283,6 +1287,7 @@
 	config/rs6000/linux64.h: Likewise.  Split out get_sigcontext
 	function.  Use ARG_POINTER_REGNUM for 32-bit temp reg too.
 
+>>>>>>> 2.5334
 2004-09-07  Jan Hubicka  <jh@suse.cz>
 
 	* cse.c (fold_rtx):  Avoid building of
