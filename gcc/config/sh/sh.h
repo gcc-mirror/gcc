@@ -1215,7 +1215,6 @@ extern int current_function_anonymous_args;
       else								\
 	emit_insn (gen_ic_invalidate_line (TRAMP));			\
     }									\
-    emit_insn (gen_ic_invalidate_line (TRAMP));				\
 }
 
 /* A C expression whose value is RTL representing the value of the return
