@@ -313,6 +313,11 @@ int number_of_entries; /* number of entries in the linked list */
 /* This holds all options.  */
 #define OPTION_STRING "-ctxuvVf:m:C:0ME@"
 
+/* Define the MANIFEST content here to have it easier with calculations
+   below.  This is for the case we create an empty MANIFEST.MF.  */
+#define MANIFEST_STR "Manifest-Version: 1.0\nCreated-By: "
+#define MANIFEST_END "\n\n"
+
 static const struct option options[] =
 {
   { "help", no_argument, NULL, OPT_HELP },
@@ -732,13 +737,14 @@ int make_manifest(int jfd, const char *mf_name){
 
   /* if the user didn't specify an external manifest file... */
   if(mf_name == NULL){
-    int mf_len = 37 + strlen(VERSION);
+    
+    int mf_len = strlen(MANIFEST_STR) + strlen(VERSION) + strlen(MANIFEST_END);
     char *mf;
 
     if((mf = (char *) malloc(mf_len + 1))) {
     uLong crc;
 
-    sprintf(mf, "Manifest-Version: 1.0\nCreated-By: %s\n\n", VERSION);
+    sprintf(mf, "%s%s%s", MANIFEST_STR, VERSION, MANIFEST_END);
 
     crc = crc32(0L, Z_NULL, 0);
     

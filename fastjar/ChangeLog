@@ -1,3 +1,8 @@
+2004-01-07  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* jartool.c (make_manifest): Fix off-by-one bug when creating
+	an empty MANIFEST.MF.
+
 2003-12-01  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.am: Define AM_MAKINFOFLAGS.  Remove Automake 1.4 hack.
