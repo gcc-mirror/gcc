@@ -1,3 +1,10 @@
+Sun Sep 28 12:00:52 1997  Mark Mitchell  <mmitchell@usa.net>
+
+        * cplus-dem.c (demangle_template): Add new parameter.  Handle new
+        template-function mangling.
+        (consume_count_with_underscores): New function.
+        (demangle_signature): Handle new name-mangling scheme.
+
 Tue Sep  9 19:39:12 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* Makefile.in (install_to_libdir, install_to_tooldir): Add MULTISUBDIR
