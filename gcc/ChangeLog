@@ -1,3 +1,8 @@
+Wed Oct 29 13:10:11 1997  Gavin Koch  <gavin@cygnus.com>
+
+	* config/mips/elf64.h (PREFERRED_DEBUGGING_TYPE): Only define
+	if not previously defined.
+
 Tue Oct 28 23:55:27 1997  Doug Evans  (devans@cygnus.com)
 
 	* function.c (assign_parms): Correct mode of stack_parm if
