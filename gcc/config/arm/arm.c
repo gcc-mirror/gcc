@@ -837,7 +837,7 @@ arm_override_options (void)
   if (optimize_size || (tune_flags & FL_LDSCHED))
     arm_constant_limit = 1;
   
-  if (arm_arch_xscale)
+  if (arm_tune_xscale)
     arm_constant_limit = 2;
 
   /* If optimizing for size, bump the number of instructions that we
