@@ -1,3 +1,7 @@
+2004-06-25  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.md: Add back scheduling exclusion info.
+
 2004-06-25  Roger Sayle  <roger@eyesopen.com>
 
 	* ifcvt.c (seq_contains_jump): Delete function.
@@ -10,7 +14,7 @@
 	PR wrong-code/15089
 	* loop.c (scan_loop): Do not move user-specified register
 	assignments.
-	
+
 2004-06-25  DJ Delorie  <dj@redhat.com>
 
 	* c-common.h (warn_cast_qual, warn_missing_format_attribute,
@@ -98,7 +102,7 @@
 2004-06-25  Devang Patel  <dpatel@apple.com>
 
 	* doc/tree-ssa.texi: Document info about MODIFY_EXPR's type
-	
+
 2004-06-25  Paul Brook  <paul@codesourcery.com>
 
 	* target-def.h (TARGET_CXX_GUARD_TYPE, TARGET_CXX_GUARD_MASK_BIT,
@@ -114,10 +118,10 @@
 	TARGET_CXX_GUARD_MASK_BIT.
 
 2004-06-25  Devang Patel  <dpatel@apple.com>
-	
+
 	* config/rs6000/darwin.h (CC1_SPEC): Handle -gused and -gfull.
 	* config/i386/darwin.h (CC1_SPEC): Same.
-	
+
 2004-06-25  Mark G. Adams  <mark.g.adams@sympatico.ca>
 
 	* dbxout.h: Add include guards
@@ -141,7 +145,7 @@
 	on armv5.
 	* arm.h (arm_arch4t): Declare.
 	* arm.md (call_reg_armv5, call_value_reg_armv5): New.
-	(call_reg_arm, call_value_reg_arm): Renamed from call_reg and 
+	(call_reg_arm, call_value_reg_arm): Renamed from call_reg and
 	call_value_reg respectively.
 	(call_reg_thumb_v5, call_value_reg_thumb_v5): New.
 	(call_reg_thumb, call_value_reg_thumb): Renamed from call_indirect
@@ -169,7 +173,7 @@
 	* gimplify.c (internal_get_tmp_var, gimplify_return_expr): Likewise.
 	(gimplify_loop_expr, gimplify_init_constructor): Likewise.
 	(gimplify_self_mod_expr, gimplify_cond_expr): Likewise.
-	
+
 	PR/16131
 	* gimplify.c (voidify_wrapper_expr): Allow TARGET_EXPR.
 
