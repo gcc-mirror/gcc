@@ -3462,7 +3462,7 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 {
   tree temp;
   tree memcpy_ftype, memset_ftype, strlen_ftype;
-  tree bcmp_ftype;
+  tree bzero_ftype, bcmp_ftype;
   tree endlink, int_endlink, double_endlink, unsigned_endlink;
   tree sizetype_endlink;
   tree ptr_ftype, ptr_ftype_unsigned;
@@ -3597,6 +3597,12 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 							    sizetype,
 							    endlink))));
 
+  /* Prototype for bzero.  */
+  bzero_ftype
+    = build_function_type (void_type_node,
+			   tree_cons (NULL_TREE, traditional_ptr_type_node,
+				      traditional_len_endlink));
+
   /* Prototype for bcmp.  */
   bcmp_ftype
     = build_function_type (integer_type_node,
@@ -3639,6 +3645,11 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
       /* Suppress error if redefined as a non-function.  */
       DECL_BUILT_IN_NONANSI (temp) = 1;
 
+      /* In C mode, don't conflict with system prototype variations.  */
+      temp = builtin_function ("bzero",
+			       cplus_mode ? bzero_ftype : void_ftype_any,
+			       BUILT_IN_BZERO, BUILT_IN_NORMAL, NULL_PTR);
+      DECL_BUILT_IN_NONANSI (temp) = 1;
       temp = builtin_function ("bcmp",
 			       cplus_mode ? bcmp_ftype : int_ftype_any,
 			       BUILT_IN_BCMP, BUILT_IN_NORMAL, NULL_PTR);
@@ -3746,8 +3757,10 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 		    BUILT_IN_NORMAL, "memcpy");
   builtin_function ("__builtin_memcmp", int_ftype_cptr_cptr_sizet,
 		    BUILT_IN_MEMCMP, BUILT_IN_NORMAL, "memcmp");
-  builtin_function ("__builtin_memset", memset_ftype, BUILT_IN_MEMSET,
-		    BUILT_IN_NORMAL, "memset");
+  builtin_function ("__builtin_memset", memset_ftype,
+		    BUILT_IN_MEMSET, BUILT_IN_NORMAL, "memset");
+  builtin_function ("__builtin_bzero", bzero_ftype,
+		    BUILT_IN_BZERO, BUILT_IN_NORMAL, "bzero");
   builtin_function ("__builtin_bcmp", bcmp_ftype,
 		    BUILT_IN_BCMP, BUILT_IN_NORMAL, "bcmp");
   builtin_function ("__builtin_strcmp", int_ftype_string_string,

@@ -1,3 +1,13 @@
+2000-03-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (expand_builtin_bzero): New function.
+	(expand_builtin): Handle bzero.
+
+	* builtins.def: Add BUILT_IN_BZERO.
+
+	* c-common.c (c_common_nodes_and_builtins): Provide builtin
+	prototype & function for bzero.
+
 2000-03-23  Michael Meissner  <meissner@redhat.com>
 
 	* config/alpha/alpha.md (TF floating point insns): Undo 2000-03-21
