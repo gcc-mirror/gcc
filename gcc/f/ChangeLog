@@ -4,6 +4,7 @@ Sat Apr 24 12:19:53 1999  Craig Burley  <craig@jcb-sc.com>
 	start/end/incr expressions to default INTEGER.
 	Fix some broken conditionals.
 	Clean up some code in the region.
+	* news.c: Document the fix.
 
 	* version.c: Bump version.
 
