@@ -1,3 +1,9 @@
+2004-07-08  Diego Novillo  <dnovillo@redhat.com>
+
+	PR c/16437
+	* gcc.c-torture/execute/991118-1.x: XFAIL for x86_64.
+	* gcc.c-torture/execute/bf64-1.x: Likewise.
+
 2004-07-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/20040708-1.c: New test.
