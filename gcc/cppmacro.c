@@ -761,7 +761,12 @@ replace_args (pfile, macro, args, list)
 
 	arg = &args[src->val.arg_no - 1];
 	if (src->flags & STRINGIFY_ARG)
-	  from = arg->stringified, count = 1;
+	  {
+	    from = arg->stringified, count = 1;
+	    /* Ugh.  Maintain position of original argument.  */
+	    arg->stringified->line = src->line;
+	    arg->stringified->col = src->col;
+	  }
 	else if (src->flags & PASTE_LEFT)
 	  count = arg->count, from = arg->first;
 	else if (src > macro->expansion && (src[-1].flags & PASTE_LEFT))
@@ -923,6 +928,7 @@ cpp_get_token (pfile, token)
 	  /* PASTE_LEFT tokens can only appear in macro expansions.  */
 	  if (token->flags & PASTE_LEFT)
 	    {
+	      /* Maintains position of original token.  */
 	      paste_all_tokens (pfile, token);
 	      pfile->buffer->saved_flags = AVOID_LPASTE;
 	    }
@@ -957,6 +963,7 @@ cpp_get_token (pfile, token)
 
 	  if (node->flags & NODE_BUILTIN)
 	    {
+	      /* Maintains position of original token.  */
 	      builtin_macro (pfile, token);
 	      pfile->buffer->saved_flags = AVOID_LPASTE;
 	      break;

@@ -246,6 +246,12 @@ struct cpp_reader
   /* Lexer state.  */
   struct lexer_state state;
 
+  /* Source line tracking.  Subtract pseudo_newlines from the actual
+     line number to get the line number of preprocessed output.  Used
+     for escaped newlines and macro args that cross multiple lines.  */
+  unsigned int line;
+  unsigned int pseudo_newlines;
+
   /* The position of the last lexed token and last lexed directive.  */
   cpp_lexer_pos lexer_pos;
   cpp_lexer_pos directive_pos;

@@ -80,7 +80,7 @@ const struct token_spelling token_spellings [N_TTYPES] = {TTYPE_TABLE };
 #define TOKEN_SPELL(token) (token_spellings[(token)->type].category)
 #define TOKEN_NAME(token) (token_spellings[(token)->type].name)
 
-static cppchar_t handle_newline PARAMS ((cpp_buffer *, cppchar_t));
+static cppchar_t handle_newline PARAMS ((cpp_reader *, cppchar_t));
 static cppchar_t skip_escaped_newlines PARAMS ((cpp_buffer *, cppchar_t));
 static cppchar_t get_effective_char PARAMS ((cpp_buffer *));
 
@@ -124,12 +124,17 @@ cpp_ideq (token, string)
 /* Call when meeting a newline.  Returns the character after the newline
    (or carriage-return newline combination), or EOF.  */
 static cppchar_t
-handle_newline (buffer, newline_char)
-     cpp_buffer *buffer;
+handle_newline (pfile, newline_char)
+     cpp_reader *pfile;
      cppchar_t newline_char;
 {
+  cpp_buffer *buffer;
   cppchar_t next = EOF;
 
+  pfile->line++;
+  pfile->pseudo_newlines++;
+
+  buffer = pfile->buffer;
   buffer->col_adjust = 0;
   buffer->lineno++;
   buffer->line_base = buffer->cur;
@@ -264,7 +269,7 @@ skip_escaped_newlines (buffer, next)
 	    cpp_warning (buffer->pfile,
 			 "backslash and newline separated by space");
 
-	  next = handle_newline (buffer, next1);
+	  next = handle_newline (buffer->pfile, next1);
 	  if (next == EOF)
 	    cpp_pedwarn (buffer->pfile, "backslash-newline at end of file");
 	}
@@ -348,7 +353,7 @@ skip_block_comment (pfile)
 	}
       else if (is_vspace (c))
 	{
-	  prevc = c, c = handle_newline (buffer, c);
+	  prevc = c, c = handle_newline (pfile, c);
 	  goto next_char;
 	}
       else if (c == '\t')
@@ -706,7 +711,7 @@ parse_string (pfile, token, terminator)
 	  if (pfile->mlstring_pos.line == 0)
 	    pfile->mlstring_pos = pfile->lexer_pos;
 	      
-	  c = handle_newline (buffer, c);
+	  c = handle_newline (pfile, c);
 	  *dest++ = '\n';
 	  goto have_char;
 	}
@@ -866,6 +871,7 @@ _cpp_lex_token (pfile, result)
   buffer->saved_flags = 0;
  next_char:
   pfile->lexer_pos.line = buffer->lineno;
+  result->line = pfile->line;
  next_char2:
   pfile->lexer_pos.col = CPP_BUF_COLUMN (buffer, buffer->cur);
 
@@ -875,6 +881,7 @@ _cpp_lex_token (pfile, result)
       c = *buffer->cur++;
       pfile->lexer_pos.col++;
     }
+  result->col = pfile->lexer_pos.col;
 
  do_switch:
   buffer->read_ahead = EOF;
@@ -901,7 +908,9 @@ _cpp_lex_token (pfile, result)
     case '\n': case '\r':
       if (!pfile->state.in_directive)
 	{
-	  handle_newline (buffer, c);
+	  handle_newline (pfile, c);
+	  if (!pfile->state.parsing_args)
+	    pfile->pseudo_newlines = 0;
 	  bol = 1;
 	  pfile->lexer_pos.output_line = buffer->lineno;
 	  /* This is a new line, so clear any white space flag.

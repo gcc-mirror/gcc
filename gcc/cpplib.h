@@ -172,6 +172,8 @@ struct cpp_string
    occupy 12 bytes on 32-bit hosts and 16 bytes on 64-bit hosts.  */
 struct cpp_token
 {
+  unsigned int line;		/* Logical line of first char of token.  */
+  unsigned short col;		/* Column of first char of token.  */
   ENUM_BITFIELD(cpp_ttype) type : CHAR_BIT;  /* token type */
   unsigned char flags;		/* flags - see above */
 
