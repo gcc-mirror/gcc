@@ -1,3 +1,8 @@
+Mon Feb 22 11:40:44 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Decrease spurious warnings from -fsyntax-only:
+	* stmt.c (expand_expr_stmt): Expand expr even when -fsyntax-only.
+
 Mon Feb 22 10:55:00 1999  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* c-lex.c (yylex): Replace warning about integer constants being
