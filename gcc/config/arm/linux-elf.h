@@ -1,5 +1,5 @@
 /* Definitions for ARM running Linux-based GNU systems using ELF
-   Copyright (C) 1993, 1994, 1997, 1998, 1999, 2000, 2001 
+   Copyright (C) 1993, 1994, 1997, 1998, 1999, 2000, 2001, 2002 
    Free Software Foundation, Inc.
    Contributed by Philip Blundell <philb@gnu.org>
 
@@ -87,7 +87,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef  CPP_PREDEFINES
 #define CPP_PREDEFINES \
-"-Dunix -Dlinux -D__ELF__ \
+"-Dunix -Dgnu_linux -Dlinux -D__ELF__ \
 -Asystem=unix -Asystem=posix"
 
 /* Allow #sccs in preprocessor.  */

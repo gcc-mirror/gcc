@@ -1,5 +1,5 @@
 /* Definitions for SPARC running Linux-based GNU systems with a.out.
-   Copyright (C) 1996, 1997, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1999, 2002 Free Software Foundation, Inc.
    Contributed by Eddie C. Dost (ecd@skynet.be)
 
 This file is part of GNU CC.
@@ -60,7 +60,7 @@ Boston, MA 02111-1307, USA.  */
 #define WCHAR_TYPE_SIZE 32
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -Dsparc -Dlinux -Asystem=unix -Asystem=posix"
+#define CPP_PREDEFINES "-Dunix -Dsparc -Dgnu_linux -Dlinux -Asystem=unix -Asystem=posix"
 
 #undef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC \

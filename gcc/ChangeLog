@@ -1,3 +1,30 @@
+2002-04-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* alpha/linux.h: Define __gnu_linux__ wherever __linux__ is
+	defined, and __gnu_hurd__ wherever __GNU__ is defined.
+	* arm/linux-elf.h: Likewise.
+	* cris/aout.h: Likewise.
+	* cris/linux.h: Likewise.
+	* i370/linux.h: Likewise.
+	* i386/gnu.h: Likewise.
+	* i386/linux-aout.h: Likewise.
+	* i386/linux-oldld.h: Likewise.
+	* i386/linux.h: Likewise.
+	* i386/linux64.h: Likewise.
+	* ia64/linux.h: Likewise.
+	* m68k/linux-aout.h: Likewise.
+	* m68k/linux.h: Likewise.
+	* mips/linux.h: Likewise.
+	* pa/pa-linux.h: Likewise.
+	* pj/linux.h: Likewise.
+	* rs6000/sysv4.h: Likewise.
+	* s390/linux.h: Likewise.
+	* sh/linux.h: Likewise.
+	* sparc/linux-aout.h: Likewise.
+	* sparc/linux.h: Likewise.
+	* sparc/linux64.h: Likewise.
+	* xtensa/linux.h: Likewise.
+
 2002-04-13  Richard Sandiford  <rsandifo@redhat.com>
 
 	* stmt.c (check_unique_operand_names): Expect operand names to
