@@ -1,6 +1,6 @@
 /* Handle the hair of processing (but not expanding) inline functions.
    Also manage function and variable name overloading.
-   Copyright (C) 1987, 89, 92-97, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92-99, 2000 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -1579,7 +1579,8 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
   const char *name = IDENTIFIER_POINTER (dname);
 
   /* member operators new and delete look like methods at this point.  */
-  if (! for_method && parms != NULL_TREE && TREE_CODE (parms) == TREE_LIST
+  if (! for_method && current_namespace == global_namespace
+      && parms != NULL_TREE && TREE_CODE (parms) == TREE_LIST
       && TREE_CHAIN (parms) == void_list_node)
     {
       if (dname == ansi_opname[(int) DELETE_EXPR])

@@ -1,3 +1,8 @@
+2000-01-14  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* method.c (build_decl_overload_real): Check whether we are in ::
+	before returning __builtin_new/delete.
+
 2000-01-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (tsubst_friend_function): Improve comment.
