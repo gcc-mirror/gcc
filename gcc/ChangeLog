@@ -1,3 +1,8 @@
+Fri Jun 25 05:35:44 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* loop.c (verify_dominator): Properly handle ADDR_VEC and
+	ADDR_DIFF_VEC insns that appear inside loops.
+
 Thu Jun 24 22:54:05 1999  David Edelsohn  <edelsohn@gnu.org>
                           Jeff Law <law@cygnus.com>
 
