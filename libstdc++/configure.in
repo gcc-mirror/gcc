@@ -20,6 +20,7 @@ fi
 srctrigger=sinst.cc
 srcname="ANSI C++ library"
 package_makefile_frag=Make.pack
+package_makefile_rules_frag=Make.pack.r
 
 # per-host:
 
@@ -83,7 +84,7 @@ MOSTLYCLEAN='*.o pic stamp-picdir core so_locations $(MOSTLYCLEAN_JUNK)'
 CLEAN='$(CLEAN_JUNK)'
 EXTRA_DISTCLEAN='target-mkfrag'
 
-(. ${srcdir}/${TO_TOPDIR}libio/config.shared) >${package_makefile_frag}
+(. ${srcdir}/${TO_TOPDIR}libio/config.shared) >${package_makefile_frag} 2>${package_makefile_rules_frag}
 
 # post-target:
 
