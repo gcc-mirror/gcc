@@ -1,3 +1,8 @@
+2005-04-05  James E. Wilson  <wilson@specifixinc.com>
+
+	PR target/20670
+	* unwind-ia64.c (uw_intall_context): Add missing load of r27.
+
 2005-04-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/invoke.texi (SPARC options): Document that
