@@ -51,15 +51,13 @@ trap 'rm -f dummy.c dummy.o dummy; exit 1' 1 2 15
 # Note: order is significant - the case branches are not exclusive.
 
 case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
-    alpha:OSF1:[VX]*:*)
-	# After 1.2, OSF1 uses "V1.3" for uname -r.
-	# After 4.x, OSF1 uses "X4.x" for uname -r.
-	echo alpha-dec-osf`echo ${UNAME_RELEASE} | sed -e 's/^[VX]//'`
-	exit 0 ;;
     alpha:OSF1:*:*)
+	# A Vn.n version is a released version.
+	# A Tn.n version is a released field test version.
+	# A Xn.n version is an unreleased experimental baselevel.
 	# 1.2 uses "1.2" for uname -r.
-	echo alpha-dec-osf${UNAME_RELEASE}
-        exit 0 ;;
+	echo alpha-dec-osf`echo ${UNAME_RELEASE} | sed -e 's/^[VTX]//'`
+	exit 0 ;;
     21064:Windows_NT:50:3)
 	echo alpha-dec-winnt3.5
 	exit 0 ;;
@@ -138,7 +136,7 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	exit 0 ;;
     AViiON:dgux:*:*)
         # DG/UX returns AViiON for all architectures
-        UNAME_PROCESSOR=`uname -p`
+        UNAME_PROCESSOR=`/usr/bin/uname -p`
         if [ $UNAME_PROCESSOR = mc88100 -o $UNAME_PROCESSOR = mc88100 ] ; then
 	if [ ${TARGET_BINARY_INTERFACE}x = m88kdguxelfx \
 	     -o ${TARGET_BINARY_INTERFACE}x = x ] ; then
