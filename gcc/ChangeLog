@@ -1,3 +1,8 @@
+2004-01-02  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/gcc.texi, doc/invoke.texi, doc/install.texi: Update
+	copyright and last modification dates.
+
 2004-01-02  Andreas Jaeger  <aj@suse.de>, Gerald Pfeifer  <gp@suse.de>
 
 	* doc/install.texi (Specific): Mention x86_64.
