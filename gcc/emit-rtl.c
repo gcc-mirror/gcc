@@ -656,6 +656,34 @@ gen_lowpart_common (mode, x)
   return 0;
 }
 
+/* Return the real part (which has mode MODE) of a complex value X.
+   This always comes at the low address in memory.  */
+
+rtx
+gen_realpart (mode, x)
+     enum machine_mode mode;
+     register rtx x;
+{
+  if (WORDS_BIG_ENDIAN)
+    return gen_highpart (mode, x);
+  else
+    return gen_lowpart (mode, x);
+}
+
+/* Return the imaginary part (which has mode MODE) of a complex value X.
+   This always comes at the high address in memory.  */
+
+rtx
+gen_imagpart (mode, x)
+     enum machine_mode mode;
+     register rtx x;
+{
+  if (WORDS_BIG_ENDIAN)
+    return gen_lowpart (mode, x);
+  else
+    return gen_highpart (mode, x);
+}
+
 /* Assuming that X is an rtx (e.g., MEM, REG or SUBREG) for a value,
    return an rtx (MEM, SUBREG, or CONST_INT) that refers to the
    least-significant part of X.
