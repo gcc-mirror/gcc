@@ -1,5 +1,12 @@
 2001-07-02  Loren J. Rittle  <ljrittle@acm.org>
 
+	libstdc++/3284
+	* acinclude.m4 (GLIBCPP_ENABLE_THREADS): Portability enhancement.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
+2001-07-02  Loren J. Rittle  <ljrittle@acm.org>
+
 	libstdc++/3243
 	* acinclude.m4 (GLIBCPP_ENABLE_THREADS): Add relative path to
 	staged/installed area to support -I-.  Document.
