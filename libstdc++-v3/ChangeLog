@@ -1,5 +1,24 @@
 2004-10-14  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* testsuite/ext/headers.cc: Add includes, compile only.
+	* testsuite/ext/hash_map.cc: Move to...
+	* testsuite/ext/hash_map/1.cc: ...here.
+	* testsuite/ext/14648.cc: Move to...
+	* testsuite/ext/hash_map/14648.cc: ...here.
+	* testsuite/ext/hash_map/instantiate.cc: Add.
+	* testsuite/ext/hash_set.cc: Move to...
+	* testsuite/ext/hash_set/1.cc: ...here.
+	* testsuite/ext/hash_set_explicit_instantiation.cc: Move to...
+	* testsuite/ext/hash_set/instantiate.cc: ...here.
+	* testsuite/ext/hash_check_construct_destroy.cc: Move to...
+	* testsuite/ext/hash_set/check_construct_destroy.cc: ...here.
+	* testsuite/ext/slist_check_construct_destroy.cc: Move to...
+	* testsuite/ext/slist/check_construct_destroy.cc: ...here.
+	* testsuite/ext/slist_explicit_instantiation.cc: Move to...
+	* testsuite/ext/slist/instantiate.cc: ...here.
+	
+2004-10-14  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/ext/mt_allocator.h: Tweaks.
 	* src/mt_allocator.cc: Same.
 

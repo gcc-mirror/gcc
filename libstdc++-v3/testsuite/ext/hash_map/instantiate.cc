@@ -1,7 +1,4 @@
-// { dg-do compile }
-// 1999-06-23 bkoz 
-
-// Copyright (C) 1999, 2001, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,27 +16,19 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// extension headers
+// As a special exception, you may use this file as part of a free software
+// library without restriction.  Specifically, if other files instantiate
+// templates or use macros or inline functions from this file, or you compile
+// this file and link it with other files to produce an executable, this
+// file does not by itself cause the resulting executable to be covered by
+// the GNU General Public License.  This exception does not however
+// invalidate any other reasons why the executable file might be covered by
+// the GNU General Public License.
 
-// This should include a list of all headers in the extension
-// subdirectory that are meant to be directly included.
+// This file tests explicit instantiation of library containers
 
-#include <ext/algorithm>
-#include <ext/functional>
 #include <ext/hash_map>
-#include <ext/hash_set>
-#include <ext/iterator>
-#include <ext/memory>
-#include <ext/numeric>
-#include <ext/rb_tree>
-#include <ext/rope>
-#include <ext/slist>
-#include <ext/debug_allocator.h>
-#include <ext/malloc_allocator.h>
-#include <ext/new_allocator.h>
-#include <ext/array_allocator.h>
-#include <ext/mt_allocator.h>
-#include <ext/pool_allocator.h>
-#include <ext/stdio_filebuf.h>
-#include <ext/stdio_sync_filebuf.h>
 
+// { dg-do compile }
+
+template class __gnu_cxx::hash_map<int, char>;
