@@ -2827,7 +2827,7 @@ __enable_execute_stack ()
 }
 #endif /* __convex__ */
 
-#ifdef __DOLPHIN__
+#if defined (__DOLPHIN__) || defined (sysV88)
 
 /* Modified from the convex -code above.  */
 
@@ -2857,7 +2857,7 @@ __enable_execute_stack ()
   errno=save_errno;
 }
 
-#endif /* __DOLPHIN__ */
+#endif /* __DOLPHIN__ or sysV88 */
 
 #ifdef __pyr__
 

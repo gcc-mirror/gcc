@@ -26,6 +26,9 @@ Wed Sep 10 01:32:54 1997  Jeffrey A Law  (law@cygnus.com)
 
 Wed Sep 10 00:29:29 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 
+	* m88k/sysv3.h (INITIALIZE_TRAMPOLINE) Define.
+	* libgcc2.c (__enable_execute_stack): Provide for sysV88 too.
+
 	* xm-m88k.h (USG): Only define if it hasn't already been defined.
 
 	* Makefile.in (risky-stage1): Delete gratutious whitespace.
