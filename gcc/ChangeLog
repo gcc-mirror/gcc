@@ -1,3 +1,12 @@
+2002-03-18  Ashif Harji  <asharji@uwaterloo.ca>
+
+	* gcc.c (struct compiler default_compilers): Add
+	-no-integrated-cpp flag to invoke an external cpp.
+	(struct option_map option_map[]): Likewise.
+	* objc/lang-specs.h (struct compiler default_compilers): Add      
+	-no-integrated-cpp flag to invoke an external cpp.
+	* doc/invoke.texi: Document -no-integrated-cpp flag.
+
 2002-03-18  Alan Modra  <amodra@bigpond.net.au>
 	    David Edelsohn  <edelsohn@gnu.org>
 

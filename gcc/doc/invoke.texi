@@ -165,7 +165,7 @@ in the following sections.
 -ansi  -std=@var{standard}  -aux-info @var{filename} @gol
 -fno-asm  -fno-builtin -fno-builtin-@var{function} @gol
 -fhosted  -ffreestanding @gol
--trigraphs  -traditional  -traditional-cpp @gol
+-trigraphs  -no-integrated-cpp  -traditional  -traditional-cpp @gol
 -fallow-single-precision  -fcond-mismatch @gol
 -fsigned-bitfields  -fsigned-char @gol
 -funsigned-bitfields  -funsigned-char @gol
@@ -1146,6 +1146,16 @@ freestanding and hosted environments.
 @opindex trigraphs
 Support ISO C trigraphs.  The @option{-ansi} option (and @option{-std}
 options for strict ISO C conformance) implies @option{-trigraphs}.
+
+@item -no-integrated-cpp
+@opindex no-integrated-cpp
+Invoke the external cpp during compilation.  The default is to use the
+integrated cpp (internal cpp).  This option also allows a
+user-supplied cpp via the @option{-B} option.  This flag is applicable
+in both C and C++ modes.
+
+We do not guarantee to retain this option in future, and we may change
+its semantics.
 
 @cindex traditional C language
 @cindex C language, traditional
