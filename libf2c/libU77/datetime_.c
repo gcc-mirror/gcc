@@ -1,4 +1,4 @@
-/* Copyright (C) 1997, 1998 Free Software Foundation, Inc.
+/* Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
 This file is part of GNU Fortran libU77 library.
 
 This library is free software; you can redistribute it and/or modify it
@@ -62,8 +62,16 @@ int G77_date_and_time_0 (char *date, char *fftime, char *zone,
 #if HAVE_GETTIMEOFDAY
   {
     struct timeval tp;
+#if HAVE_STRUCT_TIMEZONE
     struct timezone tzp;
+    /* This is still not strictly correct on some systems such as HPUX, 
+       which does have struct timezone, but gettimeofday takes void* as 
+       the 2nd arg.  However, the effect of passing anything other than a null 
+       pointer is unspecified on HPUX. */
     if (! gettimeofday (&tp, &tzp))
+#else
+    if (! gettimeofday (&tp, (void *) 0))
+#endif
       vals[7] = tp.tv_usec/1000;
   }
 #endif

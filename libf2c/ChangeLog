@@ -1,3 +1,12 @@
+Sun Apr 11 23:30:42 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* libU77/aclocal.m4: New file.
+	* libU77/configure.in (LIBU77_HAVE_STRUCT_TIMEZONE): Add test.
+	* libU77/acconfig.h (HAVE_STRUCT_TIMEZONE): Add macro.
+	* libU77/datetime_c.c (G77_date_and_time_0): Use.
+	* libU77/config.hin: Regenerate.
+	* libU77/configure: Likewise.
+
 Wed Mar 31 13:50:24 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (extra_includes): Don't attempt to calculate the

@@ -94,6 +94,7 @@ test $ac_cv_func_gethostname = yes && MAYBES="$MAYBES hostnm_.o"
 test $ac_cv_func_clock = yes && MAYBES="$MAYBES mclock_.o"
 AC_SUBST(MAYBES)
 
+LIBU77_HAVE_STRUCT_TIMEZONE
 
 AC_SUBST(CROSS)
 AC_SUBST(RANLIB)
