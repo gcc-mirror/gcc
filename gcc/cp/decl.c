@@ -5373,6 +5373,15 @@ make_typename_type (context, name)
 	    return TREE_TYPE (t);
 	}
     }
+
+  /* If the CONTEXT is not a template type, then either the field is
+     there now or its never going to be.  */
+  if (!uses_template_parms (context) && !t)
+    {
+      cp_error ("no type named `%#T' in `%#T'", name, context);
+      return error_mark_node;
+    }
+    
   
   return build_typename_type (context, name, fullname,  NULL_TREE);
 }
