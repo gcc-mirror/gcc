@@ -1,3 +1,8 @@
+2001-02-20  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (check_inner_class_access): Moved declaration of local
+	`enclosing_decl_type' to the right location.
+
 2001-02-19  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* parse.y (parser_check_super_interface): Don't call 
