@@ -65,9 +65,9 @@ extern int branch_zero_operator		PARAMS ((rtx, enum machine_mode));
 extern int cond_move_dest_operand	PARAMS ((rtx, enum machine_mode));
 extern int cond_move_operand		PARAMS ((rtx, enum machine_mode));
 extern int cond_exec_operand		PARAMS ((rtx, enum machine_mode));
-extern int srelational_si_operand	PARAMS ((rtx, enum machine_mode));
-extern int urelational_si_operand	PARAMS ((rtx, enum machine_mode));
-extern int relational_di_operand	PARAMS ((rtx, enum machine_mode));
+extern int srelational_si_operator	PARAMS ((rtx, enum machine_mode));
+extern int urelational_si_operator	PARAMS ((rtx, enum machine_mode));
+extern int relational_di_operator	PARAMS ((rtx, enum machine_mode));
 #endif
 extern d30v_stack_t *d30v_stack_info	PARAMS ((void));
 extern int direct_return		PARAMS ((void));
@@ -111,7 +111,9 @@ extern rtx d30v_expand_builtin_va_arg	PARAMS ((tree, tree));
 #endif	/* TREE_CODE */
 
 extern void d30v_function_prologue	PARAMS ((FILE *, int));
+extern void d30v_expand_prologue	PARAMS ((void));
 extern void d30v_function_epilogue	PARAMS ((FILE *, int));
+extern void d30v_expand_epilogue	PARAMS ((void));
 extern void d30v_function_profiler	PARAMS ((FILE *, int));
 #ifdef RTX_CODE
 extern void d30v_split_double		PARAMS ((rtx, rtx *, rtx *));

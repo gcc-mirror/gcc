@@ -1,3 +1,19 @@
+2000-11-27  Michael Meissner  <meissner@redhat.com>
+
+	* d30v-protos.h (srelational_si_operator): Correctly spell
+	function.
+	(urelational_si_operator): Ditto.
+	(relational_si_operator): Ditto.
+	(d30v_expand_prologue): Add prototype.
+	(d30v_expand_epilogue): Ditto.
+
+	* d30v.h (OPTIMIZATION_OPTIONS): Undo November 22nd change.
+
+	* d30v.md (movcccc_*): Delete now unused patterns.
+	(64 bit comparison splitters): Rewrite to use COND_EXEC instead of
+	IF_THEN_ELSE.
+	(define_cond_exec): Use 'b' to select branch flags.
+
 2000-11-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_strncmp, expand_builtin_strncpy): New
@@ -20,8 +36,8 @@
 
 2000-11-26  Neil Booth  <neilb@earthling.net>
 
-        * cppmacro.c (cpp_scan_buffer_nooutput): Only scan the
-        current buffer.
+	* cppmacro.c (cpp_scan_buffer_nooutput): Only scan the
+	current buffer.
 
 2000-11-26  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -35,41 +51,41 @@
 	table and call output_file_names instead.
 	(file_info_cmp): Helper function to sort directory names.
 
-2000-11-26  Neil Booth  <neilb@earthling.net>
+2000-11-26  Neil Booth	<neilb@earthling.net>
 
-        * cpplib.h (struct cpp_reader): Remove lang_asm.
-        (struct cpp_options): Remove c89. New members lang,
-        extended_numbers.
-        * cppexp.c (parse_number): Use them. 
-        * cpphash.h (VALID_SIGN): Use them.
-        * cppinit.c (set_lang, cpp_start_read): Update.
-        * cpplex.c (parse_string, _cpp_lex_token): Update.
-        * cpplib.c (_cpp_handle_directive): Update.
-        * cppmacro.c (parse_args): Update.
-        * cppmain.c (scan_buffer): Update.
+	* cpplib.h (struct cpp_reader): Remove lang_asm.
+	(struct cpp_options): Remove c89. New members lang,
+	extended_numbers.
+	* cppexp.c (parse_number): Use them. 
+	* cpphash.h (VALID_SIGN): Use them.
+	* cppinit.c (set_lang, cpp_start_read): Update.
+	* cpplex.c (parse_string, _cpp_lex_token): Update.
+	* cpplib.c (_cpp_handle_directive): Update.
+	* cppmacro.c (parse_args): Update.
+	* cppmain.c (scan_buffer): Update.
 
 Sun Nov 26 10:02:37 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* fold-const.c (fold, case CONVERT_EXPR): Always return tree of
 	proper type.
 
-2000-11-26  Neil Booth  <neilb@earthling.net>
+2000-11-26  Neil Booth	<neilb@earthling.net>
 
-        * Makefile.in: Remove MAYBE_CPPLIB and maybe_cpplib.
-        * c-decl.c: Remove parse_in declaration.
-        * c-lang.c: Similarly.
-        * c-lex.c: Similarly.
-        * c-parse.in: Similarly.
-        * c-pragma.c: Similarly.
-        * configure.in: Similarly.
-        * cp/Make-lang.in: Similarly.
-        * cp/spew.c: Similarly.
-        * cp/decl2.c: Remove check for lang-c++ option.
-        * cp/lang-specs.h: Remove -lang-c++ from cc1plus command line.
-        * cp/lex.c (lang_init_options): With cpp_reader_init, default to C++.
-        * c-lex.h: Add declaration of parse_in.
-        * cppinit.c: Call set_lang after allocating pfile->pending.
-        * configure: Regenerate.
+	* Makefile.in: Remove MAYBE_CPPLIB and maybe_cpplib.
+	* c-decl.c: Remove parse_in declaration.
+	* c-lang.c: Similarly.
+	* c-lex.c: Similarly.
+	* c-parse.in: Similarly.
+	* c-pragma.c: Similarly.
+	* configure.in: Similarly.
+	* cp/Make-lang.in: Similarly.
+	* cp/spew.c: Similarly.
+	* cp/decl2.c: Remove check for lang-c++ option.
+	* cp/lang-specs.h: Remove -lang-c++ from cc1plus command line.
+	* cp/lex.c (lang_init_options): With cpp_reader_init, default to C++.
+	* c-lex.h: Add declaration of parse_in.
+	* cppinit.c: Call set_lang after allocating pfile->pending.
+	* configure: Regenerate.
 
 2000-11-25  Zack Weinberg  <zack@wolery.stanford.edu>
 
