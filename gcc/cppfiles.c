@@ -648,12 +648,14 @@ _cpp_execute_include (pfile, header, no_reinclude, include_next)
   if (CPP_OPTION (pfile, print_deps_missing_files)
       && PRINT_THIS_DEP (pfile, angle_brackets))
     {
-      if (!angle_brackets)
+      if (!angle_brackets || *fname == '/')
 	deps_add_dep (pfile->deps, fname);
       else
 	{
 	  char *p;
 	  struct file_name_list *ptr;
+	  int len = strlen (ptr->name);
+
 	  /* If requested as a system header, assume it belongs in
 	     the first system header directory. */
 	  if (CPP_OPTION (pfile, bracket_include))
@@ -661,14 +663,13 @@ _cpp_execute_include (pfile, header, no_reinclude, include_next)
 	  else
 	    ptr = CPP_OPTION (pfile, quote_include);
 
-	  p = (char *) alloca (strlen (ptr->name)
-			       + strlen (fname) + 2);
-	  if (*ptr->name != '\0')
+	  p = (char *) alloca (len + strlen (fname) + 2);
+	  if (len)
 	    {
-	      strcpy (p, ptr->name);
-	      strcat (p, "/");
+	      memcpy (p, ptr->name, len);
+	      p[len++] = '/';
 	    }
-	  strcat (p, fname);
+	  strcpy (p + len, fname);
 	  _cpp_simplify_pathname (p);
 	  deps_add_dep (pfile->deps, p);
 	}

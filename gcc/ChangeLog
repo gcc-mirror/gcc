@@ -1,3 +1,13 @@
+2001-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* tradcpp.c (deps_file, print_deps_missing_files): New variables.
+	(main): Handle -MG, -MD, -MMD.  Bail out if -MG is given without -M
+	or -MM.
+	(do_include): Handle missing headers like cpp0.
+	* cppfiles.c (_cpp_execute_include): Don't prefix absolute header
+	paths with first include pathname.  Don't strcat to uninitialized
+	string.
+
 2001-01-04  Bernd Schmidt  <bernds@redhat.com>
 
 	* regrename.c (regrename_optimize): Don't rename from frame pointer
