@@ -2303,7 +2303,8 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	 is enough to prevent anybody from looking inside for
 	 associativity, but won't generate any code.  */
       if (!(typecode == INTEGER_TYPE || typecode == REAL_TYPE
-	    || typecode == COMPLEX_TYPE))
+	    || typecode == COMPLEX_TYPE
+	    || typecode == VECTOR_TYPE))
 	{
 	  error ("wrong type argument to unary plus");
 	  return error_mark_node;
