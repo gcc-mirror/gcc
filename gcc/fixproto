@@ -4,7 +4,7 @@
 #	fixproto TARGET-DIR SOURCE-DIR-ALL SOURCE-DIR-STD
 #
 # COPYRIGHT
-#	Copyright (C) 1993, 1994 Free Software Foundation, Inc.
+#	Copyright (C) 1993, 1994, 1997, 1998 Free Software Foundation, Inc.
 #	This file is part of GNU CC.
 #
 #	GNU CC is free software; you can redistribute it and/or modify

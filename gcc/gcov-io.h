@@ -1,5 +1,5 @@
 /* Machine-independent I/O routines for gcov.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Bob Manson <manson@cygnus.com>.
 
 This file is part of GNU CC.

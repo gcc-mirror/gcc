@@ -1,5 +1,5 @@
 /* Header file for generic hash table support.
-   Copyright (C) 1993, 94 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1997, 1998 Free Software Foundation, Inc.
    Written by Steve Chamberlain <sac@cygnus.com>
 
 This file was lifted from BFD, the Binary File Descriptor library.
