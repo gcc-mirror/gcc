@@ -36,7 +36,7 @@
 
   const ctype_base::mask*
   ctype<char>::classic_table() throw()
-  { return 0; }
+  { return __SB_masks; }
 
   ctype<char>::ctype(__c_locale, const mask* __table, bool __del, 
 		     size_t __refs) 
