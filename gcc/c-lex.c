@@ -96,12 +96,12 @@ static int ignore_escape_flag = 0;
 /* Command-line: gperf -p -j1 -i 1 -g -o -t -N is_reserved_word -k1,3,$ c-parse.gperf  */ 
 struct resword { char *name; short token; enum rid rid; };
 
-#define TOTAL_KEYWORDS 55
+#define TOTAL_KEYWORDS 57
 #define MIN_WORD_LENGTH 2
 #define MAX_WORD_LENGTH 13
 #define MIN_HASH_VALUE 8
-#define MAX_HASH_VALUE 81
-/* maximum key range = 74, duplicates = 0 */
+#define MAX_HASH_VALUE 76
+/* maximum key range = 69, duplicates = 0 */
 
 #ifdef __GNUC__
 __inline
@@ -113,19 +113,19 @@ hash (str, len)
 {
   static unsigned char asso_values[] =
     {
-      82, 82, 82, 82, 82, 82, 82, 82, 82, 82,
-      82, 82, 82, 82, 82, 82, 82, 82, 82, 82,
-      82, 82, 82, 82, 82, 82, 82, 82, 82, 82,
-      82, 82, 82, 82, 82, 82, 82, 82, 82, 82,
-      82, 82, 82, 82, 82, 82, 82, 82, 82, 82,
-      82, 82, 82, 82, 82, 82, 82, 82, 82, 82,
-      82, 82, 82, 82, 82, 82, 82, 82, 82, 82,
-      82, 82, 82, 82, 82, 82, 82, 82, 82, 82,
-      82, 82, 82, 82, 82, 82, 82, 82, 82, 82,
-      82, 82, 82, 82, 82,  1, 82, 18, 13, 25,
-      7, 11,  1,  9,  2,  5, 82,  1, 26, 19,
-      26, 46, 12, 82, 14,  2,  1, 32, 36,  1,
-      82, 82,  3, 82, 82, 82, 82, 82,
+     77, 77, 77, 77, 77, 77, 77, 77, 77, 77,
+     77, 77, 77, 77, 77, 77, 77, 77, 77, 77,
+     77, 77, 77, 77, 77, 77, 77, 77, 77, 77,
+     77, 77, 77, 77, 77, 77, 77, 77, 77, 77,
+     77, 77, 77, 77, 77, 77, 77, 77, 77, 77,
+     77, 77, 77, 77, 77, 77, 77, 77, 77, 77,
+     77, 77, 77, 77, 77, 77, 77, 77, 77, 77,
+     77, 77, 77, 77, 77, 77, 77, 77, 77, 77,
+     77, 77, 77, 77, 77, 77, 77, 77, 77, 77,
+     77, 77, 77, 77, 77,  1, 77, 21,  5, 18,
+      7, 11,  1,  9,  2,  5, 77,  1, 26, 26,
+     27, 47, 12, 77, 24,  2,  1, 33, 27,  2,
+     11, 77,  3, 77, 77, 77, 77, 77,
     };
   register int hval = len;
 
@@ -166,55 +166,58 @@ is_reserved_word (str, len)
       {"__iterator__",  SCSPEC, RID_ITERATOR},
       {"typeof",  TYPEOF, NORID},
       {"typedef",  SCSPEC, RID_TYPEDEF},
+      {"break",  BREAK, NORID},
       {"while",  WHILE, NORID},
-      {"struct",  STRUCT, NORID},
       {"signed",  TYPESPEC, RID_SIGNED},
       {"__inline",  SCSPEC, RID_INLINE},
       {"__extension__",  EXTENSION, NORID},
-      {"__asm__",  ASM_KEYWORD, NORID},
-      {"else",  ELSE, NORID},
-      {"__alignof",  ALIGNOF, NORID},
-      {"break",  BREAK, NORID},
-      {"__alignof__",  ALIGNOF, NORID},
-      {"for",  FOR, NORID},
-      {"__attribute__",  ATTRIBUTE, NORID},
       {"__const",  TYPE_QUAL, RID_CONST},
-      {"",}, 
+      {"else",  ELSE, NORID},
       {"__const__",  TYPE_QUAL, RID_CONST},
-      {"__label__",  LABEL, NORID},
-      {"iterator",  SCSPEC, RID_ITERATOR},
-      {"",}, {"",}, 
-      {"__attribute",  ATTRIBUTE, NORID},
+      {"__asm__",  ASM_KEYWORD, NORID},
+      {"__complex__",  TYPESPEC, RID_COMPLEX},
+      {"__alignof",  ALIGNOF, NORID},
+      {"struct",  STRUCT, NORID},
+      {"__alignof__",  ALIGNOF, NORID},
       {"case",  CASE, NORID},
-      {"__asm",  ASM_KEYWORD, NORID},
-      {"extern",  SCSPEC, RID_EXTERN},
-      {"register",  SCSPEC, RID_REGISTER},
+      {"__attribute__",  ATTRIBUTE, NORID},
+      {"__label__",  LABEL, NORID},
       {"",}, 
-      {"return",  RETURN, NORID},
-      {"inline",  SCSPEC, RID_INLINE},
-      {"unsigned",  TYPESPEC, RID_UNSIGNED},
+      {"__complex",  TYPESPEC, RID_COMPLEX},
+      {"__iterator",  SCSPEC, RID_ITERATOR},
       {"__volatile__",  TYPE_QUAL, RID_VOLATILE},
-      {"static",  SCSPEC, RID_STATIC},
+      {"",}, 
       {"void",  TYPESPEC, RID_VOID},
+      {"__attribute",  ATTRIBUTE, NORID},
+      {"extern",  SCSPEC, RID_EXTERN},
+      {"",}, 
+      {"static",  SCSPEC, RID_STATIC},
+      {"inline",  SCSPEC, RID_INLINE},
+      {"__volatile",  TYPE_QUAL, RID_VOLATILE},
+      {"unsigned",  TYPESPEC, RID_UNSIGNED},
+      {"const",  TYPE_QUAL, RID_CONST},
+      {"for",  FOR, NORID},
+      {"__asm",  ASM_KEYWORD, NORID},
       {"float",  TYPESPEC, RID_FLOAT},
       {"short",  TYPESPEC, RID_SHORT},
       {"do",  DO, NORID},
       {"double",  TYPESPEC, RID_DOUBLE},
-      {"const",  TYPE_QUAL, RID_CONST},
-      {"__volatile",  TYPE_QUAL, RID_VOLATILE},
-      {"asm",  ASM_KEYWORD, NORID},
+      {"return",  RETURN, NORID},
+      {"",}, {"",}, 
       {"goto",  GOTO, NORID},
-      {"char",  TYPESPEC, RID_CHAR},
-      {"",}, {"",}, {"",}, 
-      {"long",  TYPESPEC, RID_LONG},
-      {"enum",  ENUM, NORID},
-      {"",}, 
-      {"union",  UNION, NORID},
-      {"auto",  SCSPEC, RID_AUTO},
+      {"",}, {"",}, 
       {"continue",  CONTINUE, NORID},
-      {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, 
+      {"register",  SCSPEC, RID_REGISTER},
+      {"long",  TYPESPEC, RID_LONG},
+      {"char",  TYPESPEC, RID_CHAR},
+      {"",}, {"",}, 
+      {"union",  UNION, NORID},
       {"",}, 
       {"volatile",  TYPE_QUAL, RID_VOLATILE},
+      {"auto",  SCSPEC, RID_AUTO},
+      {"enum",  ENUM, NORID},
+      {"",}, 
+      {"asm",  ASM_KEYWORD, NORID},
     };
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
@@ -283,6 +286,7 @@ init_lex ()
   ridpointers[(int) RID_TYPEDEF] = get_identifier ("typedef");
   ridpointers[(int) RID_REGISTER] = get_identifier ("register");
   ridpointers[(int) RID_ITERATOR] = get_identifier ("iterator");
+  ridpointers[(int) RID_COMPLEX] = get_identifier ("complex");
 
   /* Some options inhibit certain reserved words.
      Clear those words out of the hash table so they won't be recognized.  */
@@ -298,6 +302,7 @@ init_lex ()
       UNSET_RESERVED_WORD ("signed");
       UNSET_RESERVED_WORD ("inline");
       UNSET_RESERVED_WORD ("iterator");
+      UNSET_RESERVED_WORD ("complex");
     }
   if (flag_no_asm)
     {
@@ -305,6 +310,7 @@ init_lex ()
       UNSET_RESERVED_WORD ("typeof");
       UNSET_RESERVED_WORD ("inline");
       UNSET_RESERVED_WORD ("iterator");
+      UNSET_RESERVED_WORD ("complex");
     }
 }
 
@@ -1226,8 +1232,9 @@ yylex ()
 	/* Read all the digits-and-decimal-points.  */
 
 	while (c == '.'
-	       || (isalnum (c) && (c != 'l') && (c != 'L')
-		   && (c != 'u') && (c != 'U')
+	       || (isalnum (c) && c != 'l' && c != 'L'
+		   && c != 'u' && c != 'U'
+		   && c != 'i' && c != 'I' && c != 'j' && c != 'J'
 		   && (floatflag == NOT_FLOAT || ((c != 'f') && (c != 'F')))))
 	  {
 	    if (c == '.')
@@ -1337,6 +1344,7 @@ yylex ()
 	  {
 	    tree type = double_type_node;
 	    int garbage_chars = 0, exceeds_double = 0;
+	    int imag = 0;
 	    REAL_VALUE_TYPE value;
 	    jmp_buf handler;
 
@@ -1408,6 +1416,12 @@ yylex ()
 		type = long_double_type_node;
 		garbage_chars = -1;
 		break;
+
+	      case 'i': case 'I':
+		if (imag)
+		  error ("more than one `i' or `j' in numeric constant");
+		imag = 1;
+		garbage_chars = -1;
 	      }
 	    /* Note: garbage_chars is -1 if first char is *not* garbage.  */
 	    while (isalnum (c) || c == '.' || c == '_'
@@ -1424,7 +1438,11 @@ yylex ()
 	      error ("garbage at end of number");
 
 	    /* Create a node with determined type and value.  */
-	    yylval.ttype = build_real (type, value);
+	    if (imag)
+	      yylval.ttype = build_complex (convert (type, integer_zero_node),
+					    build_real (type, value));
+	    else
+	      yylval.ttype = build_real (type, value);
 
 	    ungetc (c, finput);
 	    *p = 0;
@@ -1436,6 +1454,7 @@ yylex ()
 	    int spec_unsigned = 0;
 	    int spec_long = 0;
 	    int spec_long_long = 0;
+	    int spec_imag = 0;
 	    int bytes, warn, i;
 
 	    while (1)
@@ -1457,6 +1476,12 @@ yylex ()
 			spec_long_long = 1;
 		      }
 		    spec_long = 1;
+		  }
+		else if (c == 'i' || c == 'j' || c == 'I' || c == 'J')
+		  {
+		    if (spec_imag)
+		      error ("more than one `i' or `j' in numeric constant");
+		    spec_imag = 1;
 		  }
 		else
 		  {
@@ -1598,7 +1623,17 @@ yylex ()
 	    if (base == 10 && ! spec_unsigned && TREE_UNSIGNED (type))
 	      warning ("decimal constant is so large that it is unsigned");
 
-	    if (flag_traditional && !int_fits_type_p (yylval.ttype, type))
+	    if (spec_imag)
+	      {
+		if (TYPE_PRECISION (type)
+		    <= TYPE_PRECISION (integer_type_node))
+		  yylval.ttype
+		    = build_complex (integer_zero_node,
+				     convert (integer_type_node, yylval.ttype));
+		else
+		  error ("complex integer constant is too wide for `complex int'");
+	      }
+	    else if (flag_traditional && !int_fits_type_p (yylval.ttype, type))
 	      /* The traditional constant 0x80000000 is signed
 		 but doesn't fit in the range of int.
 		 This will change it to -0x80000000, which does fit.  */
