@@ -47,11 +47,6 @@
 	of pthread_create to find out if threads are enabled.
 	* gthr-posix95.h (__gthread_active_p): Likewise.
 
-2005-01-17  Ira Rosen  <irar@il.ibm.com>
-
-	* fortran/f95-lang.c (gfc_init_builtin_functions): Call
-	targetm.init_builtins.
-
 2005-01-17  Paolo Bonzini  <bonzini@gnu.org>
 
 	* common.opt (-fnew-ra): Remove.
