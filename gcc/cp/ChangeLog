@@ -1,5 +1,9 @@
 2002-10-18  Mark Mitchell  <mark@codesourcery.com>
 
+	* class.c (base_derived_from): Make sure return value is a bool.
+
+2002-10-18  Mark Mitchell  <mark@codesourcery.com>
+
 	* class.c (find_final_overrider_data_s): Remove overriding_fn and
 	overriding_base.
 	(dfs_base_derived_from): New function.

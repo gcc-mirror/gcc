@@ -2225,7 +2225,7 @@ dfs_base_derived_from (tree binfo, void *data)
 static bool
 base_derived_from (tree derived, tree base)
 {
-  return dfs_walk (derived, dfs_base_derived_from, NULL, base);
+  return dfs_walk (derived, dfs_base_derived_from, NULL, base) != NULL_TREE;
 }
 
 typedef struct find_final_overrider_data_s {
