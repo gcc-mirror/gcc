@@ -1,3 +1,7 @@
+Sat Mar  9 07:20:01 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* combine.c (make_extraction): Don't make extension of CONST_INT.
+
 2002-03-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mips/mips.c (function_arg_pass_by_reference): Force to 0
