@@ -620,11 +620,20 @@ extern void move_block_to_reg PROTO((int, rtx, int, enum machine_mode));
    The number of registers to be filled is NREGS.  */
 extern void move_block_from_reg PROTO((int, rtx, int, int));
 
+/* Load a BLKmode value into non-consecutive registers represented by a
+   PARALLEL.  */
+extern void emit_group_load PROTO((rtx, rtx));
+/* Store a BLKmode value from non-consecutive registers represented by a
+   PARALLEL.  */
+extern void emit_group_store PROTO((rtx, rtx));
+
 /* Mark REG as holding a parameter for the next CALL_INSN.  */
 extern void use_reg PROTO((rtx*, rtx));
 /* Mark NREGS consecutive regs, starting at REGNO, as holding parameters
    for the next CALL_INSN.  */
 extern void use_regs PROTO((rtx*, int, int));
+/* Mark a PARALLEL as holding a parameter for the next CALL_INSN.  */
+extern void use_group_regs PROTO((rtx*, rtx));
 
 /* Write zeros through the storage of OBJECT.
    If OBJECT has BLKmode, SIZE is its length in bytes and ALIGN is its
