@@ -1,3 +1,14 @@
+2002-04-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/817
+	* arm.md (arm_movdi): Adjust neg_pool_range attribute to allow
+	for the fact that the pool entry uses two words.
+	(movdf_hard_insn): Similarly.  Also, ADR instruction can span
+	1k bytes.
+	(movdf_soft_insn): Similarly.
+	(movxf_hard_insn): Adjust neg_pool_range attribute to allow
+	for the fact that the pool entry uses three words.
+
 2002-04-10  Richard Henderson  <rth@redhat.com>
 
 	* expr.c (expand_expr) [INTEGER_CST]: Don't force into registers
