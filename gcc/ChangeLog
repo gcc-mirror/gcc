@@ -1,5 +1,12 @@
 2002-02-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/4401
+	* c-common.c (pointer_int_sum): Moved from...
+	* c-typeck.c (pointer_int_sum): ...here.
+	* c-common.h (pointer_int_sum): Add prototype.
+
+2002-02-20  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c++/5713
 	* c-decl.c (duplicate_decls): Return 0 if issued error about
 	redeclaration.
