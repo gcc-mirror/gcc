@@ -1,6 +1,7 @@
 /* GNU Objective C Runtime Thread Implementation for PCThreads under Linux.
    Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Scott Christley <scottc@net-community.com>
+   Condition functions added by: Mircea Oancea <mircea@first.elcom.pub.ro>
 
 This file is part of GNU CC.
 
@@ -24,35 +25,16 @@ Boston, MA 02111-1307, USA.  */
    however invalidate any other reasons why the executable file might be
    covered by the GNU General Public License.  */
 
-#include <pthread.h>
+#include <pcthread.h>
 #include <objc/thr.h>
 #include "runtime.h"
 
 /* Key structure for maintiain thread specific storage */
 static pthread_key_t _objc_thread_storage;
 
-/********
- *  This structure represents a single mutual exclusion lock.  Lock semantics
- *  are detailed with the subsequent functions.  We use whatever lock is
- *  provided by the system.  We augment it with depth and current owner id
- *  fields to implement and re-entrant lock.
- */
-struct objc_mutex 
-{
-  volatile objc_thread_t     owner;          /* Id of thread that owns.  */
-  volatile int                depth;          /* # of acquires.           */
-  pthread_mutex_t             mutex;          /* PCThread mutex           */
-};
+/* Backend initialization functions */
 
-struct objc_condition 
-{
-  pthread_cond_t              condition;      /* cthread condition        */
-};
-
-/********
- *  Initialize the threads subsystem.  Returns 0 if successful, or -1 if no
- *  thread support is available.
- */
+/* Initialize the threads subsystem. */
 int
 __objc_init_thread_system(void)
 {
@@ -60,11 +42,9 @@ __objc_init_thread_system(void)
   return pthread_key_create(&_objc_thread_storage, NULL);
 }
 
-/********
- *  Finalize the threads subsystem.  Returns 0 if successful, or -1 if not
- */
+/* Close the threads subsystem. */
 int
-__objc_fini_thread_system(void)
+__objc_close_thread_system(void)
 {
   /* Destroy the thread storage key */
   /* Not implemented yet */
@@ -72,104 +52,76 @@ __objc_fini_thread_system(void)
   return 0;
 }
 
-/********
- *  Create a new thread of execution and return its id.  Return NULL if fails.
- *  The new thread starts in "func" with the given argument.
- */
+/* Backend thread functions */
+
+/* Create a new thread of execution. */
 objc_thread_t
-objc_thread_create(void (*func)(void *arg), void *arg)
+__objc_thread_detach(void (*func)(void *arg), void *arg)
 {
   objc_thread_t thread_id;
   pthread_t new_thread_handle;
 
-  objc_mutex_lock(__objc_runtime_mutex);
-  
   if ( !(pthread_create(&new_thread_handle, NULL, (void *)func, arg)) )
-    {
       thread_id = *(objc_thread_t *)&new_thread_handle;
-      __objc_runtime_threads_alive++;
-    }
   else
     thread_id = NULL;
-  
-  objc_mutex_unlock(__objc_runtime_mutex);
   
   return thread_id;
 }
 
-/********
- *  Set the current thread's priority.
- */
+/* Set the current thread's priority. */
 int
-objc_thread_set_priority(int priority)
+__objc_thread_set_priority(int priority)
 {
   /* Not implemented yet */
-  return -1;                                   	/* Failed.                  */
+  return -1;
 }
 
-/********
- *  Return the current thread's priority.
- */
+/* Return the current thread's priority. */
 int
-objc_thread_get_priority(void)
+__objc_thread_get_priority(void)
 {
   /* Not implemented yet */
-  return OBJC_THREAD_INTERACTIVE_PRIORITY;      /* Highest priority.        */
+  return OBJC_THREAD_INTERACTIVE_PRIORITY;
 }
 
-/********
- *  Yield our process time to another thread.  Any BUSY waiting that is done
- *  by a thread should use this function to make sure that other threads can
- *  make progress even on a lazy uniprocessor system.
- */
+/* Yield our process time to another thread. */
 void
-objc_thread_yield(void)
+__objc_thread_yield(void)
 {
   pthread_yield(NULL);
 }
 
-/********
- *  Terminate the current tread.  Doesn't return anything.  Doesn't return.
- *  Actually, if it failed returns -1.
- */
+/* Terminate the current thread. */
 int
-objc_thread_exit(void)
+__objc_thread_exit(void)
 {
-  objc_mutex_lock(__objc_runtime_mutex);
-  __objc_runtime_threads_alive--;
-  objc_mutex_unlock(__objc_runtime_mutex);
-      
-  pthread_exit(&__objc_thread_exit_status);     /* Terminate thread.        */
+  /* exit the thread */
+  pthread_exit(&__objc_thread_exit_status);
+
+  /* Failed if we reached here */
   return -1;
 }
 
-/********
- *  Returns an integer value which uniquely describes a thread.  Must not be
- *  NULL which is reserved as a marker for "no thread".
- */
+/* Returns an integer value which uniquely describes a thread. */
 objc_thread_t
-objc_thread_id(void)
+__objc_thread_id(void)
 {
   pthread_t self = pthread_self();
 
-  return *(objc_thread_t *)&self;            /* Return thread handle.    */
+  return *(objc_thread_t *)&self;
 }
 
-/********
- *  Sets the thread's local storage pointer.  Returns 0 if successful or -1
- *  if failed.
- */
+/* Sets the thread's local storage pointer. */
 int
-objc_thread_set_data(void *value)
+__objc_thread_set_data(void *value)
 {
   return pthread_setspecific(_objc_thread_storage, value);
 }
 
-/********
- *  Returns the thread's local storage pointer.  Returns NULL on failure.
- */
+/* Returns the thread's local storage pointer. */
 void *
-objc_thread_get_data(void)
+__objc_thread_get_data(void)
 {
   void *value = NULL;
 
@@ -179,240 +131,88 @@ objc_thread_get_data(void)
   return NULL;
 }
 
-/********
- *  Allocate a mutex.  Return the mutex pointer if successful or NULL if the
- *  allocation failed for any reason.
- */
-objc_mutex_t
-objc_mutex_allocate(void)
-{
-  objc_mutex_t mutex;
-    
-  if (!(mutex = (objc_mutex_t)objc_malloc(sizeof(struct objc_mutex))))
-    return NULL;                            /* Abort if malloc failed.  */
+/* Backend mutex functions */
 
-  /* Create PCThread mutex */
-  if ( pthread_mutex_init(&(mutex->mutex), NULL) )
-    {
-      /* Failed */
-      objc_free(mutex);
-      return NULL;
-    }
-
-  mutex->owner = NULL;                        /* No owner.                */
-  mutex->depth = 0;                           /* No locks.                */
-  return mutex;                               /* Return mutex handle.     */
-}
-
-/********
- *  Deallocate a mutex.  Note that this includes an implicit mutex_lock to
- *  insure that no one else is using the lock.  It is legal to deallocate
- *  a lock if we have a lock on it, but illegal to deallocate a lock held
- *  by anyone else.
- *  Returns the number of locks on the thread.  (1 for deallocate).
- */
+/* Allocate a mutex. */
 int
-objc_mutex_deallocate(objc_mutex_t mutex)
+__objc_mutex_allocate(objc_mutex_t mutex)
 {
-  int         depth;                          /* # of locks on mutex.     */
-
-  if (!mutex)                                 /* Is argument bad?         */
-    return -1;                              /* Yes, abort.              */
-  depth = objc_mutex_lock(mutex);             /* Must have lock.          */
-
-  /* Destroy PCThread mutex */
-  pthread_mutex_destroy(&(mutex->mutex));
-
-  objc_free(mutex);                           /* Free memory.             */
-  return depth;                               /* Return last depth.       */
+  if (pthread_mutex_init((pthread_mutex_t *)(&(mutex->backend)), NULL))
+    return -1;
+  else
+    return 0;
 }
 
-/********
- *  Grab a lock on a mutex.  If this thread already has a lock on this mutex
- *  then we increment the lock count.  If another thread has a lock on the 
- *  mutex we block and wait for the thread to release the lock.
- *  Returns the lock count on the mutex held by this thread.
- */
+/* Deallocate a mutex. */
 int
-objc_mutex_lock(objc_mutex_t mutex)
+__objc_mutex_deallocate(objc_mutex_t mutex)
 {
-  objc_thread_t      thread_id;              /* Cache our thread id.     */
-  int status;
-
-  if (!mutex)                                 /* Is argument bad?         */
-    return -1;                              /* Yes, abort.              */
-  thread_id = objc_thread_id();               /* Get this thread's id.    */
-  if (mutex->owner == thread_id)              /* Already own lock?        */
-    {
-      return ++mutex->depth;                  /* Yes, increment depth.    */
-    }
-
-  /* Lock the PCThread mutex */
-  status = pthread_mutex_lock(&(mutex->mutex));
-  if (status)
-    {
-      return status;                            /* Failed */
-    }
-
-  mutex->owner = thread_id;                   /* Mark thread as owner.    */
-  return mutex->depth = 1;                    /* Increment depth to end.  */
+  if (pthread_mutex_destroy((pthread_mutex_t *)(&(mutex->backend))))
+    return -1;
+  else
+    return 0;
 }
 
-/********
- *  Try to grab a lock on a mutex.  If this thread already has a lock on
- *  this mutex then we increment the lock count and return it.  If another
- *  thread has a lock on the mutex returns -1.
- */
+/* Grab a lock on a mutex. */
 int
-objc_mutex_trylock(objc_mutex_t mutex)
+__objc_mutex_lock(objc_mutex_t mutex)
 {
-  objc_thread_t      thread_id;              /* Cache our thread id.     */
-  int status;
-
-  if (!mutex)                                 /* Is argument bad?         */
-    return -1;                              /* Yes, abort.              */
-  thread_id = objc_thread_id();               /* Get this thread's id.    */
-  if (mutex->owner == thread_id)              /* Already own lock?        */
-    return ++mutex->depth;                  /* Yes, increment depth.    */
-    
-  /* Lock the PCThread mutex */
-  status = pthread_mutex_trylock(&(mutex->mutex));
-  if (status)
-    return status;                            /* Failed */
-
-  mutex->owner = thread_id;                   /* Mark thread as owner.    */
-  return mutex->depth = 1;                    /* Increment depth to end.  */
+  return pthread_mutex_lock((pthread_mutex_t *)(&(mutex->backend)));
 }
 
-/********
- *  Decrements the lock count on this mutex by one.  If the lock count reaches
- *  zero, release the lock on the mutex.  Returns the lock count on the mutex.
- *  It is an error to attempt to unlock a mutex which this thread doesn't hold
- *  in which case return -1 and the mutex is unaffected.
- *  Will also return -1 if the mutex free fails.
- */
+/* Try to grab a lock on a mutex. */
 int
-objc_mutex_unlock(objc_mutex_t mutex)
+__objc_mutex_trylock(objc_mutex_t mutex)
 {
-  objc_thread_t thread_id;                   /* Cache our thread id.     */
-  int status;
-    
-  if (!mutex)                                 /* Is argument bad?         */
-    return -1;                              /* Yes, abort.              */
-  thread_id = objc_thread_id();               /* Get this thread's id.    */
-  if (mutex->owner != thread_id)              /* Does some else own lock? */
-    return -1;                              /* Yes, abort.              */
-  if (mutex->depth > 1)                       /* Released last lock?      */
-    return --mutex->depth;                  /* No, Decrement depth, end.*/
-  mutex->depth = 0;                           /* Yes, reset depth to 0.   */
-  mutex->owner = NULL;                        /* Set owner to "no thread".*/
-
-  /* Unlock the PCThread mutex */
-  status = pthread_mutex_unlock(&(mutex->mutex));
-  if (status)
-    return status;                            /* Failed */
-
-  return 0;                                   /* No, return success.      */
+  return pthread_mutex_trylock((pthread_mutex_t *)(&(mutex->backend)));
 }
 
-/********
- *  Allocate a condition.  Return the condition pointer if successful or NULL
- * if the allocation failed for any reason.
- */
-objc_condition_t 
-objc_condition_allocate(void)
-{
-    objc_condition_t condition;
-    
-    if (!(condition = (objc_condition_t)objc_malloc(
-                        sizeof(struct objc_condition))))
-        return NULL;                            /* Abort if malloc failed.  */
-
-  	if ( pthread_cond_init(&(condition->condition), NULL) ) {
-		objc_free(condition);
-		return NULL;
-	}
-    
-    return condition;                           /* Return condition handle. */
-}
-
-/********
- *  Deallocate a condition. Note that this includes an implicit 
- *  condition_broadcast to insure that waiting threads have the opportunity
- *  to wake.  It is legal to dealloc a condition only if no other
- *  thread is/will be using it. Here we do NOT check for other threads
- *  waiting but just wake them up.
- */
+/* Unlock the mutex */
 int
-objc_condition_deallocate(objc_condition_t condition)
+__objc_mutex_unlock(objc_mutex_t mutex)
 {
-	pthread_cond_broadcast(&(condition->condition));
-	pthread_cond_destroy(&(condition->condition));
-	objc_free(condition);
-	return 0;
+  return pthread_mutex_unlock((pthread_mutex_t *)(&(mutex->backend)));
 }
 
-/********
- *  Wait on the condition unlocking the mutex until objc_condition_signal()
- *  or objc_condition_broadcast() are called for the same condition. The
- *  given mutex *must* have the depth set to 1 so that it can be unlocked
- *  here, so that someone else can lock it and signal/broadcast the condition.
- *  The mutex is used to lock access to the shared data that make up the
- *  "condition" predicate.
- */
-int
-objc_condition_wait(objc_condition_t condition, objc_mutex_t mutex)
-{
-    objc_thread_t    thread_id;                /* Cache our thread id.     */
-    
-    if (!mutex || !condition)                   /* Is argument bad?         */
-        return -1;                              /* Yes, abort.              */
+/* Backend condition mutex functions */
 
-    thread_id = objc_thread_id();               /* Get this thread's id.    */
-    if (mutex->owner != thread_id)              /* Does some else own lock? */
-        return -1;                              /* Yes, abort.              */
-    if (mutex->depth > 1)                       /* Locked more than once ?  */
-        return -1;                              /* YES, return error        */
-                                                /* mutex will be unlocked   */
-    mutex->depth = 0;                           /* Yes, reset depth to 0.   */
-    mutex->owner = (objc_thread_t) -1;         /* Set owner to "no thread".*/
-    
-    pthread_cond_wait(&(condition->condition),
-		&(mutex->mutex));               /* unlock, wait ..., lock   */
-    
-    mutex->owner = thread_id;                   /* Mark thread as owner.    */
-    mutex->depth = 1;                           /* Increment depth to end.  */
-    return 0;                                   /* Return success.          */
+/* Allocate a condition. */
+int
+__objc_condition_allocate(objc_condition_t condition)
+{
+  if (pthread_cond_init((pthread_cond_t *)(&(condition->backend)), NULL))
+    return -1;
+  else
+    return 0;
 }
 
-/********
- *  Wake up all threads waiting on this condition. It is recommended that 
- *  the called would lock the same mutex as the threads in objc_condition_wait
- *  before changing the "condition predicate" and make this call and unlock it
- *  right away after this call.
- */
+/* Deallocate a condition. */
 int
-objc_condition_broadcast(objc_condition_t condition)
+__objc_condition_deallocate(objc_condition_t condition)
 {
-    if (!condition)
-		return -1;
-	pthread_cond_broadcast(&(condition->condition));
-	return 0;
+  return pthread_cond_destroy((pthread_cond_t *)(&(condition->backend)));
 }
 
-/********
- *  Wake up one thread waiting on this condition. It is recommended that 
- *  the called would lock the same mutex as the threads in objc_condition_wait
- *  before changing the "condition predicate" and make this call and unlock it
- *  right away after this call.
- */
+/* Wait on the condition */
 int
-objc_condition_signal(objc_condition_t condition)
+__objc_condition_wait(objc_condition_t condition, objc_mutex_t mutex)
 {
-    if (!condition)
-		return -1;
-	pthread_cond_signal(&(condition->condition));
-	return 0;
+  return pthread_cond_wait((pthread_cond_t *)(&(condition->backend)),
+			   (pthread_mutex_t *)(&(mutex->backend)));
+}
+
+/* Wake up all threads waiting on this condition. */
+int
+__objc_condition_broadcast(objc_condition_t condition)
+{
+  return pthread_cond_broadcast((pthread_cond_t *)(&(condition->backend)));
+}
+
+/* Wake up one thread waiting on this condition. */
+int
+__objc_condition_signal(objc_condition_t condition)
+{
+  return pthread_cond_signal((pthread_cond_t *)(&(condition->backend)));
 }
 
 /* End of File */

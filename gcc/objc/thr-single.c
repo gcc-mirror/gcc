@@ -27,214 +27,166 @@ Boston, MA 02111-1307, USA.  */
 #include <objc/thr.h>
 #include "runtime.h"
 
-/********
- *  This structure represents a single mutual exclusion lock.  Lock semantics
- *  are detailed with the subsequent functions.  We use whatever lock is
- *  provided by the system.  We augment it with depth and current owner id
- *  fields to implement and re-entrant lock.
- */
-struct objc_mutex 
-{
-    volatile objc_thread_t     owner;          /* Id of thread that owns.  */
-    volatile int                depth;          /* # of acquires.           */
-};
+/* Thread local storage for a single thread */
+static void *thread_local_storage = NULL;
 
-/********
- *  Initialize the threads subsystem.  Returns 0 if successful, or -1 if no
- *  thread support is available.
- */
+/* Backend initialization functions */
+
+/* Initialize the threads subsystem. */
 int
 __objc_init_thread_system(void)
 {
-  DEBUG_PRINTF("__objc_init_thread_system\n");
-  return -1;                                  	/* Failed.                  */
+  /* No thread support available */
+  return -1;
 }
 
-/********
- *  Create a new thread of execution and return its id.  Return NULL if fails.
- *  The new thread starts in "func" with the given argument.
- */
+/* Close the threads subsystem. */
+int
+__objc_close_thread_system(void)
+{
+  /* No thread support available */
+  return -1;
+}
+
+/* Backend thread functions */
+
+/* Create a new thread of execution. */
 objc_thread_t
-objc_thread_create(void (*func)(void *arg), void *arg)
+__objc_thread_detach(void (*func)(void *arg), void *arg)
 {
-  return NULL;				   	/* We can't start threads.  */
+  /* No thread support available */
+  return NULL;
 }
 
-/********
- *  Set the current thread's priority.
- */
+/* Set the current thread's priority. */
 int
-objc_thread_set_priority(int priority)
+__objc_thread_set_priority(int priority)
 {
-  return -1;                                   	/* Failed.                  */
+  /* No thread support available */
+  return -1;
 }
 
-/********
- *  Return the current thread's priority.
- */
+/* Return the current thread's priority. */
 int
-objc_thread_get_priority(void)
+__objc_thread_get_priority(void)
 {
-  return OBJC_THREAD_INTERACTIVE_PRIORITY;      /* Highest priority.        */
+  return OBJC_THREAD_INTERACTIVE_PRIORITY;
 }
 
-/********
- *  Yield our process time to another thread.  Any BUSY waiting that is done
- *  by a thread should use this function to make sure that other threads can
- *  make progress even on a lazy uniprocessor system.
- */
+/* Yield our process time to another thread. */
 void
-objc_thread_yield(void)
+__objc_thread_yield(void)
 {
   return;
 }
 
-/********
- *  Terminate the current tread.  Doesn't return anything.  Doesn't return.
- *  Actually, if it failed returns -1.
- */
+/* Terminate the current thread. */
 int
-objc_thread_exit(void)
+__objc_thread_exit(void)
 {
-  exit(__objc_thread_exit_status);
+  /* No thread support available */
+  /* Should we really exit the program */
+  /* exit(&__objc_thread_exit_status); */
   return -1;
 }
 
-/********
- *  Returns an integer value which uniquely describes a thread.  Must not be
- *  NULL which is reserved as a marker for "no thread".
- */
+/* Returns an integer value which uniquely describes a thread. */
 objc_thread_t
-objc_thread_id(void)
+__objc_thread_id(void)
 {
-  return (objc_thread_t)1;                     /* No thread support, use 1.*/
+  /* No thread support, use 1. */
+  return (objc_thread_t)1;
 }
 
-/********
- *  Sets the thread's local storage pointer.  Returns 0 if successful or -1
- *  if failed.
- */
-
-static void *thread_local_storage = NULL;
-
+/* Sets the thread's local storage pointer. */
 int
-objc_thread_set_data(void *value)
+__objc_thread_set_data(void *value)
 {
   thread_local_storage = value;
   return 0;
 }
 
-/********
- *  Returns the thread's local storage pointer.  Returns NULL on failure.
- */
+/* Returns the thread's local storage pointer. */
 void *
-objc_thread_get_data(void)
+__objc_thread_get_data(void)
 {
   return thread_local_storage;
 }
 
-/********
- *  Allocate a mutex.  Return the mutex pointer if successful or NULL if the
- *  allocation failed for any reason.
- */
-objc_mutex_t
-objc_mutex_allocate(void)
+/* Backend mutex functions */
+
+/* Allocate a mutex. */
+int
+__objc_mutex_allocate(objc_mutex_t mutex)
 {
-    objc_mutex_t mutex;
-    
-    if (!(mutex = (objc_mutex_t)objc_malloc(sizeof(struct objc_mutex))))
-        return NULL;                            /* Abort if malloc failed.  */
-    
-    mutex->owner = NULL;                        /* No owner.                */
-    mutex->depth = 0;                           /* No locks.                */
-    return mutex;                               /* Return mutex handle.     */
+  return 0;
 }
 
-/********
- *  Deallocate a mutex.  Note that this includes an implicit mutex_lock to
- *  insure that no one else is using the lock.  It is legal to deallocate
- *  a lock if we have a lock on it, but illegal to deallocate a lock held
- *  by anyone else.
- *  Returns the number of locks on the thread.  (1 for deallocate).
- */
+/* Deallocate a mutex. */
 int
-objc_mutex_deallocate(objc_mutex_t mutex)
+__objc_mutex_deallocate(objc_mutex_t mutex)
 {
-    int         depth;                          /* # of locks on mutex.     */
-
-    if (!mutex)                                 /* Is argument bad?         */
-        return -1;                              /* Yes, abort.              */
-    depth = objc_mutex_lock(mutex);             /* Must have lock.          */
-    
-    objc_free(mutex);                           /* Free memory.             */
-    return depth;                               /* Return last depth.       */
+  return 0;
 }
 
-/********
- *  Grab a lock on a mutex.  If this thread already has a lock on this mutex
- *  then we increment the lock count.  If another thread has a lock on the 
- *  mutex we block and wait for the thread to release the lock.
- *  Returns the lock count on the mutex held by this thread.
- */
+/* Grab a lock on a mutex. */
 int
-objc_mutex_lock(objc_mutex_t mutex)
+__objc_mutex_lock(objc_mutex_t mutex)
 {
-    objc_thread_t      thread_id;              /* Cache our thread id.     */
-
-    if (!mutex)                                 /* Is argument bad?         */
-        return -1;                              /* Yes, abort.              */
-    thread_id = objc_thread_id();               /* Get this thread's id.    */
-    if (mutex->owner == thread_id)              /* Already own lock?        */
-        return ++mutex->depth;                  /* Yes, increment depth.    */
-
-    mutex->owner = thread_id;                   /* Mark thread as owner.    */
-
-    return mutex->depth = 1;                    /* Increment depth to end.  */
+  /* There can only be one thread, so we always get the lock */
+  return 0;
 }
 
-/********
- *  Try to grab a lock on a mutex.  If this thread already has a lock on
- *  this mutex then we increment the lock count and return it.  If another
- *  thread has a lock on the mutex returns -1.
- */
+/* Try to grab a lock on a mutex. */
 int
-objc_mutex_trylock(objc_mutex_t mutex)
+__objc_mutex_trylock(objc_mutex_t mutex)
 {
-    objc_thread_t      thread_id;              /* Cache our thread id.     */
-
-    if (!mutex)                                 /* Is argument bad?         */
-        return -1;                              /* Yes, abort.              */
-    thread_id = objc_thread_id();               /* Get this thread's id.    */
-    if (mutex->owner == thread_id)              /* Already own lock?        */
-        return ++mutex->depth;                  /* Yes, increment depth.    */
-    
-    mutex->owner = thread_id;                   /* Mark thread as owner.    */
-    return mutex->depth = 1;                    /* Increment depth to end.  */
+  /* There can only be one thread, so we always get the lock */
+  return 0;
 }
 
-/********
- *  Decrements the lock count on this mutex by one.  If the lock count reaches
- *  zero, release the lock on the mutex.  Returns the lock count on the mutex.
- *  It is an error to attempt to unlock a mutex which this thread doesn't hold
- *  in which case return -1 and the mutex is unaffected.
- *  Will also return -1 if the mutex free fails.
- */
+/* Unlock the mutex */
 int
-objc_mutex_unlock(objc_mutex_t mutex)
+__objc_mutex_unlock(objc_mutex_t mutex)
 {
-    objc_thread_t  thread_id;			/* Cache our thread id.     */
-    
-    if (!mutex)                                 /* Is argument bad?         */
-        return -1;                              /* Yes, abort.              */
-    thread_id = objc_thread_id();               /* Get this thread's id.    */
-    if (mutex->owner != thread_id)              /* Does some else own lock? */
-        return -1;                              /* Yes, abort.              */
-    if (mutex->depth > 1)                       /* Released last lock?      */
-        return --mutex->depth;                  /* No, Decrement depth, end.*/
-    mutex->depth = 0;                           /* Yes, reset depth to 0.   */
-    mutex->owner = NULL;                        /* Set owner to "no thread".*/
-    
-    return 0;                                   /* No, return success.      */
+  return 0;
+}
+
+/* Backend condition mutex functions */
+
+/* Allocate a condition. */
+int
+__objc_condition_allocate(objc_condition_t condition)
+{
+  return 0;
+}
+
+/* Deallocate a condition. */
+int
+__objc_condition_deallocate(objc_condition_t condition)
+{
+  return 0;
+}
+
+/* Wait on the condition */
+int
+__objc_condition_wait(objc_condition_t condition, objc_mutex_t mutex)
+{
+  return 0;
+}
+
+/* Wake up all threads waiting on this condition. */
+int
+__objc_condition_broadcast(objc_condition_t condition)
+{
+  return 0;
+}
+
+/* Wake up one thread waiting on this condition. */
+int
+__objc_condition_signal(objc_condition_t condition)
+{
+  return 0;
 }
 
 /* End of File */
