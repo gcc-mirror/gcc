@@ -27,6 +27,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "tree.h"
 #include "c-tree.h"
 #include "flags.h"
+#include "obstack.h"
+#include "rtl.h"
 
 static void expand_stmt_with_iterators_1 ();
 static tree collect_iterators();
@@ -36,29 +38,96 @@ static void add_ixpansion ();
 static void delete_ixpansion();
 static int top_level_ixpansion_p ();
 static void istack_sublevel_to_current ();
+
+/* A special obstack, and a pointer to the start of
+   all the data in it (so we can free everything easily).  */
+static struct obstack ixp_obstack;
+static char *ixp_firstobj;
 
+/*
+		KEEPING TRACK OF EXPANSIONS
+
+   In order to clean out expansions corresponding to statements inside
+   "{(...)}" constructs we have to keep track of all expansions.  The
+   cleanup is needed when an automatic, or implicit, expansion on
+   iterator, say X, happens to a statement which contains a {(...)}
+   form with a statement already expanded on X.  In this case we have
+   to go back and cleanup the inner expansion.  This can be further
+   complicated by the fact that {(...)} can be nested.
+
+   To make this cleanup possible, we keep lists of all expansions, and
+   to make it work for nested constructs, we keep a stack.  The list at
+   the top of the stack (ITER_STACK.CURRENT_LEVEL) corresponds to the
+   currently parsed level.  All expansions of the levels below the
+   current one are kept in one list whose head is pointed to by
+   ITER_STACK.SUBLEVEL_FIRST (SUBLEVEL_LAST is there for making merges
+   easy).  The process works as follows:
+
+   -- On "({"  a new node is added to the stack by PUSH_ITERATOR_STACK.
+	       The sublevel list is not changed at this point.
+
+   -- On "})" the list for the current level is appended to the sublevel
+	      list. 
+
+   -- On ";"  sublevel lists are appended to the current level lists.
+	      The reason is this: if they have not been superseded by the
+	      expansion at the current level, they still might be
+	      superseded later by the expansion on the higher level.
+	      The levels do not have to distinguish levels below, so we
+	      can merge the lists together.  */
+
+struct  ixpansion
+{
+  tree ixdecl;			/* Iterator decl */
+  rtx  ixprologue_start;	/* First insn of epilogue. NULL means */
+  /* explicit (FOR) expansion*/
+  rtx  ixprologue_end;
+  rtx  ixepilogue_start;
+  rtx  ixepilogue_end;
+  struct ixpansion *next;	/* Next in the list */
+};
+
+struct iter_stack_node
+{
+  struct ixpansion *first;	/* Head of list of ixpansions */
+  struct ixpansion *last;	/* Last node in list  of ixpansions */
+  struct iter_stack_node *next; /* Next level iterator stack node  */
+};
+
+struct iter_stack_node *iter_stack;
+
+struct iter_stack_node sublevel_ixpansions;
+
+/* Initialize our obstack once per compilation.  */
+
+void
+init_iterators ()
+{
+  gcc_obstack_init (&ixp_obstack);
+  ixp_firstobj = (char *) obstack_alloc (&ixp_obstack, 0);
+}
+
+/* Handle the start of an explicit `for' loop for iterator IDECL.  */
+
 void
 iterator_for_loop_start (idecl)
      tree idecl;
 {
+  ITERATOR_BOUND_P (idecl) = 1;
+  add_ixpansion (idecl, 0, 0, 0, 0);
   iterator_loop_prologue (idecl, 0, 0);
 }
+
+/* Handle the end of an explicit `for' loop for iterator IDECL.  */
 
 void
 iterator_for_loop_end (idecl)
      tree idecl;
 {
   iterator_loop_epilogue (idecl, 0, 0);
+  ITERATOR_BOUND_P (idecl) = 0;
 }
-
-void
-iterator_for_loop_record (idecl)
-     tree idecl;
-{
-  add_ixpansion (idecl, 0, 0, 0, 0);
-}
-
-
+
 /*
   		ITERATOR DECLS
 
@@ -100,16 +169,14 @@ build_iterator_decl (id, limit)
 /*
   		ITERATOR RTL EXPANSIONS
 
-   Expanding simple statements with iterators is  pretty straightforward:
-   collect (collect_iterators) the list  of  all "free" iterators  in the
-   statement and for each  of them add  a  special prologue before and an
-   epilogue after the expansion for  the statement. Iterator is "free" if
-   it has not been "bound" by a FOR operator. The rtx associated with the
-   iterator's  decl is used as  the loop counter.  Special processing  is
-   used  for "{(...)}" constructs:  each iterator expansion is registered
-   (by "add_ixpansion" function)  and inner expansions are superseded  by
-   outer ones. The cleanup of superseded expansions is done by  a call to
-   delete_ixpansion.  */
+   Expanding simple statements with iterators is straightforward:
+   collect the list of all free iterators in the statement, and
+   generate a loop for each of them.
+
+   An iterator is "free" if it has not been "bound" by a FOR
+   operator.  The DECL_RTL of the iterator is the loop counter.  */
+
+/* Expand a statement STMT, possibly containing iterator usage, into RTL.  */
 
 void
 iterator_expand (stmt)
@@ -146,9 +213,9 @@ expand_stmt_with_iterators_1 (stmt, iter_list)
 }
 
 
-/* Return a list containing all the free (i.e. not bound by "for"
-   statement or anaccumulator) iterators mentioned in EXP,
-   plus those in LIST.   Duplicates are avoided.  */
+/* Return a list containing all the free (i.e. not bound by a
+   containing `for' statement) iterators mentioned in EXP, plus those
+   in LIST.  Do not add duplicate entries to the list.  */
 
 static tree
 collect_iterators (exp, list)
@@ -238,17 +305,18 @@ iterator_loop_prologue (idecl, start_note, end_note)
    DECL_RTL is zeroed unless we are inside "({...})". The reason for that is
    described below.
 
-   When we create two (or more)  loops based on the  same IDECL, and both
-   inside the same "({...})"  construct, we  must be prepared  to  delete
-   both of the loops  and create a single one  on the  level  above, i.e.
-   enclosing the "({...})". The new loop has to use  the same counter rtl
-   because the references to the iterator decl  (IDECL) have already been
-   expanded as references to the counter rtl.
+   When we create two (or more) loops based on the same IDECL, and
+   both inside the same "({...})"  construct, we must be prepared to
+   delete both of the loops and create a single one on the level
+   above, i.e.  enclosing the "({...})". The new loop has to use the
+   same counter rtl because the references to the iterator decl
+   (IDECL) have already been expanded as references to the counter
+   rtl.
 
    It is incorrect to use the same counter reg in different functions,
    and it is desirable to use different counters in disjoint loops
-   when we know there's no need to combine them
-   (because then they can get allocated separately).  */
+   when we know there's no need to combine them (because then they can
+   get allocated separately).  */
 
 static void
 iterator_loop_epilogue (idecl, start_note, end_note)
@@ -275,65 +343,7 @@ iterator_loop_epilogue (idecl, start_note, end_note)
     *end_note = emit_note (0, NOTE_INSN_DELETED);
 }
 
-/*
-		KEEPING TRACK OF EXPANSIONS
-
-   In order to clean out expansions corresponding to statements inside
-   "{(...)}" constructs we have to keep track of all expansions.  The
-   cleanup is needed when an automatic, or implicit, expansion on
-   iterator, say X, happens to a statement which contains a {(...)}
-   form with a statement already expanded on X.  In this case we have
-   to go back and cleanup the inner expansion.  This can be further
-   complicated by the fact that {(...)} can be nested.
-
-   To make this cleanup possible, we keep lists of all expansions, and
-   to make it work for nested constructs, we keep a stack.  The list at
-   the top of the stack (ITER_STACK.CURRENT_LEVEL) corresponds to the
-   currently parsed level.  All expansions of the levels below the
-   current one are kept in one list whose head is pointed to by
-   ITER_STACK.SUBLEVEL_FIRST (SUBLEVEL_LAST is there for making merges
-   easy).  The process works as follows:
-
-   -- On "({"  a new node is added to the stack by PUSH_ITERATOR_STACK.
-	       The sublevel list is not changed at this point.
-
-   -- On "})" the list for the current level is appended to the sublevel
-	      list. 
-
-   -- On ";"  sublevel lists are appended to the current level lists.
-	      The reason is this: if they have not been superseded by the
-	      expansion at the current level, they still might be
-	      superseded later by the expansion on the higher level.
-	      The levels do not have to distinguish levels below, so we
-	      can merge the lists together.  */
-
-struct  ixpansion
-{
-  tree ixdecl;			/* Iterator decl */
-  rtx  ixprologue_start;	/* First insn of epilogue. NULL means */
-  /* explicit (FOR) expansion*/
-  rtx  ixprologue_end;
-  rtx  ixepilogue_start;
-  rtx  ixepilogue_end;
-  struct ixpansion *next;	/* Next in the list */
-};
-
-static struct obstack ixp_obstack;
-
-static char *ixp_firstobj;
-
-struct iter_stack_node
-{
-  struct ixpansion *first;	/* Head of list of ixpansions */
-  struct ixpansion *last;	/* Last node in list  of ixpansions */
-  struct iter_stack_node *next; /* Next level iterator stack node  */
-};
-
-struct iter_stack_node *iter_stack;
-
-struct iter_stack_node sublevel_ixpansions;
-
-/** Return true if we are not currently inside a "({...})" construct */
+/* Return true if we are not currently inside a "({...})" construct.  */
 
 static int
 top_level_ixpansion_p ()
@@ -495,33 +505,22 @@ delete_ixpansion (idecl)
       previx = ix;
 }
 
-/*
-We initialize iterators obstack once per file
-*/
-
-init_iterators ()
-{
-  gcc_obstack_init (&ixp_obstack);
-  ixp_firstobj = (char *) obstack_alloc (&ixp_obstack, 0);
-}
-
 #ifdef DEBUG_ITERATORS
 
-/*
-The functions below are for use from source level debugger.
-They print short forms of iterator lists and the iterator stack.
-*/
+/* The functions below are for use from source level debugger.
+   They print short forms of iterator lists and the iterator stack.  */
 
-/* Print the name of the iterator D */
+/* Print the name of the iterator D.  */
+
 void
-PRDECL (D)
-     tree D;
+prdecl (d)
+     tree d;
 {
-  if (D)
+  if (d)
     {
-      if (TREE_CODE (D) == VAR_DECL)
+      if (TREE_CODE (d) == VAR_DECL)
 	{
-	  tree tname = DECL_NAME (D);
+	  tree tname = DECL_NAME (d);
 	  char *dname = IDENTIFIER_POINTER (tname);
 	  fprintf (stderr, dname);
 	}
@@ -539,10 +538,10 @@ pil (head)
      tree head;
 {
   tree current, next;
-  for (current=head; current; current = next)
+  for (current = head; current; current = next)
     {
       tree node = TREE_VALUE (current);
-      PRDECL (node);
+      prdecl (node);
       next = TREE_CHAIN (current);
       if (next) fprintf (stderr, ",");
     }
@@ -563,7 +562,7 @@ pixl (head)
   for (current=head; current; current = next)
     {
       tree node = current->ixdecl;
-      PRDECL (node);
+      prdecl (node);
       next = current->next;
       if (next)
 	fprintf (stderr, ",");
@@ -587,4 +586,5 @@ pis ()
        stack_node = stack_node->next)
     pixl (stack_node->first);
 }
-#endif
+
+#endif /* DEBUG_ITERATORS */
