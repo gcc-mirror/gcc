@@ -42,5 +42,3 @@ std::set_new_handler (new_handler handler)
   __new_handler = handler;
   return prev_handler;
 }
-
-std::bad_alloc::~bad_alloc() throw() { }

@@ -35,8 +35,6 @@
 
 std::exception::~exception() throw() { }
 
-std::bad_exception::~bad_exception() throw() { }
-
 const char* 
 std::exception::what() const throw()
 {

@@ -1,3 +1,19 @@
+2001-11-30  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++/3150
+	DR/266
+	* libsupc++/exception (bad_exception::~bad_exception()): Remove
+	declaration.
+	* libsupc++/new (bad_alloc::~bad_alloc()): Remove.
+	* libsupc++/typeinfo (bad_cast::~bad_cast()): Remove.
+	(bad_typeid::~bad_typeid()): Remove.
+	* libsupc++/tinfo.cc (bad_cast::~bad_cast()): Remove definition.
+	(bad_typeid::~bad_typeid()): Same.
+	* libsupc++/new_handler.cc (bad_alloc::~bad_alloc()): Same.
+	* libsupc++/eh_exception.cc (bad_exception::~bad_exception()): Same.
+
+	* include/bits/std_iomanip.h: Tweak.
+	
 2001-11-29  Paolo Carlini  <pcarlini@unitus.it>
 
 	libstdc++/3655
