@@ -50,13 +50,13 @@ public class DeflaterOutputStream extends FilterOutputStream
 
   protected void deflate () throws IOException
   {
-    while (true)
+    do
       {
 	int len = def.deflate(buf, 0, buf.length);
-	if (len == 0 || len == -1)
-	  break;
-	out.write(buf, 0, len);
-      }
+	if (len > 0)
+	  out.write(buf, 0, len);
+       }
+    while (! def.needsInput());
   }
 
   public DeflaterOutputStream (OutputStream out)
@@ -78,22 +78,52 @@ public class DeflaterOutputStream extends FilterOutputStream
 
   public void finish () throws IOException
   {
+    if (inbufLength > 0)
+      {
+	def.setInput (inbuf, 0, inbufLength);
+	deflate ();
+	inbufLength = 0;
+      }
     def.finish();
-    deflate ();
+    while (! def.finished ())
+      {
+	int len = def.deflate(buf, 0, buf.length);
+	if (len > 0)
+	  out.write(buf, 0, len);
+      }
   }
 
   public void write (int bval) throws IOException
   {
-    byte[] b = new byte[1];
-    b[0] = (byte) bval;
-    write (b, 0, 1);
+    if (inbuf == null)
+      {
+	inbuf = new byte[128];
+      }
+    else if (inbufLength == inbuf.length)
+      {
+	def.setInput (inbuf, 0, inbufLength);
+	deflate ();
+	inbufLength = 0;
+      }
+    inbuf[inbufLength++] = (byte) bval;
   }
 
   public void write (byte[] buf, int off, int len) throws IOException
   {
+    if (inbufLength > 0)
+      {
+	def.setInput (inbuf, 0, inbufLength);
+	deflate ();
+	inbufLength = 0;
+      }
     def.setInput (buf, off, len);
     deflate ();
   }
+
+  // Used, if needed, for write(int).
+  private byte[] inbuf;
+  // Used length of inbuf.
+  private int inbufLength;
 
   // The retrieval buffer.
   protected byte[] buf;
