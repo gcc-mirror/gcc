@@ -1,3 +1,7 @@
+2000-09-17  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/c90-complex-1.c, gcc.dg/c99-complex-1.c: New tests.
+
 2000-09-17  Greg McGary  <greg@mcgary.org>
 
 	* gcc.c-torture/execute/20000917-1.c: New test.

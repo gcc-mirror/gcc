@@ -1,5 +1,15 @@
 2000-09-17  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-decl.c (grokdeclarator): Don't give a warning about defaulting
+	to int for plain complex which defaults to complex double.  Do
+	warn about defaulting to complex double if pedantic.  Warn about
+	complex integer types if pedantic.  Warn about complex types if
+	pedantic and not in C99 mode.
+	* c-typeck.c (build_unary_op): If pedantic, warn about use of ~
+	for complex conjugation.
+
+2000-09-17  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* contrib.texi: Update my entry.
 
 Sun Sep 17 18:48:32 2000  Denis Chertykov  <denisc@overta.ru>

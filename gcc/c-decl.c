@@ -4078,7 +4078,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
     {
       if ((! (specbits & ((1 << (int) RID_LONG) | (1 << (int) RID_SHORT)
 			  | (1 << (int) RID_SIGNED)
-			  | (1 << (int) RID_UNSIGNED))))
+			  | (1 << (int) RID_UNSIGNED)
+			  | (1 << (int) RID_COMPLEX))))
 	  /* Don't warn about typedef foo = bar.  */
 	  && ! (specbits & (1 << (int) RID_TYPEDEF) && initialized)
 	  && ! in_system_header)
@@ -4209,6 +4210,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 
   if (specbits & 1 << (int) RID_COMPLEX)
     {
+      if (pedantic && !flag_isoc99)
+	pedwarn ("ISO C89 does not support complex types");
       /* If we just have "complex", it is equivalent to
 	 "complex double", but if any modifiers at all are specified it is
 	 the complex form of TYPE.  E.g, "complex short" is
@@ -4218,9 +4221,17 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  && ! (specbits & ((1 << (int) RID_LONG) | (1 << (int) RID_SHORT)
 			    | (1 << (int) RID_SIGNED)
 			    | (1 << (int) RID_UNSIGNED))))
-	type = complex_double_type_node;
+	{
+	  if (pedantic)
+	    pedwarn ("ISO C does not support plain `complex' meaning `double complex'");
+	  type = complex_double_type_node;
+	}
       else if (type == integer_type_node)
-	type = complex_integer_type_node;
+	{
+	  if (pedantic)
+	    pedwarn ("ISO C does not support complex integer types");
+	  type = complex_integer_type_node;
+	}
       else if (type == float_type_node)
 	type = complex_float_type_node;
       else if (type == double_type_node)
@@ -4228,7 +4239,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
       else if (type == long_double_type_node)
 	type = complex_long_double_type_node;
       else
-	type = build_complex_type (type);
+	{
+	  if (pedantic)
+	    pedwarn ("ISO C does not support complex integer types");
+	  type = build_complex_type (type);
+	}
     }
 
   /* Figure out the type qualifiers for the declaration.  There are
