@@ -139,10 +139,14 @@ extern int target_flags;
    {"long-load-store", 512},	\
    {"no-long-load-store", -512},\
    {"linker-opt", 0},		\
-   { "", TARGET_DEFAULT}}
+   { "", TARGET_DEFAULT | TARGET_CPU_DEFAULT}}
 
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT 0x88		/* TARGET_GAS + TARGET_JUMP_IN_DELAY */
+#endif
+
+#ifndef TARGET_CPU_DEFAULT
+#define TARGET_CPU_DEFAULT 0
 #endif
 
 #define TARGET_OPTIONS			\
@@ -218,7 +222,7 @@ extern int target_flags;
   fprintf (FILE,							\
 	   "\t.stabs \"\",%d,0,0,L$text_end0000\nL$text_end0000:\n", N_SO)
 
-#if (TARGET_DEFAULT & 1) == 0
+#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & 1) == 0
 #define CPP_SPEC "%{msnake:-D__hp9000s700 -D_PA_RISC1_1}\
  %{mpa-risc-1-1:-D__hp9000s700 -D_PA_RISC1_1}\
  %{!ansi: -D_HPUX_SOURCE -D_HIUX_SOURCE}"
