@@ -575,7 +575,11 @@ extern void register_new_def (tree, varray_type *);
 extern void walk_use_def_chains (tree, walk_use_def_chains_fn, void *);
 
 /* In tree-into-ssa.c  */
-extern void rewrite_into_ssa (void);
+extern void rewrite_into_ssa (bool);
+extern void rewrite_ssa_into_ssa (bitmap);
+
+void compute_global_livein (bitmap, bitmap);
+tree duplicate_ssa_name (tree, tree);
 
 /* In tree-ssa-ccp.c  */
 bool fold_stmt (tree *);

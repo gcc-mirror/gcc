@@ -4283,11 +4283,18 @@ tree_duplicate_bb (basic_block bb)
   for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
     {
       tree stmt = bsi_stmt (bsi);
+      tree copy;
 
       if (TREE_CODE (stmt) == LABEL_EXPR)
 	continue;
 
-      bsi_insert_after (&bsi_tgt, unshare_expr (stmt), BSI_NEW_STMT);
+      copy = unshare_expr (stmt);
+
+      /* Copy also the virtual operands.  */
+      get_stmt_ann (copy);
+      copy_virtual_operands (copy, stmt);
+      
+      bsi_insert_after (&bsi_tgt, copy, BSI_NEW_STMT);
     }
 
   return new_bb;

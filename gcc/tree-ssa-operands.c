@@ -1446,4 +1446,43 @@ add_call_read_ops (tree stmt, voperands_t prev_vops)
     }
 }
 
+/* Copies virtual operands from SRC to DST.  */
+
+void
+copy_virtual_operands (tree dst, tree src)
+{
+  vuse_optype vuses = STMT_VUSE_OPS (src);
+  v_may_def_optype v_may_defs = STMT_V_MAY_DEF_OPS (src);
+  v_must_def_optype v_must_defs = STMT_V_MUST_DEF_OPS (src);
+  vuse_optype *vuses_new = &stmt_ann (dst)->vuse_ops;
+  v_may_def_optype *v_may_defs_new = &stmt_ann (dst)->v_may_def_ops;
+  v_must_def_optype *v_must_defs_new = &stmt_ann (dst)->v_must_def_ops;
+  unsigned i;
+
+  if (vuses)
+    {
+      *vuses_new = allocate_vuse_optype (NUM_VUSES (vuses));
+      for (i = 0; i < NUM_VUSES (vuses); i++)
+	SET_VUSE_OP (*vuses_new, i, VUSE_OP (vuses, i));
+    }
+
+  if (v_may_defs)
+    {
+      *v_may_defs_new = allocate_v_may_def_optype (NUM_V_MAY_DEFS (v_may_defs));
+      for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
+	{
+	  SET_V_MAY_DEF_OP (*v_may_defs_new, i, V_MAY_DEF_OP (v_may_defs, i));
+	  SET_V_MAY_DEF_RESULT (*v_may_defs_new, i, 
+				V_MAY_DEF_RESULT (v_may_defs, i));
+	}
+    }
+
+  if (v_must_defs)
+    {
+      *v_must_defs_new = allocate_v_must_def_optype (NUM_V_MUST_DEFS (v_must_defs));
+      for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
+	SET_V_MUST_DEF_OP (*v_must_defs_new, i, V_MUST_DEF_OP (v_must_defs, i));
+    }
+}
+
 #include "gt-tree-ssa-operands.h"

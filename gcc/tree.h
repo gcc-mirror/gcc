@@ -1235,6 +1235,10 @@ struct tree_exp GTY(())
 #define SSA_NAME_VALUE(N) \
    SSA_NAME_CHECK (N)->ssa_name.value_handle
 
+/* Auxiliary pass-specific data.  */
+#define SSA_NAME_AUX(N) \
+   SSA_NAME_CHECK (N)->ssa_name.aux
+   
 #ifndef _TREE_FLOW_H
 struct ptr_info_def;
 #endif
@@ -1254,6 +1258,9 @@ struct tree_ssa_name GTY(())
 
   /* Value for SSA name used by GVN.  */ 
   tree GTY((skip)) value_handle;
+
+  /* Auxiliary information stored with the ssa name.  */
+  PTR GTY((skip)) aux;
 };
 
 /* In a PHI_NODE node.  */

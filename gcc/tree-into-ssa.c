@@ -47,6 +47,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tree-pass.h"
 #include "cfgloop.h"
 #include "domwalk.h"
+#include "ggc.h"
 
 /* This file builds the SSA form for a function as described in:
    R. Cytron, J. Ferrante, B. Rosen, M. Wegman, and K. Zadeck. Efficiently
@@ -65,6 +66,9 @@ struct def_blocks_d
   /* Blocks that contain definitions of VAR.  Bit I will be set if the
      Ith block contains a definition of VAR.  */
   bitmap def_blocks;
+
+  /* Blocks that contain a phi node for VAR. */
+  bitmap phi_blocks;
 
   /* Blocks where VAR is live-on-entry.  Similar semantics as
      DEF_BLOCKS.  */
@@ -88,6 +92,9 @@ struct mark_def_sites_global_data
      solely to avoid the overhead of allocating and deallocating
      the bitmap.  */
   sbitmap kills;
+
+  /* Bitmap of names to rename.  */
+  sbitmap names_to_rename;
 };
 
 struct rewrite_block_data
@@ -95,6 +102,18 @@ struct rewrite_block_data
   varray_type block_defs;
 };
 
+/* Information stored for ssa names.  */
+
+struct ssa_name_info
+{
+  /* This field indicates whether or not the variable may need PHI nodes.
+     See the enum's definition for more detailed information about the
+     states.  */
+  ENUM_BITFIELD (need_phi_state) need_phi_state : 2;
+
+  /* The actual definition of the ssa name.  */
+  tree current_def;
+};
 
 /* Local functions.  */
 static void rewrite_finalize_block (struct dom_walk_data *, basic_block);
@@ -106,12 +125,11 @@ static void mark_def_sites (struct dom_walk_data *walk_data,
 			    basic_block bb, block_stmt_iterator);
 static void mark_def_sites_initialize_block (struct dom_walk_data *walk_data,
 					     basic_block bb);
-static void compute_global_livein (bitmap, bitmap);
-static void set_def_block (tree, basic_block);
+static void set_def_block (tree, basic_block, bool, bool);
 static void set_livein_block (tree, basic_block);
-static bool prepare_use_operand_for_rename (use_operand_p op_p, size_t *uid_p);
+static bool prepare_use_operand_for_rename (use_operand_p, size_t *uid_p);
 static bool prepare_def_operand_for_rename (tree def, size_t *uid_p);
-static void insert_phi_nodes (bitmap *);
+static void insert_phi_nodes (bitmap *, bitmap);
 static void rewrite_stmt (struct dom_walk_data *, basic_block,
 			  block_stmt_iterator);
 static inline void rewrite_operand (use_operand_p);
@@ -125,6 +143,61 @@ static inline struct def_blocks_d *get_def_blocks_for (tree);
 static inline struct def_blocks_d *find_def_blocks_for (tree);
 static void htab_statistics (FILE *, htab_t);
 
+/* Get the information associated with NAME.  */
+
+static inline struct ssa_name_info *
+get_ssa_name_ann (tree name)
+{
+  if (!SSA_NAME_AUX (name))
+    SSA_NAME_AUX (name) = xcalloc (1, sizeof (struct ssa_name_info));
+
+  return SSA_NAME_AUX (name);
+}
+
+/* Gets phi_state field for VAR.  */
+
+static inline enum need_phi_state
+get_phi_state (tree var)
+{
+  if (TREE_CODE (var) == SSA_NAME)
+    return get_ssa_name_ann (var)->need_phi_state;
+  else
+    return var_ann (var)->need_phi_state;
+}
+
+/* Sets phi_state field for VAR to STATE.  */
+
+static inline void
+set_phi_state (tree var, enum need_phi_state state)
+{
+  if (TREE_CODE (var) == SSA_NAME)
+    get_ssa_name_ann (var)->need_phi_state = state;
+  else
+    var_ann (var)->need_phi_state = state;
+}
+
+/* Return the current definition for VAR.  */
+
+static inline tree
+get_current_def (tree var)
+{
+  if (TREE_CODE (var) == SSA_NAME)
+    return get_ssa_name_ann (var)->current_def;
+  else
+    return var_ann (var)->current_def;
+}
+
+/* Sets current definition of VAR to DEF.  */
+
+static inline void
+set_current_def (tree var, tree def)
+{
+  if (TREE_CODE (var) == SSA_NAME)
+    get_ssa_name_ann (var)->current_def = def;
+  else
+    var_ann (var)->current_def = def;
+}
+
 /* Compute global livein information given the set of blockx where
    an object is locally live at the start of the block (LIVEIN)
    and the set of blocks where the object is defined (DEF_BLOCKS).
@@ -133,14 +206,14 @@ static void htab_statistics (FILE *, htab_t);
    to include global livein (i.e., it modifies the underlying bitmap
    for LIVEIN).  */
 
-static void
+void
 compute_global_livein (bitmap livein, bitmap def_blocks)
 {
   basic_block bb, *worklist, *tos;
   int i;
 
   tos = worklist
-    = (basic_block *) xmalloc (sizeof (basic_block) * (last_basic_block + 1));
+    = (basic_block *) xmalloc (sizeof (basic_block) * (n_basic_blocks + 1));
 
   EXECUTE_IF_SET_IN_BITMAP (livein, 0, i,
     {
@@ -189,6 +262,63 @@ mark_def_sites_initialize_block (struct dom_walk_data *walk_data,
   sbitmap_zero (kills);
 }
 
+/* Block initialization routine for mark_def_sites.  Clear the 
+   KILLS bitmap at the start of each block.  */
+
+static void
+ssa_mark_def_sites_initialize_block (struct dom_walk_data *walk_data,
+				     basic_block bb)
+{
+  struct mark_def_sites_global_data *gd = walk_data->global_data;
+  sbitmap kills = gd->kills;
+  tree phi, def;
+  unsigned def_uid;
+
+  sbitmap_zero (kills);
+
+  for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+    {
+      def = PHI_RESULT (phi);
+      def_uid = SSA_NAME_VERSION (def);
+
+      if (!TEST_BIT (gd->names_to_rename, def_uid))
+	continue;
+
+      set_def_block (def, bb, true, true);
+      SET_BIT (kills, def_uid);
+    }
+}
+
+/* Marks ssa names used as arguments of phis at the end of BB.  */
+
+static void
+ssa_mark_phi_uses (struct dom_walk_data *walk_data, basic_block bb)
+{
+  struct mark_def_sites_global_data *gd = walk_data->global_data;
+  sbitmap kills = gd->kills;
+  edge e;
+  tree phi, use;
+  unsigned uid;
+
+  for (e = bb->succ; e; e = e->succ_next)
+    {
+      if (e->dest == EXIT_BLOCK_PTR)
+	continue;
+
+      for (phi = phi_nodes (e->dest); phi; phi = TREE_CHAIN (phi))
+	{
+	  use = PHI_ARG_DEF_FROM_EDGE (phi, e);
+	  if (TREE_CODE (use) != SSA_NAME)
+	    continue;
+
+	  uid = SSA_NAME_VERSION (use);
+
+	  if (TEST_BIT (gd->names_to_rename, uid)
+	      && !TEST_BIT (kills, uid))
+	    set_livein_block (use, bb);
+	}
+    }
+}
 
 /* Call back for walk_dominator_tree used to collect definition sites
    for every variable in the function.  For every statement S in block
@@ -245,7 +375,8 @@ mark_def_sites (struct dom_walk_data *walk_data,
     {
       use_operand_p use_p = VUSE_OP_PTR (vuses, i);
 
-      if (prepare_use_operand_for_rename (use_p, &uid))
+      if (prepare_use_operand_for_rename (use_p, &uid)
+	  && !TEST_BIT (kills, uid))
 	set_livein_block (USE_FROM_PTR (use_p), bb);
     }
 
@@ -266,7 +397,7 @@ mark_def_sites (struct dom_walk_data *walk_data,
 	    SET_V_MAY_DEF_RESULT (v_may_defs, i, USE_FROM_PTR (use_p));
 	    
           set_livein_block (USE_FROM_PTR (use_p), bb);
-	  set_def_block (V_MAY_DEF_RESULT (v_may_defs, i), bb);
+	  set_def_block (V_MAY_DEF_RESULT (v_may_defs, i), bb, false, false);
 	}
     }
 
@@ -278,7 +409,7 @@ mark_def_sites (struct dom_walk_data *walk_data,
 
       if (prepare_def_operand_for_rename (def, &uid))
 	{
-	  set_def_block (def, bb);
+	  set_def_block (def, bb, false, false);
 	  SET_BIT (kills, uid);
 	}
     }
@@ -292,29 +423,135 @@ mark_def_sites (struct dom_walk_data *walk_data,
 
       if (prepare_def_operand_for_rename (def, &uid))
 	{
-	  set_def_block (def, bb);
+	  set_def_block (def, bb, false, false);
 	  SET_BIT (kills, uid);
 	}
     }
 }
 
-
-/* Mark block BB as the definition site for variable VAR.  */
+/* Ditto, but works over ssa names.  */
 
 static void
-set_def_block (tree var, basic_block bb)
+ssa_mark_def_sites (struct dom_walk_data *walk_data,
+		    basic_block bb,
+		    block_stmt_iterator bsi)
+{
+  struct mark_def_sites_global_data *gd = walk_data->global_data;
+  sbitmap kills = gd->kills;
+  v_may_def_optype v_may_defs;
+  v_must_def_optype v_must_defs;
+  vuse_optype vuses;
+  def_optype defs;
+  use_optype uses;
+  size_t i, uid, def_uid;
+  tree stmt, use, def;
+  stmt_ann_t ann;
+
+  /* Mark all the blocks that have definitions for each variable in the
+     names_to_rename bitmap.  */
+  stmt = bsi_stmt (bsi);
+  get_stmt_operands (stmt);
+  ann = stmt_ann (stmt);
+
+  /* If a variable is used before being set, then the variable is live
+     across a block boundary, so mark it live-on-entry to BB.  */
+  uses = USE_OPS (ann);
+  for (i = 0; i < NUM_USES (uses); i++)
+    {
+      use = USE_OP (uses, i);
+      uid = SSA_NAME_VERSION (use);
+
+      if (TEST_BIT (gd->names_to_rename, uid)
+	  && !TEST_BIT (kills, uid))
+	set_livein_block (use, bb);
+    }
+	  
+  /* Similarly for virtual uses.  */
+  vuses = VUSE_OPS (ann);
+  for (i = 0; i < NUM_VUSES (vuses); i++)
+    {
+      use = VUSE_OP (vuses, i);
+      uid = SSA_NAME_VERSION (use);
+
+      if (TEST_BIT (gd->names_to_rename, uid)
+	  && !TEST_BIT (kills, uid))
+	set_livein_block (use, bb);
+    }
+
+  v_may_defs = V_MAY_DEF_OPS (ann);
+  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
+    {
+      use = V_MAY_DEF_OP (v_may_defs, i);
+      uid = SSA_NAME_VERSION (use);
+
+      if (TEST_BIT (gd->names_to_rename, uid)
+	  && !TEST_BIT (kills, uid))
+	set_livein_block (use, bb);
+    }
+
+  /* Now process the definition made by this statement.  Mark the
+     variables in KILLS.  */
+  defs = DEF_OPS (ann);
+  for (i = 0; i < NUM_DEFS (defs); i++)
+    {
+      def = DEF_OP (defs, i);
+      def_uid = SSA_NAME_VERSION (def);
+
+      if (TEST_BIT (gd->names_to_rename, def_uid))
+	{
+	  set_def_block (def, bb, false, true);
+	  SET_BIT (kills, def_uid);
+	}
+    }
+
+  v_may_defs = V_MAY_DEF_OPS (ann);
+  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
+    {
+      def = V_MAY_DEF_RESULT (v_may_defs, i);
+      def_uid = SSA_NAME_VERSION (def);
+
+      if (TEST_BIT (gd->names_to_rename, def_uid))
+	{
+	  set_def_block (def, bb, false, true);
+	  SET_BIT (kills, def_uid);
+	}
+    }
+
+  v_must_defs = V_MUST_DEF_OPS (ann);
+  for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
+    {
+      def = V_MUST_DEF_OP (v_must_defs, i);
+      def_uid = SSA_NAME_VERSION (def);
+
+      if (TEST_BIT (gd->names_to_rename, def_uid))
+	{
+	  set_def_block (def, bb, false, true);
+	  SET_BIT (kills, def_uid);
+	}
+    }
+}
+
+/* Mark block BB as the definition site for variable VAR.  PHI_P is true if
+   VAR is defined by a phi node.  SSA_P is true if we are called from
+   rewrite_ssa_into_ssa.  */
+
+static void
+set_def_block (tree var, basic_block bb, bool phi_p, bool ssa_p)
 {
   struct def_blocks_d *db_p;
   enum need_phi_state state;
 
-  if (TREE_CODE (var) == SSA_NAME)
+  if (!ssa_p
+      && TREE_CODE (var) == SSA_NAME)
     var = SSA_NAME_VAR (var);
 
-  state = var_ann (var)->need_phi_state;
+  state = get_phi_state (var);
   db_p = get_def_blocks_for (var);
 
   /* Set the bit corresponding to the block where VAR is defined.  */
   bitmap_set_bit (db_p->def_blocks, bb->index);
+  if (phi_p)
+    bitmap_set_bit (db_p->phi_blocks, bb->index);
 
   /* Keep track of whether or not we may need to insert phi nodes.
 
@@ -329,9 +566,9 @@ set_def_block (tree var, basic_block bb)
      definition(s).  In this case we may need a PHI node, so enter
      state NEED_PHI_STATE_MAYBE.  */
   if (state == NEED_PHI_STATE_UNKNOWN)
-    var_ann (var)->need_phi_state = NEED_PHI_STATE_NO;
+    set_phi_state (var, NEED_PHI_STATE_NO);
   else
-    var_ann (var)->need_phi_state = NEED_PHI_STATE_MAYBE;
+    set_phi_state (var, NEED_PHI_STATE_MAYBE);
 }
 
 
@@ -341,7 +578,7 @@ static void
 set_livein_block (tree var, basic_block bb)
 {
   struct def_blocks_d *db_p;
-  enum need_phi_state state = var_ann (var)->need_phi_state;
+  enum need_phi_state state = get_phi_state (var);
 
   db_p = get_def_blocks_for (var);
 
@@ -361,10 +598,10 @@ set_livein_block (tree var, basic_block bb)
       if (def_block_index == -1
 	  || ! dominated_by_p (CDI_DOMINATORS, bb,
 	                       BASIC_BLOCK (def_block_index)))
-	var_ann (var)->need_phi_state = NEED_PHI_STATE_MAYBE;
+	set_phi_state (var, NEED_PHI_STATE_MAYBE);
     }
   else
-    var_ann (var)->need_phi_state = NEED_PHI_STATE_MAYBE;
+    set_phi_state (var, NEED_PHI_STATE_MAYBE);
 }
 
 
@@ -414,26 +651,27 @@ prepare_def_operand_for_rename (tree def, size_t *uid_p)
 }
 
 /* Helper for insert_phi_nodes.  If VAR needs PHI nodes, insert them
-   at the dominance frontier (DFS) of blocks defining VAR.  */
+   at the dominance frontier (DFS) of blocks defining VAR.
+   WORK_STACK is the varray used to implement the worklist of basic
+   blocks.  */
 
 static inline
 void insert_phi_nodes_1 (tree var, bitmap *dfs, varray_type *work_stack)
 {
-  var_ann_t ann = var_ann (var);
-  if (ann->need_phi_state != NEED_PHI_STATE_NO)
+  if (get_phi_state (var) != NEED_PHI_STATE_NO)
     insert_phi_nodes_for (var, dfs, work_stack);
 }
-
 
 /* Insert PHI nodes at the dominance frontier of blocks with variable
    definitions.  DFS contains the dominance frontier information for
    the flowgraph.  PHI nodes will only be inserted at the dominance
    frontier of definition blocks for variables whose NEED_PHI_STATE
    annotation is marked as ``maybe'' or ``unknown'' (computed by
-   mark_def_sites).  */
+   mark_def_sites).  If NAMES_TO_RENAME is not NULL, do the same but
+   for ssa name rewriting.  */
 
 static void
-insert_phi_nodes (bitmap *dfs)
+insert_phi_nodes (bitmap *dfs, bitmap names_to_rename)
 {
   size_t i;
   varray_type work_stack;
@@ -442,18 +680,28 @@ insert_phi_nodes (bitmap *dfs)
 
   /* Array WORK_STACK is a stack of CFG blocks.  Each block that contains
      an assignment or PHI node will be pushed to this stack.  */
-  VARRAY_BB_INIT (work_stack, last_basic_block, "work_stack");
+  VARRAY_GENERIC_PTR_NOGC_INIT (work_stack, last_basic_block, "work_stack");
 
   /* Iterate over all variables in VARS_TO_RENAME.  For each variable, add
      to the work list all the blocks that have a definition for the
      variable.  PHI nodes will be added to the dominance frontier blocks of
      each definition block.  */
-  if (vars_to_rename)
+  if (names_to_rename)
+    {
+      EXECUTE_IF_SET_IN_BITMAP (names_to_rename, 0, i,
+	{
+	  if (ssa_name (i))
+	    insert_phi_nodes_1 (ssa_name (i), dfs, &work_stack);
+	});
+    }
+  else if (vars_to_rename)
     EXECUTE_IF_SET_IN_BITMAP (vars_to_rename, 0, i,
 	insert_phi_nodes_1 (referenced_var (i), dfs, &work_stack));
   else
     for (i = 0; i < num_referenced_vars; i++)
       insert_phi_nodes_1 (referenced_var (i), dfs, &work_stack);
+
+  VARRAY_FREE (work_stack);
 
   timevar_pop (TV_TREE_INSERT_PHI_NODES);
 }
@@ -534,6 +782,81 @@ rewrite_initialize_block (struct dom_walk_data *walk_data, basic_block bb)
     }
 }
 
+/* Register DEF (an SSA_NAME) to be a new definition for the original
+   ssa name VAR and push VAR's current reaching definition
+   into the stack pointed by BLOCK_DEFS_P.  */
+
+static void
+ssa_register_new_def (tree var, tree def, varray_type *block_defs_p)
+{
+  tree currdef;
+   
+  /* If this variable is set in a single basic block and all uses are
+     dominated by the set(s) in that single basic block, then there is
+     nothing to do.  TODO we should not be called at all, and just
+     keep the original name.  */
+  if (get_phi_state (var) == NEED_PHI_STATE_NO)
+    {
+      set_current_def (var, def);
+      return;
+    }
+
+  currdef = get_current_def (var);
+  if (! *block_defs_p)
+    VARRAY_TREE_INIT (*block_defs_p, 20, "block_defs");
+
+  /* Push the current reaching definition into *BLOCK_DEFS_P.  This stack is
+     later used by the dominator tree callbacks to restore the reaching
+     definitions for all the variables defined in the block after a recursive
+     visit to all its immediately dominated blocks.  */
+  VARRAY_PUSH_TREE (*block_defs_p, var);
+  VARRAY_PUSH_TREE (*block_defs_p, currdef);
+
+  /* Set the current reaching definition for VAR to be DEF.  */
+  set_current_def (var, def);
+}
+
+/* Ditto, for rewriting ssa names.  */
+
+static void
+ssa_rewrite_initialize_block (struct dom_walk_data *walk_data, basic_block bb)
+{
+  tree phi, new_name;
+  struct rewrite_block_data *bd
+    = (struct rewrite_block_data *)VARRAY_TOP_GENERIC_PTR (walk_data->block_data_stack);
+  sbitmap names_to_rename = walk_data->global_data;
+  edge e;
+  bool abnormal_phi;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "\n\nRenaming block #%d\n\n", bb->index);
+
+  for (e = bb->pred; e; e = e->pred_next)
+    if (e->flags & EDGE_ABNORMAL)
+      break;
+  abnormal_phi = (e != NULL);
+
+  /* Step 1.  Register new definitions for every PHI node in the block.
+     Conceptually, all the PHI nodes are executed in parallel and each PHI
+     node introduces a new version for the associated variable.  */
+  for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+    {
+      tree result = PHI_RESULT (phi);
+
+      if (TEST_BIT (names_to_rename, SSA_NAME_VERSION (result)))
+	{
+	  new_name = duplicate_ssa_name (result, phi);
+	  SET_PHI_RESULT (phi, new_name);
+
+	  if (abnormal_phi)
+	    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_name) = 1;
+	}
+      else
+	new_name = result;
+
+      ssa_register_new_def (result, new_name, &bd->block_defs);
+    }
+}
 
 /* SSA Rewriting Step 3.  Visit all the successor blocks of BB looking for
    PHI nodes.  For every PHI node found, add a new argument containing the
@@ -550,7 +873,7 @@ rewrite_add_phi_arguments (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
     {
       tree phi;
 
-      for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
+      for (phi = phi_nodes (e->dest); phi; phi = TREE_CHAIN (phi))
 	{
 	  tree currdef;
 
@@ -562,6 +885,38 @@ rewrite_add_phi_arguments (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 
 	  currdef = get_reaching_def (SSA_NAME_VAR (PHI_RESULT (phi)));
 	  add_phi_arg (&phi, currdef, e);
+	}
+    }
+}
+
+/* Ditto, for ssa name rewriting.  */
+
+static void
+ssa_rewrite_phi_arguments (struct dom_walk_data *walk_data, basic_block bb)
+{
+  edge e;
+  sbitmap names_to_rename = walk_data->global_data;
+  use_operand_p op;
+
+  for (e = bb->succ; e; e = e->succ_next)
+    {
+      tree phi;
+
+      if (e->dest == EXIT_BLOCK_PTR)
+	continue;
+
+      for (phi = phi_nodes (e->dest); phi; phi = TREE_CHAIN (phi))
+	{
+	  op = PHI_ARG_DEF_PTR_FROM_EDGE (phi, e);
+	  if (TREE_CODE (USE_FROM_PTR (op)) != SSA_NAME)
+	    continue;
+
+	  if (!TEST_BIT (names_to_rename, SSA_NAME_VERSION (USE_FROM_PTR (op))))
+	    continue;
+
+	  SET_USE (op, get_reaching_def (USE_FROM_PTR (op)));
+	  if (e->flags & EDGE_ABNORMAL)
+	    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (USE_FROM_PTR (op)) = 1;
 	}
     }
 }
@@ -595,10 +950,33 @@ rewrite_finalize_block (struct dom_walk_data *walk_data,
 	  var = tmp;
 	}
 
-      var_ann (var)->current_def = saved_def;
+      set_current_def (var, saved_def);
     }
 }
 
+/* Ditto, for rewriting ssa names.  */
+
+static void
+ssa_rewrite_finalize_block (struct dom_walk_data *walk_data,
+			    basic_block bb ATTRIBUTE_UNUSED)
+{
+  struct rewrite_block_data *bd
+    = (struct rewrite_block_data *)VARRAY_TOP_GENERIC_PTR (walk_data->block_data_stack);
+
+  /* Step 5.  Restore the current reaching definition for each variable
+     referenced in the block (in reverse order).  */
+  while (bd->block_defs && VARRAY_ACTIVE_SIZE (bd->block_defs) > 0)
+    {
+      tree var;
+      tree saved_def = VARRAY_TOP_TREE (bd->block_defs);
+      VARRAY_POP (bd->block_defs);
+      
+      var = VARRAY_TOP_TREE (bd->block_defs);
+      VARRAY_POP (bd->block_defs);
+
+      set_current_def (var, saved_def);
+    }
+}
 
 /* Dump SSA information to FILE.  */
 
@@ -666,7 +1044,8 @@ htab_statistics (FILE *file, htab_t htab)
 
 
 /* Insert PHI nodes for variable VAR using the dominance frontier
-   information given in DFS.  */
+   information given in DFS.  WORK_STACK is the varray used to
+   implement the worklist of basic blocks.  */
 
 static void
 insert_phi_nodes_for (tree var, bitmap *dfs, varray_type *work_stack)
@@ -674,6 +1053,9 @@ insert_phi_nodes_for (tree var, bitmap *dfs, varray_type *work_stack)
   struct def_blocks_d *def_map;
   bitmap phi_insertion_points;
   int bb_index;
+  edge e;
+  tree phi;
+  basic_block bb;
 
   def_map = find_def_blocks_for (var);
   if (def_map == NULL)
@@ -683,7 +1065,7 @@ insert_phi_nodes_for (tree var, bitmap *dfs, varray_type *work_stack)
 
   EXECUTE_IF_SET_IN_BITMAP (def_map->def_blocks, 0, bb_index,
     {
-      VARRAY_PUSH_BB (*work_stack, BASIC_BLOCK (bb_index));
+      VARRAY_PUSH_GENERIC_PTR_NOGC (*work_stack, BASIC_BLOCK (bb_index));
     });
 
   /* Pop a block off the worklist, add every block that appears in
@@ -700,9 +1082,10 @@ insert_phi_nodes_for (tree var, bitmap *dfs, varray_type *work_stack)
      We now always use fully pruned SSA form.  */
   while (VARRAY_ACTIVE_SIZE (*work_stack) > 0)
     {
-      basic_block bb = VARRAY_TOP_BB (*work_stack);
-      int bb_index = bb->index;
       int dfs_index;
+
+      bb = VARRAY_TOP_GENERIC_PTR_NOGC (*work_stack);
+      bb_index = bb->index;
 
       VARRAY_POP (*work_stack);
       
@@ -712,10 +1095,14 @@ insert_phi_nodes_for (tree var, bitmap *dfs, varray_type *work_stack)
 	{
 	  basic_block bb = BASIC_BLOCK (dfs_index);
 
-	  VARRAY_PUSH_BB (*work_stack, bb);
+	  VARRAY_PUSH_GENERIC_PTR_NOGC (*work_stack, bb);
 	  bitmap_set_bit (phi_insertion_points, dfs_index);
 	});
     }
+
+  /* Remove the blocks where we already have the phis.  */
+  bitmap_operation (phi_insertion_points, phi_insertion_points,
+		    def_map->phi_blocks, BITMAP_AND_COMPL);
 
   /* Now compute global livein for this variable.  Note this modifies
      def_map->livein_blocks.  */
@@ -724,9 +1111,20 @@ insert_phi_nodes_for (tree var, bitmap *dfs, varray_type *work_stack)
   /* And insert the PHI nodes.  */
   EXECUTE_IF_AND_IN_BITMAP (phi_insertion_points, def_map->livein_blocks,
 			    0, bb_index,
-    {
-      create_phi_node (var, BASIC_BLOCK (bb_index));
-    });
+    do
+      {
+	bb = BASIC_BLOCK (bb_index);
+
+	phi = create_phi_node (var, bb);
+
+	/* If we are rewriting ssa names, add also the phi arguments.  */
+	if (TREE_CODE (var) == SSA_NAME)
+	  {
+	    for (e = bb->pred; e; e = e->pred_next)
+	      add_phi_arg (&phi, var, e);
+	  }
+      }
+    while (0));
 
   BITMAP_XFREE (phi_insertion_points);
 }
@@ -827,8 +1225,114 @@ rewrite_stmt (struct dom_walk_data *walk_data,
     
 }
 
+/* Ditto, for rewriting ssa names.  */
 
-/* Replace the use operand pointed by OP_P with its immediate reaching
+static void
+ssa_rewrite_stmt (struct dom_walk_data *walk_data,
+		  basic_block bb ATTRIBUTE_UNUSED,
+		  block_stmt_iterator si)
+{
+  size_t i;
+  stmt_ann_t ann;
+  tree stmt, var;
+  use_operand_p use_p;
+  def_operand_p def_p;
+  vuse_optype vuses;
+  v_may_def_optype v_may_defs;
+  v_must_def_optype v_must_defs;
+  def_optype defs;
+  use_optype uses;
+  struct rewrite_block_data *bd;
+  sbitmap names_to_rename = walk_data->global_data;
+
+  bd = VARRAY_TOP_GENERIC_PTR (walk_data->block_data_stack);
+
+  stmt = bsi_stmt (si);
+  ann = stmt_ann (stmt);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Renaming statement ");
+      print_generic_stmt (dump_file, stmt, TDF_SLIM);
+      fprintf (dump_file, "\n");
+    }
+
+#if defined ENABLE_CHECKING
+  /* We have just scanned the code for operands.  No statement should
+     be modified.  */
+  if (ann->modified)
+    abort ();
+#endif
+
+  defs = DEF_OPS (ann);
+  uses = USE_OPS (ann);
+  vuses = VUSE_OPS (ann);
+  v_may_defs = V_MAY_DEF_OPS (ann);
+  v_must_defs = V_MUST_DEF_OPS (ann);
+
+  /* Step 1.  Rewrite USES and VUSES in the statement.  */
+  for (i = 0; i < NUM_USES (uses); i++)
+    {
+      use_p = USE_OP_PTR (uses, i);
+      if (TEST_BIT (names_to_rename, SSA_NAME_VERSION (USE_FROM_PTR (use_p))))
+	SET_USE (use_p, get_reaching_def (USE_FROM_PTR (use_p)));
+    }
+
+  /* Rewrite virtual uses in the statement.  */
+  for (i = 0; i < NUM_VUSES (vuses); i++)
+    {
+      use_p = VUSE_OP_PTR (vuses, i);
+      if (TEST_BIT (names_to_rename, SSA_NAME_VERSION (USE_FROM_PTR (use_p))))
+	SET_USE (use_p, get_reaching_def (USE_FROM_PTR (use_p)));
+    }
+
+  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
+    {
+      use_p = V_MAY_DEF_OP_PTR (v_may_defs, i);
+      if (TEST_BIT (names_to_rename, SSA_NAME_VERSION (USE_FROM_PTR (use_p))))
+	SET_USE (use_p, get_reaching_def (USE_FROM_PTR (use_p)));
+    }
+
+  /* Step 2.  Register the statement's DEF and VDEF operands.  */
+  for (i = 0; i < NUM_DEFS (defs); i++)
+    {
+      def_p = DEF_OP_PTR (defs, i);
+      var = DEF_FROM_PTR (def_p);
+
+      if (!TEST_BIT (names_to_rename, SSA_NAME_VERSION (var)))
+	continue;
+
+      SET_DEF (def_p, duplicate_ssa_name (var, stmt));
+      ssa_register_new_def (var, DEF_FROM_PTR (def_p), &bd->block_defs);
+    }
+
+  /* Register new virtual definitions made by the statement.  */
+  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
+    {
+      def_p = V_MAY_DEF_RESULT_PTR (v_may_defs, i);
+      var = DEF_FROM_PTR (def_p);
+
+      if (!TEST_BIT (names_to_rename, SSA_NAME_VERSION (var)))
+	continue;
+
+      SET_DEF (def_p, duplicate_ssa_name (var, stmt));
+      ssa_register_new_def (var, DEF_FROM_PTR (def_p), &bd->block_defs);
+    }
+
+  for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
+    {
+      def_p = V_MUST_DEF_OP_PTR (v_must_defs, i);
+      var = DEF_FROM_PTR (def_p);
+
+      if (!TEST_BIT (names_to_rename, SSA_NAME_VERSION (var)))
+	continue;
+
+      SET_DEF (def_p, duplicate_ssa_name (var, stmt));
+      ssa_register_new_def (var, DEF_FROM_PTR (def_p), &bd->block_defs);
+    }
+}
+
+/* Replace the operand pointed by OP_P with its immediate reaching
    definition.  */
 
 static inline void
@@ -837,7 +1341,6 @@ rewrite_operand (use_operand_p op_p)
   if (TREE_CODE (USE_FROM_PTR (op_p)) != SSA_NAME)
     SET_USE (op_p, get_reaching_def (USE_FROM_PTR (op_p)));
 }
-
 
 /* Register DEF (an SSA_NAME) to be a new definition for its underlying
    variable (SSA_NAME_VAR (DEF)) and push VAR's current reaching definition
@@ -857,13 +1360,13 @@ register_new_def (tree def, varray_type *block_defs_p)
      This is the same test to prune the set of variables which may
      need PHI nodes.  So we just use that information since it's already
      computed and available for us to use.  */
-  if (var_ann (var)->need_phi_state == NEED_PHI_STATE_NO)
+  if (get_phi_state (var) == NEED_PHI_STATE_NO)
     {
-      var_ann (var)->current_def = def;
+      set_current_def (var, def);
       return;
     }
 
-  currdef = var_ann (var)->current_def;
+  currdef = get_current_def (var);
   if (! *block_defs_p)
     VARRAY_TREE_INIT (*block_defs_p, 20, "block_defs");
 
@@ -875,9 +1378,8 @@ register_new_def (tree def, varray_type *block_defs_p)
   VARRAY_PUSH_TREE (*block_defs_p, currdef ? currdef : var);
 
   /* Set the current reaching definition for VAR to be DEF.  */
-  var_ann (var)->current_def = def;
+  set_current_def (var, def);
 }
-
 
 /* Return the current definition for variable VAR.  If none is found,
    create a new SSA name to act as the zeroth definition for VAR.  If VAR
@@ -888,23 +1390,28 @@ register_new_def (tree def, varray_type *block_defs_p)
 static tree
 get_reaching_def (tree var)
 {
-  tree default_d, currdef_var;
+  tree default_d, currdef_var, avar;
   
   /* Lookup the current reaching definition for VAR.  */
   default_d = NULL_TREE;
-  currdef_var = var_ann (var)->current_def;
+  currdef_var = get_current_def (var);
 
   /* If there is no reaching definition for VAR, create and register a
      default definition for it (if needed).  */
   if (currdef_var == NULL_TREE)
     {
-      default_d = default_def (var);
+      if (TREE_CODE (var) == SSA_NAME)
+	avar = SSA_NAME_VAR (var);
+      else
+	avar = var;
+
+      default_d = default_def (avar);
       if (default_d == NULL_TREE)
 	{
-	  default_d = make_ssa_name (var, build_empty_stmt ());
-	  set_default_def (var, default_d);
+	  default_d = make_ssa_name (avar, build_empty_stmt ());
+	  set_default_def (avar, default_d);
 	}
-      var_ann (var)->current_def = default_d;
+      set_current_def (var, default_d);
     }
 
   /* Return the current reaching definition for VAR, or the default
@@ -936,6 +1443,7 @@ def_blocks_free (void *p)
 {
   struct def_blocks_d *entry = p;
   BITMAP_XFREE (entry->def_blocks);
+  BITMAP_XFREE (entry->phi_blocks);
   BITMAP_XFREE (entry->livein_blocks);
   free (entry);
 }
@@ -1002,6 +1510,7 @@ get_def_blocks_for (tree var)
       db_p = xmalloc (sizeof (*db_p));
       db_p->var = var;
       db_p->def_blocks = BITMAP_XMALLOC ();
+      db_p->phi_blocks = BITMAP_XMALLOC ();
       db_p->livein_blocks = BITMAP_XMALLOC ();
       *slot = (void *) db_p;
     }
@@ -1081,22 +1590,38 @@ invalidate_name_tags (bitmap vars_to_rename)
       (rewrite_stmt).
 
    Steps 3 and 5 are done using the dominator tree walker
-   (walk_dominator_tree).  */
+   (walk_dominator_tree).
+
+   ALL is true if all variables should be renamed (otherwise just those
+   mentioned in vars_to_rename are taken into account).  */
 
 void
-rewrite_into_ssa (void)
+rewrite_into_ssa (bool all)
 {
   bitmap *dfs;
   basic_block bb;
   struct dom_walk_data walk_data;
   struct mark_def_sites_global_data mark_def_sites_global_data;
-  unsigned int i;
+  bitmap old_vars_to_rename = vars_to_rename;
+  unsigned i;
   
   timevar_push (TV_TREE_SSA_OTHER);
 
-  /* Initialize the array of variables to rename.  */
-  if (vars_to_rename != NULL)
+  if (all)
+    vars_to_rename = NULL;
+  else
     {
+      /* Initialize the array of variables to rename.  */
+ 
+      if (vars_to_rename == NULL)
+	abort ();
+
+      if (bitmap_first_set_bit (vars_to_rename) < 0)
+	{
+	  timevar_pop (TV_TREE_SSA_OTHER);
+	  return;
+	}
+      
       invalidate_name_tags (vars_to_rename);
 
       /* Now remove all the existing PHI nodes (if any) for the variables
@@ -1125,7 +1650,7 @@ rewrite_into_ssa (void)
     }
 
   for (i = 0; i < num_referenced_vars; i++)
-    var_ann (referenced_var (i))->current_def = NULL;
+    set_current_def (referenced_var (i), NULL_TREE);
 
   /* Ensure that the dominance information is OK.  */
   calculate_dominance_info (CDI_DOMINATORS);
@@ -1167,7 +1692,7 @@ rewrite_into_ssa (void)
   sbitmap_free (mark_def_sites_global_data.kills);
 
   /* Insert PHI nodes at dominance frontiers of definition blocks.  */
-  insert_phi_nodes (dfs);
+  insert_phi_nodes (dfs, NULL);
 
   /* Rewrite all the basic blocks in the program.  */
   timevar_push (TV_TREE_SSA_REWRITE_BLOCKS);
@@ -1211,14 +1736,170 @@ rewrite_into_ssa (void)
 
   htab_delete (def_blocks);
 
+  vars_to_rename = old_vars_to_rename;
   timevar_pop (TV_TREE_SSA_OTHER);
+}
+
+/* The ssa names in NAMES_TO_RENAME may have more than one definition;
+   add phi nodes and rewrite them to fix this.  */
+
+void
+rewrite_ssa_into_ssa (bitmap names_to_rename)
+{
+  bitmap *dfs;
+  basic_block bb;
+  struct dom_walk_data walk_data;
+  struct mark_def_sites_global_data mark_def_sites_global_data;
+  unsigned i;
+  sbitmap snames_to_rename;
+  tree name;
+  
+  if (bitmap_first_set_bit (names_to_rename) < 0)
+    return;
+
+  timevar_push (TV_TREE_SSA_OTHER);
+
+  /* Allocate memory for the DEF_BLOCKS hash table.  */
+  def_blocks = htab_create (num_ssa_names,
+			    def_blocks_hash, def_blocks_eq, def_blocks_free);
+
+  /* Initialize dominance frontier and immediate dominator bitmaps. 
+     Also count the number of predecessors for each block.  Doing so
+     can save significant time during PHI insertion for large graphs.  */
+  dfs = (bitmap *) xmalloc (last_basic_block * sizeof (bitmap *));
+  FOR_EACH_BB (bb)
+    {
+      edge e;
+      int count = 0;
+
+      for (e = bb->pred; e; e = e->pred_next)
+	count++;
+
+      bb_ann (bb)->num_preds = count;
+      dfs[bb->index] = BITMAP_XMALLOC ();
+    }
+
+  /* Ensure that the dominance information is OK.  */
+  calculate_dominance_info (CDI_DOMINATORS);
+
+  /* Compute dominance frontiers.  */
+  compute_dominance_frontiers (dfs);
+
+  /* Setup callbacks for the generic dominator tree walker to find and
+     mark definition sites.  */
+  walk_data.walk_stmts_backward = false;
+  walk_data.dom_direction = CDI_DOMINATORS;
+  walk_data.initialize_block_local_data = NULL;
+  walk_data.before_dom_children_before_stmts
+	  = ssa_mark_def_sites_initialize_block;
+  walk_data.before_dom_children_walk_stmts = ssa_mark_def_sites;
+  walk_data.before_dom_children_after_stmts = ssa_mark_phi_uses; 
+  walk_data.after_dom_children_before_stmts =  NULL;
+  walk_data.after_dom_children_walk_stmts =  NULL;
+  walk_data.after_dom_children_after_stmts =  NULL;
+
+  snames_to_rename = sbitmap_alloc (num_ssa_names);
+  sbitmap_zero (snames_to_rename);
+  EXECUTE_IF_SET_IN_BITMAP (names_to_rename, 0, i,
+			    SET_BIT (snames_to_rename, i));
+
+  mark_def_sites_global_data.kills = sbitmap_alloc (num_ssa_names);
+  mark_def_sites_global_data.names_to_rename = snames_to_rename;
+  walk_data.global_data = &mark_def_sites_global_data;
+
+  /* We do not have any local data.  */
+  walk_data.block_local_data_size = 0;
+
+  /* Initialize the dominator walker.  */
+  init_walk_dominator_tree (&walk_data);
+
+  /* Recursively walk the dominator tree.  */
+  walk_dominator_tree (&walk_data, ENTRY_BLOCK_PTR);
+
+  /* Finalize the dominator walker.  */
+  fini_walk_dominator_tree (&walk_data);
+
+  /* We no longer need this bitmap, clear and free it.  */
+  sbitmap_free (mark_def_sites_global_data.kills);
+
+  for (i = 0; i < num_ssa_names; i++)
+    if (ssa_name (i))
+      set_current_def (ssa_name (i), NULL_TREE);
+
+  /* Insert PHI nodes at dominance frontiers of definition blocks.  */
+  insert_phi_nodes (dfs, names_to_rename);
+
+  /* Rewrite all the basic blocks in the program.  */
+  timevar_push (TV_TREE_SSA_REWRITE_BLOCKS);
+
+  /* Setup callbacks for the generic dominator tree walker.  */
+  walk_data.walk_stmts_backward = false;
+  walk_data.dom_direction = CDI_DOMINATORS;
+  walk_data.initialize_block_local_data
+	  = rewrite_initialize_block_local_data;
+  walk_data.before_dom_children_before_stmts = ssa_rewrite_initialize_block;
+  walk_data.before_dom_children_walk_stmts = ssa_rewrite_stmt;
+  walk_data.before_dom_children_after_stmts = ssa_rewrite_phi_arguments;
+  walk_data.after_dom_children_before_stmts = NULL;
+  walk_data.after_dom_children_walk_stmts =  NULL;
+  walk_data.after_dom_children_after_stmts =  ssa_rewrite_finalize_block;
+  walk_data.global_data = snames_to_rename;
+  walk_data.block_local_data_size = sizeof (struct rewrite_block_data);
+
+  /* Initialize the dominator walker.  */
+  init_walk_dominator_tree (&walk_data);
+
+  /* Recursively walk the dominator tree rewriting each statement in
+     each basic block.  */
+  walk_dominator_tree (&walk_data, ENTRY_BLOCK_PTR);
+
+  /* Finalize the dominator walker.  */
+  fini_walk_dominator_tree (&walk_data);
+
+  sbitmap_free (snames_to_rename);
+
+  timevar_pop (TV_TREE_SSA_REWRITE_BLOCKS);
+
+  /* Debugging dumps.  */
+  if (dump_file && (dump_flags & TDF_STATS))
+    {
+      dump_dfa_stats (dump_file);
+      dump_tree_ssa_stats (dump_file);
+    }
+
+  /* Free allocated memory.  */
+  FOR_EACH_BB (bb)
+    BITMAP_XFREE (dfs[bb->index]);
+  free (dfs);
+
+  htab_delete (def_blocks);
+
+  for (i = 0; i < num_ssa_names; i++)
+    {
+      name = ssa_name (i);
+      if (!name
+	  || !SSA_NAME_AUX (name))
+	continue;
+
+      free (SSA_NAME_AUX (name));
+      SSA_NAME_AUX (name) = NULL;
+    }
+  timevar_pop (TV_TREE_SSA_OTHER);
+}
+
+/* Rewrites all variables into ssa.  */
+
+static void
+rewrite_all_into_ssa (void)
+{
+  rewrite_into_ssa (true);
 }
 
 struct tree_opt_pass pass_build_ssa = 
 {
   "ssa",				/* name */
   NULL,					/* gate */
-  rewrite_into_ssa,			/* execute */
+  rewrite_all_into_ssa,			/* execute */
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
