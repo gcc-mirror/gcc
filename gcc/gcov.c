@@ -46,6 +46,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "gansidecl.h"
 #include "intl.h"
 #include "gcov-io.h"
+#ifdef HAVE_VPRINTF
+void fatal PVPROTO((char *, ...));
+#else
+/* We must not provide any prototype here, even if ANSI C.  */
+void fatal PROTO(());
+#endif
+void fancy_abort ();
 
 
 /* The .bb file format consists of several lists of 4-byte integers
@@ -277,6 +284,40 @@ xmalloc (size)
     }
   return value;
 }
+
+#ifdef HAVE_VPRINTF
+void
+fatal VPROTO((char *s, ...))
+{
+#ifndef ANSI_PROTOTYPES
+  char *s;
+#endif
+  va_list ap;
+
+  VA_START (ap, s);
+
+#ifndef ANSI_PROTOTYPES
+  s = va_arg (ap, char *);
+#endif
+
+  fprintf (stderr, "genattrtab: ");
+  vfprintf (stderr, s, ap);
+  va_end (ap);
+  fprintf (stderr, "\n");
+  exit (FATAL_EXIT_CODE);
+}
+#else /* not HAVE_VPRINTF */
+
+void
+fatal (s, a1, a2)
+     char *s;
+{
+  fprintf (stderr, "genattrtab: ");
+  fprintf (stderr, s, a1, a2);
+  fprintf (stderr, "\n");
+  exit (FATAL_EXIT_CODE);
+}
+#endif /* not HAVE_VPRINTF */
 
 /* More 'friendly' abort that prints the line and file.
    config.h can #define abort fancy_abort if you like that sort of thing.  */
