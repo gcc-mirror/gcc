@@ -394,7 +394,7 @@ AC_ARG_ENABLE(checking,
 			  enable expensive run-time checks.  With LIST,
 			  enable only specific categories of checks.
 			  Categories are: assert,fold,gc,gcac,misc,
-			  rtlflag,rtl,tree,valgrind,release,yes,all;],
+			  rtlflag,rtl,runtime,tree,valgrind,release,yes,all;],
 [ac_checking_flags="${enableval}"],[
 # Determine the default checks.
 if test x$is_release = x ; then
@@ -407,6 +407,7 @@ ac_checking=
 ac_tree_checking=
 ac_rtl_checking=
 ac_rtlflag_checking=
+ac_runtime_checking=1
 ac_gc_checking=
 ac_gc_always_collect=
 ac_fold_checking=
@@ -416,16 +417,17 @@ do
 	case $check in
 	yes)		ac_assert_checking=1 ; ac_checking=1 ;
 			ac_tree_checking=1 ; ac_gc_checking=1 ;
-			ac_rtlflag_checking=1 ;;
+			ac_rtlflag_checking=1 ; ac_runtime_checking=1 ;;
 	no)		ac_assert_checking= ; ac_checking= ;
 			ac_tree_checking= ; ac_rtl_checking= ;
 			ac_rtlflag_checking= ; ac_gc_checking= ;
 			ac_gc_always_collect= ; ac_fold_checking= ;;
 	all)		ac_assert_checking=1 ; ac_checking=1 ;
 			ac_tree_checking=1 ; ac_rtl_checking=1 ;
-			ac_rtlflag_checking=1 ; ac_gc_checking=1 ;
-			ac_gc_always_collect=1 ; ac_fold_checking=1 ;;
-        release)	ac_assert_checking=1 ;;
+			ac_rtlflag_checking=1 ; ac_runtime_checking=1;
+			ac_gc_checking=1 ; ac_gc_always_collect=1 ;
+			ac_fold_checking=1 ;;
+        release)	ac_assert_checking=1 ; ac_runtime_checking=1 ;;
 	assert) 	ac_assert_checking=1 ;;
 	fold)		ac_fold_checking=1 ;;
 	gc)		ac_gc_checking=1 ;;
@@ -433,6 +435,7 @@ do
 	misc)		ac_checking=1 ;;
 	rtlflag)	ac_rtlflag_checking=1 ;;
 	rtl)		ac_rtl_checking=1 ;;
+	runtime)	ac_runtime_checking=1 ;;
 	tree)		ac_tree_checking=1 ;;
 	valgrind)	ac_checking_valgrind=1 ;;
 	*)	AC_MSG_ERROR(unknown check category $check) ;;
@@ -451,6 +454,10 @@ AC_SUBST(nocommon_flag)
 if test x$ac_assert_checking != x ; then
   AC_DEFINE(ENABLE_ASSERT_CHECKING, 1,
 [Define if you want assertions enabled.  This is a cheap check.])
+fi
+if test x$ac_runtime_checking != x ; then
+  AC_DEFINE(ENABLE_RUNTIME_CHECKING, 1,
+[Define if you want runtime assertions enabled.  This is a cheap check.])
 fi
 if test x$ac_tree_checking != x ; then
   AC_DEFINE(ENABLE_TREE_CHECKING, 1,

@@ -1,3 +1,11 @@
+2005-03-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* configure.ac (enable-checking): Add 'runtime' option.
+	* doc/install.texi (enable-checking): Document 'runtime' checking.
+	* tsystem.h (gcc_assert, gcc_unreachable): Define.
+	* config.in: Regenerated.
+	* configure: Regenerated.
+
 2005-03-23  Uros Bizjak  <uros@kss-loka.si>
 
 	* optabs.h (enum optab_index): Remove OTI_llrint.
