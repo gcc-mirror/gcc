@@ -59,8 +59,8 @@ struct processor_costs {
   int mult_bit;			/* cost of multiply per each bit set */
   int divide;			/* cost of a divide/mod */
   int large_insn;		/* insns larger than this cost more */
-  int move_ratio;		/* The threshold of number of scalar memory-to-memory
-				   move insns.  */
+  int move_ratio;		/* The threshold of number of scalar
+				   memory-to-memory move insns.  */
   int movzbl_load;		/* cost of loading using movzbl */
   int int_load[3];		/* cost of loading integer registers
 				   in QImode, HImode and SImode relative
