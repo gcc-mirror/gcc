@@ -45,6 +45,7 @@ struct diagnostic_context;
       AGGR_INIT_VIA_CTOR_P (in AGGR_INIT_EXPR)
       PTRMEM_OK_P (in ADDR_EXPR, OFFSET_REF)
       PARMLIST_ELLIPSIS_P (in PARMLIST)
+      DECL_PRETTY_FUNCTION_P (in VAR_DECL)
    1: IDENTIFIER_VIRTUAL_P.
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -59,6 +60,7 @@ struct diagnostic_context;
       ICS_THIS_FLAG (in _CONV)
       BINFO_LOST_PRIMARY_P (in BINFO)
       TREE_PARMLIST (in TREE_LIST)
+      DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
    3: TYPE_USES_VIRTUAL_BASECLASSES (in a class TYPE).
       BINFO_VTABLE_PATH_MARKED.
       BINFO_PUSHDECLS_MARKED.
@@ -1926,6 +1928,11 @@ struct lang_decl GTY(())
 #define DECL_INITIALIZED_P(NODE) \
    (TREE_LANG_FLAG_1 (VAR_DECL_CHECK (NODE)))
 
+/* Nonzero for a VAR_DECL that was initialized with a
+   constant-expression.  */
+#define DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P(NODE) \
+  (TREE_LANG_FLAG_2 (VAR_DECL_CHECK (NODE)))
+
 /* Nonzero if the DECL was initialized in the class definition itself,
    rather than outside the class.  This is used for both static member
    VAR_DECLS, and FUNTION_DECLS that are defined in the class.  */
@@ -2033,7 +2040,7 @@ struct lang_decl GTY(())
 /* Nonzero if this DECL is the __PRETTY_FUNCTION__ variable in a
    template function.  */
 #define DECL_PRETTY_FUNCTION_P(NODE) \
-  (TREE_LANG_FLAG_0 (NODE))
+  (TREE_LANG_FLAG_0 (VAR_DECL_CHECK (NODE)))
 
 /* The _TYPE context in which this _DECL appears.  This field holds the
    class where a virtual function instance is actually defined.  */
