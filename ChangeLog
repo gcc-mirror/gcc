@@ -1,3 +1,7 @@
+2001-06-11  Daniel Berlin  <dan@cgsoftware.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+	
 2001-06-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config.guess: Import CVS version 1.195.
