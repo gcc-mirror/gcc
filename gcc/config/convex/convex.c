@@ -403,7 +403,9 @@ expand_movstr_call (operands)
 		     VOIDmode, 3,
 		     XEXP (operands[0], 0), Pmode,
 		     XEXP (operands[1], 0), Pmode,
-		     operands[2], SImode);
+		     convert_to_mode (TYPE_MODE (sizetype), operands[2],
+				      TREE_UNSIGNED (sizetype)),
+		     TYPE_MODE (sizetype));
 }
 
 #if _IEEE_FLOAT_
