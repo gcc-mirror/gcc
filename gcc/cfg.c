@@ -502,6 +502,7 @@ dump_flow_info (file)
      FILE *file;
 {
   int i;
+  int max_regno = max_reg_num ();
   basic_block bb;
   static const char * const reg_class_names[] = REG_CLASS_NAMES;
 

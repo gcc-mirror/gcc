@@ -1,3 +1,8 @@
+2002-11-30  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* cfg.c (dump_flow_info): Use max_reg_num () to determine the largest
+	pseudo register number plus 1.
+
 2002-11-29  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* cpplib.c (_cpp_test_assertion): Default *value to 0.
