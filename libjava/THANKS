@@ -6,9 +6,10 @@ order.
 
 Geoff Berry for his object serialization work and various patches.
 Hans-J. Boehm for his garbage collector.
+Godmar Back for his improvements and encouragement.
 Per Bothner for dreaming up, designing and implementing much of gcj.
 Steve Chamberlain for config fixes and the picoJava port.
-Jean-Marc Chandonia for various library patches.
+John-Marc Chandonia for various library patches.
 Eric Christopher for his porting help and clean-ups.
 The GCC project contributors for all of their great compiler work.
 Anthony Green for various contributions.
@@ -17,6 +18,7 @@ Andrew Haley for his amazing compiler and library efforts.
 Bryce McKinlay for numerous libgcj fixes and improvements.
 Jason Molenda for maintaining the project infrastructure 
 	on sourceware.cygnus.com.
+Mike Moreton for his various patches.
 Alexandre Oliva for all of this porting and testing efforts.
 Kresten Krab Thorup for his fantastic bytecode interpreter.
 Warren Levy for his tremendous library work.
@@ -24,7 +26,7 @@ All of the Mauve project contributors, for test code.
 Rainer Orth for configuration clean-ups and porting help.
 Alexandre Petit-Bianco for implementing much of the compiler, 
 	and continued maintainership.
-Jeff Sturm for porting help and encouragement.
+Jeff Sturm for porting help, bug fixes, and encouragement.
 Tom Tromey for his many contributions and libgcj maintainership.
 Matt Welsh for help with Linux Threads.
 Urban Widmark for help fixing java.io.
@@ -33,22 +35,33 @@ Gilles Zunino for help porting to Irix.
 We'd also like to thank the folks who have contributed time and energy
 in testing GCJ:
 
+Michael Abd-El-Malek 
 Bonzo Armstrong
+Steven Ashe 
 Chris Baldwin
 David Billinghurst
 Jim Blandy
 Stephane Bortzmeyer
+Joerg Brunsmann
 Bradford Castalia
 Richard Emberson
 Mark K. Gardner
 Simon Gornall
+John Griffin
+Kevin B. Hendricks
+Patrik Hagglund
 Amancio Hasty 
 Joep Jansen
+Tobias Kuipers
 Anon A. Mous
+Pekka Nikander
 Jon Olson
 Paul Reilly
 Tom Reilly
+Danny Sadinoff
 Marc Schifer
 Franz Sirl
+Adam Sulmicki 
+Frederik Warg 
 
 Thank you all!
