@@ -1,3 +1,11 @@
+2000-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.c (gen_df_reg): New function.
+	* config/sparc/sparc-protos.h (gen_df_reg): Add prototype.
+	* config/sparc/sparc.md (movtf_no_e_insn_sp64+1,
+	movtf_no_e_insn_sp64+2, movtf_no_e_insn_sp64+3, movtf_cc_sp64+1,
+	movtf_cc_reg_sp64+1): Use it.
+
 2000-01-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* integrate.c (copy_decl_for_inlining): Clear TREE_ADDRESSABLE on
