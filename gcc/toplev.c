@@ -3611,11 +3611,13 @@ rest_of_compilation (decl)
 
   /* If a machine dependent reorganization is needed, call it.  */
 #ifdef MACHINE_DEPENDENT_REORG
+  timevar_push (TV_MACH_DEP);
   open_dump_file (DFI_mach, decl);
 
   MACHINE_DEPENDENT_REORG (insns);
 
   close_dump_file (DFI_mach, print_rtl, insns);
+  timevar_pop (TV_MACH_DEP);
 
   ggc_collect ();
 #endif

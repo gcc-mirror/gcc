@@ -43,6 +43,7 @@ Boston, MA 02111-1307, USA.  */
 #include "basic-block.h"
 #include "toplev.h"
 #include "sched-int.h"
+#include "timevar.h"
 #include "target.h"
 #include "target-def.h"
 
@@ -6562,9 +6563,11 @@ ia64_reorg (insns)
 
   if (ia64_flag_schedule_insns2)
     {
+      timevar_push (TV_SCHED2);
       ia64_final_schedule = 1;
       schedule_ebbs (rtl_dump_file);
       ia64_final_schedule = 0;
+      timevar_pop (TV_SCHED2);
 
       /* This relies on the NOTE_INSN_BASIC_BLOCK notes to be in the same
 	 place as they were during scheduling.  */

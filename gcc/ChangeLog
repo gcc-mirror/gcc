@@ -1,3 +1,9 @@
+2001-08-18  Richard Henderson  <rth@redhat.com>
+
+	* timevar.def (TV_MACH_DEP): New.
+	* toplev.c (rest_of_compilation): Use it.
+	* config/ia64/ia64.c (ia64_reorg): Push to TV_SCHED2.
+
 2001-08-18  Zack Weinberg  <zackw@panix.com>
 
 	* unwind-dw2.c (execute_stack_op): Add default aborts to
