@@ -319,8 +319,11 @@ namespace std
    *  This inline function will boil down to a call to @c memmove whenever
    *  possible.  Failing that, if random access iterators are passed, then the
    *  loop count will be known (and therefore a candidate for compiler
-   *  optimizations such as unrolling).  If the input range and the output
-   *  range overlap, then the copy_backward function should be used instead.
+   *  optimizations such as unrolling).  Result may not be contained within
+   *  [first,last); the copy_backward function should be used instead.
+   *
+   *  Note that the end of the output range is permitted to be contained
+   *  within [first,last).
   */
   template<typename _InputIterator, typename _OutputIterator>
     inline _OutputIterator
@@ -443,9 +446,9 @@ namespace std
 
   /**
    *  @brief Copies the range [first,last) into result.
-   *  @param  first  An input iterator.
-   *  @param  last   An input iterator.
-   *  @param  result An output iterator.
+   *  @param  first  A bidirectional iterator.
+   *  @param  last   A bidirectional iterator.
+   *  @param  result A bidirectional iterator.
    *  @return   result - (first - last)
    *
    *  The function has the same effect as copy, but starts at the end of the
@@ -454,6 +457,9 @@ namespace std
    *  possible.  Failing that, if random access iterators are passed, then the
    *  loop count will be known (and therefore a candidate for compiler
    *  optimizations such as unrolling).
+   *
+   *  Result may not be in the range [first,last).  Use copy instead.  Note
+   *  that the start of the output range may overlap [first,last).
   */
   template <typename _BI1, typename _BI2>
     inline _BI2

@@ -79,6 +79,15 @@ namespace std
       *(__first + __holeIndex) = __value;
     }
 
+  /**
+   *  @brief  Push an element onto a heap.
+   *  @param  first  Start of heap.
+   *  @param  last   End of heap + element.
+   *  @ingroup heap
+   *
+   *  This operation pushes the element at last-1 onto the valid heap over the
+   *  range [first,last-1).  After completion, [first,last) is a valid heap.
+  */
   template<typename _RandomAccessIterator>
     inline void 
     push_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
@@ -112,6 +121,17 @@ namespace std
       *(__first + __holeIndex) = __value;
     }
 
+  /**
+   *  @brief  Push an element onto a heap using comparison functor.
+   *  @param  first  Start of heap.
+   *  @param  last   End of heap + element.
+   *  @param  comp   Comparison functor.
+   *  @ingroup heap
+   *
+   *  This operation pushes the element at last-1 onto the valid heap over the
+   *  range [first,last-1).  After completion, [first,last) is a valid heap.
+   *  Compare operations are performed using comp.
+  */
   template<typename _RandomAccessIterator, typename _Compare>
     inline void 
     push_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
@@ -161,6 +181,15 @@ namespace std
       std::__adjust_heap(__first, _Distance(0), _Distance(__last - __first), __value);
     }
 
+  /**
+   *  @brief  Pop an element off a heap.
+   *  @param  first  Start of heap.
+   *  @param  last   End of heap.
+   *  @ingroup heap
+   *
+   *  This operation pops the top of the heap.  The elements first and last-1
+   *  are swapped and [first,last-1) is made into a heap.
+  */
   template<typename _RandomAccessIterator>
     inline void
     pop_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
@@ -208,6 +237,17 @@ namespace std
 			 __value, __comp);
     }
 
+  /**
+   *  @brief  Pop an element off a heap using comparison functor.
+   *  @param  first  Start of heap.
+   *  @param  last   End of heap.
+   *  @param  comp   Comparison functor to use.
+   *  @ingroup heap
+   *
+   *  This operation pops the top of the heap.  The elements first and last-1
+   *  are swapped and [first,last-1) is made into a heap.  Comparisons are
+   *  made using comp.
+  */
   template<typename _RandomAccessIterator, typename _Compare>
     inline void 
     pop_heap(_RandomAccessIterator __first,
@@ -221,6 +261,14 @@ namespace std
       std::__pop_heap(__first, __last - 1, __last - 1, _ValueType(*(__last - 1)), __comp);
     }
 
+  /**
+   *  @brief  Construct a heap over a range.
+   *  @param  first  Start of heap.
+   *  @param  last   End of heap.
+   *  @ingroup heap
+   *
+   *  This operation makes the elements in [first,last) into a heap.
+  */
   template<typename _RandomAccessIterator>
     void 
     make_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
@@ -246,6 +294,16 @@ namespace std
       }
     }
 
+  /**
+   *  @brief  Construct a heap over a range using comparison functor.
+   *  @param  first  Start of heap.
+   *  @param  last   End of heap.
+   *  @param  comp   Comparison functor to use.
+   *  @ingroup heap
+   *
+   *  This operation makes the elements in [first,last) into a heap.
+   *  Comparisons are made using comp.
+  */
   template<typename _RandomAccessIterator, typename _Compare>
     inline void 
     make_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
@@ -272,6 +330,14 @@ namespace std
       }
     }
 
+  /**
+   *  @brief  Sort a heap.
+   *  @param  first  Start of heap.
+   *  @param  last   End of heap.
+   *  @ingroup heap
+   *
+   *  This operation sorts the valid heap in the range [first,last).
+  */
   template<typename _RandomAccessIterator>
     void
     sort_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
@@ -286,6 +352,16 @@ namespace std
 	std::pop_heap(__first, __last--);
     }
 
+  /**
+   *  @brief  Sort a heap using comparison functor.
+   *  @param  first  Start of heap.
+   *  @param  last   End of heap.
+   *  @param  comp   Comparison functor to use.
+   *  @ingroup heap
+   *
+   *  This operation sorts the valid heap in the range [first,last).
+   *  Comparisons are made using comp.
+  */
   template<typename _RandomAccessIterator, typename _Compare>
     void 
     sort_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
