@@ -1,5 +1,9 @@
 2004-11-05  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	* gfortranspec.c (lang_specific_driver): Change year to 2004.
+
+2004-11-05  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
 	PR fortran/18111
 	*  trans-decl.c (create_function_arglist): Set DECL_ARTIFICIAL for
 	hidden parameters.
