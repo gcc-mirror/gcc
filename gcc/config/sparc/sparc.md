@@ -4073,7 +4073,7 @@
    (set_attr "length" "1")])
 
 (define_insn "negsi2"
-  [(set (match_operand:SI 0 "general_operand" "=r")
+  [(set (match_operand:SI 0 "register_operand" "=r")
 	(neg:SI (match_operand:SI 1 "arith_operand" "rI")))]
   ""
   "sub %%g0,%1,%0"
