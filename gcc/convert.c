@@ -110,6 +110,9 @@ convert_to_real (type, expr)
   enum built_in_function fcode = builtin_mathfn_code (expr);
   tree itype = TREE_TYPE (expr);
 
+  /* Disable until we figure out how to decide whether the functions are
+     present in runtime.  */
+#if 0
   /* Convert (float)sqrt((double)x) where x is float into sqrtf(x) */
   if ((fcode == BUILT_IN_SQRT
        || fcode == BUILT_IN_SQRTL
@@ -196,6 +199,7 @@ convert_to_real (type, expr)
 	    }
 	}
     }
+#endif
 
   /* Propagate the cast into the operation.  */
   if (itype != type && FLOAT_TYPE_P (type))
