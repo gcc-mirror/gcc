@@ -3671,12 +3671,12 @@ pushdecl (x)
 		warning (warnstring, IDENTIFIER_POINTER (name));
 	    }
 	  /* Check to see if decl redeclares a template parameter. */
- 	  if (oldlocal && (current_class_type || current_function_decl ) 
+ 	  if (oldlocal && (current_class_type || current_function_decl) 
  	      && current_template_parms)
  	    {
  	      if (decl_template_parm_p (oldlocal))
  		{
- 		  cp_error ("redeclaration of template parameter `%T'", name);
+		  cp_error ("re-using name of template parameter `%T' in this scope", name);
  		  cp_error_at (" previously declared here `%#D'", oldlocal);
  		}
  	    }
@@ -3812,10 +3812,10 @@ pushdecl_class_level (x)
 	{
 	  /* A name N used in a class S shall refer to the same declaration
 	     in its context and when re-evaluated in the completed scope of S.
-
 	     Types, enums, and static vars are checked here; other
 	     members are checked in finish_struct.  */
 	  tree icv = IDENTIFIER_CLASS_VALUE (name);
+	  tree ilv = IDENTIFIER_LOCAL_VALUE (name);
 
 	  if (icv && icv != x
 	      && flag_optional_diags
@@ -3828,6 +3828,18 @@ pushdecl_class_level (x)
 	      cp_pedwarn ("declaration of identifier `%D' as `%#D'", name, x);
 	      cp_pedwarn_at ("conflicts with previous use in class as `%#D'",
 			     icv);
+	    }
+
+	  /* Check to see if decl redeclares a template parameter. */
+	  if (ilv && ! decls_match (ilv, x)
+	      && (current_class_type || current_function_decl) 
+	      && current_template_parms)
+	    {
+	      if (decl_template_parm_p (ilv))
+		{
+		  cp_error ("re-using name of template parameter `%T' in this scope", name);
+		  cp_error_at (" previously declared here `%#D'", ilv);
+		}
 	    }
 	}
 
