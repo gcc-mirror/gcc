@@ -1,3 +1,8 @@
+2005-02-10  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md: Fix the placement of the match_scratch in the
+	lea64 peephole2.
+
 2005-02-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cse.c, tree-ssa-loop-ivopts.c, config/rs6000/linux-unwind.h:
