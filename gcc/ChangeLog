@@ -1,3 +1,10 @@
+Thu Feb 12 15:26:50 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* cse.c (delete_dead_from_cse): If a libcall produces a constant
+	result and that result can be substituted into SET_SRC of the
+	insn with the REG_RETVAL note, then perform the substitution
+	and delete the libcall.
+
 Thu Feb 12 14:04:09 1998  Gavin Koch  <gavin@cygnus.com>
 
 	* mips.md (trucndihi2,truncdiqi2): Change these to support 
