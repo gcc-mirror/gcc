@@ -890,9 +890,11 @@ _cpp_lex_token (pfile, result)
   switch (c)
     {
     case EOF:
-      /* Non-empty files should end in a newline.  Ignore for command
-	 line and _Pragma buffers.  */
-      if (pfile->lexer_pos.col != 0 && !buffer->from_stage3)
+      /* Non-empty files should end in a newline.  Checking "bol" too
+	  prevents multiple warnings when hitting the EOF more than
+	  once, like in a directive.  Don't warn for command line and
+	  _Pragma buffers.  */
+      if (pfile->lexer_pos.col != 0 && !bol && !buffer->from_stage3)
 	cpp_pedwarn (pfile, "no newline at end of file");
       pfile->state.next_bol = 1;
       pfile->skipping = 0;	/* In case missing #endif.  */
