@@ -797,6 +797,7 @@ dump_type_suffix (t, flags)
     case RECORD_TYPE:
     case TEMPLATE_TYPE_PARM:
     case TEMPLATE_TEMPLATE_PARM:
+    case BOUND_TEMPLATE_TEMPLATE_PARM:
     case TREE_LIST:
     case TYPE_DECL:
     case TREE_VEC:
