@@ -128,11 +128,6 @@ extern rtx arg_pointer_save_area;
 
 /* Chain of all RTL_EXPRs that have insns in them.  */
 extern tree rtl_expr_chain;
-
-/* Stack allocation level in which temporaries for TARGET_EXPRs live.  */
-extern int target_temp_slot_level;
-
-extern int temp_slot_level;
 
 /* Functions and data structures for expanding case statements.  */
 
