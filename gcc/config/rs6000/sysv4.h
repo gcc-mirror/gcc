@@ -1145,7 +1145,7 @@ do {									\
 #define	ENDFILE_SPEC "\
 %{mmvme: ecrtn.o%s} \
 %{msim: ecrtn.o%s} \
-%{mcall-linux: } \
+%{mcall-linux: %(endfile_linux) } \
 %{mcall-solaris: scrtn.o%s} \
 %{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-solaris: %(endfile_default) }}}}"
 

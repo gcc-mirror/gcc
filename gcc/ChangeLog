@@ -1,3 +1,8 @@
+Fri Feb 13 01:29:29 1998 Franz Sirl <franz.sirl-kernel@lauterbach.com>
+
+	* rs6000/sysv4.h (ENDFILE_SPEC): add missing %(endfile_linux)
+	for -mcall-linux
+
 Fri Feb 13 00:47:21 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* cccp.c (new_include_prefix): Correctly handle -I./.
