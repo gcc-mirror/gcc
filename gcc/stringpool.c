@@ -51,7 +51,12 @@ static struct obstack string_stack;
 
 static hashnode alloc_node (hash_table *);
 static int mark_ident (struct cpp_reader *, hashnode, const void *);
-static int ht_copy_and_clear (struct cpp_reader *, hashnode, const void *);
+
+static void *
+stringpool_ggc_alloc (size_t x)
+{
+  return ggc_alloc (x);
+}
 
 /* Initialize the string pool.  */
 void
@@ -60,6 +65,7 @@ init_stringpool (void)
   /* Create with 16K (2^14) entries.  */
   ident_hash = ht_create (14);
   ident_hash->alloc_node = alloc_node;
+  ident_hash->alloc_subobject = stringpool_ggc_alloc;
   gcc_obstack_init (&string_stack);
 }
 
@@ -212,39 +218,7 @@ struct string_pool_data GTY(())
 
 static GTY(()) struct string_pool_data * spd;
 
-/* Copy HP into the corresponding entry in HT2, and then clear
-   the cpplib parts of HP.  */
-
-static int
-ht_copy_and_clear (cpp_reader *r ATTRIBUTE_UNUSED, hashnode hp, const void *ht2_p)
-{
-  cpp_hashnode *h = CPP_HASHNODE (hp);
-  struct ht *ht2 = (struct ht *) ht2_p;
-
-  if (h->type != NT_VOID
-      && (h->flags & NODE_BUILTIN) == 0)
-    {
-      cpp_hashnode *h2 = CPP_HASHNODE (ht_lookup (ht2,
-						  NODE_NAME (h),
-						  NODE_LEN (h),
-						  HT_ALLOC));
-      h2->type = h->type;
-      memcpy (&h2->value, &h->value, sizeof (h->value));
-
-      h->type = NT_VOID;
-      memset (&h->value, 0, sizeof (h->value));
-    }
-  return 1;
-}
-
-/* The hash table as it was before gt_pch_save_stringpool was called.  */
-
-static struct ht *saved_ident_hash;
-
-/* Prepare the stringpool to be written (by clearing all the cpp parts
-   of each entry) and place the data to be saved in SPD.  Save the
-   current state in SAVED_IDENT_HASH so that gt_pch_fixup_stringpool
-   can restore it.  */
+/* Save the stringpool data in SPD.  */
 
 void
 gt_pch_save_stringpool (void)
@@ -255,10 +229,6 @@ gt_pch_save_stringpool (void)
   spd->entries = ggc_alloc (sizeof (spd->entries[0]) * spd->nslots);
   memcpy (spd->entries, ident_hash->entries,
 	  spd->nslots * sizeof (spd->entries[0]));
-
-  saved_ident_hash = ht_create (14);
-  saved_ident_hash->alloc_node = alloc_node;
-  ht_forall (ident_hash, ht_copy_and_clear, saved_ident_hash);
 }
 
 /* Return the stringpool to its state before gt_pch_save_stringpool
@@ -267,9 +237,6 @@ gt_pch_save_stringpool (void)
 void
 gt_pch_fixup_stringpool (void)
 {
-  ht_forall (saved_ident_hash, ht_copy_and_clear, ident_hash);
-  ht_destroy (saved_ident_hash);
-  saved_ident_hash = 0;
 }
 
 /* A PCH file has been restored, which loaded SPD; fill the real hash table

@@ -1,3 +1,14 @@
+2004-06-09  Geoffrey Keating  <geoffk@apple.com>
+
+	* symtab.h (struct ht): Add field 'alloc_subobject'.
+	* cpplib.h (struct cpp_string): Add GTY marker.
+	(enum cpp_token_fld_kind): New.
+	(struct cpp_token): Add GTY markers.
+	(cpp_token_val_index): Prototype.
+	(CPP_HASHNODE_VALUE_IDX): New.
+	(struct cpp_hashnode): Don't skip fields of 'value' when marking.
+	* cpp-id-data.h: New file.
+
 2004-05-29  Geoffrey Keating  <geoffk@apple.com>
 
 	* symtab.h (struct ht): New field 'entries_owned'

@@ -46,8 +46,11 @@ struct ht
   struct obstack stack;
 
   hashnode *entries;
-  /* Call back.  */
+  /* Call back, allocate a node.  */
   hashnode (*alloc_node) (hash_table *);
+  /* Call back, allocate something that hangs off a node like a cpp_macro.  
+     NULL means use the usual allocator.  */
+  void * (*alloc_subobject) (size_t);
 
   unsigned int nslots;		/* Total slots in the entries array.  */
   unsigned int nelements;	/* Number of live elements.  */

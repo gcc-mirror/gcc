@@ -1,3 +1,10 @@
+2004-06-09  Geoffrey Keating  <geoffk@apple.com>
+
+	* Makefile.in (CPPLIB_H): Put files in order of inclusion.
+	(CPP_ID_DATA_H): New.
+	(gtype-desc.o): Update dependencies.
+	(GTFILES): Use CPP_ID_DATA_H.
+
 2004-06-09  Mark Mitchell  <mark@codesourcery.com>
 
 	Revert:
