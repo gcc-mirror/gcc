@@ -304,8 +304,11 @@ AC_DEFUN(GLIBCPP_CHECK_CPU, [
       arm*)
 	cpu_include_dir="config/cpu/arm"
         ;;
-      i486 | i586 | i686 | i786)
+      i386)
 	cpu_include_dir="config/cpu/i386"
+	;;
+      i486 | i586 | i686 | i786)
+	cpu_include_dir="config/cpu/i486"
         ;;
       powerpc | rs6000)
 	cpu_include_dir="config/cpu/powerpc"

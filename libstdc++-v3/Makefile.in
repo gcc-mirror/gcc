@@ -493,7 +493,7 @@ maintainer-clean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=maintainer-clean multi-clean
 
 # All the machinations with string instantiations messes up the
-# automake-genrated TAGS rule. Make a simple one here.
+# automake-generated TAGS rule. Make a simple one here.
 TAGS: tags-recursive $(LISP)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

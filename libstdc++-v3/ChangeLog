@@ -1,3 +1,30 @@
+2000-05-24   Nathan "I don't write ChangeLog Entries" Myers  <ncm@cantrip.org>
+
+	* config/cpu/i486: New directory.
+	* config/cpu/i486/bits: New directory.
+	* config/cpu/i486/bits/atomicity.h: New file.
+	* config/cpu/i386/bits/atomicity.h (__compare_and_swap): Delete
+	'cmpxchgl' asm.
+	* acinclude.m4 (GLIBCPP_CHECK_CPU): Enable i386.
+	
+2000-05-24  Loren J. Rittle  <ljrittle@acm.org>
+
+        * backward/alloc.h (__default_alloc_template): Only expose
+          implementation-specific symbol, if it exists in the
+          configuration.
+        * backward/iostream.h (ends): Expose symbol.
+        * backward/strstream.h: New file.
+        * backward/stream.h: New file.
+        * backward/ostream.h: New file.
+        * backward/istream.h: New file.
+        * backward/fstream.h: New file.
+        * backward/complex.h: New file.
+        * backward/iomanip.h: New file.
+
+	* mkcheck.in (LIB_PATH): Add -R bits.
+
+	* math/carg.c (carg): Replace __atan2 with atan2.
+
 2000-05-24  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* Makefile.am (TAGS): Construct.
@@ -26,7 +53,7 @@
 	* src/Makefile.in: Regenerate.
 	* configure: Regenerate.
 
-	* src/ios.cc (ios_base::sync_with_stdio): Cleanup buffers from
+	* src/ios.cc (ios_base::sync_with_stdio): Clean up buffers from
 	initialization.
 
 	* docs/download.html: Remove references to Cygwin-specific bits,

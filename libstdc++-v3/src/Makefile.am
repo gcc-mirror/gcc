@@ -287,7 +287,7 @@ $(headers:%=$(myincludep)%): $(myincludep)%: %
 	fi;
 
 # All the machinations with string instantiations messes up the
-# automake-genrated TAGS rule. Make a simple one here.
+# automake-generated TAGS rule. Make a simple one here.
 TAGS: $(generated_headers) $(cpu_headers) 
 	etags -C $(top_srcdir)/bits/*.h $(top_srcdir)/bits/*.tcc \
 	$(generated_headers) $(cpu_headers) $(libio_headers) \
