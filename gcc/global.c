@@ -149,7 +149,7 @@ do {									\
       for ((ALLOCNO) = allocno_; word_; word_ >>= 1, (ALLOCNO)++)	\
 	{								\
 	  if (word_ & 1)						\
-	    CODE;							\
+	    {CODE;}							\
 	}								\
     }									\
 } while (0)
@@ -159,7 +159,7 @@ do {									\
    mirror_conflicts has been run.  */
 #define EXECUTE_IF_CONFLICT(IN_ALLOCNO, OUT_ALLOCNO, CODE)\
   EXECUTE_IF_SET_IN_ALLOCNO_SET (conflicts + (IN_ALLOCNO) * allocno_row_words,\
-				 OUT_ALLOCNO, CODE)
+				 OUT_ALLOCNO, (CODE))
 
 /* Set of hard regs currently live (during scan of all insns).  */
 
