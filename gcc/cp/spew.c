@@ -477,8 +477,7 @@ next_token (t)
       return t->yychar;
     }
 
-  memcpy (t, &Teosi, sizeof (struct token));
-  return END_OF_SAVED_INPUT;
+  return 0;
 }
 
 /* Shift the next token onto the fifo.  */
@@ -1195,6 +1194,14 @@ snarf_method (decl)
 						: (interface_only ? 0 : 2)));
 
   snarf_block (meth);
+  /* Add three END_OF_SAVED_INPUT tokens.  We used to provide an
+     infinite stream of END_OF_SAVED_INPUT tokens -- but that can
+     cause the compiler to get stuck in an infinite loop when
+     encountering invalid code.  We need more than one because the
+     parser sometimes peeks ahead several tokens.  */
+  memcpy (space_for_token (meth), &Teosi, sizeof (struct token));
+  memcpy (space_for_token (meth), &Teosi, sizeof (struct token));
+  memcpy (space_for_token (meth), &Teosi, sizeof (struct token));
 
   /* Happens when we get two declarations of the same function in the
      same scope.  */
@@ -1253,6 +1260,14 @@ snarf_defarg ()
 
   /* Unget the last token.  */
   push_token (remove_last_token (buf));
+  /* Add three END_OF_SAVED_INPUT tokens.  We used to provide an
+     infinite stream of END_OF_SAVED_INPUT tokens -- but that can
+     cause the compiler to get stuck in an infinite loop when
+     encountering invalid code.  We need more than one because the
+     parser sometimes peeks ahead several tokens.  */
+  memcpy (space_for_token (buf), &Teosi, sizeof (struct token));
+  memcpy (space_for_token (buf), &Teosi, sizeof (struct token));
+  memcpy (space_for_token (buf), &Teosi, sizeof (struct token));
 
  done:
 #ifdef SPEW_DEBUG

@@ -1,3 +1,12 @@
+2002-10-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7679
+	* spew.c (next_token): Do not return an endless stream of
+	END_OF_SAVED_INPUT tokens.
+	(snarf_method): Add three END_OF_SAVED_INPUT tokens to the end of
+	the cached token stream.
+	(snarf_defarg): Likewise.
+
 2002-10-23  Zack Weinberg  <zack@codesourcery.com>
 
 	* cp-lang.c (cp_var_mod_type_p): New: C++ hook for
