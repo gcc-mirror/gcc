@@ -6045,6 +6045,8 @@ typedef struct predefined_identifier
   const char *name;
   /* The place where the IDENTIFIER_NODE should be stored.  */
   tree *node;
+  /* Non-zero if this is the name of a constructor or destructor.  */
+  int ctor_or_dtor_p;
 } predefined_identifier;
 
 /* Create all the predefined identifiers.  */
@@ -6056,30 +6058,35 @@ initialize_predefined_identifiers ()
 
   /* A table of identifiers to create at startup.  */
   static predefined_identifier predefined_identifiers[] = {
-    { "C++", &lang_name_cplusplus },
-    { "C", &lang_name_c },
-    { "Java", &lang_name_java },
-    { CTOR_NAME, &ctor_identifier },
-    { "__base_ctor", &base_ctor_identifier },
-    { "__comp_ctor", &complete_ctor_identifier },
-    { DTOR_NAME, &dtor_identifier },
-    { "__comp_dtor", &complete_dtor_identifier },
-    { "__base_dtor", &base_dtor_identifier },
-    { "__deleting_dtor", &deleting_dtor_identifier },
-    { VTABLE_DELTA2_NAME, &delta2_identifier },
-    { VTABLE_DELTA_NAME, &delta_identifier },
-    { IN_CHARGE_NAME, &in_charge_identifier },
-    { VTABLE_INDEX_NAME, &index_identifier },
-    { "nelts", &nelts_identifier },
-    { THIS_NAME, &this_identifier },
-    { VTABLE_PFN_NAME, &pfn_identifier },
-    { "__pfn_or_delta2", &pfn_or_delta2_identifier },
-    { "_vptr", &vptr_identifier },
-    { NULL, NULL }
+    { "C++", &lang_name_cplusplus, 0 },
+    { "C", &lang_name_c, 0 },
+    { "Java", &lang_name_java, 0 },
+    { CTOR_NAME, &ctor_identifier, 1 },
+    { "__base_ctor", &base_ctor_identifier, 1 },
+    { "__comp_ctor", &complete_ctor_identifier, 1 },
+    { DTOR_NAME, &dtor_identifier, 1 },
+    { "__comp_dtor", &complete_dtor_identifier, 1 },
+    { "__base_dtor", &base_dtor_identifier, 1 },
+    { "__deleting_dtor", &deleting_dtor_identifier, 1 },
+    { VTABLE_DELTA2_NAME, &delta2_identifier, 0 },
+    { VTABLE_DELTA_NAME, &delta_identifier, 0 },
+    { IN_CHARGE_NAME, &in_charge_identifier, 0 },
+    { VTABLE_INDEX_NAME, &index_identifier, 0 },
+    { "nelts", &nelts_identifier, 0 },
+    { THIS_NAME, &this_identifier, 0 },
+    { VTABLE_PFN_NAME, &pfn_identifier, 0 },
+    { "__pfn_or_delta2", &pfn_or_delta2_identifier, 0 },
+    { "_vptr", &vptr_identifier, 0 },
+    { "__cp_push_exception", &cp_push_exception_identifier, 0 },
+    { NULL, NULL, 0 }
   };
 
   for (pid = predefined_identifiers; pid->name; ++pid)
-    *pid->node = get_identifier (pid->name);
+    {
+      *pid->node = get_identifier (pid->name);
+      if (pid->ctor_or_dtor_p)
+	IDENTIFIER_CTOR_OR_DTOR_P (*pid->node) = 1;
+    }
 }
 
 /* Create the predefined scalar types of C,
@@ -13811,9 +13818,9 @@ static void
 finish_destructor_body ()
 {
   tree compound_stmt;
-  tree in_charge;
   tree virtual_size;
   tree exprstmt;
+  tree if_stmt;
 
   /* Create a block to contain all the extra code.  */
   compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
@@ -13831,16 +13838,9 @@ finish_destructor_body ()
      will set the flag again.  */
   TYPE_HAS_DESTRUCTOR (current_class_type) = 0;
 
-  /* These are two cases where we cannot delegate deletion.  */
-  if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type)
-      || TYPE_GETS_REG_DELETE (current_class_type))
-    in_charge = integer_zero_node;
-  else
-    in_charge = current_in_charge_parm;
-
   exprstmt = build_delete (current_class_type,
 			   current_class_ref,
-			   in_charge,
+			   integer_zero_node,
 			   LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR|LOOKUP_NORMAL,
 			   0);
 
@@ -13873,8 +13873,8 @@ finish_destructor_body ()
 		     TYPE_BINFO (current_class_type));
 		  finish_expr_stmt
 		    (build_scoped_method_call
-		     (current_class_ref, vb, dtor_identifier,
-		      build_tree_list (NULL_TREE, integer_zero_node)));
+		     (current_class_ref, vb, complete_dtor_identifier,
+		      NULL_TREE));
 		}
 	      vbases = TREE_CHAIN (vbases);
 	    }
@@ -13897,24 +13897,18 @@ finish_destructor_body ()
      only defines placement deletes we don't do anything here.  So we
      pass LOOKUP_SPECULATIVELY; delete_sanity will complain for us if
      they ever try to delete one of these.  */
-  if (TYPE_GETS_REG_DELETE (current_class_type)
-      || TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
-    {
-      tree if_stmt;
+  exprstmt = build_op_delete_call
+    (DELETE_EXPR, current_class_ptr, virtual_size,
+     LOOKUP_NORMAL | LOOKUP_SPECULATIVELY, NULL_TREE);
 
-      exprstmt = build_op_delete_call
-	(DELETE_EXPR, current_class_ptr, virtual_size,
-	 LOOKUP_NORMAL | LOOKUP_SPECULATIVELY, NULL_TREE);
-
-      if_stmt = begin_if_stmt ();
-      finish_if_stmt_cond (build (BIT_AND_EXPR, integer_type_node,
-				  current_in_charge_parm,
-				  integer_one_node),
-			   if_stmt);
-      finish_expr_stmt (exprstmt);
-      finish_then_clause (if_stmt);
-      finish_if_stmt ();
-    }
+  if_stmt = begin_if_stmt ();
+  finish_if_stmt_cond (build (BIT_AND_EXPR, integer_type_node,
+			      current_in_charge_parm,
+			      integer_one_node),
+		       if_stmt);
+  finish_expr_stmt (exprstmt);
+  finish_then_clause (if_stmt);
+  finish_if_stmt ();
 
   /* Close the block we started above.  */
   finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
@@ -14557,16 +14551,6 @@ maybe_build_cleanup_1 (decl, auto_delete)
       return rval;
     }
   return 0;
-}
-
-/* If DECL is of a type which needs a cleanup, build that cleanup
-   here.  The cleanup does free the storage with a call to delete.  */
-
-tree
-maybe_build_cleanup_and_delete (decl)
-     tree decl;
-{
-  return maybe_build_cleanup_1 (decl, integer_three_node);
 }
 
 /* If DECL is of a type which needs a cleanup, build that cleanup

@@ -804,10 +804,6 @@ maybe_clone_body (fn)
       && !DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (fn))
     return 0;
 
-  /* We don't yet handle destructors.  */
-  if (DECL_DESTRUCTOR_P (fn))
-    return 0;
-
   /* We know that any clones immediately follow FN in the TYPE_METHODS
      list.  */
   for (clone = TREE_CHAIN (fn);
@@ -850,12 +846,7 @@ maybe_clone_body (fn)
 	  if (DECL_HAS_IN_CHARGE_PARM_P (fn) && parmno == 1)
 	    {
 	      tree in_charge;
-
-	      if (DECL_COMPLETE_CONSTRUCTOR_P (clone))
-		in_charge = integer_one_node;
-	      else
-		in_charge = integer_zero_node;
-
+	      in_charge = in_charge_arg_for_name (DECL_NAME (clone));
 	      splay_tree_insert (id.decl_map,
 				 (splay_tree_key) parm,
 				 (splay_tree_key) in_charge);

@@ -66,6 +66,7 @@ Boston, MA 02111-1307, USA.  */
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
       SCOPE_NO_CLEANUPS_P (in SCOPE_STMT)
+      IDENTIFIER_CTOR_OR_DTOR_P (in IDENTIFIER_NODE)
    4: BINFO_NEW_VTABLE_MARKED.
       TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
           or FIELD_DECL).
@@ -482,6 +483,11 @@ struct tree_srcloc
               OPERATOR_TYPENAME_FORMAT,			\
 	      strlen (OPERATOR_TYPENAME_FORMAT)))
 
+/* Nonzero if this identifier is the name of a constructor or
+   destructor.  */
+#define IDENTIFIER_CTOR_OR_DTOR_P(NODE) \
+  TREE_LANG_FLAG_3 (NODE)
+
 /* Nonzero means reject anything that ISO standard C++ forbids.  */
 extern int pedantic;
 
@@ -571,6 +577,7 @@ enum cp_tree_index
     CPTI_PFN_IDENTIFIER,
     CPTI_PFN_OR_DELTA2_IDENTIFIER,
     CPTI_VPTR_IDENTIFIER,
+    CPTI_PUSH_EXCEPTION_IDENTIFIER,
 
     CPTI_LANG_NAME_C,
     CPTI_LANG_NAME_CPLUSPLUS,
@@ -682,6 +689,9 @@ extern tree cp_global_trees[CPTI_MAX];
 #define pfn_identifier                  cp_global_trees[CPTI_PFN_IDENTIFIER]
 #define pfn_or_delta2_identifier        cp_global_trees[CPTI_PFN_OR_DELTA2_IDENTIFIER]
 #define vptr_identifier                 cp_global_trees[CPTI_VPTR_IDENTIFIER]
+/* The name of the function to call to push an exception onto the
+   exception stack.  */
+#define cp_push_exception_identifier    cp_global_trees[CPTI_PUSH_EXCEPTION_IDENTIFIER]
 
 #define lang_name_c                     cp_global_trees[CPTI_LANG_NAME_C]
 #define lang_name_cplusplus             cp_global_trees[CPTI_LANG_NAME_CPLUSPLUS]
@@ -1962,6 +1972,24 @@ struct lang_decl
    or the the base destructor.  */
 #define DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P(NODE)			\
   (DECL_DESTRUCTOR_P (NODE) && !DECL_CLONED_FUNCTION_P (NODE))
+
+/* Nonzero if NODE (a FUNCTION_DECL) is a destructor for a complete
+   object.  */
+#define DECL_COMPLETE_DESTRUCTOR_P(NODE)		\
+  (DECL_DESTRUCTOR_P (NODE) 				\
+   && DECL_NAME (NODE) == complete_dtor_identifier)
+
+/* Nonzero if NODE (a FUNCTION_DECL) is a destructor for a base
+   object.  */
+#define DECL_BASE_DESTRUCTOR_P(NODE)		\
+  (DECL_DESTRUCTOR_P (NODE)			\
+   && DECL_NAME (NODE) == base_dtor_identifier)
+
+/* Nonzero if NODE (a FUNCTION_DECL) is a destructor for a complete
+   object.  */
+#define DECL_DELETING_DESTRUCTOR_P(NODE)		\
+  (DECL_DESTRUCTOR_P (NODE) 				\
+   && DECL_NAME (NODE) == deleting_dtor_identifier)
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a cloned constructor or
    destructor.  */
@@ -3761,7 +3789,8 @@ extern void unreverse_member_declarations       PARAMS ((tree));
 extern void invalidate_class_lookup_cache       PARAMS ((void));
 extern void maybe_note_name_used_in_class       PARAMS ((tree, tree));
 extern void note_name_declared_in_class         PARAMS ((tree, tree));
-extern tree get_vtbl_decl_for_binfo           PARAMS ((tree));
+extern tree get_vtbl_decl_for_binfo             PARAMS ((tree));
+extern tree in_charge_arg_for_name              PARAMS ((tree));
 
 /* in cvt.c */
 extern tree convert_to_reference		PARAMS ((tree, tree, int, int, tree));
@@ -3898,7 +3927,6 @@ extern tree finish_function			PARAMS ((int));
 extern tree start_method			PARAMS ((tree, tree, tree));
 extern tree finish_method			PARAMS ((tree));
 extern void hack_incomplete_structures		PARAMS ((tree));
-extern tree maybe_build_cleanup_and_delete	PARAMS ((tree));
 extern tree maybe_build_cleanup			PARAMS ((tree));
 extern void cplus_expand_expr_stmt		PARAMS ((tree));
 extern void finish_stmt				PARAMS ((void));

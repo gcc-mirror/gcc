@@ -78,6 +78,21 @@ std::unexpected ()
   __unexpected_func ();
 }
 
+/* The type of a function called to clean up an exception object.
+   (These will be destructors.)  Under the old ABI, these take a
+   second argument (the `in-charge' argument), that indicates whether
+   or not do delete the object, and whether or not to destroy virtual
+   bases.  Under the new ABI, there is no second argument.  */
+#if !defined (__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100
+typedef void (*cleanup_fn)(void *, int);
+/* The `2' is the value for the in-charge parameter that indicates
+   that virtual bases should be destroyed.  */
+#define CALL_CLEANUP(FN, THIS) FN (THIS, 2)
+#else
+typedef void (*cleanup_fn)(void *);
+#define CALL_CLEANUP(FN, THIS) FN (THIS)
+#endif
+
 /* C++-specific state about the current exception.
    This must match init_exception_processing().
 
@@ -90,7 +105,7 @@ struct cp_eh_info
   __eh_info eh_info;
   void *value;
   void *type;
-  void (*cleanup)(void *, int);
+  cleanup_fn cleanup;
   bool caught;
   cp_eh_info *next;
   long handlers;
@@ -202,7 +217,7 @@ __cplus_type_matcher (__eh_info *info_, void *match_info,
    Used by expand_throw().  */
 
 extern "C" void
-__cp_push_exception (void *value, void *type, void (*cleanup)(void *, int))
+__cp_push_exception (void *value, void *type, cleanup_fn cleanup)
 {
   cp_eh_info *p = (cp_eh_info *) __eh_alloc (sizeof (cp_eh_info));
 
@@ -251,8 +266,8 @@ __cp_pop_exception (cp_eh_info *p)
   *q = p->next;
 
   if (p->cleanup)
-    /* 2 is a magic value for destructors; see build_delete().  */
-    p->cleanup (p->original_value, 2);  // value may have been adjusted.
+    // value may have been adjusted.
+    CALL_CLEANUP (p->cleanup, p->original_value);
 
   if (! __is_pointer (p->type))
     __eh_free (p->original_value);  // value may have been adjusted.

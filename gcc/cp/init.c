@@ -51,6 +51,7 @@ static tree get_temp_regvar PARAMS ((tree, tree));
 static tree dfs_initialize_vtbl_ptrs PARAMS ((tree, void *));
 static tree build_new_1	PARAMS ((tree));
 static tree get_cookie_size PARAMS ((tree));
+static tree build_dtor_call PARAMS ((tree, tree, int));
 
 /* Set up local variable for this file.  MUST BE CALLED AFTER
    INIT_DECL_PROCESSING.  */
@@ -713,8 +714,7 @@ expand_cleanup_for_base (binfo, flag)
 
   /* Call the destructor.  */
   expr = (build_scoped_method_call
-	  (current_class_ref, binfo, dtor_identifier,
-	   build_tree_list (NULL_TREE, integer_zero_node)));
+	  (current_class_ref, binfo, base_dtor_identifier, NULL_TREE));
   if (flag)
     expr = fold (build (COND_EXPR, void_type_node,
 			truthvalue_conversion (flag),
@@ -2963,6 +2963,71 @@ build_x_delete (addr, which_delete, virtual_size)
   return build_op_delete_call (code, addr, virtual_size, flags, NULL_TREE);
 }
 
+/* Call the destructor for EXP using the IN_CHARGE parameter.  FLAGS
+   are as for build_delete.  */
+
+static tree
+build_dtor_call (exp, in_charge, flags)
+     tree exp;
+     tree in_charge;
+     int flags;
+{
+  tree name = NULL_TREE;
+  tree call1;
+  tree call2;
+  tree call3;
+  tree result;
+
+  /* First, try to figure out statically which function to call.  */
+  in_charge = fold (in_charge);
+  if (tree_int_cst_equal (in_charge, integer_zero_node))
+    name = base_dtor_identifier;
+  else if (tree_int_cst_equal (in_charge, integer_one_node))
+    name = deleting_dtor_identifier;
+  else if (tree_int_cst_equal (in_charge, integer_two_node))
+    name = complete_dtor_identifier;
+  if (name)
+    {
+      if (!binfo)
+	return build_method_call (exp, name, NULL_TREE, NULL_TREE, flags);
+      else
+	return build_scoped_method_call (exp, binfo, name, NULL_TREE);
+    }
+
+  /* If that didn't work, build the various alternatives.  */
+  if (!binfo)
+    {
+      call1 = build_method_call (exp, complete_dtor_identifier,
+				 NULL_TREE, NULL_TREE, flags);
+      call2 = build_method_call (exp, deleting_dtor_identifier,
+				 NULL_TREE, NULL_TREE, flags);
+      call3 = build_method_call (exp, base_dtor_identifier,
+				 NULL_TREE, NULL_TREE, flags);
+    }
+  else
+    {
+      call1 = build_scoped_method_call (exp, binfo, 
+					complete_dtor_identifier, NULL_TREE);
+      call2 = build_scoped_method_call (exp, binfo, 
+					deleting_dtor_identifier, NULL_TREE);
+      call3 = build_scoped_method_call (exp, binfo, 
+					base_dtor_identifier, NULL_TREE);
+    }
+
+  /* Build the conditionals.  */
+  result = build (COND_EXPR, void_type_node,
+		  fold (build (BIT_AND_EXPR, integer_type_node,
+			       in_charge, integer_two_node)),
+		  call1,
+		  call3);
+  result = build (COND_EXPR, void_type_node,
+		  fold (build (BIT_AND_EXPR, integer_type_node,
+			       in_charge, integer_one_node)),
+		  call2,
+		  result);
+  return result;
+}
+
 /* Generate a call to a destructor. TYPE is the type to cast ADDR to.
    ADDR is an expression which yields the store to be destroyed.
    AUTO_DELETE is nonzero if a call to DELETE should be made or not.
@@ -3084,10 +3149,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
       else
 	passed_auto_delete = auto_delete;
 
-      expr = build_method_call
-	(ref, dtor_identifier, build_tree_list (NULL_TREE, passed_auto_delete),
-	 NULL_TREE, flags);
-
+      expr = build_dtor_call (ref, passed_auto_delete, NULL_TREE, flags);
       if (do_delete)
 	expr = build (COMPOUND_EXPR, void_type_node, expr, do_delete);
 
@@ -3111,8 +3173,6 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
       int i, n_baseclasses = CLASSTYPE_N_BASECLASSES (type);
       tree base_binfo = n_baseclasses > 0 ? TREE_VEC_ELT (binfos, 0) : NULL_TREE;
       tree exprstmt = NULL_TREE;
-      tree parent_auto_delete = auto_delete;
-      tree cond;
 
       /* Set this again before we call anything, as we might get called
 	 recursively.  */
@@ -3120,50 +3180,19 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 
       /* If we have member delete or vbases, we call delete in
 	 finish_function.  */
-      if (auto_delete == integer_zero_node)
-	cond = NULL_TREE;
-      else if (base_binfo == NULL_TREE
-	       || TYPE_HAS_TRIVIAL_DESTRUCTOR (BINFO_TYPE (base_binfo)))
-	{
-	  cond = build (COND_EXPR, void_type_node,
-			build (BIT_AND_EXPR, integer_type_node, auto_delete, integer_one_node),
-			build_builtin_delete_call (addr),
-			void_zero_node);
-	}
-      else
-	cond = NULL_TREE;
-
-      if (cond)
-	exprstmt = build_tree_list (NULL_TREE, cond);
-
-      if (base_binfo
-	  && ! TREE_VIA_VIRTUAL (base_binfo)
-	  && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (BINFO_TYPE (base_binfo)))
-	{
-	  tree this_auto_delete;
-
-	  if (BINFO_OFFSET_ZEROP (base_binfo))
-	    this_auto_delete = parent_auto_delete;
-	  else
-	    this_auto_delete = integer_zero_node;
-
-	  expr = build_scoped_method_call
-	    (ref, base_binfo, dtor_identifier,
-	     build_tree_list (NULL_TREE, this_auto_delete));
-	  exprstmt = tree_cons (NULL_TREE, expr, exprstmt);
-	}
+      my_friendly_assert (auto_delete == integer_zero_node, 20000411);
 
       /* Take care of the remaining baseclasses.  */
-      for (i = 1; i < n_baseclasses; i++)
+      for (i = 0; i < n_baseclasses; i++)
 	{
 	  base_binfo = TREE_VEC_ELT (binfos, i);
 	  if (TYPE_HAS_TRIVIAL_DESTRUCTOR (BINFO_TYPE (base_binfo))
 	      || TREE_VIA_VIRTUAL (base_binfo))
 	    continue;
 
-	  expr = build_scoped_method_call
-	    (ref, base_binfo, dtor_identifier,
-	     build_tree_list (NULL_TREE, integer_zero_node));
+	  expr = build_scoped_method_call (ref, base_binfo,
+					   base_dtor_identifier,
+					   NULL_TREE);
 
 	  exprstmt = tree_cons (NULL_TREE, expr, exprstmt);
 	}

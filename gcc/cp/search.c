@@ -1337,7 +1337,7 @@ lookup_field_queue_p (binfo, data)
   struct lookup_field_info *lfi = (struct lookup_field_info *) data;
 
   /* Don't look for constructors or destructors in base classes.  */
-  if (lfi->name == ctor_identifier || lfi->name == dtor_identifier)
+  if (IDENTIFIER_CTOR_OR_DTOR_P (lfi->name))
     return NULL_TREE;
 
   /* If this base class is hidden by the best-known value so far, we
