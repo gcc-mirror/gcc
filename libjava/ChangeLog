@@ -1,3 +1,8 @@
+2003-11-27  Mark Wielaard  <mark@klomp.org>
+
+	* javax/swing/plaf/basic/BasicDefaults.java (BasicDefaults): Put
+	AbstractUndoableEdit.undoText and AbstractUndoableEdit.redoText.
+
 2003-11-27  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/UIDefaults.java:
