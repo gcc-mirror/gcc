@@ -37,6 +37,7 @@ struct emit_status;
 struct stmt_status;
 struct varasm_status;
 struct varray_head_tag;
+struct hash_table;
 
 /* Startup */
 
@@ -60,12 +61,15 @@ void ggc_add_root PROTO ((void *base, int nelt, int size,
 void ggc_add_rtx_root PROTO ((struct rtx_def **, int nelt));
 void ggc_add_tree_root PROTO ((union tree_node **, int nelt));
 void ggc_add_tree_varray_root PROTO ((struct varray_head_tag **, int nelt));
+void ggc_add_tree_hash_table_root PROTO ((struct hash_table **, int nelt));
 void ggc_del_root PROTO ((void *base));
 
 /* Mark nodes from the gc_add_root callback.  */
 void ggc_mark_rtx PROTO ((struct rtx_def *));
 void ggc_mark_rtvec PROTO ((struct rtvec_def *));
 void ggc_mark_tree PROTO ((union tree_node *));
+void ggc_mark_tree_varray PROTO ((struct varray_head_tag *));
+void ggc_mark_tree_hash_table PROTO ((struct hash_table *));
 void ggc_mark_string PROTO ((char *));
 
 /* Callbacks to the languages.  */

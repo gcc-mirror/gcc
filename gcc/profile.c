@@ -1651,7 +1651,6 @@ output_func_start_profiler ()
 
   /* Synthesize a constructor function to invoke __bb_init_func with a
      pointer to this object file's profile block. */
-  start_sequence ();
 
   /* Try and make a unique name given the "file function name".
 
