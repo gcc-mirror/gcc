@@ -1,3 +1,10 @@
+1998-06-24  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* configure (gcc_version): Initialize properly depending on
+	how and where configure is started.
+	(recursion line): Pass a --with-gcc-version=${gcc_version}
+	to configures in subdirs.
+
 1998-06-19  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* configure (gcc_version): Add new variable describing the
