@@ -139,7 +139,7 @@ extern int mips16_hard_float;		/* mips16 without -msoft-float */
 extern int mips_entry;			/* generate entry/exit for mips16 */
 extern char *mips_cpu_string;		/* for -mcpu=<xxx> */
 extern char *mips_isa_string;		/* for -mips{1,2,3,4} */
-extern char *mips_abi_string;		/* for -misa={32,n32,64} */
+extern char *mips_abi_string;		/* for -mabi={32,n32,64} */
 extern char *mips_entry_string;		/* for -mentry */
 extern char *mips_no_mips16_string;	/* for -mno-mips16 */
 extern int mips_split_addresses;	/* perform high/lo_sum support */
