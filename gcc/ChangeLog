@@ -1,3 +1,11 @@
+2004-09-23  Frank Ch. Eigler <fche@redhat.com>
+
+	PR tree-optimization/17533
+	* dominance.c (verify_dominators): Tolerate even more incorrect
+	dominance data during error message printing.
+	* tree-mudflap.c (mf_build_check_statement_for): Build basic blocks
+	and edges more correctly.
+	
 2004-09-23  Dorit Naishlos <dorit@il.ibm.com>
 
         * tree.def (ALIGN_INDIRECT_REF, MISALIGNED_INDIRECT_REF):

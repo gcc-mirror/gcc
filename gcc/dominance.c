@@ -829,16 +829,17 @@ verify_dominators (enum cdi_direction dir)
   FOR_EACH_BB (bb)
     {
       basic_block dom_bb;
+      basic_block imm_bb;
 
       dom_bb = recount_dominator (dir, bb);
-      if (dom_bb != get_immediate_dominator (dir, bb))
+      imm_bb = get_immediate_dominator (dir, bb);
+      if (dom_bb != imm_bb)
 	{
-	  if (dom_bb == NULL)
-	    error ("dominator of %d should be (unknown), not %d",
-		   bb->index, get_immediate_dominator(dir, bb)->index);
+	  if ((dom_bb == NULL) || (imm_bb == NULL))
+	    error ("dominator of %d status unknown", bb->index);
 	  else
 	    error ("dominator of %d should be %d, not %d",
-		   bb->index, dom_bb->index, get_immediate_dominator(dir, bb)->index);
+		   bb->index, dom_bb->index, imm_bb->index);
 	  err = 1;
 	}
     }
