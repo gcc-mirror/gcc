@@ -530,7 +530,7 @@ static inline rtx
 expand_expr (tree exp, rtx target, enum machine_mode mode,
 	     enum expand_modifier modifier)
 {
-  return expand_expr_real(exp, target, mode, modifier, NULL);
+  return expand_expr_real (exp, target, mode, modifier, NULL);
 }
 
 extern void expand_var (tree);
