@@ -4861,11 +4861,9 @@ tsubst_friend_function (decl, args)
      tree args;
 {
   tree new_friend;
-  int line = input_line;
-  const char *file = input_filename;
+  location_t saved_loc = input_location;
 
-  input_line = DECL_SOURCE_LINE (decl);
-  input_filename = DECL_SOURCE_FILE (decl);
+  input_location = DECL_SOURCE_LOCATION (decl);
 
   if (TREE_CODE (decl) == FUNCTION_DECL 
       && DECL_TEMPLATE_INSTANTIATION (decl)
@@ -5072,8 +5070,7 @@ tsubst_friend_function (decl, args)
     }
 
  done:
-  input_line = line;
-  input_filename = file;
+  input_location = saved_loc;
   return new_friend;
 }
 
@@ -5436,8 +5433,7 @@ instantiate_class_template (type)
 		     assist in error message reporting.  Since we
 		     called push_tinst_level above, we don't need to
 		     restore these.  */
-		  input_line = DECL_SOURCE_LINE (t);
-		  input_filename = DECL_SOURCE_FILE (t);
+		  input_location = DECL_SOURCE_LOCATION (t);
 
 		  r = tsubst (t, args, tf_error | tf_warning, NULL_TREE);
 		  if (TREE_CODE (r) == VAR_DECL)
@@ -5539,9 +5535,8 @@ instantiate_class_template (type)
      implicit functions at a predictable point, and the same point
      that would be used for non-template classes.  */
   typedecl = TYPE_MAIN_DECL (type);
-  input_line = DECL_SOURCE_LINE (typedecl);
-  input_filename = DECL_SOURCE_FILE (typedecl);
-
+  input_location = DECL_SOURCE_LOCATION (typedecl);
+  
   unreverse_member_declarations (type);
   finish_struct_1 (type);
   CLASSTYPE_GOT_SEMICOLON (type) = 1;
@@ -5878,16 +5873,13 @@ tsubst_decl (t, args, type, complain)
      tree type;
      tsubst_flags_t complain;
 {
-  int saved_lineno;
-  const char *saved_filename;
+  location_t saved_loc;
   tree r = NULL_TREE;
   tree in_decl = t;
 
   /* Set the filename and linenumber to improve error-reporting.  */
-  saved_lineno = input_line;
-  saved_filename = input_filename;
-  input_line = DECL_SOURCE_LINE (t);
-  input_filename = DECL_SOURCE_FILE (t);
+  saved_loc = input_location;
+  input_location = DECL_SOURCE_LOCATION (t);
 
   switch (TREE_CODE (t))
     {
@@ -6353,8 +6345,7 @@ tsubst_decl (t, args, type, complain)
     } 
 
   /* Restore the file and line information.  */
-  input_line = saved_lineno;
-  input_filename = saved_filename;
+  input_location = saved_loc;
 
   return r;
 }
@@ -6869,14 +6860,14 @@ tsubst (t, args, complain, in_decl)
 	if (TREE_CODE (type) == REFERENCE_TYPE
 	    || (code == REFERENCE_TYPE && TREE_CODE (type) == VOID_TYPE))
 	  {
-	    static int   last_line = 0;
-	    static const char* last_file = 0;
+	    static location_t last_loc;
 
 	    /* We keep track of the last time we issued this error
 	       message to avoid spewing a ton of messages during a
 	       single bad template instantiation.  */
 	    if (complain & tf_error
-		&& (last_line != input_line || last_file != input_filename))
+		&& (last_loc.line != input_line
+		    || last_loc.file != input_filename))
 	      {
 		if (TREE_CODE (type) == VOID_TYPE)
 		  error ("forming reference to void");
@@ -6884,8 +6875,7 @@ tsubst (t, args, complain, in_decl)
 		  error ("forming %s to reference type `%T'",
 			    (code == POINTER_TYPE) ? "pointer" : "reference",
 			    type);
-		last_line = input_line;
-		last_file = input_filename;
+		last_loc = input_location;
 	      }
 
 	    return error_mark_node;
@@ -10759,10 +10749,9 @@ instantiate_decl (d, defer_ok)
   tree spec;
   tree gen_tmpl;
   int pattern_defined;
-  int line = input_line;
   int need_push;
-  const char *file = input_filename;
-
+  location_t saved_loc = input_location;
+  
   /* This function should only be used to instantiate templates for
      functions and static member variables.  */
   my_friendly_assert (TREE_CODE (d) == FUNCTION_DECL
@@ -10825,8 +10814,7 @@ instantiate_decl (d, defer_ok)
   else
     pattern_defined = ! DECL_IN_AGGR_P (code_pattern);
 
-  input_line = DECL_SOURCE_LINE (d);
-  input_filename = DECL_SOURCE_FILE (d);
+  input_location = DECL_SOURCE_LOCATION (d);
 
   if (pattern_defined)
     {
@@ -10913,8 +10901,7 @@ instantiate_decl (d, defer_ok)
      because it's used by add_pending_template.  */
   else if (! pattern_defined || defer_ok)
     {
-      input_line = line;
-      input_filename = file;
+      input_location = saved_loc;
 
       if (at_eof && !pattern_defined 
 	  && DECL_EXPLICIT_INSTANTIATION (d))
@@ -10941,9 +10928,9 @@ instantiate_decl (d, defer_ok)
   regenerate_decl_from_template (d, td);
   
   /* We already set the file and line above.  Reset them now in case
-     they changed as a result of calling regenerate_decl_from_template.  */
-  input_line = DECL_SOURCE_LINE (d);
-  input_filename = DECL_SOURCE_FILE (d);
+     they changed as a result of calling
+     regenerate_decl_from_template.  */
+  input_location = DECL_SOURCE_LOCATION (d);
 
   if (TREE_CODE (d) == VAR_DECL)
     {
@@ -11048,9 +11035,7 @@ instantiate_decl (d, defer_ok)
     pop_from_top_level ();
 
 out:
-  input_line = line;
-  input_filename = file;
-
+  input_location = saved_loc;
   pop_tinst_level ();
 
   timevar_pop (TV_PARSE);

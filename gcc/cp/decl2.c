@@ -178,8 +178,7 @@ warn_if_unknown_interface (tree decl)
   if (flag_alt_external_templates)
     {
       tree til = tinst_for_decl ();
-      int sl = input_line;
-      const char *sf = input_filename;
+      location_t saved_loc = input_location;
 
       if (til)
 	{
@@ -188,8 +187,7 @@ warn_if_unknown_interface (tree decl)
 	}
       warning ("template `%#D' instantiated in file without #pragma interface",
 		  decl);
-      input_line = sl;
-      input_filename = sf;
+      input_location = saved_loc;
     }
   else
     cp_warning_at ("template `%#D' defined in file without #pragma interface",
@@ -2233,8 +2231,7 @@ start_static_initialization_or_destruction (tree decl, int initp)
      where DECL was declared so that error-messages make sense, and so
      that the debugger will show somewhat sensible file and line
      information.  */
-  input_filename = DECL_SOURCE_FILE (decl);
-  input_line = DECL_SOURCE_LINE (decl);
+  input_location = DECL_SOURCE_LOCATION (decl);
 
   /* Because of:
 
@@ -2474,8 +2471,8 @@ generate_ctor_or_dtor_function (bool constructor_p, int priority,
   tree body;
   size_t i;
 
-  input_filename = locus->file;
-  input_line = locus->line++;
+  input_location = *locus;
+  locus->line++;
   
   /* We use `I' to indicate initialization and `D' to indicate
      destruction.  */
@@ -2554,8 +2551,7 @@ finish_file ()
   location_t locus;
   unsigned ssdf_count = 0;
 
-  locus.file = input_filename;
-  locus.line = input_line;
+  locus = input_location;
   at_eof = 1;
 
   /* Bad parse errors.  Just forget about it.  */
@@ -2686,8 +2682,7 @@ finish_file ()
 
 	  /* Set the line and file, so that it is obviously not from
 	     the source file.  */
-	  input_filename = locus.file;
-	  input_line = locus.line;
+	  input_location = locus;
 	  ssdf_body = start_static_storage_duration_function (ssdf_count);
 
 	  /* Make sure the back end knows about all the variables.  */
@@ -2715,8 +2710,7 @@ finish_file ()
 
 	  /* Finish up the static storage duration function for this
 	     round.  */
-	  input_filename = locus.file;
-	  input_line = locus.line;
+	  input_location = locus;
 	  finish_static_storage_duration_function (ssdf_body);
 
 	  /* All those initializations and finalizations might cause
@@ -2905,8 +2899,7 @@ finish_file ()
       dump_tree_statistics ();
       dump_time_statistics ();
     }
-  input_filename = locus.file;
-  input_line = locus.line;
+  input_location = locus;
 }
 
 /* T is the parse tree for an expression.  Return the expression after

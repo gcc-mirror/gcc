@@ -1,3 +1,28 @@
+2003-05-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (finish_struct): Use location_t and input_location
+	directly.
+	* decl.c (make_label_decl): Likewise.
+	(use_label): Likewise.
+	* decl2.c (warn_if_unknown_interface): Likewise.
+	(start_static_initialization_or_destruction): Likewise.
+	(generate_ctor_or_dtor_function): Likewise.
+	(finish_file): Likewise.
+	* error.c (print_instantiation_full_context): Likewise.
+	* init.c (create_temporary_var): Likewise.
+	* method.c (synthesize_method): Likewise.
+	* parser.c (cp_token): Likewise.
+	(cp_lexer_set_source_position_from_token): Likewise.
+	(cp_lexer_get_preprocessor_token): Likewise.
+	(cp_parser_statement): Likewise.
+	* pt.c (tsubst_friend_function): Likewise.
+	(instantiate_class_template): Likewise.
+	(tsubst_decl): Likewise.
+	(tsubst): Likewise.
+	(instantiate_decl): Likewise.
+	* semantics.c (begin_class_definition): Likewise.
+	(expand_body): Likewise.
+
 2003-05-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c (finish_struct): Rename lineno to input_line.

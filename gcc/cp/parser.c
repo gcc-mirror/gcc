@@ -74,10 +74,8 @@ typedef struct cp_token GTY (())
   /* If this token is a keyword, this value indicates which keyword.
      Otherwise, this value is RID_MAX.  */
   enum rid keyword;
-  /* The file in which this token was found.  */
-  const char *file_name;
-  /* The line at which this token was found.  */
-  int line_number;
+  /* The location at which this token was found.  */
+  location_t location;
 } cp_token;
 
 /* The number of tokens in a single token block.  */
@@ -406,10 +404,7 @@ cp_lexer_set_source_position_from_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
 
   /* Update the line number.  */
   if (token->type != CPP_EOF)
-    {
-      input_line = token->line_number;
-      input_filename = token->file_name;
-    }
+    input_location = token->location;
 }
 
 /* TOKEN points into the circular token buffer.  Return a pointer to
@@ -621,8 +616,8 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
   if (lexer != NULL && !lexer->main_lexer_p)
     {
       token->type = CPP_EOF;
-      token->line_number = 0;
-      token->file_name = NULL;
+      token->location.line = 0;
+      token->location.file = NULL;
       token->value = NULL_TREE;
       token->keyword = RID_MAX;
 
@@ -651,8 +646,7 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
 	}
     }
   /* Now we've got our token.  */
-  token->line_number = input_line;
-  token->file_name = input_filename;
+  token->location = input_location;
 
   /* Check to see if this token is a keyword.  */
   if (token->type == CPP_NAME 
@@ -5591,7 +5585,7 @@ cp_parser_statement (cp_parser* parser)
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
   /* Remember the line number of the first token in the statement.  */
-  statement_line_number = token->line_number;
+  statement_line_number = token->location.line;
   /* If this is a keyword, then that will often determine what kind of
      statement we have.  */
   if (token->type == CPP_KEYWORD)
