@@ -994,26 +994,9 @@ int dump_time;
 int
 get_run_time ()
 {
-#if !defined (_WIN32) || defined (__CYGWIN32__)
-#ifdef USG
-  struct tms tms;
-#else
-#ifndef VMS
-  struct rusage rusage;
-#else
-  struct
-    {
-      int proc_user_time;
-      int proc_system_time;
-      int child_user_time;
-      int child_system_time;
-    } vms_times;
-#endif
-#endif
-#endif
-
   if (quiet_flag)
     return 0;
+
 #ifdef __BEOS__
   return 0;
 #else /* not BeOS */
@@ -1026,6 +1009,7 @@ get_run_time ()
 #ifdef _SC_CLK_TCK
   {
     static int tick;
+    struct tms tms;
     if (tick == 0)
       tick = 1000000 / sysconf(_SC_CLK_TCK);
     times (&tms);
@@ -1033,16 +1017,31 @@ get_run_time ()
   }
 #else
 #ifdef USG
-  times (&tms);
-  return (tms.tms_utime + tms.tms_stime) * (1000000 / HZ);
+  {
+    struct tms tms;
+    times (&tms);
+    return (tms.tms_utime + tms.tms_stime) * (1000000 / HZ);
+  }
 #else
 #ifndef VMS
-  getrusage (0, &rusage);
-  return (rusage.ru_utime.tv_sec * 1000000 + rusage.ru_utime.tv_usec
-	  + rusage.ru_stime.tv_sec * 1000000 + rusage.ru_stime.tv_usec);
+  {
+    struct rusage rusage;
+    getrusage (0, &rusage);
+    return (rusage.ru_utime.tv_sec * 1000000 + rusage.ru_utime.tv_usec
+	    + rusage.ru_stime.tv_sec * 1000000 + rusage.ru_stime.tv_usec);
+  }
 #else /* VMS */
-  times ((void *) &vms_times);
-  return (vms_times.proc_user_time + vms_times.proc_system_time) * 10000;
+  {
+    struct
+      {
+        int proc_user_time;
+        int proc_system_time;
+        int child_user_time;
+        int child_system_time;
+      } vms_times;
+    times ((void *) &vms_times);
+    return (vms_times.proc_user_time + vms_times.proc_system_time) * 10000;
+  }
 #endif	/* VMS */
 #endif	/* USG */
 #endif  /* _SC_CLK_TCK */
