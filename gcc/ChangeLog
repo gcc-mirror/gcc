@@ -1,3 +1,8 @@
+Fri Oct  1 12:42:53 1999  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/m68k.c (use_return_insn): Return false if the pic
+	register is in use.
+
 Fri Oct  1 10:56:06 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* md.texi (No Constraints): Delete section.
