@@ -370,13 +370,13 @@ try_forward_edges (mode, b)
 {
   bool changed = false;
   edge e, next, *threaded_edges = NULL;
-  int nthreaded_edges = 0;
 
   for (e = b->succ; e; e = next)
     {
       basic_block target, first;
       int counter;
       bool threaded = false;
+      int nthreaded_edges = 0;
 
       next = e->succ_next;
 
@@ -412,7 +412,7 @@ try_forward_edges (mode, b)
 	      edge t = thread_jump (mode, e, target);
 	      if (t)
 		{
-		  if (!nthreaded_edges)
+		  if (!threaded_edges)
 		    threaded_edges = xmalloc (sizeof (*threaded_edges)
 					      * n_basic_blocks);
 		  else
@@ -521,16 +521,44 @@ try_forward_edges (mode, b)
 	      edge t;
 
 	      first->count -= edge_count;
-	      first->succ->count -= edge_count;
 	      first->frequency -= edge_frequency;
 	      if (first->succ->succ_next)
 		{
+		  edge e;
+		  int prob;
 		  if (n >= nthreaded_edges)
 		    abort ();
 		  t = threaded_edges [n++];
+		  if (t->src != first)
+		    abort ();
+		  if (first->frequency)
+		    prob = edge_frequency * REG_BR_PROB_BASE / first->frequency;
+		  else
+		    prob = 0;
+		  t->probability -= prob;
+		  prob = REG_BR_PROB_BASE - prob;
+		  if (prob == 0)
+		    {
+		      first->succ->probability = REG_BR_PROB_BASE;
+		      first->succ->succ_next->probability = 0;
+		    }
+		  else
+		    for (e = first->succ; e; e = e->succ_next)
+		      e->probability = ((e->probability * REG_BR_PROB_BASE)
+					/ (double) prob);
 		}
 	      else
-		t = first->succ;
+		{
+		  /* It is possible that as the result of
+		     threading we've removed edge as it is
+		     threaded to the fallthru edge.  Avoid
+		     getting out of sync.  */
+		  if (n < nthreaded_edges
+		      && first == threaded_edges [n]->src)
+		    n++;
+		  t = first->succ;
+		 }
+	      t->count -= edge_count;
 
 	      first = t->dest;
 	    }
