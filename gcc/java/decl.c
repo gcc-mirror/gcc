@@ -1583,7 +1583,7 @@ java_dup_lang_specific_decl (node)
     return;
 
   lang_decl_size = sizeof (struct lang_decl);
-  x = (struct lang_decl *) ggc_alloc (lang_decl_size);
+  x = ggc_alloc (lang_decl_size);
   memcpy (x, DECL_LANG_SPECIFIC (node), lang_decl_size);
   DECL_LANG_SPECIFIC (node) = x;
 }

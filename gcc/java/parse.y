@@ -2183,10 +2183,10 @@ dims:
 		    {
 		      allocate *= sizeof (int);
 		      if (ctxp->osb_number)
-			ctxp->osb_number = (int *)xrealloc (ctxp->osb_number,
-							    allocate);
+			ctxp->osb_number = xrealloc (ctxp->osb_number,
+						     allocate);
 		      else
-			ctxp->osb_number = (int *)xmalloc (allocate);
+			ctxp->osb_number = xmalloc (allocate);
 		    }
 		  ctxp->osb_depth++;
 		  CURRENT_OSB (ctxp) = 1;
@@ -2660,7 +2660,7 @@ create_new_parser_context (copy_from_previous)
 {
   struct parser_ctxt *new;
 
-  new =  (struct parser_ctxt *) ggc_alloc (sizeof (struct parser_ctxt));
+  new = ggc_alloc (sizeof (struct parser_ctxt));
   if (copy_from_previous)
     {
       memcpy (new, ctxp, sizeof (struct parser_ctxt));
@@ -5133,7 +5133,7 @@ static void
 create_jdep_list (ctxp)
      struct parser_ctxt *ctxp;
 {
-  jdeplist *new = (jdeplist *)xmalloc (sizeof (jdeplist));
+  jdeplist *new = xmalloc (sizeof (jdeplist));
   new->first = new->last = NULL;
   new->next = ctxp->classd_list;
   ctxp->classd_list = new;
@@ -5188,7 +5188,7 @@ register_incomplete_type (kind, wfl, decl, ptr)
      int kind;
      tree wfl, decl, ptr;
 {
-  jdep *new = (jdep *)xmalloc (sizeof (jdep));
+  jdep *new = xmalloc (sizeof (jdep));
 
   if (!ptr && kind != JDEP_METHOD_END) /* JDEP_METHOD_END is a mere marker */
     ptr = obtain_incomplete_type (wfl);
