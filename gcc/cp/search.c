@@ -1451,15 +1451,6 @@ lookup_field_r (binfo, data)
     }
   else
     {
-      /* If the thing we're looking for is a virtual base class, then
-	 we know we've got what we want at this point; there's no way
-	 to get an ambiguity.  */
-      if (VBASE_NAME_P (lfi->name))
-	{
-	  lfi->rval = nval;
-	  return nval;
-	}
-
       if (from_dep_base_p && TREE_CODE (nval) != TYPE_DECL
 	  /* We need to return a member template class so we can
 	     define partial specializations.  Is there a better
