@@ -3123,7 +3123,10 @@ machine_dependent_reorg (first)
 			  rtx note
 			    = find_regno_note (last_float_move, REG_UNUSED, 0);
 
-			  PUT_MODE (note, REG_INC);
+			  /* If we are not optimizing, then there may not be
+			     a note.  */
+			  if (note)
+			    PUT_MODE (note, REG_INC);
 
 			  *last_float_addr = r0_inc_rtx;
 			}
