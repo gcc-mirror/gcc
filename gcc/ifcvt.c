@@ -2059,7 +2059,6 @@ if_convert (life_data_ok)
     }
 
 #ifdef ENABLE_CHECKING
-  if (life_data_ok)
-    verify_flow_info ();
+  verify_flow_info ();
 #endif
 }
