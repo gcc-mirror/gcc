@@ -1,6 +1,6 @@
 ;;- Machine description for ARM for GNU compiler
 ;;  Copyright 1991, 1993, 1994, 1995, 1996, 1996, 1997, 1998, 1999, 2000,
-;;  2001, 2002, 2003  Free Software Foundation, Inc.
+;;  2001, 2002, 2003 2004  Free Software Foundation, Inc.
 ;;  Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
 ;;  and Martin Simmons (@harleqn.co.uk).
 ;;  More major hacks by Richard Earnshaw (rearnsha@arm.com).
@@ -4481,8 +4481,8 @@
 )
 
 (define_insn "*thumb_movhi_insn"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=l,l, m,*r,*h,l")
-	(match_operand:HI 1 "general_operand"       "l,mn,l,*h,*r,I"))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=l,l,m,*r,*h,l")
+	(match_operand:HI 1 "general_operand"       "l,m,l,*h,*r,I"))]
   "TARGET_THUMB
    && (   register_operand (operands[0], HImode)
        || register_operand (operands[1], HImode))"
@@ -4514,8 +4514,7 @@
       return \"ldrh	%0, %1\";
     }"
   [(set_attr "length" "2,4,2,2,2,2")
-   (set_attr "type" "*,load,store1,*,*,*")
-   (set_attr "pool_range" "*,64,*,*,*,*")]
+   (set_attr "type" "*,load,store1,*,*,*")]
 )
 
 
