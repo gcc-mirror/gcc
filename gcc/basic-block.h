@@ -325,6 +325,9 @@ struct loops
   /* Number of natural loops in the function.  */
   int num;
 
+  /* Maxium nested loop level in the function.  */
+  int levels;
+
   /* Array of natural loop descriptors (scanning this array in reverse order
      will find the inner loops before their enclosing outer loops).  */
   struct loop *array;

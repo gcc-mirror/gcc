@@ -1,3 +1,11 @@
+2000-01-24  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* basic-block.h (struct loops): New field `levels'.
+	* flow.c (flow_loops_level_compute): Traverse all outer loops.
+	(flow_loop_level_compute): Initialise level to 1.
+	(flow_loops_find): Set loops->levels.
+	(flow_loops_dump): Print loops->levels.
+
 2000-01-23  Richard Henderson  <rth@cygnus.com>
 
 	* libgcc2.c (dwarf_reg_size_table): Size with DWARF_FRAME_REGISTERS.
