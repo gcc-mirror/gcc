@@ -1707,7 +1707,7 @@ LIBGCJ_JAVAFLAGS="${libgcj_javaflags}"
 
 
 # Only use libltdl for non-newlib builds.
-if test "x${with_newlib}" = "xno"; then
+if test "x${with_newlib}" = "x" || test "x${with_newlib}" = "xno"; then
      case $enable_ltdl_convenience in
   no) { echo "configure: error: this package needs a convenience libltdl" 1>&2; exit 1; } ;;
   "") enable_ltdl_convenience=yes
