@@ -1,3 +1,11 @@
+2003-01-09  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*addsi3_upper): New.
+	(*iorsi3_shift): Likewise.
+	(two splitters): Likewise.
+	(*addsi3_shift): Likewise.
+	(two splitters): Likewise.
+
 2003-01-09  Josef Zlomek  <zlomj9am@artax.karlin.mff.cuni.cz>
 
 	* Makefile.in (optabs.o): Add dependency on basic-block.h.
