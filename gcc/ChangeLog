@@ -1,5 +1,11 @@
 2002-04-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR optimization/6177
+	* expr.c (expand_expr) [COMPONENT_REF]: Handle op0 CONCAT if
+	bitpos is 0 and bitsize CONCAT size.
+
+2002-04-11  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c/6223
 	* combine.c (if_then_else_cond): Use trunc_int_for_mode on nz.
 

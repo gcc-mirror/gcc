@@ -2,6 +2,8 @@
 
 	* gcc.dg/20020411-1.c: New test.
 
+	* gcc.c-torture/execute/20020411-1.c: New test.
+
 2002-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/6247

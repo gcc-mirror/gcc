@@ -6956,6 +6956,16 @@ expand_expr (exp, target, tmode, modifier)
 	    MEM_VOLATILE_P (op0) = 1;
 	  }
 
+	/* The following code doesn't handle CONCAT.
+	   Assume only bitpos == 0 can be used for CONCAT, due to
+	   one element arrays having the same mode as its element.  */
+	if (GET_CODE (op0) == CONCAT)
+	  {
+	    if (bitpos != 0 || bitsize != GET_MODE_BITSIZE (GET_MODE (op0)))
+	      abort ();
+	    return op0;
+	  }
+
 	/* In cases where an aligned union has an unaligned object
 	   as a field, we might be extracting a BLKmode value from
 	   an integer-mode (e.g., SImode) object.  Handle this case
