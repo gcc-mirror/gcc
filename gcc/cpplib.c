@@ -1,6 +1,6 @@
 /* CPP Library. (Directive handling.)
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -716,6 +716,7 @@ do_line (pfile)
     
       _cpp_simplify_pathname (fname);
 
+      /* Only accept flags for the # 55 form.  */
       if (! pfile->state.line_extension)
 	check_eol (pfile);
       else
@@ -743,7 +744,10 @@ do_line (pfile)
 
 	  if (reason == FC_ENTER)
 	    {
+	      /* Fake a buffer stack for diagnostics.  */
 	      cpp_push_buffer (pfile, 0, 0, BUF_FAKE, fname);
+	      /* Fake an include for cpp_included.  */
+	      _cpp_fake_include (pfile, fname);
 	      buffer = pfile->buffer;
 	    }
 	  else if (reason == FC_LEAVE)
