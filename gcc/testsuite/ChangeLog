@@ -1,3 +1,8 @@
+2000-08-22  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/c90-strftime-2.c, gcc.dg/c99-strftime-1.c,
+	gcc.dg/c99-strftime-2.c: New tests.
+
 2000-08-22  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/execute/20000822-1.c: New test.

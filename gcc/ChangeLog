@@ -1,3 +1,9 @@
+2000-08-22  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (check_format_info): Give the 'some locales' warning
+	for strftime %Ey rather than the unconditional 'only last 2 digits
+	of year' one.
+
 2000-08-22  Richard Henderson  <rth@cygnus.com>
 
 	* alias.c (init_alias_analysis): Do not register
