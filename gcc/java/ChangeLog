@@ -6,6 +6,17 @@
 
 	* .cvsignore: New file.
 
+2000-07-13  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (not_accessible_p): Access granted to innerclasses
+	(indirectly) extending the reference type. Fixes gcj/249.
+
+2000-07-13  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (patch_method_invocation): Fixed comment.
+	(maybe_use_access_method): Build this$<n>s to the context of the
+	target method, or a type that extends it. Fixes gcj/242.
+
 2000-07-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* parse.c: Remove.
@@ -28,8 +39,34 @@
 
 2000-07-10  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
+	* class.c (set_super_info): Handled protected inner classes.
+	(common_enclosing_context_p): Bail early if arguments aren't both
+	inner classes.
+	(get_access_flags_from_decl): Handle private and protected inner
+	classes.
+	* java-tree.h (TYPE_PROTECTED_INNER_CLASS): New macro.
+	(CLASS_PROTECTED): Likewise.
+	(struct lang_type): New bitfield `poic.'
+	* parse.y (jdep_resolve_class): Call check_inner_class_access on
+	inner classes only.
+	(check_inner_class_access): Renamed arguments, added
+	comments. Handles protected inner classes (fixes gcj/225)
+	(not_accessible_p): Fixed comments. Avoid handling inner classes.
+
+2000-07-10  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (resolve_qualified_expression_name): Verify qualified
+	access to `this.' Fixes gcj/239.
+
+2000-07-10  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
 	* jcf-write.c (generate_classfile): Don't install ConstantValue
 	for null pointers.
+
+2000-07-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (resolve_qualified_expression_name): Handle inner class
+	access. Fixes gcj/256.
 
 2000-07-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
