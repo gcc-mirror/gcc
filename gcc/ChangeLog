@@ -1,3 +1,9 @@
+Fri Oct 16 08:13:46 1998  David S. Miller  <davem@pierdol.cobaltnet.com>
+
+	* cse.c (cse_basic_block): Fixup hash flushing loop so we do not
+	accidently walk into the free list.  Comment how that can happen.
+	(invalidate): Fix indentation.
+
 Thu Oct 15 23:53:29 1998 Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 			 Jeffrey A Law  (law@cygnus.com)
 

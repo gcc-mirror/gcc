@@ -1651,7 +1651,7 @@ invalidate (x, full_mode)
 		  tendregno
 		    = tregno + HARD_REGNO_NREGS (tregno, GET_MODE (p->exp));
 		  if (tendregno > regno && tregno < endregno)
-		  remove_from_table (p, hash);
+		    remove_from_table (p, hash);
 		}
 	}
 
@@ -8706,7 +8706,7 @@ cse_basic_block (from, to, next_branch, around_loop)
     {
       register enum rtx_code code = GET_CODE (insn);
       int i;
-      struct table_elt *p, *next;
+      struct table_elt *p;
 
       /* If we have processed 1,000 insns, flush the hash table to
 	 avoid extreme quadratic behavior.  We must not include NOTEs
@@ -8720,10 +8720,10 @@ cse_basic_block (from, to, next_branch, around_loop)
       if (code != NOTE && num_insns++ > 1000)
 	{
 	  for (i = 0; i < NBUCKETS; i++)
-	    for (p = table[i]; p; p = next)
+	    for (p = table[i]; p; p = table[i])
 	      {
-		next = p->next_same_hash;
-
+		/* Note that invalidate can remove elements
+		   after P in the current hash chain.  */
 		if (GET_CODE (p->exp) == REG)
 		  invalidate (p->exp, p->mode);
 		else
