@@ -1,5 +1,5 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
-/* { dg-options "-O2 -march=athlon" } */
+/* { dg-options "-O2 -march=k8" } */
 /* { dg-final { scan-assembler "sar.*magic_namea" } } */
 /* { dg-final { scan-assembler "sar.*magic_nameb" } } */
 /* { dg-final { scan-assembler "sar.*magic_namec" } } */

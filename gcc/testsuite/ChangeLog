@@ -1,3 +1,12 @@
+Tue Feb  4 21:41:09 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/i386-cadd.c:  Compile using -march=k8.
+	* gcc.dg/i386-cmov?.c:  Likewise.
+	* gcc.dg/i386-fpcvt-?.c:  Likewise.
+	* gcc.dg/i386-ssefp-1.c:  Likewise.
+	* gcc.dg/i386-ssetype-?.c:  Likewise; fix for register passing
+	convetions.
+
 2003-02-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/7129
