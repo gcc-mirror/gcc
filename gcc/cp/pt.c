@@ -3266,6 +3266,22 @@ maybe_fold_nontype_arg (arg)
   return arg;
 }
 
+/* Return the TREE_VEC with the arguments for the innermost template header,
+   where ARGS is either that or the VEC of VECs for all the arguments.
+
+   If is_spec, then we are dealing with a specialization of a member
+   template, and want the second-innermost args, the innermost ones that
+   are instantiated.  */
+
+tree
+innermost_args (args, is_spec)
+     tree args;
+     int is_spec;
+{
+  if (TREE_CODE (TREE_VEC_ELT (args, 0)) == TREE_VEC)
+    return TREE_VEC_ELT (args, TREE_VEC_LENGTH (args) - 1 - is_spec);
+  return args;
+}
 
 /* Take the tree structure T and replace template parameters used therein
    with the argument vector ARGS.  NARGS is the number of args; should
@@ -3627,7 +3643,7 @@ tsubst (t, args, nargs, in_decl)
       {
 	tree r = NULL_TREE;
 	tree ctx;
-	tree fullargs = args;
+	tree argvec;
 	tree tmpl = NULL_TREE;
 	int member;
 
@@ -3654,12 +3670,28 @@ tsubst (t, args, nargs, in_decl)
 	    tree spec;
 
 	    tmpl = DECL_TI_TEMPLATE (t);
-	    /* FIXME is this right for specializations?  */
+
+	    /* Start by getting the innermost args.  */
+	    argvec = tsubst (DECL_TI_ARGS (t), args, nargs, in_decl);
+
+	    /* If tmpl is an instantiation of a member template, tack on
+	       the args for the enclosing class.  NOTE: this will change
+	       for member class templates.  The generalized procedure
+	       is to grab the outer args, then tack on the current args,
+	       then any specialized args.  */
 	    if (DECL_TEMPLATE_INFO (tmpl) && DECL_TI_ARGS (tmpl))
-	      fullargs = add_to_template_args (DECL_TI_ARGS (tmpl), args);
+	      {
+		if (!DECL_TEMPLATE_SPECIALIZATION (tmpl))
+		  argvec = add_to_template_args (DECL_TI_ARGS (tmpl), argvec);
+		else
+		  /* In this case, we are instantiating a
+		     specialization.  The innermost template args are
+		     already given by the specialization.  */
+		  argvec = add_to_template_args (argvec, DECL_TI_ARGS (tmpl));
+	      }
 
 	    /* Do we already have this instantiation?  */
-	    spec = retrieve_specialization (tmpl, fullargs);
+	    spec = retrieve_specialization (tmpl, argvec);
 	    if (spec)
 	      return spec;
 	  }
@@ -3714,7 +3746,7 @@ tsubst (t, args, nargs, in_decl)
 	      tmpl = in_decl;
 
 	    /* tmpl will be NULL if this is a specialization of a
-	       member template of a template class.  */
+	       member function of a template class.  */
 	    if (name_mangling_version < 1
 		|| tmpl == NULL_TREE
 		|| (member && !is_member_template (tmpl)
@@ -3732,30 +3764,22 @@ tsubst (t, args, nargs, in_decl)
 	      }
 	    else
 	      {
-		/* We pass the outermost template parameters to
-		   build_template_decl_overload since the innermost
-		   template parameters are still just template
-		   parameters; there are no corresponding subsitution
-		   arguments.  We get here with full args and only one
-		   level of parms.  This is necessary because when we
-		   partially instantiate a member template, even
-		   though there's really only one level of parms, left
-		   the parms from the original template, which have
-		   level 2, may appear in the definition of the a
-		   function body.  */
 		tree tparms; 
 		tree targs;
 
 		if (!DECL_TEMPLATE_SPECIALIZATION (tmpl)) 
 		  {
+		    /* We pass the outermost template parameters to
+		       build_template_decl_overload, since the innermost
+		       template parameters are still just template
+		       parameters; there are no corresponding subsitution
+		       arguments.  Levels of parms that have been bound
+		       before are not represented in DECL_TEMPLATE_PARMS.  */
 		    tparms = DECL_TEMPLATE_PARMS (tmpl);
 		    while (tparms && TREE_CHAIN (tparms) != NULL_TREE)
 		      tparms = TREE_CHAIN (tparms);
 		    
-		    targs = 
-		      (TREE_CODE (TREE_VEC_ELT (args, 0)) == TREE_VEC 
-		       ? TREE_VEC_ELT (args, TREE_VEC_LENGTH (args) - 1)
-		       : args); 
+		    targs = innermost_args (args, 0);
 		  }
 		else
 		  {
@@ -3848,25 +3872,6 @@ tsubst (t, args, nargs, in_decl)
 
 	if (DECL_TEMPLATE_INFO (t) != NULL_TREE)
 	  {
-	    tree argvec;
-
-	    /* FIXME this is ugly.  */
-	    if (TREE_CODE (TREE_VEC_ELT (args, 0)) != TREE_VEC)
-	      argvec = args;
-	    else
-	      argvec = tsubst (DECL_TI_ARGS (t), args, nargs, in_decl);
-
-	    if (DECL_TEMPLATE_INFO (tmpl) && DECL_TI_ARGS (tmpl))
-	      {
-		if (!DECL_TEMPLATE_SPECIALIZATION (tmpl))
-		  argvec = add_to_template_args (DECL_TI_ARGS (tmpl), argvec);
-		else
-		  /* In this case, we are instantiating a
-		     specialization.  The innermost template args are
-		     already given by the specialization.  */
-		  argvec = add_to_template_args (argvec, DECL_TI_ARGS (tmpl));
-	      }
-
 	    DECL_TEMPLATE_INFO (r) = perm_tree_cons (tmpl, argvec, NULL_TREE);
 
 	    /* If we're not using ANSI overloading, then we might have
@@ -5977,18 +5982,6 @@ do_type_instantiation (t, storage)
   }
 }
 
-/* Return the TREE_VEC with the arguments for the innermost template header,
-   where ARGS is either that or the VEC of VECs for all the arguments.  */
-
-tree
-innermost_args (args)
-     tree args;
-{
-  if (TREE_CODE (TREE_VEC_ELT (args, 0)) == TREE_VEC)
-    return TREE_VEC_ELT (args, TREE_VEC_LENGTH (args) - 1);
-  return args;
-}
-
 /* Produce the definition of D, a _DECL generated from a template.  */
 
 tree
@@ -5998,7 +5991,7 @@ instantiate_decl (d)
   tree ti = DECL_TEMPLATE_INFO (d);
   tree tmpl = TI_TEMPLATE (ti);
   tree args = TI_ARGS (ti);
-  tree td;
+  tree td, temp;
   tree decl_pattern, code_pattern;
   tree save_ti;
   int nested = in_function_p ();
@@ -6111,10 +6104,8 @@ instantiate_decl (d)
   /* Trick tsubst into giving us a new decl in case the template changed.  */
   save_ti = DECL_TEMPLATE_INFO (decl_pattern);
   DECL_TEMPLATE_INFO (decl_pattern) = NULL_TREE;
-  /* FIXME this is ugly.  */
-  td = tsubst (decl_pattern,
-	       DECL_TEMPLATE_SPECIALIZATION (decl_pattern)
-	       ? args : innermost_args (args), 0, tmpl);
+  temp = innermost_args (args, DECL_TEMPLATE_SPECIALIZATION (decl_pattern));
+  td = tsubst (decl_pattern, temp, 0, tmpl);
   SET_DECL_IMPLICIT_INSTANTIATION (td);
   DECL_TEMPLATE_INFO (decl_pattern) = save_ti;
 
