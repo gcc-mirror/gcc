@@ -119,7 +119,7 @@ public abstract class AbstractPreferences extends Preferences {
             throw new IllegalArgumentException("Illegal name argument '"
                                                + name
                                                + "' (parent is "
-                                               + parent == null ? "" : "not "
+                                               + (parent == null ? "" : "not ")
                                                + "null)");
         this.parent = parent;
         this.name = name;
