@@ -1,3 +1,8 @@
+2005-01-13  Geoffrey Keating  <geoffk@apple.com>
+
+	* configure.host (darwin): On darwin8 or later, no need to build
+	libstdc++ with -flat_namespace.
+
 2005-01-13  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* docs/doxygen/user.cfg.in: Set HAVE_DOT back to YES.
