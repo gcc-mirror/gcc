@@ -1,3 +1,9 @@
+2003-06-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/11044
+	* config/i386/i386.md (length attribute): Set length to 4
+	for instructions of type "fcmp".
+
 2003-06-01  Andreas Jaeger  <aj@suse.de>
 
         * toplev.c: Use ISO C90 prototypes.
