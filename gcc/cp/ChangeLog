@@ -1,3 +1,12 @@
+2003-09-26  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* decl.c (pop_binding_level, suspend_binding_level,
+	find_class_binding_level): Merge into leave_scope.  Remove.
+	(leave_scope):  New function.
+	(poplevel): Update.
+	(poplevel_class): Likewise.
+	(pop_namespace): Likewise.
+
 2003-09-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/5655

@@ -55,8 +55,6 @@ Boston, MA 02111-1307, USA.  */
 static tree grokparms (tree);
 static const char *redeclaration_error_message (tree, tree);
 
-static void pop_binding_level (void);
-static void suspend_binding_level (void);
 static void resume_binding_level (struct cp_binding_level *);
 static int decl_jump_unsafe (tree);
 static void storedecls (tree);
@@ -98,7 +96,6 @@ static int lookup_flags (int, int);
 static tree qualify_lookup (tree, int);
 static tree record_builtin_java_type (const char *, int);
 static const char *tag_name (enum tag_types code);
-static void find_class_binding_level (void);
 static struct cp_binding_level *innermost_nonclass_level (void);
 static int walk_namespaces_r (tree, walk_namespaces_fn, void *);
 static int walk_globals_r (tree, void*);
@@ -566,81 +563,62 @@ begin_scope (scope_kind kind, tree entity)
   return scope;
 }
 
-/* Find the innermost enclosing class scope, and reset
-   CLASS_BINDING_LEVEL appropriately.  */
+/* We're about to leave current scope.  Pop the top of the stack of
+   currently active scopes.  Return the enclosing scope, now active.  */
 
-static void
-find_class_binding_level (void)
+static cxx_scope *
+leave_scope (void)
 {
-  struct cp_binding_level *level = current_binding_level;
+  cxx_scope *scope = current_binding_level;
 
-  while (level && level->kind != sk_class)
-    level = level->level_chain;
-  if (level && level->kind == sk_class)
-    class_binding_level = level;
-  else
-    class_binding_level = 0;
-}
-
-static void
-pop_binding_level (void)
-{
-  if (NAMESPACE_LEVEL (global_namespace))
-    /* Cannot pop a level, if there are none left to pop.  */
-    my_friendly_assert (!global_scope_p (current_binding_level), 20030527);
-  /* Pop the current level, and free the structure for reuse.  */
-  if (ENABLE_SCOPE_CHECKING)
-    {
-      indent (--binding_depth);
-      cxx_scope_debug (current_binding_level, input_location.line, "pop");
-      if (is_class_level != (current_binding_level == class_binding_level))
-        {
-          indent (binding_depth);
-          verbatim ("XXX is_class_level != (current_binding_level "
-                    "== class_binding_level)\n");
-        }
-      is_class_level = 0;
-    }
-  {
-    register struct cp_binding_level *level = current_binding_level;
-    current_binding_level = current_binding_level->level_chain;
-    level->level_chain = free_binding_level;
-    if (level->kind == sk_class)
-      level->type_decls = NULL;
-    else
-      binding_table_free (level->type_decls);
-    my_friendly_assert (!ENABLE_SCOPE_CHECKING
-                        || level->binding_depth == binding_depth,
-                        20030529);
-    free_binding_level = level;
-    find_class_binding_level ();
-  }
-}
-
-static void
-suspend_binding_level (void)
-{
-  if (class_binding_level)
+  if (scope->kind == sk_namespace && class_binding_level)
     current_binding_level = class_binding_level;
 
+  /* We cannot leave a scope, if there are none left.  */
   if (NAMESPACE_LEVEL (global_namespace))
-    /* Cannot suspend a level, if there are none left to suspend.  */
-    my_friendly_assert (!global_scope_p (current_binding_level), 20030527);
-  /* Suspend the current level.  */
+    my_friendly_assert (!global_scope_p (scope), 20030527);
+  
   if (ENABLE_SCOPE_CHECKING)
     {
       indent (--binding_depth);
-      cxx_scope_debug (current_binding_level, input_location.line, "suspend");
-      if (is_class_level != (current_binding_level == class_binding_level))
+      cxx_scope_debug (scope, input_location.line, "leave");
+      if (is_class_level != (scope == class_binding_level))
         {
           indent (binding_depth);
-          verbatim ("XXX is_class_level != (current_binding_level "
-                    "== class_binding_level)\n");
+          verbatim ("XXX is_class_level != (current_scope == class_scope)\n");
         }
       is_class_level = 0;
     }
-  current_binding_level = current_binding_level->level_chain;
-  find_class_binding_level ();
+
+  /* Move one nesting level up.  */
+  current_binding_level = scope->level_chain;
+
+  /* Namespace-scopes are left most probably temporarily, not completely;
+     they can be reopen later, e.g. in namespace-extension or any name
+     binding acttivity that requires us to resume a namespace.  For other
+     scopes, we just make the structure available for reuse.  */
+  if (scope->kind != sk_namespace)
+    {
+      scope->level_chain = free_binding_level;
+      if (scope->kind == sk_class)
+        scope->type_decls = NULL;
+      else
+        binding_table_free (scope->type_decls);
+      my_friendly_assert (!ENABLE_SCOPE_CHECKING
+                          || scope->binding_depth == binding_depth,
+                          20030529);
+      free_binding_level = scope;
+    }
+
+  /* Find the innermost enclosing class scope, and reset
+     CLASS_BINDING_LEVEL appropriately.  */
+  for (scope = current_binding_level;
+       scope && scope->kind != sk_class;
+       scope = scope->level_chain)
+    ;
+  class_binding_level = scope && scope->kind == sk_class ? scope : NULL;
+
+  return current_binding_level;
 }
 
 static void
@@ -1387,7 +1365,7 @@ poplevel (int keep, int reverse, int functionbody)
 
   kind = current_binding_level->kind;
 
-  pop_binding_level ();
+  leave_scope ();
   if (functionbody)
     DECL_INITIAL (current_function_decl) = block;
   else if (block)
@@ -1555,7 +1533,7 @@ poplevel_class (void)
   if (ENABLE_SCOPE_CHECKING)
     is_class_level = 1;
 
-  pop_binding_level ();
+  leave_scope ();
   timevar_pop (TV_NAME_LOOKUP);
 }
 
@@ -1967,7 +1945,7 @@ pop_namespace (void)
   my_friendly_assert (current_namespace != global_namespace, 20010801);
   current_namespace = CP_DECL_CONTEXT (current_namespace);
   /* The binding level is not popped, as it might be re-opened later.  */
-  suspend_binding_level ();
+  leave_scope ();
 }
 
 /* Push into the scope of the namespace NS, even if it is deeply
