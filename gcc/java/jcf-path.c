@@ -303,8 +303,9 @@ jcf_path_init ()
   if (! found)
     {
       /* Desperation: use the installed one.  */
+      char *extdirs;
       add_entry (&sys_dirs, LIBGCJ_ZIP_FILE, 1);
-      char *extdirs = (char *) alloca (strlen (LIBGCJ_ZIP_FILE));
+      extdirs = (char *) alloca (strlen (LIBGCJ_ZIP_FILE));
       strcpy (extdirs, LIBGCJ_ZIP_FILE);
       strcpy (&extdirs[strlen (LIBGCJ_ZIP_FILE)
 		      - strlen ("libgcj-" DEFAULT_TARGET_VERSION ".jar")],

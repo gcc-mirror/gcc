@@ -1,3 +1,7 @@
+2002-04-10  Anthony Green  <green@redhat.com>
+
+	* jcf-path.c (jcf_path_init) : Clean up local extdirs declaration.
+
 2002-04-09  Anthony Green  <green@redhat.com>
 
 	* gcj.texi (Input Options): Add --extdirs documentation.
