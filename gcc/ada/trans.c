@@ -4164,6 +4164,7 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 			       gnu_lhs, DECL_INITIAL (gnu_decl));
 
 	  DECL_INITIAL (gnu_decl) = 0;
+	  TREE_READONLY (gnu_decl) = 0;
 	  annotate_with_locus (gnu_assign_stmt,
 			       DECL_SOURCE_LOCATION (gnu_decl));
 	  add_stmt (gnu_assign_stmt);

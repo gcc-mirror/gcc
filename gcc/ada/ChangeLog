@@ -1,3 +1,8 @@
+Wed Jul 14 23:16:59 2004  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* trans.c (add_decl_expr): Clear TREE_READONLY if clear DECL_INITIAL.
+	* utils.c (unchecked_convert): Don't do two VIEW_CONVERT_EXPRs.
+
 2004-07-14  Andreas Schwab  <schwab@suse.de>
 
 	* trans.c (gnat_init_stmt_group): Remove duplicate definition.
