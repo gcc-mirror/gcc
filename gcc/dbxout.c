@@ -619,6 +619,16 @@ dbxout_begin_complex_stabs (void)
   gcc_assert (stabstr_last_contin_point == 0);
 }
 
+/* As above, but do not force text or emit pending bincls.  This is
+   used by dbxout_symbol_location, which needs to do something else.  */
+static void
+dbxout_begin_complex_stabs_noforcetext (void)
+{
+  fputs (ASM_STABS_OP, asm_out_file);
+  putc ('"', asm_out_file);
+  gcc_assert (stabstr_last_contin_point == 0);
+}
+
 /* Add CHR, a single character, to the string being built.  */
 #define stabstr_C(chr) obstack_1grow (&stabstr_ob, chr)
 
@@ -786,7 +796,7 @@ stabstr_continue (void)
    all of the arguments to the .stabs directive after the string.
    Overridden by xcoffout.h.  CODE is the stabs code for this symbol;
    LINE is the source line to write into the desc field (in extended
-   mode).
+   mode); SYM is the symbol itself.
 
    ADDR, LABEL, and NUMBER are three different ways to represent the
    stabs value field.  At most one of these should be nonzero.
@@ -802,7 +812,8 @@ stabstr_continue (void)
      register variable).  It represents the value as a decimal integer.  */
 
 #ifndef DBX_FINISH_STABS
-#define DBX_FINISH_STABS(CODE, LINE, ADDR, LABEL, NUMBER) do {	\
+#define DBX_FINISH_STABS(SYM, CODE, LINE, ADDR, LABEL, NUMBER)	\
+do {								\
   int line_ = use_gnu_debug_info_extensions ? LINE : 0;		\
 								\
   dbxout_int (CODE);						\
@@ -864,7 +875,8 @@ dbxout_finish_complex_stabs (tree sym, STAB_CODE_TYPE code,
 	  len   -= chunklen + 1;
 
 	  /* Only put a line number on the last stab in the sequence.  */
-	  DBX_FINISH_STABS (code, len == 0 ? line : 0, addr, label, number);
+	  DBX_FINISH_STABS (sym, code, len == 0 ? line : 0,
+			    addr, label, number);
 	  if (len == 0)
 	    break;
 
@@ -883,7 +895,7 @@ dbxout_finish_complex_stabs (tree sym, STAB_CODE_TYPE code,
       str = obstack_finish (&stabstr_ob);
       
       fwrite (str, 1, len, asm_out_file);
-      DBX_FINISH_STABS (code, line, addr, label, number);
+      DBX_FINISH_STABS (sym, code, line, addr, label, number);
     }
   obstack_free (&stabstr_ob, str);
 }
@@ -2901,12 +2913,14 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
     return 0;
 
   /* Ok, start a symtab entry and output the variable name.  */
+  emit_pending_bincls_if_required ();
+  FORCE_TEXT;
 
 #ifdef DBX_STATIC_BLOCK_START
   DBX_STATIC_BLOCK_START (asm_out_file, code);
 #endif
 
-  dbxout_begin_complex_stabs ();
+  dbxout_begin_complex_stabs_noforcetext ();
   dbxout_symbol_name (decl, suffix, letter);
   dbxout_type (type, 0);
   dbxout_finish_complex_stabs (decl, code, addr, 0, number);

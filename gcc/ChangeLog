@@ -1,5 +1,16 @@
 2004-10-28  Zack Weinberg  <zack@codesourcery.com>
 
+	PR 18199
+	* dbxout.c (dbxout_begin_complex_stabs_noforcetext): New function.
+	(DBX_FINISH_STABS): Add (unused by default) SYM parameter.
+	(dbxout_finish_complex_stabs): Update to match.
+	(dbxout_symbol_location): Call emit_pending_bincls_if_required
+	and FORCE_TEXT before DBX_STATIC_BLOCK_START.  Use
+	dbxout_begin_complex_stabs_noforcetext.
+	* xcoffout.h (DBX_FINISH_STABS): Restore special case for
+	N_GSYM, using new SYM parameter.  Correct logic for special
+	cases for N_FUN.
+
 	* varasm.c (function_section): If DECL is NULL_TREE, don't try
 	to do anything else.  Do not call get_insns if cfun or
 	cfun->emit are NULL.
