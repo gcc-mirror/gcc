@@ -2451,8 +2451,8 @@ expand_assignment (to, from, want_value, suggest_reg)
       rtx from_rtx, size;
 
       push_temp_slots ();
-      from_rtx = expr_size (from);
-      size = expand_expr (from, NULL_RTX, VOIDmode, 0);
+      size = expr_size (from);
+      from_rtx = expand_expr (from, NULL_RTX, VOIDmode, 0);
 
 #ifdef TARGET_MEM_FUNCTIONS
       emit_library_call (memcpy_libfunc, 0,
