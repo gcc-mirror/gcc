@@ -1284,7 +1284,7 @@ namespace std
 	    __testvalid = false;
 	}
 
-      if (__testvalid)
+      if (__testvalid && __tmp_units.size())
 	{
 	  const char_type __zero = __ctype.widen('0');
 
@@ -1297,33 +1297,30 @@ namespace std
 		__tmp_units.erase(0, __only_zeros ? __tmp_units.size() - 1
 				                  : __first);
 	    }
+	  
+	  // 22.2.6.1.2, p4
+	  if (__sign.size() && __sign == __neg_sign
+	      && __tmp_units[0] != __zero)
+	    __tmp_units.insert(__tmp_units.begin(), __ctype.widen('-'));
 
-	  if (__tmp_units.size())
+	  // Test for grouping fidelity.
+	  if (__grouping.size() && __grouping_tmp.size())
 	    {
-	      // 22.2.6.1.2, p4
-	      if (__sign.size() && __sign == __neg_sign
-		  && __tmp_units[0] != __zero)
-		__tmp_units.insert(__tmp_units.begin(), __ctype.widen('-'));      
-	      
-	      // Test for grouping fidelity.
-	      if (__grouping.size() && __grouping_tmp.size())
-		{
-		  if (!std::__verify_grouping(__grouping, __grouping_tmp))
-		    __testvalid = false;
-		}
-
-	      // Iff not enough digits were supplied after the decimal-point.
-	      if (__testdecfound)
-		{
-		  const int __frac = __intl ? __mpt.frac_digits() 
-		                            : __mpf.frac_digits();
-		  if (__frac > 0 && __sep_pos != __frac)
-		    __testvalid = false;
-		}
+	      if (!std::__verify_grouping(__grouping, __grouping_tmp))
+		__testvalid = false;
 	    }
-	  else
-	    __testvalid = false;
+	  
+	  // Iff not enough digits were supplied after the decimal-point.
+	  if (__testdecfound)
+	    {
+	      const int __frac = __intl ? __mpt.frac_digits() 
+		                        : __mpf.frac_digits();
+	      if (__frac > 0 && __sep_pos != __frac)
+		__testvalid = false;
+	    }
 	}
+      else
+	__testvalid = false;
 
       // Iff no more characters are available.      
       if (__c == __eof)
