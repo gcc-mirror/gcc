@@ -8451,21 +8451,20 @@ simplify_comparison (code, pop0, pop1)
 	 shift.  We can if the shift is a rotate or if the bits shifted out of
 	 this shift are known to be zero for both inputs and if the type of
 	 comparison is compatible with the shift.  */
-      else if (GET_CODE (op0) == GET_CODE (op1)
-	       && GET_MODE_BITSIZE (GET_MODE (op0)) <= HOST_BITS_PER_WIDE_INT
-	       && ((GET_CODE (op0) == ROTATE && (code == NE || code == EQ))
-		   || ((GET_CODE (op0) == LSHIFTRT
-			|| GET_CODE (op0) == ASHIFT
-			|| GET_CODE (op0) == LSHIFT)
-		       && (code != GT && code != LT
-			   && code != GE && code != LE))
-		   || (GET_CODE (op0) == ASHIFTRT
-		       && (code != GTU && code != LTU
-			   && code != GEU && code != GEU)))
-	       && GET_CODE (XEXP (op0, 1)) == CONST_INT
-	       && INTVAL (XEXP (op0, 1)) >= 0
-	       && INTVAL (XEXP (op0, 1)) < HOST_BITS_PER_WIDE_INT
-	       && XEXP (op0, 1) == XEXP (op1, 1))
+      if (GET_CODE (op0) == GET_CODE (op1)
+	  && GET_MODE_BITSIZE (GET_MODE (op0)) <= HOST_BITS_PER_WIDE_INT
+	  && ((GET_CODE (op0) == ROTATE && (code == NE || code == EQ))
+	      || ((GET_CODE (op0) == LSHIFTRT
+		   || GET_CODE (op0) == ASHIFT
+		   || GET_CODE (op0) == LSHIFT)
+		  && (code != GT && code != LT && code != GE && code != LE))
+	      || (GET_CODE (op0) == ASHIFTRT
+		  && (code != GTU && code != LTU
+		      && code != GEU && code != GEU)))
+	  && GET_CODE (XEXP (op0, 1)) == CONST_INT
+	  && INTVAL (XEXP (op0, 1)) >= 0
+	  && INTVAL (XEXP (op0, 1)) < HOST_BITS_PER_WIDE_INT
+	  && XEXP (op0, 1) == XEXP (op1, 1))
 	{
 	  enum machine_mode mode = GET_MODE (op0);
 	  unsigned HOST_WIDE_INT mask = GET_MODE_MASK (mode);
