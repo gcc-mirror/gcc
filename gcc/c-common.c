@@ -2738,7 +2738,7 @@ c_sizeof_or_alignof_type (tree type, enum tree_code op, int complain)
   tree value = NULL;
   enum tree_code type_code = TREE_CODE (type);
 
-  my_friendly_assert (op == SIZEOF_EXPR || op == ALIGNOF_EXPR, 20020720);
+  gcc_assert (op == SIZEOF_EXPR || op == ALIGNOF_EXPR);
   op_name = op == SIZEOF_EXPR ? "sizeof" : "__alignof__";
 
   if (type_code == FUNCTION_TYPE)
@@ -2782,7 +2782,7 @@ c_sizeof_or_alignof_type (tree type, enum tree_code op, int complain)
      never happen.  However, this node should really have type
      `size_t', which is just a typedef for an ordinary integer type.  */
   value = fold (build1 (NOP_EXPR, size_type_node, value));
-  my_friendly_assert (!TYPE_IS_SIZETYPE (TREE_TYPE (value)), 20001021);
+  gcc_assert (!TYPE_IS_SIZETYPE (TREE_TYPE (value)));
 
   return value;
 }
@@ -4638,9 +4638,8 @@ handle_visibility_attribute (tree *node, tree name, tree args,
 bool
 c_determine_visibility (tree decl)
 {
-  my_friendly_assert (TREE_CODE (decl) == VAR_DECL
-		      || TREE_CODE (decl) == FUNCTION_DECL, 
-		      20040805);
+  gcc_assert (TREE_CODE (decl) == VAR_DECL
+	      || TREE_CODE (decl) == FUNCTION_DECL);
 
   /* If the user explicitly specified the visibility with an
      attribute, honor that.  DECL_VISIBILITY will have been set during
