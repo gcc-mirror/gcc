@@ -44,8 +44,38 @@ fi
 echo 'Making directories:'
 cd ${INPUT}
 # Find all directories and all symlinks that point to directories.
-files=`	find . -type d -print | sed '/^.$/d'
-	$LINKS && find . -type l -exec test -d '{}' \; -print`
+# Put the list in $files.
+# Each time we find a symlink, add it to newdirs
+# so that we do another find within the dir the link points to.
+# Note that $files may have duplicates in it;
+# later parts of this file are supposed to ignore them.
+dirs="."
+prevdirs="."
+while [ -n "$dirs" ]
+do
+    newdirs=
+    for d in $prevdirs
+    do
+	if [ "$d" != . ]
+	then
+	    d=$d/.
+	fi
+
+	# Find all directories under $d, relative to $d, including $d itself.
+	# Get rid of ./ at the end!
+        files="$files `find $d -type d -print | sed '/^.$/d' | sed '/\/\.$/ s|/\.$||'`"
+	$LINKS && \
+	  newdirs="$newdirs `find $d -type l -exec test -d '{}' \; -print`"
+    done
+
+    dirs="$newdirs"
+    prevdirs="$newdirs"
+done
+
+dirs=
+echo all directories:
+echo $files
+
 for file in $files; do
   rm -rf $LIB/$file
   if [ ! -d $LIB/$file ]
