@@ -1,3 +1,8 @@
+2002-03-31  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.c: Revert previous patch for now.
+	* config/i386/djgpp.h: Likewise.
+
 2002-03-31  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/crti.asm (_init): Register _fini with atexit.
