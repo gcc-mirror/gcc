@@ -4,10 +4,12 @@
 
 // by Alexandre Oliva <oliva@dcc.unicamp.br>
 // based on bug report by Dima Volodin <dvv@dvv.ru>
+// variation of ns1.C
 
 void foo();
 namespace bar {
+  using ::foo;
   class baz {
-    friend void ::foo(); // gets bogus error - parse error - XFAIL *-*-*
+    friend void foo(); // gets bogus error - conflict - XFAIL *-*-*
   };
 }
