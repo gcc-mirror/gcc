@@ -8819,8 +8819,11 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	error ("cannot declare `::main' to be a template");
       if (inlinep)
 	error ("cannot declare `::main' to be inline");
-      else if (! publicp)
+      if (!publicp)
 	error ("cannot declare `::main' to be static");
+      if (!same_type_p (TREE_TYPE (TREE_TYPE (decl)),
+			integer_type_node))
+	error ("`main' must return `int'");
       inlinep = 0;
       publicp = 1;
     }
