@@ -1037,6 +1037,7 @@ cp_statement_code_p (code)
     case HANDLER:
     case EH_SPEC_BLOCK:
     case USING_STMT:
+    case TAG_DEFN:
       return 1;
 
     default:

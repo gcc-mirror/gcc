@@ -1,3 +1,9 @@
+2001-08-22  Jason Merrill  <jason_merrill@redhat.com>
+
+	* pt.c (tsubst_expr): Hand off to the TREE_CHAIN of a statement.
+	Don't loop in COMPOUND_STMT, FOR_STMT or TRY_BLOCK.
+	* tree.c (cp_statement_code_p): A TAG_DEFN is a statement.
+
 2001-08-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* typeck2.c (add_exception_specifier): Only require complete type if

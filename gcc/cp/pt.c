@@ -7171,7 +7171,7 @@ tsubst_expr (t, args, complain, in_decl)
      int complain;
      tree in_decl;
 {
-  tree stmt;
+  tree stmt, tmp;
 
   if (t == NULL_TREE || t == error_mark_node)
     return t;
@@ -7179,6 +7179,9 @@ tsubst_expr (t, args, complain, in_decl)
   if (processing_template_decl)
     return tsubst_copy (t, args, complain, in_decl);
 
+  if (!statement_code_p (TREE_CODE (t)))
+    return build_expr_from_tree (tsubst_copy (t, args, complain, in_decl));
+    
   switch (TREE_CODE (t))
     {
     case RETURN_INIT:
@@ -7186,7 +7189,6 @@ tsubst_expr (t, args, complain, in_decl)
       finish_named_return_value
 	(TREE_OPERAND (t, 0),
 	 tsubst_expr (TREE_OPERAND (t, 1), args, /*complain=*/1, in_decl));
-      tsubst_expr (TREE_CHAIN (t), args, complain, in_decl);
       break;
 
     case CTOR_INITIALIZER:
@@ -7200,7 +7202,6 @@ tsubst_expr (t, args, complain, in_decl)
 	base_init_list
 	  = tsubst_initializer_list (TREE_OPERAND (t, 1), args);
 	setup_vtbl_ptr (member_init_list, base_init_list);
-	tsubst_expr (TREE_CHAIN (t), args, complain, in_decl);
 	break;
       }
 
@@ -7265,17 +7266,21 @@ tsubst_expr (t, args, complain, in_decl)
 	        cp_finish_decl (decl, init, NULL_TREE, 0);
 	      }
 	  }
-	return decl;
+
+	/* A DECL_STMT can also be used as an expression, in the condition
+	   clause of a if/for/while construct.  If we aren't followed by
+	   another statement, return our decl.  */
+	if (TREE_CHAIN (t) == NULL_TREE)
+	  return decl;
       }
+      break;
 
     case FOR_STMT:
       {
-	tree tmp;
 	prep_stmt (t);
 
 	stmt = begin_for_stmt ();
-	for (tmp = FOR_INIT_STMT (t); tmp; tmp = TREE_CHAIN (tmp))
-	  tsubst_expr (tmp, args, complain, in_decl);
+	tsubst_expr (FOR_INIT_STMT (t), args, complain, in_decl);
 	finish_for_init_stmt (stmt);
 	finish_for_cond (tsubst_expr (FOR_COND (t), args,
 				      complain, in_decl),
@@ -7313,8 +7318,6 @@ tsubst_expr (t, args, complain, in_decl)
 
     case IF_STMT:
       {
-	tree tmp;
-
 	prep_stmt (t);
 	stmt = begin_if_stmt ();
 	finish_if_stmt_cond (tsubst_expr (IF_COND (t),
@@ -7340,15 +7343,10 @@ tsubst_expr (t, args, complain, in_decl)
 
     case COMPOUND_STMT:
       {
-	tree substmt;
-
 	prep_stmt (t);
 	stmt = begin_compound_stmt (COMPOUND_STMT_NO_SCOPE (t));
-	for (substmt = COMPOUND_BODY (t); 
-	     substmt != NULL_TREE;
-	     substmt = TREE_CHAIN (substmt))
-	  tsubst_expr (substmt, args, complain, in_decl);
-	return finish_compound_stmt (COMPOUND_STMT_NO_SCOPE (t), stmt);
+	tsubst_expr (COMPOUND_BODY (t), args, complain, in_decl);
+	finish_compound_stmt (COMPOUND_STMT_NO_SCOPE (t), stmt);
       }
       break;
 
@@ -7389,15 +7387,15 @@ tsubst_expr (t, args, complain, in_decl)
 
     case GOTO_STMT:
       prep_stmt (t);
-      t = GOTO_DESTINATION (t);
-      if (TREE_CODE (t) != LABEL_DECL)
+      tmp = GOTO_DESTINATION (t);
+      if (TREE_CODE (tmp) != LABEL_DECL)
 	/* Computed goto's must be tsubst'd into.  On the other hand,
 	   non-computed gotos must not be; the identifier in question
 	   will have no binding.  */
-	t = tsubst_expr (t, args, complain, in_decl);
+	tmp = tsubst_expr (tmp, args, complain, in_decl);
       else
-	t = DECL_NAME (t);
-      finish_goto_stmt (t);
+	tmp = DECL_NAME (tmp);
+      finish_goto_stmt (tmp);
       break;
 
     case ASM_STMT:
@@ -7423,8 +7421,6 @@ tsubst_expr (t, args, complain, in_decl)
 	}
       else
 	{
-	  tree handler;
-
 	  if (FN_TRY_BLOCK_P (t))
 	    stmt = begin_function_try_block ();
 	  else
@@ -7437,9 +7433,7 @@ tsubst_expr (t, args, complain, in_decl)
 	  else
 	    finish_try_block (stmt);
 
-	  handler = TRY_HANDLERS (t);
-	  for (; handler; handler = TREE_CHAIN (handler))
-	    tsubst_expr (handler, args, complain, in_decl);
+	  tsubst_expr (TRY_HANDLERS (t), args, complain, in_decl);
 	  if (FN_TRY_BLOCK_P (t))
 	    finish_function_handler_sequence (stmt);
 	  else
@@ -7472,14 +7466,18 @@ tsubst_expr (t, args, complain, in_decl)
 
     case TAG_DEFN:
       prep_stmt (t);
-      t = TREE_TYPE (t);
-      tsubst (t, args, complain, NULL_TREE);
+      tsubst (TREE_TYPE (t), args, complain, NULL_TREE);
       break;
 
+    case CTOR_STMT:
+      add_stmt (copy_node (t));
+      break;
+      
     default:
-      return build_expr_from_tree (tsubst_copy (t, args, complain, in_decl));
+      abort ();
     }
-  return NULL_TREE;
+
+  return tsubst_expr (TREE_CHAIN (t), args, complain, in_decl);
 }
 
 /* TMPL is a TEMPLATE_DECL for a cloned constructor or destructor.
