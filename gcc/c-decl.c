@@ -3057,7 +3057,7 @@ int debug_temp_inits = 1;
 
 tree
 start_decl (declarator, declspecs, initialized)
-     tree declspecs, declarator;
+     tree declarator, declspecs;
      int initialized;
 {
   register tree decl = grokdeclarator (declarator, declspecs,
