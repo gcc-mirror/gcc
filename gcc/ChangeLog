@@ -1,3 +1,10 @@
+2002-06-02  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c4x/c4x.h (TARGET_CPU_CPP_BUILTINS): New.
+	(CPP_SPEC, CPP_PREDEFINES): Kill.
+	* c4x/rtems.h (CPP_PREDEFINES): Kill.
+	(TARGET_OS_CPP_BUILTINS): New.
+
 Sat Jun  1 23:29:51 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (tracer.o): New.
