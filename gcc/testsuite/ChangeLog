@@ -1,3 +1,7 @@
+2000-08-23  Jason Merrill  <jason@redhat.com>
+
+	* lib/old-dejagnu.exp: Also ignore "In member function ".
+
 2000-08-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/noncompile/label-lineno-1.c: New test.

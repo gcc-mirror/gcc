@@ -1,4 +1,4 @@
-# Copyright (C) 1988, 90, 91, 92, 1994, 1996, 1997 Free Software Foundation, Inc.
+# Copyright (C) 1988, 90, 91, 92, 1994, 1996, 1997, 2000 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -526,7 +526,7 @@ proc old-dejagnu { compiler prog name cflagsx default_cflags libs } {
 
     #look to see if this is all thats left, if so, all messages have been handled
     #send_user "comp_output: $comp_output\n"
-    regsub -all "(^|\n)\[^\n\]*: In (function|method) \[^\n\]*" $comp_output "" comp_output
+    regsub -all "(^|\n)\[^\n\]*: In ((member)? function|method) \[^\n\]*" $comp_output "" comp_output
     regsub -all "(^|\n)\[^\n\]*: In instantiation of \[^\n\]*" $comp_output "" comp_output
     regsub -all "(^|\n)\[^\n\]*:   instantiated from \[^\n\]*" $comp_output "" comp_output
     regsub -all "(^|\n)\[^\n\]*: At top level:\[^\n\]*" $comp_output "" comp_output
