@@ -1332,10 +1332,10 @@ public class ObjectInputStream extends InputStream
 
 	  int off = field.getOffset();
 
-	  return (long)(((prim_field_data[off++] & 0xFF) << 56)
-			| ((prim_field_data[off++] & 0xFF) << 48)
-			| ((prim_field_data[off++] & 0xFF) << 40)
-			| ((prim_field_data[off++] & 0xFF) << 32)
+	  return (long)(((prim_field_data[off++] & 0xFFL) << 56)
+			| ((prim_field_data[off++] & 0xFFL) << 48)
+			| ((prim_field_data[off++] & 0xFFL) << 40)
+			| ((prim_field_data[off++] & 0xFFL) << 32)
 			| ((prim_field_data[off++] & 0xFF) << 24)
 			| ((prim_field_data[off++] & 0xFF) << 16)
 			| ((prim_field_data[off++] & 0xFF) << 8)
@@ -1369,10 +1369,10 @@ public class ObjectInputStream extends InputStream
 	  int off = field.getOffset();
 
 	  return Double.longBitsToDouble
-	    ( (long) (((prim_field_data[off++] & 0xFF) << 56)
-		      | ((prim_field_data[off++] & 0xFF) << 48)
-		      | ((prim_field_data[off++] & 0xFF) << 40)
-		      | ((prim_field_data[off++] & 0xFF) << 32)
+	    ( (long) (((prim_field_data[off++] & 0xFFL) << 56)
+		      | ((prim_field_data[off++] & 0xFFL) << 48)
+		      | ((prim_field_data[off++] & 0xFFL) << 40)
+		      | ((prim_field_data[off++] & 0xFFL) << 32)
 		      | ((prim_field_data[off++] & 0xFF) << 24)
 		      | ((prim_field_data[off++] & 0xFF) << 16)
 		      | ((prim_field_data[off++] & 0xFF) << 8)
