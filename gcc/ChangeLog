@@ -1,3 +1,7 @@
+Wed Jul 24 17:23:16 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* rtlanal.c (keep_with_call_p): Avoid overflow in fixed_regs.
+
 2002-07-24  Frank van der Linden  <fvdl@wasabisystems.com>
 
 	PR optimization/7291
