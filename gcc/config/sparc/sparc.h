@@ -107,7 +107,7 @@ extern enum cmodel sparc_cmodel;
 /* Values of TARGET_CPU_DEFAULT, set via -D in the Makefile,
    and specified by the user via --with-cpu=foo.
    This specifies the cpu implementation, not the architecture size.  */
-/* Note that TARGET_CPU_v9 is assumed to start the list of 64-bit 
+/* Note that TARGET_CPU_v9 is assumed to start the list of 64-bit
    capable cpu's.  */
 #define TARGET_CPU_sparc	0
 #define TARGET_CPU_v7		0	/* alias for previous */
@@ -187,7 +187,7 @@ extern enum cmodel sparc_cmodel;
 #endif
 
 #if !defined(CPP_CPU32_DEFAULT_SPEC) || !defined(CPP_CPU64_DEFAULT_SPEC)
-Unrecognized value in TARGET_CPU_DEFAULT.
+ #error Unrecognized value in TARGET_CPU_DEFAULT.
 #endif
 
 #ifdef SPARC_BI_ARCH
@@ -479,13 +479,13 @@ extern int target_flags;
 #define TARGET_FPU_SET (target_flags & MASK_FPU_SET)
 
 /* Use the UltraSPARC Visual Instruction Set extensions.  */
-#define MASK_VIS 0x1000000          
+#define MASK_VIS 0x1000000
 #define TARGET_VIS (target_flags & MASK_VIS)
 
 /* Compile for Solaris V8+.  32 bit Solaris preserves the high bits of
    the current out and global registers and Linux 2.2+ as well.  */
 #define MASK_V8PLUS 0x2000000
-#define TARGET_V8PLUS (target_flags & MASK_V8PLUS)                            
+#define TARGET_V8PLUS (target_flags & MASK_V8PLUS)
 
 /* Force a the fastest alignment on structures to take advantage of
    faster copies.  */
@@ -508,7 +508,7 @@ extern int target_flags;
 
 #define TARGET_HARD_MUL					\
   (TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET	\
-   || TARGET_DEPRECATED_V8_INSNS || TARGET_V8PLUS)                        
+   || TARGET_DEPRECATED_V8_INSNS || TARGET_V8PLUS)
 
 
 /* Macro to define tables used to set the flags.
@@ -1242,8 +1242,8 @@ extern enum reg_class sparc_regno_reg_class[FIRST_PSEUDO_REGISTER];
 
 #define REGNO_REG_CLASS(REGNO) sparc_regno_reg_class[(REGNO)]
 
-/* This is the order in which to allocate registers normally.  
-   
+/* This is the order in which to allocate registers normally.
+
    We put %f0-%f7 last among the float registers, so as to make it more
    likely that a pseudo-register which dies in the float return register
    area will get allocated to the float return register, thus saving a move
@@ -1318,7 +1318,7 @@ extern enum reg_class sparc_regno_reg_class[FIRST_PSEUDO_REGISTER];
   39, 38, 37, 36, 35, 34, 33, 32,	/* %f7-%f0 */	\
   96, 97, 98, 99,			/* %fcc0-3 */	\
   100, 0, 14, 30, 31, 101}		/* %icc, %g0, %o6, %i6, %i7, %sfp */
-  
+
 #define ORDER_REGS_FOR_LOCAL_ALLOC order_regs_for_local_alloc ()
 
 extern char sparc_leaf_regs[];
@@ -1476,7 +1476,7 @@ extern char leaf_reg_remap[];
        ? GENERAL_REGS						\
        : NO_REGS)
 
-/* On SPARC it is not possible to directly move data between 
+/* On SPARC it is not possible to directly move data between
    GENERAL_REGS and FP_REGS.  */
 #define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE) \
   (FP_REG_CLASS_P (CLASS1) != FP_REG_CLASS_P (CLASS2))
@@ -1572,7 +1572,7 @@ extern char leaf_reg_remap[];
 
 /* Definitions for register elimination.  */
 /* ??? In TARGET_FLAT mode we needn't have a hard frame pointer.  */
-   
+
 #define ELIMINABLE_REGS \
   {{ FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}, \
    { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM} }
@@ -1825,7 +1825,7 @@ extern GTY(()) rtx sparc_compare_op1;
   fprintf ((FILE), "\t.proc\t0%lo\n", sparc_type_code (TREE_TYPE (RESULT)))
 
 /* Output the special assembly code needed to tell the assembler some
-   register is used as global register variable.  
+   register is used as global register variable.
 
    SPARC 64bit psABI declares registers %g2 and %g3 as application
    registers and %g6 and %g7 as OS registers.  Any object using them
@@ -2219,7 +2219,7 @@ do {									\
 
 #define RTX_OK_FOR_OFFSET_P(X)						\
   (GET_CODE (X) == CONST_INT && INTVAL (X) >= -0x1000 && INTVAL (X) < 0x1000 - 8)
-  
+
 #define RTX_OK_FOR_OLO10_P(X)						\
   (GET_CODE (X) == CONST_INT && INTVAL (X) >= -0x1000 && INTVAL (X) < 0xc00 - 8)
 
@@ -2374,7 +2374,7 @@ do {									\
    macro is used in only one place: `find_reloads_address' in reload.c.
 
    For SPARC 32, we wish to handle addresses by splitting them into
-   HIGH+LO_SUM pairs, retaining the LO_SUM in the memory reference. 
+   HIGH+LO_SUM pairs, retaining the LO_SUM in the memory reference.
    This cuts the number of extra insns by one.
 
    Do nothing when generating PIC code and the address is a
@@ -3008,4 +3008,3 @@ do {									\
 #define JMP_BUF_SIZE 12
 
 #define DONT_ACCESS_GBLS_AFTER_EPILOGUE (flag_pic)
-

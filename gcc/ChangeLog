@@ -1,3 +1,7 @@
+2002-10-22  Eric Christopher  <echristo@redhat.com>
+
+	* config/sparc/sparc.h: Add #error.
+
 2002-10-22  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config.gcc [s390-*-linux]: Remove s390/t-linux from tmake_file.
@@ -205,7 +209,7 @@ Tue Oct 22 00:04:20 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	config/ia64/ia64.h, config/m68k/linux.h, config/m68k/m68k-protos.h,
 	config/m68k/m68k.c, config/m68k/netbsd-elf.h, config/m68k/openbsd.h,
 	config/mmix/mmix-protos.h, config/mmix/mmix.c, config/mmix/mmix.h,
-	config/pa/pa-protos.h, config/pa/pa.c, config/pa/pa.h, 
+	config/pa/pa-protos.h, config/pa/pa.c, config/pa/pa.h,
 	config/s390/s390-protos.h, config/s390/s390.c, config/s390/s390.h,
 	config/sparc/openbsd.h, config/sparc/sparc-protos.h,
 	config/sparc/sparc.c, config/sparc/sparc.h,
@@ -269,7 +273,7 @@ Tue Oct 22 00:04:20 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* stormy16-protos.h, stormy16.c (xstormy16_asm_output_mi_thunk):
 	Likewise.
 	* vax-protos.h, vax.c (vax_output_mi_thunk): Likewise.
-	
+
 	* target.h (gcc_target): Update output_mi_thunk and
 	output_mi_vcall_thunk to take a HOST_WIDE_INT delta and
 	vcall_index.
@@ -293,7 +297,7 @@ Tue Oct 22 00:04:20 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* doc/tm.texi (TARGET_ASM_OUTPUT_MI_THUNK): Update signature.
 	(TARGET_ASM_OUTPU_MI_VCALL_THUNK): Likewise.
-	
+
 2002-10-19  Brad Lucier  <lucier@math.purdue.edu>
 
 	* real.c (do_add): Fix 0+0 sign corner case.
