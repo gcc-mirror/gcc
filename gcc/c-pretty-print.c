@@ -1142,7 +1142,7 @@ pp_c_postfix_expression (c_pretty_printer ppi, tree e)
           pp_c_id_expression (ppi, TREE_OPERAND (e, 0));
           break;
         }
-      /* else fall through.   */
+      /* else fall through.  */
 
     default:
       pp_primary_expression (ppi, e);

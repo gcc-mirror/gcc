@@ -3163,7 +3163,7 @@ simplify_rtx (rtx x)
       if (swap_commutative_operands_p (XEXP (x, 0), XEXP (x, 1)))
 	return simplify_gen_binary (code, mode, XEXP (x, 1), XEXP (x, 0));
 
-      /* Fall through.... */
+      /* Fall through....  */
 
     case '2':
       return simplify_binary_operation (code, mode, XEXP (x, 0), XEXP (x, 1));

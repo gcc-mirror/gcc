@@ -57,7 +57,7 @@ typedef diagnostic_starter_fn diagnostic_finalizer_fn;
    the context of a diagnostic message.  */
 struct diagnostic_context
 {
-  /* Where most of the diagnostic formatting work is done.   */
+  /* Where most of the diagnostic formatting work is done.  */
   pretty_printer *printer;
 
   /* The number of times we have issued diagnostics.  */

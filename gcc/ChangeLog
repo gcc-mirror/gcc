@@ -1,3 +1,13 @@
+2003-08-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* builtin-attrs.def: Fix comment formatting.
+	* c-pretty-print.c: Likewise.
+	* diagnostic.h: Likewise.
+	* langhooks.h: Likewise.
+	* recog.c: Likewise.
+	* simplify-rtx.c: Likewise.
+	* tree.def: Likewise.
+
 2003-08-22  Bernardo Innocenti  <bernie@develer.com>
 
 	* config/m68k/m68k-protos.h: Convert to ISO C90.

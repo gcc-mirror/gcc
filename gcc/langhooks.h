@@ -362,7 +362,7 @@ struct lang_hooks
   tree (*expr_size) (tree);
 
   /* Called from uninitialized_vars_warning to find out if a variable is
-     uninitialized based on DECL_INITIAL. */
+     uninitialized based on DECL_INITIAL.  */
   bool (*decl_uninit) (tree);
 
   /* Pointers to machine-independent attribute tables, for front ends
