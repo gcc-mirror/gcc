@@ -38,8 +38,11 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
+import java.awt.AWTEvent;
 import java.awt.Dimension;
 import java.awt.List;
+import java.awt.event.MouseEvent;
+import java.awt.event.KeyEvent;
 import java.awt.peer.ListPeer;
 
 public class GtkListPeer extends GtkComponentPeer
@@ -119,6 +122,29 @@ public class GtkListPeer extends GtkComponentPeer
   public void setMultipleSelections (boolean b)
   {
     setMultipleMode (b);
+  }
+
+  public void handleEvent (AWTEvent e)
+  {
+    if (e.getID () == MouseEvent.MOUSE_CLICKED && isEnabled ())
+      {
+	MouseEvent me = (MouseEvent) e;
+	if (!me.isConsumed ()
+	    && (me.getModifiers () & MouseEvent.BUTTON1_MASK) != 0
+	    && me.getClickCount() > 1)
+	  postActionEvent (((List)awtComponent).getSelectedItem (), 
+			   me.getModifiers ());
+      }
+
+    if (e.getID () == KeyEvent.KEY_PRESSED)
+      {
+	KeyEvent ke = (KeyEvent) e;
+	if (!ke.isConsumed () && ke.getKeyCode () == KeyEvent.VK_ENTER)
+	  postActionEvent (((List)awtComponent).getSelectedItem (),
+			   ke.getModifiers ());
+      }
+
+    super.handleEvent (e);
   }
 
   protected void postItemEvent (int item, int stateChange)

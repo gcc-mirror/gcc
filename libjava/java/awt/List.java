@@ -668,7 +668,7 @@ getSelectedIndex()
       selected = l.getSelectedIndexes ();
     }
 
-  if (selected == null || selected.length > 1)
+  if (selected == null || selected.length != 1)
     return -1;
   return selected[0];
 }

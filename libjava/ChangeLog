@@ -1,3 +1,16 @@
+2003-12-02  Fernando Nasser  <fnasser@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkListPeer.java (handleEvent): New
+	method. Handle mouse and key events that must generate
+	ActionEvents.
+	* java/awt/List.java (getSelectedIndex): Return -1
+	if no list element is selected.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c (awt_event_handler):
+	Correct handling of mouse and key events so that List receives them.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkListPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkListPeer_delItems): Fix removal of
+	multiple list elements. 
+
 2003-12-02  Ito Kazumitsu  <kaz@maczuka.gcd.org>
 
 	* java/text/SimpleDateFormat.java (compileFormat):
