@@ -25,9 +25,8 @@ Boston, MA 02111-1307, USA.  */
 #define LOOP_UNROLL 1
 #define LOOP_BCT 2
 
-
 /* Get the loop info pointer of a loop.  */
-#define LOOP_INFO(LOOP) ((struct loop_info *) (LOOP)->aux) 
+#define LOOP_INFO(LOOP) ((struct loop_info *) (LOOP)->aux)
 
 /* Get a pointer to the loop registers structure.  */
 #define LOOP_REGS(LOOP) (&LOOP_INFO (loop)->regs)
@@ -52,7 +51,11 @@ Boston, MA 02111-1307, USA.  */
 
 /* An enum for the two different types of givs, those that are used
    as memory addresses and those that are calculated into registers.  */
-enum g_types { DEST_ADDR, DEST_REG };
+enum g_types
+{
+  DEST_ADDR,
+  DEST_REG
+};
 
 /* A `struct induction' is created for every instruction that sets
    an induction variable (either a biv or a giv).  */
@@ -74,7 +77,7 @@ struct induction
 				/* For a biv, this is the place where add_val
 				   was found.  */
   enum machine_mode mode;	/* The mode of this biv or giv */
-  enum machine_mode mem_mode;	/* For DEST_ADDR, mode of the memory object. */
+  enum machine_mode mem_mode;	/* For DEST_ADDR, mode of the memory object.  */
   rtx mult_val;			/* Multiplicative factor for src_reg.  */
   rtx add_val;			/* Additive constant for that product.  */
   int benefit;			/* Gain from eliminating this insn.  */
@@ -102,25 +105,25 @@ struct induction
   unsigned always_executed : 1; /* 1 if this set occurs each iteration.  */
   unsigned maybe_multiple : 1;	/* Only used for a biv and  1 if this biv
 				   update may be done multiple times per
-				   iteration. */
+				   iteration.  */
   unsigned cant_derive : 1;	/* For giv's, 1 if this giv cannot derive
 				   another giv.  This occurs in many cases
 				   where a giv's lifetime spans an update to
-				   a biv. */
+				   a biv.  */
   unsigned maybe_dead : 1;	/* 1 if this giv might be dead.  In that case,
 				   we won't use it to eliminate a biv, it
-				   would probably lose. */
+				   would probably lose.  */
   unsigned auto_inc_opt : 1;	/* 1 if this giv had its increment output next
-				   to it to try to form an auto-inc address. */
+				   to it to try to form an auto-inc address.  */
   unsigned unrolled : 1;	/* 1 if new register has been allocated and
 				   initialized in unrolled loop.  */
   unsigned shared : 1;
-  unsigned no_const_addval : 1; /* 1 if add_val does not contain a const. */
+  unsigned no_const_addval : 1; /* 1 if add_val does not contain a const.  */
   int lifetime;			/* Length of life of this giv */
   rtx derive_adjustment;	/* If nonzero, is an adjustment to be
 				   subtracted from add_val when this giv
 				   derives another.  This occurs when the
-				   giv spans a biv update by incrementation. */
+				   giv spans a biv update by incrementation.  */
   rtx ext_dependant;		/* If nonzero, is a sign or zero extension
 				   if a biv on which this giv is dependant.  */
   struct induction *next_iv;	/* For givs, links together all givs that are
@@ -135,7 +138,7 @@ struct induction
   HOST_WIDE_INT const_adjust;	/* Used by loop unrolling, when an address giv
 				   is split, and a constant is eliminated from
 				   the address, the -constant is stored here
-				   for later use. */
+				   for later use.  */
   int ix;			/* Used by recombine_givs, as n index into
 				   the stats array.  */
   struct induction *same_insn;	/* If there are multiple identical givs in
@@ -143,12 +146,13 @@ struct induction
 				   field set, and they all point to the giv
 				   that doesn't have this field set.  */
   rtx last_use;			/* For a giv made from a biv increment, this is
-				   a substitute for the lifetime information. */
+				   a substitute for the lifetime information.  */
 };
 
 /* A `struct iv_class' is created for each biv.  */
 
-struct iv_class {
+struct iv_class
+{
   unsigned int regno;		/* Pseudo reg which is the biv.  */
   int biv_count;		/* Number of insns setting this reg.  */
   struct induction *biv;	/* List of all insns that set this reg.  */
@@ -161,15 +165,14 @@ struct iv_class {
   rtx initial_value;		/* Value of reg at loop start */
   rtx initial_test;		/* Test performed on BIV before loop */
   struct iv_class *next;	/* Links all class structures together */
-  rtx init_insn;		/* insn which initializes biv, 0 if none. */
-  rtx init_set;			/* SET of INIT_INSN, if any. */
+  rtx init_insn;		/* insn which initializes biv, 0 if none.  */
+  rtx init_set;			/* SET of INIT_INSN, if any.  */
   unsigned incremented : 1;	/* 1 if somewhere incremented/decremented */
-  unsigned eliminable : 1;	/* 1 if plausible candidate for elimination. */
-  unsigned nonneg : 1;		/* 1 if we added a REG_NONNEG note for this. */
+  unsigned eliminable : 1;	/* 1 if plausible candidate for elimination.  */
+  unsigned nonneg : 1;		/* 1 if we added a REG_NONNEG note for this.  */
   unsigned reversed : 1;	/* 1 if we reversed the loop that this
-				   biv controls. */
+				   biv controls.  */
 };
-
 
 typedef struct loop_mem_info
 {
@@ -178,13 +181,12 @@ typedef struct loop_mem_info
   int optimize; /* Nonzero if we can optimize access to this MEM.  */
 } loop_mem_info;
 
-
 struct loop_ivs
 {
   /* Indexed by register number, indicates whether or not register is
      an induction variable, and if so what type.  */
   varray_type reg_iv_type;
-  
+
   /* Indexed by register number, contains pointer to `struct
      induction' if register is an induction variable.  This holds
      general info for all induction variables.  */
@@ -195,7 +197,7 @@ struct loop_ivs
      describing the class (a related group) of induction variables
      that the biv belongs to.  */
   struct iv_class **reg_biv_class;
-  
+
   /* The head of a list which links together (via the next field)
      every iv class for the current loop.  */
   struct iv_class *loop_iv_list;
@@ -206,7 +208,6 @@ struct loop_ivs
   unsigned int first_increment_giv;
   unsigned int last_increment_giv;
 };
-
 
 struct loop_regs
 {
@@ -220,7 +221,7 @@ struct loop_regs
      not known equal to a constant.
      After code motion, regs moved have 0 (which is accurate now)
      while the failed candidates have the original number of times set.
-     
+
      Therefore, at all times, == 0 indicates an invariant register;
      < 0 a conditionally invariant one.  */
   varray_type set_in_loop;
@@ -229,22 +230,21 @@ struct loop_regs
      is not set negative for a reg whose sets have been made candidates
      and not set to 0 for a reg that is moved.  */
   varray_type n_times_set;
-  
+
   /* Index by register number, 1 indicates that the register
      cannot be moved or strength reduced.  */
   varray_type may_not_optimize;
-  
+
   /* Contains the insn in which a register was used if it was used
      exactly once; contains const0_rtx if it was used more than once.  */
   varray_type single_usage;
-  
+
   /* Nonzero means reg N has already been moved out of one loop.
      This reduces the desire to move it out of another.  */
   char *moved_once;
 
   int multiple_uses;
 };
-
 
 /* Information pertaining to a loop.  */
 
@@ -321,8 +321,13 @@ struct loop_info
 };
 
 /* Definitions used by the basic induction variable discovery code.  */
-enum iv_mode { UNKNOWN_INDUCT, BASIC_INDUCT, NOT_BASIC_INDUCT,
-		 GENERAL_INDUCT };
+enum iv_mode
+{
+  UNKNOWN_INDUCT,
+  BASIC_INDUCT,
+  NOT_BASIC_INDUCT,
+  GENERAL_INDUCT
+};
 
 /* Variables declared in loop.c, but also needed in unroll.c.  */
 
@@ -349,8 +354,8 @@ void unroll_loop PARAMS ((struct loop *, int, rtx, int));
 rtx biv_total_increment PARAMS ((struct iv_class *));
 unsigned HOST_WIDE_INT loop_iterations PARAMS ((struct loop *));
 int precondition_loop_p PARAMS ((const struct loop *,
-			       rtx *, rtx *, rtx *, 
-			       enum machine_mode *mode));
+				 rtx *, rtx *, rtx *,
+				 enum machine_mode *mode));
 rtx final_biv_value PARAMS ((const struct loop *, struct iv_class *));
 rtx final_giv_value PARAMS ((const struct loop *, struct induction *));
 void emit_unrolled_add PARAMS ((rtx, rtx, rtx));
