@@ -1,3 +1,11 @@
+Tue Nov 18 23:03:30 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.md (attribute "type"): Add nil.
+	(movsi_ie): y/y alternative is type nil.
+	(movsf_ie): Replace ry/yr/X alternative by r/y/X , y/r/X and y/y/X
+	alternatives.
+	(movsf_ie+1): Delete.
+
 Tue Nov 18 15:39:59 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* mips/mips.c (save_restore_insns): If gp_offset or fp_offset are
