@@ -1,3 +1,14 @@
+2004-04-19  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* Makefile.in: Fix errors introduced in previous change (in particular,
+	errors when building gnattools were ignored).
+	Code clean up and simplification.
+	update comments.
+	Remove temporary debug code introduced by mistake in previous check in.
+	Prefer GNU Make syntax over complex and error-prone sh syntax.
+	(gnatlib-zcx): New target.
+	(ada.all.cross): Merged with gnattools-cross target.
+
 2004-04-17  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.ac: It's gnatlib-plain in the Makefile, not
