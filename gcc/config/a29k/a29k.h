@@ -1529,9 +1529,9 @@ extern int a29k_debug_reg_map[];
   {"const_16__operand", {CONST_INT, ASHIFT}},			\
   {"const_24__operand", {CONST_INT, ASHIFT}},			\
   {"float_const_operand", {CONST_DOUBLE}},			\
-  {"gen_reg_operand", {SUBREG, REG}},				\
-  {"gen_reg_or_float_constant_operand", {SUBREG, REG, CONST_DOUBLE}}, \
-  {"gen_reg_or_integer_constant_operand", {SUBREG, REG,		\
+  {"gpc_reg_operand", {SUBREG, REG}},				\
+  {"gpc_reg_or_float_constant_operand", {SUBREG, REG, CONST_DOUBLE}}, \
+  {"gpc_reg_or_integer_constant_operand", {SUBREG, REG,		\
 					   CONST_INT, CONST_DOUBLE}}, \
   {"spec_reg_operand", {REG}},					\
   {"accum_reg_operand", {REG}},					\
