@@ -1467,7 +1467,7 @@ add_label_notes (x, insns)
      rtx insns;
 {
   enum rtx_code code = GET_CODE (x);
-  int i;
+  int i, j;
   char *fmt;
   rtx insn;
 
@@ -1482,8 +1482,13 @@ add_label_notes (x, insns)
 
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    if (fmt[i] == 'e')
-      add_label_notes (XEXP (x, i), insns);
+    {
+      if (fmt[i] == 'e')
+	add_label_notes (XEXP (x, i), insns);
+      else if (fmt[i] == 'E')
+	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	  add_label_notes (XVECEXP (x, i, j), insns);
+    }
 }
 
 /* Scan MOVABLES, and move the insns that deserve to be moved.
@@ -3067,6 +3072,9 @@ strength_reduce (scan_start, end, loop_top, insn_count,
   /* This is 1 if current insn is not executed at least once for every loop
      iteration.  */
   int not_every_iteration = 0;
+  /* This is 1 if current insn may be executed more than once for every
+     loop iteration.  */
+  int maybe_multiple = 0;
   /* Temporary list pointers for traversing loop_iv_list.  */
   struct iv_class *bl, **backbl;
   /* Ratio of extra register life span we can justify
@@ -3141,11 +3149,51 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		    = (struct induction *) alloca (sizeof (struct induction));
 
 		  record_biv (v, p, dest_reg, inc_val, mult_val,
-			      not_every_iteration);
+			      not_every_iteration, maybe_multiple);
 		  reg_iv_type[REGNO (dest_reg)] = BASIC_INDUCT;
 		}
 	      else if (REGNO (dest_reg) < max_reg_before_loop)
 		reg_iv_type[REGNO (dest_reg)] = NOT_BASIC_INDUCT;
+	    }
+	}
+
+      /* Past CODE_LABEL, we get to insns that may be executed multiple
+	 times.  The only way we can be sure that they can't is if every
+	 every jump insn between here and the end of the loop either
+	 returns, exits the loop, or is a forward jump.  */
+
+      if (GET_CODE (p) == CODE_LABEL)
+	{
+	  rtx insn = p;
+
+	  maybe_multiple = 0;
+
+	  while (1)
+	    {
+	      insn = NEXT_INSN (insn);
+	      if (insn == scan_start)
+		break;
+	      if (insn == end)
+		{
+		  if (loop_top != 0)
+		    insn = NEXT_INSN (loop_top);
+		  else
+		    break;
+		  if (insn == scan_start)
+		    break;
+		}
+
+	      if (GET_CODE (insn) == JUMP_INSN
+		  && GET_CODE (PATTERN (insn)) != RETURN
+		  && (! condjump_p (insn)
+		      || (JUMP_LABEL (insn) != 0
+			  && (INSN_UID (JUMP_LABEL (insn)) > max_uid_for_loop
+			      || (INSN_LUID (JUMP_LABEL (insn))
+				  < INSN_LUID (insn))))))
+	      {
+		maybe_multiple = 1;
+		break;
+	      }
 	    }
 	}
 
@@ -3415,7 +3463,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 
       /* Update the status of whether giv can derive other givs.  This can
 	 change when we pass a label or an insn that updates a biv.  */
-      if (GET_CODE (p) == INSN || GET_CODE (p) == CODE_LABEL)
+      if (GET_CODE (p) == INSN || GET_CODE (p) == JUMP_INSN
+	|| GET_CODE (p) == CODE_LABEL)
 	update_giv_derive (p);
 
       /* Past a label or a jump, we get to insns for which we can't count
@@ -4000,16 +4049,24 @@ find_mem_givs (x, insn, not_every_iteration, loop_start, loop_end)
 
    MULT_VAL is const1_rtx if the biv is being incremented here, in which case
    INC_VAL is the increment.  Otherwise, MULT_VAL is const0_rtx and the biv is
-   being set to INC_VAL.  */
+   being set to INC_VAL.
+
+   NOT_EVERY_ITERATION is nonzero if this biv update is not know to be
+   executed every iteration; MAYBE_MULTIPLE is nonzero if this biv update
+   can be executed more than once per iteration.  If MAYBE_MULTIPLE
+   and NOT_EVERY_ITERATION are both zero, we know that the biv update is
+   executed exactly once per iteration.  */
 
 static void
-record_biv (v, insn, dest_reg, inc_val, mult_val, not_every_iteration)
+record_biv (v, insn, dest_reg, inc_val, mult_val,
+	    not_every_iteration, maybe_multiple)
      struct induction *v;
      rtx insn;
      rtx dest_reg;
      rtx inc_val;
      rtx mult_val;
      int not_every_iteration;
+     int maybe_multiple;
 {
   struct iv_class *bl;
 
@@ -4020,6 +4077,7 @@ record_biv (v, insn, dest_reg, inc_val, mult_val, not_every_iteration)
   v->add_val = inc_val;
   v->mode = GET_MODE (dest_reg);
   v->always_computable = ! not_every_iteration;
+  v->maybe_multiple = maybe_multiple;
 
   /* Add this to the reg's iv_class, creating a class
      if this is the first incrementation of the reg.  */
@@ -4122,6 +4180,7 @@ record_giv (v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
   v->location = location;
   v->cant_derive = 0;
   v->combined_with = 0;
+  v->maybe_multiple = 0;
   v->maybe_dead = 0;
   v->derive_adjustment = 0;
   v->same = 0;
@@ -4485,7 +4544,7 @@ update_giv_derive (p)
 
   /* Search all IV classes, then all bivs, and finally all givs.
 
-     There are two cases we are concerned with.  First we have the situation
+     There are three cases we are concerned with.  First we have the situation
      of a giv that is only updated conditionally.  In that case, it may not
      derive any givs after a label is passed.
 
@@ -4501,13 +4560,19 @@ update_giv_derive (p)
      a branch here (actually, we need to pass both a jump and a label, but
      this extra tracking doesn't seem worth it).
 
-     If this is a giv update, we must adjust the giv status to show that a
+     If this is a jump, we are concerned about any biv update that may be
+     executed multiple times.  We are actually only concerned about
+     backward jumps, but it is probably not worth performing the test
+     on the jump again here.
+
+     If this is a biv update, we must adjust the giv status to show that a
      subsequent biv update was performed.  If this adjustment cannot be done,
      the giv cannot derive further givs.  */
 
   for (bl = loop_iv_list; bl; bl = bl->next)
     for (biv = bl->biv; biv; biv = biv->next_iv)
-      if (GET_CODE (p) == CODE_LABEL || biv->insn == p)
+      if (GET_CODE (p) == CODE_LABEL || GET_CODE (p) == JUMP_INSN
+	  || biv->insn == p)
 	{
 	  for (giv = bl->giv; giv; giv = giv->next_iv)
 	    {
@@ -4551,7 +4616,8 @@ update_giv_derive (p)
 		  else
 		    giv->cant_derive = 1;
 		}
-	      else if (GET_CODE (p) == CODE_LABEL && ! biv->always_computable)
+	      else if ((GET_CODE (p) == CODE_LABEL && ! biv->always_computable)
+		       || (GET_CODE (p) == JUMP_INSN && biv->maybe_multiple))
 		giv->cant_derive = 1;
 	    }
 	}
