@@ -233,7 +233,7 @@ do {  \
 \t.SUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY\n\
 \t.IMPORT $global$,DATA\n\
 \t.IMPORT $$dyncall,MILLICODE\n", FILE);\
-     if (current_function_profile)\
+     if (profile_flag)\
        fprintf (FILE, "\t.IMPORT _mcount, CODE\n");\
      if (write_symbols != NO_DEBUG) \
        output_file_directive ((FILE), main_input_filename); \
