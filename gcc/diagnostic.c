@@ -103,9 +103,6 @@ extern int warnings_are_errors;
 static diagnostic_context global_diagnostic_context;
 diagnostic_context *global_dc = &global_diagnostic_context;
 
-/* This will be removed shortly.  */
-output_buffer *diagnostic_buffer = &global_diagnostic_context.buffer;
-
 /* Function of last error message;
    more generally, function such that if next error message is in it
    then we don't have to mention the function name.  */
@@ -177,7 +174,7 @@ int
 output_is_line_wrapping (buffer)
      output_buffer *buffer;
 {
-  return diagnostic_line_cutoff (buffer) > 0;
+  return output_line_cutoff (buffer) > 0;
 }
 
 /* Return BUFFER's prefix.  */
@@ -200,19 +197,19 @@ set_real_maximum_length (buffer)
    we'll emit prefix only once per diagnostic message, it is appropriate
   not to increase unnecessarily the line-length cut-off.  */
   if (! output_is_line_wrapping (buffer)
-      || diagnostic_prefixing_rule (buffer) == DIAGNOSTICS_SHOW_PREFIX_ONCE
-      || diagnostic_prefixing_rule (buffer) == DIAGNOSTICS_SHOW_PREFIX_NEVER)
-    line_wrap_cutoff (buffer) = diagnostic_line_cutoff (buffer);
+      || output_prefixing_rule (buffer) == DIAGNOSTICS_SHOW_PREFIX_ONCE
+      || output_prefixing_rule (buffer) == DIAGNOSTICS_SHOW_PREFIX_NEVER)
+    line_wrap_cutoff (buffer) = output_line_cutoff (buffer);
   else
     {
       int prefix_length =
         output_prefix (buffer) ? strlen (output_prefix (buffer)) : 0;
       /* If the prefix is ridiculously too long, output at least
          32 characters.  */
-      if (diagnostic_line_cutoff (buffer) - prefix_length < 32)
-        line_wrap_cutoff (buffer) = diagnostic_line_cutoff (buffer) + 32;
+      if (output_line_cutoff (buffer) - prefix_length < 32)
+        line_wrap_cutoff (buffer) = output_line_cutoff (buffer) + 32;
       else
-        line_wrap_cutoff (buffer) = diagnostic_line_cutoff (buffer);
+        line_wrap_cutoff (buffer) = output_line_cutoff (buffer);
     }
 }
 
@@ -224,7 +221,7 @@ output_set_maximum_length (buffer, length)
      output_buffer *buffer;
      int length;
 {
-  diagnostic_line_cutoff (buffer) = length;
+  output_line_cutoff (buffer) = length;
   set_real_maximum_length (buffer);
 }
 
@@ -301,8 +298,8 @@ init_output_buffer (buffer, prefix, maximum_length)
   memset (buffer, 0, sizeof (output_buffer));
   obstack_init (&buffer->obstack);
   output_buffer_attached_stream (buffer) = stderr;
-  diagnostic_line_cutoff (buffer) = maximum_length;
-  diagnostic_prefixing_rule (buffer) = diagnostic_prefixing_rule (global_dc);
+  output_line_cutoff (buffer) = maximum_length;
+  output_prefixing_rule (buffer) = diagnostic_prefixing_rule (global_dc);
   output_set_prefix (buffer, prefix);
   output_text_length (buffer) = 0;
   clear_diagnostic_info (buffer);  
@@ -354,7 +351,7 @@ output_emit_prefix (buffer)
 {
   if (output_prefix (buffer) != NULL)
     {
-      switch (diagnostic_prefixing_rule (buffer))
+      switch (output_prefixing_rule (buffer))
         {
         default:
         case DIAGNOSTICS_SHOW_PREFIX_NEVER:
@@ -1091,7 +1088,7 @@ lhd_print_error_function (context, file)
       char *prefix = file ? build_message_string ("%s: ", file) : NULL;
       output_state os;
 
-      os = output_buffer_state (context);
+      os = diagnostic_state (context);
       output_set_prefix ((output_buffer *) context, prefix);
       
       if (current_function_decl == NULL)
@@ -1111,7 +1108,7 @@ lhd_print_error_function (context, file)
 
       record_last_error_function ();
       output_buffer_to_stream ((output_buffer *) context);
-      output_buffer_state (context) = os;
+      diagnostic_state (context) = os;
       free ((char*) prefix);
     }
 }
@@ -1307,7 +1304,7 @@ output_do_verbatim (buffer, msgid, args_ptr)
 
   os = output_buffer_state (buffer);
   output_prefix (buffer) = NULL;
-  diagnostic_prefixing_rule (buffer) = DIAGNOSTICS_SHOW_PREFIX_NEVER;
+  output_prefixing_rule (buffer) = DIAGNOSTICS_SHOW_PREFIX_NEVER;
   output_buffer_text_cursor (buffer) = _(msgid);
   output_buffer_ptr_to_format_args (buffer) = args_ptr;
   output_set_maximum_length (buffer, 0);

@@ -1,3 +1,24 @@
+2002-04-15  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* diagnostic.h (output_buffer_state): Redefine.
+	(output_format_decoder): New macro.
+	(output_prefixing_rule): Likewise.
+	(output_line_cutoff): Likewise.
+	(diagnostic_format_decoder): Adjust.
+	(diagnostic_prefixing_rule): Likewise.
+	(diagnostic_line_cutoff): Likewise.
+	(diagnostic_state): Likewise.
+	(diagnostic_kind_count): Likewise.
+	(diagnostic_buffer): Now a macro.
+
+	* diagnostic.c (diagnostic_buffer): Remove definition.
+	(output_is_line_wrapping): Adjust.
+	(set_real_maximum_length): Likewise.
+	(output_set_maximum_length): Likewise.
+	(init_output_buffer): Likewise.
+	(lhd_print_error_function): Likewise.
+	(output_do_verbatim): Likewise.
+
 2002-04-14  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpperror.c (print_location): Don't print include chain

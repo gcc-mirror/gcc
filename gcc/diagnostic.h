@@ -130,9 +130,8 @@ struct output_buffer
   printer_fn format_decoder;
 };
 
-/* Current state of the diagnostic_context' output_buffer.  This macro
-   accepts both `diagnostic_context *' and `output_buffer *'.  */
-#define output_buffer_state(BUFFER) ((output_buffer *)(BUFFER))->state
+/* Current state of an output_buffer.  */
+#define output_buffer_state(BUFFER) (BUFFER)->state
 
 /* The stream attached to the output_buffer, where the formatted
    diagnostics will ultimately go.  Works only on `output_buffer *'.  */
@@ -156,6 +155,16 @@ struct output_buffer
 /* A pointer to the formatted diagonstic message.  */
 #define output_message_text(BUFFER) \
    ((const char *) obstack_base (&(BUFFER)->obstack))
+
+/* Client supplied function used to decode formats.  */
+#define output_format_decoder(BUFFER)     (BUFFER)->format_decoder
+
+/* Prefixing rule used in formatting a diagnostic message.  */
+#define output_prefixing_rule(BUFFER)  (BUFFER)->state.prefixing_rule
+
+/* Maximum characters per line in automatic line wrapping mode.
+   Zero means don't wrap lines.  */
+#define output_line_cutoff(BUFFER)  (BUFFER)->state.ideal_maximum_length
 
 /* This data structure bundles altogether any information relevant to
    the context of a diagnostic message.  */
@@ -224,31 +233,29 @@ struct diagnostic_context
 /* Extension hook for client.  */
 #define diagnostic_auxiliary_data(DC) (DC)->x_data
 
-/* Client supplied function used to decode formats.  Can operate on both
- `output_buffer *' and `diagnostic_context *'.  */
-#define diagnostic_format_decoder(DC) ((output_buffer *)(DC))->format_decoder
+/* Same as output_format_decoder.  Works on 'diagnostic_context *'.  */
+#define diagnostic_format_decoder(DC) output_format_decoder (&(DC)->buffer)
 
-/* Prefixing rule used in formatting a diagnostic message.  Accepts both
-   `output_buffer *' and `diagnostic_context *'.  */
-#define diagnostic_prefixing_rule(DC) \
-   ((output_buffer *)(DC))->state.prefixing_rule
+/* Same as output_prefixing_rule.  Works on 'diagnostic_context *'.  */
+#define diagnostic_prefixing_rule(DC) output_prefixing_rule (&(DC)->buffer)
 
 /* Maximum characters per line in automatic line wrapping mode.
    Zero means don't wrap lines.  */
-#define diagnostic_line_cutoff(DC) \
-   ((output_buffer *)(DC))->state.ideal_maximum_length
+#define diagnostic_line_cutoff(DC) output_line_cutoff (&(DC)->buffer)
+
+/* Same as output_buffer_state, but works on 'diagnostic_context *'.  */
+#define diagnostic_state(DC)  output_buffer_state (&(DC)->buffer)
+
+#define diagnostic_buffer (&global_dc->buffer)
 
 /* This diagnostic context is used by front-ends that directly output
    diagnostic messages without going through `error', `warning',
    and similar functions.  */
 extern diagnostic_context *global_dc;
 
-/* This will be removed shortly.  */
-extern output_buffer *diagnostic_buffer;
-
 /* The total count of a KIND of diagnostics meitted so far.  */
 #define diagnostic_kind_count(DC, DK) \
-   ((output_buffer *)(DC))->state.diagnostic_count[(int) (DK)]
+   (DC)->buffer.state.diagnostic_count[(int) (DK)]
 
 /* The number of errors that have been issued so far.  Ideally, these
    would take an output_buffer as an argument.  */
