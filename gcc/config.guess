@@ -1,6 +1,6 @@
 #! /bin/sh
 # Attempt to guess a canonical system name.
-#   Copyright (C) 1992, 93, 94, 95, 1996 Free Software Foundation, Inc.
+#   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -504,7 +504,7 @@ EOF
 	# "miniframe"
 	echo m68010-convergent-sysv
 	exit 0 ;;
-    m68*:*:R3V[567]*:*)
+    M68*:*:R3V[567]*:*)
 	test -r /sysV68 && echo 'm68k-motorola-sysv' && exit 0 ;;
     3[34]??:*:4.0:3.0 | 3[34]??,*:*:4.0:3.0 | 4850:*:4.0:3.0)
 	OS_REL=''
