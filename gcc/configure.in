@@ -1707,23 +1707,21 @@ do
 	echo "lang.$t: $x" >> Make-hooks
 done
 
-# If we're not building in srcdir, create .gdbinit.
+# Create .gdbinit.
 
-if test ! -f Makefile.in; then
-	echo "dir ." > .gdbinit
-	echo "dir ${srcdir}" >> .gdbinit
-	if test x$gdb_needs_out_file_path = xyes
-	then
-		echo "dir ${srcdir}/config/"`dirname ${out_file}` >> .gdbinit
-	fi
-	if test "x$subdirs" != x; then
-		for s in $subdirs
-		do
-			echo "dir ${srcdir}/$s" >> .gdbinit
-		done
-	fi
-	echo "source ${srcdir}/.gdbinit" >> .gdbinit
+echo "dir ." > .gdbinit
+echo "dir ${srcdir}" >> .gdbinit
+if test x$gdb_needs_out_file_path = xyes
+then
+	echo "dir ${srcdir}/config/"`dirname ${out_file}` >> .gdbinit
 fi
+if test "x$subdirs" != x; then
+	for s in $subdirs
+	do
+		echo "dir ${srcdir}/$s" >> .gdbinit
+	done
+fi
+echo "source ${srcdir}/gdbinit.in" >> .gdbinit
 
 # Define variables host_canonical and build_canonical
 # because some Cygnus local changes in the Makefile depend on them.
