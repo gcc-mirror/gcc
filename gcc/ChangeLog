@@ -1,3 +1,25 @@
+2001-12-30  Richard Henderson  <rth@redhat.com>
+
+	* cfglayout.c (scope_def, scope_forest_info, forest,
+	relate_bbs_with_scopes, make_new_scope, build_scope_forest,
+	remove_scope_notes, insert_intra_before_1, insert_intra_1,
+	insert_intra_bb_scope_notes, insert_inter_bb_scope_notes,
+	rebuild_scope_notes, free_scope_forest_1, dump_scope_forest,
+	dump_scope_forest_1, get_next_bb_note, get_prev_bb_note): Remove.
+	(fixup_reorder_chain): Don't set scope for bb.
+	(insn_scopes, scope_to_insns_initialize, set_block_levels,
+	change_scope, scope_to_insns_finalize): New.
+	(cfg_layout_initialize, cfg_layout_finalize): Update to match.
+	* cfglayout.h (scope_def, scope): Remove.
+	(reorder_block_def): Remove scope member.
+	(scope_to_insns_initialize, scope_to_insns_finalize): Declare.
+	* haifa-sched.c: Revert reemit_other_notes change.
+	* sched-ebb.c (schedule_ebbs): Don't call remove_unnecessary_notes.
+	Use scope_to_insns_initialize and scope_to_insns_finalize.
+	* sched-rgn.c (schedule_insns): Likewise.
+
+2001-12-31  Graham Stott  <grahams@redhat.com>
+
 2001-12-31  Graham Stott  <grahams@redhat.com>
 
 	* c-lex.c: Include tree.h before expr.h
