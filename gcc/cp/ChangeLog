@@ -1,3 +1,13 @@
+2000-01-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (build_vtable): Don't return a value.  Don't rebuild
+	vtables for bases that have already been handled.
+	(prepare_fresh_vtable): Don't rebuild vtables for bases that have
+	already been handled.
+	(modify_one_vtable): Adjust accordingly.
+	(fixup_vtable_deltas1): Likewise.
+	(finish_struct_1): Likewise.
+
 2000-01-01  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* call.c (build_new_method_call): Also check destructors.
