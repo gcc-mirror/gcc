@@ -1,5 +1,26 @@
 2003-06-19  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/DatagramChannelImpl.java
+	(fd): Removed.
+	(blocking): New member variable.
+	(socket): Likewise.
+	(DatagramChannelImpl): Throws IOException, initialize socket.
+	(socket):Implemented.
+	(implCloseSelectableChannel): Throws IOException, implemented.
+	(implConfigureBlocking): Likewise.
+	(connect): Likewise.
+	(disconnect): Likewise.
+	(isConnected): Likewise.
+	(write): Likewise.
+	(read): Likewise.
+	(receive): Throws IOException.
+	(send): Likewise.
+	* gnu/java/nio/SocketChannelImpl.java
+	(read): Implemented.
+	(write): Implemented.
+
+2003-06-19  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/JComponent.java,
 	javax/swing/JInternalFrame.java,
 	javax/swing/MenuSelectionManager.java,
