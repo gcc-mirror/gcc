@@ -1,5 +1,11 @@
 2004-03-22  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* Makefile.tpl: Rearrange by moving recursive_targets rules
+	into their proper sections.
+	* Makefile.tpl (top level bootstrap support): Move disabling
+	of coverage flags from 'make' to 'configure'; improve comments.
+	* Makefile.in: Regenerate.
+
 	* Makefile.tpl (experimental top level bootstrap) Move stage1
 	language setting from all- target to configure- target; disable
 	intermodule optimization in stage 1; prevent gratuitous rebuilds
