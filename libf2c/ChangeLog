@@ -1,3 +1,11 @@
+Mon May  3 10:52:53 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* libF77/c_cos.c, libF77/c_div.c, libF77/c_exp.c, libF77/c_log.c,
+	libF77/c_sin.c, libF77/c_sqrt.c, libF77/d_cnjg.c, libF77/pow_zi.c,
+	libF77/r_cnjg.c, libF77/z_cos.c, libF77/z_div.c, libF77/z_exp.c,
+	libF77/z_log.c, libF77/z_sin.c, libF77/z_sqrt.c: Revert back to
+	netlib versions as of f2c-19990501.
+
 Sun May  2 01:38:50 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* libU77/u77-test.f (main): Declare FTELL as intrinsic.
