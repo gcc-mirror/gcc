@@ -1090,8 +1090,12 @@ extern union tree_node *current_function_decl;
       && REG_OK_FOR_BASE_P (XEXP (OP, 0)))		\
    : (C) == 'S'						\
    ? (CONSTANT_P (OP) || memory_address_p (Pmode, OP))	\
+   : (C) == 'T'						\
+   ? (mem_aligned_8 (OP))				\
+   : (C) == 'U'						\
+   ? (register_ok_for_ldd (OP))				\
    : 0)
-
+ 
 #else
 
 /* Nonzero if X is a hard reg that can be used as an index.  */
@@ -1112,7 +1116,11 @@ extern union tree_node *current_function_decl;
       : ((C) == 'S'					\
 	 ? (CONSTANT_P (OP)				\
 	    || (GET_CODE (OP) == REG && reg_renumber[REGNO (OP)] > 0)\
-	    || strict_memory_address_p (Pmode, OP)) : 0)))
+	    || strict_memory_address_p (Pmode, OP)) 	\
+	 : ((C) == 'T' ?				\
+	    mem_aligned_8 (OP) && strict_memory_address_p (Pmode, OP) \
+	    : ((C) == 'U' ?				\
+	       register_ok_for_ldd (OP) : 0)))))
 #endif
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
