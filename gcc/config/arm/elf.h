@@ -232,7 +232,7 @@ extern int arm_structure_size_boundary;
 	  arm_target_insn = NULL;				\
 	}							\
 	ASM_GENERATE_INTERNAL_LABEL (s, (PREFIX), (NUM));	\
-	arm_asm_output_label (STREAM, s);			\
+        ASM_OUTPUT_LABEL (STREAM, s);		                \
     }								\
   while (0)
 #endif
