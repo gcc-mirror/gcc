@@ -291,11 +291,11 @@ alloc_qty (regno, mode, size, birth)
   qty_size[qty] = size;
   qty_mode[qty] = mode;
   qty_birth[qty] = birth;
-  qty_n_calls_crossed[qty] = reg_n_calls_crossed[regno];
+  qty_n_calls_crossed[qty] = REG_N_CALLS_CROSSED (regno);
   qty_min_class[qty] = reg_preferred_class (regno);
   qty_alternate_class[qty] = reg_alternate_class (regno);
-  qty_n_refs[qty] = reg_n_refs[regno];
-  qty_changes_size[qty] = reg_changes_size[regno];
+  qty_n_refs[qty] = REG_N_REFS (regno);
+  qty_changes_size[qty] = REG_CHANGES_SIZE (regno);
 }
 
 /* Similar to `alloc_qty', but allocates a quantity for a SCRATCH rtx
@@ -469,7 +469,7 @@ local_alloc ()
 
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     {
-      if (reg_basic_block[i] >= 0 && reg_n_deaths[i] == 1
+      if (REG_BASIC_BLOCK (i) >= 0 && REG_N_DEATHS (i) == 1
 	  && (reg_alternate_class (i) == NO_REGS
 	      || ! CLASS_LIKELY_SPILLED_P (reg_preferred_class (i))))
 	reg_qty[i] = -2;
@@ -784,9 +784,9 @@ optimize_reg_copy_1 (insn, dest, src)
 			 insn in the updates below.  If this is not correct,
 			 no great harm is done.  */
 		      if (sregno >= FIRST_PSEUDO_REGISTER)
-			reg_n_refs[sregno] -= loop_depth;
+			REG_N_REFS (sregno) -= loop_depth;
 		      if (dregno >= FIRST_PSEUDO_REGISTER)
-			reg_n_refs[dregno] += loop_depth;
+			REG_N_REFS (dregno) += loop_depth;
 		    }
 		  else
 		    {
@@ -823,25 +823,25 @@ optimize_reg_copy_1 (insn, dest, src)
 	    {
 	      if (sregno >= FIRST_PSEUDO_REGISTER)
 		{
-		  if (reg_live_length[sregno] >= 0)
+		  if (REG_LIVE_LENGTH (sregno) >= 0)
 		    {
-		      reg_live_length[sregno] -= length;
+		      REG_LIVE_LENGTH (sregno) -= length;
 		      /* reg_live_length is only an approximation after
 			 combine if sched is not run, so make sure that we
 			 still have a reasonable value.  */
-		      if (reg_live_length[sregno] < 2)
-			reg_live_length[sregno] = 2;
+		      if (REG_LIVE_LENGTH (sregno) < 2)
+			REG_LIVE_LENGTH (sregno) = 2;
 		    }
 
-		  reg_n_calls_crossed[sregno] -= n_calls;
+		  REG_N_CALLS_CROSSED (sregno) -= n_calls;
 		}
 
 	      if (dregno >= FIRST_PSEUDO_REGISTER)
 		{
-		  if (reg_live_length[dregno] >= 0)
-		    reg_live_length[dregno] += d_length;
+		  if (REG_LIVE_LENGTH (dregno) >= 0)
+		    REG_LIVE_LENGTH (dregno) += d_length;
 
-		  reg_n_calls_crossed[dregno] += d_n_calls;
+		  REG_N_CALLS_CROSSED (dregno) += d_n_calls;
 		}
 
 	      /* Move death note of SRC from P to INSN.  */
@@ -922,28 +922,28 @@ optimize_reg_copy_2 (insn, dest, src)
 		    /* We assume that a register is used exactly once per
 		       insn in the updates below.  If this is not correct,
 		       no great harm is done.  */
-		    reg_n_refs[dregno] -= loop_depth;
-		    reg_n_refs[sregno] += loop_depth;
+		    REG_N_REFS (dregno) -= loop_depth;
+		    REG_N_REFS (sregno) += loop_depth;
 		  }
 
 
 	      if (GET_CODE (q) == CALL_INSN)
 		{
-		  reg_n_calls_crossed[dregno]--;
-		  reg_n_calls_crossed[sregno]++;
+		  REG_N_CALLS_CROSSED (dregno)--;
+		  REG_N_CALLS_CROSSED (sregno)++;
 		}
 	      }
 
 	  remove_note (p, find_reg_note (p, REG_DEAD, dest));
-	  reg_n_deaths[dregno]--;
+	  REG_N_DEATHS (dregno)--;
 	  remove_note (insn, find_reg_note (insn, REG_DEAD, src));
-	  reg_n_deaths[sregno]--;
+	  REG_N_DEATHS (sregno)--;
 	  return;
 	}
 
       if (reg_set_p (src, p)
 	  || find_reg_note (p, REG_DEAD, dest)
-	  || (GET_CODE (p) == CALL_INSN && reg_n_calls_crossed[sregno] == 0))
+	  || (GET_CODE (p) == CALL_INSN && REG_N_CALLS_CROSSED (sregno) == 0))
 	break;
     }
 }
@@ -1010,7 +1010,7 @@ update_equiv_regs ()
 
       if (GET_CODE (dest) == MEM && GET_CODE (SET_SRC (set)) == REG
 	  && (regno = REGNO (SET_SRC (set))) >= FIRST_PSEUDO_REGISTER
-	  && reg_basic_block[regno] >= 0
+	  && REG_BASIC_BLOCK (regno) >= 0
 	  && reg_equiv_init_insn[regno] != 0
 	  && validate_equiv_mem (reg_equiv_init_insn[regno], SET_SRC (set),
 				 dest)
@@ -1040,7 +1040,7 @@ update_equiv_regs ()
 	 in a register class that's likely to be spilled.  */
       if (GET_CODE (dest) != REG
 	  || (regno = REGNO (dest)) < FIRST_PSEUDO_REGISTER
-	  || reg_n_sets[regno] != 1
+	  || REG_N_SETS (regno) != 1
 	  || CLASS_LIKELY_SPILLED_P (reg_preferred_class (REGNO (dest)))
 	  || (GET_CODE (src) == REG
 	      && REGNO (src) >= FIRST_PSEUDO_REGISTER
@@ -1074,7 +1074,7 @@ update_equiv_regs ()
 	 
       note = find_reg_note (insn, REG_EQUIV, NULL_RTX);
 
-      if (note == 0 && reg_basic_block[regno] >= 0
+      if (note == 0 && REG_BASIC_BLOCK (regno) >= 0
 	  && GET_CODE (SET_SRC (set)) == MEM
 	  && validate_equiv_mem (insn, dest, SET_SRC (set)))
 	REG_NOTES (insn) = note = gen_rtx (EXPR_LIST, REG_EQUIV, SET_SRC (set),
@@ -1087,11 +1087,11 @@ update_equiv_regs ()
 	  reg_equiv_replacement[regno] = XEXP (note, 0);
 
 	  /* Don't mess with things live during setjmp.  */
-	  if (reg_live_length[regno] >= 0)
+	  if (REG_LIVE_LENGTH (regno) >= 0)
 	    {
 	      /* Note that the statement below does not affect the priority
 		 in local-alloc!  */
-	      reg_live_length[regno] *= 2;
+	      REG_LIVE_LENGTH (regno) *= 2;
 
 
 	      /* If the register is referenced exactly twice, meaning it is
@@ -1107,8 +1107,8 @@ update_equiv_regs ()
 		 This case normally occurs when a parameter is read from
 		 memory and then used exactly once, not in a loop.  */
 
-		if (reg_n_refs[regno] == 2
-		    && reg_basic_block[regno] < 0
+		if (REG_N_REFS (regno) == 2
+		    && REG_BASIC_BLOCK (regno) < 0
 		    && rtx_equal_p (XEXP (note, 0), SET_SRC (set)))
 		  reg_equiv_replace[regno] = 1;
 	    }
@@ -1168,7 +1168,7 @@ update_equiv_regs ()
 					reg_equiv_replacement[regno], insn))
 		{
 		  remove_death (regno, insn);
-		  reg_n_refs[regno] = 0;
+		  REG_N_REFS (regno) = 0;
 		  PUT_CODE (equiv_insn, NOTE);
 		  NOTE_LINE_NUMBER (equiv_insn) = NOTE_INSN_DELETED;
 		  NOTE_SOURCE_FILE (equiv_insn) = 0;
@@ -1180,7 +1180,7 @@ update_equiv_regs ()
 	      else if (depth == 0
 		       && GET_CODE (equiv_insn) == INSN
 		       && GET_CODE (insn) == INSN
-		       && reg_basic_block[regno] < 0)
+		       && REG_BASIC_BLOCK (regno) < 0)
 		{
 		  int l, offset;
 		  REGSET_ELT_TYPE bit;
@@ -1194,11 +1194,11 @@ update_equiv_regs ()
 		  REG_NOTES (equiv_insn) = 0;
 
 		  if (block < 0)
-		    reg_basic_block[regno] = 0;
+		    REG_BASIC_BLOCK (regno) = 0;
 		  else
-		    reg_basic_block[regno] = block;
-		  reg_n_calls_crossed[regno] = 0;
-		  reg_live_length[regno] = 2;
+		    REG_BASIC_BLOCK (regno) = block;
+		  REG_N_CALLS_CROSSED (regno) = 0;
+		  REG_LIVE_LENGTH (regno) = 2;
 
 		  if (block >= 0 && insn == basic_block_head[block])
 		    basic_block_head[block] = PREV_INSN (insn);
@@ -1902,8 +1902,8 @@ combine_regs (usedreg, setreg, may_save_copy, insn_number, insn, already_dead)
       /* If we are not going to let any regs live across calls,
 	 don't tie a call-crossing reg to a non-call-crossing reg.  */
       || (current_function_has_nonlocal_label
-	  && ((reg_n_calls_crossed[ureg] > 0)
-	      != (reg_n_calls_crossed[sreg] > 0))))
+	  && ((REG_N_CALLS_CROSSED (ureg) > 0)
+	      != (REG_N_CALLS_CROSSED (sreg) > 0))))
     return 0;
 
   /* We don't already know about SREG, so tie it to UREG
@@ -1924,8 +1924,8 @@ combine_regs (usedreg, setreg, may_save_copy, insn_number, insn, already_dead)
       update_qty_class (sqty, sreg);
 
       /* Update info about quantity SQTY.  */
-      qty_n_calls_crossed[sqty] += reg_n_calls_crossed[sreg];
-      qty_n_refs[sqty] += reg_n_refs[sreg];
+      qty_n_calls_crossed[sqty] += REG_N_CALLS_CROSSED (sreg);
+      qty_n_refs[sqty] += REG_N_REFS (sreg);
       if (usize < ssize)
 	{
 	  register int i;
@@ -1995,7 +1995,7 @@ update_qty_class (qty, reg)
   if (reg_class_subset_p (rclass, qty_alternate_class[qty]))
     qty_alternate_class[qty] = rclass;
 
-  if (reg_changes_size[reg])
+  if (REG_CHANGES_SIZE (reg))
     qty_changes_size[qty] = 1;
 }
 

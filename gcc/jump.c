@@ -570,11 +570,11 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 
 	if (set && GET_CODE (SET_DEST (set)) == REG
 	    && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER
-	    && regno_first_uid[REGNO (SET_DEST (set))] == INSN_UID (insn)
+	    && REGNO_FIRST_UID (REGNO (SET_DEST (set))) == INSN_UID (insn)
 	    /* We use regno_last_note_uid so as not to delete the setting
 	       of a reg that's used in notes.  A subsequent optimization
 	       might arrange to use that reg for real.  */	       
-	    && regno_last_note_uid[REGNO (SET_DEST (set))] == INSN_UID (insn)
+	    && REGNO_LAST_NOTE_UID (REGNO (SET_DEST (set))) == INSN_UID (insn)
 	    && ! side_effects_p (SET_SRC (set))
 	    && ! find_reg_note (insn, REG_RETVAL, 0))
 	  delete_insn (insn);
@@ -1085,8 +1085,8 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		       && (temp5 = SUBREG_REG (temp5),
 			   GET_CODE (temp5) == REG))))
 	      && REGNO (temp5) >= FIRST_PSEUDO_REGISTER
-	      && regno_first_uid[REGNO (temp5)] == INSN_UID (temp)
-	      && regno_last_uid[REGNO (temp5)] == INSN_UID (temp3)
+	      && REGNO_FIRST_UID (REGNO (temp5)) == INSN_UID (temp)
+	      && REGNO_LAST_UID (REGNO (temp5)) == INSN_UID (temp3)
 	      && ! side_effects_p (SET_SRC (temp1))
 	      && ! may_trap_p (SET_SRC (temp1))
 	      && rtx_cost (SET_SRC (temp1), SET) < 10
@@ -2353,10 +2353,10 @@ duplicate_loop_exit_test (loop_start)
 	    || (GET_CODE (reg) == SUBREG
 		&& (reg = SUBREG_REG (reg), GET_CODE (reg) == REG)))
 	&& REGNO (reg) >= FIRST_PSEUDO_REGISTER
-	&& regno_first_uid[REGNO (reg)] == INSN_UID (insn))
+	&& REGNO_FIRST_UID (REGNO (reg)) == INSN_UID (insn))
       {
 	for (p = NEXT_INSN (insn); p != lastexit; p = NEXT_INSN (p))
-	  if (regno_last_uid[REGNO (reg)] == INSN_UID (p))
+	  if (REGNO_LAST_UID (REGNO (reg)) == INSN_UID (p))
 	    break;
 
 	if (p != lastexit)
@@ -4592,7 +4592,7 @@ rtx_equal_for_thread_p (x, y, yinsn)
 	  /* If this is the first time we are seeing a register on the `Y'
 	     side, see if it is the last use.  If not, we can't thread the 
 	     jump, so mark it as not equivalent.  */
-	  if (regno_last_uid[REGNO (y)] != INSN_UID (yinsn))
+	  if (REGNO_LAST_UID (REGNO (y)) != INSN_UID (yinsn))
 	    return 0;
 
 	  return 1;

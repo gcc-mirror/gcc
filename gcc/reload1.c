@@ -785,7 +785,7 @@ reload (first, global, dumpfile)
      in that case some pseudos might be in the wrong kind of hard reg.  */
 
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
-    if (reg_renumber[i] == -1 && reg_n_refs[i] != 0)
+    if (reg_renumber[i] == -1 && REG_N_REFS (i) != 0)
       break;
 
   if (i == max_regno && num_eliminable == 0 && ! caller_save_needed)
@@ -2471,7 +2471,7 @@ alter_reg (i, from_reg)
      allocate a stack slot for it.  */
 
   if (reg_renumber[i] < 0
-      && reg_n_refs[i] > 0
+      && REG_N_REFS (i) > 0
       && reg_equiv_constant[i] == 0
       && reg_equiv_memory_loc[i] == 0)
     {
@@ -3659,14 +3659,14 @@ spill_hard_reg (regno, global, dumpfile, cant_eliminate)
 
 	if (! cant_eliminate
 	    && basic_block_needs[0]
-	    && reg_basic_block[i] >= 0
-	    && basic_block_needs[(int) class][reg_basic_block[i]] == 0)
+	    && REG_BASIC_BLOCK (i) >= 0
+	    && basic_block_needs[(int) class][REG_BASIC_BLOCK (i)] == 0)
 	  {
 	    enum reg_class *p;
 
 	    for (p = reg_class_superclasses[(int) class];
 		 *p != LIM_REG_CLASSES; p++)
-	      if (basic_block_needs[(int) *p][reg_basic_block[i]] > 0)
+	      if (basic_block_needs[(int) *p][REG_BASIC_BLOCK (i)] > 0)
 		break;
 
 	    if (*p == LIM_REG_CLASSES)
@@ -3827,12 +3827,12 @@ order_regs_for_reload (global)
 		 we're not going to be able to reallocate it, but
 		 we might if allocated by global alloc.  */
 	      if (global && reg_allocno[i] < 0)
-		hard_reg_n_uses[regno].uses += (reg_n_refs[i] + 1) / 2;
+		hard_reg_n_uses[regno].uses += (REG_N_REFS (i) + 1) / 2;
 
-	      hard_reg_n_uses[regno++].uses += reg_n_refs[i];
+	      hard_reg_n_uses[regno++].uses += REG_N_REFS (i);
 	    }
 	}
-      large += reg_n_refs[i];
+      large += REG_N_REFS (i);
     }
 
   /* Now fixed registers (which cannot safely be used for reloading)
@@ -6241,8 +6241,8 @@ emit_reload_insns (insn)
 		  SET_DEST (PATTERN (temp)) = reloadreg;
 		  /* If these are the only uses of the pseudo reg,
 		     pretend for GDB it lives in the reload reg we used.  */
-		  if (reg_n_deaths[REGNO (old)] == 1
-		      && reg_n_sets[REGNO (old)] == 1)
+		  if (REG_N_DEATHS (REGNO (old)) == 1
+		      && REG_N_SETS (REGNO (old)) == 1)
 		    {
 		      reg_renumber[REGNO (old)] = REGNO (reload_reg_rtx[j]);
 		      alter_reg (REGNO (old), -1);
@@ -7280,8 +7280,8 @@ delete_output_reload (insn, j, output_reload_insn)
   /* See if the pseudo reg has been completely replaced
      with reload regs.  If so, delete the store insn
      and forget we had a stack slot for the pseudo.  */
-  else if (reg_n_deaths[REGNO (reg)] == 1
-	   && reg_basic_block[REGNO (reg)] >= 0
+  else if (REG_N_DEATHS (REGNO (reg)) == 1
+	   && REG_BASIC_BLOCK (REGNO (reg)) >= 0
 	   && find_regno_note (insn, REG_DEAD, REGNO (reg)))
     {
       rtx i2;

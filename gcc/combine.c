@@ -1589,7 +1589,7 @@ try_combine (i3, i2, i1)
 	  rtx new_dest = gen_rtx (REG, compare_mode, regno);
 
 	  if (regno < FIRST_PSEUDO_REGISTER
-	      || (reg_n_sets[regno] == 1 && ! added_sets_2
+	      || (REG_N_SETS (regno) == 1 && ! added_sets_2
 		  && ! REG_USERVAR_P (SET_DEST (newpat))))
 	    {
 	      if (regno >= FIRST_PSEUDO_REGISTER)
@@ -1792,7 +1792,7 @@ try_combine (i3, i2, i1)
 	      && GET_MODE (SET_DEST (newpat)) != VOIDmode
 	      && GET_CODE (i2dest) == REG
 	      && (REGNO (i2dest) < FIRST_PSEUDO_REGISTER
-		  || (reg_n_sets[REGNO (i2dest)] == 1 && ! added_sets_2
+		  || (REG_N_SETS (REGNO (i2dest)) == 1 && ! added_sets_2
 		      && ! REG_USERVAR_P (i2dest))))
 	    ni2dest = gen_rtx (REG, GET_MODE (SET_DEST (newpat)),
 			       REGNO (i2dest));
@@ -1861,7 +1861,7 @@ try_combine (i3, i2, i1)
 	      if (GET_CODE (new_i3_dest) == REG
 		  && GET_CODE (new_i2_dest) == REG
 		  && REGNO (new_i3_dest) == REGNO (new_i2_dest))
-		reg_n_sets[REGNO (new_i2_dest)]++;
+		REG_N_SETS (REGNO (new_i2_dest))++;
 	    }
 	}
 
@@ -1877,7 +1877,7 @@ try_combine (i3, i2, i1)
 	  && (GET_MODE (*split) == GET_MODE (i2dest)
 	      || GET_MODE (*split) == VOIDmode
 	      || REGNO (i2dest) < FIRST_PSEUDO_REGISTER
-	      || (reg_n_sets[REGNO (i2dest)] == 1 && ! added_sets_2
+	      || (REG_N_SETS (REGNO (i2dest)) == 1 && ! added_sets_2
 		  && ! REG_USERVAR_P (i2dest)))
 	  && (next_real_insn (i2) == i3
 	      || ! use_crosses_set_p (*split, INSN_CUID (i2)))
@@ -2113,7 +2113,7 @@ try_combine (i3, i2, i1)
 	      && ! reg_set_p (XEXP (note, 0), PATTERN (undobuf.other_insn)))
 	    {
 	      if (GET_CODE (XEXP (note, 0)) == REG)
-		reg_n_deaths[REGNO (XEXP (note, 0))]--;
+		REG_N_DEATHS (REGNO (XEXP (note, 0)))--;
 
 	      remove_note (undobuf.other_insn, note);
 	    }
@@ -2121,7 +2121,7 @@ try_combine (i3, i2, i1)
 
       for (note = new_other_notes; note; note = XEXP (note, 1))
 	if (GET_CODE (XEXP (note, 0)) == REG)
-	  reg_n_deaths[REGNO (XEXP (note, 0))]++;
+	  REG_N_DEATHS (REGNO (XEXP (note, 0)))++;
 
       distribute_notes (new_other_notes, undobuf.other_insn,
 			undobuf.other_insn, NULL_RTX, NULL_RTX, NULL_RTX);
@@ -2272,7 +2272,7 @@ try_combine (i3, i2, i1)
       {
 	for (temp = new_i2_notes; temp; temp = XEXP (temp, 1))
 	  if (GET_CODE (XEXP (temp, 0)) == REG)
-	    reg_n_deaths[REGNO (XEXP (temp, 0))]++;
+	    REG_N_DEATHS (REGNO (XEXP (temp, 0)))++;
 	
 	distribute_notes (new_i2_notes, i2, i2, NULL_RTX, NULL_RTX, NULL_RTX);
       }
@@ -2281,7 +2281,7 @@ try_combine (i3, i2, i1)
       {
 	for (temp = new_i3_notes; temp; temp = XEXP (temp, 1))
 	  if (GET_CODE (XEXP (temp, 0)) == REG)
-	    reg_n_deaths[REGNO (XEXP (temp, 0))]++;
+	    REG_N_DEATHS (REGNO (XEXP (temp, 0)))++;
 	
 	distribute_notes (new_i3_notes, i3, i3, NULL_RTX, NULL_RTX, NULL_RTX);
       }
@@ -2294,7 +2294,7 @@ try_combine (i3, i2, i1)
     if (i3dest_killed)
       {
 	if (GET_CODE (i3dest_killed) == REG)
-	  reg_n_deaths[REGNO (i3dest_killed)]++;
+	  REG_N_DEATHS (REGNO (i3dest_killed))++;
 
 	distribute_notes (gen_rtx (EXPR_LIST, REG_DEAD, i3dest_killed,
 				   NULL_RTX),
@@ -2309,7 +2309,7 @@ try_combine (i3, i2, i1)
     if (i2dest_in_i2src)
       {
 	if (GET_CODE (i2dest) == REG)
-	  reg_n_deaths[REGNO (i2dest)]++;
+	  REG_N_DEATHS (REGNO (i2dest))++;
 
 	if (newi2pat && reg_set_p (i2dest, newi2pat))
 	  distribute_notes (gen_rtx (EXPR_LIST, REG_DEAD, i2dest, NULL_RTX),
@@ -2323,7 +2323,7 @@ try_combine (i3, i2, i1)
     if (i1dest_in_i1src)
       {
 	if (GET_CODE (i1dest) == REG)
-	  reg_n_deaths[REGNO (i1dest)]++;
+	  REG_N_DEATHS (REGNO (i1dest))++;
 
 	if (newi2pat && reg_set_p (i1dest, newi2pat))
 	  distribute_notes (gen_rtx (EXPR_LIST, REG_DEAD, i1dest, NULL_RTX),
@@ -2365,11 +2365,11 @@ try_combine (i3, i2, i1)
 	    && ! i2dest_in_i2src)
 	  {
 	    regno = REGNO (i2dest);
-	    reg_n_sets[regno]--;
-	    if (reg_n_sets[regno] == 0
+	    REG_N_SETS (regno)--;
+	    if (REG_N_SETS (regno) == 0
 		&& ! (basic_block_live_at_start[0][regno / REGSET_ELT_BITS]
 		      & ((REGSET_ELT_TYPE) 1 << (regno % REGSET_ELT_BITS))))
-	      reg_n_refs[regno] = 0;
+	      REG_N_REFS (regno) = 0;
 	  }
       }
 
@@ -2388,11 +2388,11 @@ try_combine (i3, i2, i1)
 	regno = REGNO (i1dest);
 	if (! added_sets_1 && ! i1dest_in_i1src)
 	  {
-	    reg_n_sets[regno]--;
-	    if (reg_n_sets[regno] == 0
+	    REG_N_SETS (regno)--;
+	    if (REG_N_SETS (regno) == 0
 		&& ! (basic_block_live_at_start[0][regno / REGSET_ELT_BITS]
 		      & ((REGSET_ELT_TYPE) 1 << (regno % REGSET_ELT_BITS))))
-	      reg_n_refs[regno] = 0;
+	      REG_N_REFS (regno) = 0;
 	  }
       }
 
@@ -4457,7 +4457,7 @@ simplify_set (x)
 	  rtx new_dest = gen_rtx (REG, compare_mode, regno);
 
 	  if (regno < FIRST_PSEUDO_REGISTER
-	      || (reg_n_sets[regno] == 1 && ! REG_USERVAR_P (dest)))
+	      || (REG_N_SETS (regno) == 1 && ! REG_USERVAR_P (dest)))
 	    {
 	      if (regno >= FIRST_PSEUDO_REGISTER)
 		SUBST (regno_reg_rtx[regno], new_dest);
@@ -7246,7 +7246,7 @@ nonzero_bits (x, mode)
 
       if (reg_last_set_value[REGNO (x)] != 0
 	  && reg_last_set_mode[REGNO (x)] == mode
-	  && (reg_n_sets[REGNO (x)] == 1
+	  && (REG_N_SETS (REGNO (x)) == 1
 	      || reg_last_set_label[REGNO (x)] == label_tick)
 	  && INSN_CUID (reg_last_set[REGNO (x)]) < subst_low_cuid)
 	return reg_last_set_nonzero_bits[REGNO (x)];
@@ -7595,7 +7595,7 @@ num_sign_bit_copies (x, mode)
 
       if (reg_last_set_value[REGNO (x)] != 0
 	  && reg_last_set_mode[REGNO (x)] == mode
-	  && (reg_n_sets[REGNO (x)] == 1
+	  && (REG_N_SETS (REGNO (x)) == 1
 	      || reg_last_set_label[REGNO (x)] == label_tick)
 	  && INSN_CUID (reg_last_set[REGNO (x)]) < subst_low_cuid)
 	return reg_last_set_sign_bit_copies[REGNO (x)];
@@ -8872,7 +8872,7 @@ gen_lowpart_for_combine (mode, x)
       && REGNO (SUBREG_REG (result)) >= FIRST_PSEUDO_REGISTER
       && (GET_MODE_SIZE (GET_MODE (result))
 	  != GET_MODE_SIZE (GET_MODE (SUBREG_REG (result)))))
-    reg_changes_size[REGNO (SUBREG_REG (result))] = 1;
+    REG_CHANGES_SIZE (REGNO (SUBREG_REG (result))) = 1;
 
   if (result)
     return result;
@@ -10351,7 +10351,7 @@ get_last_value_validate (loc, insn, tick, replace)
 	if (reg_last_set_invalid[j]
 	    /* If this is a pseudo-register that was only set once, it is
 	       always valid.  */
-	    || (! (regno >= FIRST_PSEUDO_REGISTER && reg_n_sets[regno] == 1)
+	    || (! (regno >= FIRST_PSEUDO_REGISTER && REG_N_SETS (regno) == 1)
 		&& reg_last_set_label[j] > tick))
 	  {
 	    if (replace)
@@ -10414,7 +10414,7 @@ get_last_value (x)
      return 0.  */
 
   if (value == 0
-      || (reg_n_sets[regno] != 1
+      || (REG_N_SETS (regno) != 1
 	  && reg_last_set_label[regno] != label_tick))
     return 0;
 
@@ -10746,7 +10746,7 @@ remove_death (regno, insn)
 
   if (note)
     {
-      reg_n_deaths[regno]--;
+      REG_N_DEATHS (regno)--;
       remove_note (insn, note);
     }
 
@@ -10864,7 +10864,7 @@ move_deaths (x, maybe_kill_insn, from_cuid, to_insn, pnotes)
 	  else
 	    *pnotes = gen_rtx (EXPR_LIST, REG_DEAD, x, *pnotes);
 
-	  reg_n_deaths[regno]++;
+	  REG_N_DEATHS (regno)++;
 	}
 
       return;
@@ -11163,9 +11163,9 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 	     special case.  */
 
 	  if (place == i3 && i2 != 0 && GET_CODE (XEXP (note, 0)) == REG
-	      && reg_n_refs[REGNO (XEXP (note, 0))]== 2
+	      && REG_N_REFS (REGNO (XEXP (note, 0)))== 2
 	      && reg_referenced_p (XEXP (note, 0), PATTERN (i2)))
-	    reg_n_refs[REGNO (XEXP (note, 0))] = 3;
+	    REG_N_REFS (REGNO (XEXP (note, 0))) = 3;
 
 	  if (place == 0)
 	    {
@@ -11389,14 +11389,14 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
       else if ((REG_NOTE_KIND (note) == REG_DEAD
 		|| REG_NOTE_KIND (note) == REG_UNUSED)
 	       && GET_CODE (XEXP (note, 0)) == REG)
-	reg_n_deaths[REGNO (XEXP (note, 0))]--;
+	REG_N_DEATHS (REGNO (XEXP (note, 0)))--;
 
       if (place2)
 	{
 	  if ((REG_NOTE_KIND (note) == REG_DEAD
 	       || REG_NOTE_KIND (note) == REG_UNUSED)
 	      && GET_CODE (XEXP (note, 0)) == REG)
-	    reg_n_deaths[REGNO (XEXP (note, 0))]++;
+	    REG_N_DEATHS (REGNO (XEXP (note, 0)))++;
 
 	  REG_NOTES (place2) = gen_rtx (GET_CODE (note), REG_NOTE_KIND (note),
 					XEXP (note, 0), REG_NOTES (place2));

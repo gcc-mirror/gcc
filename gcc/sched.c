@@ -438,7 +438,7 @@ init_alias_analysis ()
 	&& GET_CODE (SET_DEST (set)) == REG
 	&& REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER
 	&& (((note = find_reg_note (insn, REG_EQUAL, 0)) != 0
-	     && reg_n_sets[REGNO (SET_DEST (set))] == 1)
+	     && REG_N_SETS (REGNO (SET_DEST (set))) == 1)
 	    || (note = find_reg_note (insn, REG_EQUIV, NULL_RTX)) != 0)
 	&& GET_CODE (XEXP (note, 0)) != EXPR_LIST)
       {
@@ -1762,7 +1762,7 @@ sched_analyze_1 (x, insn)
 
 	  /* Don't let it cross a call after scheduling if it doesn't
 	     already cross one.  */
-	  if (reg_n_calls_crossed[regno] == 0 && last_function_call)
+	  if (REG_N_CALLS_CROSSED (regno) == 0 && last_function_call)
 	    add_dependence (insn, last_function_call, REG_DEP_ANTI);
 	}
     }
@@ -1920,7 +1920,7 @@ sched_analyze_2 (x, insn)
 	    /* If the register does not already cross any calls, then add this
 	       insn to the sched_before_next_call list so that it will still
 	       not cross calls after scheduling.  */
-	    if (reg_n_calls_crossed[regno] == 0)
+	    if (REG_N_CALLS_CROSSED (regno) == 0)
 	      add_dependence (sched_before_next_call, insn, REG_DEP_ANTI);
 	  }
 	return;
@@ -2531,7 +2531,7 @@ birthing_insn_p (pat)
 	 insn.  */
 
       if (bb_live_regs[offset] & bit)
-	return (reg_n_sets[i] == 1);
+	return (REG_N_SETS (i) == 1);
 
       return 0;
     }
@@ -4373,10 +4373,10 @@ update_n_sets (x, inc)
 	  int endregno = regno + HARD_REGNO_NREGS (regno, GET_MODE (dest));
 	  
 	  for (i = regno; i < endregno; i++)
-	    reg_n_sets[i] += inc;
+	    REG_N_SETS (i) += inc;
 	}
       else
-	reg_n_sets[regno] += inc;
+	REG_N_SETS (regno) += inc;
     }
 }
 
@@ -4832,6 +4832,7 @@ schedule_insns (dump_file)
 {
   int max_uid = MAX_INSNS_PER_SPLIT * (get_max_uid () + 1);
   int b;
+  int i;
   rtx insn;
 
   /* Taking care of this degenerate case makes the rest of
@@ -4878,8 +4879,8 @@ schedule_insns (dump_file)
       bb_live_regs = (regset) alloca (regset_bytes);
       bzero ((char *) sched_reg_n_calls_crossed, max_regno * sizeof (int));
       bzero ((char *) sched_reg_live_length, max_regno * sizeof (int));
-      bcopy ((char *) reg_n_deaths, (char *) sched_reg_n_deaths,
-	     max_regno * sizeof (short));
+      for (i = 0; i < max_regno; i++)
+	sched_reg_n_deaths[i] = REG_N_DEATHS (i);
       init_alias_analysis ();
     }
   else
@@ -5085,35 +5086,35 @@ schedule_insns (dump_file)
 	  {
 	    if (dump_file)
 	      {
-		if (reg_live_length[regno] > sched_reg_live_length[regno])
+		if (REG_LIVE_LENGTH (regno) > sched_reg_live_length[regno])
 		  fprintf (dump_file,
 			   ";; register %d life shortened from %d to %d\n",
-			   regno, reg_live_length[regno],
+			   regno, REG_LIVE_LENGTH (regno),
 			   sched_reg_live_length[regno]);
 		/* Negative values are special; don't overwrite the current
 		   reg_live_length value if it is negative.  */
-		else if (reg_live_length[regno] < sched_reg_live_length[regno]
-			 && reg_live_length[regno] >= 0)
+		else if (REG_LIVE_LENGTH (regno) < sched_reg_live_length[regno]
+			 && REG_LIVE_LENGTH (regno) >= 0)
 		  fprintf (dump_file,
 			   ";; register %d life extended from %d to %d\n",
-			   regno, reg_live_length[regno],
+			   regno, REG_LIVE_LENGTH (regno),
 			   sched_reg_live_length[regno]);
 
-		if (! reg_n_calls_crossed[regno]
+		if (! REG_N_CALLS_CROSSED (regno)
 		    && sched_reg_n_calls_crossed[regno])
 		  fprintf (dump_file,
 			   ";; register %d now crosses calls\n", regno);
-		else if (reg_n_calls_crossed[regno]
+		else if (REG_N_CALLS_CROSSED (regno)
 			 && ! sched_reg_n_calls_crossed[regno]
-			 && reg_basic_block[regno] != REG_BLOCK_GLOBAL)
+			 && REG_BASIC_BLOCK (regno) != REG_BLOCK_GLOBAL)
 		  fprintf (dump_file,
 			   ";; register %d no longer crosses calls\n", regno);
 
 	      }
 	    /* Negative values are special; don't overwrite the current
 	       reg_live_length value if it is negative.  */
-	    if (reg_live_length[regno] >= 0)
-	      reg_live_length[regno] = sched_reg_live_length[regno];
+	    if (REG_LIVE_LENGTH (regno) >= 0)
+	      REG_LIVE_LENGTH (regno) = sched_reg_live_length[regno];
 
 	    /* We can't change the value of reg_n_calls_crossed to zero for
 	       pseudos which are live in more than one block.
@@ -5129,8 +5130,8 @@ schedule_insns (dump_file)
 	       Alternatively, we could try to correctly update basic block live
 	       at start here in sched, but that seems complicated.  */
 	    if (sched_reg_n_calls_crossed[regno]
-		|| reg_basic_block[regno] != REG_BLOCK_GLOBAL)
-	      reg_n_calls_crossed[regno] = sched_reg_n_calls_crossed[regno];
+		|| REG_BASIC_BLOCK (regno) != REG_BLOCK_GLOBAL)
+	      REG_N_CALLS_CROSSED (regno) = sched_reg_n_calls_crossed[regno];
 	  }
     }
 }

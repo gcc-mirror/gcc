@@ -735,8 +735,8 @@ scan_loop (loop_start, end, nregs)
 
 	      if (reg_single_usage && reg_single_usage[regno] != 0
 		  && reg_single_usage[regno] != const0_rtx
-		  && regno_first_uid[regno] == INSN_UID (p)
-		  && (regno_last_uid[regno]
+		  && REGNO_FIRST_UID (regno) == INSN_UID (p)
+		  && (REGNO_LAST_UID (regno)
 		      == INSN_UID (reg_single_usage[regno]))
 		  && n_times_set[REGNO (SET_DEST (set))] == 1
 		  && ! side_effects_p (SET_SRC (set))
@@ -787,11 +787,11 @@ scan_loop (loop_start, end, nregs)
 	      /* Set M->cond if either invariant_p or consec_sets_invariant_p
 		 returned 2 (only conditionally invariant).  */
 	      m->cond = ((tem | tem1 | tem2) > 1);
-	      m->global = (uid_luid[regno_last_uid[regno]] > INSN_LUID (end)
-			   || uid_luid[regno_first_uid[regno]] < INSN_LUID (loop_start));
+	      m->global = (uid_luid[REGNO_LAST_UID (regno)] > INSN_LUID (end)
+			   || uid_luid[REGNO_FIRST_UID (regno)] < INSN_LUID (loop_start));
 	      m->match = 0;
-	      m->lifetime = (uid_luid[regno_last_uid[regno]]
-			     - uid_luid[regno_first_uid[regno]]);
+	      m->lifetime = (uid_luid[REGNO_LAST_UID (regno)]
+			     - uid_luid[REGNO_FIRST_UID (regno)]);
 	      m->savings = n_times_used[regno];
 	      if (find_reg_note (p, REG_RETVAL, NULL_RTX))
 		m->savings += libcall_benefit (p);
@@ -881,12 +881,12 @@ scan_loop (loop_start, end, nregs)
 		     INSN_LUID and hence must make a conservative
 		     assumption.  */
 		  m->global = (INSN_UID (p) >= max_uid_for_loop
-			       || (uid_luid[regno_last_uid[regno]]
+			       || (uid_luid[REGNO_LAST_UID (regno)]
 				   > INSN_LUID (end))
-			       || (uid_luid[regno_first_uid[regno]]
+			       || (uid_luid[REGNO_FIRST_UID (regno)]
 				   < INSN_LUID (p))
 			       || (labels_in_range_p
-				   (p, uid_luid[regno_first_uid[regno]])));
+				   (p, uid_luid[REGNO_FIRST_UID (regno)])));
 		  if (maybe_never && m->global)
 		    m->savemode = GET_MODE (SET_SRC (set1));
 		  else
@@ -894,8 +894,8 @@ scan_loop (loop_start, end, nregs)
 		  m->regno = regno;
 		  m->cond = 0;
 		  m->match = 0;
-		  m->lifetime = (uid_luid[regno_last_uid[regno]]
-				 - uid_luid[regno_first_uid[regno]]);
+		  m->lifetime = (uid_luid[REGNO_LAST_UID (regno)]
+				 - uid_luid[REGNO_FIRST_UID (regno)]);
 		  m->savings = 1;
 		  n_times_set[regno] = -1;
 		  /* Add M to the end of the chain MOVABLES.  */
@@ -1066,7 +1066,7 @@ reg_in_basic_block_p (insn, reg)
   int regno = REGNO (reg);
   rtx p;
 
-  if (regno_first_uid[regno] != INSN_UID (insn))
+  if (REGNO_FIRST_UID (regno) != INSN_UID (insn))
     return 0;
 
   /* Search this basic block for the already recorded last use of the reg.  */
@@ -1080,13 +1080,13 @@ reg_in_basic_block_p (insn, reg)
 	case INSN:
 	case CALL_INSN:
 	  /* Ordinary insn: if this is the last use, we win.  */
-	  if (regno_last_uid[regno] == INSN_UID (p))
+	  if (REGNO_LAST_UID (regno) == INSN_UID (p))
 	    return 1;
 	  break;
 
 	case JUMP_INSN:
 	  /* Jump insn: if this is the last use, we win.  */
-	  if (regno_last_uid[regno] == INSN_UID (p))
+	  if (REGNO_LAST_UID (regno) == INSN_UID (p))
 	    return 1;
 	  /* Otherwise, it's the end of the basic block, so we lose.  */
 	  return 0;
@@ -1207,7 +1207,7 @@ force_movables (movables)
 	     this insn M->insn might not be where it dies.
 	     But very likely this doesn't matter; what matters is
 	     that M's reg is computed from M1's reg.  */
-	  if (INSN_UID (m->insn) == regno_last_uid[regno]
+	  if (INSN_UID (m->insn) == REGNO_LAST_UID (regno)
 	      && !m->done)
 	    break;
 	if (m != 0 && m->set_src == m1->set_dest
@@ -1304,8 +1304,8 @@ combine_movables (movables, nregs)
 	    && mode == GET_MODE (SET_SRC (PATTERN (NEXT_INSN (m->insn)))))
 	  {
 	    register struct movable *m1;
-	    int first = uid_luid[regno_first_uid[m->regno]];
-	    int last = uid_luid[regno_last_uid[m->regno]];
+	    int first = uid_luid[REGNO_FIRST_UID (m->regno)];
+	    int last = uid_luid[REGNO_LAST_UID (m->regno)];
 
 	    if (m0 == 0)
 	      {
@@ -1323,8 +1323,8 @@ combine_movables (movables, nregs)
 	       already combined together.  */
 	    for (m1 = movables; m1 != m; m1 = m1->next)
 	      if (m1 == m0 || (m1->partial && m1->match == m0))
-		if (! (uid_luid[regno_first_uid[m1->regno]] > last
-		       || uid_luid[regno_last_uid[m1->regno]] < first))
+		if (! (uid_luid[REGNO_FIRST_UID (m1->regno)] > last
+		       || uid_luid[REGNO_LAST_UID (m1->regno)] < first))
 		  goto overlap;
 
 	    /* No overlap: we can combine this with the others.  */
@@ -1922,13 +1922,13 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 		 to say it lives at least the full length of this loop.
 		 This will help guide optimizations in outer loops.  */
 
-	      if (uid_luid[regno_first_uid[regno]] > INSN_LUID (loop_start))
+	      if (uid_luid[REGNO_FIRST_UID (regno)] > INSN_LUID (loop_start))
 		/* This is the old insn before all the moved insns.
 		   We can't use the moved insn because it is out of range
 		   in uid_luid.  Only the old insns have luids.  */
-		regno_first_uid[regno] = INSN_UID (loop_start);
-	      if (uid_luid[regno_last_uid[regno]] < INSN_LUID (end))
-		regno_last_uid[regno] = INSN_UID (end);
+		REGNO_FIRST_UID (regno) = INSN_UID (loop_start);
+	      if (uid_luid[REGNO_LAST_UID (regno)] < INSN_LUID (end))
+		REGNO_LAST_UID (regno) = INSN_UID (end);
 
 	      /* Combine with this moved insn any other matching movables.  */
 
@@ -3785,10 +3785,10 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	 long as init_insn doesn't use the biv itself.
 	 March 14, 1989 -- self@bayes.arc.nasa.gov */
 
-      if ((uid_luid[regno_last_uid[bl->regno]] < INSN_LUID (loop_end)
+      if ((uid_luid[REGNO_LAST_UID (bl->regno)] < INSN_LUID (loop_end)
 	   && bl->init_insn
 	   && INSN_UID (bl->init_insn) < max_uid_for_loop
-	   && uid_luid[regno_first_uid[bl->regno]] >= INSN_LUID (bl->init_insn)
+	   && uid_luid[REGNO_FIRST_UID (bl->regno)] >= INSN_LUID (bl->init_insn)
 #ifdef HAVE_decrement_and_branch_until_zero
 	   && ! bl->nonneg
 #endif
@@ -3809,8 +3809,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		       bl->regno);
 	      fprintf (loop_dump_stream,
 		       "First use: insn %d, last use: insn %d.\n",
-		       regno_first_uid[bl->regno],
-		       regno_last_uid[bl->regno]);
+		       REGNO_FIRST_UID (bl->regno),
+		       REGNO_LAST_UID (bl->regno));
 	    }
 	}
 
@@ -3961,7 +3961,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 			      other_giv = tv;
 			  }
 		      if (! tv && other_giv
-			  && (regno_last_uid[REGNO (other_giv->dest_reg)]
+			  && (REGNO_LAST_UID (REGNO (other_giv->dest_reg))
 			      == INSN_UID (v->insn))
 			  && INSN_LUID (v->insn) < INSN_LUID (bl->biv->insn))
 			auto_inc_opt = 1;
@@ -4042,12 +4042,12 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	    continue;
 
 	  if (v->giv_type == DEST_REG
-	      && regno_first_uid[REGNO (v->dest_reg)] == INSN_UID (v->insn))
+	      && REGNO_FIRST_UID (REGNO (v->dest_reg)) == INSN_UID (v->insn))
 	    {
 	      struct induction *v1;
 
 	      for (v1 = bl->giv; v1; v1 = v1->next_iv)
-		if (regno_last_uid[REGNO (v->dest_reg)] == INSN_UID (v1->insn))
+		if (REGNO_LAST_UID (REGNO (v->dest_reg)) == INSN_UID (v1->insn))
 		  v->maybe_dead = 1;
 	    }
 
@@ -4548,8 +4548,8 @@ record_giv (v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
     {
       v->mode = GET_MODE (SET_DEST (set));
 
-      v->lifetime = (uid_luid[regno_last_uid[REGNO (dest_reg)]]
-		     - uid_luid[regno_first_uid[REGNO (dest_reg)]]);
+      v->lifetime = (uid_luid[REGNO_LAST_UID (REGNO (dest_reg))]
+		     - uid_luid[REGNO_FIRST_UID (REGNO (dest_reg))]);
 
       v->times_used = n_times_used[REGNO (dest_reg)];
 
@@ -4594,9 +4594,9 @@ record_giv (v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
  	 - the giv is not used outside the loop
 	 - no assignments to the biv occur during the giv's lifetime.  */
 
-      if (regno_first_uid[REGNO (dest_reg)] == INSN_UID (insn)
+      if (REGNO_FIRST_UID (REGNO (dest_reg)) == INSN_UID (insn)
 	  /* Previous line always fails if INSN was moved by loop opt.  */
-	  && uid_luid[regno_last_uid[REGNO (dest_reg)]] < INSN_LUID (loop_end)
+	  && uid_luid[REGNO_LAST_UID (REGNO (dest_reg))] < INSN_LUID (loop_end)
 	  && (! not_every_iteration
 	      || last_use_this_basic_block (dest_reg, insn)))
  	{
@@ -4619,9 +4619,9 @@ record_giv (v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
 	    {
 	      if (INSN_UID (b->insn) >= max_uid_for_loop
 		  || ((uid_luid[INSN_UID (b->insn)]
-		       >= uid_luid[regno_first_uid[REGNO (dest_reg)]])
+		       >= uid_luid[REGNO_FIRST_UID (REGNO (dest_reg))])
 		      && (uid_luid[INSN_UID (b->insn)]
-			  <= uid_luid[regno_last_uid[REGNO (dest_reg)]])))
+			  <= uid_luid[REGNO_LAST_UID (REGNO (dest_reg))])))
 		{
 		  v->replaceable = 0;
 		  v->not_replaceable = 1;
@@ -6097,10 +6097,10 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 
 	      /* Emit an insn after the end of the loop to set the biv's
 		 proper exit value if it is used anywhere outside the loop.  */
-	      if ((regno_last_uid[bl->regno]
+	      if ((REGNO_LAST_UID (bl->regno)
 		   != INSN_UID (PREV_INSN (PREV_INSN (loop_end))))
 		  || ! bl->init_insn
-		  || regno_first_uid[bl->regno] != INSN_UID (bl->init_insn))
+		  || REGNO_FIRST_UID (bl->regno) != INSN_UID (bl->init_insn))
 		emit_insn_after (gen_move_insn (reg, final_value),
 				 loop_end);
 
@@ -6612,7 +6612,7 @@ last_use_this_basic_block (reg, insn)
        n && GET_CODE (n) != CODE_LABEL && GET_CODE (n) != JUMP_INSN;
        n = NEXT_INSN (n))
     {
-      if (regno_last_uid[REGNO (reg)] == INSN_UID (n))
+      if (REGNO_LAST_UID (REGNO (reg)) == INSN_UID (n))
 	return 1;
     }
   return 0;
@@ -6659,8 +6659,8 @@ update_reg_last_use (x, insn)
      and hence this insn will never be the last use of x.  */
   if (GET_CODE (x) == REG && REGNO (x) < max_reg_before_loop
       && INSN_UID (insn) < max_uid_for_loop
-      && uid_luid[regno_last_uid[REGNO (x)]] < uid_luid[INSN_UID (insn)])
-    regno_last_uid[REGNO (x)] = INSN_UID (insn);
+      && uid_luid[REGNO_LAST_UID (REGNO (x))] < uid_luid[INSN_UID (insn)])
+    REGNO_LAST_UID (REGNO (x)) = INSN_UID (insn);
   else
     {
       register int i, j;

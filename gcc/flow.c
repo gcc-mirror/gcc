@@ -164,56 +164,9 @@ int max_scratch;
 
 static int num_scratch;
 
-/* Indexed by n, gives number of basic block that  (REG n) is used in.
-   If the value is REG_BLOCK_GLOBAL (-2),
-   it means (REG n) is used in more than one basic block.
-   REG_BLOCK_UNKNOWN (-1) means it hasn't been seen yet so we don't know.
-   This information remains valid for the rest of the compilation
-   of the current function; it is used to control register allocation.  */
+/* Indexed by n, giving various register information */
 
-int *reg_basic_block;
-
-/* Indexed by n, gives number of times (REG n) is used or set, each
-   weighted by its loop-depth.
-   This information remains valid for the rest of the compilation
-   of the current function; it is used to control register allocation.  */
-
-int *reg_n_refs;
-
-/* Indexed by N; says whether a pseudo register N was ever used
-   within a SUBREG that changes the size of the reg.  Some machines prohibit
-   such objects to be in certain (usually floating-point) registers.  */
-
-char *reg_changes_size;
-
-/* Indexed by N, gives number of places register N dies.
-   This information remains valid for the rest of the compilation
-   of the current function; it is used to control register allocation.  */
-
-short *reg_n_deaths;
-
-/* Indexed by N, gives 1 if that reg is live across any CALL_INSNs.
-   This information remains valid for the rest of the compilation
-   of the current function; it is used to control register allocation.  */
-
-int *reg_n_calls_crossed;
-
-/* Total number of instructions at which (REG n) is live.
-   The larger this is, the less priority (REG n) gets for
-   allocation in a real register.
-   This information remains valid for the rest of the compilation
-   of the current function; it is used to control register allocation.
-
-   local-alloc.c may alter this number to change the priority.
-
-   Negative values are special.
-   -1 is used to mark a pseudo reg which has a constant or memory equivalent
-   and is used infrequently enough that it should not get a hard register.
-   -2 is used to mark a pseudo reg for a parameter, when a frame pointer
-   is not required.  global.c makes an allocno for this but does
-   not try to assign a hard register to it.  */
-
-int *reg_live_length;
+reg_info *reg_n_info;
 
 /* Element N is the next insn that uses (hard or pseudo) register number N
    within the current basic block; or zero, if there is no such insn.
@@ -1252,7 +1205,7 @@ life_analysis (f, nregs)
     for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
       if (basic_block_live_at_start[0][i / REGSET_ELT_BITS]
 	  & ((REGSET_ELT_TYPE) 1 << (i % REGSET_ELT_BITS)))
-	reg_basic_block[i] = REG_BLOCK_GLOBAL;
+	REG_BASIC_BLOCK (i) = REG_BLOCK_GLOBAL;
 
   /* Now the life information is accurate.
      Make one more pass over each basic block
@@ -1288,8 +1241,8 @@ life_analysis (f, nregs)
 	& ((REGSET_ELT_TYPE) 1 << (i % REGSET_ELT_BITS))
 	&& regno_reg_rtx[i] != 0 && ! REG_USERVAR_P (regno_reg_rtx[i]))
       {
-	reg_live_length[i] = -1;
-	reg_basic_block[i] = -1;
+	REG_LIVE_LENGTH (i) = -1;
+	REG_BASIC_BLOCK (i) = -1;
       }
 #endif
 #endif
@@ -1308,8 +1261,8 @@ life_analysis (f, nregs)
 	 & ((REGSET_ELT_TYPE) 1 << (i % REGSET_ELT_BITS)))
 	&& regno_reg_rtx[i] != 0)
       {
-	reg_live_length[i] = -1;
-	reg_basic_block[i] = -1;
+	REG_LIVE_LENGTH (i) = -1;
+	REG_BASIC_BLOCK (i) = -1;
       }
 
   obstack_free (&flow_obstack, NULL_PTR);
@@ -1329,27 +1282,14 @@ allocate_for_life_analysis ()
   regset_size = ((max_regno + REGSET_ELT_BITS - 1) / REGSET_ELT_BITS);
   regset_bytes = regset_size * sizeof (*(regset) 0);
 
-  reg_n_refs = (int *) oballoc (max_regno * sizeof (int));
-  bzero ((char *) reg_n_refs, max_regno * sizeof (int));
+  /* Because both reg_scan and flow_analysis want to set up the REG_N_SETS
+     information, explicitly reset it here.  The allocation should have
+     already happened on the previous reg_scan pass.  Make sure in case
+     some more registers were allocated.  */
+  allocate_reg_info (max_regno, FALSE);
 
-  reg_n_sets = (short *) oballoc (max_regno * sizeof (short));
-  bzero ((char *) reg_n_sets, max_regno * sizeof (short));
-
-  reg_n_deaths = (short *) oballoc (max_regno * sizeof (short));
-  bzero ((char *) reg_n_deaths, max_regno * sizeof (short));
-
-  reg_changes_size = (char *) oballoc (max_regno * sizeof (char));
-  bzero (reg_changes_size, max_regno * sizeof (char));;
-
-  reg_live_length = (int *) oballoc (max_regno * sizeof (int));
-  bzero ((char *) reg_live_length, max_regno * sizeof (int));
-
-  reg_n_calls_crossed = (int *) oballoc (max_regno * sizeof (int));
-  bzero ((char *) reg_n_calls_crossed, max_regno * sizeof (int));
-
-  reg_basic_block = (int *) oballoc (max_regno * sizeof (int));
   for (i = 0; i < max_regno; i++)
-    reg_basic_block[i] = REG_BLOCK_UNKNOWN;
+    REG_N_SETS (i) = 0;
 
   basic_block_live_at_start
     = (regset *) oballoc (n_basic_blocks * sizeof (regset));
@@ -1476,7 +1416,7 @@ propagate_block (old, first, last, final, significant, bnum)
 	      break;
 	    if (old[offset] & bit)
 	      {
-		reg_basic_block[i] = REG_BLOCK_GLOBAL;
+		REG_BASIC_BLOCK (i) = REG_BLOCK_GLOBAL;
 		regs_sometimes_live[sometimes_max].offset = offset;
 		regs_sometimes_live[sometimes_max].bit = i % REGSET_ELT_BITS;
 		sometimes_max++;
@@ -1699,7 +1639,7 @@ propagate_block (old, first, last, final, significant, bnum)
 
 		  for (i = 0; i < sometimes_max; i++, p++)
 		    if (old[p->offset] & ((REGSET_ELT_TYPE) 1 << p->bit))
-		      reg_n_calls_crossed[p->offset * REGSET_ELT_BITS + p->bit]+= 1;
+		      REG_N_CALLS_CROSSED (p->offset * REGSET_ELT_BITS + p->bit)++;
 		}
 	    }
 
@@ -1733,7 +1673,7 @@ propagate_block (old, first, last, final, significant, bnum)
 		for (i = 0; i < sometimes_max; i++, p++)
 		  {
 		    if (old[p->offset] & ((REGSET_ELT_TYPE) 1 << p->bit))
-		      reg_live_length[p->offset * REGSET_ELT_BITS + p->bit]++;
+		      REG_LIVE_LENGTH (p->offset * REGSET_ELT_BITS + p->bit)++;
 		  }
 	      }
 	    }
@@ -1941,7 +1881,7 @@ regno_clobbered_at_setjmp (regno)
   if (n_basic_blocks == 0)
     return 0;
 
-  return ((reg_n_sets[regno] > 1
+  return ((REG_N_SETS (regno) > 1
 	   || (basic_block_live_at_start[0][regno / REGSET_ELT_BITS]
 	       & ((REGSET_ELT_TYPE) 1 << (regno % REGSET_ELT_BITS))))
 	  && (regs_live_at_setjmp[regno / REGSET_ELT_BITS]
@@ -2098,7 +2038,7 @@ mark_set_1 (needed, dead, x, insn, significant)
 		  reg_next_use[i] = 0;
 
 		  regs_ever_live[i] = 1;
-		  reg_n_sets[i]++;
+		  REG_N_SETS (i)++;
 		}
 	    }
 	  else
@@ -2109,22 +2049,22 @@ mark_set_1 (needed, dead, x, insn, significant)
 
 	      /* Keep track of which basic blocks each reg appears in.  */
 
-	      if (reg_basic_block[regno] == REG_BLOCK_UNKNOWN)
-		reg_basic_block[regno] = blocknum;
-	      else if (reg_basic_block[regno] != blocknum)
-		reg_basic_block[regno] = REG_BLOCK_GLOBAL;
+	      if (REG_BASIC_BLOCK (regno) == REG_BLOCK_UNKNOWN)
+		REG_BASIC_BLOCK (regno) = blocknum;
+	      else if (REG_BASIC_BLOCK (regno) != blocknum)
+		REG_BASIC_BLOCK (regno) = REG_BLOCK_GLOBAL;
 
 	      /* Count (weighted) references, stores, etc.  This counts a
 		 register twice if it is modified, but that is correct.  */
-	      reg_n_sets[regno]++;
+	      REG_N_SETS (regno)++;
 
-	      reg_n_refs[regno] += loop_depth;
+	      REG_N_REFS (regno) += loop_depth;
 		  
 	      /* The insns where a reg is live are normally counted
 		 elsewhere, but we want the count to include the insn
 		 where the reg is set, and the normal counting mechanism
 		 would not count it.  */
-	      reg_live_length[regno]++;
+	      REG_LIVE_LENGTH (regno)++;
 	    }
 
 	  if (! some_not_needed)
@@ -2152,7 +2092,7 @@ mark_set_1 (needed, dead, x, insn, significant)
 		 Indicate this by marking the reg being set as dying here.  */
 	      REG_NOTES (insn)
 		= gen_rtx (EXPR_LIST, REG_UNUSED, reg, REG_NOTES (insn));
-	      reg_n_deaths[REGNO (reg)]++;
+	      REG_N_DEATHS (REGNO (reg))++;
 	    }
 	  else
 	    {
@@ -2338,7 +2278,7 @@ find_auto_inc (needed, x, insn)
 		 that REGNO now crosses them.  */
 	      for (temp = insn; temp != incr; temp = NEXT_INSN (temp))
 		if (GET_CODE (temp) == CALL_INSN)
-		  reg_n_calls_crossed[regno]++;
+		  REG_N_CALLS_CROSSED (regno)++;
 	    }
 	  else
 	    return;
@@ -2370,11 +2310,11 @@ find_auto_inc (needed, x, insn)
 	      /* Count an extra reference to the reg.  When a reg is
 		 incremented, spilling it is worse, so we want to make
 		 that less likely.  */
-	      reg_n_refs[regno] += loop_depth;
+	      REG_N_REFS (regno) += loop_depth;
 
 	      /* Count the increment as a setting of the register,
 		 even though it isn't a SET in rtl.  */
-	      reg_n_sets[regno]++;
+	      REG_N_SETS (regno)++;
 	    }
 	}
     }
@@ -2447,7 +2387,7 @@ mark_used_regs (needed, live, x, final, insn)
 	  && REGNO (SUBREG_REG (x)) >= FIRST_PSEUDO_REGISTER
 	  && (GET_MODE_SIZE (GET_MODE (x))
 	      != GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
-	reg_changes_size[REGNO (SUBREG_REG (x))] = 1;
+	REG_CHANGES_SIZE (REGNO (SUBREG_REG (x))) = 1;
 
       /* While we're here, optimize this case.  */
       x = SUBREG_REG (x);
@@ -2549,14 +2489,14 @@ mark_used_regs (needed, live, x, final, insn)
 
 		register int blocknum = BLOCK_NUM (insn);
 
-		if (reg_basic_block[regno] == REG_BLOCK_UNKNOWN)
-		  reg_basic_block[regno] = blocknum;
-		else if (reg_basic_block[regno] != blocknum)
-		  reg_basic_block[regno] = REG_BLOCK_GLOBAL;
+		if (REG_BASIC_BLOCK (regno) == REG_BLOCK_UNKNOWN)
+		  REG_BASIC_BLOCK (regno) = blocknum;
+		else if (REG_BASIC_BLOCK (regno) != blocknum)
+		  REG_BASIC_BLOCK (regno) = REG_BLOCK_GLOBAL;
 
 		/* Count (weighted) number of uses of each reg.  */
 
-		reg_n_refs[regno] += loop_depth;
+		REG_N_REFS (regno) += loop_depth;
 	      }
 
 	    /* Record and count the insns in which a reg dies.
@@ -2588,7 +2528,7 @@ mark_used_regs (needed, live, x, final, insn)
 		  {
 		    REG_NOTES (insn)
 		      = gen_rtx (EXPR_LIST, REG_DEAD, x, REG_NOTES (insn));
-		    reg_n_deaths[regno]++;
+		    REG_N_DEATHS (regno)++;
 		  }
 		else
 		  {
@@ -2649,7 +2589,7 @@ mark_used_regs (needed, live, x, final, insn)
 		&& REGNO (SUBREG_REG (testreg)) >= FIRST_PSEUDO_REGISTER
 		&& (GET_MODE_SIZE (GET_MODE (testreg))
 		    != GET_MODE_SIZE (GET_MODE (SUBREG_REG (testreg)))))
-	      reg_changes_size[REGNO (SUBREG_REG (testreg))] = 1;
+	      REG_CHANGES_SIZE (REGNO (SUBREG_REG (testreg))) = 1;
 
 	    /* Modifying a single register in an alternate mode
 	       does not use any of the old value.  But these other
@@ -2770,8 +2710,8 @@ try_pre_increment_1 (insn)
 	 less likely.  */
       if (regno >= FIRST_PSEUDO_REGISTER)
 	{
-	  reg_n_refs[regno] += loop_depth;
-	  reg_n_sets[regno]++;
+	  REG_N_REFS (regno) += loop_depth;
+	  REG_N_SETS (regno)++;
 	}
       return 1;
     }
@@ -2944,19 +2884,19 @@ dump_flow_info (file)
   fprintf (file, "%d registers.\n", max_regno);
 
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
-    if (reg_n_refs[i])
+    if (REG_N_REFS (i))
       {
 	enum reg_class class, altclass;
 	fprintf (file, "\nRegister %d used %d times across %d insns",
-		 i, reg_n_refs[i], reg_live_length[i]);
-	if (reg_basic_block[i] >= 0)
-	  fprintf (file, " in block %d", reg_basic_block[i]);
-	if (reg_n_deaths[i] != 1)
-	  fprintf (file, "; dies in %d places", reg_n_deaths[i]);
-	if (reg_n_calls_crossed[i] == 1)
+		 i, REG_N_REFS (i), REG_LIVE_LENGTH (i));
+	if (REG_BASIC_BLOCK (i) >= 0)
+	  fprintf (file, " in block %d", REG_BASIC_BLOCK (i));
+	if (REG_N_DEATHS (i) != 1)
+	  fprintf (file, "; dies in %d places", REG_N_DEATHS (i));
+	if (REG_N_CALLS_CROSSED (i) == 1)
 	  fprintf (file, "; crosses 1 call");
-	else if (reg_n_calls_crossed[i])
-	  fprintf (file, "; crosses %d calls", reg_n_calls_crossed[i]);
+	else if (REG_N_CALLS_CROSSED (i))
+	  fprintf (file, "; crosses %d calls", REG_N_CALLS_CROSSED (i));
 	if (PSEUDO_REGNO_BYTES (i) != UNITS_PER_WORD)
 	  fprintf (file, "; %d bytes", PSEUDO_REGNO_BYTES (i));
 	class = reg_preferred_class (i);

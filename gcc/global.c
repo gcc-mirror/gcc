@@ -385,17 +385,17 @@ global_alloc (file)
     /* Note that reg_live_length[i] < 0 indicates a "constant" reg
        that we are supposed to refrain from putting in a hard reg.
        -2 means do make an allocno but don't allocate it.  */
-    if (reg_n_refs[i] != 0 && reg_renumber[i] < 0 && reg_live_length[i] != -1
+    if (REG_N_REFS (i) != 0 && reg_renumber[i] < 0 && REG_LIVE_LENGTH (i) != -1
 	/* Don't allocate pseudos that cross calls,
 	   if this function receives a nonlocal goto.  */
 	&& (! current_function_has_nonlocal_label
-	    || reg_n_calls_crossed[i] == 0))
+	    || REG_N_CALLS_CROSSED (i) == 0))
       {
 	if (reg_may_share[i] && reg_allocno[reg_may_share[i]] >= 0)
 	  reg_allocno[i] = reg_allocno[reg_may_share[i]];
 	else
 	  reg_allocno[i] = max_allocno++;
-	if (reg_live_length[i] == 0)
+	if (REG_LIVE_LENGTH (i) == 0)
 	  abort ();
       }
     else
@@ -417,10 +417,10 @@ global_alloc (file)
 	int allocno = reg_allocno[i];
 	allocno_reg[allocno] = i;
 	allocno_size[allocno] = PSEUDO_REGNO_SIZE (i);
-	allocno_calls_crossed[allocno] += reg_n_calls_crossed[i];
-	allocno_n_refs[allocno] += reg_n_refs[i];
-	if (allocno_live_length[allocno] < reg_live_length[i])
-	  allocno_live_length[allocno] = reg_live_length[i];
+	allocno_calls_crossed[allocno] += REG_N_CALLS_CROSSED (i);
+	allocno_n_refs[allocno] += REG_N_REFS (i);
+	if (allocno_live_length[allocno] < REG_LIVE_LENGTH (i))
+	  allocno_live_length[allocno] = REG_LIVE_LENGTH (i);
       }
 
   /* Calculate amount of usage of each hard reg by pseudos
@@ -437,8 +437,8 @@ global_alloc (file)
 
 	for (j = regno; j < endregno; j++)
 	  {
-	    local_reg_n_refs[j] += reg_n_refs[i];
-	    local_reg_live_length[j] += reg_live_length[i];
+	    local_reg_n_refs[j] += REG_N_REFS (i);
+	    local_reg_live_length[j] += REG_LIVE_LENGTH (i);
 	  }
       }
 
@@ -554,7 +554,7 @@ global_alloc (file)
 	 except for parameters marked with reg_live_length[regno] == -2.  */
 
       for (i = 0; i < max_allocno; i++)
-	if (reg_live_length[allocno_reg[allocno_order[i]]] >= 0)
+	if (REG_LIVE_LENGTH (allocno_reg[allocno_order[i]]) >= 0)
 	  {
 	    /* If we have more than one register class,
 	       first try allocating in the class that is cheapest
@@ -940,7 +940,7 @@ find_reg (allocno, losers, alt_regs_p, accept_call_clobbered, retrying)
   IOR_HARD_REG_SET (used1, hard_reg_conflicts[allocno]);
 
 #ifdef CLASS_CANNOT_CHANGE_SIZE
-  if (reg_changes_size[allocno_reg[allocno]])
+  if (REG_CHANGES_SIZE (allocno_reg[allocno]))
     IOR_HARD_REG_SET (used1,
 		      reg_class_contents[(int) CLASS_CANNOT_CHANGE_SIZE]);
 #endif
@@ -1127,7 +1127,7 @@ find_reg (allocno, losers, alt_regs_p, accept_call_clobbered, retrying)
 	      && ! TEST_HARD_REG_BIT (used2, regno)
 	      && HARD_REGNO_MODE_OK (regno, mode)
 #ifdef CLASS_CANNOT_CHANGE_SIZE
-	      && ! (reg_changes_size[allocno_reg[allocno]]
+	      && ! (REG_CHANGES_SIZE (allocno_reg[allocno])
 		    && (TEST_HARD_REG_BIT
 			(reg_class_contents[(int) CLASS_CANNOT_CHANGE_SIZE],
 			 regno)))

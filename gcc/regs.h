@@ -37,14 +37,37 @@ extern int max_regno;
 
 extern int max_scratch;
 
+/* Register information indexed by register number */
+typedef struct reg_info_def {
+				/* fields set by reg_scan */
+  int first_uid;		/* UID of first insn to use (REG n) */
+  int last_uid;			/* UID of last insn to use (REG n) */
+  int last_note_uid;		/* UID of last note to use (REG n) */
+
+				/* fields set by both reg_scan and flow_analysis */
+  int sets;			/* # of times (REG n) is set */
+
+				/* fields set by flow_analysis */
+  int refs;			/* # of times (REG n) is used or set */
+  int deaths;			/* # of times (REG n) dies */
+  int live_length;		/* # of instructions (REG n) is live */
+  int calls_crossed;		/* # of calls (REG n) is live across */
+  int basic_block;		/* # of basic blocks (REG n) is used in */
+  char changes_size;		/* whether (SUBREG (REG n)) changes size */
+} reg_info;
+
+extern reg_info *reg_n_info;
+
 /* Indexed by n, gives number of times (REG n) is used or set.
    References within loops may be counted more times.  */
 
-extern int *reg_n_refs;
+#define REG_N_REFS(N) (reg_n_info[(N)].refs)
 
-/* Indexed by n, gives number of times (REG n) is set.  */
+/* Indexed by n, gives number of times (REG n) is set.
+   ??? both regscan and flow allocate space for this.  We should settle
+   on just copy.  */
 
-extern short *reg_n_sets;
+#define REG_N_SETS(N) (reg_n_info[(N)].sets)
 
 /* Indexed by N, gives number of insns in which register N dies.
    Note that if register N is live around loops, it can die
@@ -52,13 +75,13 @@ extern short *reg_n_sets;
    So this is only a reliable indicator of how many regions of life there are
    for registers that are contained in one basic block.  */
 
-extern short *reg_n_deaths;
+#define REG_N_DEATHS(N) (reg_n_info[(N)].deaths)
 
 /* Indexed by N; says whether a pseudo register N was ever used
    within a SUBREG that changes the size of the reg.  Some machines prohibit
    such objects to be in certain (usually floating-point) registers.  */
 
-extern char *reg_changes_size;
+#define REG_CHANGES_SIZE(N) (reg_n_info[(N)].changes_size)
 
 /* Get the number of consecutive words required to hold pseudo-reg N.  */
 
@@ -77,7 +100,7 @@ extern char *reg_changes_size;
 
 /* Indexed by N, gives number of CALL_INSNS across which (REG n) is live.  */
 
-extern int *reg_n_calls_crossed;
+#define REG_N_CALLS_CROSSED(N) (reg_n_info[(N)].calls_crossed)
 
 /* Total number of instructions at which (REG n) is live.
    The larger this is, the less priority (REG n) gets for
@@ -94,10 +117,14 @@ extern int *reg_n_calls_crossed;
    is not required.  global.c makes an allocno for this but does
    not try to assign a hard register to it.  */
 
-extern int *reg_live_length;
+#define REG_LIVE_LENGTH(N) (reg_n_info[(N)].live_length)
 
 /* Vector of substitutions of register numbers,
-   used to map pseudo regs into hardware regs.  */
+   used to map pseudo regs into hardware regs.
+
+   This can't be folded into reg_n_info without changing all of the
+   machine dependent directories, since the reload functions
+   access it.  */
 
 extern short *reg_renumber;
 
@@ -122,7 +149,7 @@ extern enum machine_mode reg_raw_mode[FIRST_PSEUDO_REGISTER];
    It is sometimes adjusted for subsequent changes during loop,
    but not adjusted by cse even if cse invalidates it.  */
 
-extern int *regno_first_uid;
+#define REGNO_FIRST_UID(N) (reg_n_info[(N)].first_uid)
 
 /* Vector indexed by regno; gives uid of last insn using that reg.
    This is computed by reg_scan for use by cse and loop.
@@ -130,11 +157,11 @@ extern int *regno_first_uid;
    but not adjusted by cse even if cse invalidates it.
    This is harmless since cse won't scan through a loop end.  */
 
-extern int *regno_last_uid;
+#define REGNO_LAST_UID(N) (reg_n_info[(N)].last_uid)
 
 /* Similar, but includes insns that mention the reg in their notes.  */
 
-extern int *regno_last_note_uid;
+#define REGNO_LAST_NOTE_UID(N) (reg_n_info[(N)].last_note_uid)
 
 /* This is reset to LAST_VIRTUAL_REGISTER + 1 at the start of each function.
    After rtl generation, it is 1 plus the largest register number used.  */
@@ -185,3 +212,6 @@ extern rtx *scratch_list;
 extern int *scratch_block;
 /* The length of the arrays pointed to by scratch_block and scratch_list.  */
 extern int scratch_list_length;
+
+/* Allocate reg_n_info tables */
+extern void allocate_reg_info PROTO((int, int));
