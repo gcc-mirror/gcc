@@ -1,3 +1,23 @@
+2003-10-18  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390-protos.h (shift_count_operand): Add prototype.
+	* config/s390/s390.c (shift_count_operand): New function.
+	(s390_extra_constraint): Use it to implement 'Y' constraint.
+	(print_shift_count_operand): New function.
+	(print_operand): Use it to implement '%Y'.
+	* config/s390/s390.h (EXTRA_ADDRESS_CONSTRAINT): Add 'Y' constraint.
+	(PREDICATE_CODES): Add shift_count_operand.
+	* config/s390/s390.md ("rotldi3"): Merge alternatives, 
+	using "shift_count_operand" predicate and "Y" constraint,
+	and "%Y" to output the combined shift count.
+	("rotlsi3"): Likewise.
+	("ashldi3", "*ashldi3_31", "*ashldi3_64"): Likewise.
+	("ashrdi3", "*ashrdi3_31", "*ashrdi3_64", "*ashrdi3_cc_31", 
+	"*ashrdi3_cc_64", "*ashrdi3_cconly_31", "*ashrdi3_cconly_64"): Likewise.
+	("ashlsi3", "ashrsi3", "*ashrsi3_cc", "*ashrsi3_cconly"): Likewise.
+	("lshrdi3", "*lshrdi3_31", "*lshrdi3_64"): Likewise.
+	("lshrsi3"): Likewise.
+
 2003-10-18  Gunther Nikl  <gni@gecko.de>
 
 	* config/m68k/m68k.c (m68k_output_function_epilogue): Add missing
