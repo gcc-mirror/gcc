@@ -2542,47 +2542,36 @@ mark_jump_label (x, insn, cross_jump, in_mem)
 	  {
 	    if (GET_CODE (insn) == JUMP_INSN)
 	      JUMP_LABEL (insn) = label;
-
-	    /* If we've changed the label, update notes accordingly.  */
-	    else if (label != olabel)
+	    else
 	      {
-		rtx note;
+		/* If we've changed the label, update notes accordingly.  */
+		if (label != olabel)
+		  {
+		    rtx note;
 
-		/* We may have a REG_LABEL note to indicate that this
-		   instruction uses the label.  */
-		note = find_reg_note (insn, REG_LABEL, olabel);
-		if (note)
-		  XEXP (note, 0) = label;
+		    /* We may have a REG_LABEL note to indicate that this
+		       instruction uses the label.  */
+		    note = find_reg_note (insn, REG_LABEL, olabel);
+		    if (note)
+		      XEXP (note, 0) = label;
 
-		/* We may also have a REG_EQUAL note to indicate that
-		   a register is being set to the address of the
-		   label.  */
-		note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
-		if (note 
-		    && GET_CODE (XEXP (note, 0)) == LABEL_REF
-		    && XEXP (XEXP (note, 0), 0) == olabel)
-		  XEXP (XEXP (note, 0), 0) = label;
-	      }
+		    /* We may also have a REG_EQUAL note to indicate that
+		       a register is being set to the address of the
+		       label.  */
+		    note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
+		    if (note 
+			&& GET_CODE (XEXP (note, 0)) == LABEL_REF
+			&& XEXP (XEXP (note, 0), 0) == olabel)
+		      XEXP (XEXP (note, 0), 0) = label;
+		  }
 
-	    /* Otherwise, add a REG_LABEL note for LABEL unless there already
-	       is one.  */
-	    else if (! find_reg_note (insn, REG_LABEL, label))
-	      {
-		/* This code used to ignore labels which refered to dispatch
-		   tables to avoid flow.c generating worse code.
-
-		   However, in the presense of global optimizations like
-		   gcse which call find_basic_blocks without calling
-		   life_analysis, not recording such labels will lead
-		   to compiler aborts because of inconsistencies in the
-		   flow graph.  So we go ahead and record the label.
-
-		   It may also be the case that the optimization argument
-		   is no longer valid because of the more accurate cfg
-		   we build in find_basic_blocks -- it no longer pessimizes
-		   code when it finds a REG_LABEL note.  */
-		REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_LABEL, label,
-						      REG_NOTES (insn));
+		/* Add a REG_LABEL note for LABEL unless there already
+		   is one.  All uses of a label, except for labels
+		   that are the targets of jumps, must have a
+		   REG_LABEL note.  */
+		if (! find_reg_note (insn, REG_LABEL, label))
+		  REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_LABEL, label,
+							REG_NOTES (insn));
 	      }
 	  }
 	return;

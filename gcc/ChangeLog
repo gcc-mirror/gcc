@@ -1,3 +1,7 @@
+2001-05-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* jump.c (mark_jump_label): Fix thinko in 2001-05-19 change.
+
 2001-05-23  Richard Henderson  <rth@redhat.com>
 
 	* function.c (expand_function_start): Always use a pseudo
