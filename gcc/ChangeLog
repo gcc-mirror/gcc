@@ -1,5 +1,16 @@
 2002-06-08  Jason Thorpe  <thorpej@wasabisystems.com>
 
+	* config/i386/netbsd-elf.h (LINK_SPEC): Define as
+	NETBSD_LINK_SPEC_ELF.
+	(SUBTARGET_EXTRA_SPECS): Add netbsd_entry_point.
+	(NETBSD_ENTRY_POINT): Define.
+	* config/i386/netbsd64.h (LINK_SPEC): Use %(netbsd_link_spec).
+	(SUBTARGET_EXTRA_SPECS): Add netbsd_link_spec and
+	netbsd_entry_point.
+	(NETBSD_ENTRY_POINT): Define.
+
+2002-06-08  Jason Thorpe  <thorpej@wasabisystems.com>
+
 	* config/alpha/netbsd.h (SUBTARGET_EXTRA_SPECS): Add
 	netbsd_link_spec and netbsd_entry_point.
 	(LINK_SPEC): Use %(netbsd_link_spec).
