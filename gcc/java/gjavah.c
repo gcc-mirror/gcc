@@ -45,6 +45,9 @@ FILE *out = NULL;
 /* Nonzero on failure.  */
 static int found_error = 0;
 
+/* Nonzero if we're generating JNI output.  */
+static int flag_jni = 0;
+
 /* Directory to place resulting files in. Set by -d option. */
 const char *output_directory = "";
 
@@ -105,6 +108,8 @@ struct method_name
 {
   unsigned char *name;
   int length;
+  unsigned char *signature;
+  int sig_length;
   struct method_name *next;
 };
 
@@ -115,9 +120,12 @@ static void print_field_info PARAMS ((FILE*, JCF*, int, int, JCF_u2));
 static void print_mangled_classname PARAMS ((FILE*, JCF*, const char*, int));
 static int  print_cxx_classname PARAMS ((FILE*, const char*, JCF*, int));
 static void print_method_info PARAMS ((FILE*, JCF*, int, int, JCF_u2));
-static void print_c_decl PARAMS ((FILE*, JCF*, int, int, int, const char *));
-static void print_stub PARAMS ((FILE*, JCF*, int, int, int, const char *));
-static void print_full_cxx_name PARAMS ((FILE*, JCF*, int, int, int, const char *));
+static void print_c_decl PARAMS ((FILE*, JCF*, int, int, int, const char *,
+				  int));
+static void print_stub_or_jni PARAMS ((FILE*, JCF*, int, int, int,
+				       const char *, int));
+static void print_full_cxx_name PARAMS ((FILE*, JCF*, int, int, int,
+					 const char *, int));
 static void decompile_method PARAMS ((FILE*, JCF*, int));
 static void add_class_decl PARAMS ((FILE*, JCF*, JCF_u2));
 
@@ -161,13 +169,13 @@ static int method_pass;
 #define HANDLE_END_FIELD()						      \
   if (field_pass)							      \
     {									      \
-      if (out && ! stubs)						      \
+      if (out && ! stubs && ! flag_jni)					      \
 	print_field_info (out, jcf, current_field_name,			      \
 			  current_field_signature,			      \
  			  current_field_flags);				      \
     }									      \
-  else									      \
-    if (! stubs) add_class_decl (out, jcf, current_field_signature);
+  else if (! stubs && ! flag_jni)					      \
+    add_class_decl (out, jcf, current_field_signature);
 
 #define HANDLE_CONSTANTVALUE(VALUEINDEX) current_field_value = (VALUEINDEX)
 
@@ -181,8 +189,9 @@ static int method_printed = 0;
       if (out)								      \
         print_method_info (out, jcf, NAME, SIGNATURE, ACCESS_FLAGS);	      \
     }									      \
-  else									      \
-    if (! stubs) add_class_decl (out, jcf, SIGNATURE);
+  else if (flag_jni)							      \
+    print_method_info (NULL, jcf, NAME, SIGNATURE, ACCESS_FLAGS);	      \
+  else if (! stubs) add_class_decl (out, jcf, SIGNATURE);
 
 #define HANDLE_CODE_ATTRIBUTE(MAX_STACK, MAX_LOCALS, CODE_LENGTH) \
   if (out && method_declared) decompile_method (out, jcf, CODE_LENGTH);
@@ -312,8 +321,7 @@ cxx_keyword_subst (str, length)
   return NULL;
 }
 
-/* Generate an access control keyword based on FLAGS.  Returns 0 if
-   FLAGS matches the saved access information, nonzero otherwise.  */
+/* Generate an access control keyword based on FLAGS.  */
 
 static void
 generate_access (stream, flags)
@@ -357,6 +365,28 @@ name_is_method_p (name, length)
   for (p = method_name_list; p != NULL; p = p->next)
     {
       if (p->length == length && ! memcmp (p->name, name, length))
+	return 1;
+    }
+  return 0;
+}
+
+/* If there is already a method named NAME, whose signature is not
+   SIGNATURE, then return true.  Otherwise return false.  */
+static int
+overloaded_jni_method_exists_p (name, length, signature, sig_length)
+     const unsigned char *name;
+     int length;
+     const char *signature;
+     int sig_length;
+{
+  struct method_name *p;
+
+  for (p = method_name_list; p != NULL; p = p->next)
+    {
+      if (p->length == length
+	  && ! memcmp (p->name, name, length)
+	  && (p->sig_length != sig_length
+	      || memcmp (p->signature, signature, sig_length)))
 	return 1;
     }
   return 0;
@@ -525,7 +555,7 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
     }
 
   override = get_field_name (jcf, name_index, flags);
-  print_c_decl (out, jcf, name_index, sig_index, 0, override);
+  print_c_decl (out, jcf, name_index, sig_index, 0, override, flags);
   fputs (";\n", out);
 
   if (override)
@@ -543,7 +573,7 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
 
   method_declared = 0;
   method_access = flags;
-  if (JPOOL_TAG (jcf, name_index) != CONSTANT_Utf8)
+  if (stream && JPOOL_TAG (jcf, name_index) != CONSTANT_Utf8)
     fprintf (stream, "<not a UTF8 constant>");
   str = JPOOL_UTF_DATA (jcf, name_index);
   length = JPOOL_UTF_LENGTH (jcf, name_index);
@@ -576,8 +606,18 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
       memcpy (nn->name, str, length);
       nn->length = length;
       nn->next = method_name_list;
+      nn->sig_length = JPOOL_UTF_LENGTH (jcf, sig_index);
+      nn->signature = (char *) xmalloc (nn->sig_length);
+      memcpy (nn->signature, JPOOL_UTF_DATA (jcf, sig_index),
+	      nn->sig_length);
       method_name_list = nn;
     }
+
+  /* If we're not printing, then the rest of this function doesn't
+     matter.  This happens during the first method pass in JNI mode.
+     Eww.  */
+  if (! stream)
+    return;
 
   /* We can't generate a method whose name is a C++ reserved word.  We
      can't just ignore the function, because that will cause incorrect
@@ -595,7 +635,7 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
 	return;
     }
 
-  if (! stubs)
+  if (! stubs && ! flag_jni)
     {
       method_printed = 1;
 
@@ -610,7 +650,7 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
 	  if (! is_init)
 	    fputs ("virtual ", out);
 	}
-      print_c_decl (out, jcf, name_index, sig_index, is_init, override);
+      print_c_decl (out, jcf, name_index, sig_index, is_init, override, flags);
       
       if ((flags & ACC_ABSTRACT))
 	fputs (" = 0", out);
@@ -619,10 +659,11 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
     }
   else
     {
-      if (METHOD_IS_NATIVE(flags)) 
+      if (METHOD_IS_NATIVE (flags)) 
 	{
 	  method_printed = 1;
-	  print_stub (out, jcf, name_index, sig_index, is_init, override);
+	  print_stub_or_jni (out, jcf, name_index, sig_index,
+			     is_init, override, flags);
 	}
     }
 }
@@ -704,6 +745,7 @@ decode_signature_piece (stream, signature, limit, need_space)
     {
     case '[':
       /* More spaghetti.  */
+
     array_loop:
       for (signature++; (signature < limit
 			 && *signature >= '0'
@@ -711,18 +753,35 @@ decode_signature_piece (stream, signature, limit, need_space)
 	;
       switch (*signature)
 	{
-	case 'B': ctype = "jbyteArray";  goto printit;
-	case 'C': ctype = "jcharArray";  goto printit;
-	case 'D': ctype = "jdoubleArray";  goto printit;
-	case 'F': ctype = "jfloatArray";  goto printit;
-	case 'I': ctype = "jintArray";  goto printit;
-	case 'S': ctype = "jshortArray";  goto printit;
-	case 'J': ctype = "jlongArray";  goto printit;
-	case 'Z': ctype = "jbooleanArray";  goto printit;
+	case 'B':
+	  ctype = "jbyteArray";
+	  break;
+	case 'C':
+	  ctype = "jcharArray";
+	  break;
+	case 'D':
+	  ctype = "jdoubleArray";
+	  break;
+	case 'F':
+	  ctype = "jfloatArray";
+	  break;
+	case 'I':
+	  ctype = "jintArray";
+	  break;
+	case 'S':
+	  ctype = "jshortArray";
+	  break;
+	case 'J':
+	  ctype = "jlongArray";
+	  break;
+	case 'Z':
+	  ctype = "jbooleanArray";
+	  break;
 	case '[':
 	  /* We have a nested array.  */
 	  ++array_depth;
-	  fputs ("JArray<", stream);
+	  if (! flag_jni)
+	    fputs ("JArray<", stream);
 	  goto array_loop;
 
 	case 'L':
@@ -730,23 +789,42 @@ decode_signature_piece (stream, signature, limit, need_space)
 	     our output matches what the compiler does.  */
 	  ++signature;
 	  /* Space between `<' and `:' to avoid C++ digraphs.  */
-	  fputs ("JArray< ::", stream);
+	  if (! flag_jni)
+	    fputs ("JArray< ::", stream);
 	  while (signature < limit && *signature != ';')
 	    {
 	      int ch = UTF8_GET (signature, limit);
-	      if (ch == '/')
-		fputs ("::", stream);
-	      else
-		jcf_print_char (stream, ch);
+	      if (! flag_jni)
+		{
+		  if (ch == '/')
+		    fputs ("::", stream);
+		  else
+		    jcf_print_char (stream, ch);
+		}
 	    }
-	  fputs (" *> *", stream);
+	  if (! flag_jni)
+	    fputs (" *> *", stream);
 	  *need_space = 0;
-	  ++signature;
+	  ctype = NULL;
 	  break;
 	default:
 	  /* Unparseable signature.  */
 	  return NULL;
 	}
+
+      /* If the previous iterations left us with something to print,
+	 print it.  For JNI, we always print `jobjectArray' in the
+	 nested cases.  */
+      if (flag_jni && ctype == NULL)
+	{
+	  ctype = "jobjectArray";
+	  *need_space = 1;
+	}
+      /* The `printit' case will advance SIGNATURE for us.  If we
+	 don't go there, we must advance past the `;' ourselves.  */
+      if (ctype != NULL)
+	goto printit;
+      ++signature;
       break;
 
     case '(':
@@ -764,6 +842,34 @@ decode_signature_piece (stream, signature, limit, need_space)
     case 'Z': ctype = "jboolean";  goto printit;
     case 'V': ctype = "void";  goto printit;
     case 'L':
+      if (flag_jni)
+	{
+	  /* We know about certain types and special-case their
+	     names.
+	     FIXME: something like java.lang.Exception should be
+	     printed as `jthrowable', because it is a subclass.  This
+	     means that gcjh must read the entire hierarchy and
+	     comprehend it.  */
+	  if (! strncmp (signature, "Ljava/lang/String;",
+			 sizeof ("Ljava/lang/String;") -1))
+	    ctype = "jstring";
+	  else if (! strncmp (signature, "Ljava/lang/Class;",
+			      sizeof ("Ljava/lang/Class;") - 1))
+	    ctype = "jclass";
+	  else if (! strncmp (signature, "Ljava/lang/Throwable;",
+			      sizeof ("Ljava/lang/Throwable;") - 1))
+	    ctype = "jthrowable";
+	  else if (! strncmp (signature, "Ljava/lang/ref/WeakReference;",
+			      sizeof ("Ljava/lang/ref/WeakReference;") - 1))
+	    ctype = "jweak";
+	  else
+	    ctype = "jobject";
+
+	  while (*signature && *signature != ';')
+	    ++signature;
+
+	  goto printit;
+	}
       /* Print a leading "::" so we look in the right namespace.  */
       fputs ("::", stream);
       ++signature;
@@ -792,18 +898,21 @@ decode_signature_piece (stream, signature, limit, need_space)
       break;
     }
 
-  while (array_depth-- > 0)
-    fputs ("> *", stream);
+  if (! flag_jni)
+    {
+      while (array_depth-- > 0)
+	fputs ("> *", stream);
+    }
 
   return signature;
 }
 
 static void
 DEFUN(print_c_decl, (stream, jcf, name_index, signature_index, is_init,
-		     name_override),
+		     name_override, flags),
       FILE* stream AND JCF* jcf
       AND int name_index AND int signature_index
-      AND int is_init AND const char *name_override)
+      AND int is_init AND const char *name_override AND int flags)
 {
   if (JPOOL_TAG (jcf, signature_index) != CONSTANT_Utf8)
     {
@@ -850,16 +959,18 @@ DEFUN(print_c_decl, (stream, jcf, name_index, signature_index, is_init,
       if (need_space)
 	fputs (" ", stream);
       print_full_cxx_name (stream, jcf, name_index, 
-			   signature_index, is_init, name_override);
+			   signature_index, is_init, name_override,
+			   flags);
     }
 }
 
 /* Print the unqualified method name followed by the signature. */
 static void
-DEFUN(print_full_cxx_name, (stream, jcf, name_index, signature_index, is_init, name_override),
+DEFUN(print_full_cxx_name, (stream, jcf, name_index, signature_index,
+			    is_init, name_override, flags),
       FILE* stream AND JCF* jcf
       AND int name_index AND int signature_index AND int is_init 
-      AND const char *name_override)
+      AND const char *name_override AND int flags)
 {
   int length = JPOOL_UTF_LENGTH (jcf, signature_index);
   const unsigned char *str0 = JPOOL_UTF_DATA (jcf, signature_index);
@@ -879,13 +990,75 @@ DEFUN(print_full_cxx_name, (stream, jcf, name_index, signature_index, is_init, n
       else
 	print_name (stream, jcf, name_index);
     }
-  
+
+  if (flag_jni)
+    {
+      unsigned char *signature = JPOOL_UTF_DATA (jcf, signature_index);
+      int sig_len = JPOOL_UTF_LENGTH (jcf, signature_index);
+      if (overloaded_jni_method_exists_p (JPOOL_UTF_DATA (jcf, name_index),
+					  JPOOL_UTF_LENGTH (jcf, name_index),
+					  signature, sig_len))
+	{
+	  /* If this method is overloaded by another native method,
+	     then include the argument information in the mangled
+	     name.  */
+	  unsigned char *limit = signature + sig_len;
+	  fputs ("__", stream);
+	  while (signature < limit)
+	    {
+	      int ch = UTF8_GET (signature, limit);
+	      if (ch == '(')
+		{
+		  /* Ignore.  */
+		}
+	      else if (ch == ')')
+		{
+		  /* Done.  */
+		  break;
+		}
+	      else if (ch == '_')
+		fputs ("_1", stream);
+	      else if (ch == ';')
+		fputs ("_2", stream);
+	      else if (ch == '[')
+		fputs ("_3", stream);
+	      else if (ch == '/')
+		fputs ("_", stream);
+	      else if ((ch >= '0' && ch <= '9')
+		       || (ch >= 'a' && ch <= 'z')
+		       || (ch >= 'A' && ch <= 'Z'))
+		fputc (ch, stream);
+	      else
+		{
+		  /* "Unicode" character.  FIXME: upper or lower case
+		     letters?  */
+		  fprintf (stream, "_0%04x", ch);
+		}
+	    }
+	}
+    }
+
   if (is_method)
     {
       /* Have a method or a constructor.  Print signature pieces
 	 until done.  */
       fputs (" (", stream);
+
       str = str0 + 1;
+
+      /* In JNI mode, add extra arguments.  */
+      if (flag_jni)
+	{
+	  /* FIXME: it would be nice to know if we are printing a decl
+	     or a definition, and only print `env' for the latter.  */
+	  fputs ("JNIEnv *env", stream);
+
+	  fputs ((flags & ACC_STATIC) ? ", jclass" : ", jobject", stream);
+
+	  if (*str != ')')
+	    fputs (", ", stream);
+	}
+
       while (str < limit && *str != ')')
 	{
 	  next = decode_signature_piece (stream, str, limit, &need_space);
@@ -905,12 +1078,28 @@ DEFUN(print_full_cxx_name, (stream, jcf, name_index, signature_index, is_init, n
     }
 }
 
+/* This is a helper for print_stub_or_jni.  */
 static void
-DEFUN(print_stub, (stream, jcf, name_index, signature_index, is_init,
-		     name_override),
+DEFUN (print_name_for_stub_or_jni, (stream, jcf, name_index, signature_index,
+				    is_init, name_override, flags),
+       FILE *stream AND JCF *jcf
+       AND int name_index AND int signature_index
+       AND int is_init AND const char *name_override AND int flags)
+{
+  char *prefix = flag_jni ? "Java_" : "\n";
+  print_cxx_classname (stream, prefix, jcf, jcf->this_class);
+  fputs (flag_jni ? "_" : "::", stream);
+  print_full_cxx_name (stream, jcf, name_index, 
+		       signature_index, is_init, name_override,
+		       flags);
+}
+
+static void
+DEFUN(print_stub_or_jni, (stream, jcf, name_index, signature_index, is_init,
+			  name_override, flags),
       FILE* stream AND JCF* jcf
       AND int name_index AND int signature_index
-      AND int is_init AND const char *name_override)
+      AND int is_init AND const char *name_override AND int flags)
 {
   if (JPOOL_TAG (jcf, signature_index) != CONSTANT_Utf8)
     {
@@ -927,6 +1116,13 @@ DEFUN(print_stub, (stream, jcf, name_index, signature_index, is_init,
       int is_method = str[0] == '(';
       const unsigned char *next;
 
+      /* Don't print fields in the JNI case.  */
+      if (! is_method && flag_jni)
+	return;
+
+      if (flag_jni && ! stubs)
+	fputs ("extern ", stream);
+
       /* If printing a method, skip to the return signature and print
 	 that first.  However, there is no return value if this is a
 	 constructor.  */
@@ -941,7 +1137,8 @@ DEFUN(print_stub, (stream, jcf, name_index, signature_index, is_init,
 	}
 
       /* If printing a field or an ordinary method, then print the
-	 "return value" now.  */
+	 "return value" now.  Note that a constructor can't be native,
+	 so we don't bother checking this in the JNI case.  */
       if (! is_method || ! is_init)
 	{
 	  next = decode_signature_piece (stream, str, limit, &need_space);
@@ -953,17 +1150,29 @@ DEFUN(print_stub, (stream, jcf, name_index, signature_index, is_init,
 	    }
 	}
 
+      /* When printing a JNI header we need to respect the space.  In
+	 other cases we're just going to insert a newline anyway.  */
+      if (flag_jni)
+	fputs (need_space && ! stubs ? " " : "\n", stream);
+
       /* Now print the name of the thing.  */
-      print_cxx_classname (stream, "\n", jcf, jcf->this_class);
-      fputs ("::", stream);
-      print_full_cxx_name (stream, jcf, name_index, 
-			   signature_index, is_init, name_override);
-      fputs ("\n{\n  JvFail (\"", stream);
-      print_cxx_classname (stream, "", jcf, jcf->this_class);
-      fputs ("::", stream);
-      print_full_cxx_name (stream, jcf, name_index, 
-			   signature_index, is_init, name_override);
-      fputs (" not implemented\");\n}\n\n", stream);
+      print_name_for_stub_or_jni (stream, jcf, name_index,
+				  signature_index, is_init, name_override,
+				  flags);
+
+      /* Print the body.  */
+      if (stubs)
+	{
+	  if (flag_jni)
+	    fputs ("\n{\n  (*env)->FatalError (\"", stream);
+	  else
+	    fputs ("\n{\n  JvFail (\"", stream);
+	  print_name_for_stub_or_jni (stream, jcf, name_index,
+				      signature_index, is_init,
+				      name_override,
+				      flags);
+	  fputs (" not implemented\");\n}\n\n", stream);
+	}
     }
 }
 
@@ -1006,13 +1215,14 @@ print_cxx_classname (stream, prefix, jcf, index)
   fputs (prefix, stream);
 
   /* Print a leading "::" so we look in the right namespace.  */
-  fputs ("::", stream);
+  if (! flag_jni)
+    fputs ("::", stream);
 
   while (s < limit)
     {
       c = UTF8_GET (s, limit);
       if (c == '/')
-	fputs ("::", stream);
+	fputs (flag_jni ? "_" : "::", stream);
       else
 	jcf_print_char (stream, c);
     }
@@ -1084,7 +1294,9 @@ print_include (out, utf8, len)
   all_includes = incl;
 
   fputs ("#include <", out);
-  jcf_print_utf8 (out, utf8, len);
+  jcf_print_utf8_replace (out, utf8, len,
+			  '/',
+			  flag_jni ? '_' : '/');
   fputs (".h>\n", out);
 }
 
@@ -1356,17 +1568,46 @@ DEFUN(process_file, (jcf, out),
 
   if (written_class_count++ == 0 && out)
     {
-      if (! stubs)
-	fputs ("// DO NOT EDIT THIS FILE - it is machine generated -*- c++ -*-\n\n",
-	       out);
+      char *cstart, *cstart2, *mode, *cend, *what, *jflag;
+      if (flag_jni)
+	{
+	  cstart = "/*";
+	  cstart2 = "  ";
+	  cend = " */";
+	  mode = "";
+	  what = "JNI";
+	  jflag = " -jni";
+	}
       else
 	{
-	  fputs ("// This file was created by `gcjh -stubs'.  It is -*- c++ -*-.\n\
-//\n\
-// This file is intended to give you a head start on implementing native\n\
-// methods using CNI.\n\
-// Be aware: running `gcjh -stubs' once more for this class may overwrite any\n\
-// edits you have made to this file.\n\n", out);
+	  cstart = "//";
+	  cstart2 = "//";
+	  cend = "";
+	  mode = " -*- c++ -*-";
+	  what = "CNI";
+	  jflag = "";
+	}
+
+      if (! stubs)
+	fprintf (out, "%s DO NOT EDIT THIS FILE - it is machine generated%s%s\n\n",
+		 cstart, mode, cend);
+      else
+	{
+	  fprintf (out, "%s This file was created by `gcjh -stubs%s'.%s\n\
+%s\n\
+%s This file is intended to give you a head start on implementing native\n\
+%s methods using %s.\n\
+%s Be aware: running `gcjh -stubs %s' once more for this class may\n\
+%s overwrite any edits you have made to this file.%s\n\n",
+		   cstart, jflag, mode,
+		   cstart2,
+		   cstart2,
+		   cstart2,
+		   what,
+		   cstart2,
+		   jflag,
+		   cstart2,
+		   cend);
 	}
     }
 
@@ -1376,30 +1617,44 @@ DEFUN(process_file, (jcf, out),
 	{
 	  print_mangled_classname (out, jcf, "#ifndef __", jcf->this_class);
 	  fprintf (out, "__\n");
-	  
+
 	  print_mangled_classname (out, jcf, "#define __", jcf->this_class);
 	  fprintf (out, "__\n\n");
-	  
-	  /* We do this to ensure that inline methods won't be `outlined'
-	     by g++.  This works as long as method and fields are not
-	     added by the user.  */
-	  fprintf (out, "#pragma interface\n");
-	  
-	  if (jcf->super_class)
+
+	  if (flag_jni)
 	    {
-	      int super_length;
-	      const unsigned char *supername =
-		super_class_name (jcf, &super_length);
-	      
-	      fputs ("\n", out);
-	      print_include (out, supername, super_length);
+	      fprintf (out, "#include <jni.h>\n\n");
+	      fprintf (out, "#ifdef __cplusplus\n");
+	      fprintf (out, "extern \"C\"\n");
+	      fprintf (out, "{\n");
+	      fprintf (out, "#endif\n");
+	    }
+	  else  
+	    {
+	      /* We do this to ensure that inline methods won't be
+		 `outlined' by g++.  This works as long as method and
+		 fields are not added by the user.  */
+	      fprintf (out, "#pragma interface\n");
+
+	      if (jcf->super_class)
+		{
+		  int super_length;
+		  const unsigned char *supername =
+		    super_class_name (jcf, &super_length);
+
+		  fputs ("\n", out);
+		  print_include (out, supername, super_length);
+		}
 	    }
 	}
       else
 	{
 	  /* Strip off the ".class" portion of the name when printing
 	     the include file name.  */
-	  print_include (out, jcf->classname, strlen (jcf->classname) - 6);
+	  int len = strlen (jcf->classname);
+	  if (len > 6 && ! strcmp (&jcf->classname[len - 6], ".class"))
+	    len -= 6;
+	  print_include (out, jcf->classname, len);
 	}
     }
 
@@ -1417,9 +1672,10 @@ DEFUN(process_file, (jcf, out),
   jcf_parse_methods (jcf);
 
   if (out)
-    {
-      fputs ("\n", out);
+    fputs ("\n", out);
 
+  if (out && ! flag_jni)
+    {
       if (! stubs)
 	print_class_decls (out, jcf, jcf->this_class);
 
@@ -1427,7 +1683,7 @@ DEFUN(process_file, (jcf, out),
 	fprintf (out, "%s\n", prepend_specs[i]);
       if (prepend_count > 0)
 	fputc ('\n', out);
-      
+
       if (! stubs)
 	{
 	  if (! print_cxx_classname (out, "class ", jcf, jcf->this_class))
@@ -1464,32 +1720,38 @@ DEFUN(process_file, (jcf, out),
 
   jcf_parse_final_attributes (jcf);
 
-  if (out)
+  if (out && ! stubs)
     {
-      /* Generate friend decl if we still must.  */
-      for (i = 0; i < friend_count; ++i)
-	fprintf (out, "  friend %s\n", friend_specs[i]);
-
-      /* Generate extra declarations.  */
-      if (add_count > 0)
-	fputc ('\n', out);
-      for (i = 0; i < add_count; ++i)
-	fprintf (out, "  %s\n", add_specs[i]);
-
-      if (! stubs)
-	fputs ("};\n", out);
-
-      if (append_count > 0)
-	fputc ('\n', out);
-      for (i = 0; i < append_count; ++i)
-	fprintf (out, "%s\n", append_specs[i]);
-
-      if (!stubs)
+      if (flag_jni)
 	{
-	  print_mangled_classname (out, jcf, 
-				   "\n#endif /* __", jcf->this_class);
-	  fprintf (out, "__ */\n");
+	      fprintf (out, "\n#ifdef __cplusplus\n");
+	      fprintf (out, "}\n");
+	      fprintf (out, "#endif\n");
 	}
+      else
+	{
+	  /* Generate friend decl if we still must.  */
+	  for (i = 0; i < friend_count; ++i)
+	    fprintf (out, "  friend %s\n", friend_specs[i]);
+
+	  /* Generate extra declarations.  */
+	  if (add_count > 0)
+	    fputc ('\n', out);
+	  for (i = 0; i < add_count; ++i)
+	    fprintf (out, "  %s\n", add_specs[i]);
+
+	  if (! stubs)
+	    fputs ("};\n", out);
+
+	  if (append_count > 0)
+	    fputc ('\n', out);
+	  for (i = 0; i < append_count; ++i)
+	    fprintf (out, "%s\n", append_specs[i]);
+	}
+
+      print_mangled_classname (out, jcf, 
+			       "\n#endif /* __", jcf->this_class);
+      fprintf (out, "__ */\n");
     }
 }
 
@@ -1531,6 +1793,7 @@ static struct option options[] =
   { "MG",        no_argument,       NULL, OPT_MG  },
   { "MD",        no_argument,       NULL, OPT_MD  },
   { "MMD",       no_argument,       NULL, OPT_MMD },
+  { "jni",       no_argument,       &flag_jni, 1 },
   { NULL,        no_argument,       NULL, 0 }
 };
 
@@ -1547,6 +1810,7 @@ help ()
   printf ("Usage: gcjh [OPTION]... CLASS...\n\n");
   printf ("Generate C++ header files from .class files\n\n");
   printf ("  -stubs                  Generate an implementation stub file\n");
+  printf ("  -jni                    Generate a JNI header or stub\n");
   printf ("\n");
   printf ("  -add TEXT               Insert TEXT into class body\n");
   printf ("  -append TEXT            Insert TEXT after class declaration\n");
@@ -1767,6 +2031,8 @@ DEFUN(main, (argc, argv),
 	      char ch = classname[i];
 	      if (ch == '.')
 		ch = '/';
+	      if (flag_jni && ch == '/')
+		ch = '_';
 	      current_output_file[dir_len++] = ch;
 	    }
 	  if (emit_dependencies)
@@ -1785,7 +2051,7 @@ DEFUN(main, (argc, argv),
 		}
 	    }
 	  strcpy (current_output_file + dir_len, 
-		  stubs ? ".cc" : ".h");
+		  stubs ? (flag_jni ? ".c" : ".cc") : ".h");
 	  jcf_dependency_set_target (current_output_file);
 	  if (! suppress_output)
 	    {

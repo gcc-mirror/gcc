@@ -1,5 +1,29 @@
 2000-02-02  Tom Tromey  <tromey@cygnus.com>
 
+	* gjavah.c (options): Added `jni' entry.
+	(help): Document -jni.
+	(flag_jni): New global.
+	(process_file): Handle JNI output.  Don't print text from
+	-prepend, -add, etc, when generating stubs.  Only remove `.class'
+	suffix if it actually exists.
+	(main): Create a `.c' file when run with `--jni --stubs'.  Create
+	correct output file name with `--jni'.
+	(print_include): Mangle header name differently in JNI case.
+	(HANDLE_METHOD): In JNI mode, call print_method_info to generate
+	method list.
+	(print_method_info): Handle JNI case.  Put signature info into
+	method name.  Handle case when STREAM is NULL.
+	(print_name_for_stub_or_jni): New function.
+	(print_stub_or_jni): Renamed from `print_stub'.  Handle JNI.
+	(print_cxx_classname): Handle JNI.
+	(print_full_cxx_name): Likewise.
+	(decode_signature_piece): Likewise.
+	(overloaded_jni_method_exists_p): New function.
+	(struct method_name): Added `signature' and `sig_length' fields.
+	(HANDLE_END_FIELD): Do nothing in JNI mode.
+
+2000-02-02  Tom Tromey  <tromey@cygnus.com>
+
 	* jv-scan.c: Include version.c, <getopt.h>.
 	(LONG_OPT, OPT_HELP, OPT_VERSION): New macros.
 	(options): New array.
