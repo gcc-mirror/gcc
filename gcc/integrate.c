@@ -3037,10 +3037,9 @@ output_inline_function (fndecl)
   current_function_outgoing_args_size = OUTGOING_ARGS_SIZE (head);
   current_function_pops_args = POPS_ARGS (head);
 
-  /* There is no need to output a return label again.  */
-  return_label = 0;
-
-  expand_function_end (DECL_SOURCE_FILE (fndecl), DECL_SOURCE_LINE (fndecl), 0);
+  /* This is the only thing the expand_function_end call that uses to be here
+     actually does and that call can cause problems.  */
+  immediate_size_expand--;
 
   /* Find last insn and rebuild the constant pool.  */
   for (last = FIRST_PARM_INSN (head);
