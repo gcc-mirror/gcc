@@ -1,5 +1,8 @@
 1998-10-31  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* g++.old-deja/g++.pt/sizeof3.C: a similar testcase not involving
+	base classes
+
 	* g++.old-deja/g++.pt/sizeof2.C: incorrect specialization of base
 	template is selected
 
