@@ -125,7 +125,7 @@ do { long value[2];							\
    have a precedent to follow with respect to DWARF register numbers
    for x86 FP registers, but the SDB on x86/svr4 is so completely
    broken with respect to FP registers that it is hardly worth thinking
-   of it as something to strive for compatability with.
+   of it as something to strive for compatibility with.
 
    The verison of x86/svr4 SDB I have at the moment does (partially)
    seem to believe that DWARF register number 11 is associated with
