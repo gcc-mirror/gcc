@@ -3801,7 +3801,7 @@ function_arg (cum, mode, type, named)
 
       /* Drops through.  */
     case BLKmode:
-      if (type != (tree)0 && TYPE_ALIGN (type) > (unsigned) BITS_PER_WORD
+      if (type != NULL_TREE && TYPE_ALIGN (type) > BITS_PER_WORD
 	  && ! TARGET_64BIT && mips_abi != ABI_EABI)
 	cum->arg_words += (cum->arg_words & 1);
       regbase = GP_ARG_FIRST;
@@ -3833,7 +3833,8 @@ function_arg (cum, mode, type, named)
 	abort ();
 
       if (! type || TREE_CODE (type) != RECORD_TYPE || mips_abi == ABI_32
-	  || mips_abi == ABI_EABI || mips_abi == ABI_O64 || ! named)
+	  || mips_abi == ABI_EABI || mips_abi == ABI_O64 || ! named
+	  || ! host_integerp (TYPE_SIZE_UNIT (type), 1))
 	ret = gen_rtx_REG (mode, regbase + *arg_words + bias);
       else
 	{
@@ -3847,8 +3848,8 @@ function_arg (cum, mode, type, named)
 	    if (TREE_CODE (field) == FIELD_DECL
 		&& TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
 		&& TYPE_PRECISION (TREE_TYPE (field)) == BITS_PER_WORD
-		&& (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field))
-		    % BITS_PER_WORD == 0))
+		&& host_integerp (bit_position (field), 0)
+		&& int_bit_position (field) % BITS_PER_WORD == 0)
 	      break;
 
 	  /* If the whole struct fits a DFmode register,
@@ -3859,15 +3860,16 @@ function_arg (cum, mode, type, named)
 	    {
 	      /* Now handle the special case by returning a PARALLEL
 		 indicating where each 64 bit chunk goes.  */
-	      int chunks;
-	      int bitpos;
-	      int regno;
+	      unsigned int chunks;
+	      HOST_WIDE_INT bitpos;
+	      unsigned int regno;
 	      int i;
 
 	      /* ??? If this is a packed structure, then the last hunk won't
 		 be 64 bits.  */
 
-	      chunks = TREE_INT_CST_LOW (TYPE_SIZE (type)) / BITS_PER_WORD;
+	      chunks
+		= tree_low_cst (TYPE_SIZE_UNIT (type), 1) / UNITS_PER_WORD;
 	      if (chunks + *arg_words + bias > MAX_ARGS_IN_REGISTERS)
 		chunks = MAX_ARGS_IN_REGISTERS - *arg_words - bias;
 
@@ -3884,12 +3886,11 @@ function_arg (cum, mode, type, named)
 
 		  for (; field; field = TREE_CHAIN (field))
 		    if (TREE_CODE (field) == FIELD_DECL
-			&& (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field))
-			    >= bitpos))
+			&& int_bit_position (field) >= bitpos)
 		      break;
 
 		  if (field
-		      && TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field)) == bitpos
+		      && int_bit_position (field) == bitpos
 		      && TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
 		      && TYPE_PRECISION (TREE_TYPE (field)) == BITS_PER_WORD)
 		    reg = gen_rtx_REG (DFmode,
@@ -7417,10 +7418,8 @@ mips_function_value (valtype, func)
 		= TYPE_MODE (TREE_TYPE (fields[0]));
 	      enum machine_mode second_mode
 		= TYPE_MODE (TREE_TYPE (fields[1]));
-	      int first_offset
-		= TREE_INT_CST_LOW (DECL_FIELD_BITPOS (fields[0]));
-	      int second_offset
-		= TREE_INT_CST_LOW (DECL_FIELD_BITPOS (fields[1]));
+	      HOST_WIDE_INT first_offset = int_byte_position (fields[0]);
+	      HOST_WIDE_INT second_offset = int_byte_position (fields[1]);
 
 	      return gen_rtx_PARALLEL
 		(mode,
@@ -7428,13 +7427,11 @@ mips_function_value (valtype, func)
 			    gen_rtx_EXPR_LIST (VOIDmode,
 					       gen_rtx_REG (first_mode,
 							    FP_RETURN),
-					       GEN_INT (first_offset
-							/ BITS_PER_UNIT)),
+					       GEN_INT (first_offset)),
 			    gen_rtx_EXPR_LIST (VOIDmode,
 					       gen_rtx_REG (second_mode,
 							    FP_RETURN + 2),
-					       GEN_INT (second_offset
-							/ BITS_PER_UNIT))));
+					       GEN_INT (second_offset))));
 	    }
 	}
     }

@@ -4057,22 +4057,25 @@ struct function_arg_record_value_parms
 {
   rtx ret;
   int slotno, named, regbase;
-  int nregs, intoffset;
+  unsigned int nregs;
+  int intoffset;
 };
 
 static void function_arg_record_value_3
-	PARAMS ((int, struct function_arg_record_value_parms *));
+	PARAMS ((HOST_WIDE_INT, struct function_arg_record_value_parms *));
 static void function_arg_record_value_2
-	PARAMS ((tree, int, struct function_arg_record_value_parms *));
+	PARAMS ((tree, HOST_WIDE_INT,
+		 struct function_arg_record_value_parms *));
 static void function_arg_record_value_1
-        PARAMS ((tree, int, struct function_arg_record_value_parms *));
+        PARAMS ((tree, HOST_WIDE_INT,
+		 struct function_arg_record_value_parms *));
 static rtx function_arg_record_value
 	PARAMS ((tree, enum machine_mode, int, int, int));
 
 static void
 function_arg_record_value_1 (type, startbitpos, parms)
      tree type;
-     int startbitpos;
+     HOST_WIDE_INT startbitpos;
      struct function_arg_record_value_parms *parms;
 {
   tree field;
@@ -4100,15 +4103,16 @@ function_arg_record_value_1 (type, startbitpos, parms)
     {
       if (TREE_CODE (field) == FIELD_DECL)
 	{
-	  int bitpos = startbitpos;
-	  if (DECL_FIELD_BITPOS (field))
-	    bitpos += TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field));
+	  HOST_WIDE_INT bitpos = startbitpos;
+
+	  if (DECL_SIZE (field) != 0
+	      && host_integerp (bit_position (field), 1))
+	    bitpos += int_bit_position (field);
+
 	  /* ??? FIXME: else assume zero offset.  */
 
 	  if (TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE)
-	    {
-	      function_arg_record_value_1 (TREE_TYPE (field), bitpos, parms);
-	    }
+	    function_arg_record_value_1 (TREE_TYPE (field), bitpos, parms);
 	  else if (TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
 	           && TARGET_FPU
 	           && ! packed_p
@@ -4146,15 +4150,17 @@ function_arg_record_value_1 (type, startbitpos, parms)
 
 static void 
 function_arg_record_value_3 (bitpos, parms)
-     int bitpos;
+     HOST_WIDE_INT bitpos;
      struct function_arg_record_value_parms *parms;
 {
   enum machine_mode mode;
-  int regno, this_slotno, intslots, intoffset;
+  unsigned int regno;
+  int this_slotno, intslots, intoffset;
   rtx reg;
 
   if (parms->intoffset == -1)
     return;
+
   intoffset = parms->intoffset;
   parms->intoffset = -1;
 
@@ -4171,10 +4177,8 @@ function_arg_record_value_3 (bitpos, parms)
      at the moment but may wish to revisit.  */
 
   if (intoffset % BITS_PER_WORD != 0)
-    {
-      mode = mode_for_size (BITS_PER_WORD - intoffset%BITS_PER_WORD,
-			    MODE_INT, 0);
-    }
+    mode = mode_for_size (BITS_PER_WORD - intoffset % BITS_PER_WORD,
+			  MODE_INT, 0);
   else
     mode = word_mode;
 
@@ -4197,7 +4201,7 @@ function_arg_record_value_3 (bitpos, parms)
 static void
 function_arg_record_value_2 (type, startbitpos, parms)
      tree type;
-     int startbitpos;
+     HOST_WIDE_INT startbitpos;
      struct function_arg_record_value_parms *parms;
 {
   tree field;
@@ -4216,15 +4220,16 @@ function_arg_record_value_2 (type, startbitpos, parms)
     {
       if (TREE_CODE (field) == FIELD_DECL)
 	{
-	  int bitpos = startbitpos;
-	  if (DECL_FIELD_BITPOS (field))
-	    bitpos += TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field));
+	  HOST_WIDE_INT bitpos = startbitpos;
+
+	  if (DECL_SIZE (field) != 0
+	      && host_integerp (bit_position (field), 1))
+	    bitpos += int_bit_position (field);
+
 	  /* ??? FIXME: else assume zero offset.  */
 
 	  if (TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE)
-	    {
-	      function_arg_record_value_2 (TREE_TYPE (field), bitpos, parms);
-	    }
+	    function_arg_record_value_2 (TREE_TYPE (field), bitpos, parms);
 	  else if (TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
 	           && TARGET_FPU
 	           && ! packed_p
@@ -4261,7 +4266,7 @@ function_arg_record_value (type, mode, slotno, named, regbase)
 {
   HOST_WIDE_INT typesize = int_size_in_bytes (type);
   struct function_arg_record_value_parms parms;
-  int nregs;
+  unsigned int nregs;
 
   parms.ret = NULL_RTX;
   parms.slotno = slotno;
