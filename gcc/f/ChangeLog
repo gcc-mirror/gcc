@@ -1,3 +1,11 @@
+2003-05-11  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	PR fortran/10726
+	* intdoc.in: Fix documentation of IDATE.
+	* intdoc.texi: Regenerate.
+	* g77.texi: Document completion of INTEGER*n support.
+	* news.texi: Update due to the above.
+
 2003-05-08  Roger Sayle  <roger@eyesopen.com>
 
 	PR fortran/8485

@@ -316,6 +316,8 @@ for @code{INTEGER*1}, @code{INTEGER*2}, and
 This inspired Craig to add further support,
 even though the resulting support
 would still be incomplete.
+This support is believed to be completed at version 3.4
+of @command{gcc} by Roger Sayle (@email{roger@@eyesopen.com}).
 
 @item
 David Ronis (@email{ronis@@onsager.chem.mcgill.ca}) inspired

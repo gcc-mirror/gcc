@@ -11,7 +11,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995,1996,1997,1998,1999,2000,2001,2002,2003
 
-@set last-update-news 2003-04-11
+@set last-update-news 2003-05-11
 
 @ifset DOC-NEWS
 @include root.texi
@@ -156,7 +156,17 @@ The following information was last updated on @value{last-update-news}:
 @heading In @code{GCC} 3.4 versus @code{GCC} 3.3:
 @itemize @bullet
 @item
-Nothing yet.
+Problem Reports fixed (in chronological order of submission):
+@table @code
+@item 8485
+g77 doesn't accept INTEGER*8 constant in PARAMETER multiplication.
+@item 10726
+Documentation for function IDATE Intrinsic (UNIX) is wrong.
+@end table
+@item
+Roger Sayle (@email{roger@@eyesopen.com}) fixed the remaining
+problems with regard to the support of INTEGER*8, INTEGER*2 and INTEGER*1
+as a fallout of fixing PR 8485.
 @end itemize
 
 @heading In @code{GCC} 3.3 versus @code{GCC} 3.2:
