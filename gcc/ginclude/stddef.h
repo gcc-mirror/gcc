@@ -20,7 +20,7 @@
 /* On 4.3bsd-net2, make sure ansi.h is included, so we have
    one less case to deal with in the following.  */
 #if defined (__BSD_NET2__) || defined (____386BSD____)
-#include <machines/ansi.h>
+#include <machine/ansi.h>
 #endif
 
 /* In 4.3bsd-net2, machine/ansi.h defines these symbols, which are
@@ -35,9 +35,11 @@
 #ifndef _WCHAR_T_
 #define _WCHAR_T
 #endif
-#undef _SIZE_T_
 #undef _PTRDIFF_T_
+#ifndef __need_ptrdiff_t
+#undef _SIZE_T_
 #undef _WCHAR_T_
+#endif
 #endif /* _ANSI_H_ */
 
 /* In case nobody has defined these types, but we aren't running under
@@ -168,8 +170,11 @@ typedef __WCHAR_TYPE__ wchar_t;
     header files do that.  */
 #ifdef _ANSI_H_
 #undef _PTRDIFF_T_
+#ifndef _STDDEF_H /* This is a kludge.  The case where this happens
+		     is when obstack.h wants just ptrdiff_t.  */
 #undef _SIZE_T_
 #undef _WCHAR_T_
+#endif
 #endif
 
 #endif /* __sys_stdtypes_h */
