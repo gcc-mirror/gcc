@@ -1,3 +1,7 @@
+2004-12-09  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* parser.c (cp_parser_member_declaration): Fix comment typo.
+
 2004-12-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/18757

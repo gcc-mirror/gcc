@@ -13144,7 +13144,7 @@ cp_parser_member_declaration (cp_parser* parser)
 		initializer = NULL_TREE;
 
 	      /* See if we are probably looking at a function
-		 definition.  We are certainly not looking at at a
+		 definition.  We are certainly not looking at a
 		 member-declarator.  Calling `grokfield' has
 		 side-effects, so we must not do it unless we are sure
 		 that we are looking at a member-declarator.  */
