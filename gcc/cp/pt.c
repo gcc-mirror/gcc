@@ -776,8 +776,22 @@ void
 maybe_process_partial_specialization (type)
      tree type;
 {
+  /* TYPE maybe an ERROR_MARK_NODE.  */
+  tree context = TYPE_P (type) ? TYPE_CONTEXT (type) : NULL_TREE;
+
   if (CLASS_TYPE_P (type) && CLASSTYPE_USE_TEMPLATE (type))
     {
+      /* This is for ordinary explicit specialization and partial
+	 specialization of a template class such as:
+
+	   template <> class C<int>;
+
+	 or:
+
+	   template <class T> class C<T*>;
+
+	 Make sure that `C<int>' and `C<T*>' are implicit instantiations.  */
+
       if (CLASSTYPE_IMPLICIT_INSTANTIATION (type)
 	  && !COMPLETE_TYPE_P (type))
 	{
@@ -794,6 +808,62 @@ maybe_process_partial_specialization (type)
 	}
       else if (CLASSTYPE_TEMPLATE_INSTANTIATION (type))
 	error ("specialization of `%T' after instantiation", type);
+    }
+  else if (CLASS_TYPE_P (type)
+	   && !CLASSTYPE_USE_TEMPLATE (type)
+	   && CLASSTYPE_TEMPLATE_INFO (type)
+	   && context && CLASS_TYPE_P (context)
+	   && CLASSTYPE_TEMPLATE_INFO (context))
+    {
+      /* This is for an explicit specialization of member class
+	 template according to [temp.expl.spec/18]:
+
+	   template <> template <class U> class C<int>::D;
+
+	 The context `C<int>' must be an implicit instantiation.
+	 Otherwise this is just a member class template declared
+	 earlier like:
+
+	   template <> class C<int> { template <class U> class D; };
+	   template <> template <class U> class C<int>::D;
+
+	 In the first case, `C<int>::D' is a specialization of `C<T>::D'
+	 while in the second case, `C<int>::D' is a primary template
+	 and `C<T>::D' may not exist.  */
+
+      if (CLASSTYPE_IMPLICIT_INSTANTIATION (context)
+	  && !COMPLETE_TYPE_P (type))
+	{
+	  tree t;
+
+	  if (current_namespace
+	      != decl_namespace_context (CLASSTYPE_TI_TEMPLATE (type)))
+	    {
+	      pedwarn ("specializing `%#T' in different namespace", type);
+	      cp_pedwarn_at ("  from definition of `%#D'",
+			     CLASSTYPE_TI_TEMPLATE (type));
+	    }
+
+	  /* Check for invalid specialization after instantiation:
+
+	       template <> template <> class C<int>::D<int>;
+	       template <> template <class U> class C<int>::D;  */
+
+	  for (t = DECL_TEMPLATE_INSTANTIATIONS
+		 (most_general_template (CLASSTYPE_TI_TEMPLATE (type)));
+	       t; t = TREE_CHAIN (t))
+	    if (TREE_VALUE (t) != type
+		&& TYPE_CONTEXT (TREE_VALUE (t)) == context)
+	      error ("specialization `%T' after instantiation `%T'",
+		     type, TREE_VALUE (t));
+
+	  /* Mark TYPE as a specialization.  And as a result, we only
+	     have one level of template argument for the innermost
+	     class template.  */
+	  SET_CLASSTYPE_TEMPLATE_SPECIALIZATION (type);
+	  CLASSTYPE_TI_ARGS (type)
+	    = INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (type));
+	}
     }
   else if (processing_specialization)
     error ("explicit specialization of non-template `%T'", type);
@@ -10122,6 +10192,10 @@ most_general_template (decl)
       /* The DECL_TI_TEMPLATE can be a LOOKUP_EXPR or IDENTIFIER_NODE
 	 in some cases.  (See cp-tree.h for details.)  */
       if (TREE_CODE (DECL_TI_TEMPLATE (decl)) != TEMPLATE_DECL)
+	break;
+
+      if (CLASS_TYPE_P (TREE_TYPE (decl))
+	  && CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (decl)))
 	break;
 
       /* Stop if we run into an explicitly specialized class template.  */
