@@ -65,6 +65,8 @@ public class JTabbedPane extends JComponent implements Accessible, SwingConstant
 	    this.descr = descr;
 	}
     }
+
+  private static final long serialVersionUID = 1614381073220130939L;
     
     private Vector tabs = new Vector();
 
