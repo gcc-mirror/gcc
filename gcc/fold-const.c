@@ -4784,6 +4784,7 @@ fold (expr)
 	 constants (if x has signed type, the sign bit cannot be set
 	 in c).  This folds extension into the BIT_AND_EXPR.  */
       if (INTEGRAL_TYPE_P (TREE_TYPE (t))
+	  && TREE_CODE (TREE_TYPE (t)) != BOOLEAN_TYPE
 	  && TREE_CODE (TREE_OPERAND (t, 0)) == BIT_AND_EXPR
 	  && TREE_CODE (TREE_OPERAND (TREE_OPERAND (t, 0), 1)) == INTEGER_CST)
 	{
