@@ -1,3 +1,8 @@
+2002-11-12  Eric Blake  <ebb9@email.byu.edu>
+
+	* java/applet/AppletContext.java: Fix typo and remove redundant
+	modifiers.
+
 2002-11-14  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natRuntime.cc (insertSystemProperties): Set

@@ -130,7 +130,7 @@ public interface AppletContext
    * @throws IOException if the stream is too large
    * @since 1.4
    */
-  public void setStream(String key, InputStream stream) throws IOException;
+  void setStream(String key, InputStream stream) throws IOException;
 
   /**
    * Return the stream associated with a given key in this applet context, or
@@ -141,14 +141,14 @@ public interface AppletContext
    * @return the associated stream, or null
    * @since 1.4
    */
-  public InputStream getStream(String key);
+  InputStream getStream(String key);
 
   /**
-   * Iterate over all keys that have associated streams. Sttream associated
+   * Iterate over all keys that have associated streams. Stream associated
    * are local to the applet context, for security purposes.
    *
    * @return an iterator over the association keys
    * @since 1.4
    */
-  public Iterator getStreamKeys();
+  Iterator getStreamKeys();
 } // interface AppletContext
