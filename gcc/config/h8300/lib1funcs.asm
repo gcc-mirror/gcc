@@ -323,8 +323,8 @@ setbit:	inc	A0L		; do insert bit
 #ifdef __H8300__
 
 divnorm:
-	mov.b	#0,S2L		; keep the sign in S2
 	mov.b	A0H,A0H		; is the numerator -ve
+	stc	ccr,S2L		; keep the sign in bit 3 of S2L
 	bge	postive
 
 	; negate arg
@@ -337,8 +337,6 @@ divnorm:
 	addx	#0,A1H
 	addx	#0,A0L
 	addx	#0,A0H
-
-	mov.b	#1,S2L		; the sign will be -ve
 postive:
 	mov.b	A2H,A2H		; is the denominator -ve
 	bge	postive2
@@ -350,15 +348,15 @@ postive:
 	addx	#0,A3H
 	addx	#0,A2L
 	addx	#0,A2H
-	xor	#1,S2L		; toggle result sign
+	xor.b	#0x08,S2L	; toggle the result sign
 postive2:
 	rts
 
 ;; Basically the same, except that the sign of the divisor determines
 ;; the sign.
 modnorm:
-	mov.b	#0,S2L		; keep the sign in S2
 	mov.b	A0H,A0H		; is the numerator -ve
+	stc	ccr,S2L		; keep the sign in bit 3 of S2L
 	bge	mpostive
 
 	; negate arg
@@ -371,8 +369,6 @@ modnorm:
 	addx	#0,A1H
 	addx	#0,A0L
 	addx	#0,A0H
-
-	mov.b	#1,S2L		; the sign will be -ve
 mpostive:
 	mov.b	A2H,A2H		; is the denominator -ve
 	bge	mpostive2
@@ -390,19 +386,18 @@ mpostive2:
 #else /* __H8300H__ */
 
 divnorm:
-	mov.b	#0,S2L		; keep the sign in S2
 	mov.l	A0P,A0P		; is the numerator -ve
+	stc	ccr,S2L		; keep the sign in bit 3 of S2L
 	bge	postive
 
 	neg.l	A0P		; negate arg
-	mov.b	#1,S2L		; the sign will be -ve
 
 postive:
 	mov.l	A1P,A1P		; is the denominator -ve
 	bge	postive2
 
 	neg.l	A1P		; negate arg
-	xor.b	#1,S2L		; toggle result sign
+	xor.b	#0x08,S2L	; toggle the result sign
 
 postive2:
 	rts
@@ -410,12 +405,11 @@ postive2:
 ;; Basically the same, except that the sign of the divisor determines
 ;; the sign.
 modnorm:
-	mov.b	#0,S2L		; keep the sign in S2
 	mov.l	A0P,A0P		; is the numerator -ve
+	stc	ccr,S2L		; keep the sign in bit 3 of S2L
 	bge	mpostive
 
 	neg.l	A0P		; negate arg
-	mov.b	#1,S2L		; the sign will be -ve
 
 mpostive:
 	mov.l	A1P,A1P		; is the denominator -ve
@@ -493,7 +487,7 @@ ___divsi3:
 
 	; examine what the sign should be
 exitdiv:
-	or	S2L,S2L
+	btst	#3,S2L
 	beq	reti
 
 	; should be -ve
