@@ -24,6 +24,9 @@ Mon Oct 18 02:38:46 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 Mon Oct 18 01:41:35 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* cse.c (invalidate_for_call): Do not remove memory references from
+	the table here.  It's handled elsewhere.
+
 	* haifa-sched.c (add_dependence): Protect references to the
 	true dependency cache with #ifdef INSN_SCHEDULING.
 	(remove_dependence): Similarly.
