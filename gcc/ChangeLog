@@ -1,3 +1,10 @@
+Thu Jun 24 22:43:12 1999  Philippe De Muyter  <phdm@macqel.be>
+
+	* system.h (strstr): New external function declaration.
+	* acconfig.h (NEED_DECLARATION_STRSTR): New define slot.
+	* configure.in (GCC_NEED_DECLARATIONS): Check for strstr.
+	* config.in, configure: Rebuilt.
+
 1999-06-24  Tom Tromey  <tromey@cygnus.com>
 
 	* gcc.c (main): Read user-specified specs files after computing
