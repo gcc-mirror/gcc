@@ -295,6 +295,9 @@ num_immediate_uses (dataflow_t df)
 static inline tree
 immediate_use (dataflow_t df, int num)
 {
+  if (!df)
+    return NULL_TREE;
+
 #ifdef ENABLE_CHECKING
   if (num >= num_immediate_uses (df))
     abort ();
