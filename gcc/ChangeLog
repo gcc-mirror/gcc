@@ -122,6 +122,18 @@ Thu Aug 30 10:21:43 2001  J"orn Rennecke <amylaar@redhat.com>
 	* c-typeck.c (pointer_diff): Try to eliminate common term before
 	doing conversions.
 
+2001-08-30  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/arm/arm.c (arm_compute_initial_elimination_offset):
+	Account for the saves of the FP registers.
+
+	* config/arm/unknown-elf.h (TEXT_SECTION): Delete.
+	(TEXT_SECTION_ASM_OP): Define.
+	(INIT_SECTION_ASM_OP): Define.
+	(FINI_SECTION_ASM_OP): Define.
+	(SUBTARGET_EXTRA_SECTIONS): Remove trailing comma.
+	(RDATA_SECTION_FUNCITON): Provide prototype.
+
 2001-08-29  Geoffrey Keating  <geoffk@redhat.com>
 
 	* reload1.c (move2add_note_store): Correct typo checking for

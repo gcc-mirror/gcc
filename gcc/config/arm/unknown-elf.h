@@ -37,7 +37,9 @@ Boston, MA 02111-1307, USA.  */
 #define USER_LABEL_PREFIX 	""
 #define LOCAL_LABEL_PREFIX 	"."
 
-#define TEXT_SECTION "		.text"
+#define TEXT_SECTION_ASM_OP 	"\t.text"
+#define INIT_SECTION_ASM_OP	"\t.section\t.init"
+#define FINI_SECTION_ASM_OP	"\t.section\t.fini"
 
 #define INVOKE__main
 
@@ -51,7 +53,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* A list of other sections which the compiler might be "in" at any
    given time.  */
-#define SUBTARGET_EXTRA_SECTIONS in_rdata,
+#define SUBTARGET_EXTRA_SECTIONS in_rdata
 
 /* A list of extra section function definitions.  */
 #define SUBTARGET_EXTRA_SECTION_FUNCTIONS	RDATA_SECTION_FUNCTION
@@ -59,6 +61,8 @@ Boston, MA 02111-1307, USA.  */
 #define RDATA_SECTION_ASM_OP	"\t.section .rodata"
 
 #define RDATA_SECTION_FUNCTION 					\
+void rdata_section PARAMS ((void));				\
+								\
 void								\
 rdata_section ()						\
 {								\

@@ -7943,16 +7943,23 @@ arm_compute_initial_elimination_offset (from, to)
     {
       unsigned int reg;
 
+      /* In theory we should check all of the hard registers to
+	 see if they will be saved onto the stack.  In practice
+	 registers 11 upwards have special meanings and need to
+	 be check individually.  */
       for (reg = 0; reg <= 10; reg ++)
 	if (regs_ever_live[reg] && ! call_used_regs[reg])
 	  call_saved_registers += 4;
 
+      /* Determine if register 11 will be clobbered.  */
       if (! TARGET_APCS_FRAME
 	  && ! frame_pointer_needed
 	  && regs_ever_live[HARD_FRAME_POINTER_REGNUM]
 	  && ! call_used_regs[HARD_FRAME_POINTER_REGNUM])
 	call_saved_registers += 4;
 
+      /* The PIC register is fixed, so if the function will
+	 corrupt it, it has to be saved onto the stack.  */
       if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
 	call_saved_registers += 4;
 
@@ -7962,14 +7969,19 @@ arm_compute_initial_elimination_offset (from, to)
 	     for it here.  */
 	  && ! frame_pointer_needed)
 	call_saved_registers += 4;
+
+      /* If the hard floating point registers are going to be
+	 used then they must be saved on the stack as well.
+         Each register occupies 12 bytes of stack space.  */
+      for (reg = FIRST_ARM_FP_REGNUM; reg <= LAST_ARM_FP_REGNUM; reg ++)
+	if (regs_ever_live[reg] && ! call_used_regs[reg])
+	  call_saved_registers += 12;
     }
 
   /* The stack frame contains 4 registers - the old frame pointer,
      the old stack pointer, the return address and PC of the start
      of the function.  */
   stack_frame = frame_pointer_needed ? 16 : 0;
-
-  /* FIXME: we should allow for saved floating point registers.  */
 
   /* OK, now we have enough information to compute the distances.
      There must be an entry in these switch tables for each pair
