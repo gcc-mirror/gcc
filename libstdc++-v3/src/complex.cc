@@ -54,27 +54,27 @@ namespace std
 //      return hypot (__real__ __x._M_value, __imag__ __x._M_value); 
 //    }
 
-  template<>
-  FLT
-  arg(const complex<FLT>& __x)
-  { return carg(__x._M_value); }
+//    template<>
+//    FLT
+//    arg(const complex<FLT>& __x)
+//    { return carg(__x._M_value); }
 
-  template<>
-  complex<FLT>
-  polar(const FLT& __rho, const FLT& __theta)
-  {
-#if 0
-// XXX
-// defined(_GLIBCPP_HAVE_SINCOS) && !defined(__osf__)
-    // Although sincos does exist on OSF3.2 and OSF4.0 we cannot use it
-    // since the necessary types are not defined in the headers.
-    FLT __sinx, __cosx;
-    sincos(__theta, &__sinx, &__cosx);
-    return complex<FLT>(__rho * __cosx, __rho * __sinx);
-#else
-    return complex<FLT>(__rho * cos(__theta), __rho * sin(__theta));
-#endif
-  }
+//    template<>
+//    complex<FLT>
+//    polar(const FLT& __rho, const FLT& __theta)
+//    {
+//  #if 0
+//  // XXX
+//  // defined(_GLIBCPP_HAVE_SINCOS) && !defined(__osf__)
+//      // Although sincos does exist on OSF3.2 and OSF4.0 we cannot use it
+//      // since the necessary types are not defined in the headers.
+//      FLT __sinx, __cosx;
+//      sincos(__theta, &__sinx, &__cosx);
+//      return complex<FLT>(__rho * __cosx, __rho * __sinx);
+//  #else
+//      return complex<FLT>(__rho * cos(__theta), __rho * sin(__theta));
+//  #endif
+//    }
 
   template<>
   complex<FLT>
@@ -147,8 +147,3 @@ namespace std
   { return complex<FLT>(ctanh(__x._M_value)); }
   
 } // namespace std
-
-
-
-
-
