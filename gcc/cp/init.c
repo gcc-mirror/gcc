@@ -372,7 +372,7 @@ perform_member_init (tree member, tree init)
 	  else if (TREE_CODE (type) == REFERENCE_TYPE)
 	    pedwarn ("uninitialized reference member `%D'", member);
 	  else if (CP_TYPE_CONST_P (type))
-	    pedwarn ("uninitialized mber `%D' with `const' type `%T'",
+	    pedwarn ("uninitialized member `%D' with `const' type `%T'",
 		     member, type);
 	}
       else if (TREE_CODE (init) == TREE_LIST)
