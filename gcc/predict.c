@@ -248,7 +248,7 @@ can_predict_insn_p (rtx insn)
 {
   return (JUMP_P (insn)
 	  && any_condjump_p (insn)
-	  && BLOCK_FOR_INSN (insn)->succ->succ_next);
+	  && EDGE_COUNT (BLOCK_FOR_INSN (insn)->succs) >= 2);
 }
 
 /* Predict edge E by given predictor if possible.  */
@@ -287,13 +287,15 @@ static void
 dump_prediction (FILE *file, enum br_predictor predictor, int probability,
 		 basic_block bb, int used)
 {
-  edge e = bb->succ;
+  edge e;
+  edge_iterator ei;
 
   if (!file)
     return;
 
-  while (e && (e->flags & EDGE_FALLTHRU))
-    e = e->succ_next;
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    if (! (e->flags & EDGE_FALLTHRU))
+      break;
 
   fprintf (file, "  %s heuristics%s: %.1f%%",
 	   predictor_info[predictor].name,
@@ -321,11 +323,12 @@ set_even_probabilities (basic_block bb)
 {
   int nedges = 0;
   edge e;
+  edge_iterator ei;
 
-  for (e = bb->succ; e; e = e->succ_next)
+  FOR_EACH_EDGE (e, ei, bb->succs)
     if (!(e->flags & (EDGE_EH | EDGE_FAKE)))
       nedges ++;
-  for (e = bb->succ; e; e = e->succ_next)
+  FOR_EACH_EDGE (e, ei, bb->succs)
     if (!(e->flags & (EDGE_EH | EDGE_FAKE)))
       e->probability = (REG_BR_PROB_BASE + nedges / 2) / nedges;
     else
@@ -430,14 +433,14 @@ combine_predictions_for_insn (rtx insn, basic_block bb)
 
       /* Save the prediction into CFG in case we are seeing non-degenerated
 	 conditional jump.  */
-      if (bb->succ->succ_next)
+      if (EDGE_COUNT (bb->succs) > 1)
 	{
 	  BRANCH_EDGE (bb)->probability = combined_probability;
 	  FALLTHRU_EDGE (bb)->probability
 	    = REG_BR_PROB_BASE - combined_probability;
 	}
     }
-  else if (bb->succ->succ_next)
+  else if (EDGE_COUNT (bb->succs) > 1)
     {
       int prob = INTVAL (XEXP (prob_note, 0));
 
@@ -445,7 +448,7 @@ combine_predictions_for_insn (rtx insn, basic_block bb)
       FALLTHRU_EDGE (bb)->probability = REG_BR_PROB_BASE - prob;
     }
   else
-    bb->succ->probability = REG_BR_PROB_BASE;
+    EDGE_SUCC (bb, 0)->probability = REG_BR_PROB_BASE;
 }
 
 /* Combine predictions into single probability and store them into CFG.
@@ -463,11 +466,12 @@ combine_predictions_for_bb (FILE *file, basic_block bb)
   struct edge_prediction *pred;
   int nedges = 0;
   edge e, first = NULL, second = NULL;
+  edge_iterator ei;
 
-  for (e = bb->succ; e; e = e->succ_next)
+  FOR_EACH_EDGE (e, ei, bb->succs)
     if (!(e->flags & (EDGE_EH | EDGE_FAKE)))
       {
-        nedges ++;
+	nedges ++;
 	if (first && !second)
 	  second = e;
 	if (!first)
@@ -547,7 +551,7 @@ combine_predictions_for_bb (FILE *file, basic_block bb)
       int predictor = pred->predictor;
       int probability = pred->probability;
 
-      if (pred->edge != bb->succ)
+      if (pred->edge != EDGE_SUCC (bb, 0))
 	probability = REG_BR_PROB_BASE - probability;
       dump_prediction (file, predictor, probability, bb,
 		       !first_match || best_predictor == predictor);
@@ -651,6 +655,7 @@ predict_loops (struct loops *loops_info, bool rtlsimpleloops)
 	{
 	  int header_found = 0;
 	  edge e;
+	  edge_iterator ei;
 
 	  bb = bbs[j];
 
@@ -664,7 +669,7 @@ predict_loops (struct loops *loops_info, bool rtlsimpleloops)
 
 	  /* Loop branch heuristics - predict an edge back to a
 	     loop's head as taken.  */
-	  for (e = bb->succ; e; e = e->succ_next)
+	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    if (e->dest == loop->header
 		&& e->src == loop->latch)
 	      {
@@ -675,7 +680,7 @@ predict_loops (struct loops *loops_info, bool rtlsimpleloops)
 	  /* Loop exit heuristics - predict an edge exiting the loop if the
 	     conditional has no loop header successors as not taken.  */
 	  if (!header_found)
-	    for (e = bb->succ; e; e = e->succ_next)
+	    FOR_EACH_EDGE (e, ei, bb->succs)
 	      if (e->dest->index < 0
 		  || !flow_bb_inside_loop_p (loop, e->dest))
 		predict_edge
@@ -814,18 +819,19 @@ estimate_probability (struct loops *loops_info)
     {
       rtx last_insn = BB_END (bb);
       edge e;
+      edge_iterator ei;
 
       if (! can_predict_insn_p (last_insn))
 	continue;
 
-      for (e = bb->succ; e; e = e->succ_next)
+      FOR_EACH_EDGE (e, ei, bb->succs)
 	{
 	  /* Predict early returns to be probable, as we've already taken
 	     care for error returns and other are often used for fast paths
 	     trought function.  */
 	  if ((e->dest == EXIT_BLOCK_PTR
-	       || (e->dest->succ && !e->dest->succ->succ_next
-		   && e->dest->succ->dest == EXIT_BLOCK_PTR))
+	       || (EDGE_COUNT (e->dest->succs) == 1
+		   && EDGE_SUCC (e->dest, 0)->dest == EXIT_BLOCK_PTR))
 	       && !predicted_by_p (bb, PRED_NULL_RETURN)
 	       && !predicted_by_p (bb, PRED_CONST_RETURN)
 	       && !predicted_by_p (bb, PRED_NEGATIVE_RETURN)
@@ -1021,12 +1027,13 @@ tree_predict_by_opcode (basic_block bb)
   tree type;
   tree val;
   bitmap visited;
+  edge_iterator ei;
 
   if (!stmt || TREE_CODE (stmt) != COND_EXPR)
     return;
-  for (then_edge = bb->succ; then_edge; then_edge = then_edge->succ_next)
+  FOR_EACH_EDGE (then_edge, ei, bb->succs)
     if (then_edge->flags & EDGE_TRUE_VALUE)
-       break;
+      break;
   cond = TREE_OPERAND (stmt, 0);
   if (!COMPARISON_CLASS_P (cond))
     return;
@@ -1180,8 +1187,9 @@ apply_return_prediction (int *heads)
   int phi_num_args, i;
   enum br_predictor pred;
   enum prediction direction;
+  edge_iterator ei;
 
-  for (e = EXIT_BLOCK_PTR->pred; e ; e = e->pred_next)
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
     {
       return_stmt = last_stmt (e->src);
       if (TREE_CODE (return_stmt) == RETURN_EXPR)
@@ -1297,19 +1305,21 @@ tree_estimate_probability (void)
   FOR_EACH_BB (bb)
     {
       edge e;
+      edge_iterator ei;
 
-      for (e = bb->succ; e; e = e->succ_next)
+      FOR_EACH_EDGE (e, ei, bb->succs)
 	{
 	  /* Predict early returns to be probable, as we've already taken
 	     care for error returns and other cases are often used for
 	     fast paths trought function.  */
 	  if (e->dest == EXIT_BLOCK_PTR
 	      && TREE_CODE (last_stmt (bb)) == RETURN_EXPR
-	      && bb->pred && bb->pred->pred_next)
+	      && EDGE_COUNT (bb->preds) > 1)
 	    {
 	      edge e1;
+	      edge_iterator ei1;
 
-	      for (e1 = bb->pred; e1; e1 = e1->pred_next)
+	      FOR_EACH_EDGE (e1, ei1, bb->preds)
 	      	if (!predicted_by_p (e1->src, PRED_NULL_RETURN)
 		    && !predicted_by_p (e1->src, PRED_CONST_RETURN)
 		    && !predicted_by_p (e1->src, PRED_NEGATIVE_RETURN)
@@ -1447,8 +1457,8 @@ last_basic_block_p (basic_block bb)
 
   return (bb->next_bb == EXIT_BLOCK_PTR
 	  || (bb->next_bb->next_bb == EXIT_BLOCK_PTR
-	      && bb->succ && !bb->succ->succ_next
-	      && bb->succ->dest->next_bb == EXIT_BLOCK_PTR));
+	      && EDGE_COUNT (bb->succs) == 1
+	      && EDGE_SUCC (bb, 0)->dest->next_bb == EXIT_BLOCK_PTR));
 }
 
 /* Sets branch probabilities according to PREDiction and
@@ -1462,6 +1472,7 @@ predict_paths_leading_to (basic_block bb, int *heads, enum br_predictor pred,
 			  enum prediction taken)
 {
   edge e;
+  edge_iterator ei;
   int y;
 
   if (heads[bb->index] < 0)
@@ -1501,7 +1512,7 @@ predict_paths_leading_to (basic_block bb, int *heads, enum br_predictor pred,
 
   if (y == last_basic_block)
     return;
-  for (e = BASIC_BLOCK (y)->succ; e; e = e->succ_next)
+  FOR_EACH_EDGE (e, ei, BASIC_BLOCK (y)->succs)
     if (e->dest->index >= 0
 	&& dominated_by_p (CDI_POST_DOMINATORS, e->dest, bb))
       predict_edge_def (e, pred, taken);
@@ -1557,9 +1568,10 @@ propagate_freq (struct loop *loop)
     {
       if (BLOCK_INFO (bb)->tovisit)
 	{
+	  edge_iterator ei;
 	  int count = 0;
 
-	  for (e = bb->pred; e; e = e->pred_next)
+	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    if (BLOCK_INFO (e->src)->tovisit && !(e->flags & EDGE_DFS_BACK))
 	      count++;
 	    else if (BLOCK_INFO (e->src)->tovisit
@@ -1575,6 +1587,7 @@ propagate_freq (struct loop *loop)
   last = head;
   for (bb = head; bb; bb = nextbb)
     {
+      edge_iterator ei;
       sreal cyclic_probability, frequency;
 
       memcpy (&cyclic_probability, &real_zero, sizeof (real_zero));
@@ -1587,12 +1600,12 @@ propagate_freq (struct loop *loop)
       if (bb != head)
 	{
 #ifdef ENABLE_CHECKING
-	  for (e = bb->pred; e; e = e->pred_next)
+	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    if (BLOCK_INFO (e->src)->tovisit && !(e->flags & EDGE_DFS_BACK))
 	      abort ();
 #endif
 
-	  for (e = bb->pred; e; e = e->pred_next)
+	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    if (EDGE_INFO (e)->back_edge)
 	      {
 		sreal_add (&cyclic_probability, &cyclic_probability,
@@ -1637,15 +1650,15 @@ propagate_freq (struct loop *loop)
       BLOCK_INFO (bb)->tovisit = 0;
 
       /* Compute back edge frequencies.  */
-      for (e = bb->succ; e; e = e->succ_next)
+      FOR_EACH_EDGE (e, ei, bb->succs)
 	if (e->dest == head)
 	  {
 	    sreal tmp;
-
+	    
 	    /* EDGE_INFO (e)->back_edge_prob
-		  = ((e->probability * BLOCK_INFO (bb)->frequency)
-		     / REG_BR_PROB_BASE); */
-
+	       = ((e->probability * BLOCK_INFO (bb)->frequency)
+	       / REG_BR_PROB_BASE); */
+	    
 	    sreal_init (&tmp, e->probability, 0);
 	    sreal_mul (&tmp, &tmp, &BLOCK_INFO (bb)->frequency);
 	    sreal_mul (&EDGE_INFO (e)->back_edge_prob,
@@ -1653,7 +1666,7 @@ propagate_freq (struct loop *loop)
 	  }
 
       /* Propagate to successor blocks.  */
-      for (e = bb->succ; e; e = e->succ_next)
+      FOR_EACH_EDGE (e, ei, bb->succs)
 	if (!(e->flags & EDGE_DFS_BACK)
 	    && BLOCK_INFO (e->dest)->npredecessors)
 	  {
@@ -1664,10 +1677,10 @@ propagate_freq (struct loop *loop)
 		  nextbb = e->dest;
 		else
 		  BLOCK_INFO (last)->next = e->dest;
-
+		
 		last = e->dest;
 	      }
-	   }
+	  }
     }
 }
 
@@ -1686,7 +1699,8 @@ estimate_loops_at_level (struct loop *first_loop)
 
       estimate_loops_at_level (loop->inner);
 
-      if (loop->latch->succ)  /* Do not do this for dummy function loop.  */
+      /* Do not do this for dummy function loop.  */
+      if (EDGE_COUNT (loop->latch->succs) > 0)
 	{
 	  /* Find current loop back edge and mark it.  */
 	  e = loop_latch_edge (loop);
@@ -1787,7 +1801,7 @@ estimate_bb_frequencies (struct loops *loops)
 
       mark_dfs_back_edges ();
 
-      ENTRY_BLOCK_PTR->succ->probability = REG_BR_PROB_BASE;
+      EDGE_SUCC (ENTRY_BLOCK_PTR, 0)->probability = REG_BR_PROB_BASE;
 
       /* Set up block info for each basic block.  */
       alloc_aux_for_blocks (sizeof (struct block_info_def));
@@ -1795,9 +1809,10 @@ estimate_bb_frequencies (struct loops *loops)
       FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
 	{
 	  edge e;
+	  edge_iterator ei;
 
 	  BLOCK_INFO (bb)->tovisit = 0;
-	  for (e = bb->succ; e; e = e->succ_next)
+	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    {
 	      sreal_init (&EDGE_INFO (e)->back_edge_prob, e->probability, 0);
 	      sreal_mul (&EDGE_INFO (e)->back_edge_prob,

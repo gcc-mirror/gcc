@@ -175,7 +175,9 @@ compute_jump_reg_dependencies (rtx insn, regset cond_set, regset used,
 {
   basic_block b = BLOCK_FOR_INSN (insn);
   edge e;
-  for (e = b->succ; e; e = e->succ_next)
+  edge_iterator ei;
+
+  FOR_EACH_EDGE (e, ei, b->succs)
     if (e->flags & EDGE_FALLTHRU)
       /* The jump may be a by-product of a branch that has been merged
 	 in the main codepath after being conditionalized.  Therefore
@@ -280,6 +282,7 @@ fix_basic_block_boundaries (basic_block bb, basic_block last, rtx head,
 	    {
 	      edge f;
 	      rtx h;
+	      edge_iterator ei;
 
 	      /* An obscure special case, where we do have partially dead
 	         instruction scheduled after last control flow instruction.
@@ -291,9 +294,10 @@ fix_basic_block_boundaries (basic_block bb, basic_block last, rtx head,
 	         A safer solution can be to bring the code into sequence,
 	         do the split and re-emit it back in case this will ever
 	         trigger problem.  */
-	      f = bb->prev_bb->succ;
-	      while (f && !(f->flags & EDGE_FALLTHRU))
-		f = f->succ_next;
+
+	      FOR_EACH_EDGE (f, ei, bb->prev_bb->succs)
+		if (f->flags & EDGE_FALLTHRU)
+		  break;
 
 	      if (f)
 		{
@@ -588,11 +592,12 @@ schedule_ebbs (FILE *dump_file)
       for (;;)
 	{
 	  edge e;
+	  edge_iterator ei;
 	  tail = BB_END (bb);
 	  if (bb->next_bb == EXIT_BLOCK_PTR
 	      || LABEL_P (BB_HEAD (bb->next_bb)))
 	    break;
-	  for (e = bb->succ; e; e = e->succ_next)
+	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    if ((e->flags & EDGE_FALLTHRU) != 0)
 	      break;
 	  if (! e)

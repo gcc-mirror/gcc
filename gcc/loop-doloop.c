@@ -358,11 +358,11 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
       /* Expand the condition testing the assumptions and if it does not pass,
 	 reset the count register to 0.  */
       add_test (XEXP (ass, 0), preheader, set_zero);
-      preheader->succ->flags &= ~EDGE_FALLTHRU;
-      cnt = preheader->succ->count;
-      preheader->succ->probability = 0;
-      preheader->succ->count = 0;
-      irr = preheader->succ->flags & EDGE_IRREDUCIBLE_LOOP;
+      EDGE_SUCC (preheader, 0)->flags &= ~EDGE_FALLTHRU;
+      cnt = EDGE_SUCC (preheader, 0)->count;
+      EDGE_SUCC (preheader, 0)->probability = 0;
+      EDGE_SUCC (preheader, 0)->count = 0;
+      irr = EDGE_SUCC (preheader, 0)->flags & EDGE_IRREDUCIBLE_LOOP;
       te = make_edge (preheader, new_preheader, EDGE_FALLTHRU | irr);
       te->probability = REG_BR_PROB_BASE;
       te->count = cnt;
@@ -374,7 +374,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
       for (ass = XEXP (ass, 1); ass; ass = XEXP (ass, 1))
 	{
 	  bb = loop_split_edge_with (te, NULL_RTX);
-	  te = bb->succ;
+	  te = EDGE_SUCC (bb, 0);
 	  add_test (XEXP (ass, 0), bb, set_zero);
 	  make_edge (bb, set_zero, irr);
 	}

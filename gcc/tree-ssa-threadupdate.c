@@ -141,7 +141,8 @@ static void
 remove_last_stmt_and_useless_edges (basic_block bb, basic_block dest_bb)
 {
   block_stmt_iterator bsi;
-  edge e, next;
+  edge e;
+  edge_iterator ei;
 
   bsi = bsi_last (bb);
 
@@ -150,19 +151,18 @@ remove_last_stmt_and_useless_edges (basic_block bb, basic_block dest_bb)
 
   bsi_remove (&bsi);
 
-  next = NULL;
-  for (e = bb->succ; e; e = next)
+  for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
     {
-      next = e->succ_next;
-
       if (e->dest != dest_bb)
 	ssa_remove_edge (e);
+      else
+	ei_next (&ei);
     }
 
   /* BB now has a single outgoing edge. We need to update the flags for
      that single outgoing edge.  */
-  bb->succ->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
-  bb->succ->flags |= EDGE_FALLTHRU;
+  EDGE_SUCC (bb, 0)->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
+  EDGE_SUCC (bb, 0)->flags |= EDGE_FALLTHRU;
 }
 
 /* Create a duplicate of BB which only reaches the destination of the edge
@@ -173,6 +173,7 @@ create_block_for_threading (basic_block bb, struct redirection_data *rd)
 {
   tree phi;
   edge e;
+  edge_iterator ei;
 
   /* We can use the generic block duplication code and simply remove
      the stuff we do not need.  */
@@ -188,18 +189,19 @@ create_block_for_threading (basic_block bb, struct redirection_data *rd)
      specialized block copier.  */
   remove_last_stmt_and_useless_edges (rd->dup_block, rd->outgoing_edge->dest);
 
-  for (e = rd->dup_block->succ; e; e = e->succ_next)
+  FOR_EACH_EDGE (e, ei, rd->dup_block->succs)
     e->count = 0;
 
   /* If there are any PHI nodes at the destination of the outgoing edge
      from the duplicate block, then we will need to add a new argument
      to them.  The argument should have the same value as the argument
      associated with the outgoing edge stored in RD.  */
-  for (phi = phi_nodes (rd->dup_block->succ->dest); phi;
+  for (phi = phi_nodes (EDGE_SUCC (rd->dup_block, 0)->dest); phi;
        phi = PHI_CHAIN (phi))
     {
       int indx = phi_arg_from_edge (phi, rd->outgoing_edge);
-      add_phi_arg (&phi, PHI_ARG_DEF_TREE (phi, indx), rd->dup_block->succ);
+      add_phi_arg (&phi, PHI_ARG_DEF_TREE (phi, indx),
+		   EDGE_SUCC (rd->dup_block, 0));
     }
 }
 
@@ -238,10 +240,7 @@ thread_block (basic_block bb)
   /* E is an incoming edge into BB that we may or may not want to
      redirect to a duplicate of BB.  */
   edge e;
-
-  /* The next edge in a predecessor list.  Used in loops where E->pred_next
-     may change within the loop.  */
-  edge next;
+  edge_iterator ei;
 
   /* ALL indicates whether or not all incoming edges into BB should
      be threaded to a duplicate of BB.  */
@@ -254,7 +253,7 @@ thread_block (basic_block bb)
   /* Look at each incoming edge into BB.  Record each unique outgoing
      edge that we want to thread an incoming edge to.  Also note if
      all incoming edges are threaded or not.  */
-  for (e = bb->pred; e; e = e->pred_next)
+  FOR_EACH_EDGE (e, ei, bb->preds)
     {
       if (!e->aux)
 	{
@@ -312,16 +311,16 @@ thread_block (basic_block bb)
      If this turns out to be a performance problem, then we could create
      a list of incoming edges associated with each entry in 
      REDIRECTION_DATA and walk over that list of edges instead.  */
-  next = NULL;
-  for (e = bb->pred; e; e = next)
+  for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
     {
       edge new_dest = e->aux;
 
-      next = e->pred_next;
-
       /* E was not threaded, then there is nothing to do.  */
       if (!new_dest)
-	continue;
+	{
+	  ei_next (&ei);
+	  continue;
+	}
 
       /* Go ahead and clear E->aux.  It's not needed anymore and failure
          to clear it will cause all kinds of unpleasant problems later.  */
@@ -373,7 +372,8 @@ thread_block (basic_block bb)
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "  Threaded jump %d --> %d to %d\n",
-		 bb->pred->src->index, bb->index, bb->succ->dest->index);
+		 EDGE_PRED (bb, 0)->src->index, bb->index,
+		 EDGE_SUCC (bb, 0)->dest->index);
 
       remove_last_stmt_and_useless_edges (bb, rd->outgoing_edge->dest);
     }

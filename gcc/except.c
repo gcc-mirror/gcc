@@ -1449,13 +1449,16 @@ emit_to_new_bb_before (rtx seq, rtx insn)
   rtx last;
   basic_block bb;
   edge e;
+  edge_iterator ei;
 
   /* If there happens to be an fallthru edge (possibly created by cleanup_cfg
      call), we don't want it to go into newly created landing pad or other EH 
      construct.  */
-  for (e = BLOCK_FOR_INSN (insn)->pred; e; e = e->pred_next)
+  for (ei = ei_start (BLOCK_FOR_INSN (insn)->preds); (e = ei_safe_edge (ei)); )
     if (e->flags & EDGE_FALLTHRU)
       force_nonfallthru (e);
+    else
+      ei_next (&ei);
   last = emit_insn_before (seq, insn);
   if (BARRIER_P (last))
     last = PREV_INSN (last);
@@ -1623,8 +1626,8 @@ connect_post_landing_pads (void)
 	  emit_jump (outer->post_landing_pad);
 	  src = BLOCK_FOR_INSN (region->resume);
 	  dest = BLOCK_FOR_INSN (outer->post_landing_pad);
-	  while (src->succ)
-	    remove_edge (src->succ);
+	  while (EDGE_COUNT (src->succs) > 0)
+	    remove_edge (EDGE_SUCC (src, 0));
 	  e = make_edge (src, dest, 0);
 	  e->probability = REG_BR_PROB_BASE;
 	  e->count = src->count;
@@ -1991,10 +1994,10 @@ sjlj_emit_function_enter (rtx dispatch_label)
 	    || NOTE_LINE_NUMBER (fn_begin) == NOTE_INSN_BASIC_BLOCK))
       break;
   if (NOTE_LINE_NUMBER (fn_begin) == NOTE_INSN_FUNCTION_BEG)
-    insert_insn_on_edge (seq, ENTRY_BLOCK_PTR->succ);
+    insert_insn_on_edge (seq, EDGE_SUCC (ENTRY_BLOCK_PTR, 0));
   else
     {
-      rtx last = BB_END (ENTRY_BLOCK_PTR->succ->dest);
+      rtx last = BB_END (EDGE_SUCC (ENTRY_BLOCK_PTR, 0)->dest);
       for (; ; fn_begin = NEXT_INSN (fn_begin))
 	if ((NOTE_P (fn_begin)
 	     && NOTE_LINE_NUMBER (fn_begin) == NOTE_INSN_FUNCTION_BEG)
@@ -2018,6 +2021,7 @@ sjlj_emit_function_exit (void)
 {
   rtx seq;
   edge e;
+  edge_iterator ei;
 
   start_sequence ();
 
@@ -2031,7 +2035,7 @@ sjlj_emit_function_exit (void)
      post-dominates all can_throw_internal instructions.  This is
      the last possible moment.  */
 
-  for (e = EXIT_BLOCK_PTR->pred; e; e = e->pred_next)
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
     if (e->flags & EDGE_FALLTHRU)
       break;
   if (e)
@@ -2198,16 +2202,18 @@ finish_eh_generation (void)
     commit_edge_insertions ();
   FOR_EACH_BB (bb)
     {
-      edge e, next;
+      edge e;
+      edge_iterator ei;
       bool eh = false;
-      for (e = bb->succ; e; e = next)
+      for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
 	{
-	  next = e->succ_next;
 	  if (e->flags & EDGE_EH)
 	    {
 	      remove_edge (e);
 	      eh = true;
 	    }
+	  else
+	    ei_next (&ei);
 	}
       if (eh)
 	rtl_make_eh_edge (NULL, bb, BB_END (bb));

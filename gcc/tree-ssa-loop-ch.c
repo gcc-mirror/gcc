@@ -59,19 +59,16 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
   if (header->aux)
     return false;
 
-  gcc_assert (header->succ);
-  if (!header->succ->succ_next)
+  gcc_assert (EDGE_COUNT (header->succs) > 0);
+  if (EDGE_COUNT (header->succs) == 1)
     return false;
-  if (header->succ->succ_next->succ_next)
-    return false;
-  if (flow_bb_inside_loop_p (loop, header->succ->dest)
-      && flow_bb_inside_loop_p (loop, header->succ->succ_next->dest))
+  if (flow_bb_inside_loop_p (loop, EDGE_SUCC (header, 0)->dest)
+      && flow_bb_inside_loop_p (loop, EDGE_SUCC (header, 1)->dest))
     return false;
 
   /* If this is not the original loop header, we want it to have just
      one predecessor in order to match the && pattern.  */
-  if (header != loop->header
-      && header->pred->pred_next)
+  if (header != loop->header && EDGE_COUNT (header->preds) >= 2)
     return false;
 
   last = last_stmt (header);
@@ -176,10 +173,10 @@ copy_loop_headers (void)
 	{
 	  /* Find a successor of header that is inside a loop; i.e. the new
 	     header after the condition is copied.  */
-	  if (flow_bb_inside_loop_p (loop, header->succ->dest))
-	    exit = header->succ;
+	  if (flow_bb_inside_loop_p (loop, EDGE_SUCC (header, 0)->dest))
+	    exit = EDGE_SUCC (header, 0);
 	  else
-	    exit = header->succ->succ_next;
+	    exit = EDGE_SUCC (header, 1);
 	  bbs[n_bbs++] = header;
 	  header = exit->dest;
 	}
@@ -194,8 +191,8 @@ copy_loop_headers (void)
 
       /* Ensure that the header will have just the latch as a predecessor
 	 inside the loop.  */
-      if (exit->dest->pred->pred_next)
-	exit = loop_split_edge_with (exit, NULL)->succ;
+      if (EDGE_COUNT (exit->dest->preds) > 1)
+	exit = EDGE_SUCC (loop_split_edge_with (exit, NULL), 0);
 
       if (!tree_duplicate_sese_region (loop_preheader_edge (loop), exit,
 				       bbs, n_bbs, NULL))

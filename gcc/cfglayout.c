@@ -632,14 +632,16 @@ fixup_reorder_chain (void)
       rtx bb_end_insn;
       basic_block nb;
       basic_block old_bb;
+      edge_iterator ei;
 
-      if (bb->succ == NULL)
+      if (EDGE_COUNT (bb->succs) == 0)
 	continue;
 
       /* Find the old fallthru edge, and another non-EH edge for
 	 a taken jump.  */
       e_taken = e_fall = NULL;
-      for (e = bb->succ; e ; e = e->succ_next)
+
+      FOR_EACH_EDGE (e, ei, bb->succs)
 	if (e->flags & EDGE_FALLTHRU)
 	  e_fall = e;
 	else if (! (e->flags & EDGE_EH))
@@ -790,11 +792,11 @@ fixup_reorder_chain (void)
 	  /* Make sure new bb is tagged for correct section (same as
 	     fall-thru source, since you cannot fall-throu across
 	     section boundaries).  */
-	  BB_COPY_PARTITION (e_fall->src, bb->pred->src);
+	  BB_COPY_PARTITION (e_fall->src, EDGE_PRED (bb, 0)->src);
 	  if (flag_reorder_blocks_and_partition
 	      && targetm.have_named_sections)
 	    {
-	      if (BB_PARTITION (bb->pred->src) == BB_COLD_PARTITION)
+	      if (BB_PARTITION (EDGE_PRED (bb, 0)->src) == BB_COLD_PARTITION)
 		{
 		  rtx new_note;
 		  rtx note = BB_HEAD (e_fall->src);
@@ -810,7 +812,7 @@ fixup_reorder_chain (void)
 		}
 	      if (JUMP_P (BB_END (bb))
 		  && !any_condjump_p (BB_END (bb))
-		  && (bb->succ->flags & EDGE_CROSSING))
+  		  && (EDGE_SUCC (bb, 0)->flags & EDGE_CROSSING))
 		REG_NOTES (BB_END (bb)) = gen_rtx_EXPR_LIST 
 		  (REG_CROSSING_JUMP, NULL_RTX, REG_NOTES (BB_END (bb)));
 	    }
@@ -860,8 +862,12 @@ fixup_reorder_chain (void)
   FOR_EACH_BB (bb)
     {
       edge e;
-      for (e = bb->succ; e && !(e->flags & EDGE_FALLTHRU); e = e->succ_next)
-	continue;
+      edge_iterator ei;
+
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	if (e->flags & EDGE_FALLTHRU)
+	  break;
+
       if (e && !can_fallthru (e->src, e->dest))
 	force_nonfallthru (e);
     }
@@ -916,6 +922,7 @@ static void
 fixup_fallthru_exit_predecessor (void)
 {
   edge e;
+  edge_iterator ei;
   basic_block bb = NULL;
 
   /* This transformation is not valid before reload, because we might
@@ -923,7 +930,7 @@ fixup_fallthru_exit_predecessor (void)
      value.  */
   gcc_assert (reload_completed);
 
-  for (e = EXIT_BLOCK_PTR->pred; e; e = e->pred_next)
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
     if (e->flags & EDGE_FALLTHRU)
       bb = e->src;
 
@@ -1225,7 +1232,8 @@ can_copy_bbs_p (basic_block *bbs, unsigned n)
   for (i = 0; i < n; i++)
     {
       /* In case we should redirect abnormal edge during duplication, fail.  */
-      for (e = bbs[i]->succ; e; e = e->succ_next)
+      edge_iterator ei;
+      FOR_EACH_EDGE (e, ei, bbs[i]->succs)
 	if ((e->flags & EDGE_ABNORMAL)
 	    && e->dest->rbi->duplicated)
 	  {
@@ -1307,10 +1315,11 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
     new_edges[j] = NULL;
   for (i = 0; i < n; i++)
     {
+      edge_iterator ei;
       new_bb = new_bbs[i];
       bb = bbs[i];
 
-      for (e = new_bb->succ; e; e = e->succ_next)
+      FOR_EACH_EDGE (e, ei, new_bb->succs)
 	{
 	  for (j = 0; j < n_edges; j++)
 	    if (edges[j] && edges[j]->src == bb && edges[j]->dest == e->dest)

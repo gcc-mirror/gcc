@@ -454,7 +454,7 @@ peel_loop_completely (struct loops *loops, struct loop *loop)
   sbitmap wont_exit;
   unsigned HOST_WIDE_INT npeel;
   unsigned n_remove_edges, i;
-  edge *remove_edges, ei;
+  edge *remove_edges, ein;
   struct niter_desc *desc = get_simple_loop_desc (loop);
   struct split_ivs_info *si_info = NULL;
 
@@ -495,12 +495,12 @@ peel_loop_completely (struct loops *loops, struct loop *loop)
       free (remove_edges);
     }
 
-  ei = desc->in_edge;
+  ein = desc->in_edge;
   free_simple_loop_desc (loop);
 
   /* Now remove the unreachable part of the last iteration and cancel
      the loop.  */
-  remove_path (loops, ei);
+  remove_path (loops, ein);
 
   if (dump_file)
     fprintf (dump_file, ";; Peeled loop completely, %d times\n", (int) npeel);
@@ -748,15 +748,15 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
       basic_block exit_block = desc->in_edge->src->rbi->copy;
       /* Find a new in and out edge; they are in the last copy we have made.  */
       
-      if (exit_block->succ->dest == desc->out_edge->dest)
+      if (EDGE_SUCC (exit_block, 0)->dest == desc->out_edge->dest)
 	{
-	  desc->out_edge = exit_block->succ;
-	  desc->in_edge = exit_block->succ->succ_next;
+	  desc->out_edge = EDGE_SUCC (exit_block, 0);
+	  desc->in_edge = EDGE_SUCC (exit_block, 1);
 	}
       else
 	{
-	  desc->out_edge = exit_block->succ->succ_next;
-	  desc->in_edge = exit_block->succ;
+	  desc->out_edge = EDGE_SUCC (exit_block, 1);
+	  desc->in_edge = EDGE_SUCC (exit_block, 0);
 	}
     }
 
@@ -1008,11 +1008,11 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
       branch_code = compare_and_jump_seq (copy_rtx (niter), GEN_INT (j), EQ,
 					  block_label (preheader), p, NULL_RTX);
 
-      swtch = loop_split_edge_with (swtch->pred, branch_code);
+      swtch = loop_split_edge_with (EDGE_PRED (swtch, 0), branch_code);
       set_immediate_dominator (CDI_DOMINATORS, preheader, swtch);
-      swtch->succ->probability = REG_BR_PROB_BASE - p;
+      EDGE_SUCC (swtch, 0)->probability = REG_BR_PROB_BASE - p;
       e = make_edge (swtch, preheader,
-		     swtch->succ->flags & EDGE_IRREDUCIBLE_LOOP);
+		     EDGE_SUCC (swtch, 0)->flags & EDGE_IRREDUCIBLE_LOOP);
       e->probability = p;
     }
 
@@ -1025,11 +1025,11 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
       branch_code = compare_and_jump_seq (copy_rtx (niter), const0_rtx, EQ,
 					  block_label (preheader), p, NULL_RTX);
 
-      swtch = loop_split_edge_with (swtch->succ, branch_code);
+      swtch = loop_split_edge_with (EDGE_SUCC (swtch, 0), branch_code);
       set_immediate_dominator (CDI_DOMINATORS, preheader, swtch);
-      swtch->succ->probability = REG_BR_PROB_BASE - p;
+      EDGE_SUCC (swtch, 0)->probability = REG_BR_PROB_BASE - p;
       e = make_edge (swtch, preheader,
-		     swtch->succ->flags & EDGE_IRREDUCIBLE_LOOP);
+		     EDGE_SUCC (swtch, 0)->flags & EDGE_IRREDUCIBLE_LOOP);
       e->probability = p;
     }
 
@@ -1061,15 +1061,15 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
       basic_block exit_block = desc->in_edge->src->rbi->copy;
       /* Find a new in and out edge; they are in the last copy we have made.  */
       
-      if (exit_block->succ->dest == desc->out_edge->dest)
+      if (EDGE_SUCC (exit_block, 0)->dest == desc->out_edge->dest)
 	{
-	  desc->out_edge = exit_block->succ;
-	  desc->in_edge = exit_block->succ->succ_next;
+	  desc->out_edge = EDGE_SUCC (exit_block, 0);
+	  desc->in_edge = EDGE_SUCC (exit_block, 1);
 	}
       else
 	{
-	  desc->out_edge = exit_block->succ->succ_next;
-	  desc->in_edge = exit_block->succ;
+	  desc->out_edge = EDGE_SUCC (exit_block, 1);
+	  desc->in_edge = EDGE_SUCC (exit_block, 0);
 	}
     }
 

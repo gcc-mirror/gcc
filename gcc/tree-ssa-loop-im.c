@@ -603,8 +603,8 @@ loop_commit_inserts (void)
     {
       bb = BASIC_BLOCK (i);
       add_bb_to_loop (bb,
-		      find_common_loop (bb->succ->dest->loop_father,
-					bb->pred->src->loop_father));
+		      find_common_loop (EDGE_SUCC (bb, 0)->dest->loop_father,
+					EDGE_PRED (bb, 0)->src->loop_father));
     }
 }
 
@@ -1316,6 +1316,7 @@ fill_always_executed_in (struct loop *loop, sbitmap contains_call)
 
       for (i = 0; i < loop->num_nodes; i++)
 	{
+	  edge_iterator ei;
 	  bb = bbs[i];
 
 	  if (dominated_by_p (CDI_DOMINATORS, loop->latch, bb))
@@ -1324,7 +1325,7 @@ fill_always_executed_in (struct loop *loop, sbitmap contains_call)
 	  if (TEST_BIT (contains_call, bb->index))
 	    break;
 
-	  for (e = bb->succ; e; e = e->succ_next)
+	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    if (!flow_bb_inside_loop_p (loop, e->dest))
 	      break;
 	  if (e)

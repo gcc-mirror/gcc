@@ -1091,6 +1091,7 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
       int rescan, changed;
       basic_block bb;
       edge e;
+      edge_iterator ei;
 
       bb = *qhead++;
       if (qhead == qend)
@@ -1100,8 +1101,8 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
       /* Begin by propagating live_at_start from the successor blocks.  */
       CLEAR_REG_SET (new_live_at_end);
 
-      if (bb->succ)
-	for (e = bb->succ; e; e = e->succ_next)
+      if (EDGE_COUNT (bb->succs) > 0)
+	FOR_EACH_EDGE (e, ei, bb->succs)
 	  {
 	    basic_block sb = e->dest;
 
@@ -1257,7 +1258,7 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 
       /* Queue all predecessors of BB so that we may re-examine
 	 their live_at_end.  */
-      for (e = bb->pred; e; e = e->pred_next)
+      FOR_EACH_EDGE (e, ei, bb->preds)
 	{
 	  basic_block pb = e->src;
 	  if (pb->aux == NULL)
@@ -1362,8 +1363,9 @@ initialize_uninitialized_subregs (void)
   edge e;
   int reg, did_something = 0;
   find_regno_partial_param param;
+  edge_iterator ei;
 
-  for (e = ENTRY_BLOCK_PTR->succ; e; e = e->succ_next)
+  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
     {
       basic_block bb = e->dest;
       regset map = bb->global_live_at_start;
@@ -1827,19 +1829,19 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
       int i;
 
       /* Identify the successor blocks.  */
-      bb_true = bb->succ->dest;
-      if (bb->succ->succ_next != NULL)
+      bb_true = EDGE_SUCC (bb, 0)->dest;
+      if (EDGE_COUNT (bb->succs) > 1)
 	{
-	  bb_false = bb->succ->succ_next->dest;
+	  bb_false = EDGE_SUCC (bb, 1)->dest;
 
-	  if (bb->succ->flags & EDGE_FALLTHRU)
+	  if (EDGE_SUCC (bb, 0)->flags & EDGE_FALLTHRU)
 	    {
 	      basic_block t = bb_false;
 	      bb_false = bb_true;
 	      bb_true = t;
 	    }
 	  else
-	    gcc_assert (bb->succ->succ_next->flags & EDGE_FALLTHRU);
+	    gcc_assert (EDGE_SUCC (bb, 1)->flags & EDGE_FALLTHRU);
 	}
       else
 	{
@@ -1921,9 +1923,9 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
 	    && (TYPE_RETURNS_STACK_DEPRESSED
 		(TREE_TYPE (current_function_decl))))
       && (flags & PROP_SCAN_DEAD_STORES)
-      && (bb->succ == NULL
-	  || (bb->succ->succ_next == NULL
-	      && bb->succ->dest == EXIT_BLOCK_PTR
+      && (EDGE_COUNT (bb->succs) == 0
+	  || (EDGE_COUNT (bb->succs) == 1
+	      && EDGE_SUCC (bb, 0)->dest == EXIT_BLOCK_PTR
 	      && ! current_function_calls_eh_return)))
     {
       rtx insn, set;

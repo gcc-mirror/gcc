@@ -74,9 +74,9 @@ create_canonical_iv (struct loop *loop, edge exit, tree niter)
     }
 
   cond = last_stmt (exit->src);
-  in = exit->src->succ;
+  in = EDGE_SUCC (exit->src, 0);
   if (in == exit)
-    in = in->succ_next;
+    in = EDGE_SUCC (exit->src, 1);
 
   /* Note that we do not need to worry about overflows, since
      type of niter is always unsigned and all comparisons are

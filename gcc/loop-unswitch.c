@@ -180,14 +180,14 @@ may_unswitch_on (basic_block bb, struct loop *loop, rtx *cinsn)
   enum machine_mode mode;
 
   /* BB must end in a simple conditional jump.  */
-  if (!bb->succ || !bb->succ->succ_next || bb->succ->succ_next->succ_next)
+  if (EDGE_COUNT (bb->succs) != 2)
     return NULL_RTX;
   if (!any_condjump_p (BB_END (bb)))
     return NULL_RTX;
 
   /* With branches inside loop.  */
-  if (!flow_bb_inside_loop_p (loop, bb->succ->dest)
-      || !flow_bb_inside_loop_p (loop, bb->succ->succ_next->dest))
+  if (!flow_bb_inside_loop_p (loop, EDGE_SUCC (bb, 0)->dest)
+      || !flow_bb_inside_loop_p (loop, EDGE_SUCC (bb, 1)->dest))
     return NULL_RTX;
 
   /* It must be executed just once each iteration (because otherwise we
@@ -414,16 +414,15 @@ unswitch_loop (struct loops *loops, struct loop *loop, basic_block unswitch_on,
   /* Some sanity checking.  */
   if (!flow_bb_inside_loop_p (loop, unswitch_on))
     abort ();
-  if (!unswitch_on->succ || !unswitch_on->succ->succ_next ||
-      unswitch_on->succ->succ_next->succ_next)
+  if (EDGE_COUNT (unswitch_on->succs) != 2)
     abort ();
   if (!just_once_each_iteration_p (loop, unswitch_on))
     abort ();
   if (loop->inner)
     abort ();
-  if (!flow_bb_inside_loop_p (loop, unswitch_on->succ->dest))
+  if (!flow_bb_inside_loop_p (loop, EDGE_SUCC (unswitch_on, 0)->dest))
     abort ();
-  if (!flow_bb_inside_loop_p (loop, unswitch_on->succ->succ_next->dest))
+  if (!flow_bb_inside_loop_p (loop, EDGE_SUCC (unswitch_on, 1)->dest))
     abort ();
 
   entry = loop_preheader_edge (loop);
@@ -444,7 +443,7 @@ unswitch_loop (struct loops *loops, struct loop *loop, basic_block unswitch_on,
   unswitch_on_alt = unswitch_on->rbi->copy;
   true_edge = BRANCH_EDGE (unswitch_on_alt);
   false_edge = FALLTHRU_EDGE (unswitch_on);
-  latch_edge = loop->latch->rbi->copy->succ;
+  latch_edge = EDGE_SUCC (loop->latch->rbi->copy, 0);
 
   /* Create a block with the condition.  */
   prob = true_edge->probability;
@@ -463,19 +462,19 @@ unswitch_loop (struct loops *loops, struct loop *loop, basic_block unswitch_on,
   if (irred_flag)
     {
       switch_bb->flags |= BB_IRREDUCIBLE_LOOP;
-      switch_bb->succ->flags |= EDGE_IRREDUCIBLE_LOOP;
-      switch_bb->succ->succ_next->flags |= EDGE_IRREDUCIBLE_LOOP;
+      EDGE_SUCC (switch_bb, 0)->flags |= EDGE_IRREDUCIBLE_LOOP;
+      EDGE_SUCC (switch_bb, 1)->flags |= EDGE_IRREDUCIBLE_LOOP;
     }
   else
     {
       switch_bb->flags &= ~BB_IRREDUCIBLE_LOOP;
-      switch_bb->succ->flags &= ~EDGE_IRREDUCIBLE_LOOP;
-      switch_bb->succ->succ_next->flags &= ~EDGE_IRREDUCIBLE_LOOP;
+      EDGE_SUCC (switch_bb, 0)->flags &= ~EDGE_IRREDUCIBLE_LOOP;
+      EDGE_SUCC (switch_bb, 1)->flags &= ~EDGE_IRREDUCIBLE_LOOP;
     }
 
   /* Loopify from the copy of LOOP body, constructing the new loop.  */
   nloop = loopify (loops, latch_edge,
-		   loop->header->rbi->copy->pred, switch_bb, true);
+		   EDGE_PRED (loop->header->rbi->copy, 0), switch_bb, true);
 
   /* Remove branches that are now unreachable in new loops.  */
   remove_path (loops, true_edge);

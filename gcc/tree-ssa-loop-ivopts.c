@@ -1510,9 +1510,10 @@ find_interesting_uses (struct ivopts_data *data)
 
   for (i = 0; i < data->current_loop->num_nodes; i++)
     {
+      edge_iterator ei;
       bb = body[i];
 
-      for (e = bb->succ; e; e = e->succ_next)
+      FOR_EACH_EDGE (e, ei, bb->succs)
 	if (e->dest != EXIT_BLOCK_PTR
 	    && !flow_bb_inside_loop_p (data->current_loop, e->dest))
 	  find_interesting_uses_outside (data, e);
@@ -4128,7 +4129,7 @@ compute_phi_arg_on_exit (edge exit, tree stmts, tree op)
   block_stmt_iterator bsi;
   tree phi, stmt, def, next;
 
-  if (exit->dest->pred->pred_next)
+  if (EDGE_COUNT (exit->dest->preds) > 1)
     split_loop_exit_edge (exit);
 
   if (TREE_CODE (stmts) == STATEMENT_LIST)
