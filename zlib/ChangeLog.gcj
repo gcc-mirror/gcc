@@ -1,3 +1,9 @@
+2001-07-03  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR bootstrap/3281:
+	* configure, Makefile.in: Rebuilt.
+	* configure.in: Set mkinstalldirs, for in-tree build.
+
 2001-05-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	* acinclude.m4: Use ../libtool.m4.
