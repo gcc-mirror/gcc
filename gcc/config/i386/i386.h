@@ -2869,7 +2869,9 @@ do { long l;						\
   {"fcmov_comparison_operator", {EQ, NE, LTU, GTU, LEU, GEU, UNORDERED, \
 				 ORDERED, LT, UNLT, GT, UNGT, LE, UNLE,	\
 				 GE, UNGE, LTGT, UNEQ}},		\
-  {"sse_comparison_operator", {EQ, LT, LE, UNORDERED }},		\
+  {"sse_comparison_operator", {EQ, LT, LE, UNORDERED, NE, UNGE, UNGT,	\
+			       ORDERED, UNEQ, UNLT, UNLE, LTGT, GE, GT	\
+			       }},					\
   {"ix86_comparison_operator", {EQ, NE, LE, LT, GE, GT, LEU, LTU, GEU,	\
 			       GTU, UNORDERED, ORDERED, UNLE, UNLT,	\
 			       UNGE, UNGT, LTGT, UNEQ }},		\
