@@ -1,3 +1,8 @@
+2003-03-25  Marcelo Abreu  <mmabreu@inf.ufrgs.br>
+
+	PR other/10203
+	* version.c: Reference the GCC web site in the URL.
+
 2003-03-26  Alan Modra  <amodra@bigpond.net.au>
 
 	* c-incpath.c (add_standard_paths): Add both "translated" and
