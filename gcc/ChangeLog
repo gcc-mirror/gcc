@@ -1,3 +1,7 @@
+2000-10-06  David O'Brien  <obrien@dragon.nuxi.com>
+
+	* config/alpha/elf.h: Standardize the formatting.
+
 2000-10-06  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/alpha/elf.h: Protect the ASM_OUTPUT_IDENT definition with an
