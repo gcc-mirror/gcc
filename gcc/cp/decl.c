@@ -4414,7 +4414,7 @@ lookup_tag (form, name, binding_level, thislevel_only)
       else if (level->namespace_p)
 	/* Do namespace lookup. */
 	/* XXX: is this a real lookup, considering using-directives etc. ??? */
-	for (tail = current_namespace; 1; tail = DECL_CONTEXT (tail))
+	for (tail = current_namespace; 1; tail = CP_DECL_CONTEXT (tail))
 	  {
 	    tree old = BINDING_TYPE (binding_for_name (name, tail));
 	    /* If it has an original type, it is a typedef, and we

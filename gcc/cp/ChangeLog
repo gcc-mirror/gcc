@@ -1,3 +1,9 @@
+1998-07-06  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (lookup_tag): Use CP_DECL_CONTEXT.
+
+	* tree.c (make_binfo): Fix length.
+
 1998-06-30  Benjamin Kosnik  <bkoz@bliss.nabi.net>
 
         * decl2.c (lang_decode_option): Remove warn_template_debugging.
