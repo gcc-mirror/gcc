@@ -1,3 +1,122 @@
+2001-07-06  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Makefile.in (final.o): Depend on target.h.
+	* final.c: Include target.h.
+	(default_function_pro_epilogue): New.
+	(final_start_function): Use target structure for function prologues.
+	(final_end_function): Use target structure for function epilogues.
+	* fold-const.c (real_hex_to_f): Constify s and p.
+	* output.h (default_function_pro_epilogue): New.
+	* real.h (real_hex_to_f): Update prototype.
+	* target-def.h (TARGET_ASM_FUNCTION_PROLOGUE,
+	TARGET_ASM_FUNCTION_EPILOGUE, TARGET_ASM_OUT): New.
+	(TARGET_INITIALIZER): Update.
+	* target.h (gcc_target): Add struct asm_out.
+	* doc/tm.texi: Update.
+
+config:
+	Update each arch to use TARGET_ASM_FUNCTION_PROLOGUE and
+	TARGET_ASM_FUNCTION_EPILOGUE.  Move macro code to functions
+	in cpu/cpu.c, or rename old functions consistently.  Take
+	a HOST_WIDE INT not an int as the SIZE parameter.  Remove now
+	redundant macros and prototypes.  Make new functions static.
+
+	* 1750a/1750a.c: Similarly.
+	* 1750a/1750a.h: Similarly.
+	* a29k/a29k-protos.h: Similarly.
+	* a29k/a29k.c: Similarly.
+	* a29k/a29k.h: Similarly.
+	* arc/arc-protos.h: Similarly.
+	* arc/arc.c: Similarly.
+	* arc/arc.h: Similarly.
+	* arm/arm-protos.h: Similarly.
+	* arm/arm.c: Similarly.
+	* arm/arm.h: Similarly.
+	* avr/avr-protos.h: Similarly.
+	* avr/avr.c: Similarly.
+	* avr/avr.h: Similarly.
+	* clipper/clipper-protos.h: Similarly.
+	* clipper/clipper.c: Similarly.
+	* clipper/clipper.h: Similarly.
+	* convex/convex.c: Similarly.
+	* convex/convex.h: Similarly.
+	* d30v/d30v-protos.h: Similarly.
+	* d30v/d30v.c: Similarly.
+	* d30v/d30v.h: Similarly.
+	* d30v/d30v.md: Similarly.
+	* dsp16xx/dsp16xx-protos.h: Similarly.
+	* dsp16xx/dsp16xx.c: Similarly.
+	* dsp16xx/dsp16xx.h: Similarly.
+	* elxsi/elxsi.c: Similarly.
+	* elxsi/elxsi.h: Similarly.
+	* fr30/fr30.c: Similarly.
+	* fr30/fr30.md: Similarly.
+	* h8300/h8300-protos.h: Similarly.
+	* h8300/h8300.c: Similarly.
+	* h8300/h8300.h: Similarly.
+	* i370/i370-protos.h: Similarly.
+	* i370/i370.c: Similarly.
+	* i370/i370.h: Similarly.
+	* i386/i386.c: Similarly.
+	* i386/osf1elf.h: Similarly.
+	* i386/osfrose.h: Similarly.
+	* i860/i860-protos.h: Similarly.
+	* i860/i860.c: Similarly.
+	* i860/i860.h: Similarly.
+	* i960/i960-protos.h: Similarly.
+	* i960/i960.c: Similarly.
+	* i960/i960.h: Similarly.
+	* ia64/ia64-protos.h: Similarly.
+	* ia64/ia64.c: Similarly.
+	* ia64/ia64.h: Similarly.
+	* m32r/m32r-protos.h: Similarly.
+	* m32r/m32r.c: Similarly.
+	* m32r/m32r.h: Similarly.
+	* m68hc11/m68hc11-protos.h: Similarly.
+	* m68hc11/m68hc11.c: Similarly.
+	* m68hc11/m68hc11.h: Similarly.
+	* m68k/crds.h: Similarly.
+	* m68k/dpx2.h: Similarly.
+	* m68k/m68k-protos.h: Similarly.
+	* m68k/m68k.c: Similarly.
+	* m68k/m68k.h: Similarly.
+	* m68k/news.h: Similarly.
+	* m88k/m88k-protos.h: Similarly.
+	* m88k/m88k.c: Similarly.
+	* m88k/m88k.h: Similarly.
+	* mips/mips-protos.h: Similarly.
+	* mips/mips.c: Similarly.
+	* mips/mips.h: Similarly.
+	* ns32k/merlin.h: Similarly.
+	* ns32k/ns32k.c: Similarly.
+	* ns32k/ns32k.h: Similarly.
+	* ns32k/tek6000.h: Similarly.
+	* pa/pa-protos.h: Similarly.
+	* pa/pa.c: Similarly.
+	* pa/pa.h: Similarly.
+	* pdp11/2bsd.h: Similarly.
+	* pdp11/pdp11-protos.h: Similarly.
+	* pdp11/pdp11.c: Similarly.
+	* pdp11/pdp11.h: Similarly.
+	* romp/romp-protos.h: Similarly.
+	* romp/romp.c: Similarly.
+	* romp/romp.h: Similarly.
+	* rs6000/rs6000-protos.h: Similarly.
+	* rs6000/rs6000.c: Similarly.
+	* rs6000/rs6000.h: Similarly.
+	* rs6000/sysv4.h: Similarly.
+	* sh/sh-protos.h: Similarly.
+	* sh/sh.c: Similarly.
+	* sh/sh.h: Similarly.
+	* sparc/sparc-protos.h: Similarly.
+	* sparc/sparc.c: Similarly.
+	* sparc/sparc.h: Similarly.
+	* vax/vax.c: Similarly.
+	* vax/vax.h: Similarly.
+	* vax/vms.h: Similarly.
+	* we32k/we32k.c: Similarly.
+	* we32k/we32k.h: Similarly.
+
 Fri Jul  6 11:47:59 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* basic-block.h (first_insn_after_basic_block_note): Declare.
