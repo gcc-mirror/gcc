@@ -105,7 +105,8 @@ ix86_handle_dll_attribute (pnode, name, args, flags, no_add_attrs)
       if (TREE_CODE (node) == FUNCTION_DECL  && DECL_INITIAL (node)
           && !DECL_INLINE (node))
 	{
-	  error_with_decl (node, "function `%s' definition is marked dllimport.");
+	  error ("%Hfunction `%D' definition is marked dllimport.",
+		 &DECL_SOURCE_LOCATION (node), node);
 	  *no_add_attrs = true;
 	}
 
@@ -113,7 +114,8 @@ ix86_handle_dll_attribute (pnode, name, args, flags, no_add_attrs)
 	{
 	  if (DECL_INITIAL (node))
 	    {
-	      error_with_decl (node,"variable `%s' definition is marked dllimport.");
+	      error ("%Hvariable `%D' definition is marked dllimport.",
+		     &DECL_SOURCE_LOCATION (node), node);
 	      *no_add_attrs = true;
 	    }
 
@@ -132,8 +134,8 @@ ix86_handle_dll_attribute (pnode, name, args, flags, no_add_attrs)
       && (TREE_CODE (node) == VAR_DECL
 	  || TREE_CODE (node) == FUNCTION_DECL)) 
     {
-      error_with_decl (node, "external linkage required for symbol '%s' because of '%s' attribute.",
-		       IDENTIFIER_POINTER (name));
+      error ("%Hexternal linkage required for symbol '%D' because of '%s' attribute.",
+	       &DECL_SOURCE_LOCATION (node), node, IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
 
@@ -253,7 +255,8 @@ i386_pe_dllimport_p (decl)
 	{
 	   /* Don't warn about artificial methods.  */
 	  if (!DECL_ARTIFICIAL (decl))
-	    warning_with_decl (decl,"function '%s' is defined after prior declaration as dllimport: attribute ignored.");
+	    warning ("%H function '%D' is defined after prior declaration as dllimport: attribute ignored",
+		     &DECL_SOURCE_LOCATION (decl), decl);
 	  return 0;
 	}
 
@@ -263,7 +266,8 @@ i386_pe_dllimport_p (decl)
       else if (TREE_CODE (decl) == FUNCTION_DECL && DECL_INLINE (decl))
         {
 	  if (extra_warnings)
-	    warning_with_decl (decl, "inline function '%s' is declared as dllimport: attribute ignored.");
+	    warning ("%Hinline function '%D' is declared as dllimport: attribute ignored.", 
+		     &DECL_SOURCE_LOCATION (decl), decl);
 	  return 0;
 	}
 
@@ -274,8 +278,8 @@ i386_pe_dllimport_p (decl)
 	       && !DECL_EXTERNAL (decl) && context_imp)
 	{
 	  if (!DECL_VIRTUAL_P (decl))
-	      error_with_decl (decl, "definition of static data member '%s' of dllimport'd class.");
-           return 0;
+            error ("%Hdefinition of static data member '%D' of dllimport'd class.", 
+		   &DECL_SOURCE_LOCATION (decl), decl);           return 0;
 	}
 
       /* Since we can't treat a pointer to a dllimport'd symbol as a
@@ -335,7 +339,8 @@ i386_pe_mark_dllexport (decl)
     abort ();
   if (i386_pe_dllimport_name_p (oldname))
     {
-      warning_with_decl (decl,"inconsistent dll linkage for '%s': dllexport assumed.");
+      warning ("%Hinconsistent dll linkage for '%D', dllexport assumed.",
+	       &DECL_SOURCE_LOCATION (decl), decl);
      /* Remove DLL_IMPORT_PREFIX.  */
       oldname += strlen (DLL_IMPORT_PREFIX);
       DECL_NON_ADDR_CONST_P (decl) = 0;
@@ -386,7 +391,8 @@ i386_pe_mark_dllimport (decl)
       /* Already done, but do a sanity check to prevent assembler errors. */
       if (!DECL_EXTERNAL (decl) || !TREE_PUBLIC (decl))
 	{
-	  error_with_decl (decl, "failure in redeclaration of '%s': dllimport'd symbol lacks external linkage.");
+	  error ("%Hfailure in redeclaration of '%D': dllimport'd symbol lacks external linkage.", 
+		 &DECL_SOURCE_LOCATION (decl), decl);
 	  abort();
 	}
       return;
@@ -532,9 +538,11 @@ i386_pe_encode_section_info (decl, rtl, first)
       tree idp = get_identifier (oldname + strlen (DLL_IMPORT_PREFIX));
       rtx newrtl = gen_rtx (SYMBOL_REF, Pmode, IDENTIFIER_POINTER (idp));
 
-      warning_with_decl (decl, "'%s' %s after being referenced with dllimport linkage.",
-	         	 (DECL_INITIAL (decl) || !DECL_EXTERNAL (decl))
-			 ? "defined locally" : "redeclared without dllimport attribute");
+      warning ("%H%s '%D' %s after being referenced with dllimport linkage.",
+	         &DECL_SOURCE_LOCATION (decl),
+	         TREE_CODE (decl) == VAR_DECL ? "variable" : "function", 
+	         decl, (DECL_INITIAL (decl) || !DECL_EXTERNAL (decl))
+			? "defined locally" : "redeclared without dllimport attribute");
 
       XEXP (DECL_RTL (decl), 0) = newrtl;
 
@@ -711,7 +719,8 @@ i386_pe_section_type_flags (decl, name, reloc)
   else
     {
       if (decl && **slot != flags)
-	error_with_decl (decl, "%s causes a section type conflict");
+	error ("%H'%D' causes a section type conflict",
+	        &DECL_SOURCE_LOCATION (decl), decl);
     }
 
   return flags;
