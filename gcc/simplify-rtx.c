@@ -204,7 +204,8 @@ simplify_gen_relational (enum rtx_code code, enum machine_mode mode,
   if (cmp_mode == VOIDmode)
     cmp_mode = GET_MODE (op1);
 
-  if (cmp_mode != VOIDmode)
+  if (cmp_mode != VOIDmode
+      && ! VECTOR_MODE_P (mode))
     {
       tem = simplify_relational_operation (code, cmp_mode, op0, op1);
 
@@ -3531,6 +3532,8 @@ simplify_rtx (rtx x)
 					 XEXP (x, 2));
 
     case '<':
+      if (VECTOR_MODE_P (mode))
+	return NULL_RTX;
       temp = simplify_relational_operation (code,
 					    ((GET_MODE (XEXP (x, 0))
 					      != VOIDmode)

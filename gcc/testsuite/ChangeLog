@@ -1,3 +1,9 @@
+2004-10-10  Stuart Hastings  <stuart@apple.com>
+	    Roger Sayle  <roger@eyesopen.com>
+
+	PR rtl-optimization/17853
+	* gcc.dg/i386-mmx-5.c: New testcase.
+
 2004-10-09  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17821

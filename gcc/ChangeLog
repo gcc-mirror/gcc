@@ -1,3 +1,13 @@
+2004-10-10  Roger Sayle  <roger@eyesopen.com>
+
+	PR rtl-optimization/17853
+	* combine.c (combine_simplify_rtx): Don't attempt any simplifications
+	of vector mode comparison operators.
+	* cse.c (fold_rtx): Likewise.
+	* simplify-rtx.c (simplify_gen_relational):  Avoid calling
+	simplify_relational_operation with vector mode comparison operators.
+	(simplify_rtx): Likewise.
+
 2004-10-09  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/spe.h (atosfix16, atosfix32, atosfix64, atoufix16,

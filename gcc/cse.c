@@ -3868,6 +3868,10 @@ fold_rtx (rtx x, rtx insn)
       break;
 
     case '<':
+      /* Don't perform any simplifications of vector mode comparisons.  */
+      if (VECTOR_MODE_P (mode))
+	break;
+
       /* See what items are actually being compared and set FOLDED_ARG[01]
 	 to those values and CODE to the actual comparison code.  If any are
 	 constant, set CONST_ARG0 and CONST_ARG1 appropriately.  We needn't

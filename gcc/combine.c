@@ -3715,27 +3715,28 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int last,
       temp = simplify_unary_operation (code, mode, XEXP (x, 0), op0_mode);
       break;
     case '<':
-      {
-	enum machine_mode cmp_mode = GET_MODE (XEXP (x, 0));
-	if (cmp_mode == VOIDmode)
-	  {
-	    cmp_mode = GET_MODE (XEXP (x, 1));
-	    if (cmp_mode == VOIDmode)
-	      cmp_mode = op0_mode;
-	  }
-	temp = simplify_relational_operation (code, cmp_mode,
-					      XEXP (x, 0), XEXP (x, 1));
-      }
-#ifdef FLOAT_STORE_FLAG_VALUE
-      if (temp != 0 && GET_MODE_CLASS (mode) == MODE_FLOAT)
+      if (! VECTOR_MODE_P (mode))
 	{
-	  if (temp == const0_rtx)
-	    temp = CONST0_RTX (mode);
-	  else
-	    temp = CONST_DOUBLE_FROM_REAL_VALUE (FLOAT_STORE_FLAG_VALUE (mode),
-						 mode);
-	}
+	  enum machine_mode cmp_mode = GET_MODE (XEXP (x, 0));
+	  if (cmp_mode == VOIDmode)
+	    {
+	      cmp_mode = GET_MODE (XEXP (x, 1));
+	      if (cmp_mode == VOIDmode)
+		cmp_mode = op0_mode;
+	    }
+	  temp = simplify_relational_operation (code, cmp_mode,
+						XEXP (x, 0), XEXP (x, 1));
+#ifdef FLOAT_STORE_FLAG_VALUE
+	  if (temp != 0 && GET_MODE_CLASS (mode) == MODE_FLOAT)
+	    {
+	      if (temp == const0_rtx)
+		temp = CONST0_RTX (mode);
+	      else
+		temp = CONST_DOUBLE_FROM_REAL_VALUE
+			 (FLOAT_STORE_FLAG_VALUE (mode), mode);
+	    }
 #endif
+	}
       break;
     case 'c':
     case '2':
