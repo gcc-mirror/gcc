@@ -2113,6 +2113,9 @@ finish_anon_union (anon_union_decl)
   int static_p = TREE_STATIC (anon_union_decl);
   int external_p = DECL_EXTERNAL (anon_union_decl);
 
+  /* The VAR_DECL's context is the same as the TYPE's context. */
+  DECL_CONTEXT (anon_union_decl) = DECL_CONTEXT (TYPE_NAME (type));
+  
   if (TYPE_FIELDS (type) == NULL_TREE)
     return;
 
