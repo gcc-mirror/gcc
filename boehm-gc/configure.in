@@ -81,16 +81,6 @@ AC_ARG_WITH(cross-host,
 [  --with-cross-host=HOST  configuring with a cross compiler])
 
 AM_MAINTAINER_MODE
-# automake wants to see AC_EXEEXT.  But we don't need it.  And having
-# it is actually a problem, because the compiler we're passed can't
-# necessarily do a full link.  So we fool automake here.
-if false; then
-  # autoconf 2.50 runs AC_EXEEXT by default, and the macro expands
-  # to nothing, so nothing would remain between `then' and `fi' if it
-  # were not for the `:' below.
-  :
-  AC_EXEEXT
-fi
 
 AC_MSG_CHECKING([for thread model used by GCC])
 THREADS=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
@@ -214,7 +204,7 @@ AC_MSG_RESULT($THREADLIBS)
 esac
 AC_SUBST(THREADLIBS)
 
-case "$host" in 
+case "$host" in
    powerpc-*-darwin*)
       powerpc_darwin=true
       ;;
@@ -225,7 +215,7 @@ AM_CONDITIONAL(POWERPC_DARWIN,test x$powerpc_darwin = xtrue)
 # dyld calls anyway
 case "$host" in
   *-*-darwin*) ;;
-  *) 
+  *)
     AC_CHECK_LIB(dl, dlopen, EXTRA_TEST_LIBS="$EXTRA_TEST_LIBS -ldl")
     ;;
 esac
@@ -296,7 +286,7 @@ esac
 # some variations of Power PC, where trampolines don't contain
 # executable code.
 #
-AC_MSG_CHECKING(which machine-dependent code should be used) 
+AC_MSG_CHECKING(which machine-dependent code should be used)
 machdep=
 case "$host" in
  alpha*-*-openbsd*)
@@ -321,8 +311,8 @@ case "$host" in
     ;;
  mips-nec-sysv*|mips-unknown-sysv*)
     ;;
- mips*-*-linux*) 
-    ;; 
+ mips*-*-linux*)
+    ;;
  mips-*-*)
     machdep="mips_sgi_mach_dep.lo"
     ;;
@@ -361,7 +351,7 @@ ac_is_dgux=no
 AC_CHECK_HEADER(sys/dg_sys_info.h,
 [ac_is_dgux=yes;])
 
-AC_MSG_RESULT($ac_is_dgux) 
+AC_MSG_RESULT($ac_is_dgux)
     ## :GOTCHA: we do not check anything but sys/dg_sys_info.h
 if test $ac_is_dgux = yes; then
     if test "$enable_full_debug" = "yes"; then
@@ -381,17 +371,6 @@ AC_ARG_WITH(target-subdir,
                           configuring with a cross compiler])
 AC_ARG_WITH(cross-host,
 [  --with-cross-host=HOST  configuring with a cross compiler])
-
-# automake wants to see AC_EXEEXT.  But we don't need it.  And having
-# it is actually a problem, because the compiler we're passed can't
-# necessarily do a full link.  So we fool automake here.
-if false; then
-  # autoconf 2.50 runs AC_EXEEXT by default, and the macro expands
-  # to nothing, so nothing would remain between `then' and `fi' if it
-  # were not for the `:' below.
-  :
-  AC_EXEEXT
-fi
 
 dnl As of 4.13a2, the collector will not properly work on Solaris when
 dnl built with gcc and -O.  So we remove -O in the appropriate case.

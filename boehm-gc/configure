@@ -4726,16 +4726,6 @@ fi
   MAINT=$MAINTAINER_MODE_TRUE
 
 
-# automake wants to see AC_EXEEXT.  But we don't need it.  And having
-# it is actually a problem, because the compiler we're passed can't
-# necessarily do a full link.  So we fool automake here.
-if false; then
-  # autoconf 2.50 runs AC_EXEEXT by default, and the macro expands
-  # to nothing, so nothing would remain between `then' and `fi' if it
-  # were not for the `:' below.
-  :
-
-fi
 
 echo "$as_me:$LINENO: checking for thread model used by GCC" >&5
 echo $ECHO_N "checking for thread model used by GCC... $ECHO_C" >&6
@@ -5866,17 +5856,6 @@ if test "${with_cross_host+set}" = set; then
   withval="$with_cross_host"
 
 fi;
-
-# automake wants to see AC_EXEEXT.  But we don't need it.  And having
-# it is actually a problem, because the compiler we're passed can't
-# necessarily do a full link.  So we fool automake here.
-if false; then
-  # autoconf 2.50 runs AC_EXEEXT by default, and the macro expands
-  # to nothing, so nothing would remain between `then' and `fi' if it
-  # were not for the `:' below.
-  :
-
-fi
 
 echo "$as_me:$LINENO: checking whether Solaris gcc optimization fix is necessary" >&5
 echo $ECHO_N "checking whether Solaris gcc optimization fix is necessary... $ECHO_C" >&6

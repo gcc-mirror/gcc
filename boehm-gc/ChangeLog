@@ -1,5 +1,8 @@
 2004-02-26  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.in: Remove more obsolete, bogus code.
+	* configure: Regenerate.
+
 	* acinclude.m4: Remove obsolete and bogus constructs.
 	* aclocal.m4: Regenerate.
 	* configure: Regnerate.
