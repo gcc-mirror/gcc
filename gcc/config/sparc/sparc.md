@@ -1578,6 +1578,8 @@
       if (low != const0_rtx)
 	output_asm_insn (\"sethi %%hi(%a1),%%g1; or %0,%%g1,%0\", operands);
     }
+
+  return \"\";
 }"
   [(set_attr "type" "move")
    (set_attr "length" "5")])
