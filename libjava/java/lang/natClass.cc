@@ -1,6 +1,6 @@
 // natClass.cc - Implementation of java.lang.Class native methods.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -615,7 +615,7 @@ java::lang::Class::getMethods (void)
   return result;
 }
 
-inline jboolean
+jboolean
 java::lang::Class::isAssignableFrom (jclass klass)
 {
   // Arguments may not have been initialized, given ".class" syntax.
@@ -624,7 +624,7 @@ java::lang::Class::isAssignableFrom (jclass klass)
   return _Jv_IsAssignableFrom (this, klass);
 }
 
-inline jboolean
+jboolean
 java::lang::Class::isInstance (jobject obj)
 {
   if (__builtin_expect (! obj || isPrimitive (), false))
@@ -633,7 +633,7 @@ java::lang::Class::isInstance (jobject obj)
   return _Jv_IsAssignableFrom (this, JV_CLASS (obj));
 }
 
-inline jboolean
+jboolean
 java::lang::Class::isInterface (void)
 {
   return (accflags & java::lang::reflect::Modifier::INTERFACE) != 0;
@@ -1235,7 +1235,7 @@ _Jv_AppendPartialITable (jclass klass, jclass iface, void **itable,
       for (jclass cl = klass; cl; cl = cl->getSuperclass())
         {
 	  meth = _Jv_GetMethodLocal (cl, iface->methods[j].name,
-                 iface->methods[j].signature);
+				     iface->methods[j].signature);
 		 
 	  if (meth)
 	    break;
@@ -1409,3 +1409,19 @@ java::lang::Class::getPrivateMethod (jstring name, JArray<jclass> *param_types)
   JvThrow (new java::lang::NoSuchMethodException);
 }
 
+// Perform a lightweight initialization of a Class object, for the
+// purpose of creating the Class object of primitive types.
+
+void
+java::lang::Class::initializePrim (jobject cname, jbyte sig, jint len, jobject avtable)
+{
+  using namespace java::lang::reflect;
+
+  name = _Jv_makeUtf8Const ((char *) cname, -1);
+  accflags = Modifier::PUBLIC | Modifier::FINAL | Modifier::ABSTRACT;
+  method_count = sig;
+  size_in_bytes = len;
+  // We temporarily store `avtable' in the `vtable' field, so that the
+  // copy constructor can correctly invoke _Jv_FindArrayClass.
+  vtable = (_Jv_VTable *) avtable;
+}

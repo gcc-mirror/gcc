@@ -116,6 +116,30 @@
 	from the c++ compiler.
 	* Makefile.in: Rebuilt.
 
+2001-01-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	All files with updated copyright.
+	* prims.cc (class _Jv_PrimClass): Removed.
+	(init_prim_class): New function.
+	(DECLARE_PRIM_TYPE): Rewritten. `java::lang::Class' replaces
+	`_Jv_PrimClass' in primitive type declarations. Assign to the
+	value returned by `init_prim_class.'
+	* gcj/array.h: `java::lang::Class' replaces `_Jv_PrimClass' in
+	primitive type declarations.
+	(JvPrimClass): Cast to `jclass' removed.
+	* java/lang/Class.h (Class): New constructor.
+	(Class): New copy constructor.
+	(initializePrim): New prototype.
+	(_Jv_PrimClass): Field removed.
+	* java/lang/Object.h (struct _JvObjectPrefix): New virtuals
+	nacd_1 and nacd_2 (for compatibility with the new C++ ABI.)
+	(class java::lang::Object): `finalize' moved up front.
+	* java/lang/natClass.cc 
+	(isAssignableFrom): Turned outline.
+	(isInstance): Likewise.
+	(isInterface): Likewise, fixed indentation.
+	(initializePrim): New function.
+
 2001-01-07  Anthony Green  <green@redhat.com>
 
 	* Makefile.am (texinfo): Add texinfo target for generating texinfo

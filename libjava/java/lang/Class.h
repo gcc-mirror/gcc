@@ -1,6 +1,6 @@
 // Class.h - Header file for java.lang.Class.  -*- c++ -*-
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -14,6 +14,7 @@ details.  */
 
 #pragma interface
 
+#include <stdio.h>
 #include <java/lang/Object.h>
 #include <java/lang/String.h>
 #include <java/net/URL.h>
@@ -191,6 +192,53 @@ public:
   // finalization
   void finalize ();
 
+  // For the initialization of primitive types: some constructors as
+  // required by prims.cc:init_prim_class(), and the prototype of
+  // method to perform a lightweight initialization of a Class object.
+  Class (void) {}
+  Class (const Class& x) : Object () {
+    
+    // C++ ctors are fixing the vtbl in a way that doesn't fit Java.
+    // We can fix the C++ compiler, or we can hack our runtime. What's
+    // below fix the vtable so that it starts at -2.
+    void *p =  ((void **)this)[0];
+    ((void **)this)[0] = (void *)((char *)p-2*sizeof (void *));
+
+    _Jv_VTable *avtable = x.vtable;
+
+    // We must initialize every field of the class.  We do this in
+    // the same order they are declared in Class.h.
+    next = NULL;
+    name = x.name;
+    accflags = x.accflags;
+    superclass = NULL;
+    constants.size = 0;
+    constants.tags = NULL;
+    constants.data = NULL;
+    methods = NULL;
+    method_count = x.method_count;
+    vtable_method_count = 0;
+    fields = NULL;
+    size_in_bytes = x.size_in_bytes;
+    field_count = 0;
+    static_field_count = 0;
+    vtable = JV_PRIMITIVE_VTABLE;
+    interfaces = NULL;
+    loader = NULL;
+    interface_count = 0;
+    state = JV_STATE_DONE;
+    thread = NULL;
+    depth = -1;
+    ancestors = NULL;
+    idt = NULL;
+
+    if (method_count != 'V')
+      _Jv_NewArrayClass (this, NULL, avtable);
+    else
+      arrayclass = NULL;
+  }
+  void initializePrim (jobject cname, jbyte sig, jint len, jobject avtable);
+
   static java::lang::Class class$;
 
 private:   
@@ -236,8 +284,6 @@ private:
   friend jmethodID _Jv_FromReflectedConstructor (java::lang::reflect::Constructor *);
   friend jint JvNumMethods (jclass);
   friend jmethodID JvGetFirstMethod (jclass);
-
-  friend class _Jv_PrimClass;
 
   // Friends classes and functions to implement the ClassLoader
   friend class java::lang::ClassLoader;
