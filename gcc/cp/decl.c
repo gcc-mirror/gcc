@@ -6968,7 +6968,8 @@ check_tag_decl (declspecs)
 	{
 	  ++found_type;
 
-	  if (IS_AGGR_TYPE (value) || TREE_CODE (value) == ENUMERAL_TYPE)
+	  if ((TREE_CODE (value) != TYPENAME_TYPE && IS_AGGR_TYPE (value))
+	      || TREE_CODE (value) == ENUMERAL_TYPE)
 	    {
 	      my_friendly_assert (TYPE_MAIN_DECL (value) != NULL_TREE, 261);
 	      t = value;
