@@ -1463,7 +1463,7 @@ register_exception_table ()
 #ifdef TRY_NEW_EH
   emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__register_exceptions"), 0,
 		     VOIDmode, 1,
-		     gen_rtx (SYMBOL_REF, PTRmode, "__EXCEPTION_TABLE__"),
+		     gen_rtx (SYMBOL_REF, Pmode, "__EXCEPTION_TABLE__"),
 		     Pmode);
 #endif /* TRY_NEW_EH */
 }
