@@ -43,7 +43,7 @@
 
   // Expose global C names, including non-standard ones, but shadow
   // some names and types with the std:: C++ version.
-  using std::errno;
+  //  using std::errno;
 
 # ifdef _ERRNO_NEED_C_LEGACY_
   // dive back into the "swamp"
@@ -53,3 +53,4 @@
 #  undef _ERRNO_NEED_C_LEGACY_
 # endif /* _ERRNO_NEED_C_LEGACY_ */
 #endif /* _INCLUDED_CPP_ERRNO_H_ */
+

@@ -1,3 +1,40 @@
+2000-10-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/21_strings/compare.cc (test01): Add using declarations.
+
+	* include/c_std/bits/std_cerrno.h: And here.
+	* include/c_std/bits/std_cassert.h: Tweaks.
+
+	* mkcheck.in: Simplify.
+	
+	* acinclude.m4 (GLIBCPP_ENABLE_LONG_DOUBLE): Simplify.
+	(GLIBCPP_ENABLE_LONG_LONG): Same.
+	* aclocal.m4: Regenerate.
+
+	* src/Makefile.am (c_shadow_headers): Add features.h,
+	bits/wrap_features.h.
+	* src/Makefile.in: Regenerate.
+	* include/c_std/features.h: New file.
+	* include/c_std/bits/wrap_features.h (_CPP_WRAP_FEATURES_H): New
+	file. Need to have c++config.h included before this file so
+	_ISOC99_SOURCE around.
+
+	* include/c_std/sys/cdefs.h: Hack.
+	* include/c_std/stdlib.h: Same, use c++config.h.
+	* include/c_std/bits/std_cstdlib.h: Use _GLIBCPP_HAVE_STRTOLD.
+
+	* include/c_std/bits/std_cassert.h: Fix.
+	* include/c_std/bits/std_cerrno.h: Make consistent.
+
+	* include/c_std/bits/std_csetjmp.h (setjmp): Unscope global
+	declaration from ::_C_legacy to _C_legacy.
+
+	* include/c_std/bits/std_cstdio.h: same with printf.
+	* include/c_std/stdio.h: And here.
+
+	* include/c_std/bits/std_cstdlib.h: abort, exit comment.
+	* include/c_std/stdlib.h: Same here.
+	
 2000-10-21  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_LONG_DOUBLE): New macro.

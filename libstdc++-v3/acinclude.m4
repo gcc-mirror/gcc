@@ -1404,10 +1404,9 @@ AC_DEFUN(GLIBCPP_ENABLE_LONG_LONG, [dnl
   AC_MSG_RESULT($enable_long_long)
 
   dnl Option parsed, now set things appropriately
-  case "$enable_long_long" in
-    yes)  AC_DEFINE(_GLIBCPP_USE_LONG_LONG)
-          ;;
-  esac
+  if test x"$enable_long_long" = xyes; then
+    AC_DEFINE(_GLIBCPP_USE_LONG_LONG)
+  fi
 ])
 
 
@@ -1448,10 +1447,9 @@ AC_DEFUN(GLIBCPP_ENABLE_LONG_DOUBLE, [dnl
   AC_MSG_RESULT($enable_long_double)
 
   dnl Option parsed, now set things appropriately
-  case "$enable_long_double" in
-    yes)  AC_DEFINE(_GLIBCPP_USE_LONG_DOUBLE)
-          ;;
-  esac
+  if test x"$enable_long_double" = xyes; then
+    AC_DEFINE(_GLIBCPP_USE_LONG_DOUBLE)
+  fi
 ])
 
 

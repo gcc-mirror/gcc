@@ -46,7 +46,7 @@ namespace _C_legacy {
 
 #  undef jmp_buf
 #  undef setjmp
-#  define setjmp(__jb) ::_C_legacy::_CPP_setjmp_capture(__jb)
+#  define setjmp(__jb) _C_legacy::_CPP_setjmp_capture(__jb)
 #  undef longjmp
 
 namespace std {

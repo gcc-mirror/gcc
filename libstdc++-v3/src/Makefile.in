@@ -146,7 +146,7 @@ base_headers =  	bits/cpp_type_traits.h bits/char_traits.h bits/codecvt.h 	bits/
 c_base_headers =  	bits/std_cassert.h bits/std_cctype.h bits/std_cerrno.h 	bits/std_cfloat.h bits/std_climits.h bits/std_clocale.h 	bits/std_cmath.h bits/std_csetjmp.h bits/std_csignal.h 	bits/std_cstdarg.h bits/std_cstddef.h bits/std_cstdio.h 	bits/std_cstdlib.h bits/std_cstring.h bits/std_ctime.h 	bits/std_cwchar.h bits/std_cwctype.h 
 
 
-c_shadow_headers =  	assert.h ctype.h errno.h float.h limits.h locale.h math.h setjmp.h 	signal.h stdarg.h stddef.h stdio.h stdlib.h string.h time.h wchar.h 	wctype.h fcntl.h libio.h iolibio.h libioP.h pthread.h iconv.h 	bits/wrap_libio.h bits/wrap_iolibio.h bits/wrap_libioP.h 	bits/wrap_iconv.h bits/wrap_fcntl.h bits/wrap_pthread.h 	sys/cdefs.h 
+c_shadow_headers =  	assert.h ctype.h errno.h float.h limits.h locale.h math.h setjmp.h 	signal.h stdarg.h stddef.h stdio.h stdlib.h string.h time.h wchar.h 	wctype.h fcntl.h libio.h iolibio.h libioP.h pthread.h iconv.h 	features.h 	bits/wrap_libio.h bits/wrap_iolibio.h bits/wrap_libioP.h 	bits/wrap_iconv.h bits/wrap_fcntl.h bits/wrap_pthread.h 	bits/wrap_features.h 	sys/cdefs.h 
 
 @GLIBCPP_USE_CSHADOW_TRUE@c_headers = $(c_base_headers) $(c_shadow_headers)
 @GLIBCPP_USE_CSHADOW_FALSE@c_headers = $(c_base_headers)

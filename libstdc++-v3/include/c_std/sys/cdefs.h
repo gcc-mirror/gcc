@@ -1,6 +1,6 @@
 // -*- C++ -*- header wrapper.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +29,7 @@
 
 
 #ifndef _CPP_SYS_CDEFS_H
-# define _CPP_SYS_CDEFS_H
+# define _CPP_SYS_CDEFS_H 1
 
 # pragma GCC system_header
 # include_next <sys/cdefs.h>
@@ -40,4 +40,10 @@
 #undef	__END_DECLS
 #define	__END_DECLS
 
-#endif
+#endif /* _CPP_SYS_CDEFS_H_ */
+
+
+
+
+
+

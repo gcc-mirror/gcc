@@ -31,6 +31,8 @@
 #ifndef  _INCLUDED_CPP_STDLIB_H_
 # define _INCLUDED_CPP_STDLIB_H_ 1
 
+# include <bits/c++config.h>
+
 # ifdef _IN_C_LEGACY_  /* sub-included by a C header */
       // get out of the "legacy"
     } // close extern "C"
@@ -49,7 +51,7 @@
   using std::lldiv_t;
 #endif
 
-  using std::abort;
+//  using std::abort;
   using std::abs;
   using std::atexit;
   using std::atof;
@@ -58,7 +60,7 @@
   using std::bsearch;
   using std::calloc;
   using std::div;
-  using std::exit;
+//  using std::exit;
   using std::free;
   using std::getenv;
   using std::labs;
@@ -78,10 +80,14 @@
   using std::wcstombs;
   using std::wctomb;
 
+  using std::strtof;
+
 #ifdef _GLIBCPP_USE_LONG_LONG
   using std::strtoll;
   using std::strtoull;
-  using std::strtof;
+#endif
+
+#ifdef _GLIBCPP_HAVE_STRTOLD
   using std::strtold;
 #endif
 

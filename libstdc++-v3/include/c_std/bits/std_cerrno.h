@@ -33,26 +33,16 @@
 #ifndef _CPP_CERRNO
 #define _CPP_CERRNO 1
 
-namespace _C_legacy {
+//namespace _C_legacy {
   extern "C" {
-#     define _IN_C_LEGACY_
+//#     define _IN_C_LEGACY_
 #     pragma GCC system_header
 #     include_next <errno.h>
   }
+//} // namespace _C_legacy::
 
-  //  inline int& 
-  //  _CPP_errno_capture() { return errno; }
-
-} // namespace _C_legacy::
-
-#  undef  errno
-//#  define errno _C_legacy::_CPP_errno_capture()
-
-namespace std {
-  using _C_legacy::errno;
-}
-
-# undef _IN_C_LEGACY_
+//# undef _IN_C_LEGACY_
 
 #endif
+
 
