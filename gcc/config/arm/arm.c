@@ -9705,10 +9705,7 @@ arm_output_epilogue (rtx sibling)
     }
 
   /* We may have already restored PC directly from the stack.  */
-  if (! really_return
-    || (ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL
-	&& current_function_pretend_args_size == 0
-	&& saved_regs_mask & (1 << PC_REGNUM)))
+  if (!really_return || saved_regs_mask & (1 << PC_REGNUM))
     return "";
 
   /* Generate the return instruction.  */
