@@ -105,11 +105,18 @@ int stack_arg_under_construction;
 static void store_one_arg ();
 extern enum machine_mode mode_for_size ();
 
-/* Return 1 if EXP contains a call to the built-in function `alloca'.  */
+/* If WHICH is 1, return 1 if EXP contains a call to the built-in function
+   `alloca'.
+
+   If WHICH is 0, return 1 if EXP contains a call to any function.
+   Actually, we only need return 1 if evaluating EXP would require pushing
+   arguments on the stack, but that is too difficult to compute, so we just
+   assume any function call might require the stack.  */
 
 static int
-calls_alloca (exp)
+calls_function (exp, which)
      tree exp;
+     int which;
 {
   register int i;
   int type = TREE_CODE_CLASS (TREE_CODE (exp));
@@ -124,12 +131,14 @@ calls_alloca (exp)
   switch (TREE_CODE (exp))
     {
     case CALL_EXPR:
-      if (TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
-	  && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
-	      == FUNCTION_DECL)
-	  && DECL_BUILT_IN (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
-	  && (DECL_FUNCTION_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
-	      == BUILT_IN_ALLOCA))
+      if (which == 0)
+	return 1;
+      else if (TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
+	       && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
+		   == FUNCTION_DECL)
+	       && DECL_BUILT_IN (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
+	       && (DECL_FUNCTION_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
+		   == BUILT_IN_ALLOCA))
 	return 1;
 
       /* Third operand is RTL.  */
@@ -146,7 +155,8 @@ calls_alloca (exp)
 	register tree local;
 
 	for (local = BLOCK_VARS (exp); local; local = TREE_CHAIN (local))
-	  if (DECL_INITIAL (local) != 0 && calls_alloca (DECL_INITIAL (local)))
+	  if (DECL_INITIAL (local) != 0
+	      && calls_function (DECL_INITIAL (local), which))
 	    return 1;
       }
       {
@@ -155,7 +165,7 @@ calls_alloca (exp)
 	for (subblock = BLOCK_SUBBLOCKS (exp);
 	     subblock;
 	     subblock = TREE_CHAIN (subblock))
-	  if (calls_alloca (subblock))
+	  if (calls_function (subblock, which))
 	    return 1;
       }
       return 0;
@@ -174,7 +184,7 @@ calls_alloca (exp)
 
   for (i = 0; i < length; i++)
     if (TREE_OPERAND (exp, i) != 0
-	&& calls_alloca (TREE_OPERAND (exp, i)))
+	&& calls_function (TREE_OPERAND (exp, i), which))
       return 1;
 
   return 0;
@@ -1151,10 +1161,18 @@ expand_call (exp, target, ignore)
      If a parameter contains a call to alloca and this function uses the
      stack, precompute the parameter.  */
 
+  /* If we preallocated the stack space, and some arguments must be passed
+     on the stack, then we must precompute any parameter which contains a
+     function call which will store arguments on the stack.
+     Otherwise, evaluating the parameter may clobber previous parameters
+     which have already been stored into the stack.  */
+
   for (i = 0; i < num_actuals; i++)
     if (is_const
 	|| ((args_size.var != 0 || args_size.constant != 0)
-	    && calls_alloca (args[i].tree_value)))
+	    && calls_function (args[i].tree_value, 1))
+	|| (must_preallocate && (args_size.var != 0 || args_size.constant != 0)
+	    && calls_function (args[i].tree_value, 0)))
       {
 	args[i].initial_value = args[i].value
 	  = expand_expr (args[i].tree_value, NULL_RTX, VOIDmode, 0);
