@@ -14,7 +14,7 @@ if %2.==alpha. goto really_call_winnt
 echo Usage: configure winnt i386 or configure winnt alpha
 goto END
 :really_call_winnt
-call config\%2\config-nt %1 %2 %3 %4
+call config\winnt\config-nt %1 %2 %3 %4
 goto END
 
 :END
