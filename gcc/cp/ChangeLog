@@ -1,3 +1,13 @@
+2005-02-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c++/18757
+	PR c++/19366
+	PR c++/19499
+	* parser.c (cp_parser_template_id): Revert 2004-12-09's patch.
+	Issue an error when creating the template id.
+	* pt.c (fn_type_unification): Return early if the explicit
+	template arg list is an error_mark_node.
+
 2005-01-27  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR c++/18370

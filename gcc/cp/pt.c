@@ -8935,6 +8935,9 @@ fn_type_unification (tree fn,
       tree converted_args;
       bool incomplete;
 
+      if (explicit_targs == error_mark_node)
+	return 1;
+
       converted_args
 	= (coerce_template_parms (DECL_INNERMOST_TEMPLATE_PARMS (fn), 
 				  explicit_targs, NULL_TREE, tf_none, 

@@ -1,3 +1,7 @@
+2005-02-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	* g++.dg/parse/typename7.C: Adjust error messages.
+
 2005-01-26  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	Backport from mainline:

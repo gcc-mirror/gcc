@@ -9,23 +9,23 @@ struct A
 {
   template<typename>   void foo(int);
   template<typename T> void bar(T t) {
-    this->foo<typename T>(t); } // { dg-error "expected" }
+    this->foo<typename T>(t); } // { dg-error "expected|parse error|no matching" }
   template<typename T> void bad(T t) {
-    foo<typename T>(t); } // { dg-error "expected" }
+    foo<typename T>(t); } // { dg-error "expected|parse error" }
 };
 
 template <typename T>
 struct B
 {
   void bar(T t) {
-    A().bar<typename T>(t); } // { dg-error "expected" }
+    A().bar<typename T>(t); } // { dg-error "expected|parse error|no matching" }
   void bad(T t) {
     B<typename T>::bar(t); } // { dg-error "invalid|not a template" }
 };
 
 void baz()
 {
-    A().bar(0);
-    A().bad(0);
-    B<int>().bar(0);
+  A().bar(0);
+  A().bad(0);
+  B<int>().bar(0);
 }
