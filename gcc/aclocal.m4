@@ -570,7 +570,7 @@ for f in $gcc_cv_as_bfd_srcdir/configure \
          $gcc_cv_as_gas_srcdir/configure \
          $gcc_cv_as_gas_srcdir/configure.in \
          $gcc_cv_as_gas_srcdir/Makefile.in ; do
-  gcc_cv_gas_version=`grep '^VERSION=[[0-9]]*\.[[0-9]]*' $f`
+  gcc_cv_gas_version=`sed -n -e 's/^[[ 	]]*\(VERSION=[[0-9]]*\.[[0-9]]*.*\)/\1/p' < $f`
   if test x$gcc_cv_gas_version != x; then
     break
   fi
