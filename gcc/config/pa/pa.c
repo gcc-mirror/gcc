@@ -757,8 +757,8 @@ hppa_legitimize_address (x, oldx, mode)
       && GET_CODE (XEXP (x, 0)) == REG
       && GET_CODE (XEXP (x, 1)) == SYMBOL_REF)
     {
-      rtx reg = force_reg (SImode, XEXP (x, 1));
-      return force_reg (SImode, gen_rtx_PLUS (SImode, reg, XEXP (x, 0)));
+      rtx reg = force_reg (Pmode, XEXP (x, 1));
+      return force_reg (Pmode, gen_rtx_PLUS (Pmode, reg, XEXP (x, 0)));
     }
 
   /* Note we must reject symbols which represent function addresses
@@ -1159,15 +1159,15 @@ emit_move_sequence (operands, mode, scratch_reg)
       if (GET_CODE (operand1) == SUBREG)
 	operand1 = XEXP (operand1, 0);
 
-      scratch_reg = gen_rtx_REG (SImode, REGNO (scratch_reg));
+      scratch_reg = gen_rtx_REG (word_mode, REGNO (scratch_reg));
 
       /* D might not fit in 14 bits either; for such cases load D into
 	 scratch reg.  */
-      if (!memory_address_p (SImode, XEXP (operand1, 0)))
+      if (!memory_address_p (Pmode, XEXP (operand1, 0)))
 	{
 	  emit_move_insn (scratch_reg, XEXP (XEXP (operand1, 0), 1));
 	  emit_move_insn (scratch_reg, gen_rtx_fmt_ee (GET_CODE (XEXP (operand1, 0)),
-						       SImode,
+						       Pmode,
 						       XEXP (XEXP (operand1, 0), 0),
 						       scratch_reg));
 	}
@@ -1188,15 +1188,15 @@ emit_move_sequence (operands, mode, scratch_reg)
       if (GET_CODE (operand0) == SUBREG)
 	operand0 = XEXP (operand0, 0);
 
-      scratch_reg = gen_rtx_REG (SImode, REGNO (scratch_reg));
+      scratch_reg = gen_rtx_REG (word_mode, REGNO (scratch_reg));
       /* D might not fit in 14 bits either; for such cases load D into
 	 scratch reg.  */
-      if (!memory_address_p (SImode, XEXP (operand0, 0)))
+      if (!memory_address_p (Pmode, XEXP (operand0, 0)))
 	{
 	  emit_move_insn (scratch_reg, XEXP (XEXP (operand0, 0), 1));
 	  emit_move_insn (scratch_reg, gen_rtx_fmt_ee (GET_CODE (XEXP (operand0,
 								        0)),
-						       SImode,
+						       Pmode,
 						       XEXP (XEXP (operand0, 0),
 								   0),
 						       scratch_reg));
@@ -1245,12 +1245,12 @@ emit_move_sequence (operands, mode, scratch_reg)
       /* D might not fit in 14 bits either; for such cases load D into
 	 scratch reg.  */
       if (GET_CODE (operand1) == MEM
-	  && !memory_address_p (SImode, XEXP (operand1, 0)))
+	  && !memory_address_p (Pmode, XEXP (operand1, 0)))
 	{
 	  emit_move_insn (scratch_reg, XEXP (XEXP (operand1, 0), 1));	
 	  emit_move_insn (scratch_reg, gen_rtx_fmt_ee (GET_CODE (XEXP (operand1,
 								        0)),
-						       SImode,
+						       Pmode,
 						       XEXP (XEXP (operand1, 0),
 						       0),
 						       scratch_reg));
@@ -2461,22 +2461,22 @@ store_reg (reg, disp, base)
 {
   if (VAL_14_BITS_P (disp))
     {
-      emit_move_insn (gen_rtx_MEM (SImode,
-				   gen_rtx_PLUS (SImode,
-						 gen_rtx_REG (SImode, base),
+      emit_move_insn (gen_rtx_MEM (word_mode,
+				   gen_rtx_PLUS (Pmode,
+						 gen_rtx_REG (Pmode, base),
 						 GEN_INT (disp))),
-				   gen_rtx_REG (SImode, reg));
+				   gen_rtx_REG (word_mode, reg));
     }
   else
     {
-      emit_insn (gen_add_high_const (gen_rtx_REG (SImode, 1),
-				     gen_rtx_REG (SImode, base),
+      emit_insn (gen_add_high_const (gen_rtx_REG (Pmode, 1),
+				     gen_rtx_REG (Pmode, base),
 				     GEN_INT (disp)));
-      emit_move_insn (gen_rtx_MEM (SImode,
-				   gen_rtx_LO_SUM (SImode,
-						   gen_rtx_REG (SImode, 1),
+      emit_move_insn (gen_rtx_MEM (word_mode,
+				   gen_rtx_LO_SUM (Pmode,
+						   gen_rtx_REG (Pmode, 1),
 						   GEN_INT (disp))),
-		      gen_rtx_REG (SImode, reg));
+		      gen_rtx_REG (word_mode, reg));
     }
 }
 
@@ -2491,21 +2491,21 @@ load_reg (reg, disp, base)
 {
   if (VAL_14_BITS_P (disp))
     {
-      emit_move_insn (gen_rtx_REG (SImode, reg),
-		      gen_rtx_MEM (SImode,
-				   gen_rtx_PLUS (SImode,
-						 gen_rtx_REG (SImode, base),
+      emit_move_insn (gen_rtx_REG (word_mode, reg),
+		      gen_rtx_MEM (word_mode,
+				   gen_rtx_PLUS (Pmode,
+						 gen_rtx_REG (Pmode, base),
 				            GEN_INT (disp))));
     }
   else
     {
-      emit_insn (gen_add_high_const (gen_rtx_REG (SImode, 1),
-				     gen_rtx_REG (SImode, base),
+      emit_insn (gen_add_high_const (gen_rtx_REG (Pmode, 1),
+				     gen_rtx_REG (Pmode, base),
 				     GEN_INT (disp)));
-      emit_move_insn (gen_rtx_REG (SImode, reg),
-		      gen_rtx_MEM (SImode,
-				   gen_rtx_LO_SUM (SImode,
-						   gen_rtx_REG (SImode, 1),
+      emit_move_insn (gen_rtx_REG (word_mode, reg),
+		      gen_rtx_MEM (word_mode,
+				   gen_rtx_LO_SUM (Pmode,
+						   gen_rtx_REG (Pmode, 1),
 						   GEN_INT (disp))));
     }
 }
@@ -2521,19 +2521,19 @@ set_reg_plus_d(reg, base, disp)
 {
   if (VAL_14_BITS_P (disp))
     {
-      emit_move_insn (gen_rtx_REG (SImode, reg),
-		      gen_rtx_PLUS (SImode,
-				    gen_rtx_REG (SImode, base),
+      emit_move_insn (gen_rtx_REG (Pmode, reg),
+		      gen_rtx_PLUS (Pmode,
+				    gen_rtx_REG (Pmode, base),
 				    GEN_INT (disp)));
     }
   else
     {
-      emit_insn (gen_add_high_const (gen_rtx_REG (SImode, 1),
-				     gen_rtx_REG (SImode, base),
+      emit_insn (gen_add_high_const (gen_rtx_REG (Pmode, 1),
+				     gen_rtx_REG (Pmode, base),
 				     GEN_INT (disp)));
-      emit_move_insn (gen_rtx_REG (SImode, reg),
-		      gen_rtx_LO_SUM (SImode,
-				      gen_rtx_REG (SImode, 1),
+      emit_move_insn (gen_rtx_REG (Pmode, reg),
+		      gen_rtx_LO_SUM (Pmode,
+				      gen_rtx_REG (Pmode, 1),
 				       GEN_INT (disp)));
     }
 }
@@ -2670,7 +2670,7 @@ hppa_expand_prologue()
   actual_fsize = compute_frame_size (size, &save_fregs);
 
   /* Compute a few things we will use often.  */
-  tmpreg = gen_rtx_REG (SImode, 1);
+  tmpreg = gen_rtx_REG (word_mode, 1);
   size_rtx = GEN_INT (actual_fsize);
 
   /* Save RP first.  The calling conventions manual states RP will
@@ -2764,7 +2764,7 @@ hppa_expand_prologue()
 	 place to get the expected results.   sprintf here is just to
 	 put something in the name.  */
       sprintf(hp_profile_label_name, "LP$%04d", -1);
-      hp_profile_label_rtx = gen_rtx_SYMBOL_REF (SImode, hp_profile_label_name);
+      hp_profile_label_rtx = gen_rtx_SYMBOL_REF (Pmode, hp_profile_label_name);
       if (current_function_returns_struct)
 	store_reg (STRUCT_VALUE_REGNUM, - 12 - offsetadj, basereg);
       if (current_function_needs_context)
@@ -2778,10 +2778,10 @@ hppa_expand_prologue()
 	    pc_offset += VAL_14_BITS_P (arg_offset) ? 4 : 8;
 	  }
 
-      emit_move_insn (gen_rtx_REG (SImode, 26), gen_rtx_REG (SImode, 2));
-      emit_move_insn (tmpreg, gen_rtx_HIGH (SImode, hp_profile_label_rtx));
-      emit_move_insn (gen_rtx_REG (SImode, 24),
-		      gen_rtx_LO_SUM (SImode, tmpreg, hp_profile_label_rtx));
+      emit_move_insn (gen_rtx_REG (word_mode, 26), gen_rtx_REG (word_mode, 2));
+      emit_move_insn (tmpreg, gen_rtx_HIGH (Pmode, hp_profile_label_rtx));
+      emit_move_insn (gen_rtx_REG (Pmode, 24),
+		      gen_rtx_LO_SUM (Pmode, tmpreg, hp_profile_label_rtx));
       /* %r25 is set from within the output pattern.  */
       emit_insn (gen_call_profiler (GEN_INT (- pc_offset - 20)));
 
@@ -2825,7 +2825,7 @@ hppa_expand_prologue()
 	      {
 		merge_sp_adjust_with_store = 0;
 	        emit_insn (gen_post_stwm (stack_pointer_rtx,
-					  gen_rtx_REG (SImode, i),
+					  gen_rtx_REG (word_mode, i),
 					  GEN_INT (-offset)));
 	      }
 	    else
@@ -2886,8 +2886,8 @@ hppa_expand_prologue()
      Avoid this if the callee saved register wasn't used (these are
      leaf functions).  */
   if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM_SAVED])
-    emit_move_insn (gen_rtx_REG (SImode, PIC_OFFSET_TABLE_REGNUM_SAVED),
-		    gen_rtx_REG (SImode, PIC_OFFSET_TABLE_REGNUM));
+    emit_move_insn (gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM_SAVED),
+		    gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM));
 }
 
 
@@ -2936,7 +2936,7 @@ hppa_expand_epilogue ()
   int merge_sp_adjust_with_load  = 0;
 
   /* We will use this often.  */
-  tmpreg = gen_rtx_REG (SImode, 1);
+  tmpreg = gen_rtx_REG (word_mode, 1);
 
   /* Try to restore RP early to avoid load/use interlocks when
      RP gets used in the return (bv) instruction.  This appears to still
@@ -3042,7 +3042,7 @@ hppa_expand_epilogue ()
     }
   /* If we were deferring a callee register restore, do it now.  */
   else if (! frame_pointer_needed  && merge_sp_adjust_with_load)
-    emit_insn (gen_pre_ldwm (gen_rtx_REG (SImode, merge_sp_adjust_with_load),
+    emit_insn (gen_pre_ldwm (gen_rtx_REG (word_mode, merge_sp_adjust_with_load),
 			     stack_pointer_rtx,
 			     GEN_INT (- actual_fsize)));
   else if (actual_fsize != 0)
@@ -3944,7 +3944,7 @@ output_mul_insn (unsignedp, insn)
      rtx insn;
 {
   import_milli (mulI);
-  return output_millicode_call (insn, gen_rtx_SYMBOL_REF (SImode, "$$mulI"));
+  return output_millicode_call (insn, gen_rtx_SYMBOL_REF (Pmode, "$$mulI"));
 }
 
 /* Emit the rtl for doing a division by a constant. */
