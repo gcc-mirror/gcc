@@ -2677,8 +2677,9 @@ extern int flag_new_for_scope;
    the symbol has been referenced in the generated code.  If, however,
    we are not generating code, then it is also true when a symbol has
    just been used somewhere, even if it's not really needed.  */
-#define DECL_NEEDED_P(DECL)				 	\
-  ((TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME ((DECL)))) 	\
+#define DECL_NEEDED_P(DECL)					\
+  (! DECL_COMDAT (DECL)						\
+   || (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME ((DECL))))	\
    || (flag_syntax_only && TREE_USED ((DECL))))
 
 /* An un-parsed default argument looks like an identifier.  */

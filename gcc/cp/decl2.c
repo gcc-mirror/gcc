@@ -2347,9 +2347,6 @@ comdat_linkage (decl)
 
   if (DECL_LANG_SPECIFIC (decl))
     DECL_COMDAT (decl) = 1;
-
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    DECL_DEFER_OUTPUT (decl) = 1;
 }
 
 /* For win32 we also want to put explicit instantiations in
@@ -2464,10 +2461,9 @@ import_export_class (ctype)
 #ifdef VALID_MACHINE_TYPE_ATTRIBUTE
   /* FIXME this should really use some sort of target-independent macro.  */
   if (lookup_attribute ("dllimport", TYPE_ATTRIBUTES (ctype)))
-    /* Use -2 so we survive the MULTIPLE_SYMBOL_SPACES check below.  */
-    import_export = -2;
+    import_export = -1;
   else if (lookup_attribute ("dllexport", TYPE_ATTRIBUTES (ctype)))
-    import_export = 2;
+    import_export = 1;
 #endif
 
   /* If we got -fno-implicit-templates, we import template classes that
@@ -2548,8 +2544,7 @@ finish_vtable_vardecl (t, data)
   import_export_vtable (vars, ctype, 1);
 
   if (! DECL_EXTERNAL (vars)
-      && (DECL_INTERFACE_KNOWN (vars) 
-	  || DECL_NEEDED_P (vars)
+      && (DECL_NEEDED_P (vars)
 	  || (hack_decl_function_context (vars) && TREE_USED (vars)))
       && ! TREE_ASM_WRITTEN (vars))
     {
@@ -3525,7 +3520,7 @@ finish_file ()
       
 	  if (DECL_NOT_REALLY_EXTERN (decl)
 	      && DECL_INITIAL (decl)
-	      && (DECL_NEEDED_P (decl) || !DECL_COMDAT (decl)))
+	      && DECL_NEEDED_P (decl))
 	    DECL_EXTERNAL (decl) = 0;
 
 	  /* If we're going to need to write this function out, and
@@ -3533,7 +3528,7 @@ finish_file ()
 	     (There might be no body if this is a method we haven't
 	     gotten around to synthesizing yet.)  */
 	  if (!DECL_EXTERNAL (decl)
-	      && (DECL_NEEDED_P (decl) || !DECL_COMDAT (decl))
+	      && DECL_NEEDED_P (decl)
 	      && DECL_SAVED_TREE (decl)
 	      && !DECL_SAVED_INSNS (decl)
 	      && !TREE_ASM_WRITTEN (decl))
