@@ -1,3 +1,7 @@
+2003-02-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* MAINTAINERS: Add self to blanket write privs. section.
+
 2003-02-20  Sean McNeil  <sean@blue.mcneil.com>
 
 	* Makefile.tpl: Add definition of CPPFLAGS to pass into
@@ -45,7 +49,7 @@
 2003-02-08  Laurynas Biveinis  <laurynas.biveinis@mif.vu.lt>
 
 	* MAINTAINERS: Update my email.
-	
+
 2003-02-06  Keith R Seitz  <keiths@redhat.com>
 
 	* Makefile.def: Remove "snavigator", "grep", and "db" modules.
@@ -83,7 +87,7 @@
 
 2003-01-29  Andreas Tobler  <a.tobler@schweiz.ch>
 
-        * MAINTAINERS: Add myself to write-after-approval list.
+	* MAINTAINERS: Add myself to write-after-approval list.
 
 2003-01-27  Phil Edwards  <pme@gcc.gnu.org>
 
@@ -175,7 +179,7 @@
 	* configure.in (GDB_TK): Add tcl directories conditional on
 	gdb/gdbtk directory being present.
 	* configure: Regenerate.
-	
+
 2003-01-04 John David Anglin  <dave.anglin@nrc.ca>
 
 	* configure.in (LD): Improve test for gcc.  Try to set LD to the ld used
@@ -255,12 +259,12 @@
 
 	* configure: Fix stupid bug where RANLIB was mistakenly included.
 
-	* configure.in: Rename (buildargs, hostargs, targargs) to 
+	* configure.in: Rename (buildargs, hostargs, targargs) to
 	(build_configargs, host_configargs, target_configargs).
 
 	* configure.in: Move logic out of sed statement.
 
-	* configure: Remove unneeded 'export's.  Make CC_FOR_TARGET, 
+	* configure: Remove unneeded 'export's.  Make CC_FOR_TARGET,
 	CXX_FOR_TARGET, GCJ_FOR_TARGET substituted in configure.in only.
 
 2002-12-25  Svein E. Seldal  <Svein.Seldal@solidas.com>
