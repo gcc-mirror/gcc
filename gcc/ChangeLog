@@ -1,3 +1,9 @@
+2004-07-14  James E Wilson  <wilson@specifixinc.com>
+
+	PR target/16325
+	* config/mips/mips.h (STARTING_FRAME_OFFSET): When flag_profile_value
+	and ! TARGET_64BIT, include REG_PARM_STACK_SPACE.
+
 2004-07-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.c (expand_assignment): Reenable bitfield += optimizations.
