@@ -1,3 +1,8 @@
+Sun Sep 14 21:01:23 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in: Various changes to build info files
+	in the object tree rather than the source tree.
+
 Sun Sep 14 12:24:30 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* fixinc.math: New file to fix math.h on some systems.
