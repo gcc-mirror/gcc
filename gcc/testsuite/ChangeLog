@@ -1,3 +1,7 @@
+2002-01-08  Kazu Hirata  <kazu@hxi.com>
+
+	* gcc.c-torture/execute/20020108-1.c: New test.
+
 2002-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20020108-1.c: New test.

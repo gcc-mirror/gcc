@@ -1,3 +1,8 @@
+2002-01-08  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.c (get_shift_alg): Fix 15-bit LSHIFTRT on
+	H8/300H and H8/S.
+
 2002-01-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/tm.texi (EASY_DIV_EXPR, IMPLICIT_FIX_EXPR,
