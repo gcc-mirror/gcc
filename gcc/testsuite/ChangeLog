@@ -1,3 +1,8 @@
+2003-04-04  Richard Henderson  <rth@redhat.com>
+
+	* g++.dg/eh/forced1.C: Use _Unwind_SjLj_ForcedUnwind as appropriate.
+	* g++.dg/eh/forced2.C: Likewise.
+
 2003-04-03  Mike Stump  <mrs@apple.com>
 
 	* lib/scanasm.exp (scan-assembler): Add xfail processing for

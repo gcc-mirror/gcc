@@ -31,7 +31,11 @@ static void force_unwind ()
   exc->exception_class = 0;
   exc->exception_cleanup = 0;
                    
+#ifndef __USING_SJLJ_EXCEPTIONS__
   _Unwind_ForcedUnwind (exc, force_unwind_stop, 0);
+#else
+  _Unwind_SjLj_ForcedUnwind (exc, force_unwind_stop, 0);
+#endif
                    
   abort ();
 }
