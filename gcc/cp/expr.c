@@ -145,9 +145,10 @@ cplus_expand_expr (exp, target, tmode, modifier)
 
     case STMT_EXPR:
       {
-	tree rtl_expr = begin_stmt_expr ();
+	tree rtl_expr = expand_start_stmt_expr ();
 	expand_stmt (STMT_EXPR_STMT (exp));
-	finish_stmt_expr (rtl_expr);
+	expand_end_stmt_expr (rtl_expr);
+	RTL_EXPR_HAS_NO_SCOPE (rtl_expr) = 1;
 	return expand_expr (rtl_expr, target, tmode, modifier);
       }
       break;

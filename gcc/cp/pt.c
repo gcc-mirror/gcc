@@ -9569,9 +9569,6 @@ instantiate_decl (d)
      try to instantiate it again.  */
   DECL_TEMPLATE_INSTANTIATED (d) = 1;
 
-  /* And we're not deferring instantiation any more.  */
-  TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (d)) = 0;
-
   /* Regenerate the declaration in case the template has been modified
      by a subsequent redeclaration.  */
   regenerate_decl_from_template (d, td);
@@ -9610,6 +9607,9 @@ instantiate_decl (d)
       /* Finish the function.  */
       expand_body (finish_function (lineno, 0));
     }
+
+  /* We're not deferring instantiation any more.  */
+  TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (d)) = 0;
 
 out:
   lineno = line;

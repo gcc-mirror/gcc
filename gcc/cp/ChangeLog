@@ -1,3 +1,14 @@
+2000-03-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* expr.c (cplus_expand_expr, case STMT_EXPR): Use
+	expand_start_stmt_expr and expand_end_stmt_expr directly.  Set
+	RTL_EXPR_HAS_NO_SCOPE.
+
+	* pt.c (instantiate_decl): Clear TI_PENDING_TEMPLATE_FLAG a little
+	later.
+	
+	* dump.c (dequeue_and_dump): Dump SCOPE_NO_CLEANUPS_P.
+
 2000-03-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* call.c (convert_like): Macrofy.
