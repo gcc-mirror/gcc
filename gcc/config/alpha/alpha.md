@@ -123,6 +123,30 @@
    subl %r1,%n2,%0"
   [(set_attr "type" "iaddlog")])
 
+(define_split
+  [(set (match_operand:DI 0 "register_operand" "")
+	(sign_extend:DI
+	 (plus:SI (match_operand:SI 1 "register_operand" "")
+		  (match_operand:SI 2 "const_int_operand" ""))))
+   (clobber (match_operand:SI 3 "register_operand" ""))]
+  "! add_operand (operands[2], SImode) && INTVAL (operands[2]) > 0
+   && INTVAL (operands[2]) % 4 == 0"
+  [(set (match_dup 3) (match_dup 4))
+   (set (match_dup 0) (sign_extend:DI (plus:SI (mult:SI (match_dup 3)
+							(match_dup 5))
+					       (match_dup 1))))]
+  "
+{
+  HOST_WIDE_INT val = INTVAL (operands[2]) / 4;
+  int mult = 4;
+
+  if (val % 2 == 0)
+    val /= 2, mult = 8;
+
+  operands[4] = GEN_INT (val);
+  operands[5] = GEN_INT (mult);
+}")
+
 (define_insn "adddi3"
   [(set (match_operand:DI 0 "register_operand" "=r,r,r")
 	(plus:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ,%rJ,%rJ")
