@@ -267,6 +267,7 @@ do {								\
 	mach		multiply/accumulate result, high part
 	macl		multiply/accumulate result, low part.
 	fpul		fp/int communication register
+	rap		return address pointer register
 	fr0		fp arg return
 	fr1..fr3	scratch floating point registers
 	fr4..fr11	fp args in
@@ -286,7 +287,7 @@ do {								\
 #define MACL_REG 21
 #define SPECIAL_REG(REGNO) ((REGNO) >= 18 && (REGNO) <= 21)
 #define FPUL_REG 22
-/* Number 23 is unused.  Reserved for future expansion.  */
+#define RAP_REG 23
 #define FIRST_FP_REG 24
 #define LAST_FP_REG 39
 
@@ -372,6 +373,10 @@ do {								\
 /* Base register for access to local variables of the function.  */
 #define FRAME_POINTER_REGNUM	14
 
+/* Fake register that holds the address on the stack of the
+   current function's return address.  */
+#define RETURN_ADDRESS_POINTER_REGNUM 23
+
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms may be accessed
    via the stack pointer) in functions that seem suitable.  */
@@ -390,10 +395,12 @@ do {								\
    followed by "to".  Eliminations of the same "from" register are listed
    in order of preference.  */
 
-#define ELIMINABLE_REGS				\
-{{ FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},	\
- { ARG_POINTER_REGNUM,   STACK_POINTER_REGNUM},	\
- { ARG_POINTER_REGNUM,   FRAME_POINTER_REGNUM},}
+#define ELIMINABLE_REGS						\
+{{ FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},			\
+ { RETURN_ADDRESS_POINTER_REGNUM, STACK_POINTER_REGNUM},	\
+ { RETURN_ADDRESS_POINTER_REGNUM, FRAME_POINTER_REGNUM},	\
+ { ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},			\
+ { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM},}
 
 /* Given FROM and TO register numbers, say whether this elimination
    is allowed.  */
@@ -846,6 +853,16 @@ extern int current_function_anonymous_args;
   emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 12)),	\
 		  (FNADDR));						\
 }
+
+/* A C expression whose value is RTL representing the value of the return
+   address for the frame COUNT steps up from the current frame.
+   FRAMEADDR is already the frame pointer of the COUNT frame, so we
+   can ignore COUNT.  */
+
+#define RETURN_ADDR_RTX(COUNT, FRAME)	\
+  ((COUNT == 0)				\
+   ? gen_rtx (MEM, Pmode, gen_rtx (REG, Pmode, RETURN_ADDRESS_POINTER_REGNUM)) \
+   : (rtx) 0)
 
 /* Generate necessary RTL for __builtin_saveregs().
    ARGLIST is the argument list; see expr.c.  */
@@ -1333,7 +1350,7 @@ dtors_section()							\
 {				                   	\
   "r0", "r1", "r2",  "r3",  "r4",  "r5",  "r6",  "r7", 	\
   "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",	\
-  "ap", "pr", "t",  "gbr", "mach","macl", "fpul", "X",  \
+  "ap", "pr", "t",  "gbr", "mach","macl", "fpul","rap", \
   "fr0","fr1","fr2", "fr3", "fr4", "fr5", "fr6", "fr7", \
   "fr8","fr9","fr10","fr11","fr12","fr13","fr14","fr15",\
 }
