@@ -1,3 +1,17 @@
+2005-02-14  Daniel Berlin  <dberlin@dberlin.org>
+	
+	* tree-dump.c (dump_files): Update to reflect new member
+	of dump_file_info.
+	(dump_register): Add new argument.
+	Set glob name.
+	(dump_switch_p_1): Check against glob name if doglob was passed.
+	(dump_switch_p): Check against regular first, then glob if
+	we didn't have any hits on the dump name.
+	* tree-optimize.c (register_one_dump_file):
+	Pass in glob name as well.
+	* tree-pass.h (struct dump_file_info): Add glob
+	member.
+
 2005-02-14  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR preprocessor/16323

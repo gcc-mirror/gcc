@@ -667,56 +667,56 @@ dump_node (tree t, int flags, FILE *stream)
    TREE_DUMP_INDEX enumeration in tree.h */
 static struct dump_file_info dump_files[TDI_end] =
 {
-  {NULL, NULL, 0, 0, 0, 0},
-  {".tu", "translation-unit", TDF_TREE, 0, 0, 0},
-  {".class", "class-hierarchy", TDF_TREE, 0, 1, 0},
-  {".original", "tree-original", TDF_TREE, 0, 2, 0},
-  {".generic", "tree-generic", TDF_TREE, 0, 3, 0},
-  {".nested", "tree-nested", TDF_TREE, 0, 4, 0},
-  {".inlined", "tree-inlined", TDF_TREE, 0, 5, 0},
-  {".vcg", "tree-vcg", TDF_TREE, 0, 6, 0},
-  {NULL, "tree-all", TDF_TREE, 0, 0, 0},
-  {NULL, "rtl-all", TDF_RTL, 0, 0, 0},
-  {NULL, "ipa-all", TDF_IPA, 0, 0, 0},
+  {NULL, NULL, NULL, 0, 0, 0, 0},
+  {".tu", "translation-unit", NULL, TDF_TREE, 0, 0, 0},
+  {".class", "class-hierarchy", NULL, TDF_TREE, 0, 1, 0},
+  {".original", "tree-original", NULL, TDF_TREE, 0, 2, 0},
+  {".generic", "tree-generic", NULL, TDF_TREE, 0, 3, 0},
+  {".nested", "tree-nested", NULL, TDF_TREE, 0, 4, 0},
+  {".inlined", "tree-inlined", NULL, TDF_TREE, 0, 5, 0},
+  {".vcg", "tree-vcg", NULL, TDF_TREE, 0, 6, 0},
+  {NULL, "tree-all", NULL, TDF_TREE, 0, 0, 0},
+  {NULL, "rtl-all", NULL, TDF_RTL, 0, 0, 0},
+  {NULL, "ipa-all", NULL, TDF_IPA, 0, 0, 0},
 
-  { ".cgraph", "ipa-cgraph",		TDF_IPA, 0,  1, 0},
+  { ".cgraph", "ipa-cgraph", NULL,	TDF_IPA, 0,  1, 0},
 
-  { ".sibling", "rtl-sibling",		TDF_RTL, 0,  1, 'i'},
-  { ".eh", "rtl-eh",			TDF_RTL, 0,  2, 'h'},
-  { ".jump", "rtl-jump",		TDF_RTL, 0,  3, 'j'},
-  { ".cse", "rtl-cse",			TDF_RTL, 0,  4, 's'},
-  { ".gcse", "rtl-gcse",		TDF_RTL, 0,  5, 'G'},
-  { ".loop", "rtl-loop",		TDF_RTL, 0,  6, 'L'},
-  { ".bypass", "rtl-bypass",		TDF_RTL, 0,  7, 'G'},
-  { ".cfg", "rtl-cfg",			TDF_RTL, 0,  8, 'f'},
-  { ".bp", "rtl-bp",			TDF_RTL, 0,  9, 'b'},
-  { ".vpt", "rtl-vpt",			TDF_RTL, 0, 10, 'V'},
-  { ".ce1", "rtl-ce1",			TDF_RTL, 0, 11, 'C'},
-  { ".tracer", "rtl-tracer",		TDF_RTL, 0, 12, 'T'},
-  { ".loop2", "rtl-loop2",		TDF_RTL, 0, 13, 'L'},
-  { ".web", "rtl-web",			TDF_RTL, 0, 14, 'Z'},
-  { ".cse2", "rtl-cse2",		TDF_RTL, 0, 15, 't'},
-  { ".life", "rtl-life",		TDF_RTL, 0, 16, 'f'},
-  { ".combine", "rtl-combine",		TDF_RTL, 0, 17, 'c'},
-  { ".ce2", "rtl-ce2",			TDF_RTL, 0, 18, 'C'},
-  { ".regmove", "rtl-regmove",		TDF_RTL, 0, 19, 'N'},
-  { ".sms", "rtl-sms",			TDF_RTL, 0, 20, 'm'},
-  { ".sched", "rtl-sched",		TDF_RTL, 0, 21, 'S'},
-  { ".lreg", "rtl-lreg",		TDF_RTL, 0, 22, 'l'},
-  { ".greg", "rtl-greg",		TDF_RTL, 0, 23, 'g'},
-  { ".postreload", "rtl-postreload",	TDF_RTL, 0, 24, 'o'},
-  { ".gcse2", "rtl-gcse2",		TDF_RTL, 0, 25, 'J'},
-  { ".flow2", "rtl-flow2",		TDF_RTL, 0, 26, 'w'},
-  { ".peephole2", "rtl-peephole2",	TDF_RTL, 0, 27, 'z'},
-  { ".ce3", "rtl-ce3",			TDF_RTL, 0, 28, 'E'},
-  { ".rnreg", "rtl-rnreg",		TDF_RTL, 0, 29, 'n'},
-  { ".bbro", "rtl-bbro",		TDF_RTL, 0, 30, 'B'},
-  { ".btl", "rtl-btl",			TDF_RTL, 0, 31, 'd'},
-  { ".sched2", "rtl-sched2",		TDF_RTL, 0, 32, 'R'},
-  { ".stack", "rtl-stack",		TDF_RTL, 0, 33, 'k'},
-  { ".vartrack", "rtl-vartrack",	TDF_RTL, 0, 34, 'V'},
-  { ".mach", "rtl-mach",		TDF_RTL, 0, 35, 'M'},
-  { ".dbr", "rtl-dbr",			TDF_RTL, 0, 36, 'd'}
+  { ".sibling", "rtl-sibling", NULL,	TDF_RTL, 0,  1, 'i'},
+  { ".eh", "rtl-eh", NULL,		TDF_RTL, 0,  2, 'h'},
+  { ".jump", "rtl-jump", NULL,		TDF_RTL, 0,  3, 'j'},
+  { ".cse", "rtl-cse", NULL,    	 TDF_RTL, 0,  4, 's'},
+  { ".gcse", "rtl-gcse", NULL,		TDF_RTL, 0,  5, 'G'},
+  { ".loop", "rtl-loop", NULL,		TDF_RTL, 0,  6, 'L'},
+  { ".bypass", "rtl-bypass", NULL,		TDF_RTL, 0,  7, 'G'},
+  { ".cfg", "rtl-cfg", NULL,			TDF_RTL, 0,  8, 'f'},
+  { ".bp", "rtl-bp", NULL,			TDF_RTL, 0,  9, 'b'},
+  { ".vpt", "rtl-vpt", NULL,			TDF_RTL, 0, 10, 'V'},
+  { ".ce1", "rtl-ce1", NULL,			TDF_RTL, 0, 11, 'C'},
+  { ".tracer", "rtl-tracer", NULL,		TDF_RTL, 0, 12, 'T'},
+  { ".loop2", "rtl-loop2", NULL,		TDF_RTL, 0, 13, 'L'},
+  { ".web", "rtl-web", NULL,			TDF_RTL, 0, 14, 'Z'},
+  { ".cse2", "rtl-cse2", NULL,		TDF_RTL, 0, 15, 't'},
+  { ".life", "rtl-life", NULL,		TDF_RTL, 0, 16, 'f'},
+  { ".combine", "rtl-combine", NULL,		TDF_RTL, 0, 17, 'c'},
+  { ".ce2", "rtl-ce2", NULL,			TDF_RTL, 0, 18, 'C'},
+  { ".regmove", "rtl-regmove", NULL,		TDF_RTL, 0, 19, 'N'},
+  { ".sms", "rtl-sms", NULL,			TDF_RTL, 0, 20, 'm'},
+  { ".sched", "rtl-sched", NULL,		TDF_RTL, 0, 21, 'S'},
+  { ".lreg", "rtl-lreg", NULL,		TDF_RTL, 0, 22, 'l'},
+  { ".greg", "rtl-greg", NULL,		TDF_RTL, 0, 23, 'g'},
+  { ".postreload", "rtl-postreload", NULL,	TDF_RTL, 0, 24, 'o'},
+  { ".gcse2", "rtl-gcse2", NULL,		TDF_RTL, 0, 25, 'J'},
+  { ".flow2", "rtl-flow2", NULL,		TDF_RTL, 0, 26, 'w'},
+  { ".peephole2", "rtl-peephole2", NULL,	TDF_RTL, 0, 27, 'z'},
+  { ".ce3", "rtl-ce3", NULL,			TDF_RTL, 0, 28, 'E'},
+  { ".rnreg", "rtl-rnreg", NULL,		TDF_RTL, 0, 29, 'n'},
+  { ".bbro", "rtl-bbro", NULL,		TDF_RTL, 0, 30, 'B'},
+  { ".btl", "rtl-btl", NULL,			TDF_RTL, 0, 31, 'd'},
+  { ".sched2", "rtl-sched2", NULL,		TDF_RTL, 0, 32, 'R'},
+  { ".stack", "rtl-stack", NULL,		TDF_RTL, 0, 33, 'k'},
+  { ".vartrack", "rtl-vartrack", NULL,	TDF_RTL, 0, 34, 'V'},
+  { ".mach", "rtl-mach", NULL,		TDF_RTL, 0, 35, 'M'},
+  { ".dbr", "rtl-dbr", NULL,			TDF_RTL, 0, 36, 'd'}
 };
 
 /* Dynamically registered tree dump files and switches.  */
@@ -749,8 +749,8 @@ static const struct dump_option_value_info dump_options[] =
 };
 
 unsigned int
-dump_register (const char *suffix, const char *swtch, int flags,
-	       unsigned int num, int letter)
+dump_register (const char *suffix, const char *swtch, const char *glob,
+	       int flags, unsigned int num, int letter)
 {
   size_t this = extra_dump_files_in_use++;
 
@@ -768,6 +768,7 @@ dump_register (const char *suffix, const char *swtch, int flags,
   memset (&extra_dump_files[this], 0, sizeof (struct dump_file_info));
   extra_dump_files[this].suffix = suffix;
   extra_dump_files[this].swtch = swtch;
+  extra_dump_files[this].glob = glob;
   extra_dump_files[this].flags = flags;
   extra_dump_files[this].num = num;
   extra_dump_files[this].letter = letter;
@@ -924,13 +925,16 @@ dump_enable_all (int flags, int letter)
    relevant details in the dump_files array.  */
 
 static int
-dump_switch_p_1 (const char *arg, struct dump_file_info *dfi)
+dump_switch_p_1 (const char *arg, struct dump_file_info *dfi, bool doglob)
 {
   const char *option_value;
   const char *ptr;
   int flags;
+  
+  if (doglob && !dfi->glob)
+    return 0;
 
-  option_value = skip_leading_substring (arg, dfi->swtch);
+  option_value = skip_leading_substring (arg, doglob ? dfi->glob : dfi->swtch);
   if (!option_value)
     return 0;
 
@@ -981,10 +985,20 @@ dump_switch_p (const char *arg)
   int any = 0;
 
   for (i = TDI_none + 1; i != TDI_end; i++)
-    any |= dump_switch_p_1 (arg, &dump_files[i]);
+    any |= dump_switch_p_1 (arg, &dump_files[i], false);
+
+  /* Don't glob if we got a hit already */
+  if (!any)
+    for (i = TDI_none + 1; i != TDI_end; i++)
+      any |= dump_switch_p_1 (arg, &dump_files[i], true);
 
   for (i = 0; i < extra_dump_files_in_use; i++)
-    any |= dump_switch_p_1 (arg, &extra_dump_files[i]);
+    any |= dump_switch_p_1 (arg, &extra_dump_files[i], false);
+  
+  if (!any)
+    for (i = 0; i < extra_dump_files_in_use; i++)
+      any |= dump_switch_p_1 (arg, &extra_dump_files[i], true);
+
 
   return any;
 }
