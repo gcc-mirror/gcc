@@ -1,3 +1,13 @@
+2002-10-13  Danny Smith  <dannysmith@users.sourceforge.net> 
+
+	* include/bits/stl_threads.h (_GLIBCPP_mutex,
+	_GLIBCPP_mutex_init,_GLIBCPP_mutex_address,
+	_GLIBCPP_mutex_address_init, _GLIBCPP_once):
+	Declare in namespace __gnu_cxx.
+	(_STL_mutex_lock::_M_initialize): Qualify __gnu_cxx
+	names.
+	Adjust copyright.
+
 2002-10-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/abi_check.cc (hash<string>): Specialize.
