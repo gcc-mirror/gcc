@@ -419,10 +419,6 @@ INSTALL_HEADERS=install-headers
 # Options for tar when copying trees.  So HPUX can override it.
 TAROUTOPTS = xpBf
 
-# Select which version of fixincludes to use (I.E. regular versus SVR4)
-# This value is overridden directly by configure.
-FIXINCLUDES = @fixincludes@
-
 # Additional directories of header files to run fixincludes on.
 # These should be directories searched automatically by default
 # just as /usr/include is.
@@ -2109,33 +2105,38 @@ stmp-int-hdrs: stmp-fixinc $(USER_H) xlimits.h
 stmp-headers:
 	touch $@
 
-fixinc.sh :
-	DEST=`cd $(srcdir) ; pwd`/$@ CC=$(CC) MAKE=$(MAKE) CFLAGS="$(CFLAGS)" \
-	export DEST CC MAKE CFLAGS ; \
-	echo DEST=$$DEST CC=$$CC MAKE=$$MAKE CFLAGS=$$CFLAGS ; \
-	cd ../contrib/fixinc ;  \
-	$(SHELL) mkfixinc.sh $(target) $$DEST
+fixinc.sh: $(srcdir)/fixinc/mkfixinc.sh
+	MAKE="$(MAKE)"; srcdir=`cd $(srcdir)/fixinc; pwd` ; \
+	export MAKE srcdir ; \
+	cd ./fixinc; $(SHELL) $${srcdir}/mkfixinc.sh $(target)
+
+##stmp-fixinc: $(FIXINCLUDES) gsyslimits.h
+##	rm -rf include
+##	mkdir include
+##	if [ x$(FIXINCLUDES) != xMakefile.in ]; \
+##	then \
+##	  for dir in $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS); do \
+##	    if [ -d $$dir ]; \
+##	    then \
+##	      $(SHELL) $(srcdir)/$(FIXINCLUDES) include $$dir; \
+##	    else true; fi; \
+##	  done; \
+##	  if [ x$(INSTALL_ASSERT_H) != x ] ; \
+##	  then \
+##	    rm -f include/assert.h; \
+##	    cp $(srcdir)/assert.h include/assert.h; \
+##	    chmod a+r include/assert.h; \
+##	  fi \
+##	else true; \
+##	fi
 
 # Build fixed copies of system files.
-stmp-fixinc: $(FIXINCLUDES) gsyslimits.h
-	rm -rf include
-	mkdir include
-	if [ x$(FIXINCLUDES) != xMakefile.in ]; \
-	then \
-	  for dir in $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS); do \
-	    if [ -d $$dir ]; \
-	    then \
-	      $(SHELL) $(srcdir)/$(FIXINCLUDES) include $$dir; \
-	    else true; fi; \
-	  done; \
-	  if [ x$(INSTALL_ASSERT_H) != x ] ; \
-	  then \
-	    rm -f include/assert.h; \
-	    cp $(srcdir)/assert.h include/assert.h; \
-	    chmod a+r include/assert.h; \
-	  fi \
-	else true; \
-	fi
+stmp-fixinc: fixinc.sh gsyslimits.h
+	rm -rf include; mkdir include
+	TARGET_MACHINE=$(target); srcdir=`cd $(srcdir); pwd`; \
+	INSTALL_ASSERT_H=$(INSTALL_ASSERT_H); \
+	export TARGET_MACHINE srcdir INSTALL_ASSERT_H; \
+	$(SHELL) ./fixinc.sh `pwd`/include $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS)
 	rm -f include/syslimits.h
 	if [ -f include/limits.h ]; then \
 	  mv include/limits.h include/syslimits.h; \

@@ -1,3 +1,7 @@
+Thu Mar 11 08:52:02 1999  Bruce Korb <korb@datadesign.com>
+	* Makefile.in: activated fixinc/mkfixinc.sh
+	* configure.in: activated fixinc/mkfixinc.sh
+
 Thu Mar 11 01:38:02 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* cppfiles.c (INO_T_EQ): Handle UWIN.
