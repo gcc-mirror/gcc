@@ -1,3 +1,15 @@
+2004-02-03  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* combine.c (simplify_set): Use gen_rtx_fmt_e instead of
+	gen_rtx.
+	* emit-rtl.c (init_emit_once): Use gen_rtx_PC and gen_rtx_CC0
+	instead of gen_rtx.
+	* reload1.c (init_elim_table): Use gen_rtx_fmt_e instead of
+	gen_rtx.
+	* config/ns32k/ns32k.md (udivmodhi4): Use gen_rtx_IOR and
+	gen_rtx_ASHIFT instead of gen_rtx.
+	(udivmodqi4): Likewise.
+
 2004-02-02  Richard Henderson  <rth@redhat.com>
 
         PR target/13789

@@ -5200,8 +5200,8 @@ simplify_set (rtx x)
       && GET_CODE (SUBREG_REG (src)) == MEM)
     {
       SUBST (SET_SRC (x),
-	     gen_rtx (LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (src))),
-		      GET_MODE (src), SUBREG_REG (src)));
+	     gen_rtx_fmt_e (LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (src))),
+			    GET_MODE (src), SUBREG_REG (src)));
 
       src = SET_SRC (x);
     }
