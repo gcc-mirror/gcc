@@ -495,7 +495,6 @@
 	(arc_rodata_string, TARGET_OPTIONS): Delete.
 	* config/arc/arc.opt: New file.
 
->>>>>>> 2.7930
 2005-03-17  Richard Henderson  <rth@redhat.com>
 
 	* doc/extend.texi (Weak Pragmas): New section.
