@@ -679,6 +679,7 @@ print_lang_identifier (file, node, indent)
   print_node (file, "label", IDENTIFIER_LABEL_VALUE (node), indent + 4);
   print_node (file, "implicit", IDENTIFIER_IMPLICIT_DECL (node), indent + 4);
   print_node (file, "error locus", IDENTIFIER_ERROR_LOCUS (node), indent + 4);
+  print_node (file, "limbo value", IDENTIFIER_LIMBO_VALUE (node), indent + 4);
 }
 
 /* Create a new `struct binding_level'.  */
@@ -1785,22 +1786,31 @@ pushdecl (x)
             }
         }
 
-      /* Multiple external decls of the same identifier ought to match.  */
+      /* Multiple external decls of the same identifier ought to match.
+	 Check against both global declarations and out of scope (limbo) block
+	 level declarations.
 
-      if (DECL_EXTERNAL (x) && IDENTIFIER_GLOBAL_VALUE (name) != 0
-	  && (DECL_EXTERNAL (IDENTIFIER_GLOBAL_VALUE (name))
-	      || TREE_PUBLIC (IDENTIFIER_GLOBAL_VALUE (name)))
-	  /* We get warnings about inline functions where they are defined.
-	     Avoid duplicate warnings where they are used.  */
-	  && !DECL_INLINE (x))
+	 We get warnings about inline functions where they are defined.
+	 Avoid duplicate warnings where they are used.  */
+      if (DECL_EXTERNAL (x) && ! DECL_INLINE (x))
 	{
-	  if (! comptypes (TREE_TYPE (x),
-			   TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (name))))
+	  tree decl;
+
+	  if (IDENTIFIER_GLOBAL_VALUE (name) != 0
+	      && (DECL_EXTERNAL (IDENTIFIER_GLOBAL_VALUE (name))
+		  || TREE_PUBLIC (IDENTIFIER_GLOBAL_VALUE (name))))
+	    decl = IDENTIFIER_GLOBAL_VALUE (name);
+	  else if (IDENTIFIER_LIMBO_VALUE (name) != 0)
+	    /* Decls in limbo are always extern, so no need to check that.  */
+	    decl = IDENTIFIER_LIMBO_VALUE (name);
+	  else
+	    decl = 0;
+
+	  if (decl && ! comptypes (TREE_TYPE (x), TREE_TYPE (decl)))
 	    {
 	      pedwarn_with_decl (x,
 				 "type mismatch with previous external decl");
-	      pedwarn_with_decl (IDENTIFIER_GLOBAL_VALUE (name),
-				 "previous external decl of `%s'");
+	      pedwarn_with_decl (decl, "previous external decl of `%s'");
 	    }
 	}
 
@@ -1863,6 +1873,9 @@ pushdecl (x)
 	    TREE_PUBLIC (name) = 1;
 
 	  IDENTIFIER_GLOBAL_VALUE (name) = x;
+
+	  /* We no longer care about any previous block level declarations.  */
+	  IDENTIFIER_LIMBO_VALUE (name) = 0;
 
 	  /* Don't forget if the function was used via an implicit decl.  */
 	  if (IDENTIFIER_IMPLICIT_DECL (name)
@@ -1970,6 +1983,16 @@ pushdecl (x)
 	      && TREE_PUBLIC (x))
 	    {
 	      TREE_PUBLIC (name) = 1;
+
+	      /* Save this decl, so that we can do type checking against
+		 other decls after it falls out of scope.
+
+		 Only save it once.  This prevents temporary decls created in
+		 expand_inline_function from being used here, since this
+		 will have been set when the inline function was parsed.
+		 It also helps give slightly better warnings.  */
+	      if (IDENTIFIER_LIMBO_VALUE (name) == 0)
+		IDENTIFIER_LIMBO_VALUE (name) = x;
 	    }
 
 	  /* Warn if shadowing an argument at the top level of the body.  */
@@ -3948,6 +3971,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	}
       else if (TREE_CODE (declarator) == CALL_EXPR)
 	{
+	  int extern_ref = (!(specbits & (1 << (int) RID_AUTO))
+			    || current_binding_level == global_binding_level);
 	  tree arg_types;
 
 	  /* Declaring a function type.
@@ -3976,6 +4001,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  if (flag_traditional && TYPE_MAIN_VARIANT (type) == float_type_node)
 	    type = double_type_node;
 #endif /* TRADITIONAL_RETURN_FLOAT */
+
+	  /* If this is a block level extern, it must live past the end
+	     of the function so that we can check it against other extern
+	     declarations (IDENTIFIER_LIMBO_VALUE).  */
+	  if (extern_ref && allocation_temporary_p ())
+	    end_temporary_allocation ();
 
 	  /* Construct the function type and go to the next
 	     inner layer of declarator.  */
@@ -4216,6 +4247,14 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
       }
     else if (TREE_CODE (type) == FUNCTION_TYPE)
       {
+	/* Every function declaration is "external"
+	   except for those which are inside a function body
+	   in which `auto' is used.
+	   That is a case not specified by ANSI C,
+	   and we use it for forward declarations for nested functions.  */
+	int extern_ref = (!(specbits & (1 << (int) RID_AUTO))
+			  || current_binding_level == global_binding_level);
+
 	if (specbits & (1 << (int) RID_AUTO)
 	    && (pedantic || current_binding_level == global_binding_level))
 	  pedwarn ("invalid storage class for function `%s'",
@@ -4231,18 +4270,19 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	    && pedantic)
 	  pedwarn ("invalid storage class for function `%s'",
 		   IDENTIFIER_POINTER (declarator));
+
+	/* If this is a block level extern, it must live past the end
+	   of the function so that we can check it against other
+	   extern declarations (IDENTIFIER_LIMBO_VALUE).  */
+	if (extern_ref && allocation_temporary_p ())
+	  end_temporary_allocation ();
+
 	decl = build_decl (FUNCTION_DECL, declarator, type);
 
 	if (pedantic && (constp || volatilep))
 	  pedwarn ("ANSI C forbids const or volatile functions");
 
-	/* Every function declaration is "external"
-	   except for those which are inside a function body
-	   in which `auto' is used.
-	   That is a case not specified by ANSI C,
-	   and we use it for forward declarations for nested functions.  */
-	if (!(specbits & (1 << (int) RID_AUTO))
-	    || current_binding_level == global_binding_level)
+	if (extern_ref)
 	  DECL_EXTERNAL (decl) = 1;
 	/* Record absence of global scope for `static' or `auto'.  */
 	TREE_PUBLIC (decl)
@@ -4268,6 +4308,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
     else
       {
 	/* It's a variable.  */
+	/* An uninitialized decl with `extern' is a reference.  */
+	int extern_ref = !initialized && (specbits & (1 << (int) RID_EXTERN));
 
 	/* Move type qualifiers down to element of an array.  */
 	if (TREE_CODE (type) == ARRAY_TYPE && (constp || volatilep))
@@ -4280,6 +4322,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 #endif
 	  }
 
+	/* If this is a block level extern, it must live past the end
+	   of the function so that we can check it against other
+	   extern declarations (IDENTIFIER_LIMBO_VALUE).  */
+	if (extern_ref && allocation_temporary_p ())
+	  end_temporary_allocation ();
+
 	decl = build_decl (VAR_DECL, declarator, type);
 	if (size_varies)
 	  C_DECL_VARIABLE_SIZE (decl) = 1;
@@ -4287,9 +4335,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	if (inlinep)
 	  pedwarn_with_decl (decl, "variable `%s' declared `inline'");
 
-	/* An uninitialized decl with `extern' is a reference.  */
-	DECL_EXTERNAL (decl)
-	  = !initialized && (specbits & (1 << (int) RID_EXTERN));
+	DECL_EXTERNAL (decl) = extern_ref;
 	/* At top level, the presence of a `static' or `register' storage
 	   class specifier, or the absence of all storage class specifiers
 	   makes this declaration a definition (perhaps tentative).  Also,
