@@ -1,3 +1,7 @@
+Sun Oct 10 01:23:50 1999  Marc Espie <espie@cvs.openbsd.org>
+
+	* config.table:  Provide a backup shell for executing move-if-change.
+
 1999-10-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* xmalloc.c (xmalloc): Fix spelling error.

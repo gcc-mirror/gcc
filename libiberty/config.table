@@ -58,4 +58,4 @@ else
 fi
 
 frag=xhost-mkfrag
-${CONFIG_SHELL} ${libiberty_topdir}/move-if-change temp-frag xhost-mkfrag
+${CONFIG_SHELL-/bin/sh} ${libiberty_topdir}/move-if-change temp-frag xhost-mkfrag
