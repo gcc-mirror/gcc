@@ -1,3 +1,7 @@
+Thu Oct 21 20:30:19 1999  Matthias Klose  <doko@debian.org>
+
+	* gcc.1: Document exit codes.
+
 Thu Oct 21 12:49:05 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* calls.c: Include tm_p.h later, so everything we need is defined.

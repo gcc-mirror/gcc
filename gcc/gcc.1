@@ -20,7 +20,7 @@
 .if n .sp
 .if t .sp 0.4
 ..
-.Id $Id: gcc.1,v 1.10 1999/06/02 01:37:02 law Exp $
+.Id $Id: gcc.1,v 1.11 1999/09/23 14:49:11 law Exp $
 .TH GCC 1 "\*(Dt" "GNU Tools" "GNU Tools"
 .SH NAME
 gcc, g++ \- GNU project C and C++ Compiler (gcc-2.96)
@@ -4141,6 +4141,11 @@ comes from the environment variable
 if available, else
 .B /tmp\c
 \&).
+.SH "EXIT STATUS"
+Normally the exit status is 0, if compilation or link edit are successful,
+and nonzero else. The option
+.B -Werror
+treats each warning as an error.
 .SH "SEE ALSO"
 cpp(1), as(1), ld(1), gdb(1), adb(1), dbx(1), sdb(1).
 .br
