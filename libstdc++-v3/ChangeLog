@@ -1,3 +1,9 @@
+2003-12-10  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/22_locale/locale/cons/12438.cc: Tweak memory
+	limit and iterations to avoid spurious failures on some
+	64 bit machines.
+
 2003-12-09  Benjamin Kosnik  <bkoz@redhat.com>
 	
 	* config/linker-map.gnu: Remove private ios_base members from

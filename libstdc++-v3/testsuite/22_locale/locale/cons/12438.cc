@@ -57,8 +57,8 @@ void test01(int iters)
 int main(int argc, char* argv[])
 {
   // We leaked ~400-500 bytes/iter.
-  __gnu_test::set_memory_limits(5.0);
-  int iters = 20000;
+  __gnu_test::set_memory_limits(10.0);
+  int iters = 30000;
 
   if (argc > 1)
     iters = atoi(argv[1]);
