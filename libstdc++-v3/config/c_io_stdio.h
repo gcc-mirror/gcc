@@ -33,6 +33,7 @@
 #define _CPP_IO_STDIO_H 1
 
 #include <stdio.h>
+#include <stddef.h>
 #include <bits/c++threads.h>
 
 #if _GLIBCPP_USE_WCHAR_T

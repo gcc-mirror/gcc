@@ -1,3 +1,7 @@
+2000-11-16  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* config/c_io_stdio.h: Include stddef.h.
+
 2000-11-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/c_io_stdio.h (streamsize): Make it a typedef for
