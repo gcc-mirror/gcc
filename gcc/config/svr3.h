@@ -216,12 +216,31 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 /* CTOR_LIST_BEGIN and CTOR_LIST_END are machine-dependent
    because they push on the stack.  */
 
-#define DO_GLOBAL_CTORS_BODY						\
-do {									\
-  func_ptr *__CTOR_LIST__ = __builtin_alloca (0), *p;			\
-  for (p = __CTOR_LIST__; *p; )						\
-    (*p++) ();								\
+#ifdef STACK_GROWS_DOWNWARD
+
+/* Constructor list on stack is in reverse order.  Go to the end of the
+   list and go backwards to call constructors in the right order.  */
+#define DO_GLOBAL_CTORS_BODY					\
+do {								\
+  func_ptr *p, *beg = alloca (0);				\
+  for (p = beg; *p; p++)					\
+    ;								\
+  while (p != beg)						\
+    (*--p) ();							\
 } while (0)
+
+#else
+
+/* Constructor list on stack is in correct order.  Just call them.  */
+#define DO_GLOBAL_CTORS_BODY					\
+do {								\
+  func_ptr *p, *beg = alloca (0);				\
+  for (p = beg; *p; )						\
+    (*p++) ();							\
+#endif								\
+} while (0)
+
+#endif /* STACK_GROWS_DOWNWARD */
 
 /* Add extra sections .init and .fini, in addition to .bss from att386.h. */
 
