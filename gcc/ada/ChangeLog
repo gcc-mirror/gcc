@@ -1,5 +1,9 @@
 2001-12-04  Robert Dewar <dewar@gnat.com>
 
+	* errout.adb: Minor reformatting
+
+2001-12-04  Robert Dewar <dewar@gnat.com>
+
 	* exp_util.adb: Minor reformatting from last change
 	
 	* errout.adb (Check_For_Warning): For a Raised_Constraint_Error node 

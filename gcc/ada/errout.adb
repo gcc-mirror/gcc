@@ -1937,8 +1937,6 @@ package body Errout is
         Traverse_Func (Check_For_Warning);
       --  This defines the traversal operation
 
-      Discard : Traverse_Result;
-
       -----------------------
       -- Check_For_Warning --
       -----------------------
@@ -1950,6 +1948,10 @@ package body Errout is
          function To_Be_Removed (E : Error_Msg_Id) return Boolean;
          --  Returns True for a message that is to be removed. Also adjusts
          --  warning count appropriately.
+
+         -------------------
+         -- To_Be_Removed --
+         -------------------
 
          function To_Be_Removed (E : Error_Msg_Id) return Boolean is
          begin
@@ -1984,7 +1986,6 @@ package body Errout is
          if Nkind (N) = N_Raise_Constraint_Error
            and then Original_Node (N) /= N
          then
-
             --  Warnings may have been posted on subexpressions of
             --  the original tree. We temporarily replace the raise
             --  statement with the original expression to remove
@@ -1992,7 +1993,7 @@ package body Errout is
             --  any node in the current tree.
 
             declare
-               Old : Node_Id := N;
+               Old    : Node_Id := N;
                Status : Traverse_Result;
 
             begin
@@ -2011,7 +2012,11 @@ package body Errout is
 
    begin
       if Warnings_Detected /= 0 then
-         Discard := Check_All_Warnings (N);
+         declare
+            Discard : Traverse_Result;
+         begin
+            Discard := Check_All_Warnings (N);
+         end;
       end if;
    end Remove_Warning_Messages;
 
