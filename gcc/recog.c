@@ -1,5 +1,5 @@
 /* Subroutines used by or related to instruction recognition.
-   Copyright (C) 1987, 88, 91-5, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991-6, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -374,15 +374,28 @@ validate_replace_rtx_1 (loc, from, to, object)
 	}
     }
 
+  /* Note that if CODE's RTX_CLASS is "c" or "<" we will have already
+     done the substitution, otherwise we won't.  */
+
   switch (code)
     {
     case PLUS:
       /* If we have have a PLUS whose second operand is now a CONST_INT, use
 	 plus_constant to try to simplify it.  */
       if (GET_CODE (XEXP (x, 1)) == CONST_INT && XEXP (x, 1) == to)
-	validate_change (object, loc, 
-			 plus_constant (XEXP (x, 0), INTVAL (XEXP (x, 1))), 1);
+	validate_change (object, loc, plus_constant (XEXP (x, 0), INTVAL (to)),
+			 1);
       return;
+
+    case MINUS:
+      if (GET_CODE (to) == CONST_INT && XEXP (x, 1) == from)
+	{
+	  validate_change (object, loc,
+			   plus_constant (XEXP (x, 0), - INTVAL (to)),
+			   1);
+	  return;
+	}
+      break;
       
     case ZERO_EXTEND:
     case SIGN_EXTEND:
