@@ -1,4 +1,14 @@
 2004-02-11  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/13731 (first part: write)
+	* config/io/basic_file_stdio.h (__basic_file<char>::xwrite):
+	New, declare.
+	* config/io/basic_file_stdio.cc (__basic_file<char>::xwrite):
+	Define it: a wrapper around write() handling partial write.
+	(__basic_file<char>::xsputn): Use it.
+	(__basic_file<char>::xsputn_2): Likewise.
+
+2004-02-11  Paolo Carlini  <pcarlini@suse.de>
 	    Petur Runolfsson  <peturr02@ru.is>
 
 	PR libstdc++/14078

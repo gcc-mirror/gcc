@@ -200,16 +200,28 @@ namespace std
     while (__ret == -1L && errno == EINTR);
     return __ret;
   }
-    
+
+  // Wrapper handling partial write.
+  streamsize
+  __basic_file<char>::xwrite(const char* __s, streamsize __n)
+  {
+    streamsize __nleft = __n;
+    while (__nleft > 0)
+      {
+	const streamsize __ret = write(this->fd(), __s, __nleft);
+	if (__ret == -1L && errno == EINTR)
+	  continue;
+	else if (__ret == -1L)
+	  break;
+	__nleft -= __ret;
+	__s += __ret;
+      }
+    return __n - __nleft;
+  }
+ 
   streamsize 
   __basic_file<char>::xsputn(const char* __s, streamsize __n)
-  {
-    streamsize __ret;
-    do
-      __ret = write(this->fd(), __s, __n);
-    while (__ret == -1L && errno == EINTR);
-    return __ret;
-  }
+  { return __basic_file<char>::xwrite(__s, __n); }
 
   streamsize 
   __basic_file<char>::xsputn_2(const char* __s1, streamsize __n1,
@@ -228,19 +240,10 @@ namespace std
     while (__ret == -1L && errno == EINTR);
 #else
     if (__n1)
-      do
-	__ret = write(this->fd(), __s1, __n1);
-      while (__ret == -1L && errno == EINTR);
+      __ret = __basic_file<char>::xwrite(__s1, __n1);
 
     if (__ret == __n1)
-      {
-	do
-	  __ret = write(this->fd(), __s2, __n2);
-	while (__ret == -1L && errno == EINTR);
-	
-	if (__ret != -1L)
-	  __ret += __n1;
-      }
+      __ret += __basic_file<char>::xwrite(__s2, __n2);
 #endif
     return __ret;
   }
