@@ -1,3 +1,9 @@
+2004-06-11  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR libobjc/15901
+	* configure.ac: Do not disable shared by default.
+	* configure: Regenerate.
+
 2004-06-03  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* Protocol.m ([-isEqual:]): Small optimizations returning
