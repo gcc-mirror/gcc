@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
 /* We disable this when inhibit_libc, so that gcc can still be built without
    needing header files first.  */
 /* ??? This is not a good solution, since prototypes may be required in
-   some cases for correct code.  See also libgcc2.c.  */
+   some cases for correct code.  See also libgcc2.c/crtstuff.c.  */
 #ifndef inhibit_libc
 /* fixproto guarantees these system headers exist. */
 #include <stdlib.h>

@@ -1,5 +1,16 @@
 1999-12-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* crtstuff.c: If !inhibit_libc, include stdlib.h/unistd.h.
+	Otherwise provide a declaration for atexit.
+	(init_dummy): Make sure dummy call to atexit is nevertheless
+	called with correct number of args.
+
+	* frame.c: Update comments referring to other files.
+	
+	* libgcc2.c: Likewise.
+
+1999-12-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* cse.c (free_element, get_element): Remove unused prototypes.
 
 	* fold-const.c (extract_muldiv): Initialize variables `op0' and
