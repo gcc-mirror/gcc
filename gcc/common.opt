@@ -517,6 +517,10 @@ fprofile-arcs
 Common
 Insert arc-based program profiling code
 
+fprofile-values
+Common
+Insert code to profile values of expressions
+
 frandom-seed
 Common
 
@@ -718,6 +722,10 @@ Just generate unwind tables for exception handling
 fverbose-asm
 Common
 Add extra commentary to assembler output
+
+fvpt
+Common
+Use expression value profiles in optimizations
 
 fweb
 Common

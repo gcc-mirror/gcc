@@ -988,8 +988,6 @@ branch_prob (void)
       allocate_reg_info (max_reg_num (), FALSE, FALSE);
     }
 
-  if (flag_profile_values)
-    count_or_remove_death_notes (NULL, 1);
   remove_fake_edges ();
   free_aux_for_edges ();
   /* Re-merge split basic blocks and the mess introduced by

@@ -78,6 +78,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "cgraph.h"
 #include "opts.h"
 #include "coverage.h"
+#include "value-prof.h"
 
 #if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
 #include "dwarf2out.h"
@@ -137,6 +138,7 @@ static void rest_of_handle_null_pointer (tree, rtx);
 static void rest_of_handle_addressof (tree, rtx);
 static void rest_of_handle_cfg (tree, rtx);
 static void rest_of_handle_branch_prob (tree, rtx);
+static void rest_of_handle_value_profile_transformations (tree, rtx);
 static void rest_of_handle_if_conversion (tree, rtx);
 static void rest_of_handle_if_after_combine (tree, rtx);
 static void rest_of_handle_tracer (tree, rtx);
@@ -264,6 +266,7 @@ enum dump_file_index
   DFI_bypass,
   DFI_cfg,
   DFI_bp,
+  DFI_vpt,
   DFI_ce1,
   DFI_tracer,
   DFI_web,
@@ -296,7 +299,7 @@ enum dump_file_index
    Remaining -d letters:
 
 	"            m   q         "
-	"         JK   O Q    V  Y "
+	"         JK   O Q       Y "
 */
 
 static struct dump_file_info dump_file[DFI_MAX] =
@@ -318,6 +321,7 @@ static struct dump_file_info dump_file[DFI_MAX] =
   { "bypass",   'G', 1, 0, 0 }, /* Yes, duplicate enable switch.  */
   { "cfg",	'f', 1, 0, 0 },
   { "bp",	'b', 1, 0, 0 },
+  { "vpt",	'V', 1, 0, 0 },
   { "ce1",	'C', 1, 0, 0 },
   { "tracer",	'T', 1, 0, 0 },
   { "web",      'Z', 0, 0, 0 },
@@ -403,6 +407,9 @@ int profile_arc_flag = 0;
 /* Nonzero if value histograms should be measured.  */
 
 int flag_profile_values = 0;
+
+/* Nonzero if value histograms should be used to optimize code.  */
+int flag_value_profile_transformations = 0;
 
 /* Nonzero if generating info for gcov to calculate line test coverage.  */
 
@@ -1110,6 +1117,8 @@ static const lang_independent_options f_options[] =
   {"asynchronous-unwind-tables", &flag_asynchronous_unwind_tables, 1 },
   {"non-call-exceptions", &flag_non_call_exceptions, 1 },
   {"profile-arcs", &profile_arc_flag, 1 },
+  {"profile-values", &flag_profile_values, 1 },
+  {"vpt", &flag_value_profile_transformations, 1 },
   {"test-coverage", &flag_test_coverage, 1 },
   {"branch-probabilities", &flag_branch_probabilities, 1 },
   {"profile", &profile_flag, 1 },
@@ -2462,6 +2471,7 @@ rest_of_handle_branch_prob (tree decl, rtx insns)
 
   timevar_push (TV_BRANCH_PROB);
   open_dump_file (DFI_bp, decl);
+
   if (profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
     branch_prob ();
 
@@ -2479,6 +2489,20 @@ rest_of_handle_branch_prob (tree decl, rtx insns)
   flow_loops_free (&loops);
   close_dump_file (DFI_bp, print_rtl_with_bb, insns);
   timevar_pop (TV_BRANCH_PROB);
+}
+
+/* Do optimizations based on expression value profiles.  */
+static void
+rest_of_handle_value_profile_transformations (tree decl, rtx insns)
+{
+  open_dump_file (DFI_vpt, decl);
+  timevar_push (TV_VPT);
+
+  if (value_profile_transformations ())
+    cleanup_cfg (CLEANUP_EXPENSIVE);
+
+  timevar_pop (TV_VPT);
+  close_dump_file (DFI_vpt, print_rtl_with_bb, insns);
 }
 
 /* Do control and data flow analysis; write some of the results to the
@@ -3345,7 +3369,18 @@ rest_of_compilation (tree decl)
 
   if (optimize > 0
       || profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
-    rest_of_handle_branch_prob (decl, insns);
+    {
+      rest_of_handle_branch_prob (decl, insns);
+
+      if (flag_branch_probabilities
+	  && flag_profile_values
+	  && flag_value_profile_transformations)
+	rest_of_handle_value_profile_transformations (decl, insns);
+
+      /* Remove the death notes created for vpt.  */
+      if (flag_profile_values)
+	count_or_remove_death_notes (NULL, 1);
+    }
 
   if (optimize > 0)
     rest_of_handle_if_conversion (decl, insns);
@@ -4227,6 +4262,9 @@ process_options (void)
      interface.  */
   if (flag_unit_at_a_time && ! lang_hooks.callgraph.expand_function)
     flag_unit_at_a_time = 0;
+
+  if (flag_value_profile_transformations)
+    flag_profile_values = 1;
 
   /* Warn about options that are not supported on this machine.  */
 #ifndef INSN_SCHEDULING

@@ -61,3 +61,4 @@ struct histogram_value
 
 extern void find_values_to_profile (unsigned *, struct histogram_value **);
 extern void free_profiled_values (unsigned, struct histogram_value *);
+extern bool value_profile_transformations (void);

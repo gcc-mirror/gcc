@@ -264,7 +264,7 @@ in the following sections.
 @xref{Optimize Options,,Options that Control Optimization}.
 @gccoptlist{-falign-functions=@var{n}  -falign-jumps=@var{n} @gol
 -falign-labels=@var{n}  -falign-loops=@var{n}  @gol
--fbranch-probabilities -fprofile-values -fbranch-target-load-optimize @gol
+-fbranch-probabilities -fprofile-values -fvpt -fbranch-target-load-optimize @gol
 -fbranch-target-load-optimize2 -fcaller-saves  -fcprop-registers @gol
 -fcse-follow-jumps  -fcse-skip-blocks  -fdata-sections @gol
 -fdelayed-branch  -fdelete-null-pointer-checks @gol
@@ -4563,6 +4563,16 @@ data about values of expressions in the program is gathered.
 With @option{-fbranch-probabilities}, it reads back the data gathered
 from profiling values of expressions and adds @samp{REG_VALUE_PROFILE}
 notes to instructions for their later usage in optimizations.
+
+@item -fvpt
+@opindex fvpt
+If combined with @option{-fprofile-arcs}, it instructs the compiler to add
+a code to gather information about values of expressions.
+
+With @option{-fbranch-probabilities}, it reads back the data gathered
+and actually performs the optimizations based on them.
+Currently the optimizations include specialization of division operation
+using the knowledge about the value of the denominator.
 
 @item -fnew-ra
 @opindex fnew-ra
