@@ -4,6 +4,9 @@
 	unsigned issue.  Use build_int_cst instead of converting
 	integer_zero_node.  Remove unnecessary conversion.
 
+	* trans-types.c (gfc_get_character_type_len): : Use
+	gfc_charlen_type_node as basic type for the range field.
+
 2005-01-16  Steven G. Kargl  <kargls@comcast.net>
 
 	PR 19168
