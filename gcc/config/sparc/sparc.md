@@ -5211,7 +5211,7 @@
 (define_insn "muldi3_v8plus"
   [(set (match_operand:DI 0 "register_operand" "=r,h")
 	(mult:DI (match_operand:DI 1 "arith_double_operand" "%r,0")
-		 (match_operand:DI 2 "arith_double_operand" "rHI,rHI")))
+		 (match_operand:DI 2 "arith_double_operand" "rI,rI")))
    (clobber (match_scratch:SI 3 "=&h,X"))
    (clobber (match_scratch:SI 4 "=&h,X"))]
   "TARGET_V8PLUS"
@@ -5221,6 +5221,13 @@
     output_asm_insn (\"srl\\t%L1, 0, %L1\", operands);
   if (which_alternative == 1)
     output_asm_insn (\"sllx\\t%H1, 32, %H1\", operands);
+  if (GET_CODE (operands[2]) == CONST_INT)
+    {
+      if (which_alternative == 1)
+	return \"or\\t%L1, %H1, %H1\\n\\tmulx\\t%H1, %2, %L0\;srlx\\t%L0, 32, %H0\";
+      else
+	return \"sllx\\t%H1, 32, %3\\n\\tor\\t%L1, %3, %3\\n\\tmulx\\t%3, %2, %3\\n\\tsrlx\\t%3, 32, %H0\\n\\tmov\\t%3, %L0\";
+    }
   if (sparc_check_64 (operands[2], insn) <= 0)
     output_asm_insn (\"srl\\t%L2, 0, %L2\", operands);
   if (which_alternative == 1)

@@ -11,6 +11,10 @@
 	* mips.md: Define conditional move patterns for floating point
 	operands and DI mode conditions.
 
+	2000-11-25  Jakub Jelinek  <jakub@redhat.com>
+	* config/sparc/sparc.md (muldi3_v8plus): Remove H constraint.
+	Handle CONST_INT as second argument.
+
 2001-03-28  Bernd Schmidt  <bernds@redhat.com>
 
 	* flow.c (propagate_block): When trying to delete a case vector, cope
