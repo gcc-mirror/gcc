@@ -23,8 +23,8 @@ dp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#endif' >> dp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> dp-bit.c
 
-MULTILIB_OPTIONS  = mlittle-endian/mbig-endian mhard-float/msoft-float mapcs-32/mapcs-26
-MULTILIB_DIRNAMES = le be fpu soft 32bit 26bit
+MULTILIB_OPTIONS  = mlittle-endian/mbig-endian mhard-float/msoft-float mapcs-32/mapcs-26 fno-leading-underscore/fleading-underscore
+MULTILIB_DIRNAMES = le be fpu soft 32bit 26bit elf under
 MULTILIB_MATCHES  = 
 
 LIBGCC = stmp-multilib
