@@ -1,6 +1,6 @@
 // Object.h - Header file for java.lang.Object.  -*- c++ -*-
 
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2004  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -28,6 +28,13 @@ protected:
 # endif
 };
 
+// Forward declarations for friends of java::lang::Object
+void _Jv_MonitorEnter (jobject obj);
+void _Jv_MonitorExit (jobject obj);
+void _Jv_InitializeSyncMutex (void);
+void _Jv_FinalizeObject (jobject obj);
+bool _Jv_ObjectCheckMonitor (jobject obj);
+
 class java::lang::Object : public _JvObjectPrefix
 {
 protected:
@@ -45,11 +52,11 @@ public:
   void wait (void);
   void wait (jlong timeout);
 
-  friend void _Jv_MonitorEnter (jobject obj);
-  friend void _Jv_MonitorExit (jobject obj);
-  friend void _Jv_InitializeSyncMutex (void);
-  friend void _Jv_FinalizeObject (jobject obj);
-  friend bool _Jv_ObjectCheckMonitor (jobject obj);
+  friend void ::_Jv_MonitorEnter (jobject obj);
+  friend void ::_Jv_MonitorExit (jobject obj);
+  friend void ::_Jv_InitializeSyncMutex (void);
+  friend void ::_Jv_FinalizeObject (jobject obj);
+  friend bool ::_Jv_ObjectCheckMonitor (jobject obj);
 
 #ifdef JV_MARKOBJ_DECL
   friend JV_MARKOBJ_DECL;

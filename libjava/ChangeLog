@@ -1,3 +1,16 @@
+2004-11-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* Makefile.am: Correct friend function declaration.
+	* Makefile.in: Regenerated.
+	* include/boehm-gc.h (JV_MARKOBJ_DECL, JV_MARKARRAY_DECL): Add
+	scope to function names.  Declare functions directly.
+	* libjava/java/lang/Class.h
+	(java::lang::Class): Correct friend class declaration.
+	(_Jv_InitClass, _Jv_GetArrayClass): Move definition to global
+	scope.
+	* libjava/java/lang/Class.h
+	(java::lang::Object): Correct friend class declaration.
+
 2004-11-17  David Daney  <ddaney@avtrex.com>
 
 	* java/io/BufferedInputStream.java (skip): Return zero on EOF.
