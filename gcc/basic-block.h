@@ -745,7 +745,6 @@ extern basic_block debug_bb_n (int);
 extern void dump_regset (regset, FILE *);
 extern void debug_regset (regset);
 extern void allocate_reg_life_data (void);
-extern void allocate_bb_life_data (void);
 extern void expunge_block (basic_block);
 extern void link_block (basic_block, basic_block);
 extern void unlink_block (basic_block);
