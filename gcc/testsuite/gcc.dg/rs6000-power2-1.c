@@ -4,9 +4,9 @@
    if the register is a floating point one (I think this cannot
    happen in real life except in this example).  */
 
-register double t1 __asm__("r14");
-register double t2 __asm__("r15");
-register double t3 __asm__("r16"), t4 __asm__("r17");
+register volatile double t1 __asm__("r14");
+register volatile double t2 __asm__("r15");
+register volatile double t3 __asm__("r16"), t4 __asm__("r17");
 void t(double *a, double *b)
 {
         t1 = a[-1];
