@@ -200,11 +200,6 @@ struct var_ann_d GTY(())
      live at the same time and this can happen for each call to the
      dominator optimizer.  */
   tree current_def;
-
-  /* Pointer to the structure that contains the sets of global
-     variables modified by function calls.  This field is only used
-     for FUNCTION_DECLs.  */
-  static_vars_info_t static_vars_info;
 };
 
 

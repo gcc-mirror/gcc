@@ -109,7 +109,6 @@ find_referenced_vars (void)
   block_stmt_iterator si;
   struct walk_state walk_state;
 
-  cgraph_reset_static_var_maps ();
   vars_found = htab_create (50, htab_hash_pointer, htab_eq_pointer, NULL);
   memset (&walk_state, 0, sizeof (walk_state));
   walk_state.vars_found = vars_found;

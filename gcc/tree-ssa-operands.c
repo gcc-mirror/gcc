@@ -32,7 +32,6 @@ Boston, MA 02111-1307, USA.  */
 #include "tree-pass.h"
 #include "ggc.h"
 #include "timevar.h"
-#include "cgraph.h"
 
 #include "langhooks.h"
 
@@ -135,8 +134,8 @@ static inline void append_def (tree *);
 static inline void append_use (tree *);
 static void append_v_may_def (tree);
 static void append_v_must_def (tree);
-static void add_call_clobber_ops (tree, tree);
-static void add_call_read_ops (tree, tree);
+static void add_call_clobber_ops (tree);
+static void add_call_read_ops (tree);
 static void add_stmt_operand (tree *, tree, int);
 
 /* Return a vector of contiguous memory for NUM def operands.  */
@@ -1399,7 +1398,6 @@ get_call_expr_operands (tree stmt, tree expr)
 {
   tree op;
   int call_flags = call_expr_flags (expr);
-  tree callee = get_callee_fndecl (expr);
 
   /* Find uses in the called function.  */
   get_expr_operands (stmt, &TREE_OPERAND (expr, 0), opf_none);
@@ -1416,9 +1414,9 @@ get_call_expr_operands (tree stmt, tree expr)
 	 there is no point in recording that.  */ 
       if (TREE_SIDE_EFFECTS (expr)
 	  && !(call_flags & (ECF_PURE | ECF_CONST | ECF_NORETURN)))
-	add_call_clobber_ops (stmt, callee);
+	add_call_clobber_ops (stmt);
       else if (!(call_flags & ECF_CONST))
-	add_call_read_ops (stmt, callee);
+	add_call_read_ops (stmt);
     }
 }
 
@@ -1582,7 +1580,7 @@ note_addressable (tree var, stmt_ann_t s_ann)
    clobbered variables in the function.  */
 
 static void
-add_call_clobber_ops (tree stmt, tree callee)
+add_call_clobber_ops (tree stmt)
 {
   /* Functions that are not const, pure or never return may clobber
      call-clobbered variables.  */
@@ -1598,59 +1596,16 @@ add_call_clobber_ops (tree stmt, tree callee)
   else
     {
       size_t i;
-      bitmap not_read_b = NULL, not_written_b = NULL;
       bitmap_iterator bi;
-
-      /* Get info for module level statics.  There is a bit set for
-	 each static if the call being processed does not read or
-	 write that variable.  */
-
-      /* ??? Turn off the optimization until it gets fixed.  */
-      if (0 && callee)
-	{
-	  not_read_b = get_global_statics_not_read (callee);
-	  not_written_b = get_global_statics_not_written (callee);
-	}
 
       EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i, bi)
 	{
 	  tree var = referenced_var (i);
-
-	  bool not_read
-	    = not_read_b ? bitmap_bit_p (not_read_b, i) : false;
-	  bool not_written
-	    = not_written_b ? bitmap_bit_p (not_written_b, i) : false;
-
-	  if (not_read)
-	    {
-	      /* The var is not read during the call.  */
-	      if (!not_written)
-		add_stmt_operand (&var, stmt, opf_is_def);
-	    }
+	  if (TREE_READONLY (var)
+	      && (TREE_STATIC (var) || DECL_EXTERNAL (var)))
+	    add_stmt_operand (&var, stmt, opf_none);
 	  else
-	    {
-	      /* The var is read during the call.  */
-	      if (not_written) 
-		add_stmt_operand (&var, stmt, opf_none);
-
-	      /* The not_read and not_written bits are only set for module
-		 static variables.  Neither is set here, so we may be dealing
-		 with a module static or we may not.  So we still must look
-		 anywhere else we can (such as the TREE_READONLY) to get
-		 better info.  */
-
-	      /* If VAR is read-only, don't add a V_MAY_DEF, just a
-		 VUSE operand.  FIXME, this is quirky.  TREE_READONLY
-		 by itself is not enough here.  We can only decide
-		 that the call will not affect VAR if all these
-		 conditions are met.  One would think that
-		 TREE_READONLY should be sufficient.  */
-	      else if (TREE_READONLY (var)
-		       && (TREE_STATIC (var) || DECL_EXTERNAL (var)))
-		add_stmt_operand (&var, stmt, opf_none);
-	      else
-		add_stmt_operand (&var, stmt, opf_is_def);
-	    }
+	    add_stmt_operand (&var, stmt, opf_is_def);
 	}
     }
 }
@@ -1660,7 +1615,7 @@ add_call_clobber_ops (tree stmt, tree callee)
    function.  */
 
 static void
-add_call_read_ops (tree stmt, tree callee)
+add_call_read_ops (tree stmt)
 {
   bitmap_iterator bi;
 
@@ -1673,15 +1628,10 @@ add_call_read_ops (tree stmt, tree callee)
   else
     {
       size_t i;
-      bitmap not_read_b = callee 
-	? get_global_statics_not_read (callee) : NULL; 
-
+      
       EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i, bi)
 	{
 	  tree var = referenced_var (i);
-	  bool not_read = not_read_b 
-	    ? bitmap_bit_p(not_read_b, i) : false;
-	  if (!not_read)
 	  add_stmt_operand (&var, stmt, opf_none);
 	}
     }
