@@ -1,2 +1,2 @@
-set options "-fno-trapping-math"
+lappend additional_flags "-fno-trapping-math"
 return 0
