@@ -23,7 +23,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "pa/pa-hpux.h"
 
-/* We can debug dynamically linked executables on hpux9.  */
+/* We can debug dynamically linked executables on hpux9; we also want
+   dereferecing of a NULL pointer to cause a SEGV.  */
 #undef LINK_SPEC
 #define LINK_SPEC \
-  "%{!shared:-u main} %{static:-a archive} %{shared:-b}"
+  "-z %{mlinker-opt:-O} %{!shared:-u main} %{static:-a archive} %{shared:-b}"

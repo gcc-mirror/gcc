@@ -126,6 +126,7 @@ extern int target_flags;
    {"no-gas", -128},		\
    {"soft-float", 256},		\
    {"no-soft-float", -256},	\
+   {"linker-opt", 0},		\
    { "", TARGET_DEFAULT}}
 
 #ifndef TARGET_DEFAULT
@@ -196,23 +197,27 @@ extern int target_flags;
 /* gdb needs a null N_SO at the end of each file for scattered loading. */
 
 #undef	DBX_OUTPUT_MAIN_SOURCE_FILE_END
-#define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME)			\
+#define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME) \
+  if (!TARGET_PORTABLE_RUNTIME) \
+    fputs ("\t.NSUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY\n", FILE); \
+  else \
+    fprintf (FILE, "%s\n", TEXT_SECTION_ASM_OP); \
   fprintf (FILE,							\
-	   "%s\n\t.stabs \"%s\",%d,0,0,L$text_end\nL$text_end:\n",\
-	   TEXT_SECTION_ASM_OP, "" , N_SO)
+	   "\t.stabs \"\",%d,0,0,L$text_end0000\nL$text_end0000:\n", N_SO)
 
 #if (TARGET_DEFAULT & 1) == 0
 #define CPP_SPEC "%{msnake:-D__hp9000s700 -D_PA_RISC1_1}\
- %{mpa-risc-1-1:-D__hp9000s700 -D_PA_RISC1_1}"
+ %{mpa-risc-1-1:-D__hp9000s700 -D_PA_RISC1_1}\
+ %{!ansi: -D_HPUX_SOURCE -D_HIUX_SOURCE}"
 #else
-#define CPP_SPEC "%{!mpa-risc-1-0:%{!mnosnake:%{!msoft-float:-D__hp9000s700 -D_PA_RISC1_1}}}"
+#define CPP_SPEC "%{!mpa-risc-1-0:%{!mnosnake:%{!msoft-float:-D__hp9000s700 -D_PA_RISC1_1}}} %{!ansi: -D_HPUX_SOURCE -D_HIUX_SOURCE}"
 #endif
 
 /* Defines for a K&R CC */
 
 #define CC1_SPEC "%{pg:} %{p:}"
 
-#define LINK_SPEC "%{!shared:-u main} %{shared:-b}"
+#define LINK_SPEC "%{mlinker-opt:-O} %{!shared:-u main} %{shared:-b}"
 
 /* We don't want -lg.  */
 #ifndef LIB_SPEC
@@ -237,7 +242,7 @@ extern int target_flags;
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dhppa -Dhp9000s800 -D__hp9000s800 -Dhp9k8 -Dunix -D_HPUX_SOURCE -Dhp9000 -Dhp800 -Dspectrum -DREVARGV -Asystem(unix) -Asystem(bsd) -Acpu(hppa) -Amachine(hppa)"
+#define CPP_PREDEFINES "-Dhppa -Dhp9000s800 -D__hp9000s800 -Dhp9k8 -Dunix -Dhp9000 -Dhp800 -Dspectrum -DREVARGV -Asystem(unix) -Asystem(bsd) -Acpu(hppa) -Amachine(hppa)"
 
 /* HPUX has a program 'chatr' to list the dependencies of dynamically
    linked executables and shared libraries.  */
@@ -1005,6 +1010,10 @@ extern enum cmp_type hppa_branch_type;
        fprintf (FILE, ",ARGW%d=FR", (ARG1));} while (0)
 #endif
 
+#define ASM_OUTPUT_FUNCTION_PREFIX(FILE, NAME) \
+  if (!TARGET_PORTABLE_RUNTIME && TARGET_GAS && in_section == in_text) \
+    fputs ("\t.NSUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY\n", FILE);
+    
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
     do { tree fntype = TREE_TYPE (TREE_TYPE (DECL));			\
 	 tree tree_type = TREE_TYPE (DECL);				\
@@ -1794,7 +1803,13 @@ do { fprintf (FILE, "\t.SPACE $PRIVATE$\n\
 
 /* Define the .bss section for ASM_OUTPUT_LOCAL to use. */
 
+#ifndef CTORS_SECTION_FUNCTION
 #define EXTRA_SECTIONS in_bss, in_readonly_data
+#define CTORS_SECTION_FUNCTION
+#define DTORS_SECTION_FUNCTION
+#else
+#define EXTRA_SECTIONS in_bss, in_readonly_data, in_ctors, in_dtors
+#endif
 
 /* FIXME: HPUX ld generates incorrect GOT entries for "T" fixups
    which reference data within the $TEXT$ space (for example constant
@@ -1830,7 +1845,9 @@ readonly_data ()							\
 	fprintf (asm_out_file, "%s\n", READONLY_DATA_ASM_OP);		\
       in_section = in_readonly_data;					\
     }									\
-}
+}									\
+CTORS_SECTION_FUNCTION							\
+DTORS_SECTION_FUNCTION
 
 
 /* How to refer to registers in assembler output.
@@ -1880,15 +1897,22 @@ readonly_data ()							\
        fputc ('\n', FILE); } while (0)
 
 /* This is how to output a command to make the user-level label named NAME
-   defined for reference from other files.  */
+   defined for reference from other files.
+
+   We call assemble_name, which in turn sets TREE_SYMBOL_REFERENCED.  This
+   macro will restore the original value of TREE_SYMBOL_REFERENCED to avoid
+   placing useless function definitions in the output file.  */
 
 #define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)	\
-  do { fputs ("\t.IMPORT ", FILE);				\
+  do { int save_referenced;					\
+       save_referenced = TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (DECL)); \
+       fputs ("\t.IMPORT ", FILE);					\
 	 assemble_name (FILE, NAME);				\
        if (FUNCTION_NAME_P (NAME))     				\
 	 fputs (",CODE\n", FILE);				\
        else							\
 	 fputs (",DATA\n", FILE);				\
+       TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (DECL)) = save_referenced; \
      } while (0)
 
 /* The bogus HP assembler requires ALL external references to be
@@ -2110,7 +2134,7 @@ readonly_data ()							\
 	abort ();							\
       else if (flag_pic == 2)						\
 	fputs ("RT'", FILE);						\
-      output_global_address (FILE, XEXP (addr, 1));			\
+      output_global_address (FILE, XEXP (addr, 1), 0);			\
       fputs ("(", FILE);						\
       output_operand (XEXP (addr, 0), 0);				\
       fputs (")", FILE);						\
@@ -2132,10 +2156,12 @@ extern char *output_fp_move_double ();
 extern char *output_block_move ();
 extern char *output_cbranch ();
 extern char *output_bb ();
+extern char *output_bvb ();
 extern char *output_dbra ();
 extern char *output_movb ();
 extern char *output_return ();
 extern char *output_call ();
+extern char *output_millicode_call ();
 extern char *output_mul_insn ();
 extern char *output_div_insn ();
 extern char *output_mod_insn ();

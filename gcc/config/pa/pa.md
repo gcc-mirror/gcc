@@ -1694,7 +1694,7 @@
    && ! function_label_operand (operands[1])
    && ! read_only_operand (operands[1])
    && ! flag_pic"
-  "addil LR'%G1,%%r27"
+  "addil LR'%H1,%%r27"
   [(set_attr "type" "binary")
    (set_attr "length" "4")])
 
@@ -1741,7 +1741,7 @@
   "*
 {
   if (symbolic_operand (operands[1], Pmode))
-    return \"ldil LR'%G1,%0\";
+    return \"ldil LR'%H1,%0\";
   else
     return \"ldil L'%G1,%0\";
 }"
@@ -4332,6 +4332,22 @@
   [(set_attr "type" "move")
    (set_attr "length" "4")])
 
+;; These are just placeholders so we know where branch tables
+;; begin and end.
+(define_insn "begin_brtab"
+  [(const_int 1)]
+  "TARGET_GAS"
+  ".begin_brtab"
+  [(set_attr "type" "move")
+   (set_attr "length" "0")])
+
+(define_insn "end_brtab"
+  [(const_int 2)]
+  "TARGET_GAS"
+  ".end_brtab"
+  [(set_attr "type" "move")
+   (set_attr "length" "0")])
+
 ;;; Hope this is only within a function...
 (define_insn "indirect_jump"
   [(set (pc) (match_operand:SI 0 "register_operand" "r"))]
@@ -4628,7 +4644,7 @@
    (set (match_operand 3 "register_operand" "+f")
 	(plus (match_operand 4 "register_operand" "f")
 	      (match_operand 5 "register_operand" "f")))]
-  "TARGET_SNAKE && fmpyaddoperands (operands)"
+  "! TARGET_SOFT_FLOAT && TARGET_SNAKE && fmpyaddoperands (operands)"
   "*
 {
   if (GET_MODE (operands[0]) == DFmode)
@@ -4654,7 +4670,7 @@
    (set (match_operand 0 "register_operand" "=f")
 	(mult (match_operand 1 "register_operand" "f")
 	      (match_operand 2 "register_operand" "f")))]
-  "TARGET_SNAKE && fmpyaddoperands (operands)"
+  "! TARGET_SOFT_FLOAT && TARGET_SNAKE && fmpyaddoperands (operands)"
   "*
 {
   if (GET_MODE (operands[0]) == DFmode)
@@ -4682,7 +4698,7 @@
    (set (match_operand 3 "register_operand" "+f")
 	(minus (match_operand 4 "register_operand" "f")
 	       (match_operand 5 "register_operand" "f")))]
-  "TARGET_SNAKE && fmpysuboperands (operands)"
+  "! TARGET_SOFT_FLOAT && TARGET_SNAKE && fmpysuboperands (operands)"
   "*
 {
   if (GET_MODE (operands[0]) == DFmode)
@@ -4698,13 +4714,51 @@
    (set (match_operand 0 "register_operand" "=f")
 	(mult (match_operand 1 "register_operand" "f")
 	      (match_operand 2 "register_operand" "f")))]
-  "TARGET_SNAKE && fmpysuboperands (operands)"
+  "! TARGET_SOFT_FLOAT && TARGET_SNAKE && fmpysuboperands (operands)"
   "*
 {
   if (GET_MODE (operands[0]) == DFmode)
     return \"fmpysub,dbl %1,%2,%0,%5,%3\";
   else
     return \"fmpysub,sgl %1,%2,%0,%5,%3\";
+}")
+
+;; Clean up turds left by reload.
+(define_peephole
+  [(set (match_operand 0 "reg_or_nonsymb_mem_operand" "")
+	(match_operand 1 "register_operand" "f"))
+   (set (match_operand 2 "register_operand" "f")
+	(match_dup 0))]
+  "! TARGET_SOFT_FLOAT
+   && GET_CODE (operands[0]) == MEM
+   && ! MEM_VOLATILE_P (operands[0])
+   && GET_MODE (operands[0]) == GET_MODE (operands[1])
+   && GET_MODE (operands[0]) == GET_MODE (operands[2])
+   && GET_MODE (operands[0]) == DFmode
+   && REGNO_REG_CLASS (REGNO (operands[1]))
+      == REGNO_REG_CLASS (REGNO (operands[2]))"
+  "*
+{
+  enum machine_mode mode = GET_MODE (operands[0]);
+  rtx xoperands[2];
+
+  if (FP_REG_P (operands[1]))
+    output_asm_insn (output_fp_move_double (operands), operands);
+  else
+    output_asm_insn (output_move_double (operands), operands);
+
+  if (rtx_equal_p (operands[1], operands[2]))
+    return \"\";
+
+  xoperands[0] = operands[2];
+  xoperands[1] = operands[1];
+      
+  if (FP_REG_P (xoperands[1]))
+    output_asm_insn (output_fp_move_double (xoperands), xoperands);
+  else
+    output_asm_insn (output_move_double (xoperands), xoperands);
+
+  return \"\";
 }")
 
 ;; Flush the I and D cache line found at the address in operand 0.
