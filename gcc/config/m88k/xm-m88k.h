@@ -54,9 +54,6 @@ Boston, MA 02111-1307, USA.  */
 #define NO_SYS_SIGLIST
 #endif
 
-/* Define HAVE_VPRINTF if it is available on host system.  */
-#define HAVE_VPRINTF
-
 /* If not compiled with GNU C, use the C alloca */
 #ifndef __GNUC__
 #define USE_C_ALLOCA
