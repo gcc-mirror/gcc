@@ -1,3 +1,9 @@
+Mon Apr 28 09:54:56 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	PR c/10308
+	* reload.c (find_reloads_address_1): Reload plus at the place of
+	index register.
+
 2003-04-26  Richard Henderson  <rth@redhat.com>
 
         * config/ia64/ia64.c (ia64_compute_frame_size): Allow inline asm

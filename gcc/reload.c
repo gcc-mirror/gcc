@@ -5239,6 +5239,19 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 						       SUBREG_BYTE (orig_op1),
 						       GET_MODE (orig_op1))));
 	  }
+	/* Plus in the index register may be created only as a result of
+	   register remateralization for expresion like &localvar*4.  Reload it.
+	   It may be possible to combine the displacement on the outer level,
+	   but it is probably not worthwhile to do so.  */
+	if (context)
+	  {
+	    find_reloads_address (GET_MODE (x), loc, XEXP (x, 0), &XEXP (x, 0),
+				  opnum, ADDR_TYPE (type), ind_levels, insn);
+	    push_reload (*loc, NULL_RTX, loc, (rtx*) 0,
+			 (context ? INDEX_REG_CLASS : MODE_BASE_REG_CLASS (mode)),
+			 GET_MODE (x), VOIDmode, 0, 0, opnum, type);
+	    return 1;
+	  }
 
 	if (code0 == MULT || code0 == SIGN_EXTEND || code0 == TRUNCATE
 	    || code0 == ZERO_EXTEND || code1 == MEM)
