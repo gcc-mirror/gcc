@@ -32,14 +32,45 @@
 //
   
 // Information as gleaned from /usr/include/ctype.h
-  
-  ctype_base::__to_type const& ctype<char>::_S_toupper = _toupper;
-  ctype_base::__to_type const& ctype<char>::_S_tolower = _tolower;
-  const ctype_base::mask* const& ctype<char>::_S_table = __ctype;
 
-#ifdef _GLIBCPP_USE_WCHAR_T  
-  ctype_base::__to_type const& ctype<wchar_t>::_S_toupper = _toupper;
-  ctype_base::__to_type const& ctype<wchar_t>::_S_tolower = _tolower;
-  const ctype_base::mask* const& ctype<wchar_t>::_S_table = __ctype;
-#endif
+  ctype<char>::ctype(const mask* __table = 0, bool __del = false, 
+	size_t __refs = 0)
+    : _Ctype_nois<char>(__refs), _M_del(__table != 0 && __del), 
+      _M_toupper(NULL),
+      _M_tolower(NULL),
+      _M_ctable(NULL), 
+      _M_table(!__table
+	       ? (const mask*) (__libc_attr._ctype_tbl->_class + 1)
+	       : __table) 
+    { }
+
+  char
+  ctype<char>::do_toupper(char __c) const
+  { return _toupper(__c); }
+
+  const char*
+  ctype<char>::do_toupper(char* __low, const char* __high) const
+  {
+    while (__low < __high)
+      {
+	*__low = do_toupper(*__low);
+	++__low;
+      }
+    return __high;
+  }
+
+  char
+  ctype<char>::do_tolower(char __c) const
+  { return _tolower(__c); }
+
+  const char* 
+  ctype<char>::do_tolower(char* __low, const char* __high) const
+  {
+    while (__low < __high)
+      {
+	*__low = do_tolower(*__low);
+	++__low;
+      }
+    return __high;
+  }
 
