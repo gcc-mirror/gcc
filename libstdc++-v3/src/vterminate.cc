@@ -1,6 +1,6 @@
 // Verbose terminate_handler -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation
+// Copyright (C) 2001, 2002 Free Software Foundation
 //
 // This file is part of GNU CC.
 //
@@ -28,9 +28,10 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include <exception>
 #include <cstdlib>
 #include <cstdio>
+#include <exception>
+#include <exception_defines.h>
 #include <cxxabi.h>
 
 using namespace std;
@@ -38,46 +39,47 @@ using namespace abi;
 
 namespace __gnu_cxx
 {
-
-/* A replacement for the standard terminate_handler which prints
-   more information about the terminating exception (if any) on stderr.  */
-void __verbose_terminate_handler ()
-{
-  // Make sure there was an exception; terminate is also called for an
-  // attempt to rethrow when there is no suitable exception.
-  type_info *t = __cxa_current_exception_type ();
-  if (t)
-    {
-      char const *name = t->name ();
-      // Note that "name" is the mangled name.
-
+  /* A replacement for the standard terminate_handler which prints
+   more information about the terminating exception (if any) on
+   stderr.  */
+  void __verbose_terminate_handler()
+  {
+    // Make sure there was an exception; terminate is also called for an
+    // attempt to rethrow when there is no suitable exception.
+    type_info *t = __cxa_current_exception_type();
+    if (t)
       {
-	int status = -1;
-	char *dem = 0;
-
+	char const *name = t->name();
+	// Note that "name" is the mangled name.
+	
+	{
+	  int status = -1;
+	  char *dem = 0;
+	  
 #if 0
-	// Disabled until __cxa_demangle gets the runtime GPL exception.
-	dem = __cxa_demangle (name, 0, 0, &status);
+	  // Disabled until __cxa_demangle gets the runtime GPL exception.
+	  dem = __cxa_demangle(name, 0, 0, &status);
 #endif
 
-	printf ("terminate called after throwing a `%s'\n",
-		status == 0 ? dem : name);
+	  printf("terminate called after throwing a `%s'\n", 
+		 status == 0 ? dem : name);
 
-	if (status == 0)
-	  free (dem);
+	  if (status == 0)
+	    free(dem);
+	}
+
+	// If the exception is derived from std::exception, we can give more
+	// information.
+	try { __throw_exception_again; }
+#ifdef __EXCEPTIONS
+	catch (exception &exc)
+	  { fprintf(stderr, "  what(): %s\n", exc.what()); }
+#endif
+	catch (...) { }
       }
-
-      // If the exception is derived from std::exception, we can give more
-      // information.
-      try { throw; }
-      catch (exception &exc)
-	{ fprintf (stderr, "  what(): %s\n", exc.what()); }
-      catch (...) { }
-    }
-  else
-    fprintf (stderr, "terminate called without an active exception\n");
-
-  abort ();
-}
-
+    else
+      fprintf(stderr, "terminate called without an active exception\n");
+    
+    abort();
+  }
 } // namespace __gnu_cxx
