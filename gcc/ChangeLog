@@ -1,3 +1,8 @@
+2004-11-23  Richard Henderson  <rth@redhat.com>
+
+	* cse.c (record_jump_cond_subreg): New.
+	(record_jump_cond): Use it instead of gen_lowpart.
+
 2004-11-23  Daniel Jacobowitz  <dan@codesourcery.com>
             Joseph Myers  <joseph@codesourcery.com>
 
