@@ -1,5 +1,5 @@
 /* ANSI-compatible clock function.
-   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1999 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.  This library is free
 software; you can redistribute it and/or modify it under the
@@ -34,6 +34,10 @@ the executable file might be covered by the GNU General Public License. */
 #include <sys/param.h>
 #endif
 #include <sys/times.h>
+#endif
+
+#if defined (HAVE_TIMES) && ! defined (HZ) && defined (CLOCKS_PER_SEC)
+#define HZ CLOCKS_PER_SEC
 #endif
 
 /* FIXME: should be able to declare as clock_t. */
