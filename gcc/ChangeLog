@@ -1,3 +1,8 @@
+2004-06-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* cgraphunit.c (cgraph_decide_inlining): Adjust dump lines in
+	always_inline pass.
+
 2004-06-05  David S. Miller  <davem@nuts.davemloft.net>
 
 	* config/sparc/linux.h (TARGET_C99_FUNCTIONS): Set.
