@@ -1592,6 +1592,11 @@ verify_tree (x, pbefore_sp, pno_sp, writer)
   enum tree_code code;
   char class;
 
+  /* X may be NULL if it is the operand of an empty statement expression
+     ({ }).  */
+  if (x == NULL)
+    return;
+
  restart:
   code = TREE_CODE (x);
   class = TREE_CODE_CLASS (code);

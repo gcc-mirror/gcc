@@ -1,3 +1,7 @@
+2001-06-22  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/20010622-1.c: New test.
+
 2001-06-18  Stan Shebs  <shebs@apple.com>
 
 	* objc.dg: New directory.

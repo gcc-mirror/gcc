@@ -1473,6 +1473,8 @@ should be run in the reverse order of the order in which the associated
 Used to represent a brace-enclosed block.  The first substatement is
 given by @code{COMPOUND_BODY}.  Subsequent substatements are found by
 following the @code{TREE_CHAIN} link from one substatement to the next.
+The @code{COMPOUND_BODY} will be @code{NULL_TREE} if there are no
+substatements.
 
 @item CONTINUE_STMT
 
