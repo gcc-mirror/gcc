@@ -681,6 +681,7 @@ c4x-* | tic4x-*)
 	tmake_file=c4x/t-c4x
 	c_target_objs="c4x-c.o"
 	cxx_target_objs="c4x-c.o"
+	use_fixproto=no
 	;;
 cris-*-aout)
 	tm_file="dbxelf.h ${tm_file} cris/aout.h"
@@ -701,6 +702,7 @@ cris-*-linux*)
 	;;
 d30v-*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
+	use_fixproto=no
 	;;
 dsp16xx-*)
 	;;
@@ -1562,6 +1564,7 @@ mipstx39-*-elf* | mipstx39el-*-elf*)
 	;;
 mmix-knuth-mmixware)
 	need_64bit_hwint=yes
+	use_fixproto=no
 	;;
 mn10300-*-*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
