@@ -1760,7 +1760,7 @@ bootstrap: force
 # Only build the C compiler for stage1, because that is the only one that
 # we can guarantee will build with the native compiler, and also it is the
 # only thing useful for building stage2.
-	$(MAKE) LANGUAGES=c
+	$(MAKE) CC="$(CC)" libdir=$(libdir) LANGUAGES=c
 	$(MAKE) stage1
 # This used to define ALLOCA as empty, but that would lead to bad results
 # for a subsequent `make install' since that would not have ALLOCA empty.
