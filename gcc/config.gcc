@@ -1385,7 +1385,7 @@ mips-sgi-irix6*o32)		# SGI System V.4., IRIX 6, O32 ABI
 		tm_file="mips/iris5.h mips/iris5gas.h mips/iris6-o32-gas.h"
 		if test x$stabs = xyes
 		then
-			tm_file="${tm_file} dbx.h"
+			tm_file="${tm_file} dbx.h mips/dbxmdebug.h"
 		fi
 		tmake_file=mips/t-iris5-gas
 	else
@@ -1430,7 +1430,7 @@ mips-sgi-irix5*)		# SGI System V.4., IRIX 5
 		tm_file="mips/iris5.h mips/iris5gas.h"
 		if test x$stabs = xyes
 		then
-			tm_file="${tm_file} dbx.h"
+			tm_file="${tm_file} dbx.h mips/dbxmdebug.h"
 		fi
 		tmake_file=mips/t-iris5-gas
 	else

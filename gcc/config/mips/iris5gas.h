@@ -11,6 +11,11 @@
 #undef DWARF2_UNWIND_INFO
 #define DWARF2_UNWIND_INFO 1
 
+/* Override mips.h version to match DWARF 2 default.  */
+#undef MDEBUG_ASM_SPEC
+#define MDEBUG_ASM_SPEC "%{gstabs*|gcoff*:-mdebug} \
+%{!gstabs*:%{!gcoff*:-no-mdebug}}"
+
 /* Override iris5.h version to invoke [cd]tors and register eh frame
    information.  */
 #undef LINK_SPEC
