@@ -251,22 +251,21 @@ gen_rtx_REG (mode, regno)
 
   if (mode == Pmode && !reload_in_progress)
     {
-      if (frame_pointer_rtx != 0 && regno == FRAME_POINTER_REGNUM)
+      if (regno == FRAME_POINTER_REGNUM)
 	return frame_pointer_rtx;
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-      if (hard_frame_pointer_rtx != 0 && regno == HARD_FRAME_POINTER_REGNUM)
+      if (regno == HARD_FRAME_POINTER_REGNUM)
 	return hard_frame_pointer_rtx;
 #endif
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM && HARD_FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-      if (arg_pointer_rtx != 0 && regno == ARG_POINTER_REGNUM)
+      if (regno == ARG_POINTER_REGNUM)
 	return arg_pointer_rtx;
 #endif
 #ifdef RETURN_ADDRESS_POINTER_REGNUM
-      if (return_address_pointer_rtx != 0
-	  && regno == RETURN_ADDRESS_POINTER_REGNUM)
+      if (regno == RETURN_ADDRESS_POINTER_REGNUM)
 	return return_address_pointer_rtx;
 #endif
-      if (stack_pointer_rtx != 0 && regno == STACK_POINTER_REGNUM)
+      if (regno == STACK_POINTER_REGNUM)
 	return stack_pointer_rtx;
     }
 
@@ -752,9 +751,6 @@ gen_lowpart_common (mode, x)
 
       i = INTVAL (x);
       r = REAL_VALUE_FROM_TARGET_SINGLE (i);
-      /* Avoid changing the bit pattern of a NaN.  */
-      if (REAL_VALUE_ISNAN (r))
-	return 0;
       return CONST_DOUBLE_FROM_REAL_VALUE (r, mode);
     }
 #else
@@ -793,8 +789,6 @@ gen_lowpart_common (mode, x)
 	i[0] = low, i[1] = high;
 
       r = REAL_VALUE_FROM_TARGET_DOUBLE (i);
-      if (REAL_VALUE_ISNAN (r))
-	return 0;
       return CONST_DOUBLE_FROM_REAL_VALUE (r, mode);
     }
 #else
