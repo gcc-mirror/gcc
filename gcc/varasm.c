@@ -3893,6 +3893,7 @@ static void
 mark_constant_pool ()
 {
   rtx insn;
+  rtx link;
   struct pool_constant *pool;
 
   if (first_pool == 0 && htab_elements (const_str_htab) == 0)
@@ -3905,11 +3906,15 @@ mark_constant_pool ()
     if (INSN_P (insn))
       mark_constants (PATTERN (insn));
 
-  for (insn = current_function_epilogue_delay_list;
-       insn;
-       insn = XEXP (insn, 1))
-    if (INSN_P (insn))
-      mark_constants (PATTERN (insn));
+  for (link = current_function_epilogue_delay_list;
+       link;
+       link = XEXP (link, 1))
+    {
+      insn = XEXP (link, 0);
+
+      if (INSN_P (insn))
+	mark_constants (PATTERN (insn));
+    }
 }
 
 /* Look through appropriate parts of X, marking all entries in the
