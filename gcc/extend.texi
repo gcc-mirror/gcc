@@ -3330,14 +3330,12 @@ instances required by your explicit instantiations (but not by any
 other files) without having to specify them as well.
 
 g++ has extended the template instantiation syntax outlined in the
-Working Paper to allow forward declaration of explicit instantiations,
-explicit instantiation of members of template classes and instantiation
-of the compiler support data for a template class (i.e. the vtable)
-without instantiating any of its members:
+Working Paper to allow forward declaration of explicit instantiations
+and instantiation of the compiler support data for a template class
+(i.e. the vtable) without instantiating any of its members:
 
 @example
 extern template int max (int, int);
-template void Foo<int>::f ();
 inline template class Foo<int>;
 @end example
 

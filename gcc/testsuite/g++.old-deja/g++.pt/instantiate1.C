@@ -1,7 +1,7 @@
 // Build don't link:
 
 template <class T>
-void f(T t);
+void f(T t) {}
 
 template void f<int>(int);
 template void f<>(long);

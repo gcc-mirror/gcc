@@ -42,8 +42,11 @@ typedef char c;
 typedef wchar_t c;
 #endif
 
-#ifdef TRAITS
+#if defined(TRAITS) && !defined(C)
 template class string_char_traits <c>;
+#else
+/* string_char_traits<char> is already explicitly specialized in
+   std/straits.h.  */
 #endif
 
 typedef basic_string <c> s;

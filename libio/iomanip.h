@@ -68,8 +68,8 @@ public:
 };
 
 #ifdef __GNUG__
-extern template class smanip<int>;
-extern template class smanip<ios::fmtflags>;
+__extension__ extern template class smanip<int>;
+__extension__ extern template class smanip<ios::fmtflags>;
 #endif
 
 template<class TP>
@@ -81,10 +81,14 @@ inline ostream& operator<<(ostream& o, const smanip<TP>& m)
 { (*m._f)(o, m._a); return o;}
 
 #ifdef __GNUG__
-extern template istream& operator>>(istream&, const smanip<int>&);
-extern template istream& operator>>(istream&, const smanip<ios::fmtflags>&);
-extern template ostream& operator<<(ostream&, const smanip<int>&);
-extern template ostream& operator<<(ostream&, const smanip<ios::fmtflags>&);
+__extension__ extern 
+template istream& operator>>(istream&, const smanip<int>&);
+__extension__ extern 
+template istream& operator>>(istream&, const smanip<ios::fmtflags>&);
+__extension__ extern 
+template ostream& operator<<(ostream&, const smanip<int>&);
+__extension__ extern 
+template ostream& operator<<(ostream&, const smanip<ios::fmtflags>&);
 #endif
 
 //-----------------------------------------------------------------------------

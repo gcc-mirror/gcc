@@ -1278,10 +1278,7 @@ build_throw (e)
     return build_min (THROW_EXPR, void_type_node, e);
 
   if (e == null_node)
-    {
-      cp_warning ("throwing NULL, which has integral, not pointer type");
-      e = ansi_null_node;
-    }
+    cp_warning ("throwing NULL, which has integral, not pointer type");
 
   e = build1 (THROW_EXPR, void_type_node, e);
   TREE_SIDE_EFFECTS (e) = 1;
