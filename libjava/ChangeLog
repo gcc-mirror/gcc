@@ -1,3 +1,8 @@
+2000-06-27  Rolf W. Rasmussen  <rolfwr@ii.uib.no>
+
+	* java/awt/event/MouseEvent.java: Fixed coordinate space
+	confusion.
+
 2000-06-27  Tom Tromey  <tromey@cygnus.com>
 
 	* java/io/PushbackInputStream.java (read): If there are characters

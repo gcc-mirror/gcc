@@ -47,20 +47,17 @@ public class MouseEvent extends InputEvent
 
   public Point getPoint ()
   {
-    Point p = ((Component) source).getLocation ();
-    p.x = x - p.x;
-    p.y = y - p.y;
-    return p;
+    return new Point (x, y);
   }
 
   public int getX ()
   {
-    return x - ((Component) source).getX ();
+    return x;
   }
 
   public int getY ()
   {
-    return y - ((Component) source).getY ();
+    return y;
   }
 
   public boolean isPopupTrigger ()
