@@ -1,3 +1,7 @@
+2004-03-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/builtins-34.c: Also check pow10*.
+
 2004-03-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR target/14262
