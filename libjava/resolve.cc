@@ -303,16 +303,6 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
       // with either loader should produce the same result,
       // i.e., exactly the same jclass object. JVMS 5.4.3.3    
     
-      if (pool->tags[index] == JV_CONSTANT_InterfaceMethodref)
-	vtable_index = -1;
-      else
-	vtable_index = _Jv_DetermineVTableIndex
-	  (found_class, method_name, method_signature);
-
-      if (vtable_index == METHOD_NOT_THERE)
-	throw_incompatible_class_change_error
-	  (JvNewStringLatin1 ("method not found"));
-
       if (the_method == 0)
 	{
 	  java::lang::StringBuffer *sb = new java::lang::StringBuffer();
@@ -324,6 +314,16 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
 	  throw new java::lang::NoSuchMethodError (sb->toString());
 	}
       
+      if (pool->tags[index] == JV_CONSTANT_InterfaceMethodref)
+	vtable_index = -1;
+      else
+	vtable_index = _Jv_DetermineVTableIndex (found_class, method_name,
+						 method_signature);
+
+      if (vtable_index == METHOD_NOT_THERE)
+	throw_incompatible_class_change_error
+	  (JvNewStringLatin1 ("method not found"));
+
       pool->data[index].rmethod = 
 	_Jv_BuildResolvedMethod(the_method,
 				found_class,
