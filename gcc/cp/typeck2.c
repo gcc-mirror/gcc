@@ -400,6 +400,7 @@ initializer_constant_valid_p (value, endtype)
     case REAL_CST:
     case STRING_CST:
     case COMPLEX_CST:
+    case PTRMEM_CST:
       return null_pointer_node;
 
     case ADDR_EXPR:

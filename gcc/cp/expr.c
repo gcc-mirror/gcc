@@ -36,6 +36,62 @@ static tree extract_scalar_init PROTO((tree, tree));
 static rtx cplus_expand_expr PROTO((tree, rtx, enum machine_mode,
 				    enum expand_modifier));
 
+/* Hook used by output_constant to expand language-specific
+   constants.  */
+
+static tree
+cplus_expand_constant (cst)
+     tree cst;
+{
+  switch (TREE_CODE (cst))
+    {
+    case PTRMEM_CST:
+      {
+	tree type = TREE_TYPE (cst);
+	tree member;
+	tree offset;
+      
+	/* Find the member.  */
+	member = PTRMEM_CST_MEMBER (cst);
+
+	if (TREE_CODE (member) == FIELD_DECL) 
+	  {
+	    /* Find the offset for the field.  */
+	    offset = convert (sizetype,
+			      size_binop (EASY_DIV_EXPR,
+					  DECL_FIELD_BITPOS (member),
+					  size_int (BITS_PER_UNIT)));
+
+	    /* We offset all pointer to data members by 1 so that we
+	       can distinguish between a null pointer to data member
+	       and the first data member of a structure.  */
+	    offset = size_binop (PLUS_EXPR, offset, size_int (1));
+	
+	    cst = cp_convert (type, offset);
+	  }
+	else
+	  {
+	    tree delta;
+	    tree idx;
+	    tree pfn;
+	    tree delta2;
+
+	    expand_ptrmemfunc_cst (cst, &delta, &idx, &pfn, &delta2);
+
+	    cst = build_ptrmemfunc1 (type, delta, idx,
+				     pfn, delta2);
+	  }
+      }
+      break;
+
+    default:
+      /* There's nothing to do.  */
+      break;
+    }
+
+  return cst;
+}
+
 /* Hook used by expand_expr to expand language-specific tree codes.  */
 
 static rtx
@@ -163,43 +219,8 @@ cplus_expand_expr (exp, target, tmode, modifier)
       }
 
     case PTRMEM_CST:
-      {
-	tree member;
-	tree offset;
-	
-	/* Find the member.  */
-	member = PTRMEM_CST_MEMBER (exp);
-
-	if (TREE_CODE (member) == FIELD_DECL) 
-	  {
-	    /* Find the offset for the field.  */
-	    offset = convert (sizetype,
-			      size_binop (EASY_DIV_EXPR,
-					  DECL_FIELD_BITPOS (member),
-					  size_int (BITS_PER_UNIT)));
-
-	    /* We offset all pointer to data members by 1 so that we
-	       can distinguish between a null pointer to data member
-	       and the first data member of a structure.  */
-	    offset = size_binop (PLUS_EXPR, offset, size_int (1));
-	
-	    return expand_expr (cp_convert (type, offset), target, tmode,
-				modifier);
-	  }
-	else
-	  {
-	    tree delta;
-	    tree idx;
-	    tree pfn;
-	    tree delta2;
-
-	    expand_ptrmemfunc_cst (exp, &delta, &idx, &pfn, &delta2);
-
-	    return expand_expr (build_ptrmemfunc1 (type, delta, idx,
-						   pfn, delta2),
-				target, tmode, modifier);
-	  }
-      }
+      return expand_expr (cplus_expand_constant (exp),
+			  target, tmode, modifier);
 
     case OFFSET_REF:
       {
@@ -237,6 +258,7 @@ void
 init_cplus_expand ()
 {
   lang_expand_expr = cplus_expand_expr;
+  lang_expand_constant = cplus_expand_constant;
 }
 
 /* If DECL had its rtl moved from where callers expect it
