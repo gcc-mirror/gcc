@@ -1,5 +1,14 @@
 2003-12-09  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/DatagramSocket.java
+	(close): Directly return if socket is closed.
+	* java/net/ServerSocket.java
+	(close): Directly return if socket is closed.
+	* java/net/Socket.java
+	(close): Directly return if socket is closed.
+
+2003-12-09  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/SelectorImpl.java
 	(implSelect): Throws IOException.
 	(select): Likewise.

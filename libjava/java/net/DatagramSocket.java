@@ -216,32 +216,32 @@ public class DatagramSocket
    */
   public void close()
   {
-    if (!isClosed())
+    if (isClosed())
+      return;
+    
+    try
       {
-	try
-	  {
-	    getImpl().close();
-	  }
-	catch (SocketException e)
-	  {
-	    // Ignore this case, just close the socket in finally clause.
-	  }
-	finally
-	  {
-	    remoteAddress = null;
-	    remotePort = -1;
-	    impl = null;
-	  }
+	getImpl().close();
+      }
+    catch (SocketException e)
+      {
+	// Ignore this case, just close the socket in finally clause.
+      }
+    finally
+      {
+	remoteAddress = null;
+	remotePort = -1;
+	impl = null;
+      }
 
-	try
-	  {
-	    if (getChannel() != null)
-	      getChannel().close();
-	  }
-	catch (IOException e)
-	  {
-	    // Do nothing.
-	  }
+    try
+      {
+	if (getChannel() != null)
+	  getChannel().close();
+      }
+    catch (IOException e)
+      {
+	// Do nothing.
       }
   }
 

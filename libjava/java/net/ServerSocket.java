@@ -353,15 +353,15 @@ public class ServerSocket
    */
   public void close () throws IOException
   {
-    if (!isClosed())
-      {
-	impl.close();
-	impl = null;
-	bound = false;
+    if (isClosed())
+      return;
+    
+    impl.close();
+    impl = null;
+    bound = false;
 
-	if (getChannel() != null)
-	  getChannel().close();
-      }
+    if (getChannel() != null)
+      getChannel().close();
   }
 
   /**
