@@ -898,6 +898,7 @@ changequote([,])dnl
 		tmake_file=i386/t-next
 		xmake_file=i386/x-next
 		extra_objs=nextstep.o
+		use_collect2=yes
  		if test x$enable_threads = xyes; then
 			thread_file='mach'
 		fi
