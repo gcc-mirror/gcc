@@ -1,3 +1,8 @@
+Fri Jun 19 23:22:42 1998  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
+
+        * typeck2.c (pop_init_level): Warn about implicit zero initialization
+        of struct members.
+
 Thu Jun 18 09:32:32 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cp-tree.h: Prototype function `check_java_method'.

@@ -1105,6 +1105,11 @@ process_init_constructor (type, init, elts)
 	  else if (TREE_CODE (TREE_TYPE (field)) == REFERENCE_TYPE)
 	    error ("member `%s' is uninitialized reference",
 		   IDENTIFIER_POINTER (DECL_NAME (field)));
+	  /* Warn when some struct elements are implicitly initialized
+	      to zero.  */
+	  else if (extra_warnings)
+	    warning ("missing initializer for member `%s'",
+		     IDENTIFIER_POINTER (DECL_NAME (field)));
 	}
     }
 
