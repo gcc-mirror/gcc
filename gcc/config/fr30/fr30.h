@@ -2499,16 +2499,6 @@ do										\
    only if additional modes are required.  */
 /* #define EXTRA_CC_MODES */
 
-/* A list of C strings giving the names for the modes listed in
-   `EXTRA_CC_MODES'.  For example, the Sparc defines this macro and
-   `EXTRA_CC_MODES' as
-
-        #define EXTRA_CC_MODES CC_NOOVmode, CCFPmode, CCFPEmode
-        #define EXTRA_CC_NAMES "CC_NOOV", "CCFP", "CCFPE"
-
-   This macro is not required if `EXTRA_CC_MODES' is not defined.  */
-/* #define EXTRA_CC_NAMES */
-
 /* Returns a mode from class `MODE_CC' to be used when comparison operation
    code OP is applied to rtx X and Y.  For example, on the Sparc,
    `SELECT_CC_MODE' is defined as (see *note Jump Patterns::.  for a
