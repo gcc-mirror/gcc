@@ -1,3 +1,7 @@
+Mon Sep 22 14:41:00 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* reg-stack.c (find_blocks): Fix thinko in last change.
+
 1997-09-21  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* m68k.c (output_function_prologue): Add dwarf2 support.

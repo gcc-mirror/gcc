@@ -1351,6 +1351,8 @@ find_blocks (first)
 
       if (GET_CODE (insn) == JUMP_INSN)
 	{
+	  rtx pat = PATTERN (insn);
+	  rtx x;
 
 	  if (computed_jump_p (insn))
 	    {
