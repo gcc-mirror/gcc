@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
+# Makefile.in generated automatically by automake 1.4 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -66,7 +66,6 @@ AR = @AR@
 AS = @AS@
 ATOMICITY_INC_SRCDIR = @ATOMICITY_INC_SRCDIR@
 BASIC_FILE_H = @BASIC_FILE_H@
-BUILD_INCLUDED_LIBINTL = @BUILD_INCLUDED_LIBINTL@
 CATALOGS = @CATALOGS@
 CATOBJEXT = @CATOBJEXT@
 CC = @CC@
@@ -88,16 +87,16 @@ EXTRA_CXX_FLAGS = @EXTRA_CXX_FLAGS@
 GCJ = @GCJ@
 GCJFLAGS = @GCJFLAGS@
 GENCAT = @GENCAT@
-GLIBC21 = @GLIBC21@
 GLIBCPP_IS_CROSS_COMPILING = @GLIBCPP_IS_CROSS_COMPILING@
 GMOFILES = @GMOFILES@
 GMSGFMT = @GMSGFMT@
+GT_NO = @GT_NO@
+GT_YES = @GT_YES@
+INCLUDE_LOCALE_H = @INCLUDE_LOCALE_H@
 INSTOBJEXT = @INSTOBJEXT@
-INTLBISON = @INTLBISON@
+INTLDEPS = @INTLDEPS@
 INTLLIBS = @INTLLIBS@
 INTLOBJS = @INTLOBJS@
-INTL_LIBTOOL_SUFFIX_PREFIX = @INTL_LIBTOOL_SUFFIX_PREFIX@
-LIBICONV = @LIBICONV@
 LIBMATHOBJS = @LIBMATHOBJS@
 LIBSUPCXX_PICFLAGS = @LIBSUPCXX_PICFLAGS@
 LIBTOOL = @LIBTOOL@
@@ -138,6 +137,7 @@ glibcpp_toolexecdir = @glibcpp_toolexecdir@
 glibcpp_toolexeclibdir = @glibcpp_toolexeclibdir@
 gxx_include_dir = @gxx_include_dir@
 ifGNUmake = @ifGNUmake@
+l = @l@
 libio_la = @libio_la@
 libtool_VERSION = @libtool_VERSION@
 release_VERSION = @release_VERSION@
@@ -190,7 +190,7 @@ sources = \
 	locale.cc locale-inst.cc localename.cc \
 	collate.cc messages.cc moneypunct.cc numpunct.cc time.cc \
 	misc-inst.cc stdexcept.cc stl-inst.cc string-inst.cc strstream.cc \
-	valarray-inst.cc wstring-inst.cc
+	valarray-inst.cc wstring-inst.cc concept-inst.cc
 
 
 VPATH = $(top_srcdir):$(top_srcdir)/src
@@ -215,10 +215,6 @@ GLIBCPP_INCLUDE_DIR = @glibcpp_builddir@/include
 # set this option because CONFIG_CXXFLAGS has to be after
 # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
 # as the occasion call for it. (ie, --enable-debug)
-#
-# The no-implicit-templates flag will generate unresolved references to
-# the concept-checking symbols.  So we must disable the checks while
-# actually building the library.
 AM_CXXFLAGS = \
 	-fno-implicit-templates \
 	$(LIBSUPCXX_CXXFLAGS) \
@@ -271,7 +267,8 @@ libstdc___la_OBJECTS =  basic_file.lo bitset.lo c++locale.lo cmath.lo \
 codecvt.lo complex_io.lo functexcept.lo globals.lo ios.lo limits.lo \
 locale.lo locale-inst.lo localename.lo collate.lo messages.lo \
 moneypunct.lo numpunct.lo time.lo misc-inst.lo stdexcept.lo stl-inst.lo \
-string-inst.lo strstream.lo valarray-inst.lo wstring-inst.lo
+string-inst.lo strstream.lo valarray-inst.lo wstring-inst.lo \
+concept-inst.lo
 CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
@@ -501,6 +498,14 @@ strstream.lo: strstream.cc
 	$(LTCXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -c $<
 strstream.o: strstream.cc
 	$(CXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -c $<
+
+# Use special rules for the concept-checking instantiations so that all
+# the generated template functions are also instantiated.  Force the checks
+# to be on so that the instantiations are actually seen.
+concept-inst.lo: concept-inst.cc
+	$(LTCXXCOMPILE) -D_GLIBCPP_CONCEPT_CHECKS -fimplicit-templates -c $<
+concept-inst.o: concept-inst.cc
+	$(CXXCOMPILE) -D_GLIBCPP_CONCEPT_CHECKS -fimplicit-templates -c $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

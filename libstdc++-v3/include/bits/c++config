@@ -55,9 +55,6 @@
 // Use corrected code from the committee library group's issues list.
 #define _GLIBCPP_RESOLVE_LIB_DEFECTS 1
 
-// Enable concept checking code from the boost libraries.
-//#define _GLIBCPP_CONCEPT_CHECKS 1
-
 // Define this to permit user-level control of the expansion of string
 // buffers (via a fn pointer), see basic_string.* for more.
 //#define _GLIBCPP_ALLOC_CONTROL

@@ -233,8 +233,8 @@ template <class _Key, class _Tp, class _HashFcn, class _EqualKey, class _Alloc>
 class hash_multimap
 {
   // concept requirements
-  __glibcpp_class_requires(_Key, _SGIAssignableConcept);
-  __glibcpp_class_requires(_Tp, _SGIAssignableConcept);
+  __glibcpp_class_requires(_Key, _SGIAssignableConcept)
+  __glibcpp_class_requires(_Tp, _SGIAssignableConcept)
   __glibcpp_class_requires3(_HashFcn, size_t, _Key, _UnaryFunctionConcept);
   __glibcpp_class_requires3(_EqualKey, _Key, _Key, _BinaryPredicateConcept);
 

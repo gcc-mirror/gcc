@@ -82,8 +82,8 @@ template <class _Tp, class _Sequence>
 class stack
 {
   // concept requirements
-  __glibcpp_class_requires(_Tp, _SGIAssignableConcept);
-  __glibcpp_class_requires(_Sequence, _BackInsertionSequenceConcept);
+  __glibcpp_class_requires(_Tp, _SGIAssignableConcept)
+  __glibcpp_class_requires(_Sequence, _BackInsertionSequenceConcept)
   typedef typename _Sequence::value_type _Sequence_value_type;
   __glibcpp_class_requires2(_Tp, _Sequence_value_type, _SameTypeConcept);
 

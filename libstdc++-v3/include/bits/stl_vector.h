@@ -147,7 +147,7 @@ template <class _Tp, class _Alloc = allocator<_Tp> >
 class vector : protected _Vector_base<_Tp, _Alloc> 
 {
   // concept requirements
-  __glibcpp_class_requires(_Tp, _SGIAssignableConcept);
+  __glibcpp_class_requires(_Tp, _SGIAssignableConcept)
 
 private:
   typedef _Vector_base<_Tp, _Alloc> _Base;

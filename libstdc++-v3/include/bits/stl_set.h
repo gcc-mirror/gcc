@@ -84,7 +84,7 @@ template <class _Key, class _Compare, class _Alloc>
 class set
 {
   // concept requirements
-  __glibcpp_class_requires(_Key, _SGIAssignableConcept);
+  __glibcpp_class_requires(_Key, _SGIAssignableConcept)
   __glibcpp_class_requires4(_Compare, bool, _Key, _Key, _BinaryFunctionConcept);
 
 public:

@@ -81,7 +81,7 @@ namespace std
 	       _Distance& __n, input_iterator_tag)
     {
       // concept requirements
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator>);
+      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator>)
       while (__first != __last) { ++__first; ++__n; }
     }
 
@@ -91,7 +91,7 @@ namespace std
 	       _Distance& __n, random_access_iterator_tag)
     {
       // concept requirements
-      __glibcpp_function_requires(_RandomAccessIteratorConcept<_RandomAccessIterator>);
+      __glibcpp_function_requires(_RandomAccessIteratorConcept<_RandomAccessIterator>)
       __n += __last - __first;
     }
 
@@ -109,7 +109,7 @@ namespace std
     __distance(_InputIterator __first, _InputIterator __last, input_iterator_tag)
     {
       // concept requirements
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator>);
+      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator>)
       typename iterator_traits<_InputIterator>::difference_type __n = 0;
       while (__first != __last) {
 	++__first; ++__n;
@@ -123,7 +123,7 @@ namespace std
 			   random_access_iterator_tag)
     {
       // concept requirements
-      __glibcpp_function_requires(_RandomAccessIteratorConcept<_RandomAccessIterator>);
+      __glibcpp_function_requires(_RandomAccessIteratorConcept<_RandomAccessIterator>)
       return __last - __first;
     }
 
@@ -140,7 +140,7 @@ namespace std
     __advance(_InputIter& __i, _Distance __n, input_iterator_tag)
     {
       // concept requirements
-      __glibcpp_function_requires(_InputIteratorConcept<_InputIter>);
+      __glibcpp_function_requires(_InputIteratorConcept<_InputIter>)
       while (__n--) ++__i;
     }
 
@@ -149,7 +149,7 @@ namespace std
     __advance(_BidirectionalIterator& __i, _Distance __n, bidirectional_iterator_tag)
     {
       // concept requirements
-      __glibcpp_function_requires(_BidirectionalIteratorConcept<_BidirectionalIterator>);
+      __glibcpp_function_requires(_BidirectionalIteratorConcept<_BidirectionalIterator>)
       if (__n > 0)
 	while (__n--) ++__i;
       else
@@ -161,7 +161,7 @@ namespace std
     __advance(_RandomAccessIterator& __i, _Distance __n, random_access_iterator_tag)
     {
       // concept requirements
-      __glibcpp_function_requires(_RandomAccessIteratorConcept<_RandomAccessIterator>);
+      __glibcpp_function_requires(_RandomAccessIteratorConcept<_RandomAccessIterator>)
       __i += __n;
     }
 
