@@ -1,3 +1,13 @@
+2004-01-19  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_remove_node): Fix removal from linked list.
+	* cgraphunit.c (cgraph_finalize_compilation_unit): Clear next_needed
+	list.
+	(cgraph_remove_unreachable_nodes): New function
+	(cgraph_decide_inlining_of_small_function): Fix pasto.
+	(cgraph_decide_inlining_incrementally): Fix pasto.
+	(cgrpah_decide_inlining): Likewise; remove unreachable nodes.
+
 2004-01-18  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (expand_builtin_expect_jump): Fix thinko of reusing
