@@ -1,3 +1,24 @@
+2003-04-18  Paolo Carlini  <pcarlini@unitus.it>
+
+	According to 5.9 para 2 (second bullet) for pointers p, q
+	pointing to the same type, with  p == 0 and q == 0, (p < q)
+	is false.
+	* include/bits/fstream.tcc (close, overflow, _M_really_overflow,
+	seekoff): Remove redundant NULL pointer checks from tests
+	involving _M_out_* and _M_in_*, const qualify bool variables.
+	(showmanyc, pbackfail, _M_convert_to_external, imbue): Const
+	qualify bool variables.
+	* include/bits/streambuf.tcc (sbumpc, sputbackc, sungetc, sputc):
+	Remove redundant NULL pointer checks from tests involving
+	_M_out_* and _M_in_*, const qualify bool variables.
+	* include/std/std_fstream.h (sync): Likewise.
+	(_M_is_indeterminate): Const qualify bool variables.
+	* include/std/std_streambuf.h (sgetc, uflow): Remove redundant
+	NULL pointer checks from tests involving _M_out_* and _M_in_*,
+	const qualify bool variables.
+	(_M_in_cur_move, _M_out_cur_move, uflow): Const qualify bool
+	variables.
+
 2003-04-18  Loren J. Rittle  <ljrittle@acm.org>
 
 	* include/c_std/std_cmath.h (C99 FP capture): Only undefine said

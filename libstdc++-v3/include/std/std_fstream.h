@@ -312,10 +312,9 @@ namespace std
       sync()
       {
 	int __ret = 0;
-	bool __testput = this->_M_out_cur
-	  && this->_M_out_beg < this->_M_out_lim;
+	const bool __testput = this->_M_out_beg < this->_M_out_lim;
 	// Sync with stdio.
-	bool __sync = this->_M_buf_size <= 1;
+	const bool __sync = this->_M_buf_size <= 1;
 
 	// Make sure that the internal buffer resyncs its idea of
 	// the file position with the external file.
@@ -404,8 +403,8 @@ namespace std
       void
       _M_set_determinate(off_type __off)
       {
-	bool __testin = this->_M_mode & ios_base::in;
-	bool __testout = this->_M_mode & ios_base::out;
+	const bool __testin = this->_M_mode & ios_base::in;
+	const bool __testout = this->_M_mode & ios_base::out;
 	if (__testin)
 	  this->setg(this->_M_buf, this->_M_buf, this->_M_buf + __off);
 	if (__testout)
@@ -424,8 +423,8 @@ namespace std
       bool
       _M_is_indeterminate(void)
       { 
-	bool __testin = this->_M_mode & ios_base::in;
-	bool __testout = this->_M_mode & ios_base::out;
+	const bool __testin = this->_M_mode & ios_base::in;
+	const bool __testout = this->_M_mode & ios_base::out;
 	bool __ret = false;
 	// Don't return true if unbuffered.
 	if (this->_M_buf)
