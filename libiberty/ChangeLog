@@ -1,3 +1,8 @@
+Tue Oct 20 12:29:02 1998  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* cplus-dem.c (demangle_qualified): Fix off-by-one when checking
+	range of 'K' index.
+
 Thu Oct 15 18:51:12 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* choose-temp.c: Prototype mkstemps() when IN_GCC.
