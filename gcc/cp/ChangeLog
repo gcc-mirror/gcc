@@ -1,5 +1,18 @@
 2000-04-07  Nathan Sidwell  <nathan@codesourcery.com>
 
+	Rename abi::__vmi_class_type_info members.
+	* inc/cxxabi.h (__vmi_class_type_info): Rename details, n_bases,
+	base_list, detail_masks members to vmi_flags, vmi_base_count,
+	vmi_bases and vmi_flags_masks respectively.
+	(__vmi_class_type_info::vmi_flags_masks): Rename
+	details_unknown_mask to flags_unknown_mask.
+	* tinfo.cc (__class_type_info::do_upcast): Adjust.
+	(__vmi_class_type_info::do_find_public_src): Adjust.
+	(__vmi_class_type_info::do_dyncast): Adjust.
+	(__vmi_class_type_info::do_upcast): Adjust.
+	
+2000-04-07  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* tinfo.cc (convert_to_base): New function.
 	(get_vbase_offset): Remove. Move into convert_to_base.
 	(__vmi_class_type_info::do_find_public_src): Adjust.
