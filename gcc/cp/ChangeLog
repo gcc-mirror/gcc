@@ -14,6 +14,14 @@
 	* cp-tree.h (start_method): Update prototype.
 	* parse.y (fn.def2): Update start_method parameter list.
 
+1998-10-11  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (specializations_of_same_template_p): Declare.
+	* pt.c (specializations_of_same_template_p): New function.
+	(unify): Use it.
+	* search.c (get_template_base): Use it.
+	(get_template_base_recursive): Likewise.
+	
 1998-10-10  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* decl2.c (start_objects): Add new variable `joiner' and
