@@ -148,8 +148,8 @@ static rtx *new_reg_base_value;
 static unsigned int reg_base_value_size; /* size of reg_base_value array */
 
 #define REG_BASE_VALUE(X) \
-  (ORIGINAL_REGNO (X) < reg_base_value_size \
-   ? reg_base_value[ORIGINAL_REGNO (X)] : 0)
+  (REGNO (X) < reg_base_value_size \
+   ? reg_base_value[REGNO (X)] : 0)
 
 /* Vector of known invariant relationships between registers.  Set in
    loop unrolling.  Indexed by register number, if nonzero the value
@@ -668,7 +668,7 @@ find_base_value (src)
       return src;
 
     case REG:
-      regno = ORIGINAL_REGNO (src);
+      regno = REGNO (src);
       /* At the start of a function, argument registers have known base
 	 values which may be lost later.  Returning an ADDRESS
 	 expression here allows optimization based on argument values
@@ -792,7 +792,7 @@ record_set (dest, set, data)
   if (GET_CODE (dest) != REG)
     return;
 
-  regno = ORIGINAL_REGNO (dest);
+  regno = REGNO (dest);
 
   if (regno >= reg_base_value_size)
     abort ();
@@ -873,8 +873,8 @@ record_base_value (regno, val, invariant)
 
   if (GET_CODE (val) == REG)
     {
-      if (ORIGINAL_REGNO (val) < reg_base_value_size)
-	reg_base_value[regno] = reg_base_value[ORIGINAL_REGNO (val)];
+      if (REGNO (val) < reg_base_value_size)
+	reg_base_value[regno] = reg_base_value[REGNO (val)];
 
       return;
     }
@@ -892,10 +892,10 @@ canon_rtx (x)
      rtx x;
 {
   /* Recursively look for equivalences.  */
-  if (GET_CODE (x) == REG && ORIGINAL_REGNO (x) >= FIRST_PSEUDO_REGISTER
-      && ORIGINAL_REGNO (x) < reg_known_value_size)
-    return reg_known_value[ORIGINAL_REGNO (x)] == x
-      ? x : canon_rtx (reg_known_value[ORIGINAL_REGNO (x)]);
+  if (GET_CODE (x) == REG && REGNO (x) >= FIRST_PSEUDO_REGISTER
+      && REGNO (x) < reg_known_value_size)
+    return reg_known_value[REGNO (x)] == x
+      ? x : canon_rtx (reg_known_value[REGNO (x)]);
   else if (GET_CODE (x) == PLUS)
     {
       rtx x0 = canon_rtx (XEXP (x, 0));
@@ -2114,7 +2114,6 @@ init_alias_analysis ()
 					 reg_base_value_size * sizeof (rtx));
       memset ((char *)alias_invariant, 0, reg_base_value_size * sizeof (rtx));
     }
-    
 
   /* The basic idea is that each pass through this loop will use the
      "constant" information from the previous pass to propagate alias
@@ -2211,9 +2210,9 @@ init_alias_analysis ()
 
 	      if (set != 0
 		  && GET_CODE (SET_DEST (set)) == REG
-		  && ORIGINAL_REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER)
+		  && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER)
 		{
-		  unsigned int regno = ORIGINAL_REGNO (SET_DEST (set));
+		  unsigned int regno = REGNO (SET_DEST (set));
 		  rtx src = SET_SRC (set);
 
 		  if (REG_NOTES (insn) != 0
@@ -2229,13 +2228,13 @@ init_alias_analysis ()
 		  else if (REG_N_SETS (regno) == 1
 			   && GET_CODE (src) == PLUS
 			   && GET_CODE (XEXP (src, 0)) == REG
-			   && ORIGINAL_REGNO (XEXP (src, 0)) >= FIRST_PSEUDO_REGISTER
-			   && (reg_known_value[ORIGINAL_REGNO (XEXP (src, 0))])
+			   && REGNO (XEXP (src, 0)) >= FIRST_PSEUDO_REGISTER
+			   && (reg_known_value[REGNO (XEXP (src, 0))])
 			   && GET_CODE (XEXP (src, 1)) == CONST_INT)
 		    {
 		      rtx op0 = XEXP (src, 0);
-		      if (reg_known_value[ORIGINAL_REGNO (op0)])
-			op0 = reg_known_value[ORIGINAL_REGNO (op0)];
+		      if (reg_known_value[REGNO (op0)])
+			op0 = reg_known_value[REGNO (op0)];
 		      reg_known_value[regno]
 			= plus_constant_for_output (op0,
 						    INTVAL (XEXP (src, 1)));
@@ -2293,7 +2292,7 @@ init_alias_analysis ()
 	  rtx base = reg_base_value[ui];
 	  if (base && GET_CODE (base) == REG)
 	    {
-	      unsigned int base_regno = ORIGINAL_REGNO (base);
+	      unsigned int base_regno = REGNO (base);
 	      if (base_regno == ui)		/* register set from itself */
 		reg_base_value[ui] = 0;
 	      else

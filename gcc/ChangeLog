@@ -1,3 +1,12 @@
+2001-01-11  Bernd Schmidt  <bernds@redhat.com>
+
+	* alias.c (throughout): Use REGNO, rather than ORIGINAL_REGNO.
+	* sched-deps.c (deps_may_trap_p): Likewise.
+	* basic-block.h: Remove a comment.
+	* flow.c (PROP_POSTRELOAD): Remove.
+	(update_life_info): Don't add it to prop_flags.
+	(mark_set_1): Lose the code that was enabled by it.
+
 2001-01-11  Michael Hayes  <mhayes@redhat.com>
 
 	* flow.c (flow_call_edges_add): New.

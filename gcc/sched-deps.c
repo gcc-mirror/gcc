@@ -96,9 +96,9 @@ deps_may_trap_p (mem)
   rtx addr = XEXP (mem, 0);
 
   if (REG_P (addr)
-      && ORIGINAL_REGNO (addr) >= FIRST_PSEUDO_REGISTER
-      && reg_known_value[ORIGINAL_REGNO (addr)])
-    addr = reg_known_value[ORIGINAL_REGNO (addr)];
+      && REGNO (addr) >= FIRST_PSEUDO_REGISTER
+      && reg_known_value[REGNO (addr)])
+    addr = reg_known_value[REGNO (addr)];
   return rtx_addr_can_trap_p (addr);
 }
 
