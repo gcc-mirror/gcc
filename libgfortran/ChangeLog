@@ -1,3 +1,9 @@
+2004-07-11  Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/16303
+	* m4/cexp.m4 (carg): Return -pi to pi.
+	* generated/exp_c?.c: Regenerate.
+
 2004-07-08  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	PR fortran/16291
