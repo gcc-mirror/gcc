@@ -1,3 +1,7 @@
+2004-01-24  Jan Hubicka  <jh@suse.cz>
+
+	* cselib.c (remove_useless_values):  Do not access discarded values.
+
 2004-01-24  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-typeck.c (build_conditional_expr): Do not allow non-lvalue
