@@ -1,3 +1,8 @@
+2005-02-21  Mark Wielaard  <mark@klomp.org>
+
+	* java/io/FileDescriptor.java (sync): Add real exception to
+	SyncFailedException.
+
 2005-02-21  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/InputStreamReader.java:

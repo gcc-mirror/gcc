@@ -120,7 +120,7 @@ public final class FileDescriptor
 	    if (ex instanceof SyncFailedException)
 	      throw (SyncFailedException) ex;
 	    else
-	      throw new SyncFailedException(ex.getMessage());
+	      throw new SyncFailedException(ex.toString());
 	  }
       }
   }
