@@ -1,3 +1,7 @@
+2005-03-25  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* gcc.dg/20050325-1.c: Fix a typo.
+
 2005-03-25  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/19678
