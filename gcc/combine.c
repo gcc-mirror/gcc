@@ -3138,7 +3138,12 @@ simplify_rtx (x, op0_mode, last, in_dest)
       rtx cond, true, false;
 
       cond = if_then_else_cond (x, &true, &false);
-      if (cond != 0)
+      if (cond != 0
+	  /* If everything is a comparison, what we have is highly unlikely
+	     to be simpler, so don't use it.  */
+	  && ! (GET_RTX_CLASS (code) == '<'
+		&& (GET_RTX_CLASS (GET_CODE (true)) == '<'
+		    || GET_RTX_CLASS (GET_CODE (false)) == '<')))
 	{
 	  rtx cop1 = const0_rtx;
 	  enum rtx_code cond_code = simplify_comparison (NE, &cond, &cop1);
@@ -3437,25 +3442,25 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	  return gen_lowpart_for_combine (mode, x);
 	}
 					    
-#if STORE_FLAG_VALUE == -1
-      /* (not (comparison foo bar)) can be done by reversing the comparison
-	 code if valid.  */
-      if (GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
+      /* If STORE_FLAG_VALUE is -1, (not (comparison foo bar)) can be done by
+	 reversing the comparison code if valid.  */
+      if (STORE_FLAG_VALUE == -1
+	  && GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
 	  && reversible_comparison_p (XEXP (x, 0)))
 	return gen_rtx_combine (reverse_condition (GET_CODE (XEXP (x, 0))),
 				mode, XEXP (XEXP (x, 0), 0),
 				XEXP (XEXP (x, 0), 1));
 
       /* (ashiftrt foo C) where C is the number of bits in FOO minus 1
-	 is (lt foo (const_int 0)), so we can perform the above
-	 simplification.  */
+	 is (lt foo (const_int 0)) if STORE_FLAG_VALUE is -1, so we can
+	 perform the above simplification.  */
 
-      if (XEXP (x, 1) == const1_rtx
+      if (STORE_FLAG_VALUE == -1
+	  && XEXP (x, 1) == const1_rtx
 	  && GET_CODE (XEXP (x, 0)) == ASHIFTRT
 	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
 	  && INTVAL (XEXP (XEXP (x, 0), 1)) == GET_MODE_BITSIZE (mode) - 1)
 	return gen_rtx_combine (GE, mode, XEXP (XEXP (x, 0), 0), const0_rtx);
-#endif
 
       /* Apply De Morgan's laws to reduce number of patterns for machines
  	 with negating logical insns (and-not, nand, etc.).  If result has
@@ -3762,16 +3767,15 @@ simplify_rtx (x, op0_mode, last, in_dest)
       break;
 
     case MINUS:
-#if STORE_FLAG_VALUE == 1
-      /* (minus 1 (comparison foo bar)) can be done by reversing the comparison
-	 code if valid.  */
-      if (XEXP (x, 0) == const1_rtx
+      /* If STORE_FLAG_VALUE is 1, (minus 1 (comparison foo bar)) can be done
+	 by reversing the comparison code if valid.  */
+      if (STORE_FLAG_VALUE == 1
+	  && XEXP (x, 0) == const1_rtx
 	  && GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) == '<'
 	  && reversible_comparison_p (XEXP (x, 1)))
 	return gen_binary (reverse_condition (GET_CODE (XEXP (x, 1))),
 			   mode, XEXP (XEXP (x, 1), 0),
 				XEXP (XEXP (x, 1), 1));
-#endif
 
       /* (minus <foo> (and <foo> (const_int -pow2))) becomes
 	 (and <foo> (const_int pow2-1))  */
@@ -3845,7 +3849,6 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	  /* Simplify our comparison, if possible.  */
 	  new_code = simplify_comparison (code, &op0, &op1);
 
-#if STORE_FLAG_VALUE == 1
 	  /* If STORE_FLAG_VALUE is 1, we can convert (ne x 0) to simply X
 	     if only the low-order bit is possibly nonzero in X (such as when
 	     X is a ZERO_EXTRACT of one bit).  Similarly, we can convert EQ to
@@ -3858,13 +3861,14 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	     ZERO_EXTRACT is indeed appropriate, it will be placed back by
 	     the call to make_compound_operation in the SET case.  */
 
-	  if (new_code == NE && GET_MODE_CLASS (mode) == MODE_INT
-	      && op1 == const0_rtx
-	      && nonzero_bits (op0, mode) == 1)
+	  if (STORE_FLAG_VALUE == 1
+	      && new_code == NE && GET_MODE_CLASS (mode) == MODE_INT
+	      && op1 == const0_rtx && nonzero_bits (op0, mode) == 1)
 	    return gen_lowpart_for_combine (mode,
 					    expand_compound_operation (op0));
 
-	  else if (new_code == NE && GET_MODE_CLASS (mode) == MODE_INT
+	  else if (STORE_FLAG_VALUE == 1
+		   && new_code == NE && GET_MODE_CLASS (mode) == MODE_INT
 		   && op1 == const0_rtx
 		   && (num_sign_bit_copies (op0, mode)
 		       == GET_MODE_BITSIZE (mode)))
@@ -3874,7 +3878,8 @@ simplify_rtx (x, op0_mode, last, in_dest)
 				gen_lowpart_for_combine (mode, op0));
 	    }
 
-	  else if (new_code == EQ && GET_MODE_CLASS (mode) == MODE_INT
+	  else if (STORE_FLAG_VALUE == 1
+		   && new_code == EQ && GET_MODE_CLASS (mode) == MODE_INT
 		   && op1 == const0_rtx
 		   && nonzero_bits (op0, mode) == 1)
 	    {
@@ -3884,7 +3889,8 @@ simplify_rtx (x, op0_mode, last, in_dest)
 				 const1_rtx);
 	    }
 
-	  else if (new_code == EQ && GET_MODE_CLASS (mode) == MODE_INT
+	  else if (STORE_FLAG_VALUE == 1
+		   && new_code == EQ && GET_MODE_CLASS (mode) == MODE_INT
 		   && op1 == const0_rtx
 		   && (num_sign_bit_copies (op0, mode)
 		       == GET_MODE_BITSIZE (mode)))
@@ -3892,19 +3898,19 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	      op0 = expand_compound_operation (op0);
 	      return plus_constant (gen_lowpart_for_combine (mode, op0), 1);
 	    }
-#endif
 
-#if STORE_FLAG_VALUE == -1
 	  /* If STORE_FLAG_VALUE is -1, we have cases similar to
 	     those above.  */
-	  if (new_code == NE && GET_MODE_CLASS (mode) == MODE_INT
+	  if (STORE_FLAG_VALUE == -1
+	      && new_code == NE && GET_MODE_CLASS (mode) == MODE_INT
 	      && op1 == const0_rtx
 	      && (num_sign_bit_copies (op0, mode)
 		  == GET_MODE_BITSIZE (mode)))
 	    return gen_lowpart_for_combine (mode,
 					    expand_compound_operation (op0));
 
-	  else if (new_code == NE && GET_MODE_CLASS (mode) == MODE_INT
+	  else if (STORE_FLAG_VALUE == -1
+		   && new_code == NE && GET_MODE_CLASS (mode) == MODE_INT
 		   && op1 == const0_rtx
 		   && nonzero_bits (op0, mode) == 1)
 	    {
@@ -3913,7 +3919,8 @@ simplify_rtx (x, op0_mode, last, in_dest)
 				gen_lowpart_for_combine (mode, op0));
 	    }
 
-	  else if (new_code == EQ && GET_MODE_CLASS (mode) == MODE_INT
+	  else if (STORE_FLAG_VALUE == -1
+		   && new_code == EQ && GET_MODE_CLASS (mode) == MODE_INT
 		   && op1 == const0_rtx
 		   && (num_sign_bit_copies (op0, mode)
 		       == GET_MODE_BITSIZE (mode)))
@@ -3924,14 +3931,14 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	    }
 
 	  /* If X is 0/1, (eq X 0) is X-1.  */
-	  else if (new_code == EQ && GET_MODE_CLASS (mode) == MODE_INT
+	  else if (STORE_FLAG_VALUE == -1
+		   && new_code == EQ && GET_MODE_CLASS (mode) == MODE_INT
 		   && op1 == const0_rtx
 		   && nonzero_bits (op0, mode) == 1)
 	    {
 	      op0 = expand_compound_operation (op0);
 	      return plus_constant (gen_lowpart_for_combine (mode, op0), -1);
 	    }
-#endif
 
 	  /* If STORE_FLAG_VALUE says to just test the sign bit and X has just
 	     one bit that might be nonzero, we can convert (ne x 0) to
@@ -3940,7 +3947,7 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	     going to test the sign bit.  */
 	  if (new_code == NE && GET_MODE_CLASS (mode) == MODE_INT
 	      && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
-	      && (STORE_FLAG_VALUE
+	      && ((STORE_FLAG_VALUE & GET_MODE_MASK (mode))
 		  == (HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (mode) - 1))
 	      && op1 == const0_rtx
 	      && mode == GET_MODE (op0)
@@ -4215,16 +4222,15 @@ simplify_if_then_else (x)
 	return gen_binary (UMIN, mode, true, false);
       }
   
-#if STORE_FLAG_VALUE == 1 || STORE_FLAG_VALUE == -1
-
   /* If we have (if_then_else COND (OP Z C1) Z) and OP is an identity when its
      second operand is zero, this can be done as (OP Z (mult COND C2)) where
      C2 = C1 * STORE_FLAG_VALUE. Similarly if OP has an outer ZERO_EXTEND or
      SIGN_EXTEND as long as Z is already extended (so we don't destroy it).
      We can do this kind of thing in some cases when STORE_FLAG_VALUE is
-     neither of the above, but it isn't worth checking for.  */
+     neither 1 or -1, but it isn't worth checking for.  */
 
-  if (comparison_p && mode != VOIDmode && ! side_effects_p (x))
+  if ((STORE_FLAG_VALUE == 1 || STORE_FLAG_VALUE == -1)
+      && comparison_p && mode != VOIDmode && ! side_effects_p (x))
     {
       rtx t = make_compound_operation (true, SET);
       rtx f = make_compound_operation (false, SET);
@@ -4333,7 +4339,6 @@ simplify_if_then_else (x)
 	  return temp;
 	}
     }
-#endif
 
   /* If we have (if_then_else (ne A 0) C1 0) and either A is known to be 0 or
      1 and C1 is a single bit or A is known to be 0 or -1 and C1 is the
@@ -4874,10 +4879,10 @@ simplify_logical (x, last)
 			   gen_unary (NOT, mode, mode, XEXP (op0, 1)),
 			   op1);
 
-#if STORE_FLAG_VALUE == 1
       /* (xor (comparison foo bar) (const_int 1)) can become the reversed
-	 comparison.  */
-      if (op1 == const1_rtx
+	 comparison if STORE_FLAG_VALUE is 1.  */
+      if (STORE_FLAG_VALUE == 1
+	  && op1 == const1_rtx
 	  && GET_RTX_CLASS (GET_CODE (op0)) == '<'
 	  && reversible_comparison_p (op0))
 	return gen_rtx_combine (reverse_condition (GET_CODE (op0)),
@@ -4885,19 +4890,19 @@ simplify_logical (x, last)
 
       /* (lshiftrt foo C) where C is the number of bits in FOO minus 1
 	 is (lt foo (const_int 0)), so we can perform the above
-	 simplification.  */
+	 simplification if STORE_FLAG_VALUE is 1.  */
 
-      if (op1 == const1_rtx
+      if (STORE_FLAG_VALUE == 1
+	  && op1 == const1_rtx
 	  && GET_CODE (op0) == LSHIFTRT
 	  && GET_CODE (XEXP (op0, 1)) == CONST_INT
 	  && INTVAL (XEXP (op0, 1)) == GET_MODE_BITSIZE (mode) - 1)
 	return gen_rtx_combine (GE, mode, XEXP (op0, 0), const0_rtx);
-#endif
 
       /* (xor (comparison foo bar) (const_int sign-bit))
 	 when STORE_FLAG_VALUE is the sign bit.  */
       if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
-	  && (STORE_FLAG_VALUE
+	  && ((STORE_FLAG_VALUE & GET_MODE_MASK (mode))
 	      == (HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (mode) - 1))
 	  && op1 == const_true_rtx
 	  && GET_RTX_CLASS (GET_CODE (op0)) == '<'
@@ -6483,12 +6488,12 @@ if_then_else_cond (x, ptrue, pfalse)
 	  return cond0 ? cond0 : cond1;
 	}
 
-#if STORE_FLAG_VALUE == 1 || STORE_FLAG_VALUE == -1
-
       /* See if we have PLUS, IOR, XOR, MINUS or UMAX, where one of the
-	 operands is zero when the other is non-zero, and vice-versa.  */
+	 operands is zero when the other is non-zero, and vice-versa,
+	 and STORE_FLAG_VALUE is 1 or -1.  */
 
-      if ((code == PLUS || code == IOR || code == XOR || code == MINUS
+      if ((STORE_FLAG_VALUE == 1 || STORE_FLAG_VALUE == -1)
+	  && (code == PLUS || code == IOR || code == XOR || code == MINUS
 	   || code == UMAX)
 	  && GET_CODE (XEXP (x, 0)) == MULT && GET_CODE (XEXP (x, 1)) == MULT)
 	{
@@ -6521,7 +6526,8 @@ if_then_else_cond (x, ptrue, pfalse)
 
       /* Similarly for MULT, AND and UMIN, execpt that for these the result
 	 is always zero.  */
-      if ((code == MULT || code == AND || code == UMIN)
+      if ((STORE_FLAG_VALUE == 1 || STORE_FLAG_VALUE == -1)
+	  && (code == MULT || code == AND || code == UMIN)
 	  && GET_CODE (XEXP (x, 0)) == MULT && GET_CODE (XEXP (x, 1)) == MULT)
 	{
 	  cond0 = XEXP (XEXP (x, 0), 0);
@@ -6543,7 +6549,6 @@ if_then_else_cond (x, ptrue, pfalse)
 	      return cond0;
 	    }
 	}
-#endif
     }
 
   else if (code == IF_THEN_ELSE)
@@ -7773,11 +7778,10 @@ num_sign_bit_copies (x, mode)
       num1 = num_sign_bit_copies (XEXP (x, 2), mode);
       return MIN (num0, num1);
 
-#if STORE_FLAG_VALUE == -1
     case EQ:  case NE:  case GE:  case GT:  case LE:  case LT:
     case GEU: case GTU: case LEU: case LTU:
-      return bitwidth;
-#endif
+      if (STORE_FLAG_VALUE == -1)
+	return bitwidth;
     }
 
   /* If we haven't been able to figure it out by one of the above rules,
@@ -8545,9 +8549,9 @@ simplify_shift_const (x, code, result_mode, varop, count)
 	     STORE_FLAG_VALUE of 1 or logical with STORE_FLAG_VALUE == -1,
 	     we have a (neg (gt X 0)) operation.  */
 
-	  if (GET_CODE (XEXP (varop, 0)) == ASHIFTRT
+	  if ((STORE_FLAG_VALUE == 1 || STORE_FLAG_VALUE == -1)
+	      && GET_CODE (XEXP (varop, 0)) == ASHIFTRT
 	      && count == GET_MODE_BITSIZE (GET_MODE (varop)) - 1
-	      && (STORE_FLAG_VALUE == 1 || STORE_FLAG_VALUE == -1)
 	      && (code == LSHIFTRT || code == ASHIFTRT)
 	      && GET_CODE (XEXP (XEXP (varop, 0), 1)) == CONST_INT
 	      && INTVAL (XEXP (XEXP (varop, 0), 1)) == count
