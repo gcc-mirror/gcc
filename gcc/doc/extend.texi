@@ -201,6 +201,26 @@ IEC 60559 conformant implementation (F.9).}
 @cite{The result of converting a pointer to an integer or
 vice versa (6.3.2.3).}
 
+A cast from pointer to integer discards most-significant bits if the
+pointer representation is larger than the integer type, sign-extends
+if the pointer representation is smaller than the integer type, otherwise
+the bits are unchanged.
+@c ??? We've always claimed that pointers were unsigned entities.
+@c Shouldn't we therefore be doing zero-extension?  If so, the bug
+@c is in convert_to_integer, where we call type_for_size and request
+@c a signed integral type.  On the other hand, it might be most useful
+@c for the target if we extend according to POINTERS_EXTEND_UNSIGNED.
+
+A cast from integer to pointer discards most-significant bits if the
+pointer representation is smaller than the integer type, extends according
+to the signedness of the integer type if the pointer representation
+is larger than the integer type, otherwise the bits are unchanged.
+
+When casting from pointer to integer and back again, the resulting
+pointer must reference the same object as the original pointer, otherwise
+the behavior is undefined.  That is, one may not use integer arithmetic to
+avoid the undefined behavior of pointer arithmetic as proscribed in 6.5.6/8.
+
 @item
 @cite{The size of the result of subtracting two pointers to elements
 of the same array (6.5.6).}

@@ -1,3 +1,8 @@
+2001-08-10  Richard Henderson  <rth@redhat.com>
+
+	* doc/extend.texi (Arrays and pointers implementation): Document
+	behavior of pointer/integer conversion.
+
 2001-08-10  Ulrich Weigand  <uweigand@de.ibm.com>
  
  	* glimits.h (__LONG_MAX__): Add s390x as 64-bit architecture.
