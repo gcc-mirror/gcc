@@ -494,7 +494,7 @@ enum reg_class
 #define FUNCTION_PROLOGUE(FILE, LSIZE)					\
 { 									\
   fprintf (FILE, "\tEDCPRLG USRDSAL=%d,BASEREG=%d\n",			\
-	   STACK_POINTER_OFFSET + LSIZE +				\
+	   STACK_POINTER_OFFSET + LSIZE - 120 +				\
 	   current_function_outgoing_args_size, BASE_REGISTER);		\
   fprintf (FILE, "PG%d\tEQU\t*\n", mvs_page_num );			\
   fprintf (FILE, "\tLR\t11,1\n");					\
@@ -524,10 +524,19 @@ enum reg_class
       function_hour = function_time->tm_hour;				\
       function_minute = function_time->tm_min;				\
       function_second = function_time->tm_sec;				\
+      fprintf (FILE, "PPA2\tDS\t0F\n");					\
+      fprintf (FILE, "\tDC\tX'03',X'00',X'33',X'00'\n");		\
+      fprintf (FILE, "\tDC\tV(CEESTART),A(0)\n");			\
+      fprintf (FILE, "\tDC\tA(CEETIMES)\n");				\
+      fprintf (FILE, "CEETIMES\tDS\t0F\n");				\
+      fprintf (FILE, "\tDC\tCL4'%d',CL4'%02d%02d',CL6'%02d%02d00'\n",	\
+    		 function_year, function_month, function_day,		\
+    		 function_hour, function_minute, function_second);	\
+      fprintf (FILE, "\tDC\tCL2'01',CL4'0100'\n");			\
     }									\
   fprintf (FILE, "$DSD%03d\tDSECT\n", function_label_index);		\
   fprintf (FILE, "\tDS\tD\n");						\
-  fprintf (FILE, "\tDS\tCL(120+%d)\n", STACK_POINTER_OFFSET + LSIZE	\
+  fprintf (FILE, "\tDS\tCL(%d)\n", STACK_POINTER_OFFSET + LSIZE 	\
 			+ current_function_outgoing_args_size);		\
   fprintf (FILE, "\tORG\t$DSD%03d\n", function_label_index);		\
   fprintf (FILE, "\tDS\tCL(120+8)\n");					\
@@ -537,26 +546,17 @@ enum reg_class
 	   function_label_index);					\
   fprintf (FILE, "\tDS\t0H\n");						\
   assemble_name (FILE, mvs_function_name);				\
-  fprintf (FILE, "\tCSECT\n");						\
+  fprintf (FILE, "\tEQU\t*\n");						\
   fprintf (FILE, "\tUSING\t*,15\n");					\
   fprintf (FILE, "\tB\tFPL%03d\n", function_label_index);		\
   fprintf (FILE, "\tDC\tAL1(FPL%03d+4-*)\n", function_label_index + 1);	\
   fprintf (FILE, "\tDC\tX'CE',X'A0',AL1(16)\n");			\
-  fprintf (FILE, "\tDC\tAL4($PPA%03d)\n",function_label_index);		\
+  fprintf (FILE, "\tDC\tAL4(PPA2)\n");					\
   fprintf (FILE, "\tDC\tAL4(0)\n");					\
   fprintf (FILE, "\tDC\tAL4($DSL%03d)\n", function_label_index);	\
   fprintf (FILE, "FPL%03d\tEQU\t*\n", function_label_index + 1);	\
   fprintf (FILE, "\tDC\tAL2(%d),C'%s'\n", strlen (mvs_function_name),	\
 	mvs_function_name);						\
-  fprintf (FILE, "$PPA%03d\tDS\t0F\n", function_label_index);		\
-  fprintf (FILE, "\tDC\tX'03',X'00',X'33',X'00'\n");			\
-  fprintf (FILE, "\tDC\tV(CEESTART),A(0)\n");				\
-  fprintf (FILE, "\tDC\tA($TIM%03d)\n", function_label_index);		\
-  fprintf (FILE, "$TIM%03d\tDS\t0F\n", function_label_index);		\
-  fprintf (FILE, "\tDC\tCL4'%d',CL4'%02d%02d',CL6'%02d%02d00'\n",	\
-		 function_year, function_month, function_day,		\
-		 function_hour, function_minute, function_second);	\
-  fprintf (FILE, "\tDC\tCL2'01',CL4'0100'\n");				\
   fprintf (FILE, "FPL%03d\tDS\t0H\n", function_label_index);		\
   fprintf (FILE, "\tSTM\t14,12,12(13)\n");				\
   fprintf (FILE, "\tL\t2,76(,13)\n");					\
@@ -611,7 +611,10 @@ enum reg_class
     strcpy (mvs_function_name, NAME);					\
   fprintf (FILE, "\tDS\t0F\n");						\
   assemble_name (FILE, mvs_function_name);				\
-  fputs ("\tCSECT\n", FILE);						\
+  fputs ("\tEQU\t*\n", FILE);						\
+  fputs ("\tENTRY\t", FILE);						\
+  assemble_name (FILE, mvs_function_name);				\
+  fputc ('\n', FILE);							\
 }
 
 /* This macro generates the assembly code for function exit, on machines
