@@ -461,7 +461,8 @@ namespace std
 
       _Const_Link_type
       _M_begin() const
-      { return static_cast<_Const_Link_type>(this->_M_impl._M_header._M_parent); }
+      { return static_cast<
+	  _Const_Link_type>(this->_M_impl._M_header._M_parent); }
 
       _Link_type
       _M_end()
@@ -999,9 +1000,9 @@ namespace std
     inline void
     _Rb_tree<_Key,_Val,_KeyOfValue,_Compare,_Alloc>::erase(iterator __position)
     {
-      _Link_type __y =
-	static_cast<_Link_type>(_Rb_tree_rebalance_for_erase(__position._M_node,
-							     this->_M_impl._M_header));
+      _Link_type __y = static_cast<
+	_Link_type>(_Rb_tree_rebalance_for_erase(__position._M_node,
+						 this->_M_impl._M_header));
       destroy_node(__y);
       --_M_impl._M_node_count;
     }
@@ -1278,4 +1279,3 @@ namespace std
 } // namespace std
 
 #endif
-

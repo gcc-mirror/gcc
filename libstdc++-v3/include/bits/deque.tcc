@@ -131,7 +131,8 @@ namespace _GLIBCXX_STD
     deque<_Tp,_Alloc>::
     erase(iterator __first, iterator __last)
     {
-      if (__first == this->_M_impl._M_start && __last == this->_M_impl._M_finish)
+      if (__first == this->_M_impl._M_start
+	  && __last == this->_M_impl._M_finish)
 	{
 	  clear();
 	  return this->_M_impl._M_finish;
@@ -139,13 +140,15 @@ namespace _GLIBCXX_STD
       else
 	{
 	  const difference_type __n = __last - __first;
-	  const difference_type __elems_before = __first - this->_M_impl._M_start;
+	  const difference_type __elems_before = (__first
+						  - this->_M_impl._M_start);
 	  if (static_cast<size_type>(__elems_before) < (size() - __n) / 2)
 	    {
 	      std::copy_backward(this->_M_impl._M_start, __first, __last);
 	      iterator __new_start = this->_M_impl._M_start + __n;
 	      std::_Destroy(this->_M_impl._M_start, __new_start);
-	      _M_destroy_nodes(this->_M_impl._M_start._M_node, __new_start._M_node);
+	      _M_destroy_nodes(this->_M_impl._M_start._M_node,
+			       __new_start._M_node);
 	      this->_M_impl._M_start = __new_start;
 	    }
 	  else
@@ -176,12 +179,15 @@ namespace _GLIBCXX_STD
 
       if (this->_M_impl._M_start._M_node != this->_M_impl._M_finish._M_node)
 	{
-	  std::_Destroy(this->_M_impl._M_start._M_cur, this->_M_impl._M_start._M_last);
-	  std::_Destroy(this->_M_impl._M_finish._M_first, this->_M_impl._M_finish._M_cur);
+	  std::_Destroy(this->_M_impl._M_start._M_cur,
+			this->_M_impl._M_start._M_last);
+	  std::_Destroy(this->_M_impl._M_finish._M_first,
+			this->_M_impl._M_finish._M_cur);
 	  _M_deallocate_node(this->_M_impl._M_finish._M_first);
 	}
       else
-        std::_Destroy(this->_M_impl._M_start._M_cur, this->_M_impl._M_finish._M_cur);
+        std::_Destroy(this->_M_impl._M_start._M_cur,
+		      this->_M_impl._M_finish._M_cur);
 
       this->_M_impl._M_finish = this->_M_impl._M_start;
     }
@@ -217,7 +223,8 @@ namespace _GLIBCXX_STD
 	    }
 	  catch(...)
 	    {
-	      _M_destroy_nodes(__new_start._M_node, this->_M_impl._M_start._M_node);
+	      _M_destroy_nodes(__new_start._M_node,
+			       this->_M_impl._M_start._M_node);
 	      __throw_exception_again;
 	    }
 	}
@@ -226,7 +233,8 @@ namespace _GLIBCXX_STD
 	  iterator __new_finish = _M_reserve_elements_at_back(__n);
 	  try
 	    {
-	      std::uninitialized_fill(this->_M_impl._M_finish, __new_finish, __x);
+	      std::uninitialized_fill(this->_M_impl._M_finish,
+				      __new_finish, __x);
 	      this->_M_impl._M_finish = __new_finish;
 	    }
 	  catch(...)
@@ -305,11 +313,13 @@ namespace _GLIBCXX_STD
               std::uninitialized_copy(__first, __mid, *__cur_node);
               __first = __mid;
             }
-            std::uninitialized_copy(__first, __last, this->_M_impl._M_finish._M_first);
+            std::uninitialized_copy(__first, __last,
+				    this->_M_impl._M_finish._M_first);
           }
         catch(...)
           {
-            std::_Destroy(this->_M_impl._M_start, iterator(*__cur_node, __cur_node));
+            std::_Destroy(this->_M_impl._M_start,
+			  iterator(*__cur_node, __cur_node));
             __throw_exception_again;
           }
       }
@@ -326,7 +336,8 @@ namespace _GLIBCXX_STD
       try
         {
           std::_Construct(this->_M_impl._M_finish._M_cur, __t_copy);
-          this->_M_impl._M_finish._M_set_node(this->_M_impl._M_finish._M_node + 1);
+          this->_M_impl._M_finish._M_set_node(this->_M_impl._M_finish._M_node
+					      + 1);
           this->_M_impl._M_finish._M_cur = this->_M_impl._M_finish._M_first;
         }
       catch(...)
@@ -347,7 +358,8 @@ namespace _GLIBCXX_STD
       *(this->_M_impl._M_start._M_node - 1) = this->_M_allocate_node();
       try
         {
-          this->_M_impl._M_start._M_set_node(this->_M_impl._M_start._M_node - 1);
+          this->_M_impl._M_start._M_set_node(this->_M_impl._M_start._M_node
+					     - 1);
           this->_M_impl._M_start._M_cur = this->_M_impl._M_start._M_last - 1;
           std::_Construct(this->_M_impl._M_start._M_cur, __t_copy);
         }
@@ -370,10 +382,11 @@ namespace _GLIBCXX_STD
       std::_Destroy(this->_M_impl._M_finish._M_cur);
     }
 
-  // Called only if _M_impl._M_start._M_cur == _M_impl._M_start._M_last - 1.  Note that
-  // if the deque has at least one element (a precondition for this member
-  // function), and if _M_impl._M_start._M_cur == _M_impl._M_start._M_last, then the deque
-  // must have at least two nodes.
+  // Called only if _M_impl._M_start._M_cur == _M_impl._M_start._M_last - 1.
+  // Note that if the deque has at least one element (a precondition for this
+  // member function), and if
+  //   _M_impl._M_start._M_cur == _M_impl._M_start._M_last,
+  // then the deque must have at least two nodes.
   template <typename _Tp, typename _Alloc>
     void deque<_Tp,_Alloc>::
     _M_pop_front_aux()
@@ -412,7 +425,8 @@ namespace _GLIBCXX_STD
 	      }
 	    catch(...)
 	      {
-		_M_destroy_nodes(__new_start._M_node, this->_M_impl._M_start._M_node);
+		_M_destroy_nodes(__new_start._M_node,
+				 this->_M_impl._M_start._M_node);
 		__throw_exception_again;
 	      }
 	  }
@@ -421,7 +435,8 @@ namespace _GLIBCXX_STD
 	    iterator __new_finish = _M_reserve_elements_at_back(__n);
 	    try
 	      {
-		std::uninitialized_copy(__first, __last, this->_M_impl._M_finish);
+		std::uninitialized_copy(__first, __last,
+					this->_M_impl._M_finish);
 		this->_M_impl._M_finish = __new_finish;
 	      }
 	    catch(...)
@@ -485,7 +500,8 @@ namespace _GLIBCXX_STD
 	    {
 	      if (__elems_before >= difference_type(__n))
 		{
-		  iterator __start_n = this->_M_impl._M_start + difference_type(__n);
+		  iterator __start_n = (this->_M_impl._M_start
+					+ difference_type(__n));
 		  std::uninitialized_copy(this->_M_impl._M_start, __start_n,
 					  __new_start);
 		  this->_M_impl._M_start = __new_start;
@@ -494,16 +510,18 @@ namespace _GLIBCXX_STD
 		}
 	      else
 		{
-		  std::__uninitialized_copy_fill(this->_M_impl._M_start, __pos,
-						 __new_start,
-						 this->_M_impl._M_start, __x_copy);
+		  std::__uninitialized_copy_fill(this->_M_impl._M_start,
+						 __pos, __new_start,
+						 this->_M_impl._M_start,
+						 __x_copy);
 		  this->_M_impl._M_start = __new_start;
 		  std::fill(__old_start, __pos, __x_copy);
 		}
 	    }
 	  catch(...)
 	    {
-	      _M_destroy_nodes(__new_start._M_node, this->_M_impl._M_start._M_node);
+	      _M_destroy_nodes(__new_start._M_node,
+			       this->_M_impl._M_start._M_node);
 	      __throw_exception_again;
 	    }
 	}
@@ -518,7 +536,8 @@ namespace _GLIBCXX_STD
 	    {
 	      if (__elems_after > difference_type(__n))
 		{
-		  iterator __finish_n = this->_M_impl._M_finish - difference_type(__n);
+		  iterator __finish_n = (this->_M_impl._M_finish
+					 - difference_type(__n));
 		  std::uninitialized_copy(__finish_n, this->_M_impl._M_finish,
 					  this->_M_impl._M_finish);
 		  this->_M_impl._M_finish = __new_finish;
@@ -563,7 +582,8 @@ namespace _GLIBCXX_STD
 	      {
 		if (__elemsbefore >= difference_type(__n))
 		  {
-		    iterator __start_n = this->_M_impl._M_start + difference_type(__n);
+		    iterator __start_n = (this->_M_impl._M_start
+					  + difference_type(__n));
 		    std::uninitialized_copy(this->_M_impl._M_start, __start_n,
 					    __new_start);
 		    this->_M_impl._M_start = __new_start;
@@ -574,15 +594,17 @@ namespace _GLIBCXX_STD
 		  {
 		    _ForwardIterator __mid = __first;
 		    std::advance(__mid, difference_type(__n) - __elemsbefore);
-		    std::__uninitialized_copy_copy(this->_M_impl._M_start, __pos,
-						   __first, __mid, __new_start);
+		    std::__uninitialized_copy_copy(this->_M_impl._M_start,
+						   __pos, __first, __mid,
+						   __new_start);
 		    this->_M_impl._M_start = __new_start;
 		    std::copy(__mid, __last, __old_start);
 		  }
 	      }
 	    catch(...)
 	      {
-		_M_destroy_nodes(__new_start._M_node, this->_M_impl._M_start._M_node);
+		_M_destroy_nodes(__new_start._M_node,
+				 this->_M_impl._M_start._M_node);
 		__throw_exception_again;
 	      }
 	  }
@@ -597,7 +619,8 @@ namespace _GLIBCXX_STD
             {
               if (__elemsafter > difference_type(__n))
 		{
-		  iterator __finish_n = this->_M_impl._M_finish - difference_type(__n);
+		  iterator __finish_n = (this->_M_impl._M_finish
+					 - difference_type(__n));
 		  std::uninitialized_copy(__finish_n,
 					  this->_M_impl._M_finish,
 					  this->_M_impl._M_finish);

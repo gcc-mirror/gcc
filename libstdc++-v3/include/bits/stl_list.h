@@ -295,10 +295,11 @@ namespace _GLIBCXX_STD
       _Node_Alloc_type;
 
       struct _List_impl 
-	: public _Node_Alloc_type {
+      : public _Node_Alloc_type
+      {
 	_List_node_base _M_node;
 	_List_impl (const _Node_Alloc_type& __a)
-	  : _Node_Alloc_type(__a)
+	: _Node_Alloc_type(__a)
 	{ }
       };
 
@@ -317,10 +318,11 @@ namespace _GLIBCXX_STD
 
       allocator_type
       get_allocator() const
-      { return allocator_type(*static_cast<const _Node_Alloc_type*>(&this->_M_impl)); }
+      { return allocator_type(*static_cast<
+			      const _Node_Alloc_type*>(&this->_M_impl)); }
 
       _List_base(const allocator_type& __a)
-	: _M_impl(__a)
+      : _M_impl(__a)
       { _M_init(); }
 
       // This is what actually destroys the list.

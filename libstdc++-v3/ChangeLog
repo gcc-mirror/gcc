@@ -1,4 +1,11 @@
 2004-04-21  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/deque.tcc: Trivial formatting fixes.
+	* include/bits/stl_deque.h: Likewise.
+	* include/bits/stl_list.h: Likewise.
+	* include/bits/stl_tree.h: Likewise.
+
+2004-04-21  Paolo Carlini  <pcarlini@suse.de>
 	    Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* include/bits/basic_string.tcc (_M_mutate): Don't compute
