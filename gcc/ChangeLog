@@ -1,3 +1,10 @@
+2002-03-26  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/5621
+	* arm.md (define_asm_attributes): Reapply patch of Thu Sep 9, 1999:
+	"Add a pool_range attribute", which was lost during the ARM/Thumb
+	merge.
+
 2002-03-26  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (xtensa_valid_move): Allow move from
