@@ -3766,7 +3766,9 @@ fold (expr)
       /* Convert A - (-B) to A + B.  */
       else if (TREE_CODE (arg1) == NEGATE_EXPR)
 	return fold (build (PLUS_EXPR, type, arg0, TREE_OPERAND (arg1, 0)));
-      else if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT)
+
+      else if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
+	       || flag_fast_math)
 	{
 	  /* Except with IEEE floating point, 0-x equals -x.  */
 	  if (! wins && real_zerop (arg0))
@@ -3774,16 +3776,18 @@ fold (expr)
 	  /* Except with IEEE floating point, x-0 equals x.  */
 	  if (real_zerop (arg1))
 	    return non_lvalue (convert (type, arg0));
-
-	  /* Fold &x - &x.  This can happen from &x.foo - &x. 
-	     This is unsafe for certain floats even in non-IEEE formats.
-	     In IEEE, it is unsafe because it does wrong for NaNs.
-	     Also note that operand_equal_p is always false if an operand
-	     is volatile.  */
-
-	  if (operand_equal_p (arg0, arg1, FLOAT_TYPE_P (type)))
-	    return convert (type, integer_zero_node);
 	}
+
+      /* Fold &x - &x.  This can happen from &x.foo - &x. 
+	 This is unsafe for certain floats even in non-IEEE formats.
+	 In IEEE, it is unsafe because it does wrong for NaNs.
+	 Also note that operand_equal_p is always false if an operand
+	 is volatile.  */
+
+      if (operand_equal_p (arg0, arg1,
+			   FLOAT_TYPE_P (type) && ! flag_fast_math))
+	return convert (type, integer_zero_node);
+
       goto associate;
 
     case MULT_EXPR:
@@ -3807,7 +3811,8 @@ fold (expr)
       else
 	{
 	  /* x*0 is 0, except for IEEE floating point.  */
-	  if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
+	  if ((TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
+	       || flag_fast_math)
 	      && real_zerop (arg1))
 	    return omit_one_operand (type, arg1, arg0);
 	  /* In IEEE floating point, x*1 is not equivalent to x for snans.
@@ -4630,7 +4635,8 @@ fold (expr)
 
       if (TREE_CODE_CLASS (TREE_CODE (arg0)) == '<'
 	  && (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	      || ! FLOAT_TYPE_P (TREE_TYPE (TREE_OPERAND (arg0, 0))))
+	      || ! FLOAT_TYPE_P (TREE_TYPE (TREE_OPERAND (arg0, 0)))
+	      || flag_fast_math)
 	  && operand_equal_for_comparison_p (TREE_OPERAND (arg0, 0),
 					     arg1, TREE_OPERAND (arg0, 1)))
 	{
