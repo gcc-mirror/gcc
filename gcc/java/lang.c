@@ -78,6 +78,7 @@ static int inline_init_test_initialization PARAMS ((void * *,
 						    void *));
 static bool java_can_use_bit_fields_p PARAMS ((void));
 static int java_dump_tree PARAMS ((void *, tree));
+static void dump_compound_expr PARAMS ((dump_info_p, tree));
 
 #ifndef TARGET_OBJECT_SUFFIX
 # define TARGET_OBJECT_SUFFIX ".o"

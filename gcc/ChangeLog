@@ -1,3 +1,9 @@
+2003-01-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* alloc-pool.c: Don't include "libiberty.h".
+	* config/sparc/gmon-sol2.c: Include <fcntl.h>.
+	* convert.c (convert_to_real): Hide unused variable.
+
 2003-01-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (gtyp-gen.h): Const-ify.
