@@ -35,10 +35,10 @@ typedef int iconv_t;  /* dummy */
 struct directive;		/* Deliberately incomplete.  */
 struct pending_option;
 struct op;
-struct strbuf;
+struct _cpp_strbuf;
 
 typedef bool (*convert_f) (iconv_t, const unsigned char *, size_t,
-			   struct strbuf *);
+			   struct _cpp_strbuf *);
 struct cset_converter
 {
   convert_f func;

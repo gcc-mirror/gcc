@@ -92,7 +92,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #endif
 
 /* This structure is used for a resizable string buffer throughout.  */
-struct strbuf
+/* Don't call it strbuf, as that conflicts with unistd.h on systems
+   such as DYNIX/ptx where unistd.h includes stropts.h. */
+struct _cpp_strbuf
 {
   uchar *text;
   size_t asize;
@@ -451,7 +453,7 @@ one_utf16_to_utf8 (iconv_t bigend, const uchar **inbufp, size_t *inbytesleftp,
 static inline bool
 conversion_loop (int (*const one_conversion)(iconv_t, const uchar **, size_t *,
 					     uchar **, size_t *),
-		 iconv_t cd, const uchar *from, size_t flen, struct strbuf *to)
+		 iconv_t cd, const uchar *from, size_t flen, struct _cpp_strbuf *to)
 {
   const uchar *inbuf;
   uchar *outbuf;
@@ -492,7 +494,7 @@ conversion_loop (int (*const one_conversion)(iconv_t, const uchar **, size_t *,
 /* These functions convert entire strings between character sets.
    They all have the signature
 
-   bool (*)(iconv_t cd, const uchar *from, size_t flen, struct strbuf *to);
+   bool (*)(iconv_t cd, const uchar *from, size_t flen, struct _cpp_strbuf *to);
 
    The input string FROM is converted as specified by the function
    name plus the iconv descriptor CD (which may be fake), and the
@@ -501,28 +503,28 @@ conversion_loop (int (*const one_conversion)(iconv_t, const uchar **, size_t *,
 /* These four use the custom conversion code above.  */
 static bool
 convert_utf8_utf16 (iconv_t cd, const uchar *from, size_t flen,
-		    struct strbuf *to)
+		    struct _cpp_strbuf *to)
 {
   return conversion_loop (one_utf8_to_utf16, cd, from, flen, to);
 }
 
 static bool
 convert_utf8_utf32 (iconv_t cd, const uchar *from, size_t flen,
-		    struct strbuf *to)
+		    struct _cpp_strbuf *to)
 {
   return conversion_loop (one_utf8_to_utf32, cd, from, flen, to);
 }
 
 static bool
 convert_utf16_utf8 (iconv_t cd, const uchar *from, size_t flen,
-		    struct strbuf *to)
+		    struct _cpp_strbuf *to)
 {
   return conversion_loop (one_utf16_to_utf8, cd, from, flen, to);
 }
 
 static bool
 convert_utf32_utf8 (iconv_t cd, const uchar *from, size_t flen,
-		    struct strbuf *to)
+		    struct _cpp_strbuf *to)
 {
   return conversion_loop (one_utf32_to_utf8, cd, from, flen, to);
 }
@@ -530,7 +532,7 @@ convert_utf32_utf8 (iconv_t cd, const uchar *from, size_t flen,
 /* Identity conversion, used when we have no alternative.  */
 static bool
 convert_no_conversion (iconv_t cd ATTRIBUTE_UNUSED,
-		       const uchar *from, size_t flen, struct strbuf *to)
+		       const uchar *from, size_t flen, struct _cpp_strbuf *to)
 {
   if (to->len + flen > to->asize)
     {
@@ -547,7 +549,7 @@ convert_no_conversion (iconv_t cd ATTRIBUTE_UNUSED,
 #if HAVE_ICONV
 static bool
 convert_using_iconv (iconv_t cd, const uchar *from, size_t flen,
-		     struct strbuf *to)
+		     struct _cpp_strbuf *to)
 {
   ICONV_CONST char *inbuf;
   char *outbuf;
@@ -873,7 +875,7 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 
 static const uchar *
 convert_ucn (cpp_reader *pfile, const uchar *from, const uchar *limit,
-	     struct strbuf *tbuf, bool wide)
+	     struct _cpp_strbuf *tbuf, bool wide)
 {
   cppchar_t ucn;
   uchar buf[6];
@@ -900,7 +902,7 @@ convert_ucn (cpp_reader *pfile, const uchar *from, const uchar *limit,
 
 static void
 emit_numeric_escape (cpp_reader *pfile, cppchar_t n,
-		     struct strbuf *tbuf, bool wide)
+		     struct _cpp_strbuf *tbuf, bool wide)
 {
   if (wide)
     {
@@ -948,7 +950,7 @@ emit_numeric_escape (cpp_reader *pfile, cppchar_t n,
    number.  You can, e.g. generate surrogate pairs this way.  */
 static const uchar *
 convert_hex (cpp_reader *pfile, const uchar *from, const uchar *limit,
-	     struct strbuf *tbuf, bool wide)
+	     struct _cpp_strbuf *tbuf, bool wide)
 {
   cppchar_t c, n = 0, overflow = 0;
   int digits_found = 0;
@@ -999,7 +1001,7 @@ convert_hex (cpp_reader *pfile, const uchar *from, const uchar *limit,
    number.  */
 static const uchar *
 convert_oct (cpp_reader *pfile, const uchar *from, const uchar *limit,
-	     struct strbuf *tbuf, bool wide)
+	     struct _cpp_strbuf *tbuf, bool wide)
 {
   size_t count = 0;
   cppchar_t c, n = 0;
@@ -1036,7 +1038,7 @@ convert_oct (cpp_reader *pfile, const uchar *from, const uchar *limit,
    pointer.  Handles all relevant diagnostics.  */
 static const uchar *
 convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
-		struct strbuf *tbuf, bool wide)
+		struct _cpp_strbuf *tbuf, bool wide)
 {
   /* Values of \a \b \e \f \n \r \t \v respectively.  */
 #if HOST_CHARSET == HOST_CHARSET_ASCII
@@ -1128,7 +1130,7 @@ bool
 cpp_interpret_string (cpp_reader *pfile, const cpp_string *from, size_t count,
 		      cpp_string *to, bool wide)
 {
-  struct strbuf tbuf;
+  struct _cpp_strbuf tbuf;
   const uchar *p, *base, *limit;
   size_t i;
   struct cset_converter cvt
