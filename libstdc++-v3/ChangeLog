@@ -1,3 +1,27 @@
+2004-10-21  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/tr1/array (array): Make safe for zero-sized arrays.
+	(array::end): Return one past the end.
+	(array::at): Use __throw_out_of_range, include functexcept.h.
+	(operator==): Implement.
+	(operator!=): Same.
+	(operator<): Same.
+	(operator>): Same.
+	(operator>=): Same.
+	(operator<=): Same.
+	* testsuite/tr1/6_containers/array/capacity/(empty.cc,
+	max_size.cc, size.cc): New.
+	* testsuite/tr1/6_containers/array/comparison_operators/(equal.cc,
+	greater.cc, greater_or_equal.cc, less.cc, less_or_equal.cc,
+	not_equal): New.
+	* testsuite/tr1/6_containers/array/cons/aggregate_initialization.cc: 
+	New.
+	* testsuite/tr1/6_containers/array/element_access/at_out_of_range.cc: 
+	New.
+	* testsuite/tr1/6_containers/array/iterators/end_is_one_past.cc: New.
+	* testsuite/tr1/6_containers/array/requirements/(contiguous.cc,
+	instantiate, typedefs, zero_size_arrays): New.
+
 2004-10-21  Paolo Carlini  <pcarlini@suse.de>
 	    Benjamin Kosnik  <bkoz@redhat.com>
 
