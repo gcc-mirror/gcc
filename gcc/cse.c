@@ -4219,7 +4219,7 @@ fold_rtx (x, insn)
 		 with a pre- or post-increment.  Similarly for two subtracts of
 		 identical powers of two with post decrement.  */
 
-	      if (code == PLUS && INTVAL (const_arg1) == INTVAL (inner_const)
+	      if (code == PLUS && const_arg1 == inner_const
 		  && ((HAVE_PRE_INCREMENT
 			  && exact_log2 (INTVAL (const_arg1)) >= 0)
 		      || (HAVE_POST_INCREMENT
