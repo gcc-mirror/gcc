@@ -3977,10 +3977,9 @@ try_replace_reg (from, to, insn)
   int success = 0;
   rtx set = single_set (insn);
 
-  if (reg_mentioned_p (from, PATTERN (insn)))
-    {
-      success = validate_replace_src (from, to, insn);
-    }
+  validate_replace_src_group (from, to, insn);
+  if (num_changes_pending () && apply_change_group ())
+    success = 1;
 
   if (!success && set && reg_mentioned_p (from, SET_SRC (set)))
     {
