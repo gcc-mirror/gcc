@@ -509,16 +509,15 @@ cxx_decode_option (argc, argv)
 	  return 1;
 	}
 
-      if (!strcmp (p, "handle-exceptions")
-	  || !strcmp (p, "no-handle-exceptions"))
+      if (!strcmp (positive_option, "handle-exceptions"))
 	warning ("-fhandle-exceptions has been renamed to -fexceptions (and is now on by default)");
-      else if (! strcmp (p, "alt-external-templates"))
+      else if (!strcmp (p, "alt-external-templates"))
 	{
 	  flag_external_templates = 1;
 	  flag_alt_external_templates = 1;
           cp_deprecated ("-falt-external-templates");
 	}
-      else if (! strcmp (p, "no-alt-external-templates"))
+      else if (!strcmp (p, "no-alt-external-templates"))
 	flag_alt_external_templates = 0;
       else if (!strcmp (p, "repo"))
 	{
