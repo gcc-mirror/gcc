@@ -1,3 +1,7 @@
+2001-11-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* class.c (dump_array): Fix format specifier warning.
+
 2001-11-09  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cp-lang.c (LANG_HOOKS_NAME): Override.

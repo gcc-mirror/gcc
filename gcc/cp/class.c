@@ -6805,7 +6805,7 @@ dump_array (stream, decl)
 
   for (ix = 0, inits = TREE_OPERAND (DECL_INITIAL (decl), 1);
        inits; ix++, inits = TREE_CHAIN (inits))
-    fprintf (stream, "%-4d  %s\n", ix * elt,
+    fprintf (stream, "%-4ld  %s\n", (long)(ix * elt),
 	     expr_as_string (TREE_VALUE (inits), TFF_PLAIN_IDENTIFIER));
 }
 
