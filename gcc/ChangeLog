@@ -1,3 +1,15 @@
+Sat Jun 13 12:53:22 1998  Richard Earnshaw (rearnsha@arm.com)
+
+	* unroll.c (verify_addresses): Use validate_replace_rtx to undo 
+	changes; abort if undo fails.
+
+Sat Jun 13 11:46:38 1998  Anders Blomdell <anders.blomdell@control.lth.se>
+
+	* flags.h (flag_volatile_static): Declare.
+	* toplev.c (flag_volatile_static): Define.
+	(f_options): Include -fvolatile-static.
+	* varasm.c (make_decl_rtl): Support -fvolatile-static.
+
 Sat Jun 13 08:26:21 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* varasm.c (assemble_variable): Never put decl with specified section
