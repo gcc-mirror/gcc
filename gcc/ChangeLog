@@ -1,3 +1,7 @@
+2000-11-11  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* invoke.texi: Correct spelling of -foptimize-register-move.
+
 2000-11-11  Neil Booth  <neilb@earthling.net>
 
 	Remove CPP_PLACEMARKERs.
