@@ -1022,12 +1022,12 @@ place_field (rli, field)
  	  || (rli->prev_field && ! DECL_PACKED (rli->prev_field))))
     {
       /* At this point, either the prior or current are bitfields,
-	 (possibly both), and we're dealing with MS packing. */
+	 (possibly both), and we're dealing with MS packing.  */
       tree prev_saved = rli->prev_field;
 
       /* Is the prior field a bitfield?  If so, handle "runs" of same
-	 type size fields. */
-      if (rli->prev_field /* necessarily a bitfield if it exists. */) 
+	 type size fields.  */
+      if (rli->prev_field /* necessarily a bitfield if it exists.  */)
 	{
 	  /* If both are bitfields, nonzero, and the same size, this is
 	     the middle of a run.  Zero declared size fields are special
@@ -1049,7 +1049,7 @@ place_field (rli, field)
 
 	      if (rli->remaining_in_alignment < bitsize)
 		{
-		  /* out of bits; bump up to next 'word'. */
+		  /* out of bits; bump up to next 'word'.  */
 		  rli->bitpos = size_binop (PLUS_EXPR,
 				      type_size,
 				      DECL_FIELD_BIT_OFFSET(rli->prev_field));
@@ -1079,12 +1079,12 @@ place_field (rli, field)
 	      else
 		{
 		  /* We "use up" size zero fields; the code below should behave
-		     as if the prior field was not a bitfield. */
+		     as if the prior field was not a bitfield.  */
 		  prev_saved = NULL;
 		}
 
 	      /* Cause a new bitfield to be captured, either this time (if 
-		 currently a bitfield) or next time we see one. */
+		 currently a bitfield) or next time we see one.  */
 	      if (!DECL_BIT_FIELD_TYPE(field)
 		 || integer_zerop (DECL_SIZE (field)))
 		{
@@ -1124,7 +1124,7 @@ place_field (rli, field)
 		  = TREE_INT_CST_LOW (TYPE_SIZE(TREE_TYPE(field)))
 		    - TREE_INT_CST_LOW (DECL_SIZE (field));
 
-	  /* Now align (conventionally) for the new type. */
+	  /* Now align (conventionally) for the new type.  */
 	  if (!DECL_PACKED(field))
 	      type_align = MAX(TYPE_ALIGN (type), type_align);
 
@@ -1142,7 +1142,7 @@ place_field (rli, field)
 
 	  rli->bitpos = round_up (rli->bitpos, type_align);
           /* If we really aligned, don't allow subsequent bitfields
-	     to undo that. */
+	     to undo that.  */
 	  rli->prev_field = NULL;
 	}
     }
@@ -1173,7 +1173,7 @@ place_field (rli, field)
   if (known_align != actual_align)
     layout_decl (field, actual_align);
 
-  /* Only the MS bitfields use this. */
+  /* Only the MS bitfields use this.  */
   if (rli->prev_field == NULL && DECL_BIT_FIELD_TYPE(field))
       rli->prev_field = field;
 

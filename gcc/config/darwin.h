@@ -94,7 +94,7 @@ Boston, MA 02111-1307, USA.  */
 #undef	LIB_SPEC
 #define LIB_SPEC "%{!static:-lSystem}"
 
-/* We specify crt0.o as -lcrt0.o so that ld will search the library path. */
+/* We specify crt0.o as -lcrt0.o so that ld will search the library path.  */
 
 #undef	STARTFILE_SPEC
 #define STARTFILE_SPEC  \
@@ -120,7 +120,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define DBX_CONTIN_LENGTH 0
 
-/* gdb needs a null N_SO at the end of each file for scattered loading. */
+/* gdb needs a null N_SO at the end of each file for scattered loading.  */
 
 #undef	DBX_OUTPUT_MAIN_SOURCE_FILE_END
 #define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME)			\
@@ -166,7 +166,7 @@ do { text_section ();							\
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\t.space %d\n", SIZE)
 
-/* Give ObjC methods pretty symbol names. */
+/* Give ObjC methods pretty symbol names.  */
 
 #undef	OBJC_GEN_METHOD_LABEL
 #define OBJC_GEN_METHOD_LABEL(BUF,IS_INST,CLASS_NAME,CAT_NAME,SEL_NAME,NUM) \
@@ -290,7 +290,7 @@ do { text_section ();							\
 #undef	MAX_OFILE_ALIGNMENT
 #define MAX_OFILE_ALIGNMENT 0x8000
 
-/* Create new Mach-O sections. */
+/* Create new Mach-O sections.  */
 
 #undef	SECTION_FUNCTION
 #define SECTION_FUNCTION(FUNCTION, SECTION, DIRECTIVE, OBJC)		\

@@ -254,7 +254,7 @@ find_structure (name, isunion)
 
 /* Return the previously-defined parameterised structure for structure
    T and parameters PARAM, or a new parameterised empty structure or
-   union if none was defined previously.    */
+   union if none was defined previously.  */
 
 static type_p
 find_param_structure (t, param)
@@ -594,7 +594,7 @@ adjust_field_rtx_def (t, opt)
 	    }
 	  else if (t == basic_block_tp)
 	    {
-	      /* We don't presently GC basic block structures... */
+	      /* We don't presently GC basic block structures...  */
 	      subfields->opt = xmalloc (sizeof (*subfields->opt));
 	      subfields->opt->next = nodot;
 	      subfields->opt->name = "skip";

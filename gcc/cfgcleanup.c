@@ -518,7 +518,7 @@ try_forward_edges (mode, b)
 
 	      /* Do not clean up branches to just past the end of a loop
 		 at this time; it can mess up the loop optimizer's
-		 recognition of some patterns. */
+		 recognition of some patterns.  */
 
 	      insn = PREV_INSN (target->head);
 	      if (insn && GET_CODE (insn) == NOTE

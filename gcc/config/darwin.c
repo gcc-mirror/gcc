@@ -217,7 +217,7 @@ machopic_define_name (name)
 }
 
 /* This is a static to make inline functions work.  The rtx
-   representing the PIC base symbol always points to here. */
+   representing the PIC base symbol always points to here.  */
 
 static char function_base[32];
 
@@ -1023,7 +1023,7 @@ update_non_lazy_ptrs (name)
 
 /* Function NAME is being defined, and its label has just been output.
    If there's already a reference to a stub for this function, we can
-   just emit the stub label now and we don't bother emitting the stub later. */
+   just emit the stub label now and we don't bother emitting the stub later.  */
 
 void
 machopic_output_possible_stub_label (file, name)
@@ -1214,7 +1214,7 @@ machopic_select_section (exp, reloc, align)
 }
 
 /* This can be called with address expressions as "rtx".
-   They must go in "const". */
+   They must go in "const".  */
 
 void
 machopic_select_rtx_section (mode, x, align)
