@@ -33,6 +33,8 @@
 
 // Written by Benjamin Kosnik <bkoz@redhat.com>
 
+#include <clocale>
+
 namespace std
 {
   typedef __locale_t		__c_locale;
