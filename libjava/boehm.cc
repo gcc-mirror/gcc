@@ -18,6 +18,11 @@ details.  */
 #include <java-field.h>
 #include <java-interp.h>
 
+// More nastiness: the GC wants to define TRUE and FALSE.  We don't
+// need the Java definitions (themselves a hack), so we undefine them.
+#undef TRUE
+#undef FALSE
+
 // We need to include gc_priv.h.  However, it tries to include
 // config.h if it hasn't already been included.  So we force the
 // inclusion of the Boehm config.h.

@@ -92,7 +92,7 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
              
       r = pthread_cond_timedwait (cv, pmu, &ts);
       /* A timeout is a normal result.  */
-      if (r && errno == ETIME)
+      if (r && errno == ETIMEDOUT)
 	r = 0;
     }
   return r;

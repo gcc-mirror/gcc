@@ -1,3 +1,9 @@
+1999-08-23  Tom Tromey  <tromey@cygnus.com>
+
+	* boehm.cc: Undefine TRUE and FALSE.
+
+	* posix-threads.cc (_Jv_CondWait): Use ETIMEDOUT, not ETIME.
+
 1999-08-21  Tom Tromey  <tromey@cygnus.com>
 
 	* posix-threads.cc (_Jv_CondWait): Treat a timeout as a normal
