@@ -1,5 +1,5 @@
 /* Gnu.java --- Gnu provider main class
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,8 +45,13 @@ public final class Gnu extends Provider
   {
     super( "GNU", 1.0, "GNU provider v1.0 implementing SHA-1, MD5, DSA");
 
+    // Note that all implementation class names are referenced by using
+    // Class.getName(). That way when we staticly link the Gnu provider
+    // we automatically get all the implementation classes.
+
     // Signature
-    put("Signature.SHA1withDSA", "gnu.java.security.provider.DSASignature");
+    put("Signature.SHA1withDSA",
+	gnu.java.security.provider.DSASignature.class.getName());
 
     put("Alg.Alias.Signature.DSS", "SHA1withDSA");
     put("Alg.Alias.Signature.DSA", "SHA1withDSA");
@@ -62,29 +67,32 @@ public final class Gnu extends Provider
     put("Alg.Alias.Signature.1.3.14.3.2.27", "SHA1withDSA");
 
     // Key Pair Generator
-    put("KeyPairGenerator.DSA", "gnu.java.security.provider.DSAKeyPairGenerator");
+    put("KeyPairGenerator.DSA",
+	gnu.java.security.provider.DSAKeyPairGenerator.class.getName());
 
     put("Alg.Alias.KeyPairGenerator.OID.1.2.840.10040.4.1", "DSA");
     put("Alg.Alias.KeyPairGenerator.1.2.840.10040.4.1", "DSA");
     put("Alg.Alias.KeyPairGenerator.1.3.14.3.2.12", "DSA");
 
     // Message Digests
-    put("MessageDigest.SHA", "gnu.java.security.provider.SHA");
-    put("MessageDigest.MD5", "gnu.java.security.provider.MD5");
+    put("MessageDigest.SHA", gnu.java.security.provider.SHA.class.getName());
+    put("MessageDigest.MD5", gnu.java.security.provider.MD5.class.getName());
 
     // Format "Alias", "Actual Name"
     put("Alg.Alias.MessageDigest.SHA1", "SHA");
     put("Alg.Alias.MessageDigest.SHA-1", "SHA");
 
     // Algorithm Parameters
-    put("AlgorithmParameters.DSA", "gnu.java.security.provider.DSAAlgorithmParameters");
+    put("AlgorithmParameters.DSA",
+	gnu.java.security.provider.DSAParameters.class.getName());
 
     // Algorithm Parameter Generator
-    put("AlgorithmParameterGenerator.DSA", "gnu.java.security.provider.DSAAlgorithmParameterGenerator");
+    put("AlgorithmParameterGenerator.DSA",
+     gnu.java.security.provider.DSAParameterGenerator.class.getName());
 
     // SecureRandom
-    put("SecureRandom.SHA1PRNG", "gnu.java.security.provider.SHA1PRNG");
-
+    put("SecureRandom.SHA1PRNG",
+	gnu.java.security.provider.SHA1PRNG.class.getName());
 
   }
 }
