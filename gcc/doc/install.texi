@@ -433,9 +433,9 @@ complex conversion patterns. As a basic rule, @var{prefix} (and
 @var{suffix}) are prepended (appended) before further transformations
 can happen with a special transformation script @var{pattern}.
 
-As currently implemented, this options only take effect for native
+As currently implemented, this option only takes effect for native
 builds; cross compiler binaries' names are not transformed even when a
-transformation is explicitly asked for by one of this options.
+transformation is explicitly asked for by one of these options.
 
 For native builds, some of the installed programs are also installed
 with the target alias in front of their name, as in
@@ -551,15 +551,25 @@ configured with @option{--with-gnu-as}.)  If you have more than one
 assembler installed on your system, you may want to use this option in
 connection with @option{--with-as=@var{pathname}}.
 
-The systems where it makes a difference whether you use the GNU assembler are
-@samp{hppa1.0-@var{any}-@var{any}}, @samp{hppa1.1-@var{any}-@var{any}},
-@samp{i386-@var{any}-sysv}, @samp{i386-@var{any}-isc},
-@samp{i860-@var{any}-bsd}, @samp{m68k-bull-sysv},
-@samp{m68k-hp-hpux}, @samp{m68k-sony-bsd},
-@samp{m68k-altos-sysv}, @samp{m68000-hp-hpux},
-@samp{m68000-att-sysv}, @samp{@var{any}-lynx-lynxos},
-and @samp{mips-@var{any}}.
-On any other system, @option{--with-gnu-as} has no effect.
+The following systems are the only ones where it makes a difference
+whether you use the GNU assembler.  On any other system,
+@option{--with-gnu-as} has no effect.
+
+@itemize bullet
+@item @samp{hppa1.0-@var{any}-@var{any}}
+@item @samp{hppa1.1-@var{any}-@var{any}}
+@item @samp{i386-@var{any}-sysv}
+@item @samp{i386-@var{any}-isc}
+@item @samp{i860-@var{any}-bsd}
+@item @samp{m68k-bull-sysv}
+@item @samp{m68k-hp-hpux}
+@item @samp{m68k-sony-bsd}
+@item @samp{m68k-altos-sysv}
+@item @samp{m68000-hp-hpux}
+@item @samp{m68000-att-sysv}
+@item @samp{@var{any}-lynx-lynxos}
+@item @samp{mips-@var{any}}
+@end itemize
 
 On the systems listed above (except for the HP-PA, for ISC on the
 386, and for @samp{mips-sgi-irix5.*}), if you use the GNU assembler,
@@ -999,13 +1009,16 @@ bootstrap} except that object files from the stage1 and
 stage2 of the 3-stage bootstrap of the compiler are deleted as
 soon as they are no longer needed.
 
-
 If you want to save additional space during the bootstrap and in
 the final installation as well, you can build the compiler binaries
-without debugging information with @samp{make CFLAGS='-O' LIBCFLAGS='-g
--O2' LIBCXXFLAGS='-g -O2 -fno-implicit-templates' bootstrap}.  This will save
+without debugging information as in the following example.  This will save
 roughly 40% of disk space both for the bootstrap and the final installation.
 (Libraries will still contain debugging information.)
+
+@example
+     make CFLAGS='-O' LIBCFLAGS='-g -O2' \
+       LIBCXXFLAGS='-g -O2 -fno-implicit-templates' bootstrap
+@end example
 
 If you wish to use non-default GCC flags when compiling the stage2 and
 stage3 compilers, set @code{BOOT_CFLAGS} on the command line when doing
@@ -1802,8 +1815,10 @@ need to tell GCC where to find the assembler and the linker.  The
 simplest way to do so is by providing @option{--with-as} and
 @option{--with-ld} to @file{configure}, e.g.@:
 
-@samp{configure --with-as=/opt/ctl/bin/cam --with-ld=/opt/ctl/bin/cld
---enable-languages=c}
+@example
+    configure --with-as=/opt/ctl/bin/cam --with-ld=/opt/ctl/bin/cld \
+      --enable-languages=c
+@end example
 
 The comparison test during @samp{make bootstrap} fails on Unicos/Mk
 because the assembler inserts timestamps into object files.  You should
@@ -2006,15 +2021,17 @@ results on FreeBSD 3.0, 3.4, 4.0, 4.2, 4.3, 4.4, 4.5-STABLE and 5-CURRENT@.
 
 In principle, @option{--enable-threads} is now compatible with
 @option{--enable-libgcj} on FreeBSD@.  However, it has only been built
-and tested on i386-*-freebsd4.5 and alpha-*-freebsd5.0.  The static
+and tested on @samp{i386-*-freebsd4.5} and @samp{alpha-*-freebsd5.0}.
+The static
 library may be incorrectly built (symbols are missing at link time).
 There is a rare timing-based startup hang (probably involves an
 assupmtion about the thread library).  Multi-threaded boehm-gc (required for
 libjava) exposes severe threaded signal-handling bugs on FreeBSD before
 4.5-RELEASE.  The alpha port may not fully bootstrap without some manual
-intervention: gcjh will crash with a floating-point exception while
+intervention: @command{gcjh} will crash with a floating-point exception while
 generating @file{java/lang/Double.h} (just copy the version built on
-i386-*-freebsd* and rerun the top-level gmake with no arguments and it
+@samp{i386-*-freebsd*} and rerun the top-level @command{gmake} with no
+arguments and it
 should properly complete the bootstrap).  Other CPU architectures
 supported by FreeBSD will require additional configuration tuning in, at
 the very least, both boehm-gc and libffi.
@@ -2137,8 +2154,13 @@ must be used if both ports are to be installed on the same system.
 
 You must use GNU binutils 2.11 or above with the 32-bit port.  Thread
 support is not currently implemented, so @option{--enable-threads} does
-not work.  See @uref{http://gcc.gnu.org/ml/gcc-prs/2002-01/msg00551.html}
-and @uref{http://gcc.gnu.org/ml/gcc-bugs/2002-01/msg00663.html}.
+not work.  See:
+
+@itemize
+@item @uref{http://gcc.gnu.org/ml/gcc-prs/2002-01/msg00551.html}
+@item @uref{http://gcc.gnu.org/ml/gcc-bugs/2002-01/msg00663.html}
+@end itemize
+
 GCC 2.95.x is not supported under HP-UX 11 and cannot be used to
 compile GCC 3.0 and up.  Refer to @uref{binaries.html,,binaries} for
 information about obtaining precompiled GCC binaries for HP-UX.
@@ -2324,8 +2346,10 @@ from the right place) while making the tools not think we're actually
 building a cross compiler.   The easiest way to do this is with a configure
 command like this:
 
-@samp{CC=/udk/usr/ccs/bin/cc @var{/your/path/to}/gcc/configure
---host=i686-pc-udk --target=i686-pc-udk --program-prefix=udk-}
+@example
+    CC=/udk/usr/ccs/bin/cc @var{/your/path/to}/gcc/configure \
+      --host=i686-pc-udk --target=i686-pc-udk --program-prefix=udk-
+@end example
 
 @emph{You should substitute @samp{i686} in the above command with the appropriate
 processor for your host.}
@@ -2855,7 +2879,7 @@ binaries are available at
 registration required).
 
 Versions of the assembler prior to ``cctools-364'' cannot handle the
-4-argument form of rlwinm and related mask-using instructions.  Darwin
+4-argument form of @code{rlwinm} and related mask-using instructions.  Darwin
 1.3 (Mac OS X 10.0) uses cctools-353 for instance.  To get cctools-364,
 check out @file{cctools} with tag @samp{Apple-364}, build it, and
 install the assembler as @file{usr/bin/as}.  See
@@ -3033,8 +3057,10 @@ information.
 Sun @command{as} 4.x is broken in that it cannot cope with long symbol names.
 A typical error message might look similar to the following:
 
-@samp{/usr/ccs/bin/as: "/var/tmp/ccMsw135.s", line 11041:
-error: can't compute value of an expression involving an external symbol.}
+@smallexample
+/usr/ccs/bin/as: "/var/tmp/ccMsw135.s", line 11041: error:
+  can't compute value of an expression involving an external symbol.
+@end smallexample
 
 This is Sun bug 4237974.  This is fixed with patch 108908-02 for Solaris
 2.6 and has been fixed in later (5.x) versions of the assembler,
