@@ -4315,12 +4315,12 @@ tree_redirect_edge_and_branch (edge e, basic_block dest)
     case SWITCH_EXPR:
       {
         tree cases = get_cases_for_edge (e, stmt);
-	edge e2 = find_edge (e->src, dest);
 
 	/* If we have a list of cases associated with E, then use it
 	   as it's a lot faster than walking the entire case vector.  */
 	if (cases)
 	  {
+	    edge e2 = find_edge (e->src, dest);
 	    tree last, first;
 
 	    first = cases;
