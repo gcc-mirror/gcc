@@ -1,5 +1,38 @@
 2001-04-09  Andrew MacLeod  <amacleod@redhat.com>
 
+	* gcse.c (oprs_unchanged_p): Pass basic_block to load_killed_in_block_p.
+	(load_killed_in_block_p): Change bb parameter from int to basic_block.
+	(oprs_not_set_p): Pass basic_blocks instead of ints as parameters.
+	(handle_rd_kill_set): Change bb parameter from int to basic_block.
+	(compute_kill_rd): Pass basic_blocks instead of ints as parameters.
+	(expr_killed_p): Change bb parameter from int to basic_block, pass 
+	basic_blocks instead of ints as parameters.
+	(compute_ae_kill): Pass basic_blocks instead of ints as parameters.
+	(expr_reaches_here_p_work, expr_reaches_here_p): Change bb parameter 
+	from int to basic_block, pass basic_blocks instead of ints as parms.
+	(pre_expr_reaches_here_p_work, pre_expr_reaches_here_p): Change bb 
+	parameter from int to basic_block, pass basic_blocks instead of ints.
+	(process_insert_insn): Pass basic_blocks instead of ints as parameters.
+	(insert_insn_end_bb): Change bb parameter from int to basic_block, 
+	pass basic_blocks instead of ints.
+	(pre_edge_insert, pre_insert_copy_insn, pre_insert_copies): Pass 
+	basic_blocks instead of ints as parameters.
+	(pre_delete): Pass basic_blocks instead of ints as parameters.
+	(hoist_expr_reaches_here_p): Change bb parameter from int to 
+	basic_block, pass basic_blocks instead of ints.
+	(hoist_code): Pass basic_blocks instead of ints as parameters.
+	(reg_set_info, store_ops_ok, store_killed_after, store_killed_before): 
+	Change bb parameter from int to basic_block.
+	(build_store_vectors): Pass basic_blocks instead of ints as parameters.
+	(insert_insn_start_bb): Change bb parameter from int to basic_block, 
+	pass basic_blocks instead of ints.
+	(insert_store): Pass basic_blocks instead of ints as parameters.
+	(replace_store_insn, delete_store): Change bb parameter from int to 
+	basic_block, pass basic_blocks instead of ints.
+	(store_motion): Pass basic_blocks instead of ints as parameters.
+
+2001-04-09  Andrew MacLeod  <amacleod@redhat.com>
+
 	* basic-block.h (set_new_block_for_insns): New Prototype.
 	(set_block_num): Delete prototype.
 	* flow.c (set_block_num): Remove obsolete function.

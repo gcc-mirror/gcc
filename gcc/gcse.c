@@ -623,7 +623,7 @@ static int cprop_jump		PARAMS ((rtx, rtx, rtx));
 static int cprop_cc0_jump	PARAMS ((rtx, struct reg_use *, rtx));
 #endif
 static void mems_conflict_for_gcse_p PARAMS ((rtx, rtx, void *));
-static int load_killed_in_block_p    PARAMS ((int, int, rtx, int));
+static int load_killed_in_block_p    PARAMS ((basic_block, int, rtx, int));
 static void canon_list_insert        PARAMS ((rtx, rtx, void *));
 static int cprop_insn		PARAMS ((rtx, int));
 static int cprop		PARAMS ((int));
@@ -631,8 +631,9 @@ static int one_cprop_pass	PARAMS ((int, int));
 static void alloc_pre_mem	PARAMS ((int, int));
 static void free_pre_mem	PARAMS ((void));
 static void compute_pre_data	PARAMS ((void));
-static int pre_expr_reaches_here_p PARAMS ((int, struct expr *, int));
-static void insert_insn_end_bb	PARAMS ((struct expr *, int, int));
+static int pre_expr_reaches_here_p PARAMS ((basic_block, struct expr *, 
+					    basic_block));
+static void insert_insn_end_bb	PARAMS ((struct expr *, basic_block, int));
 static void pre_insert_copy_insn PARAMS ((struct expr *, rtx));
 static void pre_insert_copies	PARAMS ((void));
 static int pre_delete		PARAMS ((void));
@@ -643,21 +644,22 @@ static void alloc_code_hoist_mem PARAMS ((int, int));
 static void free_code_hoist_mem	PARAMS ((void));
 static void compute_code_hoist_vbeinout	PARAMS ((void));
 static void compute_code_hoist_data PARAMS ((void));
-static int hoist_expr_reaches_here_p PARAMS ((int, int, int, char *));
+static int hoist_expr_reaches_here_p PARAMS ((basic_block, int, basic_block, 
+					      char *));
 static void hoist_code		PARAMS ((void));
 static int one_code_hoisting_pass PARAMS ((void));
 static void alloc_rd_mem	PARAMS ((int, int));
 static void free_rd_mem		PARAMS ((void));
-static void handle_rd_kill_set	PARAMS ((rtx, int, int));
+static void handle_rd_kill_set	PARAMS ((rtx, int, basic_block));
 static void compute_kill_rd	PARAMS ((void));
 static void compute_rd		PARAMS ((void));
 static void alloc_avail_expr_mem PARAMS ((int, int));
 static void free_avail_expr_mem PARAMS ((void));
 static void compute_ae_gen	PARAMS ((void));
-static int expr_killed_p	PARAMS ((rtx, int));
+static int expr_killed_p	PARAMS ((rtx, basic_block));
 static void compute_ae_kill	PARAMS ((sbitmap *, sbitmap *));
 static int expr_reaches_here_p	PARAMS ((struct occr *, struct expr *,
-					 int, int));
+					 basic_block, int));
 static rtx computing_insn	PARAMS ((struct expr *, rtx));
 static int def_reaches_here_p	PARAMS ((rtx, rtx));
 static int can_disregard_other_sets PARAMS ((struct reg_set **, rtx, int));
@@ -671,9 +673,9 @@ static void delete_null_pointer_checks_1 PARAMS ((varray_type *, unsigned int *,
 static rtx process_insert_insn	PARAMS ((struct expr *));
 static int pre_edge_insert	PARAMS ((struct edge_list *, struct expr **));
 static int expr_reaches_here_p_work PARAMS ((struct occr *, struct expr *,
-					     int, int, char *));
-static int pre_expr_reaches_here_p_work	PARAMS ((int, struct expr *,
-						 int, char *));
+					     basic_block, int, char *));
+static int pre_expr_reaches_here_p_work	PARAMS ((basic_block, struct expr *,
+						 basic_block, char *));
 static struct ls_expr * ldst_entry 	PARAMS ((rtx));
 static void free_ldst_entry 		PARAMS ((struct ls_expr *));
 static void free_ldst_mems		PARAMS ((void));
@@ -688,19 +690,20 @@ static void compute_ld_motion_mems	PARAMS ((void));
 static void trim_ld_motion_mems		PARAMS ((void));
 static void update_ld_motion_stores	PARAMS ((struct expr *));
 static void reg_set_info		PARAMS ((rtx, rtx, void *));
-static int store_ops_ok			PARAMS ((rtx, int));
+static int store_ops_ok			PARAMS ((rtx, basic_block));
 static void find_moveable_store		PARAMS ((rtx));
 static int compute_store_table		PARAMS ((void));
 static int load_kills_store		PARAMS ((rtx, rtx));
 static int find_loads			PARAMS ((rtx, rtx));
 static int store_killed_in_insn		PARAMS ((rtx, rtx));
-static int store_killed_after		PARAMS ((rtx, rtx, int));
-static int store_killed_before		PARAMS ((rtx, rtx, int));
+static int store_killed_after		PARAMS ((rtx, rtx, basic_block));
+static int store_killed_before		PARAMS ((rtx, rtx, basic_block));
 static void build_store_vectors		PARAMS ((void));
-static void insert_insn_start_bb	PARAMS ((rtx, int));
+static void insert_insn_start_bb	PARAMS ((rtx, basic_block));
 static int insert_store			PARAMS ((struct ls_expr *, edge));
-static void replace_store_insn		PARAMS ((rtx, rtx, int));
-static void delete_store		PARAMS ((struct ls_expr *, int));
+static void replace_store_insn		PARAMS ((rtx, rtx, basic_block));
+static void delete_store		PARAMS ((struct ls_expr *, 
+						 basic_block));
 static void free_store_memory		PARAMS ((void));
 static void store_motion		PARAMS ((void));
 
@@ -1392,7 +1395,7 @@ oprs_unchanged_p (x, insn, avail_p)
 		|| reg_first_set[REGNO (x)] >= INSN_CUID (insn));
 
     case MEM:
-      if (load_killed_in_block_p (BLOCK_NUM (insn), INSN_CUID (insn),
+      if (load_killed_in_block_p (BLOCK_FOR_INSN (insn), INSN_CUID (insn),
 				  x, avail_p))
 	return 0;
       if (avail_p && mem_last_set != NEVER_SET
@@ -1506,12 +1509,12 @@ mems_conflict_for_gcse_p (dest, setter, data)
 
 static int
 load_killed_in_block_p (bb, uid_limit, x, avail_p)
-     int bb;
+     basic_block bb;
      int uid_limit;
      rtx x;
      int avail_p;
 {
-  rtx list_entry = modify_mem_list[bb];
+  rtx list_entry = modify_mem_list[bb->index];
   while (list_entry)
     {
       rtx setter;
@@ -2783,7 +2786,8 @@ oprs_not_set_p (x, insn)
       return 1;
 
     case MEM:
-      if (load_killed_in_block_p (BLOCK_NUM (insn), INSN_CUID (insn), x, 0))
+      if (load_killed_in_block_p (BLOCK_FOR_INSN (insn), 
+				  INSN_CUID (insn), x, 0))
 	return 0;
       if (mem_last_set != 0)
 	return 0;
@@ -2948,13 +2952,14 @@ free_rd_mem ()
 static void
 handle_rd_kill_set (insn, regno, bb)
      rtx insn;
-     int regno, bb;
+     int regno;
+     basic_block bb;
 {
   struct reg_set *this_reg;
 
   for (this_reg = reg_set_table[regno]; this_reg; this_reg = this_reg ->next)
     if (BLOCK_NUM (this_reg->insn) != BLOCK_NUM (insn))
-      SET_BIT (rd_kill[bb], INSN_CUID (this_reg->insn));
+      SET_BIT (rd_kill[bb->index], INSN_CUID (this_reg->insn));
 }
 
 /* Compute the set of kill's for reaching definitions.  */
@@ -2999,7 +3004,7 @@ compute_kill_rd ()
 #endif
 		       && regno != FRAME_POINTER_REGNUM)
 		      || global_regs[regno])
-		    handle_rd_kill_set (insn, regno, bb);
+		    handle_rd_kill_set (insn, regno, BASIC_BLOCK (bb));
 		}
 	    }
 
@@ -3013,13 +3018,13 @@ compute_kill_rd ()
 		      && GET_CODE (XEXP (XVECEXP (pat, 0, i), 0)) == REG)
 		    handle_rd_kill_set (insn,
 					REGNO (XEXP (XVECEXP (pat, 0, i), 0)),
-					bb);
+					BASIC_BLOCK (bb));
 		}
 	    }
 	  else if (GET_CODE (pat) == SET && GET_CODE (SET_DEST (pat)) == REG)
 	    /* Each setting of this register outside of this block
 	       must be marked in the set of kills in this block.  */
-	    handle_rd_kill_set (insn, REGNO (SET_DEST (pat)), bb);
+	    handle_rd_kill_set (insn, REGNO (SET_DEST (pat)), BASIC_BLOCK (bb));
 	}
 }
 
@@ -3108,7 +3113,7 @@ compute_ae_gen ()
 static int
 expr_killed_p (x, bb)
      rtx x;
-     int bb;
+     basic_block bb;
 {
   int i, j;
   enum rtx_code code;
@@ -3121,12 +3126,12 @@ expr_killed_p (x, bb)
   switch (code)
     {
     case REG:
-      return TEST_BIT (reg_set_in_block[bb], REGNO (x));
+      return TEST_BIT (reg_set_in_block[bb->index], REGNO (x));
 
     case MEM:
       if (load_killed_in_block_p (bb, get_max_uid () + 1, x, 0))
 	return 1;
-      if (mem_set_in_block[bb])
+      if (mem_set_in_block[bb->index])
 	return 1;
       else
 	return expr_killed_p (XEXP (x, 0), bb);
@@ -3185,7 +3190,7 @@ compute_ae_kill (ae_gen, ae_kill)
 	  if (TEST_BIT (ae_gen[bb], expr->bitmap_index))
 	    continue;
 
-	  if (expr_killed_p (expr->expr, bb))
+	  if (expr_killed_p (expr->expr, BASIC_BLOCK (bb)))
 	    SET_BIT (ae_kill[bb], expr->bitmap_index);
 	}
 }
@@ -3212,50 +3217,50 @@ static int
 expr_reaches_here_p_work (occr, expr, bb, check_self_loop, visited)
      struct occr *occr;
      struct expr *expr;
-     int bb;
+     basic_block bb;
      int check_self_loop;
      char *visited;
 {
   edge pred;
 
-  for (pred = BASIC_BLOCK(bb)->pred; pred != NULL; pred = pred->pred_next)
+  for (pred = bb->pred; pred != NULL; pred = pred->pred_next)
     {
-      int pred_bb = pred->src->index;
+      basic_block pred_bb = pred->src;
 
-      if (visited[pred_bb])
+      if (visited[pred_bb->index])
 	/* This predecessor has already been visited. Nothing to do.  */
 	  ;
       else if (pred_bb == bb)
 	{
 	  /* BB loops on itself.  */
 	  if (check_self_loop
-	      && TEST_BIT (ae_gen[pred_bb], expr->bitmap_index)
-	      && BLOCK_NUM (occr->insn) == pred_bb)
+	      && TEST_BIT (ae_gen[pred_bb->index], expr->bitmap_index)
+	      && BLOCK_NUM (occr->insn) == pred_bb->index)
 	    return 1;
 
-	  visited[pred_bb] = 1;
+	  visited[pred_bb->index] = 1;
 	}
 
       /* Ignore this predecessor if it kills the expression.  */
-      else if (TEST_BIT (ae_kill[pred_bb], expr->bitmap_index))
-	visited[pred_bb] = 1;
+      else if (TEST_BIT (ae_kill[pred_bb->index], expr->bitmap_index))
+	visited[pred_bb->index] = 1;
 
       /* Does this predecessor generate this expression?  */
-      else if (TEST_BIT (ae_gen[pred_bb], expr->bitmap_index))
+      else if (TEST_BIT (ae_gen[pred_bb->index], expr->bitmap_index))
 	{
 	  /* Is this the occurrence we're looking for?
 	     Note that there's only one generating occurrence per block
 	     so we just need to check the block number.  */
-	  if (BLOCK_NUM (occr->insn) == pred_bb)
+	  if (BLOCK_NUM (occr->insn) == pred_bb->index)
 	    return 1;
 
-	  visited[pred_bb] = 1;
+	  visited[pred_bb->index] = 1;
 	}
 
       /* Neither gen nor kill.  */
       else
 	{
-	  visited[pred_bb] = 1;
+	  visited[pred_bb->index] = 1;
 	  if (expr_reaches_here_p_work (occr, expr, pred_bb, check_self_loop, 
 	      visited))
 
@@ -3274,7 +3279,7 @@ static int
 expr_reaches_here_p (occr, expr, bb, check_self_loop)
      struct occr *occr;
      struct expr *expr;
-     int bb;
+     basic_block bb;
      int check_self_loop;
 {
   int rval;
@@ -3296,11 +3301,11 @@ computing_insn (expr, insn)
      struct expr *expr;
      rtx insn;
 {
-  int bb = BLOCK_NUM (insn);
+  basic_block bb = BLOCK_FOR_INSN (insn);
 
   if (expr->avail_occr->next == NULL)
     {    
-      if (BLOCK_NUM (expr->avail_occr->insn) == bb)
+      if (BLOCK_FOR_INSN (expr->avail_occr->insn) == bb)
 	/* The available expression is actually itself
 	   (i.e. a loop in the flow graph) so do nothing.  */
 	return NULL;
@@ -3320,7 +3325,7 @@ computing_insn (expr, insn)
 
       for (occr = expr->avail_occr; occr != NULL; occr = occr->next)
 	{
-	  if (BLOCK_NUM (occr->insn) == bb)
+	  if (BLOCK_FOR_INSN (occr->insn) == bb)
 	    {
 	      /* The expression is generated in this block.
 		 The only time we care about this is when the expression
@@ -4575,24 +4580,24 @@ compute_pre_data ()
 
 static int
 pre_expr_reaches_here_p_work (occr_bb, expr, bb, visited)
-     int occr_bb;
+     basic_block occr_bb;
      struct expr *expr;
-     int bb;
+     basic_block bb;
      char *visited;
 {
   edge pred;
 
-  for (pred = BASIC_BLOCK (bb)->pred; pred != NULL; pred = pred->pred_next)
+  for (pred = bb->pred; pred != NULL; pred = pred->pred_next)
     {
-      int pred_bb = pred->src->index;
+      basic_block pred_bb = pred->src;
 
       if (pred->src == ENTRY_BLOCK_PTR
 	  /* Has predecessor has already been visited?  */
-	  || visited[pred_bb])
+	  || visited[pred_bb->index])
 	;/* Nothing to do.  */
 
       /* Does this predecessor generate this expression?  */
-      else if (TEST_BIT (comp[pred_bb], expr->bitmap_index))
+      else if (TEST_BIT (comp[pred_bb->index], expr->bitmap_index))
 	{
 	  /* Is this the occurrence we're looking for?
 	     Note that there's only one generating occurrence per block
@@ -4600,16 +4605,16 @@ pre_expr_reaches_here_p_work (occr_bb, expr, bb, visited)
 	  if (occr_bb == pred_bb)
 	    return 1;
 
-	  visited[pred_bb] = 1;
+	  visited[pred_bb->index] = 1;
 	}
       /* Ignore this predecessor if it kills the expression.  */
-      else if (! TEST_BIT (transp[pred_bb], expr->bitmap_index))
-	visited[pred_bb] = 1;
+      else if (! TEST_BIT (transp[pred_bb->index], expr->bitmap_index))
+	visited[pred_bb->index] = 1;
 
       /* Neither gen nor kill.  */
       else
 	{
-	  visited[pred_bb] = 1;
+	  visited[pred_bb->index] = 1;
 	  if (pre_expr_reaches_here_p_work (occr_bb, expr, pred_bb, visited))
 	    return 1;
 	}
@@ -4624,9 +4629,9 @@ pre_expr_reaches_here_p_work (occr_bb, expr, bb, visited)
 
 static int
 pre_expr_reaches_here_p (occr_bb, expr, bb)
-     int occr_bb;
+     basic_block occr_bb;
      struct expr *expr;
-     int bb;
+     basic_block bb;
 {
   int rval;
   char *visited = (char *) xcalloc (n_basic_blocks, 1);
@@ -4680,10 +4685,10 @@ process_insert_insn (expr)
 static void
 insert_insn_end_bb (expr, bb, pre)
      struct expr *expr;
-     int bb;
+     basic_block bb;
      int pre;
 {
-  rtx insn = BLOCK_END (bb);
+  rtx insn = bb->end;
   rtx new_insn;
   rtx reg = expr->reaching_reg;
   int regno = REGNO (reg);
@@ -4724,7 +4729,7 @@ insert_insn_end_bb (expr, bb, pre)
 	}
 #endif
       /* FIXME: What if something in cc0/jump uses value set in new insn?  */
-      new_insn = emit_block_insn_before (pat, insn, BASIC_BLOCK (bb));
+      new_insn = emit_block_insn_before (pat, insn, bb);
     }
 
   /* Likewise if the last insn is a call, as will happen in the presence
@@ -4745,8 +4750,8 @@ insert_insn_end_bb (expr, bb, pre)
 	 Check this.  */
 
       if (pre
-	  && !TEST_BIT (antloc[bb], expr->bitmap_index)
-          && !TEST_BIT (transp[bb], expr->bitmap_index))
+	  && !TEST_BIT (antloc[bb->index], expr->bitmap_index)
+          && !TEST_BIT (transp[bb->index], expr->bitmap_index))
 	abort ();
 
       /* Since different machines initialize their parameter registers
@@ -4766,7 +4771,7 @@ insert_insn_end_bb (expr, bb, pre)
 	  }
 
       /* Search backward for the first set of a register in this set.  */
-      while (nparm_regs && BLOCK_HEAD (bb) != insn)
+      while (nparm_regs && bb->head != insn)
 	{
 	  insn = PREV_INSN (insn);
 	  p = single_set (insn);
@@ -4791,12 +4796,12 @@ insert_insn_end_bb (expr, bb, pre)
 	     || NOTE_INSN_BASIC_BLOCK_P (insn))
 	insn = NEXT_INSN (insn);
 
-      new_insn = emit_block_insn_before (pat, insn, BASIC_BLOCK (bb));
+      new_insn = emit_block_insn_before (pat, insn, bb);
     }
   else
     {
       new_insn = emit_insn_after (pat, insn);
-      BLOCK_END (bb) = new_insn;
+      bb->end = new_insn;
     }
 
   /* Keep block number table up to date.
@@ -4808,7 +4813,7 @@ insert_insn_end_bb (expr, bb, pre)
 	{
 	  rtx insn = XVECEXP (pat, 0, i);
 
-	  set_block_for_insn (insn, BASIC_BLOCK (bb));
+	  set_block_for_insn (insn, bb);
 	  if (INSN_P (insn))
 	    add_label_notes (PATTERN (insn), new_insn);
 
@@ -4818,7 +4823,7 @@ insert_insn_end_bb (expr, bb, pre)
   else
     {
       add_label_notes (SET_SRC (pat), new_insn);
-      set_block_for_new_insns (new_insn, BASIC_BLOCK (bb));
+      set_block_for_new_insns (new_insn, bb);
 
       /* Keep register set table up to date.  */
       record_one_set (regno, new_insn);
@@ -4829,7 +4834,7 @@ insert_insn_end_bb (expr, bb, pre)
   if (gcse_file)
     {
       fprintf (gcse_file, "PRE/HOIST: end of bb %d, insn %d, ",
-	       bb, INSN_UID (new_insn));
+	       bb->index, INSN_UID (new_insn));
       fprintf (gcse_file, "copying expression %d to reg %d\n",
 	       expr->bitmap_index, regno);
     }
@@ -4857,8 +4862,7 @@ pre_edge_insert (edge_list, index_map)
   for (e = 0; e < num_edges; e++)
     {
       int indx;
-      basic_block pred = INDEX_EDGE_PRED_BB (edge_list, e);
-      int bb = pred->index;
+      basic_block bb = INDEX_EDGE_PRED_BB (edge_list, e);
 
       for (i = indx = 0; i < set_size; i++, indx += SBITMAP_ELT_BITS)
 	{
@@ -4901,7 +4905,7 @@ pre_edge_insert (edge_list, index_map)
 			if (gcse_file)
 			  {
 			    fprintf (gcse_file, "PRE/HOIST: edge (%d,%d), ",
-				     bb,
+				     bb->index,
 				     INDEX_EDGE_SUCC_BB (edge_list, e)->index);
 			    fprintf (gcse_file, "copy expression %d\n",
 				     expr->bitmap_index);
@@ -4933,7 +4937,7 @@ pre_insert_copy_insn (expr, insn)
   int indx = expr->bitmap_index;
   rtx set = single_set (insn);
   rtx new_insn;
-  int bb = BLOCK_NUM (insn);
+  basic_block bb = BLOCK_FOR_INSN (insn);
 
   if (!set)
     abort ();
@@ -4942,12 +4946,12 @@ pre_insert_copy_insn (expr, insn)
 			      insn);
 
   /* Keep block number table up to date.  */
-  set_block_for_new_insns (new_insn, BASIC_BLOCK (bb));
+  set_block_for_new_insns (new_insn, bb);
 
   /* Keep register set table up to date.  */
   record_one_set (regno, new_insn);
-  if (insn == BLOCK_END (bb))
-    BLOCK_END (bb) = new_insn;
+  if (insn == bb->end)
+    bb->end = new_insn;
 
   gcse_create_count++;
 
@@ -5004,8 +5008,9 @@ pre_insert_copies ()
 		  continue;
 
 		/* Or if the expression doesn't reach the deleted one.  */
-		if (! pre_expr_reaches_here_p (BLOCK_NUM (avail->insn), expr,
-					       BLOCK_NUM (occr->insn)))
+		if (! pre_expr_reaches_here_p (BLOCK_FOR_INSN (avail->insn), 
+					       expr,
+					       BLOCK_FOR_INSN (occr->insn)))
 		  continue;
 
 		/* Copy the result of avail to reaching_reg.  */
@@ -5044,9 +5049,9 @@ pre_delete ()
 	  {
 	    rtx insn = occr->insn;
 	    rtx set;
-	    int bb = BLOCK_NUM (insn);
+	    basic_block bb = BLOCK_FOR_INSN (insn);
 
-	    if (TEST_BIT (pre_delete_map[bb], indx))
+	    if (TEST_BIT (pre_delete_map[bb->index], indx))
 	      {
 		set = single_set (insn);
 		if (! set)
@@ -5081,7 +5086,7 @@ pre_delete ()
 			     "PRE: redundant insn %d (expression %d) in ",
 			       INSN_UID (insn), indx);
 		    fprintf (gcse_file, "bb %d, reaching reg is %d\n",
-			     bb, REGNO (expr->reaching_reg));
+			     bb->index, REGNO (expr->reaching_reg));
 		  }
 	      }
 	  }
@@ -5721,9 +5726,9 @@ compute_code_hoist_data ()
 
 static int
 hoist_expr_reaches_here_p (expr_bb, expr_index, bb, visited)
-     int expr_bb;
+     basic_block expr_bb;
      int expr_index;
-     int bb;
+     basic_block bb;
      char *visited;
 {
   edge pred;
@@ -5736,25 +5741,25 @@ hoist_expr_reaches_here_p (expr_bb, expr_index, bb, visited)
        visited = xcalloc (n_basic_blocks, 1);
     }
 
-  for (pred = BASIC_BLOCK (bb)->pred; pred != NULL; pred = pred->pred_next)
+  for (pred = bb->pred; pred != NULL; pred = pred->pred_next)
     {
-      int pred_bb = pred->src->index;
+      basic_block pred_bb = pred->src;
 
       if (pred->src == ENTRY_BLOCK_PTR)
 	break;
-      else if (visited[pred_bb])
+      else if (visited[pred_bb->index])
 	continue;
 
       /* Does this predecessor generate this expression?  */
-      else if (TEST_BIT (comp[pred_bb], expr_index))
+      else if (TEST_BIT (comp[pred_bb->index], expr_index))
 	break;
-      else if (! TEST_BIT (transp[pred_bb], expr_index))
+      else if (! TEST_BIT (transp[pred_bb->index], expr_index))
 	break;
 
       /* Not killed.  */
       else
 	{
-	  visited[pred_bb] = 1;
+	  visited[pred_bb->index] = 1;
 	  if (! hoist_expr_reaches_here_p (expr_bb, expr_index,
 					   pred_bb, visited))
 	    break;
@@ -5822,7 +5827,8 @@ hoist_code ()
 
 		     Keep track of how many times this expression is hoistable
 		     from a dominated block into BB.  */
-		  if (hoist_expr_reaches_here_p (bb, i, dominated, NULL))
+		  if (hoist_expr_reaches_here_p (BASIC_BLOCK (bb), i, 
+						 BASIC_BLOCK (dominated), NULL))
 		    hoistable++;
 		}
 
@@ -5879,7 +5885,8 @@ hoist_code ()
 		     dominated block.  Now we have to determine if the
 		     expresion would reach the dominated block if it was
 		     placed at the end of BB.  */
-		  if (hoist_expr_reaches_here_p (bb, i, dominated, NULL))
+		  if (hoist_expr_reaches_here_p (BASIC_BLOCK (bb), i, 
+						 BASIC_BLOCK (dominated), NULL))
 		    {
 		      struct expr *expr = index_map[i];
 		      struct occr *occr = expr->antic_occr;
@@ -5921,7 +5928,8 @@ hoist_code ()
 			  occr->deleted_p = 1;
 			  if (!insn_inserted_p)
 			    {
-			      insert_insn_end_bb (index_map[i], bb, 0);
+			      insert_insn_end_bb (index_map[i], 
+						  BASIC_BLOCK (bb), 0);
 			      insn_inserted_p = 1;
 			    }
 			}
@@ -6409,7 +6417,7 @@ reg_set_info (dest, setter, data)
 static int
 store_ops_ok (x, bb)
      rtx x;
-     int bb;
+     basic_block bb;
 {
   int i;
   enum rtx_code code;
@@ -6427,7 +6435,7 @@ store_ops_ok (x, bb)
     case REG:
 	/* If a reg has changed after us in this
 	   block, the operand has been killed.  */
-	return TEST_BIT (reg_set_in_block[bb], REGNO (x));
+	return TEST_BIT (reg_set_in_block[bb->index], REGNO (x));
 
     case MEM:
       x = XEXP (x, 0);
@@ -6679,9 +6687,9 @@ store_killed_in_insn (x, insn)
 static int 
 store_killed_after (x, insn, bb)
      rtx x, insn;
-     int bb;
+     basic_block bb;
 {
-   rtx last = BLOCK_END (bb);
+   rtx last = bb->end;
    
    if (insn == last)
      return 0;
@@ -6706,9 +6714,9 @@ store_killed_after (x, insn, bb)
 static int 
 store_killed_before (x, insn, bb)
      rtx x, insn;
-     int bb;
+     basic_block bb;
 {
-   rtx first = BLOCK_HEAD (bb);
+   rtx first = bb->head;
 
    if (insn == first)
      return store_killed_in_insn (x, insn);
@@ -6737,7 +6745,8 @@ store_killed_before (x, insn, bb)
 static void
 build_store_vectors () 
 {
-  int bb;
+  basic_block bb;
+  int b;
   rtx insn, st;
   struct ls_expr * ptr;
 
@@ -6759,7 +6768,7 @@ build_store_vectors ()
       for (st = store_list; st != NULL; st = XEXP (st, 1))
 	{
 	  insn = XEXP (st, 0);
-	  bb = BLOCK_NUM (insn);
+	  bb = BLOCK_FOR_INSN (insn);
 	  
 	  if (!store_killed_after (ptr->pattern, insn, bb))
 	    {
@@ -6768,12 +6777,12 @@ build_store_vectors ()
 		 the block), and replace it with this one). We'll copy the
 		 old SRC expression to an unused register in case there
 		 are any side effects.  */
-	      if (TEST_BIT (ae_gen[bb], ptr->index))
+	      if (TEST_BIT (ae_gen[bb->index], ptr->index))
 		{
 		  /* Find previous store.  */
 		  rtx st;
 		  for (st = AVAIL_STORE_LIST (ptr); st ; st = XEXP (st, 1))
-		    if (BLOCK_NUM (XEXP (st, 0)) == bb)
+		    if (BLOCK_FOR_INSN (XEXP (st, 0)) == bb)
 		      break;
 		  if (st)
 		    {
@@ -6785,7 +6794,7 @@ build_store_vectors ()
 		      continue;
 		    }
 		}
-	      SET_BIT (ae_gen[bb], ptr->index);
+	      SET_BIT (ae_gen[bb->index], ptr->index);
 	      AVAIL_STORE_LIST (ptr) = alloc_INSN_LIST (insn,
 							AVAIL_STORE_LIST (ptr));
 	    }
@@ -6809,9 +6818,9 @@ build_store_vectors ()
   sbitmap_vector_zero (transp, n_basic_blocks);
 
   for (ptr = first_ls_expr (); ptr != NULL; ptr = next_ls_expr (ptr))
-    for (bb = 0; bb < n_basic_blocks; bb++)
+    for (b = 0; b < n_basic_blocks; b++)
       {
-	if (store_killed_after (ptr->pattern, BLOCK_HEAD (bb), bb))
+	if (store_killed_after (ptr->pattern, BLOCK_HEAD (b), BASIC_BLOCK (b)))
 	  {
 	    /* The anticipatable expression is not killed if it's gen'd. */
 	    /*
@@ -6828,11 +6837,11 @@ build_store_vectors ()
 		    gcc.c-torture/execute/960311-1.c with -O3
 	      If we always kill it in this case, we'll sometimes do
 	      uneccessary work, but it shouldn't actually hurt anything.
-	    if (!TEST_BIT (ae_gen[bb], ptr->index)).  */
-	    SET_BIT (ae_kill[bb], ptr->index);
+	    if (!TEST_BIT (ae_gen[b], ptr->index)).  */
+	    SET_BIT (ae_kill[b], ptr->index);
 	  }
 	else
-	  SET_BIT (transp[bb], ptr->index);
+	  SET_BIT (transp[b], ptr->index);
       }
 
   /* Any block with no exits calls some non-returning function, so
@@ -6856,11 +6865,11 @@ build_store_vectors ()
 static void 
 insert_insn_start_bb (insn, bb)
      rtx insn;
-     int bb;
+     basic_block bb;
 {
   /* Insert at start of successor block.  */
-  rtx prev = PREV_INSN (BLOCK_HEAD (bb));
-  rtx before = BLOCK_HEAD (bb);
+  rtx prev = PREV_INSN (bb->head);
+  rtx before = bb->head;
   while (before != 0)
     {
       if (GET_CODE (before) != CODE_LABEL
@@ -6868,22 +6877,22 @@ insert_insn_start_bb (insn, bb)
 	      || NOTE_LINE_NUMBER (before) != NOTE_INSN_BASIC_BLOCK))
 	break;
       prev = before;
-      if (prev == BLOCK_END (bb))
+      if (prev == bb->end)
 	break;
       before = NEXT_INSN (before);
     }
 
   insn = emit_insn_after (insn, prev);
 
-  if (prev == BLOCK_END (bb))
-    BLOCK_END (bb) = insn;
+  if (prev == bb->end)
+    bb->end = insn;
 
-  set_block_for_new_insns (insn, BASIC_BLOCK (bb));
+  set_block_for_new_insns (insn, bb);
 
   if (gcse_file)
     {
       fprintf (gcse_file, "STORE_MOTION  insert store at start of BB %d:\n",
-	       bb);
+	       bb->index);
       print_inline_rtx (gcse_file, insn, 6);
       fprintf (gcse_file, "\n");
     }
@@ -6899,7 +6908,7 @@ insert_store (expr, e)
      edge e;
 {
   rtx reg, insn;
-  int bb;
+  basic_block bb;
   edge tmp;
 
   /* We did all the deleted before this insert, so if we didn't delete a
@@ -6913,7 +6922,7 @@ insert_store (expr, e)
   /* If we are inserting this expression on ALL predecessor edges of a BB,
      insert it at the start of the BB, and reset the insert bits on the other
      edges so we don;t try to insert it on the other edges.  */
-  bb = e->dest->index;
+  bb = e->dest;
   for (tmp = e->dest->pred; tmp ; tmp = tmp->pred_next)
     {
       int index = EDGE_INDEX (edge_list, tmp->src, tmp->dest);
@@ -6925,7 +6934,7 @@ insert_store (expr, e)
 
   /* If tmp is NULL, we found an insertion on every edge, blank the
      insertion vector for these edges, and insert at the start of the BB.  */
-  if (!tmp && bb != EXIT_BLOCK)
+  if (!tmp && bb != EXIT_BLOCK_PTR)
     {
       for (tmp = e->dest->pred; tmp ; tmp = tmp->pred_next)
 	{
@@ -6962,29 +6971,29 @@ insert_store (expr, e)
 static void
 replace_store_insn (reg, del, bb)
      rtx reg, del;
-     int bb;
+     basic_block bb;
 {
   rtx insn;
   
   insn = gen_move_insn (reg, SET_SRC (PATTERN (del)));
   insn = emit_insn_after (insn, del);
-  set_block_for_new_insns (insn, BASIC_BLOCK (bb));
+  set_block_for_new_insns (insn, bb);
   
   if (gcse_file)
     {
       fprintf (gcse_file, 
-	       "STORE_MOTION  delete insn in BB %d:\n      ", bb);
+	       "STORE_MOTION  delete insn in BB %d:\n      ", bb->index);
       print_inline_rtx (gcse_file, del, 6);
       fprintf(gcse_file, "\nSTORE MOTION  replaced with insn:\n      ");
       print_inline_rtx (gcse_file, insn, 6);
       fprintf(gcse_file, "\n");
     }
   
-  if (BLOCK_END (bb) == del)
-    BLOCK_END (bb) = insn;
+  if (bb->end == del)
+    bb->end = insn;
   
-  if (BLOCK_HEAD (bb) == del)
-    BLOCK_HEAD (bb) = insn;
+  if (bb->head == del)
+    bb->head = insn;
   
   delete_insn (del);
 }
@@ -6996,7 +7005,7 @@ replace_store_insn (reg, del, bb)
 static void
 delete_store (expr, bb)
      struct ls_expr * expr;
-     int bb;
+     basic_block bb;
 {
   rtx reg, i, del;
 
@@ -7011,7 +7020,7 @@ delete_store (expr, bb)
   for (i = AVAIL_STORE_LIST (expr); i; i = XEXP (i, 1))
     {
       del = XEXP (i, 0);
-      if (BLOCK_NUM (del) == bb)
+      if (BLOCK_FOR_INSN (del) == bb)
 	{
 	  /* We know there is only one since we deleted redundant 
 	     ones during the available computation.  */
@@ -7088,7 +7097,7 @@ store_motion ()
     {
       for (x = 0; x < n_basic_blocks; x++)
 	if (TEST_BIT (pre_delete_map[x], ptr->index))
-	  delete_store (ptr, x);
+	  delete_store (ptr, BASIC_BLOCK (x));
 
       for (x = 0; x < NUM_EDGES (edge_list); x++)
 	if (TEST_BIT (pre_insert_map[x], ptr->index))
