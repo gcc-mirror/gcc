@@ -108,3 +108,20 @@ Boston, MA 02111-1307, USA.  */
 #ifndef CROSS_COMPILE
 #define HAVE_STAMP_H 1
 #endif
+
+/* Attempt to turn on access permissions for the stack.  */
+
+#define TRANSFER_FROM_TRAMPOLINE					\
+void									\
+__enable_execute_stack (addr)						\
+     void *addr;							\
+{									\
+  long size = getpagesize ();						\
+  long mask = ~(size-1);						\
+  char *page = (char *) (((long) addr) & mask);				\
+  char *end  = (char *) ((((long) (addr + TRAMPOLINE_SIZE)) & mask) + size); \
+									\
+  /* 7 is PROT_READ | PROT_WRITE | PROT_EXEC */				\
+  if (mprotect (page, end - page, 7) < 0)				\
+    perror ("mprotect of trampoline code");				\
+}

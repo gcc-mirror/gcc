@@ -1182,13 +1182,13 @@ extern void output_end_prologue ();
    aligned to FUNCTION_BOUNDARY, which is 64 bits.  */
 
 #define TRAMPOLINE_TEMPLATE(FILE)		\
-{						\
+do {						\
   fprintf (FILE, "\tldq $1,24($27)\n");		\
   fprintf (FILE, "\tldq $27,16($27)\n");	\
   fprintf (FILE, "\tjmp $31,($27),0\n");	\
   fprintf (FILE, "\tnop\n");			\
   fprintf (FILE, "\t.quad 0,0\n");		\
-}
+} while (0)
 
 /* Section in which to place the trampoline.  On Alpha, instructions
    may only be placed in a text segment.  */
@@ -1201,31 +1201,10 @@ extern void output_end_prologue ();
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
-   CXT is an RTX for the static chain value for the function.  We assume
-   here that a function will be called many more times than its address
-   is taken (e.g., it might be passed to qsort), so we take the trouble 
-   to initialize the "hint" field in the JMP insn.  Note that the hint
-   field is PC (new) + 4 * bits 13:0.  */
+   CXT is an RTX for the static chain value for the function.  */
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
-  alpha_initialize_trampoline (TRAMP, FNADDR, CXT)
-
-/* Attempt to turn on access permissions for the stack.  */
-
-#define TRANSFER_FROM_TRAMPOLINE					\
-void									\
-__enable_execute_stack (addr)						\
-     void *addr;							\
-{									\
-  long size = getpagesize ();						\
-  long mask = ~(size-1);						\
-  char *page = (char *) (((long) addr) & mask);				\
-  char *end  = (char *) ((((long) (addr + TRAMPOLINE_SIZE)) & mask) + size); \
-									\
-  /* 7 is PROT_READ | PROT_WRITE | PROT_EXEC */				\
-  if (mprotect (page, end - page, 7) < 0)				\
-    perror ("mprotect of trampoline code");				\
-}
+  alpha_initialize_trampoline (TRAMP, FNADDR, CXT, 16, 24, 8)
 
 /* A C expression whose value is RTL representing the value of the return
    address for the frame COUNT steps up from the current frame.
@@ -1240,7 +1219,6 @@ extern struct rtx_def *alpha_return_addr ();
 
 #define INIT_EXPANDERS  alpha_init_expanders ()
 extern void alpha_init_expanders ();
-
 
 /* Addressing modes, and classification of registers for them.  */
 

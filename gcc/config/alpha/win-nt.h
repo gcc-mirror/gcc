@@ -101,37 +101,11 @@ Boston, MA 02111-1307, USA.  */
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
-   CXT is an RTX for the static chain value for the function. 
-
-   This differs from the standard version in that:
-
-   We are not passed the current address in any register, and so have to 
-   load it ourselves.
-
-   We do not initialize the "hint" field because it only has an 8k
-   range and so the target is in range of something on the stack. 
-   Omitting the hint saves a bogus branch-prediction cache line load.
-
-   Always have an executable stack -- no need for a system call.
- */
+   CXT is an RTX for the static chain value for the function.   */
 
 #undef INITIALIZE_TRAMPOLINE
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
-{									\
-  rtx _addr, _val;							\
-									\
-  _addr = memory_address (Pmode, plus_constant ((TRAMP), 16));		\
-  _val = force_reg(Pmode, (FNADDR));					\
-  emit_move_insn (gen_rtx (MEM, SImode, _addr),				\
-		  gen_rtx (SUBREG, SImode, _val, 0));			\
-  _addr = memory_address (Pmode, plus_constant ((TRAMP), 20));		\
-  _val = force_reg(Pmode, (CXT));					\
-  emit_move_insn (gen_rtx (MEM, SImode, _addr),				\
-		  gen_rtx (SUBREG, SImode, _val, 0));			\
-									\
-  emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,			\
-                      gen_rtvec (1, const0_rtx), 0));			\
-}
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
+  alpha_initialize_trampoline (TRAMP, FNADDR, CXT, 16, 20, 12)
 
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
    Used for C++ multiple inheritance.  */
