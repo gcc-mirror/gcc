@@ -61,7 +61,6 @@ static int assume_compiled (const char *);
 static tree build_method_symbols_entry (tree);
 
 static GTY(()) rtx registerClass_libfunc;
-static GTY(()) rtx registerResource_libfunc;
 
 struct obstack temporary_obstack;
 
@@ -742,111 +741,7 @@ hashUtf8String (const char *str, int len)
   return hash;
 }
 
-/* Generate a byte array representing the contents of FILENAME.  The
-   array is assigned a unique local symbol.  The array represents a
-   compiled Java resource, which is accessed by the runtime using
-   NAME.  */
-void
-compile_resource_file (char *name, const char *filename)
-{
-  struct stat stat_buf;
-  int fd;
-  char *buffer;
-  char buf[60];
-  tree rtype, field = NULL_TREE, data_type, rinit, data, decl;
-  static int Jr_count = 0;
-
-  fd = open (filename, O_RDONLY | O_BINARY);
-  if (fd < 0)
-    {
-      perror ("Failed to read resource file");
-      return;
-    }
-  if (fstat (fd, &stat_buf) != 0
-      || ! S_ISREG (stat_buf.st_mode))
-    {
-      perror ("Could not figure length of resource file");
-      return;
-    }
-  buffer = xmalloc (strlen (name) + stat_buf.st_size);
-  strcpy (buffer, name);
-  read (fd, buffer + strlen (name), stat_buf.st_size);
-  close (fd);
-  data_type = build_prim_array_type (unsigned_byte_type_node,
-				     strlen (name) + stat_buf.st_size);
-  rtype = make_node (RECORD_TYPE);
-  PUSH_FIELD (rtype, field, "name_length", unsigned_int_type_node);
-  PUSH_FIELD (rtype, field, "resource_length", unsigned_int_type_node);
-  PUSH_FIELD (rtype, field, "data", data_type);
-  FINISH_RECORD (rtype);
-  START_RECORD_CONSTRUCTOR (rinit, rtype);
-  PUSH_FIELD_VALUE (rinit, "name_length", 
-		    build_int_2 (strlen (name), 0));
-  PUSH_FIELD_VALUE (rinit, "resource_length", 
-		    build_int_2 (stat_buf.st_size, 0));
-  data = build_string (strlen(name) + stat_buf.st_size, buffer);
-  TREE_TYPE (data) = data_type;
-  PUSH_FIELD_VALUE (rinit, "data", data);
-  FINISH_RECORD_CONSTRUCTOR (rinit);
-  TREE_CONSTANT (rinit) = 1;
-
-  /* Generate a unique-enough identifier.  */
-  sprintf(buf, "_Jr%d", ++Jr_count);
-
-  decl = build_decl (VAR_DECL, get_identifier (buf), rtype);
-  TREE_STATIC (decl) = 1;
-  DECL_ARTIFICIAL (decl) = 1;
-  DECL_IGNORED_P (decl) = 1;
-  TREE_READONLY (decl) = 1;
-  TREE_THIS_VOLATILE (decl) = 0;
-  DECL_INITIAL (decl) = rinit;
-  layout_decl (decl, 0);
-  pushdecl (decl);
-  rest_of_decl_compilation (decl, (char*) 0, global_bindings_p (), 0);
-  make_decl_rtl (decl, (char*) 0);
-  assemble_variable (decl, 1, 0, 0);
-
-  {
-    tree init_name = get_file_function_name ('I');
-    tree init_type = build_function_type (void_type_node, end_params_node);
-    tree init_decl;
-    
-    init_decl = build_decl (FUNCTION_DECL, init_name, init_type);
-    SET_DECL_ASSEMBLER_NAME (init_decl, init_name);
-    TREE_STATIC (init_decl) = 1;
-    current_function_decl = init_decl;
-    DECL_RESULT (init_decl) = build_decl (RESULT_DECL, 
-					  NULL_TREE, void_type_node);
-
-    /* It can be a static function as long as collect2 does not have
-       to scan the object file to find its ctor/dtor routine.  */
-    TREE_PUBLIC (init_decl) = ! targetm.have_ctors_dtors;
-
-    pushlevel (0);
-    make_decl_rtl (init_decl, NULL);
-    init_function_start (init_decl, input_filename, 0);
-    expand_function_start (init_decl, 0);
-    
-    emit_library_call (registerResource_libfunc, 0, VOIDmode, 1,
-		       gen_rtx (SYMBOL_REF, Pmode, buf), 
-		       Pmode);
-    
-    expand_function_end (input_filename, 0, 0);
-    poplevel (1, 0, 1);
-    { 
-      /* Force generation, even with -O3 or deeper. Gross hack. FIXME */
-      int saved_flag = flag_inline_functions;
-      flag_inline_functions = 0;	
-      rest_of_compilation (init_decl);
-      flag_inline_functions = saved_flag;
-    }
-    current_function_decl = NULL_TREE;
-    (* targetm.asm_out.constructor) (XEXP (DECL_RTL (init_decl), 0),
-				     DEFAULT_INIT_PRIORITY);
-  }     
-}
-
-tree utf8_decl_list = NULL_TREE;
+static GTY(()) tree utf8_decl_list = NULL_TREE;
 
 tree
 build_utf8_ref (tree name)
@@ -2209,8 +2104,6 @@ void
 init_class_processing (void)
 {
   registerClass_libfunc = gen_rtx_SYMBOL_REF (Pmode, "_Jv_RegisterClass");
-  registerResource_libfunc = 
-    gen_rtx_SYMBOL_REF (Pmode, "_Jv_RegisterResource");
   fields_ident = get_identifier ("fields");
   info_ident = get_identifier ("info");
   gcc_obstack_init (&temporary_obstack);

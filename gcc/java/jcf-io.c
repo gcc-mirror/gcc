@@ -186,48 +186,48 @@ open_in_zip (JCF *jcf, const char *zipfile, const char *zipmember,
 int
 read_zip_member (JCF *jcf,  ZipDirectory *zipd, ZipFile *zipf)
 {
-	  jcf->filbuf = jcf_unexpected_eof;
-	  jcf->zipd = (void *)zipd;
+  jcf->filbuf = jcf_unexpected_eof;
+  jcf->zipd = (void *)zipd;
 
-	  if (zipd->compression_method == Z_NO_COMPRESSION)
-	    {
-	      jcf->buffer = ALLOC (zipd->size);
-	      jcf->buffer_end = jcf->buffer + zipd->size;
-	      jcf->read_ptr = jcf->buffer;
-	      jcf->read_end = jcf->buffer_end;
-	      if (lseek (zipf->fd, zipd->filestart, 0) < 0
-		  || read (zipf->fd, jcf->buffer, zipd->size) != (long) zipd->size)
-	        return -2;
-	    }
-	  else
-	    {
-	      char *buffer;
-	      z_stream d_stream; /* decompression stream */
-	      d_stream.zalloc = (alloc_func) 0;
-	      d_stream.zfree = (free_func) 0;
-	      d_stream.opaque = (voidpf) 0;
+  if (zipd->compression_method == Z_NO_COMPRESSION)
+    {
+      jcf->buffer = ALLOC (zipd->size);
+      jcf->buffer_end = jcf->buffer + zipd->size;
+      jcf->read_ptr = jcf->buffer;
+      jcf->read_end = jcf->buffer_end;
+      if (lseek (zipf->fd, zipd->filestart, 0) < 0
+	  || read (zipf->fd, jcf->buffer, zipd->size) != (long) zipd->size)
+	return -2;
+    }
+  else
+    {
+      char *buffer;
+      z_stream d_stream; /* decompression stream */
+      d_stream.zalloc = (alloc_func) 0;
+      d_stream.zfree = (free_func) 0;
+      d_stream.opaque = (voidpf) 0;
 
-	      jcf->buffer = ALLOC (zipd->uncompressed_size);
-	      d_stream.next_out = jcf->buffer;
-	      d_stream.avail_out = zipd->uncompressed_size;
-	      jcf->buffer_end = jcf->buffer + zipd->uncompressed_size;
-	      jcf->read_ptr = jcf->buffer;
-	      jcf->read_end = jcf->buffer_end;
-	      buffer = ALLOC (zipd->size);
-	      d_stream.next_in = buffer;
-	      d_stream.avail_in = zipd->size;
-	      if (lseek (zipf->fd, zipd->filestart, 0) < 0
-		  || read (zipf->fd, buffer, zipd->size) != (long) zipd->size)
-		return -2;
-	      /* Handle NO_HEADER using undocumented zlib feature.
-                 This is a very common hack.  */
-	      inflateInit2 (&d_stream, -MAX_WBITS);
-	      inflate (&d_stream, Z_NO_FLUSH);
-	      inflateEnd (&d_stream);
-	      FREE (buffer);
-	    }
+      jcf->buffer = ALLOC (zipd->uncompressed_size);
+      d_stream.next_out = jcf->buffer;
+      d_stream.avail_out = zipd->uncompressed_size;
+      jcf->buffer_end = jcf->buffer + zipd->uncompressed_size;
+      jcf->read_ptr = jcf->buffer;
+      jcf->read_end = jcf->buffer_end;
+      buffer = ALLOC (zipd->size);
+      d_stream.next_in = buffer;
+      d_stream.avail_in = zipd->size;
+      if (lseek (zipf->fd, zipd->filestart, 0) < 0
+	  || read (zipf->fd, buffer, zipd->size) != (long) zipd->size)
+	return -2;
+      /* Handle NO_HEADER using undocumented zlib feature.
+	 This is a very common hack.  */
+      inflateInit2 (&d_stream, -MAX_WBITS);
+      inflate (&d_stream, Z_NO_FLUSH);
+      inflateEnd (&d_stream);
+      FREE (buffer);
+    }
 
-	  return 0;
+  return 0;
 }
 
 const char *

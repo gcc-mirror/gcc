@@ -397,6 +397,7 @@ java_init_decl_processing (void)
   tree t;
 
   init_class_processing ();
+  init_resource_processing ();
 
   current_function_decl = NULL;
   current_binding_level = NULL_BINDING_LEVEL;

@@ -1,3 +1,26 @@
+2003-01-22  Tom Tromey  <tromey@redhat.com>
+
+	* gcj.texi (Input and output files): Mention non-class entries.
+	* decl.c (java_init_decl_processing): Call
+	init_resource_processing.
+	* java-tree.h (compile_resource_data, write_resource_constructor,
+	compile_resource_file, init_resource_processing): Declare.
+	* config-lang.in (gtfiles): Added resource.c.
+	* Make-lang.in (gt-java-resource.h): New target.
+	(JAVA_OBJS): Added resource.o.
+	(java/resource.o): New target.
+	* resource.c: New file.
+	* class.c (compile_resource_file): Moved to resource.c.
+	(registerResource_libfunc): Likewise.
+	(utf8_decl_list): Mark with GTY; now static.
+	* jcf-parse.c (classify_zip_file): New function.
+	(parse_zip_file_entries): Use it; compile .properties files.
+	(process_zip_dir): Use classify_zip_file and compute_class_name.
+	Don't write class name into zip directory.
+	(java_parse_file): Call write_resource_constructor.
+	(compute_class_name): New function.
+	* jcf-io.c (read_zip_member): Reindented.
+
 2003-01-21  Tom Tromey  <tromey@redhat.com>
 
 	* class.c (supers_all_compiled): New function.

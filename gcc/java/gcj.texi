@@ -182,7 +182,10 @@ Java bytecode files.
 @item @var{file}.zip
 @itemx @var{file}.jar
 An archive containing one or more @code{.class} files, all of
-which are compiled.  The archive may be compressed.
+which are compiled.  The archive may be compressed.  Files in
+an archive which don't end with @samp{.class} are treated as
+resource files; they are copmiled into the resulting object file
+as @samp{core:} URLs.
 @item @@@var{file}
 A file containing a whitespace-separated list of input file names.
 (Currently, these must all be @code{.java} source files, but that
