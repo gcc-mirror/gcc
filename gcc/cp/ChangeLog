@@ -1,3 +1,28 @@
+1998-11-16  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck2.c (my_friendly_abort): Don't fatal twice in a row.
+
+	* typeck.c (c_expand_start_case): Use build_expr_type_conversion.
+	Simplify.
+
+	* parse.y (structsp): Fix cut-and-paste error.
+
+	* init.c (build_new): Complain about non-integral size.
+
+	* parse.y (unary_expr): Complain about defining types in sizeof.
+
+	* typeck.c (expr_sizeof): Complain about sizeof an overloaded fn.
+
+	* rtti.c (build_x_typeid): Complain about typeid without 
+	including <typeinfo>.
+	(get_typeid): Likewise.  Complain about typeid of incomplete type.
+	(get_tinfo_fn_dynamic): Likewise.
+	(get_typeid_1): Not static anymore.
+	* except.c (build_eh_type_type): Use get_typeid_1.
+
+	* rtti.c (build_dynamic_cast_1): Give errors for dynamic_cast to
+	ambiguous or private bases.  Fix warning for reference cast.
+
 1998-11-16  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (DECL_TEMPLATE_INSTANTIATED): New macro.
