@@ -1,3 +1,9 @@
+2004-06-07  James E Wilson  <wilson@specifixinc.com>
+
+	PR target/15569
+	* config/ia64/ia64.md (call_value_nogp): Add constraints for op0.
+	(vall_value_gp): Likewise.
+
 2004-06-07  Dan Kegel  <dank@kegel.com>
 
 	PR c++/14808
