@@ -10,6 +10,9 @@
 
 #define IO_BUFFER_SIZE (0x8000 - 1024)
 
+/* SCO has a very small ARG_MAX.  */
+#define SMALL_ARG_MAX
+
 #ifndef __GNUC__
 /* The SCO compiler gets it wrong, and treats enumerated bitfields
    as signed quantities, making it impossible to use an 8-bit enum
