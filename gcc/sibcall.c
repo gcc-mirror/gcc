@@ -617,11 +617,15 @@ optimize_sibling_and_tail_recursive_calls ()
 
 	  /* See if there are any reasons we can't perform either sibling or
 	     tail call optimizations.  We must be careful with stack slots
-	     which are live at potential optimization sites.  ?!? The first
+	     which are live at potential optimization sites.  ??? The first
 	     test is overly conservative and should be replaced.  */
 	  if (frame_offset
 	      /* Can't take address of local var if used by recursive call.  */
 	      || current_function_uses_addressof
+	      /* Any function that calls setjmp might have longjmp called from
+		 any called function.  ??? We really should represent this
+		 properly in the CFG so that this needn't be special cased.  */
+	      || current_function_calls_setjmp
 	      /* Can't if more than one successor or single successor is not
 		 exit block.  These two tests prevent tail call optimization
 		 in the presense of active exception handlers.  */
