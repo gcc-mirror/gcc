@@ -1,3 +1,9 @@
+2005-03-02  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/20276
+	* config/rs6000/predicates.md (reg_or_cint64_operand): Fix typo.
+	(reg_or_sub_cint64_operand): Same.
+
 2005-03-02  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Fix setting of

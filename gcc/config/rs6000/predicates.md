@@ -148,7 +148,7 @@
 (define_predicate "reg_or_add_cint64_operand"
   (if_then_else (match_code "const_int")
     (match_test "(HOST_BITS_PER_WIDE_INT == 32 && INTVAL (op) < 0x7fff8000)
-		 || ((unsigned HOST_WIDE_INT) (INTVAL (op) + 0x80000000)
+		 || ((unsigned HOST_WIDE_INT) (INTVAL (op) + 0x80008000)
 		     < (unsigned HOST_WIDE_INT) 0x100000000ll)")
     (match_operand 0 "gpc_reg_operand")))
 
@@ -157,7 +157,7 @@
 (define_predicate "reg_or_sub_cint64_operand"
   (if_then_else (match_code "const_int")
     (match_test "(HOST_BITS_PER_WIDE_INT == 32 && INTVAL (op) < 0x7fff8000)
-		 || ((unsigned HOST_WIDE_INT) ((- INTVAL (op)) + 0x80000000)
+		 || ((unsigned HOST_WIDE_INT) ((- INTVAL (op)) + 0x80008000)
 		     < (unsigned HOST_WIDE_INT) 0x100000000ll)")
     (match_operand 0 "gpc_reg_operand")))
 
