@@ -1,3 +1,8 @@
+2002-09-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-common.h (flag_abi_version): Fix typo in comment.
+	* doc/invoke.texi (flag_abi_version): Document default value.
+
 2002-09-23  Hans-Peter Nilsson  <hp@axis.com>
 
 	* doc/extend.texi (Extended Asm): Clarify that overlap between
