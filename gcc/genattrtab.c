@@ -6083,7 +6083,7 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"insn-attr.h\"\n");
   printf ("#include \"toplev.h\"\n");
   printf ("\n");  
-  printf ("#define operands recog_operand\n\n");
+  printf ("#define operands recog_data.operand\n\n");
 
   /* Make `insn_alternatives'.  */
   insn_alternatives = (int *) oballoc (insn_code_number * sizeof (int));

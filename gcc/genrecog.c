@@ -1142,7 +1142,7 @@ write_subroutine (tree, type)
     printf ("     rtx *_plast_insn ATTRIBUTE_UNUSED;\n");
 
   printf ("{\n");
-  printf ("  register rtx *ro = &recog_operand[0];\n");
+  printf ("  register rtx *ro = &recog_data.operand[0];\n");
 
   printf ("  register rtx ");
   for (i = 1; i < max_depth; i++)
@@ -1969,7 +1969,7 @@ from the machine description file `md'.  */\n\n");
 
   printf ("*/\n\n");
 
-  printf ("#define operands recog_operand\n\n");
+  printf ("#define operands recog_data.operand\n\n");
 
   next_subroutine_number = 0;
   break_out_subroutines (recog_tree, RECOG, 1);

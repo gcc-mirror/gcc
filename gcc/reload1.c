@@ -1264,7 +1264,7 @@ maybe_fix_stack_asms ()
 	}
 
       /* Get the operand values and constraints out of the insn.  */
-      decode_asm_operands (pat, recog_operand, recog_operand_loc,
+      decode_asm_operands (pat, recog_data.operand, recog_data.operand_loc,
 			   constraints, operand_mode);
 
       /* For every operand, see what registers are allowed.  */
@@ -3442,13 +3442,13 @@ eliminate_regs_in_insn (insn, replace)
 	       && (GET_CODE (new_body) != SET
 		   || GET_CODE (SET_SRC (new_body)) != REG))
 	      /* If this was a load from or store to memory, compare
-		 the MEM in recog_operand to the one in the insn.  If they
-		 are not equal, then rerecognize the insn.  */
+		 the MEM in recog_data.operand to the one in the insn.
+		 If they are not equal, then rerecognize the insn.  */
 	      || (old_set != 0
 		  && ((GET_CODE (SET_SRC (old_set)) == MEM
-		       && SET_SRC (old_set) != recog_operand[1])
+		       && SET_SRC (old_set) != recog_data.operand[1])
 		      || (GET_CODE (SET_DEST (old_set)) == MEM
-			  && SET_DEST (old_set) != recog_operand[0])))
+			  && SET_DEST (old_set) != recog_data.operand[0])))
 	      /* If this was an add insn before, rerecognize.  */
 	      || GET_CODE (SET_SRC (old_set)) == PLUS))
 	{
@@ -9155,31 +9155,31 @@ reload_cse_simplify_operands (insn)
 
   extract_insn (insn);
 
-  if (recog_n_alternatives == 0 || recog_n_operands == 0)
+  if (recog_data.n_alternatives == 0 || recog_data.n_operands == 0)
     return 0;
 
   /* Figure out which alternative currently matches.  */
   if (! constrain_operands (1))
     fatal_insn_not_found (insn);
 
-  alternative_reject = (int *) alloca (recog_n_alternatives * sizeof (int));
-  alternative_nregs = (int *) alloca (recog_n_alternatives * sizeof (int));
-  alternative_order = (int *) alloca (recog_n_alternatives * sizeof (int));
-  bzero ((char *)alternative_reject, recog_n_alternatives * sizeof (int));
-  bzero ((char *)alternative_nregs, recog_n_alternatives * sizeof (int));
+  alternative_reject = (int *) alloca (recog_data.n_alternatives * sizeof (int));
+  alternative_nregs = (int *) alloca (recog_data.n_alternatives * sizeof (int));
+  alternative_order = (int *) alloca (recog_data.n_alternatives * sizeof (int));
+  bzero ((char *)alternative_reject, recog_data.n_alternatives * sizeof (int));
+  bzero ((char *)alternative_nregs, recog_data.n_alternatives * sizeof (int));
 
-  for (i = 0; i < recog_n_operands; i++)
+  for (i = 0; i < recog_data.n_operands; i++)
     {
       enum machine_mode mode;
       int regno;
       const char *p;
 
-      op_alt_regno[i] = (int *) alloca (recog_n_alternatives * sizeof (int));
-      for (j = 0; j < recog_n_alternatives; j++)
+      op_alt_regno[i] = (int *) alloca (recog_data.n_alternatives * sizeof (int));
+      for (j = 0; j < recog_data.n_alternatives; j++)
 	op_alt_regno[i][j] = -1;
 
-      p = constraints[i] = recog_constraints[i];
-      mode = recog_operand_mode[i];
+      p = constraints[i] = recog_data.constraints[i];
+      mode = recog_data.operand_mode[i];
 
       /* Add the reject values for each alternative given by the constraints
 	 for this operand.  */
@@ -9197,7 +9197,7 @@ reload_cse_simplify_operands (insn)
 
       /* We won't change operands which are already registers.  We
 	 also don't want to modify output operands.  */
-      regno = true_regnum (recog_operand[i]);
+      regno = true_regnum (recog_data.operand[i]);
       if (regno >= 0
 	  || constraints[i][0] == '='
 	  || constraints[i][0] == '+')
@@ -9207,7 +9207,7 @@ reload_cse_simplify_operands (insn)
 	{
 	  int class = (int) NO_REGS;
 
-	  if (! reload_cse_regno_equal_p (regno, recog_operand[i], mode))
+	  if (! reload_cse_regno_equal_p (regno, recog_data.operand[i], mode))
 	    continue;
 
 	  REGNO (reg) = regno;
@@ -9257,8 +9257,9 @@ reload_cse_simplify_operands (insn)
 		     a cheap CONST_INT. */
 		  if (op_alt_regno[i][j] == -1
 		      && reg_fits_class_p (reg, class, 0, mode)
-		      && (GET_CODE (recog_operand[i]) != CONST_INT
-			  || rtx_cost (recog_operand[i], SET) > rtx_cost (reg, SET)))
+		      && (GET_CODE (recog_data.operand[i]) != CONST_INT
+			  || (rtx_cost (recog_data.operand[i], SET)
+			      > rtx_cost (reg, SET))))
 		    {
 		      alternative_nregs[j]++;
 		      op_alt_regno[i][j] = regno;
@@ -9275,21 +9276,21 @@ reload_cse_simplify_operands (insn)
 
   /* Record all alternatives which are better or equal to the currently
      matching one in the alternative_order array.  */
-  for (i = j = 0; i < recog_n_alternatives; i++)
+  for (i = j = 0; i < recog_data.n_alternatives; i++)
     if (alternative_reject[i] <= alternative_reject[which_alternative])
       alternative_order[j++] = i;
-  recog_n_alternatives = j;
+  recog_data.n_alternatives = j;
 
   /* Sort it.  Given a small number of alternatives, a dumb algorithm
      won't hurt too much.  */
-  for (i = 0; i < recog_n_alternatives - 1; i++)
+  for (i = 0; i < recog_data.n_alternatives - 1; i++)
     {
       int best = i;
       int best_reject = alternative_reject[alternative_order[i]];
       int best_nregs = alternative_nregs[alternative_order[i]];
       int tmp;
 
-      for (j = i + 1; j < recog_n_alternatives; j++)
+      for (j = i + 1; j < recog_data.n_alternatives; j++)
 	{
 	  int this_reject = alternative_reject[alternative_order[j]];
 	  int this_nregs = alternative_nregs[alternative_order[j]];
@@ -9315,25 +9316,25 @@ reload_cse_simplify_operands (insn)
   /* Pop back to the real obstacks while changing the insn.  */
   pop_obstacks ();
 
-  for (i = 0; i < recog_n_operands; i++)
+  for (i = 0; i < recog_data.n_operands; i++)
     {
-      enum machine_mode mode = recog_operand_mode[i];
+      enum machine_mode mode = recog_data.operand_mode[i];
       if (op_alt_regno[i][j] == -1)
 	continue;
 
-      validate_change (insn, recog_operand_loc[i],
+      validate_change (insn, recog_data.operand_loc[i],
 		       gen_rtx_REG (mode, op_alt_regno[i][j]), 1);
     }
 
-  for (i = recog_n_dups - 1; i >= 0; i--)
+  for (i = recog_data.n_dups - 1; i >= 0; i--)
     {
-      int op = recog_dup_num[i];
-      enum machine_mode mode = recog_operand_mode[op];
+      int op = recog_data.dup_num[i];
+      enum machine_mode mode = recog_data.operand_mode[op];
 
       if (op_alt_regno[op][j] == -1)
 	continue;
 
-      validate_change (insn, recog_dup_loc[i],
+      validate_change (insn, recog_data.dup_loc[i],
 		       gen_rtx_REG (mode, op_alt_regno[op][j]), 1);
     }
 

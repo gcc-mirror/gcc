@@ -2373,12 +2373,12 @@ check_pic (i)
   switch (flag_pic)
     {
     case 1:
-      if (GET_CODE (recog_operand[i]) == SYMBOL_REF
-	  || (GET_CODE (recog_operand[i]) == CONST
-	      && ! (GET_CODE (XEXP (recog_operand[i], 0)) == MINUS
-		    && (XEXP (XEXP (recog_operand[i], 0), 0)
+      if (GET_CODE (recog_data.operand[i]) == SYMBOL_REF
+	  || (GET_CODE (recog_data.operand[i]) == CONST
+	      && ! (GET_CODE (XEXP (recog_data.operand[i], 0)) == MINUS
+		    && (XEXP (XEXP (recog_data.operand[i], 0), 0)
 			== global_offset_table)
-		    && (GET_CODE (XEXP (XEXP (recog_operand[i], 0), 1))
+		    && (GET_CODE (XEXP (XEXP (recog_data.operand[i], 0), 1))
 			== CONST))))
 	abort ();
     case 2:

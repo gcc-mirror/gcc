@@ -1173,7 +1173,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	     If it dies there, then replace the dest in both operands with
 	     the source operand.  */
 
-	  for (op_no = 0; op_no < recog_n_operands; op_no++)
+	  for (op_no = 0; op_no < recog_data.n_operands; op_no++)
 	    {
 	      rtx src, dst, src_subreg;
 	      enum reg_class src_class, dst_class;
@@ -1184,8 +1184,8 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	      if (match_no < 0)
 		continue;
 
-	      src = recog_operand[op_no];
-	      dst = recog_operand[match_no];
+	      src = recog_data.operand[op_no];
+	      dst = recog_data.operand[match_no];
 
 	      if (GET_CODE (src) != REG)
 		continue;
@@ -1225,19 +1225,22 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		continue;
 
 	      /* Make sure match_operand is the destination.  */
-	      if (recog_operand[match_no] != SET_DEST (set))
+	      if (recog_data.operand[match_no] != SET_DEST (set))
 		continue;
 
-	      /* If the operands already match, then there is nothing to do.  */
-	      /* But in the commutative case, we might find a better match.  */
-	      if (operands_match_p (src, dst)
-		  || (match.commutative[op_no] >= 0
-		      && operands_match_p (recog_operand[match.commutative
-							 [op_no]], dst)
-		      && (replacement_quality (recog_operand[match.commutative
-							     [op_no]])
-			  >= replacement_quality (src))))
+	      /* If the operands already match, then there is nothing to do. */
+	      if (operands_match_p (src, dst))
 		continue;
+
+	      /* But in the commutative case, we might find a better match.  */
+	      if (match.commutative[op_no] >= 0)
+		{
+		  rtx comm = recog_data.operand[match.commutative[op_no]];
+		  if (operands_match_p (comm, dst)
+		      && (replacement_quality (comm)
+			  >= replacement_quality (src)))
+		    continue;
+		}
 
 	      src_class = reg_preferred_class (REGNO (src));
 	      dst_class = reg_preferred_class (REGNO (dst));
@@ -1284,7 +1287,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 
 	  copy_src = NULL_RTX;
 	  copy_dst = NULL_RTX;
-	  for (op_no = 0; op_no < recog_n_operands; op_no++)
+	  for (op_no = 0; op_no < recog_data.n_operands; op_no++)
 	    {
 	      rtx set, p, src, dst;
 	      rtx src_note, dst_note;
@@ -1298,8 +1301,8 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	      if (match_no < 0)
 		continue;
 
-	      dst = recog_operand[match_no];
-	      src = recog_operand[op_no];
+	      dst = recog_data.operand[match_no];
+	      src = recog_data.operand[op_no];
 
 	      if (GET_CODE (src) != REG)
 		continue;
@@ -1309,11 +1312,16 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		  || REG_LIVE_LENGTH (REGNO (dst)) < 0)
 		continue;
 
-	      /* If the operands already match, then there is nothing to do.  */
-	      if (operands_match_p (src, dst)
-		  || (match.commutative[op_no] >= 0
-		      && operands_match_p (recog_operand[match.commutative[op_no]], dst)))
+	      /* If the operands already match, then there is nothing to do. */
+	      if (operands_match_p (src, dst))
 		continue;
+
+	      if (match.commutative[op_no] >= 0)
+		{
+		  rtx comm = recog_data.operand[match.commutative[op_no]];
+		  if (operands_match_p (comm, dst))
+		    continue;
+		}
 
 	      set = single_set (insn);
 	      if (! set)
@@ -1330,7 +1338,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		continue;
 
 	      /* Make sure match_no is the destination.  */
-	      if (recog_operand[match_no] != SET_DEST (set))
+	      if (recog_data.operand[match_no] != SET_DEST (set))
 		continue;
 
 	      if (REGNO (src) < FIRST_PSEUDO_REGISTER)
@@ -1450,7 +1458,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 			      validate_replace_rtx (dst, src, insn);
 			      /* Now make sure the dst is right.  */
 			      validate_change (insn,
-					       recog_operand_loc[match_no],
+					       recog_data.operand_loc[match_no],
 					       dst, 0);
 			    }
 			}
@@ -1582,16 +1590,16 @@ find_matches (insn, matchp)
   /* Must initialize this before main loop, because the code for
      the commutative case may set matches for operands other than
      the current one.  */
-  for (op_no = recog_n_operands; --op_no >= 0; )
+  for (op_no = recog_data.n_operands; --op_no >= 0; )
     matchp->with[op_no] = matchp->commutative[op_no] = -1;
 
-  for (op_no = 0; op_no < recog_n_operands; op_no++)
+  for (op_no = 0; op_no < recog_data.n_operands; op_no++)
     {
       const char *p;
       char c;
       int i = 0;
 
-      p = recog_constraints[op_no];
+      p = recog_data.constraints[op_no];
 
       likely_spilled[op_no] = 0;
       matchp->use[op_no] = READ;
@@ -1841,7 +1849,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 	      validate_change (q, &XEXP (SET_SRC (set2), 1),
 			       GEN_INT (newconst), 1);
 	    }
-	  validate_change (insn, recog_operand_loc[match_number], src, 1);
+	  validate_change (insn, recog_data.operand_loc[match_number], src, 1);
 	  if (validate_replace_rtx (dst, src_subreg, p))
 	    success = 1;
 	  break;

@@ -68,45 +68,7 @@ static int insn_invalid_p		PROTO((rtx));
 
 int volatile_ok;
 
-/* The next variables are set up by extract_insn.  The first four of them
-   are also set up during insn_extract.  */
-
-/* Indexed by N, gives value of operand N.  */
-rtx recog_operand[MAX_RECOG_OPERANDS];
-
-/* Indexed by N, gives location where operand N was found.  */
-rtx *recog_operand_loc[MAX_RECOG_OPERANDS];
-
-/* Indexed by N, gives location where the Nth duplicate-appearance of
-   an operand was found.  This is something that matched MATCH_DUP.  */
-rtx *recog_dup_loc[MAX_RECOG_OPERANDS];
-
-/* Indexed by N, gives the operand number that was duplicated in the
-   Nth duplicate-appearance of an operand.  */
-char recog_dup_num[MAX_RECOG_OPERANDS];
-
-/* The number of operands of the insn.  */
-int recog_n_operands;
-
-/* The number of MATCH_DUPs in the insn.  */
-int recog_n_dups;
-
-/* The number of alternatives in the constraints for the insn.  */
-int recog_n_alternatives;
-
-/* Indexed by N, gives the mode of operand N.  */
-enum machine_mode recog_operand_mode[MAX_RECOG_OPERANDS];
-
-/* Indexed by N, gives the constraint string for operand N.  */
-const char *recog_constraints[MAX_RECOG_OPERANDS];
-
-/* Indexed by N, gives the type (in, out, inout) for operand N.  */
-enum op_type recog_op_type[MAX_RECOG_OPERANDS];
-
-#ifndef REGISTER_CONSTRAINTS
-/* Indexed by N, nonzero if operand N should be an address.  */
-char recog_operand_address_p[MAX_RECOG_OPERANDS];
-#endif
+struct recog_data recog_data;
 
 /* Contains a vector of operand_alternative structures for every operand.
    Set up by preprocess_constraints.  */
@@ -2000,11 +1962,8 @@ adj_offsettable_operand (op, offset)
   abort ();
 }
 
-/* Analyze INSN and compute the variables recog_n_operands, recog_n_dups,
-   recog_n_alternatives, recog_operand, recog_operand_loc, recog_constraints,
-   recog_operand_mode, recog_dup_loc and recog_dup_num.
-   If REGISTER_CONSTRAINTS is not defined, also compute
-   recog_operand_address_p.  */
+/* Analyze INSN and fill in recog_data.  */
+
 void
 extract_insn (insn)
      rtx insn;
@@ -2014,9 +1973,9 @@ extract_insn (insn)
   int noperands;
   rtx body = PATTERN (insn);
 
-  recog_n_operands = 0;
-  recog_n_alternatives = 0;
-  recog_n_dups = 0;
+  recog_data.n_operands = 0;
+  recog_data.n_alternatives = 0;
+  recog_data.n_dups = 0;
 
   switch (GET_CODE (body))
     {
@@ -2030,7 +1989,7 @@ extract_insn (insn)
     case SET:
     case PARALLEL:
     case ASM_OPERANDS:
-      recog_n_operands = noperands = asm_noperands (body);
+      recog_data.n_operands = noperands = asm_noperands (body);
       if (noperands >= 0)
 	{
 	  /* This insn is an `asm' with operands.  */
@@ -2040,17 +1999,20 @@ extract_insn (insn)
 	    abort ();
 
 	  /* Now get the operand values and constraints out of the insn.  */
-	  decode_asm_operands (body, recog_operand, recog_operand_loc,
-			       recog_constraints, recog_operand_mode);
+	  decode_asm_operands (body, recog_data.operand,
+			       recog_data.operand_loc,
+			       recog_data.constraints,
+			       recog_data.operand_mode);
 	  if (noperands > 0)
 	    {
-	      const char *p =  recog_constraints[0];
-	      recog_n_alternatives = 1;
+	      const char *p =  recog_data.constraints[0];
+	      recog_data.n_alternatives = 1;
 	      while (*p)
-		recog_n_alternatives += (*p++ == ',');
+		recog_data.n_alternatives += (*p++ == ',');
 	    }
 #ifndef REGISTER_CONSTRAINTS
-	  bzero (recog_operand_address_p, sizeof recog_operand_address_p);
+	  bzero (recog_data.operand_address_p,
+		 sizeof recog_data.operand_address_p);
 #endif
 	  break;
 	}
@@ -2065,28 +2027,29 @@ extract_insn (insn)
       if (icode < 0)
 	fatal_insn_not_found (insn);
 
-      recog_n_operands = noperands = insn_n_operands[icode];
-      recog_n_alternatives = insn_n_alternatives[icode];
-      recog_n_dups = insn_n_dups[icode];
+      recog_data.n_operands = noperands = insn_n_operands[icode];
+      recog_data.n_alternatives = insn_n_alternatives[icode];
+      recog_data.n_dups = insn_n_dups[icode];
 
       insn_extract (insn);
 
       for (i = 0; i < noperands; i++)
 	{
 #ifdef REGISTER_CONSTRAINTS
-	  recog_constraints[i] = insn_operand_constraint[icode][i];
+	  recog_data.constraints[i] = insn_operand_constraint[icode][i];
 #else
-	  recog_operand_address_p[i] = insn_operand_address_p[icode][i];
+	  recog_data.operand_address_p[i] = insn_operand_address_p[icode][i];
 #endif
-	  recog_operand_mode[i] = insn_operand_mode[icode][i];
+	  recog_data.operand_mode[i] = insn_operand_mode[icode][i];
 	}
     }
   for (i = 0; i < noperands; i++)
-    recog_op_type[i] = (recog_constraints[i][0] == '=' ? OP_OUT
-			: recog_constraints[i][0] == '+' ? OP_INOUT
-			: OP_IN);
+    recog_data.operand_type[i]
+      = (recog_data.constraints[i][0] == '=' ? OP_OUT
+	 : recog_data.constraints[i][0] == '+' ? OP_INOUT
+	 : OP_IN);
 
-  if (recog_n_alternatives > MAX_RECOG_ALTERNATIVES)
+  if (recog_data.n_alternatives > MAX_RECOG_ALTERNATIVES)
     abort ();
 }
 
@@ -2099,15 +2062,15 @@ preprocess_constraints ()
   int i;
 
   bzero (recog_op_alt, sizeof recog_op_alt);
-  for (i = 0; i < recog_n_operands; i++)
+  for (i = 0; i < recog_data.n_operands; i++)
     {
       int j;
       struct operand_alternative *op_alt;
-      const char *p = recog_constraints[i];
+      const char *p = recog_data.constraints[i];
 
       op_alt = recog_op_alt[i];
 
-      for (j = 0; j < recog_n_alternatives; j++)
+      for (j = 0; j < recog_data.n_alternatives; j++)
 	{
 	  op_alt[j].class = NO_REGS;
 	  op_alt[j].constraint = p;
@@ -2241,26 +2204,26 @@ constrain_operands (strict)
   struct funny_match funny_match[MAX_RECOG_OPERANDS];
   int funny_match_index;
 
-  if (recog_n_operands == 0 || recog_n_alternatives == 0)
+  if (recog_data.n_operands == 0 || recog_data.n_alternatives == 0)
     return 1;
 
-  for (c = 0; c < recog_n_operands; c++)
+  for (c = 0; c < recog_data.n_operands; c++)
     {
-      constraints[c] = recog_constraints[c];
+      constraints[c] = recog_data.constraints[c];
       matching_operands[c] = -1;
     }
 
   which_alternative = 0;
 
-  while (which_alternative < recog_n_alternatives)
+  while (which_alternative < recog_data.n_alternatives)
     {
       register int opno;
       int lose = 0;
       funny_match_index = 0;
 
-      for (opno = 0; opno < recog_n_operands; opno++)
+      for (opno = 0; opno < recog_data.n_operands; opno++)
 	{
-	  register rtx op = recog_operand[opno];
+	  register rtx op = recog_data.operand[opno];
 	  enum machine_mode mode = GET_MODE (op);
 	  register const char *p = constraints[opno];
 	  int offset = 0;
@@ -2320,8 +2283,8 @@ constrain_operands (strict)
 		  val = 1;
 		else
 		  {
-		    rtx op1 = recog_operand[c - '0'];
-		    rtx op2 = recog_operand[opno];
+		    rtx op1 = recog_data.operand[c - '0'];
+		    rtx op2 = recog_data.operand[opno];
 
 	            /* A unary operator may be accepted by the predicate,
 		       but it is irrelevant for matching constraints.  */
@@ -2354,7 +2317,7 @@ constrain_operands (strict)
 		   strictly valid, i.e., that all pseudos requiring hard regs
 		   have gotten them.  */
 		if (strict <= 0
-		    || (strict_memory_address_p (recog_operand_mode[opno],
+		    || (strict_memory_address_p (recog_data.operand_mode[opno],
 						 op)))
 		  win = 1;
 		break;
@@ -2535,31 +2498,31 @@ constrain_operands (strict)
 	     operand.  */
 
 	  if (strict > 0)
-	    for (eopno = 0; eopno < recog_n_operands; eopno++)
+	    for (eopno = 0; eopno < recog_data.n_operands; eopno++)
 	      /* Ignore earlyclobber operands now in memory,
 		 because we would often report failure when we have
 		 two memory operands, one of which was formerly a REG.  */
 	      if (earlyclobber[eopno]
-		  && GET_CODE (recog_operand[eopno]) == REG)
-		for (opno = 0; opno < recog_n_operands; opno++)
-		  if ((GET_CODE (recog_operand[opno]) == MEM
-		       || recog_op_type[opno] != OP_OUT)
+		  && GET_CODE (recog_data.operand[eopno]) == REG)
+		for (opno = 0; opno < recog_data.n_operands; opno++)
+		  if ((GET_CODE (recog_data.operand[opno]) == MEM
+		       || recog_data.operand_type[opno] != OP_OUT)
 		      && opno != eopno
 		      /* Ignore things like match_operator operands.  */
-		      && *recog_constraints[opno] != 0
+		      && *recog_data.constraints[opno] != 0
 		      && ! (matching_operands[opno] == eopno
-			    && operands_match_p (recog_operand[opno],
-						 recog_operand[eopno]))
-		      && ! safe_from_earlyclobber (recog_operand[opno],
-						   recog_operand[eopno]))
+			    && operands_match_p (recog_data.operand[opno],
+						 recog_data.operand[eopno]))
+		      && ! safe_from_earlyclobber (recog_data.operand[opno],
+						   recog_data.operand[eopno]))
 		    lose = 1;
 
 	  if (! lose)
 	    {
 	      while (--funny_match_index >= 0)
 		{
-		  recog_operand[funny_match[funny_match_index].other]
-		    = recog_operand[funny_match[funny_match_index].this];
+		  recog_data.operand[funny_match[funny_match_index].other]
+		    = recog_data.operand[funny_match[funny_match_index].this];
 		}
 
 	      return 1;

@@ -140,11 +140,11 @@ update_cc (body, insn)
       /* Insn doesn't affect the CC but does modify operand[0], known to be
 	 a register.  */
       if (cc_status.value1 != 0
-	  && reg_overlap_mentioned_p (recog_operand[0], cc_status.value1))
+	  && reg_overlap_mentioned_p (recog_data.operand[0], cc_status.value1))
 	cc_status.value1 = 0;
 
       if (cc_status.value2 != 0
-	  && reg_overlap_mentioned_p (recog_operand[0], cc_status.value2))
+	  && reg_overlap_mentioned_p (recog_data.operand[0], cc_status.value2))
 	cc_status.value2 = 0;
 
       break;
@@ -153,20 +153,20 @@ update_cc (body, insn)
       /* Insn copies operand[1] to operand[0], both registers, but doesn't
          affect the CC.  */
       if (cc_status.value1 != 0
-	  && reg_overlap_mentioned_p (recog_operand[0], cc_status.value1))
+	  && reg_overlap_mentioned_p (recog_data.operand[0], cc_status.value1))
 	cc_status.value1 = 0;
 
       if (cc_status.value2 != 0
-	  && reg_overlap_mentioned_p (recog_operand[0], cc_status.value2))
+	  && reg_overlap_mentioned_p (recog_data.operand[0], cc_status.value2))
 	cc_status.value2 = 0;
 
       if (cc_status.value1 != 0
-	  && rtx_equal_p (cc_status.value1, recog_operand[1]))
-	cc_status.value2 = recog_operand[0];
+	  && rtx_equal_p (cc_status.value1, recog_data.operand[1]))
+	cc_status.value2 = recog_data.operand[0];
 
       if (cc_status.value2 != 0
-	  && rtx_equal_p (cc_status.value2, recog_operand[1]))
-	cc_status.value1 = recog_operand[0];
+	  && rtx_equal_p (cc_status.value2, recog_data.operand[1]))
+	cc_status.value1 = recog_data.operand[0];
 
       break;
 
@@ -176,10 +176,10 @@ update_cc (body, insn)
       break;
 
     case CC_SETS:
-      /* Insn sets CC to recog_operand[0], but overflow is impossible.  */
+      /* Insn sets CC to recog_data.operand[0], but overflow is impossible.  */
       CC_STATUS_INIT;
       cc_status.flags |= CC_NO_OVERFLOW;
-      cc_status.value1 = recog_operand[0];
+      cc_status.value1 = recog_data.operand[0];
       break;
 
    case CC_COMPARE:

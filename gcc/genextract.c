@@ -424,8 +424,8 @@ from the machine description file `md'.  */\n\n");
   printf ("void\ninsn_extract (insn)\n");
   printf ("     rtx insn;\n");
   printf ("{\n");
-  printf ("  register rtx *ro = recog_operand;\n");
-  printf ("  register rtx **ro_loc = recog_operand_loc;\n");
+  printf ("  register rtx *ro = recog_data.operand;\n");
+  printf ("  register rtx **ro_loc = recog_data.operand_loc;\n");
   printf ("  rtx pat = PATTERN (insn);\n");
   printf ("  int i ATTRIBUTE_UNUSED;\n\n");
   printf ("  memset (ro, 0, sizeof (*ro) * MAX_RECOG_OPERANDS);\n");
@@ -506,10 +506,10 @@ from the machine description file `md'.  */\n\n");
 
       for (i = 0; i < p->dup_count; i++)
 	{
-	  printf ("      recog_dup_loc[%d] = &", i);
+	  printf ("      recog_data.dup_loc[%d] = &", i);
 	  print_path (p->duplocs[i]);
 	  printf (";\n");
-	  printf ("      recog_dup_num[%d] = %d;\n", i, p->dupnums[i]);
+	  printf ("      recog_data.dup_num[%d] = %d;\n", i, p->dupnums[i]);
 	}
 
       printf ("      break;\n\n");

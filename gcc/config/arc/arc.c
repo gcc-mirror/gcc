@@ -2152,7 +2152,7 @@ arc_final_prescan_insn (insn, opvec, noperands)
 	    arc_ccfsm_current_cc = ARC_INVERSE_CONDITION_CODE (arc_ccfsm_current_cc);
 	}
 
-      /* Restore recog_operand.  Getting the attributes of other insns can
+      /* Restore recog_data.  Getting the attributes of other insns can
 	 destroy this array, but final.c assumes that it remains intact
 	 across this call; since the insn has been recognized already we
 	 call insn_extract direct. */

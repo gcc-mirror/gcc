@@ -4258,7 +4258,7 @@ note_invalid_constants (insn, address)
   /* Preprocess the constraints, to extract some useful information.  */
   preprocess_constraints ();
 
-  for (opno = 0; opno < recog_n_operands; opno++)
+  for (opno = 0; opno < recog_data.n_operands; opno++)
     {
       /* Things we need to fix can only occur in inputs */
       if (recog_op_type[opno] != OP_IN)
@@ -4270,22 +4270,23 @@ note_invalid_constants (insn, address)
 	 now so that we output the right code.  */
       if (recog_op_alt[opno][which_alternative].memory_ok)
 	{
-	  rtx op = recog_operand[opno];
+	  rtx op = recog_data.operand[opno];
 
 	  if (CONSTANT_P (op))
-	    push_minipool_fix (insn, address, recog_operand_loc[opno],
-			       recog_operand_mode[opno], op);
+	    push_minipool_fix (insn, address, recog_data.operand_loc[opno],
+			       recog_data.operand_mode[opno], op);
 #ifndef AOF_ASSEMBLER
 	  else if (GET_CODE (op) == UNSPEC && XINT (op, 1) == 3)
-	    push_minipool_fix (insn, address, recog_operand_loc[opno],
-			       recog_operand_mode[opno], XVECEXP (op, 0, 0));
+	    push_minipool_fix (insn, address, recog_data.operand_loc[opno],
+			       recog_data.operand_mode[opno],
+			       XVECEXP (op, 0, 0));
 #endif
-	  else if (recog_operand_mode[opno] == SImode
+	  else if (recog_data.operand_mode[opno] == SImode
 		   && GET_CODE (op) == MEM
 		   && GET_CODE (XEXP (op, 0)) == SYMBOL_REF
 		   && CONSTANT_POOL_ADDRESS_P (XEXP (op, 0)))
-	    push_minipool_fix (insn, address, recog_operand_loc[opno],
-			       recog_operand_mode[opno],
+	    push_minipool_fix (insn, address, recog_data.operand_loc[opno],
+			       recog_data.operand_mode[opno],
 			       get_pool_constant (XEXP (op, 0)));
 	}
     }
@@ -6711,7 +6712,8 @@ arm_final_prescan_insn (insn)
 	  if (reverse || then_not_else)
 	    arm_current_cc = ARM_INVERSE_CONDITION_CODE (arm_current_cc);
 	}
-      /* restore recog_operand (getting the attributes of other insns can
+
+      /* Restore recog_data (getting the attributes of other insns can
 	 destroy this array, but final.c assumes that it remains intact
 	 across this call; since the insn has been recognized already we
 	 call recog direct). */

@@ -2873,7 +2873,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	   it is output.  */
 
 #ifdef FINAL_PRESCAN_INSN
-	FINAL_PRESCAN_INSN (insn, recog_operand, recog_n_operands);
+	FINAL_PRESCAN_INSN (insn, recog_data.operand, recog_data.n_operands);
 #endif
 
 #ifdef HAVE_cc0
@@ -2901,7 +2901,8 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	template = insn_template[insn_code_number];
 	if (template == 0)
 	  {
-	    template = (*insn_outfun[insn_code_number]) (recog_operand, insn);
+	    template = ((*insn_outfun[insn_code_number])
+			(recog_data.operand, insn));
 
 	    /* If the C code returns 0, it means that it is a jump insn
 	       which follows a deleted test insn, and that test insn
@@ -2941,7 +2942,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 
 	/* Output assembler code from the template.  */
 
-	output_asm_insn (template, recog_operand);
+	output_asm_insn (template, recog_data.operand);
 
 #if defined (DWARF2_UNWIND_INFO)
 #if !defined (ACCUMULATE_OUTGOING_ARGS)
@@ -3050,22 +3051,22 @@ cleanup_subreg_operands (insn)
   int i;
 
   extract_insn (insn);
-  for (i = 0; i < recog_n_operands; i++)
+  for (i = 0; i < recog_data.n_operands; i++)
     {
-      if (GET_CODE (recog_operand[i]) == SUBREG)
-        recog_operand[i] = alter_subreg (recog_operand[i]);
-      else if (GET_CODE (recog_operand[i]) == PLUS
-               || GET_CODE (recog_operand[i]) == MULT)
-       recog_operand[i] = walk_alter_subreg (recog_operand[i]);
+      if (GET_CODE (recog_data.operand[i]) == SUBREG)
+        recog_data.operand[i] = alter_subreg (recog_data.operand[i]);
+      else if (GET_CODE (recog_data.operand[i]) == PLUS
+               || GET_CODE (recog_data.operand[i]) == MULT)
+       recog_data.operand[i] = walk_alter_subreg (recog_data.operand[i]);
     }
 
-  for (i = 0; i < recog_n_dups; i++)
+  for (i = 0; i < recog_data.n_dups; i++)
     {
-      if (GET_CODE (*recog_dup_loc[i]) == SUBREG)
-        *recog_dup_loc[i] = alter_subreg (*recog_dup_loc[i]);
-      else if (GET_CODE (*recog_dup_loc[i]) == PLUS
-               || GET_CODE (*recog_dup_loc[i]) == MULT)
-        *recog_dup_loc[i] = walk_alter_subreg (*recog_dup_loc[i]);
+      if (GET_CODE (*recog_data.dup_loc[i]) == SUBREG)
+        *recog_data.dup_loc[i] = alter_subreg (*recog_data.dup_loc[i]);
+      else if (GET_CODE (*recog_data.dup_loc[i]) == PLUS
+               || GET_CODE (*recog_data.dup_loc[i]) == MULT)
+        *recog_data.dup_loc[i] = walk_alter_subreg (*recog_data.dup_loc[i]);
     }
 }
 
