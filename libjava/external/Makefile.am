@@ -1,5 +1,8 @@
 ## Input file for automake to generate the Makefile.in used by configure
 
+# May be used by various substitution variables.
+gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+
 SUBDIRS = sax w3c_dom
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
