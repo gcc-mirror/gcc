@@ -1,3 +1,11 @@
+Fri Jan 15 22:30:04 1999  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.h (CONST_OK_FOR_LETTER_P): Do not assume 32-bit CONST_INT.
+	* rs6000.c (u_short_cint_operand, add_operand, logical_operand,
+	non_add_cint_operand, non_logical_cint_operand): Likewise.
+	(get_issue_rate): Add CPU_PPC604E case.
+	* rs6000.md (movdi, !TARGET_POWERPC64 splitters): Handle 64-bit hosts.
+	
 Fri Jan 15 18:42:12 1999  Richard Henderson  <rth@cygnus.com>
 
 	* expr.c (queued_subexp_p): Make public.

@@ -507,8 +507,8 @@ u_short_cint_operand (op, mode)
      register rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  return ((GET_CODE (op) == CONST_INT
-	   && (INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff)) == 0));
+  return (GET_CODE (op) == CONST_INT
+	   && (INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff)) == 0);
 }
 
 /* Return 1 if OP is a CONST_INT that cannot fit in a signed D field.  */
@@ -854,7 +854,8 @@ add_operand (op, mode)
     enum machine_mode mode;
 {
   return (reg_or_short_operand (op, mode)
-	  || (GET_CODE (op) == CONST_INT && (INTVAL (op) & 0xffff) == 0));
+	  || (GET_CODE (op) == CONST_INT
+	      && (INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff0000)) == 0));
 }
 
 /* Return 1 if OP is a constant but not a valid add_operand.  */
@@ -866,7 +867,7 @@ non_add_cint_operand (op, mode)
 {
   return (GET_CODE (op) == CONST_INT
 	  && (unsigned HOST_WIDE_INT) (INTVAL (op) + 0x8000) >= 0x10000
-	  && (INTVAL (op) & 0xffff) != 0);
+	  && (INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff0000)) != 0);
 }
 
 /* Return 1 if the operand is a non-special register or a constant that
@@ -880,7 +881,7 @@ logical_operand (op, mode)
   return (gpc_reg_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT
 	      && ((INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff)) == 0
-		  || (INTVAL (op) & 0xffff) == 0)));
+		  || (INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff0000)) == 0)));
 }
 
 /* Return 1 if C is a constant that is not a logical operand (as
@@ -893,7 +894,7 @@ non_logical_cint_operand (op, mode)
 {
   return (GET_CODE (op) == CONST_INT
 	  && (INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff)) != 0
-	  && (INTVAL (op) & 0xffff) != 0);
+	  && (INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff0000)) != 0);
 }
 
 /* Return 1 if C is a constant that can be encoded in a mask on the
@@ -5132,13 +5133,14 @@ int get_issue_rate()
     return 2; 
   case CPU_PPC604:
     return 4;
+  case CPU_PPC604E:
+    return 4;
   case CPU_PPC620:
     return 4;
   default:
     return 1;
   }
 }
-
 
 
 /* Output assembler code for a block containing the constant parts
