@@ -48,7 +48,9 @@ extern void dw2_asm_output_addr_rtx	PARAMS ((int, rtx,
 						 const char *, ...))
      /* ATTRIBUTE_PRINTF_3 */;
 
-extern void dw2_asm_output_encoded_addr_rtx PARAMS ((int, rtx));
+extern void dw2_asm_output_encoded_addr_rtx PARAMS ((int, rtx,
+						     const char *, ...))
+     /* ATTRIBUTE_PRINTF_3 */;
 
 extern void dw2_asm_output_nstring	PARAMS ((const char *, size_t,
 						 const char *, ...))
@@ -73,5 +75,6 @@ extern void dw2_asm_output_delta_sleb128 PARAMS ((const char *, const char *,
 extern int size_of_uleb128		PARAMS ((unsigned HOST_WIDE_INT));
 extern int size_of_sleb128		PARAMS ((HOST_WIDE_INT));
 extern int size_of_encoded_value	PARAMS ((int));
+extern const char *eh_data_format_name	PARAMS ((int));
 
 extern void dw2_output_indirect_constants PARAMS ((void));

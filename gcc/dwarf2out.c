@@ -1649,8 +1649,14 @@ output_cfi (cfi, fde, for_eh)
       switch (cfi->dw_cfi_opc)
 	{
 	case DW_CFA_set_loc:
-	  dw2_asm_output_addr ((for_eh ? PTR_SIZE : DWARF2_ADDR_SIZE), 
-			       cfi->dw_cfi_oprnd1.dw_cfi_addr, NULL);
+	  if (for_eh)
+	    dw2_asm_output_encoded_addr_rtx (
+		ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/1, /*global=*/0),
+		gen_rtx_SYMBOL_REF (Pmode, cfi->dw_cfi_oprnd1.dw_cfi_addr),
+		NULL);
+	  else
+	    dw2_asm_output_addr (DWARF2_ADDR_SIZE,
+				 cfi->dw_cfi_oprnd1.dw_cfi_addr, NULL);
 	  break;
 	case DW_CFA_advance_loc1:
 	  dw2_asm_output_delta (1, cfi->dw_cfi_oprnd1.dw_cfi_addr,
@@ -1717,6 +1723,10 @@ output_call_frame_info (for_eh)
   char l1[20], l2[20];
   int any_lsda_needed = 0;
   char augmentation[6];
+  int augmentation_size;
+  int fde_encoding = DW_EH_PE_absptr;
+  int per_encoding = DW_EH_PE_absptr;
+  int lsda_encoding = DW_EH_PE_absptr;
 
   /* If we don't have any functions we'll want to unwind out of, don't
      emit any EH unwind information.  */
@@ -1770,20 +1780,46 @@ output_call_frame_info (for_eh)
   dw2_asm_output_data (1, DW_CIE_VERSION, "CIE Version");
 
   augmentation[0] = 0;
+  augmentation_size = 0;
   if (for_eh)
     {
+      char *p;
+
       /* Augmentation:
 	 z	Indicates that a uleb128 is present to size the
 	 	augmentation section.
-	 R	Indicates a pointer encoding for CIE and FDE pointers.
-	 P	Indicates the presence of a language personality
-	 	routine in the CIE augmentation and an LSDA in the
-		FDE augmentation.  */
+	 L	Indicates the encoding (and thus presence) of
+		an LSDA pointer in the FDE augmentation.
+	 R	Indicates a non-default pointer encoding for
+		FDE code pointers.
+	 P	Indicates the presence of an encoding + language
+		personality routine in the CIE augmentation.  */
 
-      /* ??? Handle pointer encodings.  */
+      fde_encoding = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/1, /*global=*/0);
+      per_encoding = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/2, /*global=*/1);
+      lsda_encoding = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0, /*global=*/0);
 
+      p = augmentation + 1;
+      if (eh_personality_libfunc)
+	{
+	  *p++ = 'P';
+	  augmentation_size += 1 + size_of_encoded_value (per_encoding);
+	}
       if (any_lsda_needed)
-	strcpy (augmentation, "zP");
+	{
+	  *p++ = 'L';
+	  augmentation_size += 1;
+	}
+      if (fde_encoding != DW_EH_PE_absptr)
+	{
+	  *p++ = 'R';
+	  augmentation_size += 1;
+	}
+      if (p > augmentation + 1)
+	{
+	  augmentation[0] = 'z';
+          *p = '\0';
+	}
     }
   dw2_asm_output_nstring (augmentation, -1, "CIE Augmentation");
 
@@ -1796,12 +1832,20 @@ output_call_frame_info (for_eh)
 
   if (augmentation[0])
     {
-      dw2_asm_output_data_uleb128 (PTR_SIZE, "Augmentation size");
+      dw2_asm_output_data_uleb128 (augmentation_size, "Augmentation size");
       if (eh_personality_libfunc)
-	dw2_asm_output_addr_rtx (PTR_SIZE, eh_personality_libfunc,
-				 "Personality");
-      else
-	dw2_asm_output_data (PTR_SIZE, 0, "Personality (none)");
+	{
+	  dw2_asm_output_data (1, per_encoding, "Personality (%s)",
+			       eh_data_format_name (per_encoding));
+	  dw2_asm_output_encoded_addr_rtx (per_encoding,
+					   eh_personality_libfunc, NULL);
+	}
+      if (any_lsda_needed)
+	dw2_asm_output_data (1, lsda_encoding, "LSDA Encoding (%s)",
+			     eh_data_format_name (lsda_encoding));
+      if (fde_encoding != DW_EH_PE_absptr)
+	dw2_asm_output_data (1, fde_encoding, "FDE Encoding (%s)",
+			     eh_data_format_name (fde_encoding));
     }
 
   for (cfi = cie_cfi_head; cfi != NULL; cfi = cfi->dw_cfi_next)
@@ -1843,29 +1887,45 @@ output_call_frame_info (for_eh)
 			       stripattributes (FRAME_SECTION),
 			       "FDE CIE offset");
 
-      dw2_asm_output_addr ((for_eh ? PTR_SIZE : DWARF2_ADDR_SIZE),
-			   fde->dw_fde_begin,
-			   "FDE initial location");
-
-      dw2_asm_output_delta ((for_eh ? PTR_SIZE : DWARF2_ADDR_SIZE), 
-			    fde->dw_fde_end, 
-			    fde->dw_fde_begin, 
-			    "FDE address range");
+      if (for_eh)
+	{
+	  dw2_asm_output_encoded_addr_rtx (fde_encoding,
+		   gen_rtx_SYMBOL_REF (Pmode, fde->dw_fde_begin),
+		   "FDE initial location");
+	  dw2_asm_output_delta (size_of_encoded_value (fde_encoding),
+				fde->dw_fde_end, fde->dw_fde_begin, 
+				"FDE address range");
+	}
+      else
+	{
+	  dw2_asm_output_addr (DWARF2_ADDR_SIZE, fde->dw_fde_begin,
+			       "FDE initial location");
+	  dw2_asm_output_delta (DWARF2_ADDR_SIZE, 
+				fde->dw_fde_end, fde->dw_fde_begin, 
+				"FDE address range");
+	}
 
       if (augmentation[0])
 	{
-	  dw2_asm_output_data_uleb128 ((for_eh ? PTR_SIZE : DWARF2_ADDR_SIZE),
-				       "Augmentation size");
-
-	  if (fde->uses_eh_lsda)
+	  if (any_lsda_needed)
 	    {
-	      ASM_GENERATE_INTERNAL_LABEL (l1, "LLSDA", fde->funcdef_number);
-	      dw2_asm_output_offset ((for_eh ? PTR_SIZE : DWARF2_ADDR_SIZE), 
-				     l1, "Language Specific Data Area");
+	      dw2_asm_output_data_uleb128 (
+		size_of_encoded_value (lsda_encoding), "Augmentation size");
+
+	      if (fde->uses_eh_lsda)
+	        {
+	          ASM_GENERATE_INTERNAL_LABEL (l1, "LLSDA",
+					       fde->funcdef_number);
+	          dw2_asm_output_encoded_addr_rtx (
+			lsda_encoding, gen_rtx_SYMBOL_REF (Pmode, l1),
+		 	"Language Specific Data Area");
+	        }
+	      else
+	        dw2_asm_output_data (size_of_encoded_value (lsda_encoding),
+				     0, "Language Specific Data Area (none)");
 	    }
 	  else
-	    dw2_asm_output_data ((for_eh ? PTR_SIZE : DWARF2_ADDR_SIZE), 
-				 0, "Language Specific Data Area (none)");
+	    dw2_asm_output_data_uleb128 (0, "Augmentation size");
 	}
 
       /* Loop through the Call Frame Instructions associated with
@@ -1876,7 +1936,7 @@ output_call_frame_info (for_eh)
 
       /* Pad the FDE out to an address sized boundary.  */
       ASM_OUTPUT_ALIGN (asm_out_file, 
-		      floor_log2 ((for_eh ? PTR_SIZE : DWARF2_ADDR_SIZE)));
+		        floor_log2 ((for_eh ? PTR_SIZE : DWARF2_ADDR_SIZE)));
       ASM_OUTPUT_LABEL (asm_out_file, l2);
     }
 

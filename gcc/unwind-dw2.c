@@ -22,6 +22,7 @@
 #include "tsystem.h"
 #include "dwarf2.h"
 #include "unwind.h"
+#include "unwind-pe.h"
 #include "unwind-dw2-fde.h"
 #include "gthr.h"
 
@@ -69,7 +70,7 @@ typedef struct
       union {
 	unsigned int reg;
 	_Unwind_Sword offset;
-	unsigned char *exp;
+	const unsigned char *exp;
       } loc;
       enum {
 	REG_UNSAVED,
@@ -87,7 +88,7 @@ typedef struct
      location expression.  */
   _Unwind_Sword cfa_offset;
   _Unwind_Word cfa_reg;
-  unsigned char *cfa_exp;
+  const unsigned char *cfa_exp;
   enum {
     CFA_UNSET,
     CFA_REG_OFFSET,
@@ -102,57 +103,11 @@ typedef struct
   signed int data_align;
   unsigned int code_align;
   unsigned char retaddr_column;
-  unsigned char addr_encoding;
+  unsigned char fde_encoding;
+  unsigned char lsda_encoding;
   unsigned char saw_z;
-  unsigned char saw_lsda;
 } _Unwind_FrameState;
 
-/* Decode the unsigned LEB128 constant at BUF into the variable pointed to
-   by R, and return the new value of BUF.  */
-
-static unsigned char *
-read_uleb128 (unsigned char *buf, _Unwind_Word *r)
-{
-  unsigned shift = 0;
-  _Unwind_Word result = 0;
-
-  while (1)
-    {
-      unsigned char byte = *buf++;
-      result |= (byte & 0x7f) << shift;
-      if ((byte & 0x80) == 0)
-	break;
-      shift += 7;
-    }
-  *r = result;
-  return buf;
-}
-
-/* Decode the signed LEB128 constant at BUF into the variable pointed to
-   by R, and return the new value of BUF.  */
-
-static unsigned char *
-read_sleb128 (unsigned char *buf, _Unwind_Sword *r)
-{
-  unsigned shift = 0;
-  _Unwind_Sword result = 0;
-  unsigned char byte;
-
-  while (1)
-    {
-      byte = *buf++;
-      result |= (byte & 0x7f) << shift;
-      shift += 7;
-      if ((byte & 0x80) == 0)
-	break;
-    }
-  if (shift < (sizeof (*r) * 8) && (byte & 0x40) != 0)
-    result |= - (1 << shift);
-
-  *r = result;
-  return buf;
-}
-
 /* Read unaligned data from the instruction buffer.  */
 
 union unaligned
@@ -167,107 +122,31 @@ union unaligned
 } __attribute__ ((packed));
 
 static inline void *
-read_pointer (void *p) { union unaligned *up = p; return up->p; }
+read_pointer (const void *p) { const union unaligned *up = p; return up->p; }
 
 static inline int
-read_1u (void *p) { return *(unsigned char *)p; }
+read_1u (const void *p) { return *(const unsigned char *)p; }
 
 static inline int
-read_1s (void *p) { return *(signed char *)p; }
+read_1s (const void *p) { return *(const signed char *)p; }
 
 static inline int
-read_2u (void *p) { union unaligned *up = p; return up->u2; }
+read_2u (const void *p) { const union unaligned *up = p; return up->u2; }
 
 static inline int
-read_2s (void *p) { union unaligned *up = p; return up->s2; }
+read_2s (const void *p) { const union unaligned *up = p; return up->s2; }
 
 static inline unsigned int
-read_4u (void *p) { union unaligned *up = p; return up->u4; }
+read_4u (const void *p) { const union unaligned *up = p; return up->u4; }
 
 static inline int
-read_4s (void *p) { union unaligned *up = p; return up->s4; }
+read_4s (const void *p) { const union unaligned *up = p; return up->s4; }
 
 static inline unsigned long
-read_8u (void *p) { union unaligned *up = p; return up->u8; }
+read_8u (const void *p) { const union unaligned *up = p; return up->u8; }
 
 static inline unsigned long
-read_8s (void *p) { union unaligned *up = p; return up->s8; }
-
-static unsigned char *
-read_encoded_pointer (unsigned char *p, unsigned char encoding,
-		      struct dwarf_eh_bases *bases, void **pptr)
-{
-  signed long val;
-  unsigned char *ret;
-  
-  switch (encoding & 0x0f)
-    {
-    case DW_EH_PE_absptr:
-      val = (_Unwind_Ptr) read_pointer (p);
-      ret = p + sizeof (void *);
-      break;
-
-    case DW_EH_PE_uleb128:
-      ret = read_uleb128 (p, &val);
-      break;
-    case DW_EH_PE_sleb128:
-      ret = read_sleb128 (p, &val);
-      break;
-
-    case DW_EH_PE_udata2:
-      val = read_2u (p);
-      ret = p + 2;
-      break;
-    case DW_EH_PE_udata4:
-      val = read_4u (p);
-      ret = p + 4;
-      break;
-    case DW_EH_PE_udata8:
-      val = read_8u (p);
-      ret = p + 8;
-      break;
-
-    case DW_EH_PE_sdata2:
-      val = read_2s (p);
-      ret = p + 2;
-      break;
-    case DW_EH_PE_sdata4:
-      val = read_4s (p);
-      ret = p + 4;
-      break;
-    case DW_EH_PE_sdata8:
-      val = read_8s (p);
-      ret = p + 8;
-      break;
-
-    default:
-      abort ();
-    }
-
-  if (val != 0)
-    switch (encoding & 0xf0)
-      {
-      case DW_EH_PE_absptr:
-	break;
-      case DW_EH_PE_pcrel:
-	val += (_Unwind_Ptr) p;
-	break;
-      case DW_EH_PE_textrel:
-	val += (_Unwind_Ptr) bases->tbase;
-	break;
-      case DW_EH_PE_datarel:
-	val += (_Unwind_Ptr) bases->dbase;
-	break;
-      case DW_EH_PE_funcrel:
-	val += (_Unwind_Ptr) bases->func;
-	break;
-      default:
-	abort ();
-      }
-
-  *pptr = (void *) (_Unwind_Ptr) val;
-  return ret;
-}
+read_8s (const void *p) { const union unaligned *up = p; return up->s8; }
 
 /* Get the value of register REG as saved in CONTEXT.  */
 
@@ -332,13 +211,13 @@ _Unwind_GetTextRelBase (struct _Unwind_Context *context)
    unit F belongs to.  Return a pointer to the byte after the augmentation,
    or NULL if we encountered an undecipherable augmentation.  */
 
-static unsigned char *
+static const unsigned char *
 extract_cie_info (struct dwarf_cie *cie, struct _Unwind_Context *context,
 		  _Unwind_FrameState *fs)
 {
-  unsigned char *aug = cie->augmentation;
-  unsigned char *p = aug + strlen (aug) + 1;
-  unsigned char *ret = NULL;
+  const unsigned char *aug = cie->augmentation;
+  const unsigned char *p = aug + strlen (aug) + 1;
+  const unsigned char *ret = NULL;
   _Unwind_Word code_align;
   _Unwind_Sword data_align;
 
@@ -349,6 +228,7 @@ extract_cie_info (struct dwarf_cie *cie, struct _Unwind_Context *context,
   fs->code_align = code_align;
   fs->data_align = data_align;
   fs->retaddr_column = *p++;
+  fs->lsda_encoding = DW_EH_PE_omit;
 
   /* If the augmentation starts with 'z', then a uleb128 immediately
      follows containing the length of the augmentation field following
@@ -373,20 +253,25 @@ extract_cie_info (struct dwarf_cie *cie, struct _Unwind_Context *context,
 	  aug += 2;
 	}
 
-      /* "R" indicates a byte indicating how addresses are encoded.  */
-      else if (aug[0] == 'R')
+      /* "L" indicates a byte showing how the LSDA pointer is encoded.  */
+      else if (aug[0] == 'L')
 	{
-	  fs->addr_encoding = *p++;
+	  fs->lsda_encoding = *p++;
 	  aug += 1;
 	}
 
-      /* "P" indicates a personality routine in the CIE augmentation
-	 and an lsda pointer in the FDE augmentation.  */
+      /* "R" indicates a byte indicating how FDE addresses are encoded.  */
+      else if (aug[0] == 'R')
+	{
+	  fs->fde_encoding = *p++;
+	  aug += 1;
+	}
+
+      /* "P" indicates a personality routine in the CIE augmentation.  */
       else if (aug[0] == 'P')
 	{
-	  p = read_encoded_pointer (p, fs->addr_encoding, &context->bases,
-				    (void **) &fs->personality);
-	  fs->saw_lsda = 1;
+	  p = read_encoded_value (context, *p, p + 1,
+				  (_Unwind_Ptr *) &fs->personality);
 	  aug += 1;
 	}
 
@@ -404,7 +289,7 @@ extract_cie_info (struct dwarf_cie *cie, struct _Unwind_Context *context,
    onto the stack to start.  */
 
 static _Unwind_Word
-execute_stack_op (unsigned char *op_ptr, unsigned char *op_end,
+execute_stack_op (const unsigned char *op_ptr, const unsigned char *op_end,
 		  struct _Unwind_Context *context, _Unwind_Word initial)
 {
   _Unwind_Word stack[64];	/* ??? Assume this is enough. */
@@ -800,8 +685,10 @@ execute_stack_op (unsigned char *op_ptr, unsigned char *op_end,
    CIE info, and the PC range to evaluate.  */
 
 static void
-execute_cfa_program (unsigned char *insn_ptr, unsigned char *insn_end,
-		     struct _Unwind_Context *context, _Unwind_FrameState *fs)
+execute_cfa_program (const unsigned char *insn_ptr,
+		     const unsigned char *insn_end,
+		     struct _Unwind_Context *context,
+		     _Unwind_FrameState *fs)
 {
   struct frame_state_reg_info *unused_rs = NULL;
 
@@ -832,8 +719,8 @@ execute_cfa_program (unsigned char *insn_ptr, unsigned char *insn_end,
       else switch (insn)
 	{
 	case DW_CFA_set_loc:
-	  insn_ptr = read_encoded_pointer (insn_ptr, fs->addr_encoding,
-					   &context->bases, &fs->pc);
+	  insn_ptr = read_encoded_value (context, fs->fde_encoding,
+					 insn_ptr, (_Unwind_Ptr *) &fs->pc);
 	  break;
 
 	case DW_CFA_advance_loc1:
@@ -989,7 +876,7 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 {
   struct dwarf_fde *fde;
   struct dwarf_cie *cie;
-  unsigned char *aug, *insn, *end;
+  const unsigned char *aug, *insn, *end;
 
   memset (fs, 0, sizeof (*fs));
   context->args_size = 0;
@@ -1011,8 +898,7 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 #endif
     }
 
-  context->bases.func = fde->pc_begin;
-  fs->pc = fde->pc_begin;
+  fs->pc = context->bases.func;
 
   cie = get_cie (fde);
   insn = extract_cie_info (cie, context, fs);
@@ -1026,6 +912,7 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 
   /* Locate augmentation for the fde.  */
   aug = (unsigned char *)fde + sizeof (*fde);
+  aug += 2 * size_of_encoded_value (fs->fde_encoding);
   insn = NULL;
   if (fs->saw_z)
     {
@@ -1033,9 +920,9 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
       aug = read_uleb128 (aug, &i);
       insn = aug + i;
     }
-  if (fs->saw_lsda)
-    aug = read_encoded_pointer (aug, fs->addr_encoding,
-				&context->bases, &context->lsda);
+  if (fs->lsda_encoding != DW_EH_PE_omit)
+    aug = read_encoded_value (context, fs->lsda_encoding, aug,
+			      (_Unwind_Ptr *) &context->lsda);
 
   /* Then the insns in the FDE up to our target PC.  */
   if (insn == NULL)
@@ -1076,7 +963,7 @@ uw_update_context_1 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 	 CFA calculation is so complicated as to require a stack program
 	 that this will not be a problem.  */
       {
-	unsigned char *exp = fs->cfa_exp;
+	const unsigned char *exp = fs->cfa_exp;
 	_Unwind_Word len;
 
 	exp = read_uleb128 (exp, &len);
@@ -1104,7 +991,7 @@ uw_update_context_1 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 	break;
       case REG_SAVED_EXP:
 	{
-	  unsigned char *exp = fs->regs.reg[i].loc.exp;
+	  const unsigned char *exp = fs->regs.reg[i].loc.exp;
 	  _Unwind_Word len;
 	  _Unwind_Ptr val;
 

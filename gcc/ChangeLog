@@ -1,3 +1,60 @@
+2001-05-16  Richard Henderson  <rth@redhat.com>
+
+	* except.c (eh_data_format_name): Move to ...
+	* dwarf2asm.c: ... here.  Use designated initializers if available.
+	(dw2_asm_output_encoded_addr_rtx): Accept varargs commentary.
+	* dwarf2asm.h: Update declarations.
+	* dwarf2out.c (output_cfi) [DW_CFA_set_loc]: If for_eh, mind
+	ASM_PREFERRED_EH_DATA_FORMAT.
+	(output_call_frame_info): Likewise.  Use 'L' augmentation for
+	the LSDA encoding.
+
+	* unwind-dw2-fde.h (struct fde_vector): New.
+	(struct old_object): Rename from struct object.
+	(struct object): New.
+	(__register_frame_info_bases): Declare.
+	(__register_frame_info_table_bases): Declare.
+	(struct dwarf_fde): Remove explicit pc_begin/pc_range members.
+	* unwind-dw2-fde.c (objects): Remove.
+	(unseen_objects, seen_objects): New.
+	(__register_frame_info_bases): New.
+	(__register_frame_info): Use it.
+	(__register_frame_info_table_bases): New.
+	(__register_frame_info_table): Use it.
+	(__deregister_frame_info): Rewrite for changed object struct.
+	(base_from_object, get_cie_encoding, get_fde_encoding): New.
+	(fde_unencoded_compare): Rename from fde_compare; uninline.
+	(fde_single_encoding_compare, fde_mixed_encoding_compare): New.
+	(start_fde_sort): Adjust for new definition of fde_vector.
+	(fde_insert): Likewise.
+	(end_fde_sort): Likewise.  Select comparison function based
+	on properties of the object.
+	(fde_split): Take object and fde_compare_t arguments.
+	(frame_heapsort, fde_merge): Likewise.
+	(classify_object_over_fdes): Rename from count_fdes.  Handle
+	encoded pointers.  Collect encoding, mixed_encoding, and pc_begin
+	for the object.
+	(add_fdes): Handle encoded pointers.
+	(init_object): Rename from frame_init.  Update for new struct object.
+	(linear_search_fdes): Rename from search_fdes.  Handle encoded
+	pointers.
+	(binary_search_unencoded_fdes): Broken out from _Unwind_Find_FDE.
+	(binary_search_single_encoding_fdes): New.
+	(binary_search_mixed_encoding_fdes): New.
+	(search_object): New.
+	(_Unwind_Find_FDE): Update for new struct object.  Fill in
+	the dwarf_eh_bases.
+	* unwind-dw2.c: Include unwind-pe.h.  Constify all pointers
+	iterating over EH data.
+	(_Unwind_FrameState): Remove saw_lsda, addr_encoding.  Add
+	fde_encoding, lsda_encoding.
+	(read_uleb128, read_sleb128): Remove.
+	(read_encoded_pointer): Remove.  All callers use read_encoded_value.
+	(extract_cie_info): Set lsda_encoding from 'L' augmentation.
+	(uw_frame_state_for): Don't set bases.func.  Handle encoded fde
+	pointers.
+	* unwind-pe.h: Add "struct" to _Unwind_Context references.
+
 2001-05-16  Andreas Jaeger  <aj@suse.de>
 
 	* Makefile.in (toplev.o): Add dependency on dwarf2asm.h.

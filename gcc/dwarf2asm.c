@@ -470,6 +470,152 @@ size_of_encoded_value (encoding)
   abort ();
 }
 
+/* Yield a name for a given pointer encoding.  */
+
+const char *
+eh_data_format_name (format)
+     int format;
+{
+#if HAVE_DESIGNATED_INITIALIZERS
+#define S(p, v)		[p] = v,
+#else
+#define S(p, v)		case p: return v;
+#endif
+
+#if HAVE_DESIGNATED_INITIALIZERS
+  __extension__ static const char * const format_names[256] = {
+#else
+  switch (format) {
+#endif
+
+  S(DW_EH_PE_absptr, "absolute")
+  S(DW_EH_PE_omit, "omit")
+
+  S(DW_EH_PE_uleb128, "uleb128")
+  S(DW_EH_PE_udata2, "udata2")
+  S(DW_EH_PE_udata4, "udata4")
+  S(DW_EH_PE_udata8, "udata8")
+  S(DW_EH_PE_sleb128, "sleb128")
+  S(DW_EH_PE_sdata2, "sdata2")
+  S(DW_EH_PE_sdata4, "sdata4")
+  S(DW_EH_PE_sdata8, "sdata8")
+
+  S(DW_EH_PE_uleb128 | DW_EH_PE_pcrel, "pcrel uleb128")
+  S(DW_EH_PE_udata2 | DW_EH_PE_pcrel, "pcrel udata2")
+  S(DW_EH_PE_udata4 | DW_EH_PE_pcrel, "pcrel udata4")
+  S(DW_EH_PE_udata8 | DW_EH_PE_pcrel, "pcrel udata8")
+  S(DW_EH_PE_sleb128 | DW_EH_PE_pcrel, "pcrel sleb128")
+  S(DW_EH_PE_sdata2 | DW_EH_PE_pcrel, "pcrel sdata2")
+  S(DW_EH_PE_sdata4 | DW_EH_PE_pcrel, "pcrel sdata4")
+  S(DW_EH_PE_sdata8 | DW_EH_PE_pcrel, "pcrel sdata8")
+
+  S(DW_EH_PE_uleb128 | DW_EH_PE_textrel, "textrel uleb128")
+  S(DW_EH_PE_udata2 | DW_EH_PE_textrel, "textrel udata2")
+  S(DW_EH_PE_udata4 | DW_EH_PE_textrel, "textrel udata4")
+  S(DW_EH_PE_udata8 | DW_EH_PE_textrel, "textrel udata8")
+  S(DW_EH_PE_sleb128 | DW_EH_PE_textrel, "textrel sleb128")
+  S(DW_EH_PE_sdata2 | DW_EH_PE_textrel, "textrel sdata2")
+  S(DW_EH_PE_sdata4 | DW_EH_PE_textrel, "textrel sdata4")
+  S(DW_EH_PE_sdata8 | DW_EH_PE_textrel, "textrel sdata8")
+
+  S(DW_EH_PE_uleb128 | DW_EH_PE_datarel, "datarel uleb128")
+  S(DW_EH_PE_udata2 | DW_EH_PE_datarel, "datarel udata2")
+  S(DW_EH_PE_udata4 | DW_EH_PE_datarel, "datarel udata4")
+  S(DW_EH_PE_udata8 | DW_EH_PE_datarel, "datarel udata8")
+  S(DW_EH_PE_sleb128 | DW_EH_PE_datarel, "datarel sleb128")
+  S(DW_EH_PE_sdata2 | DW_EH_PE_datarel, "datarel sdata2")
+  S(DW_EH_PE_sdata4 | DW_EH_PE_datarel, "datarel sdata4")
+  S(DW_EH_PE_sdata8 | DW_EH_PE_datarel, "datarel sdata8")
+
+  S(DW_EH_PE_uleb128 | DW_EH_PE_funcrel, "funcrel uleb128")
+  S(DW_EH_PE_udata2 | DW_EH_PE_funcrel, "funcrel udata2")
+  S(DW_EH_PE_udata4 | DW_EH_PE_funcrel, "funcrel udata4")
+  S(DW_EH_PE_udata8 | DW_EH_PE_funcrel, "funcrel udata8")
+  S(DW_EH_PE_sleb128 | DW_EH_PE_funcrel, "funcrel sleb128")
+  S(DW_EH_PE_sdata2 | DW_EH_PE_funcrel, "funcrel sdata2")
+  S(DW_EH_PE_sdata4 | DW_EH_PE_funcrel, "funcrel sdata4")
+  S(DW_EH_PE_sdata8 | DW_EH_PE_funcrel, "funcrel sdata8")
+
+  S(DW_EH_PE_indirect | DW_EH_PE_uleb128 | DW_EH_PE_pcrel,
+    "indirect pcrel uleb128")
+  S(DW_EH_PE_indirect | DW_EH_PE_udata2 | DW_EH_PE_pcrel,
+    "indirect pcrel udata2")
+  S(DW_EH_PE_indirect | DW_EH_PE_udata4 | DW_EH_PE_pcrel,
+    "indirect pcrel udata4")
+  S(DW_EH_PE_indirect | DW_EH_PE_udata8 | DW_EH_PE_pcrel,
+    "indirect pcrel udata8")
+  S(DW_EH_PE_indirect | DW_EH_PE_sleb128 | DW_EH_PE_pcrel,
+    "indirect pcrel sleb128")
+  S(DW_EH_PE_indirect | DW_EH_PE_sdata2 | DW_EH_PE_pcrel,
+    "indirect pcrel sdata2")
+  S(DW_EH_PE_indirect | DW_EH_PE_sdata4 | DW_EH_PE_pcrel,
+    "indirect pcrel sdata4")
+  S(DW_EH_PE_indirect | DW_EH_PE_sdata8 | DW_EH_PE_pcrel,
+    "indirect pcrel sdata8")
+
+  S(DW_EH_PE_indirect | DW_EH_PE_uleb128 | DW_EH_PE_textrel,
+    "indirect textrel uleb128")
+  S(DW_EH_PE_indirect | DW_EH_PE_udata2 | DW_EH_PE_textrel,
+    "indirect textrel udata2")
+  S(DW_EH_PE_indirect | DW_EH_PE_udata4 | DW_EH_PE_textrel,
+    "indirect textrel udata4")
+  S(DW_EH_PE_indirect | DW_EH_PE_udata8 | DW_EH_PE_textrel,
+    "indirect textrel udata8")
+  S(DW_EH_PE_indirect | DW_EH_PE_sleb128 | DW_EH_PE_textrel,
+    "indirect textrel sleb128")
+  S(DW_EH_PE_indirect | DW_EH_PE_sdata2 | DW_EH_PE_textrel,
+    "indirect textrel sdata2")
+  S(DW_EH_PE_indirect | DW_EH_PE_sdata4 | DW_EH_PE_textrel,
+    "indirect textrel sdata4")
+  S(DW_EH_PE_indirect | DW_EH_PE_sdata8 | DW_EH_PE_textrel,
+    "indirect textrel sdata8")
+
+  S(DW_EH_PE_indirect | DW_EH_PE_uleb128 | DW_EH_PE_datarel,
+    "indirect datarel uleb128")
+  S(DW_EH_PE_indirect | DW_EH_PE_udata2 | DW_EH_PE_datarel,
+    "indirect datarel udata2")
+  S(DW_EH_PE_indirect | DW_EH_PE_udata4 | DW_EH_PE_datarel,
+    "indirect datarel udata4")
+  S(DW_EH_PE_indirect | DW_EH_PE_udata8 | DW_EH_PE_datarel,
+    "indirect datarel udata8")
+  S(DW_EH_PE_indirect | DW_EH_PE_sleb128 | DW_EH_PE_datarel,
+    "indirect datarel sleb128")
+  S(DW_EH_PE_indirect | DW_EH_PE_sdata2 | DW_EH_PE_datarel,
+    "indirect datarel sdata2")
+  S(DW_EH_PE_indirect | DW_EH_PE_sdata4 | DW_EH_PE_datarel,
+    "indirect datarel sdata4")
+  S(DW_EH_PE_indirect | DW_EH_PE_sdata8 | DW_EH_PE_datarel,
+    "indirect datarel sdata8")
+
+  S(DW_EH_PE_indirect | DW_EH_PE_uleb128 | DW_EH_PE_funcrel,
+    "indirect funcrel uleb128")
+  S(DW_EH_PE_indirect | DW_EH_PE_udata2 | DW_EH_PE_funcrel,
+    "indirect funcrel udata2")
+  S(DW_EH_PE_indirect | DW_EH_PE_udata4 | DW_EH_PE_funcrel,
+    "indirect funcrel udata4")
+  S(DW_EH_PE_indirect | DW_EH_PE_udata8 | DW_EH_PE_funcrel,
+    "indirect funcrel udata8")
+  S(DW_EH_PE_indirect | DW_EH_PE_sleb128 | DW_EH_PE_funcrel,
+    "indirect funcrel sleb128")
+  S(DW_EH_PE_indirect | DW_EH_PE_sdata2 | DW_EH_PE_funcrel,
+    "indirect funcrel sdata2")
+  S(DW_EH_PE_indirect | DW_EH_PE_sdata4 | DW_EH_PE_funcrel,
+    "indirect funcrel sdata4")
+  S(DW_EH_PE_indirect | DW_EH_PE_sdata8 | DW_EH_PE_funcrel,
+    "indirect funcrel sdata8")
+
+#if HAVE_DESIGNATED_INITIALIZERS
+  };
+
+  if (format < 0 || format > 0xff || format_names[format] == NULL)
+    abort ();
+  return format_names[format];
+#else
+  }
+  abort ();
+#endif
+}
+
 /* Output an unsigned LEB128 quantity.  */
 
 void
@@ -682,6 +828,11 @@ static int dw2_output_indirect_constant_1 PARAMS ((splay_tree_node, void *));
 
 static splay_tree indirect_pool;
 
+/* Put X, a SYMBOL_REF, in memory.  Return a SYMBOL_REF to the allocated
+   memory.  Differs from force_const_mem in that a single pool is used for
+   the entire unit of translation, and the memory is not guaranteed to be
+   "near" the function in any interesting sense.  */
+
 static rtx
 dw2_force_const_mem (x)
      rtx x;
@@ -718,6 +869,9 @@ dw2_force_const_mem (x)
   return gen_rtx_SYMBOL_REF (Pmode, const_sym);
 }
 
+/* A helper function for dw2_output_indirect_constants called through
+   splay_tree_foreach.  Emit one queued constant to memory.  */
+
 static int
 dw2_output_indirect_constant_1 (node, data)
      splay_tree_node node;
@@ -735,6 +889,8 @@ dw2_output_indirect_constant_1 (node, data)
 
   return 0;
 }
+
+/* Emit the constants queued through dw2_force_const_mem.  */
 
 void
 dw2_output_indirect_constants ()
@@ -754,97 +910,104 @@ dw2_output_indirect_constants ()
   splay_tree_foreach (indirect_pool, dw2_output_indirect_constant_1, NULL);
 }
 
+/* Like dw2_asm_output_addr_rtx, but encode the pointer as directed.  */
+
 void
-dw2_asm_output_encoded_addr_rtx (encoding, addr)
-     int encoding;
-     rtx addr;
+dw2_asm_output_encoded_addr_rtx VPARAMS ((int encoding,
+					  rtx addr,
+					  const char *comment, ...))
 {
+#ifndef ANSI_PROTOTYPES
+  int encoding;
+  rtx addr;
+  const char *comment;
+#endif
+  va_list ap;
   int size;
 
-  switch (encoding & 0x07)
-    {
-    case DW_EH_PE_absptr:
-      size = POINTER_SIZE / BITS_PER_UNIT;
-      break;
-    case DW_EH_PE_udata2:
-      size = 2;
-      break;
-    case DW_EH_PE_udata4:
-      size = 4;
-      break;
-    case DW_EH_PE_udata8:
-      size = 8;
-      break;
-    default:
-      abort ();
-    }
+  VA_START (ap, comment);
+
+#ifndef ANSI_PROTOTYPES
+  encoding = va_arg (ap, int);
+  addr = va_arg (ap, rtx);
+  comment = va_arg (ap, const char *);
+#endif
+
+  size = size_of_encoded_value (encoding);
 
   /* NULL is _always_ represented as a plain zero.  */
   if (addr == const0_rtx)
+    assemble_integer (addr, size, 1);
+  else
     {
-      assemble_integer (addr, size, 1);
-      return;
-    }
-
- restart:
-
-  /* Allow the target first crack at emitting this.  Some of the
-     special relocations require special directives instead of 
-     just ".4byte" or whatever.  */
+    restart:
+      /* Allow the target first crack at emitting this.  Some of the
+	 special relocations require special directives instead of 
+	 just ".4byte" or whatever.  */
 #ifdef ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX
-  ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX(asm_out_file, encoding, size, addr, done);
+      ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX (asm_out_file, encoding, size,
+					 addr, done);
 #endif
 
-  /* Indirection is used to get dynamic relocations out of a read-only
-     section.  */
-  if (encoding & DW_EH_PE_indirect)
-    {
-      /* It is very tempting to use force_const_mem so that we share data
-	 with the normal constant pool.  However, we've already emitted
-	 the constant pool for this function.  Moreover, we'd like to share
-	 these constants across the entire unit of translation, or better,
-	 across the entire application (or DSO).  */
-      addr = dw2_force_const_mem (addr);
-      encoding &= ~DW_EH_PE_indirect;
-      goto restart;
-    }
+      /* Indirection is used to get dynamic relocations out of a
+	 read-only section.  */
+      if (encoding & DW_EH_PE_indirect)
+	{
+	  /* It is very tempting to use force_const_mem so that we share data
+	     with the normal constant pool.  However, we've already emitted
+	     the constant pool for this function.  Moreover, we'd like to
+	     share these constants across the entire unit of translation,
+	     or better, across the entire application (or DSO).  */
+	  addr = dw2_force_const_mem (addr);
+	  encoding &= ~DW_EH_PE_indirect;
+	  goto restart;
+	}
 
-  switch (encoding & 0xF0)
-    {
-    case DW_EH_PE_absptr:
+      switch (encoding & 0xF0)
+	{
+	case DW_EH_PE_absptr:
 #ifdef UNALIGNED_INT_ASM_OP
-      fputs (unaligned_integer_asm_op (size), asm_out_file);
-      output_addr_const (asm_out_file, addr);
+	  fputs (unaligned_integer_asm_op (size), asm_out_file);
+	  output_addr_const (asm_out_file, addr);
 #else
-      assemble_integer (addr, size, 1);
+	  assemble_integer (addr, size, 1);
 #endif
-      break;
+	  break;
 
-    case DW_EH_PE_pcrel:
-      if (GET_CODE (addr) != SYMBOL_REF)
-	abort ();
+	case DW_EH_PE_pcrel:
+	  if (GET_CODE (addr) != SYMBOL_REF)
+	    abort ();
 #ifdef ASM_OUTPUT_DWARF_PCREL
-      ASM_OUTPUT_DWARF_PCREL (asm_out_file, size, XSTR (addr, 0));
+	  ASM_OUTPUT_DWARF_PCREL (asm_out_file, size, XSTR (addr, 0));
 #else
 #ifdef UNALIGNED_INT_ASM_OP
-      fputs (unaligned_integer_asm_op (size), asm_out_file);
-      assemble_name (asm_out_file, XSTR (addr, 0));
-      fputc ('-', asm_out_file);
-      fputc ('.', asm_out_file);
+	  fputs (unaligned_integer_asm_op (size), asm_out_file);
+	  assemble_name (asm_out_file, XSTR (addr, 0));
+	  fputc ('-', asm_out_file);
+	  fputc ('.', asm_out_file);
 #else
-      abort ();
+	  abort ();
 #endif
 #endif
-      break;
+	  break;
 
-    default:
-      /* Other encodings should have been handled by 
-	 ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX.  */
-      abort ();
-    }
+	default:
+	  /* Other encodings should have been handled by 
+	     ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX.  */
+	  abort ();
+	}
 
 #ifdef ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX
- done:
+    done:;
 #endif
+    }
+
+  if (flag_debug_asm && comment)
+    {
+      fprintf (asm_out_file, "\t%s ", ASM_COMMENT_START);
+      vfprintf (asm_out_file, comment, ap);
+    }
   fputc ('\n', asm_out_file);
+
+  va_end (ap);
 }

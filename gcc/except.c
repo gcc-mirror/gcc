@@ -330,7 +330,6 @@ static int add_call_site			PARAMS ((rtx, int));
 static void push_uleb128			PARAMS ((varray_type *,
 							 unsigned int));
 static void push_sleb128			PARAMS ((varray_type *, int));
-static const char *eh_data_format_name		PARAMS ((int));
 #ifndef HAVE_AS_LEB128
 static int dw2_size_of_call_site_table		PARAMS ((void));
 static int sjlj_size_of_call_site_table		PARAMS ((void));
@@ -3367,133 +3366,6 @@ push_sleb128 (data_area, value)
 }
 
 
-static const char *
-eh_data_format_name (format)
-     int format;
-{
-  switch (format)
-    {
-    case DW_EH_PE_absptr:	return "absolute";
-    case DW_EH_PE_omit:		return "omit";
-
-    case DW_EH_PE_uleb128:	return "uleb128";
-    case DW_EH_PE_udata2:	return "udata2";
-    case DW_EH_PE_udata4:	return "udata4";
-    case DW_EH_PE_udata8:	return "udata8";
-    case DW_EH_PE_sleb128:	return "sleb128";
-    case DW_EH_PE_sdata2:	return "sdata2";
-    case DW_EH_PE_sdata4:	return "sdata4";
-    case DW_EH_PE_sdata8:	return "sdata8";
-
-    case DW_EH_PE_uleb128 | DW_EH_PE_pcrel:	return "pcrel uleb128";
-    case DW_EH_PE_udata2 | DW_EH_PE_pcrel:	return "pcrel udata2";
-    case DW_EH_PE_udata4 | DW_EH_PE_pcrel:	return "pcrel udata4";
-    case DW_EH_PE_udata8 | DW_EH_PE_pcrel:	return "pcrel udata8";
-    case DW_EH_PE_sleb128 | DW_EH_PE_pcrel:	return "pcrel sleb128";
-    case DW_EH_PE_sdata2 | DW_EH_PE_pcrel:	return "pcrel sdata2";
-    case DW_EH_PE_sdata4 | DW_EH_PE_pcrel:	return "pcrel sdata4";
-    case DW_EH_PE_sdata8 | DW_EH_PE_pcrel:	return "pcrel sdata8";
-
-    case DW_EH_PE_uleb128 | DW_EH_PE_textrel:	return "textrel uleb128";
-    case DW_EH_PE_udata2 | DW_EH_PE_textrel:	return "textrel udata2";
-    case DW_EH_PE_udata4 | DW_EH_PE_textrel:	return "textrel udata4";
-    case DW_EH_PE_udata8 | DW_EH_PE_textrel:	return "textrel udata8";
-    case DW_EH_PE_sleb128 | DW_EH_PE_textrel:	return "textrel sleb128";
-    case DW_EH_PE_sdata2 | DW_EH_PE_textrel:	return "textrel sdata2";
-    case DW_EH_PE_sdata4 | DW_EH_PE_textrel:	return "textrel sdata4";
-    case DW_EH_PE_sdata8 | DW_EH_PE_textrel:	return "textrel sdata8";
-
-    case DW_EH_PE_uleb128 | DW_EH_PE_datarel:	return "datarel uleb128";
-    case DW_EH_PE_udata2 | DW_EH_PE_datarel:	return "datarel udata2";
-    case DW_EH_PE_udata4 | DW_EH_PE_datarel:	return "datarel udata4";
-    case DW_EH_PE_udata8 | DW_EH_PE_datarel:	return "datarel udata8";
-    case DW_EH_PE_sleb128 | DW_EH_PE_datarel:	return "datarel sleb128";
-    case DW_EH_PE_sdata2 | DW_EH_PE_datarel:	return "datarel sdata2";
-    case DW_EH_PE_sdata4 | DW_EH_PE_datarel:	return "datarel sdata4";
-    case DW_EH_PE_sdata8 | DW_EH_PE_datarel:	return "datarel sdata8";
-
-    case DW_EH_PE_uleb128 | DW_EH_PE_funcrel:	return "funcrel uleb128";
-    case DW_EH_PE_udata2 | DW_EH_PE_funcrel:	return "funcrel udata2";
-    case DW_EH_PE_udata4 | DW_EH_PE_funcrel:	return "funcrel udata4";
-    case DW_EH_PE_udata8 | DW_EH_PE_funcrel:	return "funcrel udata8";
-    case DW_EH_PE_sleb128 | DW_EH_PE_funcrel:	return "funcrel sleb128";
-    case DW_EH_PE_sdata2 | DW_EH_PE_funcrel:	return "funcrel sdata2";
-    case DW_EH_PE_sdata4 | DW_EH_PE_funcrel:	return "funcrel sdata4";
-    case DW_EH_PE_sdata8 | DW_EH_PE_funcrel:	return "funcrel sdata8";
-
-    case DW_EH_PE_indirect | DW_EH_PE_uleb128 | DW_EH_PE_pcrel:
-      return "indirect pcrel uleb128";
-    case DW_EH_PE_indirect | DW_EH_PE_udata2 | DW_EH_PE_pcrel:
-      return "indirect pcrel udata2";
-    case DW_EH_PE_indirect | DW_EH_PE_udata4 | DW_EH_PE_pcrel:
-      return "indirect pcrel udata4";
-    case DW_EH_PE_indirect | DW_EH_PE_udata8 | DW_EH_PE_pcrel:
-      return "indirect pcrel udata8";
-    case DW_EH_PE_indirect | DW_EH_PE_sleb128 | DW_EH_PE_pcrel:
-      return "indirect pcrel sleb128";
-    case DW_EH_PE_indirect | DW_EH_PE_sdata2 | DW_EH_PE_pcrel:
-      return "indirect pcrel sdata2";
-    case DW_EH_PE_indirect | DW_EH_PE_sdata4 | DW_EH_PE_pcrel:
-      return "indirect pcrel sdata4";
-    case DW_EH_PE_indirect | DW_EH_PE_sdata8 | DW_EH_PE_pcrel:
-      return "indirect pcrel sdata8";
-
-    case DW_EH_PE_indirect | DW_EH_PE_uleb128 | DW_EH_PE_textrel:
-      return "indirect textrel uleb128";
-    case DW_EH_PE_indirect | DW_EH_PE_udata2 | DW_EH_PE_textrel:
-      return "indirect textrel udata2";
-    case DW_EH_PE_indirect | DW_EH_PE_udata4 | DW_EH_PE_textrel:
-      return "indirect textrel udata4";
-    case DW_EH_PE_indirect | DW_EH_PE_udata8 | DW_EH_PE_textrel:
-      return "indirect textrel udata8";
-    case DW_EH_PE_indirect | DW_EH_PE_sleb128 | DW_EH_PE_textrel:
-      return "indirect textrel sleb128";
-    case DW_EH_PE_indirect | DW_EH_PE_sdata2 | DW_EH_PE_textrel:
-      return "indirect textrel sdata2";
-    case DW_EH_PE_indirect | DW_EH_PE_sdata4 | DW_EH_PE_textrel:
-      return "indirect textrel sdata4";
-    case DW_EH_PE_indirect | DW_EH_PE_sdata8 | DW_EH_PE_textrel:
-      return "indirect textrel sdata8";
-
-    case DW_EH_PE_indirect | DW_EH_PE_uleb128 | DW_EH_PE_datarel:
-      return "indirect datarel uleb128";
-    case DW_EH_PE_indirect | DW_EH_PE_udata2 | DW_EH_PE_datarel:
-      return "indirect datarel udata2";
-    case DW_EH_PE_indirect | DW_EH_PE_udata4 | DW_EH_PE_datarel:
-      return "indirect datarel udata4";
-    case DW_EH_PE_indirect | DW_EH_PE_udata8 | DW_EH_PE_datarel:
-      return "indirect datarel udata8";
-    case DW_EH_PE_indirect | DW_EH_PE_sleb128 | DW_EH_PE_datarel:
-      return "indirect datarel sleb128";
-    case DW_EH_PE_indirect | DW_EH_PE_sdata2 | DW_EH_PE_datarel:
-      return "indirect datarel sdata2";
-    case DW_EH_PE_indirect | DW_EH_PE_sdata4 | DW_EH_PE_datarel:
-      return "indirect datarel sdata4";
-    case DW_EH_PE_indirect | DW_EH_PE_sdata8 | DW_EH_PE_datarel:
-      return "indirect datarel sdata8";
-
-    case DW_EH_PE_indirect | DW_EH_PE_uleb128 | DW_EH_PE_funcrel:
-      return "indirect funcrel uleb128";
-    case DW_EH_PE_indirect | DW_EH_PE_udata2 | DW_EH_PE_funcrel:
-      return "indirect funcrel udata2";
-    case DW_EH_PE_indirect | DW_EH_PE_udata4 | DW_EH_PE_funcrel:
-      return "indirect funcrel udata4";
-    case DW_EH_PE_indirect | DW_EH_PE_udata8 | DW_EH_PE_funcrel:
-      return "indirect funcrel udata8";
-    case DW_EH_PE_indirect | DW_EH_PE_sleb128 | DW_EH_PE_funcrel:
-      return "indirect funcrel sleb128";
-    case DW_EH_PE_indirect | DW_EH_PE_sdata2 | DW_EH_PE_funcrel:
-      return "indirect funcrel sdata2";
-    case DW_EH_PE_indirect | DW_EH_PE_sdata4 | DW_EH_PE_funcrel:
-      return "indirect funcrel sdata4";
-    case DW_EH_PE_indirect | DW_EH_PE_sdata8 | DW_EH_PE_funcrel:
-      return "indirect funcrel sdata8";
-
-    default:
-      abort ();
-    }
-}
-
 #ifndef HAVE_AS_LEB128
 static int
 dw2_size_of_call_site_table ()
@@ -3767,7 +3639,8 @@ output_function_exception_table ()
 
       dw2_asm_output_encoded_addr_rtx (tt_format,
 				       expand_expr (type, NULL_RTX, VOIDmode,
-						    EXPAND_INITIALIZER));
+						    EXPAND_INITIALIZER),
+				       NULL);
     }
 
 #ifdef HAVE_AS_LEB128
