@@ -4772,6 +4772,7 @@ main (argc, argv)
 	  if (c == EOF)
 	    break;
 	  putchar (c);
+	  fflush (stdout);
 	}
     }
 
