@@ -851,6 +851,10 @@ static const char alt_reg_names[][8] =
 #define TARGET_ASM_UNALIGNED_HI_OP "\t.short\t"
 #undef TARGET_ASM_UNALIGNED_SI_OP
 #define TARGET_ASM_UNALIGNED_SI_OP "\t.long\t"
+#undef TARGET_ASM_UNALIGNED_DI_OP
+#define TARGET_ASM_UNALIGNED_DI_OP "\t.quad\t"
+#undef TARGET_ASM_ALIGNED_DI_OP
+#define TARGET_ASM_ALIGNED_DI_OP "\t.quad\t"
 #endif
 #endif
 
@@ -4310,8 +4314,16 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
 		  return;
 		}
 #endif
-	      emit_insn (gen_macho_high (target, operands[1]));
-	      emit_insn (gen_macho_low (operands[0], target, operands[1]));
+	      if (mode == DImode)
+		{
+		  emit_insn (gen_macho_high_di (target, operands[1]));
+		  emit_insn (gen_macho_low_di (operands[0], target, operands[1]));
+		}
+	      else
+		{
+		  emit_insn (gen_macho_high (target, operands[1]));
+		  emit_insn (gen_macho_low (operands[0], target, operands[1]));
+		}
 	      return;
 	    }
 
@@ -16208,7 +16220,8 @@ machopic_output_stub (FILE *file, const char *symb, const char *stub)
   machopic_lazy_symbol_ptr_section ();
   fprintf (file, "%s:\n", lazy_ptr_name);
   fprintf (file, "\t.indirect_symbol %s\n", symbol_name);
-  fprintf (file, "\t.long dyld_stub_binding_helper\n");
+  fprintf (file, "%sdyld_stub_binding_helper\n",
+	   (TARGET_64BIT ? DOUBLE_INT_ASM_OP : "\t.long\t"));
 }
 
 /* Legitimize PIC addresses.  If the address is already

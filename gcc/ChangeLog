@@ -1,3 +1,25 @@
+2004-08-16  Stan Shebs  <shebs@apple.com>
+
+	Basic support for 64-bit Darwin.
+	* config/darwin.c (macho_indirect_data_reference): Add DImode case.
+	(machopic_legitimize_pic_address): Similarly, plus use Pmode
+	instead of SImode.
+	* config/rs6000/darwin.h (PTRDIFF_TYPE): Be "long int" if 64-bit.
+	(TARGET_OS_CPP_BUILTINS): Add 64-bit preprocessor macro.
+	(SUBTARGET_SWITCHES): Add -m32 and -m64 flags.
+	(SUBTARGET_OVERRIDE_OPTIONS): Require 64-bit processor if -m64.
+	(PROCESSOR_DEFAULT64): Define.
+	* config/rs6000/darwin.md: New file, patterns specific to 64-bit
+	Darwin.
+	* config/rs6000/rs6000.md: Include darwin.md.
+	(builtin_setjmp_receiver): Add DImode case.
+	* config/rs6000/rs6000.c (TARGET_ASM_UNALIGNED_DI_OP): Define for
+	Darwin.
+	(TARGET_ASM_ALIGNED_DI_OP): Ditto.
+	(rs6000_emit_move): Add DImode case to Darwin bits.
+	(machopic_output_stub): Use .quad if 64-bit.
+	* invoke.texi: Document -m32 and -m64.
+
 2004-08-16  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/extend.texi (AltiVec builtins): Document additional differences
