@@ -3747,7 +3747,8 @@ init_libfuncs (optable, first_mode, last_mode, opname, suffix)
   register enum machine_mode mode;
   register unsigned opname_len = strlen (opname);
 
-  for (mode = first_mode; mode <= last_mode; mode++)
+  for (mode = first_mode; (int) mode <= (int) last_mode;
+       mode = (enum machine_mode) ((int) mode + 1))
     {
       register char *mname = mode_name[(int) mode];
       register unsigned mname_len = strlen (mname);
