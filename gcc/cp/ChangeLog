@@ -1,5 +1,7 @@
 2004-12-22  Mark Mitchell  <mark@codesourcery.com>
 
+	* rtti.c (emit_support_tinfos): Avoid using C99 semantics.
+
 	PR c++/18464
 	* call.c (build_this): In templates, do not bother with
 	build_unary_op.
