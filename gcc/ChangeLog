@@ -1,3 +1,8 @@
+Tue Aug 24 23:43:03 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* flow.c (delete_block): Spell NOTE_INSN_EH_REGION_BEG and
+	NOTE_INSN_EH_REGION_END correctly.
+
 Tue Aug 24 23:26:44 1999  Michael Tiemann  <tiemann@holodeck.cygnus.com>
 
 	* loop.c (insert_bct): Replace use of sdiv_optab with asr_optab

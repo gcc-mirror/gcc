@@ -1685,8 +1685,8 @@ delete_block (b)
      label for an exception handler which can't be reached.
 
      We need to remove the label from the exception_handler_label list
-     and remove the associated NOTE_EH_REGION_BEG and NOTE_EH_REGION_END
-     notes.  */
+     and remove the associated NOTE_INSN_EH_REGION_BEG and
+     NOTE_INSN_EH_REGION_END notes.  */
 
   insn = b->head;
   
