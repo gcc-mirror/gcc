@@ -481,6 +481,9 @@ extern struct function *cfun;
 /* A list of all functions we have compiled so far.  */
 extern struct function *all_functions;
 
+/* Nonzero if we've already converted virtual regs to hard regs.  */
+extern int virtuals_instantiated;
+
 /* For backward compatibility... eventually these should all go away.  */
 #define current_function_name (cfun->name)
 #define current_function_pops_args (cfun->pops_args)

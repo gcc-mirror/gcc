@@ -59,6 +59,10 @@ Boston, MA 02111-1307, USA.  */
 #define PUSH_ARGS_REVERSED 0
 #endif
 
+#ifndef STACK_POINTER_OFFSET
+#define STACK_POINTER_OFFSET    0
+#endif
+
 /* Like PREFERRED_STACK_BOUNDARY but in units of bytes, not bits.  */
 #define STACK_BYTES (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT)
 
@@ -3820,11 +3824,15 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 	       highest_outgoing_arg_in_use - initial_highest_arg_in_use);
       needed = 0;
 
-      /* The address of the outgoing argument list must not be copied to a
-	 register here, because argblock would be left pointing to the
-	 wrong place after the call to allocate_dynamic_stack_space below.  */
+      /* We must be careful to use virtual regs before they're instantiated,
+         and real regs afterwards.  Loop optimization, for example, can create
+	 new libcalls after we've instantiated the virtual regs, and if we
+	 use virtuals anyway, they won't match the rtl patterns.  */
 
-      argblock = virtual_outgoing_args_rtx;
+      if (virtuals_instantiated)
+	argblock = plus_constant (stack_pointer_rtx, STACK_POINTER_OFFSET);
+      else
+	argblock = virtual_outgoing_args_rtx;
     }
   else
     {

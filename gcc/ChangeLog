@@ -1,3 +1,11 @@
+2001-04-05  DJ Delorie  <dj@redhat.com>
+
+	* function.h (virtuals_instantiated): Declare.
+	* function.c: (virtuals_instantiated): Make global.
+	* calls.c (emit_library_call_value_1): Use
+	virtual_outgoing_args_rtx only if it hasn't been instantiated.
+	Otherwise, use the stack pointer directly.
+
 Thu Apr  5 19:13:33 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (x86_initialize_trampoline): New global function.

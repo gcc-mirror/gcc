@@ -120,8 +120,10 @@ int current_function_sp_is_unchanging;
 int current_function_uses_only_leaf_regs;
 
 /* Nonzero once virtual register instantiation has been done.
-   assign_stack_local uses frame_pointer_rtx when this is nonzero.  */
-static int virtuals_instantiated;
+   assign_stack_local uses frame_pointer_rtx when this is nonzero.
+   calls.c:emit_library_call_value_1 uses it to set up
+   post-instantiation libcalls.  */
+int virtuals_instantiated;
 
 /* These variables hold pointers to functions to create and destroy
    target specific, per-function data structures.  */
