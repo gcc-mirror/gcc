@@ -7392,9 +7392,9 @@ tsubst_expr (t, args, complain, in_decl)
 	tree val;
 
 	lineno = STMT_LINENO (t);
-	begin_switch_stmt ();
+	stmt = begin_switch_stmt ();
 	val = tsubst_expr (SWITCH_COND (t), args, complain, in_decl);
-	stmt = finish_switch_cond (val);
+	finish_switch_cond (val, stmt);
 	tsubst_expr (SWITCH_BODY (t), args, complain, in_decl);
 	finish_switch_stmt (val, stmt);
       }

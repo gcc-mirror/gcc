@@ -3274,9 +3274,9 @@ simple_stmt:
 	  already_scoped_stmt
                 { finish_for_stmt ($9, $<ttype>2); }
 	| SWITCH 
-                { begin_switch_stmt (); }
+                { $<ttype>$ = begin_switch_stmt (); }
 	    '(' condition ')'
-                { $<ttype>$ = finish_switch_cond ($4); }
+                { finish_switch_cond ($4, $<ttype>2); }
 	  implicitly_scoped_stmt
                 { finish_switch_stmt ($4, $<ttype>6); }
 	| CASE expr_no_commas ':'

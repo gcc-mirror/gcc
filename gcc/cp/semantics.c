@@ -44,6 +44,7 @@
 static void expand_stmts PROTO((tree));
 static void do_pushlevel PROTO((void));
 static tree do_poplevel PROTO((void));
+static tree expand_cond PROTO((tree));
 
 /* When parsing a template, LAST_TREE contains the last statement
    parsed.  These are chained together through the TREE_CHAIN field,
@@ -64,6 +65,16 @@ static tree do_poplevel PROTO((void));
 #define RECHAIN_STMTS_FROM_CHAIN(stmt, substmt)	\
   RECHAIN_STMTS (stmt, substmt, TREE_CHAIN (stmt))
 
+/* Finish processing the COND, the SUBSTMT condition for STMT.  */
+
+#define FINISH_COND(cond, stmt, substmt) 	\
+  do {						\
+    if (last_tree != stmt)			\
+      RECHAIN_STMTS_FROM_LAST (stmt, substmt);	\
+    else					\
+      substmt = cond;				\
+  } while (0)
+  
 /* Finish an expression-statement, whose EXPRESSION is as indicated.  */
 
 void 
@@ -492,49 +503,51 @@ finish_continue_stmt ()
     cp_error ("continue statement not within a loop");   
 }
 
-/* Begin a switch-statement.  */
-
-void
-begin_switch_stmt ()
-{
-  do_pushlevel ();
-}
-
-/* Finish the cond of a switch-statement.  Returns a new
-   SWITCH_STMT if appropriate.  */ 
+/* Begin a switch-statement.  Returns a new SWITCH_STMT if
+   appropriate.  */
 
 tree
-finish_switch_cond (cond)
-     tree cond;
+begin_switch_stmt ()
 {
   tree r;
 
   if (building_stmt_tree ())
     {
-      r = build_min_nt (SWITCH_STMT, cond, NULL_TREE);
+      r = build_min_nt (SWITCH_STMT, NULL_TREE, NULL_TREE);
       add_tree (r);
     }
+  else
+    r = NULL_TREE;
+
+  do_pushlevel ();
+
+  return r;
+}
+
+/* Finish the cond of a switch-statement.  */
+
+void
+finish_switch_cond (cond, switch_stmt)
+     tree cond;
+     tree switch_stmt;
+{
+  if (building_stmt_tree ())
+    FINISH_COND (cond, switch_stmt, SWITCH_COND (switch_stmt));
   else if (cond != error_mark_node)
     {
       emit_line_note (input_filename, lineno);
       c_expand_start_case (cond);
-      r = NULL_TREE;
     }
   else
-    {
-      /* The code is in error, but we don't want expand_end_case to
-         crash. */
-      c_expand_start_case (boolean_false_node);
-      r = NULL_TREE;
-    }
+    /* The code is in error, but we don't want expand_end_case to
+       crash. */
+    c_expand_start_case (boolean_false_node);
 
   push_switch ();
 
   /* Don't let the tree nodes for COND be discarded by
      clear_momentary during the parsing of the next stmt.  */
   push_momentary ();
-
-  return r;
 }
 
 /* Finish the body of a switch-statement, which may be given by
@@ -1963,6 +1976,24 @@ finish_stmt_tree (fn)
   DECL_SAVED_TREE (fn) = TREE_CHAIN (DECL_SAVED_TREE (fn));
 }
 
+/* Some statements, like for-statements or if-statements, require a
+   condition.  This condition can be a declaration.  If T is such a
+   declaration it is processed, and an expression appropriate to use
+   as the condition is returned.  Otherwise, T itself is returned.  */
+
+static tree
+expand_cond (t)
+     tree t;
+{
+  if (t && TREE_CODE (t) == DECL_STMT)
+    {
+      expand_stmt (t);
+      return convert_from_reference (DECL_STMT_DECL (t));
+    }
+  else 
+    return t;
+}
+
 /* Generate RTL for the chain of statements T.  */
 
 static void 
@@ -2038,7 +2069,7 @@ expand_stmt (t)
 	for (tmp = FOR_INIT_STMT (t); tmp; tmp = TREE_CHAIN (tmp))
 	  expand_stmt (tmp);
 	finish_for_init_stmt (NULL_TREE);
-	finish_for_cond (FOR_COND (t), NULL_TREE);
+	finish_for_cond (expand_cond (FOR_COND (t)), NULL_TREE);
 	tmp = FOR_EXPR (t);
 	finish_for_expr (tmp, NULL_TREE);
 	expand_stmt (FOR_BODY (t));
@@ -2050,7 +2081,7 @@ expand_stmt (t)
       {
 	lineno = STMT_LINENO (t);
 	begin_while_stmt ();
-	finish_while_stmt_cond (WHILE_COND (t), NULL_TREE);
+	finish_while_stmt_cond (expand_cond (WHILE_COND (t)), NULL_TREE);
 	expand_stmt (WHILE_BODY (t));
 	finish_while_stmt (NULL_TREE);
       }
@@ -2069,7 +2100,7 @@ expand_stmt (t)
     case IF_STMT:
       lineno = STMT_LINENO (t);
       begin_if_stmt ();
-      finish_if_stmt_cond (IF_COND (t), NULL_TREE);
+      finish_if_stmt_cond (expand_cond (IF_COND (t)), NULL_TREE);
       if (THEN_CLAUSE (t))
 	{
 	  expand_stmt (THEN_CLAUSE (t));
@@ -2102,12 +2133,16 @@ expand_stmt (t)
       break;
 
     case SWITCH_STMT:
-      lineno = STMT_LINENO (t);
-      begin_switch_stmt ();
-      finish_switch_cond (SWITCH_COND (t));
-      if (TREE_OPERAND (t, 1))
+      {
+	tree cond;
+
+	lineno = STMT_LINENO (t);
+	begin_switch_stmt ();
+	cond = expand_cond (SWITCH_COND (t));
+	finish_switch_cond (cond, NULL_TREE);
 	expand_stmt (SWITCH_BODY (t));
-      finish_switch_stmt (SWITCH_COND (t), NULL_TREE);
+	finish_switch_stmt (cond, NULL_TREE);
+      }
       break;
 
     case CASE_LABEL:
