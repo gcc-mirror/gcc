@@ -2900,7 +2900,13 @@ then
 	cc_set_by_configure="\$(CC)"
 	stage_prefix_set_by_configure="\$(STAGE_PREFIX)"
 else
-	symbolic_link="cp -p"
+	rm -f symtest.tem
+	if cp -p $srcdir/gcc.c symtest.tem 2>/dev/null
+	then
+		symbolic_link="cp -p"
+	else
+		symbolic_link="cp"
+	fi
 	cc_set_by_configure="\`case '\$(CC)' in stage*) echo '\$(CC)' | sed -e 's|stage|../stage|g';; *) echo '\$(CC)';; esac\`"
 	stage_prefix_set_by_configure="\`case '\$(STAGE_PREFIX)' in stage*) echo '\$(STAGE_PREFIX)' | sed -e 's|stage|../stage|g';; *) echo '\$(STAGE_PREFIX)';; esac\`"
 fi
