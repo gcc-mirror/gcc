@@ -1,3 +1,12 @@
+2000-04-05  Andreas Jaeger  <aj@suse.de>
+
+	* config/mips/linux.h (SUBTARGET_ASM_SPEC): Use proper flags if
+	not compiling PIC code, add flags for mabi=64.
+	(SUBTARGET_CPP_SIZE_SPEC): New.
+	(SUBTARGET_CPP_SPEC): New.
+	(CPP_PREDEFINES): Define __PIC__ and __pic__.  PIC code is default
+	for MIPS/Linux and lots of code needs these defines.
+
 Wed Apr 12 22:44:11 2000  Hans-Peter Nilsson  <hp@axis.com>
 
 	* reorg.c (fill_slots_from_thread): Check side_effects_p when

@@ -68,8 +68,55 @@ Boston, MA 02111-1307, USA.  */
 #else
 #define CPP_PREDEFINES "-DMIPSEB -D_MIPSEB -Dunix -Dmips -D_mips \
 -DR3000 -D_R3000 -Dlinux -Asystem(posix) -Acpu(mips) \
--Amachine(mips) -D__ELF__"
+-Amachine(mips) -D__ELF__ -D__PIC__ -D__pic__"
 #endif
+
+#undef SUBTARGET_CPP_SIZE_SPEC
+#define SUBTARGET_CPP_SIZE_SPEC "\
+%{mabi=32: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+%{mabi=n32: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+%{mabi=64: -D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
+%{!mabi*: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}"
+
+/* We must make -mips3 do what -mlong64 used to do.  */
+/* ??? If no mipsX option given, but a mabi=X option is, then should set
+   _MIPS_ISA based on the mabi=X option.  */
+/* ??? If no mabi=X option give, but a mipsX option is, then should set
+   _MIPS_SIM based on the mipsX option.  */
+/* ??? Same for _MIPS_SZINT.  */
+/* ??? Same for _MIPS_SZPTR.  */
+/* ??? Same for __SIZE_TYPE and __PTRDIFF_TYPE.  */
+#undef SUBTARGET_CPP_SPEC
+#define SUBTARGET_CPP_SPEC "\
+%{mfp32: -D_MIPS_FPSET=16} \
+%{mfp64: -D_MIPS_FPSET=32} \
+%{!mfp*: -D_MIPS_FPSET=32} \
+%{mips1: -D_MIPS_ISA=_MIPS_ISA_MIPS1} \
+%{mips2: -D_MIPS_ISA=_MIPS_ISA_MIPS2} \
+%{mips3: -D_MIPS_ISA=_MIPS_ISA_MIPS3} \
+%{mips4: -D_MIPS_ISA=_MIPS_ISA_MIPS4} \
+%{!mips*: -D_MIPS_ISA=_MIPS_ISA_MIPS3} \
+%{mabi=32: -D_MIPS_SIM=_MIPS_SIM_ABI32}	\
+%{mabi=n32: -D_ABIN32=2 -D_MIPS_SIM=_ABIN32} \
+%{mabi=64: -D_ABI64=3 -D_MIPS_SIM=_ABI64} \
+%{!mabi*: -D_ABIN32=2 -D_MIPS_SIM=_ABIN32} \
+%{!mint64: -D_MIPS_SZINT=32}%{mint64: -D_MIPS_SZINT=64} \
+%{mabi=32: -D_MIPS_SZLONG=32} \
+%{mabi=n32: -D_MIPS_SZLONG=32} \
+%{mabi=64: -D_MIPS_SZLONG=64} \
+%{!mabi*: -D_MIPS_SZLONG=32} \
+%{mabi=32: -D_MIPS_SZPTR=32} \
+%{mabi=n32: -D_MIPS_SZPTR=32} \
+%{mabi=64: -D_MIPS_SZPTR=64} \
+%{!mabi*: -D_MIPS_SZPTR=32} \
+%{!mips*: -U__mips -D__mips} \
+%{mabi=32: -U__mips64} \
+%{mabi=n32: -D__mips64} \
+%{mabi=64: -U__mips64} \
+%{!mabi*: -U__mips64} \
+%{fno-PIC:-U__PIC__ -U__pic__} %{fno-pic:-U__PIC__ -U__pic__} \
+%{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} \
+%{pthread:-D_REENTRANT}"
 
 /* Provide a STARTFILE_SPEC appropriate for GNU/Linux.  Here we add
    the GNU/Linux magical crtbegin.o file (see crtstuff.c) which
@@ -117,7 +164,10 @@ Boston, MA 02111-1307, USA.  */
 
 
 #undef SUBTARGET_ASM_SPEC
-#define SUBTARGET_ASM_SPEC "-KPIC"
+#define SUBTARGET_ASM_SPEC "\
+%{mabi=64: -64} \
+%{!fno-PIC:%{!fno-pic:-KPIC}} \
+%{fno-PIC:-non_shared} %{fno-pic:-non_shared}"
 
 /* Undefine the following which were defined in elf.h.  This will cause the linux
    port to continue to use collect2 for constructors/destructors.  These may be removed
