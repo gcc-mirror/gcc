@@ -1,3 +1,24 @@
+2001-10-10  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/gcj/runtime/natFinalizerThread.cc: New file.
+	* java/lang/natRuntime.cc: Include FinalizerThread.h.
+	(runFinalization): Call finalizerReady.
+	* nogc.cc (_Jv_GCInitializeFinalizers): New function.
+	* prims.cc: Include VirtualMachineError.h, FinalizerThread.h.
+	(_Jv_CreateJavaVM): Start the finalizer thread.
+	* no-threads.cc: Include InternalError.h.
+	(_Jv_ThreadStart): Throw InternalError.
+	(_Jv_ThreadInitData): Don't throw error if this is not the first
+	thread.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ordinary_java_source_files): Added
+	FinalizerThread.java.
+	(nat_source_files): Added natFinalizerThread.cc.
+	* include/jvm.h (_Jv_GCInitializeFinalizers): Declare.
+	* boehm.cc (_Jv_GCInitializeFinalizers): New function.
+	* gnu/gcj/runtime/FirstThread.java (run): Start finalizer thread.
+	* gnu/gcj/runtime/FinalizerThread.java: New file.
+
 2001-10-09  Per Bothner  <per@bothner.com>
 
 	* strtod.c (_strtod_r):  Logic to check for missing digits

@@ -157,6 +157,9 @@ void * _Jv_BuildGCDescr(jclass);
    memory.  */
 void *_Jv_MallocUnchecked (jsize size) __attribute__((__malloc__));
 
+/* Initialize finalizers.  The argument is a function to be called
+   when a finalizer is ready to be run.  */
+void _Jv_GCInitializeFinalizers (void (*notifier) (void));
 /* Run finalizers for objects ready to be finalized..  */
 void _Jv_RunFinalizers (void);
 /* Run all finalizers.  Should be called only before exit.  */

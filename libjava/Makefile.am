@@ -1137,6 +1137,7 @@ gnu/gcj/protocol/http/Handler.java \
 gnu/gcj/protocol/jar/Connection.java \
 gnu/gcj/protocol/jar/Handler.java \
 gnu/gcj/runtime/FileDeleter.java \
+gnu/gcj/runtime/FinalizerThread.java \
 gnu/gcj/runtime/FirstThread.java \
 gnu/gcj/runtime/SharedLibLoader.java \
 gnu/gcj/runtime/VMClassLoader.java \
@@ -1495,6 +1496,7 @@ gnu/gcj/convert/natOutput_SJIS.cc \
 gnu/gcj/io/natSimpleSHSStream.cc \
 gnu/gcj/io/shs.cc \
 gnu/gcj/protocol/core/natCoreInputStream.cc \
+gnu/gcj/runtime/natFinalizerThread.cc \
 gnu/gcj/runtime/natFirstThread.cc \
 gnu/gcj/runtime/natSharedLibLoader.cc \
 java/io/natFile.cc \

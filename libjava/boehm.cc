@@ -544,6 +544,13 @@ _Jv_AllocTraceOne (jsize size /* includes vtable slot */)
 #endif /* JV_HASH_SYNCHRONIZATION */
 
 void
+_Jv_GCInitializeFinalizers (void (*notifier) (void))
+{
+  GC_finalize_on_demand = 1;
+  GC_finalizer_notifier = notifier;
+}
+
+void
 _Jv_GCRegisterDisappearingLink (jobject *objp)
 {
   GC_general_register_disappearing_link ((GC_PTR *) objp, (GC_PTR) *objp);

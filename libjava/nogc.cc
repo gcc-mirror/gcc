@@ -92,6 +92,11 @@ _Jv_RunAllFinalizers (void)
 }
 
 void
+_Jv_GCInitializeFinalizers (void (*) (void))
+{
+}
+
+void
 _Jv_RunGC (void)
 {
 }

@@ -18,6 +18,7 @@ details.  */
 #include <java/lang/UnknownError.h>
 #include <java/lang/UnsatisfiedLinkError.h>
 #include <gnu/gcj/runtime/FileDeleter.h>
+#include <gnu/gcj/runtime/FinalizerThread.h>
 
 #include <jni.h>
 
@@ -208,7 +209,7 @@ java::lang::Runtime::init (void)
 void
 java::lang::Runtime::runFinalization (void)
 {
-  _Jv_RunFinalizers ();
+  gnu::gcj::runtime::FinalizerThread::finalizerReady ();
 }
 
 jlong
