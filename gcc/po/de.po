@@ -4,13 +4,11 @@
 # Roland Stigge <stigge@antcom.de>, 2003.
 # This file is distributed under the same license as the gcc package.
 #
-# Wer möchte an dieser Übersetzung arbeiten?  Bitte bei de@li.org melden!
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: gcc 3.3.2\n"
 "POT-Creation-Date: 2003-10-24 13:20+0200\n"
-"PO-Revision-Date: 2003-11-24 15:30+0100\n"
+"PO-Revision-Date: 2003-12-15 21:30+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -323,11 +321,11 @@ msgstr "Zeiger sind nicht als case-Werte zugelassen"
 
 #: c-common.c:4087
 msgid "ISO C++ forbids range expressions in switch statements"
-msgstr "ISO C++ verbietet Wertebereichsausdrücke in switch-Anweisungen"
+msgstr "ISO-C++ verbietet Wertebereichsausdrücke in switch-Anweisungen"
 
 #: c-common.c:4089
 msgid "ISO C forbids range expressions in switch statements"
-msgstr "ISO C verbietet Wertebereichsausdrücke in switch-Anweisungen"
+msgstr "ISO-C verbietet Wertebereichsausdrücke in switch-Anweisungen"
 
 #: c-common.c:4119
 msgid "empty range specified"
@@ -359,11 +357,11 @@ msgstr "Dies ist die erste Standardmarke"
 
 #: c-common.c:4210
 msgid "ISO C++ forbids taking the address of a label"
-msgstr "ISO C++ verbietet die Adresse einer Marke"
+msgstr "ISO-C++ verbietet die Adresse einer Marke"
 
 #: c-common.c:4212
 msgid "ISO C forbids taking the address of a label"
-msgstr "ISO C verbietet die Adresse einer Marke"
+msgstr "ISO-C verbietet die Adresse einer Marke"
 
 #: c-common.c:5235
 #, c-format
@@ -808,11 +806,11 @@ msgstr "leere Deklaration"
 
 #: c-decl.c:2740
 msgid "ISO C90 does not support `static' or type qualifiers in parameter array declarators"
-msgstr "ISO C90 unterstützt kein »static« oder Typkennzeichner in Parameterfelddeklaratoren"
+msgstr "ISO-C90 unterstützt kein »static« oder Typkennzeichner in Parameterfelddeklaratoren"
 
 #: c-decl.c:2742
 msgid "ISO C90 does not support `[*]' array declarators"
-msgstr "ISO C90 unterstützt nicht »[*]«-Felddeklaratoren"
+msgstr "ISO-C90 unterstützt nicht »[*]«-Felddeklaratoren"
 
 #: c-decl.c:2745
 msgid "GCC does not yet properly implement `[*]' array declarators"
@@ -900,7 +898,7 @@ msgstr "Ignoriere asm-Symbol für lokale Nicht-static Variable »%s«"
 #: c-decl.c:3247
 #, c-format
 msgid "ISO C forbids parameter `%s' shadowing typedef"
-msgstr "ISO C verbietet typedef verdeckenden Parameter »%s«"
+msgstr "ISO-C verbietet typedef verdeckenden Parameter »%s«"
 
 #: c-decl.c:3592 cp/decl.c:10880
 msgid "`long long long' is too long for GCC"
@@ -908,7 +906,7 @@ msgstr "»long long long« ist für GCC zu lang"
 
 #: c-decl.c:3597
 msgid "ISO C90 does not support `long long'"
-msgstr "ISO C90 unterstützt nicht »long long«"
+msgstr "ISO-C90 unterstützt nicht »long long«"
 
 #: c-decl.c:3606 c-decl.c:3609 cp/decl.c:10885
 #, c-format
@@ -965,1043 +963,1042 @@ msgstr "Sowohl »signed« als auch »unsigned« für »%s« angegeben"
 #: c-decl.c:3739 cp/decl.c:11034
 #, c-format
 msgid "long, short, signed or unsigned invalid for `%s'"
-msgstr ""
+msgstr "long, short, signed oder unsigned ist ungültig für »%s«"
 
 #: c-decl.c:3745 cp/decl.c:11054
 #, c-format
 msgid "long, short, signed or unsigned used invalidly for `%s'"
-msgstr ""
+msgstr "long, short, signed oder unsigned ungültig verwendet für »%s«"
 
 #: c-decl.c:3763 cp/decl.c:11075
 #, c-format
 msgid "complex invalid for `%s'"
-msgstr ""
+msgstr "complex ungültig für »%s«"
 
 #: c-decl.c:3805
 msgid "ISO C90 does not support complex types"
-msgstr "ISO C90 unterstützt nicht komplexe Typen"
+msgstr "ISO-C90 unterstützt nicht komplexe Typen"
 
 #: c-decl.c:3817
 msgid "ISO C does not support plain `complex' meaning `double complex'"
-msgstr ""
+msgstr "ISO-C unterstützt nicht »double complex« bedeutendes »complex«"
 
 #: c-decl.c:3823 c-decl.c:3835
 msgid "ISO C does not support complex integer types"
-msgstr ""
+msgstr "ISO-C unterstützt keine komplexen Ganzzahltypen"
 
 #: c-decl.c:3850 c-decl.c:4316 cp/decl.c:11688
 msgid "duplicate `const'"
-msgstr ""
+msgstr "Doppeltes »const«"
 
 #: c-decl.c:3852 c-decl.c:4320 cp/decl.c:11692
 msgid "duplicate `restrict'"
-msgstr ""
+msgstr "Doppeltes »restrict«"
 
 #: c-decl.c:3854 c-decl.c:4318 cp/decl.c:11690
 msgid "duplicate `volatile'"
-msgstr ""
+msgstr "Doppeltes »volatile«"
 
 #: c-decl.c:3882 cp/decl.c:11238
 #, c-format
 msgid "multiple storage classes in declaration of `%s'"
-msgstr ""
+msgstr "Mehrere Speicherklassen in Deklaration von »%s«"
 
 #: c-decl.c:3892
 msgid "function definition declared `auto'"
-msgstr ""
+msgstr "Funktionsdefinition deklarierte »auto«"
 
 #: c-decl.c:3894
 msgid "function definition declared `register'"
-msgstr ""
+msgstr "Funktionsdefinition deklarierte »register«"
 
 #: c-decl.c:3896
 msgid "function definition declared `typedef'"
-msgstr ""
+msgstr "Funktionsdefinition deklarierte »typedef«"
 
 #: c-decl.c:3898
 msgid "function definition declared `__thread'"
-msgstr ""
+msgstr "Funktionsdefinition deklarierte »__thread«"
 
 #: c-decl.c:3911
 #, c-format
 msgid "storage class specified for structure field `%s'"
-msgstr ""
+msgstr "Speicherklasse für Strukturfeld »%s« angegeben"
 
 #: c-decl.c:3915 cp/decl.c:11285
 #, c-format
 msgid "storage class specified for parameter `%s'"
-msgstr ""
+msgstr "Speicherklasse für Parameter »%s« angegeben"
 
 #: c-decl.c:3918 cp/decl.c:11287
 msgid "storage class specified for typename"
-msgstr ""
+msgstr "Speicherklasse für Typnamen angegeben"
 
 #: c-decl.c:3930 cp/decl.c:11302
 #, c-format
 msgid "`%s' initialized and declared `extern'"
-msgstr ""
+msgstr "»%s« initialisiert und als »extern« deklariert"
 
 #: c-decl.c:3932 cp/decl.c:11305
 #, c-format
 msgid "`%s' has both `extern' and initializer"
-msgstr ""
+msgstr "»%s« hat sowohl »extern« als auch Initialisierung"
 
 #: c-decl.c:3937 cp/decl.c:11313
 #, c-format
 msgid "top-level declaration of `%s' specifies `auto'"
-msgstr ""
+msgstr "Deklaration höchster Ebene von »%s« spezifiziert »auto«"
 
 #: c-decl.c:3942 cp/decl.c:11309
 #, c-format
 msgid "nested function `%s' declared `extern'"
-msgstr ""
+msgstr "Geschachtelte Funktion »%s« als »extern« deklariert"
 
 #: c-decl.c:3948 cp/decl.c:11319
 #, c-format
 msgid "function-scope `%s' implicitly auto and declared `__thread'"
-msgstr ""
+msgstr "Funktions-Gültigkeitsbereich »%s« ist implizit auto und deklarierte »__thread«"
 
 #. Only the innermost declarator (making a parameter be of
 #. array type which is converted to pointer type)
 #. may have static or type qualifiers.
 #: c-decl.c:3987 c-decl.c:4188
 msgid "static or type qualifiers in non-parameter array declarator"
-msgstr ""
+msgstr "»static« oder Typkennzeichner in Nicht-Parameter-Felddeklarator"
 
 #: c-decl.c:4031
 #, c-format
 msgid "declaration of `%s' as array of voids"
-msgstr ""
+msgstr "Deklaration von »%s« als Feld von voids"
 
 #: c-decl.c:4037
 #, c-format
 msgid "declaration of `%s' as array of functions"
-msgstr ""
+msgstr "Deklaration von »%s« als Feld von Funtionen"
 
 #: c-decl.c:4042 c-decl.c:5332
 msgid "invalid use of structure with flexible array member"
-msgstr ""
+msgstr "Ungültige Verwendung einer Struktur mit flexiblem Feld"
 
 #: c-decl.c:4061
 #, c-format
 msgid "size of array `%s' has non-integer type"
-msgstr ""
+msgstr "Feldgröße von »%s« hat Nicht-Ganzzahltyp"
 
 #: c-decl.c:4066
 #, c-format
 msgid "ISO C forbids zero-size array `%s'"
-msgstr ""
+msgstr "ISO-C verbietet Feld »%s« der Größe null"
 
 #: c-decl.c:4073
 #, c-format
 msgid "size of array `%s' is negative"
-msgstr ""
+msgstr "Feldgröße von »%s« ist negativ"
 
 #: c-decl.c:4086
 #, c-format
 msgid "ISO C90 forbids array `%s' whose size can't be evaluated"
-msgstr ""
+msgstr "ISO-C90 verbietet Feld »%s«, dessen Größe nicht ausgewertet werden kann"
 
 #: c-decl.c:4089
 #, c-format
 msgid "ISO C90 forbids variable-size array `%s'"
-msgstr ""
+msgstr "ISO-C90 verbietet Feld »%s« variabler Größe"
 
 #: c-decl.c:4119 c-decl.c:4342 cp/decl.c:11897
 #, c-format
 msgid "size of array `%s' is too large"
-msgstr ""
+msgstr "Feldgröße von »%s« ist zu groß"
 
 #: c-decl.c:4145
-#, fuzzy
 msgid "ISO C90 does not support flexible array members"
-msgstr "ISO C90 unterstützt nicht komplexe Typen"
+msgstr "ISO-C90 unterstützt keine flexiblen Felder als Mitglied"
 
 #: c-decl.c:4155
 msgid "array type has incomplete element type"
-msgstr ""
+msgstr "Feldtyp hat unvollständigen Elementtypen"
 
 #: c-decl.c:4162 c-decl.c:4392
 msgid "ISO C forbids const or volatile function types"
-msgstr ""
+msgstr "ISO-C verbietet const oder volatile Funktionstypen"
 
 #: c-decl.c:4208 cp/decl.c:11445
 #, c-format
 msgid "`%s' declared as function returning a function"
-msgstr ""
+msgstr "»%s« als Funktion, die eine Funktion zurückgibt, deklariert"
 
 #: c-decl.c:4213 cp/decl.c:11450
 #, c-format
 msgid "`%s' declared as function returning an array"
-msgstr ""
+msgstr "»%s« als Funktion, die ein Feld zurückgibt, deklariert"
 
 #: c-decl.c:4241
 msgid "ISO C forbids qualified void function return type"
-msgstr ""
+msgstr "ISO-C verbietet qualifiziertes void als Funktions-Rückgabetypen"
 
 #: c-decl.c:4245
 msgid "type qualifiers ignored on function return type"
-msgstr ""
+msgstr "Typkennzeichner ignoriert an Funktions-Rückgabewert"
 
 #: c-decl.c:4274 c-decl.c:4357 c-decl.c:4481 c-decl.c:4573
 msgid "ISO C forbids qualified function types"
-msgstr ""
+msgstr "ISO-C verbietet qualifizierte Funktionstypen"
 
 #: c-decl.c:4314 cp/decl.c:11684
 msgid "invalid type modifier within pointer declarator"
-msgstr ""
+msgstr "Ungültiger Typmodifizierer innerhalb Zeigerdeklarator"
 
 #: c-decl.c:4412 cp/decl.c:12182
 #, c-format
 msgid "variable or field `%s' declared void"
-msgstr ""
+msgstr "Variable oder Feld »%s« als »void« deklariert"
 
 #: c-decl.c:4445
 msgid "attributes in parameter array declarator ignored"
-msgstr ""
+msgstr "Attribute in Parameterfeld ignoriert"
 
 #: c-decl.c:4470
 msgid "invalid type modifier within array declarator"
-msgstr ""
+msgstr "Ungültiger Typmodifizierer in Felddeklarator"
 
 #: c-decl.c:4515
 #, c-format
 msgid "field `%s' declared as a function"
-msgstr ""
+msgstr "Feld »%s« als Funktion deklariert"
 
 #: c-decl.c:4521
 #, c-format
 msgid "field `%s' has incomplete type"
-msgstr ""
+msgstr "Feld »%s« hat unvollständigen Typen"
 
 #: c-decl.c:4553 c-decl.c:4555 c-decl.c:4557 c-decl.c:4564
 #, c-format
 msgid "invalid storage class for function `%s'"
-msgstr ""
+msgstr "Ungültige Speicherklasse für Funktion »%s«"
 
 #: c-decl.c:4579
 msgid "`noreturn' function returns non-void value"
-msgstr ""
+msgstr "»noreturn«-Funktion gibt nicht-void-Wert zurück"
 
 #: c-decl.c:4594
 msgid "cannot inline function `main'"
-msgstr ""
+msgstr "»main« ist nicht als »inline« möglich"
 
 #: c-decl.c:4649
 #, c-format
 msgid "variable `%s' declared `inline'"
-msgstr ""
+msgstr "Variable »%s« als »inline« deklariert"
 
 #. A mere warning is sure to result in improper semantics
 #. at runtime.  Don't bother to allow this to compile.
 #: c-decl.c:4677 cp/decl.c:9951
 msgid "thread-local storage not supported for this target"
-msgstr ""
+msgstr "Thread-lokaler Speicher wird für dieses Ziel nicht unterstützt"
 
 #: c-decl.c:4732 c-decl.c:5880
 msgid "function declaration isn't a prototype"
-msgstr ""
+msgstr "Funktionsdeklaration ist kein Prototyp"
 
 #: c-decl.c:4738
 msgid "parameter names (without types) in function declaration"
-msgstr ""
+msgstr "Parameternamen (ohne Typen) in Funktionsdeklaration"
 
 #: c-decl.c:4770 c-decl.c:6250
 #, c-format
 msgid "parameter `%s' has incomplete type"
-msgstr ""
+msgstr "Parameter »%s« hat unvollständigen Typen"
 
 #: c-decl.c:4773
 msgid "parameter has incomplete type"
-msgstr ""
+msgstr "Parameter hat unvollständigen Typen"
 
 #: c-decl.c:4794
 #, c-format
 msgid "parameter `%s' points to incomplete type"
-msgstr ""
+msgstr "Parameter »%s« zeigt auf unvollständigen Typen"
 
 #: c-decl.c:4797
 msgid "parameter points to incomplete type"
-msgstr ""
+msgstr "Parameter zeigt auf unvollständigen Typen"
 
 #: c-decl.c:4862
 #, c-format
 msgid "parameter `%s' has just a forward declaration"
-msgstr ""
+msgstr "Parameter »%s« hat nur eine Vorwärtsdeklaration"
 
 #: c-decl.c:4903
 msgid "`void' in parameter list must be the entire list"
-msgstr ""
+msgstr "»void« in Parameterliste muss die gesamte Liste sein"
 
 #: c-decl.c:4934
 #, c-format
 msgid "`struct %s' declared inside parameter list"
-msgstr ""
+msgstr "»struct %s« innerhalb Parameterliste deklariert"
 
 #: c-decl.c:4937
 #, c-format
 msgid "`union %s' declared inside parameter list"
-msgstr ""
+msgstr "»union %s« innerhalb Parameterliste deklariert"
 
 #: c-decl.c:4940
 #, c-format
 msgid "`enum %s' declared inside parameter list"
-msgstr ""
+msgstr "»enum %s« innerhalb Parameterliste deklariert"
 
 #: c-decl.c:4947
 msgid "anonymous struct declared inside parameter list"
-msgstr ""
+msgstr "Anonymes »struct« innerhalb Parameterliste deklariert"
 
 #: c-decl.c:4949
 msgid "anonymous union declared inside parameter list"
-msgstr ""
+msgstr "Anonymes »union« innerhalb Parameterliste deklariert"
 
 #: c-decl.c:4951
 msgid "anonymous enum declared inside parameter list"
-msgstr ""
+msgstr "Anonymes »enum« innerhalb Parameterliste deklariert"
 
 #: c-decl.c:4955
 msgid "its scope is only this definition or declaration, which is probably not what you want"
-msgstr ""
+msgstr "Sein Gültigkeitsbereich umfasst nur diese Definition bzw. Deklaration, was Sie wahrscheinlich nicht wollten"
 
 #: c-decl.c:5032
 #, c-format
 msgid "redefinition of `union %s'"
-msgstr ""
+msgstr "Redefinition von »union %s«"
 
 #: c-decl.c:5034
 #, c-format
 msgid "redefinition of `struct %s'"
-msgstr ""
+msgstr "Redefinition von »struct %s«"
 
 #: c-decl.c:5105 cp/decl.c:7532
 msgid "declaration does not declare anything"
-msgstr ""
+msgstr "Deklaration deklariert nichts"
 
 #: c-decl.c:5169 c-decl.c:5172
 #, c-format
 msgid "%s defined inside parms"
-msgstr ""
+msgstr "%s innerhalb Parameter definiert"
 
 #: c-decl.c:5170 c-decl.c:5173 c-decl.c:5184
 msgid "union"
-msgstr ""
+msgstr "union"
 
 #: c-decl.c:5170 c-decl.c:5173
 msgid "structure"
-msgstr ""
+msgstr "Struktur"
 
 #: c-decl.c:5183
 #, c-format
 msgid "%s has no %s"
-msgstr ""
+msgstr "%s hat kein %s"
 
 #: c-decl.c:5184
 msgid "struct"
-msgstr ""
+msgstr "struct"
 
 #: c-decl.c:5185
 msgid "named members"
-msgstr ""
+msgstr "benannte Member"
 
 #: c-decl.c:5185
 msgid "members"
-msgstr ""
+msgstr "Member"
 
 #: c-decl.c:5224
 #, c-format
 msgid "nested redefinition of `%s'"
-msgstr ""
+msgstr "Verschachtelte Redefinition von »%s«"
 
 #: c-decl.c:5237
 #, c-format
 msgid "bit-field `%s' width not an integer constant"
-msgstr ""
+msgstr "Breite des Bitfeldes »%s« ist keine Ganzzahlkonstante"
 
 #: c-decl.c:5248
 #, c-format
 msgid "bit-field `%s' has invalid type"
-msgstr ""
+msgstr "Bitfeld »%s« hat ungültigen Typen"
 
 #: c-decl.c:5260
 #, c-format
 msgid "bit-field `%s' type invalid in ISO C"
-msgstr ""
+msgstr "Typ des Bitfeldes »%s« ist ungültig in ISO-C"
 
 #: c-decl.c:5271
 #, c-format
 msgid "negative width in bit-field `%s'"
-msgstr ""
+msgstr "Negative Breite in Bitfeld »%s«"
 
 #: c-decl.c:5273
 #, c-format
 msgid "width of `%s' exceeds its type"
-msgstr ""
+msgstr "Breite von »%s« überschreitet dessen Typen"
 
 #: c-decl.c:5275
 #, c-format
 msgid "zero width for bit-field `%s'"
-msgstr ""
+msgstr "Breite null für Bitfeld »%s«"
 
 #: c-decl.c:5289
 #, c-format
 msgid "`%s' is narrower than values of its type"
-msgstr ""
+msgstr "»%s« ist schmaler als die Werte seines Typs"
 
 #: c-decl.c:5323
 msgid "flexible array member in union"
-msgstr ""
+msgstr "Flexibler Feld-Member in union"
 
 #: c-decl.c:5325
 msgid "flexible array member not at end of struct"
-msgstr ""
+msgstr "Flexibler Feld-Member nicht am Ende von struct"
 
 #: c-decl.c:5327
 msgid "flexible array member in otherwise empty struct"
-msgstr ""
+msgstr "Flexibler Feld-Member in ansonsten leerem struct"
 
 #: c-decl.c:5357
 #, c-format
 msgid "duplicate member `%s'"
-msgstr ""
+msgstr "Doppelter Member »%s«"
 
 #: c-decl.c:5448
 msgid "union cannot be made transparent"
-msgstr ""
+msgstr "union kann nicht transparent gemacht werden"
 
 #. This enum is a named one that has been declared already.
 #: c-decl.c:5558
 #, c-format
 msgid "redeclaration of `enum %s'"
-msgstr ""
+msgstr "Redeklaration von »enum %s«"
 
 #: c-decl.c:5592
 msgid "enum defined inside parms"
-msgstr ""
+msgstr "enum innerhalb von Parametern definiert"
 
 #: c-decl.c:5625
 msgid "enumeration values exceed range of largest integer"
-msgstr ""
+msgstr "Aufzählungswerte überschreiten Wertebereich des größten Ganzzahltypen"
 
 #: c-decl.c:5734
 #, c-format
 msgid "enumerator value for `%s' not integer constant"
-msgstr ""
+msgstr "Aufzählungswert für »%s« ist keine Ganzzahlkonstante"
 
 #: c-decl.c:5747
 msgid "overflow in enumeration values"
-msgstr ""
+msgstr "Überlauf in Aufzählungswerten"
 
 #: c-decl.c:5752
 msgid "ISO C restricts enumerator values to range of `int'"
-msgstr ""
+msgstr "ISO-C beschränkt Aufzählungswerte auf Bereich von »int«"
 
 #: c-decl.c:5834
 msgid "return type is an incomplete type"
-msgstr ""
+msgstr "Rückgabetyp ist unvollständig"
 
 #: c-decl.c:5842
 msgid "return type defaults to `int'"
-msgstr ""
+msgstr "Rückgabetyp ist auf »int« voreingestellt"
 
 #: c-decl.c:5889
 #, c-format
 msgid "no previous prototype for `%s'"
-msgstr ""
+msgstr "Kein vorheriger Prototyp für »%s«"
 
 #: c-decl.c:5896
 #, c-format
 msgid "`%s' was used with no prototype before its definition"
-msgstr ""
+msgstr "»%s« wurde vor seiner Definition ohne Prototyp verwendet"
 
 #: c-decl.c:5902
 #, c-format
 msgid "no previous declaration for `%s'"
-msgstr ""
+msgstr "Keine vorherige Deklaration für »%s«"
 
 #: c-decl.c:5909
 #, c-format
 msgid "`%s' was used with no declaration before its definition"
-msgstr ""
+msgstr "»%s« wurde vor seiner Definition ohne Deklaration verwendet"
 
 #: c-decl.c:5933 c-decl.c:6486
 #, c-format
 msgid "return type of `%s' is not `int'"
-msgstr ""
+msgstr "Rückgabetyp von »%s« ist nicht »int«"
 
 #: c-decl.c:5949
 #, c-format
 msgid "first argument of `%s' should be `int'"
-msgstr ""
+msgstr "Erstes Argument von »%s« sollte »int« sein"
 
 #: c-decl.c:5958
 #, c-format
 msgid "second argument of `%s' should be `char **'"
-msgstr ""
+msgstr "Zweites Argument von »%s« sollte »char **« sein"
 
 #: c-decl.c:5967
 #, c-format
 msgid "third argument of `%s' should probably be `char **'"
-msgstr ""
+msgstr "Drittes Argument von »%s« sollte wahrscheinlich »char **« sein"
 
 #: c-decl.c:5976
 #, c-format
 msgid "`%s' takes only zero or two arguments"
-msgstr ""
+msgstr "»%s« benötigt entweder null oder zwei Argumente"
 
 #: c-decl.c:5979
 #, c-format
 msgid "`%s' is normally a non-static function"
-msgstr ""
+msgstr "»%s« ist normalerweise eine Nicht-static-Funktion"
 
 #: c-decl.c:6077
 msgid "parm types given both in parmlist and separately"
-msgstr ""
+msgstr "Parametertypen sowohl in Parameterliste als auch separat angegeben"
 
 #: c-decl.c:6098
 msgid "parameter name omitted"
-msgstr ""
+msgstr "Parametername ausgelassen"
 
 #: c-decl.c:6102 c-decl.c:6204
 #, c-format
 msgid "parameter `%s' declared void"
-msgstr ""
+msgstr "Parameter »%s« als void deklariert"
 
 #: c-decl.c:6178
 msgid "parameter name missing from parameter list"
-msgstr ""
+msgstr "Parametername fehlt in Parameterliste"
 
 #: c-decl.c:6197
 #, c-format
 msgid "multiple parameters named `%s'"
-msgstr ""
+msgstr "Mehrere Parameter wurden »%s« genannt"
 
 #: c-decl.c:6219 c-decl.c:6221
 #, c-format
 msgid "type of `%s' defaults to `int'"
-msgstr ""
+msgstr "Typ von »%s« auf »int« voreingestellt"
 
 #: c-decl.c:6257
 #, c-format
 msgid "declaration for parameter `%s' but no such parameter"
-msgstr ""
+msgstr "Nicht vorhandener Parameter »%s« deklariert"
 
 #: c-decl.c:6305
 msgid "number of arguments doesn't match prototype"
-msgstr ""
+msgstr "Anzahl der Argumente passt nicht zum Prototypen"
 
 #: c-decl.c:6335
 #, c-format
 msgid "promoted argument `%s' doesn't match prototype"
-msgstr ""
+msgstr "Weitergegebenes Argument »%s« passt nicht zum Prototypen"
 
 #: c-decl.c:6345
 #, c-format
 msgid "argument `%s' doesn't match prototype"
-msgstr ""
+msgstr "Argument »%s« passt nicht zum Prototypen"
 
 #: c-decl.c:6518 cp/decl.c:15049
 msgid "no return statement in function returning non-void"
-msgstr ""
+msgstr "Keine return-Anweisung in nicht void zurückgebender Funktion"
 
 #: c-decl.c:6525
 msgid "this function may return with or without a value"
-msgstr ""
+msgstr "Diese Funktion kann mit oder ohne Wert zurückkehren"
 
 #: c-decl.c:6729
 #, c-format
 msgid "size of return value of `%s' is %u bytes"
-msgstr ""
+msgstr "Größe des Rückgabewertes von »%s« ist %u Bytes"
 
 #: c-decl.c:6733
 #, c-format
 msgid "size of return value of `%s' is larger than %d bytes"
-msgstr ""
+msgstr "Größe des Rückgabewertes von »%s« ist größer als %d Bytes"
 
 #. If we get here, declarations have been used in a for loop without
 #. the C99 for loop scope.  This doesn't make much sense, so don't
 #. allow it.
 #: c-decl.c:6791
 msgid "`for' loop initial declaration used outside C99 mode"
-msgstr ""
+msgstr "Anfangsdeklaration in »for«-Schleife außerhalb C99-Modus verwendet"
 
 #: c-decl.c:6815
 #, c-format
 msgid "`struct %s' declared in `for' loop initial declaration"
-msgstr ""
+msgstr "»struct %s« in Anfangsdeklaration einer »for«-Schleife deklariert"
 
 #: c-decl.c:6818
 #, c-format
 msgid "`union %s' declared in `for' loop initial declaration"
-msgstr ""
+msgstr "»union %s« in Anfangsdeklaration einer »for«-Schleife deklariert"
 
 #: c-decl.c:6821
 #, c-format
 msgid "`enum %s' declared in `for' loop initial declaration"
-msgstr ""
+msgstr "»enum %s« in Anfangsdeklaration einer »for«-Schleife deklariert"
 
 #: c-decl.c:6829
 #, c-format
 msgid "declaration of non-variable `%s' in `for' loop initial declaration"
-msgstr ""
+msgstr "Deklaration der Nicht-Variablen »%s« in Anfangsdeklaration einer »for«-Schleife"
 
 #: c-decl.c:6831
 #, c-format
 msgid "declaration of static variable `%s' in `for' loop initial declaration"
-msgstr ""
+msgstr "Deklaration der »static«-Variablen »%s« in Anfangsdeklaration einer »for«-Schleife"
 
 #: c-decl.c:6833
 #, c-format
 msgid "declaration of `extern' variable `%s' in `for' loop initial declaration"
-msgstr ""
+msgstr "Deklaration der »extern«-Variablen »%s« in Anfangsdeklaration einer »for«-Schleife"
 
 #: c-format.c:109 c-format.c:191
 msgid "format string arg not a string type"
-msgstr ""
+msgstr "Format-Zeichenkettenargument ist kein Zeichenkettentyp"
 
 #: c-format.c:124
 msgid "args to be formatted is not '...'"
-msgstr ""
+msgstr "Zu formatierendes Argument ist nicht »...«"
 
 #: c-format.c:133
 msgid "strftime formats cannot format arguments"
-msgstr ""
+msgstr "strftime-Formate können keine Argumente formatieren"
 
 #: c-format.c:168 c-format.c:270
 msgid "format string has invalid operand number"
-msgstr ""
+msgstr "Formatzeichenkette hat ungültige Operandenzahl"
 
 #: c-format.c:202
 msgid "function does not return string type"
-msgstr ""
+msgstr "Funktion gibt keinen Zeichenkettentypen zurück"
 
 #: c-format.c:233
 msgid "unrecognized format specifier"
-msgstr ""
+msgstr "Unerkannte Formatangabe"
 
 #: c-format.c:246
 #, c-format
 msgid "`%s' is an unrecognized format function type"
-msgstr ""
+msgstr "»%s« ist ein nicht erkannter Formatfunktionstyp"
 
 #: c-format.c:280
 msgid "format string arg follows the args to be formatted"
-msgstr ""
+msgstr "Format-Zeichenkettenargument folgt den zu formatierenden Argumenten"
 
 #: c-format.c:601
 msgid "` ' flag"
-msgstr ""
+msgstr "» «-Kennzeichen"
 
 #: c-format.c:601
 msgid "the ` ' printf flag"
-msgstr ""
+msgstr "Das » «-printf-Kennzeichen"
 
 #: c-format.c:602 c-format.c:673
 msgid "`+' flag"
-msgstr ""
+msgstr "»+«-Kennzeichen"
 
 #: c-format.c:602
 msgid "the `+' printf flag"
-msgstr ""
+msgstr "Das »+«-printf-Kennzeichen"
 
 #: c-format.c:603 c-format.c:649
 msgid "`#' flag"
-msgstr ""
+msgstr "»#«-Kennzeichen"
 
 #: c-format.c:603
 msgid "the `#' printf flag"
-msgstr ""
+msgstr "Das »#«-printf-Kennzeichen"
 
 #: c-format.c:604 c-format.c:647
 msgid "`0' flag"
-msgstr ""
+msgstr "»0«-Kennzeichen"
 
 #: c-format.c:604
 msgid "the `0' printf flag"
-msgstr ""
+msgstr "Das »0«-printf-Kennzeichen"
 
 #: c-format.c:605 c-format.c:646 c-format.c:676
 msgid "`-' flag"
-msgstr ""
+msgstr "»-«-Kennzeichen"
 
 #: c-format.c:605
 msgid "the `-' printf flag"
-msgstr ""
+msgstr "Das »-«-printf-Kennzeichen"
 
 #: c-format.c:606 c-format.c:630
 msgid "`'' flag"
-msgstr ""
+msgstr "»'«-Kennzeichen"
 
 #: c-format.c:606
 msgid "the `'' printf flag"
-msgstr ""
+msgstr "Das »'«-printf-Kennzeichen"
 
 #: c-format.c:607 c-format.c:631
 msgid "`I' flag"
-msgstr ""
+msgstr "»I«-Kennzeichen"
 
 #: c-format.c:607
 msgid "the `I' printf flag"
-msgstr ""
+msgstr "Das »I«-printf-Kennzeichen"
 
 #: c-format.c:608 c-format.c:628 c-format.c:650 c-format.c:677 c-format.c:1702
 msgid "field width"
-msgstr ""
+msgstr "Feldbreite"
 
 #: c-format.c:608
 msgid "field width in printf format"
-msgstr ""
+msgstr "Feldbreite im printf-Format"
 
 #: c-format.c:609
 msgid "precision"
-msgstr ""
+msgstr "Präzision"
 
 #: c-format.c:609
 msgid "precision in printf format"
-msgstr ""
+msgstr "Präzision im printf-Format"
 
 #: c-format.c:610 c-format.c:629 c-format.c:680
 msgid "length modifier"
-msgstr ""
+msgstr "Längenmodifizierer"
 
 #: c-format.c:610
 msgid "length modifier in printf format"
-msgstr ""
+msgstr "Längenmodifizierer im printf-Format"
 
 #: c-format.c:626
 msgid "assignment suppression"
-msgstr ""
+msgstr "Zuweisungsunterdrückung"
 
 #: c-format.c:626
 msgid "the assignment suppression scanf feature"
-msgstr ""
+msgstr "Das scanf-Merkmal der Zuweisungsunterdrückung"
 
 #: c-format.c:627
 msgid "`a' flag"
-msgstr ""
+msgstr "»a«-Kennzeichen"
 
 #: c-format.c:627
 msgid "the `a' scanf flag"
-msgstr ""
+msgstr "Das »a«-scanf-Kennzeichen"
 
 #: c-format.c:628
 msgid "field width in scanf format"
-msgstr ""
+msgstr "Feldbreite im scanf-Format"
 
 #: c-format.c:629
 msgid "length modifier in scanf format"
-msgstr ""
+msgstr "Längenmodifizierer im scanf-Format"
 
 #: c-format.c:630
 msgid "the `'' scanf flag"
-msgstr ""
+msgstr "Das »'«-scanf-Kennzeichen"
 
 #: c-format.c:631
 msgid "the `I' scanf flag"
-msgstr ""
+msgstr "Das »I«-scanf-Kennzeichen"
 
 #: c-format.c:645
 msgid "`_' flag"
-msgstr ""
+msgstr "»_«-Kennzeichen"
 
 #: c-format.c:645
 msgid "the `_' strftime flag"
-msgstr ""
+msgstr "Das »_«-strftime-Kennzeichen"
 
 #: c-format.c:646
 msgid "the `-' strftime flag"
-msgstr ""
+msgstr "Das »-«-strftime-Kennzeichen"
 
 #: c-format.c:647
 msgid "the `0' strftime flag"
-msgstr ""
+msgstr "Das »0«-strftime-Kennzeichen"
 
 #: c-format.c:648 c-format.c:672
 msgid "`^' flag"
-msgstr ""
+msgstr "»^«-Kennzeichen"
 
 #: c-format.c:648
 msgid "the `^' strftime flag"
-msgstr ""
+msgstr "Das »^«-strftime-Kennzeichen"
 
 #: c-format.c:649
 msgid "the `#' strftime flag"
-msgstr ""
+msgstr "Das »#«-strftime-Kennzeichen"
 
 #: c-format.c:650
 msgid "field width in strftime format"
-msgstr ""
+msgstr "Feldbreite im strftime-Format"
 
 #: c-format.c:651
 msgid "`E' modifier"
-msgstr ""
+msgstr "»E«-Modifizierer"
 
 #: c-format.c:651
 msgid "the `E' strftime modifier"
-msgstr ""
+msgstr "Der »E«-strftime-Modifizierer"
 
 #: c-format.c:652
 msgid "`O' modifier"
-msgstr ""
+msgstr "»O«-Modifizierer"
 
 #: c-format.c:652
 msgid "the `O' strftime modifier"
-msgstr ""
+msgstr "Der »O«-strftime-Modifizierer"
 
 #: c-format.c:653
 msgid "the `O' modifier"
-msgstr ""
+msgstr "Der »O«-Modifizierer"
 
 #: c-format.c:671
 msgid "fill character"
-msgstr ""
+msgstr "Füllzeichen"
 
 #: c-format.c:671
 msgid "fill character in strfmon format"
-msgstr ""
+msgstr "Füllzeichen im strfmon-Format"
 
 #: c-format.c:672
 msgid "the `^' strfmon flag"
-msgstr ""
+msgstr "Das »^«-strfmon-Kennzeichen"
 
 #: c-format.c:673
 msgid "the `+' strfmon flag"
-msgstr ""
+msgstr "Das »+«-strfmon-Kennzeichen"
 
 #: c-format.c:674
 msgid "`(' flag"
-msgstr ""
+msgstr "»(«-Kennzeichen"
 
 #: c-format.c:674
 msgid "the `(' strfmon flag"
-msgstr ""
+msgstr "Das »(«-strfmon-Kennzeichen"
 
 #: c-format.c:675
 msgid "`!' flag"
-msgstr ""
+msgstr "»!«-Kennzeichen"
 
 #: c-format.c:675
 msgid "the `!' strfmon flag"
-msgstr ""
+msgstr "Das »!«-strfmon-Kennzeichen"
 
 #: c-format.c:676
 msgid "the `-' strfmon flag"
-msgstr ""
+msgstr "Das »-«-strfmon-Kennzeichen"
 
 #: c-format.c:677
 msgid "field width in strfmon format"
-msgstr ""
+msgstr "Feldbreite im strfmon-Format"
 
 #: c-format.c:678
 msgid "left precision"
-msgstr ""
+msgstr "Linke Präzision"
 
 #: c-format.c:678
 msgid "left precision in strfmon format"
-msgstr ""
+msgstr "Linke Präzision im strfmon-Format"
 
 #: c-format.c:679
 msgid "right precision"
-msgstr ""
+msgstr "Rechte Präzision"
 
 #: c-format.c:679
 msgid "right precision in strfmon format"
-msgstr ""
+msgstr "Rechte Präzision im strfmon-Format"
 
 #: c-format.c:680
 msgid "length modifier in strfmon format"
-msgstr ""
+msgstr "Längenmodifizierer im strfmon-Format"
 
 #: c-format.c:983
 #, c-format
 msgid "function might be possible candidate for `%s' format attribute"
-msgstr ""
+msgstr "Funktion könnte möglicher Kandidat für Formatattribut »%s« sein"
 
 #: c-format.c:1107 c-format.c:1128 c-format.c:2112
 msgid "missing $ operand number in format"
-msgstr ""
+msgstr "Fehlende $-Operandennummer im Format"
 
 #: c-format.c:1138
 #, c-format
 msgid "%s does not support %%n$ operand number formats"
-msgstr ""
+msgstr "%s unterstützt nicht %%n$-Operandennummerformate"
 
 #: c-format.c:1145
 msgid "operand number out of range in format"
-msgstr ""
+msgstr "Operandennummer außerhalb des Wertebereiches im Format"
 
 #: c-format.c:1168
 #, c-format
 msgid "format argument %d used more than once in %s format"
-msgstr ""
+msgstr "Formatargument %d mehr als einmal im %s-Format verwendet"
 
 #: c-format.c:1218
 #, c-format
 msgid "format argument %d unused before used argument %d in $-style format"
-msgstr ""
+msgstr "Formatargument %d nicht verwendet vor benutztem Argument %d im $-Stil-Format"
 
 #: c-format.c:1322
 msgid "format not a string literal, format string not checked"
-msgstr ""
+msgstr "Format ist kein Zeichenkettenliteral, Formatzeichenkette ungeprüft"
 
 #: c-format.c:1336
 msgid "format not a string literal and no format arguments"
-msgstr ""
+msgstr "Format ist kein Zeichenkettenliteral, und keine Formatargumente"
 
 #: c-format.c:1338
 msgid "format not a string literal, argument types not checked"
-msgstr ""
+msgstr "Format ist kein Zeichenkettenliteral, Argumenttypen ungeprüft"
 
 #: c-format.c:1351
 msgid "too many arguments for format"
-msgstr ""
+msgstr "Zu viele Argumente für Format"
 
 #: c-format.c:1354
 msgid "unused arguments in $-style format"
-msgstr ""
+msgstr "Unbenutzte Argumente in $-Stil-Format"
 
 #: c-format.c:1357
 #, c-format
 msgid "zero-length %s format string"
-msgstr ""
+msgstr "Format-Zeichenkette %s der Länge null"
 
 #: c-format.c:1361
 msgid "format is a wide character string"
-msgstr ""
+msgstr "Format ist »wide character«-Zeichenkette"
 
 #: c-format.c:1364
 msgid "unterminated format string"
-msgstr ""
+msgstr "Unbeendete Formatzeichenkette"
 
 #: c-format.c:1581
 msgid "embedded `\\0' in format"
-msgstr ""
+msgstr "Eingebettetes »\\0« im Format"
 
 #: c-format.c:1596
 #, c-format
 msgid "spurious trailing `%%' in format"
-msgstr ""
+msgstr "Störendes letztes »%%« im Format"
 
 #: c-format.c:1635 c-format.c:1872
 #, c-format
 msgid "repeated %s in format"
-msgstr ""
+msgstr "Wiederholtes %s im Format"
 
 #: c-format.c:1648
 msgid "missing fill character at end of strfmon format"
-msgstr ""
+msgstr "Fehlendes Füllzeichen am Ende des strfmon-Formates"
 
 #: c-format.c:1687 c-format.c:1786 c-format.c:2066 c-format.c:2119
 msgid "too few arguments for format"
-msgstr ""
+msgstr "Zu wenig Argumente für Format"
 
 #: c-format.c:1728
 #, c-format
 msgid "zero width in %s format"
-msgstr ""
+msgstr "Breite null im Format %s"
 
 #: c-format.c:1747
 #, c-format
 msgid "empty left precision in %s format"
-msgstr ""
+msgstr "Leere linke Präzision im Format %s"
 
 #: c-format.c:1801
 msgid "field precision"
-msgstr ""
+msgstr "Feldpräzision"
 
 #: c-format.c:1816
 #, c-format
 msgid "empty precision in %s format"
-msgstr ""
+msgstr "Fehlende Präzision im Format %s"
 
 #: c-format.c:1856
 #, c-format
 msgid "%s does not support the `%s' %s length modifier"
-msgstr ""
+msgstr "%s unterstützt nicht den Längenmodifizierer »%s« %s"
 
 #: c-format.c:1906
 msgid "conversion lacks type at end of format"
-msgstr ""
+msgstr "Konvertierung fehlt der Typ am Ende des Formates"
 
 #: c-format.c:1917
 #, c-format
 msgid "unknown conversion type character `%c' in format"
-msgstr ""
+msgstr "Unbekanntes Konvertierungstyp-Zeichen »%c« im Format"
 
 #: c-format.c:1920
 #, c-format
 msgid "unknown conversion type character 0x%x in format"
-msgstr ""
+msgstr "Unbekanntes Konvertierungstyp-Zeichen 0x%x im Format"
 
 #: c-format.c:1927
 #, c-format
 msgid "%s does not support the `%%%c' %s format"
-msgstr ""
+msgstr "%s unterstützt nicht das Format »%%%c« %s"
 
 #: c-format.c:1943
 #, c-format
 msgid "%s used with `%%%c' %s format"
-msgstr ""
+msgstr "%s verwendet mit Format »%%%c« %s"
 
 #: c-format.c:1952
 #, c-format
 msgid "%s does not support %s"
-msgstr ""
+msgstr "%s unterstützt nicht %s"
 
 #: c-format.c:1961
 #, c-format
 msgid "%s does not support %s with the `%%%c' %s format"
-msgstr ""
+msgstr "%s unterstützt nicht %s mit dem Format »%%%c« %s"
 
 #: c-format.c:1994
 #, c-format
 msgid "%s ignored with %s and `%%%c' %s format"
-msgstr ""
+msgstr "%s ignoriert mit %s und Format »%%%c« %s"
 
 #: c-format.c:1998
 #, c-format
 msgid "%s ignored with %s in %s format"
-msgstr ""
+msgstr "%s ignoriert mit %s im Format %s"
 
 #: c-format.c:2004
 #, c-format
 msgid "use of %s and %s together with `%%%c' %s format"
-msgstr ""
+msgstr "Verwendung von %s und %s zusammen mit »%%%c« %s Format"
 
 #: c-format.c:2008
 #, c-format
 msgid "use of %s and %s together in %s format"
-msgstr ""
+msgstr "Verwendung von %s und %s zusammen im Format %s"
 
 #: c-format.c:2027
 #, c-format
 msgid "`%%%c' yields only last 2 digits of year in some locales"
-msgstr ""
+msgstr "»%%%c« liefert in manchen Locales nur die letzten 2 Ziffern des Jahres"
 
 #: c-format.c:2030
 #, c-format
 msgid "`%%%c' yields only last 2 digits of year"
-msgstr ""
+msgstr "»%%%c« liefert nur die letzten 2 Ziffern des Jahres"
 
 #. The end of the format string was reached.
 #: c-format.c:2046
 #, c-format
 msgid "no closing `]' for `%%[' format"
-msgstr ""
+msgstr "Kein schließendes »]« für »%%[«-Format"
 
 #: c-format.c:2059
 #, c-format
 msgid "use of `%s' length modifier with `%c' type character"
-msgstr ""
+msgstr "Verwendung des »%s«-Längenmodifizierers mit »%c«-Typ-Zeichen"
 
 #: c-format.c:2080
 #, c-format
 msgid "%s does not support the `%%%s%c' %s format"
-msgstr ""
+msgstr "%s unterstützt nicht das Format »%%%s%c« %s"
 
 #: c-format.c:2095
 msgid "operand number specified with suppressed assignment"
-msgstr ""
+msgstr "Operandennummer mit unterdrückter Zuweisung angegeben"
 
 #: c-format.c:2097
 msgid "operand number specified for format taking no argument"
