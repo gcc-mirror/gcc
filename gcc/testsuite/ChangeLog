@@ -1,3 +1,7 @@
+2004-10-08  Michael Matz  <matz@suse.de>
+
+	* gcc.dg/doloop-2.c: New test.
+
 2004-10-08  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/assign-warn-1.c, gcc.dg/assign-warn-2.c: New tests.
