@@ -855,9 +855,14 @@ extern struct rtx_def *s390_compare_op0, *s390_compare_op1;
 /* Nonzero if access to memory by bytes is slow and undesirable.  */
 #define SLOW_BYTE_ACCESS 1
 
+/* An integer expression for the size in bits of the largest integer machine
+   mode that should actually be used.  We allow pairs of registers.  */ 
+#define MAX_FIXED_MODE_SIZE GET_MODE_BITSIZE (TARGET_64BIT ? TImode : DImode)
+
 /* The maximum number of bytes that a single instruction can move quickly
    between memory and registers or between two memory locations.  */
 #define MOVE_MAX (TARGET_64BIT ? 16 : 8)
+#define MOVE_MAX_PIECES (TARGET_64BIT ? 8 : 4)
 #define MAX_MOVE_MAX 16
 
 /* Determine whether to use move_by_pieces or block move insn.  */
