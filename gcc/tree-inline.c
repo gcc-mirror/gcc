@@ -516,6 +516,25 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
   else if (TYPE_P (*tp))
     *tp = remap_type (*tp, id);
 
+  /* If this is a constant, we have to copy the node iff the type will be
+     remapped.  copy_tree_r will not copy a constant.  */
+  else if (TREE_CODE_CLASS (TREE_CODE (*tp)) == tcc_constant)
+    {
+      tree new_type = remap_type (TREE_TYPE (*tp), id);
+
+      if (new_type == TREE_TYPE (*tp))
+	*walk_subtrees = 0;
+
+      else if (TREE_CODE (*tp) == INTEGER_CST)
+	*tp = build_int_cst_wide (new_type, TREE_INT_CST_LOW (*tp),
+				  TREE_INT_CST_HIGH (*tp));
+      else
+	{
+	  *tp = copy_node (*tp);
+	  TREE_TYPE (*tp) = new_type;
+	}
+    }
+
   /* Otherwise, just copy the node.  Note that copy_tree_r already
      knows not to copy VAR_DECLs, etc., so this is safe.  */
   else

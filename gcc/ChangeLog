@@ -1,3 +1,8 @@
+2004-11-24  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree-inline.c (copy_body_r): Explicitly copy a constant if the
+	type will be remapped.
+
 2004-11-24  Steven Bosscher  <stevenb@suse.de>
 
 	* c-opts.c (c_common_post_options): Don't clear
