@@ -220,7 +220,7 @@ get_token (fp, s)
       c = get_token (fp, s);
       if (c == INT_TOKEN)
 	{
-	  source_lineno = atoi (s->base);
+	  source_lineno = atoi (s->base) - 1; /* '\n' will add 1 */
 	  get_token (fp, &source_filename);
 	}
       for (;;)
@@ -229,7 +229,11 @@ get_token (fp, s)
 	  if (c == EOF)
 	    return EOF;
 	  if (c == '\n')
+	    {
+	    source_lineno++;
+	    lineno++;
 	    goto retry;
+	    }
 	}
     }
   if (c == EOF)
