@@ -4681,9 +4681,10 @@ override_options (void)
 	 architecture.
 
 	 By default, we enable use of Branch Likely instructions on
-	 all architectures which support them except for MIPS32 and MIPS64
-	 (i.e., the generic MIPS32 and MIPS64 ISAs, and processors which
-	 implement them).
+	 all architectures which support them with the following
+	 exceptions: when creating MIPS32 or MIPS64 code, and when
+	 tuning for architectures where their use tends to hurt
+	 performance.
 
 	 The MIPS32 and MIPS64 architecture specifications say "Software
 	 is strongly encouraged to avoid use of Branch Likely
@@ -4691,7 +4692,9 @@ override_options (void)
 	 of the [MIPS32 and MIPS64] architecture."  Therefore, we do not
 	 issue those instructions unless instructed to do so by
 	 -mbranch-likely.  */
-      if (ISA_HAS_BRANCHLIKELY && !(ISA_MIPS32 || ISA_MIPS32R2 || ISA_MIPS64))
+      if (ISA_HAS_BRANCHLIKELY
+	  && !(ISA_MIPS32 || ISA_MIPS32R2 || ISA_MIPS64)
+	  && !(TUNE_SB1))
 	target_flags |= MASK_BRANCHLIKELY;
       else
 	target_flags &= ~MASK_BRANCHLIKELY;
