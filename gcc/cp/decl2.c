@@ -3540,8 +3540,14 @@ build_expr_from_tree (t)
 
     case CONSTRUCTOR:
       {
-	tree r = build_nt (CONSTRUCTOR, NULL_TREE,
-			   build_expr_from_tree (CONSTRUCTOR_ELTS (t)));
+	tree r;
+
+	/* digest_init will do the wrong thing if we let it.  */
+	if (TREE_TYPE (t) && TYPE_PTRMEMFUNC_P (TREE_TYPE (t)))
+	  return t;
+
+	r = build_nt (CONSTRUCTOR, NULL_TREE,
+		      build_expr_from_tree (CONSTRUCTOR_ELTS (t)));
 
 	if (TREE_TYPE (t))
 	  return digest_init (TREE_TYPE (t), r, 0);
