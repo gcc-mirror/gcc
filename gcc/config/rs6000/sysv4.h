@@ -840,7 +840,7 @@ do {									\
 #define ASM_SPEC "-u %(asm_cpu) %{mregnames} \
 %{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
 %{mrelocatable} %{mrelocatable-lib} \
-%{memb} %{!memb: %{msdata: -memb} %{msdata=eabi: -memb} \
+%{memb} %{!memb: %{msdata: -memb} %{msdata=eabi: -memb}} \
 %{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian} \
 %{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
     %{mcall-solaris: -mlittle} %{mcall-linux: -mbig} }}}}"
