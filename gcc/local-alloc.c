@@ -59,8 +59,8 @@ Boston, MA 02111-1307, USA.  */
    register is used as a spill register.  So we don't allocate such pseudos
    here if their preferred class is likely to be used by spills.  */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "flags.h"
 #include "basic-block.h"

@@ -20,8 +20,8 @@ Boston, MA 02111-1307, USA.  */
 
 
 /* Some output-actions in m68k.md need these.  */
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"

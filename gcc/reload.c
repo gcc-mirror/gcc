@@ -87,8 +87,8 @@ a register with any other reload.  */
 
 #define REG_OK_STRICT
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "insn-config.h"
 #include "insn-codes.h"

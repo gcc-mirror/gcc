@@ -117,8 +117,8 @@ Boston, MA 02111-1307, USA.  */
    other NOTE insns are grouped in their same relative order at the
    beginning of basic blocks that have been scheduled.  */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "basic-block.h"
 #include "regs.h"

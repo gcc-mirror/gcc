@@ -23,11 +23,14 @@ Boston, MA 02111-1307, USA.  */
 /* This file lives in at least two places: libiberty and gcc.
    Don't change one without the other.  */
 
+#ifdef IN_GCC
+#include "config.h"
+#endif
+
 #include <stdio.h>
 #include <errno.h>
 
 #ifdef IN_GCC
-#include "config.h"
 #include "gansidecl.h"
 /* ??? Need to find a suitable header file.  */
 #define PEXECUTE_FIRST   1

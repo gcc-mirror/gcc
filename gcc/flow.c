@@ -108,8 +108,8 @@ Boston, MA 02111-1307, USA.  */
    register usage: reg_n_refs, reg_n_deaths, reg_n_sets, reg_live_length,
    reg_n_calls_crosses and reg_basic_block.  */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "basic-block.h"
 #include "insn-config.h"

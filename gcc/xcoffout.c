@@ -24,10 +24,8 @@ Boston, MA 02111-1307, USA.  */
    interface.  Many functions are very similar to their counterparts in
    sdbout.c.  */
 
-/* Include this first, because it may define MIN and MAX.  */
-#include <stdio.h>
-
 #include "config.h"
+#include <stdio.h>
 #include "tree.h"
 #include "rtl.h"
 #include "flags.h"

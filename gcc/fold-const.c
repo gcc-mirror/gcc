@@ -42,9 +42,9 @@ Boston, MA 02111-1307, USA.  */
    force_fit_type takes a constant and prior overflow indicator, and
    forces the value to fit the type.  It returns an overflow indicator.  */
 
+#include "config.h"
 #include <stdio.h>
 #include <setjmp.h>
-#include "config.h"
 #include "flags.h"
 #include "tree.h"
 

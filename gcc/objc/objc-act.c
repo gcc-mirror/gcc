@@ -38,8 +38,8 @@ Boston, MA 02111-1307, USA.  */
 
    - OBJC_INT_SELECTORS  */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "tree.h"
 #include "c-tree.h"
 #include "c-lex.h"

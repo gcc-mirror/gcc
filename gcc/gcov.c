@@ -41,13 +41,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    is no way to get the total execution counts for the included file, can
    only get execution counts for one or the other of the including files.  */
 
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-
 /* The only need for this is so that we get macro definitions for rindex
    if necessary.  */
 #include "config.h"
+
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "gcov-io.h"
 

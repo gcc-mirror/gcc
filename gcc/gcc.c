@@ -31,6 +31,8 @@ CC recognizes how to compile each input file by suffixes in the file names.
 Once it knows which kind of compilation to perform, the procedure for
 compilation is specified by a string called a "spec".  */
 
+#include "config.h"
+
 #include <sys/types.h>
 #include <ctype.h>
 #include <signal.h>
@@ -41,7 +43,6 @@ compilation is specified by a string called a "spec".  */
 #include <sys/file.h>   /* May get R_OK, etc. on some systems.  */
 #endif
 
-#include "config.h"
 #include "obstack.h"
 #include "gansidecl.h"
 

@@ -33,8 +33,8 @@ Boston, MA 02111-1307, USA.  */
    are used also for allocating many other kinds of objects
    by all passes of the compiler.  */
 
-#include <setjmp.h>
 #include "config.h"
+#include <setjmp.h>
 #include "flags.h"
 #include "tree.h"
 #include "except.h"

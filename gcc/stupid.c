@@ -42,8 +42,8 @@ Boston, MA 02111-1307, USA.  */
    pseudo reg is computed.  Then the pseudo regs are ordered by priority
    and assigned hard regs in priority order.  */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "hard-reg-set.h"
 #include "regs.h"

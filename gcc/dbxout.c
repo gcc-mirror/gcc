@@ -67,11 +67,11 @@ Boston, MA 02111-1307, USA.  */
 
    For more on data type definitions, see `dbxout_type'.  */
 
-/* Include these first, because they may define MIN and MAX.  */
+#include "config.h"
+
 #include <stdio.h>
 #include <errno.h>
 
-#include "config.h"
 #include "tree.h"
 #include "rtl.h"
 #include "flags.h"

@@ -34,8 +34,8 @@ Boston, MA 02111-1307, USA.  */
    Most of the complexity is in heuristics to decide when it is worth
    while to do these things.  */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "obstack.h"
 #include "expr.h"
