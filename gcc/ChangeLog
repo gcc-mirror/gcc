@@ -1,3 +1,7 @@
+2005-01-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in: Set a `build-warn' variable.
+
 2005-01-11  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/17949
