@@ -364,7 +364,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 
 	case OPTION_v:
 	  if (! verbose)
-	    fprintf (stderr, "g77 version %s (from FSF-g77 version %s)\n",
+	    fprintf (stderr, "g77 version %s (Fortran Frontend version %s)\n",
 		     version_string, ffe_version_string);
 	  verbose = 1;
 	  break;
