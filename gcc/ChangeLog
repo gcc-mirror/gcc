@@ -1,3 +1,7 @@
+Thu Apr 12 18:13:37 2001  Rodney Brown  <RodneyBrown@mynd.com>
+
+	* config/pa/quadlib.c: Add prototypes.
+
 2001-04-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* bitmap.h (debug_bitmap): Delete redundant prototype.
