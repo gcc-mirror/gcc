@@ -1,8 +1,10 @@
 /* Target OS preprocessor built-ins.  */
 #define TARGET_OS_CPP_BUILTINS()		\
-    do {					\
-	builtin_define ("__ELF__");		\
-    } while (0)
+  do						\
+    {						\
+      builtin_define ("__ELF__");		\
+    }						\
+  while (0)
 
 /* Undefine some macros defined in h8300 that conflict with elfos.h .  */
 #undef SDB_DEBUGGING_INFO
