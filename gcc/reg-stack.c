@@ -2363,8 +2363,12 @@ subst_stack_regs_pat (insn, regstack, pat)
 	src2_note = find_regno_note (insn, REG_DEAD, REGNO (*src2));
 
 	{
-	  rtx src_note [] = {0, src1_note, src2_note};
+	  rtx src_note [3];
 	  int i;
+
+	  src_note[0] = 0;
+	  src_note[1] = src1_note;
+	  src_note[2] = src2_note;
 
 	  if (STACK_REG_P (*src1))
 	    replace_reg (src1, get_hard_regnum (regstack, *src1));
