@@ -410,6 +410,37 @@ typedef __SIZE_TYPE__ size_t;\
   fi
 done
 
+# Fix #defines under Alpha OSF/1:
+# The following files contain '#pragma extern_prefix "_FOO"' followed by
+# a '#define something(x,y,z) _FOOsomething(x,y,z)'.  The intent of these
+# statements is to reduce namespace pollution.  While these macros work
+# properly in most cases, they don't allow you to take a pointer to the
+# "something" being modified.  To get around this limitation, change these
+# statements to be of the form '#define something _FOOsomething'.
+for file in libgen.h dirent.h ftw.h grp.h ndbm.h pthread.h pwd.h signal.h standards.h stdlib.h string.h stropts.h time.h unistd.h
+do
+  if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+    cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+    chmod +w ${LIB}/$file 2>/dev/null
+    chmod a+r ${LIB}/$file 2>/dev/null
+  fi
+
+  if [ -r ${LIB}/$file ]; then
+    echo Fixing $file extern_prefix
+    sed -e 's/^[ 	]*#[ 	]*define[ 	]*\([^(]*\)\(([^)]*)\)[ 	]*\(_.\)\1\2[ 	]*$/#define \1 \3\1/' ${LIB}/$file > ${LIB}/${file}.sed
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+    if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+      rm ${LIB}/$file
+    else
+      # Find any include directives that use "file".
+      for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`; do
+	dir=`echo $file | sed -e s'|/[^/]*$||'`
+	required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
+      done
+    fi
+  fi
+done
+ 
 # Fix one other error in this file: a mismatched quote not inside a C comment.
 file=sundev/vuid_event.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
