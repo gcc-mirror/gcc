@@ -1,3 +1,8 @@
+2002-05-29  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/mips/mips.h (READONLY_DATA_SECTION_ASM_OP): Define
+	only if not already defined.
+
 2002-05-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300-protos.h: Remove prototypes for
