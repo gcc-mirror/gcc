@@ -1622,6 +1622,7 @@ unsafe_for_reeval (tree expr)
     {
     case SAVE_EXPR:
     case RTL_EXPR:
+    case TRY_CATCH_EXPR:
       return 2;
 
     case TREE_LIST:

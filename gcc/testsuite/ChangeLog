@@ -1,3 +1,7 @@
+2004-06-21  Richard Sandiford  <rsandifo@redhat.com>
+
+	* g++.dg/opt/placeholder1.C: New test.
+
 2004-06-19  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* g++.dg/lookup/crash3.C: Use __SIZE_TYPE__

@@ -1,3 +1,8 @@
+2004-06-21  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR rtl-optimization/15159
+	* tree.c (unsafe_for_reeval): Return 2 for TRY_CATCH_EXPRs.
+
 2004-06-19  Richard Henderson  <rth@redhat.com>
 
 	PR target/15941
