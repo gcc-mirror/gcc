@@ -1,3 +1,8 @@
+2004-03-21  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* gcc.dg/charset/asm2.c: Allow 'parse error' instead of 'syntax error'
+	in the error message text.
+
 2004-03-21  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* g++.dg/template/qualttp20.C: Adjust dg- regexp.
