@@ -1,5 +1,14 @@
 2001-12-03  Per Bothner  <per@bothner.com>
 
+	* verify.c (subroutine_nesting):  New function.
+	(verify_jvm_instructions):  Use it to fix logic for checking that
+	we're done with the current subroutine.
+
+	* verify.c (verify_jvm_instruction): For OPCODE_checkcast and
+	OPCODE_instanceof use POP_TYPE macro for better diagnostics.
+
+2001-12-03  Per Bothner  <per@bothner.com>
+
 	* jcf.h:  Fix obvious typo in comment.
 	* typeck.c (build_null_signature):  Add comment.
 

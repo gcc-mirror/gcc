@@ -104,6 +104,22 @@ check_pending_block (target_label)
   return NULL;
 }
 
+/* Count the number of nested jsr calls needed to reach LABEL. */
+
+static int
+subroutine_nesting (tree label)
+{
+  int nesting = 0;
+  while (label != NULL_TREE && LABEL_IN_SUBR (label))
+    {
+      if (! LABEL_IS_SUBR_START(label))
+	label = LABEL_SUBR_START (label);
+      label = LABEL_SUBR_CONTEXT (label);
+      nesting++;
+    }
+  return nesting;
+}
+
 /* Return the "merged" types of TYPE1 and TYPE2.
    If either is primitive, the other must match (after promotion to int).
    For reference types, return the common super-class.
@@ -497,11 +513,9 @@ verify_jvm_instructions (jcf, byte_ops, length)
       if (current_subr 
 	  && PC == INVALID_PC)
 	{
-	  tree caller = LABEL_SUBR_CONTEXT (current_subr);
-
 	  if (pending_blocks == NULL_TREE
-	      || ! LABEL_IN_SUBR (pending_blocks)
-	      || LABEL_SUBR_START (pending_blocks) == caller)
+	      || (subroutine_nesting (pending_blocks)
+		  < subroutine_nesting (current_subr)))
 	    {
 	      int size = DECL_MAX_LOCALS(current_function_decl)+stack_pointer;
 	      tree ret_map = LABEL_RETURN_TYPE_STATE (current_subr);
@@ -511,7 +525,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
 		 have returned to an earlier caller.  Obviously a
 		 "ret" can only return one level, but a throw may
 		 return many levels.*/
-	      current_subr = caller;
+	      current_subr = LABEL_SUBR_CONTEXT (current_subr);
 
 	      if (RETURN_MAP_ADJUSTED (ret_map))
 		{
@@ -1174,12 +1188,14 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	  break;
 
 	case OPCODE_checkcast:
-	  pop_type (ptr_type_node);
+	  POP_TYPE (object_ptr_type_node,
+		    "checkcast operand is not a pointer");
 	  type = get_class_constant (current_jcf, IMMEDIATE_u2);
 	  PUSH_TYPE (type);
 	  break;
 	case OPCODE_instanceof:
-	  pop_type (ptr_type_node);
+	  POP_TYPE (object_ptr_type_node,
+		    "instanceof operand is not a pointer");
 	  get_class_constant (current_jcf, IMMEDIATE_u2);
 	  PUSH_TYPE (int_type_node);
 	  break;
