@@ -20,8 +20,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* This file just exists to give specs for the 29k running on VxWorks.  */
 
-#include "a29k/a29k-udi.h"
-
 /* Names to predefine in the preprocessor for this target machine.  */
 
 #undef  CPP_PREDEFINES
