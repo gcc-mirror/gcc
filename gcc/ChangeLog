@@ -1,3 +1,9 @@
+1999-02-09  Jim Blandy  <jimb@zwingli.cygnus.com>
+
+	* configure.in: For PowerPC configurations, accept "401", "ec603e",
+ 	"740", and "750" as valid arguments to --with-cpu.
+	* configure: Rebuilt.
+
 Tue Feb  9 00:00:14 1999  Mark Kettenis  <kettenis@gnu.org>
 
 	* configure.in (i[34567]86-*gnu*): Set float_format to i386.
