@@ -47,27 +47,10 @@
 
 
 acconfig.h
-alloca.c
 assert.h
 basic-block.h
-bc-emit.c
-bc-emit.h
-bc-optab.c
-bc-optab.h
-bc-typecd.h
-bi-arity.c
-bi-defs.h
-bi-lexer.c
-bi-opcode.c
-bi-opname.c
-bi-parser.c
-bi-parser.h
-bi-reverse.c
-bi-run.h
 bitmap.c
 bitmap.h
-bytecode.h
-bytetypes.h
 c-aux-info.c
 c-common.c
 c-convert.c
@@ -87,7 +70,7 @@ caller-save.c
 calls.c
 cccp.c
 cexp.c
-choose-temp.c
+../libiberty/choose-temp.c
 collect2.c
 combine.c
 conditions.h
@@ -120,7 +103,6 @@ config/arm/arm.c
 config/arm/arm.h
 config/arm/coff.h
 config/arm/linux-gas.h
-config/arm/linux.h
 config/arm/netbsd.h
 config/arm/riscix.h
 config/arm/riscix1-1.h
@@ -168,7 +150,7 @@ config/i386/att.h
 config/i386/bsd.h
 config/i386/bsd386.h
 config/i386/crtdll.h
-config/i386/cygwin32.h
+config/i386/cygwin.h
 config/i386/dgux.c
 config/i386/dgux.h
 config/i386/freebsd-elf.h
@@ -176,8 +158,8 @@ config/i386/freebsd.h
 config/i386/gas.h
 config/i386/gmon-sol2.c
 config/i386/gnu.h
-config/i386/go32-rtems.h
-config/i386/go32.h
+config/i386/djgpp-rtems.h
+config/i386/djgpp.h
 config/i386/gstabs.h
 config/i386/i386-aout.h
 config/i386/i386-coff.h
@@ -228,9 +210,9 @@ config/i386/vsta.h
 config/i386/win-nt.h
 config/i386/winnt.c
 config/i386/xm-aix.h
-config/i386/xm-cygwin32.h
+config/i386/xm-cygwin.h
 config/i386/xm-dos.h
-config/i386/xm-go32.h
+config/i386/xm-djgpp.h
 config/i386/xm-i386.h
 config/i386/xm-isc.h
 config/i386/xm-lynx.h
@@ -453,7 +435,7 @@ config/romp/xm-romp.h
 config/rs6000/aix31.h
 config/rs6000/aix3newas.h
 config/rs6000/aix41.h
-config/rs6000/cygwin32.h
+config/rs6000/cygwin.h
 config/rs6000/eabi-ctors.c
 config/rs6000/eabi.h
 config/rs6000/eabiaix.h
@@ -464,7 +446,7 @@ config/rs6000/linux.h
 config/rs6000/lynx.h
 config/rs6000/mach.h
 config/rs6000/netware.h
-config/rs6000/powerpc.h
+#config/rs6000/powerpc.h does not exist anymore in egcs
 config/rs6000/rs6000.c
 config/rs6000/rs6000.h
 config/rs6000/rtems.h
@@ -474,7 +456,7 @@ config/rs6000/sysv4.h
 config/rs6000/sysv4le.h
 config/rs6000/vxppc.h
 config/rs6000/win-nt.h
-config/rs6000/xm-cygwin32.h
+config/rs6000/xm-cygwin.h
 config/rs6000/xm-lynx.h
 config/rs6000/xm-mach.h
 config/rs6000/xm-rs6000.h
@@ -559,7 +541,6 @@ convert.c
 convert.h
 cp/call.c
 cp/class.c
-cp/class.h
 cp/cp-tree.h
 cp/cvt.c
 cp/decl.c
@@ -594,7 +575,7 @@ cp/tree.c
 cp/typeck.c
 cp/typeck2.c
 cp/xref.c
-cplus-dem.c
+../libiberty/cplus-dem.c
 cppalloc.c
 cpperror.c
 cppexp.c
@@ -608,7 +589,7 @@ cse.c
 dbxout.c
 dbxstclass.h
 defaults.h
-demangle.h
+../include/demangle.h
 doschk.c
 dwarf.h
 dwarf2.h
@@ -651,9 +632,9 @@ gcov.c
 #genoutput.c is used only by GCC maintainers and installers
 #genpeep.c is used only by GCC maintainers and installers
 #genrecog.c is used only by GCC maintainers and installers
-getopt.c
-getopt.h
-getopt1.c
+../libiberty/getopt.c
+../include/getopt.h
+../libiberty/getopt1.c
 getpwd.c
 ginclude/iso646.h
 ginclude/math-3300.h
@@ -725,49 +706,13 @@ loop.h
 machmode.h
 #mips-tdump.c is not yet internationalized
 #mips-tfile.c is not yet internationalized
-objc/NXConstStr.h
-objc/Object.h
-objc/Protocol.h
-objc/archive.c
-objc/class.c
-objc/encoding.c
-objc/encoding.h
-objc/hash.c
-objc/hash.h
-objc/init.c
-objc/libobjc_entry.c
-objc/misc.c
-objc/nil_method.c
 objc/objc-act.c
 objc/objc-act.h
-objc/objc-api.h
-objc/objc-list.h
 objc/objc-parse.c
-objc/objc.h
-objc/objects.c
-objc/runtime.h
-objc/sarray.c
-objc/sarray.h
-objc/selector.c
-objc/sendmsg.c
-objc/thr-decosf1.c
-objc/thr-irix.c
-objc/thr-mach.c
-objc/thr-os2.c
-objc/thr-posix.c
-objc/thr-pthreads.c
-objc/thr-single.c
-objc/thr-solaris.c
-objc/thr-win32.c
-objc/thr.c
-objc/thr.h
-objc/typedstream.h
-obstack.c
-obstack.h
 optabs.c
 output.h
 pcp.h
-pexecute.c
+../libiberty/pexecute.c
 #po/cat-id-tbl.c contains the translation tables themselves
 prefix.c
 print-rtl.c
