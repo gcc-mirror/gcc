@@ -71,6 +71,10 @@
 # define TRY_EMPTY_VM_SPACE	0x1000000000
 #elif defined(__i386)
 # define TRY_EMPTY_VM_SPACE	0x60000000
+#elif defined(__s390x__)
+# define TRY_EMPTY_VM_SPACE	0x8000000000
+#elif defined(__s390__)
+# define TRY_EMPTY_VM_SPACE	0x60000000
 #else
 # define TRY_EMPTY_VM_SPACE	0
 #endif
