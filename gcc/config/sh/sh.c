@@ -4822,6 +4822,14 @@ fpul_operand (op, mode)
 }
 
 int
+symbol_ref_operand (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return (GET_CODE (op) == SYMBOL_REF);
+}
+
+int
 commutative_float_operator (op, mode)
      rtx op;
      enum machine_mode mode;

@@ -1,3 +1,19 @@
+2000-11-25  Alexandre Oliva  <aoliva@redhat.com>, NIIBE Yutaka  <gniibe@m17n.org>
+
+	* config/sh/sh-protos.h (symbol_ref_operand): Declare.
+	* config/sh/sh.md (UNSPEC_CALLER): New constant.
+	(calli_pcrel, call_valuei_pcrel): Use PIC_REG.
+	(call_pcrel, call_value_pcrel): New insn_and_splits.
+	(call, call_value): Use them.
+	(call_site): New expand.
+	(sym_label2reg, symPLT_label2reg): Adjust to hold call_sites.
+	* config/sh/sh.h (OUTPUT_ADDR_CONST_EXTRA) [UNSPEC_CALLER]:
+	Output call_site label.
+	(PREDICATE_CODES): Added symbol_ref_operand.
+	* config/sh/sh.c (symbol_ref_operand): Define.
+	* emit-rtl.c (try_split): Propagate CALL_INSN_FUNCTION_USAGE
+	to CALL_INSNs in the split sequence.
+
 2000-11-24  Nick Clifton  <nickc@redhat.com>
 
 	* config.gcc (v850-*-*): Define c_target_objs and
