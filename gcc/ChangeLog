@@ -3,6 +3,12 @@
 	* combine.c (cant_combine_insn_p): New function.
 	(try_combine): Use it.
 
+2000-11-24  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc/cse.c (cse_insn): Removed conversion of REG_EQUIV to REG_EQUAL
+	when reversing a register-to-register copy.  Reversal now disabled
+	when the previous instruction has a REG_EQUIV.
+
 2000-11-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* c-parse.in (unary_expr): Move VA_ARG from here ...

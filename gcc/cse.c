@@ -6238,22 +6238,31 @@ cse_insn (insn, libcall_insn)
 	{
 	  rtx prev = prev_nonnote_insn (insn);
 
+	  /* Do not swap the registers around if the previous instruction
+	     attaches a REG_EQUIV note to REG1.
+
+	     ??? It's not entirely clear whether we can transfer a REG_EQUIV
+	     from the pseudo that originally shadowed an incoming argument
+	     to another register.  Some uses of REG_EQUIV might rely on it
+	     being attached to REG1 rather than REG2.
+
+	     This section previously turned the REG_EQUIV into a REG_EQUAL
+	     note.  We cannot do that because REG_EQUIV may provide an
+	     uninitialised stack slot when REG_PARM_STACK_SPACE is used. */
+
 	  if (prev != 0 && GET_CODE (prev) == INSN
 	      && GET_CODE (PATTERN (prev)) == SET
-	      && SET_DEST (PATTERN (prev)) == SET_SRC (sets[0].rtl))
+	      && SET_DEST (PATTERN (prev)) == SET_SRC (sets[0].rtl)
+	      && ! find_reg_note (prev, REG_EQUIV, NULL_RTX))
 	    {
 	      rtx dest = SET_DEST (sets[0].rtl);
 	      rtx src = SET_SRC (sets[0].rtl);
-	      rtx note = find_reg_note (prev, REG_EQUIV, NULL_RTX);
+	      rtx note;
 
 	      validate_change (prev, &SET_DEST (PATTERN (prev)), dest, 1);
 	      validate_change (insn, &SET_DEST (sets[0].rtl), src, 1);
 	      validate_change (insn, &SET_SRC (sets[0].rtl), dest, 1);
 	      apply_change_group ();
-
-	      /* If REG1 was equivalent to a constant, REG0 is not.  */
-	      if (note)
-		PUT_REG_NOTE_KIND (note, REG_EQUAL);
 
 	      /* If there was a REG_WAS_0 note on PREV, remove it.  Move
 		 any REG_WAS_0 note on INSN to PREV.  */
