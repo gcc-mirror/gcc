@@ -1559,14 +1559,19 @@ move_by_pieces_1 (genfun, mode, data)
    with mode BLKmode.
    SIZE is an rtx that says how long they are.
    ALIGN is the maximum alignment we can assume they have,
-   measured in bytes.  */
+   measured in bytes. 
 
-void
+   Return the address of the new block, if memcpy is called and returns it,
+   0 otherwise.  */
+
+rtx
 emit_block_move (x, y, size, align)
      rtx x, y;
      rtx size;
      int align;
 {
+  rtx retval = 0;
+
   if (GET_MODE (x) != BLKmode)
     abort ();
 
@@ -1639,12 +1644,13 @@ emit_block_move (x, y, size, align)
 	}
 
 #ifdef TARGET_MEM_FUNCTIONS
-      emit_library_call (memcpy_libfunc, 0,
-			 VOIDmode, 3, XEXP (x, 0), Pmode,
-			 XEXP (y, 0), Pmode,
-			 convert_to_mode (TYPE_MODE (sizetype), size,
-					  TREE_UNSIGNED (sizetype)),
-			 TYPE_MODE (sizetype));
+      retval
+	= emit_library_call_value (memcpy_libfunc, NULL_RTX, 0,
+				   ptr_mode, 3, XEXP (x, 0), Pmode,
+				   XEXP (y, 0), Pmode,
+				   convert_to_mode (TYPE_MODE (sizetype), size,
+						    TREE_UNSIGNED (sizetype)),
+				   TYPE_MODE (sizetype));
 #else
       emit_library_call (bcopy_libfunc, 0,
 			 VOIDmode, 3, XEXP (y, 0), Pmode,
@@ -1654,6 +1660,8 @@ emit_block_move (x, y, size, align)
 			 TYPE_MODE (integer_type_node));
 #endif
     }
+
+  return retval;
 }
 
 /* Copy all or part of a value X into registers starting at REGNO.
@@ -2057,14 +2065,18 @@ clear_by_pieces_1 (genfun, mode, data)
 
 /* Write zeros through the storage of OBJECT.
    If OBJECT has BLKmode, SIZE is its length in bytes and ALIGN is
-   the maximum alignment we can is has, measured in bytes.  */
+   the maximum alignment we can is has, measured in bytes.
 
-void
+   If we call a function that returns the length of the block, return it.  */
+
+rtx
 clear_storage (object, size, align)
      rtx object;
      rtx size;
      int align;
 {
+  rtx retval = 0;
+
   if (GET_MODE (object) == BLKmode)
     {
       object = protect_from_queue (object, 1);
@@ -2127,26 +2139,31 @@ clear_storage (object, size, align)
 
 
 #ifdef TARGET_MEM_FUNCTIONS
-	  emit_library_call (memset_libfunc, 0,
-			     VOIDmode, 3,
-			     XEXP (object, 0), Pmode,
-			     const0_rtx, TYPE_MODE (integer_type_node),
-			     convert_to_mode (TYPE_MODE (sizetype),
-					      size, TREE_UNSIGNED (sizetype)),
-			     TYPE_MODE (sizetype));
+	  retval
+	    = emit_library_call_value (memset_libfunc, NULL_RTX, 0,
+				       ptr_mode, 3,
+				       XEXP (object, 0), Pmode,
+				       const0_rtx,
+				       TYPE_MODE (integer_type_node),
+				       convert_to_mode
+				       (TYPE_MODE (sizetype), size,
+					TREE_UNSIGNED (sizetype)),
+				       TYPE_MODE (sizetype));
 #else
 	  emit_library_call (bzero_libfunc, 0,
 			     VOIDmode, 2,
 			     XEXP (object, 0), Pmode,	
-			     convert_to_mode (TYPE_MODE (integer_type_node),
-					      size,
-					      TREE_UNSIGNED (integer_type_node)),
+			     convert_to_mode
+			     (TYPE_MODE (integer_type_node), size,
+			      TREE_UNSIGNED (integer_type_node)),
 			     TYPE_MODE (integer_type_node));
 #endif
 	}
     }
   else
     emit_move_insn (object, const0_rtx);
+
+  return retval;
 }
 
 /* Generate code to copy Y into X.
@@ -8810,9 +8827,12 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  /* Arg could be non-pointer if user redeclared this fcn wrong.  */
 	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
 	  || TREE_CHAIN (arglist) == 0
-	  || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != POINTER_TYPE
+	  || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
+	      != POINTER_TYPE)
 	  || TREE_CHAIN (TREE_CHAIN (arglist)) == 0
-	  || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist))))) != INTEGER_TYPE)
+	  || (TREE_CODE (TREE_TYPE (TREE_VALUE
+				    (TREE_CHAIN (TREE_CHAIN (arglist)))))
+	      != INTEGER_TYPE))
 	break;
       else
 	{
@@ -8825,7 +8845,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	    = get_pointer_alignment (src, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
 	  int dest_align
 	    = get_pointer_alignment (dest, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
-	  rtx dest_rtx, dest_mem, src_mem;
+	  rtx dest_rtx, dest_mem, src_mem, dest_addr;;
 
 	  /* If either SRC or DEST is not a pointer type, don't do
 	     this operation in-line.  */
@@ -8856,10 +8876,15 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  MEM_IN_STRUCT_P (src_mem) = AGGREGATE_TYPE_P (type);
 
 	  /* Copy word part most expediently.  */
-	  emit_block_move (dest_mem, src_mem,
-			   expand_expr (len, NULL_RTX, VOIDmode, 0),
-			   MIN (src_align, dest_align));
-	  return force_operand (dest_rtx, NULL_RTX);
+	  dest_addr
+	    = emit_block_move (dest_mem, src_mem,
+			       expand_expr (len, NULL_RTX, VOIDmode, 0),
+			       MIN (src_align, dest_align));
+
+	  if (dest_addr == 0)
+	    dest_addr = force_operand (dest_rtx, NULL_RTX);
+
+	  return dest_addr;
 	}
 
     case BUILT_IN_MEMSET:
@@ -8888,7 +8913,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
 	  int dest_align
 	    = get_pointer_alignment (dest, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
-	  rtx dest_rtx, dest_mem;
+	  rtx dest_rtx, dest_mem, dest_addr;
 
 	  /* If DEST is not a pointer type, don't do this 
 	     operation in-line.  */
@@ -8908,10 +8933,14 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  type = TREE_TYPE (TREE_TYPE (dest));
 	  MEM_IN_STRUCT_P (dest_mem) = AGGREGATE_TYPE_P (type);
 
-	  clear_storage (dest_mem, expand_expr (len, NULL_RTX, VOIDmode, 0),
-                           dest_align);
+	  dest_addr = clear_storage (dest_mem,
+				     expand_expr (len, NULL_RTX, VOIDmode, 0),
+				     dest_align);
 
-	  return force_operand (dest_rtx, NULL_RTX);
+	  if (dest_addr == 0)
+	    dest_addr = force_operand (dest_rtx, NULL_RTX);
+
+	  return dest_addr;
 	}
 
 /* These comparison functions need an instruction that returns an actual
