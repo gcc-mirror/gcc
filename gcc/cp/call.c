@@ -3953,7 +3953,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
                       int flags, tree placement)
 {
   tree fn = NULL_TREE;
-  tree fns, fnname, fntype, argtypes, args, type;
+  tree fns, fnname, argtypes, args, type;
   int pass;
 
   if (addr == error_mark_node)
@@ -4019,16 +4019,6 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
      the second pass we look for a two-argument delete.  */
   for (pass = 0; pass < (placement ? 1 : 2); ++pass) 
     {
-      if (pass == 0)
-	argtypes = tree_cons (NULL_TREE, ptr_type_node, argtypes);
-      else 
-	/* Normal delete; now try to find a match including the size
-	   argument.  */
-	argtypes = tree_cons (NULL_TREE, ptr_type_node,
-			      tree_cons (NULL_TREE, sizetype, 
-					 void_list_node));
-      fntype = build_function_type (void_type_node, argtypes);
-
       /* Go through the `operator delete' functions looking for one
 	 with a matching type.  */
       for (fn = BASELINK_P (fns) ? BASELINK_FUNCTIONS (fns) : fns; 
@@ -4037,13 +4027,30 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	{
 	  tree t;
 
-	  /* Exception specifications on the `delete' operator do not
-	     matter.  */
-	  t = build_exception_variant (TREE_TYPE (OVL_CURRENT (fn)),
-				       NULL_TREE);
-	  /* We also don't compare attributes.  We're really just
-	     trying to check the types of the first two parameters.  */
-	  if (comptypes (t, fntype, COMPARE_NO_ATTRIBUTES))
+	  /* The first argument must be "void *".  */
+	  t = TYPE_ARG_TYPES (TREE_TYPE (OVL_CURRENT (fn)));
+	  if (!same_type_p (TREE_VALUE (t), ptr_type_node))
+	    continue;
+	  t = TREE_CHAIN (t);
+	  /* On the first pass, check the rest of the arguments.  */
+	  if (pass == 0)
+	    {
+	      while (argtypes && t)
+		{
+		  if (!same_type_p (TREE_VALUE (argtypes),
+				    TREE_VALUE (t)))
+		    break;
+		  argtypes = TREE_CHAIN (argtypes);
+		  t = TREE_CHAIN (t);
+		}
+	      if (!argtypes && !t)
+		break;
+	    }
+	  /* On the second pass, the second argument must be
+	     "size_t".  */
+	  else if (pass == 1
+		   && same_type_p (TREE_VALUE (t), sizetype)
+		   && TREE_CHAIN (t) == void_list_node)
 	    break;
 	}
 

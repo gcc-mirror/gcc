@@ -6017,8 +6017,6 @@ tree
 instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
 {
   int complain = (flags & tf_error);
-  int strict = (flags & tf_no_attributes)
-               ? COMPARE_NO_ATTRIBUTES : COMPARE_STRICT;
   int allow_ptrmem = flags & tf_ptrmem_ok;
   
   flags &= ~tf_ptrmem_ok;
@@ -6032,7 +6030,7 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
 
   if (TREE_TYPE (rhs) != NULL_TREE && ! (type_unknown_p (rhs)))
     {
-      if (comptypes (lhstype, TREE_TYPE (rhs), strict))
+      if (same_type_p (lhstype, TREE_TYPE (rhs)))
 	return rhs;
       if (flag_ms_extensions 
 	  && TYPE_PTRMEMFUNC_P (lhstype)
