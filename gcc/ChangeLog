@@ -1,5 +1,7 @@
 Mon Sep  1 08:29:46 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* Makefile.in: Add several missing "else true" clauses.
+
 	* collect2.c: Change DONT_DECLARE_SYS_SIGLIST to SYS_SIGLIST_DECLARED.
 	* mips-tfile.c: Likewise.
 	* gcc.texi: DONT_DECLARE_SYS_SIGLIST: Remove docs.
