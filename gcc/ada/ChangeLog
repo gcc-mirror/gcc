@@ -1,5 +1,9 @@
 2003-07-02  Neil Booth  <neil@daikokuya.co.uk>
 
+	* misc.c (save_argc, save_argv): Keep non-static!
+
+2003-07-02  Neil Booth  <neil@daikokuya.co.uk>
+
 	* misc.c (save_argc, save_argv): Make static.
 	(gnat_init_options): New prototype.
 	(gnat_init_options): Update.

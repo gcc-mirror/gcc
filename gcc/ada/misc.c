@@ -180,8 +180,8 @@ const char *const tree_code_name[] = {
 #undef DEFTREECODE
 
 /* Command-line argc and argv.  */
-static unsigned int save_argc;
-static const char **save_argv;
+unsigned int save_argc;
+const char **save_argv;
 
 /* gnat standard argc argv */
 
