@@ -205,20 +205,21 @@ package body Sem_Ch4 is
    --  the operand is not an inappropriate entity kind, return False.
 
    procedure Operator_Check (N : Node_Id);
-   --  Verify that an operator has received some valid interpretation.
-   --  If none was found, determine whether a use clause would make the
-   --  operation legal. The variable Candidate_Type (defined in Sem_Type) is
-   --  set for every type compatible with the operator, even if the operator
-   --  for the type is not directly visible. The routine uses this type to emit
-   --  a more informative message.
+   --  Verify that an operator has received some valid interpretation. If none
+   --  was found, determine whether a use clause would make the operation
+   --  legal. The variable Candidate_Type (defined in Sem_Type) is set for
+   --  every type compatible with the operator, even if the operator for the
+   --  type is not directly visible. The routine uses this type to emit a more
+   --  informative message.
 
    procedure Process_Implicit_Dereference_Prefix
-     (E : Entity_Id; P : Node_Id);
-   --  Called when P is the prefix of an implicit dereference, denoting
-   --  an object E. If in semantics only mode (-gnatc), record that P
-   --  is a reference to E. Normally, such a reference is generated only
-   --  when the implicit dereference is expanded into an explicit one.
-   --  E may be empty, in which case this procedure does nothing.
+     (E : Entity_Id;
+      P : Node_Id);
+   --  Called when P is the prefix of an implicit dereference, denoting an
+   --  object E. If in semantics only mode (-gnatc), record that is a
+   --  reference to E. Normally, such a reference is generated only when the
+   --  implicit dereference is expanded into an explicit one. E may be empty,
+   --  in which case this procedure does nothing.
 
    procedure Remove_Abstract_Operations (N : Node_Id);
    --  Ada 2005: implementation of AI-310. An abstract non-dispatching
@@ -2519,6 +2520,7 @@ package body Sem_Ch4 is
 
          else
             Error_Msg_NW (Warn_On_Dereference, "?implicit dereference", N);
+
             if Is_Entity_Name (Name) then
                Pent := Entity (Name);
             elsif Nkind (Name) = N_Selected_Component
@@ -2526,6 +2528,7 @@ package body Sem_Ch4 is
             then
                Pent := Entity (Selector_Name (Name));
             end if;
+
             Process_Implicit_Dereference_Prefix (Pent, Name);
          end if;
 
@@ -3267,8 +3270,59 @@ package body Sem_Ch4 is
    is
       Op_Name : constant Name_Id   := Chars (Op_Id);
 
+      function Has_Fixed_Op (Typ : Entity_Id; Op : Entity_Id) return Boolean;
+      --  Check whether the fixed-point type Typ has a user-defined operator
+      --  (multiplication or division) that should hide the corresponding
+      --  predefined operator. Used to implement Ada 2005 AI-264, to make
+      --  such operators more visible and therefore useful.
+
       function Specific_Type (T1, T2 : Entity_Id) return Entity_Id;
       --  Get specific type (i.e. non-universal type if there is one)
+
+      ------------------
+      -- Has_Fixed_Op --
+      ------------------
+
+      function Has_Fixed_Op (Typ : Entity_Id; Op : Entity_Id) return Boolean is
+         Ent : Entity_Id;
+         F1  : Entity_Id;
+         F2  : Entity_Id;
+
+      begin
+         --  The operation is treated as primitive if it is declared in the
+         --  same scope as the type, and therefore on the same entity chain.
+
+         Ent := Next_Entity (Typ);
+         while Present (Ent) loop
+            if Chars (Ent) = Chars (Op) then
+               F1 := First_Formal (Ent);
+               F2 := Next_Formal (F1);
+
+               --  The operation counts as primitive if either operand or
+               --  result are of the given type, and both operands are fixed
+               --  point types.
+
+               if (Etype (F1) = Typ
+                    and then Is_Fixed_Point_Type (Etype (F2)))
+
+                 or else
+                   (Etype (F2) = Typ
+                     and then Is_Fixed_Point_Type (Etype (F1)))
+
+                 or else
+                   (Etype (Ent) = Typ
+                     and then Is_Fixed_Point_Type (Etype (F1))
+                     and then Is_Fixed_Point_Type (Etype (F2)))
+               then
+                  return True;
+               end if;
+            end if;
+
+            Next_Entity (Ent);
+         end loop;
+
+         return False;
+      end Has_Fixed_Op;
 
       -------------------
       -- Specific_Type --
@@ -3308,8 +3362,11 @@ package body Sem_Ch4 is
             --  If the operator is given in  functional notation, it comes
             --  from source and Fixed_As_Integer cannot apply.
 
-            if Nkind (N) not in N_Op
-              or else not Treat_Fixed_As_Integer (N)
+            if (Nkind (N) not in N_Op
+                 or else not Treat_Fixed_As_Integer (N))
+              and then
+                (not (Ada_Version >= Ada_05 and then Has_Fixed_Op (T1, Op_Id))
+                  or else Nkind (Parent (N)) = N_Type_Conversion)
             then
                Add_One_Interp (N, Op_Id, Universal_Fixed);
             end if;
@@ -3318,6 +3375,9 @@ package body Sem_Ch4 is
            and then (Nkind (N) not in N_Op
                       or else not Treat_Fixed_As_Integer (N))
            and then T1 = Universal_Real
+           and then
+             (not (Ada_Version >= Ada_05 and then Has_Fixed_Op (T1, Op_Id))
+               or else Nkind (Parent (N)) = N_Type_Conversion)
          then
             Add_One_Interp (N, Op_Id, Universal_Fixed);
 
@@ -4362,11 +4422,14 @@ package body Sem_Ch4 is
    -----------------------------------------
 
    procedure Process_Implicit_Dereference_Prefix
-     (E : Entity_Id; P : Entity_Id)
+     (E : Entity_Id;
+      P : Entity_Id)
    is
       Ref : Node_Id;
+
    begin
       if Operating_Mode = Check_Semantics and then Present (E) then
+
          --  We create a dummy reference to E to ensure that the reference
          --  is not considered as part of an assignment (an implicit
          --  dereference can never assign to its prefix). The Comes_From_Source
