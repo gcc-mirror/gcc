@@ -71,8 +71,8 @@ public class SequenceInputStream extends InputStream
   /** Secondary input stream; not used if constructed w/ enumeration. */
   private InputStream in2;
 
-  /** The enum handle; not used if constructed w/ 2 explicit input streams. */
-  private Enumeration enum;
+  /** The enumeration handle; not used if constructed w/ 2 explicit input streams. */
+  private Enumeration e;
 
  /**
   * This method creates a new <code>SequenceInputStream</code> that obtains
@@ -84,8 +84,8 @@ public class SequenceInputStream extends InputStream
   */
   public SequenceInputStream(Enumeration e)
   {
-    enum = e;
-    in = (InputStream) enum.nextElement();
+    this.e = e;
+    in = (InputStream) e.nextElement();
     in2 = null;
   }
 
@@ -204,10 +204,10 @@ public class SequenceInputStream extends InputStream
   {
     InputStream nextIn = null;
 
-    if (enum != null)
+    if (e != null)
       {
-        if (enum.hasMoreElements())
-	  nextIn = (InputStream) enum.nextElement();
+        if (e.hasMoreElements())
+	  nextIn = (InputStream) e.nextElement();
       }
     else
       if (in2 != null)
