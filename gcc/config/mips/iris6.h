@@ -30,6 +30,10 @@ Boston, MA 02111-1307, USA.  */
 #include "mips/iris5.h"
 #include "mips/abi64.h"
 
+/* Irix6 assembler does handle DWARF2 directives.  Override setting in
+ irix5.h file.  */
+#undef DWARF2_UNWIND_INFO
+
 /* For Irix 6, -mabi=64 implies TARGET_LONG64.  */
 /* This is handled in override_options.  */
 
