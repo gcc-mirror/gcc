@@ -1,3 +1,7 @@
+2000-02-17  Jason Merrill  <jason@casey.cygnus.com>
+
+	* bitmap.c (bitmap_operation): Don't leak bitmap elements.
+
 2000-02-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* function.c (thread_prologue_and_epilogue_insns): Put a line note
