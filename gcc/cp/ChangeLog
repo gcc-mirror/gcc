@@ -1,3 +1,12 @@
+Wed May  6 06:36:41 1998  Robert Lipe  <robertl@dgii.com>
+
+	* cp/call.c, cp/class.c, cp/decl.c, cp/decl2.c, 
+	cp/errfn.c, cp/error.c, cp/except.c, cp/expr.c, 
+	cp/friend.c, cp/init.c, cp/lex.c, cp/method.c, 
+	cp/pt.c, cp/repo.c, cp/rtti.c, cp/search.c, 
+	cp/semantics.c, cp/sig.c, cp/tree.c, cp/typeck.c, 
+	cp/typeck2.c, cp/xref.c: Add include of toplev.h.
+
 Wed May  6 02:33:39 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.c (perm_manip): Also regenerate the RTL of an extern.
