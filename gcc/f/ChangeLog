@@ -1,3 +1,7 @@
+Mon Nov  9 23:15:39 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* g77.texi, news.texi: Updates from Craig.
+
 Sun Nov  8 17:47:56 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (INCLUDES): Add "-I$(srcdir)/../../include".
