@@ -839,6 +839,7 @@ static char *gcc_exec_prefix;
 #ifdef CROSS_COMPILE  /* Don't use these prefixes for a cross compiler.  */
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
+#undef MD_STARTFILE_PREFIX_1
 #endif
 
 #ifndef STANDARD_EXEC_PREFIX
@@ -857,6 +858,9 @@ static char *md_exec_prefix = MD_EXEC_PREFIX;
 
 #ifdef MD_STARTFILE_PREFIX
 static char *md_startfile_prefix = MD_STARTFILE_PREFIX;
+#endif
+#ifdef MD_STARTFILE_PREFIX_1
+static char *md_startfile_prefix_1 = MD_STARTFILE_PREFIX_1;
 #endif
 static char *standard_startfile_prefix = STANDARD_STARTFILE_PREFIX;
 static char *standard_startfile_prefix_1 = "/lib/";
@@ -3059,6 +3063,10 @@ main (argc, argv)
 
 #ifdef MD_STARTFILE_PREFIX
       add_prefix (&startfile_prefix, md_startfile_prefix, 0, 0, 0);
+#endif
+
+#ifdef MD_STARTFILE_PREFIX_1
+      add_prefix (&startfile_prefix, md_startfile_prefix_1, 0, 0, 0);
 #endif
 
       add_prefix (&startfile_prefix, standard_startfile_prefix, 0, 0, 0);
