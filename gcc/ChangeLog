@@ -1,3 +1,8 @@
+2000-07-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* ssa.c (rename_insn_1): Don't rename registers that are
+	CLOBBERed.
+
 2000-07-21  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* diagnostic.c (trim_filename, fancy_abort): Moved here from
