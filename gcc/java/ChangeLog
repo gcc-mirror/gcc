@@ -1,3 +1,9 @@
+Fri Dec 10 16:13:48 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.h (EXPR_WFL_QUALIFICATION): Temporary uses the third
+ 	operand of a WFL, until the Java front-end gets fixed with regard
+ 	to Mark Mitchell's gcc/tree.h patch (1999-12-04.)
+
 1999-12-10  Andrew Haley  <aph@cygnus.com>
 
 	* parse.h (BUILD_THROW): Add support for sjlj-exceptions.
