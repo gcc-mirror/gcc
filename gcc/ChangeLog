@@ -1,3 +1,8 @@
+2004-11-15  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/ia64.md (*movtf_internal):  Use destination_operand
+	instead of nonimmediate_operand.
+
 2004-11-15  Mark Mitchell <mark@codesourcery.com>
 
 	* config/i386/sol2.h (ASM_OUTPUT_CALL): Use print_operand.
