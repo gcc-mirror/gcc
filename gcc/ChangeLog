@@ -1,3 +1,10 @@
+2004-11-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* bitmap.c (bitmap_malloc_alloc, bitmap_malloc_free): Remove.
+	* bitmap.h (bitmap_malloc_alloc, bitmap_malloc_free): Remove.
+	(BITMAP_XMALLOC): Forward to BITMAP_OBSTACK_ALLOC.
+	(BITMAP_XFREE): Forward to BITMAP_OBSTACK_FREE.
+
 2004-11-25  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/18587
@@ -5,27 +12,28 @@
 	call clobbered caches as invalid.
 	* tree-ssa-operands.c (ssa_call_clobbered_cache_valid): New.  Flag 
 	indicating whether the call clobbered operand cache is valid.
-	(ssa_ro_call_cache_valid): New.  Flag indicating whether the pure/const
-	call operand cache is valid.
+	(ssa_ro_call_cache_valid): New.  Flag indicating whether the
+	pure/const call operand cache is valid.
 	(clobbered_v_may_defs, clobbered_vuses, ro_call_vuses): New.  Cached 
 	list of operands for cached call virtual operands.
 	(clobbered_aliased_loads, clobbered_aliased_stores, 
-	ro_call_aliased_load): New.  flags caching whether alias bits are to be
-	set in call stmt's.
+	ro_call_aliased_load): New.  flags caching whether alias bits are
+	to be set in call stmt's.
 	(fini_ssa_operands): Remove call operand caches if present.
-	(get_expr_operands, get_asm_expr_operands, get_indirect_ref_operands): 
-	Pass stmt annotation to add_stmt_operand.
+	(get_expr_operands, get_asm_expr_operands,
+	get_indirect_ref_operands): Pass stmt annotation to add_stmt_operand.
 	(get_call_expr_operands): Add call clobbered variables first.
 	(add_stmt_operand): Take stmt annotation rather than stmt as a param.
 	(add_call_clobber_ops, add_call_read_ops): Use the call operand cache
 	if it is valid, otherise fill the cache.
 	* tree-ssa-operands.h (ssa_clobbered_cache_valid): Declare extern.
-	* tree-flow.h (struct var_ann_d): Add in_vuse_list and in_v_may_def_list
-	bits.
-	* tree-ssa-operands.c (cleanup_v_may_defs): New.  Clear the in_list bits
-	for the v_may_def elements and empty the operand build array.
-	(finalize_ssa_vuses): Use cleanup_v_may_defs and remove redundant VUSES
-	by checking the in_v_may_def_list bit.
+	* tree-flow.h (struct var_ann_d): Add in_vuse_list and
+	in_v_may_def_list bits.
+	* tree-ssa-operands.c (cleanup_v_may_defs): New.  Clear the
+	in_list bits for the v_may_def elements and empty the operand
+	build array
+	(finalize_ssa_vuses): Use cleanup_v_may_defs and remove redundant
+	VUSES by checking the in_v_may_def_list bit.
 	(append_v_may_def, append_vuse): Use the in_list bit rather than 
 	scanning the array for duplicates.
 

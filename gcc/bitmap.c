@@ -222,20 +222,6 @@ bitmap_gc_alloc (void)
   return map;
 }
 
-/* Create a new malloced bitmap.  Elements will be allocated from the
-   default bitmap obstack.  */
-
-bitmap
-bitmap_malloc_alloc (void)
-{
-  bitmap map;
-
-  map = xmalloc (sizeof (bitmap_head));
-  bitmap_initialize (map, &bitmap_default_obstack);
-
-  return map;
-}
-
 /* Release an obstack allocated bitmap.  */
 
 void
@@ -247,15 +233,6 @@ bitmap_obstack_free (bitmap map)
       map->first = (void *)map->obstack->heads;
       map->obstack->heads = map;
     }
-}
-
-/* Release a malloc allocated bitmap.  */
-
-void
-bitmap_malloc_free (bitmap map)
-{
-  bitmap_clear (map);
-  free (map);
 }
 
 
