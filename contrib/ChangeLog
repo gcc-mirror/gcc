@@ -1,3 +1,8 @@
+2003-12-16  James E Wilson  <wilson@specifixinc.com>
+
+	* gcc_update (files_and_dependencies): For libjava/libltdl directory,
+	rename configure.in to configure.ac, and stamp-h.in to config-h.in.
+
 2003-12-11  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* gcc_update (files_and_dependencies): Correct typo in the filename
