@@ -5170,7 +5170,7 @@ CXX="${CXX}"
 EOF
 cat >> $CONFIG_STATUS <<\EOF
 test -z "$CONFIG_HEADERS" || echo timestamp > include/stamp-h
-case " $CONFIG_FILES " in " Makefile ")
+case " $CONFIG_FILES " in *" Makefile "*)
      if test "x$libjava_cv_gxx_debug_jboolean_bug" = xyes; then
       rm -f Makefile.new
       sed < Makefile > Makefile.new \

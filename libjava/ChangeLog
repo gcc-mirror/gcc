@@ -1,3 +1,9 @@
+1999-08-03  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* configure.in (CXXFLAGS): The buggy g++ -g work-around was buggy
+	itself; check for Makefile *anywhere* in CONFIG_FILES.
+	* configure: Rebuilt.
+
 1999-08-02  Tom Tromey  <tromey@cygnus.com>
 
 	* aclocal.m4, configure: Rebuilt for new libtool.

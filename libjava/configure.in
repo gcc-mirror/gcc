@@ -549,11 +549,11 @@ AC_CACHE_CHECK([for g++ -g jboolean bug], [libjava_cv_gxx_debug_jboolean_bug],
 ])
 if test "x$libjava_cv_gxx_debug_jboolean_bug" = xyes; then
   JCFLAGS="$JCFLAGS -g0"
-  dnl Top-leve Makefile overrides CXXFLAGS, and AM_CXXFLAGS is before it,
-  dnl so we have to use this dirty hack
+  dnl Top-level Makefile overrides CXXFLAGS, and AM_CXXFLAGS is before it,
+  dnl so we have to use this dirty hack :-(
   dnl Note that, even though this code is within an if statement, it is
   dnl unconditionally added to config.status, so we have to test again.
-  AC_OUTPUT_COMMANDS([case " $CONFIG_FILES " in " Makefile ")
+  AC_OUTPUT_COMMANDS([case " $CONFIG_FILES " in *" Makefile "*)
      if test "x$libjava_cv_gxx_debug_jboolean_bug" = xyes; then
       rm -f Makefile.new
       sed < Makefile > Makefile.new \
