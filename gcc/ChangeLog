@@ -1,3 +1,8 @@
+2002-06-24  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* doc/extend.texi: Change `@dots{}' to `/* @r{@dots{}} */'
+	in examples.
+	
 2002-06-24  Art Haas  <ahaas@neosoft.com>
 
 	* doc/extend.texi (Other Builtins): Change `...' to `@dots{}'.

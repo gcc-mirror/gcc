@@ -552,7 +552,7 @@ __label__ @var{label};
 or
 
 @example
-__label__ @var{label1}, @var{label2}, @dots{};
+__label__ @var{label1}, @var{label2}, /* @r{@dots{}} */;
 @end example
 
 Local label declarations must come at the beginning of the statement
@@ -603,7 +603,7 @@ wherever a constant of that type is valid.  For example:
 
 @example
 void *ptr;
-@dots{}
+/* @r{@dots{}} */
 ptr = &&foo;
 @end example
 
@@ -698,9 +698,9 @@ bar (int *array, int offset, int size)
   int access (int *array, int index)
     @{ return array[index + offset]; @}
   int i;
-  @dots{}
+  /* @r{@dots{}} */
   for (i = 0; i < size; i++)
-    @dots{} access (array, i) @dots{}
+    /* @r{@dots{}} */ access (array, i) /* @r{@dots{}} */
 @}
 @end group
 @end example
@@ -760,10 +760,10 @@ bar (int *array, int offset, int size)
       return array[index + offset];
     @}
   int i;
-  @dots{}
+  /* @r{@dots{}} */
   for (i = 0; i < size; i++)
-    @dots{} access (array, i) @dots{}
-  @dots{}
+    /* @r{@dots{}} */ access (array, i) /* @r{@dots{}} */
+  /* @r{@dots{}} */
   return 0;
 
  /* @r{Control comes here from @code{access}
@@ -784,14 +784,14 @@ bar (int *array, int offset, int size)
 @{
   __label__ failure;
   auto int access (int *, int);
-  @dots{}
+  /* @r{@dots{}} */
   int access (int *array, int index)
     @{
       if (index > size)
         goto failure;
       return array[index + offset];
     @}
-  @dots{}
+  /* @r{@dots{}} */
 @}
 @end example
 
@@ -1354,7 +1354,7 @@ You can also use variable-length arrays as arguments to functions:
 struct entry
 tester (int len, char data[len][len])
 @{
-  @dots{}
+  /* @r{@dots{}} */
 @}
 @end example
 
@@ -1369,7 +1369,7 @@ use a forward declaration in the parameter list---another GNU extension.
 struct entry
 tester (int len; char data[len][len], int len)
 @{
-  @dots{}
+  /* @r{@dots{}} */
 @}
 @end example
 
@@ -1536,7 +1536,7 @@ Here is an example of an initializer with run-time varying elements:
 foo (float f, float g)
 @{
   float beat_freqs[2] = @{ f-g, f+g @};
-  @dots{}
+  /* @r{@dots{}} */
 @}
 @end example
 
@@ -1825,7 +1825,7 @@ union type is equivalent to storing in a member of the union:
 
 @example
 union foo u;
-@dots{}
+/* @r{@dots{}} */
 u = (union foo) x  @equiv{}  u.i = x
 u = (union foo) y  @equiv{}  u.d = y
 @end example
@@ -1834,7 +1834,7 @@ You can also use the union cast as a function argument:
 
 @example
 void hack (union foo);
-@dots{}
+/* @r{@dots{}} */
 hack ((union foo) x);
 @end example
 
@@ -1850,7 +1850,7 @@ C89 mode.  For example, you could do:
 
 @example
 int i;
-@dots{}
+/* @r{@dots{}} */
 i++;
 int j = i + 2;
 @end example
@@ -1913,9 +1913,9 @@ their own functions that never return.  You can declare them
 void fatal () __attribute__ ((noreturn));
 
 void
-fatal (@dots{})
+fatal (/* @r{@dots{}} */)
 @{
-  @dots{} /* @r{Print error message.} */ @dots{}
+  /* @r{@dots{}} */ /* @r{Print error message.} */ /* @r{@dots{}} */
   exit (1);
 @}
 @end group
@@ -3956,7 +3956,7 @@ extern func () asm ("FUNC");
 
 func (x, y)
      int x, y;
-@dots{}
+/* @r{@dots{}} */
 @end example
 
 It is up to you to make sure that the assembler names you choose do not
@@ -4683,7 +4683,7 @@ data.  For instance, you can write
 @smallexample
 static const int table[] = @{
    __builtin_constant_p (EXPRESSION) ? (EXPRESSION) : -1,
-   /* @dots{} */
+   /* @r{@dots{}} */
 @};
 @end smallexample
 
@@ -4759,7 +4759,7 @@ for (i = 0; i < n; i++)
     a[i] = a[i] + b[i];
     __builtin_prefetch (&a[i+j], 1, 1);
     __builtin_prefetch (&b[i+j], 0, 1);
-    /* @dots{} */
+    /* @r{@dots{}} */
   @}
 @end smallexample
 
@@ -6778,7 +6778,7 @@ context.
 @example
 void fn (int *__restrict__ rptr, int &__restrict__ rref)
 @{
-  @dots{}
+  /* @r{@dots{}} */
 @}
 @end example
 
@@ -6792,7 +6792,7 @@ unaliased by using @code{__restrict__} as a member function qualifier.
 @example
 void T::fn () __restrict__
 @{
-  @dots{}
+  /* @r{@dots{}} */
 @}
 @end example
 
