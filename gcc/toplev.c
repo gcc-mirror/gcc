@@ -1660,7 +1660,7 @@ set_float_handler (handler)
 {
   float_handled = (handler != 0);
   if (handler)
-    bcopy ((char *) handler, (char *) float_handler, sizeof (float_handler));
+    memcpy (float_handler, handler, sizeof (float_handler));
 
   if (float_handled && ! float_handler_set)
     {
