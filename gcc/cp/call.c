@@ -3676,7 +3676,8 @@ enforce_access (basetype_path, decl)
 /* Perform the conversions in CONVS on the expression EXPR. 
    FN and ARGNUM are used for diagnostics.  ARGNUM is zero based, -1
    indicates the `this' argument of a method.  INNER is non-zero when
-   being called to continue a conversion chain. */
+   being called to continue a conversion chain. It is negative when a
+   reference binding will be applied, positive otherwise. */
 
 static tree
 convert_like_real (convs, expr, fn, argnum, inner)
@@ -3755,7 +3756,8 @@ convert_like_real (convs, expr, fn, argnum, inner)
 	   conversion, but is not considered during overload resolution.
 
 	   If the target is a class, that means call a ctor.  */
-	if (IS_AGGR_TYPE (totype))
+	if (IS_AGGR_TYPE (totype)
+	    && (inner >= 0 || !real_lvalue_p (expr)))
 	  {
 	    savew = warningcount, savee = errorcount;
 	    expr = build_new_method_call
@@ -3804,7 +3806,8 @@ convert_like_real (convs, expr, fn, argnum, inner)
       break;
     };
 
-  expr = convert_like_real (TREE_OPERAND (convs, 0), expr, fn, argnum, 1);
+  expr = convert_like_real (TREE_OPERAND (convs, 0), expr, fn, argnum,
+                            TREE_CODE (convs) == REF_BIND ? -1 : 1);
   if (expr == error_mark_node)
     return error_mark_node;
 
