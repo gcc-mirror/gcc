@@ -1,5 +1,21 @@
 2003-06-24  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300-protos.h: Add a prototype for
+	compute_mov_length.
+	* config/h8300/h8300.c (compute_mov_length): New.
+	* config/h8300/h8300.md (*movqi_h8300): Use it.
+	(*movqi_h8300hs): Likewise.
+	(movstrictqi): Likewise.
+	(*movhi_h8300): Likewise.
+	(*movhi_h8300hs): Likewise.
+	(movstricthi): Likewise.
+	(*movsi_h8300): Likewise.
+	(*movsf_h8300): Likewise.
+	(*movsi_h8300hs): Likewise.
+	(*movsf_h8300hs): Likewise.
+
+2003-06-24  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* jump.c (next_nondeleted_insn): Remove.
 	* rtl.h: Remove the prototype for next_nondeleted_insn.
 
