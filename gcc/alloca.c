@@ -66,9 +66,13 @@ typedef char *pointer;
    hand, the utilities in lib-src need alloca to call malloc; some of
    them are very simple, and don't have an xmalloc routine.
 
-   Everybody else should just call malloc.  */
+   Non-Emacs programs expect this to call use xmalloc.
+
+   Callers below should use malloc.  */
+
 #ifndef emacs
-extern pointer malloc ();
+#define malloc xmalloc
+extern pointer xmalloc ();
 #endif
 
 /* Define STACK_DIRECTION if you know the direction of stack
