@@ -1,3 +1,7 @@
+Sun May 28 23:26:59 2000  Philippe De Muyter <phdm@macqel.be>
+
+	* mklibgcc.in (all): Variable initialised to `libgcc'.
+
 2000-05-28  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* toplev.h (skip_leading_substring): New macro.
