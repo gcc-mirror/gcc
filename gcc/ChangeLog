@@ -1,3 +1,14 @@
+2002-05-16  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/arm/arm.c (arm_rtx_costs): Check for RTX being a
+	SYMBOL_REF before calling CONSTANT_POOL_ADDRESS_P.
+	(arm_adjust_cost): Check for RTX being a SYMBOL_REF before
+	calling CONSTANT_POOL_ADDRESS_P.
+	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Fix typo in code
+	to decide whether to define __arm__ or __thumb.
+        (THUMB_GO_IF_LEGITIMATE_ADDRESS): Check for RTX being a
+	SYMBOL_REF before calling CONSTANT_POOL_ADDRESS_P.
+
 2002-05-16  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* config/arc/arc.h (CPP_PREDEFINES): Remove.
