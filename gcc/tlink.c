@@ -575,7 +575,10 @@ scan_linker_output (fname)
 	}
 
       if (sym && sym->tweaked)
-	return 0;
+	{
+	  fclose (stream);
+	  return 0;
+	}
       if (sym && !sym->tweaking)
 	{
 	  if (tlink_verbose >= 2)
@@ -588,6 +591,7 @@ scan_linker_output (fname)
       obstack_free (&temporary_obstack, temporary_firstobj);
     }
 
+  fclose (stream);
   return (file_stack != NULL);
 }
 
