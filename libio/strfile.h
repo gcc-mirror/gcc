@@ -28,8 +28,8 @@
 Merge into  libio.h ?
 #endif
 
-typedef void *(*_IO_alloc_type) __P ((_IO_size_t));
-typedef void (*_IO_free_type) __P ((void*));
+typedef void *(*_IO_alloc_type) __PMT ((_IO_size_t));
+typedef void (*_IO_free_type) __PMT ((void*));
 
 struct _IO_str_fields
 {
