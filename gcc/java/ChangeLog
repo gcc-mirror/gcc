@@ -1,3 +1,10 @@
+2005-02-22  Tom Tromey  <tromey@redhat.com>
+
+	PR java/20056:
+	* verify-impl.c (EITHER): New define.
+	(types_compatible): Handle it.
+	(check_field_constant): Use it.
+
 2005-02-18  Tom Tromey  <tromey@redhat.com>
 
 	PR java/20056:
