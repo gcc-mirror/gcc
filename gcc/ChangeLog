@@ -1,5 +1,8 @@
 2002-08-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* objc/objc-act.c (encode_complete_bitfield): Add prototype and
+	avoid ISO C style function definition.
+
 	* expr.c (expand_assignment): Delete unused variable.
 
 2002-08-01  Toon Moene  <toon@moene.indiv.nluug.nl>
