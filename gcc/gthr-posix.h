@@ -105,7 +105,8 @@ typedef pthread_mutex_t __gthread_recursive_mutex_t;
 static inline int
 __gthread_active_p (void)
 {
-  static void *const __gthread_active_ptr = (void *) &pthread_create;
+  static void *const __gthread_active_ptr 
+    = __extension__ (void *) &pthread_create;
   return __gthread_active_ptr != 0;
 }
 
