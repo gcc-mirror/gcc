@@ -1,5 +1,9 @@
 2003-04-29  Geoffrey Keating  <geoffk@apple.com>
 
+	* c-semantics.c (expand_unreachable_stmt): Return a tree.
+	(expand_stmt): Update for change to expand_unreachable_stmt.
+	(expand_unreachable_if_stmt): Likewise.
+
 	* Makefile.in (quickstrap): Pass BOOT_CFLAGS to submake.
 
 2003-04-29  Jason Merrill  <jason@redhat.com>

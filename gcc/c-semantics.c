@@ -55,7 +55,7 @@ void (*lang_expand_decl_stmt) PARAMS ((tree));
 static tree find_reachable_label_1	PARAMS ((tree *, int *, void *));
 static tree find_reachable_label	PARAMS ((tree));
 static bool expand_unreachable_if_stmt	PARAMS ((tree));
-static bool expand_unreachable_stmt	PARAMS ((tree, int));
+static tree expand_unreachable_stmt	PARAMS ((tree, int));
 
 /* Create an empty statement tree rooted at T.  */
 
@@ -823,8 +823,8 @@ expand_stmt (t)
 
 	case RETURN_STMT:
 	  genrtl_return_stmt (t);
-	  expand_unreachable_stmt (TREE_CHAIN (t), warn_notreached);
-	  return;
+	  t = expand_unreachable_stmt (TREE_CHAIN (t), warn_notreached);
+	  goto process_t;
 
 	case EXPR_STMT:
 	  genrtl_expr_stmt_value (EXPR_STMT_EXPR (t), TREE_ADDRESSABLE (t),
@@ -859,13 +859,13 @@ expand_stmt (t)
 
 	case BREAK_STMT:
 	  genrtl_break_stmt ();
-	  expand_unreachable_stmt (TREE_CHAIN (t), warn_notreached);
-	  return;
+	  t = expand_unreachable_stmt (TREE_CHAIN (t), warn_notreached);
+	  goto process_t;
 
 	case CONTINUE_STMT:
 	  genrtl_continue_stmt ();
-	  expand_unreachable_stmt (TREE_CHAIN (t), warn_notreached);
-	  return;
+	  t = expand_unreachable_stmt (TREE_CHAIN (t), warn_notreached);
+	  goto process_t;
 
 	case SWITCH_STMT:
 	  genrtl_switch_stmt (t);
@@ -890,8 +890,8 @@ expand_stmt (t)
 	      NOTE_PREDICTION (note) = NOTE_PREDICT (PRED_GOTO, NOT_TAKEN);
 	    }
 	  genrtl_goto_stmt (GOTO_DESTINATION (t));
-	  expand_unreachable_stmt (TREE_CHAIN (t), warn_notreached);
-	  return;
+	  t = expand_unreachable_stmt (TREE_CHAIN (t), warn_notreached);
+	  goto process_t;
 
 	case ASM_STMT:
 	  genrtl_asm_stmt (ASM_CV_QUAL (t), ASM_STRING (t),
@@ -915,12 +915,13 @@ expand_stmt (t)
 	  break;
 	}
 
+      /* Go on to the next statement in this scope.  */
+      t = TREE_CHAIN (t);
+
+    process_t:
       /* Restore saved state.  */
       current_stmt_tree ()->stmts_are_full_exprs_p
 	= saved_stmts_are_full_exprs_p;
-
-      /* Go on to the next statement in this scope.  */
-      t = TREE_CHAIN (t);
     }
 }
 
@@ -964,6 +965,8 @@ static bool
 expand_unreachable_if_stmt (t)
      tree t;
 {
+  tree n;
+  
   if (find_reachable_label (IF_COND (t)) != NULL_TREE)
     {
       genrtl_if_stmt (t);
@@ -972,31 +975,38 @@ expand_unreachable_if_stmt (t)
 
   if (THEN_CLAUSE (t) && ELSE_CLAUSE (t))
     {
-      if (expand_unreachable_stmt (THEN_CLAUSE (t), 0))
+      n = expand_unreachable_stmt (THEN_CLAUSE (t), 0);
+      
+      if (n != NULL_TREE)
 	{
 	  rtx label;
+	  expand_stmt (n);
 	  label = gen_label_rtx ();
 	  emit_jump (label);
-	  expand_unreachable_stmt (ELSE_CLAUSE (t), 0);
+	  expand_stmt (expand_unreachable_stmt (ELSE_CLAUSE (t), 0));
 	  emit_label (label);
 	  return true;
 	}
       else
-	return expand_unreachable_stmt (ELSE_CLAUSE (t), 0);
+	n = expand_unreachable_stmt (ELSE_CLAUSE (t), 0);
     }
   else if (THEN_CLAUSE (t))
-    return expand_unreachable_stmt (THEN_CLAUSE (t), 0);
+    n = expand_unreachable_stmt (THEN_CLAUSE (t), 0);
   else if (ELSE_CLAUSE (t))
-    return expand_unreachable_stmt (ELSE_CLAUSE (t), 0);
-
-  return false;
+    n = expand_unreachable_stmt (ELSE_CLAUSE (t), 0);
+  else
+    n = NULL_TREE;
+  
+  expand_stmt (n);
+  
+  return n != NULL_TREE;
 }
 
 /* Expand an unreachable statement list.  This function skips all
    statements preceding the first potentially reachable label and
-   then expands the statements normally with expand_stmt.  This
-   function returns true if such a reachable label was found.  */
-static bool
+   then returns the label (or, in same cases, the statement after
+   one containing the label).  */
+static tree
 expand_unreachable_stmt (t, warn)
      tree t;
      int warn;
@@ -1037,36 +1047,31 @@ expand_unreachable_stmt (t, warn)
 
 	case RETURN_STMT:
 	  if (find_reachable_label (RETURN_STMT_EXPR (t)) != NULL_TREE)
-	    {
-	      expand_stmt (t);
-	      return true;
-	    }
+	    return t;
 	  break;
 
 	case EXPR_STMT:
 	  if (find_reachable_label (EXPR_STMT_EXPR (t)) != NULL_TREE)
-	    {
-	      expand_stmt (t);
-	      return true;
-	    }
+	    return t;
 	  break;
 
 	case IF_STMT:
 	  if (expand_unreachable_if_stmt (t))
-	    {
-	      expand_stmt (TREE_CHAIN (t));
-	      return true;
-	    }
+	    return TREE_CHAIN (t);
 	  break;
 
 	case COMPOUND_STMT:
-	  if (expand_unreachable_stmt (COMPOUND_BODY (t), warn))
-	    {
-	      expand_stmt (TREE_CHAIN (t));
-	      return true;
-	    }
-	  warn = false;
-	  break;
+	  {
+	    tree n;
+	    n = expand_unreachable_stmt (COMPOUND_BODY (t), warn);
+	    if (n != NULL_TREE)
+	      {
+		expand_stmt (n);
+		return TREE_CHAIN (t);
+	      }
+	    warn = false;
+	    break;
+	  }
 
 	case SCOPE_STMT:
 	  saved = stmts_are_full_exprs_p ();
@@ -1076,11 +1081,10 @@ expand_unreachable_stmt (t, warn)
 	  break;
 
 	default:
-	  expand_stmt (t);
-	  return true;
+	  return t;
 	}
       t = TREE_CHAIN (t);
     }
-  return false;
+  return NULL_TREE;
 }
 
