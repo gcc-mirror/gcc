@@ -4572,21 +4572,21 @@ finish_method_declaration (method_body)
   /* 8.4.5 Method Body */
   if ((flags & ACC_ABSTRACT || flags & ACC_NATIVE) && method_body)
     {
-      tree wfl = DECL_NAME (current_function_decl);
-      parse_error_context (wfl, 
+      tree name = DECL_NAME (current_function_decl);
+      parse_error_context (DECL_FUNCTION_WFL (current_function_decl), 
 			   "%s method `%s' can't have a body defined",
 			   (METHOD_NATIVE (current_function_decl) ?
 			    "Native" : "Abstract"),
-			   IDENTIFIER_POINTER (EXPR_WFL_NODE (wfl)));
+			   IDENTIFIER_POINTER (name));
       method_body = NULL_TREE;
     }
   else if (!(flags & ACC_ABSTRACT) && !(flags & ACC_NATIVE) && !method_body)
     {
-      tree wfl = DECL_NAME (current_function_decl);
+      tree name = DECL_NAME (current_function_decl);
       parse_error_context
-	(wfl, 
+	(DECL_FUNCTION_WFL (current_function_decl), 
 	 "Non native and non abstract method `%s' must have a body defined",
-	 IDENTIFIER_POINTER (EXPR_WFL_NODE (wfl)));
+	 IDENTIFIER_POINTER (name));
       method_body = NULL_TREE;
     }
 
@@ -5904,13 +5904,6 @@ check_abstract_method_definitions (do_interface, class_decl, type)
 	  char *t = xstrdup (lang_printable_name 
 			    (TREE_TYPE (TREE_TYPE (method)), 0));
 	  tree ccn = DECL_NAME (TYPE_NAME (DECL_CONTEXT (method)));
-	  tree saved_wfl = NULL_TREE;
-	  
-	  if (TREE_CODE (DECL_NAME (method)) == EXPR_WITH_FILE_LOCATION)
-	    {
-	      saved_wfl = DECL_NAME (method);
-	      DECL_NAME (method) = EXPR_WFL_NODE (DECL_NAME (method));
-	    }
 	  
 	  parse_error_context 
 	    (lookup_cl (class_decl),
@@ -5924,9 +5917,6 @@ check_abstract_method_definitions (do_interface, class_decl, type)
 	     IDENTIFIER_POINTER (DECL_NAME (class_decl)));
 	  ok = 0;
 	  free (t);
-
-	  if (saved_wfl)
-	    DECL_NAME (method) = saved_wfl;
 	}
     }
 
@@ -13870,7 +13860,7 @@ resolve_type_during_patch (type)
 {
   if (unresolved_type_p (type, NULL))
     {
-      tree type_decl = resolve_no_layout (EXPR_WFL_NODE (type), type);
+      tree type_decl = resolve_and_layout (EXPR_WFL_NODE (type), type);
       if (!type_decl)
 	{
 	  parse_error_context (type, 

@@ -834,8 +834,6 @@ lookup_do (searched_class, searched_interface, method_name, signature, signature
 	   method != NULL_TREE;  method = TREE_CHAIN (method))
 	{
 	  tree method_sig = (*signature_builder) (TREE_TYPE (method));
-	  tree name = DECL_NAME (method);
-
 	  if (DECL_NAME (method) == method_name && method_sig == signature)
 	    return method;
 	}
