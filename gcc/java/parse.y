@@ -77,6 +77,9 @@ int java_warning_count;
 /* The current parser context */
 static struct parser_ctxt *ctxp;
 
+/* List of things that were anlyzed for which code will be generated */
+static struct parser_ctxt *ctxp_for_generation = NULL;
+
 /* binop_lookup maps token to tree_code. It is used where binary
    operations are involved and required by the parser. RDIV_EXPR
    covers both integral/floating point division. The code is changed
@@ -2097,7 +2100,8 @@ java_parser_context_restore_global ()
 }
 
 void 
-java_pop_parser_context ()
+java_pop_parser_context (generate)
+     int generate;
 {
   tree current;
   struct parser_ctxt *toFree = ctxp;
@@ -2121,7 +2125,13 @@ java_pop_parser_context ()
     for (current = ctxp->import_list; current; current = TREE_CHAIN (current))
       IS_A_SINGLE_IMPORT_CLASSFILE_NAME_P (TREE_PURPOSE (current)) = 1;
 
-  free (toFree);
+  if (generate)
+    {
+      toFree->next = ctxp_for_generation;
+      ctxp_for_generation = toFree;
+    }
+  else
+    free (toFree);
 }
 
 /* Reporting JDK1.1 features not implemented */
@@ -2522,6 +2532,8 @@ maybe_create_class_interface_decl (decl, qualified_name, cl)
   DECL_SOURCE_FILE (decl) = EXPR_WFL_FILENAME (cl);
   DECL_SOURCE_LINE (decl) = EXPR_WFL_LINENO (cl);
   CLASS_FROM_SOURCE_P (TREE_TYPE (decl)) = 1;
+  CLASS_FROM_CURRENTLY_COMPILED_SOURCE_P (TREE_TYPE (decl)) =
+    IS_A_COMMAND_LINE_FILENAME_P (EXPR_WFL_FILENAME_NODE (cl));
 
   ctxp->current_parsed_class = decl;
   
@@ -4815,7 +4827,8 @@ java_complete_expand_methods ()
 	{
 	  make_class_data (current_class);
 	  register_class ();
-	  rest_of_decl_compilation (TYPE_NAME (current_class), (char*) 0, 1, 0);
+	  rest_of_decl_compilation (TYPE_NAME (current_class), 
+				    (char*) 0, 1, 0);
 	}
     }
 }
@@ -4908,6 +4921,26 @@ java_complete_expand_method (mdecl)
 void
 java_expand_finals ()
 {
+}
+
+/* Generate code for all context remembered for code generation */
+
+void
+java_expand_classes ()
+{
+  for (; ctxp_for_generation; ctxp_for_generation = ctxp_for_generation->next)
+    {
+      ctxp = ctxp_for_generation;
+      lang_init_source (2);	       /* Error msgs have method prototypes */
+      java_complete_expand_methods (); /* Complete and expand method bodies */
+      java_parse_abort_on_error ();
+      java_expand_finals ();	      /* Expand and check the finals */
+      java_parse_abort_on_error ();
+      java_check_final ();            /* Check unitialized final  */
+      java_parse_abort_on_error ();
+    }
+  if (! flag_emit_class_files)
+    emit_register_class ();
 }
 
 /* Wrap non WFL PRIMARY around a WFL and set EXPR_WFL_QUALIFICATION to

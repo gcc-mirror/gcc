@@ -1507,7 +1507,6 @@ complete_start_java_method (fndecl)
      using a different local variables management, and for them,
      pushlevel shouldn't be called from here.  */
   if (!CLASS_FROM_SOURCE_P (DECL_CONTEXT (fndecl)))
-
     {
       pushlevel (2);
       if (! flag_emit_class_files)
