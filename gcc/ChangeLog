@@ -1,5 +1,10 @@
 2004-08-30  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* c-parse.in (parmlist_or_identifiers_1): Remove unreachable and
+	redundant code.
+
+2004-08-30  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	* c-tree.h (struct language_function): Add arg_info element.
 	* c-decl.c (current_function_arg_info): New.
 	(grokdeclarator, store_parm_decls): Use it instead of
