@@ -918,6 +918,14 @@ output_epilogue (f, frame_size)
     }
   else
     {
+      /* Restore stack pointer if necessary.  */
+      if (frame_size)
+	{
+	  operands[0] = operands[1] = stack_pointer_rtx;
+	  operands[2] = gen_rtx (CONST_INT, VOIDmode, frame_size);
+	  output_add_immediate (operands);
+	}
+
       if (current_function_pretend_args_size == 0 && regs_ever_live[14])
 	{
 	  print_multi_reg (f, "ldmfd\tsp!",
