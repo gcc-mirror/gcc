@@ -1,3 +1,23 @@
+2003-11-23  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* genattrtab.c (strcmp_check, DEF_ATTR_STRING): New macros.
+	(length_str, delay_type_str, delay_1_0_str, num_delay_slots_str):
+	New variables.
+	(main): Initialize them.
+	(find_attr): Canonicalize the attribute name string.
+	(attr_rtx_1, copy_boolean, expand_delays, gen_unit): Always canonicalize
+	string arguments.
+	(attr_printf, attr_eq): Use DEF_ATTR_STRING.
+	(check_attr_test, check_attr_value, make_length_attrs,
+	write_length_unit_log, simplify_by_exploding, gen_attr,
+	write_test_expr, write_attr_value, write_eligible_delay,
+	write_complex_function, make_internal_attr,
+	write_const_num_delay_slots): Changed due to change of type of
+	find_attr.
+	(fill_attr, evaluate_eq_attr, simplify_and_tree,
+	attr_rtx_cost, simplify_by_exploding, walk_attr_value): Use
+	strcmp_check.
+
 2003-11-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR target/13122
