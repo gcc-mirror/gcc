@@ -1,3 +1,10 @@
+Fri Feb 21 23:10:13 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cfgrtl.c (commit_edge_insertions):  Call
+	find_many_sub_basic_block only when some code has been emitted.
+	(commit_edge_insertions_watch_calls): Bring into sync with
+	commit_edge_insertions
+
 Fri Feb 21 20:41:29 2003  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (OVERRIDE_OPTIONS): Fix code that clears 'e' register class.
