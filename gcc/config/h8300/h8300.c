@@ -1434,9 +1434,7 @@ print_operand (file, x, code)
 	case MEM:
 	  {
 	    rtx addr = XEXP (x, 0);
-	    int eightbit_ok = ((GET_CODE (addr) == SYMBOL_REF
-				&& SYMBOL_REF_FLAG (addr))
-			       || EIGHTBIT_CONSTANT_ADDRESS_P (addr));
+	    int eightbit_ok = EIGHTBIT_CONSTANT_ADDRESS_P (addr);
 	    int tiny_ok = ((GET_CODE (addr) == SYMBOL_REF
 			    && TINY_DATA_NAME_P (XSTR (addr, 0)))
 			   || TINY_CONSTANT_ADDRESS_P (addr));
@@ -3721,8 +3719,7 @@ h8300_adjust_insn_length (insn, length)
 
 	  /* @aa:8 is 2 bytes shorter than the longest.  */
 	  if (GET_MODE (SET_SRC (pat)) == QImode
-	      && ((GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_FLAG (addr))
-		  || EIGHTBIT_CONSTANT_ADDRESS_P (addr)))
+	      && EIGHTBIT_CONSTANT_ADDRESS_P (addr))
 	    return -2;
 	}
       else
@@ -3874,6 +3871,10 @@ h8300_eightbit_constant_address_p (x)
   const unsigned HOST_WIDE_INT s2 = trunc_int_for_mode (0xffffffff, SImode);
 
   unsigned HOST_WIDE_INT addr;
+
+  /* We accept symbols declared with eightbit_data.  */
+  if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_FLAG (x))
+    return 1;
 
   if (GET_CODE (x) != CONST_INT)
     return 0;
