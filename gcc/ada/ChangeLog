@@ -1,3 +1,8 @@
+2003-03-31   Geert Bosch <bosch@gnat.com>
+
+	PR ada/10020
+	* link.c : Fix misspelled "const" keyword
+
 2003-03-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/7086
