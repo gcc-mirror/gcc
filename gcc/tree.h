@@ -1235,7 +1235,7 @@ struct tree_vec GTY(())
 /* Operand 2 has two uses, it may either be a LABEL_DECL node or a
    another CASE_LABEL_EXPR node.  This accessor gets direct access
    to that operand.  Use it when you want to assign a value to
-   operand 2 or when you want to conditionalalize actions based on
+   operand 2 or when you want to conditionalize actions based on
    whether operand 2 is a LABEL_DELC or CASE_LABEL_EXPR.  */
 #define CASE_LEADER_OR_LABEL(NODE)	TREE_OPERAND ((NODE), 2)
 
