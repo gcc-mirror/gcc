@@ -1,3 +1,10 @@
+2002-02-21  Tom Tromey  <tromey@redhat.com>
+
+	* dwarf2out.c (DWARF_LINE_MIN_INSTR_LENGTH): Removed.
+	(output_line_info): Use constant `1', with a long explanatory
+	comment.
+	* system.h (DWARF_LINE_MIN_INSTR_LENGTH): Poison.
+
 Thu Feb 21 22:43:44 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* jump.c (redirect_jump): If old label has no UID, don't try to
