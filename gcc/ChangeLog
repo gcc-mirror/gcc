@@ -1,3 +1,9 @@
+2000-06-02  Jason Merrill  <jason@casey.soma.redhat.com>
+
+	* Makefile.in (libgcc.a): Also depend on $(LIB2ADD).
+	* mklibgcc.in (force): New target.
+	Make LIB2ADD stuff depend on it.
+
 2000-06-02  Richard Henderson  <rth@cygnus.com>
 
 	* alias.c (lang_get_alias_set): Remove.
