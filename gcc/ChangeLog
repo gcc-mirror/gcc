@@ -1,3 +1,14 @@
+2005-01-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cse.c (cse_reg_info_free_list, cse_reg_info_used_list,
+	cse_reg_info_used_list_end): Remove.
+	(cse_reg_info_list, cse_reg_info_list_free): New.
+	(get_cse_reg_info): When allocating an instance of
+	cse_reg_info, add it to the beginning of the cse_reg_info_list
+	list.  Remove code to maintain cse_reg_info_used_list.
+	(new_basic_block): Reset the free list to the beginning of
+	cse_reg_info_list.
+
 2005-01-28  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/frv/frv.c (bdesc_2arg): Remove __MDPACKH.

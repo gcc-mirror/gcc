@@ -329,12 +329,25 @@ struct cse_reg_info
   unsigned int subreg_ticked;
 };
 
-/* A free list of cse_reg_info entries.  */
-static struct cse_reg_info *cse_reg_info_free_list;
+/* We maintain a linked list of cse_reg_info instances, which is
+   partitioned into two pieces.  The first part, pointed to by
+   cse_reg_info_list, is a list of those entries that are in use.  The
+   second part, pointed to by cse_reg_info_list_free, is a list of
+   those entries that are not in use.
 
-/* A used list of cse_reg_info entries.  */
-static struct cse_reg_info *cse_reg_info_used_list;
-static struct cse_reg_info *cse_reg_info_used_list_end;
+   We combine these two parts into one linked list for efficiency.
+   Specifically, when we take an element from the second part and want
+   to move it to the first part, all we have to do is move the pointer
+   cse_reg_info_list_free to the next element.  Also, if we wish to
+   move all elements into the second part, we just have to move the
+   pointer to the first element of the list.  */
+
+/* A linked list of cse_reg_info entries that have been allocated so
+   far.  */
+static struct cse_reg_info *cse_reg_info_list;
+
+/* A pointer to the first unused entry in the above linked list.  */
+static struct cse_reg_info *cse_reg_info_list_free;
 
 /* A mapping from registers to cse_reg_info data structures.  */
 #define REGHASH_SHIFT	7
@@ -871,13 +884,17 @@ get_cse_reg_info (unsigned int regno)
   if (p == NULL)
     {
       /* Get a new cse_reg_info structure.  */
-      if (cse_reg_info_free_list)
+      if (cse_reg_info_list_free)
 	{
-	  p = cse_reg_info_free_list;
-	  cse_reg_info_free_list = p->next;
+	  p = cse_reg_info_list_free;
+	  cse_reg_info_list_free = p->next;
 	}
       else
-	p = xmalloc (sizeof (struct cse_reg_info));
+	{
+	  p = xmalloc (sizeof (struct cse_reg_info));
+	  p->next = cse_reg_info_list;
+	  cse_reg_info_list = p;
+	}
 
       /* Insert into hash table.  */
       p->hash_next = *hash_head;
@@ -889,10 +906,6 @@ get_cse_reg_info (unsigned int regno)
       p->subreg_ticked = -1;
       p->reg_qty = -regno - 1;
       p->regno = regno;
-      p->next = cse_reg_info_used_list;
-      cse_reg_info_used_list = p;
-      if (!cse_reg_info_used_list_end)
-	cse_reg_info_used_list_end = p;
     }
 
   /* Cache this lookup; we tend to be looking up information about the
@@ -917,12 +930,8 @@ new_basic_block (void)
 
   memset (reg_hash, 0, sizeof reg_hash);
 
-  if (cse_reg_info_used_list)
-    {
-      cse_reg_info_used_list_end->next = cse_reg_info_free_list;
-      cse_reg_info_free_list = cse_reg_info_used_list;
-      cse_reg_info_used_list = cse_reg_info_used_list_end = 0;
-    }
+  cse_reg_info_list_free = cse_reg_info_list;
+
   cached_cse_reg_info = 0;
 
   CLEAR_HARD_REG_SET (hard_regs_in_table);
