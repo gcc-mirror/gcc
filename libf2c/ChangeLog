@@ -1,3 +1,9 @@
+2003-03-24  Bud Davis  <bdavis9659@comcast.net>
+
+	PR fortran/10197
+	* libI77/open.c (f_open): A DIRECT ACCESS file is
+	UNFORMATTED by default.
+
 Wed Mar 12 22:27:14 2003  Andreas Schwab  <schwab@suse.de>
 
 	* aclocal.m4 (GLIBCPP_EXPORT_INSTALL_INFO): Avoid trailing /. in
