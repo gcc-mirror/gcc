@@ -1,3 +1,16 @@
+2002-11-07  David Mosberger  <davidm@hpl.hp.com>
+
+        * config/ia64/crtend.asm: Include "auto-host.h".
+        [HAVE_INITFINI_ARRAY]: Invoke __do_global_ctors_aux via .init_array.
+        * config/ia64/crtbegin.asm: Similarly.
+        * config/ia64/t-ia64 (crtbegin.o): Include from current directory.
+        (crtend.o, crtbeginS.o, crtendS.o): Likewise.
+
+        * aclocal.m4 (gcc_AC_INITFINI_ARRAY): New.
+        * configure.in: Use it if --enable-initfini-array not specified.
+        * doc/install.texi (Configuration): Document --enable-initfini-array.
+	* configure, config.in: Rebuild.
+
 2002-11-07  Jason Thorpe  <thorpej@wasabisystems.com>
   
 	* config/arm/arm-protos.h (arm_get_frame_size)

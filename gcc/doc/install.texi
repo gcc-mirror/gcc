@@ -741,6 +741,14 @@ Specify that a user visible @command{cpp} program should not be installed.
 Specify that the user visible @command{cpp} program should be installed
 in @file{@var{prefix}/@var{dirname}/cpp}, in addition to @var{bindir}.
 
+@item --enable-initfini-array
+Force the use of sections @code{.init_array} and @code{.fini_array}
+(instead of @code{.init} and @code{.fini}) for constructors and
+destructors.  Option @option{--disable-initfini-array} has the
+opposite effect.  If neither option is specified, the configure script
+will try to guess whether the @code{.init_array} and
+@code{.fini_array} sections are supported and, if they are, use them.
+
 @item --enable-maintainer-mode
 The build rules that
 regenerate the GCC master message catalog @file{gcc.pot} are normally

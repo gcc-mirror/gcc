@@ -24,15 +24,21 @@ T = disable
 
 # Assemble startup files.
 crtbegin.o: $(srcdir)/config/ia64/crtbegin.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) -c -o crtbegin.o -x assembler-with-cpp $(srcdir)/config/ia64/crtbegin.asm
+	$(GCC_FOR_TARGET) -I. -c -o crtbegin.o -x assembler-with-cpp \
+		$(srcdir)/config/ia64/crtbegin.asm
 crtend.o: $(srcdir)/config/ia64/crtend.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) -c -o crtend.o -x assembler-with-cpp $(srcdir)/config/ia64/crtend.asm
+	$(GCC_FOR_TARGET) -I. -c -o crtend.o -x assembler-with-cpp \
+		$(srcdir)/config/ia64/crtend.asm
 crtbeginS.o: $(srcdir)/config/ia64/crtbegin.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) -DSHARED -c -o crtbeginS.o -x assembler-with-cpp $(srcdir)/config/ia64/crtbegin.asm
+	$(GCC_FOR_TARGET) -I. -DSHARED -c -o crtbeginS.o \
+		-x assembler-with-cpp \
+		$(srcdir)/config/ia64/crtbegin.asm
 crtendS.o: $(srcdir)/config/ia64/crtend.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) -DSHARED -c -o crtendS.o -x assembler-with-cpp $(srcdir)/config/ia64/crtend.asm
+	$(GCC_FOR_TARGET) -I. -DSHARED -c -o crtendS.o -x assembler-with-cpp \
+		$(srcdir)/config/ia64/crtend.asm
 crtfastmath.o: $(srcdir)/config/ia64/crtfastmath.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -c -o crtfastmath.o $(srcdir)/config/ia64/crtfastmath.c
+	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -c -o crtfastmath.o \
+		$(srcdir)/config/ia64/crtfastmath.c
 
 LIB2ADDEH = $(srcdir)/config/ia64/unwind-ia64.c $(srcdir)/unwind-sjlj.c
 
