@@ -1,5 +1,8 @@
 2003-01-02  Mark Mitchell  <mark@codesourcery.com>
 
+	* parser.c (cp_parser_declaration): Accept the __extension__
+	keyword before the declaration.
+
 	PR c++/2843
 	* parser.c (cp_parser_parameter_declaration): Allow attributes to
 	appear after the declarator.
@@ -15,7 +18,7 @@
 	(cp_parser_parsing_tentatively): Likewise.
 	(cp_parser_nested_name_specifier_opt): Reduce the number of calls
 	to the cp_lexer_peek_token.
-	 
+
 	* parser.c (cp_parser_sizeof_operand): Do not evaluate the
 	expression.
 
