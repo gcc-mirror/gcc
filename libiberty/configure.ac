@@ -1,7 +1,8 @@
 dnl Process this file with autoconf to produce a configure script
 
-AC_PREREQ(2.57)
-AC_INIT(xmalloc.c)
+AC_PREREQ(2.59)
+AC_INIT
+AC_CONFIG_SRCDIR([xmalloc.c])
 
 # This works around the fact that libtool configuration may change LD
 # for this particular configuration, but some shells, instead of
@@ -433,7 +434,7 @@ if test -z "${setobjs}"; then
   AC_ISC_POSIX
   AC_REPLACE_FUNCS($funcs)
   libiberty_AC_FUNC_C_ALLOCA
-  AC_FUNC_VFORK
+  AC_FUNC_FORK
   if test $ac_cv_func_vfork_works = no; then
     AC_LIBOBJ([vfork])
   fi
@@ -449,9 +450,9 @@ if test -z "${setobjs}"; then
   for v in $vars; do
     AC_MSG_CHECKING([for $v])
     AC_CACHE_VAL(libiberty_cv_var_$v,
-      [AC_TRY_LINK([int *p;], [extern int $v []; p = $v;],
-		   [eval "libiberty_cv_var_$v=yes"],
-		   [eval "libiberty_cv_var_$v=no"])])
+      [AC_LINK_IFELSE([AC_LANG_PROGRAM([[int *p;]],[[extern int $v []; p = $v;]])],
+		      [eval "libiberty_cv_var_$v=yes"],
+		      [eval "libiberty_cv_var_$v=no"])])
     if eval "test \"`echo '$libiberty_cv_var_'$v`\" = yes"; then
       AC_MSG_RESULT(yes)
       n=HAVE_`echo $v | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
@@ -464,11 +465,11 @@ if test -z "${setobjs}"; then
   # special check for _system_configuration because AIX <4.3.2 do not
   # contain the `physmem' member.
   AC_MSG_CHECKING([for external symbol _system_configuration])
-  AC_TRY_COMPILE([#include <sys/systemcfg.h>],
-                 [double x = _system_configuration.physmem;],
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/systemcfg.h>]],
+			[[double x = _system_configuration.physmem;]])],
     [AC_MSG_RESULT([yes])
     AC_DEFINE(HAVE__SYSTEM_CONFIGURATION, 1,
-              [Define if you have the _system_configuration variable.])],
+	      [Define if you have the _system_configuration variable.])],
     [AC_MSG_RESULT([no])])
 
   AC_CHECK_FUNCS($checkfuncs)
@@ -507,8 +508,9 @@ done
 LIBOBJS="$L"
 
 # We need multilib support, but only if configuring for the target.
-AC_OUTPUT(Makefile testsuite/Makefile,
-[test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
+AC_CONFIG_FILES([Makefile testsuite/Makefile])
+AC_CONFIG_COMMANDS([default],
+  [[test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
 if test -n "$CONFIG_FILES"; then
   if test -n "${with_build_subdir}" || test -n "${with_target_subdir}"; then
     # FIXME: We shouldn't need to set ac_file
@@ -516,8 +518,8 @@ if test -n "$CONFIG_FILES"; then
     LD="${ORIGINAL_LD_FOR_MULTILIBS}"
     . ${libiberty_topdir}/config-ml.in
   fi
-fi],
-srcdir=${srcdir}
+fi]],
+[[srcdir=${srcdir}
 host=${host}
 target=${target}
 with_target_subdir=${with_target_subdir}
@@ -527,4 +529,5 @@ ac_configure_args="--enable-multilib ${ac_configure_args}"
 CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
 ORIGINAL_LD_FOR_MULTILIBS="${ORIGINAL_LD_FOR_MULTILIBS}"
 libiberty_topdir=${libiberty_topdir}
-)
+]])
+AC_OUTPUT
