@@ -3472,7 +3472,9 @@ fold_rtx (x, insn)
 		  && GET_CODE (elt->exp) != SIGN_EXTEND
 		  && GET_CODE (elt->exp) != ZERO_EXTEND
 		  && GET_CODE (XEXP (elt->exp, 0)) == SUBREG
-		  && GET_MODE (SUBREG_REG (XEXP (elt->exp, 0))) == mode)
+		  && GET_MODE (SUBREG_REG (XEXP (elt->exp, 0))) == mode
+		  && (GET_MODE_CLASS (mode)
+		      == GET_MODE_CLASS (GET_MODE (XEXP (elt->exp, 0)))))
 		{
 		  rtx op0 = SUBREG_REG (XEXP (elt->exp, 0));
 
