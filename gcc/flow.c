@@ -6751,3 +6751,87 @@ find_edge_index (edge_list, pred, succ)
   return (EDGE_INDEX_NO_EDGE);
 }
 
+/* This function will remove an edge from the flow graph.  */
+static void
+remove_edge (e)
+     edge e;
+{
+  edge last_pred = NULL;
+  edge last_succ = NULL;
+  edge tmp;
+  basic_block src, dest;
+  src = e->src;
+  dest = e->dest;
+  for (tmp = src->succ; tmp && tmp != e; tmp = tmp->succ_next)
+    last_succ = tmp;
+
+  if (!tmp)
+    abort ();
+  if (last_succ)
+    last_succ->succ_next = e->succ_next;
+  else
+    src->succ = e->succ_next;
+
+  for (tmp = dest->pred; tmp && tmp != e; tmp = tmp->pred_next)
+    last_pred = tmp;
+
+  if (!tmp)
+    abort ();
+  if (last_pred)
+    last_pred->pred_next = e->pred_next;
+  else
+    dest->pred = e->pred_next;
+
+  free (e);
+
+}
+
+/* This routine will remove any fake successor edges for a basic block.
+   When the edge is removed, it is also removed from whatever predecessor
+   list it is in.  */
+static void
+remove_fake_successors (bb)
+     basic_block bb;
+{
+  edge e;
+  for (e = bb->succ; e ; )
+    {
+      edge tmp = e;
+      e = e->succ_next;
+      if ((tmp->flags & EDGE_FAKE) == EDGE_FAKE)
+	remove_edge (tmp);
+    }
+}
+
+/* This routine will remove all fake edges from the flow graph.  If
+   we remove all fake successors, it will automatically remove all
+   fake predecessors.  */
+void
+remove_fake_edges ()
+{
+  int x;
+  edge e;
+  basic_block bb;
+
+  for (x = 0; x < n_basic_blocks; x++)
+    {
+      edge tmp, last = NULL;
+      bb = BASIC_BLOCK (x);
+      remove_fake_successors (bb);
+    }
+  /* we've handled all successors except the entry block's.  */
+  remove_fake_successors (ENTRY_BLOCK_PTR);
+}
+
+/* This functions will add a fake edge between any block which has no
+   successors, and the exit block. Some data flow equations require these
+   edges to exist.  */
+void
+add_fake_exit_edges ()
+{
+  int x;
+
+  for (x = 0; x < n_basic_blocks; x++)
+    if (BASIC_BLOCK (x)->succ == NULL)
+      make_edge (BASIC_BLOCK (x), EXIT_BLOCK_PTR, EDGE_FAKE);
+}
