@@ -74,7 +74,7 @@ extern void __do_global_dtors ();
 #ifndef DO_GLOBAL_CTORS_BODY
 #define DO_GLOBAL_CTORS_BODY						\
 do {									\
-  unsigned nptrs = (unsigned HOST_WIDE_INT) __CTOR_LIST__[0];		\
+  unsigned long nptrs = (unsigned long) __CTOR_LIST__[0];		\
   unsigned i;								\
   if (nptrs == -1)							\
     for (nptrs = 0; __CTOR_LIST__[nptrs + 1] != 0; nptrs++);		\
