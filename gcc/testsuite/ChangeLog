@@ -1,3 +1,8 @@
+2004-09-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17327
+	* g++.dg/template/enum3.C: New test.
+
 2004-09-06  Release Manager
 
 	* GCC 3.4.2 released.

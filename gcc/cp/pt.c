@@ -9992,6 +9992,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
     case VECTOR_TYPE:
     case INTEGER_TYPE:
     case BOOLEAN_TYPE:
+    case ENUMERAL_TYPE:
     case VOID_TYPE:
       if (TREE_CODE (arg) != TREE_CODE (parm))
 	return 1;
@@ -10187,10 +10188,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	  else
 	    return 0;
 	}
-      else
-	sorry ("use of `%s' in template type unification",
-	       tree_code_name [(int) TREE_CODE (parm)]);
-
+      sorry ("use of `%s' in template type unification",
+	     tree_code_name [(int) TREE_CODE (parm)]);
       return 1;
     }
 }

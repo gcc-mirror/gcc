@@ -1,3 +1,9 @@
+2004-09-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17327
+	* pt.c (unify): Add ENUMERAL_TYPE case.  Replace sorry with
+	gcc_unreacable.
+
 2004-09-06  Release Manager
 
 	* GCC 3.4.2 released.
