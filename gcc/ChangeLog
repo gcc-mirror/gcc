@@ -1,3 +1,8 @@
+2002-10-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* varasm.c (asm_output_aligned_bss): Do not call
+	ASM_GLOBALIZE_LABEL.
+
 2002-10-29  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/invoke.texi (-profile-arcs): Remove references to -a and -ax.

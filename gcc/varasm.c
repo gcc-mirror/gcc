@@ -535,7 +535,6 @@ asm_output_aligned_bss (file, decl, name, size, align)
      const char *name;
      int size, align;
 {
-  ASM_GLOBALIZE_LABEL (file, name);
   bss_section ();
   ASM_OUTPUT_ALIGN (file, floor_log2 (align / BITS_PER_UNIT));
 #ifdef ASM_DECLARE_OBJECT_NAME
