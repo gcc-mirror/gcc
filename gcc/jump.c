@@ -762,10 +762,8 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && GET_CODE (temp3) == INSN
 	      && (temp4 = single_set (temp3)) != 0
 	      && GET_CODE (temp1 = SET_DEST (temp4)) == REG
-#ifdef SMALL_REGISTER_CLASSES
 	      && (! SMALL_REGISTER_CLASSES
 		  || REGNO (temp1) >= FIRST_PSEUDO_REGISTER)
-#endif
 	      && (temp2 = next_active_insn (insn)) != 0
 	      && GET_CODE (temp2) == INSN
 	      && (temp4 = single_set (temp2)) != 0
@@ -900,11 +898,8 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && GET_CODE (temp2) == INSN
 	      && (temp4 = single_set (temp2)) != 0
 	      && GET_CODE (temp1 = SET_DEST (temp4)) == REG
-#ifdef SMALL_REGISTER_CLASSES
 	      && (! SMALL_REGISTER_CLASSES
 		  || REGNO (temp1) >= FIRST_PSEUDO_REGISTER)
-#endif
-
 	      && (temp3 = prev_active_insn (insn)) != 0
 	      && GET_CODE (temp3) == INSN
 	      && (temp4 = single_set (temp3)) != 0
@@ -990,10 +985,8 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && (temp1 = single_set (temp)) != 0
 	      && (temp2 = SET_DEST (temp1), GET_CODE (temp2) == REG)
 	      && GET_MODE_CLASS (GET_MODE (temp2)) == MODE_INT
-#ifdef SMALL_REGISTER_CLASSES
 	      && (! SMALL_REGISTER_CLASSES
 		  || REGNO (temp2) >= FIRST_PSEUDO_REGISTER)
-#endif
 	      && GET_CODE (SET_SRC (temp1)) != REG
 	      && GET_CODE (SET_SRC (temp1)) != SUBREG
 	      && GET_CODE (SET_SRC (temp1)) != CONST_INT
@@ -1033,10 +1026,8 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && (temp1 = single_set (temp)) != 0
 	      && (temp2 = SET_DEST (temp1), GET_CODE (temp2) == REG)
 	      && GET_MODE_CLASS (GET_MODE (temp2)) == MODE_INT
-#ifdef SMALL_REGISTER_CLASSES
 	      && (! SMALL_REGISTER_CLASSES
 		  || REGNO (temp2) >= FIRST_PSEUDO_REGISTER)
-#endif
 	      && ! side_effects_p (SET_SRC (temp1))
 	      && ! may_trap_p (SET_SRC (temp1))
 	      && rtx_cost (SET_SRC (temp1), SET) < 10
@@ -1095,10 +1086,8 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && (temp4 = single_set (temp3)) != 0
 	      && (temp2 = SET_DEST (temp4), GET_CODE (temp2) == REG)
 	      && GET_MODE_CLASS (GET_MODE (temp2)) == MODE_INT
-#ifdef SMALL_REGISTER_CLASSES
 	      && (! SMALL_REGISTER_CLASSES
 		  || REGNO (temp2) >= FIRST_PSEUDO_REGISTER)
-#endif
 	      && rtx_equal_p (SET_DEST (temp4), temp2)
 	      && ! side_effects_p (SET_SRC (temp4))
 	      && ! may_trap_p (SET_SRC (temp4))
@@ -1149,10 +1138,8 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && GET_CODE (temp) == INSN
 	      && GET_CODE (PATTERN (temp)) == SET
 	      && GET_CODE (temp1 = SET_DEST (PATTERN (temp))) == REG
-#ifdef SMALL_REGISTER_CLASSES
 	      && (! SMALL_REGISTER_CLASSES
 		  || REGNO (temp1) >= FIRST_PSEUDO_REGISTER)
-#endif
 	      && (GET_CODE (temp2 = SET_SRC (PATTERN (temp))) == REG
 		  || GET_CODE (temp2) == SUBREG
 		  /* ??? How about floating point constants?  */
