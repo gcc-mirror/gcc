@@ -1,3 +1,7 @@
+2002-01-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* warn_summary: Add -ada subdirectory flag.
+
 2001-12-12  Matthias Klose  <doko@debian.org>
 
 	* texi2pod.pl: Merge changes from binutils' texi2pod.pl. Allows
