@@ -29,7 +29,7 @@ Boston, MA 02111-1307, USA.  */
    sizeof(int) < sizeof (index_type).  */
 
 static void
-__cshift0 (const gfc_array_char * ret, const gfc_array_char * array,
+__cshift0 (gfc_array_char * ret, const gfc_array_char * array,
     int shift, int which)
 {
   /* r.* indicates the return array.  */
@@ -68,6 +68,25 @@ __cshift0 (const gfc_array_char * ret, const gfc_array_char * array,
   roffset = size;
   soffset = size;
   len = 0;
+
+  if (ret->data == NULL)
+    {
+      int i;
+
+      ret->data = internal_malloc (size * size0 ((array_t *)array));
+      ret->base = 0;
+      ret->dtype = array->dtype;
+      for (i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
+        {
+          ret->dim[i].lbound = 0;
+          ret->dim[i].ubound = array->dim[i].ubound - array->dim[i].lbound;
+
+          if (i == 0)
+            ret->dim[i].stride = 1;
+          else
+            ret->dim[i].stride = (ret->dim[i-1].ubound + 1) * ret->dim[i-1].stride;
+        }
+    }
 
   for (dim = 0; dim < GFC_DESCRIPTOR_RANK (array); dim++)
     {
@@ -153,7 +172,7 @@ __cshift0 (const gfc_array_char * ret, const gfc_array_char * array,
 
 
 void
-__cshift0_4 (const gfc_array_char * ret, const gfc_array_char * array,
+__cshift0_4 (gfc_array_char * ret, const gfc_array_char * array,
     const GFC_INTEGER_4 * pshift, const GFC_INTEGER_4 * pdim)
 {
   __cshift0 (ret, array, *pshift, pdim ? *pdim : 1);
@@ -161,7 +180,7 @@ __cshift0_4 (const gfc_array_char * ret, const gfc_array_char * array,
 
 
 void
-__cshift0_8 (const gfc_array_char * ret, const gfc_array_char * array,
+__cshift0_8 (gfc_array_char * ret, const gfc_array_char * array,
     const GFC_INTEGER_8 * pshift, const GFC_INTEGER_8 * pdim)
 {
   __cshift0 (ret, array, *pshift, pdim ? *pdim : 1);

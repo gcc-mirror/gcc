@@ -21,9 +21,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "libgfortran.h"
 
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, void) array_t;
-
-#define size0 prefix(size0)
 index_type size0 (const array_t * array)
 {
   int n;

@@ -63,6 +63,23 @@ __all_l4 (gfc_array_l4 * retarray, gfc_array_l4 *array, index_type *pdim)
         array->dim[n + 1].ubound + 1 - array->dim[n + 1].lbound;
     }
 
+  if (retarray->data == NULL)
+    {
+      for (n = 0; n < rank; n++)
+        {
+          retarray->dim[n].lbound = 0;
+          retarray->dim[n].ubound = extent[n]-1;
+          if (n == 0)
+            retarray->dim[n].stride = 1;
+          else
+            retarray->dim[n].stride = retarray->dim[n-1].stride * extent[n-1];
+        }
+
+      retarray->data = internal_malloc (sizeof (GFC_LOGICAL_4) * 
+                                        (retarray->dim[rank-1].stride * extent[rank-1]));
+      retarray->base = 0;
+    }
+          
   for (n = 0; n < rank; n++)
     {
       count[n] = 0;

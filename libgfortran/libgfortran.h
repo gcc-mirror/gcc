@@ -417,5 +417,12 @@ GFC_REAL_4 normalize_r4_i4 (GFC_UINTEGER_4, GFC_UINTEGER_4);
 #define normalize_r8_i8 prefix(normalize_r8_i8)
 GFC_REAL_8 normalize_r8_i8 (GFC_UINTEGER_8, GFC_UINTEGER_8);
 
+/* size.c */
+
+typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, void) array_t;
+
+#define size0 prefix(size0)
+index_type size0 (const array_t * array); 
+
 #endif
 
