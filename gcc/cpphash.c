@@ -31,6 +31,55 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 #undef abort
 
+/* Structure allocated for every #define.  For a simple replacement
+   such as
+   	#define foo bar ,
+   nargs = -1, the `pattern' list is null, and the expansion is just
+   the replacement text.  Nargs = 0 means a functionlike macro with no args,
+   e.g.,
+       #define getchar() getc (stdin) .
+   When there are args, the expansion is the replacement text with the
+   args squashed out, and the reflist is a list describing how to
+   build the output from the input: e.g., "3 chars, then the 1st arg,
+   then 9 chars, then the 3rd arg, then 0 chars, then the 2nd arg".
+   The chars here come from the expansion.  Whatever is left of the
+   expansion after the last arg-occurrence is copied after that arg.
+   Note that the reflist can be arbitrarily long---
+   its length depends on the number of times the arguments appear in
+   the replacement text, not how many args there are.  Example:
+   #define f(x) x+x+x+x+x+x+x would have replacement text "++++++" and
+   pattern list
+     { (0, 1), (1, 1), (1, 1), ..., (1, 1), NULL }
+   where (x, y) means (nchars, argno). */
+
+struct reflist
+{
+  struct reflist *next;
+  char stringify;		/* nonzero if this arg was preceded by a
+				   # operator. */
+  char raw_before;		/* Nonzero if a ## operator before arg. */
+  char raw_after;		/* Nonzero if a ## operator after arg. */
+  char rest_args;		/* Nonzero if this arg. absorbs the rest */
+  int nchars;			/* Number of literal chars to copy before
+				   this arg occurrence.  */
+  int argno;			/* Number of arg to substitute (origin-0) */
+};
+
+typedef struct definition DEFINITION;
+struct definition
+{
+  int nargs;
+  int length;			/* length of expansion string */
+  U_CHAR *expansion;
+  char rest_args;		/* Nonzero if last arg. absorbs the rest */
+  struct reflist *pattern;
+
+  /* Names of macro args, concatenated in order with \0 between
+     them.  The only use of this is that we warn on redefinition if
+     this differs between the old and new definitions.  */
+  U_CHAR *argnames;
+};
+
 static unsigned int hash_HASHNODE PARAMS ((const void *));
 static int eq_HASHNODE		  PARAMS ((const void *, const void *));
 static void del_HASHNODE	  PARAMS ((void *));
@@ -160,11 +209,8 @@ del_HASHNODE (x)
      void *x;
 {
   HASHNODE *h = (HASHNODE *)x;
-  
-  if (h->type == T_MACRO)
-    _cpp_free_definition (h->value.defn);
-  else if (h->type == T_MCONST)
-    free ((void *) h->value.cpval);
+
+  _cpp_free_definition (h);
   free ((void *) h->name);
   free (h);
 }
@@ -266,23 +312,28 @@ _cpp_init_macro_hash (pfile)
 				eq_HASHNODE, del_HASHNODE);
 }
 
-/* Free a DEFINITION structure.  Used by delete_macro, and by
-   do_define when redefining macros.  */
+/* Free the definition of macro H.  */
 
 void
-_cpp_free_definition (d)
-     DEFINITION *d;
+_cpp_free_definition (h)
+     HASHNODE *h;
 {
-  struct reflist *ap, *nextap;
-
-  for (ap = d->pattern; ap != NULL; ap = nextap)
+  if (h->type == T_MCONST || h->type == T_XCONST)
+    free ((void *) h->value.cpval);
+  else if (h->type == T_MACRO || h->type == T_FMACRO)
     {
-      nextap = ap->next;
-      free (ap);
+      DEFINITION *d = h->value.defn;
+      struct reflist *ap, *nextap;
+    
+      for (ap = d->pattern; ap != NULL; ap = nextap)
+	{
+	  nextap = ap->next;
+	  free (ap);
+	}
+      if (d->argnames)
+	free (d->argnames);
+      free (d);
     }
-  if (d->argnames)
-    free (d->argnames);
-  free (d);
 }
 
 static int
@@ -934,10 +985,7 @@ _cpp_create_definition (pfile, list, hp)
 
   /* And replace the old definition (if any).  */
 
-  if (hp->type == T_MACRO || hp->type == T_FMACRO)
-    _cpp_free_definition (hp->value.defn);
-  else if (hp->type == T_MCONST || hp->type == T_XCONST)
-    free ((PTR) hp->value.cpval);
+  _cpp_free_definition (hp);
 
   if (ntype == T_MACRO || ntype == T_FMACRO)
     hp->value.defn = defn;

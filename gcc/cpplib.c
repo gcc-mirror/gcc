@@ -980,9 +980,7 @@ do_pragma_poison (pfile)
 	  if (hp->type != T_POISON)
 	    {
 	      cpp_warning (pfile, "poisoning existing macro `%s'", hp->name);
-	      if (hp->type == T_MACRO)
-		_cpp_free_definition (hp->value.defn);
-	      hp->value.defn = 0;
+	      _cpp_free_definition (hp);
 	      hp->type = T_POISON;
 	    }
 	}
