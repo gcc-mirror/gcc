@@ -603,32 +603,57 @@ divmodsi4:
 	extu.l	S0P
 	rts
 
+ 	; er0 = er0 / er1
+ 	; er4 = er0 % er1
+ 	; trashes er1 er2
+ 	; expects er1 >= 2^16
 DenHighNonZero:
-	sub.l	S0P,S0P		; zero play area
-	mov.w	A0E,A2
-	mov.b	A2H,S0L
-	mov.b	A2L,A2H
-	mov.b	A0H,A2L
-	mov.w	A2,A0E
-	mov.b	A0L,A0H
-	mov.b	#0,A0L
-	mov.b	#24,S2H		; only do 24 iterations
-
-nextbit:
-	shll.l	A0P		; double the answer guess
-	rotxl.l	S0P		; double remainder
-	sub.l	A1P,S0P		; does it all fit?
-	bhs	setone
-
-	add.l	A1P,S0P		; no, restore mistake
-	dec	S2H
-	bne	nextbit
-	rts
-
-setone:
-	inc	A0L
-	dec	S2H
-	bne	nextbit
+	mov.l	er0,er4
+	mov.l	er1,er2
+#ifdef __H8300H__
+divmod_L21:
+	shlr.l	er0
+	shlr.l	er2		; make divisor < 2^16
+	mov.w	e2,e2
+	bne	divmod_L21
+#else
+	bra	divmod_L22
+divmod_L21:
+	shlr.l	#2,er0
+divmod_L22:
+	shlr.l	#2,er2		; make divisor < 2^16
+	mov.w	e2,e2
+	bne	divmod_L21
+	rotxl.w	r2
+	bcs	divmod_L23
+	shlr.l	er0
+	bra	divmod_L24
+divmod_L23:
+	rotxr.w	r2
+	shlr.l	#2,er0
+divmod_L24:
+#endif
+	;; At this point,
+	;;  er0 contains shifted dividend
+	;;  er1 contains divisor
+	;;  er2 contains shifted divisor
+	;;  er4 contains dividend, later remainder
+	divxu.w	r2,er0		; e0 now contains the approximate quotient (AQ)
+	extu.l	er0
+	beq	divmod_L25
+	subs	#1,er0		; er0 = AQ - 1
+	mov.w	e1,r2
+	mulxu.w	r0,er2		; er2 = upper (AQ - 1) * divisor
+	sub.w	r2,e4		; dividend - 65536 * er2
+	mov.w	r1,r2
+	mulxu.w	r0,er2		; compute er4 = remainder (tentative)
+	sub.l	er2,er4		; er4 = dividend - (AQ - 1) * divisor
+divmod_L25:
+ 	cmp.l	er1,er4		; is divisor < remainder?
+	blo	divmod_L26
+ 	adds	#1,er0
+	sub.l	er1,er4		; correct the remainder
+divmod_L26:
 	rts
 
 #endif

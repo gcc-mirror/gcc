@@ -1,3 +1,9 @@
+2003-11-13  Pavel Pisa  <pisa@cmp.felk.cvut.cz>
+	    Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/lib1funcs.asm (DenHighNonZero): Optimize using
+	the approximate quotient method.
+
 2003-11-13  Richard Earnshaw  <rearnsha@arm.com>
 
 	* combine.c (distribute_notes): When re-distributing the notes from
