@@ -2515,12 +2515,25 @@ constrain_operands (strict)
 		break;
 
 	      case 'm':
-		if (GET_CODE (op) == MEM
-		    /* Before reload, accept what reload can turn into mem.  */
-		    || (strict < 0 && CONSTANT_P (op))
-		    /* During reload, accept a pseudo  */
-		    || (reload_in_progress && GET_CODE (op) == REG
-			&& REGNO (op) >= FIRST_PSEUDO_REGISTER))
+		/* Memory operands must be valid, to the extent
+		   required by STRICT.  */
+		if (GET_CODE (op) == MEM)
+		  {
+		    if (strict > 0
+			&& !strict_memory_address_p (GET_MODE (op),
+						     XEXP (op, 0)))
+		      break;
+		    if (strict == 0
+			&& !memory_address_p (GET_MODE (op), XEXP (op, 0)))
+		      break;
+		    win = 1;
+		  }
+		/* Before reload, accept what reload can turn into mem.  */
+		else if (strict < 0 && CONSTANT_P (op))
+		  win = 1;
+		/* During reload, accept a pseudo  */
+		else if (reload_in_progress && GET_CODE (op) == REG
+			 && REGNO (op) >= FIRST_PSEUDO_REGISTER)
 		  win = 1;
 		break;
 
