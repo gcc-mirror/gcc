@@ -3250,7 +3250,6 @@ extern bool initializer_zerop (tree);
 
 extern void categorize_ctor_elements (tree, HOST_WIDE_INT *, HOST_WIDE_INT *);
 extern HOST_WIDE_INT count_type_elements (tree);
-extern int mostly_zeros_p (tree);
 
 /* add_var_to_bind_expr (bind_expr, var) binds var to bind_expr.  */
 

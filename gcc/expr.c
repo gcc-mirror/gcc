@@ -4212,7 +4212,7 @@ count_type_elements (tree type)
 
 /* Return 1 if EXP contains mostly (3/4)  zeros.  */
 
-int
+static int
 mostly_zeros_p (tree exp)
 {
   if (TREE_CODE (exp) == CONSTRUCTOR)
