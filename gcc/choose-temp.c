@@ -13,13 +13,14 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 Library General Public License for more details.
 
 You should have received a copy of the GNU Library General Public
-License along with libiberty; see the file COPYING.LIB.  If
-not, write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+License along with libiberty; see the file COPYING.LIB.  If not,
+write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* This file exports one function: choose_temp_base.  */
 
 #if ! defined (_WIN32) && ! defined (NO_SYS_FILE_H)
+#include <sys/types.h>
 #include <sys/file.h>   /* May get R_OK, etc. on some systems.  */
 #endif
 
