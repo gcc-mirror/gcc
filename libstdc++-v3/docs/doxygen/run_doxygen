@@ -131,7 +131,6 @@ test $do_man = yes && {
     chmod -R u+w $outdir/man/man3/ext
 }
 
-set -e
 (
   set -e
   cd $builddir
@@ -147,13 +146,15 @@ set -e
   $doxygen ${outdir}/${mode}.cfg
   echo :: Finished, exit code was $?
 )
-set +e
+ret=$?
+test $ret -ne 0 && exit $ret
 
 test $do_html = yes && {
+  cd ${outdir}/html_${mode}
   sed -e "s=@LEVEL@=${LEVELtext}=" \
       -e "s=@DATE@=${DATEtext}=" \
-      ${srcdir}/docs/doxygen/mainpage.html > ${outdir}/html_${mode}/index.html
-  cd ${outdir}/html_${mode}
+      ${srcdir}/docs/doxygen/mainpage.html > index.html
+
   # The following bit of line noise changes annoying
   #   std::foo < typename _Ugly1, typename _Ugly2, .... _DefaultUgly17 >
   # to user-friendly
@@ -161,6 +162,13 @@ test $do_html = yes && {
   # in the major "Compound List" page.
   sed -e 's=\(::[[:alnum:]_]*\)&lt; .* &gt;=\1=' annotated.html > annstrip.html
   mv annstrip.html annotated.html
+
+  # Work around a bug in doxygen 1.3.
+  for f in class*html struct*html; do
+      sed '1,10s!^<title> Template!<title>Template !' $f > TEMP
+      mv TEMP $f
+  done
+
   cp ${srcdir}/docs/doxygen/tables.html tables.html
   echo ::
   echo :: HTML pages begin with
