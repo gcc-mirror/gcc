@@ -92,7 +92,7 @@ namespace std
     char
     basic_ios<_CharT, _Traits>::narrow(char_type __c, char __dfault) const
     { 
-      char __ret;
+      char __ret = __dfault;
       if (_M_check_facet(_M_ios_fctype))
 	__ret = _M_ios_fctype->narrow(__c, __dfault); 
       return __ret;
@@ -102,7 +102,7 @@ namespace std
     _CharT
     basic_ios<_CharT, _Traits>::widen(char __c) const
     {
-      char_type __ret;
+      char_type __ret = char_type();
       if (_M_check_facet(_M_ios_fctype))
 	__ret = _M_ios_fctype->widen(__c); 
       return __ret;
