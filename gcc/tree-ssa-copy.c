@@ -272,11 +272,16 @@ cprop_into_stmt (tree stmt, varray_type const_and_copies)
 /* CONST_AND_COPIES is a table which maps an SSA_NAME to the current
    known value for that SSA_NAME (or NULL if no value is known).  
 
-   Propagate values from CONST_AND_COPIES into the PHI nodes of the
-   successors of BB.  */
+   NONZERO_VARS is the set SSA_NAMES known to have a nonzero value,
+   even if we don't know their precise value.
+
+   Propagate values from CONST_AND_COPIES and NONZERO_VARS into the PHI
+   nodes of the successors of BB.  */
 
 void
-cprop_into_successor_phis (basic_block bb, varray_type const_and_copies)
+cprop_into_successor_phis (basic_block bb,
+			   varray_type const_and_copies,
+			   bitmap nonzero_vars)
 {
   edge e;
 
@@ -341,6 +346,11 @@ cprop_into_successor_phis (basic_block bb, varray_type const_and_copies)
 	  orig_p = &PHI_ARG_DEF (phi, hint);
 	  if (TREE_CODE (*orig_p) != SSA_NAME)
 	    continue;
+
+	  /* If the alternative is known to have a nonzero value, record
+	     that fact in the PHI node itself for future use.  */
+	  if (bitmap_bit_p (nonzero_vars, SSA_NAME_VERSION (*orig_p)))
+	    PHI_ARG_NONZERO (phi, i) = true;
 
 	  /* If we have *ORIG_P in our constant/copy table, then replace
 	     ORIG_P with its value in our constant/copy table.  */
