@@ -17,7 +17,7 @@
   { "netbsd_cpp_spec", NETBSD_CPP_SPEC },
 
 #undef CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu) %(netbsd_cpp_spec)"
+#define CPP_SPEC "%(netbsd_cpp_spec)"
 
 
 #undef SIZE_TYPE

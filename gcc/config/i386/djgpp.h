@@ -87,7 +87,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Include <sys/version.h> so __DJGPP__ and __DJGPP_MINOR__ are defined.  */
 #undef CPP_SPEC
-#define CPP_SPEC "-remap %(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
+#define CPP_SPEC "-remap %{posix:-D_POSIX_SOURCE} \
   %{!ansi:%{!std=c*:%{!std=i*:-DMSDOS}}} %{!ansi:%{!std=c*:%{!std=i*:-DGO32}}} \
   -imacros %s../include/sys/version.h"
 

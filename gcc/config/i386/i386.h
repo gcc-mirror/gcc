@@ -474,23 +474,121 @@ extern int x86_prefetch_sse;
 #endif
 
 /* Target CPU builtins.  */
-#define TARGET_CPU_CPP_BUILTINS()			\
-  do							\
-    {							\
-      if (TARGET_64BIT)					\
-	{						\
-	  builtin_assert ("cpu=x86_64");		\
-	  builtin_assert ("machine=x86_64");		\
-	  builtin_define ("__x86_64");			\
-	  builtin_define ("__x86_64__");		\
-	}						\
-      else						\
-	{						\
-	  builtin_assert ("cpu=i386");			\
-	  builtin_assert ("machine=i386");		\
-	  builtin_define_std ("i386");			\
-	}						\
-    }							\
+#define TARGET_CPU_CPP_BUILTINS()				\
+  do								\
+    {								\
+      size_t arch_len = strlen (ix86_arch_string);		\
+      size_t cpu_len = strlen (ix86_cpu_string);		\
+      int last_arch_char = ix86_arch_string[arch_len - 1];	\
+      int last_cpu_char = ix86_cpu_string[cpu_len - 1];		\
+								\
+      if (TARGET_64BIT)						\
+	{							\
+	  builtin_assert ("cpu=x86_64");			\
+	  builtin_assert ("machine=x86_64");			\
+	  builtin_define ("__x86_64");				\
+	  builtin_define ("__x86_64__");			\
+	}							\
+      else							\
+	{							\
+	  builtin_assert ("cpu=i386");				\
+	  builtin_assert ("machine=i386");			\
+	  builtin_define_std ("i386");				\
+	}							\
+								\
+      /* Built-ins based on -mcpu= (or -march= if no		\
+	 CPU given).  */					\
+      if (TARGET_386)						\
+	builtin_define ("__tune_i386__");			\
+      else if (TARGET_486)					\
+	builtin_define ("__tune_i486__");			\
+      else if (TARGET_PENTIUM)					\
+	{							\
+	  builtin_define ("__tune_i586__");			\
+	  builtin_define ("__tune_pentium__");			\
+	  if (last_cpu_char == 'x')				\
+	    builtin_define ("__tune_pentium_mmx__");		\
+	}							\
+      else if (TARGET_PENTIUMPRO)				\
+	{							\
+	  builtin_define ("__tune_i686__");			\
+	  builtin_define ("__tune_pentiumpro__");		\
+	}							\
+      else if (TARGET_K6)					\
+	{							\
+	  builtin_define ("__tune_k6__");			\
+	  if (last_cpu_char == '2')				\
+	    builtin_define ("__tune_k6_2__");			\
+	  else if (last_cpu_char == '3')			\
+	    builtin_define ("__tune_k6_3__");			\
+	}							\
+      else if (TARGET_ATHLON)					\
+	{							\
+	  builtin_define ("__tune_athlon__");			\
+	  /* Only plain "athlon" lacks SSE.  */			\
+	  if (last_cpu_char != 'n')				\
+	    builtin_define ("__tune_athlon_sse__");		\
+	}							\
+      else if (TARGET_PENTIUM4)					\
+	builtin_define ("__tune_pentium4__");			\
+								\
+      if (TARGET_MMX)						\
+	builtin_define ("__MMX__");				\
+      if (TARGET_3DNOW)						\
+	builtin_define ("__3dNOW__");				\
+      if (TARGET_3DNOW_A)					\
+	builtin_define ("__3dNOW_A__");				\
+      if (TARGET_SSE)						\
+	builtin_define ("__SSE__");				\
+      if (TARGET_SSE2)						\
+	builtin_define ("__SSE2__");				\
+								\
+      /* Built-ins based on -march=.  */			\
+      if (ix86_arch == PROCESSOR_I486)				\
+	{							\
+	  builtin_define ("__i486");				\
+	  builtin_define ("__i486__");				\
+	}							\
+      else if (ix86_arch == PROCESSOR_PENTIUM)			\
+	{							\
+	  builtin_define ("__i586");				\
+	  builtin_define ("__i586__");				\
+	  builtin_define ("__pentium");				\
+	  builtin_define ("__pentium__");			\
+	  if (last_arch_char == 'x')				\
+	    builtin_define ("__pentium_mmx__");			\
+	}							\
+      else if (ix86_arch == PROCESSOR_PENTIUMPRO)		\
+	{							\
+	  builtin_define ("__i686");				\
+	  builtin_define ("__i686__");				\
+	  builtin_define ("__pentiumpro");			\
+	  builtin_define ("__pentiumpro__");			\
+	}							\
+      else if (ix86_arch == PROCESSOR_K6)			\
+	{							\
+								\
+	  builtin_define ("__k6");				\
+	  builtin_define ("__k6__");				\
+	  if (last_arch_char == '2')				\
+	    builtin_define ("__k6_2__");			\
+	  else if (last_arch_char == '3')			\
+	    builtin_define ("__k6_3__");			\
+	}							\
+      else if (ix86_arch == PROCESSOR_ATHLON)			\
+	{							\
+	  builtin_define ("__athlon");				\
+	  builtin_define ("__athlon__");			\
+	  /* Only plain "athlon" lacks SSE.  */			\
+	  if (last_arch_char != 'n')				\
+	    builtin_define ("__athlon_sse__");			\
+	}							\
+      else if (ix86_arch == PROCESSOR_PENTIUM4)			\
+	{							\
+	  builtin_define ("__pentium4");			\
+	  builtin_define ("__pentium4__");			\
+	}							\
+    }								\
   while (0)
 
 #define TARGET_CPU_DEFAULT_i386 0
@@ -511,96 +609,6 @@ extern int x86_prefetch_sse;
 				  "pentiumpro", "pentium2", "pentium3", \
 				  "pentium4", "k6", "k6-2", "k6-3",\
 				  "athlon", "athlon-4"}
-#ifndef CPP_CPU_DEFAULT_SPEC
-#if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_i486
-#define CPP_CPU_DEFAULT_SPEC "-D__tune_i486__"
-#endif
-#if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_pentium
-#define CPP_CPU_DEFAULT_SPEC "-D__tune_i586__ -D__tune_pentium__"
-#endif
-#if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_pentium_mmx
-#define CPP_CPU_DEFAULT_SPEC "-D__tune_i586__ -D__tune_pentium__ -D__tune_pentium_mmx__"
-#endif
-#if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_pentiumpro
-#define CPP_CPU_DEFAULT_SPEC "-D__tune_i686__ -D__tune_pentiumpro__"
-#endif
-#if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_pentium2
-#define CPP_CPU_DEFAULT_SPEC "-D__tune_i686__ -D__tune_pentiumpro__\
--D__tune_pentium2__"
-#endif
-#if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_pentium3
-#define CPP_CPU_DEFAULT_SPEC "-D__tune_i686__ -D__tune_pentiumpro__\
--D__tune_pentium2__ -D__tune_pentium3__"
-#endif
-#if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_pentium4
-#define CPP_CPU_DEFAULT_SPEC "-D__tune_pentium4__"
-#endif
-#if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_k6
-#define CPP_CPU_DEFAULT_SPEC "-D__tune_k6__"
-#endif
-#if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_k6_2
-#define CPP_CPU_DEFAULT_SPEC "-D__tune_k6__ -D__tune_k6_2__"
-#endif
-#if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_k6_3
-#define CPP_CPU_DEFAULT_SPEC "-D__tune_k6__ -D__tune_k6_3__"
-#endif
-#if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_athlon
-#define CPP_CPU_DEFAULT_SPEC "-D__tune_athlon__"
-#endif
-#if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_athlon_sse
-#define CPP_CPU_DEFAULT_SPEC "-D__tune_athlon__ -D__tune_athlon_sse__"
-#endif
-#ifndef CPP_CPU_DEFAULT_SPEC
-#define CPP_CPU_DEFAULT_SPEC "-D__tune_i386__"
-#endif
-#endif /* CPP_CPU_DEFAULT_SPEC */
-
-#define CPP_CPU_SPEC "\
-%{march=i386:%{!mcpu*:-D__tune_i386__ }}\
-%{march=i486:-D__i486 -D__i486__ %{!mcpu*:-D__tune_i486__ }}\
-%{march=pentium|march=i586:-D__i586 -D__i586__ -D__pentium -D__pentium__ \
-  %{!mcpu*:-D__tune_i586__ -D__tune_pentium__ }}\
-%{march=pentium-mmx:-D__i586 -D__i586__ -D__pentium -D__pentium__ \
-  -D__pentium__mmx__ \
-  %{!mcpu*:-D__tune_i586__ -D__tune_pentium__ -D__tune_pentium_mmx__}}\
-%{march=pentiumpro|march=i686:-D__i686 -D__i686__ \
-  -D__pentiumpro -D__pentiumpro__ \
-  %{!mcpu*:-D__tune_i686__ -D__tune_pentiumpro__ }}\
-%{march=k6:-D__k6 -D__k6__ %{!mcpu*:-D__tune_k6__ }}\
-%{march=k6-2:-D__k6 -D__k6__ -D__k6_2__ \
-  %{!mcpu*:-D__tune_k6__ -D__tune_k6_2__ }}\
-%{march=k6-3:-D__k6 -D__k6__ -D__k6_3__ \
-  %{!mcpu*:-D__tune_k6__ -D__tune_k6_3__ }}\
-%{march=athlon|march=athlon-tbird:-D__athlon -D__athlon__ \
-  %{!mcpu*:-D__tune_athlon__ }}\
-%{march=athlon-4|march=athlon-xp|march=athlon-mp:-D__athlon -D__athlon__ \
-  -D__athlon_sse__ \
-  %{!mcpu*:-D__tune_athlon__ -D__tune_athlon_sse__ }}\
-%{march=pentium4:-D__pentium4 -D__pentium4__ %{!mcpu*:-D__tune_pentium4__ }}\
-%{m386|mcpu=i386:-D__tune_i386__ }\
-%{m486|mcpu=i486:-D__tune_i486__ }\
-%{mpentium|mcpu=pentium|mcpu=i586|mcpu=pentium-mmx:-D__tune_i586__ -D__tune_pentium__ }\
-%{mpentiumpro|mcpu=pentiumpro|mcpu=i686|cpu=pentium2|cpu=pentium3:-D__tune_i686__ \
--D__tune_pentiumpro__ }\
-%{mcpu=k6|mcpu=k6-2|mcpu=k6-3:-D__tune_k6__ }\
-%{mcpu=athlon|mcpu=athlon-tbird|mcpu=athlon-4|mcpu=athlon-xp|mcpu=athlon-mp:\
--D__tune_athlon__ }\
-%{mcpu=athlon-4|mcpu=athlon-xp|mcpu=athlon-mp:\
--D__tune_athlon_sse__ }\
-%{mcpu=pentium4:-D__tune_pentium4__ }\
-%{march=athlon-tbird|march=athlon-xp|march=athlon-mp|march=pentium3|march=pentium4:\
--D__SSE__ }\
-%{march=pentium-mmx|march=k6|march=k6-2|march=k6-3\
-|march=athlon|march=athlon-tbird|march=athlon-4|march=athlon-xp\
-|march=athlon-mp|march=pentium2|march=pentium3|march=pentium4: -D__MMX__ }\
-%{march=k6-2|march=k6-3\
-|march=athlon|march=athlon-tbird|march=athlon-4|march=athlon-xp\
-|march=athlon-mp: -D__3dNOW__ }\
-%{march=athlon|march=athlon-tbird|march=athlon-4|march=athlon-xp\
-|march=athlon-mp: -D__3dNOW_A__ }\
-%{msse2: -D__SSE2__ }\
-%{march=pentium4: -D__SSE2__ }\
-%{!march*:%{!mcpu*:%{!m386:%{!m486:%{!mpentium*:%(cpp_cpu_default)}}}}}"
 
 #ifndef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu) "
@@ -621,8 +629,6 @@ extern int x86_prefetch_sse;
 #endif
 
 #define EXTRA_SPECS							\
-  { "cpp_cpu_default",	CPP_CPU_DEFAULT_SPEC },				\
-  { "cpp_cpu",	CPP_CPU_SPEC },						\
   { "cc1_cpu",  CC1_CPU_SPEC },						\
   SUBTARGET_EXTRA_SPECS
 

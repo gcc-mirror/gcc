@@ -31,4 +31,4 @@ Boston, MA 02111-1307, USA.  */
 	%{!shared:%{!symbolic:-lc -lcrt}}"
 
 #undef CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu) %{pthread:-D_REENTRANT} %{pthreadT:-D_REENTRANT}"
+#define CPP_SPEC "%{pthread:-D_REENTRANT} %{pthreadT:-D_REENTRANT}"

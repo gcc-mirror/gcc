@@ -85,7 +85,6 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_SPEC
 #define CPP_SPEC \
   "%{.S:-P} \
-   %(cpp_cpu) \
    %{pthreads:-D_REENTRANT -D_PTHREADS} \
    %{!pthreads:%{threads:-D_REENTRANT -D_SOLARIS_THREADS}} \
    %{compat-bsd:-iwithprefixbefore ucbinclude -I/usr/ucbinclude}"

@@ -96,7 +96,7 @@ Boston, MA 02111-1307, USA.  */
    existing args.  */
 
 #undef CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
+#define CPP_SPEC "%{posix:-D_POSIX_SOURCE} \
   -D__stdcall=__attribute__((__stdcall__)) \
   -D__cdecl=__attribute__((__cdecl__)) \
   %{!ansi:-D_stdcall=__attribute__((__stdcall__)) \

@@ -8,7 +8,7 @@
   -Dunix -Asystem=unix -Asystem=posix -D__gnu_hurd__ -D__GNU__ -Asystem=gnu"
 
 #undef CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu) \
+#define CPP_SPEC "\
   %{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} \
   %{posix:-D_POSIX_SOURCE} %{bsd:-D_BSD_SOURCE}"
 

@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
  %{mcpu=pentium:-DCPU=PENTIUM -DCPU_VARIANT=PENTIUM %(cpp_586)} \
  %{mpentiumpro:-DCPU=PENTIUM -DCPU_VARIANT=PENTIUMPRO %(cpp_686)} \
  %{mcpu=pentiumpro:-DCPU=PENTIUM -DCPU_VARIANT=PENTIUMPRO %(cpp_686)} \
- %{!mcpu*:%{!m486:%{!mpentium*:-DCPU=I80386 %(cpp_cpu_default)}}}}"
+ %{!mcpu*:%{!m486:%{!mpentium*:-DCPU=I80386}}}}"
 
 #define HANDLE_SYSV_PRAGMA
 

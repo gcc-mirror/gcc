@@ -45,7 +45,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES ""
 
 #undef CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu)"
+#define CPP_SPEC ""
 
 #define ENDFILE_SPEC "crtend.o%s"
 

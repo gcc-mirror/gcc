@@ -28,4 +28,4 @@ Boston, MA 02111-1307, USA.  */
     -D__ELF__ -D__i386__ -D__USE_INIT_FINI__"
 
 #undef CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu) %{msoft-float:-D_SOFT_FLOAT}"
+#define CPP_SPEC "%{msoft-float:-D_SOFT_FLOAT}"

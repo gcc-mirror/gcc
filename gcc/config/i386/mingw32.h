@@ -48,7 +48,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_SPEC
 #define CPP_SPEC \
-  "%(cpp_cpu) %{posix:-D_POSIX_SOURCE} %{mthreads:-D_MT} \
+  "%{posix:-D_POSIX_SOURCE} %{mthreads:-D_MT} \
   -D__stdcall=__attribute__((__stdcall__)) \
   -D__cdecl=__attribute__((__cdecl__)) \
   %{!ansi:-D_stdcall=__attribute__((__stdcall__)) \

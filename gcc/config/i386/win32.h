@@ -74,7 +74,7 @@ Boston, MA 02111-1307, USA.  */
                         %{mcygwin:crt0%O%s} %{pg:gcrt0%O%s}}"
 
 #undef CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
+#define CPP_SPEC "%{posix:-D_POSIX_SOURCE} \
   %{!mcygwin:-iwithprefixbefore include/mingw32 -D__MINGW32__}    \
   %{mcygwin:-D__CYGWIN32__ -D__CYGWIN__}"
 
