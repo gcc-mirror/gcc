@@ -1,3 +1,8 @@
+2001-05-14  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.c (num_insns_constant_wide): Constants are sign-extended.
+	(num_insns_constant): CONST_INT can be 64-bits.
+
 2001-05-14  Stan Shebs  <shebs@apple.com>
 
 	* config/darwin.h (LIB_SPEC): Just use -lSystem.

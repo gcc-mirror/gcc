@@ -754,8 +754,10 @@ num_insns_constant_wide (value)
 #if HOST_BITS_PER_WIDE_INT == 64
   else if (TARGET_POWERPC64)
     {
-      unsigned HOST_WIDE_INT low  = value & 0xffffffff;
+      HOST_WIDE_INT low  = value & 0xffffffff;
       HOST_WIDE_INT high = value >> 32;
+
+      low = (low ^ 0x80000000) - 0x80000000;  /* sign extend */
 
       if (high == 0 && (low & 0x80000000) == 0)
 	return 2;
@@ -782,7 +784,14 @@ num_insns_constant (op, mode)
      enum machine_mode mode;
 {
   if (GET_CODE (op) == CONST_INT)
-    return num_insns_constant_wide (INTVAL (op));
+    {
+#if HOST_BITS_PER_WIDE_INT == 64
+      if (mask64_operand (op, mode))
+	    return 2;
+      else
+#endif
+	return num_insns_constant_wide (INTVAL (op));
+    }
 
   else if (GET_CODE (op) == CONST_DOUBLE && mode == SFmode)
     {
