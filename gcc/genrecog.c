@@ -449,7 +449,7 @@ add_to_sequence (pattern, last, position, insn_type, top)
 
 	    if (i < NUM_KNOWN_PREDS)
 	      {
-		int allows_const_int, j;
+		int j;
 
 		test->u.pred.index = i;
 
