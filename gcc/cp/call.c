@@ -96,13 +96,10 @@ build_vfield_ref (datum, type)
      tree datum, type;
 {
   tree rval;
-  int old_assume_nonnull_objects = flag_assume_nonnull_objects;
 
   if (datum == error_mark_node)
     return error_mark_node;
 
-  /* Vtable references are always made from non-null objects.  */
-  flag_assume_nonnull_objects = 1;
   if (TREE_CODE (TREE_TYPE (datum)) == REFERENCE_TYPE)
     datum = convert_from_reference (datum);
 
@@ -111,7 +108,6 @@ build_vfield_ref (datum, type)
 		  datum, CLASSTYPE_VFIELD (type));
   else
     rval = build_component_ref (datum, DECL_NAME (CLASSTYPE_VFIELD (type)), NULL_TREE, 0);
-  flag_assume_nonnull_objects = old_assume_nonnull_objects;
 
   return rval;
 }
@@ -2795,8 +2791,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
     case LE_EXPR:
     case EQ_EXPR:
     case NE_EXPR:
-      if (flag_int_enum_equivalence == 0 
-	  && TREE_CODE (TREE_TYPE (arg1)) == ENUMERAL_TYPE 
+      if (TREE_CODE (TREE_TYPE (arg1)) == ENUMERAL_TYPE 
 	  && TREE_CODE (TREE_TYPE (arg2)) == ENUMERAL_TYPE 
 	  && (TYPE_MAIN_VARIANT (TREE_TYPE (arg1))
 	      != TYPE_MAIN_VARIANT (TREE_TYPE (arg2))))

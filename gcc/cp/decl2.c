@@ -330,13 +330,6 @@ int flag_labels_ok;
 int flag_detailed_statistics;
 
 /* C++ specific flags.  */   
-/* Nonzero for -fall-virtual: make every member function (except
-   constructors) lay down in the virtual function table.  Calls
-   can then either go through the virtual function table or not,
-   depending.  */
-
-int flag_all_virtual;
-
 /* Zero means that `this' is a *const.  This gives nice behavior in the
    2.0 world.  1 gives 1.2-compatible behavior.  2 gives Spring behavior.
    -2 means we're constructing an object and it has fixed type.  */
@@ -363,11 +356,6 @@ int flag_handle_signatures;
 
 int flag_default_inline = 1;
 
-/* Controls whether enums and ints freely convert.
-   1 means with complete freedom.
-   0 means enums can convert to ints, but not vice-versa.  */
-int flag_int_enum_equivalence;
-
 /* Controls whether compiler generates 'type descriptor' that give
    run-time type information.  */
 int flag_rtti = 1;
@@ -375,18 +363,6 @@ int flag_rtti = 1;
 /* Nonzero if we wish to output cross-referencing information
    for the GNU class browser.  */
 extern int flag_gnu_xref;
-
-/* Nonzero if compiler can make `reasonable' assumptions about
-   references and objects.  For example, the compiler must be
-   conservative about the following and not assume that `a' is nonnull:
-
-   obj &a = g ();
-   a.f (2);
-
-   In general, it is `reasonable' to assume that for many programs,
-   and better code can be generated in that case.  */
-
-int flag_assume_nonnull_objects = 1;
 
 /* Nonzero if we want to support huge (> 2^(sizeof(short)*8-1) bytes)
    objects.  */
@@ -482,17 +458,14 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"stats", &flag_detailed_statistics, 1},
   {"this-is-variable", &flag_this_is_variable, 1},
   {"strict-prototype", &flag_strict_prototype, 1},
-  {"all-virtual", &flag_all_virtual, 1},
   {"elide-constructors", &flag_elide_constructors, 1},
   {"handle-exceptions", &flag_exceptions, 1},
   {"handle-signatures", &flag_handle_signatures, 1},
   {"default-inline", &flag_default_inline, 1},
   {"dollars-in-identifiers", &dollars_in_ident, 1},
-  {"enum-int-equiv", &flag_int_enum_equivalence, 1},
   {"honor-std", &flag_honor_std, 1},
   {"rtti", &flag_rtti, 1},
   {"xref", &flag_gnu_xref, 1},
-  {"nonnull-objects", &flag_assume_nonnull_objects, 1},
   {"implement-inlines", &flag_implement_inlines, 1},
   {"external-templates", &flag_external_templates, 1},
   {"implicit-templates", &flag_implicit_templates, 1},
@@ -557,9 +530,21 @@ lang_decode_option (argc, argv)
       if (!strcmp (p, "memoize-lookups")
 	  || !strcmp (p, "no-memoize-lookups")
 	  || !strcmp (p, "save-memoized")
-	  || !strcmp (p, "no-save-memoized"))
+	  || !strcmp (p, "no-save-memoized")
+	  || !strcmp (p, "no-all-virtual")
+	  || !strcmp (p, "no-enum-int-equiv")
+	  || !strcmp (p, "nonnull-objects")
+          || !strcmp (p, "ansi-overloading"))
 	{
 	  /* ignore */
+	  found = 1;
+	}
+      else if (!strcmp (p, "all-virtual")
+	       || !strcmp (p, "enum-int-equiv")
+	       || !strcmp (p, "no-nonnull-objects")
+	       || !strcmp (p, "no-ansi-overloading"))
+	{
+	  warning ("-f%s is no longer supported", p);
 	  found = 1;
 	}
       else if (! strcmp (p, "alt-external-templates"))
@@ -588,13 +573,6 @@ lang_decode_option (argc, argv)
       else if (!strcmp (p, "no-guiding-decls"))
 	{
 	  flag_guiding_decls = 0;
-	  found = 1;
-	}
-      else if (!strcmp (p, "ansi-overloading"))
-	found = 1;
-      else if (!strcmp (p, "no-ansi-overloading"))
-	{
-	  error ("-fno-ansi-overloading is no longer supported");
 	  found = 1;
 	}
       else if (!strcmp (p, "new-abi"))

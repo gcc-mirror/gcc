@@ -267,8 +267,7 @@ build_vbase_path (code, type, expr, path, nonnull)
 		  ind = build_indirect_ref (nonnull_expr, NULL_PTR);
 		  nonnull_expr = build_vbase_pointer (ind, last_virtual);
 		  if (nonnull == 0
-		      && (TREE_CODE (type) == POINTER_TYPE
-			  || !flag_assume_nonnull_objects)
+		      && TREE_CODE (type) == POINTER_TYPE
 		      && null_expr == NULL_TREE)
 		    {
 		      null_expr = build1 (NOP_EXPR, build_pointer_type (last_virtual), integer_zero_node);
@@ -2812,8 +2811,7 @@ check_for_override (decl, ctype)
   for (i = 0; i < n_baselinks; i++)
     {
       tree base_binfo = TREE_VEC_ELT (binfos, i);
-      if (TYPE_VIRTUAL_P (BINFO_TYPE (base_binfo))
-	  || flag_all_virtual == 1)
+      if (TYPE_VIRTUAL_P (BINFO_TYPE (base_binfo)))
 	{
 	  tree tmp = get_matching_virtual
 	    (base_binfo, decl,
@@ -3012,37 +3010,7 @@ extern int interface_only, interface_unknown;
    TREE_LIST elements, whose TREE_PURPOSE field tells what access
    the list has, and the TREE_VALUE slot gives the actual fields.
 
-   ATTRIBUTES is the set of decl attributes to be applied, if any.
-
-   If flag_all_virtual == 1, then we lay all functions into
-   the virtual function table, as though they were declared
-   virtual.  Constructors do not lay down in the virtual function table.
-
-   If flag_all_virtual == 2, then we lay all functions into
-   the virtual function table, such that virtual functions
-   occupy a space by themselves, and then all functions
-   of the class occupy a space by themselves.  This is illustrated
-   in the following diagram:
-
-   class A; class B : A;
-
-	Class A's vtbl:			Class B's vtbl:
-    --------------------------------------------------------------------
-   | A's virtual functions|		| B's virtual functions		|
-   |			  |		| (may inherit some from A).	|
-    --------------------------------------------------------------------
-   | All of A's functions |		| All of A's functions		|
-   | (such as a->A::f).	  |		| (such as b->A::f)		|
-    --------------------------------------------------------------------
-					| B's new virtual functions	|
-					| (not defined in A.)		|
-					 -------------------------------
-					| All of B's functions		|
-					| (such as b->B::f)		|
-					 -------------------------------
-
-   this allows the program to make references to any function, virtual
-   or otherwise in a type-consistent manner.  */
+   ATTRIBUTES is the set of decl attributes to be applied, if any.  */
 
 tree
 finish_struct_1 (t, warn_anon)
@@ -3055,7 +3023,6 @@ finish_struct_1 (t, warn_anon)
   tree fields = TYPE_FIELDS (t);
   tree fn_fields = TYPE_METHODS (t);
   tree x, last_x, method_vec;
-  int all_virtual;
   int has_virtual;
   int max_has_virtual;
   tree pending_virtuals = NULL_TREE;
@@ -3173,13 +3140,6 @@ finish_struct_1 (t, warn_anon)
   CLASSTYPE_VFIELDS (t) = vfields;
   CLASSTYPE_VFIELD (t) = vfield;
 
-  if (IS_SIGNATURE (t))
-    all_virtual = 0;
-  else if (flag_all_virtual == 1)
-    all_virtual = 1;
-  else
-    all_virtual = 0;
-
   for (x = TYPE_METHODS (t); x; x = TREE_CHAIN (x))
     {
       GNU_xref_member (current_class_name, x);
@@ -3205,8 +3165,7 @@ finish_struct_1 (t, warn_anon)
 
       /* The name of the field is the original field name
 	 Save this in auxiliary field for later overloading.  */
-      if (DECL_VINDEX (x)
-	  || (all_virtual == 1 && ! DECL_CONSTRUCTOR_P (x)))
+      if (DECL_VINDEX (x))
 	{
 	  add_virtual_function (&pending_virtuals, &pending_hard_virtuals,
 				&has_virtual, x, t);
