@@ -9,7 +9,7 @@
 
 * In some obscure cases, functions with the same type could have the
   same mangled name.  This bug caused compiler crashes, link-time clashes,
-  and debugger crahses.  Fixing this bug required breaking ABI
+  and debugger crashes.  Fixing this bug required breaking ABI
   compatibility for the functions involved.  The functions in questions
   are those whose types involve non-type template arguments whose
   mangled representations require more than one digit.

@@ -1,3 +1,8 @@
+2001-07-18  Xavier Delacour <xavier@fmaudio.net>,
+            Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* NEWS (Changes in GCC 3.0): Fix typo.
+
 2001-07-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (make_rtl_for_nonlocal_decl): Set DECL_C_HARD_REGISTER
