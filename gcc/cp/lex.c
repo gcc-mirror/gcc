@@ -2322,8 +2322,9 @@ check_newline ()
   register int token;
   int saw_line;
   enum { act_none, act_push, act_pop } action;
-  int old_lineno, action_number, l;
+  int action_number, l;
   int entering_c_header;
+  char *new_file;
 
  restart:
   /* Read first nonwhite char on the line.  Do this before incrementing the
@@ -2531,9 +2532,9 @@ linenum:
       body_time = this_time;
     }
 
-  input_filename = TREE_STRING_POINTER (yylval.ttype);
+  new_file = TREE_STRING_POINTER (yylval.ttype);
 
-  GNU_xref_file (input_filename);
+  GNU_xref_file (new_file);
       
   if (main_input_filename == 0)
     {
@@ -2543,29 +2544,24 @@ linenum:
 	{
 	  while (ifiles->next)
 	    ifiles = ifiles->next;
-	  ifiles->filename = file_name_nondirectory (input_filename);
+	  ifiles->filename = file_name_nondirectory (new_file);
 	}
 
-      main_input_filename = input_filename;
+      main_input_filename = new_file;
     }
 
-  extract_interface_info ();
-
-  old_lineno = lineno;
   action = act_none;
   action_number = 0;
-  lineno = l;
 
   /* Each change of file name
      reinitializes whether we are now in a system header.  */
   in_system_header = 0;
   entering_c_header = 0;
 
-  if (!read_line_number (&action_number))
+  if (!read_line_number (&action_number) && input_file_stack)
     {
-      /* Update the name in the top element of input_file_stack.  */
-      if (input_file_stack)
-	input_file_stack->name = input_filename;
+      input_file_stack->name = input_filename = new_file;
+      input_file_stack->line = lineno = l;
     }
 
   /* `1' after file name means entering new file.
@@ -2599,14 +2595,8 @@ linenum:
   if (action == act_push)
     {
       /* Pushing to a new file.  */
-      struct file_stack *p
-	= (struct file_stack *) xmalloc (sizeof (struct file_stack));
-      input_file_stack->line = old_lineno;
-      p->next = input_file_stack;
-      p->name = input_filename;
-      p->indent_level = indent_level;
-      input_file_stack = p;
-      input_file_stack_tick++;
+      push_srcloc (new_file, l);
+      input_file_stack->indent_level = indent_level;
       debug_start_source_file (input_filename);
       if (c_header_level)
 	++c_header_level;
@@ -2621,8 +2611,6 @@ linenum:
       /* Popping out of a file.  */
       if (input_file_stack->next)
 	{
-	  struct file_stack *p = input_file_stack;
-
 	  if (c_header_level && --c_header_level == 0)
 	    {
 	      if (entering_c_header)
@@ -2630,27 +2618,25 @@ linenum:
 	      --pending_lang_change;
 	    }
 
-	  if (indent_level != p->indent_level)
+	  if (indent_level != input_file_stack->indent_level)
 	    {
 	      warning_with_file_and_line
-		(p->name, old_lineno,
+		(input_filename, lineno,
 		 "This file contains more `%c's than `%c's.",
-		 indent_level > p->indent_level ? '{' : '}',
-		 indent_level > p->indent_level ? '}' : '{');
+		 indent_level > input_file_stack->indent_level ? '{' : '}',
+		 indent_level > input_file_stack->indent_level ? '}' : '{');
 	    }
-	  input_file_stack = p->next;
-	  free (p);
-	  input_file_stack_tick++;
+
+	  pop_srcloc ();
+	  input_file_stack->name = new_file;
+	  lineno = l;
 	  debug_end_source_file (input_file_stack->line);
 	}
       else
 	error ("#-lines for entering and leaving files don't match");
     }
 
-  /* Now that we've pushed or popped the input stack,
-     update the name in the top element.  */
-  if (input_file_stack)
-    input_file_stack->name = input_filename;
+  extract_interface_info ();
 
   /* skip the rest of this line.  */
  skipline:

@@ -25,6 +25,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "cp-tree.h"
 #include "rtl.h"
 #include "insn-config.h"
+#include "input.h"
 #include "integrate.h"
 #include "varray.h"
 
@@ -569,6 +570,13 @@ expand_call_inline (tp, walk_subtrees, data)
   if (!inlinable_function_p (fn, id))
     return NULL_TREE;
 
+  /* Set the current filename and line number to the function we are
+     inlining so that when we create new _STMT nodes here they get
+     line numbers corresponding to the function we are calling.  We
+     wrap the whole inlined body in an EXPR_WITH_FILE_AND_LINE as well
+     because individual statements don't record the filename.  */
+  push_srcloc (fn->decl.filename, fn->decl.linenum);
+
   /* Build a statement-expression containing code to initialize the
      arguments, the actual inline expansion of the body, and a label
      for the return statements within the function to jump to.  The
@@ -660,6 +668,7 @@ expand_call_inline (tp, walk_subtrees, data)
 			/*col=*/0);
   EXPR_WFL_EMIT_LINE_NOTE (*tp) = 1;
   TREE_CHAIN (*tp) = chain;
+  pop_srcloc ();
 
   /* If the value of the new expression is ignored, that's OK.  We
      don't warn about this for CALL_EXPRs, so we shouldn't warn about
