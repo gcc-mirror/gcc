@@ -5625,7 +5625,15 @@ fold (expr)
 		tree newconst
 		  = fold (build (PLUS_EXPR, TREE_TYPE (varop),
 				 constop, TREE_OPERAND (varop, 1)));
-		TREE_SET_CODE (varop, PREINCREMENT_EXPR);
+
+		/* Do not overwrite the current varop to be a preincrement,
+		   create a new node so that we won't confuse our caller who
+		   might create trees and throw them away, reusing the
+		   arguments that they passed to build.  This shows up in
+		   the THEN or ELSE parts of ?: being postincrements.  */
+		varop = build (PREINCREMENT_EXPR, TREE_TYPE (varop),
+			       TREE_OPERAND (varop, 0),
+			       TREE_OPERAND (varop, 1));
 
 		/* If VAROP is a reference to a bitfield, we must mask
 		   the constant by the width of the field.  */
@@ -5669,9 +5677,9 @@ fold (expr)
 		  }
 							 
 
-		t = build (code, type, TREE_OPERAND (t, 0),
-			   TREE_OPERAND (t, 1));
-		TREE_OPERAND (t, constopnum) = newconst;
+		t = build (code, type,
+			   (constopnum == 0) ? newconst : varop,
+			   (constopnum == 1) ? newconst : varop);
 		return t;
 	      }
 	  }
@@ -5684,7 +5692,15 @@ fold (expr)
 		tree newconst
 		  = fold (build (MINUS_EXPR, TREE_TYPE (varop),
 				 constop, TREE_OPERAND (varop, 1)));
-		TREE_SET_CODE (varop, PREDECREMENT_EXPR);
+
+		/* Do not overwrite the current varop to be a predecrement,
+		   create a new node so that we won't confuse our caller who
+		   might create trees and throw them away, reusing the
+		   arguments that they passed to build.  This shows up in
+		   the THEN or ELSE parts of ?: being postdecrements.  */
+		varop = build (PREDECREMENT_EXPR, TREE_TYPE (varop),
+			       TREE_OPERAND (varop, 0),
+			       TREE_OPERAND (varop, 1));
 
 		if (TREE_CODE (TREE_OPERAND (varop, 0)) == COMPONENT_REF
 		    && DECL_BIT_FIELD(TREE_OPERAND
@@ -5723,9 +5739,9 @@ fold (expr)
 		  }
 							 
 
-		t = build (code, type, TREE_OPERAND (t, 0),
-			   TREE_OPERAND (t, 1));
-		TREE_OPERAND (t, constopnum) = newconst;
+		t = build (code, type,
+			   (constopnum == 0) ? newconst : varop,
+			   (constopnum == 1) ? newconst : varop);
 		return t;
 	      }
 	  }

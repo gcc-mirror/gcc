@@ -1,5 +1,10 @@
 2000-11-30  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	2000-07-15  Michael Meissner  <meissner@redhat.com>
+	* fold-const.c (fold): When optimizing FOO++ == CONST into ++FOO
+	== CONST + INCREMENT, don't overwrite the tree node for FOO++,
+	create a new node instead.
+
 	2000-01-01  Bernd Schmidt  <bernds@cygnus.co.uk>
 	* expmed.c (emit_store_flag): Prevent losing a pending stack
 	adjust the same way we prevent losing queued increments.
