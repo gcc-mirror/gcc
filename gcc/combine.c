@@ -5272,16 +5272,25 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 
   if (BITS_BIG_ENDIAN)
     {
-      /* If position is constant, compute new position.  Otherwise,
-	 build subtraction.  */
+      /* POS is passed as if BITS_BIG_ENDIAN == 0, so we need to convert it to
+	 BITS_BIG_ENDIAN style.  If position is constant, compute new
+	 position.  Otherwise, build subtraction.
+	 Note that POS is relative to the mode of the original argument.
+	 If it's a MEM we need to recompute POS relative to that.
+	 However, if we're extracting from (or inserting into) a register,
+	 we want to recompute POS relative to wanted_inner_mode.  */
+      int width = (GET_CODE (inner) == MEM
+		   ? GET_MODE_BITSIZE (is_mode)
+		   : GET_MODE_BITSIZE (wanted_inner_mode));
+
       if (pos_rtx == 0)
-	pos = GET_MODE_BITSIZE (wanted_inner_mode) - len - pos;
+	pos = width - len - pos;
       else
 	pos_rtx
 	  = gen_rtx_combine (MINUS, GET_MODE (pos_rtx),
-			     GEN_INT (GET_MODE_BITSIZE (wanted_inner_mode)
-				      - len),
-			     pos_rtx);
+			     GEN_INT (width - len), pos_rtx);
+      /* POS may be less than 0 now, but we check for that below.
+	 Note that it can only be less than 0 if GET_CODE (inner) != MEM.  */
     }
 
   /* If INNER has a wider mode, make it smaller.  If this is a constant
