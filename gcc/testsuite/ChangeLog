@@ -1,3 +1,11 @@
+2003-12-18  Steven Bosscher  <steven@gcc.gnu.org>
+	    Dan Kegel <dank@kegel.com>
+
+	PR other/12009
+	* g++.dg/compat/compat.exp:  Do not set LD_LIBRARY_PATH when
+	testing a cross compiler, it causes spurious compile failures.
+	* lib/g++.exp: Likewise.
+
 2003-12-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/13262
