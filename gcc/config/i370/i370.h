@@ -655,7 +655,7 @@ enum reg_class
    for profiling a function entry.  */
 
 #define FUNCTION_PROFILER(FILE, LABELNO) 				\
-  fprintf (FILE, "Error: No profiling availble.\n")
+  fprintf (FILE, "Error: No profiling available.\n")
 
 /* Define EXIT_IGNORE_STACK if, when returning from a function, the stack
    pointer does not matter (provided there is a frame pointer).  */
