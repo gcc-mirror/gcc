@@ -2957,7 +2957,7 @@ insn_dead_p (x, needed, call_ok, notes)
 	  /* Don't delete insns to set global regs.  */
 	  if ((regno < FIRST_PSEUDO_REGISTER && global_regs[regno])
 	      /* Make sure insns to set frame pointer aren't deleted.  */
-	      || regno == FRAME_POINTER_REGNUM
+	      || r == frame_pointer_rtx
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
 	      || regno == HARD_FRAME_POINTER_REGNUM
 #endif
@@ -3268,7 +3268,8 @@ mark_set_1 (needed, dead, x, insn, significant)
     mem_set_list = gen_rtx_EXPR_LIST (VOIDmode, reg, mem_set_list);
 
   if (GET_CODE (reg) == REG
-      && (regno = REGNO (reg), regno != FRAME_POINTER_REGNUM)
+      && reg != frame_pointer_rtx
+      && (regno = REGNO (reg), 1)
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
       && regno != HARD_FRAME_POINTER_REGNUM
 #endif
@@ -3733,7 +3734,7 @@ mark_used_regs (needed, live, x, final, insn)
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 		|| (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
 #endif
-		|| regno == FRAME_POINTER_REGNUM)
+		|| (x == frame_pointer_rtx))
 	      {
 		/* If this is a register we are going to try to eliminate,
 		   don't mark it live here.  If we are successful in
@@ -3909,7 +3910,8 @@ mark_used_regs (needed, live, x, final, insn)
 	if ((GET_CODE (testreg) == PARALLEL
 	     && GET_MODE (testreg) == BLKmode)
 	    || (GET_CODE (testreg) == REG
-		&& (regno = REGNO (testreg), regno != FRAME_POINTER_REGNUM)
+		&& testreg != frame_pointer_rtx
+		&& (regno = REGNO (testreg), 1)
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
 		&& regno != HARD_FRAME_POINTER_REGNUM
 #endif
