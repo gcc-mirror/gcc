@@ -1,3 +1,13 @@
+Wed Oct 13 13:30:34 1999  Richard Henderson  <rth@cygnus.com>
+
+	* i386.md (*addsi3_cc): Renamed from addcsi3.
+	(*addsi3_carry): Renamed from addxsi3.
+	(*subsi3_cc): Renamed from subcsi3.
+	(*subsi3_carry): Renamed from subxsi3.
+	(*xorqi_cc_1): Renamed from xorcqi_1.
+	(xorqi_cc_ext_1): Renamed from xorcqi_ext_1.
+	* i386.c (ix86_expand_fp_compare): Update for xorqi_cc_ext_1.
+
 Wed Oct 13 13:10:46 1999  Richard Henderson  <rth@cygnus.com>
 
 	* Makefile.in (ggc-common.o): Depend on RTL_H not RTL_BASE_H.

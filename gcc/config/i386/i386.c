@@ -4056,7 +4056,7 @@ ix86_expand_fp_compare (code, op0, op1, unordered)
 	      break;
 	    case NE:
 	      emit_insn (gen_andqi_ext_0 (tmp, tmp, GEN_INT (0x45)));
-	      emit_insn (gen_xorcqi_ext_1 (tmp, tmp, GEN_INT (0x40)));
+	      emit_insn (gen_xorqi_cc_ext_1 (tmp, tmp, GEN_INT (0x40)));
 	      code = NE;
 	      break;
 	    default:
