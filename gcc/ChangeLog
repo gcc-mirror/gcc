@@ -1,3 +1,7 @@
+Wed Mar 18 16:53:19 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* netbsd.h (ASM_OUTPUT_ALIGN): Redefine.
+
 Wed Mar 18 12:43:20 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* loop.c (struct movable): New field move_insn_first.
