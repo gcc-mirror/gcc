@@ -1,3 +1,18 @@
+1999-11-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* expr.c (build_chill_function_call): Don't call a variadic
+	function with a non-literal format string.
+	
+	* grant.c (write_spec_module): Likewise.
+	
+	* parse.c (require, expect): Likewise.
+
+	* tasking.c (get_struct_type_name, get_struct_debug_type_name,
+	get_tasking_code_name, get_struct_variable_name,
+	get_process_wrapper_name, build_start_process): Likewise.
+
+	* typeck.c (valid_array_index_p): Likewise.
+
 Sun Oct 31 22:33:33 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (convert.o, typeck.o): Depend on output.h
