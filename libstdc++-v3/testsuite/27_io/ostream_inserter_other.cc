@@ -1,7 +1,7 @@
 // 1999-08-16 bkoz
 // 1999-11-01 bkoz
 
-// Copyright (C) 1999 Free Software Foundation
+// Copyright (C) 1999, 2000 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -90,10 +90,51 @@ bool test02() {
   return test;
 }
 
+// via Brent Verner <brent@rcfile.org>
+// http://sourceware.cygnus.com/ml/libstdc++/2000-06/msg00005.html
+int
+test03(void)
+{
+  using namespace std;
+
+  typedef ios::pos_type 	pos_type;
+
+  const char* TEST_IN = "testsuite/ostream_inserter_other_in";
+  const char* TEST_OUT = "testsuite/ostream_inserter_other_out";
+  pos_type i_read, i_wrote, rs, ws;
+  double tf_size = BUFSIZ * 2.5;
+  ofstream testfile(TEST_IN);
+
+  for ( int i=0; i < tf_size; ++i )
+    testfile.put('.');
+  testfile.close();
+
+  ifstream in(TEST_IN);
+  ofstream out(TEST_OUT);
+  out << in.rdbuf();
+  in.seekg(0,ios_base::beg);
+  out.seekp(0,ios_base::beg);
+  rs = in.tellg();
+  ws = out.tellp();
+  in.seekg(0,ios_base::end);
+  out.seekp(0,ios_base::end);
+  i_read = in.tellg() - rs;
+  i_wrote = out.tellp() - ws;
+  in.close();
+  out.close();
+  
+#ifdef DEBUG_ASSERT
+  assert(i_read == i_wrote);
+#endif
+
+  return 0;
+}
+
 int main()
 {
   test01();
   test02();
+  test03();
 
   return 0;
 }
