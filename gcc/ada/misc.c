@@ -74,10 +74,13 @@
 #include "ada-tree.h"
 #include "gigi.h"
 #include "adadecode.h"
+#include "opts.h"
 
 extern FILE *asm_out_file;
 extern int save_argc;
 extern char **save_argv;
+const unsigned int cl_options_count;
+const struct cl_option cl_options[1];
 
 static size_t gnat_tree_size		PARAMS ((enum tree_code));
 static bool gnat_init			PARAMS ((void));
