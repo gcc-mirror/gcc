@@ -2061,36 +2061,38 @@ namespace std
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.  
   // NB: This syntax is a GNU extension.
+  extern template class vector<locale::facet*>;
+
   extern template class moneypunct<char, false>;
   extern template class moneypunct<char, true>;
   extern template class moneypunct_byname<char, false>;
   extern template class moneypunct_byname<char, true>;
-  extern template class money_get<char, istreambuf_iterator<char> >;
-  extern template class money_put<char, ostreambuf_iterator<char> >;
+  extern template class money_get<char>;
+  extern template class money_put<char>;
   extern template class moneypunct<wchar_t, false>;
   extern template class moneypunct<wchar_t, true>;
   extern template class moneypunct_byname<wchar_t, false>;
   extern template class moneypunct_byname<wchar_t, true>;
-  extern template class money_get<wchar_t, istreambuf_iterator<wchar_t> >;
-  extern template class money_put<wchar_t, ostreambuf_iterator<wchar_t> >;
+  extern template class money_get<wchar_t>;
+  extern template class money_put<wchar_t>;
   extern template class numpunct<char>;
   extern template class numpunct_byname<char>;
-  extern template class num_get<char, istreambuf_iterator<char> >;
-  extern template class num_put<char, ostreambuf_iterator<char> >; 
+  extern template class num_get<char>;
+  extern template class num_put<char>; 
   extern template class numpunct<wchar_t>;
   extern template class numpunct_byname<wchar_t>;
-  extern template class num_get<wchar_t, istreambuf_iterator<wchar_t> >;
-  extern template class num_put<wchar_t, ostreambuf_iterator<wchar_t> >;
+  extern template class num_get<wchar_t>;
+  extern template class num_put<wchar_t>;
   extern template class __timepunct<char>;
-  extern template class time_put<char, ostreambuf_iterator<char> >;
-  extern template class time_put_byname<char, ostreambuf_iterator<char> >;
-  extern template class time_get<char, istreambuf_iterator<char> >;
-  extern template class time_get_byname<char, istreambuf_iterator<char> >;
+  extern template class time_put<char>;
+  extern template class time_put_byname<char>;
+  extern template class time_get<char>;
+  extern template class time_get_byname<char>;
   extern template class __timepunct<wchar_t>;
-  extern template class time_put<wchar_t, ostreambuf_iterator<wchar_t> >;
-  extern template class time_put_byname<wchar_t, ostreambuf_iterator<wchar_t> >;
-  extern template class time_get<wchar_t, istreambuf_iterator<wchar_t> >;
-  extern template class time_get_byname<wchar_t, istreambuf_iterator<wchar_t> >;
+  extern template class time_put<wchar_t>;
+  extern template class time_put_byname<wchar_t>;
+  extern template class time_get<wchar_t>;
+  extern template class time_get_byname<wchar_t>;
   extern template class messages<char>;
   extern template class messages_byname<char>;
   extern template class messages<wchar_t>;
@@ -2103,13 +2105,217 @@ namespace std
   extern template class collate_byname<char>;
   extern template class collate<wchar_t>;
   extern template class collate_byname<wchar_t>;
+
+  extern template
+    const codecvt<char, char, mbstate_t>& 
+    use_facet<codecvt<char, char, mbstate_t> >(const locale&);
+
+  extern template
+    const collate<char>& 
+    use_facet<collate<char> >(const locale&);
+
+  extern template
+    const numpunct<char>& 
+    use_facet<numpunct<char> >(const locale&);
+
+  extern template 
+    const num_put<char>& 
+    use_facet<num_put<char> >(const locale&);
+
+  extern template 
+    const num_get<char>& 
+    use_facet<num_get<char> >(const locale&);
+
+  extern template
+    const moneypunct<char, true>& 
+    use_facet<moneypunct<char, true> >(const locale&);
+
+  extern template
+    const moneypunct<char, false>& 
+    use_facet<moneypunct<char, false> >(const locale&);
+
+  extern template 
+    const money_put<char>& 
+    use_facet<money_put<char> >(const locale&);
+
+  extern template 
+    const money_get<char>& 
+    use_facet<money_get<char> >(const locale&);
+
+  extern template
+    const __timepunct<char>& 
+    use_facet<__timepunct<char> >(const locale&);
+
+  extern template 
+    const time_put<char>& 
+    use_facet<time_put<char> >(const locale&);
+
+  extern template 
+    const time_get<char>& 
+    use_facet<time_get<char> >(const locale&);
+
+  extern template 
+    const messages<char>& 
+    use_facet<messages<char> >(const locale&);
+
+  extern template
+    const codecvt<wchar_t, char, mbstate_t>& 
+    use_facet<codecvt<wchar_t, char, mbstate_t> >(locale const&);
+
+  extern template
+    const collate<wchar_t>& 
+    use_facet<collate<wchar_t> >(const locale&);
+
+  extern template
+    const numpunct<wchar_t>& 
+    use_facet<numpunct<wchar_t> >(const locale&);
+
+  extern template 
+    const num_put<wchar_t>& 
+    use_facet<num_put<wchar_t> >(const locale&);
+
+  extern template 
+    const num_get<wchar_t>& 
+    use_facet<num_get<wchar_t> >(const locale&);
+
+  extern template
+    const moneypunct<wchar_t, true>& 
+    use_facet<moneypunct<wchar_t, true> >(const locale&);
+
+  extern template
+    const moneypunct<wchar_t, false>& 
+    use_facet<moneypunct<wchar_t, false> >(const locale&);
+ 
+  extern template 
+    const money_put<wchar_t>& 
+    use_facet<money_put<wchar_t> >(const locale&);
+
+  extern template 
+    const money_get<wchar_t>& 
+    use_facet<money_get<wchar_t> >(const locale&);
+
+  extern template
+    const __timepunct<wchar_t>& 
+    use_facet<__timepunct<wchar_t> >(const locale&);
+
+  extern template 
+    const time_put<wchar_t>& 
+    use_facet<time_put<wchar_t> >(const locale&);
+
+  extern template 
+    const time_get<wchar_t>& 
+    use_facet<time_get<wchar_t> >(const locale&);
+
+  extern template 
+    const messages<wchar_t>& 
+    use_facet<messages<wchar_t> >(const locale&);
+
+
+  extern template 
+    bool
+    has_facet<ctype<char> >(const locale&);
+
+  extern template 
+    bool
+    has_facet<codecvt<char, char, mbstate_t> >(const locale&);
+
+  extern template 
+    bool
+    has_facet<collate<char> >(const locale&);
+
+  extern template 
+    bool
+    has_facet<numpunct<char> >(const locale&);
+
+  extern template 
+    bool
+    has_facet<num_put<char> >(const locale&);
+
+  extern template 
+    bool
+    has_facet<num_get<char> >(const locale&);
+
+  extern template 
+    bool
+    has_facet<moneypunct<char> >(const locale&);
+
+  extern template 
+    bool
+    has_facet<money_put<char> >(const locale&);
+
+  extern template 
+    bool
+    has_facet<money_get<char> >(const locale&);
+
+  extern template 
+    bool
+    has_facet<__timepunct<char> >(const locale&);
+
+  extern template 
+    bool
+    has_facet<time_put<char> >(const locale&);
+
+  extern template 
+    bool
+    has_facet<time_get<char> >(const locale&);
+
+  extern template 
+    bool
+    has_facet<messages<char> >(const locale&);
+
+ extern template 
+    bool
+    has_facet<ctype<wchar_t> >(const locale&);
+
+  extern template 
+    bool
+    has_facet<codecvt<wchar_t, char, mbstate_t> >(const locale&);
+
+  extern template 
+    bool
+    has_facet<collate<wchar_t> >(const locale&);
+
+  extern template 
+    bool
+    has_facet<numpunct<wchar_t> >(const locale&);
+
+  extern template 
+    bool
+    has_facet<num_put<wchar_t> >(const locale&);
+
+  extern template 
+    bool
+    has_facet<num_get<wchar_t> >(const locale&);
+
+  extern template 
+    bool
+    has_facet<moneypunct<wchar_t> >(const locale&);
+
+  extern template 
+    bool
+    has_facet<money_put<wchar_t> >(const locale&);
+
+  extern template 
+    bool
+    has_facet<money_get<wchar_t> >(const locale&);
+
+  extern template 
+    bool
+    has_facet<__timepunct<wchar_t> >(const locale&);
+
+  extern template 
+    bool
+    has_facet<time_put<wchar_t> >(const locale&);
+
+  extern template 
+    bool
+    has_facet<time_get<wchar_t> >(const locale&);
+
+  extern template 
+    bool
+    has_facet<messages<wchar_t> >(const locale&);
 } // namespace std
 
 #endif
-
-
-
-
-
 
 

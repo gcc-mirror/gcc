@@ -37,6 +37,7 @@ GLIBCPP_3.1 {
     };
 
     # Names not in an 'extern' block are mangled names.
+    _ZSt9has_facet*;
 
     # operator new(unsigned)
     _Znwj;
@@ -101,4 +102,3 @@ CXXABI_1 {
   local:
     *;
 };
-
