@@ -31,6 +31,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "tconfig.h"
 #include "machmode.h"
+#include "defaults.h" 
 #ifndef L_trampoline
 #include <stddef.h>
 #endif
@@ -38,6 +39,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Don't use `fancy_abort' here even if config.h says to use it.  */
 #ifdef abort
 #undef abort
+#endif
+
+#if (SUPPORTS_WEAK == 1) && defined (ASM_OUTPUT_DEF)
+#define WEAK_ALIAS
 #endif
 
 /* Permit the tm.h file to select the endianness to use just for this
@@ -1606,9 +1611,15 @@ typedef void (*vfp)(void);
 extern vfp __new_handler;
 extern void __default_new_handler (void);
 
-void * __builtin_new (size_t sz) __attribute__ ((weak));
+#ifdef WEAK_ALIAS
+void * __builtin_new (size_t sz)
+     __attribute__ ((weak, alias ("___builtin_new")));
+void *
+___builtin_new (size_t sz)
+#else
 void *
 __builtin_new (size_t sz)
+#endif
 {
   void *p;
   vfp handler = (__new_handler) ? __new_handler : __default_new_handler;
@@ -1633,9 +1644,15 @@ __builtin_new (size_t sz)
 
 extern void * __builtin_new (size_t);
 
-void * __builtin_vec_new (size_t sz) __attribute__ ((weak));
+#ifdef WEAK_ALIAS
+void * __builtin_vec_new (size_t sz)
+     __attribute__ ((weak, alias ("___builtin_vec_new")));
+void *
+___builtin_vec_new (size_t sz)
+#else
 void *
 __builtin_vec_new (size_t sz)
+#endif
 {
   return __builtin_new (sz);
 }
@@ -1696,9 +1713,15 @@ __default_new_handler ()
    by C++ programs to return to the free store a block of memory allocated
    as a single object. */
 
-void __builtin_delete (void *ptr) __attribute__ ((weak));
+#ifdef WEAK_ALIAS
+void __builtin_delete (void *ptr)
+     __attribute__ ((weak, alias ("___builtin_delete")));
+void
+___builtin_delete (void *ptr)
+#else
 void
 __builtin_delete (void *ptr)
+#endif
 {
   if (ptr)
     free (ptr);
@@ -1712,9 +1735,15 @@ __builtin_delete (void *ptr)
 
 extern void __builtin_delete (void *);
 
-void __builtin_vec_delete (void *ptr) __attribute__ ((weak));
+#ifdef WEAK_ALIAS
+void __builtin_vec_delete (void *ptr)
+     __attribute__ ((weak, alias ("___builtin_vec_delete")));
+void
+___builtin_vec_delete (void *ptr)
+#else
 void
 __builtin_vec_delete (void *ptr)
+#endif
 {
   __builtin_delete (ptr);
 }

@@ -958,6 +958,9 @@ struct tree_type
 /* Used to indicate that this DECL represents a compiler-generated entity.  */
 #define DECL_ARTIFICIAL(NODE) ((NODE)->decl.artificial_flag)
 
+/* Used to indicate that this DECL has weak linkage.  */
+#define DECL_WEAK(NODE) ((NODE)->decl.weak_flag)
+
 /* Additional flags for language-specific uses.  */
 #define DECL_LANG_FLAG_0(NODE) ((NODE)->decl.lang_flag_0)
 #define DECL_LANG_FLAG_1(NODE) ((NODE)->decl.lang_flag_1)
@@ -997,7 +1000,8 @@ struct tree_decl
   unsigned static_ctor_flag : 1;
   unsigned static_dtor_flag : 1;
   unsigned artificial_flag : 1;
-  /* room for one more */
+  unsigned weak_flag : 1;
+  /* room for no more */
 
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;

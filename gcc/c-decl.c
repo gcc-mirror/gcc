@@ -1791,6 +1791,7 @@ duplicate_decls (newdecl, olddecl)
     }
 
   /* Merge the storage class information.  */
+  DECL_WEAK (newdecl) |= DECL_WEAK (olddecl);	  
   /* For functions, static overrides non-static.  */
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {

@@ -198,13 +198,13 @@ extern char * reg_names[];
    Redefined in sysv4.h, and luna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.1.1.2.2.2 $"
+#define VERSION_INFO2   "$Revision: 1.63 $"
 #endif
 
 #ifndef VERSION_STRING
 #define VERSION_STRING  version_string
 #ifdef __STDC__
-#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.1.1.2.2.2 $ " __DATE__
+#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.63 $ " __DATE__
 #else
 #define TM_RCS_ID      "$What: <@(#) m88k.h,v	1.1.1.2.2.2> $"
 #endif  /* __STDC__ */
@@ -1542,7 +1542,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define HANDLE_SYSV_PRAGMA
 
 /* Tell when to handle #pragma weak.  This is only done for V.4.  */
-#define HANDLE_PRAGMA_WEAK TARGET_SVR4
+#define SUPPORTS_WEAK TARGET_SVR4
 
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
@@ -1725,7 +1725,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #undef	FINI_SECTION_ASM_OP
 #undef	TYPE_ASM_OP
 #undef	SIZE_ASM_OP
-#undef	WEAK_ASM_OP
 #undef	SET_ASM_OP
 #undef	SKIP_ASM_OP
 #undef	COMMON_ASM_OP
@@ -1776,11 +1775,17 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 /* These are specific to PIC.  */
 #define TYPE_ASM_OP		"type"
 #define SIZE_ASM_OP		"size"
-#define WEAK_ASM_OP		"weak"
 #ifndef AS_BUG_POUND_TYPE /* Faulty assemblers require @ rather than #.  */
 #undef	TYPE_OPERAND_FMT
 #define TYPE_OPERAND_FMT	"#%s"
 #endif
+
+/* This is how we tell the assembler that a symbol is weak.  */
+
+#undef ASM_WEAKEN_LABEL
+#define ASM_WEAKEN_LABEL(FILE,NAME) \
+  do { fputs ("\tweak\t", FILE); assemble_name (FILE, NAME); \
+       fputc ('\n', FILE); } while (0)
 
 /* These are specific to version 03.00 assembler syntax.  */
 #define INTERNAL_ASM_OP		"local"

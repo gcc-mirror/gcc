@@ -20,18 +20,3 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define SUNOS4_SHARED_LIBRARIES 1
 
 #include "sparc/sparc.h"
-
-/* If we're using GNU as and ld, we support weak symbols.  */
-
-#define HANDLE_PRAGMA_WEAK flag_gnu_linker
-#define WEAK_ASM_OP	".weak"
-#define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2)				\
- do { if (flag_gnu_linker)						\
-	{								\
-	  fprintf ((FILE), "\t%s\t", ".set");				\
-	  assemble_name (FILE, LABEL1);					\
-	  fprintf (FILE, ",");						\
-	  assemble_name (FILE, LABEL2);					\
-	  fprintf (FILE, "\n");						\
-	}								\
-  } while (0)
