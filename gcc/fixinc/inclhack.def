@@ -121,7 +121,7 @@ fix = {
 /* _INT_VARARGS.H - Define the common stuff for varargs/stdarg/stdio.   */
 /************************************************************************/
 
-/*
+/*" "
 ** This file is a DG internal header.  Never include this
 ** file directly.
 */
@@ -1154,7 +1154,7 @@ fix = {
  */
 fix = {
     hackname  = hpux10_cpp_pow_inline;
-    files     = math.h;
+    files     = fixinc-test-limits.h, math.h;
     select    = <<-	END_POW_INLINE
 	^# +ifdef +__cplusplus
 	 +}
@@ -2091,23 +2091,23 @@ fix = {
  * initializer to "{0}" instead
  */
 fix = {
-  hackname = solaris_mutex_init;
-  select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
-  files = pthread.h;
-  c_fix = format;
-  c_fix_arg = "#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)\n"
-              "%0\n"
-              "#else\n"
-              "%1, {0}}%3\n"
-              "#endif";
-  c_fix_arg = "(^#define[ \t]+PTHREAD_(MUTEX|COND)_INITIALIZER[ \t]+{.*)"
-              ",[ \t]*0}" "(|[ \t].*)$";
-  test_text =
-  '#ident "@(#)pthread.h  1.26  98/04/12 SMI"'"\n"
-  "#define PTHREAD_MUTEX_INITIALIZER\t{{{0},0}, {{{0}}}, 0}\n"
-  "#define PTHREAD_COND_INITIALIZER\t{{{0}, 0}, 0}\t/* DEFAULTCV */\n"
-  "#define PTHREAD_RWLOCK_INITIALIZER\t"
-           "{0, 0, 0, {0, 0, 0}, {0, 0}, {0, 0}}";
+    hackname = solaris_mutex_init;
+    select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    files = pthread.h;
+    c_fix = format;
+    c_fix_arg = "#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)\n"
+                "%0\n"
+                "#else\n"
+                "%1, {0}}%3\n"
+                "#endif";
+    c_fix_arg = "(^#define[ \t]+PTHREAD_(MUTEX|COND)_INITIALIZER[ \t]+{.*)"
+                ",[ \t]*0}" "(|[ \t].*)$";
+    test_text =
+    '#ident "@(#)pthread.h  1.26  98/04/12 SMI"'"\n"
+    "#define PTHREAD_MUTEX_INITIALIZER\t{{{0},0}, {{{0}}}, 0}\n"
+    "#define PTHREAD_COND_INITIALIZER\t{{{0}, 0}, 0}\t/* DEFAULTCV */\n"
+    "#define PTHREAD_RWLOCK_INITIALIZER\t"
+             "{0, 0, 0, {0, 0, 0}, {0, 0}, {0, 0}}";
 };
 
 
