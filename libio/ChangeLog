@@ -1,3 +1,7 @@
+Sun Jul 23 15:16:23 2000  Krister Walfridsson  <cato@df.lth.se>
+
+	* gen-params: Added trailing space for 'long long int' regexp.
+
 2000-06-28  Alex Samuel  <samuel@codesourcery.com>
 
 	* libioP.h (VTABLE_LABEL): Update for new vtable mangling.
