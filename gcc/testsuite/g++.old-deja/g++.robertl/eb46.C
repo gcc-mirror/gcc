@@ -1,8 +1,9 @@
 #include <iostream.h>
 
 class A1 {
+        friend class B;
  public:
-        virtual void foo() {friend class B;};
+        virtual void foo() {};
 };
 
 class A2 : public virtual A1 {friend class B;};
