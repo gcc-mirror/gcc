@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.  */
 	builtin_define_std ("unix");				\
 	builtin_assert ("system=linux");			\
 	/* The GNU C++ standard library requires this.  */	\
-	if (c_language == clk_cplusplus)			\
+	if (c_dialect_cxx ())					\
 	  builtin_define ("_GNU_SOURCE");			\
     } while (0)
 

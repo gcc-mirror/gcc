@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
 	builtin_define ("__hpux__");				\
 	builtin_define ("__unix");				\
 	builtin_define ("__unix__");				\
-	if (c_language == clk_cplusplus)			\
+	if (c_dialect_cxx ())					\
 	  {							\
 	    builtin_define ("_HPUX_SOURCE");			\
 	    builtin_define ("_INCLUDE_LONGLONG");		\

@@ -42,7 +42,7 @@ do {							\
 	builtin_define("__fpreg=long double");		\
 	builtin_define("__float80=long double");	\
 	builtin_define("__float128=long double");	\
-	if (c_language == clk_cplusplus || !flag_iso)	\
+	if (c_dialect_cxx () || !flag_iso)		\
 	  {						\
 	    builtin_define("_HPUX_SOURCE");		\
 	    builtin_define("__STDC_EXT__");		\
