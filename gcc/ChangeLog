@@ -1,3 +1,16 @@
+2001-08-21  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpphash.h (_cpp_push_next_buffer): New.
+	* cppinit.c (do_includes): Remove.
+	(push_include, free_chain, _cpp_push_next_buffer): New.
+	(cpp_start_read): Use them to rework command line option handling.
+	(cpp_handle_option): Combine handling of -include and -imacros.
+	* cpplex.c (_cpp_lex_token): Push a new -include buffer if
+	appropriate.  Always insert missing \n at EOF.
+	* cpplib.c (start_directive): Get the directive position right.
+	* cppmain.c (cb_file_change): Always print the first line, unless
+	preprocessed.
+
 2001-08-20  Andreas Jaeger  <aj@suse.de>
 
 	* profile.c (compute_branch_probabilities): Remove extra new-line

@@ -890,6 +890,17 @@ _cpp_lex_token (pfile, result)
   switch (c)
     {
     case EOF:
+      /* Non-empty files should end in a newline.  Don't warn for
+	 command line and _Pragma buffers.  */
+      if (pfile->lexer_pos.col != 0)
+	{
+	  /* Account for the missing \n, prevent multiple warnings.  */
+	  pfile->line++;
+	  pfile->lexer_pos.col = 0;
+	  if (!buffer->from_stage3)
+	    cpp_pedwarn (pfile, "no newline at end of file");
+	}
+
       /* To prevent bogus diagnostics, only pop the buffer when
 	 in-progress directives and arguments have been taken care of.
 	 Decrement the line to terminate an in-progress directive.  */
@@ -897,23 +908,15 @@ _cpp_lex_token (pfile, result)
 	pfile->lexer_pos.output_line = pfile->line--;
       else if (! pfile->state.parsing_args)
 	{
-	  /* Non-empty files should end in a newline.  Don't warn for
-	     command line and _Pragma buffers.  */
-	  if (pfile->lexer_pos.col != 0)
-	    {
-	      /* Account for the missing \n, prevent multiple warnings.  */
-	      pfile->line++;
-	      pfile->lexer_pos.col = 0;
-	      if (!buffer->from_stage3)
-		cpp_pedwarn (pfile, "no newline at end of file");
-	    }
-
-	  /* Don't pop the last file.  */
+	  /* Don't pop the last buffer.  */
 	  if (buffer->prev)
 	    {
 	      unsigned char stop = buffer->return_at_eof;
 
 	      _cpp_pop_buffer (pfile);
+	      /* Push the next -included file, if any.  */
+	      if (!pfile->buffer->prev)
+		_cpp_push_next_buffer (pfile);
 	      if (!stop)
 		goto next_token;
 	    }

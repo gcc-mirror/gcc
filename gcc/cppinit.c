@@ -105,9 +105,9 @@ static struct search_path * remove_dup_dir	PARAMS ((cpp_reader *,
 static struct search_path * remove_dup_dirs PARAMS ((cpp_reader *,
 						 struct search_path *));
 static void merge_include_chains	PARAMS ((cpp_reader *));
-static void do_includes			PARAMS ((cpp_reader *,
-						 struct pending_option *,
-						 int));
+static bool push_include		PARAMS ((cpp_reader *,
+						 struct pending_option *));
+static void free_chain			PARAMS ((struct pending_option *));
 static void set_lang			PARAMS ((cpp_reader *, enum c_lang));
 static void init_dependency_output	PARAMS ((cpp_reader *));
 static void init_standard_includes	PARAMS ((cpp_reader *));
@@ -867,36 +867,38 @@ init_standard_includes (pfile)
     }
 }
 
-/* Handles -imacro and -include from the command line.  */
-static void
-do_includes (pfile, p, scan)
+/* Pushes a -imacro and -include file given on the command line onto
+   the buffer stack.  Returns non-zero if successful.  */
+static bool
+push_include (pfile, p)
      cpp_reader *pfile;
      struct pending_option *p;
-     int scan;
 {
-  while (p)
-    {
-      struct pending_option *q;
+  cpp_token header;
 
-      /* Don't handle if -fpreprocessed.  Later: maybe update this to
-	 use the #include "" search path if cpp_read_file fails.  */
-      if (CPP_OPTION (pfile, preprocessed))
-	cpp_error (pfile, "-include and -imacros cannot be used with -fpreprocessed");
-      else
-	{
-	  cpp_token header;
-	  header.type = CPP_STRING;
-	  header.val.str.text = (const unsigned char *) p->arg;
-	  header.val.str.len = strlen (p->arg);
-	  if (_cpp_execute_include (pfile, &header, IT_CMDLINE) && scan)
-	    {
-	      pfile->buffer->return_at_eof = true;
-	      cpp_scan_nooutput (pfile);
-	    }
-	}
-      q = p->next;
-      free (p);
-      p = q;
+  /* Later: maybe update this to use the #include "" search path
+     if cpp_read_file fails.  */
+  header.type = CPP_STRING;
+  header.val.str.text = (const unsigned char *) p->arg;
+  header.val.str.len = strlen (p->arg);
+  /* Make the command line directive take up a line.  */
+  pfile->lexer_pos.line = pfile->lexer_pos.output_line = ++pfile->line;
+
+  return _cpp_execute_include (pfile, &header, IT_CMDLINE);
+}
+
+/* Frees a pending_option chain.  */
+static void
+free_chain (head)
+     struct pending_option *head;
+{
+  struct pending_option *next;
+
+  while (head)
+    {
+      next = head->next;
+      free (head);
+      head = next;
     }
 }
 
@@ -908,8 +910,6 @@ cpp_start_read (pfile, fname)
      cpp_reader *pfile;
      const char *fname;
 {
-  struct pending_option *p, *q;
-
   /* Set up the include search path now.  */
   if (! CPP_OPTION (pfile, no_standard_includes))
     init_standard_includes (pfile);
@@ -939,42 +939,73 @@ cpp_start_read (pfile, fname)
   if (!_cpp_read_file (pfile, fname))
     return 0;
 
-  /* FIXME: we want to set up linemaps with _("<builtin>") and
-     _("<command line>") somewhere round here.  Harder than it looks.  */
-
-  /* If already preprocessed, don't install __LINE__, etc., and ignore
-     command line definitions and assertions.  Handle -U's, -D's and
-     -A's in the order they were seen.  */
+  /* Install builtins and process command line macros etc. in the order
+     they appeared, but only if not already preprocessed.  */
   if (! CPP_OPTION (pfile, preprocessed))
-    init_builtins (pfile);
-
-  p = CPP_OPTION (pfile, pending)->directive_head;
-  while (p)
     {
-      if (! CPP_OPTION (pfile, preprocessed))
+      struct pending_option *p;
+
+      _cpp_do_file_change (pfile, LC_RENAME, _("<builtin>"), 1, 0);
+      init_builtins (pfile);
+      _cpp_do_file_change (pfile, LC_RENAME, _("<command line>"), 1, 0);
+      for (p = CPP_OPTION (pfile, pending)->directive_head; p; p = p->next)
 	(*p->handler) (pfile, p->arg);
-      q = p->next;
-      free (p);
-      p = q;
+
+      /* Scan -imacros files after command line defines, but before
+	 files given with -include.  */
+      for (p = CPP_OPTION (pfile, pending)->imacros_head; p; p = p->next)
+	{
+	  if (push_include (pfile, p))
+	    {
+	      pfile->buffer->return_at_eof = true;
+	      cpp_scan_nooutput (pfile);
+	    }
+	}
     }
 
-  /* Hopefully a short-term kludge.  We stacked the main file at line
-     zero.  The intervening macro definitions have messed up line
-     numbering, so we need to restore it.  */
-  pfile->lexer_pos.output_line = pfile->line = 0;
-
-  /* The -imacros files can be scanned now, but the -include files
-     have to be pushed onto the buffer stack and processed later,
-     otherwise cppmain.c won't see the tokens.  include_head was built
-     up as a stack, and popping this stack onto the buffer stack means
-     we preserve the order of the command line.  */
-  do_includes (pfile, CPP_OPTION (pfile, pending)->imacros_head, 1);
-  do_includes (pfile, CPP_OPTION (pfile, pending)->include_head, 0);
-
-  free (CPP_OPTION (pfile, pending));
-  CPP_OPTION (pfile, pending) = NULL;
+  free_chain (CPP_OPTION (pfile, pending)->directive_head);
+  free_chain (CPP_OPTION (pfile, pending)->imacros_head);
+  _cpp_push_next_buffer (pfile);
 
   return 1;
+}
+
+/* Called to push the next buffer on the stack given by -include.  If
+   there are none, free the pending structure and restore the line map
+   for the main file.  */
+bool
+_cpp_push_next_buffer (pfile)
+     cpp_reader *pfile;
+{
+  bool pushed = false;
+
+  if (CPP_OPTION (pfile, pending))
+    {
+      while (!pushed)
+	{
+	  struct pending_option *p = CPP_OPTION (pfile, pending)->include_head;
+
+	  if (p == NULL)
+	    break;
+	  if (! CPP_OPTION (pfile, preprocessed))
+	    pushed = push_include (pfile, p);
+	  CPP_OPTION (pfile, pending)->include_head = p->next;
+	  free (p);
+	}
+
+      if (!pushed)
+	{
+	  free (CPP_OPTION (pfile, pending));
+	  CPP_OPTION (pfile, pending) = NULL;
+
+	  /* Restore the line map for the main file.  */
+	  if (! CPP_OPTION (pfile, preprocessed))
+	    _cpp_do_file_change (pfile, LC_RENAME,
+				 pfile->line_maps.maps[0].to_file, 1, 0);
+	}
+    }
+
+  return pushed;
 }
 
 /* Use mkdeps.c to output dependency information.  */
@@ -1563,18 +1594,6 @@ cpp_handle_option (pfile, argc, argv)
 	  append_include_chain (pfile, xstrdup (arg), SYSTEM, 0);
 	  break;
 	case OPT_include:
-	  {
-	    struct pending_option *o = (struct pending_option *)
-	      xmalloc (sizeof (struct pending_option));
-	    o->arg = arg;
-
-	    /* This list has to be built in reverse order so that
-	       when cpp_start_read pushes all the -include files onto
-	       the buffer stack, they will be scanned in forward order.  */
-	    o->next = pend->include_head;
-	    pend->include_head = o;
-	  }
-	  break;
 	case OPT_imacros:
 	  {
 	    struct pending_option *o = (struct pending_option *)
@@ -1582,7 +1601,10 @@ cpp_handle_option (pfile, argc, argv)
 	    o->arg = arg;
 	    o->next = NULL;
 
-	    APPEND (pend, imacros, o);
+	    if (opt_code == OPT_include)
+	      APPEND (pend, include, o);
+	    else
+	      APPEND (pend, imacros, o);
 	  }
 	  break;
 	case OPT_iwithprefix:

@@ -419,6 +419,9 @@ extern unsigned char *_cpp_next_chunk	PARAMS ((cpp_pool *, unsigned int,
 extern void _cpp_lock_pool		PARAMS ((cpp_pool *));
 extern void _cpp_unlock_pool		PARAMS ((cpp_pool *));
 
+/* In cppinit.c.  */
+extern bool _cpp_push_next_buffer	PARAMS ((cpp_reader *));
+
 /* In cpplib.c */
 extern int _cpp_test_assertion PARAMS ((cpp_reader *, int *));
 extern int _cpp_handle_directive PARAMS ((cpp_reader *, int));

@@ -226,6 +226,7 @@ start_directive (pfile)
 
   /* Some handlers need the position of the # for diagnostics.  */
   pfile->directive_pos = pfile->lexer_pos;
+  pfile->directive_pos.line = pfile->line;
   pfile->directive_line = pfile->line;
 
   /* Don't save directive tokens for external clients.  */
