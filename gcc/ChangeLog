@@ -1,3 +1,7 @@
+2002-11-18  Geoffrey Keating  <geoffk@apple.com>
+
+	* gengenrtl.c (gencode): Delete unnecessary rtl_obstack declaration.
+
 2002-12-18  Doug Evans  <dje@sebabeach.org>
 
 	* m32r/m32r.c (addr24_operand): Fix arg to CONSTANT_POOL_ADDRESS_P
