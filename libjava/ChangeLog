@@ -1,3 +1,16 @@
+2001-10-18  Tom Tromey  <tromey@redhat.com>
+
+	* java/security/Security.java (loadProviders): Removed unused
+	`pname' variable.  Don't create `File' object.  Don't update
+	`providerCount'.
+	(providerCount): Removed.
+	(insertProviderAt): Don't use `providerCount'.
+	(addProvider(Provider,int)): Likewise.
+	(removeProvider): Likewise.
+	(addProvider(Provider)): Rewrote.
+	(getProviders): Rewrote.
+	(getProvider): Don't use `providerCount'.
+
 2001-10-17  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/java/security/provider/SHA1PRNG.java (engineNextBytes):

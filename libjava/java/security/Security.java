@@ -44,7 +44,6 @@ import java.util.Properties;
 public final class Security extends Object
 {
   private static Vector providers = new Vector();
-  private static int providerCount = 0;
   private static Properties secprops;
 
   static
@@ -69,17 +68,14 @@ public final class Security extends Object
 			 separator + "security" +
 			 separator + vendor + ".security");
 
-    providerCount = 0;
     try
       {
-	File secFile = new File(secfilestr);
-	FileInputStream fin = new FileInputStream(secFile);
+	FileInputStream fin = new FileInputStream(secfilestr);
 	secprops = new Properties();
 	secprops.load(fin);
 
 	int i = 1;
 	String name;
-	StringBuffer pname = new StringBuffer("security.provider.");
 
 	while ((name = secprops.getProperty("security.provider." + i++)) !=
 	       null)
@@ -89,7 +85,6 @@ public final class Security extends Object
 	    try
 	      {
 		providers.addElement(Class.forName(name).newInstance());
-		providerCount++;
 		i++;
 	      }
 	    catch (ClassNotFoundException x)
@@ -162,7 +157,8 @@ public final class Security extends Object
     if (sm != null)
       sm.checkSecurityAccess("insertProvider." + provider.getName());
 
-    for (int i = 0; i < providerCount; i++)
+    int max = providers.size ();
+    for (int i = 0; i < max; i++)
       {
 	if (((Provider) providers.elementAt(i)).getName() ==
 	    provider.getName())
@@ -170,12 +166,11 @@ public final class Security extends Object
       }
 
     if (position < 0)
-        position = 0;
-    if (position > providerCount)
-      position = providerCount;
+      position = 0;
+    if (position > max)
+      position = max;
 
     providers.insertElementAt(provider, position);
-    providerCount++;
 
     return position;
   }
@@ -199,22 +194,7 @@ public final class Security extends Object
    */
   public static int addProvider(Provider provider)
   {
-    SecurityManager sm = System.getSecurityManager();
-
-    if (sm != null)
-      sm.checkSecurityAccess("insertProvider." + provider.getName());
-
-    for (int i = 0; i < providerCount; i++)
-      {
-	if (((Provider) providers.elementAt(i)).getName() ==
-	    provider.getName())
-	  return -1;
-      }
-
-    providers.addElement(provider);
-    providerCount++;
-
-    return providerCount - 1;
+    return insertProviderAt (provider, providers.size ());
   }
 
   /**
@@ -238,19 +218,15 @@ public final class Security extends Object
       sm.checkSecurityAccess("removeProvider." + name);
 
     Provider p = null;
-    for (int i = 0; i < providerCount; i++)
+    int max = providers.size ();
+    for (int i = 0; i < max; i++)
       {
 	if (((Provider) providers.elementAt(i)).getName() == name)
 	  {
-	    p = (Provider) providers.elementAt(i);
+	    providers.remove(i);
 	    break;
 	  }
       }
-
-    if (p != null)
-      if (providers.removeElement(p))
-	  providerCount--;
-
   }
 
   /**
@@ -261,9 +237,8 @@ public final class Security extends Object
    */
   public static Provider[] getProviders()
   {
-    Provider array[] = new Provider[providerCount];
-    for (int i = 0; i < providerCount; i++)
-      array[i] = (Provider) providers.elementAt(i);
+    Provider array[] = new Provider[providers.size ()];
+    providers.copyInto (array);
     return array;
   }
 
@@ -278,7 +253,8 @@ public final class Security extends Object
   public static Provider getProvider(String name)
   {
     Provider p = null;
-    for (int i = 0; i < providerCount; i++)
+    int max = providers.size ();
+    for (int i = 0; i < max; i++)
       {
 	p = (Provider) providers.elementAt(i);
 	if (p.getName() == name)
