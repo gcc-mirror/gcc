@@ -1,5 +1,18 @@
 2005-01-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* calls.c (expand_call): Check DECL_BUILT_IN_CLASS before
+	accessing DECL_FUNCTION_CODE.
+	* dojump.c (do_jump): Likewise.
+	* gimplify.c (gimplify_call_expr): Likewise.
+	* predict.c (expr_expected_value): Likewise.
+	(strip_builtin_expect): Likewise.
+	* tree-inline.c (estimate_num_insns_1): Likewise.
+	* tree-ssa-loop-im.c (stmt_cost): Likewise
+	* fold-const.c (fold): Test for BUILT_IN_NORMAL.
+	(tree_expr_nonnegative_p): Likewise.
+
+2005-01-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* config/sparc/sparc.c (load_pic_register): Emit the appropriate
 	variant of the load_pcrel_sym pattern.
 	* config/sparc/sparc.md (P macro): Move to the top.

@@ -1748,7 +1748,8 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
 	  return GS_OK;
 	}
 
-      if (DECL_FUNCTION_CODE (decl) == BUILT_IN_VA_START)
+      if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
+	  && DECL_FUNCTION_CODE (decl) == BUILT_IN_VA_START)
         {
 	  tree arglist = TREE_OPERAND (*expr_p, 1);
 	  
