@@ -1287,7 +1287,7 @@ abspath (cwd, rel_filename)
 
   outp = inp = abs_buffer;
   *outp++ = *inp++;        	/* copy first slash */
-#ifdef apollo
+#if defined (apollo) || defined (_WIN32) || defined (__INTERIX)
   if (inp[0] == '/')
     *outp++ = *inp++;        	/* copy second slash */
 #endif
