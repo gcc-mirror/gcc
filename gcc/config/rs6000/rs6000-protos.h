@@ -52,6 +52,7 @@ extern int got_no_const_operand PARAMS ((rtx, enum machine_mode));
 extern int num_insns_constant PARAMS ((rtx, enum machine_mode));
 extern int easy_fp_constant PARAMS ((rtx, enum machine_mode));
 extern int zero_fp_constant PARAMS ((rtx, enum machine_mode));
+extern int zero_constant PARAMS ((rtx, enum machine_mode));
 extern int volatile_mem_operand PARAMS ((rtx, enum machine_mode));
 extern int offsettable_mem_operand PARAMS ((rtx, enum machine_mode));
 extern int mem_or_easy_const_operand PARAMS ((rtx, enum machine_mode));

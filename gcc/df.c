@@ -1032,6 +1032,7 @@ df_uses_record (df, loc, ref_type, bb, insn, flags)
     case CONST_INT:
     case CONST:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case PC:
     case ADDR_VEC:
     case ADDR_DIFF_VEC:

@@ -702,6 +702,7 @@ constant_expression_warning (value)
      tree value;
 {
   if ((TREE_CODE (value) == INTEGER_CST || TREE_CODE (value) == REAL_CST
+       || TREE_CODE (value) == VECTOR_CST
        || TREE_CODE (value) == COMPLEX_CST)
       && TREE_CONSTANT_OVERFLOW (value) && pedantic)
     pedwarn ("overflow in constant expression");
@@ -735,6 +736,12 @@ overflow_warning (value)
       TREE_OVERFLOW (value) = 0;
       if (skip_evaluation == 0)
 	warning ("floating point overflow in expression");
+    }
+  else if (TREE_CODE (value) == VECTOR_CST && TREE_OVERFLOW (value))
+    {
+      TREE_OVERFLOW (value) = 0;
+      if (skip_evaluation == 0)
+	warning ("vector overflow in expression");
     }
 }
 

@@ -212,6 +212,7 @@ mark_referenced_resources (x, res, include_delayed_effects)
     case CONST:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case PC:
     case SYMBOL_REF:
     case LABEL_REF:
@@ -645,6 +646,7 @@ mark_set_resources (x, res, in_dest, mark_type)
     case USE:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case LABEL_REF:
     case SYMBOL_REF:
     case CONST:

@@ -4927,6 +4927,7 @@ subst_reg_equivs (ad, insn)
     case CONST_INT:
     case CONST:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case SYMBOL_REF:
     case LABEL_REF:
     case PC:

@@ -115,7 +115,7 @@ const char * const rtx_name[NUM_RTX_CODE] = {
 /* Indexed by machine mode, gives the name of that machine mode.
    This name does not include the letters "mode".  */
 
-#define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  NAME,
+#define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER, INNER)  NAME,
 
 const char * const mode_name[NUM_MACHINE_MODES] = {
 #include "machmode.def"
@@ -125,7 +125,7 @@ const char * const mode_name[NUM_MACHINE_MODES] = {
 
 /* Indexed by machine mode, gives the class mode for GET_MODE_CLASS.  */
 
-#define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  CLASS,
+#define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER, INNER)  CLASS,
 
 const enum mode_class mode_class[NUM_MACHINE_MODES] = {
 #include "machmode.def"
@@ -136,7 +136,7 @@ const enum mode_class mode_class[NUM_MACHINE_MODES] = {
 /* Indexed by machine mode, gives the length of the mode, in bits.
    GET_MODE_BITSIZE uses this.  */
 
-#define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  BITSIZE,
+#define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER, INNER)  BITSIZE,
 
 const unsigned short mode_bitsize[NUM_MACHINE_MODES] = {
 #include "machmode.def"
@@ -147,7 +147,7 @@ const unsigned short mode_bitsize[NUM_MACHINE_MODES] = {
 /* Indexed by machine mode, gives the length of the mode, in bytes.
    GET_MODE_SIZE uses this.  */
 
-#define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  SIZE,
+#define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER, INNER)  SIZE,
 
 const unsigned char mode_size[NUM_MACHINE_MODES] = {
 #include "machmode.def"
@@ -158,7 +158,7 @@ const unsigned char mode_size[NUM_MACHINE_MODES] = {
 /* Indexed by machine mode, gives the length of the mode's subunit.
    GET_MODE_UNIT_SIZE uses this.  */
 
-#define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  UNIT,
+#define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER, INNER)  UNIT,
 
 const unsigned char mode_unit_size[NUM_MACHINE_MODES] = {
 #include "machmode.def"		/* machine modes are documented here */
@@ -170,7 +170,7 @@ const unsigned char mode_unit_size[NUM_MACHINE_MODES] = {
    (QI -> HI -> SI -> DI, etc.)  Widening multiply instructions
    use this.  */
 
-#define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  \
+#define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER, INNER)  \
   (unsigned char) WIDER,
 
 const unsigned char mode_wider_mode[NUM_MACHINE_MODES] = {
@@ -179,12 +179,23 @@ const unsigned char mode_wider_mode[NUM_MACHINE_MODES] = {
 
 #undef DEF_MACHMODE
 
-#define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  \
+#define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER, INNER)  \
   ((BITSIZE) >= HOST_BITS_PER_WIDE_INT) ? ~(unsigned HOST_WIDE_INT) 0 : ((unsigned HOST_WIDE_INT) 1 << (BITSIZE)) - 1,
 
 /* Indexed by machine mode, gives mask of significant bits in mode.  */
 
 const unsigned HOST_WIDE_INT mode_mask_array[NUM_MACHINE_MODES] = {
+#include "machmode.def"
+};
+
+#undef DEF_MACHMODE
+
+#define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER, INNER) INNER,
+
+/* Indexed by machine mode, gives the mode of the inner elements in a
+   vector type.  */
+
+const enum machine_mode inner_mode_array[NUM_MACHINE_MODES] = {
 #include "machmode.def"
 };
 
@@ -346,6 +357,7 @@ copy_rtx (orig)
     case QUEUED:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case SYMBOL_REF:
     case CODE_LABEL:
     case PC:
@@ -455,6 +467,7 @@ copy_most_rtx (orig, may_share)
     case QUEUED:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case SYMBOL_REF:
     case CODE_LABEL:
     case PC:
@@ -560,7 +573,13 @@ unsigned int
 get_mode_alignment (mode)
      enum machine_mode mode;
 {
-  unsigned int alignment = GET_MODE_UNIT_SIZE (mode);
+  unsigned int alignment;
+
+  if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
+      || GET_MODE_CLASS (mode) == MODE_COMPLEX_INT)
+    alignment = GET_MODE_UNIT_SIZE (mode);
+  else
+    alignment = GET_MODE_SIZE (mode);
   
   /* Extract the LSB of the size.  */
   alignment = alignment & -alignment;
@@ -626,6 +645,7 @@ rtx_equal_p (x, y)
     case SCRATCH:
     case CONST_DOUBLE:
     case CONST_INT:
+    case CONST_VECTOR:
       return 0;
 
     default:

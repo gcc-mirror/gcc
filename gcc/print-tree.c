@@ -707,6 +707,22 @@ print_node (file, prefix, node, indent)
 	  }
 	  break;
 
+	case VECTOR_CST:
+	  {
+	    tree vals = TREE_VECTOR_CST_ELTS (node);
+	    char buf[10];
+	    tree link;
+	    int i;
+
+	    i = 0;
+	    for (link = vals; link; link = TREE_CHAIN (link), ++i)
+	      {
+		sprintf (buf, "elt%d: ", i);
+		print_node (file, buf, TREE_VALUE (link), indent + 4);
+	      }
+	  }
+	  break;
+
 	case COMPLEX_CST:
 	  print_node (file, "real", TREE_REALPART (node), indent + 4);
 	  print_node (file, "imag", TREE_IMAGPART (node), indent + 4);

@@ -678,6 +678,7 @@ scan_rtx (insn, loc, class, action, type, earlyclobber)
     case CONST:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case SYMBOL_REF:
     case LABEL_REF:
     case CC0:

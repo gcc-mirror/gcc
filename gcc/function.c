@@ -1994,6 +1994,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
     case SYMBOL_REF:
     case LABEL_REF:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
       return;
 
     case SIGN_EXTRACT:
@@ -3722,6 +3723,7 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
     {
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case CONST:
     case SYMBOL_REF:
     case CODE_LABEL:

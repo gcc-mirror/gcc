@@ -723,6 +723,7 @@ sched_analyze_2 (deps, x, insn)
     {
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case SYMBOL_REF:
     case CONST:
     case LABEL_REF:

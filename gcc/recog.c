@@ -753,6 +753,7 @@ find_single_use_1 (dest, loc)
     case LABEL_REF:
     case SYMBOL_REF:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case CLOBBER:
       return 0;
 

@@ -2416,6 +2416,7 @@ reg_scan_mark_refs (x, insn, note_flag, min_regno)
     case CONST:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case CC0:
     case PC:
     case SYMBOL_REF:

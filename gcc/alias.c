@@ -2276,6 +2276,7 @@ nonlocal_mentioned_p (x)
     case CC0:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case CONST:
     case LABEL_REF:
       return 0;

@@ -196,6 +196,7 @@ static mem_attrs *get_mem_attrs		PARAMS ((HOST_WIDE_INT, tree, rtx,
 						 rtx, unsigned int,
 						 enum machine_mode));
 static tree component_ref_for_mem_expr	PARAMS ((tree));
+static rtx gen_const_vector_0 PARAMS ((enum mode_class, enum machine_mode));
 
 /* Probability of the conditional branch currently proceeded by try_split.
    Set to -1 otherwise.  */
@@ -2390,6 +2391,7 @@ copy_rtx_if_shared (orig)
     case QUEUED:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case SYMBOL_REF:
     case CODE_LABEL:
     case PC:
@@ -2506,6 +2508,7 @@ reset_used_flags (x)
     case QUEUED:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case SYMBOL_REF:
     case CODE_LABEL:
     case PC:
@@ -4541,6 +4544,7 @@ copy_insn_1 (orig)
     case QUEUED:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case SYMBOL_REF:
     case CODE_LABEL:
     case PC:
@@ -4779,6 +4783,35 @@ mark_emit_status (es)
   ggc_mark_rtx (es->x_first_insn);
 }
 
+/* Generate the constant 0.  The first argument is MODE_VECTOR_INT for
+   integers or MODE_VECTOR_FLOAT for floats.  */
+
+static rtx
+gen_const_vector_0 (type, mode)
+     enum mode_class type;
+     enum machine_mode mode;
+{
+  rtx tem;
+  rtvec v;
+  int units, i;
+  enum machine_mode inner;
+
+  units = GET_MODE_NUNITS (mode);
+  inner = GET_MODE_INNER (mode);
+
+  v = rtvec_alloc (units);
+
+  /* We need to call this function after we to set CONST0_RTX first.  */
+  if (!CONST0_RTX (inner))
+    abort ();
+
+  for (i = 0; i < units; ++i)
+    RTVEC_ELT (v, i) = CONST0_RTX (inner);
+
+  tem = gen_rtx_CONST_VECTOR (mode, v);
+  return tem;
+}
+
 /* Create some permanent unique rtl objects shared between all functions.
    LINE_NUMBERS is nonzero if line numbers are to be generated.  */
 
@@ -4919,6 +4952,18 @@ init_emit_once (line_numbers)
 	   mode = GET_MODE_WIDER_MODE (mode))
 	const_tiny_rtx[i][(int) mode] = GEN_INT (i);
     }
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_INT);
+       mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    const_tiny_rtx[0][(int) mode]
+      = gen_const_vector_0 (MODE_VECTOR_INT, mode);
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_FLOAT);
+       mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    const_tiny_rtx[0][(int) mode]
+      = gen_const_vector_0 (MODE_VECTOR_FLOAT, mode);
 
   for (i = (int) CCmode; i < (int) MAX_MACHINE_MODE; ++i)
     if (GET_MODE_CLASS ((enum machine_mode) i) == MODE_CC)

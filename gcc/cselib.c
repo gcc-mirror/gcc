@@ -593,6 +593,22 @@ hash_rtx (x, mode, create)
 		 + (unsigned) CONST_DOUBLE_HIGH (x));
       return hash ? hash : (unsigned int) CONST_DOUBLE;
 
+    case CONST_VECTOR:
+      {
+	int units;
+	rtx elt;
+
+	units = CONST_VECTOR_NUNITS (x);
+
+	for (i = 0; i < units; ++i)
+	  {
+	    elt = CONST_VECTOR_ELT (x, i);
+	    hash += hash_rtx (elt, GET_MODE (elt), 0);
+	  }
+
+	return hash;
+      }
+
       /* Assume there is only one rtx object for any given label.  */
     case LABEL_REF:
       hash
@@ -794,6 +810,7 @@ cselib_subst_to_values (x)
       return e->u.val_rtx;
 
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case CONST_INT:
       return x;
 
@@ -1009,6 +1026,7 @@ cselib_mem_conflict_p (mem_base, val)
     case CONST:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
     case SYMBOL_REF:
     case LABEL_REF:
       return 0;

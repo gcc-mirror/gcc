@@ -2382,7 +2382,8 @@ decode_addr_const (exp, value)
   value->offset = offset;
 }
 
-enum kind { RTX_UNKNOWN, RTX_DOUBLE, RTX_INT, RTX_UNSPEC };
+/* We do RTX_UNSPEC + XINT (blah), so nothing can go after RTX_UNSPEC.  */
+enum kind { RTX_UNKNOWN, RTX_DOUBLE, RTX_INT, RTX_VECTOR, RTX_UNSPEC };
 struct rtx_const
 {
   ENUM_BITFIELD(kind) kind : 16;
@@ -2391,6 +2392,10 @@ struct rtx_const
     union real_extract du;
     struct addr_const addr;
     struct {HOST_WIDE_INT high, low;} di;
+
+    /* The max vector size we have is 8 wide.  This should be enough.  */
+    HOST_WIDE_INT veclo[16];
+    HOST_WIDE_INT vechi[16];
   } un;
 };
 
@@ -3580,6 +3585,34 @@ decode_rtx_const (mode, x, value)
 	}
       break;
 
+    case CONST_VECTOR:
+      {
+	int units, i;
+	rtx elt;
+
+	units = CONST_VECTOR_NUNITS (x);
+	value->kind = RTX_VECTOR;
+	value->mode = mode;
+
+	for (i = 0; i < units; ++i)
+	  {
+	    elt = CONST_VECTOR_ELT (x, i);
+	    if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+	      {
+		value->un.veclo[i] = (HOST_WIDE_INT) INTVAL (elt);
+		value->un.vechi[i] = 0;
+	      }
+	    else if (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
+	      {
+		value->un.veclo[i] = (HOST_WIDE_INT) CONST_DOUBLE_LOW (elt);
+		value->un.vechi[i] = (HOST_WIDE_INT) CONST_DOUBLE_HIGH (elt);
+	      }
+	    else
+	      abort ();
+	  }
+      }
+      break;
+
     case CONST_INT:
       value->un.addr.offset = INTVAL (x);
       break;
@@ -4007,6 +4040,46 @@ output_constant_pool (fnname, fndecl)
 	  assemble_integer (x, GET_MODE_SIZE (pool->mode), pool->align, 1);
 	  break;
 
+	case MODE_VECTOR_FLOAT:
+	  {
+	    int i, units;
+	    rtx elt;
+
+	    if (GET_CODE (x) != CONST_VECTOR)
+	      abort ();
+
+	    units = CONST_VECTOR_NUNITS (x);
+
+	    for (i = 0; i < units; i++)
+	      {
+		elt = CONST_VECTOR_ELT (x, i);
+		memcpy ((char *) &u,
+			(char *) &CONST_DOUBLE_LOW (elt),
+			sizeof u);
+		assemble_real (u.d, GET_MODE_INNER (pool->mode), pool->align);
+	      }
+	  }
+	  break;
+
+        case MODE_VECTOR_INT:
+	  {
+	    int i, units;
+	    rtx elt;
+
+	    if (GET_CODE (x) != CONST_VECTOR)
+	      abort ();
+
+	    units = CONST_VECTOR_NUNITS (x);
+
+	    for (i = 0; i < units; i++)
+	      {
+		elt = CONST_VECTOR_ELT (x, i);
+		assemble_integer (elt, GET_MODE_UNIT_SIZE (pool->mode),
+				  pool->align, 1);
+	      }
+	  }
+	  break;
+
 	default:
 	  abort ();
 	}
@@ -4255,6 +4328,7 @@ initializer_constant_valid_p (value, endtype)
       return TREE_STATIC (value) ? null_pointer_node : 0;
 
     case INTEGER_CST:
+    case VECTOR_CST:
     case REAL_CST:
     case STRING_CST:
     case COMPLEX_CST:
