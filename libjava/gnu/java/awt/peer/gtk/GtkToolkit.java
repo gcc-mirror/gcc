@@ -44,13 +44,17 @@ import java.awt.dnd.DragGestureEvent;
 import java.awt.dnd.peer.DragSourceContextPeer;
 import java.awt.font.TextAttribute;
 import java.awt.im.InputMethodHighlight;
+import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.ImageObserver;
+import java.awt.image.ImageConsumer;
 import java.awt.image.ImageProducer;
 import java.awt.GraphicsEnvironment;
 import java.awt.peer.*;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Properties;
@@ -127,10 +131,102 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
     return status;
   }
 
+  /** 
+   * A helper class to return to clients in cases where a BufferedImage is
+   * desired but its construction fails.
+   */
+  private class GtkErrorImage extends Image
+  {
+    public GtkErrorImage()
+    {
+    }
+
+    public int getWidth(ImageObserver observer)
+    {
+      return -1;
+    }
+
+    public int getHeight(ImageObserver observer)
+    {
+      return -1;
+    }
+
+    public ImageProducer getSource()
+    {
+
+      return new ImageProducer() 
+        {          
+          HashSet consumers = new HashSet();          
+          public void addConsumer(ImageConsumer ic)
+          {
+            consumers.add(ic);
+          }
+
+          public boolean isConsumer(ImageConsumer ic)
+          {
+            return consumers.contains(ic);
+          }
+
+          public void removeConsumer(ImageConsumer ic)
+          {
+            consumers.remove(ic);
+          }
+
+          public void startProduction(ImageConsumer ic)
+          {
+            consumers.add(ic);
+            Iterator i = consumers.iterator();
+            while(i.hasNext())
+              {
+                ImageConsumer c = (ImageConsumer) i.next();
+                c.imageComplete(ImageConsumer.IMAGEERROR);
+              }
+          }
+          public void requestTopDownLeftRightResend(ImageConsumer ic)
+          {
+            startProduction(ic);
+          }        
+        };
+    }
+
+    public Graphics getGraphics() 
+    { 
+      return null; 
+    }
+
+    public Object getProperty(String name, ImageObserver observer)
+    {
+      return null;
+    }
+    public Image getScaledInstance(int width, int height, int flags)
+    {
+      return new GtkErrorImage();
+    }
+
+    public void flush() 
+    {
+    }
+  }
+
+
+  /** 
+   * Helper to return either a BufferedImage -- the argument -- or a
+   * GtkErrorImage if the argument is null.
+   */
+
+  private Image bufferedImageOrError(BufferedImage b)
+  {
+    if (b == null) 
+      return new GtkErrorImage();
+    else
+      return b;
+  }
+
+
   public Image createImage (String filename)
   {
     if (useGraphics2D())
-      return GdkPixbufDecoder.createBufferedImage (filename);
+      return bufferedImageOrError(GdkPixbufDecoder.createBufferedImage (filename));
     else
       {
         GdkPixbufDecoder d = new GdkPixbufDecoder (filename);
@@ -143,7 +239,7 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
   public Image createImage (URL url)
   {
     if (useGraphics2D())
-      return GdkPixbufDecoder.createBufferedImage (url);
+      return bufferedImageOrError(GdkPixbufDecoder.createBufferedImage (url));
     else
       {
         GdkPixbufDecoder d = new GdkPixbufDecoder (url);
@@ -156,7 +252,7 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
   public Image createImage (ImageProducer producer) 
   {
     if (useGraphics2D())
-      return GdkPixbufDecoder.createBufferedImage (producer);
+      return bufferedImageOrError(GdkPixbufDecoder.createBufferedImage (producer));
     else
       {
         GtkImage image = new GtkImage (producer, null);
@@ -169,9 +265,9 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
 			    int imagelength)
   {
     if (useGraphics2D())
-      return GdkPixbufDecoder.createBufferedImage (imagedata,
+      return bufferedImageOrError(GdkPixbufDecoder.createBufferedImage (imagedata,
                                                    imageoffset, 
-                                                   imagelength);
+                                                                        imagelength));
     else
       {
         GdkPixbufDecoder d = new GdkPixbufDecoder (imagedata,

@@ -327,11 +327,19 @@ public class JViewport extends JComponent
     listenerList.remove(ChangeListener.class, listener);
   }
 
+  /**
+   * This method returns the String ID of the UI class of  Separator.
+   *
+   * @return The UI class' String ID.
+   */
   public String getUIClassID()
   {
     return "ViewportUI";
   }
 
+  /**
+   * This method resets the UI used to the Look and Feel defaults..
+   */
   public void updateUI()
   {
     setUI((ViewportUI) UIManager.getUI(this));

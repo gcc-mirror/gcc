@@ -1108,7 +1108,7 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
     {
       selectedRun = getRunForTab(tabPane.getTabCount(),
                                  tabPane.getSelectedIndex());
-      tabPane.layout();
+      tabPane.revalidate();
       tabPane.repaint();
     }
   }

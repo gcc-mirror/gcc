@@ -41,6 +41,7 @@ import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.image.ImageObserver;
 import java.io.Serializable;
 import java.net.URL;
 
@@ -50,42 +51,62 @@ public class ImageIcon
 {
   private static final long serialVersionUID = 532615968316031794L;
   Image image;
-  String file;
-  String descr;
-  Component observer;
+  String description;
+  ImageObserver observer;
 
-  public ImageIcon(String s)
+  public ImageIcon()
   {
-    // if description is not specified, then file name becomes
-    // desciption for this icon
-    this(s, s);
   }
 
-  public ImageIcon(Image image)
+  public ImageIcon(String file)
   {
+    this(file, file);
+  }
+
+  public ImageIcon(String file, String description)
+  {
+    this(Toolkit.getDefaultToolkit().getImage(file), description);
+  }
+
+  public ImageIcon(byte[] imageData)
+  {
+    this(imageData, null);
+  }
+  
+  public ImageIcon(byte[] imageData, String description)
+  {
+    this(Toolkit.getDefaultToolkit().createImage(imageData), description);
   }
 
   public ImageIcon(URL url)
   {
-    image = Toolkit.getDefaultToolkit().getImage(url);
+    this(url, null);
   }
 
-  public ImageIcon(String file, String descr)
+  public ImageIcon(URL url, String description)
   {
-    this.file = file;
-    this.descr = descr;
-
-    image = Toolkit.getDefaultToolkit().getImage(file);
-    if (image == null)
-      return;
-
-    //loadImage(image);
+    this(Toolkit.getDefaultToolkit().getImage(url), description);
   }
 
-  // not in SUN's spec !!!
-  public void setParent(Component p)
+  public ImageIcon(Image image)
   {
-    observer = p;
+    this(image, null);
+  }
+
+  public ImageIcon(Image image, String description)
+  {
+    this.image = Toolkit.getDefaultToolkit().createImage(image.getSource());
+    this.description = description;
+  }
+
+  public ImageObserver getImageObserver()
+  {
+    return observer;
+  }
+
+  public void setImageObserver(ImageObserver newObserver)
+  {
+    observer = newObserver;
   }
 
   public Image getImage()
@@ -95,12 +116,12 @@ public class ImageIcon
 
   public String getDescription()
   {
-    return descr;
+    return description;
   }
 
   public void setDescription(String description)
   {
-    this.descr = description;
+    this.description = description;
   }
 
   public int getIconHeight()
@@ -115,6 +136,6 @@ public class ImageIcon
 
   public void paintIcon(Component c, Graphics g, int x, int y)
   {
-    g.drawImage(image, x, y, observer);
+    g.drawImage(image, x, y, observer != null ? observer : c);
   }
 }

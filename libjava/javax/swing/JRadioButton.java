@@ -67,8 +67,8 @@ public class JRadioButton extends JToggleButton
     public JRadioButton(String text, Icon icon)
     {
 	super(text, icon);
-        paint_border = false;
-        content_area_filled = false;
+        borderPainted = false;
+        contentAreaFilled = false;
     }
 
     

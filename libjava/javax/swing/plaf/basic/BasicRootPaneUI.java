@@ -38,12 +38,16 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
+import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.RootPaneUI;
 
 
 public class BasicRootPaneUI extends RootPaneUI
+  implements PropertyChangeListener
 {
     public static ComponentUI createUI(JComponent x) 
     {
@@ -53,7 +57,11 @@ public class BasicRootPaneUI extends RootPaneUI
     public void installUI(JComponent c)
     {
       c.setOpaque(true);
-      c.setBackground(javax.swing.UIManager.getColor("control"));
+    c.setBackground(UIManager.getColor("control"));
       super.installUI(c);
     }
+
+  public void propertyChange(PropertyChangeEvent event)
+  {
+  }
 }

@@ -436,7 +436,6 @@ public class DefaultDesktopManager implements DesktopManager, Serializable
                           int newWidth, int newHeight)
   {
     dragCache.setBounds(newX, newY, newWidth, newHeight);
-    dragCache = findMinimum(dragCache, component);
 
     if (currentDragMode == JDesktopPane.OUTLINE_DRAG_MODE)
       {
@@ -628,27 +627,4 @@ public class DefaultDesktopManager implements DesktopManager, Serializable
   {
     return frame.getWasIcon();
   } // wasIcon()
-
-  /**
-   * This is a helper method that determines the minimum size a 
-   * JInternalFrame can be resized to.
-   *
-   * @param r The desired size.
-   * @param c The JComponent to find a minimum size for.
-   *
-   * @return The minimum size a JInternalFrame can be resized to.
-   */
-  private Rectangle findMinimum(Rectangle r, JComponent c)
-  {
-    if (r != null && c != null)
-      {
-	Dimension d = c.getPreferredSize();
-	if (d != null)
-	  {
-	    r.width = Math.max(d.width, r.width);
-	    r.height = Math.max(d.height, r.height);
-	  }
-      }
-    return r;
-  }
 } // DefaultDesktopManager

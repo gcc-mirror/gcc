@@ -50,7 +50,8 @@ public interface Document
 
   void addUndoableEditListener(UndoableEditListener listener);
 
-  Position createPosition(int offs);
+  Position createPosition(int offs)
+    throws BadLocationException;
 
   Element getDefaultRootElement();
 
@@ -64,16 +65,19 @@ public interface Document
 
   Position getStartPosition();
 
-  String getText(int offset, int length);
+  String getText(int offset, int length)
+    throws BadLocationException;
 
-  void getText(int offset, int length, Segment txt);
+  void getText(int offset, int length, Segment txt)
+    throws BadLocationException;
 
   void insertString(int offset, String str, AttributeSet a)
     throws BadLocationException;
 
   void putProperty(Object key, Object value);
 
-  void remove(int offs, int len);
+  void remove(int offs, int len)
+    throws BadLocationException;
 
   void removeDocumentListener(DocumentListener listener);
 

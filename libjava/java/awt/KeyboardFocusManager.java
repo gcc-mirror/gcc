@@ -246,7 +246,10 @@ public abstract class KeyboardFocusManager
    */
   public Component getFocusOwner ()
   {
-    return (Component) getObject (currentFocusOwners);
+    Component owner = (Component) getObject (currentFocusOwners);
+    if (owner == null)
+      owner = (Component) getObject (currentPermanentFocusOwners);
+    return owner;
   }
 
   /**

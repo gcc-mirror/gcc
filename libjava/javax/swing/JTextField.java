@@ -37,6 +37,9 @@ exception statement from your version. */
 
 package javax.swing;
 
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.accessibility.AccessibleStateSet;
@@ -77,6 +80,8 @@ public class JTextField extends JTextComponent
   public static final String notifyAction = "notify-field-accept";
   
   private int columns;
+
+  private int align;
 
   /**
    * Creates a new instance of <code>JTextField</code>.
@@ -132,10 +137,7 @@ public class JTextField extends JTextComponent
    */
   public JTextField(Document doc, String text, int columns)
   {
-    if (doc == null)
-      doc = createDefaultModel();
-
-    setDocument(doc);
+    setDocument(doc == null ? createDefaultModel() : doc);
     setText(text);
     setColumns(columns);
   }
@@ -149,6 +151,16 @@ public class JTextField extends JTextComponent
   protected Document createDefaultModel()
   {
     return new PlainDocument();
+  }
+
+  /**
+   * Returns the class ID for the UI.
+   *
+   * @return "TextFieldUI";
+   */
+  public String getUIClassID()
+  {
+    return "TextFieldUI";
   }
 
   /**
@@ -175,6 +187,8 @@ public class JTextField extends JTextComponent
    * Returns all registered <code>ActionListener</code> objects.
    *
    * @return an array of listeners
+   *
+   * @since 1.4
    */
   public ActionListener[] getActionListeners()
   {
@@ -210,10 +224,46 @@ public class JTextField extends JTextComponent
       throw new IllegalArgumentException();
 
     this.columns = columns;
-    // FIXME: Invalidate layout.
+    invalidate();
+    repaint();
   }
 
-  public void selectAll()
+  public int getHorizontalAlignment()
   {
+    return align;
+  }
+
+  public void setHorizontalAlignment(int newAlign)
+  {
+    int oldAlign = align;
+    align = newAlign;
+    invalidate();
+    repaint();
+    firePropertyChange("horizontalAlignment", oldAlign, newAlign);
+  }
+
+  public void setFont(Font newFont)
+  {
+    super.setFont(newFont);
+    revalidate();
+  }
+
+  public Dimension getPreferredSize()
+  {
+    Dimension size;
+    FontMetrics fm = getFontMetrics(getFont());
+    int fontHeight = fm.getMaxAscent() + fm.getMaxDescent();
+    int columnWidth = fm.charWidth('m');
+    
+    if (columns != 0)
+      {
+	size = new Dimension(columns * columnWidth + 4, fontHeight + 4);
+      }
+    else
+      {
+	size = new Dimension(10, 10);
+      }
+
+    return size;
   }
 }

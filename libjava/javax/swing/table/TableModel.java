@@ -37,38 +37,38 @@ exception statement from your version. */
 
 package javax.swing.table;
 
-// Imports
 import javax.swing.event.TableModelListener;
+
 
 /**
  * TableModel public interface
  * @author Andrew Selkirk
  */
-public interface TableModel {
-
+public interface TableModel
+{
 	/**
 	 * getRowCount
-	 * @returns row count
+   * @return row count
 	 */
 	int getRowCount();
 
 	/**
 	 * getColumnCount
-	 * @returns column count
+   * @return column count
 	 */
 	int getColumnCount();
 
 	/**
 	 * getColumnName
 	 * @param columnIndex Column index
-	 * @returns Column name
+   * @return Column name
 	 */
 	String getColumnName(int columnIndex);
 
 	/**
 	 * getColumnClass
 	 * @param columnIndex Column index
-	 * @returns Column class
+   * @return Column class
 	 */
 	Class getColumnClass(int columnIndex);
 
@@ -76,7 +76,7 @@ public interface TableModel {
 	 * isCellEditable
 	 * @param rowIndex Row index
 	 * @param columnIndex Column index
-	 * @returns true if editable, false otherwise
+   * @return true if editable, false otherwise
 	 */
 	boolean isCellEditable(int rowIndex, int columnIndex);
 
@@ -84,7 +84,7 @@ public interface TableModel {
 	 * getValueAt
 	 * @param rowIndex Row index
 	 * @param columnIndex Column index
-	 * @returns Value at specified indices
+   * @return Value at specified indices
 	 */
 	Object getValueAt(int rowIndex, int columnIndex);
 
@@ -107,6 +107,4 @@ public interface TableModel {
 	 * @param listener TableModelListener
 	 */
 	void removeTableModelListener(TableModelListener listener);
-
-
-} // TableModel
+}

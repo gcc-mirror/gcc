@@ -45,6 +45,7 @@ import java.awt.Graphics;
 import java.awt.event.WindowEvent;
 import java.awt.peer.FileDialogPeer;
 import java.io.FilenameFilter;
+import java.io.File;
 
 public class GtkFileDialogPeer extends GtkDialogPeer implements FileDialogPeer
 {
@@ -52,17 +53,33 @@ public class GtkFileDialogPeer extends GtkDialogPeer implements FileDialogPeer
   
   private String currentFile = null;
   private String currentDirectory = null;
+  private FilenameFilter filter;
 
-  native void create ();
+  native void create (GtkContainerPeer parent);
+  native void connectJObject ();
+  native void connectSignals ();
+  native void nativeSetFile (String file);
+  native public String nativeGetDirectory();
+  native public void nativeSetDirectory(String directory);
+  native void nativeSetFilenameFilter (FilenameFilter filter);
+
+  public void create() {
+    create((GtkContainerPeer) awtComponent.getParent().getPeer());
+
+    FileDialog fd = (FileDialog) awtComponent;
+
+    setDirectory(fd.getDirectory());
+    setFile(fd.getFile());
+
+    FilenameFilter filter = fd.getFilenameFilter();
+    if (filter != null)
+      setFilenameFilter(filter);
+  }
 
   public GtkFileDialogPeer (FileDialog fd)
   {
     super (fd);
   }
-
-  native void connectJObject ();
-  native void connectSignals ();
-  native void nativeSetFile (String file);
 
   public void setFile (String fileName)
   {
@@ -80,26 +97,16 @@ public class GtkFileDialogPeer extends GtkDialogPeer implements FileDialogPeer
         return;
       }
 
-    // Remove any directory path from the filename
-    int sepIndex = fileName.lastIndexOf (FS);
-    if (sepIndex < 0)
-      {
+    // GtkFileChooser requires absolute filenames. If the given filename
+    // is not absolute, let's construct it based on current directory.
         currentFile = fileName;
+    if (fileName.indexOf(FS) == 0)
+      {
         nativeSetFile (fileName);
       }
     else
       {
-        if (fileName.length() > (sepIndex + 1))
-	  {
-	    String fn = fileName.substring (sepIndex + 1);
-            currentFile = fn;
-            nativeSetFile (fn);
-	  }
-	else
-	  {
-            currentFile = "";
-            nativeSetFile ("");
-	  }
+        nativeSetFile (nativeGetDirectory() + FS + fileName);
       }
   }
 
@@ -120,20 +127,25 @@ public class GtkFileDialogPeer extends GtkDialogPeer implements FileDialogPeer
       }
       
     currentDirectory = directory;
-
-    // Gtk expects the directory to end with a file separator
-    if (directory.substring (directory.length () - 1).equals (FS))
-      nativeSetFile (directory);
-    else
-      nativeSetFile (directory + FS);
+    nativeSetDirectory (directory);
   }
 
   public void setFilenameFilter (FilenameFilter filter)
   {
-    /* GTK has no filter callbacks yet.  It works by setting a pattern
-     * (see gtk_file_selection_complete), which we can't convert
-     * to the callback paradigm. With GTK-2.4 there will be a
-     * gtk_file_filter_add_custom function that we can use. */
+    this.filter = filter;
+    nativeSetFilenameFilter(filter);
+  }
+
+  /* This method interacts with the native callback function of the
+     same name.  The native function will extract the filename from the
+     GtkFileFilterInfo object and send it to this method, which will
+     in turn call the filter's accept() method and give back the return
+     value. */
+  boolean filenameFilterCallback (String fullname) {
+    String filename = fullname.substring(fullname.lastIndexOf(FS) + 1);
+    String dirname = fullname.substring(0, fullname.lastIndexOf(FS));
+    File dir = new File(dirname);
+    return filter.accept(dir, filename);
   }
 
   public Graphics getGraphics ()

@@ -133,7 +133,7 @@ public class BasicSplitPaneUI extends SplitPaneUI
 	throw new IllegalArgumentException("Illegal placement in JSplitPane");
       components[i] = component;
       resetSizeAt(i);
-      layoutContainer(splitPane);
+      splitPane.revalidate();
       splitPane.repaint();
     }
 
@@ -1265,15 +1265,9 @@ public class BasicSplitPaneUI extends SplitPaneUI
     tmpSizes[1] = layoutManager.getAvailableSize(splitPane.getSize(),
                                                  splitPane.getInsets())
                   - tmpSizes[0] - tmpSizes[1];
-    Point p = divider.getLocation();
 
-//    if (getOrientation() == JSplitPane.HORIZONTAL_SPLIT)
-    //    setLastDragLocation(p.x);
-//    else
-//      setLastDragLocation(p.y);
     layoutManager.setSizes(tmpSizes);
-    layoutManager.layoutContainer(splitPane);
-
+    splitPane.revalidate();
     splitPane.repaint();
   }
 
@@ -1414,7 +1408,7 @@ public class BasicSplitPaneUI extends SplitPaneUI
     getSplitPane().setLayout(layoutManager);
 
     // invalidating by itself does not invalidate the layout.
-    getSplitPane().invalidate();
+    getSplitPane().revalidate();
   }
 
   /**
@@ -1437,7 +1431,7 @@ public class BasicSplitPaneUI extends SplitPaneUI
 	nonContinuousLayoutDivider.setVisible(true);
 	nonContinuousLayoutDivider.setBounds(divider.getBounds());
       }
-    splitPane.invalidate();
+    splitPane.revalidate();
     splitPane.repaint();
   }
 

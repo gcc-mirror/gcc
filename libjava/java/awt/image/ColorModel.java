@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package java.awt.image;
 
+import java.util.Arrays;
 import java.awt.Point;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
@@ -551,8 +552,8 @@ public abstract class ColorModel implements Transparency
       (transferType == o.transferType) &&
       (transparency == o.transparency) &&
       (hasAlpha == o.hasAlpha) &&
-      (isAlphaPremultiplied == isAlphaPremultiplied) &&
-      (bits.equals(o.bits)) &&
+      (isAlphaPremultiplied == o.isAlphaPremultiplied) &&
+      Arrays.equals(bits, o.bits) &&
       (cspace.equals(o.cspace));
   }
 

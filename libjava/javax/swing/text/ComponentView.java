@@ -79,6 +79,7 @@ public class ComponentView extends View
     }
 
     public Shape modelToView(int pos, Shape a, Position.Bias b)
+      throws BadLocationException
     {
 	return null;
     }

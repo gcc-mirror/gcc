@@ -49,6 +49,7 @@ public class JTextArea extends JTextComponent
   private int rows;
   private int columns;
   private boolean wrapping;
+  private int tabSize = 8;
 
   /**
    * Creates a new <code>JTextArea</code> object.
@@ -224,8 +225,28 @@ public class JTextArea extends JTextComponent
    *
    * @param wrapping true to enable line wrapping, false otherwise
    */
-  public void setLineWrap(boolean wrapping)
+  public void setLineWrap(boolean flag)
   {
-    this.wrapping = wrapping;
+    if (wrapping == flag)
+      return;
+
+    boolean oldValue = wrapping;
+    wrapping = flag;
+    firePropertyChange("lineWrap", oldValue, wrapping);
+  }
+
+  public int getTabSize()
+  {
+    return tabSize;
+  }
+
+  public void setTabSize(int newSize)
+  {
+    if (tabSize == newSize)
+      return;
+    
+    int oldValue = tabSize;
+    tabSize = newSize;
+    firePropertyChange("tabSize", oldValue, tabSize);
   }
 }

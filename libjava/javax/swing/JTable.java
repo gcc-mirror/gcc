@@ -38,9 +38,11 @@ exception statement from your version. */
 
 package javax.swing;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.util.Vector;
+import java.util.Hashtable;
 
 import javax.accessibility.Accessible;
 import javax.swing.event.CellEditorListener;
@@ -51,6 +53,11 @@ import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.DefaultTableColumnModel;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
@@ -66,39 +73,115 @@ public class JTable extends JComponent
   public static final int AUTO_RESIZE_OFF = 0;
   public static final int AUTO_RESIZE_SUBSEQUENT_COLUMNS = 2;
   
+  protected boolean autoCreateColumnsFromModel;
+  protected int autoResizeMode;
+  protected TableCellEditor cellEditor;
+  protected boolean cellSelectionEnabled;
+  protected TableColumnModel columnModel;
+  protected TableModel dataModel;
+  protected Hashtable defaultEditorsByColumnClass;
+  protected Hashtable defaultRenderersByColumnClass;
+  protected int editingColumn;
+  protected int editingRow;
+  protected Color gridColor;
+  protected Dimension preferredViewportSize;
+  protected int rowHeight;
+  protected int rowMargin;
+  protected boolean rowSelectionAllowed;
+  protected Color selectionBackground;
+  protected Color selectionForeground;
+  protected ListSelectionModel selectionModel;
+  protected boolean showHorizontalLines;
+  protected boolean showVerticalLines;
+  protected JTableHeader tableHeader;
+  
+  /**
+   * Creates a new <code>JTable</code> instance.
+   */
   public JTable ()
   {
-    throw new Error ("Not implemented");
+    this(null, null, null);
   }
 
+  /**
+   * Creates a new <code>JTable</code> instance.
+   *
+   * @param numRows an <code>int</code> value
+   * @param numColumns an <code>int</code> value
+   */
   public JTable (int numRows, int numColumns)
   {
-    throw new Error ("Not implemented");
+    this(new DefaultTableModel(numRows, numColumns));
   }
 
-  public JTable (Object[][] rowData, Object[] columnNames)
+  /**
+   * Creates a new <code>JTable</code> instance.
+   *
+   * @param data an <code>Object[][]</code> value
+   * @param columnNames an <code>Object[]</code> value
+   */
+  public JTable(Object[][] data, Object[] columnNames)
   {
-    throw new Error ("Not implemented");
+    this(new DefaultTableModel(data, columnNames));
   }
 
+  /**
+   * Creates a new <code>JTable</code> instance.
+   *
+   * @param dm a <code>TableModel</code> value
+   */
   public JTable (TableModel dm)
   {
-    throw new Error ("Not implemented");
+    this(dm, null, null);
   }
 
+  /**
+   * Creates a new <code>JTable</code> instance.
+   *
+   * @param dm a <code>TableModel</code> value
+   * @param cm a <code>TableColumnModel</code> value
+   */
   public JTable (TableModel dm, TableColumnModel cm)
   {
-    throw new Error ("Not implemented");
+    this(dm, cm, null);
   }
 
+  /**
+   * Creates a new <code>JTable</code> instance.
+   *
+   * @param dm a <code>TableModel</code> value
+   * @param cm a <code>TableColumnModel</code> value
+   * @param sm a <code>ListSelectionModel</code> value
+   */
   public JTable (TableModel dm, TableColumnModel cm, ListSelectionModel sm)
   {
-    throw new Error ("Not implemented");
+    this.dataModel = dm == null ? createDefaultDataModel() : dm;
+    this.columnModel = cm == null ? createDefaultColumnModel() : cm;
+    this.selectionModel = sm == null ? createDefaultListSelectionModel() : sm;
   }
 
-  public JTable (Vector rowData, Vector columnNames)
+  /**
+   * Creates a new <code>JTable</code> instance.
+   *
+   * @param data a <code>Vector</code> value
+   * @param columnNames a <code>Vector</code> value
+   */
+  public JTable(Vector data, Vector columnNames)
   {
-    throw new Error ("Not implemented");
+    this(new DefaultTableModel(data, columnNames));
+  }
+
+  /**
+   * @deprecated 1.0.2, replaced by <code>new JScrollPane(JTable)</code>
+   */
+  public static JScrollPane createScrollPaneForTable(JTable table)
+  {
+    return new JScrollPane(table);
+  }
+
+  public void clearSelection()
+  {
+    selectionModel.clearSelection();
   }
 
   public void columnAdded (TableColumnModelEvent event)
@@ -126,6 +209,21 @@ public class JTable extends JComponent
     throw new Error ("Not implemented");
   }
  
+  protected TableColumnModel createDefaultColumnModel()
+  {
+    return new DefaultTableColumnModel();
+  }
+
+  protected TableModel createDefaultDataModel()
+  {
+    return new DefaultTableModel();
+  }
+
+  protected ListSelectionModel createDefaultListSelectionModel()
+  {
+    return new DefaultListSelectionModel();
+  }
+
   public void editingCanceled (ChangeEvent event)
   {
     throw new Error ("Not implemented");
@@ -138,7 +236,12 @@ public class JTable extends JComponent
 
   public TableColumnModel getColumnModel ()
   {
-    throw new Error ("Not implemented");
+    return columnModel;
+  }
+  
+  public TableModel getModel()
+  {
+    return dataModel;
   }
   
   public Dimension getPreferredScrollableViewportSize ()
@@ -168,12 +271,15 @@ public class JTable extends JComponent
 
   public int getSelectedRow ()
   {
-    throw new Error ("Not implemented");
+    return selectionModel.getMinSelectionIndex();
   }
   
   public ListSelectionModel getSelectionModel ()
   {
-    throw new Error ("Not implemented");
+    if (! rowSelectionAllowed)
+      return null;
+
+    return selectionModel;
   }
 
   public void tableChanged (TableModelEvent event)
@@ -183,7 +289,13 @@ public class JTable extends JComponent
 
   public void setModel (TableModel model)
   {
-    throw new Error ("Not implemented");
+    if (model == null)
+      throw new IllegalArgumentException();
+
+    // FIXME: Should we deregister from old model ?
+    
+    dataModel = model;
+    dataModel.addTableModelListener(this);
   }
 
   public void setSelectionMode (int selectionMode)
@@ -193,7 +305,13 @@ public class JTable extends JComponent
 
   public void setSelectionModel (ListSelectionModel model)
   {
-    throw new Error ("Not implemented");
+    if (model == null)
+      throw new IllegalArgumentException();
+
+    // FIXME: Should we deregister from old model ?
+    
+    selectionModel = model;
+    selectionModel.addListSelectionListener(this);
   }
 
   public void setShowGrid (boolean showGrid)
@@ -205,4 +323,71 @@ public class JTable extends JComponent
   {
     throw new Error ("Not implemented");
   }
-} // class JTable
+
+  public JTableHeader getTableHeader()
+  {
+    return tableHeader;
+  }
+
+  public void setTableHeader(JTableHeader newHeader)
+  {
+    tableHeader = newHeader;
+  }
+
+  public boolean getColumnSelectionAllowed()
+  {
+    return columnModel.getColumnSelectionAllowed();
+  }
+  
+  public void setColumnSelectionAllowed(boolean flag)
+  {
+    columnModel.setColumnSelectionAllowed(flag);
+  }
+
+  public boolean getRowSelectionAllowed()
+  {
+    return rowSelectionAllowed;
+  }
+  
+  public void setRowSelectionAllowed(boolean flag)
+  {
+    rowSelectionAllowed = flag;
+  }
+
+  public int getAutoResizeMode()
+  {
+    return autoResizeMode;
+  }
+
+  public void setAutoResizeMode(int mode)
+  {
+    autoResizeMode = mode;
+  }
+
+  public int getColumnCount()
+  {
+    return dataModel.getColumnCount();
+  }
+
+  public int getRowCount()
+  {
+    return dataModel.getRowCount();
+  }
+
+  public TableCellRenderer getCellRenderer(int row, int column)
+  {
+    TableCellRenderer renderer =
+      columnModel.getColumn(column).getCellRenderer();
+    
+    if (renderer == null)
+      renderer = getDefaultRenderer(dataModel.getColumnClass(column));
+    
+    return renderer;
+  }
+
+  public TableCellRenderer getDefaultRenderer(Class columnClass)
+  {
+    // FIXME:
+    return null;
+  }
+}

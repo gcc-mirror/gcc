@@ -38,38 +38,58 @@ exception statement from your version. */
 package javax.swing.text;
 
 import java.io.InputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.Serializable;
 import java.io.Writer;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 
-public abstract class EditorKit implements Cloneable
+
+public abstract class EditorKit
+  implements Cloneable, Serializable
 {
-    EditorKit()
+  private static final long serialVersionUID = -5044124649345887822L;
+  
+  public EditorKit()
     {
     }
 
-    EditorKit(EditorKit kit)
+  public Object clone()
+    {
+    try
+      {
+	return super.clone();
+    }
+    catch (CloneNotSupportedException e)
+    {
+	return null;
+    }
+  }
+
+  /**
+   * Called when the kit is being removed from the JEditorPane.
+   */
+  public void deinstall(JEditorPane c)
     {
     }
 
-    void deinstall(JEditorPane c)
-    {
-	//      Called when the kit is being removed from the JEditorPane. 
-    }
-    void install(JEditorPane c)
-    {
-    }
-
-    abstract  Caret createCaret();
-    abstract  Document createDefaultDocument();
-    abstract  Action[] getActions();
-    abstract  String getContentType();
-    abstract  ViewFactory getViewFactory();
-    abstract  void read(InputStream in, Document doc, int pos);
-    abstract  void read(Reader in, Document doc, int pos);
-    abstract  void write(OutputStream out, Document doc, int pos, int len);
-    abstract  void write(Writer out, Document doc, int pos, int len);    
+  public void install(JEditorPane c)
+  {
 }
 
+  public abstract Caret createCaret();
+  public abstract Document createDefaultDocument();
+  public abstract Action[] getActions();
+  public abstract String getContentType();
+  public abstract ViewFactory getViewFactory();
+  public abstract void read(InputStream in, Document doc, int pos)
+    throws BadLocationException, IOException;
+  public abstract void read(Reader in, Document doc, int pos)
+    throws BadLocationException, IOException;
+  public abstract void write(OutputStream out, Document doc, int pos, int len)
+    throws BadLocationException, IOException;
+  public abstract void write(Writer out, Document doc, int pos, int len)
+    throws BadLocationException, IOException;
+}

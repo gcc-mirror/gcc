@@ -42,7 +42,6 @@ import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.Vector;
-
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
@@ -57,232 +56,15 @@ import javax.swing.undo.UndoableEdit;
 public abstract class AbstractDocument
   implements Document, Serializable
 {
-  public abstract class AbstractElement
-    implements Element, TreeNode, Serializable
-  {
-    private static final long serialVersionUID = 1265312733007397733L;
-    
-    int count;
-    int offset;
-    AttributeSet attr;
-    Vector elts = new Vector();
-    String name;
-    Element parent;
-    Vector kids = new Vector();
-    TreeNode tree_parent;
-
-    public AbstractElement(Element p, AttributeSet s)
-    {
-      parent = p;
-      attr = s;
-    }
-
-    public Enumeration children()
-    {
-      return kids.elements();
-    }
-
-    public boolean getAllowsChildren()
-    {
-      return true;
-    }
-
-    public TreeNode getChildAt(int index)
-    {
-      return (TreeNode) kids.elementAt(index);
-    }
-
-    public int getChildCount()
-    {
-      return kids.size();
-    }
-
-    public int getIndex(TreeNode node)
-    {
-      return kids.indexOf(node);
-    }
-
-    public TreeNode getParent()
-    {
-      return tree_parent;
-    }
-
-    public AttributeSet getAttributes()
-    {
-      return attr;
-    }
-
-    public Document getDocument()
-    {
-      return AbstractDocument.this;
-    }
-
-    public Element getElement(int index)
-    {
-      return (Element) elts.elementAt(index);
-    }
-
-    public String getName()
-    {
-      return name;
-    }
-
-    public Element getParentElement()
-    {
-      return parent;
-    }
-
-    public abstract boolean isLeaf();
-
-    public abstract int getEndOffset();
-
-    public abstract int getElementCount();
-
-    public abstract int getElementIndex(int offset);
-
-    public abstract int getStartOffset();
-  }
-
-  public interface AttributeContext
-  {
-  }
-
-  public class BranchElement extends AbstractElement
-  {
-    private static final long serialVersionUID = -8595176318868717313L;
-    
-    public BranchElement(Element e, AttributeSet a, int s, int end)
-    {
-      super(e, a);
-    }
-
-    public boolean isLeaf()
-    {
-      return false;
-    }
-
-    public int getEndOffset()
-    {
-      return 0;
-    }
-
-    public int getElementCount()
-    {
-      return 0;
-    }
-
-    public int getElementIndex(int offset)
-    {
-      return 0;
-    }
-
-    public int getStartOffset()
-    {
-      return 0;
-    }
-  }
-
-  public interface Content
-  {
-    Position createPosition(int offset) throws BadLocationException;
-
-    int length();
-
-    UndoableEdit insertString(int where, String str)
-      throws BadLocationException;
-
-    UndoableEdit remove(int where, int nitems) throws BadLocationException;
-
-    String getString(int where, int len) throws BadLocationException;
-
-    void getChars(int where, int len, Segment txt) throws BadLocationException;
-  }
-
-  public class DefaultDocumentEvent extends CompoundEdit
-    implements DocumentEvent
-  {
-    private static final long serialVersionUID = -7406103236022413522L;
-    
-    public int len;
-    public int off;
-
-    public Document getDocument()
-    {
-      return AbstractDocument.this;
-    }
-
-    public int getLength()
-    {
-      return len;
-    }
-
-    public int getOffset()
-    {
-      return off;
-    }
-
-    public DocumentEvent.EventType getType()
-    {
-      return null;
-    }
-
-    public DocumentEvent.ElementChange getChange(Element elem)
-    {
-      return null;
-    }
-  }
-
-  public static class ElementEdit extends AbstractUndoableEdit
-  {
-    private static final long serialVersionUID = -1216620962142928304L;
-  }
-
-  public class LeafElement extends AbstractElement
-  {
-    private static final long serialVersionUID = 5115368706941283802L;
-    
-    public LeafElement(Element e, AttributeSet a, int s, int end)
-    {
-      super(e, a);
-    }
-
-    public boolean isLeaf()
-    {
-      return true;
-    }
-
-    public int getEndOffset()
-    {
-      return 0;
-    }
-
-    public int getElementCount()
-    {
-      return 0;
-    }
-
-    public int getElementIndex(int offset)
-    {
-      return 0;
-    }
-
-    public int getStartOffset()
-    {
-      return 0;
-    }
-  }
-
   private static final long serialVersionUID = -116069779446114664L;
-
   protected static final String BAD_LOCATION = "document location failure";
-
   public static final String BidiElementName = "bidi level";
   public static final String ContentElementName = "content";
   public static final String ParagraphElementName = "paragraph";
   public static final String SectionElementName = "section";
   public static final String ElementNameAttribute = "$ename";
-  
   Content content;
+  protected EventListenerList listenerList = new EventListenerList();
 
   protected AbstractDocument(Content doc)
   {
@@ -293,8 +75,6 @@ public abstract class AbstractDocument
   {
     content = doc;
   }
-
-  protected EventListenerList listenerList = new EventListenerList();
 
   // these still need to be implemented by a derived class:
   public abstract Element getParagraphElement(int pos);
@@ -312,14 +92,16 @@ public abstract class AbstractDocument
     return new LeafElement(parent, a, p0, p1 - p0);
   }
 
-  public Position createPosition(int offs)
+  public Position createPosition(final int offset) throws BadLocationException
   {
-    final int a = offs;
+    if (offset < 0 || offset > getLength())
+      throw new BadLocationException(getText(0, getLength()), offset);
+
     return new Position()
       {
 	public int getOffset()
 	{
-	  return a;
+	  return offset;
 	}
       };
   }
@@ -416,21 +198,13 @@ public abstract class AbstractDocument
     return null;
   }
 
-  public String getText(int offset, int length)
-  {
-    try
+  public String getText(int offset, int length) throws BadLocationException
       {
 	return content.getString(offset, length);
       }
-    catch (Exception e)
-      {
-	System.out.println("Hmmm, fail to getText: " + offset + " -> "
-	                   + length);
-	return null;
-      }
-  }
 
   public void getText(int offset, int length, Segment txt)
+    throws BadLocationException
   {
     String a = getText(offset, length);
 
@@ -439,6 +213,7 @@ public abstract class AbstractDocument
 	txt.offset = 0;
 	txt.count = 0;
 	txt.array = new char[0];
+
 	return;
       }
 
@@ -478,7 +253,7 @@ public abstract class AbstractDocument
   {
   }
 
-  public void remove(int offs, int len)
+  public void remove(int offset, int length) throws BadLocationException
   {
   }
 
@@ -564,5 +339,317 @@ public abstract class AbstractDocument
 
   protected void writeUnlock()
   {
+  }
+
+  public interface AttributeContext
+  {
+    AttributeSet addAttribute(AttributeSet old, Object name, Object value);
+
+    AttributeSet addAttributes(AttributeSet old, AttributeSet attributes);
+
+    AttributeSet getEmptySet();
+
+    void reclaim(AttributeSet attributes);
+
+    AttributeSet removeAttribute(AttributeSet old, Object name);
+
+    AttributeSet removeAttributes(AttributeSet old, AttributeSet attributes);
+
+    AttributeSet removeAttributes(AttributeSet old, Enumeration names);
+  }
+
+  public interface Content
+  {
+    Position createPosition(int offset) throws BadLocationException;
+
+    int length();
+
+    UndoableEdit insertString(int where, String str)
+      throws BadLocationException;
+
+    UndoableEdit remove(int where, int nitems) throws BadLocationException;
+
+    String getString(int where, int len) throws BadLocationException;
+
+    void getChars(int where, int len, Segment txt) throws BadLocationException;
+  }
+
+  public abstract class AbstractElement
+    implements Element, TreeNode, Serializable
+  {
+    private static final long serialVersionUID = 1265312733007397733L;
+    int count;
+    int offset;
+    AttributeSet attr;
+    Vector elts = new Vector();
+    String name;
+    Element parent;
+    Vector kids = new Vector();
+    TreeNode tree_parent;
+
+    public AbstractElement(Element p, AttributeSet s)
+    {
+      parent = p;
+      attr = s;
+    }
+
+    public Enumeration children()
+    {
+      return kids.elements();
+    }
+
+    public boolean getAllowsChildren()
+    {
+      return true;
+    }
+
+    public TreeNode getChildAt(int index)
+    {
+      return (TreeNode) kids.elementAt(index);
+    }
+
+    public int getChildCount()
+    {
+      return kids.size();
+    }
+
+    public int getIndex(TreeNode node)
+    {
+      return kids.indexOf(node);
+    }
+
+    public TreeNode getParent()
+    {
+      return tree_parent;
+    }
+
+    public AttributeSet getAttributes()
+    {
+      return attr;
+    }
+
+    public Document getDocument()
+    {
+      return AbstractDocument.this;
+    }
+
+    public Element getElement(int index)
+    {
+      return (Element) elts.elementAt(index);
+    }
+
+    public String getName()
+    {
+      return name;
+    }
+
+    public Element getParentElement()
+    {
+      return parent;
+    }
+
+    public abstract boolean isLeaf();
+
+    public abstract int getEndOffset();
+
+    public abstract int getElementCount();
+
+    public abstract int getElementIndex(int offset);
+
+    public abstract int getStartOffset();
+  }
+
+  public class BranchElement extends AbstractElement
+  {
+    private static final long serialVersionUID = -8595176318868717313L;
+    private int start;
+    private int end;
+    private Vector children = new Vector();
+
+    public BranchElement(Element parent, AttributeSet attributes, int start,
+                         int end)
+    {
+      super(parent, attributes);
+      this.start = start;
+      this.end = end;
+    }
+
+    public Enumeration children()
+    {
+      return children.elements();
+    }
+
+    public boolean getAllowsChildren()
+    {
+      return true;
+    }
+
+    public Element getElement(int index)
+    {
+      return (Element) children.get(index);
+    }
+
+    public int getElementCount()
+    {
+      return children.size();
+    }
+
+    public int getElementIndex(int offset)
+    {
+      return children.indexOf(positionToElement(offset));
+    }
+
+    public int getEndOffset()
+    {
+      return end;
+    }
+
+    public String getName()
+    {
+      return "AbstractDocument.BranchElement";
+    }
+
+    public int getStartOffset()
+    {
+      return start;
+    }
+
+    public boolean isLeaf()
+    {
+      return false;
+    }
+
+    public Element positionToElement(int position)
+    {
+      // XXX: There is surely a better algorithm
+      // as beginning from first element each time.
+      for (int index = 0; index < children.size(); ++index)
+        {
+	  Element elem = (Element) children.get(index);
+
+	  if ((elem.getStartOffset() <= position)
+	      && (position < elem.getEndOffset()))
+	    return elem;
+        }
+
+      return null;
+    }
+
+    public void replace(int offset, int length, Element[] elems)
+    {
+      for (int index = 0; index < length; ++index)
+	children.removeElementAt(offset);
+
+      for (int index = 0; index < elems.length; ++index)
+	children.add(offset + index, elems[index]);
+    }
+
+    public String toString()
+    {
+      return getName() + ": " + "content";
+    }
+  }
+
+  public class DefaultDocumentEvent extends CompoundEdit
+    implements DocumentEvent
+  {
+    private static final long serialVersionUID = -7406103236022413522L;
+    public int len;
+    public int off;
+
+    public Document getDocument()
+    {
+      return AbstractDocument.this;
+    }
+
+    public int getLength()
+    {
+      return len;
+    }
+
+    public int getOffset()
+    {
+      return off;
+    }
+
+    public DocumentEvent.EventType getType()
+    {
+      return null;
+    }
+
+    public DocumentEvent.ElementChange getChange(Element elem)
+    {
+      return null;
+    }
+  }
+
+  public static class ElementEdit extends AbstractUndoableEdit
+  {
+    private static final long serialVersionUID = -1216620962142928304L;
+  }
+
+  public class LeafElement extends AbstractElement
+  {
+    private static final long serialVersionUID = 5115368706941283802L;
+    private int start;
+    private int end;
+
+    public LeafElement(Element parent, AttributeSet attributes, int start,
+                       int end)
+    {
+      super(parent, attributes);
+      this.start = start;
+      this.end = end;
+    }
+
+    public Enumeration children()
+    {
+      return null;
+    }
+
+    public boolean getAllowsChildren()
+    {
+      return false;
+    }
+
+    public Element getElement()
+    {
+      return null;
+    }
+
+    public int getElementCount()
+    {
+      return 0;
+    }
+
+    public int getElementIndex(int offset)
+    {
+      return -1;
+    }
+
+    public int getEndOffset()
+    {
+      return end;
+    }
+
+    public String getName()
+    {
+      return "AbstractDocument.LeafElement";
+    }
+
+    public int getStartOffset()
+    {
+      return start;
+    }
+
+    public boolean isLeaf()
+    {
+      return true;
+    }
+
+    public String toString()
+    {
+      return getName() + ": " + "content";
+    }
   }
 }

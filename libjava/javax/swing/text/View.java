@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package javax.swing.text;
 
+import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Shape;
 import java.util.Vector;
@@ -44,97 +45,124 @@ import javax.swing.SwingConstants;
 
 public abstract class View implements SwingConstants
 {
-    static int BadBreakWeight;    
-    static int ExcellentBreakWeight;
-    static int ForcedBreakWeight;
-    static int GoodBreakWeight;
+  public static final int BadBreakWeight = 0;
+  public static final int ExcellentBreakWeight = 2000;
+  public static final int ForcedBreakWeight = 3000;
+  public static final int GoodBreakWeight = 1000;
 
-    public final static int X_AXIS = 0;
-    public final static int Y_AXIS = 1;
+  public static final int X_AXIS = 0;
+  public static final int Y_AXIS = 1;
     
-    float width, height;
-    Element elt;
-    View parent;
+  private float width, height;
+  private Element elt;
+  private View parent;
 
     /** 
-     * this vector contains the views ordered at offsets...
+   * Creates a new <code>View</code> instance.
+   *
+   * @param elem an <code>Element</code> value
      */
-    Vector v = new Vector();
-
-
     public View(Element elem)
     {
 	elt = elem;
     }
 
-    public int getViewCount() 
+  public abstract void paint(Graphics g, Shape s);
+
+  public void setParent(View a)
     {
-	return v.size();
+    parent = a;
     }
 
-    public View getView(int a)
+  public View getParent()
     {
-	return (View) v.get(a);
+    return parent;
     }
     
-    public void remove(int i)
+  public void setSize(int w, int h)
     {
-	v.removeElementAt(i);
+    width = w;
+    height = h;
     }
     
-    public void insert(int off, View view)
+  public Container getContainer()
     {
-	v.insertElementAt(view, off);	
+    return parent != null ? parent.getContainer() : null;
     }	   
     
-    public void append(View view)
+  public Document getDocument()
     {
-	v.addElement(view);
+    return getElement().getDocument();
     }
 	
-    public void paint(Graphics g, Shape allocation)
+  public Element getElement()
     {
-	System.out.println("view.paint() !!!!");
+    return elt;
     }
 
-    public void setParent(View a)
+  public abstract float getPreferredSpan(int axis);
+  
+  public float getAlignment(int axis)
     {
-	parent = a;
+    return 0.5f;
     }
     
-    public View getParent()
+  public AttributeSet getAttributes()
     {
-	return parent;
+    return elt.getAttributes();
     }
     
-    public void setSize(int w, int h)
+  public boolean isVisible()
     {
-	width  = w;
-	height = h;
+    return true;
     }
 
-    public Document getDocument()
+  public int getViewCount()
     {
-	return getElement().getDocument();
+    return 0;
     }
     
-    public Element getElement()
+  public View getView(int index)
     {
-        return elt;
+    return null;
     }
 
-    public float getPreferredSpan(int a)
+  public ViewFactory getViewFactory()
     {
-	switch (a)
+    return parent != null ? parent.getViewFactory() : null;
+  }
+
+  public void replace(int offset, int length, View[] views)
 	    {
-	    case X_AXIS:  return width;
-	    case Y_AXIS:  return height;
-	    default:
+    // Default implementation does nothing.
+  }
+
+  public void insert(int offset, View view)
 		{
-		    System.err.println("I sure wish Java had enums !!! ");
-		    return 0;
+    View[] array = { view };
+    replace(offset, 1, array);
 		}
+
+  public void append(View view)
+  {
+    View[] array = { view };
+    replace(getViewCount(), 1, array);
+  }
+
+  public void removeAll()
+  {
+    replace(0, getViewCount(), null); 
 	    }
+
+  public void remove(int index)
+  {
+    replace(index, 1, null); 
+  }
+
+  public View createFragment(int p0, int p1)
+  {
+    // The default implementation doesnt support fragmentation.
+    return this;
     }
 }
 

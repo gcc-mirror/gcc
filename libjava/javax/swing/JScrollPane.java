@@ -490,22 +490,15 @@ public class JScrollPane
             {
               // if the viewport changed, we should update the VSB / HSB
               // models according to the new vertical and horizontal sizes
+
               Rectangle vr = vp.getViewRect();
               Dimension vs = vp.getViewSize();
-              // System.err.println("got change from viewport, vr=" + vr + ", vs=" + vs);
               if (vsb != null
                   && (vsb.getMinimum() != 0
                       || vsb.getMaximum() != vs.height
                       || vsb.getValue() != vr.y
                       || vsb.getVisibleAmount() != vr.height))
-                {
-                  //                   System.err.println("setting vsb to "
-                  //                                      + "pos=" + vr.y 
-                  //                                      + ", ext=" + vr.height 
-                  //                                      + ", min=0"
-                  //                                      + ", max=" + vs.height);
                   vsb.setValue(vr.y, vr.height, 0, vs.height);
-                }
 
               if (hsb != null
                   && (hsb.getMinimum() != 0

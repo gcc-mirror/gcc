@@ -548,14 +548,9 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
                                                               3));
 
   /** The Icon that points right. */
-  private static Icon rightIcon = new arrowIcon(new Polygon(new int[]
-                                                               {
-                                                                 3, 7, 3
-                                                               },
-                                                               new int[]
-                                                               {
-                                                                 2, 5, 8
-                                                               }, 3));
+  private static Icon rightIcon = new arrowIcon(new Polygon(new int[] { 3, 7, 3},
+                                                            new int[] { 2, 5, 8}, 
+                                                            3));
 
   /**
    * This method adds a component to the layout.
@@ -606,7 +601,15 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
   protected JButton createIncreaseButton(int orientation)
   {
     if (incrButton == null)
+      {
       incrButton = new JButton();
+        incrButton.setMargin(new Insets(0,0,0,0));
+        incrButton.setHorizontalAlignment(SwingConstants.CENTER);
+        incrButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        incrButton.setVerticalAlignment(SwingConstants.CENTER);
+        incrButton.setVerticalTextPosition(SwingConstants.CENTER);
+      }
+    
     if (orientation == SwingConstants.HORIZONTAL)
       incrButton.setIcon(rightIcon);
     else
@@ -626,7 +629,15 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
   protected JButton createDecreaseButton(int orientation)
   {
     if (decrButton == null)
+      {
       decrButton = new JButton();
+        decrButton.setMargin(new Insets(0,0,0,0));
+        decrButton.setHorizontalAlignment(SwingConstants.CENTER);
+        decrButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        decrButton.setVerticalAlignment(SwingConstants.CENTER);
+        decrButton.setVerticalTextPosition(SwingConstants.CENTER);
+      }
+
     if (orientation == SwingConstants.HORIZONTAL)
       decrButton.setIcon(leftIcon);
     else

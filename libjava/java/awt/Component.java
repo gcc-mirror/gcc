@@ -39,6 +39,7 @@ exception statement from your version. */
 package java.awt;
 
 import java.awt.dnd.DropTarget;
+import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
@@ -48,6 +49,7 @@ import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.InputEvent;
 import java.awt.event.InputMethodEvent;
 import java.awt.event.InputMethodListener;
 import java.awt.event.MouseEvent;
@@ -1175,30 +1177,7 @@ public abstract class Component
    */
   public void move(int x, int y)
   {
-    int oldx = this.x;
-    int oldy = this.y;
-
-    if (this.x == x && this.y == y)
-      return;
-    invalidate ();
-    this.x = x;
-    this.y = y;
-    if (peer != null)
-      peer.setBounds (x, y, width, height);
-
-    // Erase old bounds and repaint new bounds for lightweights.
-    if (isLightweight() && width != 0 && height !=0)
-      {
-        parent.repaint(oldx, oldy, width, height);
-        repaint();
-      }
-
-    if (oldx != x || oldy != y)
-      {
-        ComponentEvent ce = new ComponentEvent(this,
-                                               ComponentEvent.COMPONENT_MOVED);
-        getToolkit().getSystemEventQueue().postEvent(ce);
-      }
+    setBounds(x, y, this.width, this.height);
   }
 
   /**
@@ -1262,32 +1241,7 @@ public abstract class Component
    */
   public void resize(int width, int height)
   {
-    int oldwidth = this.width;
-    int oldheight = this.height;
-
-    if (this.width == width && this.height == height)
-      return;
-    invalidate ();
-    this.width = width;
-    this.height = height;
-    if (peer != null)
-      peer.setBounds (x, y, width, height);
-
-    // Erase old bounds and repaint new bounds for lightweights.
-    if (isLightweight())
-      {
-        if (oldwidth != 0 && oldheight != 0 && parent != null)
-          parent.repaint(x, y, oldwidth, oldheight);
-        if (width != 0 && height != 0)
-          repaint();
-      }
-
-    if (oldwidth != width || oldheight != height)
-      {
-        ComponentEvent ce =
-          new ComponentEvent(this, ComponentEvent.COMPONENT_RESIZED);
-        getToolkit().getSystemEventQueue().postEvent(ce);
-      }
+    setBounds(this.x, this.y, width, height);
   }
 
   /**
@@ -1395,9 +1349,25 @@ public abstract class Component
     // Erase old bounds and repaint new bounds for lightweights.
     if (isLightweight())
       {
-        if (oldwidth != 0 && oldheight != 0 && parent != null)
+        boolean shouldRepaintParent = false;
+        boolean shouldRepaintSelf = false;
+
+        if (parent != null)
+          {
+            Rectangle parentBounds = parent.getBounds();
+            Rectangle oldBounds = new Rectangle(parent.getX() + oldx,
+                                                parent.getY() + oldy,
+                                                oldwidth, oldheight);
+            Rectangle newBounds = new Rectangle(parent.getX() + x,
+                                                parent.getY() + y,
+                                                width, height);
+            shouldRepaintParent = parentBounds.intersects(oldBounds);
+            shouldRepaintSelf = parentBounds.intersects(newBounds);
+          }
+
+        if (shouldRepaintParent)
           parent.repaint(oldx, oldy, oldwidth, oldheight);
-        if (width != 0 && height != 0)
+        if (shouldRepaintSelf)
           repaint();
       }
 
@@ -2255,14 +2225,17 @@ public abstract class Component
   }
 
   /**
-   * AWT 1.0 event dispatcher.
+   * AWT 1.0 event delivery.
    *
-   * @param e the event to dispatch
+   * Deliver an AWT 1.0 event to this Component.  This method simply
+   * calls {@link #postEvent}.
+   *
+   * @param e the event to deliver
    * @deprecated use {@link #dispatchEvent(AWTEvent)} instead
    */
   public void deliverEvent(Event e)
   {
-    // XXX Add backward compatibility handling.
+    postEvent (e);
   }
 
   /**
@@ -2284,16 +2257,24 @@ public abstract class Component
   }
 
   /**
-   * AWT 1.0 event dispatcher.
+   * AWT 1.0 event handler.
    *
-   * @param e the event to dispatch
-   * @return false: since the method was deprecated, the return has no meaning
+   * This method simply calls handleEvent and returns the result.
+   *
+   * @param e the event to handle
+   * @return the result of handling <code>e</code>
    * @deprecated use {@link #dispatchEvent(AWTEvent)} instead
    */
   public boolean postEvent(Event e)
   {
-    // XXX Add backward compatibility handling.
-    return false;
+    boolean handled = handleEvent (e);
+
+    if (!handled)
+      // FIXME: need to translate event coordinates to parent's
+      // coordinate space.
+      handled = getParent ().postEvent (e);
+
+    return handled;
   }
 
   /**
@@ -3170,20 +3151,61 @@ public abstract class Component
   }
 
   /**
-   * AWT 1.0 event processor.
+   * AWT 1.0 event handler.
+   *
+   * This method calls one of the event-specific handler methods.  For
+   * example for key events, either {@link #keyDown (Event evt, int
+   * key)} or {@link keyUp (Event evt, int key)} is called.  A derived
+   * component can override one of these event-specific methods if it
+   * only needs to handle certain event types.  Otherwise it can
+   * override handleEvent itself and handle any event.
    *
    * @param evt the event to handle
-   * @return false: since the method was deprecated, the return has no meaning
+   * @return true if the event was handled, false otherwise
    * @deprecated use {@link #processEvent(AWTEvent)} instead
    */
   public boolean handleEvent(Event evt)
   {
-    // XXX Add backward compatibility handling.
+    switch (evt.id)
+      {
+	// Handle key events.
+      case Event.KEY_ACTION:
+      case Event.KEY_PRESS:
+	return keyDown (evt, evt.key);
+      case Event.KEY_ACTION_RELEASE:
+      case Event.KEY_RELEASE:
+	return keyUp (evt, evt.key);
+
+	// Handle mouse events.
+      case Event.MOUSE_DOWN:
+	return mouseDown (evt, evt.x, evt.y);
+      case Event.MOUSE_UP:
+	return mouseUp (evt, evt.x, evt.y);
+      case Event.MOUSE_MOVE:
+	return mouseMove (evt, evt.x, evt.y);
+      case Event.MOUSE_DRAG:
+	return mouseDrag (evt, evt.x, evt.y);
+      case Event.MOUSE_ENTER:
+	return mouseEnter (evt, evt.x, evt.y);
+      case Event.MOUSE_EXIT:
+	return mouseExit (evt, evt.x, evt.y);
+
+	// Handle focus events.
+      case Event.GOT_FOCUS:
+	return gotFocus (evt, evt.arg);
+      case Event.LOST_FOCUS:
+	return lostFocus (evt, evt.arg);
+
+	// Handle action event.
+      case Event.ACTION_EVENT:
+	return action (evt, evt.arg);
+      }
+    // Unknown event.
     return false;
   }
 
   /**
-   * AWT 1.0 mouse event.
+   * AWT 1.0 mouse event handler.
    *
    * @param evt the event to handle
    * @param x the x coordinate, ignored
@@ -3686,7 +3708,20 @@ public abstract class Component
                     // lightweight component.  In either case we want to
                     // post a FOCUS_GAINED event.
                     EventQueue eq = Toolkit.getDefaultToolkit ().getSystemEventQueue ();
-                    eq.postEvent (new FocusEvent(this, FocusEvent.FOCUS_GAINED));
+                    synchronized (eq)
+                      {
+                        KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager ();
+                        Component currentFocusOwner = manager.getGlobalPermanentFocusOwner ();
+                        if (currentFocusOwner != null)
+                          {
+                            eq.postEvent (new FocusEvent(currentFocusOwner, FocusEvent.FOCUS_LOST,
+                                                         false, this));
+                            eq.postEvent (new FocusEvent(this, FocusEvent.FOCUS_GAINED, false,
+                                                         currentFocusOwner));
+                          }
+                        else
+                          eq.postEvent (new FocusEvent(this, FocusEvent.FOCUS_GAINED, false));
+                      }
                   }
               }
             else
@@ -3759,8 +3794,24 @@ public abstract class Component
                     // lightweight component.  In either case we want to
                     // post a FOCUS_GAINED event.
                     EventQueue eq = Toolkit.getDefaultToolkit ().getSystemEventQueue ();
+                    synchronized (eq)
+                      {
+                        KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager ();
+                        Component currentFocusOwner = manager.getGlobalPermanentFocusOwner ();
+                        if (currentFocusOwner != null)
+                          {
+                            eq.postEvent (new FocusEvent(currentFocusOwner,
+                                                         FocusEvent.FOCUS_LOST,
+                                                         temporary, this));
+                            eq.postEvent (new FocusEvent(this,
+                                                         FocusEvent.FOCUS_GAINED,
+                                                         temporary,
+                                                         currentFocusOwner));
+                          }
+                        else
                     eq.postEvent (new FocusEvent(this, FocusEvent.FOCUS_GAINED, temporary));
                   }
+              }
               }
             else
               // FIXME: need to add a focus listener to our top-level
@@ -3852,7 +3903,8 @@ public abstract class Component
                 // Check if top-level ancestor is currently focused window.
                 if (focusedWindow == toplevel)
                   {
-                    if (peer != null)
+                    if (peer != null
+                        && !(this instanceof Window))
                       // This call will cause a FOCUS_GAINED event to be
                       // posted to the system event queue if the native
                       // windowing system grants the focus request.
@@ -3863,8 +3915,20 @@ public abstract class Component
                         // lightweight component.  In either case we want to
                         // post a FOCUS_GAINED event.
                         EventQueue eq = Toolkit.getDefaultToolkit ().getSystemEventQueue ();
+                        synchronized (eq)
+                          {
+                            Component currentFocusOwner = manager.getGlobalPermanentFocusOwner ();
+                            if (currentFocusOwner != null)
+                              {
+                                eq.postEvent (new FocusEvent(currentFocusOwner, FocusEvent.FOCUS_LOST,
+                                                             temporary, this));
+                                eq.postEvent (new FocusEvent(this, FocusEvent.FOCUS_GAINED, temporary,
+                                                             currentFocusOwner));
+                              }
+                            else
                         eq.postEvent (new FocusEvent(this, FocusEvent.FOCUS_GAINED, temporary));
                       }
+                  }
                   }
                 else
                   return false;
@@ -4041,8 +4105,8 @@ public abstract class Component
     String name = getName();
     if (name != null)
       param.append(name).append(",");
-    param.append(width).append("x").append(height).append("+").append(x)
-      .append("+").append(y);
+    param.append(x).append(",").append(y).append(",").append(width)
+      .append("x").append(height);
     if (! isValid())
       param.append(",invalid");
     if (! isVisible())
@@ -4410,13 +4474,212 @@ p   * <li>the set of backward traversal keys
   }
 
   /**
-   * Implementation of dispatchEvent. Allows trusted package classes to
-   * dispatch additional events first.
+   * Translate an AWT 1.1 event ({@link AWTEvent}) into an AWT 1.0
+   * event ({@link Event}).
+   *
+   * @param e an AWT 1.1 event to translate
+   *
+   * @return an AWT 1.0 event representing e
+   */
+  private Event translateEvent (AWTEvent e)
+  {
+    Component target = (Component) e.getSource ();
+    Event translated = null;
+
+    if (e instanceof InputEvent)
+      {
+        InputEvent ie = (InputEvent) e;
+        long when = ie.getWhen ();
+
+        int oldID = 0;
+        int id = e.getID ();
+
+        int oldMods = 0;
+        int mods = ie.getModifiers ();
+
+        if ((mods & InputEvent.BUTTON2_MASK) != 0)
+          oldMods |= Event.META_MASK;
+        else if ((mods & InputEvent.BUTTON3_MASK) != 0)
+          oldMods |= Event.ALT_MASK;
+
+        if ((mods & (InputEvent.SHIFT_MASK | InputEvent.SHIFT_DOWN_MASK)) != 0)
+          oldMods |= Event.SHIFT_MASK;
+
+        if ((mods & (InputEvent.CTRL_MASK | InputEvent.CTRL_DOWN_MASK)) != 0)
+          oldMods |= Event.CTRL_MASK;
+
+        if ((mods & (InputEvent.META_MASK | InputEvent.META_DOWN_MASK)) != 0)
+          oldMods |= Event.META_MASK;
+
+        if ((mods & (InputEvent.ALT_MASK | InputEvent.ALT_DOWN_MASK)) != 0)
+          oldMods |= Event.ALT_MASK;
+
+        if (e instanceof MouseEvent)
+          {
+            if (id == MouseEvent.MOUSE_PRESSED)
+              oldID = Event.MOUSE_DOWN;
+            else if (id == MouseEvent.MOUSE_RELEASED)
+              oldID = Event.MOUSE_UP;
+            else if (id == MouseEvent.MOUSE_MOVED)
+              oldID = Event.MOUSE_MOVE;
+            else if (id == MouseEvent.MOUSE_DRAGGED)
+              oldID = Event.MOUSE_DRAG;
+            else if (id == MouseEvent.MOUSE_ENTERED)
+              oldID = Event.MOUSE_ENTER;
+            else if (id == MouseEvent.MOUSE_EXITED)
+              oldID = Event.MOUSE_EXIT;
+            else
+              // No analogous AWT 1.0 mouse event.
+              return null;
+
+            MouseEvent me = (MouseEvent) e;
+
+            translated = new Event (target, when, oldID,
+                                    me.getX (), me.getY (), 0, oldMods);
+          }
+        else if (e instanceof KeyEvent)
+          {
+            if (id == KeyEvent.KEY_PRESSED)
+              oldID = Event.KEY_PRESS;
+            else if (e.getID () == KeyEvent.KEY_RELEASED)
+              oldID = Event.KEY_RELEASE;
+            else
+              // No analogous AWT 1.0 key event.
+              return null;
+
+            int oldKey = 0;
+            int newKey = ((KeyEvent) e).getKeyCode ();
+            switch (newKey)
+              {
+              case KeyEvent.VK_BACK_SPACE:
+                oldKey = Event.BACK_SPACE;
+                break;
+              case KeyEvent.VK_CAPS_LOCK:
+                oldKey = Event.CAPS_LOCK;
+                break;
+              case KeyEvent.VK_DELETE:
+                oldKey = Event.DELETE;
+                break;
+              case KeyEvent.VK_DOWN:
+              case KeyEvent.VK_KP_DOWN:
+                oldKey = Event.DOWN;
+                break;
+              case KeyEvent.VK_END:
+                oldKey = Event.END;
+                break;
+              case KeyEvent.VK_ENTER:
+                oldKey = Event.ENTER;
+                break;
+              case KeyEvent.VK_ESCAPE:
+                oldKey = Event.ESCAPE;
+                break;
+              case KeyEvent.VK_F1:
+                oldKey = Event.F1;
+                break;
+              case KeyEvent.VK_F10:
+                oldKey = Event.F10;
+                break;
+              case KeyEvent.VK_F11:
+                oldKey = Event.F11;
+                break;
+              case KeyEvent.VK_F12:
+                oldKey = Event.F12;
+                break;
+              case KeyEvent.VK_F2:
+                oldKey = Event.F2;
+                break;
+              case KeyEvent.VK_F3:
+                oldKey = Event.F3;
+                break;
+              case KeyEvent.VK_F4:
+                oldKey = Event.F4;
+                break;
+              case KeyEvent.VK_F5:
+                oldKey = Event.F5;
+                break;
+              case KeyEvent.VK_F6:
+                oldKey = Event.F6;
+                break;
+              case KeyEvent.VK_F7:
+                oldKey = Event.F7;
+                break;
+              case KeyEvent.VK_F8:
+                oldKey = Event.F8;
+                break;
+              case KeyEvent.VK_F9:
+                oldKey = Event.F9;
+                break;
+              case KeyEvent.VK_HOME:
+                oldKey = Event.HOME;
+                break;
+              case KeyEvent.VK_INSERT:
+                oldKey = Event.INSERT;
+                break;
+              case KeyEvent.VK_LEFT:
+              case KeyEvent.VK_KP_LEFT:
+                oldKey = Event.LEFT;
+                break;
+              case KeyEvent.VK_NUM_LOCK:
+                oldKey = Event.NUM_LOCK;
+                break;
+              case KeyEvent.VK_PAUSE:
+                oldKey = Event.PAUSE;
+                break;
+              case KeyEvent.VK_PAGE_DOWN:
+                oldKey = Event.PGDN;
+                break;
+              case KeyEvent.VK_PAGE_UP:
+                oldKey = Event.PGUP;
+                break;
+              case KeyEvent.VK_PRINTSCREEN:
+                oldKey = Event.PRINT_SCREEN;
+                break;
+              case KeyEvent.VK_RIGHT:
+              case KeyEvent.VK_KP_RIGHT:
+                oldKey = Event.RIGHT;
+                break;
+              case KeyEvent.VK_SCROLL_LOCK:
+                oldKey = Event.SCROLL_LOCK;
+                break;
+              case KeyEvent.VK_TAB:
+                oldKey = Event.TAB;
+                break;
+              case KeyEvent.VK_UP:
+              case KeyEvent.VK_KP_UP:
+                oldKey = Event.UP;
+                break;
+              default:
+                oldKey = newKey;
+              }
+
+            translated = new Event (target, when, oldID,
+                                    0, 0, oldKey, oldMods);
+          }
+      }
+    else if (e instanceof ActionEvent)
+      translated = new Event (target, Event.ACTION_EVENT,
+                              ((ActionEvent) e).getActionCommand ());
+
+    return translated;
+  }
+
+  /**
+   * Implementation of dispatchEvent. Allows trusted package classes
+   * to dispatch additional events first.  This implementation first
+   * translates <code>e</code> to an AWT 1.0 event and sends the
+   * result to {@link #postEvent}.  If the AWT 1.0 event is not
+   * handled, and events of type <code>e</code> are enabled for this
+   * component, e is passed on to {@link #processEvent}.
    *
    * @param e the event to dispatch
    */
   void dispatchEventImpl(AWTEvent e)
   {
+    Event oldEvent = translateEvent (e);
+
+    if (oldEvent != null)
+      postEvent (oldEvent);
+
     if (eventTypeEnabled (e.id))
       processEvent(e);
   }

@@ -173,6 +173,7 @@ public class BasicViewportUI extends ViewportUI
         g.clearRect(0, 0, portBounds.width, portBounds.height);
       }
 
+    g2.setClip(g.getClipBounds());
     g2.translate(-pos.x, -pos.y);
     try 
       {

@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package javax.swing;
 
+import java.awt.Component;
+import java.awt.Toolkit;
 import javax.swing.text.JTextComponent;
 
 
@@ -59,6 +61,20 @@ public abstract class LookAndFeel
 
   public abstract String getName();
 
+  /**
+   * Returns true when the Look and Feel supports window decorations,
+   * false others. This method returns always false and needs to be overwritten
+   * when the derived Look and Feel supports this.
+   *
+   * @return false
+   *
+   * @since 1.4
+   */
+  public boolean getSupportsWindowDecorations()
+  {
+    return false;
+  }
+  
   /**
    * UIManager.setLookAndFeel calls this method before the first call
    * (and typically the only call) to getDefaults(). 
@@ -138,6 +154,18 @@ public abstract class LookAndFeel
   public static JTextComponent.KeyBinding[] makeKeyBindings(Object[] keyBindingList)
   {
     return null;
+  }
+
+  /**
+   * Invoked when the user attempts an invalid operation. The default implement
+   * just beeps. Subclasses that wish to change this need to override this
+   * method.
+   *
+   * @param component the component the error occured in
+   */
+  public void provideErrorFeedback(Component component)
+  {
+    Toolkit.getDefaultToolkit().beep();
   }
 
   /**

@@ -39,6 +39,8 @@ exception statement from your version. */
 package java.awt;
 
 import java.awt.event.ComponentEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.awt.event.WindowListener;
@@ -85,6 +87,8 @@ public class Window extends Container implements Accessible
 
   private transient boolean shown;
 
+  private transient Component windowFocusOwner;
+
   /** 
    * This (package access) constructor is used by subclasses that want
    * to build windows that do not have parents.  Eg. toplevel
@@ -98,6 +102,33 @@ public class Window extends Container implements Accessible
     // cycle roots.
     focusCycleRoot = true;
     setLayout(new BorderLayout());
+
+    addWindowFocusListener (new WindowAdapter ()
+      {
+        public void windowGainedFocus (WindowEvent event)
+        {
+          if (windowFocusOwner != null)
+            {
+              // FIXME: move this section and the other similar
+              // sections in Component into a separate method.
+              EventQueue eq = Toolkit.getDefaultToolkit ().getSystemEventQueue ();
+              synchronized (eq)
+                {
+                  KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager ();
+                  Component currentFocusOwner = manager.getGlobalPermanentFocusOwner ();
+                  if (currentFocusOwner != null)
+                    {
+                      eq.postEvent (new FocusEvent (currentFocusOwner, FocusEvent.FOCUS_LOST,
+                                                    false, windowFocusOwner));
+                      eq.postEvent (new FocusEvent (windowFocusOwner, FocusEvent.FOCUS_GAINED,
+                                                    false, currentFocusOwner));
+                    }
+                  else
+                    eq.postEvent (new FocusEvent (windowFocusOwner, FocusEvent.FOCUS_GAINED, false));
+                }
+            }
+        }
+      });
   }
 
   Window(GraphicsConfiguration gc)
@@ -658,8 +689,22 @@ public class Window extends Container implements Accessible
     // The currently-focused Component belongs to the active Window.
     if (activeWindow == this)
       return manager.getFocusOwner ();
+    else
+      return windowFocusOwner;
+  }
 
-    return null;
+  /**
+   * Set the focus owner for this window.  This method is used to
+   * remember which component was focused when this window lost
+   * top-level focus, so that when it regains top-level focus the same
+   * child component can be refocused.
+   *
+   * @param windowFocusOwner the component in this window that owns
+   * the focus.
+   */
+  void setFocusOwner (Component windowFocusOwner)
+  {
+    this.windowFocusOwner = windowFocusOwner;
   }
 
   /**
@@ -671,8 +716,7 @@ public class Window extends Container implements Accessible
    */
   public boolean postEvent(Event e)
   {
-    // FIXME
-    return false;
+    return handleEvent (e);
   }
 
   /**

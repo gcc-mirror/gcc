@@ -40,9 +40,11 @@ package javax.swing.plaf.basic;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.Graphics;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import javax.swing.border.Border;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.SwingConstants;
@@ -170,6 +172,47 @@ public class BasicArrowButton extends JButton implements SwingConstants
   /** The top and left edges of the button. */
   private transient Color highlight = Color.BLACK;
 
+  /** The border around the ArrowButton. */
+  private transient Border tmpBorder = new Border()
+  {
+    public Insets getBorderInsets(Component c)
+    {
+      return new Insets(0, 0, 0, 0);
+    }
+    
+    public boolean isBorderOpaque()
+    {
+      return false;
+    }
+    
+    public void paintBorder(Component c, Graphics g, int x, int y, int w, int h)
+    {
+      Rectangle bounds = getBounds();
+
+      Color saved = g.getColor();
+      g.setColor(highlight);
+
+      g.drawLine(bounds.x, bounds.y, bounds.x, bounds.y + bounds.height);
+      g.drawLine(bounds.x, bounds.y, bounds.x + bounds.width, bounds.y);
+
+      g.setColor(shadow);
+
+      g.drawLine(bounds.x + 1, bounds.y + bounds.height - 1,
+                 bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
+      g.drawLine(bounds.x + bounds.width - 1, bounds.y + 1,
+                 bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
+
+      g.setColor(darkShadow);
+
+      g.drawLine(bounds.x, bounds.y + bounds.height, bounds.x + bounds.width,
+                 bounds.y + bounds.height);
+      g.drawLine(bounds.x + bounds.width, bounds.y, bounds.x + bounds.width,
+                 bounds.y + bounds.height);
+
+      g.setColor(saved);
+    }
+  };
+
   /**
    * Creates a new BasicArrowButton object.
    *
@@ -179,6 +222,7 @@ public class BasicArrowButton extends JButton implements SwingConstants
   {
     super();
     setDirection(direction);
+    setBorder(tmpBorder);
   }
 
   /**
@@ -234,29 +278,6 @@ public class BasicArrowButton extends JButton implements SwingConstants
   public void paint(Graphics g)
   {
     super.paint(g);
-    Rectangle bounds = getBounds();
-
-    Color saved = g.getColor();
-    g.setColor(highlight);
-
-    g.drawLine(bounds.x, bounds.y, bounds.x, bounds.y + bounds.height);
-    g.drawLine(bounds.x, bounds.y, bounds.x + bounds.width, bounds.y);
-
-    g.setColor(shadow);
-
-    g.drawLine(bounds.x + 1, bounds.y + bounds.height - 1,
-               bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
-    g.drawLine(bounds.x + bounds.width - 1, bounds.y + 1,
-               bounds.x + bounds.width - 1, bounds.y + bounds.height - 1);
-
-    g.setColor(darkShadow);
-
-    g.drawLine(bounds.x, bounds.y + bounds.height, bounds.x + bounds.width,
-               bounds.y + bounds.height);
-    g.drawLine(bounds.x + bounds.width, bounds.y, bounds.x + bounds.width,
-               bounds.y + bounds.height);
-
-    g.setColor(saved);
   }
 
   /**

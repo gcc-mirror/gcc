@@ -62,9 +62,19 @@ import javax.swing.plaf.MenuItemUI;
 
 
 /**
+ * <p>
  * This class represents a menu that can be added to a menu bar or
- * to some other menu. When JMenu is selected it displays JPopupMenu
- * containing its menu items.
+ * can be a submenu in some other menu. When JMenu is selected it
+ * displays JPopupMenu containing its menu items.
+ * </p>
+ *
+ * <p>
+ * JMenu's fires MenuEvents when this menu's selection changes. If this menu
+ * is selected, then fireMenuSelectedEvent() is invoked. In case when menu is
+ * deselected or cancelled, then fireMenuDeselectedEvent() or 
+ * fireMenuCancelledEvent() is invoked, respectivelly.
+ * </p>
+ *
  */
 public class JMenu extends JMenuItem implements Accessible, MenuElement
 {
@@ -76,10 +86,8 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   /** A Popup menu associated with this menu, which pops up when menu is selected */
   private JPopupMenu popupMenu = new JPopupMenu();
 
-  /** MenuChangeListener that listens to change events occuring in menu's model */
-  private ChangeListener menuChangeListener;
-
-  /** MenuEvent */
+  /** Whenever menu is selected or deselected the MenuEvent is fired to
+     menu's registered listeners. */
   private MenuEvent menuEvent = new MenuEvent(this);
 
   /*Amount of time, in milliseconds, that should pass before popupMenu
@@ -89,7 +97,8 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   /* PopupListener */
   protected WinListener popupListener;
 
-  /** Location at which popup menu associated with this menu will be displayed*/
+  /** Location at which popup menu associated with this menu will be
+     displayed */
   private Point menuLocation;
 
   /**
@@ -98,8 +107,6 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   public JMenu()
   {
     super();
-    menuChangeListener = createMenuChangeListener();
-    getModel().addChangeListener(menuChangeListener);
   }
 
   /**
@@ -110,8 +117,6 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   public JMenu(String text)
   {
     super(text);
-    menuChangeListener = createMenuChangeListener();
-    getModel().addChangeListener(menuChangeListener);
   }
 
   /**
@@ -123,8 +128,7 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   public JMenu(Action action)
   {
     super(action);
-    menuChangeListener = createMenuChangeListener();
-    getModel().addChangeListener(menuChangeListener);
+    createActionChangeListener(this);
   }
 
   /**
@@ -335,14 +339,52 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
 
   /**
    * Changes this menu selected state if selected is true and false otherwise
-   * This method fires menuEvents to model's registered listeners.
+   * This method fires menuEvents to menu's registered listeners.
    *
    * @param selected true if the menu should be selected and false otherwise
    */
   public void setSelected(boolean selected)
   {
+    // if this menu selection is true, then activate this menu and 
+    // display popup associated with this menu	
+    if (selected)
+      {
     super.setArmed(true);
+	super.setSelected(true);
+
+	// FIXME: The popup menu should be shown on the screen after certain
+	// number of seconds pass. The 'delay' property of this menu indicates
+	// this amount of seconds. 'delay' property is 0 by default.
+	if (this.isShowing())
+	  {
     fireMenuSelected();
+
+	    int x = 0;
+	    int y = 0;
+
+	    if (menuLocation == null)
+	      {
+		// Calculate correct position of the popup. Note that location of the popup 
+		// passed to show() should be relative to the popup's invoker
+		if (isTopLevelMenu())
+		  y = this.getHeight();
+		else
+		  x = this.getWidth();
+
+		getPopupMenu().show(this, x, y);
+	      }
+	    else
+	      getPopupMenu().show(this, menuLocation.x, menuLocation.y);
+	  }
+      }
+
+    else
+      {
+	super.setSelected(false);
+	super.setArmed(false);
+	fireMenuDeselected();
+	popupMenu.setVisible(false);
+      }
   }
 
   /**
@@ -641,17 +683,6 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   }
 
   /**
-   * Creates MenuChangeListener to listen to change events occuring
-   * in the model
-   *
-   * @return ChangeListener
-   */
-  private ChangeListener createMenuChangeListener()
-  {
-    return new MenuChangeListener();
-  }
-
-  /**
    * Creates WinListener that listens to the menu;s popup menu.
    *
    * @param popup JPopupMenu to listen to
@@ -675,34 +706,7 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
   {
     // if this menu selection is true, then activate this menu and 
     // display popup associated with this menu
-    if (changed)
-      {
-	setArmed(true);
-	fireMenuSelected();
-
-	int x = 0;
-	int y = 0;
-	if (menuLocation == null)
-	  {
-	    // Calculate correct position of the popup. Note that location of the popup 
-	    // passed to show() should be relative to the popup's invoker
-	    if (isTopLevelMenu())
-	      y = this.getHeight();
-	    else
-	      x = this.getWidth();
-
-	    getPopupMenu().show(this, x, y);
-	  }
-	else
-	  getPopupMenu().show(this, menuLocation.x, menuLocation.y);
-      }
-
-    else
-      {
-	fireMenuDeselected();
-	popupMenu.setVisible(false);
-	setArmed(false);
-      }
+    setSelected(changed);
   }
 
   /**
@@ -857,17 +861,6 @@ public class JMenu extends JMenuItem implements Accessible, MenuElement
 
     public void windowClosing(WindowEvent event)
     {
-    }
-  }
-
-  /** This class listens to ChangeEvent fired by menu's model*/
-  protected class MenuChangeListener implements ChangeListener
-  {
-    /** This method is invoked when there is change in menu's model property */
-    public void stateChanged(ChangeEvent e)
-    {
-      revalidate();
-      repaint();
     }
   }
 

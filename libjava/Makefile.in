@@ -792,6 +792,7 @@ java/awt/geom/GeneralPath.java \
 java/awt/geom/QuadCurve2D.java \
 java/awt/image/AffineTransformOp.java \
 java/awt/image/BufferedImage.java \
+java/awt/image/ByteLookupTable.java \
 java/awt/image/ColorModel.java \
 java/awt/image/ComponentColorModel.java \
 java/awt/image/ComponentSampleModel.java \
@@ -807,11 +808,14 @@ java/awt/image/ImageConsumer.java \
 java/awt/image/ImageObserver.java \
 java/awt/image/ImageProducer.java \
 java/awt/image/IndexColorModel.java \
+java/awt/image/Kernel.java \
+java/awt/image/LookupTable.java \
 java/awt/image/PackedColorModel.java \
 java/awt/image/PixelInterleavedSampleModel.java \
 java/awt/image/Raster.java \
 java/awt/image/RasterOp.java \
 java/awt/image/SampleModel.java \
+java/awt/image/ShortLookupTable.java \
 java/awt/image/SinglePixelPackedSampleModel.java \
 java/awt/image/WritableRaster.java \
 java/awt/image/AreaAveragingScaleFilter.java \
@@ -1034,8 +1038,10 @@ javax/swing/plaf/basic/BasicSliderUI.java \
 javax/swing/plaf/basic/BasicSplitPaneDivider.java \
 javax/swing/plaf/basic/BasicSplitPaneUI.java \
 javax/swing/plaf/basic/BasicTabbedPaneUI.java \
+javax/swing/plaf/basic/BasicTextFieldUI.java \
 javax/swing/plaf/basic/BasicTextUI.java \
 javax/swing/plaf/basic/BasicToggleButtonUI.java \
+javax/swing/plaf/basic/BasicToolBarSeparatorUI.java \
 javax/swing/plaf/basic/BasicToolBarUI.java \
 javax/swing/plaf/basic/BasicTreeUI.java \
 javax/swing/plaf/basic/BasicViewportUI.java \
@@ -1149,6 +1155,8 @@ javax/swing/ListModel.java \
 javax/swing/ListSelectionModel.java \
 javax/swing/LookAndFeel.java \
 javax/swing/Scrollable.java \
+javax/swing/Spring.java \
+javax/swing/SpringLayout.java \
 javax/swing/SwingConstants.java \
 javax/swing/SwingUtilities.java \
 javax/swing/Timer.java \
@@ -1203,29 +1211,34 @@ javax/swing/text/AbstractDocument.java \
 javax/swing/text/AttributeSet.java \
 javax/swing/text/BadLocationException.java \
 javax/swing/text/Caret.java \
-javax/swing/text/CharacterIterator.java \
 javax/swing/text/ComponentView.java \
 javax/swing/text/DefaultCaret.java \
 javax/swing/text/DefaultEditorKit.java \
+javax/swing/text/DefaultHighlighter.java \
 javax/swing/text/Document.java \
 javax/swing/text/DocumentFilter.java \
 javax/swing/text/EditorKit.java \
 javax/swing/text/Element.java \
+javax/swing/text/FieldView.java \
 javax/swing/text/GapContent.java \
+javax/swing/text/Highlighter.java \
 javax/swing/text/JTextComponent.java \
 javax/swing/text/Keymap.java \
+javax/swing/text/LayeredHighlighter.java \
+javax/swing/text/MutableAttributeSet.java \
+javax/swing/text/NavigationFilter.java \
 javax/swing/text/PlainDocument.java \
-javax/swing/text/PlainEditorKit.java \
+javax/swing/text/PlainView.java \
 javax/swing/text/Position.java \
 javax/swing/text/Segment.java \
 javax/swing/text/Style.java \
-javax/swing/text/View.java \
-javax/swing/text/ViewFactory.java \
-javax/swing/text/MutableAttributeSet.java \
-javax/swing/text/NavigationFilter.java \
 javax/swing/text/StyledDocument.java \
 javax/swing/text/StyledEditorKit.java \
+javax/swing/text/TabExpander.java \
+javax/swing/text/TabableView.java \
 javax/swing/text/TextAction.java \
+javax/swing/text/View.java \
+javax/swing/text/ViewFactory.java \
 javax/swing/text/html/HTML.java \
 javax/swing/text/html/parser/ParserDelegator.java \
 javax/swing/tree/TreeNode.java \
@@ -3070,7 +3083,7 @@ LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 DATA =  $(jar_DATA) $(pkgconfig_DATA) $(toolexecmainlib_DATA)
 
 DIST_COMMON =  README COPYING ChangeLog Makefile.am Makefile.in NEWS \
-THANKS TODO acinclude.m4 aclocal.m4 configure configure.in \
+THANKS acinclude.m4 aclocal.m4 configure configure.in \
 libgcj-test.spec.in libgcj.pc.in libgcj.spec.in
 
 
@@ -3669,6 +3682,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/image/BufferStrategy.P \
 .deps/java/awt/image/BufferedImage.P \
 .deps/java/awt/image/BufferedImageOp.P \
+.deps/java/awt/image/ByteLookupTable.P \
 .deps/java/awt/image/ColorModel.P \
 .deps/java/awt/image/ComponentColorModel.P \
 .deps/java/awt/image/ComponentSampleModel.P \
@@ -3685,7 +3699,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/image/ImageObserver.P \
 .deps/java/awt/image/ImageProducer.P \
 .deps/java/awt/image/ImagingOpException.P \
-.deps/java/awt/image/IndexColorModel.P \
+.deps/java/awt/image/IndexColorModel.P .deps/java/awt/image/Kernel.P \
+.deps/java/awt/image/LookupTable.P \
 .deps/java/awt/image/MemoryImageSource.P \
 .deps/java/awt/image/PackedColorModel.P \
 .deps/java/awt/image/PixelGrabber.P \
@@ -3695,6 +3710,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/image/RasterOp.P .deps/java/awt/image/RenderedImage.P \
 .deps/java/awt/image/ReplicateScaleFilter.P \
 .deps/java/awt/image/SampleModel.P \
+.deps/java/awt/image/ShortLookupTable.P \
 .deps/java/awt/image/SinglePixelPackedSampleModel.P \
 .deps/java/awt/image/TileObserver.P \
 .deps/java/awt/image/VolatileImage.P \
@@ -4587,6 +4603,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/javax/swing/ScrollPaneLayout.P .deps/javax/swing/Scrollable.P \
 .deps/javax/swing/SingleSelectionModel.P \
 .deps/javax/swing/SizeRequirements.P .deps/javax/swing/SizeSequence.P \
+.deps/javax/swing/Spring.P .deps/javax/swing/SpringLayout.P \
 .deps/javax/swing/SwingConstants.P .deps/javax/swing/SwingUtilities.P \
 .deps/javax/swing/Timer.P .deps/javax/swing/ToolTipManager.P \
 .deps/javax/swing/UIDefaults.P .deps/javax/swing/UIManager.P \
@@ -4717,8 +4734,10 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/javax/swing/plaf/basic/BasicSplitPaneDivider.P \
 .deps/javax/swing/plaf/basic/BasicSplitPaneUI.P \
 .deps/javax/swing/plaf/basic/BasicTabbedPaneUI.P \
+.deps/javax/swing/plaf/basic/BasicTextFieldUI.P \
 .deps/javax/swing/plaf/basic/BasicTextUI.P \
 .deps/javax/swing/plaf/basic/BasicToggleButtonUI.P \
+.deps/javax/swing/plaf/basic/BasicToolBarSeparatorUI.P \
 .deps/javax/swing/plaf/basic/BasicToolBarUI.P \
 .deps/javax/swing/plaf/basic/BasicTreeUI.P \
 .deps/javax/swing/plaf/basic/BasicViewportUI.P \
@@ -4736,23 +4755,26 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/javax/swing/text/AbstractDocument.P \
 .deps/javax/swing/text/AttributeSet.P \
 .deps/javax/swing/text/BadLocationException.P \
-.deps/javax/swing/text/Caret.P \
-.deps/javax/swing/text/CharacterIterator.P \
-.deps/javax/swing/text/ComponentView.P \
+.deps/javax/swing/text/Caret.P .deps/javax/swing/text/ComponentView.P \
 .deps/javax/swing/text/DefaultCaret.P \
 .deps/javax/swing/text/DefaultEditorKit.P \
+.deps/javax/swing/text/DefaultHighlighter.P \
 .deps/javax/swing/text/Document.P \
 .deps/javax/swing/text/DocumentFilter.P \
 .deps/javax/swing/text/EditorKit.P .deps/javax/swing/text/Element.P \
-.deps/javax/swing/text/GapContent.P \
+.deps/javax/swing/text/FieldView.P .deps/javax/swing/text/GapContent.P \
+.deps/javax/swing/text/Highlighter.P \
 .deps/javax/swing/text/JTextComponent.P .deps/javax/swing/text/Keymap.P \
+.deps/javax/swing/text/LayeredHighlighter.P \
 .deps/javax/swing/text/MutableAttributeSet.P \
 .deps/javax/swing/text/NavigationFilter.P \
 .deps/javax/swing/text/PlainDocument.P \
-.deps/javax/swing/text/PlainEditorKit.P \
-.deps/javax/swing/text/Position.P .deps/javax/swing/text/Segment.P \
-.deps/javax/swing/text/Style.P .deps/javax/swing/text/StyledDocument.P \
+.deps/javax/swing/text/PlainView.P .deps/javax/swing/text/Position.P \
+.deps/javax/swing/text/Segment.P .deps/javax/swing/text/Style.P \
+.deps/javax/swing/text/StyledDocument.P \
 .deps/javax/swing/text/StyledEditorKit.P \
+.deps/javax/swing/text/TabExpander.P \
+.deps/javax/swing/text/TabableView.P \
 .deps/javax/swing/text/TextAction.P .deps/javax/swing/text/View.P \
 .deps/javax/swing/text/ViewFactory.P .deps/javax/swing/text/html/HTML.P \
 .deps/javax/swing/text/html/parser/ParserDelegator.P \

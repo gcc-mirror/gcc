@@ -157,6 +157,9 @@ ScrollPane(int scrollbarDisplayPolicy)
     }
 
   wheelScrollingEnabled = true;
+
+  // Default size.
+  setSize(100,100);
 }
 
 /*************************************************************************/
@@ -400,6 +403,15 @@ addNotify()
 
   setPeer((ComponentPeer)getToolkit().createScrollPane(this));
   super.addNotify();
+
+  Component[] list = getComponents();
+  if (list != null && list.length > 0 && ! (list[0] instanceof Panel))
+  {
+    Panel panel = new Panel();
+    panel.setLayout(new BorderLayout());
+    panel.add(list[0], BorderLayout.CENTER);
+    add(panel);
+  }
 }
 
 /*************************************************************************/
@@ -527,7 +539,19 @@ printComponents(Graphics graphics)
 public String
 paramString()
 {
-  return(getClass().getName());
+  Insets insets = getInsets();
+  return getName() + ","
+         + getX() + ","
+         + getY() + ","
+         + getWidth() + "x" + getHeight() + ","
+         + "ScrollPosition=(" + scrollPosition.getX() + "," 
+                              + scrollPosition.getY() + "),"
+         + "Insets=(" + insets.top + ","
+                      + insets.left + ","
+                      + insets.bottom + ","
+                      + insets.right + "),"
+         + "ScrollbarDisplayPolicy=" + getScrollbarDisplayPolicy() + ","
+         + "wheelScrollingEnabled=" + isWheelScrollingEnabled();
 }
 
   /**

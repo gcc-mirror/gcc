@@ -35,7 +35,6 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package javax.swing.plaf.basic;
 
 import java.awt.Color;
@@ -152,7 +151,7 @@ public class BasicMenuItemUI extends MenuItemUI
   protected Color selectionBackground;
 
   /**
-   * Color of the background that is used when menu item is selected.
+   * Color of the text that is used when menu item is selected.
    */
   protected Color selectionForeground;
 
@@ -276,6 +275,11 @@ public class BasicMenuItemUI extends MenuItemUI
   public MenuElement[] getPath()
   {
     ArrayList path = new ArrayList();
+
+    // Path to menu should also include its popup menu.
+    if (menuItem instanceof JMenu)
+      path.add(((JMenu) menuItem).getPopupMenu());
+
     Component c = menuItem;
     while (c instanceof MenuElement)
       {
@@ -305,19 +309,6 @@ public class BasicMenuItemUI extends MenuItemUI
   protected Dimension getPreferredMenuItemSize(JComponent c, Icon checkIcon,
                                                Icon arrowIcon,
                                                int defaultTextIconGap)
-  {
-    // FIXME: Need to implement.
-    return null;
-  }
-
-  /**
-   * Returns preferred size of the given component
-   *
-   * @param c component for which to return preferred size
-   *
-   * @return $Dimension$ preferred size for the given component
-   */
-  public Dimension getPreferredSize(JComponent c)
   {
     JMenuItem m = (JMenuItem) c;
     Dimension d = BasicGraphicsUtils.getPreferredButtonSize(m,
@@ -361,10 +352,17 @@ public class BasicMenuItemUI extends MenuItemUI
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns preferred size of the given component
    *
-   * @return $returnType$ DOCUMENT ME!
+   * @param c component for which to return preferred size
+   *
+   * @return $Dimension$ preferred size for the given component
    */
+  public Dimension getPreferredSize(JComponent c)
+  {
+    return getPreferredMenuItemSize(c, checkIcon, arrowIcon, defaultTextIconGap);
+  }
+
   protected String getPropertyPrefix()
   {
     return null;
@@ -416,6 +414,7 @@ public class BasicMenuItemUI extends MenuItemUI
   protected void installListeners()
   {
     menuItem.addMouseListener(mouseInputListener);
+    menuItem.addMouseMotionListener(mouseInputListener);
     menuItem.addMenuDragMouseListener(menuDragMouseListener);
     menuItem.addMenuKeyListener(menuKeyListener);
     menuItem.addPropertyChangeListener(propertyChangeListener);
@@ -433,6 +432,7 @@ public class BasicMenuItemUI extends MenuItemUI
     super.installUI(c);
     menuItem = (JMenuItem) c;
     installDefaults();
+    installComponents(menuItem);
     installListeners();
   }
 
@@ -516,7 +516,7 @@ public class BasicMenuItemUI extends MenuItemUI
       {
 	if (m.isContentAreaFilled())
 	  {
-	    g.setColor(m.getBackground().darker());
+	    g.setColor(selectionBackground);
 	    g.fillRect(br.x, br.y, br.width, br.height);
 	  }
       }
@@ -529,6 +529,7 @@ public class BasicMenuItemUI extends MenuItemUI
 	  }
       }
 
+    // If this menu item is a JCheckBoxMenuItem then paint check icon
     if (checkIcon != null)
       {
 	SwingUtilities.layoutCompoundLabel(m, fm, null, checkIcon, vertAlign,
@@ -543,6 +544,7 @@ public class BasicMenuItemUI extends MenuItemUI
 	vr.x = cr.x + cr.width + defaultTextIconGap;
       }
 
+    // if this is a submenu, then paint arrow icon to indicate it.
     if (arrowIcon != null && (c instanceof JMenu))
       {
 	if (! ((JMenu) c).isTopLevelMenu())
@@ -555,6 +557,18 @@ public class BasicMenuItemUI extends MenuItemUI
 	  }
       }
 
+    // paint icon
+    // FIXME: should paint different icon at different button state's.
+    // i.e disabled icon when button is disabled.. etc.
+    Icon i = m.getIcon();
+    if (i != null)
+      {
+	i.paintIcon(c, g, vr.x, vr.y);
+
+	// Adjust view rectangle, s.t text would be drawn after menu item's icon.
+	vr.x += i.getIconWidth() + defaultTextIconGap;
+      }
+
     // paint text and user menu icon if it exists	     
     SwingUtilities.layoutCompoundLabel(c, fm, m.getText(), m.getIcon(),
                                        vertAlign, horAlign, vertTextPos,
@@ -562,20 +576,6 @@ public class BasicMenuItemUI extends MenuItemUI
                                        defaultTextIconGap);
 
     paintText(g, m, tr, m.getText());
-
-    // paint icon
-    // FIXME: should paint different icon at different button state's.
-    // i.e disabled icon when button is disabled.. etc.
-
-    /*
-    Icon i = m.getIcon();
-    if (i != null)
-      {
-         int x = ir.x;
-         int y = ir.y;
-         i.paintIcon(c, g, x, y);
-      }
-    */
 
     // paint accelerator    
     String acceleratorText = "";
@@ -612,10 +612,27 @@ public class BasicMenuItemUI extends MenuItemUI
     Font f = menuItem.getFont();
     g.setFont(f);
     FontMetrics fm = g.getFontMetrics(f);
-    g.setColor(menuItem.getForeground());
 
+    if (text != null && ! text.equals(""))
+      {
+	if (menuItem.isEnabled())
+	  g.setColor(menuItem.getForeground());
+	else
+	  // FIXME: should fix this to use 'disabledForeground', but its
+	  // default value in BasicLookAndFeel is null.	  
+	  g.setColor(Color.gray);
+
+	int mnemonicIndex = menuItem.getDisplayedMnemonicIndex();
+
+	if (mnemonicIndex != -1)
+	  BasicGraphicsUtils.drawStringUnderlineCharAt(g, text, mnemonicIndex,
+	                                               textRect.x,
+	                                               textRect.y
+	                                               + fm.getAscent());
+	else
     BasicGraphicsUtils.drawString(g, text, 0, textRect.x,
                                   textRect.y + fm.getAscent());
+  }
   }
 
   /**
@@ -682,6 +699,7 @@ public class BasicMenuItemUI extends MenuItemUI
   {
     uninstallListeners();
     uninstallDefaults();
+    uninstallComponents(menuItem);
     menuItem = null;
   }
 
@@ -751,7 +769,14 @@ public class BasicMenuItemUI extends MenuItemUI
   {
     g.setFont(acceleratorFont);
     FontMetrics fm = g.getFontMetrics(acceleratorFont);
+
+    if (menuItem.isEnabled())
     g.setColor(acceleratorForeground);
+    else
+      // FIXME: should fix this to use 'disabledForeground', but its
+      // default value in BasicLookAndFeel is null.
+      g.setColor(Color.gray);
+
     BasicGraphicsUtils.drawString(g, acceleratorText, 0, acceleratorRect.x,
                                   acceleratorRect.y + fm.getAscent());
   }
@@ -859,14 +884,17 @@ public class BasicMenuItemUI extends MenuItemUI
      */
     public void mouseReleased(MouseEvent e)
     {
-      Rectangle size = menuItem.getBounds(); //this.getParent().getSize();
+      Rectangle size = menuItem.getBounds();
+      MenuSelectionManager manager = MenuSelectionManager.defaultManager();
       if (e.getX() > 0 && e.getX() < size.width && e.getY() > 0
           && e.getY() < size.height)
         {
-	  MenuSelectionManager manager = MenuSelectionManager.defaultManager();
 	  manager.clearSelectedPath();
-	  menuItem.doClick(0);
+	  menuItem.doClick();
         }
+
+      else
+	manager.processMouseEvent(e);
     }
   }
 
@@ -882,6 +910,8 @@ public class BasicMenuItemUI extends MenuItemUI
      */
     public void menuDragMouseDragged(MenuDragMouseEvent e)
     {
+      MenuSelectionManager manager = MenuSelectionManager.defaultManager();
+      manager.setSelectedPath(e.getPath());
     }
 
     /**
@@ -892,6 +922,8 @@ public class BasicMenuItemUI extends MenuItemUI
      */
     public void menuDragMouseEntered(MenuDragMouseEvent e)
     {
+      MenuSelectionManager manager = MenuSelectionManager.defaultManager();
+      manager.setSelectedPath(e.getPath());
     }
 
     /**
@@ -912,6 +944,13 @@ public class BasicMenuItemUI extends MenuItemUI
      */
     public void menuDragMouseReleased(MenuDragMouseEvent e)
     {
+      MenuElement[] path = e.getPath();
+
+      if (path[path.length - 1] instanceof JMenuItem)
+	((JMenuItem) path[path.length - 1]).doClick();
+
+      MenuSelectionManager manager = MenuSelectionManager.defaultManager();
+      manager.clearSelectedPath();
     }
   }
 
@@ -963,6 +1002,8 @@ public class BasicMenuItemUI extends MenuItemUI
      */
     public void propertyChange(PropertyChangeEvent evt)
     {
+      menuItem.revalidate();
+      menuItem.repaint();
     }
   }
 }

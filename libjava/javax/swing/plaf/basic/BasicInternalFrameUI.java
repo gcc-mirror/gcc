@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
+import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -179,6 +180,9 @@ public class BasicInternalFrameUI extends InternalFrameUI
     /** The direction that the resize is occuring in. */
     private transient int direction = -1;
 
+    /** Cache rectangle that can be reused. */
+    private transient Rectangle cacheRect = new Rectangle();
+
     /**
      * This method is called when the mouse is clicked.
      *
@@ -204,6 +208,9 @@ public class BasicInternalFrameUI extends InternalFrameUI
 	return;
       DesktopManager dm = getDesktopManager();
       Rectangle b = frame.getBounds();
+      Dimension min = frame.getMinimumSize();
+      if (min == null)
+	min = new Dimension(0, 0);
       Insets insets = frame.getInsets();
       int x = e.getX();
       int y = e.getY();
@@ -212,31 +219,43 @@ public class BasicInternalFrameUI extends InternalFrameUI
 	  switch (direction)
 	    {
 	    case NORTH:
-	      dm.resizeFrame(frame, b.x, b.y + y, b.width, b.height - y);
+	      cacheRect.setBounds(b.x,
+	                          Math.min(b.y + y, b.y + b.height
+	                                   - min.height), b.width, b.height
+	                          - y);
 	      break;
 	    case NORTH_EAST:
-	      dm.resizeFrame(frame, b.x, b.y + y, x, b.height - y);
+	      cacheRect.setBounds(b.x,
+	                          Math.min(b.y + y, b.y + b.height
+	                                   - min.height), x, b.height - y);
 	      break;
 	    case EAST:
-	      dm.resizeFrame(frame, b.x, b.y, x, b.height);
+	      cacheRect.setBounds(b.x, b.y, x, b.height);
 	      break;
 	    case SOUTH_EAST:
-	      dm.resizeFrame(frame, b.x, b.y, x, y);
+	      cacheRect.setBounds(b.x, b.y, x, y);
 	      break;
 	    case SOUTH:
-	      dm.resizeFrame(frame, b.x, b.y, b.width, y);
+	      cacheRect.setBounds(b.x, b.y, b.width, y);
 	      break;
 	    case SOUTH_WEST:
-	      dm.resizeFrame(frame, b.x + x, b.y, b.width - x, y);
+	      cacheRect.setBounds(Math.min(b.x + x, b.x + b.width - min.width),
+	                          b.y, b.width - x, y);
 	      break;
 	    case WEST:
-	      dm.resizeFrame(frame, b.x + x, b.y, b.width - x, b.height);
+	      cacheRect.setBounds(Math.min(b.x + x, b.x + b.width - min.width),
+	                          b.y, b.width - x, b.height);
 	      break;
 	    case NORTH_WEST:
-	      dm.resizeFrame(frame, b.x + x, b.y + y, b.width - x, b.height
-	                     - y);
+	      cacheRect.setBounds(Math.min(b.x + x, b.x + b.width - min.width),
+	                          Math.min(b.y + y, b.y + b.height
+	                                   - min.height), b.width - x,
+	                          b.height - y);
 	      break;
 	    }
+	  dm.resizeFrame(frame, cacheRect.x, cacheRect.y,
+	                 Math.max(min.width, cacheRect.width),
+	                 Math.max(min.height, cacheRect.height));
         }
       else if (e.getSource() == titlePane)
         {
@@ -498,7 +517,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
      */
     public Dimension minimumLayoutSize(Container c)
     {
-      return preferredLayoutSize(c);
+      return getSize(c, true);
     }
 
     /**
@@ -522,9 +541,24 @@ public class BasicInternalFrameUI extends InternalFrameUI
      */
     public Dimension preferredLayoutSize(Container c)
     {
+      return getSize(c, false);
+    }
+
+    /**
+     * DOCUMENT ME!
+     *
+     * @param c DOCUMENT ME!
+     * @param min DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    private Dimension getSize(Container c, boolean min)
+    {
       Insets insets = frame.getInsets();
 
       Dimension contentDims = frame.getContentPane().getPreferredSize();
+      if (min)
+	contentDims.width = contentDims.height = 0;
       int nWidth = 0;
       int nHeight = 0;
       int sWidth = 0;
@@ -578,8 +612,8 @@ public class BasicInternalFrameUI extends InternalFrameUI
       int width = Math.max(sWidth, nWidth);
       width = Math.max(width, contentDims.width + eWidth + wWidth);
 
-      int height = Math.max(contentDims.height, eHeight);
-      height = Math.max(height, wHeight);
+      int height = Math.max(eHeight, wHeight);
+      height = Math.max(height, contentDims.height);
       height += nHeight + sHeight;
 
       width += insets.left + insets.right;
@@ -606,6 +640,18 @@ public class BasicInternalFrameUI extends InternalFrameUI
    */
   protected class GlassPaneDispatcher implements MouseInputListener
   {
+    /** The MouseEvent target. */
+    private transient Component mouseEventTarget;
+
+    /** The component pressed. */
+    private transient Component pressedComponent;
+
+    /** The last component entered. */
+    private transient Component lastComponentEntered;
+
+    /** The number of presses. */
+    private transient int pressCount;
+
     /**
      * This method is called when the mouse enters the glass pane.
      *
@@ -613,7 +659,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
      */
     public void mouseEntered(MouseEvent e)
     {
-      dispatchFor(e);
+      handleEvent(e);
     }
 
     /**
@@ -623,7 +669,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
      */
     public void mouseClicked(MouseEvent e)
     {
-      dispatchFor(e);
+      handleEvent(e);
     }
 
     /**
@@ -633,7 +679,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
      */
     public void mouseDragged(MouseEvent e)
     {
-      dispatchFor(e);
+      handleEvent(e);
     }
 
     /**
@@ -643,7 +689,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
      */
     public void mouseExited(MouseEvent e)
     {
-      dispatchFor(e);
+      handleEvent(e);
     }
 
     /**
@@ -653,7 +699,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
      */
     public void mouseMoved(MouseEvent e)
     {
-      dispatchFor(e);
+      handleEvent(e);
     }
 
     /**
@@ -664,7 +710,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
     public void mousePressed(MouseEvent e)
     {
       activateFrame(frame);
-      dispatchFor(e);
+      handleEvent(e);
     }
 
     /**
@@ -674,27 +720,149 @@ public class BasicInternalFrameUI extends InternalFrameUI
      */
     public void mouseReleased(MouseEvent e)
     {
-      dispatchFor(e);
+      handleEvent(e);
     }
 
     /**
-     * This helper method redispatches the MouseEvent to the  proper sub
-     * component.
+     * This method acquires a candidate component to dispatch the  MouseEvent
+     * to.
      *
-     * @param e The MouseEvent.
+     * @param me The MouseEvent to acquire a component for.
      */
-    private void dispatchFor(MouseEvent e)
+    private void acquireComponentForMouseEvent(MouseEvent me)
     {
-      Component candidate = SwingUtilities.getDeepestComponentAt(frame.getRootPane()
-                                                                      .getContentPane(),
-                                                                 e.getX(),
-                                                                 e.getY());
-      if (candidate == null || candidate == frame.getRootPane().getGlassPane())
+      int x = me.getX();
+      int y = me.getY();
+
+      // Find the candidate which should receive this event.
+      Component parent = frame.getContentPane();
+      if (parent == null)
 	return;
-      MouseEvent newevt = SwingUtilities.convertMouseEvent(frame.getRootPane()
+      Component candidate = null;
+      Point p = me.getPoint();
+      while (candidate == null && parent != null)
+        {
+	  candidate = SwingUtilities.getDeepestComponentAt(parent, p.x, p.y);
+	  if (candidate == null)
+	    {
+	      p = SwingUtilities.convertPoint(parent, p.x, p.y,
+	                                      parent.getParent());
+	      parent = parent.getParent();
+	    }
+        }
+
+      // If the only candidate we found was the native container itself,
+      // don't dispatch any event at all.  We only care about the lightweight
+      // children here.
+      if (candidate == frame.getContentPane())
+	candidate = null;
+
+      // If our candidate is new, inform the old target we're leaving.
+      if (lastComponentEntered != null && lastComponentEntered.isShowing()
+          && lastComponentEntered != candidate)
+        {
+	  Point tp = SwingUtilities.convertPoint(frame.getContentPane(), x, y,
+	                                         lastComponentEntered);
+	  MouseEvent exited = new MouseEvent(lastComponentEntered,
+	                                     MouseEvent.MOUSE_EXITED,
+	                                     me.getWhen(), me.getModifiers(),
+	                                     tp.x, tp.y, me.getClickCount(),
+	                                     me.isPopupTrigger(),
+	                                     me.getButton());
+	  lastComponentEntered.dispatchEvent(exited);
+	  lastComponentEntered = null;
+        }
+
+      // If we have a candidate, maybe enter it.
+      if (candidate != null)
+        {
+	  mouseEventTarget = candidate;
+	  if (candidate.isLightweight() && candidate.isShowing()
+	      && candidate != frame.getContentPane()
+	      && candidate != lastComponentEntered)
+	    {
+	      lastComponentEntered = mouseEventTarget;
+	      Point cp = SwingUtilities.convertPoint(frame.getContentPane(),
+	                                             x, y, lastComponentEntered);
+	      MouseEvent entered = new MouseEvent(lastComponentEntered,
+	                                          MouseEvent.MOUSE_ENTERED,
+	                                          me.getWhen(),
+	                                          me.getModifiers(), cp.x,
+	                                          cp.y, me.getClickCount(),
+	                                          me.isPopupTrigger(),
+	                                          me.getButton());
+	      lastComponentEntered.dispatchEvent(entered);
+	    }
+        }
+
+      if (me.getID() == MouseEvent.MOUSE_RELEASED
+          || me.getID() == MouseEvent.MOUSE_PRESSED && pressCount > 0
+          || me.getID() == MouseEvent.MOUSE_DRAGGED)
+	// If any of the following events occur while a button is held down,
+	// they should be dispatched to the same component to which the
+	// original MOUSE_PRESSED event was dispatched:
+	//   - MOUSE_RELEASED
+	//   - MOUSE_PRESSED: another button pressed while the first is held down
+	//   - MOUSE_DRAGGED
+	mouseEventTarget = pressedComponent;
+      else if (me.getID() == MouseEvent.MOUSE_CLICKED)
+        {
+	  // Don't dispatch CLICKED events whose target is not the same as the
+	  // target for the original PRESSED event.
+	  if (candidate != pressedComponent)
+	    mouseEventTarget = null;
+	  else if (pressCount == 0)
+	    pressedComponent = null;
+        }
+    }
+
+    /**
+     * This is a helper method that dispatches the GlassPane MouseEvents to
+     * the proper component.
+     *
+     * @param e The AWTEvent to be dispatched. Usually an instance of
+     *        MouseEvent.
+     */
+    private void handleEvent(AWTEvent e)
+    {
+      if (e instanceof MouseEvent)
+        {
+	  MouseEvent me = SwingUtilities.convertMouseEvent(frame.getRootPane()
                                                                 .getGlassPane(),
-                                                           e, candidate);
-      candidate.dispatchEvent(newevt);
+	                                                   (MouseEvent) e,
+	                                                   frame.getRootPane()
+	                                                        .getGlassPane());
+
+	  acquireComponentForMouseEvent(me);
+
+	  // Avoid dispatching ENTERED and EXITED events twice.
+	  if (mouseEventTarget != null && mouseEventTarget.isShowing()
+	      && e.getID() != MouseEvent.MOUSE_ENTERED
+	      && e.getID() != MouseEvent.MOUSE_EXITED)
+	    {
+	      MouseEvent newEvt = SwingUtilities.convertMouseEvent(frame
+	                                                           .getContentPane(),
+	                                                           me,
+	                                                           mouseEventTarget);
+	      mouseEventTarget.dispatchEvent(newEvt);
+
+	      switch (e.getID())
+	        {
+		case MouseEvent.MOUSE_PRESSED:
+		  if (pressCount++ == 0)
+		    pressedComponent = mouseEventTarget;
+		  break;
+		case MouseEvent.MOUSE_RELEASED:
+		  // Clear our memory of the original PRESSED event, only if
+		  // we're not expecting a CLICKED event after this. If
+		  // there is a CLICKED event after this, it will do clean up.
+		  if (--pressCount == 0
+		      && mouseEventTarget != pressedComponent)
+		    pressedComponent = null;
+		  break;
+	        }
+	    }
+        }
     }
   }
 
@@ -1108,7 +1276,7 @@ public class BasicInternalFrameUI extends InternalFrameUI
    */
   public Dimension getMinimumSize(JComponent x)
   {
-    return getPreferredSize(x);
+    return internalFrameLayout.minimumLayoutSize(x);
   }
 
   /**

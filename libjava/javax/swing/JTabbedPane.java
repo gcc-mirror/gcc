@@ -312,9 +312,9 @@ public class JTabbedPane extends JComponent implements Serializable,
      */
     public void setComponent(Component c)
     {
-      JTabbedPane.this.remove(component);
+      remove(component);
       this.component = c;
-      JTabbedPane.this.add(c);
+      add(c);
     }
 
     /**

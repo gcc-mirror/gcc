@@ -994,7 +994,32 @@ public class JList extends JComponent implements Accessible, Scrollable
    */
   public Dimension getPreferredScrollableViewportSize()
   {
-    return getPreferredSize();
+    int vis = getVisibleRowCount();
+    int nrows = getModel() == null ? 0 : getModel().getSize();
+    // FIXME: this is a somewhat arbitrary default, but.. ?
+    Dimension single = new Dimension(10, 10);;
+    Rectangle bounds = null;
+
+    if (vis > nrows)
+      {
+        if (fixedCellWidth != -1 && 
+            fixedCellHeight != -1)
+          {
+            single = new Dimension(fixedCellWidth, fixedCellHeight);
+          }
+        else if (nrows != 0 && getUI() != null)
+          {
+            Rectangle tmp = getUI().getCellBounds(this, 0, 0);
+            if (tmp != null)
+              single = tmp.getSize();
+          }
+      }
+    else if (getUI() != null)
+      {
+        return getUI().getCellBounds(this, 0, vis - 1).getSize();
+      }
+
+    return new Dimension(single.width, single.height * vis);
   }
 
   /**

@@ -41,17 +41,18 @@ import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.swing.plaf.ButtonUI;
 
+
 /**
  * An instance of JButton can be added to a panel, frame etc
  *
  * @author Ronald Veldema (rveldema@cs.vu.nl)
  */
-public class JButton extends AbstractButton implements Accessible 
+public class JButton extends AbstractButton
+  implements Accessible
 {
   private static final long serialVersionUID = -1907255238954382202L;
-
-    boolean def, is_def;
-
+  boolean def;
+  boolean is_def;
     
     public JButton()
     {
@@ -98,8 +99,7 @@ public class JButton extends AbstractButton implements Accessible
   
     public String getUIClassID()
     {
-	//Returns a string that specifies the name of the Look and Feel
-	//class that renders this component.  
+    //Returns a string that specifies the name of the L&F class that renders this component.  
 	return "ButtonUI";
     }
   
@@ -120,17 +120,23 @@ public class JButton extends AbstractButton implements Accessible
 	return "JButton";
     }
     
+  /**
+   * Overrides JComponent.removeNotify to check if this button is currently
+   * set as the default button on the RootPane, and if so, sets the RootPane's
+   * default button to null to ensure the RootPane doesn't hold onto an invalid
+   * button reference.
+   */
     public void removeNotify()
     {
-	//Overrides JComponent.removeNotify to check if this button is currently set as the default button on the RootPane, and if so, sets the RootPane's default button to null to ensure the RootPane doesn't hold onto an invalid button reference.  
     }
     
     public void setDefaultCapable(boolean defaultCapable)
-    {	def = defaultCapable;    }
+  {
+    def = defaultCapable;
+  }
     
     public void updateUI()
     {
-	ButtonUI b = (ButtonUI)UIManager.getUI(this);
-	setUI(b);
+    setUI((ButtonUI) UIManager.getUI(this));
     }
 }

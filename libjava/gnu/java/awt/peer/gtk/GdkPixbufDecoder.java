@@ -77,19 +77,16 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
   public GdkPixbufDecoder (String filename)
   {
     super (filename);
-    initState ();
   }
   
   public GdkPixbufDecoder (URL url)
   {
     super (url);
-    initState ();
   }
 
   public GdkPixbufDecoder (byte[] imagedata, int imageoffset, int imagelength)
   {
     super (imagedata, imageoffset, imagelength);
-    initState ();
   }
 
   // called back by native side
@@ -135,6 +132,7 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
 
     byte bytes[] = new byte[4096];
     int len = 0;
+    initState();
     while ((len = is.read (bytes)) != -1)
       pumpBytes (bytes, len);
     

@@ -42,15 +42,23 @@ import java.io.ObjectOutputStream;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 
 /**
- * DOCUMENT ME!
+ * This class represents JRadioButtonMenuItem. Its behaviour is very similar
+ * to JRadioButton. Just like JRadioButton, user can check and uncheck this
+ * menu item by clicking on it. JRadioButtonMenuItem uses ToggleButtonModel
+ * to keep track of its selection. If the JRadioButtonMenuItem is included in
+ * the button group, then only one JRadioButtonMenuItem can be selected at
+ * one time.
  */
 public class JRadioButtonMenuItem extends JMenuItem implements Accessible
 {
   private static final long serialVersionUID = 8482658191548521743L;
 
+  /** name for the UI delegate for this radio button menu item. */
   private static final String uiClassID = "RadioButtonMenuItemUI";
 
   /**
@@ -62,9 +70,9 @@ public class JRadioButtonMenuItem extends JMenuItem implements Accessible
   }
 
   /**
-   * Creates a new JRadioButtonMenuItem object.
+   * Creates a new JRadioButtonMenuItem with specified icon
    *
-   * @param icon DOCUMENT ME!
+   * @param icon Icon to be used for this menu item
    */
   public JRadioButtonMenuItem(Icon icon)
   {
@@ -72,9 +80,9 @@ public class JRadioButtonMenuItem extends JMenuItem implements Accessible
   }
 
   /**
-   * Creates a new JRadioButtonMenuItem object.
+   * Creates a new JRadioButtonMenuItem with specified label
    *
-   * @param text DOCUMENT ME!
+   * @param text Label for this menu item
    */
   public JRadioButtonMenuItem(String text)
   {
@@ -82,9 +90,9 @@ public class JRadioButtonMenuItem extends JMenuItem implements Accessible
   }
 
   /**
-   * Creates a new JRadioButtonMenuItem object.
+   * Creates a new JRadioButtonMenuItem using specified action
    *
-   * @param action DOCUMENT ME!
+   * @param action Action for this menu item
    */
   public JRadioButtonMenuItem(Action action)
   {
@@ -93,10 +101,10 @@ public class JRadioButtonMenuItem extends JMenuItem implements Accessible
   }
 
   /**
-   * Creates a new JRadioButtonMenuItem object.
+   * Creates a new JRadioButtonMenuItem with specified label and icon
    *
-   * @param text DOCUMENT ME!
-   * @param icon DOCUMENT ME!
+   * @param text Label for this menu item
+   * @param icon Icon for this menu item
    */
   public JRadioButtonMenuItem(String text, Icon icon)
   {
@@ -104,10 +112,11 @@ public class JRadioButtonMenuItem extends JMenuItem implements Accessible
   }
 
   /**
-   * Creates a new JRadioButtonMenuItem object.
+   * Creates a new JRadioButtonMenuItem with specified label
+   * and marked selected if 'selected' is true.
    *
-   * @param text DOCUMENT ME!
-   * @param selected DOCUMENT ME!
+   * @param text Text for this menu item
+   * @param selected Selected state of this menu item
    */
   public JRadioButtonMenuItem(String text, boolean selected)
   {
@@ -115,10 +124,11 @@ public class JRadioButtonMenuItem extends JMenuItem implements Accessible
   }
 
   /**
-   * Creates a new JRadioButtonMenuItem object.
+   * Creates a new JRadioButtonMenuItem with specified icon
+   * and given selected state
    *
-   * @param icon DOCUMENT ME!
-   * @param selected DOCUMENT ME!
+   * @param icon Icon for this menu item
+   * @param selected Selected state for this menu item
    */
   public JRadioButtonMenuItem(Icon icon, boolean selected)
   {
@@ -126,11 +136,12 @@ public class JRadioButtonMenuItem extends JMenuItem implements Accessible
   }
 
   /**
-   * Creates a new JRadioButtonMenuItem object.
+   * Creates a new JRadioButtonMenuItem with specified label,
+   * icon and selected state.
    *
-   * @param text DOCUMENT ME!
-   * @param icon DOCUMENT ME!
-   * @param selected DOCUMENT ME!
+   * @param text Label for this menu item
+   * @param icon Icon to be use for this menu item
+   * @param selected selected state of this menu item
    */
   public JRadioButtonMenuItem(String text, Icon icon, boolean selected)
   {
@@ -139,22 +150,15 @@ public class JRadioButtonMenuItem extends JMenuItem implements Accessible
     model.setSelected(selected);
   }
 
-  /**
-   * DOCUMENT ME!
-   *
-   * @param stream DOCUMENT ME!
-   *
-   * @throws IOException DOCUMENT ME!
-   */
   private void writeObject(ObjectOutputStream stream) throws IOException
   {
-    // TODO
   }
 
   /**
-   * DOCUMENT ME!
+   * This method returns a name to identify which look and feel class will be
+   * the UI delegate for the menuItem.
    *
-   * @return $returnType$ DOCUMENT ME!
+   * @return The Look and Feel classID. "JRadioButtonMenuItemUI"
    */
   public String getUIClassID()
   {
@@ -162,28 +166,26 @@ public class JRadioButtonMenuItem extends JMenuItem implements Accessible
   }
 
   /**
-   * DOCUMENT ME!
+   * This method overrides JComponent.requestFocus with an empty
+   * implementation, since JRadioButtonMenuItems should not
+   * receve focus in general.
    */
   public void requestFocus()
   {
-    // TODO
+    //  Should do nothing here
   }
 
   /**
-   * DOCUMENT ME!
+   * A string that describes this JRadioButtonMenuItem. Normally only used
+   * for debugging.
    *
-   * @return $returnType$ DOCUMENT ME!
+   * @return A string describing this JRadioButtonMenuItem
    */
   protected String paramString()
   {
     return "JRadioButtonMenuItem";
   }
 
-  /**
-   * DOCUMENT ME!
-   *
-   * @return $returnType$ DOCUMENT ME!
-   */
   public AccessibleContext getAccessibleContext()
   {
     if (accessibleContext == null)
@@ -192,9 +194,6 @@ public class JRadioButtonMenuItem extends JMenuItem implements Accessible
     return accessibleContext;
   }
 
-  /**
-   * DOCUMENT ME!
-   */
   protected class AccessibleJRadioButtonMenuItem extends AccessibleJMenuItem
   {
     private static final long serialVersionUID = 4381471510145292179L;
@@ -206,11 +205,6 @@ public class JRadioButtonMenuItem extends JMenuItem implements Accessible
     {
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return $returnType$ DOCUMENT ME!
-     */
     public AccessibleRole getAccessibleRole()
     {
       return AccessibleRole.RADIO_BUTTON;
