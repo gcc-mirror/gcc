@@ -1369,11 +1369,15 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   rtx body;
   int ninputs = list_length (inputs);
   int noutputs = list_length (outputs);
+  int ninout = 0;
   int nclobbers;
   tree tail;
   register int i;
   /* Vector of RTX's of evaluated output operands.  */
   rtx *output_rtx = (rtx *) alloca (noutputs * sizeof (rtx));
+  int *inout_opnum = (int *) alloca (noutputs * sizeof (int));
+  enum machine_mode *inout_mode
+    = (enum machine_mode *) alloca (noutputs * sizeof (enum machine_mode));
   /* The insn we have emitted.  */
   rtx insn;
 
@@ -1405,6 +1409,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       tree val1;
       int j;
       int found_equal = 0;
+      int found_plus = 0;
       int allows_reg = 0;
 
       /* If there's an erroneous arg, emit no insn.  */
@@ -1420,8 +1425,17 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	switch (TREE_STRING_POINTER (TREE_PURPOSE (tail))[j])
 	  {
 	  case '+':
-	    error ("output operand constraint contains `+'");
-	    return;
+	    /* Make sure we can specify the matching operand.  */
+	    if (i >= '0' && i <= '9')
+	      {
+		error ("output operand constraint %d contains `+'", i);
+		return;
+	      }
+
+	    /* Replace '+' with '='.  */
+	    TREE_STRING_POINTER (TREE_PURPOSE (tail))[j] = '=';
+	    found_plus = 1;
+	    break;
 
 	  case '=':
 	    found_equal = 1;
@@ -1450,7 +1464,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	    break;
 	  }
 
-      if (! found_equal)
+      if (! found_equal && ! found_plus)
 	{
 	  error ("output operand constraint lacks `='");
 	  return;
@@ -1465,7 +1479,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	  || (TREE_CODE_CLASS (TREE_CODE (val)) == 'd'
 	      && ! (GET_CODE (DECL_RTL (val)) == REG
 		    && GET_MODE (DECL_RTL (val)) != TYPE_MODE (type)))
-	  || ! allows_reg)
+	  || ! allows_reg
+	  || found_plus)
 	{
 	  if (! allows_reg)
 	    mark_addressable (TREE_VALUE (tail));
@@ -1481,8 +1496,15 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	  output_rtx[i] = assign_temp (type, 0, 0, 0);
 	  TREE_VALUE (tail) = make_tree (type, output_rtx[i]);
 	}
+
+      if (found_plus)
+	{
+	  inout_mode[ninout] = TYPE_MODE (TREE_TYPE (TREE_VALUE (tail)));
+	  inout_opnum[ninout++] = i;
+	}
     }
 
+  ninputs += ninout;
   if (ninputs + noutputs > MAX_RECOG_OPERANDS)
     {
       error ("more than %d operands in `asm'", MAX_RECOG_OPERANDS);
@@ -1593,11 +1615,24 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   /* Protect all the operands from the queue,
      now that they have all been evaluated.  */
 
-  for (i = 0; i < ninputs; i++)
+  for (i = 0; i < ninputs - ninout; i++)
     XVECEXP (body, 3, i) = protect_from_queue (XVECEXP (body, 3, i), 0);
 
   for (i = 0; i < noutputs; i++)
     output_rtx[i] = protect_from_queue (output_rtx[i], 1);
+
+  /* For in-out operands, copy output rtx to input rtx. */
+  for (i = 0; i < ninout; i++)
+    {
+      static char match[9+1][2]
+	= {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+      int j = inout_opnum[i];
+
+      XVECEXP (body, 3, ninputs - ninout + i)      /* argvec */
+	= output_rtx[j];
+      XVECEXP (body, 4, ninputs - ninout + i)      /* constraints */
+	= gen_rtx (ASM_INPUT, inout_mode[j], match[j]);
+    }
 
   /* Now, for each output, construct an rtx
      (set OUTPUT (asm_operands INSN OUTPUTNUMBER OUTPUTCONSTRAINT
