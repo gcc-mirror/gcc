@@ -1,3 +1,8 @@
+Wed Apr 12 07:51:54 2000  Catherine Moore  <clm@cygnus.com>
+ 
+        * calls.c (emit_library_call_value_1): Change 3rd arg to
+        locate_and_pad_parm to disregard the setting of partial.
+
 Wed Apr 12 08:47:38 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree.c (unsave_expr_now_r, unsafe_for_reeval): Properly do TREE_LIST.
