@@ -524,10 +524,12 @@ print_rtx (in_rtx)
 	{
 	  char s[60];
 
-	  real_to_decimal (s, CONST_DOUBLE_REAL_VALUE (in_rtx), -1);
+	  real_to_decimal (s, CONST_DOUBLE_REAL_VALUE (in_rtx),
+			   sizeof (s), 0, 1);
 	  fprintf (outfile, " %s", s);
 
-	  real_to_hexadecimal (s, CONST_DOUBLE_REAL_VALUE (in_rtx), -1);
+	  real_to_hexadecimal (s, CONST_DOUBLE_REAL_VALUE (in_rtx),
+			       sizeof (s), 0, 1);
 	  fprintf (outfile, " [%s]", s);
 	}
       break;

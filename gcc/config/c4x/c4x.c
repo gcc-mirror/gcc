@@ -1960,10 +1960,9 @@ c4x_print_operand (file, op, letter)
     case CONST_DOUBLE:
       {
 	char str[64];
-	REAL_VALUE_TYPE r;
 	
-	REAL_VALUE_FROM_CONST_DOUBLE (r, op);
-	REAL_VALUE_TO_DECIMAL (r, str, -1);
+	real_to_decimal (str, CONST_DOUBLE_REAL_VALUE (op),
+			 sizeof (str), 0, 1);
 	fprintf (file, "%s", str);
       }
       break;

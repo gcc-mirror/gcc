@@ -1508,7 +1508,8 @@ dump_expr (t, flags)
       break;
 
     case REAL_CST:
-      REAL_VALUE_TO_DECIMAL (TREE_REAL_CST (t), digit_buffer, -1);
+      real_to_decimal (digit_buffer, &TREE_REAL_CST (t),
+		       sizeof (digit_buffer), 0, 1);
       output_add_string (scratch_buffer, digit_buffer);
       break;
 

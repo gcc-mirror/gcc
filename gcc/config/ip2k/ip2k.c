@@ -3072,8 +3072,9 @@ asm_output_float (file, n)
   char dstr[100];
   
   REAL_VALUE_TO_TARGET_SINGLE (n, val);
-  REAL_VALUE_TO_DECIMAL (n, dstr, -1);
-  fprintf (file, "\t.long 0x%08lx\t/* %s */\n",val, dstr);
+  real_to_decimal (dstr, &n, sizeof (dstr), 0, 1);
+
+  fprintf (file, "\t.long 0x%08lx\t/* %s */\n", val, dstr);
 }
 
 /* Sets section name for declaration DECL.  */

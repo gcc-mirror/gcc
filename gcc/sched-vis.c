@@ -562,12 +562,7 @@ print_value (buf, x, verbose)
       break;
     case CONST_DOUBLE:
       if (FLOAT_MODE_P (GET_MODE (x)))
-	{
-	  REAL_VALUE_TYPE r;
-
-	  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
-	  REAL_VALUE_TO_DECIMAL(r, t, 6);
-	}
+	real_to_decimal (t, CONST_DOUBLE_REAL_VALUE (x), sizeof (t), 0, 1);
       else
 	sprintf (t, "<0x%lx,0x%lx>", (long) XWINT (x, 2), (long) XWINT (x, 3));
       cur = safe_concat (buf, cur, t);

@@ -553,11 +553,10 @@ fr30_print_operand (file, x, code)
 	output_operand_lossage ("fr30_print_operand: invalid %%F code");
       else
 	{
-	  REAL_VALUE_TYPE d;
 	  char str[30];
 
-	  REAL_VALUE_FROM_CONST_DOUBLE (d, x);
-	  REAL_VALUE_TO_DECIMAL (d, str, 8);
+	  real_to_decimal (str, CONST_DOUBLE_REAL_VALUE (x),
+			   sizeof (str), 0, 1);
 	  fputs (str, file);
 	}
       return;

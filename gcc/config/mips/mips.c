@@ -5910,12 +5910,10 @@ print_operand (file, op, letter)
   else if (code == CONST_DOUBLE
 	   && GET_MODE_CLASS (GET_MODE (op)) == MODE_FLOAT)
     {
-      REAL_VALUE_TYPE d;
       char s[60];
 
-      REAL_VALUE_FROM_CONST_DOUBLE (d, op);
-      REAL_VALUE_TO_DECIMAL (d, s, -1);
-      fprintf (file, s);
+      real_to_decimal (s, CONST_DOUBLE_REAL_VALUE (op), sizeof (s), 0, 1);
+      fputs (s, file);
     }
 
   else if (letter == 'x' && GET_CODE (op) == CONST_INT)

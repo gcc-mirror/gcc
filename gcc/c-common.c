@@ -5100,7 +5100,7 @@ builtin_define_with_hex_fp_value (macro, type, digits, hex_str, fp_suffix)
      then print it back out as decimal.  */
 
   real_from_string (&real, hex_str);
-  real_to_decimal (dec_str, &real, digits);
+  real_to_decimal (dec_str, &real, sizeof (dec_str), digits, 0);
 
   sprintf (buf, "%s=%s%s", macro, dec_str, fp_suffix);
   cpp_define (parse_in, buf);

@@ -1785,7 +1785,6 @@ i960_print_operand (file, x, code)
     }
   else if (rtxcode == CONST_DOUBLE)
     {
-      REAL_VALUE_TYPE d;
       char dstr[30];
 
       if (x == CONST0_RTX (GET_MODE (x)))
@@ -1799,8 +1798,7 @@ i960_print_operand (file, x, code)
 	  return;
 	}
 
-      REAL_VALUE_FROM_CONST_DOUBLE (d, x);
-      REAL_VALUE_TO_DECIMAL (d, dstr, -1);
+      real_to_decimal (dstr, CONST_DOUBLE_REAL_VALUE (x), sizeof (dstr), 0, 1);
       fprintf (file, "0f%s", dstr);
       return;
     }

@@ -1,3 +1,20 @@
+2002-10-15  Richard Henderson  <rth@redhat.com>
+
+	* real.c (real_to_decimal): Accept BUF_SIZE and CROP_TRAILING_ZEROS
+	as arguments.  Bound DIGITS by the available buffer size.
+	(real_to_hexadecimal): Likewise.
+	* real.h (real_to_decimal, real_to_hexadecimal): Update prototypes.
+	(REAL_VALUE_TO_DECIMAL): Remove.
+	* c-common.c, c-pretty-print.c, print-rtl.c, print-tree.c,
+	sched-vis.c, config/arc/arc.c, config/c4x/c4x.c, config/fr30/fr30.c,
+	config/i370/i370.h, config/i386/i386.c, config/i960/i960.c, 
+	config/ip2k/ip2k.c, config/m32r/m32r.c, config/m68hc11/m68hc11.c,
+	config/m68k/hp320.h, config/m68k/m68k.h, config/m68k/sun2o4.h,
+	config/m68k/sun3.h, config/mips/mips.c, config/ns32k/ns32k.c, 
+	config/pdp11/pdp11.h, config/vax/vax.h: Update all callers to
+	use real_to_decimal directly, and with the proper arguments.
+	* doc/tm.texi (REAL_VALUE_TO_DECIMAL): Remove.
+
 2002-10-15  Jim Wilson  <wilson@redhat.com>
 
 	* reload1.c (merge_assigned_reloads): After converting overlapping

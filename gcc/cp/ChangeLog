@@ -1,3 +1,8 @@
+2002-10-15  Richard Henderson  <rth@redhat.com>
+
+	* error.c (dump_expr): Use real_to_decimal directly, and with
+	the new arguments.
+
 2002-10-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (reshape_init): Fix typo.

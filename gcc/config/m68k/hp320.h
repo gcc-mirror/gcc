@@ -300,7 +300,7 @@ do {					\
       if (CODE == 'f')						\
         {							\
           char dstr[30];					\
-          REAL_VALUE_TO_DECIMAL (VALUE, dstr, 9);		\
+      	  real_to_decimal (dstr, &(VALUE), sizeof (dstr), 9, 0); \
           fprintf ((FILE), "&0f%s", dstr);			\
         }							\
       else							\
@@ -317,7 +317,7 @@ do {					\
 #undef ASM_OUTPUT_DOUBLE_OPERAND
 #define ASM_OUTPUT_DOUBLE_OPERAND(FILE,VALUE)				\
  do { char dstr[30];							\
-      REAL_VALUE_TO_DECIMAL (VALUE, dstr, -1);				\
+      real_to_decimal (dstr, &(VALUE), sizeof (dstr), 0, 1);		\
       fprintf (FILE, "&0f%s", dstr);					\
     } while (0)
 
@@ -326,7 +326,7 @@ do {					\
 #undef ASM_OUTPUT_LONG_DOUBLE_OPERAND
 #define ASM_OUTPUT_LONG_DOUBLE_OPERAND(FILE,VALUE)			\
  do { char dstr[30];							\
-      REAL_VALUE_TO_DECIMAL (VALUE, dstr, -1);				\
+      real_to_decimal (dstr, &(VALUE), sizeof (dstr), 0, 1);		\
       fprintf (FILE, "&0f%s", dstr);					\
     } while (0)
 
@@ -351,15 +351,11 @@ do {					\
     { REAL_VALUE_TYPE r;  long l;					\
       REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
       PRINT_OPERAND_FLOAT (CODE, FILE, r, l); }				\
-  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == DFmode)	\
-    { REAL_VALUE_TYPE r;  char dstr[30];				\
-      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
-      REAL_VALUE_TO_DECIMAL (r, dstr, -1);				\
-      fprintf (FILE, "&0f%s", dstr); }					\
-  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == XFmode)	\
-    { REAL_VALUE_TYPE r;  char dstr[30];				\
-      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
-      REAL_VALUE_TO_DECIMAL (r, dstr, -1);				\
+  else if (GET_CODE (X) == CONST_DOUBLE					\
+	   && (GET_MODE (X) == DFmode || GET_MODE (X) == XFmode))	\
+    { char dstr[30];							\
+      real_to_decimal (dstr, CONST_DOUBLE_REAL_VALUE (X),		\
+		       sizeof (dstr), 0, 1);				\
       fprintf (FILE, "&0f%s", dstr); }					\
   else { putc ('&', FILE); output_addr_const (FILE, X); }}
 #endif
