@@ -265,14 +265,14 @@ __ffsdi2 (u)
   w.s.high = 0;
   w.s.low = ffs (uu.s.low);
   if (w.s.low != 0)
-    return w;
+    return w.ll;
   w.s.low = ffs (uu.s.high);
   if (w.s.low != 0)
     {
       w.s.low += BITS_PER_UNIT * sizeof (SItype);
-      return w;
+      return w.ll;
     }
-  return w;
+  return w.ll;
 }
 #endif
 
