@@ -1428,6 +1428,7 @@ BLOCK_PROFILER_CODE
 
 #undef NULL /* Avoid errors if stdio.h and our stddef.h mismatch.  */
 #include <stdio.h>
+char *ctime ();
 
 #ifdef HAVE_ATEXIT
 extern void atexit (void (*) (void));
