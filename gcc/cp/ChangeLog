@@ -1,3 +1,11 @@
+2005-01-21  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/19208
+	* pt.c (fold_decl_constant_value): Always call fold_non_dependent_expr
+	at least once.
+	(tsubst): Use fold_decl_constant_value in place of a bare call to
+	integral_constant_value.
+
 2005-01-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* typeck.c (more_qualified_p): Remove.
