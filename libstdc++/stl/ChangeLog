@@ -1,3 +1,9 @@
+1998-09-03  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* stl_config.h: Define __STL_HAS_WCHAR_T,
+	__STL_MEMBER_TEMPLATE_CLASSES, __STL_HAS_NAMESPACES,
+	__STL_NO_NAMESPACES and __STL_LONG_LONG.
+
 1998-09-02  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* algorithm alloc.h defalloc.h hash_map.h hash_set.h iterator
