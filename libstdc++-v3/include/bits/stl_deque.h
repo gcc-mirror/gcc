@@ -1342,7 +1342,7 @@ void deque<_Tp,_Alloc>::_M_new_elements_at_front(size_type __new_elems)
   catch(...) {
     for (size_type __j = 1; __j < __i; ++__j)
       _M_deallocate_node(*(_M_start._M_node - __j));      
-    throw;
+    __throw_exception_again;
   }
 }
 
@@ -1360,7 +1360,7 @@ void deque<_Tp,_Alloc>::_M_new_elements_at_back(size_type __new_elems)
   catch(...) {
     for (size_type __j = 1; __j < __i; ++__j)
       _M_deallocate_node(*(_M_finish._M_node + __j));      
-    throw;
+    __throw_exception_again;
   }
 }
 
