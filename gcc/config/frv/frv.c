@@ -741,7 +741,7 @@ frv_encode_section_info (decl, first)
      tree decl;
      int first;
 {
-  if (first)
+  if (! first)
     return;
   if (TREE_CODE (decl) == VAR_DECL)
     {
