@@ -1,3 +1,8 @@
+2001-07-10  Jeff Johnston  <jjohnstn@redhat.com>
+
+	* Makefile.in: Add support for regex code.
+	* regex.c: New file.
+
 2001-07-05  Mark Klein  <mklein@dis.com>
 
 	* Makefile.in: Add ffs.c dependency.
