@@ -1,3 +1,7 @@
+2003-11-20  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in (Makefile): Pass along CONFIG_SHELL.
+
 2003-11-20 David Mosberger  <davidm@hpl.hp.com>
 
 	* config/t-libunwind (LIB2ADDEH): Add unwind-c.c.
