@@ -257,9 +257,6 @@ main (argc, argv)
 	  sdbuff[search_dirs_len+1] = 0;
 	  strcat (sdbuff, nbuff);
 
-	  if (search_dirs)
-	    free (search_dirs);
-
 	  search_dirs = sdbuff;
 	}
 
