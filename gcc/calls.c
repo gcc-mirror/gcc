@@ -2294,9 +2294,13 @@ emit_library_call (va_alist)
 
 /* Like emit_library_call except that an extra argument, VALUE,
    comes second and says where to store the result.
-   (If VALUE is zero, the result comes in the function value register.)  */
+   (If VALUE is zero, this function chooses a convenient way
+   to return the value.
 
-void
+   This function returns an rtx for where the value is to be found.
+   If VALUE is nonzero, VALUE is returned.  */
+
+rtx
 emit_library_call_value (va_alist)
      va_dcl
 {
@@ -2322,6 +2326,7 @@ emit_library_call_value (va_alist)
   rtx use_insns;
   rtx value;
   rtx mem_value = 0;
+  int pcc_struct_value = 0;
   /* library calls are never indirect calls.  */
   int current_call_is_indirect = 0;
 
@@ -2334,12 +2339,22 @@ emit_library_call_value (va_alist)
 
   /* If this kind of value comes back in memory,
      decide where in memory it should come back.  */
-  if (RETURN_IN_MEMORY (type_for_mode (outmode, 0)))
+  if (aggregate_value_p (type_for_mode (outmode, 0)))
     {
-      if (GET_CODE (value) == MEM)
+#ifdef PCC_STATIC_STRUCT_RETURN
+      rtx pointer_reg
+	= hard_function_value (build_pointer_type (type_for_mode (outmode, 0)),
+			       0);
+      mem_value = gen_rtx (MEM, outmode, pointer_reg);
+      pcc_struct_value = 1;
+      if (value == 0)
+	value = gen_reg_rtx (outmode);
+#else /* not PCC_STATIC_STRUCT_RETURN */
+      if (value != 0 && GET_CODE (value) == MEM)
 	mem_value = value;
       else
 	mem_value = assign_stack_temp (outmode, GET_MODE_SIZE (outmode), 0);
+#endif
     }
 
   /* ??? Unfinished: must pass the memory address as an argument.  */
@@ -2362,44 +2377,42 @@ emit_library_call_value (va_alist)
 
   /* If there's a structure value address to be passed,
      either pass it in the special place, or pass it as an extra argument.  */
-  if (mem_value)
+  if (mem_value && struct_value_rtx == 0 && ! pcc_struct_value)
     {
       rtx addr = XEXP (mem_value, 0);
+      nargs++;
 
-      if (! struct_value_rtx)
-	{
-	  nargs++;
+      /* Make sure it is a reasonable operand for a move or push insn.  */
+      if (GET_CODE (addr) != REG && GET_CODE (addr) != MEM
+	  && ! (CONSTANT_P (addr) && LEGITIMATE_CONSTANT_P (addr)))
+	addr = force_operand (addr, NULL_RTX);
 
-	  /* Make sure it is a reasonable operand for a move or push insn.  */
-	  if (GET_CODE (addr) != REG && GET_CODE (addr) != MEM
-	      && ! (CONSTANT_P (addr) && LEGITIMATE_CONSTANT_P (addr)))
-	    addr = force_operand (addr, NULL_RTX);
+      argvec[count].value = addr;
+      argvec[count].mode = outmode;
+      argvec[count].partial = 0;
 
-	  argvec[count].value = addr;
-	  argvec[count].mode = outmode;
-	  argvec[count].partial = 0;
-
-	  argvec[count].reg = FUNCTION_ARG (args_so_far, outmode, NULL_TREE, 1);
+      argvec[count].reg = FUNCTION_ARG (args_so_far, outmode, NULL_TREE, 1);
 #ifdef FUNCTION_ARG_PARTIAL_NREGS
-	  if (FUNCTION_ARG_PARTIAL_NREGS (args_so_far, outmode, NULL_TREE, 1))
-	    abort ();
+      if (FUNCTION_ARG_PARTIAL_NREGS (args_so_far, outmode, NULL_TREE, 1))
+	abort ();
 #endif
 
-	  locate_and_pad_parm (outmode, NULL_TREE,
-			       argvec[count].reg && argvec[count].partial == 0,
-			       NULL_TREE, &args_size, &argvec[count].offset,
-			       &argvec[count].size);
+      locate_and_pad_parm (outmode, NULL_TREE,
+			   argvec[count].reg && argvec[count].partial == 0,
+			   NULL_TREE, &args_size, &argvec[count].offset,
+			   &argvec[count].size);
 
 
-	  if (argvec[count].reg == 0 || argvec[count].partial != 0
+      if (argvec[count].reg == 0 || argvec[count].partial != 0
 #ifdef REG_PARM_STACK_SPACE
-	      || 1
+	  || 1
 #endif
-	      )
-	    args_size.constant += argvec[count].size.constant;
+	  )
+	args_size.constant += argvec[count].size.constant;
 
-	  FUNCTION_ARG_ADVANCE (args_so_far, outmode, (tree)0, 1);
-	}
+      FUNCTION_ARG_ADVANCE (args_so_far, outmode, (tree)0, 1);
+
+      count++;
     }
 
   for (; count < nargs; count++)
@@ -2562,9 +2575,6 @@ emit_library_call_value (va_alist)
 
   /* Now load any reg parms into their regs.  */
 
-  if (mem_value != 0 && struct_value_rtx != 0)
-    emit_move_insn (struct_value_rtx, XEXP (mem_value, 0));
-
   for (count = 0; count < nargs; count++, argnum += inc)
     {
       register enum machine_mode mode = argvec[argnum].mode;
@@ -2592,6 +2602,22 @@ emit_library_call_value (va_alist)
   use_insns = get_insns ();
   end_sequence ();
 
+  /* Pass the function the address in which to return a structure value.  */
+  if (mem_value != 0 && struct_value_rtx != 0 && ! pcc_struct_value)
+    {
+      emit_move_insn (struct_value_rtx,
+		      force_reg (Pmode,
+				 force_operand (XEXP (mem_value, 0),
+						NULL_RTX)));
+      if (GET_CODE (struct_value_rtx) == REG)
+	{
+	  push_to_sequence (use_insns);
+	  emit_insn (gen_rtx (USE, VOIDmode, struct_value_rtx));
+	  use_insns = get_insns ();
+	  end_sequence ();
+	}
+    }
+
   fun = prepare_call_address (fun, NULL_TREE, &use_insns);
 
   /* Don't allow popping to be deferred, since then
@@ -2603,7 +2629,8 @@ emit_library_call_value (va_alist)
 
   emit_call_1 (fun, get_identifier (XSTR (orgfun, 0)), args_size.constant, 0,
 	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
-	       outmode != VOIDmode ? hard_libcall_value (outmode) : NULL_RTX,
+	       (outmode != VOIDmode && mem_value == 0
+		? hard_libcall_value (outmode) : NULL_RTX),
 	       old_inhibit_defer_pop + 1, use_insns, no_queue);
 
   /* Now restore inhibit_defer_pop to its actual original value.  */
@@ -2615,13 +2642,17 @@ emit_library_call_value (va_alist)
       if (mem_value)
 	{
 	  if (value == 0)
-	    value = hard_libcall_value (outmode);
+	    value = mem_value;
 	  if (value != mem_value)
 	    emit_move_insn (value, mem_value);
 	}
       else if (value != 0)
 	emit_move_insn (value, hard_libcall_value (outmode));
+      else
+	value = hard_libcall_value (outmode);
     }
+
+  return value;
 }
 
 #if 0
