@@ -92,6 +92,9 @@ FLAGS_TO_PASS = \
 	"libsubdir=$(libsubdir)" \
 	"tooldir=$(tooldir)"
 
+# Subdirectories to recurse into. We need to override this during cleaning
+SUBDIRS = testsuite
+
 all: stamp-picdir $(TARGETLIB) needed-list required-list all-subdir
 	@$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=all
 
@@ -204,19 +207,24 @@ ls:
 
 # Need to deal with profiled libraries, too.
 
+# Cleaning has to be done carefully to ensure that we don't clean our SUBDIRS
+# multiple times, hence our explicit recursion with an empty SUBDIRS.
 mostlyclean: mostlyclean-subdir
 	rm -rf *.o pic core errs \#* *.E a.out
 	rm -f needed.awk needed2.awk errors dummy needed-list config.h stamp-*
 	rm -f $(CONFIG_H) $(NEEDED_LIST) stamp-picdir
 	@$(MULTICLEAN) multi-clean DO=mostlyclean
-clean: mostlyclean clean-subdir
+clean: clean-subdir
+	$(MAKE) SUBDIRS="" mostlyclean
 	rm -f *.a required-list tmpmulti.out
 	@$(MULTICLEAN) multi-clean DO=clean
-distclean: clean distclean-subdir
+distclean: distclean-subdir
+	$(MAKE) SUBDIRS="" clean
 	@$(MULTICLEAN) multi-clean DO=distclean
 	rm -f *~ Makefile config.status xhost-mkfrag TAGS multilib.out
 	rm -f config.log
-maintainer-clean realclean: distclean maintainer-clean-subdir
+maintainer-clean realclean: maintainer-clean-subdir
+	$(MAKE) SUBDIRS="" distclean
 
 force:
 
@@ -236,7 +244,9 @@ install-info-subdir clean-info-subdir dvi-subdir install-subdir	\
 etags-subdir mostlyclean-subdir clean-subdir distclean-subdir \
 maintainer-clean-subdir:
 	@target=`echo $@ | sed -e 's/-subdir//'`; \
-	cd testsuite && $(MAKE) $$target
+	for dir in . $(SUBDIRS) ; do \
+	  test $$dir = . || (cd $$dir && $(MAKE) $$target) || exit 1; \
+	done
 
 $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS) $(ALLOCA): stamp-picdir
 
