@@ -1,7 +1,10 @@
 Sat Apr 15 10:59:19 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* varasm.c (assemble_variable): Add cast to remove warning.
+	(immed_real_const_1): Only use CONST[01]_RTX if not in nested function.
+
 	* flow.c (count_basic_blocks, find_basic_blocks_1): Remove last change.
-	* optabs.c (emit_libcall_block): If have REG_EHG_REGION, update
+	* optabs.c (emit_libcall_block): If have REG_EH_REGION, update
 	region number to -1.
 
 2000-04-15  Richard Earnshaw (rearnsah@arm.com)
