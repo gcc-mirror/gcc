@@ -1,5 +1,10 @@
 2004-12-21  James A. Morrison  <phython@gcc.gnu.org>
 
+	PR c/18963
+	* gcc.dg/pr18963-1.c: New test.
+
+2004-12-21  James A. Morrison  <phython@gcc.gnu.org>
+
 	PR c/18596
 	* gcc.dg/funcdef-storage-1.c (foo): Remove.
 	* gcc.dg/pr18596-1.c: Use dg-error.

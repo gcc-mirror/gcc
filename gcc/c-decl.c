@@ -2069,30 +2069,6 @@ pushdecl (tree x)
 	    }
 	}
     }
-  /* Similarly, a declaration of a function with static linkage at
-     block scope must be checked against any existing declaration
-     of that function at file scope.  */
-  else if (TREE_CODE (x) == FUNCTION_DECL && scope != file_scope
-	   && !TREE_PUBLIC (x) && !DECL_INITIAL (x))
-    {
-      if (warn_nested_externs && !DECL_IN_SYSTEM_HEADER (x))
-	warning ("nested static declaration of %qD", x);
-
-      while (b && !B_IN_FILE_SCOPE (b))
-	b = b->shadowed;
-
-      if (b && same_translation_unit_p (x, b->decl)
-	  && duplicate_decls (x, b->decl))
-	{
-	  bind (name, b->decl, scope, /*invisible=*/false, /*nested=*/true);
-	  return b->decl;
-	}
-      else
-	{
-	  bind (name, x, file_scope, /*invisible=*/true, /*nested=*/false);
-	  nested = true;
-	}
-    }
 
   warn_if_shadowing (x);
 
