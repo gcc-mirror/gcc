@@ -377,9 +377,6 @@ do {									\
     }									\
   else									\
     {									\
-      if (DECL && s->type != type)					\
-	error_with_decl (DECL, "%s causes a section type conflict");	\
-									\
       fprintf (STREAM, ".section\t%s,\"%s\"\n", NAME, mode);		\
     }									\
 } while (0)
@@ -468,4 +465,12 @@ extern void i386_pe_asm_file_end STDIO_PROTO((FILE *));
 /* For Win32 ABI compatibility */
 #undef DEFAULT_PCC_STRUCT_RETURN
 #define DEFAULT_PCC_STRUCT_RETURN 0
+
+/* No data type wants to be aligned rounder than this.  */
+#undef	BIGGEST_ALIGNMENT
+#define BIGGEST_ALIGNMENT 128
+
+/* A bitfield declared as `int' forces `int' alignment for the struct.  */
+#undef PCC_BITFIELDS_TYPE_MATTERS
+#define PCC_BITFIELDS_TYPE_MATTERS 0
 

@@ -1,3 +1,15 @@
+Sat Aug 29 13:32:58 1998  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* i386/cygwin32.h (BIGGEST_ALIGNMENT): Define.
+	(PCC_BITFIELD_TYPE_MATTERS): Define to be 0.
+
+	* i386/cygwin32.h (ASM_OUTPUT_SECTION_NAME): Don't check for
+	for exact section attributions.
+
+	* i386/mingw32.h (CPP_PREDEFINES): Add __MSVCRT__ for msvc
+	runtime.
+	* i386/crtdll.h (CPP_PREDEFINES): Define.
+
 Sat Sep  5 03:23:05 1998  Jeffrey A Law  (law@cygnus.com)
 
         * Makefile.in (pexecute.o): Use pexecute.c from libiberty.  Provide
