@@ -19,13 +19,6 @@
 ### XXX Note that breaking out of this with ^C will not work.  Dunno why.
 
 
-# This has been true all along.  Found out about it the hard way...
-case $BASH_VERSION in
-    1*)  echo 'You need bash 2.x to run mkcheck.  Exiting.'; exit 1 ;;
-    *)   ;;   # ??
-esac
-
-
 #
 # 1: variables
 #
@@ -90,6 +83,12 @@ if [ $WHICH -eq 2 ]; then
   echo $INC_PATH -I$SRC_DIR/include/backward -I$SRC_DIR/include/ext
   exit 0;
 fi
+
+# This has been true all along.  Found out about it the hard way...
+case $BASH_VERSION in
+    1*)  echo 'You need bash 2.x to run mkcheck.  Exiting.'; exit 1 ;;
+    *)   ;;   # ??
+esac
 
 # It's not dejagnu; we need to do things ourselves.  Pick up any extra
 # settings for this target.
