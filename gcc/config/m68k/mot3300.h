@@ -25,7 +25,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define SGS			/* Uses SGS assembler */
 #define SGS_CMP_ORDER		/* Takes cmp operands in reverse order */
 #define SGS_SWAP_W		/* Use swap.w rather than just plain swap */
-#define SGS_SWITCH_TABLES	/* Different switch table handling */
 
 #define NO_DOLLAR_IN_LABEL
 #define NO_DOT_IN_LABEL
@@ -90,6 +89,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef REGISTER_PREFIX
 #define REGISTER_PREFIX "%"
 
+#if 0
+#undef LOCAL_LABEL_PREFIX
+#define LOCAL_LABEL_PREFIX "~"
+#endif
+
 #undef IMMEDIATE_PREFIX
 #define IMMEDIATE_PREFIX "&"
 
@@ -99,98 +103,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
  "%a0", "%a1", "%a2", "%a3", "%a4", "%a5", "%fp", "%sp",	\
  "%fp0", "%fp1", "%fp2", "%fp3", "%fp4", "%fp5", "%fp6", "%fp7"}
 
-#if 0 /* phdm@info.ucl.ac.be says the standard ones work.  */
-#undef FUNCTION_PROLOGUE
-#define FUNCTION_PROLOGUE(FILE, SIZE)     \
-{ register int regno;						\
-  register int mask = 0;					\
-  extern char call_used_regs[];					\
-  int fsize = (SIZE);						\
-  if (frame_pointer_needed)					\
-    { if (fsize < 0x8000)					\
-        fprintf (FILE, "\tlink.w %%fp,&%d\n", -fsize);		\
-      else if (TARGET_68020)					\
-        fprintf (FILE, "\tlink.l %%fp,&%d\n", -fsize);		\
-      else							\
-	fprintf (FILE, "\tlink.w %%fp,&0\n\tsub.l &%d,%%sp\n", fsize); }  \
-  for (regno = 16; regno < FIRST_PSEUDO_REGISTER; regno++)	\
-    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
-       mask |= 1 << (regno - 16);				\
-  if (mask != 0)						\
-    fprintf (FILE, "\tfmovem &0x%x,-(%%sp)\n", mask & 0xff);	\
-  mask = 0;							\
-  for (regno = 0; regno < 16; regno++)				\
-    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
-       mask |= 1 << (15 - regno);				\
-  if (frame_pointer_needed)					\
-    mask &= ~ (1 << (15-FRAME_POINTER_REGNUM));			\
-  if (exact_log2 (mask) >= 0)					\
-    fprintf (FILE, "\tmov.l %s,-(%%sp)\n", reg_names[15 - exact_log2 (mask)]);  \
-  else if (mask) fprintf (FILE, "\tmovm.l &0x%x,-(%%sp)\n", mask); }
-#endif /* 0 */
-
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABEL_NO)	\
     fprintf (FILE, "\tmov.l &LP%%%d,%%a0\n\tjsr mcount%%\n", (LABEL_NO))
-
-#if 0 /* phdm@info.ucl.ac.be says the standard ones work.  */
-#undef FUNCTION_EPILOGUE
-#define FUNCTION_EPILOGUE(FILE, SIZE) \
-{ register int regno;						\
-  register int mask, fmask;					\
-  register int nregs;						\
-  int offset, foffset;						\
-  extern char call_used_regs[];					\
-  int fsize = (SIZE);						\
-  int big = 0;							\
-  nregs = 0;  fmask = 0;					\
-  for (regno = 16; regno < FIRST_PSEUDO_REGISTER; regno++)	\
-    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
-      { nregs++; fmask |= 1 << (23 - regno); }			\
-  foffset = nregs * 12;						\
-  nregs = 0;  mask = 0;						\
-  if (frame_pointer_needed) regs_ever_live[FRAME_POINTER_REGNUM] = 0; \
-  for (regno = 0; regno < 16; regno++)				\
-    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
-      { nregs++; mask |= 1 << regno; }				\
-  offset = foffset + nregs * 4;					\
-  if (offset + fsize >= 0x8000 && frame_pointer_needed)		\
-    { fprintf (FILE, "\tmov.l &%d,%%a0\n", -fsize);		\
-      fsize = 0, big = 1; }					\
-  if (exact_log2 (mask) >= 0) {					\
-    if (big)							\
-      fprintf (FILE, "\tmov.l -%d(%%fp,%%a0.l),%s\n",		\
-	       offset + fsize, reg_names[exact_log2 (mask)]);	\
-    else if (! frame_pointer_needed)				\
-      fprintf (FILE, "\tmov.l (%%sp)+,%s\n",			\
-	       reg_names[exact_log2 (mask)]);			\
-    else							\
-      fprintf (FILE, "\tmov.l -%d(%%fp),%s\n",			\
-	       offset + fsize, reg_names[exact_log2 (mask)]); }	\
-  else if (mask) {						\
-    if (big)							\
-      fprintf (FILE, "\tmovm.l -%d(%%fp,%%a0.l),&0x%x\n",	\
-	       offset + fsize, mask);				\
-    else if (! frame_pointer_needed)				\
-      fprintf (FILE, "\tmovm.l (%%sp)+,&0x%x\n", mask);		\
-    else							\
-      fprintf (FILE, "\tmovm.l -%d(%%fp),&0x%x\n",		\
-	       offset + fsize, mask); }				\
-  if (fmask) {							\
-    if (big)							\
-      fprintf (FILE, "\tfmovem -%d(%%fp,%%a0.l),&0x%x\n",	\
-	       foffset + fsize, fmask);				\
-    else if (! frame_pointer_needed)				\
-      fprintf (FILE, "\tfmovem (%%sp)+,&0x%x\n", fmask);	\
-    else							\
-      fprintf (FILE, "\tfmovem -%d(%%fp),&0x%x\n",		\
-	       foffset + fsize, fmask); }			\
-  if (frame_pointer_needed)					\
-    fprintf (FILE, "\tunlk %%fp\n");				\
-  if (current_function_pops_args)				\
-    fprintf (FILE, "\trtd &%d\n", current_function_pops_args);	\
-  else fprintf (FILE, "\trts\n"); }
-#endif /* 0 */
 
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */
@@ -237,19 +152,6 @@ output_file_directive ((FILE), main_input_filename)
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dm68k -Dunix -DsysV68 -D__motorola__ -Asystem(unix) -Asystem(svr3) -Acpu(m68k) -Amachine(m68k)"
 
-#if 0 /* phdm@info.ucl.ac.be says the right way is with PARM_BOUNDARY.  */
-/* Specify how to pad function arguments.
-   Value should be `upward', `downward' or `none'.
-   Same as the default, except no padding for large or variable-size args.  */
-
-#define FUNCTION_ARG_PADDING(MODE, TYPE)				\
-  (((MODE) == BLKmode							\
-    ? ((TYPE) && TREE_CODE (TYPE_SIZE (TYPE))	== INTEGER_CST		\
-       && int_size_in_bytes (TYPE) < PARM_BOUNDARY / BITS_PER_UNIT)	\
-    : GET_MODE_BITSIZE (MODE) < PARM_BOUNDARY)				\
-   ? downward : none)
-#endif /* 0 */
-
 /* Override part of the obstack macros.  */
 
 #define __PTR_TO_INT(P) ((int)(P))
@@ -272,17 +174,12 @@ output_file_directive ((FILE), main_input_filename)
 
 #undef FUNCTION_VALUE
 /* sysV68 (brain damaged) cc convention support. */
-/* Commented out until we find a safe way to make it optional.  */
-#if 1
 #define FUNCTION_VALUE(VALTYPE,FUNC) \
   (TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_68881 	\
    ? gen_rtx (REG, TYPE_MODE (VALTYPE), 16)		\
    : (TREE_CODE (VALTYPE) == POINTER_TYPE 		\
       ? gen_rtx (REG, TYPE_MODE (VALTYPE), 8)		\
       : gen_rtx (REG, TYPE_MODE (VALTYPE), 0)))
-#else
-#define FUNCTION_VALUE(VALTYPE,FUNC) LIBCALL_VALUE (TYPE_MODE (VALTYPE))
-#endif
 
 /* If TARGET_68881, SF and DF values are returned in fp0 instead of d0.  */
 
@@ -299,14 +196,8 @@ output_file_directive ((FILE), main_input_filename)
 
 #undef FUNCTION_VALUE_REGNO_P
 /* sysV68 (brain damaged) cc convention support. */
-/* Commented out until we find a safe way to make it optional.  */
-#if 1
 #define FUNCTION_VALUE_REGNO_P(N) \
  ((N) == 0 || (N) == 8 || (TARGET_68881 && (N) == 16))
-#else
-#define FUNCTION_VALUE_REGNO_P(N) \
- ((N) == 0 || (TARGET_68881 && (N) == 16))
-#endif 
 
 /* Define this to be true when FUNCTION_VALUE_REGNO_P is true for
    more than one register.  */
@@ -439,205 +330,25 @@ do { long l;					\
 	goto loop; }						\
     putc ('\n', (FILE)); } while (0)
 
-/* Print operand X (an rtx) in assembler syntax to file FILE.
-   CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
-   For `%' followed by punctuation, CODE is the punctuation and X is null.
+/* Output a float value (represented as a C double) as an immediate operand.
+   This macro is a 68k-specific macro.  */
 
-   On the 68000, we use several CODE characters:
-   '.' for dot needed in Motorola-style opcode names.
-   '-' for an operand pushing on the stack:
-       sp@-, -(sp) or -(%sp) depending on the style of syntax.
-   '+' for an operand pushing on the stack:
-       sp@+, (sp)+ or (%sp)+ depending on the style of syntax.
-   '@' for a reference to the top word on the stack:
-       sp@, (sp) or (%sp) depending on the style of syntax.
-   '#' for an immediate operand prefix (# in MIT and Motorola syntax
-       but & in SGS syntax).
-   '!' for the fpcr register (used in some float-to-fixed conversions).
-   '$' for the letter `s' in an op code, but only on the 68040.
-   '&' for the letter `d' in an op code, but only on the 68040.
-
-   'b' for byte insn (no effect, on the Sun; this is for the ISI).
-   'd' to force memory addressing to be absolute, not relative.
-   'f' for float insn (print a CONST_DOUBLE as a float rather than in hex)
-   'w' for FPA insn (print a CONST_DOUBLE as a SunFPA constant rather
-       than directly).  Second part of 'y' below.
-   'x' for float insn (print a CONST_DOUBLE as a float rather than in hex),
-       or print pair of registers as rx:ry.
-   'y' for a FPA insn (print pair of registers as rx:ry).  This also outputs
-       CONST_DOUBLE's as SunFPA constant RAM registers if
-       possible, so it should not be used except for the SunFPA.  */
-
-#undef PRINT_OPERAND
-#define PRINT_OPERAND(FILE, X, CODE)  \
-{ if (CODE == '.') fprintf (FILE, ".");					\
-  else if (CODE == '#') fprintf (FILE, "&");				\
-  else if (CODE == '-') fprintf (FILE, "-(%%sp)");			\
-  else if (CODE == '+') fprintf (FILE, "(%%sp)+");			\
-  else if (CODE == '@') fprintf (FILE, "(%%sp)");			\
-  else if (CODE == '!') fprintf (FILE, "%%fpcr");			\
-  else if (CODE == '$') { if (TARGET_68040_ONLY) fprintf (FILE, "s"); }	\
-  else if (CODE == '&') { if (TARGET_68040_ONLY) fprintf (FILE, "d"); }	\
-  else if (CODE == '/')							\
-    fprintf (FILE, "%%");						\
-  else if (GET_CODE (X) == REG)						\
-    fprintf (FILE, "%s", reg_names[REGNO (X)]);				\
-  else if (GET_CODE (X) == MEM)						\
-    output_address (XEXP (X, 0));					\
-  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == SFmode)	\
-    { REAL_VALUE_TYPE r; long l;					\
-      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
+#undef ASM_OUTPUT_FLOAT_OPERAND
+#define ASM_OUTPUT_FLOAT_OPERAND(CODE,FILE,VALUE)			\
+ do { long l;								\
       REAL_VALUE_TO_TARGET_SINGLE (r, l);				\
       /* Use hex representation even if CODE is f.  as needs it.  */	\
-      fprintf (FILE, "&0x%x", l); }					\
-  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == DFmode)	\
-    { REAL_VALUE_TYPE r; int i[2];					\
-      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
-      REAL_VALUE_TO_TARGET_DOUBLE (r, i);				\
-      fprintf (FILE, "&0x%08x%08x", i[0], i[1]); }			\
-  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == XFmode)	\
-    { REAL_VALUE_TYPE r;						\
-      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
-      ASM_OUTPUT_LONG_DOUBLE_OPERAND (FILE, r); }			\
-  else { putc ('&', FILE); output_addr_const (FILE, X); }}
+      fprintf ((FILE), "&0x%lx", l);					\
+    } while (0)
 
-#undef PRINT_OPERAND_ADDRESS
-#define PRINT_OPERAND_ADDRESS(FILE, ADDR)  \
-{ register rtx reg1, reg2, breg, ireg;					\
-  register rtx addr = ADDR;						\
-  rtx offset;								\
-  switch (GET_CODE (addr))						\
-    {									\
-    case REG:								\
-      fprintf (FILE, "(%s)", reg_names[REGNO (addr)]);			\
-      break;								\
-    case PRE_DEC:							\
-      fprintf (FILE, "-(%s)", reg_names[REGNO (XEXP (addr, 0))]);	\
-      break;								\
-    case POST_INC:							\
-      fprintf (FILE, "(%s)+", reg_names[REGNO (XEXP (addr, 0))]);	\
-      break;								\
-    case PLUS:								\
-      reg1 = 0;	reg2 = 0;						\
-      ireg = 0;	breg = 0;						\
-      offset = 0;							\
-      if (CONSTANT_ADDRESS_P (XEXP (addr, 0)))				\
-	{								\
-	  offset = XEXP (addr, 0);					\
-	  addr = XEXP (addr, 1);					\
-	}								\
-      else if (CONSTANT_ADDRESS_P (XEXP (addr, 1)))			\
-	{								\
-	  offset = XEXP (addr, 1);					\
-	  addr = XEXP (addr, 0);					\
-	}								\
-      if (GET_CODE (addr) != PLUS) ;					\
-      else if (GET_CODE (XEXP (addr, 0)) == SIGN_EXTEND)		\
-	{								\
-	  reg1 = XEXP (addr, 0);					\
-	  addr = XEXP (addr, 1);					\
-	}								\
-      else if (GET_CODE (XEXP (addr, 1)) == SIGN_EXTEND)		\
-	{								\
-	  reg1 = XEXP (addr, 1);					\
-	  addr = XEXP (addr, 0);					\
-	}								\
-      else if (GET_CODE (XEXP (addr, 0)) == MULT)			\
-	{								\
-	  reg1 = XEXP (addr, 0);					\
-	  addr = XEXP (addr, 1);					\
-	}								\
-      else if (GET_CODE (XEXP (addr, 1)) == MULT)			\
-	{								\
-	  reg1 = XEXP (addr, 1);					\
-	  addr = XEXP (addr, 0);					\
-	}								\
-      else if (GET_CODE (XEXP (addr, 0)) == REG)			\
-	{								\
-	  reg1 = XEXP (addr, 0);					\
-	  addr = XEXP (addr, 1);					\
-	}								\
-      else if (GET_CODE (XEXP (addr, 1)) == REG)			\
-	{								\
-	  reg1 = XEXP (addr, 1);					\
-	  addr = XEXP (addr, 0);					\
-	}								\
-      if (GET_CODE (addr) == REG || GET_CODE (addr) == MULT		\
-	  || GET_CODE (addr) == SIGN_EXTEND)				\
-	{ if (reg1 == 0) reg1 = addr; else reg2 = addr; addr = 0; }	\
-/*  for OLD_INDEXING							\
-      else if (GET_CODE (addr) == PLUS)					\
-	{								\
-	  if (GET_CODE (XEXP (addr, 0)) == REG)				\
-	    {								\
-	      reg2 = XEXP (addr, 0);					\
-	      addr = XEXP (addr, 1);					\
-	    }								\
-	  else if (GET_CODE (XEXP (addr, 1)) == REG)			\
-	    {								\
-	      reg2 = XEXP (addr, 1);					\
-	      addr = XEXP (addr, 0);					\
-	    }								\
-	}								\
-  */									\
-      if (offset != 0) { if (addr != 0) abort (); addr = offset; }	\
-      if ((reg1 && (GET_CODE (reg1) == SIGN_EXTEND			\
-		    || GET_CODE (reg1) == MULT))			\
-	  || (reg2 != 0 && REGNO_OK_FOR_BASE_P (REGNO (reg2))))		\
-	{ breg = reg2; ireg = reg1; }					\
-      else if (reg1 != 0 && REGNO_OK_FOR_BASE_P (REGNO (reg1)))		\
-	{ breg = reg1; ireg = reg2; }					\
-      if (ireg != 0 && breg == 0 && GET_CODE (addr) == LABEL_REF)	\
-        { int scale = 1;						\
-	  if (GET_CODE (ireg) == MULT)					\
-	    { scale = INTVAL (XEXP (ireg, 1));				\
-	      ireg = XEXP (ireg, 0); }					\
-	  if (GET_CODE (ireg) == SIGN_EXTEND)				\
-	    fprintf (FILE, "12(%%pc,%s.w",				\
-		     reg_names[REGNO (XEXP (ireg, 0))]); 		\
-	  else								\
-	    fprintf (FILE, "12(%%pc,%s.l",				\
-		     reg_names[REGNO (ireg)]);				\
-	  if (scale != 1) fprintf (FILE, "*%d", scale);			\
-	  fprintf (FILE, ")");						\
-	  break; }							\
-      if (breg != 0 && ireg == 0 && GET_CODE (addr) == LABEL_REF)	\
-        { fprintf (FILE, "12(%%pc,%s.l",				\
-		   reg_names[REGNO (breg)]);				\
-	  putc (')', FILE);						\
-	  break; }							\
-      if (ireg != 0 || breg != 0)					\
-	{ int scale = 1;						\
-	  if (breg == 0)						\
-	    abort ();							\
-	  if (addr != 0)						\
-	    output_addr_const (FILE, addr);				\
-	  fprintf (FILE, "(%s", reg_names[REGNO (breg)]);		\
-	  if (ireg != 0)					        \
-	    putc (',', FILE);						\
-	  if (ireg != 0 && GET_CODE (ireg) == MULT)			\
-	    { scale = INTVAL (XEXP (ireg, 1));				\
-	      ireg = XEXP (ireg, 0); }					\
-	  if (ireg != 0 && GET_CODE (ireg) == SIGN_EXTEND)		\
-	    fprintf (FILE, "%s.w", reg_names[REGNO (XEXP (ireg, 0))]);	\
-	  else if (ireg != 0)						\
-	    fprintf (FILE, "%s.l", reg_names[REGNO (ireg)]);		\
-	  if (scale != 1) fprintf (FILE, "*%d", scale);			\
-	  putc (')', FILE);						\
-	  break;							\
-	}								\
-      else if (reg1 != 0 && GET_CODE (addr) == LABEL_REF)		\
-	{ fprintf (FILE, "12(%%pc,%s.w)",				\
-		   reg_names[REGNO (reg1)]);				\
-	  break; }							\
-    default:								\
-      if (GET_CODE (addr) == CONST_INT					\
-	  && INTVAL (addr) < 0x8000					\
-	  && INTVAL (addr) >= -0x8000)					\
-	fprintf (FILE, "%d", INTVAL (addr));				\
-      else								\
-        output_addr_const (FILE, addr);					\
-    }}
+/* Output a double value (represented as a C double) as an immediate operand.
+   This macro is a 68k-specific macro.  */
+#undef ASM_OUTPUT_DOUBLE_OPERAND
+#define ASM_OUTPUT_DOUBLE_OPERAND(FILE,VALUE)				\
+ do { long l[2];							\
+      REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);				\
+      fprintf ((FILE), "&0x%lx%08lx", l[0], l[1]);			\
+    } while (0)
 
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where
@@ -679,23 +390,18 @@ do { long l;					\
 #define ASM_OUTPUT_CASE_LABEL(FILE,PREFIX,NUM,TABLE)			\
     fprintf (FILE, "\tswbeg &%d\n%s%%%d:\n",				\
 	     XVECLEN (PATTERN (TABLE), 1), (PREFIX), (NUM))
+
+/* sysV68 as cannot handle LD%n(%pc,%reg) */ 
+#define SGS_NO_LI
+
+/* labelno is not used here */
+#define ASM_OUTPUT_CASE_FETCH(file, labelno, regname)\
+	asm_fprintf (file, "12(%Rpc,%s.", regname)
+
+#define ASM_RETURN_CASE_JUMP   return "jmp 8(%%pc,%0.w)"
 	     
-#if 0
-/* At end of a switch table, define LD%n iff the symbol LI%n was defined.  */
-#define ASM_OUTPUT_CASE_END(FILE,NUM,TABLE)		\
-{ if (switch_table_difference_label_flag)		\
-    asm_fprintf (FILE, "\t%s %LLD%d,%LL%d-%LLI%d-2.b\n",\
-		 SET_ASM_OP, (NUM), (NUM), (NUM))	\
-  switch_table_difference_label_flag = 0; }
-#endif
-
-/* We have to define this to avoid errors.  */
-int switch_table_difference_label_flag;
-
 /* Translate some opcodes to fit the sysV68 assembler syntax.  */
 /* The opcodes fdmov and fsmov are guesses.  */
-
-#define SWITCH_JUMP_MATCH   "jmp 6(%%pc,"
 
 /* cliffm@netcom.com says no need for .w suffix on jumps.  */
 #undef ASM_OUTPUT_OPCODE
@@ -749,10 +455,6 @@ int switch_table_difference_label_flag;
     { fprintf ((FILE), "cmp"); (PTR) += 3;		\
        if ((PTR)[0] == 'a' || (PTR)[0] == 'i'	 	\
 	   || (PTR)[0] == 'm') (PTR)++; }		\
-/* JMP to switch label */				\
-  else if (!strncmp((PTR), (SWITCH_JUMP_MATCH), sizeof(SWITCH_JUMP_MATCH) - 1)) \
-    { while (*(PTR)++ != '(');				\
-      fprintf ((FILE), "jmp 8("); }			\
 }
 
 /* phdm@info.ucl.ac.be says to pass SIZE, not ROUNDED.  */
