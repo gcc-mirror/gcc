@@ -1461,10 +1461,15 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	      for (tv = bl->giv; tv; tv = tv->next_iv)
 		if (tv->giv_type == DEST_ADDR && tv->same == v)
 		  {
-		    /* Increment the giv by the amount that was calculated in
-		       find_splittable_givs, and saved in add_val.  */
-		    tv->dest_reg = plus_constant (tv->dest_reg,
-						  INTVAL (tv->add_val));
+		    int this_giv_inc = INTVAL (giv_inc);
+
+		    /* Scale this_giv_inc if the multiplicative factors of
+		       the two givs are different.  */
+		    if (tv->mult_val != v->mult_val)
+		      this_giv_inc = (this_giv_inc / INTVAL (v->mult_val)
+				      * INTVAL (tv->mult_val));
+		       
+		    tv->dest_reg = plus_constant (tv->dest_reg, this_giv_inc);
 		    *tv->location = tv->dest_reg;
 		    
 		    if (last_iteration && unroll_type != UNROLL_COMPLETELY)
@@ -2597,13 +2602,6 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		      addr_combined_regs[REGNO (v->new_reg)] = v;
 		    }
 		}
-
-	      /* Overwrite the old add_val, which is no longer needed, and
-		 substitute the amount that the giv is incremented on each
-		 iteration.  We need to save this somewhere, so we know how
-		 much to increment split DEST_ADDR giv's in copy_loop_body.  */
-
-	      v->add_val = giv_inc;
 
 	      if (loop_dump_stream)
 		fprintf (loop_dump_stream, "DEST_ADDR giv being split.\n");

@@ -4686,9 +4686,10 @@ apply_distributive_law (x)
     case SUBREG:
       /* Non-paradoxical SUBREGs distributes over all operations, provided
 	 the inner modes and word numbers are the same, this is an extraction
-	 of a low-order part, and we would not be converting a single-word
+	 of a low-order part, we don't convert an fp operation to int or
+	 vice versa, and we would not be converting a single-word
 	 operation into a multi-word operation.  The latter test is not
-	 required, but we prevents generating unneeded multi-word operations.
+	 required, but it prevents generating unneeded multi-word operations.
 	 Some of the previous tests are redundant given the latter test, but
 	 are retained because they are required for correctness.
 
@@ -4697,6 +4698,8 @@ apply_distributive_law (x)
       if (GET_MODE (SUBREG_REG (lhs)) != GET_MODE (SUBREG_REG (rhs))
 	  || SUBREG_WORD (lhs) != SUBREG_WORD (rhs)
 	  || ! subreg_lowpart_p (lhs)
+	  || (GET_MODE_CLASS (GET_MODE (lhs))
+	      != GET_MODE_CLASS (GET_MODE (SUBREG_REG (lhs))))
 	  || (GET_MODE_SIZE (GET_MODE (lhs))
 	      < GET_MODE_SIZE (GET_MODE (SUBREG_REG (lhs))))
 	  || GET_MODE_SIZE (GET_MODE (SUBREG_REG (lhs))) > UNITS_PER_WORD)
