@@ -161,10 +161,6 @@ const char *const tree_code_name[] = {
 extern int gnat_argc;
 extern char **gnat_argv;
 
-/* Global Variables Expected by gcc: */
-
-int ggc_p = 1;
-
 static void internal_error_function	PARAMS ((const char *, va_list *));
 static rtx gnat_expand_expr		PARAMS ((tree, rtx, enum machine_mode,
 						 enum expand_modifier));

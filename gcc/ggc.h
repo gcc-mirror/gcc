@@ -177,14 +177,6 @@ extern int ggc_set_mark			PARAMS ((const void *));
    static objects, stack variables, or memory allocated with malloc.  */
 extern int ggc_marked_p			PARAMS ((const void *));
 
-/* Callbacks to the languages.  */
-
-/* The FALSE_LABEL_STACK, declared in except.h, has language-dependent
-   semantics.  If a front-end needs to mark the false label stack, it
-   should set this pointer to a non-NULL value.  Otherwise, no marking
-   will be done.  */
-extern void (*lang_mark_false_label_stack) PARAMS ((struct label_node *));
-
 /* Mark functions for various structs scattered about.  */
 
 void mark_eh_status			PARAMS ((struct eh_status *));
