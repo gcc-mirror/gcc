@@ -72,7 +72,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */
 
 #ifdef XCOFF_DEBUGGING_INFO
-#include "xcoff.h"
+#include "xcoffout.h"
 #endif
 
 /* .stabd code for line number.  */
