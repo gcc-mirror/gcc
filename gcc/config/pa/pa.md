@@ -4825,8 +4825,8 @@
 ;; Clean up turds left by reload.
 (define_peephole
   [(set (match_operand 0 "reg_or_nonsymb_mem_operand" "")
-	(match_operand 1 "register_operand" "f"))
-   (set (match_operand 2 "register_operand" "f")
+	(match_operand 1 "register_operand" "fr"))
+   (set (match_operand 2 "register_operand" "fr")
 	(match_dup 0))]
   "! TARGET_SOFT_FLOAT
    && GET_CODE (operands[0]) == MEM
@@ -4834,6 +4834,8 @@
    && GET_MODE (operands[0]) == GET_MODE (operands[1])
    && GET_MODE (operands[0]) == GET_MODE (operands[2])
    && GET_MODE (operands[0]) == DFmode
+   && GET_CODE (operands[1]) == REG
+   && GET_CODE (operands[2]) == REG
    && REGNO_REG_CLASS (REGNO (operands[1]))
       == REGNO_REG_CLASS (REGNO (operands[2]))"
   "*
@@ -4861,9 +4863,9 @@
 }")
 
 (define_peephole
-  [(set (match_operand 0 "register_operand" "f")
+  [(set (match_operand 0 "register_operand" "fr")
 	(match_operand 1 "reg_or_nonsymb_mem_operand" ""))
-   (set (match_operand 2 "register_operand" "f")
+   (set (match_operand 2 "register_operand" "fr)
 	(match_dup 1))]
   "! TARGET_SOFT_FLOAT
    && GET_CODE (operands[1]) == MEM
@@ -4871,7 +4873,9 @@
    && GET_MODE (operands[0]) == GET_MODE (operands[1])
    && GET_MODE (operands[0]) == GET_MODE (operands[2])
    && GET_MODE (operands[0]) == DFmode
-   && REGNO_REG_CLASS (REGNO (operands[1]))
+   && GET_CODE (operands[0]) == REG
+   && GET_CODE (operands[2]) == REG
+   && REGNO_REG_CLASS (REGNO (operands[0]))
       == REGNO_REG_CLASS (REGNO (operands[2]))"
   "*
 {
