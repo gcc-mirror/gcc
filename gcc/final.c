@@ -122,7 +122,7 @@ extern int length_unit_log; /* This is defined in insn-attrtab.c.  */
 /* Nonzero while outputting an `asm' with operands.
    This means that inconsistencies are the user's fault, so don't abort.
    The precise value is the insn being output, to pass to error_for_asm.  */
-static rtx this_is_asm_operands;
+rtx this_is_asm_operands;
 
 /* Number of operands of this insn, for an `asm' with operands.  */
 static unsigned int insn_noperands;
