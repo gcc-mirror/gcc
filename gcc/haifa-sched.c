@@ -1098,6 +1098,11 @@ is_cfg_nonregular ()
   if (forced_labels)
     return 1;
 
+  /* If this function has a computed jump, then we consider the cfg
+     not well structured.  */
+  if (current_function_has_computed_jump)
+    return 1;
+
   /* If we have exception handlers, then we consider the cfg not well
      structured.  ?!?  We should be able to handle this now that flow.c
      computes an accurate cfg for EH.  */
@@ -1123,20 +1128,6 @@ is_cfg_nonregular ()
 	if (insn == basic_block_end[b])
 	  break;
       }
-
-  /* If this function has a computed jump, then we consider the cfg
-     not well structured.  */
-  for (b = 0; b < n_basic_blocks; b++)
-    {
-      for (insn = basic_block_head[b];; insn = NEXT_INSN (insn))
-	{
-	  if (computed_jump_p (insn))
-	    return 1;
-
-	  if (insn == basic_block_end[b])
-	    break;
-	}
-    }
 
   /* All the tests passed.  Consider the cfg well structured.  */
   return 0;

@@ -671,6 +671,15 @@ global_conflicts ()
 	   allocno now live, and with each hard reg now live.  */
 
 	record_conflicts (block_start_allocnos, ax);
+
+#ifdef STACK_REGS
+	/* Pseudos can't go in stack regs at the start of a basic block
+	   that can be reached through a computed goto, since reg-stack
+	   can't handle computed gotos.  */
+	if (basic_block_computed_jump_target[b])
+	  for (ax = FIRST_STACK_REG; ax <= LAST_STACK_REG; ax++)
+	    record_one_conflict (ax);
+#endif
       }
 
       insn = basic_block_head[b];

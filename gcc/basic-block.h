@@ -108,6 +108,11 @@ extern rtx *basic_block_head;
 
 extern rtx *basic_block_end;
 
+/* Index by basic block number, determine whether the block can be reached
+   through a computed jump.  */
+
+extern char *basic_block_computed_jump_target;
+
 /* Index by basic block number, get address of regset
    describing the registers live at the start of that block.  */
 

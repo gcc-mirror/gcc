@@ -249,7 +249,6 @@ static void record_reg_life_pat		PROTO((rtx, HARD_REG_SET *,
 static void get_asm_operand_lengths	PROTO((rtx, int, int *, int *));
 static void record_reg_life		PROTO((rtx, int, stack));
 static void find_blocks			PROTO((rtx));
-static int uses_reg_or_mem		PROTO((rtx));
 static rtx stack_result			PROTO((tree));
 static void stack_reg_life_analysis	PROTO((rtx, HARD_REG_SET *));
 static void replace_reg			PROTO((rtx *, int));
@@ -1403,38 +1402,6 @@ find_blocks (first)
     }
 }
 
-/* Return 1 if X contain a REG or MEM that is not in the constant pool.  */
-
-static int
-uses_reg_or_mem (x)
-     rtx x;
-{
-  enum rtx_code code = GET_CODE (x);
-  int i, j;
-  char *fmt;
-
-  if (code == REG
-      || (code == MEM
-	  && ! (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
-		&& CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)))))
-    return 1;
-
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e'
-	  && uses_reg_or_mem (XEXP (x, i)))
-	return 1;
-
-      if (fmt[i] == 'E')
-	for (j = 0; j < XVECLEN (x, i); j++)
-	  if (uses_reg_or_mem (XVECEXP (x, i, j)))
-	    return 1;
-    }
-
-  return 0;
-}
-
 /* If current function returns its result in an fp stack register,
    return the REG.  Otherwise, return 0.  */
 
@@ -1583,6 +1550,7 @@ stack_reg_life_analysis (first, stackentry)
 
 		  block = jump_block;
 		  must_restart = 1;
+		  break;
 
 		win:
 		  ;
@@ -2730,7 +2698,6 @@ subst_stack_regs (insn, regstack)
 {
   register rtx *note_link, note;
   register int i;
-  rtx head, jump, pat, cipat;
   int n_operands;
 
   if (GET_CODE (insn) == CALL_INSN)
@@ -2801,39 +2768,6 @@ subst_stack_regs (insn, regstack)
 
   if (GET_CODE (insn) == NOTE)
     return;
-
-  /* If we are reached by a computed goto which sets this same stack register,
-     then pop this stack register, but maintain regstack. */
-
-  pat = single_set (insn);
-  if (pat != 0
-      && INSN_UID (insn) <= max_uid
-      && GET_CODE (block_begin[BLOCK_NUM(insn)]) == CODE_LABEL
-      && GET_CODE (pat) == SET && STACK_REG_P (SET_DEST (pat)))
-    for (head = block_begin[BLOCK_NUM(insn)], jump = LABEL_REFS (head);
-	 jump != head;
-	 jump = LABEL_NEXTREF (jump))
-      {
-	cipat = single_set (CONTAINING_INSN (jump));
-	if (cipat != 0
-	    && GET_CODE (cipat) == SET
-	    && SET_DEST (cipat) == pc_rtx
-	    && uses_reg_or_mem (SET_SRC (cipat))
-	    && INSN_UID (CONTAINING_INSN (jump)) <= max_uid)
-	  {
-	    int from_block = BLOCK_NUM (CONTAINING_INSN (jump));
-	    if (TEST_HARD_REG_BIT (block_out_reg_set[from_block],
-				   REGNO (SET_DEST (pat))))
-	      {
-		struct stack_def old;
-		bcopy (regstack->reg, old.reg, sizeof (old.reg));
-		emit_pop_insn (insn, regstack, SET_DEST (pat), emit_insn_before);
-		regstack->top += 1;
-		bcopy (old.reg, regstack->reg, sizeof (old.reg));
-		SET_HARD_REG_BIT (regstack->reg_set, REGNO (SET_DEST (pat)));
-	      }
-	  }
-      }
 
   /* If there is a REG_UNUSED note on a stack register on this insn,
      the indicated reg must be popped.  The REG_UNUSED note is removed,
