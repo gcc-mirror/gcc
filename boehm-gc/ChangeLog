@@ -1,3 +1,8 @@
+2001-05-01  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* gc_priv.h (UNLOCK): Change type of GC_noop1 argument.
+	(GC_noop1): Change declaration to take one argument.
+
 2001-04-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in: Obtain THREADS with `gcc -v'.

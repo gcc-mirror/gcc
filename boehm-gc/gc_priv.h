@@ -628,7 +628,7 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
 #    ifdef HPUX_THREADS
 #      define LOCK() { if (!GC_test_and_clear(&GC_allocate_lock)) GC_lock(); }
        /* The following is INCORRECT, since the memory model is too weak. */
-#      define UNLOCK() { GC_noop1(&GC_allocate_lock); \
+#      define UNLOCK() { GC_noop1((word)&GC_allocate_lock); \
 			*(volatile unsigned long *)(&GC_allocate_lock) = 1; }
 #    else
 #      define LOCK() { if (GC_test_and_set(&GC_allocate_lock, 1)) GC_lock(); }
@@ -641,7 +641,7 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
 	    /* This is probably not necessary for ucode or gcc 2.8.	*/
 	    /* It may be necessary for Ragnarok and future gcc		*/
 	    /* versions.						*/
-#           define UNLOCK() { GC_noop1(&GC_allocate_lock); \
+#           define UNLOCK() { GC_noop1((word)&GC_allocate_lock); \
 			*(volatile unsigned long *)(&GC_allocate_lock) = 0; }
 #      endif
 #    endif
@@ -1851,7 +1851,7 @@ void GC_dump();
   GC_API void GC_noop();
 # endif
 
-void GC_noop1(/* word arg */);
+void GC_noop1 GC_PROTO((word));
 
 /* Logging and diagnostic output: 	*/
 GC_API void GC_printf GC_PROTO((char * format, long, long, long, long, long, long));
