@@ -1654,7 +1654,7 @@ try_redirect_by_replacing_jump (e, target)
      basic_block target;
 {
   basic_block src = e->src;
-  rtx insn = src->end;
+  rtx insn = src->end, kill_from;
   edge tmp;
   rtx set;
   int fallthru = 0;
@@ -1671,19 +1671,24 @@ try_redirect_by_replacing_jump (e, target)
   if (!set || side_effects_p (set))
     return false;
 
+  /* In case we zap a conditional jump, we'll need to kill
+     the cc0 setter too.  */
+  kill_from = insn;
+#ifdef HAVE_cc0
+  if (reg_mentioned_p (cc0_rtx, PATTERN (insn)))
+    kill_from = PREV_INSN (insn);
+#endif
+
   /* See if we can create the fallthru edge.  */
   if (can_fallthru (src, target))
     {
-      src->end = PREV_INSN (insn);
+      src->end = PREV_INSN (kill_from);
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, "Removing jump %i.\n", INSN_UID (insn));
-      flow_delete_insn (insn);
       fallthru = 1;
 
       /* Selectivly unlink whole insn chain.  */
-      if (src->end != PREV_INSN (target->head))
-	flow_delete_insn_chain (NEXT_INSN (src->end),
-				PREV_INSN (target->head));
+      flow_delete_insn_chain (kill_from, PREV_INSN (target->head));
     }
   /* If this already is simplejump, redirect it.  */
   else if (simplejump_p (insn))
@@ -1701,8 +1706,7 @@ try_redirect_by_replacing_jump (e, target)
       rtx target_label = block_label (target);
       rtx barrier;
 
-      src->end = PREV_INSN (insn);
-      src->end = emit_jump_insn_after (gen_jump (target_label), src->end);
+      src->end = emit_jump_insn_before (gen_jump (target_label), kill_from);
       JUMP_LABEL (src->end) = target_label;
       LABEL_NUSES (target_label)++;
       if (basic_block_for_insn)
@@ -1710,7 +1714,9 @@ try_redirect_by_replacing_jump (e, target)
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, "Replacing insn %i by jump %i\n",
 		 INSN_UID (insn), INSN_UID (src->end));
-      flow_delete_insn (insn);
+
+      flow_delete_insn_chain (kill_from, insn);
+
       barrier = next_nonnote_insn (src->end);
       if (!barrier || GET_CODE (barrier) != BARRIER)
 	emit_barrier_after (src->end);
@@ -1726,20 +1732,6 @@ try_redirect_by_replacing_jump (e, target)
     e->flags = 0;
   e->probability = REG_BR_PROB_BASE;
   e->count = src->count;
-
-  /* In case we've zapped an conditional jump, we need to kill the cc0
-     setter too if available.  */
-#ifdef HAVE_cc0
-  insn = src->end;
-  if (GET_CODE (insn) == JUMP_INSN)
-    insn = prev_nonnote_insn (insn);
-  if (sets_cc0_p (insn))
-    {
-      if (insn == src->end)
-	src->end = PREV_INSN (insn);
-      flow_delete_insn (insn);
-    }
-#endif
 
   /* We don't want a block to end on a line-number note since that has
      the potential of changing the code between -g and not -g.  */

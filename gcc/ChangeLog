@@ -2,6 +2,9 @@
 
 	* doc/rtl.texi (REG_DEAD): Update for current semantics.
 
+	* flow.c (try_redirect_by_replacing_jump): Correctly compute which
+	insns to delete in the presence of cc0 in a jump insn.
+
 Fri Jul 20 22:14:49 CEST 2001  Roman Zippel  <zippel@linux-m68k.org>
 			       Jan Hubicka  <jh@suse.cz>
 
