@@ -3350,6 +3350,7 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   rtx container;
   int indirect_p = 0;
   tree ptrtype;
+  enum machine_mode nat_mode;
 
   /* Only 64bit target needs something special.  */
   if (!TARGET_64BIT)
@@ -3372,9 +3373,9 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   size = int_size_in_bytes (type);
   rsize = (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
-  container = construct_container (type_natural_mode (type), TYPE_MODE (type),
-				   type, 0, REGPARM_MAX, SSE_REGPARM_MAX,
-				   intreg, 0);
+  nat_mode = type_natural_mode (type);
+  container = construct_container (nat_mode, TYPE_MODE (type), type, 0,
+				   REGPARM_MAX, SSE_REGPARM_MAX, intreg, 0);
 
   /* Pull the value out of the saved registers.  */
 
@@ -3390,8 +3391,7 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
       lab_false = create_artificial_label ();
       lab_over = create_artificial_label ();
 
-      examine_argument (TYPE_MODE (type), type, 0,
-		        &needed_intregs, &needed_sseregs);
+      examine_argument (nat_mode, type, 0, &needed_intregs, &needed_sseregs);
 
       need_temp = (!REG_P (container)
 		   && ((needed_intregs && TYPE_ALIGN (type) > 64)
