@@ -1,3 +1,8 @@
+2002-12-25  Svein E. Seldal  <Svein.Seldal@solidas.com>
+
+	* config.sub: Import from master repository
+	* config.guess: Ditto
+
 2002-12-24  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.tpl (multilib.out): Fix missing space.
