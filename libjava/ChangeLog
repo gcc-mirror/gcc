@@ -1,3 +1,8 @@
+2004-03-21  Anthony Green  <green@redhat.com>
+
+	* java/lang/natClass.cc (getClassLoader): Circumvent infinite
+	recursion when searching for the system ClassLoader.
+
 2004-03-21  Ito Kazumitsu <kaz@maczuka.gcd.org>
 
         * java/net/ServerSocket.java
