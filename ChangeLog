@@ -1,3 +1,7 @@
+1998-09-30  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* configure.in (target_subdir): Remove duplicate line.
+
 Mon Sep 28 04:04:27 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in: Minor cleanups for building in the $(target_alias)

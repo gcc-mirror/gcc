@@ -372,8 +372,7 @@ fi
 # We always want to use the same name for this directory, so that dejagnu
 # can reliably find it.
 target_subdir=${target_alias}
-  
-target_subdir=${target_alias}
+
 if [ ! -d ${target_subdir} ] ; then
   if mkdir ${target_subdir} ; then true
   else
