@@ -7,6 +7,9 @@
 	and 1.
 	(find_taken_edge_switch_expr): Remove a check for INTEGER_CST.
 
+	* flow.c (delete_dead_jumptables): Speed up by scanning insns
+	that do not belong to any basic block.
+
 2005-02-21  Jeff Law  <law@redhat.com>
 
 	* cfganal.c (find_unreachable_blocks): Manually CSE load of

@@ -817,21 +817,35 @@ delete_noop_moves (void)
 void
 delete_dead_jumptables (void)
 {
-  rtx insn, next;
-  for (insn = get_insns (); insn; insn = next)
+  basic_block bb;
+
+  /* A dead jump table does not belong to any basic block.  Scan insns
+     between two adjacent basic blocks.  */
+  FOR_EACH_BB (bb)
     {
-      next = NEXT_INSN (insn);
-      if (LABEL_P (insn)
-	  && LABEL_NUSES (insn) == LABEL_PRESERVE_P (insn)
-	  && JUMP_P (next)
-	  && (GET_CODE (PATTERN (next)) == ADDR_VEC
-	      || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
+      rtx insn, next;
+
+      for (insn = NEXT_INSN (BB_END (bb));
+	   insn && !NOTE_INSN_BASIC_BLOCK_P (insn);
+	   insn = next)
 	{
-	  if (dump_file)
-	    fprintf (dump_file, "Dead jumptable %i removed\n", INSN_UID (insn));
-	  delete_insn (NEXT_INSN (insn));
-	  delete_insn (insn);
-	  next = NEXT_INSN (next);
+	  next = NEXT_INSN (insn);
+	  if (LABEL_P (insn)
+	      && LABEL_NUSES (insn) == LABEL_PRESERVE_P (insn)
+	      && JUMP_P (next)
+	      && (GET_CODE (PATTERN (next)) == ADDR_VEC
+		  || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
+	    {
+	      rtx label = insn, jump = next;
+
+	      if (dump_file)
+		fprintf (dump_file, "Dead jumptable %i removed\n",
+			 INSN_UID (insn));
+
+	      next = NEXT_INSN (next);
+	      delete_insn (jump);
+	      delete_insn (label);
+	    }
 	}
     }
 }
