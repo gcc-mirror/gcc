@@ -255,18 +255,21 @@ output_function_prologue (stream, size)
 #endif
       }
 #endif
-  for (regno = 16; regno < 24; regno++)
-    if (regs_ever_live[regno] && ! call_used_regs[regno])
-       mask |= 1 << (regno - 16);
-  if ((mask & 0xff) != 0)
+  if (TARGET_68881)
     {
+      for (regno = 16; regno < 24; regno++)
+	if (regs_ever_live[regno] && ! call_used_regs[regno])
+	   mask |= 1 << (regno - 16);
+      if ((mask & 0xff) != 0)
+	{
 #ifdef MOTOROLA
-      asm_fprintf (stream, "\tfmovm %0I0x%x,-(%Rsp)\n", mask & 0xff);
+	  asm_fprintf (stream, "\tfmovm %0I0x%x,-(%Rsp)\n", mask & 0xff);
 #else
-      asm_fprintf (stream, "\tfmovem %0I0x%x,%Rsp@-\n", mask & 0xff);
+	  asm_fprintf (stream, "\tfmovem %0I0x%x,%Rsp@-\n", mask & 0xff);
 #endif
+	}
+      mask = 0;
     }
-  mask = 0;
   for (regno = 0; regno < 16; regno++)
     if (regs_ever_live[regno] && ! call_used_regs[regno])
       {
@@ -428,12 +431,15 @@ output_function_epilogue (stream, size)
   fpoffset = nregs * 8;
 #endif
   nregs = 0;
-  for (regno = 16; regno < 24; regno++)
-    if (regs_ever_live[regno] && ! call_used_regs[regno])
-      {
-        nregs++;
-	fmask |= 1 << (23 - regno);
-      }
+  if (TARGET_68881)
+    {
+      for (regno = 16; regno < 24; regno++)
+	if (regs_ever_live[regno] && ! call_used_regs[regno])
+	  {
+	    nregs++;
+	    fmask |= 1 << (23 - regno);
+	  }
+    }
   foffset = fpoffset + nregs * 12;
   nregs = 0;  mask = 0;
   if (frame_pointer_needed)
