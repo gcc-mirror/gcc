@@ -1,3 +1,10 @@
+Sun May  2 14:02:21 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.h (struct tree_decl): Add comdat_flag.
+	(DECL_COMDAT): Define it.
+	* toplev.c (wrapup_global_declarations): Don't output a
+	DECL_COMDAT function just because it's public.
+
 Sun May  2 15:16:42 1999  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* pdp11.h (TARGET_SWITCHES): Fix error in previous change.
