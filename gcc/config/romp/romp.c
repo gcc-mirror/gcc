@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on ROMP.
-   Copyright (C) 1990, 91, 92, 93, 97, 98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1990, 91, 92, 93, 97-99, 2000 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -37,14 +37,17 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "tree.h"
 #include "function.h"
+#include "tm_p.h"
 
 #define min(A,B)	((A) < (B) ? (A) : (B))
 #define max(A,B)	((A) > (B) ? (A) : (B))
 
-static int unsigned_comparisons_p ();
-static void output_loadsave_fpregs ();
-static void output_fpops ();
-static void init_fpops ();
+static int unsigned_comparisons_p PARAMS ((rtx));
+static void output_loadsave_fpregs PARAMS ((FILE *, enum rtx_code, rtx));
+static void output_fpops PARAMS ((FILE *));
+static void init_fpops PARAMS ((void));
+static int memory_offset_in_range_p PARAMS ((rtx, enum machine_mode, int, int));
+static unsigned int hash_rtx PARAMS ((rtx));
 
 /* Return 1 if the insn using CC0 set by INSN does not contain
    any unsigned tests applied to the condition codes.
@@ -96,6 +99,8 @@ unsigned_comparisons_p (x)
     case LEU:
     case GEU:
       return (XEXP (x, 0) == cc0_rtx || XEXP (x, 1) == cc0_rtx);
+    default:
+      break;
     }
 
   len = GET_RTX_LENGTH (code);
@@ -126,8 +131,9 @@ unsigned_comparisons_p (x)
    cc_state.value[12] refer to two possible values that might correspond
    to the CC.  We only store register values.  */
 
+void
 update_cc (body, insn)
-    rtx body;
+    rtx body ATTRIBUTE_UNUSED;
     rtx insn;
 {
   switch (get_attr_cc (insn))
@@ -231,7 +237,7 @@ restore_compare_p (op)
 /*  Generate the (long) string corresponding to an inline multiply insn.
     Note that `r10' does not refer to the register r10, but rather to the
     SCR used as the MQ.  */
-char *
+const char *
 output_in_line_mul ()
 {
   static char insns[200];
@@ -356,7 +362,7 @@ symbolic_memory_operand (op, mode)
 int
 current_function_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) != MEM || GET_CODE (XEXP (op, 0)) != SYMBOL_REF
       ||  ! CONSTANT_POOL_ADDRESS_P (XEXP (op, 0)))
@@ -382,7 +388,7 @@ null_epilogue ()
 int
 constant_pool_address_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return ((GET_CODE (op) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (op))
 	  || (GET_CODE (op) == CONST && GET_CODE (XEXP (op, 0)) == PLUS
@@ -397,7 +403,7 @@ constant_pool_address_operand (op, mode)
 int
 romp_symbolic_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   switch (GET_CODE (op))
     {
@@ -656,7 +662,7 @@ void
 print_operand (file, x, code)
     FILE *file;
     rtx x;
-    char code;
+    int code;
 {
   int i;
 
@@ -1322,10 +1328,10 @@ static struct symref_hashent *symref_hash_table[SYMHASHSIZE];
    the name string is allocated from the permanent obstack.  */
 rtx
 get_symref (name)
-     register char *name;
+     register const char *name;
 {
   extern struct obstack permanent_obstack;
-  register char *sp = name;
+  register const char *sp = name;
   unsigned int hash = 0;
   struct symref_hashent *p, **last_p;
 
@@ -1459,11 +1465,11 @@ hash_rtx (x)
    A new floating-point operation block is created if this operation has not
    been seen before.  */
 
-char *
+const char *
 output_fpop (code, op0, op1, op2, insn)
      enum rtx_code code;
      rtx op0, op1, op2;
-     rtx insn;
+     rtx insn ATTRIBUTE_UNUSED;
 {
   static char outbuf[40];
   unsigned int hash, hash0, hash1, hash2;
@@ -1832,7 +1838,7 @@ output_fpops (file)
 	{
 	  register int type;
 	  register int opbyte;
-	  register char *desc0;
+	  register const char *desc0;
 	  char desc1[50];
 
 	  immed[i] = 0;

@@ -1,5 +1,16 @@
 2000-01-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* romp-protos.h: New file.
+
+	* romp.c: Fix compile time warnings.
+	
+	* romp.h: Move prototypes to romp-protos.h.  Fix compile time
+	warnings.
+
+	* romp.md: Likewise.
+
+2000-01-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* we32k-protos.h: New file.
 
 	* we32k.c: Fix compile time warnings.
