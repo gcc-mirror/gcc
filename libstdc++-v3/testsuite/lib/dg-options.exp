@@ -1,6 +1,6 @@
-# libstdc++ "tool-and-target file" for DejaGNU
+# Handlers for additional dg-xxx keywords in tests.
 
-# Copyright (C) 2001, 2004 Free Software Foundation, Inc.
+# Copyright (C) 2004 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,17 +17,13 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
 
 
-# This file is loaded only if a target-specific file or OS-specific file
-# is not found first.  It should provide libstdc++_load, which runs a
-# program.  (The default calls the standard remote_load.)  It may also
-# provide libstdc++_compile, but this is not presently used.  It must
-# provide libstdc++_target_compile, which does the same thing and is used.
-
-# Here are the default definitions:
-load_lib "standard.exp"
-
-# target-supports.exp uses this
-proc ${tool}_target_compile { srcfile destfile compile_type options } {
-    target_compile $srcfile $destfile $compile_type $options
+# Copied from GCC.
+proc dg-require-iconv { args } {
+    if { ![ check_iconv_available ${args} ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+    return
 }
 
