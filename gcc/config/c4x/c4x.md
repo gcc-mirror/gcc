@@ -1755,7 +1755,7 @@
 ; so we must emit the pattern that doesn't clobber CC.
 ;
 (define_expand "addqi3"
-  [(parallel [(set (match_operand:QI 0 "reg_operand" "")
+  [(parallel [(set (match_operand:QI 0 "std_or_reg_operand" "")
                    (plus:QI (match_operand:QI 1 "src_operand" "")
                             (match_operand:QI 2 "src_operand" "")))
               (clobber (reg:CC_NOOV 21))])]
@@ -1881,31 +1881,16 @@
 ; (set (mem (reg ar0)) (plus (reg ar3) (const_int 8))).
 ; This is an invalid C4x insn but if we don't provide a pattern
 ; for it, it will be considered to be a move insn for reloading.
-; The nasty bit is that a GENERAL_REGS class register, say r0,
-; may be allocated to reload the PLUS and thus gen_reload will
-; emit an add insn that may clobber CC.
 (define_insn "*addqi3_noclobber_reload"
-  [(set (match_operand:QI 0 "reg_operand" "=a*c,a*c,a*c,!*d,!*d,!*d")
-        (plus:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>,%0,rR,rS<>")
-                 (match_operand:QI 2 "src_operand" "rIm,JR,rS<>,rIm,JR,rS<>")))]
+  [(set (match_operand:QI 0 "std_reg_operand" "=c,c,c")
+        (plus:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>")
+                 (match_operand:QI 2 "src_operand" "rIm,JR,rS<>")))]
   "reload_in_progress"
-  "*
-   if (IS_STD_REG (operands[0]))
-     {
-       if (which_alternative == 0 || which_alternative == 3)
-	 return \"addi\\t%2,%0\";
-       else
-	 return \"addi3\\t%2,%1,%0\";
-     }
-   else
-     {
-       if (which_alternative == 0 || which_alternative == 3)
-	 return \"push\\tst\\n\\taddi\\t%2,%0\\n\\tpop\\tst\";
-       else
-	 return \"push\\tst\\n\\taddi3\\t%2,%1,%0\\n\\tpop\\tst\";
-     }
-   "
-  [(set_attr "type" "binary,binary,binary,multi,multi,multi")])
+  "@
+   addi\\t%2,%0
+   addi3\\t%2,%1,%0
+   addi3\\t%2,%1,%0"
+  [(set_attr "type" "binary,binary,binary")])
 ; Default to int16 data attr.
 
 

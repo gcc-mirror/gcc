@@ -126,6 +126,8 @@ extern int ext_reg_operand PARAMS ((rtx, enum machine_mode));
 
 extern int std_reg_operand PARAMS ((rtx, enum machine_mode));
 
+extern int std_or_reg_operand PARAMS ((rtx, enum machine_mode));
+
 extern int dst_operand PARAMS ((rtx, enum machine_mode));
 
 extern int src_operand PARAMS ((rtx, enum machine_mode));
