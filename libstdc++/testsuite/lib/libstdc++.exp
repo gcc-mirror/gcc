@@ -73,6 +73,23 @@ proc test_libstdc++ { options srcfile compile_args inpfile resultfile exec_args 
 
     verbose "using LIBSTDCPP = $libstdcpp" 2
     set args ""
+
+    # Basically we want to build up a colon separated path list from
+    # the value of $libstdcpp.
+
+    # First strip away any -L arguments.
+    regsub -all -- "-L" $libstdcpp "" ld_library_path
+
+    # Then remove any -lstdc++ argument.
+    regsub -all -- " -lstdc.*" $ld_library_path "" ld_library_path
+
+    # That's enough to make things work for the normal case.
+    # If we wanted to handle an arbitrary value of libstdcpp,
+    # then we'd have to do a lot more work.
+
+    # Set variables the dynamic linker looks at.
+    setenv LD_LIBRARY_PATH $ld_library_path
+    setenv SHLIB_PATH $ld_library_path
     if { $compile_args != "" } {
 	lappend args "additional_flags=$compile_args"
     }
