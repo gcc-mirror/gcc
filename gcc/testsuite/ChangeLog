@@ -1,3 +1,7 @@
+2003-07-31  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/builtins-27.c: New test case.
+
 2003-07-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/tls/opt-7.c: New test.

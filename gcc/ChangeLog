@@ -1,3 +1,16 @@
+2003-07-31  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold <MULT_EXPR>): Optimize both x*pow(x,c) and
+	pow(x,c)*x as pow(x,c+1) for constant values c.  Optimize x*x
+	as pow(x,2.0) when the latter will be expanded back into x*x.
+	(fold <RDIV_EXPR>): Optimize pow(x,c)/x as pow(x,c-1).
+	* builtins.c (expand_builtin_pow): Ignore flag_errno_math as
+	pow can never set errno when used with an integer exponent.
+	Always use expand_powi when exponent is -1, 0, 1 or 2.
+	(fold_builtin): Don't rewrite pow(x,2.0) as x*x nor pow(x,-2.0)
+	as 1.0/(x*x).  This avoids unbounded recursion as we now prefer
+	the pow forms of these expressions.
+
 2003-07-31  Geoffrey Keating  <geoffk@apple.com>
 
 	* Makefile.in (libexecdir): New.

@@ -6071,6 +6071,80 @@ fold (tree expr)
 		    return build_function_call_expr (sinfn,
 						     TREE_OPERAND (arg0, 1));
 		}
+
+	      /* Optimize x*pow(x,c) as pow(x,c+1).  */
+	      if (fcode1 == BUILT_IN_POW
+		  || fcode1 == BUILT_IN_POWF
+		  || fcode1 == BUILT_IN_POWL)
+		{
+		  tree arg10 = TREE_VALUE (TREE_OPERAND (arg1, 1));
+		  tree arg11 = TREE_VALUE (TREE_CHAIN (TREE_OPERAND (arg1,
+								     1)));
+		  if (TREE_CODE (arg11) == REAL_CST
+		      && ! TREE_CONSTANT_OVERFLOW (arg11)
+		      && operand_equal_p (arg0, arg10, 0))
+		    {
+		      tree powfn = TREE_OPERAND (TREE_OPERAND (arg1, 0), 0);
+		      REAL_VALUE_TYPE c;
+		      tree arg, arglist;
+
+		      c = TREE_REAL_CST (arg11);
+		      real_arithmetic (&c, PLUS_EXPR, &c, &dconst1);
+		      arg = build_real (type, c);
+		      arglist = build_tree_list (NULL_TREE, arg);
+		      arglist = tree_cons (NULL_TREE, arg0, arglist);
+		      return build_function_call_expr (powfn, arglist);
+		    }
+		}
+
+	      /* Optimize pow(x,c)*x as pow(x,c+1).  */
+	      if (fcode0 == BUILT_IN_POW
+		  || fcode0 == BUILT_IN_POWF
+		  || fcode0 == BUILT_IN_POWL)
+		{
+		  tree arg00 = TREE_VALUE (TREE_OPERAND (arg0, 1));
+		  tree arg01 = TREE_VALUE (TREE_CHAIN (TREE_OPERAND (arg0,
+								     1)));
+		  if (TREE_CODE (arg01) == REAL_CST
+		      && ! TREE_CONSTANT_OVERFLOW (arg01)
+		      && operand_equal_p (arg1, arg00, 0))
+		    {
+		      tree powfn = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
+		      REAL_VALUE_TYPE c;
+		      tree arg, arglist;
+
+		      c = TREE_REAL_CST (arg01);
+		      real_arithmetic (&c, PLUS_EXPR, &c, &dconst1);
+		      arg = build_real (type, c);
+		      arglist = build_tree_list (NULL_TREE, arg);
+		      arglist = tree_cons (NULL_TREE, arg1, arglist);
+		      return build_function_call_expr (powfn, arglist);
+		    }
+		}
+
+	      /* Optimize x*x as pow(x,2.0), which is expanded as x*x.  */
+	      if (! optimize_size
+		  && operand_equal_p (arg0, arg1, 0))
+		{
+		  tree powfn;
+
+		  if (type == double_type_node)
+		    powfn = implicit_built_in_decls[BUILT_IN_POW];
+		  else if (type == float_type_node)
+		    powfn = implicit_built_in_decls[BUILT_IN_POWF];
+		  else if (type == long_double_type_node)
+		    powfn = implicit_built_in_decls[BUILT_IN_POWL];
+		  else
+		    powfn = NULL_TREE;
+
+		  if (powfn)
+		    {
+		      tree arg = build_real (type, dconst2);
+		      tree arglist = build_tree_list (NULL_TREE, arg);
+		      arglist = tree_cons (NULL_TREE, arg0, arglist);
+		      return build_function_call_expr (powfn, arglist);
+		    }
+		}
 	    }
 	}
       goto associate;
@@ -6326,6 +6400,30 @@ fold (tree expr)
 		  return fold (build (RDIV_EXPR, type,
 				      build_real (type, dconst1),
 				      tmp));
+		}
+	    }
+
+	  /* Optimize pow(x,c)/x as pow(x,c-1).  */
+	  if (fcode0 == BUILT_IN_POW
+	      || fcode0 == BUILT_IN_POWF
+	      || fcode0 == BUILT_IN_POWL)
+	    {
+	      tree arg00 = TREE_VALUE (TREE_OPERAND (arg0, 1));
+	      tree arg01 = TREE_VALUE (TREE_CHAIN (TREE_OPERAND (arg0, 1)));
+	      if (TREE_CODE (arg01) == REAL_CST
+		  && ! TREE_CONSTANT_OVERFLOW (arg01)
+		  && operand_equal_p (arg1, arg00, 0))
+		{
+		  tree powfn = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
+		  REAL_VALUE_TYPE c;
+		  tree arg, arglist;
+
+		  c = TREE_REAL_CST (arg01);
+		  real_arithmetic (&c, MINUS_EXPR, &c, &dconst1);
+		  arg = build_real (type, c);
+		  arglist = build_tree_list (NULL_TREE, arg);
+		  arglist = tree_cons (NULL_TREE, arg1, arglist);
+		  return build_function_call_expr (powfn, arglist);
 		}
 	    }
 	}
