@@ -50,7 +50,7 @@ static void define_builtin (enum built_in_function, const char *,
    function should either return an expression, if the call is to be
    inlined, or NULL_TREE if a real call should be emitted.  Arguments
    are method return type and arguments to call.  */
-typedef tree builtin_creator_function PARAMS ((tree, tree));
+typedef tree builtin_creator_function (tree, tree);
 
 /* Hold a char*, before initialization, or a tree, after
    initialization.  */

@@ -48,8 +48,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 /* True if this arg is a resource file.  */
 #define RESOURCE_FILE_ARG (1<<7)
 
-static char *find_spec_file	PARAMS ((const char *));
-static int verify_class_name    PARAMS ((const char *));
+static char *find_spec_file (const char *);
+static int verify_class_name (const char *);
 
 static const char *main_class_name = NULL;
 int lang_specific_extra_outfiles = 0;
