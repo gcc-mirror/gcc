@@ -1,5 +1,10 @@
 2001-04-09  Andrew MacLeod  <amacleod@redhat.com>
 
+	* output.h (set_block_num): Missed it earlier, remove deprecated 
+	prototype.
+
+2001-04-09  Andrew MacLeod  <amacleod@redhat.com>
+
 	* gcse.c (oprs_unchanged_p): Pass basic_block to load_killed_in_block_p.
 	(load_killed_in_block_p): Change bb parameter from int to basic_block.
 	(oprs_not_set_p): Pass basic_blocks instead of ints as parameters.
