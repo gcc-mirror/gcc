@@ -26,7 +26,7 @@ details.  */
 #define _Jv_platform_solib_prefix ""
 #define _Jv_platform_solib_suffix ".dll"
 
-#ifndef DISBALE_JAVA_NET
+#ifndef DISABLE_JAVA_NET
 
 // these errors cannot occur on Win32
 #define ENOTCONN 0
@@ -36,7 +36,7 @@ details.  */
 #define ENOPROTOOPT 109
 #endif
 
-#endif // DISBALE_JAVA_NET
+#endif // DISABLE_JAVA_NET
 
 extern void _Jv_platform_initialize (void);
 extern void _Jv_platform_initProperties (java::util::Properties*);
@@ -48,7 +48,7 @@ _Jv_platform_close_on_exec (jint)
   // Ignore.
 }
 
-#ifndef DISBALE_JAVA_NET
+#ifndef DISABLE_JAVA_NET
 
 static inline int
 _Jv_socket (int domain, int type, int protocol)
@@ -98,7 +98,7 @@ _Jv_read(int s, void *buf, int len)
   return ::recv (s, (char*) buf, len, 0);
 }
 
-#endif /* DISBALE_JAVA_NET */
+#endif /* DISABLE_JAVA_NET */
 
 #define HAVE_BACKTRACE
 
