@@ -1,3 +1,8 @@
+2002-11-29  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/t-crtstuff: New target makefile fragment.
+	* config.gcc [s390-*-linux, s390x-*-linux]: Use it.
+
 2002-11-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (movsi_h8300hs): Change the order of
