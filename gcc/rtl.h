@@ -1806,15 +1806,6 @@ extern void replace_call_placeholder	PARAMS ((rtx, sibcall_use_t));
 extern int stack_regs_mentioned		PARAMS ((rtx insn));
 #endif
 
-/* In ssa.c */
-extern void convert_to_ssa		PARAMS ((void));
-extern void convert_from_ssa		PARAMS ((void));
-typedef int (*successor_phi_fn)         PARAMS ((rtx, int, int, void *));
-extern int for_each_successor_phi       PARAMS ((int bb,
-						 successor_phi_fn,
-						 void *));
-extern int in_ssa_form;
-
 /* In toplev.c */
 
 extern rtx stack_limit_rtx;

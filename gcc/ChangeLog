@@ -1,3 +1,25 @@
+2000-04-08  Alex Samuel  <samuel@codesourcery.com>
+
+	* ssa.c (convert_to_ssa): Eliminate dead code when calling
+	life_analysis.  
+	(convert_from_ssa): Call compute_bb_for_insn before life_analysis.
+	(for_each_successor_phi): Change parameter to basic_block.
+	(coalesce_regs_in_successor_phi_nodes): Likewise.
+	(coalesce_regs_in_copies): Likewise.
+	(compute_coalesced_reg_partition): Use basic_block instead of index.
+	* rtl.h (convert_to_ssa): Delete.
+	(convert_from_ssa): Likewise.
+	(successor_phi_fn): Likewise.
+	(for_each_successor_phi): Likewise.
+	(in_ssa_form): Likewise.
+	* basic-block.h (convert_to_ssa): Moved from rtl.h.
+	(convert_from_ssa): Likewise.
+	(successor_phi_fn): Likewise.
+	(in_ssa_form): Likewise.
+	(for_each_successor_phi): Likewise.  Change parameter to basic_block. 
+	* flow.c (calculate_global_regs_live): Pass a basic_block to
+	for_each_successor_phi.
+
 2000-04-08  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (mark_used_reg): Use reg_set_p to determine if a register

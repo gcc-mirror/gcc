@@ -147,11 +147,11 @@ static int rename_equivalent_regs_in_insn
 static int coalesce_if_unconflicting
   PARAMS ((partition p, conflict_graph conflicts, int reg1, int reg2));
 static int coalesce_regs_in_copies
-  PARAMS ((int bb, partition p, conflict_graph conflicts));
+  PARAMS ((basic_block bb, partition p, conflict_graph conflicts));
 static int coalesce_reg_in_phi
   PARAMS ((rtx, int dest_regno, int src_regno, void *data));
 static int coalesce_regs_in_successor_phi_nodes
-  PARAMS ((int bb, partition p, conflict_graph conflicts));
+  PARAMS ((basic_block bb, partition p, conflict_graph conflicts));
 static partition compute_coalesced_reg_partition
   PARAMS (());
 static int mark_reg_in_phi 
@@ -855,10 +855,7 @@ convert_to_ssa()
   if (in_ssa_form)
     abort ();
 
-  /* Don't eliminate dead code here.  The CFG we computed above must
-     remain unchanged until we are finished emerging from SSA form --
-     the phi node representation depends on it.  */
-  life_analysis (get_insns (), max_reg_num (), NULL, 0);
+  life_analysis (get_insns (), max_reg_num (), NULL, 1);
 
   /* Compute dominators.  */
   dominators = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
@@ -1454,16 +1451,16 @@ coalesce_if_unconflicting (p, conflicts, reg1, reg2)
 
 static int
 coalesce_regs_in_copies (bb, p, conflicts)
-     int bb;
+     basic_block bb;
      partition p;
      conflict_graph conflicts;
 {
   int changed = 0;
   rtx insn;
-  rtx end = BLOCK_END (bb);
+  rtx end = bb->end;
 
   /* Scan the instruction stream of the block.  */
-  for (insn = BLOCK_HEAD (bb); insn != end; insn = NEXT_INSN (insn))
+  for (insn = bb->head; insn != end; insn = NEXT_INSN (insn))
     {
       rtx pattern;
       rtx src;
@@ -1551,7 +1548,7 @@ coalesce_reg_in_phi (insn, dest_regno, src_regno, data)
 
 static int
 coalesce_regs_in_successor_phi_nodes (bb, p, conflicts)
-     int bb;
+     basic_block bb;
      partition p;
      conflict_graph conflicts;
 {
@@ -1610,8 +1607,10 @@ compute_coalesced_reg_partition ()
 	 order will generate correct, if non-optimal, results.  */
       for (bb = n_basic_blocks; --bb >= 0; )
 	{
-	  changed += coalesce_regs_in_copies (bb, p, conflicts);
-	  changed += coalesce_regs_in_successor_phi_nodes (bb, p, conflicts);
+	  basic_block block = BASIC_BLOCK (bb);
+	  changed += coalesce_regs_in_copies (block, p, conflicts);
+	  changed += 
+	    coalesce_regs_in_successor_phi_nodes (block, p, conflicts);
 	}
 
       conflict_graph_delete (conflicts);
@@ -1812,6 +1811,7 @@ convert_from_ssa()
   rtx insns = get_insns ();
     
   /* We need up-to-date life information.  */
+  compute_bb_for_insn (get_max_uid ());
   life_analysis (insns, max_reg_num (), NULL, 0);
 
   /* Figure out which regs in copies and phi nodes don't conflict and
@@ -1878,28 +1878,23 @@ convert_from_ssa()
 
 int
 for_each_successor_phi (bb, fn, data)
-     int bb;
+     basic_block bb;
      successor_phi_fn fn;
      void *data;
 {
-  basic_block block;
   edge e;
   
-  if (bb == EXIT_BLOCK)
+  if (bb == EXIT_BLOCK_PTR)
     return 0;
-  else if (bb == ENTRY_BLOCK)
-    block = ENTRY_BLOCK_PTR;
-  else
-    block = BASIC_BLOCK (bb);
 
   /* Scan outgoing edges.  */
-  for (e = block->succ; e != NULL; e = e->succ_next)
+  for (e = bb->succ; e != NULL; e = e->succ_next)
     {
       rtx insn;
 
       basic_block successor = e->dest;
-      if (successor->index == ENTRY_BLOCK 
-	  || successor->index == EXIT_BLOCK)
+      if (successor == ENTRY_BLOCK_PTR 
+	  || successor == EXIT_BLOCK_PTR)
 	continue;
 
       /* Advance to the first non-label insn of the successor block.  */
@@ -1917,7 +1912,7 @@ for_each_successor_phi (bb, fn, data)
 	{
 	  int result;
 	  rtx phi_set = PATTERN (insn);
-	  rtx *alternative = phi_alternative (phi_set, block->index);
+	  rtx *alternative = phi_alternative (phi_set, bb->index);
 	  rtx phi_src;
 	  
 	  /* This phi function may not have an alternative

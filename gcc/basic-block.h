@@ -491,4 +491,13 @@ extern conflict_graph conflict_graph_compute
                                         PARAMS ((regset,
 						 partition));
 
+/* In ssa.c */
+extern void convert_to_ssa		PARAMS ((void));
+extern void convert_from_ssa		PARAMS ((void));
+typedef int (*successor_phi_fn)         PARAMS ((rtx, int, int, void *));
+extern int for_each_successor_phi       PARAMS ((basic_block bb,
+						 successor_phi_fn,
+						 void *));
+extern int in_ssa_form;
+
 #endif /* _BASIC_BLOCK_H */
