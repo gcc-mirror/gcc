@@ -2316,10 +2316,20 @@ build_new_1 (exp)
     }
   else
     {
+      int susp;
+
+      if (flag_exceptions)
+	/* We will use RVAL when generating an exception handler for
+	   this new-expression, so we must save it.  */
+	susp = suspend_momentary ();
+
       rval = build_op_new_call
 	(code, true_type, expr_tree_cons (NULL_TREE, size, placement),
 	 LOOKUP_NORMAL | (use_global_new * LOOKUP_GLOBAL));
       rval = cp_convert (build_pointer_type (true_type), rval);
+
+      if (flag_exceptions)
+	resume_momentary (susp);
     }
 
   /*        unless an allocation function is declared with an empty  excep-

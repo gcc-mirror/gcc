@@ -243,7 +243,7 @@ empty_parms ()
 %type <ttype> exception_specification_opt ansi_raise_identifier ansi_raise_identifiers
 %type <ttype> operator_name
 %type <ttype> object aggr
-%type <itype> new delete
+%type <itype> new delete .begin_new_placement
 /* %type <ttype> primary_no_id */
 %type <ttype> nonmomentary_expr maybe_parmlist
 %type <itype> initdcl0 notype_initdcl0 member_init_list initdcl0_innards
@@ -1031,16 +1031,29 @@ unary_expr:
 	| new new_placement new_type_id new_initializer
 		{ $$ = build_new ($2, $3.t, $4, $1); 
 		  check_for_new_type ("new", $3); }
-	| new '(' type_id ')'  %prec EMPTY
-		{ $$ = build_new (NULL_TREE, groktypename($3.t),
+        /* The .begin_new_placement in the following rules is
+	   necessary to avoid shift/reduce conflicts that lead to
+	   mis-parsing some expressions.  Of course, these constructs
+	   are not really new-placement and it is bogus to call
+	   begin_new_placement.  But, the parser cannot always tell at this
+	   point whether the next thing is an expression or a type-id,
+	   so there is nothing we can do.  Fortunately,
+	   begin_new_placement does nothing harmful.  When we rewrite
+	   the parser, this lossage should be removed, of course.  */
+	| new '(' .begin_new_placement type_id 
+                { finish_new_placement (NULL_TREE, $3); }
+	    ')'  %prec EMPTY
+		{ $$ = build_new (NULL_TREE, groktypename($4.t),
 				  NULL_TREE, $1); 
-		  check_for_new_type ("new", $3); }
-	| new '(' type_id ')' new_initializer
-		{ $$ = build_new (NULL_TREE, groktypename($3.t), $5, $1); 
-		  check_for_new_type ("new", $3); }
+		  check_for_new_type ("new", $4); }
+	| new '(' .begin_new_placement type_id 
+                { finish_new_placement (NULL_TREE, $3); }
+            ')' new_initializer
+		{ $$ = build_new (NULL_TREE, groktypename($4.t), $7, $1); 
+		  check_for_new_type ("new", $4); }
 	| new new_placement '(' type_id ')'  %prec EMPTY
 		{ $$ = build_new ($2, groktypename($4.t), NULL_TREE, $1); 
-		  check_for_new_type ("new", $4); }
+	  check_for_new_type ("new", $4); }
 	| new new_placement '(' type_id ')' new_initializer
 		{ $$ = build_new ($2, groktypename($4.t), $6, $1); 
 		  check_for_new_type ("new", $4); }
@@ -1061,16 +1074,19 @@ unary_expr:
 		{ $$ = build_x_unary_op (IMAGPART_EXPR, $2); }
 	;
 
+.begin_new_placement:
+                { $$ = begin_new_placement (); }
+
 new_placement:
 	  '(' 
-                { $<itype>$ = begin_new_placement (); }
+	    .begin_new_placement
             nonnull_exprlist ')'
-                { $$ = finish_new_placement ($3, $<itype>1); }
+                { $$ = finish_new_placement ($3, $2); }
 	| '{' 
-                { cp_pedwarn ("old style placement syntax, use () instead");
-		  $<itype>$ = begin_new_placement (); }
+	    .begin_new_placement
 	    nonnull_exprlist '}'
-                { $$ = finish_new_placement ($3, $<itype>1); }
+                { cp_pedwarn ("old style placement syntax, use () instead");
+		  $$ = finish_new_placement ($3, $2); }
 	;
 
 new_initializer:
@@ -2552,14 +2568,17 @@ new_type_id:
 		{ $$.t = build_decl_list ($1.t, NULL_TREE); 
 		  $$.new_type_flag = $1.new_type_flag; }
 	/* GNU extension to allow arrays of arbitrary types with
-	   non-constant dimension.  */
-	| '(' type_id ')' '[' expr ']'
+	   non-constant dimension.  For the use of begin_new_placement
+	   here, see the comments in unary_expr above.  */
+	| '(' .begin_new_placement type_id 
+                { finish_new_placement (NULL_TREE, $2); }
+	   ')' '[' expr ']'
 		{
 		  if (pedantic)
 		    pedwarn ("ANSI C++ forbids array dimensions with parenthesized type in new");
-		  $$.t = build_parse_node (ARRAY_REF, TREE_VALUE ($2.t), $5);
-		  $$.t = build_decl_list (TREE_PURPOSE ($2.t), $$.t);
-		  $$.new_type_flag = $2.new_type_flag;
+		  $$.t = build_parse_node (ARRAY_REF, TREE_VALUE ($3.t), $7);
+		  $$.t = build_decl_list (TREE_PURPOSE ($3.t), $$.t);
+		  $$.new_type_flag = $3.new_type_flag;
 		}
 	;
 
