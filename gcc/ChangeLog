@@ -1,5 +1,10 @@
 1999-12-14  Mumit Khan  <khan@xraylith.wisc.edu>
 
+	* cccp.c (INO_T_EQ): Disable inode-based optimization for Cygwin.
+	* cppfiles.c (INO_T_EQ): Likewise.
+
+1999-12-14  Mumit Khan  <khan@xraylith.wisc.edu>
+
 	* i386/crtdll.h (STARTFILE_SPEC): Add -pg profiling support.
 	* i386/mingw32.h (LIB_SPEC): Likewise.
 	(STARTFILE_SPEC): Likewise.

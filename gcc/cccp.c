@@ -84,8 +84,9 @@ static void hack_vms_include_specification ();
 #define INCLUDE_LEN_FUDGE 12	/* leave room for VMS syntax conversion */
 #endif /* VMS */
 
-/* Windows does not natively support inodes, and neither does MSDOS.  */
-#if (defined (_WIN32) && ! defined (__CYGWIN__) && ! defined (_UWIN)) \
+/* Windows does not natively support inodes, and neither does MSDOS. 
+   Cygwin's emulation can generate non-unique inodes, so don't use it. */
+#if (defined (_WIN32) && ! defined (_UWIN)) \
   || defined (__MSDOS__)
 #define INO_T_EQ(a, b) 0
 #endif
