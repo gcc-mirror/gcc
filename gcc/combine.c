@@ -6935,10 +6935,17 @@ force_to_mode (x, mode, mask, reg, just_select)
 
       if (GET_CODE (x) == LSHIFTRT
 	  && GET_CODE (XEXP (x, 1)) == CONST_INT
+	  /* The shift puts one of the sign bit copies in the least significant
+	     bit.  */
 	  && ((INTVAL (XEXP (x, 1))
 	       + num_sign_bit_copies (XEXP (x, 0), GET_MODE (XEXP (x, 0))))
 	      >= GET_MODE_BITSIZE (GET_MODE (x)))
 	  && exact_log2 (mask + 1) >= 0
+	  /* Number of bits left after the shift must be more than the mask
+	     needs.  */
+	  && ((INTVAL (XEXP (x, 1)) + exact_log2 (mask + 1))
+	      <= GET_MODE_BITSIZE (GET_MODE (x)))
+	  /* Must be more sign bit copies than the mask needs.  */
 	  && ((int) num_sign_bit_copies (XEXP (x, 0), GET_MODE (XEXP (x, 0)))
 	      >= exact_log2 (mask + 1)))
 	x = gen_binary (LSHIFTRT, GET_MODE (x), XEXP (x, 0),

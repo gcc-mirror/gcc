@@ -1,3 +1,8 @@
+Fri Apr 14 16:09:02 2000  Jim Wilson  <wilson@cygnus.com>
+
+	* combine.c (force_to_mode, case LSHIFTRT): Check that shift shift
+	plus mask size is smaller or equal to the mode size.
+
 Fri Apr 14 18:07:30 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* print-rtl.c (print_rtx, case NOTE): Don't blow up if NOTE_BASIC_BLOCK
