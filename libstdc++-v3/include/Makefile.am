@@ -340,11 +340,15 @@ thread_target_headers = \
 	${target_builddir}/gthr-posix.h \
 	${target_builddir}/gthr-default.h
 
+pch_input = stdc++.h
+pch_output = stdc++.h.gch
+pch_source = ${glibcpp_srcdir}/include/${pch_input}
+
 # List of all timestamp files.  By keeping only one copy of this list, both
 # CLEANFILES and all-local are kept up-to-date.
 allstamps = \
 	stamp-std stamp-bits stamp-c_base stamp-c_compatibility \
-	stamp-backward stamp-ext stamp-target 
+	stamp-backward stamp-ext stamp-target
 
 # Here are the rules for building the headers
 all-local: ${target_builddir}/c++config.h ${thread_target_headers} ${allstamps}
@@ -363,12 +367,13 @@ stamp-std: ${std_headers}
 	  echo `date` > stamp-std ;\
 	fi
 
-stamp-std-precompile: stamp-std ${target_builddir}/c++config.h
-	for h in ${std_headers_rename}; do \
-	  echo "generating $$h.pch..."; \
-	  $(CXX) -Winvalid-pch -x c++-header $(INCLUDES) $${h}; \
-	done; \
-	echo `date` > stamp-std-precompile
+PCHFLAGS=-Winvalid-pch -x c++-header $(CXXFLAGS)
+stamp-stdc++-precompile: stamp-std ${target_builddir}/c++config.h ${pch_source}
+	if [ ! -f "${pch_output}" ]; then \
+	  $(CXX) $(PCHFLAGS) $(INCLUDES) ${pch_source} -o ${pch_output}; \
+	  touch ${pch_input}; \
+	fi; \
+	touch stamp-stdc++-precompile
 
 stamp-bits: ${bits_headers}
 	@if [ ! -d "${bits_builddir}" ]; then \
@@ -525,7 +530,7 @@ install-data-local:
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${target_builddir}; done
 
 # By adding these files here, automake will remove them for 'make clean'
-CLEANFILES = *.pch stamp-std-precompile
+CLEANFILES = *.gch stamp-stdc++-precompile
 
 # Stop implicit '.o' make rules from ever stomping on extensionless
 # headers, in the improbable case where some foolish, crack-addled

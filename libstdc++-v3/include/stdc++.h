@@ -1,6 +1,6 @@
-// -fno-exceptions Support -*- C++ -*-
+// C++ includes used for precompiling -*- C++ -*-
 
-// Copyright (C) 2001, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,21 +27,56 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882: 19.1  Exception classes
-//
+// 17.4.1.2 Headers
 
-#ifndef __EXCEPTION_DEFINES_H
-#define __EXCEPTION_DEFINES_H 1
+// C
+#include <cassert>
+#include <cctype>
+#include <cerrno>
+#include <cfloat>
+#include <ciso646>
+#include <climits>
+#include <clocale>
+#include <cmath>
+#include <csetjmp>
+#include <csignal>
+#include <cstdarg>
+#include <cstddef>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
 
-#ifndef __EXCEPTIONS
-// Iff -fno-exceptions, transform error handling code to work without it.
-# define try      if (true)
-# define catch(X) if (false)
-# define __throw_exception_again
-#else
-// Else proceed normally.
-# define __throw_exception_again throw
-#endif
-
-#endif
+// C++
+#include <algorithm>
+#include <bitset>
+#include <complex>
+#include <deque>
+#include <exception>
+#include <fstream>
+#include <functional>
+#include <iomanip>
+#include <ios>
+#include <iosfwd>
+#include <iostream>
+#include <istream>
+#include <iterator>
+#include <limits>
+#include <list>
+#include <locale>
+#include <map>
+#include <memory>
+#include <new>
+#include <numeric>
+#include <ostream>
+#include <queue>
+#include <set>
+#include <sstream>
+#include <stack>
+#include <stdexcept>
+#include <streambuf>
+#include <string>
+#include <typeinfo>
+#include <utility>
+#include <valarray>
+#include <vector>

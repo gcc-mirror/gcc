@@ -43,15 +43,16 @@ case ${query} in
       echo ${CXX}
       ;;
     --build-cxx)
-      CC_build="@glibcpp_CXX@"
+      PCHFLAGS="-Winvalid-pch -include ${BUILD_DIR}/include/stdc++.h"
+      CC_build="@glibcpp_CXX@
       CXX=`echo $CC_build | sed 's/xgcc/g++/g'`
       echo ${CXX}
       ;;
     --cxxflags)
-      CXXFLAGS=' -g @SECTION_FLAGS@ @SECTION_LDFLAGS@
-		 -fmessage-length=0 @EXTRA_CXX_FLAGS@
-		 -DDEBUG_ASSERT  -DLOCALEDIR="@glibcpp_localedir@" '
-      echo ${CXXFLAGS}
+      CXXFLAGS_save="-g -O2"
+      CXXFLAGS_config='@SECTION_FLAGS@ @SECTION_LDFLAGS@ -fmessage-length=0 
+ 		      @EXTRA_CXX_FLAGS@ -DLOCALEDIR="@glibcpp_localedir@" '
+      echo ${CXXFLAGS_save} ${CXXFLAGS_config}
       ;;
     *)
       print_usage
