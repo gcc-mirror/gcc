@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Motorola 68000 family.
-   Copyright (C) 1987, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -93,8 +93,20 @@ output_function_prologue (stream, size)
 
   if (frame_pointer_needed)
     {
-      /* Adding negative number is faster on the 68040.  */
-      if (fsize < 0x8000 && !TARGET_68040)
+      if (fsize == 0 && TARGET_68040_ONLY)
+	{
+	/* on the 68040, pea + move is faster than link.w 0 */
+#ifdef MOTOROLA
+	  asm_fprintf (stream, "\tpea (%s)\n\tmove.l %s,%s\n",
+	       reg_names[FRAME_POINTER_REGNUM], reg_names[STACK_POINTER_REGNUM],
+	       reg_names[FRAME_POINTER_REGNUM]);
+#else
+	  asm_fprintf (stream, "\tpea %s\@\n\tmovel %s,%s\n",
+	       reg_names[FRAME_POINTER_REGNUM], reg_names[STACK_POINTER_REGNUM],
+	       reg_names[FRAME_POINTER_REGNUM]);
+#endif
+	}
+      else if (fsize < 0x8000)
 	{
 #ifdef MOTOROLA
 	  asm_fprintf (stream, "\tlink.w %s,%0I%d\n",
@@ -116,6 +128,7 @@ output_function_prologue (stream, size)
 	}
       else
 	{
+      /* Adding negative number is faster on the 68040.  */
 #ifdef MOTOROLA
 	  asm_fprintf (stream, "\tlink.w %s,%0I0\n\tadd.l %0I%d,%Rsp\n",
 		       reg_names[FRAME_POINTER_REGNUM], -fsize);
