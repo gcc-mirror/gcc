@@ -214,9 +214,6 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
   cross_jump_death_matters = (cross_jump == 2);
   max_uid = init_label_info (f) + 1;
 
-  if (! mark_labels_only)
-    delete_barrier_successors (f);
-
   /* Leave some extra room for labels and duplicate exit test insns
      we make.  */
   max_jump_chain = max_uid * 14 / 10;
@@ -238,6 +235,9 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
   for (insn = exception_handler_labels; insn; insn = XEXP (insn, 1))
     if (GET_CODE (XEXP (insn, 0)) == CODE_LABEL)
       LABEL_NUSES (XEXP (insn, 0))++;
+
+  if (! mark_labels_only)
+    delete_barrier_successors (f);
 
   /* Quit now if we just wanted to rebuild the JUMP_LABEL and REG_LABEL
      notes and recompute LABEL_NUSES.  */
@@ -792,7 +792,24 @@ delete_barrier_successors (f)
 
 	  while (insn != 0 && GET_CODE (insn) != CODE_LABEL)
 	    {
-	      if (GET_CODE (insn) == NOTE
+	      if (GET_CODE (insn) == JUMP_INSN)
+		{
+		  /* Detect when we're deleting a tablejump; get rid of
+		     the jump table as well.  */
+		  rtx next1 = next_nonnote_insn (insn);
+		  rtx next2 = next1 ? next_nonnote_insn (next1) : 0;
+		  if (next2 && GET_CODE (next1) == CODE_LABEL
+		      && GET_CODE (next2) == JUMP_INSN
+		      && (GET_CODE (PATTERN (next2)) == ADDR_VEC
+			  || GET_CODE (PATTERN (next2)) == ADDR_DIFF_VEC))
+		    {
+		      delete_insn (insn);
+		      insn = next2;
+		    }
+		  else
+		    insn = delete_insn (insn);
+		}
+	      else if (GET_CODE (insn) == NOTE
 		  && NOTE_LINE_NUMBER (insn) != NOTE_INSN_FUNCTION_END)
 		insn = NEXT_INSN (insn);
 	      else

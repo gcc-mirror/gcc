@@ -3638,7 +3638,10 @@ propagate_block_delete_insn (bb, insn)
       rtx label = XEXP (inote, 0);
       rtx next;
 
-      if (LABEL_NUSES (label) == 1
+      /* The label may be forced if it has been put in the constant
+	 pool.  If that is the only use we must discard the table
+	 jump following it, but not the label itself.  */
+      if (LABEL_NUSES (label) == 1 + LABEL_PRESERVE_P (label)
 	  && (next = next_nonnote_insn (label)) != NULL
 	  && GET_CODE (next) == JUMP_INSN
 	  && (GET_CODE (PATTERN (next)) == ADDR_VEC
