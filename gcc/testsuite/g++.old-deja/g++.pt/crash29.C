@@ -1,7 +1,7 @@
 // Build don't link:
 // Origin: Steven Parkes <parkes@sierravista.com>
 
-typedef unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 
 class UUId {};
 
