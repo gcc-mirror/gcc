@@ -1130,16 +1130,14 @@ dump_sra_map (FILE *f)
    re-writes non-aliased structure references into scalar temporaries.  The
    goal is to expose some/all structures to the scalar optimizers.
 
-   FNDECL is the function to process.
+   Scalarization proceeds in two main phases.  First, every structure
+   referenced in the program that complies with can_be_scalarized_p is
+   marked for scalarization (find_candidates_for_sra).
    
-   VARS_TO_RENAME_P is a pointer to the set of variables that need to be
-   renamed into SSA after this pass is done.  These are going to be all the
-   new scalars created by the SRA process.  Notice that since this pass
-   creates new variables, the bitmap representing all the variables in the
-   program will be re-sized here.
-
-   PHASE indicates which dump file from the DUMP_FILES array to use when
-   dumping debugging information.
+   Second, a mapping between structure fields and scalar temporaries so
+   that every time a particular field of a particular structure is
+   referenced in the code, we replace it with its corresponding scalar
+   temporary (scalarize_structures).
 
    TODO
 
