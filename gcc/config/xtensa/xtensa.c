@@ -2281,6 +2281,33 @@ xtensa_function_epilogue (file, size)
 }
 
 
+rtx
+xtensa_return_addr (count, frame)
+     int count;
+     rtx frame;
+{
+  rtx result, retaddr;
+
+  if (count == -1)
+    retaddr = gen_rtx_REG (Pmode, 0);
+  else
+    {
+      rtx addr = plus_constant (frame, -4 * UNITS_PER_WORD);
+      addr = memory_address (Pmode, addr);
+      retaddr = gen_reg_rtx (Pmode);
+      emit_move_insn (retaddr, gen_rtx_MEM (Pmode, addr));
+    }
+
+  /* The 2 most-significant bits of the return address on Xtensa hold
+     the register window size.  To get the real return address, these
+     bits must be replaced with the high bits from the current PC.  */
+
+  result = gen_reg_rtx (Pmode);
+  emit_insn (gen_fix_return_addr (result, retaddr));
+  return result;
+}
+
+
 /* Create the va_list data type.
    This structure is set up by __builtin_saveregs.  The __va_reg
    field points to a stack-allocated region holding the contents of the
