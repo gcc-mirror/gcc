@@ -77,10 +77,6 @@ begin_init_stmts (stmt_expr_p, compound_stmt_p)
   
   if (building_stmt_tree ())
     *compound_stmt_p = begin_compound_stmt (/*has_no_scope=*/1);
-  /*
-  else 
-    *compound_stmt_p = genrtl_begin_compound_stmt (has_no_scope=1);
-  */
 }
 
 /* Finish out the statement-expression begun by the previous call to
@@ -96,7 +92,10 @@ finish_init_stmts (stmt_expr, compound_stmt)
     finish_compound_stmt (/*has_no_scope=*/1, compound_stmt);
   
   if (building_stmt_tree ())
-    stmt_expr = finish_stmt_expr (stmt_expr);
+    {
+      stmt_expr = finish_stmt_expr (stmt_expr);
+      STMT_EXPR_NO_SCOPE (stmt_expr) = true;
+    }
   else
     stmt_expr = finish_global_stmt_expr (stmt_expr);
   

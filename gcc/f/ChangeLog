@@ -1,3 +1,8 @@
+Tue Apr 16 14:55:47 2002  Mark Mitchell  <mark@codesourcery.com>
+
+	* com.c (ffecom_expr_power_integer): Add has_scope argument to
+	call to expand_start_stmt_expr.
+
 Mon Apr 15 10:59:14 2002  Mark Mitchell  <mark@codesourcery.com>
 
 	* g77.texi: Remove Chill reference.
