@@ -1,3 +1,7 @@
+Mon Mar 16 20:01:30 1998  H.J. Lu  (hjl@gnu.org)
+
+	* gcc.dg/980312-1.c: Another new test for fp on PPro.
+
 Wed Mar 11 13:08:48 1998  Robert Lipe  <robertl@dgii.com>
 
 	* g77.f-torture/execute/980310-5.f: Deleted.  Craig Burley and
