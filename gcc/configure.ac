@@ -2710,10 +2710,10 @@ AC_SUBST(gthread_flags)
 
 # Find out what GC implementation we want, or may, use.
 AC_ARG_WITH(gc,
-[  --with-gc={simple,page,zone} choose the garbage collection mechanism to use
+[  --with-gc={page,zone}   choose the garbage collection mechanism to use
                           with the compiler],
 [case "$withval" in
-  simple | page | zone)
+  page | zone)
     GGC=ggc-$withval
     ;;
   *)

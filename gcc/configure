@@ -909,7 +909,7 @@ Optional Packages:
   --with-dwarf2           force the default debug format to be DWARF 2
   --with-sysroot=DIR Search for usr/lib, usr/include, et al, within DIR.
   --with-libiconv-prefix=DIR  search for libiconv in DIR/include and DIR/lib
-  --with-gc={simple,page,zone} choose the garbage collection mechanism to use
+  --with-gc={page,zone}   choose the garbage collection mechanism to use
                           with the compiler
   --with-system-zlib      use installed libz
   --with-slibdir=DIR      shared libraries in DIR LIBDIR
@@ -11297,7 +11297,7 @@ fi
 if test "${with_gc+set}" = set; then
   withval="$with_gc"
   case "$withval" in
-  simple | page | zone)
+  page | zone)
     GGC=ggc-$withval
     ;;
   *)
