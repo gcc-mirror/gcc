@@ -206,8 +206,8 @@ struct streambuf : private __streambuf {
     char *eBptr() { return in_backup() ? _egptr : _other_egptr; }
     char *Nbase() { return _other_gbase; }
     char *eNptr() { return _other_egptr; }
-    int have_backup() { return _other_gbase != ((void*)0) ; }
-    int have_markers() { return _markers != ((void*)0) ; }
+    int have_backup() { return _other_gbase != __null ; }
+    int have_markers() { return _markers != __null ; }
     int _least_marker();
     void switch_to_main_get_area();
     void switch_to_backup_area();
@@ -237,7 +237,7 @@ struct streambuf : private __streambuf {
     int allocate() {  
 	if (base() || unbuffered()) return 0;
 	else return doallocate(); }
-    void allocbuf() { if (base() == ((void*)0) ) doallocbuf(); }
+    void allocbuf() { if (base() == __null ) doallocbuf(); }
     void doallocbuf();
     virtual int sync();
     virtual int pbackfail(int c);
@@ -266,7 +266,7 @@ struct streambuf : private __streambuf {
 	if (_pptr >= _epptr) return __overflow(this, (unsigned char)c);
 	else return *_pptr++ = c, (unsigned char)c; }
     void stossc() { if (_gptr < _egptr) _gptr++; }
-    int vscan(char const *fmt0, _G_va_list ap, ios* stream = ((void*)0) );
+    int vscan(char const *fmt0, _G_va_list ap, ios* stream = __null );
     int scan(char const *fmt0 ...);
     int vform(char const *fmt0, _G_va_list ap);
     int form(char const *fmt0 ...);
@@ -340,7 +340,7 @@ class ostream : virtual public ios
     void do_osfx();
   public:
     ostream() { }
-    ostream(streambuf* sb, ostream* tied=((void*)0) );
+    ostream(streambuf* sb, ostream* tied=__null );
     int opfx() {
 	if (!good()) return 0; else { if (_tie) _tie->flush(); return 1;} }
     void osfx() { if (flags() & (ios::unitbuf|ios::stdio))
@@ -388,7 +388,7 @@ class istream : virtual public ios
     int _skip_ws();
   public:
     istream() { _gcount = 0; }
-    istream(streambuf* sb, ostream*tied=((void*)0) );
+    istream(streambuf* sb, ostream*tied=__null );
     streambuf* istreambuf() const { return _strbuf; }
     istream& get(char* ptr, int len, char delim = '\n');
     istream& get(unsigned char* ptr, int len, char delim = '\n')
@@ -474,7 +474,7 @@ class iostream : public istream, public ostream
     _G_ssize_t _gcount;
   public:
     iostream() { _gcount = 0; }
-    iostream(streambuf* sb, ostream*tied=((void*)0) );
+    iostream(streambuf* sb, ostream*tied=__null );
 };
 extern istream cin;
 extern ostream cout, cerr, clog;  
@@ -1168,16 +1168,16 @@ class dict : public object {
 			 DISPLAYER displayer, STRINGER str_f)
 		{// ERROR - candidate for bad call
 			if (799  >=  800 ) cout <<  "Creating new dictionary..."  << '\n'; ;
-			if (cmp == ((void*)0) )       cmp = &default_compare;
-			if (displayer == ((void*)0) ) displayer = &default_displayer;
-			if (str_f == ((void*)0) )     str_f = &default_stringer;
+			if (cmp == __null )       cmp = &default_compare;
+			if (displayer == __null ) displayer = &default_displayer;
+			if (str_f == __null )     str_f = &default_stringer;
 			compare_f = cmp;
 			display_f = displayer;
 			destroy_f = destroyer;
 			string_f  = str_f;
 			di = make_dictionary(compare_f);
-			append_error(di == ((void*)0) , "dict internal");
-			if (di == ((void*)0) ) {
+			append_error(di == __null , "dict internal");
+			if (di == __null ) {
 				dict_perror("build dictionary");
 				exit(errno);
 			}
@@ -1218,7 +1218,7 @@ public:
 				    &default_displayer, &default_stringer);// ERROR - no matching fn call
 	}
 	dict(COMPARE cmp,
-	     DESTROYER destroyer = ((void*)0) ,
+	     DESTROYER destroyer = __null ,
 	     DISPLAYER displayer = &default_displayer,
 	     STRINGER str_f = &default_stringer)
 	{// ERROR - invalid type for default argument -- not expecting const
@@ -1262,55 +1262,55 @@ public:
 	POINTER access(POINTER item)
 	{
 		p = dict_access(item, rep->di);
-		obj_error(p == ((void*)0) , "access", item);
+		obj_error(p == __null , "access", item);
 		return(p);
 	}
 	POINTER low()
 	{
 		p = dict_low(rep->di);
-		append_error(p == ((void*)0) , "low");
+		append_error(p == __null , "low");
 		return(p);
 	}
 	POINTER nlow()
 	{
 		p = dict_nlow(rep->di);
-		append_error(p == ((void*)0) , "nlow");
+		append_error(p == __null , "nlow");
 		return(p);
 	}
 	POINTER big()
 	{
 		p = dict_big(rep->di);
-		append_error(p == ((void*)0) , "big");
+		append_error(p == __null , "big");
 		return(p);
 	}
 	POINTER nbig()
 	{
 		p = dict_nbig(rep->di);
-		append_error(p == ((void*)0) , "nbig");
+		append_error(p == __null , "nbig");
 		return(p);
 	}
 	POINTER first()
 	{
 		p = dict_first(rep->di);
-		append_error(p == ((void*)0) , "first");
+		append_error(p == __null , "first");
 		return(p);
 	}
 	POINTER last()
 	{
 		p = dict_last(rep->di);
-		append_error(p == ((void*)0) , "last");
+		append_error(p == __null , "last");
 		return(p);
 	}
 	POINTER next()
 	{
 		p = dict_next(rep->di);
-		append_error(p == ((void*)0) , "next");
+		append_error(p == __null , "next");
 		return(p);
 	}
 	POINTER prev()
 	{
 		p = dict_prev(rep->di);
-		append_error(p == ((void*)0) , "prev");
+		append_error(p == __null , "prev");
 		return(p);
 	}
 	int clear(DESTROYER destroy, FILE *fp = (&__iob[2]) )
@@ -1334,7 +1334,7 @@ public:
 	POINTER elem(int index)
 	{
 		p = dict_elem(index, rep->di);
-		append_error(p == ((void*)0) , "elem");
+		append_error(p == __null , "elem");
 		return(p);
 	}
 	int compare(dict &di2)
@@ -1417,21 +1417,21 @@ class queue : public object {
 		         DISPLAYER displayer, STRINGER str_f)
 		{// ERROR - candidate for bad call
 			if (799  >=  800 ) cout <<  "Creating new queue..."  << '\n'; ;
-			if (displayer == ((void*)0) ) displayer = &default_displayer;
-			if (str_f == ((void*)0) )     str_f = &default_stringer;
+			if (displayer == __null ) displayer = &default_displayer;
+			if (str_f == __null )     str_f = &default_stringer;
 			display_f = displayer;
 			destroy_f = destroyer;
 			string_f  = str_f;
 			Q = make_queue();
-			append_error(Q == ((void*)0) , "queue internal");
+			append_error(Q == __null , "queue internal");
 			errno = queue_errno;
-			if (Q == ((void*)0) ) {
+			if (Q == __null ) {
 				queue_perror("build queue");
 				exit(errno);
 			}
 			Q2 = make_queue();
-			append_error(Q2 == ((void*)0) , "queue internal");
-			if (Q2 == ((void*)0) ) {
+			append_error(Q2 == __null , "queue internal");
+			if (Q2 == __null ) {
 				queue_perror("build second queue");
 				exit(errno);
 			}
@@ -1440,8 +1440,8 @@ class queue : public object {
 		~internal()
 		{
 			if (799  >=  800 ) cout <<  "queue ~internal executing"  << '\n'; ;
-			while ((p = queue_remove(Q)) != ((void*)0) ) {
-				if (destroy_f != ((void*)0) ) {
+			while ((p = queue_remove(Q)) != __null ) {
+				if (destroy_f != __null ) {
 					(*destroy_f)((POINTER)&p, (&__iob[2]) );
 				}
 			}
@@ -1485,7 +1485,7 @@ public:
 		rep = new internal( &null_destroy,
 				    &default_displayer, &default_stringer);// ERROR - no matching fn for call
 	}
-	queue(DESTROYER destroyer = ((void*)0) ,
+	queue(DESTROYER destroyer = __null ,
 	      DISPLAYER displayer = &default_displayer,
 	      STRINGER str_f = &default_stringer)
 	{// ERROR - invalid type for default argument -- not expecting const 
@@ -1537,19 +1537,19 @@ public:
 	POINTER remove()
 	{
 		p = queue_remove(rep->Q);
-		append_error(p == ((void*)0) , "remove");
+		append_error(p == __null , "remove");
 		return(p);
 	}
 	POINTER look(POINTER item)
 	{
 		p = queue_look(rep->Q);
-		append_error(p == ((void*)0) , "look");
+		append_error(p == __null , "look");
 		return(p);
 	}
 	POINTER last(POINTER item)
 	{
 		p = queue_last(rep->Q);
-		append_error(p == ((void*)0) , "last");
+		append_error(p == __null , "last");
 		return(p);
 	}
 	int size()
@@ -1647,7 +1647,7 @@ void object_destroy(void *p, FILE *errorFile)
 {
 	object **pObj = (object **)p;
 	object *obj = *pObj;
-	if (obj == ((void*)0) ) {
+	if (obj == __null ) {
 		if (799  >=  10 ) cout <<   "+ object_destroy: NIL object passed in"  << '\n'; ;
 		return;
 	}
@@ -1655,7 +1655,7 @@ void object_destroy(void *p, FILE *errorFile)
 	if (799  >=  998 ) cout <<   *obj  << '\n'; ;
 	if (799  >=  998 ) cout <<   "===================================================="  << '\n'; ;
 	delete obj;
-	*pObj = ((void*)0) ;
+	*pObj = __null ;
 }
 int default_compare(const void *p1, const void *p2)
 {

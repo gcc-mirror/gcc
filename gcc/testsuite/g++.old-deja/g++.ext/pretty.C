@@ -30,14 +30,13 @@ SVTable::SVTable (int size, const char *d)
 {
   if (size < 0)
   {
-    fatal_error (__PRETTY_FUNCTION__ ": Invalid size: %d\n", size);
+    fatal_error ("%s: Invalid size: %d\n", __PRETTY_FUNCTION__, size);
   }
 
   array = (SV **) new SV * [size];
 
   if (array == 0)
   {
-    fatal_error (__PRETTY_FUNCTION__
-	": Failed to allocate array\n");
+    fatal_error ("%s: Failed to allocate array\n", __PRETTY_FUNCTION__);
   }
 }
