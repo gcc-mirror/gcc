@@ -374,8 +374,8 @@ print_code (code)
   register const char *p1;
   for (p1 = GET_RTX_NAME (code); *p1; p1++)
     {
-      if (*p1 >= 'a' && *p1 <= 'z')
-	putchar (*p1 + 'A' - 'a');
+      if (ISLOWER(*p1))
+	putchar (toupper(*p1));
       else
 	putchar (*p1);
     }

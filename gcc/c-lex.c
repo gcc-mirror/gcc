@@ -1015,7 +1015,7 @@ readescape (ignore_ptr)
     case 'E':
       if (pedantic)
 	pedwarn ("non-ANSI-standard escape sequence, `\\%c'", c);
-      return 033;
+      return TARGET_ESC;
 
     case '?':
       return c;
@@ -1053,7 +1053,7 @@ yyerror (msgid)
     error ("%s before string constant", string);
   else if (token_buffer[0] == '\'')
     error ("%s before character constant", string);
-  else if (token_buffer[0] < 040 || (unsigned char) token_buffer[0] >= 0177)
+  else if (!ISGRAPH(token_buffer[0]))
     error ("%s before character 0%o", string, (unsigned char) token_buffer[0]);
   else
     error ("%s before `%s'", string, token_buffer);

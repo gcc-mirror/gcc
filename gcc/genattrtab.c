@@ -1357,8 +1357,8 @@ convert_const_symbol_ref (exp, attr)
       strcat (p, "_");
       strcat (p, XSTR (av->value, 0));
       for (; *p != '\0'; p++)
-	if (*p >= 'a' && *p <= 'z')
-	  *p -= 'a' - 'A';
+	if (ISLOWER(*p))
+	  *p = toupper (*p);
 
       value = attr_rtx (SYMBOL_REF, string);
       RTX_UNCHANGING_P (value) = 1;
@@ -2841,8 +2841,8 @@ evaluate_eq_attr (exp, value, insn_code, insn_index)
       strcat (string, "_");
       strcat (string, XSTR (exp, 1));
       for (p = string; *p ; p++)
-	if (*p >= 'a' && *p <= 'z')
-	  *p -= 'a' - 'A';
+	if (ISLOWER(*p))
+	  *p = toupper (*p);
       
       newexp = attr_rtx (EQ, value,
 			 attr_rtx (SYMBOL_REF,
@@ -5357,10 +5357,10 @@ write_upcase (str)
      char *str;
 {
   while (*str)
-    if (*str < 'a' || *str > 'z')
-      printf ("%c", *str++);
+    if (ISLOWER(*str))
+      printf ("%c", toupper(*str++));
     else
-      printf ("%c", *str++ - 'a' + 'A');
+      printf ("%c", *str++);
 }
 
 static void

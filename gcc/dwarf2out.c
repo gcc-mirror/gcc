@@ -480,7 +480,7 @@ static void dwarf2out_frame_debug_expr	PROTO((rtx, char *));
 	  register int c = p[i];					      \
 	  if (c == '\"' || c == '\\')					      \
 	    putc ('\\', FILE);					              \
-	  if (c >= ' ' && c < 0177)					      \
+	  if (ISPRINT(c)) 						      \
 	    putc (c, FILE);					              \
 	  else								      \
 	    {								      \

@@ -853,7 +853,7 @@ parse_escape (string_ptr, result_mask)
     case 'E':
       if (pedantic)
 	pedwarn ("non-ANSI-standard escape sequence, `\\%c'", c);
-      return 033;
+      return TARGET_ESC;
     case 'f':
       return TARGET_FF;
     case 'n':
@@ -1113,9 +1113,9 @@ initialize_random_junk ()
    * refer to them.
    */
   for (i = 'a'; i <= 'z'; i++) {
-    ++is_idchar[i - 'a' + 'A'];
+    ++is_idchar[toupper(i)];
     ++is_idchar[i];
-    ++is_idstart[i - 'a' + 'A'];
+    ++is_idstart[toupper(i)];
     ++is_idstart[i];
   }
   for (i = '0'; i <= '9'; i++)

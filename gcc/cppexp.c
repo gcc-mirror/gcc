@@ -532,7 +532,7 @@ cpp_parse_escape (pfile, string_ptr, result_mask)
     case 'E':
       if (CPP_OPTIONS (pfile)->pedantic)
 	cpp_pedwarn (pfile, "non-ANSI-standard escape sequence, `\\%c'", c);
-      return 033;
+      return TARGET_ESC;
     case 'f':
       return TARGET_FF;
     case 'n':

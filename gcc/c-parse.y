@@ -34,7 +34,6 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include <setjmp.h>
-
 #include "tree.h"
 #include "input.h"
 #include "c-lex.h"

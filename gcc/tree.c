@@ -4878,7 +4878,7 @@ get_file_function_name_long (type)
   if (p != first_global_object_name)
     {
       for (p = buf+11; *p; p++)
-	if (! ((*p >= '0' && *p <= '9')
+	if (! ( ISDIGIT(*p)
 #if 0 /* we always want labels, which are valid C++ identifiers (+ `$') */
 #ifndef ASM_IDENTIFY_GCC	/* this is required if `.' is invalid -- k. raeburn */
 	       || *p == '.'
@@ -4890,8 +4890,8 @@ get_file_function_name_long (type)
 #ifndef NO_DOT_IN_LABEL		/* this for `.'; unlikely, but...  */
 	       || *p == '.'
 #endif
-	       || (*p >= 'A' && *p <= 'Z')
-	       || (*p >= 'a' && *p <= 'z')))
+	       || ISUPPER(*p)
+	       || ISLOWER(*p)))
 	  *p = '_';
     }
 

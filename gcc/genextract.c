@@ -321,9 +321,9 @@ print_path (path)
 
   for (i = len - 1; i >=0 ; i--)
     {
-      if (path[i] >= 'a' && path[i] <= 'z')
+      if (ISLOWER(path[i]))
 	printf ("XVECEXP (");
-      else if (path[i] >= '0' && path[i] <= '9')
+      else if (ISDIGIT(path[i]))
 	printf ("XEXP (");
       else
 	abort ();
@@ -333,9 +333,9 @@ print_path (path)
 
   for (i = 0; i < len; i++)
     {
-      if (path[i] >= 'a' && path[i] <= 'z')
+      if (ISLOWER(path[i]))
 	printf (", 0, %d)", path[i] - 'a');
-      else if (path[i] >= '0' && path[i] <= '9')
+      else if (ISDIGIT(path[i]))
 	printf (", %d)", path[i] - '0');
       else
 	abort ();

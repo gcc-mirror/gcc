@@ -1795,7 +1795,7 @@ check_format_info (info, params)
 	  ++fci;
       if (fci->format_chars == 0)
 	{
-	  if (format_char >= 040 && format_char < 0177)
+          if (ISGRAPH(format_char))
 	    warning ("unknown conversion type character `%c' in format",
 		     format_char);
 	  else
