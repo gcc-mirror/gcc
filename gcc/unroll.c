@@ -268,8 +268,12 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
      of block_beg and block_end notes, because that would unbalance the block
      structure of the function.  This can happen as a result of the
      "if (foo) bar; else break;" optimization in jump.c.  */
+  /* ??? Gcc has a general policy that -g is never supposed to change the code
+     that the compiler emits, so we must disable this optimization always,
+     even if debug info is not being output.  This is rare, so this should
+     not be a significant performance problem.  */
 
-  if (write_symbols != NO_DEBUG)
+  if (1 /* write_symbols != NO_DEBUG */)
     {
       int block_begins = 0;
       int block_ends = 0;
