@@ -1137,8 +1137,8 @@ get_jump_flags (insn, label)
   if (GET_CODE (insn) == JUMP_INSN
       && condjump_p (insn)
       && INSN_UID (insn) <= max_uid
-      && INSN_UID (label) <= max_uid
-      && label != 0)
+      && label != 0
+      && INSN_UID (label) <= max_uid)
     flags 
       = (uid_to_ruid[INSN_UID (label)] > uid_to_ruid[INSN_UID (insn)])
 	 ? ATTR_FLAG_forward : ATTR_FLAG_backward;
