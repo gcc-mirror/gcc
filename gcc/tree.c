@@ -1711,7 +1711,7 @@ size_in_bytes (type)
 /* Return the size of TYPE (in bytes) as an integer,
    or return -1 if the size can vary.  */
 
-unsigned int
+int
 int_size_in_bytes (type)
      tree type;
 {
