@@ -1,5 +1,5 @@
 /* Common subexpression elimination for GNU compiler.
-   Copyright (C) 1987, 88, 89, 92-5, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-6, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -478,12 +478,24 @@ struct table_elt
   ((REG_USERVAR_P (N) && REGNO (N) < FIRST_PSEUDO_REGISTER)	\
    || CHEAP_REGNO (REGNO (N)))
 
-#define COST(X)						\
-  (GET_CODE (X) == REG					\
-   ? (CHEAP_REG (X) ? 0					\
-      : REGNO (X) >= FIRST_PSEUDO_REGISTER ? 1		\
-      : 2)						\
-   : rtx_cost (X, SET) * 2)
+#define COST(X)								\
+  (GET_CODE (X) == REG							\
+   ? (CHEAP_REG (X) ? 0							\
+      : REGNO (X) >= FIRST_PSEUDO_REGISTER ? 1				\
+      : 2)								\
+   : ((GET_CODE (X) == SUBREG						\
+       && GET_CODE (SUBREG_REG (X)) == REG				\
+       && GET_MODE_CLASS (GET_MODE (X)) == MODE_INT			\
+       && GET_MODE_CLASS (GET_MODE (SUBREG_REG (X))) == MODE_INT	\
+       && (GET_MODE_SIZE (GET_MODE (X))					\
+	   < GET_MODE_SIZE (GET_MODE (SUBREG_REG (X))))			\
+       && subreg_lowpart_p (X)						\
+       && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (GET_MODE (X)),	\
+				 GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (X))))) \
+      ? (CHEAP_REG (SUBREG_REG (X)) ? 0					\
+	 : REGNO (SUBREG_REG (X)) >= FIRST_PSEUDO_REGISTER ? 1		\
+	 : 2)								\
+      : rtx_cost (X, SET) * 2))
 
 /* Determine if the quantity number for register X represents a valid index
    into the `qty_...' variables.  */
