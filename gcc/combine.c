@@ -3687,11 +3687,16 @@ expand_compound_operation (x)
     case ZERO_EXTEND:
       unsignedp = 1;
     case SIGN_EXTEND:
-      /* If we somehow managed to end up with (sign/zero_extend (const_int x)),
-	 just return the CONST_INT.  We can't know how much masking to do
-	 in that case.  */
+      /* We can't necessarily use a const_int for a multiword mode;
+	 it depends on implicitly extending the value.
+	 Since we don't know the right way to extend it,
+	 we can't tell whether the implicit way is right.
+
+	 Even for a mode that is no wider than a const_int,
+	 we can't win, because we need to sign extend one of its bits through
+	 the rest of it, and we don't know which bit.  */
       if (GET_CODE (XEXP (x, 0)) == CONST_INT)
-	return XEXP (x, 0);
+	return x;
 
       if (! FAKE_EXTEND_SAFE_P (GET_MODE (XEXP (x, 0)), XEXP (x, 0)))
 	return x;
