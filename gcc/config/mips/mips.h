@@ -1814,7 +1814,10 @@ typedef struct mips_args {
   int arg_words;		/* # total words the arguments take */
   int num_adjusts;		/* number of adjustments made */
 				/* Adjustments made to args pass in regs.  */
-  struct rtx_def *adjust[MAX_ARGS_IN_REGISTERS];
+				/* ??? The size is doubled to work around a 
+				   bug in the code that sets the adjustments
+				   in function_arg.  */
+  struct rtx_def *adjust[MAX_ARGS_IN_REGISTERS*2];
 } CUMULATIVE_ARGS;
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
