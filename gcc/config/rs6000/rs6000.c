@@ -7015,12 +7015,12 @@ rs6000_common_init_builtins (void)
     = build_function_type_list (V16QI_type_node,
 				V16QI_type_node, V16QI_type_node,
 				V16QI_type_node, NULL_TREE);
-  tree v4si_ftype_char
-    = build_function_type_list (V4SI_type_node, char_type_node, NULL_TREE);
-  tree v8hi_ftype_char
-    = build_function_type_list (V8HI_type_node, char_type_node, NULL_TREE);
-  tree v16qi_ftype_char
-    = build_function_type_list (V16QI_type_node, char_type_node, NULL_TREE);
+  tree v4si_ftype_int
+    = build_function_type_list (V4SI_type_node, integer_type_node, NULL_TREE);
+  tree v8hi_ftype_int
+    = build_function_type_list (V8HI_type_node, integer_type_node, NULL_TREE);
+  tree v16qi_ftype_int
+    = build_function_type_list (V16QI_type_node, integer_type_node, NULL_TREE);
   tree v8hi_ftype_v16qi
     = build_function_type_list (V8HI_type_node, V16QI_type_node, NULL_TREE);
   tree v4sf_ftype_v4sf
@@ -7078,37 +7078,37 @@ rs6000_common_init_builtins (void)
   tree v4si_ftype_v4si_v4si
     = build_function_type_list (V4SI_type_node,
 				V4SI_type_node, V4SI_type_node, NULL_TREE);
-  tree v4sf_ftype_v4si_char
+  tree v4sf_ftype_v4si_int
     = build_function_type_list (V4SF_type_node,
-				V4SI_type_node, char_type_node, NULL_TREE);
-  tree v4si_ftype_v4sf_char
+				V4SI_type_node, integer_type_node, NULL_TREE);
+  tree v4si_ftype_v4sf_int
     = build_function_type_list (V4SI_type_node,
-				V4SF_type_node, char_type_node, NULL_TREE);
-  tree v4si_ftype_v4si_char
+				V4SF_type_node, integer_type_node, NULL_TREE);
+  tree v4si_ftype_v4si_int
     = build_function_type_list (V4SI_type_node,
-				V4SI_type_node, char_type_node, NULL_TREE);
-  tree v8hi_ftype_v8hi_char
+				V4SI_type_node, integer_type_node, NULL_TREE);
+  tree v8hi_ftype_v8hi_int
     = build_function_type_list (V8HI_type_node,
-				V8HI_type_node, char_type_node, NULL_TREE);
-  tree v16qi_ftype_v16qi_char
+				V8HI_type_node, integer_type_node, NULL_TREE);
+  tree v16qi_ftype_v16qi_int
     = build_function_type_list (V16QI_type_node,
-				V16QI_type_node, char_type_node, NULL_TREE);
-  tree v16qi_ftype_v16qi_v16qi_char
+				V16QI_type_node, integer_type_node, NULL_TREE);
+  tree v16qi_ftype_v16qi_v16qi_int
     = build_function_type_list (V16QI_type_node,
 				V16QI_type_node, V16QI_type_node,
-				char_type_node, NULL_TREE);
-  tree v8hi_ftype_v8hi_v8hi_char
+				integer_type_node, NULL_TREE);
+  tree v8hi_ftype_v8hi_v8hi_int
     = build_function_type_list (V8HI_type_node,
 				V8HI_type_node, V8HI_type_node,
-				char_type_node, NULL_TREE);
-  tree v4si_ftype_v4si_v4si_char
+				integer_type_node, NULL_TREE);
+  tree v4si_ftype_v4si_v4si_int
     = build_function_type_list (V4SI_type_node,
 				V4SI_type_node, V4SI_type_node,
-				char_type_node, NULL_TREE);
-  tree v4sf_ftype_v4sf_v4sf_char
+				integer_type_node, NULL_TREE);
+  tree v4sf_ftype_v4sf_v4sf_int
     = build_function_type_list (V4SF_type_node,
 				V4SF_type_node, V4SF_type_node,
-				char_type_node, NULL_TREE);
+				integer_type_node, NULL_TREE);
   tree v4sf_ftype_v4sf_v4sf
     = build_function_type_list (V4SF_type_node,
 				V4SF_type_node, V4SF_type_node, NULL_TREE);
@@ -7251,22 +7251,22 @@ rs6000_common_init_builtins (void)
       /* vchar, vchar, vchar, 4 bit literal.  */
       else if (mode0 == V16QImode && mode1 == mode0 && mode2 == mode0
 	       && mode3 == QImode)
-	type = v16qi_ftype_v16qi_v16qi_char;
+	type = v16qi_ftype_v16qi_v16qi_int;
 
       /* vshort, vshort, vshort, 4 bit literal.  */
       else if (mode0 == V8HImode && mode1 == mode0 && mode2 == mode0
 	       && mode3 == QImode)
-	type = v8hi_ftype_v8hi_v8hi_char;
+	type = v8hi_ftype_v8hi_v8hi_int;
 
       /* vint, vint, vint, 4 bit literal.  */
       else if (mode0 == V4SImode && mode1 == mode0 && mode2 == mode0
 	       && mode3 == QImode)
-	type = v4si_ftype_v4si_v4si_char;
+	type = v4si_ftype_v4si_v4si_int;
 
       /* vfloat, vfloat, vfloat, 4 bit literal.  */
       else if (mode0 == V4SFmode && mode1 == mode0 && mode2 == mode0
 	       && mode3 == QImode)
-	type = v4sf_ftype_v4sf_v4sf_char;
+	type = v4sf_ftype_v4sf_v4sf_int;
 
       else
 	abort ();
@@ -7355,23 +7355,23 @@ rs6000_common_init_builtins (void)
       
       /* vint, vint, 5 bit literal.  */
       else if (mode0 == V4SImode && mode1 == V4SImode && mode2 == QImode)
-	type = v4si_ftype_v4si_char;
+	type = v4si_ftype_v4si_int;
       
       /* vshort, vshort, 5 bit literal.  */
       else if (mode0 == V8HImode && mode1 == V8HImode && mode2 == QImode)
-	type = v8hi_ftype_v8hi_char;
+	type = v8hi_ftype_v8hi_int;
       
       /* vchar, vchar, 5 bit literal.  */
       else if (mode0 == V16QImode && mode1 == V16QImode && mode2 == QImode)
-	type = v16qi_ftype_v16qi_char;
+	type = v16qi_ftype_v16qi_int;
 
       /* vfloat, vint, 5 bit literal.  */
       else if (mode0 == V4SFmode && mode1 == V4SImode && mode2 == QImode)
-	type = v4sf_ftype_v4si_char;
+	type = v4sf_ftype_v4si_int;
       
       /* vint, vfloat, 5 bit literal.  */
       else if (mode0 == V4SImode && mode1 == V4SFmode && mode2 == QImode)
-	type = v4si_ftype_v4sf_char;
+	type = v4si_ftype_v4sf_int;
 
       else if (mode0 == V2SImode && mode1 == SImode && mode2 == SImode)
 	type = v2si_ftype_int_int;
@@ -7424,11 +7424,11 @@ rs6000_common_init_builtins (void)
       mode1 = insn_data[d->icode].operand[1].mode;
 
       if (mode0 == V4SImode && mode1 == QImode)
-        type = v4si_ftype_char;
+        type = v4si_ftype_int;
       else if (mode0 == V8HImode && mode1 == QImode)
-        type = v8hi_ftype_char;
+        type = v8hi_ftype_int;
       else if (mode0 == V16QImode && mode1 == QImode)
-        type = v16qi_ftype_char;
+        type = v16qi_ftype_int;
       else if (mode0 == V4SFmode && mode1 == V4SFmode)
 	type = v4sf_ftype_v4sf;
       else if (mode0 == V8HImode && mode1 == V16QImode)

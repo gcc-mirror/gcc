@@ -1,3 +1,19 @@
+2004-03-04  Ziemowit Laski  <zlaski@apple.com>
+
+	PR c++/14425, c++/14426
+	* config/rs6000/altivec.h (vec_splat_s8, vec_splat_s16,
+	vec_splat_s32, vec_splat_u8, vec_splat_u16, vec_splat_u32):
+	Change C++ definitions to accept a 'const int' argument;
+	the prototypes already do.
+	* config/rs6000/rs6000.c (rs6000_common_init_builtins):
+	Rename v4si_ftype_char, v8hi_ftype_char, v16qi_ftype_char,
+	v4sf_ftype_v4si_char, v4si_ftype_v4sf_char, v4si_ftype_v4si_char,
+	v8hi_ftype_v8hi_char, v16qi_ftype_v16qi_char,
+	v16qi_ftype_v16qi_v16qi_char, v8hi_ftype_v8hi_v8hi_char,
+	v4si_ftype_v4si_v4si_char and v4sf_ftype_v4sf_v4sf_char to
+	end in ..._int; change them to accept an int instead of a char
+	as the last parameter.
+
 2004-03-04  Phil Edwards  <phil@codesourcery.com>
 
 	* genmultilib:  Change '=' to '-' when translating option names
