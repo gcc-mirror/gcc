@@ -35,12 +35,11 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.rmi.server;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.rmi.server.RemoteStub;
-import java.rmi.server.ServerNotActiveException;
 
 public interface ServerRef extends RemoteRef
 {

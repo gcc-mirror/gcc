@@ -1,3 +1,28 @@
+2004-10-21  Michael Koch  <konqueror@gmx.de>
+
+	* java/rmi/MarshalledObject.java,
+	java/rmi/Naming.java,
+	java/rmi/activation/Activatable.java,
+	java/rmi/activation/ActivationGroup.java,
+	java/rmi/activation/ActivationGroupDesc.java,
+	java/rmi/activation/ActivationInstantiator.java,
+	java/rmi/activation/ActivationMonitor.java,
+	java/rmi/activation/ActivationSystem.java,
+	java/rmi/activation/Activator.java,
+	java/rmi/registry/LocateRegistry.java,
+	java/rmi/registry/Registry.java,
+	java/rmi/server/LogStream.java,
+	java/rmi/server/ObjID.java,
+	java/rmi/server/RMIClientSocketFactory.java,
+	java/rmi/server/RMIServerSocketFactory.java,
+	java/rmi/server/RMISocketFactory.java,
+	java/rmi/server/RemoteCall.java,
+	java/rmi/server/RemoteServer.java,
+	java/rmi/server/ServerRef.java,
+	java/rmi/server/UID.java,
+	java/rmi/server/UnicastRemoteObject.java:
+	Import cleanup.
+
 2004-10-21  Tom Tromey  <tromey@redhat.com>
 
 	* java/util/zip/InflaterInputStream.java (fill): Don't throw an
