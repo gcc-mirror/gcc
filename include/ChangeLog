@@ -1,3 +1,7 @@
+2003-02-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libiberty.h (physmem_total, physmem_available): Prototype.
+
 2002-11-23  Simon Burge  <simonb@wasabisystems.com>
 
 	* libiberty.h (basename): Add NetBSD to the list.
