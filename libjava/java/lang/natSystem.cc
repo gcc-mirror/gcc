@@ -116,15 +116,57 @@ java::lang::System::arraycopy (jobject src, jint src_offset,
   const bool prim = src_comp->isPrimitive();
   if (prim || dst_comp->isAssignableFrom(src_comp) || src == dst)
     {
-      const size_t size = prim ? src_comp->size() 
-	: sizeof elements((jobjectArray)src)[0];
+      const size_t size = (prim ? src_comp->size()
+			   : sizeof elements((jobjectArray)src)[0]);
 
-      // We need a particular type to get the pointer to the data.  So
-      // we choose bytes.
-      char *src_elts = (((char *) elements ((jbyteArray) src))
-			+ src_offset * size);
-      char *dst_elts = (((char *) elements ((jbyteArray) dst))
-			+ dst_offset * size);
+      // In an ideal world we would do this via a virtual function in
+      // __JArray.  However, we can't have virtual functions in
+      // __JArray due to the need to copy an array's virtual table in
+      // _Jv_FindArrayClass.
+      // We can't just pick a single subtype of __JArray to use due to
+      // alignment concerns.
+      char *src_elts = NULL;
+      if (! prim)
+	src_elts = (char *) elements ((jobjectArray) src);
+      else if (src_comp == JvPrimClass (byte))
+	src_elts = (char *) elements ((jbyteArray) src);
+      else if (src_comp == JvPrimClass (short))
+	src_elts = (char *) elements ((jshortArray) src);
+      else if (src_comp == JvPrimClass (int))
+	src_elts = (char *) elements ((jintArray) src);
+      else if (src_comp == JvPrimClass (long))
+	src_elts = (char *) elements ((jlongArray) src);
+      else if (src_comp == JvPrimClass (boolean))
+	src_elts = (char *) elements ((jbooleanArray) src);
+      else if (src_comp == JvPrimClass (char))
+	src_elts = (char *) elements ((jcharArray) src);
+      else if (src_comp == JvPrimClass (float))
+	src_elts = (char *) elements ((jfloatArray) src);
+      else if (src_comp == JvPrimClass (double))
+	src_elts = (char *) elements ((jdoubleArray) src);
+      src_elts += size * src_offset;
+
+      char *dst_elts = NULL;
+      if (! prim)
+	dst_elts = (char *) elements ((jobjectArray) dst);
+      else if (dst_comp == JvPrimClass (byte))
+	dst_elts = (char *) elements ((jbyteArray) dst);
+      else if (dst_comp == JvPrimClass (short))
+	dst_elts = (char *) elements ((jshortArray) dst);
+      else if (dst_comp == JvPrimClass (int))
+	dst_elts = (char *) elements ((jintArray) dst);
+      else if (dst_comp == JvPrimClass (long))
+	dst_elts = (char *) elements ((jlongArray) dst);
+      else if (dst_comp == JvPrimClass (boolean))
+	dst_elts = (char *) elements ((jbooleanArray) dst);
+      else if (dst_comp == JvPrimClass (char))
+	dst_elts = (char *) elements ((jcharArray) dst);
+      else if (dst_comp == JvPrimClass (float))
+	dst_elts = (char *) elements ((jfloatArray) dst);
+      else if (dst_comp == JvPrimClass (double))
+	dst_elts = (char *) elements ((jdoubleArray) dst);
+      dst_elts += size * dst_offset;
+
       // We don't bother trying memcpy.  It can't be worth the cost of
       // the check.
       memmove ((void *) dst_elts, (void *) src_elts, count * size);

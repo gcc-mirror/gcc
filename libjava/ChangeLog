@@ -1,5 +1,8 @@
 1999-04-13  Tom Tromey  <tromey@cygnus.com>
 
+	* java/lang/natSystem.cc (arraycopy): Don't always use jbyteArray;
+	instead switch on actual element type.
+
 	* Makefile.in: Rebuilt.
 	* Makefile.am (AM_MAKEFLAGS): Added JC1FLAGS.
 
