@@ -426,7 +426,10 @@ try_forward_edges (mode, b)
 			if (threaded_edges[i] == t)
 			  break;
 		      if (i < nthreaded_edges)
-			break;
+			{
+			  counter = n_basic_blocks;
+			  break;
+			}
 		    }
 
 		  /* Detect an infinite loop across the start block.  */
