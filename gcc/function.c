@@ -2739,8 +2739,8 @@ purge_addressof_1 (loc, insn, force)
   else if (code == MEM && GET_CODE (XEXP (x, 0)) == ADDRESSOF && ! force)
     {
       rtx sub = XEXP (XEXP (x, 0), 0);
-      if (GET_CODE (sub) != REG)
-	sub = copy_rtx (sub);
+      if (GET_CODE (sub) == MEM)
+	sub = gen_rtx (MEM, GET_MODE (x), copy_rtx (XEXP (sub, 0)));
       if (GET_CODE (sub) == REG && GET_MODE (x) != GET_MODE (sub))
 	{
 	  if (! BYTES_BIG_ENDIAN && ! WORDS_BIG_ENDIAN)

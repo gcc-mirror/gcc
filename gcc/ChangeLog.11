@@ -1,7 +1,51 @@
-Fri Dec 12 08:01:44 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+Sun Dec 14 06:49:05 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* Version 2.8.0 released.
+
+	* expr.c (expand_expr, case PLACEHOLDER_EXPR): Use placeholder_list 
+	expression in preference to any other if correct type.
+
+	* i386.h (INITIAL_ELIMINATION_OFFSET): Correctly test for PIC
+	register used.
+
+Sat Dec 13 06:11:32 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* frame.h (__register_frame_info_table): Fix typo in declaration.
+
+Fri Dec 12 07:55:18 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* function.c (purge_addressof_1): For (mem (address (mem ...)),
+	when collapsing, preserve mode of outer MEM.
+
+	* frame.c (__register_frame_info): Renamed from __register_frame.
+	(__register_frame_info_table, __deregister_frame_info): Similarly.
+	* frame.h (__{,de}register_frame_info): Likewise.
+	(__register_frame_info_table): New declaration.
+	* crtstuff.c (__do_global_dtors{,_aux}): Rename __deregister_frame.
+	(frame_dummy, __do_global_ctors): Likewise for __register_frame.
+	* collect2.c (write_c_file_{stat,glob}): Rename __register_frame
+	to __register_frame_info and similarly for __deregister_frame and
+	__register_frame_table.
+
+	* sched.c (remove_dependencies): Set RTX_INTEGRATED_P on dependency
+	we delete.  Properly update prev for multiple consecutive deletions.
+	(priority): Skip deleted dependence.
 
 	* integrate.c (initialize_for_inline): In DECL_RTL of a PARM_DECL,
 	look inside a (mem (addressof (mem ...))).
+
+Fri Dec 12 05:49:58 1997  Paul Eggert  <eggert@twinsun.com>
+
+	* collect2.c (write_c_file_glob):
+	Allocate initial frame object in static storage and pass its address.
+
+Thu Dec 11 18:01:31 1997  Philippe De Muyter  <phdm@macqel.be>
+
+	* acconfig.h (NEED_DECLARATION_GETENV): Define slot added.
+
+Thu Dec 11 17:54:23 1997  Paul Eggert  <eggert@twinsun.com>
+
+	* crtstuff.c (__do_global_ctors): Fix typo in last change.
 
 Wed Dec 10 18:38:28 1997  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
  

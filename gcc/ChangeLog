@@ -1,3 +1,10 @@
+Mon Dec 15 00:04:48 1997  Jeffrey A Law  (law@cygnus.com)
+
+        * haifa-sched.c (remove_dependencies): Set RTX_INTEGRATED_P on
+	dependency we delete.  Properly update prev for multiple consecutive
+	deletions.
+        (priority): Skip deleted dependence.
+
 Fri Dec 12 18:54:23 1997  Per Bothner  <bothner@cygnus.com>
 
 	* expr.c (expand_builtin):  Support BUILT_IN_FMOD - just call fmod.

@@ -18,4 +18,7 @@
 
 /* Whether rindex must be declared even if <stdlib.h> is included.  */
 #undef NEED_DECLARATION_RINDEX
+
+/* Whether getenv must be declared even if <stdlib.h> is included.  */
+#undef NEED_DECLARATION_GETENV
 @TOP@

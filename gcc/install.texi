@@ -191,7 +191,7 @@ will print out whether the Haifa scheduler is enabled when it is run.
 
 @cindex Objective C threads
 @cindex threads, Objective C
-@item --enable-objcthreads=@var{type}
+@item --enable-threads=@var{type}
 Certain systems, notably Linux-based GNU systems, can't be relied on to
 supply a threads facility for the Objective C runtime and so will
 default to single-threaded runtime.  They may, however, have a library
