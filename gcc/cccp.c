@@ -3988,7 +3988,8 @@ handle_directive (ip, op)
 	 directives through.  */
 
       if (!no_output && already_output == 0
-	  && (kt->type == T_DEFINE ? (int) dump_names <= (int) dump_macros
+	  && ((kt->type == T_DEFINE || kt->type == T_UNDEF)
+	      ? (int) dump_names <= (int) dump_macros
 	      : IS_INCLUDE_DIRECTIVE_TYPE (kt->type) ? dump_includes
 	      : kt->type == T_PRAGMA)) {
         int len;
