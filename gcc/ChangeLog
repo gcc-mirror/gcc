@@ -1,3 +1,7 @@
+Wed Oct  7 12:10:46 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* expr.c (emit_group_store): Handle a PARALLEL destination.
+
 Wed Oct  7 10:07:29 1998  Richard Henderson  <rth@cygnus.com>
 
 	* gcse.c (pre_insert_insn): When a call ends a bb, insert
