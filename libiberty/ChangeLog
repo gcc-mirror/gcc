@@ -1,3 +1,9 @@
+2000-09-06  Alex Samuel  <samuel@codesourcery.com>
+
+	* cp-demangle.c (status_allocation_failed): Rearrange whitespace.
+	(demangle_type): Handle substitution candidates correctly in the
+	face of special substitutions.
+
 2000-09-05  Alex Samuel  <samuel@codesourcery.com>
 
 	* cp-demangle.c (demangle_encoding): Rename variable.
