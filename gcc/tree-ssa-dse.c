@@ -134,7 +134,13 @@ fix_phi_uses (tree phi, tree stmt)
   def_operand_p def_p;
   ssa_op_iter iter;
   int i;
-
+  edge e;
+  edge_iterator ei;
+  
+  FOR_EACH_EDGE (e, ei, PHI_BB (phi)->preds) 
+  if (e->flags & EDGE_ABNORMAL)
+    break;
+  
   get_stmt_operands (stmt);
 
   FOR_EACH_SSA_MAYDEF_OPERAND (def_p, use_p, stmt, iter)
@@ -146,7 +152,12 @@ fix_phi_uses (tree phi, tree stmt)
 	 them with the appropriate V_MAY_DEF_OP.  */
       for (i = 0; i < PHI_NUM_ARGS (phi); i++)
 	if (v_may_def == PHI_ARG_DEF (phi, i))
-	  SET_PHI_ARG_DEF (phi, i, v_may_use);
+	  {
+	    SET_PHI_ARG_DEF (phi, i, v_may_use);
+	    /* Update if the new phi argument is an abnormal phi.  */
+	    if (e != NULL)
+	      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (v_may_use) = 1;
+	  }
     }
 }
 

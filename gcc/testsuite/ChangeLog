@@ -1,5 +1,10 @@
 2005-02-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR tree-opt/19768
+	* g++.dg/opt/pr19768.C: New test.
+
+2005-02-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR tree-opt/19736
 	* gcc.c-torture/compile/pr19736.c: New test.
 

@@ -1,5 +1,11 @@
 2005-02-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR tree-opt/19768
+	* tree-ssa-dse.c (fix_phi_uses): Update the occurs in abnormal
+	phi flag if the phi is abnormal.
+
+2005-02-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR tree-opt/19736
 	* tree-ssa.c (replace_immediate_uses): Update the immediate_uses
 	information for the new statement.
