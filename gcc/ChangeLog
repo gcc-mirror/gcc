@@ -1,5 +1,9 @@
 2002-12-11  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md (two define_peephole2): New.
+
+2002-12-11  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.h (CONST_OK_FOR_J): Remove.
 	(CONST_OK_FOR_K): Likewise.
 	(CONST_OK_FOR_M): Likewise.
