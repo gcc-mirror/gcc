@@ -122,21 +122,17 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     close()
     {
-      __filebuf_type *__ret = NULL;
+      __filebuf_type* __ret = NULL;
       if (this->is_open())
 	{
+	  bool __testfail = false;
 	  const int_type __eof = traits_type::eof();
 	  bool __testput = this->_M_out_cur
-	    && this->_M_out_beg < this->_M_out_lim;
+	                   && this->_M_out_beg < this->_M_out_lim;
 	  if (__testput 
 	      && traits_type::eq_int_type(_M_really_overflow(__eof), __eof))
-	    return __ret;
+	    __testfail = true;
 
-	  // NB: Do this here so that re-opened filebufs will be cool...
-	  this->_M_mode = ios_base::openmode(0);
-	  _M_destroy_internal_buffer();
-	  _M_pback_destroy();
-	  
 #if 0
 	  // XXX not done
 	  if (_M_last_overflowed)
@@ -146,10 +142,17 @@ namespace std
 	    }
 #endif
 
-	  if (_M_file.close())
+	  // NB: Do this here so that re-opened filebufs will be cool...
+	  this->_M_mode = ios_base::openmode(0);
+	  _M_destroy_internal_buffer();
+	  _M_pback_destroy();
+
+	  if (!_M_file.close())
+	    __testfail = true;
+
+	  if (!__testfail)
 	    __ret = this;
 	}
-
       _M_last_overflowed = false;	
       return __ret;
     }

@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p6 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -180,9 +180,8 @@ libv3test_a_SOURCES = testsuite_hooks.cc testsuite_allocator.cc
 abi_check_SOURCES = abi_check.cc
 
 # By adding these files here, automake will remove them for 'make clean'
-CLEANFILES = *.txt *.tst *.exe core* filebuf_* tmp ostream_* *.log *.sum \
-	testsuite_files testsuite_wchar_t \
-	site.exp abi_check 
+CLEANFILES = *.txt *.tst *.exe core* filebuf_* tmp* ostream_* *.log *.sum \
+	     testsuite_files testsuite_wchar_t site.exp abi_check 
 
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = ../config.h
