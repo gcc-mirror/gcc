@@ -1,4 +1,29 @@
-2004-04-09  Jan Beulich  <jbeulich@novell.com>
+2004-07-09  Steven Bosscher  <stevenb@suse.de>
+
+	* doc/md.texi (Processor pipeline description): Mention that
+	the old pipeline description is deprecated.
+
+	* config/rs6000/7450.md (automaton ppc7450): Split up, move
+	mciu_7450 function unit to...
+	(automaton ppc7450mciu): ...new automaton.
+
+	* haifa-sched.c (insert_schedule_bubbles_p): Remove.
+	(schedule_block): Don't consider inserting bubbles.
+	(sched_init): Don't initialize DFA bubbles.
+	* target-def.h (TARGET_SCHED_INIT_DFA_BUBBLES,
+	TARGET_SCHED_DFA_BUBBLE): Remove.
+	* target.h (init_dfa_bubbles, dfa_bubble): Remove hooks.
+	* doc/tm.texi (TARGET_SCHED_INIT_DFA_BUBBLES,
+	TARGET_SCHED_DFA_BUBBLE): Remove documentation.
+
+	* stmt.c (conditional_context): Remove prototype.
+	* tree.h (conditional_context): Remove.
+	* tree-cfg.c (pre_insert_on_edge): Remove.
+
+	* c-common.h (c_expand_asm_operands): Remove prototype.
+	* c-typeck.c (c_expand_asm_operands): Remove.
+
+2004-07-09  Jan Beulich  <jbeulich@novell.com>
 
 	* config/i386/i386.c (classify_argument): Treat V1xx modes the same as
 	their base modes. CTImode, TCmode, and XCmode must be passed in memory.
@@ -17,7 +42,7 @@
 	MMX areguments and return values are passed in XMM registers).
 	(sse2_umulsidi3): Correct type and mode.
 
-2004-04-09  Richard Henderson  <rth@redhat.com>
+2004-07-09  Richard Henderson  <rth@redhat.com>
 
 	* tree-cfg.c (dump_cfg_stats): Fix 64-bit format mismatch errors.
 

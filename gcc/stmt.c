@@ -2308,16 +2308,6 @@ is_body_block (tree stmt)
   return 0;
 }
 
-/* True if we are currently emitting insns in an area of output code
-   that is controlled by a conditional expression.  This is used by
-   the cleanup handling code to generate conditional cleanup actions.  */
-
-int
-conditional_context (void)
-{
-  return block_stack && block_stack->data.block.conditional_code;
-}
-
 /* Return an opaque pointer to the current nesting level, so frontend code
    can check its own sanity.  */
 

@@ -159,12 +159,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 static int issue_rate;
 
-/* If the following variable value is nonzero, the scheduler inserts
-   bubbles (nop insns).  The value of variable affects on scheduler
-   behavior only if automaton pipeline interface with multipass
-   scheduling is used and hook dfa_bubble is defined.  */
-int insert_schedule_bubbles_p = 0;
-
 /* sched-verbose controls the amount of debugging output the
    scheduler prints.  It is controlled by -fsched-verbose=N:
    N>0 and no -DSR : the output is directed to stderr.
@@ -2462,69 +2456,6 @@ schedule_block (int b, int rgn_n_insns)
 	      else
 		{
 		  cost = state_transition (temp_state, insn);
-
-		  if (targetm.sched.first_cycle_multipass_dfa_lookahead
-		      && targetm.sched.dfa_bubble)
-		    {
-		      if (cost == 0)
-			{
-			  int j;
-			  rtx bubble;
-
-			  for (j = 0;
-			       (bubble = targetm.sched.dfa_bubble (j))
-				 != NULL_RTX;
-			       j++)
-			    {
-			      memcpy (temp_state, curr_state, dfa_state_size);
-
-			      if (state_transition (temp_state, bubble) < 0
-				  && state_transition (temp_state, insn) < 0)
-				break;
-			    }
-
-			  if (bubble != NULL_RTX)
-			    {
-			      if (insert_schedule_bubbles_p)
-				{
-				  rtx copy;
-
-				  copy = copy_rtx (PATTERN (bubble));
-				  emit_insn_after (copy, last_scheduled_insn);
-				  last_scheduled_insn
-				    = NEXT_INSN (last_scheduled_insn);
-				  INSN_CODE (last_scheduled_insn)
-				    = INSN_CODE (bubble);
-
-				  /* Annotate the same for the first insns
-				     scheduling by using mode.  */
-				  PUT_MODE (last_scheduled_insn,
-					    (clock_var > last_clock_var
-					     ? clock_var - last_clock_var
-					     : VOIDmode));
-				  last_clock_var = clock_var;
-
-				  if (sched_verbose >= 2)
-				    {
-				      fprintf (sched_dump,
-					       ";;\t\t--> scheduling bubble insn <<<%d>>>:reservation ",
-					       INSN_UID (last_scheduled_insn));
-
-				      if (recog_memoized (last_scheduled_insn)
-					  < 0)
-					fprintf (sched_dump, "nothing");
-				      else
-					print_reservation
-					  (sched_dump, last_scheduled_insn);
-
-				      fprintf (sched_dump, "\n");
-				    }
-				}
-			      cost = -1;
-			    }
-			}
-		    }
-
 		  if (cost < 0)
 		    cost = 0;
 		  else if (cost == 0)
@@ -2777,10 +2708,6 @@ sched_init (FILE *dump_file)
 
       if (targetm.sched.init_dfa_post_cycle_insn)
 	targetm.sched.init_dfa_post_cycle_insn ();
-
-      if (targetm.sched.first_cycle_multipass_dfa_lookahead
-	  && targetm.sched.init_dfa_bubbles)
-	targetm.sched.init_dfa_bubbles ();
 
       dfa_start ();
       dfa_state_size = state_size ();
