@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GNU C-Compiler
-   Copyright (C) 1987, 88, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-5, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -105,10 +105,6 @@ extern rtx cleanup_label;
    on machines which require execution of the epilogue on all returns.  */
 
 extern rtx return_label;
-
-/* List (chain of EXPR_LISTs) of pseudo-regs of SAVE_EXPRs.
-   So we can mark them all live at the end of the function, if nonopt.  */
-extern rtx save_expr_regs;
 
 /* Offset to end of allocated area of stack frame.
    If stack grows down, this is the address of the last stack slot allocated.
