@@ -14,6 +14,10 @@
 	code, type, op0, and op1 instead of t.
 	(fold_binary): Update a call to fold_range_test.
 
+	* fold-const.c (fold_binary_op_with_conditional_arg): Take
+	decomposed arguments code, type, op0, and op1 instead of t.
+	(fold_binary): Update a call to fold_range_test.
+
 2005-03-06  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* fold-const.c (fold_binary): Avoid directly using the original
