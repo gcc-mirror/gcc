@@ -1,3 +1,7 @@
+2004-07-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/compile/20040708-1.c: New test.
+
 2004-07-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c++/16276
