@@ -115,6 +115,11 @@ struct lang_type GTY(())
    been declared.  */
 #define C_DECL_DECLARED_BUILTIN(EXP) DECL_LANG_FLAG_4 (EXP)
 
+/* Record whether a decl was declared register.  This is strictly a
+   front-end flag, whereas DECL_REGISTER is used for code generation;
+   they may differ for structures with volatile fields.  */
+#define C_DECL_REGISTER(EXP) DECL_LANG_FLAG_5 (EXP)
+
 /* Nonzero for a decl which either doesn't exist or isn't a prototype.
    N.B. Could be simplified if all built-in decls had complete prototypes
    (but this is presently difficult because some of them need FILE*).  */

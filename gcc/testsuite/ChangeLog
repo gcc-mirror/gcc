@@ -1,3 +1,8 @@
+2004-03-28  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.dg/940409-1.c: Remove XFAIL.
+	* gcc.dg/reg-vol-struct-1.c: New test.
+
 2004-03-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-wctype-1.c: New test.

@@ -1,3 +1,18 @@
+2004-03-28  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-tree.h (C_DECL_REGISTER): New.
+	* c-aux-info.c (gen_decl), c-decl.c (objc_mark_locals_volatile,
+	finish_decl, grokdeclarator, get_parm_info), c-typeck.c
+	(build_array_ref, c_mark_addressable): Set and use it.
+	* c-decl.c (grokdeclarator), c-typeck.c (c_mark_addressable):
+	Allow structures with volatile fields to be declared register.
+	Don't check TREE_ADDRESSABLE before warning about taking address
+	of register.
+	* c-decl.c (finish_decl): Don't allow structures with volatile
+	fields to be placed in named register.
+	* doc/trouble.texi: Remove reference to structures with volatile
+	fields in registers.
+
 2004-03-27  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* function.c (thread_prologue_and_epilogue): Move

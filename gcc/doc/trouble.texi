@@ -1414,14 +1414,6 @@ order.  Either increment might happen first.  @code{func} might get the
 arguments @samp{2, 3}, or it might get @samp{3, 2}, or even @samp{2, 2}.
 
 @item
-Not allowing structures with volatile fields in registers.
-
-Strictly speaking, there is no prohibition in the ISO C standard
-against allowing structures with volatile fields in registers, but
-it does not seem to make any sense and is probably not what you wanted
-to do.  So the compiler will give an error message in this case.
-
-@item
 Making certain warnings into errors by default.
 
 Some ISO C testsuites report failure when the compiler does not produce
