@@ -613,8 +613,8 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 #if !defined (TARGET_TOC)
 	  emit_move_insn (reg, pic_ref);
 	  pic_ref = gen_rtx_MEM (GET_MODE (orig), reg);
-#endif
 	  MEM_READONLY_P (pic_ref) = 1;
+#endif
 	}
       else
 	{
