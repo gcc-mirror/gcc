@@ -20,4 +20,4 @@ void foo(int v)
    in the generated code, supposedly corresponding to the if-statements.
    It tries to check for jump_insn (set (pc) pattern, so that jump_insns
    corresponding to return are not taken into account.  */
-/* { dg-final { scan-assembler-times "(?n)jump_insn.*set.*pc" 2 } } */
+/* { dg-final { scan-assembler "jump_insn.*set \\(pc\\).*jump_insn.*set \\(pc\\)"} } */

@@ -1,3 +1,8 @@
+2003-10-20  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* gcc.dg/old-style-asm-1.c: Also check for (set (pc) on lines
+	following the jump_insn.
+
 2003-10-22  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/cast-lvalue-1.c: New test.
