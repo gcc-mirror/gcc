@@ -1,3 +1,8 @@
+2005-03-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/20527
+	* gcc.c-torture/execute/pr20527-1.c: New test.
+
 2005-03-22  Ben Elliston  <bje@au.ibm.com>
 
 	* gcc.misc-tests/options.exp (check_for_options): Create a real C
