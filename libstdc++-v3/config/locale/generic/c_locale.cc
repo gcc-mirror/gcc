@@ -120,7 +120,8 @@ namespace std
       if (!(__err & ios_base::failbit))
 	{
 	  // Assumes __s formatted for "C" locale.
-	  const char* __old = setlocale(LC_ALL, "C");
+	  char* __old = strdup(setlocale(LC_ALL, NULL));
+	  setlocale(LC_ALL, "C");
 	  char* __sanity;
 	  errno = 0;
 #if defined(_GLIBCPP_USE_C99)
@@ -147,6 +148,7 @@ namespace std
 	  else
 	    __err |= ios_base::failbit;
 	  setlocale(LC_ALL, __old);
+	  free(__old);
 	}
     }
 
@@ -158,7 +160,8 @@ namespace std
       if (!(__err & ios_base::failbit))
 	{
 	  // Assumes __s formatted for "C" locale.
-	  const char* __old = setlocale(LC_ALL, "C");
+	  char* __old = strdup(setlocale(LC_ALL, NULL));
+	  setlocale(LC_ALL, "C");
 	  char* __sanity;
 	  errno = 0;
 	  double __d = strtod(__s, &__sanity);
@@ -167,6 +170,7 @@ namespace std
 	  else
 	    __err |= ios_base::failbit;
 	  setlocale(LC_ALL, __old);
+	  free(__old);
 	}
     }
 
@@ -178,7 +182,8 @@ namespace std
       if (!(__err & ios_base::failbit))
 	{
 	  // Assumes __s formatted for "C" locale.
-	  const char* __old = setlocale(LC_ALL, "C");
+	  char* __old = strdup(setlocale(LC_ALL, NULL));
+	  setlocale(LC_ALL, "C");
 #if defined(_GLIBCPP_USE_C99)
 	  char* __sanity;
 	  errno = 0;
@@ -202,6 +207,7 @@ namespace std
 	  else
 	    __err |= ios_base::failbit;
 	  setlocale(LC_ALL, __old);
+	  free(__old);
 	}
     }
 

@@ -65,9 +65,11 @@
       __uselocale(__old);
       return _M_convert_from_char(__msg);
 #else
-      const char* __old = setlocale(LC_ALL, _M_name_messages);
+      char* __old = strdup(setlocale(LC_ALL, NULL));
+      setlocale(LC_ALL, _M_name_messages);
       char* __msg = gettext(_M_convert_to_char(__dfault));
       setlocale(LC_ALL, __old);
+      free(__old);
       return _M_convert_from_char(__msg);
 #endif
     }
