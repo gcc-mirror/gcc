@@ -598,19 +598,16 @@ doloop_modify_runtime (loop, iterations_max,
 
      If the loop has been unrolled, the full calculation is
 
-       t1 = abs_inc * unroll_number;		        increment per loop
-       n = (abs (final - initial) + abs_inc - 1) / t1;    full loops
-       n += (abs (final - initial) + abs_inc - 1) % t1) >= abs_inc;
-                                                          partial loop
-     which works out to be equivalent to
+       t1 = abs_inc * unroll_number;		increment per loop
+       n = abs (final - initial) / t1;		full loops
+       n += (abs (final - initial) % t1) != 0;	partial loop
 
-       n = (abs (final - initial) + t1 - 1) / t1;
-
-     In the case where the loop was preconditioned, a few iterations
-     may have been executed earlier; but 'initial' was adjusted as they
-     were executed, so we don't need anything special for that case here.
-     As above, when t1 is a power of two we don't need to worry about
-     overflow.
+     However, in certain cases the unrolled loop will be preconditioned
+     by emitting copies of the loop body with conditional branches,
+     so that the unrolled loop is always a full loop and thus needs
+     no exit tests.  In this case we don't want to add the partial
+     loop count.  As above, when t1 is a power of two we don't need to
+     worry about overflow.
 
      The division and modulo operations can be avoided by requiring
      that the increment is a power of 2 (precondition_loop_p enforces
@@ -685,10 +682,10 @@ doloop_modify_runtime (loop, iterations_max,
       if (shift_count < 0)
 	abort ();
 
-      /* (abs (final - initial) + abs_inc * unroll_number - 1) */
-      diff = expand_simple_binop (GET_MODE (diff), PLUS,
-				  diff, GEN_INT (abs_loop_inc - 1),
-				  diff, 1, OPTAB_LIB_WIDEN);
+      if (!loop_info->preconditioned)
+	diff = expand_simple_binop (GET_MODE (diff), PLUS,
+				    diff, GEN_INT (abs_loop_inc - 1),
+				    diff, 1, OPTAB_LIB_WIDEN);
 
       /* (abs (final - initial) + abs_inc * unroll_number - 1)
 	 / (abs_inc * unroll_number)  */

@@ -3278,13 +3278,6 @@ loop_invariant_p (loop, x)
 	  && REGNO (x) < FIRST_PSEUDO_REGISTER && call_used_regs[REGNO (x)])
 	return 0;
 
-      /* Out-of-range regs can occur when we are called from unrolling.
-	 These have always been created by the unroller and are set in
-	 the loop, hence are never invariant. */
-
-      if (REGNO (x) >= regs->num)
-	return 0;
-
       if (regs->array[REGNO (x)].set_in_loop < 0)
 	return 2;
 
