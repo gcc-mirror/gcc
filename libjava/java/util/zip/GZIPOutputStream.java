@@ -69,7 +69,7 @@ public class GZIPOutputStream extends DeflaterOutputStream
    */
   public GZIPOutputStream(OutputStream out) throws IOException
   {
-    this(out, 512);
+    this(out, 4096);
   }
 
   /**

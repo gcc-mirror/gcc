@@ -251,7 +251,7 @@ public class Inflater
    * @param buffer the input.
    * @exception IllegalStateException if no input is needed.
    */
-  public void setInput (byte[] buf)
+  public void setInput (byte[] buf) 
   {
     setInput (buf, 0, buf.length);
   }

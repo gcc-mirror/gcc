@@ -104,7 +104,7 @@ public class GZIPInputStream
   public GZIPInputStream(InputStream in)
     throws IOException
   {
-    this(in, 512);
+    this(in, 4096);
   }
 
   /**

@@ -1,5 +1,19 @@
 2004-07-30  Michael Koch  <konqueror@gmx.de>
 
+	* java/util/zip/GZIPInputStream.java
+	(GZIPInputStream): Increase buffer size to 4k.
+	* java/util/zip/GZIPOutputStream.java
+	(GZIPOutputStream): Likewise.
+	* java/util/zip/Inflater.java
+	(setInput): Merged formating with GNU classpath.
+	* java/util/zip/InflaterInputStream.java
+	(InflaterInputStream): Increase buffer size to 4k.
+	(fill): Throw exception if stream ends early.
+	(read): Merged endless-loop with GNU classpath.
+	(skip): Increase buffer size to 2k.
+
+2004-07-30  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/awt/EmbeddedWindow.java
 	(addNotify): Use AccessController to allow execution of privileged
 	code.
