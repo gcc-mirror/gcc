@@ -149,7 +149,7 @@ typedef struct rtx_def
      0 if the MEM was a variable or the result of a * operator in C;
      1 if it was the result of a . or -> operator (on a struct) in C.
      1 in a REG if the register is used only in exit code a loop.
-     1 in a SUBREG expression if was generated from a variable with a 
+     1 in a SUBREG expression if was generated from a variable with a
      promoted mode.
      1 in a CODE_LABEL if the label is used for nonlocal gotos
      and must not be deleted even if its count is zero.
@@ -163,7 +163,7 @@ typedef struct rtx_def
   unsigned int in_struct : 1;
   /* 1 if this rtx is used.  This is used for copying shared structure.
      See `unshare_all_rtl'.
-     In a REG, this is not needed for that purpose, and used instead 
+     In a REG, this is not needed for that purpose, and used instead
      in `leaf_renumber_regs_insn'.
      In a SYMBOL_REF, means that emit_library_call
      has used it as the function.  */
@@ -174,7 +174,7 @@ typedef struct rtx_def
   unsigned integrated : 1;
   /* 1 in an INSN or a SET if this rtx is related to the call frame,
      either changing how we compute the frame address or saving and
-     restoring registers in the prologue and epilogue.  
+     restoring registers in the prologue and epilogue.
      1 in a MEM if the MEM refers to a scalar, rather than a member of
      an aggregate.  */
   unsigned frame_related : 1;
@@ -398,101 +398,141 @@ extern void rtvec_check_failed_bounds PARAMS ((rtvec, int,
    clear, the insn should be executed only if the branch is not taken.  */
 #define INSN_FROM_TARGET_P(INSN) ((INSN)->in_struct)
 
-/* Holds a list of notes on what this insn does to various REGs.
-   It is a chain of EXPR_LIST rtx's, where the second operand
-   is the chain pointer and the first operand is the REG being described.
-   The mode field of the EXPR_LIST contains not a real machine mode
-   but a value that says what this note says about the REG:
-     REG_DEAD means that the value in REG dies in this insn (i.e., it is
-   not needed past this insn).  If REG is set in this insn, the REG_DEAD
-   note may, but need not, be omitted.
-     REG_INC means that the REG is autoincremented or autodecremented.
-     REG_EQUIV describes the insn as a whole; it says that the insn
-   sets a register to a constant value or to be equivalent to a memory
-   address.  If the register is spilled to the stack then the constant
-   value should be substituted for it.  The contents of the REG_EQUIV
-   is the constant value or memory address, which may be different
-   from the source of the SET although it has the same value.  A
-   REG_EQUIV note may also appear on an insn which copies a register
-   parameter to a pseudo-register, if there is a memory address which
-   could be used to hold that pseudo-register throughout the function.
-     REG_EQUAL is like REG_EQUIV except that the destination
-   is only momentarily equal to the specified rtx.  Therefore, it
-   cannot be used for substitution; but it can be used for cse.
-     REG_RETVAL means that this insn copies the return-value of
-   a library call out of the hard reg for return values.  This note
-   is actually an INSN_LIST and it points to the first insn involved
-   in setting up arguments for the call.  flow.c uses this to delete
-   the entire library call when its result is dead.
-     REG_LIBCALL is the inverse of REG_RETVAL: it goes on the first insn
-   of the library call and points at the one that has the REG_RETVAL.
-     REG_WAS_0 says that the register set in this insn held 0 before the insn.
-   The contents of the note is the insn that stored the 0.
-   If that insn is deleted or patched to a NOTE, the REG_WAS_0 is inoperative.
-   The REG_WAS_0 note is actually an INSN_LIST, not an EXPR_LIST.
-     REG_NONNEG means that the register is always nonnegative during
-   the containing loop.  This is used in branches so that decrement and
-   branch instructions terminating on zero can be matched.  There must be
-   an insn pattern in the md file named `decrement_and_branch_until_zero'
-   or else this will never be added to any instructions.
-     REG_NO_CONFLICT means there is no conflict *after this insn*
-   between the register in the note and the destination of this insn.
-     REG_UNUSED identifies a register set in this insn and never used.
-     REG_CC_SETTER and REG_CC_USER link a pair of insns that set and use
-   CC0, respectively.  Normally, these are required to be consecutive insns,
-   but we permit putting a cc0-setting insn in the delay slot of a branch
-   as long as only one copy of the insn exists.  In that case, these notes
-   point from one to the other to allow code generation to determine what
-   any require information and to properly update CC_STATUS.
-     REG_LABEL points to a CODE_LABEL.  Used by non-JUMP_INSNs to
-   say that the CODE_LABEL contained in the REG_LABEL note is used
-   by the insn.
-     REG_DEP_ANTI is used in LOG_LINKS which represent anti (write after read)
-   dependencies.  REG_DEP_OUTPUT is used in LOG_LINKS which represent output
-   (write after write) dependencies.  Data dependencies, which are the only
-   type of LOG_LINK created by flow, are represented by a 0 reg note kind.  */
-/*   REG_BR_PROB is attached to JUMP_INSNs and CALL_INSNs when the flag
-   -fbranch-probabilities is given.  It has an integer value.  For jumps,
-   it is the probability that this is a taken branch.  For calls, it is the
-   probability that this call won't return.
-     REG_EXEC_COUNT is attached to the first insn of each basic block, and
-   the first insn after each CALL_INSN.  It indicates how many times this
-   block was executed.
-     REG_SAVE_AREA is used to optimize rtl generated by dynamic stack
-   allocations for targets where SETJMP_VIA_SAVE_AREA is true.
-     REG_BR_PRED is attached to JUMP_INSNs only, it holds the branch prediction
-   flags computed by get_jump_flags() after dbr scheduling is complete.
-     REG_FRAME_RELATED_EXPR is attached to insns that are RTX_FRAME_RELATED_P,
-   but are too complex for DWARF to interpret what they imply.  The attached
-   rtx is used instead of intuition.
-     REG_EH_REGION is used to indicate what exception region an INSN
-   belongs in.  This can be used to indicate what region a call may throw
-   to. a REGION of 0 indicates that a call cannot throw at all.
-   a REGION  of -1 indicates that it cannot throw, nor will it execute
-   a non-local goto.
-     REG_EH_RETHROW is used to indicate that a call is actually a
-   call to rethrow, and specifies the rethrow symbol for the region 
-   the rethrow is targetting.  This provides a way to generate the 
-   non standard flow edges required for a rethrow.
-     REG_SAVE_NOTE is used by haifa-sched to save NOTE_INSN notes 
-   across scheduling.  */
-
-#define REG_NOTES(INSN)	XEXP(INSN, 6)
-
 #define ADDR_DIFF_VEC_FLAGS(RTX) X0ADVFLAGS(RTX, 4)
 
 #define CSELIB_VAL_PTR(RTX) X0CSELIB(RTX, 0)
 
+/* Holds a list of notes on what this insn does to various REGs.
+   It is a chain of EXPR_LIST rtx's, where the second operand is the
+   chain pointer and the first operand is the REG being described.
+   The mode field of the EXPR_LIST contains not a real machine mode
+   but a value from enum reg_note.  */
+
+#define REG_NOTES(INSN)	XEXP(INSN, 6)
+
 /* Don't forget to change reg_note_name in rtl.c.  */
-enum reg_note { REG_DEAD = 1, REG_INC = 2, REG_EQUIV = 3, REG_WAS_0 = 4,
-		REG_EQUAL = 5, REG_RETVAL = 6, REG_LIBCALL = 7,
-		REG_NONNEG = 8, REG_NO_CONFLICT = 9, REG_UNUSED = 10,
-		REG_CC_SETTER = 11, REG_CC_USER = 12, REG_LABEL = 13,
-		REG_DEP_ANTI = 14, REG_DEP_OUTPUT = 15, REG_BR_PROB = 16,
-		REG_EXEC_COUNT = 17, REG_NOALIAS = 18, REG_SAVE_AREA = 19,
-		REG_BR_PRED = 20, REG_EH_CONTEXT = 21,
-		REG_FRAME_RELATED_EXPR = 22, REG_EH_REGION = 23,
-		REG_EH_RETHROW = 24, REG_SAVE_NOTE = 25 };
+enum reg_note
+{
+  /* The value in REG dies in this insn (i.e., it is not needed past
+     this insn).  If REG is set in this insn, the REG_DEAD note may,
+     but need not, be omitted.  */
+  REG_DEAD = 1,
+
+  /* The REG is autoincremented or autodecremented.  */
+  REG_INC,
+
+  /* Describes the insn as a whole; it says that the insn sets a register
+     to a constant value or to be equivalent to a memory address.  If the
+     register is spilled to the stack then the constant value should be
+     substituted for it.  The contents of the REG_EQUIV is the constant
+     value or memory address, which may be different from the source of
+     the SET although it has the same value.  A REG_EQUIV note may also
+     appear on an insn which copies a register parameter to a pseudo-register,
+     if there is a memory address which could be used to hold that
+     pseudo-register throughout the function.  */
+   REG_EQUIV,
+
+  /* Like REG_EQUIV except that the destination is only momentarily equal
+     to the specified rtx.  Therefore, it cannot be used for substitution;
+     but it can be used for cse.  */
+  REG_EQUAL,
+
+  /* The register set in this insn held 0 before the insn.  The contents of
+     the note is the insn that stored the 0.  If that insn is deleted or
+     patched to a NOTE, the REG_WAS_0 is inoperative.  The REG_WAS_0 note
+     is actually an INSN_LIST, not an EXPR_LIST.  */
+  REG_WAS_0,
+
+  /* This insn copies the return-value of a library call out of the hard reg
+     for return values.  This note is actually an INSN_LIST and it points to
+     the first insn involved in setting up arguments for the call.  flow.c
+     uses this to delete the entire library call when its result is dead.  */
+  REG_RETVAL,
+
+  /* The inverse of REG_RETVAL: it goes on the first insn of the library call
+     and points at the one that has the REG_RETVAL.  */
+  REG_LIBCALL,
+
+  /* The register is always nonnegative during the containing loop.  This is
+     used in branches so that decrement and branch instructions terminating
+     on zero can be matched.  There must be an insn pattern in the md file
+     named `decrement_and_branch_until_zero' or else this will never be added
+     to any instructions.  */
+  REG_NONNEG,
+
+  /* There is no conflict *after this insn* between the register in the note
+     and the destination of this insn.  */
+  REG_NO_CONFLICT,
+
+  /* Identifies a register set in this insn and never used.  */
+  REG_UNUSED,
+
+  /* REG_CC_SETTER and REG_CC_USER link a pair of insns that set and use CC0,
+     respectively.  Normally, these are required to be consecutive insns, but
+     we permit putting a cc0-setting insn in the delay slot of a branch as
+     long as only one copy of the insn exists.  In that case, these notes
+     point from one to the other to allow code generation to determine what
+     any require information and to properly update CC_STATUS.  */
+  REG_CC_SETTER, REG_CC_USER,
+
+  /* Points to a CODE_LABEL.  Used by non-JUMP_INSNs to say that the
+     CODE_LABEL contained in the REG_LABEL note is used by the insn.  */
+  REG_LABEL,
+
+  /* REG_DEP_ANTI and REG_DEP_OUTPUT are used in LOG_LINKS to represent
+     write-after-read and write-after-write dependencies respectively.
+     Data dependencies, which are the only type of LOG_LINK created by
+     flow, are represented by a 0 reg note kind.  */
+  REG_DEP_ANTI, REG_DEP_OUTPUT,
+
+  /* REG_BR_PROB is attached to JUMP_INSNs and CALL_INSNs when the flag
+     -fbranch-probabilities is given.  It has an integer value.  For jumps,
+     it is the probability that this is a taken branch.  For calls, it is
+     the probability that this call won't return.  */
+  REG_BR_PROB,
+
+  /* REG_EXEC_COUNT is attached to the first insn of each basic block, and
+     the first insn after each CALL_INSN.  It indicates how many times this
+     block was executed.  */
+  REG_EXEC_COUNT,
+
+  /* Attached to a call insn; indicates that the call is malloc-like and
+     that the pointer returned cannot alias anything else.  */
+  REG_NOALIAS,
+
+  /* Used to optimize rtl generated by dynamic stack allocations for targets
+     where SETJMP_VIA_SAVE_AREA is true.  */
+  REG_SAVE_AREA,
+
+  /* Attached to JUMP_INSNs only, it holds the branch prediction flags
+     computed by get_jump_flags() after dbr scheduling is complete.  */
+  REG_BR_PRED,
+
+  /* Attached to insns that are RTX_FRAME_RELATED_P, but are too complex
+     for DWARF to interpret what they imply.  The attached rtx is used
+     instead of intuition.  */
+  REG_FRAME_RELATED_EXPR,
+
+  /* Indicates that REG holds the exception context for the function.
+     This context is shared by inline functions, so the code to acquire
+     the real exception context is delayed until after inlining.  */
+  REG_EH_CONTEXT,
+
+  /* Indicates what exception region an INSN belongs in.  This is used to
+     indicate what region to which a call may throw.  REGION 0 indicates
+     that a call cannot throw at all.  REGION -1 indicates that it cannot
+     throw, nor will it execute a non-local goto.  */
+  REG_EH_REGION,
+
+  /* Indicates that a call is actually a call to rethrow, and specifies the
+     rethrow symbol for the region the rethrow is targetting.  This provides
+     a way to generate the non standard flow edges required for a rethrow.  */
+  REG_EH_RETHROW,
+
+  /* Used by haifa-sched to save NOTE_INSN notes across scheduling.  */
+  REG_SAVE_NOTE
+};
+
 /* The base value for branch probability notes.  */
 #define REG_BR_PROB_BASE  10000
 
@@ -667,7 +707,7 @@ extern const char * const note_insn_name[];
 /* 1 if the REG contained in SUBREG_REG is already known to be
    sign- or zero-extended from the mode of the SUBREG to the mode of
    the reg.  SUBREG_PROMOTED_UNSIGNED_P gives the signedness of the
-   extension.  
+   extension.
 
    When used as a LHS, is means that this extension must be done
    when assigning to SUBREG_REG.  */
@@ -1211,7 +1251,7 @@ extern rtx const_true_rtx;
 
 extern rtx const_tiny_rtx[3][(int) MAX_MACHINE_MODE];
 
-/* Returns a constant 0 rtx in mode MODE.  Integer modes are treated the 
+/* Returns a constant 0 rtx in mode MODE.  Integer modes are treated the
    same as VOIDmode.  */
 
 #define CONST0_RTX(MODE) (const_tiny_rtx[0][(int) (MODE)])
@@ -1351,7 +1391,7 @@ extern rtx gen_rtx_MEM PARAMS ((enum machine_mode, rtx));
 /* This points to the Canonical Frame Address of the function.  This
    should corrospond to the CFA produced by INCOMING_FRAME_SP_OFFSET,
    but is calculated relative to the arg pointer for simplicity; the
-   frame pointer nor stack pointer are necessarily fixed relative to 
+   frame pointer nor stack pointer are necessarily fixed relative to
    the CFA until after reload.  */
 
 #define virtual_cfa_rtx			(global_rtl[GR_VIRTUAL_CFA])

@@ -188,7 +188,7 @@ const enum machine_mode class_narrowest_mode[(int) MAX_MODE_CLASS] = {
     /* MODE_COMPLEX_INT */	CQImode,
     /* MODE_COMPLEX_FLOAT */	QCmode
 };
-			
+
 
 /* Indexed by rtx code, gives a sequence of operand-types for
    rtx's of that code.  The sequence is a C string in which
@@ -228,34 +228,38 @@ const char * const rtx_format[] = {
    that rtx code.  See rtl.def for documentation on the defined classes.  */
 
 const char rtx_class[] = {
-#define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS)   CLASS, 
+#define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS)   CLASS,
 #include "rtl.def"		/* rtl expressions are defined here */
 #undef DEF_RTL_EXPR
 };
 
 /* Names for kinds of NOTEs and REG_NOTEs.  */
 
-const char * const note_insn_name[] = { 0       , "NOTE_INSN_DELETED",
-			   "NOTE_INSN_BLOCK_BEG", "NOTE_INSN_BLOCK_END",
-			   "NOTE_INSN_LOOP_BEG", "NOTE_INSN_LOOP_END",
-			   "NOTE_INSN_FUNCTION_END", "NOTE_INSN_SETJMP",
-			   "NOTE_INSN_LOOP_CONT", "NOTE_INSN_LOOP_VTOP",
-			   "NOTE_INSN_PROLOGUE_END", "NOTE_INSN_EPILOGUE_BEG",
-			   "NOTE_INSN_DELETED_LABEL", "NOTE_INSN_FUNCTION_BEG",
-			   "NOTE_INSN_EH_REGION_BEG", "NOTE_INSN_EH_REGION_END",
-			   "NOTE_REPEATED_LINE_NUMBER", "NOTE_INSN_RANGE_START",
-			   "NOTE_INSN_RANGE_END", "NOTE_INSN_LIVE",
-			   "NOTE_INSN_BASIC_BLOCK" };
+const char * const note_insn_name[] =
+{
+  0, "NOTE_INSN_DELETED",
+  "NOTE_INSN_BLOCK_BEG", "NOTE_INSN_BLOCK_END",
+  "NOTE_INSN_LOOP_BEG", "NOTE_INSN_LOOP_END",
+  "NOTE_INSN_FUNCTION_END", "NOTE_INSN_SETJMP",
+  "NOTE_INSN_LOOP_CONT", "NOTE_INSN_LOOP_VTOP",
+  "NOTE_INSN_PROLOGUE_END", "NOTE_INSN_EPILOGUE_BEG",
+  "NOTE_INSN_DELETED_LABEL", "NOTE_INSN_FUNCTION_BEG",
+  "NOTE_INSN_EH_REGION_BEG", "NOTE_INSN_EH_REGION_END",
+  "NOTE_REPEATED_LINE_NUMBER", "NOTE_INSN_RANGE_START",
+  "NOTE_INSN_RANGE_END", "NOTE_INSN_LIVE",
+  "NOTE_INSN_BASIC_BLOCK"
+};
 
-const char * const reg_note_name[] = { "", "REG_DEAD", "REG_INC", "REG_EQUIV", "REG_WAS_0",
-			  "REG_EQUAL", "REG_RETVAL", "REG_LIBCALL",
-			  "REG_NONNEG", "REG_NO_CONFLICT", "REG_UNUSED",
-			  "REG_CC_SETTER", "REG_CC_USER", "REG_LABEL",
-			  "REG_DEP_ANTI", "REG_DEP_OUTPUT", "REG_BR_PROB",
-			  "REG_EXEC_COUNT", "REG_NOALIAS", "REG_SAVE_AREA",
-			  "REG_BR_PRED", "REG_EH_CONTEXT",
-			  "REG_FRAME_RELATED_EXPR", "REG_EH_REGION",
-			  "REG_EH_RETHROW", "REG_SAVE_NOTE" };
+const char * const reg_note_name[] =
+{
+  "", "REG_DEAD", "REG_INC", "REG_EQUIV", "REG_EQUAL",
+  "REG_WAS_0", "REG_RETVAL", "REG_LIBCALL", "REG_NONNEG",
+  "REG_NO_CONFLICT", "REG_UNUSED", "REG_CC_SETTER", "REG_CC_USER",
+  "REG_LABEL", "REG_DEP_ANTI", "REG_DEP_OUTPUT", "REG_BR_PROB",
+  "REG_EXEC_COUNT", "REG_NOALIAS", "REG_SAVE_AREA", "REG_BR_PRED",
+  "REG_FRAME_RELATED_EXPR", "REG_EH_CONTEXT", "REG_EH_REGION",
+  "REG_EH_RETHROW", "REG_SAVE_NOTE"
+};
 
 static void fatal_with_file_and_line PARAMS ((FILE *, const char *, ...))
   ATTRIBUTE_PRINTF_2 ATTRIBUTE_NORETURN;
@@ -271,7 +275,7 @@ rtvec_alloc (n)
      int n;
 {
   rtvec rt;
- 
+
   if (ggc_p)
     rt = ggc_alloc_rtvec (n);
   else
@@ -311,7 +315,7 @@ rtx_alloc (code)
 
       /* This function is called more than any other in GCC, so we
 	 manipulate the obstack directly.
-       
+
 	 Even though rtx objects are word aligned, we may be sharing
 	 an obstack with tree nodes, which may have to be double-word
 	 aligned.  So align our length to the alignment mask in the
@@ -451,7 +455,7 @@ copy_rtx (orig)
 	case '0':
 	  /* These are left unchanged.  */
 	  break;
-	  
+
 	default:
 	  abort ();
 	}
@@ -498,7 +502,7 @@ copy_most_rtx (orig, may_share)
   copy->volatil = orig->volatil;
   copy->unchanging = orig->unchanging;
   copy->integrated = orig->integrated;
-  
+
   format_ptr = GET_RTX_FORMAT (GET_CODE (copy));
 
   for (i = 0; i < GET_RTX_LENGTH (GET_CODE (copy)); i++)
@@ -771,7 +775,7 @@ read_skip_spaces (infile)
 	  break;
 
 	case ';':
-	  do 
+	  do
 	    c = getc (infile);
 	  while (c != '\n' && c != EOF);
 	  read_rtx_lineno++;
@@ -783,7 +787,7 @@ read_skip_spaces (infile)
 	    c = getc (infile);
 	    if (c != '*')
 	      fatal_expected_char (infile, '*', c);
-	  
+
 	    prevc = 0;
 	    while ((c = getc (infile)) && c != EOF)
 	      {
@@ -977,7 +981,7 @@ read_rtx (infile)
 	    break;
  	  }
 	/* Now process the vector.  */
-  
+
       case 'E':
 	{
 	  register struct rtx_list *next_rtx, *rtx_list_link;
@@ -1088,7 +1092,7 @@ read_rtx (infile)
 #if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
 	tmp_wide = atol (tmp_char);
 #else
-	/* Prefer atoll over atoq, since the former is in the ISO C9X draft. 
+	/* Prefer atoll over atoq, since the former is in the ISO C9X draft.
 	   But prefer not to use our hand-rolled function above either.  */
 #if defined(HAVE_ATOLL) || !defined(HAVE_ATOQ)
 	tmp_wide = atoll (tmp_char);

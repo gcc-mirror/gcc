@@ -1,3 +1,10 @@
+2000-03-28  Richard Henderson  <rth@cygnus.com>
+
+	* rtl.h: Redistribute enum reg_note documentation. 
+	Kill trailing whitespace.
+	* rtl.c (reg_note_name): Adjust to match enum reg_note tweeks.
+	Kill trailing whitespace.
+
 2000-03-28  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppfiles.c (hash_IHASH): Just return i->hash.
