@@ -1897,11 +1897,15 @@ canon_hash (x, mode)
       /* This is like the general case, except that it only counts
 	 the integers representing the constant.  */
       hash += (unsigned) code + (unsigned) GET_MODE (x);
-      for (i = 2; i < GET_RTX_LENGTH (CONST_DOUBLE); i++)
-	{
-	  unsigned tem = XINT (x, i);
-	  hash += tem;
-	}
+      if (GET_MODE (x) != VOIDmode)
+	for (i = 2; i < GET_RTX_LENGTH (CONST_DOUBLE); i++)
+	  {
+	    unsigned tem = XINT (x, i);
+	    hash += tem;
+	  }
+      else
+	hash += ((unsigned) CONST_DOUBLE_LOW (x)
+		 + (unsigned) CONST_DOUBLE_HIGH (x));
       return hash;
 
       /* Assume there is only one rtx object for any given label.  */
