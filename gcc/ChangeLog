@@ -1,5 +1,13 @@
 2002-11-24  Jason Thorpe  <thorpej@wasabisystems.com>
 
+	* config/alpha/netbsd.h (CPP_SUBTARGET_SPEC): Just use
+	NETBSD_CPP_SPEC directly. 
+	(SUBTARGET_EXTRA_SPECS): Remove netbsd_cpp_spec.  Add
+	netbsd_endfile_spec.
+	(ENDFILE_SPEC): Use %(netbsd_endfile_spec).
+
+2002-11-24  Jason Thorpe  <thorpej@wasabisystems.com>
+
 	* config/netbsd-elf.h (STARTFILE_SPEC): Rename to
 	NETBSD_STARTFILE_SPEC.
 	(STARTFILE_SPEC): Redefine in terms of NETBSD_STARTFILE_SPEC.
