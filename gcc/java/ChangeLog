@@ -163,6 +163,15 @@ Fri Dec 10 16:13:48 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	java-tree.h: Ditto.
 	jcf-write.c: Ditto.	
 
+Wed Dec  8 15:33:26 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+        * expr.c (java_lang_expand_expr): Switch to permanent obstack
+        before calling expand_eh_region_start and expand_start_all_catch.
+        * except.c (expand_start_java_handler): Switch to permanent
+        obstack before calling expand_eh_region_start.
+        (expand_end_java_handler): Switch to permanent obstack before
+        calling expand_start_all_catch.
+
 1999-12-5  Anthony Green  <green@cygnus.com>
 
 	* decl.c (init_decl_processing): Mark throw_node as a noreturn

@@ -2024,9 +2024,13 @@ java_lang_expand_expr (exp, target, tmode, modifier)
       /* We expand a try[-catch] block */
 
       /* Expand the try block */
+      push_obstacks (&permanent_obstack, &permanent_obstack);
       expand_eh_region_start ();
+      pop_obstacks ();
       expand_expr_stmt (TREE_OPERAND (exp, 0));
+      push_obstacks (&permanent_obstack, &permanent_obstack);
       expand_start_all_catch ();
+      pop_obstacks ();
 
       /* Expand all catch clauses (EH handlers) */
       for (current = TREE_OPERAND (exp, 1); current; 
