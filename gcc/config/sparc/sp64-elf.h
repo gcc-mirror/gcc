@@ -55,6 +55,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_SPEC "\
 %{mint64:-D__INT_MAX__=9223372036854775807LL -D__LONG_MAX__=9223372036854775807LL} \
 %{mlong64:-D__LONG_MAX__=9223372036854775807LL} \
+%{mlittle-endian:-D__LITTLE_ENDIAN__} \
 "
 
 #undef MD_EXEC_PREFIX
@@ -63,12 +64,14 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_SPEC
 #define ASM_SPEC "\
 %{v:-V} -s %{fpic:-K PIC} %{fPIC:-K PIC} \
+%{mlittle-endian:-EL} \
 "
 
 /* This is taken from sol2.h.  */
 #undef LINK_SPEC
 #define LINK_SPEC "\
 %{v:-V} \
+%{mlittle-endian:-EL} \
 "
 
 /* We need something a little simpler for the embedded environment.
@@ -84,6 +87,18 @@ crtbegin.o%s \
 
 /* Use the default (for now).  */
 #undef LIB_SPEC
+
+/* V9 chips can handle either endianness.  */
+#undef SUBTARGET_SWITCHES
+#define SUBTARGET_SWITCHES \
+{"big-endian", -MASK_LITTLE_ENDIAN}, \
+{"little-endian", MASK_LITTLE_ENDIAN},
+
+#undef BYTES_BIG_ENDIAN
+#define BYTES_BIG_ENDIAN (! TARGET_LITTLE_ENDIAN)
+
+#undef WORDS_BIG_ENDIAN
+#define WORDS_BIG_ENDIAN (! TARGET_LITTLE_ENDIAN)
 
 /* Unfortunately, svr4.h redefines these so we have to restore them to
    their original values in sparc.h.  */
