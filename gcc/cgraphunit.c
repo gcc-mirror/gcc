@@ -41,12 +41,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #define INSNS_PER_CALL 10
 
-static void cgraph_expand_functions PARAMS ((void));
-static void cgraph_mark_functions_to_output PARAMS ((void));
-static void cgraph_expand_function PARAMS ((struct cgraph_node *));
-static tree record_call_1 PARAMS ((tree *, int *, void *));
-static void cgraph_mark_local_functions PARAMS ((void));
-static void cgraph_optimize_function PARAMS ((struct cgraph_node *));
+static void cgraph_expand_functions (void);
+static void cgraph_mark_functions_to_output (void);
+static void cgraph_expand_function (struct cgraph_node *);
+static tree record_call_1 (tree *, int *, void *);
+static void cgraph_mark_local_functions (void);
+static void cgraph_optimize_function (struct cgraph_node *);
 
 /* Statistics we collect about inlining algorithm.  */
 static int ncalls_inlined;
@@ -58,9 +58,7 @@ static int overall_insns;
    available - create cgraph edges for function calls via BODY.  */
 
 void
-cgraph_finalize_function (decl, body)
-     tree decl;
-     tree body ATTRIBUTE_UNUSED;
+cgraph_finalize_function (tree decl, tree body ATTRIBUTE_UNUSED)
 {
   struct cgraph_node *node = cgraph_node (decl);
 
@@ -92,10 +90,7 @@ cgraph_finalize_function (decl, body)
 
 /* Walk tree and record all calls.  Called via walk_tree.  */
 static tree
-record_call_1 (tp, walk_subtrees, data)
-     tree *tp;
-     int *walk_subtrees;
-     void *data;
+record_call_1 (tree *tp, int *walk_subtrees, void *data)
 {
   if (TREE_CODE (*tp) == VAR_DECL && TREE_STATIC (*tp))
     cgraph_varpool_mark_needed_node (cgraph_varpool_node (*tp));
@@ -115,7 +110,7 @@ record_call_1 (tp, walk_subtrees, data)
 	  if (DECL_BUILT_IN (decl))
 	    return NULL;
 	  cgraph_record_call (data, decl);
-	     
+
 	  /* When we see a function call, we don't want to look at the
 	     function reference in the ADDR_EXPR that is hanging from
 	     the CALL_EXPR we're examining here, because we would
@@ -133,9 +128,7 @@ record_call_1 (tp, walk_subtrees, data)
 /* Create cgraph edges for function calls inside BODY from DECL.  */
 
 void
-cgraph_create_edges (decl, body)
-     tree decl;
-     tree body;
+cgraph_create_edges (tree decl, tree body)
 {
   /* The nodes we're interested in are never shared, so walk
      the tree ignoring duplicates.  */
@@ -145,7 +138,7 @@ cgraph_create_edges (decl, body)
 /* Analyze the whole compilation unit once it is parsed completely.  */
 
 void
-cgraph_finalize_compilation_unit ()
+cgraph_finalize_compilation_unit (void)
 {
   struct cgraph_node *node;
   struct cgraph_edge *edge;
@@ -247,7 +240,7 @@ cgraph_finalize_compilation_unit ()
 /* Figure out what functions we want to assemble.  */
 
 static void
-cgraph_mark_functions_to_output ()
+cgraph_mark_functions_to_output (void)
 {
   struct cgraph_node *node;
 
@@ -277,8 +270,7 @@ cgraph_mark_functions_to_output ()
 /* Optimize the function before expansion.  */
 
 static void
-cgraph_optimize_function (node)
-     struct cgraph_node *node;
+cgraph_optimize_function (struct cgraph_node *node)
 {
   tree decl = node->decl;
 
@@ -298,8 +290,7 @@ cgraph_optimize_function (node)
 /* Expand function specified by NODE.  */
 
 static void
-cgraph_expand_function (node)
-     struct cgraph_node *node;
+cgraph_expand_function (struct cgraph_node *node)
 {
   tree decl = node->decl;
   struct cgraph_edge *e;
@@ -385,7 +376,7 @@ cgraph_postorder (struct cgraph_node **order)
 #define SET_INLINED_TIMES(node,times) ((node)->aux = (void *)(times))
 
 /* Return list of nodes we decided to inline NODE into, set their output
-   flag and compute INLINED_TIMES. 
+   flag and compute INLINED_TIMES.
 
    We do simple backtracing to get INLINED_TIMES right.  This should not be
    expensive as we limit the amount of inlining.  Alternatively we may first
@@ -485,7 +476,7 @@ cgraph_inlined_into (struct cgraph_node *node, struct cgraph_node **array)
 }
 
 /* Return list of nodes we decided to inline into NODE, set their output
-   flag and compute INLINED_TIMES. 
+   flag and compute INLINED_TIMES.
 
    This function is identical to cgraph_inlined_into with callers and callees
    nodes swapped.  */
@@ -584,8 +575,7 @@ cgraph_inlined_callees (struct cgraph_node *node, struct cgraph_node **array)
 /* Estimate size of the function after inlining WHAT into TO.  */
 
 static int
-cgraph_estimate_size_after_inlining (int times,
-				     struct cgraph_node *to,
+cgraph_estimate_size_after_inlining (int times, struct cgraph_node *to,
 				     struct cgraph_node *what)
 {
   return (what->global.insns - INSNS_PER_CALL) *times + to->global.insns;
@@ -627,8 +617,7 @@ cgraph_estimate_growth (struct cgraph_node *node)
    all nodes in INLINED array.  */
 
 static void
-cgraph_mark_inline (struct cgraph_node *to,
-		    struct cgraph_node *what,
+cgraph_mark_inline (struct cgraph_node *to, struct cgraph_node *what,
 		    struct cgraph_node **inlined, int ninlined,
 		    struct cgraph_node **inlined_callees,
 		    int ninlined_callees)
@@ -700,8 +689,7 @@ cgraph_mark_inline (struct cgraph_node *to,
    too large growth of function bodies.  */
 
 static bool
-cgraph_check_inline_limits (struct cgraph_node *to,
-			    struct cgraph_node *what,
+cgraph_check_inline_limits (struct cgraph_node *to, struct cgraph_node *what,
 			    struct cgraph_node **inlined, int ninlined)
 {
   int i;
@@ -757,14 +745,13 @@ cgraph_default_inline_p (struct cgraph_node *n)
 /* We use greedy algorithm for inlining of small functions:
    All inline candidates are put into prioritized heap based on estimated
    growth of the overall number of instructions and then update the estimates.
-   
+
    INLINED and INLINED_CALEES are just pointers to arrays large enought
    to be passed to cgraph_inlined_into and cgraph_inlined_callees.  */
 
 static void
 cgraph_decide_inlining_of_small_functions (struct cgraph_node **inlined,
-					   struct cgraph_node
-					   **inlined_callees)
+					   struct cgraph_node **inlined_callees)
 {
   int i;
   struct cgraph_node *node;
@@ -1037,8 +1024,8 @@ cgraph_inline_p (tree caller_decl, tree callee_decl)
      function body.  */
   return false;
 }
-/* Expand all functions that must be output. 
-  
+/* Expand all functions that must be output.
+
    Attempt to topologically sort the nodes so function is output when
    all called functions are already assembled to allow data to be
    propagated accross the callgraph.  Use a stack to get smaller distance
@@ -1048,7 +1035,7 @@ cgraph_inline_p (tree caller_decl, tree callee_decl)
    order).  */
 
 static void
-cgraph_expand_functions ()
+cgraph_expand_functions (void)
 {
   struct cgraph_node *node;
   struct cgraph_node **order =
@@ -1082,7 +1069,7 @@ cgraph_expand_functions ()
    as local.  */
 
 static void
-cgraph_mark_local_functions ()
+cgraph_mark_local_functions (void)
 {
   struct cgraph_node *node;
 
@@ -1105,7 +1092,7 @@ cgraph_mark_local_functions ()
 /* Perform simple optimizations based on callgraph.  */
 
 void
-cgraph_optimize ()
+cgraph_optimize (void)
 {
   timevar_push (TV_CGRAPHOPT);
   if (!quiet_flag)
