@@ -259,6 +259,64 @@ static rtx make_jump_insn_raw		PROTO((rtx));
 static rtx make_call_insn_raw		PROTO((rtx));
 static rtx find_line_note		PROTO((rtx));
 
+rtx
+gen_rtx_CONST_INT (mode, arg)
+     enum machine_mode mode;
+     HOST_WIDE_INT arg;
+{
+  if (arg >= - MAX_SAVED_CONST_INT && arg <= MAX_SAVED_CONST_INT)
+    return &const_int_rtx[arg + MAX_SAVED_CONST_INT];
+
+#if STORE_FLAG_VALUE != 1 && STORE_FLAG_VALUE != -1
+  if (const_true_rtx && arg == STORE_FLAG_VALUE)
+    return const_true_rtx;
+#endif
+
+  return gen_rtx_raw_CONST_INT (mode, arg);
+}
+
+rtx
+gen_rtx_REG (mode, regno)
+     enum machine_mode mode;
+     int regno;
+{
+  /* In case the MD file explicitly references the frame pointer, have
+     all such references point to the same frame pointer.  This is
+     used during frame pointer elimination to distinguish the explicit
+     references to these registers from pseudos that happened to be
+     assigned to them.
+
+     If we have eliminated the frame pointer or arg pointer, we will
+     be using it as a normal register, for example as a spill
+     register.  In such cases, we might be accessing it in a mode that
+     is not Pmode and therefore cannot use the pre-allocated rtx.
+
+     Also don't do this when we are making new REGs in reload, since
+     we don't want to get confused with the real pointers.  */
+
+  if (mode == Pmode && !reload_in_progress)
+    {
+      if (regno == FRAME_POINTER_REGNUM)
+	return frame_pointer_rtx;
+#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+      if (regno == HARD_FRAME_POINTER_REGNUM)
+	return hard_frame_pointer_rtx;
+#endif
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM && HARD_FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+      if (regno == ARG_POINTER_REGNUM)
+	return arg_pointer_rtx;
+#endif
+#ifdef RETURN_ADDRESS_POINTER_REGNUM
+      if (regno == RETURN_ADDRESS_POINTER_REGNUM)
+	return return_address_pointer_rtx;
+#endif
+      if (regno == STACK_POINTER_REGNUM)
+	return stack_pointer_rtx;
+    }
+
+  return gen_rtx_raw_REG (mode, regno);
+}
+
 /* rtx gen_rtx (code, mode, [element1, ..., elementn])
 **
 **	    This routine generates an RTX of the size specified by
@@ -306,67 +364,9 @@ gen_rtx VPROTO((enum rtx_code code, enum machine_mode mode, ...))
 #endif
 
   if (code == CONST_INT)
-    {
-      HOST_WIDE_INT arg = va_arg (p, HOST_WIDE_INT);
-
-      if (arg >= - MAX_SAVED_CONST_INT && arg <= MAX_SAVED_CONST_INT)
-	return &const_int_rtx[arg + MAX_SAVED_CONST_INT];
-
-#if STORE_FLAG_VALUE != 1 && STORE_FLAG_VALUE != -1
-      if (const_true_rtx && arg == STORE_FLAG_VALUE)
-	return const_true_rtx;
-#endif
-
-      rt_val = rtx_alloc (code);
-      INTVAL (rt_val) = arg;
-    }
+    rt_val = gen_rtx_CONST_INT (mode, va_arg (p, HOST_WIDE_INT));
   else if (code == REG)
-    {
-      int regno = va_arg (p, int);
-
-      /* In case the MD file explicitly references the frame pointer, have
-	 all such references point to the same frame pointer.  This is used
-	 during frame pointer elimination to distinguish the explicit
-	 references to these registers from pseudos that happened to be
-	 assigned to them.
-
-	 If we have eliminated the frame pointer or arg pointer, we will
-	 be using it as a normal register, for example as a spill register.
-	 In such cases, we might be accessing it in a mode that is not
-	 Pmode and therefore cannot use the pre-allocated rtx.
-
-	 Also don't do this when we are making new REGs in reload,
-	 since we don't want to get confused with the real pointers.  */
-
-      if (regno == FRAME_POINTER_REGNUM && mode == Pmode
-	  && ! reload_in_progress)
-	return frame_pointer_rtx;
-#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-      if (regno == HARD_FRAME_POINTER_REGNUM && mode == Pmode
-	  && ! reload_in_progress)
-	return hard_frame_pointer_rtx;
-#endif
-#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM && HARD_FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-      if (regno == ARG_POINTER_REGNUM && mode == Pmode
-	  && ! reload_in_progress)
-	return arg_pointer_rtx;
-#endif
-#ifdef RETURN_ADDRESS_POINTER_REGNUM
-      if (return_address_pointer_rtx && regno == RETURN_ADDRESS_POINTER_REGNUM
-	  && mode == Pmode && ! reload_in_progress)
-	return return_address_pointer_rtx;
-#endif
-      if (regno == STACK_POINTER_REGNUM && mode == Pmode
-	  && ! reload_in_progress)
-	return stack_pointer_rtx;
-      else
-	{
-	  rt_val = rtx_alloc (code);
-	  rt_val->mode = mode;
-	  REGNO (rt_val) = regno;
-	  return rt_val;
-	}
-    }
+    rt_val = gen_rtx_REG (mode, va_arg (p, int));
   else
     {
       rt_val = rtx_alloc (code);	/* Allocate the storage space.  */
@@ -517,7 +517,7 @@ gen_reg_rtx (mode)
 
       realpart = gen_reg_rtx (partmode);
       imagpart = gen_reg_rtx (partmode);
-      return gen_rtx (CONCAT, mode, realpart, imagpart);
+      return gen_rtx_CONCAT (mode, realpart, imagpart);
     }
 
   /* Make sure regno_pointer_flag and regno_reg_rtx are large
@@ -547,7 +547,7 @@ gen_reg_rtx (mode)
       regno_pointer_flag_length *= 2;
     }
 
-  val = gen_rtx (REG, mode, reg_rtx_no);
+  val = gen_rtx_raw_REG (mode, reg_rtx_no);
   regno_reg_rtx[reg_rtx_no++] = val;
   return val;
 }
@@ -659,14 +659,14 @@ gen_lowpart_common (mode, x)
       else if (GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (XEXP (x, 0))))
 	return gen_lowpart_common (mode, XEXP (x, 0));
       else if (GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (x)))
-	return gen_rtx (GET_CODE (x), mode, XEXP (x, 0));
+	return gen_rtx_fmt_e (GET_CODE (x), mode, XEXP (x, 0));
     }
   else if (GET_CODE (x) == SUBREG
 	   && (GET_MODE_SIZE (mode) <= UNITS_PER_WORD
 	       || GET_MODE_SIZE (mode) == GET_MODE_UNIT_SIZE (GET_MODE (x))))
     return (GET_MODE (SUBREG_REG (x)) == mode && SUBREG_WORD (x) == 0
 	    ? SUBREG_REG (x)
-	    : gen_rtx (SUBREG, mode, SUBREG_REG (x), SUBREG_WORD (x) + word));
+	    : gen_rtx_SUBREG (mode, SUBREG_REG (x), SUBREG_WORD (x) + word));
   else if (GET_CODE (x) == REG)
     {
       /* If the register is not valid for MODE, return 0.  If we don't
@@ -690,9 +690,9 @@ gen_lowpart_common (mode, x)
 	       && x != arg_pointer_rtx
 #endif
 	       && x != stack_pointer_rtx)
-	return gen_rtx (REG, mode, REGNO (x) + word);
+	return gen_rtx_REG (mode, REGNO (x) + word);
       else
-	return gen_rtx (SUBREG, mode, x, word);
+	return gen_rtx_SUBREG (mode, x, word);
     }
   /* If X is a CONST_INT or a CONST_DOUBLE, extract the appropriate bits
      from the low-order part of the constant.  */
@@ -984,8 +984,7 @@ gen_highpart (mode, x)
       && GET_MODE_CLASS (GET_MODE (x)) != MODE_FLOAT
 #endif
       )
-    return gen_rtx (CONST_INT, VOIDmode,
-		    CONST_DOUBLE_HIGH (x) & GET_MODE_MASK (mode));
+    return GEN_INT (CONST_DOUBLE_HIGH (x) & GET_MODE_MASK (mode));
   else if (GET_CODE (x) == CONST_INT)
     return const0_rtx;
   else if (GET_CODE (x) == MEM)
@@ -1038,9 +1037,9 @@ gen_highpart (mode, x)
 	  && x != arg_pointer_rtx
 #endif
 	  && x != stack_pointer_rtx)
-	return gen_rtx (REG, mode, REGNO (x) + word);
+	return gen_rtx_REG (mode, REGNO (x) + word);
       else
-	return gen_rtx (SUBREG, mode, x, word);
+	return gen_rtx_SUBREG (mode, x, word);
     }
   else
     abort ();
@@ -1131,12 +1130,12 @@ operand_subword (op, i, validate_address, mode)
 	       || op == arg_pointer_rtx
 #endif
 	       || op == stack_pointer_rtx)
-	return gen_rtx (SUBREG, word_mode, op, i);
+	return gen_rtx_SUBREG (word_mode, op, i);
       else
-	return gen_rtx (REG, word_mode, REGNO (op) + i);
+	return gen_rtx_REG (word_mode, REGNO (op) + i);
     }
   else if (GET_CODE (op) == SUBREG)
-    return gen_rtx (SUBREG, word_mode, SUBREG_REG (op), i + SUBREG_WORD (op));
+    return gen_rtx_SUBREG (word_mode, SUBREG_REG (op), i + SUBREG_WORD (op));
   else if (GET_CODE (op) == CONCAT)
     {
       int partwords = GET_MODE_UNIT_SIZE (GET_MODE (op)) / UNITS_PER_WORD;
@@ -1163,7 +1162,7 @@ operand_subword (op, i, validate_address, mode)
 	    addr = memory_address (word_mode, addr);
 	}
 
-      new = gen_rtx (MEM, word_mode, addr);
+      new = gen_rtx_MEM (word_mode, addr);
 
       MEM_VOLATILE_P (new) = MEM_VOLATILE_P (op);
       MEM_IN_STRUCT_P (new) = MEM_IN_STRUCT_P (op);
@@ -1397,8 +1396,7 @@ reverse_comparison (insn)
     }
   else
     {
-      rtx new = gen_rtx (COMPARE, VOIDmode,
-			 CONST0_RTX (GET_MODE (comp)), comp);
+      rtx new = gen_rtx_COMPARE (VOIDmode, CONST0_RTX (GET_MODE (comp)), comp);
       if (GET_CODE (body) == SET)
 	SET_SRC (body) = new;
       else
@@ -1439,7 +1437,7 @@ change_address (memref, mode, addr)
   if (rtx_equal_p (addr, XEXP (memref, 0)) && mode == GET_MODE (memref))
     return memref;
 
-  new = gen_rtx (MEM, mode, addr);
+  new = gen_rtx_MEM (mode, addr);
   MEM_VOLATILE_P (new) = MEM_VOLATILE_P (memref);
   RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (memref);
   MEM_IN_STRUCT_P (new) = MEM_IN_STRUCT_P (memref);
@@ -1454,9 +1452,10 @@ gen_label_rtx ()
   register rtx label;
 
   label = (output_bytecode
-	   ? gen_rtx (CODE_LABEL, VOIDmode, NULL, bc_get_bytecode_label ())
-	   : gen_rtx (CODE_LABEL, VOIDmode, 0, NULL_RTX,
-		      NULL_RTX, label_num++, NULL_PTR));
+	   ? gen_rtx_CODE_LABEL (VOIDmode, 0, bc_get_bytecode_label (),
+				 NULL_RTX, 0, NULL_PTR)
+	   : gen_rtx_CODE_LABEL (VOIDmode, 0, NULL_RTX,
+				 NULL_RTX, label_num++, NULL_PTR));
 
   LABEL_NUSES (label) = 0;
   return label;
@@ -1488,16 +1487,17 @@ gen_inline_header_rtx (first_insn, first_parm_insn, first_labelno,
      char *regno_align;
      rtvec parm_reg_stack_loc;
 {
-  rtx header = gen_rtx (INLINE_HEADER, VOIDmode,
-			cur_insn_uid++, NULL_RTX,
-			first_insn, first_parm_insn,
-			first_labelno, last_labelno,
-			max_parm_regnum, max_regnum, args_size, pops_args,
-			stack_slots, forced_labels, function_flags,
-			outgoing_args_size, original_arg_vector,
-			original_decl_initial,
-			regno_rtx, regno_flag, regno_align,
-			parm_reg_stack_loc);
+  rtx header = gen_rtx_INLINE_HEADER (VOIDmode,
+				      cur_insn_uid++, NULL_RTX,
+				      first_insn, first_parm_insn,
+				      first_labelno, last_labelno,
+				      max_parm_regnum, max_regnum, args_size,
+				      pops_args, stack_slots, forced_labels,
+				      function_flags, outgoing_args_size,
+				      original_arg_vector,
+				      original_decl_initial,
+				      regno_rtx, regno_flag, regno_align,
+				      parm_reg_stack_loc);
   return header;
 }
 
@@ -2092,9 +2092,8 @@ link_cc0_insns (insn)
   if (GET_CODE (user) == INSN && GET_CODE (PATTERN (user)) == SEQUENCE)
     user = XVECEXP (PATTERN (user), 0, 0);
 
-  REG_NOTES (user) = gen_rtx (INSN_LIST, REG_CC_SETTER, insn,
-			      REG_NOTES (user));
-  REG_NOTES (insn) = gen_rtx (INSN_LIST, REG_CC_USER, user, REG_NOTES (insn));
+  REG_NOTES (user) = gen_rtx_INSN_LIST (REG_CC_SETTER, insn, REG_NOTES (user));
+  REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_CC_USER, user, REG_NOTES (insn));
 }
 
 /* Return the next insn that uses CC0 after INSN, which is assumed to
@@ -3239,7 +3238,7 @@ gen_sequence ()
 	 cache it.  */
       push_obstacks_nochange ();
       rtl_in_saveable_obstack ();
-      result = gen_rtx (SEQUENCE, VOIDmode, rtvec_alloc (len));
+      result = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (len));
       pop_obstacks ();
     }
 
@@ -3376,7 +3375,7 @@ init_emit_once (line_numbers)
       && STORE_FLAG_VALUE <= MAX_SAVED_CONST_INT)
     const_true_rtx = &const_int_rtx[STORE_FLAG_VALUE + MAX_SAVED_CONST_INT];
   else
-    const_true_rtx = gen_rtx (CONST_INT, VOIDmode, STORE_FLAG_VALUE);
+    const_true_rtx = gen_rtx_CONST_INT (VOIDmode, STORE_FLAG_VALUE);
 
   dconst0 = REAL_VALUE_ATOF ("0", DFmode);
   dconst1 = REAL_VALUE_ATOF ("1", DFmode);
@@ -3441,14 +3440,14 @@ init_emit_once (line_numbers)
   PUT_MODE (virtual_outgoing_args_rtx, Pmode);
 
 #ifdef RETURN_ADDRESS_POINTER_REGNUM
-  return_address_pointer_rtx = gen_rtx (REG, Pmode,
-					RETURN_ADDRESS_POINTER_REGNUM);
+  return_address_pointer_rtx = gen_rtx_REG (Pmode,
+					    RETURN_ADDRESS_POINTER_REGNUM);
 #endif
 
 #ifdef STRUCT_VALUE
   struct_value_rtx = STRUCT_VALUE;
 #else
-  struct_value_rtx = gen_rtx (REG, Pmode, STRUCT_VALUE_REGNUM);
+  struct_value_rtx = gen_rtx_REG (Pmode, STRUCT_VALUE_REGNUM);
 #endif
 
 #ifdef STRUCT_VALUE_INCOMING
@@ -3456,18 +3455,18 @@ init_emit_once (line_numbers)
 #else
 #ifdef STRUCT_VALUE_INCOMING_REGNUM
   struct_value_incoming_rtx
-    = gen_rtx (REG, Pmode, STRUCT_VALUE_INCOMING_REGNUM);
+    = gen_rtx_REG (Pmode, STRUCT_VALUE_INCOMING_REGNUM);
 #else
   struct_value_incoming_rtx = struct_value_rtx;
 #endif
 #endif
 
 #ifdef STATIC_CHAIN_REGNUM
-  static_chain_rtx = gen_rtx (REG, Pmode, STATIC_CHAIN_REGNUM);
+  static_chain_rtx = gen_rtx_REG (Pmode, STATIC_CHAIN_REGNUM);
 
 #ifdef STATIC_CHAIN_INCOMING_REGNUM
   if (STATIC_CHAIN_INCOMING_REGNUM != STATIC_CHAIN_REGNUM)
-    static_chain_incoming_rtx = gen_rtx (REG, Pmode, STATIC_CHAIN_INCOMING_REGNUM);
+    static_chain_incoming_rtx = gen_rtx_REG (Pmode, STATIC_CHAIN_INCOMING_REGNUM);
   else
 #endif
     static_chain_incoming_rtx = static_chain_rtx;
@@ -3484,6 +3483,6 @@ init_emit_once (line_numbers)
 #endif
 
 #ifdef PIC_OFFSET_TABLE_REGNUM
-  pic_offset_table_rtx = gen_rtx (REG, Pmode, PIC_OFFSET_TABLE_REGNUM);
+  pic_offset_table_rtx = gen_rtx_REG (Pmode, PIC_OFFSET_TABLE_REGNUM);
 #endif
 }

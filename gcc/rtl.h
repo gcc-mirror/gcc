@@ -681,8 +681,6 @@ extern int ceil_log2			PROTO((unsigned HOST_WIDE_INT));
 extern rtx plus_constant_wide		 PROTO((rtx, HOST_WIDE_INT));
 extern rtx plus_constant_for_output_wide PROTO((rtx, HOST_WIDE_INT));
 
-#define GEN_INT(N) gen_rtx (CONST_INT, VOIDmode, (HOST_WIDE_INT) (N))
-
 struct bc_label;
 extern rtx bc_gen_rtx			PROTO ((char *, int,
 						struct bc_label *));
@@ -933,6 +931,22 @@ extern rtx struct_value_rtx;
 extern rtx struct_value_incoming_rtx;
 extern rtx static_chain_rtx;
 extern rtx static_chain_incoming_rtx;
+
+
+/* Include the RTL generation functions.  */
+
+#ifndef NO_GENRTL_H
+#include "genrtl.h"
+#endif
+
+/* There are two RTL codes that require special attention; the generation
+   functions included above do the raw handling.  */
+
+extern rtx gen_rtx_CONST_INT PROTO((enum machine_mode, HOST_WIDE_INT));
+extern rtx gen_rtx_REG PROTO((enum machine_mode, int));
+
+#define GEN_INT(N)  gen_rtx_CONST_INT (VOIDmode, (N))
+
 
 /* If HARD_FRAME_POINTER_REGNUM is defined, then a special dummy reg
    is used to represent the frame pointer.  This is because the
@@ -1376,4 +1390,3 @@ extern void init_alias_analysis		PROTO ((void));
 extern void end_alias_analysis		PROTO ((void));
 
 #endif /* _RTL_H */
-
