@@ -8243,7 +8243,7 @@
 			 (match_dup 0)
 			 (match_operand 4 "" "")))
    (clobber (reg:CC 24))]
-  "TARGET_ARM && reload_completed"
+  "TARGET_ARM && reload_completed && 0"
   [(set (match_dup 5) (match_dup 6))
    (cond_exec (match_dup 7)
 	      (set (match_dup 0) (match_dup 4)))]
@@ -8271,7 +8271,7 @@
 			 (match_operand 4 "" "")
 			 (match_dup 0)))
    (clobber (reg:CC 24))]
-  "TARGET_ARM && reload_completed"
+  "TARGET_ARM && reload_completed && 0"
   [(set (match_dup 5) (match_dup 6))
    (cond_exec (match_op_dup 1 [(match_dup 5) (const_int 0)])
 	      (set (match_dup 0) (match_dup 4)))]
@@ -8292,7 +8292,7 @@
 			 (match_operand 4 "" "")
 			 (match_operand 5 "" "")))
    (clobber (reg:CC 24))]
-  "TARGET_ARM && reload_completed"
+  "TARGET_ARM && reload_completed && 0"
   [(set (match_dup 6) (match_dup 7))
    (cond_exec (match_op_dup 1 [(match_dup 6) (const_int 0)])
 	      (set (match_dup 0) (match_dup 4)))
@@ -8322,7 +8322,7 @@
 			 (match_operand 4 "" "")
 			 (match_operand 5 "" "")))
    (clobber (reg:CC 24))]
-  "TARGET_ARM && reload_completed && 0"
+  "TARGET_ARM && reload_completed"
   [(set (match_dup 6) (match_dup 7))
    (set (match_dup 0) 
 	(if_then_else:SI (match_op_dup 1 [(match_dup 6) (const_int 0)])

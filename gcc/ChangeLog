@@ -1,5 +1,9 @@
 2000-08-15  Richard Earnshaw <rearnsha@arm.com>
 
+	* arm.md (splits generating cond_exec): Disable.
+
+2000-08-15  Richard Earnshaw <rearnsha@arm.com>
+
 	* arm/linux-elf.h (text_section): Delete declaration.
 
 2000-08-15  Richard Earnshaw <rearnsha@arm.com>
