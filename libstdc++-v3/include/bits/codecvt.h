@@ -1,6 +1,6 @@
 // Locale support (codecvt) -*- C++ -*-
 
-// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -66,10 +66,10 @@
     {
     public:
       // Types:
-      typedef codecvt_base::result			result;
-      typedef _InternT 					intern_type;
-      typedef _ExternT 					extern_type;
-      typedef _StateT  					state_type;
+      typedef codecvt_base::result	result;
+      typedef _InternT 			intern_type;
+      typedef _ExternT 			extern_type;
+      typedef _StateT  			state_type;
       
       // 22.2.1.5.1 codecvt members
       result
@@ -159,17 +159,17 @@
     {
     public:      
       // Types:
-      typedef codecvt_base::result			result;
-      typedef _InternT intern_type;
-      typedef _ExternT extern_type;
-      typedef _StateT  state_type;
+      typedef codecvt_base::result	result;
+      typedef _InternT 			intern_type;
+      typedef _ExternT 			extern_type;
+      typedef _StateT  			state_type;
 
-      // Data Members:
-      static locale::id id;
+    public:
+      static locale::id 		id;
 
       explicit 
       codecvt(size_t __refs = 0) 
-      : __codecvt_abstract_base<_InternT,_ExternT,_StateT> (__refs) { }
+      : __codecvt_abstract_base<_InternT, _ExternT, _StateT> (__refs) { }
 
     protected:
       virtual 
@@ -215,11 +215,11 @@
     {
     public:      
       // Types:
-      typedef char 	intern_type;
-      typedef char 	extern_type;
-      typedef mbstate_t state_type;
+      typedef char 			intern_type;
+      typedef char 			extern_type;
+      typedef mbstate_t 		state_type;
 
-      // Data Members:
+    public:
       static locale::id id;
 
       explicit 
@@ -267,12 +267,12 @@
     {
     public:
       // Types:
-      typedef wchar_t 	intern_type;
-      typedef char 	extern_type;
-      typedef mbstate_t state_type;
+      typedef wchar_t 			intern_type;
+      typedef char 			extern_type;
+      typedef mbstate_t 		state_type;
 
-      // Data Members:
-      static locale::id id;
+    public:
+      static locale::id 		id;
 
       explicit 
       codecvt(size_t __refs = 0);
@@ -320,8 +320,9 @@
     {
     public:
       explicit 
-      codecvt_byname(const char*, size_t __refs = 0) 
+      codecvt_byname(const char* __s, size_t __refs = 0) 
       : codecvt<_InternT, _ExternT, _StateT>(__refs) { }
+
     protected:
       virtual 
       ~codecvt_byname() { }

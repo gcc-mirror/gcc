@@ -847,7 +847,6 @@ namespace std
       : locale::facet(__refs)
       { _M_c_locale_collate = _S_c_locale; }
 
-      // Non-standard.
       explicit 
       collate(__c_locale __cloc, size_t __refs = 0) 
       : locale::facet(__refs)
