@@ -74,6 +74,13 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\t.skip %u\n", (SIZE))
 
+/* Use .uahalf/.uaword so packed structure members don't generate
+   assembler errors when using the native assembler.  */
+#undef ASM_SHORT
+#define ASM_SHORT ".uahalf"
+#undef ASM_LONG
+#define ASM_LONG ".uaword"
+
 /* This is how to output a definition of an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */
 
