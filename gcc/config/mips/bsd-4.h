@@ -19,15 +19,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define MIPS_BSD43
 
-#define CPP_PREDEFINES "-Dmips -Dunix -Dhost_mips -DMIPSEB -DR3000"
+#define CPP_PREDEFINES "-Dmips -Dunix -Dhost_mips -DMIPSEB -DR3000 -DSYSTYPE_BSD43"
+
+#define SYSTEM_INCLUDE_DIR "/bsd43/usr/include"
 
 #define CPP_SPEC "\
-%{!ansi:	%{!ZSYSV: -DSYSTYPE_BSD43} \
-		%{ZSYSV:  -DSYSTYPE_SYSV}} \
-%{!ZSYSV: -D__SYSTYPE_BSD43__} \
-%{ZSYSV:  -D__SYSTYPE_SYSV__} \
-%{!nostdinc:	%{!ZSYSV: -I/bsd43/usr/include} \
-		%{ZSYSV:  -I/sysv/usr/include}} \
 %{.cc:	-D__LANGUAGE_C_PLUS_PLUS -D_LANGUAGE_C_PLUS_PLUS} \
 %{.cxx:	-D__LANGUAGE_C_PLUS_PLUS -D_LANGUAGE_C_PLUS_PLUS} \
 %{.C:	-D__LANGUAGE_C_PLUS_PLUS -D_LANGUAGE_C_PLUS_PLUS} \
@@ -41,8 +37,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	%{EB} %{!EB: -EB} \
 	%{EL: %e-EL not supported} \
 	%{bestGnum} \
-	%{!ZSYSV: -systype /bsd43/} \
-	%{ZSYSV:  -systype /sysv/}}"
+	%{mips1} %{mips2} %{mips3} \
+	-systype /bsd43/ }"
 		    
 #define LIB_SPEC "%{p:-lprof1} %{pg:-lprof1} -lc"
 
