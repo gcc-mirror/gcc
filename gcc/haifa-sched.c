@@ -8205,21 +8205,37 @@ update_flow_info (notes, first, last, orig_insn)
 
       for (insn = first;; insn = NEXT_INSN (insn))
 	{
-	  set = single_set (insn);
-	  if (set)
+	  rtx pat;
+	  int i;
+
+	  /* I'm not sure if this can happen, but let's be safe.  */
+	  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+	    continue;
+
+	  pat = PATTERN (insn);
+	  i = GET_CODE (pat) == PARALLEL ? XVECLEN (pat, 0) : 0;
+	  set = pat;
+
+	  for (;;)
 	    {
-	      if (GET_CODE (SET_DEST (set)) == REG
-		  && REGNO (SET_DEST (set)) == REGNO (orig_dest))
+	      if (GET_CODE (set) == SET)
 		{
-		  found_orig_dest = 1;
-		  break;
+		  if (GET_CODE (SET_DEST (set)) == REG
+		      && REGNO (SET_DEST (set)) == REGNO (orig_dest))
+		    {
+		      found_orig_dest = 1;
+		      break;
+		    }
+		  else if (GET_CODE (SET_DEST (set)) == SUBREG
+			   && SUBREG_REG (SET_DEST (set)) == orig_dest)
+		    {
+		      found_split_dest = 1;
+		      break;
+		    }
 		}
-	      else if (GET_CODE (SET_DEST (set)) == SUBREG
-		       && SUBREG_REG (SET_DEST (set)) == orig_dest)
-		{
-		  found_split_dest = 1;
-		  break;
-		}
+	      if (--i < 0)
+		break;
+	      set = XVECEXP (pat, 0, i);
 	    }
 
 	  if (insn == last)

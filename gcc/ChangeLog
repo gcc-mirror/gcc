@@ -1,3 +1,9 @@
+Fri Sep  5 13:36:44 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sched.c (update_flow_info) When looking if to set found_split_dest
+	or found_orig_dest, look at all parts of a PARALLEL.
+	* haifa-sched.c (update_flow_info): Likewise.
+
 Fri Sep  5 10:08:44 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* v850: New directory for v850 port.
