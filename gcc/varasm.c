@@ -3754,7 +3754,8 @@ output_constructor (exp, size)
 	  while (next_offset < end_offset)
 	    {
 	      int this_time;
-	      int shift, value;
+	      int shift;
+	      HOST_WIDE_INT value;
 	      int next_byte = next_offset / BITS_PER_UNIT;
 	      int next_bit = next_offset % BITS_PER_UNIT;
 
