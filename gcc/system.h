@@ -26,7 +26,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* This is the location of the online document giving information how
    to report bugs. If you change this string, also check for strings
    not under control of the preprocessor.  */
-#define GCCBUGURL "<URL:http://www.gnu.org/software/gcc/bugs.html>"
+#define GCCBUGURL "<URL:http://gcc.gnu.org/bugs.html>"
 
 /* We must include stdarg.h/varargs.h before stdio.h.  */
 #ifdef ANSI_PROTOTYPES

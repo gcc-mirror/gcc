@@ -1,3 +1,8 @@
+2003-03-27  Janis Johnson  <janis187@us.ibm.com>
+
+	PR sw-bug/10234
+	* system.h (GCCBUGURL): Reference GCC web site.
+
 2003-03-26  Richard Henderson  <rth@redhat.com>
 
 	* cfgrtl.c (try_redirect_by_replacing_jump): Disable removing
