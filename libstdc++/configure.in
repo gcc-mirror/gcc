@@ -71,11 +71,12 @@ if [ "${shared}" = "yes" ]; then
     *-dec-osf*)		frags="${frags} dec-osf.ml";;
     *-*-freebsd2*)	;;
     *-*-freebsd*)	frags="${frags} freebsd.ml" ;;
-    *-*-gnu*)		frags="${frags} gnu.ml" ;;
     *-*-hpux*)		frags="${frags} hpux.ml" ;;
     *-*-irix[56]*)	frags="${frags} irix5.ml" ;;
     *-*-linux*aout*)	;;
     *-*-linux*)		frags="${frags} linux.ml" ;;
+    # This must come after *-*-linux*
+    *-*-gnu*)		frags="${frags} gnu.ml" ;;
     *-*-openbsd*)		frags="${frags} openbsd.ml" ;;
     *-*-sysv[45]*|*-*-udk*)	frags="${frags} elf.ml" ;;
     *-*-solaris*)	frags="${frags} sol2shm.ml" ;;
