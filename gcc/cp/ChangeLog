@@ -1,3 +1,8 @@
+2001-01-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* friend.c (make_friend_class): Make sure a templated class is
+	actually a template.
+
 2001-01-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl2.c (get_guard): Set linkage from guarded decl.
