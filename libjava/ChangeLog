@@ -1,3 +1,7 @@
+2000-04-20  Tom Tromey  <tromey@cygnus.com>
+
+	* jni.cc (_Jv_JNI_PopSystemFrame): Clear `env->ex'.
+
 2000-04-19  Tom Tromey  <tromey@cygnus.com>
 
 	* jni.cc (_Jv_JNI_FindClass): Use system class loader if class
