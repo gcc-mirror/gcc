@@ -2808,6 +2808,17 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 
       tree instance_ptr = *instance_ptrptr;
 
+      if (instance_ptr == error_mark_node
+	  && TREE_CODE (function) == PTRMEM_CST)
+	{
+	  /* Extracting the function address from a pmf is only
+	     allowed with -Wno-pmf-conversions. It only works for
+	     pmf constants. */
+	  e1 = build_addr_func (PTRMEM_CST_MEMBER (function));
+	  e1 = convert (TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (function)), e1);
+	  return e1;
+	}
+
       if (TREE_SIDE_EFFECTS (instance_ptr))
 	instance_ptr = save_expr (instance_ptr);
 
@@ -6425,25 +6436,28 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
      cv-unqualified type of the left operand.  */
   if (!can_convert_arg (type, rhstype, rhs))
     {
-      /* When -Wno-pmf-converions is use, we just silently allow
+      /* When -Wno-pmf-conversions is use, we just silently allow
 	 conversions from pointers-to-members to plain pointers.  If
 	 the conversion doesn't work, cp_convert will complain.  */
       if (!warn_pmf2ptr 
 	  && TYPE_PTR_P (type) 
 	  && TYPE_PTRMEMFUNC_P (rhstype))
 	rhs = cp_convert (strip_top_quals (type), rhs);
-      /* If the right-hand side has unknown type, then it is an
-	 overloaded function.  Call instantiate_type to get error
-	 messages.  */
-      else if (rhstype == unknown_type_node)
-	instantiate_type (type, rhs, 1);
-      else if (fndecl)
-	cp_error ("cannot convert `%T' to `%T' for argument `%P' to `%D'",
-		  rhstype, type, parmnum, fndecl);
-      else
-	cp_error ("cannot convert `%T' to `%T' in %s", rhstype, type, 
-		  errtype);
-      return error_mark_node;
+      else 
+	{
+	  /* If the right-hand side has unknown type, then it is an
+	     overloaded function.  Call instantiate_type to get error
+	     messages.  */
+	  if (rhstype == unknown_type_node)
+	    instantiate_type (type, rhs, 1);
+	  else if (fndecl)
+	    cp_error ("cannot convert `%T' to `%T' for argument `%P' to `%D'",
+		      rhstype, type, parmnum, fndecl);
+	  else
+	    cp_error ("cannot convert `%T' to `%T' in %s", rhstype, type, 
+		      errtype);
+	  return error_mark_node;
+	}
     }
   return perform_implicit_conversion (strip_top_quals (type), rhs);
 }

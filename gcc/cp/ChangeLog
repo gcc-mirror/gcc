@@ -1,3 +1,10 @@
+1999-09-21  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* typeck.c (get_member_function_from_ptrfunc): Allow extraction of
+	function pointer from pmfs with no object given.
+	(convert_for_assignment): Do not return error when converting
+	pmfs.
+
 1999-09-21  Alex Samuel  <samuel@codesourcery.com>
 
 	* lex.c (internal_filename): New variable.
