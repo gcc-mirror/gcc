@@ -1972,14 +1972,16 @@ c_build_type_variant (type, constp, volatilep)
 {
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
-      tree real_main_variant = TYPE_MAIN_VARIANT (type);
-
       push_obstacks (TYPE_OBSTACK (type), TYPE_OBSTACK (type));
       type = build_array_type (c_build_type_variant (TREE_TYPE (type),
 						     constp, volatilep),
 			       TYPE_DOMAIN (type));
-      TYPE_MAIN_VARIANT (type) = real_main_variant;
       pop_obstacks ();
+
+      /* If the old TYPE had variants, we lose them here.  However,
+	 since the new TYPE can be in the permanent obstack and the
+	 old one may not be, preserving this chain would cause permanent
+	 objects to point to non-permanent ones.  */
     }
   return build_type_variant (type, constp, volatilep);
 }
