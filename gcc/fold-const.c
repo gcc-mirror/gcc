@@ -3287,7 +3287,7 @@ fold (expr)
 					     &low, &high);
 		  t = build_int_2 (low, high);
 		  TREE_TYPE (t) = type;
-		  force_fit_type (t, overflow);
+		  force_fit_type (t);
 		}
 	    }
 	  else if (TREE_CODE (arg0) == REAL_CST)
