@@ -1,3 +1,8 @@
+2004-01-09  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR target/13380.
+	* gcc.c-torture/compile/20040109-1.c: New.
+
 2004-01-08  Stuart Hastings  <stuart@apple.com>
 
 	* testsuite/gcc.dg/20020523-2.c (bail_if_no_sse): Moved cpu-ID code...
