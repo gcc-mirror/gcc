@@ -1000,6 +1000,8 @@ extern int inequality_comparison_p	PROTO((rtx));
 extern rtx replace_rtx			PROTO((rtx, rtx, rtx));
 extern rtx replace_regs			PROTO((rtx, rtx *, int, int));
 extern int computed_jump_p		PROTO((rtx));
+typedef int (*rtx_function)             PROTO((rtx *, void *));
+extern int for_each_rtx                 PROTO((rtx *, rtx_function, void *));
 
 /* Maximum number of parallel sets and clobbers in any insn in this fn.
    Always at least 3, since the combiner could put that many togetherm
