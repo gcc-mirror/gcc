@@ -6,7 +6,7 @@
 #ifndef __GNUC_VA_LIST
 #define __GNUC_VA_LIST
 
-#ifdef __sparc_v9__
+#ifdef __arch64__
 typedef long long __va_greg;
 typedef double __va_freg;
 typedef struct {
@@ -26,7 +26,7 @@ typedef char * __gnuc_va_list;
    i.e., we have to pass a `va_list' to vsprintf.  */
 typedef void * __gnuc_va_list;
 #endif
-#endif /* not __sparc_v9__ */
+#endif /* not __arch64__ */
 #endif /* not __GNUC_VA_LIST */
 
 /* If this is for internal libc use, don't define anything but
@@ -35,7 +35,7 @@ typedef void * __gnuc_va_list;
 
 #ifdef _STDARG_H
 
-#ifdef __sparc_v9__
+#ifdef __arch64__
 #define va_start(AP, LASTARG) \
 __extension__ \
   ({ \
@@ -57,14 +57,14 @@ __extension__ \
 #define va_start(AP, LASTARG)					\
   (__builtin_saveregs (), AP = ((char *) __builtin_next_arg (LASTARG)))
 #endif
-#endif /* not __sparc_v9__ */
+#endif /* not __arch64__ */
 
 #else
 
 #define va_alist  __builtin_va_alist
 #define va_dcl    int __builtin_va_alist;...
 
-#ifdef __sparc_v9__
+#ifdef __arch64__
 #define va_start(AP) \
 __extension__ \
   ({ \
@@ -84,7 +84,7 @@ __extension__ \
 #define va_start(AP) 						\
  (__builtin_saveregs (), (AP) = ((char *) &__builtin_va_alist))
 #endif
-#endif /* not __sparc_v9__ */
+#endif /* not __arch64__ */
 
 #endif
 
@@ -129,7 +129,7 @@ enum __va_type_classes {
    in the stack are made to be word-aligned; for an aggregate that is
    not word-aligned, we advance the pointer to the first non-reg slot.  */
 
-#ifdef __sparc_v9__
+#ifdef __arch64__
 
 #define va_arg(pvar,TYPE)					\
 __extension__							\
@@ -173,7 +173,7 @@ __extension__							\
     }								\
   (TYPE *) __result;}))
 
-#else /* not __sparc_v9__ */
+#else /* not __arch64__ */
 
 #define __va_rounded_size(TYPE)  \
   (((sizeof (TYPE) + sizeof (int) - 1) / sizeof (int)) * sizeof (int))
@@ -198,6 +198,6 @@ __extension__							\
 	 (TYPE *) (void *) __u.__d; })				\
     : ((pvar) = (char *)(pvar) + __va_rounded_size (TYPE),	\
        ((TYPE *) (void *) ((char *)(pvar) - __va_rounded_size (TYPE)))));}))
-#endif /* not __sparc_v9__ */
+#endif /* not __arch64__ */
 
 #endif /* defined (_STDARG_H) || defined (_VARARGS_H) */
