@@ -1,3 +1,15 @@
+Wed Jan  3 00:49:10 2001  Ovidiu Predescu  <ovidiu@cup.hp.com>
+
+	* sendmsg.c: Added __objc_msg_forward, a hook that allows external
+	libraries to provide a function that returns the real forwarding
+	function. This can alleviate problems __builtin_apply() and
+	friends have on various platforms. (Solution suggested by Helge
+	Hess.)
+	
+	* objc/objc-api.h: Define __objc_msg_forward.
+
+	* sendmsg.c: Define gen_rtx_REG.
+
 2000-12-06      Ralf Corsepius <corsepiu@faw.uni-ulm.de>
 
 	* thr-rtems.c: New file. Stub to compile. 
