@@ -23,6 +23,10 @@ Sat Jan 17 21:24:16 1998  David T. McWherter <dtm@waterw.com>
 
 Sat Jan 17 21:16:19 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* loop.c (find_and_verify_loops): When attempting to move insns from
+	inside the loop outside the loop, create a BARRIER if no suitable
+	one was found.
+
 	* jump.c (jump_optimize): Remove Dec 17, 1997 chance in
 	favor of an equivalent change from gcc-2.8.
 
