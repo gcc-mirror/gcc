@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on intel 80960.
-   Copyright (C) 1992, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1995, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
    Contributed by Steven McGeady, Intel Corp.
    Additional Work by Glenn Colon-Bonet, Jonathan Shapiro, Andy Wilson
    Converted to GCC 2.0 by Jim Wilson and Michael Tiemann, Cygnus Support.
@@ -1196,7 +1196,7 @@ i960_function_name_declare (file, name, fndecl)
       assemble_name (file, name);
       fprintf (file, ",%s.lf\n", (name[0] == '*' ? &name[1] : name));
       ASM_OUTPUT_LABEL (file, name);
-      fprintf (file, "\tlda    LR%d,g14\n", ret_label);
+      fprintf (file, "\tlda    Li960R%d,g14\n", ret_label);
       fprintf (file, "%s.lf:\n", (name[0] == '*' ? &name[1] : name));
       fprintf (file, "\tmov    g14,g%d\n", i960_leaf_ret_reg);
 
@@ -1581,7 +1581,7 @@ i960_function_epilogue (file, size)
 {
   if (i960_leaf_ret_reg >= 0)
     {
-      fprintf (file, "LR%d:	ret\n", ret_label);
+      fprintf (file, "Li960R%d:	ret\n", ret_label);
       return;
     }
 
@@ -1611,11 +1611,11 @@ i960_function_epilogue (file, size)
 	    }
 	  break;
 	}
-      fprintf (file, "LR%d:	ret\n", ret_label);
+      fprintf (file, "Li960R%d:	ret\n", ret_label);
       return;
     }
 
-  fprintf (file, "LR%d:\n", ret_label);
+  fprintf (file, "Li960R%d:\n", ret_label);
 
   fprintf (file, "\t#EPILOGUE#\n");
 
@@ -1700,7 +1700,7 @@ i960_output_ret_insn (insn)
       if (! TARGET_CODE_ALIGN && next_real_insn (insn) == 0)
 	return "";
 
-      sprintf (lbuf, "b	LR%d", ret_label);
+      sprintf (lbuf, "b	Li960R%d", ret_label);
       return lbuf;
     }
 
