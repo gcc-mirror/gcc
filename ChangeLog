@@ -1,3 +1,7 @@
+2004-11-11  Paul Brook  <paul@codesourcery.com>
+
+	* MAINTAINERS: Add self as arm maintainer.  Update email address.
+
 2004-11-08  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* configure.in (noconfigdirs) [mmix-*-*]: Disable

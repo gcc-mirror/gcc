@@ -39,6 +39,7 @@ Jim Wilson					wilson@specifixinc.com
 alpha port		Richard Henderson	rth@redhat.com
 arm port		Nick Clifton		nickc@redhat.com
 arm port		Richard Earnshaw	rearnsha@arm.com
+arm port		Paul Brook		paul@codesourcery.com
 avr port		Denis Chertykov		denisc@overta.ru
 avr port		Marek Michalkiewicz	marekm@amelek.gda.pl
 c4x port		Michael Hayes		m.hayes@elec.canterbury.ac.nz
@@ -109,7 +110,7 @@ Ada front end		Robert Dewar		dewar@gnat.com
 Ada front end		Arnaud Charlet		charlet@act-europe.fr
 fortran			Richard Henderson	rth@redhat.com
 fortran			Toon Moene		toon@moene.indiv.nluug.nl
-fortran 95		Paul Brook		paul@nowt.org
+fortran 95		Paul Brook		paul@codesourcery.com
 fortran 95		Steven Bosscher		stevenb@suse.de
 fortran 95		Toon Moene		toon@moene.indiv.nluug.nl
 c++			Jason Merrill		jason@redhat.com
