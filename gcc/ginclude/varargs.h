@@ -58,17 +58,24 @@
 /* The ... causes current_function_varargs to be set in cc1.  */
 #define va_dcl    int __builtin_va_alist; __va_ellipsis
 
+#ifdef _HIDDEN_VA_LIST  /* On OSF1, this means varargs.h is "half-loaded".  */
+#undef _VA_LIST
+#endif
+
 /* The macro _VA_LIST_ is the same thing used by this file in Ultrix.  */
-#ifndef _VA_LIST_
+/* But in 4.3bsd-net2, _VA_LIST_ has another meaning.  So ignore it.  */
+#if !defined (_VA_LIST_) || defined (_ANSI_H)
 /* The macro _VA_LIST is used in SCO Unix 3.2.  */
 #ifndef _VA_LIST
+#ifndef _VA_LIST_
 #define _VA_LIST_
+#endif
 #define _VA_LIST
 /* Make this a macro rather than a typedef, so we can undef any other defn.  */
 #define va_list __va___list
 typedef char * __va___list;
 #endif /* _VA_LIST */
-#endif /* _VA_LIST_ */
+#endif /* !defined (_VA_LIST_) || defined (_ANSI_H) */
 
 #define va_start(AP)  AP=(char *) &__builtin_va_alist
 
