@@ -1,3 +1,0 @@
-#ifndef _CPP_STACK
-#include <bits/std_stack.h>
-#endif

@@ -1,3 +1,0 @@
-#ifndef _CPP_CSTDLIB
-#include <bits/std_cstdlib.h>
-#endif

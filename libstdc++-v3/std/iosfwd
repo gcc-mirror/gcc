@@ -1,3 +1,0 @@
-#ifndef _CPP_IOSFWD
-#include <bits/std_iosfwd.h>
-#endif

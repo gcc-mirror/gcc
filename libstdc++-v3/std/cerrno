@@ -1,3 +1,0 @@
-#ifndef _CPP_CERRNO
-#include <bits/std_cerrno.h>
-#endif

@@ -1,3 +1,0 @@
-#ifndef _CPP_CCTYPE
-#include <bits/std_cctype.h>
-#endif

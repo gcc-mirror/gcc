@@ -1,3 +1,0 @@
-#ifndef _CPP_SET
-#include <bits/std_set.h>
-#endif

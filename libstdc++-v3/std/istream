@@ -1,3 +1,0 @@
-#ifndef _CPP_ISTREAM
-#include <bits/std_istream.h>
-#endif

@@ -1,3 +1,0 @@
-#ifndef _CPP_EXCEPTION
-#include <bits/std_exception.h>
-#endif

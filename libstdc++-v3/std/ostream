@@ -1,3 +1,0 @@
-#ifndef _CPP_OSTREAM
-#include <bits/std_ostream.h>
-#endif
