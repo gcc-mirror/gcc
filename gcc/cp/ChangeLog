@@ -1,5 +1,10 @@
 Mon Feb  2 11:24:22 1998  Mark Mitchell  <mmitchell@usa.net>
 
+	* parse.y (primary): Deal with statement-expressions in
+	templates. 
+	* pt.c (tsubst_copy): Handle BIND_EXPR.
+	* tree.c (mapcar): Likewise.
+
 	* call.c (add_template_candidate_real): Pass extra parameter to
 	fn_type_unification. 
 	* cp-tree.h (fn_type_unification): Add parameter.

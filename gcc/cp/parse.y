@@ -1434,20 +1434,33 @@ primary:
 		      YYERROR;
 		    }
 		  keep_next_level ();
-		  $<ttype>$ = expand_start_stmt_expr (); }
+		  if (!processing_template_decl)
+		    $<ttype>$ = expand_start_stmt_expr (); 
+		  else
+		    $<ttype>$ = NULL_TREE;
+		}
 	  compstmt ')'
 		{ tree rtl_exp;
 		  if (pedantic)
 		    pedwarn ("ANSI C++ forbids braced-groups within expressions");
-		  rtl_exp = expand_end_stmt_expr ($<ttype>2);
-		  /* The statements have side effects, so the group does.  */
-		  TREE_SIDE_EFFECTS (rtl_exp) = 1;
+		  if (!processing_template_decl)
+		    {
+		      rtl_exp = expand_end_stmt_expr ($<ttype>2);
+		      /* The statements have side effects, so the
+			 group does.  */ 
+		      TREE_SIDE_EFFECTS (rtl_exp) = 1;
+		    }
 
 		  if (TREE_CODE ($3) == BLOCK)
 		    {
 		      /* Make a BIND_EXPR for the BLOCK already made.  */
-		      $$ = build (BIND_EXPR, TREE_TYPE (rtl_exp),
-				  NULL_TREE, rtl_exp, $3);
+		      if (processing_template_decl)
+			$$ = build (BIND_EXPR, NULL_TREE,
+				    NULL_TREE, last_tree, $3);
+		      else
+			$$ = build (BIND_EXPR, TREE_TYPE (rtl_exp),
+				    NULL_TREE, rtl_exp, $3);
+
 		      /* Remove the block from the tree at this point.
 			 It gets put back at the proper place
 			 when the BIND_EXPR is expanded.  */

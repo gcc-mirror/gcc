@@ -4121,12 +4121,33 @@ tsubst_copy (t, args, nargs, in_decl)
 	   NULL_TREE);
       }
 
+    case BIND_EXPR:
     case COND_EXPR:
     case MODOP_EXPR:
-      return build_nt
-	(code, tsubst_copy (TREE_OPERAND (t, 0), args, nargs, in_decl),
-	 tsubst_copy (TREE_OPERAND (t, 1), args, nargs, in_decl),
-	 tsubst_copy (TREE_OPERAND (t, 2), args, nargs, in_decl));
+      {
+	tree r = build_nt
+	  (code, tsubst_copy (TREE_OPERAND (t, 0), args, nargs, in_decl),
+	   tsubst_copy (TREE_OPERAND (t, 1), args, nargs, in_decl),
+	   tsubst_copy (TREE_OPERAND (t, 2), args, nargs, in_decl));
+
+	if (code == BIND_EXPR && !processing_template_decl)
+	  {
+	    /* This processing  should really occur in tsubst_expr,
+	       However, tsubst_expr does not recurse into expressions,
+	       since it assumes that there aren't any statements
+	       inside them.  Instead, it simply calls
+	       build_expr_from_tree.  So, we need to expand the
+	       BIND_EXPR here.  */ 
+	    tree rtl_exp = expand_start_stmt_expr();
+	    tsubst_expr (TREE_OPERAND (r, 1), args, nargs, in_decl);
+	    rtl_exp = expand_end_stmt_expr (rtl_exp);
+	    TREE_SIDE_EFFECTS (rtl_exp) = 1;
+	    return build (BIND_EXPR, TREE_TYPE (rtl_exp), 
+			  NULL_TREE, rtl_exp, TREE_OPERAND (r, 2));
+	  }
+
+	return r;
+      }
 
     case NEW_EXPR:
       {
