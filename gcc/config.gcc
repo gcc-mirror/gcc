@@ -576,6 +576,7 @@ alpha*-dec-osf[45]*)
 	    tmake_file="${tmake_file} alpha/t-osf-pthread"
 	    ;;
 	esac
+	use_fixproto=no
 	;;
 alpha64-dec-*vms*)
 	tm_file="${tm_file} alpha/vms.h alpha/vms64.h"
