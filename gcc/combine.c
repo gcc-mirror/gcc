@@ -4424,8 +4424,7 @@ force_to_mode (x, mode, bits, reg)
 
     case CONST_INT:
       if (bits < HOST_BITS_PER_INT)
-	x = gen_rtx (CONST_INT, VOIDmode,
-		     INTVAL (x) & ((1 << (bits + 1)) - 1));
+	x = gen_rtx (CONST_INT, VOIDmode, INTVAL (x) & ((1 << bits) - 1));
       return x;
 
     case SUBREG:
@@ -4452,7 +4451,7 @@ force_to_mode (x, mode, bits, reg)
 			      reg);
 
 	  if (bits < HOST_BITS_PER_INT)
-	    mask &= (1 << (bits + 1)) - 1;
+	    mask &= (1 << bits) - 1;
 
 	  x = simplify_and_const_int (x, mode, op, mask);
 
@@ -4462,7 +4461,7 @@ force_to_mode (x, mode, bits, reg)
 
 	  if (GET_CODE (x) == AND && GET_CODE (XEXP (x, 1)) == CONST_INT
 	      && bits < HOST_BITS_PER_INT
-	      && INTVAL (XEXP (x, 1)) == (1 << (bits + 1)) - 1)
+	      && INTVAL (XEXP (x, 1)) == (1 << bits) - 1)
 	    x = XEXP (x, 0);
 	  return x;
 	}
