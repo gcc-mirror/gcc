@@ -394,7 +394,9 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
      int is_const;
 {
   rtx rounded_stack_size_rtx = GEN_INT (rounded_stack_size);
+#if defined (HAVE_call) && defined (HAVE_call_value)
   rtx struct_value_size_rtx = GEN_INT (struct_value_size);
+#endif
   rtx call_insn;
 #ifndef ACCUMULATE_OUTGOING_ARGS
   int already_popped = 0;

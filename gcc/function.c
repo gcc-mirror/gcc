@@ -4970,7 +4970,7 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
                      alignment_pad)
      enum machine_mode passed_mode;
      tree type;
-     int in_regs;
+     int in_regs ATTRIBUTE_UNUSED;
      tree fndecl ATTRIBUTE_UNUSED;
      struct args_size *initial_offset_ptr;
      struct args_size *offset_ptr;
@@ -6266,7 +6266,7 @@ expand_function_end (filename, line, end_bindings)
   for (link = trampoline_list; link; link = TREE_CHAIN (link))
     {
       tree function = TREE_PURPOSE (link);
-      rtx context = lookup_static_chain (function);
+      rtx context ATTRIBUTE_UNUSED = lookup_static_chain (function);
       rtx tramp = RTL_EXPR_RTL (TREE_VALUE (link));
 #ifdef TRAMPOLINE_TEMPLATE
       rtx blktramp;

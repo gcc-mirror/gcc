@@ -222,7 +222,9 @@ static rtx fill_slots_from_thread	PROTO((rtx, rtx, rtx, rtx, int, int,
 					       int, int, int *, rtx));
 static void fill_eager_delay_slots	PROTO((void));
 static void relax_delay_slots		PROTO((rtx));
+#ifdef HAVE_return
 static void make_return_insns		PROTO((rtx));
+#endif
 
 /* Return TRUE if this insn should stop the search for insn to fill delay
    slots.  LABELS_P indicates that labels should terminate the search.

@@ -440,6 +440,10 @@ build_call (function, result_type, parms)
    `operator()()' is defined for the type of that field, then we return
    that result.  */
 
+#ifdef GATHER_STATISTICS
+extern int n_build_method_call;
+#endif
+
 tree
 build_method_call (instance, name, parms, basetype_path, flags)
      tree instance, name, parms, basetype_path;

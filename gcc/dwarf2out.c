@@ -55,6 +55,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "dyn-string.h"
 #include "ggc.h"
+#include "tm_p.h"
 
 /* We cannot use <assert.h> in GCC source, since that would include
    GCC's assert.h, which may not be compatible with the host compiler.  */

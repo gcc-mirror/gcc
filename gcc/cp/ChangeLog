@@ -1,3 +1,7 @@
+2000-01-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* call.c: If GATHER_STATISTICS, declare `n_build_method_call'.
+
 2000-01-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (start_cleanup_fn): Call pushdecl.
