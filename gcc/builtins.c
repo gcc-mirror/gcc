@@ -7611,12 +7611,98 @@ fold_builtin_abs (tree arglist, tree type)
   return fold (build1 (ABS_EXPR, type, arg));
 }
 
+/* Fold a call to __builtin_isnan(), __builtin_isinf, __builtin_finite.
+   EXP is the CALL_EXPR for the call.  */
+
+static tree
+fold_builtin_classify (tree exp, int builtin_index)
+{
+  tree fndecl = get_callee_fndecl (exp);
+  tree arglist = TREE_OPERAND (exp, 1);
+  tree type = TREE_TYPE (TREE_TYPE (fndecl));
+  tree arg;
+  REAL_VALUE_TYPE r;
+
+  if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+    {
+      /* Check that we have exactly one argument.  */
+      if (arglist == 0)
+	{
+	  error ("too few arguments to function `%s'",
+		 IDENTIFIER_POINTER (DECL_NAME (fndecl)));
+	  return error_mark_node;
+	}
+      else if (TREE_CHAIN (arglist) != 0)
+	{
+	  error ("too many arguments to function `%s'",
+		 IDENTIFIER_POINTER (DECL_NAME (fndecl)));
+	  return error_mark_node;
+	}
+      else
+	{
+	  error ("non-floating-point argument to function `%s'",
+		 IDENTIFIER_POINTER (DECL_NAME (fndecl)));
+	  return error_mark_node;
+	}
+    }
+
+  arg = TREE_VALUE (arglist);
+  switch (builtin_index)
+    {
+    case BUILT_IN_ISINF:
+      if (!MODE_HAS_INFINITIES (TYPE_MODE (TREE_TYPE (arg))))
+        return omit_one_operand (type, integer_zero_node, arg);
+
+      if (TREE_CODE (arg) == REAL_CST)
+	{
+	  r = TREE_REAL_CST (arg);
+	  if (real_isinf (&r))
+	    return real_compare (GT_EXPR, &r, &dconst0)
+		   ? integer_one_node : integer_minus_one_node;
+	  else
+	    return integer_zero_node;
+	}
+
+      return NULL_TREE;
+
+    case BUILT_IN_ISFINITE:
+      if (!MODE_HAS_NANS (TYPE_MODE (TREE_TYPE (arg)))
+          && !MODE_HAS_INFINITIES (TYPE_MODE (TREE_TYPE (arg))))
+        return omit_one_operand (type, integer_zero_node, arg);
+
+      if (TREE_CODE (arg) == REAL_CST)
+	{
+	  r = TREE_REAL_CST (arg);
+	  return real_isinf (&r) || real_isnan (&r)
+		 ? integer_zero_node : integer_one_node;
+	}
+
+      return NULL_TREE;
+
+    case BUILT_IN_ISNAN:
+      if (!MODE_HAS_NANS (TYPE_MODE (TREE_TYPE (arg))))
+        return omit_one_operand (type, integer_zero_node, arg);
+
+      if (TREE_CODE (arg) == REAL_CST)
+	{
+	  r = TREE_REAL_CST (arg);
+	  return real_isnan (&r) ? integer_one_node : integer_zero_node;
+	}
+
+      arg = builtin_save_expr (arg);
+      return fold (build2 (UNORDERED_EXPR, type, arg, arg));
+
+    default:
+      abort ();
+    }
+}
+
 /* Fold a call to an unordered comparison function such as
-   __builtin_isgreater().  ARGLIST is the funtion's argument list
-   and TYPE is the functions return type.  UNORDERED_CODE and
-   ORDERED_CODE are comparison codes that give the opposite of
-   the desired result.  UNORDERED_CODE is used for modes that can
-   hold NaNs and ORDERED_CODE is used for the rest.  */
+   __builtin_isgreater().  EXP is the CALL_EXPR for the call.
+   UNORDERED_CODE and ORDERED_CODE are comparison codes that give
+   the opposite of the desired result.  UNORDERED_CODE is used
+   for modes that can hold NaNs and ORDERED_CODE is used for
+   the rest.  */
 
 static tree
 fold_builtin_unordered_cmp (tree exp,
@@ -8246,6 +8332,21 @@ fold_builtin_1 (tree exp)
     case BUILT_IN_COPYSIGNF:
     case BUILT_IN_COPYSIGNL:
       return fold_builtin_copysign (arglist, type);
+
+    case BUILT_IN_FINITE:
+    case BUILT_IN_FINITEF:
+    case BUILT_IN_FINITEL:
+      return fold_builtin_classify (exp, BUILT_IN_FINITE);
+
+    case BUILT_IN_ISINF:
+    case BUILT_IN_ISINFF:
+    case BUILT_IN_ISINFL:
+      return fold_builtin_classify (exp, BUILT_IN_ISINF);
+
+    case BUILT_IN_ISNAN:
+    case BUILT_IN_ISNANF:
+    case BUILT_IN_ISNANL:
+      return fold_builtin_classify (exp, BUILT_IN_ISNAN);
 
     case BUILT_IN_ISGREATER:
       return fold_builtin_unordered_cmp (exp, UNLE_EXPR, LE_EXPR);
