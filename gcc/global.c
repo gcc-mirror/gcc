@@ -2033,21 +2033,21 @@ allocate_bb_info (void)
   bitmap init;
 
   alloc_aux_for_blocks (sizeof (struct bb_info));
-  init = BITMAP_XMALLOC ();
+  init = BITMAP_ALLOC (NULL);
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     bitmap_set_bit (init, i);
   FOR_EACH_BB (bb)
     {
       bb_info = bb->aux;
-      bb_info->earlyclobber = BITMAP_XMALLOC ();
-      bb_info->avloc = BITMAP_XMALLOC ();
-      bb_info->killed = BITMAP_XMALLOC ();
-      bb_info->live_pavin = BITMAP_XMALLOC ();
-      bb_info->live_pavout = BITMAP_XMALLOC ();
+      bb_info->earlyclobber = BITMAP_ALLOC (NULL);
+      bb_info->avloc = BITMAP_ALLOC (NULL);
+      bb_info->killed = BITMAP_ALLOC (NULL);
+      bb_info->live_pavin = BITMAP_ALLOC (NULL);
+      bb_info->live_pavout = BITMAP_ALLOC (NULL);
       bitmap_copy (bb_info->live_pavin, init);
       bitmap_copy (bb_info->live_pavout, init);
     }
-  BITMAP_XFREE (init);
+  BITMAP_FREE (init);
 }
 
 /* The function frees the allocated info of all basic blocks.  */
@@ -2061,11 +2061,11 @@ free_bb_info (void)
   FOR_EACH_BB (bb)
     {
       bb_info = BB_INFO (bb);
-      BITMAP_XFREE (bb_info->live_pavout);
-      BITMAP_XFREE (bb_info->live_pavin);
-      BITMAP_XFREE (bb_info->killed);
-      BITMAP_XFREE (bb_info->avloc);
-      BITMAP_XFREE (bb_info->earlyclobber);
+      BITMAP_FREE (bb_info->live_pavout);
+      BITMAP_FREE (bb_info->live_pavin);
+      BITMAP_FREE (bb_info->killed);
+      BITMAP_FREE (bb_info->avloc);
+      BITMAP_FREE (bb_info->earlyclobber);
     }
   free_aux_for_blocks ();
 }
@@ -2297,7 +2297,7 @@ calculate_reg_pav (void)
 
   VARRAY_BB_INIT (bbs, n_basic_blocks, "basic blocks");
   VARRAY_BB_INIT (new_bbs, n_basic_blocks, "basic blocks for the next iter.");
-  temp_bitmap = BITMAP_XMALLOC ();
+  temp_bitmap = BITMAP_ALLOC (NULL);
   FOR_EACH_BB (bb)
     {
       VARRAY_PUSH_BB (bbs, bb);
@@ -2351,7 +2351,7 @@ calculate_reg_pav (void)
       VARRAY_POP_ALL (new_bbs);
     }
   sbitmap_free (wset);
-  BITMAP_XFREE (temp_bitmap);
+  BITMAP_FREE (temp_bitmap);
 }
 
 /* The function modifies partial availability information for two
@@ -2373,7 +2373,7 @@ modify_reg_pav (void)
   CLEAR_HARD_REG_SET (stack_hard_regs);
   for (i = FIRST_STACK_REG; i <= LAST_STACK_REG; i++)
     SET_HARD_REG_BIT(stack_hard_regs, i);
-  stack_regs = BITMAP_XMALLOC ();
+  stack_regs = BITMAP_ALLOC (NULL);
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     {
       COPY_HARD_REG_SET (used, reg_class_contents[reg_preferred_class (i)]);
@@ -2405,7 +2405,7 @@ modify_reg_pav (void)
 #endif
     }
 #ifdef STACK_REGS
-  BITMAP_XFREE (stack_regs);
+  BITMAP_FREE (stack_regs);
 #endif
 }
 

@@ -2031,7 +2031,7 @@ duplicate_computed_gotos (void)
     uncond_jump_length = get_uncond_jump_length ();
 
   max_size = uncond_jump_length * PARAM_VALUE (PARAM_MAX_GOTO_DUPLICATION_INSNS);
-  candidates = BITMAP_XMALLOC ();
+  candidates = BITMAP_ALLOC (NULL);
 
   /* Build the reorder chain for the original order of blocks.
      Look for a computed jump while we are at it.  */
@@ -2094,7 +2094,7 @@ duplicate_computed_gotos (void)
 done:
   cfg_layout_finalize ();
 
-  BITMAP_XFREE (candidates);
+  BITMAP_FREE (candidates);
 
   timevar_pop (TV_REORDER_BLOCKS);
 }

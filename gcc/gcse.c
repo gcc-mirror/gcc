@@ -962,7 +962,7 @@ alloc_gcse_mem (rtx f)
       CUID_INSN (i++) = insn;
 
   /* Allocate vars to track sets of regs.  */
-  reg_set_bitmap = BITMAP_XMALLOC ();
+  reg_set_bitmap = BITMAP_ALLOC (NULL);
 
   /* Allocate vars to track sets of regs, memory per block.  */
   reg_set_in_block = sbitmap_vector_alloc (last_basic_block, max_gcse_regno);
@@ -970,8 +970,8 @@ alloc_gcse_mem (rtx f)
      basic block.  */
   modify_mem_list = gcalloc (last_basic_block, sizeof (rtx));
   canon_modify_mem_list = gcalloc (last_basic_block, sizeof (rtx));
-  modify_mem_list_set = BITMAP_XMALLOC ();
-  blocks_with_calls = BITMAP_XMALLOC ();
+  modify_mem_list_set = BITMAP_ALLOC (NULL);
+  blocks_with_calls = BITMAP_ALLOC (NULL);
 }
 
 /* Free memory allocated by alloc_gcse_mem.  */
@@ -982,12 +982,12 @@ free_gcse_mem (void)
   free (uid_cuid);
   free (cuid_insn);
 
-  BITMAP_XFREE (reg_set_bitmap);
+  BITMAP_FREE (reg_set_bitmap);
 
   sbitmap_vector_free (reg_set_in_block);
   free_modify_mem_tables ();
-  BITMAP_XFREE (modify_mem_list_set);
-  BITMAP_XFREE (blocks_with_calls);
+  BITMAP_FREE (modify_mem_list_set);
+  BITMAP_FREE (blocks_with_calls);
 }
 
 /* Compute the local properties of each recorded expression.

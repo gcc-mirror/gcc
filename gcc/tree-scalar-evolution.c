@@ -2466,7 +2466,7 @@ scev_initialize (struct loops *loops)
 
   scalar_evolution_info = htab_create (100, hash_scev_info,
 				       eq_scev_info, del_scev_info);
-  already_instantiated = BITMAP_XMALLOC ();
+  already_instantiated = BITMAP_ALLOC (NULL);
   
   initialize_scalar_evolutions_analyzer ();
 
@@ -2561,6 +2561,6 @@ void
 scev_finalize (void)
 {
   htab_delete (scalar_evolution_info);
-  BITMAP_XFREE (already_instantiated);
+  BITMAP_FREE (already_instantiated);
 }
 

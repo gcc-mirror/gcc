@@ -159,10 +159,10 @@ add_exit_phis_var (tree var, bitmap livein, bitmap exits)
 
   bitmap_clear_bit (livein, def_bb->index);
 
-  def = BITMAP_XMALLOC ();
+  def = BITMAP_ALLOC (NULL);
   bitmap_set_bit (def, def_bb->index);
   compute_global_livein (livein, def);
-  BITMAP_XFREE (def);
+  BITMAP_FREE (def);
 
   EXECUTE_IF_AND_IN_BITMAP (exits, livein, 0, index, bi)
     {
@@ -191,7 +191,7 @@ add_exit_phis (bitmap names_to_rename, bitmap *use_blocks, bitmap loop_exits)
 static bitmap
 get_loops_exits (void)
 {
-  bitmap exits = BITMAP_XMALLOC ();
+  bitmap exits = BITMAP_ALLOC (NULL);
   basic_block bb;
   edge e;
   edge_iterator ei;
@@ -235,7 +235,7 @@ find_uses_to_rename_use (basic_block bb, tree use, bitmap *use_blocks)
     return;
 
   if (!use_blocks[ver])
-    use_blocks[ver] = BITMAP_XMALLOC ();
+    use_blocks[ver] = BITMAP_ALLOC (NULL);
   bitmap_set_bit (use_blocks[ver], bb->index);
 
   if (!flow_bb_inside_loop_p (def_loop, bb))
@@ -330,10 +330,10 @@ rewrite_into_loop_closed_ssa (void)
   add_exit_phis (names_to_rename, use_blocks, loop_exits);
 
   for (i = 0; i < num_ssa_names; i++)
-    BITMAP_XFREE (use_blocks[i]);
+    BITMAP_FREE (use_blocks[i]);
   free (use_blocks);
-  BITMAP_XFREE (loop_exits);
-  BITMAP_XFREE (names_to_rename);
+  BITMAP_FREE (loop_exits);
+  BITMAP_FREE (names_to_rename);
 
   /* Do the rewriting.  */
   rewrite_ssa_into_ssa ();
@@ -618,7 +618,7 @@ tree_duplicate_loop_to_header_edge (struct loop *loop, edge e,
   definitions = marked_ssa_names ();
   rename_variables (first_new_block, definitions);
   unmark_all_for_rewrite ();
-  BITMAP_XFREE (definitions);
+  BITMAP_FREE (definitions);
 
   /* For some time we have the identical ssa names as results in multiple phi
      nodes.  When phi node is resized, it sets SSA_NAME_DEF_STMT of its result

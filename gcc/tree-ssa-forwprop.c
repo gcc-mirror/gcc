@@ -480,7 +480,7 @@ tree_ssa_forward_propagate_single_use_vars (void)
   basic_block bb;
   varray_type vars_worklist, cond_worklist;
 
-  vars = BITMAP_XMALLOC ();
+  vars = BITMAP_ALLOC (NULL);
   VARRAY_TREE_INIT (vars_worklist, 10, "VARS worklist");
   VARRAY_TREE_INIT (cond_worklist, 10, "COND worklist");
 
@@ -522,7 +522,7 @@ tree_ssa_forward_propagate_single_use_vars (void)
     }
 
   /* All done.  Clean up.  */
-  BITMAP_XFREE (vars);
+  BITMAP_FREE (vars);
 }
 
 

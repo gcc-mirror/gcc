@@ -1961,7 +1961,7 @@ ccp_fold_builtin (tree stmt, tree fn)
     }
 
   /* Try to use the dataflow information gathered by the CCP process.  */
-  visited = BITMAP_XMALLOC ();
+  visited = BITMAP_ALLOC (NULL);
 
   memset (strlen_val, 0, sizeof (strlen_val));
   for (i = 0, a = arglist;
@@ -1974,7 +1974,7 @@ ccp_fold_builtin (tree stmt, tree fn)
 	  strlen_val[i] = NULL_TREE;
       }
 
-  BITMAP_XFREE (visited);
+  BITMAP_FREE (visited);
 
   result = NULL_TREE;
   switch (DECL_FUNCTION_CODE (callee))

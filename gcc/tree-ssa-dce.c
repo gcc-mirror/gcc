@@ -879,7 +879,7 @@ tree_dce_init (bool aggressive)
       control_dependence_map 
 	= xmalloc (last_basic_block * sizeof (bitmap));
       for (i = 0; i < last_basic_block; ++i)
-	control_dependence_map[i] = BITMAP_XMALLOC ();
+	control_dependence_map[i] = BITMAP_ALLOC (NULL);
 
       last_stmt_necessary = sbitmap_alloc (last_basic_block);
       sbitmap_zero (last_stmt_necessary);
@@ -901,7 +901,7 @@ tree_dce_done (bool aggressive)
       int i;
 
       for (i = 0; i < last_basic_block; ++i)
-	BITMAP_XFREE (control_dependence_map[i]);
+	BITMAP_FREE (control_dependence_map[i]);
       free (control_dependence_map);
 
       sbitmap_free (visited_control_parents);

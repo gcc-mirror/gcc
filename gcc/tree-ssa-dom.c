@@ -383,8 +383,8 @@ tree_ssa_dominator_optimize (void)
   nonzero_vars_stack = VEC_alloc (tree_on_heap, 20);
   vrp_variables_stack = VEC_alloc (tree_on_heap, 20);
   stmts_to_rescan = VEC_alloc (tree_on_heap, 20);
-  nonzero_vars = BITMAP_XMALLOC ();
-  need_eh_cleanup = BITMAP_XMALLOC ();
+  nonzero_vars = BITMAP_ALLOC (NULL);
+  need_eh_cleanup = BITMAP_ALLOC (NULL);
 
   /* Setup callbacks for the generic dominator tree walker.  */
   walk_data.walk_stmts_backward = false;
@@ -497,8 +497,8 @@ tree_ssa_dominator_optimize (void)
   fini_walk_dominator_tree (&walk_data);
 
   /* Free nonzero_vars.  */
-  BITMAP_XFREE (nonzero_vars);
-  BITMAP_XFREE (need_eh_cleanup);
+  BITMAP_FREE (nonzero_vars);
+  BITMAP_FREE (need_eh_cleanup);
   
   VEC_free (tree_on_heap, block_defs_stack);
   VEC_free (tree_on_heap, avail_exprs_stack);

@@ -353,7 +353,7 @@ thread_jump (int mode, edge e, basic_block b)
     if (INSN_P (insn))
       cselib_process_insn (insn);
 
-  nonequal = BITMAP_XMALLOC();
+  nonequal = BITMAP_ALLOC (NULL);
   CLEAR_REG_SET (nonequal);
 
   /* Now assume that we've continued by the edge E to B and continue
@@ -401,7 +401,7 @@ thread_jump (int mode, edge e, basic_block b)
   EXECUTE_IF_SET_IN_REG_SET (nonequal, 0, i, rsi)
     goto failed_exit;
 
-  BITMAP_XFREE (nonequal);
+  BITMAP_FREE (nonequal);
   cselib_finish ();
   if ((comparison_dominates_p (code1, code2) != 0)
       != (XEXP (SET_SRC (set2), 1) == pc_rtx))
@@ -410,7 +410,7 @@ thread_jump (int mode, edge e, basic_block b)
     return FALLTHRU_EDGE (b);
 
 failed_exit:
-  BITMAP_XFREE (nonequal);
+  BITMAP_FREE (nonequal);
   cselib_finish ();
   return NULL;
 }

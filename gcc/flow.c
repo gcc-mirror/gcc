@@ -1826,12 +1826,12 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
   else
     pbi->reg_next_use = NULL;
 
-  pbi->new_set = BITMAP_XMALLOC ();
+  pbi->new_set = BITMAP_ALLOC (NULL);
 
 #ifdef HAVE_conditional_execution
   pbi->reg_cond_dead = splay_tree_new (splay_tree_compare_ints, NULL,
 				       free_reg_cond_life_info);
-  pbi->reg_cond_reg = BITMAP_XMALLOC ();
+  pbi->reg_cond_reg = BITMAP_ALLOC (NULL);
 
   /* If this block ends in a conditional branch, for each register
      live from one side of the branch and not the other, record the
@@ -1973,11 +1973,11 @@ free_propagate_block_info (struct propagate_block_info *pbi)
 {
   free_EXPR_LIST_list (&pbi->mem_set_list);
 
-  BITMAP_XFREE (pbi->new_set);
+  BITMAP_FREE (pbi->new_set);
 
 #ifdef HAVE_conditional_execution
   splay_tree_delete (pbi->reg_cond_dead);
-  BITMAP_XFREE (pbi->reg_cond_reg);
+  BITMAP_FREE (pbi->reg_cond_reg);
 #endif
 
   if (pbi->flags & PROP_REG_INFO)

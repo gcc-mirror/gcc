@@ -433,7 +433,7 @@ tree_ssa_dse (void)
   walk_data.block_local_data_size = sizeof (struct dse_block_local_data);
 
   /* This is the main hash table for the dead store elimination pass.  */
-  dse_gd.stores = BITMAP_XMALLOC ();
+  dse_gd.stores = BITMAP_ALLOC (NULL);
   walk_data.global_data = &dse_gd;
 
   /* Initialize the dominator walker.  */
@@ -446,7 +446,7 @@ tree_ssa_dse (void)
   fini_walk_dominator_tree (&walk_data);
 
   /* Release the main bitmap.  */
-  BITMAP_XFREE (dse_gd.stores);
+  BITMAP_FREE (dse_gd.stores);
 
   /* Free dataflow information.  It's probably out of date now anyway.  */
   free_df ();

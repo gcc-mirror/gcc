@@ -170,7 +170,7 @@ init_dom_info (struct dom_info *di, enum cdi_direction dir)
   di->dfsnum = 1;
   di->nodes = 0;
 
-  di->fake_exit_edge = dir ? BITMAP_XMALLOC () : NULL;
+  di->fake_exit_edge = dir ? BITMAP_ALLOC (NULL) : NULL;
 }
 
 #undef init_ar
@@ -191,7 +191,7 @@ free_dom_info (struct dom_info *di)
   free (di->set_child);
   free (di->dfs_order);
   free (di->dfs_to_bb);
-  BITMAP_XFREE (di->fake_exit_edge);
+  BITMAP_FREE (di->fake_exit_edge);
 }
 
 /* The nonrecursive variant of creating a DFS tree.  DI is our working

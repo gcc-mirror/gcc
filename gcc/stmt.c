@@ -2359,7 +2359,7 @@ expand_case (tree exp)
 
       uniq = 0;
       count = 0;
-      label_bitmap = BITMAP_XMALLOC ();
+      label_bitmap = BITMAP_ALLOC (NULL);
       for (n = case_list; n; n = n->right)
 	{
 	  /* Count the elements and track the largest and smallest
@@ -2390,7 +2390,7 @@ expand_case (tree exp)
 	    }
 	}
 
-      BITMAP_XFREE (label_bitmap);
+      BITMAP_FREE (label_bitmap);
 
       /* cleanup_tree_cfg removes all SWITCH_EXPR with a single
 	 destination, such as one with a default case only.  */
