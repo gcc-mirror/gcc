@@ -204,14 +204,16 @@ namespace std
 
 	// Make sure that the internal buffer resyncs its idea of
 	// the file position with the external file.
-	if (__testput && !_M_file.sync())
+	if (__testput)
 	  {
 	    // Need to restore current position after the write.
 	    off_type __off = _M_out_cur - _M_out_end;
-	    _M_really_overflow();
+	    _M_really_overflow(); // _M_file.sync() will be called within
 	    if (__off)
 	      _M_file.seekoff(__off, ios_base::cur);
 	  }
+	else
+	  _M_file.sync();
 	_M_last_overflowed = false;
 	return 0;
       }

@@ -476,16 +476,20 @@ namespace std
 				   __elen, __plen);
 
 	  // Convert pending sequence to external representation, output.
+	  // If eof, then just attempt sync.
 	  if (!traits_type::eq_int_type(__c, traits_type::eof()))
 	    {
 	      char_type __pending = traits_type::to_char_type(__c);
 	      _M_convert_to_external(&__pending, 1, __elen, __plen);
-	    }
 
-	  // Last, sync internal and external buffers.
-	  // NB: Need this so that external byte sequence reflects
-	  // internal buffer plus pending sequence.
-	  if (__elen == __plen && !_M_file.sync())
+	      // User code must flush when switching modes (thus don't sync).
+	      if (__elen == __plen)
+		{
+		  _M_set_indeterminate();
+		  __ret = traits_type::not_eof(__c);
+		}
+	    }
+	  else if (!_M_file.sync())
 	    {
 	      _M_set_indeterminate();
 	      __ret = traits_type::not_eof(__c);

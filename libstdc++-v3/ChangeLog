@@ -1,3 +1,12 @@
+2002-04-23  Loren J. Rittle <ljrittle@acm.org>
+
+	* include/std/std_fstream.h (basic_filebuf::sync): Hoist
+	unconditional flush on lower-layer handle to here...
+	* include/bits/fstream.tcc (basic_filebuf::_M_really_overflow):
+	...from here.  Optimize remaining _M_file.sync() call pattern.
+	* testsuite/27_io/narrow_stream_objects.cc (test04): New test.
+	(test05): Likewise.
+
 2002-04-23  Jason Merrill  <jason@redhat.com>
 
 	* include/bits/fstream.tcc (basic_filebuf::seekoff): Fix for
