@@ -23,7 +23,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define HP_FP_ARG_DESCRIPTOR_REVERSED
 
-#define TARGET_DEFAULT 32	/* TARGET_DISABLE_INDEXING */
+#define TARGET_DEFAULT 0
 
 #include "pa/pa.h"
 #undef CPP_PREDEFINES
