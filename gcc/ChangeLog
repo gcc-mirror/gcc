@@ -1,3 +1,12 @@
+2005-02-11  Ralf Corsepius  <ralf.corsepius@rtems.org>
+
+	* config/rs6000/t-rtems:
+	(MULTILIB_OPTIONS): Remove mcpu=602.
+	(MUTLILIB_DIRNAMES): Remove m602.
+	(MULTILIB_MATCHES): Add ${MULTILIB_MATCHES_FLOAT}. 
+	Let mcpu=602 match mcpu=603.
+	(MULTILIB_NEW_EXCEPTIONS_ONLY): Add mcpu=601, mcpu=602, mcpu=m603.
+
 2005-02-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa/linux-unwind.h (pa32_fallback_frame_state): Handle misaligned
