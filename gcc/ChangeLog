@@ -1,3 +1,8 @@
+2004-01-18  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (expand_builtin_expect_jump): Fix thinko of reusing
+	live "next" variable, which can lead to an infinite loop.
+
 2004-01-18  Daniel Jacobowitz  <drow@mvista.com>
 
 	* final.c (final_scan_insn): Make non-static again.
