@@ -2381,7 +2381,7 @@ fold_rtx_mult_add (mult1, mult2, add1, mode)
 rtx
 biv_total_increment (bl, loop_start, loop_end)
      struct iv_class *bl;
-     rtx loop_start, loop_end;
+     rtx loop_start ATTRIBUTE_UNUSED, loop_end ATTRIBUTE_UNUSED;
 {
   struct induction *v;
   rtx result;

@@ -1580,7 +1580,7 @@ set_new_last_label_num (last)
 
 void
 restore_emit_status (p)
-     struct function *p;
+     struct function *p ATTRIBUTE_UNUSED;
 {
   last_label_num = 0;
   clear_emit_caches ();

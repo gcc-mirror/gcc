@@ -27,7 +27,7 @@
 
 int ggc_p = 0;
 
-void 
+void ATTRIBUTE_NORETURN
 lang_mark_tree (t)
      union tree_node *t ATTRIBUTE_UNUSED;
 {
@@ -36,7 +36,7 @@ lang_mark_tree (t)
   abort ();
 }
 
-void
+void ATTRIBUTE_NORETURN
 lang_mark_false_label_stack (l)
      struct label_node *l ATTRIBUTE_UNUSED;
 {

@@ -3314,7 +3314,7 @@ build_decl (code, name, type)
 
 tree
 build_block (vars, tags, subblocks, supercontext, chain)
-     tree vars, tags, subblocks, supercontext, chain;
+     tree vars, tags ATTRIBUTE_UNUSED, subblocks, supercontext, chain;
 {
   register tree block = make_node (BLOCK);
 

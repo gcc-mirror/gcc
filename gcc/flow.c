@@ -348,12 +348,24 @@ static void count_reg_references	PROTO ((rtx));
 static void invalidate_mems_from_autoinc	PROTO ((rtx));
 static void remove_edge			PROTO ((edge));
 static void remove_fake_successors	PROTO ((basic_block));
+static void flow_nodes_print	PROTO ((const char *, const sbitmap, FILE *));
+static void flow_exits_print PROTO ((const char *, const edge *, int, FILE *));
+static void flow_loops_cfg_dump		PROTO ((const struct loops *, FILE *));
+static int flow_loop_nested_p		PROTO ((struct loop *, struct loop *));
+static int flow_loop_exits_find		PROTO ((const sbitmap, edge **));
+static int flow_loop_nodes_find	PROTO ((basic_block, basic_block, sbitmap));
+static int flow_depth_first_order_compute PROTO ((int *));
+static basic_block flow_loop_pre_header_find PROTO ((basic_block, const sbitmap *));
+static void flow_loop_tree_node_add	PROTO ((struct loop *, struct loop *));
+static void flow_loops_tree_build	PROTO ((struct loops *));
+static int flow_loop_level_compute	PROTO ((struct loop *, int));
+static int flow_loops_level_compute	PROTO ((struct loops *));
 
 /* This function is always defined so it can be called from the
    debugger, and it is declared extern so we don't get warnings about
    it being unused. */
 void verify_flow_info			PROTO ((void));
-
+int flow_loop_outside_edge_p		PROTO ((const struct loop *, edge));
 
 /* Find basic blocks of the current function.
    F is the first insn of the function and NREGS the number of register
@@ -5548,8 +5560,8 @@ count_reg_references (x)
 
 void
 recompute_reg_usage (f, loop_step)
-     rtx f;
-     int loop_step;
+     rtx f ATTRIBUTE_UNUSED;
+     int loop_step ATTRIBUTE_UNUSED;
 {
   rtx insn;
   int i, max_reg;
@@ -6356,7 +6368,7 @@ flow_loops_cfg_dump (loops, file)
 
 
 /* Return non-zero if the nodes of LOOP are a subset of OUTER.  */
-int
+static int
 flow_loop_nested_p (outer, loop)
      struct loop *outer;
      struct loop *loop;

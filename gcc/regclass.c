@@ -503,7 +503,9 @@ memory_move_secondary_cost (mode, class, in)
   enum reg_class altclass;
   int partial_cost = 0;
   /* We need a memory reference to feed to SECONDARY... macros.  */
-  rtx mem = top_of_stack[(int) mode];
+  /* mem may be unused even if the SECONDARY_ macros are defined. */
+  rtx mem ATTRIBUTE_UNUSED = top_of_stack[(int) mode];
+
 
   if (in)
     {
@@ -1204,7 +1206,7 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
      int n_ops;
      rtx *ops;
      enum machine_mode *modes;
-     char *subreg_changes_size;
+     char *subreg_changes_size ATTRIBUTE_UNUSED;
      const char **constraints;
      rtx insn;
 {
@@ -2101,7 +2103,7 @@ void
 reg_scan (f, nregs, repeat)
      rtx f;
      int nregs;
-     int repeat;
+     int repeat ATTRIBUTE_UNUSED;
 {
   register rtx insn;
 

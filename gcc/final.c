@@ -2068,9 +2068,9 @@ rtx
 final_scan_insn (insn, file, optimize, prescan, nopeepholes)
      rtx insn;
      FILE *file;
-     int optimize;
+     int optimize ATTRIBUTE_UNUSED;
      int prescan;
-     int nopeepholes;
+     int nopeepholes ATTRIBUTE_UNUSED;
 {
 #ifdef HAVE_cc0
   rtx set;

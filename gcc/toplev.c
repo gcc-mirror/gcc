@@ -57,6 +57,7 @@ Boston, MA 02111-1307, USA.  */
 #include "intl.h"
 #include "ggc.h"
 #include "graph.h"
+#include "loop.h"
 
 #ifdef DWARF_DEBUGGING_INFO
 #include "dwarfout.h"
@@ -167,7 +168,6 @@ static void dump_rtl PROTO((const char *, tree, void (*) (FILE *, rtx), rtx));
 static void clean_dump_file PROTO((const char *));
 static void compile_file PROTO((char *));
 static void display_help PROTO ((void));
-static void report_file_and_line PROTO ((const char *, int, int));
 static void mark_file_stack PROTO ((void *));
 
 static void decode_d_option PROTO ((const char *));

@@ -9344,6 +9344,7 @@ insert_bct (loop_start, loop_end, loop_info)
   int i;
   unsigned HOST_WIDE_INT n_iterations;
 
+#if 0
   int increment_direction, compare_direction;
 
   /* If the loop condition is <= or >=, the number of iteration
@@ -9351,6 +9352,7 @@ insert_bct (loop_start, loop_end, loop_info)
   int add_iteration = 0;
 
   enum machine_mode loop_var_mode = word_mode;
+#endif
 
   int loop_num = uid_loop_num [INSN_UID (loop_start)];
 
@@ -10020,7 +10022,7 @@ struct note_reg_stored_arg
    is equal to ARG.  */
 static void
 note_reg_stored (x, setter, arg)
-     rtx x, setter;
+     rtx x, setter ATTRIBUTE_UNUSED;
      void *arg;
 {
   struct note_reg_stored_arg *t = (struct note_reg_stored_arg *)arg;

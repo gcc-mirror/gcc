@@ -1441,7 +1441,7 @@ reload_reg_class_lower (r1p, r2p)
      const PTR r1p;
      const PTR r2p;
 {
-  register int r1 = *(short *)r1p, r2 = *(short *)r2p;
+  register int r1 = *(const short *)r1p, r2 = *(const short *)r2p;
   register int t;
 
   /* Consider required reloads before optional ones.  */
@@ -4900,11 +4900,10 @@ set_reload_reg (i, r)
 
 static int
 allocate_reload_reg (chain, r, last_reload)
-     struct insn_chain *chain;
+     struct insn_chain *chain ATTRIBUTE_UNUSED;
      int r;
      int last_reload;
 {
-  rtx insn = chain->insn;
   int i, pass, count;
 
   /* If we put this reload ahead, thinking it is a group,
