@@ -1,3 +1,8 @@
+2004-10-21  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/linux-unwind.h (sh_fallback_frame_state): Don't
+	fixup pc here.
+
 2004-10-21  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR 18004.
