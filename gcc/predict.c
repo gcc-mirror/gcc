@@ -521,10 +521,10 @@ expected_value_to_br_prob ()
       cond = simplify_rtx (cond);
 
       /* Turn the condition into a scaled branch probability.  */
-      if (cond != const1_rtx && cond != const0_rtx)
+      if (cond != const_true_rtx && cond != const0_rtx)
 	abort ();
       predict_insn_def (insn, PRED_BUILTIN_EXPECT,
-		        cond == const1_rtx ? TAKEN : NOT_TAKEN);
+		        cond == const_true_rtx ? TAKEN : NOT_TAKEN);
     }
 }
 
