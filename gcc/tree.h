@@ -3654,6 +3654,7 @@ extern void variable_section (tree, int);
 enum tls_model decl_tls_model (tree);
 extern void resolve_unique_section (tree, int, int);
 extern void mark_referenced (tree);
+extern void mark_decl_referenced (tree);
 extern void notice_global_symbol (tree);
 
 /* In stmt.c */

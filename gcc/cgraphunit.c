@@ -1076,9 +1076,8 @@ cgraph_mark_inline_edge (struct cgraph_edge *e)
       if (!cgraph_inline_hash)
         cgraph_inline_hash = htab_create_ggc (42, htab_hash_pointer,
 					      htab_eq_pointer, NULL);
-      slot = htab_find_slot (cgraph_inline_hash,
-			     DECL_ASSEMBLER_NAME (e->callee->decl), INSERT);
-      *slot = DECL_ASSEMBLER_NAME (e->callee->decl);
+      slot = htab_find_slot (cgraph_inline_hash, e->callee->decl, INSERT);
+      *slot = e->callee->decl;
     }
   e->callee->global.inlined = true;
 

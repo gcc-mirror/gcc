@@ -99,8 +99,9 @@ The varpool data structure:
 /* Hash table used to convert declarations into nodes.  */
 static GTY((param_is (struct cgraph_node))) htab_t cgraph_hash;
 
-/* We destructively update callgraph during inlining and thus we need to
-   keep information on whether inlining happened separately.  */
+/* We destructively update the callgraph during inlining, thus we need to
+   keep a separate table with information on whether inlining happened.
+   ??? Do this with a bit in the DECL instead of a hash table.  */
 htab_t cgraph_inline_hash;
 
 /* The linked list of cgraph nodes.  */
@@ -138,9 +139,7 @@ static int eq_node (const void *, const void *);
 static hashval_t
 hash_node (const void *p)
 {
-  return ((hashval_t)
-	  IDENTIFIER_HASH_VALUE (DECL_ASSEMBLER_NAME
-				 (((struct cgraph_node *) p)->decl)));
+  return ((hashval_t) DECL_UID (((struct cgraph_node *) p)->decl));
 }
 
 /* Returns nonzero if P1 and P2 are equal.  */
@@ -148,8 +147,7 @@ hash_node (const void *p)
 static int
 eq_node (const void *p1, const void *p2)
 {
-  return ((DECL_ASSEMBLER_NAME (((struct cgraph_node *) p1)->decl)) ==
-	  (tree) p2);
+  return (DECL_UID (((struct cgraph_node *) p1)->decl) == (unsigned int)p2);
 }
 
 /* Allocate new callgraph node and insert it into basic data structures.  */
@@ -183,9 +181,10 @@ cgraph_node (tree decl)
     cgraph_hash = htab_create_ggc (10, hash_node, eq_node, NULL);
 
   slot = (struct cgraph_node **)
-    htab_find_slot_with_hash (cgraph_hash, DECL_ASSEMBLER_NAME (decl),
-			      IDENTIFIER_HASH_VALUE
-			        (DECL_ASSEMBLER_NAME (decl)), INSERT);
+    htab_find_slot_with_hash (cgraph_hash,
+			      (void *)DECL_UID (decl),
+			      (hashval_t)DECL_UID (decl),
+			      INSERT);
   if (*slot)
     return *slot;
 
@@ -216,26 +215,6 @@ cgraph_edge (struct cgraph_node *node, tree call_expr)
     if (e->call_expr == call_expr)
       break;
   return e;
-}
-
-/* Try to find existing function for identifier ID.  */
-struct cgraph_node *
-cgraph_node_for_identifier (tree id)
-{
-  struct cgraph_node **slot;
-
-  if (TREE_CODE (id) != IDENTIFIER_NODE)
-    abort ();
-
-  if (!cgraph_hash)
-    return NULL;
-
-  slot = (struct cgraph_node **)
-    htab_find_slot_with_hash (cgraph_hash, id,
-			      IDENTIFIER_HASH_VALUE (id), NO_INSERT);
-  if (!slot)
-    return NULL;
-  return *slot;
 }
 
 /* Create edge from CALLER to CALLEE in the cgraph.  */
@@ -347,9 +326,10 @@ cgraph_remove_node (struct cgraph_node *node)
   if (node->next)
     node->next->previous = node->previous;
   slot = 
-    htab_find_slot_with_hash (cgraph_hash, DECL_ASSEMBLER_NAME (node->decl),
-			      IDENTIFIER_HASH_VALUE (DECL_ASSEMBLER_NAME
-						     (node->decl)), NO_INSERT);
+    htab_find_slot_with_hash (cgraph_hash,
+			      (void *)DECL_UID (node->decl),
+			      (hashval_t)DECL_UID (node->decl),
+			      NO_INSERT);
   if (*slot == node)
     {
       if (node->next_clone)
@@ -552,9 +532,7 @@ dump_cgraph (FILE *f)
 static hashval_t
 cgraph_varpool_hash_node (const void *p)
 {
-  return ((hashval_t)
-	  IDENTIFIER_HASH_VALUE (DECL_ASSEMBLER_NAME
-				 (((struct cgraph_varpool_node *) p)->decl)));
+  return ((hashval_t) DECL_UID (((struct cgraph_varpool_node *) p)->decl));
 }
 
 /* Returns nonzero if P1 and P2 are equal.  */
@@ -562,8 +540,9 @@ cgraph_varpool_hash_node (const void *p)
 static int
 eq_cgraph_varpool_node (const void *p1, const void *p2)
 {
-  return ((DECL_ASSEMBLER_NAME (((struct cgraph_varpool_node *) p1)->decl)) ==
-	  (tree) p2);
+  return (DECL_UID (((struct cgraph_varpool_node *) p1)->decl)
+	  == (unsigned int) p2);
+
 }
 
 /* Return cgraph_varpool node assigned to DECL.  Create new one when needed.  */
@@ -580,8 +559,9 @@ cgraph_varpool_node (tree decl)
     cgraph_varpool_hash = htab_create_ggc (10, cgraph_varpool_hash_node,
 				           eq_cgraph_varpool_node, NULL);
   slot = (struct cgraph_varpool_node **)
-    htab_find_slot_with_hash (cgraph_varpool_hash, DECL_ASSEMBLER_NAME (decl),
-			      IDENTIFIER_HASH_VALUE (DECL_ASSEMBLER_NAME (decl)),
+    htab_find_slot_with_hash (cgraph_varpool_hash,
+			      (void *)DECL_UID (decl),
+			      (hashval_t)DECL_UID (decl),
 			      INSERT);
   if (*slot)
     return *slot;
@@ -597,10 +577,6 @@ cgraph_varpool_node (tree decl)
 void
 change_decl_assembler_name (tree decl, tree name)
 {
-  struct cgraph_node *node = NULL;
-  struct cgraph_varpool_node *vnode = NULL;
-  void **slot;
-
   if (!DECL_ASSEMBLER_NAME_SET_P (decl))
     {
       SET_DECL_ASSEMBLER_NAME (decl, name);
@@ -613,83 +589,7 @@ change_decl_assembler_name (tree decl, tree name)
       && DECL_RTL_SET_P (decl))
     warning ("%D renamed after being referenced in assembly", decl);
 
-  if (TREE_CODE (decl) == FUNCTION_DECL && cgraph_hash)
-    {
-      /* Take a look whether declaration is in the cgraph structure.  */
-      slot = 
-	htab_find_slot_with_hash (cgraph_hash, DECL_ASSEMBLER_NAME (decl),
-				   IDENTIFIER_HASH_VALUE (DECL_ASSEMBLER_NAME
-							  (decl)), NO_INSERT);
-      if (slot)
-	node = *slot;
-
-      /* It is, verify that we are the canonical node for this decl.  */
-      if (node && node->decl == decl)
-	{
-	  node = *slot;
-	  htab_clear_slot (cgraph_hash, slot);
-      	 }
-       else
-	 node = NULL;
-    }
-  if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl) && cgraph_varpool_hash)
-    {
-      /* Take a look whether declaration is in the cgraph structure.  */
-      slot = 
-	htab_find_slot_with_hash (cgraph_varpool_hash, DECL_ASSEMBLER_NAME (decl),
-				   IDENTIFIER_HASH_VALUE (DECL_ASSEMBLER_NAME
-							  (decl)), NO_INSERT);
-      if (slot)
-	vnode = *slot;
-
-      /* It is, verify that we are the canonical vnode for this decl.  */
-      if (vnode && vnode->decl == decl)
-	{
-	  vnode = *slot;
-	  htab_clear_slot (cgraph_varpool_hash, slot);
-      	 }
-       else
-	 vnode = NULL;
-    }
   SET_DECL_ASSEMBLER_NAME (decl, name);
-  if (node)
-    {
-      slot = 
-	htab_find_slot_with_hash (cgraph_hash, name,
-				  IDENTIFIER_HASH_VALUE (name), INSERT);
-      if (*slot)
-	abort ();
-      *slot = node;
-    }
-  if (vnode)
-    {
-      slot = 
-	htab_find_slot_with_hash (cgraph_varpool_hash, name,
-				  IDENTIFIER_HASH_VALUE (name), INSERT);
-      if (*slot)
-	abort ();
-      *slot = vnode;
-    }
-}
-
-/* Try to find existing function for identifier ID.  */
-struct cgraph_varpool_node *
-cgraph_varpool_node_for_identifier (tree id)
-{
-  struct cgraph_varpool_node **slot;
-
-  if (TREE_CODE (id) != IDENTIFIER_NODE)
-    abort ();
-
-  if (!cgraph_varpool_hash)
-    return NULL;
-
-  slot = (struct cgraph_varpool_node **)
-    htab_find_slot_with_hash (cgraph_varpool_hash, id,
-			      IDENTIFIER_HASH_VALUE (id), NO_INSERT);
-  if (!slot)
-    return NULL;
-  return *slot;
 }
 
 /* Notify finalize_compilation_unit that given node is reachable
@@ -767,8 +667,7 @@ cgraph_function_possibly_inlined_p (tree decl)
     return (DECL_INLINE (decl) && !flag_really_no_inline);
   if (!cgraph_inline_hash)
     return false;
-  return (htab_find_slot (cgraph_inline_hash, DECL_ASSEMBLER_NAME (decl),
-			  NO_INSERT) != NULL);
+  return (htab_find_slot (cgraph_inline_hash, decl, NO_INSERT) != NULL);
 }
 
 /* Create clone of E in the node N represented by CALL_EXPR the callgraph.  */
