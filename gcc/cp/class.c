@@ -1235,7 +1235,7 @@ handle_using_decl (using_decl, t)
 
   if (BASELINK_P (fdecl))
     /* Ignore base type this came from. */
-    fdecl = TREE_VALUE (fdecl);
+    fdecl = BASELINK_FUNCTIONS (fdecl);
 
   old_value = IDENTIFIER_CLASS_VALUE (name);
   if (old_value)
@@ -6139,7 +6139,7 @@ instantiate_type (lhstype, rhs, flags)
     case OFFSET_REF:
       rhs = TREE_OPERAND (rhs, 1);
       if (BASELINK_P (rhs))
-	return instantiate_type (lhstype, TREE_VALUE (rhs),
+	return instantiate_type (lhstype, BASELINK_FUNCTIONS (rhs),
 	                         flags | allow_ptrmem);
 
       /* This can happen if we are forming a pointer-to-member for a
@@ -6175,7 +6175,7 @@ instantiate_type (lhstype, rhs, flags)
       /* Now we should have a baselink. */
       my_friendly_assert (BASELINK_P (rhs), 990412);
 
-      return instantiate_type (lhstype, TREE_VALUE (rhs), flags);
+      return instantiate_type (lhstype, BASELINK_FUNCTIONS (rhs), flags);
 
     case CALL_EXPR:
       /* This is too hard for now.  */

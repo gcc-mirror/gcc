@@ -1063,6 +1063,15 @@ finish_named_return_value (return_id, init)
   DECL_UNINLINABLE (current_function_decl) = 1;
 }
 
+/* Begin processing a mem-initializer-list.  */
+
+void
+begin_mem_initializers ()
+{
+  if (! DECL_CONSTRUCTOR_P (current_function_decl))
+    error ("only constructors take base initializers");
+}
+
 /* The INIT_LIST is a list of mem-initializers, in the order they were
    written by the user.  The TREE_VALUE of each node is a list of
    initializers for a particular subobject.  The TREE_PURPOSE is a

@@ -1,3 +1,25 @@
+2002-06-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (build_op_delete_call): Use BASELINK_FUNCTIONS.
+	* class.c (handle_using_decl): Likewise.
+	(instantiate_type): Likewise.
+	* cp-tree.h (BASELINK_FUNCTIONS): New macro.
+	(xref_basetypes): Change prototype.
+	(begin_mem_initializers): New function.
+	(get_overloaded_fn): Likewise.
+	* decl.c (xref_basetypes): Simplify.
+	* error.c (dump_expr): Use BASELINK_FUNCTIONS.
+	* init.c (build_offset_ref): Likewise.
+	* parse.y (base_init): Use begin_mem_initializers().
+	(structsp): Adjust call to xref_basetypes.
+	* pt.c (determine_specialization): Use BASELINK_FUNCTIONS.
+	(instantiate_class_template): Adjust call to xref_basetypes.
+	* semantics.c (begin_mem_initializers): New function.
+	* tree.c (is_overloaded_fn): Use BASELINK_FUNCTIONS.
+	(really_overlaoded_fn): Likewise.
+	(get_overloaded_fn): New function.'
+	(get_first_fn): USe BASELINK_FUNCTIONS.
+	
 2002-06-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (SCALAR_TYPE_P): New macro.
