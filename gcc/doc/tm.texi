@@ -1557,16 +1557,6 @@ If you don't define this macro, the default is the first of
 unsigned int"} that has as much precision as @code{long long unsigned
 int}.
 
-@findex OBJC_SELECTORS_WITHOUT_LABELS
-@item OBJC_SELECTORS_WITHOUT_LABELS
-Define this macro if the compiler can group all the selectors together
-into a vector and use just one label at the beginning of the vector.
-Otherwise, the compiler must give each selector its own assembler
-label.
-
-On certain machines, it is important to have a separate label for each
-selector because this enables the linker to eliminate duplicate selectors.
-
 @findex TARGET_PTRMEMFUNC_VBIT_LOCATION
 @item TARGET_PTRMEMFUNC_VBIT_LOCATION
 The C++ compiler represents a pointer-to-member-function with a struct
@@ -6268,14 +6258,6 @@ A C statement (sans semicolon) to output to the stdio stream
 is customary on your operating system, as it is in most Berkeley Unix
 systems.  This macro is used in @code{assemble_name}.
 
-@ignore @c Seems not to exist anymore.
-@findex ASM_OUTPUT_LABELREF_AS_INT
-@item ASM_OUTPUT_LABELREF_AS_INT (@var{file}, @var{label})
-Define this macro for systems that use the program @command{collect2}.
-The definition should be a C statement to output a word containing
-a reference to the label @var{label}.
-@end ignore
-
 @findex ASM_OUTPUT_SYMBOL_REF
 @item ASM_OUTPUT_SYMBOL_REF (@var{stream}, @var{sym})
 A C statement (sans semicolon) to output a reference to
@@ -7018,18 +7000,6 @@ This describes commands marking the start and the end of an exception
 region.
 
 @table @code
-@findex ASM_OUTPUT_EH_REGION_BEG
-@item ASM_OUTPUT_EH_REGION_BEG ()
-A C expression to output text to mark the start of an exception region.
-
-This macro need not be defined on most platforms.
-
-@findex ASM_OUTPUT_EH_REGION_END
-@item ASM_OUTPUT_EH_REGION_END ()
-A C expression to output text to mark the end of an exception region.
-
-This macro need not be defined on most platforms.
-
 @findex EH_FRAME_SECTION_NAME
 @item EH_FRAME_SECTION_NAME
 If defined, a C string constant for the name of the section containing
@@ -7049,26 +7019,6 @@ collection and sections cannot be marked as not to be collected.
 
 Do not define this macro unless @code{TARGET_ASM_NAMED_SECTION} is
 also defined.
-
-@findex OMIT_EH_TABLE
-@item OMIT_EH_TABLE ()
-A C expression that is nonzero if the normal exception table output
-should be omitted.
-
-This macro need not be defined on most platforms.
-
-@findex EH_TABLE_LOOKUP
-@item EH_TABLE_LOOKUP ()
-Alternate runtime support for looking up an exception at runtime and
-finding the associated handler, if the default method won't work.
-
-This macro need not be defined on most platforms.
-
-@findex DOESNT_NEED_UNWINDER
-@item DOESNT_NEED_UNWINDER
-A C expression that decides whether or not the current function needs to
-have a function unwinder generated for it.  See the file @file{except.c}
-for details on when to define this, and how.
 
 @findex MASK_RETURN_ADDR
 @item MASK_RETURN_ADDR
