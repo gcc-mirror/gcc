@@ -227,6 +227,13 @@ struct tree_common
   (TREE_CODE (TYPE) == REAL_TYPE	\
    || (TREE_CODE (TYPE) == COMPLEX_TYPE \
        && TREE_CODE (TREE_TYPE (TYPE)) == REAL_TYPE))
+
+/* Nonzero if TYPE represents an aggregate (multi-component) type. */
+
+#define AGGREGATE_TYPE_P(TYPE) \
+  (TREE_CODE (TYPE) == ARRAY_TYPE || TREE_CODE (TYPE) == RECORD_TYPE \
+   || TREE_CODE (TYPE) == UNION_TYPE || TREE_CODE (TYPE) == QUAL_UNION_TYPE \
+   || TREE_CODE (TYPE) == SET_TYPE)
 
 /* Define many boolean fields that all tree nodes have.  */
 
