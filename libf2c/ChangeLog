@@ -1,3 +1,11 @@
+1998-09-06  Dave Love  <d.love@dl.ac.uk>
+
+	From Toon to fix spurious recursive i/o errors:
+	* libI77/sfe.c (e_wdfe): Set f__init.
+
+	* libI77/dfe.c (c_dfe): Check and set f__init.
+	(s_rdfe, s_wdfe): Don't check and set f__init.
+
 Fri Sep  4 18:40:32 1998  Craig Burley  <burley@gnu.org>
 
 	* libU77/sys_clock_.c (G77_system_clock_0): Fix indentation.
