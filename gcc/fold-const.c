@@ -5376,6 +5376,33 @@ fold (expr)
 	return build (MINUS_EXPR, type, TREE_OPERAND (arg0, 1),
 		      TREE_OPERAND (arg0, 0));
 
+      /* Convert -f(x) into f(-x) where f is sin, tan or atan.  */
+      switch (builtin_mathfn_code (arg0))
+	{
+	case BUILT_IN_SIN:
+	case BUILT_IN_SINF:
+	case BUILT_IN_SINL:
+	case BUILT_IN_TAN:
+	case BUILT_IN_TANF:
+	case BUILT_IN_TANL:
+	case BUILT_IN_ATAN:
+	case BUILT_IN_ATANF:
+	case BUILT_IN_ATANL:
+	  if (negate_expr_p (TREE_VALUE (TREE_OPERAND (arg0, 1))))
+	    {
+	      tree fndecl, arg, arglist;
+
+	      fndecl = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
+	      arg = TREE_VALUE (TREE_OPERAND (arg0, 1));
+	      arg = fold (build1 (NEGATE_EXPR, type, arg));
+	      arglist = build_tree_list (NULL_TREE, arg);
+	      return build_function_call_expr (fndecl, arglist);
+	    }
+	  break;
+
+	default:
+	  break;
+	}
       return t;
 
     case ABS_EXPR:
@@ -5965,6 +5992,41 @@ fold (expr)
 		      return build_function_call_expr (powfn, arglist);
 		    }
 		}
+
+	      /* Optimize tan(x)*cos(x) as sin(x).  */
+	      if (((fcode0 == BUILT_IN_TAN && fcode1 == BUILT_IN_COS)
+		   || (fcode0 == BUILT_IN_TANF && fcode1 == BUILT_IN_COSF)
+		   || (fcode0 == BUILT_IN_TANL && fcode1 == BUILT_IN_COSL)
+		   || (fcode0 == BUILT_IN_COS && fcode1 == BUILT_IN_TAN)
+		   || (fcode0 == BUILT_IN_COSF && fcode1 == BUILT_IN_TANF)
+		   || (fcode0 == BUILT_IN_COSL && fcode1 == BUILT_IN_TANL))
+		  && operand_equal_p (TREE_VALUE (TREE_OPERAND (arg0, 1)),
+				      TREE_VALUE (TREE_OPERAND (arg1, 1)), 0))
+		{
+		  tree sinfn;
+
+		  switch (fcode0)
+		    {
+		    case BUILT_IN_TAN:
+		    case BUILT_IN_COS:
+		      sinfn = implicit_built_in_decls[BUILT_IN_SIN];
+		      break;
+		    case BUILT_IN_TANF:
+		    case BUILT_IN_COSF:
+		      sinfn = implicit_built_in_decls[BUILT_IN_SINF];
+		      break;
+		    case BUILT_IN_TANL:
+		    case BUILT_IN_COSL:
+		      sinfn = implicit_built_in_decls[BUILT_IN_SINL];
+		      break;
+		    default:
+		      sinfn = NULL_TREE;
+		    }
+
+		  if (sinfn != NULL_TREE)
+		    return build_function_call_expr (sinfn,
+						     TREE_OPERAND (arg0, 1));
+		}
 	    }
 	}
       goto associate;
@@ -6164,6 +6226,63 @@ fold (expr)
 				       build_tree_list (NULL_TREE, neg11));
 	      arg1 = build_function_call_expr (powfn, arglist);
 	      return fold (build (MULT_EXPR, type, arg0, arg1));
+	    }
+	}
+
+      if (flag_unsafe_math_optimizations)
+	{
+	  enum built_in_function fcode0 = builtin_mathfn_code (arg0);
+	  enum built_in_function fcode1 = builtin_mathfn_code (arg1);
+
+	  /* Optimize sin(x)/cos(x) as tan(x).  */
+	  if (((fcode0 == BUILT_IN_SIN && fcode1 == BUILT_IN_COS)
+	       || (fcode0 == BUILT_IN_SINF && fcode1 == BUILT_IN_COSF)
+	       || (fcode0 == BUILT_IN_SINL && fcode1 == BUILT_IN_COSL))
+	      && operand_equal_p (TREE_VALUE (TREE_OPERAND (arg0, 1)),
+				  TREE_VALUE (TREE_OPERAND (arg1, 1)), 0))
+	    {
+	      tree tanfn;
+
+	      if (fcode0 == BUILT_IN_SIN)
+		tanfn = implicit_built_in_decls[BUILT_IN_TAN];
+	      else if (fcode0 == BUILT_IN_SINF)
+		tanfn = implicit_built_in_decls[BUILT_IN_TANF];
+	      else if (fcode0 == BUILT_IN_SINL)
+		tanfn = implicit_built_in_decls[BUILT_IN_TANL];
+	      else
+		tanfn = NULL_TREE;
+
+	      if (tanfn != NULL_TREE)
+		return build_function_call_expr (tanfn,
+						 TREE_OPERAND (arg0, 1));
+	    }
+
+	  /* Optimize cos(x)/sin(x) as 1.0/tan(x).  */
+	  if (((fcode0 == BUILT_IN_COS && fcode1 == BUILT_IN_SIN)
+	       || (fcode0 == BUILT_IN_COSF && fcode1 == BUILT_IN_SINF)
+	       || (fcode0 == BUILT_IN_COSL && fcode1 == BUILT_IN_SINL))
+	      && operand_equal_p (TREE_VALUE (TREE_OPERAND (arg0, 1)),
+				  TREE_VALUE (TREE_OPERAND (arg1, 1)), 0))
+	    {
+	      tree tanfn;
+
+	      if (fcode0 == BUILT_IN_COS)
+		tanfn = implicit_built_in_decls[BUILT_IN_TAN];
+	      else if (fcode0 == BUILT_IN_COSF)
+		tanfn = implicit_built_in_decls[BUILT_IN_TANF];
+	      else if (fcode0 == BUILT_IN_COSL)
+		tanfn = implicit_built_in_decls[BUILT_IN_TANL];
+	      else
+		tanfn = NULL_TREE;
+
+	      if (tanfn != NULL_TREE)
+		{
+		  tree tmp = TREE_OPERAND (arg0, 1);
+		  tmp = build_function_call_expr (tanfn, tmp);
+		  return fold (build (RDIV_EXPR, type,
+				      build_real (type, dconst1),
+				      tmp));
+		}
 	    }
 	}
       goto binary;

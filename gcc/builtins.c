@@ -5346,6 +5346,14 @@ fold_builtin (exp)
 	  /* Optimize cos(0.0) = 1.0.  */
 	  if (real_zerop (arg))
 	    return build_real (type, dconst1);
+
+	  /* Optimize cos(-x) into cos(x).  */
+	  if (TREE_CODE (arg) == NEGATE_EXPR)
+	    {
+	      tree arglist = build_tree_list (NULL_TREE,
+					      TREE_OPERAND (arg, 0));
+	      return build_function_call_expr (fndecl, arglist);
+	    }
 	}
       break;
 
