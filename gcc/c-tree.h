@@ -20,14 +20,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifndef _C_TREE_H
 #define _C_TREE_H
 
-#ifndef STDIO_PROTO
-#ifdef BUFSIZ
-#define STDIO_PROTO(ARGS) PROTO(ARGS)
-#else
-#define STDIO_PROTO(ARGS) ()
-#endif
-#endif
-
 /* Language-dependent contents of an identifier.  */
 
 /* The limbo_value is used for block level extern declarations, which need
