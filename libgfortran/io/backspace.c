@@ -77,6 +77,7 @@ done:
   if (sseek (current_unit->s, base) == FAILURE)
     goto io_error;
   current_unit->last_record--;
+  current_unit->endfile = NO_ENDFILE;
 
   return;
 
