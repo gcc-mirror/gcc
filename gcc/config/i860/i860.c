@@ -669,12 +669,14 @@ singlemove_string (operands)
     }
  if (GET_CODE (operands[1]) == CONST_INT)
    {
-     if((INTVAL (operands[1]) & 0xffff0000) == 0)
-      return "or %L1,%?r0,%0";
-     if((INTVAL (operands[1]) & 0x0000ffff) == 0)
-      return "orh %H1,%?r0,%0";
      if (operands[1] == const0_rtx)
       return "mov %?r0,%0";
+     if((INTVAL (operands[1]) & 0xffff0000) == 0)
+      return "or %L1,%?r0,%0";
+     if((INTVAL (operands[1]) & 0xffff8000) == 0xffff8000)
+      return "adds %1,%?r0,%0";
+     if((INTVAL (operands[1]) & 0x0000ffff) == 0)
+      return "orh %H1,%?r0,%0";
    }
   return "mov %1,%0";
 }
@@ -1196,7 +1198,7 @@ output_size_for_block_move (size, reg, align)
 
 #if 1
   cc_status.flags &= ~ CC_KNOW_HI_R31;
-  output_asm_insn ("mov %1,%0", xoperands);
+  output_asm_insn (singlemove_string (xoperands), xoperands);
 #else
   if (GET_CODE (size) == REG)
     output_asm_insn ("sub %2,%1,%0", xoperands);
@@ -1621,7 +1623,7 @@ sfmode_constant_to_ulong (x)
     abort ();
 
 #if TARGET_FLOAT_FORMAT != HOST_FLOAT_FORMAT
-# error IEEE emulation needed
+ error IEEE emulation needed
 #endif
   REAL_VALUE_FROM_CONST_DOUBLE (d, x);
   u2.f = d;
