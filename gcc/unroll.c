@@ -999,6 +999,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
   map->const_equiv_map = (rtx *) alloca (new_maxregnum * sizeof (rtx));
   map->const_age_map = (unsigned *) alloca (new_maxregnum * sizeof (unsigned));
 
+  map->const_equiv_map_size = new_maxregnum;
   global_const_equiv_map = map->const_equiv_map;
 
   /* Search the list of bivs and givs to find ones which need to be remapped
@@ -1718,7 +1719,8 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	    {
 	      int regno = REGNO (SET_DEST (pattern));
 
-	      if (map->const_age_map[regno] == map->const_age)
+	      if (regno < map->const_equiv_map_size
+		  && map->const_age_map[regno] == map->const_age)
 		map->const_age_map[regno] = -1;
 	    }
 	  break;
@@ -2226,7 +2228,10 @@ approx_final_value (comparison_code, comparison_value, unsigned_p, compare_dir)
    It must be set to the initial value of the induction variable here.
    Otherwise, splittable_regs will hold the difference between the current
    value of the induction variable and the value the induction variable had
-   at the top of the loop.  It must be set to the value 0 here.  */
+   at the top of the loop.  It must be set to the value 0 here.
+
+   Returns the total number of instructions that set registers that are
+   splittable.  */
 
 /* ?? If the loop is only unrolled twice, then most of the restrictions to
    constant values are unnecessary, since we can easily calculate increment
@@ -2335,8 +2340,7 @@ find_splittable_regs (unroll_type, loop_start, loop_end, end_insert_before,
 	     we can treat the last one specially.  */
 
 	  splittable_regs_updates[bl->regno] = bl->biv_count;
-
-	  result++;
+	  result += bl->biv_count;
 
 	  if (loop_dump_stream)
 	    fprintf (loop_dump_stream,
@@ -2348,8 +2352,8 @@ find_splittable_regs (unroll_type, loop_start, loop_end, end_insert_before,
 	 depend on it may be splittable if the biv is live outside the
 	 loop, and the givs aren't.  */
 
-      result = find_splittable_givs (bl, unroll_type, loop_start, loop_end,
-				     increment, unroll_number, result);
+      result += find_splittable_givs (bl, unroll_type, loop_start, loop_end,
+				     increment, unroll_number);
 
       /* If final value is non-zero, then must emit an instruction which sets
 	 the value of the biv to the proper value.  This is done after
@@ -2393,20 +2397,23 @@ find_splittable_regs (unroll_type, loop_start, loop_end, end_insert_before,
 }
 
 /* For every giv based on the biv BL, check to determine whether it is
-   splittable.  This is a subroutine to find_splittable_regs ().  */
+   splittable.  This is a subroutine to find_splittable_regs ().
+
+   Return the number of instructions that set splittable registers.  */
 
 static int
 find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
-		      unroll_number, result)
+		      unroll_number)
      struct iv_class *bl;
      enum unroll_types unroll_type;
      rtx loop_start, loop_end;
      rtx increment;
-     int unroll_number, result;
+     int unroll_number;
 {
   struct induction *v;
   rtx final_value;
   rtx tem;
+  int result = 0;
 
   for (v = bl->giv; v; v = v->next_iv)
     {
