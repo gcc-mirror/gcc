@@ -18,7 +18,7 @@ with) `g77', so it isn't worth separating them out.
 
    For information on bugs in *other* versions of `g77', see
 `egcs/gcc/f/NEWS'.  There, lists of bugs fixed in various versions of
-`g77', can help determine what bugs existed in prior versions.
+`g77' can help determine what bugs existed in prior versions.
 
    *Warning:* The information below is still under development, and
 might not accurately reflect the `g77' code base of which it is a part.
@@ -40,7 +40,7 @@ via `http://egcs.cygnus.com/onlinedocs/g77_bugs.html'.  Follow the
 port, build, and install `g77', see "Problems Installing" in
 `egcs/gcc/f/INSTALL'.
 
-   The following information was last updated on 1999-03-13:
+   The following information was last updated on 1999-03-15:
 
    * Automatic arrays possibly aren't working on HP-UX systems, at
      least in HP-UX version 10.20.  Writing into them apparently causes
