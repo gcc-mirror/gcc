@@ -31,6 +31,7 @@ need to take first.
 * Challenges Posed::
 * Transforming Statements::
 * Transforming Expressions::
+* Internal Naming Conventions::
 @end menu
 
 @node Overview of Translation Process
@@ -626,7 +627,7 @@ Hollerith constants (such as @samp{2HAB}) can appear after:
 
 @itemize @bullet
 @item
-@samp{FORMAT(}
+@samp{(}
 
 @item
 @samp{,}
@@ -1280,7 +1281,7 @@ Further, after the @code{SYSTEM_CLOCK} library routine returns,
 the compiler must ensure that the temporary variable it wrote
 is copied into the appropriate element of the @samp{CLOCKS} array.
 (This assumes the compiler doesn't just reject the code,
-which it should if it is compiling under some kind of a "strict" option.)
+which it should if it is compiling under some kind of a ``strict'' option.)
 
 @item
 To determine the correct index into the @samp{CLOCKS} array,
@@ -1687,3 +1688,110 @@ to hold the value of the expression.
 @item
 Other stuff???
 @end itemize
+
+@node Internal Naming Conventions
+@section Internal Naming Conventions
+
+Names exported by FFE modules have the following (regular-expression) forms.
+Note that all names beginning @code{ffe@var{mod}} or @code{FFE@var{mod}},
+where @var{mod} is lowercase or uppercase alphanumerics, respectively,
+are exported by the module @code{ffe@var{mod}},
+with the source code doing the exporting in @file{@var{mod}.h}.
+(Usually, the source code for the implementation is in @file{@var{mod}.c}.)
+
+Identifiers that don't fit the following forms
+are not considered exported,
+even if they are according to the C language.
+(For example, they might be made available to other modules
+solely for use within expansions of exported macros,
+not for use within any source code in those other modules.)
+
+@table @code
+@item ffe@var{mod}
+The single typedef exported by the module.
+
+@item FFE@var{umod}_[A-Z][A-Z0-9_]*
+(Where @var{umod} is the uppercase for of @var{mod}.)
+
+A @code{#define} or @code{enum} constant of the type @code{ffe@var{mod}}.
+
+@item ffe@var{mod}[A-Z][A-Z][a-z0-9]*
+A typedef exported by the module.
+
+The portion of the identifier after @code{ffe@var{mod}} is
+referred to as @code{ctype}, a capitalized (mixed-case) form
+of @code{type}.
+
+@item FFE@var{umod}_@var{type}[A-Z][A-Z0-9_]*[A-Z0-9]?
+(Where @var{umod} is the uppercase for of @var{mod}.)
+
+A @code{#define} or @code{enum} constant of the type
+@code{ffe@var{mod}@var{type}},
+where @var{type} is the lowercase form of @var{ctype}
+in an exported typedef.
+
+@item ffe@var{mod}_@var{value}
+A function that does or returns something,
+as described by @var{value} (see below).
+
+@item ffe@var{mod}_@var{value}_@var{input}
+A function that does or returns something based
+primarily on the thing described by @var{input} (see below).
+@end table
+
+Below are names used for @var{value} and @var{input},
+along with their definitions.
+
+@table @code
+@item col
+A column number within a line (first column is number 1).
+
+@item file
+An encapsulation of a file's name.
+
+@item find
+Looks up an instance of some type that matches specified criteria,
+and returns that, even if it has to create a new instance or
+crash trying to find it (as appropriate).
+
+@item initialize
+Initializes, usually a module.  No type.
+
+@item int
+A generic integer of type @code{int}.
+
+@item is
+A generic integer that contains a true (non-zero) or false (zero) value.
+
+@item len
+A generic integer that contains the length of something.
+
+@item line
+A line number within a source file,
+or a global line number.
+
+@item lookup
+Looks up an instance of some type that matches specified criteria,
+and returns that, or returns nil.
+
+@item name
+A @code{text} that points to a name of something.
+
+@item new
+Makes a new instance of the indicated type.
+Might return an existing one if appropriate---if so,
+similar to @code{find} without crashing.
+
+@item pt
+Pointer to a particular character (line, column pairs)
+in the input file (source code being compiled).
+
+@item run
+Performs some herculean task.  No type.
+
+@item terminate
+Terminates, usually a module.  No type.
+
+@item text
+A @code{char *} that points to generic text.
+@end table
