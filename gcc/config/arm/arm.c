@@ -5703,11 +5703,7 @@ arm_print_operand (stream, x, code)
 	{
 	  HOST_WIDE_INT val;
 	  val = ARM_SIGN_EXTEND (~ INTVAL (x));
-
-	  if (val < -1000 || val > 1000)
-	    fprintf (stream, HOST_WIDE_INT_PRINT_HEX, val);
-	  else
-	    fprintf (stream, HOST_WIDE_INT_PRINT_DEC, val);
+	  fprintf (stream, HOST_WIDE_INT_PRINT_DEC, val);
 	}
       else
 	{
@@ -5737,10 +5733,7 @@ arm_print_operand (stream, x, code)
 	    else
 	      {
 		fputc ('#', stream);
-		if (val < -1000 || val > 1000)
-		  fprintf (stream, HOST_WIDE_INT_PRINT_HEX, val);
-		else
-		  fprintf (stream, HOST_WIDE_INT_PRINT_DEC, val);
+		fprintf (stream, HOST_WIDE_INT_PRINT_DEC, val);
 	      }
 	  }
       }

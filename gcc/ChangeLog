@@ -1,3 +1,8 @@
+Thu Apr  8 09:37:40 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.c (arm_print_operand): Undo previous change -
+	always print large constants in decimal.
+
 Thu Apr  8 10:22:23 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (host_xm_file, build_xm_file): Include hwint.h.
