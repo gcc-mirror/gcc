@@ -1072,10 +1072,15 @@ extern char leaf_reg_remap[];
    GENERAL_REGS and FP_REGS.  */
 #define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE) ((CLASS1) != (CLASS2))
 
-/* Return the stack location to use for secondary memory needed reloads.  */
+/* Return the stack location to use for secondary memory needed reloads.
+   We want to use the reserved location just below the frame pointer.
+   However, we must ensure that there is a frame, so use assign_stack_local
+   if the frame size is zero.  */
 #define SECONDARY_MEMORY_NEEDED_RTX(MODE) \
-  gen_rtx (MEM, MODE, gen_rtx (PLUS, Pmode, frame_pointer_rtx,	\
-	   GEN_INT (STARTING_FRAME_OFFSET)))
+  (get_frame_size () == 0						\
+   ? assign_stack_local (mode, GET_MODE_SIZE (mode), 0)			\
+   : gen_rtx (MEM, MODE, gen_rtx (PLUS, Pmode, frame_pointer_rtx,	\
+				  GEN_INT (STARTING_FRAME_OFFSET))))
 
 /* Get_secondary_mem widens it's argument to BITS_PER_WORD which loses on v9
    because the movsi and movsf patterns don't handle r/f moves.
