@@ -113,7 +113,7 @@ gcov [-b] [-c] [-v] [-n] [-l] [-f] [-o directory] @var{sourcefile}
 
 @ignore
 @c man begin SYNOPSIS
-gcov [@samp{-b}] [@samp{-c}] [@samp{-v}] [@samp{-n}] [@samp{-l}] [@samp{-f}] [@samp{-o} @var{directory}] @var{sourcefile}
+gcov [@option{-b}] [@option{-c}] [@option{-v}] [@option{-n}] [@option{-l}] [@option{-f}] [@option{-o} @var{directory}] @var{sourcefile}
 @c man end
 @c man begin SEEALSO
 gcc(1) and the Info entry for @file{gcc}.
@@ -329,11 +329,11 @@ basic block in the source file.
 
 The @file{.bb} file format consists of several lists of 4-byte integers
 which correspond to the line numbers of each basic block in the
-file.  Each list is terminated by a line number of 0.  A line number of -1
+file.  Each list is terminated by a line number of 0.  A line number of @minus{}1
 is used to designate that the source file name (padded to a 4-byte
-boundary and followed by another -1) follows.  In addition, a line number
-of -2 is used to designate that the name of a function (also padded to a
-4-byte boundary and followed by a -2) follows.
+boundary and followed by another @minus{}1) follows.  In addition, a line number
+of @minus{}2 is used to designate that the name of a function (also padded to a
+4-byte boundary and followed by a @minus{}2) follows.
 
 The @file{.bbg} file is used to reconstruct the program flow graph for
 the source file.  It contains a list of the program flow arcs (possible
@@ -350,16 +350,16 @@ In the @file{.bbg} file, the format is:
         flag bits (4-byte number)
         destination basic block of arc #1 (4-byte number)
         flag bits (4-byte number)
-        ...
+        @dots{}
         destination basic block of arc #N (4-byte number)
         flag bits (4-byte number)
         count of arcs in basic block #1 (4-byte number)
         destination basic block of arc #0 (4-byte number)
         flag bits (4-byte number)
-        ...
+        @dots{}
 @end smallexample
 
-A -1 (stored as a 4-byte number) is used to separate each function's
+A @minus{}1 (stored as a 4-byte number) is used to separate each function's
 list of basic blocks, and to verify that the file has been read
 correctly.
 

@@ -53,7 +53,7 @@ to specify a configuration when building a native compiler unless
 wrong.
 
 In those cases, specify the build machine's @dfn{configuration name}
-with the @samp{--host} option; the host and target will default to be
+with the @option{--host} option; the host and target will default to be
 the same as the host machine.  (If you are building a cross-compiler,
 see @ref{Cross-Compiler}.)
 
@@ -87,24 +87,24 @@ section before proceeding any further with the installation of GNU CC.
 @item
 When running @code{configure}, you may also need to specify certain
 additional options that describe variant hardware and software
-configurations.  These are @samp{--with-gnu-as}, @samp{--with-gnu-ld},
-@samp{--with-stabs} and @samp{--nfp}.
+configurations.  These are @option{--with-gnu-as}, @option{--with-gnu-ld},
+@option{--with-stabs} and @option{--nfp}.
 
 @table @samp
 @item --with-gnu-as
 If you will use GNU CC with the GNU assembler (GAS), you should declare
-this by using the @samp{--with-gnu-as} option when you run
+this by using the @option{--with-gnu-as} option when you run
 @file{configure}.
 
 Using this option does not install GAS.  It only modifies the output of
 GNU CC to work with GAS.  Building and installing GAS is up to you.
 
 Conversely, if you @emph{do not} wish to use GAS and do not specify
-@samp{--with-gnu-as} when building GNU CC, it is up to you to make sure
+@option{--with-gnu-as} when building GNU CC, it is up to you to make sure
 that GAS is not installed.  GNU CC searches for a program named
 @code{as} in various directories; if the program it finds is GAS, then
 it runs GAS.  If you are not sure where GNU CC finds the assembler it is
-using, try specifying @samp{-v} when you run it.
+using, try specifying @option{-v} when you run it.
 
 The systems where it makes a difference whether you use GAS are@*
 @samp{hppa1.0-@var{any}-@var{any}}, @samp{hppa1.1-@var{any}-@var{any}},
@@ -114,14 +114,14 @@ The systems where it makes a difference whether you use GAS are@*
 @samp{m68k-altos-sysv}, @samp{m68000-hp-hpux},@*
 @samp{m68000-att-sysv}, @samp{@var{any}-lynx-lynxos},
 and @samp{mips-@var{any}}).
-On any other system, @samp{--with-gnu-as} has no effect.
+On any other system, @option{--with-gnu-as} has no effect.
 
 On the systems listed above (except for the HP-PA, for ISC on the
 386, and for @samp{mips-sgi-irix5.*}), if you use GAS, you should also
-use the GNU linker (and specify @samp{--with-gnu-ld}).
+use the GNU linker (and specify @option{--with-gnu-ld}).
 
 @item --with-gnu-ld
-Specify the option @samp{--with-gnu-ld} if you plan to use the GNU
+Specify the option @option{--with-gnu-ld} if you plan to use the GNU
 linker with GNU CC.
 
 This option does not cause the GNU linker to be installed; it just
@@ -138,19 +138,19 @@ format cannot fully handle languages other than C.  BSD stabs format can
 handle other languages, but it only works with the GNU debugger GDB.
 
 Normally, GNU CC uses the ECOFF debugging format by default; if you
-prefer BSD stabs, specify @samp{--with-stabs} when you configure GNU
+prefer BSD stabs, specify @option{--with-stabs} when you configure GNU
 CC.
 
 No matter which default you choose when you configure GNU CC, the user
-can use the @samp{-gcoff} and @samp{-gstabs+} options to specify explicitly
+can use the @option{-gcoff} and @option{-gstabs+} options to specify explicitly
 the debug format for a particular compilation.
 
-@samp{--with-stabs} is meaningful on the ISC system on the 386, also, if
-@samp{--with-gas} is used.  It selects use of stabs debugging
+@option{--with-stabs} is meaningful on the ISC system on the 386, also, if
+@option{--with-gas} is used.  It selects use of stabs debugging
 information embedded in COFF output.  This kind of debugging information
 supports C++ well; ordinary COFF debugging information does not.
 
-@samp{--with-stabs} is also meaningful on 386 systems running SVR4.  It
+@option{--with-stabs} is also meaningful on 386 systems running SVR4.  It
 selects use of stabs debugging information embedded in ELF output.  The
 C++ compiler currently (2.6.0) does not support the DWARF debugging
 information normally used on 386 SVR4 platforms; stabs provide a
@@ -394,9 +394,9 @@ the GNU assembler and linker are available.
 @subsection Configuring a Cross-Compiler
 
 To build GNU CC as a cross-compiler, you start out by running
-@file{configure}.  Use the @samp{--target=@var{target}} to specify the
+@file{configure}.  Use the @option{--target=@var{target}} to specify the
 target type.  If @file{configure} was unable to correctly identify the
-system you are running on, also specify the @samp{--build=@var{build}}
+system you are running on, also specify the @option{--build=@var{build}}
 option.  For example, here is how to configure for a cross-compiler that
 produces code for an HP 68030 system running BSD on a system that
 @file{configure} can correctly identify:
@@ -433,7 +433,7 @@ and copy or link them to the proper place to for the cross-compiler to
 find them when run later.
 
 The easiest way to provide these files is to build the Binutils package
-and GAS.  Configure them with the same @samp{--host} and @samp{--target}
+and GAS.  Configure them with the same @option{--host} and @option{--target}
 options that you use for configuring GNU CC, then build and install
 them.  They install their executables automatically into the proper
 directory.  Alas, they do not support all the targets that GNU CC
@@ -825,8 +825,8 @@ called @code{__main}, which is called (automatically) at the beginning
 of the body of @code{main} (provided @code{main} was compiled with GNU
 CC).  Calling @code{__main} is necessary, even when compiling C code, to
 allow linking C and C++ object code together.  (If you use
-@samp{-nostdlib}, you get an unresolved reference to @code{__main},
-since it's defined in the standard GCC library.  Include @samp{-lgcc} at
+@option{-nostdlib}, you get an unresolved reference to @code{__main},
+since it's defined in the standard GCC library.  Include @option{-lgcc} at
 the end of your compiler command line to resolve this reference.)
 
 The program @code{collect2} is installed as @code{ld} in the directory
@@ -857,7 +857,7 @@ if specified.
 
 ``The compiler's search directories'' means all the directories where
 @code{gcc} searches for passes of the compiler.  This includes
-directories that you specify with @samp{-B}.
+directories that you specify with @option{-B}.
 
 Cross-compilers search a little differently:
 

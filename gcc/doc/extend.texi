@@ -1851,7 +1851,7 @@ memory checking code for that function, permitting the use of @code{asm}
 statements without having to compile that function with different
 options.  This also allows you to write support routines of your own if
 you wish, without getting infinite recursion if they get compiled with
-@code{-fcheck-memory-usage}.
+@option{-fcheck-memory-usage}.
 
 @item regparm (@var{number})
 @cindex functions that are passed arguments in registers on the 386
@@ -1891,7 +1891,7 @@ current location can be called.
 @item long_call/short_call
 @cindex indirect calls on ARM
 This attribute allows to specify how to call a particular function on
-ARM.  Both attributes override the @code{-mlong-calls} (@pxref{ARM Options})
+ARM.  Both attributes override the @option{-mlong-calls} (@pxref{ARM Options})
 command line switch and @code{#pragma long_calls} settings.  The
 @code{long_call} attribute causes the compiler to always call the
 function by first loading its address into a register and then using the
@@ -4663,7 +4663,7 @@ within the for scope). g++ retains this, but issues a warning, if such a
 variable is accessed outside the for scope.
 
 @item implicit C language
-Old C system header files did not contain an @code{extern "C" @{...@}}
+Old C system header files did not contain an @code{extern "C" @{@dots{}@}}
 scope to set the language. On such systems, all header files are
 implicitly scoped inside a C language scope. Also, an empty prototype
 @code{()} will be treated as an unspecified number of arguments, rather
