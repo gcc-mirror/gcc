@@ -1,3 +1,12 @@
+2001-12-04  Robert Dewar <dewar@gnat.com>
+
+	* sem_ch12.adb:
+	(Analyze_Formal_Type_Definition): Defend against Error.
+	(Analyze_Formal_Subprogram): Defend against Error.
+	
+	* par-ch12.adb (F_Formal_Type_Declaration): In case of error, 
+	remove following semicolon if present. Removes cascaded error.
+
 2001-12-04  Douglas B. Rupp <rupp@gnat.com>
 
 	* bindgen.adb:

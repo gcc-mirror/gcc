@@ -454,7 +454,13 @@ package body Ch12 is
          TF_Semicolon;
       else
          Decl_Node := Error;
+
+         if Token = Tok_Semicolon then
+            --   Avoid further cascaded errors.
+            Scan;
+         end if;
       end if;
+
 
       return Decl_Node;
    end P_Formal_Type_Declaration;
