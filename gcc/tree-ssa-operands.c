@@ -1581,58 +1581,52 @@ add_call_clobber_ops (tree stmt, tree callee)
   else
     {
       size_t i;
+      bitmap not_read_b = NULL, not_written_b = NULL;
 
       /* Get info for module level statics.  There is a bit set for
 	 each static if the call being processed does not read or
 	 write that variable.  */
 
-      /* hack to turn off the optimization until I can get the bug fixed. */
-      /*      bitmap not_read_b = callee 
-	? get_global_statics_not_read (callee) : NULL; 
-      bitmap not_written_b = callee 
-	? get_global_statics_not_written (callee) : NULL; 
-      */
-
-      bitmap not_read_b = NULL; 
-      bitmap not_written_b = NULL; 
+      /* ??? Turn off the optimization until it gets fixed.  */
+      if (0 && callee)
+	{
+	  not_read_b = get_global_statics_not_read (callee);
+	  not_written_b = get_global_statics_not_written (callee);
+	}
 
       EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i,
 	{
 	  tree var = referenced_var (i);
 
-	  bool not_read = not_read_b 
-	    ? bitmap_bit_p(not_read_b, i) : false;
-	  bool not_written = not_written_b
-	    ? bitmap_bit_p(not_written_b, i) : false;
+	  bool not_read
+	    = not_read_b ? bitmap_bit_p (not_read_b, i) : false;
+	  bool not_written
+	    = not_written_b ? bitmap_bit_p (not_written_b, i) : false;
 
-
-	  if (not_read) 
-	    { /* The var is not read during the call.  */
-	      if (not_written) 
-		{
-		  /* Nothing. */
-		}
-	      else 
+	  if (not_read)
+	    {
+	      /* The var is not read during the call.  */
+	      if (!not_written)
 		add_stmt_operand (&var, stmt, opf_is_def);
-	    } 
+	    }
 	  else
-	    { /* The var is read during the call.  */
+	    {
+	      /* The var is read during the call.  */
 	      if (not_written) 
 		add_stmt_operand (&var, stmt, opf_none);
-	      else 
-		/* The not_read and not_written bits are only set
-		   for module static variables.  Neither is set
-		   here, so we may be dealing with a module static
-		   or we may not.  So we still must look anywhere
-		   else we can (such as the TREE_READONLY) to get
-		   better info.  */
-		/* If VAR is read-only, don't add a V_MAY_DEF, just a 
-		   VUSE operand.  */
-		if (TREE_READONLY (var))
-		  add_stmt_operand (&var, stmt, opf_none);
-		else
-		  add_stmt_operand (&var, stmt, opf_is_def);
-	    }	      
+
+	      /* The not_read and not_written bits are only set for module
+		 static variables.  Neither is set here, so we may be dealing
+		 with a module static or we may not.  So we still must look
+		 anywhere else we can (such as the TREE_READONLY) to get
+		 better info.  */
+	      /* If VAR is read-only, don't add a V_MAY_DEF, just a
+		 VUSE operand.  */
+	      else if (TREE_READONLY (var))
+		add_stmt_operand (&var, stmt, opf_none);
+	      else
+		add_stmt_operand (&var, stmt, opf_is_def);
+	    }
 	});
     }
 }
