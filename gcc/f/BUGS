@@ -15,26 +15,46 @@ separating them out.
    For information on bugs that might afflict people who configure,
 port, build, and install `g77', *Note Problems Installing::.
 
-   * `g77''s version of `gcc', and probably `g77' itself, cannot be
-     reliably used with the `-O2' option (or higher) on Digital
-     Semiconductor Alpha AXP machines.  The problem is most immediately
-     noticed in differences discovered by `make compare' following a
-     bootstrap build using `-O2'.  It also manifests itself as a
-     failure to compile `DATA' statements such as `DATA R/7./'
-     correctly; in this case, `R' might be initialized to `4.0'.
+   * `g77' sometimes crashes when compiling code containing the
+     construct `CMPLX(0.)' or similar.  This is a `gcc' back-end bug.
+     It can be worked around using `-fno-emulate-complex', though that
+     might trigger other, older bugs.  Compiling without optimization
+     is another work-around.
 
-     Until this bug is fixed, use only `-O1' or no optimization.
+     Fixed in `egcs' 1.1.
+
+   * Automatic arrays aren't working on HP-UX systems, at least in
+     HP-UX version 10.20.  Writing into them apparently causes
+     over-writing of statically declared data in the main program.
+     This probably means the arrays themselves are being
+     under-allocated, or pointers to them being improperly handled,
+     e.g. not passed to other procedures as they should be.
+
+   * Some Fortran code has been found to be miscompiled by `g77' built
+     on `gcc' version 2.8.1 on m68k-next-nextstep3 configurations when
+     using the `-O2' option.  Even a C function is known to miscompile
+     on that configuration when using the `-O2 -funroll-loops' options.
+
+     Fixed in `egcs'.
+
+   * A code-generation bug afflicts Intel x86 targets when `-O2' is
+     specified compiling, for example, an old version of the `DNRM2'
+     routine.  The x87 coprocessor stack is being mismanaged in cases
+     where assigned `GOTO' and `ASSIGN' are involved.
+
+     Fixed in `egcs' version 1.1.
+
+   * A compiler crash, or apparently infinite run time, can result when
+     compiling complicated expressions involving `COMPLEX' arithmetic
+     (especially multiplication).
+
+     Fixed in `egcs' version 1.1.
 
    * Something about `g77''s straightforward handling of label
      references and definitions sometimes prevents the GBE from
      unrolling loops.  Until this is solved, try inserting or removing
      `CONTINUE' statements as the terminal statement, using the `END DO'
-     form instead, and so on.  (Probably improved, but not wholly
-     fixed, in 0.5.21.)
-
-   * The `g77' command itself should more faithfully process options
-     the way the `gcc' command does.  For example, `gcc' accepts
-     abbreviated forms of long options, `g77' generally doesn't.
+     form instead, and so on.
 
    * Some confusion in diagnostics concerning failing `INCLUDE'
      statements from within `INCLUDE''d or `#include''d files.
@@ -117,37 +137,12 @@ port, build, and install `g77', *Note Problems Installing::.
      information might even lead to all relevant products working
      together properly sooner.
 
-   * `g77' currently inserts needless padding for things like `COMMON
-     A,IPAD' where `A' is `CHARACTER*1' and `IPAD' is `INTEGER(KIND=1)'
-     on machines like x86, because the back end insists that `IPAD' be
-     aligned to a 4-byte boundary, but the processor has no such
-     requirement (though it's good for performance).
-
-     It is possible that this is not a real bug, and could be considered
-     a performance feature, but it might be important to provide the
-     ability to Fortran code to specify minimum padding for aggregate
-     areas such as common blocks--and, certainly, there is the
-     potential, with the current setup, for interface differences in
-     the way such areas are laid out between `g77' and other compilers.
-
    * `g77' doesn't work perfectly on 64-bit configurations such as the
-     Alpha.  This problem is expected to be largely resolved as of
-     version 0.5.20, and further addressed by 0.5.21.  Version 0.6
-     should solve most or all related problems (such as 64-bit machines
-     other than Digital Semiconductor ("DEC") Alphas).
+     Digital Semiconductor ("DEC") Alpha.
 
-     One known bug that causes a compile-time crash occurs when
-     compiling code such as the following with optimization:
-
-          SUBROUTINE CRASH (TEMP)
-          INTEGER*2 HALF(2)
-          REAL TEMP
-          HALF(1) = NINT (TEMP)
-          END
-
-     It is expected that a future version of `g77' will have a fix for
-     this problem, almost certainly by the time `g77' supports the
-     forthcoming version 2.8.0 of `gcc'.
+     This problem is largely resolved as of version 0.5.23.  Version
+     0.6 should solve most or all remaining problems (such as
+     cross-compiling involving 64-bit machines).
 
    * Maintainers of gcc report that the back end definitely has "broken"
      support for `COMPLEX' types.  Based on their input, it seems many
@@ -168,4 +163,56 @@ port, build, and install `g77', *Note Problems Installing::.
      that the assembler complains about invalid opcodes.  This bug is
      in the gcc back end, and it apparently occurs only when compiling
      sufficiently complicated functions *without* the `-O' option.
+
+     Fixed in `egcs' version 1.1.
+
+   * `g77' currently inserts needless padding for things like `COMMON
+     A,IPAD' where `A' is `CHARACTER*1' and `IPAD' is `INTEGER(KIND=1)'
+     on machines like x86, because the back end insists that `IPAD' be
+     aligned to a 4-byte boundary, but the processor has no such
+     requirement (though it is usually good for performance).
+
+     The `gcc' back end needs to provide a wider array of
+     specifications of alignment requirements and preferences for
+     targets, and front ends like `g77' should take advantage of this
+     when it becomes available.
+
+   * The x86 target's `-malign-double' option no longer reliably aligns
+     double-precision variables and arrays when they are placed in the
+     stack frame.
+
+     This can significantly reduce the performance of some applications,
+     even on a run-to-run basis (that is, performance measurements can
+     vary fairly widely depending on whether frequently used variables
+     are properly aligned, and that can change from one program run to
+     the next, even from one procedure call to the next).
+
+     Versions 0.5.22 and earlier of `g77' included a patch to `gcc'
+     that enabled this, but that patch has been deemed an improper
+     (probably buggy) one for version 2.8 of `gcc' and for `egcs'.
+
+     Note that version 1.1 of `egcs' aligns double-precision variables
+     and arrays when they are in static storage even if
+     `-malign-double' is not specified.
+
+     There is ongoing investigation into how to make `-malign-double'
+     work properly, also into how to make it unnecessary to get all
+     double-precision variables and arrays aligned when such alignment
+     would not violate the relevant specifications for processor and
+     inter-procedural interfaces.
+
+     For a suite of programs to test double-precision alignment, see
+     `ftp://alpha.gnu.org/gnu/g77/align/'.
+
+   * The `libf2c' routines that perform some run-time arithmetic on
+     `COMPLEX' operands were modified circa version 0.5.20 of `g77' to
+     work properly even in the presence of aliased operands.
+
+     While the `g77' and `netlib' versions of `libf2c' differ on how
+     this is accomplished, the main differences are that we believe the
+     `g77' version works properly even in the presence of *partially*
+     aliased operands.
+
+     However, these modifications have reduced performance on targets
+     such as x86, due to the extra copies of operands involved.
 
