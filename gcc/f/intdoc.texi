@@ -6355,7 +6355,7 @@ Int2(@var{A})
 Int2: @code{INTEGER(KIND=6)} function.
 
 @noindent
-@var{A}: @code{INTEGER}; scalar; INTENT(IN).
+@var{A}: @code{INTEGER}, @code{REAL}, or @code{COMPLEX}; scalar; INTENT(IN).
 
 @noindent
 Intrinsic groups: @code{gnu}.
@@ -6390,7 +6390,7 @@ Int8(@var{A})
 Int8: @code{INTEGER(KIND=2)} function.
 
 @noindent
-@var{A}: @code{INTEGER}; scalar; INTENT(IN).
+@var{A}: @code{INTEGER}, @code{REAL}, or @code{COMPLEX}; scalar; INTENT(IN).
 
 @noindent
 Intrinsic groups: @code{gnu}.
