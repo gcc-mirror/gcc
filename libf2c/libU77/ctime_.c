@@ -1,4 +1,4 @@
-/* Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+/* Copyright (C) 1995, 1996, 2001 Free Software Foundation, Inc.
 This file is part of GNU Fortran libU77 library.
 
 This library is free software; you can redistribute it and/or modify it
@@ -19,6 +19,7 @@ Boston, MA 02111-1307, USA.  */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include <sys/types.h>
 #if TIME_WITH_SYS_TIME
 # include <sys/time.h>
 # include <time.h>
