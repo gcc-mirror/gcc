@@ -6850,7 +6850,7 @@ express_from_1 (a, b, mult)
     }
   else if (CONSTANT_P (a))
     {
-      return simplify_gen_binary (MINUS, GET_MODE (b), const0_rtx, a);
+      return simplify_gen_binary (MINUS, GET_MODE (b) != VOIDmode ? GET_MODE (b) : GET_MODE (a), const0_rtx, a);
     }
   else if (GET_CODE (b) == PLUS)
     {
