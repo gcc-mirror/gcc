@@ -1,5 +1,11 @@
 2004-12-02  Bud Davis  <bdavis9659@comcast.net>
 
+	PR libfortran/18284
+	* io/unix.c (fd_alloc_w_at): Update file_length when extending.
+	* io/backspace.c (formatted_backspace): Reset endfile after backspace.
+
+2004-12-02  Bud Davis  <bdavis9659@comcast.net>
+
 	* io/inquire.c (inquire_via_unit): do not allow a direct access
 	file to be opened for sequential I/O.
 

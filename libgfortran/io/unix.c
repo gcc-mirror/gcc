@@ -462,6 +462,9 @@ fd_alloc_w_at (unix_stream * s, int *len, gfc_offset where)
 
   s->logical_offset = where + *len;
 
+  if (where + *len > s->file_length)
+    s->file_length = where + *len;
+
   n = s->logical_offset - s->buffer_offset;
   if (n > s->active)
     s->active = n;

@@ -1,5 +1,10 @@
 2004-12-02  Bud Davis  <bdavis9659@comcast.net>
 
+	PR fortran/18284
+	* gfortran.dg/backspace.f90
+
+2004-12-02  Bud Davis  <bdavis9659@comcast.net>
+
 	* gfortran.dg/inquire.f90: New test.
 
 2004-12-01  Janis Johnson  <janis187@us.ibm.com>
