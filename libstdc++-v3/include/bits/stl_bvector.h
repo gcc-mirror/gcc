@@ -323,7 +323,8 @@ namespace _GLIBCXX_STD
     }
 
     const_iterator 
-    operator+(difference_type __i) const {
+    operator+(difference_type __i) const
+    {
       const_iterator __tmp = *this;
       return __tmp += __i;
     }

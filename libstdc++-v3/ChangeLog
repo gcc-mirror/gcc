@@ -1,5 +1,18 @@
 2004-07-04  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/basic_string.h: Trivial formatting fixes and/or
+	const-ification of some variables.
+	* include/bits/deque.tcc: Likewise.
+	* include/bits/stl_algobase.h: Likewise.
+	* include/bits/stl_bvector.h: Likewise.
+	* include/bits/stl_construct.h: Likewise.
+	* include/bits/stl_deque.h: Likewise.
+	* include/bits/stl_pair.h: Likewise.
+	* include/bits/stl_vector.h: Likewise.
+	* include/bits/vector.tcc: Likewise.
+
+2004-07-04  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/25_algorithms/copy/1.cc: Add instantiations for
 	systems with no COMDAT or weak support.
 	* testsuite/25_algorithms/copy/2.cc: Likewise.

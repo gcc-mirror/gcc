@@ -721,8 +721,8 @@ namespace std
 	    typename iterator_traits<_InputIterator1>::value_type,
 	    typename iterator_traits<_InputIterator2>::value_type>)
       __glibcxx_requires_valid_range(__first1, __last1);
-
-      for ( ; __first1 != __last1; ++__first1, ++__first2)
+      
+      for (; __first1 != __last1; ++__first1, ++__first2)
 	if (!(*__first1 == *__first2))
 	  return false;
       return true;
@@ -753,7 +753,7 @@ namespace std
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
       __glibcxx_requires_valid_range(__first1, __last1);
 
-      for ( ; __first1 != __last1; ++__first1, ++__first2)
+      for (; __first1 != __last1; ++__first1, ++__first2)
 	if (!__binary_pred(*__first1, *__first2))
 	  return false;
       return true;
@@ -788,7 +788,8 @@ namespace std
       __glibcxx_requires_valid_range(__first1, __last1);
       __glibcxx_requires_valid_range(__first2, __last2);
 
-      for (;__first1 != __last1 && __first2 != __last2; ++__first1, ++__first2)
+      for (; __first1 != __last1 && __first2 != __last2;
+	   ++__first1, ++__first2)
 	{
 	  if (*__first1 < *__first2)
 	    return true;
@@ -823,8 +824,8 @@ namespace std
       __glibcxx_requires_valid_range(__first1, __last1);
       __glibcxx_requires_valid_range(__first2, __last2);
 
-      for ( ; __first1 != __last1 && __first2 != __last2
-	    ; ++__first1, ++__first2)
+      for (; __first1 != __last1 && __first2 != __last2;
+	   ++__first1, ++__first2)
 	{
 	  if (__comp(*__first1, *__first2))
 	    return true;
