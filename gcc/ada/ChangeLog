@@ -1,3 +1,7 @@
+2003-06-11  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* Make-lang.in (gnatbind): Remove $(LIBIBERTY).
+
 2003-06-11  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Make-lang.in: Update to handle command-line options.

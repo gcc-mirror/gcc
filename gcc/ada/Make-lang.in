@@ -210,7 +210,7 @@ gnat1$(exeext): $(TARGET_ADA_SRCS) $(GNAT1_OBJS) $(ADA_BACKEND) $(LIBDEPS)
 
 gnatbind$(exeext): ada/b_gnatb.o $(CONFIG_H) $(GNATBIND_OBJS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ ada/b_gnatb.o $(GNATBIND_OBJS) \
-	     $(LIBIBERTY) $(LIBS) $(SYSLIBS)
+	     $(LIBS) $(SYSLIBS)
 
 # use target-gcc target-gnatmake target-gnatbind target-gnatlink 
 gnattools: $(GCC_PARTS) $(CONFIG_H) prefix.o force
