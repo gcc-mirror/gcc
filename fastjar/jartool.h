@@ -52,6 +52,10 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#ifndef __FASTJAR_JARTOOL_H__
+#define __FASTJAR_JARTOOL_H__
+
+#include <sys/types.h>
 #include "config.h"
 
 #define ACTION_NONE 0
@@ -104,9 +108,12 @@ struct zipentry {
   ub4 usize;
   ub4 offset;
   ub1 compressed;
+  ub2 flags;
   char *filename;
   
   struct zipentry *next_entry;
 };
 
 typedef struct zipentry zipentry;
+
+#endif /* __FASTJAR_JARTOOL_H__ */

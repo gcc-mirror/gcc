@@ -47,6 +47,7 @@
 #define LOC_FNLEN   26 /* filename length */
 #define LOC_EFLEN   28 /* extra-field length */
 
+#define CEN_FLAGS    8
 #define CEN_COMP    10 /* compression method */
 #define CEN_MODTIME 12
 #define CEN_MODDATE 14

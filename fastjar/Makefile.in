@@ -41,11 +41,11 @@ POST_UNINSTALL = :
 bin_PROGRAMS = jar$(EXEEXT) grepjar$(EXEEXT)
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(fastjar_TEXINFOS) \
-	$(srcdir)/../install-sh $(srcdir)/../missing \
-	$(srcdir)/../mkinstalldirs $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
-	$(srcdir)/install-defs.sh.in $(top_srcdir)/configure AUTHORS \
-	COPYING ChangeLog INSTALL NEWS
+	$(srcdir)/../compile $(srcdir)/../install-sh \
+	$(srcdir)/../missing $(srcdir)/../mkinstalldirs \
+	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+	$(srcdir)/config.h.in $(srcdir)/install-defs.sh.in \
+	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/../config/accross.m4 $(top_srcdir)/configure.ac
@@ -64,8 +64,9 @@ am_grepjar_OBJECTS = jargrep.$(OBJEXT) dostime.$(OBJEXT) \
 grepjar_OBJECTS = $(am_grepjar_OBJECTS)
 am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = ../libiberty/libiberty.a
-am_jar_OBJECTS = jartool.$(OBJEXT) dostime.$(OBJEXT) \
-	compress.$(OBJEXT) pushback.$(OBJEXT)
+am_jar_OBJECTS = jar-jartool.$(OBJEXT) jar-dostime.$(OBJEXT) \
+	jar-compress.$(OBJEXT) jar-pushback.$(OBJEXT) \
+	jar-shift.$(OBJEXT)
 jar_OBJECTS = $(am_jar_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I.
 depcomp =
@@ -129,7 +130,6 @@ EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 GENINSRC_FALSE = @GENINSRC_FALSE@
 GENINSRC_TRUE = @GENINSRC_TRUE@
-GREP = @GREP@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -229,11 +229,12 @@ AM_MAKEFLAGS = \
 
 AM_CPPFLAGS = -I. -I$(top_srcdir) $(ZINCS) -I$(top_srcdir)/../include
 LIBIBERTY = ../libiberty/libiberty.a
-jar_SOURCES = jartool.c dostime.c compress.c pushback.c jartool.h \
-zipfile.h dostime.h compress.h pushback.h
+jar_SOURCES = jartool.c dostime.c compress.c pushback.c shift.c jartool.h \
+zipfile.h dostime.h compress.h pushback.h shift.h
 
 jar_LDADD = $(ZLIBS) $(LIBIBERTY)
 jar_DEPENDENCIES = $(ZDEPS) $(LIBIBERTY)
+jar_CPPFLAGS = -DWITH_SHIFT_DOWN
 grepjar_SOURCES = jargrep.c dostime.c compress.c pushback.c jartool.h \
 zipfile.h dostime.h compress.h pushback.h
 
@@ -361,6 +362,36 @@ distclean-compile:
 
 .c.obj:
 	$(COMPILE) -c `$(CYGPATH_W) '$<'`
+
+jar-jartool.o: jartool.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(jar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o jar-jartool.o `test -f 'jartool.c' || echo '$(srcdir)/'`jartool.c
+
+jar-jartool.obj: jartool.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(jar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o jar-jartool.obj `if test -f 'jartool.c'; then $(CYGPATH_W) 'jartool.c'; else $(CYGPATH_W) '$(srcdir)/jartool.c'; fi`
+
+jar-dostime.o: dostime.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(jar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o jar-dostime.o `test -f 'dostime.c' || echo '$(srcdir)/'`dostime.c
+
+jar-dostime.obj: dostime.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(jar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o jar-dostime.obj `if test -f 'dostime.c'; then $(CYGPATH_W) 'dostime.c'; else $(CYGPATH_W) '$(srcdir)/dostime.c'; fi`
+
+jar-compress.o: compress.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(jar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o jar-compress.o `test -f 'compress.c' || echo '$(srcdir)/'`compress.c
+
+jar-compress.obj: compress.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(jar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o jar-compress.obj `if test -f 'compress.c'; then $(CYGPATH_W) 'compress.c'; else $(CYGPATH_W) '$(srcdir)/compress.c'; fi`
+
+jar-pushback.o: pushback.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(jar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o jar-pushback.o `test -f 'pushback.c' || echo '$(srcdir)/'`pushback.c
+
+jar-pushback.obj: pushback.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(jar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o jar-pushback.obj `if test -f 'pushback.c'; then $(CYGPATH_W) 'pushback.c'; else $(CYGPATH_W) '$(srcdir)/pushback.c'; fi`
+
+jar-shift.o: shift.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(jar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o jar-shift.o `test -f 'shift.c' || echo '$(srcdir)/'`shift.c
+
+jar-shift.obj: shift.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(jar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o jar-shift.obj `if test -f 'shift.c'; then $(CYGPATH_W) 'shift.c'; else $(CYGPATH_W) '$(srcdir)/shift.c'; fi`
 
 .texi.info:
 	restore=: && \

@@ -1,3 +1,49 @@
+2004-07-06  Matthias Klose  <doko@debian.org>
+
+	* Makefile.in: Regenerate.
+	* fastjar.texi: Update for '-u'.
+	
+2004-05-19  Casey Marshall <csm@gnu.org>
+
+	PR 7854
+	* Makefile.am
+	(jar_SOURCES): added shift.c, shift.h.
+        (jar_CPPFLAGS): define WITH_SHIFT_DOWN.
+
+        * compress.c
+        Added FSF copyright.
+        (write_data): new function.
+        (compress_file): call write_data.
+
+        * jartool.c
+        Updated copyright year.
+        (progname): new variable.
+        (end_of_entries): new variable.
+        (main): open and read file when updating.
+        (find_entry): new function.
+        (looks_like_dir): new function.
+        (read_entries): new function.
+        (make_manifest): added parameter `updating'.
+        Call `add_file_to_jar' with `updating'.
+        (add_to_jar_with_dir): added parameter `updating'.
+        Call `add_to_jar' with `updating'.
+        (add_to_jar): added parameter `updating'.
+        Call `add_file_to_jar' with `updating'.
+        Don't add directories if they already exist.
+        (add_file_to_jar): added parameter `updating'.
+        Update entries if they already exist.
+
+        * jartool.h
+        Added #ifndef __FASTJAR_JARTOOL_H__.
+        (struct zipentry): added `flags'.
+
+        * shift.c: new file.
+
+        * shift.h: new file.
+
+        * zipfile.h
+        (CEN_FLAGS): new constant.
+
 2004-07-05  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.am: Silence two automake warnings.
