@@ -469,6 +469,16 @@ lhd_tree_size (c)
   return 0;
 }
 
+/* Return true if decl, which is a function decl, may be called by a
+   sibcall.  */
+
+bool
+lhd_decl_ok_for_sibcall (decl)
+     tree decl ATTRIBUTE_UNUSED;
+{
+  return true;
+}
+
 /* lang_hooks.decls.final_write_globals: perform final processing on
    global variables.  */
 void

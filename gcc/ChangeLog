@@ -1,3 +1,13 @@
+2003-06-10  Andrew Haley  <aph@redhat.com>
+
+	* langhooks-def.h (LANG_HOOKS_DECL_OK_FOR_SIBCALL): New.
+	(LANG_HOOKS_DECLS): Add LANG_HOOKS_DECL_OK_FOR_SIBCALL.
+	(lhd_decl_ok_for_sibcall): New.
+	* langhooks.c (lhd_decl_ok_for_sibcall): New.
+	* langhooks.h (lang_hooks_for_decls.ok_for_sibcall): New field.
+	* calls.c (expand_call): Check lang_hook before generating a
+	sibcall.
+
 2003-06-10  DJ Delorie  <dj@redhat.com>
 
 	* config/stormy16/stormy16.c (xstormy16_extra_constraint_p): Add Z,

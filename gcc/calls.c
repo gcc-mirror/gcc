@@ -2508,10 +2508,11 @@ expand_call (exp, target, ignore)
       || args_size.constant > current_function_args_size
       /* If the callee pops its own arguments, then it must pop exactly
 	 the same number of arguments as the current function.  */
-      || RETURN_POPS_ARGS (fndecl, funtype, args_size.constant)
-	 != RETURN_POPS_ARGS (current_function_decl,
-			      TREE_TYPE (current_function_decl),
-			      current_function_args_size))
+      || (RETURN_POPS_ARGS (fndecl, funtype, args_size.constant)
+	  != RETURN_POPS_ARGS (current_function_decl,
+			       TREE_TYPE (current_function_decl),
+			       current_function_args_size))
+      || !(*lang_hooks.decls.ok_for_sibcall) (fndecl))
     try_tail_call = 0;
 
   if (try_tail_call || try_tail_recursion)
