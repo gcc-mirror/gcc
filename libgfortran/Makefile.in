@@ -123,9 +123,9 @@ am__objects_33 = associated.lo abort.lo args.lo bessel.lo \
 	env.lo erf.lo eoshift0.lo eoshift2.lo etime.lo getXid.lo \
 	ishftc.lo pack_generic.lo size.lo spread_generic.lo \
 	string_intrinsics.lo rand.lo random.lo reshape_generic.lo \
-	reshape_packed.lo selected_kind.lo system_clock.lo \
-	transpose_generic.lo unpack_generic.lo in_pack_generic.lo \
-	in_unpack_generic.lo normalize.lo
+	reshape_packed.lo selected_int_kind.lo selected_real_kind.lo \
+	system_clock.lo transpose_generic.lo unpack_generic.lo \
+	in_pack_generic.lo in_unpack_generic.lo normalize.lo
 am__objects_34 =
 am__objects_35 = _abs_c4.lo _abs_c8.lo _abs_i4.lo _abs_i8.lo \
 	_abs_r4.lo _abs_r8.lo _exp_r4.lo _exp_r8.lo _exp_c4.lo \
@@ -331,7 +331,8 @@ intrinsics/rand.c \
 intrinsics/random.c \
 intrinsics/reshape_generic.c \
 intrinsics/reshape_packed.c \
-intrinsics/selected_kind.f90 \
+intrinsics/selected_int_kind.f90 \
+intrinsics/selected_real_kind.f90 \
 intrinsics/system_clock.c \
 intrinsics/transpose_generic.c \
 intrinsics/unpack_generic.c \
@@ -536,7 +537,8 @@ gfor_built_src = $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_matmul_c) $(i_matmull_c) $(i_transpose_c) $(i_shape_c) $(i_eoshift1_c) \
     $(i_eoshift3_c) $(i_cshift1_c) $(i_reshape_c) $(in_pack_c) $(in_unpack_c) \
     $(i_exponent_c) $(i_fraction_c) $(i_nearest_c) $(i_set_exponent_c) \
-    $(i_pow_c)
+    $(i_pow_c) \
+    selected_int_kind.inc selected_real_kind.inc
 
 
 # We only use these if libm doesn't contain complex math functions.
@@ -2291,14 +2293,23 @@ hyp_c8.lo: generated/hyp_c8.c
 .f90.lo:
 	$(LTF77COMPILE) -c -o $@ $<
 
-selected_kind.o: intrinsics/selected_kind.f90
-	$(F77) $(AM_FFLAGS) $(FFLAGS) -c -o selected_kind.o `test -f 'intrinsics/selected_kind.f90' || echo '$(srcdir)/'`intrinsics/selected_kind.f90
+selected_int_kind.o: intrinsics/selected_int_kind.f90
+	$(F77) $(AM_FFLAGS) $(FFLAGS) -c -o selected_int_kind.o `test -f 'intrinsics/selected_int_kind.f90' || echo '$(srcdir)/'`intrinsics/selected_int_kind.f90
 
-selected_kind.obj: intrinsics/selected_kind.f90
-	$(F77) $(AM_FFLAGS) $(FFLAGS) -c -o selected_kind.obj `if test -f 'intrinsics/selected_kind.f90'; then $(CYGPATH_W) 'intrinsics/selected_kind.f90'; else $(CYGPATH_W) '$(srcdir)/intrinsics/selected_kind.f90'; fi`
+selected_int_kind.obj: intrinsics/selected_int_kind.f90
+	$(F77) $(AM_FFLAGS) $(FFLAGS) -c -o selected_int_kind.obj `if test -f 'intrinsics/selected_int_kind.f90'; then $(CYGPATH_W) 'intrinsics/selected_int_kind.f90'; else $(CYGPATH_W) '$(srcdir)/intrinsics/selected_int_kind.f90'; fi`
 
-selected_kind.lo: intrinsics/selected_kind.f90
-	$(LIBTOOL) --mode=compile $(F77) $(AM_FFLAGS) $(FFLAGS) -c -o selected_kind.lo `test -f 'intrinsics/selected_kind.f90' || echo '$(srcdir)/'`intrinsics/selected_kind.f90
+selected_int_kind.lo: intrinsics/selected_int_kind.f90
+	$(LIBTOOL) --mode=compile $(F77) $(AM_FFLAGS) $(FFLAGS) -c -o selected_int_kind.lo `test -f 'intrinsics/selected_int_kind.f90' || echo '$(srcdir)/'`intrinsics/selected_int_kind.f90
+
+selected_real_kind.o: intrinsics/selected_real_kind.f90
+	$(F77) $(AM_FFLAGS) $(FFLAGS) -c -o selected_real_kind.o `test -f 'intrinsics/selected_real_kind.f90' || echo '$(srcdir)/'`intrinsics/selected_real_kind.f90
+
+selected_real_kind.obj: intrinsics/selected_real_kind.f90
+	$(F77) $(AM_FFLAGS) $(FFLAGS) -c -o selected_real_kind.obj `if test -f 'intrinsics/selected_real_kind.f90'; then $(CYGPATH_W) 'intrinsics/selected_real_kind.f90'; else $(CYGPATH_W) '$(srcdir)/intrinsics/selected_real_kind.f90'; fi`
+
+selected_real_kind.lo: intrinsics/selected_real_kind.f90
+	$(LIBTOOL) --mode=compile $(F77) $(AM_FFLAGS) $(FFLAGS) -c -o selected_real_kind.lo `test -f 'intrinsics/selected_real_kind.f90' || echo '$(srcdir)/'`intrinsics/selected_real_kind.f90
 
 _abs_c4.o: generated/_abs_c4.f90
 	$(F77) $(AM_FFLAGS) $(FFLAGS) -c -o _abs_c4.o `test -f 'generated/_abs_c4.f90' || echo '$(srcdir)/'`generated/_abs_c4.f90
@@ -3169,6 +3180,12 @@ uninstall-am: uninstall-info-am uninstall-toolexeclibLTLIBRARIES
 	pdf-am ps ps-am tags uninstall uninstall-am uninstall-info-am \
 	uninstall-toolexeclibLTLIBRARIES
 
+
+selected_int_kind.inc: $(srcdir)/mk-sik-inc.sh
+	$(SHELL) $(srcdir)/mk-sik-inc.sh '$(F77COMPILE)' > $@
+
+selected_real_kind.inc: $(srcdir)/mk-srk-inc.sh
+	$(SHELL) $(srcdir)/mk-srk-inc.sh '$(F77COMPILE)' > $@
 
 @MAINTAINER_MODE_TRUE@$(i_all_c): m4/all.m4 $(I_M4_DEPS1)
 @MAINTAINER_MODE_TRUE@	m4 -Dfile=$@ -I$(srcdir)/m4 all.m4 > $@

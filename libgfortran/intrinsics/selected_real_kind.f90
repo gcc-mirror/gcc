@@ -1,4 +1,4 @@
-!   Copyright 2003 Free Software Foundation, Inc.
+!   Copyright 2003, 2004 Free Software Foundation, Inc.
 !   Contributed by Kejia Zhao <kejia_zh@yahoo.com.cn>
 !
 !This file is part of the GNU Fortran 95 runtime library (libgfor).
@@ -19,33 +19,6 @@
 !Boston, MA 02111-1307, USA.
 !
 
-function selected_int_kind (r)
-  implicit none
-  integer, intent (in) :: r
-  integer :: selected_int_kind
-  integer :: i
-  ! Integer kind_range table
-  integer, parameter :: c = 4
-  type :: int_info
-    integer :: kind
-    integer :: range
-  end type int_info
-  type (int_info), parameter :: int_infos (c) = &
-      (/int_info (1, range (0_1)), &
-        int_info (2, range (0_2)), &
-        int_info (4, range (0_4)), &
-        int_info (8, range (0_8))/)
-
-  do i = 1, c
-    if (r <= int_infos (i) % range) then
-      selected_int_kind = int_infos (i) % kind
-      return
-    end if
-  end do
-  selected_int_kind = -1
-  return
-end function
-
 function selected_real_kind (p, r)
   implicit none
   integer, optional, intent (in) :: p, r
@@ -53,15 +26,13 @@ function selected_real_kind (p, r)
   integer :: i, p2, r2
   logical :: found_p, found_r
   ! Real kind_precision_range table
-  integer, parameter :: c = 2
   type :: real_info
     integer :: kind
     integer :: precision
     integer :: range
   end type real_info
-  type (real_info) :: real_infos (c) = &
-      (/real_info (4, precision (0.0_4), range (0.0_4)), &
-        real_info (8, precision (0.0_8), range (0.0_8))/)
+
+  include "selected_real_kind.inc"
 
   selected_real_kind = 0
   p2 = 0

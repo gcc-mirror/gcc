@@ -1,3 +1,14 @@
+2004-08-30  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.am (gfor_helper_src): Split selected_kind.f90.
+	(gfor_built_src): Add selected_int_kind.inc selected_real_kind.inc.
+	(selected_int_kind.inc selected_real_kind.inc): New rules.
+	* Makefile.in: Regenerate.
+	* mk-sik-inc.sh, mk-srk-inc.sh: New files.
+	* intrinsics/selected_int_kind.f90: Split from selected_kind.f90,
+	include table of detected kinds.
+	* intrinsics/selected_real_kind.f90: Similarly.
+
 2004-08-29  Steven G. Kargl  <kargls@comcast.net>
 	Paul Brook  <paul@codesourcery.com>
 
