@@ -2293,6 +2293,257 @@ emit_library_call (va_alist)
   OK_DEFER_POP;
 }
 
+/* Like emit_library_call except that an extra argument, VALUE,
+   comes second and says where to store the result.  */
+
+void
+emit_library_call_value (va_alist)
+     va_dcl
+{
+  va_list p;
+  struct args_size args_size;
+  register int argnum;
+  enum machine_mode outmode;
+  int nargs;
+  rtx fun;
+  rtx orgfun;
+  int inc;
+  int count;
+  rtx argblock = 0;
+  CUMULATIVE_ARGS args_so_far;
+  struct arg { rtx value; enum machine_mode mode; rtx reg; int partial;
+	       struct args_size offset; struct args_size size; };
+  struct arg *argvec;
+  int old_inhibit_defer_pop = inhibit_defer_pop;
+  int no_queue = 0;
+  rtx use_insns;
+  rtx value;
+  rtx mem_value = 0;
+
+  va_start (p);
+  orgfun = fun = va_arg (p, rtx);
+  value = va_arg (p, rtx);
+  no_queue = va_arg (p, int);
+  outmode = va_arg (p, enum machine_mode);
+  nargs = va_arg (p, int);
+
+  /* If this kind of value comes back in memory,
+     decide where in memory it should come back.  */
+  if (RETURN_IN_MEMORY (type_for_mode (outmode, 0)))
+    {
+      if (GET_CODE (value) == MEM)
+	mem_value = value;
+      else
+	mem_value = assign_stack_temp (outmode, GET_MODE_SIZE (outmode), 0);
+    }
+
+  /* ??? Unfinished: must pass the memory address as an argument.  */
+
+  /* Copy all the libcall-arguments out of the varargs data
+     and into a vector ARGVEC.
+
+     Compute how to pass each argument.  We only support a very small subset
+     of the full argument passing conventions to limit complexity here since
+     library functions shouldn't have many args.  */
+
+  argvec = (struct arg *) alloca (nargs * sizeof (struct arg));
+
+  INIT_CUMULATIVE_ARGS (args_so_far, NULL_TREE, fun);
+
+  args_size.constant = 0;
+  args_size.var = 0;
+
+  for (count = 0; count < nargs; count++)
+    {
+      rtx val = va_arg (p, rtx);
+      enum machine_mode mode = va_arg (p, enum machine_mode);
+
+      /* We cannot convert the arg value to the mode the library wants here;
+	 must do it earlier where we know the signedness of the arg.  */
+      if (mode == BLKmode
+	  || (GET_MODE (val) != mode && GET_MODE (val) != VOIDmode))
+	abort ();
+
+      /* On some machines, there's no way to pass a float to a library fcn.
+	 Pass it as a double instead.  */
+#ifdef LIBGCC_NEEDS_DOUBLE
+      if (LIBGCC_NEEDS_DOUBLE && mode == SFmode)
+	val = convert_to_mode (DFmode, val, 0), mode = DFmode;
+#endif
+
+      /* There's no need to call protect_from_queue, because
+	 either emit_move_insn or emit_push_insn will do that.  */
+
+      /* Make sure it is a reasonable operand for a move or push insn.  */
+      if (GET_CODE (val) != REG && GET_CODE (val) != MEM
+	  && ! (CONSTANT_P (val) && LEGITIMATE_CONSTANT_P (val)))
+	val = force_operand (val, NULL_RTX);
+
+      argvec[count].value = val;
+      argvec[count].mode = mode;
+
+#ifdef FUNCTION_ARG_PASS_BY_REFERENCE
+      if (FUNCTION_ARG_PASS_BY_REFERENCE (args_so_far, mode, NULL_TREE, 1))
+	abort ();
+#endif
+
+      argvec[count].reg = FUNCTION_ARG (args_so_far, mode, NULL_TREE, 1);
+      if (argvec[count].reg && GET_CODE (argvec[count].reg) == EXPR_LIST)
+	abort ();
+#ifdef FUNCTION_ARG_PARTIAL_NREGS
+      argvec[count].partial
+	= FUNCTION_ARG_PARTIAL_NREGS (args_so_far, mode, NULL_TREE, 1);
+#else
+      argvec[count].partial = 0;
+#endif
+
+      locate_and_pad_parm (mode, NULL_TREE,
+			   argvec[count].reg && argvec[count].partial == 0,
+			   NULL_TREE, &args_size, &argvec[count].offset,
+			   &argvec[count].size);
+
+      if (argvec[count].size.var)
+	abort ();
+
+#ifndef REG_PARM_STACK_SPACE
+      if (argvec[count].partial)
+	argvec[count].size.constant -= argvec[count].partial * UNITS_PER_WORD;
+#endif
+
+      if (argvec[count].reg == 0 || argvec[count].partial != 0
+#ifdef REG_PARM_STACK_SPACE
+	  || 1
+#endif
+	  )
+	args_size.constant += argvec[count].size.constant;
+
+#ifdef ACCUMULATE_OUTGOING_ARGS
+      /* If this arg is actually passed on the stack, it might be
+	 clobbering something we already put there (this library call might
+	 be inside the evaluation of an argument to a function whose call
+	 requires the stack).  This will only occur when the library call
+	 has sufficient args to run out of argument registers.  Abort in
+	 this case; if this ever occurs, code must be added to save and
+	 restore the arg slot.  */
+
+      if (argvec[count].reg == 0 || argvec[count].partial != 0)
+	abort ();
+#endif
+
+      FUNCTION_ARG_ADVANCE (args_so_far, mode, (tree)0, 1);
+    }
+  va_end (p);
+
+  /* If this machine requires an external definition for library
+     functions, write one out.  */
+  assemble_external_libcall (fun);
+
+#ifdef STACK_BOUNDARY
+  args_size.constant = (((args_size.constant + (STACK_BYTES - 1))
+			 / STACK_BYTES) * STACK_BYTES);
+#endif
+
+#ifdef REG_PARM_STACK_SPACE
+  args_size.constant = MAX (args_size.constant,
+			    REG_PARM_STACK_SPACE (NULL_TREE));
+#ifndef OUTGOING_REG_PARM_STACK_SPACE
+  args_size.constant -= REG_PARM_STACK_SPACE (NULL_TREE);
+#endif
+#endif
+
+#ifdef ACCUMULATE_OUTGOING_ARGS
+  if (args_size.constant > current_function_outgoing_args_size)
+    current_function_outgoing_args_size = args_size.constant;
+  args_size.constant = 0;
+#endif
+
+#ifndef PUSH_ROUNDING
+  argblock = push_block (GEN_INT (args_size.constant), 0, 0);
+#endif
+
+#ifdef PUSH_ARGS_REVERSED
+  inc = -1;
+  argnum = nargs - 1;
+#else
+  inc = 1;
+  argnum = 0;
+#endif
+
+  /* Push the args that need to be pushed.  */
+
+  for (count = 0; count < nargs; count++, argnum += inc)
+    {
+      register enum machine_mode mode = argvec[argnum].mode;
+      register rtx val = argvec[argnum].value;
+      rtx reg = argvec[argnum].reg;
+      int partial = argvec[argnum].partial;
+
+      if (! (reg != 0 && partial == 0))
+	emit_push_insn (val, mode, NULL_TREE, NULL_RTX, 0, partial, reg, 0,
+			argblock, GEN_INT (argvec[count].offset.constant));
+      NO_DEFER_POP;
+    }
+
+#ifdef PUSH_ARGS_REVERSED
+  argnum = nargs - 1;
+#else
+  argnum = 0;
+#endif
+
+  /* Now load any reg parms into their regs.  */
+
+  for (count = 0; count < nargs; count++, argnum += inc)
+    {
+      register enum machine_mode mode = argvec[argnum].mode;
+      register rtx val = argvec[argnum].value;
+      rtx reg = argvec[argnum].reg;
+      int partial = argvec[argnum].partial;
+
+      if (reg != 0 && partial == 0)
+	emit_move_insn (reg, val);
+      NO_DEFER_POP;
+    }
+
+  /* For version 1.37, try deleting this entirely.  */
+  if (! no_queue)
+    emit_queue ();
+
+  /* Any regs containing parms remain in use through the call.  */
+  start_sequence ();
+  for (count = 0; count < nargs; count++)
+    if (argvec[count].reg != 0)
+      emit_insn (gen_rtx (USE, VOIDmode, argvec[count].reg));
+
+  use_insns = get_insns ();
+  end_sequence ();
+
+  fun = prepare_call_address (fun, NULL_TREE, &use_insns);
+
+  /* Don't allow popping to be deferred, since then
+     cse'ing of library calls could delete a call and leave the pop.  */
+  NO_DEFER_POP;
+
+  /* We pass the old value of inhibit_defer_pop + 1 to emit_call_1, which
+     will set inhibit_defer_pop to that value.  */
+
+  emit_call_1 (fun, get_identifier (XSTR (orgfun, 0)), args_size.constant, 0,
+	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
+	       outmode != VOIDmode ? hard_libcall_value (outmode) : NULL_RTX,
+	       old_inhibit_defer_pop + 1, use_insns, no_queue);
+
+  /* Now restore inhibit_defer_pop to its actual original value.  */
+  OK_DEFER_POP;
+
+  /* Copy the value to the right place.  */
+  if (mem_value)
+    {
+      if (value != mem_value)
+	emit_move_insn (value, mem_value);
+    }
+  else
+    emit_move_insn (value, hard_libcall_value (outmode));
+}
+
 /* Expand an assignment that stores the value of FROM into TO.
    If WANT_VALUE is nonzero, return an rtx for the value of TO.
    (This may contain a QUEUED rtx.)
@@ -5795,19 +6046,19 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  {
 	    tree arg = TREE_VALUE (arglist);
 	    if (TREE_CODE (arg) != INTEGER_CST)
-	      error ("argument of __builtin_args_info must be constant");
+	      error ("argument of `__builtin_args_info' must be constant");
 	    else
 	      {
 		int wordnum = TREE_INT_CST_LOW (arg);
 
-		if (wordnum < 0 || wordnum >= nwords)
-		  error ("argument of __builtin_args_info out of range");
+		if (wordnum < 0 || wordnum >= nwords || TREE_INT_CST_HIGH (arg))
+		  error ("argument of `__builtin_args_info' out of range");
 		else
 		  return GEN_INT (word_ptr[wordnum]);
 	      }
 	  }
 	else
-	  error ("missing argument in __builtin_args_info");
+	  error ("missing argument in `__builtin_args_info'");
 
 	return const0_rtx;
 
@@ -5910,12 +6161,12 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	return const0_rtx;
       else if (TREE_CODE (TREE_VALUE (arglist)) != INTEGER_CST)
 	{
-	  error ("invalid arg to __builtin_return_address");
+	  error ("invalid arg to `__builtin_return_address'");
 	  return const0_rtx;
 	}
       else if (tree_int_cst_lt (TREE_VALUE (arglist), integer_zero_node))
 	{
-	  error ("invalid arg to __builtin_return_address");
+	  error ("invalid arg to `__builtin_return_address'");
 	  return const0_rtx;
 	}
       else
@@ -6272,7 +6523,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 #endif
 
     default:			/* just do library call, if unknown builtin */
-      error ("built-in function %s not currently supported",
+      error ("built-in function `%s' not currently supported",
 	     IDENTIFIER_POINTER (DECL_NAME (fndecl)));
     }
 
