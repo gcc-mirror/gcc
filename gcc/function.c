@@ -782,30 +782,54 @@ combine_temp_slots ()
 {
   struct temp_slot *p, *q;
   struct temp_slot *prev_p, *prev_q;
+  /* Determine where to free back to after this function.  */
+  rtx free_pointer = rtx_alloc (CONST_INT);
 
-  for (p = temp_slots, prev_p = 0; p; prev_p = p, p = p->next)
-    if (! p->in_use && GET_MODE (p->slot) == BLKmode)
-      for (q = p->next, prev_q = p; q; prev_q = q, q = q->next)
-	if (! q->in_use && GET_MODE (q->slot) == BLKmode)
+  for (p = temp_slots, prev_p = 0; p; p = prev_p ? prev_p->next : temp_slots)
+    {
+      int delete_p = 0;
+      if (! p->in_use && GET_MODE (p->slot) == BLKmode)
+	for (q = p->next, prev_q = p; q; q = prev_q->next)
 	  {
-	    if (rtx_equal_p (plus_constant (XEXP (p->slot, 0), p->size),
-			     XEXP (q->slot, 0)))
+	    int delete_q = 0;
+	    if (! q->in_use && GET_MODE (q->slot) == BLKmode)
 	      {
-		/* Combine q into p.  */
-		p->size += q->size;
-		prev_q->next = q->next;
+		if (rtx_equal_p (plus_constant (XEXP (p->slot, 0), p->size),
+				 XEXP (q->slot, 0)))
+		  {
+		    /* Q comes after P; combine Q into P.  */
+		    p->size += q->size;
+		    delete_q = 1;
+		  }
+		else if (rtx_equal_p (plus_constant (XEXP (q->slot, 0), q->size),
+				      XEXP (p->slot, 0)))
+		  {
+		    /* P comes after Q; combine P into Q.  */
+		    q->size += p->size;
+		    delete_p = 1;
+		    break;
+		  }
 	      }
-	    else if (rtx_equal_p (plus_constant (XEXP (q->slot, 0), q->size),
-				  XEXP (p->slot, 0)))
-	      {
-		/* Combine p into q.  */
-		q->size += p->size;
-		if (prev_p)
-		  prev_p->next = p->next;
-		else
-		  temp_slots = p->next;
-	      }
+	    /* Either delete Q or advance past it.  */
+	    if (delete_q)
+	      prev_q->next = q->next;
+	    else
+	      prev_q = q;
 	  }
+      /* Either delete P or advance past it.  */
+      if (delete_p)
+	{
+	  if (prev_p)
+	    prev_p->next = p->next;
+	  else
+	    temp_slots = p->next;
+	}
+      else
+	prev_p = p;
+    }
+
+  /* Free all the RTL made by plus_constant.  */ 
+  rtx_free (free_pointer);
 }
 
 /* If X could be a reference to a temporary slot, mark that slot as belonging
