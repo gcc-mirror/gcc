@@ -173,9 +173,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
    */
   public final char readChar() throws IOException
   {
-    int count = in.read (buf, 0, 2);
-    if (count < 2)
-      throw new EOFException();
+    readFully (buf, 0, 2);
     return convertToChar(buf);
   }
 
@@ -303,9 +301,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
    */
   public final int readInt() throws IOException
   {
-    int count = in.read (buf, 0, 4);
-    if (count < 4)
-      throw new EOFException();
+    readFully (buf, 0, 4);
     return convertToInt(buf);
   }
 
@@ -453,9 +449,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
    */
   public final long readLong() throws IOException
   {
-    int count = in.read(buf, 0, 8);
-    if (count < 8)
-      throw new EOFException();
+    readFully (buf, 0, 8);
     return convertToLong(buf);
   }
 
@@ -488,9 +482,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
    */
   public final short readShort() throws IOException
   {
-    int count = in.read(buf, 0, 2);
-    if (count < 2)
-      throw new EOFException();
+    readFully (buf, 0, 2);
     return convertToShort(buf);
   }
 
@@ -542,9 +534,7 @@ public class DataInputStream extends FilterInputStream implements DataInput
    */
   public final int readUnsignedShort() throws IOException
   {
-    int count = in.read(buf, 0, 2);
-    if (count < 2)
-      throw new EOFException();
+    readFully (buf, 0, 2);
     return convertToUnsignedShort(buf);
   }
 
