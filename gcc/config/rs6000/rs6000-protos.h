@@ -201,4 +201,8 @@ extern int rs6000_tls_symbol_ref (rtx, enum machine_mode);
 extern void rs6000_pragma_longcall (struct cpp_reader *);
 extern void rs6000_cpu_cpp_builtins (struct cpp_reader *);
 
+#if TARGET_MACHO
+char *output_call (rtx, rtx *, int, int);
+#endif
+
 #endif  /* rs6000-protos.h */
