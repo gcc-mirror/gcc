@@ -1,3 +1,15 @@
+2003-12-22  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (num_get::_M_extract_int,
+	num_get::_M_extract_float): According to 22.2.2.1.2, p8-9,
+	first look for decimal_point and thousands_sep, when parsing
+	sign, leading zeros (and 0, Ox, 0X for integer types) too.
+	* testsuite/22_locale/num_get/get/char/12.cc: New.
+	* testsuite/22_locale/num_get/get/wchar_t/12.cc: Likewise.
+
+	* testsuite/22_locale/num_get/get/char/11.cc: Add a comment.
+	* testsuite/22_locale/num_get/get/wchar_t/11.cc: Likewise.
+	
 2003-12-20  Jason Merrill  <jason@redhat.com>
 
 	* config/cpu/powerpc/atomicity.h: Fix oversight in previous

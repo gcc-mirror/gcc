@@ -163,12 +163,18 @@ namespace std
       const __cache_type* __lc = __uc(__loc);
       const _CharT* __lit = __lc->_M_atoms_in;
 
+      // True if a mantissa is found.
+      bool __found_mantissa = false;
+
       // First check for sign.
       if (__beg != __end)
 	{
 	  const char_type __c = *__beg;
 	  const bool __plus = __traits_type::eq(__c, __lit[_S_iplus]);
-	  if (__plus || __traits_type::eq(__c, __lit[_S_iminus]))
+	  if ((__plus || __traits_type::eq(__c, __lit[_S_iminus]))
+	      && !__traits_type::eq(__c, __lc->_M_decimal_point)
+	      && (!__lc->_M_use_grouping
+		  || !__traits_type::eq(__c, __lc->_M_thousands_sep)))
 	    {
 	      __xtrc += __plus ? _S_atoms_in[_S_iplus]
 		               : _S_atoms_in[_S_iminus];
@@ -176,16 +182,25 @@ namespace std
 	    }
 	}
 	  
-      // Next, look for a zero...
-      bool __found_mantissa = false;
-      if (__beg != __end && __traits_type::eq(*__beg, __lit[_S_izero]))
+      // Next, look for leading zeros.
+      while (__beg != __end)
 	{
-	  __xtrc += _S_atoms_in[_S_izero];
-	  __found_mantissa = true;
-	  ++__beg;
-	  // ... and skip the additional ones.
-	  for (; __beg != __end
-		 && __traits_type::eq(*__beg, __lit[_S_izero]); ++__beg);
+	  const char_type __c = *__beg;
+	  if (__traits_type::eq(__c, __lc->_M_decimal_point)
+	      || (__lc->_M_use_grouping 
+		  && __traits_type::eq(__c, __lc->_M_thousands_sep)))
+	    break;
+	  else if (__traits_type::eq(__c, __lit[_S_izero]))
+	    {
+	      if (!__found_mantissa)
+		{
+		  __xtrc += _S_atoms_in[_S_izero];
+		  __found_mantissa = true;
+		}
+	      ++__beg;
+	    }
+	  else
+	    break;
 	}
 
       // Only need acceptable digits for floating point numbers.
@@ -307,48 +322,51 @@ namespace std
 	// First check for sign.
 	bool __negative = false;
 	if (__beg != __end)
-	  {
+	  { 
+	    const char_type __c = *__beg;
 	    if (numeric_limits<_ValueT>::is_signed)
-	      __negative = __traits_type::eq(*__beg, __lit[_S_iminus]);
-	    if (__negative || __traits_type::eq(*__beg, __lit[_S_iplus]))
+	      __negative = __traits_type::eq(__c, __lit[_S_iminus]);
+	    if ((__negative || __traits_type::eq(__c, __lit[_S_iplus]))
+		&& !__traits_type::eq(__c, __lc->_M_decimal_point)
+		&& (!__lc->_M_use_grouping
+		    || !__traits_type::eq(__c, __lc->_M_thousands_sep)))
 	      ++__beg;
 	  }
 
 	// Next, look for leading zeros and check required digits
 	// for base formats.
-	if (__beg != __end && __traits_type::eq(*__beg, __lit[_S_izero]))
+	while (__beg != __end)
 	  {
-	    __found_num = true;
-	    ++__beg;
-	    if (__builtin_expect(__base == 10, true))
+	    const char_type __c = *__beg;
+	    if (__traits_type::eq(__c, __lc->_M_decimal_point)
+		|| (__lc->_M_use_grouping
+		    && __traits_type::eq(__c, __lc->_M_thousands_sep)))
+	      break;
+	    else if (__traits_type::eq(__c, __lit[_S_izero])
+		     && (!__found_num || __base == 10))
 	      {
-		// Skip the additional zeros.
-		for (; __beg != __end
-		       && __traits_type::eq(*__beg, __lit[_S_izero]); ++__beg);
-		
-		// Check required digits.
-		if (__beg != __end && __basefield == 0)
-		  {	  
-		    const bool __x = __traits_type::eq(*__beg, __lit[_S_ix]);
-		    if (__x || __traits_type::eq(*__beg, __lit[_S_iX]))
-		      {
-			__base = 16;
-			++__beg;
-			__found_num = false;
-		      }
-		    else
-		      __base = 8;
-		  }	      
+		__found_num = true;
+		++__beg;
 	      }
-	    else if (__base == 16 && __beg != __end)
+	    else if (__found_num)
 	      {
-		const bool __x = __traits_type::eq(*__beg, __lit[_S_ix]);
-		if (__x || __traits_type::eq(*__beg, __lit[_S_iX]))
+		if (__traits_type::eq(__c, __lit[_S_ix])
+		    || __traits_type::eq(__c, __lit[_S_iX]))
 		  {
-		    ++__beg;
-		    __found_num = false;
+		    if (__basefield == 0)
+		      __base = 16;
+		    if (__base == 16)
+		      {
+			__found_num = false;
+			++__beg;
+		      }
 		  }
+		else if (__basefield == 0)
+		  __base = 8;
+		break;
 	      }
+	    else
+	      break;
 	  }
 
 	// At this point, base is determined. If not hex, only allow

@@ -29,6 +29,7 @@ struct Punct: std::numpunct<wchar_t>
   wchar_t do_decimal_point() const { return L'4'; }
 };
 
+// http://gcc.gnu.org/ml/libstdc++/2003-12/msg00201.html
 void test01()
 {
   using namespace std;
