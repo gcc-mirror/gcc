@@ -1,3 +1,8 @@
+2005-03-02  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md ("return"): Remove epilogue delay list
+	sanity check.
+
 2005-03-02  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config/arm/linux-elf.h (ARM_FUNCTION_PROFILER): Do not use (PLT)

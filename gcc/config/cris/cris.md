@@ -3397,11 +3397,6 @@
   /* Just needs to hold a 'movem [sp+],rN'.  */
   char rd[sizeof (\"movem [$sp+],$r99\")];
 
-  /* Try to avoid reorg.c surprises; avoid emitting invalid code, prefer
-     crashing.  This test would have avoided invalid code for target/7042.  */
-  if (current_function_epilogue_delay_list != NULL)
-    abort ();
-
   *rd = 0;
 
   /* Start from the last call-saved register.  We know that we have a
