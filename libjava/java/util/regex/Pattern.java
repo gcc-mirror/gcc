@@ -40,22 +40,112 @@ package java.util.regex;
 
 import java.io.Serializable;
 
+/**
+ * @author Michael Koch
+ * @since 1.4
+ */
 public class Pattern implements Serializable
 {
-  public static Pattern compile(String regex)
+  private static final long serialVersionUID = 5073258162644648461L;
+  
+  public static final int CANON_EQ = 128;
+  public static final int CASE_INSENSITIVE = 2;
+  public static final int COMMENTS = 4;
+  public static final int DOTALL = 32;
+  public static final int MULTILINE = 8;
+  public static final int UNICODE_CASE = 64;
+  public static final int UNIX_LINES = 1;
+  
+  private String regex;
+  private int flags;
+
+  private Pattern (String regex)
+    throws PatternSyntaxException
   {
-    throw new InternalError("Not implemented yet");
+    this (regex, 0);
   }
-  public static boolean matches(String regex, CharSequence input) 
+
+  private Pattern (String regex, int flags)
+    throws PatternSyntaxException
   {
-    throw new InternalError("Not implemented yet");
+    this.regex = regex;
+    this.flags = flags;
+
+    throw new Error ("Not implemented");
   }
-  public Matcher matcher(CharSequence input)
+ 
+  /**
+   * @param regex The regular expression
+   *
+   * @exception PatternSyntaxException If the expression's syntax is invalid
+   */
+  public static Pattern compile (String regex)
+    throws PatternSyntaxException
   {
-    throw new InternalError("Not implemented yet");
+    throw new Error ("Not implemented");
   }
-  public String[] split(CharSequence input, int limit)
+  
+  /**
+   * @param regex The regular expression
+   * @param flags The match flags, a bit mask
+   *
+   * @exception PatternSyntaxException If the expression's syntax is invalid
+   * @exception IllegalArgumentException If bit values other than those
+   * corresponding to the defined match flags are set in flags
+   */
+  public static Pattern compile (String regex, int flags)
+    throws PatternSyntaxException
   {
-    throw new InternalError("Not implemented yet");
+    // FIXME: check which flags are really accepted
+    if ((flags & ~0xEF) != 0)
+      throw new IllegalArgumentException ();
+    
+    return new Pattern (regex, flags); 
+  }
+  
+  public int flags ()
+  {
+    return this.flags;
+  }
+  
+  /**
+   * @param regex The regular expression
+   * @param input The character sequence to be matched
+   *
+   * @exception PatternSyntaxException If the expression's syntax is invalid
+   */
+  public static boolean matches (String regex, CharSequence input) 
+  {
+    throw new Error ("Not implemented");
+  }
+  
+  /**
+   * @param input The character sequence to be matched
+   */
+  public Matcher matcher (CharSequence input)
+  {
+    throw new Error ("Not implemented");
+  }
+  
+  /**
+   * @param input The character sequence to be matched
+   */
+  public String[] split (CharSequence input)
+  {
+    throw new Error ("Not implemented");
+  }
+  
+  /**
+   * @param input The character sequence to be matched
+   * @param limit The result threshold
+   */
+  public String[] split (CharSequence input, int limit)
+  {
+    throw new Error ("Not implemented");
+  }
+  
+  public String pattern ()
+  {
+    throw new Error ("Not implemented");
   }
 }
