@@ -939,6 +939,13 @@ struct tree_block
 #define TYPE_ALIGN_UNIT(NODE) \
   (TYPE_ALIGN (NODE) / BITS_PER_UNIT)
 
+/* If your language allows you to declare types, and you want debug info
+   for them, then you need to generate corresponding TYPE_DECL nodes.
+   These "stub" TYPE_DECL nodes have no name, and simply point at the
+   type node.  You then set the TYPE_STUB_DECL field of the type node
+   to point back at the TYPE_DECL node.  This allows the debug routines
+   to know that the two nodes represent the same type, so that we only
+   get one debug info record for them. */
 #define TYPE_STUB_DECL(NODE) (TREE_CHAIN (NODE))
 
 /* In a RECORD_TYPE, UNION_TYPE or QUAL_UNION_TYPE, it means the type
