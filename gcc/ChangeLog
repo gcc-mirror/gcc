@@ -1,5 +1,13 @@
 2001-02-12  Geoffrey Keating  <geoffk@redhat.com>
 
+	* config/rs6000/rs6000.c (rs6000_float_const): Remove warning.
+	(setup_incoming_varargs): Remove warning.
+
+	* config/rs6000/rs6000.c (validate_condition_mode): When
+	flag_fast_math, allow floating-point conditionals to be reversed.
+	(rs6000_generate_compare): When flag_fast_math, don't generate
+	cror operations for FP conditionals.
+
 	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Handle
 	-mcall-i960.
 	(ASM_SPEC): Likewise.
