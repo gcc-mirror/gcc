@@ -1607,9 +1607,9 @@ change_state (oldpos, newpos, afterward, indent)
     if (newpos[new_has_insn] >= 'A' && newpos[new_has_insn] <= 'Z')
       break;
 
-  /* Make sure to reset the _last_insn pointer when popping back up.  */
+  /* Make sure to reset the last_insn pointer when popping back up.  */
   if (old_has_insn >= 0 && new_has_insn < 0)
-    printf ("%s_last_insn = insn;\n", indent);
+    printf ("%slast_insn = insn;\n", indent);
 
   /* Go down to desired level.  */
   while (depth < ndepth)
@@ -1620,7 +1620,7 @@ change_state (oldpos, newpos, afterward, indent)
 	  /* We can only fail if we're moving down the tree.  */
 	  if (old_has_insn >= 0 && oldpos[old_has_insn] >= newpos[depth])
 	    {
-	      printf ("%s_last_insn = recog_next_insn (insn, %d);\n", 
+	      printf ("%slast_insn = recog_next_insn (insn, %d);\n", 
 		      indent, newpos[depth] - 'A');
 	    }
 	  else
@@ -1632,9 +1632,9 @@ change_state (oldpos, newpos, afterward, indent)
 		printf ("%s  goto L%d;\n", indent, afterward->number);
 	      else
 		printf ("%s  goto ret0;\n", indent);
-	      printf ("%s_last_insn = tem;\n", indent);
+	      printf ("%slast_insn = tem;\n", indent);
 	    }
-	  printf ("%sx%d = PATTERN (_last_insn);\n", indent, depth + 1);
+	  printf ("%sx%d = PATTERN (last_insn);\n", indent, depth + 1);
 	}
       else if (newpos[depth] >= 'a' && newpos[depth] <= 'z')
 	printf ("%sx%d = XVECEXP (x%d, 0, %d);\n",
@@ -2210,7 +2210,7 @@ peephole2%s (x0, insn, _plast_insn)\n\
     printf ("  register rtx x%d ATTRIBUTE_UNUSED;\n", i);
 
   if (type == PEEPHOLE2)
-    printf ("  register rtx _last_insn = insn;\n");
+    printf ("  register rtx last_insn = insn;\n");
   printf ("  %s tem ATTRIBUTE_UNUSED;\n", IS_SPLIT (type) ? "rtx" : "int");
 
   if (head->first)
@@ -2219,7 +2219,7 @@ peephole2%s (x0, insn, _plast_insn)\n\
     printf ("  goto ret0;\n");
 
   if (type == PEEPHOLE2)
-    printf (" ret1:\n  *_plast_insn = _last_insn;\n  return tem;\n");
+    printf (" ret1:\n  *_plast_insn = last_insn;\n  return tem;\n");
   printf (" ret0:\n  return %d;\n}\n\n", IS_SPLIT (type) ? 0 : -1);
 }
 
@@ -2310,6 +2310,7 @@ make_insn_sequence (insn, type)
   struct decision *last;
   struct decision_test *test, **place;
   struct decision_head head;
+  char *c_test_pos = "";
 
   record_insn_name (next_insn_code, (type == RECOG ? XSTR (insn, 0) : NULL));
 
@@ -2334,6 +2335,10 @@ make_insn_sequence (insn, type)
 	    }
 	}
       XVECLEN (x, 0) = j;
+
+      c_test_pos = alloca (2);
+      c_test_pos[0] = 'A' + j - 1;
+      c_test_pos[1] = '\0';
     }
   else if (XVECLEN (insn, type == RECOG) == 1)
     x = XVECEXP (insn, type == RECOG, 0);
@@ -2359,7 +2364,7 @@ make_insn_sequence (insn, type)
       /* Need a new node if we have another test to add.  */
       if (test->type == DT_accept_op)
 	{
-	  last = new_decision ("", &last->success);
+	  last = new_decision (c_test_pos, &last->success);
 	  place = &last->tests;
 	}
       test = new_decision_test (DT_c_test, &place);
