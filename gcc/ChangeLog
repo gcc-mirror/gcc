@@ -1,3 +1,10 @@
+2003-06-10  Janis Johnson  <janis187@us.ibm.com>
+
+	* config/rs6000/eabi.h (TARGET_OS_CPP_BUILTINS): Define builtins
+	common to rs6000 sysv targets.
+	* config/rs6000/eabisim.h (TARGET_OS_CPP_BUILTINS): Ditto.
+	* config/rs6000/rtems.h (TARGET_OS_CPP_BUILTINS): Ditto.
+
 2003-06-10  Nick Clifton  <nickc@redhat.com>
 
 	* config.gcc: Add arm-wince-pe target.
