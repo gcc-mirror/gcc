@@ -1,5 +1,8 @@
 2000-10-01  Mark Mitchell  <mark@codesourcery.com>
 
+	* configure.in: Don't configure chill by default.
+	* configure: Regenerated.
+	
 	* c-decl.c (c_expand_body): Don't generate RTL if flag_syntax_only.
 	(lang_mark_false_label_stack): Remove.
 	* c-lex.c (init_c_lex): Add file_info_tree as GC root.  Allocate
