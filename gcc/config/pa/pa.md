@@ -2880,7 +2880,7 @@
    ldh%M1 %1,%0
    sth%M0 %r1,%0
    mtsar %r1
-   mfctr %sar,%0
+   {mfctl|mfctl,w} %sar,%0
    fcpy,sgl %f1,%0"
   [(set_attr "type" "move,move,move,shift,load,store,move,move,fpalu")
    (set_attr "pa_combine_type" "addmove")
@@ -3960,9 +3960,9 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "move_dest_operand"
-			  "=!*r,*r,*r,*r,*r,Q,!*q,!r,f,f,T")
+			  "=!*r,*r,*r,*r,*r,Q,f,f,T")
 	(match_operand:DF 1 "move_src_operand"
-			  "!*r,J,N,K,RQ,*rM,!*rM,!*q,fM,RT,f"))]
+			  "!*r,J,N,K,RQ,*rM,fM,RT,f"))]
   "(register_operand (operands[0], DFmode)
     || reg_or_0_operand (operands[1], DFmode))
    && !TARGET_SOFT_FLOAT && TARGET_64BIT"
@@ -3973,14 +3973,12 @@
    depdi,z %z1,%0
    ldd%M1 %1,%0
    std%M0 %r1,%0
-   mtsar %r1
-   {mfctl|mfctl,w} %%sar,%0
    fcpy,dbl %f1,%0
    fldd%F1 %1,%0
    fstd%F0 %1,%0"
-  [(set_attr "type" "move,move,move,shift,load,store,move,move,fpalu,fpload,fpstore")
+  [(set_attr "type" "move,move,move,shift,load,store,fpalu,fpload,fpstore")
    (set_attr "pa_combine_type" "addmove")
-   (set_attr "length" "4,4,4,4,4,4,4,4,4,4,4")])
+   (set_attr "length" "4,4,4,4,4,4,4,4,4")])
 
 
 (define_expand "movdi"

@@ -1,3 +1,8 @@
+2004-05-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.md:  Fix typo from last change.  Remove DFmode move to and from
+	SAR register.
+
 2004-05-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/10982
