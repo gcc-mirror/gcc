@@ -1989,7 +1989,7 @@ func_ptr __DTOR_LIST__[2];
 
 extern void __do_global_dtors ();
 extern void _cleanup ();
-extern volatile void _exit ();
+extern void _exit () __attribute__ ((noreturn));
 
 void 
 exit (status)
