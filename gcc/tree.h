@@ -780,9 +780,6 @@ struct tree_vec
 #define RTL_EXPR_SEQUENCE(NODE) (*(struct rtx_def **) &EXPR_CHECK (NODE)->exp.operands[0])
 #define RTL_EXPR_RTL(NODE) (*(struct rtx_def **) &EXPR_CHECK (NODE)->exp.operands[1])
 
-/* In a CALL_EXPR node.  */
-#define CALL_EXPR_RTL(NODE) (*(struct rtx_def **) &EXPR_CHECK (NODE)->exp.operands[2])
-
 /* In a CONSTRUCTOR node.  */
 #define CONSTRUCTOR_ELTS(NODE) TREE_OPERAND (NODE, 1)
 

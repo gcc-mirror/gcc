@@ -1,5 +1,7 @@
 2000-10-22  Mark Mitchell  <mark@codesourcery.com>
 
+	* optimize.c (copy_body_r): Don't treat CALL_EXPRs specially.
+
 	* typeck.c (c_sizeof): Return an expression of `size_t' type, 
 	not one with TYPE_IS_SIZETYPE set.
 	(dubious_conversion_warnings): Remove special-case code.

@@ -1,3 +1,14 @@
+2000-10-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* expr.c (do_preexpand_calls): Remove.
+	(same_from_p): Don't use CALL_EXPR_RTL.
+	(expand_expr): Don't call preexpand_calls, or use CALL_EXPR_RTL.
+	(preexpand_calls): Remove.
+	* tree.c (first_rtl_op): Remove CALL_EXPR case.
+	(unsave_expr_1): Likewise.
+	* tree.def (CALL_EXPR): Give it only two slots.
+	* tree.h (CALL_EXPR_RTL): Remove.
+
 2000-10-21  Chandrakala Chavva   <cchavva@redhat.com>
 
 	* libgcc-std.ver (__addvsi3, __addvdi3,  __subvsi3, __subvdi3,

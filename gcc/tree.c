@@ -1764,8 +1764,6 @@ first_rtl_op (code)
     case GOTO_SUBROUTINE_EXPR:
     case RTL_EXPR:
       return 0;
-    case CALL_EXPR:
-      return 2;
     case WITH_CLEANUP_EXPR:
       /* Should be defined to be 2.  */
       return 1;
@@ -1806,10 +1804,6 @@ unsave_expr_1 (expr)
       /* I don't yet know how to emit a sequence multiple times.  */
       if (RTL_EXPR_SEQUENCE (expr) != 0)
 	abort ();
-      break;
-
-    case CALL_EXPR:
-      CALL_EXPR_RTL (expr) = 0;
       break;
 
     default:

@@ -102,11 +102,6 @@ int (*lang_safe_from_p) PARAMS ((rtx, tree));
    the same indirect address eventually.  */
 int cse_not_expected;
 
-/* Nonzero to generate code for all the subroutines within an
-   expression before generating the upper levels of the expression.
-   Nowadays this is never zero.  */
-int do_preexpand_calls = 1;
-
 /* Don't check memory usage, since code is being emitted to check a memory
    usage.  Used when current_function_check_memory_usage is true, to avoid
    infinite recursion.  */
@@ -183,7 +178,6 @@ static rtx var_rtx		PARAMS ((tree));
 static int readonly_fields_p	PARAMS ((tree));
 static rtx expand_expr_unaligned PARAMS ((tree, unsigned int *));
 static rtx expand_increment	PARAMS ((tree, int, int));
-static void preexpand_calls	PARAMS ((tree));
 static void do_jump_by_parts_greater PARAMS ((tree, int, rtx, rtx));
 static void do_jump_by_parts_equality PARAMS ((tree, rtx, rtx));
 static void do_compare_and_jump	PARAMS ((tree, enum rtx_code, enum rtx_code,
@@ -5533,16 +5527,11 @@ safe_from_p (x, exp, top_p)
 	  break;
 
 	case CALL_EXPR:
-	  exp_rtl = CALL_EXPR_RTL (exp);
-	  if (exp_rtl == 0)
-	    {
-	      /* Assume that the call will clobber all hard registers and
-		 all of memory.  */
-	      if ((GET_CODE (x) == REG && REGNO (x) < FIRST_PSEUDO_REGISTER)
-		  || GET_CODE (x) == MEM)
-		return 0;
-	    }
-
+	  /* Assume that the call will clobber all hard registers and
+	     all of memory.  */
+	  if ((GET_CODE (x) == REG && REGNO (x) < FIRST_PSEUDO_REGISTER)
+	      || GET_CODE (x) == MEM)
+	    return 0;
 	  break;
 
 	case RTL_EXPR:
@@ -7030,8 +7019,6 @@ expand_expr (exp, target, tmode, modifier)
 	rtx rlow;
 	rtx diff, quo, rem, addr, bit, result;
 
-	preexpand_calls (exp);
-
 	/* If domain is empty, answer is no.  Likewise if index is constant
 	   and out of bounds.  */
 	if (((TREE_CODE (set_high_bound) == INTEGER_CST
@@ -7153,11 +7140,6 @@ expand_expr (exp, target, tmode, modifier)
 	  else
 	    return expand_builtin (exp, target, subtarget, tmode, ignore);
 	}
-
-      /* If this call was expanded already by preexpand_calls,
-	 just return the result we got.  */
-      if (CALL_EXPR_RTL (exp) != 0)
-	return CALL_EXPR_RTL (exp);
 
       return expand_call (exp, target, ignore);
 
@@ -7354,7 +7336,6 @@ expand_expr (exp, target, tmode, modifier)
 	  || mode != ptr_mode)
 	goto binop;
 
-      preexpand_calls (exp);
       if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1), 1))
 	subtarget = 0;
 
@@ -7453,7 +7434,6 @@ expand_expr (exp, target, tmode, modifier)
       goto binop;
 
     case MULT_EXPR:
-      preexpand_calls (exp);
       /* If first operand is constant, swap them.
 	 Thus the following special case checks need only
 	 check the second operand.  */
@@ -7580,7 +7560,6 @@ expand_expr (exp, target, tmode, modifier)
     case CEIL_DIV_EXPR:
     case ROUND_DIV_EXPR:
     case EXACT_DIV_EXPR:
-      preexpand_calls (exp);
       if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1), 1))
 	subtarget = 0;
       /* Possible optimization: compute the dividend with EXPAND_SUM
@@ -7598,7 +7577,6 @@ expand_expr (exp, target, tmode, modifier)
     case FLOOR_MOD_EXPR:
     case CEIL_MOD_EXPR:
     case ROUND_MOD_EXPR:
-      preexpand_calls (exp);
       if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1), 1))
 	subtarget = 0;
       op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, 0);
@@ -7760,7 +7738,6 @@ expand_expr (exp, target, tmode, modifier)
     case RSHIFT_EXPR:
     case LROTATE_EXPR:
     case RROTATE_EXPR:
-      preexpand_calls (exp);
       if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1), 1))
 	subtarget = 0;
       op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, 0);
@@ -7782,7 +7759,6 @@ expand_expr (exp, target, tmode, modifier)
     case UNGT_EXPR:
     case UNGE_EXPR:
     case UNEQ_EXPR:
-      preexpand_calls (exp);
       temp = do_store_flag (exp, target, tmode != VOIDmode ? tmode : mode, 0);
       if (temp != 0)
 	return temp;
@@ -8280,7 +8256,6 @@ expand_expr (exp, target, tmode, modifier)
 	    && TREE_CODE (lhs) != PARM_DECL
 	    && ! (TREE_CODE (lhs) == INDIRECT_REF
 		  && TYPE_READONLY (TREE_TYPE (TREE_OPERAND (lhs, 0)))))
-	  preexpand_calls (exp);
 
 	/* Check for |= or &= of a bitfield of size one into another bitfield
 	   of size 1.  In this case, (unless we need the result of the
@@ -8608,7 +8583,6 @@ expand_expr (exp, target, tmode, modifier)
   /* Here to do an ordinary binary operator, generating an instruction
      from the optab already placed in `this_optab'.  */
  binop:
-  preexpand_calls (exp);
   if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1), 1))
     subtarget = 0;
   op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, 0);
@@ -9178,88 +9152,6 @@ expand_increment (exp, post, ignore)
     emit_move_insn (op0, op1);
 
   return temp;
-}
-
-/* Expand all function calls contained within EXP, innermost ones first.
-   But don't look within expressions that have sequence points.
-   For each CALL_EXPR, record the rtx for its value
-   in the CALL_EXPR_RTL field.  */
-
-static void
-preexpand_calls (exp)
-     tree exp;
-{
-  register int nops, i;
-  int class = TREE_CODE_CLASS (TREE_CODE (exp));
-
-  if (! do_preexpand_calls)
-    return;
-
-  /* Only expressions and references can contain calls.  */
-
-  if (! IS_EXPR_CODE_CLASS (class) && class != 'r')
-    return;
-
-  switch (TREE_CODE (exp))
-    {
-    case CALL_EXPR:
-      /* Do nothing if already expanded.  */
-      if (CALL_EXPR_RTL (exp) != 0
-	  /* Do nothing if the call returns a variable-sized object.  */
-	  || (TREE_CODE (TREE_TYPE (exp)) != VOID_TYPE
-	      && TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) != INTEGER_CST)
-	  /* Do nothing to built-in functions.  */
-	  || (TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
-	      && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
-		  == FUNCTION_DECL)
-	      && DECL_BUILT_IN (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))))
-	return;
-
-      CALL_EXPR_RTL (exp) = expand_call (exp, NULL_RTX, 0);
-      return;
-
-    case COMPOUND_EXPR:
-    case COND_EXPR:
-    case TRUTH_ANDIF_EXPR:
-    case TRUTH_ORIF_EXPR:
-      /* If we find one of these, then we can be sure
-	 the adjust will be done for it (since it makes jumps).
-	 Do it now, so that if this is inside an argument
-	 of a function, we don't get the stack adjustment
-	 after some other args have already been pushed.  */
-      do_pending_stack_adjust ();
-      return;
-
-    case BLOCK:
-    case RTL_EXPR:
-    case WITH_CLEANUP_EXPR:
-    case CLEANUP_POINT_EXPR:
-    case TRY_CATCH_EXPR:
-      return;
-
-    case SAVE_EXPR:
-      if (SAVE_EXPR_RTL (exp) != 0)
-	return;
-
-    default:
-      break;
-    }
-
-  nops = TREE_CODE_LENGTH (TREE_CODE (exp));
-  for (i = 0; i < nops; i++)
-    if (TREE_OPERAND (exp, i) != 0)
-      {
-	if (TREE_CODE (exp) == TARGET_EXPR && i == 2)
-	  /* We don't need to preexpand the cleanup for a TARGET_EXPR.
-	     It doesn't happen before the call is made.  */
-	  ;
-	else
-	  {
-	    class = TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, i)));
-	    if (IS_EXPR_CODE_CLASS (class) || class == 'r')
-	      preexpand_calls (TREE_OPERAND (exp, i));
-	  }
-      }
 }
 
 /* At the start of a function, record that we have no previously-pushed
@@ -10428,7 +10320,6 @@ do_store_flag (exp, target, mode, only_cheap)
 	return 0;
     }
 
-  preexpand_calls (exp);
   if (! get_subtarget (target)
       || GET_MODE (subtarget) != operand_mode
       || ! safe_from_p (subtarget, arg1, 1))
