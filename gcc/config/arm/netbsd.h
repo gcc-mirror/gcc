@@ -116,6 +116,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef TYPE_OPERAND_FMT
 #define TYPE_OPERAND_FMT "%%%s"
 
+/* NetBSD uses the old PCC style aggregate returning conventions. */
+#undef DEFAULT_PCC_STRUCT_RETURN
+#define DEFAULT_PCC_STRUCT_RETURN 1
+
+/* Although not normally relevant (since by default, all aggregates
+   are returned in memory) compiling some parts of libc requires
+   non-APCS style struct returns.  */
+#undef RETURN_IN_MEMORY
+
 /* VERY BIG NOTE : Change of structure alignment for RiscBSD.
    There are consequences you should be aware of...
 
