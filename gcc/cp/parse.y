@@ -2091,7 +2091,8 @@ nomods_initdcl0:
             {}
 	| constructor_declarator maybeasm maybe_attribute
 		{ tree d;
-		  parse_decl($1, NULL_TREE, $3, 0, &d); }
+		  parse_decl($1, NULL_TREE, $3, 0, &d);
+		  cp_finish_decl (d, NULL_TREE, $2, 1, 0); }
 	;
 
 /* the * rules are dummies to accept the Apollo extended syntax

@@ -1,3 +1,8 @@
+Wed Mar 18 00:24:10 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (nomods_initdcl0): Also call cp_finish_decl for a 
+	constructor_declarator.
+
 Tue Mar 17 14:44:54 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* typeck2.c (build_x_arrow): Don't crash when an aggregate type
