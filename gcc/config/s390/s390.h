@@ -22,8 +22,6 @@ Boston, MA 02111-1307, USA.  */
 #ifndef _S390_H
 #define _S390_H
 
-#define TARGET_VERSION fprintf (stderr, " (S/390)");
-
 extern int flag_pic; 
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
@@ -33,14 +31,21 @@ extern int target_flags;
 /* Target macros checked at runtime of compiler.  */
 
 #define TARGET_HARD_FLOAT          (target_flags & 1)
+#define TARGET_SOFT_FLOAT          (!(target_flags & 1))
 #define TARGET_BACKCHAIN           (target_flags & 2)
 #define TARGET_SMALL_EXEC          (target_flags & 4)
 #define TARGET_DEBUG_ARG           (target_flags & 8)
 #define TARGET_64BIT               (target_flags & 16)
 #define TARGET_MVCLE               (target_flags & 32)
 
+#ifdef DEFAULT_TARGET_64BIT
+#define TARGET_DEFAULT             0x13
+#define TARGET_VERSION fprintf (stderr, " (zSeries)");
+#else
 #define TARGET_DEFAULT             0x3
-#define TARGET_SOFT_FLOAT          (!(target_flags & 1))
+#define TARGET_VERSION fprintf (stderr, " (S/390)");
+#endif
+
 
 /* Macro to define tables used to set the flags.  This is a list in braces
    of pairs in braces, each pair being { "NAME", VALUE }
@@ -640,7 +645,7 @@ extern enum reg_class regclass_map[FIRST_PSEUDO_REGISTER]; /* smalled class cont
 
 /* We have 31 bit mode.  */
 
-#define MASK_RETURN_ADDR (GEN_INT (0x7fffffff))
+#define MASK_RETURN_ADDR (TARGET_64BIT ? GEN_INT (-1) : GEN_INT (0x7fffffff))
 
 /* The offset from the incoming value of %sp to the top of the stack frame
    for the current function.  */

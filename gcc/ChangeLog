@@ -1,3 +1,21 @@
+2002-02-06  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/linux64.h: Delete file.
+	* config/s390/s390x.h: New file.
+	* config.gcc (s390x-*-linux*): Use s390x.h instead of linux64.h
+	as target header file.
+	* config/s390/linux.h (TARGET_VERSION): Define depending on
+	DEFAULT_TARGET_64BIT.
+	(CPP_SPEC, ASM_SPEC, LINK_SPEC): Likewise.
+	(SIZE_TYPE, PTRDIFF_TYPE): Likewise.
+	(NO_BUILTIN_SIZE_TYPE, NO_BUILTIN_PTRDIFF_TYPE): Define.
+	(CPP_ARCH31_SPEC, CPP_ARCH64_SPEC): New defines.
+	(LINK_ARCH31_SPEC, LINK_ARCH64_SPEC): New defines.
+	(EXTRA_SPEC): New define.
+	* config/s390/s390.h (TARGET_VERSION): Define depending on
+	DEFAULT_TARGET_64BIT.
+	(MASK_RETURN_ADDR): Add run-time check for TARGET_64BIT.
+
 2002-02-06  Jason Merrill  <jason@redhat.com>
 
 	* c-decl.c (finish_function): Warn about a non-void function with

@@ -2870,7 +2870,7 @@ s390-*-linux*)
 	fi
 	;;
 s390x-*-linux*)
-	tm_file="s390/s390.h dbxelf.h elfos.h svr4.h linux.h s390/linux.h s390/linux64.h"
+	tm_file="s390/s390x.h s390/s390.h dbxelf.h elfos.h svr4.h linux.h s390/linux.h"
 	tm_p_file=s390/s390-protos.h
 	md_file=s390/s390.md
 	out_file=s390/s390.c

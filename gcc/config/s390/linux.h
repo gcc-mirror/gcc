@@ -1,5 +1,5 @@
 /* Definitions for Linux for S/390.
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com).
 
@@ -23,51 +23,114 @@ Boston, MA 02111-1307, USA.  */
 #ifndef _LINUX_H
 #define _LINUX_H
 
-#undef SIZE_TYPE                       /* use default                      */
+/* Target specific version string.  */
 
-#undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (Linux for S/390)");
-
-/* Names to predefine in the preprocessor for this target machine.  */
-
-#define CPP_PREDEFINES "-Dlinux -Asystem(linux) -Acpu(s390) -Amachine(s390) -D__s390__ -Asystem(unix) -Dunix -D__ELF__"
-
-/* 
- * Caller save not (always) working in gcc-2.95.2
- */
-
-#undef CC1_SPEC
-#define CC1_SPEC "-fno-caller-saves"
-#define CC1PLUS_SPEC "-fno-caller-saves"
-
-#undef	LINK_SPEC
-#ifdef CROSS_COMPILE
-#define LINK_SPEC "-m elf_s390 %{shared:-shared} \
-  %{!shared: \
-    %{!ibcs: \
-      %{!static: \
-	%{rdynamic:-export-dynamic} \
-	%{!dynamic-linker:-dynamic-linker /lib/ld.so.1 \
-        -rpath-link=/usr/local/s390-ibm-linux/lib}} \
-	%{static:-static}}}"
+#ifdef DEFAULT_TARGET_64BIT
+#undef  TARGET_VERSION
+#define TARGET_VERSION fprintf (stderr, " (Linux for zSeries)");
 #else
-#define LINK_SPEC "-m elf_s390 %{shared:-shared} \
-  %{!shared: \
-    %{!ibcs: \
-      %{!static: \
-	%{rdynamic:-export-dynamic} \
-	%{!dynamic-linker:-dynamic-linker /lib/ld.so.1}} \
-	%{static:-static}}}"
+#undef  TARGET_VERSION
+#define TARGET_VERSION fprintf (stderr, " (Linux for S/390)");
 #endif
 
-/* Need to define this. Otherwise define to BITS_PER_WORD in cexp.c.
-   But BITS_PER_WORD depends on target flags, which are not defined in 
-   cexpc.c.  */
+
+/* Target specific type definitions.  */
+
+/* ??? Do we really want long as size_t on 31-bit?  */
+#undef  SIZE_TYPE
+#define SIZE_TYPE (TARGET_64BIT ? "long unsigned int" : "long unsigned int")
+#undef  PTRDIFF_TYPE
+#define PTRDIFF_TYPE (TARGET_64BIT ? "long int" : "int")
 
 #undef  WCHAR_TYPE
 #define WCHAR_TYPE "int"
 #undef  WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
+
+
+/* Target specific preprocessor settings.  */
+
+#define NO_BUILTIN_SIZE_TYPE
+#define NO_BUILTIN_PTRDIFF_TYPE
+
+#define CPP_PREDEFINES \
+  "-Dunix -Asystem(unix) -Dlinux -Asystem(linux) -D__ELF__ \
+   -Acpu(s390) -Amachine(s390) -D__s390__"
+
+#define CPP_ARCH31_SPEC \
+  "-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=int"
+#define CPP_ARCH64_SPEC \
+  "-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int \
+   -D__s390x__ -D__LONG_MAX__=9223372036854775807L"
+
+#ifdef DEFAULT_TARGET_64BIT
+#undef  CPP_SPEC
+#define CPP_SPEC "%{m31:%(cpp_arch31)} %{!m31:%(cpp_arch64)}"
+#else
+#undef  CPP_SPEC
+#define CPP_SPEC "%{m64:%(cpp_arch64)} %{!m64:%(cpp_arch31)}"
+#endif
+
+
+/* Target specific compiler settings.  */
+
+/* ??? -fcaller-saves sometimes doesn't work.  Fix this! */
+#undef  CC1_SPEC
+#define CC1_SPEC "-fno-caller-saves"
+#undef  CC1PLUS_SPEC
+#define CC1PLUS_SPEC "-fno-caller-saves"
+
+
+/* Target specific assembler settings.  */
+
+#ifdef DEFAULT_TARGET_64BIT
+#undef  ASM_SPEC
+#define ASM_SPEC "%{m31:-m31 -Aesa}"
+#else
+#undef  ASM_SPEC
+#define ASM_SPEC "%{m64:-m64 -Aesame}"
+#endif
+
+
+/* Target specific linker settings.  */
+
+#define LINK_ARCH31_SPEC \
+  "-m elf_s390 \
+   %{shared:-shared} \
+   %{!shared: \
+      %{static:-static} \
+      %{!static: \
+	%{rdynamic:-export-dynamic} \
+	%{!dynamic-linker:-dynamic-linker /lib/ld.so.1}}}"
+
+#define LINK_ARCH64_SPEC \
+  "-m elf64_s390 \
+   %{shared:-shared} \
+   %{!shared: \
+      %{static:-static} \
+      %{!static: \
+	%{rdynamic:-export-dynamic} \
+	%{!dynamic-linker:-dynamic-linker /lib/ld64.so.1}}}"
+
+#ifdef DEFAULT_TARGET_64BIT
+#undef  LINK_SPEC
+#define LINK_SPEC "%{m31:%(link_arch31)} %{!m31:%(link_arch64)}"
+#else
+#undef  LINK_SPEC
+#define LINK_SPEC "%{m64:%(link_arch64)} %{!m64:%(link_arch31)}"
+#endif
+
+
+/* This macro defines names of additional specifications to put in the specs
+   that can be used in various specifications like CC1_SPEC.  Its definition
+   is an initializer with a subgrouping for each command option.  */
+
+#define EXTRA_SPECS \
+  { "cpp_arch31",	CPP_ARCH31_SPEC },	\
+  { "cpp_arch64",	CPP_ARCH64_SPEC },	\
+  { "link_arch31",	LINK_ARCH31_SPEC },	\
+  { "link_arch64",	LINK_ARCH64_SPEC },	\
+
 
 /* Character to start a comment.  */
 
