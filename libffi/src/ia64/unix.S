@@ -295,6 +295,7 @@ ffi_closure_UNIX:
 	;;
 	mov	b0=loc1
 	mov 	ar.pfs=loc0
+	add	sp=BASIC_ARGS_SZ,sp
 	br.ret.sptk.many b0
 	.endp ffi_closure_UNIX
 	
