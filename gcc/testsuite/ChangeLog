@@ -1,3 +1,7 @@
+1998-12-01  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* g++.old-deja/g++.pt/lookup6.C: New test.
+
 1998-11-27  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.pt/explicit76.C: New test.
