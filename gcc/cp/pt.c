@@ -922,7 +922,7 @@ is_specialization_of_friend (tree decl, tree friend)
        };
 
      For this type of template friend, TEMPLATE_DEPTH below will be
-     non-zero.  To determine if DECL is a friend of FRIEND, we first
+     nonzero.  To determine if DECL is a friend of FRIEND, we first
      check if the enclosing class is a specialization of another.  */
 
   template_depth = template_class_depth (DECL_CONTEXT (friend));

@@ -1263,7 +1263,7 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
 	    }
 	}
 
-      /* If PROCESSING_TEMPLATE_DECL is non-zero here, then
+      /* If PROCESSING_TEMPLATE_DECL is nonzero here, then
 	 QUALIFYING_SCOPE is also non-null.  Wrap this in a SCOPE_REF
 	 for now.  */
       if (processing_template_decl)

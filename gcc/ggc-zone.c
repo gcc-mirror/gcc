@@ -268,7 +268,7 @@ typedef struct page_entry
 #endif
 
   /* Number of bytes on the page unallocated.  Only used during
-     collection, and even then large pages merely set this non-zero.  */
+     collection, and even then large pages merely set this nonzero.  */
   size_t bytes_free;
 
   /* Context depth of this page.  */
