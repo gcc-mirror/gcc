@@ -163,10 +163,10 @@ static int source_label_number = 1;
 #define FORCE_TEXT
 #endif
 
-/* If there is a system stabs.h, use it.  Otherwise, use our own.  */
+/* If there is a system stab.h, use it.  Otherwise, use our own.  */
 
-#ifndef HAVE_STAB_H
-#include "gstab.h"
+#if defined (USG) || !defined (HAVE_STAB_H)
+#include "gstab.h" /* If doing DBX on sysV, use our own stab.h.  */
 #else
 #include <stab.h>
 
