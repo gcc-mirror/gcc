@@ -1,3 +1,8 @@
+2000-01-23  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* config/sparc/sol2-sld-64.h (TRANSFER_FROM_TRAMPOLINE): Moved...
+	* config/sparc/sol2.h: ... here.
+
 2000-01-24  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* basic-block.h (struct loops): New field `levels'.

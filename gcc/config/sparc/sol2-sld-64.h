@@ -305,49 +305,6 @@
  
 #endif /* ! SPARC_BI_ARCH */
 
-/*
- * Attempt to turn on access permissions for the stack.
- *
- * This code must be defined when compiling gcc but not when compiling
- * libgcc2.a, unless we're generating code for 64 bits SPARC
- *
- * _SC_STACK_PROT is only defined for post 2.6, but we want this code
- * to run always.  2.6 can change the stack protection but has no way to
- * query it.
- *
- */
-
-#define TRANSFER_FROM_TRAMPOLINE					\
-static int need_enable_exec_stack;					\
-									\
-static void check_enabling(void) __attribute__ ((constructor));		\
-static void check_enabling(void)					\
-{									\
-  extern long sysconf(int);						\
-									\
-  int prot = (int) sysconf(515 /*_SC_STACK_PROT */);			\
-  if (prot != 7)							\
-    need_enable_exec_stack = 1;						\
-}									\
-									\
-void									\
-__enable_execute_stack (addr)						\
-     void *addr;							\
-{									\
-  if (!need_enable_exec_stack)						\
-    return;								\
-  else {								\
-    long size = getpagesize ();						\
-    long mask = ~(size-1);						\
-    char *page = (char *) (((long) addr) & mask); 			\
-    char *end  = (char *) ((((long) (addr + TRAMPOLINE_SIZE)) & mask) + size); \
-									\
-    /* 7 is PROT_READ | PROT_WRITE | PROT_EXEC */ 			\
-    if (mprotect (page, end - page, 7) < 0)				\
-      perror ("mprotect of trampoline code");				\
-  }									\
-}
-
 /* A C statement (sans semicolon) to output an element in the table of
    global constructors.  */
 #undef ASM_OUTPUT_CONSTRUCTOR
