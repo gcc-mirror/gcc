@@ -98,15 +98,22 @@ output_op_from_reg (src, template)
      char *template;
 {
   rtx xops[4];
+  int size = GET_MODE_SIZE (GET_MODE (src));
 
   xops[0] = src;
   xops[1] = AT_SP (Pmode);
-  xops[2] = GEN_INT (GET_MODE_SIZE (GET_MODE (src)));
+  xops[2] = GEN_INT (size);
   xops[3] = stack_pointer_rtx;
 
-  if (GET_MODE_SIZE (GET_MODE (src)) > UNITS_PER_WORD)
+  if (size > UNITS_PER_WORD)
     {
-      rtx high = gen_rtx (REG, SImode, REGNO (src) + 1);
+      rtx high;
+      if (size > 2 * UNITS_PER_WORD)
+	{
+	  high = gen_rtx (REG, SImode, REGNO (src) + 2);
+	  output_asm_insn (AS1 (push%L0,%0), &high);
+	}
+      high = gen_rtx (REG, SImode, REGNO (src) + 1);
       output_asm_insn (AS1 (push%L0,%0), &high);
     }
   output_asm_insn (AS1 (push%L0,%0), &src);
@@ -127,10 +134,11 @@ output_to_reg (dest, dies)
      int dies;
 {
   rtx xops[4];
+  int size = GET_MODE_SIZE (GET_MODE (dest));
 
   xops[0] = AT_SP (Pmode);
   xops[1] = stack_pointer_rtx;
-  xops[2] = GEN_INT (GET_MODE_SIZE (GET_MODE (dest)));
+  xops[2] = GEN_INT (size);
   xops[3] = dest;
 
   output_asm_insn (AS2 (sub%L1,%2,%1), xops);
@@ -147,17 +155,27 @@ output_to_reg (dest, dies)
       if (dies)
 	output_asm_insn (AS1 (fstp%z3,%y0), xops);
       else
-	output_asm_insn (AS1 (fst%z3,%y0), xops);
+	{
+	  if (GET_MODE (dest) == XFmode)
+	    abort ();
+	  else
+	    output_asm_insn (AS1 (fst%z3,%y0), xops);
+	}
     }
   else
     abort ();
 
   output_asm_insn (AS1 (pop%L0,%0), &dest);
 
-  if (GET_MODE_SIZE (GET_MODE (dest)) > UNITS_PER_WORD)
+  if (size > UNITS_PER_WORD)
     {
       dest = gen_rtx (REG, SImode, REGNO (dest) + 1);
       output_asm_insn (AS1 (pop%L0,%0), &dest);
+      if (size > 2 * UNITS_PER_WORD)
+	{
+	  dest = gen_rtx (REG, SImode, REGNO (dest) + 1);
+	  output_asm_insn (AS1 (pop%L0,%0), &dest);
+	}
     }
 }
 
@@ -243,8 +261,14 @@ output_move_double (operands)
 {
   enum {REGOP, OFFSOP, MEMOP, PUSHOP, POPOP, CNSTOP, RNDOP } optype0, optype1;
   rtx latehalf[2];
+  rtx middlehalf[2];
+  rtx xops[2];
   rtx addreg0 = 0, addreg1 = 0;
   int dest_overlapped_low = 0;
+  int size = GET_MODE_SIZE (GET_MODE (operands[1]));
+
+  middlehalf[0] = 0;
+  middlehalf[1] = 0;
 
   /* First classify both operands.  */
 
@@ -289,16 +313,29 @@ output_move_double (operands)
 
   if (optype0 == PUSHOP && optype1 == POPOP)
     {
+      /* ??? Can this ever happen on i386? */
       operands[0] = XEXP (XEXP (operands[0], 0), 0);
-      asm_add (-8, operands[0]);
-      operands[0] = gen_rtx (MEM, DImode, operands[0]);
+      asm_add (-size, operands[0]);
+      if (GET_MODE (operands[1]) == XFmode)
+        operands[0] = gen_rtx (MEM, XFmode, operands[0]);
+      else if (GET_MODE (operands[0]) == DFmode)
+        operands[0] = gen_rtx (MEM, DFmode, operands[0]);
+      else
+        operands[0] = gen_rtx (MEM, DImode, operands[0]);
       optype0 = OFFSOP;
     }
+
   if (optype0 == POPOP && optype1 == PUSHOP)
     {
+      /* ??? Can this ever happen on i386? */
       operands[1] = XEXP (XEXP (operands[1], 0), 0);
-      asm_add (-8, operands[1]);
-      operands[1] = gen_rtx (MEM, DImode, operands[1]);
+      asm_add (-size, operands[1]);
+      if (GET_MODE (operands[1]) == XFmode)
+        operands[1] = gen_rtx (MEM, XFmode, operands[1]);
+      else if (GET_MODE (operands[1]) == DFmode)
+        operands[1] = gen_rtx (MEM, DFmode, operands[1]);
+      else
+        operands[1] = gen_rtx (MEM, DImode, operands[1]);
       optype1 = OFFSOP;
     }
 
@@ -320,31 +357,87 @@ output_move_double (operands)
      for the high-numbered word and in some cases alter the
      operands in OPERANDS to be suitable for the low-numbered word.  */
 
-  if (optype0 == REGOP)
-    latehalf[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
-  else if (optype0 == OFFSOP)
-    latehalf[0] = adj_offsettable_operand (operands[0], 4);
-  else
-    latehalf[0] = operands[0];
-
-  if (optype1 == REGOP)
-    latehalf[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
-  else if (optype1 == OFFSOP)
-    latehalf[1] = adj_offsettable_operand (operands[1], 4);
-  else if (optype1 == CNSTOP)
+  if (size == 12)
     {
-      if (GET_CODE (operands[1]) == CONST_DOUBLE)
-	split_double (operands[1], &operands[1], &latehalf[1]);
-      else if (CONSTANT_P (operands[1]))
+      if (optype0 == REGOP)
 	{
-	  if (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) < 0)
-	    latehalf[1] = constm1_rtx;
-	  else
-	    latehalf[1] = const0_rtx;
+	  middlehalf[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+	  latehalf[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 2);
+	}
+      else if (optype0 == OFFSOP)
+	{
+	  middlehalf[0] = adj_offsettable_operand (operands[0], 4);
+	  latehalf[0] = adj_offsettable_operand (operands[0], 8);
+	}
+      else
+	{
+         middlehalf[0] = operands[0];
+         latehalf[0] = operands[0];
+	}
+    
+      if (optype1 == REGOP)
+	{
+          middlehalf[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+          latehalf[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 2);
+	}
+      else if (optype1 == OFFSOP)
+	{
+          middlehalf[1] = adj_offsettable_operand (operands[1], 4);
+          latehalf[1] = adj_offsettable_operand (operands[1], 8);
+	}
+      else if (optype1 == CNSTOP)
+	{
+	  if (GET_CODE (operands[1]) == CONST_DOUBLE)
+	    {
+	      REAL_VALUE_TYPE r; long l[3];
+
+	      REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
+	      REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, l);
+	      operands[1] = GEN_INT (l[0]);
+	      middlehalf[1] = GEN_INT (l[1]);
+	      latehalf[1] = GEN_INT (l[2]);
+	    }
+	  else if (CONSTANT_P (operands[1]))
+	    /* No non-CONST_DOUBLE constant should ever appear here.  */
+	    abort ();
+        }
+      else
+	{
+	  middlehalf[1] = operands[1];
+	  latehalf[1] = operands[1];
 	}
     }
-  else
-    latehalf[1] = operands[1];
+  else /* size is not 12: */
+    {
+      if (optype0 == REGOP)
+	latehalf[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+      else if (optype0 == OFFSOP)
+	latehalf[0] = adj_offsettable_operand (operands[0], 4);
+      else
+	latehalf[0] = operands[0];
+
+      if (optype1 == REGOP)
+	latehalf[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+      else if (optype1 == OFFSOP)
+	latehalf[1] = adj_offsettable_operand (operands[1], 4);
+      else if (optype1 == CNSTOP)
+	{
+	  if (GET_CODE (operands[1]) == CONST_DOUBLE)
+	    split_double (operands[1], &operands[1], &latehalf[1]);
+	  else if (CONSTANT_P (operands[1]))
+	    {
+	      /* ??? jrv: Can this really happen?  A DImode constant
+		 that isn't a CONST_DOUBLE? */
+	      if (GET_CODE (operands[1]) == CONST_INT
+		  && INTVAL (operands[1]) < 0)
+	        latehalf[1] = constm1_rtx;
+	      else
+	        latehalf[1] = const0_rtx;
+	    }
+	}
+      else
+	latehalf[1] = operands[1];
+    }
 
   /* If insn is effectively movd N (sp),-(sp) then we will do the
      high word first.  We should use the adjusted operand 1 (which is N+4 (sp))
@@ -367,12 +460,40 @@ output_move_double (operands)
 	{
 	  /* If both halves of dest are used in the src memory address,
 	     compute the address into latehalf of dest.  */
-	  rtx xops[2];
+compadr:
 	  xops[0] = latehalf[0];
 	  xops[1] = XEXP (operands[1], 0);
 	  output_asm_insn (AS2 (lea%L0,%a1,%0), xops);
-	  operands[1] = gen_rtx (MEM, DImode, latehalf[0]);
-	  latehalf[1] = adj_offsettable_operand (operands[1], 4);
+	  if( GET_MODE (operands[1]) == XFmode )
+	    {
+/*	    abort (); */
+	      operands[1] = gen_rtx (MEM, XFmode, latehalf[0]);
+	      middlehalf[1] = adj_offsettable_operand (operands[1], size-8);
+	      latehalf[1] = adj_offsettable_operand (operands[1], size-4);
+	    }
+	  else
+	    {
+	      operands[1] = gen_rtx (MEM, DImode, latehalf[0]);
+	      latehalf[1] = adj_offsettable_operand (operands[1], size-4);
+	    }
+	}
+      else if (size == 12
+		 && reg_mentioned_p (middlehalf[0], XEXP (operands[1], 0)))
+	{
+	  /* Check for two regs used by both source and dest. */
+	  if (reg_mentioned_p (operands[0], XEXP (operands[1], 0))
+		|| reg_mentioned_p (latehalf[0], XEXP (operands[1], 0)))
+		goto compadr;
+
+	  /* JRV says this can't happen: */
+	  if (addreg0 || addreg1)
+	      abort();
+
+	  /* Only the middle reg conflicts; simply put it last. */
+	  output_asm_insn (singlemove_string (operands), operands);
+	  output_asm_insn (singlemove_string (latehalf), latehalf);
+	  output_asm_insn (singlemove_string (middlehalf), middlehalf);
+	  return "";
 	}
       else if (reg_mentioned_p (operands[0], XEXP (operands[1], 0)))
 	/* If the low half of dest is mentioned in the source memory
@@ -388,16 +509,23 @@ output_move_double (operands)
      such overlap can't happen in memory unless the user explicitly
      sets it up, and that is an undefined circumstance.  */
 
+/*
   if (optype0 == PUSHOP || optype1 == PUSHOP
       || (optype0 == REGOP && optype1 == REGOP
 	  && REGNO (operands[0]) == REGNO (latehalf[1]))
       || dest_overlapped_low)
+*/
+  if (optype0 == PUSHOP || optype1 == PUSHOP
+      || (optype0 == REGOP && optype1 == REGOP
+	  && ((middlehalf[1] && REGNO (operands[0]) == REGNO (middlehalf[1]))
+	      || REGNO (operands[0]) == REGNO (latehalf[1])))
+      || dest_overlapped_low)
     {
       /* Make any unoffsettable addresses point at high-numbered word.  */
       if (addreg0)
-	asm_add (4, addreg0);
+	asm_add (size-4, addreg0);
       if (addreg1)
-	asm_add (4, addreg1);
+	asm_add (size-4, addreg1);
 
       /* Do that word.  */
       output_asm_insn (singlemove_string (latehalf), latehalf);
@@ -408,6 +536,15 @@ output_move_double (operands)
       if (addreg1)
 	asm_add (-4, addreg1);
 
+      if (size == 12)
+        {
+        output_asm_insn (singlemove_string (middlehalf), middlehalf);
+        if (addreg0)
+           asm_add (-4, addreg0);
+        if (addreg1)
+	   asm_add (-4, addreg1);
+	}
+
       /* Do low-numbered word.  */
       return singlemove_string (operands);
     }
@@ -415,6 +552,17 @@ output_move_double (operands)
   /* Normal case: do the two words, low-numbered first.  */
 
   output_asm_insn (singlemove_string (operands), operands);
+
+  /* Do the middle one of the three words for long double */
+  if (size == 12)
+    {
+      if (addreg0)
+        asm_add (4, addreg0);
+      if (addreg1)
+        asm_add (4, addreg1);
+
+      output_asm_insn (singlemove_string (middlehalf), middlehalf);
+    }
 
   /* Make any unoffsettable addresses point at high-numbered word.  */
   if (addreg0)
@@ -427,9 +575,9 @@ output_move_double (operands)
 
   /* Undo the adds we just did.  */
   if (addreg0)
-    asm_add (-4, addreg0);
+    asm_add (4-size, addreg0);
   if (addreg1)
-    asm_add (-4, addreg1);
+    asm_add (4-size, addreg1);
 
   return "";
 }
@@ -482,12 +630,14 @@ output_move_const_single (operands)
     }
   if (GET_CODE (operands[1]) == CONST_DOUBLE)
     {
-      union { int i[2]; double d;} u1;
-      union { int i; float f;} u2;
-      u1.i[0] = CONST_DOUBLE_LOW (operands[1]);
-      u1.i[1] = CONST_DOUBLE_HIGH (operands[1]);
-      u2.f = u1.d;
-      operands[1] = GEN_INT (u2.i);
+      REAL_VALUE_TYPE r; long l;
+
+      if (GET_MODE (operands[1]) == XFmode)
+	abort ();
+
+      REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
+      REAL_VALUE_TO_TARGET_SINGLE (r, l);
+      operands[1] = GEN_INT (l);
     }
   return singlemove_string (operands);
 }
@@ -1045,6 +1195,10 @@ print_operand (file, x, code)
 	  PUT_OP_SIZE (code, 's', file);
 	  return;
 
+	case 'T':
+	  PUT_OP_SIZE (code, 't', file);
+	  return;
+
 	case 'z':
 	  /* 387 opcodes don't get size suffixes if the operands are
 	     registers. */
@@ -1072,6 +1226,10 @@ print_operand (file, x, code)
 	      else
 		PUT_OP_SIZE ('L', 'l', file);
 	      return;
+
+	    case 12:
+		  PUT_OP_SIZE ('T', 't', file);
+		  return;
 
 	    case 8:
 	      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT)
@@ -1124,20 +1282,26 @@ print_operand (file, x, code)
     }
   else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == SFmode)
     {
-      union { double d; int i[2]; } u;
-      union { float f; int i; } u1;
-      u.i[0] = CONST_DOUBLE_LOW (x);
-      u.i[1] = CONST_DOUBLE_HIGH (x);
-      u1.f = u.d;
+      REAL_VALUE_TYPE r; long l;
+      REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+      REAL_VALUE_TO_TARGET_SINGLE (r, l);
       PRINT_IMMED_PREFIX (file);
-      fprintf (file, "0x%x", u1.i);
+      fprintf (file, "0x%x", l);
     }
-  else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == DFmode)
+ /* These float cases don't actually occur as immediate operands. */
+ else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == DFmode)
     {
-      union { double d; int i[2]; } u;
-      u.i[0] = CONST_DOUBLE_LOW (x);
-      u.i[1] = CONST_DOUBLE_HIGH (x);
-      fprintf (file, "%.22e", u.d);
+      REAL_VALUE_TYPE r; char dstr[30];
+      REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+      REAL_VALUE_TO_DECIMAL (r, "%.22e", dstr);
+      fprintf (file, "%s", dstr);
+    }
+  else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == XFmode)
+    {
+      REAL_VALUE_TYPE r; char dstr[30];
+      REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+      REAL_VALUE_TO_DECIMAL (r, "%.22e", dstr);
+      fprintf (file, "%s", dstr);
     }
   else 
     {
@@ -1500,7 +1664,9 @@ convert_387_op (op, mode)
       return GET_MODE (XEXP (op, 0)) == SImode;
 
     case FLOAT_EXTEND:
-      return mode == DFmode && GET_MODE (XEXP (op, 0)) == SFmode;
+      return ((mode == DFmode && GET_MODE (XEXP (op, 0)) == SFmode)
+	      || (mode == XFmode && GET_MODE (XEXP (op, 0)) == DFmode)
+	      || (mode == XFmode && GET_MODE (XEXP (op, 0)) == SFmode));
 
     default:
       return 0;
