@@ -196,7 +196,6 @@ do { text_section ();							\
 #undef	ASM_FILE_END
 #define ASM_FILE_END(FILE)					\
   do {								\
-    extern const char *language_string;				\
     machopic_finish (asm_out_file);                             \
     if (strcmp (language_string, "GNU C++") == 0)		\
       {								\
