@@ -1050,7 +1050,6 @@ rtx exp;
 	    case ASHIFTRT: 
 	    case LSHIFTRT:
 	    case ASHIFT: 
-	    case LSHIFT:
 	    case AND: 
 	    case IOR: 
 	    case XOR:
