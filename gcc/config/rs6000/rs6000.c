@@ -3903,7 +3903,7 @@ altivec_expand_ld_builtin (exp, target, expandedp)
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
   tree arg0;
   enum machine_mode tmode, mode0;
-  rtx pat, target, op0;
+  rtx pat, op0;
   enum insn_code icode;
 
   switch (fcode)
@@ -3951,7 +3951,7 @@ altivec_expand_ld_builtin (exp, target, expandedp)
 static rtx
 altivec_expand_st_builtin (exp, target, expandedp)
      tree exp;
-     rtx target;
+     rtx target ATTRIBUTE_UNUSED;
      bool *expandedp;
 {
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
@@ -3959,7 +3959,7 @@ altivec_expand_st_builtin (exp, target, expandedp)
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
   tree arg0, arg1;
   enum machine_mode mode0, mode1;
-  rtx pat, target, op0, op1;
+  rtx pat, op0, op1;
   enum insn_code icode;
 
   switch (fcode)
@@ -4005,7 +4005,7 @@ altivec_expand_st_builtin (exp, target, expandedp)
 static rtx
 altivec_expand_dst_builtin (exp, target, expandedp)
      tree exp;
-     rtx target;
+     rtx target ATTRIBUTE_UNUSED;
      bool *expandedp;
 {
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
@@ -4013,7 +4013,7 @@ altivec_expand_dst_builtin (exp, target, expandedp)
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
   tree arg0, arg1, arg2;
   enum machine_mode mode0, mode1, mode2;
-  rtx pat, target, op0, op1, op2;
+  rtx pat, op0, op1, op2;
   struct builtin_description *d;
   int i;
 
@@ -4077,9 +4077,9 @@ altivec_expand_builtin (exp, target, expandedp)
   enum insn_code icode;
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   tree arglist = TREE_OPERAND (exp, 1);
-  tree arg0, arg1, arg2;
-  rtx op0, op1, op2, pat;
-  enum machine_mode tmode, mode0, mode1, mode2;
+  tree arg0;
+  rtx op0, pat;
+  enum machine_mode tmode, mode0;
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
 
   target = altivec_expand_ld_builtin (exp, target, expandedp);
