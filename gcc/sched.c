@@ -1940,11 +1940,16 @@ sched_analyze_2 (x, insn)
 	rtx u;
 
 	/* Traditional and volatile asm instructions must be considered to use
-	   and clobber all hard registers and all of memory.  So must
-	   TRAP_IF and UNSPEC_VOLATILE operations.  */
+	   and clobber all hard registers, all pseudo-registers and all of
+	   memory.  So must TRAP_IF and UNSPEC_VOLATILE operations.
+
+	   Consider for instance a volatile asm that changes the fpu rounding
+	   mode.  An insn should not be moved across this even if it only uses
+	   pseudo-regs because it might give an incorrectly rounded result.  */
 	if (code != ASM_OPERANDS || MEM_VOLATILE_P (x))
 	  {
-	    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	    int max_reg = max_reg_num ();
+	    for (i = 0; i < max_reg; i++)
 	      {
 		for (u = reg_last_uses[i]; u; u = XEXP (u, 1))
 		  add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
