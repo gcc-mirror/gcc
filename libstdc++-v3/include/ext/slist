@@ -60,7 +60,6 @@ namespace __gnu_cxx
 {
 using std::size_t;
 using std::ptrdiff_t;
-using std::_Alloc_traits;
 using std::_Construct;
 using std::_Destroy;
 using std::allocator;
@@ -201,73 +200,27 @@ struct _Slist_iterator : public _Slist_iterator_base
   }
 };
 
-
-// Base class that encapsulates details of allocators.  Three cases:
-// an ordinary standard-conforming allocator, a standard-conforming
-// allocator with no non-static data, and an SGI-style allocator.
-// This complexity is necessary only because we're worrying about backward
-// compatibility and because we want to avoid wasting storage on an
-// allocator instance if it isn't necessary.
-
-// Base for general standard-conforming allocators.
-template <class _Tp, class _Allocator, bool _IsStatic>
-class _Slist_alloc_base {
-public:
-  typedef typename _Alloc_traits<_Tp,_Allocator>::allocator_type
-          allocator_type;
-  allocator_type get_allocator() const { return _M_node_allocator; }
-
-  _Slist_alloc_base(const allocator_type& __a) : _M_node_allocator(__a) {}
-
-protected:
-  _Slist_node<_Tp>* _M_get_node()
-    { return _M_node_allocator.allocate(1); }
-  void _M_put_node(_Slist_node<_Tp>* __p)
-    { _M_node_allocator.deallocate(__p, 1); }
-
-protected:
-  typename _Alloc_traits<_Slist_node<_Tp>,_Allocator>::allocator_type
-           _M_node_allocator;
-  _Slist_node_base _M_head;
-};
-
-// Specialization for instanceless allocators.
-template <class _Tp, class _Allocator>
-class _Slist_alloc_base<_Tp,_Allocator, true> {
-public:
-  typedef typename _Alloc_traits<_Tp,_Allocator>::allocator_type
-          allocator_type;
-  allocator_type get_allocator() const { return allocator_type(); }
-
-  _Slist_alloc_base(const allocator_type&) {}
-
-protected:
-  typedef typename _Alloc_traits<_Slist_node<_Tp>, _Allocator>::_Alloc_type
-          _Alloc_type;
-  _Slist_node<_Tp>* _M_get_node() { return _Alloc_type::allocate(1); }
-  void _M_put_node(_Slist_node<_Tp>* __p) { _Alloc_type::deallocate(__p, 1); }
-
-protected:
-  _Slist_node_base _M_head;
-};
-
-
 template <class _Tp, class _Alloc>
 struct _Slist_base
-  : public _Slist_alloc_base<_Tp, _Alloc,
-                             _Alloc_traits<_Tp, _Alloc>::_S_instanceless>
+  : public _Alloc::template rebind<_Slist_node<_Tp> >::other
 {
-  typedef _Slist_alloc_base<_Tp, _Alloc,
-                            _Alloc_traits<_Tp, _Alloc>::_S_instanceless>
-          _Base;
-  typedef typename _Base::allocator_type allocator_type;
+  typedef typename _Alloc::template rebind<_Slist_node<_Tp> >::other _Node_alloc;
+  typedef _Alloc allocator_type;
+  allocator_type get_allocator() const {
+    return *static_cast<const _Node_alloc*>(this);
+  }
 
   _Slist_base(const allocator_type& __a)
-    : _Base(__a) { this->_M_head._M_next = 0; }
+    : _Node_alloc(__a) { this->_M_head._M_next = 0; }
   ~_Slist_base() { _M_erase_after(&this->_M_head, 0); }
 
 protected:
+  _Slist_node_base _M_head;
 
+  _Slist_node<_Tp>* _M_get_node() { return _Node_alloc::allocate(1); }
+  void _M_put_node(_Slist_node<_Tp>* __p) { _Node_alloc::deallocate(__p, 1); }
+
+protected:
   _Slist_node_base* _M_erase_after(_Slist_node_base* __pos)
   {
     _Slist_node<_Tp>* __next = (_Slist_node<_Tp>*) (__pos->_M_next);

@@ -1,3 +1,13 @@
+2003-12-22  Matt Austern  <austern@apple.com>
+
+	* include/bits/stl_bvector.h (_Bvector_alloc_base): Eliminate.
+	(_Bvector_base): Inherit directly from word allocator.
+	* include/bits/stl_tree.h (_Rb_tree_alloc_base): Eliminate.
+	(_Rb_tree_base): Eliminate.
+	(_Rb_tree): Inherit directly from node allocator.
+	* include/ext/slist (_Alist_alloc_base): Eliminate.
+	(_Slist_base): Inherit direcly from node allocator.
+	
 2003-12-22  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/18_support/numeric_limits.cc: Add _GLIBCXX_ASSERT to
