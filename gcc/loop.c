@@ -3926,7 +3926,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 		     loop_info, 0);
 
-      return;
+      goto egress;
     }
 
   /* Find initial value for each biv by searching backwards from loop_start,
@@ -5225,6 +5225,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 
   if (loop_dump_stream)
     fprintf (loop_dump_stream, "\n");
+
+egress:
   VARRAY_FREE (reg_iv_type);
   VARRAY_FREE (reg_iv_info);
 }
@@ -6000,7 +6002,7 @@ basic_induction_var (x, mode, dest_reg, p, inc_val, mult_val, location)
   rtx insn, set = 0;
 
   code = GET_CODE (x);
-  *location = NULL_RTX;
+  *location = NULL;
   switch (code)
     {
     case PLUS:

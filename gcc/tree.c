@@ -365,8 +365,7 @@ save_tree_status (p)
   function_maybepermanent_obstack
     = (struct obstack *) xmalloc (sizeof (struct obstack));
   gcc_obstack_init (function_maybepermanent_obstack);
-  maybepermanent_firstobj
-    = (char *) obstack_finish (function_maybepermanent_obstack);
+  maybepermanent_firstobj = NULL;
 
   function_obstack = (struct obstack *) xmalloc (sizeof (struct obstack));
   gcc_obstack_init (function_obstack);
@@ -399,9 +398,9 @@ restore_tree_status (p)
   obstack_free (&temporary_obstack, temporary_firstobj);
   obstack_free (&momentary_obstack, momentary_function_firstobj);
 
-  obstack_free (function_obstack, 0);
+  obstack_free (function_obstack, NULL);
 
-  if (obstack_empty_p (function_maybepermanent_obstack))
+  if (maybepermanent_firstobj == NULL)
     free (function_maybepermanent_obstack);
   free (function_obstack);
 
