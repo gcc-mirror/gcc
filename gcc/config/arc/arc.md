@@ -115,23 +115,30 @@
    (eq_attr "in_delay_slot" "true")
    (eq_attr "in_delay_slot" "true")])
    
-;; Function units of the ARC
+;; Scheduling description for the ARC
 
-;; (define_function_unit {name} {num-units} {n-users} {test}
-;;                       {ready-delay} {issue-delay} [{conflict-list}])
+(define_cpu_unit "branch")
+
+(define_insn_reservation "any_insn" 1 (eq_attr "type" "!load,compare,branch")
+			 "nothing")
 
 ;; 1) A conditional jump cannot immediately follow the insn setting the flags.
 ;; This isn't a complete solution as it doesn't come with guarantees.  That
 ;; is done in the branch patterns and in arc_print_operand.  This exists to
 ;; avoid inserting a nop when we can.
-(define_function_unit "compare" 1 0 (eq_attr "type" "compare") 2 2 [(eq_attr "type" "branch")])
+
+(define_insn_reservation "compare" 1 (eq_attr "type" "compare")
+		         "nothing,branch")
+
+(define_insn_reservation "branch" 1 (eq_attr "type" "branch")
+		         "branch")
 
 ;; 2) References to loaded registers should wait a cycle.
 
 ;; Memory with load-delay of 1 (i.e., 2 cycle load).
-(define_function_unit "memory" 1 1 (eq_attr "type" "load") 2 0)
 
-;; Units that take one cycle do not need to be specified.
+(define_insn_reservation "memory" 2 (eq_attr "type" "load")
+			 "nothing")
 
 ;; Move instructions.
 

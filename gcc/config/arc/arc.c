@@ -145,6 +145,9 @@ static tree arc_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR arc_gimplify_va_arg_expr
 
+#undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
+#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE hook_int_void_1
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Called by OVERRIDE_OPTIONS to initialize various things.  */

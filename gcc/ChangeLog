@@ -1,3 +1,8 @@
+2004-07-09  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config/arc/arc.md: Switch to DFA-based scheduler description.
+	* config/arc/arc.c: Switch to DFA-based scheduler description.
+
 2004-07-09  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm/unknown-elf.h (TARGET_DEFAULT): Don't require an APCS frame
