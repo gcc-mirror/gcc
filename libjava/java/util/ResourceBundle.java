@@ -129,7 +129,9 @@ public abstract class ResourceBundle
     {
       ResourceBundle rb;
 
-      String bundleName = baseName + "_" + locale;
+      // Explicitly invoke locale.toString() to force a
+      // NullPointerException when required.
+      String bundleName = baseName + "_" + locale.toString();
 
       // Check the cache.
       Object obj = resource_cache.get(bundleName);
@@ -153,11 +155,6 @@ public abstract class ResourceBundle
     {
       ResourceBundle rb;
       Class rbc;
-
-      // FIXME: We can't currently rely on NullPointerException being
-      // thrown when we invoke a method on a null object.
-      if (locale == null)
-	throw new NullPointerException ();
 
       rb = partialGetBundle(baseName, locale, false);
       if (rb != null)

@@ -1,5 +1,9 @@
 1999-05-10  Tom Tromey  <tromey@cygnus.com>
 
+	* java/util/ResourceBundle.java (partialGetBundle): Explicitly use
+	locale.toString().
+	(getBundle): Don't explicitly throw null pointer exception.
+
 	* gnu/gcj/RawData.java: Added copyright header.
 
 	* include/jni.h (_Jv_va_list): Always define as va_list.
