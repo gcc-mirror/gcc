@@ -65,6 +65,6 @@ extern rtx legitimize_pic_address (rtx, enum machine_mode, rtx);
 #endif /* RTX_CODE */
 
 extern int flags_in_68881 (void);
-extern int use_return_insn (void);
+extern bool use_return_insn (void);
 extern void override_options (void);
 extern void init_68881_table (void);

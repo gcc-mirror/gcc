@@ -1,3 +1,18 @@
+2003-10-11  Bernardo Innocenti  <bernie@develer.com>
+
+	* config/m68k/m68k-protos.h (use_return_insn): Change return type from
+	int to bool.
+	* config/m68k/m68k.c (struct m68k_frame): Add funcdef_no member.
+	(current_frame): New global var.
+	(m68k_compute_frame_layout): Cache computations in current_frame.
+	(m68k_initial_elimination_offset): Use values from current_frame
+	instead of recomputing them.
+	(use_return_insn): Likewise.
+	(m68k_output_function_prologue): Likewise.
+	(m68k_output_function_epilogue): Likewise.
+	* config/m68k/m68k.h (TARGET_CPU_CPP_PREDEFINES): Fold __PIC__ handling
+	inside the block for __pic__.
+
 2003-10-11  Peter Barada <peter@baradas.org>
 	    Bernardo Innocenti  <bernie@develer.com>
 
