@@ -674,9 +674,9 @@ global_conflicts ()
 
 	  if (code == INSN || code == CALL_INSN || code == JUMP_INSN)
 	    {
-	      int i = 0;
 
 #if 0
+	      int i = 0;
 	      for (link = REG_NOTES (insn);
 		   link && i < NUM_NO_CONFLICT_PAIRS;
 		   link = XEXP (link, 1))
