@@ -95,6 +95,7 @@ outdir=unset
 do_html=no
 do_man=no
 enabled_sections=
+DATEtext=`date '+%Y-%m-%d'`
 
 parse_options $*
 find_doxygen
@@ -107,9 +108,11 @@ fi
 
 case x"$mode" in
     xuser)           do_html=yes
+                     LEVELtext='User'
                      ;;
     xmaint)          do_html=yes
                      enabled_sections=maint
+                     LEVELtext='Maintainer'
                      ;;
     xman)            do_man=yes
                      ;;
@@ -147,7 +150,9 @@ set -e
 set +e
 
 test $do_html = yes && {
-    cp ${srcdir}/docs/doxygen/mainpage.html ${outdir}/html_${mode}/index.html
+    sed -e "s=@LEVEL@=${LEVELtext}=" \
+        -e "s=@DATE@=${DATEtext}=" \
+        ${srcdir}/docs/doxygen/mainpage.html > ${outdir}/html_${mode}/index.html
     cp ${srcdir}/docs/doxygen/tables.html ${outdir}/html_${mode}/tables.html
     echo ::
     echo :: HTML pages begin with

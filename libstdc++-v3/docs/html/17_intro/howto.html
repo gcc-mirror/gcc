@@ -205,7 +205,8 @@
       classes publicly derived from it, simply returns the name of the
       class.  But they are the <em>mangled</em> names; you will need to call
       <code>c++filt</code> and pass the names as command-line parameters to
-      demangle them.
+      demangle them, or call a
+      <a href="../18_support/howto.html#5">runtime demangler function</a>.
       (The classes in <code>&lt;stdexcept&gt;</code> have constructors which
       require an argument to use later for <code>what()</code> calls, so the
       question does not arise in most user-defined exceptions.)

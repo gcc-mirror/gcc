@@ -1,4 +1,3 @@
-
 /*
    Copyright (C) 2001, 2002 Free Software Foundation, Inc.
    See license.html for license.
@@ -7,6 +6,11 @@
    source headers themselves.  It is a ".cc" file for the sole cheesy reason
    that it triggers many different text editors into doing Nice Things when
    typing comments.  However, it is mentioned nowhere except the *cfg.in files.
+
+   Some actual code (declarations) is exposed here, but no compiler ever
+   sees it.  The decls must be visible to doxygen, and sometimes their real
+   declarations are not visible, or not visible in a way we want.
+
    Pieces separated by '// //' lines will usually not be presented to the
    user on the same page.
 */
@@ -112,4 +116,69 @@ All associative containers must meet certain requirements, summarized in
 */
 
 // // // // // // // // // // // // // // // // // // // // // // // //
+/** @namespace abi
+ *  @brief The cross-vendor C++ Application Binary Interface.
+ *
+ *  A brief overview of an ABI is given in the libstdc++-v3 FAQ, question
+ *  5.8 (you may have a copy of the FAQ locally, or you can view the online
+ *  version at http://gcc.gnu.org/onlinedocs/libstdc++/faq/index.html#5_8).
+ *
+ *  GCC subscribes to a relatively-new cross-vendor ABI for C++, sometimes
+ *  called the IA64 ABI because it happens to be the native ABI for that
+ *  platform.  It is summarized at http://www.codesourcery.com/cxx-abi/
+ *  along with the current specification.
+ *
+ *  For users of GCC 3.x, entry points are available in <cxxabi.h>, which notes,
+ *  <em>"It is not normally necessary for user programs to include this header,
+ *  or use the entry points directly.  However, this header is available
+ *  should that be needed."</em>
+*/
+
+namespace abi {
+/**
+@brief New ABI-mandated entry point in the C++ runtime library for demangling.
+
+@param mangled_name A NUL-terminated character string containing the name
+                    to be demangled.
+
+@param output_buffer A region of memory, allocated with malloc, of
+                     @a *length bytes, into which the demangled name
+                     is stored.  If @a output_buffer is not long enough,
+                     it is expanded using realloc.  @a output_buffer may
+                     instead be NULL; in that case, the demangled name is
+                     placed in a region of memory allocated with malloc.
+
+@param length If @a length is non-NULL, the length of the buffer containing
+              the demangled name is placed in @a *length.
+
+@param status @a *status is set to one of the following values:
+              -   0: The demangling operation succeeded.
+              -  -1: A memory allocation failiure occurred.
+              -  -2: @a mangled_name is not a valid name under the C++ ABI
+                     mangling rules.
+              -  -3: One of the arguments is invalid.
+
+@return A pointer to the start of the NUL-terminated demangled name, or NULL
+        if the demangling fails.  The caller is responsible for deallocating
+        this memory using @c free.
+
+
+The demagling is performed using the C++ ABI mangling rules, with
+GNU extensions.  For example, this function is used
+in __gnu_cxx::__verbose_terminate_handler.  See
+http://gcc.gnu.org/onlinedocs/libstdc++/18_support/howto.html#5 for other
+examples of use.
+
+@note The same demangling functionality is available via libiberty 
+(@c <libiberty/demangle.h> and @c libiberty.a) in GCC 3.1 and later, but that
+requires explicit installation (@c --enable-install-libiberty) and uses a
+different API, although the ABI is unchanged.
+*/
+char* __cxa_demangle (const char* mangled_name, char* output_buffer,
+                      size_t* length, int* status);
+} // namespace abi
+
+// // // // // // // // // // // // // // // // // // // // // // // //
+
+// vim:et:noai:
 

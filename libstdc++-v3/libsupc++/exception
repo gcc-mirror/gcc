@@ -105,7 +105,9 @@ namespace __gnu_cxx
       @code
         std::set_terminate (__gnu_cxx::__verbose_terminate_handler)
       @endcode
-      to use.  */
+      to use.  For more info, see
+      http://gcc.gnu.org/onlinedocs/libstdc++/19_diagnostics/howto.html#4
+  */
   void __verbose_terminate_handler ();
 } // namespace __gnu_cxx
   
