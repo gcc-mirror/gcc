@@ -1,5 +1,15 @@
 2002-05-22  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.c (ix86_expand_call): New function, extracted
+	from md call patterns.  Add pic_offset_table_rtx to
+	CALL_INSN_FUNCTION_USAGE when needed.
+	* config/i386/i386.md (call_pop, call): Use ix86_expand_call.
+	(call_value_pop, call_value, untyped_call): Likewise.
+	(call_exp, call_value_exp): Remove.
+	* config/i386/i386-protos.h: Update.
+
+2002-05-22  Richard Henderson  <rth@redhat.com>
+
 	* varasm.c (default_section_type_flags): Check for VAR_DECL
 	before using DECL_THREAD_LOCAL.
 
