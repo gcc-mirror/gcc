@@ -1,3 +1,13 @@
+2002-09-11  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_xcoff_asm_named_section): Append
+	alignment to csect.
+	(rs6000_xcoff_unique_section): Only set section name for public
+	data.
+	(rs6000_xcoff_section_type_flags): Store log2 alignment in flags.
+	* config/rs6000/xcoff.h (TARGET_ASM_SELECT_SECTION): Remove
+	duplicate definition.
+
 2002-09-10  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.md (extzv): Check predicates before emitting extzv_32.

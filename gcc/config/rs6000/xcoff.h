@@ -135,8 +135,6 @@ toc_section ()						\
 
 #define READONLY_DATA_SECTION read_only_data_section
 
-#define TARGET_ASM_SELECT_SECTION  rs6000_xcoff_select_section
-
 /* Return non-zero if this entry is to be written into the constant
    pool in a special way.  We do so if this is a SYMBOL_REF, LABEL_REF
    or a CONST containing one of them.  If -mfp-in-toc (the default),
@@ -166,8 +164,8 @@ toc_section ()						\
 #define TARGET_ASM_SELECT_SECTION  rs6000_xcoff_select_section
 #define TARGET_ASM_SELECT_RTX_SECTION  rs6000_xcoff_select_rtx_section
 #define TARGET_ASM_UNIQUE_SECTION  rs6000_xcoff_unique_section
-#define TARGET_ENCODE_SECTION_INFO rs6000_xcoff_encode_section_info
-#define TARGET_STRIP_NAME_ENCODING rs6000_xcoff_strip_name_encoding
+#define TARGET_ENCODE_SECTION_INFO  rs6000_xcoff_encode_section_info
+#define TARGET_STRIP_NAME_ENCODING  rs6000_xcoff_strip_name_encoding
 #define TARGET_SECTION_TYPE_FLAGS  rs6000_xcoff_section_type_flags
 
 /* FP save and restore routines.  */

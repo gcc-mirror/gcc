@@ -13096,9 +13096,9 @@ rs6000_xcoff_asm_named_section (name, flags)
   else
     smclass = 1;
 
-  fprintf (asm_out_file, "\t.csect %s%s[%s]\n",
+  fprintf (asm_out_file, "\t.csect %s%s[%s],%u\n",
 	   (flags & SECTION_CODE) ? "." : "",
-	   name, suffix[smclass]);
+	   name, suffix[smclass], flags & SECTION_ENTSIZE);
 }
 
 static void
@@ -13130,8 +13130,9 @@ rs6000_xcoff_unique_section (decl, reloc)
 {
   const char *name;
 
-  /* Use select_section for uninitialized data.  */
-  if (DECL_COMMON (decl)
+  /* Use select_section for private and uninitialized data.  */
+  if (!TREE_PUBLIC (decl)
+      || DECL_COMMON (decl)
       || DECL_INITIAL (decl) == NULL_TREE
       || DECL_INITIAL (decl) == error_mark_node
       || (flag_zero_initialized_in_bss
@@ -13185,7 +13186,19 @@ rs6000_xcoff_section_type_flags (decl, name, reloc)
      const char *name;
      int reloc;
 {
-  return default_section_type_flags_1 (decl, name, reloc, 1);
+  unsigned int align;
+  unsigned int flags = default_section_type_flags_1 (decl, name, reloc, 1);
+
+  /* Align to at least UNIT size.  */
+  if (flags & SECTION_CODE)
+    align = MIN_UNITS_PER_WORD;
+  else
+    /* Increase alignment of large objects if not already stricter.  */
+    align = MAX ((DECL_ALIGN (decl) / BITS_PER_UNIT),
+		 int_size_in_bytes (TREE_TYPE (decl)) > MIN_UNITS_PER_WORD
+		 ? UNITS_PER_FP_WORD : MIN_UNITS_PER_WORD);
+
+  return flags | (exact_log2 (align) & SECTION_ENTSIZE);
 }
 
 #endif /* TARGET_XCOFF */
