@@ -735,7 +735,8 @@ unsigned_type (type)
     return unsigned_intHI_type_node;
   if (type1 == intQI_type_node)
     return unsigned_intQI_type_node;
-  return type;
+
+  return signed_or_unsigned_type (1, type);
 }
 
 /* Return a signed type the same as TYPE in other respects.  */
@@ -763,7 +764,8 @@ signed_type (type)
     return intHI_type_node;
   if (type1 == unsigned_intQI_type_node)
     return intQI_type_node;
-  return type;
+
+  return signed_or_unsigned_type (0, type);
 }
 
 /* Return a type the same as TYPE except unsigned or
