@@ -206,10 +206,10 @@ distdir: $(DISTFILES)
 	  || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
 	  || cp -p $$d/$$file $(distdir)/$$file; \
 	done
-getopt.o: getopt.c getopt.h
-getopt1.o: getopt1.c getopt.h
+getopt.o: getopt.c ../config.h getopt.h
+getopt1.o: getopt1.c ../config.h getopt.h
 xmalloc.o: xmalloc.c
-xstrdup.o: xstrdup.c
+xstrdup.o: xstrdup.c ../config.h
 
 info:
 dvi:
