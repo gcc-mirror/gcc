@@ -1,3 +1,7 @@
+2003-03-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/ultrasp7.c: New test.
+
 2003-03-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/10047

@@ -1,4 +1,10 @@
 2003-03-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR c/8281
+	* config/sparc/sparc.md (movdi_insn_sp32_v9): Remove 'f-f' alternative.
+	(movdi reg/reg split): Match only on sparc32, and v9 when int regs.
+
+2003-03-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
             Richard Henderson  <rth@redhat.com>
 
 	PR target/10114 and PR target/10084
