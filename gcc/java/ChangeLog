@@ -1,3 +1,13 @@
+2001-02-09  Raja R Harinath  <harinath@cs.umn.edu>
+
+	* Make-lang.in (java/mangle_name.o): Add 'make' prereqs.
+
+2001-02-09  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* Manke-lang.in (JVGENMAIN_OBJS): Added `errors.o'
+	* jvgenmain.c (error): Reversed 2001-02-09 patch. `error' is now
+	gone.
+
 2001-02-09  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* mangle_name (append_unicode_mangled_name): Emit `_' or `U'
