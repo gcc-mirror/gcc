@@ -2942,14 +2942,19 @@ typedef struct mips_args {
    to be generated at present.  Also, the MIPS assembler does not
    grok li.d Infinity.  */
 
-/* ??? SGI Irix 6 assembler fails for CONST address, so reject them.  */
+/* ??? SGI Irix 6 assembler fails for CONST address, so reject them.  
+   Note that the Irix 6 assembler problem may already be fixed.
+   Note also that the GET_CODE (X) == CONST test catches the mips16
+   gp pseudo reg (see mips16_gp_pseudo_reg) deciding it is not
+   a LEGITIMATE_CONSTANT.  If we ever want mips16 and ABI_N32 or
+   ABI_64 to work together, we'll need to fix this.  */
 #define LEGITIMATE_CONSTANT_P(X)					\
   ((GET_CODE (X) != CONST_DOUBLE					\
     || mips_const_double_ok (X, GET_MODE (X)))				\
-   && ! (GET_CODE (X) == CONST						\
-	 && mips_abi != ABI_32 						\
-	 && mips_abi != ABI_O64 					\
-         && mips_abi != ABI_EABI)					\
+   && ! (GET_CODE (X) == CONST 						\
+	 && ! TARGET_GAS						\
+	 && (mips_abi == ABI_N32 					\
+	     || mips_abi == ABI_64))					\
    && (! TARGET_MIPS16 || mips16_constant (X, GET_MODE (X), 0, 0)))
 
 /* A C compound statement that attempts to replace X with a valid
