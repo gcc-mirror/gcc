@@ -99,11 +99,11 @@ case "${host}" in
 	slow_pthread_self=yes
 	;;
   x86_64-*)
-	CHECKREFSPEC="%{m32:-fcheck-references}"
 	sysdeps_dir=x86-64
 	libgcj_flags="${libgcj_flags} -ffloat-store -fno-omit-frame-pointer"
 	libgcj_cxxflags=
 	libgcj_cflags=
+	DIVIDESPEC=-f%{m32:no-}use-divide-subroutine
 	enable_hash_synchronization_default=yes
 	slow_pthread_self=yes
 	libgcj_interpreter=yes
@@ -116,11 +116,11 @@ case "${host}" in
 	IEEESPEC=-mieee
 	;;
   powerpc64*-*)
-	with_libffi_default=yes
-	libgcj_interpreter=yes
-	libgcj_flags="${libgcj_flags} -mminimal-toc"
-	# this may not be correct
 	sysdeps_dir=powerpc
+	libgcj_interpreter=yes
+	if [ x`$CC -print-multi-os-directory` = x../lib64 ]; then
+	    libgcj_flags="${libgcj_flags} -mminimal-toc"
+	fi
 	enable_hash_synchronization_default=yes
 	slow_pthread_self=yes
 	;;
