@@ -1,5 +1,9 @@
 2001-07-27  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.abi/vbase8-21.C: New test.
+
+2001-07-27  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.abi/vbase8-10.C: New test.
 
 2001-07-27  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>

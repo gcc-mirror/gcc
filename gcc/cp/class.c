@@ -1763,7 +1763,6 @@ mark_primary_virtual_base (binfo, base_binfo, type)
      tree type;
 {
   tree shared_binfo = binfo_for_vbase (BINFO_TYPE (base_binfo), type);
-  tree delta;
 
   if (BINFO_PRIMARY_P (shared_binfo))
     {
@@ -1782,12 +1781,6 @@ mark_primary_virtual_base (binfo, base_binfo, type)
   if (base_binfo != shared_binfo)
     force_canonical_binfo (base_binfo, shared_binfo, type, NULL);
 
-  delta = size_diffop (BINFO_OFFSET (binfo), BINFO_OFFSET (base_binfo));
-  if (!integer_zerop (delta))
-    {
-      propagate_binfo_offsets (base_binfo, delta, type);
-      BINFO_OFFSET (base_binfo) = BINFO_OFFSET (binfo);
-    }
   return base_binfo;
 }
 
@@ -1820,7 +1813,7 @@ static tree dfs_unshared_virtual_bases (binfo, data)
       my_friendly_assert (unshared_base != binfo, 20010612);
       BINFO_LOST_PRIMARY_P (binfo) = BINFO_LOST_PRIMARY_P (unshared_base);
       if (!BINFO_LOST_PRIMARY_P (binfo))
-	      BINFO_PRIMARY_BASE_OF (get_primary_binfo (binfo)) = binfo;
+	BINFO_PRIMARY_BASE_OF (get_primary_binfo (binfo)) = binfo;
     }
   
   if (binfo != TYPE_BINFO (t))
@@ -1828,6 +1821,17 @@ static tree dfs_unshared_virtual_bases (binfo, data)
        base binfos. That information is bogus, make sure we don't try
        and use it. */
     BINFO_VTABLE (binfo) = NULL_TREE;
+
+  /* If this is a virtual primary base, make sure its offset matches
+     that which it is primary for. */
+  if (BINFO_PRIMARY_P (binfo) && TREE_VIA_VIRTUAL (binfo) &&
+      binfo_for_vbase (BINFO_TYPE (binfo), t) == binfo)
+    {
+      tree delta = size_diffop (BINFO_OFFSET (BINFO_PRIMARY_BASE_OF (binfo)),
+				BINFO_OFFSET (binfo));
+      if (!integer_zerop (delta))
+	propagate_binfo_offsets (binfo, delta, t);
+    }
   
   BINFO_UNSHARED_MARKED (binfo) = 0;
   return NULL;
@@ -1861,9 +1865,14 @@ mark_primary_bases (type)
       
       BINFO_UNSHARED_MARKED (binfo) = 1;
     }
-  /* There could remain unshared morally virtual bases which were not visited
-     in the inheritance graph walk. These bases will have lost their
-     virtual primary base (should they have one). We must now find them. */
+  /* There could remain unshared morally virtual bases which were not
+     visited in the inheritance graph walk. These bases will have lost
+     their virtual primary base (should they have one). We must now
+     find them. Also we must fix up the BINFO_OFFSETs of primary
+     virtual bases. We could not do that as we went along, as they
+     were originally copied from the bases we inherited from by
+     unshare_base_binfos. That may have decided differently about
+     where a virtual primary base went.  */
   dfs_walk (TYPE_BINFO (type), dfs_unshared_virtual_bases, NULL, type);
 }
 
