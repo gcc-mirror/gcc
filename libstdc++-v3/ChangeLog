@@ -1,3 +1,10 @@
+2005-03-30  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
+
+	* testsuite/Makefile.am (CXX): Use ${SHELL}.
+	(GLIBCXX_INCLUDES): Same.
+	(AM_CXXFLAGS): Same.
+	* testsuite/Makefile.in: Regenerate.
+
 2005-03-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/lib/libstdc++.exp (libstdc++_init): Define LOCALEDIR
