@@ -161,6 +161,12 @@ cpp_create_reader (enum c_lang lang, hash_table *table)
   CPP_OPTION (pfile, narrow_charset) = 0;
   CPP_OPTION (pfile, wide_charset) = 0;
 
+  /* A fake empty "directory" used as the starting point for files
+     looked up without a search path.  Name cannot be '/' because we
+     don't want to prepend anything at all to filenames using it.  All
+     other entries are correct zero-initialized.  */
+  pfile->no_search_path.name = (char *) "";
+
   /* Initialize the line map.  Start at logical line 1, so we can use
      a line number of zero for special states.  */
   linemap_init (&pfile->line_maps);
@@ -196,7 +202,7 @@ cpp_create_reader (enum c_lang lang, hash_table *table)
 		  (void *(*) (long)) xmalloc,
 		  (void (*) (void *)) free);
 
-  _cpp_init_includes (pfile);
+  _cpp_init_files (pfile);
 
   _cpp_init_hashtable (pfile, table);
 
@@ -231,7 +237,7 @@ cpp_destroy (cpp_reader *pfile)
   obstack_free (&pfile->buffer_ob, 0);
 
   _cpp_destroy_hashtable (pfile);
-  _cpp_cleanup_includes (pfile);
+  _cpp_cleanup_files (pfile);
   _cpp_destroy_iconv (pfile);
 
   _cpp_free_buff (pfile->a_buff);
@@ -427,15 +433,6 @@ cpp_add_dependency_target (cpp_reader *pfile, const char *target, int quote)
   deps_add_target (pfile->deps, target, quote);
 }
 
-/* This sets up for processing input from the file FNAME.  
-   It returns false on error.  */
-bool
-cpp_read_next_file (cpp_reader *pfile, const char *fname)
-{
-  /* Open the main input file.  */
-  return _cpp_read_file (pfile, fname);
-}
-
 /* This is called after options have been parsed, and partially
    processed.  Setup for processing input from the file named FNAME,
    or stdin if it is the empty string.  Return the original filename
@@ -461,7 +458,7 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname)
     }
 
   pfile->line = 1;
-  if (!cpp_read_next_file (pfile, fname))
+  if (!cpp_stack_file (pfile, fname))
     return NULL;
 
   /* Set this here so the client can change the option if it wishes,

@@ -39,10 +39,9 @@ typedef struct cpp_string cpp_string;
 typedef struct cpp_hashnode cpp_hashnode;
 typedef struct cpp_macro cpp_macro;
 typedef struct cpp_callbacks cpp_callbacks;
-typedef struct cpp_path cpp_path;
+typedef struct cpp_dir cpp_dir;
 
 struct answer;
-struct file_name_map_list;
 
 /* The first three groups, apart from '=', can appear in preprocessor
    expressions (+= and -= are used to indicate unary + and - resp.).
@@ -213,10 +212,6 @@ struct cpp_options
 {
   /* Characters between tab stops.  */
   unsigned int tabstop;
-
-  /* Map between header names and file names, used only on DOS where
-     file names are limited in length.  */
-  struct file_name_map_list *map_list;
 
   /* The language we're preprocessing.  */
   enum c_lang lang;
@@ -397,12 +392,12 @@ struct cpp_callbacks
 };
 
 /* Chain of directories to look for include files in.  */
-struct cpp_path
+struct cpp_dir
 {
   /* NULL-terminated singly-linked list.  */
-  struct cpp_path *next;
+  struct cpp_dir *next;
 
-  /* NAME need not be NUL-terminated once inside cpplib.  */
+  /* NAME of the directory, NUL-terminated.  */
   char *name;
   unsigned int len;
 
@@ -410,9 +405,9 @@ struct cpp_path
      "C" guards for C++.  */
   unsigned char sysp;
 
-  /* Mapping of file names for this directory for MS-DOS and
-     related platforms.  */
-  struct file_name_map *name_map;
+  /* Mapping of file names for this directory for MS-DOS and related
+     platforms.  A NULL-terminated array of (from, to) pairs.  */
+  const char **name_map;
     
   /* The C front end uses these to recognize duplicated
      directories in the search path.  */
@@ -516,7 +511,7 @@ extern void cpp_set_lang (cpp_reader *, enum c_lang);
 extern void cpp_add_dependency_target (cpp_reader *, const char *, int);
 
 /* Set the include paths.  */
-extern void cpp_set_include_chains (cpp_reader *, cpp_path *, cpp_path *, int);
+extern void cpp_set_include_chains (cpp_reader *, cpp_dir *, cpp_dir *, int);
 
 /* Call these to get pointers to the options and callback structures
    for a given reader.  These pointers are good until you call
@@ -535,9 +530,9 @@ extern void cpp_set_callbacks (cpp_reader *, cpp_callbacks *);
    too.  If there was an error opening the file, it returns NULL.  */
 extern const char *cpp_read_main_file (cpp_reader *, const char *);
 
-/* This continues processing to a new file.  It will return false if
-   there was an error opening the file.  */
-extern bool cpp_read_next_file (cpp_reader *, const char *);
+/* Stacks a new file.  It will return false if there was an error
+   opening the file.  */
+extern bool cpp_stack_file (cpp_reader *, const char *);
 
 /* Set up built-ins like __FILE__.  */
 extern void cpp_init_builtins (cpp_reader *, int);
@@ -715,7 +710,7 @@ extern unsigned char *cpp_quote_string (unsigned char *, const unsigned char *,
 					unsigned int);
 
 /* In cppfiles.c */
-extern int cpp_included (cpp_reader *, const char *);
+extern bool cpp_included (cpp_reader *, const char *);
 extern void cpp_make_system_header (cpp_reader *, int, int);
 extern void cpp_simplify_path (char *);
 extern bool cpp_push_include (cpp_reader *, const char *);

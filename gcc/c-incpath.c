@@ -45,21 +45,21 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 static void add_env_var_paths (const char *, int);
 static void add_standard_paths (const char *, const char *, int);
-static void free_path (struct cpp_path *, int);
+static void free_path (struct cpp_dir *, int);
 static void merge_include_chains (cpp_reader *, int);
-static struct cpp_path *remove_duplicates (cpp_reader *, struct cpp_path *,
-					   struct cpp_path *,
-					   struct cpp_path *, int);
+static struct cpp_dir *remove_duplicates (cpp_reader *, struct cpp_dir *,
+					   struct cpp_dir *,
+					   struct cpp_dir *, int);
 
 /* Include chains heads and tails.  */
-static struct cpp_path *heads[4];
-static struct cpp_path *tails[4];
+static struct cpp_dir *heads[4];
+static struct cpp_dir *tails[4];
 static bool quote_ignores_source_dir;
 enum { REASON_QUIET = 0, REASON_NOENT, REASON_DUP, REASON_DUP_SYS };
 
 /* Free an element of the include chain, possibly giving a reason.  */
 static void
-free_path (struct cpp_path *path, int reason)
+free_path (struct cpp_dir *path, int reason)
 {
   switch (reason)
     {
@@ -169,12 +169,12 @@ add_standard_paths (const char *sysroot, const char *iprefix, int cxx_stdinc)
    JOIN, unless it duplicates JOIN in which case the last path is
    removed.  Return the head of the resulting chain.  Any of HEAD,
    JOIN and SYSTEM can be NULL.  */
-static struct cpp_path *
-remove_duplicates (cpp_reader *pfile, struct cpp_path *head,
-		   struct cpp_path *system, struct cpp_path *join,
+static struct cpp_dir *
+remove_duplicates (cpp_reader *pfile, struct cpp_dir *head,
+		   struct cpp_dir *system, struct cpp_dir *join,
 		   int verbose)
 {
-  struct cpp_path **pcur, *tmp, *cur;
+  struct cpp_dir **pcur, *tmp, *cur;
   struct stat st;
 
   for (pcur = &head; *pcur; )
@@ -182,7 +182,6 @@ remove_duplicates (cpp_reader *pfile, struct cpp_path *head,
       int reason = REASON_QUIET;
 
       cur = *pcur;
-      cpp_simplify_path (cur->name);
 
       if (stat (cur->name, &st))
 	{
@@ -269,7 +268,7 @@ merge_include_chains (cpp_reader *pfile, int verbose)
   /* If verbose, print the list of dirs to search.  */
   if (verbose)
     {
-      struct cpp_path *p;
+      struct cpp_dir *p;
 
       fprintf (stderr, _("#include \"...\" search starts here:\n"));
       for (p = heads[QUOTE];; p = p->next)
@@ -304,9 +303,9 @@ split_quote_chain (void)
 void
 add_path (char *path, int chain, int cxx_aware)
 {
-  struct cpp_path *p;
+  struct cpp_dir *p;
 
-  p = xmalloc (sizeof (struct cpp_path));
+  p = xmalloc (sizeof (struct cpp_dir));
   p->next = NULL;
   p->name = path;
   if (chain == SYSTEM || chain == AFTER)

@@ -1,3 +1,37 @@
+2003-07-29  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Makefile.in (LIBCPP_DEPS): Add HASHTAB_H.
+	* cppfiles.c: Completely rewritten.
+	* c-incpath.c (free_path, remove_duplicates, heads, tails, add_path):
+	struct cpp_path is now struct cpp_dir.
+	(remove_duplicates): Don't simplify path names.
+	* c-opts.c (c_common_parse_file): cpp_read_next_file renamed
+	cpp_stack_file.
+	* cpphash.h: Include hashtab.h.
+	(_cpp_file): Declare.
+	(struct cpp_buffer): struct include_file is now struct _cpp_file,
+	and struct cpp_path is now struct cpp_dir.  Rename members.
+	(struct cpp_reader): Similarly.  New members once_only_files,
+	file_hash, file_hash_entries, quote_ignores_source_dir,
+	no_search_path, saw_pragma_once.  Remove all_include_files and
+	max_include_len.  Make some members bool.
+	(_cpp_mark_only_only): Renamed from _cpp_never_reread.
+	(_cpp_stack_file): Renamed from _cpp_read_file.
+	(_cpp_stack_include): Renamed from _cpp_execute_include.
+	(_cpp_init_files): Renamed from _cpp_init_includes.
+	(_cpp_cleanup_files): Renamed from _cpp_cleanup_includes.
+	* cppinit.c (cpp_create_reader): Initialize no_search_path.  Update.
+	(cpp_read_next_file): Rename and move to cppfiles.c.
+	(cpp_read_main_file): Update.
+	* cpplib.c (run_directive): Update for renamed members.
+	(do_include_common, _cpp_pop_buffer): Update.
+	(do_import): Undeprecate #import.
+	(do_pragma_once): Undeprecate.  Use _cpp_mark_file_once_only.
+	* cpplib.h: Remove file_name_map_list.
+	(cpp_options): Remove map_list.
+	(cpp_dir): Rename from cpp_path.  New datatype for name_map.
+	(cpp_set_include_chains, cpp_stack_file, cpp_included): Update.
+
 2003-07-29  Phil Edwards  <pme@gcc.gnu.org>
 
 	* Makefile.in:  Make stamp-objdir safe for parallel builds.

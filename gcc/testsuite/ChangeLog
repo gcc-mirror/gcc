@@ -1,3 +1,7 @@
+2003-07-29  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gcc.dg/cpp/include2.c: Only expect one message.
+
 2003-07-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9447

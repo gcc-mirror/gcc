@@ -441,7 +441,7 @@ run_directive (cpp_reader *pfile, int dir_no, const char *buf, size_t count)
 		   /* from_stage3 */ true, 1);
   /* Disgusting hack.  */
   if (dir_no == T_PRAGMA)
-    pfile->buffer->inc = pfile->buffer->prev->inc;
+    pfile->buffer->file = pfile->buffer->prev->file;
   start_directive (pfile);
 
   /* This is a short-term fix to prevent a leading '#' being
@@ -454,7 +454,7 @@ run_directive (cpp_reader *pfile, int dir_no, const char *buf, size_t count)
   pfile->directive->handler (pfile);
   end_directive (pfile, 1);
   if (dir_no == T_PRAGMA)
-    pfile->buffer->inc = NULL;
+    pfile->buffer->file = NULL;
   _cpp_pop_buffer (pfile);
 }
 
@@ -684,7 +684,7 @@ do_include_common (cpp_reader *pfile, enum include_type type)
 	pfile->cb.include (pfile, pfile->directive_line,
 			   pfile->directive->name, fname, angle_brackets);
 
-      _cpp_execute_include (pfile, fname, angle_brackets, type);
+      _cpp_stack_include (pfile, fname, angle_brackets, type);
     }
 
   free ((void *) fname);
@@ -699,13 +699,6 @@ do_include (cpp_reader *pfile)
 static void
 do_import (cpp_reader *pfile)
 {
-  if (CPP_OPTION (pfile, warn_import))
-    {
-      CPP_OPTION (pfile, warn_import) = 0;
-      cpp_error (pfile, DL_WARNING,
-   "#import is obsolete, use an #ifndef wrapper in the header file");
-    }
-
   do_include_common (pfile, IT_IMPORT);
 }
 
@@ -1170,15 +1163,11 @@ do_pragma (cpp_reader *pfile)
 static void
 do_pragma_once (cpp_reader *pfile)
 {
-  if (CPP_OPTION (pfile, warn_deprecated))
-    cpp_error (pfile, DL_WARNING, "#pragma once is obsolete");
-
   if (pfile->buffer->prev == NULL)
     cpp_error (pfile, DL_WARNING, "#pragma once in main file");
-  else
-    _cpp_never_reread (pfile->buffer->inc);
 
   check_eol (pfile);
+  _cpp_mark_file_once_only (pfile, pfile->buffer->file, false);
 }
 
 /* Handle #pragma GCC poison, to poison one or more identifiers so
@@ -1944,7 +1933,7 @@ void
 _cpp_pop_buffer (cpp_reader *pfile)
 {
   cpp_buffer *buffer = pfile->buffer;
-  struct include_file *inc = buffer->inc;
+  struct _cpp_file *inc = buffer->file;
   struct if_stack *ifs;
 
   /* Walk back up the conditional stack till we reach its level at
