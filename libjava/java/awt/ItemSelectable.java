@@ -1,5 +1,5 @@
-/* ItemSelectable.java -- Items that can be selected
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* ItemSelectable.java -- items that can be selected
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,44 +41,35 @@ package java.awt;
 import java.awt.event.ItemListener;
 
 /**
-  * This interface is for objects that can have one or more items
-  * selected.  For example, radio buttons.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This interface is for objects that can have one or more items selected.
+ * For example, radio buttons.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @since 1.0
+ * @status updated to 1.4
+ */
 public interface ItemSelectable
 {
+  /**
+   * Returns the list of objects that are selected in this component.
+   *
+   * @return the list of selected objects, or null
+   */
+  Object[] getSelectedObjects();
 
-/**
-  * Returns the list of objects that are selected in this component.
-  *
-  * @return The list of objects that are selected, or <code>null</code> if
-  * no objects are selected.
-  */
-public abstract Object[]
-getSelectedObjects();
+  /**
+   * Adds an item listener to this object.  It will receive selection events
+   * for this object by the user (but not programatically). If listener is
+   * null, it is ignored.
+   *
+   * @param listener the item listener to add
+   */
+  void addItemListener(ItemListener listener);
 
-/*************************************************************************/
-
-/**
-  * Adds an item listener to this object.  It will receive
-  * selection events for this object.
-  *
-  * @param listener The item listener to add.
-  */
-public abstract void
-addItemListener(ItemListener listener);
-
-/*************************************************************************/
-
-/**
-  * Removes an item listener from this object.  It will no longer receive
-  * selection change events.
-  *
-  * @param listener The item listener to remove.
-  */
-public abstract void
-removeItemListener(ItemListener listener);
-
+  /**
+   * Removes an item listener from this object.
+   *
+   * @param listener the item listener to remove
+   */
+  void removeItemListener(ItemListener listener);
 } // interface ItemSelectable
-

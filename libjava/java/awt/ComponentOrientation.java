@@ -1,4 +1,5 @@
-/* Copyright (C) 2000, 2001, 2002  Free Software Foundation
+/* ComponentOrientation.java -- describes a component's orientation
+   Copyright (C) 2000, 2001, 2002 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -34,83 +35,179 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-/**
- * @author Bryce McKinlay  <bryce@albatross.co.nz>
- */
-
-/* Status: Incomplete. Needs a Locale lookup table. */
 
 package java.awt;
 
+import java.io.Serializable;
 import java.util.Locale;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-public final class ComponentOrientation implements java.io.Serializable
+/**
+ * This class is used to differentiate different orientations for text layout.
+ * It controls whether text flows left-to-right or right-to-left, and whether
+ * lines are horizontal or vertical, as in this table:<br>
+ * <pre>
+ * LT      RT      TL      TR
+ * A B C   C B A   A D G   G D A
+ * D E F   F E D   B E H   H E B
+ * G H I   I H G   C F I   I F C
+ * </pre>
+ * <b>LT</b> languages are most common (left-to-right lines, top-to-bottom).
+ * This includes Western European languages, and optionally includes Japanese,
+ * Chinese, and Korean. <b>RT</b> languages (right-to-left lines,
+ * top-to-bottom) are mainly middle eastern, such as Hebrew and Arabic.
+ * <b>TR</b> languages flow top-to-bottom in a line, right-to-left, and are
+ * the basis of Japanese, Chinese, and Korean. Finally, <b>TL</b> languages
+ * flow top-to-bottom in a line, left-to-right, as in Mongolian.
+ *
+ * <p>This is a pretty poor excuse for a type-safe enum, since it is not
+ * guaranteed that orientation objects are unique (thanks to serialization),
+ * yet there is no equals() method. You would be wise to compare the output
+ * of isHorizontal() and isLeftToRight() rather than comparing objects with
+ * ==, especially since more constants may be added in the future.
+ *
+ * @author Bryce McKinlay <bryce@albatross.co.nz>
+ * @since 1.0
+ * @status updated to 1.4
+ */
+public final class ComponentOrientation implements Serializable
 {
-  // Here is a wild guess.
-  private static int HORIZONTAL_ID    = 1 << 0,
-                     LEFT_TO_RIGHT_ID = 1 << 1;
+  /**
+   * Compatible with JDK 1.0+.
+   */
+  private static final long serialVersionUID = -4113291392143563828L;
 
+  /** Constant for unknown orientation. */
+  private static final int UNKNOWN_ID = 1;
+
+  /** Constant for horizontal line orientation. */
+  private static final int HORIZONTAL_ID = 2;
+
+  /** Constant for left-to-right orientation. */
+  private static final int LEFT_TO_RIGHT_ID = 4;
+
+  /**
+   * Items run left to right, and lines flow top to bottom. Examples: English,
+   * French.
+   */
   public static final ComponentOrientation LEFT_TO_RIGHT
-    = new ComponentOrientation(HORIZONTAL_ID & LEFT_TO_RIGHT_ID);
+    = new ComponentOrientation(HORIZONTAL_ID | LEFT_TO_RIGHT_ID);
+
+  /**
+   * Items run right to left, and lines flow top to bottom. Examples: Arabic,
+   * Hebrew.
+   */
   public static final ComponentOrientation RIGHT_TO_LEFT
     = new ComponentOrientation(HORIZONTAL_ID);
+
+  /**
+   * The orientation is unknown for the locale. For backwards compatibility,
+   * this behaves like LEFT_TO_RIGHT in the instance methods.
+   */
   public static final ComponentOrientation UNKNOWN
-    = new ComponentOrientation(0);
+    = new ComponentOrientation(UNKNOWN_ID | HORIZONTAL_ID | LEFT_TO_RIGHT_ID);
 
-  // FIXME: This field is from the serialization spec, but what are the 
-  // correct values?
-  int orientation;
+  /**
+   * The orientation of this object; bitwise-or of unknown (1), horizontal (2),
+   * and left-to-right (4).
+   *
+   * @serial the orientation
+   */
+  private final int orientation;
 
-  ComponentOrientation(int orientation)
+  /**
+   * Construct a given orientation.
+   *
+   * @param orientation the orientation
+   */
+  private ComponentOrientation(int orientation)
   {
     this.orientation = orientation;
   }
 
+  /**
+   * Returns true if the lines are horizontal, in which case lines flow
+   * top-to-bottom. For example, English, Hebrew. Counterexamples: Japanese,
+   * Chinese, Korean, Mongolian.
+   *
+   * @return true if this orientation has horizontal lines
+   */
   public boolean isHorizontal()
   {
-    return ((orientation & HORIZONTAL_ID) != 0);
+    return (orientation & HORIZONTAL_ID) != 0;
   }
 
+  /**
+   * If isHorizontal() returns true, then this determines whether items in
+   * the line flow left-to-right. If isHorizontal() returns false, items in
+   * a line flow top-to-bottom, and this determines if lines flow
+   * left-to-right.
+   *
+   * @return true if this orientation flows left-to-right
+   */
   public boolean isLeftToRight()
   {
-    return ((orientation & LEFT_TO_RIGHT_ID) != 0);
+    return (orientation & LEFT_TO_RIGHT_ID) != 0;
   }
 
+  /**
+   * Gets an orientation appropriate for the locale.
+   *
+   * @param locale the locale
+   * @return the orientation for that locale
+   * @throws NullPointerException if locale is null
+   */
   public static ComponentOrientation getOrientation(Locale locale)
   {
-    // FIXME: Use a table to look this up.
+    // Based on iterating over all languages defined in JDK 1.4, this behavior
+    // matches Sun's. However, it makes me wonder if any non-horizontal
+    // orientations even exist, as it sure contradicts their documentation.
+    String language = locale.getLanguage();
+    if ("ar".equals(language) || "fa".equals(language) || "iw".equals(language)
+        || "ur".equals(language))
+      return RIGHT_TO_LEFT;
     return LEFT_TO_RIGHT;
   }
 
+  /**
+   * Gets an orientation from a resource bundle. This tries the following:<ol>
+   * <li>Use the key "Orientation" to find an instance of ComponentOrientation
+   * in the bundle.</li>
+   * <li>Get the locale of the resource bundle, and get the orientation of
+   * that locale.</li>
+   * <li>Give up and get the orientation of the default locale.<li>
+   * <ol>
+   *
+   * @param bdl the bundle to use
+   * @return the orientation
+   * @throws NullPointerException if bdl is null
+   * @deprecated use {@link #getOrientation(Locale)} instead
+   */
   public static ComponentOrientation getOrientation(ResourceBundle bdl)
   {
     ComponentOrientation r;
-
     try
-    {
-      Object obj = bdl.getObject("Orientation");
-      r = (ComponentOrientation) obj;
-      if (r != null)
-	return r;  
-    }
-    catch (Exception x)
-    {
-      // Fall through
-    }
-
+      {
+        r = (ComponentOrientation) bdl.getObject("Orientation");
+        if (r != null)
+          return r;
+      }
+    catch (MissingResourceException ignored)
+      {
+      }
+    catch (ClassCastException ignored)
+      {
+      }
     try
-    {
-      Locale l = bdl.getLocale();
-      r = getOrientation(l);
-      if (r != null)
-	return r;
-    }
-    catch (Exception x)
-    {
-      // Fall through  
-    }
-
-    return (getOrientation (Locale.getDefault ()));
+      {
+        r = getOrientation(bdl.getLocale());
+        if (r != null)
+          return r;
+      }
+    catch (Exception ignored)
+      {
+      }
+    return getOrientation(Locale.getDefault());
   }
-}
+} // class ComponentOrientation

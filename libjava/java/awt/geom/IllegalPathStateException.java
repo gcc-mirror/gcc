@@ -1,4 +1,5 @@
-/* Copyright (C) 2000, 2002  Free Software Foundation
+/* IllegalPathStateException.java -- an operation was in an illegal path state
+   Copyright (C) 2000, 2002  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -37,19 +38,34 @@ exception statement from your version. */
 package java.awt.geom;
 
 /**
+ * Thrown when an operation on a path is in an illegal state, such as appending
+ * a segment to a <code>GeneralPath</code> without an initial moveto.
+ *
  * @author Tom Tromey <tromey@cygnus.com>
- * @date July 17, 2000
+ * @see GeneralPath
+ * @status updated to 1.4
  */
-
 public class IllegalPathStateException extends RuntimeException
 {
-  public IllegalPathStateException ()
+  /**
+   * Compatible with JDK 1.2+.
+   */
+  private static final long serialVersionUID = -5158084205220481094L;
+
+  /**
+   * Create an exception with no message.
+   */
+  public IllegalPathStateException()
   {
-    super ();
   }
 
-  public IllegalPathStateException (String msg)
+  /**
+   * Create an exception with a message.
+   *
+   * @param msg the message
+   */
+  public IllegalPathStateException(String msg)
   {
-    super (msg);
+    super(msg);
   }
 }

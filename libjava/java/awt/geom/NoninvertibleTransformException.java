@@ -1,4 +1,5 @@
-/* Copyright (C) 2000, 2002  Free Software Foundation
+/* NoninvertibleTransformException.java -- a transform can't be inverted
+   Copyright (C) 2000, 2002 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -37,14 +38,28 @@ exception statement from your version. */
 package java.awt.geom;
 
 /**
+ * Thrown if an operation requires an inverse of an
+ * <code>AffineTransform</code>, but the transform is in a non-invertible
+ * state.
+ *
  * @author Tom Tromey <tromey@cygnus.com>
- * @date July 15, 2000
+ * @see AffineTransform
+ * @status updated to 1.4
  */
-
 public class NoninvertibleTransformException extends Exception
 {
-  public NoninvertibleTransformException (String s)
+  /**
+   * Compatible with JDK 1.2+.
+   */
+  private static final long serialVersionUID = 6137225240503990466L;
+
+  /**
+   * Create an exception with a message.
+   *
+   * @param s the message
+   */
+  public NoninvertibleTransformException(String s)
   {
-    super (s);
+    super(s);
   }
 }

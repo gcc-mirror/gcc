@@ -1,4 +1,5 @@
-/* Copyright (C) 2000, 2002  Free Software Foundation
+/* Paint.java -- generate colors for Graphics2D operations
+   Copyright (C) 2000, 2002 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -37,23 +38,42 @@ exception statement from your version. */
 
 package java.awt;
 
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.ColorModel;
+
 /**
+ * Defines how color patterns are generated for Graphics2D operations. This
+ * is used to perform the <code>draw</code> and <code>fill</code> methods
+ * of the graphics object. Instances must be immutable, because the graphics
+ * object does not clone them.
+ *
  * @author Warren Levy <warrenl@cygnus.com>
- * @date March 15, 2000.
+ * @see PaintContext
+ * @see Color
+ * @see GradientPaint
+ * @see TexturePaint
+ * @see Graphics2D#setPaint(Paint)
+ * @since 1.1
+ * @status updated to 1.4
  */
-
-/**
- * Written using on-line Java Platform 1.2 API Specification, as well
- * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
- * Status:  Stubbed.
- */
-
 public interface Paint extends Transparency
 {
-  // FIXME
-  // public PaintContext createContext(ColorModel cm,
-  //				    Rectangle deviceBounds,
-  //  				    Rectangle2D userBounds,
-  //				    AffineTransform xform,
-  //				    RenderingHints hints);
-}
+  /**
+   * Create the context necessary for performing the color pattern generation.
+   * The color model is a hint, and may be null for Classpath implementations;
+   * however some legacy code may throw a NullPointerException when passed a
+   * null. Leaving the color model null provides the most efficiency and leeway
+   * in the generation of the color pattern.
+   *
+   * @param cm the color model, used as a hint
+   * @param deviceBounds the device space bounding box of the painted area
+   * @param userBounds the user space bounding box of the painted area
+   * @param xform the transformation from user space to device space
+   * @param hints any hints for choosing between rendering alternatives
+   * @return the context for performing the paint
+   */
+  PaintContext createContext(ColorModel cm, Rectangle deviceBounds,
+                             Rectangle2D userBounds, AffineTransform xform,
+                             RenderingHints hints);
+} // interface Paint

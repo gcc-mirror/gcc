@@ -1,4 +1,4 @@
-/* Insets.java -- Information about a container border.
+/* Insets.java -- information about a container border
    Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,137 +38,121 @@ exception statement from your version. */
 
 package java.awt;
 
-/**
-  * This class represents the "margin" or space around a container.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
-public class Insets implements Cloneable, java.io.Serializable
-{
+import java.io.Serializable;
 
-/*
- * Instance Variable
+/**
+ * This class represents the "margin" or space around a container.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @status 
  */
-
-/**
-  * @serial The top inset
-  */
-public int top;
-
-/**
-  * @serial This bottom inset
-  */
-public int bottom;
-
-/**
-  * @serial The left inset
-  */
-public int left;
-
-/**
-  * @serial The right inset
-  */
-public int right;
-
-/*************************************************************************/
-
-/**
-  * Initializes a new instance of <code>Inset</code> with the specified
-  * inset values.
-  *
-  * @param top The top inset
-  * @param left The left inset
-  * @param bottom The bottom inset
-  * @param right The right inset
-  */
-public
-Insets(int top, int left, int bottom, int right)
+public class Insets implements Cloneable, Serializable
 {
-  this.top = top;
-  this.left = left;
-  this.bottom = bottom;
-  this.right = right;
-}
+  /**
+   * Compatible with JDK 1.0+.
+   */
+  private static final long serialVersionUID = -2272572637695466749L;
 
-/*************************************************************************/
+  /**
+   * The gap from the top.
+   *
+   * @serial the top inset
+   */
+  public int top;
 
-/*
- * Instance Methods
- */
+  /**
+   * The gap from the left.
+   *
+   * @serial the left inset
+   */
+  public int left;
 
-/**
-  * Tests whether this object is equal to the specified object.  This will
-  * be true if and only if the specified object:
-  * <p>
-  * <ul>
-  * <li>Is not <code>null</code>.
-  * <li>Is an instance of <code>Insets</code>.
-  * <li>Has the same top, bottom, left, and right inset values as this object.
-  * </ul>
-  *
-  * @param obj The object to test against.
-  *
-  * @return <code>true</code> if the specified object is equal to this
-  * one, <code>false</code> otherwise.
-  */
-public boolean
-equals(Object obj)
-{
-  if (!(obj instanceof Insets))
-    return(false);
+  /**
+   * The gap from the bottom.
+   *
+   * @serial the bottom inset
+   */
+  public int bottom;
 
-  Insets i = (Insets)obj;
+  /**
+   * The gap from the right.
+   *
+   * @serial the right inset
+   */
+  public int right;
 
-  if (i.top != top)
-    return(false);
-  if (i.bottom != bottom)
-    return(false);
-  if (i.left != left)
-    return(false);
-  if (i.right != right)
-    return(false);
+  /**
+   * Initializes a new instance of <code>Inset</code> with the specified
+   * inset values.
+   *
+   * @param top the top inset
+   * @param left the left inset
+   * @param bottom the bottom inset
+   * @param right the right inset
+   */
+  public Insets(int top, int left, int bottom, int right)
+  {
+    this.top = top;
+    this.left = left;
+    this.bottom = bottom;
+    this.right = right;
+  }
 
-  return(true);
-}
+  /**
+   * Tests whether this object is equal to the specified object. The other
+   * object must be an instance of Insets with identical field values.
+   *
+   * @param obj the object to test against
+   * @return true if the specified object is equal to this one
+   */
+  public boolean equals(Object obj)
+  {
+    if (! (obj instanceof Insets))
+      return false;
+    Insets i = (Insets) obj;
+    return top == i.top && bottom == i.bottom
+      && left == i.left && right == i.right;
+  }
 
-public int
-hashCode()
-{
-  return top + bottom + left + right;
-}
+  /**
+   * Returns a hashcode for this instance. The formula is unspecified, but
+   * appears to be <code>XXX what is it? </code>.
+   *
+   * @return the hashcode
+   */
+  public int hashCode()
+  {
+    // This can't be right...
+    return top + bottom + left + right;
+  }
 
-/*************************************************************************/
+  /**
+   * Returns a string representation of this object, which will be non-null.
+   * The format is unspecified, but appears to be <code>XXX what is it?</code>.
+   *
+   * @return a string representation of this object
+   */
+  public String toString()
+  {
+    return getClass().getName() + "(top=" + top + ",bottom=" + bottom +
+      ",left=" + left + ",right=" + right + ')';
+  }
 
-/**
-  * Returns a string representation of this object.
-  *
-  * @return A string representation of this object.
-  */
-public String
-toString()
-{
-  return(getClass().getName() + "(top=" + top + ",bottom=" + bottom +
-         ",left=" + left + ",right=" + right + ")");
-}
-
-/*************************************************************************/
-
-/**
-  * Returns a copy of this object.
-  *
-  * @return A copy of this object.
-  */
-public Object
-clone()
-{
-  try
-    {
-      return(super.clone());
-    }
-  catch(Exception e)
-    {
-      return(null);
-    }
-}
-
-} // class Insets 
+  /**
+   * Returns a copy of this object.
+   *
+   * @return a copy of this object
+   */
+  public Object clone()
+  {
+    try
+      {
+        return super.clone();
+      }
+    catch (CloneNotSupportedException e)
+      {
+        throw (Error) new InternalError().initCause(e); // Impossible
+      }
+  }
+} // class Insets

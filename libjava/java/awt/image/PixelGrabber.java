@@ -151,7 +151,7 @@ public class PixelGrabber implements ImageConsumer
 
        @return true if successful
 
-       @throws InterruptedExcpetion if interrupted by another thread.
+       @throws InterruptedException if interrupted by another thread.
      */
     public boolean grabPixels() throws InterruptedException
     {
@@ -163,7 +163,7 @@ public class PixelGrabber implements ImageConsumer
 
        @return true if successful
 
-       @throws InterruptedExcpetion if interrupted by another thread.
+       @throws InterruptedException if interrupted by another thread.
                or time runs out
      */
     public synchronized boolean grabPixels(long ms) throws InterruptedException

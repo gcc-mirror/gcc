@@ -1,4 +1,5 @@
-/* Copyright (C) 1999, 2002  Free Software Foundation
+/* Point.java -- represents a point in 2-D space
+   Copyright (C) 1999, 2002 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -36,144 +37,209 @@ exception statement from your version. */
 
 
 package java.awt;
-import java.awt.geom.Point2D;
 
-/* Written using "Java Class Libraries", 2nd edition, plus online
- * API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Believed complete and correct, except that neither toString
- * nor hashCode have been compared with JDK output.
- */
+import java.awt.geom.Point2D;
+import java.io.Serializable;
 
 /**
  * This class represents a point on the screen using cartesian coordinates.
+ * Remember that in screen coordinates, increasing x values go from left to
+ * right, and increasing y values go from top to bottom.
+ *
+ * <p>There are some public fields; if you mess with them in an inconsistent
+ * manner, it is your own fault when you get invalid results. Also, this
+ * class is not threadsafe.
  *
  * @author Per Bothner <bothner@cygnus.com>
- * @author Aaron M. Renn (arenn@urbanophile.com)
- * @date February 8, 1999.
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @since 1.0
+ * @status updated to 1.4
  */
-public class Point extends Point2D implements java.io.Serializable
+public class Point extends Point2D implements Serializable
 {
   /**
-   * @serial The X coordinate of the point.
+   * Compatible with JDK 1.0+.
+   */
+  private static final long serialVersionUID = -5276940640259749850L;
+
+  /**
+   * The x coordinate.
+   *
+   * @see #getLocation()
+   * @see #move(int, int)
+   * @serial the X coordinate of the point
    */
   public int x;
 
   /**
-   * @serial The Y coordinate of the point.
+   * The y coordinate.
+   *
+   * @see #getLocation()
+   * @see #move(int, int)
+   * @serial The Y coordinate of the point
    */
   public int y;
 
   /**
    * Initializes a new instance of <code>Point</code> representing the
    * coordiates (0,0).
+   *
+   * @since 1.1
    */
-  public Point () { }
+  public Point()
+  {
+  }
 
   /**
    * Initializes a new instance of <code>Point</code> with coordinates
    * identical to the coordinates of the specified points.
    *
-   * @param point The point to copy the coordinates from.
+   * @param point the point to copy the coordinates from
+   * @throws NullPointerException if p is null
    */
-  public Point (Point p) { this.x = p.x;  this.y = p.y; }
+  public Point(Point p)
+  {
+    x = p.x;
+    y = p.y;
+  }
 
   /**
    * Initializes a new instance of <code>Point</code> with the specified
    * coordinates.
    *
-   * @param x The X coordinate of this point.
-   * @param y The Y coordinate of this point.
+   * @param x the X coordinate
+   * @param y the Y coordinate
    */
-  public Point (int x, int y) { this.x = x;  this.y = y; }
-
-  /**
-   * Tests whether or not this object is equal to the specified object.
-   * This will be true if and only if the specified objectj:
-   * <p>
-   * <ul>
-   * <li>Is not <code>null</code>.
-   * <li>Is an instance of <code>Point</code>.
-   * <li>Has X and Y coordinates equal to this object's.
-   * </ul>
-   *
-   * @param obj The object to test against for equality.
-   *
-   * @return <code>true</code> if the specified object is equal to this
-   * object, <code>false</code> otherwise.
-  */
-  public boolean equals (Object obj)
+  public Point(int x, int y)
   {
-    if (! (obj instanceof Point))
-      return false;
-    Point p = (Point) obj;
-    return this.x == p.x && this.y == p.y;
+    this.x = x;
+    this.y = y;
   }
 
   /**
-   * Returns a hash value for this point.
+   * Get the x coordinate.
    *
-   * @param A hash value for this point.
+   * @return the value of x, as a double
    */
-  public int hashCode () { return x ^ y; }
+  public double getX()
+  {
+    return x;
+  }
 
   /**
-   * Returns the location of this object as a point.  A pretty useless
-   * method.  It is included to mimic the <code>getLocation</code> method
-   * in component.
+   * Get the y coordinate.
    *
-   * @return This point.
+   * @return the value of y, as a double
    */
-  public Point getLocation () { return new Point(this); }
+  public double getY()
+  {
+    return y;
+  }
 
   /**
-   * Sets this object's coordinates to the specified values.  This method
-   * is identical to the <code>setLocation(int, int)</code> method.
+   * Returns the location of this point. A pretty useless method, as this
+   * is already a point.
    *
-   * @param x The new X coordinate.
-   * @param y The new Y coordinate.
+   * @return a copy of this point
+   * @see #setLocation(Point)
+   * @since 1.1
    */
-  public void move (int x, int y) { this.x = x;  this.y = y; }
+  public Point getLocation()
+  {
+    return new Point(x, y);
+  }
+
+  /**
+   * Sets this object's coordinates to match those of the specified point.
+   *
+   * @param p the point to copy the coordinates from
+   * @throws NullPointerException if p is null
+   * @since 1.1
+   */
+  public void setLocation(Point p)
+  {
+    x = p.x;
+    y = p.y;
+  }
 
   /**
    * Sets this object's coordinates to the specified values.  This method
    * is identical to the <code>move()</code> method.
    *
-   * @param x The new X coordinate.
-   * @param y The new Y coordinate.
+   * @param x the new X coordinate
+   * @param y the new Y coordinate
    */
-  public void setLocation (int x, int y) { this.x = x;  this.y = y; }
+  public void setLocation(int x, int y)
+  {
+    this.x = x;
+    this.y = y;
+  }
 
   /**
-   * Sets this object's coordinates to match those of the specified point.
+   * Sets this object's coordinates to the specified values.  This method
+   * performs normal casting from double to int, so you may lose precision.
    *
-   * @param point The point to copy the coordinates from.
+   * @param x the new X coordinate
+   * @param y the new Y coordinate
    */
-  public void setLocation (Point pt) { this.x = pt.x;  this.y = pt.y; }
+  public void setLocation(double x, double y)
+  {
+    this.x = (int) x;
+    this.y = (int) y;
+  }
 
   /**
-   * Changes the coordinates of this point such that the specified 
+   * Sets this object's coordinates to the specified values.  This method
+   * is identical to the <code>setLocation(int, int)</code> method.
+   *
+   * @param x the new X coordinate
+   * @param y the new Y coordinate
+   */
+  public void move(int x, int y)
+  {
+    this.x = x;
+    this.y = y;
+  }
+
+  /**
+   * Changes the coordinates of this point such that the specified
    * <code>dx</code> parameter is added to the existing X coordinate and
    * <code>dy</code> is added to the existing Y coordinate.
    *
-   * @param dx The amount to add to the X coordinate.
-   * @param dy The amount to add to the Y coordinate.
+   * @param dx the amount to add to the X coordinate
+   * @param dy the amount to add to the Y coordinate
    */
-  public void translate (int x, int y) { this.x += x;  this.y += y; }
-
-  /**
-   * Returns a string representation of this object.
-   *
-   * @return A string representation of this object.
-   */
-  public String toString ()
+  public void translate(int dx, int dy)
   {
-    return getClass().getName() + "[x:"+x+",y:"+y+']';
+    x += dx;
+    y += dy;
   }
 
-  public double getX() { return x; }
-  public double getY() { return y; }
+  /**
+   * Tests whether or not this object is equal to the specified object.
+   * This will be true if and only if the specified object is an instance
+   * of Point2D and has the same X and Y coordinates.
+   *
+   * @param obj the object to test against for equality
+   * @return true if the specified object is equal
+  */
+  public boolean equals(Object obj)
+  {
+    if (! (obj instanceof Point2D))
+      return false;
+    Point2D p = (Point2D) obj;
+    return x == p.getX() && y == p.getY();
+  }
 
-  public void setLocation (double x, double y)
-  { this.x = (int) x;  this.y = (int) y; }
-
-}
+  /**
+   * Returns a string representation of this object. The format is:
+   * <code>getClass().getName() + "[x=" + x + ",y=" + y + ']'</code>.
+   *
+   * @return a string representation of this object
+   */
+  public String toString()
+  {
+    return getClass().getName() + "[x=" + x + ",y=" + y + ']';
+  }
+} // class Point

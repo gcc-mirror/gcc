@@ -1,5 +1,5 @@
 /* AWTError.java -- A serious AWT error occurred.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,24 +39,26 @@ exception statement from your version. */
 package java.awt;
 
 /**
-  * This error is thrown when a critical AWT error occurs.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This error is thrown when a critical Abstract Window Toolkit (AWT) error
+ * occurs.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @status updated to 1.4
+ */
 public class AWTError extends Error
 {
+  /**
+   * Compatible with JDK 1.0+.
+   */
+  private static final long serialVersionUID = -1819846354050686206L;
 
-/**
-  * Initializes a new instance of <code>AWTError</code> with the specified
-  * descriptive error message.
-  *
-  * @param message The descriptive error message.
-  */
-public
-AWTError(String message)
-{
-  super(message);
-}
-
-} // class AWTError 
-
+  /**
+   * Create a new instance with the specified descriptive error message.
+   *
+   * @param message the descriptive error message
+   */
+  public AWTError(String message)
+  {
+    super(message);
+  }
+} // class AWTError

@@ -1,5 +1,5 @@
-/* LayoutManager.java -- Layout containers in a Window
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* LayoutManager.java -- lay out elements in a Container
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,68 +39,54 @@ exception statement from your version. */
 package java.awt;
 
 /**
-  * This interface is for laying out containers.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This interface is for laying out containers in a particular sequence.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @see Container
+ * @since 1.0
+ * @status updated to 1.4
+ */
 public interface LayoutManager
 {
+  /**
+   * Adds the specified component to the layout group.
+   *
+   * @param name the name of the component to add
+   * @param component the component to add
+   */
+  void addLayoutComponent(String name, Component component);
 
-/**
-  * Adds the specified component to the layout group.
-  *
-  * @param name The name of the component to add.
-  * @param component The component to add.
-  */
-public abstract void
-addLayoutComponent(String name, Component component);
+  /**
+   * Removes the specified component from the layout group.
+   *
+   * @param component the component to remove
+   */
+  void removeLayoutComponent(Component component);
 
-/*************************************************************************/
+  /**
+   * Calculates the preferred size for this container, taking into account
+   * the components it contains.
+   *
+   * @param parent the parent container to lay out
+   * @return the preferred dimensions of this container
+   * @see #minimumLayoutSize(Container)
+   */
+  Dimension preferredLayoutSize(Container parent);
 
-/**
-  * Removes the specified component from the layout group.
-  *
-  * @param component The component to remove.
-  */
-public abstract void
-removeLayoutComponent(Component component);
+  /**
+   * Calculates the minimum size for this container, taking into account
+   * the components it contains.
+   *
+   * @param parent the parent container to lay out
+   * @return the minimum dimensions of this container
+   * @see #preferredLayoutSize(Container)
+   */
+  Dimension minimumLayoutSize(Container parent);
 
-/*************************************************************************/
-
-/**
-  * Calculates the preferred size for this container, taking into account
-  * the components in the specified parent container.
-  *
-  * @param parent The parent container.
-  *
-  * @return The preferred dimensions of this container.
-  */
-public abstract Dimension
-preferredLayoutSize(Container parent);
-
-/*************************************************************************/
-
-/**
-  * Calculates the minimum size for this container, taking into account
-  * the components in the specified parent container.
-  *
-  * @param parent The parent container.
-  *
-  * @return The minimum dimensions of this container.
-  */
-public abstract Dimension
-minimumLayoutSize(Container parent);
-
-/*************************************************************************/
-
-/**
-  * Lays out the components in this container on the specified parent
-  * container.
-  *
-  * @param parent The parent container.
-  */
-public abstract void
-layoutContainer(Container parent);
-
+  /**
+   * Lays out the components in the given container.
+   *
+   * @param parent the container to lay out
+   */
+  void layoutContainer(Container parent);
 } // interface LayoutManager
-

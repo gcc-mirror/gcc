@@ -1,4 +1,5 @@
-/* Copyright (C) 2000, 2002  Free Software Foundation
+/* HierarchyBoundsAdapter.java -- convenience class for writing listeners
+   Copyright (C) 2000, 2002 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -37,19 +38,41 @@ exception statement from your version. */
 package java.awt.event;
 
 /**
- * @since 1.3
+ * This class implements <code>HierarchyBoundsListener</code> and implements
+ * all methods with empty bodies.  This allows a listener interested in
+ * implementing only a subset of the <code>HierarchyBoundsListener</code>
+ * interface to extend this class and override only the desired methods.
+ *
  * @author Bryce McKinlay
+ * @see HierarchyBoundsListener
+ * @see HierarchyEvent
+ * @since 1.3
+ * @status updated to 1.4
  */
-
-/* Status:  Believed complete and correct. */
-
 public abstract class HierarchyBoundsAdapter implements HierarchyBoundsListener
 {
+  /**
+   * Do nothing default constructor for subclasses.
+   */
+  public HierarchyBoundsAdapter()
+  {
+  }
+
+  /**
+   * Implements this method from the interface with an empty body.
+   *
+   * @param event the event, ignored in this implementation
+   */
   public void ancestorMoved(HierarchyEvent e)
   {
   }
-  
+
+  /**
+   * Implements this method from the interface with an empty body.
+   *
+   * @param event the event, ignored in this implementation
+   */
   public void ancestorResized(HierarchyEvent e)
   {
   }
-}
+} // class HierarchyBoundsAdapter

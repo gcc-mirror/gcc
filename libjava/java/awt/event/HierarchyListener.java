@@ -1,4 +1,5 @@
-/* Copyright (C) 2000, 2002  Free Software Foundation
+/* HierarchyListener.java -- listens to changes in the component hierarchy
+   Copyright (C) 2000, 2002 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -34,16 +35,28 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.awt.event;
 
+import java.util.EventListener;
+
 /**
- * @since 1.3
+ * This listens for changes in the hierarchy tree of components. Normally it is
+ * not necessary to process these events since the AWT handles them
+ * internally, taking all appropriate actions.
+ *
  * @author Bryce McKinlay
+ * @see HierarchyEvent
+ * @since 1.3
+ * @status updated to 1.4
  */
-
-/* Status:  Believed complete and correct. */
-
-public interface HierarchyListener extends java.util.EventListener
+public interface HierarchyListener extends EventListener
 {
-  public void hierarchyChanged(HierarchyEvent e);
-}
+  /**
+   * Called when the hierarchy of this component changes. Use
+   * <code>getChangeFlags()</code> on the event to see what exactly changed.
+   *
+   * @param e the event describing the change
+   */
+  void hierarchyChanged(HierarchyEvent e);
+} // interface HierarchyListener

@@ -77,27 +77,107 @@ public static final String WEST = "West";
   */
 public static final String CENTER = "Center";
 
-/**
-  * Constant indicating the position just after the last line of the
-  * layout.
-  */
-public static final String AFTER_LAST_LINE = "Last";
 
-/**
-  * Constant indicating the position just after the end of the line.
-  */
-public static final String AFTER_LINE_ENDS = "After";
+  /**
+   * The constant indicating the position before the first line of the
+   * layout.  The exact position depends on the writing system: For a
+   * top-to-bottom orientation, it is the same as {@link #NORTH}, for
+   * a bottom-to-top orientation, it is the same as {@link #SOUTH}.
+   *
+   * <p>This constant is an older name for {@link #PAGE_START} which
+   * has exactly the same value.
+   *
+   * @since 1.2
+   */
+  public static final String BEFORE_FIRST_LINE = "First";
 
-/**
-  * Constant indicating the position just before the first line of the
-  * layout.
-  */
-public static final String BEFORE_FIRST_LINE = "First";
 
-/**
-  * Constant indicating the position at the beginning of the line.
-  */
-public static final String BEFORE_LINE_BEGINS = "Before";
+  /**
+   * The constant indicating the position after the last line of the
+   * layout.  The exact position depends on the writing system: For a
+   * top-to-bottom orientation, it is the same as {@link #SOUTH}, for
+   * a bottom-to-top orientation, it is the same as {@link #NORTH}.
+   *
+   * <p>This constant is an older name for {@link #PAGE_END} which
+   * has exactly the same value.
+   *
+   * @since 1.2
+   */
+  public static final String AFTER_LAST_LINE = "Last";
+
+
+  /**
+   * The constant indicating the position before the first item of the
+   * layout.  The exact position depends on the writing system: For a
+   * left-to-right orientation, it is the same as {@link #WEST}, for
+   * a right-to-left orientation, it is the same as {@link #EAST}.
+   *
+   * <p>This constant is an older name for {@link #LINE_START} which
+   * has exactly the same value.
+   *
+   * @since 1.2
+   */
+  public static final String BEFORE_LINE_BEGINS = "Before";
+
+
+  /**
+   * The constant indicating the position after the last item of the
+   * layout.  The exact position depends on the writing system: For a
+   * left-to-right orientation, it is the same as {@link #EAST}, for
+   * a right-to-left orientation, it is the same as {@link #WEST}.
+   *
+   * <p>This constant is an older name for {@link #LINE_END} which
+   * has exactly the same value.
+   *
+   * @since 1.2
+   */
+  public static final String AFTER_LINE_ENDS = "After";
+
+
+  /**
+   * The constant indicating the position before the first line of the
+   * layout.  The exact position depends on the writing system: For a
+   * top-to-bottom orientation, it is the same as {@link #NORTH}, for
+   * a bottom-to-top orientation, it is the same as {@link #SOUTH}.
+   *
+   * @since 1.4
+   */
+  public static final String PAGE_START = BEFORE_FIRST_LINE;
+
+
+  /**
+   * The constant indicating the position after the last line of the
+   * layout.  The exact position depends on the writing system: For a
+   * top-to-bottom orientation, it is the same as {@link #SOUTH}, for
+   * a bottom-to-top orientation, it is the same as {@link #NORTH}.
+   *
+   * @since 1.4
+   */
+  public static final String PAGE_END = AFTER_LAST_LINE;
+
+
+  /**
+   * The constant indicating the position before the first item of the
+   * layout.  The exact position depends on the writing system: For a
+   * left-to-right orientation, it is the same as {@link #WEST}, for
+   * a right-to-left orientation, it is the same as {@link #EAST}.
+   *
+   * @since 1.4
+   */
+  public static final String LINE_START = BEFORE_LINE_BEGINS;
+
+
+  /**
+   * The constant indicating the position after the last item of the
+   * layout.  The exact position depends on the writing system: For a
+   * left-to-right orientation, it is the same as {@link #EAST}, for
+   * a right-to-left orientation, it is the same as {@link #WEST}.
+   *
+   * @since 1.4
+   */
+  public static final String LINE_END = AFTER_LINE_ENDS;
+
+
 
 // Serialization constant
 private static final long serialVersionUID = -8658291919501921765L;

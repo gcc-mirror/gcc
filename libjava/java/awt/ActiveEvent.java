@@ -1,4 +1,5 @@
-/* Copyright (C) 2000, 2002  Free Software Foundation
+/* ActiveEvent.java -- a self-dispatching event
+   Copyright (C) 2000, 2002 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -38,13 +39,23 @@ exception statement from your version. */
 package java.awt;
 
 /**
+ * An interface for events which can dispatch themselves in another thread.
+ * This has two uses: first, if your code is in a critical section, calling a
+ * synchronized method might deadlock. But by using an ActiveEvent to call
+ * the second section, it will not obtain the lock until you have left the
+ * critical section, avoiding deadlock. The second use is for calling
+ * untrusted code. For example, system code should use an ActiveEvent to
+ * invoke user code securely.
+ *
  * @author Tom Tromey <tromey@cygnus.com>
- * @date April 8, 2000
+ * @since 1.2
+ * @status updated to 1.4
  */
-
-/* Status: Believed complete and correct to JDK 1.2.  */
-
 public interface ActiveEvent
 {
-  public void dispatch ();
-}
+  /**
+   * Dispatch the event, according to what the event needs done. Invoked
+   * automatically if this is placed on the <code>EventDispatchQueue</code>.
+   */
+  public void dispatch();
+} // interface ActiveEvent

@@ -1,5 +1,5 @@
 /* PrintJob.java -- A print job class
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,90 +39,64 @@ exception statement from your version. */
 package java.awt;
 
 /**
-  * This abstract class represents a print job.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This abstract class represents a print job.
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @see Toolkit#getPrintJob(Frame, String, Properties)
+ * @since 1.0
+ * @status updated to 1.4
+ */
 public abstract class PrintJob
 {
+  /**
+   * Create a new PrintJob.
+   */
+  public PrintJob()
+  {
+  }
 
-/*
- * Constructors
- */
+  /**
+   * Returns a graphics context suitable for rendering the next page. The
+   * return must also implement {@link PrintGraphics}.
+   *
+   * @return a graphics context for printing the next page
+   */
+  public abstract Graphics getGraphics();
 
-/**
-  * This method initializes a new instance of <code>PrintJob</code>.
-  */
-public
-PrintJob()
-{
-}
+  /**
+   * Returns the dimension of the page in pixels.  The resolution will be
+   * chosen to be similar to the on screen image.
+   *
+   * @return the page dimensions
+   */
+  public abstract Dimension getPageDimension();
 
-/*************************************************************************/
+  /**
+   * Returns the resolution of the page in pixels per inch. Note that this is
+   * not necessarily the printer's resolution.
+   *
+   * @return the resolution of the page in pixels per inch
+   */
+  public abstract int getPageResolution();
 
-/*
- * Instance Methods
- */
+  /**
+   * Tests whether or not the last page will be printed first.
+   *
+   * @return true if the last page prints first
+   */
+  public abstract boolean lastPageFirst();
 
-/**
-  * Returns a graphics context suitable for rendering the next page.
-  *
-  * @return A graphics context for printing the next page.
-  */
-public abstract Graphics
-getGraphics();
+  /**
+   * Informs the print job that printing is complete or should be aborted.
+   */
+  public abstract void end();
 
-/*************************************************************************/
-
-/**
-  * Returns the dimension of the page in pixels.  The resolution will be
-  * chosen to be similar to the on screen image.
-  *
-  * @return The page dimensions.
-  */
-public abstract Dimension
-getPageDimension();
-
-/*************************************************************************/
-
-/**
-  * Returns the resolution of the page in pixels per inch.
-  *
-  * @return The resolution of the page in pixels per inch.
-  */
-public abstract int
-getPageResolution();
-
-/*************************************************************************/
-
-/**
-  * Tests whether or not the last page will be printed first.
-  *
-  * @return <code>true</code> if the last page prints first, <code>false</code>
-  * otherwise.
-  */
-public abstract boolean
-lastPageFirst();
-
-/*************************************************************************/
-
-/**
-  * Informs the print job that printing is complete.
-  */
-public abstract void
-end();
-
-/*************************************************************************/
-
-/**
-  * This method explicitly ends the print job in the event the job
-  * becomes un-referenced without the application having done so.
-  */
-public void
-finalize()
-{
-  end();
-}
-
+  /**
+   * This method explicitly ends the print job in the event the job
+   * becomes un-referenced without the application having done so.
+   */
+  public void finalize()
+  {
+    end();
+  }
 } // class PrintJob
-

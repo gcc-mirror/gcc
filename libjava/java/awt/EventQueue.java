@@ -320,4 +320,27 @@ public class EventQueue
 	  }
       }
   }
-}
+
+  /**
+   * Returns the timestamp of the most recent event that had a timestamp, or
+   * the initialization time of the event queue if no events have been fired.
+   * At present, only <code>InputEvent</code>s, <code>ActionEvent</code>s,
+   * <code>InputMethodEvent</code>s, and <code>InvocationEvent</code>s have
+   * timestamps, but this may be added to other events in future versions.
+   * If this is called by the event dispatching thread, it can be any
+   * (sequential) value, but to other threads, the safest bet is to return
+   * System.currentTimeMillis().
+   *
+   * @return the most recent timestamp
+   * @see InputEvent#getWhen()
+   * @see ActionEvent#getWhen()
+   * @see InvocationEvent#getWhen()
+   * @see InputMethodEvent#getWhen()
+   * @since 1.4
+   */
+  public static long getMostRecentEventTime()
+  {
+    // XXX For now, this ONLY does the current time.
+    return System.currentTimeMillis();
+  }
+} // class EventQueue

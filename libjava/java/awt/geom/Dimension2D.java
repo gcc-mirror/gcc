@@ -1,4 +1,5 @@
-/* Copyright (C) 1999, 2000, 2002  Free Software Foundation
+/* Dimension2D.java -- abstraction of a dimension
+   Copyright (C) 1999, 2000, 2002 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -34,39 +35,79 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.awt.geom;
 
 /**
+ * This stores a dimension in 2-dimensional space - a width (along the x-axis)
+ * and height (along the y-axis). The storage is left to subclasses.
+ *
  * @author Per Bothner <bothner@cygnus.com>
- * @date February, 1999.
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @since 1.2
+ * @status updated to 1.4
  */
-
-/* Written using online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Believed complete and correct.
- */
-
 public abstract class Dimension2D implements Cloneable
 {
+  /**
+   * The default constructor.
+   */
+  protected Dimension2D()
+  {
+  }
+
+  /**
+   * Get the width of this dimension. A negative result, while legal, is
+   * undefined in meaning.
+   *
+   * @return the width
+   */
   public abstract double getWidth();
+
+  /**
+   * Get the height of this dimension. A negative result, while legal, is
+   * undefined in meaning.
+   *
+   * @return the height
+   */
   public abstract double getHeight();
 
-  public abstract void setSize (double width, double height);
+  /**
+   * Set the size of this dimension to the requested values. Loss of precision
+   * may occur.
+   *
+   * @param w the new width
+   * @param h the new height
+   */
+  public abstract void setSize(double w, double h);
 
-  public void setSize (Dimension2D dim)
+  /**
+   * Set the size of this dimension to the requested value. Loss of precision
+   * may occur.
+   *
+   * @param d the dimension containing the new values
+   * @throws NullPointerException if d is null
+   */
+  public void setSize(Dimension2D d)
   {
-    setSize(dim.getWidth(), dim.getHeight());
+    setSize(d.getWidth(), d.getHeight());
   }
 
-  public Object clone ()
+  /**
+   * Create a new dimension of the same run-time type with the same contents
+   * as this one.
+   *
+   * @return the clone
+   */
+  public Object clone()
   {
     try
-    {
-      return super.clone ();
-    } 
-    catch (CloneNotSupportedException _) {return null;}
+      {
+        return super.clone();
+      }
+    catch (CloneNotSupportedException e)
+      {
+        throw (Error) new InternalError().initCause(e); // Impossible
+      }
   }
-
-  protected Dimension2D ()
-  {
-  }
-}
+} // class Dimension2D

@@ -1,4 +1,5 @@
-/* Copyright (C) 2000, 2002  Free Software Foundation
+/* Ellipse2D.java -- represents an ellipse in 2-D space
+   Copyright (C) 2000, 2002 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -38,39 +39,40 @@ package java.awt.geom;
 
 /**
  * @author Tom Tromey <tromey@cygnus.com>
- * @date April 16, 2000
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @since 1.2
+ * @status still needs documentation
  */
-
 public abstract class Ellipse2D extends RectangularShape
 {
-  protected Ellipse2D ()
+  protected Ellipse2D()
   {
   }
 
-  public boolean contains (double x, double y)
+  public boolean contains(double x, double y)
   {
-    double rx = getWidth () / 2;
-    double ry = getHeight () / 2;
-    double tx = (x - getCenterX ()) / rx;
-    double ty = (y - getCenterY ()) / ry;
+    double rx = getWidth() / 2;
+    double ry = getHeight() / 2;
+    double tx = (x - getCenterX()) / rx;
+    double ty = (y - getCenterY()) / ry;
     return tx * tx + ty * ty <= 1.0;
   }
 
-  public boolean contains (double x, double y, double w, double h)
+  public boolean contains(double x, double y, double w, double h)
   {
     double x2 = x + w;
     double y2 = y + h;
-    return (contains (x, y) && contains (x, y2)
-	    && contains (x2, y) && contains (x2, y2));
+    return (contains(x, y) && contains(x, y2)
+            && contains(x2, y) && contains(x2, y2));
   }
 
-  public PathIterator getPathIterator (AffineTransform at)
+  public PathIterator getPathIterator(AffineTransform at)
   {
-    // fixme;
-    return null;
+    // An ellipse is just a complete arc.
+    return new Arc2D.ArcIterator(this, at);
   }
 
-  public boolean intersects (double x, double y, double w, double h)
+  public boolean intersects(double x, double y, double w, double h)
   {
     // fixme
     return false;
@@ -83,57 +85,56 @@ public abstract class Ellipse2D extends RectangularShape
     public double x;
     public double y;
 
-    public Double ()
+    public Double()
     {
-      height = width = x = y = 0;
     }
 
-    public Double (double x, double y, double w, double h)
+    public Double(double x, double y, double w, double h)
     {
       this.x = x;
       this.y = y;
-      this.height = h;
-      this.width = w;
+      height = h;
+      width = w;
     }
 
-    public Rectangle2D getBounds2D ()
+    public Rectangle2D getBounds2D()
     {
-      return new Rectangle2D.Double (x, y, width, height);
+      return new Rectangle2D.Double(x, y, width, height);
     }
 
-    public double getHeight ()
+    public double getHeight()
     {
       return height;
     }
 
-    public double getWidth ()
+    public double getWidth()
     {
       return width;
     }
 
-    public double getX ()
+    public double getX()
     {
       return x;
     }
 
-    public double getY ()
+    public double getY()
     {
       return y;
     }
 
-    public boolean isEmpty ()
+    public boolean isEmpty()
     {
       return height <= 0 || width <= 0;
     }
 
-    public void setFrame (double x, double y, double w, double h)
+    public void setFrame(double x, double y, double w, double h)
     {
       this.x = x;
       this.y = y;
-      this.height = h;
-      this.width = w;
+      height = h;
+      width = w;
     }
-  }
+  } // class Double
 
   public static class Float extends Ellipse2D
   {
@@ -142,12 +143,11 @@ public abstract class Ellipse2D extends RectangularShape
     public float x;
     public float y;
 
-    public Float ()
+    public Float()
     {
-      height = width = x = y = 0;
     }
 
-    public Float (float x, float y, float w, float h)
+    public Float(float x, float y, float w, float h)
     {
       this.x = x;
       this.y = y;
@@ -155,50 +155,50 @@ public abstract class Ellipse2D extends RectangularShape
       this.width = w;
     }
 
-    public Rectangle2D getBounds2D ()
+    public Rectangle2D getBounds2D()
     {
-      return new Rectangle2D.Float (x, y, width, height);
+      return new Rectangle2D.Float(x, y, width, height);
     }
 
-    public double getHeight ()
+    public double getHeight()
     {
       return height;
     }
 
-    public double getWidth ()
+    public double getWidth()
     {
       return width;
     }
 
-    public double getX ()
+    public double getX()
     {
       return x;
     }
 
-    public double getY ()
+    public double getY()
     {
       return y;
     }
 
-    public boolean isEmpty ()
+    public boolean isEmpty()
     {
       return height <= 0 || width <= 0;
     }
 
-    public void setFrame (float x, float y, float w, float h)
+    public void setFrame(float x, float y, float w, float h)
     {
       this.x = x;
       this.y = y;
-      this.height = h;
-      this.width = w;
+      height = h;
+      width = w;
     }
 
-    public void setFrame (double x, double y, double w, double h)
+    public void setFrame(double x, double y, double w, double h)
     {
       this.x = (float) x;
       this.y = (float) y;
-      this.height = (float) h;
-      this.width = (float) w;
+      height = (float) h;
+      width = (float) w;
     }
-  }
-}
+  } // class Float
+} // class Ellipse2D
