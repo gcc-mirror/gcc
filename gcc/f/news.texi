@@ -5,7 +5,7 @@
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1999-02-14
+@c 1999-02-18
 
 @ifclear NEWSONLY
 @node News
@@ -61,9 +61,20 @@ somewhat more difficult.
 @heading In @code{egcs} 1.2:
 @itemize @bullet
 @item
+Fix @code{g77} so it no longer crashes when compiling
+I/O statements with @samp{IOSTAT=@var{j}},
+where @var{j} is other than default @code{INTEGER}
+(such as @code{INTEGER*2}).
+Instead, it issues a diagnostic.
+
+@item
 Source file names with the suffixes @samp{.FOR} and @samp{.FPP}
 now are recognized by @code{g77}
 as if they ended in @samp{.for} and @samp{.fpp}, respectively.
+
+@item
+Improve documentation and indexing,
+including information on Year 2000 (Y2K) compliance.
 @end itemize
 
 @heading In 0.5.24 and @code{egcs} 1.1.1 (versus 0.5.23 and 1.1):
