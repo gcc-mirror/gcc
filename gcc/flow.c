@@ -6734,12 +6734,6 @@ set_block_for_new_insns (insn, bb)
 {
   set_block_for_insn (insn, bb);
 
-  /* We dont scan to set the block to 0 since this is the default value.  
-     If we did, we'd end up scanning/setting the entire prologue block
-     everytime we insert an insn into it. */
-  if (bb->index == 0)
-    return;
-
   /* Scan the previous instructions setting the block number until we find 
      an instruction that has the block number set, or we find a note 
      of any kind.  */
