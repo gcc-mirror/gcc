@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,20 +32,24 @@
 //
   
 // Information as gleaned from /usr/include/ctype.h
-  
+
+  extern "C" const u_int8_t _C_ctype_[];
+
   const ctype_base::mask*
   ctype<char>::classic_table() throw()
-  { return 0; }
+  { return _C_ctype_ + 1; }
 
   ctype<char>::ctype(__c_locale, const mask* __table, bool __del, 
 		     size_t __refs) 
   : __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
-  _M_toupper(NULL), _M_tolower(NULL), _M_table(__table ? __table : _ctype_ + 1)
+  _M_toupper(NULL), _M_tolower(NULL), 
+  _M_table(__table ? __table : classic_table())
   { }
 
   ctype<char>::ctype(const mask* __table, bool __del, size_t __refs) 
   : __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
-  _M_toupper(NULL), _M_tolower(NULL), _M_table(__table ? __table : _ctype_ + 1)
+  _M_toupper(NULL), _M_tolower(NULL), 
+  _M_table(__table ? __table : classic_table())
   { }
 
   char
