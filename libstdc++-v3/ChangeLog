@@ -1,3 +1,16 @@
+2004-03-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/mt_allocator.h (__mt_alloc<>::tune):
+	Add _M_min_bin, the size in bytes of the smallest bin.
+	(__mt_alloc<>::tune()): Tweak accordingly.
+	(__mt_alloc<>::tune(size_t, ...)): Likewise.
+	(__mt_alloc<>::block_record): Change to a union: members next
+	and thread_id are never used at the same time.
+	(__mt_alloc<>::allocate): Update consistently.
+	(__mt_alloc<>::deallocate): Likewise.
+	(__mt_alloc<>::_S_initialize): Update setups of _S_binmap and
+	_S_bin_size for the configurable _M_min_size.
+
 2004-03-25  Dhruv Matani  <dhruvbird@gmx.net>
 
 	* include/bits/stl_list.h: Created a _List_impl class and made it
