@@ -5537,6 +5537,8 @@ free_thead (ptr)
 #endif /* MIPS_DEBUGGING_INFO */
 
 
+#ifdef HAVE_VPRINTF
+
 /* Output an error message and exit */
 
 /*VARARGS*/
@@ -5599,6 +5601,27 @@ error VPROTO((char *format, ...))
 
   saber_stop ();
 }
+
+#else /* not HAVE_VPRINTF */
+
+void
+fatal (msg, arg1, arg2)
+     char *msg, *arg1, *arg2;
+{
+  error (msg, arg1, arg2);
+  exit (1);
+}
+
+void
+error (msg, arg1, arg2)
+     char *msg, *arg1, *arg2;
+{
+  fprintf (stderr, "%s: ", progname);
+  fprintf (stderr, msg, arg1, arg2);
+  fprintf (stderr, "\n");
+}
+
+#endif /* not HAVE_VPRINTF */
 
 /* More 'friendly' abort that prints the line and file.
    config.h can #define abort fancy_abort if you like that sort of thing.  */
