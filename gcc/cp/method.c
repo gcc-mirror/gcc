@@ -2341,6 +2341,7 @@ do_build_copy_constructor (fndecl)
       tree binfos = TYPE_BINFO_BASETYPES (current_class_type);
       tree member_init_list = NULL_TREE;
       tree base_init_list = NULL_TREE;
+      int cvquals = CP_TYPE_QUALS (TREE_TYPE (parm));
       int i;
 
       /* Initialize all the base-classes.  */
@@ -2387,7 +2388,9 @@ do_build_copy_constructor (fndecl)
 	  else
 	    continue;
 
-	  init = build (COMPONENT_REF, TREE_TYPE (field), init, field);
+	  init = build (COMPONENT_REF,
+	                build_qualified_type (TREE_TYPE (field), cvquals),
+	                init, field);
 	  init = build_tree_list (NULL_TREE, init);
 
 	  member_init_list
@@ -2423,13 +2426,13 @@ do_build_assign_ref (fndecl)
       tree fields = TYPE_FIELDS (current_class_type);
       int n_bases = CLASSTYPE_N_BASECLASSES (current_class_type);
       tree binfos = TYPE_BINFO_BASETYPES (current_class_type);
+      int cvquals = CP_TYPE_QUALS (TREE_TYPE (parm));
       int i;
 
       for (i = 0; i < n_bases; ++i)
 	{
 	  tree basetype = BINFO_TYPE (TREE_VEC_ELT (binfos, i));
-	  tree p = build_qualified_type
-	      (basetype, CP_TYPE_QUALS (TREE_TYPE (parm)));
+	  tree p = build_qualified_type (basetype, cvquals);
 
 	  p = convert_to_reference
 	    (build_reference_type (p), parm,
@@ -2449,18 +2452,12 @@ do_build_assign_ref (fndecl)
 
 	  if (CP_TYPE_CONST_P (TREE_TYPE (field)))
 	    {
-	      if (DECL_NAME (field))
-		cp_error ("non-static const member `%#D', can't use default assignment operator", field);
-	      else
-		cp_error ("non-static const member in type `%T', can't use default assignment operator", current_class_type);
+              cp_error ("non-static const member `%#D', can't use default assignment operator", field);
 	      continue;
 	    }
 	  else if (TREE_CODE (TREE_TYPE (field)) == REFERENCE_TYPE)
 	    {
-	      if (DECL_NAME (field))
-		cp_error ("non-static reference member `%#D', can't use default assignment operator", field);
-	      else
-		cp_error ("non-static reference member in type `%T', can't use default assignment operator", current_class_type);
+	      cp_error ("non-static reference member `%#D', can't use default assignment operator", field);
 	      continue;
 	    }
 
@@ -2487,7 +2484,9 @@ do_build_assign_ref (fndecl)
 	    continue;
 
 	  comp = build (COMPONENT_REF, TREE_TYPE (field), comp, field);
-	  init = build (COMPONENT_REF, TREE_TYPE (field), init, field);
+	  init = build (COMPONENT_REF,
+	                build_qualified_type (TREE_TYPE (field), cvquals),
+	                init, field);
 
 	  finish_expr_stmt (build_modify_expr (comp, NOP_EXPR, init));
 	}
