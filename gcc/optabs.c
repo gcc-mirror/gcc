@@ -297,6 +297,15 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       op1 = force_not_mem (op1);
     }
 
+  /* If subtracting an integer constant, convert this into an addition of
+     the negated constant.  */
+
+  if (binoptab == sub_optab && GET_CODE (op1) == CONST_INT)
+    {
+      op1 = negate_rtx (mode, op1);
+      binoptab = add_optab;
+    }
+
   /* If we are inside an appropriately-short loop and one operand is an
      expensive constant, force it into a register.  */
   if (CONSTANT_P (op0) && preserve_subexpressions_p ()
@@ -306,19 +315,6 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
   if (CONSTANT_P (op1) && preserve_subexpressions_p ()
       && rtx_cost (op1, binoptab->code) > 2)
     op1 = force_reg (shift_op ? word_mode : mode, op1);
-
-#if 0  /* Turned off because it seems to be a kludgy method.  */
-  /* If subtracting integer from pointer, and the pointer has a special mode,
-     then change it to an add.  We use the add insn of Pmode for combining
-     integers with pointers, and the sub insn to subtract two pointers.  */
-
-  if (binoptab == sub_optab
-      && GET_MODE (op0) == Pmode && GET_MODE (op1) != Pmode)
-    {
-      op1 = negate_rtx (GET_MODE(op1), op1);
-      binoptab = add_optab;
-    }
-#endif /* 0 */
 
   /* Record where to delete back to if we backtrack.  */
   last = get_last_insn ();
