@@ -206,12 +206,8 @@ namespace std {
 	    __sbin->_M_in_cur_move(__xtrct);
 	    if (__xtrct == __bufsize)
 	      {
-		int_type __c = __sbin->sgetc();
-		if (__c == _Traits::eof())
-		  {
-		    __ios.setstate(ios_base::eofbit);
-		    break;
-		  }
+		if (__sbin->sgetc() == _Traits::eof())
+		  break;
 		__bufsize = __sbin->in_avail();
 	      }
 	    else
