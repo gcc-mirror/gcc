@@ -624,6 +624,10 @@ else
         lt_cv_prog_cc_static='-bnso -bI:/lib/syscalls.exp'
       fi
       ;;
+    *djgpp*)
+      # DJGPP does not support shared libraries at all
+      ac_cv_prog_cc_pic=
+      ;;
     cygwin* | mingw* | os2*)
       # This hack is so that the source file can tell whether it is being
       # built for inclusion in a dll (and should export symbols for example).
@@ -723,7 +727,16 @@ else
       ;;
     esac
   fi
-  ac_cv_prog_cc_pic="$ac_cv_prog_cc_pic -DPIC"
+  case "$host_os" in
+      # Platforms which do not suport PIC and -DPIC is meaningless
+      # on them:
+      *djgpp*)
+        ac_cv_prog_cc_pic=
+        ;;
+      *)
+        ac_cv_prog_cc_pic="$ac_cv_prog_cc_pic -DPIC"
+        ;;
+  esac
 fi
 
 need_lc=yes

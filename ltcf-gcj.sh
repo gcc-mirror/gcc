@@ -604,6 +604,10 @@ fi
       # we not sure about C++ programs.
       ac_cv_prog_cc_static="$ac_cv_prog_cc_static ${ac_cv_prog_cc_wl}-lC"
       ;;
+    *djgpp*)
+      # DJGPP does not suppot shared libraries at all
+      ac_cv_prog_cc_pic=
+      ;;
     cygwin* | mingw* | os2*)
       # This hack is so that the source file can tell whether it is being
       # built for inclusion in a dll (and should export symbols for example).
