@@ -1,5 +1,3 @@
-// Build don't link:
-
 #include <vector>
 
 template <typename T=float> class foo {
@@ -13,7 +11,7 @@ private:
 
 template <typename T>
 foo<T>::foo()               :v(),   t() {}
-template <typename T=float>	// ERROR - default parm for member template XFAIL *-*-*
+template <typename T=float>	// ERROR - default parm for member template
 foo<T>::foo(vector<int> v_) :v(v_), t() {}
 
 foo<float> a;
