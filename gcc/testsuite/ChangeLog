@@ -1,3 +1,7 @@
+2001-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20010903-1.c: New test.
+
 2001-08-31  Roman Zippel  <zippel@linux-m68k.org>
 
 	* testsuite/gcc.c-torture/execute/ieee/ieee.exp: Add -ffloat-store
