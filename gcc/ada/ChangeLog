@@ -1,3 +1,9 @@
+2001-05-02  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* ada/Makefile.in (X_ADA_CFLAGS, T_ADA_CFLAGS): New fragment overrides.
+	(ALL_ADA_CFLAGS): Define.  Replace ADA_CFLAGS with ALL_ADA_CFLAGS in
+	ALL_ADAFLAGS, MOST_ADAFLAGS, and all compilations using CC.
+ 
 2002-04-25  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* misc.c (gnat_parse_file): Update.
