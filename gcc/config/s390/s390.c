@@ -200,24 +200,54 @@ enum processor_flags s390_arch_flags;
 const char *s390_tune_string;		/* for -mtune=<xxx> */
 const char *s390_arch_string;		/* for -march=<xxx> */
 
-/* Define the structure for the machine field in struct function.  */
+/* String to specify backchain mode.  */
+const char *s390_backchain_string = ""; /* "" no-backchain ,"1" backchain,
+					   "2" kernel-backchain */
 
-struct machine_function GTY(())
+/* The following structure is embedded in the machine 
+   specific part of struct function.  */
+
+struct s390_frame_layout GTY (())
 {
-  /* Set, if some of the fprs 8-15 need to be saved (64 bit abi).  */
-  int save_fprs_p;
-
-  /* Set if return address needs to be saved.  */
-  bool save_return_addr_p;
-
+  /* Offset within stack frame.  */
+  HOST_WIDE_INT gprs_offset;
+  HOST_WIDE_INT f0_offset;
+  HOST_WIDE_INT f4_offset;
+  HOST_WIDE_INT f8_offset;
+  HOST_WIDE_INT backchain_offset;
+  
   /* Number of first and last gpr to be saved, restored.  */
   int first_save_gpr;
   int first_restore_gpr;
   int last_save_gpr;
   int last_restore_gpr;
 
+  /* Bits standing for floating point registers. Set, if the 
+     respective register has to be saved. Starting with reg 16 (f0) 
+     at the rightmost bit.
+     Bit 15 -  8  7  6  5  4  3  2  1  0
+     fpr 15 -  8  7  5  3  1  6  4  2  0
+     reg 31 - 24 23 22 21 20 19 18 17 16  */
+  unsigned int fpr_bitmap;
+
+  /* Number of floating point registers f8-f15 which must be saved.  */
+  int high_fprs;
+
+  /* Set if return address needs to be saved.  */
+  bool save_return_addr_p;
+
+  /* Set if backchain needs to be saved.  */
+  bool save_backchain_p;
+
   /* Size of stack frame.  */
   HOST_WIDE_INT frame_size;
+};
+
+/* Define the structure for the machine field in struct function.  */
+
+struct machine_function GTY(())
+{
+  struct s390_frame_layout frame_layout;
 
   /* Literal pool base register.  */
   rtx base_reg;
@@ -225,6 +255,17 @@ struct machine_function GTY(())
   /* Some local-dynamic TLS symbol name.  */
   const char *some_ld_name;
 };
+
+/* Few accessor macros for struct cfun->machine->s390_frame_layout.  */
+
+#define cfun_frame_layout (cfun->machine->frame_layout)
+#define cfun_save_high_fprs_p (!!cfun_frame_layout.high_fprs)
+#define cfun_gprs_save_area_size ((cfun_frame_layout.last_save_gpr -           \
+  cfun_frame_layout.first_save_gpr + 1) * UNITS_PER_WORD)
+#define cfun_set_fpr_bit(BITNUM) (cfun->machine->frame_layout.fpr_bitmap |=    \
+  (1 << (BITNUM)))
+#define cfun_fpr_bit_p(BITNUM) (!!(cfun->machine->frame_layout.fpr_bitmap &    \
+  (1 << (BITNUM))))
 
 static int s390_match_ccmode_set (rtx, enum machine_mode);
 static int s390_branch_condition_mask (rtx);
@@ -246,8 +287,10 @@ static void find_constant_pool_ref (rtx, rtx *);
 static void replace_constant_pool_ref (rtx *, rtx, rtx);
 static rtx find_ltrel_base (rtx);
 static void replace_ltrel_base (rtx *);
-static void s390_optimize_prolog (bool);
+static void s390_optimize_prologue (bool);
 static int find_unused_clobbered_reg (void);
+static void s390_frame_area (int *, int *);
+static void s390_register_info (int, int);
 static void s390_frame_info (int, int);
 static rtx save_fpr (rtx, int, int);
 static rtx restore_fpr (rtx, int, int);
@@ -4168,7 +4211,7 @@ s390_split_branches (void)
 
       /* We are going to use the return register as scratch register,
 	 make sure it will be saved/restored by the prologue/epilogue.  */
-      cfun->machine->save_return_addr_p = 1;
+      cfun_frame_layout.save_return_addr_p = 1;
 
       if (!flag_pic)
 	{
@@ -5333,33 +5376,33 @@ s390_output_pool_entry (rtx exp, enum machine_mode mode, unsigned int align)
 }
 
 
-/* Rework the prolog/epilog to avoid saving/restoring
+/* Rework the prologue/epilogue to avoid saving/restoring
    registers unnecessarily.  BASE_USED specifies whether
    the literal pool base register needs to be saved.  */
 
 static void
-s390_optimize_prolog (bool base_used)
+s390_optimize_prologue (bool base_used)
 {
   rtx insn, new_insn, next_insn;
 
   /* Do a final recompute of the frame-related data.  */
 
-  s390_frame_info (base_used, cfun->machine->save_return_addr_p);
+  s390_register_info (base_used, cfun_frame_layout.save_return_addr_p);
   regs_ever_live[BASE_REGNUM] = base_used;
-  regs_ever_live[RETURN_REGNUM] = cfun->machine->save_return_addr_p;
-  regs_ever_live[STACK_POINTER_REGNUM] = cfun->machine->frame_size > 0;
+  regs_ever_live[RETURN_REGNUM] = cfun_frame_layout.save_return_addr_p;
+  regs_ever_live[STACK_POINTER_REGNUM] = cfun_frame_layout.frame_size > 0;
 
   /* If all special registers are in fact used, there's nothing we
      can do, so no point in walking the insn list.  */
 
-  if (cfun->machine->first_save_gpr <= BASE_REGNUM 
-      && cfun->machine->last_save_gpr >= BASE_REGNUM
+  if (cfun_frame_layout.first_save_gpr <= BASE_REGNUM 
+      && cfun_frame_layout.last_save_gpr >= BASE_REGNUM
       && (TARGET_CPU_ZARCH 
-          || (cfun->machine->first_save_gpr <= RETURN_REGNUM 
-              && cfun->machine->last_save_gpr >= RETURN_REGNUM)))
+          || (cfun_frame_layout.first_save_gpr <= RETURN_REGNUM 
+              && cfun_frame_layout.last_save_gpr >= RETURN_REGNUM)))
     return;
 
-  /* Search for prolog/epilog insns and replace them.  */
+  /* Search for prologue/epilogue insns and replace them.  */
 
   for (insn = get_insns (); insn; insn = next_insn)
     {
@@ -5379,17 +5422,23 @@ s390_optimize_prolog (bool base_used)
 	  last = first + XVECLEN (PATTERN (insn), 0) - 1;
 	  offset = const0_rtx;
 	  base = eliminate_constant_term (XEXP (SET_DEST (set), 0), &offset);
-	  off = INTVAL (offset) - first * UNITS_PER_WORD;
+	  off = INTVAL (offset);
 
 	  if (GET_CODE (base) != REG || off < 0)
+	    continue;
+	  if (REGNO (base) != STACK_POINTER_REGNUM
+	      && REGNO (base) != HARD_FRAME_POINTER_REGNUM)
 	    continue;
 	  if (first > BASE_REGNUM || last < BASE_REGNUM)
 	    continue;
 
-	  if (cfun->machine->first_save_gpr != -1)
+	  if (cfun_frame_layout.first_save_gpr != -1)
 	    {
-	      new_insn = save_gprs (base, off, cfun->machine->first_save_gpr,
-				    cfun->machine->last_save_gpr);
+	      new_insn 	= save_gprs (base, 
+				     off + (cfun_frame_layout.first_save_gpr
+					    - first) * UNITS_PER_WORD, 
+				     cfun_frame_layout.first_save_gpr,
+				     cfun_frame_layout.last_save_gpr);
 	      new_insn = emit_insn_before (new_insn, insn);
 	      INSN_ADDRESSES_NEW (new_insn, -1);
 	    }
@@ -5406,15 +5455,20 @@ s390_optimize_prolog (bool base_used)
 	  set = PATTERN (insn);
 	  offset = const0_rtx;
 	  base = eliminate_constant_term (XEXP (SET_DEST (set), 0), &offset);
-	  off = INTVAL (offset) - BASE_REGNUM * UNITS_PER_WORD;
+	  off = INTVAL (offset);
 
 	  if (GET_CODE (base) != REG || off < 0)
 	    continue;
-
-	  if (cfun->machine->first_save_gpr != -1)
+	  if (REGNO (base) != STACK_POINTER_REGNUM
+	      && REGNO (base) != HARD_FRAME_POINTER_REGNUM)
+	    continue;
+	  if (cfun_frame_layout.first_save_gpr != -1)
 	    {
-	      new_insn = save_gprs (base, off, cfun->machine->first_save_gpr,
-				    cfun->machine->last_save_gpr);
+	      new_insn = save_gprs (base, 
+				    off + (cfun_frame_layout.first_save_gpr 
+					   - BASE_REGNUM) * UNITS_PER_WORD, 
+				    cfun_frame_layout.first_save_gpr,
+				    cfun_frame_layout.last_save_gpr);
 	      new_insn = emit_insn_before (new_insn, insn);
 	      INSN_ADDRESSES_NEW (new_insn, -1);
 	    }
@@ -5431,17 +5485,23 @@ s390_optimize_prolog (bool base_used)
 	  last = first + XVECLEN (PATTERN (insn), 0) - 1;
 	  offset = const0_rtx;
 	  base = eliminate_constant_term (XEXP (SET_SRC (set), 0), &offset);
-	  off = INTVAL (offset) - first * UNITS_PER_WORD;
+	  off = INTVAL (offset);
 
 	  if (GET_CODE (base) != REG || off < 0)
+	    continue;
+	  if (REGNO (base) != STACK_POINTER_REGNUM
+	      && REGNO (base) != HARD_FRAME_POINTER_REGNUM)
 	    continue;
 	  if (first > BASE_REGNUM || last < BASE_REGNUM)
 	    continue;
 
-	  if (cfun->machine->first_restore_gpr != -1)
+	  if (cfun_frame_layout.first_restore_gpr != -1)
 	    {
-	      new_insn = restore_gprs (base, off, cfun->machine->first_restore_gpr,
-				       cfun->machine->last_restore_gpr);
+	      new_insn = restore_gprs (base, 
+				       off + (cfun_frame_layout.first_restore_gpr
+					      - first) * UNITS_PER_WORD, 
+				       cfun_frame_layout.first_restore_gpr,
+				       cfun_frame_layout.last_restore_gpr);
 	      new_insn = emit_insn_before (new_insn, insn);
 	      INSN_ADDRESSES_NEW (new_insn, -1);
 	    }
@@ -5458,15 +5518,20 @@ s390_optimize_prolog (bool base_used)
 	  set = PATTERN (insn);
 	  offset = const0_rtx;
 	  base = eliminate_constant_term (XEXP (SET_SRC (set), 0), &offset);
-	  off = INTVAL (offset) - BASE_REGNUM * UNITS_PER_WORD;
+	  off = INTVAL (offset);
 
 	  if (GET_CODE (base) != REG || off < 0)
 	    continue;
-
-	  if (cfun->machine->first_restore_gpr != -1)
+	  if (REGNO (base) != STACK_POINTER_REGNUM
+	      && REGNO (base) != HARD_FRAME_POINTER_REGNUM)
+	    continue;
+	  if (cfun_frame_layout.first_restore_gpr != -1)
 	    {
-	      new_insn = restore_gprs (base, off, cfun->machine->first_restore_gpr,
-				       cfun->machine->last_restore_gpr);
+	      new_insn = restore_gprs (base, 
+				       off + (cfun_frame_layout.first_restore_gpr 
+					      - BASE_REGNUM) * UNITS_PER_WORD,
+				       cfun_frame_layout.first_restore_gpr,
+				       cfun_frame_layout.last_restore_gpr);
 	      new_insn = emit_insn_before (new_insn, insn);
 	      INSN_ADDRESSES_NEW (new_insn, -1);
 	    }
@@ -5567,7 +5632,7 @@ s390_reorg (void)
       break;
     }
 
-  s390_optimize_prolog (base_used);
+  s390_optimize_prologue (base_used);
 }
 
 
@@ -5578,11 +5643,12 @@ s390_reorg (void)
 rtx
 s390_return_addr_rtx (int count, rtx frame ATTRIBUTE_UNUSED)
 {
+  int offset;
   rtx addr;
 
   /* Without backchain, we fail for all but the current frame.  */
 
-  if (!TARGET_BACKCHAIN && count > 0)
+  if (!TARGET_BACKCHAIN && !TARGET_KERNEL_BACKCHAIN && count > 0)
     return NULL_RTX;
 
   /* For the current frame, we need to make sure the initial
@@ -5590,11 +5656,16 @@ s390_return_addr_rtx (int count, rtx frame ATTRIBUTE_UNUSED)
 
   if (count == 0)
     {
-      cfun->machine->save_return_addr_p = true;
+      cfun_frame_layout.save_return_addr_p = true;
       return gen_rtx_MEM (Pmode, return_address_pointer_rtx);
     }
 
-  addr = plus_constant (frame, RETURN_REGNUM * UNITS_PER_WORD);
+  if (TARGET_BACKCHAIN)
+    offset = RETURN_REGNUM * UNITS_PER_WORD;
+  else
+    offset = -2 * UNITS_PER_WORD;
+
+  addr = plus_constant (frame, offset);
   addr = memory_address (Pmode, addr);
   return gen_rtx_MEM (Pmode, addr);
 }
@@ -5613,40 +5684,68 @@ find_unused_clobbered_reg (void)
   return 0;
 }
 
-/* Fill cfun->machine with info about frame of current function.  
-   BASE_USED and RETURN_ADDR_USED specify whether we assume the
+/* Determine the frame area which actually has to be accessed 
+   in the function epilogue. The values are stored at the 
+   given pointers AREA_BOTTOM (address of the lowest used stack
+   address) and AREA_TOP (address of the first item which does 
+   not belong to the stack frame).  */
+
+static void
+s390_frame_area (int *area_bottom, int *area_top)
+{
+  int b, t;
+  int i;
+
+  b = INT_MAX;
+  t = INT_MIN;
+
+  if (cfun_frame_layout.first_restore_gpr != -1)
+    {
+      b = (cfun_frame_layout.gprs_offset
+	   + cfun_frame_layout.first_restore_gpr * UNITS_PER_WORD);
+      t = b + (cfun_frame_layout.last_restore_gpr
+	       - cfun_frame_layout.first_restore_gpr + 1) * UNITS_PER_WORD;
+    }
+
+  if (TARGET_64BIT && cfun_save_high_fprs_p)
+    {
+      b = MIN (b, cfun_frame_layout.f8_offset);
+      t = MAX (t, (cfun_frame_layout.f8_offset
+		   + cfun_frame_layout.high_fprs * 8));
+    }
+
+  if (!TARGET_64BIT)
+    for (i = 2; i < 4; i++)
+      if (cfun_fpr_bit_p (i))
+	{
+	  b = MIN (b, cfun_frame_layout.f4_offset + (i - 2) * 8);
+	  t = MAX (t, cfun_frame_layout.f4_offset + (i - 1) * 8);
+	}
+  
+  *area_bottom = b;
+  *area_top = t;
+}
+
+/* Fill cfun->machine with info about register usage of current 
+   function. BASE_USED and RETURN_ADDR_USED specify whether we assume the
    base and return address register will need to be saved.  */
 
 static void
-s390_frame_info (int base_used, int return_addr_used)
+s390_register_info (int base_used, int return_addr_used)
 {
   int live_regs[16];
   int i, j;
-  HOST_WIDE_INT fsize = get_frame_size ();
 
-  if (!TARGET_64BIT && fsize > 0x7fff0000)
-    fatal_error ("Total size of local variables exceeds architecture limit.");
-
-  /* fprs 8 - 15 are caller saved for 64 Bit ABI.  */
-  cfun->machine->save_fprs_p = 0;
+  /* fprs 8 - 15 are call saved for 64 Bit ABI.  */
+  cfun_frame_layout.fpr_bitmap = 0;
+  cfun_frame_layout.high_fprs = 0;
   if (TARGET_64BIT)
     for (i = 24; i < 32; i++)
       if (regs_ever_live[i] && !global_regs[i])
 	{
-          cfun->machine->save_fprs_p = 1;
-	  break;
+	  cfun_set_fpr_bit (i - 16);
+	  cfun_frame_layout.high_fprs++;
 	}
-
-  cfun->machine->frame_size = fsize + cfun->machine->save_fprs_p * 64;
-
-  /* Does function need to setup frame and save area.  */
-
-  if (!current_function_is_leaf
-      || TARGET_TPF_PROFILING
-      || cfun->machine->frame_size > 0
-      || current_function_calls_alloca
-      || current_function_stdarg)
-    cfun->machine->frame_size += STARTING_FRAME_OFFSET;
 
   /* Find first and last gpr to be saved.  We trust regs_ever_live
      data, except that we don't save and restore global registers.
@@ -5663,8 +5762,13 @@ s390_frame_info (int base_used, int return_addr_used)
 
   live_regs[BASE_REGNUM] = base_used;
   live_regs[RETURN_REGNUM] = return_addr_used;
-  live_regs[STACK_POINTER_REGNUM] = cfun->machine->frame_size > 0;
-
+  live_regs[STACK_POINTER_REGNUM] = (!current_function_is_leaf
+				     || TARGET_TPF_PROFILING
+				     || cfun_save_high_fprs_p
+				     || get_frame_size () > 0
+				     || current_function_calls_alloca
+				     || current_function_stdarg);
+  
   for (i = 6; i < 16; i++)
     if (live_regs[i])
       break;
@@ -5675,30 +5779,147 @@ s390_frame_info (int base_used, int return_addr_used)
   if (i == 16)
     {
       /* Nothing to save/restore.  */
-      cfun->machine->first_save_gpr = -1;
-      cfun->machine->first_restore_gpr = -1;
-      cfun->machine->last_save_gpr = -1;
-      cfun->machine->last_restore_gpr = -1;
+      cfun_frame_layout.first_save_gpr = -1;
+      cfun_frame_layout.first_restore_gpr = -1;
+      cfun_frame_layout.last_save_gpr = -1;
+      cfun_frame_layout.last_restore_gpr = -1;
     }
   else
     {
       /* Save / Restore from gpr i to j.  */
-      cfun->machine->first_save_gpr = i;
-      cfun->machine->first_restore_gpr = i;
-      cfun->machine->last_save_gpr = j;
-      cfun->machine->last_restore_gpr = j;
+      cfun_frame_layout.first_save_gpr = i;
+      cfun_frame_layout.first_restore_gpr = i;
+      cfun_frame_layout.last_save_gpr = j;
+      cfun_frame_layout.last_restore_gpr = j;
     }
 
-  /* Varargs functions need to save gprs 2 to 6.  */
   if (current_function_stdarg)
     {
-      if (cfun->machine->first_save_gpr == -1
-          || cfun->machine->first_save_gpr > 2)
-        cfun->machine->first_save_gpr = 2;
+      /* Varargs functions need to save gprs 2 to 6.  */
+      if (cfun_frame_layout.first_save_gpr == -1
+          || cfun_frame_layout.first_save_gpr > 2)
+        cfun_frame_layout.first_save_gpr = 2;
 
-      if (cfun->machine->last_save_gpr == -1
-          || cfun->machine->last_save_gpr < 6)
-        cfun->machine->last_save_gpr = 6;
+      if (cfun_frame_layout.last_save_gpr == -1
+          || cfun_frame_layout.last_save_gpr < 6)
+        cfun_frame_layout.last_save_gpr = 6;
+
+      /* Mark f0, f2 for 31 bit and f0-f4 for 64 bit to be saved.  */
+      for (i = 0; i < (TARGET_64BIT ? 4 : 2); i++)
+	cfun_set_fpr_bit (i);
+    }
+
+  if (!TARGET_64BIT)
+    for (i = 2; i < 4; i++)
+      if (regs_ever_live[i + 16] && !global_regs[i + 16])
+	cfun_set_fpr_bit (i);
+}
+
+/* Fill cfun->machine with info about frame of current 
+   function. BASE_USED and RETURN_ADDR_USED specify whether we assume the
+   base and return address register will need to be saved.  */
+
+static void
+s390_frame_info (int base_used, int return_addr_used)
+{
+  int i;
+
+  cfun_frame_layout.frame_size = get_frame_size ();
+
+  s390_register_info (base_used, return_addr_used);
+
+  if (!TARGET_64BIT && cfun_frame_layout.frame_size > 0x7fff0000)
+    fatal_error ("Total size of local variables exceeds architecture limit.");
+  
+  cfun_frame_layout.save_backchain_p = (TARGET_BACKCHAIN 
+					|| TARGET_KERNEL_BACKCHAIN);
+
+  if (TARGET_BACKCHAIN)
+    {
+      cfun_frame_layout.backchain_offset = 0;
+      cfun_frame_layout.f0_offset = 16 * UNITS_PER_WORD;
+      cfun_frame_layout.f4_offset = cfun_frame_layout.f0_offset + 2 * 8;
+      cfun_frame_layout.f8_offset = -cfun_frame_layout.high_fprs * 8;
+      cfun_frame_layout.gprs_offset = (cfun_frame_layout.first_save_gpr
+				       * UNITS_PER_WORD);
+    }
+  else if (TARGET_KERNEL_BACKCHAIN)
+    {
+      cfun_frame_layout.backchain_offset = (STACK_POINTER_OFFSET
+					    - UNITS_PER_WORD);
+      cfun_frame_layout.gprs_offset 
+	= (cfun_frame_layout.backchain_offset 
+	   - (STACK_POINTER_REGNUM - cfun_frame_layout.first_save_gpr + 1)
+	   * UNITS_PER_WORD);
+	  
+      if (TARGET_64BIT)
+	{
+	  cfun_frame_layout.f4_offset 
+	    = (cfun_frame_layout.gprs_offset
+	       - 8 * (cfun_fpr_bit_p (2) + cfun_fpr_bit_p (3)));
+	  
+	  cfun_frame_layout.f0_offset 
+	    = (cfun_frame_layout.f4_offset 
+	       - 8 * (cfun_fpr_bit_p (0) + cfun_fpr_bit_p (1)));
+	}
+      else
+	{
+	  cfun_frame_layout.f0_offset 
+	    = (cfun_frame_layout.gprs_offset
+	       - 8 * (cfun_fpr_bit_p (0) + cfun_fpr_bit_p (1)));
+	  
+	  cfun_frame_layout.f4_offset 
+	    = (cfun_frame_layout.f0_offset
+	       - 8 * (cfun_fpr_bit_p (2) + cfun_fpr_bit_p (3)));
+	}
+    }
+  else /* no backchain */
+    {
+      cfun_frame_layout.f4_offset 
+	= (STACK_POINTER_OFFSET
+	   - 8 * (cfun_fpr_bit_p (2) + cfun_fpr_bit_p (3)));
+      
+      cfun_frame_layout.f0_offset 
+	= (cfun_frame_layout.f4_offset
+	   - 8 * (cfun_fpr_bit_p (0) + cfun_fpr_bit_p (1)));
+      
+      cfun_frame_layout.gprs_offset 
+	= cfun_frame_layout.f0_offset - cfun_gprs_save_area_size;
+    }
+
+  if (current_function_is_leaf
+      && !TARGET_TPF_PROFILING
+      && cfun_frame_layout.frame_size == 0
+      && !cfun_save_high_fprs_p
+      && !current_function_calls_alloca
+      && !current_function_stdarg)
+    return;
+
+  if (TARGET_BACKCHAIN)
+    cfun_frame_layout.frame_size += (STARTING_FRAME_OFFSET
+				     + cfun_frame_layout.high_fprs * 8);
+  else
+    {
+      cfun_frame_layout.frame_size += (cfun_frame_layout.save_backchain_p
+				       * UNITS_PER_WORD);
+      
+      cfun_frame_layout.f8_offset = (MIN (MIN (cfun_frame_layout.f0_offset,
+					       cfun_frame_layout.f4_offset),
+					  cfun_frame_layout.gprs_offset)
+				     - cfun_frame_layout.high_fprs * 8);
+
+      cfun_frame_layout.frame_size += cfun_frame_layout.high_fprs * 8;
+
+      for (i = 0; i < 8; i++)
+	if (cfun_fpr_bit_p (i))
+	  cfun_frame_layout.frame_size += 8;
+      
+      cfun_frame_layout.frame_size += cfun_gprs_save_area_size;
+      cfun_frame_layout.frame_size = ((cfun_frame_layout.frame_size +
+				       STACK_BOUNDARY / BITS_PER_UNIT - 1)
+				      & ~(STACK_BOUNDARY / BITS_PER_UNIT - 1));
+
+      cfun_frame_layout.frame_size += current_function_outgoing_args_size;
     }
 }
 
@@ -5713,10 +5934,11 @@ s390_arg_frame_offset (void)
   int return_addr_used = !current_function_is_leaf
 			 || TARGET_TPF_PROFILING
 			 || regs_ever_live[RETURN_REGNUM]
-			 || cfun->machine->save_return_addr_p;
+			 || cfun_frame_layout.save_return_addr_p;
 
   s390_frame_info (1, !TARGET_CPU_ZARCH || return_addr_used);
-  return cfun->machine->frame_size + STACK_POINTER_OFFSET;
+
+  return cfun_frame_layout.frame_size + STACK_POINTER_OFFSET;
 }
 
 /* Return offset between return address pointer (location of r14
@@ -5727,7 +5949,11 @@ s390_return_address_offset (void)
 {
   s390_frame_info (1, 1);
 
-  return cfun->machine->frame_size + RETURN_REGNUM * UNITS_PER_WORD;
+  if (cfun_frame_layout.last_save_gpr < RETURN_REGNUM)
+    abort ();
+
+  return (cfun_frame_layout.frame_size + cfun_frame_layout.gprs_offset
+	  + (RETURN_REGNUM - cfun_frame_layout.first_save_gpr) * UNITS_PER_WORD);
 }
 
 /* Emit insn to save fpr REGNUM at offset OFFSET relative
@@ -5766,7 +5992,7 @@ save_gprs (rtx base, int offset, int first, int last)
   rtx addr, insn, note;
   int i;
 
-  addr = plus_constant (base, offset + first * UNITS_PER_WORD);
+  addr = plus_constant (base, offset);
   addr = gen_rtx_MEM (Pmode, addr);
   set_mem_alias_set (addr, s390_sr_alias_set);
 
@@ -5812,7 +6038,7 @@ save_gprs (rtx base, int offset, int first, int last)
     }
   else if (last >= 6)
     {
-      addr = plus_constant (base, offset + 6 * UNITS_PER_WORD);
+      addr = plus_constant (base, offset + (6 - first) * UNITS_PER_WORD);
       note = gen_store_multiple (gen_rtx_MEM (Pmode, addr),
 				 gen_rtx_REG (Pmode, 6),
 				 GEN_INT (last - 6 + 1));
@@ -5841,7 +6067,7 @@ restore_gprs (rtx base, int offset, int first, int last)
 {
   rtx addr, insn;
 
-  addr = plus_constant (base, offset + first * UNITS_PER_WORD);
+  addr = plus_constant (base, offset);
   addr = gen_rtx_MEM (Pmode, addr);
   set_mem_alias_set (addr, s390_sr_alias_set);
 
@@ -5913,6 +6139,8 @@ s390_emit_prologue (void)
   rtx insn, addr;
   rtx temp_reg;
   int i;
+  int offset;
+  int next_fpr = 0;
 
   /* At this point, we decide whether we'll need to save/restore the
      return address register.  This decision is final on zSeries machines;
@@ -5921,7 +6149,7 @@ s390_emit_prologue (void)
   if (!current_function_is_leaf
       || TARGET_TPF_PROFILING
       || regs_ever_live[RETURN_REGNUM])
-    cfun->machine->save_return_addr_p = 1;
+    cfun_frame_layout.save_return_addr_p = 1;
 
   /* Decide which register to use as literal pool base.  In small leaf 
      functions, try to use an unused call-clobbered register as base 
@@ -5937,17 +6165,18 @@ s390_emit_prologue (void)
   /* Compute frame info.  Note that at this point, we assume the base 
      register and -on S/390- the return register always need to be saved.
      This is done because the usage of these registers might change even 
-     after the prolog was emitted.  If it turns out later that we really 
-     don't need them, the prolog/epilog code is modified again.  */
+     after the prologue was emitted.  If it turns out later that we really 
+     don't need them, the prologue/epilogue code is modified again.  */
 
-  s390_frame_info (1, !TARGET_CPU_ZARCH || cfun->machine->save_return_addr_p);
+  s390_frame_info (1, !TARGET_CPU_ZARCH
+		   || cfun_frame_layout.save_return_addr_p);
 
   /* We need to update regs_ever_live to avoid data-flow problems.  */
 
   regs_ever_live[BASE_REGNUM] = 1;
-  regs_ever_live[RETURN_REGNUM] = !TARGET_CPU_ZARCH 
-				  || cfun->machine->save_return_addr_p;
-  regs_ever_live[STACK_POINTER_REGNUM] = cfun->machine->frame_size > 0;
+  regs_ever_live[RETURN_REGNUM] = (!TARGET_CPU_ZARCH 
+				   || cfun_frame_layout.save_return_addr_p);
+  regs_ever_live[STACK_POINTER_REGNUM] = cfun_frame_layout.frame_size > 0;
 
   /* Annotate all constant pool references to let the scheduler know
      they implicitly use the base register.  */
@@ -5963,57 +6192,93 @@ s390_emit_prologue (void)
   /* Choose best register to use for temp use within prologue.
      See below for why TPF must use the register 1.  */
 
-  if (!current_function_is_leaf
-      && !TARGET_TPF_PROFILING)
+  if (!current_function_is_leaf && !TARGET_TPF_PROFILING)
     temp_reg = gen_rtx_REG (Pmode, RETURN_REGNUM);
   else
     temp_reg = gen_rtx_REG (Pmode, 1);
 
   /* Save call saved gprs.  */
-
-  insn = save_gprs (stack_pointer_rtx, 0,
-		    cfun->machine->first_save_gpr, cfun->machine->last_save_gpr);
+  if (cfun_frame_layout.first_save_gpr != -1)
+    insn = save_gprs (stack_pointer_rtx, 
+		      cfun_frame_layout.gprs_offset,
+		      cfun_frame_layout.first_save_gpr, 
+		      cfun_frame_layout.last_save_gpr);
   emit_insn (insn);
 
   /* Dummy insn to mark literal pool slot.  */
 
   emit_insn (gen_main_pool (cfun->machine->base_reg));
 
-  /* Save fprs for variable args.  */
+  offset = cfun_frame_layout.f0_offset;
 
-  if (current_function_stdarg)
-    for (i = 16; i < (TARGET_64BIT ? 20 : 18); i++)
-      save_fpr (stack_pointer_rtx, 16*UNITS_PER_WORD + 8*(i-16), i);
-
-  /* Save fprs 4 and 6 if used (31 bit ABI).  */
-
-  if (!TARGET_64BIT)
-    for (i = 18; i < 20; i++)
-      if (regs_ever_live[i] && !global_regs[i])
+  /* Save f0 and f2.  */
+  for (i = 0; i < 2; i++)
+    {
+      if (cfun_fpr_bit_p (i))
 	{
-	  insn = save_fpr (stack_pointer_rtx, 16*UNITS_PER_WORD + 8*(i-16), i);
-	  RTX_FRAME_RELATED_P (insn) = 1;
+	  save_fpr (stack_pointer_rtx, offset, i + 16);
+	  offset += 8;
 	}
+      else if (TARGET_BACKCHAIN)
+	  offset += 8;
+    }
+
+  /* Save f4 and f6.  */
+  offset = cfun_frame_layout.f4_offset;
+  for (i = 2; i < 4; i++)
+    {
+      if (cfun_fpr_bit_p (i))
+	{
+	  insn = save_fpr (stack_pointer_rtx, offset, i + 16);
+	  offset += 8;
+
+	  /* If f4 and f6 are call clobbered they are saved due to stdargs and
+	     therefore are not frame related.  */
+	  if (!call_really_used_regs[i + 16])
+	    RTX_FRAME_RELATED_P (insn) = 1;
+	}
+      else if (TARGET_BACKCHAIN)
+	offset += 8;
+    }
+
+  if (!TARGET_BACKCHAIN 
+      && cfun_save_high_fprs_p
+      && cfun_frame_layout.f8_offset + cfun_frame_layout.high_fprs * 8 > 0)
+    {
+      offset = (cfun_frame_layout.f8_offset
+		+ (cfun_frame_layout.high_fprs - 1) * 8);
+
+      for (i = 15; i > 7 && offset >= 0; i--)
+	if (cfun_fpr_bit_p (i))
+	  {
+	    insn = save_fpr (stack_pointer_rtx, offset, i + 16);
+	    	       
+	    RTX_FRAME_RELATED_P (insn) = 1;
+	    offset -= 8;
+	  }
+      if (offset >= cfun_frame_layout.f8_offset)
+	next_fpr = i + 16;
+    }
+  
+  if (TARGET_BACKCHAIN)
+    next_fpr = cfun_save_high_fprs_p ? 31 : 0;
 
   /* Decrement stack pointer.  */
 
-  if (cfun->machine->frame_size > 0)
+  if (cfun_frame_layout.frame_size > 0)
     {
-      rtx frame_off = GEN_INT (-cfun->machine->frame_size);
+      rtx frame_off = GEN_INT (-cfun_frame_layout.frame_size);
 
       /* Save incoming stack pointer into temp reg.  */
-
-      if (TARGET_BACKCHAIN || cfun->machine->save_fprs_p)
-	{
-	  insn = emit_insn (gen_move_insn (temp_reg, stack_pointer_rtx));
-	}
+      if (cfun_frame_layout.save_backchain_p || next_fpr)
+	insn = emit_insn (gen_move_insn (temp_reg, stack_pointer_rtx));
 
       /* Subtract frame size from stack pointer.  */
 
       if (DISP_IN_RANGE (INTVAL (frame_off)))
 	{
 	  insn = gen_rtx_SET (VOIDmode, stack_pointer_rtx,
-			      gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+			      gen_rtx_PLUS (Pmode, stack_pointer_rtx, 
 					    frame_off));
 	  insn = emit_insn (insn);
 	}
@@ -6030,15 +6295,20 @@ s390_emit_prologue (void)
       REG_NOTES (insn) =
 	gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
 			   gen_rtx_SET (VOIDmode, stack_pointer_rtx,
-				   gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-			           GEN_INT (-cfun->machine->frame_size))),
+			     gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+			       GEN_INT (-cfun_frame_layout.frame_size))),
 			   REG_NOTES (insn));
 
       /* Set backchain.  */
 
-      if (TARGET_BACKCHAIN)
+      if (cfun_frame_layout.save_backchain_p)
 	{
-	  addr = gen_rtx_MEM (Pmode, stack_pointer_rtx);
+	  if (cfun_frame_layout.backchain_offset)
+	    addr = gen_rtx_MEM (Pmode, 
+				plus_constant (stack_pointer_rtx, 
+				  cfun_frame_layout.backchain_offset));
+	  else
+	    addr = gen_rtx_MEM (Pmode, stack_pointer_rtx);  
 	  set_mem_alias_set (addr, s390_sr_alias_set);
 	  insn = emit_insn (gen_move_insn (addr, temp_reg));
 	}
@@ -6047,7 +6317,7 @@ s390_emit_prologue (void)
 	 we need to make sure the backchain pointer is set up
 	 before any possibly trapping memory access.  */
 
-      if (TARGET_BACKCHAIN && flag_non_call_exceptions)
+      if (cfun_frame_layout.save_backchain_p && flag_non_call_exceptions)
 	{
 	  addr = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode));
 	  emit_insn (gen_rtx_CLOBBER (VOIDmode, addr));
@@ -6056,24 +6326,30 @@ s390_emit_prologue (void)
 
   /* Save fprs 8 - 15 (64 bit ABI).  */
 
-  if (cfun->machine->save_fprs_p)
+  if (cfun_save_high_fprs_p && next_fpr)
     {
-      insn = emit_insn (gen_add2_insn (temp_reg, GEN_INT(-64)));
+      insn = emit_insn (gen_add2_insn (temp_reg, 
+				       GEN_INT (cfun_frame_layout.f8_offset)));
 
-      for (i = 24; i < 32; i++)
-	if (regs_ever_live[i] && !global_regs[i])
+      offset = 0;
+
+      for (i = 24; i <= next_fpr; i++)
+	if (cfun_fpr_bit_p (i - 16))
 	  {
 	    rtx addr = plus_constant (stack_pointer_rtx,
-				      cfun->machine->frame_size - 64 + (i-24)*8);
-
-	    insn = save_fpr (temp_reg, (i-24)*8, i);
+				      cfun_frame_layout.frame_size
+				      + cfun_frame_layout.f8_offset
+				      + offset);
+	    
+	    insn = save_fpr (temp_reg, offset, i);
+	    offset += 8;
 	    RTX_FRAME_RELATED_P (insn) = 1;
 	    REG_NOTES (insn) =
 	      gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-		gen_rtx_SET (VOIDmode,
-			     gen_rtx_MEM (DFmode, addr),
-			     gen_rtx_REG (DFmode, i)),
-		REG_NOTES (insn));
+				 gen_rtx_SET (VOIDmode,
+					      gen_rtx_MEM (DFmode, addr),
+					      gen_rtx_REG (DFmode, i)),
+				 REG_NOTES (insn));
 	  }
     }
 
@@ -6122,6 +6398,7 @@ s390_emit_epilogue (bool sibcall)
 {
   rtx frame_pointer, return_reg;
   int area_bottom, area_top, offset = 0;
+  int next_offset;
   rtvec p;
   int i;
 
@@ -6141,43 +6418,10 @@ s390_emit_epilogue (bool sibcall)
 
   /* Check whether to use frame or stack pointer for restore.  */
 
-  frame_pointer = frame_pointer_needed ?
-    hard_frame_pointer_rtx : stack_pointer_rtx;
+  frame_pointer = (frame_pointer_needed 
+		   ? hard_frame_pointer_rtx : stack_pointer_rtx);
 
-  /* Compute which parts of the save area we need to access.  */
-
-  if (cfun->machine->first_restore_gpr != -1)
-    {
-      area_bottom = cfun->machine->first_restore_gpr * UNITS_PER_WORD;
-      area_top = (cfun->machine->last_restore_gpr + 1) * UNITS_PER_WORD;
-    }
-  else
-    {
-      area_bottom = INT_MAX;
-      area_top = INT_MIN;
-    }
-
-  if (TARGET_64BIT)
-    {
-      if (cfun->machine->save_fprs_p)
-	{
-	  if (area_bottom > -64)
-	    area_bottom = -64;
-	  if (area_top < 0)
-	    area_top = 0;
-	}
-    }
-  else
-    {
-      for (i = 18; i < 20; i++)
-	if (regs_ever_live[i] && !global_regs[i])
-	  {
-	    if (area_bottom > 16*UNITS_PER_WORD + 8*(i-16))
-	      area_bottom = 16*UNITS_PER_WORD + 8*(i-16);
-	    if (area_top < 16*UNITS_PER_WORD + 8*(i-16) + 8)
-	      area_top = 16*UNITS_PER_WORD + 8*(i-16) + 8;
-	  }
-    }
+  s390_frame_area (&area_bottom, &area_top);
 
   /* Check whether we can access the register save area.
      If not, increment the frame pointer as required.  */
@@ -6186,18 +6430,18 @@ s390_emit_epilogue (bool sibcall)
     {
       /* Nothing to restore.  */
     }
-  else if (DISP_IN_RANGE (cfun->machine->frame_size + area_bottom)
-           && DISP_IN_RANGE (cfun->machine->frame_size + area_top-1))
+  else if (DISP_IN_RANGE (cfun_frame_layout.frame_size + area_bottom)
+           && DISP_IN_RANGE (cfun_frame_layout.frame_size + area_top - 1))
     {
       /* Area is in range.  */
-      offset = cfun->machine->frame_size;
+      offset = cfun_frame_layout.frame_size;
     }
   else
     {
       rtx insn, frame_off;
 
       offset = area_bottom < 0 ? -area_bottom : 0;
-      frame_off = GEN_INT (cfun->machine->frame_size - offset);
+      frame_off = GEN_INT (cfun_frame_layout.frame_size - offset);
 
       if (DISP_IN_RANGE (INTVAL (frame_off)))
 	{
@@ -6219,18 +6463,36 @@ s390_emit_epilogue (bool sibcall)
 
   if (TARGET_64BIT)
     {
-      if (cfun->machine->save_fprs_p)
-	for (i = 24; i < 32; i++)
-	  if (regs_ever_live[i] && !global_regs[i])
-	    restore_fpr (frame_pointer,
-			 offset - 64 + (i-24) * 8, i);
+      if (cfun_save_high_fprs_p)
+	{
+	  next_offset = cfun_frame_layout.f8_offset;
+	  for (i = 24; i < 32; i++)
+	    {
+	      if (cfun_fpr_bit_p (i - 16))
+		{
+		  restore_fpr (frame_pointer,
+			       offset + next_offset, i);
+		  next_offset += 8;
+		}
+	    }
+	}
+	      
     }
   else
     {
+      next_offset = cfun_frame_layout.f4_offset;
       for (i = 18; i < 20; i++)
-	if (regs_ever_live[i] && !global_regs[i])
-	  restore_fpr (frame_pointer,
-		       offset + 16*UNITS_PER_WORD + 8*(i-16), i);
+	{
+	  if (cfun_fpr_bit_p (i - 16))
+	    {
+	      restore_fpr (frame_pointer,
+			   offset + next_offset, i);
+	      next_offset += 8;
+	    }
+	  else if (TARGET_BACKCHAIN)
+	    next_offset += 8;
+	}
+      
     }
 
   /* Return register.  */
@@ -6239,7 +6501,7 @@ s390_emit_epilogue (bool sibcall)
 
   /* Restore call saved gprs.  */
 
-  if (cfun->machine->first_restore_gpr != -1)
+  if (cfun_frame_layout.first_restore_gpr != -1)
     {
       rtx insn, addr;
       int i;
@@ -6247,8 +6509,8 @@ s390_emit_epilogue (bool sibcall)
       /* Check for global register and save them
 	 to stack location from where they get restored.  */
 
-      for (i = cfun->machine->first_restore_gpr;
-	   i <= cfun->machine->last_restore_gpr;
+      for (i = cfun_frame_layout.first_restore_gpr;
+	   i <= cfun_frame_layout.last_restore_gpr;
 	   i++)
 	{
 	  /* These registers are special and need to be
@@ -6262,7 +6524,9 @@ s390_emit_epilogue (bool sibcall)
 	  if (global_regs[i])
 	    {
 	      addr = plus_constant (frame_pointer,
-		     offset + i * UNITS_PER_WORD);
+				    offset + cfun_frame_layout.gprs_offset 
+				    + (i - cfun_frame_layout.first_save_gpr)
+				    * UNITS_PER_WORD);
 	      addr = gen_rtx_MEM (Pmode, addr);
 	      set_mem_alias_set (addr, s390_sr_alias_set);
 	      emit_move_insn (addr, gen_rtx_REG (Pmode, i));
@@ -6274,9 +6538,9 @@ s390_emit_epilogue (bool sibcall)
 	  /* Fetch return address from stack before load multiple,
 	     this will do good for scheduling.  */
 
-	  if (cfun->machine->save_return_addr_p
-	      || (cfun->machine->first_restore_gpr < BASE_REGNUM
-		  && cfun->machine->last_restore_gpr > RETURN_REGNUM))
+	  if (cfun_frame_layout.save_return_addr_p
+	      || (cfun_frame_layout.first_restore_gpr < BASE_REGNUM
+		  && cfun_frame_layout.last_restore_gpr > RETURN_REGNUM))
 	    {
 	      int return_regnum = find_unused_clobbered_reg();
 	      if (!return_regnum)
@@ -6284,16 +6548,23 @@ s390_emit_epilogue (bool sibcall)
 	      return_reg = gen_rtx_REG (Pmode, return_regnum);
 
 	      addr = plus_constant (frame_pointer,
-				    offset + RETURN_REGNUM * UNITS_PER_WORD);
+				    offset + cfun_frame_layout.gprs_offset
+				    + (RETURN_REGNUM 
+				       - cfun_frame_layout.first_save_gpr)
+				    * UNITS_PER_WORD);
 	      addr = gen_rtx_MEM (Pmode, addr);
 	      set_mem_alias_set (addr, s390_sr_alias_set);
 	      emit_move_insn (return_reg, addr);
 	    }
 	}
 
-      insn = restore_gprs (frame_pointer, offset,
-			   cfun->machine->first_restore_gpr,
-			   cfun->machine->last_restore_gpr);
+      insn = restore_gprs (frame_pointer,
+			   offset + cfun_frame_layout.gprs_offset
+			   + (cfun_frame_layout.first_restore_gpr 
+			      - cfun_frame_layout.first_save_gpr)
+			   * UNITS_PER_WORD,
+			   cfun_frame_layout.first_restore_gpr,
+			   cfun_frame_layout.last_restore_gpr);
       emit_insn (insn);
     }
 
@@ -6681,9 +6952,15 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   /* Find the register save area.  */
-  t = make_tree (TREE_TYPE (sav), virtual_incoming_args_rtx);
-  t = build (PLUS_EXPR, TREE_TYPE (sav), t,
-	     build_int_2 (-STACK_POINTER_OFFSET, -1));
+  t = make_tree (TREE_TYPE (sav), return_address_pointer_rtx);
+  if (TARGET_KERNEL_BACKCHAIN)
+    t = build (PLUS_EXPR, TREE_TYPE (sav), t,
+	       build_int_2 (-(RETURN_REGNUM - 2) * UNITS_PER_WORD
+			    - (TARGET_64BIT ? 4 : 2) * 8, -1));
+  else
+    t = build (PLUS_EXPR, TREE_TYPE (sav), t,
+	       build_int_2 (-RETURN_REGNUM * UNITS_PER_WORD, -1));
+
   t = build (MODIFY_EXPR, TREE_TYPE (sav), sav, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -6747,7 +7024,8 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
       indirect_p = 1;
       reg = gpr;
       n_reg = 1;
-      sav_ofs = 2 * UNITS_PER_WORD;
+      sav_ofs = (TARGET_KERNEL_BACKCHAIN
+		 ? (TARGET_64BIT ? 4 : 2) * 8 : 2 * UNITS_PER_WORD);
       sav_scale = UNITS_PER_WORD;
       size = UNITS_PER_WORD;
       max_reg = 4;
@@ -6764,7 +7042,7 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
       indirect_p = 0;
       reg = fpr;
       n_reg = 1;
-      sav_ofs = 16 * UNITS_PER_WORD;
+      sav_ofs = TARGET_KERNEL_BACKCHAIN ? 0 : 16 * UNITS_PER_WORD;
       sav_scale = 8;
       /* TARGET_64BIT has up to 4 parameter in fprs */
       max_reg = TARGET_64BIT ? 3 : 1;
@@ -6781,7 +7059,8 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
       indirect_p = 0;
       reg = gpr;
       n_reg = (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
-      sav_ofs = 2 * UNITS_PER_WORD;
+      sav_ofs = TARGET_KERNEL_BACKCHAIN ? 
+	(TARGET_64BIT ? 4 : 2) * 8 : 2*UNITS_PER_WORD;
 
       if (size < UNITS_PER_WORD)
 	sav_ofs += UNITS_PER_WORD - size;
