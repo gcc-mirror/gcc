@@ -69,27 +69,27 @@ static int m32r_sched_odd_word_p;
 #define LIT_NAME_P(NAME) ((NAME)[0] == '*' && (NAME)[1] == '.')
 
 /* Forward declaration.  */
-static void  init_reg_tables			PARAMS ((void));
-static void  block_move_call			PARAMS ((rtx, rtx, rtx));
-static int   m32r_is_insn			PARAMS ((rtx));
+static void  init_reg_tables (void);
+static void  block_move_call (rtx, rtx, rtx);
+static int   m32r_is_insn (rtx);
 const struct attribute_spec m32r_attribute_table[];
-static tree  m32r_handle_model_attribute PARAMS ((tree *, tree, tree, int, bool *));
-static void  m32r_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
-static void  m32r_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static tree  m32r_handle_model_attribute (tree *, tree, tree, int, bool *);
+static void  m32r_output_function_prologue (FILE *, HOST_WIDE_INT);
+static void  m32r_output_function_epilogue (FILE *, HOST_WIDE_INT);
 
-static void  m32r_file_start PARAMS ((void));
+static void  m32r_file_start (void);
 
-static int    m32r_adjust_cost 	   PARAMS ((rtx, rtx, rtx, int));
-static int    m32r_adjust_priority PARAMS ((rtx, int));
-static void   m32r_sched_init	   PARAMS ((FILE *, int, int));
-static int    m32r_sched_reorder   PARAMS ((FILE *, int, rtx *, int *, int));
-static int    m32r_variable_issue  PARAMS ((FILE *, int, rtx, int));
-static int    m32r_issue_rate	   PARAMS ((void));
+static int    m32r_adjust_cost (rtx, rtx, rtx, int);
+static int    m32r_adjust_priority (rtx, int);
+static void   m32r_sched_init (FILE *, int, int);
+static int    m32r_sched_reorder (FILE *, int, rtx *, int *, int);
+static int    m32r_variable_issue (FILE *, int, rtx, int);
+static int    m32r_issue_rate (void);
 
-static void m32r_encode_section_info PARAMS ((tree, rtx, int));
-static bool m32r_in_small_data_p PARAMS ((tree));
-static void init_idents PARAMS ((void));
-static bool m32r_rtx_costs PARAMS ((rtx, int, int, int *));
+static void m32r_encode_section_info (tree, rtx, int);
+static bool m32r_in_small_data_p (tree);
+static void init_idents (void);
+static bool m32r_rtx_costs (rtx, int, int, int *);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE

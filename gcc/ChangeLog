@@ -1,3 +1,16 @@
+2003-12-05  Steven Bosscher  <stevenb@suse.de>
+
+	* config/d30v/d30v-protos.h , config/d30v/d30v.c,
+	config/dsp16xx/dsp16xx-protos.h, config/dsp16xx/dsp16xx.c,
+	config/fr30/fr30-protos.h, config/fr30/fr30.c,
+	config/i370/i370-protos.h, config/i370/i370.c,
+	config/i960/i960-protos.h, config/i960/i960.c,
+	config/ip2k/ip2k-protos.h, config/ip2k/ip2k.c,
+	config/m32r/m32r-protos.h, config/m32r/m32r.c,
+	config/mn10300/mn10300-protos.h, config/mn10300/mn10300.c,
+	config/ns32k/ns32k-protos.h, config/ns32k/ns32k.c:
+	Convert to ISO C90 function declarations and definitions.
+
 2003-12-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/extend.texi (Constructing Calls): Add warning about

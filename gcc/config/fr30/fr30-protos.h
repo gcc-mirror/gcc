@@ -18,34 +18,34 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-extern void  fr30_expand_prologue PARAMS ((void));
-extern void  fr30_expand_epilogue PARAMS ((void));
-extern unsigned int fr30_compute_frame_size PARAMS ((int, int));
+extern void  fr30_expand_prologue (void);
+extern void  fr30_expand_epilogue (void);
+extern unsigned int fr30_compute_frame_size (int, int);
 
 #ifdef RTX_CODE
-extern int   fr30_check_multiple_regs   PARAMS ((rtx *, int, int));
-extern void  fr30_print_operand         PARAMS ((FILE *, rtx, int));
-extern void  fr30_print_operand_address PARAMS ((FILE *, rtx));
-extern rtx   fr30_move_double		PARAMS ((rtx *));
+extern int   fr30_check_multiple_regs (rtx *, int, int);
+extern void  fr30_print_operand (FILE *, rtx, int);
+extern void  fr30_print_operand_address (FILE *, rtx);
+extern rtx   fr30_move_double (rtx *);
 #ifdef TREE_CODE
-extern rtx   fr30_va_arg                PARAMS ((tree, tree));
+extern rtx   fr30_va_arg (tree, tree);
 #endif /* TREE_CODE */
 #ifdef HAVE_MACHINE_MODES
 #define Mmode enum machine_mode
-extern int   stack_add_operand          PARAMS ((rtx, Mmode));
-extern int   add_immediate_operand      PARAMS ((rtx, Mmode));
-extern int   high_register_operand      PARAMS ((rtx, Mmode));
-extern int   low_register_operand       PARAMS ((rtx, Mmode));
-extern int   call_operand               PARAMS ((rtx, Mmode));
-extern int   di_operand 		PARAMS ((rtx, Mmode));
-extern int   nonimmediate_di_operand 	PARAMS ((rtx, Mmode));
-extern int   fr30_const_double_is_zero  PARAMS ((rtx));
+extern int   stack_add_operand (rtx, Mmode);
+extern int   add_immediate_operand (rtx, Mmode);
+extern int   high_register_operand (rtx, Mmode);
+extern int   low_register_operand (rtx, Mmode);
+extern int   call_operand (rtx, Mmode);
+extern int   di_operand (rtx, Mmode);
+extern int   nonimmediate_di_operand (rtx, Mmode);
+extern int   fr30_const_double_is_zero (rtx);
 #undef Mmode
 #endif /* HAVE_MACHINE_MODES */
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
-extern int   fr30_num_arg_regs               PARAMS ((int, tree));
-extern int   fr30_function_arg_partial_nregs PARAMS ((CUMULATIVE_ARGS, int, tree, int));
-extern void  fr30_setup_incoming_varargs     PARAMS ((CUMULATIVE_ARGS, int, tree, int *));
+extern int   fr30_num_arg_regs (int, tree);
+extern int   fr30_function_arg_partial_nregs (CUMULATIVE_ARGS, int, tree, int);
+extern void  fr30_setup_incoming_varargs (CUMULATIVE_ARGS, int, tree, int *);
 #endif /* TREE_CODE */

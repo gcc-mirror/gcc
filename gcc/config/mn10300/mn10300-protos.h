@@ -22,41 +22,41 @@ Boston, MA 02111-1307, USA.  */
 #ifdef RTX_CODE
 
 #ifdef TREE_CODE
-extern void mn10300_va_start PARAMS ((tree, rtx));
+extern void mn10300_va_start (tree, rtx);
 #endif /* TREE_CODE */
 
-extern struct rtx_def *legitimize_address PARAMS ((rtx, rtx, enum machine_mode));
-extern rtx legitimize_pic_address   (rtx, rtx);
+extern struct rtx_def *legitimize_address (rtx, rtx, enum machine_mode);
+extern rtx legitimize_pic_address (rtx, rtx);
 extern int legitimate_pic_operand_p (rtx);
-extern void print_operand PARAMS ((FILE *, rtx, int));
-extern void print_operand_address PARAMS ((FILE *, rtx));
-extern void mn10300_print_reg_list PARAMS ((FILE *, int));
-extern int mn10300_get_live_callee_saved_regs PARAMS ((void));
-extern void mn10300_gen_multiple_store PARAMS ((int));
-extern void notice_update_cc PARAMS ((rtx, rtx));
-extern enum reg_class secondary_reload_class PARAMS ((enum reg_class,
-						      enum machine_mode, rtx));
-extern const char *output_tst PARAMS ((rtx, rtx));
-extern int store_multiple_operation PARAMS ((rtx, enum machine_mode));
-extern int symbolic_operand PARAMS ((rtx, enum machine_mode));
-extern int call_address_operand PARAMS ((rtx, enum machine_mode));
-extern int impossible_plus_operand PARAMS ((rtx, enum machine_mode));
-extern int const_8bit_operand PARAMS ((rtx, enum machine_mode));
+extern void print_operand (FILE *, rtx, int);
+extern void print_operand_address (FILE *, rtx);
+extern void mn10300_print_reg_list (FILE *, int);
+extern int mn10300_get_live_callee_saved_regs (void);
+extern void mn10300_gen_multiple_store (int);
+extern void notice_update_cc (rtx, rtx);
+extern enum reg_class secondary_reload_class (enum reg_class,
+					      enum machine_mode, rtx);
+extern const char *output_tst (rtx, rtx);
+extern int store_multiple_operation (rtx, enum machine_mode);
+extern int symbolic_operand (rtx, enum machine_mode);
+extern int call_address_operand (rtx, enum machine_mode);
+extern int impossible_plus_operand (rtx, enum machine_mode);
+extern int const_8bit_operand (rtx, enum machine_mode);
 
-extern bool mn10300_wide_const_load_uses_clr PARAMS ((rtx operands[2]));
+extern bool mn10300_wide_const_load_uses_clr (rtx operands[2]);
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
-extern struct rtx_def *function_arg PARAMS ((CUMULATIVE_ARGS *,
-					     enum machine_mode, tree, int));
-extern int function_arg_partial_nregs PARAMS ((CUMULATIVE_ARGS *,
-					       enum machine_mode, tree, int));
-extern struct rtx_def *mn10300_va_arg PARAMS ((tree, tree));
+extern struct rtx_def *function_arg (CUMULATIVE_ARGS *,
+				     enum machine_mode, tree, int);
+extern int function_arg_partial_nregs (CUMULATIVE_ARGS *,
+				       enum machine_mode, tree, int);
+extern struct rtx_def *mn10300_va_arg (tree, tree);
 #endif /* TREE_CODE */
 
-extern struct rtx_def *mn10300_builtin_saveregs PARAMS ((void));
-extern void expand_prologue PARAMS ((void));
-extern void expand_epilogue PARAMS ((void));
-extern int initial_offset PARAMS ((int, int));
-extern int can_use_return_insn PARAMS ((void));
-extern int mask_ok_for_mem_btst PARAMS ((int, int));
+extern struct rtx_def *mn10300_builtin_saveregs (void);
+extern void expand_prologue (void);
+extern void expand_epilogue (void);
+extern int initial_offset (int, int);
+extern int can_use_return_insn (void);
+extern int mask_ok_for_mem_btst (int, int);

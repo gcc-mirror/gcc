@@ -54,35 +54,33 @@
    the stack offsets.  Isolate the decision process into a simple macro.  */
 #define CHAIN_FRAMES (frame_pointer_needed || FRAME_POINTER_REQUIRED)
 
-static int ip2k_naked_function_p PARAMS ((tree));
+static int ip2k_naked_function_p (tree);
 #ifdef IP2K_MD_REORG_PASS
-static void mdr_resequence_xy_yx PARAMS ((rtx));
-static void mdr_pres_replace_and_recurse PARAMS ((rtx, rtx, rtx));
-static void mdr_propagate_reg_equivs_sequence PARAMS ((rtx, rtx, rtx));
-static void mdr_propagate_reg_equivs PARAMS ((rtx));
-static int track_dp_reload PARAMS ((rtx , rtx *, int , int));
-static void mdr_try_dp_reload_elim PARAMS ((rtx));
-static void mdr_try_move_dp_reload PARAMS ((rtx));
-static void mdr_try_move_pushes PARAMS ((rtx));
-static void mdr_try_propagate_clr_sequence PARAMS ((rtx, unsigned int));
-static void mdr_try_propagate_clr PARAMS ((rtx));
-static void mdr_try_propagate_move_sequence PARAMS ((rtx, rtx, rtx));
-static void mdr_try_propagate_move PARAMS ((rtx));
-static void mdr_try_remove_redundant_insns PARAMS ((rtx));
-static int track_w_reload PARAMS ((rtx, rtx *, int , int));
-static void mdr_try_wreg_elim PARAMS ((rtx));
+static void mdr_resequence_xy_yx (rtx);
+static void mdr_pres_replace_and_recurse (rtx, rtx, rtx);
+static void mdr_propagate_reg_equivs_sequence (rtx, rtx, rtx);
+static void mdr_propagate_reg_equivs (rtx);
+static int track_dp_reload (rtx , rtx *, int , int);
+static void mdr_try_dp_reload_elim (rtx);
+static void mdr_try_move_dp_reload (rtx);
+static void mdr_try_move_pushes (rtx);
+static void mdr_try_propagate_clr_sequence (rtx, unsigned int);
+static void mdr_try_propagate_clr (rtx);
+static void mdr_try_propagate_move_sequence (rtx, rtx, rtx);
+static void mdr_try_propagate_move (rtx);
+static void mdr_try_remove_redundant_insns (rtx);
+static int track_w_reload (rtx, rtx *, int , int);
+static void mdr_try_wreg_elim (rtx);
 #endif /* IP2K_MD_REORG_PASS */
-static void ip2k_reorg PARAMS ((void));
-static int ip2k_check_can_adjust_stack_ref PARAMS ((rtx, int));
-static void ip2k_adjust_stack_ref PARAMS ((rtx *, int));
-static int ip2k_xexp_not_uses_reg_for_mem PARAMS ((rtx, unsigned int));
-static tree ip2k_handle_progmem_attribute PARAMS ((tree *, tree, tree, int,
-						   bool *));
-static tree ip2k_handle_fndecl_attribute PARAMS ((tree *, tree, tree, int,
-						  bool *));
-static bool ip2k_rtx_costs PARAMS ((rtx, int, int, int *));
-static int ip2k_address_cost PARAMS ((rtx));
-static void ip2k_init_libfuncs PARAMS ((void));
+static void ip2k_reorg (void);
+static int ip2k_check_can_adjust_stack_ref (rtx, int);
+static void ip2k_adjust_stack_ref (rtx *, int);
+static int ip2k_xexp_not_uses_reg_for_mem (rtx, unsigned int);
+static tree ip2k_handle_progmem_attribute (tree *, tree, tree, int, bool *);
+static tree ip2k_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
+static bool ip2k_rtx_costs (rtx, int, int, int *);
+static int ip2k_address_cost (rtx);
+static void ip2k_init_libfuncs (void);
 
 const struct attribute_spec ip2k_attribute_table[];
 

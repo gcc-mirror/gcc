@@ -148,12 +148,12 @@ static const char *const lshift_right_asm_first[] =
   "%0=%1>>16\n\t%0=%b0&0x0000"
 };
 
-static int reg_save_size PARAMS ((void));
-static void dsp16xx_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
-static void dsp16xx_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
-static void dsp16xx_file_start PARAMS ((void));
-static bool dsp16xx_rtx_costs PARAMS ((rtx, int, int, int *));
-static int dsp16xx_address_cost PARAMS ((rtx));
+static int reg_save_size (void);
+static void dsp16xx_output_function_prologue (FILE *, HOST_WIDE_INT);
+static void dsp16xx_output_function_epilogue (FILE *, HOST_WIDE_INT);
+static void dsp16xx_file_start (void);
+static bool dsp16xx_rtx_costs (rtx, int, int, int *);
+static int dsp16xx_address_cost (rtx);
 
 /* Initialize the GCC target structure.  */
 
