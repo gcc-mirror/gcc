@@ -1,6 +1,6 @@
 /* <ctype.h> replacement macros.
 
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
    Contributed by Zack Weinberg <zackw@stanford.edu>.
 
 This file is part of the libiberty library.
@@ -69,7 +69,7 @@ enum {
 /* Character classification.  */
 extern const unsigned short _sch_istable[256];
 
-#define _sch_test(c, bit) (_sch_istable[(c) & 0xff] & (bit))
+#define _sch_test(c, bit) (_sch_istable[(c) & 0xff] & (unsigned short)(bit))
 
 #define ISALPHA(c)  _sch_test(c, _sch_isalpha)
 #define ISALNUM(c)  _sch_test(c, _sch_isalnum)

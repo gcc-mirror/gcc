@@ -1,3 +1,8 @@
+2001-03-01  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* safe-ctype.h (_sch_test): Cast enum bit to unsigned short int for pcc
+	compatibility.
+
 2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* COPYING: Update to current
