@@ -1,3 +1,10 @@
+1999-05-28  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (complete_array_type): Allocate off same obstack. Fix
+	DO_DEFAULT comment to match reality.
+
+	* friend.c (make_friend_class): Fix diagnostic typo.
+
 1999-05-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (lookup_namespace_name): Handle getting a

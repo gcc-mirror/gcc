@@ -296,7 +296,7 @@ make_friend_class (type, friend_type)
 	   template <class T> friend typename S<T>::X;
 
 	 which isn't any of these.  */
-      cp_error ("typename type `%T' declare `friend'",
+      cp_error ("typename type `%T' declared `friend'",
 		friend_type);
       return;
     }
