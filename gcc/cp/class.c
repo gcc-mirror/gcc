@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "output.h"
 #include "toplev.h"
+#include "splay-tree.h"
 
 #include "obstack.h"
 #define obstack_chunk_alloc xmalloc
@@ -62,6 +63,9 @@ typedef struct class_stack_node {
   /* The access specifier pending for new declarations in the scope of
      this class.  */
   tree access;
+
+  /* If were defining TYPE, the names used in this class.  */
+  splay_tree names_used;
 }* class_stack_node_t;
 
 /* The stack itself.  This is an dynamically resized array.  The
@@ -130,7 +134,6 @@ static void build_class_init_list PROTO((tree));
 static int finish_base_struct PROTO((tree, struct base_info *));
 static void finish_struct_methods PROTO((tree));
 static void maybe_warn_about_overly_private_class PROTO ((tree));
-static void check_member_decl_is_same_in_complete_scope PROTO((tree, tree));
 static tree make_method_vec PROTO((int));
 static void free_method_vec PROTO((tree));
 static tree add_implicitly_declared_members PROTO((tree, int, int, int));
@@ -1286,7 +1289,7 @@ add_method (type, fields, method)
 
 	      /* We don't call duplicate_decls here to merge the
 		 declarations because that will confuse things if the
-		 methods have inline definitions In particular, we
+		 methods have inline definitions.  In particular, we
 		 will crash while processing the definitions.  */
 	      return;
 	    }
@@ -1295,6 +1298,12 @@ add_method (type, fields, method)
       /* Actually insert the new method.  */
       TREE_VEC_ELT (method_vec, slot) 
 	= build_overload (method, TREE_VEC_ELT (method_vec, slot));
+
+      /* Add the new binding.  */ 
+      if (!DECL_CONSTRUCTOR_P (method)
+	  && !DECL_DESTRUCTOR_P (method))
+	push_class_level_binding (DECL_NAME (method),
+				  TREE_VEC_ELT (method_vec, slot));
     }
   pop_obstacks ();
 }
@@ -3255,7 +3264,7 @@ finish_struct_1 (t, warn_anon)
 	cp_error ("redefinition of `%#T'", t);
       else
 	my_friendly_abort (172);
-      popclass (0);
+      popclass (1);
       return t;
     }
 
@@ -3838,32 +3847,6 @@ finish_struct_1 (t, warn_anon)
   /* Delete all duplicate fields from the fields */
   delete_duplicate_fields (fields);
 
-  /* Catch function/field name conflict.  We don't need to do this for a
-     signature, since it can only contain the fields constructed in
-     append_signature_fields.  */
-  if (! IS_SIGNATURE (t))
-    {
-      int n_methods = method_vec ? TREE_VEC_LENGTH (method_vec) : 0;
-      for (x = fields; x; x = TREE_CHAIN (x))
-	{
-	  tree name = DECL_NAME (x);
-	  int i;
-
-	  if (TREE_CODE (x) == TYPE_DECL && DECL_ARTIFICIAL (x))
-	    continue;
-
-	  for (i = 2; i < n_methods && TREE_VEC_ELT (method_vec, i); ++i)
-	    if (DECL_NAME (OVL_CURRENT (TREE_VEC_ELT (method_vec, i)))
-		== name)
-	      {
-		cp_error_at ("data member `%#D' conflicts with", x);
-		cp_error_at ("function member `%#D'",
-			     OVL_CURRENT (TREE_VEC_ELT (method_vec, i)));
-		break;
-	      }
-	}
-    }
-
   /* Now we have the nearly final fieldlist for the data fields.  Record it,
      then lay out the structure or union (including the fields).  */
 
@@ -4258,54 +4241,6 @@ finish_struct_1 (t, warn_anon)
   return t;
 }
 
-/* In [basic.scope.class] we have:
-
-     A name N used in a class S shall refer to the same declaration in
-     its context and when re-evaluated in the completed scope of S.
-     
-   This function checks this condition for X, which is a member of
-   T.  */
-
-static void
-check_member_decl_is_same_in_complete_scope (t, x)
-     tree t;
-     tree x;
-{
-  /* A name N used in a class S shall refer to the same declaration in
-     its context and when re-evaluated in the completed scope of S.
-     
-     Enums, types and static vars have already been checked.  */
-  if (TREE_CODE (x) != USING_DECL 
-      && TREE_CODE (x) != TYPE_DECL && !DECL_CLASS_TEMPLATE_P (x)
-      && TREE_CODE (x) != CONST_DECL && TREE_CODE (x) != VAR_DECL)
-    {
-      tree name = DECL_NAME (x);
-      tree icv;
-
-      /* Don't get confused by access decls.  */
-      if (name && TREE_CODE (name) == IDENTIFIER_NODE)
-	icv = IDENTIFIER_CLASS_VALUE (name);
-      else
-	icv = NULL_TREE;
-
-      /* This should match pushdecl_class_level.  */
-      if (icv && icv != x
-	  && flag_optional_diags
-	  /* Don't complain about constructors.  */
-	  && name != constructor_name (current_class_type)
-	  /* Or inherited names.  */
-	  && id_in_current_class (name)
-	  /* Or shadowed tags.  */
-	  && !(TREE_CODE (icv) == TYPE_DECL && DECL_CONTEXT (icv) == t))
-	{
-	  cp_pedwarn_at ("declaration of identifier `%D' as `%+#D'",
-			 name, x);
-	  cp_pedwarn_at ("conflicts with other use in class as `%#D'",
-			 icv);
-	}
-    }
-}
-
 /* When T was built up, the member declarations were added in reverse
    order.  Rearrange them to declaration order.  */
 
@@ -4372,14 +4307,6 @@ finish_struct (t, attributes, warn_anon)
      as necessary.  */
   unreverse_member_declarations (t);
 
-  if (flag_optional_diags) 
-    {
-      for (x = TYPE_METHODS (t); x; x = TREE_CHAIN (x))
-	check_member_decl_is_same_in_complete_scope (t, x);
-      for (x = TYPE_FIELDS (t); x; x = TREE_CHAIN (x))
-	check_member_decl_is_same_in_complete_scope (t, x);
-    }
-
   /* Mark all the tags in the class as class-local.  */
   for (x = CLASSTYPE_TAGS (t); x; x = TREE_CHAIN (x))
     TREE_NONLOCAL_FLAG (TREE_VALUE (x)) = 0;
@@ -4413,8 +4340,9 @@ finish_struct (t, attributes, warn_anon)
     t = finish_struct_1 (t, warn_anon);
 
   TYPE_BEING_DEFINED (t) = 0;
+
   if (current_class_type)
-    popclass (0);
+    popclass (1);
   else
     error ("trying to finish struct, but kicked out due to previous parse errors.");
 
@@ -4636,6 +4564,7 @@ pushclass (type, modify)
   current_class_stack[current_class_depth].name = current_class_name;
   current_class_stack[current_class_depth].type = current_class_type;
   current_class_stack[current_class_depth].access = current_access_specifier;
+  current_class_stack[current_class_depth].names_used = 0;
   current_class_depth++;
 
   /* Now set up the new type.  */
@@ -4651,18 +4580,23 @@ pushclass (type, modify)
 			      : access_public_node);
 
   if (previous_class_type != NULL_TREE
-      && (type != previous_class_type || TYPE_SIZE (previous_class_type) == NULL_TREE)
+      && (type != previous_class_type 
+	  || TYPE_SIZE (previous_class_type) == NULL_TREE)
       && current_class_depth == 1)
     {
       /* Forcibly remove any old class remnants.  */
-      popclass (-1);
-      previous_class_type = NULL_TREE;
+      invalidate_class_lookup_cache ();
 
       /* Now, free the obstack on which we cached all the values.  */
       obstack_free (&class_cache_obstack, class_cache_firstobj);
       class_cache_firstobj 
 	= (char*) obstack_finish (&class_cache_obstack);
     }
+
+  /* If we're about to enter a nested class, clear
+     IDENTIFIER_CLASS_VALUE for the enclosing classes.  */
+  if (modify && current_class_depth > 1)
+    clear_identifier_class_values ();
 
   pushlevel_class ();
 
@@ -4674,25 +4608,9 @@ pushclass (type, modify)
   if (modify)
     {
       tree tags;
-      tree this_fndecl = current_function_decl;
-
-      if (current_function_decl
-	  && DECL_CONTEXT (current_function_decl)
-	  && TREE_CODE (DECL_CONTEXT (current_function_decl)) == FUNCTION_DECL)
-	current_function_decl = DECL_CONTEXT (current_function_decl);
-      else
-	current_function_decl = NULL_TREE;
 
       if (type != previous_class_type || current_class_depth > 1)
-	{
-#ifdef MI_MATRIX
-	  build_mi_matrix (type);
-	  push_class_decls (type);
-	  free_mi_matrix ();
-#else
-	  push_class_decls (type);
-#endif
-	}
+	push_class_decls (type);
       else
 	{
 	  tree item;
@@ -4726,9 +4644,32 @@ pushclass (type, modify)
 		 && CLASSTYPE_IS_TEMPLATE (tag_type)))
 	    pushtag (TREE_PURPOSE (tags), tag_type, 0);
 	}
-
-      current_function_decl = this_fndecl;
     }
+}
+
+/* When we exit a toplevel class scope, we save the
+   IDENTIFIER_CLASS_VALUEs so that we can restore them quickly if we
+   reenter the class.  Here, we've entered some other class, so we
+   must invalidate our cache.  */
+
+void
+invalidate_class_lookup_cache ()
+{
+  tree tags = CLASSTYPE_TAGS (previous_class_type);
+  tree t;
+  
+  /* This code can be seen as a cache miss.  When we've cached a
+     class' scope's bindings and we can't use them, we need to reset
+     them.  This is it!  */
+  for (t = previous_class_values; t; t = TREE_CHAIN (t))
+    IDENTIFIER_CLASS_VALUE (TREE_PURPOSE (t)) = NULL_TREE;
+  while (tags)
+    {
+      TREE_NONLOCAL_FLAG (TREE_VALUE (tags)) = 0;
+      tags = TREE_CHAIN (tags);
+    }
+  
+  previous_class_type = NULL_TREE;
 }
  
 /* Get out of the current class scope. If we were in a class scope
@@ -4740,26 +4681,6 @@ void
 popclass (modify)
      int modify;
 {
-  if (modify < 0)
-    {
-      /* Back this old class out completely.  */
-      tree tags = CLASSTYPE_TAGS (previous_class_type);
-      tree t;
-
-      /* This code can be seen as a cache miss.  When we've cached a
-	 class' scope's bindings and we can't use them, we need to reset
-	 them.  This is it!  */
-      for (t = previous_class_values; t; t = TREE_CHAIN (t))
-	IDENTIFIER_CLASS_VALUE (TREE_PURPOSE (t)) = NULL_TREE;
-      while (tags)
-	{
-	  TREE_NONLOCAL_FLAG (TREE_VALUE (tags)) = 0;
-	  tags = TREE_CHAIN (tags);
-	}
-
-      return;
-    }
-
   if (modify)
     {
       /* Just remove from this class what didn't make
@@ -4787,6 +4708,8 @@ popclass (modify)
   current_class_name = current_class_stack[current_class_depth].name;
   current_class_type = current_class_stack[current_class_depth].type;
   current_access_specifier = current_class_stack[current_class_depth].access;
+  if (current_class_stack[current_class_depth].names_used)
+    splay_tree_delete (current_class_stack[current_class_depth].names_used);
 }
 
 /* Returns 1 if current_class_type is either T or a nested type of T.  */
@@ -5216,8 +5139,6 @@ instantiate_type (lhstype, rhs, complain)
 	tree field = TREE_OPERAND (rhs, 1);
 	tree r;
 
-	my_friendly_assert (TREE_CODE (field) == TREE_LIST, 0);
-
 	r = instantiate_type (lhstype, field, complain);
 
 	if (r != error_mark_node && TYPE_PTRMEMFUNC_P (lhstype))
@@ -5225,15 +5146,15 @@ instantiate_type (lhstype, rhs, complain)
 	    if (complain)
 	      {
 	        tree t = TYPE_PTRMEMFUNC_OBJECT_TYPE (lhstype);
-	        tree fn = TREE_VALUE (field);
-	        if (TREE_CODE (fn) == OVERLOAD)
-	          fn = OVL_FUNCTION (fn);
-	        if (TREE_CODE (fn) == FUNCTION_DECL)
+
+	        if (TREE_CODE (field) == OVERLOAD)
+	          field = OVL_FUNCTION (field);
+	        if (TREE_CODE (field) == FUNCTION_DECL)
 	          {
 		    cp_error ("object-dependent reference `%E' can only be used in a call",
-		    	      DECL_NAME (fn));
+		    	      DECL_NAME (field));
   	    	    cp_error ("  to form a pointer to member function, say `&%T::%E'",
-		    	      t, DECL_NAME (fn));
+		    	      t, DECL_NAME (field));
     	          }
 	        else
 	          cp_error ("object-dependent reference can only be used in a call");
@@ -5490,8 +5411,6 @@ build_self_reference ()
   DECL_CLASS_CONTEXT (value) = current_class_type;
   DECL_ARTIFICIAL (value) = 1;
 
-  pushdecl_class_level (value);
-
   saved_cas = current_access_specifier;
   current_access_specifier = access_public_node;
   finish_member_declaration (value);
@@ -5567,4 +5486,65 @@ is_base_of_enclosing_class (base, type)
       type = get_enclosing_class (type);
     }
   return 0;
+}
+
+/* Note that NAME was looked up while the current class was being
+   defined and that the result of that lookup was DECL.  */
+
+void
+maybe_note_name_used_in_class (name, decl)
+     tree name;
+     tree decl;
+{
+  splay_tree names_used;
+
+  /* If we're not defining a class, there's nothing to do.  */
+  if (!current_class_type || !TYPE_BEING_DEFINED (current_class_type))
+    return;
+  
+  /* If there's already a binding for this NAME, then we don't have
+     anything to worry about.  */
+  if (IDENTIFIER_CLASS_VALUE (name))
+    return;
+
+  if (!current_class_stack[current_class_depth - 1].names_used)
+    current_class_stack[current_class_depth - 1].names_used
+      = splay_tree_new (splay_tree_compare_pointers, 0, 0);
+  names_used = current_class_stack[current_class_depth - 1].names_used;
+
+  splay_tree_insert (names_used,
+		     (splay_tree_key) name, 
+		     (splay_tree_value) decl);
+}
+
+/* Note that NAME was declared (as DECL) in the current class.  Check
+   to see that the declaration is legal.  */
+
+void
+note_name_declared_in_class (name, decl)
+     tree name;
+     tree decl;
+{
+  splay_tree names_used;
+  splay_tree_node n;
+
+  /* Look to see if we ever used this name.  */
+  names_used 
+    = current_class_stack[current_class_depth - 1].names_used;
+  if (!names_used)
+    return;
+
+  n = splay_tree_lookup (names_used, (splay_tree_key) name);
+  if (n)
+    {
+      /* [basic.scope.class]
+	 
+	 A name N used in a class S shall refer to the same declaration
+	 in its context and when re-evaluated in the completed scope of
+	 S.  */
+      cp_error ("declaration of `%#D'", decl);
+      cp_error_at ("changes meaning of `%s' from `%+#D'", 
+		   IDENTIFIER_POINTER (DECL_NAME (decl)),
+		   (tree) n->value);
+    }
 }

@@ -1295,7 +1295,7 @@ begin_class_definition (t)
       && TYPE_CONTEXT (t) && TYPE_P (TYPE_CONTEXT (t))
       && ! current_class_type)
     push_template_decl (TYPE_STUB_DECL (t));
-  pushclass (t, 0);
+  pushclass (t, 1);
   TYPE_BEING_DEFINED (t) = 1;
   /* Reset the interface data, at the earliest possible
      moment, as it might have been set via a class foo;
@@ -1419,6 +1419,10 @@ finish_member_declaration (decl)
 	  TREE_CHAIN (decl) = TYPE_FIELDS (current_class_type);
 	  TYPE_FIELDS (current_class_type) = decl;
 	}
+
+      /* Enter the DECL into the scope of the class.  */
+      if (TREE_CODE (decl) != USING_DECL)
+	pushdecl_class_level (decl);
     }
 }
 

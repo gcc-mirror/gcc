@@ -1916,10 +1916,15 @@ hack_identifier (value, name)
       TREE_USED (value) = 1;
       value = build_component_ref (current_class_ref, name, NULL_TREE, 1);
     }
-  else if (TREE_CODE (value) == FUNCTION_DECL
-	   && DECL_FUNCTION_MEMBER_P (value))
+  else if ((TREE_CODE (value) == FUNCTION_DECL
+	    && DECL_FUNCTION_MEMBER_P (value))
+	   || (TREE_CODE (value) == OVERLOAD
+	       && DECL_FUNCTION_MEMBER_P (OVL_CURRENT (value))))
     {
       tree decl;
+
+      if (TREE_CODE (value) == OVERLOAD)
+	value = OVL_CURRENT (value);
 
       if (IS_SIGNATURE (DECL_CLASS_CONTEXT (value)))
 	return value;
@@ -1928,19 +1933,7 @@ hack_identifier (value, name)
       value = build_component_ref (decl, name, NULL_TREE, 1);
     }
   else if (really_overloaded_fn (value))
-    {
-#if 0
-      tree t = get_first_fn (value);
-      for (; t; t = DECL_CHAIN (t))
-	{
-	  if (TREE_CODE (t) == TEMPLATE_DECL)
-	    continue;
-
-	  assemble_external (t);
-	  TREE_USED (t) = 1;
-	}
-#endif
-    }
+    ;
   else if (TREE_CODE (value) == OVERLOAD)
     /* not really overloaded function */
     mark_used (OVL_FUNCTION (value));

@@ -40,7 +40,7 @@ struct __class_type_info : public __user_type_info {
     const __user_type_info *base;
     USItype offset: 29;
     bool is_virtual: 1;
-    access access: 2;
+    enum access access: 2;
   };
 
   const base_info *base_list;

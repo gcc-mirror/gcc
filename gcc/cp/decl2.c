@@ -1525,7 +1525,6 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 	DECL_ASSEMBLER_NAME (value) =
 	  get_identifier (build_overload_name (TREE_TYPE (value), 1, 1));
 
-      pushdecl_class_level (value);
       return value;
     }
 
@@ -1611,8 +1610,6 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
       && (TREE_CODE (value) == VAR_DECL || TREE_CODE (value) == FUNCTION_DECL))
     value = push_template_decl (value);
 
-  check_template_shadow (value);
-
   if (attrlist)
     cplus_decl_attributes (value, TREE_PURPOSE (attrlist),
 			   TREE_VALUE (attrlist));
@@ -1656,7 +1653,6 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
       DECL_CLASS_CONTEXT (value) = current_class_type;
 
       cp_finish_decl (value, init, asmspec_tree, 1, flags);
-      pushdecl_class_level (value);
       return value;
     }
   if (TREE_CODE (value) == FIELD_DECL)

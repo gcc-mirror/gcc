@@ -178,7 +178,7 @@ static void check_for_uninitialized_const_var PROTO((tree));
 static unsigned long typename_hash PROTO((hash_table_key));
 static boolean typename_compare PROTO((hash_table_key, hash_table_key));
 static void push_binding PROTO((tree, tree, struct binding_level*));
-static void add_binding PROTO((tree, tree));
+static int add_binding PROTO((tree, tree));
 static void pop_binding PROTO((tree, tree));
 static tree local_variable_p PROTO((tree));
 static tree find_binding PROTO((tree, tree));
@@ -188,6 +188,8 @@ static int lookup_flags PROTO((int, int));
 static tree qualify_lookup PROTO((tree, int));
 static tree record_builtin_java_type PROTO((const char *, int));
 static const char *tag_name PROTO((enum tag_types code));
+static void find_class_binding_level PROTO((void));
+static struct binding_level *innermost_nonclass_level PROTO((void));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PROTO((void));
@@ -716,18 +718,13 @@ struct binding_level
 
 #define NULL_BINDING_LEVEL ((struct binding_level *) NULL)
   
-/* The (non-class) binding level currently in effect.  */
+/* The binding level currently in effect.  */
 
 static struct binding_level *current_binding_level;
 
 /* The binding level of the current class, if any.  */
 
 static struct binding_level *class_binding_level;
-
-/* The current (class or non-class) binding level currently in effect.  */
-
-#define inner_binding_level \
-  (class_binding_level ? class_binding_level : current_binding_level)
 
 /* A chain of binding_level structures awaiting reuse.  */
 
@@ -771,15 +768,7 @@ push_binding_level (newlevel, tag_transparent, keep)
   /* Add this level to the front of the chain (stack) of levels that
      are active.  */
   *newlevel = clear_binding_level;
-  if (class_binding_level)
-    {
-      newlevel->level_chain = class_binding_level;
-      class_binding_level = (struct binding_level *)0;
-    }
-  else
-    {
-      newlevel->level_chain = current_binding_level;
-    }
+  newlevel->level_chain = current_binding_level;
   current_binding_level = newlevel;
   newlevel->tag_transparent = tag_transparent;
   newlevel->more_cleanups_ok = 1;
@@ -794,12 +783,25 @@ push_binding_level (newlevel, tag_transparent, keep)
 #endif /* defined(DEBUG_CP_BINDING_LEVELS) */
 }
 
+/* Find the innermost enclosing class scope, and reset
+   CLASS_BINDING_LEVEL appropriately.  */
+
+static void
+find_class_binding_level ()
+{
+  struct binding_level *level = current_binding_level;
+
+  while (level && level->parm_flag != 2)
+    level = level->level_chain;
+  if (level && level->parm_flag == 2)
+    class_binding_level = level;
+  else
+    class_binding_level = 0;
+}
+
 static void
 pop_binding_level ()
 {
-  if (class_binding_level)
-    current_binding_level = class_binding_level;
-
   if (global_binding_level)
     {
       /* Cannot pop a level, if there are none left to pop.  */
@@ -828,13 +830,8 @@ pop_binding_level ()
     if (level->binding_depth != binding_depth)
       abort ();
 #endif /* defined(DEBUG_CP_BINDING_LEVELS) */
-      free_binding_level = level;
-
-    class_binding_level = current_binding_level;
-    if (class_binding_level->parm_flag != 2)
-      class_binding_level = 0;
-    while (current_binding_level->parm_flag == 2)
-      current_binding_level = current_binding_level->level_chain;
+    free_binding_level = level;
+    find_class_binding_level ();
   }
 }
 
@@ -864,14 +861,8 @@ suspend_binding_level ()
     }
   is_class_level = 0;
 #endif /* defined(DEBUG_CP_BINDING_LEVELS) */
-  {
-    current_binding_level = current_binding_level->level_chain;
-    class_binding_level = current_binding_level;
-    if (class_binding_level->parm_flag != 2)
-      class_binding_level = 0;
-    while (current_binding_level->parm_flag == 2)
-      current_binding_level = current_binding_level->level_chain;
-  }
+  current_binding_level = current_binding_level->level_chain;
+  find_class_binding_level ();
 }
 
 static void
@@ -912,25 +903,44 @@ global_bindings_p ()
   return current_binding_level == global_binding_level;
 }
 
+/* Return the innermost binding level that is not for a class scope.  */
+
+static struct binding_level *
+innermost_nonclass_level ()
+{
+  struct binding_level *b;
+
+  b = current_binding_level;
+  while (b->parm_flag == 2)
+    b = b->level_chain;
+
+  return b;
+}
+
 /* Nonzero if we are currently in a toplevel binding level.  This
    means either the global binding level or a namespace in a toplevel
-   binding level.
-   Since there are no non-toplevel namespace levels, this really
-   means any namespace or pseudo-global level.  */
+   binding level.  Since there are no non-toplevel namespace levels,
+   this really means any namespace or pseudo-global level.  We also
+   include a class whose context is toplevel.  */
 
 int
 toplevel_bindings_p ()
 {
-  return current_binding_level->namespace_p 
-    || current_binding_level->pseudo_global;
+  struct binding_level *b = innermost_nonclass_level ();
+
+  return b->namespace_p || b->pseudo_global;
 }
 
-/* Nonzero if this is a namespace scope.  */
+/* Nonzero if this is a namespace scope, or if we are defining a class
+   which is itself at namespace scope, or whose enclosing class is
+   such a class, etc.  */
 
 int
 namespace_bindings_p ()
 {
-  return current_binding_level->namespace_p;
+  struct binding_level *b = innermost_nonclass_level ();
+
+  return b->namespace_p;
 }
 
 void
@@ -974,7 +984,9 @@ declare_namespace_level ()
 int
 pseudo_global_level_p ()
 {
-  return current_binding_level->pseudo_global;
+  struct binding_level *b = innermost_nonclass_level ();
+
+  return b->pseudo_global;
 }
 
 void
@@ -1085,6 +1097,7 @@ push_binding (id, decl, level)
   BINDING_VALUE (binding) = decl;
   BINDING_TYPE (binding) = NULL_TREE;
   BINDING_LEVEL (binding) = level;
+  INHERITED_VALUE_BINDING_P (binding) = 0;
   LOCAL_BINDING_P (binding) = (level != class_binding_level);
 
   /* And put it on the front of the ilst of bindings for ID.  */
@@ -1097,31 +1110,44 @@ push_binding (id, decl, level)
    stat' hack whereby a non-typedef class-name or enum-name can be
    bound at the same level as some other kind of entity.  It's the
    responsibility of the caller to check that inserting this name is
-   legal here.  */
-static void
+   legal here.  Returns nonzero if the new binding was successful.  */
+static int
 add_binding (id, decl)
      tree id;
      tree decl;
 {
   tree binding = IDENTIFIER_BINDING (id);
+  int ok = 1;
 
   if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
     /* The new name is the type name.  */
     BINDING_TYPE (binding) = decl;
-  else 
+  else if (!BINDING_VALUE (binding))
+    /* This situation arises when push_class_level_binding moves an
+       inherited type-binding out of the way to make room for a new
+       value binding.  */
+    BINDING_VALUE (binding) = decl;
+  else if (TREE_CODE (BINDING_VALUE (binding)) == TYPE_DECL
+	   && DECL_ARTIFICIAL (BINDING_VALUE (binding)))
     {
-      /* The old name must be the type name.  It was placed in
-	 IDENTIFIER_VALUE because it was thought, at the point it
-	 was declared, to be the only entity with such a name.  */
-      my_friendly_assert (TREE_CODE (BINDING_VALUE (binding)) == TYPE_DECL
-			  && DECL_ARTIFICIAL (BINDING_VALUE (binding)),
-			  0);
-
-      /* Move the type name into the type slot; it is now hidden by
-	 the new binding.  */
+      /* The old binding was a type name.  It was placed in
+	 BINDING_VALUE because it was thought, at the point it was
+	 declared, to be the only entity with such a name.  Move the
+	 type name into the type slot; it is now hidden by the new
+	 binding.  */
       BINDING_TYPE (binding) = BINDING_VALUE (binding);
       BINDING_VALUE (binding) = decl;
+      INHERITED_VALUE_BINDING_P (binding) = 0;
     }
+  else
+    {
+      cp_error ("declaration of `%#D'", decl);
+      cp_error_at ("conflicts with previous declaration `%#D'",
+		   BINDING_VALUE (binding));
+      ok = 0;
+    }
+
+  return ok;
 }
 
 /* Bind DECL to ID in the current_binding_level.
@@ -1134,14 +1160,26 @@ push_local_binding (id, decl, flags)
      tree decl;
      int flags;
 {
-  tree d = decl;
+  struct binding_level *b;
+
+  /* Skip over any local classes.  This makes sense if we call
+     push_local_binding with a friend decl of a local class.  */
+  b = current_binding_level;
+  while (b->parm_flag == 2)
+    b = b->level_chain;
 
   if (lookup_name_current_level (id))
-    /* Supplement the existing binding.  */
-    add_binding (id, d);
+    {
+      /* Supplement the existing binding.  */
+      if (!add_binding (id, decl))
+	/* It didn't work.  Something else must be bound at this
+	   level.  Do not add DECL to the list of things to pop
+	   later.  */
+	return;
+    }
   else
     /* Create a new binding.  */
-    push_binding (id, d, current_binding_level);
+    push_binding (id, decl, b);
 
   if (TREE_CODE (decl) == OVERLOAD || (flags & PUSH_USING))
     /* We must put the OVERLOAD into a TREE_LIST since the
@@ -1151,21 +1189,30 @@ push_local_binding (id, decl, flags)
 
   /* And put DECL on the list of things declared by the current
      binding level.  */
-  TREE_CHAIN (decl) = current_binding_level->names;
-  current_binding_level->names = decl;
+  TREE_CHAIN (decl) = b->names;
+  b->names = decl;
 }
 
-/* Bind DECL to ID in the class_binding_level.  */
+/* Bind DECL to ID in the class_binding_level.  Returns nonzero if the
+   binding was successful.  */
 
-void
+int
 push_class_binding (id, decl)
      tree id;
      tree decl;
 {
-  if (IDENTIFIER_BINDING (id)
-      && BINDING_LEVEL (IDENTIFIER_BINDING (id)) == class_binding_level)
+  int result = 1;
+  tree binding = IDENTIFIER_BINDING (id);
+  tree context;
+
+  /* Note that we declared this value so that we can issue an error if
+     this an illegal redeclaration of a name already used for some
+     other purpose.  */
+  note_name_declared_in_class (id, decl);
+
+  if (binding && BINDING_LEVEL (binding) == class_binding_level)
     /* Supplement the existing binding.  */
-    add_binding (id, decl);
+    result = add_binding (id, decl);
   else
     /* Create a new binding.  */
     push_binding (id, decl, class_binding_level);
@@ -1176,6 +1223,32 @@ push_class_binding (id, decl)
      a class-name or enum-name we might prefer a field-name, or some
      such.  */
   IDENTIFIER_CLASS_VALUE (id) = BINDING_VALUE (IDENTIFIER_BINDING (id));
+
+  /* If this is a binding from a base class, mark it as such.  */
+  binding = IDENTIFIER_BINDING (id);
+  if (BINDING_VALUE (binding) == decl && TREE_CODE (decl) != TREE_LIST)
+    {
+      if (TREE_CODE (decl) == OVERLOAD)
+	context = DECL_REAL_CONTEXT (OVL_CURRENT (decl));
+      else
+	{
+	  my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (decl)) == 'd',
+			      0);
+	  context = DECL_REAL_CONTEXT (decl);
+	}
+
+      if (is_properly_derived_from (current_class_type, context))
+	INHERITED_VALUE_BINDING_P (binding) = 1;
+      else
+	INHERITED_VALUE_BINDING_P (binding) = 0;
+    }
+  else if (BINDING_VALUE (binding) == decl)
+    /* We only encounter a TREE_LIST when push_class_decls detects an
+       ambiguity.  Such an ambiguity can be overridden by a definition
+       in this class.  */
+    INHERITED_VALUE_BINDING_P (binding) = 1;
+
+  return result;
 }
 
 /* Remove the binding for DECL which should be the innermost binding
@@ -1647,14 +1720,6 @@ pushlevel_class ()
   decl_stack = push_decl_level (decl_stack, &decl_obstack);
   class_binding_level = current_binding_level;
   class_binding_level->parm_flag = 2;
-  /* We have just pushed into a new binding level.  Now, fake out the rest
-     of the compiler.  Set the `current_binding_level' back to point to
-     the most closely containing non-class binding level.  */
-  do
-    {
-      current_binding_level = current_binding_level->level_chain;
-    }
-  while (current_binding_level->parm_flag == 2);
 }
 
 /* ...and a poplevel for class declarations.  FORCE is used to force
@@ -1677,10 +1742,37 @@ poplevel_class (force)
      if we don't touch it here, we're able to use the cache effect if the
      next time we're entering a class scope, it is the same class.  */
   if (current_class_depth != 1 || force)
-    for (shadowed = level->class_shadowed;
-	 shadowed;
-	 shadowed = TREE_CHAIN (shadowed))
-      IDENTIFIER_CLASS_VALUE (TREE_PURPOSE (shadowed)) = TREE_VALUE (shadowed);
+    {
+      struct binding_level* b;
+
+      /* Clear out our IDENTIFIER_CLASS_VALUEs.  */
+      for (shadowed = level->class_shadowed;
+	   shadowed;
+	   shadowed = TREE_CHAIN (shadowed))
+	IDENTIFIER_CLASS_VALUE (TREE_PURPOSE (shadowed)) = NULL_TREE;
+	
+      /* Find the next enclosing class, and recreate
+	 IDENTIFIER_CLASS_VALUEs appropriate for that class.  */
+      b = level->level_chain;
+      while (b && b->parm_flag != 2)
+	b = b->level_chain;
+
+      if (b)
+	for (shadowed = b->class_shadowed; 
+	     shadowed; 
+	     shadowed = TREE_CHAIN (shadowed))
+	  {
+	    tree t;
+
+	    t = IDENTIFIER_BINDING (TREE_PURPOSE (shadowed));
+	    while (t && BINDING_LEVEL (t) != b)
+	      t = TREE_CHAIN (t);
+      
+	    if (t)
+	      IDENTIFIER_CLASS_VALUE (TREE_PURPOSE (shadowed)) 
+		= BINDING_VALUE (t);
+	  }
+    }
   else
     /* Remember to save what IDENTIFIER's were bound in this scope so we
        can recover from cache misses.  */
@@ -1704,9 +1796,6 @@ poplevel_class (force)
 		      class_binding_level->parm_flag,
 		      class_binding_level->keep);
 
-  if (class_binding_level->parm_flag != 2)
-    class_binding_level = (struct binding_level *)0;
-
   /* Now, pop out of the binding level which we created up in the
      `pushlevel_class' routine.  */
 #if defined(DEBUG_CP_BINDING_LEVELS)
@@ -1717,6 +1806,24 @@ poplevel_class (force)
 
   return block;
 }
+
+/* We are entering the scope of a class.  Clear IDENTIFIER_CLASS_VALUE
+   for any names in enclosing classes.  */
+
+void
+clear_identifier_class_values ()
+{
+  tree t;
+
+  if (!class_binding_level)
+    return;
+
+  for (t = class_binding_level->class_shadowed;
+       t;
+       t = TREE_CHAIN (t))
+    IDENTIFIER_CLASS_VALUE (TREE_PURPOSE (t)) = NULL_TREE;
+}
+
 
 /* For debugging.  */
 static int no_print_functions = 0;
@@ -2202,7 +2309,7 @@ maybe_push_to_top_level (pseudo)
   extern int current_lang_stacksize;
   struct saved_scope *s
     = (struct saved_scope *) xmalloc (sizeof (struct saved_scope));
-  struct binding_level *b = inner_binding_level;
+  struct binding_level *b = current_binding_level;
   tree old_bindings = NULL_TREE;
 
   push_cp_function_context (NULL_TREE);
@@ -2296,10 +2403,7 @@ pop_from_top_level ()
 
   /* Clear out class-level bindings cache.  */
   if (previous_class_type)
-    {
-      popclass (-1);
-      previous_class_type = NULL_TREE;
-    }
+    invalidate_class_lookup_cache ();
 
   pop_obstacks ();
 
@@ -2385,14 +2489,14 @@ set_identifier_type_value_with_scope (id, type, b)
   SET_IDENTIFIER_TYPE_VALUE (id, type);
 }
 
-/* As set_identifier_type_value_with_scope, but using inner_binding_level.  */
+/* As set_identifier_type_value_with_scope, but using current_binding_level.  */
 
 void
 set_identifier_type_value (id, type)
      tree id;
      tree type;
 {
-  set_identifier_type_value_with_scope (id, type, inner_binding_level);
+  set_identifier_type_value_with_scope (id, type, current_binding_level);
 }
 
 /* Return the type associated with id. */
@@ -2425,9 +2529,9 @@ pop_everything ()
 #ifdef DEBUG_CP_BINDING_LEVELS
   fprintf (stderr, "XXX entering pop_everything ()\n");
 #endif
-  while (! toplevel_bindings_p () && ! pseudo_global_level_p ())
+  while (!toplevel_bindings_p ())
     {
-      if (class_binding_level)
+      if (current_binding_level->parm_flag == 2)
 	pop_nested_class (1);
       else
 	poplevel (0, 0, 0);
@@ -2506,8 +2610,6 @@ maybe_process_template_type_declaration (type, globalize, b)
 	      && !globalize && b->pseudo_global
 	      && b->level_chain->parm_flag == 2)
 	    {
-	      pushdecl_with_scope (CLASSTYPE_TI_TEMPLATE (type),
-				   b->level_chain);
 	      finish_member_declaration (CLASSTYPE_TI_TEMPLATE (type));
 	      /* Put this tag on the list of tags for the class, since
 		 that won't happen below because B is not the class
@@ -2538,7 +2640,7 @@ pushtag (name, type, globalize)
   tree context = 0;
   tree c_decl = 0;
 
-  b = inner_binding_level;
+  b = current_binding_level;
   while (b->tag_transparent
 	 || (globalize && b->parm_flag == 2))
     b = b->level_chain;
@@ -2604,13 +2706,14 @@ pushtag (name, type, globalize)
 
 	  if (b->parm_flag == 2)
 	    {
-	      pushdecl_class_level (d);
 	      if (newdecl && !PROCESSING_REAL_TEMPLATE_DECL_P ())
 		/* Put this TYPE_DECL on the TYPE_FIELDS list for the
 		   class.  But if it's a member template class, we
 		   want the TEMPLATE_DECL, not the TYPE_DECL, so this
 		   is done later.  */
 		finish_member_declaration (d);
+	      else
+		pushdecl_class_level (d);
 	    }
 	  else
 	    d = pushdecl_with_scope (d, b);
@@ -3942,8 +4045,8 @@ pushdecl (x)
 	 We will reverse them later if necessary.  */
       TREE_CHAIN (x) = current_binding_level->names;
       current_binding_level->names = x;
-      if (! (current_binding_level != global_binding_level 
-	     || TREE_PERMANENT (x)))
+      if (current_binding_level == global_binding_level
+	  && !TREE_PERMANENT (x))
 	my_friendly_abort (124);
     }
 
@@ -3987,7 +4090,7 @@ tree
 pushdecl_namespace_level (x)
      tree x;
 {
-  register struct binding_level *b = inner_binding_level;
+  register struct binding_level *b = current_binding_level;
   register tree t;
 
   t = pushdecl_with_scope (x, NAMESPACE_LEVEL (current_namespace));
@@ -4048,38 +4151,29 @@ pushdecl_class_level (x)
 {
   /* Don't use DECL_ASSEMBLER_NAME here!  Everything that looks in class
      scope looks for the pre-mangled name.  */
-  register tree name = DECL_NAME (x);
+  register tree name;
+
+  if (TREE_CODE (x) == OVERLOAD)
+    x = OVL_CURRENT (x);
+  name = DECL_NAME (x);
 
   if (name)
     {
       if (TYPE_BEING_DEFINED (current_class_type))
-	{
-	  /* A name N used in a class S shall refer to the same declaration
-	     in its context and when re-evaluated in the completed scope of S.
-	     Types, enums, and static vars are checked here; other
-	     members are checked in finish_struct.  */
-	  tree icv = IDENTIFIER_CLASS_VALUE (name);
-
-	  /* This should match check_member_decl_is_same_in_complete_scope.  */
-	  if (icv && icv != x
-	      && flag_optional_diags
-	      /* Don't complain about inherited names.  */
-	      && id_in_current_class (name)
-	      /* Or shadowed tags.  */
-	      && !(DECL_DECLARES_TYPE_P (icv)
-		   && DECL_CONTEXT (icv) == current_class_type))
-	    {
-	      cp_pedwarn ("declaration of identifier `%D' as `%#D'", name, x);
-	      cp_pedwarn_at ("conflicts with previous use in class as `%#D'",
-			     icv);
-	    }
-
-	  check_template_shadow (x);
-	}
+	check_template_shadow (x);
 
       push_class_level_binding (name, x);
       if (TREE_CODE (x) == TYPE_DECL)
 	set_identifier_type_value (name, TREE_TYPE (x));
+    }
+  else if (ANON_UNION_TYPE_P (TREE_TYPE (x)))
+    {
+      tree f;
+
+      for (f = TYPE_FIELDS (TREE_TYPE (x));
+	   f;
+	   f = TREE_CHAIN (f))
+	pushdecl_class_level (f);
     }
 }
 
@@ -4114,6 +4208,7 @@ push_class_level_binding (name, x)
      tree name;
      tree x;
 {
+  tree binding;
   /* The class_binding_level will be NULL if x is a template 
      parameter name in a member template.  */
   if (!class_binding_level)
@@ -4122,19 +4217,64 @@ push_class_level_binding (name, x)
   /* If this declaration shadows a declaration from an enclosing
      class, then we will need to restore IDENTIFIER_CLASS_VALUE when
      we leave this class.  Record the shadowed declaration here.  */
-  maybe_push_cache_obstack ();
-  class_binding_level->class_shadowed
-    = tree_cons (name, IDENTIFIER_CLASS_VALUE (name),
-		 class_binding_level->class_shadowed);
-  TREE_TYPE (class_binding_level->class_shadowed)
-    = x;
-  pop_obstacks ();
+  binding = IDENTIFIER_BINDING (name);
+  if (binding 
+      && ((TREE_CODE (x) == OVERLOAD
+	   && BINDING_VALUE (binding)
+	   && is_overloaded_fn (BINDING_VALUE (binding)))
+	  || INHERITED_VALUE_BINDING_P (binding)))
+    {
+      tree shadow;
+      tree old_decl;
 
-  /* Put the binding on the stack of bindings for the identifier, and
-     update IDENTIFIER_CLASS_VALUE.  */
-  push_class_binding (name, x);
+      /* If the old binding was from a base class, and was for a tag
+	 name, slide it over to make room for the new binding.  The
+	 old binding is still visible if explicitly qualified with a
+	 class-key.  */
+      if (INHERITED_VALUE_BINDING_P (binding)
+	  && BINDING_VALUE (binding)
+	  && TREE_CODE (BINDING_VALUE (binding)) == TYPE_DECL
+	  && DECL_ARTIFICIAL (BINDING_VALUE (binding))
+	  && !(TREE_CODE (x) == TYPE_DECL && DECL_ARTIFICIAL (x)))
+	{
+	  old_decl = BINDING_TYPE (binding);
+	  BINDING_TYPE (binding) = BINDING_VALUE (binding);
+	  BINDING_VALUE (binding) = NULL_TREE;
+	  INHERITED_VALUE_BINDING_P (binding) = 0;
+	}
+      else
+	old_decl = BINDING_VALUE (binding);
 
-  obstack_ptr_grow (&decl_obstack, x);
+      /* There was already a binding for X containing fewer
+	 functions than are named in X.  Find the previous
+	 declaration of X on the class-shadowed list, and update it.  */
+      for (shadow = class_binding_level->class_shadowed;
+	   shadow;
+	   shadow = TREE_CHAIN (shadow))
+	if (TREE_PURPOSE (shadow) == name
+	    && TREE_TYPE (shadow) == old_decl)
+	  {
+	    BINDING_VALUE (binding) = x;
+	    INHERITED_VALUE_BINDING_P (binding) = 0;
+	    TREE_TYPE (shadow) = x;
+	    return;
+	  }
+    }
+
+  /* If we didn't replace an existing binding, put the binding on the
+     stack of bindings for the identifier, and update
+     IDENTIFIER_CLASS_VALUE.  */
+  if (push_class_binding (name, x))
+    {
+      maybe_push_cache_obstack ();
+      class_binding_level->class_shadowed
+	= tree_cons (name, IDENTIFIER_CLASS_VALUE (name),
+		     class_binding_level->class_shadowed);
+      pop_obstacks ();
+      /* Record the value we are binding NAME to so that we can know
+	 what to pop later.  */
+      TREE_TYPE (class_binding_level->class_shadowed) = x;
+    }
 }
 
 /* Insert another USING_DECL into the current binding level,
@@ -5434,26 +5574,6 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 		   || TREE_CODE (type) == TYPENAME_TYPE)
 	    /* Someone else will give an error about this if needed.  */
 	    val = NULL_TREE;
-	  else if (TYPE_BEING_DEFINED (type))
-	    {
-	      val = IDENTIFIER_CLASS_VALUE (name);
-	      if (val && DECL_CONTEXT (val) != type)
-		{
-		  struct binding_level *b = class_binding_level;
-		  for (val = NULL_TREE; b; b = b->level_chain)
-		    {
-		      tree t = purpose_member (name, b->class_shadowed);
-		      if (t && TREE_VALUE (t)
-			  && DECL_CONTEXT (TREE_VALUE (t)) == type)
-			{
-			  val = TREE_VALUE (t);
-			  break;
-			}
-		    }
-		}
-	      if (val == NULL_TREE)
-		val = lookup_field (type, name, 0, 1);
-	    }
 	  else if (type == current_class_type)
 	    val = IDENTIFIER_CLASS_VALUE (name);
 	  else
@@ -5494,26 +5614,6 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	  break;
 	}
     }
-
-  /* If VAL is a type from a dependent base, we're not really supposed
-     to be able to see it; the fact that we can is the "implicit
-     typename" extension.  We call lookup_field here to turn VAL into
-     a TYPE_DECL for a TYPENAME_TYPE.  */
-  if (processing_template_decl && val
-      && val == IDENTIFIER_CLASS_VALUE (name)
-      && TREE_CODE (val) == TYPE_DECL
-      && !currently_open_class (DECL_CONTEXT (val))
-      && uses_template_parms (current_class_type))
-    val = lookup_field (current_class_type, name, 0, 1);
-
-  /* We don't put names from baseclasses onto the IDENTIFIER_BINDING
-     list when we're defining a type.  It would probably be simpler to
-     do this, but we don't.  So, we must lookup names from base
-     classes explicitly.  */
-  if (!val && !nonclass 
-      && current_class_type && TYPE_BEING_DEFINED (current_class_type))
-    val = qualify_lookup (lookup_field (current_class_type, name, 0, 0),
-			  flags);
 
   /* The name might be from an enclosing class of the current scope.  */
   if (!val && !nonclass && current_class_type)
@@ -9072,12 +9172,15 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		if (TREE_CODE (fns) == LOOKUP_EXPR)
 		  fns = TREE_OPERAND (fns, 0);
 
-		if (TREE_CODE (fns) == IDENTIFIER_NODE)
-		  dname = fns;
-		else if (is_overloaded_fn (fns))
-		  dname = DECL_NAME (get_first_fn (fns));
-		else
-		  my_friendly_abort (0);
+		dname = fns;
+		if (TREE_CODE (dname) == COMPONENT_REF)
+		  dname = TREE_OPERAND (dname, 1);
+		if (TREE_CODE (dname) != IDENTIFIER_NODE)
+		  {
+		    my_friendly_assert (is_overloaded_fn (dname),
+					19990331);
+		    dname = DECL_NAME (get_first_fn (dname));
+		  }
 	      }
 	  /* Fall through. */
 
@@ -12126,7 +12229,7 @@ xref_tag (code_type_node, name, globalize)
   enum tree_code code;
   int temp = 0;
   register tree ref, t;
-  struct binding_level *b = inner_binding_level;
+  struct binding_level *b = current_binding_level;
   int got_type = 0;
   tree attributes = NULL_TREE;
 
@@ -12557,7 +12660,7 @@ start_enum (name)
      tree name;
 {
   register tree enumtype = NULL_TREE;
-  struct binding_level *b = inner_binding_level;
+  struct binding_level *b = current_binding_level;
 
   /* We are wasting space here and putting these on the permanent_obstack so
      that typeid(local enum) will work correctly. */
@@ -12795,13 +12898,10 @@ build_enumerator (name, value, type)
  TREE_READONLY (decl) = 1;
 
  if (context && context == current_class_type)
-   {
-     pushdecl_class_level (decl);
-     /* In something like `struct S { enum E { i = 7 }; };' we put `i'
-	on the TYPE_FIELDS list for `S'.  (That's so that you can say
-	things like `S::i' later.)  */
-     finish_member_declaration (decl);
-   }
+   /* In something like `struct S { enum E { i = 7 }; };' we put `i'
+      on the TYPE_FIELDS list for `S'.  (That's so that you can say
+      things like `S::i' later.)  */
+   finish_member_declaration (decl);
  else
    {
      pushdecl (decl);
@@ -14504,13 +14604,6 @@ revert_static_member_fn (decl, fn, argtypes)
     *fn = tmp;
   if (argtypes)
     *argtypes = args;
-}
-
-int
-id_in_current_class (id)
-     tree id;
-{
-  return !!purpose_member (id, class_binding_level->class_shadowed);
 }
 
 struct cp_function

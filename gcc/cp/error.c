@@ -806,6 +806,10 @@ dump_decl (t, v)
       }
       break;
 
+    case OVERLOAD:
+      t = OVL_CURRENT (t);
+      /* Fall through.  */
+
     case FUNCTION_DECL:
       if (GLOBAL_IORD_P (DECL_ASSEMBLER_NAME (t)))
 	dump_global_iord (DECL_ASSEMBLER_NAME (t));
@@ -1928,6 +1932,8 @@ cp_file_of (t)
     return DECL_SOURCE_FILE (DECL_CONTEXT (t));
   else if (TREE_CODE_CLASS (TREE_CODE (t)) == 't')
     return DECL_SOURCE_FILE (TYPE_MAIN_DECL (t));
+  else if (TREE_CODE (t) == OVERLOAD)
+    return DECL_SOURCE_FILE (OVL_FUNCTION (t));
   else
     return DECL_SOURCE_FILE (t);
 }
@@ -1945,6 +1951,8 @@ cp_line_of (t)
 
   if (TREE_CODE_CLASS (TREE_CODE (t)) == 't')
     line = DECL_SOURCE_LINE (TYPE_MAIN_DECL (t));
+  else if (TREE_CODE (t) == OVERLOAD)
+    line = DECL_SOURCE_LINE (OVL_FUNCTION (t));
   else
     line = DECL_SOURCE_LINE (t);
 

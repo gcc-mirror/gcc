@@ -89,7 +89,6 @@ static int hides PROTO((tree, tree));
 static tree virtual_context PROTO((tree, tree, tree));
 static tree dfs_check_overlap PROTO((tree, void *));
 static tree dfs_no_overlap_yet PROTO((tree, void *));
-static void envelope_add_decl PROTO((tree, tree, tree *));
 static int get_base_distance_recursive
 	PROTO((tree, int, int, int, int *, tree *, tree,
 	       int, int *, int, int));
@@ -111,8 +110,8 @@ static tree dfs_find_vbases PROTO((tree, void *));
 static tree dfs_clear_vbase_slots PROTO((tree, void *));
 static tree dfs_init_vbase_pointers PROTO((tree, void *));
 static tree dfs_get_vbase_types PROTO((tree, void *));
-static tree dfs_pushdecls PROTO((tree, void *));
-static tree dfs_compress_decls PROTO((tree, void *));
+static tree dfs_push_type_decls PROTO((tree, void *));
+static tree dfs_push_decls PROTO((tree, void *));
 static tree dfs_unuse_fields PROTO((tree, void *));
 static tree add_conversions PROTO((tree, void *));
 static tree get_virtuals_named_this PROTO((tree, tree));
@@ -150,6 +149,8 @@ static tree dfs_assert_unmarked_p PROTO ((tree, void *));
 static void assert_canonical_unmarked PROTO ((tree));
 static int protected_accessible_p PROTO ((tree, tree, tree, tree));
 static int friend_accessible_p PROTO ((tree, tree, tree, tree));
+static void setup_class_bindings PROTO ((tree, int));
+static int template_self_reference_p PROTO ((tree, tree));
 
 /* Allocate a level of searching.  */
 
@@ -1175,6 +1176,25 @@ lookup_field_queue_p (binfo, data)
     return binfo;
 }
 
+/* Within the scope of a template class, you can refer to the
+   particular to the current specialization with the name of the
+   template itself.  For example:
+   
+     template <typename T> struct S { S* sp; }
+
+   Returns non-zero if DECL is such a declaration in a class TYPE.  */
+
+static int
+template_self_reference_p (type, decl)
+     tree type;
+     tree decl;
+{
+  return  (CLASSTYPE_USE_TEMPLATE (type)
+	   && TREE_CODE (decl) == TYPE_DECL
+	   && DECL_ARTIFICIAL (decl)
+	   && DECL_NAME (decl) == constructor_name (type));
+}
+
 /* DATA is really a struct lookup_field_info.  Look for a field with
    the name indicated there in BINFO.  If this function returns a
    non-NULL value it is the result of the lookup.  Called from
@@ -1204,6 +1224,11 @@ lookup_field_r (binfo, data)
   /* If there is no declaration with the indicated name in this type,
      then there's nothing to do.  */
   if (!nval)
+    return NULL_TREE;
+
+  /* You must name a template base class with a template-id.  */
+  if (!same_type_p (type, lfi->type) 
+      && template_self_reference_p (type, nval))
     return NULL_TREE;
 
   from_dep_base_p = dependent_base_p (binfo);
@@ -1266,7 +1291,12 @@ lookup_field_r (binfo, data)
 	{
 	  nval = purpose_member (lfi->name, CLASSTYPE_TAGS (type));
 	  if (nval)
-	    nval = TYPE_MAIN_DECL (TREE_VALUE (nval));
+	    {
+	      nval = TYPE_MAIN_DECL (TREE_VALUE (nval));
+	      if (!same_type_p (type, lfi->type)
+		  && template_self_reference_p (type, nval))
+		nval = NULL_TREE;
+	    }
 	}
 
       if (nval)
@@ -1300,13 +1330,15 @@ lookup_field_r (binfo, data)
 }
 
 /* Look for a memer named NAME in an inheritance lattice dominated by
-   XBASETYPE.  PROTECT is zero if we can avoid computing access
-   information, otherwise it is 1.  WANT_TYPE is 1 when we should only
-   return TYPE_DECLs, if no TYPE_DECL can be found return NULL_TREE.
+   XBASETYPE.  PROTECT is 0 or two, we do not check access.  If it is
+   1, we enforce accessibility.  If PROTECT is zero, then, for an
+   ambiguous lookup, we return NULL.  If PROTECT is 1, we issue an
+   error message.  If PROTECT is two 2, we return a TREE_LIST whose
+   TREE_PURPOSE is error_mark_node and whose TREE_VALUE is the list of
+   ambiguous candidates.
 
-   It was not clear what should happen if WANT_TYPE is set, and an
-   ambiguity is found.  At least one use (lookup_name) to not see
-   the error.  */
+   WANT_TYPE is 1 when we should only return TYPE_DECLs, if no
+   TYPE_DECL can be found return NULL_TREE.  */
 
 tree
 lookup_member (xbasetype, name, protect, want_type)
@@ -1323,13 +1355,6 @@ lookup_member (xbasetype, name, protect, want_type)
      members.  It is used for ambiguity checking and the hidden
      checks.  Whereas rval is only set if a proper (not hidden)
      non-function member is found.  */
-
-  /* rval_binfo_h and binfo_h are binfo values used when we perform the
-     hiding checks, as virtual base classes may not be shared.  The strategy
-     is we always go into the binfo hierarchy owned by TYPE_BINFO of
-     virtual base classes, as we cross virtual base class lines.  This way
-     we know that binfo of a virtual base class will always == itself when
-     found along any line.  (mrs)  */
 
   const char *errstr = 0;
 
@@ -1379,6 +1404,21 @@ lookup_member (xbasetype, name, protect, want_type)
   if (!protect && lfi.ambiguous)
     return NULL_TREE;
   
+  if (protect == 2) 
+    {
+      if (lfi.ambiguous)
+	{
+	  /* This flag tells hack_identifier that the lookup is
+	     ambiguous.  */
+	  TREE_NONLOCAL_FLAG (lfi.ambiguous) = 1;
+	  return scratch_tree_cons (error_mark_node,
+				    lfi.ambiguous,
+				    NULL_TREE);
+	}
+      else
+	protect = 0;
+    }
+
   /* [class.access]
 
      In the case of overloaded function names, access control is
@@ -2814,107 +2854,6 @@ note_debug_info_needed (type)
 
 /* Subroutines of push_class_decls ().  */
 
-/* Add in a decl to the envelope.  */
-static void
-envelope_add_decl (type, decl, values)
-     tree type, decl, *values;
-{
-  tree context, *tmp;
-  tree name = DECL_NAME (decl);
-  int dont_add = 0;
-
-  /* Yet Another Implicit Typename Kludge:  Since we don't tsubst
-     the members for partial instantiations, DECL_CONTEXT (decl) is wrong.
-     But pretend it's right for this function.  */
-  if (processing_template_decl)
-    type = DECL_REAL_CONTEXT (decl);
-
-  /* virtual base names are always unique.  */
-  if (VBASE_NAME_P (name))
-    *values = NULL_TREE;
-
-  /* Possible ambiguity.  If its defining type(s)
-     is (are all) derived from us, no problem.  */
-  else if (*values && TREE_CODE (*values) != TREE_LIST)
-    {
-      tree value = *values;
-      /* Only complain if we shadow something we can access.  */
-      if (warn_shadow && TREE_CODE (decl) == FUNCTION_DECL
-	  && ((DECL_LANG_SPECIFIC (*values)
-	       && DECL_CLASS_CONTEXT (value) == current_class_type)
-	      || ! TREE_PRIVATE (value)))
-	/* Should figure out access control more accurately.  */
-	{
-	  cp_warning_at ("member `%#D' is shadowed", value);
-	  cp_warning_at ("by member function `%#D'", decl);
-	  warning ("in this context");
-	}
-
-      context = DECL_REAL_CONTEXT (value);
-
-      if (context == type)
-	{
-	  if (TREE_CODE (value) == TYPE_DECL
-	      && DECL_ARTIFICIAL (value))
-	    *values = NULL_TREE;
-	  else
-	    dont_add = 1;
-	}
-      else if (type == current_class_type
-	       || DERIVED_FROM_P (context, type))
-	{
-	  /* Don't add in *values to list */
-	  *values = NULL_TREE;
-	}
-      else
-	*values = build_tree_list (NULL_TREE, value);
-    }
-  else
-    for (tmp = values; *tmp;)
-      {
-	tree value = TREE_VALUE (*tmp);
-	my_friendly_assert (TREE_CODE (value) != TREE_LIST, 999);
-	context = (TREE_CODE (value) == FUNCTION_DECL
-		   && DECL_VIRTUAL_P (value))
-	  ? DECL_CLASS_CONTEXT (value)
-	    : DECL_CONTEXT (value);
-
-	if (type == current_class_type
-	    || DERIVED_FROM_P (context, type))
-	  {
-	    /* remove *tmp from list */
-	    *tmp = TREE_CHAIN (*tmp);
-	  }
-	else
-	  tmp = &TREE_CHAIN (*tmp);
-      }
-
-  if (! dont_add)
-    {
-      /* Put the new contents in our envelope.  */
-      if (TREE_CODE (decl) == FUNCTION_DECL)
-	{
-	  *values = tree_cons (name, decl, *values);
-	  TREE_NONLOCAL_FLAG (*values) = 1;
-	  TREE_TYPE (*values) = unknown_type_node;
-	}
-      else
-	{
-	  if (*values)
-	    {
-	      *values = tree_cons (NULL_TREE, decl, *values);
-	      /* Mark this as a potentially ambiguous member.  */
-	      /* Leaving TREE_TYPE blank is intentional.
-		 We cannot use `error_mark_node' (lookup_name)
-		 or `unknown_type_node' (all member functions use this).  */
-	      TREE_NONLOCAL_FLAG (*values) = 1;
-	    }
-	  else
-	    *values = decl;
-	}
-    }
-}
-
 /* Returns 1 iff BINFO is a base we shouldn't really be able to see into,
    because it (or one of the intermediate bases) depends on template parms.  */
 
@@ -2932,182 +2871,133 @@ dependent_base_p (binfo)
   return 0;
 }
 
-/* Add the instance variables which this class contributed to the
-   current class binding contour.  When a redefinition occurs, if the
-   redefinition is strictly within a single inheritance path, we just
-   overwrite the old declaration with the new.  If the fields are not
-   within a single inheritance path, we must cons them.
+static void
+setup_class_bindings (name, type_binding_p)
+     tree name;
+     int type_binding_p;
+{
+  tree type_binding = NULL_TREE;
+  tree value_binding;
 
-   In order to know what decls are new (stemming from the current
-   invocation of push_class_decls) we enclose them in an "envelope",
-   which is a TREE_LIST node where the TREE_PURPOSE slot contains the
-   new decl (or possibly a list of competing ones), the TREE_VALUE slot
-   points to the old value and the TREE_CHAIN slot chains together all
-   envelopes which needs to be "opened" in push_class_decls.  Opening an
-   envelope means: push the old value onto the class_shadowed list,
-   install the new one and if it's a TYPE_DECL do the same to the
-   IDENTIFIER_TYPE_VALUE.  Such an envelope is recognized by seeing that
-   the TREE_PURPOSE slot is non-null, and that it is not an identifier.
-   Because if it is, it could be a set of overloaded methods from an
-   outer scope.  */
+  /* If we've already done the lookup for this declaration, we're
+     done.  */
+  if (IDENTIFIER_CLASS_VALUE (name))
+    return;
+
+  /* First, deal with the type binding.  */
+  if (type_binding_p)
+    {
+      type_binding = lookup_member (current_class_type, name,
+				    /*protect=*/2,
+				    /*want_type=*/1);
+      if (TREE_CODE (type_binding) == TREE_LIST 
+	  && TREE_PURPOSE (type_binding) == error_mark_node)
+	/* NAME is ambiguous.  */
+	push_class_level_binding (name, TREE_VALUE (type_binding));
+      else
+	pushdecl_class_level (type_binding);
+    }
+
+  /* Now, do the value binding.  */
+  value_binding = lookup_member (current_class_type, name,
+				 /*protect=*/2,
+				 /*want_type=*/0);
+
+  if (type_binding_p
+      && (TREE_CODE (value_binding) == TYPE_DECL
+	  || (TREE_CODE (value_binding) == TREE_LIST
+	      && TREE_PURPOSE (value_binding) == error_mark_node
+	      && (TREE_CODE (TREE_VALUE (TREE_VALUE (value_binding)))
+		  == TYPE_DECL))))
+    /* We found a type-binding, even when looking for a non-type
+       binding.  This means that we already processed this binding
+       above.  */
+    my_friendly_assert (type_binding_p, 19990401);
+  else
+    {
+      if (TREE_CODE (value_binding) == TREE_LIST 
+	  && TREE_PURPOSE (value_binding) == error_mark_node)
+	/* NAME is ambiguous.  */
+	push_class_level_binding (name, TREE_VALUE (value_binding));
+      else
+	{
+	  if (TREE_CODE (value_binding) == TREE_LIST)
+	    /* NAME is some overloaded functions.  */
+	    value_binding = TREE_VALUE (value_binding);
+	  pushdecl_class_level (value_binding);
+	}
+    }
+}
+
+/* Push class-level declarations for any names appearing in BINFO that
+   are TYPE_DECLS.  */
 
 static tree
-dfs_pushdecls (binfo, data)
+dfs_push_type_decls (binfo, data)
      tree binfo;
-     void *data;
+     void *data ATTRIBUTE_UNUSED;
 {
-  tree *closed_envelopes = (tree *) data;
-  tree type = BINFO_TYPE (binfo);
+  tree type;
   tree fields;
-  tree method_vec;
-  int dummy = 0;
 
-  /* Only record types if we're a template base.  */
-  if (processing_template_decl && type != current_class_type
-      && dependent_base_p (binfo))
-    dummy = 1;
-
+  type = BINFO_TYPE (binfo);
   for (fields = TYPE_FIELDS (type); fields; fields = TREE_CHAIN (fields))
-    {
-      if (dummy && TREE_CODE (fields) != TYPE_DECL)
-	continue;
-
-      /* Unmark so that if we are in a constructor, and then find that
-	 this field was initialized by a base initializer,
-	 we can emit an error message.  */
-      if (TREE_CODE (fields) == FIELD_DECL)
-	TREE_USED (fields) = 0;
-
-      /* Recurse into anonymous unions.  */
-      if (DECL_NAME (fields) == NULL_TREE
-	  && TREE_CODE (TREE_TYPE (fields)) == UNION_TYPE)
-	{
-	  dfs_pushdecls (TYPE_BINFO (TREE_TYPE (fields)), data);
-	  continue;
-	}
-
-      if (DECL_NAME (fields))
-	{
-	  tree name = DECL_NAME (fields);
-	  tree class_value = IDENTIFIER_CLASS_VALUE (name);
-
-	  /* If the class value is not an envelope of the kind described in
-	     the comment above, we create a new envelope.  */
-	  maybe_push_cache_obstack ();
-	  if (class_value == NULL_TREE || TREE_CODE (class_value) != TREE_LIST
-	      || TREE_PURPOSE (class_value) == NULL_TREE
-	      || TREE_CODE (TREE_PURPOSE (class_value)) == IDENTIFIER_NODE)
-	    {
-	      /* See comment above for a description of envelopes.  */
-	      *closed_envelopes = tree_cons (NULL_TREE, class_value,
-					     *closed_envelopes);
-	      IDENTIFIER_CLASS_VALUE (name) = *closed_envelopes;
-	      class_value = IDENTIFIER_CLASS_VALUE (name);
-	    }
-
-	  envelope_add_decl (type, fields, &TREE_PURPOSE (class_value));
-	  pop_obstacks ();
-	}
-    }
-
-  method_vec = CLASS_TYPE_P (type) ? CLASSTYPE_METHOD_VEC (type) : NULL_TREE;
-  if (method_vec && ! dummy)
-    {
-      tree *methods;
-      tree *end;
-
-      /* Farm out constructors and destructors.  */
-      end = TREE_VEC_END (method_vec);
-
-      for (methods = &TREE_VEC_ELT (method_vec, 2);
-	   *methods && methods != end;
-	   methods++)
-	{
-	  /* This will cause lookup_name to return a pointer
-	     to the tree_list of possible methods of this name.  */
-	  tree name;
-	  tree class_value;
-
-	  
-	  name = DECL_NAME (OVL_CURRENT (*methods));
-	  class_value = IDENTIFIER_CLASS_VALUE (name);
-
-	  maybe_push_cache_obstack ();
-
-	  /* If the class value is not an envelope of the kind described in
-	     the comment above, we create a new envelope.  */
-	  if (class_value == NULL_TREE || TREE_CODE (class_value) != TREE_LIST
-	      || TREE_PURPOSE (class_value) == NULL_TREE
-	      || TREE_CODE (TREE_PURPOSE (class_value)) == IDENTIFIER_NODE)
-	    {
-	      /* See comment above for a description of envelopes.  */
-	      *closed_envelopes = tree_cons (NULL_TREE, class_value,
-					     *closed_envelopes);
-	      IDENTIFIER_CLASS_VALUE (name) = *closed_envelopes;
-	      class_value = IDENTIFIER_CLASS_VALUE (name);
-	    }
-
-	  /* Here we try to rule out possible ambiguities.
-	     If we can't do that, keep a TREE_LIST with possibly ambiguous
-	     decls in there.  */
-	  /* Arbitrarily choose the first function in the list.  This is OK
-	     because this is only used for initial lookup; anything that
-	     actually uses the function will look it up again.  */
-	  envelope_add_decl (type, OVL_CURRENT (*methods),
-			     &TREE_PURPOSE (class_value));
-	  pop_obstacks ();
-	}
-    }
+    if (DECL_NAME (fields) && TREE_CODE (fields) == TYPE_DECL
+	&& !template_self_reference_p (type, fields))
+      setup_class_bindings (DECL_NAME (fields), /*type_binding_p=*/1);
 
   /* We can't just use BINFO_MARKED because envelope_add_decl uses
      DERIVED_FROM_P, which calls get_base_distance.  */
   SET_BINFO_PUSHDECLS_MARKED (binfo);
-  
+
   return NULL_TREE;
 }
 
-/* Consolidate unique (by name) member functions.  */
+/* Push class-level declarations for any names appearing in BINFO that
+   are not TYPE_DECLS.  */
 
 static tree
-dfs_compress_decls (binfo, data)
+dfs_push_decls (binfo, data)
      tree binfo;
-     void *data ATTRIBUTE_UNUSED;
+     void *data;
 {
-  tree type = BINFO_TYPE (binfo);
-  tree method_vec 
-    = CLASS_TYPE_P (type) ? CLASSTYPE_METHOD_VEC (type) : NULL_TREE;
+  tree type;
+  tree method_vec;
+  int dep_base_p;
 
-  if (processing_template_decl && type != current_class_type
-      && dependent_base_p (binfo))
-    /* We only record types if we're a template base.  */;
-  else if (method_vec != 0)
+  type = BINFO_TYPE (binfo);
+  dep_base_p = (processing_template_decl && type != current_class_type
+		&& dependent_base_p (binfo));
+  if (!dep_base_p)
     {
-      /* Farm out constructors and destructors.  */
-      tree *methods;
-      tree *end = TREE_VEC_END (method_vec);
-
-      for (methods = &TREE_VEC_ELT (method_vec, 2); 
-	   methods != end && *methods; methods++)
+      tree fields;
+      for (fields = TYPE_FIELDS (type); fields; fields = TREE_CHAIN (fields))
+	if (DECL_NAME (fields) 
+	    && TREE_CODE (fields) != TYPE_DECL
+	    && TREE_CODE (fields) != USING_DECL)
+	  setup_class_bindings (DECL_NAME (fields), /*type_binding_p=*/0);
+	else if (TREE_CODE (fields) == FIELD_DECL
+		 && ANON_UNION_TYPE_P (TREE_TYPE (fields)))
+	  dfs_push_decls (TYPE_BINFO (TREE_TYPE (fields)), data);
+	  
+      method_vec = (CLASS_TYPE_P (type) 
+		    ? CLASSTYPE_METHOD_VEC (type) : NULL_TREE);
+      if (method_vec)
 	{
-	  /* This is known to be an envelope of the kind described before
-	     dfs_pushdecls.  */
-	  tree class_value = 
-	    IDENTIFIER_CLASS_VALUE (DECL_NAME (OVL_CURRENT (*methods)));
-	  tree tmp = TREE_PURPOSE (class_value);
+	  tree *methods;
+	  tree *end;
 
-	  /* This was replaced in scope by somebody else.  Just leave it
-	     alone.  */
-	  if (TREE_CODE (tmp) != TREE_LIST)
-	    continue;
+	  /* Farm out constructors and destructors.  */
+	  end = TREE_VEC_END (method_vec);
 
-	  if (TREE_CHAIN (tmp) == NULL_TREE
-	      && TREE_VALUE (tmp)
-	      && OVL_NEXT (TREE_VALUE (tmp)) == NULL_TREE)
-	    {
-	      TREE_PURPOSE (class_value) = TREE_VALUE (tmp);
-	    }
+	  for (methods = &TREE_VEC_ELT (method_vec, 2);
+	       *methods && methods != end;
+	       methods++)
+	    setup_class_bindings (DECL_NAME (OVL_CURRENT (*methods)), 
+				  /*type_binding_p=*/0);
 	}
     }
+
   CLEAR_BINFO_PUSHDECLS_MARKED (binfo);
 
   return NULL_TREE;
@@ -3125,7 +3015,6 @@ push_class_decls (type)
      tree type;
 {
   struct obstack *ambient_obstack = current_obstack;
-  tree closed_envelopes = NULL_TREE;
   search_stack = push_search_level (search_stack, &search_obstack);
 
   /* Build up all the relevant bindings and such on the cache
@@ -3134,75 +3023,12 @@ push_class_decls (type)
   maybe_push_cache_obstack ();
 
   /* Push class fields into CLASS_VALUE scope, and mark.  */
-  dfs_walk (TYPE_BINFO (type), dfs_pushdecls, unmarked_pushdecls_p, 
-	    &closed_envelopes);
+  dfs_walk (TYPE_BINFO (type), dfs_push_type_decls, unmarked_pushdecls_p, 0);
 
   /* Compress fields which have only a single entry
      by a given name, and unmark.  */
-  dfs_walk (TYPE_BINFO (type), dfs_compress_decls, marked_pushdecls_p,
-	    0);
+  dfs_walk (TYPE_BINFO (type), dfs_push_decls, marked_pushdecls_p, 0);
 
-  /* Open up all the closed envelopes and push the contained decls into
-     class scope.  */
-  while (closed_envelopes)
-    {
-      tree new = TREE_PURPOSE (closed_envelopes);
-      tree id;
-
-      /* This is messy because the class value may be a *_DECL, or a
-	 TREE_LIST of overloaded *_DECLs or even a TREE_LIST of ambiguous
-	 *_DECLs.  The name is stored at different places in these three
-	 cases.  */
-      if (TREE_CODE (new) == TREE_LIST)
-	{
-	  if (TREE_PURPOSE (new) != NULL_TREE)
-	    id = TREE_PURPOSE (new);
-	  else
-	    {
-	      tree node = TREE_VALUE (new);
-
-	      if (TREE_CODE (node) == TYPE_DECL
-		  && DECL_ARTIFICIAL (node)
-		  && IS_AGGR_TYPE (TREE_TYPE (node))
-		  && CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (node)))
-		{
-		  tree t = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (node));
-		  tree n = new;
-
-		  for (; n; n = TREE_CHAIN (n))
-		    {
-		      tree d = TREE_VALUE (n);
-		      if (TREE_CODE (d) == TYPE_DECL
-			  && DECL_ARTIFICIAL (node)
-			  && IS_AGGR_TYPE (TREE_TYPE (d))
-			  && CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (d))
-			  && CLASSTYPE_TI_TEMPLATE (TREE_TYPE (d)) == t)
-			/* OK */;
-		      else
-			break;
-		    }
-
-		  if (n == NULL_TREE)
-		    new = t;
-		}
-	      else while (TREE_CODE (node) == TREE_LIST)
-		node = TREE_VALUE (node);
-	      id = DECL_NAME (node);
-	    }
-	}
-      else
-	id = DECL_NAME (new);
-
-      /* Install the original class value in order to make
-	 pushdecl_class_level work correctly.  */
-      IDENTIFIER_CLASS_VALUE (id) = TREE_VALUE (closed_envelopes);
-      if (TREE_CODE (new) == TREE_LIST)
-	push_class_level_binding (id, new);
-      else
-	pushdecl_class_level (new);
-      closed_envelopes = TREE_CHAIN (closed_envelopes);
-    }
-  
   /* Undo the call to maybe_push_cache_obstack above.  */
   pop_obstacks ();
 

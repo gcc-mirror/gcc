@@ -1304,16 +1304,6 @@ check_explicit_specialization (declarator, decl, template_count, flags)
       if (declarator == error_mark_node)
 	return error_mark_node;
 
-      if (TREE_CODE (TREE_OPERAND (declarator, 0)) == LOOKUP_EXPR)
-	{
-	  /* A friend declaration.  We can't do much, because we don't
-	   know what this resolves to, yet.  */
-	  my_friendly_assert (is_friend != 0, 0);
-	  my_friendly_assert (!explicit_instantiation, 0);
-	  SET_DECL_IMPLICIT_INSTANTIATION (decl);
-	  return decl;
-	} 
-
       if (ctype != NULL_TREE && TYPE_BEING_DEFINED (ctype))
 	{
 	  if (!explicit_instantiation)
@@ -1340,6 +1330,15 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 
 	  return decl;
 	}
+      else if (TREE_CODE (TREE_OPERAND (declarator, 0)) == LOOKUP_EXPR)
+	{
+	  /* A friend declaration.  We can't do much, because we don't
+	   know what this resolves to, yet.  */
+	  my_friendly_assert (is_friend != 0, 0);
+	  my_friendly_assert (!explicit_instantiation, 0);
+	  SET_DECL_IMPLICIT_INSTANTIATION (decl);
+	  return decl;
+	} 
       else if (ctype != NULL_TREE 
 	       && (TREE_CODE (TREE_OPERAND (declarator, 0)) ==
 		   IDENTIFIER_NODE))
@@ -1598,7 +1597,11 @@ void
 check_template_shadow (decl)
      tree decl;
 {
-  tree olddecl = IDENTIFIER_VALUE (DECL_NAME (decl));
+  tree olddecl;
+
+  if (TREE_CODE (decl) == OVERLOAD)
+    decl = OVL_CURRENT (decl);
+  olddecl = IDENTIFIER_VALUE (DECL_NAME (decl));
 
   if (current_template_parms && olddecl)
     {
@@ -1888,8 +1891,8 @@ build_template_decl (decl, parms)
   if (DECL_LANG_SPECIFIC (decl))
     {
       DECL_CLASS_CONTEXT (tmpl) = DECL_CLASS_CONTEXT (decl);
-      DECL_STATIC_FUNCTION_P (tmpl) = 
-	DECL_STATIC_FUNCTION_P (decl);
+      DECL_STATIC_FUNCTION_P (tmpl) = DECL_STATIC_FUNCTION_P (decl);
+      DECL_CONSTRUCTOR_P (tmpl) = DECL_CONSTRUCTOR_P (decl);
     }
 
   return tmpl;
