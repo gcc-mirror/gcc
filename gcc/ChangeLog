@@ -1,3 +1,8 @@
+Mon Apr  7 22:13:38 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	PR target/10077
+	* i386.md (movsi_1):  Fix SSEMOV alternative.
+
 Mon Apr  7 15:56:30 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR opt/10024
