@@ -615,7 +615,11 @@ output_float (fnode *f, double value, int len)
 	  *(out++) = expchar;
 	  edigits--;
 	}
+#if HAVE_SNPRINTF
       snprintf (buffer, 32, "%+0*d", edigits, e);
+#else
+      sprintf (buffer, "%+0*d", edigits, e);
+#endif
       memcpy (out, buffer, edigits);
     }
 }
