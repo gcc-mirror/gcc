@@ -810,6 +810,14 @@ expand_inline_function (fndecl, parms, target, ignore, type,
       else
 	arg_vals[i] = 0;
 
+      /* If the formal type was const but the actual was not, we might
+	 end up here with an rtx wrongly tagged unchanging in the caller's
+	 context.  Fix that.  */
+      if (arg_vals[i] != 0 
+	  && (GET_CODE (arg_vals[i]) == REG || GET_CODE (arg_vals[i]) == MEM)
+	  && ! TREE_READONLY (TREE_VALUE (actual)))
+	RTX_UNCHANGING_P (arg_vals[i]) = 0;      
+
       if (arg_vals[i] != 0
 	  && (! TREE_READONLY (formal)
 	      /* If the parameter is not read-only, copy our argument through
