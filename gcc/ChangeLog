@@ -1,3 +1,24 @@
+2004-08-18  Richard Henderson  <rth@redhat.com>
+
+	* tree.h (struct tree_decl): Add gimple_formal_temp.
+	(DECL_GIMPLE_FORMAL_TEMP_P): New.
+	* gimplify.c (pop_gimplify_context): Clear it.
+	(lookup_tmp_var): Set it, if is_formal.
+	(gimplify_init_constructor): Use rhs_predicate_for for COMPLEX.
+	Use is_gimple_val for VECTOR.  Simplify return value.
+	(gimplify_save_expr): Use and set DECL_GIMPLE_FORMAL_TEMP_P.
+	(gimplify_expr): Likewise.
+	* tree-gimple.c (is_gimple_formal_tmp_rhs): Rename from
+	is_gimple_tmp_rhs for clarity.  Update all callers.
+	(is_gimple_reg_rhs): Simplify logic.
+	(is_gimple_formal_tmp_var): Rename from is_gimple_tmp_var for
+	clarity; use DECL_GIMPLE_FORMAL_TEMP_P.
+	(is_gimple_formal_tmp_reg): Similarly.
+	* tree-gimple.h: Update decls.
+	* tree-ssa-copyrename.c (copy_rename_partition_coalesce): Use
+	DECL_IGNORED_P, not DECL_ARTIFICIAL.  Tidy formatting.
+	* tree-ssa-live.c (var_union, type_var_init): Likewise.
+
 2004-08-18  Paolo Bonzini  <bonzini@gnu.org>
 
 	* c4x.c (legitimize_operands): Remove calls to

@@ -60,28 +60,9 @@ int
 java_gimplify_expr (tree *expr_p, tree *pre_p ATTRIBUTE_UNUSED,
 		    tree *post_p ATTRIBUTE_UNUSED)
 {
-  char code_class = TREE_CODE_CLASS(TREE_CODE (*expr_p));
+  enum tree_code code = TREE_CODE (*expr_p);
 
-  /* Java insists on strict left-to-right evaluation of expressions.
-     A problem may arise if a variable used in the LHS of a binary
-     operation is altered by an assignment to that value in the RHS
-     before we've performed the operation.  So, we always copy every
-     LHS to a temporary variable.  
-
-     FIXME: Are there any other cases where we should do this?
-     Parameter lists, maybe?  Or perhaps that's unnecessary because
-     the front end already generates SAVE_EXPRs.  */
-  if (code_class == '2')
-    {
-      tree lhs = TREE_OPERAND (*expr_p, 0);
-      enum gimplify_status stat 
-	= gimplify_expr (&lhs, pre_p, post_p, is_gimple_tmp_var, fb_rvalue);
-      if (stat == GS_ERROR)
-	return stat;
-      TREE_OPERAND (*expr_p, 0) = lhs;
-    }
-
-  switch (TREE_CODE (*expr_p))
+  switch (code)
     {
     case BLOCK:
       *expr_p = java_gimplify_block (*expr_p);
@@ -150,6 +131,25 @@ java_gimplify_expr (tree *expr_p, tree *pre_p ATTRIBUTE_UNUSED,
       abort ();
 
     default:
+      /* Java insists on strict left-to-right evaluation of expressions.
+	 A problem may arise if a variable used in the LHS of a binary
+	 operation is altered by an assignment to that value in the RHS
+	 before we've performed the operation.  So, we always copy every
+	 LHS to a temporary variable.  
+
+	 FIXME: Are there any other cases where we should do this?
+	 Parameter lists, maybe?  Or perhaps that's unnecessary because
+	 the front end already generates SAVE_EXPRs.  */
+
+      if (TREE_CODE_CLASS (code) == '2' || TREE_CODE_CLASS (code) == '<')
+	{
+	  enum gimplify_status stat 
+	    = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,
+			     is_gimple_formal_tmp_var, fb_rvalue);
+	  if (stat == GS_ERROR)
+	    return stat;
+	}
+
       return GS_UNHANDLED;
     }
 

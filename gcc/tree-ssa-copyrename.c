@@ -118,7 +118,7 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
   int p1, p2, p3;
   tree root1, root2;
   var_ann_t ann1, ann2, ann3;
-  bool gimp1, gimp2;
+  bool ign1, ign2;
 
 #ifdef ENABLE_CHECKING
   if (TREE_CODE (var1) != SSA_NAME || TREE_CODE (var2) != SSA_NAME)
@@ -195,27 +195,25 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
       return;
     }
 
-  gimp1 = (TREE_CODE (root1) == VAR_DECL && DECL_ARTIFICIAL (root1));
-  gimp2 = (TREE_CODE (root2) == VAR_DECL && DECL_ARTIFICIAL (root2));
+  ign1 = TREE_CODE (root1) == VAR_DECL && DECL_IGNORED_P (root1);
+  ign2 = TREE_CODE (root2) == VAR_DECL && DECL_IGNORED_P (root2);
 
   /* Never attempt to coalesce 2 user variables unless one is an inline 
      variable.  */
-  if (!gimp1 && !gimp2)
+  if (!ign1 && !ign2)
     {
       if (DECL_FROM_INLINE (root2))
-        gimp2 = true;
-      else
-        if (DECL_FROM_INLINE (root1))
-	  gimp1 = true;
-	else 
-	  {
-	    if (debug)
-	      fprintf (debug, " : 2 different USER vars. No coalesce.\n");
-	    return;
-	  }
+        ign2 = true;
+      else if (DECL_FROM_INLINE (root1))
+	ign1 = true;
+      else 
+	{
+	  if (debug)
+	    fprintf (debug, " : 2 different USER vars. No coalesce.\n");
+	  return;
+	}
     }
 
-    
   /* Don't coalesce if there are two different memory tags.  */
   if (ann1->type_mem_tag && ann2->type_mem_tag
       && ann1->type_mem_tag != ann2->type_mem_tag)
@@ -237,16 +235,15 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
 	}
       else
         {
-	  gimp2 = true;
-	  gimp1 = false;
+	  ign2 = true;
+	  ign1 = false;
 	}
     }
-  else
-    if (default_def (root2))
-      {
-	gimp1 = true;
-	gimp2 = false;
-      }
+  else if (default_def (root2))
+    {
+      ign1 = true;
+      ign2 = false;
+    }
 
   /* Don't coalesce if the two variables aren't type compatible.  */
   if (!lang_hooks.types_compatible_p (TREE_TYPE (root1), TREE_TYPE (root2)))
@@ -261,11 +258,10 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
 
   /* Set the root variable of the partition to the better choice, if there is 
      one.  */
-  if (!gimp2)
+  if (!ign2)
     replace_ssa_name_symbol (partition_to_var (map, p3), root2);
-  else
-    if (!gimp1)
-      replace_ssa_name_symbol (partition_to_var (map, p3), root1);
+  else if (!ign1)
+    replace_ssa_name_symbol (partition_to_var (map, p3), root1);
 
   /* Update the various flag widgitry of the current base representative.  */
   ann3 = var_ann (SSA_NAME_VAR (partition_to_var (map, p3)));
