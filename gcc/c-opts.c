@@ -235,7 +235,7 @@ c_common_init_options (unsigned int argc, const char **argv ATTRIBUTE_UNUSED)
   return result;
 }
 
-/* Handle switch SCODE with argument ARG.  ON is true, unless no-
+/* Handle switch SCODE with argument ARG.  VALUE is true, unless no-
    form of an -f or -W option was given.  Returns 0 if the switch was
    invalid, a negative number to prevent language-independent
    processing in toplev.c (a hack necessary for the short-term).  */
@@ -333,6 +333,10 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_P:
       flag_no_line_commands = 1;
+      break;
+
+    case OPT_fworking_directory:
+      flag_working_directory = value;
       break;
 
     case OPT_U:
@@ -1329,6 +1333,15 @@ sanitize_cpp_opts (void)
      and/or -Wtraditional, whatever the ordering.  */
   cpp_opts->warn_long_long
     = warn_long_long && ((!flag_isoc99 && pedantic) || warn_traditional);
+
+  /* If we're generating preprocessor output, emit current directory
+     if explicitly requested or if debugging information is enabled.
+     ??? Maybe we should only do it for debugging formats that
+     actually output the current directory?  */
+  if (flag_working_directory == -1)
+    flag_working_directory = (debug_info_level != DINFO_LEVEL_NONE);
+  cpp_opts->working_directory
+    = flag_preprocess_only && flag_working_directory;
 }
 
 /* Add include path with a prefix at the front of its name.  */

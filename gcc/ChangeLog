@@ -1,3 +1,28 @@
+2003-08-05  Alexandre Oliva  <aoliva@redhat.com>
+
+	* c.opt: Introduce -fworking-directory.
+	* doc/cpp.texi, doc/invoke.texi, doc/cppopts.texi: Document it.
+	* c-common.h (flag_working_directory): Declare.
+	* c-common.c (flag_working_directory): Define.
+	* c-opts.c (c_common_handle_options): Set it.
+	(sanitize_cpp_opts): Set...
+	* cpplib.h (struct cpp_options): ... working_directory option.
+	(struct cpp_callbacks): Add dir_change.
+	* cppinit.c (read_original_filename): Call...
+	(read_original_directory): New.  Look for # 1 "directory//"
+	and process it.
+	(cpp_read_main_file): Call dir_change callback if working_directory
+	option is set.
+	* gcc.c (cpp_unique_options): Pass -g*.
+	* c-lex.c (cb_dir_change): New.
+	(init_c_lex): Set dir_change callback.
+	* toplev.c (src_pwd): New static variable.
+	(set_src_pwd, get_src_pwd): New functions.
+	* toplev.h (get_src_pwd, set_src_pwd): Declare.
+	* dbxout.c (dbxout_init): Call get_src_pwd() instead of getpwd().
+	* dwarf2out.c (gen_compile_unit_die): Likewise.
+	* dwarfout.c (output_compile_unit_die, dwarfout_init): Likewise.
+
 2003-08-05  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* pretty-print.h (pp_set_line_maximum_length): Make macro.

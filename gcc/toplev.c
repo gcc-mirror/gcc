@@ -1219,6 +1219,41 @@ FILE *aux_info_file;
 FILE *rtl_dump_file = NULL;
 FILE *cgraph_dump_file = NULL;
 
+/* The current working directory of a translation.  It's generally the
+   directory from which compilation was initiated, but a preprocessed
+   file may specify the original directory in which it was
+   created.  */
+
+static const char *src_pwd;
+
+/* Initialize src_pwd with the given string, and return true.  If it
+   was already initialized, return false.  As a special case, it may
+   be called with a NULL argument to test whether src_pwd has NOT been
+   initialized yet.  */
+
+bool
+set_src_pwd (const char *pwd)
+{
+  if (src_pwd)
+    return false;
+
+  src_pwd = xstrdup (pwd);
+  return true;
+}
+
+/* Return the directory from which the translation unit was initiated,
+   in case set_src_pwd() was not called before to assign it a
+   different value.  */
+
+const char *
+get_src_pwd (void)
+{
+  if (! src_pwd)
+    src_pwd = getpwd ();
+
+   return src_pwd;
+}
+
 /* Set up a default flag_random_seed and local_tick, unless the user
    already specified one.  */
 

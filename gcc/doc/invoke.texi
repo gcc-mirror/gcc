@@ -301,7 +301,8 @@ in the following sections.
 -include @var{file}  -imacros @var{file} @gol
 -iprefix @var{file}  -iwithprefix @var{dir} @gol
 -iwithprefixbefore @var{dir}  -isystem @var{dir} @gol
--M  -MM  -MF  -MG  -MP  -MQ  -MT  -nostdinc  -P  -remap @gol
+-M  -MM  -MF  -MG  -MP  -MQ  -MT  -nostdinc  @gol
+-P  -fworking-directory  -remap @gol
 -trigraphs  -undef  -U@var{macro}  -Wp,@var{option} @gol
 -Xpreprocessor @var{option}}
 

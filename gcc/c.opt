@@ -650,6 +650,10 @@ fwide-exec-charset=
 C ObjC C++ ObjC++ Joined RejectNegative
 -fwide-exec-charset=<cset>	Convert all wide strings and character constants to character set <cset>
 
+fworking-directory
+C ObjC C++ ObjC++
+Generate a #line directive pointing at the current working directory
+
 fxref
 C++ ObjC++
 Emit cross referencing information

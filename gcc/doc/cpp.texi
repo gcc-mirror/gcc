@@ -4133,7 +4133,9 @@ without notice.
 cpp [@option{-D}@var{macro}[=@var{defn}]@dots{}] [@option{-U}@var{macro}]
     [@option{-I}@var{dir}@dots{}] [@option{-W}@var{warn}@dots{}]
     [@option{-M}|@option{-MM}] [@option{-MG}] [@option{-MF} @var{filename}]
-    [@option{-MP}] [@option{-MQ} @var{target}@dots{}] [@option{-MT} @var{target}@dots{}]
+    [@option{-MP}] [@option{-MQ} @var{target}@dots{}]
+    [@option{-MT} @var{target}@dots{}]
+    [@option{-P}] [@option{-fno-working-directory}] 
     [@option{-x} @var{language}] [@option{-std=}@var{standard}]
     @var{infile} @var{outfile}
 
