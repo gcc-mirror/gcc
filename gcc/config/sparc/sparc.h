@@ -568,7 +568,7 @@ extern char leaf_reg_backmap[];
    For SPARC, `I' is used for the range of constants an insn
    can actually contain.
    `J' is used for the range which is just zero (since that is R0).
-   `K' is used for the 5-bit operand of a compare insns.  */
+   `K' is used for constants which can be loaded with a single sethi insn.  */
 
 #define SMALL_INT(X) ((unsigned) (INTVAL (X) + 0x1000) < 0x2000)
 
@@ -1114,8 +1114,6 @@ extern struct rtx_def *sparc_builtin_saveregs ();
    these things in insns and then not re-recognize the insns, causing
    constrain_operands to fail.
 
-   `R' handles the LO_SUM which can be an address for `Q'.
-
    `S' handles constraints for calls.  */
 
 #ifndef REG_OK_STRICT
@@ -1134,10 +1132,6 @@ extern struct rtx_def *sparc_builtin_saveregs ();
        && ! symbolic_memory_operand (OP, VOIDmode))	\
       || (reload_in_progress && GET_CODE (OP) == REG	\
 	  && REGNO (OP) >= FIRST_PSEUDO_REGISTER))	\
-   : (C) == 'R'						\
-   ? (GET_CODE (OP) == LO_SUM				\
-      && GET_CODE (XEXP (OP, 0)) == REG			\
-      && REG_OK_FOR_BASE_P (XEXP (OP, 0)))		\
    : (C) == 'S'						\
    ? (CONSTANT_P (OP) || memory_address_p (Pmode, OP))	\
    : (C) == 'T'						\
@@ -1154,23 +1148,19 @@ extern struct rtx_def *sparc_builtin_saveregs ();
 #define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
 
 #define EXTRA_CONSTRAINT(OP, C)				\
-  ((C) == 'Q' ?						\
-   (GET_CODE (OP) == REG ?				\
-    (REGNO (OP) >= FIRST_PSEUDO_REGISTER		\
-     && reg_renumber[REGNO (OP)] < 0)			\
-    : GET_CODE (OP) == MEM)				\
-   : ((C) == 'R' ?					\
-      (GET_CODE (OP) == LO_SUM				\
-       && GET_CODE (XEXP (OP, 0)) == REG		\
-       && REG_OK_FOR_BASE_P (XEXP (OP, 0)))		\
-      : ((C) == 'S'					\
-	 ? (CONSTANT_P (OP)				\
-	    || (GET_CODE (OP) == REG && reg_renumber[REGNO (OP)] > 0)\
-	    || strict_memory_address_p (Pmode, OP)) 	\
-	 : ((C) == 'T' ?				\
-	    mem_aligned_8 (OP) && strict_memory_address_p (Pmode, OP) \
-	    : ((C) == 'U' ?				\
-	       register_ok_for_ldd (OP) : 0)))))
+  ((C) == 'Q'						\
+   ? (GET_CODE (OP) == REG				\
+      ? (REGNO (OP) >= FIRST_PSEUDO_REGISTER		\
+	 && reg_renumber[REGNO (OP)] < 0)		\
+      : GET_CODE (OP) == MEM)				\
+   : (C) == 'S'						\
+   ? (CONSTANT_P (OP)					\
+      || (GET_CODE (OP) == REG && reg_renumber[REGNO (OP)] > 0) \
+      || strict_memory_address_p (Pmode, OP)) 		\
+   : (C) == 'T'						\
+   ? mem_aligned_8 (OP) && strict_memory_address_p (Pmode, OP) \
+   : (C) == 'U'						\
+   ? register_ok_for_ldd (OP) : 0)
 #endif
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
