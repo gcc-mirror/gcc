@@ -1340,7 +1340,7 @@ extern char *current_function_name;
 
 #define CONST_COSTS(RTX,CODE,OUTER_CODE) \
   case CONST_INT:						\
-    if (INTVAL (RTX) >= 0 && INTVAL (RTX) < 2546)		\
+    if (INTVAL (RTX) >= 0 && INTVAL (RTX) < 256)		\
       return 0;							\
   case CONST_DOUBLE:						\
     if (((OUTER_CODE) == PLUS && add_operand (RTX, VOIDmode))	\
