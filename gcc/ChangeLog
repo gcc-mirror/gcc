@@ -1,3 +1,10 @@
+2002-11-12  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (single_one_operand): Correctly compute
+	mask when mode is SImode.
+	(single_zero_operand): Likewise.
+	* config/h8300/h8300.md (two new anonymous insns): New.
+
 2002-11-12  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/contrib.texi (Contributors): Use GCJ instead of gcj to refer
