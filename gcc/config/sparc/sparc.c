@@ -2514,56 +2514,6 @@ order_regs_for_local_alloc ()
     }
 }
 
-/* Machine dependent routines for the branch probability, arc profiling
-   code.  */
-
-/* The label used by the arc profiling code.  */
-
-static rtx profiler_label;
-
-void
-init_arc_profiler ()
-{
-  /* Generate and save a copy of this so it can be shared.  */
-  profiler_label = gen_rtx (SYMBOL_REF, Pmode, "*LPBX2");
-}
-
-void
-output_arc_profiler (arcno, insert_after)
-     int arcno;
-     rtx insert_after;
-{
-  rtx profiler_target_addr
-    = gen_rtx (CONST, Pmode,
-	       gen_rtx (PLUS, Pmode, profiler_label,
-			gen_rtx (CONST_INT, VOIDmode, 4 * arcno)));
-  register rtx profiler_reg = gen_reg_rtx (SImode);
-  register rtx address_reg = gen_reg_rtx (Pmode);
-  rtx mem_ref;
-
-  insert_after = emit_insn_after (gen_rtx (SET, VOIDmode, address_reg,
-					   gen_rtx (HIGH, Pmode,
-						    profiler_target_addr)),
-				  insert_after);
-
-  mem_ref = gen_rtx (MEM, SImode, gen_rtx (LO_SUM, Pmode, address_reg,
-					   profiler_target_addr));
-  insert_after = emit_insn_after (gen_rtx (SET, VOIDmode, profiler_reg,
-					   mem_ref),
-				  insert_after);
-
-  insert_after = emit_insn_after (gen_rtx (SET, VOIDmode, profiler_reg,
-					   gen_rtx (PLUS, SImode, profiler_reg,
-						    const1_rtx)),
-				  insert_after);
-
-  /* This is the same rtx as above, but it is not legal to share this rtx.  */
-  mem_ref = gen_rtx (MEM, SImode, gen_rtx (LO_SUM, Pmode, address_reg,
-					   profiler_target_addr));
-  emit_insn_after (gen_rtx (SET, VOIDmode, mem_ref, profiler_reg),
-		   insert_after);
-}
-
 /* Return 1 if REGNO (reg1) is even and REGNO (reg1) == REGNO (reg2) - 1.
    This makes them candidates for using ldd and std insns. 
 
