@@ -1,3 +1,8 @@
+2004-07-16  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-pre.c (insert_aux): Break out if we hit
+	a critical edge.
+
 2004-07-16  Richard Henderson  <rth@redhat.com>
 
 	* basic-block.h (remove_fake_exit_edges): Declare.

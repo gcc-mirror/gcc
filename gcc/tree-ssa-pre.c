@@ -1457,6 +1457,15 @@ insert_aux (basic_block block)
 			{
 			  tree vprime;
 			  tree edoubleprime;
+
+			  /* This can happen in the very weird case
+			     that our fake infinite loop edges have caused a
+			     critical edge to appear.  */
+			  if (EDGE_CRITICAL_P (pred))
+			    {
+			      cant_insert = true;
+			      break;
+			    }
 			  bprime = pred->src;
 			  eprime = phi_translate (node->expr,
 						  ANTIC_IN (block),
