@@ -1246,9 +1246,9 @@ decide_copy_try_finally (int ndests, tree finally)
 
   /* ??? These numbers are completely made up so far.  */
   if (optimize > 1)
-    return f_estimate < 100 || f_estimate * 2 < sw_estimate;
+    return f_estimate < 100 || f_estimate < sw_estimate * 2;
   else
-    return f_estimate < 40 || f_estimate * 3 < sw_estimate * 2;
+    return f_estimate < 40 || f_estimate * 2 < sw_estimate * 3;
 }
 
 /* A subroutine of lower_eh_constructs_1.  Lower a TRY_FINALLY_EXPR nodes
