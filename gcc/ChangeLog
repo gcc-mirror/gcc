@@ -1,3 +1,10 @@
+2000-08-28  Philipp Thomas  <pthomas@suse.de>
+
+	* ABOUT-GCC-NLS: Remove gettext patches from Paul Eggert as
+	they have been incorporated into the gettext CVS. Change the text to
+	reflect the current status of NLS. Add instructions for accessing
+	the gettext CVS and add the patch from Martin v. Loewis.
+
 2000-08-27  Geoff Keating  <geoffk@cygnus.com>
 
 	* config/rs6000/rs6000.md (movdi_internal64+5): Make SUBREG-safe
