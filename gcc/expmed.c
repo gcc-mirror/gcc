@@ -1257,7 +1257,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 
 		  if (bestmode == VOIDmode
 		      || (SLOW_UNALIGNED_ACCESS (bestmode, align)
-			  && GET_MODE_SIZE (bestmode) > align))
+			  && GET_MODE_SIZE (bestmode) > (int) align))
 		    goto extzv_loses;
 
 		  /* Compute offset as multiple of this unit,

@@ -395,10 +395,12 @@ bitmap_operation (to, from1, from2, operation)
      bitmap from2;
      enum bitmap_bits operation;
 {
+#define HIGHEST_INDEX (unsigned int) ~0
+
   bitmap_element *from1_ptr = from1->first;
   bitmap_element *from2_ptr = from2->first;
-  unsigned int indx1 = (from1_ptr) ? from1_ptr->indx : -1;
-  unsigned int indx2 = (from2_ptr) ? from2_ptr->indx : -1;
+  unsigned int indx1 = (from1_ptr) ? from1_ptr->indx : HIGHEST_INDEX;
+  unsigned int indx2 = (from2_ptr) ? from2_ptr->indx : HIGHEST_INDEX;
   bitmap_element *to_ptr = to->first;
   bitmap_element *from1_tmp;
   bitmap_element *from2_tmp;
@@ -449,9 +451,9 @@ bitmap_operation (to, from1, from2, operation)
 	  from1_tmp = from1_ptr;
 	  from2_tmp = from2_ptr;
 	  from1_ptr = from1_ptr->next;
-	  indx1 = (from1_ptr) ? from1_ptr->indx : -1;
+	  indx1 = (from1_ptr) ? from1_ptr->indx : HIGHEST_INDEX;
 	  from2_ptr = from2_ptr->next;
-	  indx2 = (from2_ptr) ? from2_ptr->indx : -1;
+	  indx2 = (from2_ptr) ? from2_ptr->indx : HIGHEST_INDEX;
 	}
       else if (indx1 < indx2)
 	{
@@ -459,7 +461,7 @@ bitmap_operation (to, from1, from2, operation)
 	  from1_tmp = from1_ptr;
 	  from2_tmp = &bitmap_zero;
 	  from1_ptr = from1_ptr->next;
-	  indx1 = (from1_ptr) ? from1_ptr->indx : -1;
+	  indx1 = (from1_ptr) ? from1_ptr->indx : HIGHEST_INDEX;
 	}
       else
 	{
@@ -467,7 +469,7 @@ bitmap_operation (to, from1, from2, operation)
 	  from1_tmp = &bitmap_zero;
 	  from2_tmp = from2_ptr;
 	  from2_ptr = from2_ptr->next;
-	  indx2 = (from2_ptr) ? from2_ptr->indx : -1;
+	  indx2 = (from2_ptr) ? from2_ptr->indx : HIGHEST_INDEX;
 	}
 
       /* Find the appropriate element from TO.  Begin by discarding

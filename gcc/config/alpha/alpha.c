@@ -1997,7 +1997,7 @@ alpha_emit_xfloating_libcall (func, target, operands, noperands, equiv)
       abort ();
     }
 
-  tmp = gen_rtx_MEM (QImode, gen_rtx_SYMBOL_REF (Pmode, func));
+  tmp = gen_rtx_MEM (QImode, gen_rtx_SYMBOL_REF (Pmode, (char *) func));
   tmp = emit_call_insn (gen_call_value (reg, tmp, const0_rtx,
 					const0_rtx, const0_rtx));
   CALL_INSN_FUNCTION_USAGE (tmp) = usage;
@@ -2199,7 +2199,7 @@ alpha_expand_unaligned_load (tgt, mem, size, ofs, sign)
     {
       emit_move_insn (addr, plus_constant (XEXP (mem, 0), ofs));
       emit_insn (gen_extxl (extl, meml, GEN_INT (size*8), addr));
-      switch (size)
+      switch ((int) size)
 	{
 	case 2:
 	  emit_insn (gen_extwh (exth, memh, addr));
@@ -2262,7 +2262,7 @@ alpha_expand_unaligned_store (dst, src, size, ofs)
       emit_insn (gen_insxh (insh, gen_lowpart (DImode, src),
 			    GEN_INT (size*8), addr));
 
-      switch (size)
+      switch ((int) size)
 	{
 	case 2:
 	  emit_insn (gen_inswl (insl, gen_lowpart (HImode, src), addr));
@@ -2278,7 +2278,7 @@ alpha_expand_unaligned_store (dst, src, size, ofs)
 
   emit_insn (gen_mskxh (dsth, dsth, GEN_INT (size*8), addr));
 
-  switch (size)
+  switch ((int) size)
     {
     case 2:
       emit_insn (gen_mskxl (dstl, dstl, GEN_INT (0xffff), addr));
@@ -4579,6 +4579,8 @@ alpha_expand_epilogue ()
 
   fp_is_frame_pointer = ((TARGET_OPEN_VMS && vms_is_stack_procedure)
 			 || (!TARGET_OPEN_VMS && frame_pointer_needed));
+  fp_offset = 0;
+  sa_reg = stack_pointer_rtx;
 
   eh_ofs = cfun->machine->eh_epilogue_sp_ofs;
   if (sa_size)
@@ -4592,7 +4594,6 @@ alpha_expand_epilogue ()
 	}
 
       /* Cope with very large offsets to the register save area.  */
-      sa_reg = stack_pointer_rtx;
       if (reg_offset + sa_size > 0x8000)
 	{
 	  int low = ((reg_offset & 0xffff) ^ 0x8000) - 0x8000;

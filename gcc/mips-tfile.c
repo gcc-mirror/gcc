@@ -1078,6 +1078,37 @@ typedef struct efdr {
 static efdr_t init_file = 
 {
   {			/* FDR structure */
+#ifdef __alpha
+    0,			/* adr:		memory address of beginning of file */
+    0,			/* cbLineOffset: byte offset from header for this file ln's */
+    0,			/* cbLine:	size of lines for this file */
+    0,			/* cbSs:	number of bytes in the ss */
+    0,			/* rss:		file name (of source, if known) */
+    0,			/* issBase:	file's string space */
+    0,			/* isymBase:	beginning of symbols */
+    0,			/* csym:	count file's of symbols */
+    0,			/* ilineBase:	file's line symbols */
+    0,			/* cline:	count of file's line symbols */
+    0,			/* ioptBase:	file's optimization entries */
+    0,			/* copt:	count of file's optimization entries */
+    0,			/* ipdFirst:	start of procedures for this file */
+    0,			/* cpd:		count of procedures for this file */
+    0,			/* iauxBase:	file's auxiliary entries */
+    0,			/* caux:	count of file's auxiliary entries */
+    0,			/* rfdBase:	index into the file indirect table */
+    0,			/* crfd:	count file indirect entries */
+    langC,		/* lang:	language for this file */
+    1,			/* fMerge:	whether this file can be merged */
+    0,			/* fReadin:	true if read in (not just created) */
+#ifdef HOST_WORDS_BIG_ENDIAN
+    1,			/* fBigendian:	if 1, compiled on big endian machine */
+#else
+    0,			/* fBigendian:	if 1, compiled on big endian machine */
+#endif
+    0,			/* fTrim:	whether the symbol table was trimmed */
+    GLEVEL_2,		/* glevel:	level this file was compiled with */
+    0,			/* reserved:	reserved for future use */
+#else
     0,			/* adr:		memory address of beginning of file */
     0,			/* rss:		file name (of source, if known) */
     0,			/* issBase:	file's string space */
@@ -1106,6 +1137,7 @@ static efdr_t init_file =
     0,			/* reserved:	reserved for future use */
     0,			/* cbLineOffset: byte offset from header for this file ln's */
     0,			/* cbLine:	size of lines for this file */
+#endif
   },
 
   (FDR *) 0,		/* orig_fdr:	original file header pointer */
@@ -2327,7 +2359,8 @@ get_tag (tag_start, tag_end_p1, indx, basic_type)
   tag_ptr->same_name	= hash_ptr->tag_ptr;
   tag_ptr->basic_type	= basic_type;
   tag_ptr->indx		= indx;
-  tag_ptr->ifd		= (indx == indexNil) ? -1 : cur_file_ptr->file_index;
+  tag_ptr->ifd		= (indx == indexNil
+			   ? (symint_t) -1 : cur_file_ptr->file_index);
   tag_ptr->same_block	= cur_tag_head->first_tag;
 
   cur_tag_head->first_tag = tag_ptr;
@@ -4621,8 +4654,10 @@ copy_object __proto((void))
 			     (st_t) eptr->asym.st,
 			     (sc_t) eptr->asym.sc,
 			     eptr->asym.value,
-			     (symint_t) ((eptr->asym.index == indexNil) ? indexNil : 0),
-			     ((long) ifd < orig_sym_hdr.ifdMax) ? remap_file_number[ ifd ] : ifd);
+			     (eptr->asym.index == indexNil
+			      ? (symint_t) indexNil : 0),
+			     ((long) ifd < orig_sym_hdr.ifdMax
+			      ? remap_file_number[ifd] : (int) ifd));
     }
 
 
@@ -4774,8 +4809,9 @@ copy_object __proto((void))
        remaining > 0;
        remaining -= num_write)
     {
-      num_write =
-	(remaining <= (int) sizeof (buffer)) ? remaining : sizeof (buffer);
+      num_write
+	= (remaining <= (int) sizeof (buffer))
+	  ? remaining : (int) sizeof (buffer);
       sys_read = fread ((PTR_T) buffer, 1, num_write, obj_in_stream);
       if (sys_read <= 0)
 	pfatal_with_name (obj_in_name);

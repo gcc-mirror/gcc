@@ -234,7 +234,7 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
 {
   int i, j;
   unsigned HOST_WIDE_INT temp;
-  int unroll_number;
+  int unroll_number = 1;
   rtx copy_start, copy_end;
   rtx insn, sequence, pattern, tem;
   int max_labelno, max_insnno;

@@ -842,6 +842,7 @@ struct bb_info
 
 /* These bitmaps are used for the LCM algorithm.  */
 
+#ifdef OPTIMIZE_MODE_SWITCHING
 static sbitmap *antic;
 static sbitmap *transp;
 static sbitmap *comp;
@@ -850,12 +851,16 @@ static sbitmap *insert;
 
 static struct seginfo * new_seginfo PARAMS ((int, rtx, int, HARD_REG_SET));;
 static void add_seginfo PARAMS ((struct bb_info *, struct seginfo *));
-static void make_preds_opaque PARAMS ((basic_block, int));
 static void reg_dies PARAMS ((rtx, HARD_REG_SET));
 static void reg_becomes_live PARAMS ((rtx, rtx, void *));
+static void make_preds_opaque PARAMS ((basic_block, int));
+#endif
+
+#ifdef OPTIMIZE_MODE_SWITCHING
 
 /* This function will allocate a new BBINFO structure, initialized
    with the FP_MODE, INSN, and basic block BB parameters.  */
+
 static struct seginfo *
 new_seginfo (mode, insn, bb, regs_live)
      int mode;
@@ -876,6 +881,7 @@ new_seginfo (mode, insn, bb, regs_live)
 /* Add a seginfo element to the end of a list.  
    HEAD is a pointer to the list beginning.
    INFO is the structure to be linked in.  */
+
 static void
 add_seginfo (head, info)
      struct bb_info *head;
@@ -899,6 +905,7 @@ add_seginfo (head, info)
    denotes that a mode set is to be done on that edge.
    J is the bit number in the bitmaps that corresponds to the entity that
    we are currently handling mode-switching for.  */
+
 static void
 make_preds_opaque (b, j)
      basic_block b;
@@ -917,6 +924,7 @@ make_preds_opaque (b, j)
 }
 
 /* Record in LIVE that register REG died.  */
+
 static void
 reg_dies (reg, live)
      rtx reg;
@@ -938,6 +946,7 @@ reg_dies (reg, live)
 
 /* Record in LIVE that register REG became live.
    This is called via note_stores.  */
+
 static void
 reg_becomes_live (reg, setter, live)
      rtx reg;
@@ -961,6 +970,7 @@ reg_becomes_live (reg, setter, live)
 	SET_HARD_REG_BIT (* (HARD_REG_SET *) live, regno);
     }
 }
+#endif
 
 /* Find all insns that need a particular mode
    setting, and insert the necessary mode switches.  */

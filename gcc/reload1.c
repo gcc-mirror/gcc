@@ -3173,6 +3173,7 @@ mark_not_eliminable (dest, x, data)
    last call to set_initial_elim_offsets.  This is used to catch cases
    where something illegal happened during reload_as_needed that could
    cause incorrect code to be generated if we did not check for it.  */
+
 static void
 verify_initial_elim_offsets ()
 {

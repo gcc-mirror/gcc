@@ -2539,7 +2539,7 @@ compare_constant_1 (exp, p)
       if (flag_writable_strings)
 	return 0;
 
-      if (*p++ != TYPE_MODE (TREE_TYPE (exp)))
+      if ((enum machine_mode) *p++ != TYPE_MODE (TREE_TYPE (exp)))
 	return 0;
 
       strp = TREE_STRING_POINTER (exp);
