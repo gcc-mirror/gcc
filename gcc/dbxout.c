@@ -154,6 +154,8 @@ static int have_used_extensions = 0;
 
 static int source_label_number = 1;
 
+static int scope_labelno = 0;
+
 char *getpwd ();
 
 /* Typical USG systems don't have stab.h, and they also have
@@ -322,123 +324,26 @@ static int current_sym_nchars;
 void dbxout_types ();
 void dbxout_args ();
 void dbxout_symbol ();
-static void dbxout_type_name ();
-static void dbxout_type ();
-static void dbxout_typedefs ();
-static void dbxout_symbol_name ();
-static void dbxout_symbol_location ();
-static void dbxout_prepare_symbol ();
-static void dbxout_finish_symbol ();
-static void dbxout_type_index ();
-static void dbxout_continue ();
-static void print_int_cst_octal ();
-static void print_octal ();
+
+static void dbxout_function_end		PROTO((void));
+static void dbxout_typedefs		PROTO((tree));
+static void dbxout_type_index		PROTO((tree));
+static void dbxout_continue		PROTO((void));
+static void dbxout_type_fields		PROTO((tree));
+static void dbxout_type_method_1	PROTO((tree, char *));
+static void dbxout_type_methods		PROTO((tree));
+static void dbxout_range_type		PROTO((tree));
+static void dbxout_type			PROTO((tree, int, int));
+static void print_int_cst_octal		PROTO((tree));
+static void print_octal			PROTO((unsigned HOST_WIDE_INT, int));
+static void dbxout_type_name		PROTO((tree));
+static void dbxout_symbol_location	PROTO((tree, tree, char *, rtx));
+static void dbxout_symbol_name		PROTO((tree, char *, int));
+static void dbxout_prepare_symbol	PROTO((tree));
+static void dbxout_finish_symbol	PROTO((tree));
+static void dbxout_block		PROTO((tree, int, tree));
+static void dbxout_really_begin_function PROTO((tree));
 
-#if 0 /* Not clear we will actually need this.  */
-
-/* Return the absolutized filename for the given relative
-   filename.  Note that if that filename is already absolute, it may
-   still be returned in a modified form because this routine also
-   eliminates redundant slashes and single dots and eliminates double
-   dots to get a shortest possible filename from the given input
-   filename.  The absolutization of relative filenames is made by
-   assuming that the given filename is to be taken as relative to
-   the first argument (cwd) or to the current directory if cwd is
-   NULL.  */
-
-static char *
-abspath (rel_filename)
-     char *rel_filename;
-{
-  /* Setup the current working directory as needed.  */
-  char *abs_buffer
-    = (char *) alloca (strlen (cwd) + strlen (rel_filename) + 1);
-  char *endp = abs_buffer;
-  char *outp, *inp;
-  char *value;
-
-  /* Copy the filename (possibly preceded by the current working
-     directory name) into the absolutization buffer.  */
-
-  {
-    char *src_p;
-
-    if (rel_filename[0] != '/')
-      {
-        src_p = cwd;
-        while (*endp++ = *src_p++)
-          continue;
-        *(endp-1) = '/';        		/* overwrite null */
-      }
-    src_p = rel_filename;
-    while (*endp++ = *src_p++)
-      continue;
-    if (endp[-1] == '/')
-      *endp = '\0';
-
-  /* Now make a copy of abs_buffer into abs_buffer, shortening the
-     filename (by taking out slashes and dots) as we go.  */
-
-  outp = inp = abs_buffer;
-  *outp++ = *inp++;        	/* copy first slash */
-  for (;;)
-    {
-      if (!inp[0])
-        break;
-      else if (inp[0] == '/' && outp[-1] == '/')
-        {
-          inp++;
-          continue;
-        }
-      else if (inp[0] == '.' && outp[-1] == '/')
-        {
-          if (!inp[1])
-                  break;
-          else if (inp[1] == '/')
-            {
-                    inp += 2;
-                    continue;
-            }
-          else if ((inp[1] == '.') && (inp[2] == 0 || inp[2] == '/'))
-            {
-                    inp += (inp[2] == '/') ? 3 : 2;
-                    outp -= 2;
-                    while (outp >= abs_buffer && *outp != '/')
-              	outp--;
-                    if (outp < abs_buffer)
-                {
-                  /* Catch cases like /.. where we try to backup to a
-                     point above the absolute root of the logical file
-                     system.  */
-
-              	  fprintf (stderr, "%s: invalid file name: %s\n",
-			   pname, rel_filename);
-              	  exit (1);
-              	}
-                    *++outp = '\0';
-                    continue;
-            }
-        }
-      *outp++ = *inp++;
-    }
-
-  /* On exit, make sure that there is a trailing null, and make sure that
-     the last character of the returned string is *not* a slash.  */
-
-  *outp = '\0';
-  if (outp[-1] == '/')
-    *--outp  = '\0';
-
-  /* Make a copy (in the heap) of the stuff left in the absolutization
-     buffer and return a pointer to the copy.  */
-
-  value = (char *) oballoc (strlen (abs_buffer) + 1);
-  strcpy (value, abs_buffer);
-  return value;
-}
-#endif /* 0 */
-
-static int scope_labelno = 0;
 static void
 dbxout_function_end ()
 {
