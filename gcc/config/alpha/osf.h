@@ -47,7 +47,8 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC \
-"%{pthread|threads:-D_REENTRANT} %{threads:-D_PTHREAD_USE_D4} %(cpp_xfloat)"
+"%{pthread|threads:-D_REENTRANT} %{threads:-D_PTHREAD_USE_D4} %(cpp_xfloat) \
+-D__EXTERN_PREFIX"
 
 /* Under OSF4, -p and -pg require -lprof1, and -lprof1 requires -lpdf.  */
 
@@ -209,3 +210,7 @@ __enable_execute_stack (addr)						\
 /* Handle #pragma weak and #pragma pack.  */
 #undef HANDLE_SYSV_PRAGMA
 #define HANDLE_SYSV_PRAGMA 1
+
+/* Handle #pragma extern_prefix.  Technically only needed for Tru64 5.x,
+   but easier to manipulate preprocessor bits from here.  */
+#define HANDLE_PRAGMA_EXTERN_PREFIX 1

@@ -5998,6 +5998,8 @@ for further explanation.
 @menu
 * ARM Pragmas::
 * Darwin Pragmas::
+* Solaris Pragmas::
+* Tru64 Pragmas::
 @end menu
 
 @node ARM Pragmas
@@ -6060,6 +6062,44 @@ This pragma declares variables to be possibly unused.  GCC will not
 produce warnings for the listed variables.  The effect is similar to
 that of the @code{unused} attribute, except that this pragma may appear
 anywhere within the variables' scopes.
+@end table
+
+@node Solaris Pragmas
+@subsection Solaris Pragmas
+
+For compatibility with the SunPRO compiler, the following pragma
+is supported.
+
+@table @code
+@item redefine_extname @var{oldname} @var{newname}
+@cindex pragma, redefine_extname
+
+This pragma gives the C function @var{oldname} the assembler label
+@var{newname}.  The pragma must appear before the function declaration.
+This pragma is equivalent to the asm labels extension (@pxref{Asm
+Labels}).  The preprocessor defines @code{__PRAGMA_REDEFINE_EXTNAME}
+if the pragma is available.
+@end table
+
+@node Tru64 Pragmas
+@subsection Tru64 Pragmas
+
+For compatibility with the Compaq C compiler, the following pragma
+is supported.
+
+@table @code
+@item extern_prefix @var{string}
+@cindex pragma, extern_prefix
+
+This pragma renames all subsequent function and variable declarations
+such that @var{string} is prepended to the name.  This effect may be
+terminated by using another @code{extern_prefix} pragma with the 
+empty string.
+
+This pragma is similar in intent to to the asm labels extension
+(@pxref{Asm Labels}) in that the system programmer wants to change
+the assembly-level ABI without changing the source-level API.  The
+preprocessor defines @code{__EXTERN_PREFIX} if the pragma is available.
 @end table
 
 @node Unnamed Fields
