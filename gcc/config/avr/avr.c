@@ -749,8 +749,8 @@ avr_output_function_epilogue (file, size)
   interrupt_func_p = interrupt_function_p (current_function_decl);
   signal_func_p = signal_function_p (current_function_decl);
   main_p = MAIN_NAME_P (DECL_NAME (current_function_decl));
-  function_size = (INSN_ADDRESSES (INSN_UID (get_last_insn ()))
-		   - INSN_ADDRESSES (INSN_UID (get_insns ())));
+  function_size = (INSN_ADDRESSES (INSN_UID (get_last_nonnote_insn ()))
+		   - INSN_ADDRESSES (INSN_UID (get_first_nonnote_insn ())));
   function_size += jump_tables_size;
   live_seq = sequent_regs_live ();
   minimize = (TARGET_CALL_PROLOGUES

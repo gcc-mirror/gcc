@@ -1,3 +1,12 @@
+2002-06-06  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* emit-rtl.c (get_first_nonnote_insn, get_last_nonnote_insn): New
+	functions.
+	* rtl.h (get_first_nonnote_insn, get_last_nonnote_insn): Declare.
+	* avr/avr.c (avr_output_function_epilogue): Use above to determine
+	function size.
+	* pa/pa.c (pa_output_function_prologue): Likewise.
+
 2002-06-05  David S. Miller  <davem@redhat.com>
 
 	* integrate.c (subst_constants): Handle 'B' RTL format.
