@@ -691,7 +691,6 @@ static int loop_depth;
 
 static int loop_cost;
 
-static int n_occurrences	PROTO((int, char *));
 static rtx scan_one_insn	PROTO((rtx, int));
 static void record_reg_classes	PROTO((int, int, rtx *, enum machine_mode *,
 				       char **, rtx));
@@ -742,18 +741,6 @@ regclass_init ()
   prefclass = 0;
 }
 
-/* Return the number of times character C occurs in string S.  */
-static int
-n_occurrences (c, s)
-     int c;
-     char *s;
-{
-  int n = 0;
-  while (*s)
-    n += (*s++ == c);
-  return n;
-}
-
 /* Subroutine of regclass, processes one insn INSN.  Scan it and record each
    time it would save code to put a certain register in a certain class.
    PASS, when nonzero, inhibits some optimizations which need only be done

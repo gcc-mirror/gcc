@@ -1,5 +1,5 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1987, 88, 89, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1711,9 +1711,11 @@ assemble_static_space (size)
   {
     /* Round size up to multiple of BIGGEST_ALIGNMENT bits
        so that each uninitialized object starts on such a boundary.  */
-    int rounded = ((size + (BIGGEST_ALIGNMENT / BITS_PER_UNIT) - 1)
-		   / (BIGGEST_ALIGNMENT / BITS_PER_UNIT)
-		   * (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
+    /* Variable `rounded' might or might not be used in ASM_OUTPUT_LOCAL. */
+    int rounded ATTRIBUTE_UNUSED
+      = ((size + (BIGGEST_ALIGNMENT / BITS_PER_UNIT) - 1)
+	 / (BIGGEST_ALIGNMENT / BITS_PER_UNIT)
+	 * (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
     ASM_OUTPUT_LOCAL (asm_out_file, name, size, rounded);
   }
 #endif

@@ -197,7 +197,8 @@ static void v_really_sorry PROTO((char *, va_list)) ATTRIBUTE_NORETURN;
 static void float_signal PROTO((int)) ATTRIBUTE_NORETURN;
 static void pipe_closed PROTO((int)) ATTRIBUTE_NORETURN;
 #ifdef ASM_IDENTIFY_LANGUAGE
-static void output_lang_identify PROTO((FILE *));
+/* This might or might not be used in ASM_IDENTIFY_LANGUAGE. */
+static void output_lang_identify PROTO((FILE *)) ATTRIBUTE_UNUSED;
 #endif
 static void open_dump_file PROTO((char *, char *));
 static void close_dump_file PROTO((void (*) (FILE *, rtx), rtx));

@@ -1,5 +1,5 @@
 /* Search an insn for pseudo regs that must be in hard regs and are not.
-   Copyright (C) 1987, 88, 89, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -5318,7 +5318,8 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 	     of an equivalent address for a pseudo that was not allocated to a
 	     hard register.  Verify that the specified address is valid and
 	     reload it into a register.  */
-	  rtx tem = XEXP (x, 0);
+	  /* Variable `tem' might or might not be used in FIND_REG_INC_NOTE. */
+	  rtx tem ATTRIBUTE_UNUSED = XEXP (x, 0);
 	  register rtx link;
 	  int reloadnum;
 

@@ -1,5 +1,5 @@
 /* scan-decls.c - Extracts declarations from cpp output.
-   Copyright (C) 1993, 1995, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 97-98, 1999 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -189,7 +189,9 @@ scan_decls (pfile, argc, argv)
 	maybe_handle_comma:
 	  if (token != CPP_COMMA)
 	    goto new_statement;
+#if 0
 	handle_comma:
+#endif
 	  /* Handle multiple declarators in a single declaration,
 	     as in:  extern char *strcpy (), *strcat (), ... ; */
 	  if (declarator_start == 0)

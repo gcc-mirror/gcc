@@ -96,7 +96,8 @@ void
 sbitmap_copy (dst, src)
      sbitmap dst, src;
 {
-  bcopy (src->elms, dst->elms, sizeof (SBITMAP_ELT_TYPE) * dst->size);
+  bcopy ((PTR) src->elms, (PTR) dst->elms,
+	 sizeof (SBITMAP_ELT_TYPE) * dst->size);
 }
 
 /* Zero all elements in a bitmap.  */

@@ -1861,11 +1861,12 @@ offsettable_address_p (strictp, mode, y)
 
 int
 mode_dependent_address_p (addr)
-     rtx addr;
+  rtx addr ATTRIBUTE_UNUSED; /* Maybe used in GO_IF_MODE_DEPENDENT_ADDRESS. */
 {
   GO_IF_MODE_DEPENDENT_ADDRESS (addr, win);
   return 0;
- win:
+  /* Label `win' might (not) be used via GO_IF_MODE_DEPENDENT_ADDRESS. */
+ win: ATTRIBUTE_UNUSED_LABEL
   return 1;
 }
 
@@ -1888,7 +1889,8 @@ mode_independent_operand (op, mode)
   addr = XEXP (op, 0);
   GO_IF_MODE_DEPENDENT_ADDRESS (addr, lose);
   return 1;
- lose:
+  /* Label `lose' might (not) be used via GO_IF_MODE_DEPENDENT_ADDRESS. */
+ lose: ATTRIBUTE_UNUSED_LABEL
   return 0;
 }
 

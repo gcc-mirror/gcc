@@ -1070,7 +1070,7 @@ make_node (code)
     }
 
   t = (tree) obstack_alloc (obstack, length);
-  bzero (t, length);
+  bzero ((PTR) t, length);
 
 #ifdef GATHER_STATISTICS
   tree_node_counts[(int)kind]++;
@@ -1551,7 +1551,7 @@ make_tree_vec (len)
 #endif
 
   t = (tree) obstack_alloc (obstack, length);
-  bzero (t, length);
+  bzero ((PTR) t, length);
 
   TREE_SET_CODE (t, TREE_VEC);
   TREE_VEC_LENGTH (t) = len;
@@ -3058,7 +3058,7 @@ build1 (code, type, node)
   length = sizeof (struct tree_exp);
 
   t = (tree) obstack_alloc (obstack, length);
-  bzero (t, length);
+  bzero ((PTR) t, length);
 
 #ifdef GATHER_STATISTICS
   tree_node_counts[(int)kind]++;
