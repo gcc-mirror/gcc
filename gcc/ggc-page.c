@@ -247,6 +247,11 @@ typedef struct page_entry
      this is the last page-entry.  */
   struct page_entry *next;
 
+  /* The previous page-entry with objects of the same size, or NULL if
+     this is the first page-entry.   The PREV pointer exists solely to
+     keep the cost of ggc_free managable.  */
+  struct page_entry *prev;
+
   /* The number of bytes allocated.  (This will always be a multiple
      of the host system page size.)  */
   size_t bytes;
@@ -1092,12 +1097,18 @@ ggc_alloc (size_t size)
       while (new_entry->context_depth >= G.depth_in_use)
 	push_depth (G.by_depth_in_use-1);
 
-      /* If this is the only entry, it's also the tail.  */
+      /* If this is the only entry, it's also the tail.  If it is not
+	 the only entry, then we must update the PREV pointer of the
+	 ENTRY (G.pages[order]) to point to our new page entry.  */
       if (entry == NULL)
 	G.page_tails[order] = new_entry;
+      else
+	entry->prev = new_entry;
 
-      /* Put new pages at the head of the page list.  */
+      /* Put new pages at the head of the page list.  By definition the
+	 entry at the head of the list always has a NULL pointer.  */
       new_entry->next = entry;
+      new_entry->prev = NULL;
       entry = new_entry;
       G.pages[order] = new_entry;
 
@@ -1146,8 +1157,17 @@ ggc_alloc (size_t size)
       && entry->next != NULL
       && entry->next->num_free_objects > 0)
     {
+      /* We have a new head for the list.  */
       G.pages[order] = entry->next;
+
+      /* We are moving ENTRY to the end of the page table list.
+	 The new page at the head of the list will have NULL in
+	 its PREV field and ENTRY will have NULL in its NEXT field.  */
+      entry->next->prev = NULL;
       entry->next = NULL;
+
+      /* Append ENTRY to the tail of the list.  */
+      entry->prev = G.page_tails[order];
       G.page_tails[order]->next = entry;
       G.page_tails[order] = entry;
     }
@@ -1339,22 +1359,34 @@ ggc_free (void *p)
 
     if (pe->num_free_objects++ == 0)
       {
+	page_entry *p, *q;
+
 	/* If the page is completely full, then it's supposed to
 	   be after all pages that aren't.  Since we've freed one
 	   object from a page that was full, we need to move the
-	   page to the head of the list.  */
+	   page to the head of the list. 
 
-	page_entry *p, *q;
-	for (q = NULL, p = G.pages[order]; ; q = p, p = p->next)
-	  if (p == pe)
-	    break;
+	   PE is the node we want to move.  Q is the previous node
+	   and P is the next node in the list.  */
+	q = pe->prev;
 	if (q && q->num_free_objects == 0)
 	  {
 	    p = pe->next;
+
 	    q->next = p;
+
+	    /* If PE was at the end of the list, then Q becomes the
+	       new end of the list.  If PE was not the end of the
+	       list, then we need to update the PREV field for P.  */
 	    if (!p)
 	      G.page_tails[order] = q;
+	    else
+	      p->prev = q;
+
+	    /* Move PE to the head of the list.  */
 	    pe->next = G.pages[order];
+	    pe->prev = NULL;
+	    G.pages[order]->prev = pe;
 	    G.pages[order] = pe;
 	  }
 
@@ -1741,10 +1773,17 @@ sweep_pages (void)
 	  /* Remove the page if it's empty.  */
 	  else if (live_objects == 0)
 	    {
+	      /* If P was the first page in the list, then NEXT
+		 becomes the new first page in the list, otherwise
+		 splice P out of the forward pointers.  */
 	      if (! previous)
 		G.pages[order] = next;
 	      else
 		previous->next = next;
+	    
+	      /* Splice P out of the back pointers too.  */
+	      if (next)
+		next->prev = previous;
 
 	      /* Are we removing the last element?  */
 	      if (p == G.page_tails[order])
@@ -1761,6 +1800,7 @@ sweep_pages (void)
 		{
 		  /* Move p to the end of the list.  */
 		  p->next = NULL;
+		  p->prev = G.page_tails[order];
 		  G.page_tails[order]->next = p;
 
 		  /* Update the tail pointer...  */
@@ -1771,6 +1811,11 @@ sweep_pages (void)
 		    G.pages[order] = next;
 		  else
 		    previous->next = next;
+
+		  /* And update the backpointer in NEXT if necessary.  */
+		  if (next)
+		    next->prev = previous;
+
 		  p = previous;
 		}
 	    }
@@ -1782,8 +1827,19 @@ sweep_pages (void)
 	  else if (p != G.pages[order])
 	    {
 	      previous->next = p->next;
+
+	      /* Update the backchain in the next node if it exists.  */
+	      if (p->next)
+		p->next->prev = previous;
+
+	      /* Move P to the head of the list.  */
 	      p->next = G.pages[order];
+	      p->prev = NULL;
+	      G.pages[order]->prev = p;
+
+	      /* Update the head pointer.  */
 	      G.pages[order] = p;
+
 	      /* Are we moving the last element?  */
 	      if (G.page_tails[order] == p)
 	        G.page_tails[order] = previous;

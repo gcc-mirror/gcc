@@ -7183,6 +7183,45 @@ fold (tree expr)
       if (tree_swap_operands_p (arg0, arg1, true))
 	return fold (build (swap_tree_comparison (code), type, arg1, arg0));
 
+      /* If this is an equality comparison of the address of a non-weak
+	 object against zero, then we know the result.  */
+      if ((code == EQ_EXPR || code == NE_EXPR)
+	  && TREE_CODE (arg0) == ADDR_EXPR
+	  && DECL_P (TREE_OPERAND (arg0, 0))
+	  && ! DECL_WEAK (TREE_OPERAND (arg0, 0))
+	  && integer_zerop (arg1))
+	{
+	  if (code == EQ_EXPR)
+	    return integer_zero_node;
+	  else
+	    return integer_one_node;
+	}
+
+      /* If this is an equality comparison of the address of two non-weak,
+	 unaliased symbols neither of which are extern (since we do not
+	 have access to attributes for externs), then we know the result.  */
+      if ((code == EQ_EXPR || code == NE_EXPR)
+	  && TREE_CODE (arg0) == ADDR_EXPR
+	  && DECL_P (TREE_OPERAND (arg0, 0))
+	  && ! DECL_WEAK (TREE_OPERAND (arg0, 0))
+	  && ! lookup_attribute ("alias",
+				 DECL_ATTRIBUTES (TREE_OPERAND (arg0, 0)))
+	  && ! DECL_EXTERNAL (TREE_OPERAND (arg0, 0))
+	  && TREE_CODE (arg1) == ADDR_EXPR
+	  && DECL_P (TREE_OPERAND (arg1, 0))
+	  && ! DECL_WEAK (TREE_OPERAND (arg1, 0))
+	  && ! lookup_attribute ("alias",
+				 DECL_ATTRIBUTES (TREE_OPERAND (arg1, 0)))
+	  && ! DECL_EXTERNAL (TREE_OPERAND (arg1, 0)))
+	{
+	  if (code == EQ_EXPR)
+	    return (operand_equal_p (arg0, arg1, 0)
+		    ? integer_one_node : integer_zero_node);
+	  else
+	    return (operand_equal_p (arg0, arg1, 0)
+		    ? integer_zero_node : integer_one_node);
+	}
+
       if (FLOAT_TYPE_P (TREE_TYPE (arg0)))
 	{
 	  tree targ0 = strip_float_extensions (arg0);
