@@ -1,3 +1,7 @@
+2004-08-30  Paul Brook  <paul@codesourcery.com>
+
+	* doc/install.texi: Fix broken mpfr link.
+
 2004-08-29  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/rs6000/sysv4.h (LINK_OS_FREEBSD_SPEC): Sync '-p' handling with
