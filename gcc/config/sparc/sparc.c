@@ -113,40 +113,19 @@ static void sparc_init_modes ();
 
 /* Option handling.  */
 
-/* Contains one of: medium-low, medium-anywhere.  */
-/* ??? These names are quite long.  */
-
-char *sparc_code_model;
-
 /* Validate and override various options, and do some machine dependent
    initialization.  */
 
 void
 sparc_override_options ()
 {
-  if (sparc_code_model == 0)
-    /* Nothing to do.  */
-    ;
-  else if (! TARGET_V9)
-    error ("code model support is only available with -mv9");
-  else if (strcmp (sparc_code_model, "medium-low") == 0)
-    {
-      target_flags &= ~MASK_CODE_MODEL;
-      target_flags |= MASK_MEDLOW;
-    }
-  else if (strcmp (sparc_code_model, "medium-anywhere") == 0)
-    {
-      target_flags &= ~MASK_CODE_MODEL;
-      target_flags |= MASK_MEDANY;
-    }
-  else
-    error ("bad value (%s) for -mcode-model switch", sparc_code_model);
-
   /* Check for any conflicts in the choice of options.  */
   /* ??? This stuff isn't really usable yet.  */
 
   if (! TARGET_V9)
     {
+      if (target_flags & MASK_CODE_MODEL)
+	error ("code model support is only available with -mv9");
       if (TARGET_INT64)
 	error ("-mint64 is only available with -mv9");
       if (TARGET_LONG64)
