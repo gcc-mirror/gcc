@@ -212,39 +212,47 @@ namespace std
       const char_type* __p;
       while (__beg != __end)
         {
-	  // According to 22.2.2.1.2, p8-9, first look for decimal_point
-	  // and thousands_sep.
+	  // According to 22.2.2.1.2, p8-9, first look for thousands_sep
+	  // and decimal_point.
 	  const char_type __c = *__beg;
-	  if (__traits_type::eq(__c, __lc->_M_decimal_point) 
-	      && !__found_dec && !__found_sci)
+          if (__lc->_M_use_grouping
+	      && __traits_type::eq(__c, __lc->_M_thousands_sep))
 	    {
-	      // According to the standard, if no grouping chars are seen,
-	      // no grouping check is applied. Therefore __found_grouping
-	      // must be adjusted only if __dec comes after some __sep.
-	      if (__found_grouping.size())
-		__found_grouping += static_cast<char>(__sep_pos);
-	      __xtrc += '.';
-	      __found_dec = true;
-	      ++__beg;
-	    }
-          else if (__lc->_M_use_grouping
-		   && __traits_type::eq(__c, __lc->_M_thousands_sep)
-		   && !__found_dec && !__found_sci)
-	    {
-              // NB: Thousands separator at the beginning of a string
-              // is a no-no, as is two consecutive thousands separators.
-              if (__sep_pos)
-                {
-                  __found_grouping += static_cast<char>(__sep_pos);
-                  __sep_pos = 0;
-		  ++__beg;
-                }
-              else
+	      if (!__found_dec && !__found_sci)
 		{
-		  __err |= ios_base::failbit;
-		  break;
+		  // NB: Thousands separator at the beginning of a string
+		  // is a no-no, as is two consecutive thousands separators.
+		  if (__sep_pos)
+		    {
+		      __found_grouping += static_cast<char>(__sep_pos);
+		      __sep_pos = 0;
+		      ++__beg;
+		    }
+		  else
+		    {
+		      __err |= ios_base::failbit;
+		      break;
+		    }
 		}
+	      else
+		break;
             }
+	  else if (__traits_type::eq(__c, __lc->_M_decimal_point))
+	    {
+	      if (!__found_dec && !__found_sci)
+		{
+		  // If no grouping chars are seen, no grouping check
+		  // is applied. Therefore __found_grouping is adjusted
+		  // only if decimal_point comes after some thousands_sep.
+		  if (__found_grouping.size())
+		    __found_grouping += static_cast<char>(__sep_pos);
+		  __xtrc += '.';
+		  __found_dec = true;
+		  ++__beg;
+		}
+	      else
+		break;
+	    }
           else if (__p = __traits_type::find(__lit + _S_izero, 10, __c))
 	    {
 	      __xtrc += _S_atoms_in[__p - __lit];
@@ -385,13 +393,11 @@ namespace std
 	    const _ValueT __min = numeric_limits<_ValueT>::min() / __base;
 	    for (; __beg != __end; ++__beg)
 	      {
-		// According to 22.2.2.1.2, p8-9, first look for decimal_point
-		// and thousands_sep.
-		const char_type __c = *__beg;		
-		if (__traits_type::eq(__c, __lc->_M_decimal_point))
-		  break;
-		else if (__lc->_M_use_grouping
-			 && __traits_type::eq(__c, __lc->_M_thousands_sep))
+		// According to 22.2.2.1.2, p8-9, first look for thousands_sep
+		// and decimal_point.
+		const char_type __c = *__beg;
+		if (__lc->_M_use_grouping
+		    && __traits_type::eq(__c, __lc->_M_thousands_sep))
 		  {
 		    // NB: Thousands separator at the beginning of a string
 		    // is a no-no, as is two consecutive thousands separators.
@@ -406,6 +412,8 @@ namespace std
 			break;
 		      }
 		  }
+		else if (__traits_type::eq(__c, __lc->_M_decimal_point))
+		  break;
 		else if (__p = __traits_type::find(__lit_zero, __len, __c))
 		  {
 		    int __digit = __p - __lit_zero;
@@ -432,11 +440,9 @@ namespace std
 	    const _ValueT __max = numeric_limits<_ValueT>::max() / __base;
 	    for (; __beg != __end; ++__beg)
 	      {
-		const char_type __c = *__beg;		
-		if (__traits_type::eq(__c, __lc->_M_decimal_point))
-		  break;
-		else if (__lc->_M_use_grouping
-			 && __traits_type::eq(__c, __lc->_M_thousands_sep))
+		const char_type __c = *__beg;
+		if (__lc->_M_use_grouping
+		    && __traits_type::eq(__c, __lc->_M_thousands_sep))
 		  {
 		    if (__sep_pos)
 		      {
@@ -448,7 +454,9 @@ namespace std
 			__err |= ios_base::failbit;
 			break;
 		      }
-		  }
+		  }	
+		else if (__traits_type::eq(__c, __lc->_M_decimal_point))
+		  break;
 		else if (__p = __traits_type::find(__lit_zero, __len, __c))
 		  {
 		    int __digit = __p - __lit_zero;
