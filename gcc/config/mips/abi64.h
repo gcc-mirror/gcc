@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  64 bit ABI support.
-   Copyright (C) 1994, 1995, 1996, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1998, 1999, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
 #undef SUBTARGET_TARGET_OPTIONS
 #define SUBTARGET_TARGET_OPTIONS \
   { "abi=", &mips_abi_string,						\
-      "Speciy ABI to use"},
+      "Specify ABI to use"},
 
 #undef STACK_BOUNDARY
 #define STACK_BOUNDARY \

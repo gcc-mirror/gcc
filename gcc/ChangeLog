@@ -1,3 +1,10 @@
+2001-02-16  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* resource.c (mark_referenced_resources): Fix typo in introductory
+	comment.
+	* config/mips/abi64.h (SUBTARGET_TARGET_OPTIONS): Fix typo in
+	string constant.
+
 2001-02-16  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (add_bound_info): Don't crash if SAVE_EXPR_RTL is
