@@ -2061,6 +2061,102 @@ gen_cmp_fp (code, operand0, operand1)
 		  gen_rtx (code, CCFPmode, operand0, operand1));
 }
 
+/* Adjust the cost of a scheduling dependency.  Return the new cost of
+   a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
+
+int
+pa_adjust_cost (insn, link, dep_insn, cost)
+     rtx insn;
+     rtx link;
+     rtx dep_insn;
+     int cost;
+{
+  /* If the dependence is an anti-dependence, there is no cost.  For an
+     output dependence, there is sometimes a cost, but it doesn't seem
+     worth handling those few cases.  */
+
+  if (REG_NOTE_KIND (link) == 0)
+    {
+      /* Data dependency; DEP_INSN writes a register that INSN reads some
+	 cycles later.  */
+
+      if (get_attr_type (insn) == TYPE_FPSTORE)
+	{
+	  if (GET_CODE (PATTERN (insn)) != SET
+	      || GET_CODE (PATTERN (dep_insn)) != SET)
+	    /* If this happens, we have to extend this to schedule
+	       optimally.  */
+	    abort();
+
+	  if (rtx_equal_p (SET_DEST (PATTERN (dep_insn)), SET_SRC (PATTERN (insn))))
+	    {
+	      /* INSN is a fp store and DEP_INSN is writing to the register
+		 being stored.  */
+	      switch (get_attr_type (dep_insn))
+		{
+		case TYPE_FPLOAD:
+		  /* This cost 3 cycles, not 2 as the md says.  */
+		  return cost + 1;
+
+		case TYPE_FPALU:
+		case TYPE_FPMUL:
+		case TYPE_FPDIVSGL:
+		case TYPE_FPDIVDBL:
+		case TYPE_FPSQRTSGL:
+		case TYPE_FPSQRTDBL:
+		  /* In these important cases, we save one cycle compared to
+		     when flop instruction feed each other.  */
+		  return cost - 1;
+
+		default:
+		  return cost;
+		}
+	    }
+	}
+
+      /* For other data dependencies, the default cost specified in the
+	 md is correct.  */
+      return cost;
+    }
+  else if (REG_NOTE_KIND (link) == REG_DEP_ANTI)
+    {
+      /* Anti dependency; DEP_INSN reads a register that INSN writes some
+	 cycles later.  */
+
+      if (get_attr_type (insn) == TYPE_FPLOAD)
+	{
+	  if (GET_CODE (PATTERN (insn)) != SET
+	      || GET_CODE (PATTERN (dep_insn)) != SET)
+	    /* If this happens, we have to extend this to schedule
+	       optimally.  */
+	    abort();
+
+	  if (rtx_equal_p (SET_SRC (PATTERN (dep_insn)), SET_DEST (PATTERN (insn))))
+	    {
+	      switch (get_attr_type (dep_insn))
+		{
+		case TYPE_FPALU:
+		case TYPE_FPMUL:
+		case TYPE_FPDIVSGL:
+		case TYPE_FPDIVDBL:
+		case TYPE_FPSQRTSGL:
+		case TYPE_FPSQRTDBL:
+		  return cost - 1;
+
+		default:
+		  return 0;
+		}
+	    }
+	}
+
+      /* For other anti dependencies, the cost is 0.  */
+      return 0;
+    }
+
+  /* For all other cases of anti dependency and all cases of output
+     dependence the md is correct enough for the PA7000.  */
+  return cost;
+}
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
