@@ -1,3 +1,9 @@
+2005-04-01  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* g++.dg/ext/selectany1.C: New file. Test for linkonce sections.
+	* g++.dg/ext/selectany2.C: New file. Test for errors with invalid
+	selectany usage.
+
 2005-04-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/19406
