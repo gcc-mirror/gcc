@@ -430,6 +430,8 @@ static rtx inc_for_reload (rtx, rtx, rtx, int);
 static void add_auto_inc_notes (rtx, rtx);
 #endif
 static void copy_eh_notes (rtx, rtx);
+static int reloads_conflict (int, int);
+static rtx gen_reload (rtx, rtx, int, enum reload_type);
 
 /* Initialize the reload pass once per compilation.  */
 
@@ -4593,7 +4595,7 @@ reload_reg_reaches_end_p (unsigned int regno, int opnum, enum reload_type type)
 
    This function uses the same algorithm as reload_reg_free_p above.  */
 
-int
+static int
 reloads_conflict (int r1, int r2)
 {
   enum reload_type r1_type = rld[r1].when_needed;
@@ -7334,7 +7336,7 @@ emit_reload_insns (struct insn_chain *chain)
 
    Returns first insn emitted.  */
 
-rtx
+static rtx
 gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
 {
   rtx last = get_last_insn ();
