@@ -6697,15 +6697,38 @@ set_block_for_insn (insn, bb)
   VARRAY_BB (basic_block_for_insn, uid) = bb;
 }
 
-/* Record INSN's block number as BB.  */
-/* ??? This has got to go.  */
+/* When a new insn has been inserted into an existing block, it will
+   sometimes emit more than a single insn. This routine will set the
+   block number for the specified insn, and look backwards in the insn
+   chain to see if there are any other uninitialized insns immediately 
+   previous to this one, and set the block number for them too.  */
 
 void
-set_block_num (insn, bb)
+set_block_for_new_insns (insn, bb)
      rtx insn;
-     int bb;
+     basic_block bb;
 {
-  set_block_for_insn (insn, BASIC_BLOCK (bb));
+  set_block_for_insn (insn, bb);
+
+  /* We dont scan to set the block to 0 since this is the default value.  
+     If we did, we'd end up scanning/setting the entire prologue block
+     everytime we insert an insn into it. */
+  if (bb->index == 0)
+    return;
+
+  /* Scan the previous instructions setting the block number until we find 
+     an instruction that has the block number set, or we find a note 
+     of any kind.  */
+  for (insn = PREV_INSN (insn); insn != NULL_RTX; insn = PREV_INSN (insn))
+    {
+      if (GET_CODE (insn) == NOTE)
+	break;
+      if ((size_t)INSN_UID (insn) >= basic_block_for_insn->num_elements 
+	  || BLOCK_NUM (insn) == 0)
+	set_block_for_insn (insn, bb);
+      else
+	break;
+    }
 }
 
 /* Verify the CFG consistency.  This function check some CFG invariants and

@@ -3549,7 +3549,7 @@ handle_avail_expr (insn, expr)
 			   insn_computes_expr);
 
       /* Keep block number table up to date.  */
-      set_block_num (new_insn, BLOCK_NUM (insn_computes_expr));
+      set_block_for_new_insns (new_insn, BLOCK_FOR_INSN (insn_computes_expr));
 
       /* Keep register set table up to date.  */
       record_one_set (REGNO (to), new_insn);
@@ -4808,7 +4808,7 @@ insert_insn_end_bb (expr, bb, pre)
 	{
 	  rtx insn = XVECEXP (pat, 0, i);
 
-	  set_block_num (insn, bb);
+	  set_block_for_insn (insn, BASIC_BLOCK (bb));
 	  if (INSN_P (insn))
 	    add_label_notes (PATTERN (insn), new_insn);
 
@@ -4818,7 +4818,7 @@ insert_insn_end_bb (expr, bb, pre)
   else
     {
       add_label_notes (SET_SRC (pat), new_insn);
-      set_block_num (new_insn, bb);
+      set_block_for_new_insns (new_insn, BASIC_BLOCK (bb));
 
       /* Keep register set table up to date.  */
       record_one_set (regno, new_insn);
@@ -4942,7 +4942,7 @@ pre_insert_copy_insn (expr, insn)
 			      insn);
 
   /* Keep block number table up to date.  */
-  set_block_num (new_insn, bb);
+  set_block_for_new_insns (new_insn, BASIC_BLOCK (bb));
 
   /* Keep register set table up to date.  */
   record_one_set (regno, new_insn);
@@ -6367,7 +6367,7 @@ update_ld_motion_stores (expr)
 	  copy = gen_move_insn ( reg, SET_SRC (pat));
 	  i = emit_insn_before (copy, insn);
 	  record_one_set (REGNO (reg), i);
-	  set_block_num (i, BLOCK_NUM (insn));
+	  set_block_for_new_insns (i, BLOCK_FOR_INSN (insn));
 	  SET_SRC (pat) = reg;
 
 	  /* un-recognize this pattern since it's probably different now.  */
@@ -6877,11 +6877,8 @@ insert_insn_start_bb (insn, bb)
 
   if (prev == BLOCK_END (bb))
     BLOCK_END (bb) = insn;
-  while (insn != prev)
-    {
-      set_block_num (insn, bb);
-      insn = PREV_INSN (insn);
-    }
+
+  set_block_for_new_insns (insn, BASIC_BLOCK (bb));
 
   if (gcse_file)
     {
@@ -6971,7 +6968,7 @@ replace_store_insn (reg, del, bb)
   
   insn = gen_move_insn (reg, SET_SRC (PATTERN (del)));
   insn = emit_insn_after (insn, del);
-  set_block_num (insn, bb);
+  set_block_for_new_insns (insn, BASIC_BLOCK (bb));
   
   if (gcse_file)
     {

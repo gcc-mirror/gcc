@@ -1,4 +1,18 @@
 2001-04-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	* basic-block.h (set_new_block_for_insns): New Prototype.
+	(set_block_num): Delete prototype.
+	* flow.c (set_block_num): Remove obsolete function.
+	(set_block_for_new_insns): Set BB for single or multiple insns.
+	* gcse.c (handle_avail_expr): Use set_block_for_new_insns.
+	(process_insn_end_bb): Use set_block_for_new_insns or 
+	set_block_for_insn instead of set_block_num.
+	(pre_insert_copy_insn): Use set_block_for_new_insns.
+	(update_ld_motion_stores): Use set_block_for_new_insns.
+	(insert_insn_start_bb): Use set_block_for_new_insns.
+	(replace_store_insn): Use set_block_for_new_insns.
+
+2001-04-09  Andrew MacLeod  <amacleod@redhat.com>
 	    Jeff Law  <law@redhat.com>
 
 	* alias.c (get_addr): Externalize.
