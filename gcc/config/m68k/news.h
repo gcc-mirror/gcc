@@ -338,7 +338,7 @@ do { char dstr[30];					\
     { REAL_VALUE_TYPE r;						\
       REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
       ASM_OUTPUT_LONG_DOUBLE_OPERAND (FILE, r); }			\
-  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != DImode)	\
+  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == DFmode)	\
     { REAL_VALUE_TYPE r; char dstr[30];					\
       REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
       REAL_VALUE_TO_DECIMAL (r, "%.20e", dstr );			\

@@ -1,7 +1,7 @@
-/* Definitions of target machine for GNU compiler.
-   Charles River Data Systems UNiverse/32
-   Written by Gary E. Miller (Gary_Edmunds_Miller@cup.portal.com)
-   Copyright (C) 1987, 1993 Free Software Foundation, Inc.
+/* Definitions of target machine for GNU compiler;
+   Charles River Data Systems UNiverse/32.
+   Copyright (C) 1987, 1993, 1994 Free Software Foundation, Inc.
+   Contributed by Gary E. Miller (Gary_Edmunds_Miller@cup.portal.com)
 
 This file is part of GNU CC.
 
@@ -306,14 +306,14 @@ do {  int i;								\
       else								\
         { REAL_VALUE_TO_TARGET_SINGLE (r, l);				\
           fprintf (FILE, "$0x%x", l); } }				\
+  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == DFmode)	\
+    { REAL_VALUE_TYPE r;						\
+      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
+      ASM_OUTPUT_DOUBLE_OPERAND (FILE, r); }				\
   else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == XFmode)	\
     { REAL_VALUE_TYPE r;						\
       REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
       ASM_OUTPUT_LONG_DOUBLE_OPERAND (FILE, r); }			\
-  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != DImode)	\
-    { REAL_VALUE_TYPE r;						\
-      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
-      ASM_OUTPUT_DOUBLE_OPERAND (FILE, r); }				\
   else { putc ('$', FILE); output_addr_const (FILE, X); }}
 
 /* Note that this contains a kludge that knows that the only reason

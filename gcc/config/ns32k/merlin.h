@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  MERLIN NS32000 version.
-   Copyright (C) 1990 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1994 Free Software Foundation, Inc.
    By Mark Mason (mason@reed.bitnet, pyramid!unify!mason@uunet.uu.net).
 
 This file is part of GNU CC.
@@ -112,7 +112,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	  break;							\
 	}								\
     }									\
-  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != DImode)	\
+  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != VOIDmode)	\
     if (GET_MODE (X) == DFmode)						\
       { union { double d; int i[2]; } u;				\
 	u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
