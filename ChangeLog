@@ -1,3 +1,7 @@
+2002-01-28  Phil Edwards  <pme@gcc.gnu.org>
+
+	* MAINTAINERS:  Update my email address.
+
 2002-01-26  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* configure.in (*-*-netbsd*): New.  Skip target-newlib, 
