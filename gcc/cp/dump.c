@@ -264,7 +264,7 @@ cp_dump_tree (void* dump_info, tree t)
       if (CLASSTYPE_TEMPLATE_SPECIALIZATION(t))
         dump_string(di, "spec");
 
-      if (!dump_flag (di, TDF_SLIM, t))
+      if (!dump_flag (di, TDF_SLIM, t) && TYPE_BINFO (t))
 	{
 	  int i;
 	  
