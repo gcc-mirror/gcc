@@ -1,3 +1,8 @@
+2003-05-21  Nick Clifton  <nickc@redhat.com>
+
+	* config/stormy16/stormy-abi: Update overflow type for
+	R_XSTORMY16_16 reloc.
+
 2003-05-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* c-common.h (enum rid): Remove RID_BOUNDED, RID_UNBOUNDED.

@@ -133,7 +133,7 @@ Name			Value	Field	Calculation	Overflow
 ----------------------------------------------------------------
 R_XSTORMY16_NONE           0     none      none           none
 R_XSTORMY16_32             1      32       S + A          none
-R_XSTORMY16_16             2      16       S + A          none
+R_XSTORMY16_16             2      16       S + A          either
 R_XSTORMY16_8              3       8       S + A          unsigned
 R_XSTORMY16_PC32           4      32       S + A - P      none
 R_XSTORMY16_PC16           5      16       S + A - P      signed
