@@ -247,7 +247,7 @@ find_control_dependence (el, edge_index, pdom, cdbte)
     abort ();
   ending_block =
     (INDEX_EDGE_PRED_BB (el, edge_index) == ENTRY_BLOCK_PTR)
-    ? BASIC_BLOCK (0)
+    ? ENTRY_BLOCK_PTR->next_bb
     : find_pdom (pdom, INDEX_EDGE_PRED_BB (el, edge_index));
 
   for (current_block = INDEX_EDGE_SUCC_BB (el, edge_index);
@@ -275,7 +275,7 @@ find_pdom (pdom, block)
     abort ();
 
   if (block == ENTRY_BLOCK_PTR)
-    return BASIC_BLOCK (0);
+    return ENTRY_BLOCK_PTR->next_bb;
   else if (block == EXIT_BLOCK_PTR || pdom[block->index] == EXIT_BLOCK)
     return EXIT_BLOCK_PTR;
   else

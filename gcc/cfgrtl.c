@@ -1172,8 +1172,8 @@ tidy_fallthru_edges ()
 
   for (i = 1; i < n_basic_blocks; i++)
     {
-      basic_block b = BASIC_BLOCK (i - 1);
       basic_block c = BASIC_BLOCK (i);
+      basic_block b = c->prev_bb;
       edge s;
 
       /* We care about simple conditional or unconditional jumps with
@@ -1887,7 +1887,7 @@ verify_flow_info ()
 	    {
 	      rtx insn;
 
-	      if (e->src->index + 1 != e->dest->index)
+	      if (e->src->next_bb != e->dest)
 		{
 		  error
 		    ("verify_flow_info: Incorrect blocks for fallthru %i->%i",
@@ -1952,7 +1952,7 @@ verify_flow_info ()
 	  err = 1;
 	}
       if (n_branch != 1 && any_condjump_p (bb->end)
-	  && JUMP_LABEL (bb->end) != BASIC_BLOCK (bb->index + 1)->head)
+	  && JUMP_LABEL (bb->end) != bb->next_bb->head)
 	{
 	  error ("Wrong amount of branch edges after conditional jump %i", bb->index);
 	  err = 1;

@@ -1794,7 +1794,7 @@ build_insn_chain (first)
 {
   struct insn_chain **p = &reload_insn_chain;
   struct insn_chain *prev = 0;
-  int b = 0;
+  basic_block b = ENTRY_BLOCK_PTR->next_bb;
   regset_head live_relevant_regs_head;
 
   live_relevant_regs = INITIALIZE_REG_SET (live_relevant_regs_head);
@@ -1803,14 +1803,14 @@ build_insn_chain (first)
     {
       struct insn_chain *c;
 
-      if (first == BLOCK_HEAD (b))
+      if (first == b->head)
 	{
 	  int i;
 
 	  CLEAR_REG_SET (live_relevant_regs);
 
 	  EXECUTE_IF_SET_IN_BITMAP
-	    (BASIC_BLOCK (b)->global_live_at_start, 0, i,
+	    (b->global_live_at_start, 0, i,
 	     {
 	       if (i < FIRST_PSEUDO_REGISTER
 		   ? ! TEST_HARD_REG_BIT (eliminable_regset, i)
@@ -1827,7 +1827,7 @@ build_insn_chain (first)
 	  *p = c;
 	  p = &c->next;
 	  c->insn = first;
-	  c->block = b;
+	  c->block = b->index;
 
 	  if (INSN_P (first))
 	    {
@@ -1865,8 +1865,8 @@ build_insn_chain (first)
 	    }
 	}
 
-      if (first == BLOCK_END (b))
-	b++;
+      if (first == b->end)
+	b = b->next_bb;
 
       /* Stop after we pass the end of the last basic block.  Verify that
 	 no real insns are after the end of the last basic block.
@@ -1874,7 +1874,7 @@ build_insn_chain (first)
 	 We may want to reorganize the loop somewhat since this test should
 	 always be the right exit test.  Allow an ADDR_VEC or ADDR_DIF_VEC if
 	 the previous real insn is a JUMP_INSN.  */
-      if (b == n_basic_blocks)
+      if (b == EXIT_BLOCK_PTR)
 	{
 	  for (first = NEXT_INSN (first) ; first; first = NEXT_INSN (first))
 	    if (INSN_P (first)

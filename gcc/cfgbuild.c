@@ -50,7 +50,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static int count_basic_blocks		PARAMS ((rtx));
 static void find_basic_blocks_1		PARAMS ((rtx));
 static rtx find_label_refs		PARAMS ((rtx, rtx));
-static void make_edges			PARAMS ((rtx, int, int, int));
+static void make_edges			PARAMS ((rtx, basic_block,
+						 basic_block, int));
 static void make_label_edge		PARAMS ((sbitmap *, basic_block,
 						 rtx, int));
 static void make_eh_edge		PARAMS ((sbitmap *, basic_block, rtx));
@@ -280,7 +281,8 @@ make_eh_edge (edge_cache, src, insn)
 static void
 make_edges (label_value_list, min, max, update_p)
      rtx label_value_list;
-     int min, max, update_p;
+     basic_block min, max;
+     int update_p;
 {
   int i;
   sbitmap *edge_cache = NULL;
@@ -297,7 +299,7 @@ make_edges (label_value_list, min, max, update_p)
       sbitmap_vector_zero (edge_cache, n_basic_blocks);
 
       if (update_p)
-	for (i = min; i <= max; ++i)
+	for (i = min->index; i <= max->index; ++i)
 	  {
 	    edge e;
 
@@ -308,11 +310,11 @@ make_edges (label_value_list, min, max, update_p)
     }
 
   /* By nature of the way these get numbered, block 0 is always the entry.  */
-  if (min == 0)
-    cached_make_edge (edge_cache, ENTRY_BLOCK_PTR, BASIC_BLOCK (0),
+  if (min == ENTRY_BLOCK_PTR->next_bb)
+    cached_make_edge (edge_cache, ENTRY_BLOCK_PTR, min,
 		      EDGE_FALLTHRU);
 
-  for (i = min; i <= max; ++i)
+  for (i = min->index; i <= max->index; ++i)
     {
       basic_block bb = BASIC_BLOCK (i);
       rtx insn, x;
@@ -443,16 +445,15 @@ make_edges (label_value_list, min, max, update_p)
 
       /* Find out if we can drop through to the next block.  */
       insn = next_nonnote_insn (insn);
-      if (!insn || (i + 1 == n_basic_blocks && force_fallthru))
+      if (!insn || (bb->next_bb == EXIT_BLOCK_PTR && force_fallthru))
 	cached_make_edge (edge_cache, bb, EXIT_BLOCK_PTR, EDGE_FALLTHRU);
-      else if (i + 1 < n_basic_blocks)
+      else if (bb->next_bb != EXIT_BLOCK_PTR)
 	{
-	  rtx tmp = BLOCK_HEAD (i + 1);
+	  rtx tmp = bb->next_bb->head;
 	  if (GET_CODE (tmp) == NOTE)
 	    tmp = next_nonnote_insn (tmp);
 	  if (force_fallthru || insn == tmp)
-	    cached_make_edge (edge_cache, bb, BASIC_BLOCK (i + 1),
-			      EDGE_FALLTHRU);
+	    cached_make_edge (edge_cache, bb, bb->next_bb, EDGE_FALLTHRU);
 	}
     }
 
@@ -664,7 +665,7 @@ find_basic_blocks (f, nregs, file)
   compute_bb_for_insn (max_uid);
 
   /* Discover the edges of our cfg.  */
-  make_edges (label_value_list, 0, n_basic_blocks - 1, 0);
+  make_edges (label_value_list, ENTRY_BLOCK_PTR->next_bb, EXIT_BLOCK_PTR->prev_bb, 0);
 
   /* Do very simple cleanup now, for the benefit of code that runs between
      here and cleanup_cfg, e.g. thread_prologue_and_epilogue_insns.  */
@@ -815,7 +816,7 @@ find_many_sub_basic_blocks (blocks)
 
   /* Now re-scan and wire in all edges.  This expect simple (conditional)
      jumps at the end of each new basic blocks.  */
-  make_edges (NULL, min, max, 1);
+  make_edges (NULL, BASIC_BLOCK (min), BASIC_BLOCK (max), 1);
 
   /* Update branch probabilities.  Expect only (un)conditional jumps
      to be created with only the forward edges.  */
@@ -852,16 +853,15 @@ find_sub_basic_blocks (bb)
 {
   int i;
   int min, max;
-  basic_block next = (bb->index == n_basic_blocks - 1
-		      ? NULL : BASIC_BLOCK (bb->index + 1));
+  basic_block next = bb->next_bb;
 
   min = bb->index;
   find_bb_boundaries (bb);
-  max = (next ? next->index : n_basic_blocks) - 1;
+  max = next->prev_bb->index;
 
   /* Now re-scan and wire in all edges.  This expect simple (conditional)
      jumps at the end of each new basic blocks.  */
-  make_edges (NULL, min, max, 1);
+  make_edges (NULL, BASIC_BLOCK (min), BASIC_BLOCK (max), 1);
 
   /* Update branch probabilities.  Expect only (un)conditional jumps
      to be created with only the forward edges.  */

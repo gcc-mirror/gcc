@@ -1506,13 +1506,14 @@ regmove_optimize (f, nregs, regmove_dump_file)
      ends.  Fix that here.  */
   for (i = 0; i < n_basic_blocks; i++)
     {
-      rtx end = BLOCK_END (i);
+      basic_block bb = BASIC_BLOCK (i);
+      rtx end = bb->end;
       rtx new = end;
       rtx next = NEXT_INSN (new);
       while (next != 0 && INSN_UID (next) >= old_max_uid
-	     && (i == n_basic_blocks - 1 || BLOCK_HEAD (i + 1) != next))
+	     && (bb->next_bb == EXIT_BLOCK_PTR || bb->next_bb->head != next))
 	new = next, next = NEXT_INSN (new);
-      BLOCK_END (i) = new;
+      bb->end = new;
     }
 
  done:

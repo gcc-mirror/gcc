@@ -87,7 +87,7 @@ can_fallthru (src, target)
   rtx insn = src->end;
   rtx insn2 = target->head;
 
-  if (src->index + 1 != target->index)
+  if (src->next_bb != target)
     return 0;
 
   if (!active_insn_p (insn2))
@@ -296,7 +296,7 @@ flow_call_edges_add (blocks)
      Handle this by adding a dummy instruction in a new last basic block.  */
   if (check_last_block)
     {
-      basic_block bb = BASIC_BLOCK (n_basic_blocks - 1);
+      basic_block bb = EXIT_BLOCK_PTR->prev_bb;
       rtx insn = bb->end;
 
       /* Back up past insns that must be kept in the same block as a call.  */
@@ -1088,7 +1088,7 @@ flow_preorder_transversal_compute (pot_order)
      walking the tree from right to left.  */
 
   i = 0;
-  node = &dfst[0];
+  node = &dfst[ENTRY_BLOCK_PTR->next_bb->index];
   pot_order[i++] = 0;
 
   while (node)

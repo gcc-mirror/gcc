@@ -86,8 +86,8 @@ skip_insns_after_block (bb)
   rtx insn, last_insn, next_head, prev;
 
   next_head = NULL_RTX;
-  if (bb->index + 1 != n_basic_blocks)
-    next_head = BASIC_BLOCK (bb->index + 1)->head;
+  if (bb->next_bb != EXIT_BLOCK_PTR)
+    next_head = bb->next_bb->head;
 
   for (last_insn = insn = bb->end; (insn = NEXT_INSN (insn)) != 0; )
     {
@@ -364,7 +364,7 @@ fixup_reorder_chain ()
   /* First do the bulk reordering -- rechain the blocks without regard to
      the needed changes to jumps and labels.  */
 
-  for (bb = BASIC_BLOCK (0), index = 0;
+  for (bb = ENTRY_BLOCK_PTR->next_bb, index = 0;
        bb != 0;
        bb = RBI (bb)->next, index++)
     {
@@ -412,7 +412,7 @@ fixup_reorder_chain ()
   /* Now add jumps and labels as needed to match the blocks new
      outgoing edges.  */
 
-  for (bb = BASIC_BLOCK (0); bb ; bb = RBI (bb)->next)
+  for (bb = ENTRY_BLOCK_PTR->next_bb; bb ; bb = RBI (bb)->next)
     {
       edge e_fall, e_taken, e;
       rtx bb_end_insn;
@@ -527,7 +527,7 @@ fixup_reorder_chain ()
   if (rtl_dump_file)
     {
       fprintf (rtl_dump_file, "Reordered sequence:\n");
-      for (bb = BASIC_BLOCK (0), index = 0; bb; bb = RBI (bb)->next, index ++)
+      for (bb = ENTRY_BLOCK_PTR->next_bb, index = 0; bb; bb = RBI (bb)->next, index ++)
 	{
 	  fprintf (rtl_dump_file, " %i ", index);
 	  if (RBI (bb)->original)
@@ -542,7 +542,7 @@ fixup_reorder_chain ()
     }
 
   prev_bb = ENTRY_BLOCK_PTR;
-  bb = BASIC_BLOCK (0);
+  bb = ENTRY_BLOCK_PTR->next_bb;
   index = 0;
 
   for (; bb; prev_bb = bb, bb = RBI (bb)->next, index ++)
@@ -611,7 +611,9 @@ cleanup_unconditional_jumps ()
 	  rtx insn;
 	  if (GET_CODE (bb->head) != CODE_LABEL && forwarder_block_p (bb) && i)
 	    {
-	      basic_block prev = BASIC_BLOCK (--i);
+	      basic_block prev = bb->prev_bb;
+
+	      i--;
 
 	      if (rtl_dump_file)
 		fprintf (rtl_dump_file, "Removing forwarder BB %i\n",
@@ -672,7 +674,7 @@ fixup_fallthru_exit_predecessor ()
 
   if (bb && RBI (bb)->next)
     {
-      basic_block c = BASIC_BLOCK (0);
+      basic_block c = ENTRY_BLOCK_PTR->next_bb;
 
       while (RBI (c)->next != bb)
 	c = RBI (c)->next;
@@ -822,14 +824,14 @@ cfg_layout_redirect_edge (e, dest)
      edge e;
      basic_block dest;
 {
-  int old_index = dest->index;
   basic_block src = e->src;
+  basic_block old_next_bb = src->next_bb;
 
   /* Redirect_edge_and_branch may decide to turn branch into fallthru edge
      in the case the basic block appears to be in sequence.  Avoid this
      transformation.  */
 
-  dest->index = n_basic_blocks + 1;
+  src->next_bb = NULL;
   if (e->flags & EDGE_FALLTHRU)
     {
       /* In case we are redirecting fallthru edge to the branch edge
@@ -855,7 +857,7 @@ cfg_layout_redirect_edge (e, dest)
       delete_barrier (NEXT_INSN (src->end));
       src->succ->flags |= EDGE_FALLTHRU;
     }
-  dest->index = old_index;
+  src->next_bb = old_next_bb;
 }
 
 /* Create an duplicate of the basic block BB and redirect edge E into it.  */

@@ -5586,7 +5586,7 @@ compute_code_hoist_vbeinout ()
 	{
 	  changed |= sbitmap_a_or_b_and_c_cg (hoist_vbein[bb], antloc[bb],
 					      hoist_vbeout[bb], transp[bb]);
-	  if (bb != n_basic_blocks - 1)
+	  if (BASIC_BLOCK (bb)->next_bb != EXIT_BLOCK_PTR)
 	    sbitmap_intersection_of_succs (hoist_vbeout[bb], hoist_vbein, bb);
 	}
 

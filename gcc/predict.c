@@ -695,10 +695,13 @@ static bool
 last_basic_block_p (bb)
      basic_block bb;
 {
-  return (bb->index == n_basic_blocks - 1
-	  || (bb->index == n_basic_blocks - 2
+  if (bb == EXIT_BLOCK_PTR)
+    return false;
+
+  return (bb->next_bb == EXIT_BLOCK_PTR
+	  || (bb->next_bb->next_bb == EXIT_BLOCK_PTR
 	      && bb->succ && !bb->succ->succ_next
-	      && bb->succ->dest->index == n_basic_blocks - 1));
+	      && bb->succ->dest->next_bb == EXIT_BLOCK_PTR));
 }
 
 /* Sets branch probabilities according to PREDiction and FLAGS. HEADS[bb->index]
@@ -847,7 +850,7 @@ note_prediction_to_br_prob ()
 
   heads = xmalloc (sizeof (int) * n_basic_blocks);
   memset (heads, -1, sizeof (int) * n_basic_blocks);
-  heads[0] = n_basic_blocks;
+  heads[ENTRY_BLOCK_PTR->next_bb->index] = n_basic_blocks;
 
   /* Process all prediction notes.  */
 

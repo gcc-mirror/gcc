@@ -146,9 +146,9 @@ find_basic_block (insn, search_limit)
   if (search_limit == 0)
     return -1;
 
-  /* The start of the function is basic block zero.  */
+  /* The start of the function.  */
   else if (insn == 0)
-    return 0;
+    return ENTRY_BLOCK_PTR->next_bb->index;
 
   /* See if any of the upcoming CODE_LABELs start a basic block.  If we reach
      anything other than a CODE_LABEL or note, we can't find this code.  */

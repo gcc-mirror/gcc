@@ -306,8 +306,8 @@ schedule_ebbs (dump_file)
 	  basic_block b = BASIC_BLOCK (i);
 	  edge e;
 	  tail = b->end;
-	  if (i + 1 == n_basic_blocks
-	      || GET_CODE (BLOCK_HEAD (i + 1)) == CODE_LABEL)
+	  if (b->next_bb == EXIT_BLOCK_PTR
+	      || GET_CODE (b->next_bb->head) == CODE_LABEL)
 	    break;
 	  for (e = b->succ; e; e = e->succ_next)
 	    if ((e->flags & EDGE_FALLTHRU) != 0)
