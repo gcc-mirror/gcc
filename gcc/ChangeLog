@@ -1,3 +1,7 @@
+2003-04-28  David O'Brien  <obrien@FreeBSD.org>
+
+	* config/i386/i386.h (builtin_define): Add __amd64 and __amd64__.
+
 2003-04-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* builtins.def (BUILT_IN_BCOPY, BUILT_IN_MEMMOVE): New.
