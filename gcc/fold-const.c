@@ -1087,8 +1087,8 @@ negate_expr (tree t)
 		 == TREE_INT_CST_LOW (op1))
 	    {
 	      tree ntype = TREE_UNSIGNED (type)
-			   ? (*lang_hooks.types.signed_type) (type)
-			   : (*lang_hooks.types.unsigned_type) (type);
+			   ? lang_hooks.types.signed_type (type)
+			   : lang_hooks.types.unsigned_type (type);
 	      tree temp = fold_convert (ntype, TREE_OPERAND (t, 0));
 	      temp = fold (build2 (RSHIFT_EXPR, ntype, temp, op1));
 	      return fold_convert (type, temp);
@@ -2419,7 +2419,7 @@ operand_equal_for_comparison_p (tree arg0, tree arg1, tree other)
 
       /* Make sure shorter operand is extended the right way
 	 to match the longer operand.  */
-      primarg1 = fold_convert ((*lang_hooks.types.signed_or_unsigned_type)
+      primarg1 = fold_convert (lang_hooks.types.signed_or_unsigned_type
 			       (unsignedp1, TREE_TYPE (primarg1)), primarg1);
 
       if (operand_equal_p (arg0, fold_convert (type, primarg1), 0))
@@ -2900,8 +2900,8 @@ optimize_bit_field_compare (enum tree_code code, tree compare_type,
 
   /* Set signed and unsigned types of the precision of this mode for the
      shifts below.  */
-  signed_type = (*lang_hooks.types.type_for_mode) (nmode, 0);
-  unsigned_type = (*lang_hooks.types.type_for_mode) (nmode, 1);
+  signed_type = lang_hooks.types.type_for_mode (nmode, 0);
+  unsigned_type = lang_hooks.types.type_for_mode (nmode, 1);
 
   /* Compute the bit position and size for the new reference and our offset
      within it. If the new reference is the same size as the original, we
@@ -3074,7 +3074,7 @@ decode_field_reference (tree exp, HOST_WIDE_INT *pbitsize,
     *punsignedp = TREE_UNSIGNED (outer_type);
 
   /* Compute the mask to access the bitfield.  */
-  unsigned_type = (*lang_hooks.types.type_for_size) (*pbitsize, 1);
+  unsigned_type = lang_hooks.types.type_for_size (*pbitsize, 1);
   precision = TYPE_PRECISION (unsigned_type);
 
   mask = build_int_2 (~0, ~0);
@@ -3104,7 +3104,7 @@ all_ones_mask_p (tree mask, int size)
   tree tmask;
 
   tmask = build_int_2 (~0, ~0);
-  TREE_TYPE (tmask) = (*lang_hooks.types.signed_type) (type);
+  TREE_TYPE (tmask) = lang_hooks.types.signed_type (type);
   force_fit_type (tmask, 0);
   return
     tree_int_cst_equal (mask,
@@ -3497,7 +3497,7 @@ make_range (tree exp, int *pin_p, tree *plow, tree *phigh)
 	     be interpreted as positive.  */
 	  if (TREE_UNSIGNED (type) && ! TREE_UNSIGNED (TREE_TYPE (exp)))
 	    {
-	      tree equiv_type = (*lang_hooks.types.type_for_mode)
+	      tree equiv_type = lang_hooks.types.type_for_mode
 		(TYPE_MODE (type), 1);
 	      tree high_positive;
 
@@ -3598,7 +3598,7 @@ build_range_check (tree type, tree exp, int in_p, tree low, tree high)
     {
       if (! TREE_UNSIGNED (etype))
 	{
-	  etype = (*lang_hooks.types.unsigned_type) (etype);
+	  etype = lang_hooks.types.unsigned_type (etype);
 	  high = fold_convert (etype, high);
 	  exp = fold_convert (etype, exp);
 	}
@@ -3628,7 +3628,7 @@ build_range_check (tree type, tree exp, int in_p, tree low, tree high)
 	{
 	  if (TREE_UNSIGNED (etype))
 	    {
-	      etype = (*lang_hooks.types.signed_type) (etype);
+	      etype = lang_hooks.types.signed_type (etype);
 	      exp = fold_convert (etype, exp);
 	    }
 	  return fold (build (GT_EXPR, type, exp,
@@ -3833,7 +3833,7 @@ fold_range_test (tree exp)
 		      TREE_TYPE (exp), TREE_OPERAND (exp, 0),
 		      TREE_OPERAND (exp, 1));
 
-      else if ((*lang_hooks.decls.global_bindings_p) () == 0
+      else if (lang_hooks.decls.global_bindings_p () == 0
 	       && ! CONTAINS_PLACEHOLDER_P (lhs))
 	{
 	  tree common = save_expr (lhs);
@@ -3881,7 +3881,7 @@ unextend (tree c, int p, int unsignedp, tree mask)
      zero or one, and the conversion to a signed type can never overflow.
      We could get an overflow if this conversion is done anywhere else.  */
   if (TREE_UNSIGNED (type))
-    temp = fold_convert ((*lang_hooks.types.signed_type) (type), temp);
+    temp = fold_convert (lang_hooks.types.signed_type (type), temp);
 
   temp = const_binop (LSHIFT_EXPR, temp, size_int (modesize - 1), 0);
   temp = const_binop (RSHIFT_EXPR, temp, size_int (modesize - p - 1), 0);
@@ -4127,7 +4127,7 @@ fold_truthop (enum tree_code code, tree truth_type, tree lhs, tree rhs)
 
   /* After this point all optimizations will generate bit-field
      references, which we might not want.  */
-  if (! (*lang_hooks.can_use_bit_fields_p) ())
+  if (! lang_hooks.can_use_bit_fields_p ())
     return 0;
 
   /* See if we can find a mode that contains both fields being compared on
@@ -4143,7 +4143,7 @@ fold_truthop (enum tree_code code, tree truth_type, tree lhs, tree rhs)
 
   lnbitsize = GET_MODE_BITSIZE (lnmode);
   lnbitpos = first_bit & ~ (lnbitsize - 1);
-  lntype = (*lang_hooks.types.type_for_size) (lnbitsize, 1);
+  lntype = lang_hooks.types.type_for_size (lnbitsize, 1);
   xll_bitpos = ll_bitpos - lnbitpos, xrl_bitpos = rl_bitpos - lnbitpos;
 
   if (BYTES_BIG_ENDIAN)
@@ -4214,7 +4214,7 @@ fold_truthop (enum tree_code code, tree truth_type, tree lhs, tree rhs)
 
       rnbitsize = GET_MODE_BITSIZE (rnmode);
       rnbitpos = first_bit & ~ (rnbitsize - 1);
-      rntype = (*lang_hooks.types.type_for_size) (rnbitsize, 1);
+      rntype = lang_hooks.types.type_for_size (rnbitsize, 1);
       xlr_bitpos = lr_bitpos - rnbitpos, xrr_bitpos = rr_bitpos - rnbitpos;
 
       if (BYTES_BIG_ENDIAN)
@@ -4787,8 +4787,8 @@ constant_boolean_node (int value, tree type)
   if (type == integer_type_node)
     return value ? integer_one_node : integer_zero_node;
   else if (TREE_CODE (type) == BOOLEAN_TYPE)
-    return (*lang_hooks.truthvalue_conversion) (value ? integer_one_node :
-						integer_zero_node);
+    return lang_hooks.truthvalue_conversion (value ? integer_one_node
+						   : integer_zero_node);
   else
     {
       tree t = build_int_2 (value, 0);
@@ -4920,7 +4920,7 @@ fold_binary_op_with_conditional_arg (enum tree_code code, tree type,
     save = 1;
   else if (lhs == 0 && rhs == 0
 	   && !TREE_CONSTANT (arg)
-	   && (*lang_hooks.decls.global_bindings_p) () == 0
+	   && lang_hooks.decls.global_bindings_p () == 0
 	   && ((TREE_CODE (arg) != VAR_DECL && TREE_CODE (arg) != PARM_DECL)
 	       || TREE_SIDE_EFFECTS (arg)))
     {
@@ -5095,7 +5095,7 @@ fold_mathfn_compare (enum built_in_function fcode, enum tree_code code,
 				    build_real (TREE_TYPE (arg), dconst0)));
 
 	      /* sqrt(x) < y is x >= 0 && x != +Inf, when y is large.  */
-	      if ((*lang_hooks.decls.global_bindings_p) () != 0
+	      if (lang_hooks.decls.global_bindings_p () != 0
 		  || CONTAINS_PLACEHOLDER_P (arg))
 		return NULL_TREE;
 
@@ -5115,7 +5115,7 @@ fold_mathfn_compare (enum built_in_function fcode, enum tree_code code,
 				build_real (TREE_TYPE (arg), c2)));
 
 	  /* sqrt(x) < c is the same as x >= 0 && x < c*c.  */
-	  if ((*lang_hooks.decls.global_bindings_p) () == 0
+	  if (lang_hooks.decls.global_bindings_p () == 0
 	      && ! CONTAINS_PLACEHOLDER_P (arg))
 	    {
 	      arg = save_expr (arg);
@@ -5176,7 +5176,7 @@ fold_inf_compare (enum tree_code code, tree type, tree arg0, tree arg1)
 				 arg0);
 
       /* x <= +Inf is the same as x == x, i.e. isfinite(x).  */
-      if ((*lang_hooks.decls.global_bindings_p) () == 0
+      if (lang_hooks.decls.global_bindings_p () == 0
 	  && ! CONTAINS_PLACEHOLDER_P (arg0))
 	{
 	  arg0 = save_expr (arg0);
@@ -5257,7 +5257,7 @@ fold_single_bit_test (enum tree_code code, tree arg0, tree arg1,
       arg00 = sign_bit_p (TREE_OPERAND (arg0, 0), TREE_OPERAND (arg0, 1));
       if (arg00 != NULL_TREE)
 	{
-	  tree stype = (*lang_hooks.types.signed_type) (TREE_TYPE (arg00));
+	  tree stype = lang_hooks.types.signed_type (TREE_TYPE (arg00));
 	  return fold (build (code == EQ_EXPR ? GE_EXPR : LT_EXPR, result_type,
 			      fold_convert (stype, arg00),
 			      fold_convert (stype, integer_zero_node)));
@@ -5293,8 +5293,8 @@ fold_single_bit_test (enum tree_code code, tree arg0, tree arg1,
       ops_unsigned = 1;
 #endif
 
-      signed_type = (*lang_hooks.types.type_for_mode) (operand_mode, 0);
-      unsigned_type = (*lang_hooks.types.type_for_mode) (operand_mode, 1);
+      signed_type = lang_hooks.types.type_for_mode (operand_mode, 0);
+      unsigned_type = lang_hooks.types.type_for_mode (operand_mode, 1);
       intermediate_type = ops_unsigned ? unsigned_type : signed_type;
       inner = fold_convert (intermediate_type, inner);
 
@@ -5609,7 +5609,7 @@ fold (tree expr)
 	       && (TREE_CODE (arg0) != COND_EXPR
 		   || count_cond (arg0, 25) + count_cond (arg1, 25) <= 25)
 	       && (! TREE_SIDE_EFFECTS (arg0)
-		   || ((*lang_hooks.decls.global_bindings_p) () == 0
+		   || (lang_hooks.decls.global_bindings_p () == 0
 		       && ! CONTAINS_PLACEHOLDER_P (arg0))))
 	return
 	  fold_binary_op_with_conditional_arg (code, type, arg1, arg0,
@@ -5623,7 +5623,7 @@ fold (tree expr)
 	       && (TREE_CODE (arg1) != COND_EXPR
 		   || count_cond (arg0, 25) + count_cond (arg1, 25) <= 25)
 	       && (! TREE_SIDE_EFFECTS (arg1)
-		   || ((*lang_hooks.decls.global_bindings_p) () == 0
+		   || (lang_hooks.decls.global_bindings_p () == 0
 		       && ! CONTAINS_PLACEHOLDER_P (arg1))))
 	return
 	  fold_binary_op_with_conditional_arg (code, type, arg0, arg1,
@@ -5784,7 +5784,7 @@ fold (tree expr)
 		  && (LOAD_EXTEND_OP (TYPE_MODE (TREE_TYPE (and0)))
 		      == ZERO_EXTEND))
 		{
-		  tree uns = (*lang_hooks.types.unsigned_type) (TREE_TYPE (and0));
+		  tree uns = lang_hooks.types.unsigned_type (TREE_TYPE (and0));
 		  and0 = fold_convert (uns, and0);
 		  and1 = fold_convert (uns, and1);
 		}
@@ -7544,8 +7544,8 @@ fold (tree expr)
 		if (code == LE_EXPR || code == GT_EXPR)
 		  {
 		    tree st0, st1;
-		    st0 = (*lang_hooks.types.signed_type) (TREE_TYPE (arg0));
-		    st1 = (*lang_hooks.types.signed_type) (TREE_TYPE (arg1));
+		    st0 = lang_hooks.types.signed_type (TREE_TYPE (arg0));
+		    st1 = lang_hooks.types.signed_type (TREE_TYPE (arg1));
 		    return fold
 		      (build (code == LE_EXPR ? GE_EXPR: LT_EXPR,
 			      type, fold_convert (st0, arg0),
@@ -7668,7 +7668,7 @@ fold (tree expr)
 	      || TREE_CODE (arg0) == ROUND_MOD_EXPR)
 	  && integer_pow2p (TREE_OPERAND (arg0, 1)))
 	{
-	  tree newtype = (*lang_hooks.types.unsigned_type) (TREE_TYPE (arg0));
+	  tree newtype = lang_hooks.types.unsigned_type (TREE_TYPE (arg0));
 	  tree newmod = build (TREE_CODE (arg0), newtype,
 			       fold_convert (newtype,
 					     TREE_OPERAND (arg0, 0)),
@@ -7895,7 +7895,7 @@ fold (tree expr)
 
       /* If this is a comparison of a field, we may be able to simplify it.  */
       if (((TREE_CODE (arg0) == COMPONENT_REF
-	    && (*lang_hooks.can_use_bit_fields_p) ())
+	    && lang_hooks.can_use_bit_fields_p ())
 	   || TREE_CODE (arg0) == BIT_FIELD_REF)
 	  && (code == EQ_EXPR || code == NE_EXPR)
 	  /* Handle the constant case even without -O
@@ -8045,7 +8045,7 @@ fold (tree expr)
 
       TREE_TYPE (t1) = type;
       if (TREE_CODE (type) == BOOLEAN_TYPE)
-	return (*lang_hooks.truthvalue_conversion) (t1);
+	return lang_hooks.truthvalue_conversion (t1);
       return t1;
 
     case COND_EXPR:
@@ -8115,14 +8115,14 @@ fold (tree expr)
 	      case GE_EXPR:
 	      case GT_EXPR:
 		if (TREE_UNSIGNED (TREE_TYPE (arg1)))
-		  arg1 = fold_convert ((*lang_hooks.types.signed_type)
+		  arg1 = fold_convert (lang_hooks.types.signed_type
 				       (TREE_TYPE (arg1)), arg1);
 		arg1 = fold (build1 (ABS_EXPR, TREE_TYPE (arg1), arg1));
 		return pedantic_non_lvalue (fold_convert (type, arg1));
 	      case LE_EXPR:
 	      case LT_EXPR:
 		if (TREE_UNSIGNED (TREE_TYPE (arg1)))
-		  arg1 = fold_convert ((lang_hooks.types.signed_type)
+		  arg1 = fold_convert (lang_hooks.types.signed_type
 				       (TREE_TYPE (arg1)), arg1);
 		arg1 = fold (build1 (ABS_EXPR, TREE_TYPE (arg1), arg1));
 		arg1 = negate_expr (fold_convert (type, arg1));

@@ -1,3 +1,13 @@
+2004-03-13  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (negate_expr, operand_equal_for_comparison_p,
+	optimize_bit_field_compare, decode_field_reference, all_ones_mask_p,
+	make_range, build_range_check, fold_range_test, unextend,
+	constant_boolean_node, fold_binary_op_with_conditional_arg,
+	fold_truthop, fold_mathfn_compare, fold_inf_compare,
+	fold_single_bit_test, fold): Replace calls via (*lang_hooks.foo) ()
+	with lang_hooks.foo ().
+
 2004-03-14  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.h (EXTRA_CONSTRAINT_STR_ARM): Update comment.
