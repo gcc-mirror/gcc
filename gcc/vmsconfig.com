@@ -38,7 +38,7 @@ $DECK
 !  Copy file, changing lines of the form
 !	#include "vax/*"
 !  into
-!	#include "[.config.vax]*"
+!	#include "config-*"
 !
    file := CREATE_BUFFER("file", GET_INFO(COMMAND_LINE, "file_name"));
    targ := LINE_BEGIN & '#include' & SPAN(ASCII(32)+ASCII(9)) & '"vax/';
@@ -48,13 +48,18 @@ $DECK
       EXITIF incl = 0;
       POSITION(BEGINNING_OF(incl));
       ERASE(incl);
-      COPY_TEXT('#include "[.config.vax]');
+      COPY_TEXT('#include "config-');
       rang := CREATE_RANGE(END_OF(incl), END_OF(file));
    ENDLOOP;
    WRITE_FILE(file, GET_INFO(COMMAND_LINE, "output_file"));
    QUIT
 $EOD
 $ echo "Generated `tm.h' from `[.config.vax]vms.h'.
+$ !
+$	!crude hack to allow compiling from [.cp] subdirectory
+$ if f$search("config-vax.h") .nes. "" then delete config-vax.h;*
+$ copy [.config.vax]vax.h []config-vax.h
+$ echo "Linked `config-vax.h' to `[.config.vax]vax.h' for `tm.h'."
 $ !
 $ if f$search("md.") .nes. "" then delete md..*
 $ copy [.config.vax]vax.md []md.
@@ -108,6 +113,10 @@ $! Make a copy of the makefile if the sources are on a disk that is NFS
 $!    mounted on a unix machine.
 $if f$search("Makefile.in").eqs."" .and. f$search("$M$akefile.in").nes."" -
 	then copy $M$akefile.in Makefile.in
+$! This should be automated across all front-end subdirectories.
+$!    For now, it's hardcoded.
+$if f$search("[.cp]Makefile.in").eqs."" .and. f$search("[.cp]$M$akefile.in").nes."" -
+	then copy [.cp]$M$akefile.in [.cp]Makefile.in
 $!
 $!
 $echo "Now processing Makefile.in to generate linker option files."
@@ -227,6 +236,24 @@ $edit/tpu/nojournal/nosection/nodisplay/command=sys$input
          ENDLOOP ;
    ENDPROCEDURE ;
 
+!                !
+! ...fix this... !
+!                !
+ procedure temporary_cplusplus_hack()
+  position(end_of(compiler_list));
+  copy_text("cc1plus");
+  position(end_of(mainbuffer));
+  copy_text("cc1plus: [.cp]call,[.cp]decl,[.cp]errfn,[.cp]expr,[.cp]pt,[.cp]sig\");  split_line;
+  copy_text(" [.cp]typeck2,[.cp]class,[.cp]decl2,[.cp]error,[.cp]gc,[.cp]lex\");  split_line;
+  copy_text(" [.cp]parse,[.cp]ptree,[.cp]spew,[.cp]typeck,[.cp]cvt,[.cp]edsel\");  split_line;
+  copy_text(" [.cp]except,[.cp]init,[.cp]method,[.cp]search,[.cp]tree,[.cp]xref\");  split_line;
+  copy_text(" []c-common\");  split_line;
+  copy_text(" bc-emit,bc-optab\");  split_line;
+  copy_text(" obstack");  split_line;
+ endprocedure;
+
+
+!
 ! this is the start of the main procedure
    filename := GET_INFO (COMMAND_LINE, 'file_name') ;
    mainbuffer := CREATE_BUFFER ("Makefile.in", "Makefile.in") ;
@@ -266,6 +293,10 @@ $edit/tpu/nojournal/nosection/nodisplay/command=sys$input
          erase (range1) ;
 	 split_line;
          ENDLOOP ;
+!                         !
+! This needs to be fixed. !
+!                         !
+	temporary_cplusplus_hack();
 !
 ! We now have a list of supported compilers.  Now write it, and use it.
 !
@@ -293,7 +324,7 @@ $edit/tpu/nojournal/nosection/nodisplay/command=sys$input
      cmark := mark(NONE);
      exitif cmark = end_of(compiler_list);
      message(current_line);
-     generate_option_file(LINE_BEGIN & Current_line & ((SPAN(" ") & ":") | ":"),
+     generate_option_file(LINE_BEGIN & current_line & ((SPAN(" ") & ":") | ":"),
 			  current_line+"-objs.opt");
      position (cmark);
      move_vertical(1);
