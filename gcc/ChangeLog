@@ -1,3 +1,20 @@
+2000-07-10  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* diagnostic.c (wrap_text): New function.
+	(maybe_wrap_text): Likewise.
+	(output_add_string): Use it.
+	(output_format): Likewise.
+	(count_error): Use verbatim instead of notice.
+	(report_error_function): Likewise. Don't use plain fprintf.
+	(finish_diagnostic): New function.
+	(output_do_verbatim): Tweak.  Commonalize functionalities in
+	output_verbatim and verbatim.
+	(output_verbatim): Adjust.
+	(verbatim): Likewise.
+	(report_diagnostic): Define.
+
+	* diagnostic.h (report_diagnostic): Prototype.
+	
 2000-07-09  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppexp.c (_cpp_parse_expr): Don't use unary plus.

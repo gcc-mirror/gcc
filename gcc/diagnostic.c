@@ -67,7 +67,9 @@ typedef struct
 /* Prototypes. */
 static int doing_line_wrapping PARAMS ((void));
 
-static void output_do_verbatim PARAMS ((output_buffer *));
+static void finish_diagnostic PARAMS ((void));
+static void output_do_verbatim PARAMS ((output_buffer *,
+                                        const char *, va_list));
 static void output_to_stream PARAMS ((output_buffer *, FILE *));
 static void output_format PARAMS ((output_buffer *));
 
@@ -116,6 +118,9 @@ static void output_long_octal PARAMS ((output_buffer *, long int));
 static void output_hexadecimal PARAMS ((output_buffer *, int));
 static void output_long_hexadecimal PARAMS ((output_buffer *, long int));
 static void output_append_r PARAMS ((output_buffer *, const char *, int));
+static void wrap_text PARAMS ((output_buffer *, const char *, const char *));
+static void maybe_wrap_text PARAMS ((output_buffer *, const char *,
+                                     const char *));
 
 extern int rtl_dump_and_exit;
 extern int inhibit_warnings;
@@ -488,38 +493,62 @@ output_append (buffer, start, end)
   output_append_r (buffer, start, end - start);
 }
 
-/* Wrap a STRing into BUFFER.  */
+/* Wrap a text delimited by START and END into BUFFER.  */
+static void
+wrap_text (buffer, start, end)
+     output_buffer *buffer;
+     const char *start;
+     const char *end;
+{
+  while (start != end)
+    {
+      /* Dump anything bodered by whitespaces.  */ 
+      {
+        const char *p = start;
+        while (p != end && *p != ' ' && *p != '\n')
+          ++p;
+        if (p - start >= output_space_left (buffer))
+          output_add_newline (buffer);
+        output_append (buffer, start, p);
+        start = p;
+      }
+
+      if (start != end && *start == ' ')
+        {
+          output_add_space (buffer);
+          ++start;
+        }
+      if (start != end && *start == '\n')
+        {
+          output_add_newline (buffer);
+          ++start;
+        }
+    }
+}
+
+/* Same as wrap_text but wrap text only when in line-wrapping mode.  */
+static void
+maybe_wrap_text (buffer, start, end)
+     output_buffer *buffer;
+     const char *start;
+     const char *end;
+{
+  if (output_is_line_wrapping (buffer))
+    wrap_text (buffer, start, end);
+  else
+    output_append (buffer, start, end);
+}
+
+
+/* Append a STRING to BUFFER; the STRING maybe be line-wrapped if in
+   appropriate mode.  */
 
 void
 output_add_string (buffer, str)
      output_buffer *buffer;
      const char *str;
 {
-  const char *p = str;
-
-  if (!output_is_line_wrapping (buffer))
-    output_append (buffer, str, str + strlen (str));
-  else while (*str)
-    {
-      while (*p && *p != ' ' && *p != '\n')
-        ++p;
-      
-      if (p - str < output_space_left (buffer))
-        output_append (buffer, str, p);
-      else
-        {
-          output_add_newline (buffer);
-          output_append (buffer, str, p);
-        }
-      
-      while (*p && *p == '\n')
-        {
-          output_add_newline (buffer);
-          ++p;
-        }
-
-      str = p++;
-    }
+  maybe_wrap_text (buffer, str, str + (str ? strlen (str) : 0));
 }
 
 /* Flush the content of BUFFER onto FILE and reinitialize BUFFER.  */
@@ -555,11 +584,15 @@ output_format (buffer)
     {
       int long_integer = 0;
       /* Ignore text.  */
-      if (*buffer->cursor != '%')
-        {
-          output_add_character (buffer, *buffer->cursor);
-          continue;
-        }
+      {
+        const char *p = buffer->cursor;
+        while (*p && *p != '%')
+          ++p;
+        maybe_wrap_text (buffer, buffer->cursor, p);
+        buffer->cursor = p;
+      }
+      if (!*buffer->cursor)
+        break;
 
       /* We got a '%'.  Let's see what happens. Record whether we're
          parsing a long integer format specifier.  */
@@ -643,7 +676,6 @@ output_format (buffer)
             }
         }
     }
-  output_finish (buffer);
 }
 
 static char *
@@ -1221,7 +1253,7 @@ count_error (warningp)
 
       if (warningp && !warning_message)
 	{
-	  notice ("%s: warnings being treated as errors\n", progname);
+	  verbatim ("%s: warnings being treated as errors\n", progname);
 	  warning_message = 1;
 	}
       errorcount++;
@@ -1456,7 +1488,7 @@ report_error_function (file)
 
   if (need_error_newline)
     {
-      fprintf (stderr, "\n");
+      verbatim ("\n");
       need_error_newline = 0;
     }
 
@@ -1465,10 +1497,10 @@ report_error_function (file)
     {
       for (p = input_file_stack->next; p; p = p->next)
 	if (p == input_file_stack->next)
-	  notice ("In file included from %s:%d", p->name, p->line);
+	  verbatim ("In file included from %s:%d", p->name, p->line);
 	else
-	  notice (",\n                 from %s:%d", p->name, p->line);
-      fprintf (stderr, ":\n");
+	  verbatim (",\n                 from %s:%d", p->name, p->line);
+      verbatim (":\n");
       last_error_tick = input_file_stack_tick;
     }
 
@@ -1721,16 +1753,34 @@ restore_output_state (state, buffer)
   va_copy (buffer->format_args, state->format_args);
 }
 
+/* Flush diagnostic_buffer content on stderr.  */
+static void
+finish_diagnostic ()
+{
+  output_to_stream (diagnostic_buffer, stderr);
+  fputc ('\n', stderr);
+  fflush (stderr);
+}
+
 /* Helper subroutine of output_verbatim and verbatim. Do the approriate
    settings needed by BUFFER for a verbatim formatting.  */
 static void
-output_do_verbatim (buffer)
+output_do_verbatim (buffer, msg, args)
      output_buffer *buffer;
+     const char *msg;
+     va_list args;
 {
+  output_state os;
+
+  save_output_state (buffer, &os);
   buffer->prefix = NULL;
   buffer->prefixing_rule = DIAGNOSTICS_SHOW_PREFIX_NEVER;
+  buffer->cursor = msg;
+  va_copy (buffer->format_args, args);
   output_set_maximum_length (buffer, 0);
   output_format (buffer);
+  va_end (buffer->format_args);
+  restore_output_state (&os, buffer);
 }
 
 /* Output MESSAGE verbatim into BUFFER.  */
@@ -1741,7 +1791,6 @@ output_verbatim VPARAMS ((output_buffer *buffer, const char *msg, ...))
   output_buffer *buffer;
   const char *msg;
 #endif
-  output_state previous_state;
   va_list ap;
 
   VA_START (ap, msg);
@@ -1749,12 +1798,7 @@ output_verbatim VPARAMS ((output_buffer *buffer, const char *msg, ...))
   buffer = va_arg (ap, output_buffer *);
   msg = va_arg (ap, const char *);
 #endif
-  save_output_state (buffer, &previous_state);
-  buffer->cursor = msg;
-  va_copy (buffer->format_args, ap);
-  output_do_verbatim(buffer);
-  va_end (buffer->format_args);
-  restore_output_state (&previous_state, buffer);
+  output_do_verbatim (buffer, msg, ap);
 }
 
 /* Same as above but use diagnostic_buffer.  */
@@ -1764,15 +1808,42 @@ verbatim VPARAMS ((const char *msg, ...))
 #ifndef ANSI_PROTOTYPES
   const char *msg;
 #endif
-  output_state previous_state;
-  save_output_state (diagnostic_buffer, &previous_state);
-  VA_START (diagnostic_args, msg);
+  va_list ap;
+
+  VA_START (ap, msg);
 #ifndef ANSI_PROTOTYPES
-  msg = va_arg (diagnostic_args, const char *);
+  msg = va_arg (ap, const char *);
 #endif
-  diagnostic_msg = msg;
-  output_do_verbatim (diagnostic_buffer);
+  output_do_verbatim (diagnostic_buffer, msg, ap);
   output_to_stream (diagnostic_buffer, stderr);
+}
+
+/* Report a diagnostic MESSAGE (an error or a WARNING) involving
+   entities in ARGUMENTS.  FILE and LINE indicate where the diagnostic
+   occurs.  This function is *the* subroutine in terms of which front-ends
+   should implement their specific diagnostic handling modules.  */
+void
+report_diagnostic (msg, args, file, line, warn)
+     const char *msg;
+     va_list args;
+     const char *file;
+     int line;
+     int warn;
+{
+  output_state os;
+
+  save_output_state (diagnostic_buffer, &os);
+  diagnostic_msg = msg;
+  va_copy (diagnostic_args, args);
+  if (count_error (warn))
+    {
+      report_error_function (file);
+      output_set_prefix
+        (diagnostic_buffer, context_as_prefix (file, line, warn));
+      output_format (diagnostic_buffer);
+      finish_diagnostic();
+      output_destroy_prefix (diagnostic_buffer);
+    }
   va_end (diagnostic_args);
-  restore_output_state (&previous_state, diagnostic_buffer);
+  restore_output_state (&os, diagnostic_buffer);
 }
