@@ -1,3 +1,8 @@
+Wed Jul  1 21:27:13 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (emit_reload_insns): Use proper register classes for
+	SECONDARY_INPUT_RELOAD_CLASS / SECONDARY_MEMORY_NEEDED code.
+
 Wed Jul  1 21:17:36 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload.c (find_reloads): If there are multiple

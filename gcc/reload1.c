@@ -6375,16 +6375,15 @@ emit_reload_insns (insn)
 		  && ((REGNO_REG_CLASS (regno) != reload_reg_class[j]
 		       && (REGISTER_MOVE_COST (REGNO_REG_CLASS (regno),
 					       reload_reg_class[j])
-			   >= MEMORY_MOVE_COST (mode, REGNO_REG_CLASS (regno),
-						1)))
+			   >= MEMORY_MOVE_COST (mode, reload_reg_class[j], 1)))
 #ifdef SECONDARY_INPUT_RELOAD_CLASS
 		      || (SECONDARY_INPUT_RELOAD_CLASS (reload_reg_class[j],
 							mode, oldequiv)
 			  != NO_REGS)
 #endif
 #ifdef SECONDARY_MEMORY_NEEDED
-		      || SECONDARY_MEMORY_NEEDED (reload_reg_class[j],
-						  REGNO_REG_CLASS (regno),
+		      || SECONDARY_MEMORY_NEEDED (REGNO_REG_CLASS (regno),
+						  reload_reg_class[j],
 						  mode)
 #endif
 		      ))
