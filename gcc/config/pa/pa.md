@@ -2621,6 +2621,12 @@
   "bl _mcount,%%r2\;ldo %0(%%r2),%%r25"
   [(set_attr "length" "2")])
 
+(define_insn "blockage"
+  [(unspec_volatile [(const_int 2)] 0)]
+  ""
+  ""
+  [(set_attr "length" "0")])
+
 (define_insn "jump"
   [(set (pc) (label_ref (match_operand 0 "" "")))]
   ""
