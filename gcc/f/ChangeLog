@@ -1,3 +1,9 @@
+2000-02-17  Andy Vaught  <andy@maxwell.la.asu.edu>
+
+	* com.c (ffecom_member_phase2_): Re-enable COMMON debug code.
+	(ffecom_finish_symbol_transform_): Likewise.
+	(ffecom_transform_common_): Call ffestorag_set_hook.
+
 Wed Feb 16 11:09:38 2000  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in (g77spec.o): Depend on $(GCC_H), not gcc.h.
