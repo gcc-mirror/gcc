@@ -82,6 +82,7 @@ extern void sparc_emit_set_const64 (rtx, rtx);
 extern void sparc_emit_set_symbolic_const64 (rtx, rtx, rtx);
 extern int sparc_splitdi_legitimate (rtx, rtx);
 extern int sparc_absnegfloat_split_legitimate (rtx, rtx);
+extern const char *output_ubranch (rtx, int, rtx);
 extern const char *output_cbranch (rtx, rtx, int, int, int, int, rtx);
 extern const char *output_return (rtx);
 extern const char *output_sibcall (rtx, rtx);
