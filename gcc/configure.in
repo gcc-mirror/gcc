@@ -525,7 +525,7 @@ fi
 # We may need a special search path to get them linked.
 AC_CACHE_CHECK(for collect2 libraries, gcc_cv_collect2_libs,
 [save_LIBS="$LIBS"
-for libs in '' -lld -lmld '-lmld -lexc' \
+for libs in '' -lld -lmld \
 		'-L/usr/lib/cmplrs/cc2.11 -lmld' \
 		'-L/usr/lib/cmplrs/cc3.11 -lmld'
 do
@@ -540,6 +540,15 @@ case $gcc_cv_collect2_libs in
 	*)	COLLECT2_LIBS=$gcc_cv_collect2_libs ;;
 esac
 AC_SUBST(COLLECT2_LIBS)
+
+# When building Ada code on Alpha, we need exc_resume which is usually in
+# -lexc.  So test for it.
+save_LIBS="$LIBS"
+LIBS=
+AC_SEARCH_LIBS(exc_resume, exc)
+GNAT_LIBEXC="$LIBS"
+LIBS="$save_LIBS"
+AC_SUBST(GNAT_LIBEXC)
 
 # See if the stage1 system preprocessor understands the ANSI C
 # preprocessor stringification operator.  (Used by symcat.h.)
