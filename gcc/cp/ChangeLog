@@ -1,3 +1,8 @@
+2004-07-12  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* decl.c (grok_op_properties): Reject [de-]allocation functions
+	declared in a namespace, or declared as static.
+
 2004-07-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (make_binfo): Remove.

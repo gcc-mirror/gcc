@@ -1,3 +1,8 @@
+2004-07-12  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* g++.dg/lookup/new2.C: New test.
+	* g++.old-deja/g++.ns/new1.C: Remove (ill-formed).
+
 2004-07-12  David Billinghurst (David.Billinghurst@riotinto.com)
  
 	* gfortran.dg/g77/12002.f: Copy from g77.f-torture/compile .

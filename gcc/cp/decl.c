@@ -8508,6 +8508,25 @@ grok_op_properties (tree decl, int friendp, bool complain)
 	}
     }
 
+    /* [basic.std.dynamic.allocation]/1:
+
+       A program is ill-formed if an allocation function is declared
+       in a namespace scope other than global scope or declared static
+       in global scope.
+
+       The same also holds true for deallocation functions.  */
+  if (operator_code == NEW_EXPR || operator_code == VEC_NEW_EXPR
+      || operator_code == DELETE_EXPR || operator_code == VEC_DELETE_EXPR)
+    {
+      if (DECL_NAMESPACE_SCOPE_P (decl))
+	{
+	  if (CP_DECL_CONTEXT (decl) != global_namespace)
+	    error ("`%D' may not be declared within a namespace", decl);
+	  else if (!TREE_PUBLIC (decl))
+	    error ("`%D' may not be declared as static", decl);
+	}
+    }
+
   if (operator_code == NEW_EXPR || operator_code == VEC_NEW_EXPR)
     TREE_TYPE (decl) = coerce_new_type (TREE_TYPE (decl));
   else if (operator_code == DELETE_EXPR || operator_code == VEC_DELETE_EXPR)
