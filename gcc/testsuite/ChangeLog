@@ -1,5 +1,10 @@
 2002-08-08  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.dg/abi/bitfield4.c: New test.
+	* gcc.dg/bitfld-4.c: New test.
+
+2002-08-08  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.dg/other/packed1.C: New test.
 
 2002-08-07  Mark Mitchell  <mark@codesourcery.com>
