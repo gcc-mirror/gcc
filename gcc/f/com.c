@@ -14936,6 +14936,15 @@ lang_identify ()
 }
 
 void
+lang_init_options ()
+{
+  /* Set default options for Fortran.  */
+  flag_move_all_movables = 1;
+  flag_reduce_all_givs = 1;
+  flag_argument_noalias = 2;
+}
+
+void
 lang_init ()
 {
   /* If the file is output from cpp, it should contain a first line
