@@ -1,3 +1,11 @@
+Mon May 27 12:14:02 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (PEOP_SCAN_DEAD_STORES): New.
+	(PROP_FINAL): Include.
+	* flow.c (life_analysis, update_life_info,
+	init_propagate_block_info, mark_set_1, mark_used_rgs):
+	Support SCAN_DEAD_STORE.
+
 2002-05-27  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-common.c (c_common_init): Set CPP arithmetic precision.
