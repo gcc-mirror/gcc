@@ -55,6 +55,24 @@ Boston, MA 02111-1307, USA.  */
 #include "md5.h"
 #include "tm_p.h"
 
+/* DWARF2 Abbreviation Glossary:
+   CFA = Canonical Frame Address
+	   stack address identifying a stack call frame; its value is
+	   the value of the stack pointer just before the call to the
+	   current function
+   CFI = Canonical Frame Instruction
+           information describing entries in a stack call frame, e.g.,
+	   CIE and FDE
+   CIE = Common Information Entry
+	   information describing information common to one or more FDEs
+   DIE = Debugging Information Entry
+   FDE = Frame Description Entry
+	   information describing the stack call frame, in particular,
+	   how to restore registers
+
+   DW_CFA_... = DWARF2 CFA call frame instruction
+   DW_TAG_... = DWARF2 DIE tag */
+
 /* Decide whether we want to emit frame unwind information for the current
    translation unit.  */
 
@@ -855,7 +873,7 @@ dwarf2out_def_cfa (label, reg, offset)
   def_cfa_1 (label, &loc);
 }
 
-/* This routine does the actual work. The CFA is now calculated from
+/* This routine does the actual work.  The CFA is now calculated from
    the dw_cfa_location structure.  */
 static void
 def_cfa_1 (label, loc_p)
@@ -879,6 +897,8 @@ def_cfa_1 (label, loc_p)
     {
       if (loc.indirect == 0
 	  || loc.base_offset == old_cfa.base_offset)
+	/* Nothing changed so no need to issue any call frame
+           instructions.  */
 	return;
     }
 
@@ -886,6 +906,9 @@ def_cfa_1 (label, loc_p)
 
   if (loc.reg == old_cfa.reg && !loc.indirect)
     {
+      /* Construct a "DW_CFA_def_cfa_offset <offset>" instruction,
+	 indicating the CFA register did not change but the offset
+	 did.  */
       cfi->dw_cfi_opc = DW_CFA_def_cfa_offset;
       cfi->dw_cfi_oprnd1.dw_cfi_offset = loc.offset;
     }
@@ -894,6 +917,9 @@ def_cfa_1 (label, loc_p)
   else if (loc.offset == old_cfa.offset && old_cfa.reg != (unsigned long) -1
 	   && !loc.indirect)
     {
+      /* Construct a "DW_CFA_def_cfa_register <register>" instruction,
+	 indicating the CFA register has changed to <register> but the
+	 offset has not changed.  */
       cfi->dw_cfi_opc = DW_CFA_def_cfa_register;
       cfi->dw_cfi_oprnd1.dw_cfi_reg_num = loc.reg;
     }
@@ -901,12 +927,18 @@ def_cfa_1 (label, loc_p)
 
   else if (loc.indirect == 0)
     {
+      /* Construct a "DW_CFA_def_cfa <register> <offset>" instruction,
+	 indicating the CFA register has changed to <register> with
+	 the specified offset.  */
       cfi->dw_cfi_opc = DW_CFA_def_cfa;
       cfi->dw_cfi_oprnd1.dw_cfi_reg_num = loc.reg;
       cfi->dw_cfi_oprnd2.dw_cfi_offset = loc.offset;
     }
   else
     {
+      /* Construct a DW_CFA_def_cfa_expression instruction to
+	 calculate the CFA using a full location expression since no
+	 register-offset pair is available.  */
       struct dw_loc_descr_struct *loc_list;
       cfi->dw_cfi_opc = DW_CFA_def_cfa_expression;
       loc_list = build_cfa_loc (&loc);
@@ -1237,15 +1269,132 @@ dwarf2out_stack_adjust (insn)
   dwarf2out_args_size (label, args_size);
 }
 
-/* A temporary register used in adjusting SP or setting up the store_reg.  */
-static unsigned cfa_temp_reg;
+/* A temporary register holding an integral value used in adjusting SP
+   or setting up the store_reg.  The "offset" field holds the integer
+   value, not an offset.  */
+dw_cfa_location cfa_temp;
 
-/* A temporary value used in adjusting SP or setting up the store_reg.  */
-static long cfa_temp_value;
+/* Record call frame debugging information for an expression EXPR,
+   which either sets SP or FP (adjusting how we calculate the frame
+   address) or saves a register to the stack.  LABEL indicates the
+   address of EXPR.
 
-/* Record call frame debugging information for an expression, which either
-   sets SP or FP (adjusting how we calculate the frame address) or saves a
-   register to the stack.  */
+   This function encodes a state machine mapping rtxes to actions on
+   cfa, cfa_store, and cfa_temp.reg.  We describe these rules so
+   users need not read the source code.
+
+  Invariants / Summaries of Rules
+
+  cfa	       current register used to calculate the DWARF2 canonical
+	       frame address register and offset
+  cfa_store    register used by prologue code to save things to the stack
+	       cfa_store.offset is the offset from the value of
+	       cfa_store.reg to the actual CFA
+  cfa_temp     register holding an integral value.  cfa_temp.offset
+	       stores the value, which will be used to adjust the
+	       stack pointer.
+ 
+  Rules  1- 4: Setting a register's value to cfa.reg or an expression
+  	       with cfa.reg as the first operand changes the cfa.reg and its
+	       cfa.offset.
+	       (For an unknown reason, Rule 4 does not fully obey the
+	       invariant.)
+
+  Rules  6- 9: Set a non-cfa.reg register value to a constant or an
+	       expression yielding a constant.  This sets cfa_temp.reg
+	       and cfa_temp.offset.
+
+  Rule 5:      Create a new register cfa_store used to save items to the
+	       stack.
+
+  Rules 10-13: Save a register to the stack.  Record the location in
+	       cfa_store.offset.  Define offset as the difference of
+	       the original location and cfa_store's location.
+
+  The Rules
+
+  "{a,b}" indicates a choice of a xor b.
+  "<reg>:cfa.reg" indicates that <reg> must equal cfa.reg.
+
+  Rule 1:
+  (set <reg1> <reg2>:cfa.reg)
+  effects: cfa.reg = <REG1>
+           cfa.offset unchanged
+
+  Rule 2:
+  (set sp ({minus,plus} {sp,fp}:cfa.reg {<const_int>,<reg>:cfa_temp.reg}))
+  effects: cfa.reg = sp if fp used
+ 	   cfa.offset += {+/- <const_int>, cfa_temp.offset} if cfa.reg==sp
+	   cfa_store.offset += {+/- <const_int>, cfa_temp.offset}
+	     if cfa_store.reg==sp
+
+  Rule 3:
+  (set fp ({minus,plus} <reg>:cfa.reg <const_int>))
+  effects: cfa.reg = fp
+  	   cfa_offset += +/- <const_int>
+
+  Rule 4:
+  (set <reg1> (plus <reg2>:cfa.reg <const_int>))
+  constraints: <reg1> != fp
+  	       <reg1> != sp
+  effects: cfa.reg = <reg1>
+  questions: Where is <const_int> used?
+	     Should cfa.offset be changed?
+
+  Rule 5:
+  (set <reg1> (plus <reg2>:cfa_temp.reg sp:cfa.reg))
+  constraints: <reg1> != fp
+  	       <reg1> != sp
+  effects: cfa_store.reg = <reg1>
+  	   cfa_store.offset = cfa.offset - cfa_temp.offset
+
+  Rule 6:
+  (set <reg> <const_int>)
+  effects: cfa_temp.reg = <reg>
+  	   cfa_temp.offset = <const_int>
+
+  Rule 7:
+  (set <reg1>:cfa_temp.reg (ior <reg2>:cfa_temp.reg <const_int>))
+  effects: cfa_temp.reg = <reg1>
+	   cfa_temp.offset |= <const_int>
+
+  Rule 8:
+  (set <reg> (high <exp>))
+  effects: none
+
+  Rule 9:
+  (set <reg> (lo_sum <exp> <const_int>))
+  effects: cfa_temp.reg = <reg>
+  	   cfa_temp.offset = <const_int>
+
+  Rule 10:
+  (set (mem (pre_modify sp:cfa_store (???? <reg1> <const_int>))) <reg2>)
+  effects: cfa_store.offset -= <const_int>
+	   cfa.offset = cfa_store.offset if cfa.reg == sp
+	   offset = -cfa_store.offset
+	   cfa.reg = sp
+	   cfa.base_offset = offset
+
+  Rule 11:
+  (set (mem ({pre_inc,pre_dec} sp:cfa_store.reg)) <reg>)
+  effects: cfa_store.offset += -/+ mode_size(mem)
+	   cfa.offset = cfa_store.offset if cfa.reg == sp
+	   offset = -cfa_store.offset
+	   cfa.reg = sp
+	   cfa.base_offset = offset
+
+  Rule 12:
+  (set (mem ({minus,plus} <reg1>:cfa_store <const_int>)) <reg2>)
+  effects: cfa_store.offset += -/+ <const_int>
+	   offset = -cfa_store.offset
+	   cfa.reg = <reg1
+	   cfa.base_offset = offset
+
+  Rule 13:
+  (set (mem <reg1>:cfa_store) <reg2>)
+  effects: offset = -cfa_store.offset
+	   cfa.reg = <reg1>
+	   cfa.base_offset = offset */
 
 static void
 dwarf2out_frame_debug_expr (expr, label)
@@ -1257,7 +1406,7 @@ dwarf2out_frame_debug_expr (expr, label)
 
   /* If RTX_FRAME_RELATED_P is set on a PARALLEL, process each member of
      the PARALLEL independently. The first element is always processed if
-     it is a SET. This is for backward compatability.   Other elements
+     it is a SET. This is for backward compatibility.   Other elements
      are processed only if they are SETs and the RTX_FRAME_RELATED_P
      flag is set in them.  */
 
@@ -1287,6 +1436,7 @@ dwarf2out_frame_debug_expr (expr, label)
   switch (GET_CODE (dest))
     {
     case REG:
+      /* Rule 1 */
       /* Update the CFA rule wrt SP or FP.  Make sure src is
          relative to the current CFA register.  */
       switch (GET_CODE (src))
@@ -1310,6 +1460,7 @@ dwarf2out_frame_debug_expr (expr, label)
 	case MINUS:
 	  if (dest == stack_pointer_rtx)
 	    {
+	      /* Rule 2 */
 	      /* Adjusting SP.  */
 	      switch (GET_CODE (XEXP (src, 1)))
 		{
@@ -1317,9 +1468,9 @@ dwarf2out_frame_debug_expr (expr, label)
 		  offset = INTVAL (XEXP (src, 1));
 		  break;
 		case REG:
-		  if ((unsigned) REGNO (XEXP (src, 1)) != cfa_temp_reg)
+		  if ((unsigned) REGNO (XEXP (src, 1)) != cfa_temp.reg)
 		    abort ();
-		  offset = cfa_temp_value;
+		  offset = cfa_temp.offset;
 		  break;
 		default:
 		  abort ();
@@ -1344,6 +1495,7 @@ dwarf2out_frame_debug_expr (expr, label)
 	    }
 	  else if (dest == hard_frame_pointer_rtx)
 	    {
+	      /* Rule 3 */
 	      /* Either setting the FP from an offset of the SP,
 		 or adjusting the FP */
 	      if (! frame_pointer_needed)
@@ -1367,39 +1519,44 @@ dwarf2out_frame_debug_expr (expr, label)
 	      if (GET_CODE (src) != PLUS)
 		abort ();
 
+	      /* Rule 4 */
 	      if (GET_CODE (XEXP (src, 0)) == REG
 		  && REGNO (XEXP (src, 0)) == cfa.reg
 		  && GET_CODE (XEXP (src, 1)) == CONST_INT)
 		/* Setting the FP (or a scratch that will be copied into the FP
 		   later on) from SP + const.  */
 		cfa.reg = REGNO (dest);
+	      /* Rule 5 */
 	      else
 		{
 		  if (XEXP (src, 1) != stack_pointer_rtx)
 		    abort ();
 		  if (GET_CODE (XEXP (src, 0)) != REG
-		      || (unsigned) REGNO (XEXP (src, 0)) != cfa_temp_reg)
+ 		      || (unsigned) REGNO (XEXP (src, 0)) != cfa_temp.reg)
 		    abort ();
 		  if (cfa.reg != STACK_POINTER_REGNUM)
 		    abort ();
 		  cfa_store.reg = REGNO (dest);
-		  cfa_store.offset = cfa.offset - cfa_temp_value;
+		  cfa_store.offset = cfa.offset - cfa_temp.offset;
 		}
 	    }
 	  break;
 
+	  /* Rule 6 */
 	case CONST_INT:
-	  cfa_temp_reg = REGNO (dest);
-	  cfa_temp_value = INTVAL (src);
+	  cfa_temp.reg = REGNO (dest);
+	  cfa_temp.offset = INTVAL (src);
 	  break;
 
+	  /* Rule 7 */
 	case IOR:
 	  if (GET_CODE (XEXP (src, 0)) != REG
-	      || (unsigned) REGNO (XEXP (src, 0)) != cfa_temp_reg
-	      || (unsigned) REGNO (dest) != cfa_temp_reg
+	      || (unsigned) REGNO (XEXP (src, 0)) != cfa_temp.reg
 	      || GET_CODE (XEXP (src, 1)) != CONST_INT)
 	    abort ();
-	  cfa_temp_value |= INTVAL (XEXP (src, 1));
+	  if ((unsigned) REGNO (dest) != cfa_temp.reg)
+	    cfa_temp.reg = REGNO (dest);
+	  cfa_temp.offset |= INTVAL (XEXP (src, 1));
 	  break;
 
 	default:
@@ -1410,12 +1567,16 @@ dwarf2out_frame_debug_expr (expr, label)
 
       /* Skip over HIGH, assuming it will be followed by a LO_SUM, which
 	 will fill in all of the bits.  */
+      /* Rule 8 */
     case HIGH:
       break;
 
+      /* Rule 9 */
     case LO_SUM:
-      cfa_temp_reg = REGNO (dest);
-      cfa_temp_value = INTVAL (XEXP (src, 1));
+      if (GET_CODE (XEXP (src, 1)) != CONST_INT)
+	abort ();
+      cfa_temp.reg = REGNO (dest);
+      cfa_temp.offset = INTVAL (XEXP (src, 1));
       break;
 
     case MEM:
@@ -1426,6 +1587,7 @@ dwarf2out_frame_debug_expr (expr, label)
 	 CFA register.  */
       switch (GET_CODE (XEXP (dest, 0)))
 	{
+	  /* Rule 10 */
 	  /* With a push.  */
 	case PRE_MODIFY:
 	  /* We can't handle variable size modifications.  */
@@ -1442,6 +1604,7 @@ dwarf2out_frame_debug_expr (expr, label)
 
 	  offset = -cfa_store.offset;
 	  break;
+	  /* Rule 11 */
 	case PRE_INC:
 	case PRE_DEC:
 	  offset = GET_MODE_SIZE (GET_MODE (dest));
@@ -1458,9 +1621,12 @@ dwarf2out_frame_debug_expr (expr, label)
 	  offset = -cfa_store.offset;
 	  break;
 
+	  /* Rule 12 */
 	  /* With an offset.  */
 	case PLUS:
 	case MINUS:
+	  if (GET_CODE (XEXP (XEXP (dest, 0), 1)) != CONST_INT)
+	    abort ();
 	  offset = INTVAL (XEXP (XEXP (dest, 0), 1));
 	  if (GET_CODE (XEXP (dest, 0)) == MINUS)
 	    offset = -offset;
@@ -1470,6 +1636,7 @@ dwarf2out_frame_debug_expr (expr, label)
 	  offset -= cfa_store.offset;
 	  break;
 
+	  /* Rule 13 */
 	  /* Without an offset.  */
 	case REG:
 	  if (cfa_store.reg != (unsigned) REGNO (XEXP (dest, 0)))
@@ -1543,8 +1710,8 @@ dwarf2out_frame_debug (insn)
 	abort ();
       cfa.reg = STACK_POINTER_REGNUM;
       cfa_store = cfa;
-      cfa_temp_reg = -1;
-      cfa_temp_value = 0;
+      cfa_temp.reg = -1;
+      cfa_temp.offset = 0;
       return;
     }
 
@@ -6356,7 +6523,7 @@ output_aranges ()
       /* Pad using a 2 bytes word so that padding is correct
          for any pointer size.  */
       ASM_OUTPUT_DWARF_DATA2 (asm_out_file, 0);
-      for (i = 2; i < DWARF_ARANGES_PAD_SIZE; i += 2)
+      for (i = 2; i < (unsigned) DWARF_ARANGES_PAD_SIZE; i += 2)
 	fprintf (asm_out_file, ",0");
       if (flag_debug_asm)
 	fprintf (asm_out_file, "\t%s Pad to %d byte boundary",
