@@ -1602,6 +1602,13 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   if (TREE_PUBLIC (decl))
     maybe_assemble_visibility (decl);
 
+  /* Output any data that we will need to use the address of.  */
+  if (DECL_INITIAL (decl) == error_mark_node)
+    reloc = contains_pointers_p (TREE_TYPE (decl)) ? 3 : 0;
+  else if (DECL_INITIAL (decl))
+    reloc = output_addressed_constants (DECL_INITIAL (decl));
+  resolve_unique_section (decl, reloc);
+
   /* Handle uninitialized definitions.  */
 
   if ((DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node
@@ -1652,14 +1659,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   if (TREE_PUBLIC (decl) && DECL_NAME (decl))
     globalize_decl (decl);
 
-  /* Output any data that we will need to use the address of.  */
-  if (DECL_INITIAL (decl) == error_mark_node)
-    reloc = contains_pointers_p (TREE_TYPE (decl)) ? 3 : 0;
-  else if (DECL_INITIAL (decl))
-    reloc = output_addressed_constants (DECL_INITIAL (decl));
-
   /* Switch to the appropriate section.  */
-  resolve_unique_section (decl, reloc);
   variable_section (decl, reloc);
 
   /* dbxout.c needs to know this.  */
@@ -1684,7 +1684,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 
   if (!dont_output_data)
     {
-      if (DECL_INITIAL (decl))
+      if (DECL_INITIAL (decl) && DECL_INITIAL (decl) != error_mark_node)
 	/* Output the actual data.  */
 	output_constant (DECL_INITIAL (decl),
 			 tree_low_cst (DECL_SIZE_UNIT (decl), 1),
