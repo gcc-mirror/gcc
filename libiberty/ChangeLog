@@ -1,5 +1,9 @@
 2001-07-30  Andreas Jaeger  <aj@suse.de>
 
+	* concat.c: Include "config.h".
+
+2001-07-30  Andreas Jaeger  <aj@suse.de>
+
 	* regex.c: Declare wcs functions only if compiling with
 	MBS_SUPPORT.
 	Don't use #elif for traditional C.
