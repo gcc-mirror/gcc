@@ -1782,9 +1782,15 @@ expand_call (exp, target, ignore)
 	      /* Clobber REG and move each partword into it.  Ensure we don't
 		 go past the end of the structure.  Note that the loop below
 		 works because we've already verified that padding
-		 and endianness are compatible.  */
+		 and endianness are compatible.
 
-	      emit_insn (gen_rtx (CLOBBER, VOIDmode, reg));
+		 We use to emit a clobber here but that doesn't let later
+		 passes optimize the instructions we emit.  By storing 0 into
+		 the register later passes know the first AND to zero out the
+		 bitfield being set in the register is unnecessary.  The store
+		 of 0 will be deleted as will at least the first AND.  */
+
+	      emit_move_insn (reg, const0_rtx);
 
 	      for (bitpos = 0;
 		   bitpos < BITS_PER_WORD && bytes > 0;
