@@ -1,3 +1,8 @@
+2003-09-28  Phil Edwards  <phil@codesourcery.com>
+
+	* doc/cppopts.texi:  Use 'dashMP' instead of '-MP' as a cross-
+	reference name.
+
 2003-09-28  Richard Henderson  <rth@redhat.com>
 
 	* c-decl.c (duplicate_decls): Copy DECL_SOURCE_LOCATION, not
