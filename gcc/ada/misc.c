@@ -209,7 +209,7 @@ gnat_parse_file (set_yydebug)
    it cannot decode. This routine returns 1 if it is successful, otherwise
    it returns 0. */
 
-int
+static int
 gnat_decode_option (argc, argv)
      int argc ATTRIBUTE_UNUSED;
      char **argv;
@@ -276,7 +276,7 @@ gnat_decode_option (argc, argv)
 
 /* Initialize for option processing.  */
 
-void
+static void
 gnat_init_options ()
 {
   /* Initialize gnat_argv with save_argv size */
@@ -339,6 +339,10 @@ gnat_init (filename)
   internal_reference_types ();
 
   set_lang_adjust_rli (gnat_adjust_rli);
+
+  if (filename == 0)
+    filename = "";
+
   return filename;
 }
 
