@@ -743,6 +743,10 @@ for machine in $build $host $target; do
 		tm_file=i386/sun.h
 		use_collect2=yes
 		;;
+	i[[3456]]86-wrs-vxworks*)
+		tm_file=i386/vxi386.h
+		tmake_file=i386/t-i386bare
+		;;
 	i[[3456]]86-*-aout*)
 		tm_file=i386/i386-aout.h
 		tmake_file=i386/t-i386bare
