@@ -106,8 +106,8 @@ Summary:
 
 /* Don't do the contents of this file more than once.  */
 
-#ifndef __OBSTACK_H__
-#define __OBSTACK_H__
+#ifndef _OBSTACK_H
+#define _OBSTACK_H 1
 
 #ifdef __cplusplus
 extern "C" {
@@ -589,4 +589,4 @@ __extension__								\
 }	/* C++ */
 #endif
 
-#endif /* not __OBSTACK_H__ */
+#endif /* obstack.h */
