@@ -1,5 +1,5 @@
 /* Encoding of types for Objective C.
-   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
@@ -153,7 +153,7 @@ objc_sizeof_type(const char* type)
     }
     
   default:
-    abort();
+    objc_error(nil, OBJC_ERR_BAD_TYPE, "unknown type %s\n", type);
   }
 }
 
@@ -251,7 +251,7 @@ objc_alignof_type(const char* type)
     }
     
   default:
-    abort();
+    objc_error(nil, OBJC_ERR_BAD_TYPE, "unknown type %s\n", type);
   }
 }
 
@@ -354,7 +354,7 @@ objc_skip_typespec (const char* type)
     if (*type == _C_ARY_E)
       return ++type;
     else
-      abort();
+      objc_error(nil, OBJC_ERR_BAD_TYPE, "bad array type %s\n", type);
 
   case _C_STRUCT_B:
     /* skip name, and elements until closing '}'  */
@@ -376,7 +376,7 @@ objc_skip_typespec (const char* type)
     return objc_skip_typespec (++type);
     
   default:
-    abort();
+    objc_error(nil, OBJC_ERR_BAD_TYPE, "unknown type %s\n", type);
   }
 }
 
