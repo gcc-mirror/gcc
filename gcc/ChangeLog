@@ -1,3 +1,8 @@
+2004-08-17  Daniel Bornstein  <danfuzz@milk.com>
+
+	PR target/17019
+	* arm.md (addsi3_cbranch_scratch): Correct case labels.
+
 2004-08-17  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR middle-end/17036
