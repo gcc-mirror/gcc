@@ -901,7 +901,7 @@
 		   (sign_extend:DI (div:SI (reg:DI 24) (reg:DI 25))))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])
-   (set (match_operand:SI 0 "general_operand" "")
+   (set (match_operand:SI 0 "nonimmediate_operand" "")
 	(subreg:SI (reg:DI 27) 0))]
   "!TARGET_OPEN_VMS"
   "")
@@ -915,7 +915,7 @@
 		   (sign_extend:DI (udiv:SI (reg:DI 24) (reg:DI 25))))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])
-   (set (match_operand:SI 0 "general_operand" "")
+   (set (match_operand:SI 0 "nonimmediate_operand" "")
 	(subreg:SI (reg:DI 27) 0))]
   "!TARGET_OPEN_VMS"
   "")
@@ -929,7 +929,7 @@
 		   (sign_extend:DI (mod:SI (reg:DI 24) (reg:DI 25))))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])
-   (set (match_operand:SI 0 "general_operand" "")
+   (set (match_operand:SI 0 "nonimmediate_operand" "")
 	(subreg:SI (reg:DI 27) 0))]
   "!TARGET_OPEN_VMS"
   "")
@@ -943,7 +943,7 @@
 		   (sign_extend:DI (umod:SI (reg:DI 24) (reg:DI 25))))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])
-   (set (match_operand:SI 0 "general_operand" "")
+   (set (match_operand:SI 0 "nonimmediate_operand" "")
 	(subreg:SI (reg:DI 27) 0))]
   "!TARGET_OPEN_VMS"
   "")
@@ -956,7 +956,7 @@
 			   (reg:DI 25)))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])
-   (set (match_operand:DI 0 "general_operand" "")
+   (set (match_operand:DI 0 "nonimmediate_operand" "")
 	(reg:DI 27))]
   "!TARGET_OPEN_VMS"
   "")
@@ -969,7 +969,7 @@
 			    (reg:DI 25)))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])
-   (set (match_operand:DI 0 "general_operand" "")
+   (set (match_operand:DI 0 "nonimmediate_operand" "")
 	(reg:DI 27))]
   "!TARGET_OPEN_VMS"
   "")
@@ -982,7 +982,7 @@
 			   (reg:DI 25)))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])
-   (set (match_operand:DI 0 "general_operand" "")
+   (set (match_operand:DI 0 "nonimmediate_operand" "")
 	(reg:DI 27))]
   "!TARGET_OPEN_VMS"
   "")
@@ -995,7 +995,7 @@
 			    (reg:DI 25)))
 	      (clobber (reg:DI 23))
 	      (clobber (reg:DI 28))])
-   (set (match_operand:DI 0 "general_operand" "")
+   (set (match_operand:DI 0 "nonimmediate_operand" "")
 	(reg:DI 27))]
   "!TARGET_OPEN_VMS"
   "")
@@ -1233,7 +1233,7 @@
 
 (define_expand "ffsdi2"
   [(set (match_dup 2)
-	(unspec [(match_operand:DI 1 "register_operand" "")] 1))
+	(unspec:DI [(match_operand:DI 1 "register_operand" "")] 1))
    (set (match_dup 3)
 	(plus:DI (match_dup 2) (const_int 1)))
    (set (match_operand:DI 0 "register_operand" "")
@@ -1248,7 +1248,7 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(unspec [(match_operand:DI 1 "register_operand" "r")] 1))]
+	(unspec:DI [(match_operand:DI 1 "register_operand" "r")] 1))]
   "TARGET_CIX"
   "cttz %1,%0"
   ; EV6 calls all mvi and cttz/ctlz/popc class imisc, so just 
@@ -1582,9 +1582,9 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(and (lshiftrt:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
-		(ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
-			   (const_int 3)))
+	(and:DI (lshiftrt:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
+		  (ashift:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
+			     (const_int 3)))
 	     (match_operand:DI 3 "mode_mask_operand" "n")))]
   ""
   "ext%U3l %1,%2,%0"
@@ -1769,9 +1769,9 @@
 
 (define_insn "insxh"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(unspec [(match_operand:DI 1 "register_operand" "r")
-		 (match_operand:DI 2 "mode_width_operand" "n")
-		 (match_operand:DI 3 "reg_or_8bit_operand" "rI")] 2))]
+	(unspec:DI [(match_operand:DI 1 "register_operand" "r")
+		    (match_operand:DI 2 "mode_width_operand" "n")
+		    (match_operand:DI 3 "reg_or_8bit_operand" "rI")] 2))]
   ""
   "ins%M2h %1,%3,%0"
   [(set_attr "type" "shift")])
@@ -1795,9 +1795,9 @@
 
 (define_insn "mskxh"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(unspec [(match_operand:DI 1 "register_operand" "r")
-		 (match_operand:DI 2 "mode_width_operand" "n")
-		 (match_operand:DI 3 "reg_or_8bit_operand" "rI")] 3))]
+	(unspec:DI [(match_operand:DI 1 "register_operand" "r")
+		    (match_operand:DI 2 "mode_width_operand" "n")
+		    (match_operand:DI 3 "reg_or_8bit_operand" "rI")] 3))]
   ""
   "msk%M2h %1,%3,%0"
   [(set_attr "type" "shift")])
@@ -3745,7 +3745,7 @@
 (define_insn ""
   [(call (mem:DI (match_operand:DI 0 "call_operand" "r,i"))
 	 (match_operand 1 "" ""))
-   (use (match_operand:DI 2 "general_operand" "r,m"))
+   (use (match_operand:DI 2 "nonimmediate_operand" "r,m"))
    (use (reg:DI 25))
    (use (reg:DI 26))
    (clobber (reg:DI 27))]
@@ -3753,48 +3753,6 @@
   "@
    mov %2,$27\;jsr $26,0\;ldq $27,0($29)
    ldq $27,%2\;jsr $26,%0\;ldq $27,0($29)"
-  [(set_attr "type" "jsr")
-   (set_attr "length" "12,16")])
-
-(define_insn ""
-  [(set (match_operand 0 "" "")
-	(call (mem:DI (match_operand:DI 1 "call_operand" "r,R,i"))
-	      (match_operand 2 "" "")))
-   (clobber (reg:DI 27))
-   (clobber (reg:DI 26))]
-  "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS"
-  "@
-   jsr $26,($27),0\;ldgp $29,0($26)
-   bsr $26,$%1..ng
-   jsr $26,%1\;ldgp $29,0($26)"
-  [(set_attr "type" "jsr")
-   (set_attr "length" "12,*,16")])
-
-(define_insn ""
-  [(set (match_operand 0 "" "")
-	(call (mem:DI (match_operand:DI 1 "call_operand" "r,R,i"))
-	      (match_operand 2 "" "")))
-   (clobber (reg:DI 26))]
-  "TARGET_WINDOWS_NT"
-  "@
-   jsr $26,(%1)
-   bsr $26,%1
-   jsr $26,%1"
-  [(set_attr "type" "jsr")
-   (set_attr "length" "*,*,12")])
-
-(define_insn ""
-  [(set (match_operand 0 "" "")
-	(call (mem:DI (match_operand:DI 1 "call_operand" "r,i"))
-	      (match_operand 2 "" "")))
-   (use (match_operand:DI 3 "general_operand" "r,m"))
-   (use (reg:DI 25))
-   (use (reg:DI 26))
-   (clobber (reg:DI 27))]
-  "TARGET_OPEN_VMS"
-  "@
-   mov %3,$27\;jsr $26,0\;ldq $27,0($29)
-   ldq $27,%3\;jsr $26,%1\;ldq $27,0($29)"
   [(set_attr "type" "jsr")
    (set_attr "length" "12,16")])
 
@@ -3885,7 +3843,7 @@
 	(sign_extend:DI (match_operand:SI 0 "register_operand" "")))
    (parallel [(set (pc)
 		   (plus:DI (match_dup 3)
-			    (label_ref:DI (match_operand 1 "" ""))))
+			    (label_ref (match_operand 1 "" ""))))
 	      (clobber (match_scratch:DI 2 "=r"))])]
   ""
   "
@@ -3911,15 +3869,15 @@
       (match_operand:DI 0 "register_operand" ""))
         (set (pc)
 	(plus:DI (match_dup 2)
-		(label_ref:DI (match_operand 1 "" ""))))]
+		(label_ref (match_operand 1 "" ""))))]
   ""
   "
 { operands[2] = gen_reg_rtx (DImode); }")
 
 (define_insn ""
   [(set (pc)
-	(plus:DI (match_operand:DI 0 "register_operand" "r")
-		 (label_ref:DI (match_operand 1 "" ""))))
+	(plus (match_operand:DI 0 "register_operand" "r")
+	      (label_ref (match_operand 1 "" ""))))
    (clobber (match_scratch:DI 2 "=r"))]
   "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS && next_active_insn (insn) != 0
    && GET_CODE (PATTERN (next_active_insn (insn))) == ADDR_DIFF_VEC
@@ -4011,8 +3969,8 @@
 
 (define_insn ""
   [(set (pc)
-	(plus:DI (match_operand 0 "register_operand" "r")
-		(label_ref (match_operand 1 "" ""))))]
+	(plus (match_operand:DI 0 "register_operand" "r")
+	      (label_ref (match_operand 1 "" ""))))]
   "TARGET_OPEN_VMS"
   "jmp $31,(%0),0"
   [(set_attr "type" "ibr")])
@@ -4225,7 +4183,7 @@
 ;; constants.
 
 (define_expand "movsi"
-  [(set (match_operand:SI 0 "general_operand" "")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "")
 	(match_operand:SI 1 "general_operand" ""))]
   ""
   "
@@ -4265,7 +4223,7 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:DI 0 "general_operand" "=r,r,r,r,r,m,f,f,Q")
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,r,m,f,f,Q")
 	(match_operand:DI 1 "input_operand" "rJ,K,L,s,m,rJ,fJ,Q,f"))]
   "! TARGET_FIX
    && (register_operand (operands[0], DImode)
@@ -4283,7 +4241,7 @@
   [(set_attr "type" "ilog,iadd,iadd,ldsym,ild,ist,fcpys,fld,fst")])
 
 (define_insn ""
-  [(set (match_operand:DI 0 "general_operand" "=r,r,r,r,r,m,f,f,Q,r,*f")
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,r,m,f,f,Q,r,*f")
 	(match_operand:DI 1 "input_operand" "rJ,K,L,s,m,rJ,fJ,Q,f,f,*r"))]
   "TARGET_FIX
    && (register_operand (operands[0], DImode)
@@ -4306,7 +4264,7 @@
 ;; memory, and construct long 32-bit constants.
 
 (define_expand "movdi"
-  [(set (match_operand:DI 0 "general_operand" "")
+  [(set (match_operand:DI 0 "nonimmediate_operand" "")
 	(match_operand:DI 1 "general_operand" ""))]
   ""
   "
@@ -4529,7 +4487,7 @@
 ;; registers for reload.
 
 (define_expand "movqi"
-  [(set (match_operand:QI 0 "general_operand" "")
+  [(set (match_operand:QI 0 "nonimmediate_operand" "")
 	(match_operand:QI 1 "general_operand" ""))]
   ""
   "
@@ -4647,7 +4605,7 @@
 }")
 
 (define_expand "movhi"
-  [(set (match_operand:HI 0 "general_operand" "")
+  [(set (match_operand:HI 0 "nonimmediate_operand" "")
 	(match_operand:HI 1 "general_operand" ""))]
   ""
   "
@@ -5043,7 +5001,7 @@
 
 (define_expand "extzv"
   [(set (match_operand:DI 0 "register_operand" "")
-	(zero_extract:DI (match_operand:DI 1 "general_operand" "")
+	(zero_extract:DI (match_operand:DI 1 "nonimmediate_operand" "")
 			 (match_operand:DI 2 "immediate_operand" "")
 			 (match_operand:DI 3 "immediate_operand" "")))]
   ""
@@ -5105,8 +5063,8 @@
 ;; Argument 3 is the alignment
 
 (define_expand "movstrqi"
-  [(parallel [(set (match_operand:BLK 0 "general_operand" "")
-		   (match_operand:BLK 1 "general_operand" ""))
+  [(parallel [(set (match_operand:BLK 0 "memory_operand" "")
+		   (match_operand:BLK 1 "memory_operand" ""))
 	      (use (match_operand:DI 2 "immediate_operand" ""))
 	      (use (match_operand:DI 3 "immediate_operand" ""))])]
   ""
@@ -5119,7 +5077,7 @@
 }")
 
 (define_expand "clrstrqi"
-  [(parallel [(set (match_operand:BLK 0 "general_operand" "")
+  [(parallel [(set (match_operand:BLK 0 "memory_operand" "")
 		   (const_int 0))
 	      (use (match_operand:DI 1 "immediate_operand" ""))
 	      (use (match_operand:DI 2 "immediate_operand" ""))])]
@@ -5228,8 +5186,8 @@
 ;; the loop in this one insn.
 
 (define_insn "prologue_stack_probe_loop"
-  [(unspec_volatile [(match_operand 0 "register_operand" "r")
-		     (match_operand 1 "register_operand" "r")] 5)]
+  [(unspec_volatile [(match_operand:DI 0 "register_operand" "r")
+		     (match_operand:DI 1 "register_operand" "r")] 5)]
   ""
   "*
 {
@@ -5286,7 +5244,7 @@
   "lda %0,%1(%0)")
 
 (define_expand "builtin_longjmp"
-  [(unspec_volatile [(match_operand 0 "register_operand" "r")] 3)]
+  [(unspec_volatile [(match_operand:DI 0 "register_operand" "r")] 3)]
   "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT"
   "
 {
@@ -5397,28 +5355,77 @@
   [(unspec_volatile [(match_operand 0 "immediate_operand" "i")] 6)]
   ""
   ".align %0 #realign")
+
+;; The call patterns are at the end of the file because their
+;; wildcard operand0 interferes with nice recognition.
+
+(define_insn ""
+  [(set (match_operand 0 "" "")
+	(call (mem:DI (match_operand:DI 1 "call_operand" "r,R,i"))
+	      (match_operand 2 "" "")))
+   (clobber (reg:DI 27))
+   (clobber (reg:DI 26))]
+  "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS"
+  "@
+   jsr $26,($27),0\;ldgp $29,0($26)
+   bsr $26,$%1..ng
+   jsr $26,%1\;ldgp $29,0($26)"
+  [(set_attr "type" "jsr")
+   (set_attr "length" "12,*,16")])
+
+(define_insn ""
+  [(set (match_operand 0 "" "")
+	(call (mem:DI (match_operand:DI 1 "call_operand" "r,R,i"))
+	      (match_operand 2 "" "")))
+   (clobber (reg:DI 26))]
+  "TARGET_WINDOWS_NT"
+  "@
+   jsr $26,(%1)
+   bsr $26,%1
+   jsr $26,%1"
+  [(set_attr "type" "jsr")
+   (set_attr "length" "*,*,12")])
+
+(define_insn ""
+  [(set (match_operand 0 "" "")
+	(call (mem:DI (match_operand:DI 1 "call_operand" "r,i"))
+	      (match_operand 2 "" "")))
+   (use (match_operand:DI 3 "nonimmediate_operand" "r,m"))
+   (use (reg:DI 25))
+   (use (reg:DI 26))
+   (clobber (reg:DI 27))]
+  "TARGET_OPEN_VMS"
+  "@
+   mov %3,$27\;jsr $26,0\;ldq $27,0($29)
+   ldq $27,%3\;jsr $26,%1\;ldq $27,0($29)"
+  [(set_attr "type" "jsr")
+   (set_attr "length" "12,16")])
+
 
 ;; Peepholes go at the end.
 
 ;; Optimize sign-extension of SImode loads.  This shows up in the wake of
 ;; reload when converting fp->int.
-;;
-;; ??? What to do now that we actually care about the packing and
-;; alignment of instructions?  Perhaps reload can be enlightened, or
-;; the peephole pass moved up after reload but before sched2?
-;
-;(define_peephole
-;  [(set (match_operand:SI 0 "register_operand" "=r")
-;        (match_operand:SI 1 "memory_operand" "m"))
-;   (set (match_operand:DI 2 "register_operand" "=r")
-;        (sign_extend:DI (match_dup 0)))]
-;  "dead_or_set_p (insn, operands[0])"
-;  "ldl %2,%1")
-;
-;(define_peephole
-;  [(set (match_operand:SI 0 "register_operand" "=r")
-;        (match_operand:SI 1 "hard_fp_register_operand" "f"))
-;   (set (match_operand:DI 2 "register_operand" "=r")
-;        (sign_extend:DI (match_dup 0)))]
-;  "TARGET_FIX && dead_or_set_p (insn, operands[0])"
-;  "ftois %1,%2")
+
+(define_peephole2
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (match_operand:SI 1 "memory_operand" "m"))
+   (set (match_operand:DI 2 "register_operand" "=r")
+        (sign_extend:DI (match_dup 0)))]
+  "rtx_equal_p (operands[0], operands[2])
+   || reg_dead_p (insn, operands[0])"
+  [(set (match_dup 2)
+	(sign_extend:DI (match_dup 1)))]
+  "")
+
+(define_peephole2
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (match_operand:SI 1 "hard_fp_register_operand" "f"))
+   (set (match_operand:DI 2 "register_operand" "=r")
+        (sign_extend:DI (match_dup 0)))]
+  "TARGET_FIX
+   && (rtx_equal_p (operands[0], operands[2])
+       || reg_dead_p (insn, operands[0]))"
+  [(set (match_dup 2)
+	(sign_extend:DI (match_dup 1)))]
+  "")

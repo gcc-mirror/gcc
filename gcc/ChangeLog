@@ -1,3 +1,14 @@
+Thu Sep 30 17:39:16 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (*): Use nonimmediate not general_operand for SET_DEST.
+	(ffsdi2, extxl, insxh, mskxh): Add missing DImode to SET_SRC.
+	(call-value patterns): Move to end of file.
+	(*): Remove mode from label_ref in (pc) context.
+	(movstrqi): Use memory not general_operand for BLKmode operands.
+	(prologue_stack_probe_loop, builtin_longjmp): Add missing mode 
+	to register_operand operands.
+	(peep2 patterns): Convert from commented-out peephole patterns.
+
 Thu Sep 30 14:39:17 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* tree.h (enum built_in_function): Rename BUILT_IN_DWARF_REG_SIZE
