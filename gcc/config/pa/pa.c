@@ -900,25 +900,7 @@ emit_move_sequence (operands, mode, scratch_reg)
 	      emit_insn (gen_rtx (SET, VOIDmode,
 				  temp,
 				  gen_rtx (HIGH, mode, operand1)));
-	      if (function_label_operand (operand1, mode))
-		{
-		  rtx temp;
-
-		  if (reload_in_progress || reload_completed)
-		    temp = scratch_reg;
-		  else
-		    temp = gen_reg_rtx (mode);
-
-		  if (!temp)
-		    abort ();
-		  emit_insn (gen_rtx (PARALLEL, VOIDmode,
-				      gen_rtvec (2,
-						 set,
-						 gen_rtx (CLOBBER, VOIDmode,
-							  temp))));
-		}
-	      else
-		emit_insn (set);
+	      emit_insn (set);
 	      return 1;
 	    }
 	  return 1;
@@ -3285,8 +3267,7 @@ secondary_reload_class (class, mode, in)
 {
   int regno = true_regnum (in);
 
-  if (function_label_operand (in, mode)
-      || ((regno >= FIRST_PSEUDO_REGISTER || regno == -1)
+  if (((regno >= FIRST_PSEUDO_REGISTER || regno == -1)
 	  && GET_MODE_CLASS (mode) == MODE_INT
 	  && FP_REG_CLASS_P (class))
       || (class == SHIFT_REGS && (regno <= 0 || regno >= 32)))
