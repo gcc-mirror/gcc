@@ -2,6 +2,7 @@
 
 	* config/avr/avr.c, config/avr/avr-protos.h: Convert to
 	ISO C90 function declarations and definitions.
+	* config/sh/sh.c, config/sh/sh-protos.h: Likewise.
 
 2003-10-12  Nathanael Nerode  <neroden@gcc.gnu.org>
 

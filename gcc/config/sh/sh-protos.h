@@ -25,117 +25,117 @@ Boston, MA 02111-1307, USA.  */
 #define GCC_SH_PROTOS_H
 
 #ifdef RTX_CODE
-extern struct rtx_def *prepare_scc_operands PARAMS ((enum rtx_code));
+extern struct rtx_def *prepare_scc_operands (enum rtx_code);
 
 /* Declare functions defined in sh.c and used in templates.  */
 
-extern const char *output_branch PARAMS ((int, rtx, rtx *));
-extern const char *output_ieee_ccmpeq PARAMS ((rtx, rtx *));
-extern const char *output_branchy_insn PARAMS ((enum rtx_code, const char *, rtx, rtx *));
-extern const char *output_movedouble PARAMS ((rtx, rtx[], enum machine_mode));
-extern const char *output_movepcrel PARAMS ((rtx, rtx[], enum machine_mode));
-extern const char *output_far_jump PARAMS ((rtx, rtx));
+extern const char *output_branch (int, rtx, rtx *);
+extern const char *output_ieee_ccmpeq (rtx, rtx *);
+extern const char *output_branchy_insn (enum rtx_code, const char *, rtx, rtx *);
+extern const char *output_movedouble (rtx, rtx[], enum machine_mode);
+extern const char *output_movepcrel (rtx, rtx[], enum machine_mode);
+extern const char *output_far_jump (rtx, rtx);
 
-extern struct rtx_def *sfunc_uses_reg PARAMS ((rtx));
-extern int barrier_align PARAMS ((rtx));
-extern int sh_loop_align PARAMS ((rtx));
-extern int fp_zero_operand PARAMS ((rtx));
-extern int fp_one_operand PARAMS ((rtx));
-extern int fp_int_operand PARAMS ((rtx));
-extern rtx get_fpscr_rtx PARAMS ((void));
-extern rtx legitimize_pic_address PARAMS ((rtx, enum machine_mode, rtx));
-extern int nonpic_symbol_mentioned_p PARAMS ((rtx));
-extern void emit_sf_insn PARAMS ((rtx));
-extern void emit_df_insn PARAMS ((rtx));
-extern void print_operand_address PARAMS ((FILE *, rtx));
-extern void print_operand PARAMS ((FILE *, rtx, int));
-extern void output_pic_addr_const PARAMS ((FILE *, rtx));
-extern int expand_block_move PARAMS ((rtx *));
-extern int prepare_move_operands PARAMS ((rtx[], enum machine_mode mode));
-extern void from_compare PARAMS ((rtx *, int));
-extern int shift_insns_rtx PARAMS ((rtx));
-extern void gen_ashift PARAMS ((int, int, rtx));
-extern void gen_ashift_hi PARAMS ((int, int, rtx));
-extern void gen_shifty_op PARAMS ((int, rtx *));
-extern void gen_shifty_hi_op PARAMS ((int, rtx *));
-extern int expand_ashiftrt PARAMS ((rtx *));
-extern int sh_dynamicalize_shift_p PARAMS ((rtx));
-extern int shl_and_kind PARAMS ((rtx, rtx, int *));
-extern int shl_and_length PARAMS ((rtx));
-extern int shl_and_scr_length PARAMS ((rtx));
-extern int gen_shl_and PARAMS ((rtx, rtx, rtx, rtx));
-extern int shl_sext_kind PARAMS ((rtx, rtx, int *));
-extern int shl_sext_length PARAMS ((rtx));
-extern int gen_shl_sext PARAMS ((rtx, rtx, rtx, rtx));
-extern rtx gen_datalabel_ref PARAMS ((rtx));
-extern int regs_used PARAMS ((rtx, int));
-extern void fixup_addr_diff_vecs PARAMS ((rtx));
-extern int get_dest_uid PARAMS ((rtx, int));
-extern void final_prescan_insn PARAMS ((rtx, rtx *, int));
-extern int symbol_ref_operand PARAMS ((rtx, enum machine_mode));
-extern int tls_symbolic_operand PARAMS ((rtx, enum machine_mode));
-extern int system_reg_operand PARAMS ((rtx, enum machine_mode));
-extern int general_movsrc_operand PARAMS ((rtx, enum machine_mode));
-extern int general_movdst_operand PARAMS ((rtx, enum machine_mode));
-extern int arith_reg_operand PARAMS ((rtx, enum machine_mode));
-extern int fp_arith_reg_operand PARAMS ((rtx, enum machine_mode));
-extern int arith_operand PARAMS ((rtx, enum machine_mode));
-extern int arith_reg_or_0_operand PARAMS ((rtx, enum machine_mode));
-extern int logical_operand PARAMS ((rtx, enum machine_mode));
-extern int tertiary_reload_operand PARAMS ((rtx, enum machine_mode));
-extern int fpscr_operand PARAMS ((rtx, enum machine_mode));
-extern int fpul_operand PARAMS ((rtx, enum machine_mode));
-extern int commutative_float_operator PARAMS ((rtx, enum machine_mode));
-extern int noncommutative_float_operator PARAMS ((rtx, enum machine_mode));
-extern int reg_unused_after PARAMS ((rtx, rtx));
-extern void expand_sf_unop PARAMS ((rtx (*)(rtx, rtx, rtx), rtx *));
-extern void expand_sf_binop PARAMS ((rtx (*)(rtx, rtx, rtx, rtx), rtx *));
-extern void expand_df_unop PARAMS ((rtx (*)(rtx, rtx, rtx), rtx *));
-extern void expand_df_binop PARAMS ((rtx (*)(rtx, rtx, rtx, rtx), rtx *));
-extern void expand_fp_branch PARAMS ((rtx (*)(void), rtx (*)(void)));
-extern int sh_insn_length_adjustment PARAMS ((rtx));
-extern int sh_can_redirect_branch PARAMS ((rtx, rtx));
-extern void sh_expand_unop_v2sf PARAMS ((enum rtx_code, rtx, rtx));
-extern void sh_expand_binop_v2sf PARAMS ((enum rtx_code, rtx, rtx, rtx));
+extern struct rtx_def *sfunc_uses_reg (rtx);
+extern int barrier_align (rtx);
+extern int sh_loop_align (rtx);
+extern int fp_zero_operand (rtx);
+extern int fp_one_operand (rtx);
+extern int fp_int_operand (rtx);
+extern rtx get_fpscr_rtx (void);
+extern rtx legitimize_pic_address (rtx, enum machine_mode, rtx);
+extern int nonpic_symbol_mentioned_p (rtx);
+extern void emit_sf_insn (rtx);
+extern void emit_df_insn (rtx);
+extern void print_operand_address (FILE *, rtx);
+extern void print_operand (FILE *, rtx, int);
+extern void output_pic_addr_const (FILE *, rtx);
+extern int expand_block_move (rtx *);
+extern int prepare_move_operands (rtx[], enum machine_mode mode);
+extern void from_compare (rtx *, int);
+extern int shift_insns_rtx (rtx);
+extern void gen_ashift (int, int, rtx);
+extern void gen_ashift_hi (int, int, rtx);
+extern void gen_shifty_op (int, rtx *);
+extern void gen_shifty_hi_op (int, rtx *);
+extern int expand_ashiftrt (rtx *);
+extern int sh_dynamicalize_shift_p (rtx);
+extern int shl_and_kind (rtx, rtx, int *);
+extern int shl_and_length (rtx);
+extern int shl_and_scr_length (rtx);
+extern int gen_shl_and (rtx, rtx, rtx, rtx);
+extern int shl_sext_kind (rtx, rtx, int *);
+extern int shl_sext_length (rtx);
+extern int gen_shl_sext (rtx, rtx, rtx, rtx);
+extern rtx gen_datalabel_ref (rtx);
+extern int regs_used (rtx, int);
+extern void fixup_addr_diff_vecs (rtx);
+extern int get_dest_uid (rtx, int);
+extern void final_prescan_insn (rtx, rtx *, int);
+extern int symbol_ref_operand (rtx, enum machine_mode);
+extern int tls_symbolic_operand (rtx, enum machine_mode);
+extern int system_reg_operand (rtx, enum machine_mode);
+extern int general_movsrc_operand (rtx, enum machine_mode);
+extern int general_movdst_operand (rtx, enum machine_mode);
+extern int arith_reg_operand (rtx, enum machine_mode);
+extern int fp_arith_reg_operand (rtx, enum machine_mode);
+extern int arith_operand (rtx, enum machine_mode);
+extern int arith_reg_or_0_operand (rtx, enum machine_mode);
+extern int logical_operand (rtx, enum machine_mode);
+extern int tertiary_reload_operand (rtx, enum machine_mode);
+extern int fpscr_operand (rtx, enum machine_mode);
+extern int fpul_operand (rtx, enum machine_mode);
+extern int commutative_float_operator (rtx, enum machine_mode);
+extern int noncommutative_float_operator (rtx, enum machine_mode);
+extern int reg_unused_after (rtx, rtx);
+extern void expand_sf_unop (rtx (*)(rtx, rtx, rtx), rtx *);
+extern void expand_sf_binop (rtx (*)(rtx, rtx, rtx, rtx), rtx *);
+extern void expand_df_unop (rtx (*)(rtx, rtx, rtx), rtx *);
+extern void expand_df_binop (rtx (*)(rtx, rtx, rtx, rtx), rtx *);
+extern void expand_fp_branch (rtx (*)(void), rtx (*)(void));
+extern int sh_insn_length_adjustment (rtx);
+extern int sh_can_redirect_branch (rtx, rtx);
+extern void sh_expand_unop_v2sf (enum rtx_code, rtx, rtx);
+extern void sh_expand_binop_v2sf (enum rtx_code, rtx, rtx, rtx);
 #ifdef TREE_CODE
-extern void sh_va_start PARAMS ((tree, rtx));
-extern rtx sh_va_arg PARAMS ((tree, tree));
+extern void sh_va_start (tree, rtx);
+extern rtx sh_va_arg (tree, tree);
 #endif /* TREE_CODE */
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
-extern tree sh_build_va_list PARAMS ((void));
+extern tree sh_build_va_list (void);
 #endif /* TREE_CODE */
 
-extern const char *output_jump_label_table PARAMS ((void));
-extern int sh_handle_pragma PARAMS ((int (*)(void), void (*)(int), const char *));
-extern struct rtx_def *get_fpscr_rtx PARAMS ((void));
-extern int sh_media_register_for_return PARAMS ((void));
-extern void sh_expand_prologue PARAMS ((void));
-extern void sh_expand_epilogue PARAMS ((void));
-extern int sh_need_epilogue PARAMS ((void));
-extern void sh_set_return_address PARAMS ((rtx, rtx));
-extern int initial_elimination_offset PARAMS ((int, int));
-extern int fldi_ok PARAMS ((void));
-extern int sh_pr_n_sets PARAMS ((void));
-extern int sh_hard_regno_rename_ok PARAMS ((unsigned int, unsigned int));
-extern int sh_cfun_interrupt_handler_p PARAMS ((void));
-extern int sh_attr_renesas_p PARAMS ((tree));
-extern int sh_cfun_attr_renesas_p PARAMS ((void));
-extern void sh_initialize_trampoline PARAMS ((rtx, rtx, rtx));
+extern const char *output_jump_label_table (void);
+extern int sh_handle_pragma (int (*)(void), void (*)(int), const char *);
+extern struct rtx_def *get_fpscr_rtx (void);
+extern int sh_media_register_for_return (void);
+extern void sh_expand_prologue (void);
+extern void sh_expand_epilogue (void);
+extern int sh_need_epilogue (void);
+extern void sh_set_return_address (rtx, rtx);
+extern int initial_elimination_offset (int, int);
+extern int fldi_ok (void);
+extern int sh_pr_n_sets (void);
+extern int sh_hard_regno_rename_ok (unsigned int, unsigned int);
+extern int sh_cfun_interrupt_handler_p (void);
+extern int sh_attr_renesas_p (tree);
+extern int sh_cfun_attr_renesas_p (void);
+extern void sh_initialize_trampoline (rtx, rtx, rtx);
 extern bool sh_cannot_change_mode_class
-	      PARAMS ((enum machine_mode, enum machine_mode, enum reg_class));
-extern void sh_mark_label PARAMS ((rtx, int));
+	      (enum machine_mode, enum machine_mode, enum reg_class);
+extern void sh_mark_label (rtx, int);
 extern int sh_register_move_cost
-  PARAMS ((enum machine_mode mode, enum reg_class, enum reg_class));
+  (enum machine_mode mode, enum reg_class, enum reg_class);
 
 #ifdef HARD_CONST
-extern void fpscr_set_from_mem PARAMS ((int, HARD_REG_SET));
+extern void fpscr_set_from_mem (int, HARD_REG_SET);
 #endif
 
-extern void sh_pr_interrupt PARAMS ((struct cpp_reader *));
-extern void sh_pr_trapa PARAMS ((struct cpp_reader *));
-extern void sh_pr_nosave_low_regs PARAMS ((struct cpp_reader *));
+extern void sh_pr_interrupt (struct cpp_reader *);
+extern void sh_pr_trapa (struct cpp_reader *);
+extern void sh_pr_nosave_low_regs (struct cpp_reader *);
 extern rtx function_symbol (const char *);
 extern rtx sh_get_pr_initial_val (void);
 
