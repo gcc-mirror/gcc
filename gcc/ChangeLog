@@ -1,3 +1,27 @@
+2004-07-19  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390-protos.h (s390_return_address_offset): Prototype
+	added.
+	* config/s390/s390.c (regclass_map initializer): Register 35 added to
+	ADDR_REGS.
+	(load_multiple_operation, store_multiple_operation): Removed
+	pointless sanity check. 
+	(s390_decompose_address): Added check for return_address_pointer_rtx.
+	(s390_return_addr_rtx): Use return_address_pointer_rtx for count == 0.
+	(s390_return_address_offset): New function.
+	* config/s390/s390.h (FIRST_PSEUDO_REGISTER): Increased to 36.
+	(FRAME_REGNO_P): Added check for register 35.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS, CALL_REALLY_USED_REGISTERS,
+	REG_ALLOC_ORDER): Appended entry for register 35.
+	(REG_CLASS_CONTENTS): Adjusted class masks for register 35.
+	(EH_RETURN_HANDLER_RTX): Use return_address_pointer_rtx.
+	(RETURN_ADDRESS_POINTER_REGNUM): New macro.
+	(ELIMINABLE_REGS, INITIAL_ELIMINATION_OFFSET): Return address pointer
+	is eliminable using stack pointer or hard frame pointer.
+	(REGISTER_NAMES): Added name for register 35.
+	* config/s390/s390.md ("load_multiple", "store_multiple"): Removed
+	pointless sanity check.
+
 2004-07-19  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (tree_expr_nonzero_p): Add function prototype.

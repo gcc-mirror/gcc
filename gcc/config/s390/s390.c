@@ -1038,7 +1038,7 @@ const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER] =
   FP_REGS,      FP_REGS,   FP_REGS,   FP_REGS,
   FP_REGS,      FP_REGS,   FP_REGS,   FP_REGS,
   FP_REGS,      FP_REGS,   FP_REGS,   FP_REGS,
-  ADDR_REGS,    NO_REGS,   ADDR_REGS
+  ADDR_REGS,    NO_REGS,   ADDR_REGS, ADDR_REGS
 };
 
 /* Return attribute type of insn.  */
@@ -1613,9 +1613,6 @@ load_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   else
     return 0;
 
-  if (src_addr == frame_pointer_rtx || src_addr == arg_pointer_rtx)
-    return 0;
-
   for (i = 1; i < count; i++)
     {
       rtx elt = XVECEXP (op, 0, i);
@@ -1674,9 +1671,6 @@ store_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
       dest_addr = XEXP (dest_addr, 0);
     }
   else
-    return 0;
-
-  if (dest_addr == frame_pointer_rtx || dest_addr == arg_pointer_rtx)
     return 0;
 
   for (i = 1; i < count; i++)
@@ -2258,15 +2252,19 @@ s390_decompose_address (register rtx addr, struct s390_address *out)
   /* Validate displacement.  */
   if (!disp)
     {
-      /* If the argument pointer is involved, the displacement will change
-	 later anyway as the argument pointer gets eliminated.  This could
-	 make a valid displacement invalid, but it is more likely to make
-	 an invalid displacement valid, because we sometimes access the
-	 register save area via negative offsets to the arg pointer.
+      /* If the argument pointer or the return address pointer are involved,
+	 the displacement will change later anyway as the virtual registers get
+	 eliminated.  This could make a valid displacement invalid, but it is 
+	 more likely to make an invalid displacement valid, because we sometimes
+	 access the register save area via negative offsets to one of those 
+	 registers.
 	 Thus we don't check the displacement for validity here.  If after
 	 elimination the displacement turns out to be invalid after all,
 	 this is fixed up by reload in any case.  */
-      if (base != arg_pointer_rtx && indx != arg_pointer_rtx)
+      if (base != arg_pointer_rtx 
+	  && indx != arg_pointer_rtx 
+	  && base != return_address_pointer_rtx 
+	  && indx != return_address_pointer_rtx)
 	if (!DISP_IN_RANGE (offset))
 	  return FALSE;
     }
@@ -5499,7 +5497,7 @@ s390_reorg (void)
    frame pointer of that frame.  */
 
 rtx
-s390_return_addr_rtx (int count, rtx frame)
+s390_return_addr_rtx (int count, rtx frame ATTRIBUTE_UNUSED)
 {
   rtx addr;
 
@@ -5512,10 +5510,10 @@ s390_return_addr_rtx (int count, rtx frame)
      value of RETURN_REGNUM is actually saved.  */
 
   if (count == 0)
-    cfun->machine->save_return_addr_p = true;
-
-  /* To retrieve the return address we read the stack slot where the
-     corresponding RETURN_REGNUM value was saved.  */
+    {
+      cfun->machine->save_return_addr_p = true;
+      return gen_rtx_MEM (Pmode, return_address_pointer_rtx);
+    }
 
   addr = plus_constant (frame, RETURN_REGNUM * UNITS_PER_WORD);
   addr = memory_address (Pmode, addr);
@@ -5640,6 +5638,17 @@ s390_arg_frame_offset (void)
 
   s390_frame_info (1, !TARGET_CPU_ZARCH || return_addr_used);
   return cfun->machine->frame_size + STACK_POINTER_OFFSET;
+}
+
+/* Return offset between return address pointer (location of r14
+   on the stack) and frame pointer initially after prologue.  */
+
+HOST_WIDE_INT
+s390_return_address_offset (void)
+{
+  s390_frame_info (1, 1);
+
+  return cfun->machine->frame_size + RETURN_REGNUM * UNITS_PER_WORD;
 }
 
 /* Emit insn to save fpr REGNUM at offset OFFSET relative
