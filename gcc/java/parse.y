@@ -15353,6 +15353,12 @@ build_assertion (location, condition, value)
       call = build (CALL_EXPR, NULL_TREE, id, NULL_TREE, NULL_TREE);
       call = make_qualified_primary (classdollar, call, location);
       TREE_SIDE_EFFECTS (call) = 1;
+
+      /* Invert to obtain !CLASS.desiredAssertionStatus().  This may
+	 seem odd, but we do it to generate code identical to that of
+	 the JDK.  */
+      call = build1 (TRUTH_NOT_EXPR, NULL_TREE, call);
+      TREE_SIDE_EFFECTS (call) = 1;
       DECL_INITIAL (field) = call;
 
       /* Record the initializer in the initializer statement list.  */
