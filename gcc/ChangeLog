@@ -1,5 +1,9 @@
 2003-11-16  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* doc/install.texi (--enable-checking): Update valgrind's URL.
+
+2003-11-16  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md: Fix warnings by replacing -2147483648
 	with -2147483647 - 1.
 
