@@ -1,3 +1,12 @@
+2000-08-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (enum_name_string): Remove prototype.
+	(report_case_error): Remove prototype.
+	* cp/typeck2.c (enum_name_string): Remove.
+	(report_case_error): Remove.
+	* error.c (dump_expr): Deal with enum values directly.
+	Correctly negate integer constant.
+
 2000-08-17  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* inc/cxxabi.h (__cxa_vec_new2, __cxa_vec_new3): Declare.

@@ -4643,8 +4643,6 @@ extern tree build_scoped_ref			PARAMS ((tree, tree));
 extern tree build_x_arrow			PARAMS ((tree));
 extern tree build_m_component_ref		PARAMS ((tree, tree));
 extern tree build_functional_cast		PARAMS ((tree, tree));
-extern char *enum_name_string			PARAMS ((tree, tree));
-extern void report_case_error			PARAMS ((int, tree, tree, tree));
 extern void check_for_new_type			PARAMS ((const char *, flagged_type_tree));
 extern tree add_exception_specifier             PARAMS ((tree, tree, int));
 

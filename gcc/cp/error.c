@@ -1469,8 +1469,23 @@ dump_expr (t, flags)
 	/* If it's an enum, output its tag, rather than its value.  */
 	if (TREE_CODE (type) == ENUMERAL_TYPE)
 	  {
-	    const char *p = enum_name_string (t, type);
-	    OB_PUTCP (p);
+	    tree values = TYPE_VALUES (type);
+	    
+	    for (; values;
+	         values = TREE_CHAIN (values))
+	      if (tree_int_cst_equal (TREE_VALUE (values), t))
+	        break;
+	    
+	    if (values)
+	      OB_PUTID (TREE_PURPOSE (values));
+	    else
+	      {
+                /* Value must have been cast.  */
+                OB_PUTC ('(');
+                dump_type (type, flags);
+                OB_PUTC (')');
+                goto do_int;
+	      }
 	  }
 	else if (type == boolean_type_node)
 	  {
@@ -1485,30 +1500,35 @@ dump_expr (t, flags)
 	    dump_char (tree_low_cst (t, 0));
 	    OB_PUTC ('\'');
 	  }
-	else if ((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (t)
-		 != (TREE_INT_CST_LOW (t) >> (HOST_BITS_PER_WIDE_INT - 1)))
-	  {
-	    tree val = t;
-
-	    if (tree_int_cst_sgn (val) < 0)
-	      {
-		OB_PUTC ('-');
-		val = build_int_2 (~TREE_INT_CST_LOW (val),
-				   -TREE_INT_CST_HIGH (val));
-	      }
-	    /* Would "%x%0*x" or "%x%*0x" get zero-padding on all
-	       systems?  */
-	    {
-	      static char format[10]; /* "%x%09999x\0" */
-	      if (!format[0])
-		sprintf (format, "%%x%%0%dx", HOST_BITS_PER_INT / 4);
-	      sprintf (digit_buffer, format, TREE_INT_CST_HIGH (val),
-		       TREE_INT_CST_LOW (val));
-	      OB_PUTCP (digit_buffer);
-	    }
-	  }
 	else
-	  OB_PUTI (TREE_INT_CST_LOW (t));
+	  {
+	    do_int:
+	    if ((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (t)
+		!= (TREE_INT_CST_LOW (t) >> (HOST_BITS_PER_WIDE_INT - 1)))
+	      {
+	        tree val = t;
+
+	        if (tree_int_cst_sgn (val) < 0)
+	          {
+		    OB_PUTC ('-');
+		    val = build_int_2 (-TREE_INT_CST_LOW (val),
+				       ~TREE_INT_CST_HIGH (val)
+	                               + !TREE_INT_CST_LOW (val));
+	          }
+	        /* Would "%x%0*x" or "%x%*0x" get zero-padding on all
+	           systems?  */
+	        {
+	          static char format[10]; /* "%x%09999x\0" */
+	          if (!format[0])
+		    sprintf (format, "%%x%%0%dx", HOST_BITS_PER_INT / 4);
+	          sprintf (digit_buffer, format, TREE_INT_CST_HIGH (val),
+		           TREE_INT_CST_LOW (val));
+	          OB_PUTCP (digit_buffer);
+	        }
+	      }
+	    else
+	      OB_PUTI (TREE_INT_CST_LOW (t));
+	  }
       }
       break;
 
