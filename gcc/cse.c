@@ -5814,6 +5814,10 @@ cse_insn (insn, in_libcall_block)
       sets[i].src_in_memory = hash_arg_in_memory;
       sets[i].src_in_struct = hash_arg_in_struct;
 
+#if 0
+      /* It is no longer clear why we used to do this, but it doesn't
+	 appear to still be needed.  So let's try without it since this
+	 code hurts cse'ing widened ops.  */
       /* If source is a perverse subreg (such as QI treated as an SI),
 	 treat it as volatile.  It may do the work of an SI in one context
 	 where the extra bits are not being used, but cannot replace an SI
@@ -5822,6 +5826,7 @@ cse_insn (insn, in_libcall_block)
 	  && (GET_MODE_SIZE (GET_MODE (src))
 	      > GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))))
 	sets[i].src_volatile = 1;
+#endif
 
       /* Locate all possible equivalent forms for SRC.  Try to replace
          SRC in the insn with each cheaper equivalent.

@@ -513,6 +513,11 @@ reload (first, global, dumpfile)
   for (i = 0; i < N_REG_CLASSES; i++)
     basic_block_needs[i] = 0;
 
+#ifdef SECONDARY_MEMORY_NEEDED
+  /* Initialize the secondary memory table.  */
+  clear_secondary_mem ();
+#endif
+
   /* Remember which hard regs appear explicitly
      before we merge into `regs_ever_live' the ones in which
      pseudo regs have been allocated.  */
@@ -786,6 +791,7 @@ reload (first, global, dumpfile)
       rtx max_groups_insn[N_REG_CLASSES];
       rtx max_nongroups_insn[N_REG_CLASSES];
       rtx x;
+      int starting_frame_size = get_frame_size ();
 
       something_changed = 0;
       bzero (max_needs, sizeof max_needs);
@@ -1301,6 +1307,11 @@ reload (first, global, dumpfile)
 	    }
 	  /* Note that there is a continue statement above.  */
 	}
+
+      /* If we allocated any new memory locations, make another pass
+	 since it might have changed elimination offsets.  */
+      if (starting_frame_size != get_frame_size ())
+	something_changed = 1;
 
       /* If we have caller-saves, set up the save areas and see if caller-save
 	 will need a spill register.  */
@@ -5298,8 +5309,35 @@ emit_reload_insns (insn)
 
 	  /* Output the last reload insn.  */
 	  if (! special)
-	    emit_insn_before (gen_move_insn (old, reloadreg),
-			      first_output_reload_insn);
+	    {
+#ifdef SECONDARY_MEMORY_NEEDED
+	      /* If we need a memory location to do the move, do it that way.  */
+	      if (GET_CODE (old) == REG && REGNO (old) < FIRST_PSEUDO_REGISTER
+		  && SECONDARY_MEMORY_NEEDED (REGNO_REG_CLASS (REGNO (old)),
+					      REGNO_REG_CLASS (REGNO (reloadreg)),
+					      GET_MODE (reloadreg)))
+		{
+		  /* Get the memory to use and rewrite both registers to
+		     its mode.  */
+		  rtx loc = get_secondary_mem (old, GET_MODE (reloadreg));
+
+		  if (GET_MODE (loc) != GET_MODE (reloadreg))
+		    reloadreg = gen_rtx (REG, GET_MODE (loc),
+					 REGNO (reloadreg));
+
+		  if (GET_MODE (loc) != GET_MODE (old))
+		    old = gen_rtx (REG, GET_MODE (loc), REGNO (old));
+
+		  emit_insn_before (gen_move_insn (loc, reloadreg),
+				    first_output_reload_insn);
+		  emit_insn_before (gen_move_insn (old, loc),
+				    first_output_reload_insn);
+		}
+	      else
+#endif
+		emit_insn_before (gen_move_insn (old, reloadreg),
+				  first_output_reload_insn);
+	    }
 
 #ifdef PRESERVE_DEATH_INFO_REGNO_P
 	  /* If final will look at death notes for this reg,
@@ -5607,6 +5645,27 @@ gen_input_reload (reloadreg, in, before_insn)
       emit_insn_before (gen_move_insn (reloadreg, op0), before_insn);
       emit_insn_before (gen_add2_insn (reloadreg, op1), before_insn);
     }
+
+#ifdef SECONDARY_MEMORY_NEEDED
+  /* If we need a memory location to do the move, do it that way.  */
+  else if (GET_CODE (in) == REG && REGNO (in) < FIRST_PSEUDO_REGISTER
+	   && SECONDARY_MEMORY_NEEDED (REGNO_REG_CLASS (REGNO (in)),
+				       REGNO_REG_CLASS (REGNO (reloadreg)),
+				       GET_MODE (reloadreg)))
+    {
+      /* Get the memory to use and rewrite both registers to its mode.  */
+      rtx loc = get_secondary_mem (in, GET_MODE (reloadreg));
+
+      if (GET_MODE (loc) != GET_MODE (reloadreg))
+	reloadreg = gen_rtx (REG, GET_MODE (loc), REGNO (reloadreg));
+
+      if (GET_MODE (loc) != GET_MODE (in))
+	in = gen_rtx (REG, GET_MODE (loc), REGNO (in));
+
+      emit_insn_before (gen_move_insn (reloadreg, loc), before_insn);
+      emit_insn_before (gen_move_insn (loc, in), before_insn);
+    }
+#endif
 
   /* If IN is a simple operand, use gen_move_insn.  */
   else if (GET_RTX_CLASS (GET_CODE (in)) == 'o' || GET_CODE (in) == SUBREG)

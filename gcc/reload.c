@@ -207,6 +207,17 @@ static int n_replacements;
 static rtx memlocs[MAX_RECOG_OPERANDS * ((MAX_REGS_PER_ADDRESS * 2) + 1)];
 static int n_memlocs;
 
+#ifdef SECONDARY_MEMORY_NEEDED
+
+/* Save MEMs needed to copy from one class of registers to another.  One MEM
+   is used per mode, but normally only one or two modes are ever used.  
+
+   We keep two versions, before and after register elimination.  */
+
+static rtx secondary_memlocs[NUM_MACHINE_MODES];
+static rtx secondary_memlocs_elim[NUM_MACHINE_MODES];
+#endif
+
 /* The instruction we are doing reloads for;
    so we can test whether a register dies in it.  */
 static rtx this_insn;
@@ -368,6 +379,73 @@ find_secondary_reload (x, reload_class, reload_mode, in_p, picode, pmode,
   return class;
 }
 #endif /* HAVE_SECONDARY_RELOADS */
+
+#ifdef SECONDARY_MEMORY_NEEDED
+
+/* Return a memory location that will be used to copy X in mode MODE.  
+   If we haven't already made a location for this mode in this insn,
+   call find_reloads_address on the location being returned.  */
+
+rtx
+get_secondary_mem (x, mode)
+     rtx x;
+     enum machine_mode mode;
+{
+  rtx loc;
+  int mem_valid;
+
+  /* If MODE is narrower than a word, widen it.  This is required because
+     most machines that require these memory locations do not support
+     short load and stores from all registers (e.g., FP registers).  We could
+     possibly conditionalize this, but we lose nothing by doing the wider
+     mode.  */
+
+  if (GET_MODE_BITSIZE (mode) < BITS_PER_WORD)
+    mode = mode_for_size (BITS_PER_WORD, GET_MODE_CLASS (mode), 0);
+
+  /* If we already have made a MEM for this insn, return it.  */
+  if (secondary_memlocs_elim[(int) mode] != 0)
+    return secondary_memlocs_elim[(int) mode];
+
+  /* If this is the first time we've tried to get a MEM for this mode, 
+     allocate a new one.  `something_changed' in reload will get set
+     by noticing that the frame size has changed.  */
+
+  if (secondary_memlocs[(int) mode] == 0)
+    secondary_memlocs[(int) mode]
+      = assign_stack_local (mode, GET_MODE_SIZE (mode), 0);
+
+  /* Get a version of the address doing any eliminations needed.  If that
+     didn't give us a new MEM, make a new one if it isn't valid.  */
+
+  loc = eliminate_regs (secondary_memlocs[(int) mode], 0, NULL_RTX);
+  mem_valid = strict_memory_address_p (mode, XEXP (loc, 0));
+
+  if (! mem_valid && loc == secondary_memlocs[(int) mode])
+    loc = copy_rtx (loc);
+
+  /* The only time the call below will do anything is if the stack
+     offset is too large.  In that case IND_LEVELS doesn't matter, so we
+     can just pass a zero.  */
+  if (! mem_valid)
+    find_reloads_address (mode, NULL_PTR, XEXP (loc, 0), &XEXP (loc, 0), x, 0);
+
+  secondary_memlocs_elim[(int) mode] = loc;
+
+  return loc;
+}
+
+/* Clear any secondary memory locations we've made.  */
+
+void
+clear_secondary_mem ()
+{
+  int i;
+
+  for (i = 0; i < NUM_MACHINE_MODES; i++)
+    secondary_memlocs[i] = 0;
+}
+#endif /* SECONDARY_MEMORY_NEEDED */
 
 /* Record one (sometimes two) reload that needs to be performed.
    IN is an rtx saying where the data are to be found before this instruction.
@@ -568,6 +646,21 @@ push_reload (in, out, inloc, outloc, class,
       && (GET_CODE (in) == REG || GET_CODE (in) == MEM)
       && reg_overlap_mentioned_for_reload_p (in, XEXP (out, 0)))
     dont_share = 1;
+
+  /* If IN is a SUBREG of a hard register, make a new REG.  This
+     simplifies some of the cases below.  */
+
+  if (in != 0 && GET_CODE (in) == SUBREG && GET_CODE (SUBREG_REG (in)) == REG
+      && REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER)
+    in = gen_rtx (REG, GET_MODE (in),
+		  REGNO (SUBREG_REG (in)) + SUBREG_WORD (in));
+
+  /* Similarly for OUT.  */
+  if (out != 0 && GET_CODE (out) == SUBREG
+      && GET_CODE (SUBREG_REG (out)) == REG
+      && REGNO (SUBREG_REG (out)) < FIRST_PSEUDO_REGISTER)
+    out = gen_rtx (REG, GET_MODE (out),
+		  REGNO (SUBREG_REG (out)) + SUBREG_WORD (out));
 
   /* Narrow down the class of register wanted if that is
      desirable on this machine for efficiency.  */
@@ -858,6 +951,19 @@ push_reload (in, out, inloc, outloc, class,
 
 	      n_reloads++;
 	      i = n_reloads;
+
+#ifdef SECONDARY_MEMORY_NEEDED
+	      /* If we need a memory location to copy between the two
+		 reload regs, set it up now.  */
+
+	      if (in != 0 && secondary_icode == CODE_FOR_nothing
+		  && SECONDARY_MEMORY_NEEDED (secondary_class, class, inmode))
+		get_secondary_mem (in, inmode);
+
+	      if (out != 0 && secondary_icode == CODE_FOR_nothing
+		  && SECONDARY_MEMORY_NEEDED (class, secondary_class, outmode))
+		get_secondary_mem (out, outmode);
+#endif
 	    }
 	}
 #endif
@@ -883,6 +989,21 @@ push_reload (in, out, inloc, outloc, class,
       reload_secondary_p[i] = 0;
 
       n_reloads++;
+
+#ifdef SECONDARY_MEMORY_NEEDED
+      /* If a memory location is needed for the copy, make one.  */
+      if (in != 0 && GET_CODE (in) == REG
+	  && REGNO (in) < FIRST_PSEUDO_REGISTER
+	  && SECONDARY_MEMORY_NEEDED (REGNO_REG_CLASS (REGNO (in)),
+				     class, inmode))
+	get_secondary_mem (in, inmode);
+
+      if (out != 0 && GET_CODE (out) == REG
+	  && REGNO (out) < FIRST_PSEUDO_REGISTER
+	  && SECONDARY_MEMORY_NEEDED (class, REGNO_REG_CLASS (REGNO (out)),
+				      outmode))
+	get_secondary_mem (out, outmode);
+#endif
     }
   else
     {
@@ -1829,6 +1950,13 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
     no_output_reloads = 1;
 #endif
      
+#ifdef SECONDARY_MEMORY_NEEDED
+  /* The eliminated forms of any secondary memory locations are per-insn, so
+     clear them out here.  */
+
+  bzero (secondary_memlocs_elim, sizeof secondary_memlocs_elim);
+#endif
+
   /* Find what kind of insn this is.  NOPERANDS gets number of operands.
      Make OPERANDS point to a vector of operand values.
      Make OPERAND_LOCS point to a vector of pointers to
