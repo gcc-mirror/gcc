@@ -131,8 +131,8 @@ fixincludes		Bruce Korb		bkorb@gnu.org
 gcse.c 			Jeff Law		law@redhat.com
 global opt framework	Jeff Law		law@redhat.com
 jump.c			David S. Miller		davem@redhat.com
-web pages co-maintainer	Gerald Pfeifer		pfeifer@dbai.tuwien.ac.at
-web pages co-maintainer	Janis Johnson		janis187@us.ibm.com
+web pages		Gerald Pfeifer		pfeifer@dbai.tuwien.ac.at
+web pages		Janis Johnson		janis187@us.ibm.com
 config.sub/config.guess	Ben Elliston		config-patches@gnu.org
 basic block reordering	Jason Eckhardt		jle@rice.edu
 i18n			Philipp Thomas		pthomas@suse.de
