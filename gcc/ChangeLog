@@ -1,3 +1,9 @@
+2004-01-23  Eric Botcazou  <ebotcazou@act-europe.fr>
+            Olivier Hainque  <hainque@act-europe.fr>
+
+	* fold-const.c (fold_binary_op_with_conditional_arg): Only
+	build a COMPOUND_EXPR if 'arg' is really a SAVE_EXPR.
+
 2004-01-23  Daniel Jacobowitz  <drow@mvista.com>
 
 	* config/arm/arm.c (arm_legitimate_address_p): Don't check the mode
