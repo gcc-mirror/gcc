@@ -1,3 +1,8 @@
+2000-08-25  Greg McGary  <greg@mcgary.org>
+
+	* flow.c (dump_edge_info): Use ARRAY_SIZE.
+	* config/alpha/alpha.c (alpha_expand_block_move): Likewise.
+
 2000-08-25  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.h (STRUCT_VALUE): Define to 0, not NULL.

@@ -2820,7 +2820,7 @@ alpha_expand_block_move (operands)
 
  src_done:
 
-  if (nregs > sizeof data_regs / sizeof *data_regs)
+  if (nregs > ARRAY_SIZE (data_regs))
     abort ();
 
   /* Now save it back out again.  */
