@@ -1,0 +1,134 @@
+Ada_Switches            ^ Ada_Qualifiers
+b_                      ^ B_
+b~                      ^ B$
+cc1                     ^ CC1
+Cc1                     ^ CC1
+Default_Switches        ^ Default_Qualifiers
+emacs                   ^ EMACS
+Emacs                   ^ EMACS
+gdb                     ^ GDB
+Gdb                     ^ GDB
+gnat1                   ^ GNAT1
+Gnat1                   ^ GNAT1
+gnatbind                ^ GNAT BIND
+Gnatbind                ^ GNAT BIND
+gnatchop                ^ GNAT CHOP
+Gnatchop                ^ GNAT CHOP
+gnatelim                ^ GNAT ELIM
+Gnatelim                ^ GNAT ELIM
+gnatf                   ^ GNAT XREF
+Gnatf                   ^ GNAT XREF
+gnatfind                ^ GNAT FIND
+Gnatfind                ^ GNAT FIND
+gnatkr                  ^ GNAT KRUNCH
+Gnatkr                  ^ GNAT KRUNCH
+gnatlbr                 ^ GNAT LIBRARY
+Gnatlbr                 ^ GNAT LIBRARY
+gnatlink                ^ GNAT LINK
+Gnatlink                ^ GNAT LINK
+gnatls                  ^ GNAT LIST
+Gnatls                  ^ GNAT LIST
+gnatmake                ^ GNAT MAKE
+Gnatmake                ^ GNAT MAKE
+gnatprep                ^ GNAT PREPROCESS
+Gnatprep                ^ GNAT PREPROCESS
+gnatpsta                ^ GNAT STANDARD
+Gnatpsta                ^ GNAT STANDARD
+gnatstub                ^ GNAT STUB
+Gnatstub                ^ GNAT STUB
+gnatxref                ^ GNAT XREF
+Gnatxref                ^ GNAT XREF
+gcc                     ^ GNAT COMPILE
+gcc -c                  ^ GNAT COMPILE
+-gnata                  ^ /CHECKS=ASSERTIONS
+-gnatb                  ^ /WARNINGS=BRIEF
+-gnatc                  ^ /NOLOAD
+-gnatdc                 ^ /TRACE_UNITS
+-gnatdO                 ^ /REPORT_ERRORS=IMMEDIATE
+-gnatC                  ^ /COMPRESS_NAMES
+-gnatD                  ^ /XDEBUG
+-gnatE                  ^ /CHECKS=ELABORATION
+-gnatf                  ^ /REPORT_ERRORS=FULL
+-gnatF                  ^ /UPPERCASE_EXTERNALS
+-gnatg                  ^ /STYLE=GNAT
+-gnatG                  ^ /EXPAND_SOURCE
+-gnatk                  ^ /FILE_NAME_MAX_LENGTH
+-gnatl                  ^ /LIST
+-gnatm                  ^ /ERROR_LIMIT
+-gnatm2                 ^ /ERROR_LIMIT=2
+-gnatn                  ^ /INLINE=PRAGMA
+-gnato                  ^ /CHECKS=OVERFLOW
+-gnatp                  ^ /CHECKS=SUPPRESS_ALL
+-gnatP                  ^ /POLLING_ENABLE
+-gnatr                  ^ /STYLE=REFERENCE_MANUAL
+-gnatR                  ^ /REPRESENTATION_INFO
+-gnatR0                 ^ /REPRESENTATION_INFO=NONE
+-gnatR1                 ^ /REPRESENTATION_INFO=ARRAYS
+-gnatR2                 ^ /REPRESENTATION_INFO=OBJECTS
+-gnatR3                 ^ /REPRESENTATION_INFO=SYMBOLIC
+-gnatq                  ^ /TRY_SEMANTICS
+-gnatQ                  ^ /FORCE_ALI
+-gnats                  ^ /SYNTAX_ONLY
+-gnatt                  ^ /TREE_OUTPUT
+-gnatu                  ^ /UNITS_LIST
+-gnatU                  ^ /UNIQUE_ERROR_TAG
+-gnatv                  ^ /REPORT_ERRORS=VERBOSE
+-gnatV                  ^ /VALIDITY_CHECKING
+-gnatV0                 ^ /VALIDITY_CHECKING=NONE
+-gnatVd                 ^ /VALIDITY_CHECKING=RM
+-gnatVf                 ^ /VALIDITY_CHECKING=FULL
+-gnatwa                 ^ /WARNINGS=OPTIONAL
+-gnatwA                 ^ /WARNINGS=NOOPTIONAL
+-gnatwb                 ^ /WARNINGS=BIASED_ROUNDING
+-gnatwB                 ^ /WARNINGS=NOBIASED_ROUNDING
+-gnatwc                 ^ /WARNINGS=CONDITIONALS
+-gnatwC                 ^ /WARNINGS=NOCONDITIONALS
+-gnatwd                 ^ /WARNINGS=IMPLICIT_DEREFERENCE
+-gnatwD                 ^ /WARNINGS=NOIMPLICIT_DEREFERENCE
+-gnatwe                 ^ /WARNINGS=ERROR
+-gnatwf                 ^ /WARNINGS=UNREFERENCED_FORMALS
+-gnatwF                 ^ /WARNINGS=NOUNREFERENCED_FORMALS
+-gnatwh                 ^ /WARNINGS=HIDING
+-gnatwH                 ^ /WARNINGS=NOHIDING
+-gnatwi                 ^ /WARNINGS=IMPLEMENTATION
+-gnatwI                 ^ /WARNINGS=NOIMPLEMENTATION
+-gnatwl                 ^ /WARNINGS=ELABORATION
+-gnatwL                 ^ /WARNINGS=NOELABORATION
+-gnatwo                 ^ /WARNINGS=OVERLAYS
+-gnatwO                 ^ /WARNINGS=NOOVERLAYS
+-gnatwr                 ^ /WARNINGS=REDUNDANT
+-gnatwR                 ^ /WARNINGS=NOREDUNDANT
+-gnatws                 ^ /WARNINGS=SUPPRESS
+-gnatwu                 ^ /WARNINGS=UNUSED
+-gnatwU                 ^ /WARNINGS=NOUNUSED
+-gnatW8                 ^ /WIDE_CHARACTER_ENCODING=UTF8
+-gnatW?                 ^ /WIDE_CHARACTER_ENCODING=?
+-gnaty                  ^ /STYLE=
+-gnatzr                 ^ /DISTRIBUTION_STUBS=RECEIVER
+-gnatzs                 ^ /DISTRIBUTION_STUBS=SENDER
+-gnat83                 ^ /83
+-gnat95                 ^ /95
+-gnatx                  ^ /XREF=SUPPRESS
+-gnatX                  ^ /EXTENSIONS_ALLOWED
+--RTS                   ^ /RUNTIME_SYSTEM
+mode_switches           ^ mode_qualifiers
+switch                  ^ qualifier
+switches                ^ qualifiers
+Switch                  ^ Qualifier
+Switches                ^ Qualifiers
+switch-related          ^ qualifier-related
+stdout                  ^ SYS$OUTPUT
+stderr                  ^ SYS$ERROR
+-bargs                  ^ /BINDER_QUALIFIERS
+-cargs                  ^ /COMPILER_QUALIFIERS
+-largs                  ^ /LINKER_QUALIFIERS
+-aIDIR                  ^ /SOURCE_SEARCH=direc
+-aODIR                  ^ /OBJECT_SEARCH=direc
+-IDIR                   ^ /SEARCH=direc
+-nostdinc               ^ /NOSTD_INCLUDES
+-nostdlib               ^ /NOSTD_LIBRARIES
+-pFILE                  ^ /PROJECT=file
+-O0                     ^ /OPTIMIZE=NONE
+-O1                     ^ /OPTIMIZE=SOME
+-O2                     ^ /OPTIMIZE=ALL
+-O3                     ^ /OPTIMIZE=INLINING
