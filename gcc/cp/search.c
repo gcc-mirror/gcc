@@ -3333,6 +3333,12 @@ envelope_add_decl (type, decl, values)
   tree name = DECL_NAME (decl);
   int dont_add = 0;
 
+  /* Yet Another Implicit Typename Kludge:  Since we don't tsubst
+     the members for partial instantiations, DECL_CONTEXT (decl) is wrong.
+     But pretend it's right for this function.  */
+  if (processing_template_decl)
+    type = DECL_REAL_CONTEXT (decl);
+
   /* virtual base names are always unique.  */
   if (VBASE_NAME_P (name))
     *values = NULL_TREE;
@@ -3354,10 +3360,7 @@ envelope_add_decl (type, decl, values)
 	  warning ("in this context");
 	}
 
-      context = (TREE_CODE (value) == FUNCTION_DECL
-		 && DECL_VIRTUAL_P (value))
-	? DECL_CLASS_CONTEXT (value)
-	  : DECL_CONTEXT (value);
+      context = DECL_REAL_CONTEXT (value);
 
       if (context == type)
 	{

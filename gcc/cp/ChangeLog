@@ -1,5 +1,7 @@
 1998-06-05  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* search.c (envelope_add_decl): Tweak for implicit typename.
+
 	* call.c (joust): Also warn about confusing conversion op/constructor
 	overload resolution.
 
