@@ -1,3 +1,13 @@
+Tue Jan 11 18:59:35 MET 2000  Jan Hubicka <jh@suse.cz>
+
+	* i386.md (movstrsi expander): Rewrite.
+	(movstrsi_1 insn): Deleted.
+	(strmovhi, strmovqi expander): New expanders.
+	(movshi_1, movsqi_1, rep_movsi, rep_movqi): New patterns.
+	* i386.c (x86_single_stringop): New global variable.
+	* i386.h (x86_single_stringop): Declare.
+	(TARGET_SINGLE_STRINGOP): New macro.
+
 2000-01-11  Clinton Popetz  <cpopetz@cygnus.com>
 
         * config/mips/mips.c (mips_va_arg): For EABI, emit the queued
