@@ -1795,20 +1795,27 @@ do {							\
 
    On the Mips, we have 32 integer registers, 32 floating point
    registers, 8 condition code registers, and the special registers
-   hi, lo, hilo, and rap.  The 8 condition code registers are only
-   used if mips_isa >= 4.  The hilo register is only used in 64 bit
-   mode.  It represents a 64 bit value stored as two 32 bit values in
-   the hi and lo registers; this is the result of the mult
-   instruction.  rap is a pointer to the stack where the return
-   address reg ($31) was stored.  This is needed for C++ exception
-   handling.  */
+   hi, lo, hilo, and rap.  Afetr that we have 32 COP0 registers, 32
+   COP2 registers, and 32 COp3 registers.  (COP1 is the floating-point
+   processor.)  The 8 condition code registers are only used if
+   mips_isa >= 4.  The hilo register is only used in 64 bit mode.  It
+   represents a 64 bit value stored as two 32 bit values in the hi and
+   lo registers; this is the result of the mult instruction.  rap is a
+   pointer to the stack where the return address reg ($31) was stored.
+   This is needed for C++ exception handling.  */
 
-#define FIRST_PSEUDO_REGISTER 76
+#define FIRST_PSEUDO_REGISTER 176
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
 
    On the MIPS, see conventions, page D-2  */
+
+/* Regarding coprocessor registers: without evidence to the contrary,
+   it's best to assume that each coprocessor register has a unique
+   use.  This can be overridden, in, e.g., override_options() or
+   CONDITIONAL_REGISTER_USAGE should the assumption be inappropriate
+   for a particular target.  */
 
 #define FIXED_REGISTERS							\
 {									\
@@ -1816,7 +1823,16 @@ do {							\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1,			\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1					\
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,			\
+  /* COP0 registers */							\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
+  /* COP2 registers */							\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
+  /* COP3 registers */							\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1			\
 }
 
 
@@ -1833,7 +1849,16 @@ do {							\
   0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1,			\
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
   1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1					\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,			\
+  /* COP0 registers */							\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
+  /* COP2 registers */							\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
+  /* COP3 registers */							\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1			\
 }
 
 /* Like `CALL_USED_REGISTERS' but used to overcome a historical
@@ -1853,7 +1878,16 @@ do {							\
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
   1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
   /* Others.  */                                                        \
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1					\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,			\
+  /* COP0 registers */							\
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
+  /* COP2 registers */							\
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
+  /* COP3 registers */							\
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0			\
 }
 
 /* Internal macros to classify a register number as to whether it's a
@@ -1880,6 +1914,20 @@ do {							\
 
 #define RAP_REG_NUM   75
 
+#define COP0_REG_FIRST 80
+#define COP0_REG_LAST 111
+#define COP0_REG_NUM (COP0_REG_LAST - COP0_REG_FIRST + 1)
+
+#define COP2_REG_FIRST 112
+#define COP2_REG_LAST 143
+#define COP2_REG_NUM (COP2_REG_LAST - COP2_REG_FIRST + 1)
+
+#define COP3_REG_FIRST 144
+#define COP3_REG_LAST 175
+#define COP3_REG_NUM (COP3_REG_LAST - COP3_REG_FIRST + 1)
+/* ALL_COP_REG_NUM assumes that COP0,2,and 3 are numbered consecutively.  */
+#define ALL_COP_REG_NUM (COP3_REG_LAST - COP0_REG_FIRST + 1)
+
 #define AT_REGNUM	(GP_REG_FIRST + 1)
 #define HI_REGNUM	(MD_REG_FIRST + 0)
 #define LO_REGNUM	(MD_REG_FIRST + 1)
@@ -1900,6 +1948,20 @@ do {							\
   ((unsigned int) ((int) (REGNO) - MD_REG_FIRST) < MD_REG_NUM)
 #define ST_REG_P(REGNO) \
   ((unsigned int) ((int) (REGNO) - ST_REG_FIRST) < ST_REG_NUM)
+#define COP0_REG_P(REGNO) \
+  ((unsigned int) ((int) (REGNO) - COP0_REG_FIRST) < COP0_REG_NUM)
+#define COP2_REG_P(REGNO) \
+  ((unsigned int) ((int) (REGNO) - COP2_REG_FIRST) < COP2_REG_NUM)
+#define COP3_REG_P(REGNO) \
+  ((unsigned int) ((int) (REGNO) - COP3_REG_FIRST) < COP3_REG_NUM)
+#define ALL_COP_REG_P(REGNO) \
+  ((unsigned int) ((int) (REGNO) - COP0_REG_FIRST) < ALL_COP_REG_NUM)
+
+/* Return coprocessor number from register number.  */
+
+#define COPNUM_AS_CHAR_FROM_REGNUM(REGNO) 				\
+  (COP0_REG_P (REGNO) ? '0' : COP2_REG_P (REGNO) ? '2'			\
+   : COP3_REG_P (REGNO) ? '3' : '?')
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
@@ -2051,10 +2113,18 @@ enum reg_class
   LO_REG,			/* lo register */
   HILO_REG,			/* hilo register pair for 64 bit mode mult */
   MD_REGS,			/* multiply/divide registers (hi/lo) */
+  COP0_REGS,			/* generic coprocessor classes */
+  COP2_REGS,
+  COP3_REGS,
   HI_AND_GR_REGS,		/* union classes */
   LO_AND_GR_REGS,
   HILO_AND_GR_REGS,
   HI_AND_FP_REGS,
+  COP0_AND_GR_REGS,
+  COP2_AND_GR_REGS,
+  COP3_AND_GR_REGS,
+  ALL_COP_REGS,
+  ALL_COP_AND_GR_REGS,
   ST_REGS,			/* status registers (fp status) */
   ALL_REGS,			/* all registers */
   LIM_REG_CLASSES		/* max value + 1 */
@@ -2081,10 +2151,19 @@ enum reg_class
   "LO_REG",								\
   "HILO_REG",								\
   "MD_REGS",								\
+  /* coprocessor registers */						\
+  "COP0_REGS",								\
+  "COP2_REGS",								\
+  "COP3_REGS",								\
   "HI_AND_GR_REGS",							\
   "LO_AND_GR_REGS",							\
   "HILO_AND_GR_REGS",							\
   "HI_AND_FP_REGS",							\
+  "COP0_AND_GR_REGS",							\
+  "COP2_AND_GR_REGS",							\
+  "COP3_AND_GR_REGS",							\
+  "ALL_COP_REGS",							\
+  "ALL_COP_AND_GR_REGS",						\
   "ST_REGS",								\
   "ALL_REGS"								\
 }
@@ -2102,23 +2181,31 @@ enum reg_class
 
 #define REG_CLASS_CONTENTS						\
 {									\
-  { 0x00000000, 0x00000000, 0x00000000 },	/* no registers */	\
-  { 0x0003000c, 0x00000000, 0x00000000 },	/* mips16 nonarg regs */\
-  { 0x000300fc, 0x00000000, 0x00000000 },	/* mips16 registers */	\
-  { 0x01000000, 0x00000000, 0x00000000 },	/* mips16 T register */	\
-  { 0x010300fc, 0x00000000, 0x00000000 },	/* mips16 and T regs */ \
-  { 0xffffffff, 0x00000000, 0x00000000 },	/* integer registers */	\
-  { 0x00000000, 0xffffffff, 0x00000000 },	/* floating registers*/	\
-  { 0x00000000, 0x00000000, 0x00000001 },	/* hi register */	\
-  { 0x00000000, 0x00000000, 0x00000002 },	/* lo register */	\
-  { 0x00000000, 0x00000000, 0x00000004 },	/* hilo register */	\
-  { 0x00000000, 0x00000000, 0x00000003 },	/* mul/div registers */	\
-  { 0xffffffff, 0x00000000, 0x00000001 },	/* union classes */     \
-  { 0xffffffff, 0x00000000, 0x00000002 },				\
-  { 0xffffffff, 0x00000000, 0x00000004 },				\
-  { 0x00000000, 0xffffffff, 0x00000001 },				\
-  { 0x00000000, 0x00000000, 0x000007f8 },	/* status registers */	\
-  { 0xffffffff, 0xffffffff, 0x000007ff }	/* all registers */	\
+  { 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* no registers */	\
+  { 0x0003000c, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* mips16 nonarg regs */\
+  { 0x000300fc, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* mips16 registers */	\
+  { 0x01000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* mips16 T register */	\
+  { 0x010300fc, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* mips16 and T regs */ \
+  { 0xffffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* integer registers */	\
+  { 0x00000000, 0xffffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* floating registers*/	\
+  { 0x00000000, 0x00000000, 0x00000001, 0x00000000, 0x00000000, 0x00000000 },	/* hi register */	\
+  { 0x00000000, 0x00000000, 0x00000002, 0x00000000, 0x00000000, 0x00000000 },	/* lo register */	\
+  { 0x00000000, 0x00000000, 0x00000004, 0x00000000, 0x00000000, 0x00000000 },	/* hilo register */	\
+  { 0x00000000, 0x00000000, 0x00000003, 0x00000000, 0x00000000, 0x00000000 },	/* mul/div registers */	\
+  { 0x00000000, 0x00000000, 0xffff0000, 0x0000ffff, 0x00000000, 0x00000000 }, /* cop0 registers */ \
+  { 0x00000000, 0x00000000, 0x00000000, 0xffff0000, 0x0000ffff, 0x00000000 }, /* cop2 registers */ \
+  { 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0xffff0000, 0x0000ffff }, /* cop3 registers */ \
+  { 0xffffffff, 0x00000000, 0x00000001, 0x00000000, 0x00000000, 0x00000000 },	/* union classes */     \
+  { 0xffffffff, 0x00000000, 0x00000002, 0x00000000, 0x00000000, 0x00000000 },				\
+  { 0xffffffff, 0x00000000, 0x00000004, 0x00000000, 0x00000000, 0x00000000 },				\
+  { 0x00000000, 0xffffffff, 0x00000001, 0x00000000, 0x00000000, 0x00000000 },				\
+  { 0xffffffff, 0x00000000, 0xffff0000, 0x0000ffff, 0x00000000, 0x00000000 },			\
+  { 0xffffffff, 0x00000000, 0x00000000, 0xffff0000, 0x0000ffff, 0x00000000 },	\
+  { 0xffffffff, 0x00000000, 0x00000000, 0x00000000, 0xffff0000, 0x0000ffff }, \
+  { 0x00000000, 0x00000000, 0xffff0000, 0xffffffff, 0xffffffff, 0x0000ffff }, \
+  { 0xffffffff, 0x00000000, 0xffff0000, 0xffffffff, 0xffffffff, 0x0000ffff }, \
+  { 0x00000000, 0x00000000, 0x000007f8, 0x00000000, 0x00000000, 0x00000000 },	/* status registers */	\
+  { 0xffffffff, 0xffffffff, 0xffff07ff, 0xffffffff, 0xffffffff, 0x0000ffff }	/* all registers */	\
 }
 
 
@@ -2157,6 +2244,10 @@ extern const enum reg_class mips_regno_to_class[];
   ((CLASS) == GR_REGS || (CLASS) == M16_REGS || (CLASS) == T_REG	\
    || (CLASS) == M16_T_REGS || (CLASS) == M16_NA_REGS)
 
+/* This macro is also used later on in the file.  */
+#define COP_REG_CLASS_P(CLASS)						\
+  ((CLASS)  == COP0_REGS || (CLASS) == COP2_REGS || (CLASS) == COP3_REGS)
+
 /* REG_ALLOC_ORDER is to order in which to allocate registers.  This
    is the default value (allocate the registers in numeric order).  We
    define it just so that we can override it for the mips16 target in
@@ -2167,7 +2258,13 @@ extern const enum reg_class mips_regno_to_class[];
   16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,	\
   32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,	\
   48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,	\
-  64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75			\
+  64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79,	\
+  80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95,	\
+  96, 97, 98, 99, 100,101,102,103,104,105,106,107,108,109,110,111,	\
+  112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,	\
+  128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,	\
+  144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,	\
+  160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175	\
 }
 
 /* ORDER_REGS_FOR_LOCAL_ALLOC is a macro which permits reg_alloc_order
@@ -2195,6 +2292,9 @@ extern const enum reg_class mips_regno_to_class[];
    'x'	Multiply/divide registers
    'a'	HILO_REG
    'z'	FP Status register
+   'B'  Cop0 register
+   'C'  Cop2 register
+   'D'  Cop3 register
    'b'	All registers */
 
 extern enum reg_class mips_char_to_class[256];
@@ -2333,10 +2433,7 @@ extern enum reg_class mips_char_to_class[256];
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 
-#define CLASS_MAX_NREGS(CLASS, MODE)					\
-  ((CLASS) == FP_REGS							\
-   ? FP_INC								\
-   : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+#define CLASS_MAX_NREGS(CLASS, MODE) mips_class_max_nregs (CLASS, MODE)
 
 /* If defined, gives a class of registers that cannot be used as the
    operand of a SUBREG that changes the mode of the object illegally.
@@ -3939,40 +4036,10 @@ while (0)
    that the constraints of the insn are met.  Setting a cost of
    other than 2 will allow reload to verify that the constraints are
    met.  You should do this if the `movM' pattern's constraints do
-   not allow such copying.
+   not allow such copying. */
 
-   ??? We make make the cost of moving from HI/LO/HILO/MD into general
-   registers the same as for one of moving general registers to
-   HI/LO/HILO/MD for TARGET_MIPS16 in order to prevent allocating a
-   pseudo to HI/LO/HILO/MD.  This might hurt optimizations though, it
-   isn't clear if it is wise.  And it might not work in all cases.  We
-   could solve the DImode LO reg problem by using a multiply, just like
-   reload_{in,out}si.  We could solve the SImode/HImode HI reg problem
-   by using divide instructions.  divu puts the remainder in the HI
-   reg, so doing a divide by -1 will move the value in the HI reg for
-   all values except -1.  We could handle that case by using a signed
-   divide, e.g.  -1 / 2 (or maybe 1 / -2?).  We'd have to emit a
-   compare/branch to test the input value to see which instruction we
-   need to use.  This gets pretty messy, but it is feasible.  */
-
-#define REGISTER_MOVE_COST(MODE, FROM, TO)	\
-  ((FROM) == M16_REGS && GR_REG_CLASS_P (TO) ? 2			\
-   : (FROM) == M16_NA_REGS && GR_REG_CLASS_P (TO) ? 2			\
-   : GR_REG_CLASS_P (FROM) && (TO) == M16_REGS ? 2			\
-   : GR_REG_CLASS_P (FROM) && (TO) == M16_NA_REGS ? 2			\
-   : GR_REG_CLASS_P (FROM) && GR_REG_CLASS_P (TO) ? (TARGET_MIPS16 ? 4 : 2) \
-   : (FROM) == FP_REGS && (TO) == FP_REGS ? 2				\
-   : GR_REG_CLASS_P (FROM) && (TO) == FP_REGS ? 4			\
-   : (FROM) == FP_REGS && GR_REG_CLASS_P (TO) ? 4			\
-   : (((FROM) == HI_REG || (FROM) == LO_REG				\
-       || (FROM) == MD_REGS || (FROM) == HILO_REG)			\
-      && GR_REG_CLASS_P (TO)) ? (TARGET_MIPS16 ? 12 : 6)		\
-   : (((TO) == HI_REG || (TO) == LO_REG					\
-       || (TO) == MD_REGS || (TO) == HILO_REG)				\
-      && GR_REG_CLASS_P (FROM)) ? (TARGET_MIPS16 ? 12 : 6)		\
-   : (FROM) == ST_REGS && GR_REG_CLASS_P (TO) ? 4			\
-   : (FROM) == FP_REGS && (TO) == ST_REGS ? 8				\
-   : 12)
+#define REGISTER_MOVE_COST(MODE, FROM, TO)				\
+  mips_register_move_cost (MODE, FROM, TO)
 
 /* ??? Fix this to be right for the R8000.  */
 #define MEMORY_MOVE_COST(MODE,CLASS,TO_P) \
@@ -4201,6 +4268,106 @@ while (0)
   &mips_reg_names[73][0],						\
   &mips_reg_names[74][0],						\
   &mips_reg_names[75][0],						\
+  &mips_reg_names[76][0],						\
+  &mips_reg_names[77][0],						\
+  &mips_reg_names[78][0],						\
+  &mips_reg_names[79][0],						\
+  &mips_reg_names[80][0],						\
+  &mips_reg_names[81][0],						\
+  &mips_reg_names[82][0],						\
+  &mips_reg_names[83][0],						\
+  &mips_reg_names[84][0],						\
+  &mips_reg_names[85][0],						\
+  &mips_reg_names[86][0],						\
+  &mips_reg_names[87][0],						\
+  &mips_reg_names[88][0],						\
+  &mips_reg_names[89][0],						\
+  &mips_reg_names[90][0],						\
+  &mips_reg_names[91][0],						\
+  &mips_reg_names[92][0],						\
+  &mips_reg_names[93][0],						\
+  &mips_reg_names[94][0],						\
+  &mips_reg_names[95][0],						\
+  &mips_reg_names[96][0],						\
+  &mips_reg_names[97][0],						\
+  &mips_reg_names[98][0],						\
+  &mips_reg_names[99][0],						\
+  &mips_reg_names[100][0],						\
+  &mips_reg_names[101][0],						\
+  &mips_reg_names[102][0],						\
+  &mips_reg_names[103][0],						\
+  &mips_reg_names[104][0],						\
+  &mips_reg_names[105][0],						\
+  &mips_reg_names[106][0],						\
+  &mips_reg_names[107][0],						\
+  &mips_reg_names[108][0],						\
+  &mips_reg_names[109][0],						\
+  &mips_reg_names[110][0],						\
+  &mips_reg_names[111][0],						\
+  &mips_reg_names[112][0],						\
+  &mips_reg_names[113][0],						\
+  &mips_reg_names[114][0],						\
+  &mips_reg_names[115][0],						\
+  &mips_reg_names[116][0],						\
+  &mips_reg_names[117][0],						\
+  &mips_reg_names[118][0],						\
+  &mips_reg_names[119][0],						\
+  &mips_reg_names[120][0],						\
+  &mips_reg_names[121][0],						\
+  &mips_reg_names[122][0],						\
+  &mips_reg_names[123][0],						\
+  &mips_reg_names[124][0],						\
+  &mips_reg_names[125][0],						\
+  &mips_reg_names[126][0],						\
+  &mips_reg_names[127][0],						\
+  &mips_reg_names[128][0],						\
+  &mips_reg_names[129][0],						\
+  &mips_reg_names[130][0],						\
+  &mips_reg_names[131][0],						\
+  &mips_reg_names[132][0],						\
+  &mips_reg_names[133][0],						\
+  &mips_reg_names[134][0],						\
+  &mips_reg_names[135][0],						\
+  &mips_reg_names[136][0],						\
+  &mips_reg_names[137][0],						\
+  &mips_reg_names[138][0],						\
+  &mips_reg_names[139][0],						\
+  &mips_reg_names[140][0],						\
+  &mips_reg_names[141][0],						\
+  &mips_reg_names[142][0],						\
+  &mips_reg_names[143][0],						\
+  &mips_reg_names[144][0],						\
+  &mips_reg_names[145][0],						\
+  &mips_reg_names[146][0],						\
+  &mips_reg_names[147][0],						\
+  &mips_reg_names[148][0],						\
+  &mips_reg_names[149][0],						\
+  &mips_reg_names[150][0],						\
+  &mips_reg_names[151][0],						\
+  &mips_reg_names[152][0],						\
+  &mips_reg_names[153][0],						\
+  &mips_reg_names[154][0],						\
+  &mips_reg_names[155][0],						\
+  &mips_reg_names[156][0],						\
+  &mips_reg_names[157][0],						\
+  &mips_reg_names[158][0],						\
+  &mips_reg_names[159][0],						\
+  &mips_reg_names[160][0],						\
+  &mips_reg_names[161][0],						\
+  &mips_reg_names[162][0],						\
+  &mips_reg_names[163][0],						\
+  &mips_reg_names[164][0],						\
+  &mips_reg_names[165][0],						\
+  &mips_reg_names[166][0],						\
+  &mips_reg_names[167][0],						\
+  &mips_reg_names[168][0],						\
+  &mips_reg_names[169][0],						\
+  &mips_reg_names[170][0],						\
+  &mips_reg_names[171][0],						\
+  &mips_reg_names[172][0],						\
+  &mips_reg_names[173][0],						\
+  &mips_reg_names[174][0],						\
+  &mips_reg_names[175][0]						\
 }
 
 /* print-rtl.c can't use REGISTER_NAMES, since it depends on mips.c.
@@ -4216,7 +4383,19 @@ while (0)
   "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",	\
   "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "$f31",	\
   "hi",   "lo",   "accum","$fcc0","$fcc1","$fcc2","$fcc3","$fcc4",	\
-  "$fcc5","$fcc6","$fcc7","$rap"					\
+  "$fcc5","$fcc6","$fcc7","$rap", "",     "",     "",     "",		\
+  "$c0r0", "$c0r1", "$c0r2", "$c0r3", "$c0r4", "$c0r5", "$c0r6", "$c0r7",\
+  "$c0r8", "$c0r9", "$c0r10","$c0r11","$c0r12","$c0r13","$c0r14","$c0r15",\
+  "$c0r16","$c0r17","$c0r18","$c0r19","$c0r20","$c0r21","$c0r22","$c0r23",\
+  "$c0r24","$c0r25","$c0r26","$c0r27","$c0r28","$c0r29","$c0r30","$c0r31",\
+  "$c2r0", "$c2r1", "$c2r2", "$c2r3", "$c2r4", "$c2r5", "$c2r6", "$c2r7",\
+  "$c2r8", "$c2r9", "$c2r10","$c2r11","$c2r12","$c2r13","$c2r14","$c2r15",\
+  "$c2r16","$c2r17","$c2r18","$c2r19","$c2r20","$c2r21","$c2r22","$c2r23",\
+  "$c2r24","$c2r25","$c2r26","$c2r27","$c2r28","$c2r29","$c2r30","$c2r31",\
+  "$c3r0", "$c3r1", "$c3r2", "$c3r3", "$c3r4", "$c3r5", "$c3r6", "$c3r7",\
+  "$c3r8", "$c3r9", "$c3r10","$c3r11","$c3r12","$c3r13","$c3r14","$c3r15",\
+  "$c3r16","$c3r17","$c3r18","$c3r19","$c3r20","$c3r21","$c3r22","$c3r23",\
+  "$c3r24","$c3r25","$c3r26","$c3r27","$c3r28","$c3r29","$c3r30","$c3r31"\
 }
 
 /* If defined, a C initializer for an array of structures
@@ -4296,7 +4475,13 @@ while (0)
   { "ra",	31 + GP_REG_FIRST },					\
   { "$sp",	29 + GP_REG_FIRST },					\
   { "$fp",	30 + GP_REG_FIRST }					\
+  ALL_COP_ADDITIONAL_REGISTER_NAMES					\
 }
+
+/* This is meant to be redefined in the host dependent files.  It is a 
+   set of alternative names and regnums for mips coprocessors.  */
+
+#define ALL_COP_ADDITIONAL_REGISTER_NAMES
 
 /* A C compound statement to output to stdio stream STREAM the
    assembler syntax for an instruction operand X.  X is an RTL
