@@ -589,6 +589,7 @@ extern void add_interface PROTO ((tree, tree));
 extern int find_in_current_zip PROTO ((char *, int, struct JCF **));
 extern void append_gpp_mangled_classtype PROTO ((struct obstack *, char *));
 extern void emit_unicode_mangled_name PROTO ((struct obstack *, char *, int));
+extern tree force_evaluation_order PROTO ((tree));
 
 /* Access flags etc for a method (a FUNCTION_DECL): */
 
