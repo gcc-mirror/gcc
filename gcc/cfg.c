@@ -553,7 +553,7 @@ dump_flow_info (file)
       gcov_type lsum;
 
       fprintf (file, "\nBasic block %d: first insn %d, last %d, ",
-	       i, INSN_UID (bb->head), INSN_UID (bb->end));
+	       bb->index, INSN_UID (bb->head), INSN_UID (bb->end));
       fprintf (file, "prev %d, next %d, ",
 	       bb->prev_bb->index, bb->next_bb->index);
       fprintf (file, "loop_depth %d, count ", bb->loop_depth);
