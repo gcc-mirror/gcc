@@ -291,6 +291,7 @@ extern "Java"
       class Collections$UnmodifiableSortedSet;
       class Comparator;
       class ConcurrentModificationException;
+      class Currency;
       class Date;
       class Dictionary;
       class EmptyStackException;

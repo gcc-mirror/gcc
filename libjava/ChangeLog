@@ -1,5 +1,9 @@
 2003-11-25  Michael Koch  <konqueror@gmx.de>
 
+	* gcj/javaprims.h: Added missing java.util.Currency.
+
+2003-11-25  Michael Koch  <konqueror@gmx.de>
+
 	* testsuite/libjava.mauve/xfails:
 	Removed these two tests, they mystically pass now:
 	-FAIL: gnu.testlet.java.net.ServerSocket.ServerSocketTest: Error :
