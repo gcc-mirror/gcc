@@ -540,7 +540,7 @@ struct include_hash
   struct file_name_list *foundhere;
   const char *name;		/* (partial) pathname of file */
   const char *nshort;		/* name of file as referenced in #include */
-  const char *control_macro;	/* macro, if any, preventing reinclusion -
+  const U_CHAR *control_macro;	/* macro, if any, preventing reinclusion -
 				   see redundant_include_p */
   char *buf, *limit;		/* for file content cache,
 				   not yet implemented */
@@ -629,14 +629,14 @@ struct if_stack {
   int lineno;			/* similarly */
   int if_succeeded;		/* true if a leg of this if-group
 				    has been passed through rescan */
-  unsigned char *control_macro;	/* For #ifndef at start of file,
+  U_CHAR *control_macro;	/* For #ifndef at start of file,
 				   this is the macro name tested.  */
   enum node_type type;		/* type of last directive seen in this group */
 };
 typedef struct if_stack IF_STACK_FRAME;
 
 extern void cpp_buf_line_and_col PARAMS((cpp_buffer *, long *, long *));
-extern cpp_buffer* cpp_file_buffer PARAMS((cpp_reader *));
+extern cpp_buffer *cpp_file_buffer PARAMS((cpp_reader *));
 extern void cpp_define PARAMS ((cpp_reader *, unsigned char *));
 extern void cpp_assert PARAMS ((cpp_reader *, unsigned char *));
 extern void cpp_undef  PARAMS ((cpp_reader *, unsigned char *));

@@ -1809,7 +1809,7 @@ detect_if_not_defined (pfile)
 
   if (pfile->only_seen_white == 2)
     {
-      char *ident;
+      U_CHAR *ident;
       enum cpp_token token;
       int base_offset;
       int token_offset;
@@ -2270,7 +2270,7 @@ do_endif (pfile, keyword)
 	      for (ip = CPP_BUFFER (pfile); ; ip = CPP_PREV_BUFFER (ip))
 		if (ip->fname != NULL)
 		  break;
-	      ip->ihash->control_macro = (char *) temp->control_macro;
+	      ip->ihash->control_macro = temp->control_macro;
 	    }
         }
       free (temp);
@@ -3051,7 +3051,7 @@ do_assert (pfile, keyword)
      cpp_reader *pfile;
      const struct directive *keyword ATTRIBUTE_UNUSED;
 {
-  char *sym;
+  U_CHAR *sym;
   int ret, c;
   HASHNODE *base, *this;
   int baselen, thislen;
@@ -3060,7 +3060,7 @@ do_assert (pfile, keyword)
     cpp_pedwarn (pfile, "ANSI C does not allow `#assert'");
 
   cpp_skip_hspace (pfile);
-  sym = (char *) CPP_PWRITTEN (pfile);	/* remember where it starts */
+  sym = CPP_PWRITTEN (pfile);	/* remember where it starts */
   ret = parse_assertion (pfile);
   if (ret == 0)
     goto error;
@@ -3079,7 +3079,7 @@ do_assert (pfile, keyword)
     }
 
   thislen = strlen (sym);
-  baselen = index (sym, '(') - sym;
+  baselen = (U_CHAR *) index (sym, '(') - sym;
   this = _cpp_lookup (pfile, sym, thislen);
   if (this)
     {
@@ -3101,12 +3101,12 @@ do_assert (pfile, keyword)
 		      (char *)base->value.aschain);
   base->value.aschain = this;
   
-  pfile->limit = (unsigned char *) sym; /* Pop */
+  pfile->limit = sym;		/* Pop */
   return 0;
 
  error:
   skip_rest_of_line (pfile);
-  pfile->limit = (unsigned char *) sym; /* Pop */
+  pfile->limit = sym;		/* Pop */
   return 0;
 }
 
@@ -3116,7 +3116,7 @@ do_unassert (pfile, keyword)
      const struct directive *keyword ATTRIBUTE_UNUSED;
 {
   int c, ret;
-  char *sym;
+  U_CHAR *sym;
   long baselen, thislen;
   HASHNODE *base, *this, *next;
   
@@ -3125,7 +3125,7 @@ do_unassert (pfile, keyword)
 
   cpp_skip_hspace (pfile);
 
-  sym = (char *) CPP_PWRITTEN (pfile);	/* remember where it starts */
+  sym = CPP_PWRITTEN (pfile);	/* remember where it starts */
   ret = parse_assertion (pfile);
   if (ret == 0)
     goto error;
@@ -3153,7 +3153,7 @@ do_unassert (pfile, keyword)
     }
   else
     {
-      baselen = index (sym, '(') - sym;
+      baselen = (U_CHAR *) index (sym, '(') - sym;
       base = _cpp_lookup (pfile, sym, baselen);
       if (! base) goto error;
       this = _cpp_lookup (pfile, sym, thislen);
@@ -3170,11 +3170,11 @@ do_unassert (pfile, keyword)
 	_cpp_delete_macro (base);  /* Last answer for this predicate deleted. */
     }
   
-  pfile->limit = (unsigned char *) sym; /* Pop */
+  pfile->limit = sym;		/* Pop */
   return 0;
  error:
   skip_rest_of_line (pfile);
-  pfile->limit = (unsigned char *) sym; /* Pop */
+  pfile->limit = sym;		/* Pop */
   return 0;
 }
 

@@ -1,5 +1,26 @@
+2000-03-07  Neil Booth  <NeilB@earthling.net>
+
+	* cppexp.c (struct operation, left_shift, right_shift,
+	cpp_parse_expr): Change some "char"s to "U_CHAR"s, and some
+	"int"s to "unsigned int"s.
+	* cpplib.c (detect_if_not_defined, do_assert, do_unassert):
+	Similarly.
+	* cpplib.h: Update for above.
+	* mkdeps.c (deps_init, deps_calc_target): Cast pointers
+	returned from allocations.
+
+	* cppinit.c (opt_comp, parse_options): New functions.
+	(handle_option): Use parse_option to parse a single command
+	line option, that possibly takes an argument.
+	(cpp_handle_options): Sort the array of command line options on
+	first invocation (non-ASCII hosts only).
+	(print_help): Update.
+
 2000-03-07  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* mkdeps.c (munge): Fix off-by-one bug and inconsistencies in
+	backslash counting loops.  Problem noted by Matt Kraai <kraai@ghs.com>.
+	
 	* cppfiles.c (_cpp_find_include_file): Make sure ih->name is
 	initialized.
 	* cppinit.c (cpp_cleanup): Free imp->nshort also.
