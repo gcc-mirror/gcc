@@ -4,9 +4,6 @@ CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = sparc/lb1spc.asm
 LIB1ASMFUNCS = _mulsi3 _divsi3 _modsi3
 
-# While we're developing, don't emit [su]mac insns.
-TARGET_LIBGCC2_CFLAGS = -mcpu=v7
-
 # These are really part of libgcc1, but this will cause them to be
 # built correctly, so...
 
