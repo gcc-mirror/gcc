@@ -22,12 +22,12 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
  You are forbidden to forbid anyone else to use, share and improve
  what you give them.   Help stamp out software-hoarding!  */
 
-#include "cpplib.h"
-#include <stdio.h>
-
 #ifndef EMACS
 #include "config.h"
 #endif /* not EMACS */
+
+#include "cpplib.h"
+#include <stdio.h>
 
 /* Print the file names and line numbers of the #include
    commands which led to the current file.  */
