@@ -1,3 +1,22 @@
+2004-02-03  Paul Koning  <pkoning@equallogic.com>
+
+	* config/pdp11/pdp11-modes.def: Add RESET_FLOAT_FORMAT calls.
+	* config/pdp11/pdp11-protos.h (legitimate_const_double_p): Add.
+	* config/pdp11/pdp11.c (encode_pdp11_f, decode_pdp11_f,
+	encode_pdp11_d, decode_pdp11_d): New functions to handle PDP11
+	floating point format.
+	(pdp11_f_format, pdp11_d_format): New real_format descriptors for
+	the above functions.
+	(output_move_quad): Output float values in correct target format.
+	(legitimate_const_double_p): New function.
+	* config/pdp11/pdp11.h: Fix typos.
+	(FLOAT_WORDS_BIG_ENDIAN): Add definition.
+	(TARGET_FLOAT_FORMAT): Ditto.
+	(pdp11_f_format, pdp11_d_format): Add external declarations.
+	(MAX_REGS_PER_ADDRESS): Corrected.
+	(LEGITIMATE_CONSTANT_P): Use legitimate_const_double_p().
+	(PRINT_OPERAND): Output float literals in target format.
+
 2004-02-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13975

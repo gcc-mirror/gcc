@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the pdp-11
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GCC.
@@ -23,3 +23,5 @@ Boston, MA 02111-1307, USA.  */
    CCFPmode is used for FPU, but should we use a separate reg? */
 
 CC_MODE (CCFP);
+RESET_FLOAT_FORMAT (SF, pdp11_f_format);
+RESET_FLOAT_FORMAT (DF, pdp11_d_format);

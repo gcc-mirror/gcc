@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the pdp-11
-   Copyright (C) 2000, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GCC.
@@ -29,6 +29,7 @@ extern int simple_memory_operand (rtx, enum machine_mode);
 extern int comp_operator (rtx, enum machine_mode);
 
 extern int legitimate_address_p (enum machine_mode, rtx);
+extern int legitimate_const_double_p (rtx);
 extern void notice_update_cc_on_set (rtx, rtx);
 extern void output_addr_const_pdp11 (FILE *, rtx);
 extern const char *output_move_double (rtx *);
