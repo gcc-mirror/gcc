@@ -24,7 +24,6 @@ Some basic guidelines for editing this document:
 
 @end ignore
 
-
 @node Intrinsic Procedures
 @chapter Intrinsic Procedures
 @cindex Intrinsic Procedures
@@ -34,12 +33,12 @@ and editing.  All contributions and corrections are strongly encouraged.
 
 @menu
 * Introduction:   Introduction
-* @code{ABORT}:        @code{ABORT},    Abort the program     
-* @code{ABS}:          @code{ABS},      Absolute value     
-* @code{ACHAR}:        @code{ACHAR},    Character in @acronym{ASCII} collating sequence
-* @code{ACOS}:         @code{ACOS},     Arccosine function
-* @code{ADJUSTL}:      @code{ADJUSTL},  Left adjust a string
-* @code{ADJUSTR}:      @code{ADJUSTR},  Right adjust a string
+* @code{ABORT}:   ABORT,    Abort the program     
+* @code{ABS}:     ABS,      Absolute value     
+* @code{ACHAR}:   ACHAR,    Character in @acronym{ASCII} collating sequence
+* @code{ACOS}:    ACOS,     Arccosine function
+* @code{ADJUSTL}: ADJUSTL,  Left adjust a string
+* @code{ADJUSTR}: ADJUSTR,  Right adjust a string
 @end menu
 
 @node Introduction
@@ -83,7 +82,7 @@ the applicable option(s) is noted.
 
 
 
-@node @code{ABORT}
+@node ABORT
 @section @code{ABORT} --- Abort the program  
 @findex @code{ABORT}
 @cindex abort
@@ -117,7 +116,7 @@ end program test_abort
 
 
 
-@node @code{ABS}
+@node ABS
 @section @code{ABS} --- Absolute value  
 @findex @code{ABS} intrinsic
 @findex @code{CABS} intrinsic
@@ -176,7 +175,7 @@ end program test_abort
 
 
 
-@node @code{ACHAR}
+@node ACHAR
 @section @code{ACHAR} --- Character in @acronym{ASCII} collating sequence 
 @findex @code{ACHAR} intrinsic
 @cindex @acronym{ASCII} collating sequence
@@ -215,7 +214,7 @@ end program test_abort
 
 
 
-@node @code{ACOS}
+@node ACOS
 @section @code{ACOS} --- Arccosine function 
 @findex @code{ACOS} intrinsic
 @findex @code{DACOS} intrinsic
@@ -258,7 +257,9 @@ end program test_acos
 @end multitable
 @end table
 
-@node @code{ADJUSTL}
+
+
+@node ADJUSTL
 @section @code{ADJUSTL} --- Left adjust a string 
 @findex @code{ADJUSTL} intrinsic
 @cindex adjust string
@@ -298,7 +299,7 @@ end program test_adjustl
 @end table
 
 
-@node @code{ADJUSTR}
+@node ADJUSTR
 @section @code{ADJUSTR} --- Right adjust a string 
 @findex @code{ADJUSTR} intrinsic
 @cindex adjust string
