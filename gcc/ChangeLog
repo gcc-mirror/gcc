@@ -1,3 +1,8 @@
+Mon Feb 28 13:07:19 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* expr.c (store_constructor): Do not emit USE.
+	* rtl.h (stupid_life_analysis): Remove.
+
 Mon Feb 28 07:03:27 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* toplev.c (rest_of_compilation): Account for time in
@@ -6,7 +11,7 @@ Mon Feb 28 07:03:27 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* jump.c (jump_optimize_1): Don't call delete_barrier_successors
 	if only marking labels.
 
-Mon Feb 28 12:53:57 MET 2000 Jan Hubicka  <jh@suse.cz>
+Mon Feb 28 12:53:57 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* calls.c (expand_call): Attempt to combine stack adjustments with
 	pending stack adjustments.
