@@ -22,14 +22,18 @@ Boston, MA 02111-1307, USA.  */
 #include "ansidecl.h"
 #include "libiberty.h"
 
-#if defined __STDC__ || defined ALMOST_STDC
+#if defined (ANSI_PROTOTYPES) || defined (ALMOST_STDC)
+#define USE_STDARG
+#endif
+
+#ifdef USE_STDARG
 #include <stdarg.h>
 #else
 #include <varargs.h>
 #endif
 
 /* VARARGS */
-#ifdef ANSI_PROTOTYPES
+#ifdef USE_STDARG
 int
 asprintf (char **buf, const char *fmt, ...)
 #else
@@ -42,7 +46,7 @@ asprintf (buf, fmt, va_alist)
 {
   int status;
   va_list ap;
-#ifdef ANSI_PROTOTYPES
+#ifdef USE_STDARG
   va_start (ap, fmt);
 #else
   va_start (ap);
