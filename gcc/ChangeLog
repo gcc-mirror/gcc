@@ -4,6 +4,11 @@ Wed Sep  8 04:43:22 1999  Richard Henderson  <rth@cygnus.com>
 	(zap_lists): New.
 	(init_EXPR_INSN_LIST_cache): Install it.
 
+	* ggc-simple.c (init_ggc): Absorb the old init.
+	(ggc_push_context): Use xcalloc.
+	(ggc_alloc_rtx, ggc_alloc_rtvec, ggc_alloc_tree): Likewise.
+	(ggc_collect): Add [rvts] tags to the collection stats.
+
 Wed Sep  8 11:14:25 1999  Andreas Schwab  <schwab@suse.de>
 
 	* cccp.c (main): Fix handling of -include and -imacros options.
