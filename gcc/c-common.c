@@ -3428,8 +3428,6 @@ c_common_nodes_and_builtins ()
     = build_pointer_type (build_qualified_type
 			  (char_type_node, TYPE_QUAL_CONST));
 
-  (*targetm.init_builtins) ();
-
   /* This is special for C++ so functions can be overloaded.  */
   wchar_type_node = get_identifier (MODIFIED_WCHAR_TYPE);
   wchar_type_node = TREE_TYPE (identifier_global_value (wchar_type_node));
@@ -3617,6 +3615,8 @@ c_common_nodes_and_builtins ()
     }									
 #include "builtins.def"
 #undef DEF_BUILTIN
+
+  (*targetm.init_builtins) ();
 
   main_identifier_node = get_identifier ("main");
 }

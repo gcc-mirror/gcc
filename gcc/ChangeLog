@@ -1,3 +1,17 @@
+2003-03-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/9986
+	* c-common.c (c_common_nodes_and_builtins): Initialize target builtins
+	after the common builtins.
+	* pa-hpux.h (DONT_HAVE_FPUTC_UNLOCKED): Define.
+	* pa.c (TARGET_INIT_BUILTINS): Define.
+	(pa_init_builtins): New function.
+
+	* pa.md (call, call_value, sibcall, sibcall_value): When sufficient
+	space has been allocated for the outgoing arguments, set the arg
+	pointer for a call emitted after virtuals have been instantiated
+	using the stack pointer offset, otherwise abort.
+
 2003-03-09  DJ Delorie  <dj@redhat.com>
 
 	* config/stormy16/stormy16.h (DWARF_LINE_MIN_INSTR_LENGTH): Revert.
