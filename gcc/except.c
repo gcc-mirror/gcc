@@ -148,13 +148,13 @@ struct eh_region
       rtx continue_label;
     } try;
 
-    /* The list through the catch handlers, the type object
-       matched, and a pointer to the generated code.  */
+    /* The list through the catch handlers, the list of type objects
+       matched, and the list of associated filters.  */
     struct {
       struct eh_region *next_catch;
       struct eh_region *prev_catch;
-      tree type;
-      int filter;
+      tree type_list;
+      tree filter_list;
     } catch;
 
     /* A tree_list of allowed types.  */
@@ -485,7 +485,8 @@ mark_eh_region (region)
       ggc_mark_rtx (region->u.try.continue_label);
       break;
     case ERT_CATCH:
-      ggc_mark_tree (region->u.catch.type);
+      ggc_mark_tree (region->u.catch.type_list);
+      ggc_mark_tree (region->u.catch.filter_list);
       break;
     case ERT_ALLOWED_EXCEPTIONS:
       ggc_mark_tree (region->u.allowed.type_list);
@@ -767,26 +768,44 @@ expand_start_all_catch ()
   emit_jump (region->u.try.continue_label);
 }
 
-/* Begin a catch clause.  TYPE is the type caught, or null if this is
-   a catch-all clause.  */
+/* Begin a catch clause.  TYPE is the type caught, a list of such types, or
+   null if this is a catch-all clause. Providing a type list enables to
+   associate the catch region with potentially several exception types, which
+   is useful e.g. for Ada. */
 
 void
-expand_start_catch (type)
-     tree type;
+expand_start_catch (type_or_list)
+     tree type_or_list;
 {
   struct eh_region *t, *c, *l;
+  tree type_list;
 
   if (! doing_eh (0))
     return;
 
-  if (type)
-    add_type_for_runtime (type);
+  type_list = type_or_list;
+
+  if (type_or_list)
+    {
+      /* Ensure to always end up with a type list to normalize further
+         processing, then register each type against the runtime types
+         map.  */
+      tree type_node;
+
+      if (TREE_CODE (type_or_list) != TREE_LIST)
+        type_list = tree_cons (NULL_TREE, type_or_list, NULL_TREE);
+
+      type_node = type_list;
+      for (; type_node; type_node = TREE_CHAIN (type_node))
+        add_type_for_runtime (TREE_VALUE (type_node));
+    }
+
   expand_eh_region_start ();
 
   t = cfun->eh->try_region;
   c = cfun->eh->cur_region;
   c->type = ERT_CATCH;
-  c->u.catch.type = type;
+  c->u.catch.type_list = type_list;
   c->label = gen_label_rtx ();
 
   l = t->u.try.last_catch;
@@ -1348,7 +1367,7 @@ duplicate_eh_region_1 (o, map)
       break;
 
     case ERT_CATCH:
-      n->u.catch.type = o->u.catch.type;
+      n->u.catch.type_list = o->u.catch.type_list;
       break;
 
     case ERT_ALLOWED_EXCEPTIONS:
@@ -1693,7 +1712,36 @@ assign_filter_values ()
       switch (r->type)
 	{
 	case ERT_CATCH:
-	  r->u.catch.filter = add_ttypes_entry (ttypes, r->u.catch.type);
+	  /* Whatever type_list is (NULL or true list), we build a list
+	     of filters for the region.  */
+	  r->u.catch.filter_list = NULL_TREE;
+
+	  if (r->u.catch.type_list != NULL)
+	    {
+	      /* Get a filter value for each of the types caught and store
+		 them in the region's dedicated list.  */
+	      tree tp_node = r->u.catch.type_list;
+
+	      for (;tp_node; tp_node = TREE_CHAIN (tp_node))
+		{
+		  int flt = add_ttypes_entry (ttypes, TREE_VALUE (tp_node));
+		  tree flt_node = build_int_2 (flt, 0);
+		  
+		  r->u.catch.filter_list 
+		    = tree_cons (NULL_TREE, flt_node, r->u.catch.filter_list);
+		}
+	    }
+	  else
+	    {
+	      /* Get a filter value for the NULL list also since it will need
+		 an action record anyway.  */
+	      int flt = add_ttypes_entry (ttypes, NULL);
+	      tree flt_node = build_int_2 (flt, 0);
+	      
+	      r->u.catch.filter_list 
+		= tree_cons (NULL_TREE, flt_node, r->u.catch.filter_list);
+	    }
+	      
 	  break;
 
 	case ERT_ALLOWED_EXCEPTIONS:
@@ -1747,13 +1795,27 @@ build_post_landing_pads ()
 	    for (c = region->u.try.catch; c ; c = c->u.catch.next_catch)
 	      {
 		/* ??? _Unwind_ForcedUnwind wants no match here.  */
-		if (c->u.catch.type == NULL)
+		if (c->u.catch.type_list == NULL)
 		  emit_jump (c->label);
 		else
-		  emit_cmp_and_jump_insns (cfun->eh->filter,
-					   GEN_INT (c->u.catch.filter),
-					   EQ, NULL_RTX, word_mode, 0,
-					   c->label);
+		  {
+		    /* Need for one cmp/jump per type caught. Each type
+		       list entry has a matching entry in the filter list
+		       (see assign_filter_values).  */
+		    tree tp_node = c->u.catch.type_list;
+		    tree flt_node = c->u.catch.filter_list;
+
+		    for (; tp_node; )
+		      {
+			emit_cmp_and_jump_insns
+			  (cfun->eh->filter,
+			   GEN_INT (tree_low_cst (TREE_VALUE (flt_node), 0)),
+			   EQ, NULL_RTX, word_mode, 0, c->label);
+
+			tp_node = TREE_CHAIN (tp_node);
+			flt_node = TREE_CHAIN (flt_node);
+		      }
+		  }
 	      }
 	  }
 
@@ -2568,7 +2630,7 @@ reachable_next_level (region, type_thrown, info)
 	    /* A catch-all handler ends the search.  */
 	    /* ??? _Unwind_ForcedUnwind will want outer cleanups
 	       to be run as well.  */
-	    if (c->u.catch.type == NULL)
+	    if (c->u.catch.type_list == NULL)
 	      {
 		add_reachable_handler (info, region, c);
 		return RNL_CAUGHT;
@@ -2576,14 +2638,20 @@ reachable_next_level (region, type_thrown, info)
 
 	    if (type_thrown)
 	      {
-		/* If we have a type match, end the search.  */
-		if (c->u.catch.type == type_thrown
-		    || (lang_eh_type_covers
-			&& (*lang_eh_type_covers) (c->u.catch.type,
-						   type_thrown)))
+		/* If we have a at least one type match, end the search.  */
+		tree tp_node = c->u.catch.type_list;
+		
+		for (; tp_node; tp_node = TREE_CHAIN (tp_node))
 		  {
-		    add_reachable_handler (info, region, c);
-		    return RNL_CAUGHT;
+		    tree type = TREE_VALUE (tp_node);
+
+		    if (type == type_thrown
+			|| (lang_eh_type_covers
+			    && (*lang_eh_type_covers) (type, type_thrown)))
+		      {
+			add_reachable_handler (info, region, c);
+			return RNL_CAUGHT;
+		      }
 		  }
 
 		/* If we have definitive information of a match failure,
@@ -2592,19 +2660,49 @@ reachable_next_level (region, type_thrown, info)
 		  return RNL_NOT_CAUGHT;
 	      }
 
+	    /* At this point, we either don't know what type is thrown or
+	       don't have front-end assistance to help deciding if it is
+	       covered by one of the types in the list for this region.
+	    
+	       We'd then like to add this region to the list of reachable
+	       handlers since it is indeed potentially reachable based on the
+	       information we have. 
+	       
+	       Actually, this handler is for sure not reachable if all the
+	       types it matches have already been caught. That is, it is only
+	       potentially reachable if at least one of the types it catches
+	       has not been previously caught.  */
+
 	    if (! info)
 	      ret = RNL_MAYBE_CAUGHT;
-
-	    /* A type must not have been previously caught.  */
-	    else if (! check_handled (info->types_caught, c->u.catch.type))
+	    else
 	      {
-		add_reachable_handler (info, region, c);
-		info->types_caught = tree_cons (NULL, c->u.catch.type,
-						info->types_caught);
+		tree tp_node = c->u.catch.type_list;
+		bool maybe_reachable = false;
 
-		/* ??? If the catch type is a base class of every allowed
-		   type, then we know we can stop the search.  */
-		ret = RNL_MAYBE_CAUGHT;
+		/* Compute the potential reachability of this handler and
+		   update the list of types caught at the same time.  */
+		for (; tp_node; tp_node = TREE_CHAIN (tp_node))
+		  {
+		    tree type = TREE_VALUE (tp_node);
+
+		    if (! check_handled (info->types_caught, type))
+		      {
+			info->types_caught
+			  = tree_cons (NULL, type, info->types_caught);
+			
+			maybe_reachable = true;
+		      }
+		  }
+		
+		if (maybe_reachable)
+		  {
+		    add_reachable_handler (info, region, c);
+		
+		    /* ??? If the catch type is a base class of every allowed
+		       type, then we know we can stop the search.  */
+		    ret = RNL_MAYBE_CAUGHT;
+		  }
 	      }
 	  }
 
@@ -3144,10 +3242,21 @@ collect_one_action_chain (ar_hash, region)
       next = -3;
       for (c = region->u.try.last_catch; c ; c = c->u.catch.prev_catch)
 	{
-	  if (c->u.catch.type == NULL)
-	    next = add_action_record (ar_hash, c->u.catch.filter, 0);
+	  if (c->u.catch.type_list == NULL)
+	    {
+	      /* Retrieve the filter from the head of the filter list
+		 where we have stored it (see assign_filter_values).  */
+	      int filter 
+		= TREE_INT_CST_LOW (TREE_VALUE (c->u.catch.filter_list));
+
+	      next = add_action_record (ar_hash, filter, 0);
+	    }
 	  else
 	    {
+	      /* Once the outer search is done, trigger an action record for
+                 each filter we have.  */
+	      tree flt_node;
+
 	      if (next == -3)
 		{
 		  next = collect_one_action_chain (ar_hash, region->outer);
@@ -3162,7 +3271,13 @@ collect_one_action_chain (ar_hash, region)
 		  else if (next <= 0)
 		    next = add_action_record (ar_hash, 0, 0);
 		}
-	      next = add_action_record (ar_hash, c->u.catch.filter, next);
+	      
+	      flt_node = c->u.catch.filter_list;
+	      for (; flt_node; flt_node = TREE_CHAIN (flt_node))
+		{
+		  int filter = TREE_INT_CST_LOW (TREE_VALUE (flt_node));
+		  next = add_action_record (ar_hash, filter, next);
+		}
 	    }
 	}
       return next;

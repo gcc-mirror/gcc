@@ -1,3 +1,25 @@
+2001-11-16  Olivier Hainque <hainque@act-europe.fr>
+
+        * except.c: Support for catching a list of types with a single handler
+        (struct eh_region): Change type and filter to lists for catch regions.
+        (mark_eh_region): Mark the filter list for GC also.
+        (expand_start_catch): Always build a list if argument not NULL and
+        register each type of the list through add_type_for_runtime.
+        (duplicate_eh_region_1): Change type into type_list for catch regions.
+        (assign_filter_values): Assign a filter to each type associated with a
+        catch region. Assign filter for NULL types in a unique entry in the
+        filter list.
+        (build_post_landing_pads): Emit compare and jump for each filter of
+        the list associated with a catch region.
+        (reachable_next_level): When the type thrown is known, stop the search
+        as soon as one type within a catch list matches. Also, a handler is
+        potentially reachable only if at least one of the types it catches
+        has not been previously caught.
+        (collect_one_action_chain): Retrieve the filter for a NULL type list
+        from the first filter list entry. For non NULL type lists, add an
+        action record for every filter assigned.
+        * except.h: Reflect changes in comment before expand_start_catch.
+
 Fri Nov 16 07:12:51 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (expand_expr, case ADDR_EXPR): Only copy for misaligned if
