@@ -1,3 +1,8 @@
+2001-09-30  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/lang/natClass.cc (_Jv_IsAssignableFrom): Handle the case of
+	an uninitialized target class. Revert patch of 2001-07-18.
+
 2001-08-17  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/gcj/convert/IOConverter.java: Add `646' alias.
