@@ -1967,7 +1967,18 @@ package body Sem_Util is
 
    begin
       Par_Disc := Original_Record_Component (Original_Discriminant (Id));
-      Old_Disc := First_Discriminant (Scope (Par_Disc));
+
+      --  The original type may currently be private, and the discriminant
+      --  only appear on its full view.
+
+      if Is_Private_Type (Scope (Par_Disc))
+        and then not Has_Discriminants (Scope (Par_Disc))
+        and then Present (Full_View (Scope (Par_Disc)))
+      then
+         Old_Disc := First_Discriminant (Full_View (Scope (Par_Disc)));
+      else
+         Old_Disc := First_Discriminant (Scope (Par_Disc));
+      end if;
 
       if Is_Class_Wide_Type (Typ) then
          New_Disc := First_Discriminant (Root_Type (Typ));

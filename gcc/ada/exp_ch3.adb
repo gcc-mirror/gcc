@@ -1368,11 +1368,18 @@ package body Exp_Ch3 is
         (T    : Entity_Id)
          return Boolean;
       --  Determines if a component needs simple initialization, given its
-      --  type T. This is identical to Needs_Simple_Initialization, except
-      --  that the types Tag and Vtable_Ptr, which are access types which
-      --  would normally require simple initialization to null, do not
-      --  require initialization as components, since they are explicitly
-      --  initialized by other means.
+      --  type T. This is the same as Needs_Simple_Initialization except
+      --  for the following differences. The types Tag and Vtable_Ptr,
+      --  which are access types which would normally require simple
+      --  initialization to null, do not require initialization as
+      --  components, since they are explicitly initialized by other
+      --  means. The other relaxation is for packed bit arrays that are
+      --  associated with a modular type, which in some cases require
+      --  zero initialization to properly support comparisons, except
+      --  that comparison of such components always involves an explicit
+      --  selection of only the component's specific bits (whether or not
+      --  there are adjacent components or gaps), so zero initialization
+      --  is never needed for components.
 
       procedure Constrain_Array
         (SI         : Node_Id;
@@ -2144,7 +2151,8 @@ package body Exp_Ch3 is
          return
            Needs_Simple_Initialization (T)
              and then not Is_RTE (T, RE_Tag)
-             and then not Is_RTE (T, RE_Vtable_Ptr);
+             and then not Is_RTE (T, RE_Vtable_Ptr)
+             and then not Is_Bit_Packed_Array (T);
       end Component_Needs_Simple_Initialization;
 
       ---------------------

@@ -3402,6 +3402,20 @@ package body GNAT.Regpat is
       end if;
    end Match;
 
+   function  Match
+     (Self       : Pattern_Matcher;
+      Data       : String;
+      Data_First : Integer  := -1;
+      Data_Last  : Positive := Positive'Last)
+     return Boolean
+   is
+      Matches : Match_Array (0 .. 0);
+
+   begin
+      Match (Self, Data, Matches, Data_First, Data_Last);
+      return Matches (0).First >= Data'First;
+   end Match;
+
    procedure Match
      (Expression : String;
       Data       : String;

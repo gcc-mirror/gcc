@@ -1177,7 +1177,10 @@ package body Sem_Elab is
       --  case we lack the full information that we need, and no object
       --  file will be created in any case.
 
-      if not Expander_Active or else Subunits_Missing then
+      if not Expander_Active
+        or else Is_Generic_Unit (Cunit_Entity (Main_Unit))
+        or else Subunits_Missing
+      then
          return;
       end if;
 
