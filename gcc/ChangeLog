@@ -1,14 +1,14 @@
 2004-12-23  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/18896
-	* function.c (split_complex_args): Set DECL_ARTIFICIAL and DECL_IGNORED_P
+	* function.c (split_complex_args): Set DECL_ARTIFICIAL, DECL_IGNORED_P
 	for real and imaginary parts if the parm is addressable.
 	(assign_parms_unsplit_complex): If parm addressable, save real
 	and imaginary parts to a stack temp.  Pass assign_parm_data_all.
 	(assign_parms): Adjust assign_parms_unsplit_complex call.
 
 2004-12-22  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	* tree.h (DECL_PTA_ALIASVAR): Dead.
 	(struct tree_decl): Remove alias_var field.
 
@@ -50,7 +50,7 @@
 	* gimplify.c (gimplify_decl_expr): Likewise.
 	(gimplify_type_sizes): Set TYPE_SIZES_GIMPLIFIED.  Examine nested
 	array types.
-	
+
 2004-12-22  Richard Henderson  <rth@redhat.com>
 
 	* gimplify.c (eval_save_expr): Remove.
@@ -209,7 +209,7 @@
 	* c-common.c (set_builtin_user_assembler_name): New.
 	* c-common.h (set_builtin_user_assembler_name): Declare.
 	* c-decl.c (finish_decl): Use set_builtin_user_assembler_name
-	
+
 2004-12-20  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/19080
@@ -242,7 +242,7 @@
 
 2004-12-20  Richard Henderson  <rth@redhat.com>
 
-	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Use 
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Use
 	long_long_integer_type_node in building V2DI_type_node.
 
 	* config/i386/emmintrin.h: Use __vector_size__ instead of vector_size.
