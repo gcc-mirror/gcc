@@ -1,3 +1,10 @@
+2004-05-08  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold_div_compare): New function to optimize X/C1 op C2
+	where op is a comparison operator and C1 and C2 are integer constants
+	into a range check.
+	(fold): Call fold_div_compare.
+
 2004-05-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/install.texi (sparc-sun-solaris2*): Document bootstrap
