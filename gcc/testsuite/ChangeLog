@@ -1,3 +1,8 @@
+2004-06-27  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c/14963
+	* gcc.dg/pr14963.c: New test.
+
 2004-06-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16193
