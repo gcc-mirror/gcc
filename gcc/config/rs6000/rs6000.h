@@ -1268,7 +1268,7 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
    CCEQmode should be used when we are doing an inequality comparison on
    the result of a comparison. CCmode should be used in all other cases.  */
 
-#define SELECT_CC_MODE(OP,X) \
+#define SELECT_CC_MODE(OP,X,Y) \
   (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT ? CCFPmode	\
    : (OP) == GTU || (OP) == LTU || (OP) == GEU || (OP) == LEU ? CCUNSmode \
    : (((OP) == EQ || (OP) == NE) && GET_RTX_CLASS (GET_CODE (X)) == '<'   \

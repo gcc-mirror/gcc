@@ -2376,6 +2376,11 @@ subst_constants (loc, insn, map)
 	  op_mode = GET_MODE (XEXP (x, 1));
 	new = simplify_relational_operation (code, op_mode,
 					     XEXP (x, 0), XEXP (x, 1));
+#ifdef FLOAT_STORE_FLAG_VALUE
+	if (new != 0 && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+	  new = ((new == const0_rtx) ? CONST0_RTX (GET_MODE (x))
+		 : immed_real_const_1 (FLOAT_STORE_FLAG_VALUE, GET_MODE (x)));
+#endif
 	break;
       }
 

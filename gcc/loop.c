@@ -6254,18 +6254,32 @@ get_condition (jump, earliest)
 	  enum machine_mode inner_mode = GET_MODE (SET_SRC (set));
 
 	  if ((GET_CODE (SET_SRC (set)) == COMPARE
-	       || ((code == NE
-		   || (code == LT
-		       && GET_MODE_BITSIZE (inner_mode) <= HOST_BITS_PER_INT
-		       && (STORE_FLAG_VALUE
-			   & (1 << (GET_MODE_BITSIZE (inner_mode) - 1)))))
+	       || (((code == NE
+		     || (code == LT
+			 && GET_MODE_CLASS (inner_mode) == MODE_INT
+			 && GET_MODE_BITSIZE (inner_mode) <= HOST_BITS_PER_INT
+			 && (STORE_FLAG_VALUE
+			     & (1 << (GET_MODE_BITSIZE (inner_mode) - 1))))
+#ifdef FLOAT_STORE_FLAG_VALUE
+		     || (code == LT
+			 && GET_MODE_CLASS (inner_mode) == MODE_FLOAT
+			 && FLOAT_STORE_FLAG_VALUE < 0)
+#endif
+		     ))
 		   && GET_RTX_CLASS (GET_CODE (SET_SRC (set))) == '<')))
 	    x = SET_SRC (set);
-	  else if ((code == EQ
-		    || (code == GE
-			&& GET_MODE_BITSIZE (inner_mode) <= HOST_BITS_PER_INT
-			&& (STORE_FLAG_VALUE
-			    & (1 << (GET_MODE_BITSIZE (inner_mode) - 1)))))
+	  else if (((code == EQ
+		     || (code == GE
+			 && GET_MODE_BITSIZE (inner_mode) <= HOST_BITS_PER_INT
+			 && GET_MODE_CLASS (inner_mode) == MODE_INT
+			 && (STORE_FLAG_VALUE
+			     & (1 << (GET_MODE_BITSIZE (inner_mode) - 1))))
+#ifdef FLOAT_STORE_FLAG_VALUE
+		     || (code == GE
+			 && GET_MODE_CLASS (inner_mode) == MODE_FLOAT
+			 && FLOAT_STORE_FLAG_VALUE < 0)
+#eneif
+		     ))
 		   && GET_RTX_CLASS (GET_CODE (SET_SRC (set))) == '<')
 	    {
 	      /* We might have reversed a LT to get a GE here.  But this wasn't

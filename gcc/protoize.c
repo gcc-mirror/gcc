@@ -194,15 +194,6 @@ extern char *   strrchr ();
 #define STRINGIFY(STRING) "STRING"
 #endif
 
-/* POSIX systems will not have definitions for WIFEXITED or WEXITSTATUS.
-   Define them correctly and so that they work for all environments.  */
-
-#undef WIFEXITED
-#define WIFEXITED(status_word) ((*((int *)&status_word) & 0xff) == 0x00)
-
-#undef WEXITSTATUS
-#define WEXITSTATUS(status_word) ((*((int *)&status_word) & 0xff00) >> 8)
-
 /* Define a default place to find the SYSCALLS.X file.  */
 
 #ifndef STD_PROTO_DIR

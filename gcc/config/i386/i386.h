@@ -1170,7 +1170,7 @@ while (0)
    For floating-point equality comparisons, CCFPEQmode should be used.
    VOIDmode should be used in all other cases.  */
 
-#define SELECT_CC_MODE(OP,X) \
+#define SELECT_CC_MODE(OP,X,Y) \
   (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT			\
    && ((OP) == EQ || (OP) == NE) ? CCFPEQmode : CCmode)
 
