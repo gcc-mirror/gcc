@@ -100,7 +100,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define ATTR_PERMANENT_P(RTX) (RTX_FLAG((RTX), integrated))
 #define ATTR_EQ_ATTR_P(RTX) (RTX_FLAG((RTX), volatil))
 
-#if 1
+#if 0
 #define strcmp_check(S1, S2) ((S1) == (S2)		\
 			      ? 0			\
 			      : (strcmp ((S1), (S2))	\
@@ -474,6 +474,13 @@ static const char *attr_numeral	(int);
 static int attr_equal_p		(rtx, rtx);
 static rtx attr_copy_rtx	(rtx);
 static int attr_rtx_cost	(rtx);
+static bool attr_alt_subset_p (rtx, rtx);
+static bool attr_alt_subset_of_compl_p (rtx, rtx);
+static rtx attr_alt_intersection (rtx, rtx);
+static rtx attr_alt_union (rtx, rtx);
+static rtx attr_alt_complement (rtx);
+static bool attr_alt_bit_p (rtx, int);
+static rtx mk_attr_alt (int);
 
 #define oballoc(size) obstack_alloc (hash_obstack, size)
 
@@ -933,12 +940,7 @@ check_attr_test (rtx exp, int is_const, int lineno)
 	  if (attr == NULL)
 	    {
 	      if (! strcmp (XSTR (exp, 0), "alternative"))
-		{
-		  XSTR (exp, 0) = alternative_name;
-		  /* This can't be simplified any further.  */
-		  ATTR_IND_SIMPLIFIED_P (exp) = 1;
-		  return exp;
-		}
+		return mk_attr_alt (1 << atoi (XSTR (exp, 1)));
 	      else
 		fatal ("unknown attribute `%s' in EQ_ATTR", XSTR (exp, 0));
 	    }
@@ -978,16 +980,29 @@ check_attr_test (rtx exp, int is_const, int lineno)
 	}
       else
 	{
-	  /* Make an IOR tree of the possible values.  */
-	  orexp = false_rtx;
-	  name_ptr = XSTR (exp, 1);
-	  while ((p = next_comma_elt (&name_ptr)) != NULL)
+	  if (! strcmp (XSTR (exp, 0), "alternative"))
 	    {
-	      newexp = attr_eq (XSTR (exp, 0), p);
-	      orexp = insert_right_side (IOR, orexp, newexp, -2, -2);
-	    }
+	      int set = 0;
 
-	  return check_attr_test (orexp, is_const, lineno);
+	      name_ptr = XSTR (exp, 1);
+	      while ((p = next_comma_elt (&name_ptr)) != NULL)
+		set |= 1 << atoi (p);
+
+	      return mk_attr_alt (set);
+	    }
+	  else
+	    {
+	      /* Make an IOR tree of the possible values.  */
+	      orexp = false_rtx;
+	      name_ptr = XSTR (exp, 1);
+	      while ((p = next_comma_elt (&name_ptr)) != NULL)
+		{
+		  newexp = attr_eq (XSTR (exp, 0), p);
+		  orexp = insert_right_side (IOR, orexp, newexp, -2, -2);
+		}
+
+	      return check_attr_test (orexp, is_const, lineno);
+	    }
 	}
       break;
 
@@ -2212,6 +2227,7 @@ encode_units_mask (rtx x)
     case PC:
     case CC0:
     case EQ_ATTR:
+    case EQ_ATTR_ALT:
       return x;
 
     default:
@@ -2525,6 +2541,7 @@ simplify_cond (rtx exp, int insn_code, int insn_index)
 	  /* If test is false, discard it and its value.  */
 	  for (j = i; j < len - 2; j++)
 	    tests[j] = tests[j + 2];
+	  i -= 2;
 	  len -= 2;
 	}
 
@@ -2541,6 +2558,7 @@ simplify_cond (rtx exp, int insn_code, int insn_index)
 	  for (j = i; j < len - 2; j++)
 	    tests[j] = tests[j + 2];
 	  len -= 2;
+	  i -= 2;
 	}
 
       else
@@ -2711,6 +2729,16 @@ compute_alternative_mask (rtx exp, enum rtx_code code)
 	   && XSTR (exp, 0) == alternative_name)
     string = XSTR (exp, 1);
 
+  else if (GET_CODE (exp) == EQ_ATTR_ALT)
+    {
+      if (code == AND && XINT (exp, 1))
+	return XINT (exp, 0);
+
+      if (code == IOR && !XINT (exp, 1))
+	return XINT (exp, 0);
+
+      return 0;
+    }
   else
     return 0;
 
@@ -2725,17 +2753,7 @@ compute_alternative_mask (rtx exp, enum rtx_code code)
 static rtx
 make_alternative_compare (int mask)
 {
-  rtx newexp;
-  int i;
-
-  /* Find the bit.  */
-  for (i = 0; (mask & (1 << i)) == 0; i++)
-    ;
-
-  newexp = attr_rtx (EQ_ATTR, alternative_name, attr_numeral (i));
-  ATTR_IND_SIMPLIFIED_P (newexp) = 1;
-
-  return newexp;
+  return mk_attr_alt (mask);
 }
 
 /* If we are processing an (eq_attr "attr" "value") test, we find the value
@@ -2882,7 +2900,7 @@ simplify_and_tree (rtx exp, rtx *pterm, int insn_code, int insn_index)
       right = simplify_and_tree (XEXP (exp, 1), pterm, insn_code, insn_index);
       if (left != XEXP (exp, 0) || right != XEXP (exp, 1))
 	{
-	  newexp = attr_rtx (GET_CODE (exp), left, right);
+	  newexp = attr_rtx (AND, left, right);
 
 	  exp = simplify_test_exp_in_temp (newexp, insn_code, insn_index);
 	}
@@ -2905,7 +2923,7 @@ simplify_and_tree (rtx exp, rtx *pterm, int insn_code, int insn_index)
 
       if (left != XEXP (exp, 0) || right != XEXP (exp, 1))
 	{
-	  newexp = attr_rtx (GET_CODE (exp), left, right);
+	  newexp = attr_rtx (IOR, left, right);
 
 	  exp = simplify_test_exp_in_temp (newexp, insn_code, insn_index);
 	}
@@ -2922,6 +2940,20 @@ simplify_and_tree (rtx exp, rtx *pterm, int insn_code, int insn_index)
 
   else if (GET_CODE (*pterm) == NOT && exp == XEXP (*pterm, 0))
     return false_rtx;
+
+  else if (GET_CODE (exp) == EQ_ATTR_ALT && GET_CODE (*pterm) == EQ_ATTR_ALT)
+    {
+      if (attr_alt_subset_p (*pterm, exp))
+	return true_rtx;
+
+      if (attr_alt_subset_of_compl_p (*pterm, exp))
+	return false_rtx;
+
+      if (attr_alt_subset_p (exp, *pterm))
+	*pterm = true_rtx;
+	
+      return exp;
+    }
 
   else if (GET_CODE (exp) == EQ_ATTR && GET_CODE (*pterm) == EQ_ATTR)
     {
@@ -3067,6 +3099,9 @@ attr_rtx_cost (rtx x)
       else
 	return 0;
 
+    case EQ_ATTR_ALT:
+      return 0;
+
     case EQ_ATTR:
       /* Alternatives don't result into function call.  */
       if (!strcmp_check (XSTR (x, 0), alternative_name))
@@ -3117,6 +3152,146 @@ simplify_test_exp_in_temp (rtx exp, int insn_code, int insn_index)
   return attr_copy_rtx (x);
 }
 
+/* Returns true if S1 is a subset of S2.  */
+
+static bool
+attr_alt_subset_p (rtx s1, rtx s2)
+{
+  switch ((XINT (s1, 1) << 1) | XINT (s2, 1))
+    {
+    case (0 << 1) | 0:
+      return !(XINT (s1, 0) &~ XINT (s2, 0));
+
+    case (0 << 1) | 1:
+      return !(XINT (s1, 0) & XINT (s2, 0));
+
+    case (1 << 1) | 0:
+      return false;
+
+    case (1 << 1) | 1:
+      return !(XINT (s2, 0) &~ XINT (s1, 0));
+
+    default:
+      abort ();
+    }
+}
+
+/* Returns true if S1 is a subset of complement of S2.  */
+
+static bool attr_alt_subset_of_compl_p (rtx s1, rtx s2)
+{
+  switch ((XINT (s1, 1) << 1) | XINT (s2, 1))
+    {
+    case (0 << 1) | 0:
+      return !(XINT (s1, 0) & XINT (s2, 0));
+
+    case (0 << 1) | 1:
+      return !(XINT (s1, 0) & ~XINT (s2, 0));
+
+    case (1 << 1) | 0:
+      return !(XINT (s2, 0) &~ XINT (s1, 0));
+
+    case (1 << 1) | 1:
+      return false;
+
+    default:
+      abort ();
+    }
+}
+
+/* Return EQ_ATTR_ALT expression representing intersection of S1 and S2.  */
+
+static rtx
+attr_alt_intersection (rtx s1, rtx s2)
+{
+  rtx result = rtx_alloc (EQ_ATTR_ALT);
+
+  switch ((XINT (s1, 1) << 1) | XINT (s2, 1))
+    {
+    case (0 << 1) | 0:
+      XINT (result, 0) = XINT (s1, 0) & XINT (s2, 0);
+      break;
+    case (0 << 1) | 1:
+      XINT (result, 0) = XINT (s1, 0) & ~XINT (s2, 0);
+      break;
+    case (1 << 1) | 0:
+      XINT (result, 0) = XINT (s2, 0) & ~XINT (s1, 0);
+      break;
+    case (1 << 1) | 1:
+      XINT (result, 0) = XINT (s1, 0) | XINT (s2, 0);
+      break;
+    default:
+      abort ();
+    }
+  XINT (result, 1) = XINT (s1, 1) & XINT (s2, 1);
+
+  return result;
+}
+
+/* Return EQ_ATTR_ALT expression representing union of S1 and S2.  */
+
+static rtx
+attr_alt_union (rtx s1, rtx s2)
+{
+  rtx result = rtx_alloc (EQ_ATTR_ALT);
+
+  switch ((XINT (s1, 1) << 1) | XINT (s2, 1))
+    {
+    case (0 << 1) | 0:
+      XINT (result, 0) = XINT (s1, 0) | XINT (s2, 0);
+      break;
+    case (0 << 1) | 1:
+      XINT (result, 0) = XINT (s2, 0) & ~XINT (s1, 0);
+      break;
+    case (1 << 1) | 0:
+      XINT (result, 0) = XINT (s1, 0) & ~XINT (s2, 0);
+      break;
+    case (1 << 1) | 1:
+      XINT (result, 0) = XINT (s1, 0) & XINT (s2, 0);
+      break;
+    default:
+      abort ();
+    }
+
+  XINT (result, 1) = XINT (s1, 1) | XINT (s2, 1);
+  return result;
+}
+
+/* Return EQ_ATTR_ALT expression representing complement of S.  */
+
+static rtx
+attr_alt_complement (rtx s)
+{
+  rtx result = rtx_alloc (EQ_ATTR_ALT);
+
+  XINT (result, 0) = XINT (s, 0);
+  XINT (result, 1) = 1 - XINT (s, 1);
+
+  return result;
+}
+
+/* Tests whether a bit B belongs to the set represented by S.  */
+
+static bool
+attr_alt_bit_p (rtx s, int b)
+{
+  return XINT (s, 1) ^ ((XINT (s, 0) >> b) & 1);
+}
+
+/* Return EQ_ATTR_ALT expression representing set containing elements set
+   in E.  */
+
+static rtx
+mk_attr_alt (int e)
+{
+  rtx result = rtx_alloc (EQ_ATTR_ALT);
+
+  XINT (result, 0) = e;
+  XINT (result, 1) = 0;
+
+  return result;
+}
+
 /* Given an expression, see if it can be simplified for a particular insn
    code based on the values of other attributes being tested.  This can
    eliminate nested get_attr_... calls.
@@ -3135,6 +3310,7 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
   struct insn_ent *ie;
   int i;
   rtx newexp = exp;
+  bool left_alt, right_alt;
 
   /* Don't re-simplify something we already simplified.  */
   if (ATTR_IND_SIMPLIFIED_P (exp) || ATTR_CURR_SIMPLIFIED_P (exp))
@@ -3151,6 +3327,13 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
       SIMPLIFY_ALTERNATIVE (right);
       if (left == false_rtx)
 	return false_rtx;
+
+      if (GET_CODE (left) == EQ_ATTR_ALT
+	  && GET_CODE (right) == EQ_ATTR_ALT)
+	{
+	  exp = attr_alt_intersection (left, right);
+	  return simplify_test_exp (exp, insn_code, insn_index);
+	}
 
       /* If either side is an IOR and we have (eq_attr "alternative" ..")
 	 present on both sides, apply the distributive law since this will
@@ -3191,15 +3374,25 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
       /* See if all or all but one of the insn's alternatives are specified
 	 in this tree.  Optimize if so.  */
 
-      else if (insn_code >= 0
-	       && (GET_CODE (left) == AND
-		   || (GET_CODE (left) == NOT
-		       && GET_CODE (XEXP (left, 0)) == EQ_ATTR
-		       && XSTR (XEXP (left, 0), 0) == alternative_name)
-		   || GET_CODE (right) == AND
-		   || (GET_CODE (right) == NOT
-		       && GET_CODE (XEXP (right, 0)) == EQ_ATTR
-		       && XSTR (XEXP (right, 0), 0) == alternative_name)))
+      if (GET_CODE (left) == NOT)
+	left_alt = (GET_CODE (XEXP (left, 0)) == EQ_ATTR
+		    && XSTR (XEXP (left, 0), 0) == alternative_name);
+      else
+	left_alt = (GET_CODE (left) == EQ_ATTR_ALT
+		    && XINT (left, 1));
+
+      if (GET_CODE (right) == NOT)
+	right_alt = (GET_CODE (XEXP (right, 0)) == EQ_ATTR
+		     && XSTR (XEXP (right, 0), 0) == alternative_name);
+      else
+	right_alt = (GET_CODE (right) == EQ_ATTR_ALT
+		     && XINT (right, 1));
+
+      if (insn_code >= 0
+	  && (GET_CODE (left) == AND
+	      || left_alt
+	      || GET_CODE (right) == AND
+	      || right_alt))
 	{
 	  i = compute_alternative_mask (exp, AND);
 	  if (i & ~insn_alternatives[insn_code])
@@ -3241,6 +3434,13 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
       if (right == true_rtx)
 	return true_rtx;
 
+      if (GET_CODE (left) == EQ_ATTR_ALT
+	  && GET_CODE (right) == EQ_ATTR_ALT)
+	{
+	  exp = attr_alt_union (left, right);
+	  return simplify_test_exp (exp, insn_code, insn_index);
+	}
+
       right = simplify_or_tree (right, &left, insn_code, insn_index);
       if (left == XEXP (exp, 0) && right == XEXP (exp, 1))
 	left = simplify_or_tree (left, &right, insn_code, insn_index);
@@ -3279,9 +3479,13 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
 
       else if (insn_code >= 0
 	       && (GET_CODE (left) == IOR
+		   || (GET_CODE (left) == EQ_ATTR_ALT
+		       && !XINT (left, 1))
 		   || (GET_CODE (left) == EQ_ATTR
 		       && XSTR (left, 0) == alternative_name)
 		   || GET_CODE (right) == IOR
+		   || (GET_CODE (right) == EQ_ATTR_ALT
+		       && !XINT (right, 1))
 		   || (GET_CODE (right) == EQ_ATTR
 		       && XSTR (right, 0) == alternative_name)))
 	{
@@ -3331,11 +3535,17 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
 
       if (left == false_rtx)
 	return true_rtx;
-      else if (left == true_rtx)
+      if (left == true_rtx)
 	return false_rtx;
 
+      if (GET_CODE (left) == EQ_ATTR_ALT)
+	{
+	  exp = attr_alt_complement (left);
+	  return simplify_test_exp (exp, insn_code, insn_index);
+	}
+
       /* Try to apply De`Morgan's laws.  */
-      else if (GET_CODE (left) == IOR)
+      if (GET_CODE (left) == IOR)
 	{
 	  newexp = attr_rtx (AND,
 			     attr_rtx (NOT, XEXP (left, 0)),
@@ -3357,10 +3567,24 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
 	}
       break;
 
+    case EQ_ATTR_ALT:
+      if (current_alternative_string)
+	return attr_alt_bit_p (exp, atoi (current_alternative_string)) ? true_rtx : false_rtx;
+
+      if (!XINT (exp, 0))
+	return XINT (exp, 1) ? true_rtx : false_rtx;
+      break;
+
     case EQ_ATTR:
       if (current_alternative_string && XSTR (exp, 0) == alternative_name)
 	return (XSTR (exp, 1) == current_alternative_string
 		? true_rtx : false_rtx);
+
+      if (XSTR (exp, 0) == alternative_name)
+	{
+	  newexp = mk_attr_alt (1 << atoi (XSTR (exp, 1)));
+	  break;
+	}
 
       /* Look at the value for this insn code in the specified attribute.
 	 We normally can replace this comparison with the condition that
@@ -4466,6 +4690,52 @@ write_test_expr (rtx exp, int flags)
       write_test_expr (XEXP (exp, 0), flags);
       break;
 
+    case EQ_ATTR_ALT:
+	{
+	  int set = XINT (exp, 0), bit = 0;
+
+	  if (flags & 1)
+	    fatal ("EQ_ATTR_ALT not valid inside comparison");
+
+	  if (!set)
+	    fatal ("Empty EQ_ATTR_ALT should be optimized out");
+
+	  if (!(set & (set - 1)))
+	    {
+	      if (!(set & 0xffff))
+		{
+		  bit += 16;
+		  set >>= 16;
+		}
+	      if (!(set & 0xff))
+		{
+		  bit += 8;
+		  set >>= 8;
+		}
+	      if (!(set & 0xf))
+		{
+		  bit += 4;
+		  set >>= 4;
+		}
+	      if (!(set & 0x3))
+		{
+		  bit += 2;
+		  set >>= 2;
+		}
+	      if (!(set & 1))
+		bit++;
+
+	      printf ("which_alternative %s= %d",
+		      XINT (exp, 1) ? "!" : "=", bit);
+	    }
+	  else
+	    {
+	      printf ("%s((1 << which_alternative) & 0x%x)",
+		      XINT (exp, 1) ? "!" : "", set);
+	    }
+	}
+      break;
+
     /* Comparison test of an attribute with a value.  Most of these will
        have been removed by optimization.   Handle "alternative"
        specially and give error if EQ_ATTR present inside a comparison.  */
@@ -4685,6 +4955,10 @@ walk_attr_value (rtx exp)
     case MATCH_OPERAND:
       must_extract = 1;
       return;
+
+    case EQ_ATTR_ALT:
+      must_extract = must_constrain = 1;
+      break;
 
     case EQ_ATTR:
       if (XSTR (exp, 0) == alternative_name)

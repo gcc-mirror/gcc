@@ -1,3 +1,14 @@
+2003-11-24  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* genattrtab.c (simplify_cond): Update indices correctly.
+	(attr_alt_subset_p, attr_alt_subset_of_compl_p, attr_alt_intersection,
+	attr_alt_union, attr_alt_complement, attr_alt_bit_p, mk_attr_alt): New.
+	(check_attr_test, encode_units_mask, compute_alternative_mask,
+	make_alternative_compare, simplify_and_tree,
+	attr_rtx_cost, simplify_test_exp, gen_attr,
+	write_test_expr, walk_attr_value): Handle EQ_ATTR_ALT.
+	* rtl.def (EQ_ATTR_ALT): New.
+
 2003-11-23  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* genattrtab.c (strcmp_check, DEF_ATTR_STRING): New macros.
