@@ -1,3 +1,7 @@
+2004-07-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.md (prefetch_32, prefetch_64): Simplify constraint checks.
+
 2004-07-08  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-decl.c (static_ctors, static_dtors): Make static.

@@ -9393,12 +9393,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	     (match_operand:DI 2 "const_int_operand" "n,n"))]
   "TARGET_64BIT
    && (operands[2] != const0_rtx
-       || REG_P (XEXP (operands[0], 0))
-       || IS_INDEX_ADDR_P (XEXP (operands[0], 0))
-       || (GET_CODE (XEXP (operands[0], 0)) == PLUS
-	   && REG_P (XEXP (XEXP (operands[0], 0), 0))
-	   && GET_CODE (XEXP (XEXP (operands[0], 0), 1)) == CONST_INT
-	   && VAL_5_BITS_P (XEXP (XEXP (operands[0], 0), 1))))"
+       || GET_CODE (XEXP (operands[0], 0)) != PLUS
+       || GET_CODE (XEXP (XEXP (operands[0], 0), 1)) != CONST_INT
+       || VAL_5_BITS_P (XEXP (XEXP (operands[0], 0), 1)))"
 {
   /* The SL completor indicates good spatial locality but poor temporal
      locality.  The ldw instruction with a target of general register 0
@@ -9448,12 +9445,9 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	     (match_operand:SI 2 "const_int_operand" "n,n"))]
   "TARGET_PA_20
    && (operands[2] != const0_rtx
-       || REG_P (XEXP (operands[0], 0))
-       || IS_INDEX_ADDR_P (XEXP (operands[0], 0))
-       || (GET_CODE (XEXP (operands[0], 0)) == PLUS
-	   && REG_P (XEXP (XEXP (operands[0], 0), 0))
-	   && GET_CODE (XEXP (XEXP (operands[0], 0), 1)) == CONST_INT
-	   && VAL_5_BITS_P (XEXP (XEXP (operands[0], 0), 1))))"
+       || GET_CODE (XEXP (operands[0], 0)) != PLUS
+       || GET_CODE (XEXP (XEXP (operands[0], 0), 1)) != CONST_INT
+       || VAL_5_BITS_P (XEXP (XEXP (operands[0], 0), 1)))"
 {
   /* The SL completor indicates good spatial locality but poor temporal
      locality.  The ldw instruction with a target of general register 0
