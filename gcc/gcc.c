@@ -5964,11 +5964,17 @@ main (argc, argv)
 	  /* Ok, we found an applicable compiler.  Run its spec.  */
 
 	  if (input_file_compiler->spec[0] == '#')
-	    error ("%s: %s compiler not installed on this system",
-		   input_filename, &input_file_compiler->spec[1]);
-	  value = do_spec (input_file_compiler->spec);
-	  if (value < 0)
-	    this_file_error = 1;
+	    {
+	      error ("%s: %s compiler not installed on this system",
+		     input_filename, &input_file_compiler->spec[1]);
+	      this_file_error = 1;
+	    }
+	  else
+	    {
+	      value = do_spec (input_file_compiler->spec);
+	      if (value < 0)
+		this_file_error = 1;
+	    }
 	}
 
       /* If this file's name does not contain a recognized suffix,
