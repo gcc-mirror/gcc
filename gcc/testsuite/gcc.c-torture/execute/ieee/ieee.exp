@@ -34,6 +34,10 @@ if [target_info exists ieee_multilib_flags] {
     set additional_flags "";
 }
 
+# We must use -ffloat-store to ensure that excess precision on some machines
+# does not cause problems
+lappend additional_flags "-ffloat-store"
+
 # load support procs
 load_lib c-torture.exp
 
