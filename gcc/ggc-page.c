@@ -1021,6 +1021,14 @@ poison_pages ()
       for (p = G.pages[order]; p != NULL; p = p->next)
 	{
 	  size_t i;
+
+	  if (p->context_depth != G.context_depth)
+	    /* Since we don't do any collection for pages in pushed
+	       contexts, there's no need to do any poisoning.  And
+	       besides, the IN_USE_P array isn't valid until we pop
+	       contexts.  */
+	    continue;
+
 	  for (i = 0; i < num_objects; i++)
 	    {
 	      size_t word, bit;
