@@ -1,3 +1,12 @@
+2004-02-20  Mohan Embar  <gnustuff@thisiscool.com>
+	    Tom Tromey  <tromey@redhat.com>
+
+	* doc/install.texi: Moved --disable-libgcj and
+	--with-system-zlib documentation to new section for
+	Java-specific options.
+	Added explicit Cross-Compiler-Specific Options subheading.
+	Added section for Java-specific options.
+
 2004-02-20  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* doc/install.texi (Building the Ada compiler): Remove
