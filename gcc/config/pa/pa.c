@@ -2759,6 +2759,12 @@ pa_adjust_insn_length (insn, length)
       else
 	return 0;
     }
+  /* Jumps inside switch tables which have unfilled delay slots 
+     also need adjustment.  */
+  else if (GET_CODE (insn) == JUMP_INSN
+	   && simplejump_p (insn)
+	   && GET_MODE (PATTERN (insn)) == DImode)
+    return 4;
   /* Millicode insn with an unfilled delay slot.  */
   else if (GET_CODE (insn) == INSN
 	   && GET_CODE (pat) != SEQUENCE
@@ -4392,3 +4398,77 @@ jump_in_call_delay (insn)
   else
     return 0;
 }
+
+
+/* We use this hook to perform a PA specific optimization which is difficult
+   to do in earlier passes.
+
+   We want the delay slots of branches within jump tables to be filled.
+   None of the compiler passes at the moment even has the notion that a
+   PA jump table doesn't contain addresses, but instead contains actual
+   instructions!
+
+   Because we actually jump into the table, the addresses of each entry
+   must stay contant in relation to the beginning of the table (which
+   itself must stay constant relative to the instruction to jump into
+   it).  I don't believe we can guarantee earlier passes of the compiler
+   will adhere to those rules.
+
+   So, late in the compilation process we find all the jump tables, and
+   expand them into real code -- eg each entry in the jump table vector
+   will get an appropriate label followed by a jump to the final target.
+
+   Reorg and the final jump pass can then optimize these branches and
+   fill their delay slots.  We end up with smaller, more efficient code.
+
+   The jump instructions within the table are special; we must be able 
+   to identify them during assembly output (if the jumps don't get filled
+   we need to emit a nop rather than nullifying the delay slot)).  We
+   identify jumps in switch tables by marking the SET with DImode.  */
+
+pa_reorg (insns)
+     rtx insns;
+{
+  rtx insn;
+
+  /* This is fairly cheap, so always run it if optimizing.  */
+  if (optimize > 0)
+    {
+      /* Find and explode all ADDR_VEC insns.  */
+      insns = get_insns ();
+      for (insn = insns; insn; insn = NEXT_INSN (insn))
+	{
+	  rtx pattern, tmp, location;
+	  unsigned int length, i;
+
+	  /* Find an ADDR_VEC insn to explode.  */
+	  if (GET_CODE (insn) != JUMP_INSN
+	      || GET_CODE (PATTERN (insn)) != ADDR_VEC)
+	    continue;
+
+	  pattern = PATTERN (insn);
+	  location = PREV_INSN (insn);
+          length = XVECLEN (pattern, 0);
+	  for (i = 0; i < length; i++)
+	    {
+	      /* Emit the jump itself.  */
+	      tmp = gen_switch_jump (XEXP (XVECEXP (pattern, 0, i), 0));
+	      tmp = emit_jump_insn_after (tmp, location);
+	      JUMP_LABEL (tmp) = XEXP (XVECEXP (pattern, 0, i), 0);
+
+	      /* Emit a BARRIER after the jump.  */
+	      location = NEXT_INSN (location);
+	      emit_barrier_after (location);
+
+	      /* Put a CODE_LABEL before each so jump.c does not optimize
+		 the jumps away.  */
+	      location = NEXT_INSN (location);
+	      tmp = gen_label_rtx ();
+	      LABEL_NUSES (tmp) = 1;
+	      emit_label_after (tmp, location);
+	      location = NEXT_INSN (location);
+	    }
+	  /* Delete the ADDR_VEC.  */
+	  delete_insn (insn);
+	}
+    }

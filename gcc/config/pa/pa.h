@@ -239,6 +239,9 @@ extern int target_flags;
 /* Show we can debug even without a frame pointer.  */
 #define CAN_DEBUG_WITHOUT_FP
 
+/* Machine dependent reorg pass.  */
+#define MACHINE_DEPENDENT_REORG(X) pa_reorg(X)
+
 /* Names to predefine in the preprocessor for this target machine.  */
 
 #define CPP_PREDEFINES "-Dhppa -Dhp9000s800 -D__hp9000s800 -Dhp9k8 -Dunix -D_HPUX_SOURCE -Dhp9000 -Dhp800 -Dspectrum -DREVARGV -Asystem(unix) -Asystem(bsd) -Acpu(hppa) -Amachine(hppa)"
