@@ -814,7 +814,7 @@ ocp_convert (type, expr, convtype, flags)
 	  else if (TREE_CODE (expr) == ADDR_EXPR 
 		   && TREE_CODE (TREE_OPERAND (expr, 0)) == FUNCTION_DECL)
 	    fn = TREE_OPERAND (expr, 0);
-	  if (fn)
+	  if (fn && !DECL_WEAK (fn))
 	    cp_warning ("the address of `%D', will always be `true'", fn);
 	  return cp_truthvalue_conversion (e);
 	}
