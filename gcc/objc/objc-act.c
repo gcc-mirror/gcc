@@ -1910,8 +1910,6 @@ build_module_descriptor (void)
     /* Don't let this one be deferred.  */
     DECL_INLINE (init_function_decl) = 0;
     DECL_UNINLINABLE (init_function_decl) = 1;
-    current_function_cannot_inline
-      = "static constructors and destructors cannot be inlined";
 
     parms
       = build_tree_list (NULL_TREE,
@@ -7981,7 +7979,6 @@ finish_method_def (void)
      dispatched, so suppress all thoughts of doing so.  */
   DECL_INLINE (current_function_decl) = 0;
   DECL_UNINLINABLE (current_function_decl) = 1;
-  current_function_cannot_inline = "methods cannot be inlined";
 
   finish_function ();
   lang_expand_function_end = NULL;

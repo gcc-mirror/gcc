@@ -1359,6 +1359,10 @@ rest_of_compilation (tree decl)
 
   timevar_push (TV_REST_OF_COMPILATION);
 
+  /* There's no need to defer outputting this function any more; we
+     know we want to output it.  */
+  DECL_DEFER_OUTPUT (current_function_decl) = 0;
+
   /* Register rtl specific functions for cfg.  */
   rtl_register_cfg_hooks ();
 
@@ -1425,8 +1429,7 @@ rest_of_compilation (tree decl)
   /* Initialize some variables used by the optimizers.  */
   init_function_for_compilation ();
 
-  if (! DECL_DEFER_OUTPUT (decl))
-    TREE_ASM_WRITTEN (decl) = 1;
+  TREE_ASM_WRITTEN (decl) = 1;
 
   /* Now that integrate will no longer see our rtl, we need not
      distinguish between the return value of this function and the
@@ -1438,10 +1441,8 @@ rest_of_compilation (tree decl)
   purge_hard_subreg_sets (get_insns ());
 
   /* Early return if there were errors.  We can run afoul of our
-     consistency checks, and there's not really much point in fixing them.
-     Don't return yet if -Wreturn-type; we need to do cleanup_cfg.  */
-  if (((rtl_dump_and_exit || flag_syntax_only) && !warn_return_type)
-      || errorcount || sorrycount)
+     consistency checks, and there's not really much point in fixing them.  */
+  if (rtl_dump_and_exit || flag_syntax_only || errorcount || sorrycount)
     goto exit_rest_of_compilation;
 
   timevar_push (TV_JUMP);
@@ -1534,14 +1535,7 @@ rest_of_compilation (tree decl)
 
   purge_line_number_notes (insns);
 
-  timevar_pop (TV_JUMP);
   close_dump_file (DFI_jump, print_rtl, insns);
-
-  /* Now is when we stop if -fsyntax-only and -Wreturn-type.  */
-  if (rtl_dump_and_exit || flag_syntax_only || DECL_DEFER_OUTPUT (decl))
-    goto exit_rest_of_compilation;
-
-  timevar_push (TV_JUMP);
 
   if (optimize)
     cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);

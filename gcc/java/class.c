@@ -2293,6 +2293,8 @@ emit_register_classes (void)
       DECL_SOURCE_LINE (init_decl) = 0;
       TREE_STATIC (init_decl) = 1;
       current_function_decl = init_decl;
+      DECL_INLINE (init_decl) = 0;
+      DECL_UNINLINABLE (init_decl) = 1;
       DECL_RESULT (init_decl) = build_decl (RESULT_DECL, NULL_TREE,
 					    void_type_node);
 
@@ -2307,10 +2309,6 @@ emit_register_classes (void)
       make_decl_rtl (init_decl, NULL);
       init_function_start (init_decl);
       expand_function_start (init_decl, 0);
-
-      /* Do not allow the function to be deferred.  */
-      current_function_cannot_inline
-	= "static constructors and destructors cannot be inlined";
 
       for ( t = registered_class; t; t = TREE_CHAIN (t))
 	emit_library_call (registerClass_libfunc, 0, VOIDmode, 1,
