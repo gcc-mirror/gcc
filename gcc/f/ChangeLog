@@ -1,3 +1,7 @@
+2003-07-08  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Make-lang.in (f/g77.dvi): Use PWD_COMMAND.
+
 2003-07-08  Zack Weinberg  <zack@codesourcery.com>
 
 	* lex.c: Remove error block #ifdef MAP_CHARACTER.
