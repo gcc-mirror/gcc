@@ -1,3 +1,20 @@
+2003-11-26  Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/12594
+	* include/bits/ostream.tcc
+	(basic_ostream::operator<<(basic_ostream& (*)(basic_ostream&)),
+	basic_ostream::operator<<(basic_ios& (*)(basic_ios&)),
+	basic_ostream::operator<<(ios_base& (*)(ios_base&))):
+	Implement the resolution of DR 60 (TC): These are not formatted
+	output functions so don't construct sentry objects and don't
+	catch exceptions.
+	(basic_ostream::put, basic_ostream::write): Implement the
+	resolution of DR 63 (TC) by catching exceptions and setting
+	badbit.
+	(basic_ostream::flush): Implement the resolution of DR 60 (TC):
+	This is not an unformatted output function so don't construct
+	a sentry object.
+
 2003-10-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (money_get::do_get(...,
