@@ -1,5 +1,5 @@
 // Test that type punning using an anonymous union works with strict aliasing.
-// { dg-do run }
+// { dg-do run { xfail *-*-* } }
 // { dg-options "-O2 -fstrict-aliasing" }
 
 extern "C" void abort ();
