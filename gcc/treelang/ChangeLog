@@ -2,6 +2,13 @@
 
 	* treelang.c: Remove cpp_post_options.
 
+2002-08-13  Tim Josling  <tej@melbpc.org.au>
+
+	* parse.y: Provide dummy definition of rtx for use by config.h.
+	* Make-lang.in (treetree.o): Remove dependency on non-existent
+	gt-treelang-treelang.h.
+	(gt-treelang-treelang.h): Remove.
+
 2002-08-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* treelang/Make-lang.in (treelang.mostlyclean): Remove coverage files.

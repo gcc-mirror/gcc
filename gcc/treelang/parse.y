@@ -42,9 +42,12 @@
 
    */
 
+/* Undefine IN_GCC so malloc etc work. The alternative is to redefine
+   the out of stack routine in bison.  */
 #undef IN_GCC
-
+/* Front ends should not have to see these, but config.h needs everything.  */
 typedef void *tree;
+typedef void *rtx;
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -804,7 +807,7 @@ init_opt:
 }
 |init {
   /* Nothing to do.  */
-}
+};
 
 init:
 ASSIGN init_element {

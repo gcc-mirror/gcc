@@ -259,7 +259,7 @@ tree_code_create_function_prototype (unsigned char* chars,
       type_node = get_type_for_numeric_type (parm->type);
       type_list = tree_cons (NULL_TREE, type_node, type_list);
     }
-  /* Last parm if null indicates fixed length list (as opposed to
+  /* Last parm if void indicates fixed length list (as opposed to
      printf style va_* list).  */
   type_list = tree_cons (NULL_TREE, void_type_node, type_list);
   /* The back end needs them in reverse order.  */
@@ -855,6 +855,11 @@ tree_ggc_storage_always_used (void * m)
 int
 maybe_objc_comptypes (tree lhs ATTRIBUTE_UNUSED,
                       tree rhs ATTRIBUTE_UNUSED,
+                      int reflexive ATTRIBUTE_UNUSED);
+
+int
+maybe_objc_comptypes (tree lhs ATTRIBUTE_UNUSED,
+                      tree rhs ATTRIBUTE_UNUSED,
                       int reflexive ATTRIBUTE_UNUSED)
 {
   return -1;
@@ -881,7 +886,20 @@ check_function_format (int *status ATTRIBUTE_UNUSED,
 /* Tell the c code we are not objective C.  */
 
 tree
+maybe_building_objc_message_expr (void);
+
+tree
 maybe_building_objc_message_expr ()
+{
+  return 0;
+}
+
+/* Tell the c code we are not objective C.  */
+
+int
+objc_comptypes (tree lhs ATTRIBUTE_UNUSED, 
+                tree rhs ATTRIBUTE_UNUSED, 
+                int reflexive ATTRIBUTE_UNUSED)
 {
   return 0;
 }
@@ -955,7 +973,7 @@ cpp_create_reader (enum c_lang lang ATTRIBUTE_UNUSED)
 /* Should not be called for treelang.   */
 
 void
-cpp_preprocess_file (cpp_reader *pfile ATTRIBUTE_UNUSED)
+cpp_post_options (cpp_reader *pfile ATTRIBUTE_UNUSED)
 {
   abort ();
 }
@@ -980,8 +998,8 @@ init_pragma ()
 
 /* Should not be called for treelang.   */
 
-void
-cpp_finish (cpp_reader *pfile ATTRIBUTE_UNUSED)
+int
+cpp_finish (cpp_reader *pfile ATTRIBUTE_UNUSED, FILE *f ATTRIBUTE_UNUSED)
 {
   abort ();
 }
@@ -1048,9 +1066,33 @@ set_Wformat (int setting ATTRIBUTE_UNUSED)
 /* Should not be called for treelang.   */
 
 void
+maybe_objc_check_decl (tree decl ATTRIBUTE_UNUSED);
+
+void
 maybe_objc_check_decl (tree decl ATTRIBUTE_UNUSED)
 {
   abort ();
+}
+
+/* Used for objective C.  */
+
+void
+objc_check_decl (tree decl ATTRIBUTE_UNUSED);
+
+void
+objc_check_decl (tree decl ATTRIBUTE_UNUSED)
+{
+}
+
+/* Tell the c code we are not objective C.  */
+
+tree
+objc_message_selector (void);
+
+tree
+objc_message_selector ()
+{
+  return 0;
 }
 
 /* Should not be called for treelang.   */

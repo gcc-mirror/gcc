@@ -92,7 +92,7 @@ tree1$(exeext): treelang/tree1.o treelang/treetree.o treelang/lex.o treelang/par
 
 treelang/tree1.o: $(srcdir)/treelang/tree1.c $(srcdir)/treelang/treelang.h \
 	$(srcdir)/treelang/parse.h $(CONFIG_H) \
-	gt-treelang-tree1.h gt-treelang-treelang.h gtype-treelang.h
+	gt-treelang-tree1.h gtype-treelang.h
 	$(CC) -o $@ -c $(ALL_CFLAGS) $(INCLUDES) $< 
 
 treelang/treetree.o: $(srcdir)/treelang/treetree.c $(srcdir)/treelang/treetree.h \
@@ -119,7 +119,7 @@ $(srcdir)/treelang/parse.c $(srcdir)/treelang/parse.h: $(srcdir)/treelang/parse.
 	--output=$(srcdir)/treelang/parse.c --defines
 # -v
 
-gt-treelang-tree1.h gt-treelang-treelang.h gtype-treelang.h : s-gtype; @true
+gt-treelang-tree1.h gtype-treelang.h : s-gtype; @true
 
 #
 # Build hooks:
@@ -164,6 +164,7 @@ treelang.install.common.done:  installdirs treelang.done
 	   if [ -f $$name ] ; then \
 	    name2="`echo \`basename $$name\` | sed -e '$(program_transform_name)' `"; \
 	    rm -f $(bindir)/$$name2$(exeext); \
+	    echo $(INSTALL_PROGRAM) $$name$(exeext) $(bindir)/$$name2$(exeext); \
 	    $(INSTALL_PROGRAM) $$name$(exeext) $(bindir)/$$name2$(exeext); \
 	    chmod a+x $(bindir)/$$name2$(exeext); \
 	  fi ; \
