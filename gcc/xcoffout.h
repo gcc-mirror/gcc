@@ -124,7 +124,11 @@ extern char *xcoff_read_only_section_name;
 
 /* Write out main source file name using ".file" rather than ".stabs".  */
 #define DBX_OUTPUT_MAIN_SOURCE_FILENAME(FILE,FILENAME) \
-  fprintf (FILE, "\t.file\t\"%s\"\n", FILENAME);
+  do {						\
+    fprintf (FILE, "\t.file\t", FILENAME);	\
+    output_quoted_string (FILE, FILENAME);	\
+    fprintf (FILE, "\n");			\
+  } while (0)
 
 #define ABS_OR_RELATIVE_LINENO(LINENO)		\
 ((xcoff_current_include_file			\
@@ -142,10 +146,16 @@ extern char *xcoff_read_only_section_name;
 #define DBX_OUTPUT_SOURCE_FILENAME(FILE, FILENAME)	\
 {							\
   if (xcoff_current_include_file)			\
-    fprintf (FILE, "\t.ei\t\"%s\"\n", xcoff_current_include_file);\
+    {							\
+      fprintf (FILE, "\t.ei\t");			\
+      output_quoted_string (FILE, xcoff_current_include_file);	\
+      fprintf (FILE, "\n");				\
+    }							\
   if (strcmp (main_input_filename, FILENAME))		\
     {							\
-      fprintf (FILE, "\t.bi\t\"%s\"\n", FILENAME);	\
+      fprintf (FILE, "\t.bi\t");			\
+      output_quoted_string (FILE, FILENAME);		\
+      fprintf (FILE, "\n");				\
       xcoff_current_include_file = FILENAME;		\
     }							\
   else							\
@@ -157,8 +167,9 @@ extern char *xcoff_read_only_section_name;
 {							\
   if (xcoff_current_include_file)			\
     {							\
-      fprintf ((FILE), "\t.ei\t\"%s\"\n",		\
-	       xcoff_current_include_file);		\
+      fprintf (FILE, "\t.ei\t");			\
+      output_quoted_string (FILE, xcoff_current_include_file);	\
+      fprintf (FILE, "\n");				\
       xcoff_current_include_file = NULL;		\
     }							\
 }
