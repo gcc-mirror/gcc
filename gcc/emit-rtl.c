@@ -1808,12 +1808,16 @@ set_mem_attributes (ref, t, objectp)
 	  if (DECL_P (t))
 	    {
 	      expr = t;
+	      offset = NULL;
 	      if (host_integerp (off_tree, 1))
-		offset = GEN_INT (tree_low_cst (off_tree, 1));
-	      size = (DECL_SIZE_UNIT (t)
-		      && host_integerp (DECL_SIZE_UNIT (t), 1)
-		      ? GEN_INT (tree_low_cst (DECL_SIZE_UNIT (t), 1)) : 0);
-	      align = DECL_ALIGN (t);
+		{
+		  HOST_WIDE_INT ioff = tree_low_cst (off_tree, 1);
+		  HOST_WIDE_INT aoff = (ioff & -ioff) * BITS_PER_UNIT;
+		  align = DECL_ALIGN (t);
+		  if (aoff && aoff < align)
+	            align = aoff;
+		  offset = GEN_INT (ioff);
+		}
 	    }
 	  else if (TREE_CODE (t) == COMPONENT_REF)
 	    {
