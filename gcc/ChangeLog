@@ -1,3 +1,44 @@
+2000-02-01  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* frame.c (find_fde): Convert for loop to do-while so compiler
+	sees it's always executed at least once.
+	* libgcc2.c (BBINBUFSIZE): Kill.
+	(__bb_init_prg): Use fgets.
+	(__bb_exit_trace_func): Don't paste strings.
+	* unroll.c (unroll_loop): Initialize unroll_type, not
+	unroll_number, and tweak logic to match.
+
+	* i386.c (ix86_expand_int_movcc): Add explicit 'return 0' in
+	all failure paths.
+	(ix86_flags_dependant): Likewise.  Disentangle control flow.
+	(ix86_sched_reorder): Break guts out to
+	ix86_sched_reorder_pentium and ix86_sched_reorder_ppro.
+	(ix86_sched_reorder_ppro): Initialize pair2 and insnp before
+	any possible use.
+
+	* i386.h (MACHINE_STATE_SAVE, MACHINE_STATE_RESTORE): Don't
+	use string concatenation.  Don't save and restore esi.
+
+	* fixinc/Makefile.in (fixincl.sh): Don't depend on inclhack.def.
+	(machname.h): Remove script to separate file.  Use two-step
+	sequence so target is not created if script fails.
+	* fixinc/gen-machname.h: New file.  Handle case where no non-reserved
+	identifiers are defined.
+	* fixinc/fixlib.c (mn_get_regexps): Return a flag: if MN_NAME_PAT is
+	an empty string, machine_name doesn't need to do anything at
+	all.
+	(is_cxx_header): Add more cases to regexp.
+	* fixinc/fixlib.h: Update prototype.
+	* fixinc/fixtests.c, fixinc/fixfixes.c: Update callers of
+	mn_get_regexps.
+	* fixinc/fixincl.c: Define NO_BOGOSITY.
+
+	* fixinc/inclhack.def (no_double_slash, else_endif_label): Ifdef out.
+	(hp_sysfile): Add missing comma.
+	(math_exception): Put the wrapper ifdefs at the beginning and
+	the end of the file.
+	* fixinc/fixincl.x, fixinc/inclhack.sh: Regenerate.
+
 2000-02-01  Richard Henderson  <rth@cygnus.com>
 
 	* sparc.c (fp_zero_operand): Turn into a normal predicate.
