@@ -945,8 +945,8 @@
 (define_insn "beq"
   [(set (pc)
         (if_then_else (eq (cc0) (const_int 0))
-      (label_ref (match_operand 0 "" ""))
-      (pc)))]
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
   ""
   "*
   return (arm_output_asm_insn (\"beq\\t%l0\", operands));
@@ -955,8 +955,8 @@
 (define_insn "bne"
   [(set (pc)
         (if_then_else (ne (cc0) (const_int 0))
-      (label_ref (match_operand 0 "" ""))
-      (pc)))]
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
   ""
   "*
   return (arm_output_asm_insn (\"bne\\t%l0\", operands));
@@ -965,8 +965,8 @@
 (define_insn "bgt"
   [(set (pc)
         (if_then_else (gt (cc0) (const_int 0))
-      (label_ref (match_operand 0 "" ""))
-      (pc)))]
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
   ""
   "*
   return (arm_output_asm_insn (\"bgt\\t%l0\", operands));
@@ -975,8 +975,8 @@
 (define_insn "ble"
   [(set (pc)
         (if_then_else (le (cc0) (const_int 0))
-      (label_ref (match_operand 0 "" ""))
-      (pc)))]
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
   ""
   "*
   return (arm_output_asm_insn (\"ble\\t%l0\", operands));
@@ -985,8 +985,8 @@
 (define_insn "bge"
   [(set (pc)
         (if_then_else (ge (cc0) (const_int 0))
-      (label_ref (match_operand 0 "" ""))
-      (pc)))]
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
   ""
   "*
   return (arm_output_asm_insn (\"bge\\t%l0\", operands));
@@ -995,8 +995,8 @@
 (define_insn "blt"
   [(set (pc)
         (if_then_else (lt (cc0) (const_int 0))
-      (label_ref (match_operand 0 "" ""))
-      (pc)))]
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
   ""
   "*
   return (arm_output_asm_insn (\"blt\\t%l0\", operands));
@@ -1005,8 +1005,8 @@
 (define_insn "bgtu"
   [(set (pc)
         (if_then_else (gtu (cc0) (const_int 0))
-      (label_ref (match_operand 0 "" ""))
-      (pc)))]
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
   ""
   "*
   return (arm_output_asm_insn (\"bhi\\t%l0\", operands));
@@ -1015,8 +1015,8 @@
 (define_insn "bleu"
   [(set (pc)
         (if_then_else (leu (cc0) (const_int 0))
-      (label_ref (match_operand 0 "" ""))
-      (pc)))]
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
   ""
   "*
   return (arm_output_asm_insn (\"bls\\t%l0\", operands));
@@ -1025,8 +1025,8 @@
 (define_insn "bgeu"
   [(set (pc)
         (if_then_else (geu (cc0) (const_int 0))
-      (label_ref (match_operand 0 "" ""))
-      (pc)))]
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
   ""
   "*
   return (arm_output_asm_insn (\"bhs\\t%l0\", operands));
@@ -1035,8 +1035,8 @@
 (define_insn "bltu"
   [(set (pc)
         (if_then_else (ltu (cc0) (const_int 0))
-      (label_ref (match_operand 0 "" ""))
-      (pc)))]
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
   ""
   "*
   return (arm_output_asm_insn (\"blo\\t%l0\", operands));
@@ -1047,8 +1047,8 @@
 (define_insn ""
   [(set (pc)
         (if_then_else (eq (cc0) (const_int 0))
-      (pc)
-      (label_ref (match_operand 0 "" ""))))]
+		      (pc)
+		      (label_ref (match_operand 0 "" ""))))]
   ""
   "*
   return (arm_output_asm_insn (\"bne\\t%l0\", operands));
@@ -1057,8 +1057,8 @@
 (define_insn ""
   [(set (pc)
         (if_then_else (ne (cc0) (const_int 0))
-      (pc)
-      (label_ref (match_operand 0 "" ""))))]
+		      (pc)
+		      (label_ref (match_operand 0 "" ""))))]
   ""
   "*
   return (arm_output_asm_insn (\"beq\\t%l0\", operands));
@@ -1067,8 +1067,8 @@
 (define_insn ""
   [(set (pc)
         (if_then_else (gt (cc0) (const_int 0))
-      (pc)
-      (label_ref (match_operand 0 "" ""))))]
+		      (pc)
+		      (label_ref (match_operand 0 "" ""))))]
   ""
   "*
   return (arm_output_asm_insn (\"ble\\t%l0\", operands));
@@ -1077,8 +1077,8 @@
 (define_insn ""
   [(set (pc)
         (if_then_else (le (cc0) (const_int 0))
-      (pc)
-      (label_ref (match_operand 0 "" ""))))]
+		      (pc)
+		      (label_ref (match_operand 0 "" ""))))]
   ""
   "*
   return (arm_output_asm_insn (\"bgt\\t%l0\", operands));
@@ -1087,8 +1087,8 @@
 (define_insn ""
   [(set (pc)
         (if_then_else (ge (cc0) (const_int 0))
-      (pc)
-      (label_ref (match_operand 0 "" ""))))]
+		      (pc)
+		      (label_ref (match_operand 0 "" ""))))]
   ""
   "*
   return (arm_output_asm_insn (\"blt\\t%l0\", operands));
@@ -1097,8 +1097,8 @@
 (define_insn ""
   [(set (pc)
         (if_then_else (lt (cc0) (const_int 0))
-      (pc)
-      (label_ref (match_operand 0 "" ""))))]
+		      (pc)
+		      (label_ref (match_operand 0 "" ""))))]
   ""
   "*
   return (arm_output_asm_insn (\"bge\\t%l0\", operands));
@@ -1107,8 +1107,8 @@
 (define_insn ""
   [(set (pc)
         (if_then_else (gtu (cc0) (const_int 0))
-      (pc)
-      (label_ref (match_operand 0 "" ""))))]
+		      (pc)
+		      (label_ref (match_operand 0 "" ""))))]
   ""
   "*
   return (arm_output_asm_insn (\"bls\\t%l0\", operands));
@@ -1117,8 +1117,8 @@
 (define_insn ""
   [(set (pc)
         (if_then_else (leu (cc0) (const_int 0))
-      (pc)
-      (label_ref (match_operand 0 "" ""))))]
+		      (pc)
+		      (label_ref (match_operand 0 "" ""))))]
   ""
   "*
   return (arm_output_asm_insn (\"bhi\\t%l0\", operands));
@@ -1127,8 +1127,8 @@
 (define_insn ""
   [(set (pc)
         (if_then_else (geu (cc0) (const_int 0))
-      (pc)
-      (label_ref (match_operand 0 "" ""))))]
+		      (pc)
+		      (label_ref (match_operand 0 "" ""))))]
   ""
   "*
   return (arm_output_asm_insn (\"blo\\t%l0\", operands));
@@ -1137,8 +1137,8 @@
 (define_insn ""
   [(set (pc)
         (if_then_else (ltu (cc0) (const_int 0))
-      (pc)
-      (label_ref (match_operand 0 "" ""))))]
+		      (pc)
+		      (label_ref (match_operand 0 "" ""))))]
   ""
   "*
   return (arm_output_asm_insn (\"bhs\\t%l0\", operands));
