@@ -64,12 +64,14 @@ return3_##NAME (void)					\
 #define CHECK(NAME) test_##NAME()
 
 SETUP (orig, 49, 1.0, 111111)
+#ifndef SKIP_ATTRIBUTE
 SETUP (p_all, 50, 2.0, 222222)
 SETUP (p_inner, 51, 3.0, 333333)
 SETUP (p_outer, 52, 4.0, 444444)
 SETUP (a_max, 53, 5.0, 555555)
 SETUP (m_outer_p_inner, 54, 6.0, 666666)
 SETUP (m_inner_p_outer, 55, 7.0, 777777) 
+#endif
 
 void
 struct_align_1_x (void)
@@ -77,12 +79,14 @@ struct_align_1_x (void)
   DEBUG_INIT
 
   CHECK (orig);
+#ifndef SKIP_ATTRIBUTE
   CHECK (p_all);
   CHECK (p_inner);
   CHECK (p_outer);
   CHECK (a_max);
   CHECK (m_outer_p_inner);
   CHECK (m_inner_p_outer);
+#endif
 
   DEBUG_FINI
 

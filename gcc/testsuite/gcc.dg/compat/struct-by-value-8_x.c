@@ -129,7 +129,9 @@ void checkScsi (Scsi x, int i)
 void checkScis (Scis x, int i)
 { if (x.c != i/16 || x.i != i+1 || x.s != i+2) DEBUG_CHECK }
 
+#ifndef SKIP_ZERO_ARRAY
 T(0, Ssc)
+#endif
 T(1, Ssc)
 T(2, Ssc)
 T(3, Ssc)
@@ -145,7 +147,9 @@ T(12, Ssc)
 T(13, Ssc)
 T(14, Ssc)
 T(15, Ssc)
+#ifndef SKIP_ZERO_ARRAY
 T(0, Sis)
+#endif
 T(1, Sis)
 T(2, Sis)
 T(3, Sis)
@@ -171,7 +175,9 @@ DEBUG_INIT
 
 #define T(N, TYPE) testit##TYPE##N ();
 
+#ifndef SKIP_ZERO_ARRAY
 T(0, Ssc)
+#endif
 T(1, Ssc)
 T(2, Ssc)
 T(3, Ssc)
@@ -187,7 +193,9 @@ T(12, Ssc)
 T(13, Ssc)
 T(14, Ssc)
 T(15, Ssc)
+#ifndef SKIP_ZERO_ARRAY
 T(0, Sis)
+#endif
 T(1, Sis)
 T(2, Sis)
 T(3, Sis)

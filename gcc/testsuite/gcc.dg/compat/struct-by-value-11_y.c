@@ -2,8 +2,7 @@
 
 #include "compat-common.h"
 
-/* Turn off checking for variable arguments with -DSKIPVA.  */
-#ifdef SKIPVA
+#ifdef SKIP_VA
 const int test_va = 0;
 #else
 const int test_va = 1;
@@ -13,6 +12,7 @@ const int test_va = 1;
 #include "fp-struct-init.h"
 #include "fp-struct-test-by-value-y.h"
 
+#ifndef SKIP_COMPLEX_INT
 DEFS(cc,_Complex char)
 INITS(cc, _Complex char)
 
@@ -32,3 +32,4 @@ TEST(Scc13, _Complex char)
 TEST(Scc14, _Complex char)
 TEST(Scc15, _Complex char)
 TEST(Scc16, _Complex char)
+#endif

@@ -62,8 +62,10 @@ testva##NAME (int n, ...)					\
   return rslt;							\
 }
 
+#ifndef SKIP_COMPLEX_INT
 T(ci, _Complex int, (2,3))
 T(cl, _Complex long, (3,4))
 T(cll, _Complex long long, (4,5))
+#endif
 T(cd, _Complex double, (2.0,3.0))
 T(cld, _Complex long double, (3.0,4.0))

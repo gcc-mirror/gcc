@@ -2,8 +2,7 @@
 
 #include "compat-common.h"
 
-/* Turn off checking for variable arguments with -DSKIPVA.  */
-#ifdef SKIPVA
+#ifdef SKIP_VA
 const int test_va = 0;
 #else
 const int test_va = 1;
@@ -107,7 +106,9 @@ testva##TYPE##N (int n, ...)					\
     }								\
 }
 
+#ifndef SKIP_ZERO_ARRAY
 T(0, Sc)
+#endif
 T(1, Sc)
 T(2, Sc)
 T(3, Sc)
@@ -123,7 +124,9 @@ T(12, Sc)
 T(13, Sc)
 T(14, Sc)
 T(15, Sc)
+#ifndef SKIP_ZERO_ARRAY
 T(0, Ss)
+#endif
 T(1, Ss)
 T(2, Ss)
 T(3, Ss)
@@ -139,7 +142,9 @@ T(12, Ss)
 T(13, Ss)
 T(14, Ss)
 T(15, Ss)
+#ifndef SKIP_ZERO_ARRAY
 T(0, Si)
+#endif
 T(1, Si)
 T(2, Si)
 T(3, Si)

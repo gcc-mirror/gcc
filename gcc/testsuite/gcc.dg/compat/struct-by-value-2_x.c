@@ -105,7 +105,9 @@ testit##NAME##N (void)						\
   DEBUG_NL;							\
 }
 
+#ifndef SKIP_ZERO_ARRAY
 T(0, uc, unsigned char)
+#endif
 T(1, uc, unsigned char)
 T(2, uc, unsigned char)
 T(3, uc, unsigned char)
@@ -121,7 +123,9 @@ T(12, uc, unsigned char)
 T(13, uc, unsigned char)
 T(14, uc, unsigned char)
 T(15, uc, unsigned char)
+#ifndef SKIP_ZERO_ARRAY
 T(0, us, unsigned short)
+#endif
 T(1, us, unsigned short)
 T(2, us, unsigned short)
 T(3, us, unsigned short)
@@ -137,7 +141,9 @@ T(12, us, unsigned short)
 T(13, us, unsigned short)
 T(14, us, unsigned short)
 T(15, us, unsigned short)
+#ifndef SKIP_ZERO_ARRAY
 T(0, ui, unsigned int)
+#endif
 T(1, ui, unsigned int)
 T(2, ui, unsigned int)
 T(3, ui, unsigned int)
@@ -163,7 +169,9 @@ DEBUG_INIT
 
 #define T(N, NAME, TYPE) testit##NAME##N ();
 
+#ifndef SKIP_ZERO_ARRAY
 T(0, uc, unsigned char)
+#endif
 T(1, uc, unsigned char)
 T(2, uc, unsigned char)
 T(3, uc, unsigned char)
@@ -179,7 +187,9 @@ T(12, uc, unsigned char)
 T(13, uc, unsigned char)
 T(14, uc, unsigned char)
 T(15, uc, unsigned char)
+#ifndef SKIP_ZERO_ARRAY
 T(0, us, unsigned short)
+#endif
 T(1, us, unsigned short)
 T(2, us, unsigned short)
 T(3, us, unsigned short)
@@ -195,7 +205,9 @@ T(12, us, unsigned short)
 T(13, us, unsigned short)
 T(14, us, unsigned short)
 T(15, us, unsigned short)
+#ifndef SKIP_ZERO_ARRAY
 T(0, ui, unsigned int)
+#endif
 T(1, ui, unsigned int)
 T(2, ui, unsigned int)
 T(3, ui, unsigned int)
