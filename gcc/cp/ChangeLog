@@ -9,7 +9,7 @@
 	(search.o): Likewise.
 	(pt.o): Likewise.
 	(repo.o): Likewise.
-	* clas.c: Include ggc.h.
+	* class.c: Include ggc.h.
 	(current_class_name): Remove.
 	(current_class_type): Likewise.
 	(current_access_specifier): Likewise.
