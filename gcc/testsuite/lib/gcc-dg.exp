@@ -321,6 +321,16 @@ proc dg-require-gc-sections { args } {
     }
 }
 
+# If this target does not support profiling, skip this test.
+
+proc dg-require-profiling { args } {
+    if { ![ check_profiling_available ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+}
+
 # If this target does not support DLL attributes skip this test.
 
 proc dg-require-dll { args } { 

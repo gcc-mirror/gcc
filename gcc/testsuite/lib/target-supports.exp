@@ -161,3 +161,27 @@ proc check_gc_sections_available { } {
     }
     return $gc_sections_available_saved
 }
+
+# Return true if profiling is supported on the target.
+
+proc check_profiling_available { } {
+    global profiling_available_saved
+
+    if {![info exists profiling_available_saved]} {
+	# Some targets don't have any implementation of __bb_init_func or are
+	# missing other needed machinery.
+	if { [istarget mmix-*-*]
+	     || [istarget arm*-*-elf]
+	     || [istarget strongarm*-*-elf]
+	     || [istarget xscale*-*-elf]
+	     || [istarget cris-*-*]
+	     || [istarget h8300-*-*] 
+	     || [istarget *-*-windiss] } {
+	    set profiling_available_saved 0
+	} else {
+	    set profiling_available_saved 1
+	}
+    }
+    
+    return $profiling_available_saved
+}
