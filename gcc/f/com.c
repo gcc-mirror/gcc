@@ -444,9 +444,6 @@ static tree ffecom_type_localvar_ (ffesymbol s,
 				   ffeinfoBasictype bt,
 				   ffeinfoKindtype kt);
 static tree ffecom_type_namelist_ (void);
-#if 0
-static tree ffecom_type_permanent_copy_ (tree t);
-#endif
 static tree ffecom_type_vardesc_ (void);
 static tree ffecom_vardesc_ (ffebld expr);
 static tree ffecom_vardesc_array_ (ffesymbol s);
@@ -9502,41 +9499,6 @@ ffecom_type_namelist_ ()
 
 #endif
 
-/* Make a copy of a type, assuming caller has switched to the permanent
-   obstacks and that the type is for an aggregate (array) initializer.  */
-
-#if FFECOM_targetCURRENT == FFECOM_targetGCC && 0	/* Not used now. */
-static tree
-ffecom_type_permanent_copy_ (tree t)
-{
-  tree domain;
-  tree max;
-
-  assert (TREE_TYPE (t) != NULL_TREE);
-
-  domain = TYPE_DOMAIN (t);
-
-  assert (TREE_CODE (t) == ARRAY_TYPE);
-  assert (TREE_PERMANENT (TREE_TYPE (t)));
-  assert (TREE_PERMANENT (TREE_TYPE (domain)));
-  assert (TREE_PERMANENT (TYPE_MIN_VALUE (domain)));
-
-  max = TYPE_MAX_VALUE (domain);
-  if (!TREE_PERMANENT (max))
-    {
-      assert (TREE_CODE (max) == INTEGER_CST);
-
-      max = build_int_2 (TREE_INT_CST_LOW (max), TREE_INT_CST_HIGH (max));
-      TREE_TYPE (max) = TREE_TYPE (TYPE_MIN_VALUE (domain));
-    }
-
-  return build_array_type (TREE_TYPE (t),
-			   build_range_type (TREE_TYPE (domain),
-					     TYPE_MIN_VALUE (domain),
-					     max));
-}
-#endif
-
 /* Build Vardesc type.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
@@ -14095,9 +14057,6 @@ finish_decl (tree decl, tree init, bool is_top_level)
 				0);
     }
 
-  /* This test used to include TREE_PERMANENT, however, we have the same
-     problem with initializers at the function level.  Such initializers get
-     saved until the end of the function on the momentary_obstack.  */
   if (!(TREE_CODE (decl) == FUNCTION_DECL && DECL_INLINE (decl))
       && temporary
   /* DECL_INITIAL is not defined in PARM_DECLs, since it shares space with
@@ -14121,11 +14080,6 @@ finish_decl (tree decl, tree init, bool is_top_level)
 	  if (TREE_READONLY (decl))
 	    {
 	      preserve_initializer ();
-	      /* Hack?  Set the permanent bit for something that is
-		 permanent, but not on the permenent obstack, so as to
-		 convince output_constant_def to make its rtl on the
-		 permanent obstack.  */
-	      TREE_PERMANENT (DECL_INITIAL (decl)) = 1;
 
 	      /* The initializer and DECL must have the same (or equivalent
 		 types), but if the initializer is a STRING_CST, its type

@@ -301,7 +301,7 @@ print_node (file, prefix, node, indent)
     fputs (" used", file);
   if (TREE_RAISES (node))
     fputs (" raises", file);
-  if (TREE_PERMANENT (node))
+  if (!ggc_p && TREE_PERMANENT (node))
     fputs (" permanent", file);
   if (TREE_PUBLIC (node))
     fputs (" public", file);

@@ -563,8 +563,14 @@ extern void tree_class_check_failed PARAMS ((const tree, char,
 
 /* Nonzero means permanent node;
    node will continue to exist for the entire compiler run.
-   Otherwise it will be recycled at the end of the function.  */
+   Otherwise it will be recycled at the end of the function.
+   This flag is always zero if garbage collection is in use.
+   Try not to use this.  Only set it with TREE_SET_PERMANENT.  */
 #define TREE_PERMANENT(NODE) ((NODE)->common.permanent_flag)
+#define TREE_SET_PERMANENT(NODE) do { \
+  if (!ggc_p && current_obstack == &permanent_obstack) \
+    TREE_PERMANENT(NODE) = 1; \
+} while (0) 
 
 /* In INTEGER_TYPE or ENUMERAL_TYPE nodes, means an unsigned type.
    In FIELD_DECL nodes, means an unsigned bit field.

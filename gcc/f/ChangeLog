@@ -1,3 +1,8 @@
+2000-02-23  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* com.c (ffecom_type_permanent_copy_): Delete unused function.
+        (finish_decl): Don't change TREE_PERMANENT (DECL_INITIAL (decl)).
+
 Sat Feb 19 18:43:13 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* com.c (ffecom_sym_transform): Use DECL_SIZE_UNIT.
