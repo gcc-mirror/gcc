@@ -635,11 +635,11 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
   /* If we are inside an appropriately-short loop and one operand is an
      expensive constant, force it into a register.  */
   if (CONSTANT_P (op0) && preserve_subexpressions_p ()
-      && rtx_cost (op0, binoptab->code) > 2)
+      && rtx_cost (op0, binoptab->code) > COSTS_N_INSNS (1))
     op0 = force_reg (mode, op0);
 
   if (CONSTANT_P (op1) && preserve_subexpressions_p ()
-      && ! shift_op && rtx_cost (op1, binoptab->code) > 2)
+      && ! shift_op && rtx_cost (op1, binoptab->code) > COSTS_N_INSNS (1))
     op1 = force_reg (mode, op1);
 
   /* Record where to delete back to if we backtrack.  */
@@ -1876,11 +1876,11 @@ expand_twoval_binop (binoptab, op0, op1, targ0, targ1, unsignedp)
   /* If we are inside an appropriately-short loop and one operand is an
      expensive constant, force it into a register.  */
   if (CONSTANT_P (op0) && preserve_subexpressions_p ()
-      && rtx_cost (op0, binoptab->code) > 2)
+      && rtx_cost (op0, binoptab->code) > COSTS_N_INSNS (1))
     op0 = force_reg (mode, op0);
 
   if (CONSTANT_P (op1) && preserve_subexpressions_p ()
-      && rtx_cost (op1, binoptab->code) > 2)
+      && rtx_cost (op1, binoptab->code) > COSTS_N_INSNS (1))
     op1 = force_reg (mode, op1);
 
   if (targ0)
@@ -2956,11 +2956,11 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align,
   /* If we are inside an appropriately-short loop and one operand is an
      expensive constant, force it into a register.  */
   if (CONSTANT_P (x) && preserve_subexpressions_p ()
-      && rtx_cost (x, COMPARE) > 2)
+      && rtx_cost (x, COMPARE) > COSTS_N_INSNS (1))
     x = force_reg (mode, x);
 
   if (CONSTANT_P (y) && preserve_subexpressions_p ()
-      && rtx_cost (y, COMPARE) > 2)
+      && rtx_cost (y, COMPARE) > COSTS_N_INSNS (1))
     y = force_reg (mode, y);
 
 #ifdef HAVE_cc0
