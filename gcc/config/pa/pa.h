@@ -560,11 +560,9 @@ do {								\
 /* Base register for access to local variables of the function.  */
 #define FRAME_POINTER_REGNUM 3
 
-/* Value should be nonzero if functions must have frame pointers.
-   All functions have frame pointers when optimizing for space
-   (for now).  */
+/* Value should be nonzero if functions must have frame pointers.  */
 #define FRAME_POINTER_REQUIRED \
-  (current_function_calls_alloca || TARGET_SPACE)
+  (current_function_calls_alloca)
 
 /* C statement to store the difference between the frame pointer
    and the stack pointer values immediately after the function prologue.

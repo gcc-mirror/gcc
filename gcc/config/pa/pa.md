@@ -1,5 +1,5 @@
 ;;- Machine description for HP PA-RISC architecture for GNU C compiler
-;;   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+;;   Copyright (C) 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
 ;;   Contributed by the Center for Software Science at the University
 ;;   of Utah.
 
@@ -4850,18 +4850,39 @@
   ""
   "*
 {
-  /* Must import the magic millicode routine.  */
-  output_asm_insn (\".IMPORT __outline_prologue,MILLICODE\", NULL);
+  extern int frame_pointer_needed;
 
-  /* The out-of-line prologue will make sure we return to the right
-     instruction.  */
-  if (TARGET_PORTABLE_RUNTIME)
+  /* We need two different versions depending on whether or not we
+     need a frame pointer.   Also note that we return to the instruction
+     immediately after the branch rather than two instructions after the
+     break as normally is the case.  */
+  if (frame_pointer_needed)
     {
-      output_asm_insn (\"ldil L'__outline_prologue,%%r31\", NULL);
-      output_asm_insn (\"ble,n R'__outline_prologue(%%sr0,%%r31)\", NULL);
+      /* Must import the magic millicode routine(s).  */
+      output_asm_insn (\".IMPORT __outline_prologue_fp,MILLICODE\", NULL);
+
+      if (TARGET_PORTABLE_RUNTIME)
+	{
+	  output_asm_insn (\"ldil L'__outline_prologue_fp,%%r31\", NULL);
+	  output_asm_insn (\"ble,n R'__outline_prologue_fp(%%sr0,%%r31)\",
+			   NULL);
+	}
+      else
+	output_asm_insn (\"bl,n __outline_prologue_fp,%%r31\", NULL);
     }
   else
-    output_asm_insn (\"bl,n __outline_prologue,%%r31\", NULL);
+    {
+      /* Must import the magic millicode routine(s).  */
+      output_asm_insn (\".IMPORT __outline_prologue,MILLICODE\", NULL);
+
+      if (TARGET_PORTABLE_RUNTIME)
+	{
+	  output_asm_insn (\"ldil L'__outline_prologue,%%r31\", NULL);
+	  output_asm_insn (\"ble,n R'__outline_prologue(%%sr0,%%r31)\", NULL);
+	}
+      else
+	output_asm_insn (\"bl,n __outline_prologue,%%r31\", NULL);
+    }
   return \"\";
 }"
   [(set_attr "type" "multi")
@@ -4882,18 +4903,43 @@
   ""
   "*
 {
-  /* Must import the magic millicode routine.  */
-  output_asm_insn (\".IMPORT __outline_epilogue,MILLICODE\", NULL);
+  extern int frame_pointer_needed;
 
-  /* The out-of-line prologue will make sure we return to the right
-     instruction.  */
-  if (TARGET_PORTABLE_RUNTIME)
+  /* We need two different versions depending on whether or not we
+     need a frame pointer.   Also note that we return to the instruction
+     immediately after the branch rather than two instructions after the
+     break as normally is the case.  */
+  if (frame_pointer_needed)
     {
-      output_asm_insn (\"ldil L'__outline_epilogue,%%r31\", NULL);
-      output_asm_insn (\"ble,n R'__outline_epilogue(%%sr0,%%r31)\", NULL);
+      /* Must import the magic millicode routine.  */
+      output_asm_insn (\".IMPORT __outline_epilogue_fp,MILLICODE\", NULL);
+
+      /* The out-of-line prologue will make sure we return to the right
+	 instruction.  */
+      if (TARGET_PORTABLE_RUNTIME)
+	{
+	  output_asm_insn (\"ldil L'__outline_epilogue_fp,%%r31\", NULL);
+	  output_asm_insn (\"ble,n R'__outline_epilogue_fp(%%sr0,%%r31)\",
+			   NULL);
+	}
+      else
+	output_asm_insn (\"bl,n __outline_epilogue_fp,%%r31\", NULL);
     }
   else
-    output_asm_insn (\"bl,n __outline_epilogue,%%r31\", NULL);
+    {
+      /* Must import the magic millicode routine.  */
+      output_asm_insn (\".IMPORT __outline_epilogue,MILLICODE\", NULL);
+
+      /* The out-of-line prologue will make sure we return to the right
+	 instruction.  */
+      if (TARGET_PORTABLE_RUNTIME)
+	{
+	  output_asm_insn (\"ldil L'__outline_epilogue,%%r31\", NULL);
+	  output_asm_insn (\"ble,n R'__outline_epilogue(%%sr0,%%r31)\", NULL);
+	}
+      else
+	output_asm_insn (\"bl,n __outline_epilogue,%%r31\", NULL);
+    }
   return \"\";
 }"
   [(set_attr "type" "multi")

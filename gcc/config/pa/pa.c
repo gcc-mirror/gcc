@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for HPPA.
-   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.c
 
 This file is part of GNU CC.
@@ -54,6 +54,10 @@ int hp_profile_labelno;
 /* Counts for the number of callee-saved general and floating point
    registers which were saved by the current function's prologue.  */
 static int gr_saved, fr_saved;
+
+/* Whether or not the current function uses an out-of-line prologue
+   and epilogue.  */
+static int out_of_line_prologue_epilogue;
 
 static rtx find_addr_reg ();
 
@@ -2042,52 +2046,30 @@ compute_frame_size (size, fregs_live)
      we need to add this in because of STARTING_FRAME_OFFSET. */
   fsize = size + (size || frame_pointer_needed ? 8 : 0);
 
-  for (i = 18; i >= 4; i--)
-    {
-      if (regs_ever_live[i])
-	{
-	  /* For out of line prologues/epilogues we only need to
-	     compute the highest register number to save and
-	     allocate space for all the callee saved registers
-	     with a lower number.  */
-	  if (TARGET_SPACE)
-	    {
-	      fsize += 4 * (i - 3);
-	      break;
-	    }
-	  fsize += 4;
-	}
-    }
+  /* We do not want to create holes in the callee registers that
+     get saved (confuses gdb), so once we know the highest we just
+     save all the ones below it, whether they're used or not.  */
+  for (i = 18; i >= 3; i--)
+    if (regs_ever_live[i])
+      {
+	fsize += 4 * (i - 2);
+	break;
+      }
 
-  /* We always save %r3, make room for it.  */
-  if (TARGET_SPACE)
-    fsize += 8;
-
-  /* If we don't have a frame pointer, the register normally used for that
-     purpose is saved just like other registers, not in the "frame marker".  */
-  if (! frame_pointer_needed)
-    {
-      if (regs_ever_live[FRAME_POINTER_REGNUM])
-	fsize += 4;
-    }
+  /* Round the stack.  */
   fsize = (fsize + 7) & ~7;
 
+  /* We do not want to create holes in the callee registers that
+     get saved (confuses gdb), so once we know the highest we just
+     save all the ones below it, whether they're used or not.  */
   for (i = 66; i >= 48; i -= 2)
     if (regs_ever_live[i] || regs_ever_live[i + 1])
       {
 	if (fregs_live)
 	  *fregs_live = 1;
 
-	/* For out of line prologues/epilogues we only need to
-	   compute the highest register number to save and
-	   allocate space for all the callee saved registers
-	   with a lower number.  */
-        if (TARGET_SPACE)
-	  {
-	    fsize += 4 * (i - 46);
-	    break;
-	  }
-	fsize += 8;
+	fsize += 4 * (i = 46);
+	break;
       }
 
   fsize += current_function_outgoing_args_size;
@@ -2185,41 +2167,85 @@ hppa_expand_prologue()
     {
       rtx operands[2];
       int saves = 0;
+      int outline_insn_count = 0;
+      int inline_insn_count = 0;
 
-      /* Put the local_fisze into %r19.  */
-      operands[0] = gen_rtx (REG, SImode, 19);
-      operands[1] = GEN_INT (local_fsize);
-      emit_move_insn (operands[0], operands[1]);
+      /* Count the number of insns for the inline and out of line
+	 variants so we can choose one appropriately.
 
-      /* Put the stack size into %r21.  */
-      operands[0] = gen_rtx (REG, SImode, 21);
-      operands[1] = size_rtx;
-      emit_move_insn (operands[0], operands[1]);
+	 No need to screw with counting actual_fsize operations -- they're
+	 done for both inline and out of line prologues.  */
+      if (regs_ever_live[2])
+	inline_insn_count += 1;
+
+      if (! cint_ok_for_move (local_fsize))
+	outline_insn_count += 2;
+      else
+	outline_insn_count += 1;
 
       /* Put the register save info into %r22.  */
       for (i = 18; i >= 3; i--)
 	if (regs_ever_live[i] && ! call_used_regs[i])
 	  {
+	    /* -1 because the stack adjustment is normally done in
+	       the same insn as a register save.  */
+	    inline_insn_count += (i - 2) - 1;
 	    saves = i;
             break;
 	  }
-	  
+  
       for (i = 66; i >= 48; i -= 2)
 	if (regs_ever_live[i] || regs_ever_live[i + 1])
 	  {
+	    /* +1 needed as we load %r1 with the start of the freg
+	       save area.  */
+	    inline_insn_count += (i/2 - 23) + 1;
 	    saves |= ((i/2 - 12 ) << 16);
 	    break;
 	  }
 
-      operands[0] = gen_rtx (REG, SImode, 22);
-      operands[1] = GEN_INT (saves);
-      emit_move_insn (operands[0], operands[1]);
+      if (frame_pointer_needed)
+	inline_insn_count += 3;
 
-      /* Now call the out-of-line prologue.  */
-      emit_insn (gen_outline_prologue_call ());
-      emit_insn (gen_blockage ());
-      return;     
+      if (! cint_ok_for_move (saves))
+	outline_insn_count += 2;
+      else
+	outline_insn_count += 1;
+
+      if (TARGET_PORTABLE_RUNTIME)
+	outline_insn_count += 2;
+      else
+	outline_insn_count += 1;
+	
+      /* If there's a lot of insns in the prologue, then do it as
+	 an out-of-line sequence.  */
+      if (inline_insn_count > outline_insn_count)
+	{
+	  /* Put the local_fisze into %r19.  */
+	  operands[0] = gen_rtx (REG, SImode, 19);
+	  operands[1] = GEN_INT (local_fsize);
+	  emit_move_insn (operands[0], operands[1]);
+
+	  /* Put the stack size into %r21.  */
+	  operands[0] = gen_rtx (REG, SImode, 21);
+	  operands[1] = size_rtx;
+	  emit_move_insn (operands[0], operands[1]);
+
+	  operands[0] = gen_rtx (REG, SImode, 22);
+	  operands[1] = GEN_INT (saves);
+	  emit_move_insn (operands[0], operands[1]);
+
+	  /* Now call the out-of-line prologue.  */
+	  emit_insn (gen_outline_prologue_call ());
+	  emit_insn (gen_blockage ());
+
+	  /* Note that we're using an out-of-line prologue.  */
+	  out_of_line_prologue_epilogue = 1;
+	  return;     
+	}
     }
+
+  out_of_line_prologue_epilogue = 0;
 
   /* Save RP first.  The calling conventions manual states RP will
      always be stored into the caller's frame at sp-20.  */
@@ -2345,22 +2371,28 @@ hppa_expand_prologue()
      was done earlier.  */
   if (frame_pointer_needed)
     {
+      int found_one = 0;
       for (i = 18, offset = local_fsize; i >= 4; i--)
-	if (regs_ever_live[i] && ! call_used_regs[i])
+	if (regs_ever_live[i] && ! call_used_regs[i]
+	    || found_one)
 	  {
+	    found_one = 1;
 	    store_reg (i, offset, FRAME_POINTER_REGNUM);
 	    offset += 4;
 	    gr_saved++;
 	  }
-      /* Account for %r4 which is saved in a special place.  */
+      /* Account for %r3 which is saved in a special place.  */
       gr_saved++;
     }
   /* No frame pointer needed.  */
   else
     {
+      int found_one = 0;
       for (i = 18, offset = local_fsize - actual_fsize; i >= 3; i--)
-      	if (regs_ever_live[i] && ! call_used_regs[i])
+      	if (regs_ever_live[i] && ! call_used_regs[i]
+	    || found_one)
 	  {
+	    found_one = 1;
 	    /* If merge_sp_adjust_with_store is nonzero, then we can
 	       optimize the first GR save.  */
 	    if (merge_sp_adjust_with_store)
@@ -2400,13 +2432,18 @@ hppa_expand_prologue()
 
       /* Now actually save the FP registers.  */
       for (i = 66; i >= 48; i -= 2)
-	if (regs_ever_live[i] || regs_ever_live[i + 1])
-	  {
-	    emit_move_insn (gen_rtx (MEM, DFmode,
-				     gen_rtx (POST_INC, DFmode, tmpreg)),
-			    gen_rtx (REG, DFmode, i));
-	    fr_saved++;
-	  }
+	{
+	  int found_one = 0;
+	  if (regs_ever_live[i] || regs_ever_live[i + 1]
+	      || found_one)
+	    {
+	      found_one = 1;
+	      emit_move_insn (gen_rtx (MEM, DFmode,
+				       gen_rtx (POST_INC, DFmode, tmpreg)),
+			      gen_rtx (REG, DFmode, i));
+	      fr_saved++;
+	    }
+	}
     }
 
   /* When generating PIC code it is necessary to save/restore the
@@ -2490,7 +2527,7 @@ hppa_expand_epilogue ()
   int merge_sp_adjust_with_load  = 0;
 
   /* Handle out of line prologues and epilogues.  */
-  if (TARGET_SPACE)
+  if (TARGET_SPACE && out_of_line_prologue_epilogue)
     {
       int saves = 0;
       rtx operands[2];
@@ -2515,6 +2552,11 @@ hppa_expand_epilogue ()
       /* Put the local_fisze into %r19.  */
       operands[0] = gen_rtx (REG, SImode, 19);
       operands[1] = GEN_INT (local_fsize);
+      emit_move_insn (operands[0], operands[1]);
+
+      /* Put the stack size into %r21.  */
+      operands[0] = gen_rtx (REG, SImode, 21);
+      operands[1] = GEN_INT (actual_fsize);
       emit_move_insn (operands[0], operands[1]);
 
       operands[0] = gen_rtx (REG, SImode, 22);
@@ -2545,9 +2587,12 @@ hppa_expand_epilogue ()
   /* General register restores.  */
   if (frame_pointer_needed)
     {
+      int found_one = 0;
       for (i = 18, offset = local_fsize; i >= 4; i--)
-	if (regs_ever_live[i] && ! call_used_regs[i])
+	if (regs_ever_live[i] && ! call_used_regs[i]
+	    || found_one)
 	  {
+	    found_one = 1;
 	    load_reg (i, offset, FRAME_POINTER_REGNUM);
 	    offset += 4;
 	  }
@@ -2555,19 +2600,24 @@ hppa_expand_epilogue ()
   else
     {
       for (i = 18, offset = local_fsize - actual_fsize; i >= 3; i--)
-	if (regs_ever_live[i] && ! call_used_regs[i])
-	  {
-	    /* Only for the first load.
-	       merge_sp_adjust_with_load holds the register load
-	       with which we will merge the sp adjustment.  */
-	    if (VAL_14_BITS_P (actual_fsize + 20)
-		&& local_fsize == 0
-		&& ! merge_sp_adjust_with_load)
-	      merge_sp_adjust_with_load = i;
-	    else
-	      load_reg (i, offset, STACK_POINTER_REGNUM);
-	    offset += 4;
-	  }
+	{
+	  int found_one = 0;
+	  if (regs_ever_live[i] && ! call_used_regs[i]
+	      || found_one)
+	    {
+	      found_one = 1;
+	      /* Only for the first load.
+	         merge_sp_adjust_with_load holds the register load
+	         with which we will merge the sp adjustment.  */
+	      if (VAL_14_BITS_P (actual_fsize + 20)
+		  && local_fsize == 0
+		  && ! merge_sp_adjust_with_load)
+	        merge_sp_adjust_with_load = i;
+	      else
+	        load_reg (i, offset, STACK_POINTER_REGNUM);
+	      offset += 4;
+	    }
+	}
     }
 
   /* Align pointer properly (doubleword boundary).  */
@@ -2584,10 +2634,16 @@ hppa_expand_epilogue ()
 
       /* Actually do the restores now.  */
       for (i = 66; i >= 48; i -= 2)
-	if (regs_ever_live[i] || regs_ever_live[i + 1])
-	  emit_move_insn (gen_rtx (REG, DFmode, i),
-			  gen_rtx (MEM, DFmode,
-				   gen_rtx (POST_INC, DFmode, tmpreg)));
+	{
+	  int found_one = 0;
+	  if (regs_ever_live[i] || regs_ever_live[i + 1])
+	    {
+	      found_one = 1;
+	      emit_move_insn (gen_rtx (REG, DFmode, i),
+			      gen_rtx (MEM, DFmode,
+				       gen_rtx (POST_INC, DFmode, tmpreg)));
+	    }
+	}
     }
 
   /* Emit a blockage insn here to keep these insns from being moved to
