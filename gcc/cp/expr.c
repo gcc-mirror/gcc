@@ -234,6 +234,10 @@ cplus_expand_expr (exp, target, tmode, modifier)
       expand_internal_throw ();
       return NULL;
 
+    case EMPTY_CLASS_EXPR:
+      /* We don't need to generate any code for an empty class.  */
+      return const0_rtx;
+
     case STMT_EXPR:
       {
 	tree rtl_expr = begin_stmt_expr ();
