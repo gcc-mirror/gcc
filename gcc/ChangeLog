@@ -1,5 +1,10 @@
 Mon Jan  3 15:33:37 MET 2000  Jan Hubicka  <hubicka@freesoft.cz>
 
+	* combine.c (expand_compound_operation): Do not convert ZERO_EXTEND to
+	SIGN_EXTEND, convert SIGN_EXTEND to ZERO_EXTEND.
+	(make_compound_operation): Choose cheaper alternative between
+	ZERO_EXTEND and SIGN_EXTEND when sign bit is not set.
+
 	* regclass.c (op_costs): Remove global variable.
 	(record_reg_classes): New parameter "op_costs" and "reg_pref".
 	(record_operand_costs): Break out from ...
