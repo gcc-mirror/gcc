@@ -157,7 +157,7 @@ INSTALL_HEADERS_DIR = @build_install_headers_dir@
 USER_H = $(srcdir)/ginclude/stdarg.h $(srcdir)/ginclude/stddef.h \
     $(srcdir)/ginclude/varargs.h $(srcdir)/ginclude/proto.h \
     $(srcdir)/ginclude/stdbool.h $(srcdir)/ginclude/iso646.h \
-    $(EXTRA_HEADERS) $(LANG_EXTRA_HEADERS)
+    $(EXTRA_HEADERS)
 
 # The GCC to use for compiling libgcc.a, enquire, and crt*.o.
 # Usually the one we just built.
@@ -639,7 +639,6 @@ INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
 # These next lines are overridden by configure.
 LANG_MAKEFILES = @all_lang_makefiles@
 LANG_STAGESTUFF = @all_stagestuff@
-LANG_EXTRA_HEADERS = @all_headers@
 
 # Flags to pass to recursive makes.
 # CC is set by configure.  Hosts without symlinks need special handling
