@@ -1,3 +1,7 @@
+2003-10-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/ext/attrib8.C: Only run it on x86 targets.
+
 2003-10-08  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.c-torture/compile/mipscop-[1-4].c: Disable for mips16.
