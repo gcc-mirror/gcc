@@ -1,3 +1,8 @@
+2000-08-03  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (awt_java_source_files): Added new files.
+
 2000-08-03  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* Makefile.am: Make inner class CNI headers depend on libgcj.zip only.
