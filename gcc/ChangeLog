@@ -1,3 +1,8 @@
+2004-05-20  Richard Earnshaw <rearnsha@arm.com>
+
+	* arm.md (ite_ne_zeroextractsi, ite_ne_zeroextractsi_shifted): Ensure
+	we don't earlyclobber operands used in the second insn.
+
 2004-05-20  Steven Bosscher  <stevenb@suse.de>
 
 	* tree-mudflap.c: Formatting fixes.
