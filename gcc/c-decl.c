@@ -1997,9 +1997,10 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 	 inline, make sure we emit debug info for the inline before we
 	 throw it away, in case it was inlined into a function that hasn't
 	 been written out yet.  */
-      if (new_is_definition && DECL_INITIAL (olddecl) && TREE_USED (olddecl))
+      if (new_is_definition && DECL_INITIAL (olddecl))
 	{
-	  (*debug_hooks->outlining_inline_function) (olddecl);
+	  if (TREE_USED (olddecl))
+	    (*debug_hooks->outlining_inline_function) (olddecl);
 
 	  /* The new defn must not be inline.  */
 	  DECL_INLINE (newdecl) = 0;
