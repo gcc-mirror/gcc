@@ -204,12 +204,15 @@ mod_regno_adjust (instr, op)
   char *r = (!strncmp (instr, "dvr", 3) ? "r" : "");
   int modregno_gcc = REGNO (op[3]), modregno_1750 = REGNO (op[0]) + 1;
 
-  if (modregno_gcc == modregno_1750 || (reg_renumber != NULL
-        && reg_renumber[modregno_gcc] == reg_renumber[modregno_1750]))
+  if (modregno_gcc == modregno_1750
+      || (reg_renumber != NULL
+	  && reg_renumber[modregno_gcc] >= 0
+	  && reg_renumber[modregno_gcc] == reg_renumber[modregno_1750]))
     sprintf (outstr, "%s r%%0,%s%%2", instr, r);
   else
     sprintf (outstr, "lr r%d,r%d\n\t%s r%%0,%s%%2\n\txwr r%d,r%d",
-	modregno_gcc, modregno_1750, instr, r, modregno_1750, modregno_gcc);
+	     modregno_gcc, modregno_1750, instr, r, modregno_1750,
+	     modregno_gcc);
   return outstr;
 }
 
