@@ -1,3 +1,7 @@
+1999-12-22  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* template10.C: New test.
+
 1999-11-21  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* delete2.C, delete3.C, delete4.C, delete5.C: New tests.
