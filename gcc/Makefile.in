@@ -613,7 +613,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  insn-attr.h insn-attrtab.c insn-opinit.c \
  stamp-flags stamp-config stamp-codes stamp-mlib \
  stamp-output stamp-recog stamp-emit stamp-extract stamp-peep \
- stamp-attr stamp-attrtab stamp-opinit stamp-proto stamp-crt stamp-crtS stamp-crt0 \
+ stamp-attr stamp-attrtab stamp-opinit stamp-crt stamp-crtS stamp-crt0 \
  genemit$(build_exeext) genoutput$(build_exeext) genrecog$(build_exeext) \
  genextract$(build_exeext) genflags$(build_exeext) gencodes$(build_exeext) \
  genconfig$(build_exeext) genpeep$(build_exeext) genattrtab$(build_exeext) \
@@ -1862,25 +1862,14 @@ protoize: protoize.o getopt.o getopt1.o getpwd.o version.o \
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
 	  protoize.o getopt.o getopt1.o getpwd.o version.o \
 	  pexecute.o choose-temp.o $(LIBS)
-protoize.o: stamp-proto ; @true
 
 unprotoize: unprotoize.o getopt.o getopt1.o getpwd.o version.o \
     pexecute.o choose-temp.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
 	  unprotoize.o getopt.o getopt1.o getpwd.o version.o \
 	  pexecute.o choose-temp.o $(LIBS)
-unprotoize.o:	stamp-proto ; @true
 
-stamp-proto: protoize.c getopt.h $(CONFIG_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-          -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
-	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
-          -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
-	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
-	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
-	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
-	  -DUNPROTOIZE $(srcdir)/protoize.c
-	mv protoize$(objext) unprotoize$(objext)
+protoize.o: protoize.c getopt.h $(CONFIG_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
@@ -1889,7 +1878,16 @@ stamp-proto: protoize.c getopt.h $(CONFIG_H)
 	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
 	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
 	  $(srcdir)/protoize.c
-	touch stamp-proto
+
+unprotoize.o: unprotoize.c protoize.c getopt.h $(CONFIG_H)
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+          -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
+	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
+          -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
+	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
+	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
+	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
+	  $(srcdir)/unprotoize.c
 
 getopt.o: getopt.c getopt.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/getopt.c

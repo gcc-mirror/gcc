@@ -1,3 +1,9 @@
+Wed Jan  7 12:05:51 1998  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
+
+	* Makefile.in (stamp-proto): Remove.
+	(protoize.o, unprotoize.o): Straightforward compile.
+	* unprotoize.c: Define UNPROTOIZE here, not in the Makefile.
+
 Tue Jan 13 21:59:39 1998  Mumit Khan <khan@xraylith.wisc.edu>
 
 	* i386/cygwin32.h (STRIP_NAME_ENCODING): Define for Win32 to strip
