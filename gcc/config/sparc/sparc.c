@@ -950,13 +950,11 @@ arith_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  int val;
   if (register_operand (op, mode))
     return 1;
   if (GET_CODE (op) != CONST_INT)
     return 0;
-  val = INTVAL (op) & 0xffffffff;
-  return SPARC_SIMM13_P (val);
+  return SMALL_INT32 (op);
 }
 
 /* Return true if OP is a constant 4096  */
@@ -969,7 +967,6 @@ arith_4096_operand (op, mode)
   int val;
   if (GET_CODE (op) != CONST_INT)
     return 0;
-  val = INTVAL (op) & 0xffffffff;
   return val == 4096;
 }
 
@@ -998,7 +995,7 @@ const64_operand (op, mode)
 	      && SPARC_SIMM13_P (CONST_DOUBLE_LOW (op))
 	      && (CONST_DOUBLE_HIGH (op) ==
 		  ((CONST_DOUBLE_LOW (op) & 0x80000000) != 0 ?
-		   (HOST_WIDE_INT)0xffffffff : 0)))
+		   (HOST_WIDE_INT)-1 : 0)))
 #endif
 	  );
 }
@@ -1010,7 +1007,7 @@ const64_high_operand (op, mode)
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return ((GET_CODE (op) == CONST_INT
-	   && (INTVAL (op) & 0xfffffc00) != 0
+	   && (INTVAL (op) & ~(HOST_WIDE_INT)0x3ff) != 0
 	   && SPARC_SETHI_P (INTVAL (op))
 #if HOST_BITS_PER_WIDE_INT != 64
 	   /* Must be positive on non-64bit host else the
@@ -1021,7 +1018,7 @@ const64_high_operand (op, mode)
 	   )
 	  || (GET_CODE (op) == CONST_DOUBLE
 	      && CONST_DOUBLE_HIGH (op) == 0
-	      && (CONST_DOUBLE_LOW (op) & 0xfffffc00) != 0
+	      && (CONST_DOUBLE_LOW (op) & ~(HOST_WIDE_INT)0x3ff) != 0
 	      && SPARC_SETHI_P (CONST_DOUBLE_LOW (op))));
 }
 
@@ -1335,11 +1332,13 @@ sparc_emit_set_const32 (op0, op1)
 	  && (INTVAL (op1) & 0x80000000) != 0)
 	emit_insn (gen_rtx_SET
 		   (VOIDmode, temp,
-		    gen_rtx_CONST_DOUBLE (VOIDmode, INTVAL (op1) & 0xfffffc00,
+		    gen_rtx_CONST_DOUBLE (VOIDmode,
+					  INTVAL (op1) & ~(HOST_WIDE_INT)0x3ff,
 					  0)));
       else
 	emit_insn (gen_rtx_SET (VOIDmode, temp,
-				GEN_INT (INTVAL (op1) & 0xfffffc00)));
+				GEN_INT (INTVAL (op1)
+					 & ~(HOST_WIDE_INT)0x3ff)));
 
       emit_insn (gen_rtx_SET (VOIDmode,
 			      op0,
@@ -1509,15 +1508,15 @@ static rtx gen_safe_OR64 PARAMS ((rtx, HOST_WIDE_INT));
 static rtx gen_safe_XOR64 PARAMS ((rtx, HOST_WIDE_INT));
 
 #if HOST_BITS_PER_WIDE_INT == 64
-#define GEN_HIGHINT64(__x)		GEN_INT ((__x) & 0xfffffc00)
+#define GEN_HIGHINT64(__x)		GEN_INT ((__x) & ~(HOST_WIDE_INT)0x3ff)
 #define GEN_INT64(__x)			GEN_INT (__x)
 #else
 #define GEN_HIGHINT64(__x) \
-	gen_rtx_CONST_DOUBLE (VOIDmode, (__x) & 0xfffffc00, 0)
+	gen_rtx_CONST_DOUBLE (VOIDmode, (__x) & ~(HOST_WIDE_INT)0x3ff, 0)
 #define GEN_INT64(__x) \
 	gen_rtx_CONST_DOUBLE (VOIDmode, (__x) & 0xffffffff, \
 			      ((__x) & 0x80000000 \
-			       ? 0xffffffff : 0))
+			       ? -1 : 0))
 #endif
 
 /* The optimizer is not to assume anything about exactly
@@ -1602,7 +1601,8 @@ sparc_emit_set_const64_quick1 (op0, temp, low_bits, is_neg)
 	{
 	  emit_insn (gen_rtx_SET (VOIDmode, op0,
 				  gen_safe_XOR64 (temp,
-						  (-0x400 | (low_bits & 0x3ff)))));
+						  (-(HOST_WIDE_INT)0x400
+						   | (low_bits & 0x3ff)))));
 	}
     }
 }
@@ -1835,7 +1835,7 @@ const64_is_2insns (high_bits, low_bits)
   int highest_bit_set, lowest_bit_set, all_bits_between_are_set;
 
   if (high_bits == 0
-      || high_bits == 0xffffffff)
+      || high_bits == -1)
     return 1;
 
   analyze_64bit_constant (high_bits, low_bits,
@@ -6000,9 +6000,7 @@ print_operand (file, x, code)
     case 'b':
       {
 	/* Print a sign-extended character.  */
-	int i = INTVAL (x) & 0xff;
-	if (i & 0x80)
-	  i |= 0xffffff00;
+	int i = trunc_int_for_mode (INTVAL (x), QImode);
 	fprintf (file, "%d", i);
 	return;
       }
