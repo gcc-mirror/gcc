@@ -3790,8 +3790,6 @@ rest_of_compilation (decl)
   if (failure)
     goto exit_rest_of_compilation;
 
-  reload_completed = 1;
-
   /* Do a very simple CSE pass over just the hard registers.  */
   if (optimize > 0)
     reload_cse_regs (insns);
@@ -4376,7 +4374,9 @@ main (argc, argv)
       flag_schedule_insns_after_reload = 1;
 #endif
       flag_regmove = 1;
+#if 0
       flag_strict_aliasing = 1;
+#endif
     }
 
   if (optimize >= 3)
