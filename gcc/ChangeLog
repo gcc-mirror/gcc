@@ -1,3 +1,10 @@
+2003-06-16  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree.h (STMT_CHECK): New macro.
+	Also upper-case argument names on all checking macros and
+	fix some whitespace problems; assume CODE argument does not
+	have side-effects.
+
 2003-06-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* scan.h: Convert to ISO C.
