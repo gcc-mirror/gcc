@@ -2296,8 +2296,10 @@ arm_return_in_memory (tree type)
 {
   HOST_WIDE_INT size;
 
-  if (!AGGREGATE_TYPE_P (type))
-    /* All simple types are returned in registers.  */
+  if (!AGGREGATE_TYPE_P (type) &&
+      !(TARGET_AAPCS_BASED && TREE_CODE (type) == COMPLEX_TYPE))
+    /* All simple types are returned in registers.
+       For AAPCS, complex types are treated the same as aggregates.  */
     return 0;
 
   size = int_size_in_bytes (type);
