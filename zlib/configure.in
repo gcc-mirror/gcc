@@ -22,7 +22,7 @@ AC_ARG_ENABLE(multilib,
   yes) multilib=yes ;;
   no)  multilib=no ;;
   *)   AC_MSG_ERROR(bad value ${enableval} for multilib option) ;;
- esac], [multilib=yes])dnl
+ esac], [test -z "$with_target_subdir" && multilib=no || multilib=yes])dnl
 
 dnl We may get other options which we dont document:
 dnl --with-target-subdir, --with-multisrctop, --with-multisubdir
