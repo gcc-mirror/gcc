@@ -1,3 +1,10 @@
+Fri Sep  5 07:35:16 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* opts.c (decode_options): Enable unit-at-a-time at -O2.
+	* params.def (max-inline-insns-single): Set to 500
+	(max-inline-insns-auto): Set to 150
+	* invoke.texi (max-inline-insns-single, max-inline-insns-auto): Update.
+
 2003-09-04  Richard Henderson  <rth@redhat.com>
 
 	* cgraph.c (cgraph_mark_reachable_node): Split out from ...
