@@ -1,3 +1,8 @@
+2000-11-14  Chandrakala Chavva  <cchavva@redhat.com>
+
+	* optabs.c (expand_complex_ab):: Use overflow-trapping optabs for
+	signed types if flag_trapv.
+
 2000-11-14  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* tradcpp.c, tradcif.y: Update FSF mailing address, delete
