@@ -1,3 +1,7 @@
+Fri Jun  9 20:35:13 2000  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr.c (asm_output_section_name): bugfix.
+
 2000-06-09  Jason Merrill  <jason@casey.soma.redhat.com>
 
 	* timevar.def: Add TV_EXPAND.

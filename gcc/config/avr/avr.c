@@ -3217,7 +3217,7 @@ asm_output_section_name(file, decl, name, reloc)
      const char *name;
      int reloc ATTRIBUTE_UNUSED;
 {
-  fprintf (FILE, ".section\t%s,\"%s\",@progbits\n", name, \
+  fprintf (file, ".section\t%s,\"%s\",@progbits\n", name, \
 	   decl && TREE_CODE (decl) == FUNCTION_DECL ? "ax" :
 	   decl && TREE_READONLY (decl) ? "a" : "aw");
 }
