@@ -4998,7 +4998,8 @@ register_incomplete_type (kind, wfl, decl, ptr)
   JDEP_MISC (new) = NULL_TREE;
   /* For some dependencies, set the enclosing class of the current
      class to be the enclosing context */
-  if ((kind == JDEP_SUPER || kind == JDEP_INTERFACE || kind == JDEP_ANONYMOUS)
+  if ((kind == JDEP_SUPER || kind == JDEP_INTERFACE 
+       || kind == JDEP_ANONYMOUS || kind == JDEP_FIELD)
       && GET_ENCLOSING_CPC ())
     JDEP_ENCLOSING (new) = TREE_VALUE (GET_ENCLOSING_CPC ());
   else
@@ -5492,7 +5493,7 @@ do_resolve_class (enclosing, class_type, decl, cl)
 
       if ((new_class_decl = find_as_inner_class (enclosing, class_type, cl)))
         return new_class_decl;
-      
+
       intermediate = enclosing;
       /* Explore enclosing contexts. */
       while (INNER_CLASS_DECL_P (intermediate))
