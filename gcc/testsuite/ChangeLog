@@ -1,3 +1,7 @@
+Mon Feb  3 16:05:11 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.c-torture/execute/20030203-1.c: New test.
+
 2003-02-03  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc.c-torture/exectue/ieee/20000320-1.c: The ARM VFP format is
