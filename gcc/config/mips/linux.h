@@ -34,8 +34,6 @@ Boston, MA 02111-1307, USA.  */
    used.  */
 #define BSS_SECTION_ASM_OP	"\t.section\t.bss"
 
-#define SBSS_SECTION_ASM_OP	"\t.section .sbss"
-
 /* Like `ASM_OUTPUT_BSS' except takes the required alignment as a
    separate, explicit argument.  If you define this macro, it is used
    in place of `ASM_OUTPUT_BSS', and gives you more flexibility in

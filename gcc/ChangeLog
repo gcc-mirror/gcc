@@ -1,5 +1,8 @@
 2003-07-14  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/elf.h (SBSS_SECTION_ASM_OP): Delete.
+	* config/mips/linux.h: Likewise.
+
 	* config/mips/mips.c (inside_function): Delete.
 	(file_in_function_warning, ignore_line_number): Delete.
 	(mips_output_filename): Don't warn about changing filenames within
