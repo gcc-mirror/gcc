@@ -950,6 +950,13 @@ add_method (type, method, error_p)
 	      && (TYPE_QUALS (TREE_TYPE (TREE_VALUE (parms1)))
 		  != TYPE_QUALS (TREE_TYPE (TREE_VALUE (parms2)))))
 	    same = 0;
+	  
+	  /* For templates, the template parms must be identical.  */
+	  if (TREE_CODE (fn) == TEMPLATE_DECL
+	      && !comp_template_parms (DECL_TEMPLATE_PARMS (fn),
+				       DECL_TEMPLATE_PARMS (method)))
+	    same = 0;
+	  
 	  if (! DECL_STATIC_FUNCTION_P (fn))
 	    parms1 = TREE_CHAIN (parms1);
 	  if (! DECL_STATIC_FUNCTION_P (method))
