@@ -1,3 +1,9 @@
+1998-07-30  Ken Raeburn  <raeburn@cygnus.com>
+
+	* gcc.c-torture/special/eeprof-1.c: New test, for
+	-finstrument-functions.
+	* gcc.c-torture/special/special.exp: Run it.
+
 Wed Jul 29 00:17:18 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/980729-1.c: New test.

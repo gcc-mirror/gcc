@@ -1201,6 +1201,10 @@ struct tree_type
    multiple translation units should be merged.  */
 #define DECL_ONE_ONLY(NODE) (DECL_CHECK (NODE)->decl.transparent_union)
 
+/* Used in FUNCTION_DECLs to indicate that function entry and exit should
+   be instrumented with calls to support routines.  */
+#define DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT(NODE) ((NODE)->decl.no_instrument_function_entry_exit)
+
 /* Additional flags for language-specific uses.  */
 #define DECL_LANG_FLAG_0(NODE) (DECL_CHECK (NODE)->decl.lang_flag_0)
 #define DECL_LANG_FLAG_1(NODE) (DECL_CHECK (NODE)->decl.lang_flag_1)
@@ -1245,7 +1249,6 @@ struct tree_decl
   unsigned static_dtor_flag : 1;
   unsigned artificial_flag : 1;
   unsigned weak_flag : 1;
-  /* room for no more */
 
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;
@@ -1257,6 +1260,7 @@ struct tree_decl
   unsigned lang_flag_7 : 1;
 
   unsigned non_addr_const_p : 1;
+  unsigned no_instrument_function_entry_exit : 1;
 
   /* For a FUNCTION_DECL, if inline, this is the size of frame needed.
      If built-in, this is the code for which built-in function.

@@ -723,6 +723,9 @@ int flag_strict_aliasing = 0;
 
 extern int flag_dump_unnumbered;
 
+/* Instrument functions with calls at entry and exit, for profiling.  */
+int flag_instrument_function_entry_exit = 0;
+
 
 /* Table of supported debugging formats.  */
 static struct
@@ -908,7 +911,9 @@ lang_independent_options f_options[] =
    "Generate code to check every memory access" },
   {"prefix-function-name", &flag_prefix_function_name, 1,
    "Add a prefix to all function names" },
-  {"dump-unnumbered", &flag_dump_unnumbered, 1}
+  {"dump-unnumbered", &flag_dump_unnumbered, 1},
+  {"instrument-functions", &flag_instrument_function_entry_exit, 1,
+   "Instrument function entry/exit with profiling calls"},
 };
 
 #define NUM_ELEM(a)  (sizeof (a) / sizeof ((a)[0]))

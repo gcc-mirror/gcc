@@ -98,3 +98,5 @@ c-torture 960224-1.c "-E -ansi -pedantic-errors"
 
 # 960224-2
 #c-torture 960224-2.c "-E -ansi -pedantic-errors"
+
+c-torture-execute $srcdir/$subdir/eeprof-1.c "-finstrument-functions"

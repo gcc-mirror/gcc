@@ -532,6 +532,10 @@ extern rtx chkr_set_right_libfunc;
 extern rtx chkr_copy_bitmap_libfunc;
 extern rtx chkr_check_exec_libfunc;
 extern rtx chkr_check_str_libfunc;
+
+/* For instrument-functions.  */
+extern rtx profile_function_entry_libfunc;
+extern rtx profile_function_exit_libfunc;
 
 typedef rtx (*rtxfun) PROTO ((rtx));
 

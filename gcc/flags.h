@@ -444,6 +444,9 @@ extern int flag_stack_check;
 
 /* Do the full regmove optimization pass.  */
 extern int flag_regmove;
+
+/* Instrument functions with calls at entry and exit, for profiling.  */
+extern int flag_instrument_function_entry_exit;
 
 /* Other basic status info about current function.  */
 
