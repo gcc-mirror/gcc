@@ -1226,9 +1226,6 @@ typedef struct rs6000_stack {
 /* Size of the V.4 varargs area if needed */
 #define RS6000_VARARGS_AREA 0
 
-/* Whether a V.4 varargs area is needed */
-extern int rs6000_sysv_varargs_p;
-
 /* Align an address */
 #define RS6000_ALIGN(n,a) (((n) + (a) - 1) & ~((a) - 1))
 
@@ -1385,6 +1382,14 @@ extern int rs6000_sysv_varargs_p;
    || ((unsigned)((N) - FP_ARG_MIN_REG) < (unsigned)(FP_ARG_NUM_REG)))
 
 
+/* A C structure for machine-specific, per-function data.
+   This is added to the cfun structure.  */
+typedef struct machine_function
+{
+  /* Whether a System V.4 varargs area was created.  */
+  int sysv_varargs_p;
+} machine_function;
+
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
    hold all necessary information about the function itself
