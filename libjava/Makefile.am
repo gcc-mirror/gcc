@@ -548,7 +548,7 @@ if ONESTEP
 
 # Compile all classfiles in one go.
 
-classes.stamp: $(all_java_source_files)
+classes.stamp: $(all_java_source_files) gnu/gcj/tools/gcj_dbtool/Main.java
 	@echo Compiling Java sourcefiles...
 	@: $(call write_entries_to_file,$?,libgcj.sourcelist)
 	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(BOOTCLASSPATH) -d $(here) @libgcj.sourcelist
@@ -557,7 +557,7 @@ classes.stamp: $(all_java_source_files)
 # classfiles are compiled in one go when classes.stamp is built and 2)
 # anything which depends on a particular .class file must wait until
 # this file is built.
-$(all_java_class_files): classes.stamp
+$(all_java_class_files) gnu/gcj/tools/gcj_dbtool/Main.class: classes.stamp
 
 else # !ONESTEP
 
