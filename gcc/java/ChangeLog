@@ -1,3 +1,8 @@
+2001-07-03  Jeff Sturm  <jsturm@one-point.com>
+
+	* parse.y (fix_constructors): Test if a CALL_EXPR invokes
+	`this'.  If so, don't build instance initializers.
+
 2001-06-28  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* lang.c: #include diagnostic.h
