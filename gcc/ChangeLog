@@ -1,3 +1,14 @@
+2001-05-15  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.md (movdi splitter): Sign extend more efficiently.
+	* rs6000.c (reg_or_arith_cint_operand): Redefine 64-bit constant
+	to "long long" valid on 32-bit and 64-bit hosts.
+	(logical_operand): Cast trunc_int_for_mode rturn value.
+	(rs6000_emit_move): Shift macro to encapsulate variable.
+	(rs6000_va_start): Use HOST_WIDE_INT_PRINT_DEC.
+	(rs6000_emit_{prologue,epilogue}): EH regno is unsigned but
+	plus_constant requires signed argument.
+
 2001-05-15  Loren J. Rittle  <ljrittle@acm.org>
 
 	* gthr-posix.h: Make additional pthread-* functions weak.
