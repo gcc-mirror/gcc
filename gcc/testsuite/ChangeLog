@@ -1,3 +1,9 @@
+2005-01-03  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/darwin-weakimport-1.c: Remove check for variables
+	producing warning.
+	* gcc.dg/darwin-weakimport-2.c: New.
+
 2005-01-03  Richard Henderson  <rth@redhat.com>
 
 	* g++.old-deja/g++.ext/attrib5.C: Move the alias after the referent.

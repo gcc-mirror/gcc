@@ -1,5 +1,8 @@
 2005-01-03  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/darwin.c (darwin_handle_weak_import_attribute): Permit
+	VAR_DECLs to have weak_import attribute.
+
 	* config/rs6000/darwin-fallback.c: Use 'ucontext_t' rather than
 	'struct ucontext'.
 
