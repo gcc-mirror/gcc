@@ -563,33 +563,43 @@ __umodsi3:
 	.global __ia64_save_stack_nonlocal
 	.proc __ia64_save_stack_nonlocal
 __ia64_save_stack_nonlocal:
-	alloc r18=ar.pfs,2,0,0,0
-	st8 [in0]=in1,8
-	mov r19=ar.rsc
-	;;
-	flushrs
-	and r19=0x1c,r19
-	mov ar.pfs=r18
-	;;
-	mov ar.rsc=r19
-	mov r16=ar.bsp
-	adds r2=16,in0
-	;;
-	mov r17=ar.rnat
-	st8 [in0]=r16,8
-	or r19=0x3,r19
-	;;
-	st8 [in0]=r17
-	mov ar.rsc=r19
-	st8 [r2]=r18
-	mov ar.pfs=r18
-	br.ret.sptk.few rp
-	;;
+	{ .mmf
+	  alloc r18 = ar.pfs, 2, 0, 0, 0
+	  mov r19 = ar.rsc
+	  ;;
+	}
+	{ .mmi
+	  flushrs
+	  st8 [in0] = in1, 24
+	  and r19 = 0x1c, r19
+	  ;;
+	}
+	{ .mmi
+	  st8 [in0] = r18, -16
+	  mov ar.rsc = r19
+	  or r19 = 0x3, r19
+	  ;;
+	}
+	{ .mmi
+	  mov r16 = ar.bsp
+	  mov r17 = ar.rnat
+	  adds r2 = 8, in0
+	  ;;
+	}
+	{ .mmi
+	  st8 [in0] = r16
+	  st8 [r2] = r17
+	}
+	{ .mib
+	  mov ar.rsc = r19
+	  br.ret.sptk.few rp
+	  ;;
+	}
 	.endp __ia64_save_stack_nonlocal
 #endif
 
 #ifdef L__nonlocal_goto
-// void __ia64_nonlocal_goto(void *fp, void *target_label, void *save_area,
+// void __ia64_nonlocal_goto(void *target_label, void *save_area,
 //			     void *static_chain);
 
 	.text
@@ -597,35 +607,47 @@ __ia64_save_stack_nonlocal:
 	.global __ia64_nonlocal_goto
 	.proc __ia64_nonlocal_goto
 __ia64_nonlocal_goto:
-	alloc r20=ar.pfs,4,0,0,0
-	mov r19=ar.rsc
-	adds r2=8,in2
-	ld8 r12=[in2],16
-	mov.ret.sptk rp = r33, .L0
-	;;
-	flushrs
-	ld8 r16=[r2],16
-	and r19=0x1c,r19
-	ld8 r17=[in2]
-	;;
-	ld8 r18=[r2]
-	mov ar.rsc=r19
-	;;
-	mov ar.bspstore=r16
-	;;
-	mov ar.rnat=r17
-	mov ar.pfs=r18
-	or r19=0x3,r19
-	;;
-	loadrs
-	invala
-	mov r7=r32
-.L0:	{
-	mov ar.rsc=r19
-	mov r15=r35
-	br.ret.sptk.few rp
+	{ .mmi
+	  alloc r20 = ar.pfs, 3, 0, 0, 0
+	  ld8 r12 = [in1], 8
+	  mov.ret.sptk rp = in0, .L0
+	  ;;
 	}
-	;;
+	{ .mmf
+	  ld8 r16 = [in1], 8
+	  mov r19 = ar.rsc
+	  ;;
+	}
+	{ .mmi
+	  flushrs
+	  ld8 r17 = [in1], 8
+	  and r19 = 0x1c, r19
+	  ;;
+	}
+	{ .mmi
+	  ld8 r18 = [in1]
+	  mov ar.rsc = r19
+	  or r19 = 0x3, r19
+	  ;;
+	}
+	{ .mmi
+	  mov ar.bspstore = r16
+	  ;;
+	  mov ar.rnat = r17
+	  ;;
+	}
+	{ .mmi
+	  loadrs
+	  invala
+	  mov r15 = in2
+	  ;;
+	}
+.L0:	{ .mib
+	  mov ar.rsc = r19
+	  mov ar.pfs = r18
+	  br.ret.sptk.few rp
+	  ;;
+	}
 	.endp __ia64_nonlocal_goto
 #endif
 
@@ -640,31 +662,84 @@ __ia64_nonlocal_goto:
 	.global __ia64_restore_stack_nonlocal
 	.proc __ia64_restore_stack_nonlocal
 __ia64_restore_stack_nonlocal:
-	alloc r20=ar.pfs,4,0,0,0
-	mov r19=ar.rsc
-	adds r2=8,in0
-	ld8 r12=[in0],16
-	;;
-	flushrs
-	ld8 r16=[r2],16
-	and r19=0x1c,r19
-	ld8 r17=[in0]
-	;;
-	ld8 r18=[r2]
-	mov ar.rsc=r19
-	;;
-	mov ar.bspstore=r16
-	;;
-	mov ar.rnat=r17
-	mov ar.pfs=r18
-	or r19=0x3,r19
-	;;
-	loadrs
-	invala
-.L0:	{
-	mov ar.rsc=r19
-	br.ret.sptk.few rp
+	{ .mmf
+	  alloc r20 = ar.pfs, 4, 0, 0, 0
+	  ld8 r12 = [in0], 8
+	  ;;
 	}
-	;;
+	{ .mmb
+	  ld8 r16=[in0], 8
+	  mov r19 = ar.rsc
+	  ;;
+	}
+	{ .mmi
+	  flushrs
+	  ld8 r17 = [in0], 8
+	  and r19 = 0x1c, r19
+	  ;;
+	}
+	{ .mmf
+	  ld8 r18 = [in0]
+	  mov ar.rsc = r19
+	  ;;
+	}
+	{ .mmi
+	  mov ar.bspstore = r16
+	  ;;
+	  mov ar.rnat = r17
+	  or r19 = 0x3, r19
+	  ;;
+	}
+	{ .mmf
+	  loadrs
+	  invala
+	  ;;
+	}
+.L0:	{ .mib
+	  mov ar.rsc = r19
+	  mov ar.pfs = r18
+	  br.ret.sptk.few rp
+	  ;;
+	}
 	.endp __ia64_restore_stack_nonlocal
+#endif
+
+#ifdef L__trampoline
+// Implement the nested function trampoline.  This is out of line
+// so that we don't have to bother with flushing the icache, as
+// well as making the on-stack trampoline smaller.
+//
+// The trampoline has the following form:
+//
+//		+-------------------+ \ 
+//	TRAMP:	| __ia64_trampoline | |
+//		+-------------------+  > fake function descriptor
+//		| TRAMP+16          | |
+//		+-------------------+ /
+//		| target descriptor |
+//		+-------------------+
+//		| static link	    |
+//		+-------------------+
+
+	.text
+	.align 16
+	.global __ia64_trampoline
+	.proc __ia64_trampoline
+__ia64_trampoline:
+	{ .mmi
+	  ld8 r2 = [r1], 8
+	  ;;
+	  ld8 r15 = [r1]
+	}
+	{ .mmi
+	  ld8 r3 = [r2], 8
+	  ;;
+	  ld8 r1 = [r2]
+	  mov b6 = r3
+	}
+	{ .bbb
+	  br.sptk.many b6
+	  ;;
+	}
+	.endp __ia64_trampoline
 #endif

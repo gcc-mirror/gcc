@@ -20,18 +20,11 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* ??? Use of the upper 32 FP registers for integer values will make context
-   switching slower, because the kernel only saves any registers past f32 if
-   it has to.  */
-
 /* ??? Look at ABI group documents for list of preprocessor macros and
    other features required for ABI compliance.  */
 
 /* ??? Functions containing a non-local goto target save many registers.  Why?
    See for instance execute/920428-2.c.  */
-
-/* ??? Get CAN_DEBUG_WITHOUT_FP working so that -fomit-frame-pointer is not
-   needed.  */
 
 /* ??? Add support for short data/bss sections.  */
 
@@ -178,13 +171,6 @@ extern const char *ia64_fixed_range_string;
    default values for the other command line options.  */
 
 /* #define OPTIMIZATION_OPTIONS(LEVEL,SIZE) */
-
-/* Define this macro if debugging can be performed even without a frame
-   pointer.  If this macro is defined, GNU CC will turn on the
-   `-fomit-frame-pointer' option whenever `-O' is specified.  */
-/* ??? Need to define this.  */
-/* #define CAN_DEBUG_WITHOUT_FP */
-
 
 /* Driver configuration */
 
@@ -539,7 +525,7 @@ while (0)
    64 predicate registers, 8 branch registers, one frame pointer,
    and several "application" registers.  */
 
-#define FIRST_PSEUDO_REGISTER 334
+#define FIRST_PSEUDO_REGISTER 335
 
 /* Ranges for the various kinds of registers.  */
 #define ADDL_REGNO_P(REGNO) ((unsigned HOST_WIDE_INT) (REGNO) <= 3)
@@ -561,20 +547,21 @@ while (0)
 #define LOC_REG(REGNO) ((REGNO) + 32)
 
 #define AR_CCV_REGNUM	330
-#define AR_LC_REGNUM	331
-#define AR_EC_REGNUM	332
-#define AR_PFS_REGNUM	333
+#define AR_UNAT_REGNUM  331
+#define AR_PFS_REGNUM	332
+#define AR_LC_REGNUM	333
+#define AR_EC_REGNUM	334
 
 #define IN_REGNO_P(REGNO) ((REGNO) >= IN_REG (0) && (REGNO) <= IN_REG (7))
 #define LOC_REGNO_P(REGNO) ((REGNO) >= LOC_REG (0) && (REGNO) <= LOC_REG (79))
 #define OUT_REGNO_P(REGNO) ((REGNO) >= OUT_REG (0) && (REGNO) <= OUT_REG (7))
 
-#define AR_M_REGNO_P(REGNO) ((REGNO) == AR_CCV_REGNUM)
-#define AR_I_REGNO_P(REGNO) ((REGNO) >= AR_LC_REGNUM \
+#define AR_M_REGNO_P(REGNO) ((REGNO) == AR_CCV_REGNUM \
+			     || (REGNO) == AR_UNAT_REGNUM)
+#define AR_I_REGNO_P(REGNO) ((REGNO) >= AR_PFS_REGNUM \
 			     && (REGNO) < FIRST_PSEUDO_REGISTER)
 #define AR_REGNO_P(REGNO) ((REGNO) >= AR_CCV_REGNUM \
 			   && (REGNO) < FIRST_PSEUDO_REGISTER)
-
 
 
 /* ??? Don't really need two sets of macros.  I like this one better because
@@ -600,11 +587,6 @@ while (0)
 /* The last 16 stacked regs are reserved for the 8 input and 8 output
    registers.  */
 
-/* ??? Must mark the next 3 stacked regs as fixed, because ia64_expand_prologue
-   assumes that three locals are available for fp, b0, and ar.pfs.  */
-
-/* ??? Should mark b0 as fixed?  */
-
 #define FIXED_REGISTERS \
 { /* General registers.  */				\
   1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0,	\
@@ -613,7 +595,7 @@ while (0)
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1,	\
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
   /* Floating-point registers.  */			\
   1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
@@ -631,8 +613,8 @@ while (0)
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
   /* Branch registers.  */				\
   0, 0, 0, 0, 0, 0, 0, 0,				\
-  /*FP RA CCV LC EC PFS */				\
-     1, 1,  1, 1, 1,  1					\
+  /*FP RA CCV UNAT PFS LC EC */				\
+     1, 1,  1,   1,  1, 0, 1				\
  }
 
 /* Like `FIXED_REGISTERS' but has 1 for each register that is clobbered
@@ -648,7 +630,7 @@ while (0)
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1,	\
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
   0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1,	\
   /* Floating-point registers.  */			\
   1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,	\
@@ -666,8 +648,8 @@ while (0)
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
   /* Branch registers.  */				\
   1, 0, 0, 0, 0, 0, 1, 1,				\
-  /*FP RA CCV LC EC PFS */				\
-     1, 1,  1, 1, 1,  1					\
+  /*FP RA CCV UNAT PFS LC EC */				\
+     1, 1,  1,   1,  1, 0, 1				\
 }
 
 /* Define this macro if the target machine has register windows.  This C
@@ -692,6 +674,20 @@ while (0)
 
 #define LOCAL_REGNO(REGNO) \
   (IN_REGNO_P (REGNO) || LOC_REGNO_P (REGNO))
+
+/* Add any extra modes needed to represent the condition code.
+
+   CCImode is used to mark a single predicate register instead
+   of a register pair.  This is currently only used in reg_raw_mode
+   so that flow doesn't do something stupid.  */
+
+#define EXTRA_CC_MODES		CC(CCImode, "CCI")
+
+/* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
+   return the mode to be used for the comparison.  Must be defined if
+   EXTRA_CC_MODES is defined.  */
+
+#define SELECT_CC_MODE(OP,X,Y)  CCmode
 
 /* Order of allocation of registers */
 
@@ -711,72 +707,72 @@ while (0)
 /* ??? Should the GR return value registers come before or after the rest
    of the caller-save GRs?  */
 
-#define REG_ALLOC_ORDER \
+#define REG_ALLOC_ORDER							   \
 {									   \
   /* Caller-saved general registers.  */				   \
-  R_GR (14), R_GR (15), R_GR (16), R_GR (17), 				   \
-  R_GR (18), R_GR (19), R_GR (20), R_GR (21), R_GR (22), R_GR (23), 	   \
-  R_GR (24), R_GR (25), R_GR (26), R_GR (27), R_GR (28), R_GR (29), 	   \
+  R_GR (14), R_GR (15), R_GR (16), R_GR (17),				   \
+  R_GR (18), R_GR (19), R_GR (20), R_GR (21), R_GR (22), R_GR (23),	   \
+  R_GR (24), R_GR (25), R_GR (26), R_GR (27), R_GR (28), R_GR (29),	   \
   R_GR (30), R_GR (31),							   \
   /* Output registers.  */						   \
   R_GR (120), R_GR (121), R_GR (122), R_GR (123), R_GR (124), R_GR (125),  \
-  R_GR (126), R_GR (127), 						   \
+  R_GR (126), R_GR (127),						   \
   /* Caller-saved general registers, also used for return values.  */	   \
-  R_GR (8), R_GR (9), R_GR (10), R_GR (11), 				   \
+  R_GR (8), R_GR (9), R_GR (10), R_GR (11),				   \
   /* addl caller-saved general registers.  */				   \
   R_GR (2), R_GR (3),							   \
   /* Caller-saved FP registers.  */					   \
   R_FR (6), R_FR (7),							   \
   /* Caller-saved FP registers, used for parameters and return values.  */ \
-  R_FR (8), R_FR (9), R_FR (10), R_FR (11), 				   \
-  R_FR (12), R_FR (13), R_FR (14), R_FR (15), 				   \
+  R_FR (8), R_FR (9), R_FR (10), R_FR (11),				   \
+  R_FR (12), R_FR (13), R_FR (14), R_FR (15),				   \
   /* Rotating caller-saved FP registers.  */				   \
-  R_FR (32), R_FR (33), R_FR (34), R_FR (35), 				   \
-  R_FR (36), R_FR (37), R_FR (38), R_FR (39), R_FR (40), R_FR (41), 	   \
-  R_FR (42), R_FR (43), R_FR (44), R_FR (45), R_FR (46), R_FR (47), 	   \
-  R_FR (48), R_FR (49), R_FR (50), R_FR (51), R_FR (52), R_FR (53), 	   \
-  R_FR (54), R_FR (55), R_FR (56), R_FR (57), R_FR (58), R_FR (59), 	   \
-  R_FR (60), R_FR (61), R_FR (62), R_FR (63), R_FR (64), R_FR (65), 	   \
-  R_FR (66), R_FR (67), R_FR (68), R_FR (69), R_FR (70), R_FR (71), 	   \
-  R_FR (72), R_FR (73), R_FR (74), R_FR (75), R_FR (76), R_FR (77), 	   \
-  R_FR (78), R_FR (79), R_FR (80), R_FR (81), R_FR (82), R_FR (83), 	   \
-  R_FR (84), R_FR (85), R_FR (86), R_FR (87), R_FR (88), R_FR (89), 	   \
-  R_FR (90), R_FR (91), R_FR (92), R_FR (93), R_FR (94), R_FR (95), 	   \
-  R_FR (96), R_FR (97), R_FR (98), R_FR (99), R_FR (100), R_FR (101), 	   \
+  R_FR (32), R_FR (33), R_FR (34), R_FR (35),				   \
+  R_FR (36), R_FR (37), R_FR (38), R_FR (39), R_FR (40), R_FR (41),	   \
+  R_FR (42), R_FR (43), R_FR (44), R_FR (45), R_FR (46), R_FR (47),	   \
+  R_FR (48), R_FR (49), R_FR (50), R_FR (51), R_FR (52), R_FR (53),	   \
+  R_FR (54), R_FR (55), R_FR (56), R_FR (57), R_FR (58), R_FR (59),	   \
+  R_FR (60), R_FR (61), R_FR (62), R_FR (63), R_FR (64), R_FR (65),	   \
+  R_FR (66), R_FR (67), R_FR (68), R_FR (69), R_FR (70), R_FR (71),	   \
+  R_FR (72), R_FR (73), R_FR (74), R_FR (75), R_FR (76), R_FR (77),	   \
+  R_FR (78), R_FR (79), R_FR (80), R_FR (81), R_FR (82), R_FR (83),	   \
+  R_FR (84), R_FR (85), R_FR (86), R_FR (87), R_FR (88), R_FR (89),	   \
+  R_FR (90), R_FR (91), R_FR (92), R_FR (93), R_FR (94), R_FR (95),	   \
+  R_FR (96), R_FR (97), R_FR (98), R_FR (99), R_FR (100), R_FR (101),	   \
   R_FR (102), R_FR (103), R_FR (104), R_FR (105), R_FR (106), R_FR (107),  \
   R_FR (108), R_FR (109), R_FR (110), R_FR (111), R_FR (112), R_FR (113),  \
   R_FR (114), R_FR (115), R_FR (116), R_FR (117), R_FR (118), R_FR (119),  \
   R_FR (120), R_FR (121), R_FR (122), R_FR (123), R_FR (124), R_FR (125),  \
-  R_FR (126), R_FR (127), 						   \
+  R_FR (126), R_FR (127),						   \
   /* Caller-saved predicate registers.  */				   \
-  R_PR (6), R_PR (7), R_PR (8), R_PR (9), R_PR (10), R_PR (11), 	   \
+  R_PR (6), R_PR (7), R_PR (8), R_PR (9), R_PR (10), R_PR (11),		   \
   R_PR (12), R_PR (13), R_PR (14), R_PR (15),				   \
   /* Rotating caller-saved predicate registers.  */			   \
-  R_PR (16), R_PR (17), 						   \
-  R_PR (18), R_PR (19), R_PR (20), R_PR (21), R_PR (22), R_PR (23), 	   \
-  R_PR (24), R_PR (25), R_PR (26), R_PR (27), R_PR (28), R_PR (29), 	   \
-  R_PR (30), R_PR (31), R_PR (32), R_PR (33), R_PR (34), R_PR (35), 	   \
-  R_PR (36), R_PR (37), R_PR (38), R_PR (39), R_PR (40), R_PR (41), 	   \
-  R_PR (42), R_PR (43), R_PR (44), R_PR (45), R_PR (46), R_PR (47), 	   \
-  R_PR (48), R_PR (49), R_PR (50), R_PR (51), R_PR (52), R_PR (53), 	   \
-  R_PR (54), R_PR (55), R_PR (56), R_PR (57), R_PR (58), R_PR (59), 	   \
-  R_PR (60), R_PR (61), R_PR (62), R_PR (63), 				   \
+  R_PR (16), R_PR (17),							   \
+  R_PR (18), R_PR (19), R_PR (20), R_PR (21), R_PR (22), R_PR (23),	   \
+  R_PR (24), R_PR (25), R_PR (26), R_PR (27), R_PR (28), R_PR (29),	   \
+  R_PR (30), R_PR (31), R_PR (32), R_PR (33), R_PR (34), R_PR (35),	   \
+  R_PR (36), R_PR (37), R_PR (38), R_PR (39), R_PR (40), R_PR (41),	   \
+  R_PR (42), R_PR (43), R_PR (44), R_PR (45), R_PR (46), R_PR (47),	   \
+  R_PR (48), R_PR (49), R_PR (50), R_PR (51), R_PR (52), R_PR (53),	   \
+  R_PR (54), R_PR (55), R_PR (56), R_PR (57), R_PR (58), R_PR (59),	   \
+  R_PR (60), R_PR (61), R_PR (62), R_PR (63),				   \
   /* Caller-saved branch registers.  */					   \
   R_BR (6), R_BR (7),							   \
 									   \
   /* Stacked callee-saved general registers.  */			   \
-  R_GR (32), R_GR (33), R_GR (34), R_GR (35), 				   \
-  R_GR (36), R_GR (37), R_GR (38), R_GR (39), R_GR (40), R_GR (41), 	   \
-  R_GR (42), R_GR (43), R_GR (44), R_GR (45), R_GR (46), R_GR (47), 	   \
-  R_GR (48), R_GR (49), R_GR (50), R_GR (51), R_GR (52), R_GR (53), 	   \
-  R_GR (54), R_GR (55), R_GR (56), R_GR (57), R_GR (58), R_GR (59), 	   \
-  R_GR (60), R_GR (61), R_GR (62), R_GR (63), R_GR (64), R_GR (65), 	   \
-  R_GR (66), R_GR (67), R_GR (68), R_GR (69), R_GR (70), R_GR (71), 	   \
-  R_GR (72), R_GR (73), R_GR (74), R_GR (75), R_GR (76), R_GR (77), 	   \
-  R_GR (78), R_GR (79), R_GR (80), R_GR (81), R_GR (82), R_GR (83), 	   \
-  R_GR (84), R_GR (85), R_GR (86), R_GR (87), R_GR (88), R_GR (89), 	   \
-  R_GR (90), R_GR (91), R_GR (92), R_GR (93), R_GR (94), R_GR (95), 	   \
-  R_GR (96), R_GR (97), R_GR (98), R_GR (99), R_GR (100), R_GR (101), 	   \
+  R_GR (32), R_GR (33), R_GR (34), R_GR (35),				   \
+  R_GR (36), R_GR (37), R_GR (38), R_GR (39), R_GR (40), R_GR (41),	   \
+  R_GR (42), R_GR (43), R_GR (44), R_GR (45), R_GR (46), R_GR (47),	   \
+  R_GR (48), R_GR (49), R_GR (50), R_GR (51), R_GR (52), R_GR (53),	   \
+  R_GR (54), R_GR (55), R_GR (56), R_GR (57), R_GR (58), R_GR (59),	   \
+  R_GR (60), R_GR (61), R_GR (62), R_GR (63), R_GR (64), R_GR (65),	   \
+  R_GR (66), R_GR (67), R_GR (68), R_GR (69), R_GR (70), R_GR (71),	   \
+  R_GR (72), R_GR (73), R_GR (74), R_GR (75), R_GR (76), R_GR (77),	   \
+  R_GR (78), R_GR (79), R_GR (80), R_GR (81), R_GR (82), R_GR (83),	   \
+  R_GR (84), R_GR (85), R_GR (86), R_GR (87), R_GR (88), R_GR (89),	   \
+  R_GR (90), R_GR (91), R_GR (92), R_GR (93), R_GR (94), R_GR (95),	   \
+  R_GR (96), R_GR (97), R_GR (98), R_GR (99), R_GR (100), R_GR (101),	   \
   R_GR (102), R_GR (103), R_GR (104), R_GR (105), R_GR (106), R_GR (107),  \
   R_GR (108),								   \
   /* Input registers.  */						   \
@@ -785,12 +781,12 @@ while (0)
   /* Callee-saved general registers.  */				   \
   R_GR (4), R_GR (5), R_GR (6), R_GR (7),				   \
   /* Callee-saved FP registers.  */					   \
-  R_FR (2), R_FR (3), R_FR (4), R_FR (5), R_FR (16), R_FR (17), 	   \
-  R_FR (18), R_FR (19), R_FR (20), R_FR (21), R_FR (22), R_FR (23), 	   \
-  R_FR (24), R_FR (25), R_FR (26), R_FR (27), R_FR (28), R_FR (29), 	   \
+  R_FR (2), R_FR (3), R_FR (4), R_FR (5), R_FR (16), R_FR (17),		   \
+  R_FR (18), R_FR (19), R_FR (20), R_FR (21), R_FR (22), R_FR (23),	   \
+  R_FR (24), R_FR (25), R_FR (26), R_FR (27), R_FR (28), R_FR (29),	   \
   R_FR (30), R_FR (31),							   \
   /* Callee-saved predicate registers.  */				   \
-  R_PR (1), R_PR (2), R_PR (3), R_PR (4), R_PR (5), 			   \
+  R_PR (1), R_PR (2), R_PR (3), R_PR (4), R_PR (5),			   \
   /* Callee-saved branch registers.  */					   \
   R_BR (1), R_BR (2), R_BR (3), R_BR (4), R_BR (5),			   \
 									   \
@@ -798,7 +794,7 @@ while (0)
   R_GR (109), R_GR (110), R_GR (111),					   \
 									   \
   /* Special general registers.  */					   \
-  R_GR (0), R_GR (1), R_GR (12), R_GR (13), 				   \
+  R_GR (0), R_GR (1), R_GR (12), R_GR (13),				   \
   /* Special FP registers.  */						   \
   R_FR (0), R_FR (1),							   \
   /* Special predicate registers.  */					   \
@@ -807,7 +803,8 @@ while (0)
   R_BR (0),								   \
   /* Other fixed registers.  */						   \
   FRAME_POINTER_REGNUM, RETURN_ADDRESS_POINTER_REGNUM,			   \
-  AR_CCV_REGNUM, AR_LC_REGNUM, AR_EC_REGNUM, AR_PFS_REGNUM		   \
+  AR_CCV_REGNUM, AR_UNAT_REGNUM, AR_PFS_REGNUM, AR_LC_REGNUM,		   \
+  AR_EC_REGNUM		  						   \
 }
 
 /* How Values Fit in Registers */
@@ -817,11 +814,13 @@ while (0)
 
 /* ??? x86 80-bit FP values only require 1 register.  */
 /* ??? We say that CCmode values require two registers.  This allows us to
-   easily store the normal and inverted values.  If we want single register
-   predicates, we can use EXTRA_CC_MODES to give them a different mode.  */
+   easily store the normal and inverted values.  We use CCImode to indicate
+   a single predicate register.  */
 
-#define HARD_REGNO_NREGS(REGNO, MODE) \
-  ((MODE) == CCmode && PR_REGNO_P (REGNO) ? 2				\
+#define HARD_REGNO_NREGS(REGNO, MODE)					\
+  ((REGNO) == PR_REG (0) && (MODE) == DImode ? 64			\
+   : PR_REGNO_P (REGNO) && (MODE) == CCmode ? 2				\
+   : PR_REGNO_P (REGNO) && (MODE) == CCImode ? 1			\
    : FR_REGNO_P (REGNO) && (MODE) == XFmode ? 1				\
    : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
@@ -830,9 +829,9 @@ while (0)
    that one).  */
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
-  (FR_REGNO_P (REGNO) ? (MODE) != CCmode				\
-   : PR_REGNO_P (REGNO) ? (MODE) == CCmode				\
-   : GR_REGNO_P (REGNO) ? (MODE) != XFmode				\
+  (FR_REGNO_P (REGNO) ? GET_MODE_CLASS (MODE) != MODE_CC		\
+   : PR_REGNO_P (REGNO) ? GET_MODE_CLASS (MODE) == MODE_CC		\
+   : GR_REGNO_P (REGNO) ? (MODE) != XFmode && (MODE) != CCImode		\
    : AR_REGNO_P (REGNO) ? (MODE) == DImode				\
    : 1)
 
@@ -951,15 +950,15 @@ enum reg_class
   /* AR_M_REGS.  */					\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
     0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
-    0x00000000, 0x00000000, 0x0400 },			\
+    0x00000000, 0x00000000, 0x0C00 },			\
   /* AR_I_REGS.  */					\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
     0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
-    0x00000000, 0x00000000, 0x3800 },			\
+    0x00000000, 0x00000000, 0x7000 },			\
   /* ALL_REGS.  */					\
   { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
-    0xFFFFFFFF, 0xFFFFFFFF, 0x3FFF },			\
+    0xFFFFFFFF, 0xFFFFFFFF, 0x7FFF },			\
 }
 
 /* A C expression whose value is a register class containing hard register
@@ -974,8 +973,8 @@ enum reg_class
  : FR_REGNO_P (REGNO) ? FR_REGS		\
  : PR_REGNO_P (REGNO) ? PR_REGS		\
  : BR_REGNO_P (REGNO) ? BR_REGS		\
- : AR_M_REGNO_P (REGNO) ? AR_I_REGS	\
- : AR_I_REGNO_P (REGNO) ? AR_M_REGS	\
+ : AR_M_REGNO_P (REGNO) ? AR_M_REGS	\
+ : AR_I_REGNO_P (REGNO) ? AR_I_REGS	\
  : NO_REGS)
 
 /* A macro whose definition is the name of the class to which a valid base
@@ -1068,8 +1067,9 @@ enum reg_class
 
 #define CLASS_CANNOT_CHANGE_MODE_P(FROM,TO) 1
 
-/* A C expression that defines the machine-dependent operand constraint letters
-   (`I', `J', `K', .. 'P') that specify particular ranges of integer values.  */
+/* A C expression that defines the machine-dependent operand constraint
+   letters (`I', `J', `K', .. 'P') that specify particular ranges of
+   integer values.  */
 
 /* 14 bit signed immediate for arithmetic instructions.  */
 #define CONST_OK_FOR_I(VALUE) \
@@ -1084,7 +1084,6 @@ enum reg_class
 /* 6 bit unsigned immediate for shift counts.  */
 #define CONST_OK_FOR_M(VALUE) ((unsigned HOST_WIDE_INT)(VALUE) < 0x40)
 /* 9 bit signed immediate for load/store post-increments.  */
-/* ??? N is currently not used.  */
 #define CONST_OK_FOR_N(VALUE) ((unsigned HOST_WIDE_INT)(VALUE) + 0x100 < 0x200)
 /* 0 for r0.  Used by Linux kernel, do not change.  */
 #define CONST_OK_FOR_O(VALUE) ((VALUE) == 0)
@@ -1131,18 +1130,11 @@ enum reg_class
 
 /* Define this macro if the addresses of local variable slots are at negative
    offsets from the frame pointer.  */
-#define FRAME_GROWS_DOWNWARD
+/* #define FRAME_GROWS_DOWNWARD */
 
-/* Offset from the frame pointer to the first local variable slot to be
-   allocated.  */
-/* ??? This leaves 16 bytes unused normally, but it looks funny to store locals
-   into the 16-byte reserved area.  */
-/* ??? This isn't very efficient use of the frame pointer.  Better would be
-   to move it down a ways, so that we have positive and negative offsets.  */
-#define STARTING_FRAME_OFFSET \
-  (current_function_pretend_args_size					\
-   ? 16 - current_function_pretend_args_size				\
-   : 0)
+/* Offset from the frame pointer to the first local variable slot to
+   be allocated.  */
+#define STARTING_FRAME_OFFSET 0
 
 /* Offset from the stack pointer register to the first location at which
    outgoing arguments are placed.  If not specified, the default value of zero
@@ -1207,16 +1199,8 @@ enum reg_class
 
 #define FRAME_POINTER_REGNUM 328
 
-/* Register number where frame pointer was saved in the prologue, or zero
-   if it was not saved.  */
-
-extern int ia64_fp_regno;
-
-/* Number of input and local registers used.  This is needed for the .regstk
-   directive, and also for debugging info.  */
-
-extern int ia64_input_regs;
-extern int ia64_local_regs;
+/* Base register for access to local variables of the function.  */
+#define HARD_FRAME_POINTER_REGNUM  LOC_REG (79)
 
 /* The register number of the arg pointer register, which is used to access the
    function's argument list.  */
@@ -1224,25 +1208,26 @@ extern int ia64_local_regs;
    in it.  */
 #define ARG_POINTER_REGNUM R_GR(0)
 
-/* The register number for the return address register.  This is not actually
-   a pointer as the name suggests, but that's a name that gen_rtx_REG 
-   already takes care to keep unique.  We modify return_address_pointer_rtx
-   in ia64_expand_prologue to reference the final output regnum.  */
-
+/* The register number for the return address register.  For IA-64, this
+   is not actually a pointer as the name suggests, but that's a name that
+   gen_rtx_REG already takes care to keep unique.  We modify
+   return_address_pointer_rtx in ia64_expand_prologue to reference the
+   final output regnum.  */
 #define RETURN_ADDRESS_POINTER_REGNUM 329
 
 /* Register numbers used for passing a function's static chain pointer.  */
-
+/* ??? The ABI sez the static chain should be passed as a normal parameter.  */
 #define STATIC_CHAIN_REGNUM 15
-
 
 /* Eliminating the Frame Pointer and the Arg Pointer */
 
 /* A C expression which is nonzero if a function must have and use a frame
    pointer.  This expression is evaluated in the reload pass.  If its value is
    nonzero the function will have a frame pointer.  */
-
 #define FRAME_POINTER_REQUIRED 0
+
+/* Show we can debug even without a frame pointer.  */
+#define CAN_DEBUG_WITHOUT_FP
 
 /* If defined, this macro specifies a table of register pairs used to eliminate
    unneeded registers that point into the stack frame.  */
@@ -1250,50 +1235,25 @@ extern int ia64_local_regs;
 #define ELIMINABLE_REGS							\
 {									\
   {ARG_POINTER_REGNUM,	 STACK_POINTER_REGNUM},				\
-  {ARG_POINTER_REGNUM,	 FRAME_POINTER_REGNUM},				\
+  {ARG_POINTER_REGNUM,	 HARD_FRAME_POINTER_REGNUM},			\
   {FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},				\
-  {RETURN_ADDRESS_POINTER_REGNUM, BR_REG (0)}				\
+  {FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM},			\
+  {RETURN_ADDRESS_POINTER_REGNUM, BR_REG (0)},				\
 }
 
 /* A C expression that returns non-zero if the compiler is allowed to try to
-   replace register number FROM with register number TO.  */
+   replace register number FROM with register number TO.  The frame pointer
+   is automatically handled.  */
 
 #define CAN_ELIMINATE(FROM, TO) \
   (TO == BR_REG (0) ? current_function_is_leaf : 1)
 
-/* This macro is similar to `INITIAL_FRAME_POINTER_OFFSET'.  It specifies the
-   initial difference between the specified pair of registers.  This macro must
-   be defined if `ELIMINABLE_REGS' is defined.  */
-/* ??? I need to decide whether the frame pointer is the old frame SP
-   or the new frame SP before dynamic allocs.  */
-#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
-{									\
-  unsigned int size = ia64_compute_frame_size (get_frame_size ());	\
-									\
-  if ((FROM) == FRAME_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM)	\
-    (OFFSET) = size;							\
-  else if ((FROM) == ARG_POINTER_REGNUM)				\
-    {									\
-      switch (TO)							\
-	{								\
-	case FRAME_POINTER_REGNUM:					\
-	  /* Arguments start above the 16 byte save area, unless stdarg	\
-	     in which case we store through the 16 byte save area.  */	\
-	  (OFFSET) = 16 - current_function_pretend_args_size;		\
-	  break;							\
-	case STACK_POINTER_REGNUM:					\
-	  (OFFSET) = size + 16 - current_function_pretend_args_size;	\
-	  break;							\
-	default:							\
-	  abort ();							\
-	}								\
-    }									\
-  else if ((TO) == BR_REG (0))						\
-    (OFFSET) = 0;							\
-  else									\
-    abort ();								\
-}
-
+/* This macro is similar to `INITIAL_FRAME_POINTER_OFFSET'.  It
+   specifies the initial difference between the specified pair of
+   registers.  This macro must be defined if `ELIMINABLE_REGS' is
+   defined.  */
+#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
+  ((OFFSET) = ia64_initial_elimination_offset ((FROM), (TO)))
 
 /* Passing Function Arguments on the Stack */
 
@@ -1688,108 +1648,39 @@ do {									\
    a trampoline, leaving space for the variable parts.
 
    The trampoline should set the static chain pointer to value placed
-   into the trampoline and should branch to the specified routine.  The
-   gp doesn't have to be set since that is already done by the caller
-   of the trampoline.  To make the normal indirect-subroutine calling
-   convention work, the trampoline must look like a function descriptor.
-   That is, the first word must be the target address, the second
-   word must be the target's global pointer.  The complete trampoline
+   into the trampoline and should branch to the specified routine.
+   To make the normal indirect-subroutine calling convention work,
+   the trampoline must look like a function descriptor; the first
+   word being the target address and the second being the target's
+   global pointer.
+
+   We abuse the concept of a global pointer by arranging for it
+   to point to the data we need to load.  The complete trampoline
    has the following form:
 
-		+----------------+ \
-	TRAMP:	| TRAMP+32     	 | |
-		+----------------+  > fake function descriptor
-		|    gp		 | |
-		+----------------+ /
-		| target addr	 |
-		+----------------+
-		| static link	 |
-		+----------------+
-		| mov r2=ip	 |
-		+		 +
-		| ;;		 |
-		+----------------+
-		| adds r4=-16,r2 |
-		+ adds r15=-8,r2 +
-		| ;;		 |
-		+----------------+
-		| ld8 r4=[r4];;	 |
-		+ ld8 r15=[r15]	 +
-		| mov b6=r4;;	 |
-		+----------------+
-		| br b6		 |
-		+----------------+
+		+-------------------+ \
+	TRAMP:	| __ia64_trampoline | |
+		+-------------------+  > fake function descriptor
+		| TRAMP+16          | |
+		+-------------------+ /
+		| target descriptor |
+		+-------------------+
+		| static link	    |
+		+-------------------+
 */
-
-/* ??? Need a version of this and INITIALIZE_TRAMPOLINE for -mno-pic.  */
-
-#define TRAMPOLINE_TEMPLATE(FILE)					\
-{									\
-  fprintf (FILE,							\
-	   "\tdata8 0,0,0,0\n"						\
-	   "\t{ mov r2=ip }\n"						\
-	   "\t;;\n"							\
-	   "\t{ adds r4=-16,r2; adds r%d=-8,r2 }\n"			\
-	   "\t;;\n"							\
-	   "\t{ ld8 r4=[r4];; ld8 r%d=[r%d]; mov b6=r4 }\n"		\
-	   "\t;;\n"							\
-	   "\t{ br b6 }\n"						\
-	   "\t;;\n",							\
-	   STATIC_CHAIN_REGNUM, STATIC_CHAIN_REGNUM,			\
-	   STATIC_CHAIN_REGNUM);					\
-}
-
-/* The name of a subroutine to switch to the section in which the trampoline
-   template is to be placed.
-
-   On ia64, instructions may only be placed in a text segment.  */
-
-#define TRAMPOLINE_SECTION	text_section
 
 /* A C expression for the size in bytes of the trampoline, as an integer.  */
 
-#define TRAMPOLINE_SIZE		96
+#define TRAMPOLINE_SIZE		32
 
 /* Alignment required for trampolines, in bits.  */
 
-#define TRAMPOLINE_ALIGNMENT	256
+#define TRAMPOLINE_ALIGNMENT	64
 
 /* A C statement to initialize the variable parts of a trampoline.  */
 
 #define INITIALIZE_TRAMPOLINE(ADDR, FNADDR, STATIC_CHAIN) \
-{									\
-  rtx addr, addr2, addr_reg, fdesc_addr;				\
-									\
-  /* Load function descriptor address into a pseudo.  */		\
-  fdesc_addr = gen_reg_rtx (DImode);					\
-  emit_move_insn (fdesc_addr, FNADDR);				     	\
-									\
-  /* Read target address from function descriptor and store in		\
-     trampoline.  */							\
-  addr = memory_address (Pmode, plus_constant (ADDR, 16));		\
-  emit_move_insn (gen_rtx_MEM (Pmode, addr),				\
-		  gen_rtx_MEM (Pmode, fdesc_addr));			\
-  /* Store static chain in trampoline.  */				\
-  addr = memory_address (Pmode, plus_constant (ADDR, 24));		\
-  emit_move_insn (gen_rtx_MEM (Pmode, addr), STATIC_CHAIN);		\
-									\
-  /* Load GP value from function descriptor and store in trampoline.  */\
-  addr = memory_address (Pmode, plus_constant (ADDR, 8));		\
-  addr2 = memory_address (Pmode, plus_constant (fdesc_addr, 8));	\
-  emit_move_insn (gen_rtx_MEM (Pmode, addr),				\
-		  gen_rtx_MEM (Pmode, addr2));				\
-									\
-  /* Store trampoline entry address in trampoline.  */			\
-  addr = memory_address (Pmode, ADDR);					\
-  addr2 = memory_address (Pmode, plus_constant (ADDR, 32));		\
-  emit_move_insn (gen_rtx_MEM (Pmode, addr), addr2);			\
-									\
-  /* Flush the relevant 64 bytes from the i-cache.  */			\
-  addr_reg = force_reg (DImode, plus_constant (ADDR, 0));		\
-  emit_insn (gen_rtx_UNSPEC_VOLATILE (VOIDmode,				\
-				      gen_rtvec (1, addr_reg), 3));	\
-}
-
+  ia64_initialize_trampoline((ADDR), (FNADDR), (STATIC_CHAIN))
 
 /* Implicit Calls to Library Routines */
 
@@ -2394,7 +2285,7 @@ do {									\
   /* Branch registers.  */						\
   "b0", "b1", "b2", "b3", "b4", "b5", "b6", "b7",			\
   /* Frame pointer.  Return address.  */				\
-  "sfp", "retaddr", "ar.ccv", "ar.lc", "ar.ec", "ar.pfs"		\
+  "sfp", "retaddr", "ar.ccv", "ar.unat", "ar.pfs", "ar.lc", "ar.ec",	\
 }
 
 /* If defined, a C initializer for an array of structures containing a name and
@@ -2781,7 +2672,8 @@ do {									\
 { "adjusted_comparison_operator", {LT, GE, LTU, GEU}},			\
 { "call_multiple_values_operation", {PARALLEL}},			\
 { "predicate_operator", {NE, EQ}},					\
-{ "ar_lc_reg_operand", {REG}},
+{ "ar_lc_reg_operand", {REG}},						\
+{ "ar_ccv_reg_operand", {REG}},
 
 /* An alias for a machine mode name.  This is the machine mode that elements of
    a jump-table should have.  */
@@ -2892,6 +2784,9 @@ struct machine_function
 
   /* The new bsp value when unwinding from EH. */
   struct rtx_def* ia64_eh_epilogue_bsp;
+
+  /* The GP value save register.  */
+  struct rtx_def* ia64_gp_save;
 };
 
 

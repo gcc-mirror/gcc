@@ -1,5 +1,93 @@
 2000-08-08  Richard Henderson  <rth@cygnus.com>
 
+	* config/ia64/ia64-protos.h: Remove duplicates.  Update
+	for massive code rearrangements.
+	* config/ia64/ia64.c (ia64_arpfs_regno): Remove.
+	(ia64_rp_regno, ia64_fp_regno, ia64_input_regs): Remove.
+	(ia64_local_regs, ia64_need_regstk): Remove.
+	(ar_ccv_reg_operand): New.
+	(ia64_gp_save_reg): New.
+	(struct ia64_frame_info): Combine most of the size elements;
+	add new gr save elements.
+	(find_gr_spill): New.
+	(next_scratch_gr_reg): New.
+	(mark_reg_gr_used_mask): New.
+	(ia64_compute_frame_size): Rewrite.  Allocate special AR regs
+	to GR backing store regs when possible.
+	(ia64_initial_elimination_offset): New.
+	(ia64_rap_fp_offset): Remove.
+	(save_restore_insns): Remove.
+	(setup_spill_pointers): New.
+	(finish_spill_pointers): New.
+	(spill_restore_mem): New.
+	(do_spill, do_restore): New.
+	(ia64_expand_prologue): Rewrite to use them.
+	(ia64_expand_epilogue): Likewise.
+	(ia64_direct_return): Update for current_frame_info changes.
+	(ia64_function_prologue): Simplify .prologue emission.  Emit
+	.spill when needed.
+	(ia64_setup_incoming_varargs): Don't ever emit rtl.
+	(ia64_dbx_register_number): New.
+	(ia64_initialize_trampoline): New.
+	(ia64_secondary_reload_class): Request GR_REGS for integer
+	arithmetic destined for FR_REGS.
+	(ia64_init_machine_status): Don't reset return_address_pointer_rtx.
+	(ia64_mark_machine_status): Mark ia64_gp_save.
+	(rws_access_regno): Rename from rws_access_reg; don't treat
+	predicates specially.
+	(rws_access_reg): New.  Update all callers.
+	(rtx_needs_barrier): Remove dead unspecs.
+	(ia64_epilogue_uses): Mark ar.pfs and ar.unat live on exit.
+	(ia64_encode_section_info): Silence signed/unsigned warnings.
+	(spill_offset, sp_offset, spill_offset_emitted): Remove.
+	(tmp_reg, tmp_saved): Remove.
+	(process_set): Rewrite to expect complicated bits via 
+	REG_FRAME_RELATED_EXPR.
+	(ia64_expand_fetch_and_op): Use emit_move_insn; be explicit
+	in the use of ar.ccv; never set RTX_UNCHANGING_P.
+	(ia64_expand_op_and_fetch): Likewise.
+	(ia64_expand_compare_and_swap): Likewise.
+	(ia64_expand_builtin): Likewise.
+	* config/ia64/ia64.h (AR_UNAT_REGNUM): New.
+	(FIRST_PSEUDO_REGISTER): Update.
+	(AR_M_REGNO_P): Update.
+	(FIXED_REGS): Don't mark three local registers as used.
+	(EXTRA_CC_MODES): New.
+	(SELECT_CC_MODE): New.
+	(HARD_REGNO_NREGS): Allow DImode in p0; handle CCImode.
+	(HARD_REGNO_MODE_OK): Disallow CCImode from non-predicates.
+	(FRAME_GROWS_DOWNWARD): Unset.
+	(STARTING_FRAME_OFFSET): Zero.
+	(ELIMINABLE_REGS): Eliminate from the soft to hard frame pointer.
+	(INITIAL_ELIMINATION_OFFSET): Defer to out of line function.
+	(HARD_FRAME_POINTER_REGNUM): New.
+	(CAN_DEBUG_WITHOUT_FP): Define.
+	(TRAMPOLINE_TEMPLATE): Remove.
+	(TRAMPOLINE_SIZE): Lower to 32.
+	(TRAMPOLINE_ALIGNMENT): Lower to 64.
+	(INITIALIZE_TRAMPOLINE): Defer to out of line function.
+	(PREDICATE_CODES): Update.
+	(struct machine_function): Add ia64_gp_save.
+	* config/ia64/ia64.md: Purge unused unspecs.
+	(movsi patterns): Allow moves to/from AR_M_REGS.
+	(movdi patterns): Allow moves to/from p0.
+	(call patterns): Move most setjmp hackery to ia64_gp_save_reg.
+	(gr_spill, gr_restore): Indicate ar.unat read/written.
+	(nonlocal_goto): Don't pass old frame_pointer.
+	(nonlocal_goto_receiver): Remove.
+	(exception_receiver): New.
+	(builtin_setjmp_setup): New.
+	(builtin_setjmp_receiver): New.
+	* config/ia64/lib1funcs.asm (__ia64_save_stack_nonlocal): Bundle.
+	(__ia64_nonlocal_goto): Bundle.  Don't kill r7.
+	(__ia64_restore_stack_nonlocal): Likewise.
+	(__ia64_trampoline): New.
+	* config/ia64/sysv4.h (DBX_REGISTER_NUMBER): Defer to out of line
+	function.
+	* config/ia64/t-ia64 (LIB1ASMFUNCS): Add __trampoline.
+
+2000-08-08  Richard Henderson  <rth@cygnus.com>
+
 	* frame.h (ia64_frame_state): Add my_psp.
 	* libgcc2.c (ia64_throw_helper): Add throw_sp argument.
 	(__throw): Pass it in.  Don't clobber r7.
