@@ -727,9 +727,8 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
       __function_requires< _DefaultConstructibleConcept<_Sequence> >();
 
       _Sequence
-        __c _IsUnused(__n),
-        __c2 _IsUnused(__n, __t),
-        __c3 _IsUnused(__first, __last);
+	__c _IsUnused(__n, __t),
+        __c2 _IsUnused(__first, __last);
 
       __c.insert(__p, __t);
       __c.insert(__p, __n, __t);
