@@ -1099,6 +1099,56 @@ c4x_emit_move_sequence (operands, mode)
 			    gen_rtx_LO_SUM (Pmode, dp_reg, XEXP (op0, 0)));
     }
 
+  if (GET_CODE (op0) == SUBREG
+      && mixed_subreg_operand (op0, mode))
+    {
+      /* We should only generate these mixed mode patterns
+	 during RTL generation.  If we need do it later on
+	 then we'll have to emit patterns that won't clobber CC.  */
+      if (reload_in_progress || reload_completed)
+	abort ();
+      if (GET_MODE (SUBREG_REG (op0)) == QImode)
+	op0 = SUBREG_REG (op0);
+      else if (GET_MODE (SUBREG_REG (op0)) == HImode)
+	{
+	  op0 = copy_rtx (op0);
+	  PUT_MODE (op0, QImode);
+	}
+      else
+	abort ();
+
+      if (mode == QFmode)
+	emit_insn (gen_storeqf_int_clobber (op0, op1));
+      else
+	abort ();
+      return 1;
+    }
+
+  if (GET_CODE (op1) == SUBREG
+      && mixed_subreg_operand (op1, mode))
+    {
+      /* We should only generate these mixed mode patterns
+	 during RTL generation.  If we need do it later on
+	 then we'll have to emit patterns that won't clobber CC.  */
+      if (reload_in_progress || reload_completed)
+	abort ();
+      if (GET_MODE (SUBREG_REG (op1)) == QImode)
+	op1 = SUBREG_REG (op1);
+      else if (GET_MODE (SUBREG_REG (op1)) == HImode)
+	{
+	  op1 = copy_rtx (op1);
+	  PUT_MODE (op1, QImode);
+	}
+      else
+	abort ();
+
+      if (mode == QFmode)
+	emit_insn (gen_loadqf_int_clobber (op0, op1));
+      else
+	abort ();
+      return 1;
+    }
+
   /* Adjust operands in case we have modified them.  */
   operands[0] = op0;
   operands[1] = op1;
@@ -1250,10 +1300,11 @@ c4x_check_legit_addr (mode, addr, strict)
 	 being pushed on the stack.  */
 
     case PRE_DEC:
+    case PRE_INC:
     case POST_DEC:
       if (mode != QImode && mode != QFmode)
 	return 0;
-    case PRE_INC:
+
     case POST_INC:
       base = XEXP (addr, 0);
       if (! REG_P (base))
@@ -2653,7 +2704,26 @@ reg_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
+  if (GET_CODE (op) == SUBREG
+      && GET_MODE (op) == QFmode)
+    return 0;
   return register_operand (op, mode);
+}
+
+
+int
+mixed_subreg_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  /* Allow (subreg:HF (reg:HI)) that be generated for a union of an
+     int and a long double.  */
+  if (GET_CODE (op) == SUBREG
+      && (GET_MODE (op) == QFmode)
+      && (GET_MODE (SUBREG_REG (op)) == QImode
+	  || GET_MODE (SUBREG_REG (op)) == HImode))
+    return 1;
+  return 0;
 }
 
 
@@ -2733,7 +2803,7 @@ r0r1_reg_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  if (! register_operand (op, mode))
+  if (! reg_operand (op, mode))
     return 0;
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
@@ -2748,7 +2818,7 @@ r2r3_reg_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  if (! register_operand (op, mode))
+  if (! reg_operand (op, mode))
     return 0;
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
@@ -2763,7 +2833,7 @@ ext_low_reg_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  if (! register_operand (op, mode))
+  if (! reg_operand (op, mode))
     return 0;
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
@@ -2778,7 +2848,7 @@ ext_reg_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  if (! register_operand (op, mode))
+  if (! reg_operand (op, mode))
     return 0;
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
@@ -2795,7 +2865,7 @@ std_reg_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  if (! register_operand (op, mode))
+  if (! reg_operand (op, mode))
     return 0;
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
@@ -2810,7 +2880,7 @@ addr_reg_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  if (! register_operand (op, mode))
+  if (! reg_operand (op, mode))
     return 0;
   return c4x_a_register (op);
 }
@@ -2823,7 +2893,7 @@ index_reg_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  if (! register_operand (op, mode))
+  if (! reg_operand (op, mode))
     return 0;
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
@@ -2914,6 +2984,10 @@ src_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
+  if (GET_CODE (op) == SUBREG
+      && mixed_subreg_operand (op, mode))
+    return 0;
+
   if (REG_P (op))
     return reg_operand (op, mode);
 

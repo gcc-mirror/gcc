@@ -449,7 +449,9 @@
 ;  8 loadhf_int
 ;  9 storehf_int
 ; 10 RSQRF
-
+; 11 loadqf_int
+; 12 storeqf_int
+; 22 rptb_init
 
 ;
 ; C4x FUNCTIONAL UNITS
@@ -2967,6 +2969,98 @@
   if (c4x_emit_move_sequence (operands, QFmode))
     DONE;
 }")
+
+; This can generate invalid stack slot displacements
+(define_split
+ [(set (match_operand:QI 0 "reg_operand" "=r")
+       (unspec [(match_operand:QF 1 "reg_operand" "f")] 12))]
+  "reload_completed"
+  [(set (match_dup 3) (match_dup 1))
+   (set (match_dup 0) (match_dup 2))]
+  "operands[2] = assign_stack_temp (QImode, GET_MODE_SIZE (QImode), 0);
+   operands[3] = copy_rtx (operands[2]);
+   PUT_MODE (operands[3], QFmode);")
+
+
+(define_insn "storeqf_int"
+ [(set (match_operand:QI 0 "reg_operand" "=r")
+       (unspec [(match_operand:QF 1 "reg_operand" "f")] 12))]
+ ""
+ "#"
+  [(set_attr "type" "multi")])
+
+(define_split
+ [(parallel [(set (match_operand:QI 0 "reg_operand" "=r")
+                  (unspec [(match_operand:QF 1 "reg_operand" "f")] 12))
+             (clobber (reg:CC 21))])]
+  "reload_completed"
+  [(set (mem:QF (pre_inc:QI (reg:QI 20)))
+        (match_dup 1))
+   (parallel [(set (match_dup 0)
+                   (mem:QI (post_dec:QI (reg:QI 20))))
+              (clobber (reg:CC 21))])]
+  "")
+
+
+; We need accurate death notes for this...
+;(define_peephole
+;  [(set (match_operand:QF 0 "reg_operand" "=f")
+;        (match_operand:QF 1 "memory_operand" "m"))
+;   (set (mem:QF (pre_inc:QI (reg:QI 20)))
+;        (match_dup 0))
+;   (parallel [(set (match_operand:QI 2 "reg_operand" "r")
+;                   (mem:QI (post_dec:QI (reg:QI 20))))
+;              (clobber (reg:CC 21))])]
+;  ""
+;  "ldiu\\t%1,%0")
+
+(define_insn "storeqf_int_clobber"
+ [(parallel [(set (match_operand:QI 0 "reg_operand" "=r")
+                  (unspec [(match_operand:QF 1 "reg_operand" "f")] 12))
+             (clobber (reg:CC 21))])]
+ ""
+ "#"
+  [(set_attr "type" "multi")])
+
+
+; This can generate invalid stack slot displacements
+(define_split
+ [(set (match_operand:QF 0 "reg_operand" "=f")
+       (unspec [(match_operand:QI 1 "reg_operand" "r")] 11))]
+  "reload_completed"
+  [(set (match_dup 2) (match_dup 1))
+   (set (match_dup 0) (match_dup 3))]
+  "operands[2] = assign_stack_temp (QImode, GET_MODE_SIZE (QImode), 0);
+   operands[3] = copy_rtx (operands[2]);
+   PUT_MODE (operands[3], QFmode);")
+
+
+(define_insn "loadqf_int"
+ [(set (match_operand:QF 0 "reg_operand" "=f")
+       (unspec [(match_operand:QI 1 "reg_operand" "r")] 11))]
+ ""
+ "#"
+  [(set_attr "type" "multi")])
+
+(define_split
+ [(parallel [(set (match_operand:QF 0 "reg_operand" "=f")
+                  (unspec [(match_operand:QI 1 "reg_operand" "r")] 11))
+             (clobber (reg:CC 21))])]
+  "reload_completed"
+  [(set (mem:QI (pre_inc:QI (reg:QI 20)))
+        (match_dup 1))
+   (parallel [(set (match_dup 0)
+                   (mem:QF (post_dec:QI (reg:QI 20))))
+              (clobber (reg:CC 21))])]
+  "")
+
+(define_insn "loadqf_int_clobber"
+ [(parallel [(set (match_operand:QF 0 "reg_operand" "=f")
+                  (unspec [(match_operand:QI 1 "reg_operand" "r")] 11))
+             (clobber (reg:CC 21))])]
+ ""
+ "#"
+  [(set_attr "type" "multi")])
 
 ; We must provide an alternative to store to memory in case we have to
 ; spill a register.
