@@ -221,7 +221,7 @@ mark_referenced_resources (x, res, include_delayed_effects)
 	res->unch_memory = 1;
       else
 	res->memory = 1;
-      res->volatil = MEM_VOLATILE_P (x);
+      res->volatil |= MEM_VOLATILE_P (x);
 
       /* Mark registers used to access memory.  */
       mark_referenced_resources (XEXP (x, 0), res, 0);
@@ -242,7 +242,7 @@ mark_referenced_resources (x, res, include_delayed_effects)
       break;
 
     case ASM_OPERANDS:
-      res->volatil = MEM_VOLATILE_P (x);
+      res->volatil |= MEM_VOLATILE_P (x);
 
       /* For all ASM_OPERANDS, we must traverse the vector of input operands.
 	 We can not just fall through here since then we would be confused
@@ -710,8 +710,8 @@ mark_set_resources (x, res, in_dest, include_delayed_effects)
       if (in_dest)
 	{
 	  res->memory = 1;
-	  res->unch_memory = RTX_UNCHANGING_P (x);
-	  res->volatil = MEM_VOLATILE_P (x);
+	  res->unch_memory |= RTX_UNCHANGING_P (x);
+	  res->volatil |= MEM_VOLATILE_P (x);
 	}
 
       mark_set_resources (XEXP (x, 0), res, 0, 0);
@@ -750,7 +750,7 @@ mark_set_resources (x, res, in_dest, include_delayed_effects)
       break;
 
     case ASM_OPERANDS:
-      res->volatil = MEM_VOLATILE_P (x);
+      res->volatil |= MEM_VOLATILE_P (x);
 
       /* For all ASM_OPERANDS, we must traverse the vector of input operands.
 	 We can not just fall through here since then we would be confused
