@@ -1,5 +1,12 @@
 2001-12-18  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* docs/html/17_intro/TODO: Update.
+	* docs/html/17_intro/RELEASE-NOTES: Edits, update.
+	* README: Edit for clarity, update to reflect current directory
+	structure.
+
+2001-12-18  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* acinclude.m4 (GLIBCPP_ENABLE_CLOCALE): Extended checking before
 	enabling gnu model.
 	* aclocal.m4: Rebuild.
