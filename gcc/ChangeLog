@@ -1,3 +1,7 @@
+2002-09-16  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* output.h: Remove #ifdef RTX_CODE and #ifdef TREE_CODE.
+
 2002-09-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* m68hc11.md (addhi_sp): Fix uninitialized variable bug.
