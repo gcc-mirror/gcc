@@ -2316,6 +2316,8 @@ stabilize_init (tree init, tree *initp)
 	t = TREE_OPERAND (t, 1);
       if (TREE_CODE (t) == TARGET_EXPR)
 	t = TARGET_EXPR_INITIAL (t);
+      if (TREE_CODE (t) == COMPOUND_EXPR)
+	t = expr_last (t);
       if (TREE_CODE (t) == CONSTRUCTOR
 	  && CONSTRUCTOR_ELTS (t) == NULL_TREE)
 	{

@@ -1,5 +1,8 @@
 2004-08-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/16851
+	* tree.c (stabilize_init): See through a COMPOUND_EXPR.
+
 	PR c++/13684
 	* decl.c (expand_static_init): Use thread-safety API.
 	(register_dtor_fn): Return the call, don't expand it.
