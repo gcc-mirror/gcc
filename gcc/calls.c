@@ -4426,7 +4426,13 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
   /* If this isn't going to be placed on both the stack and in registers,
      set up the register and number of words.  */
   if (! arg->pass_on_stack)
-    reg = arg->reg, partial = arg->partial;
+    {
+      if (flags & ECF_SIBCALL)
+	reg = arg->tail_call_reg;
+      else
+	reg = arg->reg;
+      partial = arg->partial;
+    }
 
   if (reg != 0 && partial == 0)
     /* Being passed entirely in a register.  We shouldn't be called in

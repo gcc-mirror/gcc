@@ -1,3 +1,7 @@
+2002-04-04  David S. Miller  <davem@redhat.com>
+
+	* calls.c (store_one_arg): If ECF_SIBCALL, use tail_call_reg.
+
 2002-03-24  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	preprocessor/3951
