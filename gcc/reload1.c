@@ -8044,6 +8044,8 @@ reload_cse_regno_equal_p (regno, val, mode)
   for (x = reg_values[regno]; x; x = XEXP (x, 1))
     if (XEXP (x, 0) != 0
 	&& rtx_equal_p (XEXP (x, 0), val)
+	&& (! flag_float_store || GET_CODE (XEXP (x, 0)) != MEM
+	    || GET_MODE_CLASS (GET_MODE (x)) != MODE_FLOAT)
 	&& (GET_CODE (val) != CONST_INT
 	    || mode == GET_MODE (x)
 	    || (GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (x))
