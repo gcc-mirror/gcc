@@ -1,3 +1,8 @@
+1999-11-01  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (maybe_make_one_only): Always make things comdat on
+	ELF targets, too.
+
 Sun Oct 24 23:54:10 PDT 1999 Jeff Law  (law@cygnus.com)
 
 	* gcc-2.95.2 Released.

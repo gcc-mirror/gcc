@@ -2485,9 +2485,13 @@ void
 maybe_make_one_only (decl)
      tree decl;
 {
-  /* This is not necessary on targets that support weak symbols, because
-     the implicit instantiations will defer to the explicit one.  */     
-  if (! supports_one_only () || SUPPORTS_WEAK)
+  /* We used to say that this was not necessary on targets that support weak
+     symbols, because the implicit instantiations will defer to the explicit
+     one.  However, that's not actually the case in SVR4; a strong definition
+     after a weak one is an error.  Also, not making explicit
+     instantiations one_only means that we can end up with two copies of
+     some template instantiations. */
+  if (! supports_one_only ())
     return;
 
   /* We can't set DECL_COMDAT on functions, or finish_file will think
