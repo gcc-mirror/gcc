@@ -7,7 +7,7 @@
 --                                   S p e c                                --
 --                                                                          --
 --                                                                          --
---          Copyright (C) 1997-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -106,6 +106,7 @@ package System.OS_Interface is
    SIGTERM     : constant := 15; --  software termination signal from kill
    SIGUSR1     : constant := 16; --  user defined signal 1
    SIGUSR2     : constant := 17; --  user defined signal 2
+   SIGXCPU     : constant := 0; --  XCPU
 
    SIGADAABORT : constant := SIGABRT;
 

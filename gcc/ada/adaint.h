@@ -31,6 +31,10 @@
  *                                                                          *
  ****************************************************************************/
 
+#if defined(__rtems__)
+#include <stdio.h>
+#endif
+
 #include <dirent.h>
 
 extern int    __gnat_max_path_len;
