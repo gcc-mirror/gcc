@@ -1822,10 +1822,16 @@ install-common: native install-dir xgcc $(EXTRA_PARTS) lang.install-common
 	  else true; \
 	  fi; \
 	done
-	for file in $(EXTRA_PASSES) $(EXTRA_PARTS) $(EXTRA_PROGRAMS) $(USE_COLLECT2) ..; do \
+	for file in $(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2) ..; do \
 	  if [ x"$$file" != x.. ]; then \
 	    rm -f $(libsubdir)/$$file; \
 	    $(INSTALL_PROGRAM) $$file $(libsubdir)/$$file; \
+	  else true; fi; \
+	done
+	for file in $(EXTRA_PARTS) ..; do \
+	  if [ x"$$file" != x.. ]; then \
+	    rm -f $(libsubdir)/$$file; \
+	    $(INSTALL_DATA) $$file $(libsubdir)/$$file; \
 	  else true; fi; \
 	done
 # Don't mess with specs if it doesn't exist yet.
