@@ -1826,7 +1826,7 @@ simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
 
 	  if (! dummy_cond)
 	    {
-	      dummy_cond = build (LT_EXPR, boolean_type_node,
+	      dummy_cond = build (LE_EXPR, boolean_type_node,
 				  op, integer_zero_node);
 	      dummy_cond = build (COND_EXPR, void_type_node,
 				  dummy_cond, NULL, NULL);
@@ -1834,7 +1834,7 @@ simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
 	    }
 	  else
 	    {
-	      TREE_SET_CODE (TREE_OPERAND (dummy_cond, 0), LT_EXPR);
+	      TREE_SET_CODE (TREE_OPERAND (dummy_cond, 0), LE_EXPR);
 	      TREE_OPERAND (TREE_OPERAND (dummy_cond, 0), 0) = op;
 	      TREE_OPERAND (TREE_OPERAND (dummy_cond, 0), 1)
 		= convert (type, integer_zero_node);
@@ -1842,6 +1842,26 @@ simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
 	  val = simplify_cond_and_lookup_avail_expr (dummy_cond,
 						     &bd->avail_exprs,
 						     NULL, false);
+
+	  if (!val)
+	    {
+	      TREE_SET_CODE (TREE_OPERAND (dummy_cond, 0), GE_EXPR);
+	      TREE_OPERAND (TREE_OPERAND (dummy_cond, 0), 0) = op;
+	      TREE_OPERAND (TREE_OPERAND (dummy_cond, 0), 1)
+		= convert (type, integer_zero_node);
+
+	      val = simplify_cond_and_lookup_avail_expr (dummy_cond,
+							 &bd->avail_exprs,
+							 NULL, false);
+
+	      if (val)
+		{
+		  if (integer_zerop (val))
+		    val = integer_one_node;
+		  else if (integer_onep (val))
+		    val = integer_zero_node;
+		}
+	    }
 	}
 
       if (val
