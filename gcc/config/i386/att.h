@@ -1,5 +1,5 @@
 /* Definitions for AT&T assembler syntax for the Intel 80386.
-   Copyright (C) 1988 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -68,18 +68,6 @@ do								\
 /* Can't use ASM_OUTPUT_SKIP in text section; it doesn't leave 0s.  */
 
 #define ASM_NO_SKIP_IN_TEXT 1
-
-#undef BSS_SECTION_FUNCTION  /* Override the definition from svr3.h.  */
-#define BSS_SECTION_FUNCTION \
-void								\
-bss_section ()							\
-{								\
-  if (in_section != in_bss)					\
-    {								\
-      fprintf (asm_out_file, "%s\n", BSS_SECTION_ASM_OP);	\
-      in_section = in_bss;					\
-    }								\
-}
 
 /* Define the syntax of labels and symbol definitions/declarations.  */
 
