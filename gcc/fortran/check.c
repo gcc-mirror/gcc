@@ -525,6 +525,28 @@ gfc_check_atan2 (gfc_expr * y, gfc_expr * x)
 }
 
   
+/* BESJN and BESYN functions.  */
+
+try
+gfc_check_besn (gfc_expr * n, gfc_expr * x)
+{
+
+  if (scalar_check (n, 0) == FAILURE)
+    return FAILURE;
+
+  if (type_check (n, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (scalar_check (x, 1) == FAILURE)
+    return FAILURE;
+
+  if (type_check (x, 1, BT_REAL) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
 try
 gfc_check_btest (gfc_expr * i, gfc_expr * pos)
 {
@@ -727,6 +749,22 @@ gfc_check_eoshift (gfc_expr * array, gfc_expr * shift, gfc_expr * boundary,
   return SUCCESS;
 }
 
+
+/* This is used for the g77 one-argument Bessel functions, and the
+   error function.  */
+
+try
+gfc_check_g77_math1 (gfc_expr * x)
+{
+
+  if (scalar_check (x, 0) == FAILURE)
+    return FAILURE;
+
+  if (type_check (x, 0, BT_REAL) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
 
 
 try

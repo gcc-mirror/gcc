@@ -969,6 +969,68 @@ add_functions (void)
 
   make_generic ("atan2", GFC_ISYM_ATAN2);
 
+  /* Bessel and Neumann functions for G77 compatibility.  */
+
+  add_sym_1 ("besj0", 1, 0, BT_REAL, dr,
+	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
+	     x, BT_REAL, dr, 0);
+
+  add_sym_1 ("dbesj0", 1, 0, BT_REAL, dd,
+	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
+	     x, BT_REAL, dd, 0);
+
+  make_generic ("besj0", GFC_ISYM_J0);
+
+  add_sym_1 ("besj1", 1, 0, BT_REAL, dr,
+	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
+	     x, BT_REAL, dr, 1);
+
+  add_sym_1 ("dbesj1", 1, 0, BT_REAL, dd,
+	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
+	     x, BT_REAL, dd, 1);
+
+  make_generic ("besj1", GFC_ISYM_J1);
+
+  add_sym_2 ("besjn", 1, 0, BT_REAL, dr,
+	     gfc_check_besn, NULL, gfc_resolve_besn, n, BT_INTEGER, di, 1,
+         x, BT_REAL, dr, 1);
+
+  add_sym_2 ("dbesjn", 1, 0, BT_REAL, dd,
+	     gfc_check_besn, NULL, gfc_resolve_besn, n, BT_INTEGER, di, 1,
+         x, BT_REAL, dd, 1);
+
+  make_generic ("besjn", GFC_ISYM_JN);
+
+  add_sym_1 ("besy0", 1, 0, BT_REAL, dr,
+	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
+	     x, BT_REAL, dr, 0);
+
+  add_sym_1 ("dbesy0", 1, 0, BT_REAL, dd,
+	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
+	     x, BT_REAL, dd, 0);
+
+  make_generic ("besy0", GFC_ISYM_Y0);
+
+  add_sym_1 ("besy1", 1, 0, BT_REAL, dr,
+	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
+	     x, BT_REAL, dr, 1);
+
+  add_sym_1 ("dbesy1", 1, 0, BT_REAL, dd,
+	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
+	     x, BT_REAL, dd, 1);
+
+  make_generic ("besy1", GFC_ISYM_Y1);
+
+  add_sym_2 ("besyn", 1, 0, BT_REAL, dr,
+	     gfc_check_besn, NULL, gfc_resolve_besn, n, BT_INTEGER, di, 1,
+         x, BT_REAL, dr, 1);
+
+  add_sym_2 ("dbesyn", 1, 0, BT_REAL, dd,
+	     gfc_check_besn, NULL, gfc_resolve_besn, n, BT_INTEGER, di, 1,
+         x, BT_REAL, dd, 1);
+
+  make_generic ("besyn", GFC_ISYM_YN);
+
   add_sym_1 ("bit_size", 0, 1, BT_INTEGER, di,
 	     gfc_check_i, gfc_simplify_bit_size, NULL,
 	     i, BT_INTEGER, di, 0);
@@ -1112,6 +1174,27 @@ add_functions (void)
 	     x, BT_REAL, dr, 0);
 
   make_generic ("epsilon", GFC_ISYM_NONE);
+
+  /* G77 compatibility for the ERF() and ERFC() functions.  */
+  add_sym_1 ("erf", 1, 0, BT_REAL, dr,
+	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
+	     x, BT_REAL, dr, 0);
+
+  add_sym_1 ("derf", 1, 0, BT_REAL, dd,
+	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
+	     x, BT_REAL, dd, 0);
+
+  make_generic ("erf", GFC_ISYM_ERF);
+
+  add_sym_1 ("erfc", 1, 0, BT_REAL, dr,
+	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
+	     x, BT_REAL, dr, 0);
+
+  add_sym_1 ("derfc", 1, 0, BT_REAL, dd,
+	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
+	     x, BT_REAL, dd, 0);
+
+  make_generic ("erfc", GFC_ISYM_ERFC);
 
   /* G77 compatibility */
   add_sym_1 ("etime", 0, 1, BT_REAL, 4,

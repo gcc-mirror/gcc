@@ -1,6 +1,28 @@
 2004-08-29  Steven G. Kargl  <kargls@comcast.net>
 	Paul Brook  <paul@codesourcery.com>
 
+	* check.c (gfc_check_besn, gfc_check_g77_math1): New functions.
+	* f95-lang.c (DO_DEFINE_MATH_BUILTIN): Define.
+	(DEFINE_MATH_BUILTIN, DEFINE_MATH_BUILTIN_C): Use it.
+	(build_builtin_fntypes): New function.
+	(gfc_init_builtin_functions): Use it.
+	* gfortran.h (enum gfc_generic_isym_id): Add GFC_ISYM_{J,Y}{0,1,N}
+	and GFC_ISYM_ERF{,C}.
+	(gfc_c_int_kind): Declare.
+	* intrinsic.c (add_functions): Add [d]bes* and [d]erf*.
+	* intrinsic.h (gfc_check_besn, gfc_check_g77_math1, gfc_resolve_besn,
+	gfc_resolve_g77_math1): Add prototypes.
+	* resolve.c (gfc_resolve_besn, gfc_resolve_g77_math1): New functions.
+	* mathbuiltins.def: Add comment.  Change third argument.  Use
+	DEFINE_MATH_BUILTIN_C.  Add bessel and error functions.
+	* trans-intrinsic.c (BUILT_IN_FUNCTION): Define.
+	(DEFINE_MATH_BUILTIN, DEFINE_MATH_BUILTIN_C): Use it.
+	* trans-types.c (gfc_c_int_kind): Declare.
+	(gfc_init_kinds): Set it.
+
+2004-08-29  Steven G. Kargl  <kargls@comcast.net>
+	Paul Brook  <paul@codesourcery.com>
+
 	* gfortran.h (enum gfc_generic_isym_id): Add GFC_ISYM_GET?ID.
 	(gfc_check_f, gfc_simplify_f): Add f0.
 	* intrinsic.c (do_check): Call f0.  Flatten.

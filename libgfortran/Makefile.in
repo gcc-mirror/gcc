@@ -118,14 +118,14 @@ am__objects_31 = $(am__objects_2) $(am__objects_3) $(am__objects_4) \
 am__objects_32 = backspace.lo close.lo endfile.lo format.lo inquire.lo \
 	list_read.lo lock.lo open.lo read.lo rewind.lo transfer.lo \
 	unit.lo unix.lo write.lo
-am__objects_33 = associated.lo abort.lo args.lo c99_functions.lo \
-	cpu_time.lo cshift0.lo date_and_time.lo env.lo eoshift0.lo \
-	eoshift2.lo etime.lo getXid.lo ishftc.lo pack_generic.lo \
-	size.lo spread_generic.lo string_intrinsics.lo rand.lo \
-	random.lo reshape_generic.lo reshape_packed.lo \
-	selected_kind.lo system_clock.lo transpose_generic.lo \
-	unpack_generic.lo in_pack_generic.lo in_unpack_generic.lo \
-	normalize.lo
+am__objects_33 = associated.lo abort.lo args.lo bessel.lo \
+	c99_functions.lo cpu_time.lo cshift0.lo date_and_time.lo \
+	env.lo erf.lo eoshift0.lo eoshift2.lo etime.lo getXid.lo \
+	ishftc.lo pack_generic.lo size.lo spread_generic.lo \
+	string_intrinsics.lo rand.lo random.lo reshape_generic.lo \
+	reshape_packed.lo selected_kind.lo system_clock.lo \
+	transpose_generic.lo unpack_generic.lo in_pack_generic.lo \
+	in_unpack_generic.lo normalize.lo
 am__objects_34 =
 am__objects_35 = _abs_c4.lo _abs_c8.lo _abs_i4.lo _abs_i8.lo \
 	_abs_r4.lo _abs_r8.lo _exp_r4.lo _exp_r8.lo _exp_c4.lo \
@@ -311,11 +311,13 @@ gfor_helper_src = \
 intrinsics/associated.c \
 intrinsics/abort.c \
 intrinsics/args.c \
+intrinsics/bessel.c \
 intrinsics/c99_functions.c \
 intrinsics/cpu_time.c \
 intrinsics/cshift0.c \
 intrinsics/date_and_time.c \
 intrinsics/env.c \
+intrinsics/erf.c \
 intrinsics/eoshift0.c \
 intrinsics/eoshift2.c \
 intrinsics/etime.c \
@@ -1992,6 +1994,15 @@ args.obj: intrinsics/args.c
 args.lo: intrinsics/args.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o args.lo `test -f 'intrinsics/args.c' || echo '$(srcdir)/'`intrinsics/args.c
 
+bessel.o: intrinsics/bessel.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o bessel.o `test -f 'intrinsics/bessel.c' || echo '$(srcdir)/'`intrinsics/bessel.c
+
+bessel.obj: intrinsics/bessel.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o bessel.obj `if test -f 'intrinsics/bessel.c'; then $(CYGPATH_W) 'intrinsics/bessel.c'; else $(CYGPATH_W) '$(srcdir)/intrinsics/bessel.c'; fi`
+
+bessel.lo: intrinsics/bessel.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o bessel.lo `test -f 'intrinsics/bessel.c' || echo '$(srcdir)/'`intrinsics/bessel.c
+
 c99_functions.o: intrinsics/c99_functions.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o c99_functions.o `test -f 'intrinsics/c99_functions.c' || echo '$(srcdir)/'`intrinsics/c99_functions.c
 
@@ -2036,6 +2047,15 @@ env.obj: intrinsics/env.c
 
 env.lo: intrinsics/env.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o env.lo `test -f 'intrinsics/env.c' || echo '$(srcdir)/'`intrinsics/env.c
+
+erf.o: intrinsics/erf.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o erf.o `test -f 'intrinsics/erf.c' || echo '$(srcdir)/'`intrinsics/erf.c
+
+erf.obj: intrinsics/erf.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o erf.obj `if test -f 'intrinsics/erf.c'; then $(CYGPATH_W) 'intrinsics/erf.c'; else $(CYGPATH_W) '$(srcdir)/intrinsics/erf.c'; fi`
+
+erf.lo: intrinsics/erf.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o erf.lo `test -f 'intrinsics/erf.c' || echo '$(srcdir)/'`intrinsics/erf.c
 
 eoshift0.o: intrinsics/eoshift0.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o eoshift0.o `test -f 'intrinsics/eoshift0.c' || echo '$(srcdir)/'`intrinsics/eoshift0.c

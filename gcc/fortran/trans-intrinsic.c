@@ -85,9 +85,16 @@ gfc_intrinsic_map_t;
 /* ??? The NARGS==1 hack here is based on the fact that (c99 at least)
    defines complex variants of all of the entries in mathbuiltins.def
    except for atan2.  */
-#define DEFINE_MATH_BUILTIN(ID, NAME, NARGS) \
+#define BUILT_IN_FUNCTION(ID, NAME, HAVE_COMPLEX) \
   { GFC_ISYM_ ## ID, BUILT_IN_ ## ID ## F, BUILT_IN_ ## ID, true, \
-    NARGS == 1, true, NAME, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE},
+    HAVE_COMPLEX, true, NAME, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE},
+
+#define DEFINE_MATH_BUILTIN(id, name, argtype) \
+  BUILT_IN_FUNCTION (id, name, false)
+
+/* TODO: Use builtin function for complex intrinsics.  */
+#define DEFINE_MATH_BUILTIN_C(id, name, argtype) \
+  BUILT_IN_FUNCTION (id, name, true)
 
 #define LIBM_FUNCTION(ID, NAME, HAVE_COMPLEX) \
   { GFC_ISYM_ ## ID, END_BUILTINS, END_BUILTINS, true, HAVE_COMPLEX, true, \
@@ -117,6 +124,8 @@ static GTY(()) gfc_intrinsic_map_t gfc_intrinsic_map[] =
   LIBF_FUNCTION (NONE, NULL, false)
 };
 #undef DEFINE_MATH_BUILTIN
+#undef DEFINE_MATH_BUILTIN_C
+#undef BUILT_IN_FUNCTION
 #undef LIBM_FUNCTION
 #undef LIBF_FUNCTION
 

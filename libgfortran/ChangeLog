@@ -1,6 +1,17 @@
 2004-08-29  Steven G. Kargl  <kargls@comcast.net>
 	Paul Brook  <paul@codesourcery.com>
 
+	* intrinsics/bessel.c: New file.
+	* intrinsics/erf.c: New file.
+	* Makefie.am: Add intrinsics/bessel.c and intrinsics/erf.c.
+	* configure.ac: Test for C99 Bessel and Error functions.
+	* Makefile.in: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
+2004-08-29  Steven G. Kargl  <kargls@comcast.net>
+	Paul Brook  <paul@codesourcery.com>
+
 	* Makefile.am: Add intrinsics/getXid.c.
 	* configure.ac: Add tests for get{g,p,u}id.
 	* config.h.in: Regenerate.

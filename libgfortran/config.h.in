@@ -30,6 +30,18 @@
 /* libm includes coshf */
 #undef HAVE_COSHF
 
+/* libm includes erf */
+#undef HAVE_ERF
+
+/* libm includes erfc */
+#undef HAVE_ERFC
+
+/* libm includes erfcf */
+#undef HAVE_ERFCF
+
+/* libm includes erff */
+#undef HAVE_ERFF
+
 /* libm includes expf */
 #undef HAVE_EXPF
 
@@ -62,6 +74,24 @@
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
+
+/* libm includes j0 */
+#undef HAVE_J0
+
+/* libm includes j0f */
+#undef HAVE_J0F
+
+/* libm includes j1 */
+#undef HAVE_J1
+
+/* libm includes j1f */
+#undef HAVE_J1F
+
+/* libm includes jn */
+#undef HAVE_JN
+
+/* libm includes jnf */
+#undef HAVE_JNF
 
 /* libm includes log10f */
 #undef HAVE_LOG10F
@@ -155,6 +185,24 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* libm includes y0 */
+#undef HAVE_Y0
+
+/* libm includes y0f */
+#undef HAVE_Y0F
+
+/* libm includes y1 */
+#undef HAVE_Y1
+
+/* libm includes y1f */
+#undef HAVE_Y1F
+
+/* libm includes yn */
+#undef HAVE_YN
+
+/* libm includes ynf */
+#undef HAVE_YNF
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT

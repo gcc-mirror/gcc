@@ -167,15 +167,15 @@ cpp.F	(Renamed cpp3.F)	Y
 cpp2.F				- Compiler warnings
 dcomplex.f			Y
 dnrm2.f				Y Add dg-warning as required
-erfc.f				  Link errors
+erfc.f				Y
 exp.f				  Compiler warnings and fails
 f90-intrinsic-bit.f             F 16581 Compile errors
 f90-intrinsic-mathematical.f	Y 
 f90-intrinsic-numeric.f		Y
 int8421.f			Y
 intrinsic-f2c-z.f		F Execution fail
-intrinsic-unix-bessel.f		  Link errors
-intrinsic-unix-erf.f		  Link erros
+intrinsic-unix-bessel.f		Y
+intrinsic-unix-erf.f		Y
 intrinsic-vax-cd.f		F Execution fail
 intrinsic77.f	 		F PR 16580 Compiler ICE
 io0.f & io0.x
