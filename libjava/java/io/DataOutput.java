@@ -111,7 +111,7 @@ public interface DataOutput
   void writeChar(int value) throws IOException;
 
   /**
-   * This method writes a Java char value to an output stream.  The
+   * This method writes a Java short value to an output stream.  The
    * char to be written will be in the lowest 16 bits of the <code>int</code>
    * value passed.  These bytes will be written "big endian".  That is,
    * with the high byte written first in the following manner:
@@ -236,7 +236,7 @@ public interface DataOutput
   void writeBytes(String value) throws IOException;
 
   /**
-   * This method writes all the bytes of a <code>String</code> to an 
+   * This method writes all the characters of a <code>String</code> to an 
    * output stream as an array of <code>char</code>'s. Each character
    * is written using the method specified in the <code>writeChar</code>
    * method. 

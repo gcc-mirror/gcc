@@ -68,6 +68,8 @@ public interface DataInput
    * @exception EOFException If end of file is reached before 
    * reading the boolean
    * @exception IOException If any other error occurs
+   *
+   * @see DataOutput#writeBoolean
    */
   boolean readBoolean() throws EOFException, IOException;
 
@@ -84,7 +86,7 @@ public interface DataInput
    * @exception EOFException If end of file is reached before reading the byte
    * @exception IOException If any other error occurs
    *
-   * @see DataOutput#writeBoolean
+   * @see DataOutput#writeByte
    */
   byte readByte() throws EOFException, IOException;
 
@@ -143,7 +145,7 @@ public interface DataInput
    * first and second byte read from the stream respectively, they will be
    * transformed to a <code>short</code> in the following manner:
    * <p>
-   * <code>(short)((byte1 << 8) + (byte2 & 0xFF))</code>
+   * <code>(short)(((byte1 & 0xFF) << 8) + (byte2 & 0xFF))</code>
    * <p>
    * The value returned is in the range of -32768 to 32767.
    * <p>
@@ -234,7 +236,7 @@ public interface DataInput
    * <code>(long)(((byte1 & 0xFF) << 56) + ((byte2 & 0xFF) << 48) + 
    * ((byte3 & 0xFF) << 40) + ((byte4 & 0xFF) << 32) + 
    * ((byte5 & 0xFF) << 24) + ((byte6 & 0xFF) << 16) + 
-   * ((byte7 & 0xFF) << 8) + (byte9 & 0xFF)))
+   * ((byte7 & 0xFF) << 8) + (byte8 & 0xFF)))
    * </code>
    * <p>
    * The value returned is in the range of -9223372036854775808 to
@@ -316,14 +318,10 @@ public interface DataInput
    * charaters are discarded and are not returned as part of the string.
    * A line is also terminated by an end of file condition.
    * <p>
-   * This method can read data that was written by an object implementing the
-   * <code>writeLine()</code> method in <code>DataOutput</code>.
    *
    * @return The line read as a <code>String</code>
    *
    * @exception IOException If an error occurs
-   *
-   * @see DataOutput#writeLine
    */
   String readLine() throws IOException;
 
@@ -442,6 +440,7 @@ public interface DataInput
    * This method skips and discards the specified number of bytes in an
    * input stream.  Note that this method may skip less than the requested
    * number of bytes.  The actual number of bytes skipped is returned.
+   * No bytes are skipped if a negative number is passed to this method.
    *
    * @param numBytes The number of bytes to skip
    *
