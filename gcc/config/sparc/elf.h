@@ -40,3 +40,19 @@ Boston, MA 02111-1307, USA.  */
 /* FIXME: until fixed */
 #undef LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE 64
+
+/* This solaris2 define does not apply.  */
+#undef STDC_0_IN_SYSTEM_HEADERS
+
+/* We don't want to use the Solaris2 specific long long int conversion
+   routines.  */
+#undef INIT_SUBTARGET_OPTABS
+#define INIT_SUBTARGET_OPTABS
+
+/* ??? We haven't added Solaris2 equivalent 64 bit library routines to
+   lb1sp*.asm, so we need to avoid using them.  */
+#undef MULDI3_LIBCALL
+#undef DIVDI3_LIBCALL
+#undef UDIVDI3_LIBCALL
+#undef MODDI3_LIBCALL
+#undef UMODDI3_LIBCALL
