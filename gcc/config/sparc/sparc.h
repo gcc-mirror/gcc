@@ -2675,8 +2675,14 @@ do {                                                                    \
 /* The cases that RTX_COSTS handles.  */
 
 #define RTX_COSTS_CASES	\
+case PLUS: case MINUS: case ABS: case NEG: \
+case FLOAT: case UNSIGNED_FLOAT: \
+case FIX: case UNSIGNED_FIX: \
+case FLOAT_EXTEND: case FLOAT_TRUNCATE: \
+case SQRT: \
+case COMPARE: case IF_THEN_ELSE: \
+case MEM: \
 case MULT: case DIV: case UDIV: case MOD: case UMOD: \
-case FLOAT: case FIX: \
 case CONST_INT: case HIGH: case CONST: \
 case LABEL_REF: case SYMBOL_REF: case CONST_DOUBLE:
 

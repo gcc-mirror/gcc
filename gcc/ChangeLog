@@ -1,5 +1,9 @@
 2002-05-04  David S. Miller  <davem@redhat.com>
 
+	* config/sparc/sparc.c (sparc_rtx_costs): Describe costs of
+	more RTX codes.
+	* config/sparc/sparc.h (RTX_COSTS_CASES): List those new codes.
+
 	* recog.c (store_data_bypass_p): Handle out_insn being a PARALLEL
 	of SETs.
 
