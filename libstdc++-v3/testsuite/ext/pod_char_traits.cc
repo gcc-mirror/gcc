@@ -39,7 +39,7 @@ int main()
   typedef unsigned short			value_type;
   typedef unsigned int				int_type;
   typedef character<value_type, int_type>	char_type;
-  typedef char_traits<char_type> 		traits_type;
+  typedef std::char_traits<char_type> 		traits_type;
 
   bool test = true;
 
