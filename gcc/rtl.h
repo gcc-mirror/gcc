@@ -630,6 +630,7 @@ extern char *note_insn_name[];
 #define FUNCTION_FLAGS_USES_CONST_POOL 0200
 #define FUNCTION_FLAGS_CALLS_LONGJMP 0400
 #define FUNCTION_FLAGS_USES_PIC_OFFSET_TABLE 01000
+#define FUNCTION_FLAGS_ADDRESSES_LABELS 02000
 
 /* Define a macro to look for REG_INC notes,
    but save time on machines where they never exist.  */
