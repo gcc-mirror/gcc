@@ -1,3 +1,27 @@
+2003-05-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (finish_struct): Rename lineno to input_line.
+	* decl.c (push_binding_level, pop_binding_level,
+	suspend_binding_level, resume_binding_level, make_label_decl,
+	use_label, start_function): Likewise.
+	* decl2.c (warn_if_unknown_interface,
+	start_static_initialization_or_destruction,
+	generate_ctor_or_dtor_function, finish_file): Likewise.
+	* error.c (cp_line_of, print_instantiation_full_context,
+	print_instantiation_context): Likewise.
+	* except.c (check_handlers_1, check_handlers): Likewise.
+	* init.c (create_temporary_var): Likewise.
+	* method.c (use_thunk, synthesize_method): Likewise.
+	* parser.c (cp_lexer_set_source_position_from_token,
+	cp_lexer_get_preprocessor_token): Likewise.
+	* pt.c (push_tinst_level, pop_tinst_level,
+	tsubst_friend_function, instantiate_class_template, tsubst_decl,
+	tsubst, tsubst_expr, instantiate_decl): Likewise.
+	* semantics.c (genrtl_try_block, finish_label_stmt,
+	begin_class_definition, expand_body,
+	genrtl_finish_function): Likewise. 
+	* tree.c (build_min_nt, build_min): Likewise.
+
 2003-05-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (comdat_linkage): Don't externalize explicit
