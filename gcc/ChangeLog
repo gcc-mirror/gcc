@@ -1,3 +1,8 @@
+2000-01-05  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (*addqi3_noclobber_reload): Ensure that CC never
+	modified inadvertently.
+
 2000-01-04  Joel Sherrill <joel@OARcorp.com>
 
 	* configure.in (v850*-*-rtems*): New target.

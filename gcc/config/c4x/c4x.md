@@ -1,5 +1,5 @@
 ;; Machine description for the TMS320C[34]x for GNU C compiler
-;; Copyright (C) 1994-98, 1999 Free Software Foundation, Inc.
+;; Copyright (C) 1994-99, 2000 Free Software Foundation, Inc.
 
 ;; Contributed by Michael Hayes (m.hayes@elec.canterbury.ac.nz)
 ;;            and Herman Ten Brugge (Haj.Ten.Brugge@net.HCC.nl)
@@ -1885,15 +1885,27 @@
 ; may be allocated to reload the PLUS and thus gen_reload will
 ; emit an add insn that may clobber CC.
 (define_insn "*addqi3_noclobber_reload"
-  [(set (match_operand:QI 0 "reg_operand" "=a!r,a!r,a!r")
-        (plus:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>")
-                 (match_operand:QI 2 "src_operand" "rIm,JR,rS<>")))]
+  [(set (match_operand:QI 0 "reg_operand" "=a*c,a*c,a*c,!*d,!*d,!*d")
+        (plus:QI (match_operand:QI 1 "src_operand" "%0,rR,rS<>,%0,rR,rS<>")
+                 (match_operand:QI 2 "src_operand" "rIm,JR,rS<>,rIm,JR,rS<>")))]
   "reload_in_progress"
-  "@
-   addi\\t%2,%0
-   addi3\\t%2,%1,%0
-   addi3\\t%2,%1,%0"
-  [(set_attr "type" "binary,binary,binary")])
+  "*
+   if (IS_STD_REG (REGNO (operands[0])))
+     {
+       if (which_alternative == 0)
+	 return \"addi\\t%2,%0\";
+       else
+	 return \"addi3\\t%2,%1,%0\";
+     }
+   else
+     {
+       if (which_alternative == 0)
+	 return \"push\\tst\\n\\taddi\\t%2,%0\\n\\tpop\\tst\";
+       else
+	 return \"push\\tst\\n\\taddi3\\t%2,%1,%0\\n\\tpop\\tst\";
+     }
+   "
+  [(set_attr "type" "binary,binary,binary,multi,multi,multi")])
 ; Default to int16 data attr.
 
 
