@@ -1244,6 +1244,33 @@ FILE *asm_out_file;
 FILE *aux_info_file;
 FILE *rtl_dump_file = NULL;
 
+/* Decode the string P as an integral parameter.
+   If the string is indeed an integer return its numeric value else
+   issue an Invalid Option error for the option PNAME and return DEFVAL. */
+   
+int
+read_integral_parameter (p, pname, defval)
+     char *p;
+     char *pname;
+     int  defval;
+{
+  char *endp = p;
+
+  while (*endp)
+    {
+      if (*endp >= '0' && *endp <= '9')
+	endp++;
+      else
+	{
+	  error ("Invalid option `%s'", pname);
+	  return defval;
+	}
+    }
+
+  return atoi (p);
+}
+
+
 /* Time accumulators, to count the total time spent in various passes.  */
 
 int parse_time;
