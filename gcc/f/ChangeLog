@@ -1,3 +1,8 @@
+1998-07-06  Dave Love  <d.love@dl.ac.uk>
+
+	* intdoc.in (HOSTNM_func, HOSTNM_subr): Note possible need for
+	-lsocket.
+
 1998-07-05  Dave Love  <d.love@dl.ac.uk>
 
 	* intdoc.in: Add entry for DATE_AND_TIME.
