@@ -1945,8 +1945,8 @@ constrain_operands (insn_code_num, strict)
 		      /* Ignore things like match_operator operands.  */
 		      && *insn_operand_constraint[insn_code_num][opno] != 0
 		      && ! (matching_operands[opno] == eopno
-			    && rtx_equal_p (recog_operand[opno],
-					    recog_operand[eopno]))
+			    && operands_match_p (recog_operand[opno],
+						 recog_operand[eopno]))
 		      && ! safe_from_earlyclobber (recog_operand[opno],
 						   recog_operand[eopno]))
 		    lose = 1;
