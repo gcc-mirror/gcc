@@ -1,3 +1,9 @@
+Sat Jan 24 01:59:45 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* configure (package_makefile_frag): Move inserting the
+	${package_makefile_frag} to where it should be according
+	to the comment.
+
 Fri Jan 23 00:29:28 1998  Philip Blundell  <pb@nexus.co.uk>
 
 	* config.guess: Add support for Linux/ARM.
