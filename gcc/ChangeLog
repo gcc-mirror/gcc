@@ -1,3 +1,9 @@
+2000-08-27  Geoff Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/rs6000.md (movdi_internal64+5): Make SUBREG-safe
+	by using gen_lowpart_common.
+	(movdi_internal64+6): Likewise.
+
 2000-08-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	* tm.texi (FINI_SECTION_ASM_OP, CRT_CALL_STATIC_FUNCTION):
