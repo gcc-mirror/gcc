@@ -6004,50 +6004,8 @@ emit_reload_insns (insn)
 		    {
 		      if (icode != CODE_FOR_nothing)
 			{
-			  rtx pat;
-#ifdef SECONDARY_MEMORY_NEEDED
-			  /* If we need a memory location to do the move, do
-			     it that way.  */
-			  if (GET_CODE (real_oldequiv) == REG
-			      && REGNO (real_oldequiv) < FIRST_PSEUDO_REGISTER
-			      && SECONDARY_MEMORY_NEEDED
-			      (REGNO_REG_CLASS (REGNO (real_oldequiv)),
-			       REGNO_REG_CLASS (REGNO (second_reload_reg)),
-			       GET_MODE (second_reload_reg)))
-			    {
-			      /* Get the memory to use and rewrite both
-				 registers to its mode.  */
-			      rtx loc
-				= get_secondary_mem (real_oldequiv,
-						     GET_MODE (second_reload_reg),
-						     reload_opnum[j],
-						     reload_when_needed[j]);
-			      rtx tmp_reloadreg;
-
-			      if (GET_MODE (loc)
-				  != GET_MODE (second_reload_reg))
-				second_reload_reg
-				  = gen_rtx (REG,
-					     GET_MODE (loc),
-					     REGNO (second_reload_reg));
-			  
-			      if (GET_MODE (loc) != GET_MODE (real_oldequiv))
-				tmp_reloadreg = gen_rtx (REG, GET_MODE (loc),
-							 REGNO (real_oldequiv));
-			      else
-				tmp_reloadreg = real_oldequiv;
-			      
-			      emit_move_insn (loc, tmp_reloadreg);
-			      emit_move_insn (second_reload_reg, loc);
-			      pat = gen_move_insn (reloadreg, second_reload_reg);
-			      
-			    }
-			  else
-#endif
-			    pat = GEN_FCN (icode) (reloadreg,
-						   real_oldequiv,
-						   second_reload_reg);
-			  emit_insn (pat);
+			  emit_insn (GEN_FCN (icode) (reloadreg, real_oldequiv,
+						      second_reload_reg));
 			  special = 1;
 			}
 		      else
@@ -6067,9 +6025,9 @@ emit_reload_insns (insn)
 					   third_reload_reg)));
 			    }
 			  else
-			    gen_input_reload (second_reload_reg, oldequiv,
-					      reload_opnum[j],
-					      reload_when_needed[j]);
+			    gen_reload (second_reload_reg, oldequiv,
+					reload_opnum[j],
+					reload_when_needed[j]);
 
 			  oldequiv = second_reload_reg;
 			}
@@ -6078,8 +6036,8 @@ emit_reload_insns (insn)
 #endif
 
 	      if (! special && ! rtx_equal_p (reloadreg, oldequiv))
-		gen_input_reload (reloadreg, oldequiv, reload_opnum[j],
-				  reload_when_needed[j]);
+		gen_reload (reloadreg, oldequiv, reload_opnum[j],
+			    reload_when_needed[j]);
 
 #if defined(SECONDARY_INPUT_RELOAD_CLASS) && defined(PRESERVE_DEATH_INFO_REGNO_P)
 	      /* We may have to make a REG_DEAD note for the secondary reload
@@ -6316,7 +6274,7 @@ emit_reload_insns (insn)
 #ifdef SECONDARY_OUTPUT_RELOAD_CLASS
 
 	  /* If we need two reload regs, set RELOADREG to the intermediate
-	     one, since it will be stored into OUT.  We might need a secondary
+	     one, since it will be stored into OLD.  We might need a secondary
 	     register only for an input reload, so check again here.  */
 
 	  if (reload_secondary_out_reload[j] >= 0)
@@ -6346,10 +6304,10 @@ emit_reload_insns (insn)
 		    {
 		      /* See if we need both a scratch and intermediate reload
 			 register.  */
+
 		      int secondary_reload = reload_secondary_out_reload[j];
 		      enum insn_code tertiary_icode
 			= reload_secondary_out_icode[secondary_reload];
-		      rtx pat;
 
 		      if (GET_MODE (reloadreg) != mode)
 			reloadreg = gen_rtx (REG, mode, REGNO (reloadreg));
@@ -6358,44 +6316,24 @@ emit_reload_insns (insn)
 			{
 			  rtx third_reloadreg
 			    = reload_reg_rtx[reload_secondary_out_reload[secondary_reload]];
-			  pat = (GEN_FCN (tertiary_icode)
-				 (reloadreg, second_reloadreg, third_reloadreg));
-			}
-#ifdef SECONDARY_MEMORY_NEEDED
-		      /* If we need a memory location to do the move, do it that way.  */
-		      else if (GET_CODE (reloadreg) == REG
-			       && REGNO (reloadreg) < FIRST_PSEUDO_REGISTER
-			       && SECONDARY_MEMORY_NEEDED (REGNO_REG_CLASS (REGNO (reloadreg)),
-					   REGNO_REG_CLASS (REGNO (second_reloadreg)),
-					   GET_MODE (second_reloadreg)))
-			{
-			  /* Get the memory to use and rewrite both registers
-			     to its mode.  */
-			  rtx loc
-			    = get_secondary_mem (reloadreg,
-						 GET_MODE (second_reloadreg),
-						 reload_opnum[j],
-						 reload_when_needed[j]);
-			  rtx tmp_reloadreg;
-			    
-			  if (GET_MODE (loc) != GET_MODE (second_reloadreg))
-			    second_reloadreg = gen_rtx (REG, GET_MODE (loc),
-							REGNO (second_reloadreg));
-			  
-			  if (GET_MODE (loc) != GET_MODE (reloadreg))
-			    tmp_reloadreg = gen_rtx (REG, GET_MODE (loc),
-						     REGNO (reloadreg));
-			  else
-			    tmp_reloadreg = reloadreg;
-			  
-			  emit_move_insn (loc, second_reloadreg);
-			  pat = gen_move_insn (tmp_reloadreg, loc);
-			}
-#endif
-		      else
-			pat = gen_move_insn (reloadreg, second_reloadreg);
 
-		      emit_insn (pat);
+			  /* Copy primary reload reg to secondary reload reg.
+			     (Note that these have been swapped above, then
+			     secondary reload reg to OLD using our insn.  */
+
+			  gen_reload (reloadreg, second_reloadreg,
+				      reload_opnum[j], reload_when_needed[j]);
+			  emit_insn ((GEN_FCN (tertiary_icode)
+				      (real_old, reloadreg, third_reloadreg)));
+			  special = 1;
+			}
+
+		      else
+			/* Copy between the reload regs here and then to
+			   OUT later.  */
+
+			gen_reload (reloadreg, second_reloadreg,
+				    reload_opnum[j], reload_when_needed[j]);
 		    }
 		}
 	    }
@@ -6403,34 +6341,8 @@ emit_reload_insns (insn)
 
 	  /* Output the last reload insn.  */
 	  if (! special)
-	    {
-#ifdef SECONDARY_MEMORY_NEEDED
-	      /* If we need a memory location to do the move, do it that way.  */
-	      if (GET_CODE (old) == REG && REGNO (old) < FIRST_PSEUDO_REGISTER
-		  && SECONDARY_MEMORY_NEEDED (REGNO_REG_CLASS (REGNO (old)),
-					      REGNO_REG_CLASS (REGNO (reloadreg)),
-					      GET_MODE (reloadreg)))
-		{
-		  /* Get the memory to use and rewrite both registers to
-		     its mode.  */
-		  rtx loc = get_secondary_mem (old, GET_MODE (reloadreg),
-					       reload_opnum[j],
-					       reload_when_needed[j]);
-
-		  if (GET_MODE (loc) != GET_MODE (reloadreg))
-		    reloadreg = gen_rtx (REG, GET_MODE (loc),
-					 REGNO (reloadreg));
-
-		  if (GET_MODE (loc) != GET_MODE (old))
-		    old = gen_rtx (REG, GET_MODE (loc), REGNO (old));
-
-		  emit_insn (gen_move_insn (loc, reloadreg));
-		  emit_insn (gen_move_insn (old, loc));
-		}
-	      else
-#endif
-		emit_insn (gen_move_insn (old, reloadreg));
-	    }
+	    gen_reload (old, reloadreg, reload_opnum[j],
+			reload_when_needed[j]);
 
 #ifdef PRESERVE_DEATH_INFO_REGNO_P
 	  /* If final will look at death notes for this reg,
@@ -6694,14 +6606,15 @@ emit_reload_insns (insn)
     }
 }
 
-/* Emit code to perform an input reload of IN to RELOADREG.  IN is from
-   operand OPNUM with reload type TYPE. 
+/* Emit code to perform a reload from IN (which may be a reload register) to
+   OUT (which may also be a reload register).  IN or OUT is from operand
+   OPNUM with reload type TYPE. 
 
    Returns first insn emitted.  */
 
 rtx
-gen_input_reload (reloadreg, in, opnum, type)
-     rtx reloadreg;
+gen_reload (out, in, opnum, type)
+     rtx out;
      rtx in;
      int opnum;
      enum reload_type type;
@@ -6768,13 +6681,13 @@ gen_input_reload (reloadreg, in, opnum, type)
 	 it will be A = A + B as constrain_operands expects. */
 
       if (GET_CODE (XEXP (in, 1)) == REG
-	  && REGNO (reloadreg) == REGNO (XEXP (in, 1)))
+	  && REGNO (out) == REGNO (XEXP (in, 1)))
 	tem = op0, op0 = op1, op1 = tem;
 
       if (op0 != XEXP (in, 0) || op1 != XEXP (in, 1))
 	in = gen_rtx (PLUS, GET_MODE (in), op0, op1);
 
-      insn = emit_insn (gen_rtx (SET, VOIDmode, reloadreg, in));
+      insn = emit_insn (gen_rtx (SET, VOIDmode, out, in));
       code = recog_memoized (insn);
 
       if (code >= 0)
@@ -6803,16 +6716,16 @@ gen_input_reload (reloadreg, in, opnum, type)
 	      && REGNO (op1) >= FIRST_PSEUDO_REGISTER))
 	tem = op0, op0 = op1, op1 = tem;
 
-      emit_insn (gen_move_insn (reloadreg, op0));
+      emit_insn (gen_move_insn (out, op0));
 
-      /* If OP0 and OP1 are the same, we can use RELOADREG for OP1.
+      /* If OP0 and OP1 are the same, we can use OUT for OP1.
 	 This fixes a problem on the 32K where the stack pointer cannot
 	 be used as an operand of an add insn.  */
 
       if (rtx_equal_p (op0, op1))
-	op1 = reloadreg;
+	op1 = out;
 
-      insn = emit_insn (gen_add2_insn (reloadreg, op1));
+      insn = emit_insn (gen_add2_insn (out, op1));
 
       /* If that failed, copy the address register to the reload register.
 	 Then add the constant to the reload register. */
@@ -6831,43 +6744,44 @@ gen_input_reload (reloadreg, in, opnum, type)
 
       delete_insns_since (last);
 
-      emit_insn (gen_move_insn (reloadreg, op1));
-      emit_insn (gen_add2_insn (reloadreg, op0));
+      emit_insn (gen_move_insn (out, op1));
+      emit_insn (gen_add2_insn (out, op0));
     }
 
 #ifdef SECONDARY_MEMORY_NEEDED
   /* If we need a memory location to do the move, do it that way.  */
   else if (GET_CODE (in) == REG && REGNO (in) < FIRST_PSEUDO_REGISTER
+	   && GET_CODE (out) == REG && REGNO (out) < FIRST_PSEUDO_REGISTER
 	   && SECONDARY_MEMORY_NEEDED (REGNO_REG_CLASS (REGNO (in)),
-				       REGNO_REG_CLASS (REGNO (reloadreg)),
-				       GET_MODE (reloadreg)))
+				       REGNO_REG_CLASS (REGNO (out)),
+				       GET_MODE (out)))
     {
       /* Get the memory to use and rewrite both registers to its mode.  */
-      rtx loc = get_secondary_mem (in, GET_MODE (reloadreg), opnum, type);
+      rtx loc = get_secondary_mem (in, GET_MODE (out), opnum, type);
 
-      if (GET_MODE (loc) != GET_MODE (reloadreg))
-	reloadreg = gen_rtx (REG, GET_MODE (loc), REGNO (reloadreg));
+      if (GET_MODE (loc) != GET_MODE (out))
+	out = gen_rtx (REG, GET_MODE (loc), REGNO (out));
 
       if (GET_MODE (loc) != GET_MODE (in))
 	in = gen_rtx (REG, GET_MODE (loc), REGNO (in));
 
       emit_insn (gen_move_insn (loc, in));
-      emit_insn (gen_move_insn (reloadreg, loc));
+      emit_insn (gen_move_insn (out, loc));
     }
 #endif
 
   /* If IN is a simple operand, use gen_move_insn.  */
   else if (GET_RTX_CLASS (GET_CODE (in)) == 'o' || GET_CODE (in) == SUBREG)
-    emit_insn (gen_move_insn (reloadreg, in));
+    emit_insn (gen_move_insn (out, in));
 
 #ifdef HAVE_reload_load_address
   else if (HAVE_reload_load_address)
-    emit_insn (gen_reload_load_address (reloadreg, in));
+    emit_insn (gen_reload_load_address (out, in));
 #endif
 
-  /* Otherwise, just write (set REGLOADREG IN) and hope for the best.  */
+  /* Otherwise, just write (set OUT IN) and hope for the best.  */
   else
-    emit_insn (gen_rtx (SET, VOIDmode, reloadreg, in));
+    emit_insn (gen_rtx (SET, VOIDmode, out, in));
 
   /* Return the first insn emitted.
      We can not just return get_last_insn, because there may have
@@ -7014,7 +6928,7 @@ inc_for_reload (reloadreg, value, inc_amount)
     emit_insn (gen_move_insn (reloadreg, incloc));
 
   /* See if we can directly increment INCLOC.  Use a method similar to that
-     in gen_input_reload.  */
+     in gen_reload.  */
 
   last = get_last_insn ();
   add_insn = emit_insn (gen_rtx (SET, VOIDmode, incloc,
