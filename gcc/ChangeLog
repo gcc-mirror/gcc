@@ -1,3 +1,17 @@
+2005-03-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* builtins.c (expand_movstr): Update a call to
+	fold_builtin_strcpy.
+	(expand_builtin_strncpy): Update a call to
+	fold_builtin_strncpy.
+	(fold_builtin_strcpy, fold_builtin_strncpy): Take decomosed
+	arguments of CALL_EXPR.
+	(fold_builtin_1): Update calls to fold_builtin_strcpy and
+	fold_builtin_strncpy.
+	* tree-ssa-ccp.c (ccp_fold_builtin): Likewise.
+	* tree.h: Update the prototypes of fold_builtin_strcpy and
+	fold_builtin_strncpy.
+
 2005-03-16  Steven Bosscher  <stevenb@suse.de>
             Dorit Naishlos  <dorit@il.ibm.com>
 

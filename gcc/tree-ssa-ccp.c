@@ -1999,12 +1999,20 @@ ccp_fold_builtin (tree stmt, tree fn)
 
     case BUILT_IN_STRCPY:
       if (strlen_val[1] && is_gimple_val (strlen_val[1]))
-        result = fold_builtin_strcpy (fn, strlen_val[1]);
+	{
+	  tree fndecl = get_callee_fndecl (fn);
+	  tree arglist = TREE_OPERAND (fn, 1);
+	  result = fold_builtin_strcpy (fndecl, arglist, strlen_val[1]);
+	}
       break;
 
     case BUILT_IN_STRNCPY:
       if (strlen_val[1] && is_gimple_val (strlen_val[1]))
-	result = fold_builtin_strncpy (fn, strlen_val[1]);
+	{
+	  tree fndecl = get_callee_fndecl (fn);
+	  tree arglist = TREE_OPERAND (fn, 1);
+	  result = fold_builtin_strncpy (fndecl, arglist, strlen_val[1]);
+	}
       break;
 
     case BUILT_IN_FPUTS:
