@@ -1,5 +1,20 @@
 2002-01-05  Kazu Hirata  <kazu@hxi.com>
 
+	* cse.c: Fix formatting.
+	* dwarf2asm.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* explow.c: Likewise.
+	* expmed.c: Likewise.
+	* function.c: Likewise.
+	* gcov.c: Likewise.
+	* gencheck.c: Likewise.
+	* genrecog.c: Likewise.
+	* ggc-common.c: Likewise.
+	* ggc-page.c: Likewise.
+	* global.c: Likewise.
+
+2002-01-05  Kazu Hirata  <kazu@hxi.com>
+
 	* combine.c: Fix formatting.
 
 2002-01-05  Craig Rodrigues  <crodrigu@bbn.com>

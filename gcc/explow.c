@@ -1,6 +1,6 @@
 /* Subroutines for manipulating rtx's in semantically interesting ways.
    Copyright (C) 1987, 1991, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1133,7 +1133,7 @@ optimize_save_area_alloca (insns)
 		      break;
 
 		  if (srch == NULL_RTX)
-		    abort();
+		    abort ();
 
 		  XEXP (srch, 1) = XEXP (note, 1);
 		}

@@ -1,6 +1,6 @@
 /* Generate code from machine description to recognize rtl as insns.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1258,7 +1258,7 @@ maybe_both_true (d1, d2, toplevel)
   if (cmp != 0)
     {
       if (toplevel)
-	abort();
+	abort ();
 
       /* If the d2->position was lexically lower, swap.  */
       if (cmp > 0)

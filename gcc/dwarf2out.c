@@ -6195,7 +6195,7 @@ output_loc_list (list_head)
   if (strcmp (curr->section, ".text") == 0)
     {
       /* dw2_asm_output_data will mask off any extra bits in the ~0.  */
-      dw2_asm_output_data (DWARF2_ADDR_SIZE, ~(unsigned HOST_WIDE_INT)0,
+      dw2_asm_output_data (DWARF2_ADDR_SIZE, ~(unsigned HOST_WIDE_INT) 0,
 			   "Location list base address specifier fake entry");
       dw2_asm_output_offset (DWARF2_ADDR_SIZE, curr->section,
 			     "Location list base address specifier base");
