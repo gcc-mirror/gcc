@@ -114,7 +114,7 @@ AC_PROG_CC
 AC_PROG_CPP_WERROR
 
 if test x$GCC = xyes; then
-  ac_libiberty_warn_cflags='-W -Wall -Wtraditional -pedantic'
+  ac_libiberty_warn_cflags='-W -Wall -pedantic'
 fi
 AC_SUBST(ac_libiberty_warn_cflags)
 

@@ -1,3 +1,9 @@
+2005-03-27  Andreas Jaeger  <aj@suse.de>
+
+	* configure.ac (ac_c_preproc_warn_flag): Remove -Wtraditional
+	flags.
+	* configure: Regenerated.
+
 2005-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* getopt1.c (getopt_long_only): Fix thinko.
@@ -5,24 +11,24 @@
 2005-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Convert libiberty to use ISO C prototype style 4/n.
-	* hashtab.c (higher_prime_index, hash_pointer, eq_pointer, 
-	htab_size, htab_elements, htab_mod_1, htab_mod, htab_mod_m2, 
-	htab_create_alloc, htab_set_functions_ex, htab_create, 
-	htab_try_create, htab_delete, htab_empty, 
-	find_empty_slot_for_expand, htab_expand, htab_find_with_hash, 
-	htab_find, htab_find_slot_with_hash, htab_find_slot, 
-	htab_remove_elt, htab_remove_elt_with_hash, htab_clear_slot, 
-	htab_traverse_noresize, htab_traverse, htab_collisions, 
+	* hashtab.c (higher_prime_index, hash_pointer, eq_pointer,
+	htab_size, htab_elements, htab_mod_1, htab_mod, htab_mod_m2,
+	htab_create_alloc, htab_set_functions_ex, htab_create,
+	htab_try_create, htab_delete, htab_empty,
+	find_empty_slot_for_expand, htab_expand, htab_find_with_hash,
+	htab_find, htab_find_slot_with_hash, htab_find_slot,
+	htab_remove_elt, htab_remove_elt_with_hash, htab_clear_slot,
+	htab_traverse_noresize, htab_traverse, htab_collisions,
 	htab_hash_string, iterative_hash): Use ISO C prototype.
 	* hex.c (hex_init): Likewise.
 	* index.c (index): Likewise.
-	* insque.c (insque, remque): Likewise. 
+	* insque.c (insque, remque): Likewise.
 	* lbasename.c (lbasename): Likewise.
 	* lrealpath.c (lrealpath): Likewise.
-	* make-relative-prefix.c (save_string, split_directories, 
+	* make-relative-prefix.c (save_string, split_directories,
 	free_split_directories, make_relative_prefix): Likewise.
-	* make-temp-file.c (try, choose_tmpdir, make_temp_file): Likewise. 
-	* md5.c (md5_init_ctx, md5_read_ctx, md5_finish_ctx, md5_stream, 
+	* make-temp-file.c (try, choose_tmpdir, make_temp_file): Likewise.
+	* md5.c (md5_init_ctx, md5_read_ctx, md5_finish_ctx, md5_stream,
 	md5_buffer, md5_process_bytes, md5_process_block): Likewise.
 	* memchr.c (memchr): Likewise.
 	* memcpy.c (memcpy): Likewise.
@@ -32,61 +38,61 @@
 	* getpwd.c (getpwd, getpwd): Likewise.
 	* getpagesize.c (getpagesize): Likewise.
 	* getopt1.c (getopt_long, getopt_long_only, main): Likewise.
-	* getopt.c (my_index, exchange, _getopt_initialize, 
+	* getopt.c (my_index, exchange, _getopt_initialize,
 	_getopt_internal, getopt, main): Likewise.
 	* getcwd.c (getcwd): Likewise.
 	* fnmatch.c (fnmatch): Likewise.
-	* floatformat.c (floatformat_always_valid, 
-	floatformat_i387_ext_is_valid, get_field, floatformat_to_double, 
-	put_field, floatformat_from_double, floatformat_is_valid, 
+	* floatformat.c (floatformat_always_valid,
+	floatformat_i387_ext_is_valid, get_field, floatformat_to_double,
+	put_field, floatformat_from_double, floatformat_is_valid,
 	ieee_test, main): Likewise.
-	* fibheap.c (fibheap_new, fibnode_new, fibheap_compare, 
-	fibheap_comp_data, fibheap_insert, fibheap_min, fibheap_min_key, 
-	fibheap_union, fibheap_extract_min, fibheap_replace_key_data, 
-	fibheap_replace_key, fibheap_replace_data, fibheap_delete_node, 
-	fibheap_delete, fibheap_empty, fibheap_extr_min_node, 
-	fibheap_ins_root, fibheap_rem_root, fibheap_consolidate, 
-	fibheap_link, fibheap_cut, fibheap_cascading_cut, 
+	* fibheap.c (fibheap_new, fibnode_new, fibheap_compare,
+	fibheap_comp_data, fibheap_insert, fibheap_min, fibheap_min_key,
+	fibheap_union, fibheap_extract_min, fibheap_replace_key_data,
+	fibheap_replace_key, fibheap_replace_data, fibheap_delete_node,
+	fibheap_delete, fibheap_empty, fibheap_extr_min_node,
+	fibheap_ins_root, fibheap_rem_root, fibheap_consolidate,
+	fibheap_link, fibheap_cut, fibheap_cascading_cut,
 	fibnode_insert_after, fibnode_remove): Likewise.
 	* ffs.c (ffs): Likewise.
 	* fdmatch.c (fdmatch): Likewise.
-	* dyn-string.c (dyn_string_init, dyn_string_new, 
-	dyn_string_delete, dyn_string_release, dyn_string_resize, 
-	dyn_string_clear, dyn_string_copy, dyn_string_copy_cstr, 
-	dyn_string_prepend, dyn_string_prepend_cstr, dyn_string_insert, 
-	dyn_string_insert_cstr, dyn_string_insert_char, 
-	dyn_string_append, dyn_string_append_cstr, 
+	* dyn-string.c (dyn_string_init, dyn_string_new,
+	dyn_string_delete, dyn_string_release, dyn_string_resize,
+	dyn_string_clear, dyn_string_copy, dyn_string_copy_cstr,
+	dyn_string_prepend, dyn_string_prepend_cstr, dyn_string_insert,
+	dyn_string_insert_cstr, dyn_string_insert_char,
+	dyn_string_append, dyn_string_append_cstr,
 	dyn_string_append_char, dyn_string_substring, dyn_string_eq):
-	Likewise. 
+	Likewise.
 
 2005-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Convert libiberty to use ISO C prototype style 3/n.
-	* cplus-dem.c (set_cplus_marker_for_demangling, consume_count, 
-	consume_count_with_underscores, code_for_qualifier, 
-	qualifier_string, demangle_qualifier, cplus_demangle_opname, 
-	cplus_mangle_opname, cplus_demangle_set_style, 
-	cplus_demangle_name_to_style, cplus_demangle, grow_vect, 
+	* cplus-dem.c (set_cplus_marker_for_demangling, consume_count,
+	consume_count_with_underscores, code_for_qualifier,
+	qualifier_string, demangle_qualifier, cplus_demangle_opname,
+	cplus_mangle_opname, cplus_demangle_set_style,
+	cplus_demangle_name_to_style, cplus_demangle, grow_vect,
 	ada_demangle, internal_cplus_demangle, squangle_mop_up,
-	work_stuff_copy_to_from, delete_non_B_K_work_stuff, 
-	delete_work_stuff, mop_up, demangle_signature, 
-	demangle_method_args, demangle_template_template_parm, 
-	demangle_expression, demangle_integral_value, 
-	demangle_real_value, demangle_template_value_parm, 
-	demangle_template, arm_pt, demangle_arm_hp_template, 
-	demangle_class_name, demangle_class, iterate_demangle_function, 
-	demangle_prefix, gnu_special, recursively_demangle, arm_special, 
-	demangle_qualified, get_count, do_type, demangle_fund_type, 
-	do_hpacc_template_const_value, do_hpacc_template_literal, 
-	snarf_numeric_literal, do_arg, remember_type, remember_Ktype, 
-	register_Btype, remember_Btype, forget_B_and_K_types, 
-	forget_types, demangle_args, demangle_nested_args, 
-	demangle_function_name, string_need, string_delete, string_init, 
-	string_clear, string_empty, string_append, string_appends, 
+	work_stuff_copy_to_from, delete_non_B_K_work_stuff,
+	delete_work_stuff, mop_up, demangle_signature,
+	demangle_method_args, demangle_template_template_parm,
+	demangle_expression, demangle_integral_value,
+	demangle_real_value, demangle_template_value_parm,
+	demangle_template, arm_pt, demangle_arm_hp_template,
+	demangle_class_name, demangle_class, iterate_demangle_function,
+	demangle_prefix, gnu_special, recursively_demangle, arm_special,
+	demangle_qualified, get_count, do_type, demangle_fund_type,
+	do_hpacc_template_const_value, do_hpacc_template_literal,
+	snarf_numeric_literal, do_arg, remember_type, remember_Ktype,
+	register_Btype, remember_Btype, forget_B_and_K_types,
+	forget_types, demangle_args, demangle_nested_args,
+	demangle_function_name, string_need, string_delete, string_init,
+	string_clear, string_empty, string_append, string_appends,
 	string_appendn, string_prepend, string_prepends, string_prependn,
 	string_append_template_idx): Use ISO C prootype style.
 	* cp-demint.c (cplus_demangle_fill_component,
-	cplus_demangle_fill_builtin_type, cplus_demangle_fill_operator, 
+	cplus_demangle_fill_builtin_type, cplus_demangle_fill_operator,
 	cplus_demangle_v3_components): Likewise.
 
 2005-03-26  Gabriel Dos Reis  <gdr@integrable-solutions.net>
@@ -94,28 +100,28 @@
 	Convert libiberty to use ISO C prototype style 2/n.
 	* cp-demangle.h: Remove uses of PARAMS.
 	* cp-demangle.c: Likewise.
-	(d_dump, cplus_demangle_fill_name, 
-	cplus_demangle_fill_extended_operator, cplus_demangle_fill_ctor, 
-	cplus_demangle_fill_dtor, d_make_empty, d_make_comp, d_make_name, 
-	d_make_builtin_type, d_make_operator, d_make_extended_operator, 
-	d_make_ctor, d_make_dtor, d_make_template_param, d_make_sub, 
-	cplus_demangle_mangled_name, has_return_type, 
-	is_ctor_dtor_or_conversion, d_encoding, d_name, d_nested_name, 
-	d_prefix, d_unqualified_name, d_source_name, d_number, 
-	d_identifier, d_operator_name, d_special_name, d_call_offset, 
-	d_ctor_dtor_name, cplus_demangle_type, d_cv_qualifiers, 
-	d_function_type, d_bare_function_type, d_class_enum_type, 
-	d_array_type, d_pointer_to_member_type, d_template_param, 
-	d_template_args, d_template_arg, d_expression, d_expr_primary, 
-	d_local_name, d_discriminator, d_add_substitution, 
-	d_substitution, d_print_resize, d_print_append_char, 
-	d_print_append_buffer, d_print_error, cplus_demangle_print, 
-	d_print_comp, d_print_java_identifier, d_print_mod_list, 
-	d_print_mod, d_print_function_type, d_print_array_type, 
-	d_print_expr_op, d_print_cast, cplus_demangle_init_info, 
-	d_demangle, __cxa_demangle, cplus_demangle_v3, java_demangle_v3, 
+	(d_dump, cplus_demangle_fill_name,
+	cplus_demangle_fill_extended_operator, cplus_demangle_fill_ctor,
+	cplus_demangle_fill_dtor, d_make_empty, d_make_comp, d_make_name,
+	d_make_builtin_type, d_make_operator, d_make_extended_operator,
+	d_make_ctor, d_make_dtor, d_make_template_param, d_make_sub,
+	cplus_demangle_mangled_name, has_return_type,
+	is_ctor_dtor_or_conversion, d_encoding, d_name, d_nested_name,
+	d_prefix, d_unqualified_name, d_source_name, d_number,
+	d_identifier, d_operator_name, d_special_name, d_call_offset,
+	d_ctor_dtor_name, cplus_demangle_type, d_cv_qualifiers,
+	d_function_type, d_bare_function_type, d_class_enum_type,
+	d_array_type, d_pointer_to_member_type, d_template_param,
+	d_template_args, d_template_arg, d_expression, d_expr_primary,
+	d_local_name, d_discriminator, d_add_substitution,
+	d_substitution, d_print_resize, d_print_append_char,
+	d_print_append_buffer, d_print_error, cplus_demangle_print,
+	d_print_comp, d_print_java_identifier, d_print_mod_list,
+	d_print_mod, d_print_function_type, d_print_array_type,
+	d_print_expr_op, d_print_cast, cplus_demangle_init_info,
+	d_demangle, __cxa_demangle, cplus_demangle_v3, java_demangle_v3,
 	is_ctor_or_dtor, is_gnu_v3_mangled_ctor, is_gnu_v3_mangled_dtor,
-	print_usage, main): 
+	print_usage, main):
 
 2005-03-26  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
@@ -125,10 +131,10 @@
 	(_doprnt, checkit, main): Use ISO C prototype.
 	* alloca.c (find_stack_direction, C_alloca): Use ISO C prototype.
 	* argv.c: Remove conditional #includes on ANSI_PROTOTYPES.
-	(dupargv, freeargv, buildargv, main): Use ISO C prototype. 
+	(dupargv, freeargv, buildargv, main): Use ISO C prototype.
 	* atexit.c (atexit): Likewise
 	* asprintf.c: Remove conditional include on ANSI_PROTOTYPES.
-	(asprintf): Use ISO C prototype. 
+	(asprintf): Use ISO C prototype.
 	* basename.c (basename): Likewise
 	* bcmp.c (bcmp): Likewise.
 	* bcopy.c (bcopy): Likewise.
@@ -139,7 +145,7 @@
 	(calloc): Use ISO C prototype.
 	* clock.c (clock): Likewise.
 	* concat.c: Remove conditional #include on ANSI_PROTOTYPES.
-	(vconcat_length, vconcat_copy, concat_length, concat_copy, 
+	(vconcat_length, vconcat_copy, concat_length, concat_copy,
 	concat_copy2, concat, reconcat, main): Use ISO C prototype.
 	* copysign.c (copysign): Likewise.
 
@@ -215,7 +221,7 @@
 	* hex.c (hex_value): Group 'unsigned int' together to get correct
 	markup.
 	* functions.texi: Regenerated.
-	
+
 2004-12-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Makefile.in: Undo to 2004-12-17.
@@ -328,15 +334,15 @@
 
 	* vasprintf.c: Accept __va_copy in addition to va_copy.
 
-2004-09-03  Paolo Bonzini  <bonzini@gnu.org> 
+2004-09-03  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure: Regenerate.
 
-2004-09-02  Paolo Bonzini  <bonzini@gnu.org> 
+2004-09-02  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.ac: Do not enable multilibs for build-side libiberty.
 
-2004-06-29  Danny Smith  <dannysmith@users.sourceforge.net> 
+2004-06-29  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* lrealpath.c (lrealpath): Add _WIN32 support.
 
