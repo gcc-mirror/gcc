@@ -575,7 +575,7 @@ _Jv_GCRegisterDisappearingLink (jobject *objp)
 }
 
 jboolean
-_Jv_GCCanReclaimSoftReference (jobject obj)
+_Jv_GCCanReclaimSoftReference (jobject)
 {
   // For now, always reclaim soft references.  FIXME.
   return true;
