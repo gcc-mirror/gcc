@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,89,92,93,94,96,98,99,2000,01 Free Software Foundation, Inc.
+@c Copyright (C) 1988,1989,1992,1993,1994,1996,1998,1999,2000,2001 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -3059,7 +3059,7 @@ memory, you should write the @code{volatile} keyword to prevent future
 versions of GNU CC from moving the instruction around within a core
 region.
 
-An @code{asm} instruction without any operands or clobbers (and ``old
+An @code{asm} instruction without any operands or clobbers (an ``old
 style'' @code{asm}) will not be deleted or moved significantly,
 regardless, unless it is unreachable, the same way as if you had
 written a @code{volatile} keyword.
