@@ -327,7 +327,7 @@ my_exit (status)
 
 static void
 fatal_perror (string, arg1, arg2, arg3)
-     char *string;
+     char *string, *arg1, *arg2, *arg3;
 {
   int e = errno;
 
@@ -341,7 +341,7 @@ fatal_perror (string, arg1, arg2, arg3)
 
 static void
 fatal (string, arg1, arg2, arg3)
-     char *string;
+     char *string, *arg1, *arg2, *arg3;
 {
   fprintf (stderr, "collect2: ");
   fprintf (stderr, string, arg1, arg2, arg3);
@@ -353,7 +353,7 @@ fatal (string, arg1, arg2, arg3)
 
 static void
 error (string, arg1, arg2, arg3, arg4)
-     char *string;
+     char *string, *arg1, *arg2, *arg3, *arg4;
 {
   fprintf (stderr, "collect2: ");
   fprintf (stderr, string, arg1, arg2, arg3, arg4);
