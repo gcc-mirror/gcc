@@ -1763,9 +1763,9 @@ const char* apzMath_Gcc_IfndefsPatch[] = { "sh", "-c",
 \t   ) > /dev/null 2>&1\n\
 \tthen sed -e '/define[ \t]HUGE_VAL[ \t]DBL_MAX/s/DBL_MAX/$dbl_max_def/'\n\
 \telse cat ; fi |\n\
-\tsed -e'/define[ \t]HUGE_VAL[ \t]/i\\\n\
+\tsed -e '/define[ \t]HUGE_VAL[ \t]/i\\\n\
 #ifndef HUGE_VAL\n\
-' -e'/define[ \t]HUGE_VAL[ \t]/a\\\n\
+' -e '/define[ \t]HUGE_VAL[ \t]/a\\\n\
 #endif\n\
 '",
     (char*)NULL };

@@ -1574,9 +1574,9 @@ s/\\+++fixinc_eol+++/\\/g
 	   ) > /dev/null 2>&1
 	then sed -e '/define[ 	]HUGE_VAL[ 	]DBL_MAX/s/DBL_MAX/$dbl_max_def/'
 	else cat ; fi |
-	sed -e'/define[ 	]HUGE_VAL[ 	]/i\
+	sed -e '/define[ 	]HUGE_VAL[ 	]/i\
 #ifndef HUGE_VAL
-' -e'/define[ 	]HUGE_VAL[ 	]/a\
+' -e '/define[ 	]HUGE_VAL[ 	]/a\
 #endif
 ' ) < $infile > ${DESTDIR}/fixinc.tmp
 
