@@ -178,13 +178,6 @@ namespace std
 
       /**
        *  @if maint
-       *  Place to stash in || out || in | out settings for current streambuf.
-       *  @endif
-      */
-      ios_base::openmode 	_M_mode;
-
-      /**
-       *  @if maint
        *  Current locale setting.
        *  @endif
       */
@@ -201,9 +194,7 @@ namespace std
       /// Destructor deallocates no buffer space.
       virtual 
       ~basic_streambuf() 
-      {
-	_M_mode = ios_base::openmode(0);
-      }
+      { }
 
       // [27.5.2.2.1] locales
       /**
@@ -451,7 +442,7 @@ namespace std
       basic_streambuf()
       : _M_in_beg(0), _M_in_cur(0), _M_in_end(0), 
       _M_out_beg(0), _M_out_cur(0), _M_out_end(0),
-      _M_mode(ios_base::openmode(0)),_M_buf_locale(locale()) 
+      _M_buf_locale(locale()) 
       { }
 
       // [27.5.2.3.1] get area access

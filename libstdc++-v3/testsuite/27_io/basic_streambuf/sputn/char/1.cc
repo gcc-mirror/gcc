@@ -41,7 +41,7 @@ public:
   typedef std::streambuf::char_type char_type;
 
   testbuf(): std::streambuf() 
-  { _M_mode = (std::ios_base::in | std::ios_base::out); }
+  { }
 
   bool
   check_pointers()

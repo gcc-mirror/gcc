@@ -105,6 +105,13 @@ namespace std
       */
       __file_type 		_M_file;
 
+      /**
+       *  @if maint
+       *  Place to stash in || out || in | out settings for current filebuf.
+       *  @endif
+      */
+      ios_base::openmode 	_M_mode;
+
       // Current and beginning state type for codecvt.
       /**
        *  @if maint
@@ -213,8 +220,6 @@ namespace std
       ~basic_filebuf()
       {
 	this->close();
-	_M_buf_size = 0;
-	_M_last_overflowed = false;
       }
 
       // Members:
@@ -281,29 +286,9 @@ namespace std
       // charater from the real input source when the buffer is empty.
       // Buffered input uses underflow()
 
-      // The only difference between underflow() and uflow() is that the
-      // latter bumps _M_in_cur after the read.  In the sync_with_stdio
-      // case, this is important, as we need to unget the read character in
-      // the underflow() case in order to maintain synchronization.  So
-      // instead of calling underflow() from uflow(), we create a common
-      // subroutine to do the real work.
-      /**
-       *  @if maint
-       *  @doctodo
-       *  @endif
-      */
-      int_type
-      _M_underflow(bool __bump);
-
       // [documentation is inherited]
       virtual int_type
-      underflow()
-      { return _M_underflow(false); }
-
-      // [documentation is inherited]
-      virtual int_type
-      uflow()
-      { return _M_underflow(true); }
+      underflow();
 
       // [documentation is inherited]
       virtual int_type

@@ -1,3 +1,34 @@
+2003-06-30  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/std/std_streambuf.h (_M_mode): Move from here to
+	filebuf and stringbuf.
+	(~basic_streambuf()): Don't set _M_mode.
+	(basic_streambuf()): Don't set _M_mode.
+	* include/std/std_fstream.h (_M_mode): Move here, from streambuf.
+	(~basic_filebuf()): Clean up.
+	* include/bits/fstream.tcc (basic_filebuf()): Set _M_mode.
+	* include/std/std_sstream.h (_M_mode): Move here, from streambuf.
+	* testsuite/27_io/basic_streambuf/cons/char/1.cc: Don't set _M_mode.
+	* testsuite/27_io/basic_streambuf/overflow/char/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sgetc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sgetn/char/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sputn/char/1.cc: Likewise.
+
+2003-06-30  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/std/std_fstream.h (_M_underflow): Remove.
+	(uflow): Remove, inherited from streambuf.
+	(underflow): Only declare.
+	* include/bits/fstream.tcc (_M_underflow): Rename to 
+	underflow, to which is equivalent for __bump == false,
+	simplify.
+	* include/std/std_sstream.h (_M_underflow): Remove.
+	(uflow): Remove, inherited from streambuf.
+	(underflow): Only declare.
+	* include/bits/sstream.tcc (_M_underflow): Rename to 
+	underflow, to which is equivalent for __bump == false,
+	simplify.
+
 2003-06-29  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/stl_algo.h (LOTS): Fully qualify standard
