@@ -2215,7 +2215,7 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
 		rhs);
 }
 
-/* Subroutine for the following routine: decode a field reference.
+/* Subroutine for fold_truthop: decode a field reference.
 
    If EXP is a comparison reference, we return the innermost reference.
 
@@ -2303,14 +2303,39 @@ all_ones_mask_p (mask, size)
 					       size_int (precision - size)),
 				  size_int (precision - size)), 0);
 }
+
+/* Subroutine for fold_truthop: determine if an operand is simple enough
+   to be evaluated unconditionally.  */
+
+#ifdef __GNUC__
+__inline
+#endif
+static int 
+simple_operand_p (exp)
+     tree exp;
+{
+  /* Strip any conversions that don't change the machine mode.  */
+  while ((TREE_CODE (exp) == NOP_EXPR
+	  || TREE_CODE (exp) == CONVERT_EXPR)
+	 && (TYPE_MODE (TREE_TYPE (exp))
+	     == TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)))))
+    exp = TREE_OPERAND (exp, 0);
+
+  return (TREE_CODE_CLASS (TREE_CODE (exp)) == 'c'
+	  || (TREE_CODE_CLASS (TREE_CODE (exp)) == 'd'
+	      && ! TREE_ADDRESSABLE (exp)
+	      && ! TREE_THIS_VOLATILE (exp)
+	      && ! TREE_NONLOCAL (exp)));
+}
 
-/* Try to optimize a range test.
+/* Subroutine for fold_truthop: try to optimize a range test.
 
    For example, "i >= 2 && i =< 9" can be done as "(unsigned) (i - 2) <= 7".
 
-   JCODE is the logical combination of the two terms.  It can be
-   TRUTH_ANDIF_EXPR, TRUTH_AND_EXPR, TRUTH_ORIF_EXPR, or TRUTH_OR_EXPR.
-   TYPE is the type of the result.
+   JCODE is the logical combination of the two terms.  It is BIT_AND_EXPR
+   (representing TRUTH_ANDIF_EXPR and TRUTH_AND_EXPR) or BIT_IOR_EXPR
+   (representing TRUTH_ORIF_EXPR and TRUTH_OR_EXPR).  TYPE is the type of
+   the result.
 
    VAR is the value being tested.  LO_CODE and HI_CODE are the comparison
    operators comparing VAR to LO_CST and HI_CST.  LO_CST is known to be no
@@ -2328,7 +2353,7 @@ range_test (jcode, type, lo_code, hi_code, var, lo_cst, hi_cst)
 
   /* See if this is a range test and normalize the constant terms.  */
 
-  if (jcode == TRUTH_ANDIF_EXPR || jcode == TRUTH_AND_EXPR)
+  if (jcode == BIT_AND_EXPR)
     {
       switch (lo_code)
 	{
@@ -2426,8 +2451,11 @@ range_test (jcode, type, lo_code, hi_code, var, lo_cst, hi_cst)
 			       const_binop (MINUS_EXPR, hi_cst, lo_cst))));
 }
 
-/* Try to merge two comparisons to the same innermost item.
-   Also look for range tests like "ch >= '0' && ch <= '9'".
+/* Find ways of folding logical expressions of LHS and RHS:
+   Try to merge two comparisons to the same innermost item.
+   Look for range tests like "ch >= '0' && ch <= '9'".
+   Look for combinations of simple terms on machines with expensive branches
+   and evaluate the RHS unconditionally.
 
    For example, if we have p->a == 2 && p->b == 4 and we can make an
    object large enough to span both A and B, we can do this with a comparison
@@ -2448,7 +2476,7 @@ range_test (jcode, type, lo_code, hi_code, var, lo_cst, hi_cst)
    We return the simplified tree or 0 if no optimization is possible.  */
 
 static tree
-merge_component_references (code, truth_type, lhs, rhs)
+fold_truthop (code, truth_type, lhs, rhs)
      enum tree_code code;
      tree truth_type, lhs, rhs;
 {
@@ -2461,9 +2489,9 @@ merge_component_references (code, truth_type, lhs, rhs)
      convert EQ_EXPR to NE_EXPR so we need not reject the "wrong"
      comparison for one-bit fields.  */
 
-  enum tree_code wanted_code
-    = (code == TRUTH_AND_EXPR || code == TRUTH_ANDIF_EXPR) ? EQ_EXPR : NE_EXPR;
+  enum tree_code wanted_code;
   enum tree_code lcode, rcode;
+  tree ll_arg, lr_arg, rl_arg, rr_arg;
   tree ll_inner, lr_inner, rl_inner, rr_inner;
   int ll_bitsize, ll_bitpos, lr_bitsize, lr_bitpos;
   int rl_bitsize, rl_bitpos, rr_bitsize, rr_bitpos;
@@ -2473,43 +2501,78 @@ merge_component_references (code, truth_type, lhs, rhs)
   enum machine_mode ll_mode, lr_mode, rl_mode, rr_mode;
   enum machine_mode lnmode, rnmode;
   tree ll_mask, lr_mask, rl_mask, rr_mask;
-  tree l_const = 0, r_const = 0;
+  tree l_const, r_const;
   tree type, result;
   int first_bit, end_bit;
-  int volatilep = 0;
+  int volatilep;
 
   /* Start by getting the comparison codes and seeing if this looks like
      a range test.  Fail if anything is volatile.  */
 
+  if (TREE_SIDE_EFFECTS (lhs)
+      || TREE_SIDE_EFFECTS (rhs))
+    return 0;
+
   lcode = TREE_CODE (lhs);
   rcode = TREE_CODE (rhs);
 
-  if (TREE_SIDE_EFFECTS (lhs)
-      || TREE_SIDE_EFFECTS (rhs)
-      || TREE_CODE_CLASS (lcode) != '<'
+  if (TREE_CODE_CLASS (lcode) != '<'
       || TREE_CODE_CLASS (rcode) != '<')
     return 0;
 
-  if (TREE_CODE (TREE_OPERAND (lhs, 1)) == INTEGER_CST
-      && TREE_CODE (TREE_OPERAND (rhs, 1)) == INTEGER_CST
-      && operand_equal_p (TREE_OPERAND (lhs, 0),
-			  TREE_OPERAND (rhs, 0), 0))
+  code = ((code == TRUTH_AND_EXPR || code == TRUTH_ANDIF_EXPR)
+	  ? BIT_AND_EXPR : BIT_IOR_EXPR);
+
+  ll_arg = TREE_OPERAND (lhs, 0);
+  lr_arg = TREE_OPERAND (lhs, 1);
+  rl_arg = TREE_OPERAND (rhs, 0);
+  rr_arg = TREE_OPERAND (rhs, 1);
+  
+  if (TREE_CODE (lr_arg) == INTEGER_CST
+      && TREE_CODE (rr_arg) == INTEGER_CST
+      && operand_equal_p (ll_arg, rl_arg, 0))
     {
-      if (tree_int_cst_lt (TREE_OPERAND (lhs, 1), TREE_OPERAND (rhs, 1)))
+      if (tree_int_cst_lt (lr_arg, rr_arg))
 	result = range_test (code, truth_type, lcode, rcode,
-			     TREE_OPERAND (lhs, 0),
-			     TREE_OPERAND (lhs, 1),
-			     TREE_OPERAND (rhs, 1));
+			     ll_arg, lr_arg, rr_arg);
       else
 	result = range_test (code, truth_type, rcode, lcode,
-			     TREE_OPERAND (lhs, 0),
-			     TREE_OPERAND (rhs, 1),
-			     TREE_OPERAND (lhs, 1));
+			     ll_arg, rr_arg, lr_arg);
 
       /* If this isn't a range test, it also isn't a comparison that
-	 can be merged.  */
+	 can be merged.  However, it wins to evaluate the RHS unconditionally
+	 on machines with expensive branches.   */
+
+      if (result == 0 && BRANCH_COST >= 2)
+	{
+	  if (TREE_CODE (ll_arg) != VAR_DECL
+	      && TREE_CODE (ll_arg) != PARM_DECL)
+	    {
+	      /* Avoid evaluating the variable part twice.  */
+	      ll_arg = save_expr (ll_arg);
+	      lhs = build (lcode, TREE_TYPE (lhs), ll_arg, lr_arg);
+	      rhs = build (rcode, TREE_TYPE (rhs), ll_arg, rr_arg);
+	    }
+	  return build (code, truth_type, lhs, rhs);
+	}
       return result;
     }
+
+  /* If the RHS can be evaluated unconditionally and all operands are
+     simple, it wins to evaluate the RHS unconditionally on machines
+     with expensive branches.  In this case, this isn't a comparison
+     that can be merged.  */
+
+  /* @@ I'm not sure it wins on the m88110 to do this if the comparisons
+     are with zero (tmw).  */
+
+  if (BRANCH_COST >= 2
+      && TREE_CODE (TREE_TYPE (rhs)) == INTEGER_TYPE
+      && simple_operand_p (rl_arg)
+      && simple_operand_p (ll_arg)
+      && simple_operand_p (rr_arg)
+      && simple_operand_p (lr_arg))
+    return build (code, truth_type, lhs, rhs);
 
   /* See if the comparisons can be merged.  Then get all the parameters for
      each side.  */
@@ -2518,16 +2581,17 @@ merge_component_references (code, truth_type, lhs, rhs)
       || (rcode != EQ_EXPR && rcode != NE_EXPR))
     return 0;
 
-  ll_inner = decode_field_reference (TREE_OPERAND (lhs, 0),
+  volatilep = 0;
+  ll_inner = decode_field_reference (ll_arg,
 				     &ll_bitsize, &ll_bitpos, &ll_mode,
 				     &ll_unsignedp, &volatilep, &ll_mask);
-  lr_inner = decode_field_reference (TREE_OPERAND (lhs, 1),
+  lr_inner = decode_field_reference (lr_arg,
 				     &lr_bitsize, &lr_bitpos, &lr_mode,
 				     &lr_unsignedp, &volatilep, &lr_mask);
-  rl_inner = decode_field_reference (TREE_OPERAND (rhs, 0),
+  rl_inner = decode_field_reference (rl_arg,
 				     &rl_bitsize, &rl_bitpos, &rl_mode,
 				     &rl_unsignedp, &volatilep, &rl_mask);
-  rr_inner = decode_field_reference (TREE_OPERAND (rhs, 1),
+  rr_inner = decode_field_reference (rr_arg,
 				     &rr_bitsize, &rr_bitpos, &rr_mode,
 				     &rr_unsignedp, &volatilep, &rr_mask);
 
@@ -2539,16 +2603,20 @@ merge_component_references (code, truth_type, lhs, rhs)
       || ! operand_equal_p (ll_inner, rl_inner, 0))
     return 0;
 
-  if (TREE_CODE (TREE_OPERAND (lhs, 1)) == INTEGER_CST
-      && TREE_CODE (TREE_OPERAND (rhs, 1)) == INTEGER_CST)
-    l_const = TREE_OPERAND (lhs, 1), r_const = TREE_OPERAND (rhs, 1);
+  if (TREE_CODE (lr_arg) == INTEGER_CST
+      && TREE_CODE (rr_arg) == INTEGER_CST)
+    l_const = lr_arg, r_const = rr_arg;
   else if (lr_inner == 0 || rr_inner == 0
 	   || ! operand_equal_p (lr_inner, rr_inner, 0))
     return 0;
+  else
+    l_const = r_const = 0;
 
   /* If either comparison code is not correct for our logical operation,
      fail.  However, we can convert a one-bit comparison against zero into
      the opposite comparison against that bit being set in the field.  */
+
+  wanted_code = (code == BIT_AND_EXPR ? EQ_EXPR : NE_EXPR);
   if (lcode != wanted_code)
     {
       if (l_const && integer_zerop (l_const) && integer_pow2p (ll_mask))
@@ -3456,13 +3524,13 @@ fold (expr)
 	{
 	  if (TREE_CODE (arg0) == code)
 	    {
-	      tem = merge_component_references (code, type,
-						TREE_OPERAND (arg0, 1), arg1);
+	      tem = fold_truthop (code, type,
+				  TREE_OPERAND (arg0, 1), arg1);
 	      if (tem)
 		return fold (build (code, type, TREE_OPERAND (arg0, 0), tem));
 	    }
 
-	  tem = merge_component_references (code, type, arg0, arg1);
+	  tem = fold_truthop (code, type, arg0, arg1);
 	  if (tem)
 	    return tem;
 	}
