@@ -4536,7 +4536,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
 
       else if (regno < FIRST_PSEUDO_REGISTER
 	       && REGNO_MODE_OK_FOR_BASE_P (regno, mode)
-	       && ! regno_clobbered_p (regno, this_insn, mode))
+	       && ! regno_clobbered_p (regno, this_insn, mode, 0))
 	return 0;
 
       /* If we do not have one of the cases above, we must do the reload.  */
@@ -5155,7 +5155,9 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 
 	if (REG_P (XEXP (op1, 0)))
 	  {
-	    register int regno = REGNO (XEXP (op1, 0));
+	    rtx link;
+	    int regno = REGNO (XEXP (op1, 0));
+	    int reloadnum;
 
 	    /* A register that is incremented cannot be constant!  */
 	    if (regno >= FIRST_PSEUDO_REGISTER
@@ -5178,15 +5180,17 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 		       write back the value after reading it, hence we actually
 		       need two registers.  */
 		    find_reloads_address (GET_MODE (tem), 0, XEXP (tem, 0),
-					  &XEXP (tem, 0), opnum, type,
+					  &XEXP (tem, 0), opnum,
+					  RELOAD_OTHER,
 					  ind_levels, insn);
 
 		    /* Then reload the memory location into a base
 		       register.  */
-		    push_reload (tem, tem, &XEXP (x, 0), &XEXP (op1, 0),
-				 BASE_REG_CLASS, GET_MODE (x), GET_MODE (x),
-				 0, 0, opnum, RELOAD_OTHER);
-		    break;
+		    reloadnum = push_reload (tem, tem, &XEXP (x, 0),
+					     &XEXP (op1, 0), BASE_REG_CLASS,
+					     GET_MODE (x), GET_MODE (x), 0,
+					     0, opnum, RELOAD_OTHER);
+		    goto reg_inc;
 		  }
 	      }
 
@@ -5196,12 +5200,19 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 	    /* We require a base register here...  */
 	    if (!REGNO_MODE_OK_FOR_BASE_P (regno, GET_MODE (x)))
 	      {
-		push_reload (XEXP (op1, 0), XEXP (x, 0),
-			     &XEXP (op1, 0), &XEXP (x, 0),
-			     BASE_REG_CLASS,
-			     GET_MODE (x), GET_MODE (x), 0, 0,
-			     opnum, RELOAD_OTHER);
+		reloadnum = push_reload (XEXP (op1, 0), XEXP (x, 0),
+					 &XEXP (op1, 0), &XEXP (x, 0),
+					 BASE_REG_CLASS,
+					 GET_MODE (x), GET_MODE (x), 0, 0,
+					 opnum, RELOAD_OTHER);
 	      }
+
+	    /* Update the REG_INC notes.  */
+	  reg_inc:
+	    for (link = REG_NOTES (this_insn); link; link = XEXP (link, 1))
+	      if (REG_NOTE_KIND (link) == REG_INC
+		  && REGNO (XEXP (link, 0)) == regno)
+		push_replacement (&XEXP (link, 0), reloadnum, VOIDmode);
 	  }
 	else
 	  abort ();
@@ -5441,7 +5452,7 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 	   in this insn, reload it into some other register to be safe.
 	   The CLOBBER is supposed to make the register unavailable
 	   from before this insn to after it.  */
-	if (regno_clobbered_p (regno, this_insn, GET_MODE (x)))
+	if (regno_clobbered_p (regno, this_insn, GET_MODE (x), 0))
 	  {
 	    push_reload (x, NULL_RTX, loc, NULL_PTR,
 			 (context ? INDEX_REG_CLASS : BASE_REG_CLASS),
@@ -6552,18 +6563,21 @@ find_inc_amount (x, inced)
   return 0;
 }
 
-/* Return 1 if register REGNO is the subject of a clobber in insn INSN.  */
+/* Return 1 if register REGNO is the subject of a clobber in insn INSN.
+   If SETS is nonzero, also consider SETs.  */
 
 int
-regno_clobbered_p (regno, insn, mode)
+regno_clobbered_p (regno, insn, mode, sets)
      unsigned int regno;
      rtx insn;
      enum machine_mode mode;
+     int sets;
 {
   int nregs = HARD_REGNO_NREGS (regno, mode);
   int endregno = regno + nregs;
 
-  if (GET_CODE (PATTERN (insn)) == CLOBBER
+  if ((GET_CODE (PATTERN (insn)) == CLOBBER
+       || (sets && GET_CODE (PATTERN (insn)) == SET))
       && GET_CODE (XEXP (PATTERN (insn), 0)) == REG)
     {
       int test = REGNO (XEXP (PATTERN (insn), 0));
@@ -6578,7 +6592,9 @@ regno_clobbered_p (regno, insn, mode)
       for (; i >= 0; i--)
 	{
 	  rtx elt = XVECEXP (PATTERN (insn), 0, i);
-	  if (GET_CODE (elt) == CLOBBER && GET_CODE (XEXP (elt, 0)) == REG)
+	  if ((GET_CODE (elt) == CLOBBER
+	       || (sets && GET_CODE (PATTERN (insn)) == SET))
+	      && GET_CODE (XEXP (elt, 0)) == REG)
 	    {
 	      int test = REGNO (XEXP (elt, 0));
 	      

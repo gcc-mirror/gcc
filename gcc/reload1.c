@@ -5544,25 +5544,44 @@ choose_reload_regs (chain)
 		 In particular, we then can't use EQUIV for a
 		 RELOAD_FOR_OUTPUT_ADDRESS reload.  */
 
-	      if (equiv != 0 && regno_clobbered_p (regno, insn, rld[r].mode))
-		{
-		  switch (rld[r].when_needed)
-		    {
-		    case RELOAD_FOR_OTHER_ADDRESS:
-		    case RELOAD_FOR_INPADDR_ADDRESS:
-		    case RELOAD_FOR_INPUT_ADDRESS:
-		    case RELOAD_FOR_OPADDR_ADDR:
-		      break;
-		    case RELOAD_OTHER:
-		    case RELOAD_FOR_INPUT:
-		    case RELOAD_FOR_OPERAND_ADDRESS:
-		      if (! rld[r].optional)
-			reload_override_in[r] = equiv;
-		      /* Fall through.  */
-		    default:
-		      equiv = 0;
-		      break;
-		    }
+	      if (equiv != 0)
+  		{
+		  if (regno_clobbered_p (regno, insn, rld[r].mode, 0))
+		    switch (rld[r].when_needed)
+		      {
+		      case RELOAD_FOR_OTHER_ADDRESS:
+		      case RELOAD_FOR_INPADDR_ADDRESS:
+		      case RELOAD_FOR_INPUT_ADDRESS:
+		      case RELOAD_FOR_OPADDR_ADDR:
+			break;
+		      case RELOAD_OTHER:
+		      case RELOAD_FOR_INPUT:
+		      case RELOAD_FOR_OPERAND_ADDRESS:
+			if (! rld[r].optional)
+			  reload_override_in[r] = equiv;
+			/* Fall through.  */
+		      default:
+			equiv = 0;
+			break;
+		      }
+		  else if (regno_clobbered_p (regno, insn, rld[r].mode, 1))
+		    switch (rld[r].when_needed)
+		      {
+		      case RELOAD_FOR_OTHER_ADDRESS:
+		      case RELOAD_FOR_INPADDR_ADDRESS:
+		      case RELOAD_FOR_INPUT_ADDRESS:
+		      case RELOAD_FOR_OPADDR_ADDR:
+		      case RELOAD_FOR_OPERAND_ADDRESS:
+		      case RELOAD_FOR_INPUT:
+			break;
+		      case RELOAD_OTHER:
+			if (! rld[r].optional)
+			  reload_override_in[r] = equiv;
+			/* Fall through.  */
+		      default:
+			equiv = 0;
+			break;
+		      }
 		}
 
 	      /* If we found an equivalent reg, say no code need be generated
@@ -6567,7 +6586,7 @@ emit_output_reload_insns (chain, rl, j)
 	  || !(set = single_set (insn))
 	  || rtx_equal_p (old, SET_DEST (set))
 	  || !reg_mentioned_p (old, SET_SRC (set))
-	  || !regno_clobbered_p (REGNO (old), insn, rl->mode))
+	  || !regno_clobbered_p (REGNO (old), insn, rl->mode, 0))
 	gen_reload (old, reloadreg, rl->opnum,
 		    rl->when_needed);
     }
