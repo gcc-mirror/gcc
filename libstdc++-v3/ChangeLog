@@ -1,3 +1,9 @@
+2002-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am (check-abi, new-abi-baseline): Use @glibcpp_srcdir@
+	instead of ${top_srcdir}.
+	* Makefile.in: Rebuilt.
+
 2002-10-21  Phil Edwards  <pme@gcc.gnu.org>
 
 	* configure.in:  Use target, not target_alias, when matching triplet

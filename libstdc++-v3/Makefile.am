@@ -49,7 +49,7 @@ check-script-install: $(top_builddir)/mkcheck
 baseline_file = @baseline_file@
 check-abi: $(top_builddir)/testsuite/abi_check
 	-@(cd testsuite; \
-	  ${top_srcdir}/config/abi/extract_symvers \
+	  @glibcpp_srcdir@/config/abi/extract_symvers \
 	     ../src/.libs/libstdc++.so \
 	     ./current_symbols.txt; \
 	  ./abi_check --check ./current_symbols.txt ${baseline_file})
@@ -61,7 +61,7 @@ new-abi-baseline:
 	    t=`echo $${output} | sed 's=.*config/abi/=='`; \
 	    echo "Baseline file already exists, writing to $${t} instead."; \
 	  fi; \
-	  ${top_srcdir}/config/abi/extract_symvers \
+	  @glibcpp_srcdir@/config/abi/extract_symvers \
 	     src/.libs/libstdc++.so $${output})
 
 # These rules are messy, but are hella worth it.
