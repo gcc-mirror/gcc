@@ -5004,12 +5004,9 @@ etoasc (x, string, ndigs)
 	}
     }
  doexp:
-  /*
-     if (expon >= 0)
-     sprintf (ss, "e+%d", expon);
-     else
-     sprintf (ss, "e%d", expon);
-     */
+  /* Strip trailing zeros, but leave at least one.  */
+  while (ss[-1] == '0' && ss[-2] != '.')
+    --ss;
   sprintf (ss, "e%d", expon);
  bxit:
   rndprc = rndsav;
