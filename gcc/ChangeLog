@@ -1,3 +1,7 @@
+2002-04-14  Andreas Schwab  <schwab@suse.de>
+
+	* config/ia64/linux.h (CPP_PREDEFINES): Fix missing backslash.
+
 2002-04-14  Jeroen Dobbelaere  <jeroen.dobbelaere@acunia.com>
 
 	* config/arm/linux-elf.h (CPLUSPLUS_CPP_SPEC): Define.
