@@ -2176,6 +2176,7 @@ toc_section ()						\
   {"reg_or_cint_operand", {SUBREG, REG, CONST_INT}},		\
   {"easy_fp_constant", {CONST_DOUBLE}},				\
   {"reg_or_mem_operand", {SUBREG, MEM, REG}},			\
+  {"lwa_operand", {SUBREG, MEM, REG}},				\
   {"fp_reg_or_mem_operand", {SUBREG, MEM, REG}},		\
   {"mem_or_easy_const_operand", {SUBREG, MEM, CONST_DOUBLE}},	\
   {"add_operand", {SUBREG, REG, CONST_INT}},			\
