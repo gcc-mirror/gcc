@@ -43,7 +43,6 @@ exception statement from your version. */
 static GtkWidget *find_fg_color_widget (GtkWidget *widget);
 static GtkWidget *find_bg_color_widget (GtkWidget *widget);
 
-
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkComponentPeer_gtkWidgetSetCursor 
   (JNIEnv *env, jobject obj, jint type) 

@@ -1,5 +1,10 @@
 2004-05-06  Michael Koch  <konqueror@gmx.de>
 
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c:
+	Removed empty line.
+
+2004-05-06  Michael Koch  <konqueror@gmx.de>
+
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxGroupPeer.c,
 	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkGenericPeer.c:
 	New files.
