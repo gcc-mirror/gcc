@@ -1147,8 +1147,14 @@ sdbout_one_type (type)
 		&& TREE_CODE (DECL_SIZE (tem)) == INTEGER_CST
 		&& TREE_CODE (DECL_FIELD_BITPOS (tem)) == INTEGER_CST)
 	      {
+		char *name;
+
 		CONTIN;
-		PUT_SDB_DEF (IDENTIFIER_POINTER (DECL_NAME (tem)));
+		if (DECL_LANG_SPECIFIC (tem))
+		  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (tem));
+		else
+		  name = IDENTIFIER_POINTER (DECL_NAME (tem));
+		PUT_SDB_DEF (name);
 		if (DECL_BIT_FIELD_TYPE (tem))
 		  {
 		    PUT_SDB_INT_VAL (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (tem)));
