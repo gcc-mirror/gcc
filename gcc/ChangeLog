@@ -1,3 +1,10 @@
+2003-05-02  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* tree-inline.c (find_alloca_call):
+	Use walk_tree_without_duplicates, instead of walk_tree.
+	(find_builtin_longjmp_call): Ditto.
+	* c-objc-common.c (c_cannot_inline_fn): Ditto.
+
 2003-05-02  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/contrib.texi (Contributors): Add Daniel Berlin.

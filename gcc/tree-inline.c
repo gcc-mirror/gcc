@@ -894,7 +894,7 @@ static tree
 find_alloca_call (exp)
      tree exp;
 {
-  return walk_tree (&exp, find_alloca_call_1, NULL, NULL);
+  return walk_tree_without_duplicates (&exp, find_alloca_call_1, NULL);
 }
 
 static tree
@@ -920,7 +920,7 @@ static tree
 find_builtin_longjmp_call (exp)
      tree exp;
 {
-  return walk_tree (&exp, find_builtin_longjmp_call_1, NULL, NULL);
+  return walk_tree_without_duplicates (&exp, find_builtin_longjmp_call_1, NULL);
 }
 
 /* Returns nonzero if FN is a function that can be inlined into the

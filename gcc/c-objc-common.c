@@ -213,7 +213,8 @@ c_cannot_inline_tree_fn (fnp)
 	return 0;
     }
     
-  if (walk_tree (&DECL_SAVED_TREE (fn), inline_forbidden_p, fn, NULL))
+  if (walk_tree_without_duplicates
+	(&DECL_SAVED_TREE (fn), inline_forbidden_p, fn))
     goto cannot_inline;
 
   return 0;
