@@ -1,3 +1,8 @@
+2002-09-10  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* include/bits/locale_facets.tcc (__convert_from_v):
+	Replace strdup with ISO malloc and strcpy.
+
 2002-09-09  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/html/configopts.html: Change grouping. Note ABI impacts.
