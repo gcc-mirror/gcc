@@ -3077,9 +3077,8 @@ tsubst (t, args, nargs, in_decl)
 		      {
 			/* We are processing a type constructed from
 			   a template template parameter */
-			tree argvec = tsubst (
-					TREE_VALUE (CLASSTYPE_TEMPLATE_INFO (t)), 
-					args, nargs, in_decl);
+			tree argvec = tsubst (CLASSTYPE_TI_ARGS (t),
+					      args, nargs, in_decl);
 			tree r;
 
 			/* We can get a TEMPLATE_TEMPLATE_PARM here when 
