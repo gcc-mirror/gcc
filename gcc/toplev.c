@@ -3980,15 +3980,6 @@ main (argc, argv, envp)
 	warning ("-Wuninitialized is not supported without -O");
     }
 
-#if defined(DWARF_DEBUGGING_INFO)
-  if (write_symbols == DWARF_DEBUG
-      && strcmp (language_string, "GNU C++") == 0)
-    {
-      warning ("-g option not supported for C++ on systems using the DWARF debugging format");
-      write_symbols = NO_DEBUG;
-    }
-#endif /* defined(DWARF_DEBUGGING_INFO) */
-
 #ifdef OVERRIDE_OPTIONS
   /* Some machines may reject certain combinations of options.  */
   OVERRIDE_OPTIONS;
