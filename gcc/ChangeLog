@@ -1,5 +1,9 @@
 2004-11-12  Devang Patel  <dpatel@apple.com>
 
+	* optabs.c (vector_compare_rtx): Use COMPARISON_CLASS_P.
+	
+2004-11-12  Devang Patel  <dpatel@apple.com>
+
 	* tree-if-conv.c (clean_predicate_lists): Use loop header
 	and latch directly.
 	
