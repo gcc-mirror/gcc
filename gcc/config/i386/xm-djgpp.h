@@ -52,5 +52,5 @@ Boston, MA 02111-1307, USA.  */
       strcpy (t, xref_ext); \
     else \
       strcat (xref_file, xref_ext); \
-  while (0)
+  } while (0)
 
