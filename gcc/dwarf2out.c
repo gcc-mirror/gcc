@@ -3459,6 +3459,7 @@ static unsigned get_AT_unsigned		PARAMS ((dw_die_ref,
 static inline dw_die_ref get_AT_ref 	PARAMS ((dw_die_ref,
 						 enum dwarf_attribute));
 static int is_c_family			PARAMS ((void));
+static int is_cxx			PARAMS ((void));
 static int is_java			PARAMS ((void));
 static int is_fortran			PARAMS ((void));
 static void remove_AT			PARAMS ((dw_die_ref,

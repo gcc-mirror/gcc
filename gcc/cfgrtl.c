@@ -1944,7 +1944,7 @@ purge_all_dead_edges (update_life_p)
      int update_life_p;
 {
   int i, purged = false;
-  sbitmap blocks;
+  sbitmap blocks = 0;
 
   if (update_life_p)
     {
