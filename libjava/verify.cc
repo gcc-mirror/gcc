@@ -3164,7 +3164,7 @@ public:
 void
 _Jv_VerifyMethod (_Jv_InterpMethod *meth)
 {
-//   _Jv_BytecodeVerifier v (meth);
-//   v.verify_instructions ();
+  _Jv_BytecodeVerifier v (meth);
+  v.verify_instructions ();
 }
 #endif	/* INTERPRETER */
