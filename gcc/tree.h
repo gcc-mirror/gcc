@@ -1146,14 +1146,6 @@ extern tree type_hash_canon		PROTO((int, tree));
 
 extern void layout_decl			PROTO((tree, unsigned));
 
-/* Fold constants as much as possible in an expression.
-   Returns the simplified expression.
-   Acts only on the top level of the expression;
-   if the argument itself cannot be simplified, its
-   subexpressions are not changed.  */
-
-extern tree fold			PROTO((tree));
-
 /* Return an expr equal to X but certainly not valid as an lvalue.  */
 
 extern tree non_lvalue			PROTO((tree));
@@ -1428,7 +1420,37 @@ extern int pushcase_range			PROTO((tree, tree, tree, tree *));
 
 /* In fold-const.c */
 
-extern tree invert_truthvalue			PROTO((tree));
+/* Fold constants as much as possible in an expression.
+   Returns the simplified expression.
+   Acts only on the top level of the expression;
+   if the argument itself cannot be simplified, its
+   subexpressions are not changed.  */
+
+extern tree fold		PROTO((tree));
+
+extern int force_fit_type	PROTO((tree, int));
+extern int add_double		PROTO((HOST_WIDE_INT, HOST_WIDE_INT,
+				       HOST_WIDE_INT, HOST_WIDE_INT,
+				       HOST_WIDE_INT *, HOST_WIDE_INT *));
+extern int neg_double		PROTO((HOST_WIDE_INT, HOST_WIDE_INT,
+				       HOST_WIDE_INT *, HOST_WIDE_INT *));
+extern int mul_double		PROTO((HOST_WIDE_INT, HOST_WIDE_INT,
+				       HOST_WIDE_INT, HOST_WIDE_INT,
+				       HOST_WIDE_INT *, HOST_WIDE_INT *));
+extern void lshift_double	PROTO((HOST_WIDE_INT, HOST_WIDE_INT,
+				       HOST_WIDE_INT, int, HOST_WIDE_INT *,
+				       HOST_WIDE_INT *, int));
+extern void rshift_double	PROTO((HOST_WIDE_INT, HOST_WIDE_INT,
+				       HOST_WIDE_INT, int,
+				       HOST_WIDE_INT *, HOST_WIDE_INT *, int));
+extern void lrotate_double	PROTO((HOST_WIDE_INT, HOST_WIDE_INT,
+				       HOST_WIDE_INT, int, HOST_WIDE_INT *,
+				       HOST_WIDE_INT *));
+extern void rrotate_double	PROTO((HOST_WIDE_INT, HOST_WIDE_INT,
+				       HOST_WIDE_INT, int, HOST_WIDE_INT *,
+				       HOST_WIDE_INT *));
+extern int operand_equal_p	PROTO((tree, tree, int));
+extern tree invert_truthvalue	PROTO((tree));
 
 /* The language front-end must define these functions.  */
 
