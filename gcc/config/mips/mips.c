@@ -1200,9 +1200,11 @@ move_operand (op, mode)
 
 /* Return nonzero if OPERAND is valid as a source operand for movdi.
    This accepts not only general_operand, but also sign extended
-   constants and registers.  We need to accept sign extended constants
+   move_operands.  Note that we need to accept sign extended constants
    in case a sign extended register which is used in an expression,
-   and is equivalent to a constant, is spilled.  */
+   and is equivalent to a constant, is spilled.  We need to accept
+   sign-extended memory in order to reload registers from stack slots,
+   and so that we generate efficient code for extendsidi2.  */
 
 int
 movdi_operand (op, mode)
@@ -1213,11 +1215,7 @@ movdi_operand (op, mode)
       && mode == DImode
       && GET_CODE (op) == SIGN_EXTEND
       && GET_MODE (op) == DImode
-      && (GET_MODE (XEXP (op, 0)) == SImode
-	  || (GET_CODE (XEXP (op, 0)) == CONST_INT
-	      && GET_MODE (XEXP (op, 0)) == VOIDmode))
-      && (register_operand (XEXP (op, 0), SImode)
-	  || immediate_operand (XEXP (op, 0), SImode)))
+      && move_operand (XEXP (op, 0), SImode))
     return 1;
 
   return (general_operand (op, mode)
@@ -1324,26 +1322,6 @@ se_nonmemory_operand (op, mode)
     return 1;
 
   return nonmemory_operand (op, mode);
-}
-
-/* Like nonimmediate_operand, but when in 64 bit mode also accept a
-   sign extend of a 32 bit register, since the value is known to be
-   already sign extended.  */
-
-int
-se_nonimmediate_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (TARGET_64BIT
-      && mode == DImode
-      && GET_CODE (op) == SIGN_EXTEND
-      && GET_MODE (op) == DImode
-      && GET_MODE (XEXP (op, 0)) == SImode
-      && register_operand (XEXP (op, 0), SImode))
-    return 1;
-
-  return nonimmediate_operand (op, mode);
 }
 
 /* Accept any operand that can appear in a mips16 constant table
@@ -2464,6 +2442,33 @@ mips_restore_gp (operands, insn)
   return mips_move_1word (operands, insn, 0);
 }
 
+/* Return an instruction to sign-extend SImode value SRC and store it
+   in DImode value DEST.  INSN is the original extendsidi2-type insn.  */
+
+const char *
+mips_sign_extend (insn, dest, src)
+     rtx insn, dest, src;
+{
+  rtx operands[MAX_RECOG_OPERANDS];
+
+  if ((register_operand (src, SImode) && FP_REG_P (true_regnum (src)))
+      || memory_operand (src, SImode))
+    {
+      /* If the source is a floating-point register, we need to use a
+	 32-bit move, since the float register is not kept sign-extended.
+	 If the source is in memory, we need a 32-bit load.  */
+      operands[0] = gen_lowpart_SUBREG (SImode, dest);
+      operands[1] = src;
+      return mips_move_1word (operands, insn, false);
+    }
+  else
+    {
+      operands[0] = dest;
+      operands[1] = src;
+      return mips_move_2words (operands, insn);
+    }
+}
+
 /* Return the appropriate instructions to move 2 words */
 
 const char *
@@ -2480,6 +2485,9 @@ mips_move_2words (operands, insn)
   int subreg_offset1 = 0;
   enum delay_type delay = DELAY_NONE;
 
+  if (code1 == SIGN_EXTEND)
+    return mips_sign_extend (insn, op0, XEXP (op1, 0));
+
   while (code0 == SUBREG)
     {
       subreg_offset0 += subreg_regno_offset (REGNO (SUBREG_REG (op0)),
@@ -2488,12 +2496,6 @@ mips_move_2words (operands, insn)
 					     GET_MODE (op0));
       op0 = SUBREG_REG (op0);
       code0 = GET_CODE (op0);
-    }
-
-  if (code1 == SIGN_EXTEND)
-    {
-      op1 = XEXP (op1, 0);
-      code1 = GET_CODE (op1);
     }
 
   while (code1 == SUBREG)
@@ -2505,17 +2507,6 @@ mips_move_2words (operands, insn)
       op1 = SUBREG_REG (op1);
       code1 = GET_CODE (op1);
     }
-
-  /* Sanity check.  */
-  if (GET_CODE (operands[1]) == SIGN_EXTEND
-      && code1 != REG
-      && code1 != CONST_INT
-      /* The following three can happen as the result of a questionable
-	 cast.  */
-      && code1 != LABEL_REF
-      && code1 != SYMBOL_REF
-      && code1 != CONST)
-    abort ();
 
   if (code0 == REG)
     {
@@ -5406,10 +5397,12 @@ override_options ()
                         the value, not about whether math works on the
                         register.  */
                      || (mips_abi == ABI_MEABI && size <= 4))
-		    && (class == MODE_FLOAT
-			|| class == MODE_COMPLEX_FLOAT
-			|| (TARGET_DEBUG_H_MODE && class == MODE_INT))
-		    && size <= UNITS_PER_FPVALUE);
+		    && (((class == MODE_FLOAT || class == MODE_COMPLEX_FLOAT)
+			 && size <= UNITS_PER_FPVALUE)
+			/* Allow integer modes that fit into a single
+			   register.  We need to put integers into FPRs
+			   when using instructions like cvt and trunc.  */
+			|| (class == MODE_INT && size <= UNITS_PER_FPREG)));
 
 	  else if (MD_REG_P (regno))
 	    temp = (class == MODE_INT
@@ -8319,6 +8312,18 @@ mips_secondary_reload_class (class, mode, x, in_p)
 	  if (GET_CODE (x) == REG)
 	    regno = REGNO (x) + off;
 	}
+
+      /* 64-bit floating-point registers don't store 32-bit values
+	 in sign-extended form.  The only way we can reload
+	 (sign_extend:DI (reg:SI $f0)) is by moving $f0 into
+	 an integer register using a 32-bit move.  */
+      if (FP_REG_P (regno))
+	return (class == GR_REGS ? NO_REGS : GR_REGS);
+
+      /* For the same reason, we can only reload (sign_extend:DI FOO) into
+	 a floating-point register when FOO is an integer register. */
+      if (class == FP_REGS)
+	return (GP_REG_P (regno) ? NO_REGS : GR_REGS);
     }
 
   else if (GET_CODE (x) == REG || GET_CODE (x) == SUBREG)
@@ -8376,6 +8381,37 @@ mips_secondary_reload_class (class, mode, x, in_p)
       if (! in_p)
 	return FP_REGS;
       return class == GR_REGS ? NO_REGS : GR_REGS;
+    }
+
+  if (class == FP_REGS)
+    {
+      if (GET_CODE (x) == MEM)
+	{
+	  /* In this case we can use lwc1, swc1, ldc1 or sdc1. */
+	  return NO_REGS;
+	}
+      else if (CONSTANT_P (x) && GET_MODE_CLASS (mode) == MODE_FLOAT)
+	{
+	  /* We can use the l.s and l.d macros to load floating-point
+	     constants.  ??? For l.s, we could probably get better
+	     code by returning GR_REGS here.  */
+	  return NO_REGS;
+	}
+      else if (GP_REG_P (regno) || x == CONST0_RTX (mode))
+	{
+	  /* In this case we can use mtc1, mfc1, dmtc1 or dmfc1.  */
+	  return NO_REGS;
+	}
+      else if (FP_REG_P (regno))
+	{
+	  /* In this case we can use mov.s or mov.d.  */
+	  return NO_REGS;
+	}
+      else
+	{
+	  /* Otherwise, we need to reload through an integer register.  */
+	  return GR_REGS;
+	}
     }
 
   /* In mips16 mode, going between memory and anything but M16_REGS

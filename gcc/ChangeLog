@@ -1,3 +1,40 @@
+2002-07-17  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips-protos.h (mips_sign_extend): Declare.
+	* config/mips/mips.h (MASK_DEBUG_H, TARGET_DEBUG_H_MODE): Remove.
+	(TARGET_SWITCHES): Remove debugh.
+	(ISA_HAS_TRUNC_W): New macro.
+	(CLASS_CANNOT_CHANGE_MODE): Include FP_REGS if TARGET_FLOAT64.
+	(PREDICATE_CODES): Remove se_nonimmediate_operand.
+	* config/mips/mips.c (movdi_operand): Allow sign-extensions of
+	any SImode move_operand.
+	(se_nonimmediate_operand): Remove.
+	(mips_sign_extend): New.
+	(mips_move_2words): Use it for sign-extended source operands.
+	(override_options): Allow integers to be put into single FPRs.
+	(mips_secondary_reload_class): Handle integers in float registers.
+	* config/mips/mips.md (extendsidi2): Turn into a define_expand.
+	(fix_truncsfsi2, fix_truncdfsi2): Likewise.
+	(fix_truncdfsi2_insn, fix_truncdfsi2_macro): New.
+	(fix_truncsfsi2_insn, fix_truncsfsi2_macro): New.
+	(fix_truncdfdi2): Provide only a single alternative, in which the
+	integer is in a float register.  Depend on TARGET_FLOAT64 rather
+	than TARGET_64BIT.
+	(fix_truncsfdi2, floatdidf2, floatdisf2): Likewise.
+	(floatsidf2, floatsisf2): Likewise, but no TARGET_FLOAT64 dependency.
+	(movdi_internal2): Don't allow the source operand to be sign-extended.
+	Add alternatives for float registers.
+	(*movdi_internal2_extend): New.  Version of movdi_internal2 that
+	allows sign-extension.
+	(*movdi_internal2_mips16): Name the existing mips16 movdi pattern.
+	(movsi_internal2): Rename to movsi_internal.  Add alternatives for
+	float registers.  Remove TARGET_DEBUG_H_MODE test.
+	(movhi_internal1): Rename to movhi_internal.  Don't check
+	TARGET_DEBUG_H_MODE.  Fix transposed *d and *f source constraints.
+	(movqi_internal1): Rename to movqi_internal and remove
+	TARGET_DEBUG_H_MODE dependency.
+	(movsi_internal1, movhi_internal2, movqi_internal2): Remove.
+
 2002-07-16  Jim Wilson  <wilson@redhat.com>
 
 	* toplev.c (lang_dependent_init): Create function context for
