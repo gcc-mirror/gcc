@@ -65,6 +65,7 @@ public final class AccessController
    * allow the given permission.
    */
   public static void checkPermission(Permission perm)
+    throws AccessControlException
   {
     getContext().checkPermission(perm);
   }

@@ -52,6 +52,11 @@ public final class Security extends Object
     loadProviders();
   }
 
+  // This class can't be instantiated.
+  private Security ()
+  {
+  }
+
   private static void loadProviders()
   {
     String separator = System.getProperty("file.separator");

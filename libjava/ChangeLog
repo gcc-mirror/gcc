@@ -1,3 +1,24 @@
+2001-10-13  Tom Tromey  <tromey@redhat.com>
+
+	* java/security/AccessController.java (checkPermission): Now
+	throws AccessControlException.
+	* java/security/AllPermission.java: Class now final.
+	* java/security/Permission.java (getName): Now final.
+	(name): Now private.
+	(equals): New abstract method.
+	* java/security/PermissionCollection.java (linesep): Now private.
+	* java/security/Permissions.java: Class now final.
+	* java/security/Security.java (Security): New private
+	constructor.
+	* java/security/UnresolvedPermission.java: Import
+	java.security.cert.Certificate.  Class now final.
+	* java/security/acl/Group.java: Now extends Principal.
+	(isMember): Added Principal argument.
+	* java/security/spec/X509EncodedKeySpec.java (getFormat): Now
+	final.
+	* java/security/spec/PKCS8EncodedKeySpec.java (getFormat): Now
+	final.
+
 2001-10-12  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.

@@ -1,5 +1,5 @@
 /* X509EncodedKeySpec.java --- X.509 Encoded Key Specificaton class
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -63,7 +63,7 @@ public class X509EncodedKeySpec extends EncodedKeySpec
 
      @return a string representing the name
   */
-  public String getFormat()
+  public final String getFormat()
   {
     return "X.509";
   }
