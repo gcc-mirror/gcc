@@ -1,3 +1,7 @@
+2001-01-11  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cppinit.c (do_includes): Fix typo.
+
 2001-01-11  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.md (cmphi_1): Make sure reloading
@@ -23,6 +27,7 @@
 
         * cppinit.c (cpp_start_read): If -fpreprocessed, ignore
         -D, -U and -A, and don't initialize the builtins.
+	(do_includes): Error if -include or -imacros with -fpreprocessed.
         * cppmain.c (cb_define, cb_undef): Unconditionally process
         the callback.
         * tradcpp.c (main): Fix typo.

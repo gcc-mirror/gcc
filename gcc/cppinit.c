@@ -851,7 +851,7 @@ do_includes (pfile, p, scan)
 
       /* Don't handle if -fpreprocessed.  Later: maybe update this to
 	 use the #include "" search path if cpp_read_file fails.  */
-      if (! CPP_OPTION (pfile, preprocessed))
+      if (CPP_OPTION (pfile, preprocessed))
 	cpp_error (pfile, "-include and -imacros cannot be used with -fpreprocessed");
       else if (_cpp_read_file (pfile, p->arg) && scan)
 	cpp_scan_buffer_nooutput (pfile, 0);
