@@ -1596,7 +1596,11 @@ comment, or whenever a Backslash-Newline appears in a @samp{//} comment.
 @item -Wformat
 Check calls to @code{printf} and @code{scanf}, etc., to make sure that
 the arguments supplied have types appropriate to the format string
-specified.
+specified, and that the conversions specified in the format string make
+sense.  This includes standard functions, and others specified by format
+attributes (@pxref{Function Attributes}), in the @code{printf},
+@code{scanf}, @code{strftime} and @code{strfmon} (an X/Open extension,
+not in the C standard) families.
 
 The formats are checked against the format features supported by GNU
 libc version 2.2.  These include all ISO C89 and C99 features, as well
@@ -1605,8 +1609,9 @@ extensions.  Other library implementations may not support all these
 features; GCC does not support warning about features that go beyond a
 particular library's limitations.  However, if @samp{-pedantic} is used
 with @samp{-Wformat}, warnings will be given about format features not
-in the selected standard version.  @xref{C Dialect Options,,Options
-Controlling C Dialect}.
+in the selected standard version (but not for @code{strfmon} formats,
+since those are not in any version of the C standard).  @xref{C Dialect
+Options,,Options Controlling C Dialect}.
 
 @samp{-Wformat} is included in @samp{-Wall}.  For more control over some
 aspects of format checking, the options @samp{-Wno-format-y2k},

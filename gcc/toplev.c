@@ -1226,7 +1226,7 @@ documented_lang_options[] =
   { "-Wno-comments", "" },
   { "-Wconversion", "Warn about possibly confusing type conversions" },
   { "-Wno-conversion", "" },
-  { "-Wformat", "Warn about printf/scanf/strftime format anomalies" },
+  { "-Wformat", "Warn about printf/scanf/strftime/strfmon format anomalies" },
   { "-Wno-format", "" },
   { "-Wformat-y2k", "" },
   { "-Wno-format-y2k",

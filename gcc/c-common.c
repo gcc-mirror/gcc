@@ -230,7 +230,7 @@ enum attrs {A_PACKED, A_NOCOMMON, A_COMMON, A_NORETURN, A_CONST, A_T_UNION,
 	    A_NO_LIMIT_STACK, A_PURE};
 
 enum format_type { printf_format_type, scanf_format_type,
-		   strftime_format_type };
+		   strftime_format_type, strfmon_format_type };
 
 static void add_attribute		PARAMS ((enum attrs, const char *,
 						 int, int, int));
@@ -955,6 +955,9 @@ decl_attributes (node, attributes, prefix_attributes)
 		else if (!strcmp (p, "strftime")
 			 || !strcmp (p, "__strftime__"))
 		  format_type = strftime_format_type;
+		else if (!strcmp (p, "strfmon")
+			 || !strcmp (p, "__strfmon__"))
+		  format_type = strfmon_format_type;
 		else
 		  {
 		    warning ("`%s' is an unrecognized format function type", p);
@@ -1357,13 +1360,17 @@ enum
   FMT_FLAG_FANCY_PERCENT_OK = 4,
   /* With $ operand numbers, it is OK to reference the same argument more
      than once.  */
-  FMT_FLAG_DOLLAR_MULTIPLE = 8
+  FMT_FLAG_DOLLAR_MULTIPLE = 8,
+  /* This format type uses $ operand numbers (strfmon doesn't).  */
+  FMT_FLAG_USE_DOLLAR = 16,
+  /* Zero width is bad in this type of format (scanf).  */
+  FMT_FLAG_ZERO_WIDTH_BAD = 32,
+  /* Empty precision specification is OK in this type of format (printf).  */
+  FMT_FLAG_EMPTY_PREC_OK = 64
   /* Not included here: details of whether width or precision may occur
      (controlled by width_char and precision_char); details of whether
      '*' can be used for these (width_type and precision_type); details
-     of whether length modifiers can occur (length_char_specs); details
-     of when $ operand numbers are allowed (always, for the formats
-     supported, if arguments are converted).  */
+     of whether length modifiers can occur (length_char_specs).  */
 };
 
 
@@ -1415,7 +1422,8 @@ typedef struct
   /* Types accepted for each length modifier.  */
   format_type_detail types[FMT_LEN_MAX];
   /* List of other modifier characters allowed with these specifiers.
-     This lists flags, and additionally "w" for width, "p" for precision,
+     This lists flags, and additionally "w" for width, "p" for precision
+     (right precision, for strfmon), "#" for left precision (strfmon),
      "a" for scanf "a" allocation extension (not applicable in C99 mode),
      "*" for scanf suppression, and "E" and "O" for those strftime
      modifiers.  */
@@ -1447,6 +1455,9 @@ typedef struct
      the unpredicated one, for any pedantic warning.  For example, 'o'
      for strftime formats (meaning 'O' is an extension over C99).  */
   int predicate;
+  /* Nonzero if the next character after this flag in the format should
+     be skipped ('=' in strfmon), zero otherwise.  */
+  int skip_next_char;
   /* The name to use for this flag in diagnostic messages.  For example,
      N_("`0' flag"), N_("field width").  */
   const char *name;
@@ -1497,7 +1508,11 @@ typedef struct
   int flags;
   /* Flag character to treat a width as, or 0 if width not used.  */
   int width_char;
-  /* Flag character to treat a precision as, or 0 if precision not used.  */
+  /* Flag character to treat a left precision (strfmon) as,
+     or 0 if left precision not used.  */
+  int left_precision_char;
+  /* Flag character to treat a precision (for strfmon, right precision) as,
+     or 0 if precision not used.  */
   int precision_char;
   /* If a flag character has the effect of suppressing the conversion of
      an argument ('*' in scanf), that flag character, otherwise 0.  */
@@ -1579,19 +1594,28 @@ static const format_length_info scanf_length_specs[] =
 };
 
 
+/* All tables for strfmon use STD_C89 everywhere, since -pedantic warnings
+   make no sense for a format type not part of any C standard version.  */
+static const format_length_info strfmon_length_specs[] =
+{
+  /* A GNU extension.  */
+  { "L", FMT_LEN_L, STD_C89, NULL, 0, 0 },
+  { NULL, 0, 0, NULL, 0, 0 }
+};
+
 static const format_flag_spec printf_flag_specs[] =
 {
-  { ' ',  0, N_("` ' flag"),        N_("the ` ' printf flag"),              STD_C89 },
-  { '+',  0, N_("`+' flag"),        N_("the `+' printf flag"),              STD_C89 },
-  { '#',  0, N_("`#' flag"),        N_("the `#' printf flag"),              STD_C89 },
-  { '0',  0, N_("`0' flag"),        N_("the `0' printf flag"),              STD_C89 },
-  { '-',  0, N_("`-' flag"),        N_("the `-' printf flag"),              STD_C89 },
-  { '\'', 0, N_("`'' flag"),        N_("the `'' printf flag"),              STD_EXT },
-  { 'I',  0, N_("`I' flag"),        N_("the `I' printf flag"),              STD_EXT },
-  { 'w',  0, N_("field width"),     N_("field width in printf format"),     STD_C89 },
-  { 'p',  0, N_("precision"),       N_("precision in printf format"),       STD_C89 },
-  { 'L',  0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
-  { 0, 0, NULL, NULL, 0 }
+  { ' ',  0, 0, N_("` ' flag"),        N_("the ` ' printf flag"),              STD_C89 },
+  { '+',  0, 0, N_("`+' flag"),        N_("the `+' printf flag"),              STD_C89 },
+  { '#',  0, 0, N_("`#' flag"),        N_("the `#' printf flag"),              STD_C89 },
+  { '0',  0, 0, N_("`0' flag"),        N_("the `0' printf flag"),              STD_C89 },
+  { '-',  0, 0, N_("`-' flag"),        N_("the `-' printf flag"),              STD_C89 },
+  { '\'', 0, 0, N_("`'' flag"),        N_("the `'' printf flag"),              STD_EXT },
+  { 'I',  0, 0, N_("`I' flag"),        N_("the `I' printf flag"),              STD_EXT },
+  { 'w',  0, 0, N_("field width"),     N_("field width in printf format"),     STD_C89 },
+  { 'p',  0, 0, N_("precision"),       N_("precision in printf format"),       STD_C89 },
+  { 'L',  0, 0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
+  { 0, 0, 0, NULL, NULL, 0 }
 };
 
 
@@ -1606,13 +1630,13 @@ static const format_flag_pair printf_flag_pairs[] =
 
 static const format_flag_spec scanf_flag_specs[] =
 {
-  { '*',  0, N_("assignment suppression"), N_("assignment suppression"),          STD_C89 },
-  { 'a',  0, N_("`a' flag"),               N_("the `a' scanf flag"),              STD_EXT },
-  { 'w',  0, N_("field width"),            N_("field width in scanf format"),     STD_C89 },
-  { 'L',  0, N_("length modifier"),        N_("length modifier in scanf format"), STD_C89 },
-  { '\'', 0, N_("`'' flag"),               N_("the `'' scanf flag"),              STD_EXT },
-  { 'I',  0, N_("`I' flag"),               N_("the `I' scanf flag"),              STD_EXT },
-  { 0, 0, NULL, NULL, 0 }
+  { '*',  0, 0, N_("assignment suppression"), N_("assignment suppression"),          STD_C89 },
+  { 'a',  0, 0, N_("`a' flag"),               N_("the `a' scanf flag"),              STD_EXT },
+  { 'w',  0, 0, N_("field width"),            N_("field width in scanf format"),     STD_C89 },
+  { 'L',  0, 0, N_("length modifier"),        N_("length modifier in scanf format"), STD_C89 },
+  { '\'', 0, 0, N_("`'' flag"),               N_("the `'' scanf flag"),              STD_EXT },
+  { 'I',  0, 0, N_("`I' flag"),               N_("the `I' scanf flag"),              STD_EXT },
+  { 0, 0, 0, NULL, NULL, 0 }
 };
 
 
@@ -1625,16 +1649,16 @@ static const format_flag_pair scanf_flag_pairs[] =
 
 static const format_flag_spec strftime_flag_specs[] =
 {
-  { '_', 0,   N_("`_' flag"),     N_("the `_' strftime flag"),          STD_EXT },
-  { '-', 0,   N_("`-' flag"),     N_("the `-' strftime flag"),          STD_EXT },
-  { '0', 0,   N_("`0' flag"),     N_("the `0' strftime flag"),          STD_EXT },
-  { '^', 0,   N_("`^' flag"),     N_("the `^' strftime flag"),          STD_EXT },
-  { '#', 0,   N_("`#' flag"),     N_("the `#' strftime flag"),          STD_EXT },
-  { 'w', 0,   N_("field width"),  N_("field width in strftime format"), STD_EXT },
-  { 'E', 0,   N_("`E' modifier"), N_("the `E' strftime modifier"),      STD_C99 },
-  { 'O', 0,   N_("`O' modifier"), N_("the `O' strftime modifier"),      STD_C99 },
-  { 'O', 'o', NULL,               N_("the `O' modifier"),               STD_EXT },
-  { 0, 0, NULL, NULL, 0 }
+  { '_', 0,   0, N_("`_' flag"),     N_("the `_' strftime flag"),          STD_EXT },
+  { '-', 0,   0, N_("`-' flag"),     N_("the `-' strftime flag"),          STD_EXT },
+  { '0', 0,   0, N_("`0' flag"),     N_("the `0' strftime flag"),          STD_EXT },
+  { '^', 0,   0, N_("`^' flag"),     N_("the `^' strftime flag"),          STD_EXT },
+  { '#', 0,   0, N_("`#' flag"),     N_("the `#' strftime flag"),          STD_EXT },
+  { 'w', 0,   0, N_("field width"),  N_("field width in strftime format"), STD_EXT },
+  { 'E', 0,   0, N_("`E' modifier"), N_("the `E' strftime modifier"),      STD_C99 },
+  { 'O', 0,   0, N_("`O' modifier"), N_("the `O' strftime modifier"),      STD_C99 },
+  { 'O', 'o', 0, NULL,               N_("the `O' modifier"),               STD_EXT },
+  { 0, 0, 0, NULL, NULL, 0 }
 };
 
 
@@ -1645,6 +1669,28 @@ static const format_flag_pair strftime_flag_pairs[] =
   { '_', '0', 0, 0 },
   { '-', '0', 0, 0 },
   { '^', '#', 0, 0 },
+  { 0, 0, 0, 0 }
+};
+
+
+static const format_flag_spec strfmon_flag_specs[] =
+{
+  { '=',  0, 1, N_("fill character"),  N_("fill character in strfmon format"),  STD_C89 },
+  { '^',  0, 0, N_("`^' flag"),        N_("the `^' strfmon flag"),              STD_C89 },
+  { '+',  0, 0, N_("`+' flag"),        N_("the `+' strfmon flag"),              STD_C89 },
+  { '(',  0, 0, N_("`(' flag"),        N_("the `(' strfmon flag"),              STD_C89 },
+  { '!',  0, 0, N_("`!' flag"),        N_("the `!' strfmon flag"),              STD_C89 },
+  { '-',  0, 0, N_("`-' flag"),        N_("the `-' strfmon flag"),              STD_C89 },
+  { 'w',  0, 0, N_("field width"),     N_("field width in strfmon format"),     STD_C89 },
+  { '#',  0, 0, N_("left precision"),  N_("left precision in strfmon format"),  STD_C89 },
+  { 'p',  0, 0, N_("right precision"), N_("right precision in strfmon format"), STD_C89 },
+  { 'L',  0, 0, N_("length modifier"), N_("length modifier in strfmon format"), STD_C89 },
+  { 0, 0, 0, NULL, NULL, 0 }
+};
+
+static const format_flag_pair strfmon_flag_pairs[] =
+{
+  { '+', '(', 0, 0 },
   { 0, 0, 0, 0 }
 };
 
@@ -1748,7 +1794,7 @@ static const format_char_info scan_char_table[] =
   { NULL, 0, 0, NOLENGTHS, NULL, NULL }
 };
 
-static format_char_info time_char_table[] =
+static const format_char_info time_char_table[] =
 {
   /* C89 conversion specifiers.  */
   { "ABZab",		0, STD_C89, NOLENGTHS, "^#",     ""   },
@@ -1775,23 +1821,36 @@ static format_char_info time_char_table[] =
   { NULL,		0, 0, NOLENGTHS, NULL, NULL }
 };
 
+static const format_char_info monetary_char_table[] =
+{
+  { "in", 0, STD_C89, { T89_D, BADLEN, BADLEN, BADLEN, BADLEN, T89_LD, BADLEN, BADLEN, BADLEN }, "=^+(!-w#p", "" },
+  { NULL, 0, 0, NOLENGTHS, NULL, NULL }
+};
+
 
 /* This must be in the same order as enum format_type.  */
 static const format_kind_info format_types[] =
 {
-  { "printf",   printf_length_specs, print_char_table, " +#0-'I", NULL, 
+  { "printf",   printf_length_specs,  print_char_table, " +#0-'I", NULL, 
     printf_flag_specs, printf_flag_pairs,
-    FMT_FLAG_ARG_CONVERT|FMT_FLAG_DOLLAR_MULTIPLE, 'w', 'p', 0, 'L',
+    FMT_FLAG_ARG_CONVERT|FMT_FLAG_DOLLAR_MULTIPLE|FMT_FLAG_USE_DOLLAR|FMT_FLAG_EMPTY_PREC_OK,
+    'w', 0, 'p', 0, 'L',
     &integer_type_node, &integer_type_node
   },
-  { "scanf",    scanf_length_specs,  scan_char_table,  "*'I", NULL, 
+  { "scanf",    scanf_length_specs,   scan_char_table,  "*'I", NULL, 
     scanf_flag_specs, scanf_flag_pairs,
-    FMT_FLAG_ARG_CONVERT|FMT_FLAG_SCANF_A_KLUDGE, 'w', 0, '*', 'L',
+    FMT_FLAG_ARG_CONVERT|FMT_FLAG_SCANF_A_KLUDGE|FMT_FLAG_USE_DOLLAR|FMT_FLAG_ZERO_WIDTH_BAD,
+    'w', 0, 0, '*', 'L',
     NULL, NULL
   },
-  { "strftime", NULL,                time_char_table,  "_-0^#", "EO",
+  { "strftime", NULL,                 time_char_table,  "_-0^#", "EO",
     strftime_flag_specs, strftime_flag_pairs,
-    FMT_FLAG_FANCY_PERCENT_OK, 'w', 0, 0, 0,
+    FMT_FLAG_FANCY_PERCENT_OK, 'w', 0, 0, 0, 0,
+    NULL, NULL
+  },
+  { "strfmon",  strfmon_length_specs, monetary_char_table, "=^+(!-", NULL, 
+    strfmon_flag_specs, strfmon_flag_pairs,
+    FMT_FLAG_ARG_CONVERT, 'w', '#', 'p', 0, 'L',
     NULL, NULL
   }
 };
@@ -1934,6 +1993,9 @@ init_function_format_info ()
       record_international_format (get_identifier ("gettext"), NULL_TREE, 1);
       record_international_format (get_identifier ("dgettext"), NULL_TREE, 2);
       record_international_format (get_identifier ("dcgettext"), NULL_TREE, 2);
+      /* X/Open strfmon function.  */
+      record_function_format (get_identifier ("strfmon"), NULL_TREE,
+			      strfmon_format_type, 3, 4);
     }
 }
 
@@ -2684,7 +2746,7 @@ check_format_info_main (status, res, info, format_chars, format_length,
 	}
       flag_chars[0] = 0;
 
-      if ((fki->flags & FMT_FLAG_ARG_CONVERT) && has_operand_number != 0)
+      if ((fki->flags & FMT_FLAG_USE_DOLLAR) && has_operand_number != 0)
 	{
 	  /* Possibly read a $ operand number at the start of the format.
 	     If one was previously used, one is required here.  If one
@@ -2709,10 +2771,10 @@ check_format_info_main (status, res, info, format_chars, format_length,
       while (*format_chars != 0
 	     && strchr (fki->flag_chars, *format_chars) != 0)
 	{
+	  const format_flag_spec *s = get_flag_spec (flag_specs,
+						     *format_chars, NULL);
 	  if (strchr (flag_chars, *format_chars) != 0)
 	    {
-	      const format_flag_spec *s = get_flag_spec (flag_specs,
-							 *format_chars, NULL);
 	      status_warning (status, "repeated %s in format", _(s->name));
 	    }
 	  else
@@ -2720,6 +2782,15 @@ check_format_info_main (status, res, info, format_chars, format_length,
 	      i = strlen (flag_chars);
 	      flag_chars[i++] = *format_chars;
 	      flag_chars[i] = 0;
+	    }
+	  if (s->skip_next_char)
+	    {
+	      ++format_chars;
+	      if (*format_chars == 0)
+		{
+		  status_warning (status, "missing fill character at end of strfmon format");
+		  return;
+		}
 	    }
 	  ++format_chars;
 	}
@@ -2785,9 +2856,7 @@ check_format_info_main (status, res, info, format_chars, format_length,
 	  else
 	    {
 	      /* Possibly read a numeric width.  If the width is zero,
-		 we complain; for scanf this is bad according to the
-		 standard, and for printf and strftime it cannot occur
-		 because 0 is a flag.  */
+		 we complain if appropriate.  */
 	      int non_zero_width_char = FALSE;
 	      int found_width = FALSE;
 	      while (ISDIGIT (*format_chars))
@@ -2797,7 +2866,8 @@ check_format_info_main (status, res, info, format_chars, format_length,
 		    non_zero_width_char = TRUE;
 		  ++format_chars;
 		}
-	      if (found_width && !non_zero_width_char)
+	      if (found_width && !non_zero_width_char &&
+		  (fki->flags & FMT_FLAG_ZERO_WIDTH_BAD))
 		status_warning (status, "zero width in %s format",
 				fki->name);
 	      if (found_width)
@@ -2807,6 +2877,20 @@ check_format_info_main (status, res, info, format_chars, format_length,
 		  flag_chars[i] = 0;
 		}
 	    }
+	}
+
+      /* Read any format left precision (must be a number, not *).  */
+      if (fki->left_precision_char != 0 && *format_chars == '#')
+	{
+	  ++format_chars;
+	  i = strlen (flag_chars);
+	  flag_chars[i++] = fki->left_precision_char;
+	  flag_chars[i] = 0;
+	  if (!ISDIGIT (*format_chars))
+	    status_warning (status, "empty left precision in %s format",
+			    fki->name);
+	  while (ISDIGIT (*format_chars))
+	    ++format_chars;
 	}
 
       /* Read any format precision, possibly * or *m$.  */
@@ -2870,6 +2954,10 @@ check_format_info_main (status, res, info, format_chars, format_length,
 	    }
 	  else
 	    {
+	      if (!(fki->flags & FMT_FLAG_EMPTY_PREC_OK)
+		  && !ISDIGIT (*format_chars))
+		status_warning (status, "empty precision in %s format",
+				fki->name);
 	      while (ISDIGIT (*format_chars))
 		++format_chars;
 	    }
