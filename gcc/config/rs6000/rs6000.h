@@ -2473,7 +2473,7 @@ extern int rs6000_trunc_used;
 
    Initialize the section names for the RS/6000 at this point.
 
-   Specify filename to assembler.
+   Specify filename, including full path, to assembler.
 
    We want to go into the TOC section so at least one .toc will be emitted.
    Also, in order to output proper .bs/.es pairs, we need at least one static
@@ -2493,7 +2493,7 @@ extern int rs6000_trunc_used;
   rs6000_gen_section_name (&xcoff_read_only_section_name,	\
 			   main_input_filename, ".ro_");	\
 								\
-  output_file_directive (FILE, main_input_filename);		\
+  fprintf (FILE, "\t.file\t\"%s\"\n", main_input_filename);	\
   if (TARGET_64BIT)						\
     fputs ("\t.machine\t\"ppc64\"\n", FILE);			\
   toc_section ();						\
