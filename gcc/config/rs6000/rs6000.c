@@ -8173,13 +8173,15 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
 	  ASM_OUTPUT_INTERNAL_LABEL (file, "Lthunk", labelno);
 	  labelno++;
 
-	  /* Note, MINIMAL_TOC doesn't make sense in the case of a
-	     thunk, since there will be only one TOC entry for this
-	     function.  */
-	  fputs ("\t.tc\t", file);
-	  assemble_name (file, buf);
-	  fputs ("[TC],", file);
-	  assemble_name (file, buf);
+	  if (TARGET_MINIMAL_TOC)
+	    fputs (TARGET_32BIT ? "\t.long " : DOUBLE_INT_ASM_OP, file);
+	  else
+	    {
+	      fputs ("\t.tc ", file);
+	      assemble_name (file, fname);
+	      fputs ("[TC],", file);
+	    }
+	  assemble_name (file, fname);
 	  putc ('\n', file);
 	  text_section ();
 	  asm_fprintf (file, (TARGET_32BIT) ? "\t{l|lwz} %s," : "\tld %s,", r12);
