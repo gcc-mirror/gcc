@@ -7065,9 +7065,7 @@ cmpib_comparison_operator (op, mode)
 	      || GET_CODE (op) == GT
 	      || GET_CODE (op) == GTU
 	      || GET_CODE (op) == GE
-	      || GET_CODE (op) == GEU
 	      || GET_CODE (op) == LT
-	      || GET_CODE (op) == LTU
 	      || GET_CODE (op) == LE
 	      || GET_CODE (op) == LEU));
 }

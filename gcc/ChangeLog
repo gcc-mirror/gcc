@@ -1,3 +1,9 @@
+Mon Dec 11 13:51:09 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.c (cmpib_comparison_operator): Remove GEU and LTU.
+	* pa.h (PREDICATE_CODES, cmpib_comparison_operator): Corresponding
+	changes.
+
 2000-12-11  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/fixincl.tpl: initialize all fields for warnings
