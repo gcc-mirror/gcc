@@ -746,12 +746,7 @@ optimize_sibling_and_tail_recursive_calls ()
 	 we actually write into.  */
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	{
-	  if (GET_CODE (insn) == NOTE)
-	    {
-	      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG)
-		break;
-	    }
-	  else if (INSN_P (insn))
+	  if (INSN_P (insn))
 	    purge_mem_unchanging_flag (PATTERN (insn));
 	}
     }
