@@ -1,3 +1,7 @@
+2002-04-29  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* combine.c (find_split_point): Use gen_int_mode.
+
 2002-04-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	Merging code from dfa-branch:
