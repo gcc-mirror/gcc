@@ -603,8 +603,10 @@ count_strange_loop_iterations (rtx init, rtx lim, enum rtx_code cond,
     case LE:
     case LT:
       size = GET_MODE_BITSIZE (mode);
-      mode_min = GEN_INT (-((unsigned HOST_WIDEST_INT) 1 << (size - 1)));
-      mode_max = GEN_INT (((unsigned HOST_WIDEST_INT) 1 << (size - 1)) - 1);
+      mode_min = gen_int_mode (-((unsigned HOST_WIDEST_INT) 1 << (size - 1)),
+			       mode);
+      mode_max = gen_int_mode (((unsigned HOST_WIDEST_INT) 1 << (size - 1)) - 1,
+			       mode);
 			      
       break;
 
@@ -869,10 +871,11 @@ count_loop_iterations (struct loop_desc *desc, rtx init, rtx lim)
 	  d *= 2;
 	  size--;
 	}
-      bound = GEN_INT (((unsigned HOST_WIDEST_INT) 1 << (size - 1 ) << 1) - 1);
-      exp = simplify_gen_binary (UDIV, mode, exp, GEN_INT (d));
+      bound = gen_int_mode (((unsigned HOST_WIDEST_INT) 1 << (size - 1 ) << 1) - 1,
+			    mode);
+      exp = simplify_gen_binary (UDIV, mode, exp, gen_int_mode (d, mode));
       exp = simplify_gen_binary (MULT, mode,
-				 exp, GEN_INT (inverse (s, size)));
+				 exp, gen_int_mode (inverse (s, size), mode));
       exp = simplify_gen_binary (AND, mode, exp, bound);
       break;
 

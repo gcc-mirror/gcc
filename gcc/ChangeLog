@@ -1,3 +1,10 @@
+2004-06-08  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	PR rtl-optimization/15761
+	* cfgloopanal.c (count_strange_loop_iterations,
+	count_loop_iterations): Use gen_int_mode instead
+	of GEN_INT.
+
 2004-06-08  Roger Sayle  <roger@eyesopen.com>
 
 	PR c/14649
