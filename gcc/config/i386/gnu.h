@@ -15,3 +15,6 @@
 /* Don't default to pcc-struct-return, because gcc is the only compiler, and
    we want to retain compatibility with older gcc versions.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
+
+/* Get machine-independent configuration parameters for the GNU system.  */
+#include "gnu.h"
