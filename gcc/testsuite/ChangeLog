@@ -22,6 +22,8 @@
 
 Wed Jan  9 14:03:20 2002  Jeffrey A Law  (law@redhat.com)
 
+	* gcc.dg/asm-fs-1.c: Disable warnings when compiling.
+
 	* gcc.c-torture/execute/strct-stdarg-1.x: New file.  Expect
 	execution failure on PA targets.
 

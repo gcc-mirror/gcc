@@ -2,7 +2,7 @@
    Make sure we do not get spurious '*' characters in section names or
    elsewhere, with asm-specified names.  */
 /* { dg-do compile } */
-/* { dg-options "-ffunction-sections -fdata-sections" } */
+/* { dg-options "-w -ffunction-sections -fdata-sections" } */
 
 void foo (void) asm ("_bar");
 void foo (void) {}
