@@ -99,17 +99,13 @@ plus_constant (x, c)
 	 Look for constant term in the sum and combine
 	 with C.  For an integer constant term, we make a combined
 	 integer.  For a constant term that is not an explicit integer,
-	 we cannot really combine, but group them together anyway.  */
-      if (GET_CODE (XEXP (x, 0)) == CONST_INT)
-	{
-	  c += INTVAL (XEXP (x, 0));
-	  x = XEXP (x, 1);
-	}
-      else if (GET_CODE (XEXP (x, 1)) == CONST_INT)
-	{
-	  c += INTVAL (XEXP (x, 1));
-	  x = XEXP (x, 0);
-	}
+	 we cannot really combine, but group them together anyway.  
+
+	 Use a recursive call in case the remaining operand is something
+	 that we handle specially, such as a SYMBOL_REF.  */
+
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+	return plus_constant (XEXP (x, 0), c + INTVAL (XEXP (x, 1)));
       else if (CONSTANT_P (XEXP (x, 0)))
 	return gen_rtx (PLUS, mode,
 			plus_constant (XEXP (x, 0), c),
@@ -131,7 +127,7 @@ plus_constant (x, c)
     return x;
 }
 
-/* This is the same a `plus_constant', except that it handles LO_SUM.  */
+/* This is the same as `plus_constant', except that it handles LO_SUM.  */
 
 rtx
 plus_constant_for_output (x, c)
