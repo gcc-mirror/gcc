@@ -177,7 +177,7 @@ do {									\
 
 /* Stuff to force fit us into the Motorola PPC assembler */
 
-#undef ASM_FILE_START							\
+#undef ASM_FILE_START
 #define ASM_FILE_START(FILE)						\
 do {									\
   output_file_directive ((FILE), main_input_filename);			\
