@@ -3893,7 +3893,7 @@ gas_output_limited_string(file, str)
 {
   const unsigned char *_limited_str = (unsigned char *) str;
   unsigned ch;
-  fprintf (file, "\t%s\t\"", STRING_ASM_OP);
+  fprintf (file, "%s\"", STRING_ASM_OP);
   for (; (ch = *_limited_str); _limited_str++)
     {
       int escape;

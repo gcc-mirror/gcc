@@ -120,18 +120,18 @@ Boston, MA 02111-1307, USA.  */
 
 /* Output #ident as a .ident.  */
 #define ASM_OUTPUT_IDENT(FILE, NAME) \
-  fprintf (FILE, "\t%s\t\"%s\"\n", IDENT_ASM_OP, NAME);
+  fprintf (FILE, "%s\"%s\"\n", IDENT_ASM_OP, NAME);
   
 #ifdef IDENTIFY_WITH_IDENT
 #define ASM_IDENTIFY_GCC(FILE) /* nothing */
 #define ASM_IDENTIFY_LANGUAGE(FILE)			\
- fprintf (FILE, "\t%s \"GCC (%s) %s\"\n", IDENT_ASM_OP,	\
+ fprintf (FILE, "%s\"GCC (%s) %s\"\n", IDENT_ASM_OP,	\
 	 lang_identify (), version_string)
 #else
 #define ASM_FILE_END(FILE)					\
 do {				 				\
      if (!flag_no_ident)					\
-	fprintf ((FILE), "\t%s\t\"GCC: (GNU) %s\"\n",		\
+	fprintf ((FILE), "%s\"GCC: (GNU) %s\"\n",		\
 		 IDENT_ASM_OP, version_string);			\
    } while (0)
 #endif

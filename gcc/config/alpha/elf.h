@@ -76,13 +76,13 @@ do {								\
 #ifdef IDENTIFY_WITH_IDENT
 #define ASM_IDENTIFY_GCC(FILE) /* nothing */
 #define ASM_IDENTIFY_LANGUAGE(FILE)			\
- fprintf(FILE, "\t%s \"GCC (%s) %s\"\n", IDENT_ASM_OP,	\
+ fprintf(FILE, "%s\"GCC (%s) %s\"\n", IDENT_ASM_OP,	\
 	 lang_identify(), version_string)
 #else
 #define ASM_FILE_END(FILE)					\
 do {				 				\
      if (!flag_no_ident)					\
-	fprintf ((FILE), "\t%s\t\"GCC: (GNU) %s\"\n",		\
+	fprintf ((FILE), "%s\"GCC: (GNU) %s\"\n",		\
 		 IDENT_ASM_OP, version_string);			\
    } while (0)
 #endif
@@ -92,7 +92,7 @@ do {				 				\
 
 /* Output #ident as a .ident.  */
 #define ASM_OUTPUT_IDENT(FILE, NAME) \
-  fprintf (FILE, "\t%s\t\"%s\"\n", IDENT_ASM_OP, NAME);
+  fprintf (FILE, "%s\"%s\"\n", IDENT_ASM_OP, NAME);
 
 /* This is how to allocate empty space in some section.  The .zero
    pseudo-op is used for this on most svr4 assemblers.  */
@@ -101,7 +101,7 @@ do {				 				\
 
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE) \
-  fprintf (FILE, "\t%s\t%u\n", SKIP_ASM_OP, (SIZE))
+  fprintf (FILE, "%s%u\n", SKIP_ASM_OP, (SIZE))
 
 /* Output the label which precedes a jumptable.  Note that for all svr4
    systems where we actually generate jumptables (which is to say every
@@ -142,7 +142,7 @@ do {				 				\
 #undef ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
 do {									\
-  fprintf ((FILE), "\t%s\t", COMMON_ASM_OP);				\
+  fprintf ((FILE), "%s", COMMON_ASM_OP);				\
   assemble_name ((FILE), (NAME));					\
   fprintf ((FILE), ",%u,%u\n", (SIZE), (ALIGN) / BITS_PER_UNIT);	\
 } while (0)
@@ -159,14 +159,14 @@ do {									\
     sbss_section();							\
   else									\
     bss_section();							\
-  fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);				\
+  fprintf (FILE, "%s", TYPE_ASM_OP);					\
   assemble_name (FILE, NAME);						\
   putc (',', FILE);							\
   fprintf (FILE, TYPE_OPERAND_FMT, "object");				\
   putc ('\n', FILE);							\
   if (!flag_inhibit_size_directive)					\
     {									\
-      fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);				\
+      fprintf (FILE, "%s", SIZE_ASM_OP);				\
       assemble_name (FILE, NAME);					\
       fprintf (FILE, ",%d\n", (SIZE));					\
     }									\
@@ -311,7 +311,7 @@ void FN ()					\
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
   do {									\
     ctors_section ();							\
-    fprintf (FILE, "\t%s\t ", INT_ASM_OP);				\
+    fprintf (FILE, "%s", INT_ASM_OP);					\
     assemble_name (FILE, NAME);						\
     fprintf (FILE, "\n");						\
   } while (0)
@@ -321,7 +321,7 @@ void FN ()					\
 #define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       				\
   do {									\
     dtors_section ();                   				\
-    fprintf (FILE, "\t%s\t ", INT_ASM_OP);				\
+    fprintf (FILE, "%s", INT_ASM_OP);					\
     assemble_name (FILE, NAME);              				\
     fprintf (FILE, "\n");						\
   } while (0)
@@ -434,7 +434,7 @@ void FN ()					\
 #define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)		\
   do {								\
     HOST_WIDE_INT size;						\
-    fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);			\
+    fprintf (FILE, "%s", TYPE_ASM_OP);				\
     assemble_name (FILE, NAME);					\
     putc (',', FILE);						\
     fprintf (FILE, TYPE_OPERAND_FMT, "object");			\
@@ -445,7 +445,7 @@ void FN ()					\
 	&& (size = int_size_in_bytes (TREE_TYPE (DECL))) > 0)	\
       {								\
 	size_directive_output = 1;				\
-	fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);			\
+	fprintf (FILE, "%s", SIZE_ASM_OP);			\
 	assemble_name (FILE, NAME);				\
 	fputc (',', FILE);					\
 	fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, size);		\
@@ -472,7 +472,7 @@ void FN ()					\
 	&& (size = int_size_in_bytes (TREE_TYPE (DECL))) > 0)		\
       {									\
 	size_directive_output = 1;					\
-	fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);				\
+	fprintf (FILE, "%s", SIZE_ASM_OP);				\
 	assemble_name (FILE, name);					\
 	fputc (',', FILE);						\
 	fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, size);			\

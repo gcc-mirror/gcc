@@ -5112,7 +5112,7 @@ alpha_output_filename (stream, name)
   else if (write_symbols == DBX_DEBUG)
     {
       ASM_GENERATE_INTERNAL_LABEL (ltext_label_name, "Ltext", 0);
-      fprintf (stream, "%s ", ASM_STABS_OP);
+      fprintf (stream, "%s", ASM_STABS_OP);
       output_quoted_string (stream, name);
       fprintf (stream, ",%d,0,0,%s\n", N_SOL, &ltext_label_name[1]);
     }
@@ -5145,7 +5145,7 @@ alpha_output_lineno (stream, line)
     {
       /* mips-tfile doesn't understand .stabd directives.  */
       ++sym_lineno;
-      fprintf (stream, "$LM%d:\n\t%s %d,0,%d,$LM%d\n",
+      fprintf (stream, "$LM%d:\n%s%d,0,%d,$LM%d\n",
 	       sym_lineno, ASM_STABN_OP, N_SLINE, line, sym_lineno);
     }
   else
