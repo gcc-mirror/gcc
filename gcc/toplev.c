@@ -1247,22 +1247,6 @@ documented_lang_options[] =
 
 #define DEFINE_LANG_NAME(NAME) { NULL, NAME },
 
-  /* These are for Objective C.  */
-  DEFINE_LANG_NAME ("Objective C")
-
-  { "-lang-objc", "" },
-  { "-gen-decls", "Dump decls to a .decl file" },
-  { "-fgnu-runtime", "Generate code for GNU runtime environment" },
-  { "-fno-gnu-runtime", "" },
-  { "-fnext-runtime", "Generate code for NeXT runtime environment" },
-  { "-fno-next-runtime", "" },
-  { "-Wselector", "Warn if a selector has multiple methods" },
-  { "-Wno-selector", "" },
-  { "-Wprotocol", "" },
-  { "-Wno-protocol", "Do not warn if inherited methods are unimplemented"},
-  { "-print-objc-runtime-info",
-    "Generate C header of platform specific features" },
-
 #include "options.h"
 
 };
