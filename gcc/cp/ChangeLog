@@ -1,3 +1,7 @@
+2001-11-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* pt.c (unify): Handle SCOPE_REF.
+
 2001-11-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.c (cp_copy_res_decl_for_inlining): Adjust
