@@ -5665,10 +5665,19 @@ overload_template_name (type)
   pushdecl_class_level (decl);
 }
 
-
 /* Like type_unification but designed specially to handle conversion
-   operators.  The EXTRA_FN_ARG, if any, is the type of an additional
-   parameter to be added to the beginning of FN's parameter list.  */
+   operators.  
+
+   The FN is a TEMPLATE_DECL for a function.  The ARGS are the
+   arguments that are being used when calling it.  
+
+   If FN is a conversion operator, RETURN_TYPE is the type desired as
+   the result of the conversion operator.
+
+   The EXTRA_FN_ARG, if any, is the type of an additional
+   parameter to be added to the beginning of FN's parameter list.  
+
+   The other arguments are as for type_unification.  */
 
 int
 fn_type_unification (fn, explicit_targs, targs, args, return_type,
@@ -5677,40 +5686,35 @@ fn_type_unification (fn, explicit_targs, targs, args, return_type,
      unification_kind_t strict;
      tree extra_fn_arg;
 {
-  int i;
-  tree fn_arg_types = TYPE_ARG_TYPES (TREE_TYPE (fn));
-  tree decl_arg_types = args;
+  tree parms;
 
   my_friendly_assert (TREE_CODE (fn) == TEMPLATE_DECL, 0);
+
+  parms = TYPE_ARG_TYPES (TREE_TYPE (fn));
 
   if (IDENTIFIER_TYPENAME_P (DECL_NAME (fn))) 
     {
       /* This is a template conversion operator.  Use the return types
          as well as the argument types.  */
-      fn_arg_types = scratch_tree_cons (NULL_TREE, 
-					TREE_TYPE (TREE_TYPE (fn)),
-					fn_arg_types);
-      decl_arg_types = scratch_tree_cons (NULL_TREE,
-					  return_type,
-					  decl_arg_types);
+      parms = scratch_tree_cons (NULL_TREE, 
+				 TREE_TYPE (TREE_TYPE (fn)),
+				 parms);
+      args = scratch_tree_cons (NULL_TREE, return_type, args);
     }
 
   if (extra_fn_arg != NULL_TREE)
-    fn_arg_types = scratch_tree_cons (NULL_TREE, extra_fn_arg,
-				      fn_arg_types); 
+    parms = scratch_tree_cons (NULL_TREE, extra_fn_arg, parms);
 
   /* We allow incomplete unification without an error message here
      because the standard doesn't seem to explicitly prohibit it.  Our
      callers must be ready to deal with unification failures in any
      event.  */
-  i = type_unification (DECL_INNERMOST_TEMPLATE_PARMS (fn), 
-			targs,
-			fn_arg_types,
-			decl_arg_types,
-			explicit_targs,
-			strict, 1);
-
-  return i;
+  return type_unification (DECL_INNERMOST_TEMPLATE_PARMS (fn), 
+			   targs,
+			   parms,
+			   args,
+			   explicit_targs,
+			   strict, 1);
 }
 
 
@@ -5725,14 +5729,15 @@ fn_type_unification (fn, explicit_targs, targs, args, return_type,
    all the types, and 1 for complete failure.  An error message will be
    printed only for an incomplete match.
 
-   TPARMS[NTPARMS] is an array of template parameter types;
-   TARGS[NTPARMS] is the array of template parameter values.  PARMS is
-   the function template's signature (using TEMPLATE_PARM_IDX nodes),
-   and ARGS is the argument list we're trying to match against it.
+   TPARMS[NTPARMS] is an array of template parameter types.
 
-   If SUBR is 1, we're being called recursively (to unify the arguments of
-   a function or method parameter of a function template), so don't zero
-   out targs and don't fail on an incomplete match.
+   TARGS[NTPARMS] is the array into which the deduced template
+   parameter values are placed.  PARMS is the function template's
+   signature (using TEMPLATE_PARM_IDX nodes), and ARGS is the argument
+   list we're trying to match against it.
+
+   The EXPLICIT_TARGS are explicit template arguments provided via a
+   template-id.
 
    The parameter STRICT is one of:
 
@@ -5749,14 +5754,14 @@ fn_type_unification (fn, explicit_targs, targs, args, return_type,
      ordering between specializations of function or class
      templates, as in [temp.func.order] and [temp.class.order],
      when doing an explicit instantiation as in [temp.explicit],
-     when determiningan explicit specialization as in
+     when determining an explicit specialization as in
      [temp.expl.spec], or when taking the address of a function
      template, as in [temp.deduct.funcaddr].  */
 
 int
-type_unification (tparms, targs, parms, args, targs_in,
+type_unification (tparms, targs, parms, args, explicit_targs,
 		  strict, allow_incomplete)
-     tree tparms, targs, parms, args, targs_in;
+     tree tparms, targs, parms, args, explicit_targs;
      unification_kind_t strict;
      int allow_incomplete;
 {
@@ -5766,10 +5771,10 @@ type_unification (tparms, targs, parms, args, targs_in,
   for (i = 0; i < TREE_VEC_LENGTH (tparms); i++)
     TREE_VEC_ELT (targs, i) = NULL_TREE;
 
-  if (targs_in != NULL_TREE)
+  if (explicit_targs != NULL_TREE)
     {
       tree arg_vec;
-      arg_vec = coerce_template_parms (tparms, targs_in, NULL_TREE, 0,
+      arg_vec = coerce_template_parms (tparms, explicit_targs, NULL_TREE, 0,
 				       0, 0);
 
       if (arg_vec == error_mark_node)
@@ -5873,7 +5878,11 @@ maybe_adjust_types_for_deduction (strict, parm, arg)
 
 /* Like type_unfication.  EXPLICIT_MASK, if non-NULL, is an array of
    integers, with ones in positions corresponding to arguments in
-   targs that were provided explicitly, and zeros elsewhere.  */
+   targs that were provided explicitly, and zeros elsewhere.  
+
+   If SUBR is 1, we're being called recursively (to unify the
+   arguments of a function or method parameter of a function
+   template).  */
 
 static int
 type_unification_real (tparms, targs, parms, args, subr,

@@ -1,3 +1,8 @@
+1998-06-09  Mark Mitchell  <mark@markmitchell.com>
+
+	* pt.c (fn_type_unification): Revise documentation.  Tidy.
+	(type_unification): Likewise.
+
 1998-06-09  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* semantics.c (finish_try_block): Rename expand_start_catch, and delete
