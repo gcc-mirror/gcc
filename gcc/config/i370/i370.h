@@ -700,7 +700,7 @@ enum reg_class
 	  && GET_CODE (XEXP (XEXP (X, 0), 0)) == LABEL_REF)		\
   || (GET_CODE (X) == CONST						\
 	  && GET_CODE (XEXP (XEXP (X, 0), 0)) == SYMBOL_REF		\
-	  && !SYMBOL_REF_FLAG (XEXP (XEXP (X, 0), 0))))
+	  && !SYMBOL_REF_EXTERNAL_P (XEXP (XEXP (X, 0), 0))))
 
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
@@ -1266,7 +1266,7 @@ enum reg_class
       case SYMBOL_REF:							\
       case LABEL_REF:							\
 	mvs_page_lit += 4;						\
-	if (SYMBOL_REF_FLAG (XV)) fprintf (FILE, "=V(");		\
+	if (SYMBOL_REF_EXTERNAL_P (XV)) fprintf (FILE, "=V(");		\
 	else                      fprintf (FILE, "=A(");		\
 	output_addr_const (FILE, XV);					\
 	fprintf (FILE, ")");						\
@@ -1356,7 +1356,7 @@ enum reg_class
 	   && GET_CODE (XEXP (XEXP (XV, 0), 0)) == SYMBOL_REF)		\
 	  {								\
 	    mvs_page_lit += 4;						\
-	    if (SYMBOL_REF_FLAG (XEXP (XEXP (XV, 0), 0)))		\
+	    if (SYMBOL_REF_EXTERNAL_P (XEXP (XEXP (XV, 0), 0)))		\
 	      {								\
 		fprintf (FILE, "=V(");					\
 		ASM_OUTPUT_LABELREF (FILE,				\
@@ -1467,7 +1467,7 @@ enum reg_class
 	break;								\
       default:								\
 	mvs_page_lit += 4;						\
-	if (SYMBOL_REF_FLAG (ADDR)) fprintf (FILE, "=V(");		\
+	if (SYMBOL_REF_EXTERNAL_P (ADDR)) fprintf (FILE, "=V(");	\
 	else                        fprintf (FILE, "=A(");		\
 	output_addr_const (FILE, ADDR);					\
 	fprintf (FILE, ")");						\
@@ -1560,7 +1560,7 @@ enum reg_class
       case SYMBOL_REF:							\
       case LABEL_REF:							\
 	mvs_page_lit += 4;						\
-        if (SYMBOL_REF_FLAG (XV)) fprintf (FILE, "=V(");                \
+        if (SYMBOL_REF_EXTERNAL_P (XV)) fprintf (FILE, "=V(");		\
         else                      fprintf (FILE, "=A(");                \
         output_addr_const (FILE, XV);                                   \
         fprintf (FILE, ")");                                            \
@@ -1650,7 +1650,7 @@ enum reg_class
 	   && GET_CODE (XEXP (XEXP (XV, 0), 0)) == SYMBOL_REF)		\
 	  {								\
 	    mvs_page_lit += 4;						\
-	    if (SYMBOL_REF_FLAG (XEXP (XEXP (XV, 0), 0)))		\
+	    if (SYMBOL_REF_EXTERNAL_P (XEXP (XEXP (XV, 0), 0)))		\
 	      {								\
 		fprintf (FILE, "=V(");					\
 		ASM_OUTPUT_LABELREF (FILE,				\
@@ -1765,7 +1765,7 @@ abort(); \
 	break;								\
       default:								\
 	mvs_page_lit += 4;						\
-	if (SYMBOL_REF_FLAG (ADDR)) fprintf (FILE, "=V(");		\
+	if (SYMBOL_REF_EXTERNAL_P (ADDR)) fprintf (FILE, "=V(");	\
 	else                        fprintf (FILE, "=A(");		\
 	output_addr_const (FILE, ADDR);					\
 	fprintf (FILE, ")");						\
