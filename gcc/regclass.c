@@ -1,5 +1,5 @@
 /* Compute register class preferences for pseudo-registers.
-   Copyright (C) 1987, 88, 91-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -316,38 +316,6 @@ init_reg_sets ()
 	}
     }
 
-  /* Initialize the move cost table.  Find every subset of each class
-     and take the maximum cost of moving any subset to any other.  */
-
-  for (i = 0; i < N_REG_CLASSES; i++)
-    for (j = 0; j < N_REG_CLASSES; j++)
-      {
-	int cost = i == j ? 2 : REGISTER_MOVE_COST (i, j);
-	enum reg_class *p1, *p2;
-
-	for (p2 = &reg_class_subclasses[j][0]; *p2 != LIM_REG_CLASSES; p2++)
-	  if (*p2 != i)
-	    cost = MAX (cost, REGISTER_MOVE_COST (i, *p2));
-
-	for (p1 = &reg_class_subclasses[i][0]; *p1 != LIM_REG_CLASSES; p1++)
-	  {
-	    if (*p1 != j)
-	      cost = MAX (cost, REGISTER_MOVE_COST (*p1, j));
-
-	    for (p2 = &reg_class_subclasses[j][0];
-		 *p2 != LIM_REG_CLASSES; p2++)
-	      if (*p1 != *p2)
-		cost = MAX (cost, REGISTER_MOVE_COST (*p1, *p2));
-	  }
-
-	move_cost[i][j] = cost;
-
-	if (reg_class_subset_p (i, j))
-	  cost = 0;
-
-	may_move_cost[i][j] = cost;
-      }
-
   /* Do any additional initialization regsets may need */
   INIT_ONCE_REG_SET ();
 }
@@ -358,7 +326,7 @@ init_reg_sets ()
 static void
 init_reg_sets_1 ()
 {
-  register int i;
+  register int i, j;
 
   /* This macro allows the fixed or call-used registers
      to depend on target flags.  */
@@ -391,6 +359,38 @@ init_reg_sets_1 ()
       if (CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (i)))
 	SET_HARD_REG_BIT (losing_caller_save_reg_set, i);
     }
+
+  /* Initialize the move cost table.  Find every subset of each class
+     and take the maximum cost of moving any subset to any other.  */
+
+  for (i = 0; i < N_REG_CLASSES; i++)
+    for (j = 0; j < N_REG_CLASSES; j++)
+      {
+	int cost = i == j ? 2 : REGISTER_MOVE_COST (i, j);
+	enum reg_class *p1, *p2;
+
+	for (p2 = &reg_class_subclasses[j][0]; *p2 != LIM_REG_CLASSES; p2++)
+	  if (*p2 != i)
+	    cost = MAX (cost, REGISTER_MOVE_COST (i, *p2));
+
+	for (p1 = &reg_class_subclasses[i][0]; *p1 != LIM_REG_CLASSES; p1++)
+	  {
+	    if (*p1 != j)
+	      cost = MAX (cost, REGISTER_MOVE_COST (*p1, j));
+
+	    for (p2 = &reg_class_subclasses[j][0];
+		 *p2 != LIM_REG_CLASSES; p2++)
+	      if (*p1 != *p2)
+		cost = MAX (cost, REGISTER_MOVE_COST (*p1, *p2));
+	  }
+
+	move_cost[i][j] = cost;
+
+	if (reg_class_subset_p (i, j))
+	  cost = 0;
+
+	may_move_cost[i][j] = cost;
+      }
 }
 
 /* Compute the table of register modes.
