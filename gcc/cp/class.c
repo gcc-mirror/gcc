@@ -123,12 +123,16 @@ static int count_fields PROTO((tree));
 static int add_fields_to_vec PROTO((tree, tree, int));
 static void check_bitfield_decl PROTO((tree));
 static void check_field_decl PROTO((tree, tree, int *, int *, int *, int *));
-static tree* check_field_decls PROTO((tree, tree *, int *, int *, int *, 
-				      int *));
+static void check_field_decls PROTO((tree, tree *, int *, int *, int *, 
+				     int *));
+static int avoid_overlap PROTO((tree, tree, int *));
+static tree build_base_fields PROTO((tree, int *));
 static tree build_vbase_pointer_fields PROTO((tree, int *));
 static tree build_vtbl_or_vbase_field PROTO((tree, tree, tree, tree, int *));
 static void check_methods PROTO((tree));
 static void remove_zero_width_bit_fields PROTO((tree));
+static void check_bases PROTO((tree, int *, int *, int *));
+static void check_bases_and_members PROTO((tree, int *));
 
 /* Variables shared between class.c and call.c.  */
 
@@ -1486,10 +1490,114 @@ struct base_info
   tree vfield;
   tree vfields;
   tree rtti;
-  char cant_have_default_ctor;
-  char cant_have_const_ctor;
-  char no_const_asn_ref;
 };
+
+/* Run through the base clases of T, updating
+   CANT_HAVE_DEFAULT_CTOR_P, CANT_HAVE_CONST_CTOR_P, and
+   NO_CONST_ASN_REF_P.  Also set flag bits in T based on properties of
+   the bases.  */
+
+static void
+check_bases (t, cant_have_default_ctor_p, cant_have_const_ctor_p,
+	     no_const_asn_ref_p)
+     tree t;
+     int *cant_have_default_ctor_p;
+     int *cant_have_const_ctor_p;
+     int *no_const_asn_ref_p;
+{
+  int n_baseclasses;
+  int i;
+  tree binfos;
+
+  binfos = TYPE_BINFO_BASETYPES (t);
+  n_baseclasses = CLASSTYPE_N_BASECLASSES (t);
+
+  /* An aggregate cannot have baseclasses.  */
+  CLASSTYPE_NON_AGGREGATE (t) |= (n_baseclasses != 0);
+
+  for (i = 0; i < n_baseclasses; ++i) 
+    {
+      tree base_binfo;
+      tree basetype;
+
+      /* Figure out what base we're looking at.  */
+      base_binfo = TREE_VEC_ELT (binfos, i);
+      basetype = TREE_TYPE (base_binfo);
+
+      /* If the type of basetype is incomplete, then we already
+	 complained about that fact (and we should have fixed it up as
+	 well).  */
+      if (TYPE_SIZE (basetype) == 0)
+	{
+	  int j;
+	  /* The base type is of incomplete type.  It is
+	     probably best to pretend that it does not
+	     exist.  */
+	  if (i == n_baseclasses-1)
+	    TREE_VEC_ELT (binfos, i) = NULL_TREE;
+	  TREE_VEC_LENGTH (binfos) -= 1;
+	  n_baseclasses -= 1;
+	  for (j = i; j+1 < n_baseclasses; j++)
+	    TREE_VEC_ELT (binfos, j) = TREE_VEC_ELT (binfos, j+1);
+	  continue;
+	}
+
+      /* Effective C++ rule 14.  We only need to check TYPE_VIRTUAL_P
+	 here because the case of virtual functions but non-virtual
+	 dtor is handled in finish_struct_1.  */
+      if (warn_ecpp && ! TYPE_VIRTUAL_P (basetype)
+	  && TYPE_HAS_DESTRUCTOR (basetype))
+	cp_warning ("base class `%#T' has a non-virtual destructor",
+		    basetype);
+
+      /* If the base class doesn't have copy constructors or
+	 assignment operators that take const references, then the
+	 derived class cannot have such a member automatically
+	 generated.  */
+      if (! TYPE_HAS_CONST_INIT_REF (basetype))
+	*cant_have_const_ctor_p = 1;
+      if (TYPE_HAS_ASSIGN_REF (basetype)
+	  && !TYPE_HAS_CONST_ASSIGN_REF (basetype))
+	*no_const_asn_ref_p = 1;
+      /* Similarly, if the base class doesn't have a default
+	 constructor, then the derived class won't have an
+	 automatically generated default constructor.  */
+      if (TYPE_HAS_CONSTRUCTOR (basetype)
+	  && ! TYPE_HAS_DEFAULT_CONSTRUCTOR (basetype))
+	{
+	  *cant_have_default_ctor_p = 1;
+	  if (! TYPE_HAS_CONSTRUCTOR (t))
+	    {
+	      cp_pedwarn ("base `%T' with only non-default constructor",
+			  basetype);
+	      cp_pedwarn ("in class without a constructor");
+	    }
+	}
+
+      /* A lot of properties from the bases also apply to the derived
+	 class.  */
+      TYPE_NEEDS_CONSTRUCTING (t) |= TYPE_NEEDS_CONSTRUCTING (basetype);
+      TYPE_NEEDS_DESTRUCTOR (t) |= TYPE_NEEDS_DESTRUCTOR (basetype);
+      TYPE_HAS_COMPLEX_ASSIGN_REF (t) 
+	|= TYPE_HAS_COMPLEX_ASSIGN_REF (basetype);
+      TYPE_HAS_COMPLEX_INIT_REF (t) |= TYPE_HAS_COMPLEX_INIT_REF (basetype);
+      TYPE_OVERLOADS_CALL_EXPR (t) |= TYPE_OVERLOADS_CALL_EXPR (basetype);
+      TYPE_OVERLOADS_ARRAY_REF (t) |= TYPE_OVERLOADS_ARRAY_REF (basetype);
+      TYPE_OVERLOADS_ARROW (t) |= TYPE_OVERLOADS_ARROW (basetype);
+
+      /* Derived classes can implicitly become COMified if their bases
+	 are COM.  */
+      if (CLASSTYPE_COM_INTERFACE (basetype))
+	CLASSTYPE_COM_INTERFACE (t) = 1;
+      else if (i == 0 && CLASSTYPE_COM_INTERFACE (t))
+	{
+	  cp_error 
+	    ("COM interface type `%T' with non-COM leftmost base class `%T'",
+	     t, basetype);
+	  CLASSTYPE_COM_INTERFACE (t) = 0;
+	}
+    }
+}
 
 /* Record information about type T derived from its base classes.
    Store most of that information in T itself, and place the
@@ -1513,7 +1621,7 @@ finish_base_struct (t, b)
      struct base_info *b;
 {
   tree binfos = TYPE_BINFO_BASETYPES (t);
-  int i, n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+  int i, n_baseclasses = CLASSTYPE_N_BASECLASSES (t);
   int first_vfn_base_index = -1;
   bzero ((char *) b, sizeof (struct base_info));
 
@@ -1521,70 +1629,6 @@ finish_base_struct (t, b)
     {
       tree base_binfo = TREE_VEC_ELT (binfos, i);
       tree basetype = BINFO_TYPE (base_binfo);
-
-      /* Effective C++ rule 14.  We only need to check TYPE_VIRTUAL_P
-	 here because the case of virtual functions but non-virtual
-	 dtor is handled in finish_struct_1.  */
-      if (warn_ecpp && ! TYPE_VIRTUAL_P (basetype)
-	  && TYPE_HAS_DESTRUCTOR (basetype))
-	cp_warning ("base class `%#T' has a non-virtual destructor", basetype);
-
-      /* If the type of basetype is incomplete, then
-	 we already complained about that fact
-	 (and we should have fixed it up as well).  */
-      if (TYPE_SIZE (basetype) == 0)
-	{
-	  int j;
-	  /* The base type is of incomplete type.  It is
-	     probably best to pretend that it does not
-	     exist.  */
-	  if (i == n_baseclasses-1)
-	    TREE_VEC_ELT (binfos, i) = NULL_TREE;
-	  TREE_VEC_LENGTH (binfos) -= 1;
-	  n_baseclasses -= 1;
-	  for (j = i; j+1 < n_baseclasses; j++)
-	    TREE_VEC_ELT (binfos, j) = TREE_VEC_ELT (binfos, j+1);
-	}
-
-      if (! TYPE_HAS_CONST_INIT_REF (basetype))
-	b->cant_have_const_ctor = 1;
-
-      if (TYPE_HAS_CONSTRUCTOR (basetype)
-	  && ! TYPE_HAS_DEFAULT_CONSTRUCTOR (basetype))
-	{
-	  b->cant_have_default_ctor = 1;
-	  if (! TYPE_HAS_CONSTRUCTOR (t))
-	    {
-	      cp_pedwarn ("base `%T' with only non-default constructor",
-			  basetype);
-	      cp_pedwarn ("in class without a constructor");
-	    }
-	}
-
-      if (TYPE_HAS_ASSIGN_REF (basetype)
-	  && !TYPE_HAS_CONST_ASSIGN_REF (basetype))
-	b->no_const_asn_ref = 1;
-
-      TYPE_NEEDS_CONSTRUCTING (t) |= TYPE_NEEDS_CONSTRUCTING (basetype);
-      TYPE_NEEDS_DESTRUCTOR (t) |= TYPE_NEEDS_DESTRUCTOR (basetype);
-      TYPE_HAS_COMPLEX_ASSIGN_REF (t) |= TYPE_HAS_COMPLEX_ASSIGN_REF (basetype);
-      TYPE_HAS_COMPLEX_INIT_REF (t) |= TYPE_HAS_COMPLEX_INIT_REF (basetype);
-
-      TYPE_OVERLOADS_CALL_EXPR (t) |= TYPE_OVERLOADS_CALL_EXPR (basetype);
-      TYPE_OVERLOADS_ARRAY_REF (t) |= TYPE_OVERLOADS_ARRAY_REF (basetype);
-      TYPE_OVERLOADS_ARROW (t) |= TYPE_OVERLOADS_ARROW (basetype);
-
-      if (CLASSTYPE_COM_INTERFACE (basetype))
-	{
-	  CLASSTYPE_COM_INTERFACE (t) = 1;
-	}
-      else if (CLASSTYPE_COM_INTERFACE (t) && i == 0)
-	{
-	  cp_error 
-	    ("COM interface type `%T' with non-COM leftmost base class `%T'",
-	     t, basetype);
-	  CLASSTYPE_COM_INTERFACE (t) = 0;
-	}
 
       if (TYPE_VIRTUAL_P (basetype))
 	{
@@ -2009,8 +2053,8 @@ finish_struct_methods (t)
       return;
     }
 
-  my_friendly_assert (method_vec != NULL_TREE, 19991215);
   method_vec = CLASSTYPE_METHOD_VEC (t);
+  my_friendly_assert (method_vec != NULL_TREE, 19991215);
   len = TREE_VEC_LENGTH (method_vec);
 
   /* First fill in entry 0 with the constructors, entry 1 with destructors,
@@ -3387,7 +3431,7 @@ check_field_decl (field, t, cant_have_const_ctor,
    Returns a pointer to the end of the TYPE_FIELDs chain; additional
    fields can be added by adding to this chain.  */
 
-static tree*
+static void
 check_field_decls (t, access_decls, empty_p, 
 		   cant_have_default_ctor_p, cant_have_const_ctor_p,
 		   no_const_asn_ref_p)
@@ -3606,12 +3650,13 @@ check_field_decls (t, access_decls, empty_p,
 	cp_warning ("  but does not override `operator=(const %T&)'", t);
     }
 
+
+  /* Check anonymous struct/anonymous union fields.  */
+  finish_struct_anon (t);
+
   /* We've built up the list of access declarations in reverse order.
      Fix that now.  */
   *access_decls = nreverse (*access_decls);
-
-  /* Return the last field.  */
-  return field;
 }
 
 /* Return a FIELD_DECL for a pointer-to-virtual-table or
@@ -3662,7 +3707,7 @@ build_vbase_pointer_fields (rec, empty_p)
      base classes.  */
   tree vbase_decls = NULL_TREE;
   tree binfos = TYPE_BINFO_BASETYPES (rec);
-  int n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+  int n_baseclasses = CLASSTYPE_N_BASECLASSES (rec);
   tree decl;
   int i;
 
@@ -3723,6 +3768,129 @@ build_vbase_pointer_fields (rec, empty_p)
     }
 
   return vbase_decls;
+}
+
+/* If the empty base field in DECL overlaps with a base of the same type in
+   NEWDECL, which is either another base field or the first data field of
+   the class, pad the base just before NEWDECL and return 1.  Otherwise,
+   return 0.  */
+
+static int
+avoid_overlap (decl, newdecl, empty_p)
+     tree decl, newdecl;
+     int *empty_p;
+{
+  tree field;
+
+  if (newdecl == NULL_TREE
+      || ! types_overlap_p (TREE_TYPE (decl), TREE_TYPE (newdecl)))
+    return 0;
+
+  for (field = decl; TREE_CHAIN (field) && TREE_CHAIN (field) != newdecl;
+       field = TREE_CHAIN (field))
+    ;
+
+  DECL_SIZE (field) = integer_one_node;
+  /* The containing class cannot be empty; this field takes up space.  */
+  *empty_p = 0;
+
+  return 1;
+}
+
+/* Returns a list of fields to stand in for the base class subobjects
+   of REC.  These fields are later removed by layout_basetypes.  */
+
+static tree
+build_base_fields (rec, empty_p)
+     tree rec;
+     int *empty_p;
+{
+  /* Chain to hold all the new FIELD_DECLs which stand in for base class
+     subobjects.  */
+  tree base_decls = NULL_TREE;
+  tree binfos = TYPE_BINFO_BASETYPES (rec);
+  int n_baseclasses = CLASSTYPE_N_BASECLASSES (rec);
+  tree decl, nextdecl;
+  int i, saw_empty = 0;
+  unsigned int base_align = 0;
+
+  for (i = 0; i < n_baseclasses; ++i)
+    {
+      register tree base_binfo = TREE_VEC_ELT (binfos, i);
+      register tree basetype = BINFO_TYPE (base_binfo);
+
+      if (TYPE_SIZE (basetype) == 0)
+	/* This error is now reported in xref_tag, thus giving better
+	   location information.  */
+	continue;
+
+      if (TREE_VIA_VIRTUAL (base_binfo))
+	continue;
+
+      decl = build_lang_decl (FIELD_DECL, NULL_TREE, basetype);
+      DECL_ARTIFICIAL (decl) = 1;
+      DECL_FIELD_CONTEXT (decl) = DECL_CLASS_CONTEXT (decl) = rec;
+      DECL_SIZE (decl) = CLASSTYPE_SIZE (basetype);
+      DECL_ALIGN (decl) = CLASSTYPE_ALIGN (basetype);
+      TREE_CHAIN (decl) = base_decls;
+      base_decls = decl;
+
+      if (flag_new_abi && DECL_SIZE (decl) == integer_zero_node)
+	saw_empty = 1;
+      else
+	{
+	  /* The containing class is non-empty because it has a
+	     non-empty base class.  */
+	  *empty_p = 0;
+
+	  if (! flag_new_abi)
+	    {
+	      /* Brain damage for backwards compatibility.  For no
+		 good reason, the old layout_basetypes made every base
+		 at least as large as the alignment for the bases up
+		 to that point, gratuitously wasting space.  So we do
+		 the same thing here.  */
+	      base_align = MAX (base_align, DECL_ALIGN (decl));
+	      DECL_SIZE (decl)
+		= size_int (MAX (TREE_INT_CST_LOW (DECL_SIZE (decl)),
+				 (int) base_align));
+	    }
+	}
+    }
+
+  /* Reverse the list of fields so we allocate the bases in the proper
+     order.  */
+  base_decls = nreverse (base_decls);
+
+  /* In the presence of empty base classes, we run the risk of allocating
+     two objects of the same class on top of one another.  Avoid that.  */
+  if (flag_new_abi && saw_empty)
+    for (decl = base_decls; decl; decl = TREE_CHAIN (decl))
+      {
+	if (DECL_SIZE (decl) == integer_zero_node)
+	  {
+	    /* First step through the following bases until we find
+	       an overlap or a non-empty base.  */
+	    for (nextdecl = TREE_CHAIN (decl); nextdecl;
+		 nextdecl = TREE_CHAIN (nextdecl))
+	      {
+		if (avoid_overlap (decl, nextdecl, empty_p)
+		    || DECL_SIZE (nextdecl) != integer_zero_node)
+		  goto nextbase;
+	      }
+
+	    /* If we're still looking, also check against the first
+	       field.  */
+	    for (nextdecl = TYPE_FIELDS (rec);
+		 nextdecl && TREE_CODE (nextdecl) != FIELD_DECL;
+		 nextdecl = TREE_CHAIN (nextdecl))
+	      /* keep looking */;
+	    avoid_overlap (decl, nextdecl, empty_p);
+	  }
+      nextbase:;
+      }
+
+  return base_decls;
 }
 
 /* Go through the TYPE_METHODS of T issuing any appropriate
@@ -3800,6 +3968,80 @@ remove_zero_width_bit_fields (t)
     }
 }
 
+/* Check the validity of the bases and members declared in T.  Add any
+   implicitly-generated functions (like copy-constructors and
+   assignment operators).  Compute various flag bits (like
+   CLASSTYPE_NON_POD_T) for T.  This routine works purely at the C++
+   level: i.e., independently of the ABI in use.  */
+
+static void
+check_bases_and_members (t, empty_p)
+     tree t;
+     int *empty_p;
+{
+  /* Nonzero if we are not allowed to generate a default constructor
+     for this case.  */
+  int cant_have_default_ctor;
+  /* Nonzero if the implicitly generated copy constructor should take
+     a non-const reference argument.  */
+  int cant_have_const_ctor;
+  /* Nonzero if the the implicitly generated assignment operator
+     should take a non-const reference argument.  */
+  int no_const_asn_ref;
+  tree access_decls;
+
+  /* By default, we use const reference arguments and generate default
+     constructors.  */
+  cant_have_default_ctor = 0;
+  cant_have_const_ctor = 0;
+  no_const_asn_ref = 0;
+
+  /* Check all the base-classes. */
+  check_bases (t, &cant_have_default_ctor, &cant_have_const_ctor,
+	       &no_const_asn_ref);
+
+  /* Check all the data member declarations.  */
+  check_field_decls (t, &access_decls, empty_p,
+		     &cant_have_default_ctor,
+		     &cant_have_const_ctor,
+		     &no_const_asn_ref);
+
+  /* Check all the method declarations.  */
+  check_methods (t);
+
+  /* Do some bookkeeping that will guide the generation of implicitly
+     declared member functions.  */
+  TYPE_HAS_COMPLEX_INIT_REF (t)
+    |= (TYPE_HAS_INIT_REF (t) || TYPE_USES_VIRTUAL_BASECLASSES (t));
+  TYPE_NEEDS_CONSTRUCTING (t)
+    |= (TYPE_HAS_CONSTRUCTOR (t) || TYPE_USES_VIRTUAL_BASECLASSES (t));
+  CLASSTYPE_NON_AGGREGATE (t) |= TYPE_HAS_CONSTRUCTOR (t);
+  CLASSTYPE_NON_POD_P (t)
+    |= (CLASSTYPE_NON_AGGREGATE (t) || TYPE_HAS_DESTRUCTOR (t) 
+	|| TYPE_HAS_ASSIGN_REF (t));
+  TYPE_HAS_REAL_ASSIGN_REF (t) |= TYPE_HAS_ASSIGN_REF (t);
+  TYPE_HAS_COMPLEX_ASSIGN_REF (t)
+    |= TYPE_HAS_ASSIGN_REF (t) || TYPE_USES_VIRTUAL_BASECLASSES (t);
+
+  /* Synthesize any needed methods.  Note that methods will be synthesized
+     for anonymous unions; grok_x_components undoes that.  */
+  add_implicitly_declared_members (t, cant_have_default_ctor,
+				   cant_have_const_ctor,
+				   no_const_asn_ref);
+
+  /* Build and sort the CLASSTYPE_METHOD_VEC.  */
+  finish_struct_methods (t);
+
+  /* Process the access-declarations.  We wait until now to do this
+     because handle_using_decls requires that the CLASSTYPE_METHOD_VEC
+     be set up correctly.  */
+  while (access_decls)
+    {
+      handle_using_decl (TREE_VALUE (access_decls), t);
+      access_decls = TREE_CHAIN (access_decls);
+    }
+}
+
 /* Create a RECORD_TYPE or UNION_TYPE node for a C struct or union declaration
    (or C++ class declaration).
 
@@ -3831,19 +4073,13 @@ void
 finish_struct_1 (t)
      tree t;
 {
-  tree fields;
   tree x;
-  tree *next_field;
   int has_virtual;
   int max_has_virtual;
   tree pending_virtuals = NULL_TREE;
   tree pending_hard_virtuals = NULL_TREE;
   tree vfield;
   tree vfields;
-  tree virtual_dtor;
-  int cant_have_default_ctor;
-  int cant_have_const_ctor;
-  int no_const_asn_ref;
   int n_fields = 0;
 
   /* The index of the first base class which has virtual
@@ -3851,8 +4087,6 @@ finish_struct_1 (t)
   int first_vfn_base_index;
 
   int n_baseclasses;
-  tree access_decls;
-  int aggregate = 1;
   int empty = 1;
   tree inline_friends;
 
@@ -3874,7 +4108,24 @@ finish_struct_1 (t)
   TYPE_SIZE (t) = NULL_TREE;
   CLASSTYPE_GOT_SEMICOLON (t) = 0;
 
+  first_vfn_base_index = -1;
+  has_virtual = 0;
+  max_has_virtual = 0;
+  vfield = NULL_TREE;
+  vfields = NULL_TREE;
+  CLASSTYPE_RTTI (t) = NULL_TREE;
   n_baseclasses = CLASSTYPE_N_BASECLASSES (t);
+
+  /* Do end-of-class semantic processing: checking the validity of the
+     bases and members and adding implicitly generated methods.  */
+  check_bases_and_members (t, &empty);
+
+  /* Add pointers to all of our virtual base-classes.  */
+  TYPE_FIELDS (t) = chainon (build_vbase_pointer_fields (t, &empty),
+			     TYPE_FIELDS (t));
+  /* Build FIELD_DECLs for all of the non-virtual base-types.  */
+  TYPE_FIELDS (t) = chainon (build_base_fields (t, &empty), 
+			     TYPE_FIELDS (t));
 
   if (n_baseclasses > 0)
     {
@@ -3890,73 +4141,7 @@ finish_struct_1 (t)
       vfields = base_info.vfields;
       CLASSTYPE_VFIELDS (t) = vfields;
       CLASSTYPE_RTTI (t) = base_info.rtti;
-      cant_have_default_ctor = base_info.cant_have_default_ctor;
-      cant_have_const_ctor = base_info.cant_have_const_ctor;
-      no_const_asn_ref = base_info.no_const_asn_ref;
-      aggregate = 0;
     }
-  else
-    {
-      first_vfn_base_index = -1;
-      has_virtual = 0;
-      max_has_virtual = 0;
-      vfield = NULL_TREE;
-      vfields = NULL_TREE;
-      CLASSTYPE_RTTI (t) = NULL_TREE;
-      cant_have_default_ctor = 0;
-      cant_have_const_ctor = 0;
-      no_const_asn_ref = 0;
-    }
-
-  /* Check all the data member declarations.  */
-  next_field = check_field_decls (t, &access_decls, &empty,
-				  &cant_have_default_ctor,
-				  &cant_have_const_ctor,
-				  &no_const_asn_ref);
-
-  /* Add pointers to all of our virtual base-classes.  */
-  if (n_baseclasses)
-    TYPE_FIELDS (t) = chainon (build_vbase_pointer_fields (t, &empty),
-			       TYPE_FIELDS (t));
-
-  /* Build FIELD_DECLs for all of the non-virtual base-types.  */
-  fields = TYPE_FIELDS (t);
-  if (n_baseclasses)
-    {
-      TYPE_FIELDS (t) = chainon (build_base_fields (t), TYPE_FIELDS (t));
-
-      /* If any base is non-empty, then we are non-empty.  */
-      for (x = TYPE_FIELDS (t); empty && x != fields; x = TREE_CHAIN (x))
-	if (DECL_SIZE (x) != integer_zero_node)
-	  empty = 0;
-
-      fields = TYPE_FIELDS (t);
-    }
-
-  /* Check all the method declarations.  */
-  check_methods (t);
-
-  /* Do some bookkeeping that will guide the generation of implicitly
-     declared member functions.  */
-  TYPE_HAS_COMPLEX_INIT_REF (t)
-    |= (TYPE_HAS_INIT_REF (t) || TYPE_USES_VIRTUAL_BASECLASSES (t));
-  TYPE_NEEDS_CONSTRUCTING (t)
-    |= (TYPE_HAS_CONSTRUCTOR (t) || TYPE_USES_VIRTUAL_BASECLASSES (t));
-  CLASSTYPE_NON_AGGREGATE (t)
-      = ! aggregate || TYPE_HAS_CONSTRUCTOR (t);
-  CLASSTYPE_NON_POD_P (t)
-    |= (CLASSTYPE_NON_AGGREGATE (t) || TYPE_HAS_DESTRUCTOR (t) 
-	|| TYPE_HAS_ASSIGN_REF (t));
-  TYPE_HAS_REAL_ASSIGN_REF (t) |= TYPE_HAS_ASSIGN_REF (t);
-  TYPE_HAS_COMPLEX_ASSIGN_REF (t)
-    |= TYPE_HAS_ASSIGN_REF (t) || TYPE_USES_VIRTUAL_BASECLASSES (t);
-
-  /* Synthesize any needed methods.  Note that methods will be synthesized
-     for anonymous unions; grok_x_components undoes that.  */
-  virtual_dtor 
-    = add_implicitly_declared_members (t, cant_have_default_ctor,
-				       cant_have_const_ctor,
-				       no_const_asn_ref);
 
   /* Loop over the virtual functions, adding them to our various
      vtables.  */
@@ -3964,16 +4149,6 @@ finish_struct_1 (t)
     if (DECL_VINDEX (x))
       add_virtual_function (&pending_virtuals, &pending_hard_virtuals,
 			    &has_virtual, x, t);
-
-  /* Build and sort the CLASSTYPE_METHOD_VEC.  */
-  finish_struct_methods (t);
-
-  /* Process the access-declarations.  */
-  while (access_decls)
-    {
-      handle_using_decl (TREE_VALUE (access_decls), t);
-      access_decls = TREE_CHAIN (access_decls);
-    }
 
   if (vfield == NULL_TREE && has_virtual)
     {
@@ -4002,7 +4177,7 @@ finish_struct_1 (t)
 					  t,
 					  &empty);
       TYPE_VFIELD (t) = vfield;
-      *next_field = vfield;
+      TYPE_FIELDS (t) = chainon (TYPE_FIELDS (t), vfield);
       vfields = chainon (vfields, build_tree_list (NULL_TREE, t));
     }
 
@@ -4045,8 +4220,6 @@ finish_struct_1 (t)
   else
     CLASSTYPE_SIZE (t) = TYPE_SIZE (t);
   CLASSTYPE_ALIGN (t) = TYPE_ALIGN (t);
-
-  finish_struct_anon (t);
 
   /* Set the TYPE_DECL for this type to contain the right
      value for DECL_OFFSET, so that we can use it as part
