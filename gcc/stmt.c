@@ -2428,7 +2428,7 @@ expand_return (retval)
     {
       /* No cleanups or no hard reg used;
 	 calculate value into hard return reg.  */
-      expand_expr (retval, NULL_RTX, VOIDmode, 0);
+      expand_expr (retval, const0_rtx, VOIDmode, 0);
       emit_queue ();
       free_temp_slots ();
       expand_value_return (DECL_RTL (DECL_RESULT (current_function_decl)));
