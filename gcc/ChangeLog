@@ -1,3 +1,7 @@
+Tue Dec 21 07:06:36 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* pa.h (FUNCTION_ARG_BOUNDARY): Never return 0.
+
 1999-12-21  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
  	* md.texi: Add c4x constraints documentation.
