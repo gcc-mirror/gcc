@@ -1,3 +1,7 @@
+2003-06-18  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gcc_release: Do not update gcc_latest_snapshot tag any longer.
+
 2003-06-02  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_release (build_diffs): Add diagnostics in case we cannot
