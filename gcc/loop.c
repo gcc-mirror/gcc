@@ -1446,10 +1446,13 @@ combine_movables (movables, regs)
 
   /* Regs that are set more than once are not allowed to match
      or be matched.  I'm no longer sure why not.  */
+  /* Only pseudo registers are allowed to match or be matched,
+     since move_movables does not validate the change.  */
   /* Perhaps testing m->consec_sets would be more appropriate here?  */
 
   for (m = movables->head; m; m = m->next)
     if (m->match == 0 && regs->array[m->regno].n_times_set == 1
+	&& m->regno >= FIRST_PSEUDO_REGISTER
 	&& !m->partial)
       {
 	struct movable *m1;
@@ -1461,11 +1464,9 @@ combine_movables (movables, regs)
 	/* We want later insns to match the first one.  Don't make the first
 	   one match any later ones.  So start this loop at m->next.  */
 	for (m1 = m->next; m1; m1 = m1->next)
-	  /* ??? HACK!  move_movables does not verify that the replacement
-	     is valid, which can have disasterous effects with hard regs
-	     and match_dup.  Turn combination off for now.  */
-	  if (0 && m != m1 && m1->match == 0
+	  if (m != m1 && m1->match == 0
 	      && regs->array[m1->regno].n_times_set == 1
+	      && m1->regno >= FIRST_PSEUDO_REGISTER
 	      /* A reg used outside the loop mustn't be eliminated.  */
 	      && !m1->global
 	      /* A reg used for zero-extending mustn't be eliminated.  */
