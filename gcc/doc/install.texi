@@ -1214,34 +1214,33 @@ Finally, you can run the testsuite (which may take a long time):
      cd @var{objdir}; make -k check
 @end example
 
-The testing process will try to test as many components in the GCC
-distribution as possible, including the C, C++, Objective-C and Fortran
-compilers as well as the C++ and Java runtime libraries.
-
-While running the testsuite, DejaGnu might emit messages resembling
+This will test various components of GCC, such as compiler
+front ends and runtime libraries.  While running the testsuite, DejaGnu
+might emit some harmless messages resembling
 @samp{WARNING: Couldn't find the global config file.} or 
-@samp{WARNING: Couldn't find tool init file}.
-These messages are harmless and do not affect the validity of the tests.
+@samp{WARNING: Couldn't find tool init file} that can be ignored.
 
 @section How can I run the test suite on selected tests?
 
-As a first possibility to cut down the number of tests that are run it is
-possible to use @samp{make check-gcc} or @samp{make check-g++}
-in the @file{gcc} subdirectory of the object directory.  To further cut down the
-tests the following is possible:
+In order to run sets of tests selectively, there are targets
+@samp{make check-gcc} and @samp{make check-g++}
+in the @file{gcc} subdirectory of the object directory.  You can also
+just run @samp{make check} in a subdirectory of the object directory.
+
+
+A more selective way to just run all @command{gcc} execute tests in the
+testsuite is to use
 
 @example
     make check-gcc RUNTESTFLAGS="execute.exp @var{other-options}"
 @end example
 
-This will run all @command{gcc} execute tests in the testsuite.
+Likewise, in order to run only the @command{g++} ``old-deja'' tests in
+the testsuite with filenames matching @samp{9805*}, you would use
 
 @example
     make check-g++ RUNTESTFLAGS="old-deja.exp=9805* @var{other-options}"
 @end example
-
-This will run the @command{g++} ``old-deja'' tests in the testsuite where the filename
-matches @samp{9805*}.
 
 The @file{*.exp} files are located in the testsuite directories of the GCC
 source, the most important ones being @file{compile.exp},
@@ -1250,9 +1249,6 @@ To get a list of the possible @file{*.exp} files, pipe the
 output of @samp{make check} into a file and look at the
 @samp{Running @dots{}  .exp} lines.
 
-To run only the tests for a library, run @samp{make check} from the
-the library's testsuite in a subdirectory of the object directory:
-@file{libstdc++-v3/testsuite} or @file{libcgj/testsuite}.
 
 @section Additional testing for Java Class Libraries
 
@@ -1270,11 +1266,11 @@ the libjava testsuite at @file{libjava/testsuite/libjava.jacks/jacks}.
 
 @section How to interpret test results
 
-After the testsuite has run you'll find various @file{*.sum} and @file{*.log}
+The result of running the testsuite are various @file{*.sum} and @file{*.log}
 files in the testsuite subdirectories.  The @file{*.log} files contain a
 detailed log of the compiler invocations and the corresponding
-results, the @file{*.sum} files summarize the results.  These summaries list
-all the tests that have been run with a corresponding status code:
+results, the @file{*.sum} files summarize the results.  These summaries 
+contain status codes for all tests: 
 
 @itemize @bullet
 @item

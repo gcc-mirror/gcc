@@ -1,3 +1,8 @@
+2003-02-09  Wolfgang Bangerth  <bangerth@ticam.utexas.edu>
+
+	* doc/install.texi: Squeeze and streamline section on
+	testing and regression checking.
+
 2003-02-07  Richard Henderson  <rth@redhat.com>
 
         PR 9226
