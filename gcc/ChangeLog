@@ -1,3 +1,9 @@
+2004-06-02  Steven Bosscher  <stevenb@suse.de>
+
+	* i386.c (ix86_adjust_cost): Don't increase the cost for
+	load+operation for PROCESSOR_PENTIUMPRO, it is already
+	modelled in the DFA description
+
 2004-06-01  Jerry Quinn  <jlquinn@optonline.net>
 
 	* Makefile.in (EXPR_H): Add insn-config.h, function.h,
@@ -45,7 +51,7 @@
 	and rewrite for __builtin_offsetof.
 
 2004-06-01  Peter Barada  <peter@the-baradas.com>
-            Peter Jakubek  <peter@laseranimation.com>
+	    Peter Jakubek  <peter@laseranimation.com>
 
 	* config/m68k/m68k.c(m68k_output_mi_thunk):  For ColdFire, use %d0 as
 	a scratch to perform an add to memory.
@@ -72,8 +78,8 @@
 
 2004-06-01  Jeff Law  <law@redhat.com>
 
-        * stmt.c (expand_decl): Be more selective about calling
-        mark_reg_pointer.
+	* stmt.c (expand_decl): Be more selective about calling
+	mark_reg_pointer.
 
 2004-06-01  Nicola Pero  <nicola@brainstorm.co.uk>
 

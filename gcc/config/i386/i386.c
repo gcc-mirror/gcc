@@ -12261,14 +12261,6 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 
     case PROCESSOR_PENTIUMPRO:
       memory = get_attr_memory (insn);
-      dep_memory = get_attr_memory (dep_insn);
-
-      /* Since we can't represent delayed latencies of load+operation,
-	 increase the cost here for non-imov insns.  */
-      if (dep_insn_type != TYPE_IMOV
-          && dep_insn_type != TYPE_FMOV
-          && (dep_memory == MEMORY_LOAD || dep_memory == MEMORY_BOTH))
-	cost += 1;
 
       /* INT->FP conversion is expensive.  */
       if (get_attr_fp_int_src (dep_insn))
