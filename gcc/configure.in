@@ -3344,6 +3344,7 @@ changequote([,])dnl
 			xcommon | xpower | xpower2 | xpowerpc | xrios \
 			  | xrios1 | xrios2 | xrsc | xrsc1 \
 			  | x601 | x602 | x603 | x603e | x604 | x604e | x620 \
+			  | xec603e | x740 | x750 | x401 \
 			  | x403 | x505 | x801 | x821 | x823 | x860)
 				target_cpu_default2="\"$with_cpu\""
 				;;
