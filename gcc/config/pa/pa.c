@@ -52,6 +52,11 @@ static int gr_saved, fr_saved;
 
 static rtx find_addr_reg ();
 
+/* Keep track of the number of bytes we have output in the CODE subspaces
+   during this compilation so we'll know when to emit inline long-calls.  */
+
+unsigned int total_code_bytes;
+
 /* Return non-zero only if OP is a register of mode MODE,
    or CONST0_RTX.  */
 int
@@ -72,7 +77,7 @@ call_operand_address (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  return (CONSTANT_P (op) && ! TARGET_LONG_CALLS);
+  return (CONSTANT_P (op) && ! TARGET_PORTABLE_RUNTIME);
 }
 
 /* Return 1 if X contains a symbolic expression.  We know these
@@ -2044,6 +2049,19 @@ output_function_prologue (file, size)
   if (profile_flag)
     ASM_GENERATE_INTERNAL_LABEL (hp_profile_label_name, "LP",
 				 hp_profile_labelno);
+
+  if (insn_addresses)
+    {
+      unsigned int old_total = total_code_bytes;
+
+      total_code_bytes += insn_addresses[INSN_UID (get_last_insn())];
+      total_code_bytes += FUNCTION_BOUNDARY /BITS_PER_UNIT;
+
+      /* Be prepared to handle overflows.  */
+      total_code_bytes = old_total > total_code_bytes ? -1 : total_code_bytes;
+    }
+  else
+    total_code_bytes = -1;
 }
 
 void
@@ -3760,9 +3778,9 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
    RETURN_POINTER is the register which will hold the return address.
    %r2 for most calls, %r31 for millicode calls. 
 
-   When TARGET_LONG_CALLS is true, output_call is only called for
-   millicode calls.  In addition, no delay slots are available when
-   TARGET_LONG_CALLS is true.  */
+   When TARGET_MILLICODE_LONG_CALLS is true, then we have to assume
+   that two instruction sequences must be used to reach the millicode
+   routines (including dyncall!).  */
 
 char *
 output_call (insn, call_dest, return_pointer)
@@ -3775,21 +3793,124 @@ output_call (insn, call_dest, return_pointer)
   rtx xoperands[4];
   rtx seq_insn;
 
-  /* Handle common case -- empty delay slot or no jump in the delay slot.  */
-  if (dbr_sequence_length () == 0
-      || (dbr_sequence_length () != 0
-	  && GET_CODE (NEXT_INSN (insn)) != JUMP_INSN))
+  /* Handle long millicode calls for mod, div, and mul.  */
+  if (TARGET_PORTABLE_RUNTIME
+      || (TARGET_MILLICODE_LONG_CALLS && REGNO (return_pointer) == 31))
     {
       xoperands[0] = call_dest;
       xoperands[1] = return_pointer;
-      if (TARGET_LONG_CALLS)
+      output_asm_insn ("ldil L%%%0,%%r29", xoperands);
+      output_asm_insn ("ldo R%%%0(%%r29),%%r29", xoperands);
+      output_asm_insn ("blr 0,%r1\n\tbv,n 0(%%r29)\n\tnop", xoperands);
+      return "";
+    }
+
+  /* Handle common case -- empty delay slot or no jump in the delay slot,
+     and we're sure that the branch will reach the beginning of the $CODE$
+     subspace.  */
+  if ((dbr_sequence_length () == 0
+       && get_attr_length (insn) == 8)
+      || (dbr_sequence_length () != 0
+	  && GET_CODE (NEXT_INSN (insn)) != JUMP_INSN
+	  && get_attr_length (insn) == 4))
+    {
+      xoperands[0] = call_dest;
+      xoperands[1] = return_pointer;
+      output_asm_insn ("bl %0,%r1%#", xoperands);
+      return "";
+    }
+
+  /* This call may not reach the beginning of the $CODE$ subspace.  */
+  if (get_attr_length (insn) > 8)
+    {
+      int delay_insn_deleted = 0;
+      rtx xoperands[2];
+      rtx link;
+
+      /* We need to emit an inline long-call branch.  Furthermore,
+	 because we're changing a named function call into an indirect
+	 function call well after the parameters have been set up, we
+	 need to make sure any FP args appear in both the integer
+	 and FP registers.  Also, we need move any delay slot insn
+	 out of the delay slot -- Yuk!  */
+      if (dbr_sequence_length () != 0
+	  && GET_CODE (NEXT_INSN (insn)) != JUMP_INSN)
 	{
-	  output_asm_insn ("ldil L%%%0,%%r29", xoperands);
-	  output_asm_insn ("ldo R%%%0(%%r29),%%r29", xoperands);
-	  output_asm_insn ("blr 0,%r1\n\tbv,n 0(%%r29)\n\tnop", xoperands);
+	  /* A non-jump insn in the delay slot.  By definition we can
+	  emit this insn before the call (and in fact before argument
+	  relocating.  */
+	  final_scan_insn (NEXT_INSN (insn), asm_out_file, optimize, 0, 0);
+
+	  /* Now delete the delay insn.  */
+	  PUT_CODE (NEXT_INSN (insn), NOTE);
+	  NOTE_LINE_NUMBER (NEXT_INSN (insn)) = NOTE_INSN_DELETED;
+	  NOTE_SOURCE_FILE (NEXT_INSN (insn)) = 0;
+	  delay_insn_deleted = 1;
+	}
+
+      /* Now copy any FP arguments into integer registers.  */
+      for (link = CALL_INSN_FUNCTION_USAGE (insn); link; link = XEXP (link, 1))
+	{
+	  int arg_mode, regno;
+	  rtx use = XEXP (link, 0);
+	  if (! (GET_CODE (use) == USE
+		 && GET_CODE (XEXP (use, 0)) == REG
+		 && FUNCTION_ARG_REGNO_P (REGNO (XEXP (use, 0)))))
+	    continue;
+
+	  arg_mode = GET_MODE (XEXP (use, 0));
+	  regno = REGNO (XEXP (use, 0));
+	  /* Is it a floating point register?  */
+	  if (regno >= 32 && regno <= 39)
+	    {
+	      /* Copy from the FP register into an integer register
+		 (via memory).  */
+	      if (arg_mode == SFmode)
+		{
+		  xoperands[0] = XEXP (use, 0);
+		  xoperands[1] = gen_rtx (REG, SImode, 26 - (regno - 32) / 2);
+		  output_asm_insn ("fstws %0,-16(%%sr0,%%r30)", xoperands);
+		  output_asm_insn ("ldw -16(%%sr0,%%r30),%1", xoperands);
+		}
+	      else
+		{
+		  xoperands[0] = XEXP (use, 0);
+		  xoperands[1] = gen_rtx (REG, DImode, 25 - (regno - 34) / 2);
+		  output_asm_insn ("fstds %0,-16(%%sr0,%%r30)", xoperands);
+		  output_asm_insn ("ldw -12(%%sr0,%%r30),%R1", xoperands);
+		  output_asm_insn ("ldw -16(%%sr0,%%r30),%1", xoperands);
+		}
+		
+	    }
+	}
+
+      /* Now emit the inline long-call.  */
+      xoperands[0] = call_dest;
+      output_asm_insn ("ldil L%%%0,%%r22\n\tldo R%%%0(%%r22),%%r22", xoperands);
+
+      /* If TARGET_MILLICODE_LONG_CALLS, then we must use a long-call sequence
+	 to call dyncall!  */
+      if (TARGET_MILLICODE_LONG_CALLS)
+	{
+	  output_asm_insn ("ldil L%%$$dyncall,%%r31", xoperands);
+	  output_asm_insn ("ldo R%%$$dyncall(%%r31),%%r31", xoperands);
+	  output_asm_insn ("blr 0,%%r2\n\tbv,n 0(%%r31)\n\tnop", xoperands);
 	}
       else
-	output_asm_insn ("bl %0,%r1%#", xoperands);
+	output_asm_insn ("bl $$dyncall,%%r31\n\tcopy %%r31,%%r2", xoperands);
+
+      /* If we had a jump in the call's delay slot, output it now.  */
+      if (dbr_sequence_length () != 0
+	  && !delay_insn_deleted)
+	{
+	  xoperands[0] = XEXP (PATTERN (NEXT_INSN (insn)), 1);
+	  output_asm_insn ("b,n %0", xoperands);
+
+	  /* Now delete the delay insn.  */
+	  PUT_CODE (NEXT_INSN (insn), NOTE);
+	  NOTE_LINE_NUMBER (NEXT_INSN (insn)) = NOTE_INSN_DELETED;
+	  NOTE_SOURCE_FILE (NEXT_INSN (insn)) = 0;
+	}
       return "";
     }
 
