@@ -1,3 +1,11 @@
+2004-03-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* fold-const.c (fold): Remove variable "invert".
+	Move the handling of relational expressions that can be folded
+	to a constant ...
+	(fold_relational_const): ... here.
+	(tree_expr_nonzero_p): New.
+
 2004-03-20  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/14635
