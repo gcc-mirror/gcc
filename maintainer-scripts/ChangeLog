@@ -1,5 +1,7 @@
 2001-10-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* crontab: Build weekly snapshots.
+
 	* gcc_release: Copy from 3.0 branch.  Add support for building the
 	weekly snapshots on gcc.gnu.org.
 
