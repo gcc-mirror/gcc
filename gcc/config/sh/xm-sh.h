@@ -41,4 +41,3 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Arguments to use with `exit'.  */
 #define SUCCESS_EXIT_CODE 0
 #define FATAL_EXIT_CODE 33
-
