@@ -140,7 +140,7 @@ void test01()
   VERIFY( sz04 >= 100 );
   str02.reserve();
   sz03 = str02.capacity();
-  VERIFY( sz03 > 0 );
+  VERIFY( sz03 >= 0 );
 
   sz03 = str02.size() + 5;
   str02.resize(sz03);

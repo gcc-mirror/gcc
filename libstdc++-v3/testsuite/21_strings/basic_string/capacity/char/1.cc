@@ -37,7 +37,7 @@ void test01()
   VERIFY( sz02 >= 100 );
   str01.reserve();
   sz01 = str01.capacity();
-  VERIFY( sz01 > 0 );
+  VERIFY( sz01 >= 0 );
 
   sz01 = str01.size() + 5;
   str01.resize(sz01);

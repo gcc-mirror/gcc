@@ -1,3 +1,11 @@
+2003-12-11  Neil Ferguson  <nferguso@eso.org>
+            Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_string.tcc (reserve): Allow shrink-to-fit.
+	* testsuite/21_strings/basic_string/capacity/1.cc: Tweak.
+	* testsuite/21_strings/basic_string/capacity/char/1.cc: Ditto.
+	* testsuite/21_strings/basic_string/capacity/wchar_t/1.cc: Ditto.
+
 2003-12-10  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/6243
