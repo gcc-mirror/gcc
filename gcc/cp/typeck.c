@@ -4774,7 +4774,11 @@ unary_complex_lvalue (code, arg)
 
       /* Check all this code for right semantics.  */	
       if (TREE_CODE (t) == FUNCTION_DECL)
-	return build_unary_op (ADDR_EXPR, t, 0);
+	{
+	  if (DECL_DESTRUCTOR_P (t))
+	    cp_error ("taking address of destructor");
+	  return build_unary_op (ADDR_EXPR, t, 0);
+	}
       if (TREE_CODE (t) == VAR_DECL)
 	return build_unary_op (ADDR_EXPR, t, 0);
       else
@@ -5422,8 +5426,8 @@ build_static_cast (type, expr)
 	      >= TYPE_READONLY (TREE_TYPE (TREE_TYPE (intype))))
 	  && (TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (type)))
 	      >= TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (intype))))
-	  && (binfo = get_binfo (TYPE_OFFSET_BASETYPE (intype),
-				 TYPE_OFFSET_BASETYPE (type), 0))
+	  && (binfo = get_binfo (TYPE_OFFSET_BASETYPE (TREE_TYPE (type)),
+				 TYPE_OFFSET_BASETYPE (TREE_TYPE (intype)), 0))
 	  && ! TREE_VIA_VIRTUAL (binfo))
 	ok = 1;
     }
@@ -7206,16 +7210,19 @@ c_expand_return (retval)
       return;
     }
 
+  if (dtor_label)
+    {
+      if (retval)
+	error ("returning a value from a destructor");
+
+      /* Can't just return from a destructor.  */
+      expand_goto (dtor_label);
+      return;
+    }
+
   if (retval == NULL_TREE)
     {
       /* A non-named return value does not count.  */
-
-      /* Can't just return from a destructor.  */
-      if (dtor_label)
-	{
-	  expand_goto (dtor_label);
-	  return;
-	}
 
       if (DECL_CONSTRUCTOR_P (current_function_decl))
 	retval = current_class_ptr;
@@ -7242,13 +7249,12 @@ c_expand_return (retval)
 	  return;
 	}
     }
-  else if (DECL_CONSTRUCTOR_P (current_function_decl)
-	   && retval != current_class_ptr)
+  else if (DECL_CONSTRUCTOR_P (current_function_decl))
     {
       if (flag_this_is_variable)
 	error ("return from a constructor: use `this = ...' instead");
       else
-	error ("return from a constructor");
+	error ("returning a value from a constructor");
       retval = current_class_ptr;
     }
 

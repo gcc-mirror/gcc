@@ -1,3 +1,18 @@
+1998-06-16  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* method.c (hack_identifier): Don't let a class template out.
+
+	* call.c (check_dtor_name): Split out.
+	(build_scoped_method_call): Use it.
+	(build_method_call): Use it.
+	* init.c (build_offset_ref): Use it.
+
+	* typeck.c (build_static_cast): Fix handling of pointers to members.
+
+	* decl.c (finish_function): Just return nothing from a constructor.
+	* typeck.c (c_expand_return): Complain about returning a void
+	expression from a destructor.
+
 1998-06-13  Mark Mitchell  <mark@markmitchell.com>
 
 	* class.c (alter_access): Accept a BINFO explaining how to get
