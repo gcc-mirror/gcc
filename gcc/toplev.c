@@ -2901,6 +2901,13 @@ rest_of_handle_cse2 (tree decl, rtx insns)
     dump_flow_info (rtl_dump_file);
   /* CFG is no longer maintained up-to-date.  */
   tem = cse_main (insns, max_reg_num (), 1, rtl_dump_file);
+
+  /* Run a pass to eliminate duplicated assignments to condition code
+     registers.  We have to run this after bypass_jumps, because it
+     makes it harder for that pass to determine whether a jump can be
+     bypassed safely.  */
+  cse_condition_code_reg ();
+
   purge_all_dead_edges (0);
   delete_trivially_dead_insns (insns, max_reg_num ());
 

@@ -1,3 +1,48 @@
+2004-02-12  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	PR target/1532
+	Backport from mainline:
+
+	2004-02-11  Richard Henderson  <rth@redhat.com>
+
+	* flow.c (insn_dead_p): A clobber of a dead hard register is a
+	dead insn after reload.
+
+	2004-01-24  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* cse.c (cse_cc_succs): Change the mode of the source expression
+	as soon as decide we need a new mode.  Don't permit changing modes
+	if we found a match in a successor block.
+	(cse_condition_code_reg): Save original mode of source expression
+	so that we know whether we have to change the mode in other
+	insns.
+
+	2004-01-24  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* cse.c: (cse_cc_succs) Fix comparison warning.
+
+	2004-01-23  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* cse.c (cse_change_cc_mode): New static function.
+	(cse_change_cc_mode_insns, cse_cc_succs): Likewise.
+	(cse_condition_code_reg): New function.
+	* rtl.h (cse_condition_code_reg): Declare.
+	* toplev.c (rest_of_handle_cse2): Call cse_condition_code_reg.
+	* target.h (struct gcc_target): Add fixed_condition_code_regs and
+	cc_modes_compatible.
+	* target-def.h (TARGET_FIXED_CONDITION_CODE_REGS): Define.
+	(TARGET_CC_MODES_COMPATIBLE): Define.
+	(TARGET_INITIALIZER): Add new initializers.
+	* targhooks.c (default_cc_modes_compatible): New function.
+	* targhooks.c (default_cc_modes_compatible): Declare.
+	* hooks.c (hook_bool_intp_intp_false): New function.
+	* hooks.h (hook_bool_intp_intp_false): Declare.
+	* config/i386/i386.c (TARGET_FIXED_CONDITION_CODE_REGS): Define.
+	(TARGET_CC_MODES_COMPATIBLE): Define.
+	(ix86_fixed_condition_code_regs): New static function.
+	(ix86_cc_modes_compatible): Likewise.
+	* doc/tm.texi (Condition Code): Document new hooks.
+
 2004-02-12  Hartmut Penner  <hpenner@de.ibm.com>
 	
 	* config/rs6000/altivec.md (*movv4si_internal): At least one

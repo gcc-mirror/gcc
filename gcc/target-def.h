@@ -1,5 +1,5 @@
 /* Default initializers for a generic GCC target.
-   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -314,6 +314,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_ENCODE_SECTION_INFO default_encode_section_info
 #endif
 
+#define TARGET_FIXED_CONDITION_CODE_REGS hook_bool_uintp_uintp_false
+
+#define TARGET_CC_MODES_COMPATIBLE default_cc_modes_compatible
+
 #define TARGET_MACHINE_DEPENDENT_REORG 0
 
 #define TARGET_BUILD_BUILTIN_VA_LIST std_build_builtin_va_list
@@ -380,6 +384,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_RTX_COSTS,				\
   TARGET_ADDRESS_COST,				\
   TARGET_DWARF_REGISTER_SPAN,                   \
+  TARGET_FIXED_CONDITION_CODE_REGS,		\
+  TARGET_CC_MODES_COMPATIBLE,			\
   TARGET_MACHINE_DEPENDENT_REORG,		\
   TARGET_BUILD_BUILTIN_VA_LIST,			\
   TARGET_GET_PCH_VALIDITY,			\

@@ -70,6 +70,14 @@ default_external_libcall (rtx fun ATTRIBUTE_UNUSED)
 #endif
 }
 
+enum machine_mode
+default_cc_modes_compatible (enum machine_mode m1, enum machine_mode m2)
+{
+  if (m1 == m2)
+    return m1;
+  return VOIDmode;
+}
+
 bool
 default_promote_function_args (tree fntype ATTRIBUTE_UNUSED)
 {

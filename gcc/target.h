@@ -377,6 +377,23 @@ struct gcc_target
      hook should return NULL_RTX.  */
   rtx (* dwarf_register_span) (rtx);
 
+  /* Fetch the fixed register(s) which hold condition codes, for
+     targets where it makes sense to look for duplicate assignments to
+     the condition codes.  This should return true if there is such a
+     register, false otherwise.  The arguments should be set to the
+     fixed register numbers.  Up to two condition code registers are
+     supported.  If there is only one for this target, the int pointed
+     at by the second argument should be set to -1.  */
+  bool (* fixed_condition_code_regs) (unsigned int *, unsigned int *);
+
+  /* If two condition code modes are compatible, return a condition
+     code mode which is compatible with both, such that a comparison
+     done in the returned mode will work for both of the original
+     modes.  If the condition code modes are not compatible, return
+     VOIDmode.  */
+  enum machine_mode (* cc_modes_compatible) (enum machine_mode,
+					     enum machine_mode);
+
   /* Do machine-dependent code transformations.  Called just before
      delayed-branch scheduling.  */
   void (* machine_dependent_reorg) (void);
