@@ -1,3 +1,8 @@
+2004-06-16  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* cfglayout.c (fixup_reorder_chain): Handle case where the
+	destination of E_FALL is EXIT_BLOCK_PTR.
+
 2004-06-16  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/15653
