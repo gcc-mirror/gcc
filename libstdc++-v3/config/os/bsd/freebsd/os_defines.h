@@ -34,4 +34,7 @@
 // System-specific #define, typedefs, corrections, etc, go here.  This
 // file will come before all others.
 
+#define _GLIBCPP_USE_C99_FLOAT_TRANSCENDENTALS_CHECK 1
+#define _GLIBCPP_USE_C99_FLOAT_TRANSCENDENTALS_DYNAMIC defined _XOPEN_SOURCE
+
 #endif
