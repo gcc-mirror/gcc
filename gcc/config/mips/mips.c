@@ -5911,7 +5911,7 @@ print_operand (file, op, letter)
 	   && GET_MODE_CLASS (GET_MODE (op)) == MODE_FLOAT)
     {
       REAL_VALUE_TYPE d;
-      char s[30];
+      char s[60];
 
       REAL_VALUE_FROM_CONST_DOUBLE (d, op);
       REAL_VALUE_TO_DECIMAL (d, s, -1);

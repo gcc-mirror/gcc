@@ -1,3 +1,8 @@
+2002-10-14  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mips/mips.c (print_operand): Increase buffer size for
+	real numbers.
+
 2002-10-14  Richard Henderson  <rth@redhat.com>
 
 	PR opt/8165
