@@ -152,6 +152,7 @@ you proceed.
 
 Lists of successful builds for released versions of GCC are
 available at our web pages for
+@uref{http://gcc.gnu.org/gcc-3.1/buildstat.html,,3.1}, 
 @uref{http://gcc.gnu.org/gcc-3.0/buildstat.html,,3.0}
 and
 @uref{http://gcc.gnu.org/gcc-2.95/buildstat.html,,2.95}.
@@ -1487,13 +1488,6 @@ works.
 Please read this document carefully @emph{before} installing the
 GNU Compiler Collection on your machine.
 
-Lists of successful builds for released versions of GCC are
-available at our web pages for
-@uref{http://gcc.gnu.org/gcc-3.0/buildstat.html,,3.0}
-and
-@uref{http://gcc.gnu.org/gcc-2.95/buildstat.html,,2.95}.
-These lists are updated as new information becomes available.
-
 @ifhtml
 @itemize
 @item
@@ -1670,8 +1664,6 @@ These lists are updated as new information becomes available.
 @uref{#sparc-sun-solaris2*,,sparc-sun-solaris2*}
 @item
 @uref{#sparc-sun-solaris2.7,,sparc-sun-solaris2.7}
-@item
-@uref{#*-*-solaris2.8,,*-*-solaris2.8}
 @item
 @uref{#sparc-sun-sunos4*,,sparc-sun-sunos4*}
 @item
@@ -2220,14 +2212,14 @@ bootstrap}.
 @end html
 @heading @anchor{hppa*-hp-hpux11}hppa*-hp-hpux11
 
-GCC 3.0 supports HP-UX 11.  You must use GNU binutils 2.11 or above on
+GCC 3.0 and up support HP-UX 11.  You must use GNU binutils 2.11 or above on
 this platform.  Thread support is not currently implemented for this
 platform, so @option{--enable-threads} does not work.
 See @uref{http://gcc.gnu.org/ml/gcc-prs/2002-01/msg00551.html}
 and @uref{http://gcc.gnu.org/ml/gcc-bugs/2002-01/msg00663.html}.
 GCC 2.95.x is not supported under HP-UX 11 and cannot be used to
-compile GCC 3.0.  Refer to @uref{binaries.html,,binaries} for information
-about obtaining precompiled GCC binaries for HP-UX.
+compile GCC 3.0 and up.  Refer to @uref{binaries.html,,binaries} for
+information about obtaining precompiled GCC binaries for HP-UX.
 
 @html
 </p>
@@ -3531,15 +3523,14 @@ This is Sun bug 4237974.  This is fixed with patch 108908-02 for Solaris
 starting with Solaris 7.
 
 Starting with Solaris 7, the operating system is capable of executing
-64-bit SPARC V9 binaries.  GCC 3.1 and later should properly support
-this.  GCC 3.0 lacks the infrastructure necessary to support this
-configuration properly.  However, if all you want is code tuned for
-the UltraSPARC CPU, you should try the @option{-mtune=ultrasparc}
-option instead, which should be safe from those bugs and produce code
-that, unlike full 64-bit code, can still run on non-UltraSPARC
+64-bit SPARC V9 binaries.  GCC 3.1 and later properly supports
+this; the @option{-m64} option enables 64-bit code generation.
+However, if all you want is code tuned for the UltraSPARC CPU, you
+should try the @option{-mtune=ultrasparc} option instead, which produces
+code that, unlike full 64-bit code, can still run on non-UltraSPARC
 machines.
 
-When configuring on a Solaris 7 or 8 system that is running a kernel
+When configuring on a Solaris 7 or later system that is running a kernel
 that supports only 32-bit binaries, one must configure with
 @option{--disable-multilib}, since we will not be able to build the
 64-bit target libraries.
@@ -3568,7 +3559,7 @@ back it out.
 @item
 Copy the original, unpatched Solaris 7
 @command{/usr/ccs/bin/as} into
-@command{/usr/local/lib/gcc-lib/sparc-sun-solaris2.7/3.0/as},
+@command{/usr/local/lib/gcc-lib/sparc-sun-solaris2.7/3.1/as},
 adjusting the latter name to fit your local conventions and software
 version numbers.
 
@@ -3585,21 +3576,6 @@ the bug.  The current (as of 2001-09-24) revision is -14, and is included in
 the Solaris 7 Recommended Patch Cluster.
 @end itemize
 
-
-@html
-<p>
-<hr>
-@end html
-@heading @anchor{*-*-solaris2.8}*-*-solaris2.8
-
-The Solaris 8 linker fails to link some @samp{libjava} programs if
-previously-installed GCC java libraries already exist in the configured
-prefix.  For this reason, @command{configure} will report an error on
-Solaris 8 if an existing @samp{libgcj} is found in the appropriate
-install directory and the system linker is in use.  In this case, you
-can configure with a different prefix, or delete or rename the existing
-@samp{libgcj} library files before configuring, or configure using
-@option{--disable-libgcj}.
 
 @html
 <p>
