@@ -785,7 +785,7 @@ stack_result (decl)
   if (aggregate_value_p (DECL_RESULT (decl)))
     return 0;
 
-  result = DECL_RTL (DECL_RESULT (decl));
+  result = DECL_RTL_IF_SET (DECL_RESULT (decl));
   if (result != 0)
     {
 #ifdef FUNCTION_OUTGOING_VALUE

@@ -1341,8 +1341,27 @@ struct tree_type
    PROMOTED_MODE is defined, the mode of this expression may not be same
    as DECL_MODE.  In that case, DECL_MODE contains the mode corresponding
    to the variable's data type, while the mode
-   of DECL_RTL is the mode actually used to contain the data.  */
-#define DECL_RTL(NODE) (DECL_CHECK (NODE)->decl.rtl)
+   of DECL_RTL is the mode actually used to contain the data.  
+
+   This value can be evaluated lazily for functions, variables with
+   static storage duration, and labels.  */
+#define DECL_RTL(NODE)					\
+  (DECL_CHECK (NODE)->decl.rtl				\
+   ? (NODE)->decl.rtl					\
+   : (make_decl_rtl (NODE, NULL), (NODE)->decl.rtl))
+/* Set the DECL_RTL for NODE to RTL.  */
+#define SET_DECL_RTL(NODE, RTL) \
+  (DECL_CHECK (NODE)->decl.rtl = (RTL))
+/* Returns non-zero if the DECL_RTL for NODE has already been set.  */
+#define DECL_RTL_SET_P(NODE) \
+  (DECL_CHECK (NODE)->decl.rtl != NULL)
+/* Copy the RTL from NODE1 to NODE2.  If the RTL was not set for
+   NODE1, it will not be set for NODE2; this is a lazy copy.  */
+#define COPY_DECL_RTL(NODE1, NODE2) \
+  (DECL_CHECK (NODE2)->decl.rtl = DECL_CHECK (NODE1)->decl.rtl)
+/* The DECL_RTL for NODE, if it is set, or NULL, if it is not set.  */
+#define DECL_RTL_IF_SET(NODE) \
+  (DECL_RTL_SET_P (NODE) ? DECL_RTL (NODE) : NULL)
 /* Holds an INSN_LIST of all of the live ranges in which the variable
    has been moved to a possibly different register.  */
 #define DECL_LIVE_RANGE_RTL(NODE) (DECL_CHECK (NODE)->decl.live_range_rtl)

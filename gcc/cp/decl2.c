@@ -1775,7 +1775,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 	{
 	  /* This must override the asm specifier which was placed
 	     by grokclassfn.  Lay this out fresh.  */
-	  DECL_RTL (value) = NULL_RTX;
+	  SET_DECL_RTL (value, NULL_RTX);
 	  DECL_ASSEMBLER_NAME (value) = get_identifier (asmspec);
 	}
       cp_finish_decl (value, init, asmspec_tree, flags);
@@ -1928,25 +1928,8 @@ grok_function_init (decl, init)
 
   if (TREE_CODE (type) == FUNCTION_TYPE)
     cp_error ("initializer specified for non-member function `%D'", decl);
-#if 0
-  /* We'll check for this in finish_struct_1.  */
-  else if (DECL_VINDEX (decl) == NULL_TREE)
-    cp_error ("initializer specified for non-virtual member function `%D'", decl);
-#endif
   else if (integer_zerop (init))
     {
-#if 0
-      /* Mark this function as being "defined".  */
-      DECL_INITIAL (decl) = error_mark_node;
-      /* pure virtual destructors must be defined.  */
-      /* pure virtual needs to be defined (as abort) only when put in 
-	 vtbl. For wellformed call, it should be itself. pr4737 */
-      if (!DECL_DESTRUCTOR_P (decl)))
-	{
-	  /* Give this node rtl from `abort'.  */
-	  DECL_RTL (decl) = DECL_RTL (abort_fndecl);
-	}
-#endif
       DECL_PURE_VIRTUAL_P (decl) = 1;
       if (DECL_OVERLOADED_OPERATOR_P (decl) == NOP_EXPR)
 	{
@@ -2206,7 +2189,7 @@ finish_anon_union (anon_union_decl)
   if (static_p)
     {
       make_decl_rtl (main_decl, 0);
-      DECL_RTL (anon_union_decl) = DECL_RTL (main_decl);
+      COPY_DECL_RTL (main_decl, anon_union_decl);
       expand_anon_union_decl (anon_union_decl, 
 			      NULL_TREE,
 			      DECL_ANON_UNION_ELEMS (anon_union_decl));

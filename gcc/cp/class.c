@@ -4265,7 +4265,7 @@ build_clone (fn, name)
   set_mangled_name_for_decl (clone);
 
   /* Create the RTL for this function.  */
-  DECL_RTL (clone) = NULL_RTX;
+  SET_DECL_RTL (clone, NULL_RTX);
   rest_of_decl_compilation (clone, NULL, /*top_level=*/1, at_eof);
   
   /* Make it easy to find the CLONE given the FN.  */
@@ -5212,14 +5212,9 @@ finish_struct_1 (t)
   /* Complete the rtl for any static member objects of the type we're
      working on.  */
   for (x = TYPE_FIELDS (t); x; x = TREE_CHAIN (x))
-    {
-      if (TREE_CODE (x) == VAR_DECL && TREE_STATIC (x)
-	  && TREE_TYPE (x) == t)
-	{
-	  DECL_MODE (x) = TYPE_MODE (t);
-	  make_decl_rtl (x, NULL);
-	}
-    }
+    if (TREE_CODE (x) == VAR_DECL && TREE_STATIC (x)
+	&& TREE_TYPE (x) == t)
+      DECL_MODE (x) = TYPE_MODE (t);
 
   /* Done with FIELDS...now decide whether to sort these for
      faster lookups later.

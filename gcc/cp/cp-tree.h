@@ -1915,7 +1915,7 @@ struct lang_decl
    here because on most RISC machines, a variable's address
    is not, by itself, a legitimate address.  */
 #define DECL_IN_MEMORY_P(NODE) \
-  (DECL_RTL (NODE) != NULL_RTX && GET_CODE (DECL_RTL (NODE)) == MEM)
+  (DECL_RTL_SET_P (NODE) && GET_CODE (DECL_RTL (NODE)) == MEM)
 
 /* For FUNCTION_DECLs: return the language in which this decl
    was declared.  */

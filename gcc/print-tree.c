@@ -441,7 +441,7 @@ print_node (file, prefix, node, indent)
 
       print_lang_decl (file, node, indent);
 
-      if (DECL_RTL (node) != 0)
+      if (DECL_RTL_SET_P (node))
 	{
 	  indent_to (file, indent + 4);
 	  print_rtl (file, DECL_RTL (node));

@@ -1741,7 +1741,7 @@ unshare_all_rtl (fndecl, insn)
 
   /* Make sure that virtual parameters are not shared.  */
   for (decl = DECL_ARGUMENTS (fndecl); decl; decl = TREE_CHAIN (decl))
-    DECL_RTL (decl) = copy_rtx_if_shared (DECL_RTL (decl));
+    SET_DECL_RTL (decl, copy_rtx_if_shared (DECL_RTL (decl)));
 
   /* Make sure that virtual stack slots are not shared.  */
   unshare_all_decls (DECL_INITIAL (fndecl));
@@ -1816,7 +1816,8 @@ unshare_all_decls (blk)
 
   /* Copy shared decls.  */
   for (t = BLOCK_VARS (blk); t; t = TREE_CHAIN (t))
-    DECL_RTL (t) = copy_rtx_if_shared (DECL_RTL (t));
+    if (DECL_RTL_SET_P (t))
+      SET_DECL_RTL (t, copy_rtx_if_shared (DECL_RTL (t)));
 
   /* Now process sub-blocks.  */
   for (t = BLOCK_SUBBLOCKS (blk); t; t = TREE_CHAIN (t))
@@ -1833,7 +1834,8 @@ reset_used_decls (blk)
 
   /* Mark decls.  */
   for (t = BLOCK_VARS (blk); t; t = TREE_CHAIN (t))
-    reset_used_flags (DECL_RTL (t));
+    if (DECL_RTL_SET_P (t))
+      reset_used_flags (DECL_RTL (t));
 
   /* Now process sub-blocks.  */
   for (t = BLOCK_SUBBLOCKS (blk); t; t = TREE_CHAIN (t))

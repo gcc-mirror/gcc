@@ -1,3 +1,52 @@
+2001-03-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* varasm.c (assemble_alias): Use DECL_ASSEMBLER_NAME, not the
+	contents of the RTL, to determine the name of the object.
+
+2001-03-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.h (DECL_RTL): Allocate RTL lazily.
+	(SET_DECL_RTL): New macro.
+	(DECL_RTL_SET_P): Likewise.
+	(COPY_DECL_RTL): Likewise.
+	(DECL_RTL_IF_SET): Likewise.
+	* varasm.c (make_decl_rtl): Add assertions about the kind of
+	declaration we are processing.
+	* c-decl.c (duplicate_decls): Use COPY_DECL_RTL, DECL_RTL_SET_P, etc.
+	(start_decl): Likewise.
+	(finish_decl): Likewise.
+	* c-semantics.c (emit_local_var): Likewise.
+	* calls.c (expand_call): Likewise.
+	* dbxout.c (dbxout_symbol): Likewise.
+	* emit-rtl.c (unshare_all_rtl): Likewise.
+	(unshare_all_decls): Likewise.
+	(reset_used_decls): Likewise.
+	* expr.c (store_constructor): Likewise.
+	(safe_from_p): Likewise.
+	(expand_expr): Likewise.
+	* function.c (put_var_into_stack): Likewise.
+	(instantiate_decls_1): Likewise.
+	(assign_parms): Likewise.
+	(expand_function_start): Likewise.
+	(expand_function_end): Likewise.
+	* ggc-common.c (gcc_mark_trees): Likewise.
+	* integrate.c (function_cannot_inline_p): Likewise.
+	(copy_decl_for_inlining): Likewise.
+	(expand_inline_function): Likewise.
+	(integrate_parm_decls): Likewise.
+	(integrate_decl_tree): Likewise.
+	* print-tree.c (print_node): Likewise.
+	* reg-stack.c (stack_result): Likewise.
+	* stmt.c (label_rtx): Likewise.
+	(expand_return): Likewise.
+	(expand_decl): Likewise.
+	(expand_decl_cleanup): Likewise.
+	(expand_anon_union_decl): Likewise.
+	* toplev.c (check_global_declarations): Likewise.
+	(rest_of_decl_compilation): Likewise.
+	* tree.c (simple_cst_equal): Likewise.
+	* objc/objc-act.c (generate_static_references): Likewise.
+	
 2001-03-14  Zack Weinberg  <zackw@stanford.edu>
 
 	* aclocal.m4 (gcc_AC_C_CHARSET, gcc_AC_C_COMPILE_BIGENDIAN,
