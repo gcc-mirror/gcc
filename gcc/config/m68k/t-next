@@ -2,4 +2,6 @@
 LIBGCC1=
 
 # Specify other dirs of system header files to be fixed.
-OTHER_FIXINCLUDES_DIRS= /LocalDeveloper/Headers
+# It might be ok to leave out /NextDeveloper/Headers,
+# but I don't know and can't find out before 2.3.2 comes out.
+OTHER_FIXINCLUDES_DIRS= /LocalDeveloper/Headers /NextDeveloper/Headers
