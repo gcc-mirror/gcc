@@ -1,5 +1,12 @@
 2000-04-07  Richard Henderson  <rth@cygnus.com>
 
+	* gcse.c (gcse_main): Don't rebuild the CFG here.
+	(delete_null_pointer_checks): Likewise.
+	* ssa.c (convert_to_ssa): Likewise.
+	* toplev.c (rest_of_compilation): Do it here instead.  Combine
+	sequential calls to TIMEVAR.  Consistently use `insns' instead of
+	`get_insns()'.  Always split insns after reload when optimizing.
+
 	* basic-block.h (merge_blocks_nomove): Declare.
 	(tidy_fallthru_edge): Declare.
 	* flow.c (merge_blocks_nomove): Document as merging into previous

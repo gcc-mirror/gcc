@@ -669,18 +669,13 @@ gcse_main (f, file)
   /* Identify the basic block information for this function, including
      successors and predecessors.  */
   max_gcse_regno = max_reg_num ();
-  find_basic_blocks (f, max_gcse_regno, file);
-  cleanup_cfg (f);
 
   if (file)
     dump_flow_info (file);
 
   /* Return if there's nothing to do.  */
   if (n_basic_blocks <= 1)
-    {
-      free_basic_block_vars (0);
-      return 0;
-    }
+    return 0;
 
   /* Trying to perform global optimizations on flow graphs which have
      a high connectivity will take a long time and is unlikely to be
@@ -691,10 +686,7 @@ gcse_main (f, file)
      a couple switch statements.  So we require a relatively large number
      of basic blocks and the ratio of edges to blocks to be high.  */
   if (n_basic_blocks > 1000 && n_edges / n_basic_blocks >= 20)
-    {
-      free_basic_block_vars (0);
-      return 0;
-    }
+    return 0;
 
   /* See what modes support reg/reg copy operations.  */
   if (! can_copy_init_p)
@@ -807,7 +799,6 @@ gcse_main (f, file)
 
   obstack_free (&gcse_obstack, NULL_PTR);
   free_reg_set_mem ();
-  free_basic_block_vars (0);
   return run_jump_opt_after_gcse;
 }
 
@@ -5070,17 +5061,9 @@ delete_null_pointer_checks (f)
   int max_reg;
   struct null_pointer_info npi;
 
-  /* First break the program into basic blocks.  */
-  find_basic_blocks (f, max_reg_num (), NULL);
-  cleanup_cfg (f);
-
   /* If we have only a single block, then there's nothing to do.  */
   if (n_basic_blocks <= 1)
-    {
-      /* Free storage allocated by find_basic_blocks.  */
-      free_basic_block_vars (0);
-      return;
-    }
+    return;
 
   /* Trying to perform global optimizations on flow graphs which have
      a high connectivity will take a long time and is unlikely to be
@@ -5091,11 +5074,7 @@ delete_null_pointer_checks (f)
      a couple switch statements.  So we require a relatively large number
      of basic blocks and the ratio of edges to blocks to be high.  */
   if (n_basic_blocks > 1000 && n_edges / n_basic_blocks >= 20)
-    {
-      /* Free storage allocated by find_basic_blocks.  */
-      free_basic_block_vars (0);
-      return;
-    }
+    return;
 
   /* We need four bitmaps, each with a bit for each register in each
      basic block.  */
@@ -5151,9 +5130,6 @@ delete_null_pointer_checks (f)
       delete_null_pointer_checks_1 (block_reg, nonnull_avin,
 				    nonnull_avout, &npi);
     }
-
-  /* Free storage allocated by find_basic_blocks.  */
-  free_basic_block_vars (0);
 
   /* Free the table of registers compared at the end of every block.  */
   free (block_reg);

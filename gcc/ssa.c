@@ -855,10 +855,6 @@ convert_to_ssa()
   if (in_ssa_form)
     abort ();
 
-  find_basic_blocks (get_insns (), max_reg_num(), NULL);
-  /* The dominator algorithms assume all blocks are reachable; clean
-     up first.  */
-  cleanup_cfg (get_insns ());
   /* Don't eliminate dead code here.  The CFG we computed above must
      remain unchanged until we are finished emerging from SSA form --
      the phi node representation depends on it.  */
@@ -930,8 +926,6 @@ convert_to_ssa()
   in_ssa_form = 1;
 
   reg_scan (get_insns (), max_reg_num (), 1);
-  find_basic_blocks (get_insns (), max_reg_num (), NULL);
-  life_analysis (get_insns (), max_reg_num (), NULL, 0);
 }
 
 
@@ -1818,7 +1812,6 @@ convert_from_ssa()
   rtx insns = get_insns ();
     
   /* We need up-to-date life information.  */
-  find_basic_blocks (insns, max_reg_num (), NULL);
   life_analysis (insns, max_reg_num (), NULL, 0);
 
   /* Figure out which regs in copies and phi nodes don't conflict and
