@@ -58,9 +58,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    differently.  */
 
 #ifdef __STDC__
-extern void *malloc (), *realloc (), *sbrk (), *calloc ();
+extern void *malloc (), *realloc (), *sbrk (), *calloc (), *alloca ();
 #else
-extern char *malloc (), *realloc (), *sbrk (), *calloc ();
+extern char *malloc (), *realloc (), *sbrk (), *calloc (), *alloca ();
 #endif
 
 #include "string.h"
