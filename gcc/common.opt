@@ -472,6 +472,10 @@ finstrument-functions
 Common Report Var(flag_instrument_function_entry_exit)
 Instrument function entry and exit with profiling calls
 
+fivcanon
+Common Report Var(flag_ivcanon)
+Create canonical induction variables in loops
+
 fkeep-inline-functions
 Common Report Var(flag_keep_inline_functions)
 Generate code for functions even if they are fully inlined

@@ -2837,10 +2837,12 @@ bsi_replace (const block_stmt_iterator *bsi, tree stmt, bool preserve_eh_info)
 
    In all cases, the returned *BSI points to the correct location.  The
    return value is true if insertion should be done after the location,
-   or false if it should be done before the location.  */
+   or false if it should be done before the location.  If new basic block
+   has to be created, it is stored in *NEW_BB.  */
 
 static bool
-tree_find_edge_insert_loc (edge e, block_stmt_iterator *bsi)
+tree_find_edge_insert_loc (edge e, block_stmt_iterator *bsi,
+			   basic_block *new_bb)
 {
   basic_block dest, src;
   tree tmp;
@@ -2917,6 +2919,8 @@ tree_find_edge_insert_loc (edge e, block_stmt_iterator *bsi)
 
   /* Otherwise, create a new basic block, and split this edge.  */
   dest = split_edge (e);
+  if (new_bb)
+    *new_bb = dest;
   e = dest->pred;
   goto restart;
 }
@@ -2960,7 +2964,7 @@ bsi_commit_edge_inserts_1 (edge e)
 
       PENDING_STMT (e) = NULL_TREE;
 
-      if (tree_find_edge_insert_loc (e, &bsi))
+      if (tree_find_edge_insert_loc (e, &bsi, NULL))
 	bsi_insert_after (&bsi, stmt, BSI_NEW_STMT);
       else
 	bsi_insert_before (&bsi, stmt, BSI_NEW_STMT);
@@ -2977,6 +2981,25 @@ bsi_insert_on_edge (edge e, tree stmt)
   append_to_statement_list (stmt, &PENDING_STMT (e));
 }
 
+/* Similar to bsi_insert_on_edge+bsi_commit_edge_inserts.  If new block has to
+   be created, it is returned.  */
+
+basic_block
+bsi_insert_on_edge_immediate (edge e, tree stmt)
+{
+  block_stmt_iterator bsi;
+  basic_block new_bb = NULL;
+
+  if (PENDING_STMT (e))
+    abort ();
+
+  if (tree_find_edge_insert_loc (e, &bsi, &new_bb))
+    bsi_insert_after (&bsi, stmt, BSI_NEW_STMT);
+  else
+    bsi_insert_before (&bsi, stmt, BSI_NEW_STMT);
+
+  return new_bb;
+}
 
 /*---------------------------------------------------------------------------
 	     Tree specific functions for CFG manipulation

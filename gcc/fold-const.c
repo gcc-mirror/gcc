@@ -865,14 +865,44 @@ negate_mathfn_p (enum built_in_function code)
   return false;
 }
 
+/* Check whether we may negate an integer constant T without causing
+   overflow.  */
+
+bool
+may_negate_without_overflow_p (tree t)
+{
+  unsigned HOST_WIDE_INT val;
+  unsigned int prec;
+  tree type;
+
+  if (TREE_CODE (t) != INTEGER_CST)
+    abort ();
+
+  type = TREE_TYPE (t);
+  if (TYPE_UNSIGNED (type))
+    return false;
+
+  prec = TYPE_PRECISION (type);
+  if (prec > HOST_BITS_PER_WIDE_INT)
+    {
+      if (TREE_INT_CST_LOW (t) != 0)
+	return true;
+      prec -= HOST_BITS_PER_WIDE_INT;
+      val = TREE_INT_CST_HIGH (t);
+    }
+  else
+    val = TREE_INT_CST_LOW (t);
+  if (prec < HOST_BITS_PER_WIDE_INT)
+    val &= ((unsigned HOST_WIDE_INT) 1 << prec) - 1;
+  return val != ((unsigned HOST_WIDE_INT) 1 << (prec - 1));
+}
+
 /* Determine whether an expression T can be cheaply negated using
    the function negate_expr.  */
 
 static bool
 negate_expr_p (tree t)
 {
-  unsigned HOST_WIDE_INT val;
-  unsigned int prec;
   tree type;
 
   if (t == 0)
@@ -888,19 +918,7 @@ negate_expr_p (tree t)
 	return true;
 
       /* Check that -CST will not overflow type.  */
-      prec = TYPE_PRECISION (type);
-      if (prec > HOST_BITS_PER_WIDE_INT)
-	{
-	  if (TREE_INT_CST_LOW (t) != 0)
-	    return true;
-	  prec -= HOST_BITS_PER_WIDE_INT;
-	  val = TREE_INT_CST_HIGH (t);
-	}
-      else
-	val = TREE_INT_CST_LOW (t);
-      if (prec < HOST_BITS_PER_WIDE_INT)
-	val &= ((unsigned HOST_WIDE_INT) 1 << prec) - 1;
-      return val != ((unsigned HOST_WIDE_INT) 1 << (prec - 1));
+      return may_negate_without_overflow_p (t);
 
     case REAL_CST:
     case NEGATE_EXPR:
@@ -9615,7 +9633,10 @@ tree_expr_nonzero_p (tree t)
 	return tree_expr_nonzero_p (TREE_OPERAND (t, 0));
 
     case INTEGER_CST:
-      return !integer_zerop (t);
+      /* We used to test for !integer_zerop here.  This does not work correctly
+	 if TREE_CONSTANT_OVERFLOW (t).  */
+      return (TREE_INT_CST_LOW (t) != 0
+	      || TREE_INT_CST_HIGH (t) != 0);
 
     case PLUS_EXPR:
       if (!TYPE_UNSIGNED (type) && !flag_wrapv)

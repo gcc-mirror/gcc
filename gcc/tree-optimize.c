@@ -367,7 +367,9 @@ init_tree_optimization_passes (void)
   p = &pass_loop.sub;
   NEXT_PASS (pass_loop_init);
   NEXT_PASS (pass_lim);
+  NEXT_PASS (pass_iv_canon);
   NEXT_PASS (pass_vectorize);
+  NEXT_PASS (pass_complete_unroll);
   NEXT_PASS (pass_loop_done);
   *p = NULL;
 

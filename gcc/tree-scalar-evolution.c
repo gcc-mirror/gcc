@@ -1001,18 +1001,17 @@ tree
 get_loop_exit_condition (struct loop *loop)
 {
   tree res = NULL_TREE;
+  edge exit_edge = loop->single_exit;
+
   
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "(get_loop_exit_condition \n  ");
   
-  if (loop->exit_edges)
+  if (exit_edge)
     {
-      edge exit_edge;
       tree expr;
       
-      exit_edge = loop->exit_edges[0];
       expr = last_stmt (exit_edge->src);
-      
       if (analyzable_condition (expr))
 	res = expr;
     }
@@ -1039,8 +1038,7 @@ get_exit_conditions_rec (struct loop *loop,
   get_exit_conditions_rec (loop->inner, exit_conditions);
   get_exit_conditions_rec (loop->next, exit_conditions);
   
-  flow_loop_scan (loop, LOOP_EXIT_EDGES);
-  if (loop->num_exits == 1)
+  if (loop->single_exit)
     {
       tree loop_condition = get_loop_exit_condition (loop);
       
@@ -2185,9 +2183,9 @@ number_of_iterations_in_loop (struct loop *loop)
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "(number_of_iterations_in_loop\n");
   
-  if (!loop->exit_edges)
+  exit = loop->single_exit;
+  if (!exit)
     goto end;
-  exit = loop->exit_edges[0];
 
   if (!number_of_iterations_exit (loop, exit, &niter_desc))
     goto end;
@@ -2458,10 +2456,7 @@ scev_initialize (struct loops *loops)
 
   for (i = 1; i < loops->num; i++)
     if (loops->parray[i])
-      {
-	flow_loop_scan (loops->parray[i], LOOP_EXIT_EDGES);
-	loops->parray[i]->nb_iterations = NULL_TREE;
-      }
+      loops->parray[i]->nb_iterations = NULL_TREE;
 }
 
 /* Cleans up the information cached by the scalar evolutions analysis.  */
