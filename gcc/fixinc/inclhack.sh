@@ -6,7 +6,7 @@
 # files which are fixed to work correctly with ANSI C and placed in a
 # directory that GNU C will search.
 #
-# This script contains 117 fixup scripts.
+# This script contains 118 fixup scripts.
 #
 # See README-fixinc for more information.
 #
@@ -1235,6 +1235,28 @@ struct rusage;
     rm -f ${DESTFILE}
     mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
     fi # end of bypass 'if'
+    fi # end of select 'if'
+    ;; # case end for file name test
+    esac
+
+
+    #
+    # Fix Broken_Cabs
+    #
+    case "${file}" in ./math.h )
+    if ( test -n "`egrep '^extern double cabs' ${file}`"
+       ) > /dev/null 2>&1 ; then
+    fixlist="${fixlist}
+      broken_cabs"
+    if [ ! -r ${DESTFILE} ]
+    then infile=${file}
+    else infile=${DESTFILE} ; fi 
+
+    sed -e '/^extern double cabs();/d' \
+        -e '/^extern double cabs(struct dbl_hypot);/d' \
+          < $infile > ${DESTDIR}/fixinc.tmp
+    rm -f ${DESTFILE}
+    mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
     fi # end of select 'if'
     ;; # case end for file name test
     esac

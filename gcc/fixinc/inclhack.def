@@ -750,6 +750,19 @@ fix = {
 
 
 /*
+ *  Remove `extern double cabs' declarations from math.h.
+ *  This conflicts with C9x.  Discovered on AIX.
+ */
+fix = {
+    hackname = broken_cabs;
+    files  = "math.h";
+    select = '^extern double cabs';
+    sed    = '/^extern double cabs();/d';
+    sed    = '/^extern double cabs(struct dbl_hypot);/d';
+};
+
+
+/*
  *  Fix <c_asm.h> on Digital UNIX V4.0:
  *  It contains a prototype for a DEC C internal asm() function,
  *  clashing with gcc's asm keyword.  So protect this with __DECC.

@@ -1,3 +1,10 @@
+2000-05-04  Bruce Korb  <bkorb@gnu.org>
+
+	* fixincl/inclhack.def: added broken_cabs -
+	Remove `extern double cabs' declarations from math.h
+	* fixincl/inclhack.sh: regen
+	* fixincl/fixincl.x: regen
+
 Thu May  4 09:45:12 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* rtl.h (MEM_COPY_ATTRIBUTES): Also copy RTX_UNCHANGING_P and
