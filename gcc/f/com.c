@@ -1,5 +1,5 @@
 /* com.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
@@ -13220,9 +13220,6 @@ duplicate_decls (tree newdecl, tree olddecl)
       COPY_DECL_RTL (olddecl, newdecl);
 
       /* Merge the type qualifiers.  */
-      if (DECL_BUILT_IN_NONANSI (olddecl) && TREE_THIS_VOLATILE (olddecl)
-	  && !TREE_THIS_VOLATILE (newdecl))
-	TREE_THIS_VOLATILE (olddecl) = 0;
       if (TREE_READONLY (newdecl))
 	TREE_READONLY (olddecl) = 1;
       if (TREE_THIS_VOLATILE (newdecl))
