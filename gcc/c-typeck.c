@@ -33,9 +33,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "c-tree.h"
 #include "flags.h"
 
-/* Nonzero if we've already printed a "partly bracketed initializer"
+/* Nonzero if we've already printed a "missing braces around initializer"
    message within this initializer.  */
-static int partial_bracket_mentioned = 0;
+static int missing_braces_mentioned;
 
 extern char *index ();
 extern char *rindex ();
@@ -4439,6 +4439,32 @@ pedwarn_init (format, local, ofwhat)
 
   pedwarn (format, buffer);
 }
+
+/* Issue a warning for a bad initializer component.
+   FORMAT describes the message.  OFWHAT is the name for the component.
+   LOCAL is a format string for formatting the insertion of the name
+   into the message.
+
+   If OFWHAT is null, the component name is stored on the spelling stack.
+   If the component name is a null string, then LOCAL is omitted entirely.  */
+
+static void
+warning_init (format, local, ofwhat)
+     char *format, *local, *ofwhat;
+{
+  char *buffer;
+
+  if (ofwhat == 0)
+    ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
+  buffer = (char *) alloca (strlen (local) + strlen (ofwhat) + 2);
+
+  if (*ofwhat)
+    sprintf (buffer, local, ofwhat);
+  else
+    buffer[0] = 0;
+
+  warning (format, buffer);
+}
 
 /* Digest the parser output INIT as an initializer for type TYPE.
    Return a C expression of type TYPE to represent the initial value.
@@ -4865,6 +4891,8 @@ start_init (decl, asmspec_tree, top_level)
 
   constructor_stack = 0;
 
+  missing_braces_mentioned = 0;
+
   spelling_base = 0;
   spelling_size = 0;
   RESTORE_SPELLING_DEPTH (0);
@@ -5105,18 +5133,25 @@ push_init_level (implicit)
       push_array_bounds (TREE_INT_CST_LOW (constructor_index));
     }
 
-  /* Turn off constructor_incremental if type is a struct with bitfields.  */
-  if (constructor_type != 0)
-    check_init_type_bitfields (constructor_type);
-
   if (constructor_type == 0)
     {
       error_init ("extra brace group at end of initializer%s",
 		  " for `%s'", NULL);
       constructor_fields = 0;
       constructor_unfilled_fields = 0;
+      return;
     }
-  else if (TREE_CODE (constructor_type) == RECORD_TYPE
+
+  /* Turn off constructor_incremental if type is a struct with bitfields.  */
+  check_init_type_bitfields (constructor_type);
+
+  if (implicit && warn_missing_braces && !missing_braces_mentioned)
+    {
+      missing_braces_mentioned = 1;
+      warning_init ("missing braces around initializer%s", " for `%s'", NULL);
+    }
+
+  if (TREE_CODE (constructor_type) == RECORD_TYPE
 	   || TREE_CODE (constructor_type) == UNION_TYPE)
     {
       constructor_fields = TYPE_FIELDS (constructor_type);
@@ -5143,7 +5178,7 @@ push_init_level (implicit)
     }
   else
     {
-      warning ("braces around scalar initializer");
+      warning_init ("braces around scalar initializer%s", " for `%s'", NULL);
       constructor_fields = constructor_type;
       constructor_unfilled_fields = constructor_type;
     }
