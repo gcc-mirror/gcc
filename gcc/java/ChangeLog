@@ -1,3 +1,10 @@
+2002-11-22  Ranjit Mathew <rmathew@hotmail.com>
+	    Andrew Haley <aph@redhat.com>
+
+	* gcc/java/jcf-write.c (write_classfile): Remove target
+	class file, if it exists, before renaming the temporary
+	class file to it.
+
 2002-11-19  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* jvspec.c (lang_specific_spec_functions): New.
