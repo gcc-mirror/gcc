@@ -191,7 +191,7 @@ AC_MSG_RESULT($gcc_cv_header_inttypes_h)
 
 AC_CHECK_FUNCS(strtoul bsearch strerror putenv popen bcopy bzero bcmp \
 	index rindex strchr strrchr kill getrlimit setrlimit atoll atoq \
-	sysconf isascii)
+	sysconf isascii gettimeofday)
 
 GCC_FUNC_VFPRINTF_DOPRNT
 GCC_FUNC_PRINTF_PTR
