@@ -1,5 +1,12 @@
 2003-04-18  Olivier Hainque <hainque@act-europe.fr>
 
+	* calls.c (expand_call): Move special case for constructor calls
+	to right place. Ensures constructor calls used to initialize
+	arguments get a clean outgoing argument block for themselves. 
+	Move check for stack deallocation completeness until after last
+	deallocation.  Add stack_pointer_delta to set of state
+	variables saved and restored along with current stack_level.
+	
         * integrate.c (expand_inline_function): Ensure non-const actuals
         don't end up const in the caller's flow after conversion to possibly
         const formal type.
