@@ -153,7 +153,11 @@ package body Ch12 is
 
       Decl_Loop : loop
          P_Pragmas_Opt (Decls);
-         Ignore (Tok_Private);
+
+         if Token = Tok_Private then
+            Error_Msg_S ("generic private child packages not permitted");
+            Scan; -- past PRIVATE
+         end if;
 
          if Token = Tok_Use then
             Append (P_Use_Clause, Decls);
