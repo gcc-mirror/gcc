@@ -1,3 +1,9 @@
+Thu Jul  9 18:24:56 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (choose_reload_regs): If using an equivalence from
+	find_equiv_reg and reg_reloaded_valid is not set for this register,
+	clear the associated spill_reg_store.
+
 Thu Jul  9 18:12:49 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (emit_reload_insns): If an output reload copies only
