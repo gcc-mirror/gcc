@@ -2933,13 +2933,13 @@ handle_asm_insn (df, insn)
       CLEAR_HARD_REG_SET (allowed);
       while (1)
 	{
-	  char c = *p++;
+	  char c = *p;
 
 	  if (c == '\0' || c == ',' || c == '#')
 	    {
 	      /* End of one alternative - mark the regs in the current
-	       class, and reset the class.
-	       */
+	       class, and reset the class.  */
+	      p++;
 	      IOR_HARD_REG_SET (allowed, reg_class_contents[cls]);
 	      if (cls != NO_REGS)
 		nothing_allowed = 0;
@@ -2977,8 +2977,10 @@ handle_asm_insn (df, insn)
 	      default:
 		cls =
 		  (int) reg_class_subunion[cls][(int)
-						REG_CLASS_FROM_LETTER (c)];
+						REG_CLASS_FROM_CONSTRAINT (c,
+									   p)];
 	    }
+	  p += CONSTRAINT_LEN (c, p);
 	}
 
       /* Now make conflicts between this web, and all hardregs, which

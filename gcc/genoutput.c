@@ -189,6 +189,8 @@ static void gen_insn PARAMS ((rtx, int));
 static void gen_peephole PARAMS ((rtx, int));
 static void gen_expand PARAMS ((rtx, int));
 static void gen_split PARAMS ((rtx, int));
+static void check_constraint_len PARAMS ((void));
+static int constraint_len PARAMS ((const char *, int));
 
 const char *
 get_insn_name (index)
@@ -749,7 +751,51 @@ validate_insn_alternatives (d)
   for (start = 0; start < d->n_operands; start++)
     if (d->operand[start].n_alternatives > 0)
       {
-	if (n == 0)
+	int len, i;
+	const char *p;
+	char c;
+	int which_alternative = 0;
+	int alternative_count_unsure = 0;
+
+	for (p = d->operand[start].constraint; (c = *p); p += len)
+	  {
+	    len = CONSTRAINT_LEN (c, p);
+
+	    if (len < 1 || (len > 1 && strchr (",#*+=&%!0123456789", c)))
+	      {
+		message_with_line (d->lineno,
+				   "invalid length %d for char '%c' in alternative %d of operand %d",
+				    len, c, which_alternative, start);
+		len = 1;
+		have_error = 1;
+	      }
+
+	    if (c == ',')
+	      {
+	        which_alternative++;
+		continue;
+	      }
+
+	    for (i = 1; i < len; i++)
+	      if (p[i] == '\0')
+		{
+		  message_with_line (d->lineno,
+				     "NUL in alternative %d of operand %d",
+				     which_alternative, start);
+		  alternative_count_unsure = 1;
+		  break;
+		}
+	      else if (strchr (",#*", p[i]))
+		{
+		  message_with_line (d->lineno,
+				     "'%c' in alternative %d of operand %d",
+				     p[i], which_alternative, start);
+		  alternative_count_unsure = 1;
+		}
+	  }
+	if (alternative_count_unsure)
+	  have_error = 1;
+	else if (n == 0)
 	  n = d->operand[start].n_alternatives;
 	else if (n != d->operand[start].n_alternatives)
 	  {
@@ -816,6 +862,7 @@ gen_insn (insn, lineno)
   d->n_operands = max_opno + 1;
   d->n_dups = num_dups;
 
+  check_constraint_len ();
   validate_insn_operands (d);
   validate_insn_alternatives (d);
   place_operands (d);
@@ -1042,4 +1089,42 @@ strip_whitespace (s)
 
   *p = '\0';
   return q;
+}
+
+/* Verify that DEFAULT_CONSTRAINT_LEN is used properly and not
+   tampered with.  This isn't bullet-proof, but it should catch
+   most genuine mistakes.  */
+static void
+check_constraint_len ()
+{
+  const char *p;
+  int d;
+
+  for (p = ",#*+=&%!1234567890"; *p; p++)
+    for (d = -9; d < 9; d++)
+      if (constraint_len (p, d) != d)
+	abort ();
+}
+
+static int
+constraint_len (p, genoutput_default_constraint_len)
+     const char *p;
+     int genoutput_default_constraint_len;
+{
+  /* Check that we still match defaults.h .  First we do a generation-time
+     check that fails if the value is not the expected one...  */
+  if (DEFAULT_CONSTRAINT_LEN (*p, p) != 1)
+    abort ();
+  /* And now a comile-time check that should give a diagnostic if the
+     definition doesn't exactly match.  */
+#define DEFAULT_CONSTRAINT_LEN(C,STR) 1
+  /* Now re-define DEFAULT_CONSTRAINT_LEN so that we can verify it is
+     being used.  */
+#undef DEFAULT_CONSTRAINT_LEN
+#define DEFAULT_CONSTRAINT_LEN(C,STR) \
+  ((C) != *p || STR != p ? -1 : genoutput_default_constraint_len)
+  return CONSTRAINT_LEN (*p, p);
+  /* And set it back.  */
+#undef DEFAULT_CONSTRAINT_LEN
+#define DEFAULT_CONSTRAINT_LEN(C,STR) 1
 }

@@ -1910,7 +1910,8 @@ If the usage of an entire class of registers depends on the target
 flags, you may indicate this to GCC by using this macro to modify
 @code{fixed_regs} and @code{call_used_regs} to 1 for each of the
 registers in the classes which should not be used by GCC@.  Also define
-the macro @code{REG_CLASS_FROM_LETTER} to return @code{NO_REGS} if it
+the macro @code{REG_CLASS_FROM_LETTER} / @code{REG_CLASS_FROM_CONSTRAINT}
+to return @code{NO_REGS} if it
 is called with a letter for a class that shouldn't be used.
 
 (However, if this class is not included in @code{GENERAL_REGS} and all
@@ -2330,6 +2331,21 @@ index register must belong.  An index register is one used in an
 address where its value is either multiplied by a scale factor or
 added to another register (as well as added to a displacement).
 
+@findex CONSTRAINT_LEN
+@item CONSTRAINT_LEN (@var{char}, @var{str})
+For the constraint at the start of @var{str}, which starts with the letter
+@var{c}, return the length.  This allows you to have register class /
+constant / extra constraints that are longer than a single letter;
+you don't need to define this macro if you can do with single-letter
+constraints only.  The definition of this macro should use
+DEFAULT_CONSTRAINT_LEN for all the characters that you don't want
+to handle specially.
+There are some sanity checks in genoutput.c that check the constraint lengths
+for the md file, so you can also use this macro to help you while you are
+transitioning from a byzantine single-letter-constraint scheme: when you
+return a negative length for a constraint you want to re-use, genoutput
+will complain about every instance where it is used in the md file.
+
 @findex REG_CLASS_FROM_LETTER
 @item REG_CLASS_FROM_LETTER (@var{char})
 A C expression which defines the machine-dependent operand constraint
@@ -2338,6 +2354,12 @@ value should be the register class corresponding to it.  Otherwise,
 the value should be @code{NO_REGS}.  The register letter @samp{r},
 corresponding to class @code{GENERAL_REGS}, will not be passed
 to this macro; you do not need to handle it.
+
+@findex REG_CLASS_FROM_CONSTRAINT
+@item REG_CLASS_FROM_CONSTRAINT (@var{char}, @var{str})
+Like @code{REG_CLASS_FROM_LETTER}, but you also get the constraint string
+passed in @var{str}, so that you can use suffixes to distinguish between
+different variants.
 
 @findex REGNO_OK_FOR_BASE_P
 @item REGNO_OK_FOR_BASE_P (@var{num})
@@ -2608,6 +2630,12 @@ the appropriate range and return 1 if so, 0 otherwise.  If @var{c} is
 not one of those letters, the value should be 0 regardless of
 @var{value}.
 
+@findex CONST_OK_FOR_CONSTRAINT_P
+@item CONST_OK_FOR_CONSTRAINT_P (@var{value}, @var{c}, @var{str})
+Like @code{CONST_OK_FOR_LETTER_P}, but you also get the constraint
+string passed in @var{str}, so that you can use suffixes to distinguish
+between different variants.
+
 @findex CONST_DOUBLE_OK_FOR_LETTER_P
 @item CONST_DOUBLE_OK_FOR_LETTER_P (@var{value}, @var{c})
 A C expression that defines the machine-dependent operand constraint
@@ -2624,12 +2652,19 @@ letters, the value should be 0 regardless of @var{value}.
 or both kinds of values.  It can use @code{GET_MODE} to distinguish
 between these kinds.
 
+@findex CONST_DOUBLE_OK_FOR_CONSTRAINT_P
+@item CONST_DOUBLE_OK_FOR_CONSTRAINT_P (@var{value}, @var{c}, @var{str})
+Like @code{CONST_DOUBLE_OK_FOR_LETTER_P}, but you also get the constraint
+string passed in @var{str}, so that you can use suffixes to distinguish
+between different variants.
+
 @findex EXTRA_CONSTRAINT
 @item EXTRA_CONSTRAINT (@var{value}, @var{c})
 A C expression that defines the optional machine-dependent constraint
 letters that can be used to segregate specific types of operands, usually
 memory references, for the target machine.  Any letter that is not
-elsewhere defined and not matched by @code{REG_CLASS_FROM_LETTER}
+elsewhere defined and not matched by @code{REG_CLASS_FROM_LETTER} /
+@code{REG_CLASS_FROM_CONSTRAINT}
 may be used.  Normally this macro will not be defined.
 
 If it is required for a particular target machine, it should return 1
@@ -2645,14 +2680,21 @@ a @samp{Q} constraint on the input and @samp{r} on the output.  The next
 alternative specifies @samp{m} on the input and a register class that
 does not include r0 on the output.
 
+@findex EXTRA_CONSTRAINT_STR
+@item EXTRA_CONSTRAINT_STR (@var{value}, @var{c}, @var{str})
+Like @code{EXTRA_CONSTRAINT}, but you also get the constraint string passed
+in @var{str}, so that you can use suffixes to distinguish between different
+variants.
+
 @findex EXTRA_MEMORY_CONSTRAINT
-@item EXTRA_MEMORY_CONSTRAINT (@var{c})
+@item EXTRA_MEMORY_CONSTRAINT (@var{c}, @var{str})
 A C expression that defines the optional machine-dependent constraint
 letters, amongst those accepted by @code{EXTRA_CONSTRAINT}, that should
 be treated like memory constraints by the reload pass.
 
 It should return 1 if the operand type represented by the constraint 
-letter @var{c} comprises a subset of all memory references including
+at the start of @var{str}, the first letter of which is the letter @var{c},
+ comprises a subset of all memory references including
 all those whose address is simply a base register.  This allows the reload 
 pass to reload an operand, if it does not directly correspond to the operand 
 type of @var{c}, by copying its address into a base register.
@@ -2668,16 +2710,18 @@ into a base register if required.  This is analogous to the way
 a @samp{o} constraint can handle any memory operand.
 
 @findex EXTRA_ADDRESS_CONSTRAINT
-@item EXTRA_ADDRESS_CONSTRAINT (@var{c})
+@item EXTRA_ADDRESS_CONSTRAINT (@var{c}, @var{str})
 A C expression that defines the optional machine-dependent constraint
-letters, amongst those accepted by @code{EXTRA_CONSTRAINT}, that should
+letters, amongst those accepted by @code{EXTRA_CONSTRAINT} /
+@code{EXTRA_CONSTRAINT_STR}, that should
 be treated like address constraints by the reload pass.
 
 It should return 1 if the operand type represented by the constraint 
-letter @var{c} comprises a subset of all memory addresses including
+at the startr of @{str}, which starts with the letter @var{c}, comprises
+a subset of all memory addresses including
 all those that consist of just a base register.  This allows the reload 
 pass to reload an operand, if it does not directly correspond to the operand 
-type of @var{c}, by copying it into a base register.
+type of @var{str}, by copying it into a base register.
 
 Any constraint marked as @code{EXTRA_ADDRESS_CONSTRAINT} can only
 be used with the @code{address_operand} predicate.  It is treated 

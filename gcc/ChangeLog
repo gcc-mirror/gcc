@@ -1,4 +1,33 @@
-Thu Jan  9 17:23:19 2003  J"orn Rennecke <joern.rennecke@superh.com>
+Thu Jan  9 17:26:40 2003  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* defaults.h (EXTRA_MEMORY_CONSTRAINT): Add STR argument.
+	(EXTRA_ADDRESS_CONSTRAINT): Likewise.
+	(CONSTRAINT_LEN): Provide default definition.
+	(CONST_OK_FOR_CONSTRAINT_P): Likewise.
+	(CONST_DOUBLE_OK_FOR_CONSTRAINT_P): Likewise.
+	(EXTRA_CONSTRAINT_STR): Likewise.
+	(REG_CLASS_FROM_CONSTRAINT): Define.
+	* genoutput.c (check_constraint_len, constraint_len): New functions.
+	(validate_insn_alternatives): Check CONSTRAINT_LEN for each
+	constraint / modifier.
+	(gen_insn): Call check_constraint_len.
+	* local-alloc.c (block_alloc): Update to use new macros / pass
+	second argument to EXTRA_{MEMORY,ADDRESS}_CONSTRAINT.
+	* ra-build.c (handle_asm_insn): Likewise.
+	* recog.c (asm_operand_ok, preprocess_constraints): Likewise.
+	(constrain_operands, peep2_find_free_register): Likewise.
+	* regclass.c (record_operand_costs, record_reg_classes): Likewise.
+	* regmove.c (find_matches): Likewise.
+	* reload.c (push_secondary_reload, find_reloads): Likewise.
+	(alternative_allows_memconst): Likewise.
+	* reload1.c (maybe_fix_stack_asms): Likewise.
+	(reload_cse_simplify_operands): Likewise.
+	* stmt.c (parse_output_constraint, parse_input_constraint): Likewise.
+	* doc/tm.texi (CONSTRAINT_LEN, REG_CLASS_FROM_CONSTRAINT): Document.
+	(CONST_OK_FOR_CONSTRAINT_P): Likewise.
+	(CONST_DOUBLE_OK_FOR_CONSTRAINT_P, EXTRA_CONSTRAINT_STR): Likewise.
+	(EXTRA_MEMORY_CONSTRAINT, EXTRA_ADDRESS_CONSTRAINT): Add STR argument.
+	* config/s390/s390.h (EXTRA_MEMORY_CONSTRAINT): Likewise.
 
 	* sh.h (OVERRIDE_OPTIONS): Allow first scheduling pass for SH5.
 

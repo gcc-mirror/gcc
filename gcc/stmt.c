@@ -1197,7 +1197,7 @@ parse_output_constraint (constraint_p, operand_num, ninputs, noutputs,
     }
 
   /* Loop through the constraint string.  */
-  for (p = constraint + 1; *p; ++p)
+  for (p = constraint + 1; *p; p += CONSTRAINT_LEN (*p, p))
     switch (*p)
       {
       case '+':
@@ -1249,12 +1249,12 @@ parse_output_constraint (constraint_p, operand_num, ninputs, noutputs,
       default:
 	if (!ISALPHA (*p))
 	  break;
-	if (REG_CLASS_FROM_LETTER (*p) != NO_REGS)
+	if (REG_CLASS_FROM_CONSTRAINT (*p, p) != NO_REGS)
 	  *allows_reg = true;
-#ifdef EXTRA_CONSTRAINT
-	else if (EXTRA_ADDRESS_CONSTRAINT (*p))
+#ifdef EXTRA_CONSTRAINT_STR
+	else if (EXTRA_ADDRESS_CONSTRAINT (*p, p))
 	  *allows_reg = true;
-	else if (EXTRA_MEMORY_CONSTRAINT (*p))
+	else if (EXTRA_MEMORY_CONSTRAINT (*p, p))
 	  *allows_mem = true;
 	else
 	  {
@@ -1297,7 +1297,7 @@ parse_input_constraint (constraint_p, input_num, ninputs, noutputs, ninout,
 
   /* Make sure constraint has neither `=', `+', nor '&'.  */
 
-  for (j = 0; j < c_len; j++)
+  for (j = 0; j < c_len; j += CONSTRAINT_LEN (constraint[j], constraint+j))
     switch (constraint[j])
       {
       case '+':  case '=':  case '&':
@@ -1356,10 +1356,16 @@ parse_input_constraint (constraint_p, input_num, ninputs, noutputs, ninout,
 	      *constraint_p = constraint;
 	      c_len = strlen (constraint);
 	      j = 0;
+	      /* ??? At the end of the loop, we will skip the first part of
+		 the matched constraint.  This assumes not only that the
+		 other constraint is an output constraint, but also that
+		 the '=' or '+' come first.  */
 	      break;
 	    }
 	  else
 	    j = end - constraint;
+	  /* Anticipate increment at end of loop.  */
+	  j--;
 	}
 	/* Fall through.  */
 
@@ -1378,12 +1384,13 @@ parse_input_constraint (constraint_p, input_num, ninputs, noutputs, ninout,
 	    error ("invalid punctuation `%c' in constraint", constraint[j]);
 	    return false;
 	  }
-	if (REG_CLASS_FROM_LETTER (constraint[j]) != NO_REGS)
+	if (REG_CLASS_FROM_CONSTRAINT (constraint[j], constraint + j)
+	    != NO_REGS)
 	  *allows_reg = true;
-#ifdef EXTRA_CONSTRAINT
-	else if (EXTRA_ADDRESS_CONSTRAINT (constraint[j]))
+#ifdef EXTRA_CONSTRAINT_STR
+	else if (EXTRA_ADDRESS_CONSTRAINT (constraint[j], constraint + j))
 	  *allows_reg = true;
-	else if (EXTRA_MEMORY_CONSTRAINT (constraint[j]))
+	else if (EXTRA_MEMORY_CONSTRAINT (constraint[j], constraint + j))
 	  *allows_mem = true;
 	else
 	  {

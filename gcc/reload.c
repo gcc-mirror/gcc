@@ -381,11 +381,13 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
 	insn_class = ALL_REGS;
       else
 	{
-	  char insn_letter
-	    = insn_data[(int) icode].operand[!in_p].constraint[in_p];
+	  const char *insn_constraint
+	    = &insn_data[(int) icode].operand[!in_p].constraint[in_p];
+	  char insn_letter = *insn_constraint;
 	  insn_class
 	    = (insn_letter == 'r' ? GENERAL_REGS
-	       : REG_CLASS_FROM_LETTER ((unsigned char) insn_letter));
+	       : REG_CLASS_FROM_CONSTRAINT ((unsigned char) insn_letter,
+					    insn_constraint));
 
           if (insn_class == NO_REGS)
 	    abort ();
@@ -403,11 +405,14 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
 	mode = insn_data[(int) icode].operand[2].mode;
       else
 	{
-	  char t_letter = insn_data[(int) icode].operand[2].constraint[2];
+	  const char *t_constraint
+	    = &insn_data[(int) icode].operand[2].constraint[2];
+	  char t_letter = *t_constraint;
 	  class = insn_class;
 	  t_mode = insn_data[(int) icode].operand[2].mode;
 	  t_class = (t_letter == 'r' ? GENERAL_REGS
-		     : REG_CLASS_FROM_LETTER ((unsigned char) t_letter));
+		     : REG_CLASS_FROM_CONSTRAINT ((unsigned char) t_letter,
+						  t_constraint));
 	  t_icode = icode;
 	  icode = CODE_FOR_nothing;
 	}
@@ -2587,8 +2592,9 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
       /* Scan this operand's constraint to see if it is an output operand,
 	 an in-out operand, is commutative, or should match another.  */
 
-      while ((c = *p++))
+      while ((c = *p))
 	{
+	  p += CONSTRAINT_LEN (c, p);
 	  if (c == '=')
 	    modified[i] = RELOAD_WRITE;
 	  else if (c == '+')
@@ -2664,7 +2670,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	/* Ignore things like match_operator operands.  */
 	;
       else if (constraints[i][0] == 'p'
-	       || EXTRA_ADDRESS_CONSTRAINT (constraints[i][0]))
+	       || EXTRA_ADDRESS_CONSTRAINT (constraints[i][0], constraints[i]))
 	{
 	  find_reloads_address (recog_data.operand_mode[i], (rtx*) 0,
 				recog_data.operand[i],
@@ -2829,6 +2835,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
       for (i = 0; i < noperands; i++)
 	{
 	  char *p = constraints[i];
+	  char *end;
+	  int len;
 	  int win = 0;
 	  int did_match = 0;
 	  /* 0 => this operand can be reloaded somehow for this alternative.  */
@@ -2836,6 +2844,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	  /* 0 => this operand can be reloaded if the alternative allows regs.  */
 	  int winreg = 0;
 	  int c;
+	  int m;
 	  rtx operand = recog_data.operand[i];
 	  int offset = 0;
 	  /* Nonzero means this is a MEM that must be reloaded into a reg
@@ -2964,9 +2973,16 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	     or set WINREG if this operand could fit after reloads
 	     provided the constraint allows some registers.  */
 
-	  while (*p && (c = *p++) != ',')
-	    switch (c)
+	  do
+	    switch ((c = *p, len = CONSTRAINT_LEN (c, p)), c)
 	      {
+	      case '\0':
+		len = 0;
+		break;
+	      case ',':
+		c = '\0';
+		break;
+
 	      case '=':  case '+':  case '*':
 		break;
 
@@ -2987,15 +3003,19 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      case '#':
 		/* Ignore rest of this alternative as far as
 		   reloading is concerned.  */
-		while (*p && *p != ',')
+		do
 		  p++;
+		while (*p && *p != ',');
+		len = 0;
 		break;
 
 	      case '0':  case '1':  case '2':  case '3':  case '4':
 	      case '5':  case '6':  case '7':  case '8':  case '9':
-		c = strtoul (p - 1, &p, 10);
+		m = strtoul (p, &end, 10);
+		p = end;
+		len = 0;
 
-		this_alternative_matches[i] = c;
+		this_alternative_matches[i] = m;
 		/* We are supposed to match a previous operand.
 		   If we do, we win if that one did.
 		   If we do not, count both of the operands as losers.
@@ -3003,7 +3023,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		   only a single reload insn will be needed to make
 		   the two operands win.  As a result, this alternative
 		   may be rejected when it is actually desirable.)  */
-		if ((swapped && (c != commutative || i != commutative + 1))
+		if ((swapped && (m != commutative || i != commutative + 1))
 		    /* If we are matching as if two operands were swapped,
 		       also pretend that operands_match had been computed
 		       with swapped.
@@ -3011,22 +3031,22 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		       don't exchange them, because operands_match is valid
 		       only on one side of its diagonal.  */
 		    ? (operands_match
-		       [(c == commutative || c == commutative + 1)
-		       ? 2 * commutative + 1 - c : c]
+		       [(m == commutative || m == commutative + 1)
+		       ? 2 * commutative + 1 - m : m]
 		       [(i == commutative || i == commutative + 1)
 		       ? 2 * commutative + 1 - i : i])
-		    : operands_match[c][i])
+		    : operands_match[m][i])
 		  {
 		    /* If we are matching a non-offsettable address where an
 		       offsettable address was expected, then we must reject
 		       this combination, because we can't reload it.  */
-		    if (this_alternative_offmemok[c]
-			&& GET_CODE (recog_data.operand[c]) == MEM
-			&& this_alternative[c] == (int) NO_REGS
-			&& ! this_alternative_win[c])
+		    if (this_alternative_offmemok[m]
+			&& GET_CODE (recog_data.operand[m]) == MEM
+			&& this_alternative[m] == (int) NO_REGS
+			&& ! this_alternative_win[m])
 		      bad = 1;
 
-		    did_match = this_alternative_win[c];
+		    did_match = this_alternative_win[m];
 		  }
 		else
 		  {
@@ -3034,21 +3054,21 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		    rtx value;
 		    /* Retroactively mark the operand we had to match
 		       as a loser, if it wasn't already.  */
-		    if (this_alternative_win[c])
+		    if (this_alternative_win[m])
 		      losers++;
-		    this_alternative_win[c] = 0;
-		    if (this_alternative[c] == (int) NO_REGS)
+		    this_alternative_win[m] = 0;
+		    if (this_alternative[m] == (int) NO_REGS)
 		      bad = 1;
 		    /* But count the pair only once in the total badness of
 		       this alternative, if the pair can be a dummy reload.  */
 		    value
 		      = find_dummy_reload (recog_data.operand[i],
-					   recog_data.operand[c],
+					   recog_data.operand[m],
 					   recog_data.operand_loc[i],
-					   recog_data.operand_loc[c],
-					   operand_mode[i], operand_mode[c],
-					   this_alternative[c], -1,
-					   this_alternative_earlyclobber[c]);
+					   recog_data.operand_loc[m],
+					   operand_mode[i], operand_mode[m],
+					   this_alternative[m], -1,
+					   this_alternative_earlyclobber[m]);
 
 		    if (value != 0)
 		      losers--;
@@ -3056,7 +3076,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		/* This can be fixed with reloads if the operand
 		   we are supposed to match can be fixed with reloads.  */
 		badop = 0;
-		this_alternative[i] = this_alternative[c];
+		this_alternative[i] = this_alternative[m];
 
 		/* If we have to reload this operand and some previous
 		   operand also had to match the same thing as this
@@ -3175,7 +3195,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      case 'G':
 	      case 'H':
 		if (GET_CODE (operand) == CONST_DOUBLE
-		    && CONST_DOUBLE_OK_FOR_LETTER_P (operand, c))
+		    && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (operand, c, p))
 		  win = 1;
 		break;
 
@@ -3209,7 +3229,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      case 'O':
 	      case 'P':
 		if (GET_CODE (operand) == CONST_INT
-		    && CONST_OK_FOR_LETTER_P (INTVAL (operand), c))
+		    && CONST_OK_FOR_CONSTRAINT_P (INTVAL (operand), c, p))
 		  win = 1;
 		break;
 
@@ -3242,14 +3262,14 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		goto reg;
 
 	      default:
-		if (REG_CLASS_FROM_LETTER (c) == NO_REGS)
+		if (REG_CLASS_FROM_CONSTRAINT (c, p) == NO_REGS)
 		  {
-#ifdef EXTRA_CONSTRAINT
-		    if (EXTRA_MEMORY_CONSTRAINT (c))
+#ifdef EXTRA_CONSTRAINT_STR
+		    if (EXTRA_MEMORY_CONSTRAINT (c, p))
 		      {
 			if (force_reload)
 			  break;
-		        if (EXTRA_CONSTRAINT (operand, c))
+		        if (EXTRA_CONSTRAINT_STR (operand, c, p))
 		          win = 1;
 			/* If the address was already reloaded,
 			   we win as well.  */
@@ -3262,7 +3282,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			    && REGNO (operand) >= FIRST_PSEUDO_REGISTER
 			    && reg_renumber[REGNO (operand)] < 0
 			    && ((reg_equiv_mem[REGNO (operand)] != 0
-			         && EXTRA_CONSTRAINT (reg_equiv_mem[REGNO (operand)], c))
+			         && EXTRA_CONSTRAINT_STR (reg_equiv_mem[REGNO (operand)], c, p))
 			        || (reg_equiv_address[REGNO (operand)] != 0)))
 			  win = 1;
 
@@ -3276,9 +3296,9 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			offmemok = 1;
 			break;
 		      }
-		    if (EXTRA_ADDRESS_CONSTRAINT (c))
+		    if (EXTRA_ADDRESS_CONSTRAINT (c, p))
 		      {
-		        if (EXTRA_CONSTRAINT (operand, c))
+		        if (EXTRA_CONSTRAINT_STR (operand, c, p))
 		          win = 1;
 
 			/* If we didn't already win, we can reload
@@ -3292,14 +3312,16 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			break;
 		      }
 
-		    if (EXTRA_CONSTRAINT (operand, c))
+		    if (EXTRA_CONSTRAINT_STR (operand, c, p))
 		      win = 1;
 #endif
 		    break;
 		  }
 
 		this_alternative[i]
-		  = (int) reg_class_subunion[this_alternative[i]][(int) REG_CLASS_FROM_LETTER (c)];
+		  = (int) (reg_class_subunion
+			   [this_alternative[i]]
+			   [(int) REG_CLASS_FROM_CONSTRAINT (c, p)]);
 	      reg:
 		if (GET_MODE (operand) == BLKmode)
 		  break;
@@ -3310,6 +3332,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		  win = 1;
 		break;
 	      }
+	  while ((p += len), c);
 
 	  constraints[i] = p;
 
@@ -4358,8 +4381,9 @@ alternative_allows_memconst (constraint, altnum)
     }
   /* Scan the requested alternative for 'm' or 'o'.
      If one of them is present, this alternative accepts memory constants.  */
-  while ((c = *constraint++) && c != ',' && c != '#')
-    if (c == 'm' || c == 'o' || EXTRA_MEMORY_CONSTRAINT (c))
+  for (; (c = *constraint) && c != ',' && c != '#';
+       constraint += CONSTRAINT_LEN (c, constraint))
+    if (c == 'm' || c == 'o' || EXTRA_MEMORY_CONSTRAINT (c, constraint))
       return 1;
   return 0;
 }

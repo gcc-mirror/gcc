@@ -977,7 +977,7 @@ record_operand_costs (insn, op_costs, reg_pref)
 	record_address_regs (XEXP (recog_data.operand[i], 0),
 			     MODE_BASE_REG_CLASS (modes[i]), frequency * 2);
       else if (constraints[i][0] == 'p'
-	       || EXTRA_ADDRESS_CONSTRAINT (constraints[i][0]))
+	       || EXTRA_ADDRESS_CONSTRAINT (constraints[i][0], constraints[i]))
 	record_address_regs (recog_data.operand[i],
 			     MODE_BASE_REG_CLASS (modes[i]), frequency * 2);
     }
@@ -1548,154 +1548,161 @@ record_reg_classes (n_alts, n_ops, ops, modes,
 	     any of the constraints.  Collect the valid register classes
 	     and see if this operand accepts memory.  */
 
-	  while (*p && (c = *p++) != ',')
-	    switch (c)
-	      {
-	      case '*':
-		/* Ignore the next letter for this pass.  */
-		p++;
-		break;
-
-	      case '?':
-		alt_cost += 2;
-	      case '!':  case '#':  case '&':
-	      case '0':  case '1':  case '2':  case '3':  case '4':
-	      case '5':  case '6':  case '7':  case '8':  case '9':
-		break;
-
-	      case 'p':
-		allows_addr = 1;
-		win = address_operand (op, GET_MODE (op));
-		/* We know this operand is an address, so we want it to be
-		   allocated to a register that can be the base of an
-		   address, ie BASE_REG_CLASS.  */
-		classes[i]
-		  = reg_class_subunion[(int) classes[i]]
-		    [(int) MODE_BASE_REG_CLASS (VOIDmode)];
-		break;
-
-	      case 'm':  case 'o':  case 'V':
-		/* It doesn't seem worth distinguishing between offsettable
-		   and non-offsettable addresses here.  */
-		allows_mem[i] = 1;
-		if (GET_CODE (op) == MEM)
-		  win = 1;
-		break;
-
-	      case '<':
-		if (GET_CODE (op) == MEM
-		    && (GET_CODE (XEXP (op, 0)) == PRE_DEC
-			|| GET_CODE (XEXP (op, 0)) == POST_DEC))
-		  win = 1;
-		break;
-
-	      case '>':
-		if (GET_CODE (op) == MEM
-		    && (GET_CODE (XEXP (op, 0)) == PRE_INC
-			|| GET_CODE (XEXP (op, 0)) == POST_INC))
-		  win = 1;
-		break;
-
-	      case 'E':
-	      case 'F':
-		if (GET_CODE (op) == CONST_DOUBLE
-		    || (GET_CODE (op) == CONST_VECTOR
-			&& (GET_MODE_CLASS (GET_MODE (op))
-			    == MODE_VECTOR_FLOAT)))
-		  win = 1;
-		break;
-
-	      case 'G':
-	      case 'H':
-		if (GET_CODE (op) == CONST_DOUBLE
-		    && CONST_DOUBLE_OK_FOR_LETTER_P (op, c))
-		  win = 1;
-		break;
-
-	      case 's':
-		if (GET_CODE (op) == CONST_INT
-		    || (GET_CODE (op) == CONST_DOUBLE
-			&& GET_MODE (op) == VOIDmode))
+	  while ((c = *p))
+	    {
+	      switch (c)
+		{
+		case ',':
 		  break;
-	      case 'i':
-		if (CONSTANT_P (op)
-#ifdef LEGITIMATE_PIC_OPERAND_P
-		    && (! flag_pic || LEGITIMATE_PIC_OPERAND_P (op))
-#endif
-		    )
-		  win = 1;
-		break;
+		case '*':
+		  /* Ignore the next letter for this pass.  */
+		  c = *++p;
+		  break;
 
-	      case 'n':
-		if (GET_CODE (op) == CONST_INT
-		    || (GET_CODE (op) == CONST_DOUBLE
-			&& GET_MODE (op) == VOIDmode))
-		  win = 1;
-		break;
+		case '?':
+		  alt_cost += 2;
+		case '!':  case '#':  case '&':
+		case '0':  case '1':  case '2':  case '3':  case '4':
+		case '5':  case '6':  case '7':  case '8':  case '9':
+		  break;
 
-	      case 'I':
-	      case 'J':
-	      case 'K':
-	      case 'L':
-	      case 'M':
-	      case 'N':
-	      case 'O':
-	      case 'P':
-		if (GET_CODE (op) == CONST_INT
-		    && CONST_OK_FOR_LETTER_P (INTVAL (op), c))
-		  win = 1;
-		break;
-
-	      case 'X':
-		win = 1;
-		break;
-
-	      case 'g':
-		if (GET_CODE (op) == MEM
-		    || (CONSTANT_P (op)
-#ifdef LEGITIMATE_PIC_OPERAND_P
-			&& (! flag_pic || LEGITIMATE_PIC_OPERAND_P (op))
-#endif
-			))
-		  win = 1;
-		allows_mem[i] = 1;
-	      case 'r':
-		classes[i]
-		  = reg_class_subunion[(int) classes[i]][(int) GENERAL_REGS];
-		break;
-
-	      default:
-		if (REG_CLASS_FROM_LETTER (c) != NO_REGS)
+		case 'p':
+		  allows_addr = 1;
+		  win = address_operand (op, GET_MODE (op));
+		  /* We know this operand is an address, so we want it to be
+		     allocated to a register that can be the base of an
+		     address, ie BASE_REG_CLASS.  */
 		  classes[i]
 		    = reg_class_subunion[(int) classes[i]]
-		      [(int) REG_CLASS_FROM_LETTER (c)];
-#ifdef EXTRA_CONSTRAINT
-		else if (EXTRA_CONSTRAINT (op, c))
-		  win = 1;
+		      [(int) MODE_BASE_REG_CLASS (VOIDmode)];
+		  break;
 
-		if (EXTRA_MEMORY_CONSTRAINT (c))
-		  {
-		    /* Every MEM can be reloaded to fit.  */
-		    allows_mem[i] = 1;
-		    if (GET_CODE (op) == MEM)
-		      win = 1;
-		  }
-		if (EXTRA_ADDRESS_CONSTRAINT (op))
-		  {
-		    /* Every address can be reloaded to fit.  */
-		    allows_addr = 1;
-		    if (address_operand (op, GET_MODE (op)))
-		      win = 1;
-		    /* We know this operand is an address, so we want it to be
-		       allocated to a register that can be the base of an
-		       address, ie BASE_REG_CLASS.  */
+		case 'm':  case 'o':  case 'V':
+		  /* It doesn't seem worth distinguishing between offsettable
+		     and non-offsettable addresses here.  */
+		  allows_mem[i] = 1;
+		  if (GET_CODE (op) == MEM)
+		    win = 1;
+		  break;
+
+		case '<':
+		  if (GET_CODE (op) == MEM
+		      && (GET_CODE (XEXP (op, 0)) == PRE_DEC
+			  || GET_CODE (XEXP (op, 0)) == POST_DEC))
+		    win = 1;
+		  break;
+
+		case '>':
+		  if (GET_CODE (op) == MEM
+		      && (GET_CODE (XEXP (op, 0)) == PRE_INC
+			  || GET_CODE (XEXP (op, 0)) == POST_INC))
+		    win = 1;
+		  break;
+
+		case 'E':
+		case 'F':
+		  if (GET_CODE (op) == CONST_DOUBLE
+		      || (GET_CODE (op) == CONST_VECTOR
+			  && (GET_MODE_CLASS (GET_MODE (op))
+			      == MODE_VECTOR_FLOAT)))
+		    win = 1;
+		  break;
+
+		case 'G':
+		case 'H':
+		  if (GET_CODE (op) == CONST_DOUBLE
+		      && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (op, c, p))
+		    win = 1;
+		  break;
+
+		case 's':
+		  if (GET_CODE (op) == CONST_INT
+		      || (GET_CODE (op) == CONST_DOUBLE
+			  && GET_MODE (op) == VOIDmode))
+		    break;
+		case 'i':
+		  if (CONSTANT_P (op)
+#ifdef LEGITIMATE_PIC_OPERAND_P
+		      && (! flag_pic || LEGITIMATE_PIC_OPERAND_P (op))
+#endif
+		      )
+		    win = 1;
+		  break;
+
+		case 'n':
+		  if (GET_CODE (op) == CONST_INT
+		      || (GET_CODE (op) == CONST_DOUBLE
+			  && GET_MODE (op) == VOIDmode))
+		    win = 1;
+		  break;
+
+		case 'I':
+		case 'J':
+		case 'K':
+		case 'L':
+		case 'M':
+		case 'N':
+		case 'O':
+		case 'P':
+		  if (GET_CODE (op) == CONST_INT
+		      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), c, p))
+		    win = 1;
+		  break;
+
+		case 'X':
+		  win = 1;
+		  break;
+
+		case 'g':
+		  if (GET_CODE (op) == MEM
+		      || (CONSTANT_P (op)
+#ifdef LEGITIMATE_PIC_OPERAND_P
+			  && (! flag_pic || LEGITIMATE_PIC_OPERAND_P (op))
+#endif
+			  ))
+		    win = 1;
+		  allows_mem[i] = 1;
+		case 'r':
+		  classes[i]
+		    = reg_class_subunion[(int) classes[i]][(int) GENERAL_REGS];
+		  break;
+
+		default:
+		  if (REG_CLASS_FROM_CONSTRAINT (c, p) != NO_REGS)
 		    classes[i]
 		      = reg_class_subunion[(int) classes[i]]
-		        [(int) MODE_BASE_REG_CLASS (VOIDmode)];
-		  }
+			[(int) REG_CLASS_FROM_CONSTRAINT (c, p)];
+#ifdef EXTRA_CONSTRAINT_STR
+		  else if (EXTRA_CONSTRAINT_STR (op, c, p))
+		    win = 1;
+
+		  if (EXTRA_MEMORY_CONSTRAINT (c, p))
+		    {
+		      /* Every MEM can be reloaded to fit.  */
+		      allows_mem[i] = 1;
+		      if (GET_CODE (op) == MEM)
+			win = 1;
+		    }
+		  if (EXTRA_ADDRESS_CONSTRAINT (c, p))
+		    {
+		      /* Every address can be reloaded to fit.  */
+		      allows_addr = 1;
+		      if (address_operand (op, GET_MODE (op)))
+			win = 1;
+		      /* We know this operand is an address, so we want it to
+			 be allocated to a register that can be the base of an
+			 address, ie BASE_REG_CLASS.  */
+		      classes[i]
+			= reg_class_subunion[(int) classes[i]]
+			  [(int) MODE_BASE_REG_CLASS (VOIDmode)];
+		    }
 #endif
+		  break;
+		}
+	      p += CONSTRAINT_LEN (c, p);
+	      if (c == ',')
 		break;
-	      }
+	    }
 
 	  constraints[i] = p;
 
