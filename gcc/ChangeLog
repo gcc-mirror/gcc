@@ -1,3 +1,9 @@
+2004-05-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR c++/14962
+	* c-pragma.c (handle_pragma_redefine_extname): Only change
+	the assembler name of FUNCTION_DECLs and VAR_DECLs.
+
 2004-05-07  Loren James Rittle  <ljrittle@acm.org>
 
 	* config/alpha/freebsd.h (SUBTARGET_EXTRA_SPECS): Proper redefinition.
