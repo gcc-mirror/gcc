@@ -1,3 +1,20 @@
+2000-11-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* acinclude.m4 (GLIBCPP_ENABLE_CSTDIO): Make 
+	--enable-cstdio=stdio the default.  Disable wide character support
+	in that event.
+	* configure.in: Move GLIBCPP_ENABLE_C_MBCHAR after
+	(GLIBCPP_ENABLE_CSTDIO).
+	* config/c_io_stdio.h: Don't include <libio.h>, don't define
+	__c_wfile_type.
+	* aclocal.m4: Regenerated.
+	* configure: Likewise.
+	* Makefile.in: Likewise.
+	* libio/Makefile.in: Likewise.
+	* libmath/Makefile.in: Likewise.
+	* libsupc++/Makefile.in: Likewise.
+	* src/Makefile.in: Likewise.
+	
 2000-11-16  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* config/c_io_stdio.h: Include stddef.h.
