@@ -4547,7 +4547,7 @@ secdir = $(libdir)/security
 propdir = $(libdir)
 dbexecdir = $(libdir)/gcj-$(gcc_version)
 db_name = classmap.db
-db_pathtail = gcj-@gcc_version@/$(db_name)
+db_pathtail = gcj-$(gcc_version)/$(db_name)
 @NATIVE_TRUE@dbexec_DATA = $(db_name)
 bin_SCRIPTS = addr2name.awk
 GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8 -Wno-deprecated
