@@ -1,5 +1,16 @@
 2003-04-12  Stephane Carrez  <stcarrez@nerim.fr>
 
+	* config/m68hc11/m68hc11.md ("bitcmpqi" split): No need to test the
+	mode of operand 0.
+	(peephole2 optimize const load): Likewise for operand 2.
+	("*rotlhi3_with_carry"): Change pattern to a const 1 rotate which
+	clobbers CC_REGNUM.
+	("*rotrhi3_with_carry"): Likewise.
+	(ashift:DI 1 split): Update pattern to create the above rotate.
+	(lshiftrt:DI 1 split): Likewise.
+
+2003-04-12  Stephane Carrez  <stcarrez@nerim.fr>
+
 	* config/m68hc11/m68hc11.md (SOFT_Z_REGNUM): New constant.
 	("tstqi_z_used" split): Use it.
 	("cmphi_z_used"): Likewise.
