@@ -8966,12 +8966,18 @@ expand_expr (exp, target, tmode, modifier)
 	tree try_block = TREE_OPERAND (exp, 0);
 	tree finally_block = TREE_OPERAND (exp, 1);
 
-        if (unsafe_for_reeval (finally_block) > 1)
+        if (!optimize || unsafe_for_reeval (finally_block) > 1)
 	  {
 	    /* In this case, wrapping FINALLY_BLOCK in an UNSAVE_EXPR
 	       is not sufficient, so we cannot expand the block twice.
 	       So we play games with GOTO_SUBROUTINE_EXPR to let us
 	       expand the thing only once.  */
+	    /* When not optimizing, we go ahead with this form since
+	       (1) user breakpoints operate more predictably without
+		   code duplication, and
+	       (2) we're not running any of the global optimizers
+	           that would explode in time/space with the highly
+		   connected CFG created by the indirect branching.  */
 
 	    rtx finally_label = gen_label_rtx ();
 	    rtx done_label = gen_label_rtx ();
