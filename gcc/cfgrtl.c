@@ -1973,7 +1973,7 @@ rtl_verify_flow_info_1 (void)
       rtx note;
       edge_iterator ei;
 
-      if (INSN_P (BB_END (bb))
+      if (JUMP_P (BB_END (bb))
 	  && (note = find_reg_note (BB_END (bb), REG_BR_PROB, NULL_RTX))
 	  && EDGE_COUNT (bb->succs) >= 2
 	  && any_condjump_p (BB_END (bb)))

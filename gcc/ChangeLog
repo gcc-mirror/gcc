@@ -3,6 +3,9 @@
 	* tree-ssa-dom.c (record_equivalences_from_phis): Remove an
 	"if" whose condition is always true.
 
+	* cfgrtl.c (rtl_verify_flow_info_1): Use JUMP_P instead of
+	INSN_P.
+
 2004-12-02  Stan Shebs  <shebs@apple.com>
 
 	* config/rs6000/rs6000.c (rs6000_override_options): Make 64-bit
