@@ -1,0 +1,159 @@
+#!/bin/sh -f
+# Generate a source code listing for C or C++ code with assembler code. The
+# listing is always written to stdout.
+# Author: Igor Metz <metz@iam.unibe.ch>
+
+# Revision 1.3  89/12/18  13:58:27  metz
+# lister must now be configured before it can be used. This is done in the
+# /bin/sh part of the code.
+# 
+# 
+# Revision 1.2  89/08/16  17:35:02  metz
+# Support for SPARC added.
+# 
+# Revision 1.1  89/08/16  16:49:22  metz
+# Initial revision
+# 
+
+# Requires: gawk (may be it works also with nawk)
+
+# usage:  lister filename [compiler-options]
+
+# Method:
+# compile the source with -g option to assembler code, then merge the
+# generated assembler code with the source code. Compiler options
+# can be supplied on the command line (for example -O)
+
+# To install lister, assign one of the supported values to the variable MYSYS:
+# mc68020  for Motorola 68020 (Sun-3, ..)
+# mc68030  for Motorola 68030 (Sun-3, ..)
+# sparc    for SPARC (SUN-4, ..)
+# i386     for i386 (Sun i386, ...)
+# i386-linux for i386 (Linux, ...)
+
+# uncomment the line you need:
+# MYSYS=mc68020
+# MYSYS=mc68030
+# MYSYS=sparc
+# MYSYS=i386
+# MYSYS=i386-linux
+# MYSYS=`mach`  # this will work on Suns with SunOS > 4.0.0
+
+FILENAME=$1
+shift
+
+exec gawk -vsys=$MYSYS -voptions="$*" '
+# commandline arguments:
+#  ARGV[0] = "gawk"
+#  ARGV[1] = processid
+#  ARGV[2] = filename
+BEGIN {
+  if (ARGC != 3) {
+    usage()
+    exit 1
+  }
+
+  # Declaration of global variables
+  c_filename = ""
+  asm_filename = ""
+  cmdline = ""
+  asm_code = ""
+  c_code = ""
+  c_lineno = 0
+  oldlineno = 0
+  newlineno = 0
+  ignore_stabd = 0
+  num_of_fields = 0
+
+  # check processor architecture and set sourcecode line_hint accordingly
+  if (sys == "sparc" || sys == "i386") {
+    line_hint = "^[ \t]*\.stabn.*"
+  }
+  else if (sys == "mc68020" || sys == "mc68030" || sys == "i386-linux") {
+    line_hint = "^[ \t]*\.stabd.*"
+  }
+  else {
+    error("Processor type " sys " is not supported yet, sorry")
+  }
+
+  parse_cmdline()
+
+  printf("compiling %s to asm code\n", c_filename ) > "/dev/stderr"
+
+  if (system(cmdline) != 0 ) {
+    error("Compilation of " c_filename " failed")
+  }
+
+  printf("generating listing\n") > "/dev/stderr"
+
+
+  while ( getline asm_code < asm_filename > 0 ) {
+    if ( (ignore_stabd==0) && (asm_code ~ line_hint)) {
+      # source line hint found. Split the line into fields separated by commas.
+      # num_of_fields is 4 for sparc, 3 for m68k
+      num_of_fields = split(asm_code, fields, ",")
+      newlineno = fields[3] + 0 # the line number we are looking for is field 3
+
+      if (newlineno > oldlineno) {
+        while ( newlineno > c_lineno ) {
+	  getline c_code < c_filename
+	  c_lineno++
+	  printf("%4d %s\n", c_lineno, c_code)
+	}
+	oldlineno = newlineno
+      }
+    }
+    else if ( asm_code ~ ".*Ltext[ \t]*$" ) {
+      # filename hint found
+      if ( match(asm_code, c_filename)) {
+        ignore_stabd = 0
+      }
+      else {
+        ignore_stabd = 1
+      }
+    }
+    printf("\t\t\t%s\n", asm_code)
+  }
+
+  # general cleanup
+  system("/bin/rm " asm_filename)
+}
+
+function usage() {
+    printf("usage: %s filename compiler-options\n", argv[0]) > "/dev/stderr"
+}
+
+function error(s) {
+    printf("error: %s\n", s) > "/dev/stderr"
+    exit 1
+}
+
+function parse_cmdline(    i) {
+  # construct filenames to use
+  asm_filename = "/tmp/lister" ARGV[1] ".s"
+  ARGV[1] = ""
+  c_filename = ARGV[2]
+  ARGV[2] = ""
+
+  # construct commandline to use
+  if ( match(c_filename, ".C") || match(c_filename, ".cc") ) {
+    cmdline = "g++"
+  }
+  else if (match(c_filename, ".c")) {
+    cmdline = "gcc"
+  }
+  else {
+    error("unknown extension for file " c_filename)
+  }
+
+  cmdline = cmdline " -g -S -o " asm_filename
+
+  # now we append the compiler options specified by the user
+  cmdline = cmdline " " options
+
+  # last but not least: the name of the file to compile
+  cmdline = cmdline " " c_filename
+}
+
+' $$ $FILENAME
+
