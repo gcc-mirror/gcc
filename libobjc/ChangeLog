@@ -1,3 +1,8 @@
+Sun Aug  6 23:27:49 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
+
+	* objc-features.texi: Documented the new -fconstant-string-class
+	option.
+
 Sun Aug  6 22:51:16 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* thr-posix.c: Integrated Chris Ball's <cball@fmco.com> changes to
