@@ -1731,7 +1731,7 @@ report_problematic_module (buffer)
     }
 
   if (input_file_stack && input_file_stack->next != 0
-      && error_function_changed ())
+      && error_module_changed ())
     {
       for (p = input_file_stack->next; p; p = p->next)
 	if (p == input_file_stack->next)
@@ -1741,7 +1741,7 @@ report_problematic_module (buffer)
 	  output_verbatim
             (buffer, ",\n                 from %s:%d", p->name, p->line);
       output_verbatim (buffer, ":\n");
-      record_last_error_function ();
+      record_last_error_module ();
     }
 }
 

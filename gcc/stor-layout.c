@@ -227,6 +227,8 @@ int_mode_for_mode (mode)
     case MODE_COMPLEX_INT:
     case MODE_COMPLEX_FLOAT:
     case MODE_FLOAT:
+    case MODE_VECTOR_INT:
+    case MODE_VECTOR_FLOAT:
       mode = mode_for_size (GET_MODE_BITSIZE (mode), MODE_INT, 0);
       break;
 

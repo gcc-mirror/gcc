@@ -23,7 +23,6 @@ Boston, MA 02111-1307, USA.  */
 
 extern tree make_pointer_declarator PARAMS ((tree, tree));
 extern void position_after_white_space PARAMS ((void));
-extern int check_newline PARAMS ((void));
 
 extern int c_lex PARAMS ((tree *));
 extern const char *init_c_lex PARAMS ((const char *));
