@@ -369,13 +369,13 @@ public class UIDefaults extends Hashtable
     return o instanceof String ? (String) o : null;
   }
 
-  int getInt(Object key)
+  public int getInt(Object key)
   {
     Object o = get(key);
     return o instanceof Integer ? ((Integer) o).intValue() : 0;
   }
 
-  int getInt(Object key, Locale l)
+  public int getInt(Object key, Locale l)
   {
     Object o = get(key, l);
     return o instanceof Integer ? ((Integer) o).intValue() : 0;

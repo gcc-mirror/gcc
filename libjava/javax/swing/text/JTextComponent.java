@@ -472,15 +472,15 @@ public abstract class JTextComponent extends JComponent
 	//          Sets the vertical position of the label's text, relative to its image.  
     }
 
-    public TextUI getUI()
-    {	return (TextUI) ui;
-    }
+  public TextUI getUI()
+  {
+    return (TextUI) UIManager.getUI(this);
+  }
 
-    public void updateUI()
-    {
-	TextUI b = (TextUI)UIManager.getUI(this);
-	setUI(b);
-    }
+  public void updateUI()
+  {
+    setUI(getUI());
+  }
 
   public Dimension getPreferredScrollableViewportSize()
   {

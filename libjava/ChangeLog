@@ -1,3 +1,32 @@
+2004-03-19  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/image/AffineTransformOp.java
+	(AffineTransformOp): Made public.
+	* javax/swing/JComponent.java
+	(listenerList): Made protected.
+	(accessibleContext): Likewise.
+	* javax/swing/JList.java
+	(valueChanged): Dont use internal fields of ListSelectionEvent.
+	* javax/swing/JViewport.java
+	(getView): Dont use internal fields of Component.
+	(addImpl): Likewise.
+	* javax/swing/Timer.java
+	(isRunning): Made public.
+	(start): Likewise.
+	(stop): Likewise.
+	* javax/swing/UIDefaults.java
+	(getInt): Made public.
+	* javax/swing/plaf/basic/BasicListUI.java
+	(mousePressed): Dont use internal fields of MouseEvent.
+	(propertyChanged): Dont use internal fields of PropertyChangeEvent.
+	* javax/swing/plaf/basic/BasicScrollBarUI.java
+	(arrowIcon): Made static.
+	* javax/swing/plaf/basic/BasicViewportUI.java
+	(stateChanged): Dont use internal field on ChangeEvent.
+	* javax/swing/text/JTextComponent.java
+	(getUI): Call UIManager.getUI().
+	(updateUI): Use getUI().
+
 2004-03-19  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* verify.cc: Undef PC.

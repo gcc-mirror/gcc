@@ -293,9 +293,9 @@ public class JList extends JComponent implements Accessible, Scrollable
     // ListSelectionListener events
     public void valueChanged(ListSelectionEvent event)
     {
-      JList.this.fireSelectionValueChanged(event.firstIndex,
-                                           event.lastIndex,
-                                           event.isAdjusting);
+      JList.this.fireSelectionValueChanged(event.getFirstIndex(),
+                                           event.getLastIndex(),
+                                           event.getValueIsAdjusting());
       JList.this.repaint();
     }
   };

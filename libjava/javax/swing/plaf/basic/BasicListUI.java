@@ -190,7 +190,7 @@ public class BasicListUI extends ListUI
     public void mousePressed(MouseEvent event)
     {
       // System.err.println("got mouse click event " + event);
-      int row = BasicListUI.this.convertYToRow(event.y);
+      int row = BasicListUI.this.convertYToRow(event.getY());
       if (row == -1)
         return;
 
@@ -263,13 +263,13 @@ public class BasicListUI extends ListUI
     public void propertyChange(PropertyChangeEvent e)
     {
       // System.err.println(this + ".propertyChange(" + e + ")");
-      if (e.source == BasicListUI.this.list)
+      if (e.getSource() == BasicListUI.this.list)
         {
-          if (e.oldValue != null && e.oldValue instanceof ListModel)
-            ((ListModel) e.oldValue).removeListDataListener(BasicListUI.this.listDataListener);
+          if (e.getOldValue() != null && e.getOldValue() instanceof ListModel)
+            ((ListModel) e.getOldValue()).removeListDataListener(BasicListUI.this.listDataListener);
 
-          if (e.newValue != null && e.newValue instanceof ListModel)
-            ((ListModel) e.newValue).addListDataListener(BasicListUI.this.listDataListener);
+          if (e.getNewValue() != null && e.getNewValue() instanceof ListModel)
+            ((ListModel) e.getNewValue()).addListDataListener(BasicListUI.this.listDataListener);
         }
       BasicListUI.this.damageLayout();
     }

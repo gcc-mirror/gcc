@@ -89,12 +89,12 @@ public abstract class JComponent extends Container implements Serializable
 {
   static final long serialVersionUID = -5242478962609715464L;
 
-  EventListenerList listenerList = new EventListenerList();
+  protected EventListenerList listenerList = new EventListenerList();
   
   /**
    * accessibleContext
    */
-  AccessibleContext accessibleContext;
+  protected AccessibleContext accessibleContext;
   
   Dimension pref,min,max;
   Border border;

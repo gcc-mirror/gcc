@@ -199,10 +199,10 @@ public class JViewport extends JComponent
 
   public Component getView()
   {
-    if (ncomponents > 0)
-      return component[0];
-    else
+    if (getComponentCount() == 0)
       return null;
+  
+    return getComponents()[0];
   }
 
   public void setView(Component v)
@@ -214,8 +214,9 @@ public class JViewport extends JComponent
     
   public void addImpl(Component comp, Object constraints, int index)
   {
-    if (ncomponents > 0)
-      remove(component[0]);
+    if (getComponentCount() > 0)
+      remove(getComponents()[0]);
+    
     super.addImpl(comp, constraints, index);
   }
 

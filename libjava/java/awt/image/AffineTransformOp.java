@@ -53,13 +53,11 @@ import java.awt.geom.*;
  
 public class AffineTransformOp implements BufferedImageOp, RasterOp
 {
-
     public static final int TYPE_BILINEAR = 0;
     public static final int TYPE_NEAREST_NEIGHBOR = 1;
 
     private AffineTransform transform;
     private RenderingHints hints;
-
     
     /**
      * Construct AffineTransformOp with the given xform and interpolationType.
@@ -68,8 +66,7 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
      * @param xform AffineTransform that will applied to the source image 
      * @param interpolationType type of interpolation used
      */
-
-    AffineTransformOp (AffineTransform xform, int interpolationType)
+    public AffineTransformOp (AffineTransform xform, int interpolationType)
     {
       this.transform = xform;
 
@@ -89,8 +86,7 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
      * @param xform AffineTransform that will applied to the source image
      * @param hints rendering hints that will be used during transformation
      */
-
-    AffineTransformOp (AffineTransform xform, RenderingHints hints)
+    public AffineTransformOp (AffineTransform xform, RenderingHints hints)
     {
       this.transform = xform;
       this.hints = hints;
@@ -107,7 +103,6 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
      * @param destCM color model for the destination image
      * @return new compatible destination image
      */
-
     public BufferedImage createCompatibleDestImage (BufferedImage src,
                                                     ColorModel destCM)
     {
@@ -132,7 +127,6 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
      * @throws RasterFormatException if resulting width or height of raster is 0
      * @return new compatible raster
      */
-
     public WritableRaster createCompatibleDestRaster (Raster src)
     {
       Rectangle rect = (Rectangle) getBounds2D (src);
@@ -155,7 +149,6 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
      * @param dst destination image
      * @return transformed source image
      */
-
     public BufferedImage filter (BufferedImage src, BufferedImage dst)
     {
 
@@ -187,7 +180,6 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
      * @param dst destination raster
      * @return transformed raster
      */
-
     public WritableRaster filter (Raster src, WritableRaster dst)
     {
       throw new UnsupportedOperationException ("not implemented yet");	
@@ -200,7 +192,6 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
      * @param src image to be transformed
      * @return bounds of the transformed image.
      */
-
     public Rectangle2D getBounds2D (BufferedImage src)
     {
       return getBounds2D (src.getRaster());
@@ -212,7 +203,6 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
      * @param src raster to be transformed
      * @return bounds of the transformed raster.
      */
-
     public Rectangle2D getBounds2D (Raster src)
     {
       // determine new size for the transformed raster.
@@ -232,7 +222,6 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
      *
      * @return interpolation type
      */
-
     public int getInterpolationType ()
     {
       if(hints.containsValue (RenderingHints.VALUE_INTERPOLATION_BILINEAR))
@@ -249,7 +238,6 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
      * @param dstPt destination point
      * @return the location of the transformed source point.
      */
-     
     public Point2D getPoint2D (Point2D srcPt, Point2D dstPt)
     {
       return transform.transform (srcPt, dstPt);
@@ -259,7 +247,6 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
      *
      * @return rendering hints
      */
-
     public RenderingHints getRenderingHints ()
     {
       return hints;
@@ -270,7 +257,6 @@ public class AffineTransformOp implements BufferedImageOp, RasterOp
      *
      * @return transform
      */
-     
     public AffineTransform getTransform ()
     {
       return transform;

@@ -136,7 +136,6 @@ public class Timer implements Serializable
     return verbose;
   }
     
-
   public void setDelay(int delay)
   {
     interval = delay;
@@ -146,7 +145,6 @@ public class Timer implements Serializable
   {
     return (int)interval;
   }
-
 
   public void setInitialDelay(int initialDelay)
   {
@@ -158,12 +156,12 @@ public class Timer implements Serializable
     repeat_ticks = flag;
   }
 
-  boolean isRunning()
+  public boolean isRunning()
   {
     return running;
   }
 
-  void start()
+  public void start()
   {
     if (isRunning())
       {
@@ -173,7 +171,7 @@ public class Timer implements Serializable
     new Waker().start();
   }
 
-  void stop()
+  public void stop()
   {
     running = false;
   }
