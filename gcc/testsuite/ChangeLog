@@ -1,3 +1,7 @@
+2003-05-05  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/unused-5.c: New test.
+
 2003-05-05  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/10496
