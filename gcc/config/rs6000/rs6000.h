@@ -148,7 +148,7 @@ extern int target_flags;
 #define MASK_64BIT		0x400
 
 /* Disable use of FPRs.  */
-#define MASK_NO_FPR		0x800
+#define MASK_SOFT_FLOAT		0x800
 
 /* Enable load/store multiple, even on powerpc */
 #define	MASK_MULTIPLE		0x1000
@@ -164,8 +164,10 @@ extern int target_flags;
 #define TARGET_NO_SUM_IN_TOC		(target_flags & MASK_NO_SUM_IN_TOC)
 #define TARGET_MINIMAL_TOC		(target_flags & MASK_MINIMAL_TOC)
 #define TARGET_64BIT			(target_flags & MASK_64BIT)
-#define TARGET_NO_FPR			(target_flags & MASK_NO_FPR)
+#define TARGET_SOFT_FLOAT		(target_flags & MASK_SOFT_FLOAT)
 #define	TARGET_MULTIPLE			(target_flags & MASK_MULTIPLE)
+
+#define TARGET_HARD_FLOAT		(! TARGET_SOFT_FLOAT)
 
 /* Run-time compilation parameters selecting different hardware subsets.
 
@@ -181,10 +183,10 @@ extern int target_flags;
 #endif
 
 #define TARGET_SWITCHES						\
- {{"power",		MASK_POWER},				\
-  {"power2",		MASK_POWER | MASK_POWER2},		\
+ {{"power",		MASK_POWER  | MASK_MULTIPLE},		\
+  {"power2",		MASK_POWER | MASK_MULTIPLE | MASK_POWER2}, \
   {"no-power2",		- MASK_POWER2},				\
-  {"no-power",		- (MASK_POWER | MASK_POWER2)},		\
+  {"no-power",		- (MASK_POWER | MASK_POWER2 | MASK_MULTIPLE)}, \
   {"powerpc",		MASK_POWERPC},				\
   {"no-powerpc",	- (MASK_POWERPC | MASK_PPC_GPOPT 	\
 			   | MASK_PPC_GFXOPT | MASK_POWERPC64)}, \
@@ -203,8 +205,8 @@ extern int target_flags;
   {"minimal-toc",	MASK_MINIMAL_TOC},			\
   {"minimal-toc",	- (MASK_NO_FP_IN_TOC | MASK_NO_SUM_IN_TOC)}, \
   {"no-minimal-toc",	- MASK_MINIMAL_TOC},			\
-  {"fp-regs",		- MASK_NO_FPR},				\
-  {"no-fp-regs",	MASK_NO_FPR},				\
+  {"hard-float",	- MASK_SOFT_FLOAT},			\
+  {"soft-float",	MASK_SOFT_FLOAT},			\
   {"multiple",		MASK_MULTIPLE},				\
   {"no-multiple",	- MASK_MULTIPLE},			\
   SUBTARGET_SWITCHES						\
@@ -615,8 +617,8 @@ do {				\
 {					\
   if (! TARGET_POWER)			\
     fixed_regs[64] = 1;			\
-  if (TARGET_NO_FPR)			\
-    for (i = 32; i < 64; i++)			\
+  if (TARGET_SOFT_FLOAT)		\
+    for (i = 32; i < 64; i++)		\
       fixed_regs[i] = call_used_regs[i] = 1; \
 }
 
@@ -896,17 +898,17 @@ enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
    otherwise, FUNC is 0.
 
    On RS/6000 an integer value is in r3 and a floating-point value is in 
-   fp1.  */
+   fp1, unless -msoft-float.  */
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)	\
   gen_rtx (REG, TYPE_MODE (VALTYPE),	\
-	   TREE_CODE (VALTYPE) == REAL_TYPE ? 33 : 3)
+	   TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_HARD_FLOAT ? 33 : 3)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
 #define LIBCALL_VALUE(MODE)		\
-  gen_rtx (REG, MODE, GET_MODE_CLASS (MODE) == MODE_FLOAT ? 33 : 3)
+  gen_rtx (REG, MODE, GET_MODE_CLASS (MODE) == MODE_FLOAT && TARGET_HARD_FLOAT ? 33 : 3)
 
 /* The definition of this macro implies that there are cases where
    a scalar value cannot be returned in registers.
@@ -989,7 +991,7 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
 
 /* Non-zero if we can use a floating-point register to pass this arg.  */
 #define USE_FP_FOR_ARG_P(CUM,MODE,TYPE)	\
-  (GET_MODE_CLASS (MODE) == MODE_FLOAT && (CUM).fregno < 46)
+  (GET_MODE_CLASS (MODE) == MODE_FLOAT && (CUM).fregno < 46 && TARGET_HARD_FLOAT)
 
 /* Determine where to put an argument to a function.
    Value is zero to push the argument on the stack,
@@ -1361,6 +1363,7 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
   if (LEGITIMATE_OFFSET_ADDRESS_P (MODE, X))		\
     goto ADDR;						\
   if ((MODE) != DImode && (MODE) != TImode		\
+      && (TARGET_HARD_FLOAT || (MODE) != DFmode)	\
       && LEGITIMATE_INDEXED_ADDRESS_P (X))		\
     goto ADDR;						\
 }
@@ -1465,7 +1468,7 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
 
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
-#define MOVE_MAX (TARGET_POWER ? 16 : (TARGET_POWERPC64 ? 8 : 4))
+#define MOVE_MAX (TARGET_MULTIPLE ? 16 : (TARGET_POWERPC64 ? 8 : 4))
 #define MAX_MOVE_MAX 16
 
 /* Nonzero if access to memory by bytes is no faster than for words.

@@ -19,22 +19,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-/* eABI local switches */
-/* Set PCC_BITFIELD_TYPE_MATTERS to 0 to ignore the type of bitfields
-   when calculating alignment.  */
-#define	MASK_NO_BITFIELD_TYPE	0x40000000
-#define	MASK_STRICT_ALIGN	0x20000000
-
-#define	TARGET_NO_BITFIELD_TYPE	(target_flags & MASK_NO_BITFIELD_TYPE)
-#define	TARGET_BITFIELD_TYPE	(! TARGET_NO_BITFIELD_TYPE)
-#define TARGET_STRICT_ALIGN	(target_flags & MASK_STRICT_ALIGN)
-
-#define SUBTARGET_SWITCHES						\
-  { "bit-align",	-MASK_NO_BITFIELD_TYPE },			\
-  { "no-bit-align",	 MASK_NO_BITFIELD_TYPE },			\
-  { "strict-align",	 MASK_STRICT_ALIGN },				\
-  { "no-strict-align",	-MASK_STRICT_ALIGN },
-
 #include "rs6000/sysv4.h"
 
 /* For now, make stabs the default debugging type, not dwarf. */
@@ -59,6 +43,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* No data type wants to be aligned rounder than this.  */
 #undef	BIGGEST_ALIGNMENT
 #define BIGGEST_ALIGNMENT 64
+
+/* Put PC relative got entries in .got2 */
+#undef	MINIMAL_TOC_SECTION_ASM_OP
+#define MINIMAL_TOC_SECTION_ASM_OP \
+  ((TARGET_RELOCATABLE) ? "\t.section\t\".got2\",\"aw\"" : "\t.section\t\".got1\",\"aw\"")
+
+/* Invoke an initializer function to set up the GOT */
+#define INVOKE__main 1
+#define NAME__MAIN "__eabi"
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (PowerPC Embedded)");

@@ -18,6 +18,27 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
+/* eABI local switches -- put here rather than eabi.h, so the switches
+   can be tested in macros.  */
+
+#define	MASK_NO_BITFIELD_TYPE	0x40000000	/* Set PCC_BITFIELD_TYPE_MATTERS to 0 */
+#define	MASK_STRICT_ALIGN	0x20000000	/* Set STRICT_ALIGNMENT to 1.  */
+#define MASK_RELOCATABLE	0x10000000	/* GOT pointers are PC relative */
+
+#define	TARGET_NO_BITFIELD_TYPE	(target_flags & MASK_NO_BITFIELD_TYPE)
+#define	TARGET_BITFIELD_TYPE	(! TARGET_NO_BITFIELD_TYPE)
+#define TARGET_STRICT_ALIGN	(target_flags & MASK_STRICT_ALIGN)
+#define TARGET_RELOCATABLE	(target_flags & MASK_RELOCATABLE)
+
+#undef	SUBTARGET_SWITCHES
+#define SUBTARGET_SWITCHES						\
+  { "bit-align",	-MASK_NO_BITFIELD_TYPE },			\
+  { "no-bit-align",	 MASK_NO_BITFIELD_TYPE },			\
+  { "strict-align",	 MASK_STRICT_ALIGN },				\
+  { "no-strict-align",	-MASK_STRICT_ALIGN },				\
+  { "relocatable",	 MASK_RELOCATABLE | MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC }, \
+  { "no-relocatable",	-MASK_RELOCATABLE },
+
 #include "rs6000/powerpc.h"
 
 /* Don't generate XCOFF debugging information.  */
@@ -106,33 +127,46 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 void									\
 toc_section ()								\
 {									\
-  if (TARGET_MINIMAL_TOC)						\
-    {									\
-      static int toc_initialized = 0;					\
-									\
-      if (! toc_initialized)						\
-	{								\
-	  fprintf (asm_out_file, "%s\n", TOC_SECTION_ASM_OP);		\
-	  fprintf (asm_out_file, ".LCTOC0:\n");				\
-	  fprintf (asm_out_file, "\t.tc .LCTOC1\n");			\
-	  fprintf (asm_out_file, "%s\n", MINIMAL_TOC_SECTION_ASM_OP);	\
-	  fprintf (asm_out_file, ".LCTOC1:\n");				\
-	  toc_initialized = 1;						\
-	}								\
-    }									\
+  static int toc_initialized = 0;					\
 									\
   if (in_section != in_toc)						\
     {									\
-      fprintf (asm_out_file, "%s\n",					\
-	       (TARGET_MINIMAL_TOC					\
-		? MINIMAL_TOC_SECTION_ASM_OP				\
-		: TOC_SECTION_ASM_OP));					\
+      if (! toc_initialized)						\
+	{								\
+	  if (!TARGET_RELOCATABLE)					\
+	    fprintf (asm_out_file, "%s\n", TOC_SECTION_ASM_OP);		\
+									\
+	  if (TARGET_MINIMAL_TOC)					\
+	    {								\
+	      if (!TARGET_RELOCATABLE)					\
+		{							\
+		  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LCTOC", 0);	\
+		  fprintf (asm_out_file, "\t.tc ");			\
+		  ASM_OUTPUT_INTERNAL_LABEL_PREFIX (asm_out_file, "LCTOC1[TC],"); \
+		  ASM_OUTPUT_INTERNAL_LABEL_PREFIX (asm_out_file, "LCTOC1"); \
+		  fprintf (asm_out_file, "\n");				\
+		}							\
+									\
+	      fprintf (asm_out_file, "%s\n", MINIMAL_TOC_SECTION_ASM_OP); \
+	      ASM_OUTPUT_INTERNAL_LABEL_PREFIX (asm_out_file, "LCTOC1"); \
+	      fprintf (asm_out_file, " = .+32768\n");			\
+	    }								\
+									\
+	  toc_initialized = 1;						\
+	}								\
+									\
+      else								\
+	fprintf (asm_out_file, "%s\n",					\
+		 (TARGET_MINIMAL_TOC					\
+		  ? MINIMAL_TOC_SECTION_ASM_OP				\
+		  : TOC_SECTION_ASM_OP));				\
+									\
       in_section = in_toc;						\
     }									\
 }
 
-#define TOC_SECTION_ASM_OP "\t.section\t.got,\"aw\""
-#define MINIMAL_TOC_SECTION_ASM_OP "\t.section\t.got1,\"aw\""
+#define TOC_SECTION_ASM_OP "\t.section\t\".got\",\"aw\""
+#define MINIMAL_TOC_SECTION_ASM_OP "\t.section\t\".got1\",\"aw\""
 
 /* Use the TOC section for TOC entries.  */
 
