@@ -1,3 +1,7 @@
+2003-01-02  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* g++.dg/lookup/two-stage1.C: New test.
+
 2003-01-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* g++.old-deja/g++.bugs/900404_04.C: Remove XFAIL.
