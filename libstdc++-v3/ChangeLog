@@ -1,3 +1,10 @@
+2002-01-22  Paolo Carlini  <pcarlini@unitus.it>
+
+	* testsuite/27_io/ios_manip_basefield.cc: Enable test02.
+	* testsuite/27_io/ostream_inserter_arith.cc: Enable test03.
+	* testsuite/27_io/ostream_inserter_char.cc: Enable test01.
+	* testsuite/27_io/ostream_inserter_other.cc: Enable test04.
+
 2002-01-22  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Audit for LANG independence.
