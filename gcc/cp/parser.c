@@ -8514,7 +8514,7 @@ cp_parser_template_id (cp_parser *parser,
      error messages about problems during instantiation of the
      template.  Do so only if parsing succeeded, otherwise we may
      silently accept template arguments with syntax errors.  */
-  if (start_of_id && !cp_parser_error_occurred (parser))
+  if (start_of_id)
     {
       cp_token *token = cp_lexer_token_at (parser->lexer, start_of_id);
       
@@ -8525,6 +8525,13 @@ cp_parser_template_id (cp_parser *parser,
       
       /* Purge all subsequent tokens.  */
       cp_lexer_purge_tokens_after (parser->lexer, start_of_id);
+
+      /* ??? Can we actually assume that, if template_id ==
+	 error_mark_node, we will have issued a diagnostic to the
+	 user, as opposed to simply marking the tentative parse as
+	 failed?  */
+      if (cp_parser_error_occurred (parser) && template_id != error_mark_node)
+	error ("parse error in template argument list");
     }
 
   pop_deferring_access_checks ();
