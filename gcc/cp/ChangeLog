@@ -1,3 +1,7 @@
+2000-09-07  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* ir.texi: Document type nodes.
+
 2000-09-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (init_cp_semantics): Declare.
