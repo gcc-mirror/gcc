@@ -1,4 +1,8 @@
-2000-11-29  Laurynas Biveinis  <lauras@softhome.net>
+2001-11-29  Tim Josling  <tej@melbpc.org.au>
+
+	* tree.h (TYPE_STUB_DECL): Add documentation.
+
+2001-11-29  Laurynas Biveinis  <lauras@softhome.net>
 
 	* sdbout.c (sdbout_one_type): Skip types with indeterminate size.
 	(sdbout_field_types): Likwise.  Fix use of host_integerp.
