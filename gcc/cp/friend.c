@@ -203,24 +203,25 @@ make_friend_class (type, friend_type)
       return;
     }
 
-  if (CLASS_TYPE_P (friend_type)
-      && CLASSTYPE_TEMPLATE_SPECIALIZATION (friend_type)
-      && uses_template_parms (friend_type))
-    {
-      /* [temp.friend]
-	 
-	 Friend declarations shall not declare partial
-	 specializations.  */
-      error ("partial specialization `%T' declared `friend'",
-		friend_type);
-      return;
-    }
-  
   if (processing_template_decl > template_class_depth (type))
     /* If the TYPE is a template then it makes sense for it to be
        friends with itself; this means that each instantiation is
        friends with all other instantiations.  */
-    is_template_friend = 1;
+    {
+      if (CLASS_TYPE_P (friend_type)
+	  && CLASSTYPE_TEMPLATE_SPECIALIZATION (friend_type)
+	  && uses_template_parms (friend_type))
+	{
+	  /* [temp.friend]
+	     Friend declarations shall not declare partial
+	     specializations.  */
+	  error ("partial specialization `%T' declared `friend'",
+		 friend_type);
+	  return;
+	}
+  
+      is_template_friend = 1;
+    }
   else if (same_type_p (type, friend_type))
     {
       pedwarn ("class `%T' is implicitly friends with itself",
