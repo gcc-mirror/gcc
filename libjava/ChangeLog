@@ -1,3 +1,18 @@
+2000-11-22  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (core_java_source_files): Added Collections.java.
+	* java/util/List.java: Merged from classpath.
+	* java/util/Vector.java: Ditto.	
+	* java/util/Collections.java: From classpath.
+	* java/util/ArrayList.java (addAll(Collection)): Call 
+	addAll(int,Collection) instead of duplicating code.
+	(indexOf): Clean up int initialization.
+	(clear): Set cleared array entries to null, to allow garbage 
+	collection.
+	* java/util/List.java: Minor formatting fixes.	
+	* java/util/SimpleTimeZone.java: ditto.
+	
 2000-11-18  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt.

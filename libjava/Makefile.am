@@ -929,6 +929,7 @@ java/util/BitSet.java \
 java/util/Bucket.java \
 java/util/Calendar.java	\
 java/util/Collection.java \
+java/util/Collections.java \
 java/util/Comparator.java \
 java/util/ConcurrentModificationException.java \
 java/util/Date.java \
