@@ -8123,8 +8123,15 @@ srl\t%M0,%M1,%2\n\
    (clobber (match_operand:SI 2 "register_operand" "=d"))
    (clobber (reg:SI 31))]
   "TARGET_EMBEDDED_PIC"
-  "%(bal\t%S1\;sll\t%2,%0,2\n%~%S1:\;addu\t%2,%2,$31%)\;\
-lw\t%2,%1-%S1(%2)\;addu\t%2,%2,$31\;%*j\t%2%/"
+  {
+    if (set_nomacro)
+      return "%(bal\\t%S1\;sll\\t%2,%0,2\\n%~%S1:\;addu\\t%2,%2,$31%)\;\\
+.set macro\;lw\\t%2,%1-%S1(%2)\;.set nomacro\;addu\\t%2,%2,$31\\n\\t%*j\\t%2%/";
+    return
+  "%(bal\\t%S1\;sll\\t%2,%0,2\\n%~%S1:\;addu\\t%2,%2,$31%)\;\\
+lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
+    ;
+  }
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
    (set_attr "length"	"24")])
@@ -8140,8 +8147,15 @@ lw\t%2,%1-%S1(%2)\;addu\t%2,%2,$31\;%*j\t%2%/"
    (clobber (match_operand:DI 2 "register_operand" "=d"))
    (clobber (reg:DI 31))]
   "TARGET_EMBEDDED_PIC"
-  "%(bal\t%S1\;sll\t%2,%0,3\n%~%S1:\;daddu\t%2,%2,$31%)\;\
-ld\t%2,%1-%S1(%2)\;daddu\t%2,%2,$31\;%*j\t%2%/"
+  {
+    if (set_nomacro)
+      return "%(bal\\t%S1\;sll\\t%2,%0,3\\n%~%S1:\;daddu\\t%2,%2,$31%)\;\\
+.set macro\;ld\\t%2,%1-%S1(%2)\;.set nomacro\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/";
+    return
+  "%(bal\\t%S1\;sll\\t%2,%0,3\\n%~%S1:\;daddu\\t%2,%2,$31%)\;\\
+ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
+    ;
+  }
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
    (set_attr "length"	"24")])
