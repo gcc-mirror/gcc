@@ -4209,8 +4209,7 @@ uninitialized_vars_warning (block)
    but for arguments instead of local variables.  */
 
 void
-setjmp_args_warning (block)
-     tree block;
+setjmp_args_warning ()
 {
   register tree decl;
   for (decl = DECL_ARGUMENTS (current_function_decl);
