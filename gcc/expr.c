@@ -3634,7 +3634,7 @@ expand_expr (exp, target, tmode, modifier)
   tree context;
 
 
-  if (output_bytecode)
+  if (output_bytecode && modifier != EXPAND_INITIALIZER)
     {
       bc_expand_expr (exp);
       return NULL;
