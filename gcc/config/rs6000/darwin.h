@@ -193,4 +193,4 @@ Boston, MA 02111-1307, USA.  */
    : MAX ((COMPUTED), (SPECIFIED)))
 /* XXX: Darwin supports neither .quad, or .llong, but it also doesn't
    support 64 bit powerpc either, so this just keeps things happy. */
-#define DOUBLE_INT_ASM_OP ".quad"
+#define DOUBLE_INT_ASM_OP "\t.quad\t"

@@ -1,3 +1,12 @@
+2001-08-06  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/darwin.h (DOUBLE_INT_ASM_OP): Add whitespace.
+	* config/rs6000/linux64.h (RS6000_MCOUNT): Define.
+	({SAVE,RESTORE}_FP_{PREFFIX,SUFFIX}): Define.
+	* config/rs6000/rs6000.h (ASM_OUTPUT_DOUBLE_INT): Remove whitespace.
+	* config/rs6000/sysv4.h (DOUBLE_INT_ASM_OP): Add whitespace.
+	* config/rs6000/xcoff.h (DOUBLE_INT_ASM_OP): Add whitespace.
+
 2001-08-06  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpperror.c (print_containing_files): Moved to line-map.c.
@@ -848,8 +857,6 @@ Wed Aug  1 20:02:12 CEST 2001 Graham Stott  <grahams@redhat.com>
 	(SET_ASM_OP): Remove, now defined where needed.
 	(FUNCTION_PROLOGUE): New macro definition.
 	(FUNCTION_EPILOGUE): New macro definition.
-	(CONST_OK_FOR_LETTER_P): Change N to require that value is
-	positive, too.
 	(ASM_OPEN_PAREN, ASM_CLOSE_PAREN): New macro definition.
 
 	* config/rs6000/xcoff.h: New file.

@@ -439,7 +439,7 @@ toc_section ()						\
   } while (0)
 
 /* Used by definition of ASM_OUTPUT_DOUBLE_INT */
-#define DOUBLE_INT_ASM_OP ".llong"
+#define DOUBLE_INT_ASM_OP "\t.llong "
 
 /* This says how to output an assembler line
    to define a local common symbol.
