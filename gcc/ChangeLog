@@ -1,5 +1,7 @@
 Mon Oct 29 07:23:33 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* Makefile.in (OBJS): Put all files in alphabetical order.
+
 	* dwarf2out.c (add_const_value_attribute): Fix error in last
 	change.
 
