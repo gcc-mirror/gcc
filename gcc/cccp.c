@@ -451,6 +451,10 @@ static int no_output;
    and/or warnings.  */
 
 static int done_initializing = 0;
+
+/* Line where a newline was first seen in a string constant.  */
+
+static int multiline_string_line = 0;
 
 /* I/O buffer structure.
    The `fname' field is nonzero for source files and #include files
@@ -2176,9 +2180,6 @@ rescan (op, output_marks)
   /* While scanning a comment or a string constant,
      this records the line it started on, for error messages.  */
   int start_line;
-
-  /* Line where a newline was first seen in a string constant.  */
-  int multiline_string_line = 0;
 
   /* Record position of last `real' newline.  */
   U_CHAR *beg_of_line;
@@ -6669,6 +6670,9 @@ skip_quoted_string (bp, limit, start_line, count_newlines, backslash_newlines_p,
     if (bp >= limit) {
       error_with_line (line_for_error (start_line),
 		       "unterminated string or character constant");
+      error_with_line (multiline_string_line,
+		       "possible real start of unterminated constant");
+      multiline_string_line = 0;
       if (eofp)
 	*eofp = 1;
       break;
@@ -6696,15 +6700,10 @@ skip_quoted_string (bp, limit, start_line, count_newlines, backslash_newlines_p,
  	  *eofp = 1;
  	break;
       }
-      if (match == '\'') {
+      if (pedantic || match == '\'') {
 	error_with_line (line_for_error (start_line),
-			 "unterminated character constant");
+			 "unterminated string or character constant");
 	bp--;
-	if (eofp)
-	  *eofp = 1;
-	break;
-      }
-      if (traditional) {	/* Unterminated strings are 'legal'.  */
 	if (eofp)
 	  *eofp = 1;
 	break;
@@ -6712,6 +6711,8 @@ skip_quoted_string (bp, limit, start_line, count_newlines, backslash_newlines_p,
       /* If not traditional, then allow newlines inside strings.  */
       if (count_newlines)
 	++*count_newlines;
+      if (multiline_string_line == 0)
+	multiline_string_line = start_line;
     } else if (c == match)
       break;
   }
