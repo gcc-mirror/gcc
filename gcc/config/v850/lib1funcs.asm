@@ -1182,7 +1182,7 @@ __return_interrupt:
 	ld.w	4[sp],gp
 	ld.w	8[sp],r1
 	ld.w	12[sp],r10
-	add	16,sp
+	addi	16,sp,sp
 	reti
 	.size	__return_interrupt,.-__return_interrupt
 #endif /* L_save_interrupt */

@@ -1,3 +1,12 @@
+Tue Jun  9 14:31:19 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* config/v850/t-v850 (TCFLAGS): Add assembler options to warn of
+	overlfows. 
+
+	* config/v850/lib1funcs.asm (__return_interrupt): Use 'addi
+	16,sp,sp' ratehr than 'add 16,sp'.  Patch courtesy of Biomedin
+	<glctr@abc.it>.
+
 Tue Jun  9 16:23:13 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* except.c (expand_start_catch): Rename to start_catch_handler.
