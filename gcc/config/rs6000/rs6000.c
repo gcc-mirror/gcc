@@ -10458,8 +10458,12 @@ rs6000_emit_prologue ()
       && flag_pic && current_function_uses_pic_offset_table)
     {
       rtx dest = gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM);
+#if TARGET_MACHO
+      char *picbase = machopic_function_base_name ();
+      rtx src = gen_rtx_SYMBOL_REF (Pmode, ggc_alloc_string (picbase, -1));
 
-      rs6000_maybe_dead (emit_insn (gen_load_macho_picbase (dest)));
+      rs6000_maybe_dead (emit_insn (gen_load_macho_picbase (dest, src)));
+#endif
 
       rs6000_maybe_dead (
 	emit_move_insn (gen_rtx_REG (Pmode, RS6000_PIC_OFFSET_TABLE_REGNUM),
