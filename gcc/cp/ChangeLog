@@ -1,5 +1,6 @@
 2003-02-03  Mark Mitchell  <mark@codesourcery.com>
 	
+	PR C++/7129
 	* operators.def: Add <?= and >?=.
 	
 2003-01-28  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
