@@ -8,6 +8,8 @@
 	instead of "Objective C".
 	2001-06-15  Loren J. Rittle  <ljrittle@acm.org>
 	* doc/install.texi: Use correct markup hints.
+	2001-06-15  Loren J. Rittle  <ljrittle@acm.org>
+	* doc/install.texi: Update --enable-threads to match reality.
 
 2001-06-22  Joseph S. Myers  <jsm28@cam.ac.uk>
 
