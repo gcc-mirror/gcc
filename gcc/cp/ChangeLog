@@ -1,4 +1,11 @@
+Wed Sep  3 00:02:53 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (convert_arguments): Don't arbitrarily choose the first
+ 	of a set of overloaded functions.
+
 Tue Sep  2 12:09:13 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* lex.c (real_yylex): Don't elide __FUNCTION__.
 
 	* method.c (build_overload_value): Add in_template parm.
 	(build_overload_int): Likewise.

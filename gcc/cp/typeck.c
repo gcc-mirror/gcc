@@ -2800,18 +2800,12 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 	  /* Strip the `&' from an overloaded FUNCTION_DECL.  */
 	  if (TREE_CODE (val) == ADDR_EXPR)
 	    val = TREE_OPERAND (val, 0);
-	  if (TREE_CODE (val) == TREE_LIST
-	      && TREE_CHAIN (val) == NULL_TREE
-	      && TREE_TYPE (TREE_VALUE (val)) != NULL_TREE
-	      && (TREE_TYPE (val) == unknown_type_node
-		  || DECL_CHAIN (TREE_VALUE (val)) == NULL_TREE))
-	    /* Instantiates automatically.  */
-	    val = TREE_VALUE (val);
+	  if (really_overloaded_fn (val))
+	    cp_error ("insufficient type information to resolve address of overloaded function `%D'",
+		      DECL_NAME (get_first_fn (val)));
 	  else
-	    {
-	      error ("insufficient type information in parameter list");
-	      val = integer_zero_node;
-	    }
+	    error ("insufficient type information in parameter list");
+	  val = integer_zero_node;
 	}
       else if (TREE_CODE (val) == OFFSET_REF
 	    && TREE_CODE (TREE_TYPE (val)) == METHOD_TYPE)
