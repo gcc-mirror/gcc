@@ -1,5 +1,5 @@
 /* Structure for saving state for a nested function.
-   Copyright (C) 1989 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1992 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -28,7 +28,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 struct var_refs_queue
   {
     rtx modified;
-    rtx original;
+    enum machine_mode promoted_mode;
+    int unsignedp;
     struct var_refs_queue *next;
   };
 
