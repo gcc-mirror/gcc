@@ -1005,9 +1005,6 @@ reference_binding (rto, rfrom, expr, flags)
       from = TREE_TYPE (expr);
     }
 
-  related_p = reference_related_p (to, from);
-  compatible_p = reference_compatible_p (to, from);
-
   if (TREE_CODE (from) == REFERENCE_TYPE)
     {
       /* Anything with reference type is an lvalue.  */
@@ -1016,6 +1013,12 @@ reference_binding (rto, rfrom, expr, flags)
     }
   else if (expr)
     lvalue_p = real_lvalue_p (expr);
+
+  /* Figure out whether or not the types are reference-related and
+     reference compatible.  We have do do this after stripping
+     references from FROM.  */
+  related_p = reference_related_p (to, from);
+  compatible_p = reference_compatible_p (to, from);
 
   if (lvalue_p && compatible_p)
     {
@@ -3975,15 +3978,20 @@ maybe_handle_implicit_object (ics)
 	 member and cv is the cv-qualification on the member
 	 function declaration.  */
       tree t = *ics;
+      tree reference_type;
+
+      /* The `this' parameter is a pointer to a class type.  Make the
+	 implict conversion talk about a reference to that same class
+	 type.  */
+      reference_type = TREE_TYPE (TREE_TYPE (*ics));
+      reference_type = build_reference_type (reference_type);
+
       if (TREE_CODE (t) == QUAL_CONV)
 	t = TREE_OPERAND (t, 0);
       if (TREE_CODE (t) == PTR_CONV)
 	t = TREE_OPERAND (t, 0);
       t = build1 (IDENTITY_CONV, TREE_TYPE (TREE_TYPE (t)), NULL_TREE);
-      t = build_conv (REF_BIND, 
-		      build_reference_type (TREE_TYPE (TREE_TYPE (*ics))), 
-		      t);
-      ICS_STD_RANK (t) = ICS_STD_RANK (*ics);
+      t = direct_reference_binding (reference_type, t); 
       *ics = t;
     }
 }
