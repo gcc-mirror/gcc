@@ -31,16 +31,11 @@ do									\
   void **_p = (void **)&_dummy;						\
   struct sigcontext_struct *_regs = (struct sigcontext_struct *)++_p;	\
 									\
-  register unsigned long _ebp = _regs->ebp;				\
-  register unsigned char *_eip = (unsigned char *)_regs->eip;		\
-									\
   /* Advance the program counter so that it is after the start of the	\
      instruction:  the x86 exception handler expects			\
      the PC to point to the instruction after a call. */		\
-  _eip += 2;								\
+  _regs->eip += 2;							\
 									\
-  asm volatile ("mov %0, (%%ebp); mov %1, 4(%%ebp)"			\
-		: : "r"(_ebp), "r"(_eip));				\
 }									\
 while (0)
 
@@ -63,7 +58,7 @@ do									\
    * As the instructions are variable length it is necessary to do a	\
    * little calculation to figure out where the following instruction	\
    * actually is.							\
-  									\
+									\
    */									\
 									\
   if (_eip[0] == 0xf7)							\
@@ -104,6 +99,9 @@ do									\
 									\
 	  _eip = (unsigned char *)_ebp[1];				\
 	  _ebp = (unsigned long *)_ebp[0];				\
+									\
+	  asm volatile ("mov %0, (%%ebp); mov %1, 4(%%ebp)"		\
+			: : "r"(_ebp), "r"(_eip));			\
 	}								\
       else								\
 	{								\
@@ -111,12 +109,9 @@ do									\
 	     of the instruction: this is because the x86 exception	\
 	     handler expects the PC to point to the instruction after a	\
 	     call. */							\
-	  _eip += 2;							\
+	  _regs->eip += 2;						\
 	}								\
     }									\
-									\
-  asm volatile ("mov %0, (%%ebp); mov %1, 4(%%ebp)"			\
-		: : "r"(_ebp), "r"(_eip));				\
 }									\
 while (0)
 
