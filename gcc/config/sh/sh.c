@@ -3110,7 +3110,7 @@ machine_dependent_reorg (first)
 
 		  if (GET_CODE (dst) == REG
 		      && ((REGNO (dst) >= FIRST_FP_REG
-			   && REGNO (dst) <= LAST_FD_REG)
+			   && REGNO (dst) <= LAST_FP_REG)
 			  || REGNO (dst) == FPUL_REG))
 		    {
 		      if (last_float
@@ -3628,7 +3628,7 @@ calc_live_regs (count_ptr, live_regs_mask2)
 		  && regs_ever_live[PR_REG]))
 	     && reg != STACK_POINTER_REGNUM && reg != ARG_POINTER_REGNUM
 	     && reg != RETURN_ADDRESS_POINTER_REGNUM
-	     && reg != T_REG && reg != GBR_REG && reg != FPSCR_REG)
+	     && reg != T_REG && reg != GBR_REG)
 	  : (/* Only push those regs which are used and need to be saved.  */
 	     regs_ever_live[reg] && ! call_used_regs[reg]))
 	{

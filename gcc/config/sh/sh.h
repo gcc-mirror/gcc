@@ -617,7 +617,7 @@ extern enum reg_class reg_class_from_letter[];
 #define PREFERRED_RELOAD_CLASS(X, CLASS) (CLASS)
 
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS,MODE,X) \
-  ((((((CLASS) == FP_REGS || (CLASS) == FP0_REGS			\
+  ((((((CLASS) == FP_REGS || (CLASS) == FP0_REGS)			\
       && (GET_CODE (X) == REG && REGNO (X) <= AP_REG))			\
      || (((CLASS) == GENERAL_REGS || (CLASS) == R0_REGS)		\
 	 && GET_CODE (X) == REG						\
@@ -1332,7 +1332,7 @@ extern struct rtx_def *sh_builtin_saveregs ();
    and another.  */
 
 #define REGISTER_MOVE_COST(SRCCLASS, DSTCLASS) \
-  (((DSTCLASS) == PR_REG ? 10		\
+  ((DSTCLASS) == PR_REG ? 10		\
    : (((DSTCLASS) == FP_REGS && (SRCCLASS) == GENERAL_REGS)		\
       || ((DSTCLASS) == GENERAL_REGS && (SRCCLASS) == FP_REGS)) ? 4	\
    : 1)

@@ -2169,7 +2169,7 @@
     DONE;
   if (TARGET_SH3E)
     {
-      emit_insn (gen_movsf_ie (operands[0], operands[1]))
+      emit_insn (gen_movsf_ie (operands[0], operands[1]));
       DONE;
     }
 }")
@@ -2611,6 +2611,74 @@
 (define_insn "return"
   [(return)]
   "reload_completed"
+  "%@	%#"
+  [(set_attr "type" "return")
+   (set_attr "needs_delay_slot" "yes")])
+
+(define_expand "prologue"
+  [(const_int 0)]
+  ""
+  "sh_expand_prologue (); DONE;")
+
+(define_expand "epilogue"
+  [(return)]
+  ""
+  "sh_expand_epilogue ();")
+
+(define_insn "blockage"
+  [(unspec_volatile [(const_int 0)] 0)]
+  ""
+  ""
+  [(set_attr "length" "0")])
+
+;; ------------------------------------------------------------------------
+;; Scc instructions
+;; ------------------------------------------------------------------------
+
+(define_insn "movt"
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(eq:SI (reg:SI 18) (const_int 1)))]
+  ""
+  "movt	%0"
+  [(set_attr "type" "arith")])
+
+(define_expand "seq"
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
+	(match_dup 1))]
+  ""
+  "operands[1] = prepare_scc_operands (EQ);")
+
+(define_expand "slt"
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
+	(match_dup 1))]
+  ""
+  "operands[1] = prepare_scc_operands (LT);")
+
+(define_expand "sle"
+  [(match_operand:SI 0 "arith_reg_operand" "")]
+  ""
+  "
+{
+  rtx tmp = sh_compare_op0;
+  sh_compare_op0 = sh_compare_op1;
+  sh_compare_op1 = tmp;
+  emit_insn (gen_sge (operands[0]));
+  DONE;
+}")
+
+(define_expand "sgt"
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
+	(match_dup 1))]
+  ""
+  "operands[1] = prepare_scc_operands (GT);")
+
+(define_expand "sge"
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
+	(match_dup 1))]
+  ""
+  "
+{
+  if (GET_MODE (sh_compare_op0) == SFmode)
     {
       if (TARGET_IEEE)
 	{
@@ -2925,9 +2993,6 @@
 	(match_operand:SI 1 "arith_reg_operand" ""))
    (set (match_operand:SF 0 "arith_reg_operand" "")
         (float:SF (reg:SI 22)))]
-   (parallel [(set (match_operand:SF 0 "arith_reg_operand" "")
-		   (float:SF (reg:SI 22)))
-	      (use (match_dup 2))])]
   "TARGET_SH3E"
   "")
 
