@@ -39,82 +39,82 @@ package java.net;
 
 import java.io.IOException;
 
-/*
+/**
  * Written using on-line Java Platform 1.2 API Specification, as well
  * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
  * Status:  Believed complete and correct.
  */
 
 /**
-  * This class models a multicast UDP socket.  A multicast address is a
-  * class D internet address (one whose most significant bits are 1110).  
-  * A multicast group consists of a multicast address and a well known
-  * port number.  All members of the group listening on that address and
-  * port will receive all the broadcasts to the group.
-  * <p>
-  * Please note that applets are not allowed to use multicast sockets 
-  * 
-  * Written using on-line Java Platform 1.2 API Specification, as well
-  * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
-  * Status:  Believed complete and correct.
-  *
-  * @author Warren Levy <warrenl@cygnus.com>
-  * @author Aaron M. Renn (arenn@urbanophile.com) (Documentation comments)
-  * @since 1.1
-  * @date May 18, 1999.
-  */
+ * This class models a multicast UDP socket.  A multicast address is a
+ * class D internet address (one whose most significant bits are 1110).  
+ * A multicast group consists of a multicast address and a well known
+ * port number.  All members of the group listening on that address and
+ * port will receive all the broadcasts to the group.
+ * <p>
+ * Please note that applets are not allowed to use multicast sockets 
+ * 
+ * Written using on-line Java Platform 1.2 API Specification, as well
+ * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
+ * Status:  Believed complete and correct.
+ *
+ * @author Warren Levy <warrenl@cygnus.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com) (Documentation comments)
+ * @since 1.1
+ * @date May 18, 1999.
+ */
 public class MulticastSocket extends DatagramSocket
 {
   // FIXME: the local addr bound to the multicast socket can be reused;
   // unlike unicast sockets.  It binds to any available network interface.
   // See p.1159 JCL book.
 
-/**
-  * Create a MulticastSocket that this not bound to any address
-  *
-  * @exception IOException If an error occurs
-  */
+  /**
+   * Create a MulticastSocket that this not bound to any address
+   *
+   * @exception IOException If an error occurs
+   */
   public MulticastSocket() throws IOException
   {
     super(0, null);
   }
 
-/**
-  * Create a multicast socket bound to the specified port
-  *
-  * @param The port to bind to
-  *
-  * @exception IOException If an error occurs
-  */
+  /**
+   * Create a multicast socket bound to the specified port
+   *
+   * @param port The port to bind to
+   *
+   * @exception IOException If an error occurs
+   */
   public MulticastSocket(int port) throws IOException
   {
     super(port, null);
   }
 
-/**
-  * Returns the interface being used for multicast packets
-  * 
-  * @return The multicast interface
-  *
-  * @exception SocketException If an error occurs
-  */
+  /**
+   * Returns the interface being used for multicast packets
+   * 
+   * @return The multicast interface
+   *
+   * @exception SocketException If an error occurs
+   */
   public InetAddress getInterface() throws SocketException
   {
     // FIXME: Is it possible that an InetAddress wasn't returned from getOption?
     return (InetAddress) impl.getOption(SocketOptions.IP_MULTICAST_IF);
   }
 
-/**
-  * Returns the current value of the "Time to Live" option.  This is the
-  * number of hops a packet can make before it "expires".   This method id
-  * deprecated.  Use <code>getTimeToLive</code> instead.
-  * 
-  * @return The TTL value
-  *
-  * @exception IOException If an error occurs
-  *
-  * @deprecated Replaced by getTimeToLive() in Java 1.2
-  */
+  /**
+   * Returns the current value of the "Time to Live" option.  This is the
+   * number of hops a packet can make before it "expires".   This method id
+   * deprecated.  Use <code>getTimeToLive</code> instead.
+   * 
+   * @return The TTL value
+   *
+   * @exception IOException If an error occurs
+   *
+   * @deprecated 1.2 Replaced by getTimeToLive()
+   */
   public byte getTTL() throws IOException
   {
     // Use getTTL here rather than getTimeToLive in case we're using an impl
@@ -123,43 +123,43 @@ public class MulticastSocket extends DatagramSocket
     return impl.getTTL();
   }
 
-/**
-  * Returns the current value of the "Time to Live" option.  This is the
-  * number of hops a packet can make before it "expires". 
-  * 
-  * @return The TTL value
-  *
-  * @exception IOException If an error occurs
-  *
-  * @since Java 1.2
-  */
+  /**
+   * Returns the current value of the "Time to Live" option.  This is the
+   * number of hops a packet can make before it "expires". 
+   * 
+   * @return The TTL value
+   *
+   * @exception IOException If an error occurs
+   *
+   * @since 1.2
+   */
   public int getTimeToLive() throws IOException
   {
     return impl.getTimeToLive();
   }
 
-/**
-  * Sets the interface to use for multicast packets.
-  *
-  * @param addr The new interface to use
-  *
-  * @exception SocketException If an error occurs
-  */
+   /**
+    * Sets the interface to use for sending multicast packets.
+    *
+    * @param inf The new interface to use
+    *
+    * @exception SocketException If an error occurs
+    */
   public void setInterface(InetAddress inf) throws SocketException
   {
     impl.setOption(SocketOptions.IP_MULTICAST_IF, inf);
   }
 
-/**
-  * Sets the "Time to Live" value for a socket.  The value must be between
-  * 1 and 255.
-  *
-  * @param ttl The new TTL value
-  *
-  * @exception IOException If an error occurs
-  *
-  * @deprecated Replaced by <code>setTimeToLive</code> in Java 1.2
-  */
+  /**
+   * Sets the "Time to Live" value for a socket.  The value must be between
+   * 1 and 255.
+   *
+   * @param ttl The new TTL value
+   *
+   * @exception IOException If an error occurs
+   *
+   * @deprecated 1.2 Replaced by <code>setTimeToLive</code>
+   */
   public void setTTL(byte ttl) throws IOException
   {
     // Use setTTL here rather than setTimeToLive in case we're using an impl
@@ -168,16 +168,16 @@ public class MulticastSocket extends DatagramSocket
     impl.setTTL(ttl);
   }
 
-/**
-  * Sets the "Time to Live" value for a socket.  The value must be between
-  * 1 and 255.  
-  *
-  * @param ttl The new TTL value
-  *
-  * @exception IOException If an error occurs
-  * 
-  * @since Java 1.2
-  */
+  /**
+   * Sets the "Time to Live" value for a socket.  The value must be between
+   * 1 and 255.  
+   *
+   * @param ttl The new TTL value
+   *
+   * @exception IOException If an error occurs
+   * 
+   * @since 1.2
+   */
   public void setTimeToLive(int ttl) throws IOException
   {
     if (ttl <= 0 || ttl > 255)
@@ -186,13 +186,13 @@ public class MulticastSocket extends DatagramSocket
     impl.setTimeToLive(ttl);
   }
 
-/**
-  * Joins the specified mulitcast group.
-  *
-  * @param addr The address of the group to join
-  * 
-  * @exception IOException If an error occurs
-  */
+  /**
+   * Joins the specified mulitcast group.
+   *
+   * @param addr The address of the group to join
+   * 
+   * @exception IOException If an error occurs
+   */
   public void joinGroup(InetAddress mcastaddr) throws IOException
   {
     if (! mcastaddr.isMulticastAddress())
@@ -205,13 +205,13 @@ public class MulticastSocket extends DatagramSocket
     impl.join(mcastaddr);
   }
 
-/**
-  * Leaves the specified multicast group
-  *
-  * @param addr The address of the group to leave
-  *
-  * @exception IOException If an error occurs
-  */
+  /**
+   * Leaves the specified multicast group
+   *
+   * @param addr The address of the group to leave
+   *
+   * @exception IOException If an error occurs
+   */
   public void leaveGroup(InetAddress mcastaddr) throws IOException
   {
     if (! mcastaddr.isMulticastAddress())
@@ -224,16 +224,16 @@ public class MulticastSocket extends DatagramSocket
     impl.leave(mcastaddr);
   }
 
-/**
-  * Sends a packet of data to a multicast address with a TTL that is
-  * different from the default TTL on this socket.  The default TTL for
-  * the socket is not changed.
-  *
-  * @param packet The packet of data to send
-  * @param ttl The TTL for this packet
-  *
-  * @exception IOException If an error occurs
-  */
+  /**
+   * Sends a packet of data to a multicast address with a TTL that is
+   * different from the default TTL on this socket.  The default TTL for
+   * the socket is not changed.
+   *
+   * @param packet The packet of data to send
+   * @param ttl The TTL for this packet
+   *
+   * @exception IOException If an error occurs
+   */
   public synchronized void send(DatagramPacket p, byte ttl) throws IOException
   {
     SecurityManager s = System.getSecurityManager();
