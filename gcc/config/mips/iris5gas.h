@@ -7,6 +7,10 @@
 #define SDB_DEBUGGING_INFO
 #define MIPS_DEBUGGING_INFO
 
+/* GNU as does handle DWARF2 directives.  */
+#undef DWARF2_UNWIND_INFO
+#define DWARF2_UNWIND_INFO 1
+
 /* Irix 5 does not have some strange restrictions that Irix 3 had.  */
 #undef SET_FILE_NUMBER
 #define SET_FILE_NUMBER() ++num_source_filenames
