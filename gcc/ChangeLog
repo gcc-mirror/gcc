@@ -1,3 +1,10 @@
+Mon Jun 22 12:01:48 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* gcse.c (add_label_notes): New function.
+	(pre_insert_insn): Call it.
+	* unroll.c (unroll_loop): Look for insns with a REG_LABEL note, and
+	pass the label to set_label_in_map.
+
 Mon Jun 22 19:01:14 1998  Dave Love  <d.love@dl.ac.uk>
 
 	* Makefile.in (install-info): Fix typpo in previous change.
