@@ -15,203 +15,47 @@
 // Define if code specialized for wchar_t should be used.
 #undef _GLIBCPP_USE_WCHAR_T
 
-// Define if the compiler/host combination has __builtin_acos
-#undef HAVE_BUILTIN_ACOS
+// Define if the compiler/host combination has __builtin_abs
+#undef HAVE___BUILTIN_ABS
 
-// Define if the compiler/host combination has __builtin_acosf
-#undef HAVE_BUILTIN_ACOSF
-
-// Define if the compiler/host combination has __builtin_acosl
-#undef HAVE_BUILTIN_ACOSL
-
-// Define if the compiler/host combination has __builtin_asin
-#undef HAVE_BUILTIN_ASIN
-
-// Define if the compiler/host combination has __builtin_asinf
-#undef HAVE_BUILTIN_ASINF
-
-// Define if the compiler/host combination has __builtin_asinl
-#undef HAVE_BUILTIN_ASINL
-
-// Define if the compiler/host combination has __builtin_atan
-#undef HAVE_BUILTIN_ATAN
-
-// Define if the compiler/host combination has __builtin_atanf
-#undef HAVE_BUILTIN_ATANF
-
-// Define if the compiler/host combination has __builtin_atanl
-#undef HAVE_BUILTIN_ATANL
-
-// Define if the compiler/host combination has __builtin_atan2
-#undef HAVE_BUILTIN_ATAN2
-
-// Define if the compiler/host combination has __builtin_atan2f
-#undef HAVE_BUILTIN_ATAN2F
-
-// Define if the compiler/host combination has __builtin_atan2l
-#undef HAVE_BUILTIN_ATAN2L
-
-// Define if the compiler/host combination has __builtin_ceil
-#undef HAVE_BUILTIN_CEIL
-
-// Define if the compiler/host combination has __builtin_ceilf
-#undef HAVE_BUILTIN_CEILF
-
-// Define if the compiler/host combination has __builtin_ceill
-#undef HAVE_BUILTIN_CEILL
+// Define if the compiler/host combination has __builtin_labs
+#undef HAVE___BUILTIN_LABS
 
 // Define if the compiler/host combination has __builtin_cos
-#undef HAVE_BUILTIN_COS
+#undef HAVE___BUILTIN_COS
 
 // Define if the compiler/host combination has __builtin_cosf
-#undef HAVE_BUILTIN_COSF
+#undef HAVE___BUILTIN_COSF
 
 // Define if the compiler/host combination has __builtin_cosl
-#undef HAVE_BUILTIN_COSL
-
-// Define if the compiler/host combination has __builtin_cosh
-#undef HAVE_BUILTIN_COSH
-
-// Define if the compiler/host combination has __builtin_coshf
-#undef HAVE_BUILTIN_COSHF
-
-// Define if the compiler/host combination has __builtin_coshl
-#undef HAVE_BUILTIN_COSHL
-
-// Define if the compiler/host combination has __builtin_exp
-#undef HAVE_BUILTIN_EXP
-
-// Define if the compiler/host combination has __builtin_expf
-#undef HAVE_BUILTIN_EXPF
-
-// Define if the compiler/host combination has __builtin_expl
-#undef HAVE_BUILTIN_EXPL
+#undef HAVE___BUILTIN_COSL
 
 // Define if the compiler/host combination has __builtin_fabs
-#undef HAVE_BUILTIN_FABS
+#undef HAVE___BUILTIN_FABS
 
 // Define if the compiler/host combination has __builtin_fabsf
-#undef HAVE_BUILTIN_FABSF
+#undef HAVE___BUILTIN_FABSF
 
 // Define if the compiler/host combination has __builtin_fabsl
-#undef HAVE_BUILTIN_FABSL
-
-// Define if the compiler/host combination has __builtin_floor
-#undef HAVE_BUILTIN_FLOOR
-
-// Define if the compiler/host combination has __builtin_floorf
-#undef HAVE_BUILTIN_FLOORF
-
-// Define if the compiler/host combination has __builtin_floorl
-#undef HAVE_BUILTIN_FLOORL
-
-// Define if the compiler/host combination has __builtin_fmod
-#undef HAVE_BUILTIN_FMOD
-
-// Define if the compiler/host combination has __builtin_fmodf
-#undef HAVE_BUILTIN_FMODF
-
-// Define if the compiler/host combination has __builtin_fmodl
-#undef HAVE_BUILTIN_FMODL
-
-// Define if the compiler/host combination has __builtin_frexp
-#undef HAVE_BUILTIN_FREXP
-
-// Define if the compiler/host combination has __builtin_frexpf
-#undef HAVE_BUILTIN_FREXPF
-
-// Define if the compiler/host combination has __builtin_frexpl
-#undef HAVE_BUILTIN_FREXPL
-
-// Define if the compiler/host combination has __builtin_ldexp
-#undef HAVE_BUILTIN_LDEXP
-
-// Define if the compiler/host combination has __builtin_ldexpf
-#undef HAVE_BUILTIN_LDEXPF
-
-// Define if the compiler/host combination has __builtin_ldexpl
-#undef HAVE_BUILTIN_LDEXPL
-
-// Define if the compiler/host combination has __builtin_log
-#undef HAVE_BUILTIN_LOG
-
-// Define if the compiler/host combination has __builtin_logf
-#undef HAVE_BUILTIN_LOGF
-
-// Define if the compiler/host combination has __builtin_logl
-#undef HAVE_BUILTIN_LOGL
-
-// Define if the compiler/host combination has __builtin_log10
-#undef HAVE_BUILTIN_LOG10
-
-// Define if the compiler/host combination has __builtin_log10f
-#undef HAVE_BUILTIN_LOG10F
-
-// Define if the compiler/host combination has __builtin_log10l
-#undef HAVE_BUILTIN_LOG10L
-
-// Define if the compiler/host combination has __builtin_modf
-#undef HAVE_BUILTIN_MODF
-
-// Define if the compiler/host combination has __builtin_modff
-#undef HAVE_BUILTIN_MODFF
-
-// Define if the compiler/host combination has __builtin_modfl
-#undef HAVE_BUILTIN_MODFL
-
-// Define if the compiler/host combination has __builtin_pow
-#undef HAVE_BUILTIN_POW
-
-// Define if the compiler/host combination has __builtin_powf
-#undef HAVE_BUILTIN_POWF
-
-// Define if the compiler/host combination has __builtin_powl
-#undef HAVE_BUILTIN_POWL
+#undef HAVE___BUILTIN_FABSL
 
 // Define if the compiler/host combination has __builtin_sin
-#undef HAVE_BUILTIN_SIN
+#undef HAVE___BUILTIN_SIN
 
 // Define if the compiler/host combination has __builtin_sinf
-#undef HAVE_BUILTIN_SINF
+#undef HAVE___BUILTIN_SINF
 
 // Define if the compiler/host combination has __builtin_sinl
-#undef HAVE_BUILTIN_SINL
+#undef HAVE___BUILTIN_SINL
 
-// Define if the compiler/host combination has __builtin_sinh
-#undef HAVE_BUILTIN_SINH
-
-// Define if the compiler/host combination has __builtin_sinhf
-#undef HAVE_BUILTIN_SINHF
-
-// Define if the compiler/host combination has __builtin_sinhl
-#undef HAVE_BUILTIN_SINHL
-
-// Define if the compiler/host combination has __builtin_sqrt
-#undef HAVE_BUILTIN_SQRT
+// Define if the compiler/host combination has __builtin_fsqrt
+#undef HAVE___BUILTIN_FSQRT
 
 // Define if the compiler/host combination has __builtin_sqrtf
-#undef HAVE_BUILTIN_SQRTF
+#undef HAVE___BUILTIN_SQRTF
 
 // Define if the compiler/host combination has __builtin_sqrtl
-#undef HAVE_BUILTIN_SQRTL
-
-// Define if the compiler/host combination has __builtin_tan
-#undef HAVE_BUILTIN_TAN
-
-// Define if the compiler/host combination has __builtin_tanf
-#undef HAVE_BUILTIN_TANF
-
-// Define if the compiler/host combination has __builtin_tanl
-#undef HAVE_BUILTIN_TANL
-
-// Define if the compiler/host combination has __builtin_tanh
-#undef HAVE_BUILTIN_TANH
-
-// Define if the compiler/host combination has __builtin_tanhf
-#undef HAVE_BUILTIN_TANHF
-
-// Define if the compiler/host combination has __builtin_tanhl
-#undef HAVE_BUILTIN_TANHL
+#undef HAVE___BUILTIN_SQRTL
 
 // Define if GCC support for __complex__ float is buggy.
 #undef _GLIBCPP_BUGGY_FLOAT_COMPLEX

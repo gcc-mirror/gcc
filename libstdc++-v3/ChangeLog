@@ -1,3 +1,23 @@
+2000-06-22 Steven King <sxking@uswest.net>
+
+        * acinclude.m4: Check for sinl, _sinl using 1 parameter.
+
+2000-06-22  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* acinclude.m4 (GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT): Redo. Use the
+	same approach as GLIBCPP_CHECK_MATH_SUPPORT, only don't try to
+	link against libm and don't use -fno-builtins...
+	* math/mathconf.h: Change up builtin macros to new schema.
+	* bits/std_cmath.h: And here. Wheee!
+	* shadow/bits/std_cmath.h: And here.
+	* acconfig.h: Change up builtin macros here.
+	* math/cosf.c:  Remove.
+	* math/fabsf.c:  Likewise.
+	* math/sinf.c:  Likewise.
+	* math/sqrtf.c:  Likewise.
+	* math/Makefile.am (EXTRA_DIST):  Remove those four files.
+	* math/Makefile.in:  Regenerate.
+
 2000-06-22  Anthony Williams  <anthony@anthonyw.cjb.net>
 
 	* testsuite/21_strings/find.cc: Patch.
