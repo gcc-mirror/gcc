@@ -836,7 +836,7 @@ extern rtx virtual_incoming_args_rtx;
 
 #define VIRTUAL_INCOMING_ARGS_REGNUM	(FIRST_VIRTUAL_REGISTER)
 
-/* If FRAME_GROWS_DOWNWARDS, this points to immediately above the first
+/* If FRAME_GROWS_DOWNWARD, this points to immediately above the first
    variable on the stack.  Otherwise, it points to the first variable on
    the stack.  */
 
