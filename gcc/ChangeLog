@@ -1,3 +1,8 @@
+Fri Oct 17 23:33:20 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (LIBGCC2_CFLAGS): Avoid a backslash then an
+	empty line if @inhibit_libc@ is empty.
+
 Fri Oct 17 23:24:40 1997  Robert Lipe (robertl@dgii.com)
 
 	* i386/sco5.h: Let ELF use dwarf2 unwinding.  COFF uses sjlj.
