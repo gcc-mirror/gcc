@@ -159,7 +159,7 @@ included in the section entitled ``GNU Free Documentation License''.
 @sp 2
 @center Richard M. Stallman
 @sp 3
-@center Last updated 22 March 2001
+@center Last updated 9 May 2001
 @sp 1
 @c The version number appears five times more in this file.
 
@@ -229,6 +229,7 @@ bugs.  It corresponds to GCC version 3.1.
 * Installation::    How to configure, compile and install GCC.
 * C Extensions::    GNU extensions to the C language family.
 * C++ Extensions::  GNU extensions to the C++ language.
+* Objective C::     GNU Objective-C runtime features.
 * Gcov::	    gcov: a GCC test coverage program.
 * Trouble::         If you have trouble installing GCC.
 * Bugs::            How, why and where to report bugs.
@@ -476,6 +477,8 @@ for details of the CHILL standard.
 @include install.texi
 
 @include extend.texi
+
+@include objc.texi
 
 @include gcov.texi
 
