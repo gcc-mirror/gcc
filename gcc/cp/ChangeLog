@@ -1,3 +1,8 @@
+2004-06-25  Paul Brook  <paul@codesourcery.com>
+
+	* decl2.c (get_guard): Call targetm.cxx.guard_type.
+	(get_guard_bits, get_guard_cond): Call targetm.cxx.guard_mask_bit.
+
 2004-06-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (grokdeclarator): Restore error messages about __thread.

@@ -1,5 +1,11 @@
 2004-06-25  Paul Brook  <paul@codesourcery.com>
 
+	* libsupc++/cxxabi.h: Define __ARM_EABI__
+	(__guard): Use it.
+	* libsupc++/guard.h (__cxa_guard_acquire, __cxa_guard_release): Ditto.
+
+2004-06-25  Paul Brook  <paul@codesourcery.com>
+
 	* include/bits/concurrence.h: Still create mutex object when
 	single-threaded.
 

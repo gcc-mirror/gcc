@@ -51,6 +51,7 @@ through the macros defined in the @file{.h} file.
 * Target Attributes::   Defining target-specific uses of @code{__attribute__}.
 * MIPS Coprocessors::   MIPS coprocessor support and how to customize it.
 * PCH Target::          Validity checking for precompiled headers.
+* C++ ABI::             Controlling C++ ABI changes.
 * Misc::                Everything else.
 @end menu
 
@@ -8458,6 +8459,22 @@ is no need for extensive validity checking).  It returns @code{NULL} if
 it is safe to load a PCH file with this data, or a suitable error message
 if not.  The error message will be presented to the user, so it should
 be localized.
+@end deftypefn
+
+@node C++ ABI
+@section C++ ABI parameters
+@cindex parameters, c++ abi
+
+@deftypefn {Target Hook} tree TARGET_CXX_GUARD_TYPE (void)
+Define this hook to override the integer type used for guard variables.
+These are used to implement one-time construction of static objects.  The
+default is long_long_integer_type_node.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_CXX_GUARD_MASK_BIT (void)
+This hook determines how guard variables are used.  It should return 
+@code{false} (the default) if first byte should be used.  A return value of
+@code{true} indicates the least significant bit should be used.
 @end deftypefn
 
 @node Misc

@@ -135,3 +135,11 @@ hook_bool_CUMULATIVE_ARGS_true (CUMULATIVE_ARGS * a ATTRIBUTE_UNUSED)
 {
   return true;
 }
+
+
+/* The generic C++ ABI specifies this is a 64-bit value.  */
+tree
+default_cxx_guard_type (void)
+{
+  return long_long_integer_type_node;
+}
