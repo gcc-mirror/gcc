@@ -1,8 +1,15 @@
+2003-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/10245
+	* cvt.c (force_rvalue): New fn.
+	* call.c (build_conditional_expr): Use it.
+	* cp-tree.h: Declare it.
+
 2003-03-28  Nathan Sidwell  <nathan@codesourcery.com>
 	
-        PR c++/10047
-        * decl2.c (finish_file): Don't warn about explicitly instantiated
-        inline decls.
+	PR c++/10047
+	* decl2.c (finish_file): Don't warn about explicitly instantiated
+	inline decls.
 
 2003-03-27  Nathan Sidwell  <nathan@codesourcery.com>
 

@@ -585,6 +585,21 @@ convert_lvalue (totype, expr)
 			       NULL_TREE);
   return convert_from_reference (expr);
 }
+
+/* Really perform an lvalue-to-rvalue conversion, including copying an
+   argument of class type into a temporary.  */
+
+tree
+force_rvalue (tree expr)
+{
+  if (IS_AGGR_TYPE (TREE_TYPE (expr)) && TREE_CODE (expr) != TARGET_EXPR)
+    expr = ocp_convert (TREE_TYPE (expr), expr,
+			CONV_IMPLICIT|CONV_FORCE_TEMP, LOOKUP_NORMAL);
+  else
+    expr = decay_conversion (expr);
+
+  return expr;
+}
 
 /* C++ conversions, preference to static cast conversions.  */
 

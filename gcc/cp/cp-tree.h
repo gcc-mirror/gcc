@@ -3632,6 +3632,7 @@ extern tree get_primary_binfo                   PARAMS ((tree));
 extern tree convert_to_reference		PARAMS ((tree, tree, int, int, tree));
 extern tree convert_from_reference		PARAMS ((tree));
 extern tree convert_lvalue			PARAMS ((tree, tree));
+extern tree force_rvalue			PARAMS ((tree));
 extern tree ocp_convert				PARAMS ((tree, tree, int, int));
 extern tree cp_convert				PARAMS ((tree, tree));
 extern tree convert_to_void			PARAMS ((tree, const char */*implicit context*/));
