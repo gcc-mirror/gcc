@@ -1,3 +1,8 @@
+2001-11-25  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.h (FUNCTION_PROFILER): Fix label name
+	passed to mcount.
+
 2001-11-24  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppmacro.c (warn_of_redefinition): Warn regardless of -pedantic.

@@ -1134,7 +1134,7 @@ typedef struct m68hc11_args
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 #define FUNCTION_PROFILER(FILE, LABELNO)		\
-    asm_fprintf (FILE, "\tldy LP%d\n\tjsr mcount\n", (LABELNO))
+    asm_fprintf (FILE, "\tldy\t.LP%d\n\tjsr mcount\n", (LABELNO))
 
 /* Output assembler code to FILE to initialize this source file's
    basic block profiling info, if that has not already been done. */
