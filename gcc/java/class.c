@@ -1476,14 +1476,19 @@ get_dispatch_table (tree type, tree this_class_addr)
 void
 set_method_index (tree decl, tree method_index)
 {
-  method_index = fold (convert (sizetype, method_index));
+  if (method_index != NULL_TREE)
+    {
+      /* method_index is null if we're using indirect dispatch.  */
+      method_index = fold (convert (sizetype, method_index));
 
-  if (TARGET_VTABLE_USES_DESCRIPTORS)
-    /* Add one to skip bogus descriptor for class and GC descriptor. */
-    method_index = size_binop (PLUS_EXPR, method_index, size_int (1));
-  else
-    /* Add 1 to skip "class" field of dtable, and 1 to skip GC descriptor.  */
-    method_index = size_binop (PLUS_EXPR, method_index, size_int (2));
+      if (TARGET_VTABLE_USES_DESCRIPTORS)
+	/* Add one to skip bogus descriptor for class and GC descriptor. */
+	method_index = size_binop (PLUS_EXPR, method_index, size_int (1));
+      else
+	/* Add 1 to skip "class" field of dtable, and 1 to skip GC
+	   descriptor.  */
+	method_index = size_binop (PLUS_EXPR, method_index, size_int (2));
+    }
 
   DECL_VINDEX (decl) = method_index;
 }
@@ -2357,6 +2362,7 @@ layout_class_method (tree this_class, tree super_class,
 	  tree method_index = get_method_index (super_method);
 	  set_method_index (method_decl, method_index);
 	  if (method_index == NULL_TREE 
+	      && ! flag_indirect_dispatch
 	      && !CLASS_FROM_SOURCE_P (this_class)
 	      && ! DECL_ARTIFICIAL (super_method))
 	    error ("%Jnon-static method '%D' overrides static method",
