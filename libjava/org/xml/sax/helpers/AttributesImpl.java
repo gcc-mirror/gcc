@@ -1,8 +1,9 @@
 // AttributesImpl.java - default implementation of Attributes.
-// Written by David Megginson, sax@megginson.com
+// http://www.saxproject.org
+// Written by David Megginson
 // NO WARRANTY!  This class is in the public domain.
 
-// $Id: AttributesImpl.java,v 1.2 2001/05/31 16:03:17 garyp Exp $
+// $Id: AttributesImpl.java,v 1.6.2.3 2002/01/29 21:34:14 dbrownell Exp $
 
 
 package org.xml.sax.helpers;
@@ -16,6 +17,8 @@ import org.xml.sax.Attributes;
  * <blockquote>
  * <em>This module, both source code and documentation, is in the
  * Public Domain, and comes with <strong>NO WARRANTY</strong>.</em>
+ * See <a href='http://www.saxproject.org'>http://www.saxproject.org</a>
+ * for further information.
  * </blockquote>
  *
  * <p>This class provides a default implementation of the SAX2
@@ -39,9 +42,8 @@ import org.xml.sax.Attributes;
  * implementation using a single array rather than a set of Vectors.</p>
  *
  * @since SAX 2.0
- * @author David Megginson, 
- *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0
+ * @author David Megginson
+ * @version 2.0.1 (sax2r2)
  */
 public class AttributesImpl implements Attributes
 {
@@ -320,12 +322,16 @@ public class AttributesImpl implements Attributes
     /**
      * Clear the attribute list for reuse.
      *
-     * <p>Note that no memory is actually freed by this call:
-     * the current arrays are kept so that they can be 
+     * <p>Note that little memory is freed by this call:
+     * the current array is kept so it can be 
      * reused.</p>
      */
     public void clear ()
     {
+	if (data != null) {
+	    for (int i = 0; i < (length * 5); i++)
+		data [i] = null;
+	}
 	length = 0;
     }
 
@@ -340,15 +346,17 @@ public class AttributesImpl implements Attributes
      */
     public void setAttributes (Attributes atts)
     {
-	clear();
-	length = atts.getLength();
-	data = new String[length*5]; 
-	for (int i = 0; i < length; i++) {
-	    data[i*5] = atts.getURI(i);
-	    data[i*5+1] = atts.getLocalName(i);
-	    data[i*5+2] = atts.getQName(i);
-	    data[i*5+3] = atts.getType(i);
-	    data[i*5+4] = atts.getValue(i);
+        clear();
+        length = atts.getLength();
+        if (length > 0) {
+            data = new String[length*5];
+            for (int i = 0; i < length; i++) {
+                data[i*5] = atts.getURI(i);
+                data[i*5+1] = atts.getLocalName(i);
+                data[i*5+2] = atts.getQName(i);
+                data[i*5+3] = atts.getType(i);
+                data[i*5+4] = atts.getValue(i);
+            }
 	}
     }
 
@@ -430,15 +438,16 @@ public class AttributesImpl implements Attributes
     public void removeAttribute (int index)
     {
 	if (index >= 0 && index < length) {
-	    data[index*5] = null;
-	    data[index*5+1] = null;
-	    data[index*5+2] = null;
-	    data[index*5+3] = null;
-	    data[index*5+4] = null;
 	    if (index < length - 1) {
 		System.arraycopy(data, (index+1)*5, data, index*5,
 				 (length-index-1)*5);
 	    }
+	    index = (length - 1) * 5;
+	    data [index++] = null;
+	    data [index++] = null;
+	    data [index++] = null;
+	    data [index++] = null;
+	    data [index] = null;
 	    length--;
 	} else {
 	    badIndex(index);
@@ -556,24 +565,29 @@ public class AttributesImpl implements Attributes
      * @param n The minimum number of attributes that the array must
      *        be able to hold.
      */
-    private void ensureCapacity (int n)
-    {
-	if (n > 0 && data == null) {
-	    data = new String[25];
-	}
+    private void ensureCapacity (int n)    {
+        if (n <= 0) {
+            return;
+        }
+        int max;
+        if (data == null || data.length == 0) {
+            max = 25;
+        }
+        else if (data.length >= n * 5) {
+            return;
+        }
+        else {
+            max = data.length;
+        }
+        while (max < n * 5) {
+            max *= 2;
+        }
 
-	int max = data.length;
-	if (max >= n * 5) {
-	    return;
-	}
-
-
-	while (max < n * 5) {
-	    max *= 2;
-	}
-	String newData[] = new String[max];
-	System.arraycopy(data, 0, newData, 0, length*5);
-	data = newData;
+        String newData[] = new String[max];
+        if (length > 0) {
+            System.arraycopy(data, 0, newData, 0, length*5);
+        }
+        data = newData;
     }
 
 

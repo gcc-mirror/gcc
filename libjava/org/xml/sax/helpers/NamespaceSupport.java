@@ -1,8 +1,9 @@
 // NamespaceSupport.java - generic Namespace support for SAX.
-// Written by David Megginson, sax@megginson.com
+// http://www.saxproject.org
+// Written by David Megginson
 // This class is in the Public Domain.  NO WARRANTY!
 
-// $Id: NamespaceSupport.java,v 1.1 2000/10/02 02:43:20 sboag Exp $
+// $Id: NamespaceSupport.java,v 1.6.2.5 2002/01/29 21:34:14 dbrownell Exp $
 
 package org.xml.sax.helpers;
 
@@ -13,11 +14,14 @@ import java.util.Vector;
 
 
 /**
- * Encapsulate Namespace logic for use by SAX drivers.
+ * Encapsulate Namespace logic for use by applications using SAX,
+ * or internally by SAX drivers.
  *
  * <blockquote>
  * <em>This module, both source code and documentation, is in the
  * Public Domain, and comes with <strong>NO WARRANTY</strong>.</em>
+ * See <a href='http://www.saxproject.org'>http://www.saxproject.org</a>
+ * for further information.
  * </blockquote>
  *
  * <p>This class encapsulates the logic of Namespace processing:
@@ -39,16 +43,16 @@ import java.util.Vector;
  * support.declarePrefix("", "http://www.w3.org/1999/xhtml");
  * support.declarePrefix("dc", "http://www.purl.org/dc#");
  *
- * String parts[] = support.processName("p", parts, false);
+ * parts = support.processName("p", parts, false);
  * System.out.println("Namespace URI: " + parts[0]);
  * System.out.println("Local name: " + parts[1]);
  * System.out.println("Raw name: " + parts[2]);
-
- * String parts[] = support.processName("dc:title", parts, false);
+ *
+ * parts = support.processName("dc:title", parts, false);
  * System.out.println("Namespace URI: " + parts[0]);
  * System.out.println("Local name: " + parts[1]);
  * System.out.println("Raw name: " + parts[2]);
-
+ *
  * support.popContext();
  * </pre>
  *
@@ -57,10 +61,14 @@ import java.util.Vector;
  * prefix/URI mapping is repeated for each context (for example), this
  * class will be somewhat less efficient.</p>
  *
+ * <p>Although SAX drivers (parsers) may choose to use this class to
+ * implement namespace handling, they are not required to do so.
+ * Applications must track namespace information themselves if they
+ * want to use namespace information.
+ *
  * @since SAX 2.0
- * @author David Megginson, 
- *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0
+ * @author David Megginson
+ * @version 2.0.1 (sax2r2)
  */
 public class NamespaceSupport
 {
@@ -72,7 +80,9 @@ public class NamespaceSupport
 
 
     /**
-     * The XML Namespace as a constant.
+     * The XML Namespace URI as a constant.
+     * The value is <code>http://www.w3.org/XML/1998/namespace</code>
+     * as defined in the XML Namespaces specification.
      *
      * <p>This is the Namespace URI that is automatically mapped
      * to the "xml" prefix.</p>
@@ -125,21 +135,45 @@ public class NamespaceSupport
 
     /**
      * Start a new Namespace context.
-     *
-     * <p>Normally, you should push a new context at the beginning
-     * of each XML element: the new context will automatically inherit
+     * The new context will automatically inherit
      * the declarations of its parent context, but it will also keep
-     * track of which declarations were made within this context.</p>
+     * track of which declarations were made within this context.
+     *
+     * <p>Event callback code should start a new context once per element.
+     * This means being ready to call this in either of two places.
+     * For elements that don't include namespace declarations, the
+     * <em>ContentHandler.startElement()</em> callback is the right place.
+     * For elements with such a declaration, it'd done in the first
+     * <em>ContentHandler.startPrefixMapping()</em> callback.
+     * A boolean flag can be used to
+     * track whether a context has been started yet.  When either of
+     * those methods is called, it checks the flag to see if a new context
+     * needs to be started.  If so, it starts the context and sets the
+     * flag.  After <em>ContentHandler.startElement()</em>
+     * does that, it always clears the flag.
+     *
+     * <p>Normally, SAX drivers would push a new context at the beginning
+     * of each XML element.  Then they perform a first pass over the
+     * attributes to process all namespace declarations, making
+     * <em>ContentHandler.startPrefixMapping()</em> callbacks.
+     * Then a second pass is made, to determine the namespace-qualified
+     * names for all attributes and for the element name.
+     * Finally all the information for the
+     * <em>ContentHandler.startElement()</em> callback is available,
+     * so it can then be made.
      *
      * <p>The Namespace support object always starts with a base context
      * already in force: in this context, only the "xml" prefix is
      * declared.</p>
      *
+     * @see org.xml.sax.ContentHandler
      * @see #popContext
      */
     public void pushContext ()
     {
 	int max = contexts.length;
+
+	contexts [contextPos].declsOK = false;
 	contextPos++;
 
 				// Extend the array if necessary
@@ -178,6 +212,7 @@ public class NamespaceSupport
      */
     public void popContext ()
     {
+	contexts[contextPos].clear();
 	contextPos--;
 	if (contextPos < 0) {
 	    throw new EmptyStackException();
@@ -193,29 +228,42 @@ public class NamespaceSupport
 
 
     /**
-     * Declare a Namespace prefix.
+     * Declare a Namespace prefix.  All prefixes must be declared
+     * before they are referenced.  For example, a SAX driver (parser)
+     * would scan an element's attributes
+     * in two passes:  first for namespace declarations,
+     * then a second pass using {@link #processName processName()} to
+     * interpret prefixes against (potentially redefined) prefixes.
      *
      * <p>This method declares a prefix in the current Namespace
      * context; the prefix will remain in force until this context
      * is popped, unless it is shadowed in a descendant context.</p>
      *
-     * <p>To declare a default Namespace, use the empty string.  The
-     * prefix must not be "xml" or "xmlns".</p>
+     * <p>To declare the default element Namespace, use the empty string as
+     * the prefix.</p>
      *
      * <p>Note that you must <em>not</em> declare a prefix after
-     * you've pushed and popped another Namespace.</p>
+     * you've pushed and popped another Namespace context, or
+     * treated the declarations phase as complete by processing
+     * a prefixed name.</p>
      *
-     * <p>Note that there is an asymmetry in this library: while {@link
-     * #getPrefix getPrefix} will not return the default "" prefix,
-     * even if you have declared one; to check for a default prefix,
+     * <p>Note that there is an asymmetry in this library: {@link
+     * #getPrefix getPrefix} will not return the "" prefix,
+     * even if you have declared a default element namespace.
+     * To check for a default namespace,
      * you have to look it up explicitly using {@link #getURI getURI}.
      * This asymmetry exists to make it easier to look up prefixes
      * for attribute names, where the default prefix is not allowed.</p>
      *
-     * @param prefix The prefix to declare, or null for the empty
-     *        string.
+     * @param prefix The prefix to declare, or the empty string to
+     *	indicate the default element namespace.  This may never have
+     *	the value "xml" or "xmlns".
      * @param uri The Namespace URI to associate with the prefix.
      * @return true if the prefix was legal, false otherwise
+     * @exception IllegalStateException when a prefix is declared
+     *	after looking up a name in the context, or after pushing
+     *	another context on top of it.
+     *
      * @see #processName
      * @see #getURI
      * @see #getPrefix
@@ -232,7 +280,8 @@ public class NamespaceSupport
 
 
     /**
-     * Process a raw XML 1.0 name.
+     * Process a raw XML 1.0 name, after all declarations in the current
+     * context have been handled by {@link #declarePrefix declarePrefix()}.
      *
      * <p>This method processes a raw XML 1.0 name in the current
      * context by removing the prefix and looking it up among the
@@ -255,7 +304,7 @@ public class NamespaceSupport
      *
      * <p>Note that attribute names are processed differently than
      * element names: an unprefixed element name will received the
-     * default Namespace (if any), while an unprefixed element name
+     * default Namespace (if any), while an unprefixed attribute name
      * will not.</p>
      *
      * @param qName The raw XML 1.0 name to be processed.
@@ -419,9 +468,14 @@ public class NamespaceSupport
     /**
      * Internal class for a single Namespace context.
      *
-     * <p>This module caches and reuses Namespace contexts, so the number allocated
+     * <p>This module caches and reuses Namespace contexts,
+     * so the number allocated
      * will be equal to the element depth of the document, not to the total
-     * number of elements (i.e. 5-10 rather than tens of thousands).</p>
+     * number of elements (i.e. 5-10 rather than tens of thousands).
+     * Also, data structures used to represent contexts are shared when
+     * possible (child contexts without declarations) to further reduce
+     * the amount of memory that's consumed.
+     * </p>
      */
     final class Context {
 
@@ -436,6 +490,8 @@ public class NamespaceSupport
 	
 	/**
 	 * (Re)set the parent of this Namespace context.
+	 * The context must either have been freshly constructed,
+	 * or must have been cleared.
 	 *
 	 * @param context The parent Namespace context object.
 	 */
@@ -448,7 +504,24 @@ public class NamespaceSupport
 	    elementNameTable = parent.elementNameTable;
 	    attributeNameTable = parent.attributeNameTable;
 	    defaultNS = parent.defaultNS;
-	    tablesDirty = false;
+	    declSeen = false;
+	    declsOK = true;
+	}
+
+	/**
+	 * Makes associated state become collectible,
+	 * invalidating this context.
+	 * {@link #setParent} must be called before
+	 * this context may be used again.
+	 */
+	void clear ()
+	{
+	    parent = null;
+	    prefixTable = null;
+	    uriTable = null;
+	    elementNameTable = null;
+	    attributeNameTable = null;
+	    defaultNS = null;
 	}
 	
 	
@@ -462,7 +535,10 @@ public class NamespaceSupport
 	void declarePrefix (String prefix, String uri)
 	{
 				// Lazy processing...
-	    if (!tablesDirty) {
+	    if (!declsOK)
+		throw new IllegalStateException (
+		    "can't declare any more prefixes in this context");
+	    if (!declSeen) {
 		copyTables();
 	    }
 	    if (declarations == null) {
@@ -501,11 +577,14 @@ public class NamespaceSupport
 	    String name[];
 	    Hashtable table;
 	    
+	    			// detect errors in call sequence
+	    declsOK = false;
+
 				// Select the appropriate table.
 	    if (isAttribute) {
-		table = elementNameTable;
-	    } else {
 		table = attributeNameTable;
+	    } else {
+		table = elementNameTable;
 	    }
 	    
 				// Start by looking in the cache, and
@@ -517,8 +596,11 @@ public class NamespaceSupport
 	    }
 	    
 				// We haven't seen this name in this
-				// context before.
+				// context before.  Maybe in the parent
+				// context, but we can't assume prefix
+				// bindings are the same.
 	    name = new String[3];
+	    name[2] = qName.intern();
 	    int index = qName.indexOf(':');
 	    
 	    
@@ -529,8 +611,7 @@ public class NamespaceSupport
 		} else {
 		    name[0] = defaultNS;
 		}
-		name[1] = qName.intern();
-		name[2] = name[1];
+		name[1] = name[2];
 	    }
 	    
 				// Prefix
@@ -548,12 +629,11 @@ public class NamespaceSupport
 		}
 		name[0] = uri;
 		name[1] = local.intern();
-		name[2] = qName.intern();
 	    }
 	    
 				// Save in the cache for future use.
+				// (Could be shared with parent context...)
 	    table.put(name[2], name);
-	    tablesDirty = true;
 	    return name;
 	}
 	
@@ -659,7 +739,7 @@ public class NamespaceSupport
 	    }
 	    elementNameTable = new Hashtable();
 	    attributeNameTable = new Hashtable();
-	    tablesDirty = true;
+	    declSeen = true;
 	}
 
 
@@ -673,6 +753,7 @@ public class NamespaceSupport
 	Hashtable elementNameTable;
 	Hashtable attributeNameTable;
 	String defaultNS = null;
+	boolean declsOK = true;
 	
 
 
@@ -681,7 +762,7 @@ public class NamespaceSupport
 	////////////////////////////////////////////////////////////////
 	
 	private Vector declarations = null;
-	private boolean tablesDirty = false;
+	private boolean declSeen = false;
 	private Context parent = null;
     }
 }

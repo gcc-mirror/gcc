@@ -1,0 +1,164 @@
+<html><head>
+
+<!-- $Id: package.html,v 1.2.2.2 2002/01/12 21:42:21 dbrownell Exp $ -->
+
+</head><body>
+
+<p> This package provides the core SAX APIs.
+Some SAX1 APIs are deprecated to encourage integration of
+namespace-awareness into designs of new applications
+and into maintainance of existing infrastructure. </p>
+
+<p>See <a href='http://www.saxproject.org'>http://www.saxproject.org</a>
+for more information about SAX.</p>
+
+
+<h2> SAX2 Standard Feature Flags </h2>
+
+<p> One of the essential characteristics of SAX2 is that it added
+feature flags which can be used to examine and perhaps modify
+parser modes, in particular modes such as validation.
+Since features are identified by (absolute) URIs, anyone
+can define such features.   
+Currently defined standard feature URIs have the prefix
+<code>http://xml.org/sax/features/</code> before an identifier such as
+<code>validation</code>.  Turn features on or off using
+<em>setFeature</em>.  Those standard identifiers are: </p>
+
+
+<table border="1" cellpadding="3" cellspacing="0" width="100%">
+    <tr align="center" bgcolor="#ccccff">
+	<th>Feature ID</th>
+	<th>Default</th>
+	<th>Description</th>
+	</tr>
+
+    <tr>
+	<td>external-general-entities</td>
+	<td><em>unspecified</em></td>
+	<td> Reports whether this parser processes external
+	    general entities; always true if validating</td>
+	</tr>
+
+    <tr>
+	<td>external-parameter-entities</td>
+	<td><em>unspecified</em></td>
+	<td> Reports whether this parser processes external
+	    parameter entities; always true if validating</td>
+	</tr>
+
+    <tr>
+	<td>lexical-handler/parameter-entities</td>
+	<td><em>unspecified</em></td>
+	<td> true indicates that the LexicalHandler will report the
+	    beginning and end of parameter entities
+	    </td>
+	</tr>
+
+    <tr>
+	<td>namespaces</td>
+	<td>true</td>
+	<td> true indicates namespace URIs and unprefixed local names
+	    for element and attribute names will be available </td>
+	</tr>
+
+    <tr>
+	<td>namespace-prefixes</td>
+	<td>false</td>
+	<td> true indicates XML 1.0 names (with prefixes) and attributes
+	    (including <em>xmlns*</em> attributes) will be available </td>
+	</tr>
+
+    <tr>
+	<td>string-interning</td>
+	<td><em>unspecified</em></td>
+	<td> true if all XML names (for elements, prefixes, attributes,
+	    entities, notations, and local names),
+	    as well as Namespace URIs, will have been interned
+	    using <em>java.lang.String.intern</em>. This supports fast
+	    testing of equality/inequality against string constants.</td>
+	</tr>
+
+    <tr>
+	<td>validation</td>
+	<td><em>unspecified</em></td>
+	<td> controls whether the parser is reporting all validity
+	    errors; if true, all external entities will be read.  </td>
+	</tr>
+
+</table>
+
+<p> Support for the default values of the
+<em>namespaces</em> and <em>namespace-prefixes</em>
+properties is required.
+</p>
+
+<p> For default values not specified by SAX2,
+each XMLReader implementation specifies its default,
+or may choose not to expose the feature flag.
+Unless otherwise specified here,
+implementations may support changing current values
+of these standard feature flags, but not while parsing.
+</p>
+
+<h2> SAX2 Standard Handler and Property IDs </h2>
+
+<p> For parser interface characteristics that are described
+as objects, a separate namespace is defined.  The
+objects in this namespace are again identified by URI, and
+the standard property URIs have the prefix
+<code>http://xml.org/sax/properties/</code> before an identifier such as
+<code>lexical-handler</code> or
+<code>dom-node</code>.  Manage those properties using
+<em>setProperty()</em>.  Those identifiers are: </p>
+
+<table border="1" cellpadding="3" cellspacing="0" width="100%">
+    <tr align="center" bgcolor="#ccccff">
+	<th>Property ID</th>
+	<th>Description</th>
+	</tr>
+
+    <tr>
+	<td>declaration-handler</td>
+	<td> Used to see most DTD declarations except those treated
+	    as lexical ("document element name is ...") or which are
+	    mandatory for all SAX parsers (<em>DTDHandler</em>).
+	    The Object must implement <a href="ext/DeclHandler.html"
+	    ><em>org.xml.sax.ext.DeclHandler</em></a>.
+	    </td>
+	</tr>
+
+    <tr>
+	<td>dom-node</td>
+	<td> For "DOM Walker" style parsers, which ignore their
+	    <em>parser.parse()</em> parameters, this is used to
+	    specify the DOM (sub)tree being walked by the parser.
+	    The Object must implement the
+	    <em>org.w3c.dom.Node</em> interface.
+	    </td>
+	</tr>
+
+    <tr>
+	<td>lexical-handler</td>
+	<td> Used to see some syntax events that are essential in some
+	    applications:  comments, CDATA delimeters, selected general
+	    entity inclusions, and the start and end of the DTD
+	    (and declaration of document element name).
+	    The Object must implement <a href="ext/LexicalHandler.html"
+	    ><em>org.xml.sax.ext.LexicalHandler</em></a>.
+	    </td>
+	</tr>
+
+    <tr>
+	<td>xml-string</td>
+	<td> Readable only during a parser callback, this exposes a <b>TBS</b>
+	    chunk of characters responsible for the current event. </td>
+	</tr>
+
+</table>
+
+<p> All of these standard properties are optional;
+XMLReader implementations need not support them.
+</p>
+
+</body></html>
