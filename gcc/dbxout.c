@@ -2488,7 +2488,9 @@ dbxout_parms (parms)
 		&& TYPE_MODE (TREE_TYPE (parms)) != GET_MODE (DECL_RTL (parms))
 		&& GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (parms))) < UNITS_PER_WORD)
 	      {
-		current_sym_value += UNITS_PER_WORD - GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (parms)));
+		current_sym_value += 
+		    GET_MODE_SIZE (GET_MODE (DECL_RTL (parms)))
+		    - GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (parms)));
 	      }
 
 	    FORCE_TEXT;

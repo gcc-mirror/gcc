@@ -1,3 +1,9 @@
+2000-03-08  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* dbxout.c (dbxout_parms): When correcting for promoted 
+	big-endian parameters, use the mode of the DECL_RTL rather 
+	than UNITS_PER_WORD.
+
 2000-03-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* c-common.h (make_fname_decl): Declare.
