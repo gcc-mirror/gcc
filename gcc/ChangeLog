@@ -1,3 +1,8 @@
+2003-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* unroll.c (reg_dead_after_loop): Check for reg in REG_EQUAL and
+	REG_EQUIV notes as well.
+
 2003-07-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/md.texi: Fix the description of addmodecc.

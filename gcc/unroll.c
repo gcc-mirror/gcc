@@ -2899,9 +2899,13 @@ reg_dead_after_loop (const struct loop *loop, rtx reg)
 	  code = GET_CODE (insn);
 	  if (GET_RTX_CLASS (code) == 'i')
 	    {
-	      rtx set;
+	      rtx set, note;
 
 	      if (reg_referenced_p (reg, PATTERN (insn)))
+		return 0;
+
+	      note = find_reg_equal_equiv_note (insn);
+	      if (note && reg_overlap_mentioned_p (reg, XEXP (note, 0)))
 		return 0;
 
 	      set = single_set (insn);
