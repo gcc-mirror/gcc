@@ -3969,32 +3969,21 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p)
       switch (keyword)
 	{
 	case RID_ALIGNOF:
-	  {
-	    /* Consume the `alignof' token.  */
-	    cp_lexer_consume_token (parser->lexer);
-	    /* Parse the operand.  */
-	    return finish_alignof (cp_parser_sizeof_operand 
-				   (parser, keyword));
-	  }
-
 	case RID_SIZEOF:
 	  {
 	    tree operand;
+	    enum tree_code op;
 	    
-	    /* Consume the `sizeof' token.  */
+	    op = keyword == RID_ALIGNOF ? ALIGNOF_EXPR : SIZEOF_EXPR;
+	    /* Consume the token.  */
 	    cp_lexer_consume_token (parser->lexer);
 	    /* Parse the operand.  */
 	    operand = cp_parser_sizeof_operand (parser, keyword);
 
-	    /* If the type of the operand cannot be determined build a
-	       SIZEOF_EXPR.  */
-	    if (TYPE_P (operand)
-		? dependent_type_p (operand)
-		: type_dependent_expression_p (operand))
-	      return build_min (SIZEOF_EXPR, size_type_node, operand);
-	    /* Otherwise, compute the constant value.  */
+	    if (TYPE_P (operand))
+	      return cxx_sizeof_or_alignof_type (operand, op, true);
 	    else
-	      return finish_sizeof (operand);
+	      return cxx_sizeof_or_alignof_expr (operand, op);
 	  }
 
 	case RID_NEW:

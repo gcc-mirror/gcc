@@ -2668,26 +2668,6 @@ finish_typeof (tree expr)
   return type;
 }
 
-/* Compute the value of the `sizeof' operator.  */
-
-tree
-finish_sizeof (tree t)
-{
-  return TYPE_P (t) ? cxx_sizeof (t) : expr_sizeof (t);
-}
-
-/* Implement the __alignof keyword: Return the minimum required
-   alignment of T, measured in bytes.  */
-
-tree
-finish_alignof (tree t)
-{
-  if (processing_template_decl)
-    return build_min (ALIGNOF_EXPR, size_type_node, t);
-
-  return TYPE_P (t) ? cxx_alignof (t) : c_alignof_expr (t);
-}
-
 /* Generate RTL for the statement T, and its substatements, and any
    other statements at its nesting level.  */
 

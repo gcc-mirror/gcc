@@ -1177,16 +1177,26 @@ compparms (tree parms1, tree parms2)
 }
 
 
+/* Process a sizeof or alignof expression where the operand is a
+   type.  */
+
 tree
-cxx_sizeof_or_alignof_type (tree type, enum tree_code op, int complain)
+cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool complain)
 {
   enum tree_code type_code;
   tree value;
   const char *op_name;
 
   my_friendly_assert (op == SIZEOF_EXPR || op == ALIGNOF_EXPR, 20020720);
+  if (type == error_mark_node)
+    return error_mark_node;
+  
   if (processing_template_decl)
-    return build_min (op, size_type_node, type);
+    {
+      value = build_min (op, size_type_node, type);
+      TREE_READONLY (value) = 1;
+      return value;
+    }
   
   op_name = operator_name_info[(int) op].name;
 
@@ -1205,30 +1215,46 @@ cxx_sizeof_or_alignof_type (tree type, enum tree_code op, int complain)
   return value;
 }
 
-tree
-expr_sizeof (tree e)
-{
-  if (processing_template_decl)
-    return build_min (SIZEOF_EXPR, size_type_node, e);
+/* Process a sizeof or alignof expression where the operand is an
+   expression.  */
 
+tree
+cxx_sizeof_or_alignof_expr (tree e, enum tree_code op)
+{
+  const char *op_name = operator_name_info[(int) op].name;
+  
+  if (e == error_mark_node)
+    return error_mark_node;
+  
+  if (processing_template_decl)
+    {
+      e = build_min (op, size_type_node, e);
+      TREE_SIDE_EFFECTS (e) = 0;
+      TREE_READONLY (e) = 1;
+      
+      return e;
+    }
+  
   if (TREE_CODE (e) == COMPONENT_REF
       && DECL_C_BIT_FIELD (TREE_OPERAND (e, 1)))
-    error ("sizeof applied to a bit-field");
-  if (is_overloaded_fn (e))
     {
-      pedwarn ("ISO C++ forbids applying `sizeof' to an expression of function type");
-      return c_sizeof (char_type_node);
+      error ("invalid application of `%s' to a bit-field", op_name);
+      e = char_type_node;
+    }
+  else if (is_overloaded_fn (e))
+    {
+      pedwarn ("ISO C++ forbids applying `%s' to an expression of function type", op_name);
+      e = char_type_node;
     }
   else if (type_unknown_p (e))
     {
       cxx_incomplete_type_error (e, TREE_TYPE (e));
-      return c_sizeof (char_type_node);
+      e = char_type_node;
     }
-
-  if (e == error_mark_node)
-    return e;
-
-  return cxx_sizeof (TREE_TYPE (e));
+  else
+    e = TREE_TYPE (e);
+  
+  return cxx_sizeof_or_alignof_type (e, op, true);
 }
   
 

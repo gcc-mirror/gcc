@@ -1,3 +1,19 @@
+2003-09-04  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (finish_sizeof, finish_alignof): Remove.
+	(expr_sizeof): Replace with ...
+	(cxx_sizeof_or_alignof_expr): ... here.
+	(cxx_sizeof_or_alignof_type): Make complain parameter a bool.
+	* parser.c (cp_parser_unary_expression): Commonize alignof and
+	sizeof handling.
+	* pt.c (tsubst_copy_and_build): Adjust alignof and sizeof
+	substitution.
+	* semantics.c (finish_sizeof, finish_alignof): Remove.
+	* typeck.c (cxx_sizeof_or_alignof_type): Complain parameter
+	becomes bool. Set TREE_READONLY.
+	(expr_sizeof): Replace with ...
+	(cxx_sizeof_or_alignof_expr): ... here. Clear TREE_SIDE_EFFECTS.
+
 2003-09-04  Mark Mitchell  <mark@codesourcery.com>
 
 	Remove cast-as-lvalue extension.
