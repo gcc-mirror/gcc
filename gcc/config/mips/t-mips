@@ -1,5 +1,4 @@
 EXTRA_PASSES	= mips-tfile mips-tdump
-EXTRA_PROGRAMS	= ld
 CCLIBFLAGS	= -O -G 0
 LIBGCC2_CFLAGS	= -O2 $(GCC_CFLAGS) -g1 -G 0
 CONFIG2_H	= $(srcdir)/config/mips.h

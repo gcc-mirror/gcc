@@ -213,7 +213,7 @@ static int q_ptr = 0;
 static int q_size = 0;
 #define NEXT_Q(X) (((X)+1) & (Q_SIZE-1))
 #define NEXT_Q_AFTER(X,C) (((X)+C) & (Q_SIZE-1))
-
+
 /* Forward declarations.  */
 static void sched_analyze_2 ();
 static void schedule_block ();
@@ -690,6 +690,101 @@ output_dependence (mem, x)
 		    && ! MEM_IN_STRUCT_P (x) && ! rtx_addr_varies_p (x))
 	      && ! (MEM_IN_STRUCT_P (x) && rtx_addr_varies_p (x)
 		    && ! MEM_IN_STRUCT_P (mem) && ! rtx_addr_varies_p (mem))));
+}
+
+/* Helper functions for instruction scheduling.  */
+
+/* Add ELEM wrapped in an INSN_LIST with reg note kind DEP_TYPE to the
+   LOG_LINKS of INSN, if not already there.  DEP_TYPE indicates the type
+   of dependence that this link represents.  */
+
+void
+add_dependence (insn, elem, dep_type)
+     rtx insn;
+     rtx elem;
+     enum reg_note dep_type;
+{
+  rtx link, next;
+
+  /* Don't depend an insn on itself.  */
+  if (insn == elem)
+    return;
+
+  /* If elem is part of a sequence that must be scheduled together, then
+     make the dependence point to the last insn of the sequence.
+     When HAVE_cc0, it is possible for NOTEs to exist between users and
+     setters of the condition codes, so we must skip past notes here.
+     Otherwise, NOTEs are impossible here.  */
+
+  next = NEXT_INSN (elem);
+
+#ifdef HAVE_cc0
+  while (next && GET_CODE (next) == NOTE)
+    next = NEXT_INSN (next);
+#endif
+
+  if (next && SCHED_GROUP_P (next))
+    {
+      /* Notes will never intervene here though, so don't bother checking
+	 for them.  */
+      while (NEXT_INSN (next) && SCHED_GROUP_P (NEXT_INSN (next)))
+	next = NEXT_INSN (next);
+
+      /* Again, don't depend an insn on itself.  */
+      if (insn == next)
+	return;
+
+      /* Make the dependence to NEXT, the last insn of the group, instead
+	 of the original ELEM.  */
+      elem = next;
+    }
+
+  /* Check that we don't already have this dependence.  */
+  for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
+    if (XEXP (link, 0) == elem)
+      {
+	/* If this is a more restrictive type of dependence than the existing
+	   one, then change the existing dependence to this type.  */
+	if ((int) dep_type < (int) REG_NOTE_KIND (link))
+	  PUT_REG_NOTE_KIND (link, dep_type);
+	return;
+      }
+  /* Might want to check one level of transitivity to save conses.  */
+
+  link = rtx_alloc (INSN_LIST);
+  /* Insn dependency, not data dependency.  */
+  PUT_REG_NOTE_KIND (link, dep_type);
+  XEXP (link, 0) = elem;
+  XEXP (link, 1) = LOG_LINKS (insn);
+  LOG_LINKS (insn) = link;
+}
+
+/* Remove ELEM wrapped in an INSN_LIST from the LOG_LINKS
+   of INSN.  Abort if not found.  */
+void
+remove_dependence (insn, elem)
+     rtx insn;
+     rtx elem;
+{
+  rtx prev, link;
+  int found = 0;
+
+  for (prev = 0, link = LOG_LINKS (insn); link;
+       prev = link, link = XEXP (link, 1))
+    {
+      if (XEXP (link, 0) == elem)
+	{
+	  if (prev)
+	    XEXP (prev, 1) = XEXP (link, 1);
+	  else
+	    LOG_LINKS (insn) = XEXP (link, 1);
+	  found = 1;
+	}
+    }
+
+  if (! found)
+    abort ();
+  return;
 }
 
 #ifndef INSN_SCHEDULING
