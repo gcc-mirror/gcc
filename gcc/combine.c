@@ -3691,9 +3691,8 @@ simplify_rtx (x, op0_mode, last, in_dest)
 
       /* If we know that the value is already truncated, we can
          replace the TRUNCATE with a SUBREG.  */
-      if (GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0))) <= HOST_BITS_PER_WIDE_INT
-	  && (nonzero_bits (XEXP (x, 0), GET_MODE (XEXP (x, 0)))
-	      &~ GET_MODE_MASK (mode)) == 0)
+      if (num_sign_bit_copies (XEXP (x, 0), GET_MODE (XEXP (x, 0)))
+	  >= GET_MODE_BITSIZE (mode) + 1)
 	return gen_lowpart_for_combine (mode, XEXP (x, 0));
 
       /* A truncate of a comparison can be replaced with a subreg if
