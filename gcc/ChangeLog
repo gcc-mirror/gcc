@@ -1,3 +1,8 @@
+2003-12-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (thumb_base_register_rtx_p): Use regno in comparison against
+	FIRST_PSEUDO_REGISTER.
+
 2003-12-18  Hartmut Penner  <hpenner@de.ibm.com>
 
 	* gcc/config/rs6000/rs6000.c (USE_ALTIVEC_FOR_ARG_P): Don't check
