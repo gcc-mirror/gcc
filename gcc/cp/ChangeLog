@@ -1,3 +1,8 @@
+2004-08-20  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17121
+	* decl.c (expand_static_init): Use DECL_FUNCTION_SCOPE_P.
+
 2004-08-21  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c++/17120
