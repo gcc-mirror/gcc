@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Intel 80960
-   Copyright (C) 1992, 1993, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1995, 1996, 1998 Free Software Foundation, Inc.
    Contributed by Steven McGeady, Intel Corp.
    Additional Work by Glenn Colon-Bonet, Jonathan Shapiro, Andy Wilson
    Converted to GCC 2.0 by Jim Wilson and Michael Tiemann, Cygnus Support.
@@ -1491,6 +1491,13 @@ extern struct rtx_def *gen_compare_reg ();
   emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 12)),	\
 		  CXT);							\
 }
+
+/* Generate RTL to flush the register windows so as to make arbitrary frames
+   available.  */
+#define SETUP_FRAME_ADDRESSES()		\
+  emit_insn (gen_flush_register_windows ())
+
+#define BUILTIN_SETJMP_FRAME_VALUE hard_frame_pointer_rtx
 
 #if 0
 /* Promote char and short arguments to ints, when want compatibility with
