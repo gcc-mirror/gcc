@@ -1,3 +1,8 @@
+Tue Dec 17 09:47:57 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* convert.c (convert_to_real): Disable function transformation for
+	now.
+
 2002-12-16  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.c (handle_braces): Allow '@' as a switch name.
