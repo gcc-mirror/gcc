@@ -61,7 +61,13 @@ typedef unsigned int uint32_t __attribute__((mode(SI)));
 #define Bndry_mask1 ((uint32_t)0xffffffL)
 #define Sign_bit ((uint32_t)0x80000000L)
 #define Tiny0 ((uint32_t)0x100000L)
+
+/* This is a blatant hack: on Solaris 2.5, pthread.h defines uint32_t
+   in pthread.h, which we sometimes include.  We protect our
+   definition the same way Solaris 2.5 does, to avoid redefining it.  */
+#  ifndef _UINT32_T
 #define Exp_msk11   ((uint32_t)0x800000L)
+#  endif
 #define Exp_mask  ((uint32_t)0x7f80L)
 #define Exp_1  ((uint32_t)0x40800000L)
 #define Exp_11 ((uint32_t)0x4080L)

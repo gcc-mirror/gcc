@@ -1,3 +1,8 @@
+1999-07-12  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/mprec.h: Protect definition of uint32_t with #ifndef
+	_UINT32_T.
+
 1999-07-08  Tom Tromey  <tromey@cygnus.com>
 
 	* mauve-libgcj: Omit InetAddressTest.  Don't mention
