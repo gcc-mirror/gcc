@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -20,7 +20,7 @@ import java.io.Serializable;
  * Status:  Believed complete and correct
  */
 
-class HashtableEntry
+final class HashtableEntry
 {
   public Object key;
   public Object value;
@@ -33,7 +33,7 @@ class HashtableEntry
   }
 }
 
-class HashtableEnumeration implements Enumeration
+final class HashtableEnumeration implements Enumeration
 {
   // TBD: Enumeration is not safe if new elements are put in the table as
   // this could cause a rehash and we'd completely lose our place.  Even

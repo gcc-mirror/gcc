@@ -1,6 +1,6 @@
 // ZipFile.java - Read contents of a ZIP file.
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -166,7 +166,7 @@ public class ZipFile implements ZipConstants
   String name;
 }
 
-class ZipEnumeration implements java.util.Enumeration
+final class ZipEnumeration implements java.util.Enumeration
 {
   ZipEntry entry;
 

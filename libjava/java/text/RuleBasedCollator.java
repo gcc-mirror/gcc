@@ -1,6 +1,6 @@
 // RuleBasedCollator.java - Concrete class for locale-based string compare.
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -23,7 +23,7 @@ import java.util.Vector;
  * Status: Believed complete and correct
  */
 
-class RBCElement
+final class RBCElement
 {
   String key;
   char relation;
