@@ -77,7 +77,6 @@ GLIBCXX_ENABLE_HOSTED
 
 # Check for support bits and g++ features that don't require linking.
 GLIBCXX_ENABLE_SJLJ_EXCEPTIONS
-GLIBCXX_ENABLE_LIBUNWIND_EXCEPTIONS
 GLIBCXX_ENABLE_PCH($is_hosted)
 
 # Enable all the variable C++ runtime options.  
