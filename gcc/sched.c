@@ -2038,6 +2038,16 @@ sched_analyze_insn (x, insn)
   else
     sched_analyze_2 (x, insn);
 
+  /* Mark registers CLOBBERED or used by called function.  */
+  if (GET_CODE (insn) == CALL_INSN)
+    for (link = CALL_INSN_FUNCTION_USAGE (insn); link; link = XEXP (link, 1))
+      {
+	if (GET_CODE (XEXP (link, 0)) == CLOBBER)
+	  sched_analyze_1 (XEXP (XEXP (link, 0), 0), insn);
+	else
+	  sched_analyze_2 (XEXP (XEXP (link, 0), 0), insn);
+      }
+
   /* After reload, it is possible for an instruction to have a REG_DEAD note
      for a register that actually dies a few instructions earlier.  For
      example, this can happen with SECONDARY_MEMORY_NEEDED reloads.
@@ -2906,6 +2916,7 @@ attach_deaths_insn (insn)
 {
   rtx x = PATTERN (insn);
   register RTX_CODE code = GET_CODE (x);
+  rtx link;
 
   if (code == SET)
     {
@@ -2941,6 +2952,12 @@ attach_deaths_insn (insn)
   /* Otherwise don't add a death note to things being clobbered.  */
   else if (code != CLOBBER)
     attach_deaths (x, insn, 0);
+
+  /* Make death notes for things used in the called function.  */
+  if (GET_CODE (insn) == CALL_INSN)
+    for (link = CALL_INSN_FUNCTION_USAGE (insn); link; link = XEXP (link, 1))
+      attach_deaths (XEXP (XEXP (link, 0), 0), insn,
+		     GET_CODE (XEXP (link, 0)) == CLOBBER);
 }
 
 /* Delete notes beginning with INSN and maybe put them in the chain
