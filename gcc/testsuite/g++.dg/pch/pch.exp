@@ -1,4 +1,4 @@
-#   Copyright (C) 1997, 2002 Free Software Foundation, Inc.
+#   Copyright (C) 1997, 2002, 2003 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,11 +36,10 @@ foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.C]] {
     set nshort [file tail [file dirname $test]]/[file tail $test]
     set bname "[file rootname [file tail $test]]"
 
-    catch { file delete "$bname.Hp.pch" }
     catch { file delete "$bname.H.pch" }
+    catch { file delete "$bname.H" }
     catch { file delete "$bname.s" }
     catch { file delete "$bname.s-pch" }
-    catch { file delete "$bname.Hp" }
 
     # We don't try to use the loop-optimizing options, since they are highly
     # unlikely to make any difference to PCH.
@@ -49,30 +48,22 @@ foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.C]] {
 
 	# For the header files, the default is to precompile.
 	set dg-do-what-default precompile
-	dg-test -keep-output "[file rootname $test].H" $flags ""
+	file copy "[file rootname $test].Hs" "$bname.H"
+	dg-test -keep-output "$bname.H" $flags ""
 
 	# For the rest, the default is to compile to .s.
 	set dg-do-what-default compile
 
 	if { [ file exists "$bname.H.pch" ] } {
-	    # To ensure that the PCH is used, not the original header,
-	    # the actual PCH file is renamed to "<foo>.Hp.pch".
-	    file rename "$bname.H.pch" "$bname.Hp.pch"
-	    if { [ is_remote host ] } {
-		remote_download host "$bname.Hp.pch"
-	    }
+	    # Ensure that the PCH file is used, not the original header.
+	    file delete "$bname.H"
 
 	    dg-test -keep-output $test $flags "-I."
-	    file delete "$bname.Hp.pch"
+	    file delete "$bname.H.pch"
 	    if { [ file exists "$bname.s" ] } {
 		file rename "$bname.s" "$bname.s-pch"
-		if { [ is_remote host ] } {
-		    remote_upload host "[file rootname $test].H" "$bname.Hp"
-		} else {
-		    file copy "[file rootname $test].H" "$bname.Hp"
-		}
+		file copy "[file rootname $test].Hs" "$bname.H"
 		dg-test -keep-output $test $flags "-I."
-		remote_file host delete "$bname.Hp"
 		set tmp [ diff "$bname.s" "$bname.s-pch" ]
 		if { $tmp == 0 } {
 		    untested "$nshort $flags assembly comparison"
@@ -81,6 +72,7 @@ foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.C]] {
 		} else {
 		    fail "$nshort $flags assembly comparison"
 		}
+		file delete "$bname.H"
 		file delete "$bname.s"
 		file delete "$bname.s-pch"
 	    } else {
