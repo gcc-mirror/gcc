@@ -1819,14 +1819,19 @@ compile_file (name)
   ASM_IDENTIFY_LANGUAGE (asm_out_file);
 #endif
 
-  /* dbx on Suns needs to separate gcc_compiled. from first function.
-     We do not test write_symbols because -g should not alter
-     the actual code generated.  */
-#ifndef DBX_DEBUGGING_INFO
+/* ??? Note: There used to be a conditional here
+   to call assemble_zeros without fail if DBX_DEBUGGING_INFO is defined.
+   This was to guarantee separation between gcc_compiled. and
+   the first function, for the sake of dbx on Suns.
+   However, having the extra zero here confused the Emacs
+   code for unexec, and might confuse other programs too.
+   Therefore, I took out that change.
+   In future versions we should find another way to solve
+   that dbx problem.  -- rms, 23 May 93.  */
+
   /* Don't let the first function fall at the same address
      as gcc_compiled., if profiling.  */
   if (profile_flag || profile_block_flag)
-#endif
     assemble_zeros (UNITS_PER_WORD);
 
   /* If dbx symbol table desired, initialize writing it
