@@ -1,3 +1,9 @@
+2004-07-15  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* libf2c: Removed.
+	* gcc/gccbug.in: Updated because of libf2c removal.
+	* maintainer-scripts/gcc_release: Ditto.
+
 2004-07-09  Loren J. Rittle <ljrittle@acm.org>
 
 	* configure.in: Build libmudflap by default on FreeBSD.
