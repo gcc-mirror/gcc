@@ -2009,60 +2009,6 @@ clear_failure_queue ()
   failure_delete_queue = 0;
 }
 
-/* Routine to add variables to the environment.  We do this to pass
-   the pathname of the gcc driver, and the directories search to the
-   collect2 program, which is being run as ld.  This way, we can be
-   sure of executing the right compiler when collect2 wants to build
-   constructors and destructors.  Since the environment variables we
-   use come from an obstack, we don't have to worry about allocating
-   space for them.  */
-
-#ifndef HAVE_PUTENV
-
-void
-putenv (str)
-     char *str;
-{
-#ifndef VMS			/* nor about VMS */
-
-  extern char **environ;
-  char **old_environ = environ;
-  char **envp;
-  int num_envs = 0;
-  int name_len = 1;
-  int str_len = strlen (str);
-  char *p = str;
-  int ch;
-
-  while ((ch = *p++) != '\0' && ch != '=')
-    name_len++;
-
-  if (!ch)
-    abort ();
-
-  /* Search for replacing an existing environment variable, and
-     count the number of total environment variables.  */
-  for (envp = old_environ; *envp; envp++)
-    {
-      num_envs++;
-      if (!strncmp (str, *envp, name_len))
-	{
-	  *envp = str;
-	  return;
-	}
-    }
-
-  /* Add a new environment variable */
-  environ = (char **) xmalloc (sizeof (char *) * (num_envs + 2));
-  *environ = str;
-  memcpy ((char *) (environ + 1), (char *) old_environ,
-	  sizeof (char *) * (num_envs + 1));
-
-#endif	/* VMS */
-}
-
-#endif /* HAVE_PUTENV */
-
 /* Build a list of search directories from PATHS.
    PREFIX is a string to prepend to the list.
    If CHECK_DIR_P is non-zero we ensure the directory exists.
