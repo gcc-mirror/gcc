@@ -133,6 +133,7 @@
 #define _IO_IS_APPENDING 0x1000
 #define _IO_IS_FILEBUF 0x2000
 #define _IO_BAD_SEEN 0x4000
+#define _IO_USER_LOCK 0x8000
 
 /* These are "formatting flags" matching the iostream fmtflags enum values. */
 #define _IO_SKIPWS 01
