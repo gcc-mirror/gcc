@@ -3612,23 +3612,6 @@ emit_libcall_block (rtx insns, rtx target, rtx result, rtx equiv)
     }
 }
 
-/* Generate code to store zero in X.  */
-
-void
-emit_clr_insn (rtx x)
-{
-  emit_move_insn (x, const0_rtx);
-}
-
-/* Generate code to store 1 in X
-   assuming it contains zero beforehand.  */
-
-void
-emit_0_to_1_insn (rtx x)
-{
-  emit_move_insn (x, const1_rtx);
-}
-
 /* Nonzero if we can perform a comparison of mode MODE straightforwardly.
    PURPOSE describes how this comparison will be used.  CODE is the rtx
    comparison code we will be using.

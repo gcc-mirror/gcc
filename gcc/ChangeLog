@@ -1,3 +1,14 @@
+2004-07-24  Paolo Bonzini  <bonzini@gnu.org>
+
+	* expr.c (var_rtx): Remove.
+	(expand_expr_real_1) <LOOP_EXPR, EXIT_EXPR,
+	LABELED_BLOCK_EXPR, EXIT_BLOCK_EXPR, TRUTH_ANDIF_EXPR,
+	TRUTH_ORIF_EXPR, COMPOUND_EXPR, CONJ_EXPR, INIT_EXPR>:
+	Abort.
+	(expand_expr_real_1) <COND_EXPR>: Remove most special cases.
+	* optabs.c (emit_clr_insn, emit_0_to_1_insn): Remove.
+	* optabs.h (emit_clr_insn, emit_0_to_1_insn): Remove.
+
 2004-08-08  Mostafa Hagog  <mustafa@il.ibm.com>
 	Ayal Zaks <zaks@il.ibm.com>
 
