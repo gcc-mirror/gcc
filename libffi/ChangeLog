@@ -1,3 +1,8 @@
+2003-07-28  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* src/sparc/ffi.c: Handle all floating point registers.
+	* src/sparc/v9.S: Likewise. Fixes second part of PR target/11410.
+
 2003-07-11  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* README: Note that libffi is not part of GCC.  Update the project

@@ -126,9 +126,9 @@ dostruct:
 	.size	ffi_call_V9,.ffi_call_V9_end-ffi_call_V9
 
 
-#define	STACKFRAME	 240	/* 16*8 register window +
+#define	STACKFRAME	 320	/* 16*8 register window +
 				   6*8 args backing store +
-				   8*8 locals */
+				   18*8 locals */
 #define	FP		%fp+STACK_BIAS
 
 /* ffi_closure_v9(...)
@@ -153,19 +153,29 @@ ffi_closure_v9:
 	stx	%i5, [FP+128+40]
 
 	! Store possible floating point argument registers too.
-	std	%f0, [FP-48]
-	std	%f2, [FP-40]
-	std	%f4, [FP-32]
-	std	%f6, [FP-24]
-	std	%f8, [FP-16]
-	std	%f10, [FP-8]
+	std	%f0,  [FP-128]
+	std	%f2,  [FP-120]
+	std	%f4,  [FP-112]
+	std	%f6,  [FP-104]
+	std	%f8,  [FP-96]
+	std	%f10, [FP-88]
+	std     %f12, [FP-80]
+	std     %f14, [FP-72]
+	std     %f16, [FP-64]
+	std     %f18, [FP-56]
+	std     %f20, [FP-48]
+	std     %f22, [FP-40]
+	std     %f24, [FP-32]
+	std     %f26, [FP-24]
+	std     %f28, [FP-16]
+	std     %f30, [FP-8]
 
 	! Call ffi_closure_sparc_inner to do the bulk of the work.
 	mov	%g1, %o0
-	add	%fp, STACK_BIAS-64, %o1
+	add	%fp, STACK_BIAS-144, %o1
 	add	%fp, STACK_BIAS+128, %o2
 	call	ffi_closure_sparc_inner
-	 add	%fp, STACK_BIAS-48, %o3
+	add	%fp, STACK_BIAS-128, %o3
 
 	! Load up the return value in the proper type.
 	cmp	%o0, FFI_TYPE_VOID
@@ -173,33 +183,33 @@ ffi_closure_v9:
 
 	cmp	%o0, FFI_TYPE_FLOAT
 	be,a,pn	%icc, done1
-	 ld	[FP-64], %f0
+	 ld	[FP-144], %f0
 
 	cmp	%o0, FFI_TYPE_DOUBLE
 	be,a,pn	%icc, done1
-	 ldd	[FP-64], %f0
+	 ldd	[FP-144], %f0
 
 	cmp	%o0, FFI_TYPE_LONGDOUBLE
 	be,a,pn	%icc, longdouble1
-	 ldd	[FP-64], %f0
+	 ldd	[FP-144], %f0
 
 	cmp	%o0, FFI_TYPE_STRUCT
 	be,pn	%icc, struct1
 
 	! FFI_TYPE_UINT64 | FFI_TYPE_SINT64 | FFI_TYPE_POINTER
-	ldx	[FP-64], %i0
+	ldx	[FP-144], %i0
 
 done1:
 	ret
 	 restore
 
 struct1:
-	ldx [FP-56], %i2
+	ldx	[FP-136], %i2
 	ret
 	 restore
 
 longdouble1:
-	ldd	[FP-56], %f2
+	ldd	[FP-136], %f2
 	ret
 	 restore
 .LLFE2:
