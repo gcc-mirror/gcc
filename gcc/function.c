@@ -4142,7 +4142,8 @@ trampoline_address (function)
      by expand_function_end.  */
   if (fp != 0)
     {
-      push_obstacks (fp->current_obstack, fp->function_maybepermanent_obstack);
+      push_obstacks (fp->function_maybepermanent_obstack,
+		     fp->function_maybepermanent_obstack);
       rtlexp = make_node (RTL_EXPR);
       RTL_EXPR_RTL (rtlexp) = tramp;
       fp->trampoline_list = tree_cons (function, rtlexp, fp->trampoline_list);
