@@ -2,6 +2,7 @@
 
         * gcc/fixinc/fixincl.c(load_file): always read header files
         with sizes that are a multiple of the page size.
+	& use libiberty's getpagesize for determining that.
 
 2000-09-05  Alexandre Oliva  <aoliva@redhat.com>
 

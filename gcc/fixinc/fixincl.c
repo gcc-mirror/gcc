@@ -359,7 +359,7 @@ load_file ( fname )
 
   /*  IF the file size is a multiple of the page size,
       THEN sometimes you will seg fault trying to access a trailing byte */
-  if ((stbf.st_size & (PAGESIZE-1)) == 0)
+  if ((stbf.st_size & (getpagesize()-1)) == 0)
     res = (char*)BAD_ADDR;
   else
     res = (char*)mmap ((void*)NULL, data_map_size, PROT_READ,
