@@ -1,5 +1,10 @@
 2002-02-06  Adam Megacz <adam@xwt.org>
 
+	* shs.h, shs.cc, natSimpleSHSStream.cc: use uint<n>_t instead
+	of LONG and BYTE
+	
+2002-02-06  Adam Megacz <adam@xwt.org>
+
 	* name-finder.h: don't #include sys/wait.h unless HAVE_SYS_WAIT_H
 	
 2002-02-06  Anthony Green  <green@redhat.com>

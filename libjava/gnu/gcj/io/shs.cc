@@ -91,10 +91,10 @@
 
 /* The two buffers of 5 32-bit words */
 
-LONG h0, h1, h2, h3, h4;
-LONG A, B, C, D, E;
+uint32_t h0, h1, h2, h3, h4;
+uint32_t A, B, C, D, E;
 
-local void byteReverse OF((LONG *buffer, int byteCount));
+local void byteReverse OF((uint32_t *buffer, int byteCount));
 void shsTransform OF((SHS_INFO *shsInfo));
 
 /* Initialize the SHS values */
@@ -120,7 +120,7 @@ void shsInit (SHS_INFO *shsInfo)
 
 void shsTransform (SHS_INFO *shsInfo)
 {
-	LONG W [80], temp;
+       uint32_t W [80], temp;
 	int i;
 
 	/* Step A.	Copy the data buffer into the local work buffer */
@@ -182,9 +182,9 @@ void shsTransform (SHS_INFO *shsInfo)
 	shsInfo->digest [4] += E;
 }
 
-local void byteReverse (LONG *buffer, int byteCount)
+local void byteReverse (uint32_t *buffer, int byteCount)
 {
-	LONG value;
+       uint32_t value;
 	int count;
 
 	/*
@@ -209,7 +209,7 @@ local void byteReverse (LONG *buffer, int byteCount)
 	if ((*(unsigned short *) ("@P") >> 8) == '@')
 		return;
 
-	byteCount /= sizeof (LONG);
+       byteCount /= sizeof (uint32_t);
 	for (count = 0; count < byteCount; count++) {
 		value = (buffer [count] << 16) | (buffer [count] >> 16);
 		buffer [count] = ((value & 0xFF00FF00L) >> 8) | ((value & 0x00FF00FFL) << 8);
@@ -223,13 +223,13 @@ local void byteReverse (LONG *buffer, int byteCount)
  * between calls to shsUpdate()
  */
 
-void shsUpdate (SHS_INFO *shsInfo, BYTE *buffer, int count)
+void shsUpdate (SHS_INFO *shsInfo, uint8_t *buffer, int count)
 {
 	/* Update bitcount */
-	if ((shsInfo->countLo + ((LONG) count << 3)) < shsInfo->countLo)
+       if ((shsInfo->countLo + ((uint32_t) count << 3)) < shsInfo->countLo)
 		 shsInfo->countHi++;	/* Carry from low to high bitCount */
-	shsInfo->countLo += ((LONG) count << 3);
-	shsInfo->countHi += ((LONG) count >> 29);
+       shsInfo->countLo += ((uint32_t) count << 3);
+       shsInfo->countHi += ((uint32_t) count >> 29);
 
 	/* Process data in SHS_BLOCKSIZE chunks */
 	while (count >= SHS_BLOCKSIZE) {
@@ -250,7 +250,7 @@ void shsUpdate (SHS_INFO *shsInfo, BYTE *buffer, int count)
 void shsFinal (SHS_INFO *shsInfo)
 {
 	int count;
-	LONG lowBitcount = shsInfo->countLo, highBitcount = shsInfo->countHi;
+       uint32_t lowBitcount = shsInfo->countLo, highBitcount = shsInfo->countHi;
 
 	/* Compute number of bytes mod 64 */
 	count = (int) ((shsInfo->countLo >> 3) & 0x3F);
@@ -259,12 +259,12 @@ void shsFinal (SHS_INFO *shsInfo)
 	 * Set the first char of padding to 0x80.
 	 * This is safe since there is always at least one byte free
 	 */
-	((BYTE *) shsInfo->data) [count++] = 0x80;
+       ((uint8_t *) shsInfo->data) [count++] = 0x80;
 
 	/* Pad out to 56 mod 64 */
 	if (count > 56) {
 		/* Two lots of padding:  Pad the first block to 64 bytes */
-		memset ((BYTE *) shsInfo->data + count, 0, 64 - count);
+               memset ((uint8_t *) shsInfo->data + count, 0, 64 - count);
 		byteReverse (shsInfo->data, SHS_BLOCKSIZE);
 		shsTransform (shsInfo);
 
@@ -272,7 +272,7 @@ void shsFinal (SHS_INFO *shsInfo)
 		memset (shsInfo->data, 0, 56);
 	} else
 		/* Pad block to 56 bytes */
-		memset ((BYTE *) shsInfo->data + count, 0, 56 - count);
+               memset ((uint8_t *) shsInfo->data + count, 0, 56 - count);
 	byteReverse (shsInfo->data, SHS_BLOCKSIZE);
 
 	/* Append length in bits and transform */
