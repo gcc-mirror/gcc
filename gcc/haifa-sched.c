@@ -251,7 +251,9 @@ static int current_block_num;
    by splitting insns.  */
 static rtx *reg_last_uses;
 static rtx *reg_last_sets;
+static rtx *reg_last_clobbers;
 static regset reg_pending_sets;
+static regset reg_pending_clobbers;
 static int reg_pending_sets_all;
 
 /* Vector indexed by INSN_UID giving the original ordering of the insns.  */
@@ -1054,6 +1056,7 @@ static rtx last_scheduled_insn;
 
 static rtx **bb_reg_last_uses;
 static rtx **bb_reg_last_sets;
+static rtx **bb_reg_last_clobbers;
 
 static rtx *bb_pending_read_insns;
 static rtx *bb_pending_read_mems;
@@ -3309,6 +3312,7 @@ sched_analyze_1 (x, insn)
 {
   register int regno;
   register rtx dest = SET_DEST (x);
+  enum rtx_code code = GET_CODE (x);
 
   if (dest == 0)
     return;
@@ -3358,10 +3362,20 @@ sched_analyze_1 (x, insn)
 	      for (u = reg_last_sets[regno + i]; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
 
-	      SET_REGNO_REG_SET (reg_pending_sets, regno + i);
+	      /* Clobbers need not be ordered with respect to one another,
+		 but sets must be ordered with respect to a pending clobber. */
+	      if (code == SET)
+		{
+	          for (u = reg_last_clobbers[regno + i]; u; u = XEXP (u, 1))
+		    add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
+	          SET_REGNO_REG_SET (reg_pending_sets, regno + i);
+		}
+	      else
+		SET_REGNO_REG_SET (reg_pending_clobbers, regno + i);
 
-	      if ((call_used_regs[regno + i] || global_regs[regno + i]))
-		/* Function calls clobber all call_used regs.  */
+	      /* Function calls clobber all call_used regs.  */
+	      if (global_regs[regno + i]
+		  || (code == SET && call_used_regs[regno + i]))
 		for (u = last_function_call; u; u = XEXP (u, 1))
 		  add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 	    }
@@ -3377,7 +3391,10 @@ sched_analyze_1 (x, insn)
 	  for (u = reg_last_sets[regno]; u; u = XEXP (u, 1))
 	    add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
 
-	  SET_REGNO_REG_SET (reg_pending_sets, regno);
+	  if (code == SET)
+	    SET_REGNO_REG_SET (reg_pending_sets, regno);
+	  else
+	    SET_REGNO_REG_SET (reg_pending_clobbers, regno);
 
 	  /* Pseudos that are REG_EQUIV to something may be replaced
 	     by that during reloading.  We need only add dependencies for
@@ -3528,6 +3545,10 @@ sched_analyze_2 (x, insn)
 		for (u = reg_last_sets[regno + i]; u; u = XEXP (u, 1))
 		  add_dependence (insn, XEXP (u, 0), 0);
 
+		/* ??? This should never happen.  */
+		for (u = reg_last_clobbers[regno + i]; u; u = XEXP (u, 1))
+		  add_dependence (insn, XEXP (u, 0), 0);
+
 		if ((call_used_regs[regno + i] || global_regs[regno + i]))
 		  /* Function calls clobber all call_used regs.  */
 		  for (u = last_function_call; u; u = XEXP (u, 1))
@@ -3539,6 +3560,10 @@ sched_analyze_2 (x, insn)
 	    reg_last_uses[regno] = alloc_INSN_LIST (insn, reg_last_uses[regno]);
 
 	    for (u = reg_last_sets[regno]; u; u = XEXP (u, 1))
+	      add_dependence (insn, XEXP (u, 0), 0);
+
+	    /* ??? This should never happen.  */
+	    for (u = reg_last_clobbers[regno]; u; u = XEXP (u, 1))
 	      add_dependence (insn, XEXP (u, 0), 0);
 
 	    /* Pseudos that are REG_EQUIV to something may be replaced
@@ -3631,8 +3656,10 @@ sched_analyze_2 (x, insn)
 		  add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 		reg_last_uses[i] = 0;
 
-		/* reg_last_sets[r] is now a list of insns */
 		for (u = reg_last_sets[i]; u; u = XEXP (u, 1))
+		  add_dependence (insn, XEXP (u, 0), 0);
+
+		for (u = reg_last_clobbers[i]; u; u = XEXP (u, 1))
 		  add_dependence (insn, XEXP (u, 0), 0);
 	      }
 	    reg_pending_sets_all = 1;
@@ -3762,8 +3789,10 @@ sched_analyze_insn (x, insn, loop_notes)
 		add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 	      reg_last_uses[i] = 0;
 
-	      /* reg_last_sets[r] is now a list of insns */
 	      for (u = reg_last_sets[i]; u; u = XEXP (u, 1))
+		add_dependence (insn, XEXP (u, 0), 0);
+
+	      for (u = reg_last_clobbers[i]; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), 0);
 	    }
 	  reg_pending_sets_all = 1;
@@ -3773,20 +3802,29 @@ sched_analyze_insn (x, insn, loop_notes)
 
     }
 
+  /* Accumulate clobbers until the next set so that it will be output dependant
+     on all of them.  At the next set we can clear the clobber list, since
+     subsequent sets will be output dependant on it.  */
   EXECUTE_IF_SET_IN_REG_SET (reg_pending_sets, 0, i,
 			     {
-			       /* reg_last_sets[r] is now a list of insns */
 			       free_list (&reg_last_sets[i], &unused_insn_list);
+			       free_list (&reg_last_clobbers[i],
+					  &unused_insn_list);
 			       reg_last_sets[i]
 				 = alloc_INSN_LIST (insn, NULL_RTX);
 			     });
+  EXECUTE_IF_SET_IN_REG_SET (reg_pending_clobbers, 0, i,
+			     {
+			       reg_last_clobbers[i]
+				 = alloc_INSN_LIST (insn, reg_last_clobbers[i]);
+			     });
   CLEAR_REG_SET (reg_pending_sets);
+  CLEAR_REG_SET (reg_pending_clobbers);
 
   if (reg_pending_sets_all)
     {
       for (i = 0; i < maxreg; i++)
 	{
-	  /* reg_last_sets[r] is now a list of insns */
 	  free_list (&reg_last_sets[i], &unused_insn_list);
 	  reg_last_sets[i] = alloc_INSN_LIST (insn, NULL_RTX);
 	}
@@ -3884,8 +3922,10 @@ sched_analyze (head, tail)
 
 		  reg_last_uses[i] = 0;
 
-		  /* reg_last_sets[r] is now a list of insns */
 		  for (u = reg_last_sets[i]; u; u = XEXP (u, 1))
+		    add_dependence (insn, XEXP (u, 0), 0);
+
+		  for (u = reg_last_clobbers[i]; u; u = XEXP (u, 1))
 		    add_dependence (insn, XEXP (u, 0), 0);
 		}
 	      reg_pending_sets_all = 1;
@@ -3909,9 +3949,12 @@ sched_analyze (head, tail)
 		      add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 		    reg_last_uses[i] = 0;
 
-		    /* reg_last_sets[r] is now a list of insns */
 		    for (u = reg_last_sets[i]; u; u = XEXP (u, 1))
 		      add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
+
+		    if (global_regs[i])
+		      for (u = reg_last_clobbers[i]; u; u = XEXP (u, 1))
+		        add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 
 		    SET_REGNO_REG_SET (reg_pending_sets, i);
 		  }
@@ -7232,9 +7275,11 @@ compute_block_backward_dependences (bb)
     {
       reg_last_uses = (rtx *) alloca (max_reg * sizeof (rtx));
       reg_last_sets = (rtx *) alloca (max_reg * sizeof (rtx));
+      reg_last_clobbers = (rtx *) alloca (max_reg * sizeof (rtx));
 
       bzero ((char *) reg_last_uses, max_reg * sizeof (rtx));
       bzero ((char *) reg_last_sets, max_reg * sizeof (rtx));
+      bzero ((char *) reg_last_clobbers, max_reg * sizeof (rtx));
 
       pending_read_insns = 0;
       pending_read_mems = 0;
@@ -7252,6 +7297,7 @@ compute_block_backward_dependences (bb)
     {
       reg_last_uses = bb_reg_last_uses[bb];
       reg_last_sets = bb_reg_last_sets[bb];
+      reg_last_clobbers = bb_reg_last_clobbers[bb];
 
       pending_read_insns = bb_pending_read_insns[bb];
       pending_read_mems = bb_pending_read_mems[bb];
@@ -7322,6 +7368,16 @@ compute_block_backward_dependences (bb)
 		    (bb_reg_last_sets[bb_succ])[reg]
 		      = alloc_INSN_LIST (XEXP (u, 0),
 					 (bb_reg_last_sets[bb_succ])[reg]);
+		  }
+
+		for (u = reg_last_clobbers[reg]; u; u = XEXP (u, 1))
+		  {
+		    if (find_insn_list (XEXP (u, 0), (bb_reg_last_clobbers[bb_succ])[reg]))
+		      continue;
+
+		    (bb_reg_last_clobbers[bb_succ])[reg]
+		      = alloc_INSN_LIST (XEXP (u, 0),
+					 (bb_reg_last_clobbers[bb_succ])[reg]);
 		  }
 	      }
 
@@ -7397,6 +7453,8 @@ compute_block_backward_dependences (bb)
      3-5% on average.  */
   for (b = 0; b < max_reg; ++b)
     {
+      if (reg_last_clobbers[b])
+	free_list (&reg_last_clobbers[b], &unused_insn_list);
       if (reg_last_sets[b])
 	free_list (&reg_last_sets[b], &unused_insn_list);
       if (reg_last_uses[b])
@@ -7408,6 +7466,7 @@ compute_block_backward_dependences (bb)
     {
       bb_reg_last_uses[bb] = (rtx *) NULL_RTX;
       bb_reg_last_sets[bb] = (rtx *) NULL_RTX;
+      bb_reg_last_clobbers[bb] = (rtx *) NULL_RTX;
     }
 }
 
@@ -7560,6 +7619,7 @@ schedule_region (rgn)
   current_blocks = RGN_BLOCKS (rgn);
 
   reg_pending_sets = ALLOCA_REG_SET ();
+  reg_pending_clobbers = ALLOCA_REG_SET ();
   reg_pending_sets_all = 0;
 
   /* initializations for region data dependence analyisis */
@@ -7571,21 +7631,34 @@ schedule_region (rgn)
       bb_reg_last_uses = (rtx **) alloca (current_nr_blocks * sizeof (rtx *));
       space = (rtx *) alloca (current_nr_blocks * maxreg * sizeof (rtx));
       bzero ((char *) space, current_nr_blocks * maxreg * sizeof (rtx));
-      init_rtx_vector (bb_reg_last_uses, space, current_nr_blocks, maxreg * sizeof (rtx *));
+      init_rtx_vector (bb_reg_last_uses, space, current_nr_blocks,
+		       maxreg * sizeof (rtx *));
 
       bb_reg_last_sets = (rtx **) alloca (current_nr_blocks * sizeof (rtx *));
       space = (rtx *) alloca (current_nr_blocks * maxreg * sizeof (rtx));
       bzero ((char *) space, current_nr_blocks * maxreg * sizeof (rtx));
-      init_rtx_vector (bb_reg_last_sets, space, current_nr_blocks, maxreg * sizeof (rtx *));
+      init_rtx_vector (bb_reg_last_sets, space, current_nr_blocks,
+		       maxreg * sizeof (rtx *));
+
+      bb_reg_last_clobbers =
+	(rtx **) alloca (current_nr_blocks * sizeof (rtx *));
+      space = (rtx *) alloca (current_nr_blocks * maxreg * sizeof (rtx));
+      bzero ((char *) space, current_nr_blocks * maxreg * sizeof (rtx));
+      init_rtx_vector (bb_reg_last_clobbers, space, current_nr_blocks,
+		       maxreg * sizeof (rtx *));
 
       bb_pending_read_insns = (rtx *) alloca (current_nr_blocks * sizeof (rtx));
       bb_pending_read_mems = (rtx *) alloca (current_nr_blocks * sizeof (rtx));
-      bb_pending_write_insns = (rtx *) alloca (current_nr_blocks * sizeof (rtx));
+      bb_pending_write_insns =
+	(rtx *) alloca (current_nr_blocks * sizeof (rtx));
       bb_pending_write_mems = (rtx *) alloca (current_nr_blocks * sizeof (rtx));
-      bb_pending_lists_length = (int *) alloca (current_nr_blocks * sizeof (int));
-      bb_last_pending_memory_flush = (rtx *) alloca (current_nr_blocks * sizeof (rtx));
+      bb_pending_lists_length =
+	(int *) alloca (current_nr_blocks * sizeof (int));
+      bb_last_pending_memory_flush =
+	(rtx *) alloca (current_nr_blocks * sizeof (rtx));
       bb_last_function_call = (rtx *) alloca (current_nr_blocks * sizeof (rtx));
-      bb_sched_before_next_call = (rtx *) alloca (current_nr_blocks * sizeof (rtx));
+      bb_sched_before_next_call =
+	(rtx *) alloca (current_nr_blocks * sizeof (rtx));
 
       init_rgn_data_dependences (current_nr_blocks);
     }
@@ -7703,6 +7776,7 @@ schedule_region (rgn)
   free_pending_lists ();
 
   FREE_REG_SET (reg_pending_sets);
+  FREE_REG_SET (reg_pending_clobbers);
 }
 
 /* Subroutine of update_flow_info.  Determines whether any new REG_NOTEs are
