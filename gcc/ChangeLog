@@ -1,3 +1,8 @@
+2003-05-13  Janis Johnson  <janis187@us.ibm.com>
+
+	* config/rs6000/sysv4.h (OUTPUT_ASM_ALIGNED_LOCAL): Expect
+	HOST_WIDE_INT argument.
+
 2003-05-13  Jason Merrill  <jason@redhat.com>
 
 	* tree.h (STRIP_MAIN_TYPE_NOPS): New macro.
