@@ -18,7 +18,7 @@ g77, while `[egcs]' denotes egcs-only information.
 
 
 The email address to which bugs are to be reported is either
-[FSF] <fortran@gnu.org> or [egcs] <egcs-bugs@cygnus.com>.
+[FSF] <fortran@gnu.org> or [egcs] <egcs-bugs@egcs.cygnus.com>.
 
 * *DO NOT* send any email (reporting bugs, asking questions, etc.) to
   either of these addresses without *first* reading the g77 documentation.

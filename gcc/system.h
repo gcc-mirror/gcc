@@ -377,7 +377,7 @@ extern void abort ();
 #define abort()								\
 (fprintf (stderr,							\
 	  "%s:%d: Internal compiler error in function %s\n"             \
-	  "Please submit a full bug report to `egcs-bugs@cygnus.com'.\n"  \
+	  "Please submit a full bug report to `egcs-bugs@egcs.cygnus.com'.\n"  \
 	  "See <URL:http://egcs.cygnus.com/faq.html#bugreport> for details.\n", \
 	  __FILE__, __LINE__, __PRETTY_FUNCTION__),			\
  exit (FATAL_EXIT_CODE))
