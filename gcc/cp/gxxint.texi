@@ -1746,6 +1746,9 @@ Indicates a C++ array type.
 Encodes the C++ @code{bool} type,
 and the Java @code{boolean} type.
 
+@item B
+Used for squangling.
+
 @item c
 Encodes the C++ @code{char} type, and the Java @code{byte} type.
 
@@ -1759,6 +1762,9 @@ Encodes the C++ and Java @code{double} types.
 
 @item e
 Indicates extra unknown arguments @code{...}.
+
+@item E
+Indicates the opening parenthesis of an expression.
 
 @item f
 Encodes the C++ and Java @code{float} types.
@@ -1774,6 +1780,9 @@ Encodes the C++ and Java @code{int} types.
 
 @item J
 Indicates a complex type.
+
+@item K
+Used for squangling.
 
 @item l
 Encodes the C++ @code{long} type.
@@ -1820,6 +1829,9 @@ A modified for a @code{const} type or method.
 
 @item w
 Encodes the C++ @code{wchar_t} type, and the Java @code{char} types.
+
+@item W
+Indicates the closing parenthesis of an expression.
 
 @item x
 Encodes the GNU C++ @code{long long} type, and the Java @code{long} type.
