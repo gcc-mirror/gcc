@@ -1,3 +1,9 @@
+2003-04-12  David Edelsohn  <edelsohn@gnu.org>
+
+	* testsuite/27_io/basic_istream/sentry/char/3983-fstream.cc:
+	Change basic_streambuf instantiation to "unsigned char".
+	* testsuite/27_io/basic_ostream/sentry/char/3983-fstream.cc: Same.
+
 2003-04-12  Paolo Carlini  <pcarlini@unitus.it>
 
 	Remove _M_buf_size_opt, use directly _M_buf_size instead.
