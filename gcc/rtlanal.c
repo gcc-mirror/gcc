@@ -1410,7 +1410,7 @@ reg_overlap_mentioned_p (x, in)
     do_reg:
       endregno = regno + (regno < FIRST_PSEUDO_REGISTER
 			  ? HARD_REGNO_NREGS (regno, GET_MODE (x)) : 1);
-      return refers_to_regno_p (regno, endregno, in, (rtx*)0);
+      return refers_to_regno_p (regno, endregno, in, (rtx*) 0);
 
     case MEM:
       {
@@ -1857,7 +1857,7 @@ find_reg_fusage (insn, code, datum)
     return 0;
 
   if (! datum)
-    abort();
+    abort ();
 
   if (GET_CODE (datum) != REG)
     {

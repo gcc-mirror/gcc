@@ -871,7 +871,7 @@ remove_regno_note (insn, note, regno)
 {
   rtx *note_link, this;
 
-  note_link = &REG_NOTES(insn);
+  note_link = &REG_NOTES (insn);
   for (this = *note_link; this; this = XEXP (this, 1))
     if (REG_NOTE_KIND (this) == note
 	&& REG_P (XEXP (this, 0)) && REGNO (XEXP (this, 0)) == regno)
@@ -2223,7 +2223,7 @@ subst_stack_regs (insn, regstack)
      since the form of the newly emitted pop insn references the reg,
      making it no longer `unset'.  */
 
-  note_link = &REG_NOTES(insn);
+  note_link = &REG_NOTES (insn);
   for (note = *note_link; note; note = XEXP (note, 1))
     if (REG_NOTE_KIND (note) == REG_UNUSED && STACK_REG_P (XEXP (note, 0)))
       {

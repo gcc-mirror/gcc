@@ -239,7 +239,7 @@ mark_flags_life_zones (flags)
     {
       enum machine_mode mode = (flags ? HImode : VOIDmode);
       rtx insn;
-      for (insn = get_insns(); insn; insn = NEXT_INSN (insn))
+      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	PUT_MODE (insn, mode);
       return;
     }
@@ -334,7 +334,7 @@ static int *regno_src_regno;
    a candidate for tying to a hard register, since the output might in
    turn be a candidate to be tied to a different hard register.  */
 static int
-replacement_quality(reg)
+replacement_quality (reg)
      rtx reg;
 {
   int src_regno;
@@ -1104,12 +1104,12 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	      && (GET_CODE (SET_SRC (set)) == SIGN_EXTEND
 		  || GET_CODE (SET_SRC (set)) == ZERO_EXTEND)
 	      && GET_CODE (XEXP (SET_SRC (set), 0)) == REG
-	      && GET_CODE (SET_DEST(set)) == REG)
+	      && GET_CODE (SET_DEST (set)) == REG)
 	    optimize_reg_copy_3 (insn, SET_DEST (set), SET_SRC (set));
 
 	  if (flag_expensive_optimizations && ! pass
 	      && GET_CODE (SET_SRC (set)) == REG
-	      && GET_CODE (SET_DEST(set)) == REG)
+	      && GET_CODE (SET_DEST (set)) == REG)
 	    {
 	      /* If this is a register-register copy where SRC is not dead,
 		 see if we can optimize it.  If this optimization succeeds,
@@ -1124,7 +1124,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		  if (regno_src_regno[REGNO (SET_DEST (set))] < 0
 		      && SET_SRC (set) != SET_DEST (set))
 		    {
-		      int srcregno = REGNO (SET_SRC(set));
+		      int srcregno = REGNO (SET_SRC (set));
 		      if (regno_src_regno[srcregno] >= 0)
 			srcregno = regno_src_regno[srcregno];
 		      regno_src_regno[REGNO (SET_DEST (set))] = srcregno;
@@ -1599,7 +1599,7 @@ find_matches (insn, matchp)
 	  case 'j': case 'k': case 'l': case 'p': case 'q': case 't': case 'u':
 	  case 'v': case 'w': case 'x': case 'y': case 'z': case 'A': case 'B':
 	  case 'C': case 'D': case 'W': case 'Y': case 'Z':
-	    if (CLASS_LIKELY_SPILLED_P (REG_CLASS_FROM_LETTER ((unsigned char)c)))
+	    if (CLASS_LIKELY_SPILLED_P (REG_CLASS_FROM_LETTER ((unsigned char) c)))
 	      likely_spilled[op_no] = 1;
 	    break;
 	  }
@@ -1922,7 +1922,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 
       if (note && CONSTANT_P (XEXP (note, 0)))
 	{
-	  for (q = PREV_INSN (insn); q; q = PREV_INSN(q))
+	  for (q = PREV_INSN (insn); q; q = PREV_INSN (q))
 	    {
 	      /* ??? We can't scan past the end of a basic block without
 		 updating the register lifetime info
