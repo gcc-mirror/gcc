@@ -2439,10 +2439,14 @@ do { ip = &instack[indepth];		\
 	    beg_of_line = ibp;
 	    goto while2end;
 	  }
-	  if (pedantic || c == '\'') {
+	  if (c == '\'') {
 	    error_with_line (line_for_error (start_line),
-			     "unterminated string or character constant");
+			     "unterminated character constant");
 	    goto while2end;
+	  }
+	  if (pedantic && multiline_string_line == 0) {
+	    pedwarn_with_line (line_for_error (start_line),
+			       "string constant runs past end of line");
 	  }
 	  if (multiline_string_line == 0)
 	    multiline_string_line = ip->lineno - 1;
@@ -7838,6 +7842,36 @@ error_with_line (line, msg, arg1, arg2, arg3)
   errors++;
 }
 
+static void
+warning_with_line (line, msg, arg1, arg2, arg3)
+     int line;
+     char *msg;
+     char *arg1, *arg2, *arg3;
+{
+  int i;
+  FILE_BUF *ip = NULL;
+
+  if (inhibit_warnings)
+    return;
+
+  if (warnings_are_errors)
+    errors++;
+
+  print_containing_files ();
+
+  for (i = indepth; i >= 0; i--)
+    if (instack[i].fname != NULL) {
+      ip = &instack[i];
+      break;
+    }
+
+  if (ip != NULL)
+    fprintf (stderr, "%s:%d: ", ip->nominal_fname, line);
+  fprintf (stderr, "warning: ");
+  fprintf (stderr, msg, arg1, arg2, arg3);
+  fprintf (stderr, "\n");
+}
+
 /* print an error message and maybe count it.  */
 
 void
@@ -7849,6 +7883,18 @@ pedwarn (msg, arg1, arg2, arg3)
     error (msg, arg1, arg2, arg3);
   else
     warning (msg, arg1, arg2, arg3);
+}
+
+void
+pedwarn_with_line (line, msg, arg1, arg2, arg3)
+     int line;
+     char *msg;
+     char *arg1, *arg2, *arg3;
+{
+  if (pedantic_errors)
+    error_with_line (line, msg, arg1, arg2, arg3);
+  else
+    warning_with_line (line, msg, arg1, arg2, arg3);
 }
 
 /* Report a warning (or an error if pedantic_errors)
@@ -7866,7 +7912,7 @@ pedwarn_with_file_and_line (file, line, msg, arg1, arg2, arg3)
     return;
   if (file != NULL)
     fprintf (stderr, "%s:%d: ", file, line);
-  if (pedantic_errors || warnings_are_errors)
+  if (pedantic_errors)
     errors++;
   if (!pedantic_errors)
     fprintf (stderr, "warning: ");
