@@ -8503,7 +8503,7 @@ java_complete_expand_method (mdecl)
     {
       tree fbody = DECL_FUNCTION_BODY (mdecl);
       tree block_body = BLOCK_EXPR_BODY (fbody);
-      tree exception_copy;
+      tree exception_copy = NULL_TREE;
       expand_start_java_method (mdecl);
       build_result_decl (mdecl);
 
@@ -9215,7 +9215,7 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
       /* We resolve and expression name */
       else 
 	{
-	  tree field_decl;
+	  tree field_decl = NULL_TREE;
 
 	  /* If there exists an early resolution, use it. That occurs
 	     only once and we know that there are more things to
@@ -9628,7 +9628,7 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
      constructors */
   else
     {
-      tree class_to_search;
+      tree class_to_search = NULL_TREE;
       int lc;		/* Looking for Constructor */
       
       /* We search constructor in their target class */
@@ -10207,7 +10207,8 @@ static void
 qualify_ambiguous_name (id)
      tree id;
 {
-  tree qual, qual_wfl, name, decl, ptr_type, saved_current_class;
+  tree qual, qual_wfl, name = NULL_TREE, decl, ptr_type = NULL_TREE,
+    saved_current_class;
   int again, super_found = 0, this_found = 0, new_array_found = 0;
   int code;
 
@@ -11429,7 +11430,7 @@ patch_assignment (node, wfl_op1, wfl_op2)
 {
   tree rhs = TREE_OPERAND (node, 1);
   tree lvalue = TREE_OPERAND (node, 0), llvalue;
-  tree lhs_type, rhs_type, new_rhs = NULL_TREE;
+  tree lhs_type = NULL_TREE, rhs_type, new_rhs = NULL_TREE;
   int error_found = 0;
   int lvalue_from_array = 0;
 

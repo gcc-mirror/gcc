@@ -1,3 +1,24 @@
+1999-07-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* expr.c (build_java_soft_divmod): Provide a default case in switch.
+	(java_lang_expand_expr): Mark parameters `target', `tmode' and
+	`modifier' with ATTRIBUTE_UNUSED.
+
+	* gjavah.c (process_file): Add braces around ambiguous `else'.
+
+	* jcf-dump.c (print_access_flags, localvar_free): Change return
+	type to void.
+
+	* parse.y (java_complete_expand_method): Initialize variable
+	`exception_copy'.
+	(resolve_qualified_expression_name): Likewise for `field_decl'.
+	(patch_method_invocation): Likewise for `class_to_search'.
+	(qualify_ambiguous_name): Likewise for `name' and `ptr_type'.
+	(patch_assignment): Likewise for `lhs_type'.
+
+	* verify.c (verify_jvm_instructions): Remove unused variable
+	`caller'.
+
 1999-07-25  Richard Henderson  <rth@cygnus.com>
 
 	* decl.c (va_list_type_node): New.
