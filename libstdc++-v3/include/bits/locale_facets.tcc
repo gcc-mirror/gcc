@@ -41,7 +41,6 @@
 #include <cmath>     // For ceil
 #include <cctype>    // For isspace
 #include <limits>    // For numeric_limits
-#include <memory>    // For auto_ptr
 #include <bits/streambuf_iterator.h>
 #include <vector>	
 #include <typeinfo>  // For bad_cast.

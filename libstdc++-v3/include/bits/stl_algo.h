@@ -120,7 +120,7 @@ namespace std
     __median(const _Tp& __a, const _Tp& __b, const _Tp& __c, _Compare __comp)
     {
       // concept requirements
-      __glibcpp_function_requires(_BinaryFunctionConcept<_Compare, bool, _Tp, _Tp>)
+      __glibcpp_function_requires(_BinaryFunctionConcept<_Compare,bool,_Tp,_Tp>)
       if (__comp(__a, __b))
 	if (__comp(__b, __c))
 	  return __b;
@@ -144,8 +144,7 @@ namespace std
    *  @return   @p f.
    *
    *  Applies the function object @p f to each element in the range
-   *  @p [first,last).
-   *  @p f must not modify its argument.
+   *  @p [first,last).  @p f must not modify the order of the sequence.
    *  If @p f has a return value it is ignored.
   */
   template<typename _InputIter, typename _Function>
@@ -1388,8 +1387,12 @@ __result, __binary_pred, _IterType());
       return __result;
     }
 
-  /// This is a helper function for the rotate algorithm specialized on RAIs.
 
+  /**
+   *  @maint
+   *  This is a helper function for the rotate algorithm specialized on RAIs.
+   *  @endmaint
+  */
   template<typename _EuclideanRingElement>
     _EuclideanRingElement
     __gcd(_EuclideanRingElement __m, _EuclideanRingElement __n)
@@ -1402,6 +1405,11 @@ __result, __binary_pred, _IterType());
       return __m;
     }
 
+  /**
+   *  @maint
+   *  This is a helper function for the rotate algorithm.
+   *  @endmaint
+  */
   template<typename _ForwardIter>
     void
     __rotate(_ForwardIter __first,
@@ -1430,6 +1438,11 @@ __result, __binary_pred, _IterType());
       }
     }
 
+  /**
+   *  @maint
+   *  This is a helper function for the rotate algorithm.
+   *  @endmaint
+  */
   template<typename _BidirectionalIter>
     void
     __rotate(_BidirectionalIter __first,
@@ -1458,6 +1471,11 @@ __result, __binary_pred, _IterType());
       }
     }
 
+  /**
+   *  @maint
+   *  This is a helper function for the rotate algorithm.
+   *  @endmaint
+  */
   template<typename _RandomAccessIter>
     void
     __rotate(_RandomAccessIter __first,
@@ -1519,6 +1537,15 @@ __result, __binary_pred, _IterType());
       }
     }
 
+  /**
+   *  @brief TODO
+   *  @param  first   A forward iterator.
+   *  @param  middle  A forward iterator.
+   *  @param  last    A forward iterator.
+   *  @return  Nothing.
+   *
+   *  @doctodo
+  */
   template<typename _ForwardIter>
     inline void
     rotate(_ForwardIter __first, _ForwardIter __middle, _ForwardIter __last)
@@ -1530,6 +1557,16 @@ __result, __binary_pred, _IterType());
       __rotate(__first, __middle, __last, _IterType());
     }
 
+  /**
+   *  @brief TODO
+   *  @param  first   A forward iterator.
+   *  @param  middle  A forward iterator.
+   *  @param  last    A forward iterator.
+   *  @param  result  An output iterator.
+   *  @return  TODO
+   *
+   *  @doctodo
+  */
   template<typename _ForwardIter, typename _OutputIter>
     _OutputIter
     rotate_copy(_ForwardIter __first, _ForwardIter __middle,
@@ -1543,9 +1580,16 @@ __result, __binary_pred, _IterType());
       return copy(__first, __middle, copy(__middle, __last, __result));
     }
 
-  // Return a random number in the range [0, __n).  This function encapsulates
-  // whether we're using rand (part of the standard C library) or lrand48
-  // (not standard, but a much better choice whenever it's available).
+
+  /**
+   *  @maint
+   *  Return a random number in the range [0, __n).  This function encapsulates
+   *  whether we're using rand (part of the standard C library) or lrand48
+   *  (not standard, but a much better choice whenever it's available).
+   *
+   *  XXX There is no corresponding encapsulation fn to seed the generator.
+   *  @endmaint
+  */
   template<typename _Distance>
     inline _Distance
     __random_number(_Distance __n)
@@ -1557,8 +1601,15 @@ __result, __binary_pred, _IterType());
   #endif
     }
 
-  /// 25.2.11 random_shuffle().
 
+  /**
+   *  @brief TODO
+   *  @param  first   A forward iterator.
+   *  @param  last    A forward iterator.
+   *  @return  Nothing.
+   *
+   *  @doctodo
+  */
   template<typename _RandomAccessIter>
     inline void
     random_shuffle(_RandomAccessIter __first, _RandomAccessIter __last)
@@ -1572,6 +1623,15 @@ __result, __binary_pred, _IterType());
 	iter_swap(__i, __first + __random_number((__i - __first) + 1));
     }
 
+  /**
+   *  @brief TODO
+   *  @param  first   A forward iterator.
+   *  @param  last    A forward iterator.
+   *  @param  rand    The RNG functor or function.
+   *  @return  Nothing.
+   *
+   *  @doctodo
+  */
   template<typename _RandomAccessIter, typename _RandomNumberGenerator>
     void
     random_shuffle(_RandomAccessIter __first, _RandomAccessIter __last,
@@ -1586,8 +1646,12 @@ __result, __binary_pred, _IterType());
 	iter_swap(__i, __first + __rand((__i - __first) + 1));
     }
 
-  // partition, stable_partition, and their auxiliary functions
 
+  /**
+   *  @maint
+   *  This is a helper function...
+   *  @endmaint
+  */
   template<typename _ForwardIter, typename _Predicate>
     _ForwardIter
     __partition(_ForwardIter __first, _ForwardIter __last,
@@ -1610,6 +1674,11 @@ __result, __binary_pred, _IterType());
       return __first;
     }
 
+  /**
+   *  @maint
+   *  This is a helper function...
+   *  @endmaint
+  */
   template<typename _BidirectionalIter, typename _Predicate>
     _BidirectionalIter
     __partition(_BidirectionalIter __first, _BidirectionalIter __last,
@@ -1637,6 +1706,15 @@ __result, __binary_pred, _IterType());
       }
     }
 
+  /**
+   *  @brief TODO
+   *  @param  first   A forward iterator.
+   *  @param  last    A forward iterator.
+   *  @param  pred    A predicate functor.
+   *  @return  TODO
+   *
+   *  @doctodo
+  */
   template<typename _ForwardIter, typename _Predicate>
     inline _ForwardIter
     partition(_ForwardIter __first, _ForwardIter __last,
@@ -1651,6 +1729,11 @@ __result, __binary_pred, _IterType());
     }
 
 
+  /**
+   *  @maint
+   *  This is a helper function...
+   *  @endmaint
+  */
   template<typename _ForwardIter, typename _Predicate, typename _Distance>
     _ForwardIter
     __inplace_stable_partition(_ForwardIter __first, _ForwardIter __last,
@@ -1671,6 +1754,11 @@ __result, __binary_pred, _IterType());
       return __begin;
     }
 
+  /**
+   *  @maint
+   *  This is a helper function...
+   *  @endmaint
+  */
   template<typename _ForwardIter, typename _Pointer, typename _Predicate,
 	   typename _Distance>
     _ForwardIter
@@ -1711,6 +1799,15 @@ __result, __binary_pred, _IterType());
       }
     }
 
+  /**
+   *  @brief TODO
+   *  @param  first   A forward iterator.
+   *  @param  last    A forward iterator.
+   *  @param  pred    A predicate functor.
+   *  @return  TODO
+   *
+   *  @doctodo
+  */
   template<typename _ForwardIter, typename _Predicate>
     _ForwardIter
     stable_partition(_ForwardIter __first, _ForwardIter __last,
@@ -1739,6 +1836,11 @@ __result, __binary_pred, _IterType());
       }
     }
 
+  /**
+   *  @maint
+   *  This is a helper function...
+   *  @endmaint
+  */
   template<typename _RandomAccessIter, typename _Tp>
     _RandomAccessIter
     __unguarded_partition(_RandomAccessIter __first, _RandomAccessIter __last,
@@ -1757,6 +1859,11 @@ __result, __binary_pred, _IterType());
       }
     }
 
+  /**
+   *  @maint
+   *  This is a helper function...
+   *  @endmaint
+  */
   template<typename _RandomAccessIter, typename _Tp, typename _Compare>
     _RandomAccessIter
     __unguarded_partition(_RandomAccessIter __first, _RandomAccessIter __last,
@@ -1775,10 +1882,20 @@ __result, __binary_pred, _IterType());
       }
     }
 
+
+  /**
+   *  @maint
+   *  @doctodo
+   *  This controls some aspect of the sort routines.
+   *  @endmaint
+  */
   extern const int __stl_threshold;
 
-  // sort() and its auxiliary functions.
-
+  /**
+   *  @maint
+   *  This is a helper function for the sort routine.
+   *  @endmaint
+  */
   template<typename _RandomAccessIter, typename _Tp>
     void
     __unguarded_linear_insert(_RandomAccessIter __last, _Tp __val)
@@ -1793,6 +1910,11 @@ __result, __binary_pred, _IterType());
       *__last = __val;
     }
 
+  /**
+   *  @maint
+   *  This is a helper function for the sort routine.
+   *  @endmaint
+  */
   template<typename _RandomAccessIter, typename _Tp, typename _Compare>
     void
     __unguarded_linear_insert(_RandomAccessIter __last, _Tp __val, _Compare __comp)
@@ -1807,6 +1929,11 @@ __result, __binary_pred, _IterType());
       *__last = __val;
     }
 
+  /**
+   *  @maint
+   *  This is a helper function for the sort routine.
+   *  @endmaint
+  */
   template<typename _RandomAccessIter>
     void
     __insertion_sort(_RandomAccessIter __first, _RandomAccessIter __last)
@@ -1825,6 +1952,11 @@ __result, __binary_pred, _IterType());
       }
     }
 
+  /**
+   *  @maint
+   *  This is a helper function for the sort routine.
+   *  @endmaint
+  */
   template<typename _RandomAccessIter, typename _Compare>
     void
     __insertion_sort(_RandomAccessIter __first, _RandomAccessIter __last,
@@ -1844,6 +1976,11 @@ __result, __binary_pred, _IterType());
       }
     }
 
+  /**
+   *  @maint
+   *  This is a helper function for the sort routine.
+   *  @endmaint
+  */
   template<typename _RandomAccessIter>
     inline void
     __unguarded_insertion_sort(_RandomAccessIter __first, _RandomAccessIter __last)
@@ -1854,6 +1991,11 @@ __result, __binary_pred, _IterType());
 	__unguarded_linear_insert(__i, _ValueType(*__i));
     }
 
+  /**
+   *  @maint
+   *  This is a helper function for the sort routine.
+   *  @endmaint
+  */
   template<typename _RandomAccessIter, typename _Compare>
     inline void
     __unguarded_insertion_sort(_RandomAccessIter __first, _RandomAccessIter __last,
@@ -1865,6 +2007,11 @@ __result, __binary_pred, _IterType());
 	__unguarded_linear_insert(__i, _ValueType(*__i), __comp);
     }
 
+  /**
+   *  @maint
+   *  This is a helper function for the sort routine.
+   *  @endmaint
+  */
   template<typename _RandomAccessIter>
     void
     __final_insertion_sort(_RandomAccessIter __first, _RandomAccessIter __last)
@@ -1877,6 +2024,11 @@ __result, __binary_pred, _IterType());
 	__insertion_sort(__first, __last);
     }
 
+  /**
+   *  @maint
+   *  This is a helper function for the sort routine.
+   *  @endmaint
+  */
   template<typename _RandomAccessIter, typename _Compare>
     void
     __final_insertion_sort(_RandomAccessIter __first, _RandomAccessIter __last,
@@ -1890,6 +2042,11 @@ __result, __binary_pred, _IterType());
 	__insertion_sort(__first, __last, __comp);
     }
 
+  /**
+   *  @maint
+   *  This is a helper function for the sort routine.
+   *  @endmaint
+  */
   template<typename _Size>
     inline _Size
     __lg(_Size __n)
@@ -1899,6 +2056,11 @@ __result, __binary_pred, _IterType());
       return __k;
     }
 
+  /**
+   *  @maint
+   *  This is a helper function for the sort routine.
+   *  @endmaint
+  */
   template<typename _RandomAccessIter, typename _Size>
     void
     __introsort_loop(_RandomAccessIter __first, _RandomAccessIter __last,
@@ -1922,6 +2084,11 @@ __result, __binary_pred, _IterType());
       }
     }
 
+  /**
+   *  @maint
+   *  This is a helper function for the sort routine.
+   *  @endmaint
+  */
   template<typename _RandomAccessIter, typename _Size, typename _Compare>
     void
     __introsort_loop(_RandomAccessIter __first, _RandomAccessIter __last,
@@ -1946,6 +2113,14 @@ __result, __binary_pred, _IterType());
       }
     }
 
+  /**
+   *  @brief TODO
+   *  @param  first   An iterator.
+   *  @param  last    Another iterator.
+   *  @return  Nothing.
+   *
+   *  @doctodo
+  */
   template<typename _RandomAccessIter>
     inline void
     sort(_RandomAccessIter __first, _RandomAccessIter __last)
@@ -1963,6 +2138,15 @@ __result, __binary_pred, _IterType());
       }
     }
 
+  /**
+   *  @brief TODO
+   *  @param  first   An iterator.
+   *  @param  last    Another iterator.
+   *  @param  comp    A comparison functor.
+   *  @return  Nothing.
+   *
+   *  @doctodo
+  */
   template<typename _RandomAccessIter, typename _Compare>
     inline void
     sort(_RandomAccessIter __first, _RandomAccessIter __last, _Compare __comp)
@@ -1980,8 +2164,12 @@ __result, __binary_pred, _IterType());
       }
     }
 
-  // stable_sort() and its auxiliary functions.
 
+  /**
+   *  @maint
+   *  This is a helper function for the stable sorting routines.
+   *  @endmaint
+  */
   template<typename _RandomAccessIter>
     void
     __inplace_stable_sort(_RandomAccessIter __first, _RandomAccessIter __last)
@@ -1998,6 +2186,11 @@ __result, __binary_pred, _IterType());
 			     __last - __middle);
     }
 
+  /**
+   *  @maint
+   *  This is a helper function for the stable sorting routines.
+   *  @endmaint
+  */
   template<typename _RandomAccessIter, typename _Compare>
     void
     __inplace_stable_sort(_RandomAccessIter __first, _RandomAccessIter __last,
@@ -2171,6 +2364,14 @@ __result, __binary_pred, _IterType());
                        __comp);
     }
 
+  /**
+   *  @brief TODO
+   *  @param  first   An iterator.
+   *  @param  last    Another iterator.
+   *  @return  Nothing.
+   *
+   *  @doctodo
+  */
   template<typename _RandomAccessIter>
     inline void
     stable_sort(_RandomAccessIter __first, _RandomAccessIter __last)
@@ -2190,6 +2391,15 @@ __result, __binary_pred, _IterType());
 	__stable_sort_adaptive(__first, __last, buf.begin(), _DistanceType(buf.size()));
     }
 
+  /**
+   *  @brief TODO
+   *  @param  first   An iterator.
+   *  @param  last    Another iterator.
+   *  @param  comp    A comparison functor.
+   *  @return  Nothing.
+   *
+   *  @doctodo
+  */
   template<typename _RandomAccessIter, typename _Compare>
     inline void
     stable_sort(_RandomAccessIter __first, _RandomAccessIter __last, _Compare __comp)
@@ -2211,6 +2421,15 @@ __result, __binary_pred, _IterType());
 			       __comp);
     }
 
+  /**
+   *  @brief TODO
+   *  @param  first   An iterator.
+   *  @param  middle  Another iterator.
+   *  @param  last    Another iterator.
+   *  @return  Nothing.
+   *
+   *  @doctodo
+  */
   template<typename _RandomAccessIter>
     void
     partial_sort(_RandomAccessIter __first,
@@ -2231,6 +2450,16 @@ __result, __binary_pred, _IterType());
       sort_heap(__first, __middle);
     }
 
+  /**
+   *  @brief TODO
+   *  @param  first   An iterator.
+   *  @param  middle  Another iterator.
+   *  @param  last    Another iterator.
+   *  @param  comp    A comparison functor.
+   *  @return  Nothing.
+   *
+   *  @doctodo
+  */
   template<typename _RandomAccessIter, typename _Compare>
     void
     partial_sort(_RandomAccessIter __first,
@@ -2253,6 +2482,16 @@ __result, __binary_pred, _IterType());
       sort_heap(__first, __middle, __comp);
     }
 
+  /**
+   *  @brief TODO
+   *  @param  first   An input iterator.
+   *  @param  last    Another input iterator.
+   *  @param  result_first   A random-access iterator.
+   *  @param  result_last    Another random-access iterator.
+   *  @return  TODO
+   *
+   *  @doctodo
+  */
   template<typename _InputIter, typename _RandomAccessIter>
     _RandomAccessIter
     partial_sort_copy(_InputIter __first, _InputIter __last,
@@ -2288,6 +2527,17 @@ __result, __binary_pred, _IterType());
       return __result_real_last;
     }
 
+  /**
+   *  @brief TODO
+   *  @param  first   An input iterator.
+   *  @param  last    Another input iterator.
+   *  @param  result_first   A random-access iterator.
+   *  @param  result_last    Another random-access iterator.
+   *  @param  comp    A comparison functor.
+   *  @return  TODO
+   *
+   *  @doctodo
+  */
   template<typename _InputIter, typename _RandomAccessIter, typename _Compare>
     _RandomAccessIter
     partial_sort_copy(_InputIter __first, _InputIter __last,
@@ -2326,6 +2576,15 @@ __result, __binary_pred, _IterType());
       return __result_real_last;
     }
 
+  /**
+   *  @brief TODO
+   *  @param  first   An iterator.
+   *  @param  nth     Another iterator.
+   *  @param  last    Another iterator.
+   *  @return  Nothing.
+   *
+   *  @doctodo
+  */
   template<typename _RandomAccessIter>
     void
     nth_element(_RandomAccessIter __first,
@@ -2352,6 +2611,16 @@ __result, __binary_pred, _IterType());
       __insertion_sort(__first, __last);
     }
 
+  /**
+   *  @brief TODO
+   *  @param  first   An iterator.
+   *  @param  nth     Another iterator.
+   *  @param  last    Another iterator.
+   *  @param  comp    A comparison functor.
+   *  @return  Nothing.
+   *
+   *  @doctodo
+  */
   template<typename _RandomAccessIter, typename _Compare>
     void
     nth_element(_RandomAccessIter __first,
