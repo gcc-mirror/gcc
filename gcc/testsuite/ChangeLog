@@ -1,3 +1,8 @@
+2004-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/17099
+	* gcc.c-torture/execute/20040820-1.c: New test.
+
 2004-08-20  David Edelsohn  <edelsohn@gnu.org>
 
 	* gcc.dg/uninit-H.c: Add _POWER to powerpc case.

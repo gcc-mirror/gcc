@@ -1,3 +1,9 @@
+2004-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/17099
+	* combine.c (force_to_mode): Check if inner_mask has any bits set
+	outside of GET_MODE (x) instead of op_mode.
+
 2004-08-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* config.gcc (arm*-*-symbianelf*): Add t-symbian Makefile
