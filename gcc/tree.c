@@ -1,5 +1,5 @@
 /* Language-independent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987, 88, 92-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2192,29 +2192,32 @@ size_in_bytes (type)
   return t;
 }
 
-/* Return the size of TYPE (in bytes) as an integer,
-   or return -1 if the size can vary.  */
+/* Return the size of TYPE (in bytes) as a wide integer
+   or return -1 if the size can vary or is larger than an integer.  */
 
-int
+HOST_WIDE_INT
 int_size_in_bytes (type)
      tree type;
 {
-  unsigned int size;
+  tree t;
+
   if (type == error_mark_node)
     return 0;
+
   type = TYPE_MAIN_VARIANT (type);
-  if (TYPE_SIZE (type) == 0)
+  if (TYPE_SIZE (type) == 0
+      || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
     return -1;
-  if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+
+  if (TREE_INT_CST_HIGH (TYPE_SIZE (type)) == 0)
+    return ((TREE_INT_CST_LOW (TYPE_SIZE (type)) + BITS_PER_UNIT - 1)
+	  / BITS_PER_UNIT);
+
+  t = size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type), size_int (BITS_PER_UNIT));
+  if (TREE_CODE (t) != INTEGER_CST || TREE_INT_CST_HIGH (t) != 0)
     return -1;
-  if (TREE_INT_CST_HIGH (TYPE_SIZE (type)) != 0)
-    {
-      tree t = size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type),
-			   size_int (BITS_PER_UNIT));
-      return TREE_INT_CST_LOW (t);
-    }
-  size = TREE_INT_CST_LOW (TYPE_SIZE (type));
-  return (size + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
+
+  return TREE_INT_CST_LOW (t);
 }
 
 /* Return, as a tree node, the number of elements for TYPE (which is an
