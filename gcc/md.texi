@@ -3555,9 +3555,10 @@ The integer @var{i} specifies the value of a numeric attribute.  @var{i}
 must be non-negative.
 
 The value of a numeric attribute can be specified either with a
-@code{const_int} or as an integer represented as a string in
-@code{const_string}, @code{eq_attr} (see below), and @code{set_attr}
-(@pxref{Tagging Insns}) expressions.
+@code{const_int}, or as an integer represented as a string in
+@code{const_string}, @code{eq_attr} (see below), @code{attr},
+@code{symbol_ref}, simple arithmetic expressions, and @code{set_attr}
+overrides on specific instructions (@pxref{Tagging Insns}).
 
 @cindex @code{const_string} and attributes
 @item (const_string @var{value})
@@ -3740,6 +3741,12 @@ The @code{very_unlikely} and @code{unlikely} flags are false if the
 
 @code{attr_flag} is only used during delay slot scheduling and has no
 meaning to other passes of the compiler.
+
+@findex attr
+@item (attr @var{name})
+The value of another attribute is returned.  This is most useful
+for numeric attributes, as @code{eq_attr} and @code{attr_flag}
+produce more efficient code for non-numeric attributes.
 @end table
 
 @node Tagging Insns
