@@ -1,3 +1,92 @@
+2003-11-25  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/DatagramSocket.java
+	(factory): Made private.
+	(closed): Removed.
+	(DatagramSocket): Check impl argument, use constructor with
+	SocketAddress argument.
+	(close): Set impl to null, use isClosed().
+	(isClosed): Check for impl == null.
+	(getLocalAddress): Use isClosed().
+	(getLocalPort): Check if socket is closed.
+	(getSoTimeout): Likewise.
+	(setSoTimeout): Likewise.
+	(getSendBufferSize): Likewise.
+	(setSendBufferSize): Likewise.
+	(getReceiveBufferSize): Likewise.
+	(setReceiveBufferSize): Likewise.
+	(receive): Likewise.
+	(send): Likewise.
+	(bind): Likewise.
+	(connect): Likewise.
+	(setReuseAddress): Likewise.
+	(getReuseAddress): Likewise.
+	(setBroadcast): Likewise.
+	(getBroadcast): Likewise.
+	(setTrafficClass): Likewise.
+	(getTrafficClass): Likewise.
+	* java/net/MulticastSocket.java
+	(getInterface): Check if socket is closed.
+	(getTTL): Likewise.
+	(getTimeToLive): Likewise.
+	(setInterface): Likewise.
+	(setNetworkInterface): Likewise.
+	(getNetworkInterface): Likewise.
+	(setLoopbackMode): Likewise.
+	(setTTL): Likewise.
+	(setTimeToLive): Likewise.
+	(joinGroup): Likewise.
+	(leaveGroup): Likewise.
+	(send): Likewise.
+	* java/net/ServerSocket.java
+	(closed): Removed.
+	(close): Check if socket is closed, set impl to null.
+	(isClosed): Check impl == null;
+	(ServerSocket): Check impl argument.
+	(getInetAddress): Check if socket is bound.
+	(getLocalPort): Likewise.
+	(getLocalSocketAddress): Likewise.
+	(bind): Check if socket is closed.
+	(implAccept): Likewise.
+	(setSoTimeout): Likewise.
+	(getSoTimeout): Likewise.
+	(setReuseAddress): Likewise.
+	(getReuseAddress): Likewise.
+	(setReceiveBufferSize): Likewise.
+	(getReceiveBufferSize): Likewise.
+	(toString): Make output compliant to JDK 1.4.2.
+	* java/net/Socket.java
+	(closed): Removed.
+	(Socket): Fixed documentation.
+	(connect): Check if socket is closed, changed exception text,
+	fixed documentation.
+	(getInputStream): Check of socket is closed  and connected.
+	(getOutputStream): Likewise.
+	(bind): Check if socket is closed.
+	(setTcpNoDelay): Likewise.
+	(getTcpNoDelay): Likewise.
+	(setSoLinger): Likewise.
+	(getSoLinger): Likewise.
+	(sendUrgentData): Likewise.
+	(setOOBInline): Likewise.
+	(getOOBInline): Likewise.
+	(setSoTimeout): Likewise.
+	(getSoTimeout): Likewise.
+	(setSendBufferSize): Likewise.
+	(getSendBufferSize): Likewise.
+	(setReceiveBufferSize): Likewise.
+	(getReceiveBufferSize): Likewise.
+	(setKeepAlive): Likewise.
+	(getKeepAlive): Likewise.
+	(close): Likewise.
+	(shutdownInput): Likewise.
+	(shutdownOutput): Likewise.
+	(getReuseAddress): Likewise.
+	(getTrafficClass): Likewise.
+	(setTrafficClass): Likewise.
+	(isClosed): Check impl == null.
+	(toString): Added missing ']'.
+
 2003-11-24  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
