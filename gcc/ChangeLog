@@ -1,3 +1,14 @@
+2001-06-16  Daniel Berlin  <dan@cgsoftware.com>
+
+	* bitmap.h: Add dump_bitmap, bitmap_zero, bitmap_union_of_diffs,
+	bitmap_a_or_b, bitmap_a_and_b, bitmap_first_set_bit,
+	bitmap_last_set_bit. All for compatibility with sbitmap's.
+
+	*bitmap.c (bitmap_zero): New function.
+	(bitmap_union_of_diffs): New function.
+	(bitmap_first_set_bit): New function.
+	(bitmap_last_set_bit): New function.
+
 2001-06-16  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpp.texi, invoke.texi: Update.

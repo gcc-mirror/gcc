@@ -507,7 +507,9 @@ bitmap_operation (to, from1, from2, operation)
 	case BITMAP_IOR:
 	  DOIT (|);
 	  break;
-
+	case BITMAP_IOR_COMPL:
+	  DOIT (|~);
+	  break;
 	case BITMAP_XOR:
 	  DOIT (^);
 	  break;
@@ -675,4 +677,38 @@ bitmap_release_memory ()
       bitmap_obstack_init = FALSE;
       obstack_free (&bitmap_obstack, NULL);
     }
+}
+
+int
+bitmap_union_of_diff (dst, a, b, c)
+     bitmap dst;
+     bitmap a;
+     bitmap b;
+     bitmap c;
+{
+  int changed = 0;
+  bitmap temp = BITMAP_ALLOCA ();
+  bitmap_operation (temp, b, c, BITMAP_AND_COMPL);
+  changed = bitmap_operation (dst, temp, a, BITMAP_IOR);
+  return changed;
+}
+
+int 
+bitmap_first_set_bit (a)
+     bitmap a;
+{
+  int i;
+  EXECUTE_IF_SET_IN_BITMAP (a, 0, i, return i;);
+  return -1;
+}
+
+int 
+bitmap_last_set_bit (a)
+     bitmap a;
+{
+  int i;
+  EXECUTE_IF_SET_IN_BITMAP (a, 0, i, );
+  if (bitmap_bit_p (a, i))
+    return i;
+  return -1;
 }
