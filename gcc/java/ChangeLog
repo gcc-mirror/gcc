@@ -1,3 +1,11 @@
+Mon Feb  1 20:44:47 1999  Per Bothner  <bothner@cygnus.com>
+
+	* parse.y (patch_method_invocation):  Handle calling static methods,
+	even in the form EXPR.METHOD(ARGS), not just TYPE.METHOD(ARGS).
+
+	* parse.y (java_complete_lhs):  Don't complain about unreachable
+	exit condition in a do-while statement.
+
 Thu Jan 28 18:51:26 1999  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-write.c (localvar_alloc):  Only emit entry for
