@@ -1597,7 +1597,11 @@ struct lang_type
 /* A chain of BINFOs for the direct and indirect virtual base classes
    that this type uses in a post-order depth-first left-to-right
    order.  (In other words, these bases appear in the order that they
-   should be initialized.)  */
+   should be initialized.)  If a virtual base is primary, then the
+   primary copy will appear on this list.  Thus, the BINFOs on this
+   list are all "real"; they are the same BINFOs that will be
+   encountered when using dfs_unmarked_real_bases_queue_p and related
+   functions.  */
 #define CLASSTYPE_VBASECLASSES(NODE) (TYPE_LANG_SPECIFIC(NODE)->vbases)
 
 /* For a non-virtual BINFO, the BINFO itself; for a virtual BINFO, the
@@ -1721,8 +1725,15 @@ struct lang_type
    B is part of the hierarchy dominated by C.  */
 #define BINFO_NEW_VTABLE_MARKED(B, C) \
   (TREE_LANG_FLAG_4 (CANONICAL_BINFO (B, C)))
-#define SET_BINFO_NEW_VTABLE_MARKED(B, C) \
-  (BINFO_NEW_VTABLE_MARKED (B, C) = 1)
+
+/* Any subobject that needs a new vtable must have a vptr and must not
+   be a primary base (since it would then use the vtable from a
+   derived class.)  */
+#define SET_BINFO_NEW_VTABLE_MARKED(B, C)		       		 \
+  (BINFO_NEW_VTABLE_MARKED (B, C) = 1,					 \
+   my_friendly_assert (!BINFO_PRIMARY_MARKED_P (B), 20000517),		 \
+   my_friendly_assert (CLASSTYPE_VFIELDS (BINFO_TYPE (B)) != NULL_TREE,  \
+		       20000517))
 #define CLEAR_BINFO_NEW_VTABLE_MARKED(B, C) \
   (BINFO_NEW_VTABLE_MARKED (B, C) = 0)
 
@@ -3438,6 +3449,15 @@ extern tree original_function_name;
 
 #define EXCEPTION_CLEANUP_NAME 	"exception cleanup"
 
+/* The name used as a prefix for VTTs.  When the new ABI mangling
+   scheme is implemented, this should be removed.  */
+
+#define VTT_NAME_PREFIX "__vtt_"
+
+/* The name used as a prefix for construction vtables.  */
+
+#define CTOR_VTBL_NAME_PREFIX "__ctorvt_"
+
 #define THIS_NAME_P(ID_NODE) (strcmp(IDENTIFIER_POINTER (ID_NODE), "this") == 0)
 
 #if !defined(NO_DOLLAR_IN_LABEL) || !defined(NO_DOT_IN_LABEL)
@@ -4187,6 +4207,7 @@ extern void emit_thunk				PARAMS ((tree));
 extern void synthesize_method			PARAMS ((tree));
 extern tree get_id_2				PARAMS ((const char *, tree));
 extern tree implicitly_declare_fn               PARAMS ((special_function_kind, tree, int));
+extern tree get_ctor_vtbl_name                  PARAMS ((tree, tree));
 
 /* In optimize.c */
 extern void optimize_function                   PARAMS ((tree));

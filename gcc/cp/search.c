@@ -1859,7 +1859,7 @@ dfs_walk_real (binfo, prefn, postfn, qfn, data)
 
   /* Process the basetypes.  */
   binfos = BINFO_BASETYPES (binfo);
-  n_baselinks = binfos ? TREE_VEC_LENGTH (binfos): 0;
+  n_baselinks = BINFO_N_BASETYPES (binfo);
   for (i = 0; i < n_baselinks; i++)
     {
       tree base_binfo = TREE_VEC_ELT (binfos, i);
@@ -2521,7 +2521,6 @@ init_vbase_pointers (type, decl_ptr)
       vi.inits = NULL_TREE;
 
       /* Build up a list of the initializers.  */
-      TREE_CHAIN (binfo) = decl_ptr;
       dfs_walk_real (binfo, 
 		     dfs_init_vbase_pointers, 0,
 		     unmarked_vtable_pathp,
