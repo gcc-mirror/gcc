@@ -8,6 +8,11 @@ Fri Nov 19 10:41:15 GMT 1999  Nathan Sidwell  <nathan@acm.org>
 	(invalidate_skipped_set): Call it unconditionally.
 	(cse_set_around_loop): Likewise.
 
+Thu Nov 18 17:29:34 MST 1999	Diego Novillo <dnovillo@cygnus.com>
+
+	* rtl.texi (mem): Add documentation for alias-set argument 
+	to RTX `mem'.
+
 Fri Nov 18 13:39:22 CET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* i386.h (struct_processor_costs): New fileds int_load, int_store,
