@@ -1,3 +1,8 @@
+2004-04-20  Eric Christopher  <echristo@redhat.com>
+
+	* cp/parser.c (cp_parser_declaration): Move translate
+	up before tokens are lexed.
+
 2004-04-20  Uros Bizjak  <uros@kss-loka.si>
 
 	* optabs.h (enum optab_index): Add new OTI_asin and OTI_acos.
@@ -31,7 +36,7 @@
 	* doc/invoke.texi (Optimize options): Move -frename-registers
 	to "Not triggered by any -O level" section.  Adjust commentary
 	accordingly.
-					
+
 2004-04-20  Anil Paranjpe   <anilp1@kpitcummins.com>
 
 	* toplev.c (compile_file): Move targetm.asm_out.file_end call to end.
