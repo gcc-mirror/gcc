@@ -292,3 +292,10 @@ void expand_builtin_set_return_addr_reg PROTO((tree));
 void expand_builtin_set_eh_regs		PROTO((tree, tree));
 rtx expand_builtin_dwarf_reg_size	PROTO((tree, rtx));
 #endif
+
+
+/* Checking whether 2 instructions are within the same exception region. */
+
+int in_same_eh_region                   PROTO((rtx, rtx));
+void free_insn_eh_region                PROTO((void));
+void init_insn_eh_region                PROTO((rtx, int));
