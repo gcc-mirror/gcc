@@ -68,7 +68,7 @@
                                           (le (minus (pc) (match_dup 0))
                                               (const_int 2045)))
                                      (const_int 2)
-                                     (const_int 2)))
+                                     (const_int 3)))
          (eq_attr "type" "branch1")
          (if_then_else (and (ge (minus (pc) (match_dup 0))
                                 (const_int -62))
@@ -80,7 +80,7 @@
                                           (le (minus (pc) (match_dup 0))
                                               (const_int 2043)))
                                      (const_int 3)
-                                     (const_int 3)))]
+                                     (const_int 4)))]
         (const_int 2)))
 
 (define_insn "*pop1"
