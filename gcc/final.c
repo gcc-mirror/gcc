@@ -2293,7 +2293,7 @@ output_addr_const (file, x)
       if (GET_MODE (x) == VOIDmode)
 	{
 	  /* We can use %d if the number is one word and positive.  */
-	  if (CONST_DOUBLE_HIGH (x) || CONST_DOUBLE_LOW (x) < 0)
+	  if (CONST_DOUBLE_HIGH (x))
 	    fprintf (file,
 #if HOST_BITS_PER_WIDE_INT == 64
 #if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
@@ -2309,6 +2309,14 @@ output_addr_const (file, x)
 #endif
 #endif
 		     CONST_DOUBLE_HIGH (x), CONST_DOUBLE_LOW (x));
+	  else if  (CONST_DOUBLE_LOW (x) < 0)
+	    fprintf (file,
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
+		     "0x%x",
+#else
+		     "0x%lx",
+#endif
+		     CONST_DOUBLE_LOW (x));
 	  else
 	    fprintf (file,
 #if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
