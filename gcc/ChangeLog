@@ -1,5 +1,19 @@
 2001-03-28  Richard Henderson  <rth@redhat.com>
 
+	* config/rs6000/rs6000.c (rs6000_stack_info): Allocate space
+	for eh_return data registers.
+	(rs6000_emit_prologue): Save eh_return data registers.
+	(rs6000_emit_epilogue): Force inline restores if eh_return.
+	Restore eh_return data registers.  Mind EH_RETURN_STACKADJ_RTX.
+	* config/rs6000/rs6000.h (rs6000_stack_t): Add ehrd_offset.
+	(EH_RETURN_DATA_REGNO, EH_RETURN_STACKADJ_RTX): New.
+	(EPILOGUE_USES): True for TOC_REGISTER if calls_eh_return and
+	the target uses one.
+	* config/rs6000/rs6000.md (eh_epilogue, eh_reg_restore): Remove.
+	(return_eh_si, return_eh_di): Remove.
+	(eh_return): New, from corpse of eh_epilogue.
+	(eh_set_lr_si, eh_set_lr_di): New.
+
 	* config/i386/i386.c (general_no_elim_operand): Disallow virtual regs.
 	(ix86_save_reg): If maybe_eh_return, true for EH_RETURN_DATA_REGNOs.
 	True for pic register if current_function_calls_eh_return.
