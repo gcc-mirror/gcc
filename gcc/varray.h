@@ -47,7 +47,7 @@ struct const_equiv_data {
      pseudos that contain pointers into the replacement area allocated for
      this inline instance.  These pseudos are then marked as being equivalent
      to the appropriate address and substituted if valid.  */
-  rtx rtx;
+  struct rtx_def *rtx;
 
   /* Record the valid age for each entry.  The entry is invalid if its
      age is less than const_age.  */

@@ -25,6 +25,7 @@
 #include "ggc.h"
 #include "flags.h"
 #include "varray.h"
+#include "hash.h"
 
 /* Debugging flags.  */
 #undef GGC_DUMP
@@ -98,6 +99,9 @@ static void ggc_free_tree PROTO ((struct ggc_tree *t));
 static void ggc_mark_rtx_ptr PROTO ((void *elt));
 static void ggc_mark_tree_ptr PROTO ((void *elt));
 static void ggc_mark_tree_varray_ptr PROTO ((void *elt));
+static void ggc_mark_tree_hash_table_ptr PROTO ((void *elt));
+static boolean ggc_mark_tree_hash_table_entry PROTO ((struct hash_entry *,
+						      hash_table_key));
 
 /* These allocators are dreadfully simple, with no caching whatsoever so
    that Purify-like tools that do allocation versioning can catch errors.
@@ -486,6 +490,26 @@ ggc_mark_tree_varray (v)
     ggc_mark_tree (VARRAY_TREE (v, i));
 }
 
+/* Mark the hash table-entry HE.  It's key field is really a tree.  */
+
+static boolean
+ggc_mark_tree_hash_table_entry (he, k)
+     struct hash_entry *he;
+     hash_table_key k ATTRIBUTE_UNUSED;
+{
+  ggc_mark_tree ((tree) he->key);
+  return true;
+}
+
+/* Mark all the elements of the hash-table H, which contains trees.  */
+
+void
+ggc_mark_tree_hash_table (ht)
+     struct hash_table *ht;
+{
+  hash_traverse (ht, ggc_mark_tree_hash_table_entry, /*info=*/0);
+}
+
 void
 ggc_mark_string (s)
      char *s;
@@ -659,7 +683,7 @@ ggc_add_tree_root (base, nelt)
   ggc_add_root (base, nelt, sizeof(tree), ggc_mark_tree_ptr);
 }
 
-/* Add vV (a varray full of trees) to the list of GC roots.  */
+/* Add V (a varray full of trees) to the list of GC roots.  */
 
 void
 ggc_add_tree_varray_root (base, nelt)
@@ -668,6 +692,18 @@ ggc_add_tree_varray_root (base, nelt)
 {
   ggc_add_root (base, nelt, sizeof (varray_type), 
 		ggc_mark_tree_varray_ptr);
+}
+
+/* Add HT (a hash-table where ever key is a tree) to the list of GC
+   roots.  */
+
+void
+ggc_add_tree_hash_table_root (base, nelt)
+     struct hash_table **base;
+     int nelt;
+{
+  ggc_add_root (base, nelt, sizeof (struct hash_table *), 
+		ggc_mark_tree_hash_table_ptr);
 }
 
 void
@@ -714,6 +750,17 @@ ggc_mark_tree_varray_ptr (elt)
      void *elt;
 {
   ggc_mark_tree_varray (*(varray_type *)elt);
+}
+
+/* Type-correct function to pass to ggc_add_root.  It just forwards
+   ELT (which is really a struct hash_table **) to
+   ggc_mark_tree_hash_table.  */
+
+static void
+ggc_mark_tree_hash_table_ptr (elt)
+     void *elt;
+{
+  ggc_mark_tree_hash_table (*(struct hash_table **) elt);
 }
 
 #ifdef GGC_DUMP

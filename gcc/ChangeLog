@@ -1,3 +1,22 @@
+Sun Sep  5 18:57:42 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (ggc-simple.o): Depend on hash.h.
+	* ggc.h (ggc_add_tree_hash_table_root): Declare.
+	(ggc_mark_tree_varray): Likewise.
+	(ggc_mark_tree_hash_table): Likewise.
+	* ggc-simple.c: Include hash.h.
+	(ggc_mark_tree_hash_table_ptr): New function.
+	(ggc_mark_tree_hash_table_entry): Likewise.
+	(ggc_mark_tree_hash_table): Likewise.
+	(ggc_add_tree_hash_table_root): Likewise.
+	* varray.h (const_equiv_data): Use struct rtx_def *, rather than
+	rtx, when defining fields.
+	
+Sun Sep  5 18:57:42 1999  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
+
+	* profile.c (output_func_start_profiler): Remove apparently
+	nonsensical call to start_sequence.
+	
 Sun Sep  5 17:34:33 1999  Richard Henderson  <rth@cygnus.com>
 
 	* clipper/clipper.c (clipper_va_start): Fix typos.
@@ -48,7 +67,7 @@ Sun Sep  5 00:35:17 1999  Richard Henderson  <rth@cygnus.com>
 	(simplify_cond): Likewise.
 	(simplify_text_exp): Likewise.
 	(optimize_attrs): Likewise.
-	* gengentrtl.c (gendef): Use ggc_alloc_rtx to allocate RTL, when
+	* gengenrtl.c (gendef): Use ggc_alloc_rtx to allocate RTL, when
 	GC'ing.
 	(gencode): Generate a #include for ggc.h.
 	* ggc-callbacks.c (ggc_p): Define it to zero.

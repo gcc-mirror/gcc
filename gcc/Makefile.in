@@ -1433,7 +1433,7 @@ dumpvers: dumpvers.c
 version.o: version.c
 
 ggc-simple.o: ggc-simple.c $(CONFIG_H) $(RTL_BASE_H) $(TREE_H) flags.h \
-	ggc.h varray.h
+	ggc.h varray.h hash.h
 
 ggc-none.o: ggc-none.c $(CONFIG_H) $(RTL_BASE_H) ggc.h
 
