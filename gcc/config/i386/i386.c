@@ -9973,6 +9973,26 @@ ix86_split_long_move (rtx operands[])
   return;
 }
 
+/* Helper function of ix86_split_ashldi used to generate an SImode
+   left shift by a constant, either using a single shift or
+   a sequence of add instructions.  */
+
+static void
+ix86_expand_ashlsi3_const (rtx operand, int count)
+{
+  if (count == 1)
+    emit_insn (gen_addsi3 (operand, operand, operand));
+  else if (!optimize_size
+	   && count * ix86_cost->add <= ix86_cost->shift_const)
+    {
+      int i;
+      for (i=0; i<count; i++)
+	emit_insn (gen_addsi3 (operand, operand, operand));
+    }
+  else
+    emit_insn (gen_ashlsi3 (operand, operand, GEN_INT (count)));
+}
+
 void
 ix86_split_ashldi (rtx *operands, rtx scratch)
 {
@@ -9990,14 +10010,14 @@ ix86_split_ashldi (rtx *operands, rtx scratch)
 	  emit_move_insn (low[0], const0_rtx);
 
 	  if (count > 32)
-	    emit_insn (gen_ashlsi3 (high[0], high[0], GEN_INT (count - 32)));
+	    ix86_expand_ashlsi3_const (high[0], count - 32);
 	}
       else
 	{
 	  if (!rtx_equal_p (operands[0], operands[1]))
 	    emit_move_insn (operands[0], operands[1]);
 	  emit_insn (gen_x86_shld_1 (high[0], low[0], GEN_INT (count)));
-	  emit_insn (gen_ashlsi3 (low[0], low[0], GEN_INT (count)));
+	  ix86_expand_ashlsi3_const (low[0], count);
 	}
     }
   else
