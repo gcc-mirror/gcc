@@ -1,3 +1,9 @@
+Mon Jun 14 12:57:38 1999  David Mosberger  <davidm@hpl.hp.com>
+
+        * combine.c (simplify_logical, case AND): Only call
+        simplify_and_const_int if the mode is no wider than HOST_WIDE_INT
+	or the constant is positive.
+
 Mon Jun 14 11:43:41 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* configure.in: Fix typo in rs6000-ibm-aix4 case.
