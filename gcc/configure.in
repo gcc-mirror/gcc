@@ -1482,15 +1482,10 @@ fi
 # Expand extra_headers to include complete path.
 # This substitutes for lots of t-* files.
 extra_headers_list=
-if test "x$extra_headers" = x
-then true
-else
-	# Prepend ${srcdir}/config/${cpu_type}/ to every entry in extra_headers.
-	for file in $extra_headers;
-	do
-		extra_headers_list="${extra_headers_list} \$(srcdir)/config/${cpu_type}/${file}"
-	done
-fi
+# Prepend $(srcdir)/config/${cpu_type}/ to every entry in extra_headers.
+for file in ${extra_headers} ; do
+  extra_headers_list="${extra_headers_list} \$(srcdir)/config/${cpu_type}/${file}"
+done
 
 # Add a definition of USE_COLLECT2 if system wants one.
 case $use_collect2 in
