@@ -1124,22 +1124,7 @@ use of the particular value given by @code{DECL_INITIAL}.
 The @code{DECL_SAVED_TREE} macro will give the complete body of the
 function.  This node will usually be a @code{COMPOUND_STMT} representing
 the outermost block of the function, but it may also be a
-@code{TRY_BLOCK} or a @code{RETURN_INIT}.
-
-If the function has a function try-block, the @code{DECL_SAVED_TREE}
-will be a @code{TRY_BLOCK}.  The @code{TRY_STMTS} will then be either a
-@code{RETURN_INIT}, or a @code{COMPOUND_STMT}.
-
-If the function uses the G++ ``named return value'' extension, meaning
-that the function has been defined like:
-@example
-S f(int) return s @{...@}
-@end example
-the @code{DECL_SAVED_TREE} will be a @code{RETURN_INIT}.  The
-@code{TREE_CHAIN} of the @code{RETURN_INIT} will be the
-@code{COMPOUND_STMT} representing the body of the function.  There is
-never a named returned value for a constructor.  FIXME: Document how the
-@code{RETURN_INIT} can be used.
+@code{TRY_BLOCK}, a @code{RETURN_INIT}, or any other valid statement.
 
 @subsection Statements
 
@@ -1342,6 +1327,22 @@ Used to represent a label.  The @code{LABEL_DECL} declared by this
 statement can be obtained with the @code{LABEL_STMT_LABEL} macro.  The
 @code{IDENTIFIER_NODE} giving the name of the label can be obtained from
 the @code{LABEL_DECL} with @code{DECL_NAME}.
+
+@item RETURN_INIT
+
+If the function uses the G++ ``named return value'' extension, meaning
+that the function has been defined like:
+@example
+S f(int) return s @{...@}
+@end example
+then there will be a @code{RETURN_INIT}.  There is never a named
+returned value for a constructor.  The first argument to the
+@code{RETURN_INIT} is the name of the object returned; the second
+argument is the initializer for the object.  The object is initialized
+when the @code{RETURN_INIT} is encountered.  The object referred to is
+the actual object returned; this extension is a manual way of doing the
+``return-value optimization.''  Therefore, the object must actually be
+constructed in the place where the object will be returned.
 
 @item RETURN_STMT
 
