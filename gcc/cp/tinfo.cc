@@ -40,8 +40,8 @@ std::type_info::
 { }
 
 // We can't rely on common symbols being shared between shared objects.
-bool type_info::
-operator== (const type_info& arg) const
+bool std::type_info::
+operator== (const std::type_info& arg) const
 {
   return (&arg == this) || (strcmp (name (), arg.name ()) == 0);
 }

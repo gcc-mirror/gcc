@@ -1,3 +1,7 @@
+1999-05-02  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* tinfo.cc (operator==): Qualify type_info with std::.
+
 1999-05-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (lang_decl_flags): Remove comdat.  Updated dummy.
