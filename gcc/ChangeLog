@@ -1,3 +1,8 @@
+1999-03-15  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* fixinc/Makefile.in (procopen.o): List the actual
+	dependencies.
+
 Sun Mar 14 16:22:10 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cse.c (check_fold_consts): New static function.
