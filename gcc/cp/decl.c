@@ -5492,9 +5492,8 @@ make_typename_type (tree context, tree name, tsubst_flags_t complain)
       error ("`%D' used without template parameters", name);
       return error_mark_node;
     }
-  if (TREE_CODE (name) != IDENTIFIER_NODE)
-    abort ();
-
+  my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 20030802);
+  
   if (TREE_CODE (context) == NAMESPACE_DECL)
     {
       /* We can get here from typename_sub0 in the explicit_template_type
