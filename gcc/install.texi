@@ -176,6 +176,16 @@ point unit.  These systems include @samp{m68k-sun-sunos@var{n}} and
 effect, though perhaps there are other systems where it could usefully
 make a difference.
 
+@cindex Haifa scheduler
+@cindex scheduler, experimental
+@item --enable-haifa
+@item --disable-haifa
+Use @samp{--enable-haifa} to enable use of an experimental instruction
+scheduler (from IBM Haifa).  This may or may not produce better code.
+Some targets on which it is known to be a win enable it by default; use
+@samp{--disable-haifa} to disable it in these cases.  @code{configure}
+will print out whether the Haifa scheduler is enabled when it is run.
+
 @cindex Objective C threads
 @cindex threads, Objective C
 @item --enable-objcthreads=@var{type}
