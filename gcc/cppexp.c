@@ -1,5 +1,5 @@
 /* Parse C expressions for CCCP.
-   Copyright (C) 1987, 1992, 1994, 1995 Free Software Foundation.
+   Copyright (C) 1987, 1992, 1994, 1995, 1997 Free Software Foundation.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -238,10 +238,10 @@ parse_number (pfile, start, olen)
     }
 
   if (base <= largest_digit)
-    cpp_warning (pfile, "integer constant contains digits beyond the radix");
+    cpp_pedwarn (pfile, "integer constant contains digits beyond the radix");
 
   if (overflow)
-    cpp_warning (pfile, "integer constant out of range");
+    cpp_pedwarn (pfile, "integer constant out of range");
 
   /* If too big to be signed, consider it unsigned.  */
   if ((long) n < 0 && ! op.unsignedp)
@@ -429,7 +429,7 @@ cpp_lex (pfile)
 		  if (mbtowc (& wc, token_buffer, num_chars) == num_chars)
 		    result = wc;
 		  else
-		    cpp_warning (pfile,"Ignoring invalid multibyte character");
+		    cpp_pedwarn (pfile,"Ignoring invalid multibyte character");
 	        }
 #endif
 	      op.value = result;
@@ -542,7 +542,7 @@ cpp_parse_escape (pfile, string_ptr)
 	if ((i & ~((1 << MAX_CHAR_TYPE_SIZE) - 1)) != 0)
 	  {
 	    i &= (1 << MAX_CHAR_TYPE_SIZE) - 1;
-	    cpp_warning (pfile,
+	    cpp_pedwarn (pfile,
 			  "octal character constant does not fit in a byte");
 	  }
 	return i;
@@ -573,7 +573,7 @@ cpp_parse_escape (pfile, string_ptr)
 	if (overflow | (i & ~((1 << BITS_PER_UNIT) - 1)))
 	  {
 	    i &= (1 << BITS_PER_UNIT) - 1;
-	    cpp_warning (pfile,
+	    cpp_pedwarn (pfile,
 			 "hex character constant does not fit in a byte");
 	  }
 	return i;
