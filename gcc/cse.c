@@ -648,6 +648,8 @@ static void cse_check_loop_start PROTO((rtx, rtx));
 static void cse_set_around_loop	PROTO((rtx, rtx, rtx));
 static rtx cse_basic_block	PROTO((rtx, rtx, struct branch_path *, int));
 static void count_reg_usage	PROTO((rtx, int *, rtx, int));
+
+extern int rtx_equal_function_value_matters;
 
 /* Return an estimate of the cost of computing rtx X.
    One use is in cse, to decide which expression to keep in the hash table.
@@ -3685,9 +3687,11 @@ simplify_binary_operation (code, mode, op0, op1)
 	  if (op1 == CONST1_RTX (mode))
 	    return op0;
 
-	  /* Convert multiply by constant power of two into shift.  */
+	  /* Convert multiply by constant power of two into shift unless
+	     we are still generating RTL.  This test is a kludge.  */
 	  if (GET_CODE (op1) == CONST_INT
-	      && (val = exact_log2 (INTVAL (op1))) >= 0)
+	      && (val = exact_log2 (INTVAL (op1))) >= 0
+	      && ! rtx_equal_function_value_matters)
 	    return gen_rtx (ASHIFT, mode, op0, GEN_INT (val));
 
 	  if (GET_CODE (op1) == CONST_DOUBLE
