@@ -1316,6 +1316,9 @@ duplicate_decls (newdecl, olddecl)
   tree newtype = TREE_TYPE (newdecl);
   char *errmsg = 0;
 
+  if (TREE_CODE_CLASS (TREE_CODE (olddecl)) == 'd')
+    DECL_MACHINE_ATTRIBUTES (newdecl) = DECL_MACHINE_ATTRIBUTES (olddecl);
+
   if (TREE_CODE (newtype) == ERROR_MARK
       || TREE_CODE (oldtype) == ERROR_MARK)
     types_match = 0;
@@ -1563,6 +1566,18 @@ duplicate_decls (newdecl, olddecl)
 			     && current_binding_level == global_binding_level)
 			    ? "`%s' previously defined here"
 			    : "`%s' previously declared here"));
+	}
+      else if (TREE_CODE (newdecl) == TYPE_DECL
+               && (DECL_IN_SYSTEM_HEADER (olddecl) 
+                   || DECL_IN_SYSTEM_HEADER (newdecl)))
+	{
+	  warning_with_decl (newdecl, "redefinition of `%s'");
+	  warning_with_decl 
+	    (olddecl,
+	     ((DECL_INITIAL (olddecl)
+	       && current_binding_level == global_binding_level)
+	      ? "`%s' previously defined here"
+	      : "`%s' previously declared here"));
 	}
       else if (TREE_CODE (olddecl) == FUNCTION_DECL
 	       && DECL_INITIAL (olddecl) != 0
@@ -2363,6 +2378,8 @@ redeclaration_error_message (newdecl, olddecl)
   if (TREE_CODE (newdecl) == TYPE_DECL)
     {
       if (flag_traditional && TREE_TYPE (newdecl) == TREE_TYPE (olddecl))
+	return 0;
+      if (DECL_IN_SYSTEM_HEADER (olddecl) || DECL_IN_SYSTEM_HEADER (newdecl))
 	return 0;
       return "redefinition of `%s'";
     }
@@ -4010,6 +4027,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
   enum tree_code innermost_code = ERROR_MARK;
   int bitfield = 0;
   int size_varies = 0;
+  tree decl_machine_attr = NULL_TREE;
 
   if (decl_context == BITFIELD)
     bitfield = 1, decl_context = FIELD;
@@ -4119,6 +4137,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
       else if (TREE_CODE (id) == TYPE_DECL)
 	{
 	  type = TREE_TYPE (id);
+          decl_machine_attr = DECL_MACHINE_ATTRIBUTES (id);
 	  typedef_decl = id;
 	}
       /* Built-in types come as identifiers.  */
@@ -4853,6 +4872,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  end_temporary_allocation ();
 
 	decl = build_decl (FUNCTION_DECL, declarator, type);
+	decl = build_decl_attribute_variant (decl, decl_machine_attr);
 
 	if (pedantic && (constp || volatilep)
 	    && ! DECL_IN_SYSTEM_HEADER (decl))
