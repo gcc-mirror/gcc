@@ -223,6 +223,11 @@ SYM (__\name):
 .endm
 #endif
 
+.macro	FUNC_ALIAS new old
+	.globl	SYM (__\new)
+	EQUIV	SYM (__\new), SYM (__\old)
+.endm
+
 .macro	ARM_FUNC_ALIAS new old
 	.globl	SYM (__\new)
 	EQUIV	SYM (__\new), SYM (__\old)
@@ -885,8 +890,8 @@ LSYM(Lover12):
 #ifdef L_dvmd_tls
 
 	FUNC_START div0
-	ARM_FUNC_ALIAS aeabi_idiv0 div0
-	ARM_FUNC_ALIAS aeabi_ldiv0 div0
+	FUNC_ALIAS aeabi_idiv0 div0
+	FUNC_ALIAS aeabi_ldiv0 div0
 
 	RET
 
@@ -939,7 +944,7 @@ LSYM(Lover12):
 #ifdef L_lshrdi3
 
 	FUNC_START lshrdi3
-	ARM_FUNC_ALIAS aeabi_llsr lshrdi3
+	FUNC_ALIAS aeabi_llsr lshrdi3
 	
 #ifdef __thumb__
 	lsr	al, r2
@@ -971,7 +976,7 @@ LSYM(Lover12):
 #ifdef L_ashrdi3
 	
 	FUNC_START ashrdi3
-	ARM_FUNC_ALIAS aeabi_lasr ashrdi3
+	FUNC_ALIAS aeabi_lasr ashrdi3
 	
 #ifdef __thumb__
 	lsr	al, r2
@@ -1008,7 +1013,7 @@ LSYM(Lover12):
 #ifdef L_ashldi3
 
 	FUNC_START ashldi3
-	ARM_FUNC_ALIAS aeabi_llsl ashldi3
+	FUNC_ALIAS aeabi_llsl ashldi3
 	
 #ifdef __thumb__
 	lsl	ah, r2
