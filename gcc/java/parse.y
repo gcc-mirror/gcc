@@ -8558,6 +8558,7 @@ fix_constructors (mdecl)
   else 
     {
       int found = 0;
+      int invokes_this = 0;
       tree found_call = NULL_TREE;
       tree main_block = BLOCK_EXPR_BODY (body);
       tree ii;			/* Instance Initializer */
@@ -8567,6 +8568,8 @@ fix_constructors (mdecl)
 	  {
 	  case CALL_EXPR:
 	    found = CALL_EXPLICIT_CONSTRUCTOR_P (body);
+	    if (CALL_THIS_CONSTRUCTOR_P (body))
+	      invokes_this = 1;
 	    body = NULL_TREE;
 	    break;
 	  case COMPOUND_EXPR:
@@ -8601,7 +8604,7 @@ fix_constructors (mdecl)
 	}
       
       /* Insert the instance initializer block right after. */
-      if ((ii = build_instance_initializer (mdecl)))
+      if (!invokes_this && (ii = build_instance_initializer (mdecl)))
 	compound = add_stmt_to_compound (compound, NULL_TREE, ii);
 
       /* Fix the constructor main block if we're adding extra stmts */
