@@ -347,17 +347,10 @@ flow_analysis (f, nregs, file)
 	    || (GET_RTX_CLASS (code) == 'i'
 		&& (prev_code == JUMP_INSN
 		    || (prev_code == CALL_INSN
-			&& nonlocal_label_list != 0
-			/* Ignore a CLOBBER after a CALL_INSN here.  */
-			&& ! (code == INSN
-			      && GET_CODE (PATTERN (insn)) == CLOBBER))
+			&& nonlocal_label_list != 0)
 		    || prev_code == BARRIER)))
 	  i++;
-	if (code != NOTE
-	    /* Skip a CLOBBER after a CALL_INSN.  See similar code in
-	       find_basic_blocks.  */
-	    && ! (prev_code == CALL_INSN
-		  && code == INSN && GET_CODE (PATTERN (insn)) == CLOBBER))
+	if (code != NOTE)
 	  prev_code = code;
       }
   }
@@ -443,11 +436,7 @@ find_basic_blocks (f, nonlocal_label_list)
 	       || (GET_RTX_CLASS (code) == 'i'
 		   && (prev_code == JUMP_INSN
 		       || (prev_code == CALL_INSN
-			   && nonlocal_label_list != 0
-			   /* Ignore if CLOBBER since we consider this
-			      part of the CALL.  See below.  */
-			   && ! (code == INSN
-				 && GET_CODE (PATTERN (insn)) == CLOBBER))
+			   && nonlocal_label_list != 0)
 		       || prev_code == BARRIER)))
 	{
 	  basic_block_head[++i] = insn;
@@ -481,13 +470,7 @@ find_basic_blocks (f, nonlocal_label_list)
 
       BLOCK_NUM (insn) = i;
 
-      /* Don't separate a CALL_INSN from following CLOBBER insns.  This is a
-	 kludge that will go away when each CALL_INSN records its USE and
-	 CLOBBERs.  */
-
-      if (code != NOTE
-	  && ! (prev_code == CALL_INSN && code == INSN
-		&& GET_CODE (PATTERN (insn)) == CLOBBER))
+      if (code != NOTE)
 	prev_code = code;
     }
 
@@ -1493,6 +1476,15 @@ propagate_block (old, first, last, final, significant, bnum)
 	      if (! insn_is_dead && GET_CODE (insn) == CALL_INSN)
 		{
 		  register int i;
+
+		  rtx note;
+
+	          for (note = CALL_INSN_FUNCTION_USAGE (insn);
+		       note;
+		       note = XEXP (note, 1))
+		    if (GET_CODE (XEXP (note, 0)) == USE)
+		      mark_used_regs (old, live, SET_DEST (XEXP (note, 0)),
+				      final, insn);
 
 		  /* Each call clobbers all call-clobbered regs that are not
 		     global.  Note that the function-value reg is a
