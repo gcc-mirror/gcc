@@ -3,7 +3,7 @@
    Copyright (C) 1988, 1989, 1990, 1991 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@mcc.com)
    Enhanced by Michael Meissner (meissner@osf.org)
-   Currently supported by Tom Wood (wood@dg-rtp.dg.com)
+   Version 2 port by Tom Wood (Tom_Wood@NeXT.com)
 
 This file is part of GNU CC.
 
@@ -215,9 +215,9 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"10/21/92"
+#define VERSION_INFO2	"12/16/92"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	2.2.14.1 10/21/92 23:03:03"
+#define	TM_SCCS_ID	"@(#)m88k.h	2.3.3.2 12/16/92 08:26:09"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -343,7 +343,7 @@ extern char * reg_names[];
 	  reg_names[i]--;						     \
 	m88k_pound_sign = "#";						     \
 	if (m88k_version == 0)						     \
-	  m88k_version = "03.00";		        		     \
+	  m88k_version = VERSION_0400_SYNTAX ? "04.00" : "03.00";	     \
 	else if (strcmp (m88k_version, "03.00") < 0)			     \
 	  error ("Specified assembler version (%s) is less that 03.00",	     \
 		 m88k_version);						     \
@@ -1665,6 +1665,9 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 /* Which assembler syntax.  Redefined in m88kdgux.h.  */
 #define VERSION_0300_SYNTAX TARGET_SVR4
 
+/* At some point, m88kv4.h will redefine this.  */
+#define VERSION_0400_SYNTAX 0
+
 /* Allow pseudo-ops to be overridden.  Override these in svr[34].h.  */
 #undef	INT_ASM_OP
 #undef	ASCII_DATA_ASM_OP
@@ -1739,6 +1742,9 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define UNALIGNED_INT_ASM_OP	"uaword"
 #define PUSHSECTION_ASM_OP	"section"
 #define POPSECTION_ASM_OP	"previous"
+
+/* These are specific to the version 04.00 assembler syntax.  */
+#define REQUIRES_88110_ASM_OP	"requires_88110"
 
 /* Output any initial stuff to the assembly file.  Always put out
    a file directive, even if not debugging.
