@@ -139,7 +139,7 @@ java::lang::Class::_getConstructors (jboolean declared)
     {
       _Jv_Method *method = &methods[i];
       if (method->name == NULL
-	  && ! _Jv_equalUtf8Consts (method->name, init_name))
+	  || ! _Jv_equalUtf8Consts (method->name, init_name))
 	continue;
       if (! declared
 	  && ! java::lang::reflect::Modifier::isPublic(method->accflags))
@@ -154,7 +154,7 @@ java::lang::Class::_getConstructors (jboolean declared)
     {
       _Jv_Method *method = &methods[i];
       if (method->name == NULL
-	  && ! _Jv_equalUtf8Consts (method->name, init_name))
+	  || ! _Jv_equalUtf8Consts (method->name, init_name))
 	continue;
       if (! declared
 	  && ! java::lang::reflect::Modifier::isPublic(method->accflags))
@@ -473,7 +473,7 @@ java::lang::Class::getMethod (jstring name, JArray<jclass> *param_types)
 	      using namespace java::lang::reflect;
 
 	      // Method must be public.
-	      if (! Modifier::isPublic (methods[i].accflags))
+	      if (! Modifier::isPublic (klass->methods[i].accflags))
 		break;
 
 	      Method *rmethod = new Method ();
