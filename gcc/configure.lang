@@ -24,7 +24,7 @@
 
 savesrcdir=$srcdir
 
-for subdir in . $subdirs
+for subdir in . $oldstyle_subdirs
 do
 	# We only want to do this in language subdirs, but we have to handle
 	# the case of $subdirs = "".
