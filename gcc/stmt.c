@@ -3463,9 +3463,12 @@ expand_decl (decl)
 			  NULL_RTX, VOIDmode, 0);
       free_temp_slots ();
 
-      /* Allocate space on the stack for the variable.  */
+      /* Allocate space on the stack for the variable.  Note that
+	 DECL_ALIGN says how the variable is to be aligned and we 
+	 cannot use it to conclude anything about the alignment of
+	 the size.  */
       address = allocate_dynamic_stack_space (size, NULL_RTX,
-					      DECL_ALIGN (decl));
+					      TYPE_ALIGN (TREE_TYPE (decl)));
 
       /* Reference the variable indirect through that rtx.  */
       DECL_RTL (decl) = gen_rtx (MEM, DECL_MODE (decl), address);
