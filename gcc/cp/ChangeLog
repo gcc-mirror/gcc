@@ -1,3 +1,16 @@
+2001-09-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (duplicate_decls): Remove code deadling with
+	DECL_SAVED_INSNS.
+	* decl2.c (finish_file): Likewise.
+	* pt.c (instantiate_decl): Likewise.
+	* semantics.c (expand_body): Don't defer local functions if
+	they wouldn't be deferred for some other reason.  Don't
+	generate RTL for functions that will not be emitted.
+	(genrtl_start_function): Remove code deadling with
+	DECL_SAVED_INSNS.
+	(genrtl_finish_function): Likewise.
+
 2001-09-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/4203
