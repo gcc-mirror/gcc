@@ -36,6 +36,9 @@
 /* Changed by Jim Wilson:
    September 1993, Use #undef before HUGE_VAL instead of #ifdef/#endif.  */
 
+/* Changed by Ian Lance Taylor:
+   September 1994, use extern inline instead of static inline.  */
+
 #ifndef __math_68881
 #define __math_68881
 
