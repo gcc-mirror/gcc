@@ -315,7 +315,9 @@ proc dg-require-dll { args } {
 # Like check_conditional_xfail, but callable from a dg test.
 
 proc dg-xfail-if { args } {
-    eval check_conditional_xfail $args
+    set args [lreplace $args 0 0]
+    global compiler_conditional_xfail_data
+    set compiler_conditional_xfail_data $args
 }
 
 
