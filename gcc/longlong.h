@@ -150,24 +150,25 @@
 	     "r" ((USItype)(al)),					\
 	     "rI" ((USItype)(bl)))
 #define umul_ppmm(xh, xl, a, b) \
+{register USItype __t0, __t1, __t2;					\
   __asm__ ("%@ Inlined umul_ppmm
-	mov	%|r0, %2, lsr #16
-	mov	%|r2, %3, lsr #16
-	bic	%|r1, %2, %|r0, lsl #16
-	bic	%|r2, %3, %|r2, lsl #16
-	mul	%1, %|r1, %|r2
-	mul	%|r2, %|r0, %|r2
-	mul	%|r1, %0, %|r1
-	mul	%0, %|r0, %0
-	adds	%|r1, %|r2, %|r1
+	mov	%2, %5, lsr #16
+	mov	%0, %6, lsr #16
+	bic	%3, %5, %2, lsl #16
+	bic	%4, %6, %0, lsl #16
+	mul	%1, %3, %4
+	mul	%4, %2, %4
+	mul	%3, %0, %3
+	mul	%0, %2, %0
+	adds	%3, %4, %3
 	addcs	%0, %0, #65536
-	adds	%1, %1, %|r1, lsl #16
-	adc	%0, %0, %|r1, lsr #16"					\
+	adds	%1, %1, %3, lsl #16
+	adc	%0, %0, %3, lsr #16"					\
 	   : "=&r" ((USItype)(xh)),					\
-	     "=r" ((USItype)(xl))					\
+	     "=r" ((USItype)(xl)),					\
+	     "=&r" (__t0), "=&r" (__t1), "=r" (__t2)			\
 	   : "r" ((USItype)(a)),					\
-	     "r" ((USItype)(b))						\
-	   : "r0", "r1", "r2")
+	     "r" ((USItype)(b)));}
 #define UMUL_TIME 20
 #define UDIV_TIME 100
 #endif /* __arm__ */
