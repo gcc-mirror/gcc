@@ -156,7 +156,6 @@ static rtx get_push_address	PROTO ((int));
 static rtx enqueue_insn		PROTO((rtx, rtx));
 static int queued_subexp_p	PROTO((rtx));
 static void init_queue		PROTO((void));
-static void move_by_pieces	PROTO((rtx, rtx, int, int));
 static int move_by_pieces_ninsns PROTO((unsigned int, int));
 static void move_by_pieces_1	PROTO((rtx (*) (rtx, ...), enum machine_mode,
 				       struct move_by_pieces *));
@@ -1394,7 +1393,7 @@ convert_modes (mode, oldmode, x, unsignedp)
     through protect_from_queue before calling.
    ALIGN (in bytes) is maximum alignment we can assume.  */
 
-static void
+void
 move_by_pieces (to, from, len, align)
      rtx to, from;
      int len, align;

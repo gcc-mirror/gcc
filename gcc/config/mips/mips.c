@@ -3113,6 +3113,10 @@ expand_block_move (operands)
   if (TARGET_MEMCPY)
     block_move_call (dest_reg, src_reg, bytes_rtx);
 
+  else if (constp && bytes <= 2 * MAX_MOVE_BYTES
+	   && align == UNITS_PER_WORD)
+    move_by_pieces (orig_dest, orig_src, bytes, align);
+	
   else if (constp && bytes <= 2 * MAX_MOVE_BYTES)
     emit_insn (gen_movstrsi_internal (change_address (orig_dest, BLKmode,
 						      dest_reg),
