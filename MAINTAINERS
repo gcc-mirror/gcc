@@ -61,6 +61,8 @@ gcse.c 			Jeff Law		law@cygnus.com
 global opt framework	Jeff Law		law@cygnus.com
 jump.c			David S. Miller		davem@dm.cobaltmicro.com
 
+Note individuals who maintain parts of the compiler need approval to check
+in changes outside of the parts of the compiler they maintain.
 			
 
 			Write After Approval
