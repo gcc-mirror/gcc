@@ -4883,7 +4883,8 @@ get_parm_info (void_at_end)
 	tree type = TREE_TYPE (decl);
 	DECL_ARG_TYPE (decl) = type;
 #ifdef PROMOTE_PROTOTYPES
-	if (TREE_CODE (type) == INTEGER_TYPE
+	if ((TREE_CODE (type) == INTEGER_TYPE
+	     || TREE_CODE (type) == ENUMERAL_TYPE)
 	    && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
 	  DECL_ARG_TYPE (decl) = integer_type_node;
 #endif
@@ -6094,7 +6095,8 @@ store_parm_decls ()
 			 useful for argument types like uid_t.  */
 		      DECL_ARG_TYPE (parm) = TREE_TYPE (parm);
 #ifdef PROMOTE_PROTOTYPES
-		      if (TREE_CODE (TREE_TYPE (parm)) == INTEGER_TYPE
+		      if ((TREE_CODE (TREE_TYPE (parm)) == INTEGER_TYPE
+			   || TREE_CODE (TREE_TYPE (parm)) == ENUMERAL_TYPE)
 			  && TYPE_PRECISION (TREE_TYPE (parm))
 			  < TYPE_PRECISION (integer_type_node))
 			DECL_ARG_TYPE (parm) = integer_type_node;
