@@ -125,11 +125,11 @@ case "${host}" in
   m68k-hp-hpux*)
     # Avoid "too much defining" errors from HPUX compiler.
     tentative_cc="cc -Wp,-H256000"
-    host_makefile_frag="${host_makefile_frag} config/mh-hp300"
+    host_makefile_frag="config/mh-hp300"
     ;;
   m68k-apollo-sysv*)
     tentative_cc="cc -A ansi -A runtype,any -A systype,any -U__STDC__ -DUSG"
-    host_makefile_frag="${host_makefile_frag} config/mh-apollo68"
+    host_makefile_frag="config/mh-apollo68"
     ;;
   m68k-apollo-bsd*)
     #None of the Apollo compilers can compile gas or binutils.  The preprocessor
@@ -139,34 +139,34 @@ case "${host}" in
     # or whatever), but I'm not sure leaving CC as cc is any better...
     #CC=cc -A ansi -A runtype,any -A systype,any -U__STDC__ -DNO_STDARG
     tentative_cc=gcc
-    host_makefile_frag="${host_makefile_frag} config/mh-a68bsd"
+    host_makefile_frag="config/mh-a68bsd"
     ;;
   m88k-dg-dgux*)
     tentative_cc="gcc -Wall -ansi -D__using_DGUX"
-    host_makefile_frag="${host_makefile_frag} config/mh-dgux"
+    host_makefile_frag="config/mh-dgux"
     ;;
   m88k-harris-cxux*)
     # Under CX/UX, we want to tell the compiler to use ANSI mode.
     tentative_cc="cc -Xa"
-    host_makefile_frag="${host_makefile_frag} config/mh-cxux"
+    host_makefile_frag="config/mh-cxux"
     ;;
   m88k-motorola-sysv*)
-    host_makefile_frag="${host_makefile_frag} config/mh-delta88"
+    host_makefile_frag="config/mh-delta88"
     ;;
   mips*-dec-ultrix*)
     tentative_cc="cc -Wf,-XNg1000"
-    host_makefile_frag="${host_makefile_frag} config/mh-decstation"
+    host_makefile_frag="config/mh-decstation"
     ;;
   mips*-nec-sysv4*)
     # The C compiler on NEC MIPS SVR4 needs bigger tables.
     tentative_cc="cc -ZXNd=5000 -ZXNg=1000"
-    host_makefile_frag="${host_makefile_frag} config/mh-necv4"
+    host_makefile_frag="config/mh-necv4"
     ;;
   mips*-sgi-irix6*)
-    host_makefile_frag="${host_makefile_frag} config/mh-irix6"
+    host_makefile_frag="config/mh-irix6"
     ;;
   mips*-sgi-irix5*)
-    host_makefile_frag="${host_makefile_frag} config/mh-irix5"
+    host_makefile_frag="config/mh-irix5"
     ;;
   mips*-sgi-irix4*)
     # Tell compiler to use K&R C.  We can't compile under the SGI Ansi
@@ -175,10 +175,10 @@ case "${host}" in
     tentative_cc="cc -cckr -Wf,-XNg1500 -Wf,-XNk1000 -Wf,-XNh2000 -Wf,-XNl8192"
     ;;
   mips*-sgi-irix3*)
-    host_makefile_frag="${host_makefile_frag} config/mh-sysv"
+    host_makefile_frag="config/mh-sysv"
     ;;
   mips*-*-sysv4*)
-    host_makefile_frag="${host_makefile_frag} config/mh-sysv4"
+    host_makefile_frag="config/mh-sysv4"
     ;;
   mips*-*-sysv*)
     # This is for a MIPS running RISC/os 4.52C.
@@ -194,24 +194,24 @@ case "${host}" in
     # This is not part of CFLAGS because perhaps not all C compilers have this
     # option.
     tentative_cc="cc -systype sysv"
-    host_makefile_frag="${host_makefile_frag} config/mh-riscos"
+    host_makefile_frag="config/mh-riscos"
     ;;
   i370-ibm-opened*)
     tentative_cc="c89"
-    host_makefile_frag="${host_makefile_frag} config/mh-openedition"
+    host_makefile_frag="config/mh-openedition"
     ;;
   i[3456]86-*-sysv5*)
-    host_makefile_frag="${host_makefile_frag} config/mh-sysv5"
+    host_makefile_frag="config/mh-sysv5"
     ;;
   i[3456]86-*-dgux*)
     tentative_cc="gcc -Wall -ansi -D__using_DGUX"
-    host_makefile_frag="${host_makefile_frag} config/mh-dgux386"
+    host_makefile_frag="config/mh-dgux386"
     ;;
   i[3456]86-ncr-sysv4.3*)
     # The MetaWare compiler will generate a copyright message unless you
     # turn it off by adding the -Hnocopyr flag.
     tentative_cc="cc -Hnocopyr"
-    host_makefile_frag="${host_makefile_frag} config/mh-ncrsvr43"
+    host_makefile_frag="config/mh-ncrsvr43"
     ;;
   i[3456]86-ncr-sysv4*)
     # for an NCR 3000 (i486/SVR4) system.
@@ -220,47 +220,47 @@ case "${host}" in
     # you run it, but it chokes and dies on a whole bunch of GNU source
     # files.  Default to using the AT&T compiler installed in /usr/ccs/ATT/cc.
     tentative_cc="/usr/ccs/ATT/cc"
-    host_makefile_frag="${host_makefile_frag} config/mh-ncr3000"
+    host_makefile_frag="config/mh-ncr3000"
     ;;
   i[3456]86-*-sco3.2v5*)
-    host_makefile_frag="${host_makefile_frag} config/mh-sysv"
+    host_makefile_frag="config/mh-sysv"
     ;;
   i[3456]86-*-sco*)
     # The native C compiler botches some simple uses of const.  Unfortunately,
     # it doesn't defined anything like "__sco__" for us to test for in ansidecl.h.
     tentative_cc="cc -Dconst="
-    host_makefile_frag="${host_makefile_frag} config/mh-sco"
+    host_makefile_frag="config/mh-sco"
     ;;
   i[3456]86-*-udk*)
-    host_makefile_frag="${host_makefile_frag} config/mh-sysv5"
+    host_makefile_frag="config/mh-sysv5"
     ;;
   i[3456]86-*-isc*)
-    host_makefile_frag="${host_makefile_frag} config/mh-sysv"
+    host_makefile_frag="config/mh-sysv"
     ;;
   i[3456]86-*-solaris2*)
-    host_makefile_frag="${host_makefile_frag} config/mh-sysv4"
+    host_makefile_frag="config/mh-sysv4"
     ;;
   i[3456]86-*-aix*)
-    host_makefile_frag="${host_makefile_frag} config/mh-aix386"
+    host_makefile_frag="config/mh-aix386"
     ;;
   i[3456]86-*-msdosdjgpp*)
-    host_makefile_frag="${host_makefile_frag} config/mh-djgpp"
+    host_makefile_frag="config/mh-djgpp"
     ;;
   *-cygwin*)
-    host_makefile_frag="${host_makefile_frag} config/mh-cygwin"
+    host_makefile_frag="config/mh-cygwin"
     ;;
   *-mingw32*)
-    host_makefile_frag="${host_makefile_frag} config/mh-mingw32"
+    host_makefile_frag="config/mh-mingw32"
     ;;
   *-interix*)
-    host_makefile_frag="${host_makefile_frag} config/mh-interix"
+    host_makefile_frag="config/mh-interix"
     ;;
   vax-*-ultrix2*)
     # The old BSD pcc isn't up to compiling parts of gdb so use gcc
     tentative_cc=gcc
     ;;
   *-*-solaris2*)
-    host_makefile_frag="${host_makefile_frag} config/mh-solaris"
+    host_makefile_frag="config/mh-solaris"
     ;;
   m68k-sun-sunos*)
     # Sun's C compiler needs the -J flag to be able to compile cp-parse.c
@@ -269,30 +269,30 @@ case "${host}" in
     ;;
   *-hp-hpux[78]*)
     tentative_cc="cc -Wp,-H256000"
-    host_makefile_frag="${host_makefile_frag} config/mh-hpux8"
+    host_makefile_frag="config/mh-hpux8"
     ;;
   *-hp-hpux*)
     tentative_cc="cc -Wp,-H256000"
-    host_makefile_frag="${host_makefile_frag} config/mh-hpux"
+    host_makefile_frag="config/mh-hpux"
     ;;
   *-*-hiux*)
     tentative_cc="cc -Wp,-H256000"
-    host_makefile_frag="${host_makefile_frag} config/mh-hpux"
+    host_makefile_frag="config/mh-hpux"
     ;;
   rs6000-*-lynxos*)
     # /bin/cc is less than useful for our purposes.  Always use GCC
     tentative_cc="/usr/cygnus/progressive/bin/gcc"
-    host_makefile_frag="${host_makefile_frag} config/mh-lynxrs6k"
+    host_makefile_frag="config/mh-lynxrs6k"
     ;;
   *-*-lynxos*)
     # /bin/cc is less than useful for our purposes.  Always use GCC
     tentative_cc="/bin/gcc"
     ;;
   *-*-sysv4*)
-    host_makefile_frag="${host_makefile_frag} config/mh-sysv4"
+    host_makefile_frag="config/mh-sysv4"
     ;;
   *-*-sysv*)
-    host_makefile_frag="${host_makefile_frag} config/mh-sysv"
+    host_makefile_frag="config/mh-sysv"
     ;;
 esac
 fi
