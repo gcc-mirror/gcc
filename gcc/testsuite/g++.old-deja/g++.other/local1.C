@@ -1,6 +1,8 @@
 // Build don't run:
 
-struct Outer {};
+struct Outer {
+  virtual ~Outer() {}
+};
 
 int
 main()
