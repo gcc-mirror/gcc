@@ -215,6 +215,8 @@ do {								\
   char *string;							\
 								\
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));	\
+  /* Strip off any encoding in fnname.  */                      \
+  STRIP_NAME_ENCODING (name, name);                             \
 								\
   if (! DECL_ONE_ONLY (DECL))					\
     {								\
