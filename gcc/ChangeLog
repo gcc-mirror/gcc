@@ -1,3 +1,8 @@
+Mon Sep 11 10:48:41 2000  Ulrich Drepper <drepper@redhat.com>
+
+	* install.texi (LANGUAGES): Update to include new languages.
+	* INSTALL: Rebuilt.
+
 2000-09-11  DJ Delorie  <dj@redhat.com>
 
 	* gcc.c (main): Don't warn about unused -B prefixes

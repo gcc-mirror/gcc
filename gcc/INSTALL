@@ -246,19 +246,16 @@ and includes all the necessary compilation tools and libraries.
     `--disable-nls'
           The `--enable-nls' option enables Native Language Support
           (NLS), which lets GCC output diagnostics in languages other
-          than American English.  No translations are available yet, so
-          the main users of this option now are those translating GCC's
-          diagnostics who want to test their work.  Once translations
-          become available, Native Language Support will become enabled
-          by default.  The `--disable-nls' option disables NLS.
+          than American English. Native Language Support is enabled by
+          default if not doing a canadian cross build. The
+          `--disable-nls' option disables NLS.
 
     `--with-included-gettext'
-          If NLS is enabled, the GCC build procedure normally attempts
-          to use the host's `gettext' libraries, and falls back on
-          GCC's copy of the GNU `gettext' library only if the host
-          libraries do not suffice.  The `--with-included-gettext'
-          option causes the build procedure to prefer its copy of GNU
-          `gettext'.
+          If NLS is enbled, the `--with-included-gettext' option causes
+          the build procedure to prefer its copy of GNU `gettext'. This
+          is the default. If you want the GCC build procedure to prefer
+          the host's `gettext' libraries, use
+          `--without-included-gettext'.
 
     `--with-catgets'
           If NLS is enabled, and if the host lacks `gettext' but has the
@@ -266,6 +263,15 @@ and includes all the necessary compilation tools and libraries.
           ignores `catgets' and instead uses GCC's copy of the GNU
           `gettext' library.  The `--with-catgets' option causes the
           build procedure to use the host's `catgets' in this situation.
+
+    `--enable-maintainer-mode'
+          The build rules that regenerate the GCC master message catalog
+          `gcc.pot' are normally disabled. This is because it can only
+          be rebuilt if the complete source tree is present. If you
+          have changed the sources and want to rebuild the catalog,
+          configuring with `--enable-maintainer-mode' will enable this.
+          Note that you need a special version of the `gettext' tools
+          to do so.
 
     `--enable-win32-registry'
     `--enable-win32-registry=KEY'
@@ -338,16 +344,17 @@ and includes all the necessary compilation tools and libraries.
 
      `LANGUAGES=c' specifies that only the C compiler should be
      compiled.  The makefile normally builds compilers for all the
-     supported languages; currently, C, C++ and Objective C.  However,
-     C is the only language that is sure to work when you build with
-     other non-GNU C compilers.  In addition, building anything but C
-     at this stage is a waste of time.
+     supported languages; currently, C, C++, Objective C, Java,
+     FORTRAN, and CHILL.  However, C is the only language that is sure
+     to work when you build with other non-GNU C compilers.  In
+     addition, building anything but C at this stage is a waste of time.
 
      In general, you can specify the languages to build by typing the
      argument `LANGUAGES="LIST"', where LIST is one or more words from
-     the list `c', `c++', and `objective-c'.  If you have any
-     additional GNU compilers as subdirectories of the GNU CC source
-     directory, you may also specify their names in this list.
+     the list `c', `c++', `objective-c', `java', `f77', and `CHILL'.
+     If you have any additional GNU compilers as subdirectories of the
+     GNU CC source directory, you may also specify their names in this
+     list.
 
      Ignore any warnings you may see about "statement not reached" in
      `insn-emit.c'; they are normal.  Also, warnings about "unknown
@@ -654,11 +661,11 @@ is equivalent to `vax-dec-ultrix4.2'.
 
      386bsd, aix, acis, amigaos, aos, aout, aux, bosx, bsd, clix, coff,
      ctix, cxux, dgux, dynix, ebmon, ecoff, elf, esix, freebsd, hms,
-     genix, gnu, linux-gnu, hiux, hpux, iris, irix, isc, luna, lynxos,
-     mach, minix, msdos, mvs, netbsd, newsos, nindy, ns, osf, osfrose,
-     ptx, riscix, riscos, rtu, sco, sim, solaris, sunos, sym, sysv,
-     udi, ultrix, unicos, uniplus, unos, vms, vsta, vxworks, winnt,
-     xenix.
+     genix, gnu, linux, linux-gnu, hiux, hpux, iris, irix, isc, luna,
+     lynxos, mach, minix, msdos, mvs, netbsd, newsos, nindy, ns, osf,
+     osfrose, ptx, riscix, riscos, rtu, sco, sim, solaris, sunos, sym,
+     sysv, udi, ultrix, unicos, uniplus, unos, vms, vsta, vxworks,
+     winnt, xenix.
 
 You can omit the system type; then `configure' guesses the operating
 system from the CPU and company.
@@ -667,6 +674,12 @@ system from the CPU and company.
 make a difference.  For example, you can write `bsd4.3' or `bsd4.4' to
 distinguish versions of BSD.  In practice, the version number is most
 needed for `sysv3' and `sysv4', which are often treated differently.
+
+   `linux-gnu' is the canonical name for the GNU/Linux target; however
+GNU CC will also accept `linux'.  The version of the kernel in use is
+not relevant on these systems.  A suffix such as `libc1' or `aout'
+distinguishes major versions of the C library; all of the suffixed
+versions are obsolete.
 
    If you specify an impossible combination such as `i860-dg-vms', then
 you may get an error message from `configure', or it may ignore part of
@@ -804,13 +817,14 @@ special things you must know:
 `arm-*-elf'
      This configuration is intended for embedded systems.
 
-`arm-*-linux-gnuaout'
+`arm-*-linux*aout'
      Any of the ARM-family processors running the Linux-based GNU
      system with the `a.out' binary format.  This is an obsolete
      configuration.
 
+`arm-*-linux'
 `arm-*-linux-gnu'
-`arm-*-linux-gnuoldld'
+`arm-*-linux*oldld'
      Any of the ARM-family processors running the Linux-based GNU
      system with the `ELF' binary format.  You must use version
      2.9.1.0.22 or later of the GNU/Linux binutils, which you can
@@ -922,16 +936,17 @@ special things you must know:
      This port is very preliminary and has many known bugs.  We hope to
      have a higher-quality port for this machine soon.
 
-`i386-*-linux-gnuoldld'
+`i386-*-linux*oldld'
      Use this configuration to generate `a.out' binaries on Linux-based
      GNU systems if you do not have gas/binutils version 2.5.2 or later
      installed. This is an obsolete configuration.
 
-`i386-*-linux-gnuaout'
+`i386-*-linux*aout'
      Use this configuration to generate `a.out' binaries on Linux-based
      GNU systems. This configuration is being superseded. You must use
      gas/binutils version 2.5.2 or later.
 
+`i386-*-linux'
 `i386-*-linux-gnu'
      Use this configuration to generate ELF binaries on Linux-based GNU
      systems.  You must use gas/binutils version 2.5.2 or later.
@@ -1296,21 +1311,6 @@ special things you must know:
      and use the `--with-gnu-as' configure option when configuring gcc.
      GNU as is distributed as part of the binutils package.
 
-     Under Irix 6, if you are using Irix `cc' as your bootstrap
-     compiler, you must ensure that the N32 ABI is in use.  To test
-     this, compile a simple C file with `cc' and then run `file'
-     on the resulting object file.  The output should look like:
-
- 		test.o:		ELF N32 MSB ...
-
-     If you see:
-
-	        test.o:		ELF 32-bit MSB
-
-     then your version of `cc' uses the O32 ABI default.  You should
-     set the environment variable `CC' to `cc -n32' before configuring
-     GCC.
-
 `mips-sony-sysv'
      Sony MIPS NEWS.  This works in NEWSOS 5.0.1, but not in 5.0.2
      (which uses ELF instead of COFF).  Support for 5.0.2 will probably
@@ -1401,6 +1401,7 @@ special things you must know:
      You can specify a default version for the `-mcpu='CPU_TYPE switch
      by using the configure option `--with-cpu-'CPU_TYPE.
 
+`powerpc-*-linux'
 `powerpc-*-linux-gnu'
      PowerPC system in big endian mode, running the Linux-based GNU
      system.
