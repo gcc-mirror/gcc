@@ -238,7 +238,7 @@ static int if_stmt_line;
 static tree current_declspecs;
 static tree prefix_attributes = NULL_TREE;
 
-/* Stack of saved values of current_declspecs.  */
+/* Stack of saved values of current_declspecs and prefix_attributes.  */
 static tree declspec_stack;
 
 /* 1 if we explained undeclared var errors.  */
@@ -328,7 +328,7 @@ datadef:
 
 fndef:
 	  typed_declspecs setspecs declarator
-		{ if (! start_function ($1, $3, 0))
+		{ if (! start_function ($1, $3, prefix_attributes, 0))
 		    YYERROR1;
 		  reinit_parse_for_function (); }
 	  xdecls
@@ -338,7 +338,7 @@ fndef:
 	| typed_declspecs setspecs declarator error
 		{ }
 	| declmods setspecs notype_declarator
-		{ if (! start_function ($1, $3, 0))
+		{ if (! start_function ($1, $3, prefix_attributes, 0))
 		    YYERROR1;
 		  reinit_parse_for_function (); }
 	  xdecls
@@ -348,7 +348,7 @@ fndef:
 	| declmods setspecs notype_declarator error
 		{ }
 	| setspecs notype_declarator
-		{ if (! start_function (NULL_TREE, $2, 0))
+		{ if (! start_function (NULL_TREE, $2, prefix_attributes, 0))
 		    YYERROR1;
 		  reinit_parse_for_function (); }
 	  xdecls
@@ -851,10 +851,12 @@ datadecls:
 datadecl:
 	typed_declspecs setspecs initdecls ';'
 		{ current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
 		  declspec_stack = TREE_CHAIN (declspec_stack);
 		  resume_momentary ($2); }
 	| declmods setspecs notype_initdecls ';'
-		{ current_declspecs = TREE_VALUE (declspec_stack);
+		{ current_declspecs = TREE_VALUE (declspec_stack);	
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
 		  declspec_stack = TREE_CHAIN (declspec_stack);
 		  resume_momentary ($2); }
 	| typed_declspecs ';'
@@ -887,31 +889,36 @@ decls:
 setspecs: /* empty */
 		{ $$ = suspend_momentary ();
 		  pending_xref_error ();
-		  declspec_stack = tree_cons (NULL_TREE, current_declspecs,
+		  declspec_stack = tree_cons (prefix_attributes,
+					      current_declspecs,
 					      declspec_stack);
 		  current_declspecs = $<ttype>0; 
 		  prefix_attributes = NULL_TREE; }
 	;
 
 setattrs: /* empty */
-		{ prefix_attributes = $<ttype>0; }
+		{ prefix_attributes = chainon (prefix_attributes, $<ttype>0); }
 	;
 
 decl:
 	typed_declspecs setspecs initdecls ';'
 		{ current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
 		  declspec_stack = TREE_CHAIN (declspec_stack);
 		  resume_momentary ($2); }
 	| declmods setspecs notype_initdecls ';'
 		{ current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
 		  declspec_stack = TREE_CHAIN (declspec_stack);
 		  resume_momentary ($2); }
 	| typed_declspecs setspecs nested_function
 		{ current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
 		  declspec_stack = TREE_CHAIN (declspec_stack);
 		  resume_momentary ($2); }
 	| declmods setspecs notype_nested_function
 		{ current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
 		  declspec_stack = TREE_CHAIN (declspec_stack);
 		  resume_momentary ($2); }
 	| typed_declspecs ';'
@@ -1183,7 +1190,8 @@ end ifc
 nested_function:
 	  declarator
 		{ push_c_function_context ();
-		  if (! start_function (current_declspecs, $1, 1))
+		  if (! start_function (current_declspecs, $1,
+					prefix_attributes, 1))
 		    {
 		      pop_c_function_context ();
 		      YYERROR1;
@@ -1204,7 +1212,8 @@ nested_function:
 notype_nested_function:
 	  notype_declarator
 		{ push_c_function_context ();
-		  if (! start_function (current_declspecs, $1, 1))
+		  if (! start_function (current_declspecs, $1,
+					prefix_attributes, 1))
 		    {
 		      pop_c_function_context ();
 		      YYERROR1;
@@ -1394,6 +1403,7 @@ component_decl:
 	  typed_typespecs setspecs components
 		{ $$ = $3;
 		  current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
 		  declspec_stack = TREE_CHAIN (declspec_stack);
 		  resume_momentary ($2); }
 	| typed_typespecs
@@ -1404,6 +1414,7 @@ component_decl:
 	| nonempty_type_quals setspecs components
 		{ $$ = $3;
 		  current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
 		  declspec_stack = TREE_CHAIN (declspec_stack);
 		  resume_momentary ($2); }
 	| nonempty_type_quals
