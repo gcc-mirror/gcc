@@ -6901,7 +6901,7 @@ output_387_binary_op (rtx insn, rtx *operands)
   static char buf[30];
   const char *p;
   const char *ssep;
-  int is_sse = SSE_REG_P (operands[0]) | SSE_REG_P (operands[1]) | SSE_REG_P (operands[2]);
+  int is_sse = SSE_REG_P (operands[0]) || SSE_REG_P (operands[1]) || SSE_REG_P (operands[2]);
 
 #ifdef ENABLE_CHECKING
   /* Even if we do not want to check the inputs, this documents input
@@ -7925,7 +7925,7 @@ ix86_prepare_fp_compare_args (enum rtx_code code, rtx *pop0, rtx *pop1)
   enum machine_mode fpcmp_mode = ix86_fp_compare_mode (code);
   rtx op0 = *pop0, op1 = *pop1;
   enum machine_mode op_mode = GET_MODE (op0);
-  int is_sse = SSE_REG_P (op0) | SSE_REG_P (op1);
+  int is_sse = SSE_REG_P (op0) || SSE_REG_P (op1);
 
   /* All of the unordered compare instructions only work on registers.
      The same is true of the fcomi compare instructions.  The same is
