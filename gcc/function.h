@@ -19,16 +19,6 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
-
-#if !defined(NULL_TREE) && !defined(tree)
-typedef union union_node *_function_tree;
-#define tree _function_tree
-#endif
-#if !defined(NULL_RTX) && !defined(rtx)
-typedef struct rtx_def *_function_rtx;
-#define rtx _function_rtx
-#endif
-
 struct var_refs_queue
 {
   rtx modified;
