@@ -1,3 +1,7 @@
+Thu Oct 25 08:46:06 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* stmt.c (expand_end_case): Remove orig_minval and use tree_low_cst.
+
 2001-10-24  Christopher Faylor  <cgf@redhat.com>
 
 	* config/i386/cygwin.h: Use proper path for mingw crt files when
