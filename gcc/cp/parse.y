@@ -1295,9 +1295,11 @@ notype_unqualified_id:
 
 template_id:
         PFUNCNAME '<' template_arg_list template_close_bracket 
-                { $$ = lookup_template_function ($1, $3); }
+                { $$ = lookup_template_function
+		    (do_identifier ($1, 1), $3); }
         | PFUNCNAME '<' template_close_bracket
-                { $$ = lookup_template_function ($1, NULL_TREE); }
+                { $$ = lookup_template_function
+		    (do_identifier ($1, 1), NULL_TREE); }
         | operator_name '<' template_arg_list template_close_bracket
                 { $$ = lookup_template_function 
 		    (do_identifier ($1, 1), $3); }
@@ -1310,9 +1312,9 @@ object_template_id:
         TEMPLATE identifier '<' template_arg_list template_close_bracket
                 { $$ = lookup_template_function ($2, $4); }
         | TEMPLATE PFUNCNAME '<' template_arg_list template_close_bracket
-                { $$ = lookup_template_function (DECL_NAME ($2), $4); }
+                { $$ = lookup_template_function ($2, $4); }
         | TEMPLATE operator_name '<' template_arg_list template_close_bracket
-                { $$ = lookup_template_function (DECL_NAME ($2), $4); }
+                { $$ = lookup_template_function ($2, $4); }
         ;
 
 unqualified_id:

@@ -379,9 +379,6 @@ yylex ()
     debug_yychar (yychar);
 #endif
 
-  if (yychar == PFUNCNAME)
-    yylval.ttype = do_identifier (yylval.ttype, 1);
-
   return yychar;
 }
 
