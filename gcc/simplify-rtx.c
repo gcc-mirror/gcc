@@ -1234,6 +1234,40 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	  && (flag_trapping_math || ! MODE_HAS_INFINITIES (mode)))
 	return 0;
 
+      if (MODE_HAS_INFINITIES (mode) && HONOR_NANS (mode)
+	  && flag_trapping_math
+	  && REAL_VALUE_ISINF (f0) && REAL_VALUE_ISINF (f1))
+	{
+	  int s0 = REAL_VALUE_NEGATIVE (f0);
+	  int s1 = REAL_VALUE_NEGATIVE (f1);
+
+	  switch (code)
+	    {
+	    case PLUS:
+	      /* Inf + -Inf = NaN plus exception.  */
+	      if (s0 != s1)
+	        return 0;
+	      break;
+	    case MINUS:
+	      /* Inf - Inf = NaN plus exception.  */
+	      if (s0 == s1)
+	        return 0;
+	      break;
+	    case DIV:
+	      /* Inf / Inf = NaN plus exception.  */
+	      return 0;
+	    default:
+	      break;
+	    }
+	}
+
+      if (code == MULT && MODE_HAS_INFINITIES (mode) && HONOR_NANS (mode)
+	  && flag_trapping_math
+	  && ((REAL_VALUE_ISINF (f0) && REAL_VALUES_EQUAL (f1, dconst0))
+	      || (REAL_VALUE_ISINF (f1) && REAL_VALUES_EQUAL (f0, dconst0))))
+	/* Inf * 0 = NaN plus exception.  */
+	return 0;
+
       REAL_ARITHMETIC (value, rtx_to_tree_code (code), f0, f1);
 
       value = real_value_truncate (mode, value);

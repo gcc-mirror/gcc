@@ -1,5 +1,11 @@
 2004-06-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/15945
+	* simplify-rtx.c (simplify_binary_operation): Don't optimize out
+	Inf + -Inf, Inf - Inf, Inf / Inf and 0 * Inf if flag_trapping_math.
+
+2004-06-14  Jakub Jelinek  <jakub@redhat.com>
+
 	PR target/15178
 	* config/i386/sol2.h (ASM_OUTPUT_DEF_FROM_DECLS): Define.
 
