@@ -1,5 +1,5 @@
 /* java.beans.PropertyVetoException
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,7 +37,7 @@ package java.beans;
  **/
 
 public class PropertyVetoException extends Exception {
-	PropertyChangeEvent changeEvent;
+	PropertyChangeEvent evt;
 
 	/** Instantiate this exception with the given message and property change.
 	 ** @param msg the reason for the veto.
@@ -45,11 +45,11 @@ public class PropertyVetoException extends Exception {
 	 **/
 	public PropertyVetoException(String msg, PropertyChangeEvent changeEvent) {
 		super(msg);
-		this.changeEvent = changeEvent;
+		evt = changeEvent;
 	}
 
 	/** Get the PropertyChange event that was vetoed. **/
 	public PropertyChangeEvent getPropertyChangeEvent() {
-		return changeEvent;
+		return evt;
 	}
 }

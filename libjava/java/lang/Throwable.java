@@ -164,5 +164,5 @@ public class Throwable implements Serializable
   // Name of this field comes from serialization spec.
   private String detailMessage;
 
-  private byte stackTrace[];
+  private transient byte stackTrace[];
 }

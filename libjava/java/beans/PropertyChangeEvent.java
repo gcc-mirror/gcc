@@ -1,5 +1,5 @@
 /* java.beans.PropertyChangeEvent
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,8 +50,8 @@ package java.beans;
 
 public class PropertyChangeEvent extends java.util.EventObject {
 	String propertyName;
-	Object oldVal;
-	Object newVal;
+	Object oldValue;
+	Object newValue;
 	Object propagationId;
 
 	/** Create a new PropertyChangeEvent.  Remember that if
@@ -60,14 +60,14 @@ public class PropertyChangeEvent extends java.util.EventObject {
 	 ** from the old PropertyChangeEvent.
 	 ** @param source the Bean containing the property.
 	 ** @param propertyName the property's name.
-	 ** @param oldVal the old value of the property.
-	 ** @param newVal the new value of the property.
+	 ** @param oldValue the old value of the property.
+	 ** @param newValue the new value of the property.
 	 **/
 	public PropertyChangeEvent(Object source, String propertyName, Object oldVal, Object newVal) {
 		super(source);
 		this.propertyName = propertyName;
-		this.oldVal = oldVal;
-		this.newVal = newVal;
+		oldValue = oldVal;
+		newValue = newVal;
 	}
 
 	/** Get the property name.
@@ -81,14 +81,14 @@ public class PropertyChangeEvent extends java.util.EventObject {
 	 ** @return the property's old value.
 	 **/
 	public Object getOldValue() {
-		return oldVal;
+		return oldValue;
 	}
 
 	/** Get the property's new value.
 	 ** @return the property's new value.
 	 **/
 	public Object getNewValue() {
-		return newVal;
+		return newValue;
 	}
 
 	/** Set the propagation ID.  This is a way for the event

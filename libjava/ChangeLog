@@ -1,3 +1,23 @@
+2000-06-26  Warren Levy  <warrenl@cygnus.com>
+
+	* java/beans/PropertyChangeEvent.java (oldVal): Renamed to oldValue.
+	(newVal): Renamed to newValue.
+	* java/beans/PropertyVetoException.java (changeEvent): Renamed to evt.
+	* java/beans/beancontext/BeanContextServiceRevokedEvent.java
+	(revokeNow): Renamed to invalidateRefs.
+	* java/io/OptionalDataException.java: Updated FIXME.
+	(eof): New placeholder field.
+	(length); Ditto.
+	* java/io/WriteAbortedException.java (message): Made transient.
+	* java/lang/ClassNotFoundException.java: Updated comments for JDK 1.2.
+	* java/lang/Throwable.java (stackTrace): Made transient.
+	* java/net/InetAddress.java: Made Serializable.
+	* java/security/KeyPair.java: Made Serializable.
+	* java/security/Provider.java: Replaced with Classpath version that
+	implements serialization and proper methods.
+	* java/text/ChoiceFormat.java (strings): Renamed to choiceFormats.
+	(limits): Renamed to choiceLimits.
+
 2000-06-24  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/natDouble.cc (parseDouble): Renamed from
