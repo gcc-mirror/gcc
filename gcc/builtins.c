@@ -3830,7 +3830,8 @@ expand_builtin_strncmp (tree exp, rtx target, enum machine_mode mode)
       return 0;
 
     /* The actual new length parameter is MIN(len,arg3).  */
-    len = fold (build2 (MIN_EXPR, TREE_TYPE (len), len, arg3));
+    len = fold (build2 (MIN_EXPR, TREE_TYPE (len), len,
+			fold_convert (TREE_TYPE (len), arg3)));
 
     /* If we don't have POINTER_TYPE, call the function.  */
     if (arg1_align == 0 || arg2_align == 0)
