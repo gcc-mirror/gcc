@@ -1,3 +1,12 @@
+2002-04-03  Benjamin Kosnik  <bkoz@redhat.com>
+
+        As per DR 184, libstdc++/3139
+        * include/std/std_limits.h (__glibcpp_bool_digits): Change to 1.
+        (numeric_limits<bool>::is_iec559): False.
+        (numeric_limits<bool>::is_modulo): False.       
+
+	* testsuite/27_io/ios_init.cc: Add instantiations.
+
 2002-04-02  Benjamin Kosnik  <bkoz@redhat.com>
 	
 	libstdc++/5268

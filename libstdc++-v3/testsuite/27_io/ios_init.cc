@@ -215,6 +215,14 @@ template
 template 
   unsigned short
   std::basic_string<unsigned short>::_Rep::_S_terminal;
+
+template 
+  std::basic_string<unsigned char>::size_type 
+  std::basic_string<unsigned char>::_Rep::_S_max_size;
+
+template 
+  unsigned char
+  std::basic_string<unsigned char>::_Rep::_S_terminal;
 #endif
 
 int main()
