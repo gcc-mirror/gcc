@@ -42,6 +42,8 @@ struct arg_data
 {
   /* Tree node for this argument.  */
   tree tree_value;
+  /* Mode for value; TYPE_MODE unless promoted.  */
+  enum machine_mode mode;
   /* Current RTL value for argument, or 0 if it isn't precomputed.  */
   rtx value;
   /* Initially-compute RTL value for argument; only for const functions.  */
@@ -947,6 +949,7 @@ expand_call (exp, target, ignore)
 	}
 #endif
 
+      args[i].mode = mode;
       args[i].reg = FUNCTION_ARG (args_so_far, mode, type,
 				  argpos < n_named_args);
 #ifdef FUNCTION_ARG_PARTIAL_NREGS
@@ -985,7 +988,7 @@ expand_call (exp, target, ignore)
 	  || reg_parm_stack_space > 0
 #endif
 	  || args[i].pass_on_stack)
-	locate_and_pad_parm (TYPE_MODE (type), type,
+	locate_and_pad_parm (mode, type,
 #ifdef STACK_PARMS_IN_REG_PARM_AREA
 			     1,
 #else
@@ -1176,7 +1179,13 @@ expand_call (exp, target, ignore)
       {
 	args[i].initial_value = args[i].value
 	  = expand_expr (args[i].tree_value, NULL_RTX, VOIDmode, 0);
+
+	if (GET_MODE (args[i].value ) != VOIDmode
+	    && GET_MODE (args[i].value) != args[i].mode)
+	  args[i].value = convert_to_mode (args[i].mode, args[i].value,
+					   args[i].unsignedp);
 	preserve_temp_slots (args[i].value);
+
 	free_temp_slots ();
 
 	/* ANSI doesn't require a sequence point here,
@@ -1367,8 +1376,7 @@ expand_call (exp, target, ignore)
 	    addr = gen_rtx (PLUS, Pmode, arg_reg, offset);
 
 	  addr = plus_constant (addr, arg_offset);
-	  args[i].stack
-	    = gen_rtx (MEM, TYPE_MODE (TREE_TYPE (args[i].tree_value)), addr);
+	  args[i].stack = gen_rtx (MEM, args[i].mode, addr);
 
 	  if (GET_CODE (slot_offset) == CONST_INT)
 	    addr = plus_constant (arg_reg, INTVAL (slot_offset));
@@ -1376,8 +1384,7 @@ expand_call (exp, target, ignore)
 	    addr = gen_rtx (PLUS, Pmode, arg_reg, slot_offset);
 
 	  addr = plus_constant (addr, arg_offset);
-	  args[i].stack_slot
-	    = gen_rtx (MEM, TYPE_MODE (TREE_TYPE (args[i].tree_value)), addr);
+	  args[i].stack_slot = gen_rtx (MEM, args[i].mode, addr);
 	}
     }
 					       
@@ -1426,8 +1433,6 @@ expand_call (exp, target, ignore)
   for (i = 0; i < num_actuals; i++)
     if (args[i].reg != 0 && ! args[i].pass_on_stack)
       {
-	enum machine_mode mode;
-
 	reg_parm_seen = 1;
 
 	if (args[i].value == 0)
@@ -1444,11 +1449,10 @@ expand_call (exp, target, ignore)
 
 	/* If we are to promote the function arg to a wider mode,
 	   do it now.  */
-	mode = (GET_CODE (args[i].reg) == EXPR_LIST 
-		? GET_MODE (XEXP (args[i].reg, 0)) : GET_MODE (args[i].reg));
 
-	if (TYPE_MODE (TREE_TYPE (args[i].tree_value)) != mode)
-	  args[i].value = convert_to_mode (mode, args[i].value,
+	if (GET_MODE (args[i].value) != VOIDmode
+	    && GET_MODE (args[i].value) != args[i].mode)
+	  args[i].value = convert_to_mode (args[i].mode, args[i].value,
 					   args[i].unsignedp);
       }
 
@@ -1608,7 +1612,7 @@ expand_call (exp, target, ignore)
 	  else if (args[i].partial == 0 || args[i].pass_on_stack)
 	    move_block_to_reg (REGNO (reg),
 			       validize_mem (args[i].value), nregs,
-			       TYPE_MODE (TREE_TYPE (args[i].tree_value)));
+			       args[i].mode);
 	
 	  push_to_sequence (use_insns);
 	  if (nregs == 0)
@@ -2019,6 +2023,14 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
 #endif
       arg->value = expand_expr (pval, partial ? NULL_RTX : arg->stack,
 				VOIDmode, 0);
+
+      /* If we are promoting object (or for any other reason) the mode
+	 doesn't agree, convert the mode.  */
+
+      if (GET_MODE (arg->value) != VOIDmode
+	  && GET_MODE (arg->value) != arg->mode)
+	arg->value = convert_to_mode (arg->mode, arg->value, arg->unsignedp);
+
 #ifdef ACCUMULATE_OUTGOING_ARGS
       if (arg->pass_on_stack)
 	stack_arg_under_construction--;
@@ -2033,7 +2045,7 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
   if (arg->value == arg->stack)
     /* If the value is already in the stack slot, we are done.  */
     ;
-  else if (TYPE_MODE (TREE_TYPE (pval)) != BLKmode)
+  else if (arg->mode != BLKmode)
     {
       register int size;
 
@@ -2047,7 +2059,7 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
 	 Note that in C the default argument promotions
 	 will prevent such mismatches.  */
 
-      size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (pval)));
+      size = GET_MODE_SIZE (arg->mode);
       /* Compute how much space the push instruction will push.
 	 On many machines, pushing a byte will advance the stack
 	 pointer by a halfword.  */
@@ -2058,17 +2070,15 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
 
       /* Compute how much space the argument should get:
 	 round up to a multiple of the alignment for arguments.  */
-      if (none != FUNCTION_ARG_PADDING (TYPE_MODE (TREE_TYPE (pval)),
-					TREE_TYPE (pval)))
+      if (none != FUNCTION_ARG_PADDING (arg->mode, TREE_TYPE (pval)))
 	used = (((size + PARM_BOUNDARY / BITS_PER_UNIT - 1)
 		 / (PARM_BOUNDARY / BITS_PER_UNIT))
 		* (PARM_BOUNDARY / BITS_PER_UNIT));
 
       /* This isn't already where we want it on the stack, so put it there.
 	 This can either be done with push or copy insns.  */
-      emit_push_insn (arg->value, TYPE_MODE (TREE_TYPE (pval)),
-		      TREE_TYPE (pval), 0, 0, partial, reg,
-		      used - size, argblock, ARGS_SIZE_RTX (arg->offset));
+      emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), 0, 0, partial,
+		      reg, used - size, argblock, ARGS_SIZE_RTX (arg->offset));
     }
   else
     {
@@ -2099,8 +2109,7 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
 	  size_rtx = expand_expr (size, NULL_RTX, VOIDmode, 0);
 	}
 
-      emit_push_insn (arg->value, TYPE_MODE (TREE_TYPE (pval)),
-		      TREE_TYPE (pval), size_rtx,
+      emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), size_rtx,
 		      TYPE_ALIGN (TREE_TYPE (pval)) / BITS_PER_UNIT, partial,
 		      reg, excess, argblock, ARGS_SIZE_RTX (arg->offset));
     }
