@@ -1,3 +1,7 @@
+2004-08-13  Bud Davis  <bdavis9659@comcast.net>
+
+	* gfortran.fortran-torture/execute/open_rewind.f90: New test.
+
 2004-08-13  Janis Johnson  <janis187@us.ibm.com>
 
 	* g++.dg/ext/altivec-2.C: Revert previous changes and don't execute.

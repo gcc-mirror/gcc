@@ -506,8 +506,8 @@ st_open (void)
   if (ioparm.unit < 0)
     generate_error (ERROR_BAD_OPTION, "Bad unit number in OPEN statement");
 
-  if (flags.position != POSITION_UNSPECIFIED &&
-      u->flags.access == ACCESS_DIRECT)
+  if (flags.position != POSITION_UNSPECIFIED
+      && flags.access == ACCESS_DIRECT)
     generate_error (ERROR_BAD_OPTION,
 		    "Cannot use POSITION with direct access files");
 
