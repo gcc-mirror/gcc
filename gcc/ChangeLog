@@ -1,4 +1,12 @@
+Mon May 17 01:57:37 1999  David Daney <daney@ibw.com.ni>
+
+	* i386/sol2.h (LINK_SPEC): Do not pass "-z text" to the linker
+	if -mimpure-text.
+
 1999-05-17  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* fold-const.c (fold_truthop): When converting a one-bit
+	comparison don't sign extend the constant.
 
 	* cse.c (cse_insn): Copy SRC_CONST before putting it in the
 	REG_EQUAL note.
