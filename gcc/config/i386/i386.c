@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IA-32.
-   Copyright (C) 1988, 92, 94-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 94-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
