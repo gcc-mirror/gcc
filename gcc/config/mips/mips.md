@@ -2407,11 +2407,19 @@
                       (const_int 4)))])
 
 
+;; This pattern works around the early SB-1 rev2 core "F2" erratum:
+;;
+;; In certain cases, div.s and div.ps may have a rounding error
+;; and/or wrong inexact flag.
+;;
+;; Therefore, we only allow div.s if not working around SB-1 rev2
+;; errata, or if working around those errata and a slight loss of
+;; precision is OK (i.e., flag_unsafe_math_optimizations is set).
 (define_expand "divsf3"
   [(set (match_operand:SF 0 "register_operand" "")
 	(div:SF (match_operand:SF 1 "reg_or_const_float_1_operand" "")
 		(match_operand:SF 2 "register_operand" "")))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT && (!TARGET_FIX_SB1 || flag_unsafe_math_optimizations)"
 {
   if (const_float_1_operand (operands[1], SFmode))
     if (!(ISA_HAS_FP4 && flag_unsafe_math_optimizations))
@@ -2421,14 +2429,8 @@
 ;; This pattern works around the early SB-1 rev2 core "F1" erratum (see
 ;; "divdf3" comment for details).
 ;;
-;; This pattern works around the early SB-1 rev2 core "F2" erratum:
-;;
-;; In certain cases, div.s and div.ps may have a rounding error
-;; and/or wrong inexact flag.
-;;
-;; Therefore, we only allow div.s if not working around SB-1 rev2
-;; errata, or if working around those errata and a slight loss of
-;; precision is OK (i.e., flag_unsafe_math_optimizations is set).
+;; This pattern works around the early SB-1 rev2 core "F2" erratum (see
+;; "divsf3" comment for details).
 (define_insn "*divsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(div:SF (match_operand:SF 1 "register_operand" "f")
