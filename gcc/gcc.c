@@ -39,10 +39,6 @@ compilation is specified by a string called a "spec".  */
 
 #ifndef _WIN32
 #include <sys/file.h>   /* May get R_OK, etc. on some systems.  */
-#else
-#include <process.h>
-int __spawnv ();
-int __spawnvp ();
 #endif
 
 #include "config.h"
@@ -61,6 +57,15 @@ int __spawnvp ();
 #define W_OK 2
 #define X_OK 1
 #endif
+
+/* ??? Need to find a GCC header to put these in.  */
+extern int pexecute PROTO ((const char *, char * const *, const char *,
+			    const char *, char **, char **, int));
+extern int pwait PROTO ((int, int *, int));
+/* Flag arguments to pexecute.  */
+#define PEXECUTE_FIRST  1
+#define PEXECUTE_LAST   2
+#define PEXECUTE_SEARCH 4
 
 #ifndef WIFSIGNALED
 #define WIFSIGNALED(S) (((S) & 0xff) != 0 && ((S) & 0xff) != 0x7f)
@@ -139,8 +144,6 @@ extern char *sys_errlist[];
 #else
 extern char *strerror();
 #endif
-
-extern int execv (), execvp ();
 
 /* If a stage of compilation returns an exit status >= 1,
    compilation of that file ceases.  */
@@ -250,7 +253,7 @@ static void set_multilib_dir	PROTO((void));
 static void print_multilib_info	PROTO((void));
 static void pfatal_with_name	PROTO((char *));
 static void perror_with_name	PROTO((char *));
-static void perror_exec		PROTO((char *));
+static void pfatal_pexecute	PROTO((char *, char *));
 #ifdef HAVE_VPRINTF
 static void fatal		PVPROTO((char *, ...));
 static void error		PVPROTO((char *, ...));
@@ -1863,201 +1866,6 @@ free_path_prefix (pprefix)
   pprefix->plist = (struct prefix_list *) 0;
 }
 
-/* stdin file number.  */
-#define STDIN_FILE_NO 0
-
-/* stdout file number.  */
-#define STDOUT_FILE_NO 1
-
-/* value of `pipe': port index for reading.  */
-#define READ_PORT 0
-
-/* value of `pipe': port index for writing.  */
-#define WRITE_PORT 1
-
-/* Pipe waiting from last process, to be used as input for the next one.
-   Value is STDIN_FILE_NO if no pipe is waiting
-   (i.e. the next command is the first of a group).  */
-
-static int last_pipe_input;
-
-/* Fork one piped subcommand.  FUNC is the system call to use
-   (either execv or execvp).  ARGV is the arg vector to use.
-   NOT_LAST is nonzero if this is not the last subcommand
-   (i.e. its output should be piped to the next one.)  */
-
-#ifdef __MSDOS__
-
-#include <process.h>
-static int
-pexecute (search_flag, program, argv, not_last)
-     int search_flag;
-     char *program;
-     char *argv[];
-     int not_last;
-{
-#ifdef __GO32__
-  int i = (search_flag ? spawnv : spawnvp) (1, program, argv);
-#else
-  char *scmd, *rf;
-  FILE *argfile;
-  int i, el = search_flag ? 0 : 4;
-
-  scmd = (char *) xmalloc (strlen (program) + strlen (temp_filename) + 6 + el);
-  rf = scmd + strlen(program) + 2 + el;
-  sprintf (scmd, "%s%s @%s.gp", program,
-	   (search_flag ? "" : ".exe"), temp_filename);
-  argfile = fopen (rf, "w");
-  if (argfile == 0)
-    pfatal_with_name (rf);
-
-  for (i=1; argv[i]; i++)
-    {
-      char *cp;
-      for (cp = argv[i]; *cp; cp++)
-	{
-	  if (*cp == '"' || *cp == '\'' || *cp == '\\' || isspace (*cp))
-	    fputc ('\\', argfile);
-	  fputc (*cp, argfile);
-	}
-      fputc ('\n', argfile);
-    }
-  fclose (argfile);
-
-  i = system (scmd);
-
-  remove (rf);
-#endif
-  
-  if (i == -1)
-    {
-      perror_exec (program);
-      return MIN_FATAL_STATUS << 8;
-    }
-  return i << 8;
-}
-
-#endif
-
-#if !defined(__MSDOS__) && !defined(OS2) && !defined(_WIN32)
-
-static int
-pexecute (search_flag, program, argv, not_last)
-     int search_flag;
-     char *program;
-     char *argv[];
-     int not_last;
-{
-  int (*func)() = (search_flag ? execv : execvp);
-  int pid;
-  int pdes[2];
-  int input_desc = last_pipe_input;
-  int output_desc = STDOUT_FILE_NO;
-  int retries, sleep_interval;
-
-  /* If this isn't the last process, make a pipe for its output,
-     and record it as waiting to be the input to the next process.  */
-
-  if (not_last)
-    {
-      if (pipe (pdes) < 0)
-	pfatal_with_name ("pipe");
-      output_desc = pdes[WRITE_PORT];
-      last_pipe_input = pdes[READ_PORT];
-    }
-  else
-    last_pipe_input = STDIN_FILE_NO;
-
-  /* Fork a subprocess; wait and retry if it fails.  */
-  sleep_interval = 1;
-  for (retries = 0; retries < 4; retries++)
-    {
-      pid = vfork ();
-      if (pid >= 0)
-	break;
-      sleep (sleep_interval);
-      sleep_interval *= 2;
-    }
-
-  switch (pid)
-    {
-    case -1:
-#ifdef vfork
-      pfatal_with_name ("fork");
-#else
-      pfatal_with_name ("vfork");
-#endif
-      /* NOTREACHED */
-      return 0;
-
-    case 0: /* child */
-      /* Move the input and output pipes into place, if nec.  */
-      if (input_desc != STDIN_FILE_NO)
-	{
-	  close (STDIN_FILE_NO);
-	  dup (input_desc);
-	  close (input_desc);
-	}
-      if (output_desc != STDOUT_FILE_NO)
-	{
-	  close (STDOUT_FILE_NO);
-	  dup (output_desc);
-	  close (output_desc);
-	}
-
-      /* Close the parent's descs that aren't wanted here.  */
-      if (last_pipe_input != STDIN_FILE_NO)
-	close (last_pipe_input);
-
-      /* Exec the program.  */
-      (*func) (program, argv);
-      perror_exec (program);
-      exit (-1);
-      /* NOTREACHED */
-      return 0;
-
-    default:
-      /* In the parent, after forking.
-	 Close the descriptors that we made for this child.  */
-      if (input_desc != STDIN_FILE_NO)
-	close (input_desc);
-      if (output_desc != STDOUT_FILE_NO)
-	close (output_desc);
-
-      /* Return child's process number.  */
-      return pid;
-    }
-}
-
-#endif /* not __MSDOS__ and not OS2 and not _WIN32 */
-
-#if defined(OS2)
-
-static int
-pexecute (search_flag, program, argv, not_last)
-     int search_flag;
-     char *program;
-     char *argv[];
-     int not_last;
-{
-  return (search_flag ? spawnv : spawnvp) (1, program, argv);
-}
-#endif /* OS2 */
-
-#if defined(_WIN32)
-
-static int
-pexecute (search_flag, program, argv, not_last)
-     int search_flag;
-     char *program;
-     char *argv[];
-     int not_last;
-{
-  return (search_flag ? __spawnv : __spawnvp) (1, program, argv);
-}
-#endif /* _WIN32 */
-
-
 /* Execute the command specified by the arguments on the current line of spec.
    When using pipes, this includes several piped-together commands
    with `|' between them.
@@ -2101,8 +1909,8 @@ execute ()
   for (n_commands = 1, i = 0; i < argbuf_index; i++)
     if (strcmp (argbuf[i], "|") == 0)
       {				/* each command.  */
-#ifdef __MSDOS__
-        fatal ("-pipe not supported under MS-DOS");
+#if defined (__MSDOS__) || defined (_WIN32) || defined (OS2)
+        fatal ("-pipe not supported");
 #endif
 	argbuf[i] = 0;	/* termination of command args.  */
 	commands[n_commands].prog = argbuf[i + 1];
@@ -2146,14 +1954,21 @@ execute ()
 
   /* Run each piped subprocess.  */
 
-  last_pipe_input = STDIN_FILE_NO;
   for (i = 0; i < n_commands; i++)
     {
+      char *errmsg_fmt, *errmsg_arg;
       char *string = commands[i].argv[0];
 
-      commands[i].pid = pexecute (string != commands[i].prog,
-				  string, commands[i].argv,
-				  i + 1 < n_commands);
+      commands[i].pid = pexecute (string, commands[i].argv,
+				  programname, temp_filename,
+				  &errmsg_fmt, &errmsg_arg,
+				  ((i == 0 ? PEXECUTE_FIRST : 0)
+				   | (i + 1 == n_commands ? PEXECUTE_LAST : 0)
+				   | (string == commands[i].prog
+				      ? PEXECUTE_SEARCH : 0)));
+
+      if (commands[i].pid == -1)
+	pfatal_pexecute (errmsg_fmt, errmsg_arg);
 
       if (string != commands[i].prog)
 	free (string);
@@ -2176,15 +1991,7 @@ execute ()
 	int status;
 	int pid;
 
-#ifdef __MSDOS__
-        status = pid = commands[i].pid;
-#else
-#ifdef _WIN32
-	pid = cwait (&status, commands[i].pid, WAIT_CHILD);
-#else
-	pid = wait (&status);
-#endif
-#endif
+	pid = pwait (commands[i].pid, &status, 0);
 	if (pid < 0)
 	  abort ();
 
@@ -4746,11 +4553,31 @@ perror_with_name (name)
 }
 
 static void
-perror_exec (name)
-     char *name;
+pfatal_pexecute (errmsg_fmt, errmsg_arg)
+     char *errmsg_fmt;
+     char *errmsg_arg;
 {
-  error ("installation problem, cannot exec `%s': %s",
-	 name, my_strerror (errno));
+  char buf[30];
+  char *s;
+
+  /* ??? Why doesn't my_strerror handle this?  */
+  if (errno < sys_nerr)
+    s = my_strerror (errno);
+  else
+    {
+      sprintf (buf, "unknown error %d", errno);
+      s = buf;
+    }
+
+  if (errmsg_arg)
+    {
+      /* Space for trailing '\0' is in %s.  */
+      char *msg = xmalloc (strlen (errmsg_fmt) + strlen (errmsg_arg));
+      sprintf (msg, errmsg_fmt, errmsg_arg);
+      errmsg_fmt = msg;
+    }
+
+  fatal ("%s: %s", errmsg_fmt, s);
 }
 
 /* More 'friendly' abort that prints the line and file.
