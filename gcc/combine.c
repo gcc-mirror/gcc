@@ -11072,7 +11072,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	      && GET_CODE (XEXP (op0, 0)) == NOT)
 	    {
 	      op0 = simplify_and_const_int
-		(op0, mode, XEXP (XEXP (op0, 0), 0), (HOST_WIDE_INT) 1);
+		(NULL_RTX, mode, XEXP (XEXP (op0, 0), 0), (HOST_WIDE_INT) 1);
 	      code = (code == NE ? EQ : NE);
 	      continue;
 	    }
