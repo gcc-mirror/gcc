@@ -2138,7 +2138,7 @@ ix86_expand_epilogue (emit_return)
 
 	  emit_insn (gen_popsi1 (ecx));
 	  emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, popc));
-	  emit_indirect_jump (ecx);
+	  emit_jump_insn (gen_return_indirect_internal (ecx));
 	}
       else
 	emit_jump_insn (gen_return_pop_internal (popc));
