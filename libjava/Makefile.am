@@ -21,6 +21,9 @@ write_entries_to_file = $(shell rm -f $(2) || :) $(shell touch $(2)) $(foreach o
 
 ## ################################################################
 
+# autoconf2.13's target_alias
+target_noncanonical = @target_noncanonical@
+
 ##
 ## What gets installed, and where.
 ##
@@ -28,7 +31,7 @@ write_entries_to_file = $(shell rm -f $(2) || :) $(shell touch $(2)) $(foreach o
 if XLIB_AWT
 cond_x_ltlibrary = lib-gnu-awt-xlib.la
 ## We require libstdc++-v3 to be in the same build tree.
-xlib_includes = -I../libstdc++-v3/include -I../libstdc++-v3/include/$(target_alias) -I$(srcdir)/../libstdc++-v3/libsupc++
+xlib_includes = -I../libstdc++-v3/include -I../libstdc++-v3/include/$(target_noncanonical) -I$(srcdir)/../libstdc++-v3/libsupc++
 else
 cond_x_ltlibrary =
 xlib_includes =
@@ -78,7 +81,7 @@ ZIP = $(MULTIBUILDTOP)../$(COMPPATH)/fastjar/jar
 GCJH = gcjh
 else
 ZIP = jar
-GCJH = $(target_alias)-gcjh
+GCJH = $(target_noncanonical)-gcjh
 endif
 else # CANADIAN
 GCJH = $(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh
