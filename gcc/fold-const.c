@@ -5993,7 +5993,10 @@ fold_widened_comparison (enum tree_code code, tree type, tree arg0, tree arg1)
   if (arg0_unw == arg0)
     return NULL_TREE;
   shorter_type = TREE_TYPE (arg0_unw);
-  
+
+  if (TYPE_PRECISION (TREE_TYPE (arg0)) <= TYPE_PRECISION (shorter_type))
+    return NULL_TREE;
+
   arg1_unw = get_unwidened (arg1, shorter_type);
   if (!arg1_unw)
     return NULL_TREE;

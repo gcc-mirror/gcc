@@ -1,5 +1,9 @@
 2005-01-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/19283
+	* fold-const.c (fold_widened_comparison): Return NULL if shorter_type
+	is not shorter than the original type.
+
 	PR rtl-optimization/19012
 	* config/i386/i386.md (addqi_1_slp): Set memory attribute.
 
