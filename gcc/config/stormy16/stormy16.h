@@ -810,18 +810,6 @@ do  {						\
 
 /* Miscellaneous Parameters.  */
 
-#define PREDICATE_CODES					\
-  {"shift_operator", {ASHIFT, ASHIFTRT, LSHIFTRT }},	\
-  {"equality_operator", {EQ, NE }},			\
-  {"inequality_operator", {GE, GT, LE, LT, GEU, GTU, LEU, LTU }}, \
-  {"xstormy16_ineqsi_operator", {LT, GE, LTU, GEU }}, \
-  {"xstormy16_below100_operand", {MEM }}, \
-  {"xstormy16_below100_or_register", {MEM, REG, SUBREG }}, \
-  {"xstormy16_splittable_below100_or_register", {MEM, REG, SUBREG }}, \
-  {"xstormy16_onebit_clr_operand", {CONST_INT }}, \
-  {"xstormy16_onebit_set_operand", {CONST_INT }}, \
-  {"nonimmediate_nonstack_operand", {REG, MEM, SUBREG }},
-
 #define CASE_VECTOR_MODE SImode
 
 #define WORD_REGISTER_OPERATIONS
