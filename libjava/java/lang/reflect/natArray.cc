@@ -1,6 +1,6 @@
 // natField.cc - Implementation of java.lang.reflect.Field native methods.
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -29,7 +29,14 @@ jobject
 java::lang::reflect::Array::newInstance (jclass componentType, jint length)
 {
   if (componentType->isPrimitive())
-    return _Jv_NewPrimArray (componentType, length);
+    {
+      // We could check for this in _Jv_NewPrimArray, but that seems
+      // like needless overhead when the only real route to this
+      // problem is here.
+      if (componentType == JvPrimClass (void))
+	throw new java::lang::IllegalArgumentException ();
+      return _Jv_NewPrimArray (componentType, length);
+    }
   else
     return JvNewObjectArray (length, componentType, NULL);
 
