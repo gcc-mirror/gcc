@@ -1,5 +1,10 @@
 1999-05-03  Craig Burley  <craig@jcb-sc.com>
 
+	* g77.f-torture/execute/u77-test.f (main): Declare ABORT as
+	intrinsic.
+
+1999-05-03  Craig Burley  <craig@jcb-sc.com>
+
 	* g77.f-torture/execute/u77-test.f: Reverse order of two
 	arguments to CTIME_subr, DTIME_subr, ETIME_subr, and TTYNAM_subr.
 
