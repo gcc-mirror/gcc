@@ -284,7 +284,6 @@ _Jv_ThreadInitData (_Jv_Thread_t **data, java::lang::Thread *)
   _Jv_Thread_t *info = new _Jv_Thread_t;
 
   info->flags = 0;
-  info->exception = NULL;
 
   // FIXME register a finalizer for INFO here.
   // FIXME also must mark INFO somehow.
@@ -304,26 +303,6 @@ _Jv_ThreadSetPriority (_Jv_Thread_t *data, jint prio)
     }
 }
 
-
-// This is called as a cleanup handler when a thread is exiting.  We
-// use it to throw the requested exception.  It's entirely possible
-// that this approach is doomed to failure, in which case we'll need
-// to adopt some alternate.  For instance, use a signal to implement
-// _Jv_ThreadCancel.
-static void
-throw_cleanup (void *data)
-{
-  _Jv_Thread_t *td = (_Jv_Thread_t *) data;
-  _Jv_Throw ((java::lang::Throwable *) td->exception);
-}
-
-void
-_Jv_ThreadCancel (_Jv_Thread_t *data, void *error)
-{
-  data->exception = error;
-  pthread_cancel (data->thread);
-}
-
 // This function is called when a thread is started.  We don't arrange
 // to call the `run' method directly, because this function must
 // return a value.
@@ -332,11 +311,9 @@ really_start (void *x)
 {
   struct starter *info = (struct starter *) x;
 
-  pthread_cleanup_push (throw_cleanup, info->data);
   pthread_setspecific (_Jv_ThreadKey, info->object);
   pthread_setspecific (_Jv_ThreadDataKey, info->data);
   info->method (info->object);
-  pthread_cleanup_pop (0);
 
   if (! (info->data->flags & FLAG_DAEMON))
     {

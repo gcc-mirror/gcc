@@ -304,12 +304,7 @@ java::lang::Thread::start (void)
 void
 java::lang::Thread::stop (java::lang::Throwable *e)
 {
-  JvSynchronize sync (this);
-  checkAccess ();
-  if (! e)
-    _Jv_Throw (new NullPointerException);
-  natThread *nt = (natThread *) data;
-  _Jv_ThreadCancel (nt->thread, e);
+  JvFail ("java::lang::Thread::stop unimplemented");
 }
 
 void

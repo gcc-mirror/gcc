@@ -125,19 +125,6 @@ _Jv_ThreadSetPriority (_Jv_Thread_t *, jint)
 {
 }
 
-inline void
-_Jv_ThreadCancel (_Jv_Thread_t *, void *)
-{
-  JvFail ("_Jv_ThreadCancel");
-}
-
-// Like Cancel, but doesn't run cleanups.
-inline void
-_Jv_ThreadDestroy (_Jv_Thread_t *)
-{
-  JvFail ("_Jv_ThreadDestroy");
-}
-
 void _Jv_ThreadStart (java::lang::Thread *, _Jv_Thread_t *,
 		      _Jv_ThreadStartFunc *meth);
 

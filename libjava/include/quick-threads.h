@@ -113,19 +113,6 @@ _Jv_ThreadSetPriority (_Jv_Thread_t *, jint)
 {
 }
 
-inline void
-_Jv_ThreadCancel (_Jv_Thread_t *data, void *error)
-{
-  coop_terminate (*data, error);
-}
-
-// Like Cancel, but doesn't run cleanups.
-inline void
-_Jv_ThreadDestroy (_Jv_Thread_t *data)
-{
-  coop_terminate (*data, 0);
-}
-
 void _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *data,
 		      _Jv_ThreadStartFunc *meth);
 

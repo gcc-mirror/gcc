@@ -76,9 +76,6 @@ typedef struct
 
   // Actual thread id.
   pthread_t thread;
-
-  // Exception we want to throw when cancelled.
-  void *exception;
 } _Jv_Thread_t;
 typedef void _Jv_ThreadStartFunc (java::lang::Thread *);
 
@@ -267,15 +264,6 @@ _Jv_ThreadYield (void)
 }
 
 void _Jv_ThreadSetPriority (_Jv_Thread_t *data, jint prio);
-
-void _Jv_ThreadCancel (_Jv_Thread_t *data, void *error);
-
-// Like Cancel, but doesn't run cleanups.
-inline void
-_Jv_ThreadDestroy (_Jv_Thread_t *)
-{
-  JvFail ("_Jv_ThreadDestroy");
-}
 
 void _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *data,
 		      _Jv_ThreadStartFunc *meth);

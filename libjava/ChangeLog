@@ -1,3 +1,20 @@
+1999-11-04  Tom Tromey  <tromey@cygnus.com>
+
+	* include/quick-threads.h (_Jv_ThreadCancel): Removed.
+	(_Jv_ThreadDestroy): Likewise.
+	* include/no-threads.h (_Jv_ThreadCancel): Removed.
+	(_Jv_ThreadDestroy): Likewise.
+	* include/posix-threads.h (struct _Jv_Thread_t): Removed
+	`exception' field.
+	(_Jv_ThreadCancel): Removed decl.
+	(_Jv_ThreadDestroy): Removed.
+	* posix-threads.cc (_Jv_ThreadCancel): Removed.
+	(throw_cleanup): Removed.
+	(really_start): Don't push or pop cleanup.
+	(_Jv_ThreadInitData): Don't initialize `exception' field.
+	* java/lang/Thread.java (stop): Officially unimplemented.
+	* java/lang/natThread.cc (stop): Officially unimplemented.
+
 1999-11-02  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* posix-threads.cc: Don't include boehm-config.h. Include gcconfig.h 
