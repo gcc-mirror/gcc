@@ -211,6 +211,15 @@ rtxfun bcc_gen_fctn[NUM_RTX_CODE];
 
 enum insn_code setcc_gen_code[NUM_RTX_CODE];
 
+#ifdef HAVE_conditional_move
+/* Indexed by the machine mode, gives the insn code to make a conditional
+   move insn.  This is not indexed by the rtx-code like bcc_gen_fctn and
+   setcc_gen_code to cut down on the number of named patterns.  Consider a day
+   when a lot more rtx codes are conditional (eg: for the ARM).  */
+
+enum insn_code movcc_gen_code[NUM_MACHINE_MODES];
+#endif
+
 static int add_equal_note	PROTO((rtx, rtx, enum rtx_code, rtx, rtx));
 static rtx widen_operand	PROTO((rtx, enum machine_mode,
 				       enum machine_mode, int, int));
@@ -3050,6 +3059,148 @@ emit_indirect_jump (loc)
   emit_barrier ();
 }
 
+#ifdef HAVE_conditional_move
+
+/* Emit a conditional move instruction if the machine supports one for that
+   condition and machine mode.
+
+   OP0 and OP1 are the operands that should be compared using CODE.  CMODE is
+   the mode to use should they be constants.  If it is VOIDmode, they cannot
+   both be constants.
+
+   OP2 should be stored in TARGET if the comparison is true, otherwise OP3
+   should be stored there.  MODE is the mode to use should they be constants.
+   If it is VOIDmode, they cannot both be constants.
+
+   The result is either TARGET (perhaps modified) or NULL_RTX if the operation
+   is not supported.  */
+
+rtx
+emit_conditional_move (target, code, op0, op1, cmode, op2, op3, mode,
+		       unsignedp)
+     rtx target;
+     enum rtx_code code;
+     rtx op0, op1;
+     enum machine_mode cmode;
+     rtx op2, op3;
+     enum machine_mode mode;
+     int unsignedp;
+{
+  rtx tem, subtarget, comparison, insn;
+  enum insn_code icode;
+
+  /* If one operand is constant, make it the second one.  Only do this
+     if the other operand is not constant as well.  */
+
+  if ((CONSTANT_P (op0) && ! CONSTANT_P (op1))
+      || (GET_CODE (op0) == CONST_INT && GET_CODE (op1) != CONST_INT))
+    {
+      tem = op0;
+      op0 = op1;
+      op1 = tem;
+      code = swap_condition (code);
+    }
+
+  if (cmode == VOIDmode)
+    cmode = GET_MODE (op0);
+
+  if ((CONSTANT_P (op2) && ! CONSTANT_P (op3))
+      || (GET_CODE (op2) == CONST_INT && GET_CODE (op3) != CONST_INT))
+    {
+      tem = op2;
+      op2 = op3;
+      op3 = tem;
+      /* ??? This may not be appropriate (consider IEEE).  Perhaps we should
+	 call can_reverse_comparison_p here and bail out if necessary.
+	 It's not clear whether we need to do this canonicalization though.  */
+      code = reverse_condition (code);
+    }
+
+  if (mode == VOIDmode)
+    mode = GET_MODE (op2);
+
+  icode = movcc_gen_code[mode];
+
+  if (icode == CODE_FOR_nothing)
+    return 0;
+
+  if (flag_force_mem)
+    {
+      op2 = force_not_mem (op2);
+      op3 = force_not_mem (op3);
+    }
+
+  if (target)
+    target = protect_from_queue (target, 1);
+  else
+    target = gen_reg_rtx (mode);
+
+  subtarget = target;
+
+  emit_queue ();
+
+  op2 = protect_from_queue (op2, 0);
+  op3 = protect_from_queue (op3, 0);
+
+  /* If the insn doesn't accept these operands, put them in pseudos.  */
+
+  if (! (*insn_operand_predicate[icode][0])
+      (subtarget, insn_operand_mode[icode][0]))
+    subtarget = gen_reg_rtx (insn_operand_mode[icode][0]);
+
+  if (! (*insn_operand_predicate[icode][2])
+      (op2, insn_operand_mode[icode][2]))
+    op2 = copy_to_mode_reg (insn_operand_mode[icode][2], op2);
+
+  if (! (*insn_operand_predicate[icode][3])
+      (op3, insn_operand_mode[icode][3]))
+    op3 = copy_to_mode_reg (insn_operand_mode[icode][3], op3);
+
+  /* Everything should now be in the suitable form, so emit the compare insn
+     and then the conditional move.  */
+
+  comparison 
+    = compare_from_rtx (op0, op1, code, unsignedp, cmode, NULL_RTX, 0);
+
+  /* ??? Watch for const0_rtx (nop) and const_true_rtx (unconditional)?  */
+  if (GET_CODE (comparison) != code)
+    /* This shouldn't happen.  */
+    abort ();
+  
+  insn = GEN_FCN (icode) (subtarget, comparison, op2, op3);
+
+  /* If that failed, then give up.  */
+  if (insn == 0)
+    return 0;
+
+  emit_insn (insn);
+
+  if (subtarget != target)
+    convert_move (target, subtarget, 0);
+
+  return target;
+}
+
+/* Return non-zero if a conditional move of mode MODE is supported.
+
+   This function is for combine so it can tell whether an insn that looks
+   like a conditional move is actually supported by the hardware.  If we
+   guess wrong we lose a bit on optimization, but that's it.  */
+/* ??? sparc64 supports conditionally moving integers values based on fp
+   comparisons, and vice versa.  How do we handle them?  */
+
+int
+can_conditionally_move_p (mode)
+     enum machine_mode mode;
+{
+  if (movcc_gen_code[mode] != CODE_FOR_nothing)
+    return 1;
+
+  return 0;
+}
+
+#endif /* HAVE_conditional_move */
+
 /* These three functions generate an insn body and return it
    rather than emitting the insn.
 
@@ -3874,6 +4025,11 @@ init_optabs ()
 
   for (i = 0; i < NUM_RTX_CODE; i++)
     setcc_gen_code[i] = CODE_FOR_nothing;
+
+#ifdef HAVE_conditional_move
+  for (i = 0; i < NUM_MACHINE_MODES; i++)
+    movcc_gen_code[i] = CODE_FOR_nothing;
+#endif
 
   add_optab = init_optab (PLUS);
   sub_optab = init_optab (MINUS);
