@@ -6099,8 +6099,8 @@ compute_flow_dominators (dominators, post_dominators)
 	  if (b->aux == ENTRY_BLOCK_PTR)
 	    {
 	      /* Do not clear the aux field for blocks which are
-		 successors of the ENTRY block.  That way we we never
-		 add them to the worklist again.
+		 successors of the ENTRY block.  That way we never add
+		 them to the worklist again.
 
 		 The intersect of dominators of the preds of this block is
 		 defined as the null set.  */
