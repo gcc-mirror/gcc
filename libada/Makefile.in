@@ -47,7 +47,7 @@ gnatlib:
 	$(MAKE) -C ../../gcc $(FLAGS_TO_PASS) $(GNATLIB)
 
 # Rules to build gnattools.
-gnattools:
+gnattools: gnatlib
 	$(MAKE) -C ../../gcc $(FLAGS_TO_PASS) $(GNATTOOLS)
 
 # Check uninstalled version.

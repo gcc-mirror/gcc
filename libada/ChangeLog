@@ -1,3 +1,7 @@
+2004-02-10  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* Makefile.in (gnattools): Depend on gnatlib.
+
 2003-02-10  Arnaud Charlet  <charlet@act-europe.fr>
 
 	PR ada/6637, PR ada/5911
