@@ -1,3 +1,8 @@
+2003-07-14  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	PR optimization/11440
+	* gcc.c-torture/execute/20030714-1.c: New test.
+
 2003-07-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/11154
