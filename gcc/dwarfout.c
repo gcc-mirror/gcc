@@ -1886,17 +1886,17 @@ static inline unsigned HOST_WIDE_INT
 simple_type_size_in_bits (type)
      register tree type;
 {
+  tree type_size_tree;
+
   if (TREE_CODE (type) == ERROR_MARK)
     return BITS_PER_WORD;
-  else
-    {
-      register tree type_size_tree = TYPE_SIZE (type);
+  type_size_tree = TYPE_SIZE (type);
 
-      if (! host_integerp (type_size_tree, 1))
-	return TYPE_ALIGN (type);
-
-      return tree_low_cst (type_size_tree, 1);
-    }
+  if (type_size_tree == NULL_TREE)
+    return 0;
+  if (! host_integerp (type_size_tree, 1))
+    return TYPE_ALIGN (type);
+  return tree_low_cst (type_size_tree, 1);
 }
 
 /* Given a pointer to what is assumed to be a FIELD_DECL node, compute and
@@ -1931,15 +1931,11 @@ field_byte_offset (decl)
   type = field_type (decl);
   field_size_tree = DECL_SIZE (decl);
 
-  /* If there was an error, the size could be zero.  */
+  /* The size could be unspecified if there was an error, or for
+     a flexible array member.  */
   if (! field_size_tree)
-    {
-      if (errorcount)
-	return 0;
+    field_size_tree = bitsize_zero_node;
 
-      abort ();
-    }
-    
   /* We cannot yet cope with fields whose positions or sizes are variable,
      so for now, when we see such things, we simply return 0.  Someday,
      we may be able to handle such cases, but it will be damn difficult.  */
@@ -2533,28 +2529,26 @@ subscript_data_attribute (type)
 	  register tree upper = TYPE_MAX_VALUE (domain);
 
 	  /* Handle only fundamental types as index types for now.  */
-
 	  if (! type_is_fundamental (domain))
 	    abort ();
 
 	  /* Output the representation format byte for this dimension.  */
-
 	  ASM_OUTPUT_DWARF_FMT_BYTE (asm_out_file,
 		  FMT_CODE (1, TREE_CODE (lower) == INTEGER_CST,
-			    (upper && TREE_CODE (upper) == INTEGER_CST)));
+			    upper && TREE_CODE (upper) == INTEGER_CST));
 
 	  /* Output the index type for this dimension.	*/
-
 	  ASM_OUTPUT_DWARF_FUND_TYPE (asm_out_file,
 				      fundamental_type_code (domain));
 
 	  /* Output the representation for the lower bound.  */
-
 	  output_bound_representation (lower, dimension_number, 'l');
 
 	  /* Output the representation for the upper bound.  */
-
-	  output_bound_representation (upper, dimension_number, 'u');
+	  if (upper)
+	    output_bound_representation (upper, dimension_number, 'u');
+	  else
+	    ASM_OUTPUT_DWARF_DATA2 (asm_out_file, 0);
 	}
       else
 	{

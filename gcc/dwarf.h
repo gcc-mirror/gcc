@@ -285,10 +285,10 @@ enum dwarf_subscr_data_formats {
 
 /* Derived from above for ease of use.  */
 
-#define FMT_CODE(_FUNDAMENTAL_TYPE_P, _UB_CONST_P, _LB_CONST_P) \
+#define FMT_CODE(_FUNDAMENTAL_TYPE_P, _LB_CONST_P, _UB_CONST_P) \
  (((_FUNDAMENTAL_TYPE_P) ? 0 : 4)	\
-  | ((_UB_CONST_P) ? 0 : 2)		\
-  | ((_LB_CONST_P) ? 0 : 1))
+  | ((_LB_CONST_P) ? 0 : 2)		\
+  | ((_UB_CONST_P) ? 0 : 1))
 
 /* Source language names and codes.  */
 
