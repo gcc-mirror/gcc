@@ -1,3 +1,23 @@
+2000-12-03  Nick Clifton  <nickc@redhat.com>
+
+	* config.gcc: Add support for StrongARM targets.
+	* config/arm/t-strongarm-elf: New file.
+	* config/arm/t-strongarm-coff: New file.
+	* config/arm/t-strongarm-pe: New file.
+	* config/arm/strongarm-pe.h: New file.
+
+2000-12-03  Nick Clifton  <nickc@redhat.com>
+
+	* NEWS: Mention XScale has been added.
+	* config.gcc: Add support for XScale targets.
+	* config/arm/arm.h: Add support for XScale processor.
+	* config/arm/arm.c: Add support for XScale processor.
+	* config/arm/arm.md: Add support for XScale processor.
+	* config/arm/t-xscale-elf: New file.
+	* config/arm/t-xscale-coff: New file.
+	* config/arm/xscale-elf.h: New file.
+	* config/arm/xscale-coff.h: New file.
+
 2000-12-03  Richard Henderson  <rth@redhat.com>
 
 	* bb-reorder.c (reorder_basic_blocks): Don't check for EH edges

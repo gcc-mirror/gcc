@@ -69,6 +69,11 @@
 ; scheduling decisions for the load unit and the multiplier.
 (define_attr "is_strongarm" "no,yes" (const (symbol_ref "arm_is_strong")))
 
+;; Operand number of an input operand that is shifted.  Zero if the
+;; given instruction does not shift one of its input operands.
+(define_attr "is_xscale" "no,yes" (const (symbol_ref "arm_is_xscale")))
+(define_attr "shift" "" (const_int 0))
+
 ; Floating Point Unit.  If we only have floating point emulation, then there
 ; is no point in scheduling the floating point insns.  (Well, for best
 ; performance we should try and group them together).
@@ -290,6 +295,18 @@
 
 (define_function_unit "core" 1 0
   (and (eq_attr "ldsched" "yes") (eq_attr "type" "load")) 2 1)
+
+;; We do not need to conditionalize the define_function_unit immediately
+;; above.  This one will be ignored for anything other than xscale
+;; compiles and for xscale compiles it provides a larger delay
+;; and the scheduler will DTRT.
+;; FIXME: this test needs to be revamped to not depend on this feature 
+;; of the scheduler.
+
+(define_function_unit "core" 1 0
+  (and (and (eq_attr "ldsched" "yes") (eq_attr "type" "load"))
+       (eq_attr "is_xscale" "yes"))
+   3 1)
 
 (define_function_unit "core" 1 0
   (and (eq_attr "ldsched" "!yes") (eq_attr "type" "load,store1")) 2 2)
@@ -1121,7 +1138,7 @@
 			 (const_int 0)))
    (set (match_operand:SI 0 "s_register_operand" "=&r,&r")
 	(mult:SI (match_dup 2) (match_dup 1)))]
-  "TARGET_ARM"
+  "TARGET_ARM && !arm_is_xscale"
   "mul%?s\\t%0, %2, %1"
   [(set_attr "conds" "set")
    (set_attr "type" "mult")]
@@ -1134,7 +1151,7 @@
 			  (match_operand:SI 1 "s_register_operand" "%?r,0"))
 			 (const_int 0)))
    (clobber (match_scratch:SI 0 "=&r,&r"))]
-  "TARGET_ARM"
+  "TARGET_ARM && !arm_is_xscale"
   "mul%?s\\t%0, %2, %1"
   [(set_attr "conds" "set")
    (set_attr "type" "mult")]
@@ -1165,7 +1182,7 @@
    (set (match_operand:SI 0 "s_register_operand" "=&r,&r,&r,&r")
 	(plus:SI (mult:SI (match_dup 2) (match_dup 1))
 		 (match_dup 3)))]
-  "TARGET_ARM"
+  "TARGET_ARM && !arm_is_xscale"
   "mla%?s\\t%0, %2, %1, %3"
   [(set_attr "conds" "set")
    (set_attr "type" "mult")]
@@ -1180,7 +1197,7 @@
 		  (match_operand:SI 3 "s_register_operand" "?r,r,0,0"))
 	 (const_int 0)))
    (clobber (match_scratch:SI 0 "=&r,&r,&r,&r"))]
-  "TARGET_ARM"
+  "TARGET_ARM && !arm_is_xscale"
   "mla%?s\\t%0, %2, %1, %3"
   [(set_attr "conds" "set")
    (set_attr "type" "mult")]
@@ -1226,7 +1243,7 @@
 ;; Unnamed template to match long long unsigned multiply-accumlate (umlal)
 
 (define_insn "*umulsidi3adddi"
-  [(set (match_operand:DI 0 "s_register_operand" "=&r")
+  [(set (match_operand:DI 0 "s_register_operand" "+&r")
 	(plus:DI
 	 (mult:DI
 	  (zero_extend:DI (match_operand:SI 2 "s_register_operand" "%r"))
@@ -1267,6 +1284,41 @@
   [(set_attr "type" "mult")
    (set_attr "predicable" "yes")]
 )
+
+(define_insn "mulhisi3"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(mult:SI (sign_extend:SI
+		  (match_operand:HI 1 "s_register_operand" "%r"))
+		 (sign_extend:SI
+		  (match_operand:HI 2 "s_register_operand" "r"))))]
+  "TARGET_ARM && arm_is_xscale"
+  "smulbb%?\\t%0,%1,%2"
+  [(set_attr "type" "mult")]
+)
+
+(define_insn "*mulhisi3addsi"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(plus:SI (match_operand:SI 1 "s_register_operand" "r")
+		 (mult:SI (sign_extend:SI
+			   (match_operand:HI 2 "s_register_operand" "%r"))
+			  (sign_extend:SI
+			   (match_operand:HI 3 "s_register_operand" "r")))))]
+  "TARGET_ARM && arm_is_xscale"
+  "smlabb%?\\t%0,%2,%3,%1"
+  [(set_attr "type" "mult")]
+)
+
+(define_insn "*mulhidi3adddi"
+  [(set (match_operand:DI 0 "s_register_operand" "=r")
+	(plus:DI
+	  (match_operand:DI 1 "s_register_operand" "0")
+	  (mult:DI (sign_extend:DI
+	 	    (match_operand:HI 2 "s_register_operand" "%r"))
+		   (sign_extend:DI
+		    (match_operand:HI 3 "s_register_operand" "r")))))]
+  "TARGET_ARM && arm_is_xscale"
+  "smlalbb%?\\t%Q0, %R0, %2, %3"
+[(set_attr "type" "mult")])
 
 (define_insn "mulsf3"
   [(set (match_operand:SF 0 "s_register_operand" "=f")
@@ -2003,6 +2055,7 @@
   "TARGET_ARM"
   "bic%?\\t%0, %1, %2%S4"
   [(set_attr "predicable" "yes")
+   (set_attr "shift" "2")
    ]
 )
 
@@ -2503,6 +2556,7 @@
   "TARGET_ARM"
   "mov%?\\t%0, %1%S3"
   [(set_attr "predicable" "yes")
+   (set_attr "shift" "1")
    ]
 )
 
@@ -2517,6 +2571,7 @@
   "TARGET_ARM"
   "mov%?s\\t%0, %1%S3"
   [(set_attr "conds" "set")
+   (set_attr "shift" "1")
    ]
 )
 
@@ -2530,6 +2585,7 @@
   "TARGET_ARM"
   "mov%?s\\t%0, %1%S3"
   [(set_attr "conds" "set")
+   (set_attr "shift" "1")
    ]
 )
 
@@ -2541,6 +2597,7 @@
   "TARGET_ARM"
   "mvn%?\\t%0, %1%S3"
   [(set_attr "predicable" "yes")
+   (set_attr "shift" "1")
    ]
 )
 
@@ -2555,6 +2612,7 @@
   "TARGET_ARM"
   "mvn%?s\\t%0, %1%S3"
   [(set_attr "conds" "set")
+   (set_attr "shift" "1")
    ]
 )
 
@@ -2568,7 +2626,8 @@
   "TARGET_ARM"
   "mvn%?s\\t%0, %1%S3"
   [(set_attr "conds" "set")
-   ]
+   (set_attr "shift" "1")
+  ]
 )
 
 ;; We don't really have extzv, but defining this using shifts helps
@@ -2713,6 +2772,7 @@
    cmp\\t%0, #0\;rsblt\\t%0, %0, #0
    eor%?\\t%0, %1, %1, asr #31\;sub%?\\t%0, %0, %1, asr #31"
   [(set_attr "conds" "clob,*")
+   (set_attr "shift" "1")
    ;; predicable can't be set based on the variant, so left as no
    (set_attr "length" "8")]
 )
@@ -2726,6 +2786,7 @@
    cmp\\t%0, #0\;rsbgt\\t%0, %0, #0
    eor%?\\t%0, %1, %1, asr #31\;rsb%?\\t%0, %0, %1, asr #31"
   [(set_attr "conds" "clob,*")
+   (set_attr "shift" "1")
    ;; predicable can't be set based on the variant, so left as no
    (set_attr "length" "8")]
 )
@@ -3056,6 +3117,7 @@
     return \"mov%?\\t%R0, %Q0, asr #31\";
   "
   [(set_attr "length" "8")
+   (set_attr "shift" "1")
    (set_attr "predicable" "yes")]
 )
 
@@ -5471,6 +5533,7 @@
   "TARGET_ARM"
   "cmp%?\\t%0, %1%S3"
   [(set_attr "conds" "set")
+   (set_attr "shift" "1")
    ]
 )
 
@@ -5483,6 +5546,7 @@
   "TARGET_ARM"
   "cmp%?\\t%0, %1%S3"
   [(set_attr "conds" "set")
+   (set_attr "shift" "1")
    ]
 )
 
@@ -5495,6 +5559,7 @@
   "TARGET_ARM"
   "cmn%?\\t%0, %1%S3"
   [(set_attr "conds" "set")
+   (set_attr "shift" "1")
    ]
 )
 
@@ -6728,6 +6793,7 @@
   "TARGET_ARM"
   "%i1%?\\t%0, %2, %4%S3"
   [(set_attr "predicable" "yes")
+   (set_attr "shift" "4")
    ]
 )
 
@@ -6745,6 +6811,7 @@
   "TARGET_ARM"
   "%i1%?s\\t%0, %2, %4%S3"
   [(set_attr "conds" "set")
+   (set_attr "shift" "4")
    ]
 )
 
@@ -6760,6 +6827,7 @@
   "TARGET_ARM"
   "%i1%?s\\t%0, %2, %4%S3"
   [(set_attr "conds" "set")
+   (set_attr "shift" "4")
    ]
 )
 
@@ -6772,6 +6840,7 @@
   "TARGET_ARM"
   "sub%?\\t%0, %1, %3%S2"
   [(set_attr "predicable" "yes")
+   (set_attr "shift" "3")
    ]
 )
 
@@ -6789,6 +6858,7 @@
   "TARGET_ARM"
   "sub%?s\\t%0, %1, %3%S2"
   [(set_attr "conds" "set")
+   (set_attr "shift" "3") 
    ]
 )
 
@@ -6804,6 +6874,7 @@
   "TARGET_ARM"
   "sub%?s\\t%0, %1, %3%S2"
   [(set_attr "conds" "set")
+   (set_attr "shift" "3") 
    ]
 )
 
@@ -6848,12 +6919,13 @@
 	(plus:SI (plus:SI (match_op_dup 5 [(match_dup 3) (match_dup 4)])
 			  (match_dup 1))
 		 (match_dup 2)))]
-  "TARGET_ARM && reload_in_progress"
+  "TARGET_ARM && reload_in_progress && !arm_is_xscale"
   "*
     output_add_immediate (operands);
     return \"add%?s\\t%0, %0, %3%S5\";
   "
   [(set_attr "conds" "set")
+   (set_attr "shift" "3")
    (set_attr "length" "20")]
 )
 
@@ -6868,12 +6940,13 @@
 			  (match_operand:SI 2 "const_int_operand" "n"))
 			 (const_int 0)))
    (clobber (match_scratch:SI 0 "=&r"))]
-  "TARGET_ARM && reload_in_progress"
+  "TARGET_ARM && reload_in_progress && !arm_is_xscale"
   "*
     output_add_immediate (operands);
     return \"add%?s\\t%0, %0, %3%S5\";
   "
   [(set_attr "conds" "set")
+   (set_attr "shift" "3")
    (set_attr "length" "20")]
 )
 
@@ -6908,7 +6981,7 @@
    (set (match_operand:SI 0 "" "=&r")
 	(plus:SI (plus:SI (mult:SI (match_dup 3) (match_dup 4)) (match_dup 1))
 		 (match_dup 2)))]
-  "TARGET_ARM && reload_in_progress"
+  "TARGET_ARM && reload_in_progress && !arm_is_xscale"
   "*
     output_add_immediate (operands);
     output_asm_insn (\"mla%?s\\t%0, %3, %4, %0\", operands);
@@ -7615,6 +7688,7 @@
    mov%D5\\t%0, %1\;mov%d5\\t%0, %2%S4
    mvn%D5\\t%0, #%B1\;mov%d5\\t%0, %2%S4"
   [(set_attr "conds" "use")
+   (set_attr "shift" "2")
    (set_attr "length" "4,8,8")]
 )
 
@@ -7650,6 +7724,7 @@
    mov%d5\\t%0, %1\;mov%D5\\t%0, %2%S4
    mvn%d5\\t%0, #%B1\;mov%D5\\t%0, %2%S4"
   [(set_attr "conds" "use")
+   (set_attr "shift" "2")
    (set_attr "length" "4,8,8")]
 )
 
@@ -7686,6 +7761,7 @@
   "TARGET_ARM"
   "mov%d5\\t%0, %1%S6\;mov%D5\\t%0, %3%S7"
   [(set_attr "conds" "use")
+   (set_attr "shift" "1")
    (set_attr "length" "8")]
 )
 
@@ -8911,6 +8987,22 @@
   "mov	pc, %0"
   [(set_attr "length" "2")]
 )
+
+;; V5 Instructions,
+
+(define_insn "clz"
+  [(set (match_operand:SI             0 "s_register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "s_register_operand" "r")] 128))]
+  "TARGET_ARM"
+  "clz\\t%0,%1")
+
+;; XScale instructions.
+
+(define_insn "prefetch"
+  [(unspec_volatile
+    [(match_operand:SI 0 "offsettable_memory_operand" "o")] 129)]
+  "TARGET_ARM"
+  "pld\\t%0")
 
 ;; General predication pattern
 

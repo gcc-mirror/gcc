@@ -213,6 +213,9 @@ strongarm*-*-*)
 arm*-*-*)
 	cpu_type=arm
 	;;
+xscale-*-*)
+	cpu_type=arm
+	;;
 c*-convex-*)
 	cpu_type=convex
 	;;
@@ -3114,6 +3117,28 @@ sparc64-*-linux*)		# 64-bit Sparc's running GNU/Linux
 	fi
 	float_format=sparc
 	;;
+strongarm-*-elf*)
+	tm_file=arm/strongarm-elf.h
+	tmake_file=arm/t-strongarm-elf
+	out_file=arm/arm.c
+	xm_file=arm/xm-arm.h
+	md_file=arm/arm.md
+	;;
+strongarm-*-coff*)
+	tm_file=arm/strongarm-coff.h
+	tmake_file=arm/t-strongarm-coff
+	out_file=arm/arm.c
+	xm_file=arm/xm-arm.h
+	md_file=arm/arm.md
+	;;
+strongarm-*-pe)
+	tm_file=arm/strongarm-pe.h
+	tmake_file=arm/t-strongarm-pe
+	out_file=arm/arm.c
+	xm_file=arm/xm-arm.h
+	md_file=arm/arm.md
+	extra_objs=pe.o
+	;;
 thumb*-*-*)
 	{ echo "config.gcc: error:
 *** The Thumb targets have been deprecated.  The equivalent
@@ -3184,6 +3209,20 @@ vax-*-*)			# vax default entry
 we32k-att-sysv*)
 	xm_file="${xm_file} xm-svr3"
 	use_collect2=yes
+	;;
+xscale-*-elf)
+	tm_file=arm/xscale-elf.h
+	tmake_file=arm/t-xscale-elf
+	out_file=arm/arm.c
+	xm_file=arm/xm-arm.h
+	md_file=arm/arm.md
+	;;
+xscale-*-coff)
+	tm_file=arm/xscale-coff.h
+	tmake_file=arm/t-xscale-coff
+	out_file=arm/arm.c
+	xm_file=arm/xm-arm.h
+	md_file=arm/arm.md
 	;;
 *)
 	echo "Configuration $machine not supported" 1>&2
@@ -3280,6 +3319,7 @@ arm*-*-*)
 		xarm[236789] | xarm250 | xarm[67][01]0 \
 		| xarm7m | xarm7dm | xarm7dmi | xarm[79]tdmi \
 		| xarm7100 | xarm7500 | xarm7500fe | xarm810 \
+		| xxscale \
 		| xstrongarm | xstrongarm110 | xstrongarm1100)
 			target_cpu_default2="TARGET_CPU_$with_cpu"
 			;;
