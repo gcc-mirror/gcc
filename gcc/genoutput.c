@@ -177,7 +177,7 @@ output_prologue ()
 from the machine description file `md'.  */\n\n");
 
   printf ("#include \"config.h\"\n");
-  printf ("#include <stdio.h>\n");
+  printf ("#include \"system.h\"\n");
   printf ("#include \"flags.h\"\n");
   printf ("#include \"rtl.h\"\n");
   printf ("#include \"regs.h\"\n");
@@ -562,8 +562,13 @@ process_template (d, template)
 
   printf ("\nstatic char *\n");
   printf ("output_%d (operands, insn)\n", d->code_number);
+  printf ("#ifdef __GNUC__\n");
+  printf ("     rtx *operands __attribute__ ((unused));\n");
+  printf ("     rtx insn __attribute__ ((unused));\n");
+  printf ("#else\n");
   printf ("     rtx *operands;\n");
   printf ("     rtx insn;\n");
+  printf ("#endif\n");
   printf ("{\n");
 
   /* If the assembler code template starts with a @ it is a newline-separated

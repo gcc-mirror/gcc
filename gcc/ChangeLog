@@ -1,5 +1,13 @@
 Wed Apr  1 22:26:22 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* genattrtab.c: Make generated file use system.h, instead of
+	including stdio.h, etc directly.
+	* genextract.c, genopinit.c, genoutput.c: Likewise.
+	* genpeep.c, genrecog.c: Likewise
+
+	* genoutput.c (process_template): Mark operands in the generated
+	function as potentially unused if compiling with GNU CC.
+
 	* i386/freebsd-elf.h (CPP_PREDEFINES): Update from FreeBSD folks.
 
 	* pa.md (reload peepholes): Remove unused variable "mode".
