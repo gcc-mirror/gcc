@@ -1,3 +1,8 @@
+2004-07-07  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR target/15869
+	* config/mips/mips.c (mips_avoid_hazards): Call split_all_insns_noflow.
+
 2004-07-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* doc/include/gcc-common.texi: Increment version number.
