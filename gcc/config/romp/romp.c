@@ -58,7 +58,7 @@ static void romp_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void romp_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void romp_select_rtx_section PARAMS ((enum machine_mode, rtx,
 					     unsigned HOST_WIDE_INT));
-static void romp_encode_section_info PARAMS ((tree, int));
+static void romp_encode_section_info PARAMS ((tree, rtx, int));
 static bool romp_rtx_costs PARAMS ((rtx, int, int, int *));
 static int romp_address_cost PARAMS ((rtx));
 
@@ -2098,12 +2098,13 @@ romp_select_rtx_section (mode, x, align)
    that we need to mark such SYMBOL_REFs.  We do so here.  */
 
 static void
-romp_encode_section_info (decl, first)
+romp_encode_section_info (decl, rtl, first)
      tree decl;
+     rtx rtl;
      int first ATTRIBUTE_UNUSED;
 {
   if (TREE_CODE (TREE_TYPE (decl)) == FUNCTION_TYPE)
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+    SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;
 }
 
 static bool

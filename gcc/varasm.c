@@ -809,7 +809,7 @@ make_decl_rtl (decl, asmspec)
       /* Let the target reassign the RTL if it wants.
 	 This is necessary, for example, when one machine specific
 	 decl attribute overrides another.  */
-      (* targetm.encode_section_info) (decl, false);
+      (* targetm.encode_section_info) (decl, DECL_RTL (decl), false);
       return;
     }
 
@@ -932,7 +932,7 @@ make_decl_rtl (decl, asmspec)
      such as that it is a function name.
      If the name is changed, the macro ASM_OUTPUT_LABELREF
      will have to know how to strip this information.  */
-  (* targetm.encode_section_info) (decl, true);
+  (* targetm.encode_section_info) (decl, DECL_RTL (decl), true);
 }
 
 /* Make the rtl for variable VAR be volatile.
@@ -2674,10 +2674,7 @@ output_constant_def (exp, defer)
      encoded in it.  */
   if (! found)
     {
-      /* Take care not to invoke targetm.encode_section_info for
-	 constants which don't have a TREE_CST_RTL.  */
-      if (TREE_CODE (exp) != INTEGER_CST)
-	(*targetm.encode_section_info) (exp, true);
+      (*targetm.encode_section_info) (exp, rtl, true);
 
       desc->rtl = rtl;
       desc->label = XSTR (XEXP (desc->rtl, 0), 0);
@@ -5346,14 +5343,13 @@ default_elf_select_rtx_section (mode, x, align)
 /* Set the generally applicable flags on the SYMBOL_REF for EXP.  */
 
 void
-default_encode_section_info (decl, first)
+default_encode_section_info (decl, rtl, first)
      tree decl;
+     rtx rtl;
      int first ATTRIBUTE_UNUSED;
 {
-  rtx rtl, symbol;
+  rtx symbol;
   int flags;
-
-  rtl = DECL_P (decl) ? DECL_RTL (decl) : TREE_CST_RTL (decl);
 
   /* Careful not to prod global register variables.  */
   if (GET_CODE (rtl) != MEM)

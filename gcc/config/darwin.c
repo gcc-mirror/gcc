@@ -974,8 +974,9 @@ machopic_operand_p (op)
    use later.  */
 
 void
-darwin_encode_section_info (decl, first)
+darwin_encode_section_info (decl, rtl, first)
      tree decl;
+     rtx rtl;
      int first ATTRIBUTE_UNUSED;
 {
   char code = '\0';
@@ -1002,7 +1003,7 @@ darwin_encode_section_info (decl, first)
   if (code == '\0')
     return;
 
-  sym_ref = XEXP (DECL_RTL (decl), 0);
+  sym_ref = XEXP (rtl, 0);
   orig_str = XSTR (sym_ref, 0);
   len = strlen (orig_str) + 1;
 

@@ -154,7 +154,7 @@ static void mips_unique_section			PARAMS ((tree, int))
 static void mips_select_rtx_section PARAMS ((enum machine_mode, rtx,
 					     unsigned HOST_WIDE_INT));
 static int mips_use_dfa_pipeline_interface      PARAMS ((void));
-static void mips_encode_section_info		PARAMS ((tree, int));
+static void mips_encode_section_info		PARAMS ((tree, rtx, int));
 static bool mips_rtx_costs			PARAMS ((rtx, int, int, int *));
 static int mips_address_cost			PARAMS ((rtx));
 
@@ -8521,8 +8521,9 @@ mips_select_section (decl, reloc, align)
    is why the DECL_INITIAL macros differ from mips_select_section.  */
 
 static void
-mips_encode_section_info (decl, first)
+mips_encode_section_info (decl, rtl, first)
      tree decl;
+     rtx rtl;
      int first;
 {
   if (TARGET_MIPS16)
@@ -8545,7 +8546,7 @@ mips_encode_section_info (decl, first)
 	{
 	  rtx symref;
 
-	  symref = XEXP (TREE_CST_RTL (decl), 0);
+	  symref = XEXP (rtl, 0);
 	  mips16_strings = alloc_EXPR_LIST (0, symref, mips16_strings);
 	  SYMBOL_REF_FLAG (symref) = 1;
 	  mips_string_length += TREE_STRING_LENGTH (decl);
@@ -8558,20 +8559,20 @@ mips_encode_section_info (decl, first)
       && (!DECL_INITIAL (decl)
 	  || TREE_CONSTANT (DECL_INITIAL (decl))))
     {
-      SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 0;
+      SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 0;
     }
 
   else if (TARGET_EMBEDDED_PIC)
     {
       if (TREE_CODE (decl) == VAR_DECL)
-	SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+	SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;
       else if (TREE_CODE (decl) == FUNCTION_DECL)
-	SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 0;
+	SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 0;
       else if (TREE_CODE (decl) == STRING_CST
 	       && ! flag_writable_strings)
-	SYMBOL_REF_FLAG (XEXP (TREE_CST_RTL (decl), 0)) = 0;
+	SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 0;
       else
-	SYMBOL_REF_FLAG (XEXP (TREE_CST_RTL (decl), 0)) = 1;
+	SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;
     }
 
   else if (TREE_CODE (decl) == VAR_DECL
@@ -8581,7 +8582,7 @@ mips_encode_section_info (decl, first)
 	       || 0 == strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
 			       ".sbss")))
     {
-      SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+      SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;
     }
 
   /* We can not perform GP optimizations on variables which are in
@@ -8597,7 +8598,7 @@ mips_encode_section_info (decl, first)
       int size = int_size_in_bytes (TREE_TYPE (decl));
 
       if (size > 0 && size <= mips_section_threshold)
-	SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+	SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;
     }
 
 }

@@ -1,3 +1,32 @@
+2003-04-20  Zack Weinberg  <zack@codesourcery.com>
+
+	* target.h (encode_section_info): Add new argument carrying
+	the RTL to be modified by the hook.
+
+	* varasm.c (make_decl_rtl, output_constant_def): Update calls
+	to encode_section_info.
+	(default_encode_section_info): Take and use RTL argument,
+	don't use TREE_CST_RTL or DECL_RTL.
+	* output.h: Update prototype of default_encode_section_info.
+	* config/darwin.h (ASM_DECLARE_OBJECT_NAME)
+	(ASM_DECLARE_FUNCTION_NAME, ASM_OUTPUT_ALIGNED_DECL_LOCAL):
+	Update calls to encode_section_info.
+
+	* config/darwin.c, config/arm/arm.c, config/arm/pe.c
+	* config/h8300/h8300.c, config/i386/winnt.c, config/m32r/m32r.c
+	* config/m68hc11/m68hc11.c, config/m88k/m88k.c, config/mcore/mcore.c
+	* config/mips/mips.c, config/mmix/mmix.c, config/pa/pa.c
+	* config/romp/romp.c, config/rs6000/rs6000.c, config/s390/s390.c
+	* config/v850/v850.c (TARGET_ENCODE_SECTION_INFO definitions):
+	Take and use RTL argument, don't use TREE_CST_RTL or DECL_RTL,
+	except for PE dllimport/dllexport.  Update calls to
+	default_encode_section_info.
+
+	* config/darwin-protos.h, config/arm/arm-protos.h, config/i386-protos.h:
+	Update prototypes.
+
+	* doc/tm.texi (TARGET_ENCODE_SECTION_INFO): Update.
+
 2003-04-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR/8705
@@ -251,19 +280,19 @@ Sat Apr 19 14:56:17 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* calls.c (expand_call): Move special case for constructor calls
 	to right place. Ensures constructor calls used to initialize
-	arguments get a clean outgoing argument block for themselves. 
+	arguments get a clean outgoing argument block for themselves.
 	Move check for stack deallocation completeness until after last
 	deallocation.  Add stack_pointer_delta to set of state
 	variables saved and restored along with current stack_level.
-	
-        * integrate.c (expand_inline_function): Ensure non-const actuals
-        don't end up const in the caller's flow after conversion to possibly
-        const formal type.
+
+	* integrate.c (expand_inline_function): Ensure non-const actuals
+	don't end up const in the caller's flow after conversion to possibly
+	const formal type.
 
 2003-04-18  Vincent Celier  <celier@gnat.com>
 
-        * dwarf2out.c (loc_descriptor_from_tree): Treat all *_MOD_EXPR
-        and *_DIV_EXPR as TRUNC_*_EXPR.
+	* dwarf2out.c (loc_descriptor_from_tree): Treat all *_MOD_EXPR
+	and *_DIV_EXPR as TRUNC_*_EXPR.
 
 2003-04-18  Mark Mitchell  <mark@codesourcery.com>
 
@@ -379,8 +408,8 @@ Fri Apr 18 01:28:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-04-17  Simon Law  <sfllaw@engmail.uwaterloo.ca>
 
-        * doc/include/gpl.texi: Fix double-spacing after "MA" to match
-        the one provided by the FSF.
+	* doc/include/gpl.texi: Fix double-spacing after "MA" to match
+	the one provided by the FSF.
 
 2003-04-17  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
@@ -444,7 +473,7 @@ Fri Apr 18 01:28:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(tls_model_chars): Remove.
 	(larl_operand): Use SYMBOL_REF_FLAGS.
 	(tls_symbolic_operand): Use SYMBOL_REF_TLS_MODEL.
-	(legitimize_pic_address): Use SYMBOL_REF_LOCAL_P. 
+	(legitimize_pic_address): Use SYMBOL_REF_LOCAL_P.
 	(s390_output_mi_thunk): Likewise.
 	(s390_emit_prologue): Set SYMBOL_FLAG_LOCAL as needed.
 	(s390_function_profiler): Likewise.
@@ -505,7 +534,7 @@ Fri Apr 18 01:28:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-04-17  Richard Henderson  <rth@redhat.com>
 
-	* varasm.c (default_encode_section_info): Don't set 
+	* varasm.c (default_encode_section_info): Don't set
 	SYMBOL_FLAG_EXTERNAL if not TREE_PUBLIC.
 	* config/i370/i370.c (i370_encode_section_info): Remove.
 	* config/i370/i370.h (CONSTANT_ADDRESS_P): Use SYMBOL_REF_EXTERNAL_P.
@@ -577,7 +606,7 @@ Fri Apr 18 01:28:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
 2003-04-16  Richard Henderson  <rth@redhat.com>
 
 	* arc.c (arc_encode_section_info): Remove.
-	(arc_assemble_integer): Use SYMBOL_REF_FUNCTION_P.	
+	(arc_assemble_integer): Use SYMBOL_REF_FUNCTION_P.
 	(arc_print_operand, arc_print_operand_address): Likewise.
 	* arc.h (EXTRA_CONSTRAINT): Likewise.
 
@@ -618,16 +647,16 @@ Fri Apr 18 01:28:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-04-16  Olivier Hainque <hainque@act-europe.fr>
 
-        * tree.c (skip_simple_arithmetics_at, saved_expr_p): New functions.
-        (save_expr): Replace loop by call to skip_simple_arithmetics_at.
-        * tree.h: Add prototypes for the two new functions.
-        * fold-const.c (fold_binary_op_with_conditional_arg): Replace test
-        updates introduced in the previous revision by call to saved_expr_p.
-        * stor-layout.c (put_pending_size): Use skip_simple_arithmetics_at.
+	* tree.c (skip_simple_arithmetics_at, saved_expr_p): New functions.
+	(save_expr): Replace loop by call to skip_simple_arithmetics_at.
+	* tree.h: Add prototypes for the two new functions.
+	* fold-const.c (fold_binary_op_with_conditional_arg): Replace test
+	updates introduced in the previous revision by call to saved_expr_p.
+	* stor-layout.c (put_pending_size): Use skip_simple_arithmetics_at.
 
-        * expr.c (store_field): Force usage of bitfield instructions when
-        the field position requires it, whatever SLOW_UNALIGNED_ACCESS.
-        (expand_expr, case BIT_FIELD_REF): likewise.
+	* expr.c (store_field): Force usage of bitfield instructions when
+	the field position requires it, whatever SLOW_UNALIGNED_ACCESS.
+	(expand_expr, case BIT_FIELD_REF): likewise.
 
 2003-04-16  Mark Mitchell  <mark@codesourcery.com>
 
@@ -673,9 +702,9 @@ Fri Apr 18 01:28:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-04-16  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config.gcc: Add t-spe for eabispe.
+	* config.gcc: Add t-spe for eabispe.
 
-        * config/rs6000/t-spe: New.
+	* config/rs6000/t-spe: New.
 
 2003-04-16  J"orn Rennecke <joern.rennecke@superh.com>
 
@@ -690,7 +719,7 @@ Fri Apr 18 01:28:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	PR/10271
 	* pa-protos.h (function_arg): Remove last argument.
 	* pa.c (function_arg): Likewise.  Use CUMULATIVE_ARGS struct instead.
-	* pa.h (struct hppa_args): Add member incoming. 
+	* pa.h (struct hppa_args): Add member incoming.
 	(INIT_CUMULATIVE_ARGS, INIT_CUMULATIVE_INCOMING_ARGS): Initialize
 	member incoming.
 	(FUNCTION_ARG): Revise call to function_arg.

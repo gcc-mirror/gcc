@@ -66,7 +66,7 @@ static void h8300_insert_attributes PARAMS ((tree, tree *));
 #ifndef OBJECT_FORMAT_ELF
 static void h8300_asm_named_section PARAMS ((const char *, unsigned int));
 #endif
-static void h8300_encode_section_info PARAMS ((tree, int));
+static void h8300_encode_section_info PARAMS ((tree, rtx, int));
 static int const_costs PARAMS ((rtx, enum rtx_code, enum rtx_code));
 static int h8300_and_costs PARAMS ((rtx));
 static int h8300_shift_costs PARAMS ((rtx));
@@ -4171,13 +4171,14 @@ h8300_handle_tiny_data_attribute (node, name, args, flags, no_add_attrs)
 /* Mark function vectors, and various small data objects.  */
 
 static void
-h8300_encode_section_info (decl, first)
+h8300_encode_section_info (decl, rtl, first)
      tree decl;
+     rtx rtl;
      int first;
 {
   int extra_flags = 0;
 
-  default_encode_section_info (decl, first);
+  default_encode_section_info (decl, rtl, first);
 
   if (TREE_CODE (decl) == FUNCTION_DECL
       && h8300_funcvec_function_p (decl))
@@ -4192,7 +4193,7 @@ h8300_encode_section_info (decl, first)
     }
 
   if (extra_flags)
-    SYMBOL_REF_FLAGS (XEXP (DECL_RTL (decl), 0)) |= extra_flags;
+    SYMBOL_REF_FLAGS (XEXP (rtl, 0)) |= extra_flags;
 }
 
 const char *

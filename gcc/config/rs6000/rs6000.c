@@ -229,7 +229,7 @@ static void rs6000_elf_select_section PARAMS ((tree, int,
 static void rs6000_elf_unique_section PARAMS ((tree, int));
 static void rs6000_elf_select_rtx_section PARAMS ((enum machine_mode, rtx,
 						   unsigned HOST_WIDE_INT));
-static void rs6000_elf_encode_section_info PARAMS ((tree, int))
+static void rs6000_elf_encode_section_info PARAMS ((tree, rtx, int))
      ATTRIBUTE_UNUSED;
 static const char *rs6000_elf_strip_name_encoding PARAMS ((const char *));
 static bool rs6000_elf_in_small_data_p PARAMS ((tree));
@@ -244,7 +244,7 @@ static void rs6000_xcoff_select_rtx_section PARAMS ((enum machine_mode, rtx,
 						     unsigned HOST_WIDE_INT));
 static const char * rs6000_xcoff_strip_name_encoding PARAMS ((const char *));
 static unsigned int rs6000_xcoff_section_type_flags PARAMS ((tree, const char *, int));
-static void rs6000_xcoff_encode_section_info PARAMS ((tree, int))
+static void rs6000_xcoff_encode_section_info PARAMS ((tree, rtx, int))
      ATTRIBUTE_UNUSED;
 #endif
 #if TARGET_MACHO
@@ -12935,8 +12935,9 @@ rs6000_elf_unique_section (decl, reloc)
    to read the prefixes.  */
 
 static void
-rs6000_elf_encode_section_info (decl, first)
+rs6000_elf_encode_section_info (decl, rtl, first)
      tree decl;
+     rtx rtl;
      int first;
 {
   if (!first)
@@ -12944,7 +12945,7 @@ rs6000_elf_encode_section_info (decl, first)
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
-      rtx sym_ref = XEXP (DECL_RTL (decl), 0);
+      rtx sym_ref = XEXP (rtl, 0);
       if ((*targetm.binds_local_p) (decl))
 	SYMBOL_REF_FLAG (sym_ref) = 1;
 
@@ -12964,7 +12965,7 @@ rs6000_elf_encode_section_info (decl, first)
 	   && DEFAULT_ABI == ABI_V4
 	   && TREE_CODE (decl) == VAR_DECL)
     {
-      rtx sym_ref = XEXP (DECL_RTL (decl), 0);
+      rtx sym_ref = XEXP (rtl, 0);
       int size = int_size_in_bytes (TREE_TYPE (decl));
       tree section_name = DECL_SECTION_NAME (decl);
       const char *name = (char *)0;
@@ -13628,13 +13629,14 @@ rs6000_xcoff_section_type_flags (decl, name, reloc)
 }
 
 static void
-rs6000_xcoff_encode_section_info (decl, first)
+rs6000_xcoff_encode_section_info (decl, rtl, first)
      tree decl;
+     rtx rtl;
      int first ATTRIBUTE_UNUSED;
 {
   if (TREE_CODE (decl) == FUNCTION_DECL
       && (*targetm.binds_local_p) (decl))
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+    SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;
 }
 #endif /* TARGET_XCOFF */
 

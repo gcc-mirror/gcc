@@ -312,7 +312,7 @@ struct gcc_target
 
   /* Do something target-specific to record properties of the DECL into
      the associated SYMBOL_REF.  */
-  void (* encode_section_info) PARAMS ((tree, int));
+  void (* encode_section_info) PARAMS ((tree, rtx, int));
 
   /* Undo the effects of encode_section_info on the symbol string.  */
   const char * (* strip_name_encoding) PARAMS ((const char *));

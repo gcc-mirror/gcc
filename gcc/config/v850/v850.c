@@ -61,8 +61,8 @@ static tree v850_handle_interrupt_attribute PARAMS ((tree *, tree, tree, int, bo
 static tree v850_handle_data_area_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static void v850_insert_attributes   PARAMS ((tree, tree *));
 static void v850_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT));
-static void v850_encode_data_area    PARAMS ((tree));
-static void v850_encode_section_info PARAMS ((tree, int));
+static void v850_encode_data_area    PARAMS ((tree, rtx));
+static void v850_encode_section_info PARAMS ((tree, rtx, int));
 
 /* Information about the various small memory areas.  */
 struct small_memory_info small_memory[ (int)SMALL_MEMORY_max ] =
@@ -2324,11 +2324,11 @@ v850_interrupt_function_p (func)
 
 
 static void
-v850_encode_data_area (decl)
+v850_encode_data_area (decl, symbol)
      tree decl;
+     rtx symbol;
 {
   int flags;
-  rtx symbol;
 
   /* Map explict sections into the appropriate attribute */
   if (v850_get_data_area (decl) == DATA_AREA_NORMAL)
@@ -2368,7 +2368,6 @@ v850_encode_data_area (decl)
 	return;
     }
 
-  symbol = XEXP (DECL_RTL (decl), 0);
   flags = SYMBOL_REF_FLAGS (symbol);
   switch (v850_get_data_area (decl))
     {
@@ -2381,15 +2380,16 @@ v850_encode_data_area (decl)
 }
 
 static void
-v850_encode_section_info (decl, first)
+v850_encode_section_info (decl, rtl, first)
      tree decl;
+     rtx rtl;
      int first;
 {
-  default_encode_section_info (decl, first);
+  default_encode_section_info (decl, rtl, first);
 
   if (TREE_CODE (decl) == VAR_DECL
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
-    v850_encode_data_area (decl);
+    v850_encode_data_area (decl, XEXP (rtl, 0));
 }
 
 /* Return true if the given RTX is a register which can be restored

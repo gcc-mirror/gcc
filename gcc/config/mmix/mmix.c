@@ -124,7 +124,7 @@ static HOST_WIDEST_INT mmix_intval PARAMS ((rtx));
 static void mmix_output_octa PARAMS ((FILE *, HOST_WIDEST_INT, int));
 static bool mmix_assemble_integer PARAMS ((rtx, unsigned int, int));
 static struct machine_function * mmix_init_machine_status PARAMS ((void));
-static void mmix_encode_section_info PARAMS ((tree, int));
+static void mmix_encode_section_info PARAMS ((tree, rtx, int));
 static const char *mmix_strip_name_encoding PARAMS ((const char *));
 static void mmix_emit_sp_add PARAMS ((HOST_WIDE_INT offset));
 static void mmix_target_asm_function_prologue
@@ -1235,8 +1235,9 @@ mmix_data_section_asm_op ()
 }
 
 static void
-mmix_encode_section_info (decl, first)
+mmix_encode_section_info (decl, rtl, first)
      tree decl;
+     rtx rtl;
      int first;
 {
   /* Test for an external declaration, and do nothing if it is one.  */
@@ -1256,7 +1257,7 @@ mmix_encode_section_info (decl, first)
 	 means that when -mtoplevel-symbols is in use, we can just handle
 	 well-behaved ISO-compliant code.  */
 
-      const char *str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+      const char *str = XSTR (XEXP (rtl, 0), 0);
       int len = strlen (str);
       char *newstr;
 
@@ -1265,7 +1266,7 @@ mmix_encode_section_info (decl, first)
 
       strcpy (newstr + 1, str);
       *newstr = '@';
-      XSTR (XEXP (DECL_RTL (decl), 0), 0) = newstr;
+      XSTR (XEXP (rtl, 0), 0) = newstr;
     }
 
   /* Set SYMBOL_REF_FLAG for things that we want to access with GETA.  We
@@ -1278,11 +1279,7 @@ mmix_encode_section_info (decl, first)
 	  && !TREE_SIDE_EFFECTS (decl)
 	  && (!DECL_INITIAL (decl)
 	      || TREE_CONSTANT (DECL_INITIAL (decl)))))
-    {
-      rtx rtl = (TREE_CODE_CLASS (TREE_CODE (decl)) != 'd'
-                 ? TREE_CST_RTL (decl) : DECL_RTL (decl));
-      SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;
-    }
+    SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;
 }
 
 static const char *

@@ -420,14 +420,15 @@ gen_stdcall_suffix (decl)
 }
 
 void
-i386_pe_encode_section_info (decl, first)
+i386_pe_encode_section_info (decl, rtl, first)
      tree decl;
+     rtx rtl;
      int first;
 {
   if (!first)
     return;
 
-  default_encode_section_info (decl, first);
+  default_encode_section_info (decl, rtl, first);
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {

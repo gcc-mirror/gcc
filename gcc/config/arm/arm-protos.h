@@ -206,7 +206,7 @@ extern int  arm_dllimport_name_p 	PARAMS ((const char *));
 
 #ifdef TREE_CODE
 extern void arm_pe_unique_section 	PARAMS ((tree, int));
-extern void arm_pe_encode_section_info 	PARAMS ((tree, int));
+extern void arm_pe_encode_section_info 	PARAMS ((tree, rtx, int));
 extern int  arm_dllexport_p 		PARAMS ((tree));
 extern int  arm_dllimport_p 		PARAMS ((tree));
 extern void arm_mark_dllexport 		PARAMS ((tree));

@@ -75,7 +75,7 @@ static void m88k_svr3_asm_out_destructor PARAMS ((rtx, int));
 #endif
 static void m88k_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT));
 static int m88k_adjust_cost PARAMS ((rtx, rtx, rtx, int));
-static void m88k_encode_section_info PARAMS ((tree, int));
+static void m88k_encode_section_info PARAMS ((tree, rtx, int));
 #ifdef AS_BUG_DOT_LABELS
 static void m88k_internal_label PARAMS ((FILE *, const char *, unsigned long));
 #endif
@@ -3335,8 +3335,9 @@ m88k_adjust_cost (insn, link, dep, cost)
 /* For the m88k, determine if the item should go in the global pool.  */
 
 static void
-m88k_encode_section_info (decl, first)
+m88k_encode_section_info (decl, rtl, first)
      tree decl;
+     rtx rtl;
      int first ATTRIBUTE_UNUSED;
 {
   if (m88k_gp_threshold > 0)
@@ -3348,13 +3349,13 @@ m88k_encode_section_info (decl, first)
 	      int size = int_size_in_bytes (TREE_TYPE (decl));
 
 	      if (size > 0 && size <= m88k_gp_threshold)
-		SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+		SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;
 	    }
 	}
       else if (TREE_CODE (decl) == STRING_CST
 	       && flag_writable_strings
 	       && TREE_STRING_LENGTH (decl) <= m88k_gp_threshold)
-	SYMBOL_REF_FLAG (XEXP (TREE_CST_RTL (decl), 0)) = 1;
+	SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;
     }
 }
 
