@@ -1,3 +1,7 @@
+2001-12-07  Phil Edwards  <pme@gcc.gnu.org>
+
+	* src/globals.cc:  Remove __GTHREADS guard.
+
 2001-12-07  Paolo Carlini  <pcarlini@unitus.it>
         
 	* include/bits/locale_facets.tcc (num_put::_M_convert_float):
