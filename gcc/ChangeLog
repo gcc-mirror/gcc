@@ -1,3 +1,8 @@
+Sat Dec 20 16:14:50 1997  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.h (FUNCTION_ARG_PADDING): Define.
+	* rs6000.c (function_arg_padding): New function.
+
 Sat Dec 20 13:36:06 1997  Paul Eggert  <eggert@twinsun.com>
                           Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
                           H.J. Lu  (hjl@gnu.org)

@@ -1461,6 +1461,15 @@ typedef struct rs6000_args
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED) \
   function_arg_pass_by_reference(&CUM, MODE, TYPE, NAMED)
 
+/* If defined, a C expression which determines whether, and in which
+   direction, to pad out an argument with extra space.  The value
+   should be of type `enum direction': either `upward' to pad above
+   the argument, `downward' to pad below, or `none' to inhibit
+   padding.  */
+
+#define FUNCTION_ARG_PADDING(MODE, TYPE) \
+  function_arg_padding (MODE, TYPE)
+
 /* If defined, a C expression that gives the alignment boundary, in bits,
    of an argument with the specified mode and type.  If it is not defined,
    PARM_BOUNDARY is used for all arguments.  */
