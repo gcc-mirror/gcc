@@ -23,7 +23,7 @@ int main1 (int off)
   /* check results: */  
   for (i = 0; i < N; i++)
     {
-       if (pp->ia[i] = ib[i])
+       if (pp->ia[i] != ib[i])
          abort();
     }
 
