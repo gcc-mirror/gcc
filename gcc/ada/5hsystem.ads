@@ -101,9 +101,6 @@ pragma Pure (System);
 
 private
 
-   pragma Linker_Options ("-lpthread");
-   --  To ease supporting --enable-threads=posix at configure-time.
-
    type Address is mod Memory_Size;
    Null_Address : constant Address := 0;
 
@@ -135,7 +132,7 @@ private
    Stack_Check_Default       : constant Boolean := False;
    Stack_Check_Probes        : constant Boolean := False;
    Use_Ada_Main_Program_Name : constant Boolean := False;
-   ZCX_By_Default            : constant Boolean := True;
+   ZCX_By_Default            : constant Boolean := False;
    GCC_ZCX_Support           : constant Boolean := True;
    Front_End_ZCX_Support     : constant Boolean := False;
 
