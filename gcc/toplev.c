@@ -131,8 +131,7 @@ extern char *version_string, *language_string;
 extern int size_directive_output;
 extern tree last_assemble_variable_decl;
 
-extern void init_lex ();
-extern void init_parse PVPROTO((char *));
+extern char *init_parse PVPROTO((char *));
 extern void finish_parse ();
 extern void init_decl_processing ();
 extern void init_obstacks ();
@@ -2274,7 +2273,7 @@ compile_file (name)
 
   init_obstacks ();
   init_tree_codes ();
-  init_parse (name);
+  name = init_parse (name);
   init_rtl ();
   init_emit_once (debug_info_level == DINFO_LEVEL_NORMAL
 		  || debug_info_level == DINFO_LEVEL_VERBOSE

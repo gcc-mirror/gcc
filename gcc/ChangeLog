@@ -1,3 +1,10 @@
+Wed Apr 15 14:50:05 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* toplev.c (compile_file): Call init_parse using new interface.
+	(init_lex): Remove declaration.
+
+	* c-lex.c (init_parse): Now returns char* containing filename.
+
 Wed Apr 15 12:37:10 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.h (LEGITIMIZE_RELOAD_ADDRESS): Do nothing if not optimizing.
