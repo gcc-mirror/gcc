@@ -33,9 +33,20 @@ Boston, MA 02111-1307, USA.  */
 #undef	ASM_DEFAULT_SPEC
 #define ASM_DEFAULT_SPEC "-mcom"
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D_IBMR2 -D_POWER -D_AIX -D_AIX32 -D_AIX41 \
--D_LONG_LONG -Asystem=unix -Asystem=aix"
+#undef TARGET_OS_CPP_BUILTINS
+#define TARGET_OS_CPP_BUILTINS()      \
+  do                                  \
+    {                                 \
+      builtin_define ("_IBMR2");      \
+      builtin_define ("_POWER");      \
+      builtin_define ("_AIX");        \
+      builtin_define ("_AIX32");      \
+      builtin_define ("_AIX41");      \
+      builtin_define ("_LONG_LONG");  \
+      builtin_assert ("system=unix"); \
+      builtin_assert ("system=aix");  \
+    }                                 \
+  while (0)
 
 #undef CPP_SPEC
 #define CPP_SPEC "%{posix: -D_POSIX_SOURCE}\

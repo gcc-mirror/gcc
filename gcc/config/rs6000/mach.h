@@ -26,8 +26,19 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_VERSION fprintf (stderr, " (Mach-RS/6000)");
 
 /* We don't define AIX under MACH; instead we define `unix'.  */
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Drios -D_IBMR2 -Dunix -Asystem=unix -Asystem=mach -Acpu=rs6000 -Amachine=rs6000"
+#undef TARGET_OS_CPP_BUILTINS
+#define TARGET_OS_CPP_BUILTINS()         \
+  do                                     \
+    {                                    \
+      builtin_define_std ("rios");       \
+      builtin_define ("_IBMR2");         \
+      builtin_define_std ("unix");       \
+      builtin_assert ("system=unix");    \
+      builtin_assert ("system=mach");    \
+      builtin_assert ("cpu=rs6000");     \
+      builtin_assert ("machine=rs6000"); \
+    }                                    \
+  while (0)
 
 /* Define different binder options for MACH.  */
 #undef LINK_SPEC

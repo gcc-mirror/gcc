@@ -21,6 +21,14 @@ Boston, MA 02111-1307, USA.  */
 
 /* Specify predefined symbols in preprocessor.  */
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-DPPC -D__rtems__ \
-   -Asystem=rtems -Acpu=powerpc -Amachine=powerpc"
+#undef TARGET_OS_CPP_BUILTINS
+#define TARGET_OS_CPP_BUILTINS()          \
+  do                                      \
+    {                                     \
+      builtin_define_std ("PPC");         \
+      builtin_define ("__rtems__");       \
+      builtin_assert ("system=rtems");    \
+      builtin_assert ("cpu=powerpc");     \
+      builtin_assert ("machine=powerpc"); \
+    }                                     \
+  while (0)

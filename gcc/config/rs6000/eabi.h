@@ -31,6 +31,14 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (PowerPC Embedded)");
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES \
-  "-DPPC -D__embedded__ -Asystem=embedded -Acpu=powerpc -Amachine=powerpc"
+#undef TARGET_OS_CPP_BUILTINS
+#define TARGET_OS_CPP_BUILTINS()          \
+  do                                      \
+    {                                     \
+      builtin_define_std ("PPC");         \
+      builtin_define ("__embedded__");    \
+      builtin_assert ("system=embedded"); \
+      builtin_assert ("cpu=powerpc");     \
+      builtin_assert ("machine=powerpc"); \
+    }                                     \
+  while (0)
