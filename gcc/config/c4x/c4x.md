@@ -3414,6 +3414,7 @@
  "#"
   [(set_attr "type" "multi")])
 
+
 ; This can generate invalid stack slot displacements
 (define_split
  [(set (match_operand:QF 0 "reg_operand" "=f")
@@ -5120,8 +5121,7 @@
    (set (match_dup 0)
         (plus:QI (match_dup 0)
                  (const_int -1)))]
-  "reload_completed && (TARGET_DB && (find_reg_note (insn, REG_NONNEG, 0)
-	                || TARGET_LOOP_UNSIGNED))"
+  "reload_completed && TARGET_DB && TARGET_LOOP_UNSIGNED"
   "dbu%#\\t%0,%l1"
   [(set_attr "type" "db")])
 
@@ -5136,8 +5136,7 @@
         (plus:QI (match_dup 0)
                  (const_int -1)))
    (clobber (reg:CC_NOOV 21))]
-  "reload_completed && (TARGET_DB && (find_reg_note (insn, REG_NONNEG, 0)
-	                || TARGET_LOOP_UNSIGNED))"
+  "reload_completed && TARGET_DB && TARGET_LOOP_UNSIGNED"
   [(parallel [(set (pc)
         	   (if_then_else (ge (plus:QI (match_dup 0)
 			                      (const_int -1))
@@ -5168,7 +5167,9 @@
 ;
 (define_insn "rptb_top"
   [(use (label_ref (match_operand 0 "" "")))
-   (use (label_ref (match_operand 1 "" "")))]
+   (use (label_ref (match_operand 1 "" "")))
+   (clobber (reg:QI 25))
+   (clobber (reg:QI 26))]
   ""
   "*
    return ! final_sequence && c4x_rptb_rpts_p (insn, operands[0])
@@ -5178,7 +5179,9 @@
 
 (define_insn "rpts_top"
   [(unspec [(use (label_ref (match_operand 0 "" "")))
-            (use (label_ref (match_operand 1 "" "")))] 2)]
+            (use (label_ref (match_operand 1 "" "")))] 2)
+   (clobber (reg:QI 25))
+   (clobber (reg:QI 26))]
   ""
   "*
    return ! final_sequence && c4x_rptb_rpts_p (insn, operands[0])
@@ -5209,7 +5212,7 @@
   ""
   "if (INTVAL (operands[3]) > 1 || ! TARGET_RPTB)
      FAIL;
-   emit_jump_insn (gen_rptb_init (operands[0]));
+   emit_insn (gen_rptb_init (operands[0]));
    DONE;
   ")
 
@@ -6904,7 +6907,6 @@
 ;
 ; Which moves the bCC condition outside the inner loop for free.
 ;
-
 (define_peephole
   [(set (pc) (if_then_else (match_operator 3 "comparison_operator"
                            [(reg:CC 21) (const_int 0)])
@@ -6920,7 +6922,8 @@
             (pc)))
      (set (match_dup 0)
           (plus:QI (match_dup 0)
-                   (const_int -1)))])]
+                   (const_int -1)))
+     (clobber (reg:CC_NOOV 21))])]
   "! c4x_label_conflict (insn, operands[2], operands[1])"
   "db%I3\\t%0,%l1\\n\\tb%3\\t%l2"
   [(set_attr "type" "multi")])
@@ -6947,6 +6950,7 @@
 ;
 ; Peepholes to convert 'call label; rets' into jump label
 ;
+
 (define_peephole
   [(parallel [(call (mem:QI (match_operand:QI 0 "call_address_operand" ""))
                     (match_operand:QI 1 "general_operand" ""))
