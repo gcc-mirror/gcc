@@ -4954,25 +4954,22 @@ start_struct (code, name)
     ref = lookup_tag (code, name, current_binding_level, 1);
   if (ref && TREE_CODE (ref) == code)
     {
-      C_TYPE_BEING_DEFINED (ref) = 1;
-      TYPE_PACKED (ref) = flag_pack_struct;
       if (TYPE_FIELDS (ref))
         {
 	  if (code == UNION_TYPE)
-	    error ("redefinition of `union %s'",
-		   IDENTIFIER_POINTER (name));
+	    error ("redefinition of `union %s'", IDENTIFIER_POINTER (name));
           else
-	    error ("redefinition of `struct %s'",
-		   IDENTIFIER_POINTER (name));
+	    error ("redefinition of `struct %s'", IDENTIFIER_POINTER (name));
 	}  
-
-      return ref;
     }
+  else
+    {
+      /* Otherwise create a forward-reference just so the tag is in scope.  */
 
-  /* Otherwise create a forward-reference just so the tag is in scope.  */
-
-  ref = make_node (code);
-  pushtag (name, ref);
+      ref = make_node (code);
+      pushtag (name, ref);
+    }
+  
   C_TYPE_BEING_DEFINED (ref) = 1;
   TYPE_PACKED (ref) = flag_pack_struct;
   return ref;

@@ -1,3 +1,7 @@
+2002-11-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-decl.c: (start_struct): Commonize flag setting.
+
 2002-11-26  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/rs6000/rs6000.h (RS6000_CPU_CPP_ENDIAN_BUILTINS): New.
