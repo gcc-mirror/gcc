@@ -6382,7 +6382,7 @@ mips_expand_prologue ()
 	  if (TARGET_MIPS16 && current_function_outgoing_args_size != 0)
 	    {
 	      rtx incr = GEN_INT (current_function_outgoing_args_size);
-	      if (TARGET_64BIT)
+	      if (TARGET_LONG64)
 		insn = emit_insn (gen_adddi3 (hard_frame_pointer_rtx,
                                               stack_pointer_rtx,
                                               incr));
@@ -6391,7 +6391,7 @@ mips_expand_prologue ()
                                               stack_pointer_rtx,
                                               incr));
 	    }
-	  else if (TARGET_64BIT)
+	  else if (TARGET_LONG64)
 	    insn = emit_insn (gen_movdi (hard_frame_pointer_rtx, stack_pointer_rtx));
 	  else
 	    insn = emit_insn (gen_movsi (hard_frame_pointer_rtx, stack_pointer_rtx));
@@ -6507,7 +6507,7 @@ mips_expand_prologue ()
 	  reg_rtx = gen_rtx (REG, Pmode, 3);
   	  emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
   	  emit_move_insn (reg_rtx, tsize_rtx);
-  	  if (TARGET_64BIT)
+  	  if (TARGET_LONG64)
 	    emit_insn (gen_subdi3 (hard_frame_pointer_rtx,
 				   hard_frame_pointer_rtx,
 				   reg_rtx));
@@ -6536,7 +6536,7 @@ mips_expand_prologue ()
 	      if (current_function_outgoing_args_size != 0)
 		{
 		  rtx incr = GEN_INT (current_function_outgoing_args_size);
-		  if (TARGET_64BIT)
+		  if (TARGET_LONG64)
 		    insn = emit_insn (gen_adddi3 (hard_frame_pointer_rtx,
                                                   hard_frame_pointer_rtx,
                                                   incr));
@@ -6549,7 +6549,7 @@ mips_expand_prologue ()
 	  else if (TARGET_MIPS16 && current_function_outgoing_args_size != 0)
 	    {
 	      rtx incr = GEN_INT (current_function_outgoing_args_size);
-	      if (TARGET_64BIT)
+	      if (TARGET_LONG64)
 		insn = emit_insn (gen_adddi3 (hard_frame_pointer_rtx,
                                               stack_pointer_rtx,
                                               incr));
@@ -6558,7 +6558,7 @@ mips_expand_prologue ()
                                               stack_pointer_rtx,
                                               incr));
 	    }
-	  else if (TARGET_64BIT)
+	  else if (TARGET_LONG64)
 	    insn = emit_insn (gen_movdi (hard_frame_pointer_rtx, stack_pointer_rtx));
 	  else
 	    insn = emit_insn (gen_movsi (hard_frame_pointer_rtx, stack_pointer_rtx));
