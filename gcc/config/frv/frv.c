@@ -276,11 +276,9 @@ static void frv_function_epilogue		PARAMS ((FILE *, HOST_WIDE_INT));
 static bool frv_assemble_integer		PARAMS ((rtx, unsigned, int));
 static const char * frv_strip_name_encoding	PARAMS ((const char *));
 static void frv_encode_section_info		PARAMS ((tree, int));
-static void frv_unique_section			PARAMS ((tree, int));
 static void frv_init_builtins			PARAMS ((void));
 static rtx frv_expand_builtin			PARAMS ((tree, rtx, rtx, enum machine_mode, int));
-static void frv_select_section			PARAMS ((tree, int, unsigned HOST_WIDE_INT));
-static void frv_select_rtx_section		PARAMS ((enum machine_mode, rtx, unsigned HOST_WIDE_INT));
+static bool frv_in_small_data_p			PARAMS ((tree));
 
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
@@ -293,16 +291,12 @@ static void frv_select_rtx_section		PARAMS ((enum machine_mode, rtx, unsigned HO
 #define TARGET_STRIP_NAME_ENCODING frv_strip_name_encoding
 #undef  TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO frv_encode_section_info
-#undef  TARGET_ASM_UNIQUE_SECTION
-#define TARGET_ASM_UNIQUE_SECTION frv_unique_section
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS frv_init_builtins
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN frv_expand_builtin
-#undef TARGET_ASM_SELECT_SECTION
-#define TARGET_ASM_SELECT_SECTION frv_select_section
-#undef TARGET_ASM_SELECT_RTX_SECTION
-#define TARGET_ASM_SELECT_RTX_SECTION frv_select_rtx_section
+#undef TARGET_IN_SMALL_DATA_P
+#define TARGET_IN_SMALL_DATA_P frv_in_small_data_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -630,88 +624,6 @@ frv_optimization_options (level, size)
 }
 
 
-/* A C statement or statements to switch to the appropriate section for output
-   of EXP.  You can assume that EXP is either a `VAR_DECL' node or a constant
-   of some sort.  RELOC indicates whether the initial value of EXP requires
-   link-time relocations.  Select the section by calling `text_section' or one
-   of the alternatives for other sections.
-
-   Do not define this macro if you put all read-only variables and constants in
-   the read-only data section (usually the text section).
-
-   Defined in svr4.h.  */
-
-static void
-frv_select_section (decl, reloc, align)
-     tree decl;
-     int reloc;
-     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
-{
-  int size = int_size_in_bytes (TREE_TYPE (decl));
-
-  if (TREE_CODE (decl) == STRING_CST)
-    {
-      if (! flag_writable_strings)
-	 readonly_data_section ();
-      else
-	data_section ();
-    }
-  else if (TREE_CODE (decl) == VAR_DECL)
-    {
-      if ((flag_pic && reloc)
-          || !TREE_READONLY (decl)
-          || TREE_SIDE_EFFECTS (decl)
-          || !DECL_INITIAL (decl)
-          || (DECL_INITIAL (decl) != error_mark_node
-              && !TREE_CONSTANT (DECL_INITIAL (decl))))
-        {
-          if (SDATA_NAME_P (XSTR (XEXP (DECL_RTL (decl), 0), 0))
-              && size > 0
-              && size <= g_switch_value)
-	    sdata_section ();
-          else
-            data_section ();
-        }
-      else
-        {
-          if (SDATA_NAME_P (XSTR (XEXP (DECL_RTL (decl), 0), 0))
-              && size > 0
-              && size <= g_switch_value)
-            sdata_section ();
-          else
-             readonly_data_section ();
-        }
-    }
-  else
-     readonly_data_section ();
-}
-
-
-/* A C statement or statements to switch to the appropriate section for output
-   of RTX in mode MODE.  You can assume that OP is some kind of constant in
-   RTL.  The argument MODE is redundant except in the case of a `const_int'
-   rtx.  Select the section by calling `text_section' or one of the
-   alternatives for other sections.
-
-   Do not define this macro if you put all constants in the read-only data
-   section.
-
-   Defined in svr4.h.  */
-
-static void
-frv_select_rtx_section (mode, op, align)
-     enum machine_mode mode;
-     rtx op ATTRIBUTE_UNUSED;
-     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
-{
-  int size = (int) GET_MODE_SIZE (mode);
-  if (size > 0 && size <= g_switch_value)
-    sdata_section ();
-  else
-    readonly_data_section ();
-}
-
-
 /* Return true if NAME (a STRING_CST node) begins with PREFIX.  */
 
 static int
@@ -783,43 +695,6 @@ frv_encode_section_info (decl, first)
     }
 }
 
-static void
-frv_unique_section (decl, reloc)
-     tree decl;
-     int reloc;
-{
-  int len;
-  int sec;
-  const char *name;
-  char *string;
-  const char *prefix;
-  static const char *const prefixes[4][2] =
-    {
-      { ".text.", ".gnu.linkonce.t." },
-      { ".rodata.", ".gnu.linkonce.r." },
-      { ".data.", ".gnu.linkonce.d." },
-      { ".sdata.", ".gnu.linkonce.s." }
-    };
-
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    sec = 0;
-  else if (decl_readonly_section (decl, reloc))
-    sec = 1;
-  else if (SDATA_NAME_P (XSTR (XEXP (DECL_RTL (decl), 0), 0)))
-    sec = 3;
-  else
-    sec = 2;
-
-  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  name = (* targetm.strip_name_encoding) (name);
-  prefix = prefixes[sec][DECL_ONE_ONLY (decl)];
-  len = strlen (name) + strlen (prefix);
-  string = alloca (len + 1);
-
-  sprintf (string, "%s%s", prefix, name);
-
-  DECL_SECTION_NAME (decl) = build_string (len, string);
-}
 
 /* Zero or more C statements that may conditionally modify two variables
    `fixed_regs' and `call_used_regs' (both of type `char []') after they have
@@ -9888,4 +9763,14 @@ frv_strip_name_encoding (str)
   while (*str == '*' || *str == SDATA_FLAG_CHAR)
     str++;
   return str;
+}
+
+static bool
+frv_in_small_data_p (decl)
+     tree decl;
+{
+  HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (decl));
+
+  return symbol_ref_small_data_p (XEXP (DECL_RTL (decl), 0))
+    && size > 0 && size <= g_switch_value;
 }
