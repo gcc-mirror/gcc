@@ -1,3 +1,7 @@
+2004-09-13  James E Wilson  <wilson@specifixinc.com>
+
+	* gcc.target/mips/sb1-1.c: New testcase.
+
 2004-09-12  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* lib/g77-dg.exp: Remove unused file.

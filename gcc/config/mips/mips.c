@@ -9410,6 +9410,36 @@ static const struct builtin_description mips_bdesc[] =
   MIPS_FP_CONDITIONS (CMP_BUILTINS)
 };
 
+/* Builtin functions for the SB-1 processor.  */
+
+#define CODE_FOR_mips_sqrt_ps CODE_FOR_sqrtv2sf2
+
+static const struct builtin_description sb1_bdesc[] =
+{
+  DIRECT_BUILTIN (sqrt_ps, MIPS_V2SF_FTYPE_V2SF, MASK_PAIRED_SINGLE)
+};
+
+/* This helps provide a mapping from builtin function codes to bdesc
+   arrays.  */
+
+struct bdesc_map
+{
+  /* The builtin function table that this entry describes.  */
+  const struct builtin_description *bdesc;
+
+  /* The number of entries in the builtin function table.  */
+  unsigned int size;
+
+  /* The target processor that supports these builtin functions.
+     PROCESSOR_DEFAULT means we enable them for all processors.  */
+  enum processor_type proc;
+};
+
+static const struct bdesc_map bdesc_arrays[] =
+{
+  { mips_bdesc, ARRAY_SIZE (mips_bdesc), PROCESSOR_DEFAULT },
+  { sb1_bdesc, ARRAY_SIZE (sb1_bdesc), PROCESSOR_SB1 }
+};
 
 /* Take the head of argument list *ARGLIST and convert it into a form
    suitable for input operand OP of instruction ICODE.  Return the value
@@ -9457,15 +9487,28 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   enum mips_builtin_type type;
   tree fndecl, arglist;
   unsigned int fcode;
+  const struct builtin_description *bdesc;
+  const struct bdesc_map *m;
 
   fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   arglist = TREE_OPERAND (exp, 1);
   fcode = DECL_FUNCTION_CODE (fndecl);
-  if (fcode >= ARRAY_SIZE (mips_bdesc))
+
+  bdesc = NULL;
+  for (m = bdesc_arrays; m < &bdesc_arrays[ARRAY_SIZE (bdesc_arrays)]; m++)
+    {
+      if (fcode < m->size)
+	{
+	  bdesc = m->bdesc;
+	  icode = bdesc[fcode].icode;
+	  type = bdesc[fcode].builtin_type;
+	  break;
+	}
+      fcode -= m->size;
+    }
+  if (bdesc == NULL)
     return 0;
 
-  icode = mips_bdesc[fcode].icode;
-  type = mips_bdesc[fcode].builtin_type;
   switch (type)
     {
     case MIPS_BUILTIN_DIRECT:
@@ -9473,7 +9516,7 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
     case MIPS_BUILTIN_MOVT:
     case MIPS_BUILTIN_MOVF:
-      return mips_expand_builtin_movtf (type, icode, mips_bdesc[fcode].cond,
+      return mips_expand_builtin_movtf (type, icode, bdesc[fcode].cond,
 					target, arglist);
 
     case MIPS_BUILTIN_CMP_ANY:
@@ -9481,7 +9524,7 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case MIPS_BUILTIN_CMP_UPPER:
     case MIPS_BUILTIN_CMP_LOWER:
     case MIPS_BUILTIN_CMP_SINGLE:
-      return mips_expand_builtin_compare (type, icode, mips_bdesc[fcode].cond,
+      return mips_expand_builtin_compare (type, icode, bdesc[fcode].cond,
 					  target, arglist);
 
     default:
@@ -9495,8 +9538,10 @@ void
 mips_init_builtins (void)
 {
   const struct builtin_description *d;
+  const struct bdesc_map *m;
   tree types[(int) MIPS_MAX_FTYPE_MAX];
   tree V2SF_type_node;
+  unsigned int offset;
 
   /* We have only builtins for -mpaired-single and -mips3d.  */
   if (!TARGET_PAIRED_SINGLE_FLOAT)
@@ -9561,10 +9606,20 @@ mips_init_builtins (void)
     = build_function_type_list (double_type_node,
 				double_type_node, double_type_node, NULL_TREE);
 
-  for (d = mips_bdesc; d < &mips_bdesc[ARRAY_SIZE (mips_bdesc)]; d++)
-    if ((d->target_flags & target_flags) == d->target_flags)
-      lang_hooks.builtin_function (d->name, types[d->function_type],
-				   d - mips_bdesc, BUILT_IN_MD, NULL, NULL);
+  /* Iterate through all of the bdesc arrays, initializing all of the
+     builtin functions.  */
+
+  offset = 0;
+  for (m = bdesc_arrays; m < &bdesc_arrays[ARRAY_SIZE (bdesc_arrays)]; m++)
+    {
+      if (m->proc == PROCESSOR_DEFAULT || (m->proc == mips_arch))
+	for (d = m->bdesc; d < &m->bdesc[m->size]; d++)
+	  if ((d->target_flags & target_flags) == d->target_flags)
+	    lang_hooks.builtin_function (d->name, types[d->function_type],
+					 d - m->bdesc + offset,
+					 BUILT_IN_MD, NULL, NULL);
+      offset += m->size;
+    }
 }
 
 /* Expand a MIPS_BUILTIN_DIRECT function.  ICODE is the code of the
