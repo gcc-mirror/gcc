@@ -1,3 +1,8 @@
+1999-11-06  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* bitset (class bitset): Declare reference as our friend.
+	* bitset: Include limits.h.
+
 1999-08-08  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* pthread_alloc: Solaris' ctype.h defines _U to 01; use _Up as
