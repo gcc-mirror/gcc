@@ -1,3 +1,7 @@
+2000-02-27  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* c-lex.c (putback_buffer): Make 'buffer' an unsigned char *.
+
 Sun Feb 27 07:44:17 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gcov-io.h (__fetch_long, __store_long, __read_long, __write_long):
