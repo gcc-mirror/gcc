@@ -787,6 +787,7 @@ assign_stack_temp_for_type (mode, size, keep, type)
   MEM_IN_STRUCT_P (p->slot) = 0;
   MEM_SCALAR_P (p->slot) = 0;
   MEM_VOLATILE_P (p->slot) = 0;
+  set_mem_alias_set (p->slot, 0);
 
   /* If we know the alias set for the memory that will be used, use
      it.  If there's no TYPE, then we don't know anything about the
