@@ -1,3 +1,8 @@
+Tue Apr 13 14:45:17 1999  Jan Hubicka <hubicka@freesoft.cz>
+
+	* i386.md (anddi3): Add % constraint.
+	(iordi3, xordi3): Likewise.
+
 Tue Apr 13 14:29:58 1999  Jan Hubicka <hubicka@freesoft.cz>
 
 	* i386.md (extendhisi2): Output mov instead of cw instruction for K6
