@@ -1,3 +1,8 @@
+2004-09-08  David Edelsohn  <edelsohn@gnu.org>
+
+	* ltmain.sh: Use $pic_object as $non_pic_object if
+	$non_pic_object=none.
+
 2004-09-07  Paolo Bonzini  <bonzini@gnu.org>
 
 	* missing: Import latest version from master repository.
