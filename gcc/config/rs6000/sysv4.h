@@ -257,7 +257,8 @@ do {									\
 	     rs6000_sdata_name);					\
     }									\
 									\
-  if (rs6000_sdata != SDATA_NONE && DEFAULT_ABI != ABI_V4)		\
+  if ((rs6000_sdata != SDATA_NONE && DEFAULT_ABI != ABI_V4)		\
+      || (rs6000_sdata == SDATA_EABI && !TARGET_EABI))			\
     {									\
       rs6000_sdata = SDATA_NONE;					\
       error ("-msdata=%s and -mcall-%s are incompatible",		\
