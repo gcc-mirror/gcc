@@ -62,11 +62,8 @@ static void add_friend (), add_friends ();
 /* Cache _builtin_new and _builtin_delete exprs.  */
 static tree BIN, BID, BIVN, BIVD;
 
-/* Cache the identifier nodes for the two magic field of a new cookie.  */
+/* Cache the identifier nodes for the magic field of a new cookie.  */
 static tree nc_nelts_field_id;
-#if 0
-static tree nc_ptr_2comp_field_id;
-#endif
 
 static tree minus_one;
 
@@ -582,7 +579,7 @@ emit_base_init (t, immediately)
 	continue;
 
 #if 0 /* Once unsharing happens soon enough.  */
-      my_friendly_assert (BINFO_INHERITANCE_CHAIN (base_binfo) == t_binfo);
+      my_friendly_assert (BINFO_INHERITANCE_CHAIN (base_binfo) == t_binfo, 999);
 #else
       BINFO_INHERITANCE_CHAIN (base_binfo) = t_binfo;
 #endif
@@ -632,7 +629,7 @@ emit_base_init (t, immediately)
   /* Initialize all the virtual function table fields that
      do come from virtual base classes. */
   if (TYPE_USES_VIRTUAL_BASECLASSES (t))
-    expand_indirect_vtbls_init (t_binfo, C_C_D, current_class_decl, 0);
+    expand_indirect_vtbls_init (t_binfo, C_C_D, current_class_decl);
 
   /* Initialize all the virtual function table fields that
      do not come from virtual base classes.  */
@@ -1375,12 +1372,6 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 	  if (TREE_CODE (init_type) == ERROR_MARK)
 	    return;
 
-#if 0
-	  /* These lines are found troublesome 5/11/89.  */
-	  if (TREE_CODE (init_type) == REFERENCE_TYPE)
-	    init_type = TREE_TYPE (init_type);
-#endif
-
 	  /* This happens when we use C++'s functional cast notation.
 	     If the types match, then just use the TARGET_EXPR
 	     directly.  Otherwise, we need to create the initializer
@@ -1399,35 +1390,13 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 		  expand_expr_stmt (init);
 		  return;
 		}
-	      else
-		{
-#if 0
-		  /* This causes testcase return2.C to fail.  */
-		  init = TREE_OPERAND (init, 1);
-		  init = build (CALL_EXPR, init_type,
-				TREE_OPERAND (init, 0), TREE_OPERAND (init, 1), 0);
-		  TREE_SIDE_EFFECTS (init) = 1;
-		    if (init_list)
-		      TREE_VALUE (init_list) = init;
-#endif
-		}
 	    }
 
-	  if (init_type == type && TREE_CODE (init) == CALL_EXPR
-#if 0
-	      /* It is valid to directly initialize from a CALL_EXPR
-		 without going through X(X&), apparently.  */
-	      && ! TYPE_GETS_INIT_REF (type)
-#endif
-	      )
+	  if (init_type == type && TREE_CODE (init) == CALL_EXPR)
 	    {
 	      /* A CALL_EXPR is a legitimate form of initialization, so
 		 we should not print this warning message.  */
-#if 0
-	      /* Should have gone away due to 5/11/89 change.  */
-	      if (TREE_CODE (TREE_TYPE (init)) == REFERENCE_TYPE)
-		init = convert_from_reference (init);
-#endif
+
 	      expand_assignment (exp, init, 0, 0);
 	      if (exp == DECL_RESULT (current_function_decl))
 		{
@@ -1565,148 +1534,9 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 	}
     }
 
-  /* Handle default copy constructors here, does not matter if there is
-     a constructor or not.  */
-  if (type == init_type && IS_AGGR_TYPE (type)
-      && init && TREE_CODE (init) != TREE_LIST)
-    expand_default_init (binfo, true_exp, exp, type, init, alias_this, flags);
-  /* Not sure why this is here... */
-  else if (TYPE_HAS_CONSTRUCTOR (type))
-    expand_default_init (binfo, true_exp, exp, type, init, alias_this, flags);
-  else if (TREE_CODE (type) == ARRAY_TYPE)
-    {
-      if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (type)))
-	expand_vec_init (exp, exp, array_type_nelts (type), init, 0);
-      else if (TYPE_VIRTUAL_P (TREE_TYPE (type)))
-	sorry ("arrays of objects with virtual functions but no constructors");
-    }
-  else
-    expand_recursive_init (binfo, true_exp, exp, init,
-			   CLASSTYPE_BASE_INIT_LIST (type), alias_this);
-}
-
-/* A pointer which holds the initializer.  First call to
-   expand_aggr_init gets this value pointed to, and sets it to init_null.  */
-static tree *init_ptr, init_null;
-
-/* Subroutine of expand_recursive_init:
-
-   ADDR is the address of the expression being initialized.
-   INIT_LIST is the cons-list of initializations to be performed.
-   ALIAS_THIS is its same, lovable self.  */
-static void
-expand_recursive_init_1 (binfo, true_exp, addr, init_list, alias_this)
-     tree binfo, true_exp, addr;
-     tree init_list;
-     int alias_this;
-{
-  while (init_list)
-    {
-      if (TREE_PURPOSE (init_list))
-	{
-	  if (TREE_CODE (TREE_PURPOSE (init_list)) == FIELD_DECL)
-	    {
-	      tree member = TREE_PURPOSE (init_list);
-	      tree subexp = build_indirect_ref (convert_pointer_to (TREE_VALUE (init_list), addr), NULL_PTR);
-	      tree member_base = build (COMPONENT_REF, TREE_TYPE (member), subexp, member);
-	      if (IS_AGGR_TYPE (TREE_TYPE (member)))
-		expand_aggr_init (member_base, DECL_INITIAL (member), 0, 0);
-	      else if (TREE_CODE (TREE_TYPE (member)) == ARRAY_TYPE
-		       && TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (member)))
-		{
-		  member_base = save_expr (default_conversion (member_base));
-		  expand_vec_init (member, member_base,
-				   array_type_nelts (TREE_TYPE (member)),
-				   DECL_INITIAL (member), 0);
-		}
-	      else
-		expand_expr_stmt (build_modify_expr (member_base, INIT_EXPR, DECL_INITIAL (member)));
-	    }
-	  else if (TREE_CODE (TREE_PURPOSE (init_list)) == TREE_LIST)
-	    {
-	      expand_recursive_init_1 (binfo, true_exp, addr, TREE_PURPOSE (init_list), alias_this);
-	      expand_recursive_init_1 (binfo, true_exp, addr, TREE_VALUE (init_list), alias_this);
-	    }
-	  else if (TREE_CODE (TREE_PURPOSE (init_list)) == ERROR_MARK)
-	    {
-	      /* Only initialize the virtual function tables if we
-		 are initializing the ultimate users of those vtables.  */
-	      if (TREE_VALUE (init_list))
-		{
-		  /* We have to ensure that the first argment to
-		     expand_virtual_init is in binfo's hierarchy.  */
-		  /* Is it the case that this is exactly the right binfo? */
-		  /* If it is ok, then fixup expand_virtual_init, to make
-		     it much simpler. */
-		  expand_virtual_init (get_binfo (TREE_VALUE (init_list), binfo, 0),
-				      addr);
-		  if (TREE_VALUE (init_list) == binfo
-		      && TYPE_USES_VIRTUAL_BASECLASSES (BINFO_TYPE (binfo)))
-		    expand_indirect_vtbls_init (binfo, true_exp, addr, 1);
-		}
-	    }
-	  else
-	    my_friendly_abort (49);
-	}
-      else if (TREE_VALUE (init_list)
-	       && TREE_CODE (TREE_VALUE (init_list)) == TREE_VEC)
-	{
-	  tree subexp = build_indirect_ref (convert_pointer_to (TREE_VALUE (init_list), addr), NULL_PTR);
-	  expand_aggr_init_1 (binfo, true_exp, subexp, *init_ptr,
-			      alias_this && BINFO_OFFSET_ZEROP (TREE_VALUE (init_list)),
-			      LOOKUP_COMPLAIN);
-
-	  /* INIT_PTR is used up.  */
-	  init_ptr = &init_null;
-	}
-      else
-	my_friendly_abort (50);
-      init_list = TREE_CHAIN (init_list);
-    }
-}
-
-/* Initialize EXP with INIT.  Type EXP does not have a constructor,
-   but it has a baseclass with a constructor or a virtual function
-   table which needs initializing.
-
-   INIT_LIST is a cons-list describing what parts of EXP actually
-   need to be initialized.  INIT is given to the *unique*, first
-   constructor within INIT_LIST.  If there are multiple first
-   constructors, such as with multiple inheritance, INIT must
-   be zero or an ambiguity error is reported.
-
-   ALIAS_THIS is passed from `expand_aggr_init'.  See comments
-   there.  */
-
-static void
-expand_recursive_init (binfo, true_exp, exp, init, init_list, alias_this)
-     tree binfo, true_exp, exp, init;
-     tree init_list;
-     int alias_this;
-{
-  tree *old_init_ptr = init_ptr;
-  tree addr = build_unary_op (ADDR_EXPR, exp, 0);
-  init_ptr = &init;
-
-  if (true_exp == exp && TYPE_USES_VIRTUAL_BASECLASSES (BINFO_TYPE (binfo)))
-    {
-      expand_aggr_vbase_init (binfo, exp, addr, init_list);
-      expand_indirect_vtbls_init (binfo, true_exp, addr, 1);
-    }
-  expand_recursive_init_1 (binfo, true_exp, addr, init_list, alias_this);
-
-  if (*init_ptr)
-    {
-      tree type = TREE_TYPE (exp);
-
-      if (TREE_CODE (type) == REFERENCE_TYPE)
-	type = TREE_TYPE (type);
-      if (IS_AGGR_TYPE (type))
-	cp_error ("unexpected argument to constructor `%T'", type);
-      else
-	error ("unexpected argument to constructor");
-    }
-  init_ptr = old_init_ptr;
+  /* We know that expand_default_init can handle everything we want
+     at this point.  */
+  expand_default_init (binfo, true_exp, exp, type, init, alias_this, flags);
 }
 
 /* Report an error if NAME is not the name of a user-defined,
@@ -1846,12 +1676,6 @@ build_member_call (type, name, parmlist)
 
   if (dtor)
     {
-#if 0
-      /* Everything can explicitly call a destructor; see 12.4 */
-      if (! TYPE_HAS_DESTRUCTOR (type))
-	cp_error ("type `%#T' does not have a destructor", type);
-      else
-#endif
       cp_error ("cannot call destructor `%T::~%T' without object", type,
 		method_name);
       return error_mark_node;
@@ -2092,11 +1916,6 @@ build_offset_ref (type, name)
 		  || ! allocation_temporary_p ()))
 	    fnfields = copy_list (fnfields);
 
-#if 0
-	  for (t = TREE_VALUE (fnfields); t; t = DECL_CHAIN (t))
-	    assemble_external (t);
-#endif
-
 	  t = build_tree_list (error_mark_node, fnfields);
 	  TREE_TYPE (t) = build_offset_type (type, unknown_type_node);
 	  return t;
@@ -2146,72 +1965,6 @@ build_offset_ref (type, name)
      equivalent to `this->type::name', at least not until
      resolve_offset_ref.  */
   return build (OFFSET_REF, build_offset_type (type, TREE_TYPE (t)), decl, t);
-}
-
-/* Given an object EXP and a member function reference MEMBER,
-   return the address of the actual member function.  */
-tree
-get_member_function (exp_addr_ptr, exp, member)
-     tree *exp_addr_ptr;
-     tree exp, member;
-{
-  tree ctype = TREE_TYPE (exp);
-  tree function = save_expr (build_unary_op (ADDR_EXPR, member, 0));
-
-  if (TYPE_VIRTUAL_P (ctype)
-      || (flag_all_virtual == 1 && TYPE_OVERLOADS_METHOD_CALL_EXPR (ctype)))
-    {
-      tree e0, e1, e3;
-      tree exp_addr;
-
-      /* Save away the unadulterated `this' pointer.  */
-      exp_addr = save_expr (*exp_addr_ptr);
-
-      /* Cast function to signed integer.  */
-      e0 = build1 (NOP_EXPR, integer_type_node, function);
-
-      /* There is a hack here that takes advantage of
-	 twos complement arithmetic, and the fact that
-	 there are more than one UNITS to the WORD.
-	 If the high bit is set for the `function',
-	 then we pretend it is a virtual function,
-	 and the array indexing will knock this bit
-	 out the top, leaving a valid index.  */
-      if (UNITS_PER_WORD <= 1)
-	my_friendly_abort (54);
-
-      e1 = build (GT_EXPR, boolean_type_node, e0, integer_zero_node);
-      e1 = build_compound_expr (tree_cons (NULL_TREE, exp_addr,
-					   build_tree_list (NULL_TREE, e1)));
-      e1 = save_expr (e1);
-
-      if (TREE_SIDE_EFFECTS (*exp_addr_ptr))
-	{
-	  exp = build_indirect_ref (exp_addr, NULL_PTR);
-	  *exp_addr_ptr = exp_addr;
-	}
-
-      /* This is really hairy: if the function pointer is a pointer
-	 to a non-virtual member function, then we can't go mucking
-	 with the `this' pointer (any more than we already have to
-	 this point).  If it is a pointer to a virtual member function,
-	 then we have to adjust the `this' pointer according to
-	 what the virtual function table tells us.  */
-
-      e3 = build_vfn_ref (exp_addr_ptr, exp, e0);
-      my_friendly_assert (e3 != error_mark_node, 213);
-
-      /* Change this pointer type from `void *' to the
-	 type it is really supposed to be.  */
-      TREE_TYPE (e3) = TREE_TYPE (function);
-
-      /* If non-virtual, use what we had originally.  Otherwise,
-	 use the value we get from the virtual function table.  */
-      *exp_addr_ptr = build_conditional_expr (e1, exp_addr, *exp_addr_ptr);
-
-      function = build_conditional_expr (e1, function, e3);
-    }
-  return build_indirect_ref (function, NULL_PTR);
 }
 
 /* If a OFFSET_REF made it through to here, then it did
@@ -2317,13 +2070,7 @@ resolve_offset_ref (exp)
      for the dereferenced pointer-to-member construct.  */
   addr = build_unary_op (ADDR_EXPR, base, 0);
 
-  if (TREE_CODE (TREE_TYPE (member)) == METHOD_TYPE)
-    {
-      basetype = DECL_CLASS_CONTEXT (member);
-      addr = convert_pointer_to (basetype, addr);
-      return build_unary_op (ADDR_EXPR, get_member_function (&addr, build_indirect_ref (addr, NULL_PTR), member), 0);
-    }
-  else if (TREE_CODE (TREE_TYPE (member)) == OFFSET_TYPE)
+  if (TREE_CODE (TREE_TYPE (member)) == OFFSET_TYPE)
     {
       basetype = TYPE_OFFSET_BASETYPE (TREE_TYPE (member));
       addr = convert_pointer_to (basetype, addr);
@@ -2573,14 +2320,8 @@ xref_friend (type, decl, ctype)
      tree type, decl, ctype;
 {
   tree friend_decl = TYPE_NAME (ctype);
-#if 0
-  tree typedecl = TYPE_NAME (type);
-  tree t = tree_cons (NULL_TREE, ctype, DECL_UNDEFINED_FRIENDS (typedecl));
-
-  DECL_UNDEFINED_FRIENDS (typedecl) = t;
-#else
   tree t = 0;
-#endif
+
   SET_DECL_WAITING_FRIENDS (friend_decl,
 			    tree_cons (type, t,
 				       DECL_WAITING_FRIENDS (friend_decl)));
@@ -2767,9 +2508,6 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals)
       add_friend (current_class_type, decl);
 
       DECL_FRIEND_P (decl) = 1;
-#if 0
-      TREE_OVERLOADED (declarator) = 1;
-#endif
     }
   else
     {
@@ -2820,9 +2558,6 @@ embrace_waiting_friends (type)
        waiters = TREE_CHAIN (waiters))
     {
       tree waiter = TREE_PURPOSE (waiters);
-#if 0
-      tree waiter_prev = TREE_VALUE (waiters);
-#endif
       tree decl = TREE_TYPE (waiters);
       tree name = decl ? (TREE_CODE (decl) == IDENTIFIER_NODE
 			  ? decl : DECL_NAME (decl)) : NULL_TREE;
@@ -2846,13 +2581,6 @@ embrace_waiting_friends (type)
 	}
       else
 	make_friend_class (type, waiter);
-
-#if 0
-      if (TREE_CHAIN (waiter_prev))
-	TREE_CHAIN (waiter_prev) = TREE_CHAIN (TREE_CHAIN (waiter_prev));
-      else
-	DECL_UNDEFINED_FRIENDS (TYPE_NAME (waiter)) = NULL_TREE;
-#endif
     }
 }
 
@@ -3131,17 +2859,6 @@ build_new (placement, decl, init, use_global_new)
       rval = build_builtin_call (build_pointer_type (true_type),
 				 has_array ? BIVN : BIN,
 				 build_tree_list (NULL_TREE, size));
-#if 0
-      /* See comment above as to why this is disabled.  */
-      if (alignment)
-	{
-	  rval = build (PLUS_EXPR, build_pointer_type (true_type), rval,
-			alignment);
-	  rval = build (BIT_AND_EXPR, build_pointer_type (true_type),
-			rval, build1 (BIT_NOT_EXPR, integer_type_node,
-				      alignment));
-	}
-#endif
       TREE_CALLS_NEW (rval) = 1;
     }
 
@@ -3360,24 +3077,6 @@ build_new (placement, decl, init, use_global_new)
   if (pending_sizes)
     rval = build_compound_expr (chainon (pending_sizes,
 					 build_tree_list (NULL_TREE, rval)));
-
-  if (flag_gc)
-    {
-      extern tree gc_visible;
-      tree objbits;
-      tree update_expr;
-
-      rval = save_expr (rval);
-      /* We don't need a `headof' operation to do this because
-	 we know where the object starts.  */
-      objbits = build1 (INDIRECT_REF, unsigned_type_node,
-			build (MINUS_EXPR, ptr_type_node,
-			       rval, c_sizeof_nowarn (unsigned_type_node)));
-      update_expr = build_modify_expr (objbits, BIT_IOR_EXPR, gc_visible);
-      rval = build_compound_expr (tree_cons (NULL_TREE, rval,
-					     tree_cons (NULL_TREE, update_expr,
-							build_tree_list (NULL_TREE, rval))));
-    }
 
   return rval;
 }
@@ -3988,11 +3687,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 
 		 @@ Does this really need to be done?  */
 	      tree ifexp = build_binary_op(NE_EXPR, addr, integer_zero_node,1);
-#if 0
-	      if (TREE_CODE (ref) == VAR_DECL
-		  || TREE_CODE (ref) == COMPONENT_REF)
-		warning ("losing in build_delete");
-#endif
+
 	      expr = build (COND_EXPR, void_type_node,
 			    ifexp, expr, void_zero_node);
 	    }
@@ -4228,7 +3923,8 @@ build_vec_delete (base, maxindex, elt_size, auto_delete_vec, auto_delete,
     }
   else
     {
-      error ("type to vector delete is neither pointer or array type");
+      if (base != error_mark_node)
+	error ("type to vector delete is neither pointer or array type");
       return error_mark_node;
     }
 

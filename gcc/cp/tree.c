@@ -419,32 +419,6 @@ build_cplus_method_type (basetype, rettype, argtypes)
 }
 
 tree
-build_cplus_staticfn_type (basetype, rettype, argtypes)
-     tree basetype, rettype, argtypes;
-{
-  register tree t;
-  int hashcode;
-
-  /* Make a node of the sort we want.  */
-  t = make_node (FUNCTION_TYPE);
-
-  TYPE_METHOD_BASETYPE (t) = TYPE_MAIN_VARIANT (basetype);
-  TREE_TYPE (t) = rettype;
-
-  TYPE_ARG_TYPES (t) = argtypes;
-
-  /* If we already have such a type, use the old one and free this one.
-     Note that it also frees up the above cons cell if found.  */
-  hashcode = TYPE_HASH (basetype) + TYPE_HASH (rettype) + type_hash_list (argtypes);
-  t = type_hash_canon (hashcode, t);
-
-  if (TYPE_SIZE (t) == 0)
-    layout_type (t);
-
-  return t;
-}
-
-tree
 build_cplus_array_type (elt_type, index_type)
      tree elt_type;
      tree index_type;
@@ -1149,59 +1123,6 @@ get_decl_list (value)
 
   return build_decl_list (NULL_TREE, value);
 }
-
-/* Look in the type hash table for a type isomorphic to
-   `build_tree_list (NULL_TREE, VALUE)'.
-   If one is found, return it.  Otherwise return 0.  */
-
-tree
-list_hash_lookup_or_cons (value)
-     tree value;
-{
-  register int hashcode = TYPE_HASH (value);
-  register struct list_hash *h;
-  struct obstack *ambient_obstack;
-  tree list = NULL_TREE;
-
-  if (TREE_CODE (value) == IDENTIFIER_NODE)
-    list = get_identifier_list (value);
-  else if (TREE_CODE (value) == TYPE_DECL
-	   && TREE_CODE (TREE_TYPE (value)) == RECORD_TYPE
-	   && TYPE_LANG_SPECIFIC (TREE_TYPE (value)))
-    list = CLASSTYPE_ID_AS_LIST (TREE_TYPE (value));
-  else if (TREE_CODE (value) == RECORD_TYPE
-	   && TYPE_LANG_SPECIFIC (value))
-    list = CLASSTYPE_AS_LIST (value);
-
-  if (list != NULL_TREE)
-    {
-      my_friendly_assert (TREE_CHAIN (list) == NULL_TREE, 302);
-      return list;
-    }
-
-  if (debug_no_list_hash)
-    return hash_tree_chain (value, NULL_TREE);
-
-  for (h = list_hash_table[hashcode % TYPE_HASH_SIZE]; h; h = h->next)
-    if (h->hashcode == hashcode
-	&& TREE_VIA_VIRTUAL (h->list) == 0
-	&& TREE_VIA_PUBLIC (h->list) == 0
-	&& TREE_VIA_PROTECTED (h->list) == 0
-	&& TREE_PURPOSE (h->list) == 0
-	&& TREE_VALUE (h->list) == value)
-      {
-	my_friendly_assert (TREE_TYPE (h->list) == 0, 303);
-	my_friendly_assert (TREE_CHAIN (h->list) == 0, 304);
-	return h->list;
-      }
-
-  ambient_obstack = current_obstack;
-  current_obstack = &class_obstack;
-  list = build_tree_list (NULL_TREE, value);
-  list_hash_add (hashcode, list);
-  current_obstack = ambient_obstack;
-  return list;
-}
 
 /* Build an association between TYPE and some parameters:
 
@@ -1283,38 +1204,6 @@ reverse_path (path)
   return prev;
 }
 
-tree
-virtual_member (elem, list)
-     tree elem;
-     tree list;
-{
-  tree t;
-  tree rval, nval;
-
-  for (t = list; t; t = TREE_CHAIN (t))
-    if (elem == BINFO_TYPE (t))
-      return t;
-  rval = 0;
-  for (t = list; t; t = TREE_CHAIN (t))
-    {
-      tree binfos = BINFO_BASETYPES (t);
-      int i;
-
-      if (binfos != NULL_TREE)
-	for (i = TREE_VEC_LENGTH (binfos)-1; i >= 0; i--)
-	  {
-	    nval = binfo_value (elem, BINFO_TYPE (TREE_VEC_ELT (binfos, i)));
-	    if (nval)
-	      {
-		if (rval && BINFO_OFFSET (nval) != BINFO_OFFSET (rval))
-		  my_friendly_abort (104);
-		rval = nval;
-	      }
-	  }
-    }
-  return rval;
-}
-
 void
 debug_binfo (elem)
      tree elem;
@@ -1379,20 +1268,6 @@ count_functions (t)
   return 0;
 }
 
-/* Like value_member, but for DECL_CHAINs.  */
-tree
-decl_value_member (elem, list)
-     tree elem, list;
-{
-  while (list)
-    {
-      if (elem == list)
-	return list;
-      list = DECL_CHAIN (list);
-    }
-  return NULL_TREE;
-}
-
 int
 is_overloaded_fn (x)
      tree x;
@@ -1448,16 +1323,6 @@ fnaddr_from_vtable_entry (entry)
     }
   else
     return TREE_VALUE (TREE_CHAIN (TREE_CHAIN (CONSTRUCTOR_ELTS (entry))));
-}
-
-void
-set_fnaddr_from_vtable_entry (entry, value)
-     tree entry, value;
-{
-  if (flag_vtable_thunks)
-    abort ();
-  else
-  TREE_VALUE (TREE_CHAIN (TREE_CHAIN (CONSTRUCTOR_ELTS (entry)))) = value;
 }
 
 tree
@@ -1555,16 +1420,6 @@ lang_printable_name (decl)
   return print_ring[ring_counter];
 }
 
-/* Comparison function for sorting identifiers in RAISES lists.
-   Note that because IDENTIFIER_NODEs are unique, we can sort
-   them by address, saving an indirection.  */
-static int
-id_cmp (p1, p2)
-     tree *p1, *p2;
-{
-  return (HOST_WIDE_INT)TREE_VALUE (*p1) - (HOST_WIDE_INT)TREE_VALUE (*p2);
-}
-
 /* Build the FUNCTION_TYPE or METHOD_TYPE which may throw exceptions
    listed in RAISES.  */
 tree

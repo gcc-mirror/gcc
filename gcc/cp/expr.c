@@ -358,6 +358,7 @@ extract_init (decl, init)
 {
   return 0;
 
+#if 0
   if (IS_AGGR_TYPE (TREE_TYPE (decl))
       || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
     init = extract_aggr_init (decl, init);
@@ -369,4 +370,5 @@ extract_init (decl, init)
 
   DECL_INITIAL (decl) = init;
   return 1;
+#endif
 }

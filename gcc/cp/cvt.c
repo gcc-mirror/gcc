@@ -590,15 +590,7 @@ build_up_reference (type, arg, flags, checkconst)
     {
       tree temp;
 
-      if (flags&INDIRECT_BIND)
-	{
-	  tree slot = build (VAR_DECL, argtype);
-	  layout_decl (slot, 0);
-	  rval = build (TARGET_EXPR, argtype, slot, arg, 0);
-	  rval = build1 (ADDR_EXPR, type, rval);
-	  goto done;
-	}
-      else if (TREE_CODE (targ) == CALL_EXPR && IS_AGGR_TYPE (argtype))
+      if (TREE_CODE (targ) == CALL_EXPR && IS_AGGR_TYPE (argtype))
 	{
 	  temp = build_cplus_new (argtype, targ, 1);
 	  if (TREE_CODE (temp) == WITH_CLEANUP_EXPR)
@@ -607,6 +599,17 @@ build_up_reference (type, arg, flags, checkconst)
 			  0, TREE_OPERAND (temp, 2));
 	  else
 	    rval = build1 (ADDR_EXPR, type, temp);
+	  goto done;
+	}
+      else if (flags&INDIRECT_BIND)
+	{
+	  /* This should be the default, not the below code.  */
+	  /* All callers except grok_reference_init should probably
+             use INDIRECT_BIND.  */
+	  tree slot = build (VAR_DECL, argtype);
+	  layout_decl (slot, 0);
+	  rval = build (TARGET_EXPR, argtype, slot, arg, 0);
+	  rval = build1 (ADDR_EXPR, type, rval);
 	  goto done;
 	}
       else

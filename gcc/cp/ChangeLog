@@ -1,3 +1,175 @@
+Thu Feb  1 09:27:01 1996  Mike Stump  <mrs@cygnus.com>
+
+	* class.c (finish_struct_anon): Switch around code to not move anon
+	union elements around, nor mess up their contexts, nor offsets,
+	instead we now build up the right number of COMPONENT_REFs for all
+	the anon unions that may be present at build_component_ref time.
+	* typeck.c (lookup_anon_field): New routine to handle field lookup
+	on fields without names.  We find them, based upon their unique type
+	instead.
+	* typeck.c (build_component_ref): Allow FIELD_DECL components.
+	Handle finding components in anonymous unions, and ensure that a
+	COMPONENT_REF is built for each level as necessary.
+
+Tue Jan 30 18:18:23 1996  Mike Stump  <mrs@cygnus.com>
+
+	* cvt.c (build_up_reference): Make the INDIRECT_BIND case come after
+	code that ensures that copy ctors are used if appropriate.
+
+Tue Jan 30 17:35:14 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* init.c (build_vec_delete): Only give an error if base isn't an
+	error_mark_node.
+
+Mon Jan 29 17:09:06 1996  Mike Stump  <mrs@cygnus.com>
+
+	* spew.c (do_aggr): `new struct S;' isn't a forward declaration.
+	(yylex): If we see `new', keep slurping.
+
+Thu Jan 25 18:31:36 1996  Mike Stump  <mrs@cygnus.com>
+
+	* class.c (finish_struct_1): Move code for handling anon unions...
+	(finish_struct_anon): to here.  Fixup so that we do the offset
+	calculations right, and so that the fields are physically moved to
+	the containers's chain.
+
+Thu Jan 25 18:27:37 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* decl.c (grokdeclarator): Avoid trying to get an operand off an
+	identifier node.
+
+Wed Jan 24 11:25:30 1996  Jim Wilson  <wilson@chestnut.cygnus.com>
+
+	* typeck.c (pointer_int_sum): Use TYPE_PRECISION (sizetype) not
+	POINTER_SIZE to agree with expr.c.
+
+Thu Jan 25 13:01:23 1996  Mike Stump  <mrs@cygnus.com>
+
+	* search.c (lookup_field): Don't report ambiguities if protect is 0,
+	instead return NULL_TREE.
+
+Wed Jan 24 13:01:26 1996  Mike Stump  <mrs@cygnus.com>
+
+	* class.c (finish_struct_1): Call warn_hidden if we want warnings
+	about overloaded virtual functions.
+	(warn_hidden): New routine to warn of virtual functions that are
+	hidden by other virtual functions, that are not overridden.
+	(get_basefndecls): New routine, used by warn_hidden.
+	(mark_overriders): New routine, used by warn_hidden.
+	* search.c (get_matching_virtual): Remove old warning that just
+	isn't very useful.
+
+Tue Jan 23 12:26:10 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* decl.c (output_builtin_tdesc_entries): #if 0 the function definition.
+
+	* typeck.c (null_ptr_cst_p): Delete unused fn.
+	(build_function_call_maybe): Delete unused fn.
+
+	* expr.c (extract_init): #if 0 the code after unconditional return 0
+	for now.
+
+	Delete old cadillac code.
+	* edsel.c: Remove file.
+	* Make-lang.in (CXX_SRCS): Take edsel.c off the list.
+	* Makefile.in (CXX_OBJS): Delete edsel.o.
+	(edsel.o): Delete rule.
+	* cp-tree.h (flag_cadillac): Delete var decl.
+	* lang-options.h: Delete "-fcadillac" and "-fno-cadillac".
+	* decl2.c (flag_cadillac): Delete var definition.
+	(lang_decode_option): Delete handling of -fcadillac and -fno-cadillac.
+	(grokfield): Delete code depending on flag_cadillac.
+	(finish_anon_union): Likewise.
+	* class.c (finish_struct_1): Likewise.
+	(pushclass): Likewise.
+	(popclass): Likewise.
+	(push_lang_context): Likewise.
+	(pop_lang_context): Likewise.
+	* decl.c (init_decl_processing): Likewise.
+	(start_decl): Likewise.
+	(cp_finish_decl): Likewise.
+	(xref_tag): Likewise.
+	(finish_enum): Likewise.
+	(start_function): Likewise.
+	(finish_function): Likewise.
+	(finish_stmt): Likewise.
+	* lex.c (lang_init): Likewise.
+	(check_newline): Likewise.
+
+	* lex.c (do_pending_inlines): Delete synthesized method kludge.
+
+	Delete defunct, ancient garbage collection implementation.
+	* rtti.c: New file with the RTTI stuff from gc.c.
+	* gc.c: Removed file (moved the remaining stuff into rtti.c).
+	* Makefile.in (CXX_OBJS): Replace gc.o with rtti.o.
+	(rtti.o): New rule, replacing gc.o.
+	* Make-lang.in (CXX_SRCS): Replace gc.c with rtti.c.
+	* cp-tree.h: Delete gc-related fn decls.
+	(DECL_GC_OFFSET): Delete macro.
+	(flag_gc): Delete extern decl.
+	* decl.c (current_function_obstack_index): Delete var decl.
+	(current_function_obstack_usage): Delete var decl.
+	(start_function): Delete clearing of current_function_obstack_index
+	and current_function_obstack_usage.
+	(init_decl_processing): Delete code relying on -fgc.
+	Delete call to init_gc_processing.
+	(cp_finish_decl): Delete calls to build_static_gc_entry and
+	type_needs_gc_entry.  Delete gc code setting DECL_GC_OFFSET.
+	(store_parm_decls): Delete -fgc calls to cp_expand_decl_cleanup
+	and to expand_expr of a __gc_main call.
+	(maybe_gc_cleanup): Delete var decl.
+	(finish_function): Delete call to expand_gc_prologue_and_epilogue.
+	* decl2.c (flag_gc): Delete var decl.
+	(lang_f_options): Delete offering of -fgc.
+	(lang_decode_option): Delete -fgc and -fno-gc handling.
+	(get_temp_regvar): Delete gc code.
+	* init.c (build_new): Delete gc code.
+	* lex.c (init_lex): Delete checking of flag_gc.
+
+	* typeck.c (convert_arguments): Delete gc code.
+	(build_component_addr): Delete -fgc warning.
+	(build_modify_expr): Delete gc code.
+
+	* decl2.c (build_push_scope): Delete fn.
+	* cp-tree.h (build_push_scope): Delete decl.
+
+	* search.c (clear_search_slots): Delete fn.
+	* cp-tree.h (clear_search_slots): Delete decl.
+
+	* search.c (tree_needs_constructor_p): Delete fn.
+	* cp-tree.h (tree_needs_constructor_p): Delete decl.
+
+	* tree.c (id_cmp): Delete fn.
+
+	* tree.c (set_fnaddr_from_vtable_entry): Delete fn.
+	* cp-tree.h (set_fnaddr_from_vtable_entry): Delete decl.
+
+	* tree.c (decl_value_member): Delete fn.
+	* cp-tree.h (decl_value_member): Delete decl.
+
+	* tree.c (list_hash_lookup_or_cons): Delete fn.
+	* cp-tree.h (list_hash_lookup_or_cons): Delete decl.
+
+	* method.c (cplus_exception_name): Delete fn.
+	(EXCEPTION_NAME_{PREFIX, LENGTH}): Delete macros.
+
+	* spew.c (shift_tokens): Delete fn.
+
+Mon Jan 22 17:49:33 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c (init_exception_processing): Pass 1 to needs_pop in calls
+	to cp_finish_decl.
+	* parse.y: Ditto.
+
+Mon Jan 22 17:34:29 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* tree.c (build_cplus_staticfn_type): Delete function definition;
+	never used.
+	* cp-tree.h (build_cplus_staticfn_type): Delete decl.
+
+	* tree.c (virtual_member): Delete function definition; never used.
+	* cp-tree.h (virtual_member): Delete decl.
+
 Fri Jan 19 18:03:14 1996  Mike Stump  <mrs@cygnus.com>
 
 	* typeck.c (build_component_ref): Handle getting vbase pointers
@@ -16,8 +188,8 @@ Fri Jan 19 16:01:47 1996  Mike Stump  <mrs@cygnus.com>
 Fri Jan 19 14:09:44 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (store_bindings): Split out from push_to_top_level.
-  	(push_to_top_level): Call it for b->type_shadowed on class binding
- 	levels.
+	(push_to_top_level): Call it for b->type_shadowed on class binding
+	levels.
 
 Fri Jan 19 13:53:14 1996  Mike Stump  <mrs@cygnus.com>
 
@@ -86,7 +258,7 @@ Tue Jan 16 00:25:33 1996  Jason Merrill  <jason@yorick.cygnus.com>
 	* decl2.c (constructor_name_full): Handle TEMPLATE_TYPE_PARMs.
 
 	* decl.c (grokdeclarator): Also accept TEMPLATE_TYPE_PARM as a
- 	scope.
+	scope.
 
 Mon Jan 15 16:19:32 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
@@ -96,8 +268,8 @@ Mon Jan 15 16:19:32 1996  Jason Merrill  <jason@yorick.cygnus.com>
 	(nested_type): Ditto.
 	Take types directly instead of as identifiers.
 	* call.c (build_scoped_method_call): Take types directly instead of
- 	as identifiers.
-  	* decl.c (xref_basetypes): Ditto.
+	as identifiers.
+	* decl.c (xref_basetypes): Ditto.
 	* init.c (expand_member_init): Ditto.
 	(build_member_call): Ditto.
 	(build_offset_ref): Ditto.
@@ -128,7 +300,7 @@ Thu Jan 11 14:55:07 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
 Mon Jan  8 17:35:12 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck.c (build_modify_expr): Use a COMPOUND_EXPR instead of
- 	expand_target_expr.
+	expand_target_expr.
 
 Thu Jan  4 12:30:32 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
@@ -225,7 +397,7 @@ Tue Dec 19 22:36:56 1995  Jason Merrill  <jason@yorick.cygnus.com>
 Mon Dec 18 15:51:33 1995  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.h, decl2.c (flag_weak): New flag to control the use of
- 	weak symbols.	
+	weak symbols.	
 	* lang-options.h: Add -f{no-,}weak.
 	* decl.c (init_decl_processing): If the target does not support weak
 	symbols, don't use them.
@@ -253,7 +425,7 @@ Thu Dec 14 16:05:58 1995  Mike Stump  <mrs@cygnus.com>
 Thu Dec 14 14:16:26 1995  Mike Stump  <mrs@cygnus.com>
 
 	* init.c (expand_aggr_init_1): Use expand_aggr_init_1 instead of
- 	expand_assignment, as the later doesn't handle things that have
+	expand_assignment, as the later doesn't handle things that have
 	copy constructors well.  The compiler would do bitwise copying,
 	instead of ctor calling in some cases.
 
@@ -325,7 +497,7 @@ Wed Dec  6 11:48:21 1995  Mike Stump  <mrs@cygnus.com>
 	changes.
 	(push_eh_cleanup): New routine to register a cleanup for an
 	exception object.
- 	(empty_fndecl): Used to default cleanup actions to
+	(empty_fndecl): Used to default cleanup actions to
 	nothing.
 	(init_exception_processing): Setup empty_fndecl.  Setup
 	saved_cleanup.
@@ -390,7 +562,7 @@ Wed Nov 22 14:19:22 1995  Mike Stump  <mrs@cygnus.com>
 Wed Nov 22 11:52:19 1995  Paul Russell  <Rusty.Russell@adelaide.maptek.com.au>
 
 	* typeck.c (build_unary_op): Set TREE_NO_UNUSED_WARNING to avoid
- 	warnings.
+	warnings.
 
 Tue Nov 21 17:15:23 1995  Mike Stump  <mrs@cygnus.com>
 
@@ -408,7 +580,7 @@ Tue Nov 21 13:32:03 1995  Mike Stump  <mrs@cygnus.com>
 Thu Nov  9 13:35:30 1995  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (do_function_instantiation): Don't try to find a file-scope
- 	template for a member function.
+	template for a member function.
 
 Tue Nov 14 06:20:35 1995  Mike Stump  <mrs@cygnus.com>
 
@@ -537,7 +709,7 @@ Thu Oct 19 14:26:10 1995  Mike Stump  <mrs@cygnus.com>
 Thu Oct 19 10:36:30 1995  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* class.c (finish_struct_bits): Check aggregate_value_p instead of
- 	RETURN_IN_MEMORY.
+	RETURN_IN_MEMORY.
 
 Wed Oct 18 18:12:32 1995  Jason Merrill  <jason@yorick.cygnus.com>
 
@@ -740,7 +912,7 @@ Wed Sep 13 18:32:24 1995  Mike Stump  <mrs@cygnus.com>
 Wed Sep 13 16:52:06 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
 	* typeck.c (comptypes): Tighten up comparisons of template type
- 	parms.
+	parms.
 
 	* decl.c (duplicate_decls): Turn off whining about virtual functions
 	redeclared inline for now.
@@ -9656,7 +9828,7 @@ Tue Dec  7 16:09:34 1993  Jason Merrill  (jason@deneb.cygnus.com)
 
 	* toplev.c (lang_options): Ditto.
 
-       Mon Oct  4 12:50:02 1993  Chip Salzenberg  (chip@fin.uucp)
+Mon Oct  4 12:50:02 1993  Chip Salzenberg  (chip@fin.uucp)
 
 	[changes propagated from 930810 snapshot]
 	* cp-decl.c (init_decl_processing): Make long long available for use

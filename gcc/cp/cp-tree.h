@@ -298,10 +298,6 @@ extern int flag_handle_signatures;
    inline by default.  */
 
 extern int flag_default_inline;
-
-/* Nonzero means emit cadillac protocol.  */
-
-extern int flag_cadillac;
 
 /* C++ language-specific tree codes.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
@@ -1318,9 +1314,6 @@ extern int flag_new_for_scope;
 #define DECL_REFERENCE_SLOT(NODE) ((tree)(NODE)->decl.arguments)
 #define SET_DECL_REFERENCE_SLOT(NODE,VAL) ((NODE)->decl.arguments=VAL)
 
-/* For local VAR_DECLs, holds index into gc-protected obstack.  */
-#define DECL_GC_OFFSET(NODE) ((NODE)->decl.result)
-
 /* Accessor macros for C++ template decl nodes.  */
 #define DECL_TEMPLATE_IS_CLASS(NODE)    (DECL_RESULT(NODE) == NULL_TREE)
 #define DECL_TEMPLATE_PARMS(NODE)       DECL_ARGUMENTS(NODE)
@@ -1779,10 +1772,6 @@ extern int flag_this_is_variable;
 
 extern int flag_int_enum_equivalence;
 
-/* Nonzero means layout structures so that we can do garbage collection.  */
-
-extern int flag_gc;
-
 /* Nonzero means generate 'rtti' that give run-time type information.  */
 
 extern int flag_rtti;
@@ -1809,14 +1798,6 @@ extern int flag_implicit_templates;
    Otherwise, emit them as local symbols.  */
 
 extern int flag_weak;
-
-/* Current end of entries in the gc obstack for stack pointer variables.  */
-
-extern int current_function_obstack_index;
-
-/* Flag saying whether we have used the obstack in this function or not.  */
-
-extern int current_function_obstack_usage;
 
 enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 
@@ -2082,7 +2063,6 @@ extern tree grokfield				PROTO((tree, tree, tree, tree, tree, tree));
 extern tree grokbitfield			PROTO((tree, tree, tree));
 extern tree groktypefield			PROTO((tree, tree));
 extern tree grokoptypename			PROTO((tree, tree));
-extern tree build_push_scope			PROTO((tree, tree));
 extern void cplus_decl_attributes		PROTO((tree, tree, tree)); 
 extern tree constructor_name_full		PROTO((tree));
 extern tree constructor_name			PROTO((tree));
@@ -2112,8 +2092,6 @@ extern tree do_class_using_decl			PROTO((tree));
 extern tree current_namespace_id		PROTO((tree));
 extern tree get_namespace_id			PROTO((void));
 extern void check_default_args			PROTO((tree));
-
-/* in edsel.c */
 
 /* in except.c */
 extern tree protect_list;
@@ -2145,19 +2123,12 @@ extern void fixup_result_decl			PROTO((tree, struct rtx_def *));
 extern int decl_in_memory_p			PROTO((tree));
 extern tree unsave_expr_now			PROTO((tree));
 
-/* in gc.c */
-extern int type_needs_gc_entry			PROTO((tree));
-extern int value_safe_from_gc			PROTO((tree, tree));
-extern void build_static_gc_entry		PROTO((tree, tree));
-extern tree protect_value_from_gc		PROTO((tree, tree));
+/* in rtti.c */
 extern tree build_headof			PROTO((tree));
 extern tree build_classof			PROTO((tree));
 extern tree build_t_desc			PROTO((tree, int));
 extern tree build_i_desc			PROTO((tree));
 extern tree build_m_desc			PROTO((tree));
-extern void expand_gc_prologue_and_epilogue	PROTO((void));
-extern void lang_expand_end_bindings		PROTO((struct rtx_def *, struct rtx_def *));
-extern void init_gc_processing			PROTO((void));
 extern tree build_typeid			PROTO((tree));
 extern tree get_typeid				PROTO((tree));
 extern tree build_dynamic_cast			PROTO((tree, tree));
@@ -2174,7 +2145,6 @@ extern tree get_aggr_from_typedef		PROTO((tree, int));
 extern tree get_type_value			PROTO((tree));
 extern tree build_member_call			PROTO((tree, tree, tree));
 extern tree build_offset_ref			PROTO((tree, tree));
-extern tree get_member_function			PROTO((tree *, tree, tree));
 extern tree get_member_function_from_ptrfunc	PROTO((tree *, tree));
 extern tree resolve_offset_ref			PROTO((tree));
 extern tree decl_constant_value			PROTO((tree));
@@ -2316,14 +2286,13 @@ extern tree lookup_nested_field			PROTO((tree, int));
 extern tree lookup_fnfields			PROTO((tree, tree, int));
 extern tree lookup_nested_tag			PROTO((tree, tree));
 extern HOST_WIDE_INT breadth_first_search	PROTO((tree, int (*)(), int (*)()));
-extern int tree_needs_constructor_p		PROTO((tree, int));
 extern int tree_has_any_destructor_p		PROTO((tree, int));
 extern tree get_matching_virtual		PROTO((tree, tree, int));
 extern tree get_abstract_virtuals		PROTO((tree));
 extern tree get_baselinks			PROTO((tree, tree, tree));
 extern tree next_baselink			PROTO((tree));
 extern tree init_vbase_pointers			PROTO((tree, tree));
-extern void expand_indirect_vtbls_init		PROTO((tree, tree, tree, int));
+extern void expand_indirect_vtbls_init		PROTO((tree, tree, tree));
 extern void clear_search_slots			PROTO((tree));
 extern tree get_vbase_types			PROTO((tree));
 extern void build_mi_matrix			PROTO((tree));
@@ -2375,19 +2344,15 @@ extern tree hash_tree_cons			PROTO((int, int, int, tree, tree, tree));
 extern tree hash_tree_chain			PROTO((tree, tree));
 extern tree hash_chainon			PROTO((tree, tree));
 extern tree get_decl_list			PROTO((tree));
-extern tree list_hash_lookup_or_cons		PROTO((tree));
 extern tree make_binfo				PROTO((tree, tree, tree, tree, tree));
 extern tree binfo_value				PROTO((tree, tree));
 extern tree reverse_path			PROTO((tree));
-extern tree virtual_member			PROTO((tree, tree));
 extern void debug_binfo				PROTO((tree));
 extern int decl_list_length			PROTO((tree));
 extern int count_functions			PROTO((tree));
-extern tree decl_value_member			PROTO((tree, tree));
 extern int is_overloaded_fn			PROTO((tree));
 extern tree get_first_fn			PROTO((tree));
 extern tree fnaddr_from_vtable_entry		PROTO((tree));
-extern void set_fnaddr_from_vtable_entry	PROTO((tree, tree));
 extern tree function_arg_chain			PROTO((tree));
 extern int promotes_to_aggr_type		PROTO((tree, enum tree_code));
 extern int is_aggr_type_2			PROTO((tree, tree));
