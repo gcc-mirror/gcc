@@ -1,3 +1,11 @@
+2001-04-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-aux-info.c: NULL_PTR->NULL in calls to `concat'.
+
+	* gcc.c: Likewise.
+
+	* prefix.c: Likewise.
+
 2001-04-28  Stan Shebs  <shebs@apple.com>
 
 	* objc/objc-act.c (handle_class_ref): Rewrite to flush target

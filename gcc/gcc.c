@@ -1058,7 +1058,7 @@ translate_options (argcp, argvp)
 		  /* Store the translation as one argv elt or as two.  */
 		  if (arg != 0 && strchr (arginfo, 'j') != 0)
 		    newv[newindex++] = concat (option_map[j].equivalent, arg,
-					       NULL_PTR);
+					       NULL);
 		  else if (arg != 0)
 		    {
 		      newv[newindex++] = option_map[j].equivalent;
@@ -1505,7 +1505,7 @@ set_spec (name, spec)
 
   old_spec = *(sl->ptr_spec);
   *(sl->ptr_spec) = ((spec[0] == '+' && ISSPACE ((unsigned char)spec[1]))
-		     ? concat (old_spec, spec + 1, NULL_PTR)
+		     ? concat (old_spec, spec + 1, NULL)
 		     : xstrdup (spec));
 
 #ifdef DEBUG_SPECS
@@ -3030,7 +3030,7 @@ process_command (argc, argv)
       gcc_exec_prefix = make_relative_prefix (argv[0], standard_bindir_prefix,
 					      standard_exec_prefix);
       if (gcc_exec_prefix)
-	putenv (concat ("GCC_EXEC_PREFIX=", gcc_exec_prefix, NULL_PTR));
+	putenv (concat ("GCC_EXEC_PREFIX=", gcc_exec_prefix, NULL));
     }
 #endif
 
@@ -3072,7 +3072,7 @@ process_command (argc, argv)
 	    {
 	      strncpy (nstore, startp, endp - startp);
 	      if (endp == startp)
-		strcpy (nstore, concat (".", dir_separator_str, NULL_PTR));
+		strcpy (nstore, concat (".", dir_separator_str, NULL));
 	      else if (!IS_DIR_SEPARATOR (endp[-1]))
 		{
 		  nstore[endp - startp] = DIR_SEPARATOR;
@@ -3083,7 +3083,7 @@ process_command (argc, argv)
 	      add_prefix (&exec_prefixes, nstore, 0,
 			  PREFIX_PRIORITY_LAST, 0, NULL_PTR);
 	      add_prefix (&include_prefixes,
-			  concat (nstore, "include", NULL_PTR),
+			  concat (nstore, "include", NULL),
 			  0, PREFIX_PRIORITY_LAST, 0, NULL_PTR);
 	      if (*endp == 0)
 		break;
@@ -3107,7 +3107,7 @@ process_command (argc, argv)
 	    {
 	      strncpy (nstore, startp, endp - startp);
 	      if (endp == startp)
-		strcpy (nstore, concat (".", dir_separator_str, NULL_PTR));
+		strcpy (nstore, concat (".", dir_separator_str, NULL));
 	      else if (!IS_DIR_SEPARATOR (endp[-1]))
 		{
 		  nstore[endp - startp] = DIR_SEPARATOR;
@@ -3140,7 +3140,7 @@ process_command (argc, argv)
 	    {
 	      strncpy (nstore, startp, endp - startp);
 	      if (endp == startp)
-		strcpy (nstore, concat (".", dir_separator_str, NULL_PTR));
+		strcpy (nstore, concat (".", dir_separator_str, NULL));
 	      else if (!IS_DIR_SEPARATOR (endp[-1]))
 		{
 		  nstore[endp - startp] = DIR_SEPARATOR;
@@ -3390,8 +3390,7 @@ process_command (argc, argv)
 			    PREFIX_PRIORITY_B_OPT, 0, &warn_B);
 		add_prefix (&startfile_prefixes, value, NULL_PTR,
 			    PREFIX_PRIORITY_B_OPT, 0, &warn_B);
-		add_prefix (&include_prefixes, concat (value, "include",
-						       NULL_PTR),
+		add_prefix (&include_prefixes, concat (value, "include", NULL),
 			    NULL_PTR,
 			    PREFIX_PRIORITY_B_OPT, 0, NULL_PTR);
 		n_switches++;
@@ -3579,7 +3578,7 @@ process_command (argc, argv)
 	      PREFIX_PRIORITY_LAST, 1, warn_std_ptr);
 
   tooldir_prefix = concat (tooldir_base_prefix, spec_machine,
-			   dir_separator_str, NULL_PTR);
+			   dir_separator_str, NULL);
 
   /* If tooldir is relative, base it on exec_prefixes.  A relative
      tooldir lets us move the installed tree as a unit.
@@ -3594,28 +3593,28 @@ process_command (argc, argv)
 	{
 	  char *gcc_exec_tooldir_prefix
 	    = concat (gcc_exec_prefix, spec_machine, dir_separator_str,
-		      spec_version, dir_separator_str, tooldir_prefix, NULL_PTR);
+		      spec_version, dir_separator_str, tooldir_prefix, NULL);
 
 	  add_prefix (&exec_prefixes,
 		      concat (gcc_exec_tooldir_prefix, "bin",
-			      dir_separator_str, NULL_PTR),
+			      dir_separator_str, NULL),
 		      NULL_PTR, PREFIX_PRIORITY_LAST, 0, NULL_PTR);
 	  add_prefix (&startfile_prefixes,
 		      concat (gcc_exec_tooldir_prefix, "lib",
-			      dir_separator_str, NULL_PTR),
+			      dir_separator_str, NULL),
 		      NULL_PTR, PREFIX_PRIORITY_LAST, 0, NULL_PTR);
 	}
 
       tooldir_prefix = concat (standard_exec_prefix, spec_machine,
 			       dir_separator_str, spec_version,
-			       dir_separator_str, tooldir_prefix, NULL_PTR);
+			       dir_separator_str, tooldir_prefix, NULL);
     }
 
   add_prefix (&exec_prefixes,
-	      concat (tooldir_prefix, "bin", dir_separator_str, NULL_PTR),
+	      concat (tooldir_prefix, "bin", dir_separator_str, NULL),
 	      "BINUTILS", PREFIX_PRIORITY_LAST, 0, NULL_PTR);
   add_prefix (&startfile_prefixes,
-	      concat (tooldir_prefix, "lib", dir_separator_str, NULL_PTR),
+	      concat (tooldir_prefix, "lib", dir_separator_str, NULL),
 	      "BINUTILS", PREFIX_PRIORITY_LAST, 0, NULL_PTR);
 
   /* More prefixes are enabled in main, after we read the specs file
@@ -3740,7 +3739,7 @@ process_command (argc, argv)
 	{ /* POSIX allows separation of -l and the lib arg;
 	     canonicalize by concatenating -l with its arg */
 	  infiles[n_infiles].language = "*";
-	  infiles[n_infiles++].name = concat ("-l", argv[++i], NULL_PTR);
+	  infiles[n_infiles++].name = concat ("-l", argv[++i], NULL);
 	}
       else if (strncmp (argv[i], "-l", 2) == 0)
 	{
@@ -5374,11 +5373,11 @@ is_directory (path1, path2, linker)
   if (linker
       && ((cp - path == 6
 	   && strcmp (path, concat (dir_separator_str, "lib",
-				    dir_separator_str, ".", NULL_PTR)) == 0)
+				    dir_separator_str, ".", NULL)) == 0)
 	  || (cp - path == 10
 	      && strcmp (path, concat (dir_separator_str, "usr",
 				       dir_separator_str, "lib",
-				       dir_separator_str, ".", NULL_PTR)) == 0)))
+				       dir_separator_str, ".", NULL)) == 0)))
     return 0;
 
   return (stat (path, &st) >= 0 && S_ISDIR (st.st_mode));
@@ -5617,8 +5616,8 @@ main (argc, argv)
   /* Read specs from a file if there is one.  */
 
   machine_suffix = concat (spec_machine, dir_separator_str,
-			   spec_version, dir_separator_str, NULL_PTR);
-  just_machine_suffix = concat (spec_machine, dir_separator_str, NULL_PTR);
+			   spec_version, dir_separator_str, NULL);
+  just_machine_suffix = concat (spec_machine, dir_separator_str, NULL);
 
   specs_file = find_a_file (&startfile_prefixes, "specs", R_OK);
   /* Read the specs file unless it is a default one.  */
@@ -5670,12 +5669,12 @@ main (argc, argv)
 	  if (gcc_exec_prefix)
 	    add_prefix (&startfile_prefixes,
 			concat (gcc_exec_prefix, machine_suffix,
-				standard_startfile_prefix, NULL_PTR),
+				standard_startfile_prefix, NULL),
 			NULL_PTR, PREFIX_PRIORITY_LAST, 0, NULL_PTR);
 	  add_prefix (&startfile_prefixes,
 		      concat (standard_exec_prefix,
 			      machine_suffix,
-			      standard_startfile_prefix, NULL_PTR),
+			      standard_startfile_prefix, NULL),
 		      NULL_PTR, PREFIX_PRIORITY_LAST, 0, NULL_PTR);
 	}
 
@@ -5694,7 +5693,7 @@ main (argc, argv)
 	  && gcc_exec_prefix)
 	add_prefix (&startfile_prefixes,
 		    concat (gcc_exec_prefix, machine_suffix,
-			    standard_startfile_prefix, NULL_PTR),
+			    standard_startfile_prefix, NULL),
 		    "BINUTILS", PREFIX_PRIORITY_LAST, 0, NULL_PTR);
     }
 

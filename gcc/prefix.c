@@ -96,7 +96,7 @@ get_key_value (key)
 #endif
 
   if (prefix == 0)
-    prefix = getenv (temp = concat (key, "_ROOT", NULL_PTR));
+    prefix = getenv (temp = concat (key, "_ROOT", NULL));
 
   if (prefix == 0)
     prefix = std_prefix;
@@ -273,7 +273,7 @@ translate_name (name)
      and intended by the user, causing two path components to run
      together.  */
 
-  return concat (prefix, name, NULL_PTR);
+  return concat (prefix, name, NULL);
 }
 
 /* Update PATH using KEY if PATH starts with PREFIX.  */
@@ -286,9 +286,9 @@ update_path (path, key)
   if (! strncmp (path, std_prefix, strlen (std_prefix)) && key != 0)
     {
       if (key[0] != '$')
-	key = concat ("@", key, NULL_PTR);
+	key = concat ("@", key, NULL);
 
-      path = concat (key, &path[strlen (std_prefix)], NULL_PTR);
+      path = concat (key, &path[strlen (std_prefix)], NULL);
 
       while (path[0] == '@' || path[0] == '$')
 	path = translate_name (path);
