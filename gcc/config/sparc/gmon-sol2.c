@@ -85,9 +85,9 @@ static int	s_scale;
 
 #define	MSG "No space for profiling buffer(s)\n"
 
-static void moncontrol	PROTO ((int));
-extern void monstartup	PROTO ((char *, char *));
-extern void _mcleanup	PROTO ((void));
+static void moncontrol	PARAMS ((int));
+extern void monstartup	PARAMS ((char *, char *));
+extern void _mcleanup	PARAMS ((void));
 
 void monstartup(lowpc, highpc)
     char	*lowpc;
@@ -266,7 +266,7 @@ _mcleanup()
  * -- [eichin:19920702.1107EST]
  */
 
-static void internal_mcount PROTO((char *, unsigned short *)) ATTRIBUTE_UNUSED;
+static void internal_mcount PARAMS ((char *, unsigned short *)) ATTRIBUTE_UNUSED;
 
 /* i7 == last ret, -> frompcindex */
 /* o7 == current ret, -> selfpc */

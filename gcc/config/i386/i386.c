@@ -302,29 +302,29 @@ int ix86_align_loops;
 /* Power of two alignment for non-loop jumps. */
 int ix86_align_jumps;
 
-static void output_pic_addr_const PROTO ((FILE *, rtx, int));
-static void put_condition_code PROTO ((enum rtx_code, enum machine_mode,
+static void output_pic_addr_const PARAMS ((FILE *, rtx, int));
+static void put_condition_code PARAMS ((enum rtx_code, enum machine_mode,
 				       int, int, FILE *));
-static enum rtx_code unsigned_comparison PROTO ((enum rtx_code code));
-static rtx ix86_expand_int_compare PROTO ((enum rtx_code, rtx, rtx));
-static rtx ix86_expand_fp_compare PROTO ((enum rtx_code, rtx, rtx, int));
-static rtx ix86_expand_compare PROTO ((enum rtx_code, int));
-static rtx gen_push PROTO ((rtx));
-static int memory_address_length PROTO ((rtx addr));
-static int ix86_flags_dependant PROTO ((rtx, rtx, enum attr_type));
-static int ix86_agi_dependant PROTO ((rtx, rtx, enum attr_type));
-static int ix86_safe_length PROTO ((rtx));
-static enum attr_memory ix86_safe_memory PROTO ((rtx));
-static enum attr_pent_pair ix86_safe_pent_pair PROTO ((rtx));
-static enum attr_ppro_uops ix86_safe_ppro_uops PROTO ((rtx));
-static void ix86_dump_ppro_packet PROTO ((FILE *));
-static void ix86_reorder_insn PROTO ((rtx *, rtx *));
-static rtx * ix86_pent_find_pair PROTO ((rtx *, rtx *, enum attr_pent_pair,
+static enum rtx_code unsigned_comparison PARAMS ((enum rtx_code code));
+static rtx ix86_expand_int_compare PARAMS ((enum rtx_code, rtx, rtx));
+static rtx ix86_expand_fp_compare PARAMS ((enum rtx_code, rtx, rtx, int));
+static rtx ix86_expand_compare PARAMS ((enum rtx_code, int));
+static rtx gen_push PARAMS ((rtx));
+static int memory_address_length PARAMS ((rtx addr));
+static int ix86_flags_dependant PARAMS ((rtx, rtx, enum attr_type));
+static int ix86_agi_dependant PARAMS ((rtx, rtx, enum attr_type));
+static int ix86_safe_length PARAMS ((rtx));
+static enum attr_memory ix86_safe_memory PARAMS ((rtx));
+static enum attr_pent_pair ix86_safe_pent_pair PARAMS ((rtx));
+static enum attr_ppro_uops ix86_safe_ppro_uops PARAMS ((rtx));
+static void ix86_dump_ppro_packet PARAMS ((FILE *));
+static void ix86_reorder_insn PARAMS ((rtx *, rtx *));
+static rtx * ix86_pent_find_pair PARAMS ((rtx *, rtx *, enum attr_pent_pair,
 					 rtx));
-static void ix86_init_machine_status PROTO ((struct function *));
-static void ix86_mark_machine_status PROTO ((struct function *));
-static void ix86_split_to_parts PROTO ((rtx, rtx *, enum machine_mode));
-static int ix86_safe_length_prefix PROTO ((rtx));
+static void ix86_init_machine_status PARAMS ((struct function *));
+static void ix86_mark_machine_status PARAMS ((struct function *));
+static void ix86_split_to_parts PARAMS ((rtx, rtx *, enum machine_mode));
+static int ix86_safe_length_prefix PARAMS ((rtx));
 
 struct ix86_address
 {

@@ -1930,7 +1930,7 @@
   rtx dummy = gen_rtx (SIGN_EXTEND, DImode, const0_rtx);
   rtx dummy2 = gen_rtx_LSHIFTRT (DImode, const0_rtx, const0_rtx);
 #ifndef NO_MD_PROTOTYPES
-  rtx (*genfn) PROTO((rtx, rtx, rtx, rtx, rtx, rtx));
+  rtx (*genfn) PARAMS ((rtx, rtx, rtx, rtx, rtx, rtx));
 #else
   rtx (*genfn) ();
 #endif
@@ -1952,7 +1952,7 @@
   rtx dummy = gen_rtx (ZERO_EXTEND, DImode, const0_rtx);
   rtx dummy2 = gen_rtx_LSHIFTRT (DImode, const0_rtx, const0_rtx);
 #ifndef NO_MD_PROTOTYPES
-  rtx (*genfn) PROTO((rtx, rtx, rtx, rtx, rtx, rtx));
+  rtx (*genfn) PARAMS ((rtx, rtx, rtx, rtx, rtx, rtx));
 #else
   rtx (*genfn) ();
 #endif

@@ -108,34 +108,34 @@ char leaf_reg_remap[] =
 static const char *frame_base_name;
 static int frame_base_offset;
 
-static rtx pic_setup_code	PROTO((void));
-static void sparc_init_modes	PROTO((void));
-static int save_regs		PROTO((FILE *, int, int, const char *,
+static rtx pic_setup_code	PARAMS ((void));
+static void sparc_init_modes	PARAMS ((void));
+static int save_regs		PARAMS ((FILE *, int, int, const char *,
 				       int, int, int));
-static int restore_regs		PROTO((FILE *, int, int, const char *, int, int));
-static void build_big_number	PROTO((FILE *, int, const char *));
-static int function_arg_slotno	PROTO((const CUMULATIVE_ARGS *,
+static int restore_regs		PARAMS ((FILE *, int, int, const char *, int, int));
+static void build_big_number	PARAMS ((FILE *, int, const char *));
+static int function_arg_slotno	PARAMS ((const CUMULATIVE_ARGS *,
 				       enum machine_mode, tree, int, int,
 				       int *, int *));
 
-static int supersparc_adjust_cost PROTO((rtx, rtx, rtx, int));
-static int hypersparc_adjust_cost PROTO((rtx, rtx, rtx, int));
-static int ultrasparc_adjust_cost PROTO((rtx, rtx, rtx, int));
+static int supersparc_adjust_cost PARAMS ((rtx, rtx, rtx, int));
+static int hypersparc_adjust_cost PARAMS ((rtx, rtx, rtx, int));
+static int ultrasparc_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 
-static void sparc_output_addr_vec PROTO((rtx));
-static void sparc_output_addr_diff_vec PROTO((rtx));
-static void sparc_output_deferred_case_vectors PROTO((void));
-static void sparc_add_gc_roots    PROTO ((void));
-static void mark_ultrasparc_pipeline_state PROTO ((void *));
-static int check_return_regs PROTO ((rtx));
-static int epilogue_renumber PROTO ((rtx *, int));
-static int ultra_cmove_results_ready_p PROTO ((rtx));
-static int ultra_fpmode_conflict_exists PROTO ((enum machine_mode));
-static rtx *ultra_find_type PROTO ((int, rtx *, int));
-static void ultra_build_types_avail PROTO ((rtx *, int));
-static void ultra_flush_pipeline PROTO ((void));
-static void ultra_rescan_pipeline_state PROTO ((rtx *, int));
-static int set_extends PROTO ((rtx, rtx));
+static void sparc_output_addr_vec PARAMS ((rtx));
+static void sparc_output_addr_diff_vec PARAMS ((rtx));
+static void sparc_output_deferred_case_vectors PARAMS ((void));
+static void sparc_add_gc_roots    PARAMS ((void));
+static void mark_ultrasparc_pipeline_state PARAMS ((void *));
+static int check_return_regs PARAMS ((rtx));
+static int epilogue_renumber PARAMS ((rtx *, int));
+static int ultra_cmove_results_ready_p PARAMS ((rtx));
+static int ultra_fpmode_conflict_exists PARAMS ((enum machine_mode));
+static rtx *ultra_find_type PARAMS ((int, rtx *, int));
+static void ultra_build_types_avail PARAMS ((rtx *, int));
+static void ultra_flush_pipeline PARAMS ((void));
+static void ultra_rescan_pipeline_state PARAMS ((rtx *, int));
+static int set_extends PARAMS ((rtx, rtx));
 
 /* Option handling.  */
 
@@ -1421,10 +1421,10 @@ sparc_emit_set_symbolic_const64 (op0, op1, temp1)
 /* These avoid problems when cross compiling.  If we do not
    go through all this hair then the optimizer will see
    invalid REG_EQUAL notes or in some cases none at all.  */
-static void sparc_emit_set_safe_HIGH64 PROTO ((rtx, HOST_WIDE_INT));
-static rtx gen_safe_SET64 PROTO ((rtx, HOST_WIDE_INT));
-static rtx gen_safe_OR64 PROTO ((rtx, HOST_WIDE_INT));
-static rtx gen_safe_XOR64 PROTO ((rtx, HOST_WIDE_INT));
+static void sparc_emit_set_safe_HIGH64 PARAMS ((rtx, HOST_WIDE_INT));
+static rtx gen_safe_SET64 PARAMS ((rtx, HOST_WIDE_INT));
+static rtx gen_safe_OR64 PARAMS ((rtx, HOST_WIDE_INT));
+static rtx gen_safe_XOR64 PARAMS ((rtx, HOST_WIDE_INT));
 
 #if HOST_BITS_PER_WIDE_INT == 64
 #define GEN_HIGHINT64(__x)		GEN_INT ((__x) & 0xfffffc00)
@@ -1486,7 +1486,7 @@ gen_safe_XOR64 (src, val)
    opportunities.  */
 
 static void sparc_emit_set_const64_quick1
-	PROTO((rtx, rtx, unsigned HOST_WIDE_INT, int));
+	PARAMS ((rtx, rtx, unsigned HOST_WIDE_INT, int));
 
 static void
 sparc_emit_set_const64_quick1 (op0, temp, low_bits, is_neg)
@@ -1528,7 +1528,7 @@ sparc_emit_set_const64_quick1 (op0, temp, low_bits, is_neg)
 }
 
 static void sparc_emit_set_const64_quick2
-	PROTO((rtx, rtx, unsigned HOST_WIDE_INT,
+	PARAMS ((rtx, rtx, unsigned HOST_WIDE_INT,
 	       unsigned HOST_WIDE_INT, int));
 
 static void
@@ -1569,7 +1569,7 @@ sparc_emit_set_const64_quick2 (op0, temp, high_bits, low_immediate, shift_count)
 }
 
 static void sparc_emit_set_const64_longway
-	PROTO((rtx, rtx, unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT));
+	PARAMS ((rtx, rtx, unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT));
 
 /* Full 64-bit constant decomposition.  Even though this is the
    'worst' case, we still optimize a few things away.  */
@@ -1677,7 +1677,7 @@ sparc_emit_set_const64_longway (op0, temp, high_bits, low_bits)
 
 /* Analyze a 64-bit constant for certain properties. */
 static void analyze_64bit_constant
-	PROTO((unsigned HOST_WIDE_INT,
+	PARAMS ((unsigned HOST_WIDE_INT,
 	       unsigned HOST_WIDE_INT,
 	       int *, int *, int *));
 
@@ -1746,7 +1746,7 @@ analyze_64bit_constant (high_bits, low_bits, hbsp, lbsp, abbasp)
 }
 
 static int const64_is_2insns
-	PROTO((unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT));
+	PARAMS ((unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT));
 
 static int
 const64_is_2insns (high_bits, low_bits)
@@ -1774,7 +1774,7 @@ const64_is_2insns (high_bits, low_bits)
 }
 
 static unsigned HOST_WIDE_INT create_simple_focus_bits
-	PROTO((unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
+	PARAMS ((unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
 	       int, int));
 
 static unsigned HOST_WIDE_INT
@@ -3782,13 +3782,13 @@ struct function_arg_record_value_parms
 };
 
 static void function_arg_record_value_3
-	PROTO((int, struct function_arg_record_value_parms *));
+	PARAMS ((int, struct function_arg_record_value_parms *));
 static void function_arg_record_value_2
-	PROTO((tree, int, struct function_arg_record_value_parms *));
+	PARAMS ((tree, int, struct function_arg_record_value_parms *));
 static void function_arg_record_value_1
-        PROTO((tree, int, struct function_arg_record_value_parms *));
+        PARAMS ((tree, int, struct function_arg_record_value_parms *));
 static rtx function_arg_record_value
-	PROTO((tree, enum machine_mode, int, int, int));
+	PARAMS ((tree, enum machine_mode, int, int, int));
 
 static void
 function_arg_record_value_1 (type, startbitpos, parms)
@@ -6884,8 +6884,8 @@ enum ultra_code { NONE=0, /* no insn at all				*/
 		  SINGLE, /* single issue instructions			*/
 		  NUM_ULTRA_CODES };
 
-static enum ultra_code ultra_code_from_mask PROTO ((int));
-static void ultra_schedule_insn PROTO ((rtx *, rtx *, int, enum ultra_code));
+static enum ultra_code ultra_code_from_mask PARAMS ((int));
+static void ultra_schedule_insn PARAMS ((rtx *, rtx *, int, enum ultra_code));
 
 static const char *ultra_code_names[NUM_ULTRA_CODES] = {
   "NONE", "IEU0", "IEU1", "IEUN", "LSU", "CTI",

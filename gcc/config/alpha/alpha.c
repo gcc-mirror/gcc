@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the DEC Alpha.
-   Copyright (C) 1992, 93-98, 1999 Free Software Foundation, Inc. 
+   Copyright (C) 1992, 93-99, 2000 Free Software Foundation, Inc. 
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -99,23 +99,23 @@ static int alpha_sr_alias_set;
 
 /* Declarations of static functions.  */
 static void alpha_set_memflags_1
-  PROTO((rtx, int, int, int));
+  PARAMS ((rtx, int, int, int));
 static rtx alpha_emit_set_const_1
-  PROTO((rtx, enum machine_mode, HOST_WIDE_INT, int));
+  PARAMS ((rtx, enum machine_mode, HOST_WIDE_INT, int));
 static void alpha_expand_unaligned_load_words
-  PROTO((rtx *out_regs, rtx smem, HOST_WIDE_INT words, HOST_WIDE_INT ofs));
+  PARAMS ((rtx *out_regs, rtx smem, HOST_WIDE_INT words, HOST_WIDE_INT ofs));
 static void alpha_expand_unaligned_store_words
-  PROTO((rtx *out_regs, rtx smem, HOST_WIDE_INT words, HOST_WIDE_INT ofs));
+  PARAMS ((rtx *out_regs, rtx smem, HOST_WIDE_INT words, HOST_WIDE_INT ofs));
 static void alpha_sa_mask
-  PROTO((unsigned long *imaskP, unsigned long *fmaskP));
+  PARAMS ((unsigned long *imaskP, unsigned long *fmaskP));
 static int alpha_does_function_need_gp
-  PROTO((void));
+  PARAMS ((void));
 static void alpha_init_machine_status
-  PROTO((struct function *p));
+  PARAMS ((struct function *p));
 static void alpha_mark_machine_status
-  PROTO((struct function *p));
-static int alpha_ra_ever_killed PROTO((void));
-static rtx set_frame_related_p PROTO((void));
+  PARAMS ((struct function *p));
+static int alpha_ra_ever_killed PARAMS ((void));
+static rtx set_frame_related_p PARAMS ((void));
 
 
 /* Get the number of args of a function in one of two ways.  */
@@ -4365,8 +4365,8 @@ struct shadow_summary
   } used, defd;
 };
 
-static void summarize_insn PROTO((rtx, struct shadow_summary *, int));
-static void alpha_handle_trap_shadows PROTO((rtx));
+static void summarize_insn PARAMS ((rtx, struct shadow_summary *, int));
+static void alpha_handle_trap_shadows PARAMS ((rtx));
 
 /* Summary the effects of expression X on the machine.  Update SUM, a pointer
    to the summary structure.  SET is nonzero if the insn is setting the
@@ -4684,15 +4684,15 @@ enum alphaev5_pipe {
   EV5_FM = 64
 };
 
-static enum alphaev4_pipe alphaev4_insn_pipe PROTO((rtx));
-static enum alphaev5_pipe alphaev5_insn_pipe PROTO((rtx));
-static rtx alphaev4_next_group PROTO((rtx, int*, int*));
-static rtx alphaev5_next_group PROTO((rtx, int*, int*));
-static rtx alphaev4_next_nop PROTO((int*));
-static rtx alphaev5_next_nop PROTO((int*));
+static enum alphaev4_pipe alphaev4_insn_pipe PARAMS ((rtx));
+static enum alphaev5_pipe alphaev5_insn_pipe PARAMS ((rtx));
+static rtx alphaev4_next_group PARAMS ((rtx, int*, int*));
+static rtx alphaev5_next_group PARAMS ((rtx, int*, int*));
+static rtx alphaev4_next_nop PARAMS ((int*));
+static rtx alphaev5_next_nop PARAMS ((int*));
 
 static void alpha_align_insns
-  PROTO((rtx, int, rtx (*)(rtx, int*, int*), rtx (*)(int*), int));
+  PARAMS ((rtx, int, rtx (*)(rtx, int*, int*), rtx (*)(int*), int));
 
 static enum alphaev4_pipe
 alphaev4_insn_pipe (insn)
@@ -5082,8 +5082,8 @@ static void
 alpha_align_insns (insns, max_align, next_group, next_nop, gp_in_use)
      rtx insns;
      int max_align;
-     rtx (*next_group) PROTO((rtx, int*, int*));
-     rtx (*next_nop) PROTO((int*));
+     rtx (*next_group) PARAMS ((rtx, int*, int*));
+     rtx (*next_nop) PARAMS ((int*));
      int gp_in_use;
 {
   /* ALIGN is the known alignment for the insn group.  */

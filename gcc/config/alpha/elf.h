@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha w/ELF.
-   Copyright (C) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 97-99, 2000 Free Software Foundation, Inc.
    Contributed by Richard Henderson (rth@tamu.edu).
 
 This file is part of GNU CC.
@@ -282,7 +282,7 @@ const_section ()						\
 }
 
 #define SECTION_FUNCTION_TEMPLATE(FN, ENUM, OP)	\
-void FN PROTO ((void));				\
+void FN PARAMS ((void));				\
 void FN ()					\
 {						\
   if (in_section != ENUM)			\
