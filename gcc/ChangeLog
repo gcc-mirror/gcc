@@ -1,5 +1,9 @@
 2001-06-11  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* doc/c-tree.texi: Use more logical markup.
+
+2001-06-11  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* c-decl.c (xref_tag): Don't return previous tags of wrong type.
 
 2001-06-11  Aldy Hernandez  <aldyh@redhat.com>
