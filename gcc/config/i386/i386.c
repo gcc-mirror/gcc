@@ -1972,12 +1972,10 @@ load_pic_register (do_rtl)
  
       if (do_rtl)
 	{
-	  emit_insn (gen_prologue_get_pc (xops[0], xops[1]));
-	  emit_insn (gen_pop (xops[0]));
-	  emit_insn (gen_prologue_set_got
-		     (xops[0],
-		      gen_rtx (SYMBOL_REF, Pmode, "$_GLOBAL_OFFSET_TABLE_"), 
-		      xops[1]));
+	  /* We can't put a raw CODE_LABEL into the RTL, and we can't emit
+	     a new CODE_LABEL after reload, so we need a single pattern to
+	     emit the 3 necessary instructions.  */
+	  emit_insn (gen_prologue_get_pc_and_set_got (xops[0]));
 	}
       else
 	{
