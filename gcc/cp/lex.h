@@ -43,8 +43,9 @@ enum rid
   /* This is where grokdeclarator starts its search when setting the specbits.
      The first seven are in the order of most frequently used, as found
      building libg++.  */
+  RID_FIRST_MODIFIER,
 
-  RID_EXTERN,
+  RID_EXTERN = RID_FIRST_MODIFIER,
   RID_CONST,
   RID_LONG,
   RID_TYPEDEF,
@@ -66,6 +67,7 @@ enum rid
   RID_COMPLEX,
   RID_RESTRICT,
 
+  RID_LAST_MODIFIER = RID_RESTRICT,
   /* This is where grokdeclarator ends its search when setting the
      specbits.  */
 
@@ -80,11 +82,6 @@ enum rid
      will have to be changed a little.  */
   RID_MAX
 };
-
-#define NORID RID_UNUSED
-
-#define RID_FIRST_MODIFIER RID_EXTERN
-#define RID_LAST_MODIFIER RID_COMPLEX
 
 /* The type that can represent all values of RIDBIT.  */
 /* We assume that we can stick in at least 32 bits into this.  */

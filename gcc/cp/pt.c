@@ -5311,7 +5311,8 @@ tsubst_aggr_type (t, args, complain, in_decl, entering_scope)
 	{
 	  tree r = build_ptrmemfunc_type
 	    (tsubst (TYPE_PTRMEMFUNC_FN_TYPE (t), args, complain, in_decl));
-	  return cp_build_qualified_type (r, TYPE_QUALS (t));
+	  return cp_build_qualified_type_real (r, TYPE_QUALS (t),
+					       complain);
 	}
 
       /* else fall through */
@@ -5349,7 +5350,8 @@ tsubst_aggr_type (t, args, complain, in_decl, entering_scope)
 				     entering_scope);
 	  pop_momentary ();
 
-	  return cp_build_qualified_type (r, TYPE_QUALS (t));
+	  return cp_build_qualified_type_real (r, TYPE_QUALS (t),
+					       complain);
 	}
       else 
 	/* This is not a template type, so there's nothing to do.  */
@@ -6208,18 +6210,9 @@ tsubst (t, args, complain, in_decl)
 		  {
 		    my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (arg))
 					== 't', 0);
-
-		    /* If we're not COMPLAINing, don't let an attempt
-		       to qualify a FUNCTION_TYPE reach
-		       cp_build_qualified_type.  That will result in
-		       an error message.  */
-		    if (!complain
-			&& TREE_CODE (arg) == FUNCTION_TYPE
-			&& CP_TYPE_QUALS (t) != TYPE_UNQUALIFIED)
-		      return error_mark_node;
-
-		    return cp_build_qualified_type
-		      (arg, CP_TYPE_QUALS (arg) | CP_TYPE_QUALS (t));
+		    return cp_build_qualified_type_real
+		      (arg, CP_TYPE_QUALS (arg) | CP_TYPE_QUALS (t),
+		       complain);
 		  }
 		else if (TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM)
 		  {
@@ -6244,7 +6237,9 @@ tsubst (t, args, complain, in_decl)
 						   argvec, in_decl, 
 						   DECL_CONTEXT (arg),
 						   /*entering_scope=*/0);
-			return cp_build_qualified_type (r, TYPE_QUALS (t));
+			return cp_build_qualified_type_real (r, 
+							     TYPE_QUALS (t),
+							     complain);
 		      }
 		    else
 		      /* We are processing a template argument list.  */ 
@@ -6411,7 +6406,7 @@ tsubst (t, args, complain, in_decl)
 	  r = build_pointer_type (type);
 	else
 	  r = build_reference_type (type);
-	r = cp_build_qualified_type (r, TYPE_QUALS (t));
+	r = cp_build_qualified_type_real (r, TYPE_QUALS (t), complain);
 
 	/* Will this ever be needed for TYPE_..._TO values?  */
 	layout_type (r);
@@ -6553,9 +6548,10 @@ tsubst (t, args, complain, in_decl)
 	f = make_typename_type (ctx, f);
 	if (f == error_mark_node)
 	  return f;
-	return cp_build_qualified_type (f, 
-					CP_TYPE_QUALS (f) 
-					| CP_TYPE_QUALS (t));
+	return cp_build_qualified_type_real (f, 
+					     CP_TYPE_QUALS (f) 
+					     | CP_TYPE_QUALS (t),
+					     complain);
       }
 
     case INDIRECT_REF:
@@ -7388,6 +7384,7 @@ fn_type_unification (fn, explicit_targs, targs, args, return_type,
 {
   tree parms;
   tree fntype;
+  int result;
 
   my_friendly_assert (TREE_CODE (fn) == TEMPLATE_DECL, 0);
   
@@ -7446,9 +7443,25 @@ fn_type_unification (fn, explicit_targs, targs, args, return_type,
      because the standard doesn't seem to explicitly prohibit it.  Our
      callers must be ready to deal with unification failures in any
      event.  */
-  return type_unification_real (DECL_INNERMOST_TEMPLATE_PARMS (fn), 
-				targs, parms, args, /*subr=*/0,
-				strict, /*allow_incomplete*/1);
+  result = type_unification_real (DECL_INNERMOST_TEMPLATE_PARMS (fn), 
+				  targs, parms, args, /*subr=*/0,
+				  strict, /*allow_incomplete*/1);
+
+  if (result == 0) 
+    /* All is well so far.  Now, check:
+       
+       [temp.deduct] 
+       
+       When all template arguments have been deduced, all uses of
+       template parameters in nondeduced contexts are replaced with
+       the corresponding deduced argument values.  If the
+       substitution results in an invalid type, as described above,
+       type deduction fails.  */
+    if (tsubst (TREE_TYPE (fn), targs, /*complain=*/0, NULL_TREE)
+	== error_mark_node)
+      return 1;
+
+  return result;
 }
 
 /* Adjust types before performing type deduction, as described in
@@ -8040,11 +8053,6 @@ check_cv_quals_for_unify (strict, arg, parm)
       && !at_least_as_qualified_p (parm, arg))
     return 0;
 
-  /* Don't allow unification to create a qualified function type.  */
-  if (TREE_CODE (arg) == FUNCTION_TYPE 
-      && CP_TYPE_QUALS (parm) != TYPE_UNQUALIFIED)
-    return 0;
-
   return 1;
 }
 
@@ -8198,9 +8206,12 @@ unify (tparms, targs, parm, arg, strict)
 	  /* Consider the case where ARG is `const volatile int' and
 	     PARM is `const T'.  Then, T should be `volatile int'.  */
 	  arg = 
-	    cp_build_qualified_type (arg,
-				     CP_TYPE_QUALS (arg) 
-				     & ~CP_TYPE_QUALS (parm));
+	    cp_build_qualified_type_real (arg,
+					  CP_TYPE_QUALS (arg) 
+					  & ~CP_TYPE_QUALS (parm),
+					  /*complain=*/0);
+	  if (arg == error_mark_node)
+	    return 1;
 	}
 
       /* Simple cases: Value already set, does match or doesn't.  */

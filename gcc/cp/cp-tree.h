@@ -1721,7 +1721,7 @@ extern int flag_new_for_scope;
    non-virtual function.  Of course, `&f__2B2' is the name of that
    function.
 
-   (Of course, the exactl values may differ depending on the mangling
+   (Of course, the exact values may differ depending on the mangling
    scheme, sizes of types, and such.).  */
      
 /* Get the POINTER_TYPE to the METHOD_TYPE associated with this
@@ -2100,7 +2100,6 @@ extern void check_function_format		PROTO((tree, tree, tree));
 /* Print an error message for invalid operands to arith operation CODE.
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
 extern void binary_op_error                     PROTO((enum tree_code));
-extern tree cp_build_qualified_type             PROTO((tree, int));
 extern tree canonical_type_variant              PROTO((tree));
 extern void c_expand_expr_stmt                  PROTO((tree));
 /* Validate the expression after `case' and apply default promotions.  */
@@ -3387,6 +3386,9 @@ extern int is_dummy_object			PROTO((tree));
 extern tree search_tree                         PROTO((tree, tree (*)(tree)));
 extern int cp_valid_lang_attribute		PROTO((tree, tree, tree, tree));
 extern tree make_ptrmem_cst                     PROTO((tree, tree));
+extern tree cp_build_qualified_type_real        PROTO((tree, int, int));
+#define cp_build_qualified_type(TYPE, QUALS) \
+  cp_build_qualified_type_real ((TYPE), (QUALS), /*complain=*/1)
 
 #define scratchalloc expralloc
 #define scratch_tree_cons expr_tree_cons
