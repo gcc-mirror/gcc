@@ -1,3 +1,11 @@
+2005-02-14  Sebastian Pop  <pop@cri.ensmp.fr>
+        
+	* lambda-code.c (lambda_loopnest_to_gcc_loopnest, perfect_nestify):
+	Use standard_iv_increment_position for computing the bsi position
+	for create_iv.
+	* tree-ssa-loop-manip.c (create_iv): Add a comment on how to compute
+	the bsi position.
+
 2005-02-13  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR target/17428
