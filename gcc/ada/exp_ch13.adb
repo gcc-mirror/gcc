@@ -329,7 +329,9 @@ package body Exp_Ch13 is
            and then Is_First_Subtype (E)
          then
             --  Check for a definition of External_Tag, whose expansion must
-            --  be delayed until the dispatch table is built.
+            --  be delayed until the dispatch table is built. The clause
+            --  is considered only if it applies to this specific tagged
+            --  type, as opposed to one of its ancestors.
 
             declare
                Def : constant Node_Id :=
@@ -337,7 +339,7 @@ package body Exp_Ch13 is
                          (E, Attribute_External_Tag);
 
             begin
-               if Present (Def) then
+               if Present (Def) and then Entity (Name (Def)) = E then
                   Expand_External_Tag_Definition (Def);
                end if;
             end;

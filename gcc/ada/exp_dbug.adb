@@ -358,6 +358,16 @@ package body Exp_Dbug is
          when N_Package_Renaming_Declaration =>
             Add_Str_To_Name_Buffer ("___XRP");
 
+            --  If it is a child unit create a fully qualified name,
+            --  to disambiguate multiple child units with the same
+            --  name and different parents.
+
+            if Is_Child_Unit (Ent) then
+               Prepend_String_To_Buffer ("__");
+               Prepend_String_To_Buffer
+                 (Get_Name_String (Chars (Scope (Ent))));
+            end if;
+
          when others =>
             return Empty;
       end case;

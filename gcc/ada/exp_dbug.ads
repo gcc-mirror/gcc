@@ -951,7 +951,10 @@ package Exp_Dbug is
    --    x___XRP   for a package renaming
 
    --  The name is fully qualified in the usual manner, i.e. qualified in
-   --  the same manner as the entity x would be.
+   --  the same manner as the entity x would be. In the case of a package
+   --  renaming where x is a child unit, the qualification includes the
+   --  name of the parent unit, to disambiguate child units with the same
+   --  simple name and (of necessity) different parents.
 
    --  Note: subprogram renamings are not encoded at the present time.
 
@@ -1036,7 +1039,7 @@ package Exp_Dbug is
 
    --       type p__z___XR is
    --         (p__g___XEXS1XS5XRmXL2XS3);
-   --          p__q___XE--------------------outer entity is g
+   --          p__g___XE--------------------outer entity is g
    --                   XS1-----------------first subscript for g
    --                      XS5--------------second subscript for g
    --                         XRm-----------select field m

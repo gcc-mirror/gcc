@@ -564,7 +564,7 @@ tree_transform (gnat_node)
 	      if (! Is_Machine_Number (gnat_node))
 		ur_realval
 		  = Machine (Base_Type (Underlying_Type (Etype (gnat_node))),
-			     ur_realval, Round_Even);
+			     ur_realval, Round_Even, gnat_node);
 
 	      gnu_result
 		= UI_To_gnu (Numerator (ur_realval), gnu_result_type);
