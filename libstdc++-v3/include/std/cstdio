@@ -27,6 +27,15 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file cstdio
+ *  This is a Standard C++ Library file.  You should @c #include this file
+ *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
+ *
+ *  This is the C++ version of the Standard C Library header @c stdio.h,
+ *  and its contents are (mostly) the same as that header, but are all
+ *  contained in the namespace @c std.
+ */
+
 #ifndef _CPP_CSTDIO
 #include <bits/std_cstdio.h>
 #endif

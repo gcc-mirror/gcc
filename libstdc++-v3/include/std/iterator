@@ -27,6 +27,11 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+/** @file iterator
+ *  This is a Standard C++ Library file.  You should @c #include this file
+ *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
+ */
+
 #ifndef _CPP_ITERATOR
 #include <bits/std_iterator.h>
 #endif
