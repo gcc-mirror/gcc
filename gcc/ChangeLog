@@ -1,3 +1,7 @@
+2001-08-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/mips/mips.c (mips_legitimate_address_p): Limit "la" addresses.
+
 2001-08-08  Jason Merrill  <jason_merrill@redhat.com>
 
 	* alias.c (get_alias_set): Return a previously calculated
