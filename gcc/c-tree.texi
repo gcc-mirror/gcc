@@ -1868,7 +1868,15 @@ embedded @code{NUL} characters.  Therefore, the
 @code{TREE_STRING_LENGTH} includes the trailing @code{NUL} if it is
 present.
 
-FIXME: How are wide strings represented?
+For wide string constants, the @code{TREE_STRING_LENGTH} is the number
+of wide characters in the string, and the @code{TREE_STRING_POINTER}
+points to an array of the bytes of the string, as represented on the
+target system (that is, as integers in the target endianness).  Wide and
+non-wide string constants are distinguished only by the @code{TREE_TYPE}
+of the @code{STRING_CST}.
+
+FIXME: The formats of string constants are not well-defined when the
+target system bytes are not the same width as host system bytes.
 
 @item PTRMEM_CST
 These nodes are used to represent pointer-to-member constants.  The

@@ -1,3 +1,7 @@
+2001-04-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-tree.texi: Document representation of wide strings.
+
 2001-03-31  Marek Michalkiewicz  <marekm@linux.org.pl>
 
 	* config/avr/libgcc.S (__mulhi3): Correct tests to exit the loop
