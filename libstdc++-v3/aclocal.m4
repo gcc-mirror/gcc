@@ -1373,6 +1373,7 @@ dnl target may or may not support call frame exceptions.
 dnl
 dnl --enable-sjlj-exceptions forces the use of builtin setjmp.
 dnl --disable-sjlj-exceptions forces the use of call frame unwinding.
+dnl Neither one forces an attempt at detection.
 dnl
 dnl Defines:
 dnl  _GLIBCXX_SJLJ_EXCEPTIONS if the compiler is configured for it
@@ -1381,17 +1382,17 @@ AC_DEFUN(GLIBCXX_ENABLE_SJLJ_EXCEPTIONS, [
   AC_MSG_CHECKING([for exception model to use])
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
-  GLIBCXX_ENABLE(sjlj-exceptions,no,,
+  GLIBCXX_ENABLE(sjlj-exceptions,auto,,
     [force use of builtin_setjmp for exceptions],
-    [:],
-    [# Botheration.  Now we've got to detect the exception model.
-     # Link tests against libgcc.a are problematic since -- at least
-     # as of this writing -- we've not been given proper -L bits for
-     # single-tree newlib and libgloss.
-     #
-     # This is what AC_TRY_COMPILE would do if it didn't delete the
-     # conftest files before we got a change to grep them first.
-     cat > conftest.$ac_ext << EOF
+    [permit yes|no|auto])
+
+  if test $enable_sjlj_exceptions = auto; then
+    # Botheration.  Now we've got to detect the exception model.  Link tests
+    # against libgcc.a are problematic since we've not been given proper -L
+    # bits for single-tree newlib and libgloss.
+    #
+    # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
+    cat > conftest.$ac_ext << EOF
 [#]line __oline__ "configure"
 struct S { ~S(); };
 void bar();
@@ -1401,27 +1402,34 @@ void foo()
   bar();
 }
 EOF
-     old_CXXFLAGS="$CXXFLAGS"
-     CXXFLAGS=-S
-     if AC_TRY_EVAL(ac_compile); then
-       if grep _Unwind_SjLj_Resume conftest.s >/dev/null 2>&1 ; then
-         enable_sjlj_exceptions=yes
-       elif grep _Unwind_Resume conftest.s >/dev/null 2>&1 ; then
-         enable_sjlj_exceptions=no
-       fi
-     fi
-     CXXFLAGS="$old_CXXFLAGS"
-     rm -f conftest*
-   ])
- if test $enable_sjlj_exceptions = yes; then
-   AC_DEFINE(_GLIBCXX_SJLJ_EXCEPTIONS, 1,
-     [Define if the compiler is configured for setjmp/longjmp exceptions.])
-   ac_exception_model_name=sjlj
- elif test x$enable_sjlj_exceptions = xno; then
-   ac_exception_model_name="call frame"
- else
-   AC_MSG_ERROR([unable to detect exception model])
- fi
+    old_CXXFLAGS="$CXXFLAGS"
+    CXXFLAGS=-S
+    if AC_TRY_EVAL(ac_compile); then
+      if grep _Unwind_SjLj_Resume conftest.s >/dev/null 2>&1 ; then
+        enable_sjlj_exceptions=yes
+      elif grep _Unwind_Resume conftest.s >/dev/null 2>&1 ; then
+        enable_sjlj_exceptions=no
+      fi
+    fi
+    CXXFLAGS="$old_CXXFLAGS"
+    rm -f conftest*
+  fi
+
+  # This is a tad weird, for hysterical raisins.  We have to map enable/disable 
+  # to two different models.
+  case $enable_sjlj_exceptions in
+    yes)
+      AC_DEFINE(_GLIBCXX_SJLJ_EXCEPTIONS, 1,
+        [Define if the compiler is configured for setjmp/longjmp exceptions.])
+      ac_exception_model_name=sjlj
+      ;;
+    no)
+      ac_exception_model_name="call frame"
+      ;;
+    *)
+      AC_MSG_ERROR([unable to detect exception model])
+      ;;
+  esac
  AC_LANG_RESTORE
  AC_MSG_RESULT($ac_exception_model_name)
 ])
