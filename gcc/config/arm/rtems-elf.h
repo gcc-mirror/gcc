@@ -25,6 +25,3 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D__rtems__ -D__ELF__ -Asystem=rtems"
-
-#undef INVOKE_main
-

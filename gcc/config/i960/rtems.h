@@ -24,8 +24,3 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Di960 -Di80960 -DI960 -DI80960 -D__rtems__ \
    -Asystem=rtems -Acpu=i960 -Amachine=i960"
-
-/* Generate calls to memcpy, memcmp and memset.  */
-#ifndef TARGET_MEM_FUNCTIONS
-#define TARGET_MEM_FUNCTIONS
-#endif

@@ -25,8 +25,3 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dsparc -D__GCC_NEW_VARARGS__ -D__rtems__ \
   -Asystem=rtems"
-
-/* Generate calls to memcpy, memcmp and memset.  */
-#ifndef TARGET_MEM_FUNCTIONS
-#define TARGET_MEM_FUNCTIONS
-#endif

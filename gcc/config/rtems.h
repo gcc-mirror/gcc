@@ -1,5 +1,5 @@
 /* Configuration common to all targets running RTEMS. 
-   Copyright (C) 2000 Free Software Foundation, Inc. 
+   Copyright (C) 2000, 2002 Free Software Foundation, Inc. 
 
 This file is part of GNU CC.
 
@@ -20,3 +20,18 @@ Boston, MA 02111-1307, USA.  */
 
 /* The system headers under RTEMS are C++-aware.  */
 #define NO_IMPLICIT_EXTERN_C
+
+/* Generate calls to memcpy, memcmp and memset.  */
+#ifndef TARGET_MEM_FUNCTIONS
+#define TARGET_MEM_FUNCTIONS
+#endif
+
+/*
+ * Dummy start/end specification to let linker work as
+ * needed by autoconf scripts using this compiler.
+ */
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC "crt0.o%s crti.o%s crtbegin.o%s"
+
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC   "crtend.o%s crtn.o%s"

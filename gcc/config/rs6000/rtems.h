@@ -24,11 +24,3 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-DPPC -D__rtems__ \
    -Asystem=rtems -Acpu=powerpc -Amachine=powerpc"
-
-/* Generate calls to memcpy, memcmp and memset.  */
-#ifndef TARGET_MEM_FUNCTIONS
-#define TARGET_MEM_FUNCTIONS
-#endif
-
-#undef STARTFILE_DEFAULT_SPEC
-#define STARTFILE_DEFAULT_SPEC "crt0.o%s"

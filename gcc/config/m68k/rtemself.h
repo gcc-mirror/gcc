@@ -22,41 +22,8 @@ Boston, MA 02111-1307, USA.  */
 
 #define MOTOROLA       /* Use Motorola syntax rather than MIT.  */
 
-#include "m68k/m68020-elf.h"
-
 /* Specify predefined symbols in preprocessor.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dmc68000 -D__rtems__ -D__ELF__ -D__USE_INIT_FINI__ \
    -Asystem=rtems -Acpu=mc68000 -Acpu=m68k -Amachine=m68k"
-
-/* Generate calls to memcpy, memcmp and memset.  */
-#ifndef TARGET_MEM_FUNCTIONS
-#define TARGET_MEM_FUNCTIONS
-#endif
-
-/*
- *  Each RTEMS BSP provides its own crt0 and linker script.  Unfortunately
- *  this means that crt0 and the linker script are not available as
- *  each tool is configured.  Without a crt0 and linker script, m68k ELF
- *  targets do not successfully link "conftest.c" during the configuration
- *  process.  RTEMS supplies a crt0.c that provides all the symbols required
- *  to successfully link a program.  The resulting program will not run 
- *  but this is enough to satisfy the autoconf macro AC_PROG_CC.
- *  Override STARTFILE_SPEC to use the fake crt0.o supplied by rtems.
- */
-#undef STARTFILE_SPEC
-#define STARTFILE_SPEC "crt0.o%s"
-
-/*
- *  Redefine INIT_SECTION_ASM_OP and FINI_SECTION_ASM_OP. This is the easiest
- *  way to process constructors, destructors, and the exception frame
- *  information at startup.
- */
-#undef INIT_SECTION_ASM_OP
-#define INIT_SECTION_ASM_OP    "\t.section\t.init"
-#undef FINI_SECTION_ASM_OP
-#define FINI_SECTION_ASM_OP    "\t.section\t.fini"
-
-/* Do I need this? */
-#undef INVOKE__main
