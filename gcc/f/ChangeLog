@@ -1,5 +1,21 @@
 2003-05-03  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* com.c (ffecom_do_entry_): Use location_t and input_location
+	directly.
+	(ffecom_gen_sfuncdef_): Likewise.
+	(ffecom_start_progunit_): Likewise.
+	(ffecom_sym_transform_): Likewise.
+	(ffecom_sym_transform_assign_): Likewise.
+	* lex.c (ffelex_hash_): Likewise.
+	(ffelex_include_): Likewise.
+	* std.c (ffestd_exec_begin): Likewise.
+	(ffestd_exec_end): Likewise.
+	* ste.c (struct gbe_block): Likewise.
+	(ffeste_start_block_): Likewise.
+	(ffeste_start_stmt_): Likewise.
+
+2003-05-03  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* ansify.c (die_unless): Revert lineno change here.
 
 2003-05-02  Nathan Sidwell  <nathan@codesourcery.com>

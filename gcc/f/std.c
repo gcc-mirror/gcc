@@ -1423,8 +1423,7 @@ ffestd_exec_begin ()
 void
 ffestd_exec_end ()
 {
-  int old_lineno = input_line;
-  const char *old_input_filename = input_filename;
+  location_t old_loc = input_location;
 
   ffecom_end_transition ();
 
@@ -1456,8 +1455,7 @@ ffestd_exec_end ()
   ffestd_stmt_list_.last = NULL;
   ffestd_2pass_entrypoints_ = 0;
 
-  input_line = old_lineno;
-  input_filename = old_input_filename;
+  input_location = old_loc;
 }
 
 /* ffestd_init_3 -- Initialize for any program unit
