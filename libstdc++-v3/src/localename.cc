@@ -178,7 +178,7 @@ namespace std
   // Construct named _Impl.
   locale::_Impl::
   _Impl(const char* __s, size_t __refs) 
-  : _M_references(__refs), _M_facets_size(_GLIBCXX_NUM_FACETS)
+  : _M_refcount(__refs), _M_facets_size(_GLIBCXX_NUM_FACETS)
   {
     // Initialize the underlying locale model, which also checks to
     // see if the given name is valid.

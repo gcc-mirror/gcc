@@ -191,7 +191,7 @@ namespace std
     friend class locale;
     friend class locale::_Impl;
 
-    mutable _Atomic_word		_M_references;
+    mutable _Atomic_word		_M_refcount;
 
     // Contains data from the underlying "C" library for the classic locale.
     static __c_locale                   _S_c_locale;
@@ -208,7 +208,7 @@ namespace std
 
   protected:
     explicit 
-    facet(size_t __refs = 0) throw() : _M_references(__refs ? 1 : 0)
+    facet(size_t __refs = 0) throw() : _M_refcount(__refs ? 1 : 0)
     { }
 
     virtual 
@@ -235,12 +235,12 @@ namespace std
   private:
     inline void
     _M_add_reference() const throw()
-    { __atomic_add(&_M_references, 1); }
+    { __atomic_add(&_M_refcount, 1); }
 
     inline void
     _M_remove_reference() const throw()
     {
-      if (__exchange_and_add(&_M_references, -1) == 1)
+      if (__exchange_and_add(&_M_refcount, -1) == 1)
 	{
 	  try 
 	    { delete this; }  
@@ -277,7 +277,7 @@ namespace std
     mutable size_t 		_M_index;
 
     // Last id number assigned.
-    static _Atomic_word 	_S_highwater;   
+    static _Atomic_word 	_S_refcount;   
 
     void 
     operator=(const id&);  // Not defined.
@@ -315,7 +315,7 @@ namespace std
 
   private:
     // Data Members.
-    _Atomic_word			_M_references;
+    _Atomic_word			_M_refcount;
     const facet**			_M_facets;
     size_t 				_M_facets_size;
     const facet**			_M_caches;
@@ -330,12 +330,12 @@ namespace std
 
     inline void 
     _M_add_reference() throw()
-    { __atomic_add(&_M_references, 1); }
+    { __atomic_add(&_M_refcount, 1); }
 
     inline void 
     _M_remove_reference() throw()
     {
-      if (__exchange_and_add(&_M_references, -1) == 1)
+      if (__exchange_and_add(&_M_refcount, -1) == 1)
 	{
 	  try 
 	    { delete this; } 

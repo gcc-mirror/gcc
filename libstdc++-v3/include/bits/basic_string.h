@@ -134,7 +134,7 @@ namespace std
       //      _CharT() where the interface does not require it.
       //   2. _M_capacity >= _M_length
       //      Allocated memory is always _M_capacity + (1 * sizeof(_CharT)).
-      //   3. _M_references has three states:
+      //   3. _M_refcount has three states:
       //      -1: leaked, one reference, no ref-copies allowed, non-const.
       //       0: one reference, non-const.
       //     n>0: n + 1 references, operations require a lock, const.
@@ -146,7 +146,7 @@ namespace std
       {
 	size_type 		_M_length;
 	size_type 		_M_capacity;
-	_Atomic_word		_M_references;
+	_Atomic_word		_M_refcount;
       };
 
       struct _Rep : _Rep_base
@@ -180,19 +180,19 @@ namespace std
  
         bool
 	_M_is_leaked() const
-        { return this->_M_references < 0; }
+        { return this->_M_refcount < 0; }
 
         bool
 	_M_is_shared() const
-        { return this->_M_references > 0; }
+        { return this->_M_refcount > 0; }
 
         void
 	_M_set_leaked()
-        { this->_M_references = -1; }
+        { this->_M_refcount = -1; }
 
         void
 	_M_set_sharable()
-        { this->_M_references = 0; }
+        { this->_M_refcount = 0; }
 
 	_CharT*
 	_M_refdata() throw()
@@ -217,7 +217,7 @@ namespace std
 	_M_dispose(const _Alloc& __a)
 	{
 	  if (__builtin_expect(this != &_S_empty_rep(), false))
-	    if (__exchange_and_add(&this->_M_references, -1) <= 0)
+	    if (__exchange_and_add(&this->_M_refcount, -1) <= 0)
 	      _M_destroy(__a);
 	}  // XXX MT
 
@@ -228,7 +228,7 @@ namespace std
 	_M_refcopy() throw()
 	{
 	  if (__builtin_expect(this != &_S_empty_rep(), false))
-            __atomic_add(&this->_M_references, 1);
+            __atomic_add(&this->_M_refcount, 1);
 	  return _M_refdata();
 	}  // XXX MT
 
