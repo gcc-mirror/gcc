@@ -3644,6 +3644,10 @@ internal_build_compound_expr (list, first_p)
 
   if (TREE_CHAIN (list) == 0)
     {
+      /* Convert arrays to pointers when there really is a comma operator.  */
+      if (!first_p && TREE_CODE (TREE_TYPE (TREE_VALUE (list))) == ARRAY_TYPE)
+	TREE_VALUE (list) = default_conversion (TREE_VALUE (list));
+
 #if 0 /* If something inside inhibited lvalueness, we should not override.  */
       /* Consider (x, y+0), which is not an lvalue since y+0 is not.  */
 
@@ -3656,14 +3660,6 @@ internal_build_compound_expr (list, first_p)
       if (!first_p && integer_zerop (TREE_VALUE (list)))
 	return non_lvalue (TREE_VALUE (list));
       return TREE_VALUE (list);
-    }
-
-  if (TREE_CHAIN (list) != 0 && TREE_CHAIN (TREE_CHAIN (list)) == 0)
-    {
-      /* Convert arrays to pointers when there really is a comma operator.  */
-      if (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (list)))) == ARRAY_TYPE)
-	TREE_VALUE (TREE_CHAIN (list))
-	  = default_conversion (TREE_VALUE (TREE_CHAIN (list)));
     }
 
   rest = internal_build_compound_expr (TREE_CHAIN (list), FALSE);
