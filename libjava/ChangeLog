@@ -1,5 +1,8 @@
 2000-01-19  Tom Tromey  <tromey@cygnus.com>
 
+	* java/lang/natThrowable.cc: Don't use `#pragma implementation'.
+	From Bryce McKinlay.
+
 	* All files: Updated copyright to reflect Cygnus purchase.
 
 2000-01-18  Bryce McKinlay <bryce@albatross.co.nz>
