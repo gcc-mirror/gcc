@@ -26,6 +26,9 @@
 	* c-decl.c (c_init_decl_processing): Remove local variables
 	ptr_ftype_void and ptr_ftype_ptr.
 
+	* gimplify.c (gimplify_expr): Remove local variables r0 and
+	r1.
+
 2005-03-12  Geoffrey Keating  <geoffk@apple.com>
 
 	* c-lex.c (c_lex_with_flags): Add parameter to call to 
