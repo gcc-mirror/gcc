@@ -124,6 +124,7 @@ static int field_pass;
 
 #define HANDLE_CONSTANTVALUE(VALUEINDEX) current_field_value = (VALUEINDEX)
 
+static int method_declared = 0;
 static int method_access = 0;
 #define HANDLE_METHOD(ACCESS_FLAGS, NAME, SIGNATURE, ATTRIBUTE_COUNT) \
   if (out) { decompiled = 0; \
@@ -131,7 +132,7 @@ static int method_access = 0;
   }
 
 #define HANDLE_CODE_ATTRIBUTE(MAX_STACK, MAX_LOCALS, CODE_LENGTH) \
-  if (out) decompile_method (out, jcf, CODE_LENGTH);
+  if (out && method_declared) decompile_method (out, jcf, CODE_LENGTH);
 
 static int decompiled = 0;
 #define HANDLE_END_METHOD() \
@@ -399,6 +400,7 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
   int length, is_init = 0;
   char *override = NULL;
 
+  method_declared = 0;
   method_access = flags;
   if (JPOOL_TAG (jcf, name_index) != CONSTANT_Utf8)
     fprintf (stream, "<not a UTF8 constant>");
@@ -453,6 +455,11 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
 	fputs ("virtual ", out);
     }
   print_c_decl (out, jcf, name_index, sig_index, flags, is_init, override);
+
+  if ((flags & ACC_ABSTRACT))
+    fputs (" = 0", out);
+  else
+    method_declared = 1;
 }
 
 /* Try to decompile a method body.  Right now we just try to handle a
@@ -504,6 +511,15 @@ decompile_method (out, jcf, code_len)
     {
       /* Found plain `return'.  */
       fputs (" { }", out);
+      decompiled = 1;
+    }
+  else if (code_len == 2
+	   && codes[0] == OPCODE_aconst_null
+	   && codes[1] == OPCODE_areturn)
+    {
+      /* Found `return null'.  We don't want to depend on NULL being
+	 defined.  */
+      fputs (" { return 0; }", out);
       decompiled = 1;
     }
 }
@@ -833,6 +849,11 @@ DEFUN(process_file, (jcf, out),
 
       print_mangled_classname (out, jcf, "#define __", jcf->this_class);
       fprintf (out, "__\n\n");
+
+      /* We do this to ensure that inline methods won't be `outlined'
+	 by g++.  This works as long as method and fields are not
+	 added by the user.  */
+      fprintf (out, "#pragma interface\n\n");
     }
 
   if (jcf->super_class && out)
