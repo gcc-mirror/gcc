@@ -5185,3 +5185,80 @@ simple_epilogue_p ()
 
   return (compute_frame_size (get_frame_size ())) == 0;
 }
+
+/* Choose the section to use for the constant rtx expression X that has
+   mode MODE.  */
+
+mips_select_rtx_section (mode, x)
+     enum machine_mode mode;
+     rtx x;
+{
+  if (TARGET_EMBEDDED_DATA)
+    {
+      /* For embedded applications, always put constants in read-only data,
+	 in order to reduce RAM usage.  */
+      rdata_section ();
+    }
+  else
+    {
+      /* For hosted applications, always put constants in small data if
+	 possible, as this gives the best performance.  */
+     
+      if (GET_MODE_SIZE (mode) <= mips_section_threshold
+	  && mips_section_threshold > 0)
+	sdata_section ();
+      else
+	rdata_section ();
+    }
+}
+
+/* Choose the section to use for DECL.  RELOC is true if its value contains
+   any relocatable expression.  */
+
+mips_select_section (decl, reloc)
+     tree decl;
+     int reloc;
+{
+  int size = int_size_in_bytes (TREE_TYPE (decl));
+
+  if (TARGET_EMBEDDED_DATA)
+    {
+      /* For embedded applications, always put an object in read-only data
+	 if possible, in order to reduce RAM usage.  */
+
+      if (((TREE_READONLY (decl) && !TREE_SIDE_EFFECTS (decl)
+	    && DECL_INITIAL (decl)
+	    && (DECL_INITIAL (decl) == error_mark_node
+		|| TREE_CONSTANT (DECL_INITIAL (decl))))
+	   /* Deal with calls from output_constant_def_contents.  */
+	   || (TREE_CODE (decl) != VAR_DECL
+	       && (TREE_CODE (decl) != STRING_CST
+		   || !flag_writable_strings)))
+	  && ! (flag_pic && reloc))
+	rdata_section ();
+      else if (size > 0 && size <= mips_section_threshold)
+	sdata_section ();
+      else
+	data_section ();
+    }
+  else
+    {
+      /* For hosted applications, always put an object in small data if
+	 possible, as this gives the best performance.  */
+
+      if (size > 0 && size <= mips_section_threshold)
+	sdata_section ();
+      else if (((TREE_READONLY (decl) && !TREE_SIDE_EFFECTS (decl)
+		 && DECL_INITIAL (decl)
+		 && (DECL_INITIAL (decl) == error_mark_node
+		     || TREE_CONSTANT (DECL_INITIAL (decl))))
+		/* Deal with calls from output_constant_def_contents.  */
+		|| (TREE_CODE (decl) != VAR_DECL
+		    && (TREE_CODE (decl) != STRING_CST
+			|| !flag_writable_strings)))
+	       && ! (flag_pic && reloc))
+	rdata_section ();
+      else
+	data_section ();
+    }
+}
