@@ -64,7 +64,7 @@ end ifc
 #endif
 
 ifobjc
-#include "objc-actions.h"
+#include "objc-act.h"
 end ifobjc
 
 #ifndef errno
