@@ -39,6 +39,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "recog.h"
 #include "sched-int.h"
 #include "params.h"
+#include "cselib.h"
 
 extern char *reg_known_equiv_p;
 extern rtx *reg_known_value;
@@ -482,6 +483,11 @@ add_insn_mem_dependence (deps, insn_list, mem_list, insn, mem)
   link = alloc_INSN_LIST (insn, *insn_list);
   *insn_list = link;
 
+  if (current_sched_info->use_cselib)
+    {
+      mem = shallow_copy_rtx (mem);
+      XEXP (mem, 0) = cselib_subst_to_values (XEXP (mem, 0));
+    }
   link = alloc_EXPR_LIST (VOIDmode, mem, *mem_list);
   *mem_list = link;
 
@@ -676,6 +682,14 @@ sched_analyze_1 (deps, x, insn)
   else if (GET_CODE (dest) == MEM)
     {
       /* Writing memory.  */
+      rtx t = dest;
+
+      if (current_sched_info->use_cselib)
+	{
+	  t = shallow_copy_rtx (dest);
+	  cselib_lookup (XEXP (t, 0), Pmode, 1);
+	  XEXP (t, 0) = cselib_subst_to_values (XEXP (t, 0));
+	}
 
       if (deps->pending_lists_length > MAX_PENDING_LIST_LENGTH)
 	{
@@ -695,7 +709,7 @@ sched_analyze_1 (deps, x, insn)
 	  pending_mem = deps->pending_read_mems;
 	  while (pending)
 	    {
-	      if (anti_dependence (XEXP (pending_mem, 0), dest))
+	      if (anti_dependence (XEXP (pending_mem, 0), t))
 		add_dependence (insn, XEXP (pending, 0), REG_DEP_ANTI);
 
 	      pending = XEXP (pending, 1);
@@ -706,7 +720,7 @@ sched_analyze_1 (deps, x, insn)
 	  pending_mem = deps->pending_write_mems;
 	  while (pending)
 	    {
-	      if (output_dependence (XEXP (pending_mem, 0), dest))
+	      if (output_dependence (XEXP (pending_mem, 0), t))
 		add_dependence (insn, XEXP (pending, 0), REG_DEP_OUTPUT);
 
 	      pending = XEXP (pending, 1);
@@ -838,12 +852,19 @@ sched_analyze_2 (deps, x, insn)
 	/* Reading memory.  */
 	rtx u;
 	rtx pending, pending_mem;
+	rtx t = x;
 
+	if (current_sched_info->use_cselib)
+	  {
+	    t = shallow_copy_rtx (t);
+	    cselib_lookup (XEXP (t, 0), Pmode, 1);
+	    XEXP (t, 0) = cselib_subst_to_values (XEXP (t, 0));
+	  }
 	pending = deps->pending_read_insns;
 	pending_mem = deps->pending_read_mems;
 	while (pending)
 	  {
-	    if (read_dependence (XEXP (pending_mem, 0), x))
+	    if (read_dependence (XEXP (pending_mem, 0), t))
 	      add_dependence (insn, XEXP (pending, 0), REG_DEP_ANTI);
 
 	    pending = XEXP (pending, 1);
@@ -855,7 +876,7 @@ sched_analyze_2 (deps, x, insn)
 	while (pending)
 	  {
 	    if (true_dependence (XEXP (pending_mem, 0), VOIDmode,
-				 x, rtx_varies_p))
+				 t, rtx_varies_p))
 	      add_dependence (insn, XEXP (pending, 0), 0);
 
 	    pending = XEXP (pending, 1);
@@ -1237,6 +1258,9 @@ sched_analyze (deps, head, tail)
   register rtx u;
   rtx loop_notes = 0;
 
+  if (current_sched_info->use_cselib)
+    cselib_init ();
+
   for (insn = head;; insn = NEXT_INSN (insn))
     {
       if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN)
@@ -1386,8 +1410,14 @@ sched_analyze (deps, head, tail)
 	  CONST_OR_PURE_CALL_P (loop_notes) = CONST_OR_PURE_CALL_P (insn);
 	}
 
+      if (current_sched_info->use_cselib)
+	cselib_process_insn (insn);
       if (insn == tail)
-	return;
+	{
+	  if (current_sched_info->use_cselib)
+	    cselib_finish ();
+	  return;
+	}
     }
   abort ();
 }

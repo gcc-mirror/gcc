@@ -2352,7 +2352,7 @@ static struct sched_info region_sched_info =
 
   NULL, NULL,
   NULL, NULL,
-  0
+  0, 0
 };
 
 /* Add dependences so that branches are scheduled to run last in their
