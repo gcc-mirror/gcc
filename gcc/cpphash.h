@@ -307,11 +307,6 @@ struct cpp_buffer
      include files has been calculated and stored in "dir" below.  */
   unsigned char search_cached;
 
-  /* At EOF, a buffer is automatically popped.  If RETURN_AT_EOF is
-     true, a CPP_EOF token is then returned.  Otherwise, the next
-     token from the enclosing buffer is returned.  */
-  bool return_at_eof;
-
   /* The directory of the this buffer's file.  Its NAME member is not
      allocated, so we don't need to worry about freeing it.  */
   struct cpp_dir dir;
@@ -361,6 +356,8 @@ struct cpp_reader
 
   /* Chain of all hashed _cpp_file instances.  */
   struct _cpp_file *all_files;
+
+  struct _cpp_file *main_file;
 
   /* File and directory hash table.  */
   struct htab *file_hash;
@@ -515,9 +512,13 @@ extern void _cpp_init_hashtable (cpp_reader *, hash_table *);
 extern void _cpp_destroy_hashtable (cpp_reader *);
 
 /* In cppfiles.c */
+typedef struct _cpp_file _cpp_file;
+extern _cpp_file *_cpp_find_file (cpp_reader *, const char *fname,
+				  cpp_dir *start_dir, bool fake);
+extern bool _cpp_find_failed (_cpp_file *);
 extern void _cpp_mark_file_once_only (cpp_reader *, struct _cpp_file *);
 extern void _cpp_fake_include (cpp_reader *, const char *);
-extern bool _cpp_stack_file (cpp_reader *, const char *);
+extern bool _cpp_stack_file (cpp_reader *, _cpp_file*, bool);
 extern bool _cpp_stack_include (cpp_reader *, const char *, int,
 				enum include_type);
 extern int _cpp_compare_file_date (cpp_reader *, const char *, int);

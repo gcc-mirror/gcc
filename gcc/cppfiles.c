@@ -54,7 +54,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 /* This structure represents a file searched for by CPP, whether it
    exists or not.  An instance may be pointed to by more than one
    file_hash_entry; at present no reference count is kept.  */
-typedef struct _cpp_file _cpp_file;
 struct _cpp_file
 {
   /* Filename as given to #include or command line switch.  */
@@ -157,11 +156,8 @@ struct file_hash_entry
 static bool open_file (_cpp_file *file);
 static bool pch_open_file (cpp_reader *pfile, _cpp_file *file);
 static bool find_file_in_dir (cpp_reader *pfile, _cpp_file *file);
-static _cpp_file *find_file (cpp_reader *, const char *fname,
-			     cpp_dir *start_dir, bool fake);
 static bool read_file_guts (cpp_reader *pfile, _cpp_file *file);
 static bool read_file (cpp_reader *pfile, _cpp_file *file);
-static bool stack_file (cpp_reader *, _cpp_file *file, bool import);
 static bool should_stack_file (cpp_reader *, _cpp_file *file, bool import);
 static struct cpp_dir *search_path_head (cpp_reader *, const char *fname,
 				 int angle_brackets, enum include_type);
@@ -330,6 +326,12 @@ find_file_in_dir (cpp_reader *pfile, _cpp_file *file)
   return false;
 }
 
+bool
+_cpp_find_failed (_cpp_file *file)
+{
+  return file->err_no != 0;
+}
+
 /* Given a filename FNAME search for such a file in the include path
    starting from START_DIR.  If FNAME is the empty string it is
    interpreted as STDIN if START_DIR is PFILE->no_seach_path.
@@ -344,8 +346,8 @@ find_file_in_dir (cpp_reader *pfile, _cpp_file *file)
    had previously been closed.  To open it again pass the return value
    to open_file().
 */
-static _cpp_file *
-find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool fake)
+_cpp_file *
+_cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool fake)
 {
   struct file_hash_entry *entry, **hash_slot;
   _cpp_file *file;
@@ -594,8 +596,8 @@ should_stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
    stack if possible.  IMPORT is true if this stacking attempt is
    because of a #import directive.  Returns true if a buffer is
    stacked.  */
-static bool
-stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
+bool
+_cpp_stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
 {
   cpp_buffer *buffer;
   int sysp;
@@ -619,8 +621,7 @@ stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
 
   /* Stack the buffer.  */
   buffer = cpp_push_buffer (pfile, file->buffer, file->st.st_size,
-			    CPP_OPTION (pfile, preprocessed),
-			    ! pfile->buffer);
+			    CPP_OPTION (pfile, preprocessed));
   buffer->file = file;
 
   /* Initialize controlling macro state.  */
@@ -654,7 +655,8 @@ search_path_head (cpp_reader *pfile, const char *fname, int angle_brackets,
   if (IS_ABSOLUTE_PATH (fname))
     return &pfile->no_search_path;
 
-  file = pfile->buffer->file;
+  /* pfile->buffer is NULL when processing an -include command-line flag.  */
+  file = pfile->buffer == NULL ? pfile->main_file : pfile->buffer->file;
 
   /* For #include_next, skip in the search path past the dir in which
      the current file was found, but if it was found via an absolute
@@ -698,16 +700,6 @@ dir_name_of_file (_cpp_file *file)
   return file->dir_name;
 }
 
-/* Push an input buffer with the contents of FNAME, the empty string
-   for standard input.  Return true if a buffer was stacked.  */
-bool
-_cpp_stack_file (cpp_reader *pfile, const char *fname)
-{
-  struct cpp_dir *dir = &pfile->no_search_path;
-
-  return stack_file (pfile, find_file (pfile, fname, dir, false), false);
-}
-
 /* Handles #include-family directives (distinguished by TYPE),
    including HEADER, and the command line -imacros and -include.
    Returns true if a buffer was stacked.  */
@@ -721,7 +713,7 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
   if (!dir)
     return false;
 
-  return stack_file (pfile, find_file (pfile, fname, dir, false),
+  return _cpp_stack_file (pfile, _cpp_find_file (pfile, fname, dir, false),
 		     type == IT_IMPORT);
 }
 
@@ -881,7 +873,7 @@ _cpp_cleanup_files (cpp_reader *pfile)
 void
 _cpp_fake_include (cpp_reader *pfile, const char *fname)
 {
-  find_file (pfile, fname, pfile->buffer->file->dir, true);
+  _cpp_find_file (pfile, fname, pfile->buffer->file->dir, true);
 }
 
 /* Not everyone who wants to set system-header-ness on a buffer can
@@ -963,7 +955,7 @@ _cpp_compare_file_date (cpp_reader *pfile, const char *fname,
   if (!dir)
     return -1;
 
-  file = find_file (pfile, fname, dir, false);
+  file = _cpp_find_file (pfile, fname, dir, false);
   if (file->err_no)
     return -1;
 

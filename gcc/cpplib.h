@@ -382,7 +382,13 @@ struct cpp_callbacks
 {
   /* Called when a new line of preprocessed output is started.  */
   void (*line_change) (cpp_reader *, const cpp_token *, int);
+
+  /* Called when switching to/from a new file.
+     The line_map is for the new file.  It is NULL if there is no new file.
+     (In C this happens when done with <built-in>+<command line> and also
+     when done with a main file.)  This can be used for resource cleanup.  */
   void (*file_change) (cpp_reader *, const struct line_map *);
+
   void (*dir_change) (cpp_reader *, const char *);
   void (*include) (cpp_reader *, unsigned int, const unsigned char *,
 		   const char *, int);
@@ -526,12 +532,14 @@ extern const struct line_maps *cpp_get_line_maps (cpp_reader *);
 extern cpp_callbacks *cpp_get_callbacks (cpp_reader *);
 extern void cpp_set_callbacks (cpp_reader *, cpp_callbacks *);
 
-/* This function reads the file, but does not start preprocessing.  It
-   returns the name of the original file; this is the same as the
-   input file, except for preprocessed input.  This will generate at
-   least one file change callback, and possibly a line change callback
-   too.  If there was an error opening the file, it returns NULL.  */
-extern const char *cpp_read_main_file (cpp_reader *, const char *);
+/* This function finds the main file, but does not start reading it.
+   Returns true iff the file was found.  */
+extern bool cpp_find_main_file (cpp_reader *, const char *);
+
+/* This function reads the file, but does not start preprocessing.
+   This will generate at least one file change callback, and possibly
+   a line change callback.  */
+extern void cpp_push_main_file (cpp_reader *);
 
 /* Set up built-ins like __FILE__.  */
 extern void cpp_init_builtins (cpp_reader *, int);
@@ -590,7 +598,7 @@ extern void cpp_unassert (cpp_reader *, const char *);
 extern void cpp_undef_all (cpp_reader *);
 
 extern cpp_buffer *cpp_push_buffer (cpp_reader *, const unsigned char *,
-				    size_t, int, int);
+				    size_t, int);
 extern int cpp_defined (cpp_reader *, const unsigned char *, int);
 
 /* A preprocessing number.  Code assumes that any unused high bits of

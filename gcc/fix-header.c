@@ -604,8 +604,9 @@ read_scan_file (char *in_fname, int argc, char **argv)
   options->inhibit_errors = 1;
   cpp_post_options (scan_in);
 
-  if (! cpp_read_main_file (scan_in, in_fname))
+  if (!cpp_find_main_file (scan_in, in_fname))
     exit (FATAL_EXIT_CODE);
+  cpp_push_main_file (scan_in);
 
   cpp_change_file (scan_in, LC_RENAME, "<built-in>");
   cpp_init_builtins (scan_in, true);
@@ -669,7 +670,7 @@ read_scan_file (char *in_fname, int argc, char **argv)
 
       /* Scan the macro expansion of "getchar();".  */
       cpp_push_buffer (scan_in, getchar_call, sizeof(getchar_call) - 1,
-		       /* from_stage3 */ true, 1);
+		       /* from_stage3 */ true);
       for (;;)
 	{
 	  const cpp_token *t = cpp_get_token (scan_in);
