@@ -1,5 +1,5 @@
 /* { dg-do run { target i?86-*-linux* x86_64-*-linux* ia64-*-linux* alpha*-*-linux* powerpc*-*-linux* s390*-*-linux* sparc*-*-linux* mips*-*-linux* } } */
-/* { dg-options "-fasynchronous-unwind-tables -fexceptions -O2" } */
+/* { dg-options "-fexceptions -fnon-call-exceptions -O2" } */
 /* Verify that cleanups work with exception handling through signal frames
    on alternate stack.  */
 
