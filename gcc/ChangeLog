@@ -1,3 +1,8 @@
+2004-03-04  Alan Modra  <amodra@bigpond.net.au>
+
+	* target-def.h (TARGET_OPTF): Delete.
+	* c-opts.c (TARGET_OPTF): Define.
+
 2004-03-04  Jan Hubicka  <jh@suse.cz>
 
 	* cselib.c (cselib_finish): Fix another miss-application of my previous

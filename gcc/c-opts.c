@@ -46,6 +46,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 # define TARGET_SYSTEM_ROOT NULL
 #endif
 
+#ifndef TARGET_OPTF
+#define TARGET_OPTF(ARG)
+#endif
+
 static int saved_lineno;
 
 /* CPP's options.  */
