@@ -1,3 +1,9 @@
+2004-05-17  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc_update: Remove gcc/f/intdoc.texi and all libf2c files
+	from list of files to be touched.
+	* convert_to_f2c, convert_to_g2c, download_f2c: Delete.
+
 2004-05-15  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gennews: Update for GCC 3.4.
@@ -14,7 +20,7 @@
 	libbanshee and libmudflap.
 
 2004-04-12  Kelley Cook  <kcook@gcc.gnu.org>
-            Andreas Jaeger  <aj@suse.de>
+	    Andreas Jaeger  <aj@suse.de>
 
 	* gcc_update (files_and_dependencies): Insert zlib dependencies.
 

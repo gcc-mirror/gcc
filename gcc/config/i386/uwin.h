@@ -55,9 +55,6 @@ Boston, MA 02111-1307, USA.  */
 #define LIB_SPEC \
   "%{pg:-lgmon} %{mwindows:-luser32 -lgdi32 -lcomdlg32} -lkernel32 -ladvapi32"
 
-/* This is needed in g77spec.c for now. Will be removed in the future.  */
-#define WIN32_UWIN_TARGET 1
-
 /* Include in the mingw32 libraries with libgcc */
 #undef LIBGCC_SPEC
 #define LIBGCC_SPEC "-lgnuwin -lposix -lgcc -last -lmoldname -lmsvcrt"

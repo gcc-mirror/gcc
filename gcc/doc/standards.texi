@@ -185,9 +185,6 @@ HTML format.
 GNAT Reference Manual}, for information on standard
 conformance and compatibility of the Ada compiler.
 
-@xref{Language,,The GNU Fortran Language, g77, Using and Porting GNU
-Fortran}, for details of the Fortran language supported by @command{g77}.
-
 @xref{Standards,,Standards, gfortran, The GNU Fortran 95 Compiler}, for details
 of standards supported by @command{gfortran}.
 

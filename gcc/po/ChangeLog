@@ -1,3 +1,10 @@
+2004-05-17  Zack Weinberg  <zack@codesourcery.com>
+
+	* exgettext (spec_error_string): Do not scan beyond the end of
+	the string for a close brace.  Do not bail out at the first
+	incidence of %%e.
+	* gcc.pot: Regenerate.
+
 2004-05-15  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* be.po, ca.po, da.po, de.po, el.po, es.po, fr.po, ja.po, nl.po,
