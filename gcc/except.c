@@ -551,20 +551,6 @@ top_label_entry (stack)
   return (*stack)->u.tlabel;
 }
 
-/* Make a copy of ENTRY using xmalloc to allocate the space.  */
-
-static struct eh_entry *
-copy_eh_entry (entry)
-     struct eh_entry *entry;
-{
-  struct eh_entry *newentry;
-
-  newentry = (struct eh_entry *) xmalloc (sizeof (struct eh_entry));
-  bcopy ((char *) entry, (char *) newentry, sizeof (struct eh_entry));
-
-  return newentry;
-}
-
 /* Push a new eh_node entry onto STACK.  */
 
 static void
@@ -855,7 +841,7 @@ start_dynamic_cleanup (func, arg)
      tree func;
      tree arg;
 {
-  rtx dhc, dcc;
+  rtx dcc;
   rtx new_func, new_arg;
   rtx x, buf;
   int size;
@@ -984,8 +970,6 @@ expand_eh_region_start_tree (decl, cleanup)
      tree decl;
      tree cleanup;
 {
-  rtx note;
-
   /* This is the old code.  */
   if (! doing_eh (0))
     return 0;
@@ -2016,7 +2000,7 @@ scan_region (insn, n, delete_outer)
 void
 exception_optimize ()
 {
-  rtx insn, regions = NULL_RTX;
+  rtx insn;
   int n;
 
   /* Remove empty regions.  */
@@ -2160,7 +2144,7 @@ expand_builtin_eh_stub ()
 {
   rtx stub_start = gen_label_rtx ();
   rtx after_stub = gen_label_rtx ();
-  rtx handler, offset, temp;
+  rtx handler, offset;
 
   emit_jump (after_stub);
   emit_label (stub_start);
