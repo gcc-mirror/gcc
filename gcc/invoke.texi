@@ -931,6 +931,10 @@ to use single precision operations when the operands are single
 precision, use this option.   This option has no effect when compiling
 with ANSI or GNU C conventions (the default).
 
+@item -fshort-wchar
+Override the underlying type for @samp{wchar_t} to be @samp{short
+unsigned int} instead of the default for the target.  This option is
+useful for building programs to run under WINE.
 @end table
 
 @node C++ Dialect Options
