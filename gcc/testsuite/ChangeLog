@@ -1,3 +1,7 @@
+2001-02-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* g++.old-deja/g++.other/inline19.c: Remove XFAIL.
+
 2001-02-16  Gabriel Dos Reis <gdr@codesourcery.com>
 
 	* g++.old-deja/g++.other/decl9.C: New test.
