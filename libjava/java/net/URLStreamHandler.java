@@ -126,6 +126,13 @@ public abstract class URLStreamHandler
     int port = url.getPort();
     String file = url.getFile();
     String ref = url.getRef();
+    String userInfo = url.getUserInfo();
+    String authority = url.getAuthority();
+    String query = null;
+    
+    // On Windows we need to change \ to / for file URLs
+    if (url.getProtocol().equals("file"))
+      spec = spec.replace(File.separatorChar, '/');
 
     if (spec.regionMatches(start, "//", 0, 2))
       {
@@ -141,14 +148,17 @@ public abstract class URLStreamHandler
 	else
 	  hostEnd = end;
 
-	host = spec.substring(start, hostEnd);
+	authority = host = spec.substring(start, hostEnd);
 
 	// We first need a genuine host name (with userinfo).
 	// So we check for '@': if it's present check the port in the
 	// section after '@' in the other case check it in the full string.
 	// P.S.: We don't care having '@' at the beginning of the string.
 	if ((at_host = host.indexOf('@')) >= 0)
-	  genuineHost = host.substring(at_host);
+	  {
+	    genuineHost = host.substring(at_host);
+	    userInfo = host.substring(0, at_host);
+	  }
 	else
 	  genuineHost = host;
 
@@ -193,18 +203,10 @@ public abstract class URLStreamHandler
     else if (start < end)
       {
 	// Context is available, but only override it if there is a new file.
-	char sepChar = '/';
-	int lastSlash = file.lastIndexOf(sepChar);
-	if (lastSlash < 0 && File.separatorChar != sepChar
-	    && url.getProtocol().equals("file"))
-	  {
-	    // On Windows, even '\' is allowed in a "file" URL.
-	    sepChar = File.separatorChar;
-	    lastSlash = file.lastIndexOf(sepChar);
-	  }
+	int lastSlash = file.lastIndexOf('/');
 
 	file =
-	  file.substring(0, lastSlash) + sepChar + spec.substring(start, end);
+	  file.substring(0, lastSlash) + '/' + spec.substring(start, end);
 
 	if (url.getProtocol().equals("file"))
 	  {
@@ -214,6 +216,7 @@ public abstract class URLStreamHandler
 	      {
 		boolean endsWithSlash = file.charAt(file.length() - 1) == '/';
 		file = new File(file).getCanonicalPath();
+		file = file.replace(File.separatorChar, '/');
 		if (endsWithSlash && file.charAt(file.length() - 1) != '/')
 		  file += '/';
 	      }
@@ -238,10 +241,21 @@ public abstract class URLStreamHandler
 	  }
       }
 
+    // We care about the query tag only if there is no reference at all.
+    if (ref == null)
+      {
+	  int queryTag = file.indexOf('?');
+	  if (queryTag != -1)
+	    {
+	      query = file.substring(queryTag + 1);
+	      file = file.substring(0, queryTag);
+	    }
+      }
+
     // XXX - Classpath used to call PlatformHelper.toCanonicalForm() on
     // the file part. It seems like overhead, but supposedly there is some
     // benefit in windows based systems (it also lowercased the string).
-    setURL(url, url.getProtocol(), host, port, file, ref);
+    setURL(url, url.getProtocol(), host, port, authority, userInfo, file, query, ref);
   }
 
   /*
@@ -492,42 +506,31 @@ public abstract class URLStreamHandler
     String file;
     String ref;
     String user;
+    String authority;
     int port;
 
     protocol = url.getProtocol();
-
-    // JDK 1.2 online doc infers that host could be null because it
-    // explicitly states that file cannot be null, but is silent on host.
-    host = url.getHost();
-    if (host == null)
-      host = "";
-
-    port = url.getPort();
+    authority = url.getAuthority();
+    if (authority == null)
+      authority = "";
+    
     file = url.getFile();
     ref = url.getRef();
-    user = url.getUserInfo();
 
     // Guess a reasonable size for the string buffer so we have to resize
     // at most once.
-    int size = protocol.length() + host.length() + file.length() + 24;
+    int size = protocol.length() + authority.length() + file.length() + 24;
     StringBuffer sb = new StringBuffer(size);
 
-    if (protocol.length() != 0)
+    if (protocol != null && protocol.length() > 0)
       {
 	sb.append(protocol);
 	sb.append(":");
       }
-
-    if (host.length() != 0)
+    
+    if (authority.length() != 0)
       {
-	sb.append("//");
-	if (user != null && ! "".equals(user))
-	  sb.append(user).append('@');
-	sb.append(host);
-
-	// Append port if port was in URL spec.
-	if (port >= 0)
-	  sb.append(':').append(port);
+	sb.append("//").append(authority);
       }
 
     sb.append(file);

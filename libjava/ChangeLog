@@ -1,3 +1,19 @@
+2004-04-22  Jeroen Frijters <jeroen@sumatra.nl>
+
+	* java/net/URLStreamHandler.java
+	(parseURL): Convert the file path to using '/' instead of native
+	file separator.
+
+2004-04-22  Guilhem Lavaux <guilhem@kaffe.org>
+
+	* java/net/URL.java
+	(userInfo): New field.
+	(URL): Set authority to the right value.
+	(setURL): Fixed authority and file initialization.
+	* java/net/URLStreamHandler.java
+	(parseURL): Take care of the query tag. Build authority.
+	(toExternalForm): Fixed URL building using authority.
+
 2004-04-22  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/Socket.java
