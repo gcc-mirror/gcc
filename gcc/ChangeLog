@@ -1,3 +1,8 @@
+Sun Oct 25 18:35:06 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* ginclude/va-ppc.h (va_arg): longlong types in overflow area are
+	not doubleword aligned.
+
 Sun Oct 25 12:07:00 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* i386/crtdll.h (CPP_PREDEFINES): Fix typo.

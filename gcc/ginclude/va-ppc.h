@@ -158,9 +158,6 @@ __extension__ (*({							\
     }									\
   else									\
     {									\
-      if (__va_longlong_p(TYPE) && ((long)__va_overflow(AP) & 4) != 0)	\
-	__va_overflow(AP) += 4;						\
-									\
       __ptr = (TYPE *) (void *) (__va_overflow(AP));			\
       __va_overflow(AP) += __va_size (TYPE) * sizeof (long);		\
     }									\
