@@ -1,3 +1,8 @@
+Wed May 24 19:37:53 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.texi: Remove contributor list.  Instead include contrib.texi.
+	* contrib.texi: New file.
+
 Thu May 25 02:27:22 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (basic_induction_var): Avoid double recording of an increment.
