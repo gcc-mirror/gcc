@@ -449,7 +449,7 @@ static void bc_expand_variable_local_init PROTO((tree));
 static void bc_expand_decl_init		PROTO((tree));
 static void expand_null_return_1	PROTO((rtx, int));
 static int tail_recursion_args		PROTO((tree, tree));
-static void expand_cleanups		PROTO((tree, tree));
+static void expand_cleanups		PROTO((tree, tree, int));
 static void bc_expand_start_case	PROTO((struct nesting *, tree,
 					       tree, char *));
 static int bc_pushcase			PROTO((tree, tree));
@@ -804,7 +804,7 @@ expand_goto_internal (body, label, last_insn)
 	  /* Execute the cleanups for blocks we are exiting.  */
 	  if (block->data.block.cleanups != 0)
 	    {
-	      expand_cleanups (block->data.block.cleanups, NULL_TREE);
+	      expand_cleanups (block->data.block.cleanups, NULL_TREE, 1);
 	      do_pending_stack_adjust ();
 	    }
 	}
@@ -868,7 +868,7 @@ bc_expand_goto_internal (opcode, label, body)
 	  /* Execute the cleanups for blocks we are exiting.  */
 	  if (block->data.block.cleanups != 0)
 	    {
-	      expand_cleanups (block->data.block.cleanups, NULL_TREE);
+	      expand_cleanups (block->data.block.cleanups, NULL_TREE, 1);
 	      do_pending_stack_adjust ();
 	    }
 	}
@@ -1181,7 +1181,7 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 		if (TREE_ADDRESSABLE (lists)
 		    && TREE_VALUE (lists) != 0)
 		  {
-		    expand_cleanups (TREE_VALUE (lists), 0);
+		    expand_cleanups (TREE_VALUE (lists), NULL_TREE, 1);
 		    /* Pop any pushes done in the cleanups,
 		       in case function is about to return.  */
 		    do_pending_stack_adjust ();
@@ -3102,7 +3102,7 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
 	  expr_stmts_for_value = 0;
 
 	  /* Do the cleanups.  */
-	  expand_cleanups (thisblock->data.block.cleanups, NULL_TREE);
+	  expand_cleanups (thisblock->data.block.cleanups, NULL_TREE, 0);
 	  do_pending_stack_adjust ();
 
 	  expr_stmts_for_value = old_expr_stmts_for_value;
@@ -3679,22 +3679,27 @@ expand_anon_union_decl (decl, cleanup, decl_elts)
    If DONT_DO is nonnull, then any list-element
    whose TREE_PURPOSE matches DONT_DO is omitted.
    This is sometimes used to avoid a cleanup associated with
-   a value that is being returned out of the scope.  */
+   a value that is being returned out of the scope.
+
+   If IN_FIXUP is non-zero, we are generating this cleanup for a fixup
+   goto and handle protection regions specially in that case.  */
 
 static void
-expand_cleanups (list, dont_do)
+expand_cleanups (list, dont_do, in_fixup)
      tree list;
      tree dont_do;
+     int in_fixup;
 {
   tree tail;
   for (tail = list; tail; tail = TREE_CHAIN (tail))
     if (dont_do == 0 || TREE_PURPOSE (tail) != dont_do)
       {
 	if (TREE_CODE (TREE_VALUE (tail)) == TREE_LIST)
-	  expand_cleanups (TREE_VALUE (tail), dont_do);
+	  expand_cleanups (TREE_VALUE (tail), dont_do, in_fixup);
 	else
 	  {
-	    (*interim_eh_hook) (TREE_VALUE (tail));
+	    if (! in_fixup)
+	      (*interim_eh_hook) (TREE_VALUE (tail));
 
 	    /* Cleanups may be run multiple times.  For example,
 	       when exiting a binding contour, we expand the
