@@ -1,3 +1,7 @@
+2001-12-07  Per Bothner  <per@bothner.com>
+
+	* check-init.c (check_init):  Fix typo freeing memory twice.
+
 2001-12-05  Per Bothner  <per@bothner.com>
 
 	Restore support for static class initialization optimization.
