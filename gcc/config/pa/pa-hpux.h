@@ -28,6 +28,12 @@ Boston, MA 02111-1307, USA.  */
 #define SIZE_TYPE "unsigned int"
 #define PTRDIFF_TYPE "int"
 
+/* GCC always defines __STDC__.  HP C++ compilers don't define it.  This
+   causes trouble when sys/stdsyms.h is included.  As a work around,
+   we define __STDC_EXT__.  A similar situation exists with respect to
+   the definition of __cplusplus.  We define _INCLUDE_LONGLONG
+   to prevent nlist.h from defining __STDC_32_MODE__ (no longlong
+   support).  */
 #undef TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()				\
   do								\
@@ -46,6 +52,7 @@ Boston, MA 02111-1307, USA.  */
 	  {							\
 	    builtin_define ("_HPUX_SOURCE");			\
 	    builtin_define ("_INCLUDE_LONGLONG");		\
+	    builtin_define ("__STDC_EXT__");			\
 	  }							\
 	else if (!flag_iso)					\
 	  {							\
