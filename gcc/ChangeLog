@@ -1,3 +1,11 @@
+2003-04-24  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR opt/8705
+	* gcse.c (try_replace_reg): On a successful substitution of a constant
+	into a single set, try to simplify the source of the set.
+	* loop.c (scan_loop): Don't try to optimize a MODE_CC set with a
+	constant source.
+
 2003-04-24  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cpplex.c (cpp_token_len): Tighten up.

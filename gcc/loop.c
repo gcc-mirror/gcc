@@ -833,11 +833,17 @@ scan_loop (loop, flags)
 		   That behavior is incorrect and was removed.  */
 		insert_temp = 1;
 
+	      /* Don't try to optimize a MODE_CC set with a constant
+		 source.  It probably will be combined with a conditional
+		 jump.  */
+	      if (GET_MODE_CLASS (GET_MODE (SET_DEST (set))) == MODE_CC
+		  && CONSTANT_P (src))
+		;
 	      /* Don't try to optimize a register that was made
 		 by loop-optimization for an inner loop.
 		 We don't know its life-span, so we can't compute
 		 the benefit.  */
-	      if (REGNO (SET_DEST (set)) >= max_reg_before_loop)
+	      else if (REGNO (SET_DEST (set)) >= max_reg_before_loop)
 		;
 	      /* Don't move the source and add a reg-to-reg copy:
 		 - with -Os (this certainly increases size),
