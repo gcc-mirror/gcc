@@ -1327,20 +1327,14 @@ extern char *instruction_bits;
 /* True iff the byte is the start of an instruction. */
 #define BCODE_INSTRUCTION_START 1
 
-/* True iff there is a jump to this location. */
+/* True iff there is a jump or a return to this location. */
 #define BCODE_JUMP_TARGET 2
-
-/* True iff there is a return to this location.
-   (I.e. the preceding instruction was a call.) */
-#define BCODE_RETURN_TARGET 4
 
 /* True iff this is the start of an exception handler. */
 #define BCODE_EXCEPTION_TARGET 16
 
 /* True iff there is a jump to this location (and it needs a label). */
-#define BCODE_TARGET \
-  (BCODE_JUMP_TARGET|BCODE_RETURN_TARGET \
-   | BCODE_EXCEPTION_TARGET)
+#define BCODE_TARGET (BCODE_JUMP_TARGET| BCODE_EXCEPTION_TARGET)
 
 /* True iff there is an entry in the linenumber table for this location. */
 #define BCODE_HAS_LINENUMBER 32
