@@ -965,6 +965,8 @@ extern int alpha_memory_latency;
 		+ (ALPHA_ROUND (get_frame_size ()			\
 			       + current_function_pretend_args_size)	\
 		   - current_function_pretend_args_size));		\
+  else									\
+    abort ();								\
 }
 
 /* Define this if stack space is still allocated for a parameter passed

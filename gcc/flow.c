@@ -7072,9 +7072,8 @@ typedef struct reorder_block_def {
 static int reorder_index;
 static basic_block reorder_last_visited;
 
-#define REORDER_SKIP_BEFORE 0x1
-#define REORDER_SKIP_AFTER 0x2
-#define REORDER_SKIP_BLOCK_END 0x3
+enum reorder_skip_type {REORDER_SKIP_BEFORE, REORDER_SKIP_AFTER,
+			REORDER_SKIP_BLOCK_END};
 
 /* Skip over insns BEFORE or AFTER BB which are typically associated with
    basic block BB.  */
@@ -7082,7 +7081,7 @@ static basic_block reorder_last_visited;
 static rtx
 skip_insns_between_block (bb, skip_type)
      basic_block bb;
-     int skip_type;
+     enum reorder_skip_type skip_type;
 {
   rtx insn, last_insn;
 
@@ -7090,6 +7089,7 @@ skip_insns_between_block (bb, skip_type)
     {
       if (bb == ENTRY_BLOCK_PTR)
 	return 0;
+
       last_insn = bb->head;
       for (insn = PREV_INSN (bb->head);
 	   insn && insn != BASIC_BLOCK (bb->index - 1)->end;
@@ -7097,6 +7097,7 @@ skip_insns_between_block (bb, skip_type)
 	{
 	  if (NEXT_INSN (insn) != last_insn)
 	    break;
+
 	  if (GET_CODE (insn) == NOTE
 	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_END
 	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK
@@ -7106,8 +7107,8 @@ skip_insns_between_block (bb, skip_type)
 	  break;
 	}
     }
-  else if (skip_type == REORDER_SKIP_AFTER
-	   || skip_type == REORDER_SKIP_BLOCK_END)
+
+  else
     {
       last_insn = bb->end;
 
@@ -7128,6 +7129,7 @@ skip_insns_between_block (bb, skip_type)
 		  && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END
 		      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)))
 	    continue;
+
 	  if (GET_CODE (insn) == CODE_LABEL
 	      && GET_CODE (NEXT_INSN (insn)) == JUMP_INSN
 	      && (GET_CODE (PATTERN (NEXT_INSN (insn))) == ADDR_VEC
@@ -7139,34 +7141,40 @@ skip_insns_between_block (bb, skip_type)
 	    }
 	  break;
 	}
-    }
-  if (skip_type == REORDER_SKIP_BLOCK_END)
-    {
-      int found_block_end = 0;
 
-      for (; insn; last_insn = insn, insn = NEXT_INSN (insn))
+      if (skip_type == REORDER_SKIP_BLOCK_END)
 	{
-	  if (bb->index + 1 != n_basic_blocks
-	      && insn == BASIC_BLOCK (bb->index + 1)->head)
-	    break;
+	  int found_block_end = 0;
 
-	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
+	  for (; insn; last_insn = insn, insn = NEXT_INSN (insn))
 	    {
-	      found_block_end = 1;
-	      continue;
+	      if (bb->index + 1 != n_basic_blocks
+		  && insn == BASIC_BLOCK (bb->index + 1)->head)
+		break;
+
+	      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
+		{
+		  found_block_end = 1;
+		  continue;
+		}
+
+	      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED)
+		continue;
+
+	      if (GET_CODE (insn) == NOTE
+		  && NOTE_LINE_NUMBER (insn) >= 0
+		  && NEXT_INSN (insn)
+		  && (NOTE_LINE_NUMBER (NEXT_INSN (insn))
+		      == NOTE_INSN_BLOCK_END))
+		continue;
+	      break;
 	    }
-	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED)
-	    continue;
-	  if (GET_CODE (insn) == NOTE
-	      && NOTE_LINE_NUMBER (insn) >= 0
-	      && NEXT_INSN (insn)
-	      && NOTE_LINE_NUMBER (NEXT_INSN (insn)) == NOTE_INSN_BLOCK_END)
-	    continue;
-	  break;
+
+	  if (! found_block_end)
+	    last_insn = 0;
 	}
-      if (! found_block_end)
-	last_insn = 0;
     }
+
   return last_insn;
 }
 

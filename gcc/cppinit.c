@@ -1058,7 +1058,7 @@ new_pending_define (opts, text)
   struct pending_option *o = (struct pending_option *)
     xmalloc (sizeof (struct pending_option));
 
-  o->arg = text;
+  o->arg = (char *) text;
   o->next = NULL;
   o->undef = 0;
   APPEND (opts->pending, define, o);
@@ -1067,6 +1067,7 @@ new_pending_define (opts, text)
 /* Handle one command-line option in (argc, argv).
    Can be called multiple times, to handle multiple sets of options.
    Returns number of strings consumed.  */
+
 int
 cpp_handle_option (pfile, argc, argv)
      cpp_reader *pfile;

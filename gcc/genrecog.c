@@ -1785,19 +1785,21 @@ write_switch (start, depth)
       switch (type)
 	{
 	case DT_mode:
-	  printf("GET_MODE (x%d)", depth);
+	  printf ("GET_MODE (x%d)", depth);
 	  break;
 	case DT_veclen:
-	  printf("XVECLEN (x%d, 0)", depth);
+	  printf ("XVECLEN (x%d, 0)", depth);
 	  break;
 	case DT_elt_zero_int:
-	  printf("XINT (x%d, 0)", depth);
+	  printf ("XINT (x%d, 0)", depth);
 	  break;
 	case DT_elt_one_int:
-	  printf("XINT (x%d, 1)", depth);
+	  printf ("XINT (x%d, 1)", depth);
 	  break;
 	case DT_elt_zero_wide:
-	  printf("XWINT (x%d, 0)", depth);
+	  /* Convert result of XWINT to int for portability since some C
+	     compilers won't do it and some will.  */
+	  printf ("(int) XWINT (x%d, 0)", depth);
 	  break;
 	default:
 	  abort ();

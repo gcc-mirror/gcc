@@ -1,3 +1,30 @@
+Fri Feb 18 20:08:57 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* bitmap.c (bitmap_operation): Avoid using -1 for index since unsigned.
+	* cppinit.c (new_pending_define): Add cast to avoid warning.
+	* expmed.c (extract_bit_field): Likewise.
+	* flow.c (enum reorder_skip_type): New type.
+	(skip_insns_between_blcok): New it.
+	Rework to avoid warning about possibly undefined variable.
+	* function.c (assign_parms): Make thisparm_boundary unsigned.
+	* genrecog.c (write_switch): Cast XWINT result to int.
+	* lcm.c: Many static fcns and vars now #ifdef OPTIMIZE_MODE_SWITCHING.
+	* mips-tfile.c (init_file): Make two versions of FDR intializer:
+	one for MIPS and one for Alpha.
+	(get_tag, copy_object): Add casts to avoid warnings.
+	* optabs.c (init_one_libfunc): Cast NAME to (char *).
+	* reload.c (find_reloads): Make TYPE enum reload_type.
+	* sbitmap.c (dump_sbitmap): J is unsigned; don't use "1L".
+	* unroll.c (unroll_loop): Initialize UNROLL_NUMBER.
+	* varasm.c (compare_constant_1): Add cast to avoid warning.
+	* config/alpha/alpha.c (alpha_emit_xfloating_libcall): Cast FUNC
+	to (char *).
+	(alpha_expand_unaligned_load, alpha_expand_unaligned_store):
+ 	Cast switch operand of size to int.
+	(alpha_expand_epilogue): Always initialize fp_offset and sa_reg.
+	* config/alpha/alpha.h (INITIAL_ELIMINATION_OFFSET): Add abort
+	in unhandled case.
+
 2000-02-18  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/elf.h (ASM_OUTPUT_ALIGN): Do not generate

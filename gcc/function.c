@@ -4348,7 +4348,7 @@ assign_parms (fndecl)
 	 for its ultimate type, don't use that slot after entry.
 	 We'll make another stack slot, if we need one.  */
       {
-	int thisparm_boundary
+	unsigned int thisparm_boundary
 	  = FUNCTION_ARG_BOUNDARY (promoted_mode, passed_type);
 
 	if (GET_MODE_ALIGNMENT (nominal_mode) > thisparm_boundary)

@@ -4037,7 +4037,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
       {
 	for (i = 0; i < n_reloads; i++)
 	  {
-	    int first_num, type;
+	    int first_num;
+	    enum reload_type type;
 
 	    switch (rld[i].when_needed)
 	      {

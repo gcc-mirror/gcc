@@ -540,7 +540,8 @@ dump_sbitmap (file, bmap)
      FILE *file;
      sbitmap bmap;
 {
-  int i,j,n;
+  int i, n;
+  unsigned int j;
   int set_size = bmap->size;
   int total_bits = bmap->n_bits;
 
@@ -551,7 +552,8 @@ dump_sbitmap (file, bmap)
 	{
 	  if (n != 0 && n % 10 == 0)
 	    fprintf (file, " ");
-	  fprintf (file, "%d", (bmap->elms[i] & (1L << j)) != 0);
+	  fprintf (file, "%d",
+		   (bmap->elms[i] & ((SBITMAP_ELT_TYPE) 1 << j)) != 0);
 	}
     }
   fprintf (file, "\n");
