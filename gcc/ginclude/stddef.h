@@ -115,7 +115,7 @@ _TYPE_wchar_t;
 #endif
 
 /* In case nobody has defined these types, but we aren't running under
-   GCC 2.00, make sure that __PTRDIFF_TYPE__, __SIZE__TYPE__, and
+   GCC 2.00, make sure that __PTRDIFF_TYPE__, __SIZE_TYPE__, and
    __WCHAR_TYPE__ have reasonable values.  This can happen if the
    parts of GCC is compiled by an older compiler, that actually
    include gstddef.h, such as collect2.  */
