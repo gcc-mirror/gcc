@@ -22,9 +22,7 @@
 
 #include <string>
 #include <stdexcept>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 bool test01(void)
 {
@@ -45,14 +43,14 @@ bool test01(void)
   // string& append(const string&)
   str05 = str02;
   str05.append(str05); 
-  test &= str05 == "corpus, corpus, ";
+  VERIFY( str05 == "corpus, corpus, " );
   str05.append(str01);
-  test &= str05 == "corpus, corpus, point bolivar, texas";
+  VERIFY( str05 == "corpus, corpus, point bolivar, texas" );
   str05.append(str03);
-  test &= str05 == "corpus, corpus, point bolivar, texas";
+  VERIFY( str05 == "corpus, corpus, point bolivar, texas" );
   std::string str06;
   str06.append(str05);
-  test &= str06 == str05;
+  VERIFY( str06 == str05 );
 
 
   // string& append(const string&, size_type pos, size_type n)
@@ -61,78 +59,78 @@ bool test01(void)
   csz01 = str03.size();
   try {
     str06.append(str03, csz01 + 1, 0);
-    test &= false; 
+    VERIFY( false ); 
   }
   catch(std::out_of_range& fail) {
-    test &= true;
+    VERIFY( true );
   }
   catch(...) {
-    test &= false;
+    VERIFY( false );
   }
 
   csz01 = str01.size();
   try {
     str06.append(str01, csz01 + 1, 0);
-    test &= false; 
+    VERIFY( false ); 
   }
   catch(std::out_of_range& fail) {
-    test &= true;
+    VERIFY( true );
   }
   catch(...) {
-    test &= false;
+    VERIFY( false );
   }
 
   str05 = str02;
   str05.append(str01, 0, std::string::npos);
-  test &= str05 == "corpus, point bolivar, texas";
-  test &= str05 != str02;
+  VERIFY( str05 == "corpus, point bolivar, texas" );
+  VERIFY( str05 != str02 );
 
   str06 = str02;
   str06.append(str01, 15, std::string::npos);
-  test &= str06 == "corpus, texas";
-  test &= str02 != str06;
+  VERIFY( str06 == "corpus, texas" );
+  VERIFY( str02 != str06 );
 
 
   // string& append(const char* s)
   str05.erase();
   str06.erase();
   str05.append("");
-  test &= str05 == str03;
+  VERIFY( str05 == str03 );
 
   str05.append(str_lit01);
-  test &= str05 == str01;
+  VERIFY( str05 == str01 );
 
   str06 = str02;
   str06.append("corpus, ");
-  test &= str06 == "corpus, corpus, ";
+  VERIFY( str06 == "corpus, corpus, " );
 
 
   // string& append(const char* s, size_type n)
   str05.erase();
   str06.erase();
   str05.append("", 0);
-  test &= str05.size() == 0;
-  test &= str05 == str03;
+  VERIFY( str05.size() == 0 );
+  VERIFY( str05 == str03 );
   
   str05.append(str_lit01, sizeof(str_lit01) - 1);
-  test &= str05 == str01;
+  VERIFY( str05 == str01 );
 
   str06 = str02;
   str06.append("corpus, ", 6);
-  test &= str06 == "corpus, corpus";
+  VERIFY( str06 == "corpus, corpus" );
 
   str06 = str02;
   str06.append("corpus, ", 12);
-  test &= str06 != "corpus, corpus, ";
+  VERIFY( str06 != "corpus, corpus, " );
 
 
   // string& append(size_type n, char c)
   str05.erase();
   str06.erase();
   str05.append(0, 'a');
-  test &= str05 == str03;
+  VERIFY( str05 == str03 );
   str06.append(8, '.');
-  test &= str06 == "........";
+  VERIFY( str06 == "........" );
 
 
   // template<typename InputIter>
@@ -140,18 +138,18 @@ bool test01(void)
   str05.erase();
   str06.erase();
   str05.append(str03.begin(), str03.end());
-  test &= str05 == str03;
+  VERIFY( str05 == str03 );
 
   str06 = str02;
   str06.append(str01.begin(), str01.begin() + str01.find('r')); 
-  test &= str06 == "corpus, point boliva";
-  test &= str06 != str01;
-  test &= str06 != str02;
+  VERIFY( str06 == "corpus, point boliva" );
+  VERIFY( str06 != str01 );
+  VERIFY( str06 != str02 );
 
   str05 = str01;
   str05.append(str05.begin(), str05.begin() + str05.find('r')); 
-  test &= str05 ==  "point bolivar, texaspoint boliva";
-  test &= str05 != str01;
+  VERIFY( str05 ==  "point bolivar, texaspoint boliva" );
+  VERIFY( str05 != str01 );
 
 #ifdef DEBUG_ASSERT
   assert(test);

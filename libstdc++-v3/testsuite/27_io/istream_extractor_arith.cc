@@ -24,9 +24,7 @@
 #include <ostream>
 #include <sstream>
 #include <locale>
-#ifdef DEBUG_ASSERT
-  #include <assert.h>
-#endif
+#include <debug_assert.h>
 
 std::string str_01;
 std::string str_02("true false 0 1 110001");
@@ -71,44 +69,44 @@ bool test01() {
   fmt = is_02.flags();
   testfmt = fmt & std::ios_base::boolalpha;
   is_02 >> b1;
-  test &= b1 == 1;
+  VERIFY( b1 == 1 );
   is_02 >> b1;
-  test &= b1 == 0;
+  VERIFY( b1 == 0 );
 
   // process numeric versions of of bool values
   is_02.unsetf(std::ios_base::boolalpha);
   fmt = is_02.flags();
   testfmt = fmt & std::ios_base::boolalpha;
   is_02 >> b1;
-  test &= b1 == 0;
+  VERIFY( b1 == 0 );
   is_02 >> b1;
-  test &= b1 == 1;
+  VERIFY( b1 == 1 );
 
   // is_03 == "-19999999 777777 -234234 233 -234 33 1 66300.25 .315 1.5"
   is_03 >> l1;
-  test &= l1 == -19999999;
+  VERIFY( l1 == -19999999 );
   is_03 >> ul1;
-  test &= ul1 == 777777;
+  VERIFY( ul1 == 777777 );
   is_03 >> i1;
-  test &= i1 == -234234;
+  VERIFY( i1 == -234234 );
   is_03 >> ui1;
-  test &= ui1 == 233;
+  VERIFY( ui1 == 233 );
   is_03 >> s1;
-  test &= s1 == -234;
+  VERIFY( s1 == -234 );
   is_03 >> us1;
-  test &= us1 == 33;
+  VERIFY( us1 == 33 );
   is_03 >> b1;
-  test &= b1 == 1;
+  VERIFY( b1 == 1 );
   is_03 >> ld1;
-  test &= ld1 == 66300.25;
+  VERIFY( ld1 == 66300.25 );
   is_03 >> d1;
-  test &= d1 == .315;
+  VERIFY( d1 == .315 );
   is_03 >> f1;
-  test &= f1 == 1.5;
+  VERIFY( f1 == 1.5 );
 
   is_04 >> std::hex >> i1;
   printf ("%d %d %d\n", i1, i1 == 0x123, test);
-  test &= i1 == 0x123;
+  VERIFY( i1 == 0x123 );
   printf ("%d %d %d\n", i1, i1 == 0x123, test);
 
   // test void pointers
@@ -119,7 +117,7 @@ bool test01() {
   ss_01 << po;
   ss_01 >> pi;
   printf ("%x %x\n", pi, po);
-  test &= po == pi;
+  VERIFY( po == pi );
   
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -138,9 +136,9 @@ bool test02() {
 
   int n = 15;
   is >> n;
-  test &= n == 20000;
+  VERIFY( n == 20000 );
   char c = is.peek();
-  test &= c == 65;
+  VERIFY( c == 65 );
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -159,8 +157,8 @@ bool test03()
   long l01;
   ostr <<  "12220101";
   istr >>  l01; // _M_in_end set completely incorrectly here.
-  test &= l01 == 12220101;
-  test &= istr.rdstate() == std::ios_base::eofbit;
+  VERIFY( l01 == 12220101 );
+  VERIFY( istr.rdstate() == std::ios_base::eofbit );
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -181,21 +179,21 @@ void test06()
   std::istringstream is(s);
   
   is >> h4; // 205
-  test &= h4 == 205;
+  VERIFY( h4 == 205 );
   is >> c; // ','
-  test &= c == ',';
+  VERIFY( c == ',' );
 
   is >> h4; // 199
-  test &= h4 == 199;
+  VERIFY( h4 == 199 );
   is >> c; // ','
-  test &= c == ',';
+  VERIFY( c == ',' );
 
   is >> h4; // 144
-  test &= is.rdstate() == std::ios_base::eofbit;
-  test &= h4 == 144;
+  VERIFY( is.rdstate() == std::ios_base::eofbit );
+  VERIFY( h4 == 144 );
   is >> c; // EOF
-  test &= c == ',';
-  test &= static_cast<bool>(is.rdstate() & std::ios_base::failbit);
+  VERIFY( c == ',' );
+  VERIFY( static_cast<bool>(is.rdstate() & std::ios_base::failbit) );
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -224,24 +222,24 @@ void test07()
 
   // Basic operation.
   is >> h4; 
-  test &= h4 == 205199;
-  test &= is.good();
+  VERIFY( h4 == 205199 );
+  VERIFY( is.good() );
 
   is.clear();
   is >> f1; 
-  test &= f1 == 23445.25;
-  test &= is.good();
+  VERIFY( f1 == 23445.25 );
+  VERIFY( is.good() );
 
   is.clear();
   is >> h3; 
-  test &= h3 == 1024365;
-  test &= is.good();
+  VERIFY( h3 == 1024365 );
+  VERIFY( is.good() );
 
   is.clear();
   is >> h2; 
-  test &= h2 == 0;
-  test &= static_cast<bool>(is.rdstate() & std::ios_base::failbit);
-  test &= static_cast<bool>(is.rdstate() & std::ios_base::eofbit);
+  VERIFY( h2 == 0 );
+  VERIFY( static_cast<bool>(is.rdstate() & std::ios_base::failbit) );
+  VERIFY( static_cast<bool>(is.rdstate() & std::ios_base::eofbit) );
 
   // Stress tests for explicit errors in grouping corner cases.  The
   // validity of these tests and results have been hammered out in
@@ -256,64 +254,64 @@ void test07()
   is.str(s2);
 
   is >> h4; 
-  test &= h4 == 0;
-  test &= static_cast<bool>(is.rdstate() & std::ios_base::failbit);
+  VERIFY( h4 == 0 );
+  VERIFY( static_cast<bool>(is.rdstate() & std::ios_base::failbit) );
   is.clear();
   is >> c;
-  test &= c == ',';
-  test &= is.good();
+  VERIFY( c == ',' );
+  VERIFY( is.good() );
 
   is.ignore(3);
   is >> f1; 
-  test &= f1 == 0.0;
-  test &= static_cast<bool>(is.rdstate() & std::ios_base::failbit);
+  VERIFY( f1 == 0.0 );
+  VERIFY( static_cast<bool>(is.rdstate() & std::ios_base::failbit) );
   is.clear();
   is >> c;
-  test &= c == ',';
+  VERIFY( c == ',' );
   is >> c;
-  test &= c == '4';
-  test &= is.good();
+  VERIFY( c == '4' );
+  VERIFY( is.good() );
 
   is >> f1; 
-  test &= f1 == 0.25;
-  test &= is.good();
+  VERIFY( f1 == 0.25 );
+  VERIFY( is.good() );
   is >> c;
-  test &= c == ',';
+  VERIFY( c == ',' );
   is >> h2;
-  test &= h2 == 345;
-  test &= is.good();
+  VERIFY( h2 == 345 );
+  VERIFY( is.good() );
   f1 = 0.0;
   h2 = 0;
 
   is >> f1; 
-  test &= f1 == 5.0;
-  test &= is.good();
+  VERIFY( f1 == 5.0 );
+  VERIFY( is.good() );
   is >> f1; 
-  test &= f1 == .25;
-  test &= is.good();
+  VERIFY( f1 == .25 );
+  VERIFY( is.good() );
 
   is >> h3; 
-  test &= h3 == 0;
-  test &= static_cast<bool>(is.rdstate() & std::ios_base::failbit);
+  VERIFY( h3 == 0 );
+  VERIFY( static_cast<bool>(is.rdstate() & std::ios_base::failbit) );
   is.clear();
   is >> c;
-  test &= c == ','; // second one
-  test &= is.good();
+  VERIFY( c == ',' ); // second one
+  VERIFY( is.good() );
 
   is >> h2; 
-  test &= h2 == 0;
-  test &= static_cast<bool>(is.rdstate() & std::ios_base::failbit);
+  VERIFY( h2 == 0 );
+  VERIFY( static_cast<bool>(is.rdstate() & std::ios_base::failbit) );
   is.clear();
 
   is >> h2; 
-  test &= h2 == 1000000;
-  test &= is.good();
+  VERIFY( h2 == 1000000 );
+  VERIFY( is.good() );
   h2 = 0;
 
   is >> h2; 
-  test &= h2 == 0;
-  test &= static_cast<bool>(is.rdstate() & std::ios_base::failbit);
-  test &= static_cast<bool>(is.rdstate() & std::ios_base::eofbit);
+  VERIFY( h2 == 0 );
+  VERIFY( static_cast<bool>(is.rdstate() & std::ios_base::failbit) );
+  VERIFY( static_cast<bool>(is.rdstate() & std::ios_base::eofbit) );
   is.clear();
 
 #ifdef DEBUG_ASSERT
@@ -345,18 +343,18 @@ void test08()
 
   // Basic operation.
   is >> h4; 
-  test &= h4 == 122;
-  test &= is.good();
+  VERIFY( h4 == 122 );
+  VERIFY( is.good() );
 
   is.clear();
   is >> h3; 
-  test &= h3 == 20519;
-  test &= is.good();
+  VERIFY( h3 == 20519 );
+  VERIFY( is.good() );
 
   is.clear();
   is >> h2; 
-  test &= h2 == 2212322;
-  test &= static_cast<bool>(is.rdstate() & std::ios_base::eofbit);
+  VERIFY( h2 == 2212322 );
+  VERIFY( static_cast<bool>(is.rdstate() & std::ios_base::eofbit) );
 
 
 #ifdef DEBUG_ASSERT
@@ -378,8 +376,8 @@ bool test09()
    (is>>std::ws) >> c;
    (is>>std::ws) >> f2;
    test = f1 == 2456;
-   test &= f2 == 0.00567;
-   test &= c == '-';
+   VERIFY( f2 == 0.00567 );
+   VERIFY( c == '-' );
 #ifdef DEBUG_ASSERT
   assert(test);
 #endif
@@ -396,37 +394,37 @@ bool test10() {
 
   int n = 365;
   is_01 >> n;
-  test &= n == 0;
+  VERIFY( n == 0 );
   n = 364;
   is_01 >> n;
-  test &= n == 0;
+  VERIFY( n == 0 );
   n = 363;
   is_01 >> n;
-  test &= n == 0;
+  VERIFY( n == 0 );
   n = 362;
   is_01 >> n;
-  test &= n == 0;
+  VERIFY( n == 0 );
   n = 361;
   is_01 >> n;
-  test &= n == 0;
+  VERIFY( n == 0 );
   n = 360;
   is_01 >> n;
-  test &= n == 0;
-  test &= is_01.rdstate() == std::ios_base::eofbit;
+  VERIFY( n == 0 );
+  VERIFY( is_01.rdstate() == std::ios_base::eofbit );
 
   std::string str_02("0x32 0X33 033 33");
   std::stringbuf isbuf_02(str_02);
   std::istream is_02(&isbuf_02);
   is_02.unsetf(std::ios_base::basefield);
   is_02 >> n;
-  test &= n == 50;
+  VERIFY( n == 50 );
   is_02 >> n;
-  test &= n == 51;
+  VERIFY( n == 51 );
   is_02 >> n;
-  test &= n == 27;
+  VERIFY( n == 27 );
   is_02 >> n;
-  test &= n == 33;
-  test &= is_02.rdstate() == std::ios_base::eofbit;
+  VERIFY( n == 33 );
+  VERIFY( is_02.rdstate() == std::ios_base::eofbit );
 
   std::stringbuf isbuf_03(str_02);
   std::istream is_03(&isbuf_03);
@@ -434,19 +432,19 @@ bool test10() {
   int m;
 
   is_03 >> std::dec >> n >> c >> m;
-  test &= n == 0;
-  test &= c == 'x';
-  test &= m == 32;
+  VERIFY( n == 0 );
+  VERIFY( c == 'x' );
+  VERIFY( m == 32 );
 
   is_03 >> std::oct >> m >> c >> n;
-  test &= m == 0;
-  test &= c == 'X';
-  test &= n == 27;
+  VERIFY( m == 0 );
+  VERIFY( c == 'X' );
+  VERIFY( n == 27 );
 
   is_03 >> std::dec >> m >> n;
-  test &= m == 33;
-  test &= n == 33;
-  test &= is_03.rdstate() == std::ios_base::eofbit;
+  VERIFY( m == 33 );
+  VERIFY( n == 33 );
+  VERIFY( is_03.rdstate() == std::ios_base::eofbit );
 
   std::string str_04("3. 4.5E+  2a5E-3 .6E1");
   std::stringbuf isbuf_04(str_04);
@@ -454,35 +452,35 @@ bool test10() {
 
   double f;
   is_04 >> f;
-  test &= f == 3.0;
+  VERIFY( f == 3.0 );
   is_04 >> f;
-  test &= f == 450.0;
+  VERIFY( f == 450.0 );
   is_04.ignore();
   is_04 >> f;
-  test &= f == 0.005;
+  VERIFY( f == 0.005 );
   is_04 >> f;
-  test &= f == 6;
-  test &= is_03.rdstate() == std::ios_base::eofbit;
+  VERIFY( f == 6 );
+  VERIFY( is_03.rdstate() == std::ios_base::eofbit );
 
   std::string str_05("0E20 5Ea E16");
   std::stringbuf isbuf_05(str_05);
   std::istream is_05(&isbuf_05);
 
   is_05 >> f;
-  test &= f == 0;
+  VERIFY( f == 0 );
   is_05 >> f;
-  test &= f == 0;
-  test &= is_05.rdstate() == std::ios_base::failbit;
+  VERIFY( f == 0 );
+  VERIFY( is_05.rdstate() == std::ios_base::failbit );
   is_05.clear();
   is_05 >> c;
-  test &= c == 'a';
+  VERIFY( c == 'a' );
   is_05 >> f;
-  test &= f == 0;
-  test &= is_05.rdstate() == std::ios_base::failbit;
+  VERIFY( f == 0 );
+  VERIFY( is_05.rdstate() == std::ios_base::failbit );
   is_05.clear();
   is_05.ignore();
   is_05 >> n;
-  test &= n == 16;
+  VERIFY( n == 16 );
 
 #ifdef DEBUG_ASSERT
   assert(test);

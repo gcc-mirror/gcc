@@ -29,9 +29,7 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 bool test01(void)
 {
@@ -54,91 +52,91 @@ bool test01(void)
   // istream& operator>>(istream&, string&)
   std::istringstream istrs01(str01);
   istrs01 >> str10;
-  test &= str10 == str02;
+  VERIFY( str10 == str02 );
   try {
     std::istringstream::int_type i01 = istrs01.peek(); //a-boo
-    test &= std::istringstream::traits_type::to_char_type(i01) == ' ';
+    VERIFY( std::istringstream::traits_type::to_char_type(i01) == ' ' );
   }
   catch(std::exception& fail) {
-    test &= false; // shouldn't throw
+    VERIFY( false ); // shouldn't throw
   }
 
   istrs01 >> str10; 
-  test &= str10 == str03; 
+  VERIFY( str10 == str03 ); 
   istrs01 >> str10; 
-  test &= str10 == str04; // sentry picks out the white spaces. . 
+  VERIFY( str10 == str04 ); // sentry picks out the white spaces. . 
 
   std::istringstream istrs02(str05); // empty
   istrs02 >> str10;
-  test &= str10 == str04;
+  VERIFY( str10 == str04 );
  
   // istream& getline(istream&, string&, char)
   // istream& getline(istream&, string&)
   try {
     getline(istrs01, str10);
-    test &= !istrs01.fail();
-    test &= !istrs01.eof();
-    test &= istrs01.good();
-    test &= str10 == " bay";
+    VERIFY( !istrs01.fail() );
+    VERIFY( !istrs01.eof() );
+    VERIFY( istrs01.good() );
+    VERIFY( str10 == " bay" );
   }
   catch(std::exception& fail) {
-    test &= false; // shouldn't throw
+    VERIFY( false ); // shouldn't throw
   }
 
   try {
     istrs01.clear();
     getline(istrs01, str10,'\t');
-    test &= !istrs01.fail();
-    test &= !istrs01.eof();
-    test &= istrs01.good();
-    test &= str10 == str05;
+    VERIFY( !istrs01.fail() );
+    VERIFY( !istrs01.eof() );
+    VERIFY( istrs01.good() );
+    VERIFY( str10 == str05 );
   }
   catch(std::exception& fail) {
-    test &= false; // shouldn't throw
+    VERIFY( false ); // shouldn't throw
   }
 
   try {
     istrs01.clear();
     getline(istrs01, str10,'\t');
-    test &= !istrs01.fail();
-    test &= !istrs01.eof();
-    test &= istrs01.good();
-    test &= str10 == str05;
+    VERIFY( !istrs01.fail() );
+    VERIFY( !istrs01.eof() );
+    VERIFY( istrs01.good() );
+    VERIFY( str10 == str05 );
   }
   catch(std::exception& fail) {
-    test &= false; // shouldn't throw
+    VERIFY( false ); // shouldn't throw
   }
 
   try {
     istrs01.clear();
     getline(istrs01, str10, '.');
-    test &= !istrs01.fail();
-    test &= istrs01.eof();
-    test &= !istrs01.good();
-    test &= str10 == "\t    from Elk Rapids to the point reminds me of miles";
+    VERIFY( !istrs01.fail() );
+    VERIFY( istrs01.eof() );
+    VERIFY( !istrs01.good() );
+    VERIFY( str10 == "\t    from Elk Rapids to the point reminds me of miles" );
   }
   catch(std::exception& fail) {
-    test &= false; // shouldn't throw
+    VERIFY( false ); // shouldn't throw
   }
 
   try {
     getline(istrs02, str10);
-    test &= istrs02.fail();
-    test &= istrs02.eof();
-    test &= str10 == "\t    from Elk Rapids to the point reminds me of miles";
+    VERIFY( istrs02.fail() );
+    VERIFY( istrs02.eof() );
+    VERIFY( str10 == "\t    from Elk Rapids to the point reminds me of miles" );
   }
   catch(std::exception& fail) {
-    test &= false; // shouldn't throw
+    VERIFY( false ); // shouldn't throw
   }
 
   // ostream& operator<<(ostream&, const basic_string&)
   std::ostringstream ostrs01;
   try {
     ostrs01 << str01;
-    test &= ostrs01.str() == str01;
+    VERIFY( ostrs01.str() == str01 );
   }
   catch(std::exception& fail) {
-    test &= false;
+    VERIFY( false );
   }
 
   std::string hello_world;
@@ -161,8 +159,8 @@ void test04(int size)
   std::ostringstream oss(str);
   
   // sanity checks
-  test &= str.size() == size;
-  test &= oss.good();
+  VERIFY( str.size() == size );
+  VERIFY( oss.good() );
 
   // stress test
   oss << str << std::endl;
@@ -173,10 +171,10 @@ void test04(int size)
   if (!oss.good()) 
     test = false;
 
-  test &= str.size() == size;
-  test &= oss.good();
+  VERIFY( str.size() == size );
+  VERIFY( oss.good() );
   std::string str_tmp = oss.str();
-  test &= str_tmp.size() == expected_size;
+  VERIFY( str_tmp.size() == expected_size );
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -196,8 +194,8 @@ void test05(int size)
   std::string str(size, fillc);
 
   // sanity checks
-  test &= str.size() == size;
-  test &= ofs.good();
+  VERIFY( str.size() == size );
+  VERIFY( ofs.good() );
 
   // stress test
   ofs << str << std::endl;
@@ -208,8 +206,8 @@ void test05(int size)
   if (!ofs.good()) 
     test = false;
 
-  test &= str.size() == size;
-  test &= ofs.good();
+  VERIFY( str.size() == size );
+  VERIFY( ofs.good() );
 
   ofs.close();
 
@@ -229,7 +227,7 @@ void test05(int size)
 	break;
     }
 
-  test &= count == 2 * size;
+  VERIFY( count == 2 * size );
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -251,16 +249,16 @@ void test06(void)
   str01.erase(0, 1);
   size_type i03 = str01.size();
   size_type i04 = str01.capacity();
-  test &= i01 - 1 == i03;
-  test &= i02 >= i04;
+  VERIFY( i01 - 1 == i03 );
+  VERIFY( i02 >= i04 );
 
   std::istringstream is(str01);
   std::string str02;
   is >> str02 >> std::ws;
   size_type i05 = str02.size();
   size_type i06 = str02.capacity();
-  test &= i05 == i03;
-  test &= i06 <= i04;
+  VERIFY( i05 == i03 );
+  VERIFY( i06 <= i04 );
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -281,8 +279,8 @@ void test07(void)
   while (iss >> s) 
     ++i;
 
-  test &= i < 3;
-  test &= static_cast<bool>(iss.rdstate() & std::ios_base::failbit);
+  VERIFY( i < 3 );
+  VERIFY( static_cast<bool>(iss.rdstate() & std::ios_base::failbit) );
 
 #ifdef DEBUG_ASSERT
   assert(test);

@@ -23,9 +23,7 @@
 // simulated a bit more readily.
 
 #include <fstream>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 const char carray_01[] = "santa cruz or sandiego?";
 const char carray_02[] = "memphis, new orleans, and savanah";
@@ -72,9 +70,9 @@ bool test02() {
   bool 			test = true;
 
   // bool is_open()
-  test &= !fb_01.is_open();
-  test &= !fb_02.is_open();
-  test &= !fb_03.is_open();
+  VERIFY( !fb_01.is_open() );
+  VERIFY( !fb_02.is_open() );
+  VERIFY( !fb_03.is_open() );
 
   // filebuf_type* open(const char* __s, ios_base::openmode __mode)
   fb_01.open(name_01, std::ios_base::in | std::ios_base::ate);
@@ -83,17 +81,17 @@ bool test02() {
   // Should keep the old file attached, and disregard attempt to overthrow.
   fb_02.open(name_03, std::ios_base::in | std::ios_base::out);
   fb_03.open(name_03, std::ios_base::out | std::ios_base::trunc);
-  test &= fb_01.is_open();
-  test &= fb_02.is_open();
-  test &= fb_03.is_open();
+  VERIFY( fb_01.is_open() );
+  VERIFY( fb_02.is_open() );
+  VERIFY( fb_03.is_open() );
 
   // filebuf_type* close()
   fb_01.close();
   fb_02.close();
   fb_03.close();
-  test &= !fb_01.is_open();
-  test &= !fb_02.is_open();
-  test &= !fb_03.is_open();
+  VERIFY( !fb_01.is_open() );
+  VERIFY( !fb_02.is_open() );
+  VERIFY( !fb_03.is_open() );
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -131,35 +129,35 @@ bool test03() {
   // else return showmanyc.
   strmof_1 = fb_01.in_avail();
   strmof_2 = fb_02.in_avail();
-  test &= strmof_1 == -1;
-  test &= strmof_1 == strmof_2; //fail because not open
+  VERIFY( strmof_1 == -1 );
+  VERIFY( strmof_1 == strmof_2 ); //fail because not open
   strmof_1 = fb_03.in_avail();
-  test &= strmof_1 == strmof_2;
+  VERIFY( strmof_1 == strmof_2 );
   fb_01.open(name_01, std::ios_base::in);
   fb_02.open(name_02, std::ios_base::out | std::ios_base::trunc);
   fb_03.open(name_03, std::ios_base::out | std::ios_base::in | std::ios_base::trunc); 
   strmof_1 = fb_01.in_avail();
   strmof_2 = fb_02.in_avail();
-  test &= strmof_1 != strmof_2;
-  test &= strmof_1 >= 0;
-  test &= strmof_2 == -1;  // empty file
+  VERIFY( strmof_1 != strmof_2 );
+  VERIFY( strmof_1 >= 0 );
+  VERIFY( strmof_2 == -1 );  // empty file
   strmof_1 = fb_03.in_avail(); 
-  test &= strmof_1  == -1; // empty file
+  VERIFY( strmof_1  == -1 ); // empty file
 
   // int_type sbumpc()
   // if read_cur not avail returns uflow(), else return *read_cur & increment
   int_type c1 = fb_01.sbumpc();
   int_type c2 = fb_02.sbumpc();
-  test &= c1 != c2;
-  test &= c1 == '/';
-  test &= c2 == -1;
+  VERIFY( c1 != c2 );
+  VERIFY( c1 == '/' );
+  VERIFY( c2 == -1 );
   int_type c3 = fb_01.sbumpc();
   int_type c4 = fb_02.sbumpc();
-  test &= c3 != c4;
-  test &= c1 == c3; // fluke, both happen to be '/'
-  test &= c2 == c4;
+  VERIFY( c3 != c4 );
+  VERIFY( c1 == c3 ); // fluke, both happen to be '/'
+  VERIFY( c2 == c4 );
   int_type c5 = fb_03.sbumpc();
-  test &= c5 == traits_type::eof();
+  VERIFY( c5 == traits_type::eof() );
   // XXX should do some kind of test to make sure that internal
   // buffers point ot the same thing, to check consistancy.
 
@@ -167,29 +165,29 @@ bool test03() {
   // if read_cur not avail, return uflow(), else return *read_cur  
   int_type c6 = fb_01.sgetc();
   int_type c7 = fb_02.sgetc();
-  test &= c6 != c3;
-  test &= c7 == c4; // both -1
+  VERIFY( c6 != c3 );
+  VERIFY( c7 == c4 ); // both -1
   int_type c8 = fb_01.sgetc();
   int_type c9 = fb_02.sgetc();
-  test &= c6 == c8;
-  test &= c7 == c9;
+  VERIFY( c6 == c8 );
+  VERIFY( c7 == c9 );
   c5 = fb_03.sgetc();
-  test &= c5 == traits_type::eof();
+  VERIFY( c5 == traits_type::eof() );
 
   // int_type snextc()
   // calls sbumpc and if sbumpc != eof, return sgetc
   c6 = fb_01.snextc();
   c7 = fb_02.snextc();
-  test &= c6 != c8;
-  test &= c7 == c9; // -1
-  test &= c6 == '9';
+  VERIFY( c6 != c8 );
+  VERIFY( c7 == c9 ); // -1
+  VERIFY( c6 == '9' );
   c6 = fb_01.snextc();
   c7 = fb_02.snextc();
-  test &= c6 != c8;
-  test &= c7 == c9; // -1
-  test &= c6 == '9';
+  VERIFY( c6 != c8 );
+  VERIFY( c7 == c9 ); // -1
+  VERIFY( c6 == '9' );
   c5 = fb_03.snextc();
-  test &= c5 == traits_type::eof();
+  VERIFY( c5 == traits_type::eof() );
 
   // streamsize sgetn(char_type *s, streamsize n)
   // streamsize xsgetn(char_type *s, streamsize n)
@@ -202,30 +200,30 @@ bool test03() {
   strmsz_1 = fb_01.sgetn(carray1, 10);
   char carray2[buffer_size] = "";
   strmsz_2 = fb_02.sgetn(carray2, 10);
-  test &= strmsz_1 != strmsz_2;
-  test &= strmsz_1 == 10;
-  test &= strmsz_2 == 0;
+  VERIFY( strmsz_1 != strmsz_2 );
+  VERIFY( strmsz_1 == 10 );
+  VERIFY( strmsz_2 == 0 );
   c1 = fb_01.sgetc();
   c2 = fb_02.sgetc();
-  test &= c1 == '\n';  
-  test &= c7 == c2; // n != i
+  VERIFY( c1 == '\n' );  
+  VERIFY( c7 == c2 ); // n != i
   strmsz_1 = fb_03.sgetn(carray1, 10);
-  test &= !strmsz_1; //zero
+  VERIFY( !strmsz_1 ); //zero
   strmsz_1 = fb_01.in_avail();
   strmsz_2 = fb_01.sgetn(carray2, strmsz_1 + 5);
-  test &= strmsz_1 == strmsz_2 - 5; 
+  VERIFY( strmsz_1 == strmsz_2 - 5 ); 
   c4 = fb_01.sgetc(); // buffer should have underflowed from above.
-  test &= c4 == 'i';
+  VERIFY( c4 == 'i' );
   strmsz_1 = fb_01.in_avail();
-  test &= strmsz_1 > 0;
+  VERIFY( strmsz_1 > 0 );
   strmsz_2 = fb_01.sgetn(carray2, strmsz_1 + 5);
-  test &= strmsz_1 == strmsz_2; //at the end of the actual file 
+  VERIFY( strmsz_1 == strmsz_2 ); //at the end of the actual file 
   strmsz_1 = fb_02.in_avail();
   strmsz_2 = fb_02.sgetn(carray2, strmsz_1 + 5);
-  test &= strmsz_1 == -1;
-  test &= strmsz_2 == 0;
+  VERIFY( strmsz_1 == -1 );
+  VERIFY( strmsz_2 == 0 );
   c4 = fb_02.sgetc(); // should be EOF
-  test &= c4 == traits_type::eof();
+  VERIFY( c4 == traits_type::eof() );
 
   // PUT
   // int_type sputc(char_type c)
@@ -235,12 +233,12 @@ bool test03() {
   // strmsz_1 = fb_03.in_avail();  // XXX valid for in|out??
   c1 = fb_02.sputc('a'); 
   c2 = fb_03.sputc('b'); 
-  test &= c1 != c2;
+  VERIFY( c1 != c2 );
   c1 = fb_02.sputc('c'); 
   c2 = fb_03.sputc('d'); 
-  test &= c1 != c2;
+  VERIFY( c1 != c2 );
   // strmsz_2 = fb_03.in_avail();
-  // test &= strmsz_1 != strmsz_2;
+  // VERIFY( strmsz_1 != strmsz_2 );
   for (int i = 50; i <= 90; ++i) 
     c2 = fb_02.sputc(char(i));
   // 27filebuf-2.txt == ac23456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWX
@@ -249,30 +247,30 @@ bool test03() {
   for (int i = 50; i <= 90; ++i) 
     c2 = fb_03.sputc(char(i));
   strmsz_2 = fb_03.in_avail();
-  // test &= strmsz_1 != strmsz_2;
-  // test &= strmsz_1 > 0;
-  // test &= strmsz_2 > 0;
+  // VERIFY( strmsz_1 != strmsz_2 );
+  // VERIFY( strmsz_1 > 0 );
+  // VERIFY( strmsz_2 > 0 );
   // 27filebuf-2.txt == bd23456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWX
   // fb_02._M_out_cur = '2'
   c3 = fb_01.sputc('a'); // should be EOF because this is read-only
-  test &= c3 == traits_type::eof();
+  VERIFY( c3 == traits_type::eof() );
 
   // streamsize sputn(const char_typs* s, streamsize n)
   // write up to n chars to out_cur from s, returning number assigned
   // NB *sputn will happily put '\0' into your stream if you give it a chance*
   strmsz_1 = fb_03.sputn("racadabras", 10);//"abracadabras or what?"
-  test &= strmsz_1 == 10;
+  VERIFY( strmsz_1 == 10 );
   strmsz_2 = fb_03.sputn(", i wanna reach out and", 10);
-  test &= strmsz_2 == 10;
-  test &= strmsz_1 == strmsz_2; 
+  VERIFY( strmsz_2 == 10 );
+  VERIFY( strmsz_1 == strmsz_2 ); 
   // fb_03._M_out_beg = "YZracadabras, i wanna FGHIJKLMNOPQRSTUVW"
   // fb_03._M_out_cur = "FGHIJKLMNOPQRSTUVW"
   strmsz_1 = fb_02.sputn("racadabras", 10);
-  test &= strmsz_1 == 10;  
+  VERIFY( strmsz_1 == 10 );  
   // fb_02._M_out_beg = "YZracadabras<=>?@ABCDEFGHIJKLMNOPQRSTUVW"
   // fb_02._M_out_cur = "<=>?@ABCDEFGHIJKLMNOPQRSTUVW"
   strmsz_1 = fb_01.sputn("racadabra", 10);
-  test &= strmsz_1 == 0;  
+  VERIFY( strmsz_1 == 0 );  
 
   // PUTBACK
   // int_type pbfail(int_type c)
@@ -293,9 +291,9 @@ bool test03() {
   c2 = fb_03.sputbackc('z');
   strmsz_2 = fb_03.in_avail();
   c3 = fb_03.sgetc();
-  test &= c3 == c2;
-  test &= c1 != c3;
-  test &= 1 == strmsz_2;
+  VERIFY( c3 == c2 );
+  VERIFY( c1 != c3 );
+  VERIFY( 1 == strmsz_2 );
   //test for _in_cur == _in_beg
   // fb_03._M_out_beg = "bd23456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZracada" etc
   fb_03.pubseekoff(10, std::ios_base::beg, 
@@ -307,11 +305,11 @@ bool test03() {
   c2 = fb_03.sputbackc('z');  
   strmsz_2 = fb_03.in_avail(); 
   c3 = fb_03.sgetc();  
-  test &= c1 != c2;
-  test &= c3 == c2;
-  test &= c1 != c3;
-  test &= c2 == 'z';
-  test &= strmsz_1 == strmsz_2;
+  VERIFY( c1 != c2 );
+  VERIFY( c3 == c2 );
+  VERIFY( c1 != c3 );
+  VERIFY( c2 == 'z' );
+  VERIFY( strmsz_1 == strmsz_2 );
   // test for replacing char with identical one
   fb_03.snextc();
   fb_03.sputc('u');
@@ -321,13 +319,13 @@ bool test03() {
   c2 = fb_03.sputbackc('a');
   strmsz_2 = fb_03.in_avail();
   c3 = fb_03.sgetc();
-  test &= c3 == c2;
-  test &= strmsz_1 + 1 == strmsz_2;
+  VERIFY( c3 == c2 );
+  VERIFY( strmsz_1 + 1 == strmsz_2 );
   //test for ios_base::out
   c1 = fb_02.sgetc(); // undefined
   c2 = fb_02.sputbackc('a');
-  test &= c1 == c2;
-  test &= c1 == -1;
+  VERIFY( c1 == c2 );
+  VERIFY( c1 == -1 );
 
   // int_type sungetc()
   // if in_cur not avail, return pbackfail(), else decrement and
@@ -337,8 +335,8 @@ bool test03() {
   strmsz_1 = fb_03.in_avail();
   c2 = fb_03.sungetc(); // delete the 'a'
   strmsz_2 = fb_03.in_avail();
-  test &= c2 == 'v'; //  test &= c2 != traits_type::eof();
-  test &= strmsz_1 + 1 == strmsz_2;
+  VERIFY( c2 == 'v' ); //  VERIFY( c2 != traits_type::eof() );
+  VERIFY( strmsz_1 + 1 == strmsz_2 );
   //test for _in_cur == _in_beg
   for (int i = 50; i < 32 + 29; ++i)
     fb_02.sputc(char(i));
@@ -348,11 +346,11 @@ bool test03() {
   c2 = fb_02.sungetc();
   strmsz_2 = fb_02.in_avail();
   c3 = fb_02.sgetc();
-  test &= c1 == c2;
-  test &= c3 == c2;
-  test &= c1 == c3;
-  test &= c2 == traits_type::eof();
-  test &= strmsz_1 == strmsz_2;
+  VERIFY( c1 == c2 );
+  VERIFY( c3 == c2 );
+  VERIFY( c1 == c3 );
+  VERIFY( c2 == traits_type::eof() );
+  VERIFY( strmsz_1 == strmsz_2 );
   //test for _in_cur == _in_end
   fb_03.pubseekoff(0, std::ios_base::end);
   strmsz_1 = fb_03.in_avail(); // -1 cuz at the end
@@ -360,10 +358,10 @@ bool test03() {
   c2 = fb_03.sungetc();
   strmsz_2 = fb_03.in_avail(); // 1
   c3 = fb_03.sgetc();
-  test &= c1 != c2;
-  // test &= c2 == c3 || c2 == traits_type::not_eof(int(c3));
-  test &= strmsz_2 != strmsz_1;
-  test &= strmsz_2 == 1;
+  VERIFY( c1 != c2 );
+  // VERIFY( c2 == c3 || c2 == traits_type::not_eof(int(c3)) );
+  VERIFY( strmsz_2 != strmsz_1 );
+  VERIFY( strmsz_2 == 1 );
   //test for ios_base::out
 
   // BUFFER MANAGEMENT & POSITIONING
@@ -373,21 +371,21 @@ bool test03() {
   strmsz_1 = fb_01.in_avail(); 
   fb_01.pubsync();
   strmsz_2 = fb_01.in_avail();
-  test &= strmsz_2 == strmsz_1;
+  VERIFY( strmsz_2 == strmsz_1 );
   strmsz_1 = fb_02.in_avail(); 
   fb_02.pubsync();		
   // 27filebuf-2.txt == 53 bytes after this.
   strmsz_2 = fb_02.in_avail();
-  test &= strmsz_2 == -1;
-  test &= strmsz_2 == strmsz_1;
+  VERIFY( strmsz_2 == -1 );
+  VERIFY( strmsz_2 == strmsz_1 );
   strmsz_1 = fb_03.in_avail(); 
   fb_03.pubsync();
   // 27filebuf-3.txt 
   // bd23456789mzuva?@ABCDEFGHIJKLMNOPQRSTUVWXYZracadabras, i wannaz 
   // 63 bytes.
   strmsz_2 = fb_03.in_avail();
-  test &= strmsz_1 == 1;
-  test &= strmsz_2 == 1;
+  VERIFY( strmsz_1 == 1 );
+  VERIFY( strmsz_2 == 1 );
 
   // setbuf
   // pubsetbuf(char_type* s, streamsize n)
@@ -412,42 +410,42 @@ bool test03() {
   pt_1 = fb_03.pubseekoff(2, std::ios_base::beg);
   strmsz_2 = fb_03.in_avail(); 
   off_1 = pt_1;
-  test &= off_1 > 0;
+  VERIFY( off_1 > 0 );
   c1 = fb_03.snextc(); //current in pointer +1
-  test &= c1 == '3';
+  VERIFY( c1 == '3' );
   c2 = fb_03.sputc('\n');  //current in pointer +1
   c3 = fb_03.sgetc();
-  test &= c2 != c3; 
-  test &= c3 == '4';
+  VERIFY( c2 != c3 ); 
+  VERIFY( c3 == '4' );
   fb_03.pubsync(); 
   c1 = fb_03.sgetc();
-  test &= c1 == c3;
+  VERIFY( c1 == c3 );
   //cur
   // 27filebuf-3.txt = bd2\n456789:;<=>?...
   pt_2 = fb_03.pubseekoff(2, std::ios_base::cur);
   off_2 = pt_2;
-  test &= (off_2 == (off_1 + 2 + 1 + 1));
+  VERIFY( (off_2 == (off_1 + 2 + 1 + 1)) );
   c1 = fb_03.snextc(); //current in pointer +1
-  test &= c1 == '7';
+  VERIFY( c1 == '7' );
   c2 = fb_03.sputc('x');  //test current out pointer
   c3 = fb_03.sputc('\n');
   c1 = fb_03.sgetc();
   fb_03.pubsync(); 
   c3 = fb_03.sgetc();
-  test &= c1 == c3;
+  VERIFY( c1 == c3 );
   //end
   // 27filebuf-3.txt = "bd2\n456x\n9" 
   pt_2 = fb_03.pubseekoff(0, std::ios_base::end, 
 			  std::ios_base::in|std::ios_base::out);
   off_1 = pt_2;
-  test &= off_1 > off_2; //weak, but don't know exactly where it ends
+  VERIFY( off_1 > off_2 ); //weak, but don't know exactly where it ends
   c3 = fb_03.sputc('\n');
   strmsz_1 = fb_03.sputn("because because because. . .", 28);  
-  test &= strmsz_1 == 28;
+  VERIFY( strmsz_1 == 28 );
   c1 = fb_03.sungetc();
   fb_03.pubsync(); 
   c3 = fb_03.sgetc();
-  test &= c1 == c3;
+  VERIFY( c1 == c3 );
   // IN
   // OUT
 
@@ -459,20 +457,20 @@ bool test03() {
   //beg
   pt_1 = fb_03.pubseekoff(78, std::ios_base::beg);
   off_1 = pt_1;
-  test &= off_1 > 0;
+  VERIFY( off_1 > 0 );
   c1 = fb_03.snextc(); 		//current in pointer +1
-  test &= c1 == ' ';
+  VERIFY( c1 == ' ' );
   c2 = fb_03.sputc('\n');  	//test current out pointer
   c3 = fb_03.sgetc();
   fb_03.pubsync(); 		//resets pointers
   pt_2 = fb_03.pubseekpos(pt_1);
   off_2 = pt_2;
-  test &= off_1 == off_2;
+  VERIFY( off_1 == off_2 );
   c3 = fb_03.snextc(); 		//current in pointer +1
-  test &= c2 == c3;
+  VERIFY( c2 == c3 );
   pt_1 = fb_03.pubseekoff(0, std::ios_base::end);
   off_1 = pt_1;
-  test &= off_1 > off_2;
+  VERIFY( off_1 > off_2 );
   fb_03.sputn("\nof the wonderful things he does!!\nok", 37);
   fb_03.pubsync();
 
@@ -494,9 +492,9 @@ bool test03() {
   fb_01.close();
   fb_02.close();
   fb_03.close();
-  test &= !fb_01.is_open();
-  test &= !fb_02.is_open();
-  test &= !fb_03.is_open();
+  VERIFY( !fb_01.is_open() );
+  VERIFY( !fb_02.is_open() );
+  VERIFY( !fb_03.is_open() );
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -514,8 +512,8 @@ bool test04()
   ifstream ifs(name_02);
   char buffer[] = "xxxxxxxxxx";
   int_type len1 = ifs.rdbuf()->sgetn(buffer, sizeof(buffer));
-  test &= len1 == sizeof(buffer);
-  test &= buffer[0] == 'a';
+  VERIFY( len1 == sizeof(buffer) );
+  VERIFY( buffer[0] == 'a' );
 
 #ifdef DEBUG_ASSERT
   assert(test);

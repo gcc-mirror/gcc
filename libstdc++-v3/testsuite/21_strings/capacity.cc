@@ -22,9 +22,7 @@
 
 #include <string>
 #include <cstdio>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 template<typename T>
   struct A { };
@@ -49,27 +47,27 @@ bool test01()
   size_type_s sz01 = str01.capacity();
   str01.reserve(100);
   size_type_s sz02 = str01.capacity();
-  test &= sz02 >= sz01;
-  test &= sz02 >= 100;
+  VERIFY( sz02 >= sz01 );
+  VERIFY( sz02 >= 100 );
   str01.reserve();
   sz01 = str01.capacity();
-  test &= sz01 >= 0;
+  VERIFY( sz01 >= 0 );
 
   sz01 = str01.size() + 5;
   str01.resize(sz01);
   sz02 = str01.size();
-  test &= sz01 == sz02;
+  VERIFY( sz01 == sz02 );
 
   sz01 = str01.size() - 5;
   str01.resize(sz01);
   sz02 = str01.size();
-  test &= sz01 == sz02;
+  VERIFY( sz01 == sz02 );
 
   std::string str05(30, 'q');
   std::string str06 = str05;
   str05 = str06 + str05;
-  test &= str05.capacity() >= str05.size();
-  test &= str06.capacity() >= str06.size();
+  VERIFY( str05.capacity() >= str05.size() );
+  VERIFY( str06.capacity() >= str06.size() );
 
   // 2 non POD types : resize, capacity, reserve
   std::basic_string< A<B> > str02;
@@ -80,50 +78,50 @@ bool test01()
   sz03 = str02.capacity();
   str02.reserve(100);
   sz04 = str02.capacity();
-  test &= sz04 >= sz03;
-  test &= sz04 >= 100;
+  VERIFY( sz04 >= sz03 );
+  VERIFY( sz04 >= 100 );
   str02.reserve();
   sz03 = str02.capacity();
-  test &= sz03 >= 0;
+  VERIFY( sz03 >= 0 );
 
   sz03 = str02.size() + 5;
   str02.resize(sz03);
   sz04 = str02.size();
-  test &= sz03 == sz04;
+  VERIFY( sz03 == sz04 );
 
   sz03 = str02.size() - 5;
   str02.resize(sz03);
   sz04 = str02.size();
-  test &= sz03 == sz04;
+  VERIFY( sz03 == sz04 );
 
   A<B> inst_obj;
   std::basic_string<A<B> > str07(30, inst_obj);
   std::basic_string<A<B> > str08 = str07;
   str07 = str08 + str07;
-  test &= str07.capacity() >= str07.size();
-  test &= str08.capacity() >= str08.size();
+  VERIFY( str07.capacity() >= str07.size() );
+  VERIFY( str08.capacity() >= str08.size() );
 
   // 3 POD types: size, length, max_size, clear(), empty()
   bool b01;
   std::string str011;
   b01 = str01.empty();  
-  test &= b01 == true;
+  VERIFY( b01 == true );
   sz01 = str01.size();
   sz02 = str01.length();
-  test &= sz01 == sz02;
+  VERIFY( sz01 == sz02 );
   str01.c_str();
   sz01 = str01.size();
   sz02 = str01.length();
-  test &= sz01 == sz02;
+  VERIFY( sz01 == sz02 );
 
   sz01 = str01.length();
   str01.c_str();
   str011 = str01 +  "_addendum_";
   str01.c_str();
   sz02 = str01.length();    
-  test &= sz01 == sz02;
+  VERIFY( sz01 == sz02 );
   sz02 = str011.length();
-  test &= sz02 > sz01;
+  VERIFY( sz02 > sz01 );
     
   // trickster allocator (__USE_MALLOC, luke) issues involved with these:
   std::string str3 = "8-chars_8-chars_";
@@ -133,36 +131,36 @@ bool test01()
   
   sz01 = str01.size();
   sz02 = str01.max_size();  
-  test &= sz02 >= sz01;
+  VERIFY( sz02 >= sz01 );
 
   sz01 = str01.size();
   str01.clear();  
   b01 = str01.empty(); 
-  test &= b01 == true;
+  VERIFY( b01 == true );
   sz02 = str01.size();  
-  test &= sz01 >= sz02;
+  VERIFY( sz01 >= sz02 );
 
 
   // 4 non-POD types: size, length, max_size, clear(), empty()
   b01 = str02.empty();  
-  test &= b01 == true;
+  VERIFY( b01 == true );
   sz03 = str02.size();
   sz04 = str02.length();
-  test &= sz03 == sz04;
+  VERIFY( sz03 == sz04 );
   str02.c_str();
   sz03 = str02.size();
   sz04 = str02.length();
-  test &= sz03 == sz04;
+  VERIFY( sz03 == sz04 );
 
   sz03 = str02.max_size();  
-  test &= sz03 >= sz04;
+  VERIFY( sz03 >= sz04 );
 
   sz03 = str02.size();
   str02.clear();  
   b01 = str02.empty(); 
-  test &= b01 == true;
+  VERIFY( b01 == true );
   sz04 = str02.size();  
-  test &= sz03 >= sz04;
+  VERIFY( sz03 >= sz04 );
 
 #ifdef DEBUG_ASSERT
   assert(test);

@@ -21,9 +21,7 @@
 // 23.2.4.3 vector modifiers
 
 #include <vector>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 template<typename T>
   struct A { };

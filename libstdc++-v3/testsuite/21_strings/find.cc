@@ -22,9 +22,7 @@
 
 #include <string>
 #include <stdexcept>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 bool test01(void)
 {
@@ -43,71 +41,71 @@ bool test01(void)
 
   // size_type find(const string&, size_type pos = 0) const;
   csz01 = str01.find(str01);
-  test &= csz01 == 0;
+  VERIFY( csz01 == 0 );
   csz01 = str01.find(str01, 4);
-  test &= csz01 == npos;
+  VERIFY( csz01 == npos );
   csz01 = str01.find(str02, 0);
-  test &= csz01 == 0;
+  VERIFY( csz01 == 0 );
   csz01 = str01.find(str02, 3);
-  test &= csz01 == npos;
+  VERIFY( csz01 == npos );
   csz01 = str01.find(str03, 0);
-  test &= csz01 == 8;
+  VERIFY( csz01 == 8 );
   csz01 = str01.find(str03, 3);
-  test &= csz01 == 8;
+  VERIFY( csz01 == 8 );
   csz01 = str01.find(str03, 12);
-  test &= csz01 == npos;
+  VERIFY( csz01 == npos );
 
   // An empty string consists of no characters
   // therefore it should be found at every point in a string,
   // except beyond the end
   csz01 = str01.find(str04, 0);
-  test &= csz01 == 0;
+  VERIFY( csz01 == 0 );
   csz01 = str01.find(str04, 5);
-  test &= csz01 == 5;
+  VERIFY( csz01 == 5 );
   csz01 = str01.find(str04, str01.size());
-  test &= csz01 == str01.size(); 
+  VERIFY( csz01 == str01.size() ); 
   csz01 = str01.find(str04, str01.size()+1);
-  test &= csz01 == npos; 
+  VERIFY( csz01 == npos ); 
   
   // size_type find(const char* s, size_type pos, size_type n) const;
   csz01 = str01.find(str_lit01, 0, 3);
-  test &= csz01 == 0;
+  VERIFY( csz01 == 0 );
   csz01 = str01.find(str_lit01, 3, 0);
-  test &= csz01 == 3;
+  VERIFY( csz01 == 3 );
 
   // size_type find(const char* s, size_type pos = 0) const;
   csz01 = str01.find(str_lit01);
-  test &= csz01 == 0;
+  VERIFY( csz01 == 0 );
   csz01 = str01.find(str_lit01, 3);
-  test &= csz01 == npos;
+  VERIFY( csz01 == npos );
 
   // size_type find(char c, size_type pos = 0) const;
   csz01 = str01.find('z');
   csz02 = str01.size() - 1;
-  test &= csz01 == csz02;
+  VERIFY( csz01 == csz02 );
   csz01 = str01.find('/');
-  test &= csz01 == npos;
+  VERIFY( csz01 == npos );
    
   // size_type find_first_of(const string&, size_type pos = 0) const;
   std::string str05("xena rulez");
   csz01 = str01.find_first_of(str01);
-  test &= csz01 == 0;
+  VERIFY( csz01 == 0 );
   csz01 = str01.find_first_of(str01, 4);
-  test &= csz01 == 4;
+  VERIFY( csz01 == 4 );
   csz01 = str01.find_first_of(str02, 0);
-  test &= csz01 == 0;
+  VERIFY( csz01 == 0 );
   csz01 = str01.find_first_of(str02, 3);
-  test &= csz01 == 3;
+  VERIFY( csz01 == 3 );
   csz01 = str01.find_first_of(str03, 0);
-  test &= csz01 == 8;
+  VERIFY( csz01 == 8 );
   csz01 = str01.find_first_of(str03, 3);
-  test &= csz01 == 8;
+  VERIFY( csz01 == 8 );
   csz01 = str01.find_first_of(str03, 12);
-  test &= csz01 == 16;
+  VERIFY( csz01 == 16 );
   csz01 = str01.find_first_of(str05, 0);
-  test &= csz01 == 1;
+  VERIFY( csz01 == 1 );
   csz01 = str01.find_first_of(str05, 4);
-  test &= csz01 == 4;
+  VERIFY( csz01 == 4 );
 
   // An empty string consists of no characters
   // therefore it should be found at every point in a string,
@@ -115,26 +113,26 @@ bool test01(void)
   // However, str1.find_first_of(str2,pos) finds the first character in 
   // str1 (starting at pos) that exists in str2, which is none for empty str2
   csz01 = str01.find_first_of(str04, 0);
-  test &= csz01 == npos;
+  VERIFY( csz01 == npos );
   csz01 = str01.find_first_of(str04, 5);
-  test &= csz01 == npos;
+  VERIFY( csz01 == npos );
   
   // size_type find_first_of(const char* s, size_type pos, size_type n) const;
   csz01 = str01.find_first_of(str_lit01, 0, 3);
-  test &= csz01 == 0;
+  VERIFY( csz01 == 0 );
   csz01 = str01.find_first_of(str_lit01, 3, 0);
-  test &= csz01 == npos;
+  VERIFY( csz01 == npos );
 
   // size_type find_first_of(const char* s, size_type pos = 0) const;
   csz01 = str01.find_first_of(str_lit01);
-  test &= csz01 == 0;
+  VERIFY( csz01 == 0 );
   csz01 = str01.find_first_of(str_lit01, 3);
-  test &= csz01 == 3;
+  VERIFY( csz01 == 3 );
 
   // size_type find_first_of(char c, size_type pos = 0) const;
   csz01 = str01.find_first_of('z');
   csz02 = str01.size() - 1;
-  test &= csz01 == csz02;
+  VERIFY( csz01 == csz02 );
 
   // size_type find_last_of(const string& str, size_type pos = 0) const;
   // size_type find_last_of(const char* s, size_type pos, size_type n) const;
@@ -146,45 +144,45 @@ bool test01(void)
   std::string x;
   std::string::size_type pos;
   pos = x.find_last_not_of('X');
-  test &= pos == npos;
+  VERIFY( pos == npos );
   pos = x.find_last_not_of("XYZ");
-  test &= pos == npos;
+  VERIFY( pos == npos );
 
   std::string y("a");
   pos = y.find_last_not_of('X');
-  test &= pos == 0;
+  VERIFY( pos == 0 );
   pos = y.find_last_not_of('a');
-  test &= pos == npos;
+  VERIFY( pos == npos );
   pos = y.find_last_not_of("XYZ");
-  test &= pos == 0;
+  VERIFY( pos == 0 );
   pos = y.find_last_not_of("a");
-  test &= pos == npos;
+  VERIFY( pos == npos );
 
   std::string z("ab");
   pos = z.find_last_not_of('X');
-  test &= pos == 1;
+  VERIFY( pos == 1 );
   pos = z.find_last_not_of("XYZ");
-  test &= pos == 1;
+  VERIFY( pos == 1 );
   pos = z.find_last_not_of('b');
-  test &= pos == 0;
+  VERIFY( pos == 0 );
   pos = z.find_last_not_of("Xb");
-  test &= pos == 0;
+  VERIFY( pos == 0 );
   pos = z.find_last_not_of("Xa");
-  test &= pos == 1;
+  VERIFY( pos == 1 );
   pos = z.find_last_of("ab");
-  test &= pos == 1;
+  VERIFY( pos == 1 );
   pos = z.find_last_of("Xa");
-  test &= pos == 0;
+  VERIFY( pos == 0 );
   pos = z.find_last_of("Xb");
-  test &= pos == 1;
+  VERIFY( pos == 1 );
   pos = z.find_last_of("XYZ");
-  test &= pos == std::string::npos;
+  VERIFY( pos == std::string::npos );
   pos = z.find_last_of('a');
-  test &= pos == 0;
+  VERIFY( pos == 0 );
   pos = z.find_last_of('b');
-  test &= pos == 1;
+  VERIFY( pos == 1 );
   pos = z.find_last_of('X');
-  test &= pos == std::string::npos;
+  VERIFY( pos == std::string::npos );
 #endif
 
 #ifdef DEBUG_ASSERT

@@ -22,9 +22,7 @@
 
 #include <string>
 #include <bitset>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 bool test01(void)
 {
@@ -34,15 +32,15 @@ bool test01(void)
   const size_t n1 = 5;
   std::bitset<n1> bit01;
   for (int i = 0; i < n1; ++i)
-    test &= !bit01.test(i);
+    VERIFY( !bit01.test(i) );
 
   // bitset(unsigned long)
   const size_t n2 = 32;
   unsigned long ul1 = 2;
   std::bitset<n2> bit02(ul1);
-  test &= !bit02.test(0);
-  test &= bit02.test(1);
-  test &= !bit02.test(2);
+  VERIFY( !bit02.test(0) );
+  VERIFY( bit02.test(1) );
+  VERIFY( !bit02.test(2) );
 
   // template<_CharT, _Traits, _Alloc>
   // explicit bitset(const basic_string<_C,_T,_A>&, size_type pos, size_type n)
@@ -52,10 +50,10 @@ bool test01(void)
     std::bitset<n3> bit03(str01, 5);
   }
   catch(std::invalid_argument& fail) {
-    test &= true;
+    VERIFY( true );
   }
   catch(...) {
-    test&= false;
+    VERIFY( false );
   }
 
   std::string str02("010101000011");
@@ -66,13 +64,13 @@ bool test01(void)
     for (int i = 0; i < sz; ++i)
       str03 += (bit03.test(i) ? '1' : '0');
     std::reverse(str03.begin(), str03.end());
-    test &= str03 == str02;
+    VERIFY( str03 == str02 );
   }
   catch(std::invalid_argument& fail) {
-    test &= false;
+    VERIFY( false );
   }
   catch(...) {
-    test&= false;
+    VERIFY( false );
   }
   
 

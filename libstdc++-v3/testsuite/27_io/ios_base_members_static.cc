@@ -24,9 +24,7 @@
 #include <sstream>
 #include <iostream>
 
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 bool test01() 
 {
@@ -36,15 +34,15 @@ bool test01()
   std::ios		ios01(&strbuf01);
 
   // 1: basic invocation
-  test &= ios01.sync_with_stdio();
-  test &= ios01.sync_with_stdio(false); //returns previous state
+  VERIFY( ios01.sync_with_stdio() );
+  VERIFY( ios01.sync_with_stdio(false) ); //returns previous state
 
   // 2: need to test interleaving of C and C++ io on a file object.
-  test &= std::cout.good();
-  test &= !std::cout.sync_with_stdio(0);
-  test &= std::cout.good();
-  test &= !std::cout.sync_with_stdio(0);
-  test &= std::cout.good();
+  VERIFY( std::cout.good() );
+  VERIFY( !std::cout.sync_with_stdio(0) );
+  VERIFY( std::cout.good() );
+  VERIFY( !std::cout.sync_with_stdio(0) );
+  VERIFY( std::cout.good() );
 
 #ifdef DEBUG_ASSERT
   assert(test);

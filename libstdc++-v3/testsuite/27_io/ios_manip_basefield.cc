@@ -31,9 +31,7 @@
 #include <sstream>
 #include <locale>
 #include <iomanip>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 			
 struct MyNP : std::numpunct<char>
 {
@@ -44,7 +42,8 @@ struct MyNP : std::numpunct<char>
 std::string MyNP::do_grouping() const { static std::string s("\3"); return s; }
 char   MyNP::do_thousands_sep() const { return ' '; }
 
-void test01()
+int
+test01()
 {
   std::cout.imbue(std::locale(std::locale(), new MyNP));
   std::cout << std::oct << std::showbase;
@@ -71,9 +70,11 @@ void test01()
 #ifdef DEBUG_ASSERT
   assert (std::cout.good());
 #endif
+  return 0;
 }
 
-void test02()
+int
+test02()
 {
   bool 		test = true;
   const std::string 	str_blank;
@@ -82,23 +83,25 @@ void test02()
   std::ostream 	o(&strbuf);
 
   o <<  std::setw(6) <<  std::right << "san";
-  test &= strbuf.str() == "   san"; 
+  VERIFY( strbuf.str() == "   san" ); 
   strbuf.str(str_blank);
 
   o <<  std::setw(6) <<  std::internal << "fran";
-  test &= strbuf.str() == "  fran"; 
+  VERIFY( strbuf.str() == "  fran" ); 
   strbuf.str(str_blank);
 
   o << std::setw(6) <<  std::left << "cisco";
-  test &= strbuf.str() == "cisco "; 
+  VERIFY( strbuf.str() == "cisco " ); 
   strbuf.str(str_blank);
 
 #ifdef DEBUG_ASSERT
   assert (test);
 #endif
+  return 0;
 }
 
-int main() {
+int 
+main() {
   test01();
   return 0;
 }

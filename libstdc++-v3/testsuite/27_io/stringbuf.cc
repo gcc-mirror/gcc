@@ -19,9 +19,7 @@
 // USA.
 
 #include <sstream>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 std::string str_01("mykonos. . . or what?");
 std::string str_02("paris, or sainte-maxime?");
@@ -59,20 +57,20 @@ bool test03() {
   std::string str_tmp;
 
   //stringbuf::str()
-  test &= strb_01.str() == str_01;
-  test &= strb_02.str() == str_02;
-  test &= strb_03.str() == str_03;
+  VERIFY( strb_01.str() == str_01 );
+  VERIFY( strb_02.str() == str_02 );
+  VERIFY( strb_03.str() == str_03 );
  
   //stringbuf::str(string&)
   strb_03.str("none of the above, go to the oberoi in cairo, egypt.");
   strb_03.str(str_01);
   std::streamsize d1 = strb_01.in_avail();
   std::streamsize d2 = strb_03.in_avail();
-  test &= d1; // non-zero
-  test &= !d2; // zero, cuz ios_base::out
-  test &= d1 != d2; //these should be the same
-  test &= str_01.length() == d1;  
-  test &= strb_01.str() == strb_03.str(); //ditto
+  VERIFY( d1 ); // non-zero
+  VERIFY( !d2 ); // zero, cuz ios_base::out
+  VERIFY( d1 != d2 ); //these should be the same
+  VERIFY( str_01.length() == d1 );  
+  VERIFY( strb_01.str() == strb_03.str() ); //ditto
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -98,50 +96,50 @@ bool test04() {
   // int in_avail()
   strmof_1 = strb_01.in_avail();
   strmof_2 = strb_02.in_avail();
-  test &= strmof_1 != strmof_2;
-  test &= strmof_1 == str_01.length();
-  test &= strmof_2 == str_02.length();
+  VERIFY( strmof_1 != strmof_2 );
+  VERIFY( strmof_1 == str_01.length() );
+  VERIFY( strmof_2 == str_02.length() );
   strmof_1 = strb_03.in_avail(); 
-  test &= strmof_1 == 0; // zero cuz write-only, or eof()? zero, from showmany
+  VERIFY( strmof_1 == 0 ); // zero cuz write-only, or eof()? zero, from showmany
 
   // int_type sbumpc()
   // if read_cur not avail, return uflow(), else return *read_cur & increment
   int_type c1 = strb_01.sbumpc();
   int_type c2 = strb_02.sbumpc();
-  test &= c1 != c2;
-  test &= c1 == str_01[0];
-  test &= c2 == str_02[0]; //should equal first letter at this point
+  VERIFY( c1 != c2 );
+  VERIFY( c1 == str_01[0] );
+  VERIFY( c2 == str_02[0] ); //should equal first letter at this point
   int_type c3 = strb_01.sbumpc();
   int_type c4 = strb_02.sbumpc();
-  test &= c1 != c2;
-  test &= c1 != c3;
-  test &= c2 != c4;
+  VERIFY( c1 != c2 );
+  VERIFY( c1 != c3 );
+  VERIFY( c2 != c4 );
   int_type c5 = strb_03.sbumpc();
-  test &= c5 == traits_type::eof();
+  VERIFY( c5 == traits_type::eof() );
 
   // int_type sgetc()
   // if read_cur not avail, return uflow(), else return *read_cur  
   int_type c6 = strb_01.sgetc();
   int_type c7 = strb_02.sgetc();
-  test &= c6 != c3;
-  test &= c7 != c4;
+  VERIFY( c6 != c3 );
+  VERIFY( c7 != c4 );
   int_type c8 = strb_01.sgetc();
   int_type c9 = strb_02.sgetc();
-  test &= c6 == c8;
-  test &= c7 == c9;
+  VERIFY( c6 == c8 );
+  VERIFY( c7 == c9 );
   c5 = strb_03.sgetc();
-  test &= c5 == traits_type::eof();
+  VERIFY( c5 == traits_type::eof() );
 
   // int_type snextc()
   // calls sbumpc and if sbumpc != eof, return sgetc
   c6 = strb_01.snextc();
   c7 = strb_02.snextc();
-  test &= c6 != c8;
-  test &= c7 != c9;
-  test &= c6 == str_01[3];
-  test &= c7 == str_02[3]; //should equal fourth letter at this point
+  VERIFY( c6 != c8 );
+  VERIFY( c7 != c9 );
+  VERIFY( c6 == str_01[3] );
+  VERIFY( c7 == str_02[3] ); //should equal fourth letter at this point
   c5 = strb_03.snextc();
-  test &= c5 == traits_type::eof();
+  VERIFY( c5 == traits_type::eof() );
 
   // int showmanyc
   // streamsize sgetn(char_type *s, streamsize n)
@@ -151,27 +149,27 @@ bool test04() {
   strmsz_1 = strb_01.in_avail();
   strmsz_2 = strb_02.in_avail();
   test = strmsz_1 != strmsz_2;
-  test &= strmsz_1 != str_01.length();
-  test &= strmsz_2 != str_02.length(); //because now we've moved into string
+  VERIFY( strmsz_1 != str_01.length() );
+  VERIFY( strmsz_2 != str_02.length() ); //because now we've moved into string
   char carray1[11] = "";
   strmsz_1 = strb_01.sgetn(carray1, 10);
   char carray2[20] = "";
   strmsz_2 = strb_02.sgetn(carray2, 10);
-  test &= strmsz_1 == strmsz_2;
-  test &= strmsz_1 == 10;
+  VERIFY( strmsz_1 == strmsz_2 );
+  VERIFY( strmsz_1 == 10 );
   c1 = strb_01.sgetc();
   c2 = strb_02.sgetc();
-  test &= c6 == c1; //just by co-incidence both o's
-  test &= c7 != c2; // n != i
-  test &= c1 == str_01[13];
-  test &= c2 == str_02[13]; //should equal fourteenth letter at this point
+  VERIFY( c6 == c1 ); //just by co-incidence both o's
+  VERIFY( c7 != c2 ); // n != i
+  VERIFY( c1 == str_01[13] );
+  VERIFY( c2 == str_02[13] ); //should equal fourteenth letter at this point
   strmsz_1 = strb_03.sgetn(carray1, 10);
-  test &= !strmsz_1; //zero
+  VERIFY( !strmsz_1 ); //zero
   strmsz_1 = strb_02.in_avail();
   strmsz_2 = strb_02.sgetn(carray2, strmsz_1 + 5);
-  test &= strmsz_1 == strmsz_2; //write off the end
+  VERIFY( strmsz_1 == strmsz_2 ); //write off the end
   c4 = strb_02.sgetc(); // should be EOF
-  test &= c4 == traits_type::eof();
+  VERIFY( c4 == traits_type::eof() );
 
   // PUT
   // int_type sputc(char_type c)
@@ -181,12 +179,12 @@ bool test04() {
   std::string::size_type sz1 = strb_03.str().length();
   c1 = strb_03.sputc('a'); 
   std::string::size_type sz2 = strb_03.str().length();
-  test &= sz1 == sz2; //cuz inserting at out_cur, which is at beg to start
+  VERIFY( sz1 == sz2 ); //cuz inserting at out_cur, which is at beg to start
   c2 = strb_03.sputc('b'); 
-  test &= c1 != c2;
-  test &= strb_03.str() != str_01;
+  VERIFY( c1 != c2 );
+  VERIFY( strb_03.str() != str_01 );
   c3 = strb_02.sputc('a'); // should be EOF because this is read-only
-  test &= c3 == traits_type::eof();
+  VERIFY( c3 == traits_type::eof() );
   
   // streamsize sputn(const char_typs* s, streamsize n)
   // write up to n chars to out_cur from s, returning number assigned
@@ -195,20 +193,20 @@ bool test04() {
   sz1 = str_tmp.length();
   strmsz_1 = strb_03.sputn("racadabras", 10);//"abracadabras or what?"
   sz2 = strb_03.str().length();
-  test &= sz1 == sz2; //shouldn't have changed length
-  test &= strmsz_1 == 10;
-  test &= str_tmp != strb_03.str();
+  VERIFY( sz1 == sz2 ); //shouldn't have changed length
+  VERIFY( strmsz_1 == 10 );
+  VERIFY( str_tmp != strb_03.str() );
   strmsz_2 = strb_03.sputn(", i wanna reach out and", 10);
-  test &= strmsz_1 == strmsz_2; // should re-allocate, copy 10 chars.
-  test &= strmsz_1 == 10;
-  test &= strmsz_2 == 10;
+  VERIFY( strmsz_1 == strmsz_2 ); // should re-allocate, copy 10 chars.
+  VERIFY( strmsz_1 == 10 );
+  VERIFY( strmsz_2 == 10 );
   sz2 = strb_03.str().length();
-  test &= sz1 != sz2; // need to change length
-  test &= str_tmp != strb_03.str();
+  VERIFY( sz1 != sz2 ); // need to change length
+  VERIFY( str_tmp != strb_03.str() );
   str_tmp = strb_02.str();
   strmsz_1 = strb_02.sputn("racadabra", 10);
-  test &= strmsz_1 == 0;  
-  test &= str_tmp == strb_02.str();
+  VERIFY( strmsz_1 == 0 );  
+  VERIFY( str_tmp == strb_02.str() );
 
   // PUTBACK
   // int_type pbfail(int_type c)
@@ -230,22 +228,22 @@ bool test04() {
   c1 = strb_01.sgetc(); //"mykonos. . . 'o'r what?"
   c2 = strb_01.sputbackc('z');//"mykonos. . .zor what?"
   c3 = strb_01.sgetc();
-  test &= c1 != c2;
-  test &= c3 == c2;
-  test &= strb_01.str() == std::string("mykonos. . .zor what?");
-  test &= str_tmp.size() == strb_01.str().size();
+  VERIFY( c1 != c2 );
+  VERIFY( c3 == c2 );
+  VERIFY( strb_01.str() == std::string("mykonos. . .zor what?") );
+  VERIFY( str_tmp.size() == strb_01.str().size() );
   //test for _in_cur == _in_beg
   strb_01.str(str_tmp);
   strmsz_1 = strb_01.in_avail();
   c1 = strb_01.sgetc(); //"'m'ykonos. . . or what?"
   c2 = strb_01.sputbackc('z');//"mykonos. . . or what?"
   c3 = strb_01.sgetc();
-  test &= c1 != c2;
-  test &= c3 != c2;
-  test &= c1 == c3;
-  test &= c2 == traits_type::eof();
-  test &= strb_01.str() == str_tmp;
-  test &= str_tmp.size() == strb_01.str().size();
+  VERIFY( c1 != c2 );
+  VERIFY( c3 != c2 );
+  VERIFY( c1 == c3 );
+  VERIFY( c2 == traits_type::eof() );
+  VERIFY( strb_01.str() == str_tmp );
+  VERIFY( str_tmp.size() == strb_01.str().size() );
   // test for replacing char with identical one
   strb_01.str(str_01); //reset
   strmsz_1 = strb_01.in_avail();
@@ -254,15 +252,15 @@ bool test04() {
   c1 = strb_01.sgetc(); //"my'k'onos. . . or what?"
   c2 = strb_01.sputbackc('y');//"mykonos. . . or what?"
   c3 = strb_01.sgetc();
-  test &= c1 != c2;
-  test &= c3 == c2;
-  test &= c1 != c3;
-  test &= strb_01.str() == str_01;
-  test &= str_01.size() == strb_01.str().size();
+  VERIFY( c1 != c2 );
+  VERIFY( c3 == c2 );
+  VERIFY( c1 != c3 );
+  VERIFY( strb_01.str() == str_01 );
+  VERIFY( str_01.size() == strb_01.str().size() );
   //test for ios_base::out
   strmsz_2 = strb_03.in_avail();
   c4 = strb_03.sputbackc('x');
-  test &= c4 == traits_type::eof();
+  VERIFY( c4 == traits_type::eof() );
 
   // int_type sungetc()
   // if in_cur not avail, return pbackfail(), else decrement and
@@ -274,24 +272,24 @@ bool test04() {
   c1 = strb_01.sgetc(); //"mykonos. . . 'o'r what?"
   c2 = strb_01.sungetc();//"mykonos. . . or what?"
   c3 = strb_01.sgetc();
-  test &= c1 != c2;
-  test &= c3 == c2;
-  test &= c1 != c3;
-  test &= c2 == ' ';
-  test &= strb_01.str() == str_01;
-  test &= str_01.size() == strb_01.str().size();
+  VERIFY( c1 != c2 );
+  VERIFY( c3 == c2 );
+  VERIFY( c1 != c3 );
+  VERIFY( c2 == ' ' );
+  VERIFY( strb_01.str() == str_01 );
+  VERIFY( str_01.size() == strb_01.str().size() );
   //test for _in_cur == _in_beg
   strb_01.str(str_tmp);
   strmsz_1 = strb_01.in_avail();
   c1 = strb_01.sgetc(); //"'m'ykonos. . . or what?"
   c2 = strb_01.sungetc();//"mykonos. . . or what?"
   c3 = strb_01.sgetc();
-  test &= c1 != c2;
-  test &= c3 != c2;
-  test &= c1 == c3;
-  test &= c2 == traits_type::eof();
-  test &= strb_01.str() == str_01;
-  test &= str_01.size() == strb_01.str().size();
+  VERIFY( c1 != c2 );
+  VERIFY( c3 != c2 );
+  VERIFY( c1 == c3 );
+  VERIFY( c2 == traits_type::eof() );
+  VERIFY( strb_01.str() == str_01 );
+  VERIFY( str_01.size() == strb_01.str().size() );
   // test for replacing char with identical one
   strb_01.str(str_01); //reset
   strmsz_1 = strb_01.in_avail();
@@ -300,15 +298,15 @@ bool test04() {
   c1 = strb_01.sgetc(); //"my'k'onos. . . or what?"
   c2 = strb_01.sungetc();//"mykonos. . . or what?"
   c3 = strb_01.sgetc();
-  test &= c1 != c2;
-  test &= c3 == c2;
-  test &= c1 != c3;
-  test &= strb_01.str() == str_01;
-  test &= str_01.size() == strb_01.str().size();
+  VERIFY( c1 != c2 );
+  VERIFY( c3 == c2 );
+  VERIFY( c1 != c3 );
+  VERIFY( strb_01.str() == str_01 );
+  VERIFY( str_01.size() == strb_01.str().size() );
   //test for ios_base::out
   strmsz_2 = strb_03.in_avail();
   c4 = strb_03.sungetc();
-  test &= c4 == traits_type::eof();
+  VERIFY( c4 == traits_type::eof() );
 
   // BUFFER MANAGEMENT & POSITIONING
   // sync
@@ -321,9 +319,9 @@ bool test04() {
   // pubsetbuf(char_type* s, streamsize n)
   str_tmp = std::string("naaaah, go to cebu");
   strb_01.pubsetbuf(const_cast<char*> (str_tmp.c_str()), str_tmp.size());
-  test &= strb_01.str() == str_tmp;
+  VERIFY( strb_01.str() == str_tmp );
   strb_01.pubsetbuf(0,0);
-  test &= strb_01.str() == str_tmp;
+  VERIFY( strb_01.str() == str_tmp );
 
   // seekoff
   // pubseekoff(off_type off, ios_base::seekdir way, ios_base::openmode which)
@@ -339,31 +337,31 @@ bool test04() {
   //beg
   pt_1 = strb_01.pubseekoff(2, std::ios_base::beg);
   off_1 = pt_1;
-  test &= off_1 >= 0;
+  VERIFY( off_1 >= 0 );
   c1 = strb_01.snextc(); //current in pointer +1
-  test &= c1 == 'o';
+  VERIFY( c1 == 'o' );
   c2 = strb_01.sputc('x');  //test current out pointer
   str_tmp = std::string("myxonos. . . or what?");
-  test &= strb_01.str() == str_tmp;
+  VERIFY( strb_01.str() == str_tmp );
   //cur
   pt_1 = strb_01.pubseekoff(2, std::ios_base::cur);
   off_1 = pt_1;
-  test &= off_1 == -1; // can't seekoff for in and out + cur in sstreams
+  VERIFY( off_1 == -1 ); // can't seekoff for in and out + cur in sstreams
   pt_1 = strb_01.pubseekoff(2, std::ios_base::cur, std::ios_base::in);
   off_1 = pt_1;
   pt_2 = strb_01.pubseekoff(2, std::ios_base::cur, std::ios_base::in);
   off_2 = pt_2;
-  test &= off_2 == off_1 + 2;
+  VERIFY( off_2 == off_1 + 2 );
   c1 = strb_01.snextc(); //current in pointer + 1
-  test &= c1 == ' ';
+  VERIFY( c1 == ' ' );
   c2 = strb_01.sputc('x');  //test current out pointer
   str_tmp = std::string("myxxnos. . . or what?");
-  test &= strb_01.str() == str_tmp;
+  VERIFY( strb_01.str() == str_tmp );
   //end
   pt_2 = strb_01.pubseekoff(2, std::ios_base::end);
   off_1 = pt_2;
-  test &= off_1 == -1; // not a valid position
-  test &= strb_01.str() == str_tmp;
+  VERIFY( off_1 == -1 ); // not a valid position
+  VERIFY( strb_01.str() == str_tmp );
   // end part two (from the filebuf tests)
   strb_01.pubseekoff(0, std::ios_base::end);
   strmsz_1 = strb_01.in_avail(); // 0 cuz at the end
@@ -371,16 +369,16 @@ bool test04() {
   c2 = strb_01.sungetc();
   strmsz_2 = strb_01.in_avail(); // 1
   c3 = strb_01.sgetc();
-  test &= c1 != c2;
-  test &= strmsz_2 != strmsz_1;
-  test &= strmsz_2 == 1;
+  VERIFY( c1 != c2 );
+  VERIFY( strmsz_2 != strmsz_1 );
+  VERIFY( strmsz_2 == 1 );
   // end part three
   strmsz_1 = strb_01.str().size();
   strmsz_2 = strb_01.sputn(" ravi shankar meets carlos santana in LoHa", 90);
   strb_01.pubseekoff(0, std::ios_base::end);
   strb_01.sputc('<');
   str_tmp = strb_01.str();
-  test &= str_tmp.size() == strmsz_1 + strmsz_2 + 1;
+  VERIFY( str_tmp.size() == strmsz_1 + strmsz_2 + 1 );
   // IN
   // OUT
 
@@ -394,23 +392,23 @@ bool test04() {
   //beg
   pt_1 = strb_01.pubseekoff(2, std::ios_base::beg);
   off_1 = pt_1;
-  test &= off_1 >= 0;
+  VERIFY( off_1 >= 0 );
   pt_1 = strb_01.pubseekoff(0, std::ios_base::cur, std::ios_base::out);
   off_1 = pt_1;
   c1 = strb_01.snextc(); //current in pointer +1
-  test &= c1 == 'o';
+  VERIFY( c1 == 'o' );
   c2 = strb_01.sputc('x');  //test current out pointer
   str_tmp = std::string("myxonos. . . or what?");
-  test &= strb_01.str() == str_tmp;
+  VERIFY( strb_01.str() == str_tmp );
   strb_01.pubsync(); //resets pointers
   pt_2 = strb_01.pubseekpos(pt_1, std::ios_base::in|std::ios_base::out);
   off_2 = pt_2;
-  test &= off_1 == off_2;
+  VERIFY( off_1 == off_2 );
   c3 = strb_01.snextc(); //current in pointer +1
-  test &= c1 == c3;
+  VERIFY( c1 == c3 );
   c2 = strb_01.sputc('x');  //test current out pointer
   str_tmp = std::string("myxonos. . . or what?");
-  test &= strb_01.str() == str_tmp;
+  VERIFY( strb_01.str() == str_tmp );
 
   // VIRTUALS (indirectly tested)
   // underflow

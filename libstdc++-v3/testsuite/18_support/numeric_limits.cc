@@ -21,9 +21,7 @@
 // 18.2.1.1 template class numeric_limits
 
 #include <limits>
-#ifdef DEBUG_ASSERT
-  #include <assert.h>
-#endif
+#include <debug_assert.h>
 
 
 template<typename T>
@@ -44,36 +42,36 @@ bool test01()
   bool test = true;
   std::numeric_limits< A<B> > obj;
 
-  test &= !obj.is_specialized;
-  test &= obj.min() == 0;
-  test &= obj.max() == 0;
-  test &= obj.digits ==  0;
-  test &= obj.digits10 == 0;
-  test &= !obj.is_signed;
-  test &= !obj.is_integer;
-  test &= !obj.is_exact;
-  test &= obj.radix == 0;
-  test &= obj.epsilon() == 0;
-  test &= obj.round_error() == 0;
-  test &= obj.min_exponent == 0;
-  test &= obj.min_exponent10 == 0;
-  test &= obj.max_exponent == 0;
-  test &= obj.max_exponent10 == 0;
-  test &= !obj.has_infinity;
-  test &= !obj.has_quiet_NaN;
-  test &= !obj.has_signaling_NaN;
-  test &= !obj.has_denorm;
-  test &= !obj.has_denorm_loss;
-  test &= obj.infinity() == 0;
-  test &= obj.quiet_NaN() == 0;
-  test &= obj.signaling_NaN() == 0;
-  test &= obj.denorm_min() == 0;
-  test &= !obj.is_iec559;
-  test &= !obj.is_bounded;
-  test &= !obj.is_modulo;
-  test &= !obj.traps;
-  test &= !obj.tinyness_before;
-  test &= obj.round_style == std::round_toward_zero;
+  VERIFY( !obj.is_specialized );
+  VERIFY( obj.min() == 0 );
+  VERIFY( obj.max() == 0 );
+  VERIFY( obj.digits ==  0 );
+  VERIFY( obj.digits10 == 0 );
+  VERIFY( !obj.is_signed );
+  VERIFY( !obj.is_integer );
+  VERIFY( !obj.is_exact );
+  VERIFY( obj.radix == 0 );
+  VERIFY( obj.epsilon() == 0 );
+  VERIFY( obj.round_error() == 0 );
+  VERIFY( obj.min_exponent == 0 );
+  VERIFY( obj.min_exponent10 == 0 );
+  VERIFY( obj.max_exponent == 0 );
+  VERIFY( obj.max_exponent10 == 0 );
+  VERIFY( !obj.has_infinity );
+  VERIFY( !obj.has_quiet_NaN );
+  VERIFY( !obj.has_signaling_NaN );
+  VERIFY( !obj.has_denorm );
+  VERIFY( !obj.has_denorm_loss );
+  VERIFY( obj.infinity() == 0 );
+  VERIFY( obj.quiet_NaN() == 0 );
+  VERIFY( obj.signaling_NaN() == 0 );
+  VERIFY( obj.denorm_min() == 0 );
+  VERIFY( !obj.is_iec559 );
+  VERIFY( !obj.is_bounded );
+  VERIFY( !obj.is_modulo );
+  VERIFY( !obj.traps );
+  VERIFY( !obj.tinyness_before );
+  VERIFY( obj.round_style == std::round_toward_zero );
 
 #ifdef DEBUG_ASSERT
   assert(test);

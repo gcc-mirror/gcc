@@ -31,9 +31,7 @@
 
 #include <streambuf>
 #include <ostream>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 class testbuf : public std::streambuf
 {
@@ -50,12 +48,12 @@ public:
   check_pointers()
   { 
     bool test = true;
-    test &= this->eback() == NULL;
-    test &= this->gptr() == NULL;
-    test &= this->egptr() == NULL;
-    test &= this->pbase() == NULL;
-    test &= this->pptr() == NULL;
-    test &= this->epptr() == NULL;
+    VERIFY( this->eback() == NULL );
+    VERIFY( this->gptr() == NULL );
+    VERIFY( this->egptr() == NULL );
+    VERIFY( this->pbase() == NULL );
+    VERIFY( this->pptr() == NULL );
+    VERIFY( this->epptr() == NULL );
     return test;
   }
 
@@ -103,33 +101,33 @@ void test01()
   // default ctor initializes 
   // - all pointer members to null pointers
   // - locale to current global locale
-  test &= buf01.check_pointers();
-  test &= buf01.getloc() == std::locale();
+  VERIFY( buf01.check_pointers() );
+  VERIFY( buf01.getloc() == std::locale() );
 
   // 27.5.2.3.1 get area
   // 27.5.2.2.3 get area
   // 27.5.2.4.3 get area
   int i01 = 3;
   buf01.pub_setg(lit01, lit01, (lit01 + i01));
-  test &= i01 == buf01.in_avail();
+  VERIFY( i01 == buf01.in_avail() );
 
-  test &= buf01.pub_uflow() == lit01[0];
-  test &= buf01.sgetc() == traits_type::to_int_type(lit01[1]);
-  test &= buf01.pub_uflow() == lit01[1];
-  test &= buf01.sgetc() == traits_type::to_int_type(lit01[2]);
-  test &= buf01.pub_uflow() == lit01[2];
-  test &= buf01.sgetc() == traits_type::eof();
+  VERIFY( buf01.pub_uflow() == lit01[0] );
+  VERIFY( buf01.sgetc() == traits_type::to_int_type(lit01[1]) );
+  VERIFY( buf01.pub_uflow() == lit01[1] );
+  VERIFY( buf01.sgetc() == traits_type::to_int_type(lit01[2]) );
+  VERIFY( buf01.pub_uflow() == lit01[2] );
+  VERIFY( buf01.sgetc() == traits_type::eof() );
 
   // pbackfail
   buf01.pub_setg(lit01, lit01, (lit01 + i01));
-  test &= i01 == buf01.in_avail();
+  VERIFY( i01 == buf01.in_avail() );
   int_type intt01 = traits_type::to_int_type('b');
-  test &= traits_type::eof() == buf01.pub_pbackfail(intt01);
+  VERIFY( traits_type::eof() == buf01.pub_pbackfail(intt01) );
 
   // overflow
-  test &= traits_type::eof() == buf01.pub_overflow(intt01);
-  test &= traits_type::eof() == buf01.pub_overflow();
-  test &= buf01.sgetc() == traits_type::to_int_type(lit01[0]);
+  VERIFY( traits_type::eof() == buf01.pub_overflow(intt01) );
+  VERIFY( traits_type::eof() == buf01.pub_overflow() );
+  VERIFY( buf01.sgetc() == traits_type::to_int_type(lit01[0]) );
 
   // sputn/xsputn
   char* lit02 = "isotope 217: the unstable molecule on thrill jockey";
@@ -139,16 +137,16 @@ void test01()
 
   buf01.pub_setp(carray, (carray + i02));
   buf01.sputn(lit02, 0);
-  test &= carray[0] == 0;
-  test &= lit02[0] == 'i';
+  VERIFY( carray[0] == 0 );
+  VERIFY( lit02[0] == 'i' );
   buf01.sputn(lit02, 1);
-  test &= lit02[0] == carray[0];
-  test &= lit02[1] == 's';
-  test &= carray[1] == 0;
+  VERIFY( lit02[0] == carray[0] );
+  VERIFY( lit02[1] == 's' );
+  VERIFY( carray[1] == 0 );
   buf01.sputn(lit02 + 1, 10);
-  test &= memcmp(lit02, carray, 10) == 0;
+  VERIFY( memcmp(lit02, carray, 10) == 0 );
   buf01.sputn(lit02 + 11, 20);
-  test &= memcmp(lit02, carray, 30) == 0;
+  VERIFY( memcmp(lit02, carray, 30) == 0 );
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -168,8 +166,8 @@ void test02()
   // default ctor initializes 
   // - all pointer members to null pointers
   // - locale to current global locale
-  test &= buf01.check_pointers();
-  test &= buf01.getloc() == std::locale();
+  VERIFY( buf01.check_pointers() );
+  VERIFY( buf01.getloc() == std::locale() );
 
   // 27.5.2.2.5 Put area
   size_t i01 = traits_type::length(lit01);
@@ -178,13 +176,13 @@ void test02()
   
   buf01.pub_setg(lit01, lit01, lit01 + i01);
   buf01.sgetn(carray01, 0);
-  test &= carray01[0] == 0;
+  VERIFY( carray01[0] == 0 );
   buf01.sgetn(carray01, 1);
-  test &= carray01[0] == 'c';
+  VERIFY( carray01[0] == 'c' );
   buf01.sgetn(carray01 + 1, i01 - 1);
-  test &= carray01[0] == 'c';
-  test &= carray01[1] == 'h';
-  test &= carray01[i01 - 1] == 'k';
+  VERIFY( carray01[0] == 'c' );
+  VERIFY( carray01[1] == 'h' );
+  VERIFY( carray01[i01 - 1] == 'k' );
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -227,7 +225,7 @@ void test03()
   test01 += print('x');
   test01 += print("pipo");
 
-  test &= test01 == control01;
+  VERIFY( test01 == control01 );
 #ifdef DEBUG_ASSERT
   assert(test);
 #endif

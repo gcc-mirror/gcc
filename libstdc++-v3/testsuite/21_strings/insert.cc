@@ -22,9 +22,7 @@
 
 #include <string>
 #include <stdexcept>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 int test01(void)
 {
@@ -56,13 +54,13 @@ int test01(void)
   csz02 = str02.size();
   try {
     str03.insert(csz01 + 1, str02, 0, 5);
-    test &= false;
+    VERIFY( false );
   }		 
   catch(std::out_of_range& fail) {
-    test &= true;
+    VERIFY( true );
   }
   catch(...) {
-    test &= false;
+    VERIFY( false );
   }
 
   str03 = str01; 
@@ -70,13 +68,13 @@ int test01(void)
   csz02 = str02.size();
   try {
     str03.insert(0, str02, csz02 + 1, 5);
-    test &= false;
+    VERIFY( false );
   }		 
   catch(std::out_of_range& fail) {
-    test &= true;
+    VERIFY( true );
   }
   catch(...) {
-    test &= false;
+    VERIFY( false );
   }
 
   csz01 = str01.max_size();
@@ -86,39 +84,39 @@ int test01(void)
     csz02 = str02.size();
     try {
       str03.insert(0, str02, 0, 5);
-      test &= false;
+      VERIFY( false );
     }		 
     catch(std::length_error& fail) {
-      test &= true;
+      VERIFY( true );
     }
     catch(...) {
-      test &= false;
+      VERIFY( false );
     }
   }
   catch(std::bad_alloc& failure){
-    test &= true; 
+    VERIFY( true ); 
   }
   catch(std::exception& failure){
-    test &= false;
+    VERIFY( false );
   }
 
   str03 = str01; 
   csz01 = str03.size();
   csz02 = str02.size();
   str03.insert(13, str02, 0, 12); 
-  test&= str03 == "rodeo beach, baker beach,marin";
+  VERIFY( str03 == "rodeo beach, baker beach,marin" );
 
   str03 = str01; 
   csz01 = str03.size();
   csz02 = str02.size();
   str03.insert(0, str02, 0, 12); 
-  test&= str03 == "baker beach,rodeo beach, marin";
+  VERIFY( str03 == "baker beach,rodeo beach, marin" );
 
   str03 = str01; 
   csz01 = str03.size();
   csz02 = str02.size();
   str03.insert(csz01, str02, 0, csz02); 
-  test&= str03 == "rodeo beach, marinbaker beach, san francisco";
+  VERIFY( str03 == "rodeo beach, marinbaker beach, san francisco" );
 
   // string& insert(size_type __p, const string& string);
   // insert(p1, str, 0, npos)
@@ -126,47 +124,47 @@ int test01(void)
   csz01 = str03.size();
   csz02 = str02.size();
   str03.insert(csz01, str02); 
-  test&= str03 == "rodeo beach, marinbaker beach, san francisco";
+  VERIFY( str03 == "rodeo beach, marinbaker beach, san francisco" );
 
   str03 = str01; 
   csz01 = str03.size();
   csz02 = str02.size();
   str03.insert(0, str02); 
-  test&= str03 == "baker beach, san franciscorodeo beach, marin";
+  VERIFY( str03 == "baker beach, san franciscorodeo beach, marin" );
 
   // string& insert(size_type __p, const char* s, size_type n);
   // insert(p1, string(s,n))
   str03 = str02; 
   csz01 = str03.size();
   str03.insert(0, "-break at the bridge", 20); 
-  test&= str03 == "-break at the bridgebaker beach, san francisco";
+  VERIFY( str03 == "-break at the bridgebaker beach, san francisco" );
 
   // string& insert(size_type __p, const char* s);
   // insert(p1, string(s))
   str03 = str02; 
   str03.insert(0, "-break at the bridge"); 
-  test&= str03 == "-break at the bridgebaker beach, san francisco";
+  VERIFY( str03 == "-break at the bridgebaker beach, san francisco" );
 
   // string& insert(size_type __p, size_type n, char c)
   // insert(p1, string(n,c))
   str03 = str02; 
   csz01 = str03.size();
   str03.insert(csz01, 5, 'z'); 
-  test&= str03 == "baker beach, san franciscozzzzz";
+  VERIFY( str03 == "baker beach, san franciscozzzzz" );
 
   // iterator insert(iterator p, char c)
   // inserts a copy of c before the character referred to by p
   str03 = str02; 
   citerator cit01 = str03.begin();
   str03.insert(cit01, 'u'); 
-  test&= str03 == "ubaker beach, san francisco";
+  VERIFY( str03 == "ubaker beach, san francisco" );
 
   // iterator insert(iterator p, size_type n,  char c)
   // inserts n copies of c before the character referred to by p
   str03 = str02; 
   cit01 = str03.begin();
   str03.insert(cit01, 5, 'u'); 
-  test&= str03 == "uuuuubaker beach, san francisco";
+  VERIFY( str03 == "uuuuubaker beach, san francisco" );
 
   // template<inputit>
   //   void 
@@ -176,12 +174,12 @@ int test01(void)
   str03 = str02; 
   csz01 = str03.size();
   str03.insert(str03.begin(), str01.begin(), str01.end()); 
-  test&= str03 == "rodeo beach, marinbaker beach, san francisco";
+  VERIFY( str03 == "rodeo beach, marinbaker beach, san francisco" );
 
   str03 = str02; 
   csz01 = str03.size();
   str03.insert(str03.end(), str01.begin(), str01.end()); 
-  test&= str03 == "baker beach, san franciscorodeo beach, marin";
+  VERIFY( str03 == "baker beach, san franciscorodeo beach, marin" );
 
 #ifdef DEBUG_ASSERT
   assert(test);

@@ -30,9 +30,7 @@
 // 27.4.3 template class fpos
 
 #include <ios>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 void test01()
 {
@@ -61,7 +59,7 @@ void test01()
 // operators, increment and deincrement operators need to be in place.
   pos01.state(state02);
   state01 = pos01.state();
-  test &= state01 == state02;
+  VERIFY( state01 == state02 );
 #endif
   
 #ifdef DEBUG_ASSERT
@@ -87,43 +85,43 @@ void test02()
   // p(i), p = i
   std::streampos pos01(i02);
   std::streampos pos02 = i02;
-  test &= pos01 == pos02;
+  VERIFY( pos01 == pos02 );
   
   // p(o), p = o 
   // NB: P(o) is only required.
   std::streampos pos03(off02);
   std::streampos pos04 = off02;
-  test &= pos03 == pos04;
+  VERIFY( pos03 == pos04 );
   
   // O(p)
   std::streamoff off03(pos04);
-  test &= off03 == off02;
+  VERIFY( off03 == off02 );
 
   // p == q, p!= q
-  test &= pos01 == pos02;
-  test &= pos02 != pos03;
+  VERIFY( pos01 == pos02 );
+  VERIFY( pos02 != pos03 );
 
   // q = p + o
   // p += o
   pos03 = pos03 + off02;
   pos04 += off02;
-  test &= pos03 == pos04;
+  VERIFY( pos03 == pos04 );
 
   // q = p - o
   // p -= o
   pos03 = pos03 - off02;
   pos04 -= off02;
-  test &= pos03 == pos04;
+  VERIFY( pos03 == pos04 );
 
   // o = p - q
-  test &= 0 == pos03 - pos04;
+  VERIFY( 0 == pos03 - pos04 );
 
   // streamsize -> streamoff
   // streamoff -> streamsize 
   off01 = off02;
   std::streamsize size01(off02);
   std::streamoff off04(size01);
-  test &= off01 == off04;
+  VERIFY( off01 == off04 );
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -152,14 +150,14 @@ void test03()
   // equality/inequality with const args
   const std::streampos pos02(54);
   std::streampos pos03(44);
-  test &= !(pos03 == pos02);
-  test &= pos03 != pos02;
-  test &= !(pos02 == pos03);
-  test &= pos02 != pos03;
+  VERIFY( !(pos03 == pos02) );
+  VERIFY( pos03 != pos02 );
+  VERIFY( !(pos02 == pos03) );
+  VERIFY( pos02 != pos03 );
 
   // default values
   std::streampos pos04;
-  test &= (std::streamoff)pos04 == 0; 
+  VERIFY( (std::streamoff)pos04 == 0 ); 
 
 #ifdef DEBUG_ASSERT
   assert(test);

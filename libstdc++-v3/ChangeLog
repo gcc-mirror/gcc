@@ -1,3 +1,12 @@
+2000-08-14  Brent Verner <brent@rcfile.org>
+
+	* testsuite/debug_assert.h: new file
+	* testsuite/*/*.cc: s/test\s*&=([^;]+);/VERIFY($1);/g
+	changed conditional #include <c?assert.?h?> to
+	unconditional #include <debug_assert.h>
+	* mkcheck.in: added $SRC_DIR/testsuite to include search path
+	for testsuite compile command.
+
 2000-08-14  Levente Farkas  <lfarkas@mindmaker.hu>
 
 	* bits/std_fstream.h: Remove duplicate typdefs for ofstream and

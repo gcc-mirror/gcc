@@ -24,9 +24,7 @@
 // stringbuf* rdbuf() const
 
 #include <sstream>
-#ifdef DEBUG_ASSERT
-  #include <assert.h>
-#endif
+#include <debug_assert.h>
 
 
 void test01()
@@ -47,30 +45,30 @@ void test01()
   state1 = is01.rdstate();
   is01 >> a;
   state2 = is01.rdstate();
-  test &=  a = i01;
+  VERIFY( a = i01 );
   // 22.2.2.1.2 num_get virtual functions
   // p 13
   // in any case, if stage 2 processing was terminated by the test for
   // in == end then err != ios_base::eofbit is performed.
-  test &= state1 != state2;
-  test &= state2 == stateeof; 
+  VERIFY( state1 != state2 );
+  VERIFY( state2 == stateeof ); 
 
   is01.str(str01);
   is01 >> b;
-  test &=  b != a; 
+  VERIFY( b != a ); 
   // as is01.good() is false, istream::sentry blocks extraction.
 
   is01.clear();
   state1 = is01.rdstate();
   is01 >> b;
   state2 = is01.rdstate();
-  test &=  b == a; 
-  test &= state1 != state2;
-  test &= state2 == stateeof; 
+  VERIFY( b == a ); 
+  VERIFY( state1 != state2 );
+  VERIFY( state2 == stateeof ); 
 
   // string str() const
   str02 = is01.str();
-  test &= str01 == str02;
+  VERIFY( str01 == str02 );
 
  #ifdef DEBUG_ASSERT
   assert(test);

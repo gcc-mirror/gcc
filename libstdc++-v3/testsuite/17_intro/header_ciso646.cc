@@ -21,9 +21,7 @@
 // 17.4.1.2 Headers, ciso646
 
 #include <ciso646>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 
 // 2.11 Keywords
@@ -104,11 +102,11 @@ bool test02()
   int  int1 = 45;
   int  int2 = 0;
   
-  test &= arg1 && int1;
-  test &= arg1 and int1;
+  VERIFY( arg1 && int1 );
+  VERIFY( arg1 and int1 );
 
-  test &= (arg1 && arg2) == (arg1 and arg2);
-  test &= (arg1 && int1) == (arg1 and int1);
+  VERIFY( (arg1 && arg2) == (arg1 and arg2) );
+  VERIFY( (arg1 && int1) == (arg1 and int1) );
 
 #ifdef DEBUG_ASSERT
   assert(test);

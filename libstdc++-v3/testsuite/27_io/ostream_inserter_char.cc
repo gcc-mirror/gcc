@@ -24,9 +24,7 @@
 #include <ostream>
 #include <sstream>
 #include <fstream>
-#ifdef DEBUG_ASSERT
-  #include <assert.h>
-#endif
+#include <debug_assert.h>
 
 // ofstream
 bool test01()
@@ -75,7 +73,7 @@ bool test02(void)
   oss01.flags(std::ios_base::left);
   oss01 << str01;
   tmp = oss01.str();
-  test &= tmp == "00000";
+  VERIFY( tmp == "00000" );
 
   std::string str02 = "1";
   std::ostringstream oss02;
@@ -84,7 +82,7 @@ bool test02(void)
   oss02.flags(std::ios_base::left);
   oss02 << str02;
   tmp = oss02.str();
-  test &= tmp == "10000";
+  VERIFY( tmp == "10000" );
 
   std::string str03 = "909909";
   std::ostringstream oss03;
@@ -93,7 +91,7 @@ bool test02(void)
   oss03.flags(std::ios_base::left);
   oss03 << str03;
   tmp = oss03.str();
-  test &= tmp == "909909";
+  VERIFY( tmp == "909909" );
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -116,7 +114,7 @@ bool test03(void)
   oss01.flags(std::ios_base::right);
   oss01 << str01;
   tmp = oss01.str();
-  test &= tmp == "00000";
+  VERIFY( tmp == "00000" );
 
   std::string str02 = "1";
   std::ostringstream oss02;
@@ -125,7 +123,7 @@ bool test03(void)
   oss02.flags(std::ios_base::right);
   oss02 << str02;
   tmp = oss02.str();
-  test &= tmp == "00001";
+  VERIFY( tmp == "00001" );
 
   std::string str03 = "909909";
   std::ostringstream oss03;
@@ -134,7 +132,7 @@ bool test03(void)
   oss03.flags(std::ios_base::right);
   oss03 << str03;
   tmp = oss03.str();
-  test &= tmp == "909909";
+  VERIFY( tmp == "909909" );
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -164,10 +162,10 @@ bool test04() {
   for (int i = 0; i < i_max; ++i) 
     oss_02 << "Test: " << i << std::endl;
   str_tmp = oss_02.str();
-  test &= !oss_02.bad();
-  test &= oss_02.good();
-  test &= str_tmp != str_01;
-  test &= str_tmp.size() == 2390;
+  VERIFY( !oss_02.bad() );
+  VERIFY( oss_02.good() );
+  VERIFY( str_tmp != str_01 );
+  VERIFY( str_tmp.size() == 2390 );
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -207,8 +205,8 @@ bool test05()
   sstr02 << str01;
   str05 = sstr01.str();
   str10 = sstr02.str();
-  test &= str05 == str01;
-  test &= str10 == str01;
+  VERIFY( str05 == str01 );
+  VERIFY( str10 == str01 );
 
   // test 2: in | out 
   std::ostringstream sstr04(str01,  std::ios_base::out | std::ios_base::in);
@@ -216,8 +214,8 @@ bool test05()
   sstr05 << str01;
   str05 = sstr04.str();
   str10 = sstr05.str();
-  test &= str05 == str01;
-  test &= str10 == str01;
+  VERIFY( str05 == str01 );
+  VERIFY( str10 == str01 );
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -236,21 +234,21 @@ void test06()
 
   // normal
   std::ostringstream ostr1("mos def");
-  test &= ostr1.str() == "mos def"; 
+  VERIFY( ostr1.str() == "mos def" ); 
   ostr1 << " & talib kweli";  // should overwrite first part of buffer
-  test &= ostr1.str() == " & talib kweli";
+  VERIFY( ostr1.str() == " & talib kweli" );
   ostr1 << " are black star";  // should append to string from above
-  test &= ostr1.str() != carray01;
-  test &= ostr1.str() == " & talib kweli are black star";
+  VERIFY( ostr1.str() != carray01 );
+  VERIFY( ostr1.str() == " & talib kweli are black star" );
 
   // appending
   std::ostringstream ostr2("blackalicious", 
 			   std::ios_base::out | std::ios_base::ate);
-  test &= ostr2.str() == "blackalicious"; 
+  VERIFY( ostr2.str() == "blackalicious" ); 
   ostr2 << " NIA ";  // should not overwrite first part of buffer
-  test &= ostr2.str() == "blackalicious NIA ";
+  VERIFY( ostr2.str() == "blackalicious NIA " );
   ostr2 << "4: deception (5:19)";  // should append to full string from above
-  test &= ostr2.str() == "blackalicious NIA 4: deception (5:19)";
+  VERIFY( ostr2.str() == "blackalicious NIA 4: deception (5:19)" );
 
 #ifdef DEBUG_ASSERT
   assert(test);

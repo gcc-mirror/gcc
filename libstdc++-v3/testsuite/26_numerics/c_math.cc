@@ -20,38 +20,48 @@
 // USA.
 
 #include <cmath>
-#include <cassert>
+#include <debug_assert.h>
 
 // test compilation.
-void test01()
+int
+test01()
 {
-    float a = 1.f;
-    float b;
-    std::modf(a, &b);
+  float a = 1.f;
+  float b;
+  std::modf(a, &b);
+  return 0;
 }
 
 // need more extravagant checks than this, of course, but this used to core...
-void test02()
+int
+test02()
 {
   sin(static_cast<float>(0));
+  return 0;
 }
 
 // as did this.
-void test03()
+int
+test03()
 {
   double powtest = pow(2., 0);
+  return 0;
 }
 
 // this used to abort.
-void test04()
+int
+test04()
 {
+  bool test = true;
   float x[2] = {1, 2};
   float y = 3.4;
   std::modf(y, &x[0]);
-  assert (x[1] == 2);
+  VERIFY(x[1] == 2);
+  return 0;
 }
 
-int main()
+int 
+main()
 {
   test01();
   test02();
@@ -59,3 +69,4 @@ int main()
   test04();
   return 0;
 }
+

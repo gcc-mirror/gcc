@@ -31,9 +31,7 @@
 
 #include <locale>
 // NB: Don't include any other headers in this file.
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 class gnu_ctype: public std::ctype<char> {};
 
@@ -59,37 +57,37 @@ void test01()
   char c_array[len + 1];
 
   // bool is(mask m, char c) const;
-  test &= gctype.is(std::ctype_base::space, c30);
-  test &= gctype.is(std::ctype_base::upper, c00);
-  test &= gctype.is(std::ctype_base::lower, c10);
-  test &= gctype.is(std::ctype_base::digit, c20);
-  test &= gctype.is(std::ctype_base::punct, c40);
-  test &= gctype.is(std::ctype_base::alpha, c50);
-  test &= gctype.is(std::ctype_base::alpha, c60);
-  test &= gctype.is(std::ctype_base::xdigit, c20);
-  test &= !gctype.is(std::ctype_base::xdigit, c80);
-  test &= gctype.is(std::ctype_base::alnum, c50);
-  test &= gctype.is(std::ctype_base::alnum, c20);
-  test &= gctype.is(std::ctype_base::graph, c40);
-  test &= gctype.is(std::ctype_base::graph, c20);
+  VERIFY( gctype.is(std::ctype_base::space, c30) );
+  VERIFY( gctype.is(std::ctype_base::upper, c00) );
+  VERIFY( gctype.is(std::ctype_base::lower, c10) );
+  VERIFY( gctype.is(std::ctype_base::digit, c20) );
+  VERIFY( gctype.is(std::ctype_base::punct, c40) );
+  VERIFY( gctype.is(std::ctype_base::alpha, c50) );
+  VERIFY( gctype.is(std::ctype_base::alpha, c60) );
+  VERIFY( gctype.is(std::ctype_base::xdigit, c20) );
+  VERIFY( !gctype.is(std::ctype_base::xdigit, c80) );
+  VERIFY( gctype.is(std::ctype_base::alnum, c50) );
+  VERIFY( gctype.is(std::ctype_base::alnum, c20) );
+  VERIFY( gctype.is(std::ctype_base::graph, c40) );
+  VERIFY( gctype.is(std::ctype_base::graph, c20) );
 
   // char toupper(char c) const
   c100 = gctype.toupper(c10);
-  test &= c100 == c00;
+  VERIFY( c100 == c00 );
 
   // char tolower(char c) const
   c100 = gctype.tolower(c00);
-  test &= c100 == c10;
+  VERIFY( c100 == c10 );
 
   // char toupper(char* low, const char* hi) const
   std::char_traits<char>::copy(c_array, strlit02, len + 1);
   gctype.toupper(c_array, c_array + len);
-  test &= !std::char_traits<char>::compare(c_array, strlit01, len - 1);
+  VERIFY( !std::char_traits<char>::compare(c_array, strlit01, len - 1) );
 
   // char tolower(char* low, const char* hi) const
   std::char_traits<char>::copy(c_array, strlit01, len + 1);
   gctype.tolower(c_array, c_array + len);
-  test &= !std::char_traits<char>::compare(c_array, strlit02, len - 1);
+  VERIFY( !std::char_traits<char>::compare(c_array, strlit02, len - 1) );
 
 
 #ifdef DEBUG_ASSERT

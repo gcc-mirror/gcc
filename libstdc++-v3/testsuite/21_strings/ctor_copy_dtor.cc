@@ -23,9 +23,7 @@
 #include <new>
 #include <string>
 #include <stdexcept>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 int test01(void)
 {
@@ -43,22 +41,22 @@ int test01(void)
   csz01 = str01.size();
   try {
     std::string str03(str01, csz01 + 1);
-    test &= false;
+    VERIFY( false );
   }		 
   catch(std::out_of_range& fail) {
-    test &= true;
+    VERIFY( true );
   }
   catch(...) {
-    test &= false;
+    VERIFY( false );
   }
 
   try {
     std::string str03(str01, csz01);
-    test &= str03.size() == 0;
-    test &= str03.size() <= str03.capacity();
+    VERIFY( str03.size() == 0 );
+    VERIFY( str03.size() <= str03.capacity() );
   }		 
   catch(...) {
-    test &= false;
+    VERIFY( false );
   }
 
 
@@ -68,13 +66,13 @@ int test01(void)
   // should not crash, but what gets constructed is a bit arbitrary.
   try {
     std::string str03(str_lit01, csz01 + 1);
-    test &= true;
+    VERIFY( true );
   }		 
   catch(std::length_error& fail) {
-    test &= true;
+    VERIFY( true );
   }
   catch(...) {
-    test &= false;
+    VERIFY( false );
   }
 
   // NB: As strlen(str_lit01) != csz01, this test is undefined. It
@@ -82,79 +80,79 @@ int test01(void)
   // The "maverick's" of all string objects.
   try {
     std::string str04(str_lit01, npos); 
-    test &= true;
+    VERIFY( true );
   }		 
   catch(std::length_error& fail) {
-    test &= true;
+    VERIFY( true );
   }
   catch(...) {
-    test &= false;
+    VERIFY( false );
   }
 
   // Build a maxsize-1 lengthed string consisting of all A's
   try {
     std::string str03(csz01 - 1, 'A');
-    test &= str03.size() == csz01 - 1;
-    test &= str03.size() <= str03.capacity();
+    VERIFY( str03.size() == csz01 - 1 );
+    VERIFY( str03.size() <= str03.capacity() );
   }		 
   // NB: bad_alloc is regrettable but entirely kosher for
   // out-of-memory situations.
   catch(std::bad_alloc& fail) {
-    test &= true;
+    VERIFY( true );
   }
   catch(...) {
-    test &= false;
+    VERIFY( false );
   }
 
 
   // basic_string(const char* s, const allocator& a = allocator())
   std::string str04(str_lit01);
-  test &= str01 == str04;
+  VERIFY( str01 == str04 );
 
 
   // basic_string(size_type n, char c, const allocator& a = allocator())
   csz01 = str01.max_size();
   try {
     std::string str03(csz01 + 1, 'z');
-    test &= false;
+    VERIFY( false );
   }		 
   catch(std::length_error& fail) {
-    test &= true;
+    VERIFY( true );
   }
   catch(...) {
-    test &= false;
+    VERIFY( false );
   }
 
   try {
     std::string str04(npos, 'b'); // the "maverick's" of all string objects.
-    test &= false;
+    VERIFY( false );
   }		 
   catch(std::length_error& fail) {
-    test &= true;
+    VERIFY( true );
   }
   catch(...) {
-    test &= false;
+    VERIFY( false );
   }
 
   try {
     std::string str03(csz01 - 1, 'z');
-    test &= str03.size() != 0;
-    test &= str03.size() <= str03.capacity();
+    VERIFY( str03.size() != 0 );
+    VERIFY( str03.size() <= str03.capacity() );
   }		 
   // NB: bad_alloc is regrettable but entirely kosher for
   // out-of-memory situations.
   catch(std::bad_alloc& fail) {
-    test &= true;
+    VERIFY( true );
   }
   catch(...) {
-    test &= false;
+    VERIFY( false );
   }
 
 
   // template<typename _InputIter>
   //   basic_string(_InputIter begin, _InputIter end, const allocator& a)
   std::string str06(str01.begin(), str01.end());
-  test &= str06 == str01;
+  VERIFY( str06 == str01 );
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -170,7 +168,7 @@ void test02()
   //   basic_string(_InputIter begin, _InputIter end, const allocator& a)
   // where _InputIter is integral [21.3.1 para 15]
   std::string s(10,0);
-  test &= s.size() == 10;
+  VERIFY( s.size() == 10 );
 #ifdef DEBUG_ASSERT
   assert(test);
 #endif

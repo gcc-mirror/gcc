@@ -22,9 +22,7 @@
 
 #include <string>
 #include <stdexcept>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 bool test01(void)
 {
@@ -42,45 +40,45 @@ bool test01(void)
   // const_reference operator[] (size_type pos) const;
   csz01 = str01.size();
   cref cref1 = str01[csz01 - 1];
-  test &= cref1 == 'a';
+  VERIFY( cref1 == 'a' );
   cref cref2 = str01[csz01];
-  test &= cref2 == char();
+  VERIFY( cref2 == char() );
 
   // reference operator[] (size_type pos);
   csz02 = str02.size();
   ref ref1 = str02[csz02 - 1];
-  test &= ref1 == 'a';
+  VERIFY( ref1 == 'a' );
   ref ref2 = str02[1];
-  test &= ref2 == '4';
+  VERIFY( ref2 == '4' );
 
   // const_reference at(size_type pos) const;
   csz01 = str01.size();
   cref cref3 = str01.at(csz01 - 1);
-  test &= cref3 == 'a';
+  VERIFY( cref3 == 'a' );
   try {
     cref cref4 = str01.at(csz01);
-    test &= false; // Should not get here, as exception thrown.
+    VERIFY( false ); // Should not get here, as exception thrown.
   }
   catch(std::out_of_range& fail) {
-    test &= true;
+    VERIFY( true );
   }
   catch(...) {
-    test &= false;
+    VERIFY( false );
   }
 
   // reference at(size_type pos);
   csz01 = str02.size();
   ref ref3 = str02.at(csz02 - 1);
-  test &= ref3 == 'a';
+  VERIFY( ref3 == 'a' );
   try {
     ref ref4 = str02.at(csz02);
-    test &= false; // Should not get here, as exception thrown.
+    VERIFY( false ); // Should not get here, as exception thrown.
   }
   catch(std::out_of_range& fail) {
-    test &= true;
+    VERIFY( true );
   }
   catch(...) {
-    test &= false;
+    VERIFY( false );
   }
 
 #ifdef DEBUG_ASSERT

@@ -31,9 +31,7 @@
 #include <sstream>
 #include <locale>
 #include <iomanip>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 struct MyNP : std::numpunct<char>
 {
@@ -44,7 +42,8 @@ struct MyNP : std::numpunct<char>
 std::string MyNP::do_truename()  const { static std::string s("yea"); return s; }
 std::string MyNP::do_falsename() const { static std::string s("nay"); return s; }
 
-void test01()
+int
+test01()
 {
   std::cout << true << " " << false << std::endl;
   std::cout << std::boolalpha;
@@ -71,9 +70,11 @@ void test01()
 #ifdef DEBUG_ASSERT
   assert (std::cout.good());
 #endif
+  return 0;
 }
 
-void test02()
+int
+test02()
 {
   bool test = true;
   const std::string strue("true");
@@ -88,19 +89,21 @@ void test02()
 
   ostr01 << true;
   str02 = ostr01.str();
-  test &= str02 == strue;
+  VERIFY( str02 == strue );
 
   ostr01.str(str01);
   ostr01 << false;
   str02 = ostr01.str();
-  test &= str02 == sfalse;
+  VERIFY( str02 == sfalse );
 
 #ifdef DEBUG_ASSERT
   assert(test);
 #endif
+  return 0;
 }
 
-int main() {
+int 
+main() {
   test01();
   test02();
   return 0;

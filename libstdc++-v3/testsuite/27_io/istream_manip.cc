@@ -23,9 +23,7 @@
 #include <istream>
 #include <sstream>
 #include <stdexcept>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 bool test01(void)
 {
@@ -44,36 +42,36 @@ bool test01(void)
   std::istringstream iss02(str01);
   
   iss01 >> str04;
-  test &= str04.size() != str01.size();
-  test &= str04 == "santa";
+  VERIFY( str04.size() != str01.size() );
+  VERIFY( str04 == "santa" );
 
   iss02 >> std::ws;
   iss02 >> str05;
-  test &= str05.size() != str01.size();
-  test &= str05 == "santa";
-  test &= str05 == str04;
+  VERIFY( str05.size() != str01.size() );
+  VERIFY( str05 == "santa" );
+  VERIFY( str05 == str04 );
 
   iss01 >> str04;
-  test &= str04.size() != str01.size();
-  test &= str04 == "barbara";
+  VERIFY( str04.size() != str01.size() );
+  VERIFY( str04 == "barbara" );
   
   iss02 >> std::ws;
   iss02 >> str05;
-  test &= str05.size() != str01.size();
-  test &= str05 == "barbara";
-  test &= str05 == str04;
+  VERIFY( str05.size() != str01.size() );
+  VERIFY( str05 == "barbara" );
+  VERIFY( str05 == str04 );
 
   flag3 = std::ios_base::eofbit;
   flag4 = std::ios_base::badbit;
   flag5 = std::ios_base::failbit;
-  test &= !iss01.fail();
-  test &= !iss02.fail();
-  test &= !iss01.eof();
-  test &= !iss02.eof();
+  VERIFY( !iss01.fail() );
+  VERIFY( !iss02.fail() );
+  VERIFY( !iss01.eof() );
+  VERIFY( !iss02.eof() );
 
   iss01 >> std::ws;
-  test &= !iss01.fail();
-  test &= iss01.eof();
+  VERIFY( !iss01.fail() );
+  VERIFY( iss01.eof() );
 
 #ifdef DEBUG_ASSERT
   assert(test);

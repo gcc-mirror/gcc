@@ -22,9 +22,7 @@
 
 #include <string>
 #include <stdexcept>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 // Do a quick sanity check on known problems with element access and
 // ref-counted strings. These should all pass, regardless of the
@@ -60,48 +58,48 @@ bool test01(void)
   str03 = str01;
   it1 = str01.begin();
   *it1 = 'x';
-  test &= str01[0] == 'x';
-  test &= str03[0] == 'm';
+  VERIFY( str01[0] == 'x' );
+  VERIFY( str03[0] == 'm' );
 
   str03 = str01; 
   csz01 = str01.size();
   rit1 = str01.rbegin(); // NB: Pointing at one-past the end, so ...
   *rit1 = 'z'; 		 // ... but it's taken care of here 
-  test &= str01[csz01 - 1] == 'z';
-  test &= str03[csz01 - 1] == 'y';
+  VERIFY( str01[csz01 - 1] == 'z' );
+  VERIFY( str03[csz01 - 1] == 'y' );
 
   str03 = str01;
   csz01 = str01.size();
   std::string::reference r1 = str01.at(csz01 - 2);
-  test &= str03 == str01;
+  VERIFY( str03 == str01 );
   r1 = 'd';
-  test &= str01[csz01 - 2] == 'd';
-  test &= str03[csz01 - 2] == 'a';
+  VERIFY( str01[csz01 - 2] == 'd' );
+  VERIFY( str03[csz01 - 2] == 'a' );
 
   str03 = str01; 
   csz01 = str01.size();
   std::string::reference r2 = str01[csz01 - 3];
-  test &= str03 == str01;
+  VERIFY( str03 == str01 );
   r2 = 'w'; 
-  test &= str01[csz01 - 3] == 'w';
-  test &= str03[csz01 - 3] == 'b';
+  VERIFY( str01[csz01 - 3] == 'w' );
+  VERIFY( str03[csz01 - 3] == 'b' );
 
   str03 = str01;
   csz02 = str01.size();
   it1 = str01.end();
-  test &= str03 == str01;
+  VERIFY( str03 == str01 );
   --it1;
   *it1 = 'q'; 
-  test &= str01[csz02 - 1] == 'q';
-  test &= str03[csz02 - 1] == 'z';
+  VERIFY( str01[csz02 - 1] == 'q' );
+  VERIFY( str03[csz02 - 1] == 'z' );
 
   str03 = str01;
   rit1 = str01.rend();
-  test &= str03 == str01;
+  VERIFY( str03 == str01 );
   --rit1; 	
   *rit1 = 'p'; 
-  test &= str01[0] == 'p';
-  test &= str03[0] == 'x';
+  VERIFY( str01[0] == 'p' );
+  VERIFY( str03[0] == 'x' );
 
   // need to also test for const begin/const end
 #ifdef DEBUG_ASSERT
@@ -129,39 +127,39 @@ bool test02(void)
   std::string str05 = str02; // optional, so that begin below causes a mutate
   std::string::iterator p = str02.insert(str02.begin(), ' ');
   std::string str03 = str02;
-  test &= str03 == str02;
+  VERIFY( str03 == str02 );
   *p = '!';
-  test &= *str03.c_str() == ' ';
+  VERIFY( *str03.c_str() == ' ' );
   str03[0] = '@';
-  test &= str02[0] == '!';
-  test &= *p == '!';
-  test &= str02 != str05;
-  test &= str02 != str03;
+  VERIFY( str02[0] == '!' );
+  VERIFY( *p == '!' );
+  VERIFY( str02 != str05 );
+  VERIFY( str02 != str03 );
 
   std::string str10 = str01;
   std::string::iterator p2 = str10.insert(str10.begin(), 'a');
   std::string str11 = str10;
   *p2 = 'e';
-  test &= str11 != str10;
+  VERIFY( str11 != str10 );
 
   std::string str06 = str01;
   std::string str07 = str06; // optional, so that begin below causes a mutate
   p = str06.erase(str06.begin());
   std::string str08 = str06;
-  test &= str08 == str06;
+  VERIFY( str08 == str06 );
   *p = '!';
-  test &=  *str08.c_str() == 't';
+  VERIFY( *str08.c_str() == 't' );
   str08[0] = '@';
-  test &= str06[0] == '!';
-  test &= *p == '!';
-  test &= str06 != str07;
-  test &= str06 != str08;
+  VERIFY( str06[0] == '!' );
+  VERIFY( *p == '!' );
+  VERIFY( str06 != str07 );
+  VERIFY( str06 != str08 );
 
   std::string str12 = str01;
   p2 = str12.erase(str12.begin(), str12.begin() + str12.size() - 1);
   std::string str13 = str12;
   *p2 = 'e';
-  test &= str12 != str13;
+  VERIFY( str12 != str13 );
 
 #ifdef DEBUG_ASSERT
   assert(test);

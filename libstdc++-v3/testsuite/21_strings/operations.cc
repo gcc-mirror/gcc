@@ -22,9 +22,7 @@
 
 #include <string>
 #include <cstdio>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 int test01(void)
 {

@@ -31,9 +31,7 @@
 
 #include <ios>
 #include <sstream>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 void test01()
 {
@@ -60,27 +58,27 @@ void test01()
   // void init(sreambuf* sb)
   // NB: This is protected so need to go through fstream/stringstream
   // Can double-check the accuracy of the above initializations though.
-  test &= ios_00.rdbuf() == 0;
-  test &= ios_00.tie() == 0;
-  test &= ios_00.rdstate() == std::ios_base::badbit;
-  test &= ios_00.exceptions() == std::ios_base::goodbit;
+  VERIFY( ios_00.rdbuf() == 0 );
+  VERIFY( ios_00.tie() == 0 );
+  VERIFY( ios_00.rdstate() == std::ios_base::badbit );
+  VERIFY( ios_00.exceptions() == std::ios_base::goodbit );
   flag02 = ios_00.flags();
-  test &= flag02 == flag01;
-  test &= ios_00.width() == 0;  
-  test &= ios_00.precision() == 6;  
-  test &= ios_00.fill() == ios_00.widen(' ');
-  test &= ios_00.getloc() == glocale;    
+  VERIFY( flag02 == flag01 );
+  VERIFY( ios_00.width() == 0 );  
+  VERIFY( ios_00.precision() == 6 );  
+  VERIFY( ios_00.fill() == ios_00.widen(' ') );
+  VERIFY( ios_00.getloc() == glocale );    
 
-  test &= ios_01.rdbuf() == &strb_01;
-  test &= ios_01.tie() == 0;
-  test &= ios_01.rdstate() == std::ios_base::goodbit;
-  test &= ios_01.exceptions() == std::ios_base::goodbit;
+  VERIFY( ios_01.rdbuf() == &strb_01 );
+  VERIFY( ios_01.tie() == 0 );
+  VERIFY( ios_01.rdstate() == std::ios_base::goodbit );
+  VERIFY( ios_01.exceptions() == std::ios_base::goodbit );
   flag02 = ios_01.flags();
-  test &= flag02 == flag01;
-  test &= ios_01.width() == 0;  
-  test &= ios_01.precision() == 6;  
-  test &= ios_01.fill() == ios_01.widen(' ');
-  test &= ios_01.getloc() == glocale;    
+  VERIFY( flag02 == flag01 );
+  VERIFY( ios_01.width() == 0 );  
+  VERIFY( ios_01.precision() == 6 );  
+  VERIFY( ios_01.fill() == ios_01.widen(' ') );
+  VERIFY( ios_01.getloc() == glocale );    
 
 #ifdef DEBUG_ASSERT
   assert(test);

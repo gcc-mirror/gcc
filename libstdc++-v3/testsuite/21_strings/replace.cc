@@ -22,9 +22,7 @@
 
 #include <string>
 #include <stdexcept>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 bool test01(void)
 {
@@ -60,23 +58,23 @@ bool test01(void)
   std::string x = X;
 
   char ch = x[0];
-  test &= ch == 'H';
+  VERIFY( ch == 'H' );
 
   std::string z = x.substr(2, 3);
-  test &= z == "llo";
+  VERIFY( z == "llo" );
 
   x.replace(2, 2, "r");
-  test &= x == "Hero";
+  VERIFY( x == "Hero" );
 
   x = X;
   x.replace(0, 1, "j");
-  test &= x == "jello";
+  VERIFY( x == "jello" );
 
   int ar[] = { 'H', 'e', 'l', 'l', 'o' };
   x.replace(std::find(x.begin(), x.end(), 'l'), 
 	    std::find(x.rbegin(), x.rend(), 'l').base(), ar, 
 	    ar + sizeof(ar) / sizeof(ar[0]));
-  test &= x == "jeHelloo";
+  VERIFY( x == "jeHelloo" );
 #endif
 
 #ifdef DEBUG_ASSERT

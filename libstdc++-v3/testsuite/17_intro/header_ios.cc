@@ -21,9 +21,7 @@
 // 17.4.1.2 Headers, ios
 
 #include <ios>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 
 int main(void)

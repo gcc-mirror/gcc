@@ -21,9 +21,7 @@
 // 17.4.1.2 Headers, istream
 
 #include <istream>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 
 int main(void)

@@ -32,12 +32,11 @@
 #include <vector>
 #include <string>
 #include <sstream>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 // 01: sanity checks for strings, stringbufs
-std::string test01()
+std::string 
+test01()
 {
   bool test = false;
 
@@ -47,7 +46,7 @@ std::string test01()
   std::string::iterator __i_end = str01.end();
   std::string::size_type len = str01.size();
   test = __i_start == __i_end;
-  test &= len == 0;
+  VERIFY( len == 0 );
 
   // Full string sanity check.
   std::string str02("these golden days, i spend waiting for you:\n 
@@ -55,8 +54,8 @@ std::string test01()
   __i_start = str02.begin();
   __i_end = str02.end();
   len = str02.size();
-  test &= __i_start != __i_end;
-  test &= len != 0;
+  VERIFY( __i_start != __i_end );
+  VERIFY( len != 0 );
  
   // Test an empty ostring stream for sanity.
   std::ostringstream ostrstream0;
@@ -64,16 +63,17 @@ std::string test01()
   __i_start = str03.begin();
   __i_end = str03.end();
   len = str03.size();
-  test &= __i_start == __i_end;
-  test &= len == 0;
-  test &= str01 == str03;
+  VERIFY( __i_start == __i_end );
+  VERIFY( len == 0 );
+  VERIFY( str01 == str03 );
 
   return str02;
 }
 
 
-bool test02(void) {
-
+int
+test02()
+{
   bool test = true;
 
   //
@@ -96,8 +96,8 @@ bool test02(void) {
 
   std::string msg01 = ostrst01.str();
   std::string msg02 = ostrst02.str();
-  test &= msg01 != msg02;
-  test &= msg02 != blank;
+  VERIFY( msg01 != msg02 );
+  VERIFY( msg02 != blank );
 
   //
   // 2: istringstream
@@ -113,10 +113,10 @@ bool test02(void) {
   istrst01 >> i2 >> pi2 >> d2 >> pd2;
   //istrst01 >> i2;
   //istrst01 >> pi2;
-  test &= i2 == i;
-  test &= d2 == d;
-  test &= pd2 == pd;
-  test &= pi2 == pi;
+  VERIFY( i2 == i );
+  VERIFY( d2 == d );
+  VERIFY( pd2 == pd );
+  VERIFY( pi2 == pi );
 #endif
 
   // stringstream
@@ -125,7 +125,7 @@ bool test02(void) {
   std::stringstream ss1(str1, std::ios_base::in|std::ios_base::out);
   std::stringstream ss2(str3, std::ios_base::in|std::ios_base::out);
 
-  return test;
+  return 0;
 }
 
 // user-reported error
@@ -135,25 +135,29 @@ public:
   derived_oss() : std::ostringstream() {}
 };
 
-bool test03()
+int
+test03()
 {
   bool test = true;
   derived_oss yy;
   yy << "buena vista social club\n";
-  test &= yy.str() == std::string("buena vista social club\n");
+  VERIFY( yy.str() == std::string("buena vista social club\n") );
 
 #ifdef DEBUG_ASSERT
   assert(test);
 #endif
 
-  return test;
+  return 0;
 }
 
-int main() 
+int 
+main() 
 {
   test01();
   test02();
   test03();
+  
+  return 0;
 }
 
 

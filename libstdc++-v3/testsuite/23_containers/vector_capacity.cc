@@ -22,9 +22,7 @@
 // 23.2.4.2 vector capacity
 
 #include <vector>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 template<typename T>
   struct A { };
@@ -42,17 +40,17 @@ bool test01()
   size_type sz01 = vec01.capacity();
   vec01.reserve(100);
   size_type sz02 = vec01.capacity();
-  test &= sz02 >= sz01;
+  VERIFY( sz02 >= sz01 );
   
   sz01 = vec01.size() + 5;
   vec01.resize(sz01);
   sz02 = vec01.size();
-  test &= sz01 == sz02;
+  VERIFY( sz01 == sz02 );
 
   sz01 = vec01.size() - 5;
   vec01.resize(sz01);
   sz02 = vec01.size();
-  test &= sz01 == sz02;
+  VERIFY( sz01 == sz02 );
 
 #ifdef DEBUG_ASSERT
   assert(test);

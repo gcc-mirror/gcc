@@ -31,9 +31,7 @@
 
 #include <istream>
 #include <sstream>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 void test01()
 {
@@ -48,17 +46,17 @@ void test01()
   
   // test negatives
   std::istream::sentry sentry01(istr01);	
-  test &= bool(sentry01) == false; 
+  VERIFY( bool(sentry01) == false ); 
 
   std::istream::sentry sentry02(istr01, true);
-  test &= bool(sentry02) == false; 
+  VERIFY( bool(sentry02) == false ); 
 
   // positive tests
   std::istream::sentry sentry03(istr02);	
-  test &= bool(sentry03) == true; 
+  VERIFY( bool(sentry03) == true ); 
 
   std::istream::sentry sentry04(istr02, true);
-  test &= bool(sentry04) == true; 
+  VERIFY( bool(sentry04) == true ); 
 
 #ifdef DEBUG_ASSERT
   assert(test);
