@@ -2819,10 +2819,6 @@ On some machines, the definition
 @item PUSH_ROUNDING (@var{npushed})
 A C expression that is the number of bytes actually pushed onto the
 stack when an instruction attempts to push @var{npushed} bytes.
-@findex PUSH_ROUNDING
-@item PUSH_ROUNDING (@var{npushed})
-A C expression that is the number of bytes actually pushed onto the
-stack when an instruction attempts to push @var{npushed} bytes.
 
 On some machines, the definition
 

@@ -1,3 +1,7 @@
+2001-01-29  lars brinkhoff  <lars@nocrew.org>
+
+        * tm.texi (PUSH_ROUNDING): Remove duplicate lines.
+
 2001-01-29  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 	    Jeff Law <law@redhat.com>
 
