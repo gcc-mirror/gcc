@@ -1,3 +1,10 @@
+2003-04-22  David Turner <novalis@gnu.org>
+
+	* gbl-ctors.h: Add special license exception.
+	* libgcc2.h: Likewise.
+	* tsystem.h: Likewise.
+	* gcov-io.h: Likewise.
+
 2003-04-22  David Edelsohn  <edelsohn@gnu.org>
 
 	* fold-const.c (fold_range_test): Use RANGE_TEST_NON_SHORT_CIRCUIT
