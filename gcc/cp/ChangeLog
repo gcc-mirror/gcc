@@ -1,3 +1,8 @@
+2003-06-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/10968
+	* pt.c (mark_decl_instantiated): Set TREE_SYMBOL_REFERENCED.
+
 2003-06-10  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* decl.c (start_cleanup_fn): Move static 'counter' out, mark with GTY.
