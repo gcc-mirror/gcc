@@ -1,8 +1,8 @@
-2001-02-06  Benjamin Kosnik  <bkoz@fillmore.constant.com>
+2001-02-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4 (GLIBCPP_EXPORT_INSTALL_INFO): Deal with library
 	install locations too.
-	* aclocal.m4: Regeneate.
+	* aclocal.m4: Regenerate.
 	* configure.in: Remove USE_LIBDIR.
 	* configure: Regenerate.
 	* src/Makefile.am (toolexecdir): Simplify, use
