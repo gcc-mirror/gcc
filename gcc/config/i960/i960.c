@@ -597,7 +597,7 @@ i960_output_ldconst (dst, src)
     }
   else if (mode == DImode)
     {
-      rtx upperhalf, lowerhalf;
+      rtx upperhalf, lowerhalf, xoperands[2];
       char *string;
 
       if (GET_CODE (src) == CONST_DOUBLE)
@@ -620,9 +620,10 @@ i960_output_ldconst (dst, src)
 	return "movl	%1,%0";
 
       /* Output the upper half with a recursive call.  */
-      string = i960_output_ldconst (gen_rtx (REG, SImode, REGNO (dst) + 1),
-				    upperhalf);
-      output_asm_insn (string);
+      xoperands[0] = gen_rtx (REG, SImode, REGNO (dst) + 1);
+      xoperands[1] = upperhalf;
+      output_asm_insn (i960_output_ldconst (xoperands[0], xoperands[1]),
+		       xoperands);
       /* The lower word is emitted as normally.  */
     }
   else if (mode == SFmode)
