@@ -430,6 +430,7 @@ extensions, accepted by GCC in C89 mode and in C++.
 * Function Names::	Printable strings which are the name of the current
 			 function.
 * Return Address::      Getting the return or frame address of a function.
+* Vector Extensions::   Using vector instructions through built-in functions.
 * Other Builtins::      Other built-in functions.
 * Pragmas::             Pragmas accepted by GCC.
 @end menu
@@ -483,6 +484,7 @@ extensions, accepted by GCC in C89 mode and in C++.
 * Function Names::	Printable strings which are the name of the current
 			 function.
 * Return Address::      Getting the return or frame address of a function.
+* Vector Extensions::   Using vector instructions through built-in functions.
 * Other Builtins::      Other built-in functions.
 * Pragmas::             Pragmas accepted by GCC.
 @end menu
@@ -4146,6 +4148,75 @@ the first frame pointer is properly initialized by the startup code.
 This function should only be used with a non-zero argument for debugging
 purposes.
 @end deftypefn
+
+@node Vector Extensions
+@section Using vector instructions through built-in functions
+
+On some targets, the instruction set contains SIMD vector instructions that
+operate on multiple values contained in one large register at the same time.
+For example, on the i386 the MMX, 3Dnow! and SSE extensions can be used
+this way.
+
+The first step in using these extensions is to provide the necessary data
+types.  This should be done using an appropriate @code{typedef}:
+
+@example
+typedef int v4si __attribute__ ((mode(V4SI)));
+@end example
+
+The base type @code{int} is effectively ignored by the compiler, the
+actual properties of the new type @code{v4si} are defined by the
+@code{__attribute__}.  It defines the machine mode to be used; for vector
+types these have the form @code{VnB}; @code{n} should be the number of
+elements in the vector, and @code{B} should be the base mode of the
+individual elements.  The following can be used as base modes:
+
+@table @code
+@item QI
+An integer that is as wide as the smallest addressable unit, usually 8 bits.
+@item HI
+An integer, twice as wide as a QI mode integer, usually 16 bits.
+@item SI
+An integer, four times as wide as a QI mode integer, usually 32 bits.
+@item DI
+An integer, eight times as wide as a QI mode integer, usually 64 bits.
+@item SF
+A floating point value, as wide as a SI mode integer, usually 32 bits.
+@item DF
+A floating point value, as wide as a DI mode integer, usually 64 bits.
+@end table
+
+Not all base types or combinations are always valid; which modes can be used
+is determined by the target machine.  For example, if targetting the i386 MMX
+extensions, only @code{V8QI}, @code{V4HI} and @code{V2SI} are allowed modes.
+
+There are no @code{V1xx} vector modes - they would be identical to the
+corresponding base mode.
+
+There is no distinction between signed and unsigned vector modes.  This
+distinction is made by the operations that perform on the vectors, not
+by the data type.
+
+The types defined in this manner are somewhat special, they cannot be
+used with most normal C operations (i.e., a vector addition can @emph{not}
+be represented by a normal addition of two vector type variables).  You
+can declare only variables and use them in function calls and returns, as
+well as in assignments and some casts.  It is possible to cast from one
+vector type to another, provided they are of the same size (in fact, you
+can also cast vectors to and from other datatypes of the same size).
+
+A port that supports vector operations provides a set of built-in functions
+that can be used to operate on vectors.  For example, a function to add two
+vectors and multiply the result by a third could look like this:
+
+@example
+v4si f (v4si a, v4si b, v4si c)
+@{
+  v4si tmp = __builtin_addv4si (a, b);
+  return __builtin_mulv4si (tmp, c);
+@}
+
+@end example
 
 @node Other Builtins
 @section Other built-in functions provided by GCC
