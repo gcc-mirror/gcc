@@ -1,3 +1,11 @@
+2001-05-14  Andrew Haley  <aph@redhat.com>
+
+	* reload1.c (copy_eh_notes): New function.
+	(emit_input_reload_insns): Call it.
+	(emit_output_reload_insns): Call it.
+
+	* emit-rtl.c (try_split):  Copy EH notes to sequence.
+
 2001-05-14  Richard Henderson  <rth@redhat.com>
 
 	2001-04-12  Richard Henderson  <rth@redhat.com>
