@@ -2507,7 +2507,7 @@ while (0)
    : (C) == 'C' ? EXTRA_CONSTRAINT_C ((OP), (STR)) \
    : (C) == 'S' ? EXTRA_CONSTRAINT_S ((OP), (STR)) \
    : (C) == 'W' ? EXTRA_CONSTRAINT_W (OP) \
-   : (C) == 'U' ? EXTRA_CONSTRAINT_Z (OP) \
+   : (C) == 'Z' ? EXTRA_CONSTRAINT_Z (OP) \
    : 0)
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
