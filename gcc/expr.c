@@ -8452,6 +8452,9 @@ expand_builtin (exp, target, subtarget, mode, ignore)
  
       return target;
 
+    case BUILT_IN_FMOD:
+      break;
+
       /* __builtin_apply_args returns block of memory allocated on
 	 the stack into which is stored the arg pointer, structure
 	 value address, static chain, and all the registers that might

@@ -1,3 +1,7 @@
+Fri Dec 12 18:54:23 1997  Per Bothner  <bothner@cygnus.com>
+
+	* expr.c (expand_builtin):  Support BUILT_IN_FMOD - just call fmod.
+
 Fri Dec 12 01:19:48 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* flow.c (flow_analysis): Be consistent with find_basic_blocks in
