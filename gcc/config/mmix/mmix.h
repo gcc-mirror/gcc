@@ -119,13 +119,15 @@ struct machine_function
 
 /* Pass on -mset-program-start=N and -mset-data-start=M to the linker.
    Provide default program start 0x100 unless -mno-set-program-start.
-   Link to ELF if requested.  */
+   Don't do this if linking relocatably, with -r.  For a final link,
+   produce mmo, unless ELF is requested or when linking relocatably.  */
 #define LINK_SPEC \
  "%{mset-program-start=*:--defsym __.MMIX.start..text=%*}\
   %{mset-data-start=*:--defsym __.MMIX.start..data=%*}\
   %{!mset-program-start=*:\
-    %{!mno-set-program-start:--defsym __.MMIX.start..text=0x100}}\
-  %{!melf:-m mmo}%{melf:-m elf64mmix}"
+    %{!mno-set-program-start:\
+     %{!r:--defsym __.MMIX.start..text=0x100}}}\
+  %{!melf:%{!r:-m mmo}}%{melf|r:-m elf64mmix}"
 
 /* Put unused option values here.  */
 extern const char *mmix_cc1_ignored_option;
@@ -937,8 +939,8 @@ const_section ()						\
 #define SELECT_SECTION(DECL, RELOC, ALIGN) \
  mmix_select_section (DECL, RELOC, ALIGN)
 
-#define ENCODE_SECTION_INFO(DECL) \
- mmix_encode_section_info (DECL)
+#define ENCODE_SECTION_INFO(DECL, FIRST) \
+ mmix_encode_section_info (DECL, FIRST)
 
 #define STRIP_NAME_ENCODING(VAR, SYM_NAME) \
  (VAR) = mmix_strip_name_encoding (SYM_NAME)

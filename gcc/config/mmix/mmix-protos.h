@@ -75,7 +75,7 @@ extern int mmix_local_alignment PARAMS ((tree, int));
 extern void mmix_setup_incoming_varargs
   PARAMS ((CUMULATIVE_ARGS *, enum machine_mode, tree, int *, int));
 extern void mmix_select_section PARAMS ((tree, int, int));
-extern void mmix_encode_section_info PARAMS ((tree));
+extern void mmix_encode_section_info PARAMS ((tree, int));
 extern void mmix_unique_section PARAMS ((tree, int));
 extern void mmix_asm_output_pool_prologue
   PARAMS ((FILE *, const char *, tree, int));
