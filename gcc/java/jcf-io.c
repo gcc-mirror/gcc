@@ -292,7 +292,7 @@ compare_path (const void *key, const void *entry)
 static int
 java_or_class_file (const struct dirent *entry)
 {
-  const char *base = basename (entry->d_name);
+  const char *base = lbasename (entry->d_name);
   return (fnmatch ("*.java", base, 0) == 0 || 
 	  fnmatch ("*.class", base, 0) == 0);
 }
