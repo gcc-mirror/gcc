@@ -637,6 +637,7 @@ static struct compiler default_compilers[] =
   {".cc", "@c++"},
   {".cxx", "@c++"},
   {".cpp", "@c++"},
+  {".c++", "@c++"},
   {".C", "@c++"},
   {"@c++",
    "cpp -lang-c++ %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
