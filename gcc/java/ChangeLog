@@ -1,3 +1,7 @@
+2002-07-07  Neil Booth  <neil@daikokuya.co.uk>
+
+	* lang.c (java_post_options): Update prototype.
+
 2002-07-05  Roger Sayle  <roger@eyesopen.com>
 
 	* java/builtins.c (initialize_builtins): Ignore the additional

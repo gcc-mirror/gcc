@@ -96,10 +96,10 @@ extern int size_directive_output;
 extern tree last_assemble_variable_decl;
 
 static void general_init PARAMS ((char *));
-static void parse_options_and_default_flags PARAMS ((int, char **));
-static void do_compile PARAMS ((void));
+static bool parse_options_and_default_flags PARAMS ((int, char **));
+static void do_compile PARAMS ((int));
 static void process_options PARAMS ((void));
-static void lang_independent_init PARAMS ((void));
+static void lang_independent_init PARAMS ((int));
 static int lang_dependent_init PARAMS ((const char *));
 static void init_asm_output PARAMS ((const char *));
 static void finalize PARAMS ((void));
@@ -4584,6 +4584,8 @@ general_init (argv0)
 
   xmalloc_set_program_name (progname);
 
+  hex_init ();
+
   gcc_init_libintl ();
 
   /* Trap fatal signals, e.g. SIGSEGV, and convert them to ICE messages.  */
@@ -4614,8 +4616,10 @@ general_init (argv0)
 /* Parse command line options and set default flag values, called
    after language-independent option-independent initialization.  Do
    minimal options processing.  Outputting diagnostics is OK, but GC
-   and identifier hashtables etc. are not initialized yet.  */
-static void
+   and identifier hashtables etc. are not initialized yet.
+
+   Return non-zero to suppress compiler back end initialization.  */
+static bool
 parse_options_and_default_flags (argc, argv)
      int argc;
      char **argv;
@@ -4846,7 +4850,7 @@ parse_options_and_default_flags (argc, argv)
 
   /* All command line options have been parsed; allow the front end to
      perform consistency checks, etc.  */
-  (*lang_hooks.post_options) ();
+  return (*lang_hooks.post_options) ();
 }
 
 /* Process the options that have been parsed.  */
@@ -5025,13 +5029,17 @@ process_options ()
 /* Language-independent initialization, before language-dependent
    initialization.  */
 static void
-lang_independent_init ()
+lang_independent_init (no_backend)
+     int no_backend;
 {
   /* Initialize the garbage-collector, and string pools.  */
   init_ggc ();
 
   init_stringpool ();
   init_obstacks ();
+
+  if (no_backend)
+    return;
 
   /* init_emit_once uses reg_raw_mode and therefore must be called
      after init_regs which initialized reg_raw_mode.  */
@@ -5167,7 +5175,8 @@ finalize ()
 
 /* Initialize the compiler, and compile the input file.  */
 static void
-do_compile ()
+do_compile (no_backend)
+     int no_backend;
 {
   /* The bulk of command line switch processing.  */
   process_options ();
@@ -5178,8 +5187,8 @@ do_compile ()
   timevar_start (TV_TOTAL);
 
   /* Language-independent initialization.  Also sets up GC, identifier
-     hashes etc.  */
-  lang_independent_init ();
+     hashes etc., and the back-end if requested.  */
+  lang_independent_init (no_backend);
 
   /* Language-dependent initialization.  Returns true on success.  */
   if (lang_dependent_init (filename))
@@ -5204,18 +5213,18 @@ toplev_main (argc, argv)
      int argc;
      char **argv;
 {
-  hex_init ();
+  bool no_backend;
 
   /* Initialization of GCC's environment, and diagnostics.  */
   general_init (argv[0]);
 
   /* Parse the options and do minimal processing; basically just
      enough to default flags appropriately.  */
-  parse_options_and_default_flags (argc, argv);
+  no_backend = parse_options_and_default_flags (argc, argv);
 
   /* Exit early if we can (e.g. -help).  */
   if (!errorcount && !exit_after_options)
-    do_compile ();
+    do_compile (no_backend);
 
   if (errorcount || sorrycount)
     return (FATAL_EXIT_CODE);

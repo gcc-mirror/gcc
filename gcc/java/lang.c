@@ -51,7 +51,7 @@ struct string_option
 static const char *java_init PARAMS ((const char *));
 static void java_finish PARAMS ((void));
 static void java_init_options PARAMS ((void));
-static void java_post_options PARAMS ((void));
+static bool java_post_options PARAMS ((void));
 
 static int java_decode_option PARAMS ((int, char **));
 static void put_decl_string PARAMS ((const char *, int));
@@ -780,7 +780,7 @@ java_init_options ()
 }
 
 /* Post-switch processing.  */
-static void
+static bool
 java_post_options ()
 {
   /* Turn off RTL inliner unless -finline-functions was really specified.  */
@@ -789,6 +789,9 @@ java_post_options ()
       flag_no_inline = 1;
       flag_inline_functions = 0;
     }
+
+  /* Initialize the compiler back end.  */
+  return false;
 }
 
 #include "gt-java-lang.h"
