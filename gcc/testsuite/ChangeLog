@@ -1,3 +1,9 @@
+2004-04-29  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* gcc.dg/rs6000-power2-1.c: Change the options to be more correct.
+	* gcc.dg/rs6000-power2-2.c: Change the options to be more correct.
+	Change the asm registers to be in form of frN instead of fN.
+
 2004-04-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-convert-2.c: New test.

@@ -1,13 +1,13 @@
 /* { dg-do assemble { target powerpc-*-* rs6000-*-* }  } */
-/* { dg-options "-O -mpower2 -fno-schedule-insns" } */
+/* { dg-options "-O3 -mcpu=power2 -fno-schedule-insns -w -mhard-float" } */
 /* { dg-final { scan-assembler-not "lfd" } } */
 /* { dg-final { scan-assembler-not "sfd" } } */
 /* { dg-final { scan-assembler "lfq" } } */
 /* { dg-final { scan-assembler "sfq" } } */
 
-register double t1 __asm__("f0");
-register double t2 __asm__("f1");
-register double t3 __asm__("f2"), t4 __asm__("f3");
+register double t1 __asm__("fr0");
+register double t2 __asm__("fr1");
+register double t3 __asm__("fr2"), t4 __asm__("fr3");
 void t(double *a, double *b)
 {
         t1 = a[-1];
