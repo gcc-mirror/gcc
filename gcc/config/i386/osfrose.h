@@ -104,7 +104,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Turn on -pic-extern by default for OSF/rose, -fpic for ELF.  */
 #undef  CC1_SPEC
-#define CC1_SPEC "\
+#define CC1_SPEC "%(cc1_cpu) \
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
 %{!melf: %{!mrose: -mrose }} \
 %{melf: %{!munderscores: %{!mno-underscores: -mno-underscores }} \

@@ -18,6 +18,7 @@
 /* Note, -fpic and -fPIC are equivalent */
 #undef  CPP_SPEC
 #define CPP_SPEC "\
+%(cpp_cpu)
 %{fpic: -D__SHARED__} %{fPIC: %{!fpic: -D__SHARED__}} \
 %{.S:	%{!ansi:%{!traditional:%{!traditional-cpp:%{!ftraditional: -traditional}}}}} \
 %{.S:	-D__LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
@@ -29,7 +30,7 @@
 
 /* -mmcount or -mno-mcount should be used with -pg or -p */
 #undef  CC1_SPEC
-#define CC1_SPEC "%{p: %{!mmcount: %{!mno-mcount: -mno-mcount }}} \
+#define CC1_SPEC "%(cc1_cpu) %{p: %{!mmcount: %{!mno-mcount: -mno-mcount }}} \
 %{!p: %{pg: %{!mmcount: %{!mno-mcount: -mno-mcount }}}}"
 
 /* Note, -D__NO_UNDERSCORES__ -D__ELF__ are provided in the older version of
@@ -37,7 +38,8 @@
    */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
-  "-D__NO_UNDERSCORES__ -D__ELF__ -DOSF -DOSF1 -Di386 -Dunix -Asystem(xpg4) -Asystem(osf1) -Acpu(i386) -Amachine(i386)"
+  "-D__NO_UNDERSCORES__ -D__ELF__ -DOSF -DOSF1 -Dunix \
+   -Asystem(unix) -Asystem(xpg4) -Asystem(osf1)"
 
 /* current OSF/1 doesn't provide separate crti.o and gcrti.o (and also, crtn.o
    and gcrtn.o) for profile.  */

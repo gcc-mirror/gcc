@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "i386/sysv4.h"
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.7 $"
+#define VERSION_INFO2   "$Revision: 1.8 $"
 #endif
 
 #ifndef VERSION_STRING
@@ -144,15 +144,15 @@ Boston, MA 02111-1307, USA.  */
    operate without installing the header files.  */
 
 #undef	CPP_PREDEFINES
-#define CPP_PREDEFINES "-Di386 -D__ix86 -Dunix -DDGUX -D__CLASSIFY_TYPE__=2\
-   -Asystem(unix) -Asystem(svr4) -Acpu(i386) -Amachine(i386)"
+#define CPP_PREDEFINES "-D__ix86 -Dunix -DDGUX -D__CLASSIFY_TYPE__=2\
+   -Asystem(unix) -Asystem(svr4)"
 
    /*
      If not -ansi, -traditional, or restricting include files to one
      specific source target, specify full DG/UX features.
    */
 #undef	CPP_SPEC
-#define	CPP_SPEC "%{!ansi:%{!traditional:-D__OPEN_NAMESPACE__}}"
+#define	CPP_SPEC "%(cpp_cpu) %{!ansi:%{!traditional:-D__OPEN_NAMESPACE__}}"
 
 /* Assembler support (legends for mxdb).  */
 #undef	ASM_SPEC

@@ -63,16 +63,13 @@ Boston, MA 02111-1307, USA. */
    is that args are not accumulated: each new appearance would clobber any
    existing args.  */
 
-#ifdef CPP_PREDEFINES
 #undef CPP_PREDEFINES
-#endif
-
-#define CPP_PREDEFINES "-Di386 -D_WIN32 \
+#define CPP_PREDEFINES "-D_WIN32 \
   -DWINNT  -D_X86_=1 -D__STDC__=1\
   -D__stdcall=__attribute__((__stdcall__)) \
   -D__cdecl=__attribute__((__cdecl__)) \
   -D__declspec(x)=__attribute__((x)) \
-  -Asystem(winnt) -Acpu(i386) -Amachine(i386)"
+  -Asystem(winnt)"
 
 /* Normally, -lgcc is not needed since everything in it is in the DLL, but we
    want to allow things to be added to it when installing new versions of

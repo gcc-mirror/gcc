@@ -10,7 +10,7 @@
 #define TARGET_VERSION fprintf (stderr, " (i386 GNU)");
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__ELF__ -D__i386__ -DMACH -Asystem(mach) \
+#define CPP_PREDEFINES "-D__ELF__ -DMACH -Asystem(mach) \
   -Dunix -Asystem(unix) -Asystem(posix) -D__GNU__ -Asystem(gnu)"
 
 #undef CPP_SPEC

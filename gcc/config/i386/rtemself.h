@@ -83,8 +83,7 @@ Boston, MA 02111-1307, USA.  */
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
     
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES  "-Di386 -Drtems -D__rtems__ \
-   -Asystem(rtems) -Acpu(i386) -Amachine(i386)"
+#define CPP_PREDEFINES  "-Drtems -D__rtems__ -Asystem(rtems)"
 
 /* Get perform_* macros to build libgcc.a.  */
 #include "i386/perform.h"

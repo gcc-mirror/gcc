@@ -22,7 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #include <lynx.h>
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -Di386 -DI386 -DLynx -DIBITS32 -Asystem(unix) -Asystem(lynx) -Acpu(i386) -Amachine(i386)"
+#define CPP_PREDEFINES "-DI386 -DLynx -DIBITS32 -Asystem(unix) -Asystem(lynx)"
 
 /* The prefix to add to user-visible assembler symbols. */
 

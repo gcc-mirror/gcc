@@ -133,7 +133,8 @@ Boston, MA 02111-1307, USA.  */
 /* Names to predefine in the preprocessor for this target machine.  */
 
 #undef	CPP_PREDEFINES
-#define CPP_PREDEFINES "-Di386 -DNeXT -Dunix -D__MACH__ -D__LITTLE_ENDIAN__ -D__ARCHITECTURE__=\"i386\" -Asystem(unix) -Asystem(mach) -Acpu(i386) -Amachine(i386)"
+#define CPP_PREDEFINES "-DNeXT -Dunix -D__MACH__ -D__LITTLE_ENDIAN__ \
+  -D__ARCHITECTURE__=\"i386\" -Asystem(unix) -Asystem(mach)"
 
 /* This accounts for the return pc and saved fp on the i386. */
 

@@ -23,13 +23,13 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA. */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Di386 -D_WIN32 -DWIN32 -D__WIN32__ \
+#define CPP_PREDEFINES "-D_WIN32 -DWIN32 \
   -D__MINGW32__=0.2 -DWINNT  -D_X86_=1 -D__STDC__=1\
   -D__stdcall=__attribute__((__stdcall__)) \
   -D_stdcall=__attribute__((__stdcall__)) \
   -D__cdecl=__attribute__((__cdecl__)) \
   -D__declspec(x)=__attribute__((x)) \
-  -Asystem(winnt) -Acpu(i386) -Amachine(i386)"
+  -Asystem(winnt)"
 
 #undef LIBGCC_SPEC
 #define LIBGCC_SPEC \

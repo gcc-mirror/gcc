@@ -37,7 +37,8 @@ Boston, MA 02111-1307, USA.  */
   (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_NO_FANCY_MATH_387)
 
 /* Run-time target specifications */
-#define CPP_PREDEFINES "-D__unix__ -D__i386__ -D__OpenBSD__ -Asystem(unix) -Asystem(OpenBSD) -Acpu(i386) -Amachine(i386)"
+#define CPP_PREDEFINES "-D__unix__ -D__OpenBSD__ \
+ -Asystem(unix) -Asystem(bsd) -Asystem(OpenBSD)"
 
 /* Layout of source language data types.  */
 

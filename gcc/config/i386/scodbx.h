@@ -53,7 +53,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "-Dunix -DM_UNIX -DM_I386 -DM_COFF -DM_WORDSWAP -Asystem(svr3)"
 
 #undef CPP_SPEC
-#define CPP_SPEC " -Acpu(i386) -Amachine(i386) %{scointl:-DM_INTERNAT}"
+#define CPP_SPEC "%(cpp_cpu) %{scointl:-DM_INTERNAT}"
 
 /* This spec is used for telling cpp whether char is signed or not.  */
 

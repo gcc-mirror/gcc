@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA. */
 #define MD_STARTFILE_PREFIX "/usr/gnu/lib/"
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__i386__ -D_WIN32 -D__WIN32__ \
+#define CPP_PREDEFINES "-D_WIN32 -D__WIN32__ \
   -D_UWIN -DWINNT  -D_X86_=1 -D__STDC__=1 \
   -D__UWIN__ -D__MSVCRT__ \
   -D_STD_INCLUDE_DIR=mingw32 \
@@ -40,7 +40,7 @@ Boston, MA 02111-1307, USA. */
   _D_stdcall=__attribute__((__stdcall__)) \
   -D__cdecl=__attribute__((__cdecl__)) \
   -D__declspec(x)=__attribute__((x)) \
-  -Asystem(winnt) -Acpu(i386) -Amachine(i386)"
+  -Asystem(winnt)"
 
 #undef CPP_SPEC
 #define CPP_SPEC "-remap %(cpp_cpu) %{posix:-D_POSIX_SOURCE} \

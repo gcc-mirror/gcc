@@ -39,11 +39,11 @@ Boston, MA 02111-1307, USA. */
    existing args.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__BEOS__ -D__INTEL__ -Di386 -D_X86_=1 \
+#define CPP_PREDEFINES "-D__BEOS__ -D__INTEL__ -D_X86_=1 \
 -D__stdcall=__attribute__((__stdcall__)) \
 -D__cdecl=__attribute__((__cdecl__)) \
 -D__declspec(x)=__attribute__((x)) \
--Asystem(beos) -Acpu(i386) -Amachine(i386)"
+-Asystem(beos)"
 
 #undef CPP_SPEC
 #define CPP_SPEC "-remap %(cpp_cpu) %{posix:-D_POSIX_SOURCE}"

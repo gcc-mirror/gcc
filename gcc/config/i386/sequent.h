@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Specify predefined symbols in preprocessor.  */
 
-#define CPP_PREDEFINES "-Dunix -Di386 -Dsequent -Asystem(unix) -Acpu(i386) -Amachine(i386)"
+#define CPP_PREDEFINES "-Dunix -Dsequent -Asystem(unix)"
 
 /* Pass -Z and -ZO options to the linker.  */
 

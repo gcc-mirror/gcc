@@ -40,7 +40,7 @@ Boston, MA 02111-1307, USA.  */
 #define HANDLE_SYSV_PRAGMA
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__vxworks -D__i386__"
+#define CPP_PREDEFINES "-D__vxworks"
 
 /* VxWorks does all the library stuff itself.  */
 
