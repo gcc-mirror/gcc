@@ -312,7 +312,14 @@ compute_immediate_uses_for_stmt (tree stmt, int flags, bool (*calc_for)(tree))
 	  if (!IS_EMPTY_STMT (imm_rdef_stmt) && (!calc_for || calc_for (use)))
 	    add_immediate_use (imm_rdef_stmt, stmt);
 	}
-    }
+      
+      FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_ALL_KILLS)
+	{
+	  tree imm_rdef_stmt = SSA_NAME_DEF_STMT (use);
+	  if (!IS_EMPTY_STMT (imm_rdef_stmt) && (!calc_for || calc_for (use)))
+	    add_immediate_use (imm_rdef_stmt, stmt);
+	}
+    }  
 }
 
 

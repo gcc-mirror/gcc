@@ -1,3 +1,89 @@
+2004-10-27  Daniel Berlin <dberlin@dberlin.org>
+	
+	Fix PR tree-optimization/17133
+	
+	* tree-cfg.c (rewrite_to_new_ssa_names_bb): Also rewrite must
+	def kill operand.
+
+	* tree-flow-inline.h: V_MUST_DEF_OP became V_MUST_DEF_RESULT.
+	(get_v_must_def_result_ptr): Modify for new structure of
+	v_must_defs array.
+	(get_v_must_def_kill_ptr): New.
+	(op_iter_next_use): Add support for the kill that occurs in V_MUST_DEFs.
+	(op_iter_next_tree): Ditto. Also V_MAY_DEF_OP became V_MAY_DEF_RESULT.
+	(op_iter_next_def): V_MAY_DEF_OP became V_MAY_DEF_RESULT.
+	(op_iter_init): Initialize new mustu members.
+	(op_iter_next_mustdef): New function.
+	(op_iter_init_mustdef): Ditto.
+
+	* tree-flow.h (rewrite_def_def_chains): New function.
+
+	* tree-into-ssa.c (mark_def_sites): Handle mustdefkill operands.
+	(ssa_mark_def_sites): Ditto.
+	(rewrite_stmt): Ditto.
+	(ssa_rewrite_stmt): Ditto.
+	(rewrite_blocks): Factor out from rewrite_into_ssa.
+	(mark_def_block_sites): Ditto.
+	(rewrite_def_def_chains): New function, just rewrites def-def
+	chains without phi node insertion.
+
+	* tree-pass.h (TODO_fix_def_def_chains): New todo flag.
+
+	* tree-optimize.c (execute_todo): Handle TODO_fix_def_def_chains.	
+
+	* tree-pretty-print.c (dump_vops): Print out MUST_DEF's so that
+	they include the rhs now.
+
+	* tree-ssa-ccp.c (visit_assignment): V_MUST_DEF_OP became
+	V_MUST_DEF_RESULT. 
+
+	* tree-ssa-dce.c (mark_operand_necessary): Add phionly argument.
+	Update callers.
+	(mark_really_necessary_kill_operand_phis): New function.
+	(perform_tree_ssa_dce): Call it.
+	(pass_dce): Add TODO_fix_def_def_chains.
+	(pass_cd_dce): Ditto.
+
+	* tree-ssa-loop-im.c (determine_max_movement): Look at kills as
+	well.
+	(rewrite_mem_refs): Ditto.
+
+	* tree-ssa-loop-manip.c (find_uses_to_rename_stmt): Look at kills
+	as well.
+
+	* tree-ssa-operands.c (allocate_v_may_def_optype):
+	v_may_def_operand_type_t became v_def_use_operand_type_t.
+	(allocate_v_must_def_optype) Ditto.
+	(finalize_ssa_v_must_defs): Update for new operand type, as well
+	as setting the use portion as well.
+	(copy_virtual_operands): Copy the kill operand as well.
+	(create_ssa_artficial_load_stmt): V_MUST_DEF_OP became
+	V_MUST_DEF_RESULT. 
+
+	* tree-ssa-operands.h (v_may_def_operand_type): Renamed to
+	v_def_use_operand_type. 
+	(v_must_def_optype_d): Use v_def_use_operand_type.
+	(V_MUST_DEF_OP_*): Renamed to V_MUST_DEF_RESULT_*
+	(V_MUST_DEF_KILL_*): New macros.
+	(struct ssa_operand_iterator_d): Add num_v_mustu and v_mustu_i
+	members.
+	Rename existing must_i and num_v_must members to mustd_i and
+	num_v_mustd. 
+	(SSA_OP_VMUSTDEFKILL): New flag.
+	(SSA_OP_VIRTUAL_KILLS): New flag.
+	(SSA_OP_ALL_OPERANDS): Add in SSA_OP_ALL_KILLS.
+	(SSA_OP_ALL_KILLS): New flag.
+	(FOR_EACH_SSA_MUSTDEF_OPERAND): New macro.
+
+	* tree-ssa.c (verify_ssa): Verify virtual kills as well.
+
+	* tree-vectorizer.c (vect_create_data_ref_ptr): V_MUST_DEF_OP
+	became V_MUST_DEF_RESULT.
+	(rename_variables_in_bb): Rename kill pointer as well.
+
+	* tree-dfa.c (compute_immediate_uses_for_stmt): Add kills into the
+	immediate uses.
+
 2004-10-27  Richard Sandiford  <rsandifo@redhat.com>
 
 	* dbxout.c (dbxout_source_line): Move declaration of begin_label to

@@ -112,7 +112,7 @@ static void find_control_dependence (struct edge_list *, int);
 static inline basic_block find_pdom (basic_block);
 
 static inline void mark_stmt_necessary (tree, bool);
-static inline void mark_operand_necessary (tree);
+static inline void mark_operand_necessary (tree, bool);
 
 static void mark_stmt_if_obviously_necessary (tree, bool);
 static void find_obviously_necessary_stmts (struct edge_list *);
@@ -234,10 +234,11 @@ mark_stmt_necessary (tree stmt, bool add_to_worklist)
     VARRAY_PUSH_TREE (worklist, stmt);
 }
 
-/* Mark the statement defining operand OP as necessary.  */
+/* Mark the statement defining operand OP as necessary.  PHIONLY is true
+   if we should only mark it necessary if it is a phi node.  */
 
 static inline void
-mark_operand_necessary (tree op)
+mark_operand_necessary (tree op, bool phionly)
 {
   tree stmt;
   int ver;
@@ -253,7 +254,8 @@ mark_operand_necessary (tree op)
   gcc_assert (stmt);
 
   if (NECESSARY (stmt)
-      || IS_EMPTY_STMT (stmt))
+      || IS_EMPTY_STMT (stmt)
+      || (phionly && TREE_CODE (stmt) != PHI_NODE))
     return;
 
   NECESSARY (stmt) = 1;
@@ -592,7 +594,7 @@ propagate_necessity (struct edge_list *el)
             {
 	      tree arg = PHI_ARG_DEF (i, k);
 	      if (TREE_CODE (arg) == SSA_NAME)
-		mark_operand_necessary (arg);
+		mark_operand_necessary (arg, false);
 	    }
 
 	  if (aggressive)
@@ -624,11 +626,79 @@ propagate_necessity (struct edge_list *el)
 	     links).  */
 
 	  FOR_EACH_SSA_TREE_OPERAND (use, i, iter, SSA_OP_ALL_USES)
-	    mark_operand_necessary (use);
+	    mark_operand_necessary (use, false);
 	}
     }
 }
+
+
+/* Propagate necessity around virtual phi nodes used in kill operands.
+   The reason this isn't done during propagate_necessity is because we don't
+   want to keep phis around that are just there for must-defs, unless we
+   absolutely have to.  After we've rewritten the reaching definitions to be
+   correct in the previous part of the fixup routine, we can simply propagate
+   around the information about which of these virtual phi nodes are really
+   used, and set the NECESSARY flag accordingly.
+   Note that we do the minimum here to ensure that we keep alive the phis that
+   are actually used in the corrected SSA form.  In particular, some of these
+   phis may now have all of the same operand, and will be deleted by some
+   other pass.  */
+
+static void
+mark_really_necessary_kill_operand_phis (void)
+{
+  basic_block bb;
+  int i;
+
+  /* Seed the worklist with the new virtual phi arguments and virtual
+     uses */
+  FOR_EACH_BB (bb)
+    {
+      block_stmt_iterator bsi;
+      tree phi;
+      
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+	{
+	  if (!is_gimple_reg (PHI_RESULT (phi)) && NECESSARY (phi))
+	    {
+	      for (i = 0; i < PHI_NUM_ARGS (phi); i++)
+		mark_operand_necessary (PHI_ARG_DEF (phi, i), true);
+	    }
+	}
+      
+      for (bsi = bsi_last (bb); !bsi_end_p (bsi); bsi_prev (&bsi))
+	{
+	  tree stmt = bsi_stmt (bsi);
+	
+	  if (NECESSARY (stmt))
+	    {
+	      use_operand_p use_p;
+	      ssa_op_iter iter;
+	      FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter,
+					SSA_OP_VIRTUAL_USES | SSA_OP_VIRTUAL_KILLS)
+		{
+		  tree use = USE_FROM_PTR (use_p);
+		  mark_operand_necessary (use, true);
+		}
+	    }
+	}
+    }
+  
+  /* Mark all virtual phis still in use as necessary, and all of their
+     arguments that are phis as necessary.  */
+  while (VARRAY_ACTIVE_SIZE (worklist) > 0)
+    {
+      tree use = VARRAY_TOP_TREE (worklist);
+      VARRAY_POP (worklist);
+      
+      for (i = 0; i < PHI_NUM_ARGS (use); i++)
+	mark_operand_necessary (PHI_ARG_DEF (use, i), true);
+    }
+}
+
+
 
+
 /* Eliminate unnecessary statements. Any instruction not marked as necessary
    contributes nothing to the program, and can be deleted.  */
 
@@ -640,7 +710,7 @@ eliminate_unnecessary_stmts (void)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\nEliminating unnecessary statements:\n");
-
+  
   clear_special_calls ();
   FOR_EACH_BB (bb)
     {
@@ -650,23 +720,23 @@ eliminate_unnecessary_stmts (void)
       /* Remove dead statements.  */
       for (i = bsi_start (bb); ! bsi_end_p (i) ; )
 	{
-	  tree t = bsi_stmt (i);
+         tree t = bsi_stmt (i);
 
-	  stats.total++;
+         stats.total++;
 
-	  /* If `i' is not necessary then remove it.  */
-	  if (! NECESSARY (t))
-	    remove_dead_stmt (&i, bb);
-	  else
-	    {
-	      tree call = get_call_expr_in (t);
-	      if (call)
-		notice_special_calls (call);
-	      bsi_next (&i);
-	    }
+         /* If `i' is not necessary then remove it.  */
+         if (! NECESSARY (t))
+           remove_dead_stmt (&i, bb);
+         else
+           {
+             tree call = get_call_expr_in (t);
+             if (call)
+               notice_special_calls (call);
+             bsi_next (&i);
+           }
 	}
     }
-}
+ }
 
 /* Remove dead PHI nodes from block BB.  */
 
@@ -711,6 +781,9 @@ static void
 remove_dead_stmt (block_stmt_iterator *i, basic_block bb)
 {
   tree t = bsi_stmt (*i);
+  def_operand_p def_p;
+
+  ssa_op_iter iter;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -765,9 +838,16 @@ remove_dead_stmt (block_stmt_iterator *i, basic_block bb)
       while (EDGE_COUNT (bb->succs) != 1)
         remove_edge (EDGE_SUCC (bb, 1));
     }
-
-  bsi_remove (i);
-  release_defs (t);
+  
+  FOR_EACH_SSA_DEF_OPERAND (def_p, t, iter, 
+			    SSA_OP_VIRTUAL_DEFS | SSA_OP_VIRTUAL_KILLS)
+    {
+      tree def = DEF_FROM_PTR (def_p);
+      bitmap_set_bit (vars_to_rename,
+		      var_ann (SSA_NAME_VAR (def))->uid);
+    }
+  bsi_remove (i);  
+  release_defs (t); 
 }
 
 /* Print out removed statement statistics.  */
@@ -875,6 +955,7 @@ perform_tree_ssa_dce (bool aggressive)
 
   propagate_necessity (el);
 
+  mark_really_necessary_kill_operand_phis ();
   eliminate_unnecessary_stmts ();
 
   if (aggressive)
@@ -926,7 +1007,7 @@ struct tree_opt_pass pass_dce =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_ggc_collect | TODO_verify_ssa,	/* todo_flags_finish */
+  TODO_fix_def_def_chains |TODO_ggc_collect | TODO_verify_ssa,	/* todo_flags_finish */
   0					/* letter */
 };
 
@@ -943,7 +1024,7 @@ struct tree_opt_pass pass_cd_dce =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_ggc_collect | TODO_verify_ssa | TODO_verify_flow,
+  TODO_fix_def_def_chains | TODO_ggc_collect | TODO_verify_ssa | TODO_verify_flow,
 					/* todo_flags_finish */
   0					/* letter */
 };

@@ -58,17 +58,17 @@ typedef struct use_optype_d GTY(())
 typedef use_optype_t *use_optype;
 
 /* Operand type which stores a def and a use tree.  */
-typedef struct v_may_def_operand_type GTY(())
+typedef struct v_def_use_operand_type GTY(())
 {
   tree def;
   tree use;
-} v_may_def_operand_type_t;
+} v_def_use_operand_type_t;
 
 /* This represents the MAY_DEFS for a stmt.  */
 typedef struct v_may_def_optype_d GTY(())
 {
   unsigned num_v_may_defs; 
-  struct v_may_def_operand_type GTY((length ("%h.num_v_may_defs")))
+  struct v_def_use_operand_type GTY((length ("%h.num_v_may_defs")))
 							      v_may_defs[1];
 } v_may_def_optype_t;
 
@@ -87,7 +87,7 @@ typedef vuse_optype_t *vuse_optype;
 typedef struct v_must_def_optype_d GTY(())
 {
   unsigned num_v_must_defs; 
-  tree GTY((length("%h.num_v_must_defs"))) v_must_defs[1];
+  v_def_use_operand_type_t GTY((length("%h.num_v_must_defs"))) v_must_defs[1];
 } v_must_def_optype_t;
 
 typedef v_must_def_optype_t *v_must_def_optype;
@@ -157,12 +157,14 @@ typedef stmt_operands_t *stmt_operands_p;
 #define V_MUST_DEF_OPS(ANN)		get_v_must_def_ops (ANN)
 #define STMT_V_MUST_DEF_OPS(STMT)	get_v_must_def_ops (stmt_ann (STMT))
 #define NUM_V_MUST_DEFS(OPS)		((OPS) ? (OPS)->num_v_must_defs : 0)
-#define V_MUST_DEF_OP_PTR(OPS, I)	get_v_must_def_op_ptr ((OPS), (I))
-#define V_MUST_DEF_OP(OPS, I)						\
-				(DEF_FROM_PTR (V_MUST_DEF_OP_PTR ((OPS), (I))))
-#define SET_V_MUST_DEF_OP(OPS, I, V)					\
-				(SET_DEF (V_MUST_DEF_OP_PTR ((OPS), (I)), (V)))
-
+#define V_MUST_DEF_RESULT_PTR(OPS, I)	get_v_must_def_result_ptr ((OPS), (I))
+#define V_MUST_DEF_RESULT(OPS, I) \
+				(DEF_FROM_PTR (V_MUST_DEF_RESULT_PTR ((OPS), (I))))
+#define SET_V_MUST_DEF_RESULT(OPS, I, V) \
+				(SET_DEF (V_MUST_DEF_RESULT_PTR ((OPS), (I)), (V)))
+#define V_MUST_DEF_KILL_PTR(OPS, I)  get_v_must_def_kill_ptr ((OPS), (I))
+#define V_MUST_DEF_KILL(OPS, I) (USE_FROM_PTR (V_MUST_DEF_KILL_PTR ((OPS), (I))))
+#define SET_V_MUST_DEF_KILL(OPS, I, V) (SET_USE (V_MUST_DEF_KILL_PTR ((OPS), (I)), (V)))
 
 #define PHI_RESULT_PTR(PHI)	get_phi_result_ptr (PHI)
 #define PHI_RESULT(PHI)		DEF_FROM_PTR (PHI_RESULT_PTR (PHI))
@@ -199,13 +201,15 @@ typedef struct ssa_operand_iterator_d
   int num_vuse;
   int num_v_mayu;
   int num_v_mayd;
-  int num_v_must;
+  int num_v_mustu;
+  int num_v_mustd;
   int use_i;
   int def_i;
   int vuse_i;
   int v_mayu_i;
   int v_mayd_i;
-  int v_must_i;
+  int v_mustu_i;
+  int v_mustd_i;
   stmt_operands_p ops;
   bool done;
 } ssa_op_iter;
@@ -218,13 +222,17 @@ typedef struct ssa_operand_iterator_d
 #define SSA_OP_VMAYUSE		0x08	/* USE portion of V_MAY_DEFS.  */
 #define SSA_OP_VMAYDEF		0x10	/* DEF portion of V_MAY_DEFS.  */
 #define SSA_OP_VMUSTDEF		0x20	/* V_MUST_DEF definitions.  */
+#define SSA_OP_VMUSTDEFKILL     0x40    /* V_MUST_DEF kills.  */
 
 /* These are commonly grouped operand flags.  */
 #define SSA_OP_VIRTUAL_USES	(SSA_OP_VUSE | SSA_OP_VMAYUSE)
 #define SSA_OP_VIRTUAL_DEFS	(SSA_OP_VMAYDEF | SSA_OP_VMUSTDEF)
+#define SSA_OP_VIRTUAL_KILLS    (SSA_OP_VMUSTDEFKILL)
+#define SSA_OP_ALL_VIRTUALS     (SSA_OP_VIRTUAL_USES | SSA_OP_VIRTUAL_KILLS | SSA_OP_VIRTUAL_DEFS)
 #define SSA_OP_ALL_USES		(SSA_OP_VIRTUAL_USES | SSA_OP_USE)
 #define SSA_OP_ALL_DEFS		(SSA_OP_VIRTUAL_DEFS | SSA_OP_DEF)
-#define SSA_OP_ALL_OPERANDS	(SSA_OP_ALL_USES | SSA_OP_ALL_DEFS)
+#define SSA_OP_ALL_KILLS        (SSA_OP_VIRTUAL_KILLS)
+#define SSA_OP_ALL_OPERANDS	(SSA_OP_ALL_USES | SSA_OP_ALL_DEFS | SSA_OP_ALL_KILLS)
 
 /* This macro executes a loop over the operands of STMT specified in FLAG, 
    returning each operand as a 'tree' in the variable TREEVAR.  ITER is an
@@ -257,5 +265,13 @@ typedef struct ssa_operand_iterator_d
   for (op_iter_init_maydef (&(ITER), STMT, &(USEVAR), &(DEFVAR));	\
        !op_iter_done (&(ITER));					\
        op_iter_next_maydef (&(USEVAR), &(DEFVAR), &(ITER)))
+
+/* This macro executes a loop over the V_MUST_DEF operands of STMT.  The def
+   and kill for each V_MUST_DEF is returned in DEFVAR and KILLVAR. 
+   ITER is an ssa_op_iter structure used to control the loop.  */
+#define FOR_EACH_SSA_MUSTDEF_OPERAND(DEFVAR, KILLVAR, STMT, ITER)	\
+  for (op_iter_init_mustdef (&(ITER), STMT, &(KILLVAR), &(DEFVAR));	\
+       !op_iter_done (&(ITER));					\
+       op_iter_next_mustdef (&(KILLVAR), &(DEFVAR), &(ITER)))
 
 #endif  /* GCC_TREE_SSA_OPERANDS_H  */

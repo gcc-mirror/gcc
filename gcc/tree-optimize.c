@@ -420,6 +420,11 @@ execute_todo (int properties, unsigned int flags)
       rewrite_into_ssa (false);
       bitmap_clear (vars_to_rename);
     }
+  if (flags & TODO_fix_def_def_chains)
+    {
+      rewrite_def_def_chains ();
+      bitmap_clear (vars_to_rename);
+    }
 
   if ((flags & TODO_dump_func) && dump_file)
     {

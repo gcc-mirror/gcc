@@ -4542,8 +4542,12 @@ rewrite_to_new_ssa_names_bb (basic_block bb, htab_t map)
 
       v_must_defs = V_MUST_DEF_OPS (ann);
       for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
-	rewrite_to_new_ssa_names_def
-		(V_MUST_DEF_OP_PTR (v_must_defs, i), stmt, map);
+	{
+	  rewrite_to_new_ssa_names_def
+	    (V_MUST_DEF_RESULT_PTR (v_must_defs, i), stmt, map);
+	  rewrite_to_new_ssa_names_use
+	    (V_MUST_DEF_KILL_PTR (v_must_defs, i),  map);
+	}
     }
 
   FOR_EACH_EDGE (e, ei, bb->succs)
