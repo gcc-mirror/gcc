@@ -1,3 +1,7 @@
+2001-02-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mips.h (MULTILIB_ISA_DEFAULT): Don't use #elif.
+
 2001-02-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.md (movdf load split): Pass register number to
