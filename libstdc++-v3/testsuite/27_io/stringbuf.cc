@@ -1,6 +1,6 @@
 // 2002-07-25 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2002 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,9 +50,10 @@ void test01()
 namespace test 
 {
   using namespace std;
+  using __gnu_cxx_test::pod_char;
   typedef short type_t;
   template class basic_stringbuf<type_t, char_traits<type_t> >;
-  template class basic_stringbuf<gnu_char, char_traits<gnu_char> >;
+  template class basic_stringbuf<pod_char, char_traits<pod_char> >;
 } // test
 
 int main() 
