@@ -7615,17 +7615,23 @@ fi
 # Look if the user specified --enable-languages="..."; if not, use
 # the environment variable $LANGUAGES if defined. $LANGUAGES might
 # go away some day.
+# NB:  embedded tabs in this IF block -- do not untabify
 if test x"${enable_languages+set}" != xset; then
 	if test x"${LANGUAGES+set}" = xset; then
-		enable_languages="`echo ${LANGUAGES} | tr ' ' ','`"
+		enable_languages="${LANGUAGES}"
+		echo "configure: warning: setting LANGUAGES is deprecated, use --enable-languages instead" 1>&2
+
 	else
 		enable_languages=all
 	fi
 else
-	if test x"${enable_languages}" = x; then
-		{ echo "configure: error: --enable-languages needs at least one argument" 1>&2; exit 1; }
+	if test x"${enable_languages}" = x ||
+	   test x"${enable_languages}" = xyes;
+	then
+		{ echo "configure: error: --enable-languages needs at least one language argument" 1>&2; exit 1; }
 	fi
 fi
+enable_languages=`echo "${enable_languages}" | sed -e 's/[ 	,][ 	,]*/,/g' -e 's/,$//'`
 
 # First scan to see if an enabled language requires some other language.
 # We assume that a given config-lang.in will list all the language
@@ -7741,7 +7747,7 @@ fi
 
 
 echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles""... $ac_c" 1>&6
-echo "configure:7745: checking whether to enable maintainer-specific portions of Makefiles" >&5
+echo "configure:7751: checking whether to enable maintainer-specific portions of Makefiles" >&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"
