@@ -1,3 +1,10 @@
+2000-02-20  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/inclhack.def(stdio_va_list):
+	typedef needs to be disabled.
+	* fixinc/inclhack.sh: regen
+	* fixinc/fixincl.x: regen
+
 2000-02-20  Geoff Keating  <geoffk@cygnus.com>
 
 	* print-rtl.c (print_rtx): Don't print addresses when
