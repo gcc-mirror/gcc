@@ -303,8 +303,8 @@ static char *reg_last_set_sign_bit_copies;
 struct undo
 {
   int is_int;
-  union {rtx rtx; int i;} old_contents;
-  union {rtx *rtx; int *i;} where;
+  union {rtx r; int i;} old_contents;
+  union {rtx *r; int *i;} where;
 };
 
 /* Record a bunch of changes to be undone, up to MAX_UNDO of them.
@@ -339,10 +339,10 @@ static struct undobuf undobuf;
       if (undobuf.num_undo < MAX_UNDO)					\
 	{								\
 	  undobuf.undo[undobuf.num_undo].is_int = 0;			\
-	  undobuf.undo[undobuf.num_undo].where.rtx = &INTO;		\
-	  undobuf.undo[undobuf.num_undo].old_contents.rtx = INTO;	\
+	  undobuf.undo[undobuf.num_undo].where.r = &INTO;		\
+	  undobuf.undo[undobuf.num_undo].old_contents.r = INTO;	\
 	  INTO = _new;							\
-	  if (undobuf.undo[undobuf.num_undo].old_contents.rtx != INTO)	\
+	  if (undobuf.undo[undobuf.num_undo].old_contents.r != INTO)	\
 	    undobuf.num_undo++; 					\
 	}								\
     } while (0)
@@ -2265,7 +2265,7 @@ undo_all ()
       if (undobuf.undo[i].is_int)
 	*undobuf.undo[i].where.i = undobuf.undo[i].old_contents.i;
       else
-	*undobuf.undo[i].where.rtx = undobuf.undo[i].old_contents.rtx;
+	*undobuf.undo[i].where.r = undobuf.undo[i].old_contents.r;
       
     }
 
@@ -8073,15 +8073,15 @@ gen_rtx_combine (va_alist)
 
   for (i = previous_num_undos; i < undobuf.num_undo; i++)
     if (!undobuf.undo[i].is_int
-	&& GET_CODE (undobuf.undo[i].old_contents.rtx) == code
-	&& GET_MODE (undobuf.undo[i].old_contents.rtx) == mode)
+	&& GET_CODE (undobuf.undo[i].old_contents.r) == code
+	&& GET_MODE (undobuf.undo[i].old_contents.r) == mode)
       {
 	for (j = 0; j < n_args; j++)
-	  if (XEXP (undobuf.undo[i].old_contents.rtx, j) != args[j])
+	  if (XEXP (undobuf.undo[i].old_contents.r, j) != args[j])
 	    break;
 
 	if (j == n_args)
-	  return undobuf.undo[i].old_contents.rtx;
+	  return undobuf.undo[i].old_contents.r;
       }
 
   /* Otherwise make a new rtx.  We know we have 1, 2, or 3 args.
