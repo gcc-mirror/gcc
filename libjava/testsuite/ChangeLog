@@ -1,3 +1,9 @@
+2002-12-08  Tom Tromey  <tromey@redhat.com>
+
+	Test for PR libgcj/8823:
+	* libjava.lang/pr8823.java: New file.
+	* libjava.lang/pr8823.out: New file.
+
 2002-12-05  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.lang/override.java: New file.
