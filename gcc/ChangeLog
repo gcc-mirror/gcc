@@ -1,3 +1,10 @@
+Mon Nov 22 23:09:44 1999  David O'Brien  <obrien@FreeBSD.org>
+
+        * xm-i386.h: Define `__i386__' if not defined, rather than `i386'
+	which is in the user's namespace.
+        * libgcc2.c: Look for the ANSI-C approved `__i386__' symbol, vs.
+        `i386' which is not in our namespace.
+
 Mon Nov 22 22:58:01 1999  "R. Kelley Cook" <KelleyCook@attglobal.net>
 
 	* invoke.texi (ARM Options): Add in -mno-alignment-traps
