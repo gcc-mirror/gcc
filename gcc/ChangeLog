@@ -1,5 +1,15 @@
 2001-02-18  Alan Modra <alan@linuxcare.com.au>
 
+	* pa.c (hppa_expand_prologue): Simplify code storing return
+ 	pointer.  For large (>=8k) frames with a post_store, adjust stack
+ 	pointer by 8k-64 first rather than by 64.  When testing with
+ 	VAL_14_BITS_P, always use the actual value rather than the value
+ 	negated.  Add blockage to prevent scheduling of spills before
+ 	stack frame has been created.
+ 	(hppa_expand_epilogue): Simplify code loading return pointer.
+ 	Allow a slightly larger range for merge_sp_adjust_with_load case.
+ 	When testing with VAL_14_BITS_P, always use the actual value.
+
 	* pa.c (pa_adjust_insn_length): Check that block move
 	pattern is a set before looking at operands.
 
