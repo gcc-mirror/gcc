@@ -3104,7 +3104,7 @@ static GTY(()) rtx global_offset_table;
 
 /* The function we use to get at it.  */
 static GTY(()) rtx get_pc_symbol;
-static char get_pc_symbol_name[256];
+static GTY(()) char get_pc_symbol_name[256];
 
 /* Ensure that we are not using patterns that are not OK with PIC.  */
 
