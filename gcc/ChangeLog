@@ -1,5 +1,8 @@
 Wed Apr  8 12:51:19 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* bitmap.c (bitmap_element_allocate): Use "void" for arglist instead
+	of an empty arglist in prototype.
+
 	* Makefile.in: Remove bytecode crud that crept back in after the
 	gcc2 merge.
 
