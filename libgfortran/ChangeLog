@@ -1,3 +1,9 @@
+2004-01-16  Bud Davis  <bdavis9659@comcast.net>
+
+	PR fortran/18778
+	* io/transfer.c (us_read): no bytes available is not a
+	runtime error.
+
 2005-01-15  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/18983
