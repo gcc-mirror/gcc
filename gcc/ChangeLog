@@ -1,3 +1,8 @@
+2001-10-23  Stan Shebs  <shebs@apple.com>
+
+	* config/rs6000/x-darwin: Use -no-cpp-precomp instead of
+	-traditional-cpp in first-stage compilation.
+
 Tue Oct 23 21:45:40 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gensupport.c (target_flags): Add.
