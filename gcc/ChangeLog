@@ -7,6 +7,16 @@ Fri Sep 26 08:54:59 1997  Paul Eggert  <eggert@twinsun.com>
 
 Fri Sep 26 09:00:13 1997  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
+	* frame.c: Include gansidecl.h for PROTO.
+	* dwarf2out.c: Move inclusion of dwarf2.h down so that PROTO is
+	defined.  Don't declare dwarf2out_cfi_label here.
+	* dwarf2.h: Add declarations of DWARF2 unwind info support
+	functions.
+	* m68k.c: Include dwarf2.h.
+	(output_function_prologue): Add dwarf2 support.
+	* m68k.h (INCOMING_RETURN_ADDR_RTX, DWARF_FRAME_REGNUM): New macros.
+	(INCOMING_FRAME_SP_OFFSET): Likewise.
+
 	* integrate.c (expand_inline_function): Make sure there is at
 	least one insn that can be used as an insertion point.
 
