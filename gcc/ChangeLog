@@ -1,5 +1,10 @@
 2005-03-26  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* Makefile.in (libbackend.o): Depend on version files;
+	add custom generation command.
+
+2005-03-26  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR target/20636
 	* config/rs6000/rs6000.md (extendsfdf2_fpr): Check to make
 	sure that we have a REG before getting its REGNO.

@@ -2227,11 +2227,13 @@ mips-tdump.o : mips-tdump.c $(CONFIG_H) $(RTL_H) $(SYSTEM_H) coretypes.h $(TM_H)
 # FIXME: writing proper dependencies for this is a *LOT* of work.
 libbackend.o : $(OBJS-common:.o=.c) $(out_file) \
   insn-config.h insn-flags.h insn-codes.h insn-constants.h \
-  insn-attr.h
+  insn-attr.h  $(DATESTAMP) $(BASEVER) $(DEVPHASE)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DTARGET_NAME=\"$(target_noncanonical)\" \
 	  -DLOCALEDIR=\"$(localedir)\" \
-	  -c $(filter %.c,$^) -o $@ -combine
+	  -c $(filter %.c,$^) -o $@  \
+	  -DBASEVER=$(BASEVER_s) -DDATESTAMP=$(DATESTAMP_s) \
+	  -DDEVPHASE=$(DEVPHASE_s) -combine
 
 #
 # Generate header and source files from the machine description,
