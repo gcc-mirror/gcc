@@ -1,3 +1,9 @@
+2003-11-14  Giovanni Bajo  <giovannibajo@libero.it>
+
+        PR c++/2094
+        * pt.c (unify): Add support for PTRMEM_CST and
+        FIELD_DECL unification.
+
 2003-11-13  Richard Earnshaw  <rearnsha@arm.com>
 
 	* decl.c (grokfndecl): Change OK to type tree.
