@@ -1,3 +1,9 @@
+2003-03-31  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10278
+	* c-common.c (finish_label_address_expr): Handle the
+	error_mark_node.
+
 2003-03-31  Richard Henderson  <rth@redhat.com>
 
 	* real.c (real_identical): Reorg so as to not compare
