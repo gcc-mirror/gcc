@@ -484,7 +484,8 @@ dtors_section ()						\
       else							\
 	data_section ();					\
     }								\
-  else if (TREE_CODE (DECL) == VAR_DECL)			\
+  else if (TREE_CODE (DECL) == VAR_DECL				\
+	   || TREE_CODE (DECL) == CONSTRUCTOR)			\
     {								\
       if ((flag_pic && RELOC)					\
 	  || !TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)	\
