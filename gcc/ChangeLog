@@ -1,3 +1,12 @@
+2001-07-02  Jim Wilson  <wilson@redhat.com>
+
+	* config/ia64/ia64.h: Delete obsolete lib1funcs.asm comment.
+
+2001-07-02  Steve Ellcey  <sje@cup.hp.com>
+
+        * config/ia64/t-ia64: Change LIB1ASMFUNCS to use single underscore.
+        * config/ia64/lib1funcs.asm: Change macro names to match t-ia64.
+
 2001-07-02  Zack Weinberg  <zackw@stanford.edu>
 
 	* cppinit.c (lang_defaults): New table.

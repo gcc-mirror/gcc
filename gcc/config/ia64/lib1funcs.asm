@@ -1,4 +1,4 @@
-#ifdef L__divtf3
+#ifdef L_divtf3
 // Compute a 80-bit IEEE double-extended quotient.
 //
 // From the Intel IA-64 Optimization Guide, choose the minimum latency
@@ -40,7 +40,7 @@ __divtf3:
 	.endp __divtf3
 #endif
 
-#ifdef L__divdf3
+#ifdef L_divdf3
 // Compute a 64-bit IEEE double quotient.
 //
 // From the Intel IA-64 Optimization Guide, choose the minimum latency
@@ -82,7 +82,7 @@ __divdf3:
 	.endp __divdf3
 #endif
 
-#ifdef L__divsf3
+#ifdef L_divsf3
 // Compute a 32-bit IEEE float quotient.
 //
 // From the Intel IA-64 Optimization Guide, choose the minimum latency
@@ -118,7 +118,7 @@ __divsf3:
 	.endp __divsf3
 #endif
 
-#ifdef L__divdi3
+#ifdef L_divdi3
 // Compute a 64-bit integer quotient.
 //
 // From the Intel IA-64 Optimization Guide, choose the minimum latency
@@ -168,7 +168,7 @@ __divdi3:
 	.endp __divdi3
 #endif
 
-#ifdef L__moddi3
+#ifdef L_moddi3
 // Compute a 64-bit integer modulus.
 //
 // From the Intel IA-64 Optimization Guide, choose the minimum latency
@@ -222,7 +222,7 @@ __moddi3:
 	.endp __moddi3
 #endif
 
-#ifdef L__udivdi3
+#ifdef L_udivdi3
 // Compute a 64-bit unsigned integer quotient.
 //
 // From the Intel IA-64 Optimization Guide, choose the minimum latency
@@ -272,7 +272,7 @@ __udivdi3:
 	.endp __udivdi3
 #endif
 
-#ifdef L__umoddi3
+#ifdef L_umoddi3
 // Compute a 64-bit unsigned integer modulus.
 //
 // From the Intel IA-64 Optimization Guide, choose the minimum latency
@@ -327,7 +327,7 @@ __umoddi3:
 	.endp __umoddi3
 #endif
 
-#ifdef L__divsi3
+#ifdef L_divsi3
 // Compute a 32-bit integer quotient.
 //
 // From the Intel IA-64 Optimization Guide, choose the minimum latency
@@ -370,7 +370,7 @@ __divsi3:
 	.endp __divsi3
 #endif
 
-#ifdef L__modsi3
+#ifdef L_modsi3
 // Compute a 32-bit integer modulus.
 //
 // From the Intel IA-64 Optimization Guide, choose the minimum latency
@@ -417,7 +417,7 @@ __modsi3:
 	.endp __modsi3
 #endif
 
-#ifdef L__udivsi3
+#ifdef L_udivsi3
 // Compute a 32-bit unsigned integer quotient.
 //
 // From the Intel IA-64 Optimization Guide, choose the minimum latency
@@ -460,7 +460,7 @@ __udivsi3:
 	.endp __udivsi3
 #endif
 
-#ifdef L__umodsi3
+#ifdef L_umodsi3
 // Compute a 32-bit unsigned integer modulus.
 //
 // From the Intel IA-64 Optimization Guide, choose the minimum latency
@@ -507,7 +507,7 @@ __umodsi3:
 	.endp __umodsi3
 #endif
 
-#ifdef L__save_stack_nonlocal
+#ifdef L_save_stack_nonlocal
 // Notes on save/restore stack nonlocal: We read ar.bsp but write
 // ar.bspstore.  This is because ar.bsp can be read at all times
 // (independent of the RSE mode) but since it's read-only we need to
@@ -556,7 +556,7 @@ __ia64_save_stack_nonlocal:
 	.endp __ia64_save_stack_nonlocal
 #endif
 
-#ifdef L__nonlocal_goto
+#ifdef L_nonlocal_goto
 // void __ia64_nonlocal_goto(void *target_label, void *save_area,
 //			     void *static_chain);
 
@@ -609,7 +609,7 @@ __ia64_nonlocal_goto:
 	.endp __ia64_nonlocal_goto
 #endif
 
-#ifdef L__restore_stack_nonlocal
+#ifdef L_restore_stack_nonlocal
 // This is mostly the same as nonlocal_goto above.
 // ??? This has not been tested yet.
 
@@ -662,7 +662,7 @@ __ia64_restore_stack_nonlocal:
 	.endp __ia64_restore_stack_nonlocal
 #endif
 
-#ifdef L__trampoline
+#ifdef L_trampoline
 // Implement the nested function trampoline.  This is out of line
 // so that we don't have to bother with flushing the icache, as
 // well as making the on-stack trampoline smaller.
