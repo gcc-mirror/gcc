@@ -1,3 +1,7 @@
+Wed Jun 28 16:53:36 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* expr.c (cplus_expand_expr): Don't mess with temp slots.
+
 Thu Jun 22 01:50:42 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
 	* pt.c (tsubst, PARM_TYPE): Propagate DECL_ARTIFICIAL.
