@@ -812,8 +812,12 @@ convert_to_void (tree expr, const char *implicit)
         /* The two parts of a cond expr might be separate lvalues.  */
         tree op1 = TREE_OPERAND (expr,1);
         tree op2 = TREE_OPERAND (expr,2);
-        tree new_op1 = convert_to_void (op1, implicit);
-        tree new_op2 = convert_to_void (op2, implicit);
+        tree new_op1 = convert_to_void
+	  (op1, (implicit && !TREE_SIDE_EFFECTS (op2)
+		 ? "second operand of conditional" : NULL));
+        tree new_op2 = convert_to_void
+	  (op2, (implicit && !TREE_SIDE_EFFECTS (op1)
+		 ? "third operand of conditional" : NULL));
         
 	expr = build (COND_EXPR, TREE_TYPE (new_op1),
 		      TREE_OPERAND (expr, 0), new_op1, new_op2);
@@ -824,7 +828,8 @@ convert_to_void (tree expr, const char *implicit)
       {
         /* The second part of a compound expr contains the value.  */
         tree op1 = TREE_OPERAND (expr,1);
-        tree new_op1 = convert_to_void (op1, implicit);
+        tree new_op1 = convert_to_void
+	  (op1, implicit ? "right-hand operand of comma" : NULL);
         
         if (new_op1 != op1)
 	  {
@@ -901,13 +906,9 @@ convert_to_void (tree expr, const char *implicit)
   
   if (expr != error_mark_node && !VOID_TYPE_P (TREE_TYPE (expr)))
     {
-      /* FIXME: This is where we should check for expressions with no
-         effects.  At the moment we do that in both build_x_component_expr
-         and expand_expr_stmt -- inconsistently too.  For the moment
-         leave implicit void conversions unadorned so that expand_expr_stmt
-         has a chance of detecting some of the cases.  */
-      if (!implicit)
-        expr = build1 (CONVERT_EXPR, void_type_node, expr);
+      if (implicit && !TREE_SIDE_EFFECTS (expr) && warn_unused_value)
+	warning ("%s has no effect", implicit);
+      expr = build1 (CONVERT_EXPR, void_type_node, expr);
     }
   return expr;
 }

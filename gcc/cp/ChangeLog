@@ -1,3 +1,15 @@
+2003-08-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/11512
+	* cvt.c (convert_to_void): Indicate which side of conditional has
+	no effects, and rhs of comma operator. Test for no sideeffect
+	expressions here and always build a convert expr.
+	* init.c (expand_default_init): Convert the init to void.
+	* typeck.c (build_x_compound_expr): Do not check for side effects
+	here.
+	(build_compound_expr): Do not convert lhs when building a
+	template.
+
 2003-08-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.def (NON_DEPENDENT_EXPR): Add operand.
