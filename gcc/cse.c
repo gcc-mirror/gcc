@@ -2850,7 +2850,8 @@ find_best_addr (rtx insn, rtx *loc, enum machine_mode mode)
      be valid and produce better code.  */
   if (!REG_P (addr))
     {
-      rtx folded = fold_rtx (addr, NULL_RTX);
+      rtx folded = canon_for_address (fold_rtx (addr, NULL_RTX));
+
       if (folded != addr)
 	{
 	  int addr_folded_cost = address_cost (folded, mode);
