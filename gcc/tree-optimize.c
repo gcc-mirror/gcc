@@ -502,6 +502,10 @@ execute_one_pass (struct tree_opt_pass *pass)
   if (pass->execute)
     pass->execute ();
 
+  /* Stop timevar.  */
+  if (pass->tv_id)
+    timevar_pop (pass->tv_id);
+
   if (dump_file
       && (pass->properties_provided & (PROP_cfg | PROP_rtl))
 	  == (PROP_cfg | PROP_rtl))
@@ -513,9 +517,7 @@ execute_one_pass (struct tree_opt_pass *pass)
   if (todo)
     execute_todo (pass->properties_provided, todo);
 
-  /* Close down timevar and dump file.  */
-  if (pass->tv_id)
-    timevar_pop (pass->tv_id);
+  /* Flush and close dump file.  */
   if (dump_file_name)
     {
       free ((char *) dump_file_name);
