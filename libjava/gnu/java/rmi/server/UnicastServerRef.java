@@ -254,8 +254,11 @@ public Object incomingMessageCall(UnicastConnection conn, int method, long hash)
 			throw new NoSuchMethodException();
 		}
 		UnicastRemoteCall call = new UnicastRemoteCall(conn);
-		skel.dispatch(myself, call, method, hash);
-		return (call.returnValue());
+		skel.dispatch(myself, call, method, hash);		  
+		if (!call.isReturnValue())
+		  return RMIVoidValue.INSTANCE;
+		else
+		  return (call.returnValue());
 	}
 }
 

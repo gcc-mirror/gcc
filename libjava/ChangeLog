@@ -1,3 +1,27 @@
+2003-12-26  Guilhem Lavaux  <guilhem@kaffe.org>
+            Mark Wielaard  <mark@klomp.org>
+
+	* gnu/java/rmi/server/UnicastConnectionManager.java
+	(startScavenger): Set the client connection manager to daemon
+	state because it may block clients until TIMEOUT is reached
+	when they are exiting.
+
+	* gnu/java/rmi/RMIVoidValue.java: New file for a class representing
+	a void return.
+
+	* gnu/java/rmi/server/UnicastRemoteCall.java
+	(DummyOutputStream): Add a boolean before each written field to
+	know whether it is a primitive.
+	(releaseOutputStream): Flush parameters at write time.
+
+	* gnu/java/rmi/server/UnicastServerRef.java
+	(incomingMessageCall): Return a RMIVoidValue if no value is to be
+	returned.
+
+	* gnu/java/rmi/server/UnicastServer.java
+	(incomingMessageCall): Do not write a returned object if it is
+	a RMIVoidValue.
+
 2003-12-25  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* libltdl/ltdl.c (HAVE_DYLD): Remove ifdef conditional for 
