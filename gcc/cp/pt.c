@@ -5152,63 +5152,26 @@ instantiate_class_template (type)
   /* Figure out which arguments are being used to do the
      instantiation.  */
   args = CLASSTYPE_TI_ARGS (type);
-  PARTIAL_INSTANTIATION_P (type) = uses_template_parms (args);
-
-  if (pedantic && PARTIAL_INSTANTIATION_P (type))
-    /* If this is a partial instantiation, then we can't instantiate
-       the type; there's no telling whether or not one of the
-       template parameters might eventually be instantiated to some
-       value that results in a specialization being used.  For
-       example, consider:
-
-         template <class T>
-         struct S {};
-
-         template <class U> 
-         void f(S<U>);
-	     
-         template <> 
-         struct S<int> {};
-
-       Now, the `S<U>' in `f<int>' is the specialization, not an
-       instantiation of the original template.  */
-    return type;
 
   /* Determine what specialization of the original template to
      instantiate.  */
-  if (PARTIAL_INSTANTIATION_P (type))
-    /* There's no telling which specialization is appropriate at this
-       point.  Since all peeking at the innards of this partial
-       instantiation are extensions (like the "implicit typename"
-       extension, which allows users to omit the keyword `typename' on
-       names that are declared as types in template base classes), we
-       are free to do what we please.
-
-       Trying to figure out which partial instantiation to use can
-       cause a crash.  (Some of the template arguments don't even have
-       types.)  So, we just use the most general version.  */
-    t = NULL_TREE;
-  else
+  t = most_specialized_class (template, args);
+  if (t == error_mark_node)
     {
-      t = most_specialized_class (template, args);
-
-      if (t == error_mark_node)
+      const char *str = "candidates are:";
+      error ("ambiguous class template instantiation for `%#T'", type);
+      for (t = DECL_TEMPLATE_SPECIALIZATIONS (template); t; 
+	   t = TREE_CHAIN (t))
 	{
-	  const char *str = "candidates are:";
-	  error ("ambiguous class template instantiation for `%#T'", type);
-	  for (t = DECL_TEMPLATE_SPECIALIZATIONS (template); t; 
-	       t = TREE_CHAIN (t))
+	  if (get_class_bindings (TREE_VALUE (t), TREE_PURPOSE (t),
+				  args))
 	    {
-	      if (get_class_bindings (TREE_VALUE (t), TREE_PURPOSE (t),
-				      args))
-		{
-		  cp_error_at ("%s %+#T", str, TREE_TYPE (t));
-		  str = "               ";
-		}
+	      cp_error_at ("%s %+#T", str, TREE_TYPE (t));
+	      str = "               ";
 	    }
-	  TYPE_BEING_DEFINED (type) = 1;
-	  return error_mark_node;
 	}
+      TYPE_BEING_DEFINED (type) = 1;
+      return error_mark_node;
     }
 
   if (t)
@@ -5220,26 +5183,6 @@ instantiate_class_template (type)
      there's nothing we can do.  */
   if (!COMPLETE_TYPE_P (pattern))
     return type;
-
-  /* If this is a partial instantiation, don't tsubst anything.  We will
-     only use this type for implicit typename, so the actual contents don't
-     matter.  All that matters is whether a particular name is a type.  */
-  if (PARTIAL_INSTANTIATION_P (type))
-    {
-      /* The fields set here must be kept in sync with those cleared
-	 in begin_class_definition.  */
-      TYPE_BINFO_BASETYPES (type) = TYPE_BINFO_BASETYPES (pattern);
-      TYPE_FIELDS (type) = TYPE_FIELDS (pattern);
-      TYPE_METHODS (type) = TYPE_METHODS (pattern);
-      CLASSTYPE_DECL_LIST (type) = CLASSTYPE_DECL_LIST (pattern);
-      CLASSTYPE_TAGS (type) = CLASSTYPE_TAGS (pattern);
-      CLASSTYPE_VBASECLASSES (type) = CLASSTYPE_VBASECLASSES (pattern);
-      
-      /* Pretend that the type is complete, so that we will look
-	 inside it during name lookup and such.  */
-      TYPE_SIZE (type) = bitsize_zero_node;
-      return type;
-    }
 
   /* If we've recursively instantiated too many templates, stop.  */
   if (! push_tinst_level (type))

@@ -1,3 +1,29 @@
+2003-01-16  Mark Mitchell  <mark@codesourcery.com>
+	    Jeffrey Oldham <oldham@codesourcery.com>
+	
+	* config/locale/gnu/messages_members.h: Use this-> to refer to
+	unqualified members of base clasess.
+	* config/locale/ieee_1003.1-2001/codecvt_specializations.h: Likewise.
+	* include/bits/codecvt.h: Likewise.
+	* include/bits/deque.tcc: Likewise.
+	* include/bits/fstream.tcc: Likewise.
+	* include/bits/istream.tcc: Likewise.
+	* include/bits/list.tcc: Likewise.
+	* include/bits/locale_facets.h: Likewise.
+	* include/bits/ostream.tcc: Likewise.
+	* include/bits/sstream.tcc: Likewise.
+	* include/bits/stl_bvector.h: Likewise.
+	* include/bits/stl_deque.h: Likewise.
+	* include/bits/stl_list.h: Likewise.
+	* include/bits/stl_tree.h: Likewise.
+	* include/bits/stl_vector.h: Likewise.
+	* include/bits/vector.tcc: Likewise.
+	* include/ext/ropeimpl.h: Likewise.
+	* include/ext/stdio_filebuf.h: Likewise.
+	* include/ext/stl_rope.h: Likewise.
+	* include/std/std_fstream.h: Likewise.
+	* include/std/std_sstream.h: Likewise.
+	
 2003-01-15  Phil Edwards  <pme@gcc.gnu.org>
 
 	* include/bits/basic_string.tcc (_S_string_copy): Unused, remove.

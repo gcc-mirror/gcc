@@ -1,6 +1,6 @@
 // SGI's rope class implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -278,12 +278,12 @@ void _Rope_iterator_base<_CharT,_Alloc>::_M_decr(size_t __n) {
 
 template <class _CharT, class _Alloc>
 void _Rope_iterator<_CharT,_Alloc>::_M_check() {
-    if (_M_root_rope->_M_tree_ptr != _M_root) {
+    if (_M_root_rope->_M_tree_ptr != this->_M_root) {
         // _Rope was modified.  Get things fixed up.
-        _RopeRep::_S_unref(_M_root);
-        _M_root = _M_root_rope->_M_tree_ptr;
-        _RopeRep::_S_ref(_M_root);
-        _M_buf_ptr = 0;
+        _RopeRep::_S_unref(this->_M_root);
+        this->_M_root = _M_root_rope->_M_tree_ptr;
+        _RopeRep::_S_ref(this->_M_root);
+        this->_M_buf_ptr = 0;
     }
 }
 
@@ -300,7 +300,7 @@ inline _Rope_iterator<_CharT,_Alloc>::_Rope_iterator(
 : _Rope_iterator_base<_CharT,_Alloc>(__r._M_tree_ptr, __pos), 
   _M_root_rope(&__r)
 {
-    _RopeRep::_S_ref(_M_root);
+    _RopeRep::_S_ref(this->_M_root);
 }
 
 template <class _CharT, class _Alloc>
@@ -321,7 +321,7 @@ inline void _Rope_RopeRep<_CharT,_Alloc>::_M_free_c_string()
 {
     _CharT* __cstr = _M_c_string;
     if (0 != __cstr) {
-	size_t __size = _M_size + 1;
+	size_t __size = this->_M_size + 1;
 	_Destroy(__cstr, __cstr + __size);
 	_Data_deallocate(__cstr, __size);
     }
@@ -960,7 +960,7 @@ size_t
 rope<_CharT,_Alloc>::find(_CharT __pattern, size_t __start) const
 {
     _Rope_find_char_char_consumer<_CharT> __c(__pattern);
-    _S_apply_to_pieces(__c, _M_tree_ptr, __start, size());
+    _S_apply_to_pieces(__c, this->_M_tree_ptr, __start, size());
     size_type __result_pos = __start + __c._M_count;
 #   ifndef __STL_OLD_ROPE_SEMANTICS
 	if (__result_pos == size()) __result_pos = npos;
@@ -1436,8 +1436,8 @@ rope<_CharT, _Alloc>::rope(size_t __n, _CharT __c,
     } else {
 	__result = __remainder_rope;
     }
-    _M_tree_ptr = __result._M_tree_ptr;
-    _M_tree_ptr->_M_ref_nonnil();
+    this->_M_tree_ptr = __result._M_tree_ptr;
+    this->_M_tree_ptr->_M_ref_nonnil();
 }
 
 template<class _CharT, class _Alloc>
@@ -1445,22 +1445,23 @@ template<class _CharT, class _Alloc>
 
 template<class _CharT, class _Alloc>
 const _CharT* rope<_CharT,_Alloc>::c_str() const {
-    if (0 == _M_tree_ptr) {
+    if (0 == this->_M_tree_ptr) {
         _S_empty_c_str[0] = _S_eos((_CharT*)0);  // Possibly redundant,
 					     // but probably fast.
         return _S_empty_c_str;
     }
-    __GC_CONST _CharT* __old_c_string = _M_tree_ptr->_M_c_string;
+    __GC_CONST _CharT* __old_c_string = this->_M_tree_ptr->_M_c_string;
     if (0 != __old_c_string) return(__old_c_string);
     size_t __s = size();
     _CharT* __result = _Data_allocate(__s + 1);
-    _S_flatten(_M_tree_ptr, __result);
+    _S_flatten(this->_M_tree_ptr, __result);
     __result[__s] = _S_eos((_CharT*)0);
 #   ifdef __GC
 	_M_tree_ptr->_M_c_string = __result;
 #   else
       if ((__old_c_string = (__GC_CONST _CharT*)
-             std::_Atomic_swap((unsigned long *)(&(_M_tree_ptr->_M_c_string)),
+             std::_Atomic_swap((unsigned long *)
+			       (&(this->_M_tree_ptr->_M_c_string)),
 			  (unsigned long)__result)) != 0) {
 	// It must have been added in the interim.  Hence it had to have been
 	// separately allocated.  Deallocate the old copy, since we just
@@ -1474,20 +1475,21 @@ const _CharT* rope<_CharT,_Alloc>::c_str() const {
 
 template<class _CharT, class _Alloc>
 const _CharT* rope<_CharT,_Alloc>::replace_with_c_str() {
-    if (0 == _M_tree_ptr) {
+    if (0 == this->_M_tree_ptr) {
         _S_empty_c_str[0] = _S_eos((_CharT*)0);
         return _S_empty_c_str;
     }
-    __GC_CONST _CharT* __old_c_string = _M_tree_ptr->_M_c_string;
-    if (_RopeRep::_S_leaf == _M_tree_ptr->_M_tag && 0 != __old_c_string) {
+    __GC_CONST _CharT* __old_c_string = this->_M_tree_ptr->_M_c_string;
+    if (_RopeRep::_S_leaf == this->_M_tree_ptr->_M_tag
+	&& 0 != __old_c_string) {
 	return(__old_c_string);
     }
     size_t __s = size();
     _CharT* __result = _Data_allocate(_S_rounded_up_size(__s));
-    _S_flatten(_M_tree_ptr, __result);
+    _S_flatten(this->_M_tree_ptr, __result);
     __result[__s] = _S_eos((_CharT*)0);
-    _M_tree_ptr->_M_unref_nonnil();
-    _M_tree_ptr = _S_new_RopeLeaf(__result, __s, get_allocator());
+    this->_M_tree_ptr->_M_unref_nonnil();
+    this->_M_tree_ptr = _S_new_RopeLeaf(__result, __s, get_allocator());
     return(__result);
 }
 

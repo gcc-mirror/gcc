@@ -1350,7 +1350,7 @@ lookup_field_r (binfo, data)
     }
   else
     {
-      if (from_dep_base_p && TREE_CODE (nval) != TYPE_DECL
+      if (from_dep_base_p && TREE_CODE (nval) == TYPE_DECL
 	  /* We need to return a member template class so we can
 	     define partial specializations.  Is there a better
 	     way?  */
@@ -1500,9 +1500,7 @@ lookup_member (xbasetype, name, protect, want_type)
   /* If the thing we found was found via the implicit typename
      extension, build the typename type.  */
   if (rval && lfi.from_dep_base_p && !DECL_CLASS_TEMPLATE_P (rval))
-    rval = TYPE_STUB_DECL (build_typename_type (BINFO_TYPE (basetype_path),
-						name, name,
-						TREE_TYPE (rval)));
+    abort ();
 
   if (rval && is_overloaded_fn (rval)) 
     rval = build_baselink (rval_binfo, basetype_path, rval,
@@ -2187,6 +2185,7 @@ marked_pushdecls_p (binfo, data)
      void *data ATTRIBUTE_UNUSED;
 {
   return (CLASS_TYPE_P (BINFO_TYPE (binfo))
+	  && !dependent_base_p (binfo)
 	  && BINFO_PUSHDECLS_MARKED (binfo)) ? binfo : NULL_TREE; 
 }
 
@@ -2196,6 +2195,7 @@ unmarked_pushdecls_p (binfo, data)
      void *data ATTRIBUTE_UNUSED;
 { 
   return (CLASS_TYPE_P (BINFO_TYPE (binfo))
+	  && !dependent_base_p (binfo)
 	  && !BINFO_PUSHDECLS_MARKED (binfo)) ? binfo : NULL_TREE;
 }
 

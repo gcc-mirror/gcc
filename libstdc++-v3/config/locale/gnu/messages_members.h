@@ -99,11 +99,11 @@
      : messages<_CharT>(__refs) 
      { 
 #if !(__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2))
-       if (_S_c_name != _M_name_messages)
-	 delete [] _M_name_messages;
-       _M_name_messages = new char[strlen(__s) + 1];
-       strcpy(_M_name_messages, __s);
+       if (this->_S_c_name != this->_M_name_messages)
+	 delete [] this->_M_name_messages;
+       this->_M_name_messages = new char[strlen(__s) + 1];
+       strcpy(this->_M_name_messages, __s);
 #endif
-       _S_destroy_c_locale(_M_c_locale_messages);
-       _S_create_c_locale(_M_c_locale_messages, __s); 
+       _S_destroy_c_locale(this->_M_c_locale_messages);
+       _S_create_c_locale(this->_M_c_locale_messages, __s); 
      }

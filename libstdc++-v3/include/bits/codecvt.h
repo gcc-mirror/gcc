@@ -1,6 +1,6 @@
 // Locale support (codecvt) -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -341,9 +341,9 @@
       codecvt_byname(const char* __s, size_t __refs = 0) 
       : codecvt<_InternT, _ExternT, _StateT>(__refs)
       { 
-	if (_M_c_locale_codecvt != _S_c_locale)
-	  _S_destroy_c_locale(_M_c_locale_codecvt);
-	_S_create_c_locale(_M_c_locale_codecvt, __s); 
+	if (this->_M_c_locale_codecvt != this->_S_c_locale)
+	  _S_destroy_c_locale(this->_M_c_locale_codecvt);
+	_S_create_c_locale(this->_M_c_locale_codecvt, __s); 
       }
 
     protected:

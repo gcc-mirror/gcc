@@ -1797,11 +1797,6 @@ begin_class_definition (t)
       error ("definition of `%#T' inside template parameter list", t);
       return error_mark_node;
     }
-
-  /* In a definition of a member class template, we will get here with
-     an implicit typename.  */
-  if (IMPLICIT_TYPENAME_P (t))
-    t = TREE_TYPE (t);
   /* A non-implicit typename comes from code like:
 
        template <typename T> struct A {
@@ -1820,56 +1815,9 @@ begin_class_definition (t)
       pushtag (make_anon_name (), t, 0);
     }
 
-  /* If we generated a partial instantiation of this type, but now
-     we're seeing a real definition, we're actually looking at a
-     partial specialization.  Consider:
-
-       template <class T, class U>
-       struct Y {};
-
-       template <class T>
-       struct X {};
-
-       template <class T, class U>
-       void f()
-       {
-	 typename X<Y<T, U> >::A a;
-       }
-
-       template <class T, class U>
-       struct X<Y<T, U> >
-       {
-       };
-
-     We have to undo the effects of the previous partial
-     instantiation.  */
-  if (PARTIAL_INSTANTIATION_P (t))
-    {
-      if (!pedantic) 
-	{
-	  /* Unfortunately, when we're not in pedantic mode, we
-	     attempt to actually fill in some of the fields of the
-	     partial instantiation, in order to support the implicit
-	     typename extension.  Clear those fields now, in
-	     preparation for the definition here.  The fields cleared
-	     here must match those set in instantiate_class_template.
-	     Look for a comment mentioning begin_class_definition
-	     there.  */
-	  TYPE_BINFO_BASETYPES (t) = NULL_TREE;
-	  TYPE_FIELDS (t) = NULL_TREE;
-	  TYPE_METHODS (t) = NULL_TREE;
-	  CLASSTYPE_DECL_LIST (t) = NULL_TREE;
-	  CLASSTYPE_TAGS (t) = NULL_TREE;
-	  CLASSTYPE_VBASECLASSES (t) = NULL_TREE;
-	  TYPE_SIZE (t) = NULL_TREE;
-	}
-
-      /* This isn't a partial instantiation any more.  */
-      PARTIAL_INSTANTIATION_P (t) = 0;
-    }
   /* If this type was already complete, and we see another definition,
      that's an error.  */
-  else if (COMPLETE_TYPE_P (t))
+  if (COMPLETE_TYPE_P (t))
     duplicate_tag_error (t);
 
   /* Update the location of the decl.  */

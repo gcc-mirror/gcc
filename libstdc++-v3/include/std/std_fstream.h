@@ -1,6 +1,6 @@
 // File based streams -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -311,14 +311,15 @@ namespace std
       virtual int
       sync()
       {
-	bool __testput = _M_out_cur && _M_out_beg < _M_out_end;
+	bool __testput = this->_M_out_cur
+	  && this->_M_out_beg < this->_M_out_end;
 
 	// Make sure that the internal buffer resyncs its idea of
 	// the file position with the external file.
 	if (__testput)
 	  {
 	    // Need to restore current position after the write.
-	    off_type __off = _M_out_cur - _M_out_end;
+	    off_type __off = this->_M_out_cur - this->_M_out_end;
 	    _M_really_overflow(); // _M_file.sync() will be called within
 	    if (__off)
 	      _M_file.seekoff(__off, ios_base::cur);
@@ -339,14 +340,14 @@ namespace std
       {
 	streamsize __ret = 0;
 	// Clear out pback buffer before going on to the real deal...
-	if (_M_pback_init)
+	if (this->_M_pback_init)
 	  {
-	    while (__ret < __n && _M_in_cur < _M_in_end)
+	    while (__ret < __n && this->_M_in_cur < this->_M_in_end)
 	      {
-		*__s = *_M_in_cur;
+		*__s = *this->_M_in_cur;
 		++__ret;
 		++__s;
-		++_M_in_cur;
+		++this->_M_in_cur;
 	      }
 	    _M_pback_destroy();
 	  }
@@ -386,11 +387,11 @@ namespace std
       void
       _M_set_indeterminate(void)
       {
-	if (_M_mode & ios_base::in)
-	  this->setg(_M_buf, _M_buf, _M_buf);
-	if (_M_mode & ios_base::out)
-	  this->setp(_M_buf, _M_buf);
-	_M_filepos = _M_buf;
+	if (this->_M_mode & ios_base::in)
+	  this->setg(this->_M_buf, this->_M_buf, this->_M_buf);
+	if (this->_M_mode & ios_base::out)
+	  this->setp(this->_M_buf, this->_M_buf);
+	_M_filepos = this->_M_buf;
       }
 
       /**
@@ -401,13 +402,13 @@ namespace std
       void
       _M_set_determinate(off_type __off)
       {
-	bool __testin = _M_mode & ios_base::in;
-	bool __testout = _M_mode & ios_base::out;
+	bool __testin = this->_M_mode & ios_base::in;
+	bool __testout = this->_M_mode & ios_base::out;
 	if (__testin)
-	  this->setg(_M_buf, _M_buf, _M_buf + __off);
+	  this->setg(this->_M_buf, this->_M_buf, this->_M_buf + __off);
 	if (__testout)
-	  this->setp(_M_buf, _M_buf + __off);
-	_M_filepos = _M_buf + __off;
+	  this->setp(this->_M_buf, this->_M_buf + __off);
+	_M_filepos = this->_M_buf + __off;
       }
 
       /**
@@ -420,12 +421,14 @@ namespace std
       { 
 	bool __ret = false;
 	// Don't return true if unbuffered.
-	if (_M_buf)
+	if (this->_M_buf)
 	  {
-	    if (_M_mode & ios_base::in)
-	      __ret = _M_in_beg == _M_in_cur && _M_in_cur == _M_in_end;
-	    if (_M_mode & ios_base::out)
-	      __ret = _M_out_beg == _M_out_cur && _M_out_cur == _M_out_end;
+	    if (this->_M_mode & ios_base::in)
+	      __ret = this->_M_in_beg == this->_M_in_cur
+		&& this->_M_in_cur == this->_M_in_end;
+	    if (this->_M_mode & ios_base::out)
+	      __ret = this->_M_out_beg == this->_M_out_cur
+		&& this->_M_out_cur == this->_M_out_end;
 	  }
 	return __ret;
       }

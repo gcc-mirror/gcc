@@ -12,7 +12,7 @@ struct S {
 
   template <class U>
   struct I : public O<U> {
-    static X x; // WARNING - lookup finds S<T>::X
+    static X x;
   };
 };
 

@@ -147,6 +147,7 @@ static void initialize_local_var (tree, tree);
 static void expand_static_init (tree, tree);
 static tree next_initializable_field (tree);
 static tree reshape_init (tree, tree *);
+static tree build_typename_type (tree, tree, tree);
 
 #if defined (DEBUG_BINDING_LEVELS)
 static void indent (void);
@@ -1093,27 +1094,18 @@ push_class_binding (tree id, tree decl)
   binding = IDENTIFIER_BINDING (id);
   if (BINDING_VALUE (binding) == decl && TREE_CODE (decl) != TREE_LIST)
     {
-      /* Any implicit typename must be from a base-class.  The
-	 context for an implicit typename declaration is always
-	 the derived class in which the lookup was done, so the checks
-	 based on the context of DECL below will not trigger.  */
-      if (IMPLICIT_TYPENAME_TYPE_DECL_P (decl))
-	INHERITED_VALUE_BINDING_P (binding) = 1;
+      if (TREE_CODE (decl) == OVERLOAD)
+	context = CP_DECL_CONTEXT (OVL_CURRENT (decl));
       else
 	{
-	  if (TREE_CODE (decl) == OVERLOAD)
-	    context = CP_DECL_CONTEXT (OVL_CURRENT (decl));
-	  else
-	    {
-	      my_friendly_assert (DECL_P (decl), 0);
-	      context = context_for_name_lookup (decl);
-	    }
-
-	  if (is_properly_derived_from (current_class_type, context))
-	    INHERITED_VALUE_BINDING_P (binding) = 1;
-	  else
-	    INHERITED_VALUE_BINDING_P (binding) = 0;
+	  my_friendly_assert (DECL_P (decl), 0);
+	  context = context_for_name_lookup (decl);
 	}
+
+      if (is_properly_derived_from (current_class_type, context))
+	INHERITED_VALUE_BINDING_P (binding) = 1;
+      else
+	INHERITED_VALUE_BINDING_P (binding) = 0;
     }
   else if (BINDING_VALUE (binding) == decl)
     /* We only encounter a TREE_LIST when push_class_decls detects an
@@ -5437,7 +5429,7 @@ typename_compare (const void * k1, const void * k2)
 static GTY ((param_is (union tree_node))) htab_t typename_htab;
 
 tree
-build_typename_type (tree context, tree name, tree fullname, tree base_type)
+build_typename_type (tree context, tree name, tree fullname)
 {
   tree t;
   tree d;
@@ -5453,7 +5445,6 @@ build_typename_type (tree context, tree name, tree fullname, tree base_type)
   t = make_aggr_type (TYPENAME_TYPE);
   TYPE_CONTEXT (t) = FROB_CONTEXT (context);
   TYPENAME_TYPE_FULLNAME (t) = fullname;
-  TREE_TYPE (t) = base_type;
 
   /* Build the corresponding TYPE_DECL.  */
   d = build_decl (TYPE_DECL, name, t);
@@ -5586,16 +5577,6 @@ make_typename_type (tree context, tree name, tsubst_flags_t complain)
 
 	      if (DECL_ARTIFICIAL (t) || !(complain & tf_keep_type_decl))
 		t = TREE_TYPE (t);
-	      if (IMPLICIT_TYPENAME_P (t))
-		{
-		  /* Lookup found an implicit typename that we had
-		     injected into the current scope. Doing things
-		     properly would have located the exact same type,
-		     so there is no error here.  We must remove the
-		     implicitness so that we do not warn about it.  */
-		  t = copy_node (t);
-		  TREE_TYPE (t) = NULL_TREE;
-		}
 	      
 	      return t;
 	    }
@@ -5611,7 +5592,7 @@ make_typename_type (tree context, tree name, tsubst_flags_t complain)
       return error_mark_node;
     }
 
-  return build_typename_type (context, name, fullname,  NULL_TREE);
+  return build_typename_type (context, name, fullname);
 }
 
 /* Resolve `CONTEXT::template NAME'.  Returns an appropriate type,
@@ -5935,7 +5916,6 @@ lookup_name_real (tree name,
 {
   tree t;
   tree val = NULL_TREE;
-  int val_is_implicit_typename = 0;
 
   /* Conversion operators are handled specially because ordinary
      unqualified name lookup will not find template conversion
@@ -5990,29 +5970,19 @@ lookup_name_real (tree name,
       else
 	binding = NULL_TREE;
 
-      if (binding
-	  && (!val || !IMPLICIT_TYPENAME_TYPE_DECL_P (binding)))
+      if (binding)
 	{
-	  if (val_is_implicit_typename)
-	    warn_about_implicit_typename_lookup (val, binding);
 	  val = binding;
-	  val_is_implicit_typename
-	    = IMPLICIT_TYPENAME_TYPE_DECL_P (val);
-	  if (!val_is_implicit_typename)
-	    break;
+	  break;
 	}
     }
 
   /* Now lookup in namespace scopes.  */
-  if (!val || val_is_implicit_typename)
+  if (!val)
     {
       t = unqualified_namespace_lookup (name, flags, 0);
       if (t)
-	{
-	  if (val_is_implicit_typename)
-	    warn_about_implicit_typename_lookup (val, t);
-	  val = t;
-	}
+	val = t;
     }
 
   if (val)
@@ -9723,9 +9693,6 @@ grokdeclarator (tree declarator,
   /* See the code below that used this.  */
   tree decl_attr = NULL_TREE;
 #endif
-  /* Set this to error_mark_node for FIELD_DECLs we could not handle properly.
-     All FIELD_DECLs we build here have `init' put into their DECL_INITIAL.  */
-  tree init = NULL_TREE;
 
   /* Keep track of what sort of function is being processed
      so that we can warn about default return values, or explicit
@@ -9825,46 +9792,6 @@ grokdeclarator (tree declarator,
 	    break;
 
 	  case CALL_EXPR:
-	    if (parmlist_is_exprlist (CALL_DECLARATOR_PARMS (decl)))
-	      {
-		/* This is actually a variable declaration using
-		   constructor syntax.  We need to call start_decl and
-		   cp_finish_decl so we can get the variable
-		   initialized...  */
-
-		tree attributes;
-
-		if (decl_context != NORMAL)
-		  {
-		    error ("variable declaration is not allowed here");
-		    return error_mark_node;
-		  }
-
-		*next = TREE_OPERAND (decl, 0);
-		init = CALL_DECLARATOR_PARMS (decl);
-
-		if (attrlist)
-		  {
-		    attributes = *attrlist;
-		  }
-		else
-		  {
-		    attributes = NULL_TREE;
-		  }
-
-		decl = start_decl (declarator, declspecs, 1,
-				   attributes, NULL_TREE);
-		if (decl)
-		  {
-		    /* Look for __unused__ attribute */
-		    if (TREE_USED (TREE_TYPE (decl)))
-		      TREE_USED (decl) = 1;
-		    finish_decl (decl, init, NULL_TREE);
-		  }
-		else
-		  error ("invalid declarator");
-		return NULL_TREE;
-	      }
 	    innermost_code = TREE_CODE (decl);
 	    if (decl_context == FIELD && ctype == NULL_TREE)
 	      ctype = current_class_type;
@@ -10294,21 +10221,6 @@ grokdeclarator (tree declarator,
       type = integer_type_node;
     }
   
-  if (type && IMPLICIT_TYPENAME_P (type))
-    {
-      /* The implicit typename extension is deprecated and will be
-	 removed.  Warn about its use now.  */
-      warning ("`%T' is implicitly a typename", type);
-      cp_deprecated ("implicit typename");
-
-      /* Now remove its implicitness, so that we don't warn again.
-         For instance this might be a typedef, and we do not want to
-         warn on uses of the typedef itself.  Simply clearing the
-         TREE_TYPE is insufficient.  */
-      type = copy_node (type);
-      TREE_TYPE (type) = NULL_TREE;
-    }
-
   ctype = NULL_TREE;
 
   /* Now process the modifiers that were specified
@@ -11903,32 +11815,6 @@ grokdeclarator (tree declarator,
   }
 }
 
-/* Tell if a parmlist/exprlist looks like an exprlist or a parmlist.
-   An empty exprlist is a parmlist.  An exprlist which
-   contains only identifiers at the global level
-   is a parmlist.  Otherwise, it is an exprlist.  */
-
-int
-parmlist_is_exprlist (tree exprs)
-{
-  if (exprs == NULL_TREE || TREE_PARMLIST (exprs))
-    return 0;
-
-  if (toplevel_bindings_p ())
-    {
-      /* At the global level, if these are all identifiers,
-	 then it is a parmlist.  */
-      while (exprs)
-	{
-	  if (TREE_CODE (TREE_VALUE (exprs)) != IDENTIFIER_NODE)
-	    return 1;
-	  exprs = TREE_CHAIN (exprs);
-	}
-      return 0;
-    }
-  return 1;
-}
-
 /* Subroutine of start_function.  Ensure that each of the parameter
    types (as listed in PARMS) is complete, as is required for a
    function definition.  */
@@ -12963,9 +12849,9 @@ xref_basetypes (tree ref, tree binfo)
   /* In the declaration `A : X, Y, ... Z' we mark all the types
      (A, X, Y, ..., Z) so we can check for duplicates.  */
   tree binfos;
-  tree base;
+  tree *basep;
 
-  int i, len;
+  int i;
   enum tag_types tag_code;
 
   if (TREE_CODE (ref) == UNION_TYPE)
@@ -12976,17 +12862,25 @@ xref_basetypes (tree ref, tree binfo)
 
   tag_code = (CLASSTYPE_DECLARED_CLASS (ref) ? class_type : record_type);
 
-  len = list_length (binfo);
-
   /* First, make sure that any templates in base-classes are
      instantiated.  This ensures that if we call ourselves recursively
      we do not get confused about which classes are marked and which
      are not.  */
-  for (base = binfo; base; base = TREE_CHAIN (base))
-    complete_type (TREE_VALUE (base));
+  basep = &binfo; 
+  while (*basep) 
+    {
+      tree basetype = TREE_VALUE (*basep);
+      if (!(processing_template_decl && uses_template_parms (basetype))
+	  && !complete_type_or_else (basetype, NULL))
+	/* An incomplete type.  Remove it form the list.  */
+	*basep = TREE_CHAIN (*basep);
+      else
+	basep = &TREE_CHAIN (*basep);
+    }
 
   SET_CLASSTYPE_MARKED (ref);
-  BINFO_BASETYPES (TYPE_BINFO (ref)) = binfos = make_tree_vec (len);
+  BINFO_BASETYPES (TYPE_BINFO (ref)) = binfos 
+    = make_tree_vec (list_length (binfo));
 
   for (i = 0; binfo; binfo = TREE_CHAIN (binfo))
     {
@@ -13021,85 +12915,74 @@ xref_basetypes (tree ref, tree binfo)
 	  continue;
 	}
 
-      /* This code replaces similar code in layout_basetypes.
-         We put the complete_type first for implicit `typename'.  */
-      if (!COMPLETE_TYPE_P (basetype)
-	  && ! (current_template_parms && uses_template_parms (basetype)))
+      if (CLASSTYPE_MARKED (basetype))
 	{
-	  error ("base class `%T' has incomplete type", basetype);
+	  if (basetype == ref)
+	    error ("recursive type `%T' undefined", basetype);
+	  else
+	    error ("duplicate base type `%T' invalid", basetype);
 	  continue;
 	}
-      else
+
+      if (TYPE_FOR_JAVA (basetype)
+	  && (current_lang_depth () == 0))
+	TYPE_FOR_JAVA (ref) = 1;
+
+      /* Note that the BINFO records which describe individual
+	 inheritances are *not* shared in the lattice!  They
+	 cannot be shared because a given baseclass may be
+	 inherited with different `accessibility' by different
+	 derived classes.  (Each BINFO record describing an
+	 individual inheritance contains flags which say what
+	 the `accessibility' of that particular inheritance is.)  */
+
+      base_binfo
+	= make_binfo (size_zero_node, basetype,
+		      CLASS_TYPE_P (basetype)
+		      ? TYPE_BINFO_VTABLE (basetype) : NULL_TREE,
+		      CLASS_TYPE_P (basetype)
+		      ? TYPE_BINFO_VIRTUALS (basetype) : NULL_TREE);
+
+      TREE_VEC_ELT (binfos, i) = base_binfo;
+      TREE_VIA_PUBLIC (base_binfo) = via_public;
+      TREE_VIA_PROTECTED (base_binfo) = via_protected;
+      TREE_VIA_VIRTUAL (base_binfo) = via_virtual;
+      BINFO_INHERITANCE_CHAIN (base_binfo) = TYPE_BINFO (ref);
+
+      /* We need to unshare the binfos now so that lookups during class
+	 definition work.  */
+      unshare_base_binfos (base_binfo);
+
+      SET_CLASSTYPE_MARKED (basetype);
+
+      /* We are free to modify these bits because they are meaningless
+	 at top level, and BASETYPE is a top-level type.  */
+      if (via_virtual || TYPE_USES_VIRTUAL_BASECLASSES (basetype))
 	{
-	  if (CLASSTYPE_MARKED (basetype))
-	    {
-	      if (basetype == ref)
-		error ("recursive type `%T' undefined", basetype);
-	      else
-		error ("duplicate base type `%T' invalid", basetype);
-	      continue;
-	    }
-
-	  if (TYPE_FOR_JAVA (basetype)
-	      && (current_lang_depth () == 0))
-	    TYPE_FOR_JAVA (ref) = 1;
-
-	  /* Note that the BINFO records which describe individual
-	     inheritances are *not* shared in the lattice!  They
-	     cannot be shared because a given baseclass may be
-	     inherited with different `accessibility' by different
-	     derived classes.  (Each BINFO record describing an
-	     individual inheritance contains flags which say what
-	     the `accessibility' of that particular inheritance is.)  */
-
-	  base_binfo
-	    = make_binfo (size_zero_node, basetype,
-			  CLASS_TYPE_P (basetype)
-			  ? TYPE_BINFO_VTABLE (basetype) : NULL_TREE,
-			  CLASS_TYPE_P (basetype)
-			  ? TYPE_BINFO_VIRTUALS (basetype) : NULL_TREE);
-
-	  TREE_VEC_ELT (binfos, i) = base_binfo;
-	  TREE_VIA_PUBLIC (base_binfo) = via_public;
-	  TREE_VIA_PROTECTED (base_binfo) = via_protected;
-	  TREE_VIA_VIRTUAL (base_binfo) = via_virtual;
-	  BINFO_INHERITANCE_CHAIN (base_binfo) = TYPE_BINFO (ref);
-
-	  /* We need to unshare the binfos now so that lookups during class
-	     definition work.  */
-	  unshare_base_binfos (base_binfo);
-
-	  SET_CLASSTYPE_MARKED (basetype);
-
-	  /* We are free to modify these bits because they are meaningless
-	     at top level, and BASETYPE is a top-level type.  */
-	  if (via_virtual || TYPE_USES_VIRTUAL_BASECLASSES (basetype))
-	    {
-	      TYPE_USES_VIRTUAL_BASECLASSES (ref) = 1;
-	      /* Converting to a virtual base class requires looking
-		 up the offset of the virtual base.  */
-	      TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (ref) = 1;
-	    }
-
-	  if (CLASS_TYPE_P (basetype))
-	    {
-	      TYPE_HAS_NEW_OPERATOR (ref)
-		|= TYPE_HAS_NEW_OPERATOR (basetype);
-	      TYPE_HAS_ARRAY_NEW_OPERATOR (ref)
-		|= TYPE_HAS_ARRAY_NEW_OPERATOR (basetype);
-	      TYPE_GETS_DELETE (ref) |= TYPE_GETS_DELETE (basetype);
-	      /* If the base-class uses multiple inheritance, so do we.  */
-	      TYPE_USES_MULTIPLE_INHERITANCE (ref)
-		|= TYPE_USES_MULTIPLE_INHERITANCE (basetype);
-	      /* Likewise, if converting to a base of the base may require
-		 code, then we may need to generate code to convert to a
-		 base as well.  */
-	      TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (ref)
-		|= TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (basetype);
-	    }
-
-	  i += 1;
+	  TYPE_USES_VIRTUAL_BASECLASSES (ref) = 1;
+	  /* Converting to a virtual base class requires looking
+	     up the offset of the virtual base.  */
+	  TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (ref) = 1;
 	}
+
+      if (CLASS_TYPE_P (basetype))
+	{
+	  TYPE_HAS_NEW_OPERATOR (ref)
+	    |= TYPE_HAS_NEW_OPERATOR (basetype);
+	  TYPE_HAS_ARRAY_NEW_OPERATOR (ref)
+	    |= TYPE_HAS_ARRAY_NEW_OPERATOR (basetype);
+	  TYPE_GETS_DELETE (ref) |= TYPE_GETS_DELETE (basetype);
+	  /* If the base-class uses multiple inheritance, so do we.  */
+	  TYPE_USES_MULTIPLE_INHERITANCE (ref)
+	    |= TYPE_USES_MULTIPLE_INHERITANCE (basetype);
+	  /* Likewise, if converting to a base of the base may require
+	     code, then we may need to generate code to convert to a
+	     base as well.  */
+	  TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (ref)
+	    |= TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (basetype);
+	}
+
+      i += 1;
     }
   if (i)
     TREE_VEC_LENGTH (binfos) = i;

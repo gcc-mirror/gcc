@@ -1,6 +1,6 @@
 // String based streams -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -133,16 +133,17 @@ namespace std
       __string_type
       str() const
       {
-	if (_M_mode & ios_base::out)
+	if (this->_M_mode & ios_base::out)
 	  {
 	    // This is the deal: _M_string.size() is a value that
 	    // represents the size of the initial string that makes
 	    // _M_string, and may not be the correct size of the
 	    // current stringbuf internal buffer.
 	    __size_type __len = _M_string.size();
-	    if (_M_out_cur > _M_out_beg)
-	      __len = std::max(__size_type(_M_out_end - _M_out_beg), __len);
-	    return __string_type(_M_out_beg, _M_out_beg + __len);
+	    if (this->_M_out_cur > this->_M_out_beg)
+	      __len = std::max(__size_type(this->_M_out_end 
+					   - this->_M_out_beg), __len);
+	    return __string_type(this->_M_out_beg, this->_M_out_beg + __len);
 	  }
 	else
 	  return _M_string;
@@ -160,7 +161,7 @@ namespace std
       {
 	// Cannot use _M_string = __s, since v3 strings are COW.
 	_M_string.assign(__s.data(), __s.size());
-	_M_stringbuf_init(_M_mode);
+	_M_stringbuf_init(this->_M_mode);
       }
 
     protected:
@@ -178,16 +179,16 @@ namespace std
 	// necessary as ostringstreams are implemented with the
 	// streambufs having control of the allocation and
 	// re-allocation of the internal string object, _M_string.
-	_M_buf_size = _M_string.size();
+	this->_M_buf_size = _M_string.size();
 
 	// NB: Start ostringstream buffers at 512 bytes. This is an
 	// experimental value (pronounced "arbitrary" in some of the
 	// hipper english-speaking countries), and can be changed to
 	// suit particular needs.
-	_M_buf_size_opt = 512;
-	_M_mode = __mode;
-	if (_M_mode & (ios_base::ate | ios_base::app))
-	  _M_really_sync(0, _M_buf_size);
+	this->_M_buf_size_opt = 512;
+	this->_M_mode = __mode;
+	if (this->_M_mode & (ios_base::ate | ios_base::app))
+	  _M_really_sync(0, this->_M_buf_size);
 	else
 	  _M_really_sync(0, 0);
       }
@@ -197,7 +198,7 @@ namespace std
       virtual int_type
       underflow()
       {
-	if (_M_in_cur && _M_in_cur < _M_in_end)
+	if (this->_M_in_cur && this->_M_in_cur < this->_M_in_end)
 	  return traits_type::to_int_type(*gptr());
 	else
 	  return traits_type::eof();
@@ -258,17 +259,17 @@ namespace std
       _M_really_sync(__size_type __i, __size_type __o)
       {
 	char_type* __base = const_cast<char_type*>(_M_string.data());
-	bool __testin = _M_mode & ios_base::in;
-	bool __testout = _M_mode & ios_base::out;
+	bool __testin = this->_M_mode & ios_base::in;
+	bool __testout = this->_M_mode & ios_base::out;
 	__size_type __len = _M_string.size();
 
-	_M_buf = __base;
+	this->_M_buf = __base;
 	if (__testin)
 	    this->setg(__base, __base + __i, __base + __len);
 	if (__testout)
 	  {
 	    this->setp(__base, __base + __len);
-	    _M_out_cur += __o;
+	    this->_M_out_cur += __o;
 	  }
 	return 0;
       }

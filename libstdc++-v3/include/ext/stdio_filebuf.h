@@ -1,6 +1,6 @@
 // File descriptor layer for filebuf -*- C++ -*-
 
-// Copyright (C) 2002 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -107,7 +107,7 @@ namespace __gnu_cxx
       */
       int
       fd()
-      { return _M_file.fd(); }
+      { return this->_M_file.fd(); }
     };
 
   template<typename _CharT, typename _Traits>
@@ -119,20 +119,20 @@ namespace __gnu_cxx
     stdio_filebuf(int __fd, std::ios_base::openmode __mode, bool __del, 
 		  int_type __size)
     {
-      _M_file.sys_open(__fd, __mode, __del);
+      this->_M_file.sys_open(__fd, __mode, __del);
       if (this->is_open())
 	{
-	  _M_mode = __mode;
+	  this->_M_mode = __mode;
 	  if (__size > 0 && __size < 4)
 	    {
 	      // Specify unbuffered.
-	      _M_buf = _M_unbuf;
-	      _M_buf_size = __size;
-	      _M_buf_size_opt = 0;
+	      this->_M_buf = _M_unbuf;
+	      this->_M_buf_size = __size;
+	      this->_M_buf_size_opt = 0;
 	    }
 	  else
 	    {
-	      _M_buf_size_opt = __size;
+	      this->_M_buf_size_opt = __size;
 	      _M_allocate_internal_buffer();
 	    }
 	  _M_set_indeterminate();
@@ -144,20 +144,20 @@ namespace __gnu_cxx
     stdio_filebuf(std::__c_file* __f, std::ios_base::openmode __mode, 
 		  int_type __size)
     {
-      _M_file.sys_open(__f, __mode);
+      this->_M_file.sys_open(__f, __mode);
       if (this->is_open())
 	{
-	  _M_mode = __mode;
+	  this->_M_mode = __mode;
 	  if (__size > 0 && __size < 4)
 	    {
 	      // Specify unbuffered.
-	      _M_buf = _M_unbuf;
-	      _M_buf_size = __size;
-	      _M_buf_size_opt = 0;
+	      this->_M_buf = _M_unbuf;
+	      this->_M_buf_size = __size;
+	      this->_M_buf_size_opt = 0;
 	    }
 	  else
 	    {
-	      _M_buf_size_opt = __size;
+	      this->_M_buf_size_opt = __size;
 	      _M_allocate_internal_buffer();
 	    }
 	  _M_set_indeterminate();

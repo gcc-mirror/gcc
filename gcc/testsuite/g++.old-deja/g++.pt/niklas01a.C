@@ -1,6 +1,6 @@
 // Build don't link: 
 
-struct A {
+struct A { // ERROR - forward declaration
   friend struct B : A {		// ERROR - 
     int x;
   };

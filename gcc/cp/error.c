@@ -454,8 +454,7 @@ dump_type (t, flags)
       break;
     }
     case TYPENAME_TYPE:
-      if (!IMPLICIT_TYPENAME_P (t))
-        output_add_string (scratch_buffer, "typename ");
+      output_add_string (scratch_buffer, "typename ");
       dump_typename (t, flags);
       break;
 

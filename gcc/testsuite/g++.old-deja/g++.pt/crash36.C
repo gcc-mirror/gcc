@@ -29,7 +29,7 @@ struct list {
   
   reverse_iterator<list_iterator<T> > rbegin()
     { return reverse_iterator<list_iterator<T> > // ERROR - no type|instantiated here
-	(list_iterator<T>(Head->next())); }
+	(list_iterator<T>(Head->next())); } // ERROR - not declared
 };
 
 template class list<int>;
