@@ -931,7 +931,11 @@ poplevel (keep, reverse, functionbody)
 	if (DECL_ABSTRACT_ORIGIN (decl) != 0)
 	  TREE_ADDRESSABLE (DECL_ABSTRACT_ORIGIN (decl)) = 1;
 	else
-	  output_inline_function (decl);
+	  {
+	    push_function_context ();
+	    output_inline_function (decl);
+	    pop_function_context ();
+	  }
       }
 
   /* If there were any declarations or structure tags in that level,
