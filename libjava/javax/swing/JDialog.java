@@ -1,5 +1,5 @@
 /* JDialog.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -57,12 +57,8 @@ import javax.accessibility.AccessibleContext;
  *
  * @author Ronald Veldema (rveldema@cs.vu.nl)
  */
-public class JDialog extends Dialog implements Accessible
+public class JDialog extends Dialog implements Accessible, WindowConstants
 {
-    public final static int HIDE_ON_CLOSE        = 0;
-    public final static int DISPOSE_ON_CLOSE     = 1;
-    public final static int DO_NOTHING_ON_CLOSE  = 2;
-
     protected  AccessibleContext accessibleContext;
 
     private int close_action = HIDE_ON_CLOSE;    
@@ -75,42 +71,42 @@ public class JDialog extends Dialog implements Accessible
      *
      *************/
 
-    JDialog(Frame owner)
+    public JDialog(Frame owner)
     {
 	this(owner, "dialog");
     }
     
-    JDialog(Frame owner,
+    public JDialog(Frame owner,
 	    String s)
     {
 	this(owner, s, true);
     }
     
-  JDialog(Frame owner,
+  public JDialog(Frame owner,
 	  String s,
 	  boolean modeld)
     {
 	super(owner, s, modeld);
     }
 
-  JDialog(Frame owner,
+  public JDialog(Frame owner,
 	  //  String s,
 	  boolean modeld)
     {
 	super(owner, "JDialog", modeld);
     }
-  JDialog(Dialog owner)
+  public JDialog(Dialog owner)
   {
       this(owner, "dialog");
   }
     
-    JDialog(Dialog owner,
+    public JDialog(Dialog owner,
 	    String s)
     {
 	this(owner, s, true);
     }
     
-  JDialog(Dialog owner,
+  public JDialog(Dialog owner,
 	  String s,
 	  boolean modeld)
     {
@@ -221,18 +217,20 @@ public class JDialog extends Dialog implements Accessible
 
     protected  void processWindowEvent(WindowEvent e)
     {
-	//	System.out.println("PROCESS_WIN_EV-1: " + e);
 	super.processWindowEvent(e); 
-	//	System.out.println("PROCESS_WIN_EV-2: " + e);
 	switch (e.getID())
 	    {
 	    case WindowEvent.WINDOW_CLOSING:
 		{
 		    switch(close_action)
 			{
+			case EXIT_ON_CLOSE:
+			  {
+			    System.exit(0);
+			    break;
+			  }
 			case DISPOSE_ON_CLOSE:
 			    {
-				System.out.println("user requested dispose on close");
 				dispose();
 				break;
 			    }
@@ -258,8 +256,34 @@ public class JDialog extends Dialog implements Accessible
     }   
  
 
-    void setDefaultCloseOperation(int operation)
-    {  close_action = operation;   }
+  /**
+   * Defines what happens when this frame is closed. Can be one off
+   * <code>EXIT_ON_CLOSE</code>,
+   * <code>DISPOSE_ON_CLOSE</code>,
+   * <code>HIDE_ON_CLOSE</code> or
+   * <code>DO_NOTHING_ON_CLOSE</code>.
+   * The default is <code>HIDE_ON_CLOSE</code>.
+   * When <code>EXIT_ON_CLOSE</code> is specified this method calls
+   * <code>SecurityManager.checkExit(0)</code> which might throw a
+   * <code>SecurityException</code>. When the specified operation is
+   * not one of the above a <code>IllegalArgumentException</code> is
+   * thrown.
+   */
+  public void setDefaultCloseOperation(int operation)
+  {
+    SecurityManager sm = System.getSecurityManager();
+    if (sm != null && operation == EXIT_ON_CLOSE)
+      sm.checkExit(0);
+    
+    if (operation != EXIT_ON_CLOSE && operation != DISPOSE_ON_CLOSE
+	&& operation != HIDE_ON_CLOSE && operation != DO_NOTHING_ON_CLOSE)
+      throw new IllegalArgumentException("operation = " + operation);
+    
+    close_action = operation;
+  }
+  
+  public int getDefaultCloseOperation()
+  {    return close_action;   }
 
     protected  String paramString()
     {   return "JDialog";     }
