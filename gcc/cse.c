@@ -5197,17 +5197,6 @@ cse_insn (insn, libcall_insn)
 		  || (GET_CODE (trial) == LABEL_REF
 		      && ! condjump_p (insn))))
 	    {
-	      /* If TRIAL is a label in front of a jump table, we are
-		 really falling through the switch (this is how casesi
-		 insns work), so we must branch around the table.  */
-	      if (GET_CODE (trial) == CODE_LABEL
-		  && NEXT_INSN (trial) != 0
-		  && GET_CODE (NEXT_INSN (trial)) == JUMP_INSN
-		  && (GET_CODE (PATTERN (NEXT_INSN (trial))) == ADDR_DIFF_VEC
-		      || GET_CODE (PATTERN (NEXT_INSN (trial))) == ADDR_VEC))
-
-		trial = gen_rtx_LABEL_REF (Pmode, get_label_after (trial));
-
 	      if (trial == pc_rtx)
 		{
 		  SET_SRC (sets[i].rtl) = trial;
@@ -5215,7 +5204,8 @@ cse_insn (insn, libcall_insn)
 		  break;
 		}
 
-	      PATTERN (insn) = gen_jump (trial);
+	      PATTERN (insn) = gen_jump (XEXP (trial, 0));
+	      INSN_CODE (insn) = -1;
 	      cse_jumps_altered = 1;
 	      break;
 	    }
