@@ -556,7 +556,7 @@ do {									\
 #define SDB_DEBUGGING_INFO   1
 #define DBX_DEBUGGING_INFO   1
 #define PREFERRED_DEBUGGING_TYPE					\
-  ((TARGET_ELF) ? DWARF_DEBUG: SDB_DEBUG)
+  ((TARGET_ELF) ? DWARF2_DEBUG: SDB_DEBUG)
 
 #undef EXTRA_SECTIONS
 #define EXTRA_SECTIONS in_const, in_init, in_fini, in_ctors, in_dtors
@@ -891,11 +891,10 @@ dtors_section ()							\
 
 #define MASK_COFF     		010000000000	/* Mask for elf generation */
 #define TARGET_COFF             (target_flags & MASK_COFF)
-#define TARGET_ELF              (!(target_flags & MASK_COFF))
+#define TARGET_ELF              (1) /* (!(target_flags & MASK_COFF)) */
 
 #undef SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES 					\
-	{ "coff", MASK_COFF, N_("Generate COFF output") }, 	\
 	{ "elf", -MASK_COFF, N_("Generate ELF output")  },
 
 #define NO_DOLLAR_IN_LABEL
