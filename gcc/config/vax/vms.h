@@ -246,4 +246,65 @@ const_section ()					\
   fputc ('\n', (FILE));							\
 }
 
+/* The following definitions are used in libgcc2.c with the __main
+   function.  The _SHR symbol is used when the sharable image library
+   for libg++ is used - this is picked up automatically by the linker
+   and this symbol points to the start of the __CTOR_LIST__ from libg++.
+   If libg++ is not being used, then __CTOR_LIST_SHR__ occurs just after
+   __CTOR_LIST__, and essentially points to the same list as __CTOR_LIST.  */
 
+#ifdef L__main
+#include <stdio.h>
+
+#define __CTOR_LIST__ __gxx_init_0
+#define __CTOR_LIST_END__ __gxx_init_2
+
+#define __CTOR_LIST_SHR__ $$PsectAttributes_NOSHR$$__gxx_init_0_shr
+#define __CTOR_LIST_SHR_END__ $$PsectAttributes_NOSHR$$__gxx_init_2_shr
+
+#define DO_GLOBAL_CTORS_BODY						\
+do {									\
+  func_ptr *p;								\
+  extern func_ptr __CTOR_LIST__[1];					\
+  extern func_ptr __CTOR_LIST_END__[1];					\
+  extern func_ptr __CTOR_LIST_SHR__[1];					\
+  extern func_ptr __CTOR_LIST_SHR_END__[1];				\
+  fflush(stdout);							\
+  if( &__CTOR_LIST_SHR__[0] != &__CTOR_LIST__[1])			\
+  for (p = __CTOR_LIST_SHR__ + 1; p < __CTOR_LIST_SHR_END__ ; p++ )	\
+    if (*p) (*p) ();							\
+  for (p = __CTOR_LIST__ + 1; p < __CTOR_LIST_END__ ; p++ )		\
+    if (*p) (*p) ();							\
+  atexit (__do_global_dtors);						\
+    {									\
+      __label__ foo;							\
+      int *callers_caller_fp = (int *) __builtin_frame_address (3);	\
+      register int retval asm ("r0");					\
+      callers_caller_fp[4] = (int) && foo;				\
+      return;								\
+    foo:								\
+      exit (retval);							\
+    }									\
+} while (0)
+
+#define __DTOR_LIST__ __gxx_clean_0
+#define __DTOR_LIST_END__ __gxx_clean_2
+
+#define __DTOR_LIST_SHR__ $$PsectAttributes_NOSHR$$__gxx_clean_0_shr
+#define __DTOR_LIST_SHR_END__ $$PsectAttributes_NOSHR$$__gxx_clean_2_shr
+
+#define DO_GLOBAL_DTORS_BODY						\
+do {									\
+  func_ptr *p;								\
+  extern func_ptr __DTOR_LIST__[1];					\
+  extern func_ptr __DTOR_LIST_END__[1];					\
+  extern func_ptr __DTOR_LIST_SHR__[1];					\
+  extern func_ptr __DTOR_LIST_SHR_END__[1];				\
+  for (p = __DTOR_LIST__ + 1; p < __DTOR_LIST_END__ ; p++ )		\
+    if (*p) (*p) ();							\
+  if( &__DTOR_LIST_SHR__[0] != &__DTOR_LIST__[1])			\
+  for (p = __DTOR_LIST_SHR__ + 1; p < __DTOR_LIST_SHR_END__ ; p++ )	\
+    if (*p) (*p) ();							\
+} while (0)
+
+#endif /* L__main */
