@@ -1,18 +1,18 @@
-// Build don't link: 
+// { dg-do assemble  }
 namespace A{
   void f();
 }
 
 namespace B{
   using namespace A;
-  void f(int);			// ERROR - referenced below
+  void f(int);			// { dg-error "" } referenced below
 }
 
 using namespace B;
 
 void g()
 {
-  ::f();               // ERROR - A::f is not found
+  ::f();               // { dg-error "" } A::f is not found
 }
 
 using namespace A;

@@ -1,3 +1,4 @@
+// { dg-do run  }
 #include <stdio.h>
 
 int bar ()

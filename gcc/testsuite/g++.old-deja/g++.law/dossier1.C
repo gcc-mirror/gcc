@@ -1,5 +1,5 @@
-// Build don't link: 
-// Special g++ Options: -frtti
+// { dg-do assemble  }
+// { dg-options "-frtti" }
 // GROUPS passed rtti
 // dossier file
 // Message-Id: <9212021501.AA02484@olympia.miro.com>

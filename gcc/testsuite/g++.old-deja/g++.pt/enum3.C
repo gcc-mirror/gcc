@@ -1,3 +1,4 @@
+// { dg-do run  }
 struct S { enum en { s0, s1, s2 }; };
 
 template<typename S::en e>

@@ -1,4 +1,5 @@
-// Special g++ Options: -w
+// { dg-do run  }
+// { dg-options "-w" }
 // GROUPS passed constructors
 // ctors file
 // Message-Id: <ACHILLES.92Nov25192123@i90s8.ira.uka.de>

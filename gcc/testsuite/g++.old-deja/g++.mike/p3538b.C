@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // prms-id: 3538
 
 // This tests for an ambiguous conversion of the this pointer (going
@@ -27,7 +27,7 @@ class ccHandleBase : public ccObjectInfo
 {};
 
 class cc_CircleHdl : public virtual ccHandleBase, public ccObjectInfo
-{				// WARNING - 
+{				// { dg-warning "" } 
 public:
   virtual const ccObjectInfo& repInvariant (int);
 };

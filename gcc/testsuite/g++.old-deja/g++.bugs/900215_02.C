@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.36.1 bug 900215_02
 
 // g++ allows global objects (which happen to be pointers to members of some
@@ -40,8 +41,8 @@ void struct0::function_member ()
   i = (this->*fmp) ();		// perfectly legal - for both cfront and g++
   i = this->*dmp;		// perfectly legal - for both cfront and g++
 
-  i = (*fmp) ();		// ERROR - 
-  i = *dmp;			// ERROR - 
+  i = (*fmp) ();		// { dg-error "" } 
+  i = *dmp;			// { dg-error "" } 
 }
 
 int main () { return 0; }

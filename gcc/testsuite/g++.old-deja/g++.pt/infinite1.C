@@ -1,11 +1,12 @@
+// { dg-do assemble  }
+// { dg-options "-ftemplate-depth-10" }
 // Test for catching infinitely recursive instantiations.
 // Origin: Jason Merrill <jason@redhat.com>
 
-// Special g++ Options: -ftemplate-depth-10
 
 template <int i> void f()
 {
-  f<i+1>();			// ERROR - excessive recursion
+  f<i+1>();			// { dg-error "" } excessive recursion
 }
 
 // We should never need this specialization because we should issue an

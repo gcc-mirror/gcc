@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test for partial specialization of a member function template.
 // Origin: Jason Merrill <jason@cygnus.com>
 

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // g++ 1.36.1 bug 900220_03
 
 // g++ does not properly disambiguate calls to overloaded functions
@@ -42,7 +43,7 @@ int test ()
   //volatile char& vcr = vc;
 
   overloaded (c);		// OK
-  overloaded (cc);		// gets bogus error
+  overloaded (cc);		// { dg-bogus "" } 
   //overloaded (vc);		// OK
 
   return (c_call_count != 1 || cc_call_count != 1 /* || vc_call_count != 1 */);

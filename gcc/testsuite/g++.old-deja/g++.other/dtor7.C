@@ -1,5 +1,6 @@
+// { dg-do run  }
+// { dg-options "-O2" }
 // Origin: Mark Mitchell <mitchell@codesourcery.com>
-// Special g++ Options: -O2
 
 int i;
 int j;

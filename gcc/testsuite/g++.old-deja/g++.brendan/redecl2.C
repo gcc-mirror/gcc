@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed redeclaration
 // Check that if multiple declarations of the same single
 // function are present in different places in the same file,

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 class string {
 public:
@@ -11,11 +11,11 @@ void foo(string) { }
 string bar() {
   foo("hello");		// ok
   foo(string(2));	// ok
-  foo(2);		// ERROR - no implicit conversion from int to string
-  string x = 2;		// ERROR - no implicit conversion from int to string
+  foo(2);		// { dg-error "" } no implicit conversion from int to string
+  string x = 2;		// { dg-error "" } no implicit conversion from int to string
   string y(2);		// ok
   foo((string)2);	// ok
-  return 2;		// ERROR - no implicit conversion from int to string
+  return 2;		// { dg-error "" } no implicit conversion from int to string
 }
 
 class A : string {

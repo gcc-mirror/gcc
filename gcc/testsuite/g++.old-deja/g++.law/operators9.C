@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed operators
 // opr-eq file
 // Message-Id: <9301141514.AA05925@mi.el.utwente.nl>
@@ -9,11 +9,11 @@
 class B
 {
 public:
-      operator=(B &); // ERROR - no type or storage class
+      operator=(B &); // { dg-error "" } no type or storage class
 };
 
 void
 test(B &b1, const B &b2)
 {
-        b1 = b2;// ERROR - .*
+        b1 = b2;// { dg-error "" } .*
 }

@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // Bug: g++ silently mangles the second 'B' to 'A::B', so the definition is
 // lost.
-// Build don't link:
 
 struct A {
   enum B { };

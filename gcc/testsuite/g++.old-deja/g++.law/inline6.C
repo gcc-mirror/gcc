@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed inlining
 // inline file
 // Message-Id: <199307162240.AA04019@world.std.com>

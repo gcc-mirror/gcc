@@ -1,4 +1,5 @@
-// Special g++ Options: -O
+// { dg-do run  }
+// { dg-options "-O" }
 // PRMS Id: 10776
 
 extern "C" int printf (const char *, ...);

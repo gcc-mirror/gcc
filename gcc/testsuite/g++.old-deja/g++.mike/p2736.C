@@ -1,3 +1,4 @@
+// { dg-do run  }
 // This is a poor test case, it is meant to ensure that function local
 // statics are destroyed at the right time.  See PR 2736 for details.
 // prms-id: 2736

@@ -1,7 +1,7 @@
+// { dg-do assemble  }
 // Make sure we can initialize a reference to a templated type, that
 // requires a conversion from a derived type to a base type.
 
-// Build don't link:
 // prms-id: 3524
 
 struct cc2Vector

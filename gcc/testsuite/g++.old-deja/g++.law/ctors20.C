@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed constructors
 // ctor file
 // Message-Id: <9311011758.AA25157@thneed.cs.duke.edu>

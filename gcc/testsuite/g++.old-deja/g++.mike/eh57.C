@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -fno-exceptions
+// { dg-do assemble  }
+// { dg-options "-fno-exceptions" }
 
 class Calendar_Time {
 public:

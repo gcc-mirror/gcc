@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Testcase for simple overloading resolution.
-// Build don't link:
 
 void foo (int);
 void foo (int, int);

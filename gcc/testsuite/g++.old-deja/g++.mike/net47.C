@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -w -fpermissive
+// { dg-do assemble  }
+// { dg-options "-w -fpermissive" }
 
 class foo {};
 class bar : foo {

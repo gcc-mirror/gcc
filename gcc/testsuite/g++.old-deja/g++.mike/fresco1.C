@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // This is a Fresco found bug.
 

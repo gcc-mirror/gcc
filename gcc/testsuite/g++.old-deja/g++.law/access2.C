@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed access
 // access file
 // Message-Id: <9306301534.AA05072@sparc1.cnm.us.es>
@@ -10,11 +10,11 @@ template <class T> class Foo
 {
 private:
     friend class Bar; // To avoid warning.
-      Foo(const T &v) {}; // ERROR - private
+      Foo(const T &v) {}; // { dg-error "" } private
 };
 
 
 int main()
 {
-    Foo<int>(1);// ERROR - 
+    Foo<int>(1);// { dg-error "" } 
 }

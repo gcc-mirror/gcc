@@ -1,11 +1,11 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed constructors
 // ctors file
 // Subject: bug in handling static const object of the enclosing class
 // Date: Tue, 1 Sep 92 10:38:44 EDT
 
 class X
-{ // ERROR - candidate
+{ // { dg-error "" } candidate
   private:
     int x;
   public:
@@ -21,13 +21,13 @@ class Y
     Y();
 }
 X::X( int xi )
-{// ERROR -  return.*
+{// { dg-error "" }  return.*
     x = xi;
 }
 
 const X X::x0( 0 );
 
 Y::Y()
-{// ERROR -  no mat
+{// { dg-error "" }  no mat
     xx = X::x0;
 }

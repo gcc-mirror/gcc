@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 4656
 // Testcase for use of member pointers in template resolution
 
@@ -14,7 +15,7 @@ int foo (T A<int>::*p)
 }
 int main()
 {
-  int A<int>::*pm = &A<int>::a;	// gets bogus error - failed temp resolution
+  int A<int>::*pm = &A<int>::a;	// { dg-bogus "" } failed temp resolution
   foo (pm);
   return 0;
 }

@@ -1,8 +1,8 @@
+// { dg-do assemble  }
+// { dg-options "" }
 // Test that we don't complain about trying to define bool or wchar_t in a
 // system header.
 
-// Special g++ Options:
-// Build don't link:
 
 # 1 "syshdr1.C"
 # 1 "syshdr1.h" 1 3

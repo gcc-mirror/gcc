@@ -1,5 +1,4 @@
-// Build don't link:
-// excess errors test
+// { dg-do assemble  }
 
 // Here we declare ::S
 typedef struct s1 *S;
@@ -22,7 +21,7 @@ class X
 {
 public:
   static T *do_something ();
-  friend class T; // ERROR - `T' is a template parameter
+  friend class T; // { dg-error "" } `T' is a template parameter
   friend class XX<T, U>;
 };
 

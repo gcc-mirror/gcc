@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
 
-template <class T> void foo();	// ERROR - candidate
+template <class T> void foo();	// { dg-error "" } candidate
 
 void (*bar)() = foo<void>;
-void (*baz)() = foo; // ERROR - can't deduce T
+void (*baz)() = foo; // { dg-error "" } can't deduce T

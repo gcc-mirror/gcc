@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Testcase for precedence of ?: wrt =
 
 extern "C" int printf (const char *, ...);

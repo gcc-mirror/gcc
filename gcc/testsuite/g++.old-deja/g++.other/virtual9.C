@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Source: Neil Booth, from PR #111.
 
 class A

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed initialization
 // init file
 // From: lupine!segfault!rfg@uunet.UU.NET

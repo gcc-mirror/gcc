@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed arg-matching
 // arg-matching file
 // Message-Id: <199303032114.AA03574@kolvir.Boulder.ParcPlace.COM>

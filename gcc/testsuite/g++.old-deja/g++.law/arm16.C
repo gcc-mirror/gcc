@@ -1,5 +1,5 @@
-// Build don't link: 
-// Special g++ Options: -ansi -Wall -pedantic
+// { dg-do assemble  }
+// { dg-options "-ansi -Wall -pedantic" }
 // GROUPS passed ARM-compliance
 // arm file
 // From: Olaf.Weber@cwi.nl
@@ -11,4 +11,4 @@ struct C {
         void foo();
 };
 
-void (C::*pfm)() = C::foo;// ERROR - .*
+void (C::*pfm)() = C::foo;// { dg-error "" } .*

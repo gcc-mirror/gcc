@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed conversions
 // cvt file
 // Message-Id: <9208261851.AA16997@josquin.media.mit.edu>

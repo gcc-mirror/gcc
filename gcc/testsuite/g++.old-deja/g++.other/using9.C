@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 26 Feb 2001 <nathan@codesourcery.com>
@@ -17,5 +17,5 @@ extern "C" void foo ();
 
 namespace {
   extern "C" int foo ();
-  using ::foo; // ERROR - already in use
+  using ::foo; // { dg-error "" } already in use
 }

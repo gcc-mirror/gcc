@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Any expression may be explicitly converted to type void.
-// Build don't link:
 
 struct S { int m[10]; } object;
 struct S f () { return object; }

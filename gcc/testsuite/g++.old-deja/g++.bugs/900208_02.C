@@ -1,3 +1,4 @@
+// { dg-do run  }
 // g++ 1.36.1 bug 900208_02
 
 // g++ does not allow a static member of a class/struct/union to be
@@ -9,9 +10,9 @@
 
 class class0 {
 public:
-  static int class0_data_member_0[];	// gets bogus error
+  static int class0_data_member_0[];	// { dg-bogus "" } 
 };
 
-int class0::class0_data_member_0[3] = { 1, 2, 3 };  // gets bogus error
+int class0::class0_data_member_0[3] = { 1, 2, 3 };  // { dg-bogus "" } 
 
 int main () { return 0; }

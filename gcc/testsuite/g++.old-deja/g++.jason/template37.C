@@ -1,6 +1,9 @@
+// { dg-do run  }
+// { dg-options "-Wno-deprecated -fexternal-templates" }
+// { dg-warning "switch.*deprecated" "" { target *-*-* } 0 }
+
 // PRMS Id: 9930
 // Test of -fexternal-templates hackery in new template code
-// Special g++ options: -Wno-deprecated -fexternal-templates
 
   #pragma implementation "foo.hh"
   #pragma interface "foo.hh"

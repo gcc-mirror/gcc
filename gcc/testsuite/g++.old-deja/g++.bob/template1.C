@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // prms-id: 10038
 template < class Referencee >
 class Referencer

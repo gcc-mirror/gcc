@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 4 Feb 2000 <nathan@acm.org>
@@ -12,7 +12,7 @@ typedef char const *ary_t[2];
 void f0 (ary_t const *const &ary)
 {
   static_cast <void const *> (ary);
-  static_cast <void *> (ary);         // ERROR - casts away const
+  static_cast <void *> (ary);         // { dg-error "" } casts away const
   (void const *) (ary);
 }
 
@@ -26,7 +26,7 @@ void f1 (ary_t *const &ary)
 void f2 (ary_t const *&ary)
 {
   static_cast <void const *> (ary);
-  static_cast <void *> (ary);         // ERROR - casts away const
+  static_cast <void *> (ary);         // { dg-error "" } casts away const
   (void const *) (ary);
 }
 

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // PRMS Id: 8927
 // Bug: complex inheritance interferes with const checking
 
@@ -20,5 +21,5 @@ public:
 
 void Child::DoX() const
 {
-  A = 10;		// ERROR - assignment to const
+  A = 10;		// { dg-error "" } assignment to const
 }

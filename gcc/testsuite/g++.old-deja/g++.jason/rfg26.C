@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 typedef void (FTYPE) ();
  
 FTYPE f;                /* ok */
@@ -5,5 +6,5 @@ FTYPE f;                /* ok */
 void
 test_0 ()
 {
-    (FTYPE) f;          /* ERROR - casting to function type */
+    (FTYPE) f;          /* { dg-error "" } casting to function type */
 }

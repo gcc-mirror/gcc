@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 struct C
@@ -8,5 +8,5 @@ struct C
 
 void C::f ()
 {
-  asm ("" : : "m" (f)); // ERROR - type could not be determined
+  asm ("" : : "m" (f)); // { dg-error "" } type could not be determined
 }

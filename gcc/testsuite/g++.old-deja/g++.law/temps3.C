@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed temps
 // temps file
 // Message-Id: <9308231535.AA19432@geant.cenatls.cena.dgac.fr>

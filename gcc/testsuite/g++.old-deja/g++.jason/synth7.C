@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Testcase to make sure that synthesized methods are found when needed.
 
 struct B { ~B() { } };

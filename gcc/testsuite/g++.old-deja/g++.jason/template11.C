@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: initializers for static data members of templates don't get run.
 
 template <class T> struct A {

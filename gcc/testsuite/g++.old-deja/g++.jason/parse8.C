@@ -1,2 +1,2 @@
-// Build don't link:
-void foo(const int* const); // gets bogus error
+// { dg-do assemble  }
+void foo(const int* const); // { dg-bogus "" } 

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed friends
 // friends file
 // From: rwave!myersn%rwave.roguewave@cs.orst.edu (Nathan Myers)

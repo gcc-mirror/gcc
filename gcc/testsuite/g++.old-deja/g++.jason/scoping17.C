@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that the integer hides the struct in block scope.
 
 int main ()

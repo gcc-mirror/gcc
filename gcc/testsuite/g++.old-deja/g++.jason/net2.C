@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test of various ?: problems.
 
 class D

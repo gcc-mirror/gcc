@@ -1,6 +1,5 @@
-// Build don't link:
+// { dg-do assemble { xfail *-*-* } }
 
-// crash test - XFAIL *-*-*
 
 // Based on bug report by Eric NICOLAS <nicolas@bnp-eng.remcomp.com>
 
@@ -9,5 +8,5 @@ namespace foo {
 }
 
 void baz() {
-  foo::bar(); // ERROR - template used as expression
+  foo::bar(); // { dg-error "" } template used as expression
 }

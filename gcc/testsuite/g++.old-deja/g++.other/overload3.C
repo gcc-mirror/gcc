@@ -1,4 +1,4 @@
-// Build don't run:
+// { dg-do link  }
 
 void f(const int *);
 void f(int *) {}

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS ID: 7304
 
 struct V {

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Testing overloading of function argument involving template template
 // parameters

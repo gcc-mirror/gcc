@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed pointers-to-members
 template<class T> class TemplA {
     T t;

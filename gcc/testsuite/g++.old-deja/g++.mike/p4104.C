@@ -1,3 +1,4 @@
+// { dg-do run  }
 // prms-id: 4104
 
 template <class T>

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 typedef __SIZE_TYPE__ size_t;
 inline void *operator new(size_t, void *place) throw() { return place; }
 

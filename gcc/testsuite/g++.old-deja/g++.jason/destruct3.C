@@ -1,7 +1,7 @@
-// Special g++ Options: -w
+// { dg-do assemble  }
+// { dg-options "-w" }
 // PRMS Id: 4342 (second testcase)
 // Bug: g++ still can't deal with ambiguous inheritance in destructor calls.
-// Build don't link:
 
 struct ccUnwind 
 {

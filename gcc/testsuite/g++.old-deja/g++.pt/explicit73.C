@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // by Alexandre Oliva <oliva@dcc.unicamp.br>
 
@@ -7,9 +7,9 @@
 // the template
 
 namespace N {
-  template <class T> class foo;	// ERROR - referenced below
+  template <class T> class foo;	// { dg-error "" } referenced below
 }
 
 using namespace N;
 
-template <> class foo<void>; // ERROR - invalid specialization
+template <> class foo<void>; // { dg-error "" } invalid specialization

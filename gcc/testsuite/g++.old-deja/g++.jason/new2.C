@@ -1,5 +1,6 @@
+// { dg-do run  }
+// { dg-options "-Wno-deprecated -fno-exceptions" }
 // PRMS Id: 6267
-// Special g++ Options: -Wno-deprecated -fno-exceptions
 
 struct A {
   int i;

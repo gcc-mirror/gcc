@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Compile with -S, there should be no references to
 // LTRAMP in the output.
 

@@ -1,3 +1,4 @@
+// { dg-do run  }
 int count;
 
 extern "C" void _exit(int);

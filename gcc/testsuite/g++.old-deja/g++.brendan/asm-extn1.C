@@ -1,7 +1,6 @@
-// Build don't link: 
-// Special g++ Options: -S
+// { dg-do assemble { target sparc-sun-* } }
+// { dg-options "-S" }
 // GROUPS passed asm-extension
-// Skip if not target: sparc-sun-*
 // This used to crash because c_expand_asm_keyword didn't know what to
 // do with this.  The parser rules were changed to accept an expr, instead
 // of a stmt.

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: "Artem Hodyush" <artem@duma.gov.ru>
 
 struct B { int m; };

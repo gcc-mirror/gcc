@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed miscellaneous-bugs
 // Using a typedef causes a compiler error
 typedef unsigned int Uint32;

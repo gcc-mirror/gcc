@@ -1,5 +1,5 @@
-// Special g++ Options: -fexceptions
-// excess errors test - XFAIL arm-*-pe
+// { dg-do run { xfail arm-*-pe } }
+// { dg-options "-fexceptions" }
 
 #include <string>
 

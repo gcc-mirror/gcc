@@ -1,11 +1,11 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed gb scope
 struct C {
   struct D {
     int x;
     void foo ();
   };
-      const int Ok = 0; // ERROR - initialization forbidden
+      const int Ok = 0; // { dg-error "" } initialization forbidden
 };
 
 void C::D::foo ()

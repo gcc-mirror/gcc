@@ -1,7 +1,7 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template<typename T>
 void f()
 {
-  typename T::u;  // ERROR - declare anything
+  typename T::u;  // { dg-error "" } declare anything
 }

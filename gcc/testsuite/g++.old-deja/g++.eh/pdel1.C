@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test for calling placement delete.
 
 #include <new>

@@ -1,8 +1,8 @@
-//Build don't link:
+// { dg-do assemble  }
 namespace NS1
 {
   int a;
 }
 
-namespace NS2 = NonExistant; //ERROR - 
+namespace NS2 = NonExistant; //{ dg-error "" } 
 

@@ -1,5 +1,5 @@
-// Special g++ Options: -fexceptions -w
-// excess errors test - XFAIL sparc64-*-elf arm-*-pe
+// { dg-do run { xfail sparc64-*-elf arm-*-pe } }
+// { dg-options "-fexceptions -w" }
 
 // Ensure reference handling works.
 

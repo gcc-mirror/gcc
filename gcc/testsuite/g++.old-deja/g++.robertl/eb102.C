@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Error: intenral compiler error on 1998/05/28 snapshot.
 #include <stdio.h>
 #include <stdlib.h>

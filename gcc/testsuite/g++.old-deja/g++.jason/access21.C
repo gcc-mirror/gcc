@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // PRMS Id: 6877
-// Build don't link:
 
 typedef __SIZE_TYPE__ size_t;
 class aa {
@@ -14,7 +14,7 @@ private:
 class bb {
 public:
         aa caa;
-};				// gets bogus error - calling private delete
+};				// { dg-bogus "" } calling private delete
 
 void
 f(){

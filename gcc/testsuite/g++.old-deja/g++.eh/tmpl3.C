@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Posted by Trevor Taylor <ttaylor@powerup.com.au>
 

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Jakub Jelinek <jakub@redhat.com>
 
 class foo {
@@ -7,11 +7,11 @@ class foo {
    friend class __iterator;
    typedef __iterator const_iterator;
    virtual ~foo() { }
-   __iterator begin();				// ERROR - 
+   __iterator begin();				// { dg-error "" } 
 };
 static void iteratorTest(const foo &x)
 {
-   foo::const_iterator i = x.begin();		// ERROR - 
+   foo::const_iterator i = x.begin();		// { dg-error "" } 
    for (; i; ++i)
       *i;
 }

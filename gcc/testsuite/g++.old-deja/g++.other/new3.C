@@ -1,3 +1,4 @@
+// { dg-do run  }
 typedef __SIZE_TYPE__ size_t;
 
 template <class T>

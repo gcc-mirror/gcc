@@ -1,3 +1,4 @@
+// { dg-do run  }
 //Overload resolution should consider both declarations of func identically.
 
 struct S{};

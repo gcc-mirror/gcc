@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 extern "C" void abort();
 
 template <class T>
@@ -14,7 +15,7 @@ int main()
 
 template <>
 int f(int i) 
-{             // ERROR - specialization of f<int>(int) after instantiation
+{             // { dg-error "" } specialization of f<int>(int) after instantiation
   return 1;
 }
 

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed initialization
 class test
  {
@@ -8,4 +8,4 @@ class test
    test (int val) { x = val; y = 0;}
  };
 
-test ar(34)[5];// ERROR - .*
+test ar(34)[5];// { dg-error "" } .*

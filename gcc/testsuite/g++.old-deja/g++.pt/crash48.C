@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Jean-Francois Panisset <panisset@discreet.com>
 
 template<class T>

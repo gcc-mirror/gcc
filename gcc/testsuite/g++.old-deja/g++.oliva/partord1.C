@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 1999 Free Software Foundation
 
@@ -9,7 +9,7 @@ template <typename T> void foo(T*);
 
 template <typename T> class bar {
  private:
-  int i; // ERROR - this variable
+  int i; // { dg-error "" } this variable
   friend void foo<T>(T);
 };
 
@@ -17,7 +17,7 @@ template <typename T> void foo(T) {
   bar<T>().i = 0; // ok, I'm a friend
 }
 template <typename T> void foo(T*) {
-  bar<T*>().i = 1; // ERROR - not a friend
+  bar<T*>().i = 1; // { dg-error "" } not a friend
 }
 
 int main() {

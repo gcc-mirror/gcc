@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.36.1 bug 900210_05
 
 // Section 18.3 of the 2.0 Reference Manual says "An implementation
@@ -31,7 +32,7 @@ int int0_object;
 
 void function ()
 {
-  enum0_object = int0_object;	/* ERROR - */
+  enum0_object = int0_object;	/* { dg-error "" } */
 }
 
 int main () { return 0; }

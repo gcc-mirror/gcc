@@ -1,3 +1,4 @@
+// { dg-do run  }
 //980323 bkoz
 //test for bools with inclusive ors
 

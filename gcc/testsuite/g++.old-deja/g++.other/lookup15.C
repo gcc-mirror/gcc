@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Benjamin Kosnik <bkoz@cygnus.com>
 
 class b

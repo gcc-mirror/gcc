@@ -1,6 +1,6 @@
+// { dg-do assemble  }
+// { dg-options "-Wno-pmf-conversions" }
 // Testcase for cast of bound pointer to member function.
-// Special g++ Options: -Wno-pmf-conversions
-// Build don't link:
 
 struct A {
   int f ();

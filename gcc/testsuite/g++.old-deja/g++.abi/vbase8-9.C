@@ -1,4 +1,5 @@
-// Special g++ Options: -ansi -pedantic-errors -w
+// { dg-do run  }
+// { dg-options "-ansi -pedantic-errors -w" }
 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 14 Jun 2001 <nathan@codesourcery.com>

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed constructors
 // ctor file
 // Message-Id: <9303270404.28207@munta.cs.mu.OZ.AU>

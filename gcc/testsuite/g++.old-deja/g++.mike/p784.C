@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -w
+// { dg-do assemble  }
+// { dg-options "-w" }
 // prms-id: 784
 
 //# 1 "GctSymbol.GctSymbol.CHMap.cc"
@@ -1602,74 +1602,74 @@ inline void String:: operator +=(char y)
 
 
 
-inline String operator + (const String& x, const String& y) return r; // ERROR - 
+inline String operator + (const String& x, const String& y) return r; // { dg-error "" } 
 {
-  cat(x, y, r); // ERROR - 
+  cat(x, y, r); // { dg-error "" } 
 }
 
-inline String operator + (const String& x, const SubString& y) return r; // ERROR - 
+inline String operator + (const String& x, const SubString& y) return r; // { dg-error "" } 
 {
-  cat(x, y, r); // ERROR - 
+  cat(x, y, r); // { dg-error "" } 
 }
 
-inline String operator + (const String& x, const char* y) return r; // ERROR - 
+inline String operator + (const String& x, const char* y) return r; // { dg-error "" } 
 {
-  cat(x, y, r); // ERROR - 
+  cat(x, y, r); // { dg-error "" } 
 }
 
-inline String operator + (const String& x, char y) return r; // ERROR - 
+inline String operator + (const String& x, char y) return r; // { dg-error "" } 
 {
-  cat(x, y, r); // ERROR - 
+  cat(x, y, r); // { dg-error "" } 
 }
 
-inline String operator + (const SubString& x, const String& y) return r; // ERROR - 
+inline String operator + (const SubString& x, const String& y) return r; // { dg-error "" } 
 {
-  cat(x, y, r); // ERROR - 
+  cat(x, y, r); // { dg-error "" } 
 }
 
-inline String operator + (const SubString& x, const SubString& y) return r; // ERROR - 
+inline String operator + (const SubString& x, const SubString& y) return r; // { dg-error "" } 
 {
-  cat(x, y, r); // ERROR - 
+  cat(x, y, r); // { dg-error "" } 
 }
 
-inline String operator + (const SubString& x, const char* y) return r; // ERROR - 
+inline String operator + (const SubString& x, const char* y) return r; // { dg-error "" } 
 {
-  cat(x, y, r); // ERROR - 
+  cat(x, y, r); // { dg-error "" } 
 }
 
-inline String operator + (const SubString& x, char y) return r; // ERROR - 
+inline String operator + (const SubString& x, char y) return r; // { dg-error "" } 
 {
-  cat(x, y, r); // ERROR - 
+  cat(x, y, r); // { dg-error "" } 
 }
 
-inline String operator + (const char* x, const String& y) return r; // ERROR - 
+inline String operator + (const char* x, const String& y) return r; // { dg-error "" } 
 {
-  cat(x, y, r); // ERROR - 
+  cat(x, y, r); // { dg-error "" } 
 }
 
-inline String operator + (const char* x, const SubString& y) return r; // ERROR - 
+inline String operator + (const char* x, const SubString& y) return r; // { dg-error "" } 
 {
-  cat(x, y, r); // ERROR - 
+  cat(x, y, r); // { dg-error "" } 
 }
 
-inline String reverse(const String& x) return r; // ERROR - 
+inline String reverse(const String& x) return r; // { dg-error "" } 
 {
-  r.rep = Sreverse(x.rep, r.rep); // ERROR - 
+  r.rep = Sreverse(x.rep, r.rep); // { dg-error "" } 
 }
 
-inline String upcase(const String& x) return r; // ERROR - 
+inline String upcase(const String& x) return r; // { dg-error "" } 
 {
-  r.rep = Supcase(x.rep, r.rep); // ERROR - 
+  r.rep = Supcase(x.rep, r.rep); // { dg-error "" } 
 }
 
-inline String downcase(const String& x) return r; // ERROR - 
+inline String downcase(const String& x) return r; // { dg-error "" } 
 {
-  r.rep = Sdowncase(x.rep, r.rep); // ERROR - 
+  r.rep = Sdowncase(x.rep, r.rep); // { dg-error "" } 
 }
 
-inline String capitalize(const String& x) return r; // ERROR - 
+inline String capitalize(const String& x) return r; // { dg-error "" } 
 {
-  r.rep = Scapitalize(x.rep, r.rep); // ERROR - 
+  r.rep = Scapitalize(x.rep, r.rep); // { dg-error "" } 
 }
 
 //# 883 "/projects/gnu-cygnus/gnu-cygnus-8/common/g++-include/String.h"
@@ -2282,7 +2282,7 @@ public:
     // This constructor defines cp as the buffer to use for the
     // stream (instead of one of its own devising); it does NOT
     // initialize the ostrstream to contain cp (of length n).
-  tostrstream(char *cp, int n, int mode=ios::out): ostrtream(cp, n, mode)	// ERROR - 
+  tostrstream(char *cp, int n, int mode=ios::out): ostrtream(cp, n, mode)	// { dg-error "" } 
 	{ }
     char *str()
 	{
@@ -3653,5 +3653,5 @@ GctSymbolGctSymbolCHMap::GctSymbolGctSymbolCHMap(GctSymbolGctSymbolCHMap& a) :Gc
   tab = (GctSymbolGctSymbolCHNode**)(new GctSymbolGctSymbolCHNodePtr[size = a.size]);
   for (unsigned int i = 0; i < size; ++i) tab[i] = index_to_CHptr(i+1);
   count = 0;
-  for (Pix p = a.first(); p; a.next(p)) (*this)[a.key(p)] = a.contents(p); // gets bogus error - type `GctSymbol' is derived from private `String'
+  for (Pix p = a.first(); p; a.next(p)) (*this)[a.key(p)] = a.contents(p); // { dg-bogus "" } type `GctSymbol' is derived from private `String'
 }

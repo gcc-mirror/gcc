@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 void f ()
 {
   struct A {
@@ -6,5 +6,5 @@ void f ()
   };
 }
 void h () {
-  g ();				// ERROR - no g in scope
+  g ();				// { dg-error "" } no g in scope
 }

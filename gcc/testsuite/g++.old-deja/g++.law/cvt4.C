@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed conversions
 // cvt file
 // Message-Id: <9308091213.AA11572@emmy.Mathematik.Uni-Dortmund.DE>

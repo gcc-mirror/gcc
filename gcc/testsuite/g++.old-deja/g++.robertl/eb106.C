@@ -1,6 +1,5 @@
-// Skip if not native
-// Special g++ Options: -O2 -fPIC 
-// Build don't link: 
+// { dg-do assemble { target native } }
+// { dg-options "-O2 -fPIC " }
 struct T
 {
 	char*	f1;

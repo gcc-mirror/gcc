@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 5331
 // Bug: the return value of foo is constructed in a temporary and then
 // copied into the return slot.  This is not necessary.

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed visibility
 // visibility file
 // From: Gordon Joly <G.Joly@cs.ucl.ac.uk>
@@ -16,9 +16,9 @@ class A {
   virtual ~A()
     {}
   virtual void Number(int c)
-    { number = c; } // ERROR - private
+    { number = c; } // { dg-error "" } private
   virtual int Number()
-    { return number; } // ERROR - private
+    { return number; } // { dg-error "" } private
 };
 
 class B : private A {
@@ -53,9 +53,9 @@ class C {
   // and they should not be able to do so
   //
   virtual void setBValue(int i) 
-    { if (bobject) bobject->Number(i); }// ERROR - .*
+    { if (bobject) bobject->Number(i); }// { dg-error "" } .*
   virtual int getBValue()
-    { if (bobject) { return bobject->Number(); } return 0; }// ERROR - .*
+    { if (bobject) { return bobject->Number(); } return 0; }// { dg-error "" } .*
 };
 
 

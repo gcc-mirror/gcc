@@ -1,4 +1,5 @@
-// Special g++ Options: -fexceptions
+// { dg-do run  }
+// { dg-options "-fexceptions" }
 
 struct A {
   A() { }

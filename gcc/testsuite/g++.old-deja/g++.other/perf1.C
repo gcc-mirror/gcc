@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Test of severe performance regression from 2.95.  This code generates
 // a heavily self-referential tree which caused the inliner to take

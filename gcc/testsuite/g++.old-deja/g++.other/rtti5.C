@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -fno-rtti
+// { dg-do assemble  }
+// { dg-options "-fno-rtti" }
 
 // Copyright (C) 1999 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 9 Apr 1999 <nathan@acm.org>
@@ -10,5 +10,5 @@
 
 int main(void) {
   int i;
-  typeid(i); // ERROR - rtti disabled
+  typeid(i); // { dg-error "" } rtti disabled
 }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed sizeof
 // ARM $5.3.2
 

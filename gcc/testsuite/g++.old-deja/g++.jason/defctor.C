@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: g++ doesn't generate default constructor.
 
 class A {

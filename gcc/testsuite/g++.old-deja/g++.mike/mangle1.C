@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: 
+// { dg-do assemble  }
+// { dg-options "" }
 
 // Make sure the typedef name is used in name mangling, not some random
 // anonymous name

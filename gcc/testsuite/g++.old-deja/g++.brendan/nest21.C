@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed nested-classes
 #include <iostream>
 #include <cstdio>

@@ -1,8 +1,8 @@
-// Build don't link:
+// { dg-do assemble  }
 
 int f (int x)
 {
-  extern void g (int i = f (x)); // ERROR - default argument uses local
+  extern void g (int i = f (x)); // { dg-error "" } default argument uses local
   
   g();
 
@@ -12,12 +12,12 @@ int f (int x)
 int f (void);
 
 int h1 (int (*)(int) = f);
-int h2 (int (*)(double) = f); // ERROR - no matching f
+int h2 (int (*)(double) = f); // { dg-error "" } no matching f
 
 template <class T>
 int j (T t)
 {
-  extern void k (int i = j (t)); // ERROR - default argument uses local
+  extern void k (int i = j (t)); // { dg-error "" } default argument uses local
 
   k ();
 

@@ -1,5 +1,5 @@
-// Build don't link: 
-// Special g++ Options: -O
+// { dg-do assemble  }
+// { dg-options "-O" }
 // GROUPS passed unsorted
 // unsorted.2 file
 // From: skipnyc!skipsun!skip@fsg.com (Skip Gilbrech)

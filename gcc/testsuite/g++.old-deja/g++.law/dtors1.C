@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed destructors
 // friends file
 // From: offline!marc@ai.mit.edu (Marc Duponcheel) (Marc Duponcheel)
@@ -9,5 +9,5 @@
 void    f()
 {
         int     i;
-        i.i::~i();// ERROR - .*
+        i.i::~i();// { dg-error "" } .*
 }

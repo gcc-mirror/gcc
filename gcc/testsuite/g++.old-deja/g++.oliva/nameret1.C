@@ -1,13 +1,13 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "-Wno-deprecated" }
 // Copyright (C) 1999, 2000, 2002 Free Software Foundation
 
 // by Alexandre Oliva <oliva@lsd.ic.unicamp.br>
 
 // distilled from libg++'s Rational.cc
 
-// Special g++ Options: -Wno-deprecated
 
-inline int bar () return r {} // ERROR - 
+inline int bar () return r {} // { dg-error "" } 
 
 int foo () {
   return bar ();

@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "-O2" }
 // Origin: Matt Austern <austern@isolde.engr.sgi.com>
-// Special g++ Options: -O2
 
 class X;
 

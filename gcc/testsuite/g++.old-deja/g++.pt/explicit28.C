@@ -1,4 +1,4 @@
-// Build don't run:
+// { dg-do link  }
 // GROUPS passed templates
 template <class T>
 int foo(T t) { return 1; }

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Neil Booth, from PR #66
 
 extern "C"

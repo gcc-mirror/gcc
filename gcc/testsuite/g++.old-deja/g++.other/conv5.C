@@ -1,8 +1,8 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "" }
 
 // Based on bug report by Thomas Kunert <kunert@physik.tu-dresden.de>
 
-// Special g++ Options:
 
 int foo();
-const int (*bar)() = foo; // ERROR - adding const
+const int (*bar)() = foo; // { dg-error "" } adding const

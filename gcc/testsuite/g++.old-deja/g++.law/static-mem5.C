@@ -1,5 +1,5 @@
-// Build don't link: 
-// Special g++ Options: -w
+// { dg-do assemble  }
+// { dg-options "-w" }
 // GROUPS passed static-mem
 // static-mem file
 // From: bunch@tazboy.jpl.nasa.gov (Walt Bunch)

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Testing exception specifications.
 // Test 4: all throws fail, call terminate.
 

@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // PRMS Id: 4694
 // Bug: g++ doesn't realize that A::i refers to a member of `this' in B().
-// Build don't link:
 
 class A {
 protected:

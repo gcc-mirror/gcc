@@ -1,6 +1,6 @@
-// Build don't run:
+// { dg-do link  }
+// { dg-options "-fno-implicit-templates" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
-// Special g++ Options: -fno-implicit-templates
 
 template <class T>
 struct U {

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // prms-id: 807
 
 // See ARM page 275 Section 12.3.2
@@ -10,13 +10,13 @@ class B;
 
 class A {
 public:
-	A(B&);			// ERROR - fn ref in err msg
+	A(B&);			// { dg-error "" } fn ref in err msg
 };
 
 class B {
 public:
-	operator A();		// ERROR - fn ref in err msg
+	operator A();		// { dg-error "" } fn ref in err msg
 };
 
 B b;
-A a = b;  // ERROR - should fail as it is ambigious.
+A a = b;  // { dg-error "" } should fail as it is ambigious.

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 7563
 // Bug: declaration at function scope causes mismangling.
 

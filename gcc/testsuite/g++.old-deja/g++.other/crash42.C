@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -g
+// { dg-do assemble  }
+// { dg-options "-g" }
 // 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 25 Jul 2001 <nathan@codesourcery.com>

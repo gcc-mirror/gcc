@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template <class T> 
 struct S1 {};
@@ -8,5 +8,5 @@ namespace N {
 
 struct S2 
 {
-  typedef N::S1<int> S2_T; // ERROR - parse error
+  typedef N::S1<int> S2_T; // { dg-error "" } parse error
 };

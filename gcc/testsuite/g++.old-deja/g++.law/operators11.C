@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed operators
 // opr-eq file
 // Message-Id: <CCJrut.9M7@csc.ti.com>

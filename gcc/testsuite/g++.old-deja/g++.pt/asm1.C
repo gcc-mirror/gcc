@@ -1,6 +1,5 @@
-// Build don't link:
+// { dg-do assemble { target i?86-*-linux* x86_64-*-linux } }
 // Origin: "Weidmann, Nicholas" <nicholas.weidmann@swx.ch>
-// Skip if not target: i?86-*-linux* x86_64-*-linux
 
 template<int i> int foo(int v)
 {

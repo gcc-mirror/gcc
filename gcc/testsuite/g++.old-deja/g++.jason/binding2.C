@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Bug: g++ screws up binding levels in a switch statement with cleanups.
-// Build don't link:
 
 struct A {
   ~A() { }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // g++ 1.37.1 bug 900331_04
 
 // g++ is unable to correctly parse declarations of formal parameters and
@@ -13,20 +14,20 @@ int array[10];
 int (*global_array_ptr)[10] = &array;
 int (&global_array_ref)[10] = array;
 
-void function0 (int (*formal_array_ptr)[10]) {	// gets bogus errors
+void function0 (int (*formal_array_ptr)[10]) {	// { dg-bogus "" } s
 }
 
-void function1 (int (&formal_array_ref)[10]) {	// gets bogus errors
+void function1 (int (&formal_array_ref)[10]) {	// { dg-bogus "" } s
 }
 
 void function2 ()
 {
-  int (*local_array_ptr)[10] = &array;		// gets bogus errors
+  int (*local_array_ptr)[10] = &array;		// { dg-bogus "" } s
 }
 
 void function3 ()
 {
-  int (&local_array_ref)[10] = array;		// gets bogus error
+  int (&local_array_ref)[10] = array;		// { dg-bogus "" } 
 }
 
 int main () { return 0; }

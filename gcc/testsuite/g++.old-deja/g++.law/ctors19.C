@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed constructors
 // ctor file
 // From: mkohtala@vinkku.hut.fi

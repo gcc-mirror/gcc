@@ -1,5 +1,6 @@
+// { dg-do run  }
+// { dg-options "-frtti" }
 // test of rtti of non-class types
-// Special g++ Options: -frtti
 
 #include <typeinfo>
 

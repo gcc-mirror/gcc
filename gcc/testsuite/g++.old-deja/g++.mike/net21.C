@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Make sure we can initialize complex (MI ambiguous) vtables.
 
 extern "C" int printf(const char *, ...);

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: the switch fails on the Alpha because folding ef - 1 fails.
 
 enum foo { one=1, thirty=30 };

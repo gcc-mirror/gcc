@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed operators
 // opr-mm file
 // Date: Thu, 2 Jun 94 10:00:29 +0200

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: g++ screws up derived->base conversions when calling a global function
 // in the presence of matching members in the base.  Whew.
 

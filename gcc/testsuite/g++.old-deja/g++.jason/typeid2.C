@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 11596
 
 #include <typeinfo>

@@ -1,3 +1,4 @@
+// { dg-do run  }
 #include <cassert>
 #include <iostream>
 

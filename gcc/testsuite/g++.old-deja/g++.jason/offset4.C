@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Bug: g++ complains about the use of A::p below.
-// Build don't link:
 
 struct A {
   void *p;

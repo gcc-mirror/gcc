@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 3 Jan 2000 <nathan@acm.org>
@@ -19,8 +19,8 @@ void f0 ()
   
   static_cast <char *> (a);
   static_cast <char *> (b);
-  static_cast <char *> (c);   // ERROR - static cast
-  static_cast <char *> (d);   // ERROR - static cast
+  static_cast <char *> (c);   // { dg-error "" } static cast
+  static_cast <char *> (d);   // { dg-error "" } static cast
 }
 
 void f1 ()
@@ -43,10 +43,10 @@ void f2 ()
   C const c = C ();
   D const d = D ();
   
-  static_cast <char *> (a);   // ERROR - static cast
+  static_cast <char *> (a);   // { dg-error "" } static cast
   static_cast <char *> (b);
-  static_cast <char *> (c);   // ERROR - static cast
-  static_cast <char *> (d);   // ERROR - static cast
+  static_cast <char *> (c);   // { dg-error "" } static cast
+  static_cast <char *> (d);   // { dg-error "" } static cast
 }
 
 void f3 ()
@@ -56,8 +56,8 @@ void f3 ()
   C const c = C ();
   D const d = D ();
   
-  static_cast <const char *> (a); // ERROR - static cast
+  static_cast <const char *> (a); // { dg-error "" } static cast
   static_cast <const char *> (b);
-  static_cast <const char *> (c); // ERROR - static cast
+  static_cast <const char *> (c); // { dg-error "" } static cast
   static_cast <const char *> (d);
 }

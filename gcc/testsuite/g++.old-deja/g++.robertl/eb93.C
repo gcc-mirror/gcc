@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // Error: Internal compiler error on egcs 1998/05/28 snapshot.
 
 const double M_PI=3.14159265358979323846;
@@ -26,5 +27,5 @@ inline double Sine()
 int main()
 {
   double f=Sine<32,5>()
-  return 0;               // ERROR - parse error
+  return 0;               // { dg-error "" } parse error
 }

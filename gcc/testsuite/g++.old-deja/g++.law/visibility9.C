@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed visibility
 // visibility file
 // rom: roland@jts.com (Roland Knight )
@@ -8,7 +8,7 @@
 
 class A {
 protected:
-    int a; // ERROR - protected
+    int a; // { dg-error "" } protected
 };
 
 class B : public A {
@@ -18,5 +18,5 @@ public:
 
 
 void B::f1(A* pa) {
-    pa->a = 1;    // illegal but allowed by gcc// ERROR - .*
+    pa->a = 1;    // illegal but allowed by gcc// { dg-error "" } .*
 }

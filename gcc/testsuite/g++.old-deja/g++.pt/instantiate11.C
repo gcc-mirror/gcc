@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Neil Booth, from bug report #36
 
 template <typename t> class vect;

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that a throw in foo destroys the A, but does not free the memory.
 
 #include <cstddef>

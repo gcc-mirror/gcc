@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // 980808-980824 bkoz
 // template parameter redeclaration bugs
 
@@ -18,7 +18,7 @@
 
 // 01 
 // declared friend template
-template <class T4>// ERROR - .*
+template <class T4>// { dg-error "" } .*
 class Xone {
 protected:
   T4* next;
@@ -32,13 +32,13 @@ public:
   // can also do template-decl and then can ditch the foward-declaration
   // template <class T5> friend bool isequal (Xone<T5>& lhs, Xone<T5>& rhs);
   // this is not ok:
-  template <class T4> friend bool isequal (Xone<T4>& lhs, Xone<T4>& rhs);// ERROR - .*
+  template <class T4> friend bool isequal (Xone<T4>& lhs, Xone<T4>& rhs);// { dg-error "" } .*
 };
 
 
 // 02
 // nested template class
-template <class T6>// ERROR - .*
+template <class T6>// { dg-error "" } .*
 class Xtwo {
 protected:
   T6* next;
@@ -48,7 +48,7 @@ public:
   Xtwo(): next(0), prev(0), value(1999){}
   Xtwo(T6 init): value(init) {}
 
-  template <class T6> class nested {// ERROR - .*
+  template <class T6> class nested {// { dg-error "" } .*
     T6 value;
   public:
     nested(): value( T6(0)) {}
@@ -58,7 +58,7 @@ public:
 
 // 03
 // member templates
-template <class T8>// ERROR - .*
+template <class T8>// { dg-error "" } .*
 class Xthree {
 protected:
   T8* next;
@@ -68,7 +68,7 @@ public:
   Xthree(): next(0), prev(0), value(1999){}
   Xthree(T8 init): value(init) {}
 
-  template <class T8> T8 comp_ge(T8 test) {// ERROR - .*
+  template <class T8> T8 comp_ge(T8 test) {// { dg-error "" } .*
     T8 local_value;
     if (local_value > value) 
       return local_value;
@@ -80,8 +80,8 @@ public:
 
 // 04
 // local names (14.6.1 p 4)
-template <class T10, int i> struct Xfour {// ERROR - .*
-  int T10; // ERROR - .*
+template <class T10, int i> struct Xfour {// { dg-error "" } .*
+  int T10; // { dg-error "" } .*
   void f(){
     char T10;
   }
@@ -94,15 +94,15 @@ template <class T12, int i> struct Xfive {
   void f();
 };
 
-template <class T13, int i> void Xfive<T13,i>::f() {// ERROR - .*
-  int T13; // ERROR - .*
+template <class T13, int i> void Xfive<T13,i>::f() {// { dg-error "" } .*
+  int T13; // { dg-error "" } .*
   int T12; //should be ok
 }
 
 
 // 06
 // multiple names at the same level
-template <class T14, class T14> class Xsix { // ERROR - .*
+template <class T14, class T14> class Xsix { // { dg-error "" } .*
 private:
 public:
   void f();
@@ -111,14 +111,14 @@ public:
 
 // 07
 // multiple names, one in template parameter one in class-name
-template <class T12> class T12; // ERROR - .*
+template <class T12> class T12; // { dg-error "" } .*
 
 
 // 08 
 // with multiple template params, and second (third) one is redeclared
-template <class T16, int i, class T161> class Xseven { // ERROR - .*
+template <class T16, int i, class T161> class Xseven { // { dg-error "" } .*
 private:
-  char T161; // ERROR - .*
+  char T161; // { dg-error "" } .*
 public:
   template <class U>
   friend bool fooy(U u);
@@ -126,8 +126,8 @@ public:
   template <class T161>
   friend bool foo(T161 u)
     {
-      Xseven<T161, 5, int> obj; // ERROR - .*
-      return (obj.inst == u.inst); // ERROR - .*
+      Xseven<T161, 5, int> obj; // { dg-error "" } .*
+      return (obj.inst == u.inst); // { dg-error "" } .*
     }
 
 };
@@ -158,27 +158,27 @@ struct S1
 // 10 
 // check for non-type parameters, should still be able to redeclare?
 // local names (14.6.1 p 4)
-template <class T18, int i> class Xten {// ERROR - .*
-  float i; // ERROR - .*
+template <class T18, int i> class Xten {// { dg-error "" } .*
+  float i; // { dg-error "" } .*
 };
 
 
 // 11 
 // declared friend template, non-type parameters
-template <long l>// ERROR - .*
+template <long l>// { dg-error "" } .*
 class Xeleven {
 public:
-  template <long l> friend bool isequal (Xeleven<5> lhs, Xeleven<5> rhs);  // ERROR - .*
+  template <long l> friend bool isequal (Xeleven<5> lhs, Xeleven<5> rhs);  // { dg-error "" } .*
 };
 
 
 
 // 12
 // nested template class, non-type parameters
-template <long l>// ERROR - .*
+template <long l>// { dg-error "" } .*
 class Xtwelve {
 public:
-  template <long l> class nested {// ERROR - .
+  template <long l> class nested {// { dg-error "" } .
     long value;
   public:
     nested(): value(0) {}
@@ -188,14 +188,14 @@ public:
 
 // 13
 // member templates, non-type parameters
-template <long l>// ERROR - .*
+template <long l>// { dg-error "" } .*
 struct Xthirteen {
-  template <long l> long comp_ge(long test) {// ERROR - .
+  template <long l> long comp_ge(long test) {// { dg-error "" } .
     long local_value;
-    if (local_value > value) // ERROR - .*
+    if (local_value > value) // { dg-error "" } .*
       return local_value;
     else
-      return value; // ERROR - .*
+      return value; // { dg-error "" } .*
   }
 };
 

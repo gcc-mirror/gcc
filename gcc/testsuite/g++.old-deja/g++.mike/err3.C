@@ -1,9 +1,10 @@
+// { dg-do assemble  }
 class cb {
 };
 
 class cc {
 public:
   cc()
-    : cb() {		// ERROR - 
+    : cb() {		// { dg-error "" } 
   }
 };

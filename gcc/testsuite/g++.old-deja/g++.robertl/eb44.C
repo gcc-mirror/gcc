@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // spurious 'const' in error.
 // For egcs-2.91.34, the warning message refers to
 // class ostream & operator <<(class ostream &, const class Vector<T> &)
@@ -13,7 +14,7 @@ using namespace std;
 template <class T>
 class Vector
 {
-  friend ostream& operator<< (ostream& out, const Vector<T> & vec); // WARNING - 
+  friend ostream& operator<< (ostream& out, const Vector<T> & vec); // { dg-warning "" } 
 };
 
 template <class T>

@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Bug: typename_sub2 returned the type, so we tried to look up "A" in B.
-// Build don't link:
 
 struct A { struct A1 { }; };
 

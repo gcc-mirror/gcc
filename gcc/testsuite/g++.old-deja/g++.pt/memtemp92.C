@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: "Adam J. Richter" <adam@yggdrasil.com>
 
 template <class Style, class Base>

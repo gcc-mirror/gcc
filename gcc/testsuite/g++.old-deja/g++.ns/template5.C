@@ -1,3 +1,4 @@
+// { dg-do run  }
 //Check whether namespace-scoped template instantiations
 //are mangled differently.
 

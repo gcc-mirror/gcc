@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // prms-id: 6578
 
 struct A {

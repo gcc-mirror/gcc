@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed old-abort
 typedef int element;
 class Pix {
@@ -8,10 +8,10 @@ public:
 
     // Friend functions so that v == x works as does x == v works
     friend int operator==(void *v, const Pix& x)
-        { return v == index; }// ERROR - .*
+        { return v == index; }// { dg-error "" } .*
     friend int operator==(void *v, const Pix& x)
-        { return v != index; }// ERROR - .*
+        { return v != index; }// { dg-error "" } .*
 private:
 //    friend class List<T>;
-    element *index; // ERROR - invalid use of member
+    element *index; // { dg-error "" } invalid use of member
 };

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed constructors
 // Check that global level object constructors get called.
 

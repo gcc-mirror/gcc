@@ -1,3 +1,4 @@
+// { dg-do run  }
 // prms-id: 6311
 
 struct Foo {

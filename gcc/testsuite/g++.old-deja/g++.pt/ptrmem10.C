@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 14 Aug 2000 <nathan@codesourcery.com>
@@ -15,13 +15,13 @@ struct A
   void baz ();
 };
 
-template <typename T> void foo (int (*)(T));      // ERROR - candidate
-template <typename T> void foo (int (A::*)(T));   // ERROR - candidate
+template <typename T> void foo (int (*)(T));      // { dg-error "" } candidate
+template <typename T> void foo (int (A::*)(T));   // { dg-error "" } candidate
 
 
 void A::baz ()
 {
-  foo (&A::f);  // ERROR - ambiguous
+  foo (&A::f);  // { dg-error "" } ambiguous
   foo (A::f);
   foo (&(A::f));
   foo (f);

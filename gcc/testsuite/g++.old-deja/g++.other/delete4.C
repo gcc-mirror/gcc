@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 1999 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 15 Apr 1999 <nathan@acm.org>
@@ -13,22 +13,22 @@ typedef __SIZE_TYPE__ size_t;
 
 void *operator new(size_t)
 {
-  return 0; // ERROR - cannot return NULL
+  return 0; // { dg-error "" } cannot return NULL
 }
 void *operator new[](size_t)
 {
-  return 0; // ERROR - cannot return NULL
+  return 0; // { dg-error "" } cannot return NULL
 }
 
 struct X
 {
   void *operator new(size_t)
   {
-    return 0; // ERROR - cannot return NULL
+    return 0; // { dg-error "" } cannot return NULL
   }
   void *operator new[](size_t)
   {
-    return 0; // ERROR - cannot return NULL
+    return 0; // { dg-error "" } cannot return NULL
   }
 };
 
@@ -47,7 +47,7 @@ struct Y
 void fn(double *d, void *v)
 {
   delete d;   // ok
-  delete v;   // WARNING - deleting void
+  delete v;   // { dg-warning "" } deleting void
   delete[] d; // ok
-  delete[] v; // WARNING - deleting void
+  delete[] v; // { dg-warning "" } deleting void
 }

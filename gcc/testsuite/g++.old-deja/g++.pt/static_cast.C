@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template <class InputIterator, class BinaryOperation>
 void accumulate(InputIterator first, 

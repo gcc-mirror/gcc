@@ -1,5 +1,5 @@
-// Build don't run:
-// Special g++ Options: -fno-implement-inlines 
+// { dg-do link  }
+// { dg-options "-fno-implement-inlines " }
 struct type {
   virtual void m1();
   virtual void m2() { }

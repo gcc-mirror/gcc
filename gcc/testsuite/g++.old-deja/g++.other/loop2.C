@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -O
+// { dg-do assemble  }
+// { dg-options "-O" }
 
 class foo {
 public:

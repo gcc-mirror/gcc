@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed temps
 // temps file
 // Date: Mon, 07 Sep 1992 13:12:28 EDT
@@ -15,4 +15,4 @@ struct cookie
   cookie ( foo * x) { v=x; }
 };
 
-cookie cat(&foo("apabepa"));// ERROR - .*
+cookie cat(&foo("apabepa"));// { dg-error "" } .*

@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // Bug: A function is not hidden properly by a use of its name in an
 // inner scope.
-// Build don't link:
 
 struct A
 {

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.37.1 bug 900330_02
 
 // The C++ Reference Manual says in section 13.1:
@@ -18,12 +19,12 @@ struct B {
 };
 
 struct D : public B {
-  int f(struct B);		// ERROR - referred to below
+  int f(struct B);		// { dg-error "" } referred to below
 };
 
 void h(D* pd)
 {
-  pd->f(1);		// ERROR - D::f(struct B) hides B::f(int)
+  pd->f(1);		// { dg-error "" } D::f(struct B) hides B::f(int)
 }
 
 int main () { return 0; }

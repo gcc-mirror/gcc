@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // Error: Internal Compiler Error in 2.7.2. & egcs 1.0.0
 
 #ifndef NO_META_MAX

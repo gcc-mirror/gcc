@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed visibility
 // visibility file
 // From: Marie Trapp <Marie.Trapp@analog.com>
@@ -7,7 +7,7 @@
 // Message-ID: <9308051553.AA07639@nwd2sun1.analog.com>
 class A {
   protected:
-    int astuff; // ERROR - protected
+    int astuff; // { dg-error "" } protected
     A() {
         astuff = 3; 
     }
@@ -17,7 +17,7 @@ class B : public A {
     int bstuff;
   public:
     B( A *p) {
-        bstuff = p->astuff;// ERROR - .*
+        bstuff = p->astuff;// { dg-error "" } .*
     }
 };
 

@@ -1,5 +1,5 @@
-// Build don't link: 
-// Special g++ Options: -w -O
+// { dg-do assemble  }
+// { dg-options "-w -O" }
 // GROUPS passed old-abort
 class   RWDlist
 {

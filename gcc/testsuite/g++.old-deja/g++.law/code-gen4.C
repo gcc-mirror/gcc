@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed code-generation
 // code-gen file
 // From: david.binderman@pmsr.philips.co.uk

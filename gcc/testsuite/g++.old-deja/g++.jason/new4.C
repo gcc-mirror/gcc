@@ -1,4 +1,5 @@
-// Special g++ Options: -fcheck-new
+// { dg-do run  }
+// { dg-options "-fcheck-new" }
 
 struct A {
   A(): i(42) { }

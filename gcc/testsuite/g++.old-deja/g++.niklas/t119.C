@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed niklas i386
 unsigned long foo(unsigned long x)
 {

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Ensure that virtual base upcast and downcasting works on this
 // conversions during virtual function dispatch at ctor/dtor time
 // when dynamic vtable fixups for deltas are needed.

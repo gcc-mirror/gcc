@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.36.1 bug 900213_02
 
 // The following erroneous code causes g++ to abort.
@@ -15,7 +16,7 @@ int struct0::*dmp;
 
 void global_function_0 ()
 {
-  i = *dmp;			// ERROR - causes abort
+  i = *dmp;			// { dg-error "" } causes abort
 }
 
 int main () { return 0; }

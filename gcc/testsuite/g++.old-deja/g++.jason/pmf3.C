@@ -1,7 +1,7 @@
+// { dg-do assemble  }
 // From: enewton@uunet.uu.NET
 // Subject: g++ 2.5.8: cannot cast member function pointers
 // Date: 27 Jan 1994 01:22:56 -0500
-// Build don't link:
 
 struct A {
 	void f(char);

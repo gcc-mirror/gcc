@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 14 Nov 2000 <nathan@codesourcery.com>
@@ -39,5 +39,5 @@ void foo (B *bp, C* cp)
 
 struct D : A
 {
-  using A::D;   // ERROR - names constructor
+  using A::D;   // { dg-error "" } names constructor
 };

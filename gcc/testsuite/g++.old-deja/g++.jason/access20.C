@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // PRMS Id: 6662
 // Bug: we crash trying to check the access on anglesSinesCosines.
-// Build don't link:
 
 #define Double double
 

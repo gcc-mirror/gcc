@@ -1,6 +1,6 @@
-// Build don't link: 
+// { dg-do assemble  }
+// { dg-options "-Wreturn-type" }
 // GROUPS passed error-reporting
-// Special g++ Options: -Wreturn-type
 
 // DR 295 allows qualification via typedef
 
@@ -32,37 +32,37 @@ char ***spp = &sp;
 
 int foo (int a = (**bar) (s))
 {
-   return doowop<foo>::bar; // ERROR - not a member
+   return doowop<foo>::bar; // { dg-error "" } not a member
 }
 
 int foo2 (int (*a)(int) = &foo)
 {
-   undef4 (1); // ERROR - implicit declaration
+   undef4 (1); // { dg-error "" } implicit declaration
   return 1;
 }
 
 class X{
-  class Y{};			// ERROR - private
+  class Y{};			// { dg-error "" } private
 };
 
 typedef int const * bart ();
 //The following is DR295 dependant
-typedef bart const * const * bar2; // ERROR - constifying qualifiers
-typedef bart volatile * const * bar2v; // ERROR - qualifiers
+typedef bart const * const * bar2; // { dg-error "" } constifying qualifiers
+typedef bart volatile * const * bar2v; // { dg-error "" } qualifiers
 
 bar2 baz (X::Y y)
-{				// ERROR - in this context
-  X::Y f;			// ERROR - in this context
+{				// { dg-error "" } in this context
+  X::Y f;			// { dg-error "" } in this context
   bar2 wa [5];
   wa[0] = baz(f);
-  undef2 (1); // ERROR - implicit declaration
+  undef2 (1); // { dg-error "" } implicit declaration
 }
 
 int ninny ()
 {
   struct A
     {
-	  static int ninny2 () { return badoo<'\001'>::foo; } // ERROR - not a member
+	  static int ninny2 () { return badoo<'\001'>::foo; } // { dg-error "" } not a member
     };
 
   return A::ninny2();
@@ -70,5 +70,5 @@ int ninny ()
 
 int darg (char X::*p)
 {
-   undef3 (1); // ERROR - implicit declaration
+   undef3 (1); // { dg-error "" } implicit declaration
 }

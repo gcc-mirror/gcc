@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Test for PRETTY_FUNCTION
-// Build don't link:
 
 class SV;
 

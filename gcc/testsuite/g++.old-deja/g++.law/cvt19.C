@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed conversions
 // cvt file
 // Message-Id: <1166.9307131600@ace.eng.cam.ac.uk>

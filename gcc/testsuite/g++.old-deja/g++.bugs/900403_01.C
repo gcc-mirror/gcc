@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.37.1 bug 900403_01
 
 // g++ allows casts to be treated as lvalues (even when the -pedantic
@@ -12,8 +13,8 @@ int i, j;
 
 void f ()
 {
-  (int) i = j;		// ERROR - 
-  ((int) i) = j;	// ERROR - 
+  (int) i = j;		// { dg-error "" } 
+  ((int) i) = j;	// { dg-error "" } 
 }
 
 int main () { return 0; }

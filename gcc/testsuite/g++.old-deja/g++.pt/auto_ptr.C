@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 template <typename Y> struct auto_ptr_ref {
   Y* py;
   auto_ptr_ref(Y* p) : py(p) {}
@@ -8,9 +9,9 @@ template<typename X> struct auto_ptr {
    typedef X element_type;
 
    explicit auto_ptr(X* p =0) throw() : px(p) {}
-   auto_ptr(auto_ptr& r) throw() : px(r.release()) {} // ERROR - candidate
+   auto_ptr(auto_ptr& r) throw() : px(r.release()) {} // { dg-error "" } candidate
    template<typename Y>
-      auto_ptr(auto_ptr<Y>& r) throw() : px(r.release()) {}// ERROR - candidate
+      auto_ptr(auto_ptr<Y>& r) throw() : px(r.release()) {}// { dg-error "" } candidate
 
    auto_ptr& operator=(auto_ptr& r) throw() { 
       reset(r.release()); 
@@ -29,7 +30,7 @@ template<typename X> struct auto_ptr {
    X* release() throw() { X* p=px; px=0; return p; }
    void reset(X* p=0) throw() { if (px != p) delete px, px = p; }
 
-   auto_ptr(auto_ptr_ref<X> r) throw() : px(r.py) {} // ERROR - candidate
+   auto_ptr(auto_ptr_ref<X> r) throw() : px(r.py) {} // { dg-error "" } candidate
    template<typename Y> operator auto_ptr_ref<Y>() throw() {
       return auto_ptr_ref<Y>(release()); 
    }
@@ -50,5 +51,5 @@ int main() {
     auto_ptr<Derived> y(f());
     x = y;
     g(f());
-    h(f());			// ERROR - no usable copy ctor
+    h(f());			// { dg-error "" } no usable copy ctor
 }

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Jakub Jelinek <jakub@redhat.com>
 
 namespace N
@@ -31,5 +31,5 @@ public:
 };
 void foo::x() throw(bar)
 {
-  if (!b) throw bar (static_cast<::N::X*>(this));	// ERROR - parse error
+  if (!b) throw bar (static_cast<::N::X*>(this));	// { dg-error "" } parse error
 }

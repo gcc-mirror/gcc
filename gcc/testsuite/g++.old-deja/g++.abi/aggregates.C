@@ -1,5 +1,5 @@
-// Skip if not target: i?86-*-linux* i?86-*-freebsd*
-// Special g++ Options: -malign-double
+// { dg-do run { target i?86-*-linux* i?86-*-freebsd* } }
+// { dg-options "-malign-double" }
 // Origin: Alex Samuel <samuel@codesourcery.com>
 
 /* Test the data layout of C aggregates by checking aggregate size and

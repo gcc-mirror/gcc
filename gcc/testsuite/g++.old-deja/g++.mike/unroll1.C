@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -g -O -funroll-loops
+// { dg-do assemble  }
+// { dg-options "-g -O -funroll-loops" }
 
 struct A {
   inline ~A() { }

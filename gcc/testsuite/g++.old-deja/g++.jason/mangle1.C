@@ -1,7 +1,7 @@
+// { dg-do assemble  }
 // Bug: numeric_outputed_need_bar is not cleared properly, adding random '_'s
 // to mangled names.
 
-// Build don't link:
 
 template <int seed_length>
 class rand1

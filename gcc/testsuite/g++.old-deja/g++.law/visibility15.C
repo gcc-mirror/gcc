@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed visibility
 // visibility file
 // From: wpsun4!xinforms!johnjo@uunet.uu.net (John D. Johnson)
@@ -10,7 +10,7 @@
 
 class X {
 private:
-  void* operator new(size_t) throw(){// ERROR - .*
+  void* operator new(size_t) throw(){// { dg-error "" } .*
     printf("Inside private new().\n");
     return NULL;
   }
@@ -21,5 +21,5 @@ public:
 
 int main(void)
 {
-  X* p = new X;// ERROR - .*
+  X* p = new X;// { dg-error "" } .*
 }

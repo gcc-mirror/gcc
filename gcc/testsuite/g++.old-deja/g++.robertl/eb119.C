@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 template<bool B>
 void f()
 {
@@ -5,6 +6,6 @@ void f()
 
 int main()
 {
-  f<bool>(); // ERROR - .*
+  f<bool>(); // { dg-error "" } .*
 }
 

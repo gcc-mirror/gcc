@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 class error {
 public:
@@ -6,7 +6,7 @@ public:
 };
 
 class foo {
-  const error x = 1; // ERROR - initialization of non-static data member
+  const error x = 1; // { dg-error "" } initialization of non-static data member
 };
 
 

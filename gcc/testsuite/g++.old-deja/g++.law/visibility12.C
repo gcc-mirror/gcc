@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed visibility
 // visibility file
 // From: Mark Rawling <Mark.Rawling@mel.dit.csiro.au>
@@ -6,13 +6,13 @@
 // Subject:  member access rule bug
 // Message-ID: <9306300528.AA17185@coda.mel.dit.CSIRO.AU>
 struct a {
-  int aa; // ERROR - private
+  int aa; // { dg-error "" } private
         };
 
 class b : private a {
         };
 
 class c : public b {
-        int xx(void) { return (aa); }  // aa should be invisible// ERROR - .*
+        int xx(void) { return (aa); }  // aa should be invisible// { dg-error "" } .*
         };
 

@@ -1,3 +1,4 @@
+// { dg-do run  }
 namespace X{
   void f(int){}
 }

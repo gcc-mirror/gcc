@@ -1,3 +1,4 @@
+// { dg-do run  }
 namespace fred
 {
   int barney();

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // prms-id: 8175
 
 class AtoBoolC {
@@ -11,4 +12,4 @@ struct TestCase {
   AtoBoolC is_call_on_unack;
 };
 
-static TestCase the_cases[] = { { 0 } };	// ERROR - 
+static TestCase the_cases[] = { { 0 } };	// { dg-error "" } 

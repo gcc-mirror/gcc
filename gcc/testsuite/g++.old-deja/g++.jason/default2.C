@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // PRMS Id: 5921
-// Build don't link:
 // Bug: default arguments containing constructor calls persist incorrectly.
 
 class foo

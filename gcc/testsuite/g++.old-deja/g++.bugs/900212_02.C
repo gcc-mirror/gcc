@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.36.1 bug 900212_02
 
 // g++ fails to flag as errors attempts to take the difference of two values
@@ -20,8 +21,8 @@ int result;
 
 void global_function_0 ()
 {
-  result = (p0 - p1);		// ERROR - 
-  result = (fp0 - fp1);		// ERROR - 
+  result = (p0 - p1);		// { dg-error "" } 
+  result = (fp0 - fp1);		// { dg-error "" } 
 }
 
 int main () { return 0; }

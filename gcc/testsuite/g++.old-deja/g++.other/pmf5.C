@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: g++ expanded b->member() multiple times, causing the optimizer to
 // decide that things weren't related and optimize 'die' into an infinite
 // loop.

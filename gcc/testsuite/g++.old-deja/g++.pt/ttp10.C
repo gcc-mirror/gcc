@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template<class T> class D
 {
@@ -13,14 +13,14 @@ template<class T> int D<T>::f()
 
 template<template<class> class D,class E> class C
 {
-		D d;			// ERROR - D is a template
+		D d;			// { dg-error "" } D is a template
 	public:
 		int f();
 };
 
 template<template<class> class D,class E> int C<D,E>::f()
 {
-	return d.f();			// ERROR - d not properly declared
+	return d.f();			// { dg-error "" } d not properly declared
 }
 
 int main()

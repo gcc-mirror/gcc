@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -fexceptions
+// { dg-do assemble  }
+// { dg-options "-fexceptions" }
 
 void foo() {
   throw 1;

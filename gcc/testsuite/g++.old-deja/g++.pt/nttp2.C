@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test for nested template template parameter feature
 
 template <template<template <class> class> class TTT> struct C

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 void *vp;
 int (*ap)[];
 struct S *sp;
@@ -7,9 +8,9 @@ int (*fp)();
 void
 test ()
 {
-    vp++;               /* ERROR - incrementing void * */
-    ap++;               /* ERROR - incrementing ptr to incomplete type */
-    sp++;               /* ERROR - incrementing ptr to incomplete type */
-    up++;               /* ERROR - incrementing ptr to incomplete type */
-    fp++;               /* ERROR - incrementing ptr to function */
+    vp++;               /* { dg-error "" } incrementing void * */
+    ap++;               /* { dg-error "" } incrementing ptr to incomplete type */
+    sp++;               /* { dg-error "" } incrementing ptr to incomplete type */
+    up++;               /* { dg-error "" } incrementing ptr to incomplete type */
+    fp++;               /* { dg-error "" } incrementing ptr to function */
 }

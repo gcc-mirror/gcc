@@ -1,3 +1,4 @@
+// { dg-do run  }
 // 980617 bkoz
 // typeid for local types
 // typeid bool vs int and enum vs int

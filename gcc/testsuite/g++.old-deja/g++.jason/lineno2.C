@@ -1,6 +1,6 @@
-// Build don't link: 
+// { dg-do assemble  }
+// { dg-options "" }
 // GROUPS passed error-reporting
-// Special g++ Options: 
 // Bug: # line directive gets ignored immediately after text.
 template <class T> class A
 {
@@ -10,5 +10,5 @@ public:
 
 main()
 {
-   undef1(); // ERROR - , LINE 204
+   undef1(); // { dg-error "" "" { target *-*-* } 204 }
 }

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed miscellaneous
 // This should not complain about A::f being abstract.
 struct	A

@@ -1,3 +1,4 @@
+// { dg-do run  }
 template <class T> T* create ();
 
 template <class T> T* create2()

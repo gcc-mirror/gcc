@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed static
 class A
 {
@@ -9,7 +9,7 @@ class A
 
         static void staticMember()
         {
-	  member (); // illegal, no object for calling non-static method// ERROR - .*
+	  member (); // illegal, no object for calling non-static method// { dg-error "" } .*
         }
 };
 

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // prms-id: 11110
 
 class data;
@@ -5,7 +6,7 @@ class data;
 class conatiner {
 public:
   virtual void* first    ();
-  virtual data* contents (void* i);     // ERROR - candidates
+  virtual data* contents (void* i);     // { dg-error "" } candidates
 };
 
 class user {
@@ -16,5 +17,5 @@ private:
 };
 
 data* user::data1() const {
-  return (_c.contents (_c.first));	// ERROR - 
+  return (_c.contents (_c.first));	// { dg-error "" } 
 }

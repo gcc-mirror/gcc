@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 10 Aug 2000 <nathan@codesourcery.com>
@@ -21,5 +21,5 @@ class B
 
 B::B (const A a[])
   : ary(a)
-{        // ERROR - bad array initializer
+{        // { dg-error "" } bad array initializer
 }

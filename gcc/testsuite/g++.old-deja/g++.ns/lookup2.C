@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 template <class charT>
 struct basic_string
 {

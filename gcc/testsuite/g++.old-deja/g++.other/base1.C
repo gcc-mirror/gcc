@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 25 Nov 2000 <nathan@codesourcery.com>
@@ -14,7 +14,7 @@ struct A {};
 typedef const A cA;
 typedef A pA;
 
-struct B : I {};  // ERROR - not an aggregate
-struct C : cI {}; // ERROR - not an aggregate
-struct D : cA {}; // ERROR - cv qualified
+struct B : I {};  // { dg-error "" } not an aggregate
+struct C : cI {}; // { dg-error "" } not an aggregate
+struct D : cA {}; // { dg-error "" } cv qualified
 struct E : pA {};

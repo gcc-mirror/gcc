@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // Makes bogus x86 assembly code.
 #include <iostream>
 
@@ -10,7 +11,7 @@ T max(T a, T b)
 }
 
 // Prototypes (enable one or the other)
-double max<>(double, double);      // ERROR - bogus code
+double max<>(double, double);      // { dg-error "" } bogus code
 // int max(int, int);
 
 int main()
@@ -19,7 +20,7 @@ int main()
   double d = 1234.5678;
 
   cout.precision(12);
-  cout << max(d, i) << endl;  // ERROR - 
-  cout << max(i, d) << endl;  // ERROR - 
+  cout << max(d, i) << endl;  // { dg-error "" } 
+  cout << max(i, d) << endl;  // { dg-error "" } 
   return 0;
 }

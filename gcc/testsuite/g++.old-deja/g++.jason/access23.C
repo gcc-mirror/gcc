@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // PRMS Id: 9127
 // Bug: members of anonymous unions are not access-controlled.
 
@@ -16,24 +17,24 @@ public:
   int PUB_A;
 protected:
   union {
-    long B; // ERROR - protected
-    void *pY; // ERROR - protected
+    long B; // { dg-error "" } protected
+    void *pY; // { dg-error "" } protected
   } ;
   union Y {
     long B;
     void *pY;
-  } PRT; // ERROR - protected
-  int PRT_A; // ERROR - protected
+  } PRT; // { dg-error "" } protected
+  int PRT_A; // { dg-error "" } protected
 private:
   union {
-    long C; // ERROR - private
-    void *pZ; // ERROR - private
+    long C; // { dg-error "" } private
+    void *pZ; // { dg-error "" } private
   };
   union Z {
     long C;  
     void *pZ;
-  } PRV; // ERROR - private
-  int PRV_A; // ERROR - private
+  } PRV; // { dg-error "" } private
+  int PRV_A; // { dg-error "" } private
 };
 
 struct Bar : public Foo {
@@ -49,11 +50,11 @@ public:
     PRT_A = 0;
     PRT.B = 0;		
     printf("%x\n",Foo::PRT.pY);	
-    PRV_A = 0;			// ERROR - 
-    Foo::C = 0;			// ERROR - 
-    printf("%x\n",pZ);  	// ERROR - 
-    Foo::PRV.C = 0;		// ERROR - 
-    printf("%x\n",PRV.pZ); 	// ERROR - 
+    PRV_A = 0;			// { dg-error "" } 
+    Foo::C = 0;			// { dg-error "" } 
+    printf("%x\n",pZ);  	// { dg-error "" } 
+    Foo::PRV.C = 0;		// { dg-error "" } 
+    printf("%x\n",PRV.pZ); 	// { dg-error "" } 
   }
 };
 
@@ -64,16 +65,16 @@ int main()
   a.PUB_A = 0;
   a.A = 0;
   printf("%x\n",a.pX);  
-  a.PRT_A = 0;			// ERROR - 
-  a.B = 0;			// ERROR - 
-  printf("%x\n",a.pY);  	// ERROR - 
-  a.PRV_A = 0;			// ERROR - 
-  a.C = 0;			// ERROR - 
-  printf("%x\n",a.pZ);  	// ERROR - 
+  a.PRT_A = 0;			// { dg-error "" } 
+  a.B = 0;			// { dg-error "" } 
+  printf("%x\n",a.pY);  	// { dg-error "" } 
+  a.PRV_A = 0;			// { dg-error "" } 
+  a.C = 0;			// { dg-error "" } 
+  printf("%x\n",a.pZ);  	// { dg-error "" } 
   a.PUB.A = 0;
   printf("%x\n",a.PUB.pX);  
-  a.PRT.B = 0;			// ERROR - 
-  printf("%x\n",a.PRT.pY);  	// ERROR - 
-  a.PRV.C = 0;			// ERROR - 
-  printf("%x\n",a.PRV.pZ);  	// ERROR - 
+  a.PRT.B = 0;			// { dg-error "" } 
+  printf("%x\n",a.PRT.pY);  	// { dg-error "" } 
+  a.PRV.C = 0;			// { dg-error "" } 
+  printf("%x\n",a.PRV.pZ);  	// { dg-error "" } 
 }

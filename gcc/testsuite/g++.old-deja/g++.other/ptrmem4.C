@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test to make sure g++ can handle target types that aren't identical
 // with pointers to members.
 

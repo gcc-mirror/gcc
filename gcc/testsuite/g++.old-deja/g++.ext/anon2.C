@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options:
+// { dg-do assemble  }
+// { dg-options "" }
 
 struct S 
 {
@@ -8,7 +8,7 @@ struct S
 
 union U {
   struct { 
-    S s; // ERROR - struct with constructor in union
+    S s; // { dg-error "" } struct with constructor in union
   };
 };
 

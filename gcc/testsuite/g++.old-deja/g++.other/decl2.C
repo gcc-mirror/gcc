@@ -1,7 +1,7 @@
-// Build don't link:
+// { dg-do assemble  }
 // Based on a test-case by Maciej Radziejewski <maciejr@iws.uni-stuttgart.de>
 
-int i(0)(1); // ERROR - multiple initialization
-int j(2) = 3; // ERROR - multiple initialization
-int k(4)(5)(6); // ERROR - multiple initialization
-int m, n(7)(8); // ERROR - multiple initialization
+int i(0)(1); // { dg-error "" } multiple initialization
+int j(2) = 3; // { dg-error "" } multiple initialization
+int k(4)(5)(6); // { dg-error "" } multiple initialization
+int m, n(7)(8); // { dg-error "" } multiple initialization

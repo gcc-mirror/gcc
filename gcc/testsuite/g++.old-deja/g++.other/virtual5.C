@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -w
+// { dg-do assemble  }
+// { dg-options "-w" }
 // Origin: Derived from code by Andris Pavenis <andris@stargate.astr.lu.lv>
 
 class vector {};

@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -O2
+// { dg-do assemble  }
+// { dg-options "-O2" }
 
 struct E
 {

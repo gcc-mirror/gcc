@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed visibility
 // visibility file
 // From: klamer@mi.el.utwente.nl (Klamer Schutte)
@@ -7,11 +7,11 @@
 // Message-ID: <9308121003.AA02294@mi.el.utwente.nl>
 class A {
 protected:
-      void foo(); // ERROR - protected
+      void foo(); // { dg-error "" } protected
 };
 
 class B : public A
 {
         void bar(A &a)
-                {       a.foo(); }// ERROR - .*
+                {       a.foo(); }// { dg-error "" } .*
 };

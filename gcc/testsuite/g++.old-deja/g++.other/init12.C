@@ -1,5 +1,5 @@
-// Build don't run:
-// Special g++ Options: -O3
+// { dg-do link  }
+// { dg-options "-O3" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 typedef int (*fp)();

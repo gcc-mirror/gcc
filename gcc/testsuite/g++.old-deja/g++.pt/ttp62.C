@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Origin: Ewgenij Gawrilow <gawrilow@math.TU-Berlin.DE>
 
 extern "C" void abort ();

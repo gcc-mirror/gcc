@@ -1,4 +1,4 @@
-// Build don't link:
-// Special g++ Options: -fsave-memoized
+// { dg-do assemble  }
+// { dg-options "-fsave-memoized" }
 
 #include <iostream>

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Templates can be defined outside of the namespace if the have been declared
 // inside
 namespace bar

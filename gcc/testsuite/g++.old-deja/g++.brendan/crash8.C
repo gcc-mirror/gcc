@@ -1,12 +1,12 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed old-abort
 template<int a, int b>
 class Elvis
-{ // ERROR - in template.*
+{ // { dg-error "" } in template.*
 } ;
 
 template<int a>
 class Elvis<0>
-{ // ERROR - incorrect number of parameters
+{ // { dg-error "" } incorrect number of parameters
   int geta() { return a ; }
 } ;

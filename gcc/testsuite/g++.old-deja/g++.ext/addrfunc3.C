@@ -1,6 +1,7 @@
+// { dg-do run  }
+// { dg-options "-fpermissive -w" }
 // Test for overload resolution in comparison expressions.
 // Contributed by Jason Merrill <jason@cygnus.com>.
-// Special g++ Options: -fpermissive -w
 
 void f (int) { }
 void f ();

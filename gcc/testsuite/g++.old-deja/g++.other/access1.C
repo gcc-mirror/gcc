@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 class X{
     unsigned int i;

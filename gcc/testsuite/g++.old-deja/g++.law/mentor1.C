@@ -1,5 +1,5 @@
-// Build don't link: 
-// Special g++ Options: -O
+// { dg-do assemble  }
+// { dg-options "-O" }
 // GROUPS passed mentor
 struct Word {
    struct S1 *p1;

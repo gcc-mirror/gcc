@@ -1,4 +1,5 @@
-// Special g++ Options:
+// { dg-do run  }
+// { dg-options "" }
 // Test for g++ array init extension 
 
 class A {

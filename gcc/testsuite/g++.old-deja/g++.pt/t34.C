@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 
 template <class X> struct A { int operator [] (int); };
 template <class Y> int A<Y>::operator[] (int j) { return j * j; }

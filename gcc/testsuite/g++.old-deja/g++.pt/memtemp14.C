@@ -1,4 +1,4 @@
-// Build don't run:
+// { dg-do link  }
 // GROUPS passed templates membertemplates
 extern "C" int printf (const char *, ...);
 

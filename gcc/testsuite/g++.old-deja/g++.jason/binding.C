@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // Bug: g++ only looks in the current temporary binding level for a name.
 
 struct T { ~T(); };
@@ -5,7 +6,7 @@ struct T { ~T(); };
 int main()
 {
   foo:
-   T t;				// ERROR - redeclared
+   T t;				// { dg-error "" } redeclared
   bar:
-   T t;				// ERROR - redeclaration
+   T t;				// { dg-error "" } redeclaration
 }

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed templates
 struct Regex { int i; Regex(char *, int); };
 template<class KEY>
@@ -8,5 +8,5 @@ public:
     static unsigned sequence_number;
 };
 
-const Regex NDAMName<'L'>::pattern("^[Ll](.*)$",   1);// ERROR -  type/value.*
-unsigned NDAMName<'L'>::sequence_number = 0;// ERROR -  type/value
+const Regex NDAMName<'L'>::pattern("^[Ll](.*)$",   1);// { dg-error "" }  type/value.*
+unsigned NDAMName<'L'>::sequence_number = 0;// { dg-error "" }  type/value

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // The compiler tried to build up a double with a NOP_EXPR from
 // integer_zero_node, which fails.
 

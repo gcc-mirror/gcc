@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that we only call f once and that pointers to different subobjects
 // compare as different.
 

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that we properly convert a constant ptm to bool.
 
 class A { };

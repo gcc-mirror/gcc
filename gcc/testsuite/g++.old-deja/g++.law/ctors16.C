@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed constructors
 // ctor file
 // Message-Id: <9306021533.AA14347@icepick.jts.com>

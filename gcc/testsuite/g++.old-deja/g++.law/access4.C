@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed access
 // (Message bugs/access:3)
 // From: jamshid@ses.com (Jamshid Afshar)
@@ -6,9 +6,9 @@
 // Subject:  g++ 2.5.5 doesn't warn about inaccessible virtual base ctor
 // Message-ID: <9403030024.AA04534@ses.com>
 
-class ForceLeafSterile { // ERROR - 
+class ForceLeafSterile { // { dg-error "" } 
     friend class Sterile;
-      ForceLeafSterile() {} // ERROR - 
+      ForceLeafSterile() {} // { dg-error "" } 
 };
 
 class Sterile : private virtual ForceLeafSterile {
@@ -19,9 +19,9 @@ public:
 
 class Illegitimate : public Sterile {
 public:
-    Illegitimate() {}           // ERROR -  can't access virtual base deflt ctor
+    Illegitimate() {}           // { dg-error "" }  can't access virtual base deflt ctor
     Illegitimate(const char* /*blah*/)
-        : ForceLeafSterile() {} // ERROR - can't access default ctor
+        : ForceLeafSterile() {} // { dg-error "" } can't access default ctor
     Illegitimate(const Illegitimate&)
-        {}                      // ERROR - can't access default ctor
+        {}                      // { dg-error "" } can't access default ctor
 };

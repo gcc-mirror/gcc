@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // PRMS Id: 5420
 // Bug: g++ gets mixed up calling destructors for references.
-// Build don't link:
 
 template<class X>
 class Z {

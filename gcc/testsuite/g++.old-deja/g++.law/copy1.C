@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed copy-ctors
 #include <stdio.h>
 

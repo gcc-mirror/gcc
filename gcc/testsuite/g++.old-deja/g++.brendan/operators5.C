@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed operators
 // Check that operators may be (directly) recursive.
 

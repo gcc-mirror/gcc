@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed bit-fields
 // bitfield file
 // Message-Id: <92Oct29.191913est.62@jarvis.csri.toronto.edu>

@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Test that we can represent static_casts in template arg lists.
-// Build don't link:
 
 template <int I> struct A { };
 

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 5652
 // Bug: strings does not get initialized.
 

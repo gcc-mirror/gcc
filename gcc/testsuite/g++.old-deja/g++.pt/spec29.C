@@ -1,3 +1,4 @@
+// { dg-do run  }
 char c;
 
 struct S {

@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -g -O -fkeep-inline-functions
+// { dg-do assemble  }
+// { dg-options "-g -O -fkeep-inline-functions" }
 
 class c {
 public:

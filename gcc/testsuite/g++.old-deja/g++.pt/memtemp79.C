@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
 
 struct foo {
 	template<typename T> static void bar( foo* );
-	template<typename T> void bar() const; // gets bogus error - quals
+	template<typename T> void bar() const; // { dg-bogus "" } quals
 };

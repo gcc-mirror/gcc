@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // This tests for the compiler_error in binfo_value.
 // prms-id: 3538
 
@@ -25,7 +25,7 @@ class ccHandleBase : public ccObjectInfo
 {};
 
 class cc_CircleHdl : public virtual ccHandleBase, public ccObjectInfo
-{				// WARNING - 
+{				// { dg-warning "" } 
 public:
   virtual const ccObjectInfo& ri (int);
 };

@@ -1,4 +1,5 @@
-// Special g++ Options: -O -funroll-loops
+// { dg-do run  }
+// { dg-options "-O -funroll-loops" }
 
 struct A {
   ~A();

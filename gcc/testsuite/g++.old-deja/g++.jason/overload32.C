@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // PRMS Id: 7128
-// Build don't link:
 
 class B {};
 

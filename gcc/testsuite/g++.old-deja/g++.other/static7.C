@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Origin: Jason Merrill <jason@cygnus.com>
 
 int j = 42;

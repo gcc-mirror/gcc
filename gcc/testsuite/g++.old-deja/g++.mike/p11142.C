@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -fexceptions -O -g
+// { dg-do assemble  }
+// { dg-options "-fexceptions -O -g" }
 // prms-id: 11142
 
 class RWxmsg {

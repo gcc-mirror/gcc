@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -fno-rtti
+// { dg-do assemble  }
+// { dg-options "-fno-rtti" }
 // Origin: Anthony Green <green@cygnus.com>
 
 class _JvObjectPrefix

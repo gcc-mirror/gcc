@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed old-abort
 // Should have been fixed by:
 //
@@ -101,5 +101,5 @@ main()
 	int	i, j;
 	Dummy	foo;
 
-	bs1+=&foo;// ERROR -  no .*
+	bs1+=&foo;// { dg-error "" }  no .*
 }

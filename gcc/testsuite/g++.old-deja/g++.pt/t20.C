@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 
 template <class X> class A {
 public:

@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Error: ICE on 2.7.2.3 and EGCS 1.0.0.
-// Build don't link:
 
 template<int N1, int N2>
 struct meta_max {

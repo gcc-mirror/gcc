@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Gabriel Dos Reis <Gabriel.Dos-Reis@cmla.ens-cachan.fr>
 
 // Bug 29.  We failed to verify that template argument deduction

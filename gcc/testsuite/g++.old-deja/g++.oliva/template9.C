@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 1999 Free Software Foundation
 
@@ -7,5 +7,5 @@
 
 struct foo {
   template <class>
-  void bar() = 0; // ERROR - invalid initializer - XFAIL *-*-*
+  void bar() = 0; // { dg-error "" "" { xfail *-*-* } } invalid initializer - 
 };

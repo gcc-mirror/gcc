@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // prms-id: 807
 
 extern "C" int printf(const char*, ...);
@@ -23,12 +24,12 @@ class B
 };
 
 
-int foo(B& b);			// ERROR - referenced below
+int foo(B& b);			// { dg-error "" } referenced below
 
 
 int main()
 {
    AX a;
-   foo(a);  // ERROR - Ambiguous B(a) or a.operator B()  //  See ARM 12.3.2
+   foo(a);  // { dg-error "" } Ambiguous B(a) or a.operator B()  //  See ARM 12.3.2
 
 }

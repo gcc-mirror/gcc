@@ -1,5 +1,5 @@
-// Build don't link: 
-// Special g++ Options: -pedantic-errors
+// { dg-do assemble  }
+// { dg-options "-pedantic-errors" }
 // GROUPS passed constructors
 // ctors file
 // Message-Id: <9301132030.AA05210@cs.rice.edu>
@@ -21,7 +21,7 @@ Foo::Foo(int aa)
 
 
 struct var_Foo: public Foo
-{ // ERROR -  base.*// ERROR -  in class.*
+{ // { dg-error "" }  base.*// ERROR -  in class.*
   var_Foo* operator-> () {return this;}
 };
 
@@ -32,7 +32,7 @@ int blort(Foo& f)
 
 int main()
 {
-  var_Foo b(2);// ERROR - 
+  var_Foo b(2);// { dg-error "" } 
   b->a = 0;
   int x = blort(b);
   return x;

@@ -1,5 +1,5 @@
-//Build don't link:
+// { dg-do assemble  }
 namespace A{
 }
 
-struct Y: A::S<int>{};     //ERROR - no such type
+struct Y: A::S<int>{};     //{ dg-error "" } no such type

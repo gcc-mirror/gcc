@@ -1,14 +1,14 @@
-//Build don't link:
+// { dg-do assemble  }
 class A {
 private:
   int i1_;
 public:
-  void f(int const i1 = 1); // ERROR - previous specification
+  void f(int const i1 = 1); // { dg-error "" } previous specification
 };
 
 void
 A::f(int const i1 = 1)
-{                          // ERROR - duplicate default argument
+{                          // { dg-error "" } duplicate default argument
   i1_ = i1;
 }
 

@@ -1,3 +1,4 @@
+// { dg-do run  }
 template <int S=0, class T=int>
 struct X
 {};

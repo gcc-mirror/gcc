@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed overloading
 struct temp_string {
   temp_string (const unsigned char);

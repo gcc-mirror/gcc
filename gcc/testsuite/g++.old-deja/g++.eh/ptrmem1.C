@@ -1,3 +1,4 @@
+// { dg-do run  }
 extern "C" void exit (int);
 extern "C" void abort (void);
 struct A { int i; };

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.36.1 bug 900205_04
 
 // g++ allows a class for which an implicit default X::X() constructor must
@@ -18,7 +19,7 @@ struct0::struct0 (int, void *)
 {
 }
 
-struct struct0_derived_struct_0 : public struct0 { // ERROR - 
+struct struct0_derived_struct_0 : public struct0 { // { dg-error "" } 
 };
 
 // struct0_derived_struct_0 object;	// would give g++ error if compiled

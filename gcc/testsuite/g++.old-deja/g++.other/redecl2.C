@@ -1,9 +1,9 @@
-// Build don't link:
+// { dg-do assemble  }
 
 struct S {
   S(int);
-  S(int); // ERROR - already declared
+  S(int); // { dg-error "" } already declared
 
   ~S();
-  ~S(); // ERROR - already declared
+  ~S(); // { dg-error "" } already declared
 };

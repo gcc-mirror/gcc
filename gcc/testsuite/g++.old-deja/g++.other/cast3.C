@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Copyright (C) 1999 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 12 Dec 1999 <nathan@acm.org>
 
@@ -21,24 +21,24 @@ void fn (void *p, void const *cp, Y *yp, Y const *ycp, Z *zp, Z const *zcp)
   static_cast <int *const *> (p);
   static_cast <int const *const *> (p);
   
-  static_cast <X *> (cp);           // ERROR - lose const
+  static_cast <X *> (cp);           // { dg-error "" } lose const
   static_cast <X const *> (cp);
-  static_cast <int *> (cp);         // ERROR - lose const
+  static_cast <int *> (cp);         // { dg-error "" } lose const
   static_cast <int const *> (cp);
-  static_cast <int **> (cp);        // ERROR - lose const
-  static_cast <int const **> (cp);  // ERROR - lose const
+  static_cast <int **> (cp);        // { dg-error "" } lose const
+  static_cast <int const **> (cp);  // { dg-error "" } lose const
   static_cast <int *const *> (cp);
   static_cast <int const *const *> (cp);
   
   static_cast <Z *> (yp);
   static_cast <Z const *> (yp);
 
-  static_cast <Z *> (ycp);          // ERROR - lose const
+  static_cast <Z *> (ycp);          // { dg-error "" } lose const
   static_cast <Z const *> (ycp);
 
   static_cast <Y *> (zp);
   static_cast <Y const *> (zp);
 
-  static_cast <Y *> (zcp);          // ERROR - lose const
+  static_cast <Y *> (zcp);          // { dg-error "" } lose const
   static_cast <Y const *> (zcp);
 }

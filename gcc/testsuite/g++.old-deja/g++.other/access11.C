@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "-w" }
 // Origin: r.spatschek@fz-juelich.de
-// Special g++ Options: -w
 
 class A
 {
@@ -10,11 +10,11 @@ private:
 };
 
 template <>
-void A::g<int>(int t) { i = 1; } // ERROR - private
+void A::g<int>(int t) { i = 1; } // { dg-error "" } private
 
 int main()
 {
   A a;
  
-  a.g<int>(0); // ERROR - private
+  a.g<int>(0); // { dg-error "" } private
 }

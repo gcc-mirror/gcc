@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // prms-id: 7476
 
 class HeapTracked {
@@ -16,5 +16,5 @@ void HeapTracked::isObjectAllocation(HeapTracked *ptr)
 void HeapTracked::isObjectAllocation(const HeapTracked *ptr)
 {
   const_cast<void*>(dynamic_cast<const void*>(ptr));
-  dynamic_cast<void*>(ptr);		// ERROR - 
+  dynamic_cast<void*>(ptr);		// { dg-error "" } 
 }

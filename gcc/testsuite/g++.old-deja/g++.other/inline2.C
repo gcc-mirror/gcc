@@ -1,6 +1,6 @@
+// { dg-do assemble  }
+// { dg-options "-O2 -Winline" }
 // Origin: Martin Reinecke <martin@MPA-Garching.MPG.DE>
-// Build don't link:
-// Special g++ Options: -O2 -Winline
 
 #include <cmath>
 

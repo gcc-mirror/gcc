@@ -1,5 +1,6 @@
+// { dg-do run  }
+// { dg-options "-frtti" }
 // test of rtti of single inheritance and multiple inheritance classes
-// Special g++ Options: -frtti
 
 #include <typeinfo>
 

@@ -1,4 +1,5 @@
-// Special g++ Options: -fexceptions -O9
+// { dg-do run  }
+// { dg-options "-fexceptions -O9" }
 
 int promote_mode (int mode, int *punsignedp)
 {

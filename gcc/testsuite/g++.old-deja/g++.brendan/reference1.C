@@ -1,4 +1,5 @@
-// Special g++ Options: -w
+// { dg-do run  }
+// { dg-options "-w" }
 // GROUPS passed references
 // Check that if a reference is initialized to refer to a value
 // which is returned from a function call, the actual call to

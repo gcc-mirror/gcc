@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed ptolemy-bugs
 #include <iostream>
 

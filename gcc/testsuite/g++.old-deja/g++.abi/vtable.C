@@ -1,5 +1,6 @@
+// { dg-do run  }
+// { dg-options "-fno-strict-aliasing" }
 // Test various aspects of vtable layout.
-// Special g++ Options: -fno-strict-aliasing
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 #if defined (__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100

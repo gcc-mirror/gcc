@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: schmid@snake.iap.physik.tu-darmstadt.de
 
 extern "C" int rand (void) throw ();

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 10 Aug 2000 <nathan@codesourcery.com>
@@ -22,5 +22,5 @@ void foo (eo &ref)
   ref.mlp::base::reset ();
   ref.base::reset ();
   ref.reset ();
-  ref.mlp::reset ();        // ERROR - not an aggregate type
+  ref.mlp::reset ();        // { dg-error "" } not an aggregate type
 }

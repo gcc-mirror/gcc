@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 2000 Free Software Foundation
 // Contributed by Kriang Lerdsuwanakij <lerdsuwa@users.sourceforge.net>

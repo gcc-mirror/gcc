@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 //980205 bkoz
 
 //7.1.3 the typedef specifier
@@ -16,10 +16,10 @@ typedef int I;
 typedef I I;
 
 //p3--cannot redefine to a different type in a given scope
-class complex2 { /* ... */ };// ERROR - .*
-typedef int complex2;// ERROR - .*
-typedef int complex3;// ERROR - .*
-class complex3 { /* ... */ };// ERROR - .*
+class complex2 { /* ... */ };// { dg-error "" } .*
+typedef int complex2;// { dg-error "" } .*
+typedef int complex3;// { dg-error "" } .*
+class complex3 { /* ... */ };// { dg-error "" } .*
 
 
 //p4
@@ -40,7 +40,7 @@ struct S {
 typedef struct S T;
 
 S a = T();                      // OK 
-struct T * p;                   // ERROR - using typedef after struct
+struct T * p;                   // { dg-error "" } using typedef after struct
 
 //case01
-typedef bool short;// ERROR - .*
+typedef bool short;// { dg-error "" } .*

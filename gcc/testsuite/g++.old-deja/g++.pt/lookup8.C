@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 template <class T>
@@ -11,5 +11,5 @@ class Y : public X<int>
 
 void Y::f()
 {
-  X x; // ERROR - X is not a type.
+  X x; // { dg-error "" } X is not a type.
 }

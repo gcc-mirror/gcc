@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed bit-fields
   class t {
       short           :(sizeof(short)-2);

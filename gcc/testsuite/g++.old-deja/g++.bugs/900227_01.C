@@ -1,3 +1,5 @@
+// { dg-do assemble  }
+// { dg-options "" }
 // g++ 1.37.1 bug 900227_01
 
 // g++ allows pointer type values to be converted to integral types which are
@@ -28,11 +30,10 @@
 // Update 2/10/95: The compiler will now compute these expressions at
 // runtime.  I think this is in the spirit of the GNU compilers (jason).
 
-// Special g++ Options:
 
 int main ();
 
-short s = (short) &main;	// WARNING - small integer XFAIL h8*-*-* xstormy16-*-*
-char c = (char) &main;		// WARNING - small integer
+short s = (short) &main;	// { dg-warning "" "" { xfail h8*-*-* xstormy16-*-* } } small integer 
+char c = (char) &main;		// { dg-warning "" } small integer
 
 int main () { return 0; }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: the temporary returned from f is elided, causing a to be constructed
 // twice but only destroyed once.
 

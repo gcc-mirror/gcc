@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Nathan Sidwell <nathan@codesourcery.com>
 
 struct A {

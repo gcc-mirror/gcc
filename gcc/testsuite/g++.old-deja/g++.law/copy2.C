@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed copy-ctors
 // copy file
 // From: Vivek Khera <khera@cs.duke.edu>

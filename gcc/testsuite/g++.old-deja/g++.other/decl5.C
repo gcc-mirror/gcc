@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
 
-// Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 22 Apr 1999 <nathan@acm.org>
 // derived from a bug report by <rch@larissa.sd.bi.ruhr-uni-bochum.de>
 // http://gcc.gnu.org/ml/gcc-bugs/1999-04n/msg00631.html
@@ -8,40 +8,40 @@
 
 
 struct A {
-  int A::fn();        // WARNING - extra qualification
-  int A::m;           // WARNING - extra qualification
+  int A::fn();        // { dg-warning "" } extra qualification
+  int A::m;           // { dg-warning "" } extra qualification
   struct e;
   struct A::e {int i;};
-  struct A::expand {  // WARNING - extra qualification
+  struct A::expand {  // { dg-warning "" } extra qualification
   int m;
   };
   struct Z;
   expand me;
   void foo(struct A::e);
-  void foo(struct A::z);  // WARNING - extra qualification
+  void foo(struct A::z);  // { dg-warning "" } extra qualification
 };
 
 struct Q;
 struct B {
-  struct A::fink {    // ERROR - no such member
+  struct A::fink {    // { dg-error "" } no such member
   int m;
   };
-  struct A::Z {       // ERROR - A::Z not a member of B
+  struct A::Z {       // { dg-error "" } A::Z not a member of B
     int m;
   };
   int m;
   int n;
-  struct ::Q {        // ERROR - ::Q not a member of B
+  struct ::Q {        // { dg-error "" } ::Q not a member of B
     int m;
   };
-  int A::fn() {       // ERROR - A::fn not a member of B
+  int A::fn() {       // { dg-error "" } A::fn not a member of B
     return 0;
   }
   void fn(struct ::Q &);
-  void foo(struct A::y);  // ERROR - no such member
+  void foo(struct A::y);  // { dg-error "" } no such member
 };
 
-struct ::C {          // WARNING - extra qualification
+struct ::C {          // { dg-warning "" } extra qualification
   int i;
 };
 
@@ -52,21 +52,21 @@ namespace N {
 
 namespace NMS
 {
-  void NMS::fn();     // WARNING - extra qualification XFAIL
-  int NMS::i;         // WARNING - extra qualification XFAIL
-  struct NMS::D {     // WARNING - extra qualification
+  void NMS::fn();     // { dg-warning "" "" { xfail *-*-* } } extra qualification
+  int NMS::i;         // { dg-warning "" "" { xfail *-*-* } } extra qualification
+  struct NMS::D {     // { dg-warning "" } extra qualification
     int i;
   };
-  struct N::E {       // ERROR - no such type
+  struct N::E {       // { dg-error "" } no such type
     int i;
   };
-  struct ::F {        // ERROR - no such type
+  struct ::F {        // { dg-error "" } no such type
     int i;
   };
-  int N::fn() {       // ERROR - N::fn not a member of NMS
+  int N::fn() {       // { dg-error "" } N::fn not a member of NMS
     return 0;
   }
-  struct N::F {       // ERROR - N::F not a member of NMS
+  struct N::F {       // { dg-error "" } N::F not a member of NMS
     int i;
   };
 }

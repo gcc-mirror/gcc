@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed ARM-compliance
 // arm file
 // Message-Id: <1oab2hINN7m@gap.caltech.edu>

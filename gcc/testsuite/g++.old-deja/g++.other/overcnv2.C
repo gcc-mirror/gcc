@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // Test that we resolve this case as mandated by the standard, but also
 // warn about it.  We choose op char* not because it is a member of B --
 // the standard says that all conversion ops are treated as coming from
@@ -14,7 +15,7 @@ struct B : public A {
 int main()
 {
   B b;
-  if ((const char *)b != 0)  // WARNING - surprising overload resolution
+  if ((const char *)b != 0)  // { dg-warning "" } surprising overload resolution
     return 1;
   if ((const char *)(const B)b == 0)
     return 2;

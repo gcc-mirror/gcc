@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed conversions
 // cvt file
 // Message-Id: <CC7oHn.B4F@izf.tno.nl>

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // Test that we notice unfortunate handler ordering.
 
 struct A { };
@@ -8,12 +9,12 @@ void f();
 void g()
 {
   try { f(); }
-  catch (...) { }		// ERROR - ... followed by others
+  catch (...) { }		// { dg-error "" } ... followed by others
   catch (A*) { }
 
   try { f(); }
-  catch (A*) { }		// WARNING - A* before B*
-  catch (B*) { }		// WARNING - A* before B*
+  catch (A*) { }		// { dg-warning "" } A* before B*
+  catch (B*) { }		// { dg-warning "" } A* before B*
 
   try { f(); }
   catch (A*) { }

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 
 class OBJECT
 {
@@ -11,7 +11,7 @@ template <class T> class TESTA
 {
 public:
     TESTA();
-      T	foo(int i) {T t = 0; return t};	// ERROR - no semi
+      T	foo(int i) {T t = 0; return t};	// { dg-error "" } no semi
 };
 
 

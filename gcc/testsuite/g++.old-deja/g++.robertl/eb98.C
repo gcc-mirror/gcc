@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // Error:    Internal compiler error in egcs 1998/05/28 snapshot.
 
 
@@ -13,5 +14,5 @@
 
     void f()
     {
-      extent(b);  // ERROR - no matching function
+      extent(b);  // { dg-error "" } no matching function
     }

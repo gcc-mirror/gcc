@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 class X;
 
@@ -11,9 +11,9 @@ typedef void (A::*handler) (X*);
 
 class B {
 public:
-  void setHandler(handler); // ERROR - candidate
+  void setHandler(handler); // { dg-error "" } candidate
 };
 
 void f(B* b) {
-  b->setHandler(A::handlerFn);	// ERROR - 
+  b->setHandler(A::handlerFn);	// { dg-error "" } 
 }

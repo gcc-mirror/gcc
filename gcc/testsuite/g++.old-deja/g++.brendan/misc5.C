@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed miscellaneous
 class A {
     static A aa[2];

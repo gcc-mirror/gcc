@@ -1,3 +1,4 @@
+// { dg-do run  }
 // prms-id: 658
 
 #include <iostream>

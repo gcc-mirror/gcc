@@ -1,3 +1,4 @@
+// { dg-do run  }
 namespace NS
 {
 template <typename T>

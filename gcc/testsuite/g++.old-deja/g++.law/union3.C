@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed unions
 // anon-union file
 // From: dcb@us-es.sel.de (David Binderman 3841)
@@ -9,5 +9,5 @@
 static union {
         char*   uC;
 private:
-        int     uI;// ERROR - 
+        int     uI;// { dg-error "" } 
 };

@@ -1,5 +1,5 @@
-// Special g++ Options: -O2
-// Skip if not target: i?86-*-*
+// { dg-do run { target i?86-*-* } }
+// { dg-options "-O2" }
 
 inline double foo (double x)
 {

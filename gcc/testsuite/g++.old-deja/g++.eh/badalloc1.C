@@ -1,4 +1,4 @@
-// excess errors test - XFAIL xstormy16-*-* *-*-darwin*
+// { dg-do run { xfail xstormy16-*-* *-*-darwin* } }
 // Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 6 June 2000 <nathan@codesourcery.com>
 

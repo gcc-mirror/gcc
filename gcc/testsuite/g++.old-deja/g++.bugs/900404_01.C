@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.37.1 bug 900404_01
 
 // g++ allows string initializers for known-length character arrays to be
@@ -10,6 +11,6 @@
 
 // keywords: arrays, initialization, array bounds
 
-char cv[4] = "asdf";		// ERROR - missed
+char cv[4] = "asdf";		// { dg-error "" } missed
 
 int main () { return 0; }

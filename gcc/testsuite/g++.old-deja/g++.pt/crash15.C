@@ -1,8 +1,8 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template <class T>
 template <class U>
-struct A { // ERROR - too many template parameter lists
+struct A { // { dg-error "" } too many template parameter lists
 public:
   A() {}
 

@@ -1,12 +1,13 @@
-// Special g++ Options:
+// { dg-do assemble  }
+// { dg-options "" }
 
 class S {
 public:
   void (S::*pmf)();
   void foo() {
-    pmf();			// WARNING - 
+    pmf();			// { dg-warning "" } 
   }
   static void foo1(S* sp) {
-    (sp->pmf)();		// ERROR - 
+    (sp->pmf)();		// { dg-error "" } 
   }
 };

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed copy-ctors
 extern "C" int printf (const char *, ...);
 extern "C" void exit (int);

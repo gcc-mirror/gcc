@@ -1,7 +1,8 @@
+// { dg-do assemble  }
 struct A
 {
   A();
-  A(A&);			// ERROR - referenced below
+  A(A&);			// { dg-error "" } referenced below
 };
 
 int
@@ -9,7 +10,7 @@ main ()
 {
   try
     {
-      throw A();		// ERROR - can't copy
+      throw A();		// { dg-error "" } can't copy
     }
   catch (...) { }
 }

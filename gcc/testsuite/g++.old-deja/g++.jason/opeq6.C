@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Testcase for wrongful generation of operator =.
-// Build don't link:
 
 class ivResource {
 public:

@@ -1,7 +1,7 @@
-// Build don't link:
+// { dg-do assemble  }
 
 class S
 {
-  friend void f<>(int); // ERROR - does not match any template
+  friend void f<>(int); // { dg-error "" } does not match any template
   int i;
 };

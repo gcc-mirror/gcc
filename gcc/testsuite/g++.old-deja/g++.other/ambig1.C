@@ -1,15 +1,15 @@
-// Build don't link:
+// { dg-do assemble  }
 
 struct A {
-  int operator ++(); // ERROR - candidates
-  void operator ()(); // ERROR - candidates
-  void operator delete(void*); // ERROR - candidates
+  int operator ++(); // { dg-error "" } candidates
+  void operator ()(); // { dg-error "" } candidates
+  void operator delete(void*); // { dg-error "" } candidates
 };
 
 struct B {
-  int operator ++(int); // ERROR - candidates
-  void operator ()(); // ERROR - candidates
-  void operator delete(void*); // ERROR - candidates
+  int operator ++(int); // { dg-error "" } candidates
+  void operator ()(); // { dg-error "" } candidates
+  void operator delete(void*); // { dg-error "" } candidates
   void f();
 };
 
@@ -21,8 +21,8 @@ void f()
   C c;
   C* cp;
   
-  delete cp; // ERROR - ambiguous
-  c(); // ERROR - ambiguous
-  c++; // ERROR - ambiguous
+  delete cp; // { dg-error "" } ambiguous
+  c(); // { dg-error "" } ambiguous
+  c++; // { dg-error "" } ambiguous
 }
   

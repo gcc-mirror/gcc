@@ -1,5 +1,6 @@
+// { dg-do run  }
+// { dg-options "" }
 // Test for obsolete specialization syntax.  Turn off -pedantic.
-// Special g++ Options:
 
 #include <iostream>
 #include <typeinfo>

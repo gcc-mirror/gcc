@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed pure-virt
 extern "C" int printf (const char *, ...);
 class Base {

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Jason Merrill <jason@cygnus.com>
 
 template <class T> struct A
@@ -8,6 +8,6 @@ template <class T> struct A
 
 template<class T> struct C
 {
-  friend typename A<T>::B; // ERROR - `typename' not allowed
+  friend typename A<T>::B; // { dg-error "" } `typename' not allowed
 };
 

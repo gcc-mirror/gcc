@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed bit-fields
 	struct {
 	    char c;
@@ -7,7 +7,7 @@
 	
 	int main()
 	{
-	    int &ir = s.i;	// ERROR - address of bitfield
-	    int *ip = &s.i;	// ERROR - address of bitfield
+	    int &ir = s.i;	// { dg-error "" } address of bitfield
+	    int *ip = &s.i;	// { dg-error "" } address of bitfield
 	    ir = 10;
 	}

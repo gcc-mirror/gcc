@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 24 Nov 2000 <nathan@codesourcery.com>
@@ -7,12 +7,12 @@
 
 class F
 {
-  class Internal;   // ERROR - is private
+  class Internal;   // { dg-error "" } is private
 };
 
 class C
 {
-  friend class F::Internal; // ERROR - in this context
+  friend class F::Internal; // { dg-error "" } in this context
   public:
   typedef enum { A, B } e;
 

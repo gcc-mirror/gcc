@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 struct A1 {
   explicit A1(int) { }
 } a1(1);
@@ -11,5 +12,5 @@ A::A(int) {
 
 void foo(A a) {
   foo(a);
-  foo(1);		// ERROR - not allowed
+  foo(1);		// { dg-error "" } not allowed
 }

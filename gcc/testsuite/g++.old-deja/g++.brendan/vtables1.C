@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed virtual-tables
 // Check that virtual function tables are generated and used
 // even for struct's/classes which have no explicit constructors.

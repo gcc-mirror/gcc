@@ -1,12 +1,11 @@
-// Build don't link:
+// { dg-do assemble { xfail *-*-* } }
 
 // Submitted by bjornw@fairplay.no
 
-// crash test - XFAIL *-*-*
 
 namespace hei {
   class CSomeClass {};
   extern CSomeClass SomeClass;
 }
 
-hei::CSomeClass hei::CSomeClass; // ERROR - should be hei::SomeClass - XFAIL *-*-*
+hei::CSomeClass hei::CSomeClass; // { dg-error "" "" { xfail *-*-* } } should be hei::SomeClass - 

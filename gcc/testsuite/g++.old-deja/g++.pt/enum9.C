@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template <typename _CharT>
 class _Format_cache

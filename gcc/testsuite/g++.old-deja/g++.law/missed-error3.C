@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed missed-error
 // missed-error file
 // From: Neil Wilson <csf004@cch.coventry.ac.uk>
@@ -88,7 +88,7 @@ public:
     virtual const int lower() const;
     virtual const int upper() const;
     virtual const T item(const int index) const;
-      const T Array::operator[](const int index); // ERROR - qualification ignored
+      const T Array::operator[](const int index); // { dg-error "" } qualification ignored
     virtual const bool valid_index(const int index) const;
     virtual const bool empty() const;
     friend const bool operator==(const Array& left, const Array& right);
@@ -119,6 +119,6 @@ public:
 
 void Fixed_List::go_offleft() const
 {
-    cursor_position = 0;// ERROR - 
+    cursor_position = 0;// { dg-error "" } 
 }
 

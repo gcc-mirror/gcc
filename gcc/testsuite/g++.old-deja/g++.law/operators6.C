@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed operators
 // opr-as file
 // From: Klaus Ahrens <ahrens@informatik.hu-berlin.de>

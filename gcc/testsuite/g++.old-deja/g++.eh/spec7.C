@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that we allow simple throw specs on pointers.
 
 void f() throw () { }

@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Tests non-unification of parms that don't use template parms.
-// Build don't link:
 
 enum kind {a, b};
 

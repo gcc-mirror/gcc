@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // Bug: g++ fails to clear out the IDENTIFIER_CLASS_VALUEs of various names
 // after a class definition.
-// Build don't link:
 
 struct A {
   typedef double T;
@@ -16,5 +16,5 @@ public:
 };
 
 struct C : public A {
-  T f ();			// gets bogus error
+  T f ();			// { dg-bogus "" } 
 };

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: fold is too eager about pushing down CLEANUP_POINT_EXPR.
 
 int d;

@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "-Wno-non-template-friend" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
-// Special g++ Options: -Wno-non-template-friend
 
 template<int I>
 class C {

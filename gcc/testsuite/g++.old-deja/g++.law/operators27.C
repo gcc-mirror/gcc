@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed operators
 // opr-new file
 // From: David Binderman 3841 <dcb@us-es.sel.de>

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that inline redeclarations of builtins are emitted.
 // Origin: Roger Sayle  Mar 28, 2002
 // Copyright (C) 2002 Free Software Foundation.

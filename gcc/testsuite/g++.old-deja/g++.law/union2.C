@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed unions
 // anon-union file
 // From: gerlek@dat.cse.ogi.edu (Michael Gerlek)
@@ -10,9 +10,9 @@ class A {
 public:
   int x;
 private:
-  int y;    // ERROR - private
+  int y;    // { dg-error "" } private
   union {
-    int z;  // ERROR - private
+    int z;  // { dg-error "" } private
   };
 };
 
@@ -20,6 +20,6 @@ void f() {
   A a;
 
   a.x = 0;
-  a.y = 1;// ERROR - .*
-  a.z = 2;// ERROR - 
+  a.y = 1;// { dg-error "" } .*
+  a.z = 2;// { dg-error "" } 
 }

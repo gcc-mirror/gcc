@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed visibility
 template<int K> class B;
 template<int K> class A {int n; friend class B<K>;};

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 class A
 {
@@ -12,5 +12,5 @@ class A
 union B
 {
     char f1;
-    A    f2;   // gets bogus error - non-copy assignment op is OK
+    A    f2;   // { dg-bogus "" } non-copy assignment op is OK
 };

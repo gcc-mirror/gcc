@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // GROUPS passed conversions
-// Build don't link:
 typedef unsigned long Array[3];
 
 void sample(const unsigned long (&an_array)[3]);

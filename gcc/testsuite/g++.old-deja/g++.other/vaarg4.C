@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Bug 845. We were treating __builtin_va_arg as a unary expr, not a primary,
 // and hence getting parse errors.

@@ -1,6 +1,6 @@
+// { dg-do run { target i?86-*-* } }
 // Test that stdcall doesn't prevent us from using op delete.
 // Contributed by Jason Merrill <jason@cygnus.com>
-// Skip if not target: i?86-*-*
 
 struct A {
   void operator delete (void *) __attribute__ ((stdcall));

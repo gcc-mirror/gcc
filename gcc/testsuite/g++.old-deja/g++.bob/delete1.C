@@ -1,3 +1,4 @@
+// { dg-do run  }
 // prms-id: 7330
 #include <stddef.h>
 int size = 0; 

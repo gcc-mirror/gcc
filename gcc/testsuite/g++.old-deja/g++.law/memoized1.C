@@ -1,5 +1,5 @@
-// Build don't link: 
-// Special g++ Options: -fsave-memoized
+// { dg-do assemble  }
+// { dg-options "-fsave-memoized" }
 // GROUPS passed memoized
 class CArray
 {

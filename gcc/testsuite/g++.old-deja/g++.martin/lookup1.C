@@ -1,4 +1,4 @@
-//Build don't link:
+// { dg-do assemble  }
 //In the base class list, the context of the current is used
 //reported by Stephen Vavasis <vavasis@CS.Cornell.EDU>
 

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.37.1 bug 900405_01
 
 // The C++ Reference Manual says (in section 5.4) "Types may not be defined
@@ -10,10 +11,10 @@
 
 void f ()
 {
-  (enum e { red, green } *) 0;		// ERROR - type defined in cast
-  (struct s { int member; } *) 0;	// ERROR - type defined in cast
-  (union u { int member; } * ) 0;	// ERROR - type defined in cast
-  (class c { int member; } *) 0;	// ERROR - type defined in cast
+  (enum e { red, green } *) 0;		// { dg-error "" } type defined in cast
+  (struct s { int member; } *) 0;	// { dg-error "" } type defined in cast
+  (union u { int member; } * ) 0;	// { dg-error "" } type defined in cast
+  (class c { int member; } *) 0;	// { dg-error "" } type defined in cast
 }
 
 int main () { return 0; }

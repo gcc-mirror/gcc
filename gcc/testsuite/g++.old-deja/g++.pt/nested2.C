@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Mathias Doreille <Mathias.Doreille@imag.fr>
 
 template<class T>

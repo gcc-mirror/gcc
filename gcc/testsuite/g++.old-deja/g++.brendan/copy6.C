@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed copy-ctors
 /*
 g++ 2.3.3 will prefer using type conversions over the

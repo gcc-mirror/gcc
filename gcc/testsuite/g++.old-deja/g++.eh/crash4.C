@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "-O2" }
 // Origin: Nathan Sidwell <nathan@codesourcery.com>
-// Special g++ Options: -O2
 
 struct A
 {

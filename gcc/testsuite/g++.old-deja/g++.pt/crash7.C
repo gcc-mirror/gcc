@@ -1,10 +1,10 @@
-// Build don't link:
+// { dg-do assemble  }
 
 class foo 
 {
 };
 
-template <class T : public foo> // ERROR - base clause
+template <class T : public foo> // { dg-error "" } base clause
 struct bar
 {
 };

@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // Bug: g++ remembers the members of OUTER and complains about the second
 // definition.
-// Build don't link:
 
 void
 test ()

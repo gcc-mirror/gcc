@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed operators
 // opr-ampr file
 // From: mecklen@oops.cs.utah.edu (Robert Mecklenburg)

@@ -1,10 +1,9 @@
+// { dg-do run  }
+// { dg-gpp-additional-sources " comdat1-aux.cc" }
+// { dg-options "-O" }
 // Test that statics in inline functions are unified between
 // translation units.  Currently we handle this by just suppressing
 // inling and relying on unification of the function itself.
-
-// Special g++ Options: -O
-
-// Additional sources: comdat1-aux.cc
 
 inline int f ()
 {

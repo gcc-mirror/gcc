@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 10 Jan 2001 <nathan@codesourcery.com>
@@ -15,7 +15,7 @@ template <class T> void A::f(void *CLUTp)
 {
     void *CLUT;
 
-    CLUT = (unsigned char [3][256])CLUTp; // ERROR - cast to array
+    CLUT = (unsigned char [3][256])CLUTp; // { dg-error "" } cast to array
 
     return;
 }

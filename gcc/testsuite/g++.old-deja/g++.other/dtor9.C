@@ -1,3 +1,4 @@
+// { dg-do run  }
 int i;
 
 struct CC

@@ -1,3 +1,4 @@
+// { dg-do run  }
 #include<iostream>
 
 int main() {

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template <class T, int i>
 struct S1;

@@ -1,5 +1,4 @@
-// Build don't link:
-// excess errors test
+// { dg-do assemble  }
 
 struct foo {
        template<typename T> T bar() { return staticbar<T>( this ); }

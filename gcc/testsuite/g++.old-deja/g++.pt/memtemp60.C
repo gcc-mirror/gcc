@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // GROUPS passed membertemplates
 template <class T>
 struct S

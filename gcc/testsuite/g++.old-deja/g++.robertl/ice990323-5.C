@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // check attempting to throw an overloaded function
 
 struct A {
@@ -8,5 +8,5 @@ struct A {
 
 void g()
 {
-	throw &A::f; // ERROR - insufficient context
+	throw &A::f; // { dg-error "" } insufficient context
 }

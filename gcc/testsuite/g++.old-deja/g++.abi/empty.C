@@ -1,4 +1,5 @@
-// Special g++ Options: -w
+// { dg-do run  }
+// { dg-options "-w" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 #if defined (__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Raja R Harinath <harinath@cs.umn.edu>
 
 enum ReservedName {

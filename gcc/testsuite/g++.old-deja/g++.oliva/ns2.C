@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 1999 Free Software Foundation
 
@@ -10,6 +10,6 @@ void foo();
 namespace bar {
   using ::foo;
   class baz {
-    friend void foo(); // gets bogus error - conflict - XFAIL *-*-*
+    friend void foo(); // { dg-bogus "" "" { xfail *-*-* } }  - conflict - 
   };
 }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 //980324 bkoz
 //test for bool and bitwise ands
 

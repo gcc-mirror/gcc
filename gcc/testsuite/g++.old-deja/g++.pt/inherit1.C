@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Origin: Wolfgang Bangerth <wolf@gaia.iwr.uni-heidelberg.de>
 
 int i = 1;

@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Bug: the compiler gets hopelessly confused.
-// Build don't link:
 
 #line 1 "c-inline.h"
 #pragma interface

@@ -1,4 +1,5 @@
-// Special g++ Options:
+// { dg-do run  }
+// { dg-options "" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 template <class T>

@@ -1,8 +1,8 @@
+// { dg-do assemble  }
+// { dg-options "-pedantic -Wno-deprecated" }
 // This code snippet should be rejected with -pedantic
 // Based on a test case by Louidor Erez <s3824888@techst02.technion.ac.il>
 
-// Build don't link:
-// Special g++ Options: -pedantic -Wno-deprecated
 
 template<class T>
 class Vector {
@@ -13,5 +13,5 @@ public:
 template<class T>
 void f()
 {
-  Vector<T>::iterator i = 0; // WARNING - missing typename
+  Vector<T>::iterator i = 0; // { dg-warning "" } missing typename
 }

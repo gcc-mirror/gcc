@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 class A{
   public:
     enum Foo{f1,f2};

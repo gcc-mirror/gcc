@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // PRMS Id: 9500
-// Build don't link:
 
 template <int S> 
 class base 

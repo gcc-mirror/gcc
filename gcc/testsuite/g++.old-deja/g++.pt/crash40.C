@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: rch@larissa.sd.bi.ruhr-uni-bochum.de
 
 template< class X >

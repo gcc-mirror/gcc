@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 class x
 {
@@ -9,7 +9,7 @@ public:
 void foo()
 {
   x* y;
-  if (y->is_constant) // ERROR - assuming &
+  if (y->is_constant) // { dg-error "" } assuming &
     {
     }
 }

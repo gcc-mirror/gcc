@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Bug: g++ doesn't find the conversion path from DPtr& to B*.
-// Build don't link:
 
 class B {};
 class D : public B {};

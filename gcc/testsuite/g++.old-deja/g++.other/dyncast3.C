@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Author: Alfred Miniarik <a8601248@unet.univie.ac.at>
 // test of dynamic_cast
 // runtime detecting of nonpublic

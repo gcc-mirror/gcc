@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test for proper handling of field calls.
 // Contributed by Jason Merrill <jason@cygnus.com>
 

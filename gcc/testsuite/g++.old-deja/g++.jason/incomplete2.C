@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 struct A {
   int foo(A a) { return a.bar(); }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 enum E { C };
 
 E foo() {

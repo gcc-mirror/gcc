@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 22 June 2000 <nathan@codesourcery.com>
@@ -20,7 +20,7 @@ class Y
 };
 template <class T> Y::Y(T &) {}
 
-template class Y::Y (int);  // ERROR - parse error
-template Y::Y (int);        // ERROR - template-id does not match
+template class Y::Y (int);  // { dg-error "" } parse error
+template Y::Y (int);        // { dg-error "" } template-id does not match
 template Y::Y (int &);
 

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template<typename T> T baz() { return 0; }
 

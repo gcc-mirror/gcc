@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 struct Base_bitset {
   unsigned M_w[2];

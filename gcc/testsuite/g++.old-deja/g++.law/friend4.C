@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed friends
 // friends file
 // From: osinski@cs.nyu.edu (Ed Osinski)

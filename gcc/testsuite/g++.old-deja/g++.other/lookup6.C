@@ -1,3 +1,4 @@
+// { dg-do run  }
 int f(int i)
 {
   struct C {

@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -Wno-deprecated
+// { dg-do assemble  }
+// { dg-options "-Wno-deprecated" }
 // prms-id: 13417
 
 class   Foo {
@@ -7,5 +7,5 @@ public:
   explicit Foo (int){}
 };
 Foo f(10);
-Foo blat() return f(4){} // ERROR - named return value
+Foo blat() return f(4){} // { dg-error "" } named return value
  

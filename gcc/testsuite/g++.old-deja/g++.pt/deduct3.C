@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 18 Jan 2001 <nathan@codesourcery.com>
@@ -12,7 +12,7 @@ template <class T> int Foo (T const *);
 
 void Baz (int *p1, int const *p2)
 {
-  int i = Foo (p1); // ERROR - cannot convert
+  int i = Foo (p1); // { dg-error "" } cannot convert
   int j = Foo (p2);
 }
 void Baz (float *p1, float const *p2)

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed virtual-functions
 #include <stdio.h>
 #include <stdlib.h>

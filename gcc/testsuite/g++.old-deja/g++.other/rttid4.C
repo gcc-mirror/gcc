@@ -1,7 +1,8 @@
+// { dg-do run  }
+// { dg-options "-w" }
 // test of rtti of single inheritance and multiple inheritance with 
 // virtual inheritance
 // dynamic casting
-// Special g++ Options: -w
 
 #include <typeinfo>
 

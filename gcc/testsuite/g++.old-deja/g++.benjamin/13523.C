@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // 981203 bkoz
 // g++/13523
-// Build don't link: 
 
 template<typename T> class latin_america;
 

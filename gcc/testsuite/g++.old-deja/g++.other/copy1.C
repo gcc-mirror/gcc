@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: expand_vec_init doesn't copy arrays of builtin types.
 
 struct B {

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: bkoz@nabi.net
 
 typedef struct

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // g++ 1.37.1 bug 900321_04
 
 // The following code causes g++ to segfault.

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.36.1 bug 900210_09
 
 // g++ allows pointer to members (both data members and function members)
@@ -23,8 +24,8 @@ void *vp;
 
 void global_function_0 ()
 {
-  vp = class0_data_member_pointer;		// ERROR - 
-  vp = class0_function_member_pointer;		// ERROR - 
+  vp = class0_data_member_pointer;		// { dg-error "" } 
+  vp = class0_function_member_pointer;		// { dg-error "" } 
 }
 
 int main () { return 0; }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 #include <stdio.h>
 #include <stdlib.h>
 #include <exception>

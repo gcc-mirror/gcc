@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // PRMS Id: 5085
 // Bug: TYPE_POINTER_TO wasn't set.
-// Build don't link:
 
 class A {
    A(const A &);

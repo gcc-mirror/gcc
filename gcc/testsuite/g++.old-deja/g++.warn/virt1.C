@@ -1,10 +1,10 @@
-// Special g++ Options: -Woverloaded-virtual
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "-Woverloaded-virtual" }
 
 struct A {
-  virtual void f(); // WARNING - hidden 
+  virtual void f(); // { dg-warning "" } hidden 
 };
 
 struct B: public A {
-  void f(int); // WARNING - by this
+  void f(int); // { dg-warning "" } by this
 };

@@ -1,5 +1,5 @@
-// Build don't link:
+// { dg-do assemble  }
 union A {
  struct B { };
- A::B b;			// gets bogus error
+ A::B b;			// { dg-bogus "" } 
 };

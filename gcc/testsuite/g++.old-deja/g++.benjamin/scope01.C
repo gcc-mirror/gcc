@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // 980604 bkoz
 // 3.4.5 Class member access p 4
 // nested and non-nested calls, no dtors

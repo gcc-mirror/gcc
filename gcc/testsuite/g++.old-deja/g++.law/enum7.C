@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed enums
 // friends file
 // From: offline!marc@ai.mit.edu (Marc Duponcheel) (Marc Duponcheel)

@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options:
+// { dg-do assemble  }
+// { dg-options "" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 void X();

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.37.1 bug 900404_04
 
 // [dcl.dcl] explains that simple-declarations may omit the
@@ -12,6 +13,6 @@
 
 int i;
 
-;			// ERROR - 
+;			// { dg-error "" } 
 
 int main () { return 0; }

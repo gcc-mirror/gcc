@@ -1,3 +1,4 @@
+// { dg-do run  }
 // check cleanup of template temporaries
 extern "C" void abort ();
 extern "C" void exit (int);

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 template< class T >
 void    sort( T* t, int n )
         {

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 typedef unsigned long   Xv_opaque;
 
 class DynaString

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed error-messages
 class foo {};
-~foo () {}// ERROR -  destructors must be member functions.*
+~foo () {}// { dg-error "" }  destructors must be member functions.*

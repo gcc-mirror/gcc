@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Test nested enums in templates.
-// Build don't link:
 
 template <class T>
 class A

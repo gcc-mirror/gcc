@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed visibility
 // visibility file
 // From: joe@consolve.com (Joe Shapiro)
@@ -14,7 +14,7 @@ template <class T>
 class A
 {
 public:
-      void Fun() { printf( "Fun fun fun!\n" ); } // ERROR - private
+      void Fun() { printf( "Fun fun fun!\n" ); } // { dg-error "" } private
 };
 
 
@@ -27,7 +27,7 @@ class B: private A<T>
 class C
 {
 public:
-    C() { _b.Fun(); }// ERROR - .*
+    C() { _b.Fun(); }// { dg-error "" } .*
 
 private:
     B<int> _b;

@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "-w" }
 // Origin: Ulrich Drepper <drepper@cygnus.com>
-// Special g++ Options: -w
 
 struct st
 {

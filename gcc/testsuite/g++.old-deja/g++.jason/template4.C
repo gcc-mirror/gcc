@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Bug: g++ tries to instantiate ccList twice, and fails.
-// Build don't link:
 
 template<class T> class ccHandle{ };
 template <class T> class ccList;

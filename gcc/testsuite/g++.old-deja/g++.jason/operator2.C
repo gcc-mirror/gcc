@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // PRMS Id: 6018
-// Build don't link:
 
 class string {
     char *p;

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 8475
 
 class SomeClass {

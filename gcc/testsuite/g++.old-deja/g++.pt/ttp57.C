@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Alex Samuel <samuel@codesourcery.com>
 
 namespace NS 

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS id: 11315
 // Bug: g++ doesn't recognize the copy ctor for Array<long>.
 

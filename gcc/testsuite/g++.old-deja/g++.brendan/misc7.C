@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed miscellaneous
 extern "C" int printf (const char *, ...);
 

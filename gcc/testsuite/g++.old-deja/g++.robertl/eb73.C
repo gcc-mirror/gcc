@@ -1,4 +1,5 @@
-// Special g++ Options: -O -Wall
+// { dg-do run  }
+// { dg-options "-O -Wall" }
 // Depletes VM.
 
 #include <iostream>

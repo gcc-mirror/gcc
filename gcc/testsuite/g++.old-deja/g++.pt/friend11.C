@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 template <class T>
 class C;
 
@@ -8,7 +9,7 @@ struct S
   void f(U u)
     {
       C<U> cu;
-      cu.i = 3; // ERROR - S<double>::f<U> is a friend, but this is
+      cu.i = 3; // { dg-error "" } S<double>::f<U> is a friend, but this is
                 //         S<int>::f<double>. 
     }
 };
@@ -20,7 +21,7 @@ class C
   template <class U>
   friend void S<T>::f(U);
 
-  int i; // ERROR - private
+  int i; // { dg-error "" } private
 };
 
 

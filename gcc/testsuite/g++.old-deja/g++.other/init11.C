@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Check that elements for which no explicit initializer was given are
 // default-initialized properly.
 

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 24 Jul 2001 <nathan@codesourcery.com>
@@ -21,6 +21,6 @@ X x;
 
 void foo (bool a)
 {
-  x << (a ? OVL1 : OVL2);	// ERROR - incomplete type
-  a ? OVL1 : OVL2;              // ERROR - incomplete type
+  x << (a ? OVL1 : OVL2);	// { dg-error "" } incomplete type
+  a ? OVL1 : OVL2;              // { dg-error "" } incomplete type
 }

@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // PRMS Id: 4342
 // Bug: g++ does not massage things enough to allow calling ~X().
-// Build don't link:
 
 struct X 
 {
@@ -11,10 +11,10 @@ struct Y : public X
 {};
 
 struct Z : public Y, public X
-{};				// WARNING - 
+{};				// { dg-warning "" } 
 
 void foo ()
 {
     Z* f = new Z;
-    delete f;			// gets bogus error - 
+    delete f;			// { dg-bogus "" } 
 }

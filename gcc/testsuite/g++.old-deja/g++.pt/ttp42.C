@@ -1,3 +1,4 @@
+// { dg-do run  }
 template <class T, template <class T> class C>
 struct X
 {};

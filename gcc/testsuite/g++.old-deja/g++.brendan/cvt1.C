@@ -1,11 +1,11 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed conversions
 #include <iostream>
 
 class Thing
 {
 public:
-      typedef enum { GOOD_THING, BAD_THING, } ThingType ; // ERROR - comma
+      typedef enum { GOOD_THING, BAD_THING, } ThingType ; // { dg-error "" } comma
 	Thing (ThingType type) : thingType (type) { }
 	~Thing () { }
 private:
@@ -15,7 +15,7 @@ private:
 class Group
 {
 public:
-      typedef enum { THIS_GROUP, THAT_GROUP, } GroupType ; // ERROR - comma
+      typedef enum { THIS_GROUP, THAT_GROUP, } GroupType ; // { dg-error "" } comma
 	Group (GroupType type) : groupType (type), groupCount (0) { }
 	~Group () { }
 	void append (Thing* const &entry) { groupCount ++ ; }

@@ -1,4 +1,4 @@
-// Build don't run:
+// { dg-do link  }
 
 void f(int* const volatile * const * const*);
 void f(int* const * const * const*) {}

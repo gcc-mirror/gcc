@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // PRMS Id: 5124
 // Bug: g++ promotes bar to int* too soon and the call to f fails.
-// Build don't link:
 
 typedef int arr[1];
 

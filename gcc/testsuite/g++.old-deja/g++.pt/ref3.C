@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Origin: John Wilkinson <jfw@sgi.com>
 
 template <class T, int& Size> 

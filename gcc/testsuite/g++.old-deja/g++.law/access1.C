@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed access
 // access file
 // Message-Id: <9211281852.AA24557@cove.cis.ufl.edu>

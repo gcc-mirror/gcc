@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that we can deduce t even though T is deduced from a later argument.
 
 template <int I> struct A { };

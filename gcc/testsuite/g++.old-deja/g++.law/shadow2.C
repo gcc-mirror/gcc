@@ -1,5 +1,5 @@
-// Build don't link: 
-// Special g++ Options: -Wshadow
+// { dg-do assemble  }
+// { dg-options "-Wshadow" }
 // GROUPS passed shadow-warnings
 // (Message bugs/shadow:2)
 // From: michael@utex.rni.sub.org (Michael Utech)

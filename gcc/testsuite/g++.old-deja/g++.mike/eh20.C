@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -fexceptions -Wall
+// { dg-do assemble  }
+// { dg-options "-fexceptions -Wall" }
 
 int
 main() {

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed destructors
 // dtor file
 // Message-Id: <9301242117.AA04053@cs.rice.edu>

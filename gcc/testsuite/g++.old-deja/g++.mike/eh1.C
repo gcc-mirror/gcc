@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -fexceptions -O -S
+// { dg-do assemble  }
+// { dg-options "-fexceptions -O -S" }
 
 extern "C" int printf (const char *, ...);
 extern "C" int atoi (const char *);

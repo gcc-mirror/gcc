@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 namespace M {
    int i;
 }

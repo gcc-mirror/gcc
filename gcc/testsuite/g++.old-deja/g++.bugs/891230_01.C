@@ -1,3 +1,4 @@
+// { dg-do run  }
 // g++ 1.36.1 bug 891230_01
 
 // g++ gives typedefs which are nested within class declarations a scope
@@ -14,7 +15,7 @@ struct foo {
     void member (foo_p);
 };
 
-void foo::member (foo_p p) {	// gets bogus errors
+void foo::member (foo_p p) {	// { dg-bogus "" } s
 }
 
 int main () { return 0; }

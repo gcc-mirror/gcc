@@ -1,4 +1,5 @@
-// Special g++ Options: -O2
+// { dg-do run  }
+// { dg-options "-O2" }
 
 #include <iostream>
 

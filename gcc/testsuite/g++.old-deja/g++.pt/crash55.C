@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Jakub Jelinek <jakub@redhat.com>
 
 template<class T> struct foo {

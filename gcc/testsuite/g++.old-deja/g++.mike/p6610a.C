@@ -1,3 +1,4 @@
+// { dg-do run  }
 // prms-id: 6610
 // There is a bug in vtable thunks with multiple/virtual inheritance.
 

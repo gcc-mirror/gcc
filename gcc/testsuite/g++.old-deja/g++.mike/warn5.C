@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -Wpointer-arith
+// { dg-do assemble  }
+// { dg-options "-Wpointer-arith" }
 
 double X(const double x) { return x; }
 double Y() { return 1.0; }
@@ -12,10 +12,10 @@ struct A {
 
 typedef void (A::*pmf)();
 
-static int mememe = &A::foo - &A::bar;	// WARNING - 
-pmf b = &A::foo-1;	// WARNING - 
+static int mememe = &A::foo - &A::bar;	// { dg-warning "" } 
+pmf b = &A::foo-1;	// { dg-warning "" } 
 
 int main() {
     double y;
-    y=X(Y-Z);   // WARNING - 
+    y=X(Y-Z);   // { dg-warning "" } 
 }

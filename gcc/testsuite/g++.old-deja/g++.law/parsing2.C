@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed parsing
 // parsing folder
 // From: jonathan@Pescadero.Stanford.EDU

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 10 Jan 2001 <nathan@codesourcery.com>
@@ -14,5 +14,5 @@ struct B {
 
 void foo (B *ptr)
 {
-  ptr->Tpl.t (); // ERROR - template as expression
+  ptr->Tpl.t (); // { dg-error "" } template as expression
 }

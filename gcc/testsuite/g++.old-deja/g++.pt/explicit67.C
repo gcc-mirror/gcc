@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 struct S
 {
   void f(int);
@@ -14,7 +15,7 @@ void foo();
 
 void bar()
 {
-  foo<S::f>(); // ERROR - no matching function
-  foo<g>();    // ERROR - no matching function
+  foo<S::f>(); // { dg-error "" } no matching function
+  foo<g>();    // { dg-error "" } no matching function
   
 }

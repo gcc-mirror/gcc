@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Distillation of crash1.C problem (PR 3633)
-// Build don't link:
 
 template<class P>
 class A

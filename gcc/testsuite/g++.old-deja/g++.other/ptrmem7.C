@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 14 Aug 2000 <nathan@codesourcery.com>
@@ -20,9 +20,9 @@ struct A
 void A::foo ()
 {
   int (A::*ptr1) (int) = &A::ns;
-  int (A::*ptr2) (int) = A::ns;           // ERROR - not ptr mem
-  int (A::*ptr3) (int) = &ns;             // ERROR - not ptr mem
-  int (A::*ptr4) (int) = ns;              // ERROR - not ptr mem
+  int (A::*ptr2) (int) = A::ns;           // { dg-error "" } not ptr mem
+  int (A::*ptr3) (int) = &ns;             // { dg-error "" } not ptr mem
+  int (A::*ptr4) (int) = ns;              // { dg-error "" } not ptr mem
 
   int (*ptr5) (short) = &A::ns;
   int (*ptr6) (short) = A::ns;
@@ -30,12 +30,12 @@ void A::foo ()
   int (*ptr8) (short) = ns;
 
   int (A::*ptr11) (int) = &A::single;
-  int (A::*ptr12) (int) = A::single;      // ERROR - not ptr mem
-  int (A::*ptr13) (int) = &single;        // ERROR - not ptr mem
-  int (A::*ptr14) (int) = single;         // ERROR - not ptr mem
+  int (A::*ptr12) (int) = A::single;      // { dg-error "" } not ptr mem
+  int (A::*ptr13) (int) = &single;        // { dg-error "" } not ptr mem
+  int (A::*ptr14) (int) = single;         // { dg-error "" } not ptr mem
 
-  int (A::*ptr20) (int) = &(A::ns);       // ERROR - not ptr mem
-  int (A::*ptr21) (int) = &(A::single);   // ERROR - not ptr mem
+  int (A::*ptr20) (int) = &(A::ns);       // { dg-error "" } not ptr mem
+  int (A::*ptr21) (int) = &(A::single);   // { dg-error "" } not ptr mem
 
   int (*ptr31) (short) = &A::sole;
   int (*ptr32) (short) = A::sole;

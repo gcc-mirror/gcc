@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Ian Nixon <ian@tharas.com>
 
 class Action {

@@ -1,7 +1,7 @@
+// { dg-do assemble  }
+// { dg-options "-Wno-non-template-friend" }
 // 980903 bkoz
 // make sure this option works
-// Build don't link: 
-// Special g++ Options: -Wno-non-template-friend
 
 
 template<class T> class task {

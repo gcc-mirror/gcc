@@ -1,3 +1,4 @@
+// { dg-do run  }
 // example from the ARM page 292 and 293
 
 extern "C" int printf(const char *, ...);

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // g++ 1.36.1 bug 900220_01
 
 // Ref: 12.8
@@ -23,14 +24,14 @@ typedef struct0& (struct0::*member_func_t) (const struct0&);
 member_func_t member_func;
 
 void global_function_0 (member_func_t member_f)
-{						// gets bogus error - ref from below
+{						// { dg-bogus "" } ref from below
 }
 
 void global_function_1 ()
 {
-  member_func = &struct0::operator=;		// gets bogus error
+  member_func = &struct0::operator=;		// { dg-bogus "" } 
 
-  global_function_0 (&struct0::operator=);	// gets bogus error
+  global_function_0 (&struct0::operator=);	// { dg-bogus "" } 
 }
 
 int main () { return 0; }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // prms-id: 5840
 
 class Signal {

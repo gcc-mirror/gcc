@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // by Alexandre Oliva <oliva@dcc.unicamp.br>
 
@@ -10,12 +10,12 @@
 
 template <class A, class B> void foo();
 template <class C> class bar {
-  int i; // ERROR - private
-  template <class B> friend void foo<C,B>(); // ERROR - bogus declaration
+  int i; // { dg-error "" } private
+  template <class B> friend void foo<C,B>(); // { dg-error "" } bogus declaration
 };
 template <class A, class B> void foo() {
-  bar<A> baz; baz.i = 1;   // ERROR - foo cannot access bar<int>::i
-  bar<int> buz; buz.i = 1; // ERROR - foo cannot access bar<int>::i
+  bar<A> baz; baz.i = 1;   // { dg-error "" } foo cannot access bar<int>::i
+  bar<int> buz; buz.i = 1; // { dg-error "" } foo cannot access bar<int>::i
 }
 int main() {
   foo<void,void>();

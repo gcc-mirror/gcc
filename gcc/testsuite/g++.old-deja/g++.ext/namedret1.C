@@ -1,6 +1,7 @@
-// Special g++ Options: -Wno-deprecated
+// { dg-do assemble  }
+// { dg-options "-Wno-deprecated" }
 
-int f(int x) return y(x) { } // ERROR - 
+int f(int x) return y(x) { } // { dg-error "" } 
 
 extern "C" void abort ();
 

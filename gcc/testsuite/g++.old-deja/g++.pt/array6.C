@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "" }
 // Origin: Alfred Minarik <a8601248@unet.univie.ac.at>
-// Special g++ Options: 
 
 template<typename _CharT>
 struct basic_filebuf

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed nested-classes
 // This is the first line of file ||t3.C||.
 

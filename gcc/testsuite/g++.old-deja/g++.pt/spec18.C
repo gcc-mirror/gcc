@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template<class A, class B>
 void foo(const A& a, const B& b)

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // submitted by David C Binderman <dcb@pncl.co.uk>
 
@@ -7,5 +7,5 @@
 void
 f()
 {
-  const int var [ 10 ]; // ERROR - missing initializer 
+  const int var [ 10 ]; // { dg-error "" } missing initializer 
 }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // g++ 1.36.1 bug 900107_01
 
 // Unlike GCC and Cfront 2.0, the g++ 1.36.1 compiler gives struct, union,
@@ -15,15 +16,15 @@ typedef int t1;
 
 void foo ()
 {
-  class c1 {			// gets bogus error
+  class c1 {			// { dg-bogus "" } 
     int c1_member1;
   } c1_local_object_0;
 
-  struct s1 {			// gets bogus error
+  struct s1 {			// { dg-bogus "" } 
     int s1_member1;
   } s1_local_object_0;
 
-  union u1 {			// gets bogus error
+  union u1 {			// { dg-bogus "" } 
     int u1_member1;
   } u1_local_object_0;
 

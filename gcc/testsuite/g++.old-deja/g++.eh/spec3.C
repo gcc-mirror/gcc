@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Testing exception specifications.
 // Test 3: the bad_exception throw succeeds.
 

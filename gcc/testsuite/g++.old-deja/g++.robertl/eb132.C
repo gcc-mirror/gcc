@@ -1,7 +1,7 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "-O -Wall  -fgcse -frerun-loop-opt" }
 // From: Klaus-Georg Adams <Klaus-Georg.Adams@chemie.uni-karlsruhe.de> 
 // Reported against EGCS snaps 98/06/28.
-// Special g++ Options: -O -Wall  -fgcse -frerun-loop-opt
 //
 // Compilation of this program with the flags g++ -Wall -O -fgcse
 // -frerun-loop-opt or -O2 produces spurious warnings in the standard

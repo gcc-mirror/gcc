@@ -1,6 +1,5 @@
-// Build don't link:
-// Skip if not target: i?86-*-* x86_64-*-*
-// Special g++ Options: -O2
+// { dg-do assemble { target i?86-*-* x86_64-*-* } }
+// { dg-options "-O2" }
 
 typedef unsigned long long uint64;
 uint64 fstps(void)

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // Gets ICE 40.
 
 #include <vector>
@@ -47,7 +48,7 @@ void ODEsolver::init()
 
 void ODEsolver::timeloop(vector<double>& y, double ts, double te, double dt)
 {
-  (ODEsolver::useMethod)(y,ts,dt); // ERROR - should use this->*
+  (ODEsolver::useMethod)(y,ts,dt); // { dg-error "" } should use this->*
 }
 
 int main (int nargs, char** args)

@@ -1,3 +1,3 @@
-// Build don't link:
-using namespace bb; // ERROR - .*
+// { dg-do assemble  }
+using namespace bb; // { dg-error "" } .*
 

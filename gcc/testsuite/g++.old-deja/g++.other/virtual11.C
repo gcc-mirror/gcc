@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 14 Nov 2000 <nathan@codesourcery.com>
@@ -12,7 +12,7 @@ struct A
 
 struct B
 {
-  virtual void foo ();  // ERROR - of this function
+  virtual void foo ();  // { dg-error "" } of this function
 };
 
 struct C : A , B
@@ -27,5 +27,5 @@ struct D : C
 
 struct E : D
 {
-  virtual int foo ();   // ERROR - invalid override
+  virtual int foo ();   // { dg-error "" } invalid override
 };

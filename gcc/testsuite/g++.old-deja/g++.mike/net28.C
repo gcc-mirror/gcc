@@ -1,10 +1,10 @@
+// { dg-do assemble  }
 // From reinhard@ifki50.informatik.fh-muenchen.de against gcc 2.5.0.
 // shows an InterViews problem on RS6000 and i386.  Doesn't happen on
 // SPARC.
 
 // From fbrowser.c.
 
-// Build don't link:
 
 class test {
 };

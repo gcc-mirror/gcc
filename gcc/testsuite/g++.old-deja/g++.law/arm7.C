@@ -1,4 +1,5 @@
-// Special g++ Options: -w
+// { dg-do run  }
+// { dg-options "-w" }
 // GROUPS passed ARM-compliance
 // arm file (also in cvt file)
 // Message-Id: <9303061246.AA09402@gjetost.cs.wisc.edu>

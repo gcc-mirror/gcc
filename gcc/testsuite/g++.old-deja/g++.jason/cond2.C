@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Positive testcase for decls in conditions.
 
 extern "C" int printf(const char *, ...);

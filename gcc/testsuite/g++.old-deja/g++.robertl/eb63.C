@@ -1,4 +1,5 @@
-//Special g++ Options:
+// { dg-do run  }
+// { dg-options "" }
 //This uses GNU extensions, so disable -ansi
 #include <stdio.h>
 #include <stdlib.h>

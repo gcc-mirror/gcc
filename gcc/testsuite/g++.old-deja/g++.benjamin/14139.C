@@ -1,7 +1,7 @@
+// { dg-do assemble  }
 // 981203 bkoz
 // g++/14309
 // test for global functions, mf's, and templatized mf's.
-// Build don't link: 
 
 static int fooe_1(void) { return 5; }
 static int fooe_2(int x = fooe_1()) { return x; }

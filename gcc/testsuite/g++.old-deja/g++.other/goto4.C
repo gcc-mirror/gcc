@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that we clean up temporaries bound to references properly when
 // jumping out of their scope.
 

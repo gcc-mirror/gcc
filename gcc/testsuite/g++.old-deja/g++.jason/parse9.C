@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 5720
 // Bug: the extra set of parens confuses the expr/declarator disambiguation.
 
@@ -13,6 +14,6 @@ int main(int argc, char * argv[])
 {
   int * i = &argc;
 
-  Fu((*i)).print();		// gets bogus error
+  Fu((*i)).print();		// { dg-bogus "" } 
   Fu((*j));
 }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 #include <cstddef>
 
 template <class T>	

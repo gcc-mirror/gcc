@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed visibility
 // visibility file
 // From: doug@foxtrot.ccmrc.ucsb.edu (Douglas Scott)
@@ -8,7 +8,7 @@
 
 class Base {
 protected:
-      void protectedBaseFunction() {} // ERROR - protected
+      void protectedBaseFunction() {} // { dg-error "" } protected
 public:
     Base() {}
 };
@@ -23,7 +23,7 @@ public:
 
 void
 Derived::noticeThisFunction(Base *b) {
-    b->protectedBaseFunction(); // ARM says this is not allowed// ERROR - .*
+    b->protectedBaseFunction(); // ARM says this is not allowed// { dg-error "" } .*
                                 // since it is not called on 'this'
 }
 
@@ -31,6 +31,6 @@ int main() {
     Base b;
     Derived d;
     d.noticeThisFunction(&b);
-    printf("gpptest run\n");// ERROR - .*
+    printf("gpptest run\n");// { dg-error "" } .*
 }
 

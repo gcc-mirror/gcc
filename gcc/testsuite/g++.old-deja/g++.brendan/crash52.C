@@ -1,13 +1,13 @@
-// Build don't link: 
+// { dg-do assemble  }
+// { dg-options "-Wreturn-type" }
 // GROUPS passed old-abort
-// Special g++ Options: -Wreturn-type
 #include <iostream>
 
 class A {
 public:
-  friend A f(A &a);// ERROR -  ambiguates.*
+  friend A f(A &a);// { dg-error "" }  ambiguates.*
 };
 
-A &f(A &a) {// ERROR -  new decl.*
+A &f(A &a) {// { dg-error "" }  new decl.*
   std::cout << "Blah\n";
 }

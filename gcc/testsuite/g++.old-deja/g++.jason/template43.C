@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test matching of partial specializations.
 
 template <int* x, int* y>

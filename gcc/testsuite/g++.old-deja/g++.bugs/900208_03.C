@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.36.1 bug 900208_03
 
 // The Cfront 2.0 reference manual (5.3.3) says "This type must be an
@@ -12,7 +13,7 @@ typedef void (func_type) ();
 
 void global_function_0 ()
 {
-  new func_type;	// ERROR - missed by both cfront 2.0 and g++ 1.36.1
+  new func_type;	// { dg-error "" } missed by both cfront 2.0 and g++ 1.36.1
 }
 
 int main () { return 0; }

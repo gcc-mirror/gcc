@@ -1,3 +1,4 @@
+// { dg-do run  }
 #include <iterator>
 
 using namespace std;

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed templates overloading
 template<class T> class Vector { };
 template<class T> struct Sort { static void sort (Vector<typename T::foo> &); };

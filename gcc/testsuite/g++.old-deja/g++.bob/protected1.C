@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 class A {
 public:
   int i;
@@ -38,5 +38,5 @@ void C::f() {
 B b(3);
 int
 main() {
- A *z = &b; // ERROR - 
+ A *z = &b; // { dg-error "" } 
 }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: bar isn't emitted, which causes havoc.
 
 extern int i;

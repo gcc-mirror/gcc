@@ -1,5 +1,5 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template <class T> struct A {};
 template <class T> struct A<T*>;
-A<int*> ai; // ERROR - incomplete type
+A<int*> ai; // { dg-error "" } incomplete type

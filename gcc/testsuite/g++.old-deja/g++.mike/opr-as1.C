@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Shows a problem with the default op= not being an implementation...
 
 class C {

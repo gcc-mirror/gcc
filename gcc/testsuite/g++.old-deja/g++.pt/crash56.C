@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 1 Sep 2000 <nathan@codesourcery.com>
@@ -15,5 +15,5 @@ public:
 };
 
 void foo () {
-  basic_string<char>::iterator<char> p; // ERROR - not a template // ERROR - no type
+  basic_string<char>::iterator<char> p; // { dg-error "" } not a template // ERROR - no type
 }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // global and local multidimensional array objects are not getting
 // constructors called on any dimension, other than the first.  Also,
 // the destructors are not being called.  Seems odd, they probably

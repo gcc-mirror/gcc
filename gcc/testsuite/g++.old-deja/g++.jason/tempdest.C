@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed templates destructors
 // Example of PR 3308 workaround
 

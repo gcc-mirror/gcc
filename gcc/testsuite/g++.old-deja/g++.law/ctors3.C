@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed constructors
 // ctor file
 // Message-Id: <m0oxRi1-0002fPC@nesmith.pactitle.com>

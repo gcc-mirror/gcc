@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -g
+// { dg-do assemble  }
+// { dg-options "-g" }
 // Origin: Jim Wilson <wilson@cygnus.com>
 
 template<template<class> class _Oper,

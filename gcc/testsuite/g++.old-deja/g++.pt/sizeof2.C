@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Although template class B is not used at all, it causes the
 // incorrect specialization of A to be selected
 

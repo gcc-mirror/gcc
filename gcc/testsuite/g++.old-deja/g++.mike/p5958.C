@@ -1,4 +1,5 @@
-// Special g++ Options: -ansi
+// { dg-do run  }
+// { dg-options "-ansi" }
 // prms-id: 5958
 
 class A { };

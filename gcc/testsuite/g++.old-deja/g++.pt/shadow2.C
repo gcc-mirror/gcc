@@ -1,9 +1,9 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Jason Merrill <jason@cygnus.com>
 
-template <class T> struct A { // ERROR - shadowed parameter
+template <class T> struct A { // { dg-error "" } shadowed parameter
   struct B {
-    void T(); // ERROR - shadows template parameter
+    void T(); // { dg-error "" } shadows template parameter
   };
 };
 A<int> a;

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 #include <stdlib.h>

@@ -1,8 +1,7 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "-O1" }
 // Origin: Scott Snyder <snyder@fnal.gov> via PR 1733.
-// Special g++ Options: -O1
 //
-// crash test
 
 struct TBtItem
 {

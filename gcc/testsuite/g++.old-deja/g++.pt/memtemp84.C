@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 1999 Free Software Foundation
 
@@ -10,9 +10,9 @@ struct B {
 } b;
 
 template <class T> void foo() {
-  b.bar<T>(); // gets bogus error - bar undeclared
-  b.template bar<T>(); // gets bogus error - ditto
+  b.bar<T>(); // { dg-bogus "" } bar undeclared
+  b.template bar<T>(); // { dg-bogus "" } ditto
   b.B::bar<T>();
 }
 
-template void foo<void>(); // gets bogus error
+template void foo<void>(); // { dg-bogus "" } 

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that const-correctness is observed when using new.
 
 struct A {

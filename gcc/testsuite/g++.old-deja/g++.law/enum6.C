@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed enums
 // enum file
 // From: polstra!jdp@uunet.uu.net (John Polstra)

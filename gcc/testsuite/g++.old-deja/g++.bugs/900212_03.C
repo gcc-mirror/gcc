@@ -1,3 +1,4 @@
+// { dg-do run  }
 // g++ 1.36.1 bug 900212_03
 
 // g++ segfaults on any attempt to use the ->* operator.

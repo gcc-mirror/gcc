@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Leon Bottou <leonb@research.att.com>
 
 class AA { protected:

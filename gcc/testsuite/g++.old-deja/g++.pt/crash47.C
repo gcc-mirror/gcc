@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Rick Campbell <rick.campbell@db.com>
 
 template <class Owner, typename Type>

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed temps
 // temps file
 // Message-Id: <9212181914.AA05066@sparc1.cnm.us.es>

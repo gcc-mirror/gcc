@@ -1,17 +1,15 @@
-// Build don't link:
+// { dg-do assemble }
 // Origin: Jakub Jelinek <jakub@redhat.com>
-
-// excess errors test - XFAIL *-*-*
 
 struct foo
 {
   enum e
   {
-    not				// ERROR - 
-  };
-  ~foo();
+    not				// { dg-error "" } 
+  }; // { dg-bogus "" "" { xfail *-*-* } } 
+  ~foo(); // { dg-bogus "" "" { xfail *-*-* } } 
   void x (foo *&a, bool b = (unsigned char)0);
-};
+}; // { dg-bogus "" "" { xfail *-*-* } } 
 
 namespace N
 {
@@ -26,7 +24,6 @@ namespace N
   typedef baz<bar> c;
 }
 
-struct z // crash test - XFAIL *-*-*
 {
   int a;
 };

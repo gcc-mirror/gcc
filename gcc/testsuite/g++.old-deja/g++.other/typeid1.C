@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "" }
 // Origin: sk@gluit.de
-// Special g++ Options: 
 
 #include <typeinfo>
 
@@ -10,6 +10,6 @@ int main ()
   
   int len = 1;
   char carr[len];
-  typeid(typeof(carr)); // ERROR - type has variable size
-  typeid(carr); // ERROR - type has variable size
+  typeid(typeof(carr)); // { dg-error "" } type has variable size
+  typeid(carr); // { dg-error "" } type has variable size
 }

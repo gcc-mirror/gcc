@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed parsing
 // From: Teemu Torma <Teemu.Torma@frend.fi>
 // Date:     Mon, 15 Jun 92 18:42:25 +0300

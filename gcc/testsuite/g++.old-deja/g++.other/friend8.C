@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 14 Aug 2000 <nathan@codesourcery.com>
@@ -11,6 +11,6 @@ struct Z;
 struct X
 {
   friend class Z;
-  friend Y;         // ERROR - friend must use aggr tag
+  friend Y;         // { dg-error "" } friend must use aggr tag
 };
 

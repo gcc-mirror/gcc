@@ -1,23 +1,22 @@
-// This is a crash test; we don't care how many normal errors we get.
-// excess errors test - XFAIL *-*-*
+// { dg-do assemble }
 
 struct test_box
     {
      void print(void);
     };
 
-void test<class BOX> (test_box *);   // ERROR - illegal code
+void test<class BOX> (test_box *);   // { dg-error "" } illegal code
 
 class test_square
     {
-      friend void test<class BOX> (test_box *); // ERROR - does not match
+      friend void test<class BOX> (test_box *); // { dg-error "" } does not match
     }
 
 
 
-template <class BOX> void test(BOX *the_box)  // ERROR - semicolon missing
-    {
+template <class BOX> void test(BOX *the_box)  // { dg-error "" } semicolon missing
+    {x
     the_box->print();
-    };
+    }; // { dg-error "" }
 
-template void test<> (test_box *);
+template void test<> (test_box *); // { dg-error "" }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed operators
 // opr-new file
 // From: (The Crossjammer) <xjam@cork.cs.berkeley.edu>

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed destructors
 // Check that member and base classes get properly destructed
 // when an object of a derived class is destructed via a pointer

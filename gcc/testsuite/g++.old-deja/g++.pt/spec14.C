@@ -1,4 +1,4 @@
-// crash test - XFAIL *-*-*
+// { dg-do assemble { xfail *-*-* } }
 class X
 {
 public:
@@ -6,5 +6,5 @@ public:
   X() {}
   
   template <typename A, typename B>
-  X::X<A, void, B>() {} // ERROR - non-template type used as a template
+  X::X<A, void, B>() {} // { dg-error "" } non-template type used as a template
 };

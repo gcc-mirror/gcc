@@ -1,3 +1,4 @@
+// { dg-do run  }
 template<class T_type, int N>
 class foo {
 public:

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed unions
 // anon-union file
 // From: "Terry R. Coley" <terry@wag.caltech.edu>

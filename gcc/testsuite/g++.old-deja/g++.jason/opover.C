@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // Bug: g++ prefers a non-matching operator== over user-defined conversions
 // and a default operator==.
-// Build don't link:
 
 struct A {
   operator int ();

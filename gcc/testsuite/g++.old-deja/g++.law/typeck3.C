@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed typeck
 // typeck file
 // From: Dror Caspi <dror@fibronics.co.il>

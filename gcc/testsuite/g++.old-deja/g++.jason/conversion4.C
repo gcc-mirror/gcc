@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 struct A {
   A (int);
 };
@@ -10,5 +10,5 @@ void g()
 {
   B b;
   f ((A) b);
-  f (A (b)); // gets bogus error - functional cast treated differently from C style
+  f (A (b)); // { dg-bogus "" } functional cast treated differently from C style
 }

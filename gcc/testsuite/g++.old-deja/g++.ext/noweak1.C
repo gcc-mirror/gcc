@@ -1,5 +1,6 @@
+// { dg-do run  }
+// { dg-options "-fno-weak" }
 // Test that -fno-weak doesn't break explicit instantiation of static data.
-// Special g++ Options: -fno-weak
 
 template <class T> struct A
 {

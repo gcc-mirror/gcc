@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed missed-error
 // missed-error file
 // From: ndc!don@csvax.cs.caltech.edu (Don Erway)
@@ -8,11 +8,11 @@
 
 #include <iostream>
 
-inline int max(int a, int b) {return a > b ? a : b;}; // ERROR - candidate
-inline double max(double a, double b) {return a > b ? a : b;}; // ERROR - candidate
+inline int max(int a, int b) {return a > b ? a : b;}; // { dg-error "" } candidate
+inline double max(double a, double b) {return a > b ? a : b;}; // { dg-error "" } candidate
 
 int main() {
-   static void foo(int i, int j, double x, double y) ;// ERROR - .*
+   static void foo(int i, int j, double x, double y) ;// { dg-error "" } .*
 
    foo(4, -37, 14.39, 14.38);
 }
@@ -23,6 +23,6 @@ static void foo(int i, int j, double x, double y) {
 
    std::cout << "Max(int): " << max(i,j) << " Max(double): " <<
 max(x,y) << '\n';
-   std::cout << "Max(int, double): " << max(i, y) << '\n';// ERROR - 
+   std::cout << "Max(int, double): " << max(i, y) << '\n';// { dg-error "" } 
 }
 

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // It checks to see if you can define your own global delete operator.
 // prms-id: 755
 

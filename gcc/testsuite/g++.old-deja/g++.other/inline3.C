@@ -1,6 +1,6 @@
-// Build don't link: 
+// { dg-do assemble  }
+// { dg-options "-O3" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
-// Special g++ Options: -O3
 
 class ostream;
 

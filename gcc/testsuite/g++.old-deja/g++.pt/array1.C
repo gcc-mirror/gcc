@@ -1,3 +1,4 @@
+// { dg-do run  }
 template <class T, unsigned N>
   unsigned size(T (&)[N]) { return N; }
 template <class T, unsigned N>

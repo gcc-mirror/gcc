@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed arrays
 // array file
 // Message-Id: <9204120353.AA06266@cs.rice.edu>

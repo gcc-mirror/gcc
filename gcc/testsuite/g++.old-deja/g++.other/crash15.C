@@ -1,11 +1,11 @@
+// { dg-do assemble  }
+// { dg-options "-O2" }
 // g++ crashed because we unsaved the TARGET_EXPR for the return value
 // for get_allocator without first expanding it, because it was part of the
 // cleanup for the temporary string.
 
 // Derived from libstdc++ v3 code.
 
-// Special g++ Options: -O2
-// Build don't link:
 
 class AA {};
 

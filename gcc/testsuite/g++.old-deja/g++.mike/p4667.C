@@ -1,3 +1,4 @@
+// { dg-do run  }
 // prms-id: 4667
 
 int counter = 0;

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed nest
 // nest file
 // From: gs4t@virginia.edu (Gnanasekaran  Swaminathan)
@@ -6,10 +6,10 @@
 // Subject:  Local type names bug in g++ 2.3.3
 // Message-ID: <1992Dec30.203807.17504@murdoch.acc.Virginia.EDU>
 
-typedef char* T; // ERROR - previous declaration
+typedef char* T; // { dg-error "" } previous declaration
 
 struct Y {
     T a;
-    typedef long T; // error. See ARM p189-191 for details// ERROR - 
+    typedef long T; // error. See ARM p189-191 for details// { dg-error "" } 
     T b;
 };

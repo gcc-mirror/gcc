@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.37.1 bug 900401_01
 
 // The following erroneous code causes g++ to abort.
@@ -9,7 +10,7 @@
 typedef unsigned nibble_array[4];
 
 struct whole {
-  nibble_array nibbles:16;	// ERROR - 
+  nibble_array nibbles:16;	// { dg-error "" } 
 };
 
 int main () { return 0; }

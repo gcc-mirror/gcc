@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.37.1 bug 900428_02
 
 // g++ fails to issue either errors or warnings (even with -pedantic) for
@@ -8,20 +9,19 @@
 // cfront 2.0 passes this test.
 
 // keywords: pointer arithmetic, increment, decrement
-// Build don't link:
 
 void *vp;
 void (*fp) ();
 
 void test ()
 {
-  vp++;		/* ERROR - */
-  ++vp;		/* ERROR - */
-  vp--;		/* ERROR - */
-  --vp;		/* ERROR - */
+  vp++;		/* { dg-error "" } */
+  ++vp;		/* { dg-error "" } */
+  vp--;		/* { dg-error "" } */
+  --vp;		/* { dg-error "" } */
 
-  fp++;		/* ERROR - */
-  ++fp;		/* ERROR - */
-  fp--;		/* ERROR - */
-  --fp;		/* ERROR - */
+  fp++;		/* { dg-error "" } */
+  ++fp;		/* { dg-error "" } */
+  fp--;		/* { dg-error "" } */
+  --fp;		/* { dg-error "" } */
 }

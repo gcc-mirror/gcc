@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // GROUPS abort
-// Build don't link:
 // g++ 1.37.1 bug 900519_12
 
 // The following erroneous code causes g++ to segfault.
@@ -8,4 +8,4 @@
 
 // keywords: segfault, typedef, pointer type, function type
 
-typedef eek void (*)();		// ERROR - 
+typedef eek void (*)();		// { dg-error "" } 

@@ -1,3 +1,4 @@
+// { dg-do run  }
 class A {
   char a;
 public:

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: g++/6034
 
 extern "C" int printf (const char *, ...);

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // 
 // Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 10 Aug 2000 <nathan@codesourcery.com>
@@ -9,10 +9,10 @@
 namespace A { 
 template <class T> void f(T) {}
 }
-void (* &h)(int) = A::f<int>;       // ERROR - rvalue to non-const
-void (*const volatile &i)(int) = A::f<int>;  // ERROR - rvalue to volatile
+void (* &h)(int) = A::f<int>;       // { dg-error "" } rvalue to non-const
+void (*const volatile &i)(int) = A::f<int>;  // { dg-error "" } rvalue to volatile
 void (*const &j)(int) = A::f<int>;
 
-int &k = 1;                         // ERROR - rvalue to non-const
-int &const volatile l = 1;          // ERROR - rvalue to volatile
+int &k = 1;                         // { dg-error "" } rvalue to non-const
+int &const volatile l = 1;          // { dg-error "" } rvalue to volatile
 int const &m = 1;

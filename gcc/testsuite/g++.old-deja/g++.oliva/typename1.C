@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 1999 Free Software Foundation
 
@@ -12,5 +12,5 @@ template <class T> struct bar {
 };
 
 template <class T> struct baz {
-  typedef bar<T>::foo foo; // ERROR - missing typename
+  typedef bar<T>::foo foo; // { dg-error "" } missing typename
 };

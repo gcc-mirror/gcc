@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed nested-classes
 int x;
 class enclose {
@@ -8,7 +8,7 @@ public:
   class inner {
   public:
     void f (int i) {
-      x = i;// ERROR - .*
+      x = i;// { dg-error "" } .*
     }
   };
 };

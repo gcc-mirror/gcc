@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 14 Aug 2000 <nathan@codesourcery.com>
@@ -7,7 +7,7 @@
 
 template<typename T> struct X
 {
-  template<typename D> friend X<D>;         // ERROR - friend must use aggr tag
+  template<typename D> friend X<D>;         // { dg-error "" } friend must use aggr tag
 };
 
 X<int> g;

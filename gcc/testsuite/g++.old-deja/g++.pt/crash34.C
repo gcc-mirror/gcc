@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 
 template <class T>

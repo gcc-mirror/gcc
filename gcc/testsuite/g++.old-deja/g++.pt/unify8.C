@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 12 Jan 2001 <nathan@codesourcery.com>
@@ -10,11 +10,11 @@
 
 template <typename T> void Foo (T const **);
 template <typename T> void Bar (T const * const *);
-void Foo (int);       // ERROR - candidate
-void Foo (float);     // ERROR - candidate
+void Foo (int);       // { dg-error "" } candidate
+void Foo (float);     // { dg-error "" } candidate
 
 void baz (int **p1)
 {
-  Foo (p1);   // ERROR - no such function
+  Foo (p1);   // { dg-error "" } no such function
   Bar (p1);   // OK
 }

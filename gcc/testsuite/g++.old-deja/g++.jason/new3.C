@@ -1,5 +1,6 @@
+// { dg-do run  }
+// { dg-options "-fcheck-new -pedantic" }
 // PRMS Id: 6037
-// Special g++ Options: -fcheck-new -pedantic
 
 extern "C" void * malloc (__SIZE_TYPE__);
 

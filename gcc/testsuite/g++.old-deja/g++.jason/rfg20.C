@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 typedef void func_type ();
 func_type *fp;
@@ -6,5 +6,5 @@ void *vp;
 
 void example ()
 {
-    vp != fp;			// ERROR - no conversion from pfn to void*
+    vp != fp;			// { dg-error "" } no conversion from pfn to void*
 }

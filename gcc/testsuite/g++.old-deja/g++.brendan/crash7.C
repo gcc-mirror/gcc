@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed templates
 
 template<class T>
@@ -13,21 +13,21 @@ public:
   int size () { return sz; }
 };
 
-template<class T>// ERROR - previous definition of T
+template<class T>// { dg-error "" } previous definition of T
 struct Comparator
 {
-  typedef T T;// ERROR - use of template type T in typedef to T
+  typedef T T;// { dg-error "" } use of template type T in typedef to T
   static int lessthan (T &a, T &b) { return a < b; }
 };
 
 template<class Comp>
 struct Sort
 {
-  static void sort (Vector<Comp::T> &);// ERROR - use of bad T
+  static void sort (Vector<Comp::T> &);// { dg-error "" } use of bad T
 };
 
 template<class Comp>
-void Sort<Comp>::sort (Vector<Comp::T> &v)// ERROR - use of bad T
+void Sort<Comp>::sort (Vector<Comp::T> &v)// { dg-error "" } use of bad T
 {
   int n = v.size ();
 

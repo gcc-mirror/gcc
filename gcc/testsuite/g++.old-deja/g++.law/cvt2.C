@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed conversions
 #include <cstdio>
 #include <cstdlib>

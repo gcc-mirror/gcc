@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // Message-Id: <m0lLuUK-0000fRC@nix.appli.se>
 // Date: Wed, 4 Mar 92 12:50 MET
 // From: niklas@appli.se (Niklas Hallqvist)
@@ -21,7 +22,6 @@
 // a patch enclosed below is needed.  I'm not sure if it causes any
 // unanticipated side-effects, but it seem to work well for me.
 
-// Build don't link:
 
 struct O {
   struct M {

@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "-Wno-non-template-friend" }
 // Origin: Jason Merrill <jason@cygnus.com>
-// Special g++ Options: -Wno-non-template-friend
 
 template<class T> struct A
 {

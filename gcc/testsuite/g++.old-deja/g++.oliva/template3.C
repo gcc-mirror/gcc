@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 1999 Free Software Foundation
 
@@ -6,4 +6,4 @@
 // based on bug report by Ulf Larsson <ulf.larsson@mbow337.swipnet.se>
 
 template <class T> class C {};
-class foo {} bar = bar.C(); // ERROR - call to template
+class foo {} bar = bar.C(); // { dg-error "" } call to template

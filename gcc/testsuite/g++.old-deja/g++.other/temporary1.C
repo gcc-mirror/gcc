@@ -1,3 +1,4 @@
+// { dg-do run  }
 extern "C" int printf (const char *, ...);
 
 int c, d;

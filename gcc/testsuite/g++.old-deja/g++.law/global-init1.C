@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed initialization
 // global-init file
 // Message-Id: <9212021756.AA12639@grumpy.pocs.com>

@@ -1,3 +1,4 @@
+// { dg-do run  }
 #include <iomanip>
 #include <iostream>
 #include <cstdlib>

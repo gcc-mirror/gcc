@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: a ends up in the text segment, so trying to initialize it causes
 // a seg fault.
 

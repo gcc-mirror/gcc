@@ -1,3 +1,4 @@
+// { dg-do run  }
 // g++ 1.37.1 bug 900520_06
 
 // When an object of a class type is passed into a formal parameter of the

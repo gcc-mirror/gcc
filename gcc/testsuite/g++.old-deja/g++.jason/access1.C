@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Bug: access declarations are broken.
-// Build don't link:
 
 class A {
 public:
@@ -13,5 +13,5 @@ public:
 
 void foo() {
   B b;
-  b.foo ();			// gets bogus error - 
+  b.foo ();			// { dg-bogus "" } 
 }

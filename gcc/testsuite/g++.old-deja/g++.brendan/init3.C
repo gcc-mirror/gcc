@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed initialization
 // p2766: Make sure that members are initialized in order of declaration
 // in the class, not in order of specification in the mem-initializer list.

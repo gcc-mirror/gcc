@@ -1,5 +1,5 @@
-// Build don't link: 
-// Special g++ Options:
+// { dg-do assemble  }
+// { dg-options "" }
 template<class X> struct A {
   A ();
   ~A();

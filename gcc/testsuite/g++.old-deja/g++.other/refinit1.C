@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // Test that we don't allow multiple user-defined conversions in reference
 // initialization.
-// Build don't link:
 
 struct B { };
 
@@ -14,4 +14,4 @@ struct C {
 
 C c;
 
-const A& ref (c);		// ERROR - requires two UDCs
+const A& ref (c);		// { dg-error "" } requires two UDCs

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // check MI and VBC offsets on throw
 extern "C" void abort ();
 extern "C" void exit (int);

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test to make sure that the use of __typeof__ in WIFEXITED works.
 
 int main ()

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed conversions
 // cvt file
 // Message-Id: <9307152250.AA24812@volterra>
@@ -10,11 +10,11 @@
 // Compiles fine with Sun CC 2.1
 
 void f(char *& x)
-{// ERROR - location of error
+{// { dg-error "" } location of error
   x++;
 }
 
 int main()
 {
-  f ("foo");// ERROR - init of non-const ref from char*
+  f ("foo");// { dg-error "" } init of non-const ref from char*
 }

@@ -1,5 +1,5 @@
-// Build don't link:
+// { dg-do assemble  }
 // prms-id: 9732
 
 struct foo {};
-foo& x() { return foo(); }	// WARNING - 
+foo& x() { return foo(); }	// { dg-warning "" } 

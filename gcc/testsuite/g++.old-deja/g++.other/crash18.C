@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -fvtable-gc -S
+// { dg-do assemble  }
+// { dg-options "-fvtable-gc -S" }
 // Origin: Mark Mitchell <mitchell@codesourcery.com>
 
 struct S {

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Jason Merrill <jason@cygnus.com>
 
-template <class T> T t; // ERROR - template declaration of t
+template <class T> T t; // { dg-error "" } template declaration of t

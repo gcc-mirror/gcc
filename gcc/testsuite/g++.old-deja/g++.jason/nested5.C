@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 struct A {
   struct B { };
@@ -6,6 +6,6 @@ struct A {
 
 struct C : public A {
   struct D
-    : public B			// gets bogus error - can't find B
+    : public B			// { dg-bogus "" } can't find B
     { };
 };

@@ -1,6 +1,7 @@
+// { dg-do run  }
+// { dg-options "" }
 # 1 "SetLS.cc"
 // GROUPS passed templates nested-classes
-// Special g++ Options: 
 //
 // The SetLS template test
 //

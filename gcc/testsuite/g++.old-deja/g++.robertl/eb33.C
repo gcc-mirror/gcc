@@ -1,3 +1,4 @@
+// { dg-do run  }
 #include <fstream>
 #include <cstdio>
 

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed patches
 // patches file
 // From: david.binderman@pmsr.philips.co.uk

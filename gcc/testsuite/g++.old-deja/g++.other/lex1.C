@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 26 April 2001 <nathan@codesourcery.com>
@@ -8,5 +8,5 @@
 void foo ()
 {
   // there is a ctrl-h on the next line
-   // ERROR - stray char
+   // { dg-error "" } stray char
 }

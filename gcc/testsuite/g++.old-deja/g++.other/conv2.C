@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -pedantic-errors
+// { dg-do assemble  }
+// { dg-options "-pedantic-errors" }
 
 void cheat( int* i ) { ++(*i); }
  
@@ -9,8 +9,8 @@ struct t {
 
 int main()
 {
-  void (t::*member)( const int& ) = &t::cheat; // ERROR - conversion
-  void (*cheater)( const int* ) = &cheat; // ERROR - converting
+  void (t::*member)( const int& ) = &t::cheat; // { dg-error "" } conversion
+  void (*cheater)( const int* ) = &cheat; // { dg-error "" } converting
   t t2;
   const int i=1;
   int j=1;

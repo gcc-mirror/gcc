@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: g++ forgets about the instantiation of class1 when looking up
 // class11_value, and tries to look things up in class1<class2>.
 

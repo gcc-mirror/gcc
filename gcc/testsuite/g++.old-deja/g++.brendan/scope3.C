@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed scoping
 // This is fixed when NEW_CLASS_SCOPING is on.
 

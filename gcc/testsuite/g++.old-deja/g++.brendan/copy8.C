@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed copy-ctors
 /*
 This report is for GCC 2.3.3 running on a Sun/4.  The bug is that when

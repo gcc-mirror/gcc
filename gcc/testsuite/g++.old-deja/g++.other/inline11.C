@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "-O2" }
 // Origin: Jakub Jelinek <jakub@redhat.com>
-// Special g++ Options: -O2
 
 class baz
 {

@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Bug: g++ generates code for assignment in invalid situations.
-// Build don't link:
 
 class X {
   int& a;
@@ -11,5 +11,5 @@ void foo ()
 {
   int one=1, two=2;
   X a(one), b(two);
-  a = b;			// ERROR - no assignment semantics defined
+  a = b;			// { dg-error "" } no assignment semantics defined
 }

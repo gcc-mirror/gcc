@@ -1,3 +1,4 @@
+// { dg-do run  }
 // g++ 1.37.1 bug 900520_05
 
 // The following legal code gets syntax errors from g++.
@@ -12,12 +13,12 @@ static struct_0 *sp;
 
 void test0 ()
 {
-  new char * (cp);		// gets bogus error
+  new char * (cp);		// { dg-bogus "" } 
 }
 
 void test1 ()
 {
-  new struct_0 * (sp);		// gets bogus error
+  new struct_0 * (sp);		// { dg-bogus "" } 
 }
 
 int main () { return 0; }

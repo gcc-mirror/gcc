@@ -1,12 +1,13 @@
+// { dg-do assemble  }
 // Build don't linK:
 
 int main()
-{ // ERROR - invalid redeclaration of
+{ // { dg-error "" } invalid redeclaration of
   return 0;
 }
 
 
 int main(int, const char**)
-{ // ERROR - as
+{ // { dg-error "" } as
   return 0;
 }

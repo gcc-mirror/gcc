@@ -1,5 +1,6 @@
+// { dg-do run  }
+// { dg-options "-O1" }
 // Origin: Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>
-// Special g++ Options: -O1
 
 #include <map>
 #include <cstdlib>

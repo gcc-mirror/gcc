@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // prms-id: 701
 
 extern "C" 
@@ -8,7 +8,7 @@ extern "C"
 
 
 void Munge(int& x) 
-{				// ERROR - referenced below
+{				// { dg-error "" } referenced below
    x = 2;
 }
 
@@ -24,7 +24,7 @@ class A
 void
 A::Safe() const 
 {
-   Munge(i);	// ERROR - should not be able to modify a const object
+   Munge(i);	// { dg-error "" } should not be able to modify a const object
 }
 
 int main()

@@ -1,6 +1,7 @@
+// { dg-do run  }
+// { dg-options "-fno-const-strings" }
 // 981203 bkoz
 // g++/15351 - test
-// Special g++ Options: -fno-const-strings
 
 #include <assert.h>
 

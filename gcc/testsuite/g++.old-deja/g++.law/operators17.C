@@ -1,5 +1,5 @@
-// Build don't link: 
-// Special g++ Options: -Wall -pedantic-errors
+// { dg-do assemble  }
+// { dg-options "-Wall -pedantic-errors" }
 // GROUPS passed operators
 // copy file
 // From: gfm@mencon.mencon.oz.au (Graham Menhennitt)
@@ -8,5 +8,5 @@
 // Message-ID: <9304291053.AA00090@mencon>
 
 struct A {
-        A& operator = (const A& a) {}// WARNING - 
+        A& operator = (const A& a) {}// { dg-warning "" } 
 };

@@ -1,5 +1,6 @@
+// { dg-do link }
+// { dg-options "-frepo" }
 // Build then link:
-// Special g++ Options: -frepo
 
 template <class T>
 struct S {

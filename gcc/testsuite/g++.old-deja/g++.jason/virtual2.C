@@ -1,3 +1,4 @@
+// { dg-do run  }
 struct A {
   virtual A* f () { return this; }
 };

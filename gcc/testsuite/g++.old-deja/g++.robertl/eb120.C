@@ -1,3 +1,4 @@
+// { dg-do run  }
 template<double functionToIntegrate(double)>
 double integrate(double a, double b, int numSamplePoints)
 {

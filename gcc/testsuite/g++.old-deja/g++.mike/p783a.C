@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Copying into an object directly is a lose according to tiemann.
 // Deleting an object many times is a lose.
 // prms-id: 783

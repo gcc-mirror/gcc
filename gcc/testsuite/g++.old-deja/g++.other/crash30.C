@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Jakub Jelinek <jakub@redhat.com>
 
 struct foo
@@ -7,7 +7,7 @@ struct foo
   void x();
 };
 
-void foo::x() throw(bar)	// ERROR - parse error
+void foo::x() throw(bar)	// { dg-error "" } parse error
 {
 }
 

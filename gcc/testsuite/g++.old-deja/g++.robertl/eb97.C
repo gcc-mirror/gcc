@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Creates bad assembly on sparc and x86
 template<unsigned long SIZE>
 struct Array { };

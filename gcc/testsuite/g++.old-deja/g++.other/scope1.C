@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Testcase for proper scoping of local externs.
 
 int x = 1;

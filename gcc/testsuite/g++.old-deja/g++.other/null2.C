@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Based on a testcase by Eric Dumazet <Eric.Dumazet@COSMOSBAY.COM>
 
 extern "C" void abort ();

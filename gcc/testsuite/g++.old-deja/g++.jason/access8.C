@@ -1,9 +1,9 @@
+// { dg-do assemble  }
 // From: smidt@dd.chalmers.se (Peter Smidt)
 // Date: 25 Jan 1994 23:41:33 -0500
 // Bug: g++ forgets access decls after the definition.
-// Build don't link:
 
-class inh { // ERROR - inaccessible
+class inh { // { dg-error "" } inaccessible
         int a;
 protected:
         void myf(int);
@@ -25,6 +25,6 @@ void inh::myf(int i) {
 }
 
 void top_t::myf(int i) {
-        inh::myf(i);		// ERROR - cannot convert to inh
+        inh::myf(i);		// { dg-error "" } cannot convert to inh
 	mel::myf(i);
 }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 #include <stdarg.h>
 
 extern "C" void abort();

@@ -1,10 +1,10 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed old-abort
 class X {
 public:
 void doit();
 };
 
-X::::doit()// ERROR -  (syntax|parse) error.*
+X::::doit()// { dg-error "" }  (syntax|parse) error.*
 {
 }

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // try throwing overloaded function
 
 void f(int)
@@ -11,5 +11,5 @@ void f(long)
 
 void g()
 {
-	throw &f; // ERROR - insufficient contextual information
+	throw &f; // { dg-error "" } insufficient contextual information
 }

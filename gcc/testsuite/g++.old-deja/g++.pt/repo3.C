@@ -1,8 +1,9 @@
+// { dg-do link }
+// { dg-options "-frepo" }
 // Test that we properly generate the vtable and such for C.
 // Contributed by scott snyder <snyder@fnal.gov>
 
 // Build then link:
-// Special g++ Options: -frepo
 
 struct A
 {

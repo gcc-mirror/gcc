@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test of class-scope using-declaration for functions.
 
 #define assert(COND) if (!(COND)) return 1

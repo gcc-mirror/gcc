@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "-O0 -fpic" }
 // Origin: Jakub Jelinek <jakub@redhat.com>
-// Special g++ Options: -O0 -fpic
 // Skip if target: cris-*-elf* cris-*-aout* mmix-*-*
 
 struct bar {

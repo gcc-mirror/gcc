@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Shows that problem of initializing one object's secondary base from
 // another object via a user defined copy constructor for that base,
 // the pointer for the secondary vtable is not set after implicit

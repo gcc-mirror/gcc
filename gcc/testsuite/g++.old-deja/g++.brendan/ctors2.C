@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed constructors
 // Check that sub-words sized class members are correctly set
 // by constructors.

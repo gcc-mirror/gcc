@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed constructors
 // ctor file
 // Message-Id: <199212160609.AA18247@phecda.cs.sfu.ca>

@@ -1,3 +1,4 @@
+// { dg-do run  }
 struct A { int i; };
 
 int main()

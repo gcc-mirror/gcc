@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Submitted by Erez Louidor Lior <s3824888@techst02.technion.ac.il>
 

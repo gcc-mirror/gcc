@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.37.1 bug 900428_01
 
 // g++ fails to issue error messages for cases where an incomplete type
@@ -16,7 +17,6 @@
 // dereference of pointer to volatile to be a read.
 
 // keywords: incomplete types, evaluation, volatile qualifier
-// Build don't link: 
 
 int *ip_fn ();
 int &ir_fn ();
@@ -46,16 +46,16 @@ void int_test (int i, int *p, volatile int *vp, int &r, volatile int &vr)
   (void)(i ? r : j);	        // ok, no warning
   (void)((void)1, r);	        // ok, no warning
 
-  vr;				// WARNING - reference not accessed
-  (void)vr;			// WARNING - reference not accessed
-  (void)(i ? vj : vr);	        // WARNING - reference not accessed
-  (void)(i ? vr : vj);	        // WARNING - reference not accessed
-  (void)((void)1, vr);          // WARNING - reference not accessed
+  vr;				// { dg-warning "" } reference not accessed
+  (void)vr;			// { dg-warning "" } reference not accessed
+  (void)(i ? vj : vr);	        // { dg-warning "" } reference not accessed
+  (void)(i ? vr : vj);	        // { dg-warning "" } reference not accessed
+  (void)((void)1, vr);          // { dg-warning "" } reference not accessed
   
   *ip_fn ();			// ok, no warning
   *vip_fn ();			// ok, no warning
   ir_fn ();			// ok, no warning
-  vir_fn ();			// WARNING - reference not accessed
+  vir_fn ();			// { dg-warning "" } reference not accessed
 }
 
 struct S;
@@ -75,11 +75,11 @@ void incomplete_test (int i, S *p, volatile S *vp, S &r, volatile S &vr)
   (void)(i ? *p : j);	        // ok, no warning
   (void)((void)1, *p);	        // ok, no warning
 
-  *vp;				// WARNING - incomplete not accessed
-  (void)*vp;			// WARNING - incomplete not accessed
-  (void)(i ? vj : *vp);	        // WARNING - incomplete not accessed
-  (void)(i ? *vp : vj);	        // WARNING - incomplete not accessed
-  (void)((void)1, *vp);         // WARNING - incomplete not accessed
+  *vp;				// { dg-warning "" } incomplete not accessed
+  (void)*vp;			// { dg-warning "" } incomplete not accessed
+  (void)(i ? vj : *vp);	        // { dg-warning "" } incomplete not accessed
+  (void)(i ? *vp : vj);	        // { dg-warning "" } incomplete not accessed
+  (void)((void)1, *vp);         // { dg-warning "" } incomplete not accessed
 
   r;				// ok, no warning
   (void)r;			// ok, no warning
@@ -87,16 +87,16 @@ void incomplete_test (int i, S *p, volatile S *vp, S &r, volatile S &vr)
   (void)(i ? r : j);	        // ok, no warning
   (void)((void)1, r);	        // ok, no warning
 
-  vr;				// WARNING - reference not accessed
-  (void)vr;			// WARNING - reference not accessed
-  (void)(i ? vj : vr);	        // WARNING - reference not accessed
-  (void)(i ? vr : vj);	        // WARNING - reference not accessed
-  (void)((void)1, vr);          // WARNING - reference not accessed
+  vr;				// { dg-warning "" } reference not accessed
+  (void)vr;			// { dg-warning "" } reference not accessed
+  (void)(i ? vj : vr);	        // { dg-warning "" } reference not accessed
+  (void)(i ? vr : vj);	        // { dg-warning "" } reference not accessed
+  (void)((void)1, vr);          // { dg-warning "" } reference not accessed
   
   *sp_fn ();			// ok, no warning
-  *vsp_fn ();			// WARNING - incomplete not accessed
+  *vsp_fn ();			// { dg-warning "" } incomplete not accessed
   sr_fn ();			// ok, no warning
-  vsr_fn ();			// WARNING - reference not accessed
+  vsr_fn ();			// { dg-warning "" } reference not accessed
 }
 
 struct T {int m;};
@@ -128,16 +128,16 @@ void complete_test (int i, T *p, volatile T *vp, T &r, volatile T &vr)
   (void)(i ? r : j);	        // ok, no warning
   (void)((void)1, r);	        // ok, no warning
 
-  vr;				// WARNING - reference not accessed
-  (void)vr;			// WARNING - reference not accessed
-  (void)(i ? vj : vr);	        // WARNING - reference not accessed
-  (void)(i ? vr : vj);	        // WARNING - reference not accessed
-  (void)((void)1, vr);          // WARNING - reference not accessed
+  vr;				// { dg-warning "" } reference not accessed
+  (void)vr;			// { dg-warning "" } reference not accessed
+  (void)(i ? vj : vr);	        // { dg-warning "" } reference not accessed
+  (void)(i ? vr : vj);	        // { dg-warning "" } reference not accessed
+  (void)((void)1, vr);          // { dg-warning "" } reference not accessed
   
   *tp_fn ();			// ok, no warning
   *vtp_fn ();			// ok, no warning
   tr_fn ();			// ok, no warning
-  vtr_fn ();			// ok, no warningWARNING - reference not accessed
+  vtr_fn ();			// ok, no warning{ dg-warning "" } reference not accessed
 }
 
 void extern_test ()
@@ -153,12 +153,12 @@ void extern_test ()
   extern volatile T &vetr;
   
   es;				// ok, no warning
-  ves;				// WARNING - incomplete not accessed
+  ves;				// { dg-warning "" } incomplete not accessed
   et;				// ok, no warning
   vet;				// ok, no warning
   
   esr;				// ok, no warning
-  vesr;				// WARNING - incomplete not accessed
+  vesr;				// { dg-warning "" } incomplete not accessed
   etr;				// ok, no warning
-  vetr;				// WARNING - reference not accessed
+  vetr;				// { dg-warning "" } reference not accessed
 }

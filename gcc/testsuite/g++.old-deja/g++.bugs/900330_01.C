@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.37.1 bug 900330_01
 //
 // As indicated by the example at the end of the section 3.5.3 of the ANSI
@@ -46,7 +47,7 @@ int *pi;
 
 void function_1 ()
 {
-  pi = a[0];	// ERROR - a[0] has type "const int *"
+  pi = a[0];	// { dg-error "" } a[0] has type "const int *"
 }
 
 int main () { return 0; }

@@ -1,6 +1,6 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed error-messages
 class foo {
 public:
-  friend mutable int x ();// ERROR -  non-object member `x' cannot be declared `mutable'
+  friend mutable int x ();// { dg-error "" }  non-object member `x' cannot be declared `mutable'
 };

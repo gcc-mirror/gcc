@@ -1,3 +1,4 @@
+// { dg-do run  }
 // InterViews (ibuild) requires this to work.
 
 extern "C" void exit(int);

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble { xfail i386-pc-solaris* } }
 
 // Copyright (C) 1999 Free Software Foundation
 
@@ -6,7 +6,6 @@
 // based on bug report by Andreas Stolcke <stolcke@speech.sri.com>
 
 // Fails with dwarf debugging.
-// crash test - XFAIL i386-pc-solaris*
 
 template <class T = void> struct foo {
   int data[1];

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 
 template <class X> int f (X x, unsigned int j = 3) { return 29; }
 template <class X> int f (X x, X y) { return 23; }

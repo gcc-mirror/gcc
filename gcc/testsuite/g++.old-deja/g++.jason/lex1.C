@@ -1,3 +1,4 @@
+// { dg-do run  }
 int main()
 {
   char c = '\351';

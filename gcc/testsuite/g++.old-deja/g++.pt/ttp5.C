@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template<int> class D
 {
@@ -6,7 +6,7 @@ template<int> class D
 
 template<template<int> class D,class E> class C
 {
-	D<int> d;			// ERROR - arg not match
+	D<int> d;			// { dg-error "" } arg not match
 };
 
 int main()

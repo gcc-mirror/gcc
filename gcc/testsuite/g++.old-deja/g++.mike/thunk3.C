@@ -1,3 +1,4 @@
+// { dg-do run  }
 int state;
 int fail;
 

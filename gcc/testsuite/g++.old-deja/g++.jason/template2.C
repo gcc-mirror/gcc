@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Bug: instantiation of member templates breaks.
-// Build don't link:
 
 template <class T> struct A {
   static void f ();

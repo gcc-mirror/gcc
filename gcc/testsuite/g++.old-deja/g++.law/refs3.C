@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed references
 const int& min(const int& n, const int& m)
 {

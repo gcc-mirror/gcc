@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that binfos aren't erroneously shared between instantiations.
 
 class PK_CryptoSystem

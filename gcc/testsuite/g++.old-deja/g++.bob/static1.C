@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 class A {
   public:
     static int a;
@@ -9,4 +9,4 @@ class B : public A {
     static int b;
 };
 
-int B::a; // ERROR - 
+int B::a; // { dg-error "" } 

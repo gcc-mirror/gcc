@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.37.1 bug 900407_01
 
 // g++ fails to flag errors for uses of anachronistic features such as the
@@ -30,7 +31,7 @@ struct s1 : public s0 {
   s1 ();
 };
 
-s1::s1() : () {		// ERROR - anachronism used
+s1::s1() : () {		// { dg-error "" } anachronism used
 }
 
 int main () { return 0; }

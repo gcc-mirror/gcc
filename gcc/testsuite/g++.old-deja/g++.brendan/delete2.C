@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed operator-delete
 // Check that using the delete operator with a null pointer
 // is allowed (as called for by The Book, pg. 259)

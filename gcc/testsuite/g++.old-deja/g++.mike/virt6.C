@@ -1,3 +1,4 @@
+// { dg-do run  }
 // This testcase ensures that we can build vtable names for complex MI
 // classes.
 

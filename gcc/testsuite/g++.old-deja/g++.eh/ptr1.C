@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: catching pointers by reference doesn't work right.
 
 extern "C" int printf (const char *, ...);

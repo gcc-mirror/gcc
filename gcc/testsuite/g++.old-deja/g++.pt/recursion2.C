@@ -1,3 +1,4 @@
+// { dg-do run  }
 template< int i > struct T :
 public T< i-1 >
 {

@@ -1,7 +1,7 @@
-// Build don't link:
+// { dg-do assemble  }
 
 #define x \
   y
 
-int; // ERROR - invalid declaration
+int; // { dg-error "" } invalid declaration
 

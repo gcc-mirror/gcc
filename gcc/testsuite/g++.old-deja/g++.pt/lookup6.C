@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Based on bug report by Miniussi <miniussi@ilog.fr>
 
@@ -10,6 +10,6 @@ template <class T> struct B : public A<T> {
   // according to [temp.dep.type], `t' and `u' cannot be dependent types,
   // and so there's no reason to delay lookup to specialization time.
   void f(t p); // this is ::t [temp.dep]/3
-  void f(typename A<T>::t p); // gets bogus error - redefinition
-  void g(u p); // ERROR - unknown type name
+  void f(typename A<T>::t p); // { dg-bogus "" } redefinition
+  void g(u p); // { dg-error "" } unknown type name
 };

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 void athrow(const int & e) throw(int)
 {

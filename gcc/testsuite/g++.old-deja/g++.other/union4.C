@@ -1,13 +1,13 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
-// Special g++ Options:
 
 union A
 {
   int i;
   int j;
 
-  A () : i (3), j (2) {} // ERROR - multiple initializations
+  A () : i (3), j (2) {} // { dg-error "" } multiple initializations
 };
 
 union B
@@ -17,7 +17,7 @@ union B
     int j;
   };
 
-  B () : i (3), j (2) {} // ERROR - multiple initializations
+  B () : i (3), j (2) {} // { dg-error "" } multiple initializations
 };
 
 union C

@@ -1,10 +1,10 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed visibility
 
 class a {
 
 private:
-  a (int i);// ERROR - .*
+  a (int i);// { dg-error "" } .*
 
 public:
   a ();
@@ -13,5 +13,5 @@ public:
 void test ()
 {
   a *ap = new a;
-  a *ap2 = new a (3);// ERROR - .*
+  a *ap2 = new a (3);// { dg-error "" } .*
 }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // g++ 1.37.1 bug 900331_02
 
 // g++ fails to treat conditional expressions which yield composite type
@@ -20,8 +21,8 @@ int i;
 
 void function0 ()
 {
-  (i ? object0 : object1).data_member = 99;	// gets bogus error
-  (i ? object0 : object1) = object2;		// gets bogus error
+  (i ? object0 : object1).data_member = 99;	// { dg-bogus "" } 
+  (i ? object0 : object1) = object2;		// { dg-bogus "" } 
 }
 
 int main () { return 0; }

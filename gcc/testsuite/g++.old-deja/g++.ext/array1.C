@@ -1,6 +1,7 @@
+// { dg-do assemble  }
+// { dg-options "" }
 // Testcase for assignment of non-array to array (assigns the same value to
 // each member)
-// Build don't link:
 // Special Options: 
 
 typedef struct {} ct2d_rigid, ct2d_rigid_a[1];
@@ -18,5 +19,5 @@ void
 ccBgaInspection::reinspect (unsigned long diag_flags) 
 {
   ct2d_rigid physTdev;		 
-  _dev2phys = physTdev; // ERROR - 
+  _dev2phys = physTdev; // { dg-error "" } 
 }

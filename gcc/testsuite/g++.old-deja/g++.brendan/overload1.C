@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed overloading
 class Foo
 {
@@ -9,13 +9,13 @@ public:
 class Bar : public Foo
 {
 public:
-      int f (int); // ERROR - candidates are
+      int f (int); // { dg-error "" } candidates are
 };
 
 int main ()
 {
   Bar b;
 
-  b.f ();// ERROR - 
+  b.f ();// { dg-error "" } 
   b.f (10);
 }

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.37.1 bug 900511_02
 
 // g++ does not properly shadow names of types with names of data members
@@ -12,10 +13,10 @@ enum enum0 { enum0_value_0 };
 
 struct struct0 {
   int enum0;			
-  void member_function (enum0 e); // ERROR - invalid use of struct-local member
+  void member_function (enum0 e); // { dg-error "" } invalid use of struct-local member
 };
 
-void class0::member_function (enum0 e) {	// ERROR - syntax error
+void class0::member_function (enum0 e) {	// { dg-error "" } syntax error
 }
 
 int main () { return 0; }

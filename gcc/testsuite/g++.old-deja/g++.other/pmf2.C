@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // submitted by David C Binderman <dcb@pncl.co.uk>
 
@@ -14,5 +14,5 @@ S * pf;
 void
 f()
 {
-	pmf = & pf->f; // ERROR - not a valid pmf expression
+	pmf = & pf->f; // { dg-error "" } not a valid pmf expression
 }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 5163
 // Bug: g++ doesn't accept the explicit destructor call syntax for templates.
 
@@ -6,5 +7,5 @@ A<int> a;
 
 int main()
 {
-  a.~A();			// gets bogus error
+  a.~A();			// { dg-bogus "" } 
 }

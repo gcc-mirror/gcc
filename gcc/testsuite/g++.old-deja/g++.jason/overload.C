@@ -1,8 +1,8 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed overloading
 enum bar {};
 
-void operator+ (int, int);// ERROR - .*
+void operator+ (int, int);// { dg-error "" } .*
 void operator+ (bar&, int);
 
 template <class T> void operator+ (int b, T& t) { return b; }

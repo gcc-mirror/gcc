@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.36.1 bug 900221_01
 
 // Ref: 3.2
@@ -15,7 +16,7 @@
 
 void function (int arg1)
 {
-  int arg1;		// ERROR - redeclaration of arg1
+  int arg1;		// { dg-error "" } redeclaration of arg1
 }
 
 int main () { return 0; }

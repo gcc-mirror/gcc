@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Error: Internal Compiler error on GCC 2.7.2.3 & EGCS 1998/05/23 snapshot.
 
 class A {

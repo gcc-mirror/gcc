@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Copyright (C) 2001 Free Software Foundation, Inc.
 // Contributed by Jason Merrill 14 Jun 2001 <jason@redhat.com>
 

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Gabriel Dos Reis <gdr@codesourcery.com>
 
 struct  A {
@@ -9,6 +9,6 @@ struct B : public A {
   int x;
 };
 
-void B::f(int& t) { // ERROR - undeclared method
+void B::f(int& t) { // { dg-error "" } undeclared method
   x = t;
 }

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Gives ICE 109
 // From: Klaus-Georg Adams <Klaus-Georg.Adams@chemie.uni-karlsruhe.de> 
 // Reported against EGCS snaps 98/06/28.
@@ -9,7 +9,7 @@ int main()
 {
 	try {
 	}
-	catch (bad_alloc) { // ERROR - parse error
+	catch (bad_alloc) { // { dg-error "" } parse error
 		return 1;
 	}
 	return 0;

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Theo Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 
 namespace Bname {

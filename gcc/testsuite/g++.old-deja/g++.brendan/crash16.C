@@ -1,13 +1,12 @@
-// Build don't link: 
+// { dg-do assemble { xfail *-*-* } }
 // GROUPS passed old-abort
-// crash test - XFAIL *-*-*
 class Graph {
 public:
       unsigned         char N;
-      Graph(void) {}; // ERROR - previously defined here
+      Graph(void) {}; // { dg-error "" } previously defined here
 }
 
 Graph::Graph(void)
-{    N = 10;// ERROR -  return type.*
+{    N = 10;// { dg-error "" }  return type.*
 }
 

@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // 981203 bkoz
 // g++/13478
-// Build don't link:
   
 class A {};
 class AData {};
@@ -26,8 +26,8 @@ const hand_table Agent::table_1[] =
 {
    {0,     &Agent::table_2},
    {first, &Agent::foo},
-   {last,  &(hand)Agent::foo} // ERROR - no match
-}; // ERROR - cannot convert
+   {last,  &(hand)Agent::foo} // { dg-error "" } no match
+}; // { dg-error "" } cannot convert
 
 
 

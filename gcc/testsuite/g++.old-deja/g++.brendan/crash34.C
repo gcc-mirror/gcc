@@ -1,3 +1,3 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed old-abort
-operator int () {}// ERROR - .*// ERROR - .*
+operator int () {}// { dg-error "" } .*// ERROR - .*

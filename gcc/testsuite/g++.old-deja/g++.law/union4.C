@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed unions
 // anon-union file
 // From: hossein@veritas.com (Hossein Raassi)
@@ -10,4 +10,4 @@ static union {
         struct SS {
                 int ss;
         };
-};// ERROR - .*
+};// { dg-error "" } .*

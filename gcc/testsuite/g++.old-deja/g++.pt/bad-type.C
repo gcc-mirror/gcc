@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 template<class Type>
 class A
 {
@@ -8,7 +9,7 @@ public:
 template<class Type>
 void f(A<Type>& a, Type d)
 {
-  A.m=d; // ERROR - invalid use of template
+  A.m=d; // { dg-error "" } invalid use of template
 }
 
 int main()

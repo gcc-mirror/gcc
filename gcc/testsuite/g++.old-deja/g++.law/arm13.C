@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed ARM-compliance
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // main is only reserved in the global namespace [basic.start.main]/3
 

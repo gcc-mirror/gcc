@@ -1,3 +1,4 @@
+// { dg-do run  }
 // g++ 1.36.1 bug 900220_02
 
 // g++ treats plain `char' and `unsigned char' as different types, however
@@ -10,7 +11,7 @@
 void overloaded (char) {
 }
 
-void overloaded (signed char) {		// gets bogus error
+void overloaded (signed char) {		// { dg-bogus "" } 
 }
 
 void overloaded (unsigned char) {

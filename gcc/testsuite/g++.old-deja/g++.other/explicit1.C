@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // Origin: Jason Merrill <jason@redhat.com>
 
 struct A
@@ -8,5 +9,5 @@ struct A
 
 int main ()
 {
-  const A& r = 1;		// ERROR - no suitable constructor
+  const A& r = 1;		// { dg-error "" } no suitable constructor
 }

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // by Bert Bril <bert@dgb.nl>
 
 struct M1 {

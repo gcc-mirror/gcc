@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Test for not complaining about mismatches during unification.
-// Build don't link:
 
 template <void (*F)(int)> void f();
 template <void (*F)(double)> void f();

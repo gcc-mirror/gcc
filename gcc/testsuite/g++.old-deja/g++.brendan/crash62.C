@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed old-abort
 #include <iostream>
 
@@ -26,7 +26,7 @@
   	  // Call to this function results in a bus error in fubar when the 1st
   	  // arg is dereferenced.
   	  //
-  	  fubar(die, "Second line.");// ERROR -  cannot convert .die.*
+  	  fubar(die, "Second line.");// { dg-error "" }  cannot convert .die.*
   
   	  return 1;
 	}

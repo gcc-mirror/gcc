@@ -1,10 +1,10 @@
-// Build don't link:
+// { dg-do assemble  }
 
 struct S1
 {
   template <class T>
-  struct S2 {}; // ERROR - previous definition
+  struct S2 {}; // { dg-error "" } previous definition
 
   template <class T>
-  struct S2 {}; // ERROR - redefinition 
+  struct S2 {}; // { dg-error "" } redefinition 
 };

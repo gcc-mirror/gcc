@@ -1,5 +1,5 @@
-// Special g++ Options: -Wunused
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "-Wunused" }
 
 struct A {
   int i:8;

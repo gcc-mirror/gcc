@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Origin: <mikes@nilenet.com>
 
@@ -6,5 +6,5 @@
 // rejected.
 
 template<class T> class blah{};
-blah<char>::blah(){}		// ERROR - invalid specialization
+blah<char>::blah(){}		// { dg-error "" } invalid specialization
 int main(){}

@@ -1,24 +1,24 @@
-// Build don't link:
+// { dg-do assemble  }
 
 struct A {
   union {
-    int a;	// ERROR - conflicts with previous declaration
+    int a;	// { dg-error "" } conflicts with previous declaration
   };
-  int a;	// ERROR - 
+  int a;	// { dg-error "" } 
 };
 
 struct B {
-  int b;	// ERROR - conflicts with previous declaration
+  int b;	// { dg-error "" } conflicts with previous declaration
   union {
-    int b;	// ERROR - duplicate member
-  };		// ERROR - declaration of
+    int b;	// { dg-error "" } duplicate member
+  };		// { dg-error "" } declaration of
 };
 
 struct C {
   union {
-    int c;	// ERROR - conflicts with previous declaration
+    int c;	// { dg-error "" } conflicts with previous declaration
   };
   union {
-    int c;	// ERROR - duplicate member
-  };		// ERROR - declaration of
+    int c;	// { dg-error "" } duplicate member
+  };		// { dg-error "" } declaration of
 };

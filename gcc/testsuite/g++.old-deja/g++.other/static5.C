@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 struct S
@@ -9,7 +9,7 @@ struct S
 inline void f()
 {
   static S s;
-  atexit (0); // ERROR - implicit declaration
+  atexit (0); // { dg-error "" } implicit declaration
 }
 
 

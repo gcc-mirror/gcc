@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template <class T>
 struct S1 {};
@@ -10,7 +10,7 @@ template <class C>
 struct S2
 {
   template <class T>
-  void f<S1<T> >(T) {}  // ERROR - bad specialization.
+  void f<S1<T> >(T) {}  // { dg-error "" } bad specialization.
 };
 
 

@@ -1,3 +1,4 @@
+// { dg-do run  }
 namespace foo{
   int eine_funktion(int)
     {

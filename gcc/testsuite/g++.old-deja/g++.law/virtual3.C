@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed virtual-functions
 // virtual file
 // From: allan@ramjet.multinet.DE (Allan Brighton)

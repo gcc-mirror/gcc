@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed vbase
 // vbase file
 // From: pino@hubble.eecs.berkeley.edu (Jose Luis Pino)

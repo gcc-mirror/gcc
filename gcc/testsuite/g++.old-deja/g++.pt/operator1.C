@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 7 Nov 2000 <nathan@codesourcery.com>
 // Origin: bug 510 wolfgang.bangerth@iwr.uni-heidelberg.de

@@ -1,4 +1,4 @@
-//Build don't link:
+// { dg-do assemble  }
 //reported by Theodore Papadopoulo (Theodore.Papadopoulo@sophia.inria.fr)
 
 namespace A {
@@ -13,12 +13,12 @@ namespace A {
          };
 
       template <>
-         const unsigned B<int,int>::count = 2; // ERROR - duplicate init
+         const unsigned B<int,int>::count = 2; // { dg-error "" } duplicate init
    }
 }
 
 int
 main()
 {
-   unsigned kk =  A::B<int,int>::count; // ERROR - not a template: syntax error
+   unsigned kk =  A::B<int,int>::count; // { dg-error "" } not a template: syntax error
 }

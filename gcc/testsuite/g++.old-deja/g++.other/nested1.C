@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 struct C
 {
@@ -15,5 +15,5 @@ struct E
 
 void E::g()
 {
-  c.D().f(); // ERROR - no matching function
+  c.D().f(); // { dg-error "" } no matching function
 }

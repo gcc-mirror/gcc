@@ -1,3 +1,4 @@
+// { dg-do run  }
 // This one check for objects being destroyed twice.  The bug it is
 // looking for is the extra dtor call on C() even though it is never
 // built.

@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "-O" }
 // Origin: Thomas Kunert <kunert@physik.tu-dresden.de>
-// Special g++ Options: -O
 
 struct C {
     ~C();

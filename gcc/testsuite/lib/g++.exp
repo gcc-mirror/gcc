@@ -1,4 +1,4 @@
-# Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 2000, 2001, 2002
+# Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 2000, 2001, 2002, 2003
 # Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -31,7 +31,8 @@ load_lib gcc-defs.exp
 
 
 set gpp_compile_options ""
-
+set additional_sources ""
+set additional_files ""
 
 #
 # g++_version -- extract and print the version number of the compiler
@@ -305,7 +306,35 @@ proc g++_target_compile { source dest type options } {
 	exec rm -f $rponame
     }
 
-    return [target_compile $source $dest $type $options]
+    global additional_sources
+    global additional_files
+    set to_download ""
+    if { $additional_sources != "" } then {
+	if [is_remote host] {
+	    lappend options "additional_flags=$additional_sources"
+	}
+	regsub -all " " $additional_sources " [file dirname $source]/" additional_sources
+	if ![is_remote host] {
+	    lappend options "additional_flags=$additional_sources"
+	}
+	set to_download [concat $to_download $additional_sources]
+    }
+    if { $additional_files != "" } then { 
+	regsub -all " " $additional_files " [file dirname $source]/" additional_files
+	set to_download [concat $to_download $additional_files]
+    }
+    if [is_remote host] {
+	foreach file $to_download {
+	    remote_download host $file
+	}
+    }
+
+    set result [target_compile $source $dest $type $options]
+
+    set additional_sources ""
+    set additional_files ""
+
+    return $result
 }
 
 #

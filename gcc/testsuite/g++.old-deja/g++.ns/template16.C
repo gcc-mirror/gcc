@@ -1,7 +1,7 @@
+// { dg-do assemble  }
 // Test that pushing into a namespace for a definition doesn't affect
 // template instantiations.
 
-// Build don't link:
 
 namespace N {
   template <class T> void f () { }

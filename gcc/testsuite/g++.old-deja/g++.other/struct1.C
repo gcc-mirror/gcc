@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 1999 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 3 Jun 1999 <nathan@acm.org>
@@ -7,36 +7,36 @@
 // politely, but we used to die horribly.
 
 class Y
-{   // ERROR - previous definition
+{   // { dg-error "" } previous definition
 };
 class Y
-{   // ERROR - redefinition
+{   // { dg-error "" } redefinition
 };
 
 template<class T> class X
-{   // ERROR - previous definition
+{   // { dg-error "" } previous definition
 };
 template<class T> class X
-{   // ERROR - redefinition
+{   // { dg-error "" } redefinition
 };
 
 template<class T> class X<T *>
-{   // ERROR - previous definition
+{   // { dg-error "" } previous definition
 };
 template<class T> class X<T *>
-{   // ERROR - redefinition
+{   // { dg-error "" } redefinition
 };
 
 template<> class X<int>
-{   // ERROR - previous definition
+{   // { dg-error "" } previous definition
 };
 template<> class X<int>
-{   // ERROR - redefinition
+{   // { dg-error "" } redefinition
 };
 
 template<> class X<int *>
-{   // ERROR - previous definition
+{   // { dg-error "" } previous definition
 };
 template<> class X<int *>
-{   // ERROR - redefinition
+{   // { dg-error "" } redefinition
 };

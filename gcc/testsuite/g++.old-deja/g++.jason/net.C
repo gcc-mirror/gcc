@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Bug: g++ doesn't instantiate function templates in instantiate_type.
-// Build don't link:
 
 template <class T> void fn (T t) { }
 template <class T> struct A {

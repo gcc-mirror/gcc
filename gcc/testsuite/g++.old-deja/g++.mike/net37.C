@@ -1,3 +1,4 @@
+// { dg-do run  }
 class B {
 public:
     int bi;

@@ -1,5 +1,4 @@
-// Build don't link:
-// crash test - XFAIL *-*-*
+// { dg-do assemble { xfail *-*-* } }
 
 // by Paul Burchard <burchard@pobox.com>, Level Set Systems, Inc.
 // Copyright (C) 1999 Free Software Foundation
@@ -12,5 +11,5 @@ struct Q {
 template<template<class> class>
 class Y {
 };
-Y<typename Q::X> y; // ERROR - typename out of template context
+Y<typename Q::X> y; // { dg-error "" } typename out of template context
 

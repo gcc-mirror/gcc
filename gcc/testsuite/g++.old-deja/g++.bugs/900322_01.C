@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.37.1 bug 900322_01
 
 // ** Old, obsolete commentary:
@@ -32,23 +33,23 @@
 
 // keywords: incomplete types, arrays, element types
 
-extern int extern_two_d [] [];		// ERROR - invalid declaration
-int tenative_two_d [] [];		// ERROR - caught by g++
-static int static_two_d [] [];		// ERROR - caught by g++
+extern int extern_two_d [] [];		// { dg-error "" } invalid declaration
+int tenative_two_d [] [];		// { dg-error "" } caught by g++
+static int static_two_d [] [];		// { dg-error "" } caught by g++
 
-int (*pointer_to_two_d)[][];		// ERROR - invalid declaration
+int (*pointer_to_two_d)[][];		// { dg-error "" } invalid declaration
 
-void function_0 (int arg [] []) {	// ERROR - invalid declaration
+void function_0 (int arg [] []) {	// { dg-error "" } invalid declaration
 }
 
 typedef int int_one_d_type [];
-typedef int_one_d_type int_two_d_type[];// ERROR - invalid declaration
+typedef int_one_d_type int_two_d_type[];// { dg-error "" } invalid declaration
 
 struct s;
 
 extern struct s extern_s_array [10];	// OK
-struct s tenative_s_array [10];		// ERROR - object with incomplete type
-static struct s static_s_array [10];	// ERROR - object with incomplete type
+struct s tenative_s_array [10];		// { dg-error "" } object with incomplete type
+static struct s static_s_array [10];	// { dg-error "" } object with incomplete type
 
 struct s (*pointer_to_s_array) [];	// OK
 

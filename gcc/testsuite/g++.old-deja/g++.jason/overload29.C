@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Bug: we get an error trying to build up our ideal candidate.
-// Build don't link:
 
 class C {
  public:

@@ -1,5 +1,6 @@
+// { dg-do run  }
+// { dg-options "-O2" }
 // Testcase for order of destruction.
-// Special g++ Options: -O2
 
 extern "C" int printf (const char *, ...);
 int c;

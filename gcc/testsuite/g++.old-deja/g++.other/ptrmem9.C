@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that const-correctness is observed when using pointers-to-members.
 
 struct A {

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Jason Merrill <jason@cygnus.com>
 
   const char *pc;

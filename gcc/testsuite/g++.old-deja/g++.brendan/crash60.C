@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed old-abort
 class X
 {
@@ -9,4 +9,4 @@ public:
 
 // Note that we mistakenly initialize the array data member as if it
 // was scalar
-X::X () : f (0) {}// ERROR - .*
+X::X () : f (0) {}// { dg-error "" } .*

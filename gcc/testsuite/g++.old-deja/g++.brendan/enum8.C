@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed enums
 class foo1
 {
@@ -7,7 +7,7 @@ class foo1
    {
       ENUM1,
       ENUM2,
-   }; // ERROR - comma
+   }; // { dg-error "" } comma
 };
 
    

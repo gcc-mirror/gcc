@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template <class T>
 struct S {};
@@ -13,4 +13,4 @@ struct S<int>
 void S<int>::f() {}
 
 template <>
-void S<int>::g() {} // ERROR - does not match any template declaration
+void S<int>::g() {} // { dg-error "" } does not match any template declaration

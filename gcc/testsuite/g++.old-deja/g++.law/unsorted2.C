@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed unsorted
 // code-gen file
 // From: klaus@steinitz.mathematik.uni-dortmund.de

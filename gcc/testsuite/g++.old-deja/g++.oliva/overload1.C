@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 1999 Free Software Foundation
 
@@ -6,18 +6,18 @@
 // Based on bug report by JDonner <jdonner@schedsys.com>
 
 struct foo {
-  static int bar(); // ERROR - candidate
-  void bar(int); // ERROR - candidate
+  static int bar(); // { dg-error "" } candidate
+  void bar(int); // { dg-error "" } candidate
 };
 
 /* gcc emits a hard error without -pedantic, and a warning with
    -pedantic, even in bad1.  */
 int (*ok1)() = foo::bar;
-void (foo::*bad1)(int) = foo::bar; // ERROR - missing &
+void (foo::*bad1)(int) = foo::bar; // { dg-error "" } missing &
 
 int (*ok2)() = &foo::bar; // ok
-void (*bad2)(int) = foo::bar; // ERROR - overload resolution fails
+void (*bad2)(int) = foo::bar; // { dg-error "" } overload resolution fails
 
 void (foo::*ok3)(int) = &foo::bar; // ok
-int (foo::*bad3)() = foo::bar; // ERROR - overload resolution fails
+int (foo::*bad3)() = foo::bar; // { dg-error "" } overload resolution fails
 

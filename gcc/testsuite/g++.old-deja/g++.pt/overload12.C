@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Testcase for not trying a candidate that would generate an ill-formed
 // instantiation.
 

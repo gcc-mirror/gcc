@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // PRMS Id: 6412
-// Build don't link:
 
 class Foo;
 

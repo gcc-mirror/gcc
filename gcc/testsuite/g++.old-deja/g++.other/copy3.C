@@ -1,4 +1,4 @@
-// Build don't run:
+// { dg-do link  }
 // Origin: ericp@mit.edu
 
 class bar {

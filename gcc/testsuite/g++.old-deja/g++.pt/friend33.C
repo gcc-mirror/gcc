@@ -1,5 +1,5 @@
-// Build don't run:
-// Special g++ Options: -g
+// { dg-do link  }
+// { dg-options "-g" }
 
 template <class P1>
 struct S1

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 22 Nov 2000 <nathan@codesourcery.com>
 
@@ -34,8 +35,8 @@ typedef int foo::*foomPtr;
 int main ()
 {
   foofPtr fp = &foo::b;
-  barfPtr bp = (barfPtr)fp;         // WARNING - pointer to member
-  foofPtr fp2 = (foofPtr)bp;        // WARNING - pointer to member
+  barfPtr bp = (barfPtr)fp;         // { dg-warning "" } pointer to member
+  foofPtr fp2 = (foofPtr)bp;        // { dg-warning "" } pointer to member
   
   if (fp2 != fp)
     return 1;
@@ -50,8 +51,8 @@ int main ()
   fobj.m = 78;
   
   foomPtr fmp = &foo::m;
-  barmPtr bmp = (barmPtr)fmp;          // WARNING - pointer to member
-  foomPtr fmp2 = (foomPtr)bmp;         // WARNING - pointer to member
+  barmPtr bmp = (barmPtr)fmp;          // { dg-warning "" } pointer to member
+  foomPtr fmp2 = (foomPtr)bmp;         // { dg-warning "" } pointer to member
   bar *bptr = &fobj;
   
   if (fmp != fmp2)

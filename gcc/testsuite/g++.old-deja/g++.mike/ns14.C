@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 namespace Jazz {
   int horn( int h ) { return 1; }

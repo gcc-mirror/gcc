@@ -1,3 +1,4 @@
+// { dg-do run  }
 template <class T, class V>
 class A {
 public:
@@ -23,7 +24,7 @@ public:
 };
 
 template <class T, class V>
-B<T, V>::B (T at, V av) : A<T, V> (at, av) { }	// gets bogus error - 
+B<T, V>::B (T at, V av) : A<T, V> (at, av) { }	// { dg-bogus "" } 
 
 int main () {
   int i = 2;

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.37.1 bug 900404_03
 
 // g++ fails to be able to properly flag errors for even simple cases of
@@ -8,12 +9,12 @@
 // keywords: overloading, ambiguity, resolution
 
 void function0 (int i, char c)
-{				// ERROR - 
+{				// { dg-error "" } 
   i = c;
 }
 
 void function0 (char c, int i)
-{				// ERROR - 
+{				// { dg-error "" } 
   i = c;
 }
 
@@ -21,7 +22,7 @@ char c;
 
 void test ()
 {
-  function0 (c,c);		// ERROR - missed
+  function0 (c,c);		// { dg-error "" } missed
 }
 
 int main () { return 0; }

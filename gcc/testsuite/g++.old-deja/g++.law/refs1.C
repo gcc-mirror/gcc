@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed references
 // (Message bugs/refs:1)
 // From: tal@vlsi.cs.caltech.edu

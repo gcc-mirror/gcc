@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 22 June 2000 <nathan@codesourcery.com>
@@ -22,6 +22,6 @@ template <class T> template <class U> image<T>::image(const image<U> &copy)
 }
 
 template class image<double>;
-template class image<double>::image (const image<int> &); // ERROR - parse error
-template class image<double>::image (image<int>); // ERROR - specified as declarator-id
+template class image<double>::image (const image<int> &); // { dg-error "" } parse error
+template class image<double>::image (image<int>); // { dg-error "" } specified as declarator-id
 template image<double>::image (const image<int> &);

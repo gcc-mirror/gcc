@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed typeck
 class A {
   public:
@@ -15,7 +15,7 @@ const int& A::operator[]( int i )
 
 void ff( A &anA )
 {
-    int &ani = anA[0];// ERROR - 
+    int &ani = anA[0];// { dg-error "" } 
 
     ani = 7;
 }

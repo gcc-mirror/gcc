@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 5126
 
 extern int i, j;

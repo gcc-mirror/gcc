@@ -1,13 +1,14 @@
-// Special g++ Options: -Wsynth
+// { dg-do assemble  }
+// { dg-options "-Wsynth" }
 
 struct A {
   operator int ();
-  A& operator= (int);		// WARNING - not used below
+  A& operator= (int);		// { dg-warning "" } not used below
 };
 
 main()
 {
   A a, b;
 
-  a = b;			// WARNING - uses synthesized op=
+  a = b;			// { dg-warning "" } uses synthesized op=
 }

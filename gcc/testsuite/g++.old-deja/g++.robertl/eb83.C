@@ -1,5 +1,5 @@
-// Skip if not native
-// Special g++ Options: -fprofile-arcs -ftest-coverage
+// { dg-do run { target native } }
+// { dg-options "-fprofile-arcs -ftest-coverage" }
 void
 test_swap(int& x, int& y) throw()
 {

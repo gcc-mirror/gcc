@@ -1,8 +1,8 @@
+// { dg-do assemble  }
+// { dg-options "-Wformat" }
 // Test that attributes are really applied to function declarations under
 // various conditions.
 // Contributed by Jason Merrill (jason@cygnus.com)
-// Special g++ Options: -Wformat
-// Build don't link:
 
 #define PF __attribute__ ((format (printf, 1, 2)))
 
@@ -17,8 +17,8 @@ void PF k (char *, ...) { }
 
 void A::test ()
 {
-  f ("%f", 42);			// WARNING - 
-  g ("%f", 42);			// WARNING - 
-  h ("%f", 42);			// WARNING - 
-  k ("%f", 42);			// WARNING - 
+  f ("%f", 42);			// { dg-warning "" } 
+  g ("%f", 42);			// { dg-warning "" } 
+  h ("%f", 42);			// { dg-warning "" } 
+  k ("%f", 42);			// { dg-warning "" } 
 }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed operators
 // opr-del file
 // Message-Id: <199301272137.AA25213@world.std.com>

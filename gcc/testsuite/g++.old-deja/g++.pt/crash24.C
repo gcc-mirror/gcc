@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template<typename T, template <class> class U> void template_fn (T);
 template<typename T> void callme ( void (*)(T));

@@ -1,8 +1,9 @@
+// { dg-do run  }
+// { dg-options "-O2" }
 // Test that built-in functions are recognized with a prototype.
 // Origin: Roger Sayle  Mar 20, 2002
 // Copyright (C) 2002 Free Software Foundation.
 //
-// Special g++ Options: -O2
 
 
 extern "C" void link_error (void);

@@ -1,3 +1,4 @@
+// { dg-do run  }
 class S1 { int i; };
 class S2 { int i; };
 class VB {

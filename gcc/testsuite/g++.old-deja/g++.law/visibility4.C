@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed visibility
 // visibility file
 // From: dcb@us-es.sel.de (David Binderman 3841)
@@ -8,7 +8,7 @@
 
 class A {
 public:
-     int b; // ERROR - private
+     int b; // { dg-error "" } private
 };
 
 class C : private A {                   // NOTE WELL. private, not public
@@ -20,6 +20,6 @@ extern "C" int printf( const char *, ...);
 
 class E : public C {
         void f() {
-                printf( "%d\n", b);// ERROR - .*
+                printf( "%d\n", b);// { dg-error "" } .*
         };
 };

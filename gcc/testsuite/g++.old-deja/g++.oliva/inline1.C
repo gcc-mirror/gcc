@@ -1,11 +1,10 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Copyright (C) 1999 Free Software Foundation
 
 // by Alexandre Oliva <oliva@lsd.ic.unicamp.br>
 // Derived from GNU lilypond.
 
-// crash test
 
 struct foo {
   foo();

@@ -1,11 +1,11 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template <class T>
-void f(T) {} // ERROR - parameter has incomplete type
+void f(T) {} // { dg-error "" } parameter has incomplete type
 
-class C;    // ERROR - forward declaration
+class C;    // { dg-error "" } forward declaration
 
 void g(const C& c)
 {
-  f(c); // ERROR - invalid use of undefined type
+  f(c); // { dg-error "" } invalid use of undefined type
 }

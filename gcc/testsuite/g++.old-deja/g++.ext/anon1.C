@@ -1,4 +1,5 @@
-// Special g++ Options:
+// { dg-do run  }
+// { dg-options "" }
 
 union U {
   struct { int i; int j; };

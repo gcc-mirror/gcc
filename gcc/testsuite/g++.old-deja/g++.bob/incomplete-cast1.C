@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // prms-id: 5274
 class VHDLIdentifier;
 
@@ -11,6 +12,6 @@ extern void form(const char *format, ... );
 int
 VHDLPackageProtoRep::thing()
 {
-    form("package `%s'", (char *)actual_name()); // ERROR - can't convert from incomplete type
+    form("package `%s'", (char *)actual_name()); // { dg-error "" } can't convert from incomplete type
     return 0;
 }

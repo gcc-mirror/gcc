@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed arg-matching
 // arg-matching file
 // From: Terry Lee <terry@uivlsisd.csl.uiuc.edu>

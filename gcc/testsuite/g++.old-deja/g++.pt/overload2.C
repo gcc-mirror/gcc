@@ -1,4 +1,4 @@
-//Build don't link:
+// { dg-do assemble  }
 template<class T>
 class C
 {
@@ -12,5 +12,5 @@ int
 main()
 {
 	C<char*>	c;
-	char*		p = Z(c.O); //ERROR - ambiguous c.O
+	char*		p = Z(c.O); //{ dg-error "" } ambiguous c.O
 }

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Mark Mitchell <mitchell@codesourcery.com>
 
 template <class T, class V>

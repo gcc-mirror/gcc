@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Testing exception specifications.
 // Test 1: the original exception succeeds.
 

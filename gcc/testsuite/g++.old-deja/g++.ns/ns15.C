@@ -1,2 +1,2 @@
-//Build don't link:
+// { dg-do assemble  }
 namespace std {}

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed visibility
 // Used to say:
 // manip.cc:17: member `_f' is a private member of class `B<int>'

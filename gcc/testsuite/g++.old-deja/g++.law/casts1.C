@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed casts
 // casts file
 // From: dcb@us-es.sel.de (David Binderman 3841)
@@ -7,7 +7,7 @@
 // Message-ID: <9302181342.AA14050@slsvitt>
 
 int main() {
-   (struct T { int b; } *) 0;      // ERROR - 
+   (struct T { int b; } *) 0;      // { dg-error "" } 
 
         return 0;
 }

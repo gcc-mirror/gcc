@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Special g++ Option: 
 // Origin: holmen@mail.nu
 
@@ -14,5 +14,5 @@ struct D {
 C* D::g() {
     int i = 0;
     while (i < 1 && a[i].f() != 1) {}
-    return undefined_variable; // ERROR - 
+    return undefined_variable; // { dg-error "" } 
 }

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template<class T>
 class TestClass1 {
@@ -21,10 +21,10 @@ void doit(T x) {
   q2 = TestClass2<T>();
 
   TestClass1<T> p1;
-  p1 = TestClass1(); // ERROR - template used as expression
+  p1 = TestClass1(); // { dg-error "" } template used as expression
 
   TestClass2<T> p2;
-  p2 = TestClass2(); // ERROR - template used as expression
+  p2 = TestClass2(); // { dg-error "" } template used as expression
 }
 
 int main() {

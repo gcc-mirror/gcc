@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test whether N::operator new is different from ::operator new
 #include <new>
 #include <cstdlib>

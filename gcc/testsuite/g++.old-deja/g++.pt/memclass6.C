@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Compiler: egcs-2.91.12 980302
 // Error:    compiler error in ctor of 'foo::bar<T>::bar(T const &)'
 

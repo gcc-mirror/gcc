@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 template < class T, template < class > class E1, template < class > class E2 >
 class Add {

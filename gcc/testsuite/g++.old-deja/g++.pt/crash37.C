@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Jens Maurer <jmaurer@menuett.rhein-main.de>
 
 template<class T, void (T::*f)(int)>

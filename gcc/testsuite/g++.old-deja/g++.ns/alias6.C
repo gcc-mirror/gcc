@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Check namespace aliases inside blocks
 namespace A { 
   int i;

@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 
 // Reported by Harri Porten <porten@tu-harburg.de>
 // Simplified for testsuite by Alexandre Oliva

@@ -1,4 +1,5 @@
-// Special g++ Options: -w
+// { dg-do run  }
+// { dg-options "-w" }
 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 24 Jul 2001 <nathan@codesourcery.com>

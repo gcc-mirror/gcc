@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that unwinding properly restores SP.
 // Contributed by Jason Merrill <jason@cygnus.com>
 

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed operators
 // pic file
 // Message-Id: <199406132030.NAA23508@dewitt.eecs.berkeley.edu>

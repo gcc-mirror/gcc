@@ -1,4 +1,5 @@
-// Special g++ Options: -O2
+// { dg-do run  }
+// { dg-options "-O2" }
 // 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 29 May 2001 <nathan@codesourcery.com>

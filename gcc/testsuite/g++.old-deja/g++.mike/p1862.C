@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS vtable
 extern "C" int printf (const char *, ...);
 

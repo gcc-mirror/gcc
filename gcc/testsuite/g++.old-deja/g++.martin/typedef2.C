@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Testcase from Alexander Zvyagin <zvyagin@mx.ihep.su>
 // Check implicit conversion from string constants into typedefs
 

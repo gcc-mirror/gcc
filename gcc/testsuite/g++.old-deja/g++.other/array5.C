@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // We tried to create a temporary of unknown size and crashed.
 
 extern int a1[];

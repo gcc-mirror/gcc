@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Testcase for defining nested types separately.
-// Build don't link:
 
 class remote
 {

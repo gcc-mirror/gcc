@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // Test for proper diagnostics on trying to take the address of a non-static
 // member function.
 
@@ -10,6 +11,6 @@ struct A {
 int main ()
 {
   A a;
-  &a.f;				// ERROR - overloaded
-  &a.g;				// ERROR - can't write a pmf like this
+  &a.f;				// { dg-error "" } overloaded
+  &a.g;				// { dg-error "" } can't write a pmf like this
 }

@@ -1,3 +1,4 @@
+// { dg-do run  }
 extern "C" int printf(const char *, ...);
 extern "C" const char *getenv(const char *);
 

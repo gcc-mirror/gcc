@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: <Corey Kosak> kosak@cs.cmu.edu
 
 struct moo {

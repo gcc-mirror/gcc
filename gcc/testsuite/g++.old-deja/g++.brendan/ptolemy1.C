@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed ptolemy-bugs
 class Tcl_Interp;
 

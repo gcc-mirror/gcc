@@ -1,6 +1,5 @@
-// Build don't run:
-
-// Additional sources: instantiate5.cc instantiate5-main.cc
+// { dg-do link  }
+// { dg-gpp-additional-sources " instantiate5.cc instantiate5-main.cc" }
 
 // `global constructors' are given the same name, based on foo(), on
 // both translation units, which is wrong, because it must be possible

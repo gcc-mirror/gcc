@@ -1,4 +1,5 @@
-// Special g++ Options: -O
+// { dg-do run  }
+// { dg-options "-O" }
 
 #include <iostream>
 #include <typeinfo>

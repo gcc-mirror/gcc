@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that two extern "C" declarations of the same name in different
 // namespaces are treated as declaring the same function.
 

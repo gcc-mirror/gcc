@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed code-generation
 // Check that type float parameters can be correctly passed to
 // methods.

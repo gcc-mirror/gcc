@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 
 typedef int I;
 int i;

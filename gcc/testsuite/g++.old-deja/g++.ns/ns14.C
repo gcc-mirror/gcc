@@ -1,3 +1,4 @@
+// { dg-do run  }
 
 namespace std{ 
   int f(){

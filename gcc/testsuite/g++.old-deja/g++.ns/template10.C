@@ -1,4 +1,4 @@
-// Build don't link:
+// { dg-do assemble  }
 // Origin: Manuel Menezes de Sequeira <mms@torga.iscte.pt>
 
 namespace N {

@@ -1,6 +1,6 @@
+// { dg-do assemble  }
 // PRMS Id: 6303
 // Bug: compiler crashes processing the cleanup for arrayOfClass.
-// Build don't link:
 
 class Class {
 public:

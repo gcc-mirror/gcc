@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that partial ordering ignores defaulted parms and 'this'.
 
 struct A {

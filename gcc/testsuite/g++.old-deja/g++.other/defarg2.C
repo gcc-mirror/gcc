@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test that default args don't mess up pmf type comparisons.
 // Contributed by Jason Merrill <jason@cygnus.com>.
 

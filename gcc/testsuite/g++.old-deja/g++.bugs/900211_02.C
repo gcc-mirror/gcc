@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.36.1 bug 900211_02
 
 // g++ allows you to explicitly specify the return type for a type conversion
@@ -14,10 +15,10 @@ struct struct0 { int member_0; };
 struct0 struct0_object_0;
 
 struct struct1 {
-  struct0 operator struct0 ();		/* ERROR - */
+  struct0 operator struct0 ();		/* { dg-error "" } */
 };
 
-struct0 struct1::operator struct0 () {	// ERROR - 
+struct0 struct1::operator struct0 () {	// { dg-error "" } 
   return struct0_object_0;
 }
 

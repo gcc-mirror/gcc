@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Test for allowing conversion to bool.
 
 struct A { };

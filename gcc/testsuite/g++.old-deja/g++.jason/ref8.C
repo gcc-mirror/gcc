@@ -1,3 +1,4 @@
+// { dg-do run  }
 // PRMS Id: 5184
 // Bug: cast to C& below does not adjust address
 

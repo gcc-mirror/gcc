@@ -1,1 +1,2 @@
-char array0[4] = "abcde";          /* ERROR - initializer too long */
+// { dg-do assemble  }
+char array0[4] = "abcde";          /* { dg-error "" } initializer too long */

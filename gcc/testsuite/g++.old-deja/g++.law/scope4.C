@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed scoping
 // local-class file
 // From: daniels@sugar.neosoft.com (Brad Daniels)

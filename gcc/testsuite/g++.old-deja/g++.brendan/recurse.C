@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed recursive-aborts
 // types
 typedef unsigned int DBflag;   // for storing user flag value
@@ -75,6 +75,6 @@ int main()
 {
   DBpathrec a(), b();
 
-  a = b;// ERROR -  non-lvalue in assignment.*
+  a = b;// { dg-error "" }  non-lvalue in assignment.*
 }
 

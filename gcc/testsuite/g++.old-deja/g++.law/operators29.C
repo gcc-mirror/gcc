@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed operators
 // (Message bugs/opr-del:4)
 // From: jamshid@ses.com (Jamshid Afshar)

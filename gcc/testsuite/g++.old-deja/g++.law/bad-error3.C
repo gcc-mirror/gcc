@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed bad-errors
 // bad-error file
 // Date: Sun, 31 Jul 1994 11:37:43 +1000 (EST)

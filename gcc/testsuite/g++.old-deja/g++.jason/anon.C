@@ -1,3 +1,4 @@
+// { dg-do run  }
 // Bug: g++ has trouble copying anonymous structs.
 
 typedef struct { int i; } foo;

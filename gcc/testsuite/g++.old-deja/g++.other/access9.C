@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // Test that g++ allows friends to use private types in their declarations.
-// Build don't link:
 
 class A {
   typedef int I;

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed operators
 // opr-eq file
 // Message-Id: <1993Nov18.210502.28842@midway.uchicago.edu>

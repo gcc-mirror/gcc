@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -ansi -pedantic-errors -Winline -O1
+// { dg-do assemble  }
+// { dg-options "-ansi -pedantic-errors -Winline -O1" }
 
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 9 Mar 2000 <nathan@codesourcery.com>
@@ -14,7 +14,7 @@ inline void wibble ()
 {}
 
 inline void wobble ()
-{}                          // gets bogus error - cannot inline
+{}                          // { dg-bogus "" } cannot inline
 
 void bar (void (*)());
 
@@ -31,12 +31,12 @@ struct B
   void mwibble ()
   {};
   void mwobble ()
-  {};                       // gets bogus error - cannot inline
+  {};                       // { dg-bogus "" } cannot inline
   
   static void swibble ()
   {};
   static void swobble ()
-  {};                       // gets bogus error - cannot inline
+  {};                       // { dg-bogus "" } cannot inline
 };
 
 void bar (void (B::*)());
@@ -60,7 +60,7 @@ void bar3 (B *b)
 struct C
 {
   virtual void vwobble ()
-  {};                               // gets bogus error - cannot inline
+  {};                               // { dg-bogus "" } cannot inline
 };
 
 void bar4 ()

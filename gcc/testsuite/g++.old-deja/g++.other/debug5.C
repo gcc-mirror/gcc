@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -g
+// { dg-do assemble  }
+// { dg-options "-g" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 struct S

@@ -1,6 +1,6 @@
-// Build don't link: 
+// { dg-do assemble  }
 char *stuff() {
-   char array[10]; // WARNING - 
+   char array[10]; // { dg-warning "" } 
 
    return array;
 }

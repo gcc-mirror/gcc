@@ -1,3 +1,4 @@
+// { dg-do run  }
 // prms-id: 4246
 
 extern "C" void abort ();

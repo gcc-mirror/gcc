@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
+// { dg-options "-Wunused" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
-// Special g++ Options: -Wunused
 
 struct S
 {
@@ -12,9 +12,9 @@ void f ()
 {
   {
     S s1;
-    int j; // WARNING - unused
+    int j; // { dg-warning "" } unused
     
-  t:       // WARNING - unused
+  t:       // { dg-warning "" } unused
     S s2;
   }
 }

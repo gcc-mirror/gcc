@@ -1,5 +1,5 @@
-// Build don't link: 
-// Special g++ Options: -O
+// { dg-do assemble  }
+// { dg-options "-O" }
 // GROUPS passed old-abort
 // gcc puts the array into a register, and then the store_bit_field () code
 // in expmed.c gets confused when it tries to store zero past the end of the

@@ -1,6 +1,6 @@
-// Build don't link:
+// { dg-do assemble  }
 
 struct S
 {
-  friend void f<>(int); // ERROR - does not match any template
+  friend void f<>(int); // { dg-error "" } does not match any template
 };

@@ -1,8 +1,8 @@
-// Build don't link:
+// { dg-do assemble  }
 
 struct A { 
   struct B {}; 
   struct C;
 };
 
-struct A :: C : A :: B {}; // gets bogus error - parse error before `:'
+struct A :: C : A :: B {}; // { dg-bogus "" } parse error before `:'

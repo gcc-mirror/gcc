@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed operators
 // opr-conv file
 // Message-Id: <199301260142.AA13995@world.std.com>

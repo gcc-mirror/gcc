@@ -1,3 +1,4 @@
+// { dg-do run  }
 int count;
 
 struct base {

@@ -1,4 +1,4 @@
-// Build don't run:
+// { dg-do link  }
 
 template<class T,class T1>
 int connect_to_method(T* receiver,

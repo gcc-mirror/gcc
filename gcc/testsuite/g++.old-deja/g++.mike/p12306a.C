@@ -1,3 +1,4 @@
+// { dg-do run  }
 // prms-id: 12306
 // a net report of the same problem as 12306
 

@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed ARM-compliance
 // arm file
 // Message-Id: <199301260140.AA13734@world.std.com>

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 // g++ 1.37.1 bug 900520_03
 
 // The C++ Reference Manual says (in section 8.2.4):
@@ -33,7 +34,7 @@
 typedef int u_array[];
 typedef u_array &u_array_ref;
 
-void take_u_array_ref (u_array_ref arg) { } // ERROR - reference to array of unknown bound in parmtype
+void take_u_array_ref (u_array_ref arg) { } // { dg-error "" } reference to array of unknown bound in parmtype
 
 extern u_array u_array_gbl_obj;
 u_array_ref u_array_ref_gbl_obj0 = u_array_gbl_obj;	// OK

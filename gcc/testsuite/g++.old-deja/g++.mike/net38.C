@@ -1,3 +1,4 @@
+// { dg-do run  }
 struct A {
   virtual int a ()       { return 0; }
 };

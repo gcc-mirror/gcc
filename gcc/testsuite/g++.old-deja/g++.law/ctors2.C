@@ -1,3 +1,4 @@
+// { dg-do run  }
 // GROUPS passed constructors
 // Message-Id: <m0p8Am6-0002fCC@neal.ctd.comsat.com>
 // Date: Fri, 10 Dec 93 11:33 EST

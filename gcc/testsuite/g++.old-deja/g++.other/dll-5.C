@@ -1,5 +1,4 @@
-// Build don't link:
-// Skip if not target: arm-*pe
+// { dg-do assemble { target arm-*-*pe } }
 // dllimport is "sorta like" to "extern".
 // set compiler_result "(\nfoo1:.*\nfoo2:|\nfoo2:.*\nfoo1:)"
 // set not_compiler_result "__imp_"

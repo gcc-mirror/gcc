@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed templates
 template< class R, class T1 = R, class T2 = T1 >
 struct plus

@@ -1,4 +1,5 @@
-// Special g++ Options: -felide-constructors
+// { dg-do run  }
+// { dg-options "-felide-constructors" }
 // GROUPS passed temps
 // temps file
 // Message-Id: <9311102043.AA22871@ses.com>

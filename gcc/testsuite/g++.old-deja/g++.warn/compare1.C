@@ -1,5 +1,5 @@
-// Build don't link:
-// Special g++ Options: -ansi -pedantic-errors -Wsign-compare
+// { dg-do assemble  }
+// { dg-options "-ansi -pedantic-errors -Wsign-compare" }
 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 // Contributed by Kaveh R. Ghazi <ghazi@caip.rutgers.edu> 5/13/2001
@@ -8,7 +8,7 @@ int foo(int x, int y, unsigned u)
 {
   /* A MAX_EXPR is non-negative if EITHER argument to the MAX_EXPR is
      determined to be non-negative.  */
-  if (u < (x >? -1)) // WARNING - signed and unsigned
+  if (u < (x >? -1)) // { dg-warning "" } signed and unsigned
     return x;
   if (u < (x >? 10))
     return x;
@@ -21,7 +21,7 @@ int foo(int x, int y, unsigned u)
 
   /* A MIN_EXPR is non-negative if BOTH arguments to the MIN_EXPR are
      determined to be non-negative.  */
-  if (u < ((x?11:8) <? -1)) // WARNING - signed and unsigned
+  if (u < ((x?11:8) <? -1)) // { dg-warning "" } signed and unsigned
     return x;
   if (u < ((x?11:8) <? 10))
     return x;

@@ -1,3 +1,4 @@
+// { dg-do assemble  }
 struct A {
   ~A();
 };
@@ -9,5 +10,5 @@ struct B {
 int main()
 {
   A a;
-  a.~B();			// ERROR - wrong name
+  a.~B();			// { dg-error "" } wrong name
 }

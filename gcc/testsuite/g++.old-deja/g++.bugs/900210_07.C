@@ -1,3 +1,5 @@
+// { dg-do assemble  }
+// { dg-options "" }
 // g++ 1.36.1 bug 900210_07
 
 // g++ allows values of pointer-to-signed types to be assigned to variables
@@ -12,8 +14,8 @@ unsigned int *uip;
 
 void function ()
 {
-  sip = uip;		// ERROR - 
-  uip = sip;		// ERROR - 
+  sip = uip;		// { dg-error "" } 
+  uip = sip;		// { dg-error "" } 
 }
 
 int main () { return 0; }

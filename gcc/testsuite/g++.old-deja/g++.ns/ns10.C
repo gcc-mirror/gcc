@@ -1,4 +1,4 @@
-//Build don't link:
+// { dg-do assemble  }
 namespace bb
 {
   int f(int);
@@ -7,7 +7,7 @@ namespace bb
   {
     void foo(int bar)
     {
-      int i=bb:f(bar); // ERROR - namespace
+      int i=bb:f(bar); // { dg-error "" } namespace
     }
   }
 }

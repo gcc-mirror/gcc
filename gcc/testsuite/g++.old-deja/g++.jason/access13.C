@@ -1,5 +1,5 @@
+// { dg-do assemble  }
 // PRMS Id: 4955
-// Build don't link:
 
 struct A {
  protected:
@@ -9,7 +9,7 @@ struct A {
 
 struct B: public A {
   void g () {
-    this->A::i = 1;		// gets bogus error - access control failure
-    this->A::f();		// gets bogus error - access control failure
+    this->A::i = 1;		// { dg-bogus "" } access control failure
+    this->A::f();		// { dg-bogus "" } access control failure
   }
 };

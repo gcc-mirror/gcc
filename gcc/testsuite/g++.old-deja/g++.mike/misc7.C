@@ -1,4 +1,4 @@
-// Build don't link: 
+// { dg-do assemble  }
 // GROUPS passed MI
 struct S1 { };
 
@@ -12,5 +12,5 @@ struct S4 *p4;
 
 void foobar ()
 {
-  p1 = p4;		// ERROR - this is illegal// ERROR - .*
+  p1 = p4;		// { dg-error "" } this is illegal// ERROR - .*
 }
