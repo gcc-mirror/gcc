@@ -1,5 +1,7 @@
 Mon Mar 23 12:24:37 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* pt.c (complete_template_args): Initialize skip properly.
+
 	* decl.c (make_typename_type): Revert.
 	(make_implicit_typename): Remove.
 	(lookup_name_real): Don't call it.  Call lookup_field if we see a
