@@ -264,7 +264,7 @@ extern int target_flags;
 */
 
 #define FIXED_REGISTERS  \
- {0, 0, 1, 1, 1, 0, 0, 0, \
+ {0, 0, 1, 0, 1, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 1, 0, 0, 1, 1, \
@@ -289,7 +289,7 @@ extern int target_flags;
    and the register where structure-value addresses are passed.
    Aside from that, you can include as many other registers as you like.  */
 #define CALL_USED_REGISTERS  \
- {1, 1, 1, 1, 1, 0, 0, 0, \
+ {1, 1, 1, 0, 1, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 1, 1, 1, 1, 1, \
   1, 1, 1, 1, 1, 1, 1, 1, \
@@ -354,12 +354,12 @@ extern int target_flags;
   88, 89, 90, 91, 92, 93, 94, 95, 	\
   96, 97, 98, 99, 100, 101, 102, 103, 	\
   104, 105, 106, 107, 108, 109, 110, 111,\
-   5,  6,  7,				\
+   3, 5,  6,  7,			\
    8,  9, 10, 11, 12, 13, 14, 15,	\
   16, 17, 18, 44, 45, 46, 47,		\
   48, 49, 50, 51, 52, 53, 54, 55,	\
      1,	\
-   2,  3,  4, 32, 33, 34, 35,  0,	\
+   2, 4, 32, 33, 34, 35,  0,		\
    112}
 
 
@@ -1369,6 +1369,10 @@ while (0)
    but a CALL with constant address is cheap.  */
 #define NO_FUNCTION_CSE
 
+/* Use atexit for static constructors/destructors, instead of defining
+   our own exit function.  */
+#define HAVE_ATEXIT
+
 /* Compute the cost of computing a constant rtl expression RTX
    whose rtx-code is CODE.  The body of this macro is a portion
    of a switch statement.  If the code is computed here,
@@ -1775,3 +1779,5 @@ extern struct rtx_def *legitimize_pic_address ();
 extern struct rtx_def *gen_cmp_fp ();
 extern struct rtx_def *gen_scond_fp ();
 extern void hppa_encode_label ();
+
+extern struct rtx_def *hppa_save_pic_table_rtx;
