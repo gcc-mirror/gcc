@@ -2322,7 +2322,7 @@ replace_call_address (x, reg, addr)
     {
       if (fmt[i] == 'e')
 	replace_call_address (XEXP (x, i), reg, addr);
-      if (fmt[i] == 'E')
+      else if (fmt[i] == 'E')
 	{
 	  register int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)
@@ -2374,7 +2374,7 @@ count_nonfixed_reads (x)
     {
       if (fmt[i] == 'e')
 	value += count_nonfixed_reads (XEXP (x, i));
-      if (fmt[i] == 'E')
+      else if (fmt[i] == 'E')
 	{
 	  register int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)

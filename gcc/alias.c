@@ -1468,7 +1468,7 @@ nonlocal_reference_p (x)
 	    if (nonlocal_reference_p (XEXP (x, i)))
 	      return 1;
 	  }
-	if (fmt[i] == 'E')
+	else if (fmt[i] == 'E')
 	  {
 	    register int j;
 	    for (j = 0; j < XVECLEN (x, i); j++)

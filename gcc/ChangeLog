@@ -1,3 +1,17 @@
+1999-12-27  Christophe Jaillet  <jaillet.christophe@caramail.com>
+
+	* alias.c (nonlocal_reference_p): Add else for disjoint ifs.
+	* flow.c (find_use_as_address): Likewise.
+	* function.c (fixup_var_refs_1): Likewise.
+	(walk_fixup_memory_subreg, fixup_stack_1): Likewise.
+	* jump.c (invert_exp, redirect_exp): Likewise.
+	* loop.c (replace_call_address): Likewise.
+	(count_nonfixed_reads): Likewise.
+	* rtlanal.c (modified_between_p): Likewise.
+	(modified_in_p, volatile_insn_p, volatile_refs_p): Likewise.
+	(side_effects_p, replace_regs, jmp_uses_reg_or_mem): Likewise.
+	* unroll.c (remap_split_bivs): Likewise.
+
 1999-12-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* diagnostic.c (v_message_with_decl): Use .* format specifier

@@ -4646,7 +4646,7 @@ invert_exp (x, insn)
       if (fmt[i] == 'e')
 	if (! invert_exp (XEXP (x, i), insn))
 	  return 0;
-      if (fmt[i] == 'E')
+      else if (fmt[i] == 'E')
 	{
 	  register int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)
@@ -4795,7 +4795,7 @@ redirect_exp (loc, olabel, nlabel, insn)
       if (fmt[i] == 'e')
 	if (! redirect_exp (&XEXP (x, i), olabel, nlabel, insn))
 	  return 0;
-      if (fmt[i] == 'E')
+      else if (fmt[i] == 'E')
 	{
 	  register int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)

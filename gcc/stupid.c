@@ -750,7 +750,7 @@ stupid_mark_refs (x, chain)
     {
       if (fmt[i] == 'e')
 	stupid_mark_refs (XEXP (x, i), chain);
-      if (fmt[i] == 'E')
+      else if (fmt[i] == 'E')
 	{
 	  register int j;
 	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)

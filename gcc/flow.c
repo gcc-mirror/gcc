@@ -4881,7 +4881,7 @@ find_use_as_address (x, reg, plusconst)
 	  else if (tem != 0)
 	    return (rtx) (HOST_WIDE_INT) 1;
 	}
-      if (fmt[i] == 'E')
+      else if (fmt[i] == 'E')
 	{
 	  register int j;
 	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
