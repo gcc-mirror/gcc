@@ -280,10 +280,12 @@ static rtx find_basic_blocks_1		PROTO((rtx));
 static void create_basic_block		PROTO((int, rtx, rtx, rtx));
 static void clear_edges			PROTO((void));
 static void make_edges			PROTO((rtx));
-static void make_edge			PROTO((basic_block, basic_block, int));
-static void make_label_edge		PROTO((basic_block, rtx, int));
-static void make_eh_edge		PROTO((eh_nesting_info *, basic_block,
+static void make_edge			PROTO((sbitmap *, basic_block,
+					       basic_block, int));
+static void make_label_edge		PROTO((sbitmap *, basic_block,
 					       rtx, int));
+static void make_eh_edge		PROTO((sbitmap *, eh_nesting_info *,
+					       basic_block, rtx, int));
 static void mark_critical_edges		PROTO((void));
 static void move_stray_eh_region_notes	PROTO((void));
 static void record_active_eh_regions	PROTO((rtx));
@@ -879,12 +881,22 @@ make_edges (label_value_list)
 {
   int i;
   eh_nesting_info *eh_nest_info = init_eh_nesting_info ();
+  sbitmap *edge_cache = NULL;
 
   /* Assume no computed jump; revise as we create edges.  */
   current_function_has_computed_jump = 0;
 
+  /* Heavy use of computed goto in machine-generated code can lead to
+     nearly fully-connected CFGs.  In that case we spend a significant
+     amount of time searching the edge lists for duplicates.  */
+  if (forced_labels || label_value_list)
+    {
+      edge_cache = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
+      sbitmap_vector_zero (edge_cache, n_basic_blocks);
+    }
+
   /* By nature of the way these get numbered, block 0 is always the entry.  */
-  make_edge (ENTRY_BLOCK_PTR, BASIC_BLOCK (0), EDGE_FALLTHRU);
+  make_edge (edge_cache, ENTRY_BLOCK_PTR, BASIC_BLOCK (0), EDGE_FALLTHRU);
 
   for (i = 0; i < n_basic_blocks; ++i)
     {
@@ -920,7 +932,8 @@ make_edges (label_value_list)
 		vec = XVEC (PATTERN (tmp), 1);
 
 	      for (j = GET_NUM_ELEM (vec) - 1; j >= 0; --j)
-		make_label_edge (bb, XEXP (RTVEC_ELT (vec, j), 0), 0);
+		make_label_edge (edge_cache, bb,
+				 XEXP (RTVEC_ELT (vec, j), 0), 0);
 
 	      /* Some targets (eg, ARM) emit a conditional jump that also
 		 contains the out-of-range target.  Scan for these and
@@ -929,7 +942,8 @@ make_edges (label_value_list)
 		  && SET_DEST (tmp) == pc_rtx
 		  && GET_CODE (SET_SRC (tmp)) == IF_THEN_ELSE
 		  && GET_CODE (XEXP (SET_SRC (tmp), 2)) == LABEL_REF)
-		make_label_edge (bb, XEXP (XEXP (SET_SRC (tmp), 2), 0), 0);
+		make_label_edge (edge_cache, bb,
+				 XEXP (XEXP (SET_SRC (tmp), 2), 0), 0);
 
 #ifdef CASE_DROPS_THROUGH
 	      /* Silly VAXen.  The ADDR_VEC is going to be in the way of
@@ -945,22 +959,22 @@ make_edges (label_value_list)
 	      current_function_has_computed_jump = 1;
 
 	      for (x = label_value_list; x; x = XEXP (x, 1))
-		make_label_edge (bb, XEXP (x, 0), EDGE_ABNORMAL);
+		make_label_edge (edge_cache, bb, XEXP (x, 0), EDGE_ABNORMAL);
 	      
 	      for (x = forced_labels; x; x = XEXP (x, 1))
-		make_label_edge (bb, XEXP (x, 0), EDGE_ABNORMAL);
+		make_label_edge (edge_cache, bb, XEXP (x, 0), EDGE_ABNORMAL);
 	    }
 
 	  /* Returns create an exit out.  */
 	  else if (returnjump_p (insn))
-	    make_edge (bb, EXIT_BLOCK_PTR, 0);
+	    make_edge (edge_cache, bb, EXIT_BLOCK_PTR, 0);
 
 	  /* Otherwise, we have a plain conditional or unconditional jump.  */
 	  else
 	    {
 	      if (! JUMP_LABEL (insn))
 		abort ();
-	      make_label_edge (bb, JUMP_LABEL (insn), 0);
+	      make_label_edge (edge_cache, bb, JUMP_LABEL (insn), 0);
 	    }
 	}
 
@@ -975,7 +989,7 @@ make_edges (label_value_list)
 	  /* If there's an EH region active at the end of a block,
 	     add the appropriate edges.  */
 	  if (bb->eh_end >= 0)
-	    make_eh_edge (eh_nest_info, bb, insn, bb->eh_end);
+	    make_eh_edge (edge_cache, eh_nest_info, bb, insn, bb->eh_end);
 
 	  /* If we have asynchronous exceptions, do the same for *all*
 	     exception regions active in the block.  */
@@ -983,7 +997,8 @@ make_edges (label_value_list)
 	      && bb->eh_beg != bb->eh_end)
 	    {
 	      if (bb->eh_beg >= 0)
-		make_eh_edge (eh_nest_info, bb, NULL_RTX, bb->eh_beg);
+		make_eh_edge (edge_cache, eh_nest_info, bb,
+			      NULL_RTX, bb->eh_beg);
 
 	      for (x = bb->head; x != bb->end; x = NEXT_INSN (x))
 		if (GET_CODE (x) == NOTE
@@ -991,7 +1006,8 @@ make_edges (label_value_list)
 		        || NOTE_LINE_NUMBER (x) == NOTE_INSN_EH_REGION_END))
 		  {
 		    int region = NOTE_EH_HANDLER (x);
-		    make_eh_edge (eh_nest_info, bb, NULL_RTX, region);
+		    make_eh_edge (edge_cache, eh_nest_info, bb,
+				  NULL_RTX, region);
 		  }
 	    }
 
@@ -1009,7 +1025,7 @@ make_edges (label_value_list)
 	      rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
 	      if (!note || XINT (XEXP (note, 0), 0) >=  0)
 		for (x = nonlocal_goto_handler_labels; x ; x = XEXP (x, 1))
-		  make_label_edge (bb, XEXP (x, 0),
+		  make_label_edge (edge_cache, bb, XEXP (x, 0),
 				   EDGE_ABNORMAL | EDGE_ABNORMAL_CALL);
 	    }
 	}
@@ -1020,42 +1036,53 @@ make_edges (label_value_list)
 	 returns to one of the eh_stub labels within it.  So we have to
 	 make additional edges in the flow graph.  */
       if (i + 1 == n_basic_blocks && eh_return_stub_label != 0)
-	make_label_edge (bb, eh_return_stub_label, EDGE_EH);
+	make_label_edge (edge_cache, bb, eh_return_stub_label, EDGE_EH);
 
       /* Find out if we can drop through to the next block.  */
       insn = next_nonnote_insn (insn);
       if (!insn || (i + 1 == n_basic_blocks && force_fallthru))
-	make_edge (bb, EXIT_BLOCK_PTR, EDGE_FALLTHRU);
+	make_edge (edge_cache, bb, EXIT_BLOCK_PTR, EDGE_FALLTHRU);
       else if (i + 1 < n_basic_blocks)
 	{
 	  rtx tmp = BLOCK_HEAD (i + 1);
 	  if (GET_CODE (tmp) == NOTE)
 	    tmp = next_nonnote_insn (tmp);
 	  if (force_fallthru || insn == tmp)
-	    make_edge (bb, BASIC_BLOCK (i + 1), EDGE_FALLTHRU);
+	    make_edge (edge_cache, bb, BASIC_BLOCK (i + 1), EDGE_FALLTHRU);
 	}
     }
+
   free_eh_nesting_info (eh_nest_info);
+  if (edge_cache)
+    sbitmap_vector_free (edge_cache);
 }
 
 /* Create an edge between two basic blocks.  FLAGS are auxiliary information
    about the edge that is accumulated between calls.  */
 
 static void
-make_edge (src, dst, flags)
+make_edge (edge_cache, src, dst, flags)
+     sbitmap *edge_cache;
      basic_block src, dst;
      int flags;
 {
+  int use_edge_cache;
   edge e;
 
-  /* Make sure we don't add duplicate edges.  */
+  /* Don't bother with edge cache for ENTRY or EXIT; there aren't that
+     many edges to them, and we didn't allocate memory for it.  */
+  use_edge_cache = (edge_cache
+		    && src != ENTRY_BLOCK_PTR
+		    && dst != EXIT_BLOCK_PTR);
 
-  for (e = src->succ; e ; e = e->succ_next)
-    if (e->dest == dst)
-      {
-	e->flags |= flags;
-	return;
-      }
+  /* Make sure we don't add duplicate edges.  */
+  if (! use_edge_cache || TEST_BIT (edge_cache[src->index], dst->index))
+    for (e = src->succ; e ; e = e->succ_next)
+      if (e->dest == dst)
+	{
+	  e->flags |= flags;
+	  return;
+	}
 
   e = (edge) xcalloc (1, sizeof (*e));
 
@@ -1067,12 +1094,16 @@ make_edge (src, dst, flags)
 
   src->succ = e;
   dst->pred = e;
+
+  if (use_edge_cache)
+    SET_BIT (edge_cache[src->index], dst->index);
 }
 
 /* Create an edge from a basic block to a label.  */
 
 static void
-make_label_edge (src, label, flags)
+make_label_edge (edge_cache, src, label, flags)
+     sbitmap *edge_cache;
      basic_block src;
      rtx label;
      int flags;
@@ -1088,13 +1119,14 @@ make_label_edge (src, label, flags)
   if (INSN_UID (label) == 0)
     return;
 
-  make_edge (src, BLOCK_FOR_INSN (label), flags);
+  make_edge (edge_cache, src, BLOCK_FOR_INSN (label), flags);
 }
 
 /* Create the edges generated by INSN in REGION.  */
 
 static void
-make_eh_edge (eh_nest_info, src, insn, region)
+make_eh_edge (edge_cache, eh_nest_info, src, insn, region)
+     sbitmap *edge_cache;
      eh_nesting_info *eh_nest_info;
      basic_block src;
      rtx insn;
@@ -1107,7 +1139,7 @@ make_eh_edge (eh_nest_info, src, insn, region)
   num = reachable_handlers (region, eh_nest_info, insn, &handler_list);
   while (--num >= 0)
     {
-      make_label_edge (src, handler_list[num]->handler_label,
+      make_label_edge (edge_cache, src, handler_list[num]->handler_label,
 		       EDGE_ABNORMAL | EDGE_EH | is_call);
     }
 }
@@ -6989,5 +7021,5 @@ add_noreturn_fake_exit_edges ()
 
   for (x = 0; x < n_basic_blocks; x++)
     if (BASIC_BLOCK (x)->succ == NULL)
-      make_edge (BASIC_BLOCK (x), EXIT_BLOCK_PTR, EDGE_FAKE);
+      make_edge (NULL, BASIC_BLOCK (x), EXIT_BLOCK_PTR, EDGE_FAKE);
 }
