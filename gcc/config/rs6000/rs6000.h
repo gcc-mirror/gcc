@@ -153,22 +153,26 @@ extern int target_flags;
 #define	MASK_MULTIPLE		0x1000
 #define	MASK_MULTIPLE_SET	0x2000
 
-#define TARGET_POWER			(target_flags & MASK_POWER)
-#define TARGET_POWER2			(target_flags & MASK_POWER2)
-#define TARGET_POWERPC			(target_flags & MASK_POWERPC)
-#define TARGET_PPC_GPOPT		(target_flags & MASK_PPC_GPOPT)
-#define TARGET_PPC_GFXOPT		(target_flags & MASK_PPC_GFXOPT)
-#define TARGET_POWERPC64		(target_flags & MASK_POWERPC64)
-#define TARGET_NEW_MNEMONICS		(target_flags & MASK_NEW_MNEMONICS)
-#define TARGET_NO_FP_IN_TOC		(target_flags & MASK_NO_FP_IN_TOC)
-#define TARGET_NO_SUM_IN_TOC		(target_flags & MASK_NO_SUM_IN_TOC)
-#define TARGET_MINIMAL_TOC		(target_flags & MASK_MINIMAL_TOC)
-#define TARGET_64BIT			(target_flags & MASK_64BIT)
-#define TARGET_SOFT_FLOAT		(target_flags & MASK_SOFT_FLOAT)
-#define	TARGET_MULTIPLE			(target_flags & MASK_MULTIPLE)
-#define	TARGET_MULTIPLE_SET		(target_flags & MASK_MULTIPLE_SET)
+/* Use string instructions for block moves */
+#define MASK_STRING		0x4000
 
-#define TARGET_HARD_FLOAT		(! TARGET_SOFT_FLOAT)
+#define TARGET_POWER		(target_flags & MASK_POWER)
+#define TARGET_POWER2		(target_flags & MASK_POWER2)
+#define TARGET_POWERPC		(target_flags & MASK_POWERPC)
+#define TARGET_PPC_GPOPT	(target_flags & MASK_PPC_GPOPT)
+#define TARGET_PPC_GFXOPT	(target_flags & MASK_PPC_GFXOPT)
+#define TARGET_POWERPC64	(target_flags & MASK_POWERPC64)
+#define TARGET_NEW_MNEMONICS	(target_flags & MASK_NEW_MNEMONICS)
+#define TARGET_NO_FP_IN_TOC	(target_flags & MASK_NO_FP_IN_TOC)
+#define TARGET_NO_SUM_IN_TOC	(target_flags & MASK_NO_SUM_IN_TOC)
+#define TARGET_MINIMAL_TOC	(target_flags & MASK_MINIMAL_TOC)
+#define TARGET_64BIT		(target_flags & MASK_64BIT)
+#define TARGET_SOFT_FLOAT	(target_flags & MASK_SOFT_FLOAT)
+#define	TARGET_MULTIPLE		(target_flags & MASK_MULTIPLE)
+#define	TARGET_MULTIPLE_SET	(target_flags & MASK_MULTIPLE_SET)
+#define TARGET_STRING		(target_flags & MASK_STRING)
+
+#define TARGET_HARD_FLOAT	(! TARGET_SOFT_FLOAT)
 
 /* Run-time compilation parameters selecting different hardware subsets.
 
@@ -211,6 +215,8 @@ extern int target_flags;
   {"multiple",		MASK_MULTIPLE | MASK_MULTIPLE_SET},	\
   {"no-multiple",	- MASK_MULTIPLE},			\
   {"no-multiple",	MASK_MULTIPLE_SET},			\
+  {"string",		MASK_STRING},				\
+  {"no-string",		- MASK_STRING},				\
   SUBTARGET_SWITCHES						\
   {"",			TARGET_DEFAULT}}
 
@@ -1493,8 +1499,8 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
 
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
-#define MOVE_MAX (TARGET_MULTIPLE ? 16 : (TARGET_POWERPC64 ? 8 : 4))
-#define MAX_MOVE_MAX 16
+#define MOVE_MAX (TARGET_POWERPC64 ? 8 : 4)
+#define MAX_MOVE_MAX 8
 
 /* Nonzero if access to memory by bytes is no faster than for words.
    Also non-zero if doing byte operations (specifically shifts) in registers
@@ -2377,6 +2383,7 @@ extern int lwa_operand ();
 extern int call_operand ();
 extern int current_file_function_operand ();
 extern int input_operand ();
+extern int expand_block_move ();
 extern int load_multiple_operation ();
 extern int store_multiple_operation ();
 extern int branch_comparison_operator ();
