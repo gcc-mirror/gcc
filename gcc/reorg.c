@@ -1790,6 +1790,9 @@ try_merge_delay_insns (insn, thread)
 	  if (! annul_p)
 	    {
 	      update_block (trial, thread);
+	      if (trial == thread)
+		thread = next_active_insn (thread);
+
 	      delete_insn (trial);
 	      INSN_FROM_TARGET_P (next_to_match) = 0;
 	    }
