@@ -1095,7 +1095,7 @@ extern union tree_node *current_function_decl;
 
    `S' handles constraints for calls.
 
-   `T' is for fp load and store addresses.*/
+   `T' is for fp loads and stores.  */
 #define EXTRA_CONSTRAINT(OP, C)				\
   ((C) == 'Q' ?						\
    (IS_RELOADING_PSEUDO_P (OP)				\
@@ -1105,9 +1105,10 @@ extern union tree_node *current_function_decl;
 	&& memory_address_p (GET_MODE (OP), XEXP (OP, 0))\
 	&& ! symbolic_memory_operand (OP, VOIDmode)))	\
    : ((C) == 'T' ? 					\
-      (IS_RELOADING_PSEUDO_P (OP)			\
-       || (GET_CODE (OP) == MEM				\
-	   && short_memory_operand (OP, VOIDmode)))	\
+      (GET_CODE (OP) == MEM				\
+       /* Using DFmode forces only short displacements	\
+	  to be recognized as valid in reg+d addresses.  */\
+       && memory_address_p (DFmode, XEXP (OP, 0)))	\
    : ((C) == 'S' ?					\
       ((CONSTANT_P (OP) && ! TARGET_LONG_CALLS)		\
         || (reload_in_progress 				\
