@@ -2494,9 +2494,13 @@ extern int flag_new_for_scope;
 
 #define THUNK_DELTA(DECL) ((DECL)->decl.frame_size.i)
 
-/* ...and for unexpanded-parameterized-type nodes.  */
-#define UPT_TEMPLATE(NODE)      TREE_PURPOSE(TYPE_VALUES(NODE))
-#define UPT_PARMS(NODE)         TREE_VALUE(TYPE_VALUES(NODE))
+/* DECL_NEEDED_P holds of a declaration when we need to emit its
+   definition.  This is true when the back-end tells us that
+   the symbol has been referenced in the generated code.  If, however,
+   we are not generating code, then it is also true when a symbol has
+   just been used somewhere, even if it's not really needed.  */
+#define DECL_NEEDED_P(DECL)				  \
+  (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME ((DECL)))) \
 
 /* An un-parsed default argument looks like an identifier.  */
 #define DEFARG_LENGTH(NODE)  (DEFAULT_ARG_CHECK(NODE)->identifier.length)

@@ -2556,7 +2556,7 @@ finish_vtable_vardecl (t, data)
 
   if (! DECL_EXTERNAL (vars)
       && (DECL_INTERFACE_KNOWN (vars) 
-	  || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (vars))
+	  || DECL_NEEDED_P (vars)
 	  || (hack_decl_function_context (vars) && TREE_USED (vars)))
       && ! TREE_ASM_WRITTEN (vars))
     {
@@ -2600,9 +2600,14 @@ finish_vtable_vardecl (t, data)
       if (flag_vtable_gc)
 	output_vtable_inherit (vars);
 
+      /* Because we're only doing syntax-checking, we'll never end up
+	 actually marking the variable as written.  */
+      if (flag_syntax_only)
+	TREE_ASM_WRITTEN (vars) = 1;
+
       return 1;
     }
-  else if (! TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (vars)))
+  else if (!DECL_NEEDED_P (vars))
     /* We don't know what to do with this one yet.  */
     return 0;
 
@@ -2827,6 +2832,12 @@ finish_objects (method_type, initp, body)
   fn = finish_function (lineno, 0);
   expand_body (fn);
 
+  /* When only doing semantic analysis, and no RTL generation, we
+     can't call functions that directly emit assembly code; there is
+     no assembly file in which to put the code.  */
+  if (flag_syntax_only)
+    return;
+
   fnname = XSTR (XEXP (DECL_RTL (fn), 0), 0);
   if (initp == DEFAULT_INIT_PRIORITY)
     {
@@ -2835,7 +2846,6 @@ finish_objects (method_type, initp, body)
       else
 	assemble_destructor (fnname);
     }
-
 #if defined (ASM_OUTPUT_SECTION_NAME) && defined (ASM_OUTPUT_CONSTRUCTOR)
   /* If we're using init priority we can't use assemble_*tor, but on ELF
      targets we can stick the references into named sections for GNU ld
@@ -3554,8 +3564,7 @@ finish_file ()
       
 	  if (DECL_NOT_REALLY_EXTERN (decl)
 	      && DECL_INITIAL (decl)
-	      && (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
-		  || !DECL_COMDAT (decl)))
+	      && (DECL_NEEDED_P (decl) || !DECL_COMDAT (decl)))
 	    DECL_EXTERNAL (decl) = 0;
 	}
 
@@ -3603,8 +3612,10 @@ finish_file ()
 
   /* Now delete from the chain of variables all virtual function tables.
      We output them all ourselves, because each will be treated
-     specially.  */
-  walk_globals (vtable_decl_p, prune_vtable_vardecl, /*data=*/0);
+     specially.  We don't do this if we're just doing semantic
+     analysis, and not code-generation.  */
+  if (!flag_syntax_only)
+    walk_globals (vtable_decl_p, prune_vtable_vardecl, /*data=*/0);
 
   /* Now, issue warnings about static, but not defined, functions,
      etc., and emit debugging information.  */
