@@ -1,3 +1,7 @@
+2004-09-02  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm/predicates.md (arm_reload_memory_operand): Allow MEM.
+
 2004-09-02  Denis Chertykov  <denisc@overta.ru>
 
 	PR target/16884
