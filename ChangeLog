@@ -1,3 +1,7 @@
+2002-07-04  Steve Ellcey  <sje@cup.hp.com>
+	
+	* ltcf-cxx.sh (hpux*): Modify to support ia64-*-hpux*.
+
 2002-07-03  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: Make --without-x work.
