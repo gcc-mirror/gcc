@@ -1,3 +1,18 @@
+2004-04-20  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/AWTPermission.java,
+	java/awt/Component.java,
+	java/awt/ComponentOrientation.java,,
+	java/awt/Dialog.java,
+	java/awt/FontMetrics.java,
+	java/awt/Graphics.java,
+	java/awt/datatransfer/DataFlavor.java,
+	java/beans/Introspector.java,
+	java/beans/PropertyEditor.java,
+	java/beans/PropertyEditorManager.java,
+	java/beans/beancontext/BeanContextServiceProvider.java:
+	Fixed HTML tags in javadocs all over.
+
 2004-04-20  Mark Wielaard  <mark@klomp.org>
 
 	* gnu/java/awt/peer/gtk/GtkFontPeer.java: Use fallback when

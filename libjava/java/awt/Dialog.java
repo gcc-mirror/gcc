@@ -123,8 +123,8 @@ Dialog(Frame parent)
   * parent and modality, that is resizable and which has no title.
   *
   * @param parent The parent frame of this dialog box.
-  * @param modal <true> if this dialog box is modal, <code>false</code>
-  * otherwise.
+  * @param modal <code>true</code> if this dialog box is modal,
+  * <code>false</code> otherwise.
   *
   * @exception IllegalArgumentException If the owner's GraphicsConfiguration
   * is not from a screen device, or if owner is null. This exception is always
@@ -164,8 +164,8 @@ Dialog(Frame parent, String title)
   *
   * @param parent The parent frame of this dialog box.
   * @param title The title string for this dialog box.
-  * @param modal <true> if this dialog box is modal, <code>false</code>
-  * otherwise.
+  * @param modal <code>true</code> if this dialog box is modal,
+  * <code>false</code> otherwise.
   *
   * @exception IllegalArgumentException If owner is null or
   * GraphicsEnvironment.isHeadless() returns true.
@@ -183,8 +183,8 @@ Dialog(Frame parent, String title, boolean modal)
  *
  * @param parent The parent frame of this dialog box.
  * @param title The title string for this dialog box.
- * @param modal <true> if this dialog box is modal, <code>false</code>
- * otherwise.
+ * @param modal <code>true</code> if this dialog box is modal,
+ * <code>false</code> otherwise.
  * @param gc The <code>GraphicsConfiguration</code> object to use.
  *
  * @exception IllegalArgumentException If owner is null, the

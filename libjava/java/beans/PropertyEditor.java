@@ -77,7 +77,7 @@ package java.beans;
  **       have isPaintable() return true and implement the paintValue() method.
  **       This method does not determine in any way how the value is edited;
  **       merely how it is displayed.</LI>
- **   <LU>Let the caller of the PropertyEditor give the user a text input.  Do
+ **   <LI>Let the caller of the PropertyEditor give the user a text input.  Do
  **       this by returning a non-null String from getAsText().  If you support
  **       text input, you *must* support setAsText().</LI>
  **   <LI>Give the caller a set of possible values, such as "true"/"false", that
