@@ -38,8 +38,9 @@ Boston, MA 02111-1307, USA.  */
 #undef SPARC_DEFAULT_CMODEL
 #define SPARC_DEFAULT_CMODEL CM_EMBMEDANY
 
-/* Target OS builtins.  */
-#define TARGET_OS_CPP_BUILTINS()		\
+/* Target OS builtins for config/sol.h.  */
+#undef TARGET_SUB_OS_CPP_BUILTINS
+#define TARGET_SUB_OS_CPP_BUILTINS()		\
   do						\
     {						\
 	builtin_define_std ("sparc");		\
