@@ -61,12 +61,6 @@ static Method_t search_for_method_in_hierarchy (Class class, SEL sel);
 static Method_t search_for_method_in_list(MethodList_t list, SEL op);
 id nil_method(id, SEL, ...);
 
-id
-nil_method(id receiver, SEL op, ...)
-{
-  return receiver;
-}
-
 /* Given a class and selector, return the selector's implementation.  */
 __inline__
 IMP
