@@ -1,3 +1,18 @@
+Tue May 19 14:50:27 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* call.c (compare_qual): Remove.
+	(is_subseq): Tweak.
+	(is_properly_derived_from): New function.
+	(maybe_handle_ref_bind): Likewise.
+	(maybe_handle_implicit_object): Likewise.
+	(compare_ics): Modify substantially to bring into conformance with
+	the standard.
+	* cp-tree.h (TYPE_PTRMEMFUNC_OBJECT_TYPE): New macro.
+	(comp_cv_qualification): Declare.
+	(comp_cv_qual_signature): Likewise.
+	* typeck.c (comp_cv_qualification): Likewise.
+	(comp_cv_qual_signature): Likewise.
+
 Tue May 19 10:05:02 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (parse.o): Depend on toplev.h.

@@ -1362,6 +1362,11 @@ extern int flag_new_for_scope;
    pointer to member function.  TYPE_PTRMEMFUNC_P _must_ be true,
    before using this macro.  */
 #define TYPE_PTRMEMFUNC_FN_TYPE(NODE) (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (TREE_CHAIN (TREE_CHAIN (TYPE_FIELDS (NODE)))))))
+
+/* Returns `A' for a type like `int (A::*)(double)' */
+#define TYPE_PTRMEMFUNC_OBJECT_TYPE(NODE) \
+  TYPE_METHOD_BASETYPE (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (NODE)))
+
 /* These are use to manipulate the canonical RECORD_TYPE from the
    hashed POINTER_TYPE, and can only be used on the POINTER_TYPE.  */
 #define TYPE_GET_PTRMEMFUNC_TYPE(NODE) ((tree)TYPE_LANG_SPECIFIC(NODE))
@@ -2770,6 +2775,8 @@ extern int comptypes				PROTO((tree, tree, int));
 extern int comp_target_types			PROTO((tree, tree, int));
 extern int compparms				PROTO((tree, tree, int));
 extern int comp_target_types			PROTO((tree, tree, int));
+extern int comp_cv_qualification                PROTO((tree, tree));
+extern int comp_cv_qual_signature               PROTO((tree, tree));
 extern int self_promoting_args_p		PROTO((tree));
 extern tree unsigned_type			PROTO((tree));
 extern tree signed_type				PROTO((tree));

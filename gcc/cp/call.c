@@ -45,7 +45,6 @@ static tree build_field_call PROTO((tree, tree, tree, tree));
 static tree find_scoped_type PROTO((tree, tree, tree));
 static struct z_candidate * tourney PROTO((struct z_candidate *));
 static int joust PROTO((struct z_candidate *, struct z_candidate *, int));
-static int compare_qual PROTO((tree, tree));
 static int compare_ics PROTO((tree, tree));
 static tree build_over_call PROTO((struct z_candidate *, tree, int));
 static tree convert_default_arg PROTO((tree, tree));
@@ -89,6 +88,9 @@ static tree strip_top_quals PROTO((tree));
 static tree non_reference PROTO((tree));
 static tree build_conv PROTO((enum tree_code, tree, tree));
 static int is_subseq PROTO((tree, tree));
+static int is_properly_derived_from PROTO((tree, tree));
+static int maybe_handle_ref_bind PROTO((tree*, tree*));
+static void maybe_handle_implicit_object PROTO((tree*));
 
 tree
 build_vfield_ref (datum, type)
@@ -3658,71 +3660,141 @@ build_new_method_call (instance, name, args, basetype_path, flags)
      flags);
 }
 
-/* Compare two implicit conversion sequences that differ only in their
-   qualification conversion.  Subroutine of compare_ics.  */
-
-static int
-compare_qual (ics1, ics2)
-     tree ics1, ics2;
-{
-  tree to1 = TREE_TYPE (ics1);
-  tree to2 = TREE_TYPE (ics2);
-
-  if (TYPE_PTRMEMFUNC_P (to1))
-    to1 = TYPE_PTRMEMFUNC_FN_TYPE (to1);
-  if (TYPE_PTRMEMFUNC_P (to2))
-    to2 = TYPE_PTRMEMFUNC_FN_TYPE (to2);
-
-  to1 = TREE_TYPE (to1);
-  to2 = TREE_TYPE (to2);
-
-  if (TREE_CODE (to1) == OFFSET_TYPE)
-    {
-      to1 = TREE_TYPE (to1);
-      to2 = TREE_TYPE (to2);
-    }
-
-  if (TYPE_READONLY (to1) >= TYPE_READONLY (to2)
-      && TYPE_VOLATILE (to1) > TYPE_VOLATILE (to2))
-    return -1;
-  else if (TYPE_READONLY (to1) > TYPE_READONLY (to2)
-	   && TYPE_VOLATILE (to1) == TYPE_VOLATILE (to2))
-    return -1;
-  else if (TYPE_READONLY (to1) <= TYPE_READONLY (to2)
-	   && TYPE_VOLATILE (to1) < TYPE_VOLATILE (to2))
-    return 1;
-  else if (TYPE_READONLY (to1) < TYPE_READONLY (to2)
-	   && TYPE_VOLATILE (to1) == TYPE_VOLATILE (to2))
-    return 1;
-  return 0;
-}
-
-/* Determine whether standard conversion sequence ICS1 is a proper
-   subsequence of ICS2.  We assume that a conversion of the same code
-   between the same types indicates a subsequence.  */
+/* Returns non-zero iff standard conversion sequence ICS1 is a proper
+   subsequence of ICS2.  */
 
 static int
 is_subseq (ics1, ics2)
      tree ics1, ics2;
 {
-  /* Do not consider lvalue transformations here.  */
-  if (TREE_CODE (ics2) == RVALUE_CONV
-      || TREE_CODE (ics2) == LVALUE_CONV)
-    return 0;
+  /* We can assume that a conversion of the same code
+     between the same types indicates a subsequence since we only get
+     here if the types we are converting from are the same.  */
 
-  for (;; ics2 = TREE_OPERAND (ics2, 0))
+  while (TREE_CODE (ics1) == RVALUE_CONV
+	 || TREE_CODE (ics1) == LVALUE_CONV)
+    ics1 = TREE_OPERAND (ics1, 0);
+
+  while (1)
     {
+      while (TREE_CODE (ics2) == RVALUE_CONV
+	  || TREE_CODE (ics2) == LVALUE_CONV)
+	ics2 = TREE_OPERAND (ics2, 0);
+
+      if (TREE_CODE (ics2) == USER_CONV
+	  || TREE_CODE (ics2) == AMBIG_CONV
+	  || TREE_CODE (ics2) == IDENTITY_CONV)
+	/* At this point, ICS1 cannot be a proper subsequence of
+	   ICS2.  We can get a USER_CONV when we are comparing the
+	   second standard conversion sequence of two user conversion
+	   sequences.  */
+	return 0;
+
+      ics2 = TREE_OPERAND (ics2, 0);
+
       if (TREE_CODE (ics2) == TREE_CODE (ics1)
 	  && comptypes (TREE_TYPE (ics2), TREE_TYPE (ics1), 1)
 	  && comptypes (TREE_TYPE (TREE_OPERAND (ics2, 0)),
 			TREE_TYPE (TREE_OPERAND (ics1, 0)), 1))
 	return 1;
-
-      if (TREE_CODE (ics2) == USER_CONV
-	  || TREE_CODE (ics2) == AMBIG_CONV
-	  || TREE_CODE (ics2) == IDENTITY_CONV)
-	return 0;
     }
+}
+
+/* Returns non-zero iff DERIVED is derived from BASE.  The inputs may
+   be any _TYPE nodes.  */
+
+static int
+is_properly_derived_from (derived, base)
+     tree derived;
+     tree base;
+{
+  if (!IS_AGGR_TYPE_CODE (TREE_CODE (derived))
+      || !IS_AGGR_TYPE_CODE (TREE_CODE (base)))
+    return 0;
+
+  /* We only allow proper derivation here.  The DERIVED_FROM_P macro
+     considers every class derived from itself.  */
+  return (!comptypes (TYPE_MAIN_VARIANT (derived),
+		      TYPE_MAIN_VARIANT (base), 1)
+	  && DERIVED_FROM_P (base, derived));
+}
+
+/* We build the ICS for an implicit object parameter as a pointer
+   conversion sequence.  However, such a sequence should be compared
+   as if it were a reference conversion sequence.  If ICS is the
+   implicit conversion sequence for an implicit object parameter,
+   modify it accordingly.  */
+
+static void
+maybe_handle_implicit_object (ics)
+     tree* ics;
+{
+  if (ICS_THIS_FLAG (*ics))
+    {
+      /* [over.match.funcs]
+	 
+	 For non-static member functions, the type of the
+	 implicit object parameter is "reference to cv X"
+	 where X is the class of which the function is a
+	 member and cv is the cv-qualification on the member
+	 function declaration.  */
+      tree t = *ics;
+      if (TREE_CODE (t) == PTR_CONV)
+	t = TREE_OPERAND (t, 0);
+      t = build1 (IDENTITY_CONV, TREE_TYPE (TREE_TYPE (t)), NULL_TREE);
+      t = build_conv (REF_BIND, TREE_TYPE (*ics), t);
+      ICS_STD_RANK (t) = ICS_STD_RANK (*ics);
+      *ics = t;
+    }
+}
+
+/* If ICS is a REF_BIND, modify it appropriately, set ORIG_TO_TYPE
+   to the type the reference originally referred to, and return 1.
+   Otherwise, return 0.  */
+
+static int
+maybe_handle_ref_bind (ics, reference_type)
+     tree* ics;
+     tree* reference_type;
+{
+  if (TREE_CODE (*ics) == REF_BIND)
+    {
+      /* [over.ics.rank] 
+	 
+	 When a parameter of reference type binds directly
+	 (_dcl.init.ref_) to an argument expression, the implicit
+	 conversion sequence is the identity conversion, unless the
+	 argument expression has a type that is a derived class of the
+	 parameter type, in which case the implicit conversion
+	 sequence is a derived-to-base Conversion.
+	 
+	 If the parameter binds directly to the result of applying a
+	 conversion function to the argument expression, the implicit
+	 conversion sequence is a user-defined conversion sequence
+	 (_over.ics.user_), with the second standard conversion
+	 sequence either an identity conversion or, if the conversion
+	 function returns an entity of a type that is a derived class
+	 of the parameter type, a derived-to-base Conversion.
+	 
+	 When a parameter of reference type is not bound directly to
+	 an argument expression, the conversion sequence is the one
+	 required to convert the argument expression to the underlying
+	 type of the reference according to _over.best.ics_.
+	 Conceptually, this conversion sequence corresponds to
+	 copy-initializing a temporary of the underlying type with the
+	 argument expression.  Any difference in top-level
+	 cv-qualification is subsumed by the initialization itself and
+	 does not constitute a conversion.  */
+
+      *reference_type = TREE_TYPE (TREE_TYPE (*ics));
+      *ics = TREE_OPERAND (*ics, 0);
+      if (TREE_CODE (*ics) == IDENTITY_CONV
+	  && is_properly_derived_from (TREE_TYPE (*ics), *reference_type))
+	*ics = build_conv (BASE_CONV, *reference_type, *ics);
+      return 1;
+    }
+  
+  return 0;
 }
 
 /* Compare two implicit conversion sequences according to the rules set out in
@@ -3736,41 +3808,43 @@ static int
 compare_ics (ics1, ics2)
      tree ics1, ics2;
 {
-  tree main1, main2;
+  tree from_type1;
+  tree from_type2;
+  tree to_type1;
+  tree to_type2;
+  tree deref_from_type1 = NULL_TREE;
+  tree deref_from_type2;
+  tree deref_to_type1;
+  tree deref_to_type2;
 
-  if (TREE_CODE (ics1) == QUAL_CONV)
-    main1 = TREE_OPERAND (ics1, 0);
-  else
-    main1 = ics1;
+  /* REF_BINDING is non-zero if the result of the conversion sequence
+     is a reference type.   In that case REFERENCE_TYPE is the
+     reference type.  */
+  int ref_binding1;
+  int ref_binding2;
+  tree reference_type1;
+  tree reference_type2;
 
-  if (TREE_CODE (ics2) == QUAL_CONV)
-    main2 = TREE_OPERAND (ics2, 0);
-  else
-    main2 = ics2;
+  /* Handle implicit object parameters.  */
+  maybe_handle_implicit_object (&ics1);
+  maybe_handle_implicit_object (&ics2);
 
-  /* Conversions for `this' are PTR_CONVs, but we compare them as though
-     they were REF_BINDs.  */
-  if (ICS_THIS_FLAG (ics1))
-    {
-      tree t = main1;
-      if (TREE_CODE (t) == PTR_CONV)
-	t = TREE_OPERAND (t, 0);
-      t = build1 (IDENTITY_CONV, TREE_TYPE (TREE_TYPE (t)), NULL_TREE);
-      t = build_conv (REF_BIND, TREE_TYPE (ics1), t);
-      ICS_STD_RANK (t) = ICS_STD_RANK (main1);
-      main1 = ics1 = t;
-    }
-  if (ICS_THIS_FLAG (ics2))
-    {
-      tree t = main2;
-      if (TREE_CODE (t) == PTR_CONV)
-	t = TREE_OPERAND (t, 0);
-      t = build1 (IDENTITY_CONV, TREE_TYPE (TREE_TYPE (t)), NULL_TREE);
-      t = build_conv (REF_BIND, TREE_TYPE (ics2), t);
-      ICS_STD_RANK (t) = ICS_STD_RANK (main2);
-      main2 = ics2 = t;
-    }
+  /* Handle reference parameters.  */
+  ref_binding1 = maybe_handle_ref_bind (&ics1, &reference_type1);
+  ref_binding2 = maybe_handle_ref_bind (&ics2, &reference_type2);
 
+  /* [over.ics.rank]
+
+     When  comparing  the  basic forms of implicit conversion sequences (as
+     defined in _over.best.ics_)
+
+     --a standard conversion sequence (_over.ics.scs_) is a better
+       conversion sequence than a user-defined conversion sequence
+       or an ellipsis conversion sequence, and
+     
+     --a user-defined conversion sequence (_over.ics.user_) is a
+       better conversion sequence than an ellipsis conversion sequence
+       (_over.ics.ellipsis_).  */
   if (ICS_RANK (ics1) > ICS_RANK (ics2))
     return -1;
   else if (ICS_RANK (ics1) < ICS_RANK (ics2))
@@ -3778,6 +3852,8 @@ compare_ics (ics1, ics2)
 
   if (ICS_RANK (ics1) == BAD_RANK)
     {
+      /* Both ICS are bad.  We try to make a decision based on what
+	 would have happenned if they'd been good.  */
       if (ICS_USER_FLAG (ics1) > ICS_USER_FLAG (ics2)
 	  || ICS_STD_RANK (ics1) > ICS_STD_RANK (ics2))
 	return -1;
@@ -3785,8 +3861,12 @@ compare_ics (ics1, ics2)
 	       || ICS_STD_RANK (ics1) < ICS_STD_RANK (ics2))
 	return 1;
 
-      /* else fall through */
+      /* We couldn't make up our minds; try to figure it out below.  */
     }
+
+  if (ICS_ELLIPSIS_FLAG (ics1))
+    /* Both conversions are ellipsis conversions.  */
+    return 0;
 
   /* User-defined  conversion sequence U1 is a better conversion sequence
      than another user-defined conversion sequence U2 if they contain the
@@ -3807,175 +3887,251 @@ compare_ics (ics1, ics2)
 
       if (USER_CONV_FN (t1) != USER_CONV_FN (t2))
 	return 0;
-      else if (ICS_STD_RANK (ics1) > ICS_STD_RANK (ics2))
-	return -1;
-      else if (ICS_STD_RANK (ics1) < ICS_STD_RANK (ics2))
-	return 1;
 
-      /* else fall through */
+      /* We can just fall through here, after setting up
+	 FROM_TYPE1 and FROM_TYPE2.  */
+      from_type1 = TREE_TYPE (t1);
+      from_type2 = TREE_TYPE (t2);
+    }
+  else
+    {
+      /* We're dealing with two standard conversion sequences. 
+
+	 [over.ics.rank]
+	 
+	 Standard conversion sequence S1 is a better conversion
+	 sequence than standard conversion sequence S2 if
+     
+	 --S1 is a proper subsequence of S2 (comparing the conversion
+	   sequences in the canonical form defined by _over.ics.scs_,
+	   excluding any Lvalue Transformation; the identity
+	   conversion sequence is considered to be a subsequence of
+	   any non-identity conversion sequence */
+      
+      from_type1 = ics1;
+      while (TREE_CODE (from_type1) != IDENTITY_CONV)
+	from_type1 = TREE_OPERAND (from_type1, 0);
+      from_type1 = TREE_TYPE (from_type1);
+      
+      from_type2 = ics2;
+      while (TREE_CODE (from_type2) != IDENTITY_CONV)
+	from_type2 = TREE_OPERAND (from_type2, 0);
+      from_type2 = TREE_TYPE (from_type2);
     }
 
-#if 0 /* Handled by ranking */
-  /* A conversion that is not a conversion of a pointer,  or  pointer  to
-     member,  to  bool  is  better than another conversion that is such a
-     conversion.  */
-#endif
-
-  if (TREE_CODE (main1) != TREE_CODE (main2))
+  if (comptypes (from_type1, from_type2, 1))
     {
-      /* ...if S1  is  a  proper  subsequence  of  S2  */
-      if (is_subseq (main1, main2))
+      if (is_subseq (ics1, ics2))
 	return 1;
-      if (is_subseq (main2, main1))
+      if (is_subseq (ics2, ics1))
 	return -1;
-      return 0;
+    }
+  else
+    /* One sequence cannot be a subsequence of the other; they don't
+       start with the same type.  This can happen when comparing the
+       second standard conversion sequence in two user-defined
+       conversion sequences.  */
+    ;
+
+  /* [over.ics.rank]
+
+     Or, if not that,
+
+     --the rank of S1 is better than the rank of S2 (by the rules
+       defined below):
+
+    Standard conversion sequences are ordered by their ranks: an Exact
+    Match is a better conversion than a Promotion, which is a better
+    conversion than a Conversion.
+
+    Two conversion sequences with the same rank are indistinguishable
+    unless one of the following rules applies:
+
+    --A conversion that is not a conversion of a pointer, or pointer
+      to member, to bool is better than another conversion that is such
+      a conversion.  
+
+    The ICS_STD_RANK automatically handles the pointer-to-bool rule,
+    so that we do not have to check it explicitly.  */
+  if (ICS_STD_RANK (ics1) < ICS_STD_RANK (ics2))
+    return 1;
+  else if (ICS_STD_RANK (ics2) < ICS_STD_RANK (ics1))
+    return -1;
+
+  to_type1 = TREE_TYPE (ics1);
+  to_type2 = TREE_TYPE (ics2);
+
+  if (TYPE_PTR_P (from_type1)
+      && TYPE_PTR_P (from_type2)
+      && TYPE_PTR_P (to_type1)
+      && TYPE_PTR_P (to_type2))
+    {
+      deref_from_type1 = TREE_TYPE (from_type1);
+      deref_from_type2 = TREE_TYPE (from_type2);
+      deref_to_type1 = TREE_TYPE (to_type1);
+      deref_to_type2 = TREE_TYPE (to_type2);
+    }
+  /* The rules for pointers to members A::* are just like the rules
+     for pointers A*, except opposite: if B is derived from A then
+     A::* converts to B::*, not vice versa.  For that reason, we
+     switch the from_ and to_ variables here.  */
+  else if (TYPE_PTRMEM_P (from_type1)
+	   && TYPE_PTRMEM_P (from_type2)
+	   && TYPE_PTRMEM_P (to_type1)
+	   && TYPE_PTRMEM_P (to_type2))
+    {
+      deref_to_type1 = TYPE_OFFSET_BASETYPE (TREE_TYPE (from_type1));
+      deref_to_type2 = TYPE_OFFSET_BASETYPE (TREE_TYPE (from_type2));
+      deref_from_type1 = TYPE_OFFSET_BASETYPE (TREE_TYPE (to_type1));
+      deref_from_type2 = TYPE_OFFSET_BASETYPE (TREE_TYPE (to_type2));
+    }
+  else if (TYPE_PTRMEMFUNC_P (from_type1)
+	   && TYPE_PTRMEMFUNC_P (from_type2)
+	   && TYPE_PTRMEMFUNC_P (to_type1)
+	   && TYPE_PTRMEMFUNC_P (to_type2))
+    {
+      deref_to_type1 = TYPE_PTRMEMFUNC_OBJECT_TYPE (from_type1);
+      deref_to_type2 = TYPE_PTRMEMFUNC_OBJECT_TYPE (from_type2);
+      deref_from_type1 = TYPE_PTRMEMFUNC_OBJECT_TYPE (to_type1);
+      deref_from_type2 = TYPE_PTRMEMFUNC_OBJECT_TYPE (to_type2);
     }
 
-  if (TREE_CODE (main1) == PTR_CONV || TREE_CODE (main1) == PMEM_CONV
-      || TREE_CODE (main1) == REF_BIND || TREE_CODE (main1) == BASE_CONV)
+  if (deref_from_type1 != NULL_TREE
+      && IS_AGGR_TYPE_CODE (TREE_CODE (deref_from_type1))
+      && IS_AGGR_TYPE_CODE (TREE_CODE (deref_from_type2)))
     {
-      tree to1 = TREE_TYPE (main1);
-      tree from1 = TREE_TYPE (TREE_OPERAND (main1, 0));
-      tree to2 = TREE_TYPE (main2);
-      tree from2 = TREE_TYPE (TREE_OPERAND (main2, 0));
-      int distf, distt;
+      /* This was one of the pointer or pointer-like conversions.  
 
-      /* Standard conversion sequence S1 is a better conversion sequence than
-	 standard conversion sequence S2 if...
-
-	 S1 and S2 differ only in their qualification conversion  and  they
-	 yield types identical except for cv-qualifiers and S2 adds all the
-	 qualifiers that S1 adds (and in the same places) and S2  adds  yet
-	 more  cv-qualifiers  than  S1,  or the similar case with reference
-	 binding15).  */
-      if (TREE_CODE (main1) == REF_BIND)
+	 [over.ics.rank]
+	 
+	 --If class B is derived directly or indirectly from class A,
+	   conversion of B* to A* is better than conversion of B* to
+	   void*, and conversion of A* to void* is better than
+	   conversion of B* to void*.  */
+      if (TREE_CODE (deref_to_type1) == VOID_TYPE
+	  && TREE_CODE (deref_to_type2) == VOID_TYPE)
 	{
-	  if (TYPE_MAIN_VARIANT (TREE_TYPE (to1))
-	      == TYPE_MAIN_VARIANT (TREE_TYPE (to2)))
-	    return compare_qual (ics1, ics2);
+	  if (is_properly_derived_from (deref_from_type1,
+					deref_from_type2))
+	    return -1;
+	  else if (is_properly_derived_from (deref_from_type2,
+					     deref_from_type1))
+	    return 1;
 	}
-      else if (TREE_CODE (main1) != BASE_CONV && from1 == from2 && to1 == to2)
-	return compare_qual (ics1, ics2);
-	
-      if (TYPE_PTRMEMFUNC_P (to1))
+      else if (TREE_CODE (deref_to_type1) == VOID_TYPE
+	       || TREE_CODE (deref_to_type2) == VOID_TYPE)
 	{
-	  to1 = TYPE_METHOD_BASETYPE (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (to1)));
-	  from1 = TYPE_METHOD_BASETYPE (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (from1)));
-	}
-      else if (TREE_CODE (main1) != BASE_CONV)
-	{
-	  to1 = TREE_TYPE (to1);
-	  if (TREE_CODE (main1) != REF_BIND)
-	    from1 = TREE_TYPE (from1);
-
-	  if (TREE_CODE (to1) == OFFSET_TYPE)
+	  if (comptypes (deref_from_type1, deref_from_type2, 1))
 	    {
-	      to1 = TYPE_OFFSET_BASETYPE (to1);
-	      from1 = TYPE_OFFSET_BASETYPE (from1);
+	      if (TREE_CODE (deref_to_type2) == VOID_TYPE)
+		{
+		  if (is_properly_derived_from (deref_from_type1,
+						deref_to_type1))
+		    return 1;
+		}
+	      /* We know that DEREF_TO_TYPE1 is `void' here.  */
+	      else if (is_properly_derived_from (deref_from_type1,
+						 deref_to_type2))
+		return -1;
 	    }
 	}
-
-      if (TYPE_PTRMEMFUNC_P (to2))
+      else if (IS_AGGR_TYPE_CODE (TREE_CODE (deref_to_type1))
+	       && IS_AGGR_TYPE_CODE (TREE_CODE (deref_to_type2)))
 	{
-	  to2 = TYPE_METHOD_BASETYPE (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (to2)));
-	  from2 = TYPE_METHOD_BASETYPE (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (from2)));
-	}
-      else if (TREE_CODE (main1) != BASE_CONV)
-	{
-	  to2 = TREE_TYPE (to2);
-	  if (TREE_CODE (main1) != REF_BIND)
-	    from2 = TREE_TYPE (from2);
+	  /* [over.ics.rank]
 
-	  if (TREE_CODE (to2) == OFFSET_TYPE)
+	     --If class B is derived directly or indirectly from class A
+	       and class C is derived directly or indirectly from B,
+	     
+	     --conversion of C* to B* is better than conversion of C* to
+	       A*, 
+	     
+	     --conversion of B* to A* is better than conversion of C* to
+	       A*  */
+	  if (comptypes (deref_from_type1, deref_from_type2, 1))
 	    {
-	      to2 = TYPE_OFFSET_BASETYPE (to2);
-	      from2 = TYPE_OFFSET_BASETYPE (from2);
+	      if (is_properly_derived_from (deref_to_type1,
+					    deref_to_type2))
+		return 1;
+	      else if (is_properly_derived_from (deref_to_type2,
+						 deref_to_type1))
+		return -1;
+	    }
+	  else if (comptypes (deref_to_type1, deref_to_type2, 1))
+	    {
+	      if (is_properly_derived_from (deref_from_type2,
+					    deref_from_type1))
+		return 1;
+	      else if (is_properly_derived_from (deref_from_type1,
+						 deref_from_type2))
+		return -1;
 	    }
 	}
-
-      if (! (IS_AGGR_TYPE (from1) && IS_AGGR_TYPE (from2)))
-	return 0;
-
-      /* The sense of pmem conversions is reversed from that of the other
-	 conversions.  */
-      if (TREE_CODE (main1) == PMEM_CONV)
-	{
-	  tree t = from1; from1 = from2; from2 = t;
-	  t = to1; to1 = to2; to2 = t;
-	}
-
-      distf = get_base_distance (from1, from2, 0, 0);
-      if (distf == -1)
-	{
-	  distf = -get_base_distance (from2, from1, 0, 0);
-	  if (distf == 1)
-	    return 0;
-	}
-
-      /* If class B is derived directly or indirectly from class A,
-	 conver- sion of B* to A* is better than conversion of B* to
-	 void*, and conversion of A* to void* is better than
-	 conversion of B* to void*.  */
-
-      if (TREE_CODE (to1) == VOID_TYPE && TREE_CODE (to2) == VOID_TYPE)
-	{
-	  if (distf > 0)
-	    return 1;
-	  else if (distf < 0)
-	    return -1;
-	}
-      else if (TREE_CODE (to2) == VOID_TYPE && IS_AGGR_TYPE (to1)
-	       && DERIVED_FROM_P (to1, from1))
-	return 1;
-      else if (TREE_CODE (to1) == VOID_TYPE && IS_AGGR_TYPE (to2)
-	       && DERIVED_FROM_P (to2, from2))
-	return -1;
-
-      if (! (IS_AGGR_TYPE (to1) && IS_AGGR_TYPE (to2)))
-	return 0;
-
-      /* If  class B is derived directly or indirectly from class A and class
-	 C is derived directly or indirectly from B */
-
-      distt = get_base_distance (to1, to2, 0, 0);
-      if (distt == -1)
-	{
-	  distt = -get_base_distance (to2, to1, 0, 0);
-	  if (distt == 1)
-	    return 0;
-	}
-
-      /* --conversion of C* to B* is better than conversion of C* to A*, */
-      if (distf == 0)
-	{
-	  if (distt > 0)
-	    return -1;
-	  else if (distt < 0)
-	    return 1;
-	}
-      /* --conversion of B* to A* is better than conversion of C* to A*, */
-      else if (distt == 0)
-	{
-	  if (distf > 0)
-	    return 1;
-	  else if (distf < 0)
-	    return -1;
-	}
     }
-  else if (TREE_CODE (TREE_TYPE (main1)) == POINTER_TYPE
-	   || TYPE_PTRMEMFUNC_P (TREE_TYPE (main1)))
+  else if (IS_AGGR_TYPE_CODE (TREE_CODE (from_type1))
+	   && comptypes (from_type1, from_type2, 1))
     {
-      if (TREE_TYPE (main1) == TREE_TYPE (main2))
-	return compare_qual (ics1, ics2);
+      /* [over.ics.rank]
+	 
+	 --binding of an expression of type C to a reference of type
+	   B& is better than binding an expression of type C to a
+	   reference of type A&
 
-#if 0 /* This is now handled by making identity better than anything else.  */
-      /* existing practice, not WP-endorsed: const char * -> const char *
-	 is better than char * -> const char *.  (jason 6/29/96) */
-      if (TREE_TYPE (ics1) == TREE_TYPE (ics2))
-	return -compare_qual (main1, main2);
-#endif
+	 --conversion of C to B is better than conversion of C to A,  */
+      if (is_properly_derived_from (from_type1, to_type1)
+	  && is_properly_derived_from (from_type1, to_type2))
+	{
+	  if (is_properly_derived_from (to_type1, to_type2))
+	    return 1;
+	  else if (is_properly_derived_from (to_type2, to_type1))
+	    return -1;
+	}
+    }
+  else if (IS_AGGR_TYPE_CODE (TREE_CODE (to_type1))
+	   && comptypes (to_type1, to_type2, 1))
+    {
+      /* [over.ics.rank]
+
+	 --binding of an expression of type B to a reference of type
+	   A& is better than binding an expression of type C to a
+	   reference of type A&, 
+
+	 --onversion of B to A is better than conversion of C to A  */
+      if (is_properly_derived_from (from_type1, to_type1)
+	  && is_properly_derived_from (from_type2, to_type1))
+	{
+	  if (is_properly_derived_from (from_type2, from_type1))
+	    return 1;
+	  else if (is_properly_derived_from (from_type1, from_type2))
+	    return -1;
+	}
     }
 
+  /* [over.ics.rank]
+
+     --S1 and S2 differ only in their qualification conversion and  yield
+       similar  types  T1 and T2 (_conv.qual_), respectively, and the cv-
+       qualification signature of type T1 is a proper subset of  the  cv-
+       qualification signature of type T2  */
+  if (TREE_CODE (ics1) == QUAL_CONV 
+      && TREE_CODE (ics2) == QUAL_CONV
+      && comptypes (from_type1, from_type2, 1))
+    return comp_cv_qual_signature (to_type1, to_type2);
+
+  /* [over.ics.rank]
+     
+     --S1 and S2 are reference bindings (_dcl.init.ref_), and the
+     types to which the references refer are the same type except for
+     top-level cv-qualifiers, and the type to which the reference
+     initialized by S2 refers is more cv-qualified than the type to
+     which the reference initialized by S1 refers */
+      
+  if (ref_binding1 && ref_binding2
+      && comptypes (TYPE_MAIN_VARIANT (to_type1),
+		    TYPE_MAIN_VARIANT (to_type2), 1))
+    return comp_cv_qualification (reference_type2, reference_type1);
+
+  /* Neither conversion sequence is better than the other.  */
   return 0;
 }
 
