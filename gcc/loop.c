@@ -1839,13 +1839,8 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 	  if (loop_dump_stream)
 	    fprintf (loop_dump_stream, "savings %d ", savings);
 
-	  if (moved_once[regno])
-	    {
-	      insn_count *= 2;
-
-	      if (loop_dump_stream)
-		fprintf (loop_dump_stream, "halved since already moved ");
-	    }
+	  if (moved_once[regno] && loop_dump_stream)
+	    fprintf (loop_dump_stream, "halved since already moved ");
 
 	  /* An insn MUST be moved if we already moved something else
 	     which is safe only if this one is moved too: that is,
@@ -1862,7 +1857,8 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 
 	  if (already_moved[regno]
 	      || flag_move_all_movables
-	      || (threshold * savings * m->lifetime) >= insn_count
+	      || (threshold * savings * m->lifetime) >=
+		 (moved_once[regno] ? insn_count * 2 : insn_count)
 	      || (m->forces && m->forces->done
 		  && VARRAY_INT (n_times_used, m->forces->regno) == 1))
 	    {

@@ -1,3 +1,8 @@
+1998-10-05 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* loop.c (move_movables): Corrected threshold calculation for
+	moved_once registers.
+
 Mon Oct  5 21:18:45 1998  Bernd Schmidt <crux@Pool.Informatik.RWTH-Aachen.DE>
 
 	* loop.c (combine_givs_p): Fix test for identical givs.
