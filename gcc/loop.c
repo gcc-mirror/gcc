@@ -1838,7 +1838,7 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 	    {
 	      int count;
 	      register struct movable *m1;
-	      rtx first;
+	      rtx first = NULL_RTX;
 
 	      /* Now move the insns that set the reg.  */
 
@@ -4017,7 +4017,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
       else
 	{
 	  struct iv_class *bl2 = 0;
-	  rtx increment;
+	  rtx increment = NULL_RTX;
 
 	  /* Biv initial value is not a simple move.  If it is the sum of
 	     another biv and a constant, check if both bivs are incremented
@@ -7901,7 +7901,7 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 		  || (GET_CODE (comparison) == LE
 		      && no_use_except_counting)))
 	    {
-	      HOST_WIDE_INT add_val, add_adjust, comparison_val;
+	      HOST_WIDE_INT add_val, add_adjust, comparison_val = 0;
 	      rtx initial_value, comparison_value;
 	      int nonneg = 0;
 	      enum rtx_code cmp_code;
@@ -8173,7 +8173,7 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 		       REG_EQUAL notes should still be correct.  */
 		    if (! set
 			|| GET_CODE (SET_DEST (set)) != REG
-			|| REGNO (SET_DEST (set)) >= reg_iv_type->num_elements
+			|| (size_t) REGNO (SET_DEST (set)) >= reg_iv_type->num_elements
 			|| REG_IV_TYPE (REGNO (SET_DEST (set))) != GENERAL_INDUCT
 			|| REG_IV_INFO (REGNO (SET_DEST (set)))->src_reg != bl->biv->src_reg)
 		      for (pnote = &REG_NOTES (p); *pnote;)
@@ -9509,7 +9509,7 @@ load_mems (scan_start, end, loop_top, start)
   int i;
   rtx p;
   rtx label = NULL_RTX;
-  rtx end_label;
+  rtx end_label = NULL_RTX;
 
   if (loop_mems_idx > 0) 
     {

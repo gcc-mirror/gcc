@@ -380,7 +380,7 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
      rtx funexp;
      tree fndecl ATTRIBUTE_UNUSED;
      tree funtype ATTRIBUTE_UNUSED;
-     HOST_WIDE_INT stack_size;
+     HOST_WIDE_INT stack_size ATTRIBUTE_UNUSED;
      HOST_WIDE_INT rounded_stack_size;
      HOST_WIDE_INT struct_value_size;
      rtx next_arg_reg;
@@ -1792,7 +1792,7 @@ expand_call (exp, target, ignore)
 	    {
 	      rtx first_insn
 		= before_call ? NEXT_INSN (before_call) : get_insns ();
-	      rtx insn, seq;
+	      rtx insn = NULL_RTX, seq;
 
 	      /* Look for a call in the inline function code.
 		 If DECL_SAVED_INSNS (fndecl)->outgoing_args_size is
@@ -2583,7 +2583,7 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
 #if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
   /* Define the boundary of the register parm stack space that needs to be
      save, if any.  */
-  int low_to_save = -1, high_to_save;
+  int low_to_save = -1, high_to_save = 0;
   rtx save_area = 0;            /* Place that it is saved */
 #endif
 
@@ -3082,7 +3082,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 #if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
   /* Define the boundary of the register parm stack space that needs to be
      save, if any.  */
-  int low_to_save = -1, high_to_save;
+  int low_to_save = -1, high_to_save = 0;
   rtx save_area = 0;            /* Place that it is saved */
 #endif
 
@@ -3694,7 +3694,7 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size,
   int partial = 0;
   int used = 0;
 #ifdef ACCUMULATE_OUTGOING_ARGS
-  int i, lower_bound, upper_bound;
+  int i, lower_bound = 0, upper_bound = 0;
 #endif
 
   if (TREE_CODE (pval) == ERROR_MARK)

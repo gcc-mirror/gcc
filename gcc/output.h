@@ -20,7 +20,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Initialize data in final at the beginning of a compilation.  */
-extern void init_final		PROTO((char *));
+extern void init_final		PROTO((const char *));
 
 /* Called at end of source file,
    to output the block-profiling table for this entire compilation.  */

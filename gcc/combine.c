@@ -1339,7 +1339,7 @@ try_combine (i3, i2, i1)
   /* Nonzero is I2's body now appears in I3.  */
   int i2_is_used;
   /* INSN_CODEs for new I3, new I2, and user of condition code.  */
-  int insn_code_number, i2_code_number, other_code_number;
+  int insn_code_number, i2_code_number = 0, other_code_number = 0;
   /* Contains I3 if the destination of I3 is used in its source, which means
      that the old life of I3 is being killed.  If that usage is placed into
      I2 and not in I3, a REG_DEAD note must be made.  */
@@ -2593,8 +2593,8 @@ find_split_point (loc, insn)
   rtx x = *loc;
   enum rtx_code code = GET_CODE (x);
   rtx *split;
-  int len = 0, pos, unsignedp;
-  rtx inner;
+  int len = 0, pos = 0, unsignedp = 0;
+  rtx inner = NULL_RTX;
 
   /* First special-case some codes.  */
   switch (code)
@@ -4457,9 +4457,9 @@ simplify_if_then_else (x)
       rtx f = make_compound_operation (false, SET);
       rtx cond_op0 = XEXP (cond, 0);
       rtx cond_op1 = XEXP (cond, 1);
-      enum rtx_code op, extend_op = NIL;
+      enum rtx_code op = NIL, extend_op = NIL;
       enum machine_mode m = mode;
-      rtx z = 0, c1;
+      rtx z = 0, c1 = NULL_RTX;
 
       if ((GET_CODE (t) == PLUS || GET_CODE (t) == MINUS
 	   || GET_CODE (t) == IOR || GET_CODE (t) == XOR
@@ -7323,7 +7323,6 @@ simplify_and_const_int (x, mode, varop, constop)
      unsigned HOST_WIDE_INT constop;
 {
   unsigned HOST_WIDE_INT nonzero;
-  int width = GET_MODE_BITSIZE (mode);
   int i;
 
   /* Simplify VAROP knowing that we will be only looking at some of the
@@ -8224,7 +8223,6 @@ merge_outer_ops (pop0, pconst0, op1, const1, mode, pcomp_p)
 {
   enum rtx_code op0 = *pop0;
   HOST_WIDE_INT const0 = *pconst0;
-  int width = GET_MODE_BITSIZE (mode);
 
   const0 &= GET_MODE_MASK (mode);
   const1 &= GET_MODE_MASK (mode);

@@ -1159,7 +1159,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 {
   register char *name;
   unsigned int align;
-  tree size_tree;
+  tree size_tree = NULL_TREE;
   int reloc = 0;
   enum in_section saved_in_section;
 
@@ -2355,6 +2355,8 @@ const_hash (exp)
 	  }
 	else if (GET_CODE (value.base) == LABEL_REF)
 	  hi = value.offset + CODE_LABEL_NUMBER (XEXP (value.base, 0)) * 13;
+	else
+	  abort();
 
 	hi &= (1 << HASHBITS) - 1;
 	hi %= MAX_HASH_TABLE;
@@ -4383,7 +4385,7 @@ weak_finish ()
    some assemblers.  */
 static void
 remove_from_pending_weak_list (name)
-     char *name;
+     char *name ATTRIBUTE_UNUSED;
 {
 #ifdef HANDLE_PRAGMA_WEAK
   if (HANDLE_PRAGMA_WEAK)
