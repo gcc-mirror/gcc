@@ -1370,6 +1370,17 @@ get_asm_expr_operands (tree stmt)
 	EXECUTE_IF_SET_IN_BITMAP (addressable_vars, 0, i, bi)
 	    {
 	      tree var = referenced_var (i);
+
+	      /* Subvars are explicitly represented in this list, so
+		 we don't need the original to be added to the clobber
+		 ops, but the original *will* be in this list because 
+		 we keep the addressability of the original
+		 variable up-to-date so we don't screw up the rest of
+		 the backend.  */
+	      if (var_can_have_subvars (var)
+		  && get_subvars_for_var (var) != NULL)
+		continue;		
+
 	      add_stmt_operand (&var, s_ann, opf_is_def);
 	    }
 
