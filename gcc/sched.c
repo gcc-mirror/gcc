@@ -333,6 +333,7 @@ static rtx unlink_notes			PROTO((rtx, rtx));
 static int new_sometimes_live		PROTO((struct sometimes *, int, int,
 					       int));
 static void finish_sometimes_live	PROTO((struct sometimes *, int));
+static rtx reemit_notes			PROTO((rtx, rtx));
 static void schedule_block		PROTO((int, FILE *));
 static rtx regno_use_in			PROTO((int, rtx));
 static void split_hard_reg_notes	PROTO((rtx, rtx, rtx, rtx));
@@ -1843,21 +1844,18 @@ sched_analyze_2 (x, insn)
       {
 	rtx link, prev;
 
+	/* User of CC0 depends on immediately preceding insn.  */
+	SCHED_GROUP_P (insn) = 1;
+
 	/* There may be a note before this insn now, but all notes will
 	   be removed before we actually try to schedule the insns, so
 	   it won't cause a problem later.  We must avoid it here though.  */
-
-	/* User of CC0 depends on immediately preceding insn.  */
-	SCHED_GROUP_P (insn) = 1;
+	prev = prev_nonnote_insn (insn);
 
 	/* Make a copy of all dependencies on the immediately previous insn,
 	   and add to this insn.  This is so that all the dependencies will
 	   apply to the group.  Remove an explicit dependence on this insn
 	   as SCHED_GROUP_P now represents it.  */
-
-	prev = PREV_INSN (insn);
-	while (GET_CODE (prev) == NOTE)
-	  prev = PREV_INSN (prev);
 
 	if (find_insn_list (prev, LOG_LINKS (insn)))
 	  remove_dependence (insn, prev);
@@ -2288,6 +2286,8 @@ sched_analyze (head, tail)
       if (insn == tail)
 	return n_insns;
     }
+
+  abort ();
 }
 
 /* Called when we see a set of a register.  If death is true, then we are
@@ -3168,7 +3168,7 @@ schedule_block (b, file)
 {
   rtx insn, last;
   rtx *ready, link;
-  int i, j, n_ready = 0, new_ready, n_insns = 0;
+  int i, j, n_ready = 0, new_ready, n_insns;
   int sched_n_insns = 0;
   int clock;
 #define NEED_NOTHING	0
@@ -3285,7 +3285,7 @@ schedule_block (b, file)
 
   LOG_LINKS (sched_before_next_call) = 0;
 
-  n_insns += sched_analyze (head, tail);
+  n_insns = sched_analyze (head, tail);
   if (n_insns == 0)
     {
       free_pending_lists ();
@@ -3379,9 +3379,7 @@ schedule_block (b, file)
 	    {
 	      while (SCHED_GROUP_P (insn))
 		{
-		  insn = PREV_INSN (insn);
-		  while (GET_CODE (insn) == NOTE)
-		    insn = PREV_INSN (insn);
+		  insn = prev_nonnote_insn (insn);
 		  priority (insn);
 		}
 	      continue;
@@ -3910,18 +3908,6 @@ schedule_block (b, file)
       NEXT_INSN (insn) = last;
       PREV_INSN (last) = insn;
 
-      /* Maintain a valid chain so emit_note_before works.
-	 This is necessary because PREV_INSN (insn) isn't valid and
-	 if it points to an insn already scheduled, a circularity
-	 will result.  */
-      NEXT_INSN (prev_head) = insn;
-      PREV_INSN (insn) = prev_head;
-
-      last = insn;
-
-      /* Check to see if we need to re-emit any notes here.  */
-      last = reemit_notes (insn, last);
-
       /* Everything that precedes INSN now either becomes "ready", if
 	 it can execute immediately before INSN, or "pending", if
 	 there must be a delay.  Give INSN high enough priority that
@@ -3947,30 +3933,42 @@ schedule_block (b, file)
 
 	  /* Now handle each group insn like the main insn was handled
 	     above.  */
-	  while (SCHED_GROUP_P (insn))
+	  link = insn;
+	  while (SCHED_GROUP_P (link))
 	    {
-	      insn = PREV_INSN (insn);
+	      link = PREV_INSN (link);
 
 	      sched_n_insns += 1;
-	      NEXT_INSN (insn) = last;
-	      PREV_INSN (last) = insn;
-
-	      /* Maintain a valid chain so emit_note_before works.
-		 This is necessary because PREV_INSN (insn) isn't valid and
-		 if it points to an insn already scheduled, a circularity
-		 will result.  */
-	      NEXT_INSN (prev_head) = insn;
-	      PREV_INSN (insn) = prev_head;
-
-	      last = insn;
-
-	      last = reemit_notes (insn, last);
 
 	      /* ??? Why don't we set LAUNCH_PRIORITY here?  */
-	      new_ready = schedule_insn (insn, ready, new_ready, clock);
-	      INSN_PRIORITY (insn) = DONE_PRIORITY;
+	      new_ready = schedule_insn (link, ready, new_ready, clock);
+	      INSN_PRIORITY (link) = DONE_PRIORITY;
 	    }
 	}
+
+      /* Put back NOTE_INSN_SETJMP, NOTE_INSN_LOOP_BEGIN, and
+	 NOTE_INSN_LOOP_END notes.  */
+
+      /* To prime the loop.  We need to handle INSN and all the insns in the
+         sched group.  */
+      last = NEXT_INSN (insn);
+      do
+	{
+	  insn = PREV_INSN (last);
+
+	  /* Maintain a valid chain so emit_note_before works.
+	     This is necessary because PREV_INSN (insn) isn't valid
+	     (if ! SCHED_GROUP_P) and if it points to an insn already
+	     scheduled, a circularity will result.  */
+	  if (! SCHED_GROUP_P (insn))
+	    {
+	      NEXT_INSN (prev_head) = insn;
+	      PREV_INSN (insn) = prev_head;
+	    }
+
+	  last = reemit_notes (insn, insn);
+	}
+      while (SCHED_GROUP_P (insn));
     }
   if (q_size != 0)
     abort ();
@@ -3981,7 +3979,7 @@ schedule_block (b, file)
   /* HEAD is now the first insn in the chain of insns that
      been scheduled by the loop above.
      TAIL is the last of those insns.  */
-  head = insn;
+  head = last;
 
   /* NOTE_LIST is the end of a chain of notes previously found
      among the insns.  Insert them at the beginning of the insns.  */
@@ -4802,6 +4800,8 @@ schedule_insns (dump_file)
 
   /* ??? Add a NOTE after the last insn of the last basic block.  It is not
      known why this is done.  */
+  /* ??? Perhaps it's done to ensure NEXT_TAIL in schedule_block is a
+     valid insn.  */
 
   insn = basic_block_end[n_basic_blocks-1];
   if (NEXT_INSN (insn) == 0
