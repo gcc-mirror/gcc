@@ -116,17 +116,17 @@ Boston, MA 02111-1307, USA.  */
     (FS)->regs.reg[0].how = REG_SAVED_OFFSET;				\
     (FS)->regs.reg[0].loc.offset = (long)&sc_->rax - new_cfa_;		\
     (FS)->regs.reg[1].how = REG_SAVED_OFFSET;				\
-    (FS)->regs.reg[1].loc.offset = (long)&sc_->rbx - new_cfa_;		\
+    (FS)->regs.reg[1].loc.offset = (long)&sc_->rdx - new_cfa_;		\
     (FS)->regs.reg[2].how = REG_SAVED_OFFSET;				\
     (FS)->regs.reg[2].loc.offset = (long)&sc_->rcx - new_cfa_;		\
     (FS)->regs.reg[3].how = REG_SAVED_OFFSET;				\
-    (FS)->regs.reg[3].loc.offset = (long)&sc_->rdx - new_cfa_;		\
+    (FS)->regs.reg[3].loc.offset = (long)&sc_->rbx - new_cfa_;		\
     (FS)->regs.reg[4].how = REG_SAVED_OFFSET;				\
-    (FS)->regs.reg[4].loc.offset = (long)&sc_->rbp - new_cfa_;		\
+    (FS)->regs.reg[4].loc.offset = (long)&sc_->rsi - new_cfa_;		\
     (FS)->regs.reg[5].how = REG_SAVED_OFFSET;				\
-    (FS)->regs.reg[5].loc.offset = (long)&sc_->rsi - new_cfa_;		\
+    (FS)->regs.reg[5].loc.offset = (long)&sc_->rdi - new_cfa_;		\
     (FS)->regs.reg[6].how = REG_SAVED_OFFSET;				\
-    (FS)->regs.reg[6].loc.offset = (long)&sc_->rdi - new_cfa_;		\
+    (FS)->regs.reg[6].loc.offset = (long)&sc_->rbp - new_cfa_;		\
     (FS)->regs.reg[8].how = REG_SAVED_OFFSET;				\
     (FS)->regs.reg[8].loc.offset = (long)&sc_->r8 - new_cfa_;		\
     (FS)->regs.reg[9].how = REG_SAVED_OFFSET;				\
@@ -143,6 +143,8 @@ Boston, MA 02111-1307, USA.  */
     (FS)->regs.reg[14].loc.offset = (long)&sc_->r14 - new_cfa_;		\
     (FS)->regs.reg[15].how = REG_SAVED_OFFSET;				\
     (FS)->regs.reg[15].loc.offset = (long)&sc_->r15 - new_cfa_;		\
+    (FS)->regs.reg[16].how = REG_SAVED_OFFSET;				\
+    (FS)->regs.reg[16].loc.offset = (long)&sc_->rip - new_cfa_;		\
     (FS)->retaddr_column = 16;						\
     goto SUCCESS;							\
   } while (0)
