@@ -2932,10 +2932,12 @@ finish_struct_anon (t)
 		 declared, but we also find nested classes by noticing
 		 the TYPE_DECL that we create implicitly.  You're
 		 allowed to put one anonymous union inside another,
-		 though, so we explicitly tolerate that.  */
+		 though, so we explicitly tolerate that.  We use
+		 TYPE_ANONYMOUS_P rather than ANON_AGGR_TYPE_P so that
+		 we also allow unnamed types used for defining fields.  */
 	      if (DECL_ARTIFICIAL (elt) 
 		  && (!DECL_IMPLICIT_TYPEDEF_P (elt)
-		      || ANON_AGGR_TYPE_P (TREE_TYPE (elt))))
+		      || TYPE_ANONYMOUS_P (TREE_TYPE (elt))))
 		continue;
 
 	      if (DECL_NAME (elt) == constructor_name (t))
