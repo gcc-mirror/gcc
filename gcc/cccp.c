@@ -4579,6 +4579,7 @@ get_filename:
 		    strcat (p, "/");
 		    strcat (p, fname);
 		    deps_output (p, ' ');
+		    free (p);
 		    break;
 		  }
 	      }
