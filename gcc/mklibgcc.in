@@ -106,11 +106,10 @@ case X"$LIBGCC1" in
 
       echo $out: $libgcc1_c_dep
       if [ -z "@NO_MINUS_C_MINUS_O@" ]; then
-	echo "	$oldcc_compile" $flags -c $src -o $dst
+	echo "	$oldcc_compile" $flags -c libgcc1.c -o $out
       else
-	echo "	$oldcc_compile" $flags -c $src
-	tmp=`echo $src | sed -e 's/[.]c$/'${objext}/ -e 's,.*/,,'`
-	echo "	mv $tmp $dst"
+	echo "	$oldcc_compile" $flags -c libgcc1.c
+	echo "	mv libgcc1${objext} $out"
       fi
 
       libgcc1_objs="$libgcc1_objs ${name}${objext}"
@@ -130,8 +129,8 @@ case X"$LIBGCC1" in
 	echo "	$oldcc_compile" -c $file -o $out
       else
 	echo "	$oldcc_compile" -c $file
-	tmp=`echo $src | sed -e 's/[.][cs]$/'${objext}/ -e 's,.*/,,'`
-	echo "	mv $tmp $dst"
+	tmp=`echo $file | sed -e 's/[.][cs]$/'${objext}/ -e 's,.*/,,'`
+	echo "	mv $tmp $out"
       fi
 
       libgcc1_objs="$libgcc1_objs ${name}${objext}"
