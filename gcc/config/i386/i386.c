@@ -3448,11 +3448,11 @@ notice_update_cc (exp)
 	  && (REG_P (SET_SRC (exp))
 	      || GET_RTX_CLASS (GET_CODE (SET_SRC (exp))) == '<'))
 	{
-	  if (cc_status.value1 && GET_CODE (cc_status.value1) == MEM
-	      || reg_mentioned_p (SET_DEST (exp), cc_status.value1))
+	  if (cc_status.value1
+	      && reg_overlap_mentioned_p (SET_DEST (exp), cc_status.value1))
 	    cc_status.value1 = 0;
-	  if (cc_status.value2 && GET_CODE (cc_status.value2) == MEM
-	      || reg_mentioned_p (SET_DEST (exp), cc_status.value2))
+	  if (cc_status.value2
+	      && reg_overlap_mentioned_p (SET_DEST (exp), cc_status.value2))
 	    cc_status.value2 = 0;
 	  return;
 	}
