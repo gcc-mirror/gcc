@@ -1,3 +1,7 @@
+2002-02-12  Graham Stott  <grahams@redhat.com>
+
+	* config/hp/pa.h (GO_IF_LEGITIMATE_ADDRESS): Fix typos.
+
 2002-02-12  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c (shift_alg_hi): Improve the 15-bit
