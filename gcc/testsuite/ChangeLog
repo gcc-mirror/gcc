@@ -1,3 +1,8 @@
+2002-07-03  Chris Demetriou  <cgd@broadcom.com>
+
+	* g++.dg/abi/mangle6.C: Run for mipsisa64*-*-* targets.
+	* gcc.dg/20020620-1.c: Likewise.
+
 2002-07-03  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/6944

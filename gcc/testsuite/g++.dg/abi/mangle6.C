@@ -1,5 +1,5 @@
 /* Check that __int128 types are mangled.  */
-/* { dg-do compile { target mips64*-*-* } } */
+/* { dg-do compile { target mips64*-*-* mipsisa64*-*-* } } */
 
 typedef int int128 __attribute__ ((mode(TI)));
 typedef unsigned int uint128 __attribute__ ((mode(TI)));
