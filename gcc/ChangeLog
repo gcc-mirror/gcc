@@ -1,5 +1,12 @@
 2004-03-05  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* config/s390/s390.md ("load_multiple", "*load_multiple_di",
+	"*load_multiple_si"): Allow only if reload_completed.
+	("store_multiple", "*store_multiple_di", "*store_multiple_si"):
+	Likewise.
+
+2004-03-05  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* config/s390/s390.c (s390_expand_movstr): Clobber double-word
 	register before initializing high and low parts separately.
 	(s390_expand_clrstr): Likewise.
