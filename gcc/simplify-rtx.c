@@ -232,9 +232,30 @@ simplify_gen_relational (code, mode, cmp_mode, op0, op1)
   if ((tem = simplify_relational_operation (code, cmp_mode, op0, op1)) != 0)
     return tem;
 
+  /* For the following tests, ensure const0_rtx is op1.  */
+  if (op0 == const0_rtx && swap_commutative_operands_p (op0, op1))
+    tem = op0, op0 = op1, op1 = tem, code = swap_condition (code);
+
   /* If op0 is a compare, extract the comparison arguments from it.  */
   if (GET_CODE (op0) == COMPARE && op1 == const0_rtx)
     op1 = XEXP (op0, 1), op0 = XEXP (op0, 0);
+
+  /* If op0 is a comparison, extract the comparison arguments form it.  */
+  if (code == NE && op1 == const0_rtx
+      && GET_RTX_CLASS (GET_CODE (op0)) == '<')
+    return op0;
+  else if (code == EQ && op1 == const0_rtx)
+    {
+      /* The following tests GET_RTX_CLASS (GET_CODE (op0)) == '<'.  */
+      enum rtx_code new = reversed_comparison_code (op0, NULL_RTX);
+      if (new != UNKNOWN)
+        {
+	  code = new;
+	  mode = cmp_mode;
+	  op1 = XEXP (op0, 1);
+	  op0 = XEXP (op0, 0);
+        }
+    }
 
   /* Put complex operands first and constants second.  */
   if (swap_commutative_operands_p (op0, op1))
