@@ -1,3 +1,8 @@
+Sun Oct 26 13:50:44 1997  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_sa_mask [VMS]): Don't include $26 in the mask.
+	Patch from Klaus Kaempf <kkaempf@progis.de>.
+
 Sun Oct 26 13:31:47 1997  Jim Wilson  (wilson@cygnus.com)
 
 	* expr.c (expand_expr, case INDIRECT_REF): Optimize a reference
