@@ -1828,7 +1828,7 @@ esac
 
 # Host dirs don't like to share a cache file either, horribly enough.
 # This seems to be due to autoconf 2.5x stupidity.
-host_configargs="--cache-file=config.cache --build=${build_alias} --host=${host_alias} --target=${target_alias} ${extra_host_args} ${baseargs}"
+host_configargs="--cache-file=./config.cache --build=${build_alias} --host=${host_alias} --target=${target_alias} ${extra_host_args} ${baseargs}"
 
 target_configargs=${baseargs}
 
@@ -1862,7 +1862,7 @@ fi
 # directory.  I think.
 
 # Pass the appropriate --host, --build, and --cache-file arguments.
-target_configargs="--cache-file=config.cache --host=${target_alias} --build=${build_alias} ${target_configargs}"
+target_configargs="--cache-file=./config.cache --host=${target_alias} --build=${build_alias} ${target_configargs}"
 
 # provide a proper gxx_include_dir.
 # Note, if you change the default, make sure to fix both here and in

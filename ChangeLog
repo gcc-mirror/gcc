@@ -1,5 +1,10 @@
 2004-01-04  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.in: Use ./config.cache, not config.cache.
+	* configure: Regenerate.
+	* Makefile.tpl: Special-casing not needed for GCC any more.
+	* Makefile.in: Regenerate.
+
 	* configure.in: Don't share a cache file for host dirs.
 	* configure: Regenerate.
 
