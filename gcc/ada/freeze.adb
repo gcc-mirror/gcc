@@ -82,7 +82,9 @@ package body Freeze is
 
    procedure Check_Address_Clause (E : Entity_Id);
    --  Apply legality checks to address clauses for object declarations,
-   --  at the point the object is frozen.
+   --  at the point the object is frozen. Also deals with cancelling effect
+   --  of Import pragma which has no effect (other than to eliminate any
+   --  implicit initialization) if an address clause is present.
 
    procedure Check_Strict_Alignment (E : Entity_Id);
    --  E is a base type. If E is tagged or has a component that is aliased
@@ -497,6 +499,11 @@ package body Freeze is
          then
             Warn_Overlay (Expr, Typ, Name (Addr));
          end if;
+
+         --  Cancel effect of any Import pragma
+
+         Set_Is_Imported (E, False);
+         Set_Is_Public (E, False);
       end if;
    end Check_Address_Clause;
 
