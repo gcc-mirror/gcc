@@ -26,6 +26,7 @@
 using namespace std;
 
 #ifdef _GLIBCPP_USE___ENC_TRAITS
+#ifdef _GLIBCPP_USE_WCHAR_T
 
 void
 initialize_state(__enc_traits& state)
@@ -46,21 +47,27 @@ void test01()
 
   bool 			test = true;
   int 			size = 23;
-  ext_type 		e_lit_base[24] = 
-  { 1644167168, 1811939328, 1627389952, 1660944384, 1795162112,  536870912, 
-    1879048192, 1694498816, 1627389952, 1912602624, 1811939328, 536870912, 
-    1778384896, 1627389952, 1929379840, 1828716544, 1761607680, 1845493760, 
-    1694498816, 536870912,  1946157056, 1694498816, 1627389952, 167772160
+  char  e_lit_base[96] __attribute__((aligned(__alignof__(ext_type)))) =
+  {
+    0x00, 0x00, 0x00, 0x62, 0x00, 0x00, 0x00, 0x6c, 0x00, 0x00, 0x00, 0x61,
+    0x00, 0x00, 0x00, 0x63, 0x00, 0x00, 0x00, 0x6b, 0x00, 0x00, 0x00, 0x20,
+    0x00, 0x00, 0x00, 0x70, 0x00, 0x00, 0x00, 0x65, 0x00, 0x00, 0x00, 0x61,
+    0x00, 0x00, 0x00, 0x72, 0x00, 0x00, 0x00, 0x6c, 0x00, 0x00, 0x00, 0x20,
+    0x00, 0x00, 0x00, 0x6a, 0x00, 0x00, 0x00, 0x61, 0x00, 0x00, 0x00, 0x73,
+    0x00, 0x00, 0x00, 0x6d, 0x00, 0x00, 0x00, 0x69, 0x00, 0x00, 0x00, 0x6e,
+    0x00, 0x00, 0x00, 0x65, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x74,
+    0x00, 0x00, 0x00, 0x65, 0x00, 0x00, 0x00, 0x61, 0x00, 0x00, 0x00, 0xa0     
   };
-  const ext_type* 	e_lit = e_lit_base;
+  const ext_type* 	e_lit = reinterpret_cast<ext_type*>(e_lit_base);
 
-  int_type 		i_lit_base[24] = 
+  char  i_lit_base[48] __attribute__((aligned(__alignof__(int_type)))) = 
   { 
-    0x6200, 0x6c00, 0x6100, 0x6300, 0x6b00, 0x2000, 0x7000, 0x6500, 0x6100, 
-    0x7200, 0x6c00, 0x2000, 0x6a00, 0x6100, 0x7300, 0x6d00, 0x6900, 0x6e00, 
-    0x6500, 0x2000, 0x7400, 0x6500, 0x6100, 0xa000
+    0x00, 0x62, 0x00, 0x6c, 0x00, 0x61, 0x00, 0x63, 0x00, 0x6b, 0x00, 0x20,
+    0x00, 0x70, 0x00, 0x65, 0x00, 0x61, 0x00, 0x72, 0x00, 0x6c, 0x00, 0x20,
+    0x00, 0x6a, 0x00, 0x61, 0x00, 0x73, 0x00, 0x6d, 0x00, 0x69, 0x00, 0x6e,
+    0x00, 0x65, 0x00, 0x20, 0x00, 0x74, 0x00, 0x65, 0x00, 0x61, 0x00, 0xa0 
   };
-  const int_type* 	i_lit = i_lit_base;
+  const int_type* 	i_lit = reinterpret_cast<int_type*>(i_lit_base);
 
   const ext_type*       efrom_next;
   const int_type*       ifrom_next;
@@ -76,7 +83,7 @@ void test01()
   const unicode_codecvt&	cvt = use_facet<unicode_codecvt>(loc); 
 
   // in
-  unicode_codecvt::state_type state01("UCS-2BE", "UCS4", 0xfeff, 0);
+  unicode_codecvt::state_type state01("UCS-2BE", "UCS-4BE", 0xfeff, 0);
   initialize_state(state01);
   result r1 = cvt.in(state01, e_lit, e_lit + size, efrom_next, 
 		     i_arr, i_arr + size + 1, ito_next);
@@ -86,7 +93,7 @@ void test01()
   VERIFY( ito_next == i_arr + size );
 
   // out
-  unicode_codecvt::state_type state02("UCS-2BE", "UCS4", 0xfeff, 0);
+  unicode_codecvt::state_type state02("UCS-2BE", "UCS-4BE", 0xfeff, 0);
   initialize_state(state02);  
   result r2 = cvt.out(state02, i_lit, i_lit + size, ifrom_next, 
 		       e_arr, e_arr + size, eto_next);
@@ -97,7 +104,7 @@ void test01()
 
   // unshift
   ext_traits::copy(e_arr, e_lit, size);
-  unicode_codecvt::state_type state03("UCS-2BE", "UCS4", 0xfeff, 0);
+  unicode_codecvt::state_type state03("UCS-2BE", "UCS-4BE", 0xfeff, 0);
   initialize_state(state03);
   result r3 = cvt.unshift(state03, e_arr, e_arr + size, eto_next);
   VERIFY( r3 == codecvt_base::noconv );
@@ -109,7 +116,7 @@ void test01()
 
   VERIFY( !cvt.always_noconv() );
 
-  unicode_codecvt::state_type state04("UCS-2BE", "UCS4", 0xfeff, 0);
+  unicode_codecvt::state_type state04("UCS-2BE", "UCS-4BE", 0xfeff, 0);
   initialize_state(state04);
   int j = cvt.length(state03, e_lit, e_lit + size, 5);
   VERIFY( j == 5 );
@@ -120,14 +127,16 @@ void test01()
   delete [] e_arr;
   delete [] i_arr;
 }
+#endif // _GLIBCPP_USE_WCHAR_T
 #endif // _GLIBCPP_USE___ENC_TRAITS
 
 int main ()
 {
-#if _GLIBCPP_USE___ENC_TRAITS
+#ifdef _GLIBCPP_USE___ENC_TRAITS
+#ifdef _GLIBCPP_USE_WCHAR_T
   test01();
+#endif
 #endif 
-
   return 0;
 }
 
