@@ -1,3 +1,9 @@
+2004-03-11  Kelley Cook  <kcook@gcc.gnu.org>
+
+	PR other/14536
+	* configure: Regenerated with autoconf 2.57.
+	* config.in: Regenerated with autoheader 2.57.
+
 2004-03-11  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/linux64.h (MD_FALLBACK_FRAME_STATE_FOR): Don't
