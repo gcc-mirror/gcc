@@ -1,3 +1,7 @@
+Wed Oct 13 09:25:03 1999  Niels Möller <nisse@lysator.liu.se>
+
+	* extend.texi (Function Names): Document types of function names.
+
 Wed Oct 13 00:45:04 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* reload1.c (reload_reg_free_for_value_p):  RELOAD_OTHER reloads with
