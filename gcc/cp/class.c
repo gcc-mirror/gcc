@@ -2011,7 +2011,8 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
 	    nonprivate_method = 1;
 	    break;
 	  }
-      if (nonprivate_method == 0)
+      if (nonprivate_method == 0 
+	  && warn_ctor_dtor_privacy)
 	cp_warning ("all member functions in class `%T' are private", t);
     }
 

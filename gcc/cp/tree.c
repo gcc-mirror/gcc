@@ -832,19 +832,17 @@ layout_basetypes (rec, binfos)
 	  BINFO_VPTR_FIELD (base_binfo) = decl;
 	  vbase_decls = decl;
 
-	  if (warn_nonvdtor && TYPE_HAS_DESTRUCTOR (basetype)
-	      && DECL_VINDEX (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (basetype), 1)) == NULL_TREE)
-	    {
-	      warning_with_decl (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (basetype), 1),
-				 "destructor `%s' non-virtual");
-	      warning ("in inheritance relationship `%s: virtual %s'",
-		       TYPE_NAME_STRING (rec),
-		       TYPE_NAME_STRING (basetype));
-	    }
 	got_it:
 	  /* The space this decl occupies has already been accounted for.  */
 	  continue;
 	}
+
+      /* Effective C++ rule 14.  We only need to check TYPE_VIRTUAL_P
+	 here because the case of virtual functions but non-virtual
+	 dtor is handled in finish_struct_1.  */
+      if (warn_ecpp && ! TYPE_VIRTUAL_P (basetype)
+	  && TYPE_HAS_DESTRUCTOR (basetype))
+	cp_warning ("base class `%#T' has a non-virtual destructor", basetype);
 
       if (const_size == 0)
 	offset = integer_zero_node;
@@ -854,22 +852,6 @@ layout_basetypes (rec, binfos)
 	  const_size = CEIL (const_size, TYPE_ALIGN (basetype))
 	    * TYPE_ALIGN (basetype);
 	  offset = size_int ((const_size + BITS_PER_UNIT - 1) / BITS_PER_UNIT);
-
-#if 0
-	  /* bpk: Disabled this check until someone is willing to
-	     claim it as theirs and explain exactly what circumstances
-	     warrant the warning.  */ 
-	  if (warn_nonvdtor && TYPE_HAS_DESTRUCTOR (basetype)
-	      && DECL_VINDEX (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (basetype), 1)) == NULL_TREE)
-	    {
-	      warning_with_decl (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (basetype), 1),
-				 "destructor `%s' non-virtual");
-	      warning ("in inheritance relationship `%s:%s %s'",
-		       TYPE_NAME_STRING (rec),
-		       TREE_VIA_VIRTUAL (base_binfo) ? " virtual" : "",
-		       TYPE_NAME_STRING (basetype));
-	    }
-#endif
 	}
       BINFO_OFFSET (base_binfo) = offset;
       if (CLASSTYPE_VSIZE (basetype))

@@ -1652,15 +1652,17 @@ build_object_ref (datum, basetype, field)
   return error_mark_node;
 }
 
-/* Like `build_component_ref, but uses an already found field.
-   Must compute access for current_class_ref.  Otherwise, ok.  */
+/* Like `build_component_ref, but uses an already found field, and converts
+   from a reference.  Must compute access for current_class_ref.
+   Otherwise, ok.  */
 
 tree
 build_component_ref_1 (datum, field, protect)
      tree datum, field;
      int protect;
 {
-  return build_component_ref (datum, field, NULL_TREE, protect);
+  return convert_from_reference
+    (build_component_ref (datum, field, NULL_TREE, protect));
 }
 
 /* Given a COND_EXPR in T, return it in a form that we can, for
@@ -2484,11 +2486,17 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 	function = save_expr (function);
 
       fntype = TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (function));
-      idx = save_expr (build_component_ref (function,
-					    index_identifier,
-					    NULL_TREE, 0));
-      e1 = fold (build (GT_EXPR, boolean_type_node, idx,
-			cp_convert (delta_type_node, integer_zero_node)));
+
+      /* Promoting idx before saving it improves performance on RISC
+	 targets.  Without promoting, the first compare used
+	 load-with-sign-extend, while the second used normal load then
+	 shift to sign-extend.  An optimizer flaw, perhaps, but it's easier
+	 to make this change.  */
+      idx = save_expr (default_conversion
+		       (build_component_ref (function,
+					     index_identifier,
+					     NULL_TREE, 0)));
+      e1 = build_binary_op (GT_EXPR, idx, integer_zero_node, 1);
       delta = cp_convert (ptrdiff_type_node,
 			  build_component_ref (function, delta_identifier, NULL_TREE, 0));
       delta2 = DELTA2_FROM_PTRMEMFUNC (function);

@@ -72,6 +72,7 @@ void yyerror ();
 /* This obstack is needed to hold text.  It is not safe to use
    TOKEN_BUFFER because `check_newline' calls `yylex'.  */
 struct obstack inline_text_obstack;
+char *inline_text_firstobj;
 
 int end_of_file;
 
@@ -91,7 +92,7 @@ extern struct obstack token_obstack;
 #else
 extern void put_back (/* int */);
 extern int input_redirected ();
-extern void feed_input (/* char *, int, struct obstack * */);
+extern void feed_input (/* char *, int */);
 #endif
 
 /* Holds translations from TREE_CODEs to operator name strings,
@@ -575,6 +576,7 @@ init_lex ()
   init_method ();
   init_error ();
   gcc_obstack_init (&inline_text_obstack);
+  inline_text_firstobj = (char *) obstack_alloc (&inline_text_obstack, 0);
 
   /* Start it at 0, because check_newline is called at the very beginning
      and will increment it to 1.  */
@@ -1170,7 +1172,7 @@ do_pending_inlines ()
     push_cp_function_context (context);
   if (t->len > 0)
     {
-      feed_input (t->buf, t->len, t->can_free ? &inline_text_obstack : 0);
+      feed_input (t->buf, t->len);
       lineno = t->lineno;
 #if 0
       if (input_filename != t->filename)
@@ -1192,7 +1194,6 @@ do_pending_inlines ()
   DECL_PENDING_INLINE_INFO (t->fndecl) = 0;
 }
 
-extern struct pending_input *to_be_restored;
 static int nextchar = -1;
 
 /* Called from the fndecl rule in the parser when the function just parsed
@@ -1222,16 +1223,13 @@ process_next_inline (t)
       nextchar = -1;
     }
   yychar = YYEMPTY;
-  if (to_be_restored == 0)
-    my_friendly_abort (123);
-  restore_pending_input (to_be_restored);
-  to_be_restored = 0;
+  end_input ();
   if (i && i->fndecl != NULL_TREE)
     {
       context = hack_decl_function_context (i->fndecl);
       if (context)
 	push_cp_function_context (context);
-      feed_input (i->buf, i->len, i->can_free ? &inline_text_obstack : 0);
+      feed_input (i->buf, i->len);
       lineno = i->lineno;
       input_filename = i->filename;
       yychar = PRE_PARSED_FUNCTION_DECL;
@@ -1392,6 +1390,12 @@ yyungetc (ch, rescan)
     }
 }
 
+void
+clear_inline_text_obstack ()
+{
+  obstack_free (&inline_text_obstack, inline_text_firstobj);
+}
+
 /* This function stores away the text for an inline function that should
    be processed later.  It decides how much later, and may need to move
    the info between obstacks; therefore, the caller should not refer to
@@ -1448,7 +1452,6 @@ reinit_parse_for_method (yychar, decl)
       t->token_value = 0;
       t->buf = buf;
       t->len = len;
-      t->can_free = 1;
       t->deja_vu = 0;
 #if 0
       if (interface_unknown && processing_template_defn && flag_external_templates && ! DECL_IN_SYSTEM_HEADER (decl))
@@ -1623,6 +1626,259 @@ reinit_parse_for_block (pyychar, obstackp)
     }
  done:
   obstack_1grow (obstackp, '\0');
+}
+
+/* Consume a no-commas expression -- actually, a default argument -- and
+   save it away on the specified obstack.  */
+
+static void
+reinit_parse_for_expr (obstackp)
+     struct obstack *obstackp;
+{
+  register int c = 0;
+  int starting_lineno = lineno;
+  char *starting_filename = input_filename;
+  int len;
+  int look_for_semicolon = 0;
+  int look_for_lbrac = 0;
+  int plev = 0;
+
+  if (nextchar != EOF)
+    {
+      c = nextchar;
+      nextchar = EOF;
+    }
+  else
+    c = getch ();
+  
+  while (c != EOF)
+    {
+      int this_lineno = lineno;
+
+      c = skip_white_space (c);
+
+      /* Don't lose our cool if there are lots of comments.  */
+      if (lineno == this_lineno + 1)
+	obstack_1grow (obstackp, '\n');
+      else if (lineno == this_lineno)
+	;
+      else if (lineno - this_lineno < 10)
+	{
+	  int i;
+	  for (i = lineno - this_lineno; i > 0; --i)
+	    obstack_1grow (obstackp, '\n');
+	}
+      else
+	{
+	  char buf[16];
+	  sprintf (buf, "\n# %d \"", lineno);
+	  len = strlen (buf);
+	  obstack_grow (obstackp, buf, len);
+
+	  len = strlen (input_filename);
+	  obstack_grow (obstackp, input_filename, len);
+	  obstack_1grow (obstackp, '\"');
+	  obstack_1grow (obstackp, '\n');
+	}
+
+      while (c > ' ')		/* ASCII dependent...  */
+	{
+	  if (plev <= 0 && (c == ')' || c == ','))
+	    {
+	      put_back (c);
+	      goto done;
+	    }
+	  obstack_1grow (obstackp, c);
+	  if (c == '(' || c == '[')
+	    ++plev;
+	  else if (c == ']' || c == ')')
+	    --plev;
+	  else if (c == '\\')
+	    {
+	      /* Don't act on the next character...e.g, doing an escaped
+		 double-quote.  */
+	      c = getch ();
+	      if (c == EOF)
+		{
+		  error_with_file_and_line (starting_filename,
+					    starting_lineno,
+					    "end of file read inside definition");
+		  goto done;
+		}
+	      obstack_1grow (obstackp, c);
+	    }
+	  else if (c == '\"')
+	    consume_string (obstackp, c);
+	  else if (c == '\'')
+	    consume_string (obstackp, c);
+	  c = getch ();
+	}
+
+      if (c == EOF)
+	{
+	  error_with_file_and_line (starting_filename,
+				    starting_lineno,
+				    "end of file read inside definition");
+	  goto done;
+	}
+      else if (c != '\n')
+	{
+	  obstack_1grow (obstackp, c);
+	  c = getch ();
+	}
+    }
+ done:
+  obstack_1grow (obstackp, '\0');
+}
+
+int do_snarf_defarg;
+
+/* Decide whether the default argument we are about to see should be
+   gobbled up as text for later parsing.  */
+
+void
+maybe_snarf_defarg ()
+{
+  if (current_class_type && TYPE_BEING_DEFINED (current_class_type))
+    do_snarf_defarg = 1;
+}
+
+/* When we see a default argument in a method declaration, we snarf it as
+   text using snarf_defarg.  When we get up to namespace scope, we then go
+   through and parse all of them using do_pending_defargs.  Since yacc
+   parsers are not reentrant, we retain defargs state in these two
+   variables so that subsequent calls to do_pending_defargs can resume
+   where the previous call left off.  */
+
+tree defarg_fns;
+tree defarg_parm;
+
+tree
+snarf_defarg ()
+{
+  int len;
+  char *buf;
+  tree arg;
+  struct pending_inline *t;
+
+  reinit_parse_for_expr (&inline_text_obstack);
+  len = obstack_object_size (&inline_text_obstack);
+  buf = obstack_finish (&inline_text_obstack);
+
+  push_obstacks (&inline_text_obstack, &inline_text_obstack);
+  arg = make_node (DEFAULT_ARG);
+  DEFARG_LENGTH (arg) = len - 1;
+  DEFARG_POINTER (arg) = buf;
+  pop_obstacks ();
+
+  return arg;
+}
+
+/* Called from grokfndecl to note a function decl with unparsed default
+   arguments for later processing.  Also called from grokdeclarator
+   for function types with unparsed defargs; the call from grokfndecl
+   will always come second, so we can overwrite the entry from the type.  */
+
+void
+add_defarg_fn (decl)
+     tree decl;
+{
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    TREE_VALUE (defarg_fns) = decl;
+  else
+    {
+      push_obstacks (&inline_text_obstack, &inline_text_obstack);
+      defarg_fns = tree_cons (current_class_type, decl, defarg_fns);  
+      pop_obstacks ();
+    }
+}
+
+/* Helper for do_pending_defargs.  Starts the parsing of a default arg.  */
+
+static void
+feed_defarg (f, p)
+     tree f, p;
+{
+  tree d = TREE_PURPOSE (p);
+  feed_input (DEFARG_POINTER (d), DEFARG_LENGTH (d));
+  if (TREE_CODE (f) == FUNCTION_DECL)
+    {
+      lineno = DECL_SOURCE_LINE (f);
+      input_filename = DECL_SOURCE_FILE (f);
+    }
+  yychar = DEFARG_MARKER;
+  yylval.ttype = p;
+}
+
+/* Helper for do_pending_defargs.  Ends the parsing of a default arg.  */
+
+static void
+finish_defarg ()
+{
+  if (yychar == YYEMPTY)
+    yychar = yylex ();
+  if (yychar != END_OF_SAVED_INPUT)
+    {
+      error ("parse error at end of saved function text");
+
+      /* restore_pending_input will abort unless yychar is either
+         END_OF_SAVED_INPUT or YYEMPTY; since we already know we're
+         hosed, feed back YYEMPTY.  We also need to discard nextchar,
+         since that may have gotten set as well.  */
+      nextchar = -1;
+    }
+  yychar = YYEMPTY;
+  end_input ();
+}  
+
+/* Main function for deferred parsing of default arguments.  Called from
+   the parser.  */
+
+void
+do_pending_defargs ()
+{
+  if (defarg_parm)
+    finish_defarg ();
+
+  for (; defarg_fns; defarg_fns = TREE_CHAIN (defarg_fns))
+    {
+      tree defarg_fn = TREE_VALUE (defarg_fns);
+      if (defarg_parm == NULL_TREE)
+	{
+	  tree p;
+
+	  push_nested_class (TREE_PURPOSE (defarg_fns), 1);
+	  pushlevel (0);
+
+	  if (TREE_CODE (defarg_fn) == FUNCTION_DECL)
+	    {
+#if 0
+	      for (p = DECL_ARGUMENTS (defarg_fn); p; p = TREE_CHAIN (p))
+		pushdecl (copy_node (p));
+#endif
+	      defarg_parm = TYPE_ARG_TYPES (TREE_TYPE (defarg_fn));
+	    }
+	  else
+	    defarg_parm = TYPE_ARG_TYPES (defarg_fn);
+	}
+      else
+	defarg_parm = TREE_CHAIN (defarg_parm);
+
+      for (; defarg_parm; defarg_parm = TREE_CHAIN (defarg_parm))
+	if (TREE_PURPOSE (defarg_parm))
+	  {
+	    my_friendly_assert (TREE_CODE (TREE_PURPOSE (defarg_parm))
+				== DEFAULT_ARG, 2349);
+	    feed_defarg (defarg_fn, defarg_parm);
+
+	    /* Return to the parser, which will process this defarg
+	       and call us again.  */
+	    return;
+	  }
+
+      poplevel (0, 0, 0);
+      pop_nested_class (1);
+    }
 }
 
 /* Build a default function named NAME for type TYPE.
@@ -2716,7 +2972,7 @@ do_scoped_id (token, parsing)
 	}
       /* else just use the decl */
     }
-  return id;
+  return convert_from_reference (id);
 }
 
 tree

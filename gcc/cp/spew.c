@@ -215,6 +215,7 @@ probe_obstack (h, obj, nlevels)
    Value is 0 if we treat this name in a default fashion.  */
 extern int looking_for_typename;
 int looking_for_template;
+extern int do_snarf_defarg;
 
 extern struct obstack *current_obstack, *saveable_obstack;
 tree got_scope;
@@ -226,6 +227,8 @@ peekyylex ()
   scan_tokens (0);
   return nth_token (0)->yychar;
 }
+
+extern tree snarf_defarg ();
 
 int
 yylex ()
@@ -242,8 +245,18 @@ yylex ()
   }
 #endif
 
+  if (do_snarf_defarg)
+    {
+      my_friendly_assert (num_tokens () == 0, 2837);
+      tmp_token.yychar = DEFARG;
+      tmp_token.yylval.ttype = snarf_defarg ();
+      tmp_token.end_of_file = 0;
+      do_snarf_defarg = 0;
+      add_token (&tmp_token);
+    }
+
   /* if we've got tokens, send them */
-  if (num_tokens ())
+  else if (num_tokens ())
     {
       tmp_token= *nth_token (0);
 

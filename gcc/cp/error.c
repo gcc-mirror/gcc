@@ -1081,7 +1081,8 @@ dump_expr (t, nop)
     case NEW_EXPR:
       OB_PUTID (TYPE_IDENTIFIER (TREE_TYPE (t)));
       OB_PUTC ('(');
-      dump_expr_list (TREE_CHAIN (TREE_OPERAND (t, 1)));
+      if (TREE_OPERAND (t, 1))
+	dump_expr_list (TREE_CHAIN (TREE_OPERAND (t, 1)));
       OB_PUTC (')');
       break;
 

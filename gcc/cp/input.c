@@ -30,7 +30,6 @@ Boston, MA 02111-1307, USA.  */
    inlining).  */
 
 #include <stdio.h>
-#include "obstack.h"
 
 extern FILE *finput;
 
@@ -43,8 +42,6 @@ struct input_source {
   int length;
   /* current position, when reading as input */
   int offset;
-  /* obstack to free this input string from when finished, if any */
-  struct obstack *obstack;
   /* linked list maintenance */
   struct input_source *next;
   /* values to restore after reading all of current string */
@@ -78,7 +75,6 @@ allocate_input ()
     }
   inp = (struct input_source *) xmalloc (sizeof (struct input_source));
   inp->next = 0;
-  inp->obstack = 0;
   return inp;
 }
 
@@ -86,9 +82,6 @@ static inline void
 free_input (inp)
      struct input_source *inp;
 {
-  if (inp->obstack)
-    obstack_free (inp->obstack, inp->str);
-  inp->obstack = 0;
   inp->str = 0;
   inp->length = 0;
   inp->next = free_inputs;
@@ -102,10 +95,9 @@ static int putback_char = -1;
 
 inline
 void
-feed_input (str, len, delete)
+feed_input (str, len)
      char *str;
      int len;
-     struct obstack *delete;
 {
   struct input_source *inp = allocate_input ();
 
@@ -115,7 +107,6 @@ feed_input (str, len, delete)
 
   inp->str = str;
   inp->length = len;
-  inp->obstack = delete;
   inp->offset = 0;
   inp->next = input;
   inp->filename = input_filename;
@@ -129,6 +120,22 @@ feed_input (str, len, delete)
 struct pending_input *to_be_restored; /* XXX */
 extern int end_of_file;
 
+static inline void
+end_input ()
+{
+  struct input_source *inp = input;
+
+  end_of_file = 0;
+  input = inp->next;
+  input_filename = inp->filename;
+  lineno = inp->lineno;
+  /* Get interface/implementation back in sync.  */
+  extract_interface_info ();
+  putback_char = inp->putback_char;
+  restore_pending_input (inp->input);
+  free_input (inp);
+}
+
 static inline int
 sub_getch ()
 {
@@ -140,30 +147,12 @@ sub_getch ()
     }
   if (input)
     {
-      if (input->offset == input->length)
+      if (input->offset >= input->length)
 	{
-	  struct input_source *inp = input;
 	  my_friendly_assert (putback_char == -1, 223);
-	  to_be_restored = inp->input;
-	  input->offset++;
 	  return EOF;
 	}
-      else if (input->offset > input->length)
-	{
-	  struct input_source *inp = input;
-
-	  end_of_file = 0;
-	  input = inp->next;
-	  input_filename = inp->filename;
-	  lineno = inp->lineno;
-	  /* Get interface/implementation back in sync.  */
-	  extract_interface_info ();
-	  putback_char = inp->putback_char;
-	  free_input (inp);
-	  return getch ();
-	}
-      if (input)
-	return (unsigned char)input->str[input->offset++];
+      return (unsigned char)input->str[input->offset++];
     }
   return getc (finput);
 }

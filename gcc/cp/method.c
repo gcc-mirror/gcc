@@ -43,6 +43,8 @@ Boston, MA 02111-1307, USA.  */
    processed.  */
 struct pending_inline *pending_inlines;
 
+int static_labelno;
+
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
@@ -371,18 +373,15 @@ build_overload_nested_name (decl)
     {
       tree name = DECL_ASSEMBLER_NAME (decl);
       char *label;
-      extern int var_labelno;
 
-      ASM_FORMAT_PRIVATE_NAME (label, IDENTIFIER_POINTER (name), var_labelno);
-      var_labelno++;
+      ASM_FORMAT_PRIVATE_NAME (label, IDENTIFIER_POINTER (name), static_labelno);
+      static_labelno++;
 
       if (numeric_output_need_bar)
-	{
-	  OB_PUTC ('_');
-	  numeric_output_need_bar = 0;
-	}
+	OB_PUTC ('_');
       icat (strlen (label));
       OB_PUTCP (label);
+      numeric_output_need_bar = 1;
     }
   else				/* TYPE_DECL */
     build_overload_identifier (decl);
@@ -669,6 +668,49 @@ build_overload_identifier (name)
     }
 }
 
+/* Given DECL, either a class TYPE, TYPE_DECL or FUNCTION_DECL, produce
+   the mangling for it.  Used by build_overload_name and build_static_name.  */
+
+static void
+build_qualified_name (decl)
+     tree decl;
+{
+  tree context;
+  int i = 1;
+
+  if (TREE_CODE_CLASS (TREE_CODE (decl)) == 't')
+    decl = TYPE_NAME (decl);
+
+  /* If DECL_ASSEMBLER_NAME has been set properly, use it.  */
+  if (TREE_CODE (decl) == TYPE_DECL
+      && DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl))
+    {
+      OB_PUTID (DECL_ASSEMBLER_NAME (decl));
+      return;
+    }
+
+  context = decl;
+  while (DECL_CONTEXT (context))
+    {
+      i += 1;
+      context = DECL_CONTEXT (context);
+      if (TREE_CODE_CLASS (TREE_CODE (context)) == 't')
+	context = TYPE_NAME (context);
+    }
+
+  if (i > 1)
+    {
+      OB_PUTC ('Q');
+      if (i > 9)
+	OB_PUTC ('_');
+      icat (i);
+      if (i > 9)
+	OB_PUTC ('_');
+      numeric_output_need_bar = 0;
+    }
+  build_overload_nested_name (decl);
+}
+
 /* Given a list of parameters in PARMTYPES, create an unambiguous
    overload string. Should distinguish any type that C (or C++) can
    distinguish. I.e., pointers to functions are treated correctly.
@@ -931,41 +973,15 @@ build_overload_name (parmtypes, begin, end)
 	common:
 	  {
 	    tree name = TYPE_NAME (parmtype);
-	    int i = 1;
 
-	    if (TREE_CODE (name) == TYPE_DECL)
+	    if (TREE_CODE (name) == IDENTIFIER_NODE)
 	      {
-		tree context = name;
+		build_overload_identifier (TYPE_NAME (parmtype));
+		break;
+	      }
+	    my_friendly_assert (TREE_CODE (name) == TYPE_DECL, 248);
 
-		/* If DECL_ASSEMBLER_NAME has been set properly, use it.  */
-		if (DECL_ASSEMBLER_NAME (context) != DECL_NAME (context))
-		  {
-		    OB_PUTID (DECL_ASSEMBLER_NAME (context));
-		    break;
-		  }
-		while (DECL_CONTEXT (context))
-		  {
-		    i += 1;
-		    context = DECL_CONTEXT (context);
-		    if (TREE_CODE_CLASS (TREE_CODE (context)) == 't')
-		      context = TYPE_NAME (context);
-		  }
-		name = DECL_NAME (name);
-	      }
-	    my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 248);
-	    if (i > 1)
-	      {
-		OB_PUTC ('Q');
-		if (i > 9)
-		  OB_PUTC ('_');
-		icat (i);
-		if (i > 9)
-		  OB_PUTC ('_');
-		numeric_output_need_bar = 0;
-		build_overload_nested_name (TYPE_NAME (parmtype));
-	      }
-	    else	      
-	      build_overload_identifier (TYPE_NAME (parmtype));
+	    build_qualified_name (name);
 	    break;
 	  }
 
@@ -1015,17 +1031,29 @@ build_overload_name (parmtypes, begin, end)
   return (char *)obstack_base (&scratch_obstack);
 }
 
+/* Produce the mangling for a variable named NAME in CONTEXT, which can
+   be either a class TYPE or a FUNCTION_DECL.  */
+
 tree
-build_static_name (basetype, name)
-  tree basetype, name;
+build_static_name (context, name)
+     tree context, name;
 {
-  char *basename  = build_overload_name (basetype, 1, 1);
-  char *buf = (char *) alloca (IDENTIFIER_LENGTH (name)
-			       + sizeof (STATIC_NAME_FORMAT)
-			       + strlen (basename));
-  sprintf (buf, STATIC_NAME_FORMAT, basename, IDENTIFIER_POINTER (name));
-  return get_identifier (buf);
-}  
+  OB_INIT ();
+  numeric_output_need_bar = 0;
+#ifdef JOINER
+  OB_PUTC ('_');
+  build_qualified_name (context);
+  OB_PUTC (JOINER);
+#else
+  OB_PUTS ("__static_");
+  build_qualified_name (context);
+  OB_PUTC (' ');
+#endif
+  OB_PUTID (name);
+  OB_FINISH ();
+
+  return get_identifier ((char *)obstack_base (&scratch_obstack));
+}
 
 /* Change the name of a function definition so that it may be
    overloaded. NAME is the name of the function to overload,

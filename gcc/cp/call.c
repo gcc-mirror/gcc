@@ -3281,14 +3281,19 @@ implicit_conversion (to, from, expr, flags)
 	conv = cand->second_conv;
       if ((! conv || ICS_BAD_FLAG (conv))
 	  && TREE_CODE (to) == REFERENCE_TYPE
-	  && TYPE_READONLY (TREE_TYPE (to))
-	  && ! TYPE_VOLATILE (TREE_TYPE (to))
 	  && (flags & LOOKUP_NO_TEMP_BIND) == 0)
 	{
 	  cand = build_user_type_conversion_1
 	    (TYPE_MAIN_VARIANT (TREE_TYPE (to)), expr, LOOKUP_ONLYCONVERTING);
 	  if (cand)
-	    conv = build_conv (REF_BIND, to, cand->second_conv);
+	    {
+	      if (! TYPE_READONLY (TREE_TYPE (to))
+		  || TYPE_VOLATILE (TREE_TYPE (to)))
+		ICS_BAD_FLAG (cand->second_conv) = 1;
+	      if (!conv || (ICS_BAD_FLAG (conv)
+			    > ICS_BAD_FLAG (cand->second_conv)))
+		conv = build_conv (REF_BIND, to, cand->second_conv);
+	    }
 	}
     }
 
@@ -5108,10 +5113,11 @@ build_over_call (fn, convs, args, flags)
     {
       tree arg = TREE_PURPOSE (parm);
 
-      if (PARM_DEFAULT_FROM_TEMPLATE (parm))
+      if (DECL_TEMPLATE_INFO (fn) && uses_template_parms (arg))
 	/* This came from a template.  Instantiate the default arg here,
 	   not in tsubst.  */
-	arg = tsubst_expr (arg, &TREE_VEC_ELT (DECL_TI_ARGS (fn), 0),
+	arg = tsubst_expr (arg,
+			   &TREE_VEC_ELT (DECL_TI_ARGS (fn), 0),
 			   TREE_VEC_LENGTH (DECL_TI_ARGS (fn)), NULL_TREE);
       converted_args = tree_cons
 	(NULL_TREE, convert_default_arg (TREE_VALUE (parm), arg),

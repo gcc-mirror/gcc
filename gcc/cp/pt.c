@@ -962,6 +962,18 @@ uses_template_parms (t)
 	return uses_template_parms (TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (t)));
       return uses_template_parms (TREE_OPERAND (t, 1));
 
+    case MODOP_EXPR:
+    case CAST_EXPR:
+    case REINTERPRET_CAST_EXPR:
+    case CONST_CAST_EXPR:
+    case STATIC_CAST_EXPR:
+    case DYNAMIC_CAST_EXPR:
+    case SIZEOF_EXPR:
+    case ARROW_EXPR:
+    case DOTSTAR_EXPR:
+    case TYPEID_EXPR:
+      return 1;
+
     default:
       switch (TREE_CODE_CLASS (TREE_CODE (t)))
 	{
@@ -1848,9 +1860,6 @@ tsubst (t, args, nargs, in_decl)
 		   Handle it in build_over_call instead.  */
 		tree purpose = TREE_PURPOSE (values);
 		tree x = build_tree_list (purpose, value);
-
-		if (purpose)
-		  PARM_DEFAULT_FROM_TEMPLATE (x) = 1;
 
 		if (first)
 		  TREE_CHAIN (last) = x;
@@ -2828,6 +2837,7 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
     case REAL_TYPE:
     case COMPLEX_TYPE:
     case INTEGER_TYPE:
+    case BOOLEAN_TYPE:
       if (TREE_CODE (arg) != TREE_CODE (parm))
 	return 1;
 
