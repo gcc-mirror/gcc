@@ -446,6 +446,9 @@ s390_select_ccmode (enum rtx_code code, rtx op0, rtx op1)
     {
       case EQ:
       case NE:
+	if ((GET_CODE (op0) == NEG || GET_CODE (op0) == ABS)
+	    && GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT)
+	  return CCAPmode;
 	if (GET_CODE (op0) == PLUS && GET_CODE (XEXP (op0, 1)) == CONST_INT
 	    && CONST_OK_FOR_CONSTRAINT_P (INTVAL (XEXP (op0, 1)), 'K', "K"))
 	  return CCAPmode;
@@ -482,14 +485,18 @@ s390_select_ccmode (enum rtx_code code, rtx op0, rtx op1)
       case LT:
       case GE:
       case GT:
-	  if (GET_CODE (op0) == PLUS && GET_CODE (XEXP (op0, 1)) == CONST_INT
-	      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (XEXP (op0, 1)), 'K', "K"))
-            {
-	      if (INTVAL (XEXP((op0), 1)) < 0)
-	        return CCANmode;
-              else
-	        return CCAPmode;
-	    }
+	if ((GET_CODE (op0) == NEG || GET_CODE (op0) == ABS)
+	    && GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT)
+	  return CCAPmode;
+	if (GET_CODE (op0) == PLUS && GET_CODE (XEXP (op0, 1)) == CONST_INT
+	    && CONST_OK_FOR_CONSTRAINT_P (INTVAL (XEXP (op0, 1)), 'K', "K"))
+	  {
+	    if (INTVAL (XEXP((op0), 1)) < 0)
+	      return CCANmode;
+	    else
+	      return CCAPmode;
+	  }
+	/* Fall through.  */
       case UNORDERED:
       case ORDERED:
       case UNEQ:
