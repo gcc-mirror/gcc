@@ -3280,7 +3280,7 @@ expand_float (to, from, unsignedp)
     }
 #endif
 
-  /* No hardware instruction available; call a library rotine to convert from
+  /* No hardware instruction available; call a library routine to convert from
      SImode, DImode, or TImode into SFmode, DFmode, XFmode, or TFmode.  */
     {
       rtx libfcn;
@@ -3564,6 +3564,7 @@ expand_fix (to, from, unsignedp)
   if (libfcn)
     {
       rtx insns;
+      rtx value;
 
       to = protect_from_queue (to, 1);
       from = protect_from_queue (from, 0);
@@ -3573,11 +3574,13 @@ expand_fix (to, from, unsignedp)
 
       start_sequence ();
 
-      emit_library_call (libfcn, 1, GET_MODE (to), 1, from, GET_MODE (from));
+      value = emit_library_call_value (libfcn, NULL_RTX, 1, GET_MODE (to),
+
+				       1, from, GET_MODE (from));
       insns = get_insns ();
       end_sequence ();
 
-      emit_libcall_block (insns, target, hard_libcall_value (GET_MODE (to)),
+      emit_libcall_block (insns, target, value,
 			  gen_rtx (unsignedp ? FIX : UNSIGNED_FIX,
 				   GET_MODE (to), from));
     }
