@@ -2997,6 +2997,19 @@ tree_transform (Node_Id gnat_node)
 				   gnu_actual);
 		  }
 
+		/* Otherwise, if we have a non-addressable COMPONENT_REF of a
+		   variable-size type see if it's doing a unpadding operation.
+		   If so, remove that operation since we have no way of
+		   allocating the required temporary.  */
+		if (TREE_CODE (gnu_actual) == COMPONENT_REF
+		    && ! TREE_CONSTANT (TYPE_SIZE (TREE_TYPE (gnu_actual)))
+		    && (TREE_CODE (TREE_TYPE (TREE_OPERAND (gnu_actual, 0)))
+			== RECORD_TYPE)
+		    && TYPE_IS_PADDING_P (TREE_TYPE
+					  (TREE_OPERAND (gnu_actual, 0)))
+		    && !addressable_p (gnu_actual))
+		  gnu_actual = TREE_OPERAND (gnu_actual, 0);
+
 		/* The symmetry of the paths to the type of an entity is
 		   broken here since arguments don't know that they will
 		   be passed by ref. */

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2001-2003 Free Software Foundation, Inc.       --
+--             Copyright (C) 2001-2004 Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -105,7 +105,7 @@ package body Prj.Attr is
      "Pbuilder#" &
      "Ladefault_switches#" &
      "Lbswitches#" &
-     "SAexecutable#" &
+     "Sbexecutable#" &
      "SVexecutable_suffix#" &
      "SVglobal_configuration_pragmas#" &
 
@@ -258,7 +258,7 @@ package body Prj.Attr is
 
                when 'b' =>
                   if File_Names_Case_Sensitive then
-                     Kind_2 := Case_Insensitive_Associative_Array;
+                     Kind_2 := Associative_Array;
                   else
                      Kind_2 := Case_Insensitive_Associative_Array;
                   end if;

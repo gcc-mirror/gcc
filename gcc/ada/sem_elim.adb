@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -232,6 +232,29 @@ package body Sem_Elim is
       Ctr  : Nat;
       Ent  : Entity_Id;
 
+      function Original_Chars (S : Entity_Id) return Name_Id;
+      --  If the candidate subprogram is a protected operation of a single
+      --  protected object, the scope of the operation is the created
+      --  protected type, and we have to retrieve the original name of
+      --  the object.
+
+      --------------------
+      -- Original_Chars --
+      --------------------
+
+      function Original_Chars (S : Entity_Id) return Name_Id is
+      begin
+         if Ekind (S) /= E_Protected_Type
+           or else Comes_From_Source (S)
+         then
+            return Chars (S);
+         else
+            return Chars (Defining_Identifier (Original_Node (Parent (S))));
+         end if;
+      end Original_Chars;
+
+   --  Start of processing for Check_Eliminated
+
    begin
       if No_Elimination then
          return;
@@ -270,7 +293,7 @@ package body Sem_Elim is
             Scop := Scope (E);
             if Elmt.Entity_Scope /= null then
                for J in reverse Elmt.Entity_Scope'Range loop
-                  if Elmt.Entity_Scope (J) /= Chars (Scop) then
+                  if Elmt.Entity_Scope (J) /= Original_Chars (Scop) then
                      goto Continue;
                   end if;
 
