@@ -1,3 +1,7 @@
+Fri Feb 19 15:43:59 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cppinit.c (print_help): Remove unescaped newline in string.
+
 Fri Feb 19 19:55:06 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (strength_reduce): Check for intervening jumps when
