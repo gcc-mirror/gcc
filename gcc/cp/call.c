@@ -5126,12 +5126,15 @@ perform_implicit_conversion (type, expr)
      tree type;
      tree expr;
 {
-  tree conv = implicit_conversion (type, TREE_TYPE (expr), expr,
-				   LOOKUP_NORMAL);
+  tree conv;
+  
+  if (expr == error_mark_node)
+    return error_mark_node;
+  conv = implicit_conversion (type, TREE_TYPE (expr), expr,
+			      LOOKUP_NORMAL);
   if (!conv || ICS_BAD_FLAG (conv))
     {
-      if (expr != error_mark_node)
-        cp_error ("could not convert `%E' to `%T'", expr, type);
+      cp_error ("could not convert `%E' to `%T'", expr, type);
       return error_mark_node;
     }
 
