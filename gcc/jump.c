@@ -1,5 +1,5 @@
 /* Optimize jump instructions, for GNU compiler.
-   Copyright (C) 1987, 88, 89, 91-96, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 91-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
