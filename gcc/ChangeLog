@@ -1,3 +1,10 @@
+Fri Feb 21 11:02:29 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cfgrtl.c (commit_one_edge_insertion): Only mark BB for splitting.
+	(commit_edge_insertions): Call find_many_sub_basic_blocks
+
+	* reg-stack.c (convert_regs): Cleax aux for blocks.
+
 2003-02-21  Glen Nakamura  <glen@imodulo.com>
 
 	PR optimization/8613

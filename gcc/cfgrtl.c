@@ -1448,7 +1448,8 @@ commit_one_edge_insertion (e, watch_calls)
   else if (GET_CODE (last) == JUMP_INSN)
     abort ();
 
-  find_sub_basic_blocks (bb);
+  /* Mark the basic block for find_sub_basic_blocks.  */
+  bb->aux = &bb->aux;
 }
 
 /* Update the CFG for all queued instructions.  */
@@ -1457,6 +1458,7 @@ void
 commit_edge_insertions ()
 {
   basic_block bb;
+  sbitmap blocks;
 
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
@@ -1473,6 +1475,17 @@ commit_edge_insertions ()
 	    commit_one_edge_insertion (e, false);
 	}
     }
+
+  blocks = sbitmap_alloc (last_basic_block);
+  sbitmap_zero (blocks);
+  FOR_EACH_BB (bb)
+    if (bb->aux)
+      {
+        SET_BIT (blocks, bb->index);
+	bb->aux = NULL;
+      }
+  find_many_sub_basic_blocks (blocks);
+  sbitmap_free (blocks);
 }
 
 /* Update the CFG for all queued instructions, taking special care of inserting
