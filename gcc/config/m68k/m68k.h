@@ -1629,6 +1629,8 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
        sp@+, (sp)+ or (%sp)+ depending on the style of syntax.
    '@' for a reference to the top word on the stack:
        sp@, (sp) or (%sp) depending on the style of syntax.
+   '#' for an immediate operand prefix (# in MIT and Motorola syntax
+       but & in SGS syntax).
    '!' for the fpcr register (used in some float-to-fixed conversions).
    '$' for the letter `s' in an op code, but only on the 68040.
    '&' for the letter `d' in an op code, but only on the 68040.
@@ -1643,8 +1645,9 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
        or print pair of registers as rx:ry.  */
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)				\
-  ((CODE) == '.' || (CODE) == '-' || (CODE) == '+' || (CODE) == '@'	\
-   || (CODE) == '!' || (CODE) == '$' || (CODE) == '&' || (CODE) == '/')
+  ((CODE) == '.' || (CODE) == '#' || (CODE) == '-'			\
+   || (CODE) == '+' || (CODE) == '@' || (CODE) == '!'			\
+   || (CODE) == '$' || (CODE) == '&' || (CODE) == '/')
 
 /* A C compound statement to output to stdio stream STREAM the
    assembler syntax for an instruction operand X.  X is an RTL

@@ -1,3 +1,8 @@
+2004-02-15  Bernardo Innocenti  <bernie@develer.com>
+
+	* config/m68k/m68k.h (PRINT_OPERAND_PUNCT_VALID_P): Restore support for
+	'%#'.
+
 2004-02-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/ia64/ia64.c, config/mips/mips.c,
