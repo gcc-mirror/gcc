@@ -106,9 +106,9 @@ add_line_map (set, reason, sysp, from_line, to_file, to_line)
 
       if (MAIN_FILE_P (map - 1))
 	{
-	  error = true;
-	  reason = LC_RENAME;
-	  from = map - 1;
+	  set->depth--;
+	  set->used--;
+	  return NULL;
 	}
       else
 	{
@@ -139,8 +139,8 @@ add_line_map (set, reason, sysp, from_line, to_file, to_line)
 
   if (reason == LC_ENTER)
     {
+      map->included_from = set->depth == 0 ? -1 : (int) (set->used - 2);
       set->depth++;
-      map->included_from = set->used - 2;
       if (set->trace_includes)
 	trace_include (set, map);
     }

@@ -1,3 +1,12 @@
+2003-03-20  Per Bothner  <pbothner@apple.com>
+
+	Various cleanups to help compile server.
+
+	* line-map.c (add_line_map):  Allow leaving the outermost file.
+	Allowing entering an outermost-file after the initial time. 
+
+	* toplev.c (pop_srcloc):  Allow popping from initial file.
+
 2003-03-20  Kazu Hirata  <kazu at cs dot umass dot edu>
 
 	* fold-const.c (fold): Fold A - (A & B) into ~B & A.
