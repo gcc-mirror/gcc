@@ -271,6 +271,7 @@ AM_CONDITIONAL(USING_GCC, test "$GCC" = yes)
 
 CANADIAN=no
 NULL_TARGET=no
+NATIVE=yes
 
 # Find eh-common.h and support headers.  If we're in the tree with
 # gcc, then look there.  Otherwise look in compat-include.  If all else
@@ -309,10 +310,11 @@ if test -n "${with_cross_host}"; then
    if test "$build" != "$with_cross_host"; then
       CANADIAN=yes
       EH_COMMON_INCLUDE=
-      GCJ="${target_alias}/gcj"
+      GCJ="${target_alias}-gcj"
    else
       GCJ=
    fi
+   NATIVE=no
 else
    AC_CHECK_FUNCS(strerror ioctl select fstat open fsync sleep)
    AC_CHECK_FUNCS(gmtime_r localtime_r readdir_r getpwuid_r)
@@ -520,7 +522,7 @@ AC_SUBST(DIVIDESPEC)
 
 AM_CONDITIONAL(CANADIAN, test "$CANADIAN" = yes)
 AM_CONDITIONAL(NULL_TARGET, test "$NULL_TARGET" = yes)
-AM_CONDITIONAL(NATIVE, test "$CANADIAN" = no || test "$NULL_TARGET" = yes)
+AM_CONDITIONAL(NATIVE, test "$NATIVE" = yes || test "$NULL_TARGET" = yes)
 AM_CONDITIONAL(USE_LIBDIR, test -z "$with_cross_host")
 AC_SUBST(EH_COMMON_INCLUDE)
 
