@@ -24,6 +24,10 @@ Boston, MA 02111-1307, USA.  */
 #include <errno.h>
 #include <setjmp.h>
 
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif
+
 #include "rtl.h"
 #include "tree.h"
 #include "input.h"
@@ -32,8 +36,11 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "c-parse.h"
 #include "c-pragma.h"
+#include "intl.h"
 
+#ifdef MAP_CHARACTER
 #include <ctype.h>
+#endif
 
 /* MULTIBYTE_CHARS support only works for native compilers.
    ??? Ideally what we want is to model widechar support after
@@ -57,6 +64,12 @@ cpp_reader parse_in;
 cpp_options parse_options;
 static enum cpp_token cpp_token;
 #endif
+
+#ifndef UCHAR_MAX
+#define UCHAR_MAX ((unsigned char) -1)
+#endif
+
+char C_alnum_array[UCHAR_MAX + 1 - EOF];
 
 /* The elements of `ridpointers' are identifier nodes
    for the reserved type names and storage classes.
@@ -217,6 +230,8 @@ finish_parse ()
 void
 init_lex ()
 {
+  char *p;
+
   /* Make identifier nodes long enough for the language-specific slots.  */
   set_identifier_size (sizeof (struct lang_identifier));
 
@@ -286,6 +301,14 @@ init_lex ()
       UNSET_RESERVED_WORD ("iterator");
       UNSET_RESERVED_WORD ("complex");
     }
+
+  for (p = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz";
+       *p; p++)
+    is_C_alnum ((unsigned char) *p) = 1;
+  if (doing_objc_thang)
+    is_C_alnum ((unsigned char) '@') = 1;
+  if (dollars_in_ident)
+    is_C_alnum ((unsigned char) '$') = 1;
 }
 
 void
@@ -1039,30 +1062,25 @@ readescape (ignore_ptr)
 }
 
 void
-yyerror (string)
-     char *string;
+yyerror (msgid)
+     char *msgid;
 {
-  char buf[200];
-
-  strcpy (buf, string);
+  char *string = _(msgid);
 
   /* We can't print string and character constants well
      because the token_buffer contains the result of processing escapes.  */
   if (end_of_file)
-    strcat (buf, " at end of input");
+    error ("%s at end of input", string);
   else if (token_buffer[0] == 0)
-    strcat (buf, " at null character");
+    error ("%s at null character", string);
   else if (token_buffer[0] == '"')
-    strcat (buf, " before string constant");
+    error ("%s before string constant", string);
   else if (token_buffer[0] == '\'')
-    strcat (buf, " before character constant");
+    error ("%s before character constant", string);
   else if (token_buffer[0] < 040 || (unsigned char) token_buffer[0] >= 0177)
-    sprintf (buf + strlen (buf), " before character 0%o",
-	     (unsigned char) token_buffer[0]);
+    error ("%s before character 0%o", string, (unsigned char) token_buffer[0]);
   else
-    strcat (buf, " before `%s'");
-
-  error (buf, token_buffer);
+    error ("%s before `%s'", string, token_buffer);
 }
 
 #if 0
@@ -1193,11 +1211,9 @@ yylex ()
     case '$':
     letter:
       p = token_buffer;
-      while (isalnum (c) || c == '_' || c == '$' || c == '@')
+      while (is_C_alnum (c) || c == '$')
 	{
 	  /* Make sure this char really belongs in an identifier.  */
-	  if (c == '@' && ! doing_objc_thang)
-	    break;
 	  if (c == '$')
 	    {
 	      if (! dollars_in_ident)
@@ -1305,7 +1321,7 @@ yylex ()
 
 	next_c = GETC ();
 	UNGETC (next_c);	/* Always undo this lookahead.  */
-	if (!isalnum (next_c) && next_c != '.')
+	if (!is_C_alnum (next_c) && next_c != '.')
 	  {
 	    token_buffer[0] = (char)c,  token_buffer[1] = '\0';
 	    yylval.ttype = (c == '0') ? integer_zero_node : integer_one_node;
@@ -1362,7 +1378,7 @@ yylex ()
 	/* Read all the digits-and-decimal-points.  */
 
 	while (c == '.'
-	       || (isalnum (c) && c != 'l' && c != 'L'
+	       || (is_C_alnum (c) && c != 'l' && c != 'L'
 		   && c != 'u' && c != 'U'
 		   && c != 'i' && c != 'I' && c != 'j' && c != 'J'
 		   && (floatflag == NOT_FLOAT || ((c != 'f') && (c != 'F')))))
@@ -1391,7 +1407,7 @@ yylex ()
 		   only when it is followed by a digit.
 		   Otherwise, unread the following non-digit
 		   and use the '.' as a structural token.  */
-		if (p == token_buffer + 2 && !isdigit (c))
+		if (p == token_buffer + 2 && !is_C_digit (c))
 		  {
 		    if (c == '.')
 		      {
@@ -1415,7 +1431,7 @@ yylex ()
 		/* It is not a decimal point.
 		   It should be a digit (perhaps a hex digit).  */
 
-		if (isdigit (c))
+		if (is_C_digit (c))
 		  {
 		    c = c - '0';
 		  }
@@ -1497,9 +1513,9 @@ yylex ()
 		    *p++ = c;
 		    c = GETC();
 		  }
-		if (! isdigit (c))
+		if (! is_C_digit (c))
 		  error ("floating constant exponent has no digits");
-	        while (isdigit (c))
+	        while (is_C_digit (c))
 		  {
 		    if (p >= token_buffer + maxtoken - 3)
 		      p = extend_token_buffer (p);
@@ -1813,7 +1829,7 @@ yylex ()
 	UNGETC (c);
 	*p = 0;
 
-	if (isalnum (c) || c == '.' || c == '_' || c == '$'
+	if (is_C_alnum (c) || c == '.'
 	    || (!flag_traditional && (c == '-' || c == '+')
 		&& (p[-1] == 'e' || p[-1] == 'E')))
 	  error ("missing white space after number `%s'", token_buffer);
