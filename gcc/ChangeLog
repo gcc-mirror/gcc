@@ -1,3 +1,9 @@
+2004-11-11  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/17742
+	* tree-scalar-evolution.c (follow_ssa_edge_in_rhs): Handle
+	MINUS_EXPR correctly.
+
 2004-11-11  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* tree-scalar-evolution.c (follow_ssa_edge_in_condition_phi): 

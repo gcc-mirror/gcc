@@ -1186,65 +1186,15 @@ follow_ssa_edge_in_rhs (struct loop *loop,
 
       if (TREE_CODE (rhs0) == SSA_NAME)
 	{
-	  if (TREE_CODE (rhs1) == SSA_NAME)
-	    {
-	      /* Match an assignment under the form: 
-		 "a = b - c".  */
-	      res = follow_ssa_edge 
-		(loop, SSA_NAME_DEF_STMT (rhs0), halting_phi, 
-		 evolution_of_loop);
-	      
-	      if (res)
-		*evolution_of_loop = add_to_evolution 
-		  (loop->num, chrec_convert (type_rhs, *evolution_of_loop), 
-		   MINUS_EXPR, rhs1);
-	      
-	      else
-		{
-		  res = follow_ssa_edge 
-		    (loop, SSA_NAME_DEF_STMT (rhs1), halting_phi, 
-		     evolution_of_loop);
-		  
-		  if (res)
-		    *evolution_of_loop = add_to_evolution 
-		      (loop->num, 
-		       chrec_fold_multiply (type_rhs, 
-					    *evolution_of_loop, 
-					    build_int_cst_type (type_rhs, -1)),
-		       PLUS_EXPR, rhs0);
-		}
-	    }
-	  
-	  else
-	    {
-	      /* Match an assignment under the form: 
-		 "a = b - ...".  */
-	      res = follow_ssa_edge 
-		(loop, SSA_NAME_DEF_STMT (rhs0), halting_phi, 
-		 evolution_of_loop);
-	      if (res)
-		*evolution_of_loop = add_to_evolution 
-		  (loop->num, chrec_convert (type_rhs, *evolution_of_loop), 
-		   MINUS_EXPR, rhs1);
-	    }
-	}
-      
-      else if (TREE_CODE (rhs1) == SSA_NAME)
-	{
 	  /* Match an assignment under the form: 
-	     "a = ... - c".  */
-	  res = follow_ssa_edge 
-	    (loop, SSA_NAME_DEF_STMT (rhs1), halting_phi, 
-	     evolution_of_loop);
+	     "a = b - ...".  */
+	  res = follow_ssa_edge (loop, SSA_NAME_DEF_STMT (rhs0), halting_phi, 
+				 evolution_of_loop);
 	  if (res)
 	    *evolution_of_loop = add_to_evolution 
-	      (loop->num, 
-	       chrec_fold_multiply (type_rhs, 
-				    *evolution_of_loop, 
-				    build_int_cst_type (type_rhs, -1)),
-	       PLUS_EXPR, rhs0);
+		    (loop->num, chrec_convert (type_rhs, *evolution_of_loop), 
+		     MINUS_EXPR, rhs1);
 	}
-      
       else
 	/* Otherwise, match an assignment under the form: 
 	   "a = ... - ...".  */
