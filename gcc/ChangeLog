@@ -1,3 +1,9 @@
+2004-05-31  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/15069
+	* fold-const.c (fold_single_bit_test): Only perform "(X & C) != 0"
+	into "X < 0" (where C is the signbit) if X's type is a full mode.
+
 2004-05-31  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.md: Disable the peephole2 patterns that generate indexed
