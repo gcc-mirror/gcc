@@ -19,9 +19,9 @@
 #   cpu_include_dir        CPU-specific directory, defaults to cpu/generic
 #                              if cpu/target_cpu doesn't exist.  This is
 #                              used to set the next two:
-#   ATOMICITYH             location of bits/atomicity.h,
+#   ATOMICITYH             location of atomicity.h,
 #                              defaults to cpu_include_dir
-#   CPULIMITSH             location of bits/cpu_limits.h,
+#   CPULIMITSH             location of cpu_limits.h,
 #                              defaults to cpu_include_dir
 #
 #   os_include_dir         OS-specific directory, defaults to os/generic.
@@ -106,14 +106,14 @@ esac
 # choices for those if they haven't been explicitly set already.
 _cpu_incdir_fullpath=${glibcpp_srcdir}/config/${cpu_include_dir}
 if test x${ATOMICITYH+set} != xset; then
-  if test -f ${_cpu_incdir_fullpath}/bits/atomicity.h; then
+  if test -f ${_cpu_incdir_fullpath}/atomicity.h; then
     ATOMICITYH=$cpu_include_dir
   else
     ATOMICITYH="cpu/generic"
   fi
 fi
 if test x${CPULIMITSH+set} != xset; then
-  if test -f ${_cpu_incdir_fullpath}/bits/cpu_limits.h; then
+  if test -f ${_cpu_incdir_fullpath}/cpu_limits.h; then
     CPULIMITSH=$cpu_include_dir
   else
     CPULIMITSH="cpu/generic"
@@ -131,7 +131,7 @@ unset _cpu_incdir_fullpath
 case "${target_os}" in
   aix4.[3456789]* | aix[56789]*)
     # We set os_include_dir to os/aix only on AIX 4.3 and newer, but
-    # os/aix/bits/atomicity.h works on earlier versions of AIX 4.*, so we
+    # os/aix/atomicity.h works on earlier versions of AIX 4.*, so we
     # explicitly duplicate the directory for 4.[<3].
     os_include_dir="os/aix"
     ATOMICITYH="os/aix"

@@ -1,3 +1,12 @@
+2002-06-24  Phil Edwards  <pme@gcc.gnu.org>
+
+	* config/cpu/*/bits/*:  Move header files up a level.  Remove bits.
+	* config/os/*/bits/*:  Likewise.
+	* configure.in:  Update.
+	* configure:  Regenerate.
+	* configure.target:  Update.
+	* docs/html/17_intro/porting.texi:  Update.
+
 2002-06-21  Phil Edwards  <pme@gcc.gnu.org>
 
 	* include/bits/stl_map.h, include/bits/stl_multimap.h,
