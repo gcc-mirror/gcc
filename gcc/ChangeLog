@@ -1,3 +1,9 @@
+Sat Feb 28 16:58:08 1998  Tristan Gingold  <gingold@rossini.enst.fr>
+
+	* stmt.c (expand_decl): If -fcheck-memory-usage, put vars in memory.
+	* expr.c (get_memory_usage_from_modifier): Convert
+	EXPAND_{CONST_ADDRESS, INITIALIZER} to MEMORY_USE_DONT.
+  
 Sat Feb 28 08:13:43 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* i860/fx2800.h (DATA_ALIGNMENT): Use POINTER_TYPE_P.
