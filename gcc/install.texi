@@ -141,9 +141,9 @@ linker with GNU CC.
 
 This option does not cause the GNU linker to be installed; it just
 modifies the behavior of GNU CC to work with the GNU linker.
-@cSpecifically, it inhibits the installation of @code{collect2}, a program
-@cwhich otherwise serves as a front-end for the system's linker on most
-@cconfigurations.
+@c Specifically, it inhibits the installation of @code{collect2}, a program
+@c which otherwise serves as a front-end for the system's linker on most
+@c configurations.
 
 @item --with-stabs
 On MIPS based systems and on Alphas, you must specify whether you want
