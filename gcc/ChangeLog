@@ -1,3 +1,8 @@
+Mon May  4 19:15:29 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* expr.c (expand_expr, case INDIRECT_REF): Don't optimize string
+	reference if this is a store.
+
 Mon May  4 17:25:17 1998  Richard Henderson  <rth@cygnus.com>
 
 	* sparc.c (output_move_quad): Fix typo in mov_by_64 argument.
