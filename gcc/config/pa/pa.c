@@ -423,7 +423,7 @@ arith_double_operand (op, mode)
 	  || (GET_CODE (op) == CONST_DOUBLE
 	      && GET_MODE (op) == mode
 	      && VAL_14_BITS_P (CONST_DOUBLE_LOW (op))
-	      && (CONST_DOUBLE_HIGH (op) >= 0
+	      && ((CONST_DOUBLE_HIGH (op) >= 0)
 		  == ((CONST_DOUBLE_LOW (op) & 0x1000) == 0))));
 }
 
