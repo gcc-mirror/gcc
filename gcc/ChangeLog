@@ -17,9 +17,8 @@ Sun Oct 26 09:21:40 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (LIBGCC2_CFLAGS): Add -fexceptions.
 
-	* alias.c (find_base_value): Handle PRE_INC, PRE_DEC, POST_INC,
+	* alias.c (find_base_term): Handle PRE_INC, PRE_DEC, POST_INC,
 	and POS_DEC.
-	(find_base_term): Likewise.
 
 	* alias.c (true_dependence): Fix typo.
 
