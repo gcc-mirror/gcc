@@ -1295,12 +1295,11 @@ noce_try_minmax (if_info)
   if (no_new_pseudos)
     return FALSE;
 
-  /* ??? Reject FP modes since we don't know how 0 vs -0 or NaNs
-     will be resolved with an SMIN/SMAX.  It wouldn't be too hard
+  /* ??? Reject modes with NaNs or signed zeros since we don't know how
+     they will be resolved with an SMIN/SMAX.  It wouldn't be too hard
      to get the target to tell us...  */
-  if (FLOAT_MODE_P (GET_MODE (if_info->x))
-      && TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
-      && ! flag_unsafe_math_optimizations)
+  if (HONOR_SIGNED_ZEROS (GET_MODE (if_info->x))
+      || HONOR_NANS (GET_MODE (if_info->x)))
     return FALSE;
 
   cond = noce_get_alt_condition (if_info, if_info->a, &earliest);

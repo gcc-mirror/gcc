@@ -1336,6 +1336,55 @@ defined for them.
 The ordering of the component words of floating point values stored in
 memory is controlled by @code{FLOAT_WORDS_BIG_ENDIAN}.
 
+@findex MODE_HAS_NANS
+@item MODE_HAS_NANS (@var{mode})
+When defined, this macro should be true if @var{mode} has a NaN
+representation.  The compiler assumes that NaNs are not equal to
+anything (including themselves) and that addition, subtraction,
+multiplication and division all return NaNs when one operand is
+NaN@.
+
+By default, this macro is true if @var{mode} is a floating-point
+mode and the target floating-point format is IEEE@.
+
+@findex MODE_HAS_INFINITIES
+@item MODE_HAS_INFINITIES (@var{mode})
+This macro should be true if @var{mode} can represent infinity.  At
+present, the compiler uses this macro to decide whether @samp{x - x}
+is always defined.  By default, the macro is true when @var{mode}
+is a floating-point mode and the target format is IEEE@.
+
+@findex MODE_HAS_SIGNED_ZEROS
+@item MODE_HAS_SIGNED_ZEROS (@var{mode})
+True if @var{mode} distinguishes between positive and negative zero.
+The rules are expected to follow the IEEE standard:
+
+@itemize @bullet
+@item
+@samp{x + x} has the same sign as @samp{x}.
+
+@item
+If the sum of two values with opposite sign is zero, the result is
+positive for all rounding modes expect towards @minus{}infinity, for
+which it is negative.
+
+@item
+The sign of a product or quotient is negative when exactly one
+of the operands is negative.
+@end itemize
+
+The default definition is true if @var{mode} is a floating-point
+mode and the target format is IEEE@.
+
+@findex MODE_HAS_SIGN_DEPENDENT_ROUNDING
+@item MODE_HAS_SIGN_DEPENDENT_ROUNDING (@var{mode})
+If defined, this macro should be true for @var{mode} if it has at
+least one rounding mode in which @samp{x} and @samp{-x} can be
+rounded to numbers of different magnitude.  Two such modes are
+towards @minus{}infinity and towards +infinity.
+
+The default definition of this macro is true if @var{mode} is
+a floating-point mode and the target format is IEEE@.
 @end table
 
 @deftypefn {Target Hook} bool TARGET_MS_BITFIELD_LAYOUT_P (tree @var{record_type})
