@@ -105,13 +105,6 @@ namespace std {
   do_max_length() const throw() 
   { return 1; }
   
-  codecvt_byname<char, char, mbstate_t>::
-  codecvt_byname(const char* /*__s*/, size_t __refs)
-  : codecvt<char, char, mbstate_t>(__refs) { }
-
-  codecvt_byname<char, char, mbstate_t>::
-  ~codecvt_byname() { }
-
 #ifdef _GLIBCPP_USE_WCHAR_T
   // codecvt<wchar_t, char, mbstate_t> required specialization
   locale::id codecvt<wchar_t, char, mbstate_t>::id;
@@ -210,13 +203,6 @@ namespace std {
   codecvt<wchar_t, char, mbstate_t>::
   do_max_length() const throw()
   { return 1; }
-
-  codecvt_byname<wchar_t, char, mbstate_t>::
-  codecvt_byname(const char* /*__s*/, size_t __refs)
-  : codecvt<wchar_t, char, mbstate_t> (__refs) { }
-  
-  codecvt_byname<wchar_t, char, mbstate_t>::
-  ~codecvt_byname() { }
 #endif //  _GLIBCPP_USE_WCHAR_T
 
 } // namespace std

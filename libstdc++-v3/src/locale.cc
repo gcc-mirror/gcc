@@ -788,6 +788,23 @@ namespace std {
   ctype<char>::~ctype()
   { if (_M_del) delete[] this->table(); }
 
+  // These are dummy placeholders as these virtual functions are never called.
+  bool 
+  ctype<char>::do_is(mask, char_type) const 
+  { return false; }
+  
+  const char*
+  ctype<char>::do_is(const char_type* __c, const char_type*, mask*) const 
+  { return __c; }
+  
+  const char*
+  ctype<char>::do_scan_is(mask, const char_type* __c, const char_type*) const 
+  { return __c; }
+
+  const char* 
+  ctype<char>::do_scan_not(mask, const char_type* __c, const char_type*) const
+  { return __c; }
+
   char
   ctype<char>::do_widen(char __c) const
   { return __c; }
@@ -875,12 +892,58 @@ namespace std {
 #ifdef _GLIBCPP_USE_WCHAR_T  
   locale::id ctype<wchar_t>::id;
 
+  ctype<wchar_t>::__wmask_type
+  ctype<wchar_t>::_M_convert_to_wmask(const mask __m) const
+  {
+    __wmask_type __ret;
+    switch (__m)
+      {
+      case space:
+	__ret = wctype("space");
+	break;
+      case print:
+	__ret = wctype("print");
+	break;
+      case cntrl:
+	__ret = wctype("cntrl");
+	break;
+      case upper:
+	__ret = wctype("upper");
+	break;
+      case lower:
+	__ret = wctype("lower");
+	break;
+      case alpha:
+	__ret = wctype("alpha");
+	break;
+      case digit:
+	__ret = wctype("digit");
+	break;
+      case punct:
+	__ret = wctype("punct");
+	break;
+      case xdigit:
+	__ret = wctype("xdigit");
+	break;
+      case alnum:
+	__ret = wctype("alnum");
+	break;
+      case graph:
+	__ret = wctype("graph");
+	break;
+      default:
+	__ret = 0;
+      }
+    return __ret;
+  };
+  
   ctype<wchar_t>::
   ~ctype() { }
 
   // NB: These ctype<wchar_t> methods are not configuration-specific,
   // unlike the ctype<char> bits.
-  ctype<wchar_t>::ctype(size_t __refs) : _Ctype<wchar_t>(__refs) { }
+  ctype<wchar_t>::ctype(size_t __refs) : __ctype_abstract_base<wchar_t>(__refs)
+  { }
 
   wchar_t
   ctype<wchar_t>::do_toupper(wchar_t __c) const

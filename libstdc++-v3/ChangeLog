@@ -1,3 +1,37 @@
+2000-12-06  Benjamin Kosnik  <bkoz@kredhat.com>
+
+	* include/bits/locale_facets.h (ctype): Remove _Ctype_nois and
+	_Ctype and replace with common __ctype_abstract_base.
+	(ctype<wchar_t>::_M_convert_to_wmask): Move to locale.cc.
+	* config/os/gnu-linux/bits/ctype_noninline.h (ctype<char>::ctype):
+	And here.
+	* config/os/solaris/solaris2.7/bits/ctype_noninline.h (ctype): Same.
+	* config/os/solaris/solaris2.6/bits/ctype_noninline.h (ctype): Same.
+	* config/os/solaris/solaris2.5/bits/ctype_noninline.h (ctype): Same.
+	* config/os/newlib/bits/ctype_noninline.h (ctype): Same.
+	* config/os/irix/bits/ctype_noninline.h (ctype): Same.
+	* config/os/hpux/bits/ctype_noninline.h (ctype): Same.
+	* config/os/generic/bits/ctype_noninline.h (ctype): Same.
+	* config/os/aix/bits/ctype_noninline.h (ctype): Same.
+	* config/os/bsd/netbsd/bits/ctype_noninline.h (ctype): Same.
+	* config/os/bsd/freebsd/bits/ctype_noninline.h (ctype): Same.
+	* src/locale-inst.cc: Clean instantiations.
+	* src/locale.cc (ctype<char>): Add definitions here. 
+	(ctype<wchar_t>::_M_wmask): Move definitions here.
+	
+	* config/os/generic/bits/ctype_inline.h (ctype<char>::is):
+	Implement in a generic way, with only "C" functionality and no
+	knowlege of the target os.
+	* config/os/generic/bits/os_defines.h: Change comments to C++ style.
+	* testsuite/22_locale/ctype_char_members.cc (test01): Add tests.
+	
+	* include/bits/codecvt.h (ctype_byname): Remove specializations,
+	as not required.
+	* include/bits/localefwd.h (codecvt_byname): And here.
+	* src/codecvt.cc: Remove codecvt_byname specializations.
+	
+	* include/c/bits/std_cstdio.h: Include c++config.h.
+
 2000-12-06  Phil Edwards  <pme@sources.redhat.com>
 
 	* acinclude.m4 (GLIBCPP_CHECK_*_DECL_AND_LINKAGE_*):  Pre-test
@@ -15,7 +49,7 @@
 	* configure.target (*-*-freebsd, *-*-netbsd): Correct paths to 
 	os_include_dir.
 
-Tue Dec  5 20:24:15 2000  Jeffrey A Law  (law@cygnus.com)
+2000-12-05  Jeffrey A Law  <law@cygnus.com>
 
 	* configure.target (hpux): Set os_include_dir.
 	* config/os/hpux/bits/ctype_base.h: New file

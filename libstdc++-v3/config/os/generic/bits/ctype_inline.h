@@ -34,11 +34,57 @@
 // ctype bits to be inlined go here. Non-inlinable (ie virtual do_*)
 // functions go in ctype.cc
   
+// The following definitions are portable, but insanely slow. If one
+// cares at all about performance, then specialized ctype
+// functionality should be added for the native os in question: see
+// the config/os/bits/ctype_*.h files.
+
   bool
   ctype<char>::
   is(mask __m, char __c) const throw()
-  { return _M_table[(unsigned char)(__c)] & __m; }
-
+  { 
+    bool __ret = false;
+    switch (__m)
+      {
+      case space:
+	__ret = isspace(__c);
+	break;
+      case print:
+	__ret = isprint(__c);
+	break;
+      case cntrl:
+	__ret = iscntrl(__c);
+	break;
+      case upper:
+	__ret = isupper(__c);
+	break;
+      case lower:
+	__ret = islower(__c);
+	break;
+      case alpha:
+	__ret = isalpha(__c);
+	break;
+      case digit:
+	__ret = isdigit(__c);
+	break;
+      case punct:
+	__ret = ispunct(__c);
+	break;
+      case xdigit:
+	__ret = isxdigit(__c);
+	break;
+      case alnum:
+	__ret = isalnum(__c);
+	break;
+      case graph:
+	__ret = isgraph(__c);
+	break;
+      default:
+	break;
+      }
+    return __ret;
+  }
+   
   const char*
   ctype<char>::
   is(const char* __low, const char* __high, mask* __vec) const throw()

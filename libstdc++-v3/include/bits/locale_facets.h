@@ -40,8 +40,8 @@
 #include <typeinfo> 		// For bad_cast, which shouldn't be here.
 #include <bits/std_ios.h>	// For ios_base
 #ifdef _GLIBCPP_USE_WCHAR_T
-#include <bits/std_cwctype.h>	// For wctype_t
-#endif /* _GLIBCPP_USE_WCHAR_T */
+# include <bits/std_cwctype.h>	// For wctype_t
+#endif 
 
 namespace std
 {
@@ -83,14 +83,29 @@ namespace std
   #include <bits/ctype_base.h>
 
   // 22.2.1.1  Template class ctype
-  // _Ctype_nois is the common base for ctype<char>.  It lacks "do_is"
-  // and related virtuals.  These are filled in by _Ctype, below.
+  // __ctype_abstract_base is the common base for ctype<_CharT>.  
   template<typename _CharT>
-    class _Ctype_nois : public locale::facet, public ctype_base
+    class __ctype_abstract_base : public locale::facet, public ctype_base
     {
     public:
       // Types:
       typedef _CharT char_type;
+
+      bool 
+      is(mask __m, char_type __c) const
+      { return this->do_is(__m, __c); }
+
+      const char_type*
+      is(const char_type *__lo, const char_type *__hi, mask *__vec) const   
+      { return this->do_is(__lo, __hi, __vec); }
+
+      const char_type*
+      scan_is(mask __m, const char_type* __lo, const char_type* __hi) const
+      { return this->do_scan_is(__m, __lo, __hi); }
+
+      const char_type*
+      scan_not(mask __m, const char_type* __lo, const char_type* __hi) const
+      { return this->do_scan_not(__m, __lo, __hi); }
 
       char_type 
       toupper(char_type __c) const
@@ -127,11 +142,26 @@ namespace std
 
     protected:
       explicit 
-      _Ctype_nois(size_t __refs = 0): locale::facet(__refs) { }
+      __ctype_abstract_base(size_t __refs = 0): locale::facet(__refs) { }
 
       virtual 
-      ~_Ctype_nois() { }
+      ~__ctype_abstract_base() { }
       
+      virtual bool 
+      do_is(mask __m, char_type __c) const = 0;
+
+      virtual const char_type*
+      do_is(const char_type* __lo, const char_type* __hi, 
+	    mask* __vec) const = 0;
+
+      virtual const char_type*
+      do_scan_is(mask __m, const char_type* __lo, 
+		 const char_type* __hi) const = 0;
+
+      virtual const char_type*
+      do_scan_not(mask __m, const char_type* __lo, 
+		  const char_type* __hi) const = 0;
+
       virtual char_type 
       do_toupper(char_type) const = 0;
 
@@ -159,163 +189,28 @@ namespace std
 		 char __dfault, char* __dest) const = 0;
     };
 
-
+  // NB: Generic, mostly useless implementation.
   template<typename _CharT>
-    class _Ctype : public _Ctype_nois<_CharT>
+    class ctype : public __ctype_abstract_base<_CharT>
     {
     public:
       // Types:
-      typedef _CharT 					char_type;
-      typedef typename _Ctype_nois<_CharT>::mask 	mask;
-
-      bool 
-      is(mask __m, char_type __c) const
-      { return this->do_is(__m, __c); }
-
-      const char_type*
-      is(const char_type *__lo, const char_type *__hi, mask *__vec) const   
-      { return this->do_is(__lo, __hi, __vec); }
-
-      const char_type*
-      scan_is(mask __m, const char_type* __lo, const char_type* __hi) const
-      { return this->do_scan_is(__m, __lo, __hi); }
-
-      const char_type*
-      scan_not(mask __m, const char_type* __lo, const char_type* __hi) const
-      { return this->do_scan_not(__m, __lo, __hi); }
-
-    protected:
-      explicit 
-      _Ctype(size_t __refs = 0) : _Ctype_nois<_CharT>(__refs) { }
-
-      virtual 
-      ~_Ctype() { }
-
-      virtual bool 
-      do_is(mask __m, char_type __c) const = 0;
-
-      virtual const char_type*
-      do_is(const char_type* __lo, const char_type* __hi, 
-	    mask* __vec) const = 0;
-
-      virtual const char_type*
-      do_scan_is(mask __m, const char_type* __lo, 
-		 const char_type* __hi) const = 0;
-
-      virtual const char_type*
-      do_scan_not(mask __m, const char_type* __lo, 
-		  const char_type* __hi) const = 0;
-    };
-
-  template<typename _CharT>
-    class ctype : public _Ctype<_CharT>
-    {
-    public:
-      // Types:
-      typedef _CharT 					char_type;
-      typedef typename ctype::mask 			mask;
+      typedef _CharT 		  	char_type;
+      typedef typename ctype::mask 	mask;
 
       explicit 
-      ctype(size_t __refs = 0) : _Ctype<_CharT>(__refs) { }
+      ctype(size_t __refs = 0) : __ctype_abstract_base<_CharT>(__refs) { }
 
       static locale::id id;
 
    protected:
       virtual 
       ~ctype() { }
-
-      virtual bool 
-      do_is(mask, char_type) const
-      {
-	// XXX Need definitions for these abstract mf's.
-	return true;
-      }
-
-      virtual const char_type*
-      do_is(const char_type*  __lo, const char_type*, mask*) const
-      {
-	// XXX Need definitions for these abstract mf's.
-	return __lo;
-      }
-
-      virtual const char_type*
-      do_scan_is(mask, const char_type* __lo, const char_type*) const
-      {
-	// XXX Need definitions for these abstract mf's.
-	return __lo;
-      }
-
-      virtual const char_type*
-      do_scan_not(mask, const char_type* __lo, const char_type*) const
-      {
-	// XXX Need definitions for these abstract mf's.
-	return __lo;
-      }
-
-      virtual char_type 
-      do_toupper(char_type __c) const
-      {
-	// XXX Need definitions for these abstract mf's.
-	return __c;
-      }
-
-      virtual const char_type*
-      do_toupper(char_type* __lo, const char_type*) const
-      {
-	// XXX Need definitions for these abstract mf's.
-	return __lo;
-      }
-
-      virtual char_type 
-      do_tolower(char_type __c) const
-      {
-	// XXX Need definitions for these abstract mf's.
-	return __c;
-      }
-
-      virtual const char_type*
-      do_tolower(char_type* __lo, const char_type*) const
-      {
-	// XXX Need definitions for these abstract mf's.
-	return __lo;
-      }
-      
-      virtual char_type 
-      do_widen(char __c) const
-      {
-	// XXX Need definitions for these abstract mf's.
-	return __c;
-      }
-
-      virtual const char*
-      do_widen(const char* __lo, const char*, char_type*) const
-      {
-	// XXX Need definitions for these abstract mf's.
-	return __lo;
-      }
-
-      virtual char 
-      do_narrow(char_type, char __c) const
-      {
-	// XXX Need definitions for these abstract mf's.
-	return __c;
-      }
-
-      virtual const char_type*
-      do_narrow(const char_type* __lo, const char_type*, char, char*) const
-      {
-	// XXX Need definitions for these abstract mf's.
-	return __lo;
-      }
     };
 
-
   // 22.2.1.3  ctype specializations
-  // NB: Can use _Ctype_nois to actually implement the "is"
-  // functionality in the non-virtual (thus inline-able) member
-  // fuctions.
   template<>
-    class ctype<char> : public _Ctype_nois<char>
+    class ctype<char> : public __ctype_abstract_base<char>
     {
     public:
       // Types:
@@ -363,6 +258,21 @@ namespace std
       classic_table() throw()
       { return _M_ctable; }
 
+      virtual bool 
+      do_is(mask __m, char_type __c) const;
+
+      virtual const char_type*
+      do_is(const char_type* __lo, const char_type* __hi, 
+	    mask* __vec) const;
+
+      virtual const char_type*
+      do_scan_is(mask __m, const char_type* __lo, 
+		 const char_type* __hi) const;
+
+      virtual const char_type*
+      do_scan_not(mask __m, const char_type* __lo, 
+		  const char_type* __hi) const;
+
       virtual char_type 
       do_toupper(char_type) const;
 
@@ -397,7 +307,7 @@ namespace std
 #ifdef _GLIBCPP_USE_WCHAR_T
   // ctype<wchar_t> specialization
   template<>
-    class ctype<wchar_t> : public _Ctype<wchar_t>
+    class ctype<wchar_t> : public __ctype_abstract_base<wchar_t>
     {
     public:
       // Types:
@@ -413,49 +323,7 @@ namespace std
 
     protected:
       __wmask_type
-      _M_convert_to_wmask(const mask __m) const
-      {
-	__wmask_type __ret;
-	switch (__m)
-	  {
-	  case space:
-	    __ret = wctype("space");
-	    break;
-	  case print:
-	    __ret = wctype("print");
-	    break;
-	  case cntrl:
-	    __ret = wctype("cntrl");
-	    break;
-	  case upper:
-	    __ret = wctype("upper");
-	    break;
-	  case lower:
-	    __ret = wctype("lower");
-	    break;
-	  case alpha:
-	    __ret = wctype("alpha");
-	    break;
-	  case digit:
-	    __ret = wctype("digit");
-	    break;
-	  case punct:
-	    __ret = wctype("punct");
-	    break;
-	  case xdigit:
-	    __ret = wctype("xdigit");
-	    break;
-	  case alnum:
-	    __ret = wctype("alnum");
-	    break;
-	  case graph:
-	    __ret = wctype("graph");
-	    break;
-	  default:
-	    __ret = 0;
-	  }
-	return __ret;
-      };
+      _M_convert_to_wmask(const mask __m) const;
 
       virtual 
       ~ctype();
@@ -526,13 +394,9 @@ namespace std
       ~ctype_byname() { }
     };
 
-  //  22.2.1.4  Class ctype_byname specializations
+  // 22.2.1.4  Class ctype_byname specialization
   template<>
     ctype_byname<char>::ctype_byname(const char*, size_t refs);
-#ifdef _GLIBCPP_USE_WCHAR_T
-  template<>
-    ctype_byname<wchar_t>::ctype_byname(const char*, size_t refs);
-#endif
 
 
   template<typename _CharT, typename _InIter>

@@ -33,7 +33,7 @@
 // NB: Don't include any other headers in this file.
 #include <debug_assert.h>
 
-class gnu_ctype: public std::ctype<char> {};
+class gnu_ctype: public std::ctype<char> { };
 
 void test01()
 {
@@ -70,6 +70,22 @@ void test01()
   VERIFY( gctype.is(std::ctype_base::alnum, c20) );
   VERIFY( gctype.is(std::ctype_base::graph, c40) );
   VERIFY( gctype.is(std::ctype_base::graph, c20) );
+
+  // const char* is(const char* low, const char* high, mask* vec) const
+  std::ctype_base::mask m01 = static_cast<std::ctype_base::mask>(0);
+  std::ctype_base::mask m02 = std::ctype_base::digit;
+  const char* cc0 = strlit00;
+  const char* cc1 = NULL;
+  const char* cc2 = NULL;
+#if 1
+  cc1 = gctype.is(cc0, cc0, &m01);
+  VERIFY( cc1 == strlit00 );
+  cc2 = gctype.is(cc0, cc0 + 3, &m01);
+  VERIFY( cc2 == strlit00 + 3);
+
+  cc1 = gctype.is(cc0, cc0 + 13, &m02);
+  VERIFY( cc1 == strlit00 + 13);
+#endif
 
   // char toupper(char c) const
   c100 = gctype.toupper(c10);
