@@ -1,3 +1,11 @@
+2000-09-12  Tom Tromey  <tromey@cygnus.com>
+
+	Fix for PR gcj/343:
+	* lex.c (java_init_lex): Initialize java_io_serializable.
+	* parse.y (java_io_serializable): New global.
+	(valid_ref_assignconv_cast_p): An array can be cast to
+	serializable.
+
 2000-09-10  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* decl.c, expr.c: Include defaults.h if not already included.
