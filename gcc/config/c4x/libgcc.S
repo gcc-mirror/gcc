@@ -1076,7 +1076,7 @@ ufix_truncqfhi2n:
 	ash	-24,r3
 	subi	31,r3
 	cmpi	32,r3
-	bge	ufix1
+	bgt	ufix1
 	cmpi	-32,r3
 	ble	ufix1
 	ldi	1,r0
@@ -1223,7 +1223,7 @@ ufix_trunchfhi2n:
 	ash	-24,r3
 	subi	31,r3
 	cmpi	32,r3
-	bge	ufixh1
+	bgt	ufixh1
 	cmpi	-32,r3
 	ble	ufixh1
 	ldi	1,r0

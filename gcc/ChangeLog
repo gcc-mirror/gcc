@@ -1,3 +1,8 @@
+2000-02-05  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (fixuns_truncqfqi2): Rewrite.
+	* config/c4x/libgcc.S (ufix_truncqfhi2n): Fix.
+
 2000-02-04  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/genfixes(machname.h):
