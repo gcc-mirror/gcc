@@ -28,7 +28,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 #endif
 
-#ifndef STDIO_PROTO
+#if !defined(STDIO_PROTO) && !defined(NO_STDIO_H)
 #ifndef BUFSIZ
 #include <stdio.h>
 #endif
@@ -59,9 +59,11 @@ extern void half_pic_encode PROTO((union tree_node *));		/* encode whether half-
 extern void half_pic_declare PROTO((char *));			/* declare object local */
 extern void half_pic_external PROTO((char *));			/* declare object external */
 extern void half_pic_init PROTO((void));			/* half_pic initialization */
-extern void half_pic_finish STDIO_PROTO((FILE *));		/* half_pic termination */
 extern int  half_pic_address_p PROTO((struct rtx_def *));	/* true if an address is half-pic */
 extern struct rtx_def *half_pic_ptr PROTO((struct rtx_def *));	/* return RTX for half-pic pointer */
+#ifdef STDIO_PROTO
+extern void half_pic_finish STDIO_PROTO((FILE *));		/* half_pic termination */
+#endif
 
 /* Macros to provide access to the half-pic stuff (so they can easily
    be stubbed out.  */
