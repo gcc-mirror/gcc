@@ -1,3 +1,10 @@
+Thu 07-Sep-2000 21:29:00 BST  Neil Booth  <NeilB@earthling.net>
+
+	* Makefile.in: Remove references to cppulp.{c,o}.
+	* cppinit.c (initialize_builtins, cpp_start_read,
+	cpp_handle_option): Update to use cpp_options structure.
+	* cppulp.c: Remove.
+
 2000-09-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (time_char_table): Allow %#b and %#h.

@@ -598,6 +598,7 @@ initialize_builtins (pfile)
      cpp_reader *pfile;
 {
   const struct builtin *b;
+
   for(b = builtin_array; b < builtin_array_end; b++)
     {
       if (b->flags & CPLUS && ! CPP_OPTION (pfile, cplusplus))
@@ -617,7 +618,7 @@ initialize_builtins (pfile)
 	  else
 	    {
 	      if (b->flags & ULP)
-		val = user_label_prefix;
+		val = CPP_OPTION (pfile, user_label_prefix);
 	      else
 		val = b->value;
 
@@ -825,8 +826,8 @@ cpp_start_read (pfile, print, fname)
     CPP_OPTION (pfile, warn_paste) = 0;
 
   /* Set this if it hasn't been set already. */
-  if (user_label_prefix == NULL)
-    user_label_prefix = USER_LABEL_PREFIX;
+  if (CPP_OPTION (pfile, user_label_prefix) == NULL)
+    CPP_OPTION (pfile, user_label_prefix) = USER_LABEL_PREFIX;
 
   /* Figure out if we need to save function macro parameter spellings.
      We don't use CPP_PEDANTIC() here because that depends on whether
@@ -1224,10 +1225,10 @@ cpp_handle_option (pfile, argc, argv)
 	case N_OPTS: /* shut GCC up */
 	  break;
 	case OPT_fleading_underscore:
-	  user_label_prefix = "_";
+	  CPP_OPTION (pfile, user_label_prefix) = "_";
 	  break;
 	case OPT_fno_leading_underscore:
-	  user_label_prefix = "";
+	  CPP_OPTION (pfile, user_label_prefix) = "";
 	  break;
 	case OPT_fpreprocessed:
 	  CPP_OPTION (pfile, preprocessed) = 1;
