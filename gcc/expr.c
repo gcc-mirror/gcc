@@ -595,248 +595,32 @@ convert_move (rtx to, rtx from, int unsignedp)
       return;
     }
 
-  if (to_real != from_real)
-    abort ();
-
   if (to_real)
     {
       rtx value, insns;
+      convert_optab tab;
 
       if (GET_MODE_BITSIZE (from_mode) < GET_MODE_BITSIZE (to_mode))
-	{
-	  /* Try converting directly if the insn is supported.  */
-	  if ((code = can_extend_p (to_mode, from_mode, 0))
-	      != CODE_FOR_nothing)
-	    {
-	      emit_unop_insn (code, to, from, UNKNOWN);
-	      return;
-	    }
-	}
+	tab = sext_optab;
+      else if (GET_MODE_BITSIZE (from_mode) > GET_MODE_BITSIZE (to_mode))
+	tab = trunc_optab;
+      else
+	abort ();
 
-#ifdef HAVE_trunchfqf2
-      if (HAVE_trunchfqf2 && from_mode == HFmode && to_mode == QFmode)
+      /* Try converting directly if the insn is supported.  */
+
+      code = tab->handlers[to_mode][from_mode].insn_code;
+      if (code != CODE_FOR_nothing)
 	{
-	  emit_unop_insn (CODE_FOR_trunchfqf2, to, from, UNKNOWN);
+	  emit_unop_insn (code, to, from,
+			  tab == sext_optab ? FLOAT_EXTEND : FLOAT_TRUNCATE);
 	  return;
 	}
-#endif
-#ifdef HAVE_trunctqfqf2
-      if (HAVE_trunctqfqf2 && from_mode == TQFmode && to_mode == QFmode)
-	{
-	  emit_unop_insn (CODE_FOR_trunctqfqf2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-#ifdef HAVE_truncsfqf2
-      if (HAVE_truncsfqf2 && from_mode == SFmode && to_mode == QFmode)
-	{
-	  emit_unop_insn (CODE_FOR_truncsfqf2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-#ifdef HAVE_truncdfqf2
-      if (HAVE_truncdfqf2 && from_mode == DFmode && to_mode == QFmode)
-	{
-	  emit_unop_insn (CODE_FOR_truncdfqf2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-#ifdef HAVE_truncxfqf2
-      if (HAVE_truncxfqf2 && from_mode == XFmode && to_mode == QFmode)
-	{
-	  emit_unop_insn (CODE_FOR_truncxfqf2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-#ifdef HAVE_trunctfqf2
-      if (HAVE_trunctfqf2 && from_mode == TFmode && to_mode == QFmode)
-	{
-	  emit_unop_insn (CODE_FOR_trunctfqf2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
 
-#ifdef HAVE_trunctqfhf2
-      if (HAVE_trunctqfhf2 && from_mode == TQFmode && to_mode == HFmode)
-	{
-	  emit_unop_insn (CODE_FOR_trunctqfhf2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-#ifdef HAVE_truncsfhf2
-      if (HAVE_truncsfhf2 && from_mode == SFmode && to_mode == HFmode)
-	{
-	  emit_unop_insn (CODE_FOR_truncsfhf2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-#ifdef HAVE_truncdfhf2
-      if (HAVE_truncdfhf2 && from_mode == DFmode && to_mode == HFmode)
-	{
-	  emit_unop_insn (CODE_FOR_truncdfhf2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-#ifdef HAVE_truncxfhf2
-      if (HAVE_truncxfhf2 && from_mode == XFmode && to_mode == HFmode)
-	{
-	  emit_unop_insn (CODE_FOR_truncxfhf2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-#ifdef HAVE_trunctfhf2
-      if (HAVE_trunctfhf2 && from_mode == TFmode && to_mode == HFmode)
-	{
-	  emit_unop_insn (CODE_FOR_trunctfhf2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
+      /* Otherwise use a libcall.  */
+      libcall = tab->handlers[to_mode][from_mode].libfunc;
 
-#ifdef HAVE_truncsftqf2
-      if (HAVE_truncsftqf2 && from_mode == SFmode && to_mode == TQFmode)
-	{
-	  emit_unop_insn (CODE_FOR_truncsftqf2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-#ifdef HAVE_truncdftqf2
-      if (HAVE_truncdftqf2 && from_mode == DFmode && to_mode == TQFmode)
-	{
-	  emit_unop_insn (CODE_FOR_truncdftqf2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-#ifdef HAVE_truncxftqf2
-      if (HAVE_truncxftqf2 && from_mode == XFmode && to_mode == TQFmode)
-	{
-	  emit_unop_insn (CODE_FOR_truncxftqf2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-#ifdef HAVE_trunctftqf2
-      if (HAVE_trunctftqf2 && from_mode == TFmode && to_mode == TQFmode)
-	{
-	  emit_unop_insn (CODE_FOR_trunctftqf2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-
-#ifdef HAVE_truncdfsf2
-      if (HAVE_truncdfsf2 && from_mode == DFmode && to_mode == SFmode)
-	{
-	  emit_unop_insn (CODE_FOR_truncdfsf2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-#ifdef HAVE_truncxfsf2
-      if (HAVE_truncxfsf2 && from_mode == XFmode && to_mode == SFmode)
-	{
-	  emit_unop_insn (CODE_FOR_truncxfsf2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-#ifdef HAVE_trunctfsf2
-      if (HAVE_trunctfsf2 && from_mode == TFmode && to_mode == SFmode)
-	{
-	  emit_unop_insn (CODE_FOR_trunctfsf2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-#ifdef HAVE_truncxfdf2
-      if (HAVE_truncxfdf2 && from_mode == XFmode && to_mode == DFmode)
-	{
-	  emit_unop_insn (CODE_FOR_truncxfdf2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-#ifdef HAVE_trunctfdf2
-      if (HAVE_trunctfdf2 && from_mode == TFmode && to_mode == DFmode)
-	{
-	  emit_unop_insn (CODE_FOR_trunctfdf2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-
-      libcall = (rtx) 0;
-      switch (from_mode)
-	{
-	case SFmode:
-	  switch (to_mode)
-	    {
-	    case DFmode:
-	      libcall = extendsfdf2_libfunc;
-	      break;
-
-	    case XFmode:
-	      libcall = extendsfxf2_libfunc;
-	      break;
-
-	    case TFmode:
-	      libcall = extendsftf2_libfunc;
-	      break;
-
-	    default:
-	      break;
-	    }
-	  break;
-
-	case DFmode:
-	  switch (to_mode)
-	    {
-	    case SFmode:
-	      libcall = truncdfsf2_libfunc;
-	      break;
-
-	    case XFmode:
-	      libcall = extenddfxf2_libfunc;
-	      break;
-
-	    case TFmode:
-	      libcall = extenddftf2_libfunc;
-	      break;
-
-	    default:
-	      break;
-	    }
-	  break;
-
-	case XFmode:
-	  switch (to_mode)
-	    {
-	    case SFmode:
-	      libcall = truncxfsf2_libfunc;
-	      break;
-
-	    case DFmode:
-	      libcall = truncxfdf2_libfunc;
-	      break;
-
-	    default:
-	      break;
-	    }
-	  break;
-
-	case TFmode:
-	  switch (to_mode)
-	    {
-	    case SFmode:
-	      libcall = trunctfsf2_libfunc;
-	      break;
-
-	    case DFmode:
-	      libcall = trunctfdf2_libfunc;
-	      break;
-
-	    default:
-	      break;
-	    }
-	  break;
-
-	default:
-	  break;
-	}
-
-      if (libcall == (rtx) 0)
+      if (!libcall)
 	/* This conversion is not implemented yet.  */
 	abort ();
 
@@ -848,6 +632,42 @@ convert_move (rtx to, rtx from, int unsignedp)
       emit_libcall_block (insns, to, value, gen_rtx_FLOAT_TRUNCATE (to_mode,
 								    from));
       return;
+    }
+
+  /* Handle pointer conversion.  */			/* SPEE 900220.  */
+  /* Targets are expected to provide conversion insns between PxImode and
+     xImode for all MODE_PARTIAL_INT modes they use, but no others.  */
+  if (GET_MODE_CLASS (to_mode) == MODE_PARTIAL_INT)
+    {
+      enum machine_mode full_mode
+	= smallest_mode_for_size (GET_MODE_BITSIZE (to_mode), MODE_INT);
+
+      if (trunc_optab->handlers[to_mode][full_mode].insn_code
+	  == CODE_FOR_nothing)
+	abort ();
+
+      if (full_mode != from_mode)
+	from = convert_to_mode (full_mode, from, unsignedp);
+      emit_unop_insn (trunc_optab->handlers[to_mode][full_mode].insn_code,
+		      to, from, UNKNOWN);
+      return;
+    }
+  if (GET_MODE_CLASS (from_mode) == MODE_PARTIAL_INT)
+    {
+      enum machine_mode full_mode
+	= smallest_mode_for_size (GET_MODE_BITSIZE (from_mode), MODE_INT);
+
+      if (sext_optab->handlers[full_mode][from_mode].insn_code
+	  == CODE_FOR_nothing)
+	abort ();
+
+      emit_unop_insn (sext_optab->handlers[full_mode][from_mode].insn_code,
+		      to, from, UNKNOWN);
+      if (to_mode == full_mode)
+	return;
+
+      /* else proceed to integer conversions below */
+      from_mode = full_mode;
     }
 
   /* Now both modes are integers.  */
@@ -972,119 +792,6 @@ convert_move (rtx to, rtx from, int unsignedp)
       return;
     }
 
-  /* Handle pointer conversion.  */			/* SPEE 900220.  */
-  if (to_mode == PQImode)
-    {
-      if (from_mode != QImode)
-	from = convert_to_mode (QImode, from, unsignedp);
-
-#ifdef HAVE_truncqipqi2
-      if (HAVE_truncqipqi2)
-	{
-	  emit_unop_insn (CODE_FOR_truncqipqi2, to, from, UNKNOWN);
-	  return;
-	}
-#endif /* HAVE_truncqipqi2 */
-      abort ();
-    }
-
-  if (from_mode == PQImode)
-    {
-      if (to_mode != QImode)
-	{
-	  from = convert_to_mode (QImode, from, unsignedp);
-	  from_mode = QImode;
-	}
-      else
-	{
-#ifdef HAVE_extendpqiqi2
-	  if (HAVE_extendpqiqi2)
-	    {
-	      emit_unop_insn (CODE_FOR_extendpqiqi2, to, from, UNKNOWN);
-	      return;
-	    }
-#endif /* HAVE_extendpqiqi2 */
-	  abort ();
-	}
-    }
-
-  if (to_mode == PSImode)
-    {
-      if (from_mode != SImode)
-	from = convert_to_mode (SImode, from, unsignedp);
-
-#ifdef HAVE_truncsipsi2
-      if (HAVE_truncsipsi2)
-	{
-	  emit_unop_insn (CODE_FOR_truncsipsi2, to, from, UNKNOWN);
-	  return;
-	}
-#endif /* HAVE_truncsipsi2 */
-      abort ();
-    }
-
-  if (from_mode == PSImode)
-    {
-      if (to_mode != SImode)
-	{
-	  from = convert_to_mode (SImode, from, unsignedp);
-	  from_mode = SImode;
-	}
-      else
-	{
-#ifdef HAVE_extendpsisi2
-	  if (! unsignedp && HAVE_extendpsisi2)
-	    {
-	      emit_unop_insn (CODE_FOR_extendpsisi2, to, from, UNKNOWN);
-	      return;
-	    }
-#endif /* HAVE_extendpsisi2 */
-#ifdef HAVE_zero_extendpsisi2
-	  if (unsignedp && HAVE_zero_extendpsisi2)
-	    {
-	      emit_unop_insn (CODE_FOR_zero_extendpsisi2, to, from, UNKNOWN);
-	      return;
-	    }
-#endif /* HAVE_zero_extendpsisi2 */
-	  abort ();
-	}
-    }
-
-  if (to_mode == PDImode)
-    {
-      if (from_mode != DImode)
-	from = convert_to_mode (DImode, from, unsignedp);
-
-#ifdef HAVE_truncdipdi2
-      if (HAVE_truncdipdi2)
-	{
-	  emit_unop_insn (CODE_FOR_truncdipdi2, to, from, UNKNOWN);
-	  return;
-	}
-#endif /* HAVE_truncdipdi2 */
-      abort ();
-    }
-
-  if (from_mode == PDImode)
-    {
-      if (to_mode != DImode)
-	{
-	  from = convert_to_mode (DImode, from, unsignedp);
-	  from_mode = DImode;
-	}
-      else
-	{
-#ifdef HAVE_extendpdidi2
-	  if (HAVE_extendpdidi2)
-	    {
-	      emit_unop_insn (CODE_FOR_extendpdidi2, to, from, UNKNOWN);
-	      return;
-	    }
-#endif /* HAVE_extendpdidi2 */
-	  abort ();
-	}
-    }
-
   /* Now follow all the conversions between integers
      no more than a word long.  */
 
@@ -1158,140 +865,20 @@ convert_move (rtx to, rtx from, int unsignedp)
     }
 
   /* Support special truncate insns for certain modes.  */
-
-  if (from_mode == DImode && to_mode == SImode)
+  if (trunc_optab->handlers[to_mode][from_mode].insn_code != CODE_FOR_nothing)
     {
-#ifdef HAVE_truncdisi2
-      if (HAVE_truncdisi2)
-	{
-	  emit_unop_insn (CODE_FOR_truncdisi2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-      convert_move (to, force_reg (from_mode, from), unsignedp);
-      return;
-    }
-
-  if (from_mode == DImode && to_mode == HImode)
-    {
-#ifdef HAVE_truncdihi2
-      if (HAVE_truncdihi2)
-	{
-	  emit_unop_insn (CODE_FOR_truncdihi2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-      convert_move (to, force_reg (from_mode, from), unsignedp);
-      return;
-    }
-
-  if (from_mode == DImode && to_mode == QImode)
-    {
-#ifdef HAVE_truncdiqi2
-      if (HAVE_truncdiqi2)
-	{
-	  emit_unop_insn (CODE_FOR_truncdiqi2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-      convert_move (to, force_reg (from_mode, from), unsignedp);
-      return;
-    }
-
-  if (from_mode == SImode && to_mode == HImode)
-    {
-#ifdef HAVE_truncsihi2
-      if (HAVE_truncsihi2)
-	{
-	  emit_unop_insn (CODE_FOR_truncsihi2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-      convert_move (to, force_reg (from_mode, from), unsignedp);
-      return;
-    }
-
-  if (from_mode == SImode && to_mode == QImode)
-    {
-#ifdef HAVE_truncsiqi2
-      if (HAVE_truncsiqi2)
-	{
-	  emit_unop_insn (CODE_FOR_truncsiqi2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-      convert_move (to, force_reg (from_mode, from), unsignedp);
-      return;
-    }
-
-  if (from_mode == HImode && to_mode == QImode)
-    {
-#ifdef HAVE_trunchiqi2
-      if (HAVE_trunchiqi2)
-	{
-	  emit_unop_insn (CODE_FOR_trunchiqi2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-      convert_move (to, force_reg (from_mode, from), unsignedp);
-      return;
-    }
-
-  if (from_mode == TImode && to_mode == DImode)
-    {
-#ifdef HAVE_trunctidi2
-      if (HAVE_trunctidi2)
-	{
-	  emit_unop_insn (CODE_FOR_trunctidi2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-      convert_move (to, force_reg (from_mode, from), unsignedp);
-      return;
-    }
-
-  if (from_mode == TImode && to_mode == SImode)
-    {
-#ifdef HAVE_trunctisi2
-      if (HAVE_trunctisi2)
-	{
-	  emit_unop_insn (CODE_FOR_trunctisi2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-      convert_move (to, force_reg (from_mode, from), unsignedp);
-      return;
-    }
-
-  if (from_mode == TImode && to_mode == HImode)
-    {
-#ifdef HAVE_trunctihi2
-      if (HAVE_trunctihi2)
-	{
-	  emit_unop_insn (CODE_FOR_trunctihi2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-      convert_move (to, force_reg (from_mode, from), unsignedp);
-      return;
-    }
-
-  if (from_mode == TImode && to_mode == QImode)
-    {
-#ifdef HAVE_trunctiqi2
-      if (HAVE_trunctiqi2)
-	{
-	  emit_unop_insn (CODE_FOR_trunctiqi2, to, from, UNKNOWN);
-	  return;
-	}
-#endif
-      convert_move (to, force_reg (from_mode, from), unsignedp);
+      emit_unop_insn (trunc_optab->handlers[to_mode][from_mode].insn_code,
+		      to, from, UNKNOWN);
       return;
     }
 
   /* Handle truncation of volatile memrefs, and so on;
      the things that couldn't be truncated directly,
-     and for which there was no special instruction.  */
+     and for which there was no special instruction.
+
+     ??? Code above formerly short-circuited this, for most integer
+     mode pairs, with a force_reg in from_mode followed by a recursive
+     call to this routine.  Appears always to have been wrong.  */
   if (GET_MODE_BITSIZE (to_mode) < GET_MODE_BITSIZE (from_mode))
     {
       rtx temp = force_reg (to_mode, gen_lowpart (to_mode, from));

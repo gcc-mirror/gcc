@@ -39,7 +39,6 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "expr.h"
 #include "optabs.h"
-#include "libfuncs.h"
 #include "recog.h"
 #include "toplev.h"
 #include "ggc.h"
@@ -8431,20 +8430,21 @@ sparc_init_libfuncs (void)
       set_optab_libfunc (lt_optab, TFmode, "_Q_flt");
       set_optab_libfunc (le_optab, TFmode, "_Q_fle");
 
-      trunctfsf2_libfunc = init_one_libfunc ("_Q_qtos");
-      trunctfdf2_libfunc = init_one_libfunc ("_Q_qtod");
-      extendsftf2_libfunc = init_one_libfunc ("_Q_stoq");
-      extenddftf2_libfunc = init_one_libfunc ("_Q_dtoq");
-      floatsitf_libfunc = init_one_libfunc ("_Q_itoq");
-      fixtfsi_libfunc = init_one_libfunc ("_Q_qtoi");
-      fixunstfsi_libfunc = init_one_libfunc ("_Q_qtou");
+      set_conv_libfunc (sext_optab,   TFmode, SFmode, "_Q_stoq");
+      set_conv_libfunc (sext_optab,   TFmode, DFmode, "_Q_dtoq");
+      set_conv_libfunc (trunc_optab,  SFmode, TFmode, "_Q_qtos");
+      set_conv_libfunc (trunc_optab,  DFmode, TFmode, "_Q_qtod");
+
+      set_conv_libfunc (sfix_optab,   SImode, TFmode, "_Q_qtoi");
+      set_conv_libfunc (ufix_optab,   SImode, TFmode, "_Q_qtou");
+      set_conv_libfunc (sfloat_optab, TFmode, SImode, "_Q_itoq");
 
       if (SUN_CONVERSION_LIBFUNCS)
 	{
-	  fixsfdi_libfunc = init_one_libfunc ("__ftoll");
-	  fixunssfdi_libfunc = init_one_libfunc ("__ftoull");
-	  fixdfdi_libfunc = init_one_libfunc ("__dtoll");
-	  fixunsdfdi_libfunc = init_one_libfunc ("__dtoull");
+	  set_conv_libfunc (sfix_optab, DImode, SFmode, "__ftoll");
+	  set_conv_libfunc (ufix_optab, DImode, SFmode, "__ftoull");
+	  set_conv_libfunc (sfix_optab, DImode, DFmode, "__dtoll");
+	  set_conv_libfunc (ufix_optab, DImode, DFmode, "__dtoull");
 	}
     }
   if (TARGET_ARCH64)
@@ -8470,10 +8470,10 @@ sparc_init_libfuncs (void)
 
       if (SUN_CONVERSION_LIBFUNCS)
 	{
-	  fixsfdi_libfunc = init_one_libfunc ("__ftol");
-	  fixunssfdi_libfunc = init_one_libfunc ("__ftoul");
-	  fixdfdi_libfunc = init_one_libfunc ("__dtol");
-	  fixunsdfdi_libfunc = init_one_libfunc ("__dtoul");
+	  set_conv_libfunc (sfix_optab, DImode, SFmode, "__ftol");
+	  set_conv_libfunc (ufix_optab, DImode, SFmode, "__ftoul");
+	  set_conv_libfunc (sfix_optab, DImode, DFmode, "__dtol");
+	  set_conv_libfunc (ufix_optab, DImode, DFmode, "__dtoul");
 	}
     }
 

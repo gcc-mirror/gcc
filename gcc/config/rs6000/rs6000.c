@@ -37,7 +37,6 @@
 #include "tree.h"
 #include "expr.h"
 #include "optabs.h"
-#include "libfuncs.h"
 #include "except.h"
 #include "function.h"
 #include "output.h"
@@ -6784,8 +6783,8 @@ rs6000_init_libfuncs (void)
       if (TARGET_XCOFF && ! TARGET_POWER2 && ! TARGET_POWERPC)
 	{
 	  /* AIX library routines for float->int conversion.  */
-	  fixdfsi_libfunc = init_one_libfunc ("__itrunc");
-	  fixunsdfsi_libfunc = init_one_libfunc ("__uitrunc");
+	  set_conv_libfunc (sfix_optab, SImode, DFmode, "__itrunc");
+	  set_conv_libfunc (ufix_optab, SImode, DFmode, "__uitrunc");
 	}
 
       /* Standard AIX/Darwin/64-bit SVR4 quad floating point routines.  */
@@ -6813,17 +6812,15 @@ rs6000_init_libfuncs (void)
       set_optab_libfunc (lt_optab, TFmode, "_q_flt");
       set_optab_libfunc (le_optab, TFmode, "_q_fle");
 
-      trunctfsf2_libfunc = init_one_libfunc ("_q_qtos");
-      trunctfdf2_libfunc = init_one_libfunc ("_q_qtod");
-      extendsftf2_libfunc = init_one_libfunc ("_q_stoq");
-      extenddftf2_libfunc = init_one_libfunc ("_q_dtoq");
-      floatsitf_libfunc = init_one_libfunc ("_q_itoq");
-      fixtfsi_libfunc = init_one_libfunc ("_q_qtoi");
-      fixunstfsi_libfunc = init_one_libfunc ("_q_qtou");
+      set_conv_libfunc (sext_optab, TFmode, SFmode, "_q_stoq");
+      set_conv_libfunc (sext_optab, TFmode, DFmode, "_q_dtoq");
+      set_conv_libfunc (trunc_optab, SFmode, TFmode, "_q_qtos");
+      set_conv_libfunc (trunc_optab, DFmode, TFmode, "_q_qtod");
+      set_conv_libfunc (sfix_optab, SImode, TFmode, "_q_qtoi");
+      set_conv_libfunc (ufix_optab, SImode, TFmode, "_q_qtou");
+      set_conv_libfunc (sfloat_optab, TFmode, SImode, "_q_itoq");
     }
 }
-
-
 
 /* Expand a block move operation, and return 1 if successful.  Return 0
    if we should let the compiler generate normal code.

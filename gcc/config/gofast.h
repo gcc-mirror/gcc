@@ -66,14 +66,15 @@ gofast_maybe_init_libfuncs (void)
   set_optab_libfunc (lt_optab, DFmode, "dpcmp");
   set_optab_libfunc (le_optab, DFmode, "dpcmp");
 
-  extendsfdf2_libfunc = init_one_libfunc ("fptodp");
-  truncdfsf2_libfunc = init_one_libfunc ("dptofp");
+  set_conv_libfunc (sext_optab,   DFmode, SFmode, "fptodp");
+  set_conv_libfunc (trunc_optab,  SFmode, DFmode, "dptofp");
 
-  floatsisf_libfunc = init_one_libfunc ("sitofp");
-  floatsidf_libfunc = init_one_libfunc ("litodp");
-  fixsfsi_libfunc = init_one_libfunc ("fptosi");
-  fixdfsi_libfunc = init_one_libfunc ("dptoli");
-  fixunssfsi_libfunc = init_one_libfunc ("fptoui");
-  fixunsdfsi_libfunc = init_one_libfunc ("dptoul");
+  set_conv_libfunc (sfix_optab,   SImode, SFmode, "fptosi");
+  set_conv_libfunc (sfix_optab,   SImode, DFmode, "dptoli");
+  set_conv_libfunc (ufix_optab,   SImode, SFmode, "fptoui");
+  set_conv_libfunc (ufix_optab,   SImode, DFmode, "dptoul");
+
+  set_conv_libfunc (sfloat_optab, SFmode, SImode, "sitofp");
+  set_conv_libfunc (sfloat_optab, DFmode, DImode, "litodp");
 #endif
 }

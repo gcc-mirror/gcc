@@ -1652,7 +1652,7 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
     case BUILT_IN_TRUNC:
     case BUILT_IN_TRUNCF:
     case BUILT_IN_TRUNCL:
-      builtin_optab = trunc_optab; break;
+      builtin_optab = btrunc_optab; break;
     case BUILT_IN_ROUND:
     case BUILT_IN_ROUNDF:
     case BUILT_IN_ROUNDL:

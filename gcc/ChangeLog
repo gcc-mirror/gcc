@@ -1,3 +1,65 @@
+2003-10-06  Zack Weinberg  <zack@codesourcery.com>
+
+	* libfuncs.h (LTI_extendsfdf2, LTI_extendsfxf2, LTI_extendsftf2)
+	(LTI_extenddfxf2, LTI_extenddftf2, LTI_truncdfsf2, LTI_truncxfsf2)
+	(LTI_trunctfsf2, LTI_truncxfdf2, LTI_trunctfdf2, LTI_floatsisf)
+	(LTI_floatdisf, LTI_floattisf, LTI_floatsidf, LTI_floatdidf)
+	(LTI_floattidf, LTI_floatsixf, LTI_floatdixf, LTI_floattixf)
+	(LTI_floatsitf, LTI_floatditf, LTI_floattitf, LTI_fixsfsi, LTI_fixsfdi)
+	(LTI_fixsfti, LTI_fixdfsi, LTI_fixdfdi, LTI_fixdfti, LTI_fixxfsi)
+	(LTI_fixxfdi, LTI_fixxfti, LTI_fixtfsi, LTI_fixtfdi, LTI_fixtfti)
+	(LTI_fixunssfsi, LTI_fixunssfdi, LTI_fixunssfti, LTI_fixunsdfsi)
+	(LTI_fixunsdfdi, LTI_fixunsdfti, LTI_fixunsxfsi, LTI_fixunsxfdi)
+	(LTI_fixunsxfti, LTI_fixunstfsi, LTI_fixunstfdi, LTI_fixunstfti)
+	(extendsfdf2_libfunc, extendsfxf2_libfunc, extendsftf2_libfunc)
+	(extenddfxf2_libfunc, extenddftf2_libfunc, truncdfsf2_libfunc)
+	(truncxfsf2_libfunc, trunctfsf2_libfunc, truncxfdf2_libfunc)
+	(trunctfdf2_libfunc, floatsisf_libfunc, floatdisf_libfunc)
+	(floattisf_libfunc, floatsidf_libfunc, floatdidf_libfunc)
+	(floattidf_libfunc, floatsixf_libfunc, floatdixf_libfunc)
+	(floattixf_libfunc, floatsitf_libfunc, floatditf_libfunc)
+	(floattitf_libfunc, fixsfsi_libfunc, fixsfdi_libfunc, fixsfti_libfunc)
+	(fixdfsi_libfunc, fixdfdi_libfunc, fixdfti_libfunc, fixxfsi_libfunc)
+	(fixxfdi_libfunc, fixxfti_libfunc, fixtfsi_libfunc, fixtfdi_libfunc)
+	(fixtfti_libfunc, fixunssfsi_libfunc, fixunssfdi_libfunc)
+	(fixunssfti_libfunc, fixunsdfsi_libfunc, fixunsdfdi_libfunc)
+	(fixunsdfti_libfunc, fixunsxfsi_libfunc, fixunsxfdi_libfunc)
+	(fixunsxfti_libfunc, fixunstfsi_libfunc, fixunstfdi_libfunc)
+	(fixunstfti_libfunc): Delete.
+	* optabs.h (struct optab_handlers): Break out of struct optab.
+	(struct convert_optab, convert_optab, enum convert_optab_index,
+	convert_optab_table, sext_optab, zext_optab, trunc_optab,
+	sfix_optab, ufix_optab, sfixtrunc_optab, ufixtrunc_optab,
+	sfloat_optab, ufloat_optab): New.
+	(set_conv_libfunc): Prototype.
+	(GEN_FCN): Use C90 indirect call syntax, remove unnecessary cast.
+	(trunc_optab): Renamed btrunc_optab.
+	* builtins.c (expand_builtin_mathfn): Update to match.
+	* optabs.c (extendtab, fixtab, fixtrunctab, floattab): Delete.
+	(convert_optab_table, new_convert_optab, init_convert_optab)
+	(init_interclass_conv_libfuncs, init_intraclass_conv_libfuncs)
+	(set_conv_libfunc): New.
+	(can_extend_p, gen_extend_insn, can_fix_p, can_float_p)
+	(expand_float, expand_fix): Use new conversion optabs,
+	not old insn code tables or long chains of ifs.
+	(init_optabs): No need to clear old insn code tables.
+	Initialize the new optabs, not the old libfunc array entries.
+	Don't handle FIXUNS_TRUNC_LIKE_FIX_TRUNC here.
+	* genopinit.c: Initialize conversion optabs, not the
+	former insn code tables.  Remove unnecessary casts.
+	Handle FIXUNS_TRUNC_LIKE_FIX_TRUNC here.
+	* expr.c (convert_move): Remove redundant check that
+	to_real==from_real.  Use the conversion optabs instead
+	of long chains of tests of modes.  Move partial-integer-mode
+	interconversion above all integer conversion.  Do not recurse
+	on a value forced into a register in the original mode.
+
+	* config/gofast.h, config/frv/frv.c, config/ia64/ia64.c
+	* config/mips/mips.c, config/pa/pa.c, config/rs6000/rs6000.c
+	* config/sparc/sparc.c: Use set_conv_libfunc to adjust entries
+	in new conversion optabs; do not reference the old libfunc
+	array entries.  No need to include libfuncs.h.
+
 2003-10-06  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/i386.c (ix86_expand_setcc): Annotate the floating
@@ -18,9 +80,9 @@
 
 2003-10-06  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
 
-        PR optimization/11974
-        * optabs.c (expand_unop): Promote libcall outmode according to
-        hard_libcall_value.
+	PR optimization/11974
+	* optabs.c (expand_unop): Promote libcall outmode according to
+	hard_libcall_value.
 
 2003-10-06  Zack Weinberg  <zack@codesourcery.com>
 

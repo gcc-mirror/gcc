@@ -42,7 +42,6 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "expr.h"
 #include "optabs.h"
-#include "libfuncs.h"
 #include "flags.h"
 #include "reload.h"
 #include "tm_p.h"
@@ -9043,8 +9042,8 @@ mips_init_libfuncs (void)
       set_optab_libfunc (lt_optab, SFmode, "__mips16_ltsf2");
       set_optab_libfunc (le_optab, SFmode, "__mips16_lesf2");
 
-      floatsisf_libfunc = init_one_libfunc ("__mips16_floatsisf");
-      fixsfsi_libfunc   = init_one_libfunc ("__mips16_fixsfsi");
+      set_conv_libfunc (sfix_optab, SImode, SFmode, "__mips16_fixsfsi");
+      set_conv_libfunc (sfloat_optab, SFmode, SImode, "__mips16_floatsisf");
 
       if (TARGET_DOUBLE_FLOAT)
 	{
@@ -9060,11 +9059,11 @@ mips_init_libfuncs (void)
 	  set_optab_libfunc (lt_optab, DFmode, "__mips16_ltdf2");
 	  set_optab_libfunc (le_optab, DFmode, "__mips16_ledf2");
 
-	  floatsidf_libfunc   = init_one_libfunc ("__mips16_floatsidf");
-	  fixdfsi_libfunc     = init_one_libfunc ("__mips16_fixdfsi");
+	  set_conv_libfunc (sext_optab, DFmode, SFmode, "__mips16_extendsfdf2");
+	  set_conv_libfunc (trunc_optab, SFmode, DFmode, "__mips16_truncdfsf2");
 
-	  extendsfdf2_libfunc =	init_one_libfunc ("__mips16_extendsfdf2");
-	  truncdfsf2_libfunc  =	init_one_libfunc ("__mips16_truncdfsf2");
+	  set_conv_libfunc (sfix_optab, SImode, DFmode, "__mips16_fixdfsi");
+	  set_conv_libfunc (sfloat_optab, DFmode, SImode, "__mips16_floatsidf");
 	}
     }
   else
