@@ -5486,13 +5486,14 @@ basic_induction_var (loop, x, mode, dest_reg, p, inc_val, mult_val, location)
 		       <= UNITS_PER_WORD)
 		   && (GET_MODE_CLASS (GET_MODE (SET_DEST (set)))
 		       == MODE_INT)
-		   && SUBREG_REG (SET_DEST (set)) == x)))
-	      return basic_induction_var (loop, SET_SRC (set),
-					  (GET_MODE (SET_SRC (set)) == VOIDmode
-					   ? GET_MODE (x)
-					   : GET_MODE (SET_SRC (set))),
-					  dest_reg, insn,
-					  inc_val, mult_val, location);
+		   && SUBREG_REG (SET_DEST (set)) == x))
+	      && basic_induction_var (loop, SET_SRC (set),
+				      (GET_MODE (SET_SRC (set)) == VOIDmode
+				       ? GET_MODE (x)
+				       : GET_MODE (SET_SRC (set))),
+				      dest_reg, insn,
+				      inc_val, mult_val, location))
+	    return 1;
 	}
       /* Fall through.  */
 
