@@ -38,14 +38,6 @@
 #ifndef _CPP_CSTDLIB
 #define _CPP_CSTDLIB 1
 
-# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
-      // get out of the "legacy"
-    } // close extern "C"
-  }   // close namespace _C_legacy::
-#  undef _IN_C_LEGACY_
-#  define _STDLIB_NEED_C_LEGACY_
-# endif
-
 # include <bits/c++config.h>
 # include <bits/std_cstddef.h>  
 
@@ -194,58 +186,6 @@ namespace std {
   
 # undef _IN_C_LEGACY_
 
-  // Expose global C names, including non-standard ones, but shadow
-  // some names and types with the std:: C++ version.
-  using std::div_t;
-  using std::ldiv_t;
-#ifdef _GLIBCPP_USE_LONG_LONG
-  using std::lldiv_t;
 #endif
-
-  using std::abort;
-  using std::abs;
-  using std::atexit;
-  using std::atof;
-  using std::atoi;
-  using std::atol;
-  using std::bsearch;
-  using std::calloc;
-  using std::div;
-  using std::exit;
-  using std::free;
-  using std::getenv;
-  using std::labs;
-  using std::ldiv;
-  using std::malloc;
-  using std::mblen;
-  using std::mbstowcs;
-  using std::mbtowc;
-  using std::qsort;
-  using std::rand;
-  using std::realloc;
-  using std::srand;
-  using std::strtod;
-  using std::strtol;
-  using std::strtoul;
-  using std::system;
-  using std::wcstombs;
-  using std::wctomb;
-
-#ifdef _GLIBCPP_USE_LONG_LONG
-  using std::strtoll;
-  using std::strtoull;
-  using std::strtof;
-  using std::strtold;
-#endif
-
-# ifdef _STDLIB_NEED_C_LEGACY_
-  // dive back into the "swamp"
-  namespace _C_legacy {
-    extern "C" {
-#  define _IN_C_LEGACY_
-#  undef _STDLIB_NEED_C_LEGACY_
-# endif /* _STDLIB_NEED_C_LEGACY_ */
-
-#endif /*_CPP_CSTDLIB*/
 
 

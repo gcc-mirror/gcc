@@ -36,19 +36,11 @@
 
 # include <bits/std_cstddef.h> 
 
-# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
-      // get out of the "legacy"
-    } // close extern "C"
-  }   // close namespace _C_legacy::
-#  undef _IN_C_LEGACY_
-#  define _LOCALE_NEED_C_LEGACY_
-#endif
-
 namespace _C_legacy {
   extern "C" {
-#   define _IN_C_LEGACY_
-#   pragma GCC system_header
-#   include_next <locale.h>
+#     define _IN_C_LEGACY_
+#     pragma GCC system_header
+#     include_next <locale.h>
   }
 
   typedef lconv _CPP_lconv_capture;
@@ -70,21 +62,7 @@ namespace std {
 
 # undef _IN_C_LEGACY_
 
-  // Expose global C names, including non-standard ones, but shadow
-  // some names and types with the std:: C++ version.
-  using std::lconv;
-  using std::setlocale;
-  using std::localeconv;
-
-# ifdef _LOCALE_NEED_C_LEGACY_
-  // dive back into the "swamp"
-  namespace _C_legacy {
-    extern "C" {
-#  define _IN_C_LEGACY_
-#  undef _LOCALE_NEED_C_LEGACY_
-# endif /* _LOCALE_NEED_C_LEGACY_ */
-
-#endif  /*_CPP_CLOCALE*/
+#endif 
 
 
 

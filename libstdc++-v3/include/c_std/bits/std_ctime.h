@@ -34,28 +34,20 @@
 #ifndef _CPP_CTIME
 #define _CPP_CTIME 1
 
-# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
-      // get out of the "legacy"
-    } // close extern "C"
-  }   // close namespace _C_legacy::
-#  undef _IN_C_LEGACY_
-#  define _TIME_NEED_C_LEGACY_
-# endif
-
 # include <bits/std_cstddef.h>  
 
 namespace _C_legacy {
   extern "C" {
-#   define _IN_C_LEGACY_
-#   pragma GCC system_header
+#     define _IN_C_LEGACY_
+#     pragma GCC system_header
 
       // XXX
       // glibc 2.1.x time.h is on crack
-#   undef __need_time_t
-#   undef __need_clock_t
-#   undef __need_timespec
+#     undef __need_time_t
+#     undef __need_clock_t
+#     undef __need_timespec
 
-#   include_next <time.h>
+#     include_next <time.h>
   }
 
   typedef clock_t	_CPP_clock_t_capture;
@@ -111,30 +103,5 @@ namespace std {
   
 # undef _IN_C_LEGACY_
 
-  // Expose global C names, including non-standard ones, but shadow
-  // some names and types with the std:: C++ version.
-  using std::clock_t;
-  using std::time_t;
-  using std::tm;
-
-  using std::clock;
-  using std::difftime;
-  using std::mktime;
-  using std::time;
-  using std::asctime;
-  using std::ctime;
-  using std::gmtime;
-  using std::localtime;
-  using std::strftime;
-
-# ifdef _TIME_NEED_C_LEGACY_
-  // dive back into the "swamp"
-  namespace _C_legacy {
-    extern "C" {
-#  define _IN_C_LEGACY_
-#  undef _TIME_NEED_C_LEGACY_
-# endif /* _TIME_NEED_C_LEGACY_ */
-
-#endif /*_CPP_CTIME*/
-
+#endif
 

@@ -34,28 +34,16 @@
 #ifndef _CPP_CSTDDEF
 #define _CPP_CSTDDEF 1
 
-# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
-      // get out of the "legacy"
-    } // close extern "C"
-  }   // close namespace _C_legacy::
-#  undef _IN_C_LEGACY_
-#  define _STDDEF_NEED_C_LEGACY_
-# endif
-
 namespace _C_legacy {
   extern "C" {
-#   define _IN_C_LEGACY_
-#   pragma GCC system_header
-
-//#   define __need_ptrdiff_t
-//#   define __need_size_t
-#   include_next <stddef.h>
+#     define _IN_C_LEGACY_
+#     pragma GCC system_header
+#     include_next <stddef.h>
   }
 } // namespace _C_legacy
 
 #  undef ptrdiff_t  
 #  undef size_t  
-#  undef wchar_t
 
 namespace std {
   using _C_legacy::ptrdiff_t;
@@ -64,25 +52,7 @@ namespace std {
   
 # undef _IN_C_LEGACY_
 
-  // Expose global C names, including non-standard ones, but shadow
-  // some names and types with the std:: C++ version.
-  using std::ptrdiff_t;
-  using std::size_t;
-
-  // 3.9.1 Fundamental Types
-  // p 5
-  // wchar_t is a fundamental type
-  // using std::wchar_t;
-
-# ifdef _STDDEF_NEED_C_LEGACY_
-  // dive back into the "swamp"
-  namespace _C_legacy {
-    extern "C" {
-#  define _IN_C_LEGACY_
-#  undef _STDDEF_NEED_C_LEGACY_
-# endif /* _STDDEF_NEED_C_LEGACY_ */
-
-#endif  /*_CPP_CSTDDEF*/
+#endif
 
 
 

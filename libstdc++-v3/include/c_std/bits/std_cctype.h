@@ -33,19 +33,11 @@
 #ifndef _CPP_CCTYPE
 #define _CPP_CCTYPE 1
 
-# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
-      // get out of the "legacy"
-    } // close extern "C"
-  }   // close namespace _C_legacy::
-#  undef _IN_C_LEGACY_
-#  define _CTYPE_NEED_C_LEGACY_
-# endif
-
 namespace _C_legacy {
   extern "C" {
-#   define _IN_C_LEGACY_
-#   pragma GCC system_header
-#   include_next <ctype.h>
+#     define _IN_C_LEGACY_
+#     pragma GCC system_header
+#     include_next <ctype.h>
   }
 
   inline int 
@@ -146,29 +138,8 @@ namespace std {
   
 # undef _IN_C_LEGACY_
 
-  // Expose global C names, including non-standard ones, but shadow
-  // some names and types with the std:: C++ version.
-  using std::isalnum;
-  using std::isalpha;
-  using std::iscntrl;
-  using std::isdigit;
-  using std::isgraph;
-  using std::islower;
-  using std::isprint;
-  using std::ispunct;
-  using std::isspace;
-  using std::isupper;
-  using std::isxdigit;
-  using std::tolower;
-  using std::toupper;
+#endif
 
-# ifdef _CTYPE_NEED_C_LEGACY_
-  // dive back into the "swamp"
-  namespace _C_legacy {
-    extern "C" {
-#  define _IN_C_LEGACY_
-#  undef _CTYPE_NEED_C_LEGACY_
-# endif /* _CTYPE_NEED_C_LEGACY_ */
 
-#endif /*_CPP_CCTYPE*/
+
 

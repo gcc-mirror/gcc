@@ -34,23 +34,15 @@
 #ifndef _CPP_CSIGNAL
 #define _CPP_CSIGNAL 1
 
-# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
-      // get out of the "legacy"
-    } // close extern "C"
-  }   // close namespace _C_legacy::
-#  undef _IN_C_LEGACY_
-#  define _SIGNAL_NEED_C_LEGACY_
-# endif
-
 namespace _C_legacy {
   extern "C" {
-#   define _IN_C_LEGACY_
+#     define _IN_C_LEGACY_
     // XXX
-#   undef __need_sig_atomic_t
-#   undef __need_sigset_t
+#     undef __need_sig_atomic_t
+#     undef __need_sigset_t
 
-#   pragma GCC system_header
-#   include_next <signal.h>
+#     pragma GCC system_header
+#     include_next <signal.h>
   }
 } // namespace _C_legacy
 
@@ -67,22 +59,7 @@ namespace std {
   
 # undef _IN_C_LEGACY_
 
-  // Expose global C names, including non-standard ones, but shadow
-  // some names and types with the std:: C++ version.
-  using std::sig_atomic_t;
-
-  using std::raise;
-  using std::signal;
-
-# ifdef _SIGNAL_NEED_C_LEGACY_
-  // dive back into the "swamp"
-  namespace _C_legacy {
-    extern "C" {
-#  define _IN_C_LEGACY_
-#  undef _SIGNAL_NEED_C_LEGACY_
-#  endif /* _SIGNAL_NEED_C_LEGACY_ */
-
-#endif  /*_CPP_CSIGNAL*/
+#endif
 
 
 

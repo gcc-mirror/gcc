@@ -34,36 +34,17 @@
 #ifndef _CPP_CFLOAT
 #define _CPP_CFLOAT 1
 
-# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
-      // get out of the "legacy"
-    } // close extern "C"
-  }   // close namespace _C_legacy::
-#  undef _IN_C_LEGACY_
-#  define _FLOAT_NEED_C_LEGACY_
-# endif
-
 namespace _C_legacy {
   extern "C" {
-#   define _IN_C_LEGACY_
-#   pragma GCC system_header
-#   include_next <float.h>
+#     define _IN_C_LEGACY_
+#     pragma GCC system_header
+#     include_next <float.h>
   }
 } // namespace _C_legacy
 
 # undef _IN_C_LEGACY_
 
-  // Expose global C names, including non-standard ones, but shadow
-  // some names and types with the std:: C++ version.
-
-# ifdef _FLOAT_NEED_C_LEGACY_
-  // dive back into the "swamp"
-  namespace _C_legacy {
-    extern "C" {
-#  define _IN_C_LEGACY_
-#  undef _FLOAT_NEED_C_LEGACY_
-# endif /* _FLOAT_NEED_C_LEGACY_ */
-
-#endif  /*_CPP_CFLOAT*/
+#endif
 
 
 

@@ -34,14 +34,6 @@
 #ifndef _CPP_CSTRING
 #define _CPP_CSTRING 1
 
-# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
-      // get out of the "legacy"
-    } // close extern "C"
-  }   // close namespace _C_legacy::
-#  undef _IN_C_LEGACY_
-#  define _STRING_NEED_C_LEGACY_
-# endif
-
 # if defined __GLIBC__ && __GLIBC__ >= 2
 // We must not see the optimized string functions GNU libc defines.
 #  define __NO_STRING_INLINES
@@ -283,38 +275,5 @@ namespace std {
 
 # undef _IN_C_LEGACY_
 
-  // Expose global C names, including non-standard ones, but shadow
-  // some names and types with the std:: C++ version.
-  using std::memcpy;
-  using std::memmove;
-  using std::strcpy;
-  using std::strncpy;
-  using std::strcat;
-  using std::strncat;
-  using std::memcmp;
-  using std::strcmp;
-  using std::strcoll;
-  using std::strncmp;
-  using std::strxfrm;
-  using std::memchr;
-  using std::strchr;
-  using std::strcspn;
-  using std::strpbrk;
-  using std::strrchr;
-  using std::strspn;
-  using std::strstr;
-  using std::strtok;
-  using std::memset;
-  using std::strerror;
-  using std::strlen;
-
-# ifdef _STRING_NEED_C_LEGACY_
-  // dive back into the "swamp"
-  namespace _C_legacy {
-    extern "C" {
-#  define _IN_C_LEGACY_
-#  undef _STRING_NEED_C_LEGACY_
-# endif /* _STRING_NEED_C_LEGACY_ */
-
-#endif /*_CPP_CSTRING*/
+#endif
 
