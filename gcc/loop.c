@@ -8826,7 +8826,18 @@ load_mems (scan_start, end, loop_top, start)
       rr.r2 = label;
 
       for (p = start; p != end; p = NEXT_INSN (p))
-	for_each_rtx (&p, replace_label, &rr);
+	{
+	  for_each_rtx (&p, replace_label, &rr);
+
+	  /* If this is a JUMP_INSN, then we also need to fix the JUMP_LABEL
+	     field.  This is not handled by for_each_rtx because it doesn't
+	     handle unprinted ('0') fields.  We need to update JUMP_LABEL
+	     because the immediately following unroll pass will use it.
+	     replace_label would not work anyways, because that only handles
+	     LABEL_REFs.  */
+	  if (GET_CODE (p) == JUMP_INSN && JUMP_LABEL (p) == end_label)
+	    JUMP_LABEL (p) = label;
+	}
     }
 }
 

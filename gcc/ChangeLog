@@ -1,3 +1,7 @@
+Fri Sep  4 10:37:07 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* loop.c (load_mems): Fix JUMP_LABEL field after for_each_rtx call.
+
 Fri Sep  4 02:01:05 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.c (output_double_int): In all V9 symbolic
