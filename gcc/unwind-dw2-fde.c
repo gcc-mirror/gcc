@@ -293,14 +293,18 @@ get_fde_encoding (struct dwarf_fde *f)
 
 /* Comparison routines.  Three variants of increasing complexity.  */
 
-static saddr
+static int
 fde_unencoded_compare (struct object *ob __attribute__((unused)),
 		       fde *x, fde *y)
 {
-  return *(saddr *)x->pc_begin - *(saddr *)y->pc_begin;
+  if (x->pc_begin > y->pc_begin)
+    return 1;
+  if (x->pc_begin < y->pc_begin)
+    return -1;
+  return 0;
 }
 
-static saddr
+static int
 fde_single_encoding_compare (struct object *ob, fde *x, fde *y)
 {
   _Unwind_Ptr base, x_ptr, y_ptr;
@@ -309,10 +313,14 @@ fde_single_encoding_compare (struct object *ob, fde *x, fde *y)
   read_encoded_value_with_base (ob->s.b.encoding, base, x->pc_begin, &x_ptr);
   read_encoded_value_with_base (ob->s.b.encoding, base, y->pc_begin, &y_ptr);
 
-  return x_ptr - y_ptr;
+  if (x_ptr > y_ptr)
+    return 1;
+  if (x_ptr < y_ptr)
+    return -1;
+  return 0;
 }
 
-static saddr
+static int
 fde_mixed_encoding_compare (struct object *ob, fde *x, fde *y)
 {
   int x_encoding, y_encoding;
@@ -326,10 +334,14 @@ fde_mixed_encoding_compare (struct object *ob, fde *x, fde *y)
   read_encoded_value_with_base (y_encoding, base_from_object (y_encoding, ob),
 				y->pc_begin, &y_ptr);
 
-  return x_ptr - y_ptr;
+  if (x_ptr > y_ptr)
+    return 1;
+  if (x_ptr < y_ptr)
+    return -1;
+  return 0;
 }
 
-typedef saddr (*fde_compare_t) (struct object *, fde *, fde *);
+typedef int (*fde_compare_t) (struct object *, fde *, fde *);
 
 
 /* This is a special mix of insertion sort and heap sort, optimized for
