@@ -1,3 +1,8 @@
+2004-02-11  Richard Henderson  <rth@redhat.com>
+
+	* flow.c (insn_dead_p): A clobber of a dead hard register is a
+	dead insn after reload.
+
 2004-02-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* tree.h (frame_base_decl): Add GTY marker.
