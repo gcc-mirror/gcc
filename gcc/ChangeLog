@@ -1,3 +1,8 @@
+Fri May 14 21:31:36 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (*umulqi3_highpart_clobber): Fix operand 2
+ 	constraints order.
+
 1999-05-14  Ulrich Drepper  <drepper@cygnus.com>
 
 	* fixinc/fixinc.x86-linux-gnu (FD_ZERO): Fix operand numbers in
@@ -61,6 +66,7 @@ Wed May 12 07:27:31 1999  Craig Burley  <craig@jcb-sc.com>
 	* flags.h: Declare flag_errno_math.
 	* toplev.c: Define flag_errno_math.
 
+>>>>>>> 1.3645
 Tue May 11 23:55:49 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* fixproto: Change "mkdir" calls to "mkdir -p"
