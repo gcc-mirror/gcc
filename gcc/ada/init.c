@@ -359,6 +359,22 @@ __gnat_initialize (void)
 {
 }
 
+/***************************************/
+/* __gnat_initialize (RTEMS version) */
+/***************************************/
+
+#elif defined(__rtems__)
+
+extern void __gnat_install_handler (void);
+
+/* For RTEMS, each bsp will provide a custom __gnat_install_handler (). */
+
+void
+__gnat_initialize (void)
+{
+   __gnat_install_handler ();
+}
+
 /****************************************/
 /* __gnat_initialize (Dec Unix Version) */
 /****************************************/
@@ -1885,22 +1901,6 @@ __gnat_initialize (void)
 {
   __gnat_install_handler ();
   __gnat_init_float ();
-}
-
-/***************************************/
-/* __gnat_initialize (RTEMS version) */
-/***************************************/
-
-#elif defined(__rtems__)
-
-extern void __gnat_install_handler (void);
-
-/* For RTEMS, each bsp will provide a custom __gnat_install_handler (). */
-
-void
-__gnat_initialize (void)
-{
-   __gnat_install_handler ();
 }
 
 #else

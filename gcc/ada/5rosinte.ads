@@ -139,6 +139,8 @@ package System.OS_Interface is
    pragma Convention (C, struct_sigaction);
    type struct_sigaction_ptr is access all struct_sigaction;
 
+   SA_SIGINFO  : constant := 16#02#;
+
    SIG_BLOCK   : constant := 1;
    SIG_UNBLOCK : constant := 2;
    SIG_SETMASK : constant := 3;
@@ -261,7 +263,7 @@ package System.OS_Interface is
    PROT_OFF : constant := 0;
 
    function mprotect (addr : Address; len : size_t; prot : int) return int;
-   --  Do nothing on RTEMS.
+   pragma Import (C, mprotect);
 
    -----------------------------------------
    --  Nonstandard Thread Initialization  --

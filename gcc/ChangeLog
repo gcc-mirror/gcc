@@ -1,3 +1,13 @@
+2004-04-08  Joel Sherrill <joel@oarcorp.com>
+
+	PR ada/14538
+	* ada/5rosinte.adb: Remove fake mprotect() body.
+	* ada/5rosinte.ads: Add SA_SIGINFO.
+	* ada/5rtpopsp.adb: Rewrite to use new interface.
+	* ada/init.c: Reorder so the simple single OS conditional __rtems__
+	is tested before more complex ones which mix UNIX and embedded
+	systems in the conditional.
+
 2004-04-08  Joel Sherrill  <joel@oarcorp.com>
 
 	PR ada/14665
