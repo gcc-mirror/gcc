@@ -22,6 +22,8 @@ alignmentof ()
 
 #define alignof(type) (alignmentof<type> ())
 
+enum A { a };
+
 int
 main ()
 {
@@ -61,9 +63,9 @@ main ()
     return 17;
   if (alignof (unsigned int)            !=  4)
     return 18;
-  if (sizeof  (enum { a })              !=  4)
+  if (sizeof  (enum A)                  !=  4)
     return 19;
-  if (alignof (enum { a })              !=  4)
+  if (alignof (enum A)                  !=  4)
     return 20;
 #ifdef HAVE_IA64_TYPES
   if (sizeof  (__int64)                 !=  8)
