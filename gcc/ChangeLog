@@ -1,3 +1,9 @@
+2004-01-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR optimization/12372
+	* calls.c (expand_call): Add call_fusage data for stack arguments in
+	constant calls.
+
 2004-01-15  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (uses_TOC): Correct comment.  Make static.
