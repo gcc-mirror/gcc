@@ -482,10 +482,20 @@ expand_builtin_init_dwarf_reg_sizes (tree address)
 
 	emit_move_insn (adjust_address (mem, mode, offset), GEN_INT (size));
       }
+
+#ifdef DWARF_ALT_FRAME_RETURN_COLUMN
+  if (! wrote_return_column)
+    abort ();
+  i = DWARF_ALT_FRAME_RETURN_COLUMN;
+  wrote_return_column = false;
+#else
+  i = DWARF_FRAME_RETURN_COLUMN;
+#endif
+
   if (! wrote_return_column)
     {
       enum machine_mode save_mode = Pmode;
-      HOST_WIDE_INT offset = DWARF_FRAME_RETURN_COLUMN * GET_MODE_SIZE (mode);
+      HOST_WIDE_INT offset = i * GET_MODE_SIZE (mode);
       HOST_WIDE_INT size = GET_MODE_SIZE (save_mode);
       emit_move_insn (adjust_address (mem, mode, offset), GEN_INT (size));
     }

@@ -2904,6 +2904,14 @@ If this RTL is a @code{REG}, you should also define
 @code{DWARF_FRAME_RETURN_COLUMN} to @code{DWARF_FRAME_REGNUM (REGNO)}.
 @end defmac
 
+@defmac DWARF_ALT_FRAME_RETURN_COLUMN
+A C expression whose value is an integer giving a DWARF 2 column 
+number that may be used as an alternate return column.  This should
+be defined only if @code{DWARF_FRAME_RETURN_COLUMN} is set to a 
+general register, but an alternate column needs to be used for
+signal frames.
+@end defmac
+
 @defmac INCOMING_FRAME_SP_OFFSET
 A C expression whose value is an integer giving the offset, in bytes,
 from the value of the stack pointer register to the top of the stack
