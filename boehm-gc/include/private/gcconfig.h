@@ -1642,6 +1642,7 @@
 #   define MACH_TYPE "X86_64"
 #   define ALIGNMENT 8
 #   define CPP_WORDSZ 64
+#   define HBLKSIZE 4096
 #   define CACHE_LINE_SIZE 64
 #   define USE_GENERIC_PUSH_REGS
 #   ifdef LINUX

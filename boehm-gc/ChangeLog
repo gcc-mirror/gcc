@@ -1,6 +1,10 @@
+2002-10-02  Andreas Jaeger  <aj@suse.de>
+
+	* include/private/gcconfig.h (HBLKSIZE): Define for x86-64.
+
 2002-09-28  Richard Earnshaw  <rearnsha@arm.com>
 
-	* include/private/gcconfig.h: Don't check for __XSCALE__.  Instead 
+	* include/private/gcconfig.h: Don't check for __XSCALE__.  Instead
 	check for __arm__ or __thumb__.
 
 2002-09-27  Ulrich Weigand  <uweigand@de.ibm.com>
@@ -62,7 +66,7 @@ Sun May 19 11:32:03 2002  Mark P Mitchell  <mark@codesourcery.com>
 	* include/private/gc_locks.h (GC_test_and_set): Only take one
 	one argument.
 	(LOCK): Adjust appropriately.
-	* include/private/gc_priv.h (SIG_SUSPEND): Use SIGRTMIN if 
+	* include/private/gc_priv.h (SIG_SUSPEND): Use SIGRTMIN if
 	_SIGRTMIN is unavailable.
 
 2002-05-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
@@ -109,7 +113,7 @@ Sun May 19 11:32:03 2002  Mark P Mitchell  <mark@codesourcery.com>
 	* include/private/gcconfig.h (DATAEND): Clarify comment.
 
 2002-04-08  Hans Boehm  <Hans_Boehm@hp.com>
-	
+
 	* include/private/gc_priv.h (WARN macro): Add "GC warning:" prefix.
 	(GC_large_alloc_warn_interval, GC_large_alloc_warn_suppressed):
 	declare.
@@ -117,7 +121,7 @@ Sun May 19 11:32:03 2002  Mark P Mitchell  <mark@codesourcery.com>
 	frequency for blacklist warning message.
 	* misc.c (GC_large_alloc_warn_interval,
 	GC_large_alloc_warn_suppressed): define.
-	(GC_init_inner): Check GC_NO_BLACKLIST_WARNING and 
+	(GC_init_inner): Check GC_NO_BLACKLIST_WARNING and
 	GC_LARGE_ALLOC_WARN_INTERVAL environment variables.
 	* doc/README.environment (GC_NO_BLACKLIST_WARNING): Deprecate.
 	(GC_LARGE_ALLOC_WARN_INTERVAL): Add documentation.
@@ -191,10 +195,10 @@ Sun May 19 11:32:03 2002  Mark P Mitchell  <mark@codesourcery.com>
         compiling with GCC.
         * mark.c (GC_mark_some): We no longer use SEH if
         compiling with GCC.
-	
+
 2002-03-09  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
-	* include/gc_priv.h: Define ALIGN_DOUBLE on 32 bit targets if GCJ 
+	* include/gc_priv.h: Define ALIGN_DOUBLE on 32 bit targets if GCJ
 	support is enabled, for hash synchronization.
 
 2002-02-24  Adam Megacz  <adam@xwt.org>
@@ -210,8 +214,8 @@ Sun May 19 11:32:03 2002  Mark P Mitchell  <mark@codesourcery.com>
 2002-02-13  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* dbg_mlc.c (GC_debug_generic_malloc): Removed.
-	
-	* sparc_mach_dep.S: Rename from sparc_mach_dep.s as it is a 
+
+	* sparc_mach_dep.S: Rename from sparc_mach_dep.s as it is a
 	preprocessor file.
 	* mips_sgi_mach_dep.S: Likewise.
 	* Makefile.am: Update for above changes.
@@ -258,7 +262,7 @@ Sun May 19 11:32:03 2002  Mark P Mitchell  <mark@codesourcery.com>
 
 	* boehm-gc on win32 now automatically detects if it is being built
 	as a DLL; see http://gcc.gnu.org/ml/java/2001-12/msg00240.html
-	
+
 2002-01-25  David Edelsohn  <edelsohn@gnu.org>
 
 	* include/gc.h (GC_INIT): Add DATASTART and DATAEND roots on AIX.
@@ -279,7 +283,7 @@ Sun May 19 11:32:03 2002  Mark P Mitchell  <mark@codesourcery.com>
 2001-12-16  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	PR other/3725
-	* configure.in: Add AC_SUBST(target_alias). 
+	* configure.in: Add AC_SUBST(target_alias).
 	* configure: Regenerated.
 
 2001-11-26  Loren J. Rittle  <ljrittle@acm.org>
@@ -327,7 +331,7 @@ Sun May 19 11:32:03 2002  Mark P Mitchell  <mark@codesourcery.com>
 
 	* solaris_threads.c (MAX_ORIG_STACK_SIZE) [I386]: Provide special
 	Solaris 2/Intel definition.
-	
+
 	* configure.in (i?86-*-solaris2.[89]*): Define
 	SOLARIS25_PROC_VDB_BUG_FIXED.
 	* include/private/gcconfig.h [I386 && SUNOS5]: Use it.
@@ -512,8 +516,8 @@ Sun May 19 11:32:03 2002  Mark P Mitchell  <mark@codesourcery.com>
 	functions.
 	* Makefile.in: Rebuilt.
 	* configure: Rebuilt.
-	
-	* linux_thread.c (GC_thr_init, GC_suspend_handler): Add SIGABRT to the 
+
+	* linux_thread.c (GC_thr_init, GC_suspend_handler): Add SIGABRT to the
 	list of signals which are not blocked during suspend in the NO_SIGNALS
 	case.
 
@@ -540,7 +544,7 @@ Sun May 19 11:32:03 2002  Mark P Mitchell  <mark@codesourcery.com>
 
 2000-09-30  Bryce McKinlay  <bryce@albatross.co.nz>
 
-	* configure.in: Define GC_GCJ_SUPPORT. Define NO_DEBUGGING in 
+	* configure.in: Define GC_GCJ_SUPPORT. Define NO_DEBUGGING in
 	cross-compile configuration only.
 	* Makefile.am: Build gcj_mlc.c.
 	* configure, Makefile.in: Rebuilt.
@@ -623,7 +627,7 @@ Sun May 19 11:32:03 2002  Mark P Mitchell  <mark@codesourcery.com>
 	Imported version version 5.0alpha6.
 	* acinclude.m4: Bump version to 5.0a6.
 	* configure.in: Don't use alpha_mach_dep.s.
-	* include/private/config.h, irix_threads.c gc_watcom.asm: Delete 
+	* include/private/config.h, irix_threads.c gc_watcom.asm: Delete
 	obsolete files.
 	* Makefile.am, Makefile.in: irix_threads.c is now
 	hpux_irix_threads.c.
@@ -655,7 +659,7 @@ Fri Jan 28 17:13:20 2000  Anthony Green  <green@cygnus.com>
 
 1999-12-19  Anthony Green  <green@cygnus.com>
 
-	* gcconfig.h: Use libgcj hack for Alpha Linux.  
+	* gcconfig.h: Use libgcj hack for Alpha Linux.
 	Undefine MPROTEXT_VDB (from Jeff Sturm).
 	* os_dep.c: Remove Alpha Linux hacks.
 	* misc.c: Ditto.
@@ -852,7 +856,7 @@ Mon Aug  2 23:09:41 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 	(LTCOMPILE): Renamed; added libtool invocation.
 	(LINK): Added libtool invocation.
 	(.s.o): use LTCOMPILE.
-	* configure.in: Call AM_PROG_LIBTOOL.  
+	* configure.in: Call AM_PROG_LIBTOOL.
 	(target_all): Set to libgcjgc.la.
 	Mention `.lo' forms of object files.
 
@@ -936,7 +940,7 @@ Mon Aug  2 23:09:41 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 	* configure.in: likewise
 	* misc.c (GC_write): add eCos support.
 	* os_dep.c (tiny_sbrk): add eCos support.
-	
+
 Thu Dec 10 18:24:34 1998  Warren Levy  <warrenl@cygnus.com>
 
 	* misc.c (GC_init_inner): Moved STACKBASE code to os_dep.c.
@@ -948,9 +952,9 @@ Thu Dec 10 18:24:34 1998  Warren Levy  <warrenl@cygnus.com>
 
 1998-11-20  Andrew Haley  <aph@viagra.cygnus.co.uk>
 
-	* Makefile.am, Makefile.in, configure.host: tx39 build option 
+	* Makefile.am, Makefile.in, configure.host: tx39 build option
 	"-G 0" added.
-	
+
 1998-11-17  Tom Tromey  <tromey@cygnus.com>
 
 	* configure: Rebuilt.
@@ -1137,4 +1141,3 @@ Wed Apr 15 11:40:56 1998  Tom Tromey  <tromey@sanguine.cygnus.com>
 	* Makefile.am, Makefile.in, configure.in, configure, aclocal.m4:
 	New files.
 	* Makefile.orig: Renamed from Makefile.
-
