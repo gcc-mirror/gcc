@@ -905,10 +905,21 @@ combine_blocks (struct loop *loop)
 	continue;
 
       /* It is time to remove this basic block.	 First remove edges.  */
-      while (EDGE_COUNT (bb->succs) > 0)
-	remove_edge (EDGE_SUCC (bb, 0));
       while (EDGE_COUNT (bb->preds) > 0)
 	remove_edge (EDGE_PRED (bb, 0));
+
+      /* This is loop latch and loop does not have exit then do not
+	 delete this basic block. Just remove its PREDS and reconnect 
+	 loop->header and loop->latch blocks.  */
+      if (bb == loop->latch && loop->num_exits == 0)
+	{
+	  make_edge (loop->header, loop->latch, EDGE_FALLTHRU);
+	  set_immediate_dominator (CDI_DOMINATORS, loop->latch, loop->header);
+	  continue;
+	}
+
+      while (EDGE_COUNT (bb->succs) > 0)
+	remove_edge (EDGE_SUCC (bb, 0));
 
       /* Remove labels and make stmts member of loop->header.  */
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); )
