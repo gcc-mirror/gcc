@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
 #   Free Software Foundation, Inc.
 
-version='2000-09-11'
+version='2000-11-02'
 
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
@@ -105,7 +105,7 @@ esac
 # Here we must recognize all the valid KERNEL-OS combinations.
 maybe_os=`echo $1 | sed 's/^\(.*\)-\([^-]*-[^-]*\)$/\2/'`
 case $maybe_os in
-  nto-qnx* | linux-gnu*)
+  nto-qnx* | linux-gnu* | storm-chaos*)
     os=-$maybe_os
     basic_machine=`echo $1 | sed 's/^\(.*\)-\([^-]*-[^-]*\)$/\1/'`
     ;;
@@ -991,7 +991,7 @@ case $os in
 	      | -cygwin* | -pe* | -psos* | -moss* | -proelf* | -rtems* \
 	      | -mingw32* | -linux-gnu* | -uxpv* | -beos* | -mpeix* | -udk* \
 	      | -interix* | -uwin* | -rhapsody* | -darwin* | -opened* \
-	      | -openstep* | -oskit* | -conix* | -pw32*)
+	      | -openstep* | -oskit* | -conix* | -pw32* | -storm-chaos*)
 	# Remember, each alternative MUST END IN *, to match a version number.
 		;;
 	-qnx*)
