@@ -225,7 +225,7 @@ ext_headers = \
 
 
 # This is the common subset of files that all three "C" header models use.
-c_base_srcdir = @C_INCLUDE_DIR@
+c_base_srcdir = $(C_INCLUDE_DIR)
 c_base_builddir = .
 c_base_headers = \
 	${c_base_srcdir}/std_cassert.h \
@@ -304,19 +304,19 @@ else
 c_compatibility_headers_extra =
 endif
 
-host_srcdir = ${glibcxx_srcdir}/@OS_INC_SRCDIR@
+host_srcdir = ${glibcxx_srcdir}/$(OS_INC_SRCDIR)
 host_builddir = ./${host_alias}/bits
 host_headers = \
 	${host_srcdir}/ctype_base.h \
 	${host_srcdir}/ctype_inline.h \
 	${host_srcdir}/ctype_noninline.h \
 	${host_srcdir}/os_defines.h \
-	${glibcxx_srcdir}/@ATOMICITY_INC_SRCDIR@/atomicity.h \
-	${glibcxx_srcdir}/@FPOS_INC_SRCDIR@/fpos.h
+	${glibcxx_srcdir}/$(ATOMICITY_INC_SRCDIR)/atomicity.h \
+	${glibcxx_srcdir}/$(FPOS_INC_SRCDIR)/fpos.h
 
 # Non-installed host_header files.
 host_headers_noinst = \
-	${glibcxx_srcdir}/@CLOCALE_INTERNAL_H@
+	${glibcxx_srcdir}/$(CLOCALE_INTERNAL_H)
 
 # These host_headers_extra files are all built with ad hoc naming rules.
 host_headers_extra = \
@@ -441,13 +441,13 @@ stamp-host: ${host_headers} ${host_headers_noinst} stamp-${host_alias}
 	@if [ ! -f stamp-host ]; then \
 	  (cd ${host_builddir} ;\
 	  $(LN_S) ${host_headers} . || true ;\
-	  $(LN_S) ${glibcxx_srcdir}/@BASIC_FILE_H@ basic_file.h || true ;\
-	  $(LN_S) ${glibcxx_srcdir}/@CSTDIO_H@ c++io.h || true ;\
-	  $(LN_S) ${glibcxx_srcdir}/@CLOCALE_H@ c++locale.h || true ;\
-	  $(LN_S) ${glibcxx_srcdir}/@CLOCALE_INTERNAL_H@ . || true ;\
-	  $(LN_S) ${glibcxx_srcdir}/@CMESSAGES_H@ messages_members.h || true ;\
-	  $(LN_S) ${glibcxx_srcdir}/@CTIME_H@ time_members.h || true ;\
-	  $(LN_S) ${glibcxx_srcdir}/@CCODECVT_H@ codecvt_specializations.h || true);\
+	  $(LN_S) ${glibcxx_srcdir}/$(BASIC_FILE_H) basic_file.h || true ;\
+	  $(LN_S) ${glibcxx_srcdir}/$(CSTDIO_H) c++io.h || true ;\
+	  $(LN_S) ${glibcxx_srcdir}/$(CLOCALE_H) c++locale.h || true ;\
+	  $(LN_S) ${glibcxx_srcdir}/$(CLOCALE_INTERNAL_H) . || true ;\
+	  $(LN_S) ${glibcxx_srcdir}/$(CMESSAGES_H) messages_members.h || true ;\
+	  $(LN_S) ${glibcxx_srcdir}/$(CTIME_H) time_members.h || true ;\
+	  $(LN_S) ${glibcxx_srcdir}/$(CCODECVT_H) codecvt_specializations.h || true);\
 	fi ;\
 	$(STAMP) stamp-host
 
@@ -464,7 +464,6 @@ ${host_builddir}/c++config.h: ${top_builddir}/config.h \
 	echo "#endif // _CXXCONFIG_" >>$@
 
 # Host includes for threads
-glibcxx_thread_h = @glibcxx_thread_h@
 uppercase = [ABCDEFGHIJKLMNOPQRSTUVWXYZ_]
 
 ${host_builddir}/gthr.h: ${toplevel_srcdir}/gcc/gthr.h stamp-${host_alias}

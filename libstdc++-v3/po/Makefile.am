@@ -25,33 +25,33 @@ include $(top_srcdir)/fragment.am
 
 # Location of installation directories.
 locale_installdir = $(DESTDIR)$(datadir)/locale
-locale_builddir = @glibcxx_localedir@
+locale_builddir = $(glibcxx_localedir)
 
 # Tell automake that foo.po makes foo.mo
 SUFFIXES = .po .mo
 
-LOCALE_IN = @glibcxx_POFILES@
-LOCALE_OUT = @glibcxx_MOFILES@
+LOCALE_IN = $(glibcxx_POFILES)
+LOCALE_OUT = $(glibcxx_MOFILES)
 
 MSGFMT = msgfmt
 
 # Necessary files.
 DISTFILES = \
 	Makefile.am Makefile.in string_literals.cc POTFILES.in $(PACKAGE).pot \
-	$(LOCALE_IN) 
+	$(LOCALE_IN)
 
 .po.mo:
 	$(MSGFMT) -o $@ $<
 
-all-local: all-local-@USE_NLS@
-all-local-no: 
-all-local-yes: $(LOCALE_OUT) 
+all-local: all-local-$(USE_NLS)
+all-local-no:
+all-local-yes: $(LOCALE_OUT)
 
 # 'make check' needs the catalogs constructed in build directory.
-check: check-@USE_NLS@
+check: check-$(USE_NLS)
 check-no:
 check-yes:
-	$(mkinstalldirs) $(locale_builddir) 
+	$(mkinstalldirs) $(locale_builddir)
 	catalogs='$(LOCALE_OUT)'; \
 	for cat in $$catalogs; do \
 	  cat=`basename $$cat`; \
@@ -59,14 +59,14 @@ check-yes:
 	  install_dir=$(locale_builddir)/$$lang/LC_MESSAGES; \
 	  $(mkinstalldirs) $$install_dir; \
 	  $(INSTALL_DATA) $$cat $$install_dir/$(PACKAGE).mo; \
-	done 
+	done
 
-# Install rules here. 
+# Install rules here.
 # Wish install could just `cp -R ./share $(locale_installdir)` ...
-install-data-local: install-data-local-@USE_NLS@
+install-data-local: install-data-local-$(USE_NLS)
 install-data-local-no:
 install-data-local-yes: all-local-yes
-	$(mkinstalldirs) $(locale_installdir) 
+	$(mkinstalldirs) $(locale_installdir)
 	catalogs='$(LOCALE_OUT)'; \
 	for cat in $$catalogs; do \
 	  cat=`basename $$cat`; \
@@ -85,4 +85,4 @@ pot:
 	  `grep -r -l '__N(".*")' .`
 
 # Specify what gets cleaned up on a 'make clean'
-CLEANFILES = $(LOCALE_OUT) 
+CLEANFILES = $(LOCALE_OUT)

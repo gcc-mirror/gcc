@@ -147,7 +147,6 @@ ac_ct_CXX = @ac_ct_CXX@
 ac_ct_RANLIB = @ac_ct_RANLIB@
 ac_ct_STRIP = @ac_ct_STRIP@
 am__leading_dot = @am__leading_dot@
-
 baseline_dir = @baseline_dir@
 bindir = @bindir@
 build = @build@
@@ -247,8 +246,9 @@ libv3test_a_SOURCES = testsuite_hooks.cc testsuite_allocator.cc
 
 @GLIBCXX_TEST_ABI_TRUE@noinst_PROGRAMS = abi_check
 abi_check_SOURCES = abi_check.cc
+
 baseline_file = ${baseline_dir}/baseline_symbols.txt
-extract_symvers = @glibcxx_srcdir@/scripts/extract_symvers
+extract_symvers = $(glibcxx_srcdir)/scripts/extract_symvers
 
 # These two special 'check-script' rules use the bash script
 # 'check_survey' to do testing. This script is not as portable as the
@@ -257,7 +257,7 @@ extract_symvers = @glibcxx_srcdir@/scripts/extract_symvers
 # items like compile time, execution time, and binary size.
 survey_script = ${glibcxx_builddir}/scripts/check_survey
 
-# Runs the testsuite/performance tests.  
+# Runs the testsuite/performance tests.
 # Some of these tests create large (~75MB) files, allocate huge
 # ammounts of memory, or otherwise tie up machine resources. Thus,
 # running this is off by default.
@@ -265,7 +265,7 @@ performance_script = ${glibcxx_srcdir}/scripts/check_performance
 
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.txt *.tst *.exe core* filebuf_* tmp* ostream_* *.log *.sum \
-	     testsuite_* site.exp abi_check baseline_symbols 
+	     testsuite_* site.exp abi_check baseline_symbols
 
 subdir = testsuite
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -593,7 +593,7 @@ baseline_symbols:
 	    exit 1; \
 	  fi; true)
 
-new-abi-baseline: 
+new-abi-baseline:
 	-@$(mkinstalldirs) ${baseline_dir}
 	-@(output=${baseline_file}; \
 	  if test -f $${output}; then \
@@ -609,7 +609,7 @@ new-abi-baseline:
 @GLIBCXX_TEST_ABI_TRUE@	-@(./abi_check --check ./current_symbols.txt ${baseline_file} \
 @GLIBCXX_TEST_ABI_TRUE@	2>&1 | tee libstdc++-abi.sum)
 
-@GLIBCXX_TEST_ABI_TRUE@check-abi-verbose: abi_check baseline_symbols current_symbols.txt 
+@GLIBCXX_TEST_ABI_TRUE@check-abi-verbose: abi_check baseline_symbols current_symbols.txt
 @GLIBCXX_TEST_ABI_TRUE@	-@(./abi_check --check-verbose ./current_symbols.txt ${baseline_file} \
 @GLIBCXX_TEST_ABI_TRUE@	2>&1 | tee libstdc++-abi.sum)
 
