@@ -1,3 +1,8 @@
+2002-02-25  Jason Merrill  <jason@redhat.com>
+
+	* c-decl.c (finish_function): Only warn about missing return
+	statement with -Wreturn-type.
+
 Don Feb 28 11:24:30 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* cfgrtl.c (purge_dead_edges): Fix handling of EH edges.

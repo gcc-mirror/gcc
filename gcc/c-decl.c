@@ -6809,7 +6809,8 @@ finish_function (nested)
   finish_stmt_tree (&DECL_SAVED_TREE (fndecl));
 
   /* Complain if there's just no return statement.  */
-  if (TREE_CODE (TREE_TYPE (TREE_TYPE (fndecl))) != VOID_TYPE
+  if (warn_return_type
+      && TREE_CODE (TREE_TYPE (TREE_TYPE (fndecl))) != VOID_TYPE
       && !current_function_returns_value && !current_function_returns_null
       /* Don't complain if we abort.  */
       && !current_function_returns_abnormally
@@ -6817,9 +6818,9 @@ finish_function (nested)
       && !MAIN_NAME_P (DECL_NAME (fndecl))
       /* Or if they didn't actually specify a return type.  */
       && !C_FUNCTION_IMPLICIT_INT (fndecl)
-      /* If we have -Wreturn-type, let flow complain.  Unless we're an
+      /* Normally, with -Wreturn-type, flow will complain.  Unless we're an
 	 inline function, as we might never be compiled separately.  */
-      && (!warn_return_type || DECL_INLINE (fndecl)))
+      && DECL_INLINE (fndecl))
     warning ("no return statement in function returning non-void");
 
   /* Clear out memory we no longer need.  */
