@@ -1,3 +1,13 @@
+1999-10-07  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (build_vtable_entry_ref): Use finish_asm_stmt.
+
+1999-10-07  Greg McGary  <gkm@gnu.org>
+
+	* class.c (finish_struct_1): Use simpler method of
+	removing elements of a singly-linked list which doesn't
+	lose for classes without data members.
+
 1999-10-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* friend.c (make_friend_class): Robustify.
