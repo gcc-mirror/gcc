@@ -61,7 +61,6 @@ GLIBCXX_3.4 {
       std::_List_node_base::reverse*;
       std::_List_node_base::transfer*;
       std::__throw_*;
-      std::__basic_file*;
       std::__timepunct*;
       std::__numeric_limits_base*;
       std::__num_base::_S_format_float*;
@@ -133,6 +132,22 @@ GLIBCXX_3.4 {
 
     # std::__codecvt_abstract_base*
     _ZNStSt23__codecvt_abstract_base*;
+
+    # std::__basic_file
+    _ZNKSt12__basic_fileIcE7is_openEv;
+    _ZNSt12__basic_fileIcE2fdEv;
+    _ZNSt12__basic_fileIcE4openEPKcSt13_Ios_Openmodei;
+    _ZNSt12__basic_fileIcE4syncEv;
+    _ZNSt12__basic_fileIcE5closeEv;
+    _ZNSt12__basic_fileIcE6xsgetnEPci;
+    _ZNSt12__basic_fileIcE6xsputnEPKci;
+    _ZNSt12__basic_fileIcE7seekoffExSt12_Ios_Seekdir;
+    _ZNSt12__basic_fileIcE8sys_openEP8_IO_FILESt13_Ios_Openmode;
+    _ZNSt12__basic_fileIcE8sys_openEiSt13_Ios_Openmode;
+    _ZNSt12__basic_fileIcE8xsputn_2EPKciS2_i;
+    _ZNSt12__basic_fileIcE9showmanycEv;
+    _ZNSt12__basic_fileIcEC*;
+    _ZNSt12__basic_fileIcED*;
 
     # virtual table
     _ZTVNSt8ios_base7failureE;
@@ -234,6 +249,12 @@ GLIBCXX_3.4 {
     *;
 };
 
+GLIBCXX_3.4.1 {
+ 
+    _ZNSt12__basic_fileIcE4fileEv;
+ 
+} GLIBCXX_3.4;
+ 
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
