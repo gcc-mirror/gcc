@@ -1,5 +1,11 @@
 2004-09-25  Jan Hubicka  <jh@suse.cz>
 
+	* predict.c (counts_to_freqs): Make glolbal.
+	* predict.h (counts_to_freqa): Declare.
+	* profile.c (compute_branch_probabilities): Compute frequencies
+	* tree-profile.c (do_tree_profiling): Refine conditional on when
+	tree profiling pass is needed.
+
 	* passes.c (rest_of_handle_cfg): Disable const/pure function
 	detection when doing tree based profiling.
 

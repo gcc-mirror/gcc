@@ -590,6 +590,7 @@ compute_branch_probabilities (void)
 	    num_branches++, num_never_executed;
 	}
     }
+  counts_to_freqs ();
 
   if (dump_file)
     {
