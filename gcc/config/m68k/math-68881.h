@@ -57,7 +57,7 @@
 ({									\
   double huge_val;							\
 									\
-  __asm ("fmove%.d %#0x7ff0000000000000,%0"	/* Infinity */		\
+  __asm ("fmove%.d #0x7ff0000000000000,%0"	/* Infinity */		\
 	 : "=f" (huge_val)						\
 	 : /* no inputs */);						\
   huge_val;								\
@@ -135,10 +135,10 @@ atan2 (double y, double x)
 {
   double pi, pi_over_2;
 
-  __asm ("fmovecr%.x %#0,%0"		/* extended precision pi */
+  __asm ("fmovecr%.x #0,%0"		/* extended precision pi */
 	 : "=f" (pi)
 	 : /* no inputs */ );
-  __asm ("fscale%.b %#-1,%0"		/* no loss of accuracy */
+  __asm ("fscale%.b #-1,%0"		/* no loss of accuracy */
 	 : "=f" (pi_over_2)
 	 : "0" (pi));
   if (x > 0)
@@ -178,7 +178,7 @@ atan2 (double y, double x)
 	      double value;
 
 	      errno = EDOM;
-	      __asm ("fmove%.d %#0x7fffffffffffffff,%0" 	/* quiet NaN */
+	      __asm ("fmove%.d #0x7fffffffffffffff,%0"	/* quiet NaN */
 		     : "=f" (value)
 		     : /* no inputs */);
 	      return value;
@@ -317,7 +317,7 @@ pow (double x, double y)
 	  double value;
 
 	  errno = EDOM;
-	  __asm ("fmove%.d %#0x7fffffffffffffff,%0"		/* quiet NaN */
+	  __asm ("fmove%.d #0x7fffffffffffffff,%0"		/* quiet NaN */
 		 : "=f" (value)
 		 : /* no inputs */);
 	  return value;
@@ -333,7 +333,7 @@ pow (double x, double y)
       if (y == temp)
         {
 	  int i = (int) y;
-	  
+
 	  if ((i & 1) == 0)			/* even */
 	    return exp (y * log (-x));
 	  else
@@ -344,7 +344,7 @@ pow (double x, double y)
 	  double value;
 
 	  errno = EDOM;
-	  __asm ("fmove%.d %#0x7fffffffffffffff,%0"		/* quiet NaN */
+	  __asm ("fmove%.d #0x7fffffffffffffff,%0"		/* quiet NaN */
 		 : "=f" (value)
 		 : /* no inputs */);
 	  return value;
@@ -497,7 +497,7 @@ frexp (double x, int *exp)
   double mantissa;
 
   __asm ("fgetexp%.x %1,%0"
-	 : "=f" (float_exponent) 	/* integer-valued float */
+	 : "=f" (float_exponent)	/* integer-valued float */
 	 : "f" (x));
   int_exponent = (int) float_exponent;
   __asm ("fgetman%.x %1,%0"
@@ -505,7 +505,7 @@ frexp (double x, int *exp)
 	 : "f" (x));
   if (mantissa != 0)
     {
-      __asm ("fscale%.b %#-1,%0"
+      __asm ("fscale%.b #-1,%0"
 	     : "=f" (mantissa)		/* mantissa /= 2.0 */
 	     : "0" (mantissa));
       int_exponent += 1;
