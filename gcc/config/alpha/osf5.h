@@ -38,7 +38,11 @@
 
    It is clearly not desirable to depend on this undocumented flag, and
    Compaq wants -oldas to go away soon, but until they have released a
-   new adu that works with mips-tfile, this is the only option.  */
+   new adu that works with mips-tfile, this is the only option.
+
+   In some versions of the DTK, the assembler driver invokes ld after
+   assembly.  This has been fixed in current versions, but adding -c
+   works as expected for all versions.  */
 
 #undef ASM_OLDAS_SPEC
-#define ASM_OLDAS_SPEC "-oldas"
+#define ASM_OLDAS_SPEC "-oldas -c"
