@@ -810,6 +810,8 @@ dump_decl (t, v)
 	  || (DECL_INITIAL (t) &&
 	      TREE_CODE (DECL_INITIAL (t)) == TEMPLATE_CONST_PARM))
 	goto general;
+      else if (DECL_NAME (t))
+	dump_decl (DECL_NAME (t), v);
       else if (DECL_INITIAL (t))
 	dump_expr (DECL_INITIAL (t), 0);
       else
