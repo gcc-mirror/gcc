@@ -1,3 +1,8 @@
+2002-12-18  Nick Clifton  <nickc@redhat.com>
+
+	* lib/g++.exp (g++_include_flags): Only invoke testsuite_flags if
+	the libstdc++-v3 directory has been found.
+
 2002-12-12  Devang Patel <dpatel@apple.com>
 	* gcc.dg/darwin-ld-1.c: New test.
 	* gcc.dg/darwin-ld-2.c: New test.
