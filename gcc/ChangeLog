@@ -1,3 +1,11 @@
+2003-06-16  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha-protos.h, config/alpha/elf.h,
+	config/alpha/osf.h, config/alpha/unicosmk.h, config/alpha/vms.h,
+	config/alpha/vms-cc.c, config/alpha/vms-ld.c: Update to ISO C.
+	* config/alpha/alpha.c: Likewise.  Move targetm init to end of file.
+	Remove unneeded static function decls.
+
 2003-06-16  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-opts.c (c_common_handle_option): s/on/value/.

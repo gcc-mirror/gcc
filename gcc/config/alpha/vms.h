@@ -287,8 +287,8 @@ literals_section ()						\
     }								\
 }
 
-extern void link_section	PARAMS ((void));
-extern void literals_section	PARAMS ((void));
+extern void link_section (void);
+extern void literals_section (void);
 
 #undef ASM_OUTPUT_ADDR_DIFF_ELT
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) abort ()

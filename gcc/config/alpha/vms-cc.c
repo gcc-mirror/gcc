@@ -1,5 +1,5 @@
 /* VMS DEC C wrapper.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003 Free Software Foundation, Inc.
    Contributed by Douglas B. Rupp (rupp@gnat.com).
 
 This file is part of GNU CC.
@@ -34,50 +34,47 @@ Boston, MA 02111-1307, USA.  */
 #define PATH_SEPARATOR_STR ","
 
 /* These can be set by command line arguments */
-int verbose = 0;
-int save_temps = 0;
+static int verbose = 0;
+static int save_temps = 0;
 
-int comp_arg_max = -1;
-const char **comp_args = 0;
-int comp_arg_index = -1;
-char *objfilename = 0;
+static int comp_arg_max = -1;
+static const char **comp_args = 0;
+static int comp_arg_index = -1;
+static char *objfilename = 0;
 
-char *system_search_dirs = (char *) "";
-char *search_dirs;
+static char *system_search_dirs = (char *) "";
+static char *search_dirs;
 
-char *default_defines = (char *) "";
-char *defines;
+static char *default_defines = (char *) "";
+static char *defines;
 
 /* Translate a Unix syntax directory specification into VMS syntax.
    If indicators of VMS syntax found, return input string. */
-static char *to_host_dir_spec PARAMS ((char *));
+static char *to_host_dir_spec (char *);
 
 /* Translate a Unix syntax file specification into VMS syntax.
    If indicators of VMS syntax found, return input string. */
-static char *to_host_file_spec PARAMS ((char *));
+static char *to_host_file_spec (char *);
 
 /* Add a translated arg to the list to be passed to DEC CC */
-static void addarg PARAMS ((const char *));
+static void addarg (const char *);
 
 /* Preprocess the number of args in P_ARGC and contained in ARGV.
    Look for special flags, etc. that must be handled first. */
-static void preprocess_args PARAMS ((int *, char **));
+static void preprocess_args (int *, char **);
 
 /* Process the number of args in P_ARGC and contained in ARGV. Look
    for special flags, etc. that must be handled for the VMS compiler. */
-static void process_args PARAMS ((int *, char **));
+static void process_args (int *, char **);
 
 /* Action routine called by decc$to_vms */
-static int translate_unix PARAMS ((char *, int));
-
-int main PARAMS ((int, char **));
+static int translate_unix (char *, int);
 
 /* Add the argument contained in STR to the list of arguments to pass to the
    compiler.  */
 
 static void
-addarg (str)
-     const char *str;
+addarg (const char *str)
 {
   int i;
 
@@ -100,9 +97,7 @@ addarg (str)
 }
 
 static void
-preprocess_args (p_argc, argv)
-     int *p_argc;
-     char *argv[];
+preprocess_args (int *p_argc, char *argv[])
 {
   int i;
 
@@ -122,9 +117,7 @@ preprocess_args (p_argc, argv)
 }
 
 static void
-process_args (p_argc, argv)
-     int *p_argc;
-     char *argv[];
+process_args (int *p_argc, char *argv[])
 {
   int i;
 
@@ -185,9 +178,7 @@ process_args (p_argc, argv)
 typedef struct dsc {unsigned short len, mbz; char *adr; } Descr;
 
 int
-main (argc, argv)
-     int argc;
-     char **argv;
+main (int argc, char **argv)
 {
   int i;
   char cwdev [128], *devptr;
@@ -320,17 +311,14 @@ static char new_host_dirspec [255];
 static char filename_buff [256];
 
 static int
-translate_unix (name, type)
-     char *name;
-     int type ATTRIBUTE_UNUSED;
+translate_unix (char *name, int type ATTRIBUTE_UNUSED)
 {
   strcpy (filename_buff, name);
   return 0;
 }
 
 static char *
-to_host_dir_spec (dirspec)
-     char *dirspec;
+to_host_dir_spec (char *dirspec)
 {
   int len = strlen (dirspec);
 
@@ -353,8 +341,7 @@ to_host_dir_spec (dirspec)
 }
 
 static char *
-to_host_file_spec (filespec)
-     char *filespec;
+to_host_file_spec (char *filespec)
 {
   strcpy (new_host_filespec, "");
   if (strchr (filespec, ']') || strchr (filespec, ':'))
