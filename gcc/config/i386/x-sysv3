@@ -1,0 +1,2 @@
+CLIB=-lPW
+INSTALL=cp
