@@ -1,5 +1,5 @@
 /* Try to unroll loops, and split induction variables.
-   Copyright (C) 1992, 93, 94, 95, 97, 98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-95, 97-99, 2000 Free Software Foundation, Inc.
    Contributed by James E. Wilson, Cygnus Support/UC Berkeley.
 
 This file is part of GNU CC.
@@ -1692,7 +1692,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
      rtx start_label, loop_end, insert_before, copy_notes_from;
 {
   rtx insn, pattern;
-  rtx set, tem, copy;
+  rtx set, tem, copy = NULL_RTX;
   int dest_reg_was_split, i;
 #ifdef HAVE_cc0
   rtx cc0_insn = 0;

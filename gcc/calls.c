@@ -1,5 +1,5 @@
 /* Convert function calls to rtl insns, for GNU C compiler.
-   Copyright (C) 1989, 92-97, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1989, 92-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1660,7 +1660,7 @@ expand_call (exp, target, ignore)
 #ifdef ACCUMULATE_OUTGOING_ARGS
   int initial_highest_arg_in_use = highest_outgoing_arg_in_use;
   char *initial_stack_usage_map = stack_usage_map;
-  int old_stack_arg_under_construction;
+  int old_stack_arg_under_construction = 0;
 #endif
 
   rtx old_stack_level = 0;

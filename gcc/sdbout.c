@@ -1,5 +1,5 @@
 /* Output sdb-format symbol table information from GNU compiler.
-   Copyright (C) 1988, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1173,7 +1173,7 @@ sdbout_one_type (type)
       /* Output a structure type.  */
       {
 	int size = int_size_in_bytes (type);
-	int member_scl;
+	int member_scl = 0;
 	tree tem;
 	int i, n_baseclasses = 0;
 

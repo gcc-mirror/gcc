@@ -1,5 +1,5 @@
 /* Register to Stack convert for GNU compiler.
-   Copyright (C) 1992, 93-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-99, 2000 Free Software Foundation, Inc.
 
    This file is part of GNU CC.
 
@@ -589,7 +589,7 @@ check_asm_stack_operands (insn)
   char implicitly_dies[FIRST_PSEUDO_REGISTER];
   int alt;
 
-  rtx *clobber_reg;
+  rtx *clobber_reg = 0;
   int n_inputs, n_outputs;
 
   /* Find out what the constraints require.  If no constraint
@@ -1792,8 +1792,8 @@ subst_asm_stack_regs (insn, regstack)
   rtx **note_loc;		/* Address of REG field of each note */
   enum reg_note *note_kind;	/* The type of each note */
 
-  rtx *clobber_reg;
-  rtx **clobber_loc;
+  rtx *clobber_reg = 0;
+  rtx **clobber_loc = 0;
 
   struct stack_def temp_stack;
   int n_notes;

@@ -1,5 +1,5 @@
 /* Functions related to building classes and their related objects.
-   Copyright (C) 1987, 92-97, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 92-99, 2000 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -2930,7 +2930,7 @@ warn_hidden (t)
   for (i = 2; i < n_methods && TREE_VEC_ELT (method_vec, i); ++i)
     {
       tree fns = TREE_VEC_ELT (method_vec, i);
-      tree fndecl;
+      tree fndecl = NULL_TREE;
 
       tree base_fndecls = NULL_TREE;
       tree binfos = BINFO_BASETYPES (TYPE_BINFO (t));

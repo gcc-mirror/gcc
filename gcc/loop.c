@@ -1,5 +1,5 @@
 /* Perform various loop optimizations, including strength reduction.
-   Copyright (C) 1987, 88, 89, 91-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 91-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -7682,7 +7682,7 @@ recombine_givs (bl, loop_start, loop_end, unroll_p)
      LAST_GIV.  */
   for (i = giv_count - 1; i >= 0; i = rescan)
     {
-      int life_start, life_end;
+      int life_start = 0, life_end = 0;
 
       for (last_giv = 0, rescan = -1; i >= 0; i--)
 	{

@@ -1,5 +1,5 @@
 /* Optimize jump instructions, for GNU compiler.
-   Copyright (C) 1987, 88, 89, 91-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 91-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -309,7 +309,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
       for (insn = f; insn; insn = next)
 	{
 	  rtx reallabelprev;
-	  rtx temp, temp1, temp2, temp3, temp4, temp5, temp6;
+	  rtx temp, temp1, temp2 = NULL_RTX, temp3, temp4, temp5, temp6;
 	  rtx nlabel;
 	  int this_is_simplejump, this_is_condjump, reversep = 0;
 	  int this_is_condjump_in_parallel;

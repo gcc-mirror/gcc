@@ -1,5 +1,5 @@
 /* Part of CPP library.  (Macro handling.)
-   Copyright (C) 1986, 87, 89, 92-96, 98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1986, 87, 89, 92-96, 98, 99, 2000 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -1051,12 +1051,12 @@ macroexpand (pfile, hp)
   register U_CHAR *xbuf;
   long start_line, start_column;
   int xbuf_len;
-  struct argdata *args;
+  struct argdata *args = 0;
   long old_written = CPP_WRITTEN (pfile);
 #if 0
   int start_line = instack[indepth].lineno;
 #endif
-  int rest_args, rest_zero;
+  int rest_args, rest_zero = 0;
   register int i;
 
 #if 0
