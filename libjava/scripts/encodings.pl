@@ -17,7 +17,7 @@ if ($ARGV[0] eq '')
     if (! -f $file)
     {
 	# Too painful to figure out how to get Perl to do it.
-	system 'wget -o .wget-log http://www.isi.edu/in-notes/iana/assignments/character-sets';
+	system 'wget -o .wget-log http://www.iana.org/assignments/character-sets';
     }
 }
 else
@@ -42,12 +42,15 @@ while (<INPUT>)
     }
 
     ($type, $name) = split (/\s+/);
+    # Encoding names are case-insensitive.  We do all processing on
+    # the lower-case form.
+    my $lower = lc ($name);
     if ($type eq 'Name:')
     {
 	$current = $map{$name};
 	if ($current)
 	{
-	    print "    hash.put (\"$name\", \"$current\");\n";
+	    print "    hash.put (\"$lower\", \"$current\");\n";
 	}
     }
     elsif ($type eq 'Alias:')
@@ -55,7 +58,7 @@ while (<INPUT>)
 	# The IANA list has some ugliness.
 	if ($name ne '' && $name ne 'NONE' && $current)
 	{
-	    print "    hash.put (\"$name\", \"$current\");\n";
+	    print "    hash.put (\"$lower\", \"$current\");\n";
 	}
     }
 }
