@@ -8042,7 +8042,7 @@ check_dbra_loop (loop, insn_count)
 		{
 		  if (v->giv_type == DEST_REG
 		      && reg_mentioned_p (v->dest_reg,
-					  XEXP (loop_store_mems, 0))
+					 PATTERN (first_loop_store_insn)) 
 		      && loop_insn_first_p (first_loop_store_insn, v->insn))
 		    reversible_mem_store = 0;
 		}
