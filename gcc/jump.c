@@ -3504,7 +3504,7 @@ delete_insn (insn)
       register RTX_CODE code;
       while (next != 0
 	     && (GET_RTX_CLASS (code = GET_CODE (next)) == 'i'
-		 || code == NOTE
+		 || code == NOTE || code == BARRIER
 		 || (code == CODE_LABEL && INSN_DELETED_P (next))))
 	{
 	  if (code == NOTE
