@@ -5,7 +5,6 @@ AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE(zlib, 1.1.3)
 
 AM_MAINTAINER_MODE
-AC_EXEEXT
 
 AC_CONFIG_AUX_DIR(..)
 
@@ -43,6 +42,16 @@ AC_ARG_WITH(system-zlib,
 [  --with-system-zlib      use installed libz])
 
 LIB_AC_PROG_CC
+# We need AC_EXEEXT to keep automake happy in cygnus mode.  However,
+# at least currently, we never actually build a program, so we never
+# need to use $(EXEEXT).  Moreover, the test for EXEEXT normally
+# fails, because we are probably configuring with a cross compiler
+# which cant create executables.  So we include AC_EXEEXT to keep
+# automake happy, but we dont execute it, since we dont care about
+# the result.
+if false; then
+  AC_EXEEXT
+fi
 AM_PROG_LIBTOOL
 
 if test -z "$with_target_subdir" || test "$with_target_subdir" = "."; then
