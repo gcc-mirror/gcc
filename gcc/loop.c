@@ -312,7 +312,7 @@ static int basic_induction_var PROTO((rtx, enum machine_mode, rtx, rtx, rtx *, r
 static rtx simplify_giv_expr PROTO((rtx, int *));
 static int general_induction_var PROTO((rtx, rtx *, rtx *, rtx *, int, int *));
 static int consec_sets_giv PROTO((int, rtx, rtx, rtx, rtx *, rtx *));
-static int check_dbra_loop PROTO((rtx, int, rtx));
+static int check_dbra_loop PROTO((rtx, int, rtx, struct loop_info *));
 static rtx express_from_1 PROTO((rtx, rtx, rtx));
 static rtx express_from PROTO((struct induction *, struct induction *));
 static rtx combine_givs_p PROTO((struct induction *, struct induction *));
@@ -4041,7 +4041,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
   /* Try to prove that the loop counter variable (if any) is always
      nonnegative; if so, record that fact with a REG_NONNEG note
      so that "decrement and branch until zero" insn can be used.  */
-  check_dbra_loop (loop_end, insn_count, loop_start);
+  check_dbra_loop (loop_end, insn_count, loop_start, loop_info);
 
   /* Create reg_map to hold substitutions for replaceable giv regs.  */
   reg_map = (rtx *) alloca (max_reg_before_loop * sizeof (rtx));
@@ -6634,10 +6634,11 @@ product_cheap_p (a, b)
    final_[bg]iv_value.  */
 
 static int
-check_dbra_loop (loop_end, insn_count, loop_start)
+check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
      rtx loop_end;
      int insn_count;
      rtx loop_start;
+     struct loop_info *loop_info;
 {
   struct iv_class *bl;
   rtx reg;
@@ -7064,6 +7065,15 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 	      bl->biv->insn = p;
 	      bl->initial_value = start_value;
 	      bl->biv->add_val = new_add_val;
+
+	      /* Update loop info.  */
+	      loop_info->initial_value = bl->initial_value;
+	      loop_info->initial_equiv_value = bl->initial_value;
+	      loop_info->final_value = const0_rtx;
+	      loop_info->final_equiv_value = const0_rtx;
+	      loop_info->comparison_value = const0_rtx;
+	      loop_info->comparison_code = cmp_code;
+	      loop_info->increment = new_add_val;
 
 	      /* Inc LABEL_NUSES so that delete_insn will
 		 not delete the label.  */
