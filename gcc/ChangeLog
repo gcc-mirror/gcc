@@ -1,3 +1,16 @@
+2004-06-06  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/13519
+	* c-typeck.c (composite_type, common_pointer_type): New functions.
+	(common_type): Split parts into composite_type and
+	common_pointer_type.  Ensure that arithmetic operations return
+	unqualified types without attributes.  Don't make composite type
+	of signed enum and compatible integer be unsigned.
+	(build_conditional_expr, build_binary_op): Use
+	common_pointer_type.
+	* c-decl.c (merge_decls): Use composite_type.
+	* c-tree.h (composite_type): Declare.
+
 2004-06-06  Stephane Carrez  <stcarrez@nerim.fr>
 
 	PR target/14457

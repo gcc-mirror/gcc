@@ -1452,7 +1452,7 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
   /* Merge the data types specified in the two decls.  */
   TREE_TYPE (newdecl)
     = TREE_TYPE (olddecl)
-    = common_type (newtype, oldtype);
+    = composite_type (newtype, oldtype);
 
   /* Lay the type out, unless already done.  */
   if (oldtype != TREE_TYPE (newdecl))
