@@ -3909,8 +3909,9 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	    /* These operators may not appear in constant-expressions.  */
 	    if (parser->integral_constant_expression_p
 		/* The "->" operator is allowed in the implementation
-		   of "offsetof".  */
-		&& !(parser->in_offsetof_p && token_type == CPP_DEREF))
+		   of "offsetof".  The "." operator may appear in the
+		   name of the member.  */
+		&& !parser->in_offsetof_p)
 	      {
 		if (!parser->allow_non_integral_constant_expression_p)
 		  postfix_expression 
@@ -10977,12 +10978,13 @@ cp_parser_parameter_declaration (cp_parser *parser,
 	 expression.  Therefore, if parsing tentatively, we commit at
 	 this point.  */
       if (!parser->in_template_argument_list_p
-	  /* Having seen:
+	  /* In an expression context, having seen:
 
 	       (int((char *)...
 
 	     we cannot be sure whether we are looking at a
-	     function-type (taking a */
+	     function-type (taking a "char*" as a parameter) or a cast
+	     of some object of type "char*" to "int".  */
 	  && !parser->in_type_id_in_expr_p
 	  && cp_parser_parsing_tentatively (parser)
 	  && !cp_parser_committed_to_tentative_parse (parser)
