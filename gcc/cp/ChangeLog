@@ -1,3 +1,13 @@
+Sun May 17 14:52:08 1998  Martin v. Loewis  <loewis@informatik.hu-berlin.de>
+
+	* typeck.c (type_unknown_p): Return true for TREE_LIST also.
+
+	* call.c (build_method_call): Use TYPE_MAIN_VARIANT on typedefs.
+
+Sun May 17 14:51:41 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (build_scoped_method_call): Likewise.
+
 Sun May 17 13:53:48 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* init.c (build_new_1): Call suspend_momentary around the creation

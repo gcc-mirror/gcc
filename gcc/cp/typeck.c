@@ -165,6 +165,7 @@ type_unknown_p (exp)
      tree exp;
 {
   return (TREE_CODE (exp) == OVERLOAD
+          || TREE_CODE (exp) == TREE_LIST
 	  || TREE_TYPE (exp) == unknown_type_node
 	  || (TREE_CODE (TREE_TYPE (exp)) == OFFSET_TYPE
 	      && TREE_TYPE (TREE_TYPE (exp)) == unknown_type_node));

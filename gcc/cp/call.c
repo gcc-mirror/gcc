@@ -392,7 +392,8 @@ build_scoped_method_call (exp, basetype, name, parms)
 		  exp, basetype, type);
       name = TREE_OPERAND (name, 0);
       if (TYPE_MAIN_VARIANT (basetype) != name 
-	  && basetype != get_type_value (name))
+	  && (TYPE_MAIN_VARIANT (basetype)
+	      != TYPE_MAIN_VARIANT (get_type_value (name))))
 	cp_error ("qualified type `%T' does not match destructor name `~%T'",
 		  basetype, name);
       return cp_convert (void_type_node, exp);
@@ -639,7 +640,8 @@ build_method_call (instance, name, parms, basetype_path, flags)
       if (! (name == TYPE_MAIN_VARIANT (basetype)
 	     || (IS_AGGR_TYPE (basetype)
 		 && name == constructor_name (basetype))
-	     || basetype == get_type_value (name)))
+	     || (TYPE_MAIN_VARIANT (basetype)
+		 == TYPE_MAIN_VARIANT (get_type_value (name)))))
 	{
 	  cp_error ("destructor name `~%D' does not match type `%T' of expression",
 		    name, basetype);
