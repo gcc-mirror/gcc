@@ -33,8 +33,11 @@ static void print_containing_files	PARAMS ((cpp_buffer *));
 static void print_location		PARAMS ((cpp_reader *,
 						 const char *,
 						 const cpp_lexer_pos *));
+
+/* Don't remove the blank before do, as otherwise the exgettext
+   script will mistake this as a function definition */
 #define v_message(msgid, ap) \
-do { vfprintf (stderr, _(msgid), ap); putc ('\n', stderr); } while (0)
+ do { vfprintf (stderr, _(msgid), ap); putc ('\n', stderr); } while (0)
 
 /* Print the file names and line numbers of the #include
    commands which led to the current file.  */
