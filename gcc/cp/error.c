@@ -1,6 +1,6 @@
 /* Call-backs for C++ error reporting.
    This code is non-reentrant.
-   Copyright (C) 1993, 94-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1993, 94-97, 1998, 1999 Free Software Foundation, Inc.
 
    This file is part of GNU CC.
 
@@ -32,6 +32,7 @@ typedef char* cp_printer ();
 #define C code_as_string
 #define D decl_as_string
 #define E expr_as_string
+#define F fndecl_as_string
 #define L language_as_string
 #define O op_as_string
 #define P parm_as_string
@@ -47,7 +48,7 @@ cp_printer * cp_printers[256] =
   o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, /* 0x10 */
   o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, /* 0x20 */
   o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, /* 0x30 */
-  o, A, o, C, D, E, o, o, o, o, o, o, L, o, o, O, /* 0x40 */
+  o, A, o, C, D, E, F, o, o, o, o, o, L, o, o, O, /* 0x40 */
   P, Q, o, o, T, o, V, o, o, o, o, o, o, o, o, o, /* 0x50 */
   o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, /* 0x60 */
   o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, o, /* 0x70 */
@@ -55,6 +56,7 @@ cp_printer * cp_printers[256] =
 #undef C
 #undef D
 #undef E
+#undef F
 #undef L
 #undef O
 #undef P
@@ -104,6 +106,8 @@ static void dump_expr_list PROTO((tree));
 static void dump_global_iord PROTO((tree));
 static void dump_qualifiers PROTO((tree, enum pad));
 static void dump_char PROTO((int));
+static void dump_parameters PROTO((tree, int, int));
+static void dump_exception_spec PROTO((tree, int));
 static char *aggr_variety PROTO((tree));
 static tree ident_fndecl PROTO((tree));
 
@@ -199,29 +203,6 @@ dump_type_real (t, v, canonical_name)
 
     case UNKNOWN_TYPE:
       OB_PUTS ("{unknown type}");
-      break;
-
-    case TREE_LIST:
-      /* i.e. function taking no arguments */
-      if (t != void_list_node)
-	{
-	  dump_type_real (TREE_VALUE (t), v, canonical_name);
-	  /* Can this happen other than for default arguments? */
-	  if (TREE_PURPOSE (t) && v)
-	    {
-	      OB_PUTS (" = ");
-	      dump_expr (TREE_PURPOSE (t), 0);
-	    }
-	  if (TREE_CHAIN (t))
-	    {
-	      if (TREE_CHAIN (t) != void_list_node)
-		{
-		  OB_PUTC2 (',', ' ');
-		  dump_type_real (TREE_CHAIN (t), v, canonical_name);
-		}
-	    }
-	  else OB_PUTS (" ...");
-	}
       break;
 
     case IDENTIFIER_NODE:
@@ -569,20 +550,20 @@ dump_type_suffix (t, v, canonical_name)
     case METHOD_TYPE:
       {
 	tree arg;
-	OB_PUTC2 (')', '(');
+	OB_PUTC (')');
 	arg = TYPE_ARG_TYPES (t);
 	if (TREE_CODE (t) == METHOD_TYPE)
 	  arg = TREE_CHAIN (arg);
 
-	if (arg)
-	  dump_type (arg, v);
-	else
-	  OB_PUTS ("...");
-	OB_PUTC (')');
+	/* Function pointers don't have default args.  Not in standard C++,
+	   anyway; they may in g++, but we'll just pretend otherwise.  */
+	dump_parameters (arg, 0, canonical_name);
+
 	if (TREE_CODE (t) == METHOD_TYPE)
 	  dump_qualifiers
 	    (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (t))), before);
 	dump_type_suffix (TREE_TYPE (t), v, canonical_name);
+	dump_exception_spec (TYPE_RAISES_EXCEPTIONS (t), canonical_name);
 	break;
       }
 
@@ -957,10 +938,15 @@ dump_decl (t, v)
     }
 }
 
-/* Pretty printing for announce_function.  T is the declaration of the
-   function we are interested in seeing.  If V is zero, we print the
-   argument types.  If V is positive, we also print the return types.
-   If V is negative, we do not even print the argument types.  */
+/* Pretty print a function decl. There are several ways we want to print a
+   function declaration. We use V to tell us what.
+     V    - 01 23
+   args   - ++ ++
+   retval - -+ ++
+   default- -+ -+
+   throw  - -- ++
+   As cp_error can only apply the '#' flag once to give 0 and 1 for V, there
+   is %D which doesn't print the throw specs, and %F which does. */
 
 static void
 dump_function_decl (t, v)
@@ -1027,15 +1013,8 @@ dump_function_decl (t, v)
   if (v < 0)
     return;
 
-  OB_PUTC ('(');
-
-  if (parmtypes)
-    dump_type (parmtypes, v);
-  else
-    OB_PUTS ("...");
-
-  OB_PUTC (')');
-
+  dump_parameters (parmtypes, v & 1, 0);
+  
   if (v && ! DECL_CONV_FN_P (t))
     dump_type_suffix (TREE_TYPE (fntype), 1, 0);
 
@@ -1048,6 +1027,68 @@ dump_function_decl (t, v)
       else
 	dump_qualifiers
 	  (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (fntype))), before);
+    }
+  
+  if (v >= 2)
+    dump_exception_spec (TYPE_RAISES_EXCEPTIONS (fntype), 0);
+}
+
+/* Print a parameter list. V indicates if we show default values or not. If
+   these are for a member function, the member object ptr
+   (and any other hidden args) should have already been removed. */
+
+static void
+dump_parameters (parmtypes, v, canonical_name)
+     tree parmtypes;
+     int v;
+     int canonical_name;
+{
+  int first;
+  OB_PUTC ('(');
+
+  for (first = 1; parmtypes != void_list_node;
+       parmtypes = TREE_CHAIN (parmtypes))
+    {
+      if (!first)
+        OB_PUTC2 (',', ' ');
+      first = 0;
+      if (!parmtypes)
+        {
+          OB_PUTS ("...");
+          break;
+        }
+      dump_type_real (TREE_VALUE (parmtypes), 0, canonical_name);
+      
+      if (TREE_PURPOSE (parmtypes) && v)
+        {
+          OB_PUTS (" = ");
+          dump_expr (TREE_PURPOSE (parmtypes), 0);
+        }
+    }
+
+  OB_PUTC (')');
+}
+
+/* Print an exception specification. T is the exception specification. */
+
+static void
+dump_exception_spec (t, canonical_name)
+     tree t;
+     int canonical_name;
+{
+  if (t)
+    {
+      OB_PUTS (" throw (");
+      if (TREE_VALUE (t) != NULL_TREE)
+        while (1)
+          {
+            dump_type_real (TREE_VALUE (t), 0, canonical_name);
+            t = TREE_CHAIN (t);
+            if (!t)
+              break;
+            OB_PUTC2 (',', ' ');
+          }
+      OB_PUTC (')');
     }
 }
 
@@ -1758,12 +1799,20 @@ dump_unary_op (opstring, t, nop)
   if (!nop) OB_PUTC (')');
 }
 
+/* Print a function decl with exception specification included. */
+
 char *
-fndecl_as_string (fndecl, print_ret_type_p)
+fndecl_as_string (fndecl, print_default_args_p)
      tree fndecl;
-     int print_ret_type_p;
+     int print_default_args_p;
 {
-  return decl_as_string (fndecl, print_ret_type_p);
+  OB_INIT ();
+
+  dump_function_decl (fndecl, 2 + print_default_args_p);
+  
+  OB_FINISH ();
+
+  return (char *)obstack_base (&scratch_obstack);
 }
 
 /* Same, but handle a _TYPE.
