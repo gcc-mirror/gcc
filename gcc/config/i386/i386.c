@@ -1033,7 +1033,14 @@ print_operand (file, x, code)
 
 	    case 8:
 	      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT)
-		PUT_OP_SIZE ('Q', 'l', file);
+		{
+#ifdef GAS_MNEMONICS
+		  PUT_OP_SIZE ('Q', 'q', file);
+		  return;
+#else
+		  PUT_OP_SIZE ('Q', 'l', file);	/* Fall through */
+#endif
+		}
 
 	      PUT_OP_SIZE ('Q', 'l', file);
 	      return;

@@ -25,3 +25,15 @@
       (PTR) += 4;							\
     }									\
 }
+
+/* Define macro used to output shift-double opcodes when the shift
+   count is in %cl.  Some assemblers require %cl as an argument;
+   some don't.
+
+   GAS requires the %cl argument, so override unx386.h. */
+
+#undef AS3_SHIFT_DOUBLE
+#define AS3_SHIFT_DOUBLE(a,b,c,d) AS3 (a,b,c,d)
+
+/* Print opcodes the way that GAS expects them. */
+#define GAS_MNEMONICS 1
