@@ -1,3 +1,7 @@
+1998-11-19  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Make-lang.in (mandir): Replace all uses of $(mandir) by $(man1dir).
+
 1998-11-19  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* semantics.c (begin_class_definition): Call

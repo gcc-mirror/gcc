@@ -289,7 +289,8 @@ exeext = @host_exeext@
 build_exeext = @build_exeext@
 
 # Directory in which to put man pages.
-mandir = @mandir@/man1
+mandir = @mandir@
+man1dir = $(mandir)/man1
 # Directory in which to find other cross-compilation tools and headers.
 # Used in install-cross.
 tooldir = $(libsubdir)/$(unlibsubdir)/../$(target_alias)
@@ -2366,12 +2367,12 @@ installdirs:
 	-if [ -d $(tooldir) ] ; then true ; else mkdir $(tooldir) ; chmod a+rx $(tooldir) ; fi
 	-if [ -d $(assertdir) ] ; then true ; else mkdir $(assertdir) ; chmod a+rx $(assertdir) ; fi
 	-if [ -d $(infodir) ] ; then true ; else mkdir $(infodir) ; chmod a+rx $(infodir) ; fi
-# We don't use mkdir -p to create the parents of mandir,
+# We don't use mkdir -p to create the parents of man1dir,
 # because some systems don't support it.
-# Instead, we use this technique to create the immediate parent of mandir.
-	-parent=`echo $(mandir)|sed -e 's@/[^/]*$$@@'`; \
+# Instead, we use this technique to create the immediate parent of man1dir.
+	-parent=`echo $(man1dir)|sed -e 's@/[^/]*$$@@'`; \
 	if [ -d $$parent ] ; then true ; else mkdir $$parent ; chmod a+rx $$parent ; fi
-	-if [ -d $(mandir) ] ; then true ; else mkdir $(mandir) ; chmod a+rx $(mandir) ; fi
+	-if [ -d $(man1dir) ] ; then true ; else mkdir $(man1dir) ; chmod a+rx $(man1dir) ; fi
 
 # Install the compiler executables built during cross compilation.
 install-common: native installdirs $(EXTRA_PARTS) lang.install-common
@@ -2467,17 +2468,17 @@ install-info: doc installdirs lang.install-info
 # Install the man pages.
 install-man: installdirs $(srcdir)/gcc.1 $(srcdir)/cccp.1 lang.install-man
 	-if [ -f gcc-cross$(exeext) ] ; then \
-	  rm -f $(mandir)/$(GCC_CROSS_NAME)$(manext); \
-	  $(INSTALL_DATA) $(srcdir)/gcc.1 $(mandir)/$(GCC_CROSS_NAME)$(manext); \
-	  chmod a-x $(mandir)/$(GCC_CROSS_NAME)$(manext); \
+	  rm -f $(man1dir)/$(GCC_CROSS_NAME)$(manext); \
+	  $(INSTALL_DATA) $(srcdir)/gcc.1 $(man1dir)/$(GCC_CROSS_NAME)$(manext); \
+	  chmod a-x $(man1dir)/$(GCC_CROSS_NAME)$(manext); \
 	else \
-	  rm -f $(mandir)/$(GCC_INSTALL_NAME)$(manext); \
-	  $(INSTALL_DATA) $(srcdir)/gcc.1 $(mandir)/$(GCC_INSTALL_NAME)$(manext); \
-	  chmod a-x $(mandir)/$(GCC_INSTALL_NAME)$(manext); \
+	  rm -f $(man1dir)/$(GCC_INSTALL_NAME)$(manext); \
+	  $(INSTALL_DATA) $(srcdir)/gcc.1 $(man1dir)/$(GCC_INSTALL_NAME)$(manext); \
+	  chmod a-x $(man1dir)/$(GCC_INSTALL_NAME)$(manext); \
 	fi
-	-rm -f $(mandir)/cccp$(manext)
-	-$(INSTALL_DATA) $(srcdir)/cccp.1 $(mandir)/cccp$(manext)
-	-chmod a-x $(mandir)/cccp$(manext)
+	-rm -f $(man1dir)/cccp$(manext)
+	-$(INSTALL_DATA) $(srcdir)/cccp.1 $(man1dir)/cccp$(manext)
+	-chmod a-x $(man1dir)/cccp$(manext)
 
 # Install the library.
 install-libgcc: libgcc.a installdirs
@@ -2575,11 +2576,11 @@ uninstall: lang.uninstall
 	-rm -rf $(bindir)/protoize$(exeext)
 	-rm -rf $(bindir)/unprotoize$(exeext)
 	-rm -rf $(bindir)/gcov$(exeext)
-	-rm -rf $(mandir)/$(GCC_INSTALL_NAME)$(manext)
-	-rm -rf $(mandir)/$(GCC_CROSS_NAME)$(manext)
-	-rm -rf $(mandir)/cccp$(manext)
-	-rm -rf $(mandir)/protoize$(manext)
-	-rm -rf $(mandir)/unprotoize$(manext)
+	-rm -rf $(man1dir)/$(GCC_INSTALL_NAME)$(manext)
+	-rm -rf $(man1dir)/$(GCC_CROSS_NAME)$(manext)
+	-rm -rf $(man1dir)/cccp$(manext)
+	-rm -rf $(man1dir)/protoize$(manext)
+	-rm -rf $(man1dir)/unprotoize$(manext)
 	-rm -f $(infodir)/cpp.info* $(infodir)/gcc.info*
 #
 # These targets are for the dejagnu testsuites. The file site.exp 
