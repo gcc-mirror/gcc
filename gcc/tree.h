@@ -1253,12 +1253,13 @@ struct tree_type GTY(())
    the name from decl_attributes to make_function_rtl and make_decl_rtl.  */
 #define DECL_SECTION_NAME(NODE) (DECL_CHECK (NODE)->decl.section_name)
 
-/*  For FIELD_DECLs, this is the
-    RECORD_TYPE, UNION_TYPE, or QUAL_UNION_TYPE node that the field is
-    a member of.  For VAR_DECL, PARM_DECL, FUNCTION_DECL, LABEL_DECL,
-    and CONST_DECL nodes, this points to either the FUNCTION_DECL for the
-    containing function, the RECORD_TYPE or UNION_TYPE for the containing
-    type, or NULL_TREE if the given decl has "file scope".  */
+/*  For FIELD_DECLs, this is the RECORD_TYPE, UNION_TYPE, or
+    QUAL_UNION_TYPE node that the field is a member of.  For VAR_DECL,
+    PARM_DECL, FUNCTION_DECL, LABEL_DECL, and CONST_DECL nodes, this
+    points to either the FUNCTION_DECL for the containing function,
+    the RECORD_TYPE or UNION_TYPE for the containing type, or
+    NULL_TREE or a TRANSLATION_UNIT_DECL if the given decl has "file
+    scope".  */
 #define DECL_CONTEXT(NODE) (DECL_CHECK (NODE)->decl.context)
 #define DECL_FIELD_CONTEXT(NODE) (FIELD_DECL_CHECK (NODE)->decl.context)
 /* In a DECL this is the field where attributes are stored.  */
@@ -1287,6 +1288,7 @@ struct tree_type GTY(())
 /* In PARM_DECL, holds the type as written (perhaps a function or array).  */
 #define DECL_ARG_TYPE_AS_WRITTEN(NODE) (PARM_DECL_CHECK (NODE)->decl.result)
 /* For a FUNCTION_DECL, holds the tree of BINDINGs.
+   For a TRANSLATION_UNIT_DECL, holds the namespace's BLOCK.
    For a VAR_DECL, holds the initial value.
    For a PARM_DECL, not used--default
    values for parameters are encoded in the type of the function,

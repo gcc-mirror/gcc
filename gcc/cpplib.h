@@ -535,6 +535,10 @@ extern void cpp_set_callbacks (cpp_reader *, cpp_callbacks *);
    too.  If there was an error opening the file, it returns NULL.  */
 extern const char *cpp_read_main_file (cpp_reader *, const char *);
 
+/* This continues processing to a new file.  It will return false if
+   there was an error opening the file.  */
+extern bool cpp_read_next_file (cpp_reader *, const char *);
+
 /* Set up built-ins like __FILE__.  */
 extern void cpp_init_builtins (cpp_reader *, int);
 
@@ -583,6 +587,9 @@ extern void cpp_define (cpp_reader *, const char *);
 extern void cpp_assert (cpp_reader *, const char *);
 extern void cpp_undef (cpp_reader *, const char *);
 extern void cpp_unassert (cpp_reader *, const char *);
+
+/* Undefine all macros and assertions.  */
+extern void cpp_undef_all (cpp_reader *);
 
 extern cpp_buffer *cpp_push_buffer (cpp_reader *, const unsigned char *,
 				    size_t, int, int);

@@ -3773,7 +3773,6 @@ extern void comdat_linkage (tree);
 extern void import_export_vtable (tree, tree, int);
 extern void import_export_decl (tree);
 extern void import_export_tinfo	(tree, tree, bool);
-extern void finish_file				(void);
 extern tree build_cleanup			(tree);
 extern tree build_offset_ref_call_from_tree     (tree, tree);
 extern void set_decl_namespace (tree, tree, bool);

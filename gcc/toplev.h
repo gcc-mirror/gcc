@@ -91,6 +91,7 @@ extern void fnotice			(FILE *, const char *, ...)
 
 extern int wrapup_global_declarations (tree *, int);
 extern void check_global_declarations (tree *, int);
+extern void write_global_declarations (void);
 
 /* A unique local time stamp, might be zero if none is available.  */
 extern unsigned local_tick;

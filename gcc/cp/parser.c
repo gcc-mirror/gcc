@@ -14617,10 +14617,10 @@ static GTY (()) cp_parser *the_parser;
 
 /* External interface.  */
 
-/* Parse the entire translation unit.  */
+/* Parse one entire translation unit.  */
 
-int
-yyparse (void)
+void
+c_parse_file (void)
 {
   bool error_occurred;
 
@@ -14629,10 +14629,6 @@ yyparse (void)
 				? dk_no_deferred : dk_no_check);
   error_occurred = cp_parser_translation_unit (the_parser);
   the_parser = NULL;
-  
-  finish_file ();
-
-  return error_occurred;
 }
 
 /* Clean up after parsing the entire translation unit.  */

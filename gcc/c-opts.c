@@ -52,7 +52,8 @@ static int saved_lineno;
 static cpp_options *cpp_opts;
 
 /* Input filename.  */
-static const char *in_fname;
+static const char **in_fnames;
+static unsigned num_in_fnames;
 
 /* Filename and stream for preprocessed output.  */
 static const char *out_fname;
@@ -1039,12 +1040,9 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 void
 c_common_handle_filename (const char *filename)
 {
-  if (!in_fname)
-    in_fname = filename;
-  else if (!out_fname)
-    out_fname = filename;
-  else
-    error ("output filename specified twice");
+  num_in_fnames++;
+  in_fnames = xrealloc (in_fnames, num_in_fnames * sizeof (in_fnames[0]));
+  in_fnames[num_in_fnames - 1] = filename;
 }
 
 /* Post-switch processing.  */
@@ -1052,8 +1050,13 @@ bool
 c_common_post_options (const char **pfilename)
 {
   /* Canonicalize the input and output filenames.  */
-  if (in_fname == NULL || !strcmp (in_fname, "-"))
-    in_fname = "";
+  if (in_fnames == NULL)
+    {
+      in_fnames = xmalloc (sizeof (in_fnames[0]));
+      in_fnames[0] = "";
+    }
+  else if (strcmp (in_fnames[0], "-") == 0)
+    in_fnames[0] = "";
 
   if (out_fname == NULL || !strcmp (out_fname, "-"))
     out_fname = "";
@@ -1119,6 +1122,10 @@ c_common_post_options (const char **pfilename)
 	  return false;
 	}
 
+      if (num_in_fnames > 1)
+	error ("too many filenames given.  Type %s --help for usage",
+	       progname);
+
       init_pp_output (out_stream);
     }
   else
@@ -1132,7 +1139,7 @@ c_common_post_options (const char **pfilename)
   cpp_get_callbacks (parse_in)->file_change = cb_file_change;
 
   /* NOTE: we use in_fname here, not the one supplied.  */
-  *pfilename = cpp_read_main_file (parse_in, in_fname);
+  *pfilename = cpp_read_main_file (parse_in, in_fnames[0]);
 
   saved_lineno = input_line;
   input_line = 0;
@@ -1176,23 +1183,43 @@ c_common_init (void)
   return true;
 }
 
-/* A thin wrapper around the real parser that initializes the
-   integrated preprocessor after debug output has been initialized.
-   Also, make sure the start_source_file debug hook gets called for
-   the primary source file.  */
+/* Initialize the integrated preprocessor after debug output has been
+   initialized; loop over each input file.  */
 void
 c_common_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 {
+  unsigned file_index;
+  
 #if YYDEBUG != 0
   yydebug = set_yydebug;
 #else
   warning ("YYDEBUG not defined");
 #endif
 
-  finish_options();
-  pch_init();
-  yyparse ();
+  file_index = 0;
+  
+  do
+    {
+      if (file_index > 0)
+	{
+	  /* Reset the state of the parser.  */
+	  c_reset_state();
+
+	  /* Reset cpplib's macros and start a new file.  */
+	  cpp_undef_all (parse_in);
+	  cpp_read_next_file (parse_in, in_fnames[file_index]);
+	}
+
+      finish_options();
+      if (file_index == 0)
+	pch_init();
+      c_parse_file ();
+
+      file_index++;
+    } while (file_index < num_in_fnames);
+  
   free_parser_stacks ();
+  finish_file ();
 }
 
 /* Common finish hook for the C, ObjC and C++ front ends.  */

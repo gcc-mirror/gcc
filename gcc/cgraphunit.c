@@ -71,7 +71,8 @@ cgraph_finalize_function (decl, body)
 	 It is possible to assemble the name later after finalizing the function
 	 and the fact is noticed in assemble_name then.  */
       || (DECL_ASSEMBLER_NAME_SET_P (decl)
-	  && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
+	  && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
+      || lookup_attribute ("used", DECL_ATTRIBUTES (decl)))
     {
       cgraph_mark_needed_node (node, 1);
     }

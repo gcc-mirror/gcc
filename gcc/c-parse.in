@@ -352,20 +352,8 @@ c_parse_init (void)
 program: /* empty */
 		{ if (pedantic)
 		    pedwarn ("ISO C forbids an empty source file");
-		  finish_file ();
 		}
 	| extdefs
-		{
-		  /* In case there were missing closebraces,
-		     get us back to the global binding level.  */
-		  while (! global_bindings_p ())
-		    poplevel (0, 0, 0);
-		  /* __FUNCTION__ is defined at file scope ("").  This
-		     call may not be necessary as my tests indicate it
-		     still works without it.  */
-		  finish_fname_decls ();
-                  finish_file ();
-		}
 	;
 
 /* the reason for the strange actions in this rule
@@ -718,7 +706,7 @@ primary:
 		  e1 = TYPE_MAIN_VARIANT (groktypename ($3));
 		  e2 = TYPE_MAIN_VARIANT (groktypename ($5));
 
-		  $$ = comptypes (e1, e2)
+		  $$ = comptypes (e1, e2, COMPARE_STRICT)
 		    ? build_int_2 (1, 0) : build_int_2 (0, 0);
 		}
 	| primary '[' expr ']'   %prec '.'
@@ -3795,10 +3783,27 @@ yyprint (FILE *file, int yychar, YYSTYPE yyl)
 void
 free_parser_stacks (void)
 {
+}
+
+/* Parse the file.  */
+void
+c_parse_file (void)
+{
+  yyparse ();
+  /* In case there were missing closebraces, get us back to the global
+     binding level.  */
+  while (! global_bindings_p ())
+    poplevel (0, 0, 0);
+  /* __FUNCTION__ is defined at file scope ("").  This
+     call may not be necessary as my tests indicate it
+     still works without it.  */
+  finish_fname_decls ();
+
   if (malloced_yyss)
     {
       free (malloced_yyss);
       free (malloced_yyvs);
+      malloced_yyss = 0;
     }
 }
 

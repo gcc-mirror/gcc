@@ -372,3 +372,9 @@ cp_var_mod_type_p (tree type)
   return false;
 }
 
+/* Stub routine to tell people that this doesn't work yet.  */
+void
+c_reset_state (void)
+{
+  sorry ("inter-module optimisations not implemented yet");
+}

@@ -53,9 +53,10 @@ static int missing_braces_mentioned;
 static int undeclared_variable_notice;
 
 static tree qualify_type (tree, tree);
+static int tagged_types_tu_compatible_p (tree, tree, int);
 static int comp_target_types (tree, tree, int);
-static int function_types_compatible_p (tree, tree);
-static int type_lists_compatible_p (tree, tree);
+static int function_types_compatible_p (tree, tree, int);
+static int type_lists_compatible_p (tree, tree, int);
 static tree decl_constant_value_for_broken_optimization (tree);
 static tree default_function_array_conversion (tree);
 static tree lookup_field (tree, tree);
@@ -409,7 +410,8 @@ common_type (tree t1, tree t2)
 		tree memb;
 		for (memb = TYPE_FIELDS (TREE_VALUE (p1));
 		     memb; memb = TREE_CHAIN (memb))
-		  if (comptypes (TREE_TYPE (memb), TREE_VALUE (p2)))
+		  if (comptypes (TREE_TYPE (memb), TREE_VALUE (p2), 
+				 COMPARE_STRICT))
 		    {
 		      TREE_VALUE (n) = TREE_VALUE (p2);
 		      if (pedantic)
@@ -423,7 +425,8 @@ common_type (tree t1, tree t2)
 		tree memb;
 		for (memb = TYPE_FIELDS (TREE_VALUE (p2));
 		     memb; memb = TREE_CHAIN (memb))
-		  if (comptypes (TREE_TYPE (memb), TREE_VALUE (p1)))
+		  if (comptypes (TREE_TYPE (memb), TREE_VALUE (p1), 
+				 COMPARE_STRICT))
 		    {
 		      TREE_VALUE (n) = TREE_VALUE (p1);
 		      if (pedantic)
@@ -452,7 +455,7 @@ common_type (tree t1, tree t2)
    but a warning may be needed if you use them together.  */
 
 int
-comptypes (tree type1, tree type2)
+comptypes (tree type1, tree type2, int flags)
 {
   tree t1 = type1;
   tree t2 = type2;
@@ -512,11 +515,11 @@ comptypes (tree type1, tree type2)
     {
     case POINTER_TYPE:
       val = (TREE_TYPE (t1) == TREE_TYPE (t2)
-	      ? 1 : comptypes (TREE_TYPE (t1), TREE_TYPE (t2)));
+	      ? 1 : comptypes (TREE_TYPE (t1), TREE_TYPE (t2), flags));
       break;
 
     case FUNCTION_TYPE:
-      val = function_types_compatible_p (t1, t2);
+      val = function_types_compatible_p (t1, t2, flags);
       break;
 
     case ARRAY_TYPE:
@@ -529,7 +532,8 @@ comptypes (tree type1, tree type2)
 
 	/* Target types must match incl. qualifiers.  */
 	if (TREE_TYPE (t1) != TREE_TYPE (t2)
-	    && 0 == (val = comptypes (TREE_TYPE (t1), TREE_TYPE (t2))))
+	    && 0 == (val = comptypes (TREE_TYPE (t1), TREE_TYPE (t2),
+				      flags)))
 	  return 0;
 
 	/* Sizes must match unless one is missing or variable.  */
@@ -561,6 +565,11 @@ comptypes (tree type1, tree type2)
     case RECORD_TYPE:
       if (c_dialect_objc () && objc_comptypes (t1, t2, 0) == 1)
 	val = 1;
+
+    case ENUMERAL_TYPE:
+    case UNION_TYPE:
+      if (val != 1 && (flags & COMPARE_DIFFERENT_TU))
+	val = tagged_types_tu_compatible_p (t1, t2, flags);
       break;
 
     case VECTOR_TYPE:
@@ -592,7 +601,7 @@ comp_target_types (tree ttl, tree ttr, int reflexive)
     return val;
 
   val = comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (ttl)),
-		   TYPE_MAIN_VARIANT (TREE_TYPE (ttr)));
+		   TYPE_MAIN_VARIANT (TREE_TYPE (ttr)), COMPARE_STRICT);
 
   if (val == 2 && pedantic)
     pedwarn ("types are not quite compatible");
@@ -600,6 +609,159 @@ comp_target_types (tree ttl, tree ttr, int reflexive)
 }
 
 /* Subroutines of `comptypes'.  */
+
+/* The C standard says that two structures in different translation
+   units are compatible with each other only if the types of their
+   fields are compatible (among other things).  So, consider two copies
+   of this structure:  */
+
+struct tagged_tu_seen {
+  const struct tagged_tu_seen * next;
+  tree t1;
+  tree t2;
+};
+
+/* Can they be compatible with each other?  We choose to break the
+   recursion by allowing those types to be compatible.  */
+
+static const struct tagged_tu_seen * tagged_tu_seen_base;
+
+/* Return 1 if two 'struct', 'union', or 'enum' types T1 and T2 are
+   compatible.  If the two types are not the same (which has been
+   checked earlier), this can only happen when multiple translation
+   units are being compiled.  See C99 6.2.7 paragraph 1 for the exact
+   rules.  */
+
+static int
+tagged_types_tu_compatible_p (tree t1, tree t2, int flags)
+{
+  tree s1, s2;
+  bool needs_warning = false;
+  
+  /* We have to verify that the tags of the types are the same.  This
+     is harder than it looks because this may be a typedef, so we have
+     to go look at the original type.  It may even be a typedef of a
+     typedef... */
+  while (TYPE_NAME (t1) && TREE_CODE (TYPE_NAME (t1)) == TYPE_DECL)
+    t1 = DECL_ORIGINAL_TYPE (TYPE_NAME (t1));
+
+  while (TYPE_NAME (t2) && TREE_CODE (TYPE_NAME (t2)) == TYPE_DECL)
+    t2 = DECL_ORIGINAL_TYPE (TYPE_NAME (t2));
+
+  /* C90 didn't have the requirement that the two tags be the same.  */
+  if (flag_isoc99 && TYPE_NAME (t1) != TYPE_NAME (t2))
+    return 0;
+  
+  /* C90 didn't say what happened if one or both of the types were
+     incomplete; we choose to follow C99 rules here, which is that they
+     are compatible.  */
+  if (TYPE_SIZE (t1) == NULL
+      || TYPE_SIZE (t2) == NULL)
+    return 1;
+  
+  {
+    const struct tagged_tu_seen * tts_i;
+    for (tts_i = tagged_tu_seen_base; tts_i != NULL; tts_i = tts_i->next)
+      if (tts_i->t1 == t1 && tts_i->t2 == t2)
+	return 1;
+  }
+  
+  switch (TREE_CODE (t1))
+    {
+    case ENUMERAL_TYPE:
+      {
+	if (list_length (TYPE_VALUES (t1)) != list_length (TYPE_VALUES (t2)))
+	  return 0;
+	
+	for (s1 = TYPE_VALUES (t1); s1; s1 = TREE_CHAIN (s1))
+	  {
+	    s2 = purpose_member (TREE_PURPOSE (s1), TYPE_VALUES (t2));
+	    if (s2 == NULL
+		|| simple_cst_equal (TREE_VALUE (s1), TREE_VALUE (s2)) != 1)
+	      return 0;
+	  }
+	return 1;
+      }
+
+    case UNION_TYPE:
+      {
+	if (list_length (TYPE_FIELDS (t1)) != list_length (TYPE_FIELDS (t2)))
+	  return 0;
+
+	for (s1 = TYPE_FIELDS (t1); s1; s1 = TREE_CHAIN (s1))
+	  {
+	    bool ok = false;
+	    struct tagged_tu_seen tts;
+
+	    tts.next = tagged_tu_seen_base;
+	    tts.t1 = t1;
+	    tts.t2 = t2;
+	    tagged_tu_seen_base = &tts;
+	
+	    if (DECL_NAME (s1) != NULL)
+	      for (s2 = TYPE_VALUES (t2); s2; s2 = TREE_CHAIN (s2))
+		if (DECL_NAME (s1) == DECL_NAME (s2))
+		  {
+		    int result;
+		    result = comptypes (TREE_TYPE (s1), TREE_TYPE (s2), flags);
+		    if (result == 0)
+		      break;
+		    if (result == 2)
+		      needs_warning = true;
+		    
+		    if (TREE_CODE (s1) == FIELD_DECL
+			&& simple_cst_equal (DECL_FIELD_BIT_OFFSET (s1),
+					     DECL_FIELD_BIT_OFFSET (s2)) != 1)
+		      break;
+
+		    ok = true;
+		    break;
+		  }
+	    tagged_tu_seen_base = tts.next;
+	    if (! ok)
+	      return 0;
+	  }
+	return needs_warning ? 2 : 1;
+      }
+
+    case RECORD_TYPE:
+      {
+	struct tagged_tu_seen tts;
+	
+	tts.next = tagged_tu_seen_base;
+	tts.t1 = t1;
+	tts.t2 = t2;
+	tagged_tu_seen_base = &tts;
+	  
+	for (s1 = TYPE_FIELDS (t1), s2 = TYPE_FIELDS (t2); 
+	     s1 && s2;
+	     s1 = TREE_CHAIN (s1), s2 = TREE_CHAIN (s2))
+	  {
+	    int result;
+	    if (TREE_CODE (s1) != TREE_CODE (s2)
+		|| DECL_NAME (s1) != DECL_NAME (s2))
+	      break;
+	    result = comptypes (TREE_TYPE (s1), TREE_TYPE (s2), flags);
+	    if (result == 0)
+	      break;
+	    if (result == 2)
+	      needs_warning = true;
+	    
+	    if (TREE_CODE (s1) == FIELD_DECL
+		&& simple_cst_equal (DECL_FIELD_BIT_OFFSET (s1),
+				     DECL_FIELD_BIT_OFFSET (s2)) != 1)
+	      break;
+	  }
+	tagged_tu_seen_base = tts.next;
+	if (s1 && s2)
+	  return 0;
+	return needs_warning ? 2 : 1;
+      }
+
+    default:
+      abort ();
+    }
+}
 
 /* Return 1 if two function types F1 and F2 are compatible.
    If either type specifies no argument types,
@@ -609,7 +771,7 @@ comp_target_types (tree ttl, tree ttr, int reflexive)
    Otherwise, the argument types must match.  */
 
 static int
-function_types_compatible_p (tree f1, tree f2)
+function_types_compatible_p (tree f1, tree f2, int flags)
 {
   tree args1, args2;
   /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
@@ -630,7 +792,7 @@ function_types_compatible_p (tree f1, tree f2)
   if (TYPE_VOLATILE (ret2))
     ret2 = build_qualified_type (TYPE_MAIN_VARIANT (ret2),
 				 TYPE_QUALS (ret2) & ~TYPE_QUAL_VOLATILE);
-  val = comptypes (ret1, ret2);
+  val = comptypes (ret1, ret2, flags);
   if (val == 0)
     return 0;
 
@@ -648,7 +810,8 @@ function_types_compatible_p (tree f1, tree f2)
 	 compare that with the other type's arglist.
 	 If they don't match, ask for a warning (but no error).  */
       if (TYPE_ACTUAL_ARG_TYPES (f1)
-	  && 1 != type_lists_compatible_p (args2, TYPE_ACTUAL_ARG_TYPES (f1)))
+	  && 1 != type_lists_compatible_p (args2, TYPE_ACTUAL_ARG_TYPES (f1),
+					   flags))
 	val = 2;
       return val;
     }
@@ -657,13 +820,14 @@ function_types_compatible_p (tree f1, tree f2)
       if (!self_promoting_args_p (args1))
 	return 0;
       if (TYPE_ACTUAL_ARG_TYPES (f2)
-	  && 1 != type_lists_compatible_p (args1, TYPE_ACTUAL_ARG_TYPES (f2)))
+	  && 1 != type_lists_compatible_p (args1, TYPE_ACTUAL_ARG_TYPES (f2),
+					   flags))
 	val = 2;
       return val;
     }
 
   /* Both types have argument lists: compare them and propagate results.  */
-  val1 = type_lists_compatible_p (args1, args2);
+  val1 = type_lists_compatible_p (args1, args2, flags);
   return val1 != 1 ? val1 : val;
 }
 
@@ -672,7 +836,7 @@ function_types_compatible_p (tree f1, tree f2)
    or 2 for compatible with warning.  */
 
 static int
-type_lists_compatible_p (tree args1, tree args2)
+type_lists_compatible_p (tree args1, tree args2, int flags)
 {
   /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
   int val = 1;
@@ -701,7 +865,8 @@ type_lists_compatible_p (tree args1, tree args2)
 	    return 0;
 	}
       else if (! (newval = comptypes (TYPE_MAIN_VARIANT (TREE_VALUE (args1)),
-				      TYPE_MAIN_VARIANT (TREE_VALUE (args2)))))
+				      TYPE_MAIN_VARIANT (TREE_VALUE (args2)),
+				      flags)))
 	{
 	  /* Allow  wait (union {union wait *u; int *i} *)
 	     and  wait (union wait *)  to be compatible.  */
@@ -715,7 +880,8 @@ type_lists_compatible_p (tree args1, tree args2)
 	      tree memb;
 	      for (memb = TYPE_FIELDS (TREE_VALUE (args1));
 		   memb; memb = TREE_CHAIN (memb))
-		if (comptypes (TREE_TYPE (memb), TREE_VALUE (args2)))
+		if (comptypes (TREE_TYPE (memb), TREE_VALUE (args2),
+			       flags))
 		  break;
 	      if (memb == 0)
 		return 0;
@@ -730,7 +896,8 @@ type_lists_compatible_p (tree args1, tree args2)
 	      tree memb;
 	      for (memb = TYPE_FIELDS (TREE_VALUE (args2));
 		   memb; memb = TREE_CHAIN (memb))
-		if (comptypes (TREE_TYPE (memb), TREE_VALUE (args1)))
+		if (comptypes (TREE_TYPE (memb), TREE_VALUE (args1),
+			       flags))
 		  break;
 	      if (memb == 0)
 		return 0;
@@ -1409,7 +1576,7 @@ build_external_ref (tree id, int fun)
       /* Properly declared variable or function reference.  */
       if (!objc_ivar)
 	ref = decl;
-      else if (decl != objc_ivar && DECL_CONTEXT (decl) != 0)
+      else if (decl != objc_ivar && !C_DECL_FILE_SCOPE (decl))
 	{
 	  warning ("local declaration of `%s' hides instance variable",
 		   IDENTIFIER_POINTER (id));
@@ -1449,7 +1616,7 @@ build_external_ref (tree id, int fun)
       TREE_CONSTANT (ref) = 1;
     }
   else if (current_function_decl != 0
-	   && DECL_CONTEXT (current_function_decl) != 0
+	   && !C_DECL_FILE_SCOPE (current_function_decl)
 	   && (TREE_CODE (ref) == VAR_DECL
 	       || TREE_CODE (ref) == PARM_DECL
 	       || TREE_CODE (ref) == FUNCTION_DECL))
@@ -3031,7 +3198,7 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	   file-scope function counts as a constant.  */
 	if (staticp (arg)
 	    && ! (TREE_CODE (arg) == FUNCTION_DECL
-		  && DECL_CONTEXT (arg) != 0))
+		  && !C_DECL_FILE_SCOPE (arg)))
 	  TREE_CONSTANT (addr) = 1;
 	return addr;
       }
@@ -3258,6 +3425,7 @@ c_mark_addressable (tree exp)
 	/* drops in */
       case FUNCTION_DECL:
 	TREE_ADDRESSABLE (x) = 1;
+	/* drops out */
       default:
 	return true;
     }
@@ -3523,7 +3691,7 @@ build_c_cast (tree type, tree expr)
 
       for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
 	if (comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (field)),
-		       TYPE_MAIN_VARIANT (TREE_TYPE (value))))
+		       TYPE_MAIN_VARIANT (TREE_TYPE (value)), COMPARE_STRICT))
 	  break;
 
       if (field)
@@ -3917,7 +4085,7 @@ convert_for_assignment (tree type, tree rhs, const char *errtype,
      This code doesn't fully support references, it's just for the
      special case of va_start and va_copy.  */
   if (codel == REFERENCE_TYPE
-      && comptypes (TREE_TYPE (type), TREE_TYPE (rhs)) == 1)
+      && comptypes (TREE_TYPE (type), TREE_TYPE (rhs), COMPARE_STRICT) == 1)
     {
       if (!lvalue_p (rhs))
 	{
@@ -3966,7 +4134,7 @@ convert_for_assignment (tree type, tree rhs, const char *errtype,
 	  tree memb_type = TREE_TYPE (memb_types);
 
 	  if (comptypes (TYPE_MAIN_VARIANT (memb_type),
-			 TYPE_MAIN_VARIANT (rhstype)))
+			 TYPE_MAIN_VARIANT (rhstype), COMPARE_STRICT))
 	    break;
 
 	  if (TREE_CODE (memb_type) != POINTER_TYPE)
@@ -4543,7 +4711,7 @@ digest_init (tree type, tree init, int require_constant)
 	  && ((inside_init && TREE_CODE (inside_init) == STRING_CST)))
 	{
 	  if (comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (inside_init)),
-			 TYPE_MAIN_VARIANT (type)))
+			 TYPE_MAIN_VARIANT (type), COMPARE_STRICT))
 	    return inside_init;
 
 	  if ((TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (inside_init)))
@@ -4585,12 +4753,13 @@ digest_init (tree type, tree init, int require_constant)
      vector constructor is not constant (e.g. {1,2,3,foo()}) then punt
      below and handle as a constructor.  */
     if (code == VECTOR_TYPE
-        && comptypes (TREE_TYPE (inside_init), type)
+        && comptypes (TREE_TYPE (inside_init), type, COMPARE_STRICT)
         && TREE_CONSTANT (inside_init))
       {
 	if (TREE_CODE (inside_init) == VECTOR_CST
 	    && comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (inside_init)),
-			  TYPE_MAIN_VARIANT (type)))
+			  TYPE_MAIN_VARIANT (type),
+			  COMPARE_STRICT))
 	  return inside_init;
 	else
 	  return build_vector (type, CONSTRUCTOR_ELTS (inside_init));
@@ -4601,16 +4770,16 @@ digest_init (tree type, tree init, int require_constant)
 
   if (inside_init && TREE_TYPE (inside_init) != 0
       && (comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (inside_init)),
-		     TYPE_MAIN_VARIANT (type))
+		     TYPE_MAIN_VARIANT (type), COMPARE_STRICT)
 	  || (code == ARRAY_TYPE
-	      && comptypes (TREE_TYPE (inside_init), type))
+	      && comptypes (TREE_TYPE (inside_init), type, COMPARE_STRICT))
 	  || (code == VECTOR_TYPE
-	      && comptypes (TREE_TYPE (inside_init), type))
+	      && comptypes (TREE_TYPE (inside_init), type, COMPARE_STRICT))
 	  || (code == POINTER_TYPE
 	      && (TREE_CODE (TREE_TYPE (inside_init)) == ARRAY_TYPE
 		  || TREE_CODE (TREE_TYPE (inside_init)) == FUNCTION_TYPE)
 	      && comptypes (TREE_TYPE (TREE_TYPE (inside_init)),
-			    TREE_TYPE (type)))))
+			    TREE_TYPE (type), COMPARE_STRICT))))
     {
       if (code == POINTER_TYPE)
 	inside_init = default_function_array_conversion (inside_init);
@@ -6039,7 +6208,7 @@ output_init_element (tree value, tree type, tree field, int pending)
 	       && TREE_CODE (type) == ARRAY_TYPE
 	       && TREE_CODE (TREE_TYPE (type)) == INTEGER_TYPE)
 	  && !comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (value)),
-			 TYPE_MAIN_VARIANT (type))))
+			 TYPE_MAIN_VARIANT (type), COMPARE_STRICT)))
     value = default_conversion (value);
 
   if (TREE_CODE (value) == COMPOUND_LITERAL_EXPR

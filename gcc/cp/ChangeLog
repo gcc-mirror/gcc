@@ -1,3 +1,11 @@
+2003-07-11  Geoffrey Keating  <geoffk@apple.com>
+
+	* decl.c (cp_finish_decl): Handle 'used' attribute.
+
+	* cp-lang.c (c_reset_state): New dummy routine.
+	* cp-tree.h (finish_file): Move prototype to c-common.h.
+	* parser.c (c_parse_file): Rename from yyparse; don't call finish_file.
+
 2003-07-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8327

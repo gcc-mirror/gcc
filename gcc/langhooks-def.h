@@ -80,8 +80,6 @@ extern int lhd_tree_inlining_start_inlining (tree);
 extern void lhd_tree_inlining_end_inlining (tree);
 extern tree lhd_tree_inlining_convert_parm_for_inlining (tree, tree, tree);
 
-extern void write_global_declarations (void);
-
 #define LANG_HOOKS_NAME			"GNU unknown"
 #define LANG_HOOKS_IDENTIFIER_SIZE	sizeof (struct lang_identifier)
 #define LANG_HOOKS_INIT			hook_bool_void_false

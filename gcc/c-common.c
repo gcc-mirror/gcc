@@ -4680,7 +4680,6 @@ handle_used_attribute (tree *pnode, tree name, tree args ATTRIBUTE_UNUSED,
   if (TREE_CODE (node) == FUNCTION_DECL
       || (TREE_CODE (node) == VAR_DECL && TREE_STATIC (node)))
     {
-      mark_referenced (DECL_ASSEMBLER_NAME (node));
       TREE_USED (node) = 1;
     }
   else
