@@ -1067,8 +1067,8 @@ s-crt0:	$(CRT0_S) $(MCRT0_S) $(GCC_PASSES) $(CONFIG_H)
 
 # C language specific files.
 
-c-errors.o: $(srcdir)/c-errors.c $(CONFIG_H) system.h $(TREE_H) c-tree.h \
-    flags.h diagnostic.h
+c-errors.o: c-errors.c $(CONFIG_H) system.h $(TREE_H) c-tree.h flags.h \
+    diagnostic.h
 c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(TREE_H) c-lex.h $(GGC_H) \
     $(srcdir)/c-parse.h c-tree.h c-common.h input.h flags.h system.h \
     toplev.h output.h

@@ -1,3 +1,7 @@
+2000-07-12  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* Makefile.in (c-errors.o): Fix thinko in dependency.
+
 2000-07-12  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.c (C specs [!USE_CPPLIB]): Invoke tradcpp if any of
