@@ -1,3 +1,10 @@
+2003-09-11  Roger Sayle  <roger@eyesopen.com>
+
+	* combine.c (combine_simplify_rtx): Move several NOT and NEG
+	optimizations from here...
+	* simplify-rtx.c (simplify_unary_operation): to here.  Recursively
+	simplify expressions using simplify_gen_*ary instead of gen_rtx_*.
+
 2003-09-11  Richard Henderson  <rth@redhat.com>
 
 	* cgraphunit.c (cgraph_finalize_function): Add nested arg.

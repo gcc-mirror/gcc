@@ -788,6 +788,8 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
   else
     {
       enum rtx_code reversed;
+      rtx temp;
+
       /* There are some simplifications we can do even if the operands
 	 aren't constant.  */
       switch (code)
@@ -801,14 +803,116 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  if (mode == BImode && GET_RTX_CLASS (GET_CODE (op)) == '<'
 	      && ((reversed = reversed_comparison_code (op, NULL_RTX))
 		  != UNKNOWN))
-	    return gen_rtx_fmt_ee (reversed,
-				   op_mode, XEXP (op, 0), XEXP (op, 1));
+	    return simplify_gen_relational (reversed, op_mode, op_mode,
+					    XEXP (op, 0), XEXP (op, 1));
+
+          /* (not (plus X -1)) can become (neg X).  */
+          if (GET_CODE (op) == PLUS
+	      && XEXP (op, 1) == constm1_rtx)
+	    return simplify_gen_unary (NEG, mode, XEXP (op, 0), mode);
+
+	  /* Similarly, (not (neg X)) is (plus X -1).  */
+	  if (GET_CODE (op) == NEG)
+	    return plus_constant (XEXP (op, 0), -1);
+
+	  /* (not (xor X C)) for C constant is (xor X D) with D = ~C.  */
+	  if (GET_CODE (op) == XOR
+	      && GET_CODE (XEXP (op, 1)) == CONST_INT
+	      && (temp = simplify_unary_operation (NOT, mode,
+						   XEXP (op, 1),
+						   mode)) != 0)
+	    return simplify_gen_binary (XOR, mode, XEXP (op, 0), temp);
+
+
+	  /* (not (ashift 1 X)) is (rotate ~1 X).  We used to do this for
+	     operands other than 1, but that is not valid.  We could do a
+	     similar simplification for (not (lshiftrt C X)) where C is
+	     just the sign bit, but this doesn't seem common enough to
+	     bother with.  */
+	  if (GET_CODE (op) == ASHIFT
+	      && XEXP (op, 0) == const1_rtx)
+	    {
+	      temp = simplify_gen_unary (NOT, mode, const1_rtx, mode);
+	      return simplify_gen_binary (ROTATE, mode, temp, XEXP (op, 1));
+	    }
+
+	  /* If STORE_FLAG_VALUE is -1, (not (comparison X Y)) can be done
+	     by reversing the comparison code if valid.  */
+	  if (STORE_FLAG_VALUE == -1
+	      && GET_RTX_CLASS (GET_CODE (op)) == '<'
+	      && (reversed = reversed_comparison_code (op, NULL_RTX))
+		 != UNKNOWN)
+	    return simplify_gen_relational (reversed, op_mode, op_mode,
+					    XEXP (op, 0), XEXP (op, 1));
+
+	  /* (not (ashiftrt foo C)) where C is the number of bits in FOO
+	     minus 1 is (ge foo (const_int 0)) if STORE_FLAG_VALUE is -1,
+	     so we can perform the above simplification.  */
+
+	  if (STORE_FLAG_VALUE == -1
+	      && GET_CODE (op) == ASHIFTRT
+	      && GET_CODE (XEXP (op, 1)) == CONST_INT
+	      && INTVAL (XEXP (op, 1)) == GET_MODE_BITSIZE (mode) - 1)
+	    return simplify_gen_relational (GE, mode, mode, XEXP (op, 0),
+					    const0_rtx);
+
 	  break;
 
 	case NEG:
 	  /* (neg (neg X)) == X.  */
 	  if (GET_CODE (op) == NEG)
 	    return XEXP (op, 0);
+
+	  /* (neg (plus X 1)) can become (not X).  */
+	  if (GET_CODE (op) == PLUS
+	      && XEXP (op, 1) == const1_rtx)
+	    return simplify_gen_unary (NOT, mode, XEXP (op, 0), mode);
+
+	  /* Similarly, (neg (not X)) is (plus X 1).  */
+	  if (GET_CODE (op) == NOT)
+	    return plus_constant (XEXP (op, 0), 1);
+
+	  /* (neg (minus X Y)) can become (minus Y X).  This transformation
+	     isn't safe for modes with signed zeros, since if X and Y are
+	     both +0, (minus Y X) is the same as (minus X Y).  If the
+	     rounding mode is towards +infinity (or -infinity) then the two
+	     expressions will be rounded differently.  */
+	  if (GET_CODE (op) == MINUS
+	      && !HONOR_SIGNED_ZEROS (mode)
+	      && !HONOR_SIGN_DEPENDENT_ROUNDING (mode))
+	    return simplify_gen_binary (MINUS, mode, XEXP (op, 1),
+					XEXP (op, 0));
+
+	  /* (neg (plus A B)) is canonicalized to (minus (neg A) B).  */
+	  if (GET_CODE (op) == PLUS
+	      && !HONOR_SIGNED_ZEROS (mode)
+	      && !HONOR_SIGN_DEPENDENT_ROUNDING (mode))
+	    {
+	      temp = simplify_gen_unary (NEG, mode, XEXP (op, 0), mode);
+	      return simplify_gen_binary (MINUS, mode, temp, XEXP (op, 1));
+	    }
+
+	  /* (neg (mult A B)) becomes (mult (neg A) B).
+	     This works even for floating-point values.  */
+	  if (GET_CODE (op) == MULT
+	      && !HONOR_SIGN_DEPENDENT_ROUNDING (mode))
+	    {
+	      temp = simplify_gen_unary (NEG, mode, XEXP (op, 0), mode);
+	      return simplify_gen_binary (MULT, mode, temp, XEXP (op, 1));
+	    }
+
+	  /* NEG commutes with ASHIFT since it is multiplication.  Only do
+	     this if we can then eliminate the NEG (e.g., if the operand
+	     is a constant).  */
+	  if (GET_CODE (op) == ASHIFT)
+	    {
+	      temp = simplify_unary_operation (NEG, mode, XEXP (op, 0),
+					       mode);
+	      if (temp)
+		return simplify_gen_binary (ASHIFT, mode, temp,
+					    XEXP (op, 1));
+	    }
+
 	  break;
 
 	case SIGN_EXTEND:
