@@ -3185,6 +3185,22 @@ init_varasm_status (f)
   p->x_pool_offset = 0;
   p->x_const_double_chain = 0;
 }
+
+/* Clear out all parts of our state in F that can safely be discarded
+   after the function has been compiled.  */
+void
+free_varasm_status (f)
+     struct function *f;
+{
+  struct varasm_status *p = f->varasm;
+  free (p->x_const_rtx_hash_table);
+  free (p->x_const_rtx_sym_hash_table);
+
+  p->x_first_pool = p->x_last_pool = 0;
+  p->x_const_rtx_hash_table = 0;
+  p->x_const_rtx_sym_hash_table = 0;
+  p->x_const_double_chain = 0;
+}
 
 enum kind { RTX_DOUBLE, RTX_INT };
 

@@ -22,6 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include "tree.h"
+#include "function.h"
 #include "input.h"
 #include "c-tree.h"
 #include "c-lex.h"
@@ -68,6 +69,9 @@ lang_init ()
   check_newline ();
   yy_cur--;
 #endif 
+
+  save_lang_status = &push_c_function_context;
+  restore_lang_status = &pop_c_function_context;
 }
 
 void

@@ -1335,7 +1335,7 @@ c-decl.o : c-decl.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-common.h \
 c-typeck.o : c-typeck.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-common.h \
     flags.h intl.h output.h $(EXPR_H) $(RTL_H) toplev.h
 c-lang.o : c-lang.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-common.h \
-    c-lex.h toplev.h output.h
+    c-lex.h toplev.h output.h function.h
 c-lex.o : c-lex.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) c-lex.h c-tree.h \
     c-common.h $(srcdir)/c-parse.h $(srcdir)/c-gperf.h c-pragma.h input.h \
     intl.h flags.h toplev.h output.h mbchar.h

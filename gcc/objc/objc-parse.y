@@ -1258,11 +1258,14 @@ designator:
 
 nested_function:
 	  declarator
-		{ push_c_function_context ();
+		{ if (pedantic)
+		    pedwarn ("ANSI C forbids nested functions");
+
+		  push_function_context ();
 		  if (! start_function (current_declspecs, $1,
 					prefix_attributes, NULL_TREE, 1))
 		    {
-		      pop_c_function_context ();
+		      pop_function_context ();
 		      YYERROR1;
 		    }
 		  reinit_parse_for_function (); }
@@ -1276,16 +1279,19 @@ nested_function:
    which called YYERROR1 again, and so on.  */
 	  compstmt
 		{ finish_function (1);
-		  pop_c_function_context (); }
+		  pop_function_context (); }
 	;
 
 notype_nested_function:
 	  notype_declarator
-		{ push_c_function_context ();
+		{ if (pedantic)
+		    pedwarn ("ANSI C forbids nested functions");
+
+		  push_function_context ();
 		  if (! start_function (current_declspecs, $1,
 					prefix_attributes, NULL_TREE, 1))
 		    {
-		      pop_c_function_context ();
+		      pop_function_context ();
 		      YYERROR1;
 		    }
 		  reinit_parse_for_function (); }
@@ -1299,7 +1305,7 @@ notype_nested_function:
    which called YYERROR1 again, and so on.  */
 	  compstmt
 		{ finish_function (1);
-		  pop_c_function_context (); }
+		  pop_function_context (); }
 	;
 
 /* Any kind of declarator (thus, all declarators allowed
