@@ -111,7 +111,6 @@ objc_sizeof_type(const char* type)
     return sizeof(double);
     break;
 
-  case _C_PTR:
   case _C_ATOM:
   case _C_CHARPTR:
     return sizeof(char*);
