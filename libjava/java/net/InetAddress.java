@@ -573,7 +573,7 @@ public class InetAddress implements Serializable
    * Returns an InetAddress object representing the IP address of the given
    * hostname.  This name can be either a hostname such as "www.urbanophile.com"
    * or an IP address in dotted decimal format such as "127.0.0.1".  If the
-   * hostname is null, the hostname of the local machine is supplied by
+   * hostname is null or "", the hostname of the local machine is supplied by
    * default.  This method is equivalent to returning the first element in
    * the InetAddress array returned from GetAllByName.
    *
@@ -594,7 +594,7 @@ public class InetAddress implements Serializable
       s.checkConnect (hostname, -1);
    
     // Default to current host if necessary
-    if (hostname == null)
+    if (hostname == null || hostname.length() == 0)
       return getLocalHost();
 
     // Assume that the host string is an IP address
