@@ -1,3 +1,8 @@
+1998-08-12  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl.c (grokdeclarator): Issue errors on namespace qualified
+	declarators in parameter lists or in class scope.
+
 1998-08-09  Mark Mitchell  <mark@markmitchell.com>
 
 	* pt.c (check_explicit_specialization): Don't abort on bogus

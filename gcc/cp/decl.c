@@ -10125,7 +10125,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
     if (decl_context == PARM)
       {
-	if (ctype)
+	if (ctype || in_namespace)
 	  error ("cannot use `::' in parameter declaration");
 
 	/* A parameter declared as an array of T is really a pointer to T.
@@ -10177,6 +10177,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  {
 	    /* Happens when declaring arrays of sizes which
 	       are error_mark_node, for example.  */
+	    decl = NULL_TREE;
+	  }
+	else if (in_namespace)
+	  {
+	    /* Something like struct S { int N::j; };  */
+	    cp_error ("invalid use of `::'");
 	    decl = NULL_TREE;
 	  }
 	else if (TREE_CODE (type) == FUNCTION_TYPE)
