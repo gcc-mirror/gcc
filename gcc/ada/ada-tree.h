@@ -165,7 +165,7 @@ struct lang_type GTY(()) {union lang_tree_node t; };
   (TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE)) = (struct lang_type *) (X))
 
 /* For INTEGER_TYPE, stores the RM_Size of the type.  */
-#define TYPE_RM_SIZE_INT(NODE)	(INTEGER_TYPE_CHECK (NODE)->type.values)
+#define TYPE_RM_SIZE_INT(NODE)	TYPE_LANG_SLOT_1 (INTEGER_TYPE_CHECK (NODE))
 
 /* Likewise for ENUMERAL_TYPE.  */
 #define TYPE_RM_SIZE_ENUM(NODE)	\

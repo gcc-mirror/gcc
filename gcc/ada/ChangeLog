@@ -1,4 +1,9 @@
 2004-08-25  Nathan Sidwell  <nathan@codesourcery.com>
+	    Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+	
+	* ada-tree.h (TYPE_RM_SIZE_INT): Use TYPE_LANG_SLOT_1.
+
+2004-08-25  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cuintp.c (UI_To_gnu): Adjust build_int_cst calls.
 	* trans.c (Exception_Handler_to_gnu_sjlj, gnat_to_gnu): Likewise.
