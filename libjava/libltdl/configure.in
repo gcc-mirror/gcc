@@ -2,12 +2,16 @@ dnl Process this file with autoconf to create configure.
 
 AC_INIT(ltdl.c)
 
-dnl We shouldn't be using these internal macros of autoconf,
-dnl but CONFIG_AUX_DIR($with_auxdir) breaks automake.
 AC_ARG_WITH(auxdir,
 [  --with-auxdir=DIR   path to autoconf auxiliary files],
-[AC_CONFIG_AUX_DIRS($with_auxdir)],
+[AC_CONFIG_AUX_DIR($with_auxdir)
+dnl This is here just to satisfy automake.
+ifelse(not,equal,[AC_CONFIG_AUX_DIR(../..)])],
 [AC_CONFIG_AUX_DIR_DEFAULT])
+
+# This is another blatant hack to work around automake bugs.
+mkinstalldirs="$ac_aux_dir/mkinstalldirs"
+AC_SUBST(mkinstalldirs)
 
 if test -z "$enable_ltdl_install$enable_ltdl_convenience"; then
   if test -f ${srcdir}/ltconfig && test -f ${srcdir}/ltmain.sh; then
