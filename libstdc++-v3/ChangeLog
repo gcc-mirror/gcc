@@ -46,10 +46,6 @@
 	* testsuite/27_io/basic_istream/getline/wchar_t/4.cc: New.
 	* testsuite/27_io/basic_istream/getline/wchar_t/5.cc: New.
 
-2004-11-25  Kelley Cook  <kcook@gcc.gnu.org>
-
-	* configure: Regenerate for libtool reversion.
-
 2004-11-24  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure: Regenerate for libtool change.
