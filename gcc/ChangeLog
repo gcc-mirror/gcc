@@ -1,3 +1,7 @@
+2004-01-02  Jan Hubicka  <jh@suse.cz>
+
+	* expr.c (store_constructor):  Fix pasto in previous patch.
+
 2004-01-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/i386/cygming.h: Fix comment formatting.

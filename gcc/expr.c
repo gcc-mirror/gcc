@@ -4994,9 +4994,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		  target = copy_rtx (target);
 		  MEM_KEEP_ALIAS_SET_P (target) = 1;
 		}
-	      else
-		store_constructor_field (target, bitsize, bitpos, mode, value,
-					 type, cleared, get_alias_set (elttype));
+	      store_constructor_field (target, bitsize, bitpos, mode, value,
+				       type, cleared, get_alias_set (elttype));
 	    }
 	}
       if (vector)
