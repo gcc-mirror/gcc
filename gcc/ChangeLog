@@ -1,5 +1,9 @@
 Sat May 20 09:30:55 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* alias.c: Clarify some comments.
+	(record_base_value): REGNO is unsigned.
+	* rtl.h (record_base_value): Likewise.
+
 	* alias.c (aliases_everything_p): Don't special-case QImode here.
 	* c-common.c (c_get_alias_set): Do it here.
 	Handle BIT_FIELD_REF by getting alias info for arg.

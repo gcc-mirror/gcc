@@ -1823,7 +1823,7 @@ extern void init_alias_once		PARAMS ((void));
 extern void init_alias_analysis		PARAMS ((void));
 extern void end_alias_analysis		PARAMS ((void));
 
-extern void record_base_value		PARAMS ((int, rtx, int));
+extern void record_base_value		PARAMS ((unsigned int, rtx, int));
 extern void record_alias_subset         PARAMS ((int, int));
 extern rtx addr_side_effect_eval	PARAMS ((rtx, int, int));
 
