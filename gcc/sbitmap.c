@@ -115,7 +115,16 @@ void
 sbitmap_ones (bmap)
      sbitmap bmap;
 {
+  unsigned int last_bit;
+
   memset (bmap->elms, -1, bmap->bytes);
+
+  last_bit = bmap->n_bits % (unsigned) SBITMAP_ELT_BITS;
+  if (last_bit)
+    {
+      bmap->elms[bmap->size - 1]
+        = (SBITMAP_ELT_TYPE)-1 >> (SBITMAP_ELT_BITS - last_bit);
+    }
 }
 
 /* Zero a vector of N_VECS bitmaps.  */
@@ -208,7 +217,7 @@ sbitmap_difference (dst, a, b)
     *dstp++ = *ap++ & (~*bp++);
 }
 
-/* Set DST to be (A and B)).
+/* Set DST to be (A and B).
    Return non-zero if any change is made.  */
 
 int
