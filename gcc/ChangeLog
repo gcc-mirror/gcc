@@ -59,6 +59,9 @@ Tue Dec  1 15:03:30 1998  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 	
 Tue Dec  1 15:20:44 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* flow.c (delete_block): Call set_last_insn if we end up deleting the
+	last insn in the rtl chain.
+
 	* reload1.c (reload): Do not set reload_completed or split insns
 	here.  Instead...
 	* toplev.c (rest_of_compilation): Set reload_completed after
