@@ -1,3 +1,8 @@
+1999-07-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (build_conditional_expr): Call convert_from_reference to
+	avoid reference/non-reference type confusion.  Fix typo.
+
 1999-07-30  Richard Henderson  <rth@cygnus.com>
 
 	* typeck2.c (initializer_constant_valid_p): Moved to c-common.c.
