@@ -90,6 +90,8 @@ int coprocessor_operand 			PARAMS ((rtx,
 							enum machine_mode));
 int coprocessor2_operand 			PARAMS ((rtx,
 							enum machine_mode));
+int symbolic_operand				PARAMS ((rtx,
+							 enum machine_mode));
 static int m16_check_op				PARAMS ((rtx, int, int, int));
 static void block_move_loop			PARAMS ((rtx, rtx,
 							 unsigned int,
@@ -1382,6 +1384,26 @@ coprocessor2_operand (op, mode)
   return (GET_CODE (op) == REG
 	  && COP2_REG_FIRST <= REGNO (op)
 	  && REGNO (op) <= COP2_REG_LAST);
+}
+
+/* Returns 1 if OP is a symbolic operand, i.e. a symbol_ref or a label_ref,
+   possibly with an offset.  */
+
+int
+symbolic_operand (op, mode)
+      register rtx op;
+      enum machine_mode mode;
+{
+  if (mode != VOIDmode && GET_MODE (op) != VOIDmode && mode != GET_MODE (op))
+    return 0;
+  if (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == LABEL_REF)
+    return 1;
+  if (GET_CODE (op) == CONST
+      && GET_CODE (XEXP (op,0)) == PLUS
+      && GET_CODE (XEXP (XEXP (op,0), 0)) == SYMBOL_REF
+      && GET_CODE (XEXP (XEXP (op,0), 1)) == CONST_INT)
+    return 1;
+  return 0;
 }
 
 /* Return nonzero if we split the address into high and low parts.  */
@@ -10393,6 +10415,37 @@ mips_issue_rate ()
 
   return rate;
 }
+
+const char *
+mips_emit_prefetch (operands)
+     rtx operands[];
+{
+ /* For the mips32/64 architectures the hint fields are arranged
+    by operation (load/store) and locality (normal/streamed/retained).
+    Irritatingly, numbers 2 and 3 are reserved leaving no simple
+    algorithm for figuring the hint.  */
+
+    int write = INTVAL (operands[1]);
+    int locality = INTVAL (operands[2]);
+
+    static const char * const alt[2][4] = {
+	{
+	 "pref\t0,%a0",
+	 "pref\t4,%a0",
+	 "pref\t4,%a0",
+	 "pref\t6,%a0"
+	},
+	{
+	 "pref\t1,%a0",
+	 "pref\t5,%a0",
+	 "pref\t5,%a0",
+	 "pref\t7,%a0"
+	}
+    };
+
+    return alt[write][locality];
+}
+
 
 
 #ifdef TARGET_IRIX6
