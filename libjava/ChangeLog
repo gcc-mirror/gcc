@@ -1,3 +1,8 @@
+2000-10-25  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (install-exec-hook): New target.
+
 2000-10-24  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/util/EventObject.java: Merged from classpath.
