@@ -1513,7 +1513,7 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
    of a switch statement.  If the code is computed here,
    return it with a return statement.  Otherwise, break from the switch.
 
-   On the RS/6000, if it is legal in the insn, it is free.  So this
+   On the RS/6000, if it is valid in the insn, it is free.  So this
    always returns 0.  */
 
 #define CONST_COSTS(RTX,CODE,OUTER_CODE) \
