@@ -1,3 +1,15 @@
+2004-02-12  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/13731 (final part: writev)
+	* config/io/basic_file_stdio.cc (__gnu_internal::xwrite):
+	New, a wrapper around writev() handling partial writes.
+	(__basic_file<char>::xwrite): Move to __gnu_internal and make
+	static.
+	(__basic_file<char>::xsputn): Update call.
+	(__basic_file<char>::xsputn_2): Likewise.	
+	* config/io/basic_file_stdio.h (__basic_file<char>::write):
+	Don't declare, now static.
+
 2004-02-11  Stefan Olsson  <stefan@xapa.se>
 
 	* docs/html/ext/mt_allocator.html: New.
