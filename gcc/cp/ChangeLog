@@ -1,3 +1,8 @@
+2001-02-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* lang-specs.h: Use CPLUSPLUS_CPP_SPEC for the preprocessor 
+	spec.
+
 2001-02-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* pt.c (lookup_template_class): Make sure it's a primary

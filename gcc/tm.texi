@@ -109,6 +109,12 @@ give to GCC into options for GCC to pass to the CPP.
 
 Do not define this macro if it does not need to do anything.
 
+@findex CPLUSPLUS_CPP_SPEC
+@item CPLUSPLUS_CPP_SPEC
+This macro is just like @code{CPP_SPEC}, but is used for C++, rather
+than C.  If you do not define this macro, then the value of
+@code{CPP_SPEC} (if any) will be used instead.
+
 @findex NO_BUILTIN_SIZE_TYPE
 @item NO_BUILTIN_SIZE_TYPE
 If this macro is defined, the preprocessor will not define the builtin macro

@@ -68,6 +68,9 @@ Boston, MA 02111-1307, USA.  */
        %(cc1_options) %2 %{+e*}\
        %{!fsyntax-only:%(invoke_as)}}}}"
 #endif
+#ifdef CPLUSPLUS_CPP_SPEC
+     , CPLUSPLUS_CPP_SPEC
+#endif
      },
   {".ii", "@c++-cpp-output"},
   {"@c++-cpp-output",
