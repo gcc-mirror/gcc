@@ -2620,6 +2620,7 @@ secondary_reload_class (class, mode, in)
      is needed as an intermediate register.  */
   if (class != BASE_REGS
       && (GET_CODE (in) == SYMBOL_REF
+	  || GET_CODE (in) == HIGH
 	  || GET_CODE (in) == LABEL_REF
 	  || GET_CODE (in) == CONST))
     return BASE_REGS;
