@@ -10799,7 +10799,7 @@ rs6000_emit_prologue ()
     {
       rtx dest = gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM);
       const char *picbase = machopic_function_base_name ();
-      rtx src = gen_rtx_SYMBOL_REF (Pmode, ggc_alloc_string (picbase, -1));
+      rtx src = gen_rtx_SYMBOL_REF (Pmode, picbase);
 
       rs6000_maybe_dead (emit_insn (gen_load_macho_picbase (dest, src)));
 

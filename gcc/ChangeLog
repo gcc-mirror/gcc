@@ -18,6 +18,11 @@
 
 2003-03-18  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Don't clone
+	the result of machopic_function_base_name.
+	* config/darwin.c (machopic_function_base_name): Use a gc-allocated
+	string rather than a static array.
+
 	* Makefile.in (emit-rtl.o): Add gt-emit-rtl.h to dependencies.
 
 	* gengtype.c: Include rtl.h.

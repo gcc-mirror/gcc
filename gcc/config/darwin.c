@@ -219,24 +219,26 @@ machopic_define_name (name)
 }
 
 /* This is a static to make inline functions work.  The rtx
-   representing the PIC base symbol always points to here.  */
+   representing the PIC base symbol always points to here.  
 
-static char function_base[32];
+   FIXME: The rest of the compiler doesn't expect strings to change.  */
 
+static GTY(()) char * function_base;
+static GTY(()) const char * function_base_func_name;
 static GTY(()) int current_pic_label_num;
 
 const char *
 machopic_function_base_name ()
 {
-  static const char *name = NULL;
-  static const char *current_name;
+  const char *current_name;
 
   /* if dynamic-no-pic is on, we should not get here */
   if (MACHO_DYNAMIC_NO_PIC_P)
     abort ();
-  current_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl));
+  current_name = 
+    IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (current_function_decl));
 
-  if (name != current_name)
+  if (function_base_func_name != current_name)
     {
       current_function_uses_pic_offset_table = 1;
 
@@ -246,13 +248,21 @@ machopic_function_base_name ()
 	 by the incredibly scientific test below.  This is because code in
 	 rs6000.c makes the same ugly test when loading the PIC reg.  */
  
+      /* It's hard to describe just how ugly this is.  The reason for
+         the '%011d' is that after a PCH load, we can't change the
+         size of the string, because PCH will have uniqued it and
+         allocated it in the string pool.  */
+      if (function_base == NULL)
+	function_base = 
+	  (char *) ggc_alloc_string ("", sizeof ("*\"L12345678901$pb\""));
+
       ++current_pic_label_num;
       if (*current_name == '+' || *current_name == '-')
-	sprintf (function_base, "*\"L-%d$pb\"", current_pic_label_num);
+	sprintf (function_base, "*\"L-%010d$pb\"", current_pic_label_num);
       else
-	sprintf (function_base, "*L%d$pb", current_pic_label_num);
+	sprintf (function_base, "*\"L%011d$pb\"", current_pic_label_num);
 
-      name = current_name;
+      function_base_func_name = current_name;
     }
 
   return function_base;
