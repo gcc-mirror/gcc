@@ -84,7 +84,6 @@ static const char *output_multi_immediate (rtx *, const char *, const char *,
 					   int, HOST_WIDE_INT);
 static const char *shift_op (rtx, HOST_WIDE_INT *);
 static struct machine_function *arm_init_machine_status (void);
-static void replace_symbols_in_block (tree, rtx, rtx);
 static void thumb_exit (FILE *, int);
 static rtx is_jump_table (rtx);
 static HOST_WIDE_INT get_jump_table_size (rtx);
@@ -12380,37 +12379,6 @@ arm_expand_builtin (tree exp,
   return NULL_RTX;
 }
 
-/* Recursively search through all of the blocks in a function
-   checking to see if any of the variables created in that
-   function match the RTX called 'orig'.  If they do then
-   replace them with the RTX called 'new'.  */
-static void
-replace_symbols_in_block (tree block, rtx orig, rtx new)
-{
-  for (; block; block = BLOCK_CHAIN (block))
-    {
-      tree sym;
-
-      if (!TREE_USED (block))
-	continue;
-
-      for (sym = BLOCK_VARS (block); sym; sym = TREE_CHAIN (sym))
-	{
-	  if (  (DECL_NAME (sym) == 0 && TREE_CODE (sym) != TYPE_DECL)
-	      || DECL_IGNORED_P (sym)
-	      || TREE_CODE (sym) != VAR_DECL
-	      || DECL_EXTERNAL (sym)
-	      || !rtx_equal_p (DECL_RTL (sym), orig)
-	      )
-	    continue;
-
-	  SET_DECL_RTL (sym, new);
-	}
-
-      replace_symbols_in_block (BLOCK_SUBBLOCKS (block), orig, new);
-    }
-}
-
 /* Return the number (counting from 0) of
    the least significant set bit in MASK.  */
 
