@@ -1,3 +1,11 @@
+2004-12-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* cpp/pragma-once-1.c: New test.
+	* cpp/pragma-once-1b.h: Likewise.
+	* cpp/pragma-once-1c.h: Likewise.
+	* cpp/pragma-once-1d.h: Likewise.
+	* cpp/inc/pragma-once-1a.h: Likewise.
+
 2004-12-15  Bud Davis  <bdavis9659@comcast.net>
             Steven G. Kargle  <kargls@comcast.net>
 
