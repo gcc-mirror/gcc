@@ -1671,7 +1671,9 @@ do {									\
     if (INTVAL (RTX) >= 0 && INTVAL (RTX) < 256)		\
       return 0;							\
   case CONST_DOUBLE:						\
-    if (((OUTER_CODE) == PLUS && add_operand (RTX, VOIDmode))	\
+    if ((RTX) == CONST0_RTX (GET_MODE (RTX)))			\
+      return 0;							\
+    else if (((OUTER_CODE) == PLUS && add_operand (RTX, VOIDmode)) \
 	|| ((OUTER_CODE) == AND && and_operand (RTX, VOIDmode))) \
       return 0;							\
     else if (add_operand (RTX, VOIDmode) || and_operand (RTX, VOIDmode)) \
@@ -1686,7 +1688,9 @@ do {									\
     case PROCESSOR_EV4:						\
       return COSTS_N_INSNS (3);					\
     case PROCESSOR_EV5:						\
+    case PROCESSOR_EV6:						\
       return COSTS_N_INSNS (2);					\
+    default: abort();						\
     }
     
 /* Provide the costs of a rtl expression.  This is in the body of a
@@ -1700,7 +1704,9 @@ do {									\
         case PROCESSOR_EV4:				\
           return COSTS_N_INSNS (6);			\
         case PROCESSOR_EV5:				\
+        case PROCESSOR_EV6:				\
           return COSTS_N_INSNS (4); 			\
+	default: abort();				\
 	}						\
     else if (GET_CODE (XEXP (X, 0)) == MULT		\
 	     && const48_operand (XEXP (XEXP (X, 0), 1), VOIDmode)) \
@@ -1721,19 +1727,37 @@ do {									\
           return COSTS_N_INSNS (12);			\
         else						\
           return COSTS_N_INSNS (8);			\
+      case PROCESSOR_EV6:				\
+	if (FLOAT_MODE_P (GET_MODE (X)))		\
+	  return COSTS_N_INSNS (4);			\
+	else 						\
+	  return COSTS_N_INSNS (7);			\
+      default: abort();					\
       }							\
   case ASHIFT:						\
     if (GET_CODE (XEXP (X, 1)) == CONST_INT		\
 	&& INTVAL (XEXP (X, 1)) <= 3)			\
       break;						\
     /* ... fall through ... */				\
-  case ASHIFTRT:  case LSHIFTRT:  case IF_THEN_ELSE:	\
+  case ASHIFTRT:  case LSHIFTRT:			\
     switch (alpha_cpu)					\
       {							\
       case PROCESSOR_EV4:				\
         return COSTS_N_INSNS (2);			\
       case PROCESSOR_EV5:				\
+      case PROCESSOR_EV6:				\
         return COSTS_N_INSNS (1); 			\
+      default: abort();					\
+      }							\
+  case IF_THEN_ELSE:					\
+    switch (alpha_cpu)					\
+      {							\
+      case PROCESSOR_EV4:				\
+      case PROCESSOR_EV6:				\
+        return COSTS_N_INSNS (2);			\
+      case PROCESSOR_EV5:				\
+        return COSTS_N_INSNS (1); 			\
+      default: abort();					\
       }							\
   case DIV:  case UDIV:  case MOD:  case UMOD:		\
     switch (alpha_cpu)					\
@@ -1751,15 +1775,25 @@ do {									\
         else if (GET_MODE (X) == DFmode)		\
           return COSTS_N_INSNS (22);			\
         else						\
-          return COSTS_N_INSNS (70);	/* EV5 ??? */	\
+          return COSTS_N_INSNS (70);	/* ??? */	\
+      case PROCESSOR_EV6:				\
+	if (GET_MODE (X) == SFmode)			\
+	  return COSTS_N_INSNS (12);			\
+        else if (GET_MODE (X) == DFmode)		\
+          return COSTS_N_INSNS (15);			\
+        else						\
+          return COSTS_N_INSNS (70);	/* ??? */	\
+      default: abort();					\
       }							\
   case MEM:						\
     switch (alpha_cpu)					\
       {							\
       case PROCESSOR_EV4:				\
+      case PROCESSOR_EV6:				\
         return COSTS_N_INSNS (3);			\
       case PROCESSOR_EV5:				\
         return COSTS_N_INSNS (2); 			\
+      default: abort();					\
       }							\
   case NEG:  case ABS:					\
     if (! FLOAT_MODE_P (GET_MODE (X)))			\
@@ -1772,7 +1806,9 @@ do {									\
       case PROCESSOR_EV4:				\
         return COSTS_N_INSNS (6);			\
       case PROCESSOR_EV5:				\
+      case PROCESSOR_EV6:				\
         return COSTS_N_INSNS (4); 			\
+      default: abort();					\
       }
 
 /* Control the assembler format that we output.  */
