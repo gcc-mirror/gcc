@@ -161,7 +161,9 @@
 ;; dmpy		longword or doublelongword precision integer multiply
 ;; return	rts
 ;; pload	load of pr reg, which can't be put into delay slot of rts
+;; prset	copy register to pr reg, ditto
 ;; pstore	store of pr reg, which can't be put into delay slot of jsr
+;; prget	copy pr to register, ditto
 ;; pcload	pc relative load of constant value
 ;; pcload_si	Likewise, SImode variant for general register.
 ;; rte		return from exception
@@ -175,7 +177,7 @@
 ;; nil		no-op move, will be deleted.
 
 (define_attr "type"
- "cbranch,jump,jump_ind,arith,arith3,arith3b,dyn_shift,other,load,load_si,store,move,fmove,smpy,dmpy,return,pload,pstore,pcload,pcload_si,rte,sfunc,call,fp,fdiv,dfp_arith,dfp_cmp,dfp_conv,dfdiv,gp_fpul,nil"
+ "cbranch,jump,jump_ind,arith,arith3,arith3b,dyn_shift,other,load,load_si,store,move,fmove,smpy,dmpy,return,pload,prset,pstore,prget,pcload,pcload_si,rte,sfunc,call,fp,fdiv,dfp_arith,dfp_cmp,dfp_conv,dfdiv,gp_fpul,nil"
   (const_string "other"))
 
 ;; Indicate what precision must be selected in fpscr for this insn, if any.
@@ -568,7 +570,7 @@
   (eq_attr "type" "return")
   [(and (eq_attr "in_delay_slot" "yes")
 	(ior (and (eq_attr "interrupt_function" "no")
-		  (eq_attr "type" "!pload"))
+		  (eq_attr "type" "!pload,prset"))
 	     (and (eq_attr "interrupt_function" "yes")
 		  (eq_attr "hit_stack" "no")))) (nil) (nil)])
 
@@ -578,7 +580,7 @@
 (define_delay
   (ior (eq_attr "type" "call") (eq_attr "type" "sfunc"))
   [(and (eq_attr "in_delay_slot" "yes")
-	(eq_attr "type" "!pstore")) (nil) (nil)])
+	(eq_attr "type" "!pstore,prget")) (nil) (nil)])
 
 ;; Say that we have annulled true branches, since this gives smaller and
 ;; faster code when branches are predicted as not taken.
@@ -2402,8 +2404,8 @@
 ;; (set (subreg:SI (mem:QI (plus:SI (reg:SI SP_REG) (const_int 12)) 0) 0)
 ;; (made from (set (subreg:SI (reg:QI ###) 0) ) into T.
 (define_insn "movsi_i"
-  [(set (match_operand:SI 0 "general_movdst_operand" "=r,r,t,r,r,r,m,<,<,xl,x,l,r")
-	(match_operand:SI 1 "general_movsrc_operand" "Q,rI,r,mr,xl,t,r,x,l,r,>,>,i"))]
+  [(set (match_operand:SI 0 "general_movdst_operand" "=r,r,t,r,r,r,r,m,<,<,x,l,x,l,r")
+	(match_operand:SI 1 "general_movsrc_operand" "Q,rI,r,mr,x,l,t,r,x,l,r,r,>,>,i"))]
   "
    ! TARGET_SH3E
    && (register_operand (operands[0], SImode)
@@ -2414,24 +2416,26 @@
 	cmp/pl	%1
 	mov.l	%1,%0
 	sts	%1,%0
+	sts	%1,%0
 	movt	%0
 	mov.l	%1,%0
 	sts.l	%1,%0
 	sts.l	%1,%0
 	lds	%1,%0
+	lds	%1,%0
 	lds.l	%1,%0
 	lds.l	%1,%0
 	fake	%1,%0"
-  [(set_attr "type" "pcload_si,move,*,load_si,move,move,store,store,pstore,move,load,pload,pcload_si")
-   (set_attr "length" "*,*,*,*,*,*,*,*,*,*,*,*,*")])
+  [(set_attr "type" "pcload_si,move,*,load_si,move,prget,move,store,store,pstore,move,prset,load,pload,pcload_si")
+   (set_attr "length" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*")])
 
 ;; t/r must come after r/r, lest reload will try to reload stuff like
 ;; (subreg:SI (reg:SF FR14_REG) 0) into T (compiling stdlib/strtod.c -m3e -O2)
 ;; ??? This allows moves from macl to fpul to be recognized, but these moves
 ;; will require a reload.
 (define_insn "movsi_ie"
-  [(set (match_operand:SI 0 "general_movdst_operand" "=r,r,t,r,r,r,m,<,<,xl,x,l,y,r,y,r,y")
-	(match_operand:SI 1 "general_movsrc_operand" "Q,rI,r,mr,xl,t,r,x,l,r,>,>,>,i,r,y,y"))]
+  [(set (match_operand:SI 0 "general_movdst_operand" "=r,r,t,r,r,r,r,m,<,<,x,l,x,l,y,r,y,r,y")
+	(match_operand:SI 1 "general_movsrc_operand" "Q,rI,r,mr,x,l,t,r,x,l,r,r,>,>,>,i,r,y,y"))]
   "TARGET_SH3E
    && (register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
@@ -2441,10 +2445,12 @@
 	cmp/pl	%1
 	mov.l	%1,%0
 	sts	%1,%0
+	sts	%1,%0
 	movt	%0
 	mov.l	%1,%0
 	sts.l	%1,%0
 	sts.l	%1,%0
+	lds	%1,%0
 	lds	%1,%0
 	lds.l	%1,%0
 	lds.l	%1,%0
@@ -2453,12 +2459,12 @@
 	lds	%1,%0
 	sts	%1,%0
 	! move optimized away"
-  [(set_attr "type" "pcload_si,move,*,load_si,move,move,store,store,pstore,move,load,pload,load,pcload_si,gp_fpul,gp_fpul,nil")
-   (set_attr "length" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,0")])
+  [(set_attr "type" "pcload_si,move,*,load_si,move,prget,move,store,store,pstore,move,prset,load,pload,load,pcload_si,gp_fpul,gp_fpul,nil")
+   (set_attr "length" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,0")])
 
 (define_insn "movsi_i_lowpart"
-  [(set (strict_low_part (match_operand:SI 0 "general_movdst_operand" "+r,r,r,r,r,m,r"))
-	(match_operand:SI 1 "general_movsrc_operand" "Q,rI,mr,xl,t,r,i"))]
+  [(set (strict_low_part (match_operand:SI 0 "general_movdst_operand" "+r,r,r,r,r,r,m,r"))
+	(match_operand:SI 1 "general_movsrc_operand" "Q,rI,mr,x,l,t,r,i"))]
    "register_operand (operands[0], SImode)
     || register_operand (operands[1], SImode)"
   "@
@@ -2466,10 +2472,11 @@
 	mov	%1,%0
 	mov.l	%1,%0
 	sts	%1,%0
+	sts	%1,%0
 	movt	%0
 	mov.l	%1,%0
 	fake	%1,%0"
-  [(set_attr "type" "pcload,move,load,move,move,store,pcload")])
+  [(set_attr "type" "pcload,move,load,move,prget,move,store,pcload")])
 
 (define_expand "movsi"
   [(set (match_operand:SI 0 "general_movdst_operand" "")

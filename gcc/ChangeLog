@@ -1,3 +1,11 @@
+2001-01-05  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.md (prget, prset): New insn types.
+	(return delay slot): Dont' allow prset.
+	(call, sfunc delay slot): Don't allow prget.
+	(movsi_i, movsi_ie, movsi_i_lowpart): Create separate alternatives
+	for prset and prget.
+
 2001-01-05  Michael Hayes  <mhayes@redhat.com>
 
 	* loop.h (struct loop_reg): New.
