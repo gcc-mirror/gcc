@@ -1,3 +1,7 @@
+Thu Jan 11 17:06:30 EST 2001  John Wehle  (john@feith.com)
+
+	* final.c: (leaf_function_p): Fix typo.
+
 2001-01-11  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* aclocal.m4 (AC_FUNC_MMAP_ANYWHERE): Completely rewritten.

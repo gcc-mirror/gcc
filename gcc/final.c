@@ -1,6 +1,6 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000 Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -4125,6 +4125,7 @@ int
 leaf_function_p ()
 {
   rtx insn;
+  rtx link;
 
   if (profile_flag || profile_block_flag || profile_arc_flag)
     return 0;
@@ -4140,17 +4141,19 @@ leaf_function_p ()
 	  && ! SIBLING_CALL_P (XVECEXP (PATTERN (insn), 0, 0)))
 	return 0;
     }
-  for (insn = current_function_epilogue_delay_list;
-       insn;
-       insn = XEXP (insn, 1))
+  for (link = current_function_epilogue_delay_list;
+       link;
+       link = XEXP (link, 1))
     {
-      if (GET_CODE (XEXP (insn, 0)) == CALL_INSN
+      insn = XEXP (link, 0);
+
+      if (GET_CODE (insn) == CALL_INSN
 	  && ! SIBLING_CALL_P (insn))
 	return 0;
-      if (GET_CODE (XEXP (insn, 0)) == INSN
-	  && GET_CODE (PATTERN (XEXP (insn, 0))) == SEQUENCE
-	  && GET_CODE (XVECEXP (PATTERN (XEXP (insn, 0)), 0, 0)) == CALL_INSN
-	  && ! SIBLING_CALL_P (XVECEXP (PATTERN (XEXP (insn, 0)), 0, 0)))
+      if (GET_CODE (insn) == INSN
+	  && GET_CODE (PATTERN (insn)) == SEQUENCE
+	  && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == CALL_INSN
+	  && ! SIBLING_CALL_P (XVECEXP (PATTERN (insn), 0, 0)))
 	return 0;
     }
 
