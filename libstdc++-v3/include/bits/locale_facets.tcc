@@ -1099,12 +1099,12 @@ namespace std
       string_type __str;
       __beg = this->do_get(__beg, __end, __intl, __io, __err, __str); 
 
-      const int __n = numeric_limits<long double>::digits10;
-      char* __cs = static_cast<char*>(__builtin_alloca(__n));
+      const int __cs_size = __str.size() + 1;
+      char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
       const locale __loc = __io.getloc();
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc); 
       const _CharT* __wcs = __str.c_str();
-      __ctype.narrow(__wcs, __wcs + __str.size() + 1, char(), __cs);      
+      __ctype.narrow(__wcs, __wcs + __cs_size, char(), __cs);      
       __convert_to_v(__cs, __units, __err, _S_c_locale);
       return __beg;
     }
