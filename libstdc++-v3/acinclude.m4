@@ -2106,6 +2106,45 @@ AC_DEFUN([AC_LIBTOOL_DLOPEN])
 AC_DEFUN([AC_PROG_LD])
 ])
 
+dnl
+dnl Check whether S_ISREG (Posix) or S_IFREG is available in <sys/stat.h>.
+dnl
+
+AC_DEFUN(GLIBCPP_CHECK_S_ISREG_OR_S_IFREG, [
+  AC_CACHE_VAL(glibcpp_cv_S_ISREG, [
+    AC_TRY_LINK([#include <sys/stat.h>],
+                [struct stat buffer; fstat(0, &buffer); S_ISREG(buffer.st_mode); ],
+                [glibcpp_cv_S_ISREG=yes],
+                [glibcpp_cv_S_ISREG=no])
+  ])
+  AC_CACHE_VAL(glibcpp_cv_S_IFREG, [
+    AC_TRY_LINK([#include <sys/stat.h>],
+                [struct stat buffer; fstat(0, &buffer); S_IFREG & buffer.st_mode; ],
+                [glibcpp_cv_S_IFREG=yes],
+                [glibcpp_cv_S_IFREG=no])
+  ])
+  if test x$glibcpp_cv_S_ISREG = xyes; then
+    AC_DEFINE(HAVE_S_ISREG)
+  elif test x$glibcpp_cv_S_IFREG = xyes; then
+    AC_DEFINE(HAVE_S_IFREG)
+  fi
+])
+
+dnl
+dnl Check whether poll is available in <poll.h>.
+dnl
+
+AC_DEFUN(GLIBCPP_CHECK_POLL, [
+  AC_CACHE_VAL(glibcpp_cv_POLL, [
+    AC_TRY_COMPILE([#include <poll.h>],
+                [struct pollfd pfd[1]; pfd[0].events = POLLIN; poll(pfd, 1, 0); ],
+                [glibcpp_cv_POLL=yes],
+                [glibcpp_cv_POLL=no])
+  ])
+  if test x$glibcpp_cv_POLL = xyes; then
+    AC_DEFINE(HAVE_POLL)
+  fi
+])
 
 # Check whether LC_MESSAGES is available in <locale.h>.
 # Ulrich Drepper <drepper@cygnus.com>, 1995.

@@ -96,13 +96,6 @@ namespace std
 	      // Setup initial position of buffer.
 	      _M_set_indeterminate();
 
-	      // Set input buffer to something real.
-	      // NB: Must open in non-blocking way to do this, or must
-	      // set the initial position in a different manner than
-	      // using underflow.
- 	      if (__mode & ios_base::in && _M_buf_allocated)
- 		this->underflow();
-
 	      if ((__mode & ios_base::ate)
 		  && this->seekoff(0, ios_base::end, __mode) < 0)
 		{
@@ -164,9 +157,21 @@ namespace std
     {
       streamsize __ret = -1;
       bool __testin = this->_M_mode & ios_base::in;
+      const locale __loc = this->getloc();
+      const __codecvt_type& __cvt = use_facet<__codecvt_type>(__loc);
+      // Sync with stdio.
+      bool __sync = this->_M_buf_size == 1;
 
       if (__testin && this->is_open())
-	__ret = this->_M_in_end - this->_M_in_cur;
+	{
+	  __ret = this->_M_in_end - this->_M_in_cur;
+
+	  // For a stateful encoding (-1) the pending sequence might be just
+	  // shift and unshift prefixes with no actual character.
+	  if (__cvt.encoding() >= 0)
+	    __ret += _M_file.showmanyc_helper(__sync) / __cvt.max_length();
+	}
+
       _M_last_overflowed = false;	
       return __ret;
     }

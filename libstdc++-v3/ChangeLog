@@ -1,3 +1,26 @@
+2003-03-28  Paolo Carlini  <pcarlini@unitus.it>
+            Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/9533
+	* include/bits/fstream.tcc (basic_filebuf<>::open): Don't
+	call underflow().
+	(basic_filebuf<>::showmanyc): Use the information provided
+	by codecvt and __basic_file<>::showmanyc_helper to implement
+	a non-trivial showmanyc.
+	* config/io/basic_file_stdio.h
+	(__basic_file<>::showmanyc_helper): New, declare.
+	* config/io/basic_file_stdio.cc
+	(__basic_file<>::showmanyc_helper): Define.
+	(__basic_file<>::_M_open_mode): Don't set O_NONBLOCK.
+	(__basic_file<char>::open): Don't call fcntl().
+	* acinclude.m4 (GLIBCPP_CHECK_S_ISREG_OR_S_IFREG,
+	GLIBCPP_CHECK_POLL): New macros.
+	* configure.in: Call here.
+	* acconfig.h: Add #undefs for the corresponding symbols.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
 2003-03-24  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/linker-map.gnu: Remove string export restrictions.
