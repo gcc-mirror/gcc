@@ -37,12 +37,8 @@ exception statement from your version. */
 
 
 package java.net;
-import java.io.IOException;
 
-/**
- * @author Warren Levy <warrenl@cygnus.com>
- * @date May 3, 1999.
- */
+import java.io.IOException;
 
 /**
  * Written using on-line Java Platform 1.2 API Specification, as well
@@ -50,6 +46,10 @@ import java.io.IOException;
  * Status:  Believed complete and correct.
  */
 
+/**
+ * @author Warren Levy <warrenl@cygnus.com>
+ * @date May 3, 1999.
+ */
 class PlainDatagramSocketImpl extends DatagramSocketImpl
 {
   // These fields are mirrored for use in native code to avoid cpp conflicts

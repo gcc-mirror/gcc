@@ -1,5 +1,53 @@
 2003-05-02  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/JarURLConnection.java
+	(JarURLConnection): Class documentation merged with classpath.
+	(getJarFileURL): Moved and documentation merged with classpath.
+	(getEntryName): Likewise.
+	(JarURLConnection): Documentation merged with classpath.
+	(getJarEntry): Likewise.
+	(getJarFile): Likewise.
+	* java/net/PlainDatagramSocketImpl.java:
+	Class documentation moved.
+	* java/net/URLConnection.java
+	(fileNameMap): Moved and documentation merged with classpath.
+	(factory): Likewise.
+	(defaultAllowUserInteraction): Likewis.
+	(defaultUseCaches): Likewise.
+	(allowUserInteraction): Likewise.
+	(connected): Likewise.
+	(url): Likewise.
+	(connect): Documentation merged with classpath.
+	(getURL): Likewise.
+	(getContentLength): Likewise.
+	(getContentType): Likewise.
+	(getContentEncoding): Likewise.
+	(getExpiration): Likewise.
+	(getDate): Likewise.
+	(getLastModified): Likewise.
+	(getHeaderField): Likewise.
+	(getContent): Likewise.
+	(getPermission): Likewise.
+	(getInputStream): Likewise.
+	(getOutputStream): Likewise.
+	(toString): Likewise.
+	(getDoInput): Likewise.
+	(getDoOutput): Likewise.
+	(setAllowUserInteraction): Likewise.
+	(getAllowUserInteraction): Likewise.
+	(setDefaultAllowUserInteraction): Likewise.
+	(getDefaultAllowUserInteraction): Likewise.
+	(setUseCaches): Likewise.
+	(getUseCaches): Likewise.
+	(setIfModifiedSince): Likewise.
+	(getIfModifiedSince): Likewise.
+	(setDefaultRequestProperty): Likewise.
+	(getDefaultRequestProperty): Likewise.
+	(setContentHandlerFactory): Likewise.
+	(setFileNameMap): Likewise.
+
+2003-05-02  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/InetAddress.java:
 	Merged class documentation with classpath.
 	* java/net/JarURLConnection.java:
