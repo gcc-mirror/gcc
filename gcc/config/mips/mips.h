@@ -259,7 +259,7 @@ extern char	       *mktemp ();
 #define MASK_ABICALLS	0x00000400	/* emit .abicalls/.cprestore/.cpload */
 #define MASK_HALF_PIC	0x00000800	/* Emit OSF-style pic refs to externs*/
 #define MASK_LONG_CALLS	0x00001000	/* Always call through a register */
-#define MASK_64BIT	0x00002000	/* Use 64 bit registers and insns */
+#define MASK_64BIT	0x00002000	/* Use 64 bit GP registers and insns */
 #define MASK_UNUSED1	0x00004000
 #define MASK_UNUSED2	0x00008000
 #define MASK_UNUSED3	0x00010000
@@ -362,6 +362,8 @@ extern char	       *mktemp ();
   {"hard-float",	 -MASK_SOFT_FLOAT},				\
   {"fp64",		  MASK_FLOAT64},				\
   {"fp32",		 -MASK_FLOAT64},				\
+  {"gp64",		  MASK_64BIT},					\
+  {"gp32",		 -MASK_64BIT},					\
   {"abicalls",		  MASK_ABICALLS},				\
   {"no-abicalls",	 -MASK_ABICALLS},				\
   {"half-pic",		  MASK_HALF_PIC},				\
@@ -421,18 +423,18 @@ extern char	       *mktemp ();
 #define BRANCH_LIKELY_P()	(mips_isa >= 2)
 #define HAVE_SQRT_P()		(mips_isa >= 2)
 
-/* If mips_isa >= 3, then override_options will set MASK_64BIT
-   in target_flags.  This is in target_flags, not mips_isa, because
-   the gen* programs link code that refers to it, and they don't have
-   mips_isa.  They don't actually use the information in target_flags;
-   they just refer to it.
+/* CC1_SPEC causes -mips3 to set -mfp64 and -mgp64; -mips1 or -mips2
+   sets -mfp32 and -mgp32.  This can be overridden by an explicit
+   -mfp32, -mfp64, -mgp32 or -mgp64.  -mfp64 sets MASK_FLOAT64 in
+   target_flags, and -mgp64 sets MASK_64BIT.
 
-   Setting mips_isa >= 3 will cause gcc to assume that registers are
-   64 bits wide.  int, long and void * will be 32 bit; this may be
-   changed with -mint64 or -mlong64.
+   Setting MASK_64BIT in target_flags will cause gcc to assume that
+   registers are 64 bits wide.  int, long and void * will be 32 bit;
+   this may be changed with -mint64 or -mlong64.
 
-   CC1_SPEC causes -mips3 to set -mfp64, and -mips1 or -mips2 to set -mfp32.
-   This can be overridden by an explicit -mfp32 or -mfp64.  */
+   The gen* programs link code that refers to MASK_64BIT.  They don't
+   actually use the information in target_flags; they just refer to
+   it.  */
 
 /* Switch  Recognition by gcc.c.  Add -G xx support */
 
@@ -620,7 +622,7 @@ while (0)
 #ifndef CC1_SPEC
 #define CC1_SPEC "\
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
-%{mips1:-mfp32}%{mips2:-mfp32}%{mips3:-mfp64} \
+%{mips1:-mfp32 -mgp32}%{mips2:-mfp32 -mgp32}%{mips3:-mfp64 -mgp64} \
 %{G*} \
 %{pic-none:   -mno-half-pic} \
 %{pic-lib:    -mhalf-pic} \
@@ -1493,10 +1495,13 @@ extern enum reg_class mips_char_to_class[];
    Do not define this macro if its value would always be zero.  */
 
 #define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)			\
-  (!TARGET_DEBUG_H_MODE							\
-   && GET_MODE_CLASS (MODE) == MODE_INT					\
-   && ((CLASS1 == FP_REGS && CLASS2 == GR_REGS)				\
-       || (CLASS1 == GR_REGS && CLASS2 == FP_REGS)))
+  ((!TARGET_DEBUG_H_MODE						\
+    && GET_MODE_CLASS (MODE) == MODE_INT				\
+    && ((CLASS1 == FP_REGS && CLASS2 == GR_REGS)			\
+	|| (CLASS1 == GR_REGS && CLASS2 == FP_REGS)))			\
+   || (TARGET_FLOAT64 && !TARGET_64BIT && (MODE) == DFmode		\
+       && ((CLASS1 == GR_REGS && CLASS2 == FP_REGS)			\
+	   || (CLASS2 == GR_REGS && CLASS1 == FP_REGS))))
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
