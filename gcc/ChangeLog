@@ -1,3 +1,12 @@
+2004-09-28  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR target/14064
+	Backport from mainline
+	2004-09-01  James E Wilson  <wilson@specifixinc.com>
+	* config/avr/avr.c (avr_unique_section): Delete prototype and
+	definition.
+	(TARGET_ASM_UNIQUE_SECTION): Delete.
+
 2004-09-26  Roger Sayle  <roger@eyesopen.com>
 
 	PR other/15526
