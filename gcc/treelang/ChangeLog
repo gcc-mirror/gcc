@@ -1,3 +1,10 @@
+2003-10-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* Make-lang.in (info): Use docobjdir.
+	($(srcdir)/treelang/treelang.info): Replace with ...
+	($(docobjdir)/treelang/treelang.info): ... this.
+	(install-info): New target.
+
 2003-10-12  Andreas Jaeger  <aj@suse.de>
 
 	* Make-lang.in (treelang.install-info): Remove reference to

@@ -1,3 +1,10 @@
+2003-10-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* Make-lang.in (info): Update dependencies.
+	(java.install-info): Remove.
+	($(srcdir)/java/gcj.info): Replace with ...
+	($(docobjdir)/gcj.info): ... this.
+
 2003-10-14  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Make-lang.in: Replace uses of $(target_alias) with

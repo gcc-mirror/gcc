@@ -588,10 +588,8 @@ compiler executables listed in @code{compilers} in
 @file{config-lang.in}.
 @item install-info
 Install info documentation for the front end, if it is present in the
-source directory.  (It may not be present if a suitable version of
-@command{makeinfo} was not installed.)  This target should run the
-command @command{install-info} to update the info directory, but
-should ignore errors when running that command.
+source directory.  This target should have dependencies on info files
+that should be installed.  This hook is a double-colon hook.
 @item install-man
 Install man pages for the front end.  This target should ignore
 errors.

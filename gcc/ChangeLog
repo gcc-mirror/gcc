@@ -1,3 +1,17 @@
+2003-10-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (install-info): Simplify.
+	($(DESTDIR)$(infodir)/%.info): New rule.
+	* configure.in (target_list): Remove install-info.
+	* doc/.cvsignore (gcc.info*): Remove.
+	(gccint.info*): Likewise.
+	(gccinstall.info*): Likewise.
+	(cpp.info*): Likewise.
+	(cppinternals.info*): Likewise.
+	(*.info*): Add it.
+	* doc/sourcebuild.texi: Update description of install-info.
+	* objc/Make-lang.in (objc.install-info): Remove.
+
 2003-10-20  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/linux.h (TARGET_OS_CPP_BUILTINS): Define _ABIO32.

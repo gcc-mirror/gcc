@@ -1,3 +1,12 @@
+Mon Oct 20 13:49:43 2003  Mark Mitchell  <mark@codesourcery.com>
+
+	* Make-lang.in (.PHONY): Remove f77.info, f77.install-info.
+	(info): Update dependencies.
+	($(srcdir)/f/g77.info): Replace with ...
+	($(docobjdir)/g77.info): ... this.
+	(f77.install-info): Remove.
+	(install-info): New target.
+
 2003-10-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* Make-lang.in (f77.info): Replace with ...

@@ -1,8 +1,4 @@
-gcc.info*
-gccint.info*
-gccinstall.info*
-cpp.info*
-cppinternals.info*
+*.info*
 gcc.1
 cpp.1
 gcov.1

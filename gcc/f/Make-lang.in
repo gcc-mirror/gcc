@@ -22,7 +22,7 @@
 # Each language makefile fragment must provide the following targets:
 #
 # foo.all.build, foo.all.cross, foo.start.encap, foo.rest.encap,
-# foo.install-normal, foo.install-common, foo.install-info, foo.install-man,
+# foo.install-normal, foo.install-common, foo.install-man,
 # foo.uninstall,
 # foo.mostlyclean, foo.clean, foo.distclean, foo.extraclean,
 # foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
@@ -57,9 +57,9 @@ F77 f77: f771$(exeext)
 
 # Tell GNU make to ignore these if they exist.
 .PHONY: F77 f77 f77.all.build f77.all.cross \
-  f77.start.encap f77.rest.encap f77.info f77.dvi \
+  f77.start.encap f77.rest.encap f77.dvi \
   f77.install-normal \
-  f77.install-common f77.install-info f77.install-man \
+  f77.install-common f77.install-man \
   f77.uninstall f77.mostlyclean f77.clean f77.distclean \
   f77.extraclean f77.maintainer-clean f77.rebuilt \
   f77.stage1 f77.stage2 f77.stage3 f77.stage4 \
@@ -148,12 +148,12 @@ f77.rest.encap:
 f77.tags: force
 	cd $(srcdir)/f; etags *.c *.h
 
-info:: $(srcdir)/f/g77.info
+info:: $(docobjdir)/g77.info
 dvi:: f/g77.dvi
 generated-manpages:: $(srcdir)/f/g77.1
 
 # g77 documentation.
-$(srcdir)/f/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
+$(docobjdir)/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 		$(srcdir)/f/ffe.texi $(srcdir)/f/invoke.texi \
 		$(srcdir)/f/news.texi  $(srcdir)/f/intdoc.texi \
 		$(srcdir)/f/root.texi $(srcdir)/doc/include/fdl.texi \
@@ -161,8 +161,8 @@ $(srcdir)/f/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 		$(srcdir)/doc/include/funding.texi \
 		$(srcdir)/doc/include/gcc-common.texi
 	if [ x$(BUILD_INFO) = xinfo ]; then \
-	  rm -f $(srcdir)/f/g77.info-*; \
-	  cd $(srcdir)/f && $(MAKEINFO) -I../doc/include -o g77.info g77.texi; \
+	  rm -f $(@)*; \
+	  cd $(srcdir)/f && $(MAKEINFO) -I../doc/include -o $@ g77.texi; \
 	else true; fi
 
 f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
@@ -270,23 +270,7 @@ f77.install-common: installdirs
 	  echo ''; \
 	else true; fi
 
-# $(INSTALL_DATA) might be a relative pathname, so we can't cd into srcdir
-# to do the install.  The sed rule was copied from stmp-int-hdrs.
-f77.install-info: f77.info installdirs
-	if [ -f $(srcdir)/f/g77.info ] ; then \
-	  rm -f $(DESTDIR)$(infodir)/g77.info*; \
-	  for f in $(srcdir)/f/g77.info*; do \
-	      realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
-	      $(INSTALL_DATA) $$f $(DESTDIR)$(infodir)/$$realfile; \
-	  done; \
-	  chmod a-x $(DESTDIR)$(infodir)/g77.info*; \
-	else true; fi
-	@if [ -f $(srcdir)/f/g77.info ] ; then \
-	  if $(SHELL) -c 'install-info --version | sed 1q | fgrep -s -v -i debian' >/dev/null 2>&1; then \
-	    echo " install-info --info-dir=$(DESTDIR)$(infodir) $(DESTDIR)$(infodir)/g77.info"; \
-	    install-info --info-dir=$(DESTDIR)$(infodir) $(DESTDIR)$(infodir)/g77.info || : ; \
-	  else : ; fi; \
-	else : ; fi
+install-info:: $(DESTDIR)$(infodir)/g77.info
 
 f77.install-man: $(GENERATED_MANPAGES) installdirs
 	-if [ -f f771$(exeext) ] ; then \
