@@ -1,3 +1,17 @@
+2003-01-28  Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>	
+	Backport patches
+	
+  2002-10-04  Loren J. Rittle  <ljrittle@acm.org>
+
+	  * gcc/ginclude/stddef.h: Support the FreeBSD 5 typedef system.
+
+  2002-08-01  Stan Shebs  <shebs@apple.com>
+	      Andreas Tobler  <toa@pop.agri.ch>
+
+	  * ginclude/stddef.h (_BSD_SIZE_T_DEFINED_): Define if not defined,
+	  plays nice with Darwin headers.
+	  (_BSD_RUNE_T_DEFINED_): Likewise.
+	
 2003-01-27  Gabriel Dos_Reis  <gdosreis@sophia.inria.fr>
 	
 	PR objc/9267
