@@ -1,5 +1,9 @@
 Wed May 13 17:38:35 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* combine.c (simplify_comparison, case AND): Don't commute AND
+	with SUBREG if constant is whole mode and don't do if lowpart
+	and not WORD_REGISTER_OPERATIONS.
+
 	* expmed.c (expand_mult): Use 0 as add_target if should preserve
 	subexpressions.
 
