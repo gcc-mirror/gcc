@@ -250,7 +250,7 @@ open_file (pfile, filename)
   /* Don't reopen an idempotent file.  */
   if (DO_NOT_REREAD (file))
     return file;
-      
+
   /* Don't reopen one which is already loaded.  */
   if (file->buffer != NULL)
     return file;
@@ -276,7 +276,7 @@ open_file (pfile, filename)
       /* For DJGPP redirected input is opened in text mode. Change it
          to binary mode.  */
       if (! isatty (file->fd))
-        setmode (file->fd, O_BINARY);
+	setmode (file->fd, O_BINARY);
 #endif
     }
   else
@@ -520,7 +520,7 @@ cpp_included (pfile, fname)
       nd = splay_tree_lookup (pfile->all_include_files, (splay_tree_key) fname);
       return (nd && nd->value);
     }
-      
+
   /* Search directory path for the file.  */
   name = (char *) alloca (strlen (fname) + pfile->max_include_len + 2);
   for (path = CPP_OPTION (pfile, quote_include); path; path = path->next)
@@ -712,7 +712,7 @@ _cpp_compare_file_date (pfile, header)
      const cpp_token *header;
 {
   struct include_file *inc = find_include_file (pfile, header, 0);
-  
+
   if (inc == NULL || inc == NO_INCLUDE_PATH)
     return -1;
 
@@ -721,7 +721,7 @@ _cpp_compare_file_date (pfile, header)
       close (inc->fd);
       inc->fd = -1;
     }
-    
+
   return inc->st.st_mtime > pfile->buffer->inc->st.st_mtime;
 }
 
@@ -936,7 +936,7 @@ read_name_map (pfile, dirname)
 	      ptr->map_to[dirlen] = '/';
 	      strcpy (ptr->map_to + dirlen + 1, to);
 	      free (to);
-	    }	      
+	    }
 
 	  ptr->map_next = map_list_ptr->map_list_map;
 	  map_list_ptr->map_list_map = ptr;
@@ -947,13 +947,13 @@ read_name_map (pfile, dirname)
 	}
       fclose (f);
     }
-  
+
   /* Add this information to the cache.  */
   map_list_ptr->map_list_next = CPP_OPTION (pfile, map_list);
   CPP_OPTION (pfile, map_list) = map_list_ptr;
 
   return map_list_ptr->map_list_map;
-}  
+}
 
 /* Remap an unsimplified path NAME based on the file_name_map (if any)
    for LOC.  */
@@ -978,10 +978,10 @@ remap_filename (pfile, name, loc)
       if (! loc->name_map)
 	return name;
     }
-  
+
   /* This works since NAME has not been simplified yet.  */
   from = name + loc->len + 1;
-  
+
   for (map = loc->name_map; map; map = map->map_next)
     if (!strcmp (map->map_from, from))
       return map->map_to;
@@ -1002,7 +1002,7 @@ remap_filename (pfile, name, loc)
   memcpy (dir, name, p - name);
   dir[p - name] = '\0';
   from = p + 1;
-  
+
   for (map = read_name_map (pfile, dir); map; map = map->map_next)
     if (! strcmp (map->map_from, from))
       return map->map_to;
@@ -1052,7 +1052,7 @@ remove_component_p (path)
    nonzero if an error occurred when using stat () or lstat ().  */
 char *
 _cpp_simplify_pathname (path)
-    char *path;
+     char *path;
 {
 #ifndef VMS
   char *from, *to;
@@ -1068,7 +1068,7 @@ _cpp_simplify_pathname (path)
   /* Convert all backslashes to slashes.  */
   for (from = path; *from; from++)
     if (*from == '\\') *from = '/';
-    
+
   /* Skip over leading drive letter if present.  */
   if (ISALPHA (path[0]) && path[1] == ':')
     from = to = &path[2];
@@ -1077,7 +1077,7 @@ _cpp_simplify_pathname (path)
 #else
   from = to = path;
 #endif
-    
+
   /* Remove redundant leading /s.  */
   if (*from == '/')
     {
@@ -1152,7 +1152,7 @@ _cpp_simplify_pathname (path)
       if (move_base)
 	base = to;
     }
-    
+
   /* Change the empty string to "." so that it is not treated as stdin.
      Null terminate.  */
   if (to == path)

@@ -400,8 +400,8 @@ _cpp_handle_directive (pfile, indented)
 	 requested to expand comments into macros, then re-enable
 	 saving of comments.  */
       if (dir == &dtable[T_DEFINE])
-        pfile->state.save_comments =
-          ! CPP_OPTION (pfile, discard_comments_in_macro_exp);
+	pfile->state.save_comments =
+	  ! CPP_OPTION (pfile, discard_comments_in_macro_exp);
 
       pfile->directive = dir;
       (*pfile->directive->handler) (pfile);
@@ -514,7 +514,7 @@ static void
 do_undef (pfile)
      cpp_reader *pfile;
 {
-  cpp_hashnode *node = lex_macro_node (pfile);  
+  cpp_hashnode *node = lex_macro_node (pfile);
 
   /* 6.10.3.5 paragraph 2: [#undef] is ignored if the specified identifier
      is not currently defined as a macro name.  */
@@ -787,7 +787,7 @@ do_line (pfile)
 		 "\"%s\" after #line is not a positive integer",
 		 cpp_token_as_text (pfile, token));
       return;
-    }      
+    }
 
   if (CPP_PEDANTIC (pfile) && (new_lineno == 0 || new_lineno > cap))
     cpp_error (pfile, DL_PEDWARN, "line number out of range");
@@ -839,7 +839,7 @@ do_linemarker (pfile)
       cpp_error (pfile, DL_ERROR, "\"%s\" after # is not a positive integer",
 		 cpp_token_as_text (pfile, token));
       return;
-    }      
+    }
 
   token = cpp_get_token (pfile);
   if (token->type == CPP_STRING)
@@ -1112,7 +1112,7 @@ do_pragma_once (pfile)
      cpp_reader *pfile;
 {
   cpp_error (pfile, DL_WARNING, "#pragma once is obsolete");
- 
+
   if (pfile->buffer->prev == NULL)
     cpp_error (pfile, DL_WARNING, "#pragma once in main file");
   else
@@ -1187,7 +1187,7 @@ do_pragma_dependency (pfile)
 {
   const cpp_token *header;
   int ordering;
- 
+
   header = parse_include (pfile);
   if (!header)
     return;
@@ -1664,7 +1664,7 @@ do_assert (pfile)
 {
   struct answer *new_answer;
   cpp_hashnode *node;
-  
+
   node = parse_assertion (pfile, &new_answer, T_ASSERT);
   if (node)
     {
@@ -1698,7 +1698,7 @@ do_unassert (pfile)
 {
   cpp_hashnode *node;
   struct answer *answer;
-  
+
   node = parse_assertion (pfile, &answer, T_UNASSERT);
   /* It isn't an error to #unassert something that isn't asserted.  */
   if (node && node->type == NT_ASSERTION)
@@ -1739,7 +1739,7 @@ cpp_define (pfile, str)
   char *buf, *p;
   size_t count;
 
-  /* Copy the entire option so we can modify it. 
+  /* Copy the entire option so we can modify it.
      Change the first "=" in the string to a space.  If there is none,
      tack " 1" on the end.  */
 
@@ -1794,7 +1794,7 @@ cpp_unassert (pfile, str)
      const char *str;
 {
   handle_assertion (pfile, str, T_UNASSERT);
-}  
+}
 
 /* Common code for cpp_assert (-A) and cpp_unassert (-A-).  */
 static void

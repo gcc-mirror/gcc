@@ -150,7 +150,7 @@ parse_number (pfile, tok)
 	  || (base == 16 && (c == 'P' || c == 'p')
 	      && p+1 < end && (p[1] == '+' || p[1] == '-')))
 	SYNTAX_ERROR ("floating point numbers are not valid in #if");
-  
+
       /* Determine the suffix. l means long, and u means unsigned.
 	 See the suffix tables, above.  */
       switch (end - p)
@@ -177,7 +177,7 @@ parse_number (pfile, tok)
 	cpp_error (pfile, DL_PEDWARN,
 		   "too many 'l' suffixes in integer constant");
     }
-  
+
   if (base <= largest_digit)
     cpp_error (pfile, DL_PEDWARN,
 	       "integer constant contains digits beyond the radix");
@@ -491,7 +491,7 @@ static const struct operator
     top->value = PSH (pfile, v1, unsigned1, v2);
 
 /* Parse and evaluate a C expression, reading from PFILE.
-   Returns the truth value of the expression.  
+   Returns the truth value of the expression.
 
    The implementation is an operator precedence parser, i.e. a
    bottom-up parser, using a stack for not-yet-reduced tokens.
@@ -631,7 +631,7 @@ _cpp_parse_expr (pfile)
       /* Check for and handle stack overflow.  */
       if (++top == pfile->op_limit)
 	top = _cpp_expand_op_stack (pfile);
-      
+
       top->op = op.op;
     }
 

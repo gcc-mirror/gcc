@@ -1,3 +1,17 @@
+2002-05-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cpperror.c: Fix formatting.
+	* cppexp.c: Likewise.
+	* cppfiles.c: Likewise.
+	* cpphash.c: Likewise.
+	* cpphash.h: Likewise.
+	* cppinit.c: Likewise.
+	* cpplex.c: Likewise.
+	* cpplib.c: Likewise.
+	* cppmacro.c: Likewise.
+	* cppmain.c: Likewise.
+	* cppspec.c: Likewise.
+
 2002-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* combine.c (force_to_mode): Use gen_int_mode.

@@ -37,7 +37,7 @@ alloc_node (table)
      hash_table *table;
 {
   cpp_hashnode *node;
-  
+
   node = (cpp_hashnode *) obstack_alloc (&table->pfile->hash_ob,
 					 sizeof (cpp_hashnode));
   memset ((PTR) node, 0, sizeof (cpp_hashnode));
