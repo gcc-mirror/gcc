@@ -76,7 +76,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    INVOKE__main is defined.  This has the additional effect of forcing cc1
    to switch to the .text section.  */
 static void __do_global_ctors_aux ();
-void __do_global_ctors () { __do_global_ctors_aux (); }
+void __do_global_ctors ()
+{
+#ifdef INVOKE__main  /* If __main won't actually call __do_global_ctors
+			then it doesn't matter what's inside the function.
+			The inside of __do_global_ctors_aux is called
+			automatically in that case.
+			And the Alliant fx2800 linker crashes
+			on this reference.  So prevent the crash.  */
+  __do_global_ctors_aux ();
+#endif
+}
 
 asm (INIT_SECTION_ASM_OP);	/* cc1 doesn't know that we are switching! */
 
