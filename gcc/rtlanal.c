@@ -2462,6 +2462,8 @@ may_trap_p (x)
 
       /* Memory ref can trap unless it's a static var or a stack slot.  */
     case MEM:
+      if (MEM_NOTRAP_P (x))
+	return 0;
       return rtx_addr_can_trap_p (XEXP (x, 0));
 
       /* Division by a non-constant might trap.  */
