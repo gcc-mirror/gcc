@@ -1,4 +1,6 @@
 2004-07-06 Jan Beulich <jbeulich@novell.com>
+
+	* varasm.c (asm_output_bss): Don't declare unless BSS_SECTION_ASM_OP.
                                                                                 
         * expmed.c (emit_store_flag): Also special-case double-word
         (in-)equality comparison against -1.
