@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1529,13 +1529,22 @@ package body Sem_Cat is
       if Is_Remote_Access_To_Subprogram_Type (E)
         and then not Is_Remote_Access_To_Subprogram_Type (S)
       then
-         Error_Msg_N ("incorrect conversion of remote operand", N);
+         Error_Msg_N
+           ("incorrect conversion of remote operand to local type", N);
+         return;
+
+      elsif not Is_Remote_Access_To_Subprogram_Type (E)
+        and then Is_Remote_Access_To_Subprogram_Type (S)
+      then
+         Error_Msg_N
+           ("incorrect conversion of local operand to remote type", N);
          return;
 
       elsif Is_Remote_Access_To_Class_Wide_Type (E)
         and then not Is_Remote_Access_To_Class_Wide_Type (S)
       then
-         Error_Msg_N ("incorrect conversion of remote operand", N);
+         Error_Msg_N
+           ("incorrect conversion of remote operand to local type", N);
          return;
       end if;
 

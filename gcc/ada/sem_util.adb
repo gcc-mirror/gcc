@@ -6770,16 +6770,20 @@ package body Sem_Util is
                Found_Scope := Scope (Found_Scope);
 
                exit when Expec_Scope = Standard_Standard
-                           or else
-                         Found_Scope = Standard_Standard
-                           or else
-                         not Comes_From_Source (Expec_Scope)
-                           or else
-                         not Comes_From_Source (Found_Scope);
+                 or else Found_Scope = Standard_Standard
+                 or else not Comes_From_Source (Expec_Scope)
+                 or else not Comes_From_Source (Found_Scope);
             end loop;
          end;
 
-         Error_Msg_NE ("expected}!", Expr, Expec_Type);
+         if Is_Record_Type (Expec_Type)
+           and then Present (Corresponding_Remote_Type (Expec_Type))
+         then
+            Error_Msg_NE ("expected}!", Expr,
+                          Corresponding_Remote_Type (Expec_Type));
+         else
+            Error_Msg_NE ("expected}!", Expr, Expec_Type);
+         end if;
 
          if Is_Entity_Name (Expr)
            and then Is_Package (Entity (Expr))
