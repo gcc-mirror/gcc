@@ -3435,9 +3435,10 @@ groktypename_in_parm_context (typename)
 int debug_temp_inits = 1;
 
 tree
-start_decl (declarator, declspecs, initialized)
+start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
      tree declarator, declspecs;
      int initialized;
+     tree attributes, prefix_attributes;
 {
   register tree decl = grokdeclarator (declarator, declspecs,
 				       NORMAL, initialized);
@@ -3530,6 +3531,9 @@ start_decl (declarator, declspecs, initialized)
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
     gen_aux_info_record (decl, 0, 0, TYPE_ARG_TYPES (TREE_TYPE (decl)) != 0);
+
+  /* Set attributes here so if duplicate decl, will have proper attributes.  */
+  decl_attributes (decl, attributes, prefix_attributes);
 
   /* Add this decl to the current binding level.
      TEM may equal DECL or it may be a previous decl of the same name.  */
