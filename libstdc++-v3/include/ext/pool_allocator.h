@@ -48,6 +48,7 @@
 #define _POOL_ALLOCATOR_H 1
 
 #include <bits/c++config.h>
+#include <cstdlib>
 #include <new>
 #include <bits/functexcept.h>
 #include <bits/atomicity.h>
