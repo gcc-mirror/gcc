@@ -1,3 +1,8 @@
+2004-02-27  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/os/aix/atomicity.h: Use __gnu_cxx namespace. Remove
+	static, and inline keyworks.
+
 2004-02-27  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (num_get<>::_M_extract_float,
