@@ -147,11 +147,10 @@ const char *rs6000_debug_name;
 int rs6000_debug_stack;		/* debug stack applications */
 int rs6000_debug_arg;		/* debug argument handling */
 
-/* A copy of V2SI_type_node to be used as an opaque type.  */
+/* Opaque types.  */
 static GTY(()) tree opaque_V2SI_type_node;
-
-/* Same, but for V2SF.  */
 static GTY(()) tree opaque_V2SF_type_node;
+static GTY(()) tree opaque_p_V2SI_type_node;
 
 const char *rs6000_traceback_name;
 static enum {
@@ -5645,6 +5644,7 @@ rs6000_init_builtins ()
 {
   opaque_V2SI_type_node = copy_node (V2SI_type_node);
   opaque_V2SF_type_node = copy_node (V2SF_type_node);
+  opaque_p_V2SI_type_node = build_pointer_type (opaque_V2SI_type_node);
 
   if (TARGET_SPE)
     spe_init_builtins ();
@@ -5689,7 +5689,6 @@ spe_init_builtins ()
   tree endlink = void_list_node;
   tree puint_type_node = build_pointer_type (unsigned_type_node);
   tree pushort_type_node = build_pointer_type (short_unsigned_type_node);
-  tree pv2si_type_node = build_pointer_type (opaque_V2SI_type_node);
   struct builtin_description *d;
   size_t i;
 
@@ -5746,7 +5745,7 @@ spe_init_builtins ()
   tree void_ftype_v2si_pv2si_int
     = build_function_type (void_type_node,
 			   tree_cons (NULL_TREE, opaque_V2SI_type_node,
-				      tree_cons (NULL_TREE, pv2si_type_node,
+				      tree_cons (NULL_TREE, opaque_p_V2SI_type_node,
 						 tree_cons (NULL_TREE,
 							    integer_type_node,
 							    endlink))));
@@ -5754,7 +5753,7 @@ spe_init_builtins ()
   tree void_ftype_v2si_pv2si_char
     = build_function_type (void_type_node,
 			   tree_cons (NULL_TREE, opaque_V2SI_type_node,
-				      tree_cons (NULL_TREE, pv2si_type_node,
+				      tree_cons (NULL_TREE, opaque_p_V2SI_type_node,
 						 tree_cons (NULL_TREE,
 							    char_type_node,
 							    endlink))));
@@ -5769,7 +5768,7 @@ spe_init_builtins ()
 
   tree v2si_ftype_pv2si_int
     = build_function_type (opaque_V2SI_type_node,
-			   tree_cons (NULL_TREE, pv2si_type_node,
+			   tree_cons (NULL_TREE, opaque_p_V2SI_type_node,
 				      tree_cons (NULL_TREE, integer_type_node,
 						 endlink)));
 
@@ -14044,6 +14043,7 @@ is_ev64_opaque_type (type)
   return (TARGET_SPE
 	  && (type == opaque_V2SI_type_node
 	      || type == opaque_V2SF_type_node
+	      || type == opaque_p_V2SI_type_node
 	      || (TREE_CODE (type) == VECTOR_TYPE
 		  && TYPE_NAME (type)
 		  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
