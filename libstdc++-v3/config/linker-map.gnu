@@ -102,6 +102,10 @@ GLIBCXX_3.4 {
     # operator delete[](void*, std::nothrow_t const&)
     _ZdaPvRKSt9nothrow_t;
 
+    # std::basic_iostream constructors, destructors
+    _ZNSdC*;
+    _ZNSdD*;
+
     # std::locale destructors
     _ZNSt6localeD*;
 	

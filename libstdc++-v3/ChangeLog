@@ -1,3 +1,7 @@
+2005-02-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/linker-map.gnu (GLIBCXX_3.4): Add _ZNSdC* and _ZNSdD*.
+
 2005-02-02  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/19642
