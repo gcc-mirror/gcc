@@ -4,7 +4,7 @@
 
 @c Common values used in the GCC manuals:
 
-@set version-GCC 3.1
+@set version-GCC 3.2
 
 @c Common macros to support generating man pages:
 

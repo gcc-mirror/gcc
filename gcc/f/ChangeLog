@@ -1,3 +1,7 @@
+Sun Aug  4 16:48:53 2002  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* root.texi (version-gcc): Increase to 3.2.
+
 2002-07-25  Release Manager
 
 	* GCC 3.1.1 Released.
