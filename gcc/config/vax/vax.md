@@ -1464,12 +1464,14 @@
   ""
   "j%C0 %l1") ; %C0 negates condition
 
-;; Recognize jbs, jlbs, jbc and jlbc instructions.
+;; Recognize jbs, jlbs, jbc and jlbc instructions.  Note that the operand
+;; if this insn is SImode in the hardware.  However, if it is memory,
+;; we use QImode.  So we can't allow the memory address to be indexed.
 
 (define_insn ""
   [(set (pc)
 	(if_then_else
-	 (ne (zero_extract:SI (match_operand:QI 0 "nonimmediate_operand" "g,g")
+	 (ne (zero_extract:SI (match_operand:QI 0 "reg_or_nxmem_operand" "g,g")
 			      (const_int 1)
 			      (match_operand:SI 1 "general_operand" "I,g"))
 	     (const_int 0))
@@ -1483,7 +1485,7 @@
 (define_insn ""
   [(set (pc)
 	(if_then_else
-	 (eq (zero_extract:SI (match_operand:QI 0 "nonimmediate_operand" "g,g")
+	 (eq (zero_extract:SI (match_operand:QI 0 "reg_or_nxmem_operand" "g,g")
 			      (const_int 1)
 			      (match_operand:SI 1 "general_operand" "I,g"))
 	     (const_int 0))
