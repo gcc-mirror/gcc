@@ -242,6 +242,8 @@ public abstract class HttpURLConnection extends URLConnection
 
   /**
    * This error code indicates that some sort of server error occurred.
+   *
+   * @deprecated
    */
   public static final int HTTP_SERVER_ERROR    = 500;
 

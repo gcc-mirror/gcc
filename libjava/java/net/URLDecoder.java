@@ -77,6 +77,8 @@ public class URLDecoder
    * @param s the String to convert
    *
    * @return the converted String
+   *
+   * @deprecated
    */
   public static String decode(String s)
   {

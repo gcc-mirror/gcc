@@ -426,17 +426,21 @@ public class MulticastSocket extends DatagramSocket
    * @exception IOException If an error occurs
    * @exception SecurityException If a security manager exists and its
    * checkConnect or checkMulticast method doesn't allow the operation
+   *
+   * @deprecated
    */
   public synchronized void send(DatagramPacket p, byte ttl) throws IOException
   {
     SecurityManager s = System.getSecurityManager();
     if (s != null)
       {
-	InetAddress addr = p.getAddress();
-	if (addr.isMulticastAddress())
-	  s.checkMulticast(addr, ttl);
-	else
-	  s.checkConnect(addr.getHostAddress(), p.getPort());
+        InetAddress addr = p.getAddress();
+        if (addr.isMulticastAddress())
+          s.checkPermission (new SocketPermission
+                             (addr.getHostName () + p.getPort (),
+                              "accept,connect"));
+        else
+          s.checkConnect(addr.getHostAddress(), p.getPort());
       }
 
     int oldttl = impl.getTimeToLive();
