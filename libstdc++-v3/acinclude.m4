@@ -90,7 +90,9 @@ dnl Fool anybody using AC_PROG_CXX.
 AC_PROVIDE([AC_PROG_CXX])
 # Use CXX_libstdcxx so that we do not cause CXX to be cached with the
 # flags that come in CXX while configuring libstdc++.  They're different
-# from those used for all other target libraries.
+# from those used for all other target libraries.  If CXX is set in
+# the environment, respect that here.
+CXX_libstdcxx=$CXX
 AC_CHECK_PROGS(CXX_libstdcxx, "$CXX" "$CCC" c++ g++ gcc CC cxx cc++, gcc)
 CXX=$CXX_libstdcxx
 AC_SUBST(CXX)
