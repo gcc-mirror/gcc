@@ -1,3 +1,9 @@
+2002-05-03  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/6549.
+	* include/bits/fstream.tcc (filebuf::_M_underflow_common): Revert.
+	* testsuite/27_io/narrow_stream_objects.cc (test07): Add.
+	
 2002-05-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* config/os/irix/irix5.2/bits/ctype_noninline.h (classic_table):
