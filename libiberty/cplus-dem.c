@@ -2883,6 +2883,8 @@ demangle_fund_type (work, mangled, result)
 {
   int done = 0;
   int success = 1;
+  char buf[10];
+  int dec = 0;
   string btype;
   type_kind_t tk = tk_integral;
 
@@ -3000,6 +3002,28 @@ demangle_fund_type (work, mangled, result)
 	  success = 0;
 	  break;
 	}
+    case 'I':
+      ++(*mangled);
+      if (**mangled == '_')
+	{
+	  int i;
+	  ++(*mangled);
+	  for (i = 0; **mangled != '_'; ++(*mangled), ++i)
+	    buf[i] = **mangled;
+	  buf[i] = '\0';
+	  ++(*mangled);
+	}
+      else
+	{
+	  strncpy (buf, *mangled, 2);
+	  *mangled += 2;
+	}
+      sscanf (buf, "%x", &dec); 
+      sprintf (buf, "int%i_t", dec);
+      APPEND_BLANK (result);
+      string_append (result, buf);
+      break;
+
       /* fall through */
       /* An explicit type, such as "6mytype" or "7integer" */
     case '0':
