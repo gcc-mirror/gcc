@@ -1,5 +1,8 @@
 1999-09-02  Tom Tromey  <tromey@cygnus.com>
 
+	* include/java-array.h (jobjectArrayjchar): Removed unused
+	declaration.
+
 	* java/lang/natClassLoader.cc (_Jv_WaitForState): Call
 	_Jv_PrepareCompiledClass while holding class mutex.
 
