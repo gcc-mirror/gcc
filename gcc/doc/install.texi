@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.8 2001/05/28 07:55:13 gerald Exp $
+@comment $Id: install.texi,v 1.9 2001/05/31 08:15:15 gerald Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -146,10 +146,11 @@ The installation procedure itself is broken into five steps.
 @end enumerate
 @end ifnotinfo
 
-Please note that GCC does not support `@code{make uninstall}' and probably
+Please note that GCC does not support @samp{make uninstall} and probably
 won't do so in the near future as this would open a can of worms. Instead, 
 we suggest that you install GCC into a directory of its own and simply
-remove that directory when you do not need that specific version of GCC any longer. 
+remove that directory when you do not need that specific version of GCC
+any longer. 
 
 @html
 <hr>
@@ -232,45 +233,49 @@ Like most GNU software, GCC must be configured before it can be built.
 This document describes the recommended configuration procedure
 for both native and cross targets.
 
-We use @emph{srcdir} to refer to the toplevel source directory for
-GCC; we use @emph{objdir} to refer to the toplevel build/object directory.
+We use @var{srcdir} to refer to the toplevel source directory for
+GCC; we use @var{objdir} to refer to the toplevel build/object directory.
+
+If you obtained the sources via CVS, @var{srcdir} must refer to the top
+@file{gcc} directory, the one where the @file{MAINTAINERS} can be found,
+and not its @file{gcc} subdirectory, otherwise the build will fail.
 
 First, we @strong{highly} recommend that GCC be built into a
 separate directory than the sources which does @strong{not} reside
 within the source tree.  This is how we generally build GCC; building
-where @emph{srcdir} == @emph{objdir} should still work, but doesn't
-get extensive testing; building where @emph{objdir} is a subdirectory
-of @emph{srcdir} is unsupported.
+where @var{srcdir} == @var{objdir} should still work, but doesn't
+get extensive testing; building where @var{objdir} is a subdirectory
+of @var{srcdir} is unsupported.
 
-Second, when configuring a native system, either ``@command{cc}'' or
-``@command{gcc}'' must be in your path or you must set @command{CC} in
+Second, when configuring a native system, either @command{cc} or
+@command{gcc} must be in your path or you must set @env{CC} in
 your environment before running configure.  Otherwise the configuration
 scripts may fail.
 
 To configure GCC:
 
 @example
-   % mkdir @emph{objdir}
-   % cd @emph{objdir}
-   % @emph{srcdir}/configure @strong{[target] [options]}
+   % mkdir @var{objdir}
+   % cd @var{objdir}
+   % @var{srcdir}/configure @strong{[target] [options]}
 @end example
 
 
 @strong{target specification}
 @itemize @bullet
 @item
-GCC has code to correctly determine the correct value for @strong{target}
+GCC has code to correctly determine the correct value for @var{target}
 for nearly all native systems.  Therefore, we highly recommend you not 
 provide a configure target when configuring a native compiler.
 
 @item
-@strong{target} must be specified as @option{--target=}@emph{target}
+@var{target} must be specified as @option{--target=}@var{target}
 when configuring a cross compiler; examples of valid targets would be 
 i960-rtems, m68k-coff, sh-elf, etc.
 
 @item
-Specifying just @strong{target} instead of @option{--target=}@emph{target}
-implies that the host defaults to @strong{target}.
+Specifying just @var{target} instead of @option{--target=}@var{target}
+implies that the host defaults to @var{target}.
 @end itemize
 
 
@@ -281,93 +286,104 @@ GCC.  A partial list of supported @option{options}:
 
 @itemize @bullet
 @item
-@option{--prefix=}@emph{dirname} @minus{}@minus{} Specify the toplevel installation
+@option{--prefix=}@var{dirname} @minus{}@minus{} Specify the toplevel installation
 directory.  This is the recommended way to install the tools into a directory
 other than the default.  The toplevel installation directory defaults to
 @code{/usr/local}.
 
-We @strong{highly} recommend against @emph{dirname} being the same or a
-subdirectory of @emph{objdir} or vice versa.
+We @strong{highly} recommend against @var{dirname} being the same or a
+subdirectory of @var{objdir} or vice versa.
 
 These additional options control where certain parts of the distribution
 are installed.  Normally you should not need to use these options.
 @itemize @bullet
 @item
-@option{--with-local-prefix=}@emph{dirname} @minus{}@minus{} Specify the installation
-directory for local include files.  The default is @code{/usr/local}.
+@option{--with-local-prefix=}@var{dirname} @minus{}@minus{} Specify the installation
+directory for local include files.  The default is @file{/usr/local}.
 
 @item
-@option{--with-gxx-include-dir=}@emph{dirname} @minus{}@minus{} Specify the installation
-directory for g++ header files.  The default is @command{/usr/local/include/g++}.
+@option{--with-gxx-include-dir=}@var{dirname} @minus{}@minus{} Specify
+the installation directory for g++ header files.  The default is
+@file{/usr/local/include/g++}.
   
 @end itemize
 
 @item
-@option{--enable-shared} @minus{}@minus{} Build shared versions of the C++ runtime
-libraries if supported. This is the default on most systems. Use @option{--disable-shared} 
-for static libraries. Note that up to the gcc version 2.95.x series, static
-libraries were the default on all systems.
+@option{--enable-shared} @minus{}@minus{} Build shared versions of the
+C++ runtime libraries if supported. This is the default on most
+systems. Use @option{--disable-shared} for static libraries. Note that
+up to the gcc version 2.95.x series, static libraries were the default
+on all systems.
 
 @item
 @html
 <a name="with-gnu-as">@option{--with-gnu-as}</a>
 @end html
- @minus{}@minus{} Specify that the compiler should assume that the
-assembler it finds is the GNU assembler. However, this does not modify the rules to find an
-assembler and will result in confusion if found assembler is not actually the GNU assembler.
-If you have more than one assembler installed on your system, you may want to use this option
-in connection with @option{--with-as=/path/to/gas}.
+@minus{}@minus{} Specify that the compiler should assume that the
+assembler it finds is the GNU assembler. However, this does not modify
+the rules to find an assembler and will result in confusion if found
+assembler is not actually the GNU assembler.  If you have more than one
+assembler installed on your system, you may want to use this option in
+connection with @option{--with-as=@file{/path/to/gas}}.
 
 @item
-@option{--with-as=@emph{/path/to/as}} @minus{}@minus{} Specify that the compiler should use the
-assembler pointed to by @emph{pathname}, rather than the one found by the standard rules to
-find an assembler, which are:
+@option{--with-as=@file{/path/to/as}} @minus{}@minus{} Specify that the
+compiler should use the assembler pointed to by @var{pathname}, rather
+than the one found by the standard rules to find an assembler, which
+are:
 @itemize @bullet
 @item
-Check the @emph{$exec_prefix/lib/gcc-lib/$target/$version} directory, where @emph{$exec_prefix}
-defaults to @emph{$prefix} which defaults to @file{/usr/local} unless overridden by the 
-@option{--prefix=/pathname} switch described above. @emph{$target} is the target system triple, 
-such as @emph{sparc-sun-solaris2.7}, and @emph{$version} denotes the GCC version, such as 2.95.2.
+Check the
+@file{@var{exec_prefix}/lib/gcc-lib/@var{target}/@var{version}}
+directory, where @var{exec_prefix} defaults to @var{prefix} which
+defaults to @file{/usr/local} unless overridden by the
+@option{--prefix=/pathname} switch described above. @var{target} is the
+target system triple, such as @var{sparc-sun-solaris2.7}, and
+@var{version} denotes the GCC version, such as 2.95.2.
 @item
-Check operating system specific directories (e.g. @file{/usr/ccs/bin} on Sun Solaris).
+Check operating system specific directories (e.g. @file{/usr/ccs/bin} on
+Sun Solaris).
 @end itemize
-Note that these rules do not check for the value of @emph{$PATH}. You may want to use 
-@option{--with-as} if no assembler is installed in the directories listed above, or if you have
-multiple assemblers installed and want to choose one that is not found by the above rules.
+Note that these rules do not check for the value of @env{PATH}. You may
+want to use @option{--with-as} if no assembler is installed in the
+directories listed above, or if you have multiple assemblers installed
+and want to choose one that is not found by the above rules.
 
 @item
 @html
 <a name="with-gnu-ld">@option{--with-gnu-ld}</a>
 @end html
- @minus{}@minus{} Same as @uref{#with-gnu-as,,@option{--with-gnu-as}} but for linker.
+ @minus{}@minus{} Same as @uref{#with-gnu-as,,@option{--with-gnu-as}}
+but for linker.
 
 
 @item
-@option{--with-ld=@emph{/path/to/ld}} @minus{}@minus{} Same as @option{--with-as}, but for the
-linker.
+@option{--with-ld=@file{/path/to/ld}} @minus{}@minus{} Same as
+@option{--with-as}, but for the linker.
 
 @item
-@option{--with-stabs} @minus{}@minus{} Specify that stabs debugging information should be used
-instead of whatever format the host normally uses.  Normally GCC uses the
-same debug format as the host system. 
+@option{--with-stabs} @minus{}@minus{} Specify that stabs debugging
+information should be used instead of whatever format the host normally
+uses.  Normally GCC uses the same debug format as the host system.
 
 @item
-@option{--enable-multilib} @minus{}@minus{} Specify that multiple target libraries
-should be built to support different target variants, calling conventions,
-etc.  This is the default. 
+@option{--enable-multilib} @minus{}@minus{} Specify that multiple target
+libraries should be built to support different target variants, calling
+conventions, etc.  This is the default.
 
 @item
-@option{--enable-threads} @minus{}@minus{} Specify that the target supports threads.
-This affects the Objective-C compiler and runtime library, and exception
-handling for other languages like C++ and Java.
+@option{--enable-threads} @minus{}@minus{} Specify that the target
+supports threads.  This affects the Objective-C compiler and runtime
+library, and exception handling for other languages like C++ and Java.
 
 @item
-@option{--enable-threads=}@emph{lib} @minus{}@minus{} Specify that @emph{lib} is the thread
-support library.  This affects the Objective-C compiler and runtime library,
-and exception handling for other languages like C++ and Java.
+@option{--enable-threads=}@var{lib} @minus{}@minus{} Specify that
+@var{lib} is the thread support library.  This affects the Objective-C
+compiler and runtime library, and exception handling for other languages
+like C++ and Java.
 
 @item
-@option{--with-cpu=}@emph{cpu} @minus{}@minus{} Specify which cpu variant the
+@option{--with-cpu=}@var{cpu} @minus{}@minus{} Specify which cpu variant the
 compiler should generate code for by default.  This is currently
 only supported on the some ports, specifically arm, powerpc, and
 SPARC. If configure does not recognize the model name (e.g. arm700,
@@ -375,13 +391,13 @@ SPARC. If configure does not recognize the model name (e.g. arm700,
 for a complete list of supported models.
 
 @item
-@option{--enable-target-optspace} @minus{}@minus{} Specify that target libraries
-should  be optimized for code space instead of code speed.  This is the
-default for the m32r platform.
+@option{--enable-target-optspace} @minus{}@minus{} Specify that target
+libraries should be optimized for code space instead of code speed.
+This is the default for the m32r platform.
 
 @item
-@option{--enable-cpp} @minus{}@minus{} Specify that a shell script which emulates
-traditional cpp functionality should be installed.
+@option{--enable-cpp} @minus{}@minus{} Specify that a shell script which
+emulates traditional cpp functionality should be installed.
 
 @item
 @option{--enable-cpplib} @minus{}@minus{} Specify that the functionality of
@@ -391,37 +407,38 @@ it is supported, it is not enabled by default, except for snapshots
 very close to November 2000.
 
 @item
-@option{--without-fast-fixincludes} @minus{}@minus{} Specify that the old, slower
-method of fixing the system header files should be used. 
+@option{--without-fast-fixincludes} @minus{}@minus{} Specify that the
+old, slower method of fixing the system header files should be used.
 EGCS 1.1.x and older releases default to the slow version. GCC 2.95 and
 newer releases will default to the fast version.
 
 @item
-@option{--enable-version-specific-runtime-libs} @minus{}@minus{} Specify that runtime
-libraries should be installed in the compiler specific subdirectory
-(@option{$@{libsubdir@}}) rather than the usual places.
-In addition, libstdc++'s include files will be installed in
-@option{$@{libsubdir@}/include/g++} unless you overruled it by using
-@option{--with-gxx-include-dir=}@emph{dirname}.
-Using this option is particularly useful if you intend to use several
-versions of GCC in parallel. This is currently supported by @option{libf2c}
-and @option{libstdc++}.
+@option{--enable-version-specific-runtime-libs} @minus{}@minus{} Specify
+that runtime libraries should be installed in the compiler specific
+subdirectory (@file{@var{libsubdir}}) rather than the usual places.  In
+addition, libstdc++'s include files will be installed in
+@file{@var{libsubdir}/include/g++} unless you overruled it by using
+@option{--with-gxx-include-dir=}@var{dirname}.  Using this option is
+particularly useful if you intend to use several versions of GCC in
+parallel. This is currently supported by @option{libf2c} and
+@option{libstdc++}.
 
 @item
-@option{--enable-languages=}@emph{lang1}@option{,}@emph{lang2}@option{,...}
-@minus{}@minus{} Specify that only a particular subset of compilers and their runtime libraries
-should be built. For a list of valid values for @emph{lang}@option{x} you can issue
-the following command in the @option{gcc} directory of your GCC source tree:@*
-@command{grep language= */config-lang.in}@*
-Currently, you can use any of the following: @code{c++}, @code{f77}, @code{java} and @code{objc}.
+@option{--enable-languages=}@var{lang1}@option{,}@var{lang2}@option{,...}
+@minus{}@minus{} Specify that only a particular subset of compilers and
+their runtime libraries should be built. For a list of valid values for
+@var{lang}@option{x} you can issue the following command in the
+@file{gcc} directory of your GCC source tree:@* @samp{grep language=
+*/config-lang.in}@* Currently, you can use any of the following:
+@code{c++}, @code{f77}, @code{java} and @code{objc}.
 @code{CHILL} is not currently maintained, and will almost
 certainly fail to compile.  Note that this switch does not work with
 EGCS 1.1.2 or older versions of egcs.  It is supported in GCC 2.95
 and newer versions.@*
-If you do not pass this flag, all languages available in the @code{gcc} sub-tree
-will be configured.  Re-defining LANGUAGES when calling @command{make bootstrap}
-@strong{*does not*} work anymore, as those language sub-directories might not have been
-configured!
+If you do not pass this flag, all languages available in the @file{gcc}
+sub-tree will be configured.  Re-defining LANGUAGES when calling
+@samp{make bootstrap} @strong{*does not*} work anymore, as those
+language sub-directories might not have been configured!
 
 @item
 @option{--disable-libgcj} @minus{}@minus{} Specify that the run-time libraries
@@ -436,31 +453,35 @@ configure.in so that libgcj is enabled by default on this platform,
 you may use @option{--enable-libgcj} to override the default.
 
 @item
-@option{--with-dwarf2} @minus{}@minus{} Specify that the compiler should use DWARF2
-debugging information as the default.
+@option{--with-dwarf2} @minus{}@minus{} Specify that the compiler should
+use DWARF2 debugging information as the default.
 @end itemize
 
 Some options which only apply to building cross compilers:
 @itemize @bullet
 @item
-@option{--with-headers=}@emph{dir} @minus{}@minus{} Specifies a directory which has
-target include files.
+@option{--with-headers=}@var{dir} @minus{}@minus{} Specifies a directory
+which has target include files.
 @emph{This options is required} when building a cross
-compiler, if @code{$@{prefix@}/$@{target@}/sys-include} doesn't pre-exist.
-These include files will be copied into the @code{gcc} install directory.
-Fixincludes will be run on these files to make them compatible with @command{gcc}.
+compiler, if @file{@var{prefix}/@var{target}/sys-include} doesn't pre-exist.
+These include files will be copied into the @file{gcc} install directory.
+Fixincludes will be run on these files to make them compatible with
+@command{gcc}.
 @item
-@option{--with-libs=}@emph{``dir1 dir2 ... dirN''} @minus{}@minus{} Specifies a list of
-directories which contain the target runtime libraries.  These libraries will
-be copied into the @code{gcc} install directory.
+@option{--with-libs=}@emph{``dir1 dir2 ... dirN''} @minus{}@minus{}
+Specifies a list of directories which contain the target runtime
+libraries.  These libraries will be copied into the @file{gcc} install
+directory.
 @item
-@option{--with-newlib} @minus{}@minus{} Specifies that ``newlib'' is being used as the target
-C library.   This causes @code{__eprintf} to be omitted from libgcc.a on the
-assumption that it will be provided by newlib.
+@option{--with-newlib} @minus{}@minus{} Specifies that ``newlib'' is
+being used as the target C library.  This causes @code{__eprintf} to be
+omitted from libgcc.a on the assumption that it will be provided by
+newlib.
 @end itemize
  
-Note that each @option{--enable} option has a corresponding @option{--disable} option and
-that each @option{--with} option has a corresponding @option{--without} option.
+Note that each @option{--enable} option has a corresponding
+@option{--disable} option and that each @option{--with} option has a
+corresponding @option{--without} option.
 
 @html
 <hr>
@@ -492,12 +513,12 @@ We @strong{highly} recommend that GCC be built using GNU make;
 other versions may work, then again they might not.
 
 (For example, many broken versions of make will fail if you use the
-recommended setup where @emph{objdir} is different from @emph{srcdir}.)
+recommended setup where @var{objdir} is different from @var{srcdir}.)
 
 
 @section Building a native compiler
 
-For a native build issue the command `@code{make bootstrap}'.  This 
+For a native build issue the command @samp{make bootstrap}.  This 
 will build the entire GCC system, which includes the following steps:
 
 @itemize @bullet
@@ -522,25 +543,25 @@ Build runtime libraries using the stage3 compiler from the previous step.
  
 @end itemize
 
-If you are short on disk space you might consider `@code{make
-bootstrap-lean}' instead.  This is identical to `@code{make
-bootstrap}' except that object files from the stage1 and
+If you are short on disk space you might consider @samp{make
+bootstrap-lean} instead.  This is identical to @samp{make
+bootstrap} except that object files from the stage1 and
 stage2 of the 3-stage bootstrap of the compiler are deleted as
 soon as they are no longer needed.
 
 
 If you want to save additional space during the bootstrap and in
 the final installation as well, you can build the compiler binaries
-without debugging information with ``@code{make CFLAGS='-O' LIBCFLAGS='-g
--O2' LIBCXXFLAGS='-g -O2 -fno-implicit-templates' bootstrap}''.  This will save
+without debugging information with @samp{make CFLAGS='-O' LIBCFLAGS='-g
+-O2' LIBCXXFLAGS='-g -O2 -fno-implicit-templates' bootstrap}.  This will save
 roughly 40% of disk space both for the bootstrap and the final installation.
 (Libraries will still contain debugging information.)
 
-If you used the flag @code{--enable-languages=...} to restrict
+If you used the flag @option{--enable-languages=...} to restrict
 the compilers to be built, only those you've actually enabled will be
 built. This will of course only build those runtime libraries, for
 which the particular compiler has been built.  Please note,
-that re-defining LANGUAGES when calling `@code{make bootstrap}'
+that re-defining LANGUAGES when calling @samp{make bootstrap}
 @strong{*does not*} work anymore!
 
 
@@ -559,7 +580,7 @@ native compiler.  You can then use the native GCC compiler to build the
 cross compiler.
 
 Assuming you have already installed a native copy of GCC and configured
-your cross compiler, issue the command `@code{make}', which performs the
+your cross compiler, issue the command @samp{make}, which performs the
 following steps:
 
 @itemize @bullet
@@ -584,9 +605,9 @@ Note that if an error occurs in any step the make process will exit.
 
 @section Building in parallel
 
-If you have a multiprocessor system you can use `@code{make bootstrap
-MAKE="make -j 2" -j 2}' or just `@code{make -j 2 bootstrap}'
-for GNU Make 3.79 and above instead of just `@code{make bootstrap}'
+If you have a multiprocessor system you can use @samp{make bootstrap
+MAKE="make -j 2" -j 2} or just @samp{make -j 2 bootstrap}
+for GNU Make 3.79 and above instead of just @samp{make bootstrap}
 when building GCC.  You can use a bigger number instead of two if
 you like.  In most cases, it won't help to use a number bigger than
 the number of processors in your machine.
@@ -666,7 +687,7 @@ well as the C++ runtime libraries.
 @section How can I run the test suite on selected tests?
 
 As a first possibility to cut down the number of tests that are run it is
-possible to use `@code{make check-gcc}' or `@code{make check-g++}'
+possible to use @samp{make check-gcc} or @samp{make check-g++}
 in the gcc subdirectory of the object directory. To further cut down the
 tests the following is possible:
 
@@ -686,8 +707,8 @@ matches 9805*.
 The *.exp files are located in the testsuite directories of the GCC
 source, the most important ones being compile.exp, execute.exp, dg.exp
 and old-deja.exp. To get a list of the possible *.exp files, pipe the
-output of `@code{make check}' into a file and look at the
-"@code{Running ...  .exp}" lines.
+output of @samp{make check} into a file and look at the
+@samp{Running ...  .exp} lines.
 
 @section How to interpret test results
 
@@ -714,9 +735,10 @@ ERROR: the testsuite detected an error
 WARNING: the testsuite detected a possible problem
 @end itemize
 
-It is normal for some tests to report unexpected failures.  At the current time 
-our testing harness does not allow fine grained control over whether or not a 
-test is expected to fail.  We expect to fix this problem in future releases.
+It is normal for some tests to report unexpected failures.  At the
+current time our testing harness does not allow fine grained control
+over whether or not a test is expected to fail.  We expect to fix this
+problem in future releases.
 
 
 @section Submitting test results
@@ -756,14 +778,15 @@ should look here first if you think your results are unreasonable.
 @end ifnothtml
 
 Now that GCC has been built and tested, you can install it with
-`@command{cd @emph{objdir}; make install}' for a native compiler or
-`@command{cd @emph{objdir}; make install LANGUAGES="c c++"}' for 
+@samp{cd @emph{objdir}; make install} for a native compiler or
+@samp{cd @emph{objdir}; make install LANGUAGES="c c++"} for 
 a cross compiler (note installing cross compilers will be easier in the 
 next release!).
 
 That step completes the installation of GCC; user level binaries can
-be found in @code{@emph{prefix}/bin} where @code{@emph{prefix}} is the value you specified
-with the @option{--prefix} to configure (or @file{/usr/local} by default).
+be found in @file{@var{prefix}/bin} where @var{prefix} is the value you
+specified with the @option{--prefix} to configure (or @file{/usr/local}
+by default).
 
 If you don't mind, please quickly review the 
 @uref{http://gcc.gnu.org/gcc-2.95/buildstat.html,,build status page}.
@@ -771,7 +794,7 @@ If your system is not listed, send a note to
 @uref{mailto:gcc@@gcc.gnu.org,,gcc@@gcc.gnu.org} indicating
 that you successfully built and installed GCC.
 
-Include the output from running @code{@emph{srcdir}/config.guess}.  (Do not
+Include the output from running @file{@var{srcdir}/config.guess}.  (Do not
 send us the config.guess file itself, just the output from running
 it!)
 
@@ -816,7 +839,8 @@ contact their makers.
 AIX:
 @itemize
 @item
-@uref{http://www-frec.bull.com/docs/download.htm,,Bull's Freeware and Shareware Archive for AIX};
+@uref{http://www-frec.bull.com/docs/download.htm,,Bull's Freeware and
+Shareware Archive for AIX};
 
 @item
 @uref{http://aixpdlib.seas.ucla.edu,,UCLA Software Library for AIX};
@@ -829,7 +853,8 @@ DOS - @uref{http://www.delorie.com/djgpp/,,DJGPP};
 @uref{http://hpux.cae.wisc.edu/,,HP-UX Porting Center};
 
 @item
-@uref{http://www.sco.com/skunkware/devtools/index.html#gcc,,SCO OpenServer/Unixware};
+@uref{http://www.sco.com/skunkware/devtools/index.html#gcc,,SCO
+OpenServer/Unixware};
 
 @item
 Solaris (SPARC, Intel) - @uref{http://www.sunfreeware.com/,,Sunfreeware};
@@ -988,7 +1013,7 @@ the least of which is incorrect linking of shared libraries.
 @end html
 
 If you install a shared libstdc++ and, when you link a non-trivial C++
-program (for example, @code{gcc/testsuite/g++.other/delete3.C}),
+program (for example, @file{gcc/testsuite/g++.other/delete3.C}),
 the linker reports a couple of errors about multiply-defined symbols
 (for example, @code{nothrow}, @code{__throw} and
 @code{terminate(void)}), you've probably got a linker bug, for
@@ -1008,24 +1033,24 @@ will have to be relinked.
 
 The magic spell is to add @code{-Wl,-all,-lgcc,-none} to the
 definition of macro @code{SHDEPS} in
-@code{libstdc++/config/dec-osf.ml} @emph{before}
-@code{alpha*-dec-osf*/libstdc++/Makefile} is created (a 
+@file{libstdc++/config/dec-osf.ml} @emph{before}
+@file{alpha*-dec-osf*/libstdc++/Makefile} is created (a 
 @uref{dec-osf-shlibstdc++.patch,,patch} 
 that does just that is available).  If the Makefile already exists, run
-@code{./config.status} within directory
-@code{alpha*-dec-osf*/libstdc++} (and
-@code{alpha*-dec-osf*/ieee/libstdc++}, if it also exists).
-Remove any existing @code{libstdc++.so*} from such directories,
-and run @code{make all-target-libstdc++} in the top-level
-directory, then @code{make install-target-libstdc++}.
+@file{./config.status} within directory
+@file{alpha*-dec-osf*/libstdc++} (and
+@file{alpha*-dec-osf*/ieee/libstdc++}, if it also exists).
+Remove any existing @file{libstdc++.so*} from such directories,
+and run @samp{make all-target-libstdc++} in the top-level
+directory, then @samp{make install-target-libstdc++}.
 
 If you have already removed the build tree, you may just remove
-@code{libstdc++.so.2.10.0} from the install tree and re-create
+@file{libstdc++.so.2.10.0} from the install tree and re-create
 it with the command 
-@code{gcc -shared -o libstdc++.so.2.10.0 -Wl,-all,-lstdc++,-lgcc,-none -lm}.
-If the @code{ieee}
+@samp{gcc -shared -o libstdc++.so.2.10.0 -Wl,-all,-lstdc++,-lgcc,-none -lm}.
+If the @file{ieee}
 sub-directory exists, repeat this command in it, with the additional
-flag @code{-mieee}.
+flag @option{-mieee}.
 
 @html
 </p>
@@ -1041,7 +1066,7 @@ We require GNU binutils 2.10 or newer.
 <h3><a name="avr">avr</a></h3>
 @end html
 
-Use `@command{configure} @option{--target=avr} 
+Use @samp{configure --target=avr} 
 @option{--enable-languages="c"}' to configure GCC.
 
 Further installation notes and other useful information about AVR tools
@@ -1091,8 +1116,9 @@ assembler.
 
 Specifically, @option{-g} does not work on HP-UX (since that system
 uses a peculiar debugging format which GCC does not know about), unless you
-use GAS and GDB and configure GCC with the @uref{./configure.html#with-gnu-as,,@option{--with-gnu-as}}
-and @option{--with-as=...} options.
+use GAS and GDB and configure GCC with the
+@uref{./configure.html#with-gnu-as,,@option{--with-gnu-as}} and
+@option{--with-as=...} options.
 
 If you wish to use pa-risc 2.0 architecture support, you must use either
 the HP assembler, gas/binutils-2.11 or a recent
@@ -1113,8 +1139,8 @@ shared libraries from working.  Use the GNU assembler to avoid these problems.
 
 
 The configuration scripts for GCC will also trigger a bug in the hpux9
-shell.  To avoid this problem set CONFIG_SHELL to @file{/bin/ksh} and SHELL 
-to @file{/bin/ksh} in your environment.
+shell.  To avoid this problem set @env{CONFIG_SHELL} to @file{/bin/ksh}
+and @env{SHELL} to @file{/bin/ksh} in your environment.
 
 
 @html
@@ -1144,9 +1170,9 @@ Latin-America
 The HP assembler on these systems is much better than the hpux9 assembler,
 but still has some problems.  Most notably the assembler inserts timestamps
 into each object file it creates, causing the 3-stage comparison test to fail
-during a `@code{make bootstrap}'.  You should be able to continue by 
-saying `@code{make all}' after getting the failure from `@code{make 
-bootstrap}'.
+during a @samp{make bootstrap}.  You should be able to continue by 
+saying @samp{make all} after getting the failure from @samp{make 
+bootstrap}.
 
 
 @html
@@ -1199,13 +1225,13 @@ may use either the UDK debugger or GDB to debug programs built by this
 version of GCC.
 
 If you are building languages other than C, you must follow the instructions
-about invoking `@code{make bootstrap}' because the native OpenServer
-compiler will build a @code{cc1plus} that will not correctly parse many
-valid C++ programs including those in @code{libgcc.a}.  
-@strong{You must do a `@code{make bootstrap}' if you are building with the 
+about invoking @samp{make bootstrap} because the native OpenServer
+compiler will build a @command{cc1plus} that will not correctly parse many
+valid C++ programs including those in @file{libgcc.a}.  
+@strong{You must do a @samp{make bootstrap} if you are building with the 
 native compiler.}
 
-Use of the `@option{-march-pentiumpro}' flag can result in
+Use of the @option{-march-pentiumpro} flag can result in
 unrecognized opcodes when using the native assembler on OS versions before
 5.0.6. (Support for P6 opcodes was added to the native ELF assembler in
 that version.)  While it's rather rare to see these emitted by GCC yet, 
@@ -1226,8 +1252,9 @@ The native SCO assembler that is provided with the OS at no
 charge is normally required.  If, however, you must be able to use
 the GNU assembler (perhaps you're compiling code with asms that
 require GAS syntax) you may configure this package using the flags
-@uref{./configure.html#with-gnu-as,,@option{--with-gnu-as}}.  You must use a recent version of GNU
-binutils; versions past 2.9.1 seem to work well.
+@uref{./configure.html#with-gnu-as,,@option{--with-gnu-as}}.  You must
+use a recent version of GNU binutils; versions past 2.9.1 seem to work
+well.
 
 In general, the @option{--with-gnu-as} option isn't as well tested
 as the native assembler.
@@ -1235,7 +1262,7 @@ as the native assembler.
 Look in @file{gcc/config/i386/sco5.h} (search for "messy") for
 additional OpenServer-specific flags.
 
-Systems based on OpenServer before 5.0.4 (`@code{uname -X}'
+Systems based on OpenServer before 5.0.4 (@samp{uname -X}
 will tell you what you're running) require TLS597 from ftp.sco.com/TLS
 for C++ constructors and destructors to work right.
 
@@ -1245,7 +1272,7 @@ code.  This can be seen as execution testsuite failures when using
 -fPIC on 921215-1.c, 931002-1.c, nestfunc-1.c, and gcov-1.c.
 For 5.0.5, an updated linker that will cure this problem is
 available.  You must install both 
-@uref{ftp://ftp.sco.com/Supplements/rs505a/,,ftp://ftp.sco.com/Supplements/rs505a/} 
+@uref{ftp://ftp.sco.com/Supplements/rs505a/,,ftp://ftp.sco.com/Supplements/rs505a/}
 and @uref{ftp://ftp.sco.com/SLS/,,OSS499A}.
 
 The dynamic linker in OpenServer 5.0.5 (earlier versions may show
@@ -1255,11 +1282,11 @@ Although it's conceivable that the error could be triggered by other
 code, only G77-compiled code has been observed to cause this abort.
 If you are getting core dumps immediately upon execution of your
 g77 program - and especially if it's compiled with -fPIC - try applying
-@uref{sco_osr5_g77.patch,,@code{`sco_osr5_g77.patch'}} to your libf2c and 
+@uref{sco_osr5_g77.patch,,@file{sco_osr5_g77.patch}} to your libf2c and 
 rebuilding GCC.  
 Affected faults, when analyzed in a debugger, will show a stack
 backtrace with a fault occurring in @code{rtld()} and the program
-running as @code{/usr/lib/ld.so.1}.  This problem has been reported to SCO 
+running as @file{/usr/lib/ld.so.1}.  This problem has been reported to SCO 
 engineering and will hopefully be addressed in later releases.
 
 
@@ -1273,7 +1300,7 @@ GCC 2.95.2, when configured to use the GNU assembler, would invoke
 it with the @code{-s} switch, that GNU as up to 2.9.5.0.12 does
 not support.  If you'd rather not use a newer GNU as nor the native
 assembler, you'll need the patch 
-@uref{x86-sol2-gas.patch,,@code{`x86-sol2-gas.patch'}}.
+@uref{x86-sol2-gas.patch,,@file{x86-sol2-gas.patch}}.
 
 
 @html
@@ -1301,17 +1328,18 @@ from the right place) while making the tools not think we're actually
 building a cross compiler.   The easiest way to do this is with a configure
 command like this:
 
-@command{  CC=/udk/usr/ccs/bin/cc <i>/your/path/to/</i>gcc/configure 
+@samp{CC=/udk/usr/ccs/bin/cc <i>/your/path/to/</i>gcc/configure 
 --host=i686-pc-udk --target=i686-pc-udk --program-prefix=udk-}
 
 @emph{You should substitute 'i686' in the above command with the appropriate
 processor for your host.}
 
-You should follow this with a `@command{make bootstrap}'  then
-`@command{make install}'.  You can then access the UDK-targeted GCC 
-tools by adding @code{udk-} before the commonly known name.  For example, to 
-invoke the C compiler, you would use `@code{udk-gcc}'.  They will coexist 
-peacefully with any native-target GCC tools you may have installed.
+You should follow this with a @samp{make bootstrap}  then
+@samp{make install}.  You can then access the UDK-targeted GCC 
+tools by adding @command{udk-} before the commonly known name.  For
+example, to invoke the C compiler, you would use @command{udk-gcc}.
+They will coexist peacefully with any native-target GCC tools you may
+have installed.
 
 
 @html
@@ -1325,18 +1353,19 @@ AIX Make frequently has problems with GCC makefiles.  GNU Make 3.76 or
 newer is recommended to build on this platform.
 
 Errors involving "alloca" when building GCC generally are due
-to an incorrect definition of @command{CC} in the Makefile or mixing files
+to an incorrect definition of @var{CC} in the Makefile or mixing files
 compiled with the native C compiler and GCC.  During the stage1 phase of
 the build, the native AIX compiler @strong{must} be invoked as "cc"
 (not "xlc").  Once @command{configure} has been informed of
-"xlc", one needs to use "make distclean" to remove the
-configure cache files and ensure that @command{CC} environment variable
+"xlc", one needs to use @samp{make distclean} to remove the
+configure cache files and ensure that @env{CC} environment variable
 does not provide a definition that will confuse @command{configure}.
 If this error occurs during stage2 or later, then the problem most likely
 is the version of Make (see above).
 
 Binutils 2.10 does not support AIX 4.3.  Binutils available from the
-@uref{http://www-1.ibm.com/servers/aix/products/aixos/linux/,,AIX Toolbox for Linux: GNU and Open Source tools for AIX};
+@uref{http://www-1.ibm.com/servers/aix/products/aixos/linux/,,AIX
+Toolbox for Linux: GNU and Open Source tools for AIX};
 website does work.  Binutils 2.11 is expected to include AIX 4.3
 support.  The GNU Assembler is necessary for libstdc++ to build.  The
 AIX native ld still is recommended.  The native AIX tools do
@@ -1384,7 +1413,7 @@ use NLS to support locale-specific representations of various data
 formats including floating-point numbers (e.g., "."  vs "," for
 separating decimal fractions).  There have been problems reported where
 GCC does not produce the same floating-point formats that the assembler
-expects.  If one encouters this problem, set the @command{LANG}
+expects.  If one encouters this problem, set the @env{LANG}
 environment variable to "C" or "En_US".
 
 
@@ -1418,7 +1447,7 @@ replacement that does can be obtained at
 If you try to build the integrated C++ & C++ runtime libraries on this system
 you will run into trouble with include files.  The way to get around this is
 to use the following sequence.  Note you must have write permission to
-the directory @emph{prefix} you specified in the configuration process of GCC
+the directory @var{prefix} you specified in the configuration process of GCC
 for this sequence to work.
 
 @example
@@ -1509,7 +1538,7 @@ If you see:
 @end example
 
 then your version of @command{cc} uses the O32 ABI default.  You
-should set the environment variable @command{CC} to 'cc -n32'
+should set the environment variable @env{CC} to @samp{cc -n32}
 before configuring GCC.
 
 GCC does not currently support generating O32 ABI binaries in the
@@ -1694,7 +1723,7 @@ GCC version 2.95 is not able to compile code correctly for
 @code{sparc64} targets.  Users of the Linux kernel, at least,
 12~can use the @code{sparc32} program to start up a new shell
 invocation with an environment that causes @command{configure} to
-recognize (via @command{uname -a}) the system as @command{sparc-*-*} instead.
+recognize (via @samp{uname -a}) the system as @var{sparc-*-*} instead.
 
 
 @html
@@ -1755,8 +1784,8 @@ system, and using it to compile a more recent GCC, to avoid bugs in
 the vendor compiler.  Old releases of GCC 1 and GCC 2 are available in 
 the old-releases directory on the 
 @uref{../mirrors.html,,GCC mirror sites}.  Header bugs may generally 
-be avoided using @code{fixincludes}, but bugs or deficiencies in libraries and 
-the operating system may still cause problems.
+be avoided using @command{fixincludes}, but bugs or deficiencies in
+libraries and the operating system may still cause problems.
  
 For some systems, old versions of GNU binutils may also be useful, 
 and are available from pub/binutils/old-releases on 
@@ -1773,9 +1802,10 @@ current GCC) is to be found in the GCC texinfo manual.
 <h3><a name="elf_targets">all ELF targets (SVR4, Solaris, etc.)</a></h3>
 @end html
 
-C++ support is significantly better on ELF targets if you use the @uref{./configure.html#with-gnu-ld,,GNU
-linker}; duplicate copies of inlines, vtables and template instantiations
-will be discarded automatically.
+C++ support is significantly better on ELF targets if you use the
+@uref{./configure.html#with-gnu-ld,,GNU linker}; duplicate copies of
+inlines, vtables and template instantiations will be discarded
+automatically.
 
 
 @html

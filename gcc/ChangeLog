@@ -1,3 +1,9 @@
+2001-06-01  Laurent Guerby  <guerby@acm.org>
+            Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi: Define srcdir when sources come from CVS.
+	Significantly improve markup.  Wrap overly long lines
+
 2001-06-01  DJ Delorie  <dj@redhat.com>
 
 	* c-tree.texi, contrib.texi, cpp.texi, cppinternals.texi,
