@@ -20,7 +20,7 @@ strstr(const char *s1, const char *s2)
 	    break;
 	  p++, q++;
 	}
-      if (*p == *q && *p == 0)
+      if (*q == 0)
 	return (char *)s1;
     }
   return 0;
