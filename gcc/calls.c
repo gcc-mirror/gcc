@@ -2037,8 +2037,11 @@ expand_call (exp, target, ignore)
       enum machine_mode tmpmode;
       
       if (target == 0)
-	target = assign_stack_temp (BLKmode, bytes, 0);
-      MEM_IN_STRUCT_P (target) = AGGREGATE_TYPE_P (TREE_TYPE (exp));
+	{
+	  target = assign_stack_temp (BLKmode, bytes, 0);
+	  MEM_IN_STRUCT_P (target) = AGGREGATE_TYPE_P (TREE_TYPE (exp));
+	  preserve_temp_slots (target);
+	}
 
       /* We could probably emit more efficient code for machines
 	 which do not use strict alignment, but it doesn't seem
