@@ -1,3 +1,7 @@
+2004-02-03  Steven Bosscher  <s.bosscher@student.tudelft.nl>
+
+        * toplev.c: Fix broken checkin of 2003-12-30, again.
+
 2004-02-02  Eric Christopher  <echristo@redhat.com>
 	    Zack Weinberg  <zack@codesourcery.com>
 
@@ -2167,6 +2171,10 @@
 	* system.h (ASM_OUTPUT_MAIN_SOURCE_FILENAME): Poison.
 	* toplev.c (output_file_directive): Don't use
 	ASM_OUTPUT_MAIN_SOURCE_FILENAME.
+
+2004-01-05  Steven Bosscher <s.bosscher@student.tudelft.nl>
+
+	* toplev.c: Fix broken checkin of 2003-12-30.
 
 2004-01-05  Daniel Berlin  <dberlin@dberlin.org>
 

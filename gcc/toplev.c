@@ -3302,6 +3302,9 @@ rest_of_compilation (tree decl)
 
       if (flag_loop_optimize)
 	rest_of_handle_loop_optimize (decl, insns);
+
+      if (flag_gcse)
+	rest_of_handle_jump_bypass (decl, insns);
     }
 
   timevar_push (TV_FLOW);
@@ -3329,16 +3332,11 @@ rest_of_compilation (tree decl)
   if (flag_tracer)
     rest_of_handle_tracer (decl, insns);
 
-  if (optimize > 0)
-    {
-      if (flag_unswitch_loops
+  if (optimize > 0
+      && (flag_unswitch_loops
 	  || flag_peel_loops
-	  || flag_unroll_loops)
-	rest_of_handle_loop2 (decl, insns);
-
-      if (flag_gcse)
-	rest_of_handle_jump_bypass (decl, insns);
-    }
+	  || flag_unroll_loops))
+    rest_of_handle_loop2 (decl, insns);
 
   if (flag_web)
     rest_of_handle_web (decl, insns);
