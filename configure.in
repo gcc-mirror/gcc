@@ -1794,11 +1794,11 @@ AC_SUBST_FILE(serialization_dependencies)
 # down to subconfigures.
 baseargs=`echo " ${ac_configure_args} " | \
 	sed -e 's/ --no[[^ ]]* / /' \
-	    -e 's/ --cache[[a-z-]]*=[[^ ]]* / /' \
-	    -e 's/ --sr[[a-z-]]*=[[^ ]]* / /' \
-	    -e 's/ --ho[[a-z-]]*=[[^ ]]* / /' \
-	    -e 's/ --bu[[a-z-]]*=[[^ ]]* / /' \
-	    -e 's/ --ta[[a-z-]]*=[[^ ]]* / /' \
+	    -e 's/ \(--c[[a-z-]]*\|-cache-file\)[[= ]][[^ ]]* / /' \
+	    -e 's/ \(--sr[[a-z-]]*\|-srcdir\)[[= ]][[^ ]]* / /' \
+	    -e 's/ \(--ho[[a-z-]]*\|-host\)[[= ]][[^ ]]* / /' \
+	    -e 's/ \(--bu[[a-z-]]*\|-build\)[[= ]][[^ ]]* / /' \
+	    -e 's/ \(--t[[a-z-]]*\|-target\)[[= ]][[^ ]]* / /' \
 	    -e 's/ [[^ -][^ ]*] / /' \
 	    -e 's/^ *//;s/ *$//'`
 
