@@ -72,7 +72,7 @@ Boston, MA 02111-1307, USA.  */
 	     builtin_define_std ("LANGUAGE_C");				\
 	     if (c_language == clk_cplusplus)				\
 	       builtin_define_std ("LANGUAGE_C_PLUS_PLUS");		\
-	     else if (c_language == clk_objective_c)			\
+	     if (flag_objc)						\
 	       builtin_define_std ("LANGUAGE_OBJECTIVE_C");		\
 	  } 								\
     }									\
