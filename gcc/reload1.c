@@ -364,13 +364,20 @@ init_reload ()
 
   /* See if reg+reg is a valid (and offsettable) address.  */
 
-  tem = gen_rtx (PLUS, Pmode,
-		 gen_rtx (REG, Pmode, FRAME_POINTER_REGNUM),
-		 gen_rtx (REG, Pmode, FRAME_POINTER_REGNUM));
-  /* This way, we make sure that reg+reg is an offsettable address.  */
-  tem = plus_constant (tem, 4);
+  for (i = 0; i < FIRST_PSEUDO_REGSTER; i++)
+    {
+      tem = gen_rtx (PLUS, Pmode,
+		     gen_rtx (REG, Pmode, FRAME_POINTER_REGNUM),
+		     gen_rtx (REG, Pmode, i));
+      /* This way, we make sure that reg+reg is an offsettable address.  */
+      tem = plus_constant (tem, 4);
 
-  double_reg_address_ok = memory_address_p (QImode, tem);
+      if (memory_address_p (QImode, tem))
+	{
+	  double_reg_address_ok = 1;
+	  break;
+	}
+    }
 
   /* Initialize obstack for our rtl allocation. */
   gcc_obstack_init (&reload_obstack);
