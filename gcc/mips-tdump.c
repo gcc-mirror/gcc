@@ -262,18 +262,6 @@ const char *glevel_to_string	__proto((glevel_t));
 const char *lang_to_string	__proto((lang_t));
 const char *type_to_string	__proto((AUXU *, int, FDR *));
 
-#ifndef __alpha
-# ifdef NEED_DECLARATION_MALLOC
-extern PTR_T	malloc	__proto((size_t));
-# endif
-# ifdef NEED_DECLARATION_CALLOC
-extern PTR_T	calloc	__proto((size_t, size_t));
-# endif
-# ifdef NEED_DECLARATION_REALLOC
-extern PTR_T	realloc	__proto((PTR_T, size_t));
-# endif
-#endif
-
 extern char *optarg;
 extern int   optind;
 extern int   opterr;

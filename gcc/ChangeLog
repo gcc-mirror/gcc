@@ -1,3 +1,11 @@
+Wed Sep  8 15:32:16 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h (sbrk, malloc, calloc, realloc): Backup prototypes
+	changed from extern char *, to extern PTR.  Also fix typo in
+	NEED_DECLARATION_REALLOC test.
+
+	* mips-tdump.c (malloc, calloc, realloc): Don't prototype.
+	
 Wed Sep  8 11:40:47 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gansidecl.h (__attribute__, ATTRIBUTE_UNUSED_LABEL,
