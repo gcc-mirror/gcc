@@ -2,12 +2,39 @@ We're in the process of converting the existing testsuite machinery to
 use the new style DejaGnu framework.  Eventually, we'll abandon
 ../mkcheck.in in favor of this new testsuite framework.
 
+// 1: Thoughts on naming test cases, and structuring them.
+The testsuite directory has been divided into 11 directories, directly
+correlated to the relevant chapters in the standard. For example, the
+directory testsuite/21_strings contains tests related to chapter 21,
+Strings library in the C++ standard.
 
-// 1: How to write a testcase
+So, the first step in making a new test case is to choose the correct
+directory. The second item is seeing if a test file exists that tests
+the item in question. Generally, within chapters test files are named
+after the section headings in ISO 14882, the C++ standard. For instance, 
+
+21.3.7.9 Inserters and Extractors
+
+Has a related test case:
+21_strings/inserters_extractors.cc
+
+Not so hard. Some time, the works "ctor" and "dtor" are used instead
+of "construct", "constructor", "cons", "destructor", etc. Other than
+that, the naming seems mostly consistent.
+
+Inside a test file, the plan is to test the relevant parts of the
+standard, and then add specific regressions as additional test
+functions, ie test04() can represent a specific regression noted in
+GNATS. Once test files get unwieldy or too big, then they should be
+broken up into multiple sub-categories, hopefully intelligently named
+after the relevant (and more specific) part of the standard.
+
+
+// 2: How to write a test case, from a dejagnu perspective
 As per the dejagnu instructions, always return 0 from main to indicate
 success.
 
-Basically, a testcase contains dg-keywords (see dg.exp) indicating
+Basically, a test case contains dg-keywords (see dg.exp) indicating
 what to do and what kinds of behaviour are to be expected.  New
 testcases should be written with the new style DejaGnu framework in
 mind.
@@ -94,7 +121,7 @@ Example 3: Testing for compilation errors on line 41
 More examples can be found in the libstdc++-v3/testsuite/*/*.cc files.
 
 
-// 2: Test harness notes, invocation, and debugging.
+// 3: Test harness notes, invocation, and debugging.
 Configuring the dejagnu harness to work with libstdc++-v3 in a cross
 compilation environment has been maddening. However, it does work now,
 and on a variety of platforms. Including solaris, linux, and cygwin.
@@ -120,7 +147,7 @@ make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=calmrisc32-sid"
 make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=arm-sim"
 
 
-// 3: Future plans, to be done
+// 4: Future plans, to be done
 Shared runs need to be implemented, for targets that support shared libraries.
 
 Diffing of expected output to standard streams needs to be finished off.
