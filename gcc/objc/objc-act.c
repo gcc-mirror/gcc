@@ -1870,7 +1870,8 @@ init_objc_symtab (tree type)
 
   /* sel_ref_cnt = { ..., 5, ... } */
 
-  initlist = build_tree_list (NULL_TREE, build_int_cst (NULL_TREE, 0));
+  initlist = build_tree_list (NULL_TREE,
+			      build_int_cst (long_integer_type_node, 0));
 
   /* refs = { ..., _OBJC_SELECTOR_TABLE, ... } */
 
@@ -1969,12 +1970,13 @@ init_module_descriptor (tree type)
 
   /* version = { 1, ... } */
 
-  expr = build_int_cst (NULL_TREE, OBJC_VERSION);
+  expr = build_int_cst (long_integer_type_node, OBJC_VERSION);
   initlist = build_tree_list (NULL_TREE, expr);
 
   /* size = { ..., sizeof (struct _objc_module), ... } */
 
-  expr = size_in_bytes (objc_module_template);
+  expr = convert (long_integer_type_node,
+		  size_in_bytes (objc_module_template));
   initlist = tree_cons (NULL_TREE, expr, initlist);
 
   /* name = { ..., "foo.m", ... } */
@@ -4850,13 +4852,17 @@ build_shared_structure_initializer (tree type, tree isa, tree super,
   initlist = tree_cons (NULL_TREE, default_conversion (name), initlist);
 
   /* version = */
-  initlist = tree_cons (NULL_TREE, build_int_cst (NULL_TREE, 0), initlist);
+  initlist = tree_cons (NULL_TREE, build_int_cst (long_integer_type_node, 0),
+			initlist);
 
   /* info = */
-  initlist = tree_cons (NULL_TREE, build_int_cst (NULL_TREE, status), initlist);
+  initlist = tree_cons (NULL_TREE,
+			build_int_cst (long_integer_type_node, status),
+			initlist);
 
   /* instance_size = */
-  initlist = tree_cons (NULL_TREE, size, initlist);
+  initlist = tree_cons (NULL_TREE, convert (long_integer_type_node, size),
+			initlist);
 
   /* objc_ivar_list = */
   if (!ivar_list)
