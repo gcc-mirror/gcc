@@ -1394,56 +1394,46 @@ emit_block_move (rtx x, rtx y, rtx size, enum block_op_methods method)
 static bool
 block_move_libcall_safe_for_call_parm (void)
 {
+  /* If arguments are pushed on the stack, then they're safe.  */
   if (PUSH_ARGS)
     return true;
-  else
-    {
-      /* Check to see whether memcpy takes all register arguments.  */
-      static enum {
-	takes_regs_uninit, takes_regs_no, takes_regs_yes
-      } takes_regs = takes_regs_uninit;
 
-      switch (takes_regs)
-	{
-	case takes_regs_uninit:
-	  {
-	    CUMULATIVE_ARGS args_so_far;
-	    tree fn, arg;
-
-	    fn = emit_block_move_libcall_fn (false);
-	    INIT_CUMULATIVE_ARGS (args_so_far, TREE_TYPE (fn), NULL_RTX, 0);
-
-	    arg = TYPE_ARG_TYPES (TREE_TYPE (fn));
-	    for ( ; arg != void_list_node ; arg = TREE_CHAIN (arg))
-	      {
-		enum machine_mode mode = TYPE_MODE (TREE_VALUE (arg));
-		rtx tmp = FUNCTION_ARG (args_so_far, mode, NULL_TREE, 1);
-		if (!tmp || !REG_P (tmp))
-		  goto fail_takes_regs;
-#ifdef FUNCTION_ARG_PARTIAL_NREGS
-		if (FUNCTION_ARG_PARTIAL_NREGS (args_so_far, mode,
-						NULL_TREE, 1))
-		  goto fail_takes_regs;
+  /* If registers go on the stack anyway, any argument is sure to clobber 
+     an outgoing argument.  */
+#if defined (REG_PARM_STACK_SPACE) && defined (OUTGOING_REG_PARM_STACK_SPACE)
+  {
+    tree fn = emit_block_move_libcall_fn (false);
+    (void) fn;
+    if (REG_PARM_STACK_SPACE (fn) != 0)
+      return false;
+  }
 #endif
-		FUNCTION_ARG_ADVANCE (args_so_far, mode, NULL_TREE, 1);
-	      }
-	  }
-	  takes_regs = takes_regs_yes;
-	  /* FALLTHRU */
 
-	case takes_regs_yes:
-	  return true;
-
-	fail_takes_regs:
-	  takes_regs = takes_regs_no;
-	  /* FALLTHRU */
-	case takes_regs_no:
+  /* If any argument goes in memory, then it might clobber an outgoing
+     argument.  */
+  {
+    CUMULATIVE_ARGS args_so_far;
+    tree fn, arg;
+    
+    fn = emit_block_move_libcall_fn (false);
+    INIT_CUMULATIVE_ARGS (args_so_far, TREE_TYPE (fn), NULL_RTX, 0);
+    
+    arg = TYPE_ARG_TYPES (TREE_TYPE (fn));
+    for ( ; arg != void_list_node ; arg = TREE_CHAIN (arg))
+      {
+	enum machine_mode mode = TYPE_MODE (TREE_VALUE (arg));
+	rtx tmp = FUNCTION_ARG (args_so_far, mode, NULL_TREE, 1);
+	if (!tmp || !REG_P (tmp))
 	  return false;
-
-	default:
-	  abort ();
-	}
-    }
+#ifdef FUNCTION_ARG_PARTIAL_NREGS
+	if (FUNCTION_ARG_PARTIAL_NREGS (args_so_far, mode,
+					NULL_TREE, 1))
+	  return false;
+#endif
+	FUNCTION_ARG_ADVANCE (args_so_far, mode, NULL_TREE, 1);
+      }
+  }
+  return true;
 }
 
 /* A subroutine of emit_block_move.  Expand a movstr pattern;
