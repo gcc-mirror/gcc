@@ -1,3 +1,16 @@
+2002-07-29  Chris Demetriou  <cgd@broadcom.com>
+
+	* configure.in (mips*-*-*): Add a test to see if MIPS libgloss
+	linker scripts use STARTUP directives consistently.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/mips/elf.h (STARTFILE_SPEC): Define conditionally, based
+	on whether HAVE_MIPS_LIBGLOSS_STARTUP_DIRECTIVES is defined.
+	* config/mips/elf64.h (STARTFILE_SPEC): Likewise.
+	* config/mips/isa3264.h (STARTFILE_SPEC): Do not redefine if
+	HAVE_MIPS_LIBGLOSS_STARTUP_DIRECTIVES is set; the result
+	will be the same.
+
 2002-07-29  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.md ("cpu"): Add ppc8540 to attribute.

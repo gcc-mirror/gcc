@@ -7917,6 +7917,39 @@ EOF
 fi
 echo "$ac_t""$gcc_cv_ld_eh_frame_hdr" 1>&6
 
+# Miscellaneous target-specific checks.
+case "$target" in
+  mips*-*-*)
+    echo $ac_n "checking whether libgloss uses STARTUP directives consistently""... $ac_c" 1>&6
+echo "configure:7925: checking whether libgloss uses STARTUP directives consistently" >&5
+    gcc_cv_mips_libgloss_startup=no
+    gcc_cv_libgloss_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/libgloss
+    if test "x$exec_prefix" = xNONE; then
+      if test "x$prefix" = xNONE; then
+        test_prefix=/usr/local
+      else
+        test_prefix=$prefix
+      fi
+    else
+      test_prefix=$exec_prefix
+    fi
+    for f in $gcc_cv_libgloss_srcdir/mips/idt.ld $test_prefix/$target_alias/lib/idt.ld
+    do
+      if grep '^STARTUP' $f > /dev/null 2>&1; then
+        gcc_cv_mips_libgloss_startup=yes
+        break
+      fi
+    done
+    if test x"$gcc_cv_mips_libgloss_startup" = xyes; then
+      cat >> confdefs.h <<\EOF
+#define HAVE_MIPS_LIBGLOSS_STARTUP_DIRECTIVES 1
+EOF
+
+    fi
+    echo "$ac_t""$gcc_cv_mips_libgloss_startup" 1>&6
+    ;;
+esac
+
 if test "$prefix" != "/usr" && test "$prefix" != "/usr/local" ; then
   cat >> confdefs.h <<EOF
 #define PREFIX_INCLUDE_DIR "$prefix/include"
@@ -8092,7 +8125,7 @@ fi
 
 
 echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles""... $ac_c" 1>&6
-echo "configure:8096: checking whether to enable maintainer-specific portions of Makefiles" >&5
+echo "configure:8129: checking whether to enable maintainer-specific portions of Makefiles" >&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"

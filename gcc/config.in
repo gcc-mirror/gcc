@@ -579,6 +579,9 @@
 /* Define if your linker supports --eh-frame-hdr option. */
 #undef HAVE_LD_EH_FRAME_HDR
 
+/* Define if your MIPS libgloss linker scripts consistently include STARTUP directives. */
+#undef HAVE_MIPS_LIBGLOSS_STARTUP_DIRECTIVES
+
 /* Define 0/1 to force the choice for exception handling model. */
 #undef CONFIG_SJLJ_EXCEPTIONS
 
