@@ -3,6 +3,8 @@
 	* c-typeck.c (constructor_stack, constructor_range_stack,
 	initializer_stack): Make them static.
 
+	* cfg.c (rbi_pool): Make it static.
+
 2005-03-08  Julian Brown  <julian@codesourcery.com>
 
 	* config/elfos.h (MAKE_DECL_ONE_ONLY): Redefined to stop DECL_WEAK
