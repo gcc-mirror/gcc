@@ -3,6 +3,9 @@
 	* config/sparc/sparc.c (ultra_cmove_results_ready_p,
 	ultra_fpmode_conflict_exists, ultra_flush_pipeline): Typo fix.
 
+	* config/sparc/sparc.h (SPARC_SETHI_P): Don't look at topmost 32 bits
+	if TARGET_ARCH32.
+
 1999-12-08  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* config/sparc/sol2-64.h: Same as sol2-sld-64.h, except that

@@ -1440,7 +1440,8 @@ extern char leaf_reg_remap[];
 /* 13 bit immediate, considering only the low 32 bits */
 #define SMALL_INT32(X) (SPARC_SIMM13_P ((int)INTVAL (X) & 0xffffffff))
 #define SPARC_SETHI_P(X) \
-(((unsigned HOST_WIDE_INT) (X) & ~(unsigned HOST_WIDE_INT) 0xfffffc00) == 0)
+(((unsigned HOST_WIDE_INT) (X) & \
+  (TARGET_ARCH64 ? ~(unsigned HOST_WIDE_INT) 0xfffffc00 : 0x3ff)) == 0)
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C)  \
   ((C) == 'I' ? SPARC_SIMM13_P (VALUE)			\
