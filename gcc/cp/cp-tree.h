@@ -2935,6 +2935,9 @@ typedef enum scope_kind {
 			is initialized by using "memset" to set the
 			contents to zero, and the default scope kind
 			is "sk_block".  */
+  sk_cleanup,        /* A scope for (pseudo-)scope for cleanup.  It is
+                        peusdo in that it is transparent to name lookup
+                        activities.  */
   sk_try,	     /* A try-block.  */
   sk_catch,          /* A catch-block.  */
   sk_for,            /* The scope of the variable declared in a
@@ -3609,7 +3612,6 @@ extern void adjust_clone_args			(tree);
 extern int global_bindings_p			(void);
 extern int kept_level_p				(void);
 extern tree getdecls				(void);
-extern void pushlevel				(int);
 extern void insert_block			(tree);
 extern void set_block				(tree);
 extern tree pushdecl				(tree);
@@ -3622,12 +3624,12 @@ extern void cxx_pop_function_context		(struct function *);
 extern void cxx_mark_function_context		(struct function *);
 extern int toplevel_bindings_p			(void);
 extern int namespace_bindings_p			(void);
-extern void keep_next_level			(int);
+extern void keep_next_level (bool);
 extern scope_kind innermost_scope_kind          (void);
 extern int template_parm_scope_p		(void);
 extern void set_class_shadows			(tree);
 extern void maybe_push_cleanup_level		(tree);
-extern void begin_scope                         (scope_kind);
+extern cxx_scope *begin_scope (scope_kind, tree);
 extern void finish_scope                        (void);
 extern void resume_level			(struct cp_binding_level *);
 extern void delete_block			(tree);
