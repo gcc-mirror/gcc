@@ -1,5 +1,10 @@
 2001-06-09  Alexandre Oliva  <aoliva@redhat.com>
 
+	* doc/invoke.texi (C Dialect Options): Document -aux-info.
+	(Debugging Options): Document -print-multi-directory and
+	-print-multi-lib.
+	* doc/gcc.1: Rebuilt.
+
 	* toplev.c (independent_decode_option): Require `=' between
 	`-aux-info' and filename in the same argument.
 	* gcc.c: Don't pass -aux-info=filename twice.

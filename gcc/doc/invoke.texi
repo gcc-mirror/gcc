@@ -157,7 +157,8 @@ in the following sections.
 @item C Language Options
 @xref{C Dialect Options,,Options Controlling C Dialect}.
 @gccoptlist{
--ansi  -std=@var{standard}  -fno-asm  -fno-builtin @gol
+-ansi  -std=@var{standard}  -aux-info @var{filename} @gol
+-fno-asm  -fno-builtin @gol
 -fhosted  -ffreestanding @gol
 -trigraphs  -traditional  -traditional-cpp @gol
 -fallow-single-precision  -fcond-mismatch @gol
@@ -243,6 +244,7 @@ in the following sections.
 -g  -g@var{level}  -gcoff  -gdwarf  -gdwarf-1  -gdwarf-1+  -gdwarf-2 @gol
 -ggdb  -gstabs  -gstabs+  -gxcoff  -gxcoff+ @gol
 -p  -pg  -print-file-name=@var{library}  -print-libgcc-file-name @gol
+-print-multi-directory  -print-multi-lib @gol
 -print-prog-name=@var{program}  -print-search-dirs  -Q @gol
 -save-temps  -time}
 
@@ -954,6 +956,22 @@ the @code{inline} keyword in ISO C99) are not disabled.
 
 @xref{Standards,,Language Standards Supported by GCC}, for details of
 these standard versions.
+
+@item -aux-info @var{filename}
+@opindex aux-info
+Output to the given filename prototyped declarations for all functions
+declared and/or defined in a translation unit, including those in header
+files.  This option is silently ignored in any language other than C.
+
+Besides declarations, the file indicates, in comments, the origin of
+each declaration (source file and line), whether the declaration was
+implicit, prototyped or unprototyped (@samp{I}, @samp{N} for new or
+@samp{O} for old, respectively, in the first character after the line
+number and the colon), and whether it came from a declaration or a
+definition (@samp{C} or @samp{F}, respectively, in the following
+character).  In the case of function definitions, a K&R-style list of
+arguments followed by their declarations is also provided, inside
+comments, after the declaration.
 
 @item -fno-asm
 @opindex fno-asm
@@ -3026,6 +3044,20 @@ Print the full absolute name of the library file @var{library} that
 would be used when linking---and don't do anything else.  With this
 option, GCC does not compile or link anything; it just prints the
 file name.
+
+@item -print-multi-directory
+@opindex print-multi-directory
+Print the directory name corresponding to the multilib selected by any
+other switches present in the command line.  This directory is supposed
+to exist in @env{GCC_EXEC_PREFIX}.
+
+@item -print-multi-lib
+@opindex print-multi-lib
+Print the mapping from multilib directory names to compiler switches
+that enable them.  The directory name is separated from the switches by
+@samp{;}, and each switch starts with an @samp{@@} instead of the
+@samp{-}, without spaces between multiple switches.  This is supposed to
+ease shell-processing.
 
 @item -print-prog-name=@var{program}
 @opindex print-prog-name
@@ -9522,7 +9554,7 @@ the existing @samp{.X} file because it is newer than the source file.
 For example:
 
 @example
-gcc -Dfoo=bar file1.c -aux-info
+gcc -Dfoo=bar file1.c -aux-info file1.X
 protoize *.c
 @end example
 
