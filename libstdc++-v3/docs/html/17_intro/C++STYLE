@@ -99,8 +99,8 @@ Notable areas of divergence from what may be previous local practice
 07. Member initialization lists
    All one line, separate from class name.
 
-  gribble::gribble() :
-  _M_private_data(0), _M_more_stuff(0), _M_helper(0);
+  gribble::gribble() 
+  : _M_private_data(0), _M_more_stuff(0), _M_helper(0);
   { }
   -NOT-
   gribble::gribble() : _M_private_data(0), _M_more_stuff(0), _M_helper(0);

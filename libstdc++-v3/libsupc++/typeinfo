@@ -48,86 +48,90 @@ namespace __cxxabiv1
 } // namespace __cxxabiv1
 #endif
 
-namespace std {
+namespace std 
+{
+  class type_info 
+  {
+  public:
+    // Destructor. Being the first non-inline virtual function, this
+    // controls in which translation unit the vtable is emitted. The
+    // compiler makes use of that information to know where to emit
+    // the runtime-mandated type_info structures in the new-abi.
+    virtual ~type_info();
 
-class type_info {
-public:
-  // Destructor. Being the first non-inline virtual function, this controls in
-  // which translation unit the vtable is emitted. The compiler makes use of
-  // that information to know where to emit the runtime-mandated type_info
-  // structures in the new-abi.
-  virtual ~type_info ();
-
-private:
-  // Assigning type_info is not supported.  made private.
-  type_info& operator= (const type_info&);
-  type_info (const type_info&);
-
-protected:
-  const char *__name;
-
-protected:
-  explicit type_info (const char *__n): __name (__n) { }
-
-public:
-  // the public interface
+  private:
+    // Assigning type_info is not supported.  made private.
+    type_info& operator=(const type_info&);
+    type_info(const type_info&);
+    
+  protected:
+    const char *__name;
+    
+  protected:
+    explicit type_info(const char *__n): __name(__n) { }
+    
+  public:
+    // the public interface
 #if !defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100
-  // In old abi, there can be multiple instances of a type_info object for one
-  // type. Uniqueness must use the _name value, not object address.
-  bool before (const type_info& arg) const;
-  const char* name () const
+    // In old abi, there can be multiple instances of a type_info
+    // object for one type. Uniqueness must use the _name value, not
+    // object address.
+    bool before(const type_info& arg) const;
+    const char* name() const
     { return __name; }
-  bool operator== (const type_info& __arg) const;
-  bool operator!= (const type_info& __arg) const
-    { return !operator== (__arg); }
+    bool operator==(const type_info& __arg) const;
+    bool operator!=(const type_info& __arg) const
+    { return !operator==(__arg); }
 
 #else
-  // In new abi we can rely on type_info's NTBS being unique,
-  // and therefore address comparisons are sufficient.
-  bool before (const type_info& __arg) const
+    // In new abi we can rely on type_info's NTBS being unique,
+    // and therefore address comparisons are sufficient.
+    bool before(const type_info& __arg) const
     { return __name < __arg.__name; }
-  const char* name () const
+    const char* name() const
     { return __name; }
-  bool operator== (const type_info& __arg) const
+    bool operator==(const type_info& __arg) const
     { return __name == __arg.__name; }
-  bool operator!= (const type_info& __arg) const
-    { return !operator== (__arg); }
+    bool operator!=(const type_info& __arg) const
+    { return !operator==(__arg); }
 #endif
-
-  // the internal interface
+    
+    // the internal interface
 #if defined(__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100
-public:
-  // return true if this is a pointer type of some kind
-  virtual bool __is_pointer_p () const;
-  // return true if this is a function type
-  virtual bool __is_function_p () const;
+  public:
+    // return true if this is a pointer type of some kind
+    virtual bool __is_pointer_p() const;
+    // return true if this is a function type
+    virtual bool __is_function_p() const;
 
-  // Try and catch a thrown type. Store an adjusted pointer to the caught type
-  // in THR_OBJ. If THR_TYPE is not a pointer type, then THR_OBJ points to the
-  // thrown object. If THR_TYPE is a pointer type, then THR_OBJ is the pointer
-  // itself. OUTER indicates the number of outer pointers, and whether they
-  // were const qualified.
-  virtual bool __do_catch (const type_info *__thr_type, void **__thr_obj,
-                         unsigned __outer) const;
+    // Try and catch a thrown type. Store an adjusted pointer to the
+    // caught type in THR_OBJ. If THR_TYPE is not a pointer type, then
+    // THR_OBJ points to the thrown object. If THR_TYPE is a pointer
+    // type, then THR_OBJ is the pointer itself. OUTER indicates the
+    // number of outer pointers, and whether they were const
+    // qualified.
+    virtual bool __do_catch(const type_info *__thr_type, void **__thr_obj,
+			    unsigned __outer) const;
 
-  // internally used during catch matching
-  virtual bool __do_upcast (const __cxxabiv1::__class_type_info *__target,
-			    void **__obj_ptr) const;
+    // internally used during catch matching
+    virtual bool __do_upcast(const __cxxabiv1::__class_type_info *__target,
+			     void **__obj_ptr) const;
 #endif
-};
+  };
 
-class bad_cast : public exception {
-public:
-  bad_cast() { }
-  virtual ~bad_cast() { }
-};
-
-class bad_typeid : public exception {
- public:
-  bad_typeid () { }
-  virtual ~bad_typeid () { }
-};
-
+  class bad_cast : public exception 
+  {
+  public:
+    bad_cast() throw() { }
+    virtual ~bad_cast() throw() { }
+  };
+  
+  class bad_typeid : public exception 
+  {
+  public:
+    bad_typeid () throw() { }
+    virtual ~bad_typeid () throw() { }
+  };
 } // namespace std
 
 } // extern "C++"

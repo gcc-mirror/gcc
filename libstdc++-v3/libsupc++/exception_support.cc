@@ -1,5 +1,7 @@
 // Functions for Exception Support for -*- C++ -*-
-// Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation
+
+// Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+// 2001 Free Software Foundation
 
 // This file is part of GNU CC.
 
@@ -56,7 +58,7 @@ static std::unexpected_handler __unexpected_func __attribute__((__noreturn__))
   = __default_unexpected;
 
 std::terminate_handler
-std::set_terminate (std::terminate_handler func)
+std::set_terminate (std::terminate_handler func) throw()
 {
   std::terminate_handler old = __terminate_func;
 
@@ -65,7 +67,7 @@ std::set_terminate (std::terminate_handler func)
 }
 
 std::unexpected_handler
-std::set_unexpected (std::unexpected_handler func)
+std::set_unexpected (std::unexpected_handler func) throw()
 {
   std::unexpected_handler old = __unexpected_func;
 
@@ -374,14 +376,15 @@ THROW_BAD_TYPEID ()
 /* Has the current exception been caught?  */
 
 bool
-std::uncaught_exception ()
+std::uncaught_exception () throw()
 {
   cp_eh_info *p = CP_EH_INFO;
   return p && ! p->caught;
 }
 
-const char * std::exception::
-what () const
+const char * 
+std::exception::
+what () const throw()
 {
   return typeid (*this).name ();
 }
