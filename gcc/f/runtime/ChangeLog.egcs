@@ -1,3 +1,7 @@
+Fri Aug 22 08:55:12 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (UOBJ): Include symlnk.
+
 Wed Aug 20 23:18:46 1997  Mumit Khan  (khan@xraylith.wisc.edu)
 
 	* Makefile.in (UOBJ): Include mclock. 
