@@ -674,9 +674,9 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 DATA =  $(data_DATA) $(toolexeclib_DATA)
 
-DIST_COMMON =  COPYING.LIB ChangeLog Makefile.am Makefile.in acconfig.h \
-acinclude.m4 aclocal.m4 configure configure.in include/config.h.in \
-include/stamp-h.in libgcj.spec.in
+DIST_COMMON =  COPYING.LIB ChangeLog Makefile.am Makefile.in NEWS THANKS \
+acconfig.h acinclude.m4 aclocal.m4 configure configure.in \
+include/config.h.in include/stamp-h.in libgcj.spec.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)

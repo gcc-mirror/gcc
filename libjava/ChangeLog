@@ -1,3 +1,8 @@
+1999-08-01  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* acinclude.m4 (version): Set to 2.95.0.
+
 Sun Aug  1 16:29:25 1999  Tom Tromey  <tromey@ferrule.cygnus.com>
 
 	* Makefile.in: Rebuilt.

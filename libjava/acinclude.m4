@@ -32,7 +32,7 @@ AC_SUBST(libgcj_basedir)
 AC_CANONICAL_HOST
 
 dnl version is pulled out to make it a bit easier to change using sed.
-version=0.0.7
+version=2.95.0
 dnl Still use "libjava" here to placate dejagnu.
 AM_INIT_AUTOMAKE(libjava, $version)
 
