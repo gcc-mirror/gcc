@@ -1,3 +1,8 @@
+2001-01-27  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
+
+	* fixproto: Correctly install synthesised unistd.h and stdlib.h when
+	they didn't need fixing.
+
 2001-01-27  Janis Johnson <janis@us.ibm.com>
 
 	* config.gcc (i[34567]86-sequent-{ptx4*,sysv4*}): Use usegas.h

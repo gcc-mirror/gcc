@@ -310,7 +310,12 @@ EOF
 EOF
     ${FIX_HEADER} $rel_source_file tmp.h $abs_target_dir/$rel_source_file ${DEFINES} $include_path
     if test $? != 0 ; then exit 1 ; fi
-    rm tmp.h
+    if test -f $abs_target_dir/$rel_source_file
+    then
+      rm tmp.h
+    else
+      mv tmp.h $abs_target_dir/$rel_source_file
+    fi
   fi
 done
 
