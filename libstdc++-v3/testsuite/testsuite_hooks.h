@@ -68,6 +68,7 @@
 # define VERIFY(fn) test &= (fn)
 #endif
 #include <list>
+#include <locale>
 
 namespace __gnu_cxx_test
 {
@@ -105,9 +106,9 @@ namespace __gnu_cxx_test
   void 
   run_tests_wrapped_env(const char*, const char*, const func_callback&);
 
-  // Run select unit test inside exception catcher for non-C named locale
-  void 
-  run_test_wrapped_generic_locale_exception_catcher(const test_func);
+  // Try to create a locale with the given name. If it fails, bail.
+  std::locale
+  try_named_locale(const char* name);
 
   // Test data types.
   struct pod_char

@@ -43,7 +43,7 @@ test02()
   os2.setf(ios::fixed);
 
   // Check it can be done in a locale with grouping on.
-  locale loc2("de_DE");
+  locale loc2 = __gnu_cxx_test::try_named_locale("de_DE");
   os2.imbue(loc2);
   os2 << fixed << setprecision(3) << val2 << endl;
   os2 << endl;
@@ -53,6 +53,6 @@ test02()
 int 
 main()
 {
-  __gnu_cxx_test::run_test_wrapped_generic_locale_exception_catcher(test02);
+  test02();
   return 0;
 }

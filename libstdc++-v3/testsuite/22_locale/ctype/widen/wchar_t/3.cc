@@ -38,7 +38,7 @@ void test03()
   using namespace std;
   bool test = true;
 
-  locale loc ("se_NO.UTF-8");
+  locale loc = __gnu_cxx_test::try_named_locale("se_NO.UTF-8");
   const ctype<wchar_t>& wct = use_facet<ctype<wchar_t> >(loc);
 
   const char* strlit = "\xc2\x80";

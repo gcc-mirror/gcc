@@ -80,7 +80,7 @@ namespace std
 
       static char_type* 
       copy(char_type* __s1, const char_type* __s2, size_t __n)
-      {  return static_cast<char_type*>(memcpy(__s1, __s2, __n)); }
+      { return static_cast<char_type*>(memcpy(__s1, __s2, __n)); }
 
       static char_type* 
       assign(char_type* __s, size_t __n, char_type __a);
@@ -170,7 +170,7 @@ void test01()
 
   // 3
   // explicit locale(const char* std_name)
-  locale loc06("fr_FR");
+  locale loc06 = __gnu_cxx_test::try_named_locale("fr_FR");
   VERIFY (loc06 != loc01);  
   VERIFY (loc06 != loc02);  
   VERIFY (loc06.name() == "fr_FR");

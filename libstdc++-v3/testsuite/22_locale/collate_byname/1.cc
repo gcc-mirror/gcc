@@ -32,11 +32,11 @@ void test01()
   string str;
   locale loc_c = locale::classic();
 
+  locale loc_de = __gnu_cxx_test::try_named_locale("de_DE");
+  str = loc_de.name();
+
   locale loc_byname(locale::classic(), new collate_byname<char>("de_DE"));
   str = loc_byname.name();
-
-  locale loc_de("de_DE");
-  str = loc_de.name();
 
   VERIFY( loc_de != loc_byname );
 
@@ -131,6 +131,6 @@ void test01()
 
 int main()
 {
-  __gnu_cxx_test::run_test_wrapped_generic_locale_exception_catcher(test01);
+  test01();
   return 0;
 }

@@ -29,7 +29,7 @@ void test02()
   
   bool test = true;
 
-  locale loc_it("it_IT");
+  locale loc_it = __gnu_cxx_test::try_named_locale("it_IT");
 
   const numpunct<char>& nump_it = use_facet<numpunct<char> >(loc_it); 
 
@@ -40,6 +40,6 @@ void test02()
 
 int main()
 {
-  __gnu_cxx_test::run_test_wrapped_generic_locale_exception_catcher(test02);
+  test02();
   return 0;
 }

@@ -33,7 +33,7 @@ void test03()
   const char* LC_ALL_orig = getenv("LC_ALL");
   if (!setenv("LC_ALL", "it_IT", 1))
     {
-      std::locale loc(""); 
+      std::locale loc = __gnu_cxx_test::try_named_locale(""); 
       VERIFY( loc.name() == "it_IT" );
       setenv("LC_ALL", LC_ALL_orig ? LC_ALL_orig : "", 1);
     }
@@ -42,6 +42,6 @@ void test03()
 
 int main()
 {
-  __gnu_cxx_test::run_test_wrapped_generic_locale_exception_catcher(test03);
+  test03();
   return 0;
 }

@@ -32,7 +32,7 @@ void test03()
 
   // basic construction
   locale loc_c = locale::classic();
-  locale loc_de("de_DE");
+  locale loc_de = __gnu_cxx_test::try_named_locale("de_DE");
   VERIFY( loc_c != loc_de );
 
   // cache the collate facets

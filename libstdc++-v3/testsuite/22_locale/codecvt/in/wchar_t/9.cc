@@ -111,7 +111,7 @@ void test09()
   int_type*		ito = i_arr;
   int_type*		ito_next;
 
-  locale 		loc ("en_US.UTF-8");
+  locale loc = __gnu_cxx_test::try_named_locale("en_US.UTF-8");
   locale::global(loc);
   const w_codecvt* 	cvt = &use_facet<w_codecvt>(loc); 
 

@@ -52,7 +52,7 @@ void test07()
   const ext_type*       efrom_next;
   int 			size = strlen(e_lit);
 
-  locale 		loc ("en_US.UTF-8");
+  locale loc = __gnu_cxx_test::try_named_locale("en_US.UTF-8");
   locale::global(loc);
   const w_codecvt* 	cvt = &use_facet<w_codecvt>(loc); 
 

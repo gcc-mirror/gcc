@@ -1,6 +1,6 @@
 // Wrapper for underlying C-language localization -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -216,7 +216,7 @@ namespace std
 				    __c_locale)
   {
     __cloc = NULL;
-    if (strcmp (__s, "C"))
+    if (strcmp(__s, "C"))
       __throw_runtime_error("attempt to create locale from unhandled name in generic implementation; see http://gcc.gnu.org/ml/libstdc++/2003-02/msg00345.html");
   }
 
