@@ -545,6 +545,7 @@ cpp_reader_init (pfile)
   CPP_OPTION (pfile, warn_import) = 1;
   CPP_OPTION (pfile, discard_comments) = 1;
   CPP_OPTION (pfile, show_column) = 1;
+  CPP_OPTION (pfile, tabstop) = 8;
 
   CPP_OPTION (pfile, pending) =
     (struct cpp_pending *) xcalloc (1, sizeof (struct cpp_pending));
@@ -1079,6 +1080,7 @@ new_pending_directive (pend, text, handler)
 #define no_fil N_("File name missing after %s")
 #define no_mac N_("Macro name missing after %s")
 #define no_pth N_("Path name missing after %s")
+#define no_num N_("Number missing after %s")
 
 /* This is the list of all command line options, with the leading
    "-" removed.  It must be sorted in ASCII collating order.  */
@@ -1108,6 +1110,7 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("fno-show-column",          0,      OPT_fno_show_column)            \
   DEF_OPT("fpreprocessed",            0,      OPT_fpreprocessed)              \
   DEF_OPT("fshow-column",             0,      OPT_fshow_column)               \
+  DEF_OPT("ftabstop=",                no_num, OPT_ftabstop)                   \
   DEF_OPT("g",                        no_arg, OPT_g)  /* arg optional */      \
   DEF_OPT("h",                        0,      OPT_h)                          \
   DEF_OPT("idirafter",                no_dir, OPT_idirafter)                  \
@@ -1311,6 +1314,16 @@ handle_option (pfile, argc, argv)
 	  break;
 	case OPT_fno_show_column:
 	  CPP_OPTION (pfile, show_column) = 0;
+	  break;
+	case OPT_ftabstop:
+	  /* Silently ignore empty string, non-longs and silly values.  */
+	  if (arg[0] != '\0')
+	    {
+	      char *endptr;
+	      long tabstop = strtol (arg, &endptr, 10);
+	      if (*endptr == '\0' && tabstop >= 1 && tabstop <= 100)
+		CPP_OPTION (pfile, tabstop) = tabstop;
+	    }
 	  break;
 	case OPT_w:
 	  CPP_OPTION (pfile, inhibit_warnings) = 1;
@@ -1833,6 +1846,7 @@ Switches:\n\
   -dD                       Preserve macro definitions in output\n\
   -dN                       As -dD except that only the names are preserved\n\
   -dI                       Include #include directives in the output\n\
+  -ftabstop=<number>        Distance between tab stops for column reporting\n\
   -P                        Do not generate #line directives\n\
   -$                        Do not allow '$' in identifiers\n\
   -remap                    Remap file names when including files.\n\
