@@ -1,4 +1,7 @@
 // GROUPS passed references
+
+// execution test - XFAIL *-*-*
+
 #include <stdio.h>
 #include <stdlib.h>
 

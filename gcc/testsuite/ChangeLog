@@ -1,5 +1,11 @@
 2000-05-28  Alexandre Oliva  <aoliva@cygnus.com>
 
+	* g++.old-deja/g++.law/refs4.C: Mark as XFAIL.
+	* g++.old-deja/g++.law/temps4.C: Likewise.
+
+
+2000-05-28  Alexandre Oliva  <aoliva@cygnus.com>
+
 	* g++.old-deja/g++.brendan/code-gen4.C: Include stdio.h and
 	stdlib.h.  Call abort() on failure.
 	* g++.old-deja/g++.law/refs4.C: Likewise.
