@@ -1,6 +1,6 @@
 // DecimalFormatSymbols.java - Symbols used to format numbers.
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -14,6 +14,8 @@ import java.io.Serializable;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.io.ObjectInputStream;
+import java.io.IOException;
 
 /**
  * @author Tom Tromey <tromey@cygnus.com>
@@ -21,7 +23,7 @@ import java.util.ResourceBundle;
  */
 /* Written using "Java Class Libraries", 2nd edition, plus online
  * API docs for JDK 1.2 from http://www.javasoft.com.
- * Status:  Believed complete and correct to 1.2, except serialization.
+ * Status:  Believed complete and correct to 1.2.
  */
 
 public final class DecimalFormatSymbols implements Cloneable, Serializable
@@ -40,6 +42,7 @@ public final class DecimalFormatSymbols implements Cloneable, Serializable
       this.groupingSeparator = orig.groupingSeparator;
       this.infinity = orig.infinity;
       this.intlCurrencySymbol = orig.intlCurrencySymbol;
+      this.monetarySeparator = orig.monetarySeparator;
       this.minusSign = orig.minusSign;
       this.NaN = orig.NaN;
       this.patternSeparator = orig.patternSeparator;
@@ -107,6 +110,14 @@ public final class DecimalFormatSymbols implements Cloneable, Serializable
       infinity = safeGetString (res, "infinity", "\u221e");
       // FIXME: default?
       intlCurrencySymbol = safeGetString (res, "intlCurrencySymbol", "$");
+      try
+        {
+	  monetarySeparator = safeGetChar (res, "monetarySeparator", '.');
+	}
+      catch (MissingResourceException x)
+        {
+	  monetarySeparator = decimalSeparator;
+	}
       minusSign = safeGetChar (res, "minusSign", '-');
       NaN = safeGetString (res, "NaN", "\ufffd");
       patternSeparator = safeGetChar (res, "patternSeparator", ';');
@@ -128,6 +139,7 @@ public final class DecimalFormatSymbols implements Cloneable, Serializable
 	      && infinity.equals(dfs.infinity)
 	      && intlCurrencySymbol.equals(dfs.intlCurrencySymbol)
 	      && minusSign == dfs.minusSign
+	      && monetarySeparator == dfs.monetarySeparator
 	      && NaN.equals(dfs.NaN)
 	      && patternSeparator == dfs.patternSeparator
 	      && percent == dfs.percent
@@ -174,6 +186,11 @@ public final class DecimalFormatSymbols implements Cloneable, Serializable
   public char getMinusSign ()
     {
       return minusSign;
+    }
+
+  public char getMonetaryDecimalSeparator ()
+    {
+      return monetarySeparator;
     }
 
   public String getNaN ()
@@ -250,6 +267,11 @@ public final class DecimalFormatSymbols implements Cloneable, Serializable
       this.minusSign = minusSign;
     }
 
+  public void setMonetaryDecimalSeparator (char decimalSep)
+    {
+      monetarySeparator = decimalSep;
+    }
+
   public void setNaN (String nan)
     {
       NaN = nan;
@@ -285,9 +307,24 @@ public final class DecimalFormatSymbols implements Cloneable, Serializable
   private String infinity;
   private String intlCurrencySymbol;
   private char minusSign;
+  private char monetarySeparator;
   private String NaN;
   private char patternSeparator;
   private char percent;
   private char perMill;
+  private int serialVersionOnStream = 1;
   private char zeroDigit;
+  private static final long serialVersionUID = 5772796243397350300L;
+
+  private void readObject(ObjectInputStream stream)
+    throws IOException, ClassNotFoundException
+  {
+    stream.defaultReadObject();
+    if (serialVersionOnStream < 1)
+      {
+        monetarySeparator = decimalSeparator;
+	exponential = 'E';
+	serialVersionOnStream = 1;
+      }
+  }
 }

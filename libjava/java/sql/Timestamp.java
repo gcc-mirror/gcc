@@ -1,5 +1,5 @@
 /* Time.java -- Wrapper around java.util.Date
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,7 +39,7 @@ import java.text.SimpleDateFormat;
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public class Timestamp extends java.util.Date implements java.io.Serializable
+public class Timestamp extends java.util.Date
 {
 
 /*
@@ -55,6 +55,11 @@ private static SimpleDateFormat parse_sdf =
 
 private static SimpleDateFormat format_sdf =
   new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+/**
+  * This is the serialization UID for this class.
+  */
+private static final long serialVersionUID = 3581463369166924961L;
 
 /*************************************************************************/
 

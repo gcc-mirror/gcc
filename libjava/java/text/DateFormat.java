@@ -219,11 +219,6 @@ public abstract class DateFormat extends Format implements Cloneable
     return getDateTimeInstance (DEFAULT, DEFAULT, Locale.getDefault());
   }
 
-  public static final DateFormat getDateTimeInstance (int style)
-  {
-    return getDateTimeInstance (style, style, Locale.getDefault());
-  }
-
   public static final DateFormat getDateTimeInstance (int dateStyle, 
 						      int timeStyle)
   {

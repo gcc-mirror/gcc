@@ -1,3 +1,32 @@
+2000-10-10  Warren Levy  <warrenl@cygnus.com>
+
+	* gnu/gcj/text/LocaleData_en.java (monetarySeparator): Added.
+	* java/sql/Date.java (serialVersionUID): New field.
+	* java/sql/Time.java (serialVersionUID): New field.
+	* java/sql/Timestamp.java (serialVersionUID): New field.
+	* java/text/ChoiceFormat.java (serialVersionUID): New field.
+	* java/text/DateFormat.java (getDateTimeInstance (int)): Removed.
+	* java/text/DateFormatSymbols.java (serialVersionUID): New field.
+	* java/text/DecimalFormat.java (serialVersionOnStream): New field.
+	(readObject): New serialization method.
+	* java/text/DecimalFormatSymbols.java (monetarySeparator): New field.
+	(serialVersionOnStream): New field.
+	(readObject): New serialization method.
+	(getMonetaryDecimalSeparator): New method.
+	(setMonetaryDecimalSeparator): New method.
+	* java/text/NumberFormat.java (maxFractionDigits): New field.
+	(maxIntegerDigits): New field.
+	(minFractionDigits): New field.
+	(minIntegerDigits): New field.
+	(serialVersionOnStream): New field.
+	(serialVersionUID): New field.
+	(readObject): New serialization method.
+	(writeObject): New serialization method.
+	* java/text/SimpleDateFormat.java (defaultCenturyStart): Initialized.
+	(serialVersionOnStream): New field.
+	(serialVersionUID): New field.
+	(readObject): New serialization method.
+
 2000-10-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (GCJ): Avoid bogus error message when looking for
