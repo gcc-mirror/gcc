@@ -1,3 +1,22 @@
+2001-08-01  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* include/posix.h (_POSIX_PII_SOCKET): Define.
+	* configure.in (HAVE_SOCKLEN_T): Define.
+	* java/net/natPlainSocketImpl.cc [!HAVE_SOCKLEN_T]: Move socklen_t
+	definition up. 
+	(_JV_accept): New function, avoids Tru64 UNIX accept macro.
+	(java::net::PlainSocketImpl::accept): Use it.
+	Fixes PRs libgcj/3694, libgcj/3696.
+	
+	* configure.in (HAVE_STRUCT_IPV6_MREQ): New test.
+	* acconfig.h (HAVE_STRUCT_IPV6_MREQ): Provide template.
+	* configure, include/config.h.in: Regenerate.
+	* java/net/natPlainDatagramSocketImpl.cc (union McastReq): Use it.
+	(mcastGrp): Likewise.
+	(java::net::PlainDatagramSocketImpl::setOption): Guard against
+	missing IPV6_MULTICAST_IF.
+	Fixes PR libgcj/3694.
+
 2001-07-31  Christian Iseli  <chris@ludwig-alpha.unil.ch>
 
 	* Makefile.in: Rebuilt.

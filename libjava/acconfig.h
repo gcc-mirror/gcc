@@ -65,6 +65,9 @@
 /* Define if struct ip_mreq is defined in netinet/in.h.  */
 #undef HAVE_STRUCT_IP_MREQ
 
+/* Define if struct ipv6_mreq is defined in netinet/in.h.  */
+#undef HAVE_STRUCT_IPV6_MREQ
+
 /* Define it socklen_t typedef is in sys/socket.h.  */
 #undef HAVE_SOCKLEN_T
 
