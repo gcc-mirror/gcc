@@ -2527,6 +2527,7 @@ m68hc11_split_move (to, from, scratch)
   rtx low_to, low_from;
   rtx high_to, high_from;
   enum machine_mode mode;
+  int offset = 0;
 
   mode = GET_MODE (to);
   if (GET_MODE_SIZE (mode) == 8)
@@ -2535,6 +2536,22 @@ m68hc11_split_move (to, from, scratch)
     mode = HImode;
   else
     mode = QImode;
+
+  if (TARGET_M6812
+      && IS_STACK_PUSH (to)
+      && reg_mentioned_p (gen_rtx (REG, HImode, HARD_SP_REGNUM), from))
+    {
+      if (mode == SImode)
+        {
+          offset = 4;
+        }
+      else if (mode == HImode)
+        {
+          offset = 2;
+        }
+      else
+        offset = 0;
+    }
 
   low_to = m68hc11_gen_lowpart (mode, to);
   high_to = m68hc11_gen_highpart (mode, to);
@@ -2550,6 +2567,11 @@ m68hc11_split_move (to, from, scratch)
   else
     high_from = m68hc11_gen_highpart (mode, from);
 
+  if (offset)
+    {
+      high_from = adj_offsettable_operand (high_from, offset);
+      low_from = high_from;
+    }
   if (mode == SImode)
     {
       m68hc11_split_move (low_to, low_from, scratch);
@@ -2842,6 +2864,7 @@ m68hc11_gen_movhi (insn, operands)
     {
       if (IS_STACK_PUSH (operands[0]) && H_REG_P (operands[1]))
 	{
+          cc_status = cc_prev_status;
 	  switch (REGNO (operands[1]))
 	    {
 	    case HARD_X_REGNUM:
@@ -2856,6 +2879,7 @@ m68hc11_gen_movhi (insn, operands)
 	}
       if (IS_STACK_POP (operands[1]) && H_REG_P (operands[0]))
 	{
+          cc_status = cc_prev_status;
 	  switch (REGNO (operands[0]))
 	    {
 	    case HARD_X_REGNUM:
@@ -2870,6 +2894,7 @@ m68hc11_gen_movhi (insn, operands)
 	}
       if (H_REG_P (operands[0]) && H_REG_P (operands[1]))
 	{
+          m68hc11_notice_keep_cc (operands[0]);
 	  output_asm_insn ("tfr\t%1,%0", operands);
 	}
       else if (H_REG_P (operands[0]))
@@ -2911,6 +2936,7 @@ m68hc11_gen_movhi (insn, operands)
 	      else
 		{
 		  /* !!!! SCz wrong here.  */
+                  fatal_insn ("Move insn not handled", insn);
 		}
 	    }
 	  else
@@ -2922,6 +2948,7 @@ m68hc11_gen_movhi (insn, operands)
 		}
 	      else
 		{
+                  m68hc11_notice_keep_cc (operands[0]);
 		  output_asm_insn ("movw\t%1,%0", operands);
 		}
 	    }
@@ -2931,6 +2958,7 @@ m68hc11_gen_movhi (insn, operands)
 
   if (IS_STACK_POP (operands[1]) && H_REG_P (operands[0]))
     {
+      cc_status = cc_prev_status;
       switch (REGNO (operands[0]))
 	{
 	case HARD_X_REGNUM:
@@ -2966,7 +2994,7 @@ m68hc11_gen_movhi (insn, operands)
 		}
 	      else
 		{
-		  cc_status = cc_prev_status;
+                  m68hc11_notice_keep_cc (operands[0]);
 		  output_asm_insn ("pshx\n\tpula\n\tpulb", operands);
 		}
 	    }
@@ -3021,7 +3049,7 @@ m68hc11_gen_movhi (insn, operands)
 		}
 	      else
 		{
-		  cc_status = cc_prev_status;
+		  m68hc11_notice_keep_cc (operands[0]);
 		  output_asm_insn ("pshb", operands);
 		  output_asm_insn ("psha", operands);
 		  output_asm_insn ("pulx", operands);
@@ -3077,7 +3105,7 @@ m68hc11_gen_movhi (insn, operands)
 	case HARD_SP_REGNUM:
 	  if (D_REG_P (operands[1]))
 	    {
-	      cc_status = cc_prev_status;
+	      m68hc11_notice_keep_cc (operands[0]);
 	      output_asm_insn ("xgdx", operands);
 	      output_asm_insn ("txs", operands);
 	      output_asm_insn ("xgdx", operands);
@@ -3118,6 +3146,7 @@ m68hc11_gen_movhi (insn, operands)
 
   if (IS_STACK_PUSH (operands[0]) && H_REG_P (operands[1]))
     {
+      cc_status = cc_prev_status;
       switch (REGNO (operands[1]))
 	{
 	case HARD_X_REGNUM:
@@ -3201,25 +3230,26 @@ m68hc11_gen_movqi (insn, operands)
 
       if (H_REG_P (operands[0]) && H_REG_P (operands[1]))
 	{
+          m68hc11_notice_keep_cc (operands[0]);
 	  output_asm_insn ("tfr\t%1,%0", operands);
 	}
       else if (H_REG_P (operands[0]))
 	{
 	  if (Q_REG_P (operands[0]))
-	    output_asm_insn ("lda%0\t%1", operands);
+	    output_asm_insn ("lda%0\t%b1", operands);
 	  else if (D_REG_P (operands[0]))
-	    output_asm_insn ("ldab\t%1", operands);
+	    output_asm_insn ("ldab\t%b1", operands);
 	  else
-	    output_asm_insn ("ld%0\t%1", operands);
+	    goto m6811_move;
 	}
       else if (H_REG_P (operands[1]))
 	{
 	  if (Q_REG_P (operands[1]))
-	    output_asm_insn ("sta%1\t%0", operands);
+	    output_asm_insn ("sta%1\t%b0", operands);
 	  else if (D_REG_P (operands[1]))
-	    output_asm_insn ("staa\t%0", operands);
+	    output_asm_insn ("stab\t%b0", operands);
 	  else
-	    output_asm_insn ("st%1\t%0", operands);
+	    goto m6811_move;
 	}
       else
 	{
@@ -3246,6 +3276,7 @@ m68hc11_gen_movqi (insn, operands)
 	      else
 		{
 		  /* !!!! SCz wrong here.  */
+                  fatal_insn ("Move insn not handled", insn);
 		}
 	    }
 	  else
@@ -3256,13 +3287,15 @@ m68hc11_gen_movqi (insn, operands)
 		}
 	      else
 		{
-		  output_asm_insn ("movb\t%1,%0", operands);
+                  m68hc11_notice_keep_cc (operands[0]);
+		  output_asm_insn ("movb\t%b1,%b0", operands);
 		}
 	    }
 	}
       return;
     }
 
+ m6811_move:
   if (H_REG_P (operands[0]))
     {
       switch (REGNO (operands[0]))
@@ -3637,6 +3670,24 @@ m68hc11_notice_update_cc (exp, insn)
       && reg_overlap_mentioned_p (cc_status.value1, cc_status.value2))
     cc_status.value2 = 0;
 }
+
+/* The current instruction does not affect the flags but changes
+   the register 'reg'.  See if the previous flags can be kept for the
+   next instruction to avoid a comparison.  */
+void
+m68hc11_notice_keep_cc (reg)
+     rtx reg;
+{
+  if (reg == 0
+      || cc_prev_status.value1 == 0
+      || rtx_equal_p (reg, cc_prev_status.value1)
+      || (cc_prev_status.value2
+          && reg_mentioned_p (reg, cc_prev_status.value2)))
+    CC_STATUS_INIT;
+  else
+    cc_status = cc_prev_status;
+}
+
 
 
 /* Machine Specific Reorg. */

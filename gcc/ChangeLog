@@ -1,5 +1,20 @@
 2001-03-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11.md (*addhi3_68hc12): Fix generation
+	and use m68hc11_notice_keep_cc when using leax/leay.
+	(addhi3 split): Reject split if the insn is handled by 
+	leax/leay above.
+	* config/m68hc11/m68hc11.c (m68hc11_split_move): For 68HC12 the
+	push must be handled in a special way if the source operand uses
+	sp as index register.
+	(m68hc11_notice_keep_cc): New function.
+	(m68hc11_gen_movhi): Use it when an insn changes a register but 
+	not the flags.
+	(m68hc11_gen_movqi): Fix move for 68HC12.
+	* config/m68hc11/m68hc11-protos.h (m68hc11_notice_keep_cc): Declare.
+
+2001-03-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11.c (m68hc11_emit_libcall): Use LCT_CONST
 	and don't pass operands[0] to emit_library_call_value.
 

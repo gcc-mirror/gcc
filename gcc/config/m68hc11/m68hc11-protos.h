@@ -73,6 +73,7 @@ extern int m68hc11_go_if_legitimate_address PARAMS((rtx,
 extern int m68hc11_legitimize_address PARAMS((rtx*, rtx, enum machine_mode));
 
 extern void m68hc11_notice_update_cc PARAMS((rtx, rtx));
+extern void m68hc11_notice_keep_cc PARAMS((rtx));
 
 extern void m68hc11_reorg PARAMS((rtx));
 
