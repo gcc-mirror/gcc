@@ -1252,7 +1252,6 @@ extern short pj_debugreg_renumber_vec[FIRST_PSEUDO_REGISTER];
 #undef  PREFERRED_DEBUGGING_TYPE 
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 #define DWARF2_UNWIND_INFO 1
-#define DWARF_LINE_MIN_INSTR_LENGTH 1
 
 
 /* varargs and stdarg builtins.  */
