@@ -1,3 +1,7 @@
+Thu Sep 17 19:45:01 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (jcf-dump, jvgenmain): Link in memmove.o too.
+
 Thu Sep 17 16:21:52 1998  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in ($(PARSE_H)): Removed target.
