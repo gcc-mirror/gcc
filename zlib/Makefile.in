@@ -83,6 +83,7 @@ PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
 STRIP = @STRIP@
 VERSION = @VERSION@
+mkinstalldirs = @mkinstalldirs@
 target_all = @target_all@
 zlib_basedir = @zlib_basedir@
 
@@ -95,9 +96,12 @@ MULTIDIRS =
 MULTISUBDIR = 
 MULTIDO = true
 MULTICLEAN = true
-@USE_LIBDIR_TRUE@toolexeclibdir = @USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexeclibdir = @USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexecdir = @USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
+@USE_LIBDIR_TRUE@toolexeclibdir = \
+@USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexeclibdir = \
+@USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexecdir = \
+@USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
 
 ZLIB_SOURCES = adler32.c compress.c crc32.c deflate.c deflate.h \
 gzio.c infblock.c infblock.h infcodes.c infcodes.h inffast.c inffast.h \
@@ -105,12 +109,18 @@ inffixed.h inflate.c inftrees.c inftrees.h infutil.c infutil.h trees.c \
 trees.h uncompr.c zconf.h zlib.h zutil.c zutil.h
 
 
-@TARGET_LIBRARY_TRUE@toolexeclib_LTLIBRARIES = @TARGET_LIBRARY_TRUE@@target_all@
-@TARGET_LIBRARY_TRUE@EXTRA_LTLIBRARIES = @TARGET_LIBRARY_TRUE@libzgcj.la
-@TARGET_LIBRARY_TRUE@libzgcj_la_SOURCES = @TARGET_LIBRARY_TRUE@$(ZLIB_SOURCES)
-@TARGET_LIBRARY_TRUE@libzgcj_la_LDFLAGS = @TARGET_LIBRARY_TRUE@-version-info 0:0:0 -rpath $(toolexeclibdir)
-@TARGET_LIBRARY_FALSE@toolexeclib_LIBRARIES = @TARGET_LIBRARY_FALSE@libz.a
-@TARGET_LIBRARY_FALSE@libz_a_SOURCES = @TARGET_LIBRARY_FALSE@$(ZLIB_SOURCES)
+@TARGET_LIBRARY_TRUE@toolexeclib_LTLIBRARIES = \
+@TARGET_LIBRARY_TRUE@@target_all@
+@TARGET_LIBRARY_TRUE@EXTRA_LTLIBRARIES = \
+@TARGET_LIBRARY_TRUE@libzgcj.la
+@TARGET_LIBRARY_TRUE@libzgcj_la_SOURCES = \
+@TARGET_LIBRARY_TRUE@$(ZLIB_SOURCES)
+@TARGET_LIBRARY_TRUE@libzgcj_la_LDFLAGS = \
+@TARGET_LIBRARY_TRUE@-version-info 0:0:0 -rpath $(toolexeclibdir)
+@TARGET_LIBRARY_FALSE@toolexeclib_LIBRARIES = \
+@TARGET_LIBRARY_FALSE@libz.a
+@TARGET_LIBRARY_FALSE@libz_a_SOURCES = \
+@TARGET_LIBRARY_FALSE@$(ZLIB_SOURCES)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
@@ -154,7 +164,6 @@ AM_MAKEFLAGS = \
 	"DESTDIR=$(DESTDIR)"
 
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_CLEAN_FILES = 
 LIBRARIES =  $(toolexeclib_LIBRARIES)
 
@@ -190,7 +199,7 @@ aclocal.m4 configure configure.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 SOURCES = $(libz_a_SOURCES) $(libzgcj_la_SOURCES)
 OBJECTS = $(libz_a_OBJECTS) $(libzgcj_la_OBJECTS)
@@ -392,7 +401,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$d/$$file $(distdir)/$$file; \
+	    cp -pr $$/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
