@@ -1,3 +1,7 @@
+2005-03-01  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in, include/Makefile.in: Regenerate.
+
 2005-02-26  Richard Earnshaw  <rearnsha@arm.com>
 
 	* dyn_load.c: On NetBSD, include machine/elf_machdep.h and define

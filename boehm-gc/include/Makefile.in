@@ -39,14 +39,15 @@ host_triplet = @host@
 target_triplet = @target@
 subdir = include
 DIST_COMMON = $(noinst_HEADERS) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/gc_config.h.in
+	$(srcdir)/Makefile.in $(srcdir)/gc_config.h.in \
+	$(srcdir)/gc_ext_config.h.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../libtool.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-CONFIG_HEADER = gc_config.h
+CONFIG_HEADER = gc_config.h gc_ext_config.h
 CONFIG_CLEAN_FILES =
 SOURCES =
 DIST_SOURCES =
@@ -179,7 +180,7 @@ AUTOMAKE_OPTIONS = foreign
 noinst_HEADERS = gc.h gc_backptr.h gc_local_alloc.h \
   gc_pthread_redirects.h gc_cpp.h
 
-all: gc_config.h
+all: gc_config.h gc_ext_config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
@@ -227,8 +228,18 @@ $(srcdir)/gc_config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	rm -f stamp-h1
 	touch $@
 
+gc_ext_config.h: stamp-h2
+	@if test ! -f $@; then \
+	  rm -f stamp-h2; \
+	  $(MAKE) stamp-h2; \
+	else :; fi
+
+stamp-h2: $(srcdir)/gc_ext_config.h.in $(top_builddir)/config.status
+	@rm -f stamp-h2
+	cd $(top_builddir) && $(SHELL) ./config.status include/gc_ext_config.h
+
 distclean-hdr:
-	-rm -f gc_config.h stamp-h1
+	-rm -f gc_config.h stamp-h1 gc_ext_config.h stamp-h2
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -250,11 +261,11 @@ ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	mkid -fID $$unique
 tags: TAGS
 
-TAGS:  $(HEADERS) $(SOURCES) gc_config.h.in $(TAGS_DEPENDENCIES) \
+TAGS:  $(HEADERS) $(SOURCES) gc_config.h.in gc_ext_config.h.in $(TAGS_DEPENDENCIES) \
 		$(TAGS_FILES) $(LISP)
 	tags=; \
 	here=`pwd`; \
-	list='$(SOURCES) $(HEADERS) gc_config.h.in $(LISP) $(TAGS_FILES)'; \
+	list='$(SOURCES) $(HEADERS) gc_config.h.in gc_ext_config.h.in $(LISP) $(TAGS_FILES)'; \
 	unique=`for i in $$list; do \
 	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
 	  done | \
@@ -266,11 +277,11 @@ TAGS:  $(HEADERS) $(SOURCES) gc_config.h.in $(TAGS_DEPENDENCIES) \
 	    $$tags $$unique; \
 	fi
 ctags: CTAGS
-CTAGS:  $(HEADERS) $(SOURCES) gc_config.h.in $(TAGS_DEPENDENCIES) \
+CTAGS:  $(HEADERS) $(SOURCES) gc_config.h.in gc_ext_config.h.in $(TAGS_DEPENDENCIES) \
 		$(TAGS_FILES) $(LISP)
 	tags=; \
 	here=`pwd`; \
-	list='$(SOURCES) $(HEADERS) gc_config.h.in $(LISP) $(TAGS_FILES)'; \
+	list='$(SOURCES) $(HEADERS) gc_config.h.in gc_ext_config.h.in $(LISP) $(TAGS_FILES)'; \
 	unique=`for i in $$list; do \
 	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
 	  done | \
@@ -317,7 +328,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(HEADERS) gc_config.h
+all-am: Makefile $(HEADERS) gc_config.h gc_ext_config.h
 installdirs:
 install: install-am
 install-exec: install-exec-am
