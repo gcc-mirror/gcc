@@ -151,7 +151,7 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
 	return null;
       }
     if (header != LOCSIG)
-      throw new ZipException("Wrong Local header signature"
+      throw new ZipException("Wrong Local header signature: "
 			     + Integer.toHexString(header));
     /* skip version */
     readLeShort();

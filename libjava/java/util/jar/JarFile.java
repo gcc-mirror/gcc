@@ -67,18 +67,22 @@ public class JarFile extends ZipFile
 
   /**
    * The manifest of this file, if any, otherwise null.
-   * Read by the constructor.
+   * Read when first needed.
    */
-  private final Manifest manifest;
+  private Manifest manifest;
 
-  /** Wether to verify the manifest and all entries */
+  /** Wether to verify the manifest and all entries. */
   private boolean verify;
+
+  /** Wether the has already been loaded. */
+  private boolean manifestRead = false;
 
   // Constructors
 
   /**
-   * Creates a new JarFile, tries to read the manifest and if the manifest
-   * exists verifies it.
+   * Creates a new JarFile. All jar entries are verified (when a Manifest file
+   * for this JarFile exists). You need to actually open and read the complete
+   * jar entry (with <code>getInputStream()</code>) to check its signature.
    *
    * @param fileName the name of the file to open
    * @exception FileNotFoundException if the fileName cannot be found
@@ -90,8 +94,10 @@ public class JarFile extends ZipFile
   }
 
   /**
-   * Creates a new JarFile, tries to read the manifest and if the manifest
-   * exists and verify is true verfies it.
+   * Creates a new JarFile. If verify is true then all jar entries are
+   * verified (when a Manifest file for this JarFile exists). You need to
+   * actually open and read the complete jar entry
+   * (with <code>getInputStream()</code>) to check its signature.
    *
    * @param fileName the name of the file to open
    * @param verify checks manifest and entries when true and a manifest
@@ -103,14 +109,12 @@ public class JarFile extends ZipFile
     FileNotFoundException, IOException
   {
     super(fileName);
-    manifest = readManifest();
-    if (verify)
-      verify();
   }
 
   /**
-   * Creates a new JarFile, tries to read the manifest and if the manifest
-   * exists verifies it.
+   * Creates a new JarFile. All jar entries are verified (when a Manifest file
+   * for this JarFile exists). You need to actually open and read the complete
+   * jar entry (with <code>getInputStream()</code>) to check its signature.
    *
    * @param file the file to open as a jar file
    * @exception FileNotFoundException if the file does not exits
@@ -122,8 +126,10 @@ public class JarFile extends ZipFile
   }
 
   /**
-   * Creates a new JarFile, tries to read the manifest and if the manifest
-   * exists and verify is true verfies it.
+   * Creates a new JarFile. If verify is true then all jar entries are
+   * verified (when a Manifest file for this JarFile exists). You need to
+   * actually open and read the complete jar entry
+   * (with <code>getInputStream()</code>) to check its signature.
    *
    * @param file the file to open to open as a jar file
    * @param verify checks manifest and entries when true and a manifest
@@ -135,13 +141,13 @@ public class JarFile extends ZipFile
     IOException
   {
     super(file);
-    manifest = readManifest();
-    if (verify)
-      verify();
   }
 
   /**
-   * Creates a new JarFile with the indicated mode, tries to read the
+   * Creates a new JarFile with the indicated mode. If verify is true then
+   * all jar entries are verified (when a Manifest file for this JarFile
+   * exists). You need to actually open and read the complete jar entry
+   * (with <code>getInputStream()</code>) to check its signature.
    * manifest and if the manifest exists and verify is true verfies it.
    *
    * @param file the file to open to open as a jar file
@@ -159,9 +165,6 @@ public class JarFile extends ZipFile
     FileNotFoundException, IOException, IllegalArgumentException
   {
     super(file, mode);
-    manifest = readManifest();
-    if (verify)
-      verify();
   }
 
   // Methods
@@ -241,6 +244,16 @@ public class JarFile extends ZipFile
     {
       ZipEntry zip = (ZipEntry) entries.nextElement();
       JarEntry jar = new JarEntry(zip);
+      Manifest manifest;
+      try
+	{
+	  manifest = getManifest();
+	}
+      catch (IOException ioe)
+	{
+	  manifest = null;
+	}
+
       if (manifest != null)
 	{
 	  jar.attr = manifest.getAttributes(jar.getName());
@@ -261,6 +274,16 @@ public class JarFile extends ZipFile
     if (entry != null)
       {
 	JarEntry jarEntry = new JarEntry(entry);
+	Manifest manifest;
+	try
+	  {
+	    manifest = getManifest();
+	  }
+	catch (IOException ioe)
+	  {
+	    manifest = null;
+	  }
+
 	if (manifest != null)
 	  {
 	    jarEntry.attr = manifest.getAttributes(name);
@@ -301,8 +324,11 @@ public class JarFile extends ZipFile
    * Returns the manifest for this JarFile or null when the JarFile does not
    * contain a manifest file.
    */
-  public Manifest getManifest()
+  public Manifest getManifest() throws IOException
   {
+    if (!manifestRead)
+      manifest = readManifest();
+
     return manifest;
   }
 }
