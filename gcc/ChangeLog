@@ -1,3 +1,7 @@
+2003-01-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fixinc/Makefile.in (FL_LIST): Revert last change.
+
 2003-01-23  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR other/7341
