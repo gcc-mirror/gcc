@@ -5674,7 +5674,7 @@ build_modify_expr (lhs, modifycode, rhs)
 	}
 
       /* Allow array assignment in compiler-generated code.  */
-      if (pedantic && ! DECL_ARTIFICIAL (current_function_decl))
+      if (! DECL_ARTIFICIAL (current_function_decl))
 	pedwarn ("ISO C++ forbids assignment of arrays");
 
       from_array = TREE_CODE (TREE_TYPE (newrhs)) == ARRAY_TYPE
