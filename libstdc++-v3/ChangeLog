@@ -1,3 +1,16 @@
+2005-04-06  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* acinclude.m4 (_GLIBCXX_USE_LONG_LONG,
+	_GLIBCXX_USE_WCHAR_T, _GLIBCXX_USE_C99, _GLIBCXX_USE_C99_MATH,
+	_GLIBCXX_USE_C99_COMPLEX, _GLIBCXX_RES_LIMITS, _GLIBCXX_CONCEPT_CHECKS,
+	_GLIBCXX_SYMVER, _GLIBCXX_USE_LFS, _GLIBCXX_FULLY_DYNAMIC_STRING,
+	_GLIBCXX_USE_NLS, HAVE_GTHR_DEFAULT, HAVE_MBSTATE_T, HAVE_POLL,
+	HAVE_S_ISREG, HAVE_S_IFREG, HAVE_WRITEV, HAVE_INT64_T,
+	HAVE_LC_MESSAGES): Use long form of AC_DEFINE ...
+	* acconfig.h: ... to eliminate them from here.
+	(_GLIBCXX_ASM_SYMVER): Move definition below @BOTTOM@.
+	* config.h.in, configure: Regenerate.
+	
 2005-04-05  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.am (ACLOCAL_AMFLAGS): Define.
