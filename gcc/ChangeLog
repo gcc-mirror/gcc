@@ -1,3 +1,8 @@
+Wed Feb 27 10:45:19 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* linux64.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Remove.
+	* x86-64.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Allways define.
+
 Wed Feb 27 10:39:20 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* linux64.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Define.

@@ -73,7 +73,6 @@ Boston, MA 02111-1307, USA.  */
 
    This is used to align code labels according to Intel recommendations.  */
 
-#ifdef HAVE_GAS_MAX_SKIP_P2ALIGN
 #define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE,LOG,MAX_SKIP)			\
   do {									\
     if ((LOG) != 0) {							\
@@ -81,7 +80,6 @@ Boston, MA 02111-1307, USA.  */
       else fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));	\
     }									\
   } while (0)
-#endif
 
 
 /* i386 System V Release 4 uses DWARF debugging info.
