@@ -1,3 +1,7 @@
+1999-03-25  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (comdat_linkage): Treat vtables like functions.
+
 1999-03-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (tsubst_decl): Tsubst into DECL_BEFRIENDING_CLASSES.

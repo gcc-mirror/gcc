@@ -2370,10 +2370,14 @@ comdat_linkage (decl)
 {
   if (flag_weak)
     make_decl_one_only (decl);
-  else if (TREE_CODE (decl) == FUNCTION_DECL)
+  else if (TREE_CODE (decl) == FUNCTION_DECL || DECL_VIRTUAL_P (decl))
+    /* We can just emit functions and vtables statically; it doesn't really
+       matter if we have multiple copies.  */
     TREE_PUBLIC (decl) = 0;
   else
     {
+      /* Static data member template instantiations, however, cannot
+	 have multiple copies.  */
       if (DECL_INITIAL (decl) == 0
 	  || DECL_INITIAL (decl) == error_mark_node)
 	DECL_COMMON (decl) = 1;
