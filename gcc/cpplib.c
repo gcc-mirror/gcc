@@ -210,7 +210,7 @@ skip_rest_of_line (pfile)
      cpp_reader *pfile;
 {
   /* Discard all stacked contexts.  */
-  while (pfile->context != &pfile->base_context)
+  while (pfile->context->prev)
     _cpp_pop_context (pfile);
 
   /* Sweep up all tokens remaining on the line.  */
@@ -1224,9 +1224,6 @@ destringize_and_run (pfile, in)
 {
   const unsigned char *src, *limit;
   char *dest, *result;
-  cpp_context saved_context;
-  cpp_context *saved_cur_context;
-  unsigned int saved_line;
 
   dest = result = alloca (in->len + 1);
   for (src = in->text, limit = src + in->len; src < limit;)
@@ -1238,24 +1235,28 @@ destringize_and_run (pfile, in)
     }
   *dest = '\0';
 
-  /* FIXME.  All this saving is a horrible kludge to handle the case
-     when we're in a macro expansion.
-                                     
-     A better strategy it to not convert _Pragma to #pragma if doing
-     preprocessed output, but to just pass it through as-is, unless it
-     is a CPP pragma in which case is should be processed normally.
-     When compiling the preprocessed output the _Pragma should be  
-     handled.  This will be become necessary when we move to     
-     line-at-a-time lexing since we will be macro-expanding the line                   
-     before outputting / compiling it.  */
-  saved_line = pfile->line;
-  saved_context = pfile->base_context;
-  saved_cur_context = pfile->context;
-  pfile->context = &pfile->base_context;
-  run_directive (pfile, T_PRAGMA, result, dest - result);
-  pfile->context = saved_cur_context;
-  pfile->base_context = saved_context;
-  pfile->line = saved_line;
+  /* Ugh; an awful kludge.  We are really not set up to be lexing
+     tokens when in the middle of a macro expansion.  Use a new
+     context to force cpp_get_token to lex, and so skip_rest_of_line
+     doesn't go beyond the end of the text.  Also, remember the
+     current lexing position so we can return to it later.
+
+     Something like line-at-a-time lexing should remove the need for
+     this.  */
+  {
+    cpp_context *saved_context = pfile->context;
+    cpp_token *saved_cur_token = pfile->cur_token;
+    tokenrun *saved_cur_run = pfile->cur_run;
+
+    pfile->context = xnew (cpp_context);
+    pfile->context->macro = 0;
+    pfile->context->prev = 0;
+    run_directive (pfile, T_PRAGMA, result, dest - result);
+    free (pfile->context);
+    pfile->context = saved_context;
+    pfile->cur_token = saved_cur_token;
+    pfile->cur_run = saved_cur_run;
+  }
 
   /* See above comment.  For the moment, we'd like
 

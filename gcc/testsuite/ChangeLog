@@ -1,3 +1,7 @@
+2002-11-26  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gcc.dg/cpp/_Pragma5.c: New test.
+
 2002-11-24  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/20021124-1.c: New test.

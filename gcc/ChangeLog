@@ -1,3 +1,10 @@
+2002-11-26  Neil Booth  <neil@daikokuya.co.uk>
+
+	PR preprocessor/8524
+	* cpplib.c (run_directive): Remove previous kludge to _Pragma.
+	Add a new one in its place, which hopefully works.
+	(skip_rest_of_line): Change test for bottom-of-context-stack.
+
 2002-11-26  David Edelsohn  <edelsohn@gnu.org>
 
         * config/rs6000/rs6000.c (rs6000_flag_pic): New variable.
