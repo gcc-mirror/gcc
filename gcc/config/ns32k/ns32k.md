@@ -1335,7 +1335,7 @@
   DONE;
 }")
 
-;; deiw wants two hi's in seperate registers or else they can be adjacent
+;; deiw wants two hi's in separate registers or else they can be adjacent
 ;; in memory. DI mode will ensure two registers are available, but if we
 ;; want to allow memory as an operand we would need SI mode. There is no
 ;; way to do this, so just restrict operand 0 and 1 to be in registers.
@@ -1392,7 +1392,7 @@
   DONE;
 }")
 
-;; deib wants two qi's in seperate registers or else they can be adjacent
+;; deib wants two qi's in separate registers or else they can be adjacent
 ;; in memory. DI mode will ensure two registers are available, but if we
 ;; want to allow memory as an operand we would need HI mode. There is no
 ;; way to do this, so just restrict operand 0 and 1 to be in registers.

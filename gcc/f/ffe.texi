@@ -640,7 +640,7 @@ and
 except it also provides automatic conversion of tabs
 and ignoring of newline-related carriage returns.
 
-It also effects the ``pure visual'' model,
+It also affects the ``pure visual'' model,
 by which is meant that a user viewing his code
 in a typical text editor
 (assuming it's not preprocessed via @code{g77stripcard} or similar)
