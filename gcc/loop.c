@@ -3148,9 +3148,15 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 
   /* Save insn immediately after the loop_end.  Insns inserted after loop_end
      must be put before this insn, so that they will appear in the right
-     order (i.e. loop order).  */
+     order (i.e. loop order). 
 
-  end_insert_before = NEXT_INSN (loop_end);
+     If loop_end is the end of the current function, then emit a 
+     NOTE_INSN_DELETED after loop_end and set end_insert_before to the
+     dummy note insn.  */
+  if (NEXT_INSN (loop_end) != 0)
+    end_insert_before = NEXT_INSN (loop_end);
+  else
+    end_insert_before = emit_note_after (NOTE_INSN_DELETED, loop_end);
 
   /* Scan through loop to find all possible bivs.  */
 
