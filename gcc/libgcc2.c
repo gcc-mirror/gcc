@@ -3002,10 +3002,6 @@ __empty ()
 struct eh_context
 {
   void **dynamic_handler_chain;
-  void *saved_pc;
-#ifndef DWARF2_UNWIND_INFO
-  void *buf[2];
-#endif
   /* This is language dependent part of the eh context. */
   void *info;
 };
@@ -3028,10 +3024,6 @@ new_eh_context ()
   memset (eh, 0, sizeof *eh);
 
   eh->dynamic_handler_chain = top_elt;
-#ifndef DWARF2_UNWIND_INFO
-  eh->buf[0] = &eh->saved_pc;
-  eh->buf[1] = &__throw;
-#endif  
 
   return eh;
 }
@@ -3073,7 +3065,7 @@ void **
 __get_eh_info ()
 {
   struct eh_context *eh = (*get_eh_context) ();
-  return (void **) &eh->info;
+  return &eh->info;
 }
 
 #if __GTHREADS
@@ -3158,14 +3150,7 @@ void ***
 __get_dynamic_handler_chain ()
 {
   struct eh_context *eh = (*get_eh_context) ();
-  return (void ***) &eh->dynamic_handler_chain;
-}
-
-void **
-__get_saved_pc ()
-{
-  struct eh_context *eh = (*get_eh_context) ();
-  return (void **) &eh->saved_pc;
+  return &eh->dynamic_handler_chain;
 }
 
 /* This is used to throw an exception when the setjmp/longjmp codegen
@@ -3364,162 +3349,7 @@ find_exception_handler (void *pc, exception_table *table)
 }
 #endif /* EH_TABLE_LOOKUP */
 
-#ifndef DWARF2_UNWIND_INFO
-/* Support code for exception handling using inline unwinders or
-   __unwind_function.  */
-
-void *__eh_pc;
-
-#ifndef EH_TABLE_LOOKUP
-typedef struct exception_table_node {
-  exception_table *table;
-  void *start;
-  void *end;
-  struct exception_table_node *next;
-} exception_table_node;
-
-static struct exception_table_node *exception_table_list;
-
-void *
-__find_first_exception_table_match (void *pc)
-{
-  register exception_table_node *tnp;
-
-  for (tnp = exception_table_list; tnp != 0; tnp = tnp->next)
-    {
-      if (tnp->start <= pc && tnp->end >= pc)
-	return find_exception_handler (pc, tnp->table);
-    }
-
-  return (void *) 0;
-}
-
-void
-__register_exceptions (exception_table *table)
-{
-  exception_table_node *node;
-  exception_table *range = table + 1;
-
-  if (range->start == (void *) -1)
-    return;
-
-  node = (exception_table_node *) malloc (sizeof (exception_table_node));
-  node->table = table;
-
-  /* This look can be optimized away either if the table
-     is sorted, or if we pass in extra parameters.  */
-  node->start = range->start;
-  node->end = range->end;
-  for (range++ ; range->start != (void *) (-1); range++)
-    {
-      if (range->start < node->start)
-	node->start = range->start;
-      if (range->end > node->end)
-	node->end = range->end;
-    }
-
-  node->next = exception_table_list;
-  exception_table_list = node;
-}
-#endif /* !EH_TABLE_LOOKUP */
-
-/* Throw stub routine.
-
-   This is work in progress, but not completed yet.  */
-
-void
-__throw ()
-{
-  abort ();
-}
-
-/* See expand_builtin_throw for details.  */
-
-void **__eh_pcnthrow () {
-  struct eh_context *eh = (*get_eh_context) ();
-  return &eh->buf[0];
-}
-
-#if #machine(i386)
-void
-__unwind_function(void *ptr)
-{
-  asm("movl 8(%esp),%ecx");
-  /* Undo current frame */
-  asm("movl %ebp,%esp");
-  asm("popl %ebp");
-  /* like ret, but stay here */
-  asm("addl $4,%esp");
-  
-  /* Now, undo previous frame.  */
-  /* This is a test routine, as we have to dynamically probe to find out
-     what to pop for certain, this is just a guess.  */
-  asm("leal -16(%ebp),%esp");
-  asm("pop %ebx");
-  asm("pop %esi");
-  asm("pop %edi");
-  asm("movl %ebp,%esp");
-  asm("popl %ebp");
-
-  asm("movl %ecx,0(%esp)");
-  asm("ret");
-}
-#elif #machine(rs6000) && !defined _ARCH_PPC
-__unwind_function(void *ptr)
-{
-  asm("mr 31,1");
-  asm("l 1,0(1)");
-  asm("l 31,-4(1)");
-  asm("# br");
-
-  asm("mr 31,1");
-  asm("l 1,0(1)");
-  /* use 31 as a scratch register to restore the link register.  */
-  asm("l 31, 8(1);mtlr 31 # l lr,8(1)");
-  asm("l 31,-4(1)");
-  asm("# br");
-  asm("mtctr 3;bctr # b 3");
-}
-#elif (#machine(rs6000) || #machine(powerpc)) && defined _ARCH_PPC
-__unwind_function(void *ptr)
-{
-  asm("mr 31,1");
-  asm("lwz 1,0(1)");
-  asm("lwz 31,-4(1)");
-  asm("# br");
-
-  asm("mr 31,1");
-  asm("lwz 1,0(1)");
-  /* use 31 as a scratch register to restore the link register.  */
-  asm("lwz 31, 8(1);mtlr 31 # l lr,8(1)");
-  asm("lwz 31,-4(1)");
-  asm("# br");
-  asm("mtctr 3;bctr # b 3");
-}
-#elif #machine(vax)
-__unwind_function(void *ptr)
-{
-  __label__ return_again;
-
-  /* Replace our frame's return address with the label below.
-     During execution, we will first return here instead of to
-     caller, then second return takes caller's frame off the stack.
-     Two returns matches two actual calls, so is less likely to
-     confuse debuggers.  `16' corresponds to RETURN_ADDRESS_OFFSET.  */
-  __asm ("movl %0,16(fp)" : : "p" (&& return_again));
-  return;
-
- return_again:
-  return;
-}
-#else
-__unwind_function(void *ptr)
-{
-  abort ();
-}
-#endif /* powerpc */
-
-#else /* DWARF2_UNWIND_INFO */
+#ifdef DWARF2_UNWIND_INFO
 /* Support code for exception handling using static unwind information.  */
 
 #include "frame.h"
@@ -3793,7 +3623,7 @@ label:
   /* Epilogue:  restore the handler frame's register values and return
      to the stub.  */
 }
-#endif /* !DWARF2_UNWIND_INFO */
+#endif /* DWARF2_UNWIND_INFO */
 
 #endif /* L_eh */
 

@@ -774,12 +774,12 @@ use_eh_context ()
       
       insn = gen_rtx (USE,
 		      GET_MODE (current_function_ehc),
-		      copy_rtx (current_function_ehc));
+		      current_function_ehc);
       insn = emit_insn_before (insn, get_first_nonparm_insn ());
 
       REG_NOTES (insn)
 	= gen_rtx (EXPR_LIST, 
-		   REG_EH_CONTEXT, copy_rtx (current_function_ehc),
+		   REG_EH_CONTEXT, current_function_ehc,
 		   REG_NOTES (insn));
     }
   return current_function_ehc;
@@ -1272,10 +1272,6 @@ emit_throw ()
 #ifdef JUMP_TO_THROW
       emit_indirect_jump (throw_libfunc);
 #else
-#ifndef DWARF2_UNWIND_INFO
-      /* Prevent assemble_external from doing anything with this symbol.  */
-      SYMBOL_REF_USED (throw_libfunc) = 1;
-#endif
       emit_library_call (throw_libfunc, 0, VOIDmode, 0);
 #endif
       throw_used = 1;
@@ -1289,15 +1285,6 @@ emit_throw ()
 void
 expand_internal_throw ()
 {
-#ifndef DWARF2_UNWIND_INFO
-  if (! exceptions_via_longjmp)
-    {
-      rtx label = gen_label_rtx ();
-      emit_label (label);
-      label = gen_rtx (LABEL_REF, Pmode, label);
-      emit_move_insn (get_saved_pc_ref (), label);
-    }
-#endif
   emit_throw ();
 }
 

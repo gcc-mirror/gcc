@@ -1,3 +1,10 @@
+Thu Dec 11 21:12:09 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (finish_file): Lose call to expand_builtin_throw.
+	* except.c (expand_builtin_throw): Remove.
+	* cp-tree.h: Remove ptr_ptr_type_node.
+	* decl.c: Likewise.
+
 Thu Dec 11 20:43:33 1997  Teemu Torma  <tot@trema.com>
 	
 	* decl.c (ptr_ptr_type_node): Define.
