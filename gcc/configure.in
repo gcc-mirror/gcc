@@ -1146,8 +1146,8 @@ AC_SUBST(inhibit_libc)
 # FIXME.
 
 # These are the normal (build=host) settings:
-HOST_PREFIX=			AC_SUBST(HOST_PREFIX)
-HOST_PREFIX_1=ignore-		AC_SUBST(HOST_PREFIX_1)
+BUILD_PREFIX=			AC_SUBST(BUILD_PREFIX)
+BUILD_PREFIX_1=ignore-		AC_SUBST(BUILD_PREFIX_1)
 HOST_CC='$(CC)'			AC_SUBST(HOST_CC)
 HOST_CFLAGS='$(ALL_CFLAGS)'	AC_SUBST(HOST_CFLAGS)
 
@@ -1157,8 +1157,8 @@ STMP_FIXPROTO=stmp-fixproto	AC_SUBST(STMP_FIXPROTO)
 # And these apply if build != host.
 if test x$build != x$host
 then
-    HOST_PREFIX=build-
-    HOST_PREFIX_1=build-
+    BUILD_PREFIX=build-
+    BUILD_PREFIX_1=build-
     HOST_CC='$(CC_FOR_BUILD)'
     HOST_CFLAGS='$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS_FOR_BUILD) $(XCFLAGS)'
 

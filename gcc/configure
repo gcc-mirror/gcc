@@ -6797,8 +6797,8 @@ fi
 # FIXME.
 
 # These are the normal (build=host) settings:
-HOST_PREFIX=			
-HOST_PREFIX_1=ignore-		
+BUILD_PREFIX=			
+BUILD_PREFIX_1=ignore-		
 HOST_CC='$(CC)'			
 HOST_CFLAGS='$(ALL_CFLAGS)'	
 
@@ -6808,8 +6808,8 @@ STMP_FIXPROTO=stmp-fixproto
 # And these apply if build != host.
 if test x$build != x$host
 then
-    HOST_PREFIX=build-
-    HOST_PREFIX_1=build-
+    BUILD_PREFIX=build-
+    BUILD_PREFIX_1=build-
     HOST_CC='$(CC_FOR_BUILD)'
     HOST_CFLAGS='$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS_FOR_BUILD) $(XCFLAGS)'
 
@@ -8543,8 +8543,8 @@ s%@CROSS@%$CROSS%g
 s%@ALL@%$ALL%g
 s%@SYSTEM_HEADER_DIR@%$SYSTEM_HEADER_DIR%g
 s%@inhibit_libc@%$inhibit_libc%g
-s%@HOST_PREFIX@%$HOST_PREFIX%g
-s%@HOST_PREFIX_1@%$HOST_PREFIX_1%g
+s%@BUILD_PREFIX@%$BUILD_PREFIX%g
+s%@BUILD_PREFIX_1@%$BUILD_PREFIX_1%g
 s%@HOST_CC@%$HOST_CC%g
 s%@HOST_CFLAGS@%$HOST_CFLAGS%g
 s%@STMP_FIXINC@%$STMP_FIXINC%g

@@ -468,12 +468,12 @@ DIR = ../gcc
 # Flags to use when cross-building GCC.
 # Prefix to apply to names of object files when using them
 # to run on the machine we are compiling on.
-HOST_PREFIX = @HOST_PREFIX@
+BUILD_PREFIX = @BUILD_PREFIX@
 # Prefix to apply to names of object files when compiling them
 # to run on the machine we are compiling on.
 # The default for this variable is chosen to keep these rules
 # out of the way of the other rules for compiling the same source files.
-HOST_PREFIX_1 = @HOST_PREFIX_1@
+BUILD_PREFIX_1 = @BUILD_PREFIX_1@
 # Native compiler for the build machine and its switches.
 HOST_CC = @HOST_CC@
 HOST_CFLAGS= @HOST_CFLAGS@ -DGENERATOR_FILE
@@ -623,12 +623,12 @@ SYSLIBS = @GNAT_LIBEXC@
 # even if we are cross-building GCC.
 HOST_LIBS = $(BUILD_LIBIBERTY)
 
-HOST_RTL = $(HOST_PREFIX)rtl.o read-rtl.o $(HOST_PREFIX)bitmap.o \
-		$(HOST_PREFIX)ggc-none.o gensupport.o
+HOST_RTL = $(BUILD_PREFIX)rtl.o read-rtl.o $(BUILD_PREFIX)bitmap.o \
+		$(BUILD_PREFIX)ggc-none.o gensupport.o
 
-HOST_PRINT = $(HOST_PREFIX)print-rtl.o
-HOST_ERRORS = $(HOST_PREFIX)errors.o
-HOST_VARRAY = $(HOST_PREFIX)varray.o
+HOST_PRINT = $(BUILD_PREFIX)print-rtl.o
+HOST_ERRORS = $(BUILD_PREFIX)errors.o
+HOST_VARRAY = $(BUILD_PREFIX)varray.o
 
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order,
@@ -1034,7 +1034,7 @@ LIBGCC_DEPS = $(GCC_PASSES) $(LANGUAGES) stmp-int-hdrs $(STMP_FIXPROTO) \
 
 libgcc.a: $(LIBGCC_DEPS)
 	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-	  HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
+	  BUILD_PREFIX="$(BUILD_PREFIX)" BUILD_PREFIX_1="$(BUILD_PREFIX_1)" \
 	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
 	  AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
 	  AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
@@ -1072,7 +1072,7 @@ s-mlib: $(srcdir)/genmultilib Makefile
 # Build multiple copies of libgcc.a, one for each target switch.
 stmp-multilib: $(LIBGCC_DEPS)
 	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-	  HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
+	  BUILD_PREFIX="$(BUILD_PREFIX)" BUILD_PREFIX_1="$(BUILD_PREFIX_1)" \
 	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
 	  AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
 	  AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
@@ -1928,43 +1928,43 @@ genpreds.o : genpreds.c $(RTL_BASE_H) $(HCONFIG_H) $(SYSTEM_H)
 #
 # Compile the libraries to be used by gen*.
 # If we are not cross-building, gen* use the same .o's that cc1 will use,
-# and HOST_PREFIX_1 is `loser-', just to ensure these rules don't conflict
+# and BUILD_PREFIX_1 is `loser-', just to ensure these rules don't conflict
 # with the rules for rtl.o, etc.
-$(HOST_PREFIX_1)rtl.o: $(srcdir)/rtl.c $(HCONFIG_H) $(SYSTEM_H) $(RTL_H) \
+$(BUILD_PREFIX_1)rtl.o: $(srcdir)/rtl.c $(HCONFIG_H) $(SYSTEM_H) $(RTL_H) \
   real.h $(GGC_H) errors.h
-	rm -f $(HOST_PREFIX)rtl.c
-	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/rtl.c > $(HOST_PREFIX)rtl.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)rtl.c $(OUTPUT_OPTION)
+	rm -f $(BUILD_PREFIX)rtl.c
+	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/rtl.c > $(BUILD_PREFIX)rtl.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(BUILD_PREFIX)rtl.c $(OUTPUT_OPTION)
 
-$(HOST_PREFIX_1)print-rtl.o: $(srcdir)/print-rtl.c $(HCONFIG_H) \
+$(BUILD_PREFIX_1)print-rtl.o: $(srcdir)/print-rtl.c $(HCONFIG_H) \
   $(RTL_H) $(TREE_H) hard-reg-set.h $(BASIC_BLOCK_H)
-	rm -f $(HOST_PREFIX)print-rtl.c
-	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/print-rtl.c > $(HOST_PREFIX)print-rtl.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)print-rtl.c $(OUTPUT_OPTION)
+	rm -f $(BUILD_PREFIX)print-rtl.c
+	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/print-rtl.c > $(BUILD_PREFIX)print-rtl.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(BUILD_PREFIX)print-rtl.c $(OUTPUT_OPTION)
 
-$(HOST_PREFIX_1)bitmap.o: $(srcdir)/bitmap.c $(HCONFIG_H) $(SYSTEM_H) $(RTL_H) \
+$(BUILD_PREFIX_1)bitmap.o: $(srcdir)/bitmap.c $(HCONFIG_H) $(SYSTEM_H) $(RTL_H) \
   flags.h $(BASIC_BLOCK_H) $(REGS_H)
-	rm -f $(HOST_PREFIX)bitmap.c
-	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/bitmap.c > $(HOST_PREFIX)bitmap.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)bitmap.c $(OUTPUT_OPTION)
+	rm -f $(BUILD_PREFIX)bitmap.c
+	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/bitmap.c > $(BUILD_PREFIX)bitmap.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(BUILD_PREFIX)bitmap.c $(OUTPUT_OPTION)
 
-$(HOST_PREFIX_1)errors.o: errors.c $(HCONFIG_H) $(SYSTEM_H) errors.h
-	rm -f $(HOST_PREFIX)errors.c
-	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/errors.c > $(HOST_PREFIX)errors.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)errors.c $(OUTPUT_OPTION)
+$(BUILD_PREFIX_1)errors.o: errors.c $(HCONFIG_H) $(SYSTEM_H) errors.h
+	rm -f $(BUILD_PREFIX)errors.c
+	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/errors.c > $(BUILD_PREFIX)errors.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(BUILD_PREFIX)errors.c $(OUTPUT_OPTION)
 
-$(HOST_PREFIX_1)varray.o: varray.c $(HCONFIG_H) $(SYSTEM_H) varray.h $(RTL_H) \
+$(BUILD_PREFIX_1)varray.o: varray.c $(HCONFIG_H) $(SYSTEM_H) varray.h $(RTL_H) \
   $(TREE_H) bitmap.h errors.h
-	rm -f $(HOST_PREFIX)varray.c
+	rm -f $(BUILD_PREFIX)varray.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/varray.c > \
-		$(HOST_PREFIX)varray.c
+		$(BUILD_PREFIX)varray.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
-		$(HOST_PREFIX)varray.c $(OUTPUT_OPTION)
+		$(BUILD_PREFIX)varray.c $(OUTPUT_OPTION)
 
-$(HOST_PREFIX_1)ggc-none.o: ggc-none.c $(HCONFIG_H) $(SYSTEM_H) $(GCC_H)
-	rm -f $(HOST_PREFIX)ggc-none.c
-	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/ggc-none.c > $(HOST_PREFIX)ggc-none.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)ggc-none.c $(OUTPUT_OPTION)
+$(BUILD_PREFIX_1)ggc-none.o: ggc-none.c $(HCONFIG_H) $(SYSTEM_H) $(GCC_H)
+	rm -f $(BUILD_PREFIX)ggc-none.c
+	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/ggc-none.c > $(BUILD_PREFIX)ggc-none.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(BUILD_PREFIX)ggc-none.c $(OUTPUT_OPTION)
 
 #
 # Remake internationalization support.
@@ -2446,9 +2446,9 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 	-rm -f $(STAGESTUFF)
 	-rm -rf libgcc
 # Delete the temporary source copies for cross compilation.
-	-rm -f $(HOST_PREFIX_1)rtl.c $(HOST_PREFIX_1)print-rtl.c
-	-rm -f $(HOST_PREFIX_1)bitmap.c $(HOST_PREFIX_1)errors.c
-	-rm -f $(HOST_PREFIX_1)ggc-none.c
+	-rm -f $(BUILD_PREFIX_1)rtl.c $(BUILD_PREFIX_1)print-rtl.c
+	-rm -f $(BUILD_PREFIX_1)bitmap.c $(BUILD_PREFIX_1)errors.c
+	-rm -f $(BUILD_PREFIX_1)ggc-none.c
 # Delete the temp files made in the course of building libgcc.a.
 	-rm -f xlimits.h
 # Delete other built files.
@@ -2754,7 +2754,7 @@ install-libgcc: libgcc.mk libgcc.a installdirs
 	  r_f_t=: ; \
 	fi; \
 	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-	  HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
+	  BUILD_PREFIX="$(BUILD_PREFIX)" BUILD_PREFIX_1="$(BUILD_PREFIX_1)" \
 	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
 	  AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
 	  AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
@@ -2780,7 +2780,7 @@ install-multilib: stmp-multilib installdirs
 	  r_f_t=: ; \
 	fi; \
 	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-	  HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
+	  BUILD_PREFIX="$(BUILD_PREFIX)" BUILD_PREFIX_1="$(BUILD_PREFIX_1)" \
 	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
 	  AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
 	  AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
