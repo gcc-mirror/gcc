@@ -1,3 +1,8 @@
+2001-01-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* call.c (add_builtin_candidate): Quote std properly, from
+	previous change.
+
 2001-01-23  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* pt.c (check_explicit_specialization): Clone constructors and
