@@ -435,8 +435,8 @@ native: config.status cpp $(LANGUAGES) $(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_C
 # Define the names for selecting languages in LANGUAGES.
 C c: cc1
 C++ c++: cc1plus
-OBJC objc: cc1obj
-OBJECTIVE-C objective-c: cc1obj
+OBJC objc: cc1obj objc-runtime
+OBJECTIVE-C objective-c: cc1obj objc-runtime
 PROTO: proto
 
 # Really, really stupid make features, such as SUN's KEEP_STATE, may force
@@ -659,6 +659,25 @@ libgcc.a: $(LIBGCC1) $(LIBGCC2)
 # so that libgcc.a itself remains nonexistent if compilation is aborted.
 	mv tmplibgcc.a libgcc.a
 
+objc-runtime: libobjc.a
+
+# Build the Objective C runtime library.  Build the Objc compiler first!
+libobjc.a: cc1obj libgcc2.ready
+	thisdir1=`pwd`; \
+	cd $(srcdir); srcdir1=`pwd`; \
+	cd objc; \
+	$(MAKE) $(MAKEFLAGS) -f $(srcdir)/objc/Makefile libobjc.a \
+	  srcdir=$$srcdir1 tooldir=$(tooldir) AR=$(AR) AR_FLAGS=$(AR_FLAGS) \
+	  GCC_FOR_TARGET=$$thisdir1/$(GCC_FOR_TARGET) \
+	  GCC_CFLAGS="$(GCC_CFLAGS)"
+	ln objc/libobjc.a .
+	-if $(RANLIB_TEST) ; then $(RANLIB) libobjc.a; else true; fi
+
+# This is used by objc/Makefile if the user runs that directly.
+sublibobjc.a: cc1obj libgcc2.ready
+	cd objc; make $(MAKEFLAGS) -f $(srcdir)/objc/Makefile libobjc.a \
+	  srcdir=$(srcdir) tooldir=$(tooldir) AR=$(AR) AR_FLAGS=$(AR_FLAGS) \
+	  GCC_FOR_TARGET=$(GCC_FOR_TARGET) GCC_CFLAGS=$(GCC_CFLAGS)
 
 # Compile two additional files that are linked with every program
 # linked using GCC on system V, for the sake of C++ constructors.
@@ -1236,6 +1255,8 @@ $(srcdir)/INSTALL: install1.texi install.texi
 
 mostlyclean:
 	-rm -f $(STAGESTUFF)
+# Clean the objc subdir.
+	cd objc; make $(MAKEFLAGS) -f $(srcdir)/objc/Makefile mostlyclean
 # Delete the temporary source copies for cross compilation.
 	-rm -f $(HOST_PREFIX_1)rtl.c $(HOST_PREFIX_1)rtlanal.c
 	-rm -f $(HOST_PREFIX_1)alloca.c $(HOST_PREFIX_1)malloc.c
@@ -1619,10 +1640,15 @@ gcc.xtar: doc c-parse.y objc-parse.y
 # which has the name that we want to have in the tar file.
 	mkdir tmp
 	mkdir tmp/config
+	mkdir tmp/objc
 	for file in *[0-9a-zA-Z+]; do \
 	  ln $$file tmp > /dev/null 2>&1 || cp $$file tmp; \
 	done
 	cd config; \
+	for file in *[0-9a-zA-Z+]; do \
+	  ln $$file ../tmp/config >/dev/null 2>&1 || cp $$file ../tmp/config; \
+	done
+	cd objc; \
 	for file in *[0-9a-zA-Z+]; do \
 	  ln $$file ../tmp/config >/dev/null 2>&1 || cp $$file ../tmp/config; \
 	done
