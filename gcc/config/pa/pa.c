@@ -3757,20 +3757,6 @@ secondary_reload_class (class, mode, in)
   else
     regno = -1;
 
-  /* Profiling showed the PA port spends about 1.3% of its compilation
-     time in true_regnum from calls inside secondary_reload_class.  */
-
-  if (GET_CODE (in) == REG)
-    {
-      regno = REGNO (in);
-      if (regno >= FIRST_PSEUDO_REGISTER)
-	regno = true_regnum (in);
-    }
-  else if (GET_CODE (in) == SUBREG)
-    regno = true_regnum (in);
-  else
-    regno = -1;
-
   if (((regno >= FIRST_PSEUDO_REGISTER || regno == -1)
        && GET_MODE_CLASS (mode) == MODE_INT
        && FP_REG_CLASS_P (class))
