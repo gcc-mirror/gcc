@@ -1,7 +1,7 @@
 /* Copyright (C) 2000 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
-/* { dg-options -pedantic } */
+/* { dg-options "-pedantic -std=gnu99" } */
 
 /* Tests macro syntax, for both definition and invocation, including:-
 
