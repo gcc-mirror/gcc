@@ -1,3 +1,13 @@
+Mon Oct 29 21:11:40 2001  Nicola Pero  <n.pero@mi.flashnet.it>
+	
+	* objc/objc-act.c (finish_message_expr): For the GNU runtime: when
+	determining the type of the receiver, do not check that TREE_CODE
+	of receiver is CALL_EXPR before calling receiver_is_class_object
+	().  (receiver_is_class_object): For the GNU runtime: recognize
+	the case that the receiver is self in a class method context.
+	Check that TREE_CODE of receiver is CALL_EXPR when checking that
+	the receiver is a call to objc_get_class.
+
 2001-10-29  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.md (floatunssisf2): Set subreg 0 of operand 2 to zero.
