@@ -1,5 +1,10 @@
 2004-04-22  Dalibor Topic  <robilad@kaffe.org>
 
+	* javax/swing/JSlider.java:
+	Fixed HTML tags in comments.
+
+2004-04-22  Dalibor Topic  <robilad@kaffe.org>
+
 	* javax/accessibility/AccessibleText.java:
 	Cleaned up imports.
 

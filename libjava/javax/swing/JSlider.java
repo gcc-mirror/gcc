@@ -71,7 +71,7 @@ import javax.swing.plaf.SliderUI;
  * </p>
  * 
  * <table>
- * <tr><th> Property         </td><th> Stored in </td><th> Bound? </td></tr>
+ * <tr><th> Property         </th><th> Stored in </th><th> Bound? </th></tr>
  * <tr><td> extent           </td><td> model     </td><td> no     </td></tr>
  * <tr><td> inverted         </td><td> slider    </td><td> yes    </td></tr>
  * <tr><td> labelTable       </td><td> slider    </td><td> yes    </td></tr>
