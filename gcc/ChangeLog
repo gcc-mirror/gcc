@@ -1,3 +1,9 @@
+2004-12-09  Matt Rice  <ratmice@yahoo.com>
+
+	PR preprocessor/18102
+	* c-incpath.c (remove_duplicates): Check for construct
+	equality.
+
 2004-12-09  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* genopinit.c (vec_realign_store_optab): Initialization removed.
