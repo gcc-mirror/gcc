@@ -261,3 +261,10 @@ do { long value[4];							\
 	     4 * blockn, 4 * blockn, 4 * blockn); \
 }
 
+/* A C statement (sans semicolon) to output to the stdio stream
+   FILE the assembler definition of an uninitialized global label named
+   NAME whose size is SIZE bytes and alignment is ALIGN bytes.
+   Try to use asm_output_aligned_bss to implement this macro.  */
+
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, NAME, SIZE, ALIGN) \
+  asm_output_aligned_bss (FILE, NAME, SIZE, ALIGN)
