@@ -15,33 +15,9 @@
 @c Versions
 @set which-gcj GCC-@value{version-GCC}
 
-@ifinfo
-@format
-@dircategory Programming
-@direntry
-* Gcj: (gcj).               Ahead-of-time compiler for the Java language
-@end direntry
-
-@dircategory Individual utilities
-@direntry
-* gcjh: (gcj)Invoking gcjh.
-                            Generate header files from Java class files
-* jv-scan: (gcj)Invoking jv-scan.
-                            Print information about Java source files
-* jcf-dump: (gcj)Invoking jcf-dump.
-                            Print information about Java class files
-* gij: (gcj)Invoking gij.   GNU interpreter for Java bytecode
-* jv-convert: (gcj)Invoking jv-convert.
-                            Convert file from one encoding to another
-* rmic: (gcj)Invoking rmic.
-                            Generate stubs for Remote Method Invocation.
-* rmiregistry: (gcj)Invoking rmiregistry.
-                            The remote object registry.
-@end direntry
-@end format
-
+@copying
 @c man begin COPYRIGHT
-Copyright (C) @value{copyrights-gcj} Free Software Foundation, Inc.
+Copyright @copyright{} @value{copyrights-gcj} Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
@@ -70,6 +46,34 @@ man page gfdl(7).
      software.  Copies published by the Free Software Foundation raise
      funds for GNU development.
 @c man end
+@end copying
+
+@ifinfo
+@format
+@dircategory Programming
+@direntry
+* Gcj: (gcj).               Ahead-of-time compiler for the Java language
+@end direntry
+
+@dircategory Individual utilities
+@direntry
+* gcjh: (gcj)Invoking gcjh.
+                            Generate header files from Java class files
+* jv-scan: (gcj)Invoking jv-scan.
+                            Print information about Java source files
+* jcf-dump: (gcj)Invoking jcf-dump.
+                            Print information about Java class files
+* gij: (gcj)Invoking gij.   GNU interpreter for Java bytecode
+* jv-convert: (gcj)Invoking jv-convert.
+                            Convert file from one encoding to another
+* rmic: (gcj)Invoking rmic.
+                            Generate stubs for Remote Method Invocation.
+* rmiregistry: (gcj)Invoking rmiregistry.
+                            The remote object registry.
+@end direntry
+@end format
+
+@insertcopying
 @end ifinfo
 
 @titlepage
@@ -78,31 +82,13 @@ man page gfdl(7).
 
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} @value{copyrights-gcj} Free Software Foundation, Inc.
-@sp 2
 For the @value{which-gcj} Version*
 @sp 1
 Published by the Free Software Foundation @*
 59 Temple Place - Suite 330@*
 Boston, MA 02111-1307, USA@*
 @sp 1
-Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1 or
-any later version published by the Free Software Foundation; with the
-Invariant Sections being ``GNU General Public License'', the Front-Cover
-texts being (a) (see below), and with the Back-Cover Texts being (b)
-(see below).  A copy of the license is included in the section entitled
-``GNU Free Documentation License''.
-
-(a) The FSF's Front-Cover Text is:
-
-     A GNU Manual
-
-(b) The FSF's Back-Cover Text is:
-
-     You have freedom to copy and modify this GNU Manual, like GNU
-     software.  Copies published by the Free Software Foundation raise
-     funds for GNU development.
+@insertcopying
 @end titlepage
 @contents
 @page

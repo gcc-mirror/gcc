@@ -1,3 +1,7 @@
+2002-12-28  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcj.texi: Use @copying.
+
 2002-12-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* gjavah.c (print_name_for_stub_or_jni): Adjust call to

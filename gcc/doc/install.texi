@@ -58,7 +58,7 @@
 @end ifnothtml
 
 @c Part 2 Summary Description and Copyright
-@macro copyrightnotice
+@copying
 Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 @sp 1
@@ -79,9 +79,9 @@ Free Documentation License}''.
      You have freedom to copy and modify this GNU Manual, like GNU
      software.  Copies published by the Free Software Foundation raise
      funds for GNU development.
-@end macro
+@end copying
 @ifinfo
-@copyrightnotice{}
+@insertcopying
 @end ifinfo
 
 @c Part 3 Titlepage and Copyright
@@ -93,7 +93,7 @@ Free Documentation License}''.
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
-@copyrightnotice{}
+@insertcopying
 @end titlepage
 
 @c Part 4 Top node and Master Menu
@@ -197,7 +197,7 @@ not yet been merged into the main part of this manual.
 @ifhtml
 @uref{./index.html,,Return to the GCC Installation page}
 
-@copyrightnotice{}
+@insertcopying
 @end ifhtml
 @end ifset
 

@@ -81,6 +81,28 @@
 @c \global\normaloffset =0.75in
 @c @end tex
 
+@copying
+Copyright @copyright{} @value{copyrights-treelang} Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being ``GNU General Public License'', the Front-Cover
+texts being (a) (see below), and with the Back-Cover Texts being (b)
+(see below).  A copy of the license is included in the section entitled
+``GNU Free Documentation License''.
+
+(a) The FSF's Front-Cover Text is:
+
+     A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+     You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development.
+@end copying
+
 @ifnottex
 @dircategory Programming
 @direntry
@@ -107,25 +129,7 @@ Published by the Free Software Foundation
 59 Temple Place - Suite 330
 Boston, MA 02111-1307 USA
 
-Copyright (C) @value{copyrights-treelang} Free Software Foundation, Inc.
-
-Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1 or
-any later version published by the Free Software Foundation; with the
-Invariant Sections being ``GNU General Public License'', the Front-Cover
-texts being (a) (see below), and with the Back-Cover Texts being (b)
-(see below).  A copy of the license is included in the section entitled
-``GNU Free Documentation License''.
-
-(a) The FSF's Front-Cover Text is:
-
-     A GNU Manual
-
-(b) The FSF's Back-Cover Text is:
-
-     You have freedom to copy and modify this GNU Manual, like GNU
-     software.  Copies published by the Free Software Foundation raise
-     funds for GNU development.
+@insertcopying
 @end ifnottex
 
 treelang was Contributed by Tim Josling (@email{@value{email-josling}}).
@@ -157,8 +161,6 @@ documentation.
 @center for version @value{version-treelang}
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} @value{copyrights-treelang} Free Software Foundation, Inc.
-@sp 2
 For the @value{which-treelang} Version*
 @sp 1
 Published by the Free Software Foundation @*
@@ -168,23 +170,7 @@ Boston, MA 02111-1307, USA@*
 @c Printed copies are available for $? each.@*
 @c ISBN ???
 @sp 1
-Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1 or
-any later version published by the Free Software Foundation; with the
-Invariant Sections being ``GNU General Public License'', the Front-Cover
-texts being (a) (see below), and with the Back-Cover Texts being (b)
-(see below).  A copy of the license is included in the section entitled
-``GNU Free Documentation License''.
-
-(a) The FSF's Front-Cover Text is:
-
-     A GNU Manual
-
-(b) The FSF's Back-Cover Text is:
-
-     You have freedom to copy and modify this GNU Manual, like GNU
-     software.  Copies published by the Free Software Foundation raise
-     funds for GNU development.
+@insertcopying
 @end titlepage
 @page
 

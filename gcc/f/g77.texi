@@ -62,6 +62,29 @@
 @c \global\normaloffset =0.75in
 @c @end tex
 
+@copying
+Copyright @copyright{} @value{copyrights-g77} Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being ``GNU General Public License'' and ``Funding
+Free Software'', the Front-Cover
+texts being (a) (see below), and with the Back-Cover Texts being (b)
+(see below).  A copy of the license is included in the section entitled
+``GNU Free Documentation License''.
+
+(a) The FSF's Front-Cover Text is:
+
+     A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+     You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development.
+@end copying
+
 @ifinfo
 @dircategory Programming
 @direntry
@@ -87,27 +110,7 @@ Published by the Free Software Foundation
 59 Temple Place - Suite 330
 Boston, MA 02111-1307 USA
 
-Copyright (C) @value{copyrights-g77} Free Software Foundation, Inc.
-
-
-Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1 or
-any later version published by the Free Software Foundation; with the
-Invariant Sections being ``GNU General Public License'' and ``Funding
-Free Software'', the Front-Cover
-texts being (a) (see below), and with the Back-Cover Texts being (b)
-(see below).  A copy of the license is included in the section entitled
-``GNU Free Documentation License''.
-
-(a) The FSF's Front-Cover Text is:
-
-     A GNU Manual
-
-(b) The FSF's Back-Cover Text is:
-
-     You have freedom to copy and modify this GNU Manual, like GNU
-     software.  Copies published by the Free Software Foundation raise
-     funds for GNU development.
+@insertcopying
 @end ifinfo
 
 Contributed by James Craig Burley (@email{@value{email-burley}}).
@@ -136,8 +139,6 @@ was contributed to Craig by David Ronis (@email{ronis@@onsager.chem.mcgill.ca}).
 @center for version @value{which-g77}
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} @value{copyrights-g77} Free Software Foundation, Inc.
-@sp 2
 For the @value{which-g77} Version*
 @sp 1
 Published by the Free Software Foundation @*
@@ -147,24 +148,7 @@ Boston, MA 02111-1307, USA@*
 @c Printed copies are available for $? each.@*
 @c ISBN ???
 @sp 1
-Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1 or
-any later version published by the Free Software Foundation; with the
-Invariant Sections being ``GNU General Public License'' and ``Funding
-Free Software'', the Front-Cover
-texts being (a) (see below), and with the Back-Cover Texts being (b)
-(see below).  A copy of the license is included in the section entitled
-``GNU Free Documentation License''.
-
-(a) The FSF's Front-Cover Text is:
-
-     A GNU Manual
-
-(b) The FSF's Back-Cover Text is:
-
-     You have freedom to copy and modify this GNU Manual, like GNU
-     software.  Copies published by the Free Software Foundation raise
-     funds for GNU development.
+@insertcopying
 @end titlepage
 @summarycontents
 @contents
