@@ -1855,7 +1855,8 @@ verify_flow_info ()
 	  edge_checksum[e->dest->index + 2] += (size_t) e;
 	}
 
-      if (n_eh && !find_reg_note (bb->end, REG_EH_REGION, NULL_RTX))
+      if (n_eh && GET_CODE (PATTERN (bb->end)) != RESX
+	  && !find_reg_note (bb->end, REG_EH_REGION, NULL_RTX))
 	{
 	  error ("Missing REG_EH_REGION note in the end of bb %i", bb->index);
 	  err = 1;
