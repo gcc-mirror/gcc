@@ -31,6 +31,9 @@ Boston, MA 02111-1307, USA.  */
 #else
 #  include <stdio.h>
 #endif
+#if STDC_HEADERS
+#  include <string.h>
+#endif
 
 #include "f2c.h"
 
