@@ -594,6 +594,9 @@ case $basic_machine in
 	m88k-omron*)
 		os=-luna
 		;;
+	*-sequent)
+		os=-bsd
+		;;
 	*-crds)
 		os=-unos
 		;;
