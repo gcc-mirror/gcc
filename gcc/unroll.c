@@ -1944,7 +1944,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 
 	      /* Can't use the label_map for every insn, since this may be
 		 the backward branch, and hence the label was not mapped.  */
-	      if ((set = single_set (insn)))
+	      if ((set = single_set (copy)))
 		{
 		  tem = SET_SRC (set);
 		  if (GET_CODE (tem) == LABEL_REF)
