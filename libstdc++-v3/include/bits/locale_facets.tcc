@@ -299,7 +299,7 @@ namespace std
 
       // Digit grouping is checked. If grouping and found_grouping don't
       // match, then get very very upset, and set failbit.
-      if (__lc->_M_use_grouping && __found_grouping.size())
+      if (__found_grouping.size())
         {
           // Add the ending grouping if a decimal wasn't found.
 	  if (!__found_dec)
@@ -492,7 +492,7 @@ namespace std
 
 	// Digit grouping is checked. If grouping and found_grouping don't
 	// match, then get very very upset, and set failbit.
-	if (__lc->_M_use_grouping && __found_grouping.size())
+	if (__found_grouping.size())
 	  {
 	    // Add the ending grouping.
 	    __found_grouping += static_cast<char>(__sep_pos);
@@ -1320,7 +1320,7 @@ namespace std
 	    __tmp_units.insert(__tmp_units.begin(), __ctype.widen('-'));
 
 	  // Test for grouping fidelity.
-	  if (__grouping.size() && __grouping_tmp.size())
+	  if (__grouping_tmp.size())
 	    {
 	      // Add the ending grouping if a decimal wasn't found.
 	      if (!__testdecfound)
