@@ -2512,18 +2512,18 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 	  /* This is the case of (char)x >?< 0x80, which people used to use
 	     expecting old C compilers to change the 0x80 into -0x80.  */
 	  if (val == boolean_false_node)
-	    warning ("comparison is always 0 due to limited range of data type");
+	    warning ("comparison is always false due to limited range of data type");
 	  if (val == boolean_true_node)
-	    warning ("comparison is always 1 due to limited range of data type");
+	    warning ("comparison is always true due to limited range of data type");
 	}
 
       if (!min_lt && unsignedp0 && TREE_CODE (primop0) != INTEGER_CST)
 	{
 	  /* This is the case of (unsigned char)x >?< -1 or < 0.  */
 	  if (val == boolean_false_node)
-	    warning ("comparison is always 0 due to limited range of data type");
+	    warning ("comparison is always false due to limited range of data type");
 	  if (val == boolean_true_node)
-	    warning ("comparison is always 1 due to limited range of data type");
+	    warning ("comparison is always true due to limited range of data type");
 	}
 
       if (val != 0)
@@ -2589,7 +2589,7 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 		  && ! (TREE_CODE (primop0) == INTEGER_CST
 			&& ! TREE_OVERFLOW (convert (signed_type (type),
 						     primop0))))
-		warning ("unsigned value >= 0 is always 1");
+		warning ("comparison of unsigned expression >= 0 is always true");
 	      value = boolean_true_node;
 	      break;
 
@@ -2598,7 +2598,7 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 		  && ! (TREE_CODE (primop0) == INTEGER_CST
 			&& ! TREE_OVERFLOW (convert (signed_type (type),
 						     primop0))))
-		warning ("unsigned value < 0 is always 0");
+		warning ("comparison of unsigned expression < 0 is always false");
 	      value = boolean_false_node;
 	      break;
 

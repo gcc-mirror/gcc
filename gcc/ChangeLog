@@ -1,3 +1,9 @@
+1998-11-19 Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+	* c-common.c: Change warning messages to say `comparison is
+	always true' or `comparison is always false' instead of the
+	confusing `is always 0', `is always 1'.
+
 Thu Nov 19 19:05:49 1998  Per Bothner  <bothner@cygnus.com>
 
 	* print-tree.c (print_node):  After printing BLOCK or BIND_EXPR,
