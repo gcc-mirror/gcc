@@ -1,3 +1,8 @@
+Wed Oct 29 22:56:46 1997 Robert Lipe  (robertl@dgii.com)
+
+	* info/termdep.h: If POSIX, #undef TIOCGETC for benefit of systems
+	that provide TIOCETC but not struct tchars.
+
 Wed Oct 15 09:49:57 1997  Richard Henderson  <rth@cygnus.com>
 
 	* info/man.c (find_man_formatter): Don't cast getenv(), but provide

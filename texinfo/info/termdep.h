@@ -1,5 +1,5 @@
 /* termdep.h -- System things that terminal.c depends on.
-   $Id: termdep.h,v 1.3 1996/10/02 22:23:52 karl Exp $
+   $Id: termdep.h,v 1.2 1997/10/30 05:55:14 law Exp $
 
    This file is part of GNU Info, a program for reading online documentation
    stored in Info format.
@@ -45,6 +45,11 @@
 
 #if defined (HAVE_TERMIOS_H)
 #  include <termios.h>
+/* 
+ * POSIX does not mandate that we have these and it may, in fact, be only
+ * partially implemented 
+ */
+#  undef TIOCGETC
 #else
 #  if defined (HAVE_TERMIO_H)
 #    include <termio.h>
