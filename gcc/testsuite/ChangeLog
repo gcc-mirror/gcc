@@ -1,3 +1,8 @@
+2004-02-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gcc.dg/builtins-config.h (HAVE_C99_RUNTIME): Don't define for PA
+	HP-UX.
+
 2004-02-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* g++.dg/eh/simd-1.C: Tweak again for SPARC.
