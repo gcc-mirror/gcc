@@ -101,7 +101,7 @@ mystrstr (s1, s2)
 #define CPLUS_MARKER '$'
 #endif
 
-enum demangling_styles current_demangling_style = gnu_demangling;
+enum demangling_styles current_demangling_style = auto_demangling;
 
 static char cplus_markers[] = { CPLUS_MARKER, '.', '$', '\0' };
 
@@ -294,9 +294,9 @@ struct demangler_engine libiberty_demanglers[] =
   }
   ,
   {
-    GNU_NEW_ABI_DEMANGLING_STYLE_STRING,
-    gnu_new_abi_demangling,
-    "GNU (g++) new-ABI-style demangling"
+    GNU_V3_DEMANGLING_STYLE_STRING,
+    gnu_v3_demangling,
+    "GNU (g++) V3 ABI-style demangling"
   }
   ,
   {
@@ -913,9 +913,13 @@ cplus_demangle (mangled, options)
   if ((work->options & DMGL_STYLE_MASK) == 0)
     work->options |= (int) current_demangling_style & DMGL_STYLE_MASK;
 
-  /* The new-ABI demangling is implemented elsewhere.  */
-  if (GNU_NEW_ABI_DEMANGLING)
-    return cplus_demangle_new_abi (mangled);
+  /* The V3 ABI demangling is implemented elsewhere.  */
+  if (GNU_V3_DEMANGLING || AUTO_DEMANGLING)
+    {
+      ret = cplus_demangle_v3 (mangled);
+      if (ret || GNU_V3_DEMANGLING)
+	return ret;
+    }
 
   if (GNAT_DEMANGLING)
     return ada_demangle(mangled,options);
@@ -4968,7 +4972,7 @@ static const char *
 hp_symbol_characters PARAMS ((void));
 
 static const char *
-gnu_new_abi_symbol_characters PARAMS ((void));
+gnu_v3_symbol_characters PARAMS ((void));
 
 /* Return the string of non-alnum characters that may occur 
    as a valid symbol component, in the standard assembler symbol
@@ -5019,11 +5023,11 @@ hp_symbol_characters ()
 
 
 /* Return the string of non-alnum characters that may occur 
-   as a valid symbol component in the GNU standard C++ ABI mangling
+   as a valid symbol component in the GNU C++ V3 ABI mangling
    scheme.  */
 
 static const char *
-gnu_new_abi_symbol_characters ()
+gnu_v3_symbol_characters ()
 {
   return "_$.";
 }
@@ -5100,13 +5104,14 @@ main (argc, argv)
 	case java_demangling:
 	case edg_demangling:
 	case gnat_demangling:
+	case auto_demangling:
 	  valid_symbols = standard_symbol_characters ();
 	  break;
 	case hp_demangling:
 	  valid_symbols = hp_symbol_characters ();
 	  break;
-	case gnu_new_abi_demangling:
-	  valid_symbols = gnu_new_abi_symbol_characters ();
+	case gnu_v3_demangling:
+	  valid_symbols = gnu_v3_symbol_characters ();
 	  break;
 	default:
 	  /* Folks should explicitly indicate the appropriate alphabet for
