@@ -1,5 +1,8 @@
 1998-05-20  Mark Mitchell  <mmitchell@usa.net>
 
+	* decl2.c (find_representative_member): New function.
+	(finish_anon_union): Use it.
+
 	* cp-tree.h (MAIN_NAME_P): New macro.
 	(DECL_MAIN_P): Likwise.
 	* decl.c (pushdecl): Avoid crashing on redefinitions of `main'.
