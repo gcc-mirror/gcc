@@ -1,5 +1,5 @@
 /* Generate code to initialize optabs from machine description.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -93,7 +93,6 @@ char *optabs[] =
   "xor_optab->handlers[(int) %A].insn_code = CODE_FOR_%(xor%a3%)",
   "ashl_optab->handlers[(int) %A].insn_code = CODE_FOR_%(ashl%a3%)",
   "ashr_optab->handlers[(int) %A].insn_code = CODE_FOR_%(ashr%a3%)",
-  "lshl_optab->handlers[(int) %A].insn_code = CODE_FOR_%(lshl%a3%)",
   "lshr_optab->handlers[(int) %A].insn_code = CODE_FOR_%(lshr%a3%)",
   "rotl_optab->handlers[(int) %A].insn_code = CODE_FOR_%(rotl%a3%)",
   "rotr_optab->handlers[(int) %A].insn_code = CODE_FOR_%(rotr%a3%)",
