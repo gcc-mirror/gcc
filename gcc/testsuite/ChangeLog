@@ -1,3 +1,13 @@
+2004-11-04  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* g++.dg/template/nontype7.C: New test.
+	* g++.dg/template/nontype8.C: Likewise.
+	* g++.dg/template/nontype9.C: Likewise.
+	* g++.dg/template/nontype10.C: Likewise.
+	* g++.dg/tc1/dr49.C: Likewise.
+	* g++.dg/template/ptrmem8.C: Relax dg-error checks.
+	* g++.old-deja/g++.other/null1.C: Remove a buggy error check
+
 2004-11-04  Ben Elliston  <bje@au.ibm.com>
 
 	* g++.dg/rtti/tinfo1.C: Remove xfails.
