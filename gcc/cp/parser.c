@@ -2800,6 +2800,8 @@ cp_parser_primary_expression (cp_parser *parser,
 			(decl, parser->scope, current_class_type));
 		if (TREE_CODE (decl) == FIELD_DECL || BASELINK_P (decl))
 		  *qualifying_class = parser->scope;
+		else if (!processing_template_decl)
+		  decl = convert_from_reference (decl);
 	      }
 	    else
 	      /* Transform references to non-static data members into

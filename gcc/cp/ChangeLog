@@ -1,3 +1,14 @@
+2003-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/5388
+	* call.c (conditional_conversion): Don't consider implicit
+	conversions if T2 is a base of T1. 
+	* cp-tree.h (DERIVED_FROM_P, UNIQUELY_DERIVED_FROM_P): Make boolean.
+	(ACCESSIBLY_UNIQUELY_DERIVED_P, PUBLICLY_UNIQUELY_DERIVED_P): Likewise.
+
+	* parser.c (cp_parser_primary_expression): Convert a static data
+	member from reference.
+
 2003-05-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (build_op_delete_call): Avoid creating unnecessary types.
@@ -98,10 +109,10 @@
 
 2003-05-07  Richard Henderson  <rth@redhat.com>
 
-        PR c++/10570
-        * cfns.gperf: Comment out POSIX thread cancellation points,
-        plus abort and raise.
-        * cfns.h: Regenerate.
+	PR c++/10570
+	* cfns.gperf: Comment out POSIX thread cancellation points,
+	plus abort and raise.
+	* cfns.h: Regenerate.
 
 2003-05-07  Jason Merrill  <jason@redhat.com>
 
