@@ -1,3 +1,9 @@
+2002-02-09  David O'Brien  <obrien@FreeBSD.org>
+
+	* config/sparc/freebsd.h(TARGET_DEFAULT): Add MASK_EPILOGUE setting and
+	remove MASK_VIS.
+	(ASM_CPU_DEFAULT_SPEC): Remove.  Default setting is fine.
+
 2002-02-09  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c (output_logical_op): Use sub.w to clear
