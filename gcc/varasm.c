@@ -3299,7 +3299,7 @@ output_constant_def (exp, defer)
      encoded in it.  */
   if (! found)
     {
-      if (TREE_CODE (exp) == INTEGER_CSY)
+      if (TREE_CODE (exp) == INTEGER_CST)
 	ENCODE_SECTION_INFO (exp, true);
 
       desc->rtl = rtl;
