@@ -695,7 +695,7 @@ enum reg_class
 #define CAN_ELIMINATE(FROM, TO) 1
 
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
- (OFFSET) = mmix_initial_elimination_offset (FROM, TO);
+ (OFFSET) = mmix_initial_elimination_offset (FROM, TO)
 
 
 /* Node: Stack Arguments */
