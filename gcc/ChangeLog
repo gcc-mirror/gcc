@@ -1,3 +1,8 @@
+2003-04-21  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.c (rs6000_override_options): No SPE means
+        64-bit long doubles.
+
 2003-04-21  Olivier Hainque  <hainque@act-europe.fr>
 
 	* calls.c (expand_call): Prevent sibcall optimization for calls to
