@@ -378,9 +378,13 @@ end_final (filename)
 	 compatibility.  */
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBX", 1);
       {
-	int len = strlen (filename);
-	char *data_file = (char *) alloca (len + 3);
-	strcpy (data_file, filename);
+	char *cwd = getpwd ();
+	int len = strlen (filename) + strlen (cwd) + 1;
+	char *data_file = (char *) alloca (len + 4);
+
+	strcpy (data_file, cwd);
+	strcat (data_file, "/");
+	strcat (data_file, filename);
 	strip_off_ending (data_file, len);
 	strcat (data_file, ".d");
 	assemble_string (data_file, strlen (data_file) + 1);
