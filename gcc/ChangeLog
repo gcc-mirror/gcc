@@ -1,3 +1,15 @@
+2003-09-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (real_dconstp, fold_builtin_logarithm,
+	fold_builtin_exponent): New, split out from fold_builtin.  Also
+	generalize to add log2, log10, exp2 and exp10/pow10 equivalents.
+	* emit-rtl.c (dconst3, dconst10, dconstthird): New.
+	(init_emit_once): Initialize new dconsts, use ARRAY_SIZE in lieu
+	of hardcoded array size.
+	* fold-const.c (fold): Add cases for exp2, exp10 and pow10.
+	(tree_expr_nonnegative_p): Likewise.
+	* real.h (dconst3, dconst10, dconstthird): New.
+
 Tue Sep  9 22:18:48 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (cgraph_finalize_function): Fix handling of extern

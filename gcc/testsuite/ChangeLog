@@ -1,3 +1,7 @@
+2003-09-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/torture/builtin-explog-1.c: New testcase.
+
 2003-09-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.dg/ia64-types1.c: New test.

@@ -6110,10 +6110,20 @@ fold (tree expr)
 		  return build_function_call_expr (sqrtfn, arglist);
 		}
 
-	      /* Optimize exp(x)*exp(y) as exp(x+y).  */
-	      if ((fcode0 == BUILT_IN_EXP && fcode1 == BUILT_IN_EXP)
-		  || (fcode0 == BUILT_IN_EXPF && fcode1 == BUILT_IN_EXPF)
-		  || (fcode0 == BUILT_IN_EXPL && fcode1 == BUILT_IN_EXPL))
+	      /* Optimize expN(x)*expN(y) as expN(x+y).  */
+	      if (fcode0 == fcode1
+		  && (fcode0 == BUILT_IN_EXP
+		      || fcode0 == BUILT_IN_EXPF
+		      || fcode0 == BUILT_IN_EXPL
+		      || fcode0 == BUILT_IN_EXP2
+		      || fcode0 == BUILT_IN_EXP2F
+		      || fcode0 == BUILT_IN_EXP2L
+		      || fcode0 == BUILT_IN_EXP10
+		      || fcode0 == BUILT_IN_EXP10F
+		      || fcode0 == BUILT_IN_EXP10L
+		      || fcode0 == BUILT_IN_POW10
+		      || fcode0 == BUILT_IN_POW10F
+		      || fcode0 == BUILT_IN_POW10L))
 		{
 		  tree expfn = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
 		  tree arg = build (PLUS_EXPR, type,
@@ -6445,10 +6455,19 @@ fold (tree expr)
       if (flag_unsafe_math_optimizations)
 	{
 	  enum built_in_function fcode = builtin_mathfn_code (arg1);
-	  /* Optimize x/exp(y) into x*exp(-y).  */
+	  /* Optimize x/expN(y) into x*expN(-y).  */
 	  if (fcode == BUILT_IN_EXP
 	      || fcode == BUILT_IN_EXPF
-	      || fcode == BUILT_IN_EXPL)
+	      || fcode == BUILT_IN_EXPL
+	      || fcode == BUILT_IN_EXP2
+	      || fcode == BUILT_IN_EXP2F
+	      || fcode == BUILT_IN_EXP2L
+	      || fcode == BUILT_IN_EXP10
+	      || fcode == BUILT_IN_EXP10F
+	      || fcode == BUILT_IN_EXP10L
+	      || fcode == BUILT_IN_POW10
+	      || fcode == BUILT_IN_POW10F
+	      || fcode == BUILT_IN_POW10L)
 	    {
 	      tree expfn = TREE_OPERAND (TREE_OPERAND (arg1, 0), 0);
 	      tree arg = build1 (NEGATE_EXPR, type,
@@ -8674,6 +8693,15 @@ tree_expr_nonnegative_p (tree t)
 	    case BUILT_IN_EXP:
 	    case BUILT_IN_EXPF:
 	    case BUILT_IN_EXPL:
+	    case BUILT_IN_EXP2:
+	    case BUILT_IN_EXP2F:
+	    case BUILT_IN_EXP2L:
+	    case BUILT_IN_EXP10:
+	    case BUILT_IN_EXP10F:
+	    case BUILT_IN_EXP10L:
+	    case BUILT_IN_POW10:
+	    case BUILT_IN_POW10F:
+	    case BUILT_IN_POW10L:
 	    case BUILT_IN_FABS:
 	    case BUILT_IN_FABSF:
 	    case BUILT_IN_FABSL:
