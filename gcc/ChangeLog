@@ -10,6 +10,8 @@ Thu Sep 30 00:13:27 1999  Dirk Zoller  <duz@rtsffm.com>
 
 Wed Sep 29 23:43:39 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* expr.h (init_mov_optab): Delete declaration
+
 	* h8300.c (WORD_REG_USED): Update to avoid useless register
 	saves in interrupt functions and functions which never return.
 
