@@ -3488,7 +3488,10 @@ store_constructor (exp, target, cleared)
 	      if (mostly_zeros_p (TREE_VALUE (elt)))
 		zero_count += this_node_count;
 	    }
-	  if (4 * zero_count >= 3 * count)
+	  /* Clear the entire array first if there are any missing elements,
+	     or if the incidence of zero elements is >= 75%. */
+	  if (count < maxelt - minelt + 1
+	      || 4 * zero_count >= 3 * count)
 	    need_to_clear = 1;
 	}
       if (need_to_clear)
