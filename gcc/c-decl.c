@@ -1947,8 +1947,7 @@ pushdecl (x)
 	  /* If this is a global decl, and there exists a conflicting local
 	     decl in a parent block, then we can't return as yet, because we
 	     need to register this decl in the current binding block.  */
-	  if (! DECL_EXTERNAL (x) || ! TREE_PUBLIC (x)
-	      || lookup_name (name) == t)
+	  if (! TREE_PUBLIC (x) || lookup_name (name) == t)
 	    return t;
 	}
 
