@@ -3963,7 +3963,7 @@
   [(set_attr "length" "8")
    (set_attr "type" "*,load,store2")
    (set_attr "pool_range" "*,1020,*")
-   (set_attr "neg_pool_range" "*,1012,*")]
+   (set_attr "neg_pool_range" "*,1008,*")]
 )
 
 ;;; ??? This should have alternatives for constants.
@@ -5095,8 +5095,8 @@
    (set_attr "predicable" "yes")
    (set_attr "type"
     "load,store2,*,store2,load,ffarith,ffarith,f_load,f_store,r_mem_f,f_mem_r")
-   (set_attr "pool_range" "*,*,*,*,252,*,*,1024,*,*,*")
-   (set_attr "neg_pool_range" "*,*,*,*,244,*,*,1012,*,*,*")]
+   (set_attr "pool_range" "*,*,*,*,1020,*,*,1024,*,*,*")
+   (set_attr "neg_pool_range" "*,*,*,*,1008,*,*,1008,*,*,*")]
 )
 
 ;; Software floating point version.  This is essentially the same as movdi.
@@ -5111,8 +5111,8 @@
   "* return output_move_double (operands);"
   [(set_attr "length" "8,8,8")
    (set_attr "type" "*,load,store2")
-   (set_attr "pool_range" "252")
-   (set_attr "neg_pool_range" "244")]
+   (set_attr "pool_range" "1020")
+   (set_attr "neg_pool_range" "1008")]
 )
 
 ;;; ??? This should have alternatives for constants.
@@ -5186,7 +5186,7 @@
    (set_attr "predicable" "yes")
    (set_attr "type" "ffarith,ffarith,f_load,f_store,r_mem_f,f_mem_r,*")
    (set_attr "pool_range" "*,*,1024,*,*,*,*")
-   (set_attr "neg_pool_range" "*,*,1012,*,*,*,*")]
+   (set_attr "neg_pool_range" "*,*,1004,*,*,*,*")]
 )
 
 
