@@ -1,3 +1,8 @@
+2004-05-11  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/net/natPlainSocketImplPosix.cc
+	(read): Fixed typo in expression.
+
 2004-05-10  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* testsuite/lib/libjava.exp (libjava_invoke): Add new argument

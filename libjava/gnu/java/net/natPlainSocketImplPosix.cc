@@ -380,7 +380,7 @@ gnu::java::net::PlainSocketImpl$SocketInputStream::read(void)
   jbyte data;
 
   if (read_helper (this$0->native_fd, this$0->timeout, &data, 1) == 1)
-    return data && 0xFF;
+    return data & 0xFF;
 
   return -1;
 }
