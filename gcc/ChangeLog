@@ -1,3 +1,12 @@
+Thu Mar  5 02:14:44 1998  Richard Henderson  <rth@cygnus.com>
+
+	* haifa-sched.c (free_list): Rename from free_pnd_lst.
+	(free_pending_lists): Rename free_pnd_lst uses.
+	(remove_dependence): Place expunged element on unused_insn_list.
+	(alloc_INSN_LIST, alloc_EXPR_LIST): New.  Change all callers of
+	gen_rtx_*_LIST and alloc_rtx to use them.
+	(compute_block_backward_dependences): Free the reg_last_* lists.
+
 Thu Mar  5 00:05:40 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* cccp.c (main): Avoid undefined behavior when setting pend_includes
