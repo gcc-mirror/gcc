@@ -1,3 +1,7 @@
+2004-03-10  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/26_numerics/valarray_subset_assignment.cc: Fix typos.
+
 2004-03-10  Paul Kienzle  <pkienzle@nist.gov>
 	    Paolo Carlini  <pcarlini@suse.de>
 
