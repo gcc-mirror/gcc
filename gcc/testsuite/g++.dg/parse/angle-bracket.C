@@ -4,6 +4,6 @@
 
 int main()
 {
-  ( int() > int() );            // { dg-bogus "parse" "" { xfail *-*-* } }
+  ( int() > int() );            // { dg-bogus "parse|syntax" "" { xfail *-*-* } }
   return 0;
 }

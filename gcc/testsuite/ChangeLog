@@ -1,3 +1,12 @@
+2003-01-31  Paolo Carlini  <pcarlini@unitus.it>
+
+	Further tweaks for Bison-1.875.
+	* gcc.dg/cpp/assert_trad2.c: Test for "(parse|syntax) error".
+	* gcc.dg/cpp/direct2s.c: Likewise.
+	* g++.dg/lookup/using2.C: Likewise.
+	* g++.dg/parse/angle-bracket.C: Likewise.
+	* g++.dg/template/typename3.C: Likewise.
+
 2003-01-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9433
