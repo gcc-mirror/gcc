@@ -1,4 +1,4 @@
-/* Copyright (C) 2000, 2002  Free Software Foundation
+/* Copyright (C) 2000, 2002, 2003  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -589,9 +589,21 @@ public class BufferedImage extends Image
     
   public String toString()
   {
-    // FIXME: implement:
-    return super.toString();
+    StringBuffer buf;
+
+    buf = new StringBuffer(/* estimated length */ 120);
+    buf.append("BufferedImage@");
+    buf.append(Integer.toHexString(hashCode()));
+    buf.append(": type=");
+    buf.append(type);
+    buf.append(' ');
+    buf.append(colorModel);
+    buf.append(' ');
+    buf.append(raster);
+
+    return buf.toString();
   }
+
 
   /**
    * Adds a tile observer. If the observer is already present, it receives

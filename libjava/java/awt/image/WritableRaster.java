@@ -1,4 +1,4 @@
-/* Copyright (C) 2000, 2002  Free Software Foundation
+/* Copyright (C) 2000, 2002, 2003  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -54,7 +54,8 @@ public class WritableRaster extends Raster
 			   DataBuffer dataBuffer, Point origin)
   {
     this(sampleModel, dataBuffer,
-	 new Rectangle(origin.x, origin.y,
+	 new Rectangle(origin != null ? origin.x : 0,
+                       origin != null ? origin.y : 0,
 		       sampleModel.getWidth(), sampleModel.getHeight()),
 	 origin,
 	 null);
