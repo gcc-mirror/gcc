@@ -1,3 +1,12 @@
+2000-07-26 Mark Elbrecht <snowball3@bigfoot.com>
+
+	* pexecute.c (pexecute) [__MSDOS__]: Change __GO32__ to
+	__DJGPP__. Use P_WAIT instead of constant in the spawnv* call.
+	Cast program to 'char *' in errmsg_arg assignment.
+	(PWAIT_ERROR): Define.
+	(pwait): Use PWAIT_ERROR.  Adjust DJGPP's status code to conform
+	to DJGPP's WIF* macros.
+
 2000-07-27  RodneyBrown  <RodneyBrown@pmsc.com>
 	    Jeff Law <law@cygnus.com>
 

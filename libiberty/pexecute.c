@@ -157,9 +157,9 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
   if ((flags & PEXECUTE_ONE) != PEXECUTE_ONE)
     abort ();
 
-#ifdef __GO32__
+#ifdef __DJGPP__
   /* ??? What are the possible return values from spawnv?  */
-  rc = (flags & PEXECUTE_SEARCH ? spawnvp : spawnv) (1, program, argv);
+  rc = (flags & PEXECUTE_SEARCH ? spawnvp : spawnv) (P_WAIT, program, argv);
 #else
   char *scmd, *rf;
   FILE *argfile;
@@ -208,7 +208,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
   if (rc == -1)
     {
       *errmsg_fmt = install_error_msg;
-      *errmsg_arg = program;
+      *errmsg_arg = (char *)program;
       return -1;
     }
 
@@ -216,6 +216,13 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
   last_status = rc << 8;
   return last_pid;
 }
+
+/* Use ECHILD if available, otherwise use EINVAL.  */
+#ifdef ECHILD
+#define PWAIT_ERROR ECHILD
+#else
+#define PWAIT_ERROR EINVAL
+#endif
 
 int
 pwait (pid, status, flags)
@@ -228,13 +235,16 @@ pwait (pid, status, flags)
       /* Called twice for the same child?  */
       || pid == last_reaped)
     {
-      /* ??? ECHILD would be a better choice.  Can we use it here?  */
-      errno = EINVAL;
+      errno = PWAIT_ERROR;
       return -1;
     }
   /* ??? Here's an opportunity to canonicalize the values in STATUS.
      Needed?  */
+#ifdef __DJGPP__
+  *status = (last_status >> 8);
+#else
   *status = last_status;
+#endif
   last_reaped = last_pid;
   return last_pid;
 }
