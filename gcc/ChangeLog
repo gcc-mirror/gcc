@@ -1,5 +1,41 @@
 2001-07-19  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* Makefile.in (toplev.o, dwarfout.o, final.o): Don't depend on
+	dwarfout.h.
+	* dbxout.c (dbxout_function): Rename dbxout_funciton_decl, move
+	to conditionally compiled block.
+	(dbx_debug_hooks, xcoff_debug_hooks): Update.
+	* dbxout.h (dbxout_function): Remove.
+	* debug.c (do_nothing_debug_hooks): Update.
+	* debug.h (struct gcc_debug_hooks): New hooks function_decl,
+	global_decl, deferred_inline_function.
+	* dwarf2out.c (dwarf2_debug_hooks): Update.
+	(dwarf2out_global_decl): New.
+	* dwarfout.c: Don't include dwarfout.h.
+	(dwarfout_global_decl, dwarfout_function_decl,
+	dwarfout_deferred_inline_function): New.
+	(dwarf_debug_hooks): Update.
+	* dwarfout.h: Remove.
+	* final.c: Don't include dwarfout.h.
+	* sdbout.c (sdbout_global_decl): New.
+	(sdbout_debug_hooks): Update.
+	* toplev.c: Don't include dwarfout.h.
+	(check_global_declarations, rest_of_compilation): Use new debug hooks.
+	(note_deferral_of_defined_inline_function): Remove.
+	* toplev.h (note_deferral_of_defined_inline_function): Remove.
+	* ch/Makefile.in (lex.o): No dependence on dwarfout.h.
+	* ch/lex.c: Don't include dwarfout.h.
+	* cp/Make-lang.in (decl2.o): No dependence on dwarfout.h, dwarf2out.h.
+	(semantics.o, optimize.o): Depend on debug.h not dwarfout.h.
+	* cp/decl2.c: Don't include dwarfout.h and dwarf2out.h.
+	* cp/optimize.c: Include debug.h.
+	(maybe_clone_body): Use debug hook.
+	* cp/semantics.c: Include debug.h.
+	(expand_body): Use debug hook.
+	* po/POTFILES.in: Remove dwarfout.h.
+
+2001-07-19  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* c-lex.c (c_lex): Remove CPP_INT, CPP_FLOAT cases.
 	* c-parse.in (yyerror, _yylex): Similarly.
 	* cppexp.c (parse_number, parse_defined, lex, _cpp_parse_expr):

@@ -1,3 +1,8 @@
+2001-07-19  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Makefile.in (lex.o): No dependence on dwarfout.h.
+	* lex.c: Don't include dwarfout.h.
+
 2001-07-10  Jan van Male  <jan.vanmale@fenk.wau.nl>
 
 	* ch-tree.h: Remove prototype for combine_parm_decls, unused

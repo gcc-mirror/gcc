@@ -32,6 +32,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "params.h"
 #include "hashtab.h"
+#include "debug.h"
 
 /* To Do:
 
@@ -1104,7 +1105,7 @@ maybe_clone_body (fn)
     return 0;
 
   /* Emit the DWARF1 abstract instance.  */
-  note_deferral_of_defined_inline_function (fn);
+  (*debug_hooks->deferred_inline_function) (fn);
 
   /* We know that any clones immediately follow FN in the TYPE_METHODS
      list.  */

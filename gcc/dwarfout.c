@@ -574,7 +574,6 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-config.h"
 #include "reload.h"
 #include "output.h"
-#include "dwarfout.h"
 #include "toplev.h"
 #include "tm_p.h"
 #include "debug.h"
@@ -801,6 +800,10 @@ static void dwarfout_end_epilogue	PARAMS ((void));
 static void dwarfout_source_line	PARAMS ((unsigned int, const char *));
 static void dwarfout_end_prologue	PARAMS ((unsigned int));
 static void dwarfout_end_function	PARAMS ((unsigned int));
+static void dwarfout_function_decl	PARAMS ((tree));
+static void dwarfout_global_decl	PARAMS ((tree));
+static void dwarfout_deferred_inline_function	PARAMS ((tree));
+static void dwarfout_file_scope_decl 	PARAMS ((tree , int));
 static const char *dwarf_tag_name	PARAMS ((unsigned));
 static const char *dwarf_attr_name	PARAMS ((unsigned));
 static const char *dwarf_stack_op_name	PARAMS ((unsigned));
@@ -1389,7 +1392,10 @@ struct gcc_debug_hooks dwarf_debug_hooks =
   dwarfout_end_prologue,
   dwarfout_end_epilogue,
   debug_nothing_tree,		/* begin_function */
-  dwarfout_end_function
+  dwarfout_end_function,
+  dwarfout_function_decl,
+  dwarfout_global_decl,
+  dwarfout_deferred_inline_function
 };
 
 /************************ general utility functions **************************/
@@ -5324,7 +5330,7 @@ output_decl (decl, containing_scope)
 
       /* If we're emitting an out-of-line copy of an inline function,
 	 set up to refer to the abstract instance emitted from
-	 note_deferral_of_defined_inline_function.  */
+	 dwarfout_deferred_inline_function.  */
       if (DECL_INLINE (decl) && ! DECL_ABSTRACT (decl)
 	  && ! (containing_scope && TYPE_P (containing_scope)))
 	set_decl_origin_self (decl);
@@ -5631,7 +5637,62 @@ output_decl (decl, containing_scope)
     }
 }
 
-void
+/* Output debug information for a function.  */
+static void
+dwarfout_function_decl (decl)
+     tree decl;
+{
+  dwarfout_file_scope_decl (decl, 0);
+}
+
+/* Debug information for a global DECL.  Called from toplev.c after
+   compilation proper has finished.  */
+static void
+dwarfout_global_decl (decl)
+     tree decl;
+{
+  /* Output DWARF information for file-scope tentative data object
+     declarations, file-scope (extern) function declarations (which
+     had no corresponding body) and file-scope tagged type
+     declarations and definitions which have not yet been forced out.  */
+
+  if (TREE_CODE (decl) != FUNCTION_DECL || !DECL_INITIAL (decl))
+    dwarfout_file_scope_decl (decl, 1);
+}
+
+/* DECL is an inline function, whose body is present, but which is not
+   being output at this point.  (We're putting that off until we need
+   to do it.)  */
+static void
+dwarfout_deferred_inline_function (decl)
+     tree decl;
+{
+  /* Generate the DWARF info for the "abstract" instance of a function
+     which we may later generate inlined and/or out-of-line instances
+     of.  */
+  if ((DECL_INLINE (decl) || DECL_ABSTRACT (decl))
+      && ! DECL_ABSTRACT_ORIGIN (decl))
+    {
+      /* The front-end may not have set CURRENT_FUNCTION_DECL, but the
+	 DWARF code expects it to be set in this case.  Intuitively,
+	 DECL is the function we just finished defining, so setting
+	 CURRENT_FUNCTION_DECL is sensible.  */
+      tree saved_cfd = current_function_decl;
+      int was_abstract = DECL_ABSTRACT (decl);
+      current_function_decl = decl;
+
+      /* Let the DWARF code do its work.  */
+      set_decl_abstract_flags (decl, 1);
+      dwarfout_file_scope_decl (decl, 0);
+      if (! was_abstract)
+	set_decl_abstract_flags (decl, 0);
+
+      /* Reset CURRENT_FUNCTION_DECL.  */
+      current_function_decl = saved_cfd;
+    }
+}
+
+static void
 dwarfout_file_scope_decl (decl, set_finalizing)
      register tree decl;
      register int set_finalizing;

@@ -3022,6 +3022,7 @@ static void dwarf2out_start_source_file	PARAMS ((unsigned, const char *));
 static void dwarf2out_end_source_file	PARAMS ((unsigned));
 static void dwarf2out_begin_block	PARAMS ((unsigned, unsigned));
 static void dwarf2out_end_block		PARAMS ((unsigned, unsigned));
+static void dwarf2out_global_decl	PARAMS ((tree));
 
 /* The debug hooks structure.  */
 
@@ -3040,7 +3041,10 @@ struct gcc_debug_hooks dwarf2_debug_hooks =
   debug_nothing_int,		/* end_prologue */
   dwarf2out_end_epilogue,
   debug_nothing_tree,		/* begin_function */
-  debug_nothing_int		/* end_function */
+  debug_nothing_int,		/* end_function */
+  dwarf2out_decl,		/* function_decl */
+  dwarf2out_global_decl,
+  debug_nothing_tree		/* deferred_inline_function */
 };
 
 /* NOTE: In the comments in this file, many references are made to
@@ -11009,6 +11013,21 @@ dwarf2out_add_library_unit_info (filename, context_list)
       add_AT_unsigned (unit_die, DW_AT_decl_file, file_index);
       add_pubname (context_list_decl, unit_die);
     }
+}
+
+/* Debug information for a global DECL.  Called from toplev.c after
+   compilation proper has finished.  */
+static void
+dwarf2out_global_decl (decl)
+     tree decl;
+{
+  /* Output DWARF2 information for file-scope tentative data object
+     declarations, file-scope (extern) function declarations (which
+     had no corresponding body) and file-scope tagged type
+     declarations and definitions which have not yet been forced out.  */
+
+  if (TREE_CODE (decl) != FUNCTION_DECL || !DECL_INITIAL (decl))
+    dwarf2out_decl (decl);
 }
 
 /* Write the debugging output for DECL.  */

@@ -1,5 +1,13 @@
 2001-07-19  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* decl2.c: Don't include dwarfout.h and dwarf2out.h.
+	* optimize.c: Include debug.h.
+	(maybe_clone_body): Use debug hook.
+	* semantics.c: Include debug.h.
+	(expand_body): Use debug hook.
+
+2001-07-19  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* spew.c (read_token, yyerror): Remove CPP_INT, CPP_FLOAT cases.
 
 2001-07-18  Mark Mitchell  <mark@codesourcery.com>

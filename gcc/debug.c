@@ -35,7 +35,10 @@ struct gcc_debug_hooks do_nothing_debug_hooks =
   debug_nothing_int,		/* end_prologue */
   debug_nothing_void,		/* end_epilogue */
   debug_nothing_tree,		/* begin_function */
-  debug_nothing_int		/* end_function */
+  debug_nothing_int,		/* end_function */
+  debug_nothing_tree,		/* function_decl */
+  debug_nothing_tree,		/* global_decl */
+  debug_nothing_tree		/* deferred_inline_function */
 };
 
 /* This file contains implementations of each debug hook that do

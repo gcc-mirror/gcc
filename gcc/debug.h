@@ -73,6 +73,20 @@ struct gcc_debug_hooks
 
   /* Record end of function.  LINE is highest line number in function.  */
   void (* end_function) PARAMS ((unsigned int line));
+
+  /* Debug information for a function DECL.  This might include the
+     function name (a symbol), its parameters, and the block that
+     makes up the function's body, and the local variables of the
+     function.  */
+  void (* function_decl) PARAMS ((union tree_node *decl));
+
+  /* Debug information for a global DECL.  Called from toplev.c after
+     compilation proper has finished.  */
+  void (* global_decl) PARAMS ((union tree_node *decl));
+
+  /* DECL is an inline function, whose body is present, but which is
+     not being output at this point.  */
+  void (* deferred_inline_function) PARAMS ((union tree_node *decl));
 };
 
 extern struct gcc_debug_hooks *debug_hooks;

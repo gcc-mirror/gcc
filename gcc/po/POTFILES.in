@@ -731,7 +731,6 @@ dwarf2asm.h
 dwarf2out.c
 dwarf2out.h
 dwarfout.c
-dwarfout.h
 emit-rtl.c
 #enquire.c is used only by GCC maintainers and installers
 errors.c

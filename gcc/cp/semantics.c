@@ -37,6 +37,7 @@
 #include "expr.h"
 #include "output.h"
 #include "timevar.h"
+#include "debug.h"
 
 /* There routines provide a modular interface to perform many parsing
    operations.  They may therefore be used during actual parsing, or
@@ -2440,7 +2441,7 @@ expand_body (fn)
 	 we actually need to write this function out.  */
       defer_fn (fn);
       /* Let the back-end know that this funtion exists.  */
-      note_deferral_of_defined_inline_function (fn);
+      (*debug_hooks->deferred_inline_function) (fn);
       return;
     }
 
