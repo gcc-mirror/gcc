@@ -5257,7 +5257,12 @@ basic_induction_var (x, mode, dest_reg, p, inc_val, mult_val)
     case CONST_INT:
     case SYMBOL_REF:
     case CONST:
-      if (loops_enclosed == 1)
+      /* convert_modes aborts if we try to convert to or from CCmode, so just
+         exclude that case.  It is very unlikely that a condition code value
+	 would be a useful iterator anyways.  */
+      if (loops_enclosed == 1
+	  && GET_MODE_CLASS (mode) != MODE_CC
+	  && GET_MODE_CLASS (GET_MODE (dest_reg)) != MODE_CC)
  	{
 	  /* Possible bug here?  Perhaps we don't know the mode of X.  */
 	  *inc_val = convert_modes (GET_MODE (dest_reg), mode, x, 0);
