@@ -1,3 +1,26 @@
+2000-04-10  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.h (HOST_INT): New macro: Declare a HOST_WIDE_INT
+	integer.
+	(HOST_UINT): New macro: Declare an unsigned HOST_WIDE_INT
+	integer.
+	(ARM_SIGN_EXTEND): Use HOST_UINT.
+	(STRIP_NAME_ENCODING): Prevent warnings about redefinitions.
+	(ASM_OUTPUT_LABELREF): Prevent warnings about redefinitions.
+	(INCOMING_RETURN_ADDR_RTX): Only define if Dwarf2 is supported.
+	(DWARF_FRAME_RETURN_COLUMN): Only define if Dwarf2 is supported.
+
+	* config/arm/arm.c: (const_ok_for_arm): Use HOST_UINT.
+	(arm_gen_constant): Use HOST_UINT.
+	(arm_canonicalize_constant): Use HOST_UINT.
+	(arm_reload_in_hi): Use HOST_UINT.
+	(arm_reload_out_hi): Use HOST_UINT.
+	(output_multi_immediate): Use HOST_UINT.
+	(int_log2): Use HOST_UINT.
+	(arm_poke_function_name): Use HOST_UINT.
+	(arm_output_epilogue): Use arm_volatile_func().
+	(output_thumb_prologue): Use arm_strip_name_encoding().
+	
 Mon Apr 10 15:40:59 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* sbitmap.c (sbitmap_a_subset_b_p): Rework loop to avoid potential
