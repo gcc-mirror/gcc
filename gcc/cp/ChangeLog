@@ -1,3 +1,10 @@
+1999-08-08  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* ptree.c (print_lang_type): Print the real type of a PMF.
+	Print what exceptions a fn type throws.
+
+	* typeck.c (common_type): Use same_type_p.
+
 1999-08-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* class.c (count_fields, add_fields_to_vec): Add static prototype.
@@ -36,9 +43,6 @@
 	* typeck.c (composite_pointer_type): Constify a char*.
 
 1999-08-06  Jason Merrill  <jason@yorick.cygnus.com>
-
-	* decl.c (bad_specifiers): It's OK to have an EH spec on a function
-	pointer.
 
 	* pt.c (maybe_get_template_decl_from_type_decl): Make sure that
 	we're looking at a class.
