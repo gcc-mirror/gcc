@@ -1442,11 +1442,11 @@ hash_rtx (x)
     if (fmt[i] == 'e')
       hash += hash_rtx (XEXP (x, i));
     else if (fmt[i] == 'u')
-      hash += (int) XEXP (x, i);
+      hash += (unsigned HOST_WIDE_INT) XEXP (x, i);
     else if (fmt[i] == 'i')
       hash += XINT (x, i);
     else if (fmt[i] == 's')
-      hash += (int) XSTR (x, i);
+      hash += (unsigned HOST_WIDE_INT) XSTR (x, i);
 
   return hash;
 }
@@ -1952,7 +1952,8 @@ output_fpops (file)
 		{
 		  union real_extract u;
 
-		  bcopy (&CONST_DOUBLE_LOW (immed[i]), &u, sizeof u);
+		  bcopy ((char *) &CONST_DOUBLE_LOW (immed[i]),
+			 (char *) &u, sizeof u);
 		  if (GET_MODE (immed[i]) == DFmode)
 		    ASM_OUTPUT_DOUBLE (file, u.d);
 		  else
