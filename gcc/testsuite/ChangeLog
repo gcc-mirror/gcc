@@ -1,3 +1,11 @@
+2003-12-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10926
+	* g++.dg/template/error9.C: New test.
+
+	PR c++/11116
+	* g++.dg/template/error8.C: New test.
+
 2003-12-15  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/13400
