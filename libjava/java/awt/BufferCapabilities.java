@@ -67,6 +67,11 @@ public class BufferCapabilities implements Cloneable
   private final ImageCapabilities back;
   private final FlipContents flip;
 
+  /**
+   * Creates a buffer capabilities object.
+   *
+   * @exception IllegalArgumentException If frontCaps or backCaps are null.
+   */
   public BufferCapabilities(ImageCapabilities front, ImageCapabilities back,
                             FlipContents flip)
   {

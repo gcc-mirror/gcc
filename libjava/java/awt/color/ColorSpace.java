@@ -46,7 +46,7 @@ import java.io.Serializable;
  * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
  * @since 1.2
  */
-public abstract class ColorSpace
+public abstract class ColorSpace implements Serializable
 {
   /**
    * Compatible with JDK 1.2+.

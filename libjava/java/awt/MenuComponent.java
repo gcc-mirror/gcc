@@ -92,10 +92,14 @@ private static transient Toolkit toolkit = Toolkit.getDefaultToolkit();
 
 /**
   * Default constructor for subclasses.
+  *
+  * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
   */
 protected
 MenuComponent()
 {
+  if (GraphicsEnvironment.isHeadless())
+    throw new HeadlessException ();
 }
 
 /*************************************************************************/

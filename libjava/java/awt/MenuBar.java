@@ -86,10 +86,14 @@ private Vector menus = new Vector();
 
 /**
   * Initializes a new instance of <code>MenuBar</code>.
+  *
+  * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
   */
 public
 MenuBar()
 {
+  if (GraphicsEnvironment.isHeadless())
+    throw new HeadlessException ();
 }
 
 /*************************************************************************/

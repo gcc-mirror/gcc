@@ -100,7 +100,7 @@ public class PipedWriter extends Writer
     */
   public void connect(PipedReader sink) throws IOException
   {
-    if (sink != null)
+    if (this.sink != null || sink.source != null)
       throw new IOException ("Already connected");
     sink.connect(this);
   }

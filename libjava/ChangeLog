@@ -1,3 +1,34 @@
+2003-01-01  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (rmi_java_source_files): Added RMIClassLoaderSpi.
+	* java/awt/AlphaComposite.java, java/awt/BasicStroke.java,
+	java/awt/BufferCapabilities.java, java/awt/Button.java,
+	java/awt/CheckboxMenuItem.java, java/awt/Choice.java,
+	java/awt/Container.java, java/awt/Cursor.java,
+	java/awt/EventQueue.java, java/awt/FileDialog.java,
+	java/awt/Graphics2D.java, java/awt/Label.java, java/awt/Menu.java,
+	java/awt/MenuBar.java, java/awt/MenuComponent.java,
+	java/awt/PopupMenu.java, java/awt/ScrollPane.java,
+	java/awt/Scrollbar.java, java/awt/TextArea.java,
+	java/awt/TextField.java, java/awt/color/CMMException.java,
+	java/awt/color/ColorSpace.java, java/awt/color/ICC_Profile.java,
+	java/awt/color/ProfileDataException.java,
+	java/awt/datatransfer/Clipboard.java,
+	java/awt/datatransfer/DataFlavor.java,
+	java/awt/datatransfer/FlavorMap.java,
+	java/awt/datatransfer/SystemFlavorMap.java,
+	java/awt/dnd/DragGestureEvent.java,
+	java/awt/dnd/DragGestureRecognizer.java,
+	java/awt/dnd/DragSource.java, java/awt/dnd/DropTarget.java,
+	java/awt/event/WindowEvent.java, java/awt/geom/PathIterator.java,
+	java/awt/im/InputMethodHighlight.java,
+	java/io/PipedOutputStream.java, java/io/PipedWriter.java,
+	java/rmi/server/RMIClassLoader.java: Merged from Classpath.
+
+	* gnu/awt/j2d/Graphics2DImpl.java (drawImage): Changed type of
+	`op' to BufferedImageOp.
+
 2002-12-31  Tom Tromey  <tromey@redhat.com>
 
 	Fix for PR libgcj/7416:
