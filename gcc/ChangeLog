@@ -1,3 +1,13 @@
+2002-09-13  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.md (attr type): Add callpal.
+	(imb, trap, load_tp, set_tp): Use it.
+	* config/alpha/ev4.md (ev4_callpal): New.
+	* config/alpha/ev5.md (ev5_callpal): New.
+	* config/alpha/ev6.md (ev6_ibr): Handle callpal.
+	* config/alpha/alpha.c (alphaev4_insn_pipe): Handle TYPE_CALLPAL.
+	(alphaev5_insn_pipe): Likewise.
+
 2002-09-13  Andreas Jaeger  <aj@suse.de>
 
 	* Makefile.in (print-rtl.o): Depend on CONFIG_H.
