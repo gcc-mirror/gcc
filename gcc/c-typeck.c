@@ -178,6 +178,7 @@ common_type (t1, t2)
 {
   register enum tree_code code1;
   register enum tree_code code2;
+  tree attributes;
 
   /* Save time if the two types are the same.  */
 
@@ -188,6 +189,40 @@ common_type (t1, t2)
     return t2;
   if (t2 == error_mark_node)
     return t1;
+
+  /* Merge the attributes */
+
+  { register tree a1, a2;
+    a1 = TYPE_ATTRIBUTES (t1);
+    a2 = TYPE_ATTRIBUTES (t2);
+
+    /* Either one unset?  Take the set one.  */
+
+    if (!(attributes = a1))
+       attributes = a2;
+
+    /* One that completely contains the other?  Take it.  */
+
+    else if (a2 && !attribute_list_contained (a1, a2))
+       if (attribute_list_contained (a2, a1))
+	  attributes = a2;
+       else
+	{
+	  /* Pick the longest list, and hang on the other
+	     list.  */
+	
+	  if (list_length (a1) < list_length (a2))
+	     attributes = a2, a2 = a1;
+
+	  for (; a2; a2 = TREE_CHAIN (a2))
+	     if (!value_member (attributes, a2))
+	      {
+		a1 = copy_node (a2);
+		TREE_CHAIN (a1) = attributes;
+		attributes = a1;
+	      }
+	}
+  }
 
   /* Treat an enum type as the unsigned integer type of the same width.  */
 
@@ -209,11 +244,12 @@ common_type (t1, t2)
       tree subtype = common_type (subtype1, subtype2);
 
       if (code1 == COMPLEX_TYPE && TREE_TYPE (t1) == subtype)
-	return t1;
+	return build_type_attribute_variant (t1, attributes);
       else if (code2 == COMPLEX_TYPE && TREE_TYPE (t2) == subtype)
-	return t2;
+	return build_type_attribute_variant (t2, attributes);
       else
-	return build_complex_type (subtype);
+	return build_type_attribute_variant (build_complex_type (subtype),
+					     attributes);
     }
 
   switch (code1)
@@ -223,23 +259,24 @@ common_type (t1, t2)
       /* If only one is real, use it as the result.  */
 
       if (code1 == REAL_TYPE && code2 != REAL_TYPE)
-	return t1;
+	return build_type_attribute_variant (t1, attributes);
 
       if (code2 == REAL_TYPE && code1 != REAL_TYPE)
-	return t2;
+	return build_type_attribute_variant (t2, attributes);
 
       /* Both real or both integers; use the one with greater precision.  */
 
       if (TYPE_PRECISION (t1) > TYPE_PRECISION (t2))
-	return t1;
+	return build_type_attribute_variant (t1, attributes);
       else if (TYPE_PRECISION (t2) > TYPE_PRECISION (t1))
-	return t2;
+	return build_type_attribute_variant (t2, attributes);
 
       /* Same precision.  Prefer longs to ints even when same size.  */
 
       if (TYPE_MAIN_VARIANT (t1) == long_unsigned_type_node
 	  || TYPE_MAIN_VARIANT (t2) == long_unsigned_type_node)
-	return long_unsigned_type_node;
+	return build_type_attribute_variant (long_unsigned_type_node,
+					     attributes);
 
       if (TYPE_MAIN_VARIANT (t1) == long_integer_type_node
 	  || TYPE_MAIN_VARIANT (t2) == long_integer_type_node)
@@ -247,15 +284,18 @@ common_type (t1, t2)
 	  /* But preserve unsignedness from the other type,
 	     since long cannot hold all the values of an unsigned int.  */
 	  if (TREE_UNSIGNED (t1) || TREE_UNSIGNED (t2))
-	    return long_unsigned_type_node;
-	  return long_integer_type_node;
+	     t1 = long_unsigned_type_node;
+	  else
+	     t1 = long_integer_type_node;
+	  return build_type_attribute_variant (t1, attributes);
 	}
 
       /* Otherwise prefer the unsigned one.  */
 
       if (TREE_UNSIGNED (t1))
-	return t1;
-      else return t2;
+	return build_type_attribute_variant (t1, attributes);
+      else
+	return build_type_attribute_variant (t2, attributes);
 
     case POINTER_TYPE:
       /* For two pointers, do this recursively on the target type,
@@ -270,10 +310,13 @@ common_type (t1, t2)
 	  = TYPE_READONLY (TREE_TYPE (t1)) || TYPE_READONLY (TREE_TYPE (t2));
 	int volatilep
 	  = TYPE_VOLATILE (TREE_TYPE (t1)) || TYPE_VOLATILE (TREE_TYPE (t2));
-	return build_pointer_type (c_build_type_variant (target, constp, volatilep));
+	t1 = build_pointer_type (c_build_type_variant (target, constp,
+				 volatilep));
+	return build_type_attribute_variant (t1, attributes);
       }
 #if 0
-      return build_pointer_type (common_type (TREE_TYPE (t1), TREE_TYPE (t2)));
+      t1 = build_pointer_type (common_type (TREE_TYPE (t1), TREE_TYPE (t2)));
+      return build_type_attribute_variant (t1, attributes);
 #endif
 
     case ARRAY_TYPE:
@@ -281,11 +324,12 @@ common_type (t1, t2)
 	tree elt = common_type (TREE_TYPE (t1), TREE_TYPE (t2));
 	/* Save space: see if the result is identical to one of the args.  */
 	if (elt == TREE_TYPE (t1) && TYPE_DOMAIN (t1))
-	  return t1;
+	  return build_type_attribute_variant (t1, attributes);
 	if (elt == TREE_TYPE (t2) && TYPE_DOMAIN (t2))
-	  return t2;
+	  return build_type_attribute_variant (t2, attributes);
 	/* Merge the element types, and have a size if either arg has one.  */
-	return build_array_type (elt, TYPE_DOMAIN (TYPE_DOMAIN (t1) ? t1 : t2));
+	t1 = build_array_type (elt, TYPE_DOMAIN (TYPE_DOMAIN (t1) ? t1 : t2));
+	return build_type_attribute_variant (t1, attributes);
       }
 
     case FUNCTION_TYPE:
@@ -301,15 +345,21 @@ common_type (t1, t2)
 
 	/* Save space: see if the result is identical to one of the args.  */
 	if (valtype == TREE_TYPE (t1) && ! TYPE_ARG_TYPES (t2))
-	  return t1;
+	  return build_type_attribute_variant (t1, attributes);
 	if (valtype == TREE_TYPE (t2) && ! TYPE_ARG_TYPES (t1))
-	  return t2;
+	  return build_type_attribute_variant (t2, attributes);
 
 	/* Simple way if one arg fails to specify argument types.  */
 	if (TYPE_ARG_TYPES (t1) == 0)
-	  return build_function_type (valtype, TYPE_ARG_TYPES (t2));
+	 {
+	   t1 = build_function_type (valtype, TYPE_ARG_TYPES (t2));
+	   return build_type_attribute_variant (t1, attributes);
+	 }
 	if (TYPE_ARG_TYPES (t2) == 0)
-	  return build_function_type (valtype, TYPE_ARG_TYPES (t1));
+	 {
+	   t1 = build_function_type (valtype, TYPE_ARG_TYPES (t1));
+	   return build_type_attribute_variant (t1, attributes);
+	 }
 
 	/* If both args specify argument types, we must merge the two
 	   lists, argument by argument.  */
@@ -373,11 +423,12 @@ common_type (t1, t2)
 	  parm_done: ;
 	  }
 
-	return build_function_type (valtype, newargs);
+	t1 = build_function_type (valtype, newargs);
+	/* ... falls through ... */
       }
 
     default:
-      return t1;
+      return build_type_attribute_variant (t1, attributes);
     }
 
 }
@@ -392,6 +443,7 @@ comptypes (type1, type2)
 {
   register tree t1 = type1;
   register tree t2 = type2;
+  int attrval, val;
 
   /* Suppress errors caused by previously reported errors.  */
 
@@ -427,21 +479,33 @@ comptypes (type1, type2)
   if (TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
     return 1;
 
+#ifndef COMP_TYPE_ATTRIBUTES
+#define COMP_TYPE_ATTRIBUTES(t1,t2)	1
+#endif
+
+  /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
+  if (! (attrval = COMP_TYPE_ATTRIBUTES (t1, t2)))
+     return 0;
+
+  /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
+  val = 0;
+
   switch (TREE_CODE (t1))
     {
     case POINTER_TYPE:
-      return (TREE_TYPE (t1) == TREE_TYPE (t2)
+      val = (TREE_TYPE (t1) == TREE_TYPE (t2)
 	      ? 1 : comptypes (TREE_TYPE (t1), TREE_TYPE (t2)));
+      break;
 
     case FUNCTION_TYPE:
-      return function_types_compatible_p (t1, t2);
+      val = function_types_compatible_p (t1, t2);
+      break;
 
     case ARRAY_TYPE:
       {
-	/* 1 if no need for warning yet, 2 if warning cause has been seen.  */
-	int val = 1;
 	tree d1 = TYPE_DOMAIN (t1);
 	tree d2 = TYPE_DOMAIN (t2);
+	val = 1;
 
 	/* Target types must match incl. qualifiers.  */
 	if (TREE_TYPE (t1) != TREE_TYPE (t2)
@@ -454,24 +518,26 @@ comptypes (type1, type2)
 	    || TREE_CODE (TYPE_MIN_VALUE (d2)) != INTEGER_CST
 	    || TREE_CODE (TYPE_MAX_VALUE (d1)) != INTEGER_CST
 	    || TREE_CODE (TYPE_MAX_VALUE (d2)) != INTEGER_CST)
-	  return val;
+	  break;
 
-	return (((TREE_INT_CST_LOW (TYPE_MIN_VALUE (d1))
+	if (! ((TREE_INT_CST_LOW (TYPE_MIN_VALUE (d1))
 		  == TREE_INT_CST_LOW (TYPE_MIN_VALUE (d2)))
 		 && (TREE_INT_CST_HIGH (TYPE_MIN_VALUE (d1))
 		     == TREE_INT_CST_HIGH (TYPE_MIN_VALUE (d2)))
 		 && (TREE_INT_CST_LOW (TYPE_MAX_VALUE (d1))
 		     == TREE_INT_CST_LOW (TYPE_MAX_VALUE (d2)))
 		 && (TREE_INT_CST_HIGH (TYPE_MAX_VALUE (d1))
-		     == TREE_INT_CST_HIGH (TYPE_MAX_VALUE (d2))))
-		? val : 0);
+		     == TREE_INT_CST_HIGH (TYPE_MAX_VALUE (d2)))))
+	   val = 0;
+        break;
       }
 
     case RECORD_TYPE:
       if (maybe_objc_comptypes (t1, t2, 0) == 1)
-	return 1;
+	val = 1;
+      break;
     }
-  return 0;
+  return attrval == 2 && val == 1 ? 2 : val;
 }
 
 /* Return 1 if TTL and TTR are pointers to types that are equivalent,
