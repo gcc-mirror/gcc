@@ -1,5 +1,5 @@
 /* Perform instruction reorganizations for delay slot filling.
-   Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994. 1995 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu).
    Hacked by Michael Tiemann (tiemann@cygnus.com).
 
@@ -4287,14 +4287,15 @@ dbr_schedule (first, file)
   target_hash_table
     = (struct target_info **) alloca ((TARGET_HASH_PRIME
 				       * sizeof (struct target_info *)));
-  bzero (target_hash_table, TARGET_HASH_PRIME * sizeof (struct target_info *));
+  bzero ((char *) target_hash_table,
+	 TARGET_HASH_PRIME * sizeof (struct target_info *));
 
   bb_ticks = (int *) alloca (n_basic_blocks * sizeof (int));
-  bzero (bb_ticks, n_basic_blocks * sizeof (int));
+  bzero ((char *) bb_ticks, n_basic_blocks * sizeof (int));
 
   /* Initialize the statistics for this function.  */
-  bzero (num_insns_needing_delays, sizeof num_insns_needing_delays);
-  bzero (num_filled_delays, sizeof num_filled_delays);
+  bzero ((char *) num_insns_needing_delays, sizeof num_insns_needing_delays);
+  bzero ((char *) num_filled_delays, sizeof num_filled_delays);
 
   /* Now do the delay slot filling.  Try everything twice in case earlier
      changes make more slots fillable.  */
