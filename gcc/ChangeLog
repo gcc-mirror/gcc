@@ -1,3 +1,11 @@
+2003-04-08  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (fold_builtin):  Constant fold expressions as x*0.5
+	instead of x/2.0.  Optimize sqrt(pow(x,y)) as pow(x,y*0.5),
+	log(pow(x,y)) as y*log(x), pow(exp(x),y) as exp(x*y),
+	pow(sqrt(x),y) as pow(x,y*0.5) and pow(pow(x,y),z) as pow(x,y*z).
+	Delete function scope "fcode" variable to avoid shadowing.
+
 2003-04-08  Kevin Buettner  <kevinb@redhat.com>
 
 	* dwarf2out.c (DWARF_ARANGES_HEADER_SIZE, DWARF_ARANGES_PAD_SIZE):

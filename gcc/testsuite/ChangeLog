@@ -1,3 +1,8 @@
+2003-04-08  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/builtins-9.c: New test case.
+	* gcc.dg/builtins-10.c: New test case.
+
 2003-04-07  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.dg/noncompile/init-4.c.c: New test.
