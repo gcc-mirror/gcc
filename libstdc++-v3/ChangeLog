@@ -1,3 +1,7 @@
+2003-11-15  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/std/std_fstream.h: Tweak a comment.
+
 2003-11-15  Roger Sayle  <roger@eyesopen.com>
 
 	* include/c_std/std_cmath.h: Don't import C99's float transcendentals
