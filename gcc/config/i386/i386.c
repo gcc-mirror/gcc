@@ -80,11 +80,21 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
 struct processor_costs pentium_cost = {
   1,					/* cost of an add instruction */
   1,					/* cost of a lea instruction */
+  4,					/* variable shift costs */
+  1,					/* constant shift costs */
+  11,					/* cost of starting a multiply */
+  0,					/* cost of multiply per each bit set */
+  25					/* cost of a divide/mod */
+};
+
+struct processor_costs pentiumpro_cost = {
+  1,					/* cost of an add instruction */
+  1,					/* cost of a lea instruction */
   3,					/* variable shift costs */
   1,					/* constant shift costs */
-  12,					/* cost of starting a multiply */
-  1,					/* cost of multiply per each bit set */
-  25					/* cost of a divide/mod */
+  4,					/* cost of starting a multiply */
+  0,					/* cost of multiply per each bit set */
+  17					/* cost of a divide/mod */
 };
 
 struct processor_costs *ix86_cost = &pentium_cost;
@@ -182,8 +192,8 @@ override_options ()
 	   {PROCESSOR_I486_STRING, PROCESSOR_I486, &i486_cost, 0, 0},
 	   {PROCESSOR_I586_STRING, PROCESSOR_PENTIUM, &pentium_cost, 0, 0},
 	   {PROCESSOR_PENTIUM_STRING, PROCESSOR_PENTIUM, &pentium_cost, 0, 0},
-	   {PROCESSOR_I686_STRING, PROCESSOR_PENTIUMPRO, &pentium_cost, 0, 0},
-	   {PROCESSOR_PENTIUMPRO_STRING, PROCESSOR_PENTIUMPRO, &pentium_cost, 0, 0}};
+	   {PROCESSOR_I686_STRING, PROCESSOR_PENTIUMPRO, &pentiumpro_cost, 0, 0},
+	   {PROCESSOR_PENTIUMPRO_STRING, PROCESSOR_PENTIUMPRO, &pentiumpro_cost, 0, 0}};
 
   int ptt_size = sizeof (processor_target_table) / sizeof (struct ptt);
 
@@ -246,6 +256,7 @@ override_options ()
     if (! strcmp (ix86_cpu_string, processor_target_table[j].name))
       {
 	ix86_cpu = processor_target_table[j].processor;
+	ix86_cost = processor_target_table[j].cost;
 	if (i > j && (int)ix86_arch >= (int)PROCESSOR_PENTIUMPRO)
 	  error ("-mcpu=%s does not support -march=%s", ix86_cpu_string, ix86_arch_string);
 
