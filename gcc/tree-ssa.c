@@ -53,9 +53,6 @@ Boston, MA 02111-1307, USA.  */
 void
 ssa_remove_edge (edge e)
 {
-  /* Remove all PHI arguments for E.  */
-  remove_phi_args (e);
-
   remove_edge (e);
 }
 
@@ -85,8 +82,6 @@ ssa_redirect_edge (edge e, basic_block dest)
       node = build_tree_list (dst, src);
       *last = node;
       last = &TREE_CHAIN (node);
-
-      remove_phi_arg_num (phi, i);
     }
 
   e = redirect_edge_succ_nodup (e, dest);
