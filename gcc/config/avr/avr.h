@@ -509,8 +509,6 @@ do {									    \
 
 #define NO_FUNCTION_CSE
 
-#define NO_RECURSIVE_FUNCTION_CSE
-
 #define TEXT_SECTION_ASM_OP "\t.text"
 
 #define DATA_SECTION_ASM_OP "\t.data"

@@ -618,8 +618,6 @@ do {							\
 
 #define NO_FUNCTION_CSE
 
-#define NO_RECURSIVE_FUNCTION_CSE
-
 
 /* Dividing the output into sections.  */
 

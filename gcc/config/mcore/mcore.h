@@ -909,9 +909,6 @@ extern const enum reg_class reg_class_from_letter[];
 /* The type of size_t unsigned int.  */
 #define SIZE_TYPE "unsigned int"
 
-/* Don't cse the address of the function being compiled.  */
-#define NO_RECURSIVE_FUNCTION_CSE 1
-
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
 #define MOVE_MAX 4

@@ -2645,9 +2645,6 @@ struct sh_args {
 
 #define SH_ELF_WCHAR_TYPE "long int"
 
-/* Don't cse the address of the function being compiled.  */
-/*#define NO_RECURSIVE_FUNCTION_CSE 1*/
-
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
 #define MOVE_MAX (TARGET_SHMEDIA ? 8 : 4)

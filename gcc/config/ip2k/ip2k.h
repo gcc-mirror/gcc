@@ -598,7 +598,6 @@ do {									\
 #define SLOW_BYTE_ACCESS 0
 
 #define NO_FUNCTION_CSE
-#define NO_RECURSIVE_FUNCTION_CSE
 
 #define TEXT_SECTION_ASM_OP ".text"
 #define DATA_SECTION_ASM_OP ".data"
