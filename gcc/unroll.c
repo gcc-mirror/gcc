@@ -2037,22 +2037,17 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	  if (JUMP_LABEL (insn) == start_label && insn == copy_end
 	      && ! last_iteration)
 	    {
+	      /* Update JUMP_LABEL correctly to make invert_jump working.  */
+	      JUMP_LABEL (copy) = get_label_from_map (map,
+						      CODE_LABEL_NUMBER
+						      (JUMP_LABEL (insn)));
 	      /* This is a branch to the beginning of the loop; this is the
 		 last insn being copied; and this is not the last iteration.
 		 In this case, we want to change the original fall through
 		 case to be a branch past the end of the loop, and the
 		 original jump label case to fall_through.  */
 
-	      if (invert_exp (pattern, copy))
-		{
-		  if (! redirect_exp (&pattern,
-				      get_label_from_map (map,
-							  CODE_LABEL_NUMBER
-							  (JUMP_LABEL (insn))),
-				      exit_label, copy))
-		    abort ();
-		}
-	      else
+	      if (!invert_jump (copy, exit_label, 0))
 		{
 		  rtx jmp;
 		  rtx lab = gen_label_rtx ();
@@ -2064,12 +2059,8 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		  jmp = emit_barrier_after (jmp);
 		  emit_label_after (lab, jmp);
 		  LABEL_NUSES (lab) = 0;
-		  if (! redirect_exp (&pattern,
-				      get_label_from_map (map,
-							  CODE_LABEL_NUMBER
-							  (JUMP_LABEL (insn))),
-				      lab, copy))
-		    abort ();
+		  if (!redirect_jump (copy, lab, 0))
+		    abort();
 		}
 	    }
 

@@ -122,7 +122,9 @@ static int tension_vector_labels	PARAMS ((rtx, int));
 static void mark_jump_label		PARAMS ((rtx, rtx, int, int));
 static void delete_computation		PARAMS ((rtx));
 static void redirect_exp_1		PARAMS ((rtx *, rtx, rtx, rtx));
-static void invert_exp_1		PARAMS ((rtx, rtx));
+static int redirect_exp			PARAMS ((rtx, rtx, rtx));
+static void invert_exp_1		PARAMS ((rtx));
+static int invert_exp			PARAMS ((rtx));
 static void delete_from_jump_chain	PARAMS ((rtx));
 static int delete_labelref_insn		PARAMS ((rtx, rtx, int));
 static void mark_modified_reg		PARAMS ((rtx, rtx, void *));
@@ -303,8 +305,9 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 	  rtx temp, temp1, temp2 = NULL_RTX;
 	  rtx temp4 ATTRIBUTE_UNUSED;
 	  rtx nlabel;
-	  int this_is_simplejump, this_is_condjump;
-	  int this_is_condjump_in_parallel;
+	  int this_is_any_uncondjump;
+	  int this_is_any_condjump;
+	  int this_is_onlyjump;
 
 	  next = NEXT_INSN (insn);
 
@@ -315,7 +318,8 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 	  if (after_regscan && GET_CODE (insn) == NOTE
 	      && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
 	      && (temp1 = next_nonnote_insn (insn)) != 0
-	      && simplejump_p (temp1))
+	      && any_uncondjump_p (temp1)
+	      && onlyjump_p (temp1))
 	    {
 	      temp = PREV_INSN (insn);
 	      if (duplicate_loop_exit_test (insn))
@@ -329,9 +333,9 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 	  if (GET_CODE (insn) != JUMP_INSN)
 	    continue;
 
-	  this_is_simplejump = simplejump_p (insn);
-	  this_is_condjump = condjump_p (insn);
-	  this_is_condjump_in_parallel = condjump_in_parallel_p (insn);
+	  this_is_any_condjump = any_condjump_p (insn);
+	  this_is_any_uncondjump = any_uncondjump_p (insn);
+	  this_is_onlyjump = onlyjump_p (insn);
 
 	  /* Tension the labels in dispatch tables.  */
 
@@ -387,7 +391,9 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 	  reallabelprev = prev_active_insn (JUMP_LABEL (insn));
 
 	  /* Detect jump to following insn.  */
-	  if (reallabelprev == insn && this_is_condjump)
+	  if (reallabelprev == insn
+	      && (this_is_any_condjump || this_is_any_uncondjump)
+	      && this_is_onlyjump)
 	    {
 	      next = next_real_insn (JUMP_LABEL (insn));
 	      delete_jump (insn);
@@ -404,7 +410,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 
 	  /* Detect a conditional jump going to the same place
 	     as an immediately following unconditional jump.  */
-	  else if (this_is_condjump
+	  else if (this_is_any_condjump && this_is_onlyjump
 		   && (temp = next_active_insn (insn)) != 0
 		   && simplejump_p (temp)
 		   && (next_active_insn (JUMP_LABEL (insn))
@@ -427,13 +433,13 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 
 	  /* Detect a conditional jump jumping over an unconditional jump.  */
 
-	  else if ((this_is_condjump || this_is_condjump_in_parallel)
-		   && ! this_is_simplejump
+	  else if (this_is_any_condjump
 		   && reallabelprev != 0
 		   && GET_CODE (reallabelprev) == JUMP_INSN
 		   && prev_active_insn (reallabelprev) == insn
 		   && no_labels_between_p (insn, reallabelprev)
-		   && simplejump_p (reallabelprev))
+		   && any_uncondjump_p (reallabelprev)
+		   && onlyjump_p (reallabelprev))
 	    {
 	      /* When we invert the unconditional jump, we will be
 		 decrementing the usage count of its old label.
@@ -484,7 +490,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 	     being branch to already has the identical USE or if code
 	     never falls through to that label.  */
 
-	  else if (this_is_simplejump
+	  else if (this_is_any_uncondjump
 		   && (temp = prev_nonnote_insn (insn)) != 0
 		   && GET_CODE (temp) == INSN
 		   && GET_CODE (PATTERN (temp)) == USE
@@ -517,7 +523,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 #ifdef HAVE_trap
 	  /* Detect a conditional jump jumping over an unconditional trap.  */
 	  if (HAVE_trap
-	      && this_is_condjump && ! this_is_simplejump
+	      && this_is_any_condjump && this_is_onlyjump
 	      && reallabelprev != 0
 	      && GET_CODE (reallabelprev) == INSN
 	      && GET_CODE (PATTERN (reallabelprev)) == TRAP_IF
@@ -541,21 +547,22 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 		}
 	    }
 	  /* Detect a jump jumping to an unconditional trap.  */
-	  else if (HAVE_trap && this_is_condjump
+	  else if (HAVE_trap && this_is_onlyjump
 		   && (temp = next_active_insn (JUMP_LABEL (insn)))
 		   && GET_CODE (temp) == INSN
 		   && GET_CODE (PATTERN (temp)) == TRAP_IF
-		   && (this_is_simplejump
-		       || (temp2 = get_condition (insn, &temp4))))
+		   && (this_is_any_uncondjump
+		       || (this_is_any_condjump
+			   && temp2 = get_condition (insn, &temp4))))
 	    {
 	      rtx tc = TRAP_CONDITION (PATTERN (temp));
 
 	      if (tc == const_true_rtx
-		  || (! this_is_simplejump && rtx_equal_p (temp2, tc)))
+		  || (! this_is_uncondjump && rtx_equal_p (temp2, tc)))
 		{
 		  rtx new;
 		  /* Replace an unconditional jump to a trap with a trap.  */
-		  if (this_is_simplejump)
+		  if (this_is_uncondjump)
 		    {
 		      emit_barrier_after (emit_insn_before (gen_trap (), insn));
 		      delete_jump (insn);
@@ -576,7 +583,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 	      /* If the trap condition and jump condition are mutually
 		 exclusive, redirect the jump to the following insn.  */
 	      else if (GET_RTX_CLASS (GET_CODE (tc)) == '<'
-		       && ! this_is_simplejump
+		       && this_is_any_condjump
 		       && swap_condition (GET_CODE (temp2)) == GET_CODE (tc)
 		       && rtx_equal_p (XEXP (tc, 0), XEXP (temp2, 0))
 		       && rtx_equal_p (XEXP (tc, 1), XEXP (temp2, 1))
@@ -797,6 +804,7 @@ delete_barrier_successors (f)
      rtx f;
 {
   rtx insn;
+  rtx set;
 
   for (insn = f; insn;)
     {
@@ -821,9 +829,10 @@ delete_barrier_successors (f)
 	 gcse.  We eliminate such insns now to avoid having them
 	 cause problems later.  */
       else if (GET_CODE (insn) == JUMP_INSN
-	       && GET_CODE (PATTERN (insn)) == SET
-	       && SET_SRC (PATTERN (insn)) == pc_rtx
-	       && SET_DEST (PATTERN (insn)) == pc_rtx)
+	       && (set = pc_set (insn)) != NULL
+	       && SET_SRC (set) == pc_rtx
+	       && SET_DEST (set) == pc_rtx
+	       && onlyjump_p (insn))
 	insn = delete_insn (insn);
 
       else
@@ -1707,26 +1716,29 @@ jump_back_p (insn, target)
 {
   rtx cinsn, ctarget;
   enum rtx_code codei, codet;
+  rtx set, tset;
 
-  if (simplejump_p (insn) || ! condjump_p (insn)
-      || simplejump_p (target)
+  if (! any_condjump_p (insn)
+      || any_uncondjump_p (target)
       || target != prev_real_insn (JUMP_LABEL (insn)))
     return 0;
+  set = pc_set (insn);
+  tset = pc_set (target);
 
-  cinsn = XEXP (SET_SRC (PATTERN (insn)), 0);
-  ctarget = XEXP (SET_SRC (PATTERN (target)), 0);
+  cinsn = XEXP (SET_SRC (set), 0);
+  ctarget = XEXP (SET_SRC (tset), 0);
 
   codei = GET_CODE (cinsn);
   codet = GET_CODE (ctarget);
 
-  if (XEXP (SET_SRC (PATTERN (insn)), 1) == pc_rtx)
+  if (XEXP (SET_SRC (set), 1) == pc_rtx)
     {
       if (! can_reverse_comparison_p (cinsn, insn))
 	return 0;
       codei = reverse_condition (codei);
     }
 
-  if (XEXP (SET_SRC (PATTERN (target)), 2) == pc_rtx)
+  if (XEXP (SET_SRC (tset), 2) == pc_rtx)
     {
       if (! can_reverse_comparison_p (ctarget, target))
 	return 0;
@@ -2351,7 +2363,8 @@ follow_jumps (label)
        (depth < 10
 	&& (insn = next_active_insn (value)) != 0
 	&& GET_CODE (insn) == JUMP_INSN
-	&& ((JUMP_LABEL (insn) != 0 && simplejump_p (insn))
+	&& ((JUMP_LABEL (insn) != 0 && any_uncondjump_p (insn)
+	     && onlyjump_p (insn))
 	    || GET_CODE (PATTERN (insn)) == RETURN)
 	&& (next = NEXT_INSN (insn))
 	&& GET_CODE (next) == BARRIER);
@@ -3148,12 +3161,18 @@ redirect_exp_1 (loc, olabel, nlabel, insn)
 
 /* Similar, but apply the change group and report success or failure.  */
 
-int
-redirect_exp (loc, olabel, nlabel, insn)
-     rtx *loc;
+static int
+redirect_exp (olabel, nlabel, insn)
      rtx olabel, nlabel;
      rtx insn;
 {
+  rtx *loc;
+
+  if (GET_CODE (PATTERN (insn)) == PARALLEL)
+    loc = &XVECEXP (PATTERN (insn), 0, 0);
+  else
+    loc = &PATTERN (insn);
+
   redirect_exp_1 (loc, olabel, nlabel, insn);
   if (num_validated_changes () == 0)
     return 0;
@@ -3170,7 +3189,14 @@ redirect_jump_1 (jump, nlabel)
      rtx jump, nlabel;
 {
   int ochanges = num_validated_changes ();
-  redirect_exp_1 (&PATTERN (jump), JUMP_LABEL (jump), nlabel, jump);
+  rtx *loc;
+
+  if (GET_CODE (PATTERN (jump)) == PARALLEL)
+    loc = &XVECEXP (PATTERN (jump), 0, 0);
+  else
+    loc = &PATTERN (jump);
+
+  redirect_exp_1 (loc, JUMP_LABEL (jump), nlabel, jump);
   return num_validated_changes () > ochanges;
 }
 
@@ -3194,7 +3220,7 @@ redirect_jump (jump, nlabel, delete_unused)
   if (nlabel == olabel)
     return 1;
 
-  if (! redirect_exp (&PATTERN (jump), olabel, nlabel, jump))
+  if (! redirect_exp (olabel, nlabel, jump))
     return 0;
 
   /* If this is an unconditional branch, delete it from the jump_chain of
@@ -3235,13 +3261,15 @@ redirect_jump (jump, nlabel, delete_unused)
    Accrue the modifications into the change group.  */
 
 static void
-invert_exp_1 (x, insn)
-     rtx x;
+invert_exp_1 (insn)
      rtx insn;
 {
   register RTX_CODE code;
-  register int i;
-  register const char *fmt;
+  rtx x = pc_set (insn);
+
+  if (!x)
+    abort();
+  x = SET_SRC (x);
 
   code = GET_CODE (x);
 
@@ -3268,34 +3296,21 @@ invert_exp_1 (x, insn)
       tem = XEXP (x, 1);
       validate_change (insn, &XEXP (x, 1), XEXP (x, 2), 1);
       validate_change (insn, &XEXP (x, 2), tem, 1);
-      return;
     }
-
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	invert_exp_1 (XEXP (x, i), insn);
-      else if (fmt[i] == 'E')
-	{
-	  register int j;
-	  for (j = 0; j < XVECLEN (x, i); j++)
-	    invert_exp_1 (XVECEXP (x, i, j), insn);
-	}
-    }
+  else
+    abort ();
 }
 
-/* Invert the jump condition of rtx X contained in jump insn, INSN. 
+/* Invert the jump condition of conditional jump insn, INSN. 
 
    Return 1 if we can do so, 0 if we cannot find a way to do so that
    matches a pattern.  */
 
-int
-invert_exp (x, insn)
-     rtx x;
+static int
+invert_exp (insn)
      rtx insn;
 {
-  invert_exp_1 (x, insn);
+  invert_exp_1 (insn);
   if (num_validated_changes () == 0)
     return 0;
 
@@ -3314,7 +3329,7 @@ invert_jump_1 (jump, nlabel)
   int ochanges;
 
   ochanges = num_validated_changes ();
-  invert_exp_1 (PATTERN (jump), jump);
+  invert_exp_1 (jump);
   if (num_validated_changes () == ochanges)
     return 0;
 
@@ -3334,7 +3349,7 @@ invert_jump (jump, nlabel, delete_unused)
      the jump. If that succeeds, we try changing the label.  If that fails,
      we invert the jump back to what it was.  */
 
-  if (! invert_exp (PATTERN (jump), jump))
+  if (! invert_exp (jump))
     return 0;
 
   if (redirect_jump (jump, nlabel, delete_unused))
@@ -3350,7 +3365,7 @@ invert_jump (jump, nlabel, delete_unused)
       return 1;
     }
 
-  if (! invert_exp (PATTERN (jump), jump))
+  if (! invert_exp (jump))
     /* This should just be putting it back the way it was.  */
     abort ();
 
@@ -3788,10 +3803,11 @@ thread_jumps (f, max_reg, flag_before_loop)
 
       for (b1 = f; b1; b1 = NEXT_INSN (b1))
 	{
+	  rtx set;
+	  rtx set2;
 	  /* Get to a candidate branch insn.  */
 	  if (GET_CODE (b1) != JUMP_INSN
-	      || ! condjump_p (b1) || simplejump_p (b1)
-	      || JUMP_LABEL (b1) == 0)
+	      || ! any_condjump_p (b1) || JUMP_LABEL (b1) == 0)
 	    continue;
 
 	  bzero (modified_regs, max_reg * sizeof (char));
@@ -3815,7 +3831,8 @@ thread_jumps (f, max_reg, flag_before_loop)
 		{
 		  /* If this is an unconditional jump and is the only use of
 		     its target label, we can follow it.  */
-		  if (simplejump_p (b2)
+		  if (any_uncondjump_p (b2)
+		      && onlyjump_p (b2)
 		      && JUMP_LABEL (b2) != 0
 		      && LABEL_NUSES (JUMP_LABEL (b2)) == 1)
 		    {
@@ -3849,23 +3866,25 @@ thread_jumps (f, max_reg, flag_before_loop)
 	  if (b2 == 0
 	      || GET_CODE (b2) != JUMP_INSN
 	      || b2 == b1
-	      || ! condjump_p (b2)
-	      || simplejump_p (b2))
+	      || !any_condjump_p (b2)
+	      || !onlyjump_p (b2))
 	    continue;
+	  set = pc_set (b1);
+	  set2 = pc_set (b2);
 
 	  /* Get the comparison codes and operands, reversing the
 	     codes if appropriate.  If we don't have comparison codes,
 	     we can't do anything.  */
-	  b1op0 = XEXP (XEXP (SET_SRC (PATTERN (b1)), 0), 0);
-	  b1op1 = XEXP (XEXP (SET_SRC (PATTERN (b1)), 0), 1);
-	  code1 = GET_CODE (XEXP (SET_SRC (PATTERN (b1)), 0));
-	  if (XEXP (SET_SRC (PATTERN (b1)), 1) == pc_rtx)
+	  b1op0 = XEXP (XEXP (SET_SRC (set), 0), 0);
+	  b1op1 = XEXP (XEXP (SET_SRC (set), 0), 1);
+	  code1 = GET_CODE (XEXP (SET_SRC (set), 0));
+	  if (XEXP (SET_SRC (set), 1) == pc_rtx)
 	    code1 = reverse_condition (code1);
 
-	  b2op0 = XEXP (XEXP (SET_SRC (PATTERN (b2)), 0), 0);
-	  b2op1 = XEXP (XEXP (SET_SRC (PATTERN (b2)), 0), 1);
-	  code2 = GET_CODE (XEXP (SET_SRC (PATTERN (b2)), 0));
-	  if (XEXP (SET_SRC (PATTERN (b2)), 1) == pc_rtx)
+	  b2op0 = XEXP (XEXP (SET_SRC (set2), 0), 0);
+	  b2op1 = XEXP (XEXP (SET_SRC (set2), 0), 1);
+	  code2 = GET_CODE (XEXP (SET_SRC (set2), 0));
+	  if (XEXP (SET_SRC (set2), 1) == pc_rtx)
 	    code2 = reverse_condition (code2);
 
 	  /* If they test the same things and knowing that B1 branches
@@ -3874,9 +3893,7 @@ thread_jumps (f, max_reg, flag_before_loop)
 	  if (rtx_equal_for_thread_p (b1op0, b2op0, b2)
 	      && rtx_equal_for_thread_p (b1op1, b2op1, b2)
 	      && (comparison_dominates_p (code1, code2)
-		  || (can_reverse_comparison_p (XEXP (SET_SRC (PATTERN (b1)),
-						      0),
-						b1)
+		  || (can_reverse_comparison_p (XEXP (SET_SRC (set), 0), b1)
 		      && comparison_dominates_p (code1, reverse_condition (code2)))))
 
 	    {
