@@ -462,6 +462,16 @@ extern int flag_pedantic_errors;
 
 extern int flag_pic;
 
+/* Nonzero if we are compiling position independent code for executable.
+   1 vs 2 for a target-dependent "small" or "large" mode.  */
+      
+extern int flag_pie;
+      
+/* Nonzero if we are compiling code for a shared library, zero for
+   executable.  */
+
+extern int flag_shlib;
+
 /* Nonzero means generate extra code for exception handling and enable
    exception handling.  */
 

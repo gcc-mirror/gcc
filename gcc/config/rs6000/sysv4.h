@@ -810,7 +810,7 @@ extern int fixuplabelno;
 #define	ASM_SPEC "%(asm_cpu) \
 %{.s: %{mregnames} %{mno-regnames}} %{.S: %{mregnames} %{mno-regnames}} \
 %{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
-%{mrelocatable} %{mrelocatable-lib} %{fpic:-K PIC} %{fPIC:-K PIC} \
+%{mrelocatable} %{mrelocatable-lib} %{fpic|fpie|fPIC|fPIE:-K PIC} \
 %{memb|msdata|msdata=eabi: -memb} \
 %{mlittle|mlittle-endian:-mlittle; \
   mbig|mbig-endian      :-mbig;    \
@@ -947,8 +947,8 @@ extern int fixuplabelno;
 
 #define CPP_SYSV_SPEC \
 "%{mrelocatable*: -D_RELOCATABLE} \
-%{fpic: -D__PIC__=1 -D__pic__=1} \
-%{!fpic: %{fPIC: -D__PIC__=2 -D__pic__=2}}"
+%{fpic|fpie: -D__PIC__=1 -D__pic__=1} \
+%{!fpic: %{fPIC|fPIE: -D__PIC__=2 -D__pic__=2}}"
 
 /* Override rs6000.h definition.  */
 #undef	CPP_SPEC
@@ -1107,12 +1107,16 @@ extern int fixuplabelno;
 %{!shared: %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}} \
 %{mnewlib: ecrti.o%s} %{!mnewlib: crti.o%s} \
 %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
+#elif defined HAVE_LD_PIE
+#define	STARTFILE_LINUX_SPEC "\
+%{!shared: %{pg|p:gcrt1.o%s;pie:Scrt1.o%s;:crt1.o%s}} \
+%{mnewlib:ecrti.o%s;:crti.o%s} \
+%{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
 #else
 #define	STARTFILE_LINUX_SPEC "\
-%{!shared: %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}} \
-%{mnewlib: ecrti.o%s} %{!mnewlib: crti.o%s} \
-%{static:crtbeginT.o%s} \
-%{!static:%{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}}"
+%{!shared: %{pg|p:gcrt1.o%s;:crt1.o%s}} \
+%{mnewlib:ecrti.o%s;:crti.o%s} \
+%{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
 #endif
 
 #define	ENDFILE_LINUX_SPEC "%{!shared:crtend.o%s} %{shared:crtendS.o%s} \

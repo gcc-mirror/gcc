@@ -48,8 +48,8 @@
    t860: -DCPU=PPC860 -D_SOFT_FLOAT ; \
        : -DCPU=PPC604}  \
  %{!msoft-float:-D__hardfp}	   \
- %{fpic: -D__PIC__=1 -D__pic__=1 ; \
-   fPIC: -D__PIC__=2 -D__pic__=2 } \
+ %{fpic|fpie: -D__PIC__=1 -D__pic__=1 ; \
+   fPIC|fPIE: -D__PIC__=2 -D__pic__=2 } \
  %(cpp_cpu)"
 
 #define CC1_SPEC \

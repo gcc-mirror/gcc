@@ -59,7 +59,7 @@
    binutils can't.  */
 #ifndef ASM_SPEC
 #define ASM_SPEC "\
-%{fpic: -k} %{fPIC: -k} \
+%{fpic|fpie: -k} %{fPIC|fPIE: -k} \
 %{mbig-endian:-EB} \
 %{mcpu=*:-mcpu=%*} \
 %{march=*:-march=%*} \

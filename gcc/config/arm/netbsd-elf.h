@@ -59,7 +59,7 @@
 
 #undef SUBTARGET_EXTRA_ASM_SPEC
 #define SUBTARGET_EXTRA_ASM_SPEC	\
-  "-matpcs %{fpic:-k} %{fPIC:-k}"
+  "-matpcs %{fpic|fpie:-k} %{fPIC|fPIE:-k}"
 
 /* Default floating point model is soft-VFP.
    FIXME: -mhard-float currently implies FPA.  */

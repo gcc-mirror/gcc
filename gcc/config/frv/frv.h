@@ -86,7 +86,7 @@
     %{mmedia} %{mno-media} \
     %{mmuladd} %{mno-muladd} \
     %{mpack} %{mno-pack} \
-    %{fpic: -mpic} %{fPIC: -mPIC} %{mlibrary-pic}}"
+    %{fpic|fpie: -mpic} %{fPIC|fPIE: -mPIC} %{mlibrary-pic}}"
 
 /* Another C string constant used much like `LINK_SPEC'.  The difference
    between the two is that `STARTFILE_SPEC' is used at the very beginning of

@@ -65,17 +65,6 @@ Boston, MA 02111-1307, USA.  */
       %{!m32:%{!dynamic-linker:-dynamic-linker /lib64/ld-linux-x86-64.so.2}}} \
     %{static:-static}}"
 
-#undef  STARTFILE_SPEC
-#define STARTFILE_SPEC \
-  "%{!shared: \
-     %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} \
-     %{!p:%{profile:gcrt1.o%s} %{!profile:crt1.o%s}}}} \
-   crti.o%s %{static:crtbeginT.o%s} \
-   %{!static:%{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}}"
-
-#undef  ENDFILE_SPEC
-#define ENDFILE_SPEC "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
-
 #define MULTILIB_DEFAULTS { "m64" }
 
 /* Do code reading to identify a signal frame, and set the frame

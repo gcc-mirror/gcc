@@ -86,7 +86,7 @@ Boston, MA 02111-1307, USA.  */
 #define USER_LABEL_PREFIX ""
 
 #undef ASM_SPEC
-#define ASM_SPEC "%{fpic:-K PIC} %{fPIC:-K PIC} %{V} %{v:%{!V:-V}} \
+#define ASM_SPEC "%{fpic|fPIC|fpie|fPIE:-K PIC} %{V} %{v:%{!V:-V}} \
 %{mlittle-endian:-EL} \
 %(asm_cpu) %(asm_arch) %(asm_relax)"
 

@@ -8838,11 +8838,32 @@ EOF
 fi
 echo "$ac_t""$gcc_cv_ld_eh_frame_hdr" 1>&6
 
+echo $ac_n "checking linker position independent executable support""... $ac_c" 1>&6
+echo "configure:8843: checking linker position independent executable support" >&5
+gcc_cv_ld_pie=no
+if test $in_tree_ld = yes ; then
+  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 15 -o "$gcc_cv_gld_major_version" -gt 2 && grep 'EMUL = elf' ../ld/Makefile > /dev/null; then
+    gcc_cv_ld_pie=yes
+  fi
+elif test x$gcc_cv_ld != x; then
+	# Check if linker supports -pie option
+	if $gcc_cv_ld --help 2>/dev/null | grep -- -pie > /dev/null; then
+		gcc_cv_ld_pie=yes
+	fi
+fi
+if test x"$gcc_cv_ld_pie" = xyes; then
+	cat >> confdefs.h <<\EOF
+#define HAVE_LD_PIE 1
+EOF
+
+fi
+echo "$ac_t""$gcc_cv_ld_pie" 1>&6
+
 # Miscellaneous target-specific checks.
 case "$target" in
   mips*-*-*)
     echo $ac_n "checking whether libgloss uses STARTUP directives consistently""... $ac_c" 1>&6
-echo "configure:8846: checking whether libgloss uses STARTUP directives consistently" >&5
+echo "configure:8867: checking whether libgloss uses STARTUP directives consistently" >&5
     gcc_cv_mips_libgloss_startup=no
     gcc_cv_libgloss_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/libgloss
     if test "x$exec_prefix" = xNONE; then
@@ -8870,7 +8891,7 @@ EOF
     echo "$ac_t""$gcc_cv_mips_libgloss_startup" 1>&6
 
     echo $ac_n "checking whether the assembler has explicit relocation support""... $ac_c" 1>&6
-echo "configure:8874: checking whether the assembler has explicit relocation support" >&5
+echo "configure:8895: checking whether the assembler has explicit relocation support" >&5
     if test x$gcc_cv_mips_explicit_relocs = x; then
       gcc_cv_mips_explicit_relocs=no
       if test x$gcc_cv_as != x; then
@@ -9065,7 +9086,7 @@ fi
 
 
 echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles""... $ac_c" 1>&6
-echo "configure:9069: checking whether to enable maintainer-specific portions of Makefiles" >&5
+echo "configure:9090: checking whether to enable maintainer-specific portions of Makefiles" >&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"

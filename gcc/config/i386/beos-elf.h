@@ -78,7 +78,7 @@ Boston, MA 02111-1307, USA.  */
    CC1_SPEC is used for both cc1 and cc1plus.  */
 
 #undef CC1_SPEC
-#define CC1_SPEC "%{!no-fpic:%{!fPIC:-fpic}} %{!Wmultichar: -Wno-multichar} %(cc1_cpu) %{profile:-p}"
+#define CC1_SPEC "%{!no-fpic:%{!fno-pic:%{!fno-pie:%{!fpie:%{!fPIC:%{!fPIE:-fpic}}}}}} %{!Wmultichar: -Wno-multichar} %(cc1_cpu) %{profile:-p}"
 
 #undef CC1PLUS_SPEC
 #define CC1PLUS_SPEC "%{!Wctor-dtor-privacy:-Wno-ctor-dtor-privacy}"

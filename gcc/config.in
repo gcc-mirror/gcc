@@ -631,6 +631,9 @@
 /* Define if your linker supports --eh-frame-hdr option. */
 #undef HAVE_LD_EH_FRAME_HDR
 
+/* Define if your linker supports -pie option. */
+#undef HAVE_LD_PIE
+
 /* Define if your MIPS libgloss linker scripts consistently include STARTUP directives. */
 #undef HAVE_MIPS_LIBGLOSS_STARTUP_DIRECTIVES
 

@@ -1,5 +1,59 @@
 2003-06-03  Jakub Jelinek  <jakub@redhat.com>
 
+	* configure.in (HAVE_LD_PIE): Check for ld -pie.
+	* config.in: Rebuilt.
+	* configure: Rebuilt.
+	* toplev.c (flag_pie, flag_shlib): New variables.
+	(f_options): Add -fpie and -fPIE.
+	(parse_options_and_default_flags): Set flag_pic if -fpie/-fPIE.
+	Set flag_shlib if flag_pic and not -fpie/-fPIE.
+	* flags.h (flag_pic, flag_shlib): Add.
+	* varasm.c (default_binds_local_p): Use flag_shlib instead of
+	flag_pic.
+	* gcc.c (LINK_PIE_SPEC): Define.
+	(LINK_COMMAND_SPEC): Use LINK_PIE_SPEC.
+	(option_map): Add --pie -> -pie mapping.
+	* config/sol2.h (ASM_SPEC): Handle -fpie the same way as -fpic
+	and -fPIE the same way as -fPIC.
+	* config/openbsd.h (ASM_SPEC): Likewise.
+	* config/frv/frv.h (ASM_SPEC): Likewise.
+	* config/arm/linux-gas.h (SUBTARGET_CPP_SPEC): Likewise.
+	* config/arm/semi.h (ASM_SPEC): Likewise.
+	* config/arm/netbsd-elf.h (SUBTARGET_EXTRA_ASM_SPEC): Likewise.
+	* config/freebsd-spec.h (FBSD_CPP_SPEC): Likewise.
+	* config/i386/beos-elf.h (CC1_SPEC): Likewise.
+	* config/i386/freebsd-aout.h (ASM_SPEC): Likewise.
+	* config/m68k/linux.h (CPP_SPEC): Likewise.
+	* config/m68k/netbsd.h (ASM_SPEC): Likewise.
+	* config/m68k/openbsd.h (ASM_SPEC): Likewise.
+	* config/m68k/netbsd-elf.h (ASM_SPEC): Likewise.
+	* config/mips/linux.h (SUBTARGET_CPP_SPEC): Likewise.
+	* config/mips/openbsd.h (SUBTARGET_ASM_SPEC): Likewise.
+	* config/pa/pa-linux.h (CPP_SPEC): Likewise.
+	* config/netbsd-aout.h (ASM_SPEC): Likewise.
+	* config/rs6000/sysv4.h (ASM_SPEC, CPP_SYSV_SPEC): Likewise.
+	* config/rs6000/vxworks.h (CPP_SPEC): Likewise.
+	* config/sparc/linux.h (CPP_SUBTARGET_SPEC, ASM_SPEC): Likewise.
+	* config/sparc/linux64.h (CPP_SUBTARGET_SPEC, ASM_SPEC): Likewise.
+	* config/sparc/sparc.h (ASM_SPEC): Likewise.
+	* config/sparc/sp64-elf.h (ASM_SPEC): Likewise.
+	* config/sparc/sysv4.h (ASM_SPEC): Likewise.
+	* config/sparc/netbsd-elf.h (ASM_SPEC): Likewise.
+	* config/sparc/openbsd64.h (ASM_SPEC): Likewise.
+	* config/cris/linux.h (CRIS_ASM_SUBTARGET_SPEC): Likewise.
+	* config/linux.h (STARTFILE_SPEC, ENDFILE_SPEC): Handle -pie.
+	Simplify.
+	* config/alpha/elf.h (STARTFILE_SPEC, ENDFILE_SPEC): Likewise.
+	* config/i386/linux64.h (STARTFILE_SPEC, ENDFILE_SPEC): Likewise.
+	* config/ia64/linux.h (STARTFILE_SPEC, ENDFILE_SPEC): Likewise.
+	* config/rs6000/sysv4.h (STARTFILE_SPEC, ENDFILE_SPEC): Likewise.
+	* config/rs6000/linux64.h (STARTFILE_SPEC, ENDFILE_SPEC): Likewise.
+	* config/sparc/linux.h (STARTFILE_SPEC, ENDFILE_SPEC): Likewise.
+	* config/sparc/linux64.h (STARTFILE_SPEC, ENDFILE_SPEC): Likewise.
+	* doc/invoke.texi: Document -pie, -fpie and -fPIE options.
+
+2003-06-03  Jakub Jelinek  <jakub@redhat.com>
+
 	* builtins.c (expand_builtin_memcpy): Remove endp argument and endp
 	!= 0 handling.  Pass 0 to store_by_pieces.
 	(expand_builtin_mempcpy): Add endp argument.  Don't call
