@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# (C) 1998 Free Software Foundation
+# (C) 1998-1999 Free Software Foundation
 # Originally by Alexandre Oliva <oliva@dcc.unicamp.br>
 
 # This script is Free Software, and it can be copied, distributed and
@@ -9,8 +9,8 @@
 
 # This script processes *.{sum,log} files, producing a shell-script
 # that sends e-mail to the appropriate lists and renames files to
-# *.sent.  It currently handles gcc and egcs, but it should be quite
-# easy to modify it to handle other packages and its mailing lists.
+# *.sent.  It currently handles only gcc, but it should be quite easy
+# to modify it to handle other packages and its mailing lists.
 
 # The scripts assumes it is run in the root directory of the build
 # tree, and it will include all .sum files it finds in the mail
@@ -85,8 +85,8 @@ if $forcemail || $anychange; then :; else mailto=nobody; fi &&
 $AWK '
 BEGIN {
   lang="";
-  address="egcs-testresults@egcs.cygnus.com";
-  version="egcs";
+  address="gcc-testresults@gcc.gnu.org";
+  version="gcc";
   print "cat <<\EOF |";
 '${prepend_logs+"  system(\"cat $prepend_logs\"); "}'
 }
