@@ -812,17 +812,7 @@ enum reg_class {
    `O' is used for negated 8-bit constants.
    `P' is used for the constants 1, 2 and 3.  */
 
-#define CONST_OK_FOR_LETTER_P(VALUE, C)				\
-  ((C) == 'I' ? (unsigned HOST_WIDE_INT) (VALUE) < 0x100	\
-   : (C) == 'J' ? (VALUE) == 0					\
-   : (C) == 'K' ? (unsigned HOST_WIDE_INT) ((VALUE) + 0x8000) < 0x10000	\
-   : (C) == 'L' ? (((VALUE) & 0xffff) == 0			\
-                  && (((VALUE)) >> 31 == -1 || (VALUE) >> 31 == 0)) \
-   : (C) == 'M' ? zap_mask (VALUE)				\
-   : (C) == 'N' ? (unsigned HOST_WIDE_INT) (~ (VALUE)) < 0x100	\
-   : (C) == 'O' ? (unsigned HOST_WIDE_INT) (- (VALUE)) < 0x100	\
-   : (C) == 'P' ? (VALUE) == 1 || (VALUE) == 2 || (VALUE) == 3	\
-   : 0)
+#define CONST_OK_FOR_LETTER_P   alpha_const_ok_for_letter_p
 
 /* Similar, but for floating or large integer constants, and defining letters
    G and H.   Here VALUE is the CONST_DOUBLE rtx itself.
@@ -830,13 +820,7 @@ enum reg_class {
    For Alpha, `G' is the floating-point constant zero.  `H' is a CONST_DOUBLE
    that is the operand of a ZAP insn.  */
 
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)  			\
-  ((C) == 'G' ? (GET_MODE_CLASS (GET_MODE (VALUE)) == MODE_FLOAT	\
-		 && (VALUE) == CONST0_RTX (GET_MODE (VALUE)))		\
-   : (C) == 'H' ? (GET_MODE (VALUE) == VOIDmode				\
-		   && zap_mask (CONST_DOUBLE_LOW (VALUE))		\
-		   && zap_mask (CONST_DOUBLE_HIGH (VALUE)))		\
-   : 0)
+#define CONST_DOUBLE_OK_FOR_LETTER_P  alpha_const_double_ok_for_letter_p
 
 /* Optional extra constraints for this machine.
 
@@ -848,31 +832,18 @@ enum reg_class {
 
    'S' is a 6-bit constant (valid for a shift insn).  
 
+   'T' is a HIGH.
+
    'U' is a symbolic operand.  */
 
-#define EXTRA_CONSTRAINT(OP, C)				\
-  ((C) == 'Q' ? normal_memory_operand (OP, VOIDmode)			\
-   : (C) == 'R' ? direct_call_operand (OP, Pmode)		\
-   : (C) == 'S' ? (GET_CODE (OP) == CONST_INT				\
-		   && (unsigned HOST_WIDE_INT) INTVAL (OP) < 64)	\
-   : (C) == 'T' ? GET_CODE (OP) == HIGH					\
-   : (TARGET_ABI_UNICOSMK && (C) == 'U')				\
-		? symbolic_operand (OP, VOIDmode)			\
-   : 0)
+#define EXTRA_CONSTRAINT  alpha_extra_constraint
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
    In general this is just CLASS; but on some machines
-   in some cases it is preferable to use a more restrictive class.
+   in some cases it is preferable to use a more restrictive class.  */
 
-   On the Alpha, all constants except zero go into a floating-point
-   register via memory.  */
-
-#define PREFERRED_RELOAD_CLASS(X, CLASS)				\
-  (CONSTANT_P (X) && (X) != const0_rtx && (X) != CONST0_RTX (GET_MODE (X)) \
-   ? ((CLASS) == FLOAT_REGS || (CLASS) == NO_REGS ? NO_REGS		\
-      : (CLASS) == ALL_REGS ? GENERAL_REGS : (CLASS))			\
-   : (CLASS))
+#define PREFERRED_RELOAD_CLASS  alpha_preferred_reload_class
 
 /* Loading and storing HImode or QImode values to and from memory
    usually requires a scratch register.  The exceptions are loading
@@ -1479,14 +1450,14 @@ do {						\
    to be legitimate.  If we find one, return the new, valid address.
    This macro is used in only one place: `memory_address' in explow.c.  */
 
-#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)		\
-do {							\
-  rtx new_x = alpha_legitimize_address (X, OLDX, MODE);	\
-  if (new_x)						\
-    {							\
-      X = new_x;					\
-      goto WIN;						\
-    }							\
+#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)			\
+do {								\
+  rtx new_x = alpha_legitimize_address (X, NULL_RTX, MODE);	\
+  if (new_x)							\
+    {								\
+      X = new_x;						\
+      goto WIN;							\
+    }								\
 } while (0)
 
 /* Try a machine-dependent way of reloading an illegitimate address
@@ -2117,9 +2088,9 @@ do {						\
   {"global_symbolic_operand", {SYMBOL_REF, CONST}},			\
   {"call_operand", {REG, SYMBOL_REF}},					\
   {"input_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE,		\
-		     SYMBOL_REF, CONST, LABEL_REF}},			\
+		     SYMBOL_REF, CONST, LABEL_REF, HIGH}},		\
   {"some_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE,		\
-		    SYMBOL_REF, CONST, LABEL_REF}},			\
+		    SYMBOL_REF, CONST, LABEL_REF, HIGH}},		\
   {"some_ni_operand", {SUBREG, REG, MEM}},				\
   {"aligned_memory_operand", {MEM}},					\
   {"unaligned_memory_operand", {MEM}},					\
@@ -2130,7 +2101,9 @@ do {						\
   {"reg_not_elim_operand", {SUBREG, REG}},				\
   {"reg_no_subreg_operand", {REG}},					\
   {"addition_operation", {PLUS}},					\
-  {"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST}},
+  {"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST}},			\
+  {"some_small_symbolic_mem_operand", {MEM, SIGN_EXTEND, ZERO_EXTEND,	\
+				      FLOAT_EXTEND}},
 
 /* Define the `__builtin_va_list' type for the ABI.  */
 #define BUILD_VA_LIST_TYPE(VALIST) \

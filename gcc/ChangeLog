@@ -1,3 +1,32 @@
+2002-01-04  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (some_operand): Accept HIGH.
+	(input_operand): Likewise; accept simple references to globals.
+	(alpha_const_ok_for_letter_p): New, outlined from alpha.h.
+	(alpha_const_double_ok_for_letter_p): Likewise.
+	(alpha_extra_constraint): Likewise.
+	(alpha_preferred_reload_class): Likewise.  Do not force
+	symbolic constants to memory.
+	(alpha_legitimate_address_p): Accept simple references
+	to small_symbolic_operand.
+	(alpha_legitimize_address): New arg scratch.  Be prepared to be
+	called when no_new_pseudos.  Emit simple symbolic references.
+	Split integers into low, high, and rest.
+	(alpha_expand_mov): Use alpha_legitimize_address.
+	(some_small_symbolic_mem_operand): New.
+	(split_small_symbolic_mem_operand): New.
+	* config/alpha/alpha-protos.h: Update.
+	* config/alpha/alpha.h (CONST_OK_FOR_LETTER_P): Out-line.
+	(CONST_DOUBLE_OK_FOR_LETTER_P): Likewise.
+	(EXTRA_CONSTRAINT): Likewise.
+	(PREFERRED_RELOAD_CLASS): Likewise.
+	(LEGITIMIZE_ADDRESS): Update for alpha_legitimize_address change.
+	(PREDICATE_CODES): Update.
+	* config/alpha/alpha.md: New post-reload splitters to convert
+	simplfied symbolic operands to the form that references $29.
+	(divide expanders): Use emit_move_insn, not gen_movdi_er_high_g.
+	(movdi_er_nofix, movdi_er_fix): Accept any symbolic operand.
+
 2002-01-03  Richard Henderson  <rth@redhat.com>
 
 	* local-alloc.c (function_invariant_p): Update commentary.
