@@ -77,7 +77,7 @@ VMS_fopen (fname, type)
 
 extern int rtx_equal_function_value_matters;
 
-#if ! (defined (VMS) && defined (OS2))
+#if ! (defined (VMS) || defined (OS2))
 extern char **environ;
 #endif
 extern char *version_string, *language_string;
