@@ -1,3 +1,7 @@
+2002-03-22  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * gcc.dg/cpp/multiline.c: Update to match.
+
 2002-03-22  Alexandre Oliva  <aoliva@redhat.com>
 
 	* g++.old-deja/g++.abi/ptrmem.C: Mips puts vbit in delta too.

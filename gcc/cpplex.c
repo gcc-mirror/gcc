@@ -82,7 +82,6 @@ static U_CHAR *parse_slow PARAMS ((cpp_reader *, const U_CHAR *, int,
 static void parse_number PARAMS ((cpp_reader *, cpp_string *, int));
 static int unescaped_terminator_p PARAMS ((cpp_reader *, const U_CHAR *));
 static void parse_string PARAMS ((cpp_reader *, cpp_token *, cppchar_t));
-static void unterminated PARAMS ((cpp_reader *, int));
 static bool trigraph_p PARAMS ((cpp_reader *));
 static void save_comment PARAMS ((cpp_reader *, cpp_token *, const U_CHAR *));
 static int name_p PARAMS ((cpp_reader *, const cpp_string *));
@@ -575,22 +574,6 @@ parse_number (pfile, number, leading_period)
     }
 }
 
-/* Subroutine of parse_string.  Emits error for unterminated strings.  */
-static void
-unterminated (pfile, term)
-     cpp_reader *pfile;
-     int term;
-{
-  cpp_error (pfile, "missing terminating %c character", term);
-
-  if (term == '\"' && pfile->mls_line && pfile->mls_line != pfile->line)
-    {
-      cpp_error_with_line (pfile, pfile->mls_line, pfile->mls_col,
-			   "possible start of unterminated string literal");
-      pfile->mls_line = 0;
-    }
-}
-
 /* Subroutine of parse_string.  */
 static int
 unescaped_terminator_p (pfile, dest)
@@ -617,7 +600,6 @@ unescaped_terminator_p (pfile, dest)
    name.  Handles embedded trigraphs and escaped newlines.  The stored
    string is guaranteed NUL-terminated, but it is not guaranteed that
    this is the first NUL since embedded NULs are preserved.
-   Multi-line strings are allowed, but they are deprecated.
 
    When this function returns, buffer->cur points to the next
    character to be processed.  */
@@ -630,7 +612,7 @@ parse_string (pfile, token, terminator)
   cpp_buffer *buffer = pfile->buffer;
   unsigned char *dest, *limit;
   cppchar_t c;
-  bool warned_nulls = false, warned_multi = false;
+  bool warned_nulls = false;
 
   dest = BUFF_FRONT (pfile->u_buff);
   limit = BUFF_LIMIT (pfile->u_buff);
@@ -658,49 +640,20 @@ parse_string (pfile, token, terminator)
 	}
       else if (is_vspace (c))
 	{
-	  /* In assembly language, silently terminate string and
-	     character literals at end of line.  This is a kludge
-	     around not knowing where comments are.  */
-	  if (CPP_OPTION (pfile, lang) == CLK_ASM && terminator != '>')
-	    {
-	      buffer->cur--;
-	      break;
-	    }
-
-	  /* Character constants and header names may not extend over
-	     multiple lines.  In Standard C, neither may strings.
-	     Unfortunately, we accept multiline strings as an
-	     extension, except in #include family directives.  */
-	  if (terminator != '"' || pfile->state.angled_headers)
-	    {
-	      unterminated (pfile, terminator);
-	      buffer->cur--;
-	      break;
-	    }
-
-	  if (!warned_multi)
-	    {
-	      warned_multi = true;
-	      cpp_pedwarn (pfile, "multi-line string literals are deprecated");
-	    }
-
-	  if (pfile->mls_line == 0)
-	    {
-	      pfile->mls_line = token->line;
-	      pfile->mls_col = token->col;
-	    }
-	      
-	  handle_newline (pfile);
-	  c = '\n';
+	  /* No string literal may extend over multiple lines.  In
+	     assembly language, suppress the error except for <>
+	     includes.  This is a kludge around not knowing where
+	     comments are.  */
+	unterminated:
+	  if (CPP_OPTION (pfile, lang) != CLK_ASM || terminator == '>')
+	    cpp_error (pfile, "missing terminating %c character", terminator);
+	  buffer->cur--;
+	  break;
 	}
       else if (c == '\0')
 	{
 	  if (buffer->cur - 1 == buffer->rlimit)
-	    {
-	      unterminated (pfile, terminator);
-	      buffer->cur--;
-	      break;
-	    }
+	    goto unterminated;
 	  if (!warned_nulls)
 	    {
 	      warned_nulls = true;
