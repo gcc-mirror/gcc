@@ -479,7 +479,7 @@ extern SItype float_to_si (FLO_type);
 #endif
 
 #if defined(L_sf_to_usi) || defined(L_df_to_usi) || defined(L_tf_to_usi)
-#ifdef US_SOFTWARE_GOFAST
+#if defined(US_SOFTWARE_GOFAST) || defined(L_tf_to_usi)
 extern USItype float_to_usi (FLO_type);
 #endif
 #endif

@@ -1,3 +1,7 @@
+2003-03-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fp-bit.h (float_to_usi): Fix condition wrapping prototype.
+
 2003-03-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (a peephole2): Remove dead code.
