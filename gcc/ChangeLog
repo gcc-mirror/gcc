@@ -1,4 +1,10 @@
-2003-09-80  Nathanael Nerode  <neroden@gcc.gnu.org>
+2003-09-30  Nicolas Pitre <nico@cam.org>
+
+	* arm/ieee754-df.S: split compilation of fixunsdfsi from
+	L_fixdfsi target.
+	* arm/t-arm-elf: add _fixunsdfsi target due to the above.
+
+2003-09-30  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc: Default use_fixproto to 'no'.
 
