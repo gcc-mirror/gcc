@@ -1,5 +1,5 @@
 /* A splay-tree datatype.  
-   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Mark Mitchell (mark@markmitchell.com).
 
 This file is part of GNU CC.
@@ -110,6 +110,10 @@ extern splay_tree_node splay_tree_predecessor
 extern splay_tree_node splay_tree_successor
                                         PARAMS((splay_tree,
 						splay_tree_key));
+extern splay_tree_node splay_tree_max
+                                        PARAMS((splay_tree));
+extern splay_tree_node splay_tree_min
+                                        PARAMS((splay_tree));
 extern int splay_tree_foreach           PARAMS((splay_tree,
 					        splay_tree_foreach_fn,
 					        void*));

@@ -1,5 +1,5 @@
 /* A splay-tree datatype.  
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Mark Mitchell (mark@markmitchell.com).
 
 This file is part of GNU CC.
@@ -366,6 +366,40 @@ splay_tree_lookup (sp, key)
     return sp->root;
   else
     return 0;
+}
+
+/* Return the node in SP with the greatest key.  */
+
+splay_tree_node
+splay_tree_max (sp)
+     splay_tree sp;
+{
+  splay_tree_node n = sp->root;
+
+  if (!n)
+    return NULL;
+
+  while (n->right)
+    n = n->right;
+
+  return n;
+}
+
+/* Return the node in SP with the smallest key.  */
+
+splay_tree_node
+splay_tree_min (sp)
+     splay_tree sp;
+{
+  splay_tree_node n = sp->root;
+
+  if (!n)
+    return NULL;
+
+  while (n->left)
+    n = n->left;
+
+  return n;
 }
 
 /* Return the immediate predecessor KEY, or NULL if there is no

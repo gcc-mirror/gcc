@@ -1,3 +1,10 @@
+2001-05-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (walk_subobject_offsets): Add max_offset parameter.
+	(record_subobject_offsets): Adjust call.
+	(layout_conflict_p): Stop walking when we get past the last empty
+	subobject.
+
 2001-05-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (flag_inline_trees): Update documentation.

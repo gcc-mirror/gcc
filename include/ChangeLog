@@ -1,3 +1,8 @@
+2001-05-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* splay-tree.h (splay_tree_max): New function.
+	(splay_tree_min): Likewise.
+
 2001-03-20  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* libiberty.h: Declare lbasename ().
