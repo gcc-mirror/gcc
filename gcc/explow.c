@@ -1,5 +1,5 @@
 /* Subroutines for manipulating rtx's in semantically interesting ways.
-   Copyright (C) 1987, 91, 94-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91, 94-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-codes.h"
 
 static rtx break_out_memory_refs	PROTO((rtx));
+static void set_stack_check_libfunc	PROTO((rtx));
 static void emit_stack_probe		PROTO((rtx));
 
 /* Return an rtx for the sum of X and the integer C.
@@ -1186,6 +1187,19 @@ allocate_dynamic_stack_space (size, target, known_align)
   return target;
 }
 
+/* A front end may want to override GCC's stack checking by providing a 
+   run-time routine to call to check the stack, so provide a mechanism for
+   calling that routine.  */
+
+static rtx stack_check_libfunc;
+
+static void
+set_stack_check_libfunc (libfunc)
+     rtx libfunc;
+{
+  stack_check_libfunc = libfunc;
+}
+
 /* Emit one stack probe at ADDRESS, an address within the stack.  */
 
 static void
@@ -1219,9 +1233,19 @@ probe_stack_range (first, size)
      HOST_WIDE_INT first;
      rtx size;
 {
-  /* First see if we have an insn to check the stack.  Use it if so.  */
+  /* First see if the front end has set up a function for us to call to
+     check the stack.  */
+  if (stack_check_libfunc != 0)
+    emit_library_call (stack_check_libfunc, 0, VOIDmode, 1,
+		       memory_address (QImode,
+				       gen_rtx (STACK_GROW_OP, Pmode,
+						stack_pointer_rtx,
+						plus_constant (size, first))),
+		       ptr_mode);
+
+  /* Next see if we have an insn to check the stack.  Use it if so.  */
 #ifdef HAVE_check_stack
-  if (HAVE_check_stack)
+  else if (HAVE_check_stack)
     {
       rtx last_addr = force_operand (gen_rtx (STACK_GROW_OP, Pmode,
 					      stack_pointer_rtx,
@@ -1234,14 +1258,13 @@ probe_stack_range (first, size)
 	last_addr = copy_to_mode_reg (Pmode, last_addr);
 
       emit_insn (gen_check_stack (last_addr));
-      return;
     }
 #endif
 
   /* If we have to generate explicit probes, see if we have a constant
      small number of them to generate.  If so, that's the easy case.  */
-  if (GET_CODE (size) == CONST_INT
-      && INTVAL (size) < 10 * STACK_CHECK_PROBE_INTERVAL)
+  else if (GET_CODE (size) == CONST_INT
+	   && INTVAL (size) < 10 * STACK_CHECK_PROBE_INTERVAL)
     {
       HOST_WIDE_INT offset;
 
