@@ -1,3 +1,8 @@
+2002-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR optimization/5172, optimization/5200
+	* gcse.c (gcse_main): Disable store_motion.
+
 2002-05-14  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-parse.in (MODIFIED_WCHAR_TYPE): New macro.
