@@ -3978,6 +3978,7 @@ extern bool type_dependent_expression_p         (tree);
 extern bool value_dependent_expression_p        (tree);
 extern tree resolve_typename_type               (tree, bool);
 extern tree resolve_typename_type_in_current_instantiation (tree);
+extern tree template_for_substitution           (tree);
 
 /* in repo.c */
 extern void repo_template_used (tree);
