@@ -4139,6 +4139,36 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	break;
       }
 
+  /* The built-in function expanders test for target == const0_rtx
+     to determine whether the function's result will be ignored.  */
+  if (ignore)
+    target = const0_rtx;
+
+  /* If the result of a pure or const built-in function is ignored, and
+     none of its arguments are volatile, we can avoid expanding the
+     built-in call and just evaluate the arguments for side-effects.  */
+  if (target == const0_rtx
+      && (DECL_IS_PURE (fndecl) || TREE_READONLY (fndecl)))
+    {
+      bool volatilep = false;
+      tree arg;
+
+      for (arg = arglist; arg; arg = TREE_CHAIN (arg))
+	if (TREE_THIS_VOLATILE (TREE_VALUE (arg)))
+	  {
+	    volatilep = true;
+	    break;
+	  }
+
+      if (! volatilep)
+	{
+	  for (arg = arglist; arg; arg = TREE_CHAIN (arg))
+	    expand_expr (TREE_VALUE (arg), const0_rtx,
+			 VOIDmode, EXPAND_NORMAL);
+	  return const0_rtx;
+	}
+    }
+
   switch (fcode)
     {
     case BUILT_IN_ABS:
