@@ -1,3 +1,9 @@
+Tue Sep  1 10:06:06 1998  Craig Burley  <burley@gnu.org>
+
+	* libF77/Version.c: Update.
+	* libU77/Version.c: Update.
+	* libI77/Version.c: Update.
+
 Wed Aug 26 23:20:12 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (FLAGS_TO_PASS): Fix typo.
