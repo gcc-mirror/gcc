@@ -6655,11 +6655,12 @@ mips_expand_prologue (void)
   /* If generating n32/n64 abicalls, emit the instructions to load $gp.  */
   if (TARGET_ABICALLS && TARGET_NEWABI && cfun->machine->global_pointer > 0)
     {
-      rtx addr, offset;
+      rtx addr, offset, incoming_address;
 
       addr = XEXP (DECL_RTL (current_function_decl), 0);
       offset = mips_unspec_address (addr, SYMBOL_GOTOFF_LOADGP);
-      emit_insn (gen_loadgp (offset));
+      incoming_address = gen_rtx_REG (Pmode, PIC_FUNCTION_ADDR_REGNUM);
+      emit_insn (gen_loadgp (offset, incoming_address));
       if (!TARGET_EXPLICIT_RELOCS)
 	emit_insn (gen_loadgp_blockage ());
     }

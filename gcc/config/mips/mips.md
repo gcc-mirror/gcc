@@ -5123,20 +5123,23 @@ dsrl\t%3,%3,1\n\
    (set_attr "mode"	"SF")
    (set_attr "length"	"4")])
 
+;; Insn to initialize $gp for n32/n64 abicalls.  Operand 0 is the offset
+;; of _gp from the start of this function.  Operand 1 is the incoming
+;; function address.
 (define_insn_and_split "loadgp"
-  [(unspec_volatile [(match_operand 0 "" "")] UNSPEC_LOADGP)]
+  [(unspec_volatile [(match_operand 0 "" "")
+		     (match_operand 1 "register_operand" "")] UNSPEC_LOADGP)]
   "TARGET_ABICALLS && TARGET_NEWABI"
   "#"
   ""
-  [(set (match_dup 1) (match_dup 2))
-   (set (match_dup 1) (match_dup 3))
-   (set (match_dup 1) (match_dup 4))]
+  [(set (match_dup 2) (match_dup 3))
+   (set (match_dup 2) (match_dup 4))
+   (set (match_dup 2) (match_dup 5))]
 {
-  operands[1] = pic_offset_table_rtx;
-  operands[2] = gen_rtx_HIGH (Pmode, operands[0]);
-  operands[3] = gen_rtx_PLUS (Pmode, operands[1],
-			      gen_rtx_REG (Pmode, PIC_FUNCTION_ADDR_REGNUM));
-  operands[4] = gen_rtx_LO_SUM (Pmode, operands[1], operands[0]);
+  operands[2] = pic_offset_table_rtx;
+  operands[3] = gen_rtx_HIGH (Pmode, operands[0]);
+  operands[4] = gen_rtx_PLUS (Pmode, operands[2], operands[1]);
+  operands[5] = gen_rtx_LO_SUM (Pmode, operands[2], operands[0]);
 }
   [(set_attr "length" "12")])
 
