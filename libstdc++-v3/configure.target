@@ -82,7 +82,7 @@ case "${target_os}" in
     os_include_dir="config/os/aix"
     ;;
   bsd* | freebsd* )
-    os_include_dir="config/os/bsd"
+    os_include_dir="config/os/freebsd"
     ;;
   cygwin*)
     os_include_dir="config/os/newlib"
@@ -115,6 +115,11 @@ esac
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 
 case "${target}" in
+   arm*-*-aout | arm*-*-elf)
+     # Assume newlib
+     os_include_dir=config/os/newlib
+     ATOMICITYH=$cpu_include_dir
+     ;;
    *-*-aix*)
      ATOMICITYH=$os_include_dir
      ;;
