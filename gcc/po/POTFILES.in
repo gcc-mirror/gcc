@@ -47,12 +47,16 @@
 
 
 acconfig.h
+alias.c
 assert.h
 basic-block.h
+bb-reorder.c
 bitmap.c
 bitmap.h
+builtins.c
 c-aux-info.c
 c-common.c
+c-common.h
 c-convert.c
 c-decl.c
 c-gperf.h
@@ -64,12 +68,14 @@ c-parse.c
 c-parse.h
 c-pragma.c
 c-pragma.h
+c-semantics.c
 c-tree.h
 c-typeck.c
 caller-save.c
 calls.c
 ../libiberty/choose-temp.c
 collect2.c
+collect2.h
 combine.c
 conditions.h
 config/a29k/a29k.c
@@ -547,6 +553,7 @@ config/xm-alloca.h
 config/xm-gnu.h
 config/xm-lynx.h
 config/xm-std32.h
+conflict.c
 convert.c
 convert.h
 cp/call.c
@@ -585,6 +592,8 @@ cp/typeck.c
 cp/typeck2.c
 cp/xref.c
 ../libiberty/cplus-dem.c
+cppdefault.c
+cppdefault.h
 cpperror.c
 cppexp.c
 cppfiles.c
@@ -596,17 +605,25 @@ cpplib.c
 cpplib.h
 cppmain.c
 cppspec.c
+cppulp.c
 #crtstuff.c is part of the GCC library
 cse.c
+cselib.h
 dbxout.c
+dbxout.h
 dbxstclass.h
 defaults.h
 ../include/demangle.h
+diagnostic.c
+diagnostic.h
+#doprint.c
 doschk.c
 dwarf.h
 dwarf2.h
 dwarf2out.c
+dwarf2out.h
 dwarfout.c
+dwarfout.h
 ../libiberty/dyn-string.c
 ../include/dyn-string.h
 emit-rtl.c
@@ -624,6 +641,7 @@ floatlib.c
 flow.c
 fold-const.c
 fp-test.c
+frame-dwarf2.c
 frame.c
 #frame.h is part of the GCC library
 function.c
@@ -647,10 +665,18 @@ gcov.c
 #genoutput.c is used only by GCC maintainers and installers
 #genpeep.c is used only by GCC maintainers and installers
 #genrecog.c is used only by GCC maintainers and installers
+#gensupport.c is used only by GCC maintainers and installers
+#gensupport.h is used only by GCC maintainers and installers
 ../libiberty/getopt.c
 ../include/getopt.h
 ../libiberty/getopt1.c
 ../libiberty/getpwd.c
+ggc-callbacks.c
+ggc-common.c
+ggc-none.c
+ggc-page.c
+ggc-simple.c
+ggc.h
 ginclude/iso646.h
 ginclude/math-3300.h
 ginclude/math-68881.h
@@ -663,12 +689,27 @@ ginclude/varargs.h
 glimits.h
 global.c
 gmon.c
+graph.c
+graph.h
 gstab.h
 gsyms.h
 gsyslimits.h
+gthr-dce.h
+gthr-posix.h
+gthr-qt.h
+gthr-single.h
+gthr-solaris.h
+gthr-vxworks.h
+gthr-win32.h
+gthr.h
+haifa-sched.c
 halfpic.c
 halfpic.h
 hard-reg-set.h
+hash.c
+hash.h
+hwint.h
+ifcvt.c
 input.h
 integrate.c
 integrate.h
@@ -692,11 +733,13 @@ intl/loadmsgcat.c
 intl/localealias.c
 intl/textdomain.c
 jump.c
+lcm.c
 #libgcc1-test.c is used only by GCC maintainers and installers
 #libgcc1.c is part of the GCC library
 #libgcc2.c is part of the GCC library
 limitx.h
 limity.h
+lists.c
 local-alloc.c
 #longlong.h is part of the GCC library
 loop.c
@@ -715,7 +758,9 @@ optabs.c
 output.h
 ../libiberty/pexecute.c
 #po/cat-id-tbl.c contains the translation tables themselves
+predict.c
 prefix.c
+prefix.h
 print-rtl.c
 print-tree.c
 profile.c
@@ -724,6 +769,10 @@ pself.c
 pself1.c
 pself2.c
 pself3.c
+pself4.c
+pself5.c
+range.c
+range.h
 real.c
 real.h
 recog.c
@@ -731,11 +780,14 @@ recog.h
 reg-stack.c
 regclass.c
 regmove.c
+regrename.c
 regs.h
 reload.c
 reload.h
 reload1.c
 reorg.c
+resource.c
+resource.h
 rtl.c
 rtl.h
 rtlanal.c
@@ -743,20 +795,33 @@ rtlanal.c
 #scan.c is used only by GCC maintainers and installers
 scan.h
 sdbout.c
+sdbout.h
+sibcall.c
 simplify-rtx.c
+ssa.c
 stack.h
 stmt.c
 stor-layout.c
 sys-protos.h
 sys-types.h
 system.h
+timevar.c
+timevar.h
+tlink.c
 toplev.c
+toplev.h
+tradcif.c
+tradcpp.c
 tree.c
 tree.h
+tsystem.h
 typeclass.h
 unprotoize.c
 unroll.c
 varasm.c
+varray.c
+varray.h
 version.c
+version.h
 xcoffout.c
 xcoffout.h

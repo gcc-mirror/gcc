@@ -1,3 +1,7 @@
+2000-07-13  Nick Clifton  <nickc@cygnus.com>
+
+ 	* POTFILES.in: Add new gcc files.
+
 2000-06-27  Philipp Thomas  <pthomas@suse.de>
 
 	* POTFILES.in: Add diagnostic.c .
