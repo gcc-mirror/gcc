@@ -2289,8 +2289,7 @@ cp_copy_res_decl_for_inlining (result, fn, caller, decl_map_,
 	     position so we can get reasonable debugging information, and
 	     register the return variable as its equivalent.  */
 	  DECL_NAME (var) = DECL_NAME (nrv);
-	  DECL_SOURCE_FILE (var) = DECL_SOURCE_FILE (nrv);
-	  DECL_SOURCE_LINE (var) = DECL_SOURCE_LINE (nrv);
+	  DECL_SOURCE_LOCATION (var) = DECL_SOURCE_LOCATION (nrv);
 	  DECL_ABSTRACT_ORIGIN (var) = DECL_ORIGIN (nrv);
 	  /* Don't lose initialization info.  */
 	  DECL_INITIAL (var) = DECL_INITIAL (nrv);
