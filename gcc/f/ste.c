@@ -2711,15 +2711,13 @@ ffeste_R810 (ffestw block, unsigned long casenum)
     do
       {
 	texprlow = (c->low == NULL) ? NULL_TREE
-	  : ffecom_constantunion (&ffebld_constant_union (c->low), s->type,
-				  s->kindtype,
-				  ffecom_tree_type[s->type][s->kindtype]);
+	  : ffecom_constantunion_with_type (&ffebld_constant_union (c->low),
+				  ffecom_tree_type[s->type][s->kindtype], c->low->consttype);
 	if (c->low != c->high)
 	  {
 	    texprhigh = (c->high == NULL) ? NULL_TREE
-	      : ffecom_constantunion (&ffebld_constant_union (c->high),
-				      s->type, s->kindtype,
-				      ffecom_tree_type[s->type][s->kindtype]);
+	      : ffecom_constantunion_with_type (&ffebld_constant_union (c->high),
+				      ffecom_tree_type[s->type][s->kindtype], c->high->consttype);
 	    pushok = pushcase_range (texprlow, texprhigh, convert,
 				     tlabel, &duplicate);
 	  }

@@ -1,3 +1,11 @@
+2003-03-22  Bud Davis  <bdavis9659@comcast.net>
+
+	* com.c (ffecom_constantunion_with_type): New function.
+	* com.h (ffecom_constantunion_with_type): Declare.
+	* stc.c (ffestc_R810): Check for kind type.
+	* ste.c (ffeste_R810): Use ffecom_constantunion_with_type
+	to discern SELECT CASE variables.
+
 2003-03-15  Andreas Jaeger  <aj@suse.de>
 
 	* g77spec.c (DEFAULT_SWITCH_TAKES_ARG): Remove.

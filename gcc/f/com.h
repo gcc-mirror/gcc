@@ -210,6 +210,8 @@ tree ffecom_arg_expr (ffebld expr, tree *length);
 tree ffecom_arg_ptr_to_const_expr (ffebld expr, tree *length);
 tree ffecom_arg_ptr_to_expr (ffebld expr, tree *length);
 tree ffecom_call_gfrt (ffecomGfrt ix, tree args, tree hook);
+tree ffecom_constantunion_with_type (ffebldConstantUnion *cu, 
+		            tree tree_type,ffebldConst ct);
 tree ffecom_constantunion (ffebldConstantUnion *cu, ffeinfoBasictype bt,
 			   ffeinfoKindtype kt, tree tree_type);
 tree ffecom_const_expr (ffebld expr);
