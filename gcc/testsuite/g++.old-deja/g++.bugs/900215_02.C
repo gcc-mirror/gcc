@@ -41,7 +41,7 @@ void struct0::function_member ()
   i = this->*dmp;		// perfectly legal - for both cfront and g++
 
   i = (*fmp) ();		// ERROR - 
-  i = *dmp;			// ERROR - , XFAIL *-*-*
+  i = *dmp;			// ERROR - 
 }
 
 int main () { return 0; }
