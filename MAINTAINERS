@@ -175,7 +175,6 @@ Andrew Cagney					cagney@redhat.com
 Chandra Chavva					cchavva@redhat.com
 William Cohen					wcohen@redhat.com
 Chris Demetriou					cgd@broadcom.com
-*Paul Eggert					eggert@twinsun.com
 Steve Ellcey					sje@cup.hp.com
 Ben Elliston					bje@redhat.com
 Marc Espie					espie@cvs.openbsd.org
@@ -208,7 +207,7 @@ Kriang Lerdsuwanakij				lerdsuwa@users.sourceforge.net
 Don Lindsay					dlindsay@redhat.com
 Dave Love					d.love@dl.ac.uk
 Martin v. Löwis					loewis@informatik.hu-berlin.de
-*HJ Lu						hjl@lucon.org
+HJ Lu						hjl@lucon.org
 Andrew Macleod					amacleod@redhat.com
 Vladimir Makarov				vmakarov@redhat.com
 Michael Matz					matz@suse.de
