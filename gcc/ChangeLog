@@ -1,3 +1,8 @@
+2004-06-03  Chris Demetriou  <cgd@broadcom.com>
+
+	* config/mips/mips.c (struct irix_section_align_entry): Fix
+	GTY marker.
+
 2004-06-03  Geoffrey Keating  <geoffk@apple.com>
 
 	* toplev.c (check_global_declarations): Don't ask for
