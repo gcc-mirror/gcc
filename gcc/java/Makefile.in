@@ -318,7 +318,7 @@ typeck.o : typeck.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h convert.h \
   $(srcdir)/../toplev.h $(srcdir)/../system.h
 verify.o : verify.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h javaop.h java-opcodes.h \
   java-except.h $(srcdir)/../toplev.h $(srcdir)/../system.h
-xref.o : xref.h $(CONFIG_H) $(JAVA_TREE_H) $(srcdir)/../toplev.h \
+xref.o : xref.c xref.h $(CONFIG_H) $(JAVA_TREE_H) $(srcdir)/../toplev.h \
   $(srcdir)/../system.h
 zextract.o : zextract.c $(CONFIG_H) $(srcdir)/../system.h zipfile.h
 

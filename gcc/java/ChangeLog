@@ -1,3 +1,7 @@
+Mon Aug 30 16:41:41 1999  Hans-Peter Nilsson  <hp@axis.se>
+
+	* Makefile.in (xref.o): Depend on xref.c explicitly.
+
 1999-08-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* java-tree.h (lang_printable_name): Constify a char*.
