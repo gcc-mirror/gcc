@@ -30,9 +30,10 @@ AM_RUNTESTFLAGS =
 
 ## CXX is actually a "C" compiler. These are real C++ programs.
 testsuite_flags_script=${glibcxx_builddir}/scripts/testsuite_flags
-CXX         = $(shell ${testsuite_flags_script} --build-cxx)
-GLIBCXX_INCLUDES = $(shell ${testsuite_flags_script} --build-includes)
-AM_CXXFLAGS = $(shell ${testsuite_flags_script} --cxxflags)
+CXX         = $(shell ${SHELL} ${testsuite_flags_script} --build-cxx)
+GLIBCXX_INCLUDES = $(shell ${SHELL} ${testsuite_flags_script} \
+  --build-includes)
+AM_CXXFLAGS = $(shell ${SHELL} ${testsuite_flags_script} --cxxflags)
 
 GLIBGCC_DIR=`$(CC) -print-libgcc-file-name | sed 's,/[^/]*$$,,'`
 GLIBCXX_DIR=${glibcxx_builddir}/src/.libs
