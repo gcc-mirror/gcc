@@ -4,6 +4,10 @@
 
 2004-02-11  Hartmut Penner  <hpenner@de.ibm.com>
 
+        * g++.dg/simd-2.C: Set -maltivec for ppc64.
+
+2004-02-11  Hartmut Penner  <hpenner@de.ibm.com>
+
         * gcc.dg/ppc64-abi-3.c: New test.
 
 2004-02-10  Paolo Bonzini  <bonzini@gnu.org>
