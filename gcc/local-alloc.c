@@ -663,7 +663,6 @@ contains_replace_regs (x)
     case PC:
     case CC0:
     case HIGH:
-    case LO_SUM:
       return 0;
 
     case REG:
