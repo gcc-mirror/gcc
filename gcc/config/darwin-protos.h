@@ -116,3 +116,4 @@ extern void machopic_output_stub PARAMS ((FILE *, const char *, const char *));
 extern void darwin_exception_section PARAMS ((void));
 extern void darwin_eh_frame_section PARAMS ((void));
 extern void darwin_globalize_label PARAMS ((FILE *, const char *));
+extern void darwin_asm_output_dwarf_delta PARAMS ((FILE *, int, const char *, const char *));

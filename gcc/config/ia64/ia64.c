@@ -8086,11 +8086,10 @@ ia64_hpux_asm_file_end (file)
 {
   while (extern_func_head)
     {
-      char *real_name;
-      tree decl;
+      const char *const real_name =
+	(* targetm.strip_name_encoding) (extern_func_head->name);
+      tree decl = get_identifier (real_name);
 
-      real_name = (* targetm.strip_name_encoding) (extern_func_head->name);
-      decl = get_identifier (real_name);
       if (decl && ! TREE_ASM_WRITTEN (decl) && TREE_SYMBOL_REFERENCED (decl))
         {
 	  TREE_ASM_WRITTEN (decl) = 1;
