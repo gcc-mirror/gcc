@@ -1,3 +1,7 @@
+2005-02-17  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* libgcc2.c, tree-vect-analyze.c: Fix comment typos.
+
 2005-02-17  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* builtins.c (expand_builtin_return_addr): Remove tem parameter.

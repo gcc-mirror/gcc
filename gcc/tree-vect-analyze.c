@@ -1,4 +1,4 @@
-/* Anlaysis Utilities for Loop Vectorization.
+/* Analysis Utilities for Loop Vectorization.
    Copyright (C) 2003,2004,2005 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 

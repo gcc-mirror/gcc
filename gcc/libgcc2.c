@@ -1287,7 +1287,7 @@ __fixunssfDI (SFtype a)
     {
       /* Since we know that there are fewer significant bits in the SFmode
 	 quantity than in a word, we know that we can convert out all the
-	 signficant bits in one step, and thus avoid losing bits.  */
+	 significant bits in one step, and thus avoid losing bits.  */
 
       /* ??? This following loop essentially performs frexpf.  If we could
 	 use the real libm function, or poke at the actual bits of the fp
