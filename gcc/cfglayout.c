@@ -196,19 +196,16 @@ record_effective_endpoints (void)
   rtx insn;
 
   for (insn = get_insns ();
-       NEXT_INSN (insn) && GET_CODE (insn) == NOTE;
+       insn
+       && GET_CODE (insn) == NOTE
+       && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK;
        insn = NEXT_INSN (insn))
-    {
-      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BASIC_BLOCK)
-	{
-	  insn = NULL;
-	  break;
-	 }
-      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG)
-	break;
-    }
-  if (insn)
-    cfg_layout_function_header = unlink_insn_chain (get_insns (), insn);
+    continue;
+  if (!insn)
+    abort ();  /* No basic blocks at all?  */
+  if (PREV_INSN (insn))
+    cfg_layout_function_header =
+	    unlink_insn_chain (get_insns (), PREV_INSN (insn));
   else
     cfg_layout_function_header = NULL_RTX;
 
