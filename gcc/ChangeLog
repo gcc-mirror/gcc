@@ -1,3 +1,7 @@
+Sat Oct  5 19:42:45 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* c-common.c (cb_register_builtins):  Use really_no_inline.
+
 2002-10-04  David Edelsohn  <edelsohn@gnu.org>
 
 	* unroll.c (copy_loop_body): Remove REG_EQUAL note attached to
