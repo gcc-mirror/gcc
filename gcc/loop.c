@@ -6071,21 +6071,47 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 	    fprintf (loop_dump_stream, "Can reverse loop\n");
 
 	  /* Now check other conditions:
-	     initial_value must be zero,
-	     final_value % add_val == 0, so that when reversed, the
-	     biv will be zero on the last iteration.
+
+	     The increment must be a constant and the comparison code
+	     must be LT. 
 
 	     This test can probably be improved since +/- 1 in the constant
 	     can be obtained by changing LT to LE and vice versa; this is
 	     confusing.  */
 
-	  if (comparison && bl->initial_value == const0_rtx
+	  if (comparison
 	      && GET_CODE (XEXP (comparison, 1)) == CONST_INT
 	      /* LE gets turned into LT */
-	      && GET_CODE (comparison) == LT
-	      && (INTVAL (XEXP (comparison, 1))
-		  % INTVAL (bl->biv->add_val)) == 0)
+	      && GET_CODE (comparison) == LT)
 	    {
+	      HOST_WIDE_INT add_val, comparison_val;
+	      rtx initial_value;
+
+	      add_val = INTVAL (bl->biv->add_val);
+	      comparison_val = INTVAL (XEXP (comparison, 1));
+	      initial_value = bl->initial_value;
+		
+	      /* Normalize the initial value if it has no other use
+		 except as a counter.  This will allow a few more loops
+		 to be reversed.  */
+	      if (no_use_except_counting)
+		{
+		  comparison_val = comparison_val - INTVAL (bl->initial_value);
+		  initial_value = const0_rtx;
+		}
+
+	      /* If the initial value is not zero, or if the comparison
+		 value is not an exact multiple of the increment, then we
+		 can not reverse this loop.  */
+	      if (initial_value != const0_rtx
+		  || (comparison_val % add_val) != 0)
+		return 0;
+
+	      /* Reset these in case we normalized the initial value
+		 and comparison value above.  */
+	      bl->initial_value = initial_value;
+	      XEXP (comparison, 1) = GEN_INT (comparison_val);
+
 	      /* Register will always be nonnegative, with value
 		 0 on last iteration if loop reversed */
 
