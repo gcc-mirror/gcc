@@ -551,6 +551,25 @@ test10()
   VERIFY( test );
 }
 
+
+// libstdc++/8258
+class mybuf : public std::basic_streambuf<char> 
+{ };
+
+void test11()
+{
+  bool test = true;
+  using namespace std;
+  char arr[10];
+  mybuf sbuf;
+  basic_istream<char, char_traits<char> > istr(&sbuf);
+  
+  VERIFY(istr.rdstate() == ios_base::goodbit);
+  VERIFY(istr.readsome(arr, 10) == 0);
+  VERIFY(istr.rdstate() == ios_base::goodbit);
+}
+
+
 int 
 main()
 {
@@ -564,6 +583,6 @@ main()
   test08();
   test09();
   test10();
-
+  test11();
   return 0;
 }

@@ -811,8 +811,9 @@ namespace std
 	{
 	  try 
 	    {
+	      // Cannot compare int_type with streamsize generically.
 	      streamsize __num = this->rdbuf()->in_avail();
-	      if (__num > 0)
+	      if (__num >= 0)
 		{
 		  __num = min(__num, __n);
 		  if (__num)
@@ -1034,13 +1035,14 @@ namespace std
 	      int_type __c = __sb->sgetc();
 	      
 	      while (__extracted < __num - 1 
-		     && __c != __eof && !__ctype.is(ctype_base::space, __c))
+		     && !_Traits::eq_int_type(__c, __eof)
+		     && !__ctype.is(ctype_base::space, __c))
 		{
 		  *__s++ = __c;
 		  ++__extracted;
 		  __c = __sb->snextc();
 		}
-	      if (__c == __eof)
+	      if (_Traits::eq_int_type(__c, __eof))
 		__in.setstate(ios_base::eofbit);
 
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
@@ -1078,9 +1080,11 @@ namespace std
       __streambuf_type* __sb = __in.rdbuf();
       __int_type __c = __sb->sgetc();
 
-      while (__c != __eof && __ctype.is(ctype_base::space, __c))
+      while (!_Traits::eq_int_type(__c, __eof) 
+	     && __ctype.is(ctype_base::space, __c))
 	__c = __sb->snextc();
-      if (__c == __eof)
+
+       if (_Traits::eq_int_type(__c, __eof))
 	__in.setstate(ios_base::eofbit);
 
       return __in;
@@ -1114,13 +1118,14 @@ namespace std
 	  __int_type __c = __sb->sgetc();
 	  
 	  while (__extracted < __n 
-		 && __c != __eof && !__ctype.is(ctype_base::space, __c))
+		 && !_Traits::eq_int_type(__c, __eof)
+		 && !__ctype.is(ctype_base::space, __c))
 	    {
 	      __str += _Traits::to_char_type(__c);
 	      ++__extracted;
 	      __c = __sb->snextc();
 	    }
-	  if (__c == __eof)
+	  if (_Traits::eq_int_type(__c, __eof))
 	    __in.setstate(ios_base::eofbit);
 	  __in.width(0);
 	}

@@ -1,3 +1,13 @@
+2002-11-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/8258
+	* include/bits/istream.tcc (istream::readsome): Don't set eofbit
+	for null buffer.
+	(istream::operator>>(_CharT*)): Use traits_type.
+	(istream::ws): Same.
+	(istream::operator>>(string)): Same.	
+	* testsuite/27_io/istream_unformatted.cc (test11): Add.
+	
 2002-11-05  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/8466
@@ -11,7 +21,7 @@
 
 	* configure.target (hppa*): Define cpu_include_dir.
 	* config/os/hpux/os_defines.h (_GLIBCPP_INST_ATOMICITY_LOCK): Define.
-	* src/misc-inst.cc (std): Instantiate atomicity lock when
+	* src/misc-inst.cc: Instantiate atomicity lock when
 	_GLIBCPP_INST_ATOMICITY_LOCK is defined.
 	* config/cpu/hppa/atomicity.h: New file.
 
