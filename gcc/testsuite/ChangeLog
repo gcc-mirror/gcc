@@ -1,3 +1,9 @@
+2005-03-05  Paul Thomas  <prthomas@drfccad.cea.fr>
+            Steven G. Kargl  <kargls@comcast.net> 
+
+	* gfortran.dg/PR19754_1.f90: New test.
+	* gfortran.dg/PR19754_2.f90: ditto.
+
 2005-03-05  John David Anglin  <dave.danglin@nrc-cnrc.gc.ca>
 	    Joseph S. Myers  <joseph@codesourcery.com>
 
