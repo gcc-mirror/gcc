@@ -1,3 +1,8 @@
+2002-05-02 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* predict.c: (propagate_freq, estimate_bb_frequencies): Use
+	TYPE_MODE (double_type_node) instead of DFmode.
+
 Thu May  2 19:50:04 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* cfgrtl.c (try_redirect_by_replacing_jump): Do not kill computed
