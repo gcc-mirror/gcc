@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for IBM PS/2 running AIX/386.
-   Copyright (C) 1988, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -24,10 +24,6 @@ Boston, MA 02111-1307, USA.  */
 #undef FALSE
 
 #include "i386/xm-i386.h"
-
-#define bcopy(a,b,c) memcpy (b,a,c)
-#define bzero(a,b) memset (a,0,b)
-#define bcmp(a,b,c) memcmp (a,b,c)
 
 /* If not compiled with GNU C, use the portable alloca.  */
 #ifndef __GNUC__

@@ -22,7 +22,3 @@ Boston, MA 02111-1307, USA.  */
 #undef FALSE
 
 #include "i386/xm-i386.h"
-
-#define bcopy(a,b,c) memcpy (b,a,c)
-#define bzero(a,b) memset (a,0,b)
-#define bcmp(a,b,c) memcmp (a,b,c)
