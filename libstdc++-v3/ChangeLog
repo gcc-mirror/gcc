@@ -4,6 +4,9 @@
 	* config/abi/i386-unknown-freebsd4/baseline_symbols.txt: New file.
 	* config/abi/i386-unknown-freebsd4.7/baseline_symbols.txt: Remove.
 
+	* testsuite/thread/pthread1.cc: Remove needless workaround
+	for FreeBSD 5.
+
 2002-10-18  Loren J. Rittle  <ljrittle@acm.org>
 	    Brad Spencer  <spencer@infointeractive.com> (provided alternate
 						         patch and improvements)
