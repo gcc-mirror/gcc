@@ -852,7 +852,7 @@ fix_with_system (tFixDesc* p_fixd,
   char*  pz_scan;
   size_t argsize;
   int i;
-  tSCC z_applyfix_prog[2] = {
+  tSCC *z_applyfix_prog[2] = {
     "/../fixincludes/applyfix" EXE_EXT,
     "/../../fixincludes/applyfix" EXE_EXT };
 

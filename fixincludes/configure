@@ -2347,7 +2347,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 # Check whether --enable-twoprocess or --disable-twoprocess was given.
 if test "${enable_twoprocess+set}" = set; then
   enableval="$enable_twoprocess"
-  if test "x$enable_twoprocess" = yes; then
+  if test "x$enable_twoprocess" = xyes; then
 	TARGET=twoprocess
 else
 	TARGET=oneprocess

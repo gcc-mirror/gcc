@@ -11,7 +11,7 @@ AC_PROG_CC
 #
 AC_ARG_ENABLE([twoprocess],
 [  --enable-twoprocess       Use a separate process to apply the fixes],
-[if test "x$enable_twoprocess" = yes; then
+[if test "x$enable_twoprocess" = xyes; then
 	TARGET=twoprocess
 else
 	TARGET=oneprocess
