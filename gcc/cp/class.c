@@ -4160,7 +4160,6 @@ finish_struct (t, attributes, warn_anon)
      int warn_anon;
 {
   tree name = TYPE_NAME (t);
-  tree x;
 
   if (TREE_CODE (name) == TYPE_DECL)
     {
@@ -4481,8 +4480,6 @@ pushclass (type, modify)
 
   if (modify)
     {
-      tree tags;
-
       if (type != previous_class_type || current_class_depth > 1)
 	push_class_decls (type);
       else
@@ -4519,7 +4516,6 @@ pushclass (type, modify)
 void
 invalidate_class_lookup_cache ()
 {
-  tree tags = CLASSTYPE_TAGS (previous_class_type);
   tree t;
   
   /* This code can be seen as a cache miss.  When we've cached a
