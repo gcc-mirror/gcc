@@ -1,5 +1,5 @@
 /* Common subexpression elimination for GNU compiler.
-   Copyright (C) 1987, 88, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-5, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3028,7 +3028,7 @@ simplify_unary_operation (code, mode, op, op_mode)
 	lv = CONST_DOUBLE_LOW (op),  hv = CONST_DOUBLE_HIGH (op);
 
 #ifdef REAL_ARITHMETIC
-      REAL_VALUE_FROM_INT (d, lv, hv);
+      REAL_VALUE_FROM_INT (d, lv, hv, mode);
 #else
       if (hv < 0)
 	{
@@ -3073,7 +3073,7 @@ simplify_unary_operation (code, mode, op, op_mode)
 	hv = 0, lv &= GET_MODE_MASK (op_mode);
 
 #ifdef REAL_ARITHMETIC
-      REAL_VALUE_FROM_UNSIGNED_INT (d, lv, hv);
+      REAL_VALUE_FROM_UNSIGNED_INT (d, lv, hv, mode);
 #else
 
       d = (double) (unsigned HOST_WIDE_INT) hv;
