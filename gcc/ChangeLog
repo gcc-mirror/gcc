@@ -1,3 +1,14 @@
+2003-01-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/8870, PR target/9195
+
+	Backport from mainline:
+
+	2003-01-10  Richard Henderson  <rth@redhat.com>
+
+	* combine.c (make_compound_operation): Use SCALAR_INT_MODE_P,
+	not INTEGRAL_MODE_P when widening extensions.
+
 2003-01-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	* aclocal.m4 (gcc_AC_PROG_GNAT): Don't try to prepend
@@ -29,7 +40,7 @@ Sat Jan 11 11:10:19 CET 2003  Jan Hubicka  <jh@suse.cz>
 Wed Jan  8 14:09:30 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR target/8213
-	* i386.c (ix86_expand_int_movcc): FIx RTL sharing problem.
+	* i386.c (ix86_expand_int_movcc): Fix RTL sharing problem.
 
 2003-01-09  Kazu Hirata  <kazu@cs.umass.edu>
 

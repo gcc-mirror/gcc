@@ -6734,7 +6734,7 @@ make_compound_operation (x, in_code)
 	      || (GET_MODE_SIZE (mode) >
 		  GET_MODE_SIZE (GET_MODE (XEXP (tem, 0)))))
 	    {
-	      if (! INTEGRAL_MODE_P (mode))
+	      if (! SCALAR_INT_MODE_P (mode))
 		break;
 	      tem = gen_rtx_fmt_e (GET_CODE (tem), mode, XEXP (tem, 0));
 	    }
