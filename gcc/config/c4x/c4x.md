@@ -5202,7 +5202,7 @@
 
 (define_insn "return"
   [(return)]
-  "c4x_null_epilogue_p ()"
+  "! c4x_null_epilogue_p ()"
   "rets"
   [(set_attr "type" "rets")])
 
@@ -5224,7 +5224,7 @@
                       [(reg:CC 21) (const_int 0)])
                       (return)
                        (pc)))]
-  "c4x_null_epilogue_p ()"
+  "! c4x_null_epilogue_p ()"
   "rets%0"
   [(set_attr "type" "rets")])
 
@@ -5238,7 +5238,7 @@
    && GET_CODE (operands[0]) != GE
    && GET_CODE (operands[0]) != LT
    && GET_CODE (operands[0]) != GT
-   && c4x_null_epilogue_p ()"
+   && ! c4x_null_epilogue_p ()"
   "rets%0"
   [(set_attr "type" "rets")])
 
@@ -5248,7 +5248,7 @@
                       [(reg:CC 21) (const_int 0)])
                        (pc)
                       (return)))]
-  "c4x_null_epilogue_p ()"
+  "! c4x_null_epilogue_p ()"
   "rets%I0"
   [(set_attr "type" "rets")])
 
@@ -5262,7 +5262,7 @@
    && GET_CODE (operands[0]) != GE
    && GET_CODE (operands[0]) != LT
    && GET_CODE (operands[0]) != GT
-   && c4x_null_epilogue_p ()"
+   && ! c4x_null_epilogue_p ()"
   "rets%I0"
   [(set_attr "type" "rets")])
 
@@ -5484,7 +5484,7 @@
 
 (define_expand "epilogue"
   [(const_int 1)]
-  ""
+  "! c4x_null_epilogue_p ()"
   "c4x_expand_epilogue (); DONE;")
 
 ;
@@ -7264,7 +7264,7 @@
                     (match_operand:QI 1 "general_operand" ""))
               (clobber (reg:QI 31))])
    (return)]
-  "c4x_null_epilogue_p ()"
+  "! c4x_null_epilogue_p ()"
   "*
    if (REG_P (operands[0]))
      return \"bu%#\\t%C0\";
@@ -7278,7 +7278,7 @@
                          (match_operand:QI 2 "general_operand" "")))
               (clobber (reg:QI 31))])
    (return)]
-  "c4x_null_epilogue_p ()"
+  "! c4x_null_epilogue_p ()"
   "*
    if (REG_P (operands[1]))
      return \"bu%#\\t%C1\";
