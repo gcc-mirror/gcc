@@ -10,6 +10,7 @@ details.  */
 
 package java.lang;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
@@ -53,15 +54,20 @@ final class ConcreteProcess extends Process
 
   // This is used for actual initialization, as we can't write a
   // native constructor.
-  public native void startProcess (String[] progarray, String[] envp)
+  public native void startProcess (String[] progarray,
+                                   String[] envp,
+                                   File dir)
     throws IOException;
 
   // This file is copied to `ConcreteProcess.java' before
   // compilation.  Hence the constructor name apparently does not
   // match the file name.
-  public ConcreteProcess (String[] progarray, String[] envp) throws IOException
+  public ConcreteProcess (String[] progarray,
+                          String[] envp,
+                          File dir)
+    throws IOException
   {
-    startProcess (progarray, envp);
+    startProcess (progarray, envp, dir);
   }
 
   // The process id.  This is cast to a pid_t on the native side.

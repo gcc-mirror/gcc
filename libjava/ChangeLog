@@ -1,3 +1,21 @@
+2002-08-13  Jesse Rosenstock  <jmr@ugcs.caltech.edu>
+
+	Fix for PR libgcj/7570 and PR libgcj/7578:
+	* java/lang/natPosixProcess.cc: Include java/io/File.h.
+	(startProcess): Handle new `dir' argument.
+	* java/lang/Win32Process.java (ConcreteProcess): Added `dir'
+	argument.
+	* java/lang/PosixProcess.java (ConcreteProcess): Added `dir'
+	argument.
+	(startProcess): Likewise.
+	* java/lang/EcosProcess.java (ConcreteProcess): Added `dir'
+	argument.
+	* java/lang/Runtime.java (execInternal): Added `dir' argument.
+	(exec): Don't create new environment if ENV==null.  Pass DIR to
+	execInternal.
+	* java/lang/natRuntime.cc: Include java/io/File.h.
+	(execInternal): Added `dir' argument.
+
 2002-08-13  Jesse Rosenstock  <jmr@fulcrummicro.com>
 
 	* java/io/RandomAccessFile.java (skipBytes): Return number of

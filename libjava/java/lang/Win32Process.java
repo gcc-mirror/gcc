@@ -10,6 +10,7 @@ details.  */
 
 package java.lang;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
@@ -60,7 +61,10 @@ final class ConcreteProcess extends Process
     throw new Error("not implemented");
   }
 
-  public ConcreteProcess (String[] progarray, String[] envp) throws IOException
+  public ConcreteProcess (String[] progarray,
+                          String[] envp,
+                          File dir)
+    throws IOException
   {
     throw new IOException("not implemented");
   }
