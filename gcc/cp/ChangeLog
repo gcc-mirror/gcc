@@ -1,3 +1,9 @@
+2003-02-16  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/9459
+	* error.c (dump_type_prefix): Handle TYPEOF_TYPE.
+	(dump_type_suffix): Likewise.
+
 2003-02-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* search.c: ANSIfy function declarations and definitions.
