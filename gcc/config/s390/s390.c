@@ -472,15 +472,20 @@ s390_tm_ccmode (rtx op1, rtx op2, int mixed)
   if (GET_CODE (op1) != CONST_INT || GET_CODE (op2) != CONST_INT)
     return VOIDmode;
 
-  /* Selected bits all zero: CC0.  */
+  /* Selected bits all zero: CC0.
+     e.g.: int a; if ((a & (16 + 128)) == 0) */
   if (INTVAL (op2) == 0)
     return CCTmode;
 
-  /* Selected bits all one: CC3.  */
+  /* Selected bits all one: CC3. 
+     e.g.: int a; if ((a & (16 + 128)) == 16 + 128) */
   if (INTVAL (op2) == INTVAL (op1))
     return CCT3mode;
 
-  /* Exactly two bits selected, mixed zeroes and ones: CC1 or CC2.  */
+  /* Exactly two bits selected, mixed zeroes and ones: CC1 or CC2. e.g.:
+     int a;
+     if ((a & (16 + 128)) == 16)         -> CCT1
+     if ((a & (16 + 128)) == 128)        -> CCT2  */
   if (mixed)
     {
       bit1 = exact_log2 (INTVAL (op2));
@@ -542,9 +547,19 @@ s390_select_ccmode (enum rtx_code code, rtx op0, rtx op1)
       case LT:
       case GE:
       case GT:
+	/* The only overflow condition of NEG and ABS happens when
+	   -INT_MAX is used as parameter, which stays negative. So
+	   we have an overflow from a positive value to a negative. 
+	   Using CCAP mode the resulting cc can be used for comparisons.  */
 	if ((GET_CODE (op0) == NEG || GET_CODE (op0) == ABS)
 	    && GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT)
 	  return CCAPmode;
+
+ 	/* If constants are involved in an add instruction it is possible to use
+ 	   the resulting cc for comparisons with zero. Knowing the sign of the
+	   constant the overflow behaviour gets predictable. e.g.:
+ 	     int a, b; if ((b = a + c) > 0)  
+ 	   with c as a constant value: c < 0 -> CCAN and c >= 0 -> CCAP  */
 	if (GET_CODE (op0) == PLUS && GET_CODE (XEXP (op0, 1)) == CONST_INT
 	    && CONST_OK_FOR_CONSTRAINT_P (INTVAL (XEXP (op0, 1)), 'K', "K"))
 	  {
@@ -3772,7 +3787,21 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
 /* Expand conditional increment or decrement using alc/slb instructions.
    Should generate code setting DST to either SRC or SRC + INCREMENT,
    depending on the result of the comparison CMP_OP0 CMP_CODE CMP_OP1.
-   Returns true if successful, false otherwise.  */
+   Returns true if successful, false otherwise.
+
+   That makes it possible to implement some if-constructs without jumps e.g.:
+   (borrow = CC0 | CC1 and carry = CC2 | CC3)
+   unsigned int a, b, c;
+   if (a < b)  c++; -> CCU  b > a  -> CC2;    c += carry;
+   if (a < b)  c--; -> CCL3 a - b  -> borrow; c -= borrow;
+   if (a <= b) c++; -> CCL3 b - a  -> borrow; c += carry;
+   if (a <= b) c--; -> CCU  a <= b -> borrow; c -= borrow;
+
+   Checks for EQ and NE with a nonzero value need an additional xor e.g.:
+   if (a == b) c++; -> CCL3 a ^= b; 0 - a  -> borrow;    c += carry;
+   if (a == b) c--; -> CCU  a ^= b; a <= 0 -> CC0 | CC1; c -= borrow;
+   if (a != b) c++; -> CCU  a ^= b; a > 0  -> CC2;       c += carry;
+   if (a != b) c--; -> CCL3 a ^= b; 0 - a  -> borrow;    c -= borrow; */
 
 bool
 s390_expand_addcc (enum rtx_code cmp_code, rtx cmp_op0, rtx cmp_op1,

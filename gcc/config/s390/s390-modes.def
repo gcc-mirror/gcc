@@ -25,6 +25,127 @@ INT_MODE (OI, 32);
 
 /* Add any extra modes needed to represent the condition code.  */
 
+/*
+
+Condition Codes
+
+Check for zero
+
+CCZ:  EQ          NE           NE          NE
+
+Unsigned compares
+
+CCU:  EQ          LTU          GTU         NE         (CLG/R, CL/R/Y, CLM/Y, CLI/Y)
+CCUR: EQ          GTU          LTU         NE         (CLGF/R)
+
+Signed compares
+
+CCS:  EQ          LT           GT          UNORDERED  (LTGFR, LTGR, LTR, ICM/Y,
+                                                       LTDBR, LTDR, LTEBR, LTER,
+                                                       CG/R, C/R/Y, CGHI, CHI, 
+                                                       CDB/R, CD/R, CEB/R, CE/R, 
+                                                       ADB/R, AEB/R, SDB/R, SEB/R,
+                                                       SRAG, SRA, SRDA)
+CCSR: EQ          GT           LT          UNORDERED  (CGF/R, CH/Y)
+
+Condition codes resulting from add with overflow
+
+CCA:  EQ          LT           GT          Overflow
+CCAP: EQ          LT           GT          LT         (AGHI, AHI)
+CCAN: EQ          LT           GT          GT         (AGHI, AHI)
+
+Condition codes of unsigned adds and subs
+
+CCL:  EQ          NE           EQ          NE         (ALGF/R, ALG/R, AL/R/Y,
+                                                       ALCG/R, ALC/R, 
+                                                       SLGF/R, SLG/R, SL/R/Y,
+                                                       SLBG/R, SLB/R)
+CCL1: GEU         GEU          LTU         LTU        (ALG/R, AL/R/Y)
+CCL2: GTU         GTU          LEU         LEU        (SLG/R, SL/R/Y)
+CCL3: EQ          LTU          EQ          GTU        (SLG/R, SL/R/Y)
+
+Test under mask checks
+
+CCT:  EQ          NE           NE          NE         (ICM/Y, TML, CG/R, CGHI, 
+                                                       C/R/Y, CHI, NG/R, N/R/Y,
+                                                       OG/R, O/R/Y, XG/R, X/R/Y)
+CCT1: NE          EQ           NE          NE         (TMH, TML)
+CCT2: NE          NE           EQ          NE         (TMH, TML)
+CCT3: NE          NE           NE          EQ         (TMH, TML)
+
+CCA and CCT modes are request only modes. These modes are never returned by 
+s390_select_cc_mode. They are only intended to match other modes.
+
+Requested mode            -> Destination CC register mode
+
+CCS, CCU, CCT, CCSR, CCUR -> CCZ
+CCA                       -> CCAP, CCAN
+
+
+*** Comments ***
+
+CCAP, CCAN
+
+The CC obtained from add instruction usually can't be used for comparisons 
+because its coupling with overflow flag. In case of an overflow the
+less than/greater than data are lost. Nevertheless a comparison can be done
+whenever immediate values are involved because they are known at compile time.
+If you know whether the used constant is positive or negative you can predict 
+the sign of the result even in case of an overflow.
+
+
+CCT, CCT1, CCT2, CCT3
+
+If bits of an integer masked with an AND instruction are checked, the test under
+mask instructions turn out to be very handy for a set of special cases.
+The simple cases are checks whether all masked bits are zero or ones:
+
+  int a; 
+  if ((a & (16 + 128)) == 0)          -> CCT/CCZ
+  if ((a & (16 + 128)) == 16 + 128)   -> CCT3
+
+Using two extra modes makes it possible to do complete checks on two bits of an
+integer (This is possible on register operands only. TM does not provide the
+information necessary for CCT1 and CCT2 modes.):
+
+  int a;
+  if ((a & (16 + 128)) == 16)         -> CCT1
+  if ((a & (16 + 128)) == 128)        -> CCT2
+
+
+CCSR, CCUR
+
+There are several instructions comparing 32 bit with 64 bit unsigned/signed
+values. Such instructions can be considered to have a builtin zero/sign_extend.
+The problem is that in the RTL (to be canonical) the zero/sign extended operand 
+has to be the first one but the machine instructions like it the other way 
+around. The following both modes can be considered as CCS and CCU modes with 
+exchanged operands.
+
+
+CCL1, CCL2
+
+These modes represent the result of overflow checks. 
+
+if (a + b < a) -> CCL1 state of the carry bit   (CC2 | CC3)
+if (a - b > a) -> CCL2 state of the borrow bit  (CC0 | CC1)
+
+They are used when multi word numbers are computed dealing one SImode part after
+another or whenever manual overflow checks like the examples above are
+compiled.
+
+
+CCL3
+
+A logical subtract instruction sets the borrow bit in case of an overflow.
+The resulting condition code of those instructions is represented by the
+CCL3 mode. Together with the CCU mode this mode is used for jumpless 
+implementations of several if-constructs - see s390_expand_addcc for more
+details.
+
+*/   
+
+
 CC_MODE (CCZ);
 CC_MODE (CCA);
 CC_MODE (CCAP);

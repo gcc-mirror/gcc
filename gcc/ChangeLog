@@ -1,3 +1,10 @@
+2004-11-30  Andreas Krebbel  <krebbel1@de.ibm.com>
+	
+	* config/s390/s390-modes.def: Added cc modes documentation.
+	* config/s390/s390.c: (s390_tm_ccmode, s390_select_ccmode,
+	s390_expand_addcc): Added cc mode comments.
+	* config/s390/s390.md: Removed old cc mode documentation.
+
 2004-11-30  Mark Dettinger  <dettinge@de.ibm.com>
 
 	* config/s390/s390.c (struct processor_costs): New data type.
