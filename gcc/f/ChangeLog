@@ -1,3 +1,8 @@
+2003-01-31  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* news.texi: Document fixing PR fortran/7681
+	and optimization/9258.
+
 2003-01-26  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* lang-specs.h: Revoke change to (incorrectly) prohibit
