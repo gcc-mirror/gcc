@@ -1126,10 +1126,13 @@ do_ifdef (pfile)
 {
   int def = 0;
   const cpp_hashnode *node = parse_ifdef (pfile, dtable[T_IFDEF].name);
-  if (node->type == T_POISON)
-    cpp_error (pfile, "attempt to use poisoned `%s'", node->name);
-  else
-    def = (node->type != T_VOID);
+  if (node)
+    {
+      if (node->type == T_POISON)
+	cpp_error (pfile, "attempt to use poisoned `%s'", node->name);
+      else
+	def = (node->type != T_VOID);
+    }
   push_conditional (pfile, !def, T_IFDEF, 0);
   return 0;
 }
@@ -1147,11 +1150,13 @@ do_ifndef (pfile)
 
   start_of_file = pfile->only_seen_white == 2;
   cmacro = parse_ifdef (pfile, dtable[T_IFNDEF].name);
-  if (cmacro->type == T_POISON)
-    cpp_error (pfile, "attempt to use poisoned `%s'", cmacro->name);
-  else
-    def = (cmacro->type != T_VOID);
-
+  if (cmacro)
+    {
+      if (cmacro->type == T_POISON)
+	cpp_error (pfile, "attempt to use poisoned `%s'", cmacro->name);
+      else
+	def = (cmacro->type != T_VOID);
+    }
   push_conditional (pfile, def, T_IFNDEF,
 		    start_of_file ? cmacro : 0);
   return 0;
