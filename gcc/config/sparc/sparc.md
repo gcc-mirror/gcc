@@ -2568,10 +2568,28 @@
   [(set_attr "type" "move")
    (set_attr "length" "1")])
 
-(define_insn "*movdi_insn_sp64"
+(define_insn "*movdi_insn_sp64_novis"
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,m,?e,?e,?m")
+        (match_operand:DI 1 "input_operand"   "rI,K,J,m,rJ,e,m,e"))]
+  "TARGET_ARCH64 && ! TARGET_VIS &&
+   (register_operand (operands[0], DImode)
+    || reg_or_0_operand (operands[1], DImode))"
+  "@
+   mov\\t%1, %0
+   sethi\\t%%hi(%a1), %0
+   clr\\t%0
+   ldx\\t%1, %0
+   stx\\t%r1, %0
+   fmovd\\t%1, %0
+   ldd\\t%1, %0
+   std\\t%1, %0"
+  [(set_attr "type" "move,move,move,load,store,fpmove,fpload,fpstore")
+   (set_attr "length" "1")])
+
+(define_insn "*movdi_insn_sp64_vis"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,m,?e,?e,?m,b")
         (match_operand:DI 1 "input_operand"   "rI,K,J,m,rJ,e,m,e,J"))]
-  "TARGET_ARCH64 &&
+  "TARGET_ARCH64 && TARGET_VIS &&
    (register_operand (operands[0], DImode)
     || reg_or_0_operand (operands[1], DImode))"
   "@
@@ -3127,14 +3145,20 @@
   if (GET_CODE (operands[0]) == REG
       && CONSTANT_P (operands[1]))
     {
-      if (TARGET_VIS && fp_zero_operand (operands[1], SFmode))
-	goto movsf_is_ok;
-
       /* emit_group_store will send such bogosity to us when it is
          not storing directly into memory.  So fix this up to avoid
          crashes in output_constant_pool.  */
       if (operands [1] == const0_rtx)
         operands[1] = CONST0_RTX (SFmode);
+
+      if (TARGET_VIS && fp_zero_operand (operands[1], SFmode))
+	goto movsf_is_ok;
+
+      /* We are able to build any SF constant in integer registers
+	 with at most 2 instructions.  */
+      if (REGNO (operands[0]) < 32)
+	goto movsf_is_ok;
+
       operands[1] = validize_mem (force_const_mem (GET_MODE (operands[0]),
                                                    operands[1]));
     }
@@ -3174,44 +3198,233 @@
   ;
 }")
 
-(define_insn "*clear_df"
-  [(set (match_operand:DF 0 "register_operand" "=e")
-        (match_operand:DF 1 "fp_zero_operand" ""))]
-  "TARGET_VIS"
-  "fzero\\t%0"
-  [(set_attr "type" "fpmove")
-   (set_attr "length" "1")])
+(define_expand "movdf"
+  [(set (match_operand:DF 0 "general_operand" "")
+	(match_operand:DF 1 "general_operand" ""))]
+  ""
+  "
+{
+  /* Force DFmode constants into memory.  */
+  if (GET_CODE (operands[0]) == REG
+      && CONSTANT_P (operands[1]))
+    {
+      /* emit_group_store will send such bogosity to us when it is
+         not storing directly into memory.  So fix this up to avoid
+         crashes in output_constant_pool.  */
+      if (operands [1] == const0_rtx)
+        operands[1] = CONST0_RTX (DFmode);
 
-(define_insn "*clear_dfp"
-  [(set (match_operand:DF 0 "memory_operand" "=m")
-        (match_operand:DF 1 "fp_zero_operand" ""))]
-  "TARGET_V9"
-  "stx\\t%%g0, %0"
-  [(set_attr "type" "store")
-   (set_attr "length" "1")])
+      if ((TARGET_VIS || REGNO (operands[0]) < 32)
+	  && fp_zero_operand (operands[1], DFmode))
+	goto movdf_is_ok;
 
-(define_insn "*movdf_const_intreg_sp32"
-  [(set (match_operand:DF 0 "register_operand" "=e,e,?r")
-        (match_operand:DF 1 "const_double_operand" "T#F,o#F,F"))]
-  "TARGET_FPU && ! TARGET_ARCH64"
+      operands[1] = validize_mem (force_const_mem (GET_MODE (operands[0]),
+                                                   operands[1]));
+    }
+
+  /* Handle MEM cases first.  */
+  if (GET_CODE (operands[0]) == MEM)
+    {
+      if (register_operand (operands[1], DFmode)
+	  || fp_zero_operand (operands[1], DFmode))
+	goto movdf_is_ok;
+
+      if (! reload_in_progress)
+	{
+	  operands[0] = validize_mem (operands[0]);
+	  operands[1] = force_reg (DFmode, operands[1]);
+	}
+    }
+
+  /* Fixup PIC cases.  */
+  if (flag_pic)
+    {
+      if (CONSTANT_P (operands[1])
+	  && pic_address_needs_scratch (operands[1]))
+	operands[1] = legitimize_pic_address (operands[1], DFmode, 0);
+
+      if (symbolic_operand (operands[1], DFmode))
+	{
+	  operands[1] = legitimize_pic_address (operands[1],
+						DFmode,
+						(reload_in_progress ?
+						 operands[0] :
+						 NULL_RTX));
+	}
+    }
+
+ movdf_is_ok:
+  ;
+}")
+
+;; Be careful, fmovd does not exist when !v9.
+(define_insn "*movdf_insn_sp32"
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,T,U,T,o,e,*r,o,e,o")
+	(match_operand:DF 1 "input_operand"    "T#F,e,T,U,G,e,*rFo,*r,o#F,e"))]
+  "TARGET_FPU
+   && ! TARGET_V9
+   && (register_operand (operands[0], DFmode)
+       || register_operand (operands[1], DFmode)
+       || fp_zero_operand (operands[1], DFmode))"
   "@
-   ldd\\t%1, %0
-   #
-   #"
-  [(set_attr "type" "move")
-   (set_attr "length" "1,2,2")])
+  ldd\\t%1, %0
+  std\\t%1, %0
+  ldd\\t%1, %0
+  std\\t%1, %0
+  #
+  #
+  #
+  #
+  #
+  #"
+ [(set_attr "type" "fpload,fpstore,load,store,*,*,*,*,*,*")
+  (set_attr "length" "1,1,1,1,2,2,2,2,2,2")])
 
-;; Now that we redo life analysis with a clean slate after
-;; instruction splitting for sched2 this can work.
-(define_insn "*movdf_const_intreg_sp64"
-  [(set (match_operand:DF 0 "register_operand" "=e,?r")
-        (match_operand:DF 1 "const_double_operand" "m#F,F"))]
-  "TARGET_FPU && TARGET_ARCH64"
+(define_insn "*movdf_no_e_insn_sp32"
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=U,T,o,r,o")
+	(match_operand:DF 1 "input_operand"    "T,U,G,ro,r"))]
+  "! TARGET_FPU
+   && ! TARGET_V9
+   && ! TARGET_ARCH64
+   && (register_operand (operands[0], DFmode)
+       || register_operand (operands[1], DFmode)
+       || fp_zero_operand (operands[1], DFmode))"
   "@
-   ldd\\t%1, %0
-   #"
-  [(set_attr "type" "move")
-   (set_attr "length" "1,2")])
+  ldd\\t%1, %0
+  std\\t%1, %0
+  #
+  #
+  #"
+  [(set_attr "type" "load,store,*,*,*")
+   (set_attr "length" "1,1,2,2,2")])
+
+(define_insn "*movdf_no_e_insn_v9_sp32"
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=U,T,T,r,o")
+	(match_operand:DF 1 "input_operand"    "T,U,G,ro,rG"))]
+  "! TARGET_FPU
+   && TARGET_V9
+   && ! TARGET_ARCH64
+   && (register_operand (operands[0], DFmode)
+       || register_operand (operands[1], DFmode)
+       || fp_zero_operand (operands[1], DFmode))"
+  "@
+  ldd\\t%1, %0
+  std\\t%1, %0
+  stx\\t%r1, %0
+  #
+  #"
+  [(set_attr "type" "load,store,store,*,*")
+   (set_attr "length" "1,1,1,2,2")])
+
+;; We have available v9 double floats but not 64-bit
+;; integer registers and no VIS.
+(define_insn "*movdf_insn_v9only_novis"
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,e,T,T,U,T,e,*r,o")
+        (match_operand:DF 1 "input_operand"    "e,T#F,G,e,T,U,o#F,*roF,*rGe"))]
+  "TARGET_FPU
+   && TARGET_V9
+   && ! TARGET_VIS
+   && ! TARGET_ARCH64
+   && (register_operand (operands[0], DFmode)
+       || register_operand (operands[1], DFmode)
+       || fp_zero_operand (operands[1], DFmode))"
+  "@
+  fmovd\\t%1, %0
+  ldd\\t%1, %0
+  stx\\t%r1, %0
+  std\\t%1, %0
+  ldd\\t%1, %0
+  std\\t%1, %0
+  #
+  #
+  #"
+  [(set_attr "type" "fpmove,load,store,store,load,store,*,*,*")
+   (set_attr "length" "1,1,1,1,1,1,2,2,2")])
+
+;; We have available v9 double floats but not 64-bit
+;; integer registers but we have VIS.
+(define_insn "*movdf_insn_v9only_vis"
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,e,e,T,T,U,T,e,*r,o")
+        (match_operand:DF 1 "input_operand" "G,e,T#F,G,e,T,U,o#F,*roGF,*rGe"))]
+  "TARGET_FPU
+   && TARGET_VIS
+   && ! TARGET_ARCH64
+   && (register_operand (operands[0], DFmode)
+       || register_operand (operands[1], DFmode)
+       || fp_zero_operand (operands[1], DFmode))"
+  "@
+  fzero\\t%1, %0
+  fmovd\\t%1, %0
+  ldd\\t%1, %0
+  stx\\t%r1, %0
+  std\\t%1, %0
+  ldd\\t%1, %0
+  std\\t%1, %0
+  #
+  #
+  #"
+  [(set_attr "type" "fpmove,fpmove,load,store,store,load,store,*,*,*")
+   (set_attr "length" "1,1,1,1,1,1,1,2,2,2")])
+
+;; We have available both v9 double floats and 64-bit
+;; integer registers. No VIS though.
+(define_insn "*movdf_insn_sp64_novis"
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,e,m,*r,*r,m,*r")
+        (match_operand:DF 1 "input_operand"    "e,m#F,e,*rG,m,*rG,F"))]
+  "TARGET_FPU
+   && ! TARGET_VIS
+   && TARGET_ARCH64
+   && (register_operand (operands[0], DFmode)
+       || register_operand (operands[1], DFmode)
+       || fp_zero_operand (operands[1], DFmode))"
+  "@
+  fmovd\\t%1, %0
+  ldd\\t%1, %0
+  std\\t%1, %0
+  mov\\t%r1, %0
+  ldx\\t%1, %0
+  stx\\t%r1, %0
+  #"
+  [(set_attr "type" "fpmove,load,store,move,load,store,*")
+   (set_attr "length" "1,1,1,1,1,1,2")])
+
+;; We have available both v9 double floats and 64-bit
+;; integer registers. And we have VIS.
+(define_insn "*movdf_insn_sp64_vis"
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,e,e,m,*r,*r,m,*r")
+        (match_operand:DF 1 "input_operand"    "G,e,m#F,e,*rG,m,*rG,F"))]
+  "TARGET_FPU
+   && TARGET_VIS
+   && TARGET_ARCH64
+   && (register_operand (operands[0], DFmode)
+       || register_operand (operands[1], DFmode)
+       || fp_zero_operand (operands[1], DFmode))"
+  "@
+  fzero\\t%0
+  fmovd\\t%1, %0
+  ldd\\t%1, %0
+  std\\t%1, %0
+  mov\\t%r1, %0
+  ldx\\t%1, %0
+  stx\\t%r1, %0
+  #"
+  [(set_attr "type" "fpmove,fpmove,load,store,move,load,store,*")
+   (set_attr "length" "1,1,1,1,1,1,1,2")])
+
+(define_insn "*movdf_no_e_insn_sp64"
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r,m")
+        (match_operand:DF 1 "input_operand"    "r,m,rG"))]
+  "! TARGET_FPU
+   && TARGET_ARCH64
+   && (register_operand (operands[0], DFmode)
+       || register_operand (operands[1], DFmode)
+       || fp_zero_operand (operands[1], DFmode))"
+  "@
+  mov\\t%1, %0
+  ldx\\t%1, %0
+  stx\\t%r1, %0"
+  [(set_attr "type" "move,load,store")
+   (set_attr "length" "1")])
 
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
@@ -3219,6 +3432,7 @@
   "TARGET_FPU
    && (GET_CODE (operands[0]) == REG
        && REGNO (operands[0]) < 32)
+   && ! fp_zero_operand(operands[1], DFmode)
    && reload_completed"
   [(clobber (const_int 0))]
   "
@@ -3268,156 +3482,6 @@
     }
   DONE;
 }")
-
-(define_expand "movdf"
-  [(set (match_operand:DF 0 "general_operand" "")
-	(match_operand:DF 1 "general_operand" ""))]
-  ""
-  "
-{
-  /* Force DFmode constants into memory.  */
-  if (GET_CODE (operands[0]) == REG
-      && CONSTANT_P (operands[1]))
-    {
-      if (TARGET_VIS && fp_zero_operand (operands[1], DFmode))
-	goto movdf_is_ok;
-
-      /* emit_group_store will send such bogosity to us when it is
-         not storing directly into memory.  So fix this up to avoid
-         crashes in output_constant_pool.  */
-      if (operands [1] == const0_rtx)
-        operands[1] = CONST0_RTX (DFmode);
-      operands[1] = validize_mem (force_const_mem (GET_MODE (operands[0]),
-                                                   operands[1]));
-    }
-
-  /* Handle MEM cases first.  */
-  if (GET_CODE (operands[0]) == MEM)
-    {
-      if (register_operand (operands[1], DFmode))
-	goto movdf_is_ok;
-
-      if (! reload_in_progress)
-	{
-	  operands[0] = validize_mem (operands[0]);
-	  operands[1] = force_reg (DFmode, operands[1]);
-	}
-    }
-
-  /* Fixup PIC cases.  */
-  if (flag_pic)
-    {
-      if (CONSTANT_P (operands[1])
-	  && pic_address_needs_scratch (operands[1]))
-	operands[1] = legitimize_pic_address (operands[1], DFmode, 0);
-
-      if (symbolic_operand (operands[1], DFmode))
-	{
-	  operands[1] = legitimize_pic_address (operands[1],
-						DFmode,
-						(reload_in_progress ?
-						 operands[0] :
-						 NULL_RTX));
-	}
-    }
-
- movdf_is_ok:
-  ;
-}")
-
-;; Be careful, fmovd does not exist when !v9.
-(define_insn "*movdf_insn_sp32"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,T,U,T,e,r,r,o,e,o")
-	(match_operand:DF 1 "input_operand"    "T,e,T,U,e,r,o,r,o,e"))]
-  "TARGET_FPU
-   && ! TARGET_V9
-   && (register_operand (operands[0], DFmode)
-       || register_operand (operands[1], DFmode))"
-  "@
-  ldd\\t%1, %0
-  std\\t%1, %0
-  ldd\\t%1, %0
-  std\\t%1, %0
-  #
-  #
-  #
-  #
-  #
-  #"
- [(set_attr "type" "fpload,fpstore,load,store,*,*,*,*,*,*")
-  (set_attr "length" "1,1,1,1,2,2,2,2,2,2")])
-
-(define_insn "*movdf_no_e_insn_sp32"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=U,T,r,r,o")
-	(match_operand:DF 1 "input_operand"    "T,U,r,o,r"))]
-  "! TARGET_FPU
-   && ! TARGET_ARCH64
-   && (register_operand (operands[0], DFmode)
-       || register_operand (operands[1], DFmode))"
-  "@
-  ldd\\t%1, %0
-  std\\t%1, %0
-  #
-  #
-  #"
-  [(set_attr "type" "load,store,*,*,*")
-   (set_attr "length" "1,1,2,2,2")])
-
-;; We have available v9 double floats but not 64-bit
-;; integer registers.
-(define_insn "*movdf_insn_v9only"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,e,m,U,T,r,r,o")
-        (match_operand:DF 1 "input_operand"    "e,m,e,T,U,r,o,r"))]
-  "TARGET_FPU
-   && TARGET_V9
-   && ! TARGET_ARCH64
-   && (register_operand (operands[0], DFmode)
-       || register_operand (operands[1], DFmode))"
-  "@
-  fmovd\\t%1, %0
-  ldd\\t%1, %0
-  std\\t%1, %0
-  ldd\\t%1, %0
-  std\\t%1, %0
-  #
-  #
-  #"
-  [(set_attr "type" "fpmove,load,store,load,store,*,*,*")
-   (set_attr "length" "1,1,1,1,1,2,2,2")])
-
-;; We have available both v9 double floats and 64-bit
-;; integer registers.
-(define_insn "*movdf_insn_sp64"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,e,m,r,r,m")
-        (match_operand:DF 1 "input_operand"    "e,m,e,r,m,r"))]
-  "TARGET_FPU
-   && TARGET_V9
-   && TARGET_ARCH64
-   && (register_operand (operands[0], DFmode)
-       || register_operand (operands[1], DFmode))"
-  "@
-  fmovd\\t%1, %0
-  ldd\\t%1, %0
-  std\\t%1, %0
-  mov\\t%1, %0
-  ldx\\t%1, %0
-  stx\\t%1, %0"
-  [(set_attr "type" "fpmove,load,store,move,load,store")
-   (set_attr "length" "1")])
-
-(define_insn "*movdf_no_e_insn_sp64"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r,m")
-        (match_operand:DF 1 "input_operand"    "r,m,r"))]
-  "! TARGET_FPU
-   && TARGET_ARCH64
-   && (register_operand (operands[0], DFmode)
-       || register_operand (operands[1], DFmode))"
-  "@
-  mov\\t%1, %0
-  ldx\\t%1, %0
-  stx\\t%1, %0"
-  [(set_attr "type" "move,load,store")
-   (set_attr "length" "1")])
 
 ;; Ok, now the splits to handle all the multi insn and
 ;; mis-aligned memory address cases.
@@ -3471,17 +3535,11 @@
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
 	(match_operand:DF 1 "memory_operand" ""))]
-  "((! TARGET_V9
-     || (! TARGET_ARCH64
-         && ((GET_CODE (operands[0]) == REG
-              && REGNO (operands[0]) < 32)
-             || (GET_CODE (operands[0]) == SUBREG
-                 && GET_CODE (SUBREG_REG (operands[0])) == REG
-                 && REGNO (SUBREG_REG (operands[0])) < 32))))
-    && (reload_completed
-        && (((REGNO (operands[0])) % 2) != 0
-             || ! mem_min_alignment (operands[1], 8))
-        && offsettable_memref_p (operands[1])))"
+  "reload_completed
+   && ! TARGET_ARCH64
+   && (((REGNO (operands[0]) % 2) != 0)
+       || ! mem_min_alignment (operands[1], 8))
+   && offsettable_memref_p (operands[1])"
   [(clobber (const_int 0))]
   "
 {
@@ -3512,17 +3570,11 @@
 (define_split
   [(set (match_operand:DF 0 "memory_operand" "")
 	(match_operand:DF 1 "register_operand" ""))]
-  "((! TARGET_V9
-     || (! TARGET_ARCH64
-         && ((GET_CODE (operands[1]) == REG
-              && REGNO (operands[1]) < 32)
-             || (GET_CODE (operands[1]) == SUBREG
-                 && GET_CODE (SUBREG_REG (operands[1])) == REG
-                 && REGNO (SUBREG_REG (operands[1])) < 32))))
-    && (reload_completed
-        && (((REGNO (operands[1])) % 2) != 0
-             || ! mem_min_alignment (operands[0], 8))
-        && offsettable_memref_p (operands[0])))"
+  "reload_completed
+   && ! TARGET_ARCH64
+   && (((REGNO (operands[1]) % 2) != 0)
+       || ! mem_min_alignment (operands[0], 8))
+   && offsettable_memref_p (operands[0])"
   [(clobber (const_int 0))]
   "
 {
@@ -3539,45 +3591,51 @@
   DONE;
 }")
 
-(define_insn "*clear_tf"
-  [(set (match_operand:TF 0 "register_operand" "=e")
-        (match_operand:TF 1 "fp_zero_operand" ""))]
-  "TARGET_VIS"
-  "#"
-  [(set_attr "type" "fpmove")
-   (set_attr "length" "2")])
-
 (define_split
-  [(set (match_operand:TF 0 "register_operand" "")
-        (match_operand:TF 1 "fp_zero_operand" ""))]
-  "TARGET_VIS && reload_completed"
-  [(set (subreg:DF (match_dup 0) 0) (match_dup 1))
-   (set (subreg:DF (match_dup 0) 8) (match_dup 1))]
+  [(set (match_operand:DF 0 "memory_operand" "")
+        (match_operand:DF 1 "fp_zero_operand" ""))]
+  "reload_completed
+   && (! TARGET_V9
+       || (! TARGET_ARCH64
+	   && ! mem_min_alignment (operands[0], 8)))
+   && offsettable_memref_p (operands[0])"
+  [(clobber (const_int 0))]
   "
 {
-  operands[1] = CONST0_RTX (DFmode);
-}
-")
+  rtx dest1, dest2;
 
-(define_insn "*clear_tfp"
-  [(set (match_operand:TF 0 "memory_operand" "=m")
-        (match_operand:TF 1 "fp_zero_operand" ""))]
-  "TARGET_V9"
-  "#"
-  [(set_attr "type" "fpmove")
-   (set_attr "length" "2")])
+  dest1 = change_address (operands[0], SFmode, NULL_RTX);
+  dest2 = change_address (operands[0], SFmode,
+			  plus_constant_for_output (XEXP (dest1, 0), 4));
+  emit_insn (gen_movsf (dest1, CONST0_RTX (SFmode)));
+  emit_insn (gen_movsf (dest2, CONST0_RTX (SFmode)));
+  DONE;
+}")
 
 (define_split
-  [(set (match_operand:TF 0 "memory_operand" "=m")
-        (match_operand:TF 1 "fp_zero_operand" ""))]
-  "TARGET_V9 && reload_completed"
-  [(set (subreg:DF (match_dup 0) 0) (match_dup 1))
-   (set (subreg:DF (match_dup 0) 8) (match_dup 1))]
+  [(set (match_operand:DF 0 "register_operand" "")
+        (match_operand:DF 1 "fp_zero_operand" ""))]
+  "reload_completed
+   && ! TARGET_ARCH64
+   && ((GET_CODE (operands[0]) == REG
+	&& REGNO (operands[0]) < 32)
+       || (GET_CODE (operands[0]) == SUBREG
+	   && GET_CODE (SUBREG_REG (operands[0])) == REG
+	   && REGNO (SUBREG_REG (operands[0])) < 32))"
+  [(clobber (const_int 0))]
   "
 {
-  operands[1] = CONST0_RTX (DFmode);
-}
-")
+  rtx set_dest = operands[0];
+  rtx dest1, dest2;
+
+  if (GET_CODE (set_dest) == SUBREG)
+    set_dest = alter_subreg (set_dest);
+  dest1 = gen_highpart (SFmode, set_dest);
+  dest2 = gen_lowpart (SFmode, set_dest);
+  emit_insn (gen_movsf (dest1, CONST0_RTX (SFmode)));
+  emit_insn (gen_movsf (dest2, CONST0_RTX (SFmode)));
+  DONE;
+}")
 
 (define_expand "movtf"
   [(set (match_operand:TF 0 "general_operand" "")
@@ -3589,14 +3647,15 @@
   if (GET_CODE (operands[0]) == REG
       && CONSTANT_P (operands[1]))
     {
-      if (TARGET_VIS && fp_zero_operand (operands[1], TFmode))
-	goto movtf_is_ok;
-
       /* emit_group_store will send such bogosity to us when it is
          not storing directly into memory.  So fix this up to avoid
          crashes in output_constant_pool.  */
       if (operands [1] == const0_rtx)
         operands[1] = CONST0_RTX (TFmode);
+
+      if (TARGET_VIS && fp_zero_operand (operands[1], TFmode))
+	goto movtf_is_ok;
+
       operands[1] = validize_mem (force_const_mem (GET_MODE (operands[0]),
                                                    operands[1]));
     }
@@ -3605,8 +3664,9 @@
      full 16-byte alignment for quads. */
   if (GET_CODE (operands[0]) == MEM)
     {
-      if (register_operand (operands[1], TFmode))
-        goto movtf_is_ok;
+      if (register_operand (operands[1], TFmode)
+	  || fp_zero_operand (operands[1], TFmode))
+	goto movtf_is_ok;
 
       if (! reload_in_progress)
 	{
@@ -3639,12 +3699,26 @@
 ;; Be careful, fmovq and {st,ld}{x,q} do not exist when !arch64 so
 ;; we must split them all.  :-(
 (define_insn "*movtf_insn_sp32"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "=e,o,U,o,e,r,r,o")
-	(match_operand:TF 1 "input_operand"    "o,e,o,U,e,r,o,r"))]
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=e,o,U,o,r,o")
+	(match_operand:TF 1 "input_operand"    "oe,Ge,o,U,ro,r"))]
   "TARGET_FPU
+   && ! TARGET_VIS
    && ! TARGET_ARCH64
    && (register_operand (operands[0], TFmode)
-       || register_operand (operands[1], TFmode))"
+       || register_operand (operands[1], TFmode)
+       || fp_zero_operand (operands[1], TFmode))"
+  "#"
+  [(set_attr "length" "4")])
+
+(define_insn "*movtf_insn_vis_sp32"
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=e,o,U,o,r,o")
+	(match_operand:TF 1 "input_operand"    "Goe,Ge,o,U,ro,r"))]
+  "TARGET_FPU
+   && TARGET_VIS
+   && ! TARGET_ARCH64
+   && (register_operand (operands[0], TFmode)
+       || register_operand (operands[1], TFmode)
+       || fp_zero_operand (operands[1], TFmode))"
   "#"
   [(set_attr "length" "4")])
 
@@ -3653,26 +3727,48 @@
 ;; when -mno-fpu.
 
 (define_insn "*movtf_no_e_insn_sp32"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "=U,o,r,r,o")
-	(match_operand:TF 1 "input_operand"    "o,U,r,o,r"))]
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=o,U,o,r,o")
+	(match_operand:TF 1 "input_operand"    "G,o,U,ro,r"))]
   "! TARGET_FPU
    && ! TARGET_ARCH64
    && (register_operand (operands[0], TFmode)
-       || register_operand (operands[1], TFmode))"
+       || register_operand (operands[1], TFmode)
+       || fp_zero_operand (operands[1], TFmode))"
   "#"
   [(set_attr "length" "4")])
 
 ;; Now handle the float reg cases directly when arch64,
 ;; hard_quad, and proper reg number alignment are all true.
 (define_insn "*movtf_insn_hq_sp64"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "=e,e,m,r,r,o")
-        (match_operand:TF 1 "input_operand"    "e,m,e,r,o,r"))]
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=e,e,m,o,r,o")
+        (match_operand:TF 1 "input_operand"    "e,m,e,G,ro,r"))]
   "TARGET_FPU
+   && ! TARGET_VIS
    && TARGET_ARCH64
-   && TARGET_V9
    && TARGET_HARD_QUAD
    && (register_operand (operands[0], TFmode)
-       || register_operand (operands[1], TFmode))"
+       || register_operand (operands[1], TFmode)
+       || fp_zero_operand (operands[1], TFmode))"
+  "@
+  fmovq\\t%1, %0
+  ldq\\t%1, %0
+  stq\\t%1, %0
+  #
+  #
+  #"
+  [(set_attr "type" "fpmove,fpload,fpstore,*,*,*")
+   (set_attr "length" "1,1,1,2,2,2")])
+
+(define_insn "*movtf_insn_hq_vis_sp64"
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=e,e,m,eo,r,o")
+        (match_operand:TF 1 "input_operand"    "e,m,e,G,ro,r"))]
+  "TARGET_FPU
+   && TARGET_VIS
+   && TARGET_ARCH64
+   && TARGET_HARD_QUAD
+   && (register_operand (operands[0], TFmode)
+       || register_operand (operands[1], TFmode)
+       || fp_zero_operand (operands[1], TFmode))"
   "@
   fmovq\\t%1, %0
   ldq\\t%1, %0
@@ -3686,23 +3782,39 @@
 ;; Now we allow the integer register cases even when
 ;; only arch64 is true.
 (define_insn "*movtf_insn_sp64"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "=e,o,r,o,e,r")
-        (match_operand:TF 1 "input_operand"    "o,e,o,r,e,r"))]
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=o,e,r")
+        (match_operand:TF 1 "input_operand"    "Ge,oe,or"))]
   "TARGET_FPU
+   && ! TARGET_VIS
    && TARGET_ARCH64
    && ! TARGET_HARD_QUAD
    && (register_operand (operands[0], TFmode)
-       || register_operand (operands[1], TFmode))"
+       || register_operand (operands[1], TFmode)
+       || fp_zero_operand (operands[1], TFmode))"
+  "#"
+  [(set_attr "length" "2")])
+
+(define_insn "*movtf_insn_vis_sp64"
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=eo,e,r")
+        (match_operand:TF 1 "input_operand"    "Ge,o,or"))]
+  "TARGET_FPU
+   && TARGET_VIS
+   && TARGET_ARCH64
+   && ! TARGET_HARD_QUAD
+   && (register_operand (operands[0], TFmode)
+       || register_operand (operands[1], TFmode)
+       || fp_zero_operand (operands[1], TFmode))"
   "#"
   [(set_attr "length" "2")])
 
 (define_insn "*movtf_no_e_insn_sp64"
-  [(set (match_operand:TF 0 "nonimmediate_operand" "=r,o,r")
-        (match_operand:TF 1 "input_operand"    "o,r,r"))]
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=r,o")
+        (match_operand:TF 1 "input_operand"    "or,rG"))]
   "! TARGET_FPU
    && TARGET_ARCH64
    && (register_operand (operands[0], TFmode)
-       || register_operand (operands[1], TFmode))"
+       || register_operand (operands[1], TFmode)
+       || fp_zero_operand (operands[1], TFmode))"
   "#"
   [(set_attr "length" "2")])
 
@@ -3744,6 +3856,39 @@
       emit_insn (gen_movdf (dest1, src1));
       emit_insn (gen_movdf (dest2, src2));
     }
+  DONE;
+}")
+
+(define_split
+  [(set (match_operand:TF 0 "nonimmediate_operand" "")
+        (match_operand:TF 1 "fp_zero_operand" ""))]
+  "reload_completed"
+  [(clobber (const_int 0))]
+  "
+{
+  rtx set_dest = operands[0];
+  rtx dest1, dest2;
+
+  switch (GET_CODE (set_dest))
+    {
+    case SUBREG:
+      set_dest = alter_subreg (set_dest);
+      /* FALLTHROUGH */
+    case REG:
+      dest1 = gen_df_reg (set_dest, 0);
+      dest2 = gen_df_reg (set_dest, 1);
+      break;
+    case MEM:
+      dest1 = change_address (set_dest, DFmode, NULL_RTX);
+      dest2 = change_address (set_dest, DFmode,
+			      plus_constant_for_output (XEXP (dest1, 0), 8));
+      break;
+    default:
+      abort ();      
+    }
+
+  emit_insn (gen_movdf (dest1, CONST0_RTX (DFmode)));
+  emit_insn (gen_movdf (dest2, CONST0_RTX (DFmode)));
   DONE;
 }")
 

@@ -2298,7 +2298,7 @@ LFLGRET"ID":\n\
 #define REG_OK_FOR_BASE_P(X) \
   (((unsigned) REGNO (X)) - 32 >= (FIRST_PSEUDO_REGISTER - 32))
 
-/* 'T', 'U' are for aligned memory loads which aren't needed for v9.  */
+/* 'T', 'U' are for aligned memory loads which aren't needed for arch64.  */
 
 #define EXTRA_CONSTRAINT(OP, C)				\
    (EXTRA_CONSTRAINT_BASE(OP, C)                        \
