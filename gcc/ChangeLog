@@ -158,7 +158,6 @@
 	* doc/invoke.texi (Option Summary, PowerPC Options): Document
 	new options.
 
->>>>>>> 1.17889
 2003-05-19  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* c-decl.c (finish_decl): When setting the DECL_ASSEMBLER_NAME
