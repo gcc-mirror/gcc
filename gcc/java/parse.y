@@ -9684,6 +9684,7 @@ patch_method_invocation (patch, primary, where, from_super,
   int is_static_flag = 0;
   int is_super_init = 0;
   tree this_arg = NULL_TREE;
+  int is_array_clone_call = 0;
   
   /* Should be overriden if everything goes well. Otherwise, if
      something fails, it should keep this value. It stop the
@@ -9757,6 +9758,9 @@ patch_method_invocation (patch, primary, where, from_super,
 	}
       else
 	this_arg = primary = resolved;
+      
+      if (TYPE_ARRAY_P (type) && identifier == get_identifier ("clone"))
+        is_array_clone_call = 1;
       
       /* IDENTIFIER_WFL will be used to report any problem further */
       wfl = identifier_wfl;
@@ -9839,6 +9843,10 @@ patch_method_invocation (patch, primary, where, from_super,
          can't be executed then. */
       if (!list)
 	PATCH_METHOD_RETURN_ERROR ();
+      
+      if (TYPE_ARRAY_P (class_to_search)
+          && DECL_NAME (list) == get_identifier ("clone"))
+        is_array_clone_call = 1;
 
       /* Check for static reference if non static methods */
       if (check_for_static_method_reference (wfl, patch, list, 
@@ -9909,7 +9917,9 @@ patch_method_invocation (patch, primary, where, from_super,
      return the call */
   if (not_accessible_p (DECL_CONTEXT (current_function_decl), list,
 			(primary ? TREE_TYPE (TREE_TYPE (primary)) : 
-			 NULL_TREE), from_super))
+			 NULL_TREE), from_super)
+      /* Calls to clone() on array types are permitted as a special-case. */
+      && !is_array_clone_call)
     {
       char *fct_name = (char *) IDENTIFIER_POINTER (DECL_NAME (list));
       char *access = java_accstring_lookup (get_access_flags_from_decl (list));
