@@ -7,6 +7,9 @@
 #ifndef __GNUC__
 #define USE_C_ALLOCA
 #endif
+#ifdef __HIGHC__
+#include <alloca.h>		/* for MetaWare High-C on NCR System 3000 */
+#endif
 
 /* Univel, at least, has a small ARG_MAX.  Defining this is harmless
    except for causing extra stat calls in the driver program.  */
