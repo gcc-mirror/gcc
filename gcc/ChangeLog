@@ -1,3 +1,7 @@
+2003-01-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* doc/passes.texi: Fix typo.
+
 2003-01-24  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* timevar.def (TV_NAME_LOOKUP, TV_OVERLOAD,
