@@ -1,3 +1,8 @@
+2004-07-08  Paul Brook  <paul@codesourcery.com>
+
+	* intrinsic.c (add_sym_4s): New function.
+	(add_subroutines): Change gfc_add_sym_? to gfc_add_sym_?s.
+
 2004-07-04  Janne Blomqvist  <jblomqvi@cc.hut.fi>
 	Paul Brook  <paul@codesourcery.com>
 
