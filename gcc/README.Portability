@@ -50,6 +50,13 @@ should be written
 String literals
 ---------------
 
+Some SGI compilers choke on the parentheses in:-
+
+const char string[] = ("A string");
+
+This is unfortunate since this is what the GNU gettext macro N_
+produces.  You need to find a different way to code it.
+
 K+R C did not allow concatenation of string literals like
 
   "This is a " "single string literal".
@@ -80,8 +87,8 @@ needs to be coded in some other way.
 signed keyword
 --------------
 
-The signed keyword did not exist in K+R comilers, it was introduced in
-ISO C89, so you cannot use it.  In both K+R and standard C,
+The signed keyword did not exist in K+R compilers, it was introduced
+in ISO C89, so you cannot use it.  In both K+R and standard C,
 unqualified char and bitfields may be signed or unsigned.  There is no
 way to portably declare signed chars or signed bitfields.
 
@@ -163,8 +170,9 @@ double respectively.
 Calling functions through pointers to functions
 -----------------------------------------------
 
-K+R C compilers require brackets around the dereferenced pointer
-variable, whereas ISO C relaxes the syntax.  For example
+K+R C compilers require parentheses around the dereferenced function
+pointer expression in the call, whereas ISO C relaxes the syntax.  For
+example
 
 typedef void (* cl_directive_handler) PARAMS ((cpp_reader *, const char *));
       *p->handler (pfile, p->arg);
@@ -190,6 +198,13 @@ space around the commas.  Also,
 
 will stringify an argument; to get the same result on K+R and ISO
 compilers x should not have spaces around it.
+
+
+Passing structures by value
+---------------------------
+
+Avoid passing structures by value, either to or from functions.  It
+seems some K+R compilers handle this differently or not at all.
 
 
 Enums
