@@ -921,7 +921,9 @@ process_init_constructor (type, init, elts)
 	  members = expr_tree_cons (field, next1, members);
 	}
     }
-  else if (TREE_CODE (type) == UNION_TYPE)
+  else if (TREE_CODE (type) == UNION_TYPE
+	   /* If the initializer was empty, use default zero initialization.  */
+	   && tail)
     {
       register tree field = TYPE_FIELDS (type);
 

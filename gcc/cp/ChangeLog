@@ -1,3 +1,7 @@
+Wed Oct 13 22:01:35 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* typeck2.c (process_init_constructor): Handle empty constructors.
+
 1999-10-13  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (lang_mark_tree): Mark NAMESPACE_LEVEL.
