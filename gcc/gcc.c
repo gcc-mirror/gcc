@@ -615,7 +615,7 @@ static const char *cc1_options =
  %1 %{!Q:-quiet} -dumpbase %B %{d*} %{m*} %{a*}\
  %{g*} %{O*} %{W*} %{w} %{pedantic*} %{std*} %{ansi}\
  %{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
- %{aux-info*} %{Qn:-fno-ident} %{--help:--help}\
+ %{Qn:-fno-ident} %{--help:--help}\
  %{--target-help:--target-help}\
  %{!fsyntax-only:%{S:%W{o*}%{!o*:-o %b.s}}}\
  %{fsyntax-only:-o %j} %{-param*}";
