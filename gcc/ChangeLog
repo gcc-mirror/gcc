@@ -1,3 +1,7 @@
+Fri Jan 15 01:19:42 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* h8300.h (ASM_OUTPUT_LABELREF): Use asm_fprintf, not fprintf.
+
 Mon Jan 11 20:23:34 1999  Richard Henderson  <rth@cygnus.com>
 
 	* sparc.c (legitimize_pic_address): Treat labels like symbols.
