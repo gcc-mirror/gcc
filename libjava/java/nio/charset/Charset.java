@@ -235,7 +235,7 @@ public abstract class Charset implements Comparable
     return encode (CharBuffer.wrap (str));
   }
 
-  public CharBuffer decode (ByteBuffer bb)
+  public final CharBuffer decode (ByteBuffer bb)
   {
     try
       {
