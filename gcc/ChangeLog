@@ -141,7 +141,7 @@
 2005-02-06  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/19800
-	* simplify_rtx.c (simplify_relational_operaration_1): Explicitly
+	* simplify_rtx.c (simplify_relational_operation_1): Explicitly
 	call gen_lowpart_common and gen_lowpart_SUBREG instead of calling
 	gen_lowpart.
 
