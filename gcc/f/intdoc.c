@@ -67,7 +67,7 @@ static char *elaborate_if_real (ffeintrinImp imp, int argno);
 static void print_type_string (char *c);
 
 int
-main (int argc, char **argv __attribute__ ((unused)))
+main (int argc, char **argv)
 {
   if (argc != 1)
     {
