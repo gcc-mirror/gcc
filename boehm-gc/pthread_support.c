@@ -54,8 +54,17 @@
      && !defined(GC_AIX_THREADS)
 
 # if defined(GC_HPUX_THREADS) && !defined(USE_PTHREAD_SPECIFIC) \
-     && !defined(USE_HPUX_TLS)
-#   define USE_HPUX_TLS
+     && !defined(USE_COMPILER_TLS)
+#   ifdef __GNUC__
+#     define USE_PTHREAD_SPECIFIC
+      /* Empirically, as of gcc 3.3, USE_COMPILER_TLS doesn't work.	*/
+#   else
+#     define USE_COMPILER_TLS
+#   endif
+# endif
+
+# if defined USE_HPUX_TLS
+    --> Macro replaced by USE_COMPILER_TLS
 # endif
 
 # if (defined(GC_DGUX386_THREADS) || defined(GC_OSF1_THREADS) || \
@@ -72,7 +81,7 @@
 # endif
 
 # ifdef THREAD_LOCAL_ALLOC
-#   if !defined(USE_PTHREAD_SPECIFIC) && !defined(USE_HPUX_TLS)
+#   if !defined(USE_PTHREAD_SPECIFIC) && !defined(USE_COMPILER_TLS)
 #     include "private/specific.h"
 #   endif
 #   if defined(USE_PTHREAD_SPECIFIC)
@@ -81,7 +90,7 @@
 #     define GC_key_create pthread_key_create
       typedef pthread_key_t GC_key_t;
 #   endif
-#   if defined(USE_HPUX_TLS)
+#   if defined(USE_COMPILER_TLS)
 #     define GC_getspecific(x) (x)
 #     define GC_setspecific(key, v) ((key) = (v), 0)
 #     define GC_key_create(key, d) 0
@@ -99,6 +108,7 @@
 # include <sys/types.h>
 # include <sys/stat.h>
 # include <fcntl.h>
+# include <signal.h>
 
 #if defined(GC_DARWIN_THREADS)
 # include "private/darwin_semaphore.h"
@@ -158,7 +168,7 @@ void GC_init_parallel();
 
 /* We don't really support thread-local allocation with DBG_HDRS_ALL */
 
-#ifdef USE_HPUX_TLS
+#ifdef USE_COMPILER_TLS
   __thread
 #endif
 GC_key_t GC_thread_key;
@@ -500,19 +510,6 @@ static __inline__ void start_mark_threads()
 
 #endif /* !PARALLEL_MARK */
 
-/* Defining INSTALL_LOOPING_SEGV_HANDLER causes SIGSEGV and SIGBUS to 	*/
-/* result in an infinite loop in a signal handler.  This can be very	*/
-/* useful for debugging, since (as of RH7) gdb still seems to have	*/
-/* serious problems with threads.					*/
-#ifdef INSTALL_LOOPING_SEGV_HANDLER
-void GC_looping_handler(int sig)
-{
-    GC_printf3("Signal %ld in thread %lx, pid %ld\n",
-	       sig, pthread_self(), getpid());
-    for (;;);
-}
-#endif
-
 GC_bool GC_thr_initialized = FALSE;
 
 volatile GC_thread GC_threads[THREAD_TABLE_SZ];
@@ -622,7 +619,7 @@ void GC_delete_gc_thread(pthread_t id, GC_thread gc_id)
     GC_INTERNAL_FREE(p);
 }
 
-/* Return a GC_thread corresponding to a given thread_t.	*/
+/* Return a GC_thread corresponding to a given pthread_t.	*/
 /* Returns 0 if it's not there.					*/
 /* Caller holds  allocation lock or otherwise inhibits 		*/
 /* updates.							*/
@@ -747,7 +744,9 @@ void GC_wait_for_gc_completion(GC_bool wait_for_all)
 	while (GC_incremental && GC_collection_in_progress()
 	       && (wait_for_all || old_gc_no == GC_gc_no)) {
 	    ENTER_GC();
+	    GC_in_thread_creation = TRUE;
             GC_collect_a_little_inner(1);
+	    GC_in_thread_creation = FALSE;
 	    EXIT_GC();
 	    UNLOCK();
 	    sched_yield();
@@ -1055,9 +1054,10 @@ void GC_thread_exit_proc(void *arg)
 	me -> flags |= FINISHED;
     }
 #   if defined(THREAD_LOCAL_ALLOC) && !defined(USE_PTHREAD_SPECIFIC) \
-       && !defined(USE_HPUX_TLS) && !defined(DBG_HDRS_ALL)
+       && !defined(USE_COMPILER_TLS) && !defined(DBG_HDRS_ALL)
       GC_remove_specific(GC_thread_key);
 #   endif
+    /* The following may run the GC from "nonexistent" thread.	*/
     GC_wait_for_gc_completion(FALSE);
     UNLOCK();
 }
@@ -1115,6 +1115,8 @@ WRAP_FUNC(pthread_detach)(pthread_t thread)
     return result;
 }
 
+GC_bool GC_in_thread_creation = FALSE;
+
 void * GC_start_routine(void * arg)
 {
     int dummy;
@@ -1132,7 +1134,9 @@ void * GC_start_routine(void * arg)
         GC_printf1("sp = 0x%lx\n", (long) &arg);
 #   endif
     LOCK();
+    GC_in_thread_creation = TRUE;
     me = GC_new_thread(my_pthread);
+    GC_in_thread_creation = FALSE;
 #ifdef GC_DARWIN_THREADS
     me -> stop_info.mach_thread = mach_thread_self();
 #else
@@ -1301,12 +1305,12 @@ WRAP_FUNC(pthread_create)(pthread_t *new_thread,
 void GC_pause()
 {
     int i;
-#	ifndef __GNUC__
-        volatile word dummy = 0;
-#	endif
+#   if !defined(__GNUC__) || defined(__INTEL_COMPILER)
+      volatile word dummy = 0;
+#   endif
 
     for (i = 0; i < 10; ++i) { 
-#     ifdef __GNUC__
+#     if defined(__GNUC__) && !defined(__INTEL_COMPILER)
         __asm__ __volatile__ (" " : : : "memory");
 #     else
 	/* Something that's unlikely to be optimized away. */
@@ -1315,7 +1319,7 @@ void GC_pause()
     }
 }
     
-#define SPIN_MAX 1024	/* Maximum number of calls to GC_pause before	*/
+#define SPIN_MAX 128	/* Maximum number of calls to GC_pause before	*/
 			/* give up.					*/
 
 VOLATILE GC_bool GC_collecting = 0;
@@ -1340,19 +1344,34 @@ VOLATILE GC_bool GC_collecting = 0;
 /* yield by calling pthread_mutex_lock(); it never makes sense to	*/
 /* explicitly sleep.							*/
 
+#define LOCK_STATS
+#ifdef LOCK_STATS
+  unsigned long GC_spin_count = 0;
+  unsigned long GC_block_count = 0;
+  unsigned long GC_unlocked_count = 0;
+#endif
+
 void GC_generic_lock(pthread_mutex_t * lock)
 {
 #ifndef NO_PTHREAD_TRYLOCK
     unsigned pause_length = 1;
     unsigned i;
     
-    if (0 == pthread_mutex_trylock(lock)) return;
+    if (0 == pthread_mutex_trylock(lock)) {
+#       ifdef LOCK_STATS
+	    ++GC_unlocked_count;
+#       endif
+	return;
+    }
     for (; pause_length <= SPIN_MAX; pause_length <<= 1) {
 	for (i = 0; i < pause_length; ++i) {
 	    GC_pause();
 	}
         switch(pthread_mutex_trylock(lock)) {
 	    case 0:
+#		ifdef LOCK_STATS
+		    ++GC_spin_count;
+#		endif
 		return;
 	    case EBUSY:
 		break;
@@ -1361,6 +1380,9 @@ void GC_generic_lock(pthread_mutex_t * lock)
         }
     }
 #endif /* !NO_PTHREAD_TRYLOCK */
+#   ifdef LOCK_STATS
+	++GC_block_count;
+#   endif
     pthread_mutex_lock(lock);
 }
 

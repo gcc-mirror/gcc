@@ -12,4 +12,11 @@ struct thread_stop_info {
     mach_port_t mach_thread;
 };
 
+struct GC_mach_thread {
+  thread_act_t thread;
+  int already_suspended;
+};
+
+void GC_darwin_register_mach_handler_thread(mach_port_t thread);
+
 #endif

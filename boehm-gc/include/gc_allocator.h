@@ -35,7 +35,17 @@
  * library, which itself was derived from the SGI STL implementation.
  */
 
-#include "gc.h" 	// For size_t
+#ifndef GC_ALLOCATOR_H
+
+#define GC_ALLOCATOR_H
+
+#include "gc.h"
+
+#if defined(__GNUC__)
+#  define GC_ATTR_UNUSED __attribute__((unused))
+#else
+#  define GC_ATTR_UNUSED
+#endif
 
 /* First some helpers to allow us to dispatch on whether or not a type
  * is known to be pointerfree.
@@ -118,7 +128,7 @@ public:
   }
 
   // __p is not permitted to be a null pointer.
-  void deallocate(pointer __p, size_type GC_n)
+  void deallocate(pointer __p, size_type GC_ATTR_UNUSED GC_n)
     { GC_FREE(__p); }
 
   size_type max_size() const throw()
@@ -194,7 +204,7 @@ public:
   }
 
   // __p is not permitted to be a null pointer.
-  void deallocate(pointer __p, size_type GC_n)
+  void deallocate(pointer __p, size_type GC_ATTR_UNUSED GC_n)
     { GC_FREE(__p); }
 
   size_type max_size() const throw()
@@ -230,3 +240,4 @@ inline bool operator!=(const traceable_allocator<GC_T1>&, const traceable_alloca
   return false;
 }
 
+#endif /* GC_ALLOCATOR_H */
