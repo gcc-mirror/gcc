@@ -46,7 +46,6 @@
 #include <wchar.h>
 #endif
 
-
 // Need to do a bit of trickery here with mbstate_t as char_traits
 // assumes it is in wchar.h, regardless of wchar_t specializations.
 #ifndef _GLIBCPP_HAVE_MBSTATE_T
@@ -192,19 +191,21 @@ namespace std
     return const_cast<wchar_t*>(wmemchr(const_cast<const wchar_t*>(__p), __c, __n));
   }
   extern "C" int wmemcmp(const wchar_t*, const wchar_t*, size_t); 
-  //extern "C" int wmemcmp(wchar_t*, const wchar_t*, size_t); 
   extern "C" wchar_t* wmemcpy(wchar_t*, const wchar_t*, size_t); 
   extern "C" wchar_t* wmemmove(wchar_t*, const wchar_t*, size_t); 
   extern "C" wchar_t* wmemset(wchar_t*, wchar_t, size_t); 
   extern "C" size_t wcsftime(wchar_t*, size_t, const wchar_t*, const struct tm*); 
+}
 
-#if 0
-  // Full C99 listing
+#if _GLIBCPP_USE_C99
+namespace c99
+{
   extern "C" long double wcstold(const wchar_t*, wchar_t**); 
   extern "C" long long int wcstoll(const wchar_t*, wchar_t**, int); 
   extern "C" unsigned long long int wcstoull(const wchar_t*, wchar_t**, int); 
-#endif
 }
+#endif
+
 #endif //_GLIBCPP_USE_WCHAR_T
 
 #endif 

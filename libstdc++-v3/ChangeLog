@@ -1,3 +1,32 @@
+2001-04-19  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acconfig.h (_GLIBCPP_USE_C99): Add.
+	* config.h.in: Regenerate.
+	* acinclude.m4 (GLIBCPP_ENABLE_C99): New macro. Test for ISO/IEC
+	9899: 1999 support.
+	* aclocal.m4: Regenerate.
+	* configure.in (GLIBCPP_ENABLE_C99): Use it, on by default.
+	* configure: Regenerate.
+	* configure.in (GLIBCPP_ENABLE_LONG_LONG): Set default to yes.
+	* configure: Regenerate.
+	* include/c_std/bits/std_cwchar.h: Put wcstold, wcstoll, wcstoull
+	into c99.
+	* include/c_std/bits/std_cmath.h: Bring C99 functions into c99
+	namespace.
+	* include/c_std/bits/std_cstdlib.h: Same.
+	* docs/html/configopts.html: Update.
+	* testsuite/26_numerics/c99_macros.cc: Edit, use cmath instead of
+	math.h
+	(test_c99_classify): Add.
+	* config/os/gnu-linux/bits/os_defines.h (_GNU_SOURCE): Remove.
+	(_ISOC99_SOURCE): Remove.
+
+	* include/bits/stl_algo.h: Use _GLIBCPP_HAVE_DRAND48.
+	* include/bits/c++config (__STL_ASSERTIONS): Simplify.
+	* acinclude.m4 (GLIBCPP_CHECK_STDLIB_SUPPORT): Add check for drand48.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	
 2001-04-19  Phil Edwards  <pme@sources.redhat.com>
 
 	* Makefile.am (doxygen):  Assume script is missing execute perms.
@@ -29,7 +58,8 @@
 2001-04-13  Phil Edwards  <pme@sources.redhat.com>
 
 	* include/bits/stl_algobase.h (equal):  Use EqualOpConcept instead
-	of EqualityComparableConcept.
+	of EqualityCo
+	mparableConcept.
 
 2001-04-13  Phil Edwards  <pme@sources.redhat.com>
 

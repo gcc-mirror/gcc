@@ -67,24 +67,6 @@
 #undef tan
 #undef tanh
 
-// These are possible macros imported from C99-land.  They tend to break
-// well-formed C++ programs.  Just pretend we don't know about them.
-// At some point, we should provide extensions in std:: -- Gaby
-
-#undef fpclassify
-#undef isfinite
-#undef isinf
-#undef isnan
-#undef isnormal
-#undef signbit
-
-#undef isgreater
-#undef isgreaterequal
-#undef isless
-#undef islessequal
-#undef islessgreater
-#undef isunordered
-
 namespace std 
 {
   // Forward declaration of a helper function.  This really should be
@@ -619,6 +601,136 @@ namespace std
 #endif
 } // std
 
+
+#if _GLIBCPP_USE_C99
+// These are possible macros imported from C99-land. For strict
+// conformance, remove possible C99-injected names from the
+// global namespace, and sequester them in the c99 namespace. 
+namespace c99
+{
+  template<typename _Tp>
+    int 
+    __capture_fpclassify(_Tp __f) { return fpclassify(__f); }
+
+  template<typename _Tp>
+    int 
+    __capture_isfinite(_Tp __f) { return isfinite(__f); }
+
+  template<typename _Tp>
+    int 
+    __capture_isinf(_Tp __f) { return isinf(__f); }
+
+  template<typename _Tp>
+    int 
+    __capture_isnan(_Tp __f) { return isnan(__f); }
+
+  template<typename _Tp>
+    int 
+    __capture_isnormal(_Tp __f) { return isnormal(__f); }
+
+  template<typename _Tp>
+    int 
+    __capture_signbit(_Tp __f) { return signbit(__f); }
+
+  template<typename _Tp>
+    int 
+    __capture_isgreater(_Tp __f1, _Tp __f2) { return isgreater(__f1, __f2); }
+
+ template<typename _Tp>
+    int 
+    __capture_isgreaterequal(_Tp __f1, _Tp __f2) 
+    { return isgreaterequal(__f1, __f2); }
+
+ template<typename _Tp>
+    int 
+    __capture_isless(_Tp __f1, _Tp __f2) { return isless(__f1, __f2); }
+
+ template<typename _Tp>
+    int 
+    __capture_islessequal(_Tp __f1, _Tp __f2) 
+    { return islessequal(__f1, __f2); }
+
+ template<typename _Tp>
+    int 
+    __capture_islessgreater(_Tp __f1, _Tp __f2) 
+    { return islessgreater(__f1, __f2); }
+
+ template<typename _Tp>
+    int 
+    __capture_isunordered(_Tp __f1, _Tp __f2) 
+    { return isunordered(__f1, __f2); }
+} // namespace c99
+#endif
+
+#undef fpclassify
+#undef isfinite
+#undef isinf
+#undef isnan
+#undef isnormal
+#undef signbit
+#undef isgreater
+#undef isgreaterequal
+#undef isless
+#undef islessequal
+#undef islessgreater
+#undef isunordered
+
+#if _GLIBCPP_USE_C99
+namespace c99
+{
+  template<typename _Tp>
+    int
+    fpclassify(_Tp __f) { return __capture_fpclassify(__f); }
+
+  template<typename _Tp>
+    int
+    isfinite(_Tp __f) { return __capture_isfinite(__f); }
+
+  template<typename _Tp>
+    int 
+    isinf(_Tp __f) { return __capture_isinf(__f); }
+
+  template<typename _Tp>
+    int 
+    isnan(_Tp __f) { return __capture_isnan(__f); }
+
+  template<typename _Tp>
+    int 
+    isnormal(_Tp __f) { return __capture_isnormal(__f); }
+
+  template<typename _Tp>
+    int 
+    signbit(_Tp __f) { return __capture_signbit(__f); }
+
+  template<typename _Tp>
+    int 
+    isgreater(_Tp __f1, _Tp __f2) { return __capture_isgreater(__f1, __f2); }
+
+  template<typename _Tp>
+    int 
+    isgreaterequal(_Tp __f1, _Tp __f2) 
+    { return __capture_isgreaterequal(__f1, __f2); }
+
+  template<typename _Tp>
+    int 
+    isless(_Tp __f1, _Tp __f2) { return __capture_isless(__f1, __f2); }
+
+  template<typename _Tp>
+    int 
+    islessequal(_Tp __f1, _Tp __f2) 
+    { return __capture_islessequal(__f1, __f2); }
+
+  template<typename _Tp>
+    int 
+    islessgreater(_Tp __f) { return __capture_islessgreater(__f); }
+
+  template<typename _Tp>
+    int 
+    isunordered(_Tp __f1, _Tp __f2) 
+    { return __capture_isunordered(__f1, __f2); }
+}
+#endif
+  
 #ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
 #  define export
 #  include <bits/cmath.tcc>

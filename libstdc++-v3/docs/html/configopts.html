@@ -7,7 +7,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 configure options</TITLE>
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: configopts.html,v 1.8 2001/04/02 19:00:13 bkoz Exp $ -->
+<!-- $Id: configopts.html,v 1.9 2001/04/06 01:47:11 bkoz Exp $ -->
 </HEAD>
 <BODY>
 
@@ -91,16 +91,31 @@ options</A></H1>
  'generic'.
      </P>
 
+ <DT><TT>--enable-c99  </TT>
+ <DD><P>The &quot;long long&quot; type was introduced in C99, along
+ 	with bunches of other functions for wide characters, and math
+ 	classification macros, etc. If enabled, all C99 functions not
+ 	specified by the C++ standard will be put into namespace c99,
+ 	and then all names in the c99 namespace will be injected into
+ 	namespace std, so that C99 functions can be used "as if" they
+ 	were in the C++ standard (as they will eventually be in some
+ 	future revision of the standard, without a doubt.) By default,
+ 	C99 support is on, assuming the configure probes find all the
+ 	necessary functions and bits necessary.
+    </P>
+
  <DT><TT>--enable-long-long  </TT>
  <DD><P>The &quot;long long&quot; type was introduced in C99.  It is
         provided as a GNU extension to C++98 in g++.  This flag builds
         support for &quot;long long&quot; into the library
-        (specialized templates and the like). This option is off by
-        default:  if enabled, users will have to either use the
-        new-style &quot;C&quot; headers by default (ie cmath not math.h)
-        or add appropriate compile-time flags to all compile lines to
-        allow &quot;C&quot; visibility of this feature (on GNU/Linux,
-        the flag is -D_ISOC99_SOURCE).
+        (specialized templates and the like for iostreams). This
+        option is on by default: if enabled, users will have to either
+        use the new-style &quot;C&quot; headers by default (ie cmath
+        not math.h) or add appropriate compile-time flags to all
+        compile lines to allow &quot;C&quot; visibility of this
+        feature (on GNU/Linux, the flag is -D_ISOC99_SOURCE, which is
+        added automatically via CPLUSPLUS_CPP_SPEC's addition of
+        _GNU_SOURCE).
      </P>
 
  <DT><TT>--enable-cheaders=OPTION  </TT>
@@ -197,7 +212,7 @@ options</A></H1>
 
 <HR>
 <P CLASS="fineprint"><EM>
-$Id: configopts.html,v 1.8 2001/04/02 19:00:13 bkoz Exp $
+$Id: configopts.html,v 1.9 2001/04/06 01:47:11 bkoz Exp $
 </EM></P>
 
 

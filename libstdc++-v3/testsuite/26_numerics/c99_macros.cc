@@ -1,6 +1,6 @@
 // 2001-04-06 gdr
 
-// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +29,7 @@
 
 // { dg-do compile }
 
-#include <math.h>
+#include <cmath>
 
 void fpclassify() { }
 
@@ -55,7 +55,38 @@ void islessgreater() { }
 
 void isunordered() { }
 
+#if _GLIBCPP_USE_C99
+template <typename _Tp>
+  void test_c99_classify()
+  {
+    using namespace std;
+    test = bool;
+
+    typedef _Tp fp_type;
+    fp_type f1 = 1.0;
+    fp_type f2 = 3.0;
+    int res = 0;
+    
+    res = fpclassify(f1);
+    res = isfinite(f2);
+    res = isinf(f1);
+    res = isnan(f2);
+    res = isnormal(f1);
+    res = signbit(f2);
+    res = isgreater(f1, f2);
+    res = isgreaterequal(f1, f2);
+    res = isless(f1, f2);
+    res = islessequal(f1,f2);
+    res = islessgreater(f1, f2);
+    res = isunordered(f1, f2);
+  }
+#endif
+
 int main()
 {
+#if _GLIBCPP_USE_C99
+  test_c99_classify<float>();
+  test_c99_classify<double>();
+#endif
   return 0;
 }
