@@ -76,7 +76,9 @@ struct lim_aux_data
 				   MAX_LOOP loop.  */
 };
 
-#define LIM_DATA(STMT) ((struct lim_aux_data *) (stmt_ann (STMT)->common.aux))
+#define LIM_DATA(STMT) (TREE_CODE (STMT) == PHI_NODE \
+			? NULL \
+			: (struct lim_aux_data *) (stmt_ann (STMT)->common.aux))
 
 /* Description of a memory reference for store motion.  */
 
@@ -94,9 +96,20 @@ struct mem_ref
    block will be executed.  */
 #define ALWAYS_EXECUTED_IN(BB) ((struct loop *) (BB)->aux)
 
-/* Maximum uid in the statement in the function.  */
+static unsigned max_stmt_uid;	/* Maximal uid of a statement.  Uids to phi
+				   nodes are assigned using the versions of
+				   ssa names they define.  */
 
-static unsigned max_uid;
+/* Returns uid of statement STMT.  */
+
+static unsigned
+get_stmt_uid (tree stmt)
+{
+  if (TREE_CODE (stmt) == PHI_NODE)
+    return SSA_NAME_VERSION (PHI_RESULT (stmt)) + max_stmt_uid;
+
+  return stmt_ann (stmt)->uid;
+}
 
 /* Calls CBCK for each index in memory reference ADDR_P.  There are two
    kinds situations handled; in each of these cases, the memory reference
@@ -805,10 +818,10 @@ maybe_queue_var (tree var, struct loop *loop,
 	      
   if (!def_bb
       || !flow_bb_inside_loop_p (loop, def_bb)
-      || TEST_BIT (seen, stmt_ann (stmt)->uid))
+      || TEST_BIT (seen, get_stmt_uid (stmt)))
     return;
 	  
-  SET_BIT (seen, stmt_ann (stmt)->uid);
+  SET_BIT (seen, get_stmt_uid (stmt));
   queue[(*in_queue)++] = stmt;
 }
 
@@ -900,6 +913,7 @@ single_reachable_address (struct loop *loop, tree stmt,
 			  struct mem_ref **mem_refs,
 			  bool *seen_call_stmt)
 {
+  unsigned max_uid = max_stmt_uid + num_ssa_names;
   tree *queue = xmalloc (sizeof (tree) * max_uid);
   sbitmap seen = sbitmap_alloc (max_uid);
   unsigned in_queue = 1;
@@ -917,7 +931,7 @@ single_reachable_address (struct loop *loop, tree stmt,
   sra_data.common_ref = NULL_TREE;
 
   queue[0] = stmt;
-  SET_BIT (seen, stmt_ann (stmt)->uid);
+  SET_BIT (seen, get_stmt_uid (stmt));
   *seen_call_stmt = false;
 
   while (in_queue)
@@ -975,9 +989,9 @@ single_reachable_address (struct loop *loop, tree stmt,
 	  if (!flow_bb_inside_loop_p (loop, bb_for_stmt (stmt)))
 	    continue;
 
-	  if (TEST_BIT (seen, stmt_ann (stmt)->uid))
+	  if (TEST_BIT (seen, get_stmt_uid (stmt)))
 	    continue;
-	  SET_BIT (seen, stmt_ann (stmt)->uid);
+	  SET_BIT (seen, get_stmt_uid (stmt));
 
 	  queue[in_queue++] = stmt;
 	}
@@ -1230,17 +1244,13 @@ determine_lsm (struct loops *loops)
 
   /* Create a UID for each statement in the function.  Ordering of the
      UIDs is not important for this pass.  */
-  max_uid = 0;
+  max_stmt_uid = 0;
   FOR_EACH_BB (bb)
     {
       block_stmt_iterator bsi;
-      tree phi;
 
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-	stmt_ann (bsi_stmt (bsi))->uid = max_uid++;
-
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
-	stmt_ann (phi)->uid = max_uid++;
+	stmt_ann (bsi_stmt (bsi))->uid = max_stmt_uid++;
     }
 
   compute_immediate_uses (TDFA_USE_VOPS, NULL);

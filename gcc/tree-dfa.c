@@ -191,19 +191,31 @@ compute_immediate_uses (int flags, bool (*calc_for)(tree))
 static void
 free_df_for_stmt (tree stmt)
 {
-  stmt_ann_t ann = stmt_ann (stmt);
+  dataflow_t *df;
 
-  if (ann && ann->df)
+  if (TREE_CODE (stmt) == PHI_NODE)
+    df = &PHI_DF (stmt);
+  else
     {
-      /* If we have a varray of immediate uses, then go ahead and release
-	 it for re-use.  */
-      if (ann->df->immediate_uses)
-	ggc_free (ann->df->immediate_uses);
+      stmt_ann_t ann = stmt_ann (stmt);
 
-      /* Similarly for the main dataflow structure.  */
-      ggc_free (ann->df);
-      ann->df = NULL;
+      if (!ann)
+	return;
+
+      df = &ann->df;
     }
+
+  if (!*df)
+    return;
+      
+  /* If we have a varray of immediate uses, then go ahead and release
+     it for re-use.  */
+  if ((*df)->immediate_uses)
+    ggc_free ((*df)->immediate_uses);
+
+  /* Similarly for the main dataflow structure.  */
+  ggc_free (*df);
+  *df = NULL;
 }
 
 
@@ -302,28 +314,34 @@ compute_immediate_uses_for_stmt (tree stmt, int flags, bool (*calc_for)(tree))
 static void
 add_immediate_use (tree stmt, tree use_stmt)
 {
-  stmt_ann_t ann = get_stmt_ann (stmt);
-  struct dataflow_d *df;
+  struct dataflow_d **df;
 
-  df = ann->df;
-  if (df == NULL)
+  if (TREE_CODE (stmt) == PHI_NODE)
+    df = &PHI_DF (stmt);
+  else
     {
-      df = ann->df = ggc_alloc (sizeof (struct dataflow_d));
-      memset ((void *) df, 0, sizeof (struct dataflow_d));
-      df->uses[0] = use_stmt;
+      stmt_ann_t ann = get_stmt_ann (stmt);
+      df = &ann->df;
+    }
+
+  if (*df == NULL)
+    {
+      *df = ggc_alloc (sizeof (struct dataflow_d));
+      memset ((void *) *df, 0, sizeof (struct dataflow_d));
+      (*df)->uses[0] = use_stmt;
       return;
     }
 
-  if (!df->uses[1])
+  if (!(*df)->uses[1])
     {
-      df->uses[1] = use_stmt;
+      (*df)->uses[1] = use_stmt;
       return;
     }
 
-  if (ann->df->immediate_uses == NULL)
-    VARRAY_TREE_INIT (ann->df->immediate_uses, 4, "immediate_uses");
+  if ((*df)->immediate_uses == NULL)
+    VARRAY_TREE_INIT ((*df)->immediate_uses, 4, "immediate_uses");
 
-  VARRAY_PUSH_TREE (ann->df->immediate_uses, use_stmt);
+  VARRAY_PUSH_TREE ((*df)->immediate_uses, use_stmt);
 }
 
 
@@ -333,7 +351,7 @@ static void
 redirect_immediate_use (tree use, tree old, tree new)
 {
   tree imm_stmt = SSA_NAME_DEF_STMT (use);
-  struct dataflow_d *df = get_stmt_ann (imm_stmt)->df;
+  struct dataflow_d *df = get_immediate_uses (imm_stmt);
   unsigned int num_uses = num_immediate_uses (df);
   unsigned int i;
 

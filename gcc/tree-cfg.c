@@ -2666,7 +2666,9 @@ last_and_only_stmt (basic_block bb)
 void
 set_bb_for_stmt (tree t, basic_block bb)
 {
-  if (TREE_CODE (t) == STATEMENT_LIST)
+  if (TREE_CODE (t) == PHI_NODE)
+    PHI_BB (t) = bb;
+  else if (TREE_CODE (t) == STATEMENT_LIST)
     {
       tree_stmt_iterator i;
       for (i = tsi_start (t); !tsi_end_p (i); tsi_next (&i))

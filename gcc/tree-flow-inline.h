@@ -78,7 +78,12 @@ ann_type (tree_ann_t ann)
 static inline basic_block
 bb_for_stmt (tree t)
 {
-  stmt_ann_t ann = stmt_ann (t);
+  stmt_ann_t ann;
+
+  if (TREE_CODE (t) == PHI_NODE)
+    return PHI_BB (t);
+
+  ann = stmt_ann (t);
   return ann ? ann->bb : NULL;
 }
 
@@ -305,7 +310,12 @@ addresses_taken (tree stmt)
 static dataflow_t
 get_immediate_uses (tree stmt)
 {
-  stmt_ann_t ann = stmt_ann (stmt);
+  stmt_ann_t ann;
+
+  if (TREE_CODE (stmt) == PHI_NODE)
+    return PHI_DF (stmt);
+
+  ann = stmt_ann (stmt);
   return ann ? ann->df : NULL;
 }
 

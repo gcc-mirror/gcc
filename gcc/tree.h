@@ -1293,6 +1293,8 @@ struct tree_ssa_name GTY(())
 #define PHI_ARG_ELT(NODE, I)		PHI_NODE_ELT_CHECK (NODE, I)
 #define PHI_ARG_EDGE(NODE, I)		PHI_NODE_ELT_CHECK (NODE, I).e
 #define PHI_ARG_NONZERO(NODE, I) 	PHI_NODE_ELT_CHECK (NODE, I).nonzero
+#define PHI_BB(NODE)			PHI_NODE_CHECK (NODE)->phi.bb
+#define PHI_DF(NODE)			PHI_NODE_CHECK (NODE)->phi.df
 
 struct edge_def;
 
@@ -1313,6 +1315,12 @@ struct tree_phi_node GTY(())
   /* Nonzero if the PHI node was rewritten by a previous pass through the
      SSA renamer.  */
   int rewritten;
+
+  /* Basic block to that the phi node belongs.  */
+  struct basic_block_def *bb;
+
+  /* Dataflow information.  */
+  struct dataflow_d *df;
 
   struct phi_arg_d GTY ((length ("((tree)&%h)->phi.capacity"))) a[1];
 };
