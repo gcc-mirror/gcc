@@ -1,3 +1,8 @@
+Mon Oct 29 19:22:07 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* reload1.c (eliminate_regs): Test for reg_renumber being allocated
+	before referencing it.
+
 2001-10-26  DJ Delorie  <dj@redhat.com>
 
 	* config/rs6000/sysv4.h (LINK_SPEC): Allow -msdata=none to
