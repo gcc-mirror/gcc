@@ -1,3 +1,7 @@
+2003-07-08  Mark Wielaard  <mark@klomp.org>
+
+	* gcj.texi: CNI now expands to Compiled Native Interface.
+
 2003-07-08  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Make-lang.in (java/gcj.dvi): Use PWD_COMMAND.
