@@ -1,3 +1,11 @@
+Fri Mar  5 02:14:54 1999  John Wehle  (john@feith.com)
+
+	* function.c (assign_stack_temp_for_type): Abort
+	if mode == Blkmode and align is less than
+	BIGGEST_ALIGNMENT / BITS_PER_UNIT.
+	(assign_stack_temp_for_type): Round the size parameter
+	passed to assign_stack_local instead of size itself.
+
 Thu Mar  4 15:00:35 1999  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (delete_unreachable_blocks): Mark blocks as they
