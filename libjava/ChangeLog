@@ -1,5 +1,9 @@
 2004-07-14  Jerry Quinn  <jlquinn@optonline.net>
 
+	* java/beans/EventHandler.java: Remove debugging statements.
+
+2004-07-14  Jerry Quinn  <jlquinn@optonline.net>
+
 	* java/beans/EventHandler.java: New file.
 	* Makefile.am (awt_java_source_files): Add EventHandler.java.
 	* Makefile.in, gcj/Makefile.in, include/Makefile.in,
