@@ -57,7 +57,7 @@ final class ConcreteProcess extends Process
 
   public ConcreteProcess (String[] progarray, String[] envp) throws IOException
   {
-    throw new Error("not implemented");
+    throw new IOException("not implemented");
   }
 
 }
