@@ -1673,6 +1673,19 @@ process_options (void)
   if (flag_unroll_loops || flag_peel_loops)
     flag_rerun_cse_after_loop = 1;
 
+  /* If explicitly asked to run new loop optimizer, switch off the old
+     one.  */
+  if (flag_loop_optimize2)
+    flag_loop_optimize = 0;
+
+  /* Enable new loop optimizer pass if any of its optimizations is called.  */
+  if (flag_move_loop_invariants
+      || flag_unswitch_loops
+      || flag_peel_loops
+      || flag_unroll_loops
+      || flag_branch_on_count_reg)
+    flag_loop_optimize2 = 1;
+
   if (flag_non_call_exceptions)
     flag_asynchronous_unwind_tables = 1;
   if (flag_asynchronous_unwind_tables)

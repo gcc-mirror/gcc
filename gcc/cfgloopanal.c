@@ -474,3 +474,92 @@ get_loop_level (const struct loop *loop)
     }
   return mx;
 }
+
+/* Returns estimate on cost of computing SEQ.  */
+
+static unsigned
+seq_cost (rtx seq)
+{
+  unsigned cost = 0;
+  rtx set;
+
+  for (; seq; seq = NEXT_INSN (seq))
+    {
+      set = single_set (seq);
+      if (set)
+	cost += rtx_cost (set, SET);
+      else
+	cost++;
+    }
+
+  return cost;
+}
+
+/* The properties of the target.  */
+
+static unsigned avail_regs;	/* Number of available registers.  */
+static unsigned res_regs;	/* Number of reserved registers.  */
+static unsigned small_cost;	/* The cost for register when there is a free one.  */
+static unsigned pres_cost;	/* The cost for register when there are not too many
+				   free ones.  */
+static unsigned spill_cost;	/* The cost for register when we need to spill.  */
+
+/* Initialize the constants for computing set costs.  */
+
+void
+init_set_costs (void)
+{
+  rtx seq;
+  rtx reg1 = gen_raw_REG (SImode, FIRST_PSEUDO_REGISTER);
+  rtx reg2 = gen_raw_REG (SImode, FIRST_PSEUDO_REGISTER + 1);
+  rtx addr = gen_raw_REG (Pmode, FIRST_PSEUDO_REGISTER + 2);
+  rtx mem = validize_mem (gen_rtx_MEM (SImode, addr));
+  unsigned i;
+
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    if (TEST_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], i)
+	&& !fixed_regs[i])
+      avail_regs++;
+
+  res_regs = 3;
+
+  /* These are really just heuristic values.  */
+  
+  start_sequence ();
+  emit_move_insn (reg1, reg2);
+  seq = get_insns ();
+  end_sequence ();
+  small_cost = seq_cost (seq);
+  pres_cost = 2 * small_cost;
+
+  start_sequence ();
+  emit_move_insn (mem, reg1);
+  emit_move_insn (reg2, mem);
+  seq = get_insns ();
+  end_sequence ();
+  spill_cost = seq_cost (seq);
+}
+
+/* Calculates cost for having SIZE new loop global variables.  REGS_USED is the
+   number of global registers used in loop.  N_USES is the number of relevant
+   variable uses.  */
+
+unsigned
+global_cost_for_size (unsigned size, unsigned regs_used, unsigned n_uses)
+{
+  unsigned regs_needed = regs_used + size;
+  unsigned cost = 0;
+
+  if (regs_needed + res_regs <= avail_regs)
+    cost += small_cost * size;
+  else if (regs_needed <= avail_regs)
+    cost += pres_cost * size;
+  else
+    {
+      cost += pres_cost * size;
+      cost += spill_cost * n_uses * (regs_needed - avail_regs) / regs_needed;
+    }
+
+  return cost;
+}
+
