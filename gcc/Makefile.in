@@ -1741,7 +1741,7 @@ install-float-h-cross:
 install-dir:
 	-if [ -d $(libdir) ] ; then true ; else mkdir $(libdir) ; fi
 	-if [ -d $(libdir)/gcc-lib ] ; then true ; else mkdir $(libdir)/gcc-lib ; fi
-# This dir isn't curretly searched by cpp.
+# This dir isn't currently searched by cpp.
 #	-if [ -d $(libdir)/gcc-lib/include ] ; then true ; else mkdir $(libdir)/gcc-lib/include ; fi
 	-if [ -d $(libdir)/gcc-lib/$(target) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target) ; fi
 	-if [ -d $(libdir)/gcc-lib/$(target)/$(version) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target)/$(version) ; fi
@@ -1759,8 +1759,6 @@ install-dir:
 	-if [ -d $(mandir) ] ; then true ; else mkdir $(mandir) ; fi
 
 # Install the compiler executables built during cross compilation.
-# Deps on  $(srcdir)/g++ $(srcdir)/c++  would be natural here,
-# but the latter would get confused with the target `c++'.
 install-common: native install-dir xgcc g++ $(EXTRA_PARTS)
 	for file in $(COMPILERS); do \
 	  if [ -f $$file ] ; then \
@@ -1802,6 +1800,13 @@ install-common: native install-dir xgcc g++ $(EXTRA_PARTS)
 	  rm -f $(bindir)/$(target)-gcc-1; \
 	  ln $(bindir)/gcc $(bindir)/$(target)-gcc-1; \
 	  mv $(bindir)/$(target)-gcc-1 $(bindir)/$(target)-gcc; \
+	  -if [ -f cc1plus ] ; then \
+	    rm -f $(bindir)/g++; \
+	    $(INSTALL_PROGRAM) g++ $(bindir)/g++; \
+	    chmod a+x $(bindir)/g++; \
+	    rm -f $(bindir)/c++; \
+	    ln $(bindir)/g++ $(bindir)/c++; \
+	  fi
 	fi
 # Install protoize if it was compiled.
 	-if [ -f protoize ]; \
@@ -1813,13 +1818,6 @@ install-common: native install-dir xgcc g++ $(EXTRA_PARTS)
 	    rm -f $(libsubdir)/SYSCALLS.c.X; \
 	    $(INSTALL_DATA) SYSCALLS.c.X $(libsubdir)/SYSCALLS.c.X; \
 	    chmod a-x $(libsubdir)/SYSCALLS.c.X; \
-	fi
-	-if [ -f cc1plus ] ; then \
-	    rm -f $(bindir)/g++; \
-	    $(INSTALL_PROGRAM) g++ $(bindir)/g++; \
-	    chmod a+x $(bindir)/g++; \
-	    rm -f $(bindir)/c++; \
-	    ln $(bindir)/g++ $(bindir)/c++; \
 	fi
 	-rm -f $(libsubdir)/cpp
 	$(INSTALL_PROGRAM) cpp $(libsubdir)/cpp
