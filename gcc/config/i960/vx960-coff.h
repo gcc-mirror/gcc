@@ -34,6 +34,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef CC1_SPEC
 #define CC1_SPEC \
 	"%{!mka:%{!mkb:%{!msa:%{!msb:%{!mmc:%{!mca:%{!mcc:%{!mcf:-mkb}}}}}}}}\
-	%{mbout:%{g*:-gstabs}}\
-	%{mcoff:%{g*:-gcoff}}\
-	%{!mbout:%{!mcoff:%{g*:-gcoff}}}"
+	 %{!gs*:%{!gc*:%{mbout:%{g*:-gstabs}}\
+		       %{mcoff:%{g*:-gcoff}}\
+		       %{!mbout:%{!mcoff:%{g*:-gcoff}}}}}"
