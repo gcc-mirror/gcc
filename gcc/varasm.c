@@ -2169,12 +2169,12 @@ struct rtx_const GTY(())
       HOST_WIDE_INT low;
     } GTY ((tag ("0"))) di;
 
-    /* The max vector size we have is 8 wide; two variants for
+    /* The max vector size we have is 16 wide; two variants for
        integral and floating point vectors.  */
     struct rtx_const_int_vec {
       HOST_WIDE_INT high;
       HOST_WIDE_INT low;
-    } GTY ((tag ("2"))) int_vec[8];
+    } GTY ((tag ("2"))) int_vec[16];
 
     REAL_VALUE_TYPE GTY ((tag ("3"))) fp_vec[8];
 
