@@ -121,6 +121,7 @@ struct cpp_buffer
 };
 
 struct file_name_map_list;
+struct htab;
 
 /* Maximum nesting of cpp_buffers.  We use a static limit, partly for
    efficiency, and partly to limit runaway recursion.  */
@@ -155,12 +156,10 @@ struct cpp_reader
   int buffer_stack_depth;
 
   /* Hash table of macros and assertions.  See cpphash.c */
-#define HASHSIZE 1403
-  struct hashnode **hashtab;
+  struct htab *hashtab;
 
   /* Hash table of other included files.  See cppfiles.c */
-#define ALL_INCLUDE_HASHSIZE 71
-  struct ihash *all_include_files[ALL_INCLUDE_HASHSIZE];
+  struct htab *all_include_files;
 
   /* Chain of `actual directory' file_name_list entries,
      for "" inclusion. */
@@ -502,7 +501,6 @@ extern void output_line_command		PARAMS ((cpp_reader *,
 /* In cppfiles.c */
 extern int cpp_included			PARAMS ((cpp_reader *, const char *));
 extern int cpp_read_file		PARAMS ((cpp_reader *, const char *));
-
 
 #ifdef __cplusplus
 }

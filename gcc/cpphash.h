@@ -132,15 +132,11 @@ union hashval
 typedef struct hashnode HASHNODE;
 struct hashnode
 {
-  struct hashnode *next;	/* double links for easy deletion */
-  struct hashnode *prev;
-  struct hashnode **bucket_hdr;	/* also, a back pointer to this node's hash
-				   chain is kept, in case the node is the head
-				   of the chain and gets deleted. */
-  enum node_type type;		/* type of special token */
-  int length;			/* length of token, for quick comparison */
-  U_CHAR *name;			/* the actual name */
+  const U_CHAR *name;		/* the actual name */
+  size_t length;		/* length of token, for quick comparison */
+  unsigned long hash;		/* cached hash value */
   union hashval value;		/* pointer to expansion, or whatever */
+  enum node_type type;		/* type of special token */
 };
 
 /* List of directories to look for include files in. */
@@ -169,7 +165,6 @@ struct file_name_list
    #include statement) which is stored in *nshort.  */
 struct ihash
 {
-  struct ihash *next;
   /* Next file with the same short name but a
      different (partial) pathname). */
   struct ihash *next_this_file;
@@ -177,12 +172,13 @@ struct ihash
   /* Location of the file in the include search path.
      Used for include_next */
   struct file_name_list *foundhere;
-  const char *name;		/* (partial) pathname of file */
-  const char *nshort;		/* name of file as referenced in #include */
+
+  unsigned long hash;		/* save hash value for future reference */
+  const char *nshort;		/* name of file as referenced in #include;
+				   points into name[]  */
   const U_CHAR *control_macro;	/* macro, if any, preventing reinclusion -
 				   see redundant_include_p */
-  char *buf, *limit;		/* for file content cache,
-				   not yet implemented */
+  const char name[1];		/* (partial) pathname of file */
 };
 typedef struct ihash IHASH;
 
@@ -247,19 +243,23 @@ extern unsigned char _cpp_IStable[256];
   (CPP_OPTIONS (PFILE)->pedantic && !CPP_BUFFER (pfile)->system_header_p)
 
 /* In cpphash.c */
-extern HASHNODE *_cpp_install	  PARAMS ((cpp_reader *, const U_CHAR *, int,
-					   enum node_type, const char *));
-extern HASHNODE *_cpp_lookup	  PARAMS ((cpp_reader *, const U_CHAR *, int));
-extern void _cpp_free_definition  PARAMS ((DEFINITION *));
-extern void _cpp_delete_macro	  PARAMS ((HASHNODE *));
-
-extern DEFINITION *_cpp_create_definition
-				  PARAMS ((cpp_reader *, int));
-extern int _cpp_compare_defs		  PARAMS ((cpp_reader *, DEFINITION *,
-					   DEFINITION *));
-extern void _cpp_macroexpand	  PARAMS ((cpp_reader *, HASHNODE *));
-extern void _cpp_dump_definition  PARAMS ((cpp_reader *, const U_CHAR *, long,
-					   DEFINITION *));
+extern HASHNODE *_cpp_make_hashnode	PARAMS ((const U_CHAR *, size_t,
+						 enum node_type,
+						 unsigned long));
+extern HASHNODE *_cpp_lookup		PARAMS ((cpp_reader *,
+						 const U_CHAR *, int));
+extern HASHNODE **_cpp_lookup_slot	PARAMS ((cpp_reader *,
+						 const U_CHAR *, int, int,
+						 unsigned long *));
+extern void _cpp_free_definition	PARAMS ((DEFINITION *));
+extern DEFINITION *_cpp_create_definition PARAMS ((cpp_reader *, int));
+extern void _cpp_dump_definition	PARAMS ((cpp_reader *, const U_CHAR *,
+						 long, DEFINITION *));
+extern int _cpp_compare_defs		PARAMS ((cpp_reader *, DEFINITION *,
+						 DEFINITION *));
+extern void _cpp_macroexpand		PARAMS ((cpp_reader *, HASHNODE *));
+extern void _cpp_init_macro_hash	PARAMS ((cpp_reader *));
+extern void _cpp_dump_macro_hash	PARAMS ((cpp_reader *));
 
 /* In cppfiles.c */
 extern void _cpp_simplify_pathname	PARAMS ((char *));
@@ -267,6 +267,7 @@ extern int _cpp_find_include_file	PARAMS ((cpp_reader *, const char *,
 						struct file_name_list *,
 						IHASH **, int *));
 extern int _cpp_read_include_file	PARAMS ((cpp_reader *, int, IHASH *));
+extern void _cpp_init_include_hash	PARAMS ((cpp_reader *));
 
 /* In cppexp.c */
 extern int _cpp_parse_expr		PARAMS ((cpp_reader *));

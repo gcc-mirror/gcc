@@ -24,6 +24,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include "cpplib.h"
 #include "cpphash.h"
+#include "hashtab.h"
 #include "intl.h"
 #include "mkdeps.h"
 
@@ -659,9 +660,10 @@ do_define (pfile, keyword)
      cpp_reader *pfile;
      const struct directive *keyword ATTRIBUTE_UNUSED;
 {
-  HASHNODE *hp;
+  HASHNODE **slot;
   DEFINITION *def;
   long here;
+  unsigned long hash;
   int len, c;
   int funlike = 0;
   U_CHAR *sym;
@@ -692,9 +694,11 @@ do_define (pfile, keyword)
   if (def == 0)
     return 0;
 
-  if ((hp = _cpp_lookup (pfile, sym, len)) != NULL)
+  slot = _cpp_lookup_slot (pfile, sym, len, 1, &hash);
+  if (*slot)
     {
       int ok;
+      HASHNODE *hp = *slot;
 
       /* Redefining a macro is ok if the definitions are the same.  */
       if (hp->type == T_MACRO)
@@ -729,7 +733,11 @@ do_define (pfile, keyword)
 	}
     }
   else
-    _cpp_install (pfile, sym, len, T_MACRO, (char *) def);
+    {
+      HASHNODE *hp = _cpp_make_hashnode (sym, len, T_MACRO, hash);
+      hp->value.defn = def;
+      *slot = hp;
+    }
 
   if (CPP_OPTIONS (pfile)->debug_output
       || CPP_OPTIONS (pfile)->dump_macros == dump_definitions)
@@ -1260,21 +1268,12 @@ do_include (pfile, keyword)
   if (importing)
     ihash->control_macro = (const U_CHAR *) "";
   
-  if (cpp_push_buffer (pfile, NULL, 0) == NULL)
-    {
-      close (fd);
-      return 0;
-    }
-  
-  if (angle_brackets)
-    pfile->system_include_depth++;   /* Decremented in file_cleanup. */
-
   if (_cpp_read_include_file (pfile, fd, ihash))
     {
       output_line_command (pfile, enter_file);
-      pfile->only_seen_white = 2;
+      if (angle_brackets)
+	pfile->system_include_depth++;   /* Decremented in file_cleanup. */
     }
-
   return 0;
 }
 
@@ -1435,7 +1434,7 @@ do_undef (pfile, keyword)
      const struct directive *keyword;
 {
   int len;
-  HASHNODE *hp;
+  HASHNODE **slot;
   U_CHAR *buf, *name, *limit;
   int c;
   long here = CPP_WRITTEN (pfile);
@@ -1468,8 +1467,10 @@ do_undef (pfile, keyword)
   }
   CPP_SET_WRITTEN (pfile, here);
 
-  while ((hp = _cpp_lookup (pfile, name, len)) != NULL)
+  slot = _cpp_lookup_slot (pfile, name, len, 0, 0);
+  if (slot)
     {
+      HASHNODE *hp = *slot;
       /* If we are generating additional info for debugging (with -g) we
 	 need to pass through all effective #undef commands.  */
       if (CPP_OPTIONS (pfile)->debug_output && keyword)
@@ -1480,7 +1481,8 @@ do_undef (pfile, keyword)
 	{
 	  if (hp->type != T_MACRO)
 	    cpp_warning (pfile, "undefining `%s'", hp->name);
-	  _cpp_delete_macro (hp);
+
+	  htab_clear_slot (pfile->hashtab, (void **)slot);
 	}
     }
 
@@ -1692,6 +1694,7 @@ do_pragma_implementation (pfile)
   long written = CPP_WRITTEN (pfile);
   U_CHAR *name;
   U_CHAR *copy;
+  size_t len;
 
   token = get_directive_token (pfile);
   if (token == CPP_VSPACE)
@@ -1703,14 +1706,15 @@ do_pragma_implementation (pfile)
     }
 
   name = pfile->token_buffer + written + 1;
-  copy = (U_CHAR *) xstrdup (name);
-  copy[strlen(copy)] = '\0';  /* trim trailing quote */
-
+  len = strlen (name);
+  copy = (U_CHAR *) alloca (len);
+  memcpy (copy, name, len - 1);
+  copy[len] = '\0';	/* trim trailing quote */
+  
   if (cpp_included (pfile, copy))
     cpp_warning (pfile,
 	 "`#pragma implementation' for `%s' appears after file is included",
 		 copy);
-  free (copy);
   return 0;
 }
 
@@ -1721,11 +1725,13 @@ do_pragma_poison (pfile)
   /* Poison these symbols so that all subsequent usage produces an
      error message.  */
   U_CHAR *p;
-  HASHNODE *hp;
+  HASHNODE **slot;
   long written;
   size_t len;
   enum cpp_token token;
   int writeit;
+  unsigned long hash;
+
   /* As a rule, don't include #pragma poison commands in output,  
      unless the user asks for them.  */
   writeit = (CPP_OPTIONS (pfile)->debug_output
@@ -1747,8 +1753,10 @@ do_pragma_poison (pfile)
 
       p = pfile->token_buffer + written;
       len = strlen (p);
-      if ((hp = _cpp_lookup (pfile, p, len)))
+      slot = _cpp_lookup_slot (pfile, p, len, 1, &hash);
+      if (*slot)
 	{
+	  HASHNODE *hp = *slot;
 	  if (hp->type != T_POISON)
 	    {
 	      cpp_warning (pfile, "poisoning existing macro `%s'", p);
@@ -1759,7 +1767,11 @@ do_pragma_poison (pfile)
 	    }
 	}
       else
-	_cpp_install (pfile, p, len, T_POISON, 0);
+	{
+	  HASHNODE *hp = _cpp_make_hashnode (p, len, T_POISON, hash);
+	  hp->value.cpval = 0;
+	  *slot = hp;
+	}
       if (writeit)
 	CPP_PUTC (pfile, ' ');
     }
@@ -3025,7 +3037,9 @@ do_assert (pfile, keyword)
   U_CHAR *sym;
   int ret, c;
   HASHNODE *base, *this;
-  int baselen, thislen;
+  HASHNODE **bslot, **tslot;
+  size_t blen, tlen;
+  unsigned long bhash, thash;
 
   if (CPP_PEDANTIC (pfile) && CPP_OPTIONS (pfile)->done_initializing)
     cpp_pedwarn (pfile, "ANSI C does not allow `#assert'");
@@ -3049,27 +3063,30 @@ do_assert (pfile, keyword)
       goto error;
     }
 
-  thislen = strlen (sym);
-  baselen = (U_CHAR *) strchr (sym, '(') - sym;
-  this = _cpp_lookup (pfile, sym, thislen);
-  if (this)
+  tlen = strlen (sym);
+  blen = (U_CHAR *) strchr (sym, '(') - sym;
+  tslot = _cpp_lookup_slot (pfile, sym, tlen, 1, &thash);
+  if (*tslot)
     {
       cpp_warning (pfile, "`%s' re-asserted", sym);
       goto error;
     }
 
-  base = _cpp_lookup (pfile, sym, baselen);
-  if (! base)
-    base = _cpp_install (pfile, sym, baselen, T_ASSERT, 0);
-  else if (base->type != T_ASSERT)
-  {
-    /* Token clash - but with what?! */
-    cpp_ice (pfile, "base->type != T_ASSERT in do_assert");
-    goto error;
-  }
-
-  this = _cpp_install (pfile, sym, thislen, T_ASSERT,
-		      (char *)base->value.aschain);
+  bslot = _cpp_lookup_slot (pfile, sym, blen, 1, &bhash);
+  if (! *bslot)
+    *bslot = base = _cpp_make_hashnode (sym, blen, T_ASSERT, bhash);
+  else
+    {
+      base = *bslot;
+      if (base->type != T_ASSERT)
+	{
+	  /* Token clash - but with what?! */
+	  cpp_ice (pfile, "base->type != T_ASSERT in do_assert");
+	  goto error;
+	}
+    }
+  *tslot = this = _cpp_make_hashnode (sym, tlen, T_ASSERT, thash);
+  this->value.aschain = base->value.aschain;
   base->value.aschain = this;
   
   pfile->limit = sym;		/* Pop */
@@ -3118,9 +3135,9 @@ do_unassert (pfile, keyword)
       for (this = base->value.aschain; this; this = next)
         {
 	  next = this->value.aschain;
-	  _cpp_delete_macro (this);
+	  htab_remove_elt (pfile->hashtab, this);
 	}
-      _cpp_delete_macro (base);
+      htab_remove_elt (pfile->hashtab, base);
     }
   else
     {
@@ -3135,10 +3152,11 @@ do_unassert (pfile, keyword)
 	next = next->value.aschain;
 
       next->value.aschain = this->value.aschain;
-      _cpp_delete_macro (this);
+      htab_remove_elt (pfile->hashtab, this);
 
       if (base->value.aschain == NULL)
-	_cpp_delete_macro (base);  /* Last answer for this predicate deleted. */
+	/* Last answer for this predicate deleted. */
+	htab_remove_elt (pfile->hashtab, base);
     }
   
   pfile->limit = sym;		/* Pop */

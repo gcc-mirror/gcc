@@ -28,9 +28,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "system.h"
 #include "cpplib.h"
 #include "cpphash.h"
+#include "hashtab.h"
 #include "intl.h"
 
-static IHASH *include_hash	PARAMS ((cpp_reader *, const char *, int));
 static IHASH *redundant_include_p PARAMS ((cpp_reader *, IHASH *,
 					   struct file_name_list *));
 static struct file_name_map *read_name_map
@@ -42,6 +42,10 @@ static long read_and_prescan	PARAMS ((cpp_reader *, cpp_buffer *,
 					 int, size_t));
 static struct file_name_list *actual_directory
 				PARAMS ((cpp_reader *, const char *));
+
+static unsigned int hash_IHASH	PARAMS ((const void *));
+static int eq_IHASH		PARAMS ((const void *, const void *));
+
 static void init_input_buffer	PARAMS ((cpp_reader *, int, struct stat *));
 static int file_cleanup		PARAMS ((cpp_buffer *, cpp_reader *));
 static U_CHAR *find_position	PARAMS ((U_CHAR *, U_CHAR *, unsigned long *));
@@ -50,50 +54,57 @@ static U_CHAR *find_position	PARAMS ((U_CHAR *, U_CHAR *, unsigned long *));
 static void hack_vms_include_specification PARAMS ((char *));
 #endif
 
+/* Initial size of include hash table.  */
+#define IHASHSIZE 50
+
 #ifndef INCLUDE_LEN_FUDGE
 #define INCLUDE_LEN_FUDGE 0
 #endif
 
-/* Look up or add an entry to the table of all includes.  This table
- is indexed by the name as it appears in the #include line.  The
- ->next_this_file chain stores all different files with the same
- #include name (there are at least three ways this can happen).  The
- hash function could probably be improved a bit. */
+/* Open files in nonblocking mode, so we don't get stuck if someone
+   clever has asked cpp to process /dev/rmt0.  _cpp_read_include_file
+   will check that we have a real file to work with.  Also take care
+   not to acquire a controlling terminal by mistake (this can't happen
+   on sane systems, but paranoia is a virtue).  */
+#define OMODES O_RDONLY|O_NONBLOCK|O_NOCTTY
 
-static IHASH *
-include_hash (pfile, fname, add)
-     cpp_reader *pfile;
-     const char *fname;
-     int add;
+/* Calculate hash of an IHASH entry.  */
+static unsigned int
+hash_IHASH (x)
+     const void *x;
 {
-  unsigned int hash = 0;
-  IHASH *l, *m;
-  const char *f = fname;
+  IHASH *i = (IHASH *)x;
+  unsigned int r = 0, len = 0;
+  const U_CHAR *s = i->nshort;
 
-  while (*f)
-    hash += *f++;
+  if (i->hash != (unsigned long)-1)
+    return i->hash;
 
-  l = pfile->all_include_files[hash % ALL_INCLUDE_HASHSIZE];
-  m = 0;
-  for (; l; m = l, l = l->next)
-    if (!strcmp (l->nshort, fname))
-      return l;
+  do
+    len++, r = r * 67 + (*s++ - 113);
+  while (*s && *s != '.');
+  i->hash = r + len;
+  return r + len;
+}
 
-  if (!add)
-    return 0;
-  
-  l = (IHASH *) xmalloc (sizeof (IHASH));
-  l->next = NULL;
-  l->next_this_file = NULL;
-  l->foundhere = NULL;
-  l->buf = NULL;
-  l->limit = NULL;
-  if (m)
-    m->next = l;
-  else
-    pfile->all_include_files[hash % ALL_INCLUDE_HASHSIZE] = l;
-  
-  return l;
+/* Compare an existing IHASH structure with a potential one.  */
+static int
+eq_IHASH (x, y)
+     const void *x;
+     const void *y;
+{
+  const U_CHAR *a = ((const IHASH *)x)->nshort;
+  const U_CHAR *b = ((const IHASH *)y)->nshort;
+  return !strcmp (a, b);
+}
+
+/* Init the hash table.  In here so it can see the hash and eq functions.  */
+void
+_cpp_init_include_hash (pfile)
+     cpp_reader *pfile;
+{
+  pfile->all_include_files
+    = htab_create (IHASHSIZE, hash_IHASH, eq_IHASH, free);
 }
 
 /* Return 0 if the file pointed to by IHASH has never been included before,
@@ -152,9 +163,10 @@ cpp_included (pfile, fname)
      cpp_reader *pfile;
      const char *fname;
 {
-  IHASH *ptr;
-
-  ptr = include_hash (pfile, fname, 0);
+  IHASH dummy, *ptr;
+  dummy.nshort = fname;
+  dummy.hash = -1;
+  ptr = htab_find (pfile->all_include_files, (const void *)&dummy);
   return (ptr != NULL);
 }
 
@@ -164,10 +176,7 @@ file_cleanup (pbuf, pfile)
      cpp_reader *pfile;
 {
   if (pbuf->buf)
-    {
-      free ((PTR) pbuf->buf);
-      pbuf->buf = 0;
-    }
+    free ((PTR) pbuf->buf);
   if (pfile->system_include_depth)
     pfile->system_include_depth--;
   return 0;
@@ -178,7 +187,7 @@ file_cleanup (pbuf, pfile)
    (because it was included already and it's marked idempotent),
    -1 if an error occurred, or a file descriptor open on the file.
    *IHASH is set to point to the include hash entry for this file, and
-   *BEFORE is 1 if the file was included before (but needs to be read
+   *BEFORE is set to 1 if the file was included before (but needs to be read
    again). */
 int
 _cpp_find_include_file (pfile, fname, search_start, ihash, before)
@@ -188,97 +197,82 @@ _cpp_find_include_file (pfile, fname, search_start, ihash, before)
      IHASH **ihash;
      int *before;
 {
-  struct file_name_list *l;
-  IHASH *ih, *jh;
-  int f, len;
+  struct file_name_list *path;
+  IHASH *ih, **slot;
+  IHASH dummy;
+  int f;
   char *name;
-  
-  ih = include_hash (pfile, fname, 1);
-  jh = redundant_include_p (pfile, ih,
-			    fname[0] == '/' ? ABSOLUTE_PATH : search_start);
 
-  if (jh != 0)
+  dummy.hash = -1;
+  dummy.nshort = fname;
+  path = (fname[0] == '/') ? ABSOLUTE_PATH : search_start;
+  slot = (IHASH **) htab_find_slot (pfile->all_include_files,
+				    (const void *)&dummy, 1);
+
+  if (*slot && (ih = redundant_include_p (pfile, *slot, path)))
     {
-      *before = 1;
-      *ihash = jh;
-
-      if (jh == (IHASH *)-1)
+      if (ih == (IHASH *)-1)
 	return -2;
-      else
-	return open (jh->name, O_RDONLY, 0666);
+
+      *before = 1;
+      *ihash = ih;
+      return open (ih->name, OMODES);
     }
 
-  if (ih->foundhere)
-    /* A file is already known by this name, but it's not the same file.
-       Allocate another include_hash block and add it to the next_this_file
-       chain. */
+  if (path == ABSOLUTE_PATH)
     {
-      jh = (IHASH *) xmalloc (sizeof (IHASH));
-      while (ih->next_this_file) ih = ih->next_this_file;
-
-      ih->next_this_file = jh;
-      jh = ih;
-      ih = ih->next_this_file;
-
-      ih->next = NULL;
-      ih->next_this_file = NULL;
-      ih->buf = NULL;
-      ih->limit = NULL;
+      name = (char *) fname;
+      f = open (name, OMODES);
     }
+  else
+    {
+      /* Search directory path, trying to open the file.  */
+      name = alloca (strlen (fname) + pfile->max_include_len
+		     + 2 + INCLUDE_LEN_FUDGE);
+      do
+	{
+	  memcpy (name, path->name, path->nlen);
+	  name[path->nlen] = '/';
+	  strcpy (&name[path->nlen+1], fname);
+	  _cpp_simplify_pathname (name);
+	  if (CPP_OPTIONS (pfile)->remap)
+	    name = remap_filename (pfile, name, path);
+
+	  f = open (name, OMODES);
+#ifdef EACCES
+	  if (f == -1 && errno == EACCES)
+	    {
+	      cpp_error (pfile,
+			 "included file `%s' exists but is not readable",
+			 name);
+	      return -1;
+	    }
+#endif
+	  if (f >= 0)
+	    break;
+	  path = path->next;
+	}
+      while (path);
+    }
+  if (f == -1)
+    return -1;
+
+  ih = (IHASH *) xmalloc (sizeof (IHASH) + strlen (name));
+  strcpy ((char *)ih->name, name);
+  ih->foundhere = path;
+  if (path == ABSOLUTE_PATH)
+    ih->nshort = ih->name;
+  else
+    ih->nshort = strstr (ih->name, fname);
+  ih->control_macro = NULL;
+  ih->hash = dummy.hash;
+
+  ih->next_this_file = *slot;
+  *slot = ih;
+
   *before = 0;
   *ihash = ih;
-  ih->name = NULL;
-  ih->nshort = xstrdup (fname);
-  ih->control_macro = NULL;
-  
-  /* If the pathname is absolute, just open it. */ 
-  if (fname[0] == '/')
-    {
-      ih->foundhere = ABSOLUTE_PATH;
-      ih->name = ih->nshort;
-      return open (ih->name, O_RDONLY, 0666);
-    }
-
-  /* Search directory path, trying to open the file. */
-
-  len = strlen (fname);
-  name = xmalloc (len + pfile->max_include_len + 2 + INCLUDE_LEN_FUDGE);
-
-  for (l = search_start; l; l = l->next)
-    {
-      memcpy (name, l->name, l->nlen);
-      name[l->nlen] = '/';
-      strcpy (&name[l->nlen+1], fname);
-      _cpp_simplify_pathname (name);
-      if (CPP_OPTIONS (pfile)->remap)
-	name = remap_filename (pfile, name, l);
-
-      f = open (name, O_RDONLY|O_NONBLOCK|O_NOCTTY, 0666);
-#ifdef EACCES
-      if (f == -1 && errno == EACCES)
-	{
-	  cpp_error(pfile, "included file `%s' exists but is not readable",
-		    name);
-	  return -1;
-	}
-#endif
-
-      if (f >= 0)
-        {
-	  ih->foundhere = l;
-	  ih->name = xrealloc (name, strlen (name) + 1);
-	  return f;
-        }
-    }
-  
-    if (jh)
-      {
-	jh->next_this_file = NULL;
-	free (ih);
-      }
-    free (name);
-    *ihash = (IHASH *)-1;
-    return -1;
+  return f;
 }
 
 /* The file_name_map structure holds a mapping of file names for a
@@ -482,54 +476,41 @@ cpp_read_file (pfile, fname)
      cpp_reader *pfile;
      const char *fname;
 {
-  IHASH *ih_fake;
+  IHASH *ih, **slot;
+  IHASH dummy;
   int f;
 
-  if (fname == NULL || *fname == 0)
+  if (fname == NULL)
+    fname = "";
+
+  dummy.hash = -1;
+  dummy.nshort = fname;
+  slot = (IHASH **) htab_find_slot (pfile->all_include_files,
+				    (const void *) &dummy, 1);
+  if (*slot && (ih = redundant_include_p (pfile, *slot, ABSOLUTE_PATH)))
     {
-      fname = "";
-      f = 0;
+      if (ih == (IHASH *)-1)
+	return 1;  /* Already included.  */
+    }
+  else
+    {
+      ih = (IHASH *) xmalloc (sizeof (IHASH) + strlen (fname));
+      ih->control_macro = 0;
+      ih->foundhere = ABSOLUTE_PATH;  /* well sort of ... */
+      ih->hash = dummy.hash;
+      strcpy ((char *)ih->name, fname);
+      ih->nshort = ih->name;
+
+      ih->next_this_file = *slot;
+      *slot = ih;
     }
 
-  /* Open the file in nonblocking mode, so we don't get stuck if
-     someone clever has asked cpp to process /dev/rmt0.
-     _cpp_read_include_file will check that we have a real file to
-     work with.  Also take care not to acquire a controlling terminal
-     by mistake (this can't happen on sane systems, but paranoia is a
-     virtue).  */
-  else if ((f = open (fname, O_RDONLY|O_NONBLOCK|O_NOCTTY, 0666)) < 0)
-    {
-      cpp_notice_from_errno (pfile, fname);
-      return 0;
-    }
+  if (*fname == '\0')
+    f = 0;
+  else
+    f = open (fname, OMODES);
 
-  /* Push the buffer.  */
-  if (!cpp_push_buffer (pfile, NULL, 0))
-    goto failed_push;
-  
-  /* Gin up an include_hash structure for this file and feed it
-     to finclude.  */
-
-  ih_fake = (IHASH *) xmalloc (sizeof (IHASH));
-  ih_fake->next = 0;
-  ih_fake->next_this_file = 0;
-  ih_fake->foundhere = ABSOLUTE_PATH;  /* well sort of ... */
-  ih_fake->name = fname;
-  ih_fake->control_macro = 0;
-  ih_fake->buf = (char *)-1;
-  ih_fake->limit = 0;
-  if (!_cpp_read_include_file (pfile, f, ih_fake))
-    goto failed_finclude;
-
-  return 1;
-
- failed_finclude:
-  /* If finclude fails, it pops the buffer.  */
-  free (ih_fake);
- failed_push:
-  if (f)
-    close (f);
-  return 0;
+  return _cpp_read_include_file (pfile, f, ih);
 }
 
 /* Read the contents of FD into the buffer on the top of PFILE's stack.
@@ -549,12 +530,15 @@ _cpp_read_include_file (pfile, fd, ihash)
   long length;
   cpp_buffer *fp;
 
+  fp = cpp_push_buffer (pfile, NULL, 0);
+
+  if (fp == 0)
+    goto push_fail;
+
   if (fstat (fd, &st) < 0)
     goto perror_fail;
   if (fcntl (fd, F_SETFL, 0) == -1)  /* turn off nonblocking mode */
     goto perror_fail;
-
-  fp = CPP_BUFFER (pfile);
 
   /* If fd points to a plain file, we know how big it is, so we can
      allocate the buffer all at once.  If fd is a pipe or terminal, we
@@ -632,12 +616,14 @@ _cpp_read_include_file (pfile, fd, ihash)
     fp->actual_dir = actual_directory (pfile, ihash->name);
 
   pfile->input_stack_listing_current = 0;
+  pfile->only_seen_white = 2;
   return 1;
 
  perror_fail:
   cpp_error_from_errno (pfile, ihash->name);
  fail:
   cpp_pop_buffer (pfile);
+ push_fail:
   close (fd);
   return 0;
 }
@@ -1485,7 +1471,7 @@ hack_vms_include_specification (fullname)
 
   if (check_filename_before_returning)
     {
-      f = open (fullname, O_RDONLY, 0666);
+      f = open (fullname, OMODES);
       if (f >= 0)
 	{
 	  /* The file name is OK as it is, so return it as is.  */
