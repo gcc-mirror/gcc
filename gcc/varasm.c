@@ -82,7 +82,7 @@ struct varasm_status GTY(())
      This pool of constants is reinitialized for each function
      so each function gets its own constants-pool that comes right before
      it.  */
-  struct constant_descriptor_rtx ** GTY ((length ("MAX_RTX_HASH_TABLE"))) 
+  struct constant_descriptor_rtx ** GTY ((length ("MAX_RTX_HASH_TABLE")))
     x_const_rtx_hash_table;
   struct pool_constant ** GTY ((length ("MAX_RTX_HASH_TABLE")))
     x_const_rtx_sym_hash_table;
@@ -143,9 +143,9 @@ static void output_constant_def_contents  PARAMS ((tree, int, int));
 static void decode_rtx_const		PARAMS ((enum machine_mode, rtx,
 					       struct rtx_const *));
 static int const_hash_rtx		PARAMS ((enum machine_mode, rtx));
-static int compare_constant_rtx	
+static int compare_constant_rtx
   PARAMS ((enum machine_mode, rtx, struct constant_descriptor_rtx *));
-static struct constant_descriptor_rtx * record_constant_rtx 
+static struct constant_descriptor_rtx * record_constant_rtx
   PARAMS ((enum machine_mode, rtx));
 static struct pool_constant *find_pool_constant PARAMS ((struct function *, rtx));
 static void mark_constant_pool		PARAMS ((void));
@@ -823,8 +823,11 @@ make_decl_rtl (decl, asmspec)
 	SET_DECL_RTL (decl, adjust_address_nv (DECL_RTL (decl),
 					       DECL_MODE (decl), 0));
 
-      /* ??? Another way to do this would be to do what halfpic.c does
-	 and maintain a hashed table of such critters.  */
+      /* ??? Another way to do this would be to maintain a hashed
+	 table of such critters.  Instead of adding stuff to a DECL
+	 to give certain attributes to it, we could use an external
+	 hash map from DECL to set of attributes.  */
+
       /* Let the target reassign the RTL if it wants.
 	 This is necessary, for example, when one machine specific
 	 decl attribute overrides another.  */
@@ -2173,9 +2176,9 @@ struct rtx_const GTY(())
   union rtx_const_un {
     REAL_VALUE_TYPE du;
     struct addr_const GTY ((tag ("1"))) addr;
-    struct rtx_const_u_di { 
+    struct rtx_const_u_di {
       HOST_WIDE_INT high;
-      HOST_WIDE_INT low; 
+      HOST_WIDE_INT low;
     } GTY ((tag ("0"))) di;
 
     /* The max vector size we have is 8 wide.  This should be enough.  */
@@ -2433,7 +2436,7 @@ compare_constant (t1, t2)
 	    return 0;
 	  if (get_set_constructor_bytes (t2, tmp2, len) != NULL_TREE)
 	    return 0;
-	  
+
 	  return memcmp (tmp1, tmp2, len) != 0;
 	}
       else
@@ -2477,7 +2480,7 @@ compare_constant (t1, t2)
 		    return 0;
 		}
 	    }
-	  
+
 	  return l1 == NULL_TREE && l2 == NULL_TREE;
 	}
 
@@ -4678,7 +4681,7 @@ make_decl_one_only (decl)
 void
 init_varasm_once ()
 {
-  const_str_htab = htab_create_ggc (128, const_str_htab_hash, 
+  const_str_htab = htab_create_ggc (128, const_str_htab_hash,
 				    const_str_htab_eq, NULL);
   in_named_htab = htab_create (31, in_named_entry_hash,
 			       in_named_entry_eq, NULL);

@@ -1,5 +1,10 @@
 2002-06-05  Eric Christopher  <echristo@redhat.com>
 
+	* varasm.c (make_decl_rtl): Fix comment for removed
+	halfpic.c.
+
+2002-06-05  Eric Christopher  <echristo@redhat.com>
+
 	* Makefile.in: Remove missed halfpic bits.
 
 2002-06-05  Eric Christopher  <echristo@redhat.com>
