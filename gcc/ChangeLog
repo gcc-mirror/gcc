@@ -1,3 +1,29 @@
+2000-12-28  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (enum format_type): Add strfmon_format_type.
+	(decl_attributes): Handle format attributes strfmon and
+	__strfmon__.
+	(FMT_FLAG_USE_DOLLAR, FMT_FLAG_ZERO_WIDTH_BAD,
+	FMT_FLAG_EMPTY_PREC_OK): Define.
+	(format_char_info): Update comment for flag_chars.
+	(format_flag_spec): Add skip_next_char.
+	(format_kind_info): Add left_precision_char.
+	(printf_flag_specs, scanf_flag_specs, strftime_flag_specs,
+	format_types): Update for these new structure members and flags.
+	(time_char_table): Make const.
+	(strfmon_length_specs, strfmon_flag_specs, strfmon_flag_pairs,
+	monetary_char_table): New.
+	(format_types): Add details of strfmon formats.
+	(init_function_format_info): Create default attribute for strfmon.
+	(check_format_info_main): Check the new flags.  Handle
+	skip_next_char and left precision.
+	* toplev.c (documented_lang_options): Update description of
+	-Wformat.
+	* extend.texi: Document strfmon format attributes.  Document
+	attribute forms such as __printf__.  Clarify format_arg attribute
+	documentation.
+	* invoke.texi (-Wformat): Update for strfmon formats.
+
 2000-12-28  Andreas Jaeger  <aj@suse.de>
 
 	* expmed.c (store_bit_field): Fix last patch.
