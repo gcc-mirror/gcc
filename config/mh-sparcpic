@@ -1,1 +1,1 @@
-PICFLAG=`case "${LIBCFLAGS} ${LIBCXXFLAGS}" in *-fpic* ) echo -fpic ;; * ) echo -fPIC ;; esac`
+PICFLAG=`case '${LIBCFLAGS} ${LIBCXXFLAGS}' in *-fpic* ) echo -fpic ;; * ) echo -fPIC ;; esac`

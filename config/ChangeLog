@@ -1,3 +1,8 @@
+2000-06-21  Branko Cibej  <branko.cibej@hermes.si>
+
+	* mh-sparcpic: Use single instead of double quotes.
+	* mt-sparcpic: Likewise.
+
 2000-02-22  Nick Clifton  <nickc@cygnus.com>
 
 	* config/mt-wince: new file: Makefile fragment for WinCE targets.
