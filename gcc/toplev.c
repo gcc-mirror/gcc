@@ -140,7 +140,7 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #if ! (defined (VMS) || defined (OS2))
 extern char **environ;
 #endif
-extern char *version_string, *language_string;
+extern char *version_string;
 
 /* Carry information from ASM_DECLARE_OBJECT_NAME
    to ASM_FINISH_DECLARE_OBJECT.  */
@@ -148,8 +148,6 @@ extern char *version_string, *language_string;
 extern int size_directive_output;
 extern tree last_assemble_variable_decl;
 
-extern char *init_parse PVPROTO((char *));
-extern void finish_parse ();
 extern void init_decl_processing ();
 extern void init_obstacks ();
 extern void init_tree_codes ();

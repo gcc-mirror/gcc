@@ -1,5 +1,9 @@
 1999-08-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* parse.y (language_string): Constify.
+
+1999-08-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* repo.c (getpwd): Don't prototype.
 	* xref.c (getpwd): Likewise
 

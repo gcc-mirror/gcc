@@ -73,7 +73,7 @@ State 434 contains 2 shift/reduce conflicts.  (Four ways to parse this.)  */
 
 /* Since parsers are distinct for each language, put the language string
    definition here.  */
-char *language_string = "GNU C";
+const char * const language_string = "GNU C";
 
 /* Like YYERROR but do call yyerror.  */
 #define YYERROR1 { yyerror ("syntax error"); YYERROR; }

@@ -81,10 +81,10 @@ end ifobjc
 /* Since parsers are distinct for each language, put the language string
    definition here.  */
 ifobjc
-char *language_string = "GNU Obj-C";
+const char * const language_string = "GNU Obj-C";
 end ifobjc
 ifc
-char *language_string = "GNU C";
+const char * const language_string = "GNU C";
 end ifc
 
 /* Like YYERROR but do call yyerror.  */

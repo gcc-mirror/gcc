@@ -1,3 +1,25 @@
+Mon Aug 30 22:04:36 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-parse.in (language_string): Constify.
+
+	* dwarf2out.c (language_string): Remove declaration.
+
+	* dwarfout.c (language_string): Likewise.
+
+	* toplev.c (language_string, init_parse, finish_parse): Likewise.
+
+	* tree.h (language_string, init_parse, finish_parse): Declare.
+
+	* i386/sun386.h (language_string): Remove declaration.
+
+	* mips.h (language_string): Likewise.
+
+	* nextstep.h (language_string): Likewise.
+
+	* nextstep21.h (language_string): Likewise.
+
+	* rs6000.c (language_string): Likewise.
+
 Mon Aug 30 20:56:08 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (OBJS, PROTO_OBJS): Remove getpwd.o.

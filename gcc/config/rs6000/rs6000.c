@@ -43,7 +43,6 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_NO_PROTOTYPE 0
 #endif
 
-extern char *language_string;
 extern int profile_block_flag;
 
 #define min(A,B)	((A) < (B) ? (A) : (B))

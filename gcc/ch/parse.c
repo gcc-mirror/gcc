@@ -53,7 +53,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Since parsers are distinct for each language, put the 
    language string definition here.  (fnf) */
-char *language_string = "GNU CHILL";
+const char * const language_string = "GNU CHILL";
 
 /* Common code to be done before expanding any action. */
 #define INIT_ACTION { \
