@@ -1,3 +1,8 @@
+2002-06-07  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config.gcc (mips*-*-netbsd*): Add mips/t-netbsd to ${tmake_file}.
+	* config/mips/t-netbsd: New file.
+
 2002-06-07  Zack Weinberg  <zack@codesourcery.com>
 
 	* cppinit.c (COMMAND_LINE_OPTIONS): Give all relevant -W
