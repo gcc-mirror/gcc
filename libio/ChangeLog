@@ -1,3 +1,8 @@
+1999-12-21  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* filebuf.cc (open): Support ios::ate if _G_HAVE_IO_FILE_OPEN.
+	Remove seek for ios::app if not.
+
 1999-12-14  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* strstream.h (strstreambuf::streambuf): Rename parameters to

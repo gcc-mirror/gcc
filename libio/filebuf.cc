@@ -1,5 +1,5 @@
 /* This is part of libio/iostream, providing -*- C++ -*- input/output.
-Copyright (C) 1993, 1995 Free Software Foundation
+Copyright (C) 1993, 1995, 1999 Free Software Foundation
 
 This file is part of the GNU IO Library.  This library is free
 software; you can redistribute it and/or modify it under the
@@ -112,15 +112,23 @@ filebuf* filebuf::open(const char *filename, ios::openmode mode, int prot)
   if (mode & (int)ios::noreplace)
     posix_mode |= O_EXCL;
 #if _G_HAVE_IO_FILE_OPEN
-  return (filebuf*)_IO_file_open (this, filename, posix_mode, prot,
-				  read_write, 0);
+  if (!_IO_file_open (this, filename, posix_mode, prot, 
+		      read_write, 0))
+    return NULL;
+  if (mode & ios::ate) {
+    if (pubseekoff(0, ios::end) == EOF) {
+      _IO_un_link (this);
+      return NULL;
+    }
+  }
+  return this;
 #else
   int fd = ::open(filename, posix_mode, prot);
   if (fd < 0)
     return NULL;
   _fileno = fd;
   xsetflags(read_write, _IO_NO_READS+_IO_NO_WRITES+_IO_IS_APPENDING);
-  if (mode & (ios::ate|ios::app)) {
+  if (mode & ios::ate) {
     if (pubseekoff(0, ios::end) == EOF)
       return NULL;
   }
