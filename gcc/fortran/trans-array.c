@@ -2926,15 +2926,9 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym, tree fnbody)
     {
       gfc_trans_init_string_length (sym->ts.cl, &block);
 
-      DECL_DEFER_OUTPUT (decl) = 1;
-
-      /* Generate code to allocate the automatic variable.  It will be
-	 freed automatically.  */
-      tmp = gfc_build_addr_expr (NULL, decl);
-      args = gfc_chainon_list (NULL_TREE, tmp);
-      args = gfc_chainon_list (args, sym->ts.cl->backend_decl);
-      tmp = gfc_build_function_call (built_in_decls[BUILT_IN_STACK_ALLOC],
-				     args);
+      /* Emit a DECL_EXPR for this variable, which will cause the
+	 gimplifier to allocate stoage, and all that good stuff.  */
+      tmp = build (DECL_EXPR, TREE_TYPE (decl), decl);
       gfc_add_expr_to_block (&block, tmp);
     }
 

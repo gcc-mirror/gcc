@@ -897,6 +897,8 @@ mx_register_decls (tree decl, tree *stmt_list)
           && TREE_ADDRESSABLE (decl)
           /* The type of the variable must be complete.  */
           && COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (decl))
+	  /* The decl hasn't been decomposed somehow.  */
+	  && DECL_VALUE_EXPR (decl) == NULL
           /* Don't process the same decl twice.  */
           && ! mf_marked_p (decl))
         {
@@ -904,73 +906,7 @@ mx_register_decls (tree decl, tree *stmt_list)
           tree unregister_fncall, unregister_fncall_params;
           tree register_fncall, register_fncall_params;
 
-          if (DECL_DEFER_OUTPUT (decl))
-            {
-              /* Oh no ... it's probably a variable-length array (VLA).
-                 The size and address cannot be computed by merely
-                 looking at the DECL.  See gimplify_decl_stmt for the
-                 method by which VLA declarations turn into calls to
-                 BUILT_IN_STACK_ALLOC.  We assume that multiple
-                 VLAs declared later in the same block get allocation 
-                 code later than the others.  */
-              tree stack_alloc_call = NULL_TREE;
-
-              while(! tsi_end_p (initially_stmts))
-                {
-                  tree t = tsi_stmt (initially_stmts);
-
-                  tree call = NULL_TREE;
-                  if (TREE_CODE (t) == CALL_EXPR)
-                    call = t;
-                  else if (TREE_CODE (t) == MODIFY_EXPR &&
-                           TREE_CODE (TREE_OPERAND (t, 1)) == CALL_EXPR)
-                    call = TREE_OPERAND (t, 1);
-                  else if (TREE_CODE (t) == TRY_FINALLY_EXPR)
-                    {
-                      /* We hope that this is the try/finally block sometimes
-                         constructed by gimplify_bind_expr() for a BIND_EXPR
-                         that contains VLAs.  This very naive recursion
-                         appears to be sufficient.  */
-                      initially_stmts = tsi_start (TREE_OPERAND (t, 0));
-                    }
-
-                  if (call != NULL_TREE)
-                    {
-                      if (TREE_CODE (TREE_OPERAND(call, 0)) == ADDR_EXPR &&
-                          TREE_OPERAND (TREE_OPERAND (call, 0), 0) ==
-                                implicit_built_in_decls [BUILT_IN_STACK_ALLOC])
-                        {
-                          tree stack_alloc_args = TREE_OPERAND (call, 1);
-                          tree stack_alloc_op1 = TREE_VALUE (stack_alloc_args);
-                          tree stack_alloc_op2 = TREE_VALUE (TREE_CHAIN (stack_alloc_args));
-                          
-                          if (TREE_CODE (stack_alloc_op1) == ADDR_EXPR &&
-                              TREE_OPERAND (stack_alloc_op1, 0) == decl)
-                            {
-                              /* Got it! */
-                              size = stack_alloc_op2;
-                              stack_alloc_call = call;
-                              /* Advance iterator to point past this allocation call.  */
-                              tsi_next (&initially_stmts);
-                              break;
-                            }
-                        }
-                    }
-
-                  tsi_next (&initially_stmts);
-                }
-
-              if (stack_alloc_call == NULL_TREE)
-                {
-                  warning ("mudflap cannot handle variable-sized declaration `%s'",
-                         IDENTIFIER_POINTER (DECL_NAME (decl)));
-                  break;
-                }
-            }
-          else
-            {
-              size = convert (size_type_node, TYPE_SIZE_UNIT (TREE_TYPE (decl)));
-            }
+	  size = convert (size_type_node, TYPE_SIZE_UNIT (TREE_TYPE (decl)));
 
           /* (& VARIABLE, sizeof (VARIABLE), __MF_TYPE_STACK) */
           unregister_fncall_params =

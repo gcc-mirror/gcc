@@ -976,20 +976,34 @@ gimplify_decl_expr (tree *stmt_p)
 	  /* This is a variable-sized decl.  Simplify its size and mark it
 	     for deferred expansion.  Note that mudflap depends on the format
 	     of the emitted code: see mx_register_decls().  */
-	  tree t, args;
+	  tree t, args, addr, ptr_type;
 
 	  gimplify_type_sizes (TREE_TYPE (decl), stmt_p);
 	  gimplify_one_sizepos (&DECL_SIZE (decl), stmt_p);
 	  gimplify_one_sizepos (&DECL_SIZE_UNIT (decl), stmt_p);
 
+	  /* All occurences of this decl in final gimplified code will be
+	     replaced by indirection.  Setting DECL_VALUE_EXPR does two
+	     things: First, it lets the rest of the gimplifier know what
+	     replacement to use.  Second, it lets the debug info know 
+	     where to find the value.  */
+	  ptr_type = build_pointer_type (TREE_TYPE (decl));
+	  addr = create_tmp_var (ptr_type, get_name (decl));
+	  DECL_IGNORED_P (addr) = 0;
+	  t = build_fold_indirect_ref (addr);
+	  DECL_VALUE_EXPR (decl) = t;
+
 	  args = tree_cons (NULL, DECL_SIZE_UNIT (decl), NULL);
-	  t = build_fold_addr_expr (decl);
-	  args = tree_cons (NULL, t, args);
-	  t = implicit_built_in_decls[BUILT_IN_STACK_ALLOC];
+	  t = built_in_decls[BUILT_IN_ALLOCA];
 	  t = build_function_call_expr (t, args);
+	  t = fold_convert (ptr_type, t);
+	  t = build2 (MODIFY_EXPR, void_type_node, addr, t);
 
 	  gimplify_and_add (t, stmt_p);
-	  DECL_DEFER_OUTPUT (decl) = 1;
+
+	  /* Indicate that we need to restore the stack level when the
+	     enclosing BIND_EXPR is exited.  */
+	  gimplify_ctxp->save_stack = true;
 	}
 
       if (init && init != error_mark_node)
@@ -1834,20 +1848,7 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
   decl = get_callee_fndecl (*expr_p);
   if (decl && DECL_BUILT_IN (decl))
     {
-      tree new;
-
-      /* If it is allocation of stack, record the need to restore the memory
-	 when the enclosing bind_expr is exited.  */
-      if (DECL_FUNCTION_CODE (decl) == BUILT_IN_STACK_ALLOC)
-	gimplify_ctxp->save_stack = true;
-
-      /* If it is restore of the stack, reset it, since it means we are
-	 regimplifying the bind_expr.  Note that we use the fact that
-	 for try_finally_expr, try part is processed first.  */
-      if (DECL_FUNCTION_CODE (decl) == BUILT_IN_STACK_RESTORE)
-	gimplify_ctxp->save_stack = false;
-
-      new = simplify_builtin (*expr_p, !want_value);
+      tree new = simplify_builtin (*expr_p, !want_value);
 
       if (new && new != *expr_p)
 	{
@@ -3781,9 +3782,19 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 		abort ();
 #endif
 	      ret = GS_ERROR;
+	      break;
 	    }
-	  else
-	    ret = GS_ALL_DONE;
+
+	  /* If this is a local variable sized decl, it must be accessed
+	     indirectly.  Perform that substitution.  */
+	  if (DECL_VALUE_EXPR (tmp))
+	    {
+	      *expr_p = unshare_expr (DECL_VALUE_EXPR (tmp));
+	      ret = GS_OK;
+	      break;
+	    }
+
+	  ret = GS_ALL_DONE;
 	  break;
 
 	case SSA_NAME:

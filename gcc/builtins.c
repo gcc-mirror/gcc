@@ -5756,11 +5756,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 	return target;
       break;
 
-    case BUILT_IN_STACK_ALLOC:
-      expand_stack_alloc (TREE_VALUE (arglist),
-			  TREE_VALUE (TREE_CHAIN (arglist)));
-      return const0_rtx;
-
     case BUILT_IN_STACK_SAVE:
       return expand_stack_save ();
 

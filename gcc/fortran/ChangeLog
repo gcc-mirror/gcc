@@ -1,3 +1,10 @@
+2004-08-10  Richard Henderson  <rth@redhat.com>
+
+	* f95-lang.c (gfc_init_builtin_functions): Remove
+	 __builtin_stack_alloc, add __builtin_alloca.
+	* trans-array.c (gfc_trans_auto_array_allocation): Use DECL_EXPR.
+	* trans-decl.c (gfc_trans_auto_character_variable): Likewise.
+
 2004-08-10  Paul Brook  <paul@codesourcery.com>
 
 	* trans-io.c (transfer_expr): Handle pointters.

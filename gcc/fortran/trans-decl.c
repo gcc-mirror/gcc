@@ -1626,7 +1626,6 @@ gfc_trans_auto_character_variable (gfc_symbol * sym, tree fnbody)
 {
   stmtblock_t body;
   tree decl;
-  tree args;
   tree tmp;
 
   assert (sym->backend_decl);
@@ -1639,23 +1638,11 @@ gfc_trans_auto_character_variable (gfc_symbol * sym, tree fnbody)
 
   decl = sym->backend_decl;
 
-  DECL_DEFER_OUTPUT (decl) = 1;
-
-  /* Since we don't use a DECL_STMT or equivalent, we have to deal
-     with getting these gimplified.  But we can't gimplify it yet since
-     we're still generating statements.
-
-     ??? This should be cleaned up and handled like other front ends.  */
-  gfc_add_expr_to_block (&body, save_expr (DECL_SIZE (decl)));
-  gfc_add_expr_to_block (&body, save_expr (DECL_SIZE_UNIT (decl)));
-
-  /* Generate code to allocate the automatic variable.  It will be freed
-     automatically.  */
-  tmp = gfc_build_addr_expr (NULL, decl);
-  args = gfc_chainon_list (NULL_TREE, tmp);
-  args = gfc_chainon_list (args, sym->ts.cl->backend_decl);
-  tmp = gfc_build_function_call (built_in_decls[BUILT_IN_STACK_ALLOC], args);
+  /* Emit a DECL_EXPR for this variable, which will cause the
+     gimplifier to allocate stoage, and all that good stuff.  */
+  tmp = build (DECL_EXPR, TREE_TYPE (decl), decl);
   gfc_add_expr_to_block (&body, tmp);
+
   gfc_add_expr_to_block (&body, fnbody);
   return gfc_finish_block (&body);
 }
