@@ -2,6 +2,8 @@
 
 AUTOMAKE_OPTIONS = foreign
 
+ACLOCAL_AMFLAGS = -I .
+
 if TESTSUBDIR
 SUBDIRS = $(DIRLTDL) testsuite gcj include
 else
@@ -23,7 +25,14 @@ cond_x_ltlibrary =
 xlib_includes =
 endif
 
-toolexeclib_LTLIBRARIES = libgcj.la lib-org-xml-sax.la lib-org-w3c-dom.la $(cond_x_ltlibrary)
+if GTK_AWT
+cond_gtk_ltlibrary = lib-gnu-java-awt-peer-gtk.la
+else
+cond_gtk_ltlibrary =
+endif
+
+toolexeclib_LTLIBRARIES = libgcj.la lib-org-xml-sax.la lib-org-w3c-dom.la \
+    $(cond_gtk_ltlibrary) $(cond_x_ltlibrary)
 toolexecmainlib_DATA = libgcj.spec
 
 jardir = $(datadir)/java
@@ -115,6 +124,8 @@ nat_files = $(nat_source_files:.cc=.lo)
 x_nat_files = $(x_nat_source_files:.cc=.lo)
 ## Objects from C sources in subdirs.
 c_files = $(c_source_files:.c=.lo)
+## Objects from gtk-related C sources in subdirs.
+gtk_c_files = $(gtk_c_source_files:.c=.lo)
 ## Objects from Java sources in subdirs.
 javao_files = $(java_source_files:.java=.lo) \
 	$(built_java_source_files:.java=.lo)
@@ -139,6 +150,102 @@ libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) $(THREADLDFLAGS) $(THREADLIBS) \
 ## The mysterious backslash is consumed by make.
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
 libgcj_la_LINK = $(LIBLINK)
+
+## Gtk JNI sources.
+gtk_c_source_files = \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontMetrics.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkButtonPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCanvasPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkClipboard.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkImagePainter.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkLabelPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkListPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuBarPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuItemPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPanelPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPopupMenuPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollBarPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollPanePeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextAreaPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextComponentPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextFieldPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkToolkit.c	\
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c \
+jni/gtk-peer/gthread-jni.c \
+jni/classpath/jcl.c \
+jni/classpath/jnilink.c	\
+jni/classpath/native_state.c \
+jni/classpath/primlib.c
+
+## Java sources for Gtk peers.
+gtk_awt_peer_sources = \
+gnu/java/awt/peer/gtk/GdkFontMetrics.java \
+gnu/java/awt/peer/gtk/GdkGraphics.java \
+gnu/java/awt/peer/gtk/GtkArg.java \
+gnu/java/awt/peer/gtk/GtkArgList.java \
+gnu/java/awt/peer/gtk/GtkButtonPeer.java \
+gnu/java/awt/peer/gtk/GtkCanvasPeer.java \
+gnu/java/awt/peer/gtk/GtkCheckboxGroupPeer.java	\
+gnu/java/awt/peer/gtk/GtkCheckboxMenuItemPeer.java \
+gnu/java/awt/peer/gtk/GtkCheckboxPeer.java \
+gnu/java/awt/peer/gtk/GtkChoicePeer.java \
+gnu/java/awt/peer/gtk/GtkClipboard.java	\
+gnu/java/awt/peer/gtk/GtkComponentPeer.java \
+gnu/java/awt/peer/gtk/GtkContainerPeer.java \
+gnu/java/awt/peer/gtk/GtkDialogPeer.java \
+gnu/java/awt/peer/gtk/GtkFileDialogPeer.java \
+gnu/java/awt/peer/gtk/GtkFontPeer.java \
+gnu/java/awt/peer/gtk/GtkFramePeer.java	\
+gnu/java/awt/peer/gtk/GtkGenericPeer.java \
+gnu/java/awt/peer/gtk/GtkImage.java \
+gnu/java/awt/peer/gtk/GtkImagePainter.java \
+gnu/java/awt/peer/gtk/GtkLabelPeer.java	\
+gnu/java/awt/peer/gtk/GtkListPeer.java \
+gnu/java/awt/peer/gtk/GtkMainThread.java \
+gnu/java/awt/peer/gtk/GtkMenuBarPeer.java \
+gnu/java/awt/peer/gtk/GtkMenuComponentPeer.java	\
+gnu/java/awt/peer/gtk/GtkMenuItemPeer.java \
+gnu/java/awt/peer/gtk/GtkMenuPeer.java \
+gnu/java/awt/peer/gtk/GtkOffScreenImage.java \
+gnu/java/awt/peer/gtk/GtkPanelPeer.java	\
+gnu/java/awt/peer/gtk/GtkPopupMenuPeer.java \
+gnu/java/awt/peer/gtk/GtkScrollPanePeer.java \
+gnu/java/awt/peer/gtk/GtkScrollbarPeer.java \
+gnu/java/awt/peer/gtk/GtkTextAreaPeer.java \
+gnu/java/awt/peer/gtk/GtkTextComponentPeer.java	\
+gnu/java/awt/peer/gtk/GtkTextFieldPeer.java \
+gnu/java/awt/peer/gtk/GtkToolkit.java \
+gnu/java/awt/peer/gtk/GtkWindowPeer.java
+
+## FIXME: GNU make.
+gtk_c_headers = $(patsubst %.java,jniinclude/%.h,$(subst /,_,$(gtk_awt_peer_sources)))
+
+$(gtk_c_headers): $(gtk_awt_peer_sources)
+## FIXME: GNU make.
+	@input=`echo $@ | sed -e 's,jniinclude,,' -e 's,_,.,g' -e 's,.h$$,,'`; \
+	echo "$(GCJH) -jni -d jniinclude -classpath '' -bootclasspath $(top_builddir) $$input"; \
+	$(GCJH) -jni -d jniinclude -classpath '' -bootclasspath $(top_builddir) $$input
+
+lib_gnu_java_awt_peer_gtk_la_SOURCES = \
+$(gtk_awt_peer_sources) \
+$(gtk_c_source_files) \
+jni/gtk-peer/gthread-jni.h \
+jni/gtk-peer/gtkpeer.h \
+jni/classpath/jcl.h \
+jni/classpath/jnilink.h	\
+jni/classpath/native_state.h \
+jni/classpath/primlib.h
+
+lib_gnu_java_awt_peer_gtk_la_LIBADD = $(GTK_LIBS) $(GLIB_LIBS) $(LIBART_LIBS)
 
 lib_org_w3c_dom_la_SOURCES = org/w3c/dom/Attr.java \
 org/w3c/dom/CDATASection.java \
@@ -220,6 +327,7 @@ all_java_source_files = \
     $(built_java_source_files) \
     $(lib_org_xml_sax_la_SOURCES) \
     $(lib_org_w3c_dom_la_SOURCES) \
+    $(gtk_awt_peer_sources) \
     $(x_java_source_files)
 
 all_java_class_files = $(all_java_source_files:.java=.class)
@@ -270,8 +378,17 @@ $(c_files): %.lo: %.c
 $(c_files): java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h
 
 ## FIXME: GNU make.
+$(gtk_c_files): %.lo: %.c
+	$(LTCOMPILE) -c -Ijniinclude -I$(srcdir)/jni/classpath -I$(srcdir)/jni/gtk-peer $(GTK_CFLAGS) $(LIBART_CFLAGS) -o $@ $<
+
+$(gtk_c_files): $(gtk_c_headers)
+
+## FIXME: GNU make.
 $(javao_files) $(x_javao_files) $(lib_org_w3c_dom_la_OBJECTS) $(lib_org_xml_sax_la_OBJECTS): %.lo: %.java
 	$(GCJCOMPILE) -o $@ $<
+
+$(gtk_awt_peer_sources:.java=.lo): %.lo: %.java
+	$(GCJCOMPILE) -fjni -o $@ $<
 
 ## Pass the list of object files to libtool in a temporary file to 
 ## avoid tripping platform command line length limits.

@@ -289,6 +289,59 @@ AC_SUBST(ZLIBSPEC)
 ZLIBTESTSPEC=
 AC_SUBST(ZLIBTESTSPEC)
 
+AC_PATH_XTRA
+
+dnl Determine which AWT peer libraries to build
+AC_ARG_ENABLE(java-awt,
+[  --enable-java-awt       list of AWT peer implementations to be built])
+
+peerlibs="`echo ${enable_java_awt} | tr ',' ' '`"
+use_xlib_awt=""
+use_gtk_awt=""
+# The default toolkit to use is the first one specified.
+TOOLKIT=
+AC_SUBST(TOOLKIT)
+
+for peer in $peerlibs ; do
+  case $peer in
+    xlib)
+      if test "$no_x" = yes; then
+        echo "*** xlib peers requested but no X library available" 1>&2
+        exit 1
+      else
+        use_xlib_awt="yes"
+	if test -z "$TOOLKIT"; then
+	   TOOLKIT=gnu.gnu.awt.xlib.XToolkit
+	fi
+      fi
+      ;;
+    gtk)
+      if test "$no_x" = yes; then
+	 echo "*** xlib peers requested but no X library available" 1>&2
+	 exit 1
+      else
+	 use_gtk_awt=yes
+	 if test -z "$TOOLKIT"; then
+	    TOOLKIT=gnu.java.awt.peer.gtk.GtkToolkit
+	 fi
+	 test -d jniinclude || mkdir jniinclude
+      fi
+      ;;
+    no)
+      use_xlib_awt=
+      use_gtk_awt=
+      break
+      ;;
+    *)
+      echo "*** unrecognised argument \"${peer}\" for --enable-java-awt" 1>&2
+      exit 1
+  esac
+done
+
+AM_CONDITIONAL(XLIB_AWT, test "$use_xlib_awt" = yes)
+AM_CONDITIONAL(GTK_AWT, test "$use_gtk_awt" = yes)
+
+
 dnl FIXME: this should be _libs on some hosts.
 libsubdir=.libs
 
@@ -721,6 +774,15 @@ else
       AC_CHECK_LIB(z, deflate, ZLIBSPEC=-lz, ZLIBSPEC=)
    fi
 
+   # Test for Gtk stuff, if asked for.
+   if test "$use_gtk_awt" = yes; then
+      AM_PATH_GTK(1.2.4,,exit 1)
+      AM_PATH_GLIB(1.2.4,,exit 1,gthread)
+      dnl XXX Fix me when libart.m4 has the compile test fixed!
+      enable_libarttest=no
+      AM_PATH_LIBART(2.1.0,,exit 1)
+   fi
+
    # On Solaris, and maybe other architectures, the Boehm collector
    # requires -ldl.
    if test "$GC" = boehm; then
@@ -757,7 +819,8 @@ CPPFLAGS="$CPPFLAGS -I`${PWDCMD-pwd}` -I`cd $srcdir && ${PWDCMD-pwd}`"
 if test ! -f gnu/classpath/Configuration.java; then
   test -d gnu || mkdir gnu
   test -d gnu/classpath || mkdir gnu/classpath
-  sed 's,@LIBGCJDEBUG@,$LIBGCJDEBUG,' \
+  sed -e 's,@LIBGCJDEBUG@,$LIBGCJDEBUG,' \
+      -e 's,@TOOLKIT@,$TOOLKIT,' \
 	< $srcdir/gnu/classpath/Configuration.java.in \
 	> gnu/classpath/Configuration.java
   # We do not want to redirect the output of the grep below to /dev/null,
@@ -966,42 +1029,6 @@ else
   multilib_arg=
 fi
 
-AC_PATH_XTRA
-
-dnl Determine which AWT peer libraries to build
-AC_ARG_ENABLE(java-awt,
-[  --enable-java-awt       list of AWT peer implementations to be built])
-
-peerlibs="`echo ${enable_java_awt} | tr ',' ' '`"
-use_xlib_awt=""
-use_gtk_awt=""
-
-for peer in $peerlibs ; do
-  case $peer in
-    xlib)
-      if [test "$no_x" = yes]; then
-        echo "*** xlib peers requested but no X library available" 1>&2
-        exit 1
-      else
-        use_xlib_awt="yes"
-      fi
-      ;;
-    gtk)
-      # Nothing, yet...
-      ;;
-    no)
-      use_xlib_awt=
-      use_gtk_awt=
-      break
-      ;;
-    *)
-      echo "*** unrecognised argument \"${peer}\" for --enable-java-awt" 1>&2
-      exit 1
-  esac
-done
-
-AM_CONDITIONAL(XLIB_AWT, test "$use_xlib_awt" = yes)
-AM_CONDITIONAL(GTK_AWT, test "$use_gtk_awt" = yes)
 
 
 here=`${PWDCMD-pwd}`
@@ -1023,10 +1050,10 @@ esac
 # builddir for the .java files.
 h=`${PWDCMD-pwd}`
 : > deps.mk
-( (cd $srcdir && find . \( -name '*.java' -o -name '*.cc' \) -print) ;
-  find . \( -name '*.java' -o -name '*.cc' \) -print) | \
+( (cd $srcdir && find . \( -name '*.java' -o -name '*.cc' -o -name '*.c' \) -print) ;
+  find . \( -name '*.java' -o -name '*.cc' -o -name '*.c' \) -print) | \
    fgrep -v testsuite | \
-   sed -e 's/\.java/.d/'\;'s/\.cc/.d/' | \
+   sed -e 's/\.java/.d/'\;'s/\.cc/.d/'\;'s/\.c/.d/' | \
    while read f; do
       echo "include $f" >> deps.mk
       test -f $f || {

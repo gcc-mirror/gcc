@@ -1,5 +1,5 @@
 /* Toolkit.java -- AWT Toolkit superclass
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -96,7 +96,7 @@ public abstract class Toolkit
 {
   /** The default toolkit name. */
   private static String default_toolkit_name
-    = "gnu.awt.gtk.GtkToolkit";
+    = gnu.classpath.Configuration.default_awt_peer_toolkit;
 
   /**
    * The toolkit in use.  Once we load it, we don't ever change it
