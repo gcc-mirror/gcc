@@ -235,7 +235,41 @@ do { \
   (bitmap)->elms [(bitno) / SBITMAP_ELT_BITS] &= ~((SBITMAP_ELT_TYPE) 1 << (bitno) % SBITMAP_ELT_BITS); \
 } while (0)
 
-extern void dump_sbitmap       PROTO ((FILE *, sbitmap));
+/* Loop over all elements of SBITSET, starting with MIN.  */
+#define EXECUTE_IF_SET_IN_SBITMAP(SBITMAP, MIN, N, CODE)		\
+do {									\
+  unsigned int bit_num_ = (MIN) % (unsigned) SBITMAP_ELT_BITS;		\
+  unsigned int word_num_ = (MIN) / (unsigned) SBITMAP_ELT_BITS;		\
+  unsigned int size_ = (SBITMAP)->size;					\
+  SBITMAP_ELT_TYPE *ptr_ = (SBITMAP)->elms;				\
+									\
+  while (word_num_ < size_)						\
+    {									\
+      SBITMAP_ELT_TYPE word_ = ptr_[word_num_];				\
+      if (word_ != 0)							\
+	{								\
+	  for (; bit_num_ < SBITMAP_ELT_BITS; ++bit_num_)		\
+	    {								\
+	      SBITMAP_ELT_TYPE mask_ = (SBITMAP_ELT_TYPE)1 << bit_num_;	\
+	      if ((word_ & mask_) != 0)					\
+		{							\
+		  word_ &= ~mask_;					\
+		  (N) = word_num_ * SBITMAP_ELT_BITS + bit_num_;	\
+		  CODE;							\
+		  if (word_ == 0)					\
+		    break;						\
+		}							\
+	    }								\
+	}								\
+      bit_num_ = 0;							\
+      word_num_++;							\
+   }									\
+} while (0)
+
+#define sbitmap_free(map)		free(map)
+#define sbitmap_vector_free(vec)	free(vec)
+
+extern void dump_sbitmap PROTO ((FILE *, sbitmap));
 extern void dump_sbitmap_vector PROTO ((FILE *, char *, char *,
 					sbitmap *, int));
 extern sbitmap sbitmap_alloc PROTO ((int));

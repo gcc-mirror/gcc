@@ -460,6 +460,12 @@ extern int sdb_begin_function_line;
 extern FILE *asm_out_file;
 #endif
 
+/* Default file in which to dump debug output.  */
+
+#ifdef BUFSIZ
+extern FILE *rtl_dump_file;
+#endif
+
 /* Decide whether DECL needs to be in a writable section.  RELOC is the same
    as for SELECT_SECTION.  */
 
