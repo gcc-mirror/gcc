@@ -12,6 +12,7 @@ int t( int i)
   j = 0;
 end:
   return j;
+}
 
 /* Should have no ifs left after straightening.  */
 /* { dg-final { scan-tree-dump-times "if " 0 "phiopt1"} } */
