@@ -1,3 +1,8 @@
+2005-03-12  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* testsuite/libjava.jacks/jacks.xfail: Add XFAILs for new JSR-201
+	tests.
+
 2005-03-11  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* testsuite/lib/libjava.exp (libjava_init): Use the same target
