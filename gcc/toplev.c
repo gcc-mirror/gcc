@@ -4010,10 +4010,11 @@ rest_of_compilation (decl)
 	   life_analysis (insns, max_reg_num (), rtl_dump_file, 1);
 	 });
 
-      if (warn_uninitialized)
+      if (warn_uninitialized || extra_warnings)
 	{
 	  uninitialized_vars_warning (DECL_INITIAL (decl));
-	  setjmp_args_warning ();
+          if (extra_warnings)
+	    setjmp_args_warning ();
 	}
     }
 
