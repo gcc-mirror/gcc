@@ -30,6 +30,8 @@
 
 2004-02-12  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* function.c (update_epilogue_consts): Teach about binary operations.
+
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Don't kill
 	previous MEM_VOLATILE in REF.
 	* function.c (fixup_var_refs): Save volatile_ok and set to 1.
