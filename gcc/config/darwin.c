@@ -391,12 +391,12 @@ machopic_stub_name (const char *name)
 
     if (needs_quotes)
       {
-        memcpy (buffer + bufferlen +1, "$stub\"", strlen("$stub\""));
+        memcpy (buffer + bufferlen +1, "$stub\"", strlen("$stub\"")+1);
         bufferlen += strlen("$stub\"");
       }
     else
       {
-        memcpy (buffer + bufferlen +1, "$stub", strlen("$stub"));
+        memcpy (buffer + bufferlen +1, "$stub", strlen("$stub")+1);
         bufferlen += strlen("$stub");
       }
     ptr_name = get_identifier (buffer);
