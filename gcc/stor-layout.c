@@ -461,11 +461,6 @@ layout_decl (decl, known_align)
 			       larger_than_size);
 	}
     }
-
-  /* If there was already RTL for this DECL, as for a variable with an
-     incomplete type whose type is completed later, update the RTL.  */
-  if (DECL_RTL_SET_P (decl))
-    make_decl_rtl (decl, NULL);
 }
 
 /* Hook for a front-end function that can modify the record layout as needed

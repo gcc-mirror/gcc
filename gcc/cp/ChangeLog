@@ -1,3 +1,10 @@
+2002-04-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (duplicate_decls): Do not copy the RTL for a variable
+	declaration if the old variable had an incomplete type and the new
+	variable does not.
+	(complete_vars): Do not call layout_decl for completed variables.
+
 2002-04-12  Richard Sandiford  <rsandifo@redhat.com>
 
 	* decl.c (duplicate_decls): Don't try to unify an implicit typedef
