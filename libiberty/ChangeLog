@@ -1,3 +1,7 @@
+2000-07-21  Mike Stump  <mrs@wrs.com>
+
+	* Makefile.in (xexit.o): Add dependency for config.h in xexit.c.
+
 2000-07-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cp-demangle.c (cp_demangle_type): Wrap in IN_LIBGCC2.
