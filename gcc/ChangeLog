@@ -1,3 +1,7 @@
+2001-07-18  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* defaults.h (ASM_OUTPUT_WEAK_ALIAS): Check for ASM_WEAKEN_LABEL.
+
 Wed Jul 18 20:47:36 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* cse.c: Undo my previous patch.
