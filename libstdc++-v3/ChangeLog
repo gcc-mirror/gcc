@@ -1,3 +1,10 @@
+2004-07-29  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/16813
+	* include/debug/map.h (insert(_InputIterator, _InputIterator)):
+	Fix typo.
+	* testsuite/23_containers/map/insert/16813.cc: New.
+
 2004-07-29  Phil Edwards  <phil@codesourcery.com>
 
 	* docs/html/faq/index.html:  Update version references.  Make
