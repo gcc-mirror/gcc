@@ -6200,6 +6200,7 @@ record_unknown_type (type, name)
   TYPE_DECL_SUPPRESS_DEBUG (decl) = 1;
   TYPE_SIZE (type) = TYPE_SIZE (void_type_node);
   TYPE_ALIGN (type) = 1;
+  TYPE_USER_ALIGN (type) = 0;
   TYPE_MODE (type) = TYPE_MODE (void_type_node);
 }
 
@@ -12884,6 +12885,7 @@ xref_tag (code_type_node, name, globalize)
 	     to avoid crashing if it does not get defined.  */
 	  TYPE_MODE (ref) = TYPE_MODE (unsigned_type_node);
 	  TYPE_ALIGN (ref) = TYPE_ALIGN (unsigned_type_node);
+	  TYPE_USER_ALIGN (ref) = 0;
 	  TREE_UNSIGNED (ref) = 1;
 	  TYPE_PRECISION (ref) = TYPE_PRECISION (unsigned_type_node);
 	  TYPE_MIN_VALUE (ref) = TYPE_MIN_VALUE (unsigned_type_node);
@@ -13297,6 +13299,7 @@ finish_enum (enumtype)
 	  TYPE_MODE (tem) = TYPE_MODE (enumtype);
 	  TYPE_PRECISION (tem) = TYPE_PRECISION (enumtype);
 	  TYPE_ALIGN (tem) = TYPE_ALIGN (enumtype);
+	  TYPE_USER_ALIGN (tem) = TYPE_USER_ALIGN (enumtype);
 	  TREE_UNSIGNED (tem) = TREE_UNSIGNED (enumtype);
 	}
 

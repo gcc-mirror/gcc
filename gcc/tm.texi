@@ -849,9 +849,10 @@ on machines that don't have byte or half-word store operations.
 
 @findex BIGGEST_FIELD_ALIGNMENT
 @item BIGGEST_FIELD_ALIGNMENT
-Biggest alignment that any structure field can require on this machine,
-in bits.  If defined, this overrides @code{BIGGEST_ALIGNMENT} for
-structure fields only.
+Biggest alignment that any structure or union field can require on this
+machine, in bits.  If defined, this overrides @code{BIGGEST_ALIGNMENT} for
+structure and union fields only, unless the field alignment has been set
+by the @code{__attribute__ ((aligned (@var{n})))} construct.
 
 @findex ADJUST_FIELD_ALIGN
 @item ADJUST_FIELD_ALIGN (@var{field}, @var{computed})

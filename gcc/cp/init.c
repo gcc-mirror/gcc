@@ -74,6 +74,7 @@ void init_init_processing ()
   /* Use the biggest alignment supported by the target to prevent operator
      new from returning misaligned pointers. */
   TYPE_ALIGN (BI_header_type) = BIGGEST_ALIGNMENT;
+  TYPE_USER_ALIGN (BI_header_type) = 0;
   finish_builtin_type (BI_header_type, "__new_cookie", fields,
 		       0, BI_header_type);
   BI_header_size = size_in_bytes (BI_header_type);

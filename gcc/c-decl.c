@@ -1805,7 +1805,10 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 	  DECL_MODE (newdecl) = DECL_MODE (olddecl);
 	  if (TREE_CODE (olddecl) != FUNCTION_DECL)
 	    if (DECL_ALIGN (olddecl) > DECL_ALIGN (newdecl))
-	      DECL_ALIGN (newdecl) = DECL_ALIGN (olddecl);
+	      {
+		DECL_ALIGN (newdecl) = DECL_ALIGN (olddecl);
+		DECL_USER_ALIGN (newdecl) |= DECL_ALIGN (olddecl);
+	      }
 	}
 
       /* Keep the old rtl since we can safely use it.  */
@@ -5102,6 +5105,7 @@ xref_tag (code, name)
 	 to avoid crashing if it does not get defined.  */
       TYPE_MODE (ref) = TYPE_MODE (unsigned_type_node);
       TYPE_ALIGN (ref) = TYPE_ALIGN (unsigned_type_node);
+      TYPE_USER_ALIGN (ref) = 0;
       TREE_UNSIGNED (ref) = 1;
       TYPE_PRECISION (ref) = TYPE_PRECISION (unsigned_type_node);
       TYPE_MIN_VALUE (ref) = TYPE_MIN_VALUE (unsigned_type_node);
@@ -5328,8 +5332,11 @@ finish_struct (t, fieldlist, attributes)
 #endif
 #ifdef PCC_BITFIELD_TYPE_MATTERS
 		  if (PCC_BITFIELD_TYPE_MATTERS)
-		    DECL_ALIGN (x) = MAX (DECL_ALIGN (x),
-					  TYPE_ALIGN (TREE_TYPE (x)));
+		    {
+		      DECL_ALIGN (x) = MAX (DECL_ALIGN (x),
+					    TYPE_ALIGN (TREE_TYPE (x)));
+		      DECL_USER_ALIGN (x) |= TYPE_USER_ALIGN (TREE_TYPE (x));
+		    }
 #endif
 		}
 	    }
@@ -5343,6 +5350,8 @@ finish_struct (t, fieldlist, attributes)
 	  /* Non-bit-fields are aligned for their type, except packed
 	     fields which require only BITS_PER_UNIT alignment.  */
 	  DECL_ALIGN (x) = MAX (DECL_ALIGN (x), min_align);
+	  if (! DECL_PACKED (x))
+	    DECL_USER_ALIGN (x) |= TYPE_USER_ALIGN (TREE_TYPE (x));
 	}
 
       DECL_INITIAL (x) = 0;
@@ -5400,6 +5409,7 @@ finish_struct (t, fieldlist, attributes)
       TYPE_FIELDS (x) = TYPE_FIELDS (t);
       TYPE_LANG_SPECIFIC (x) = TYPE_LANG_SPECIFIC (t);
       TYPE_ALIGN (x) = TYPE_ALIGN (t);
+      TYPE_USER_ALIGN (x) = TYPE_USER_ALIGN (t);
     }
 
   /* If this was supposed to be a transparent union, but we can't
@@ -5584,6 +5594,7 @@ finish_enum (enumtype, values, attributes)
 	  DECL_SIZE (enu) = TYPE_SIZE (enumtype);
 	  DECL_SIZE_UNIT (enu) = TYPE_SIZE_UNIT (enumtype);
 	  DECL_ALIGN (enu) = TYPE_ALIGN (enumtype);
+	  DECL_USER_ALIGN (enu) = TYPE_USER_ALIGN (enumtype);
 	  DECL_MODE (enu) = TYPE_MODE (enumtype);
 	  DECL_INITIAL (enu) = convert (enumtype, DECL_INITIAL (enu));
 
@@ -5607,6 +5618,7 @@ finish_enum (enumtype, values, attributes)
       TYPE_MODE (tem) = TYPE_MODE (enumtype);
       TYPE_PRECISION (tem) = TYPE_PRECISION (enumtype);
       TYPE_ALIGN (tem) = TYPE_ALIGN (enumtype);
+      TYPE_USER_ALIGN (tem) = TYPE_USER_ALIGN (enumtype);
       TREE_UNSIGNED (tem) = TREE_UNSIGNED (enumtype);
     }
 

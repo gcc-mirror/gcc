@@ -2297,6 +2297,7 @@ finish_builtin_type (type, name, fields, len, align_type)
     }
   DECL_FIELD_CONTEXT (fields[i]) = type;
   TYPE_ALIGN (type) = TYPE_ALIGN (align_type);
+  TYPE_USER_ALIGN (type) = TYPE_USER_ALIGN (align_type);
   layout_type (type);
 #if 0 /* not yet, should get fixed properly later */
   TYPE_NAME (type) = make_type_decl (get_identifier (name), type);

@@ -421,7 +421,10 @@ build_java_array_type (element_type, length)
       TREE_CHAIN (fld) = arfld;
     }
   else
-    TYPE_ALIGN (t) = TYPE_ALIGN (element_type);
+    {
+      TYPE_ALIGN (t) = TYPE_ALIGN (element_type);
+      TYPE_USER_ALIGN (t) = TYPE_USER_ALIGN (element_type);
+    }
   pop_obstacks ();
 
   /* We could layout_class, but that loads java.lang.Object prematurely.

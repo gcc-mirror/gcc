@@ -984,6 +984,7 @@ build_secondary_vtable (binfo, for_type)
 
   new_decl = build_vtable (for_type, name, TREE_TYPE (orig_decl));
   DECL_ALIGN (new_decl) = DECL_ALIGN (orig_decl);
+  DECL_USER_ALIGN (new_decl) = DECL_USER_ALIGN (orig_decl);
   BINFO_VTABLE (binfo) = pushdecl_top_level (new_decl);
 
 #ifdef GATHER_STATISTICS
@@ -3225,8 +3226,11 @@ check_bitfield_decl (field)
 #endif
 #ifdef PCC_BITFIELD_TYPE_MATTERS
 	  if (PCC_BITFIELD_TYPE_MATTERS)
-	    DECL_ALIGN (field) = MAX (DECL_ALIGN (field), 
-				      TYPE_ALIGN (type));
+	    {
+	      DECL_ALIGN (field) = MAX (DECL_ALIGN (field), 
+					TYPE_ALIGN (type));
+	      DECL_USER_ALIGN (field) |= TYPE_USER_ALIGN (type);
+	    }
 #endif
 	}
     }
@@ -3236,6 +3240,7 @@ check_bitfield_decl (field)
       DECL_BIT_FIELD (field) = 0;
       CLEAR_DECL_C_BIT_FIELD (field);
       DECL_ALIGN (field) = MAX (DECL_ALIGN (field), TYPE_ALIGN (type));
+      DECL_USER_ALIGN (field) |= TYPE_USER_ALIGN (type);
     }
 }
 
@@ -3326,6 +3331,8 @@ check_field_decl (field, t, cant_have_const_ctor,
 			    (DECL_PACKED (field) 
 			     ? BITS_PER_UNIT
 			     : TYPE_ALIGN (TREE_TYPE (field))));
+  if (! DECL_PACKED (field))
+    DECL_USER_ALIGN (field) |= TYPE_USER_ALIGN (TREE_TYPE (field));
 }
 
 /* Check the data members (both static and non-static), class-scoped
@@ -3625,6 +3632,7 @@ build_vtbl_or_vbase_field (name, assembler_name, type, class_type, fcontext,
   DECL_FIELD_CONTEXT (field) = class_type;
   DECL_FCONTEXT (field) = fcontext;
   DECL_ALIGN (field) = TYPE_ALIGN (type);
+  DECL_USER_ALIGN (field) = TYPE_USER_ALIGN (type);
 
   /* Return it.  */
   return field;
@@ -3844,6 +3852,7 @@ build_base_field (rli, binfo, empty_p, base_align, v)
   DECL_SIZE (decl) = CLASSTYPE_SIZE (basetype);
   DECL_SIZE_UNIT (decl) = CLASSTYPE_SIZE_UNIT (basetype);
   DECL_ALIGN (decl) = CLASSTYPE_ALIGN (basetype);
+  DECL_USER_ALIGN (decl) = CLASSTYPE_USER_ALIGN (basetype);
   
   if (! flag_new_abi)
     {
@@ -4800,6 +4809,7 @@ layout_class_type (t, empty_p, vfuns_p,
 				TYPE_SIZE (integer_type));
 	  DECL_SIZE (field) = TYPE_SIZE (integer_type);
 	  DECL_ALIGN (field) = TYPE_ALIGN (integer_type);
+	  DECL_USER_ALIGN (field) = TYPE_USER_ALIGN (integer_type);
 	}
       else
 	padding = NULL_TREE;
@@ -4821,6 +4831,7 @@ layout_class_type (t, empty_p, vfuns_p,
 	  DECL_BIT_FIELD (padding_field) = 1;
 	  DECL_SIZE (padding_field) = padding;
 	  DECL_ALIGN (padding_field) = 1;
+	  DECL_USER_ALIGN (padding_field) = 0;
 	  layout_nonempty_base_or_field (rli, padding_field, NULL_TREE, v);
 	}
     }
@@ -4897,6 +4908,7 @@ layout_class_type (t, empty_p, vfuns_p,
     }
 
   CLASSTYPE_ALIGN (t) = TYPE_ALIGN (t);
+  CLASSTYPE_USER_ALIGN (t) = TYPE_USER_ALIGN (t);
 
   /* Set the TYPE_DECL for this type to contain the right
      value for DECL_OFFSET, so that we can use it as part

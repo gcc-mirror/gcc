@@ -7949,6 +7949,7 @@ java_complete_class ()
 		pop_obstacks ();
 		TREE_TYPE (field_decl) = field_type;
 		DECL_ALIGN (field_decl) = 0;
+		DECL_USER_ALIGN (field_decl) = 0;
 		layout_decl (field_decl, 0);
 		SOURCE_FRONTEND_DEBUG 
 		  (("Completed field/var decl `%s' with `%s'",
