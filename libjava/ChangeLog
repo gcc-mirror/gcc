@@ -1,3 +1,9 @@
+2001-03-27  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* Makefile.am (libffi_files): Use 'find' to pick up libffi libtool
+	objects	in subdirectories.
+	* Makefile.in: Rebuilt.
+
 2001-03-24  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/util/HashMap.java (HashMap): If 0 is given for initialCapacity 
