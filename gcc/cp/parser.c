@@ -3520,7 +3520,10 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	    /* Look for the `)' token.  */
 	    cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
 	  }
-
+	/* `typeid' may not appear in an integral constant expression.  */
+	if (cp_parser_non_integral_constant_expression(parser, 
+						       "`typeid' operator"))
+	  return error_mark_node;
 	/* Restore the saved message.  */
 	parser->type_definition_forbidden_message = saved_message;
       }

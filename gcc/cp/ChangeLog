@@ -1,3 +1,9 @@
+2004-04-23  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/15064
+	* parser.c (cp_parser_postfix_expression): typeid operator cannot be
+	used in integral constant expressions.
+
 2004-04-18  Release Manager
 
 	* GCC 3.4.0 released.
