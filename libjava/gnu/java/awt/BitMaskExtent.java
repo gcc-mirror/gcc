@@ -23,35 +23,46 @@ resulting executable to be covered by the GNU General Public License.
 This exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU General Public License. */
 
-package java.awt.color;
+package gnu.java.awt;
 
-// Currently just a stub.
-
-/**
- * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
+/** 
+ * Simple transparent utility class that can be used to perform bit
+ * mask extent calculations.
  */
-public class ICC_Profile
+public final class BitMaskExtent
 {
-  long profileID; // why long?
-  
-  ICC_Profile(long profileID)
-  {
-    this.profileID = profileID;
-  }
+  /** The number of the least significant bit of the bit mask extent. */
+  public byte leastSignificantBit;
 
-  public int getNumComponents()
+  /** The number of bits in the bit mask extent. */
+  public byte bitWidth;
+  
+  /**
+   * Set the bit mask. This will calculate and set the leastSignificantBit
+   * and bitWidth fields.
+   *
+   * @see #leastSignificantBit
+   * @see #bitWidth
+   */
+  public void setMask(long mask)
   {
-    switch ((int) profileID)
-      {
-      case ColorSpace.CS_sRGB:
-      case ColorSpace.CS_LINEAR_RGB:
-      case ColorSpace.CS_CIEXYZ:
-	return 3;
-      case ColorSpace.CS_GRAY:
-	return 1;
-      case ColorSpace.CS_PYCC:    // have no clue about this one
-      default:
-	throw new UnsupportedOperationException("profile not implemented");
-      }
+    leastSignificantBit = 0;
+    bitWidth = 0;
+    if (mask == 0) return;
+    long shiftMask = mask;
+    for (; (shiftMask&1) == 0; shiftMask >>>=1) leastSignificantBit++;
+    for (; (shiftMask&1) != 0; shiftMask >>>=1) bitWidth++;
+    
+    if (shiftMask != 0)
+      throw new IllegalArgumentException("mask must be continuous");
   }
+  
+  /** 
+   * Calculate the bit mask based on the values of the
+   * leastSignificantBit and bitWidth fields.
+   */
+  public long toMask()
+  {
+    return ((1<<bitWidth)-1) << leastSignificantBit;
+  }  
 }

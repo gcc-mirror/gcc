@@ -1,10 +1,29 @@
-/* Copyright (C) 1999, 2000  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2002  Free Software Foundation
 
-   This file is part of libgcj.
+   Copyright (C) 1999 Free Software Foundation, Inc.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
+This file is part of GNU Classpath.
+
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+As a special exception, if you link this library with other files to
+produce an executable, this library does not by itself cause the
+resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why the
+executable file might be covered by the GNU General Public License. */
 
 package java.awt;
 import java.awt.event.WindowEvent;
@@ -15,8 +34,12 @@ import java.util.EventListener;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-/* Status: partially implemented. */
-
+/**
+ * This class represents a top-level window with no decorations.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Warren Levy  <warrenl@cygnus.com>
+ */
 public class Window extends Container
 {
   // Serialized fields, from Sun's serialization spec.
@@ -46,6 +69,12 @@ public class Window extends Container
     graphicsConfiguration = gc;
   }
     
+  /**
+   * Initializes a new instance of <code>Window</code> with the specified
+   * parent.  The window will initially be invisible.
+   *
+   * @param parent The owning <code>Frame</code> of this window.
+   */
   public Window(Frame owner)
   {
     this((Window) owner);
@@ -99,6 +128,9 @@ public class Window extends Container
     super.finalize();
   }
 
+  /**
+   * Creates the native peer for this window.
+   */
   public void addNotify()
   {
     if (peer == null)
@@ -106,8 +138,12 @@ public class Window extends Container
     super.addNotify ();
   }
 
-  /** @specnote pack() doesn't appear to be called internally by show(), so
-                we duplicate some of the functionality. */
+  /**
+   * Relays out this window's child components at their preferred size.
+   *
+   * @specnote pack() doesn't appear to be called internally by show(), so
+   *             we duplicate some of the functionality.
+   */
   public void pack()
   {
     if (parent != null
@@ -121,31 +157,16 @@ public class Window extends Container
     validate();
   }
 
+  /**
+   * Makes this window visible and brings it to the front.
+   */
   public void show ()
   {
     if (peer == null)
       addNotify();
-    validate ();
 
-    if (isVisible())
-      {
-	this.toFront();
-	return;
-      }
-  
-    if (parent != null
-        && !parent.isDisplayable())
-      parent.addNotify();
-    if (peer == null)
-      addNotify ();    
-
-    validate ();
-    
-    super.show ();
-
-    // FIXME: Is this call necessary or do we assume the peer takes care of 
-    // it?
-    // this.toFront();
+    super.show();
+    toFront();
   }
 
   public void hide()
@@ -154,6 +175,9 @@ public class Window extends Container
     super.hide();
   }
 
+  /**
+   * Called to free any resource associated with this window.
+   */
   public void dispose()
   {
     hide();
@@ -167,6 +191,10 @@ public class Window extends Container
     this.removeNotify();
   }
 
+  /**
+   * Sends this window to the back so that all other windows display in
+   * front of it.
+   */
   public void toBack ()
   {
     if (peer != null)
@@ -176,6 +204,10 @@ public class Window extends Container
       }
   }
 
+  /**
+   * Brings this window to the front so that it displays in front of
+   * any other windows.
+   */
   public void toFront ()
   {
     if (peer != null)
@@ -185,13 +217,25 @@ public class Window extends Container
       }
   }
 
-  /** @specnote Unlike Component.getToolkit, this implementation always 
-                returns the value of Toolkit.getDefaultToolkit(). */
+  /**
+   * Returns the toolkit used to create this window.
+   *
+   * @return The toolkit used to create this window.
+   *
+   * @specnote Unlike Component.getToolkit, this implementation always 
+   *           returns the value of Toolkit.getDefaultToolkit().
+   */
   public Toolkit getToolkit()
   {
     return Toolkit.getDefaultToolkit ();    
   }
 
+  /**
+   * Returns the warning string that will be displayed if this window is
+   * popped up by an unsecure applet or application.
+   *
+   * @return The unsecure window warning message.
+   */
   public final String getWarningString()
   {
     boolean secure = true;
@@ -210,6 +254,11 @@ public class Window extends Container
     return null;
   }
 
+  /**
+   * Returns the locale that this window is configured for.
+   *
+   * @return The locale this window is configured for.
+   */
   public Locale getLocale ()
   {
     return locale == null ? Locale.getDefault () : locale;
@@ -223,9 +272,13 @@ public class Window extends Container
   }
   */
 
+  /**
+   * Sets the cursor for this window to the specifiec cursor.
+   *
+   * @param cursor The new cursor for this window.
+   */
   public void setCursor(Cursor cursor)
   {
-    // FIXME: why different from Component.setCursor() ?
     super.setCursor(cursor);
   }
 
@@ -242,11 +295,23 @@ public class Window extends Container
     return null;
   }
 
+  /**
+   * Adds the specified listener to the list of <code>WindowListeners</code>
+   * that will receive events for this window.
+   *
+   * @param listener The <code>WindowListener</code> to add.
+   */
   public synchronized void addWindowListener (WindowListener listener)
   {
     windowListener = AWTEventMulticaster.add (windowListener, listener);
   }
 
+  /**
+   * Removes the specified listener from the list of
+   * <code>WindowListeners</code> that will receive events for this window.
+   *
+   * @param listener The <code>WindowListener</code> to remove.
+   */
   public synchronized void removeWindowListener (WindowListener listener)
   {
     windowListener = AWTEventMulticaster.remove (windowListener, listener);
@@ -272,6 +337,14 @@ public class Window extends Container
       super.dispatchEventImpl(e);
   }
 
+  /**
+   * Processes the specified event for this window.  If the event is an
+   * instance of <code>WindowEvent</code>, then
+   * <code>processWindowEvent()</code> is called to process the event,
+   * otherwise the superclass version of this method is invoked.
+   *
+   * @param event The event to process.
+   */
   protected void processEvent (AWTEvent evt)
   {
     if (evt instanceof WindowEvent)
@@ -280,6 +353,14 @@ public class Window extends Container
       super.processEvent (evt);
   }
 
+  /**
+   * Dispatches this event to any listeners that are listening for
+   * <code>WindowEvents</code> on this window.  This method only gets
+   * invoked if it is enabled via <code>enableEvents()</code> or if
+   * a listener has been added.
+   *
+   * @param event The event to process.
+   */
   protected void processWindowEvent (WindowEvent evt)
   {
     if (windowListener != null)
@@ -311,22 +392,40 @@ public class Window extends Container
       }
   }
 
+  /**
+   * Returns the child window that has focus if this window is active.
+   * This method returns <code>null</code> if this window is not active
+   * or no children have focus.
+   *
+   * @return The component that has focus, or <code>null</code> if no
+   * component has focus.
+   */
   public Component getFocusOwner()
   {
     // FIXME
     return null;
   }
 
+  /**
+   * Post a Java 1.0 event to the event queue.
+   *
+   * @param event The event to post.
+   */
   public boolean postEvent(Event e)
   {
     // FIXME
     return false;
   }
 
+  /**
+   * Tests whether or not this window is visible on the screen.
+   *
+   * @return <code>true</code> if this window is visible, <code>false</code>
+   * otherwise.
+   */
   public boolean isShowing()
   {
-    // FIXME: Also check if window is within the boundary of the screen?
-    return isVisible();
+    return super.isShowing();
   }
 
   /** @since 1.2 */

@@ -1,17 +1,35 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2002  Free Software Foundation
 
-   This file is part of libgcj.
+This file is part of GNU Classpath.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+As a special exception, if you link this library with other files to
+produce an executable, this library does not by itself cause the
+resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why the
+executable file might be covered by the GNU General Public License. */
+
 
 package java.awt.image;
 
 import java.awt.Point;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
-import gnu.gcj.awt.Buffers;
+import gnu.java.awt.Buffers;
 
 /**
  * A color model operates with colors in several formats:
@@ -47,8 +65,8 @@ import gnu.gcj.awt.Buffers;
  * </ul>
  *
  * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
+ * @author C. Brian Jones (cbj@gnu.org) 
  */
-
 public abstract class ColorModel implements Transparency
 {
   protected int pixel_bits;
@@ -74,6 +92,12 @@ public abstract class ColorModel implements Transparency
     return array;
   } 
 
+  /**
+   * Constructs the default color model.  The default color model 
+   * can be obtained by calling <code>getRGBdefault</code> of this
+   * class.
+   * @param b the number of bits wide used for bit size of pixel values
+   */
   public ColorModel(int bits)
   {
     this(bits * 4, // total bits, sRGB, four channels
@@ -98,6 +122,10 @@ public abstract class ColorModel implements Transparency
     this.transferType = transferType;
   }
 
+  /**
+   * Returns the default color model which in Sun's case is an instance
+   * of <code>DirectColorModel</code>.
+   */
   public static ColorModel getRGBdefault()
   {
     return new DirectColorModel(8, 0xff0000, 0xff00, 0xff, 0xff000000);
@@ -113,6 +141,9 @@ public abstract class ColorModel implements Transparency
     return isAlphaPremultiplied;
   }
 
+  /**
+   * Get get number of bits wide used for the bit size of pixel values
+   */
   public int getPixelSize()
   {
     return pixel_bits;
@@ -525,7 +556,8 @@ public abstract class ColorModel implements Transparency
     return sm.getTransferType() == transferType;
   }
 
-  public void finalize() {
+  public void finalize()
+  {
   }
 
   /**

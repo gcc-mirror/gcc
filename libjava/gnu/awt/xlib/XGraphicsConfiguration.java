@@ -26,7 +26,7 @@ import gnu.gcj.xlib.Colormap;
 import gnu.gcj.xlib.XColor;
 import gnu.gcj.xlib.Screen;
 import gnu.gcj.xlib.Display;
-import gnu.gcj.awt.Buffers;
+import gnu.java.awt.Buffers;
 import java.util.Hashtable;
 
 public class XGraphicsConfiguration extends GraphicsConfiguration
