@@ -3445,7 +3445,7 @@ expand_call (exp, target, ignore)
 
 /* Output a library call to function FUN (a SYMBOL_REF rtx).
    The RETVAL parameter specifies whether return value needs to be saved, other
-   parameters are documented in the emit_library_call function bellow.  */
+   parameters are documented in the emit_library_call function below.  */
 static rtx
 emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
      int retval;

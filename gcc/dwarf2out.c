@@ -7264,7 +7264,7 @@ mem_loc_descriptor (rtl, mode)
 
     case PRE_MODIFY:
       /* Extract the PLUS expression nested inside and fall into
-         PLUS code bellow.  */
+         PLUS code below.  */
       rtl = XEXP (rtl, 1);
       goto plus;
 

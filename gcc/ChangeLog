@@ -1,3 +1,8 @@
+2001-07-10  Kazu Hirata  <kazu@hxi.com>
+
+	* calls.c (emit_library_call_value_1): Fix a comment typo.
+	* dwarf2out.c (mem_loc_descriptor): Likewise.
+
 2001-07-09  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/t-h8300 (LIB1ASMFUNCS): Add _floatdisf and _fixsfdi.
