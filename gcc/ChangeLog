@@ -1,3 +1,10 @@
+2005-01-23  Richard Sandiford  <rsandifo@redhat.com>
+
+	* function.c (assign_parm_setup_block): When creating a new stack slot
+	for a parameter, get its alignment from the parameter's DECL_ALIGN
+	rather than the type's TYPE_ALIGN.  Make sure that the parameter
+	is at least word aligned.
+
 2005-01-22  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/19378
