@@ -1,3 +1,7 @@
+2003-04-14  Roger Sayle  <roger@eyesopen.com>
+
+	* strdup.c (strdup): Tweak implementation to use memcpy.
+
 2003-04-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (HAVE_UINTPTR_T): Always define.
