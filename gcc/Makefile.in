@@ -553,7 +553,8 @@ MACHMODE_H = machmode.h machmode.def @extra_modes_file@
 RTL_BASE_H = rtl.h rtl.def $(MACHMODE_H)
 RTL_H = $(RTL_BASE_H) genrtl.h
 PARAMS_H = params.h params.def
-TREE_H = tree.h tree.def $(MACHMODE_H) tree-check.h version.h builtins.def
+TREE_H = tree.h tree.def $(MACHMODE_H) tree-check.h version.h builtins.def \
+          location.h
 BASIC_BLOCK_H = basic-block.h bitmap.h sbitmap.h varray.h
 DEMANGLE_H = $(srcdir)/../include/demangle.h
 RECOG_H = recog.h
@@ -1807,7 +1808,7 @@ s-preds: genpreds$(build_exeext) $(srcdir)/move-if-change
 	$(SHELL) $(srcdir)/move-if-change tmp-preds.h tm-preds.h
 	$(STAMP) s-preds
 
-GTFILES = $(GCONFIG_H) \
+GTFILES = $(GCONFIG_H) $(srcdir)/location.h \
   $(HASHTAB_H) \
   $(srcdir)/bitmap.h $(srcdir)/function.h  $(srcdir)/rtl.h $(srcdir)/optabs.h \
   $(srcdir)/tree.h $(srcdir)/libfuncs.h $(srcdir)/hashtable.h $(srcdir)/real.h \
@@ -1834,7 +1835,7 @@ gt-alias.h gt-cselib.h gt-fold-const.h gt-gcse.h gt-profile.h : s-gtype; @true
 gt-expr.h gt-sdbout.h gt-optabs.h gt-bitmap.h gt-dwarf2out.h : s-gtype ; @true
 gt-reg-stack.h gt-dependence.h : s-gtype ; @true
 gt-c-common.h gt-c-decl.h gt-c-parse.h gt-c-pragma.h : s-gtype; @true
-gt-c-objc-common.h gtype-c.h : s-gtype ; @true
+gt-c-objc-common.h gtype-c.h gt-location.h : s-gtype ; @true
 
 s-gtype: gengtype$(build_exeext) $(GTFILES)
 	./gengtype $(GTFILES)
