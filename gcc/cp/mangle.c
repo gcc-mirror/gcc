@@ -157,7 +157,8 @@ static void write_template_prefix PARAMS ((tree));
 static void write_component PARAMS ((tree));
 static void write_unqualified_name PARAMS ((tree));
 static void write_source_name PARAMS ((tree));
-static void write_number PARAMS ((int, int));
+static void write_number PARAMS ((unsigned HOST_WIDE_INT, int,
+				  unsigned int));
 static void write_integer_cst PARAMS ((tree));
 static void write_identifier PARAMS ((char *));
 static void write_special_name_constructor PARAMS ((tree));
@@ -218,6 +219,14 @@ static tree mangle_special_for_type PARAMS ((tree, const char *));
         && same_type_p (TREE_PURPOSE (NODE1), TREE_PURPOSE (NODE2)))\
        || TREE_PURPOSE (NODE1) == TREE_PURPOSE (NODE2))             \
    && TREE_VALUE (NODE1) == TREE_VALUE (NODE2))
+
+/* Write out a signed quantity in base 10.  */
+#define write_signed_number(NUMBER) \
+  write_number (NUMBER, /*unsigned_p=*/0, 10)
+
+/* Write out an unsigned quantity in base 10.  */
+#define write_unsigned_number(NUMBER) \
+  write_number (NUMBER, /*unsigned_p=*/1, 10)
 
 /* Produce debugging output of current substitution candidates.  */
 
@@ -441,7 +450,7 @@ find_substitution (node)
   /* Check for std::basic_string.  */
   if (decl && is_std_substitution (decl, SUBID_BASIC_STRING))
     {
-      if (type)
+      if (TYPE_P (node))
 	{
 	  /* If this is a type (i.e. a fully-qualified template-id), 
 	     check for 
@@ -473,7 +482,7 @@ find_substitution (node)
     }
 
   /* Check for basic_{i,o,io}stream.  */
-  if (type
+  if (TYPE_P (node)
       && CP_TYPE_QUALS (type) == TYPE_UNQUALIFIED
       && CLASS_TYPE_P (type)
       && CLASSTYPE_USE_TEMPLATE (type)
@@ -510,7 +519,7 @@ find_substitution (node)
     }
 
   /* Check for namespace std.  */
-  if (decl&& DECL_NAMESPACE_STD_P (decl))
+  if (decl && DECL_NAMESPACE_STD_P (decl))
     {
       write_string ("St");
       return 1;
@@ -518,7 +527,6 @@ find_substitution (node)
 
   /* Now check the list of available substitutions for this mangling
      operation.    */
-
   for (i = 0; i < size; ++i)
     {
       tree candidate = VARRAY_TREE (G.substitutions, i);
@@ -604,7 +612,9 @@ static void
 write_name (decl)
      tree decl;
 {
-  tree context = CP_DECL_CONTEXT (decl);
+  tree context;
+
+  context = CP_DECL_CONTEXT (decl);
 
   MANGLE_TRACE_TREE ("name", decl);
 
@@ -913,7 +923,7 @@ write_source_name (identifier)
   if (IDENTIFIER_TEMPLATE (identifier))
     identifier = IDENTIFIER_TEMPLATE (identifier);
 
-  write_number (IDENTIFIER_LENGTH (identifier), 10);
+  write_unsigned_number (IDENTIFIER_LENGTH (identifier));
   write_identifier (IDENTIFIER_POINTER (identifier));
 }
 
@@ -922,20 +932,22 @@ write_source_name (identifier)
      <number> ::= [n] </decimal integer/>  */
 
 static void
-write_number (number, base)
-     int number;
-     int base;
+write_number (number, unsigned_p, base)
+     unsigned HOST_WIDE_INT number;
+     int unsigned_p;
+     unsigned int base;
 {
   static const char digits[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  int n;
-  int m = 1;
+  unsigned HOST_WIDE_INT n;
+  unsigned HOST_WIDE_INT m = 1;
 
-  if (number < 0)
+  if (!unsigned_p && (HOST_WIDE_INT) number < 0)
     {
       write_char ('n');
-      number = -number;
+      number = -((HOST_WIDE_INT) number);
     }
   
+  /* Figure out how many digits there are.  */
   n = number;
   while (n >= base)
     {
@@ -943,6 +955,7 @@ write_number (number, base)
       m *= base;
     }
 
+  /* Write them out.  */
   while (m > 0)
     {
       int digit = number / m;
@@ -960,7 +973,14 @@ static inline void
 write_integer_cst (cst)
      tree cst;
 {
-  write_number (tree_low_cst (cst, TREE_UNSIGNED (TREE_TYPE (cst))), 10);
+  if (tree_int_cst_sgn (cst) >= 0) 
+    {
+      if (TREE_INT_CST_HIGH (cst) != 0)
+	sorry ("mangling very large integers");
+      write_unsigned_number (TREE_INT_CST_LOW (cst));
+    }
+  else
+    write_signed_number (tree_low_cst (cst, 0));
 }
 
 /* Non-terminal <identifier>.
@@ -1086,7 +1106,7 @@ write_discriminator (discriminator)
       /* The number is omitted for discriminator == 1.  Beyond 1, the
 	 numbering starts at 0.  */
       if (discriminator > 1)
-	write_number (discriminator - 2, 10);
+	write_unsigned_number (discriminator - 2);
     }
 }
 
@@ -1151,7 +1171,7 @@ write_type (type)
 
   if (find_substitution (type))
     return;
-
+  
   if (write_CV_qualifiers_for_type (type) > 0)
     /* If TYPE was CV-qualified, we just wrote the qualifiers; now
        mangle the unqualified type.  The recursive call is needed here
@@ -1159,85 +1179,90 @@ write_type (type)
        candidates.  */
     write_type (TYPE_MAIN_VARIANT (type));
   else
-    switch (TREE_CODE (type))
-      {
-      case VOID_TYPE:
-      case BOOLEAN_TYPE:
-      case INTEGER_TYPE:  /* Includes wchar_t.  */
-      case REAL_TYPE:
-	/* If this is a typedef, TYPE may not be one of
-	   the standard builtin type nodes, but an alias of one.  Use
-	   TYPE_MAIN_VARIANT to get to the underlying builtin type.  */
-	write_builtin_type (TYPE_MAIN_VARIANT (type));
-	++is_builtin_type;
-	break;
+    {
+      /* See through any typedefs.  */
+      type = TYPE_MAIN_VARIANT (type);
 
-      case COMPLEX_TYPE:
-	write_char ('C');
-	write_type (TREE_TYPE (type));
-	break;
+      switch (TREE_CODE (type))
+	{
+	case VOID_TYPE:
+	case BOOLEAN_TYPE:
+	case INTEGER_TYPE:  /* Includes wchar_t.  */
+	case REAL_TYPE:
+	  /* If this is a typedef, TYPE may not be one of
+	     the standard builtin type nodes, but an alias of one.  Use
+	     TYPE_MAIN_VARIANT to get to the underlying builtin type.  */
+	  write_builtin_type (TYPE_MAIN_VARIANT (type));
+	  ++is_builtin_type;
+	  break;
 
-      case FUNCTION_TYPE:
-      case METHOD_TYPE:
-	write_function_type (type, 1);
-	break;
+	case COMPLEX_TYPE:
+	  write_char ('C');
+	  write_type (TREE_TYPE (type));
+	  break;
 
-      case UNION_TYPE:
-      case RECORD_TYPE:
-      case ENUMERAL_TYPE:
-	/* A pointer-to-member function is represented as a special
-	   RECORD_TYPE, so check for this first.  */
-	if (TYPE_PTRMEMFUNC_P (type))
-	  write_pointer_to_member_type (type);
-	else
-	  write_class_enum_type (type);
-	break;
+	case FUNCTION_TYPE:
+	case METHOD_TYPE:
+	  write_function_type (type, 1);
+	  break;
 
-      case TYPENAME_TYPE:
-	/* We handle TYPENAME_TYPEs like ordinary nested names.  */
-	write_nested_name (TYPE_STUB_DECL (type));
-	break;
+	case UNION_TYPE:
+	case RECORD_TYPE:
+	case ENUMERAL_TYPE:
+	  /* A pointer-to-member function is represented as a special
+	     RECORD_TYPE, so check for this first.  */
+	  if (TYPE_PTRMEMFUNC_P (type))
+	    write_pointer_to_member_type (type);
+	  else
+	    write_class_enum_type (type);
+	  break;
 
-      case ARRAY_TYPE:
-	write_array_type (type);
-	break;
+	case TYPENAME_TYPE:
+	  /* We handle TYPENAME_TYPEs like ordinary nested names.  */
+	  write_nested_name (TYPE_STUB_DECL (type));
+	  break;
 
-      case POINTER_TYPE:
-	/* A pointer-to-member variable is represented by a POINTER_TYPE
-	   to an OFFSET_TYPE, so check for this first.  */
-	if (TYPE_PTRMEM_P (type))
-	  write_pointer_to_member_type (type);
-	else
-	  {
-	    write_char ('P');
-	    write_type (TREE_TYPE (type));
-	  }
-	break;
+	case ARRAY_TYPE:
+	  write_array_type (type);
+	  break;
 
-      case REFERENCE_TYPE:
-	write_char ('R');
-	write_type (TREE_TYPE (type));
-	break;
+	case POINTER_TYPE:
+	  /* A pointer-to-member variable is represented by a POINTER_TYPE
+	     to an OFFSET_TYPE, so check for this first.  */
+	  if (TYPE_PTRMEM_P (type))
+	    write_pointer_to_member_type (type);
+	  else
+	    {
+	      write_char ('P');
+	      write_type (TREE_TYPE (type));
+	    }
+	  break;
 
-      case TEMPLATE_TYPE_PARM:
-      case TEMPLATE_PARM_INDEX:
-	write_template_param (type);
-	break;
+	case REFERENCE_TYPE:
+	  write_char ('R');
+	  write_type (TREE_TYPE (type));
+	  break;
 
-      case TEMPLATE_TEMPLATE_PARM:
-	write_template_template_param (type);
-	if (TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (type))
-	  write_template_args 
-	    (TI_ARGS (TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (type)));
-	break;
+	case TEMPLATE_TYPE_PARM:
+	case TEMPLATE_PARM_INDEX:
+	  write_template_param (type);
+	  break;
 
-      case OFFSET_TYPE:
-	write_pointer_to_member_type (build_pointer_type (type));
-	break;
+	case TEMPLATE_TEMPLATE_PARM:
+	  write_template_template_param (type);
+	  if (TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (type))
+	    write_template_args 
+	      (TI_ARGS (TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (type)));
+	  break;
 
-      default:
-	my_friendly_abort (20000409);
-      }
+	case OFFSET_TYPE:
+	  write_pointer_to_member_type (build_pointer_type (type));
+	  break;
+
+	default:
+	  my_friendly_abort (20000409);
+	}
+    }
 
   /* Types other than builtin types are substitution candidates.  */
   if (!is_builtin_type)
@@ -1564,8 +1589,17 @@ write_expression (expr)
       if (TREE_CODE (expr) == ADDR_EXPR
 	  && TREE_TYPE (expr)
 	  && TREE_CODE (TREE_TYPE (expr)) == REFERENCE_TYPE)
-	expr = TREE_OPERAND (expr, 0);
+	{
+	  expr = TREE_OPERAND (expr, 0);
+	  if (DECL_P (expr))
+	    {
+	      write_expression (expr);
+	      return;
+	    }
 
+	  code = TREE_CODE (expr);
+	}
+      
       /* If it wasn't any of those, recursively expand the expression.  */
       write_string (operator_name_info[(int) code].mangled_name);
 
@@ -1610,9 +1644,9 @@ write_template_arg_literal (value)
       if (same_type_p (type, boolean_type_node))
 	{
 	  if (value == boolean_false_node || integer_zerop (value))
-	    write_number (0, 10);
+	    write_unsigned_number (0);
 	  else if (value == boolean_true_node)
-	    write_number (1, 10);
+	    write_unsigned_number (1);
 	  else 
 	    my_friendly_abort (20000412);
 	}
@@ -1633,7 +1667,9 @@ write_template_arg_literal (value)
       size_t i;
       for (i = 0; i < sizeof (TREE_REAL_CST (value)); ++i)
 	write_number (((unsigned char *) 
-		       &TREE_REAL_CST (value))[i], 16);
+		       &TREE_REAL_CST (value))[i], 
+		      /*unsigned_p=*/1,
+		      16);
 #endif
     }
   else
@@ -1732,7 +1768,7 @@ write_array_type (type)
 	 array.  */
       max = TYPE_MAX_VALUE (index_type);
       if (TREE_CODE (max) == INTEGER_CST)
-	write_number (TREE_INT_CST_LOW (max) + 1, 10);
+	write_unsigned_number (tree_low_cst (max, 1));
       else
 	write_expression (TREE_OPERAND (max, 0));
     }
@@ -1786,7 +1822,7 @@ write_template_param (parm)
   /* NUMBER as it appears in the mangling is (-1)-indexed, with the
      earliest template param denoted by `_'.  */
   if (parm_index > 0)
-    write_number (parm_index - 1, 10);
+    write_unsigned_number (parm_index - 1);
   write_char ('_');
 }
 
@@ -1831,7 +1867,7 @@ write_substitution (seq_id)
 
   write_char ('S');
   if (seq_id > 0)
-    write_number (seq_id - 1, 36);
+    write_number (seq_id - 1, /*unsigned=*/1, 36);
   write_char ('_');
 }
 
@@ -2063,14 +2099,14 @@ mangle_thunk (fn_decl, offset, vcall_offset)
     write_char ('h');
 
   /* For either flavor, write the offset to this.  */
-  write_number (offset, 10);
+  write_signed_number (offset);
   write_char ('_');
 
   /* For a virtual thunk, add the vcall offset.  */
   if (vcall_offset != 0)
     {
       /* Virtual thunk.  Write the vcall offset and base type name.  */
-      write_number (vcall_offset, 10);
+      write_signed_number (vcall_offset);
       write_char ('_');
     }
 
