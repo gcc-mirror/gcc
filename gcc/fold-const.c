@@ -1,5 +1,5 @@
 /* Fold a constant sub-tree into a single node for C-compiler
-   Copyright (C) 1987, 88, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -966,6 +966,8 @@ const_binop (code, arg1, arg2, notrunc)
      register tree arg1, arg2;
      int notrunc;
 {
+  STRIP_NOPS (arg1); STRIP_NOPS (arg2);
+
   if (TREE_CODE (arg1) == INTEGER_CST)
     {
       register HOST_WIDE_INT int1l = TREE_INT_CST_LOW (arg1);
