@@ -151,6 +151,7 @@ GLIBCXX_3.4 {
     _ZTISt21__ctype_abstract_baseI[cw]E;
     _ZTISt23__codecvt_abstract_baseI[cw]c11__mbstate_tE;
     _ZTIN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EEE;
+    _ZTIN9__gnu_cxx13stdio_filebufI[cw]St11char_traitsI[cw]EEE;
 
     # typeinfo name
     _ZTSNSt8ios_base7failureE;
@@ -163,6 +164,7 @@ GLIBCXX_3.4 {
     _ZTSSt21__ctype_abstract_baseI[cw]E;
     _ZTSSt23__codecvt_abstract_baseI[cw]c11__mbstate_tE;
     _ZTSN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EEE;
+    _ZTSN9__gnu_cxx13stdio_filebufI[cw]St11char_traitsI[cw]EEE;
 
     # function-scope static objects requires a guard variable.
     _ZGVNSt*;
