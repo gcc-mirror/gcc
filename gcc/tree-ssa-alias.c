@@ -73,7 +73,7 @@ struct alias_info
   /* SSA names visited while collecting points-to information.  If bit I
      is set, it means that SSA variable with version I has already been
      visited.  */
-  bitmap ssa_names_visited;
+  sbitmap ssa_names_visited;
 
   /* Array of SSA_NAME pointers processed by the points-to collector.  */
   varray_type processed_ptrs;
@@ -368,7 +368,8 @@ init_alias_info (void)
   static bool aliases_computed_p = false;
 
   ai = xcalloc (1, sizeof (struct alias_info));
-  ai->ssa_names_visited = BITMAP_XMALLOC ();
+  ai->ssa_names_visited = sbitmap_alloc (num_ssa_names);
+  sbitmap_zero (ai->ssa_names_visited);
   VARRAY_TREE_INIT (ai->processed_ptrs, 50, "processed_ptrs");
   ai->addresses_needed = BITMAP_XMALLOC ();
   VARRAY_UINT_INIT (ai->num_references, num_referenced_vars, "num_references");
@@ -449,7 +450,7 @@ delete_alias_info (struct alias_info *ai)
 {
   size_t i;
 
-  BITMAP_XFREE (ai->ssa_names_visited);
+  sbitmap_free (ai->ssa_names_visited);
   ai->processed_ptrs = NULL;
   BITMAP_XFREE (ai->addresses_needed);
 
@@ -484,9 +485,9 @@ collect_points_to_info_for (struct alias_info *ai, tree ptr)
 {
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (ptr)));
 
-  if (!bitmap_bit_p (ai->ssa_names_visited, SSA_NAME_VERSION (ptr)))
+  if (!TEST_BIT (ai->ssa_names_visited, SSA_NAME_VERSION (ptr)))
     {
-      bitmap_set_bit (ai->ssa_names_visited, SSA_NAME_VERSION (ptr));
+      SET_BIT (ai->ssa_names_visited, SSA_NAME_VERSION (ptr));
       walk_use_def_chains (ptr, collect_points_to_info_r, ai, true);
       VARRAY_PUSH_TREE (ai->processed_ptrs, ptr);
     }

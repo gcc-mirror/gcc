@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "diagnostic.h"
 #include "bitmap.h"
+#include "pointer-set.h"
 #include "tree-flow.h"
 #include "tree-gimple.h"
 #include "tree-inline.h"
@@ -905,8 +906,10 @@ tree_ssa_useless_type_conversion (tree expr)
 /* Internal helper for walk_use_def_chains.  VAR, FN and DATA are as
    described in walk_use_def_chains.
    
-   VISITED is a bitmap used to mark visited SSA_NAMEs to avoid
-      infinite loops.
+   VISITED is a pointer set used to mark visited SSA_NAMEs to avoid
+      infinite loops.  We used to have a bitmap for this to just mark
+      SSA versions we had visited.  But non-sparse bitmaps are way too
+      expensive, while sparse bitmaps may cause quadratic behavior.
 
    IS_DFS is true if the caller wants to perform a depth-first search
       when visiting PHI nodes.  A DFS will visit each PHI argument and
@@ -916,14 +919,12 @@ tree_ssa_useless_type_conversion (tree expr)
 
 static bool
 walk_use_def_chains_1 (tree var, walk_use_def_chains_fn fn, void *data,
-		       bitmap visited, bool is_dfs)
+		       struct pointer_set_t *visited, bool is_dfs)
 {
   tree def_stmt;
 
-  if (bitmap_bit_p (visited, SSA_NAME_VERSION (var)))
+  if (pointer_set_insert (visited, var))
     return false;
-
-  bitmap_set_bit (visited, SSA_NAME_VERSION (var));
 
   def_stmt = SSA_NAME_DEF_STMT (var);
 
@@ -1002,9 +1003,9 @@ walk_use_def_chains (tree var, walk_use_def_chains_fn fn, void *data,
     (*fn) (var, def_stmt, data);
   else
     {
-      bitmap visited = BITMAP_XMALLOC ();
+      struct pointer_set_t *visited = pointer_set_create ();
       walk_use_def_chains_1 (var, fn, data, visited, is_dfs);
-      BITMAP_XFREE (visited);
+      pointer_set_destroy (visited);
     }
 }
 
