@@ -744,7 +744,7 @@ struct hppa_args {int words, nargs_prototype, indirect; };
 
 #define FUNCTION_ARG_SIZE(MODE, TYPE)	\
   ((((MODE) != BLKmode \
-     ? GET_MODE_SIZE (MODE) \
+     ? (HOST_WIDE_INT) GET_MODE_SIZE (MODE) \
      : int_size_in_bytes (TYPE)) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* Update the data in CUM to advance over an argument

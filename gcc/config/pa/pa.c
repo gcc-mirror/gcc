@@ -377,12 +377,14 @@ move_operand (op, mode)
       && ((GET_CODE (XEXP (op, 0)) == MULT
 	   && GET_CODE (XEXP (XEXP (op, 0), 0)) == REG
 	   && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT
-	   && INTVAL (XEXP (XEXP (op, 0), 1)) == GET_MODE_SIZE (mode)
+	   && INTVAL (XEXP (XEXP (op, 0), 1))
+	      == (HOST_WIDE_INT) GET_MODE_SIZE (mode)
 	   && GET_CODE (XEXP (op, 1)) == REG)
 	  || (GET_CODE (XEXP (op, 1)) == MULT
 	      &&GET_CODE (XEXP (XEXP (op, 1), 0)) == REG
 	      && GET_CODE (XEXP (XEXP (op, 1), 1)) == CONST_INT
-	      && INTVAL (XEXP (XEXP (op, 1), 1)) == GET_MODE_SIZE (mode)
+	      && INTVAL (XEXP (XEXP (op, 1), 1))
+		 == (HOST_WIDE_INT) GET_MODE_SIZE (mode)
 	      && GET_CODE (XEXP (op, 0)) == REG)))
     return 1;
 
@@ -2938,7 +2940,8 @@ pa_output_function_prologue (file, size)
       total_code_bytes += FUNCTION_BOUNDARY / BITS_PER_UNIT;
 
       /* Be prepared to handle overflows.  */
-      total_code_bytes = old_total > total_code_bytes ? -1 : total_code_bytes;
+      if (old_total > total_code_bytes)
+	total_code_bytes = -1;
     }
   else
     total_code_bytes = -1;
