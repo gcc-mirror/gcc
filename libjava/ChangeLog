@@ -1,3 +1,9 @@
+2003-12-16 Guilhem Lavaux <guilhem@kaffe.org>
+           Helmer Kraemer <hkraemer@freenet.de>
+ 
+	* gnu/java/lang/reflect/TypeSignature.java (getClassForEncoding):
+	Splitted the method so we can specify an explicit boot loader.
+
 2003-12-15  Graydon Hoare  <graydon@redhat.com>
 
 	* jni/gtk-peer/gdkfont.h: New file.
