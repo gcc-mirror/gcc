@@ -1,3 +1,9 @@
+2002-05-07  Geoffrey Keating  <geoffk@redhat.com>
+
+	* configure.in: Don't pass -Wno-long-long to a ADA compiler
+	that doesn't support it.
+	* configure: Regenerate.
+
 2002-05-07  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (rtl_for_decl_location): Don't try to extract a
