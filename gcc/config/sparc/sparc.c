@@ -2429,6 +2429,9 @@ int
 pic_address_needs_scratch (x)
      rtx x;
 {
+  if (GET_CODE (x) == LABEL_REF)
+    return 1;
+
   /* An address which is a symbolic plus a non SMALL_INT needs a temp reg.  */
   if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == PLUS
       && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF

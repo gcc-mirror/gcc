@@ -3,6 +3,9 @@
 	* combine.c (cant_combine_insn_p): Only restrict hard register
 	combinations for SMALL_REGISTER_CLASSES machines.
 
+	* config/sparc/sparc.c (pic_address_needs_scratch): LABEL_REFs are
+	not valid pic operands.
+
 2000-12-22  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* calls.c (emit_call_1): Fall back to call_pop/call_value_pop if no
