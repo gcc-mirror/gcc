@@ -1234,20 +1234,22 @@ struct rt_cargs {int gregs, fregs; };
 #define CONST_COSTS(RTX,CODE,OUTER_CODE) \
   case CONST_INT:						\
     if ((OUTER_CODE) == IOR && exact_log2 (INTVAL (RTX)) >= 0	\
-	|| (OUTER_CODE) == AND && exact_log2 (~INTVAL (RTX)) >= 0	\
-	|| (((OUTER_CODE) == PLUS || (OUTER_CODE) == MINUS)		\
+	|| (OUTER_CODE) == AND && exact_log2 (~INTVAL (RTX)) >= 0 \
+	|| (((OUTER_CODE) == PLUS || (OUTER_CODE) == MINUS)	\
 	    && (unsigned int) (INTVAL (RTX) + 15) < 31)		\
 	|| ((OUTER_CODE) == SET && (unsigned int) INTVAL (RTX) < 16))\
       return 0;							\
-    return ((unsigned)(INTVAL(RTX) + 0x8000) < 0x10000 || (INTVAL (RTX) & 0xffff0000) == 0) ? 0 : COSTS_N_INSNS (2);\
+    return ((unsigned int) (INTVAL(RTX) + 0x8000) < 0x10000		\
+	    || (INTVAL (RTX) & 0xffff0000) == 0) ? 0 : COSTS_N_INSNS (2);\
   case CONST:							\
   case LABEL_REF:						\
   case SYMBOL_REF:						\
     if (current_function_operand (RTX, Pmode)) return 0;	\
-    return COSTS_N_INSNS (2);
+    return COSTS_N_INSNS (2);					\
   case CONST_DOUBLE:						\
     if ((RTX) == CONST0_RTX (GET_MODE (RTX))) return 2;		\
-    return (GET_MODE_CLASS (GET_MODE (RTX)) == MODE_FLOAT) ? COSTS_N_INSNS (5) : COSTS_N_INSNS (4);
+    return ((GET_MODE_CLASS (GET_MODE (RTX)) == MODE_FLOAT)	\
+	    ? COSTS_N_INSNS (5) : COSTS_N_INSNS (4));
 
 /* Provide the costs of a rtl expression.  This is in the body of a
    switch on CODE. 
