@@ -213,7 +213,8 @@ namespace std
 	{
 	  while (__testput && __bufsize != -1)
   	    {
- 	      if (__bufsize != 0 && __sbin->gptr() != NULL) 
+ 	      if (__bufsize != 0 && __sbin->gptr() != NULL
+		  && __sbin->gptr() + __bufsize <= __sbin->egptr()) 
 		{
 		  __xtrct = __sbout->sputn(__sbin->gptr(), __bufsize);
 		  __ret += __xtrct;
