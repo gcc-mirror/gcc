@@ -8440,7 +8440,7 @@ sparc_rtx_costs (rtx x, int code, int outer_code, int *total)
 	  *total = 0;
 	  return true;
 	}
-      /* Fall through.  */
+      /* FALLTHRU */
 
     case HIGH:
       *total = 2;

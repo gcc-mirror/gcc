@@ -1614,7 +1614,7 @@ unw_access_gr (struct _Unwind_Context *info, int regnum,
 		  *nat = 1;
 		  return;
 		}
-	      /* Fall through.  */
+	      /* FALLTHRU */
 
 	    case UNW_NAT_NONE:
 	      dummy_nat = 0;

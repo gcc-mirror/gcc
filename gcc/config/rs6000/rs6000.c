@@ -8974,7 +8974,7 @@ print_operand (FILE *file, rtx x, int code)
     case 'Q':
       if (TARGET_MFCRF)
 	fputc (',',file);
-        /* Fall through.  */
+        /* FALLTHRU */
       else
 	return;
 
@@ -15581,7 +15581,7 @@ rs6000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
 	  *total = COSTS_N_INSNS (2);
 	  return true;
 	}
-      /* Fall through.  */
+      /* FALLTHRU */
 
     case UDIV:
     case UMOD:

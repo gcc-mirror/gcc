@@ -1,5 +1,16 @@
 2004-02-04  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/alpha/alpha.c, config/arc/arc.c, config/avr/avr.c,
+	config/i386/i386.c, config/i386/i386.h, config/i386/i386.md,
+	config/ia64/ia64.c, config/ia64/unwind-ia64.c,
+	config/m32r/m32r.c, config/ns32k/ns32k.c, config/pa/pa.c,
+	config/pdp11/pdp11.c, config/rs6000/rs6000.c,
+	config/sparc/sparc.c, config/vax/vax.c: Revert the
+	replacements of "FALLTHRU" with "Fall through" done in the
+	previous patch.
+
+2004-02-04  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/darwin.c, config/darwin.h, config/freebsd-spec.h,
 	config/arm/arm.c, config/arm/arm.md,
 	config/cris/cris-protos.h, config/fr30/fr30.c,
