@@ -69,6 +69,12 @@ rs6000_override_options ()
 {
   int i;
 
+  /* Simplify the entries below by making a mask for any POWER
+     variant and any PowerPC variant.  */
+
+#define POWER_MASKS (MASK_POWER | MASK_POWER2)
+#define POWERPC_MASKS (MASK_POWERPC | MASK_POWERPCSQR | MASK_POWERPC64)
+
   static struct ptt
     {
       char *name;		/* Canonical processor name.  */
@@ -76,30 +82,49 @@ rs6000_override_options ()
       int target_enable;	/* Target flags to enable.  */
       int target_disable;	/* Target flags to disable.  */
     } processor_target_table[]
-      = {{"all", PROCESSOR_DEFAULT,
-	    0, MASK_POWER | MASK_POWERPC | MASK_POWERPC64},
-	 {"rios", PROCESSOR_RIOS1,
-	    MASK_POWER, MASK_POWERPC | MASK_POWERPC64},
-	 {"rios1", PROCESSOR_RIOS1,
-	    MASK_POWER, MASK_POWERPC | MASK_POWERPC64},
-	 {"rios2", PROCESSOR_RIOS2,
-	    MASK_POWER, MASK_POWERPC | MASK_POWERPC64},
+      = {{"all", PROCESSOR_DEFAULT, 0, POWER_MASKS | POWERPC_MASKS},
+	 {"rios", PROCESSOR_RIOS1, MASK_POWER, MASK_POWER2 | POWERPC_MASKS},
+	 {"rios1", PROCESSOR_RIOS1, MASK_POWER, MASK_POWER2 | POWERPC_MASKS},
+	 {"rios2", PROCESSOR_RIOS2, MASK_POWER | MASK_POWER2 , POWERPC_MASKS},
 	 {"601", PROCESSOR_PPC601,
-	    MASK_POWER | MASK_POWERPC | MASK_NEW_MNEMONICS, MASK_POWERPC64},
+	    MASK_POWER | MASK_POWERPC | MASK_NEW_MNEMONICS,
+	    MASK_POWER2 | MASK_POWERPCSQR | MASK_POWERPC64},
 	 {"mpc601", PROCESSOR_PPC601,
-	    MASK_POWER | MASK_POWERPC | MASK_NEW_MNEMONICS, MASK_POWERPC64},
+	    MASK_POWER | MASK_POWERPC | MASK_NEW_MNEMONICS,
+	    MASK_POWER2 | MASK_POWERPCSQR | MASK_POWERPC64},
+	 {"ppc601", PROCESSOR_PPC601,
+	    MASK_POWER | MASK_POWERPC | MASK_NEW_MNEMONICS,
+	    MASK_POWER2 | MASK_POWERPCSQR | MASK_POWERPC64},
 	 {"603", PROCESSOR_PPC603,
-	    MASK_POWERPC | MASK_NEW_MNEMONICS, MASK_POWER | MASK_POWERPC64},
+	    MASK_POWERPC | MASK_POWERPCSQR | MASK_NEW_MNEMONICS,
+	    POWER_MASKS | MASK_POWERPC64},
 	 {"mpc603", PROCESSOR_PPC603,
-	    MASK_POWERPC | MASK_NEW_MNEMONICS, MASK_POWER | MASK_POWERPC64},
+	    MASK_POWERPC | MASK_POWERPCSQR | MASK_NEW_MNEMONICS,
+	    POWER_MASKS | MASK_POWERPC64},
+	 {"ppc603", PROCESSOR_PPC603,
+	    MASK_POWERPC | MASK_POWERPCSQR | MASK_NEW_MNEMONICS,
+	    POWER_MASKS | MASK_POWERPC64},
 	 {"604", PROCESSOR_PPC604,
-	    MASK_POWERPC | MASK_NEW_MNEMONICS, MASK_POWER | MASK_POWERPC64},
+	    MASK_POWERPC | MASK_POWERPCSQR | MASK_NEW_MNEMONICS,
+	    POWER_MASKS | MASK_POWERPC64},
 	 {"mpc604", PROCESSOR_PPC604,
-	    MASK_POWERPC | MASK_NEW_MNEMONICS, MASK_POWER | MASK_POWERPC64},
+	    MASK_POWERPC | MASK_POWERPCSQR | MASK_NEW_MNEMONICS,
+	    POWER_MASKS | MASK_POWERPC64},
+	 {"ppc604", PROCESSOR_PPC604,
+	    MASK_POWERPC | MASK_POWERPCSQR | MASK_NEW_MNEMONICS,
+	    POWER_MASKS | MASK_POWERPC64},
 	 {"620", PROCESSOR_PPC620,
-	    MASK_POWERPC | MASK_POWERPC64 | MASK_NEW_MNEMONICS, MASK_POWER},
+	    (MASK_POWERPC | MASK_POWERPCSQR | MASK_POWERPC64
+	     | MASK_NEW_MNEMONICS),
+	      POWER_MASKS},
 	 {"mpc620", PROCESSOR_PPC620,
-	    MASK_POWERPC | MASK_POWERPC64 | MASK_NEW_MNEMONICS, MASK_POWER}};
+	    (MASK_POWERPC | MASK_POWERPCSQR | MASK_POWERPC64
+	     | MASK_NEW_MNEMONICS),
+	      POWER_MASKS},
+	 {"ppc620", PROCESSOR_PPC620,
+	    (MASK_POWERPC | MASK_POWERPCSQR | MASK_POWERPC64
+	     | MASK_NEW_MNEMONICS),
+	      POWER_MASKS}};
 
   int ptt_size = sizeof (processor_target_table) / sizeof (struct ptt);
 
@@ -1407,58 +1432,68 @@ output_prolog (file, size)
 
   /* If we use the link register, get it into r0.  */
   if (regs_ever_live[65])
-    fprintf (file, "\tmflr 0\n");
+    asm_fprintf (file, "\tmflr 0\n");
 
   /* If we need to save CR, put it into r12.  */
   if (must_save_cr ())
-    fprintf (file, "\tmfcr 12\n");
+    asm_fprintf (file, "\tmfcr 12\n");
 
   /* Do any required saving of fpr's.  If only one or two to save, do it
      ourself.  Otherwise, call function.  Note that since they are statically
      linked, we do not need a nop following them.  */
   if (first_fp_reg == 62)
-    fprintf (file, "\tstfd 30,-16(1)\n\tstfd 31,-8(1)\n");
+    asm_fprintf (file, "\tstfd 30,-16(1)\n\tstfd 31,-8(1)\n");
   else if (first_fp_reg == 63)
-    fprintf (file, "\tstfd 31,-8(1)\n");
+    asm_fprintf (file, "\tstfd 31,-8(1)\n");
   else if (first_fp_reg != 64)
-    fprintf (file, "\tbl ._savef%d\n", first_fp_reg - 32);
+    asm_fprintf (file, "\tbl ._savef%d\n", first_fp_reg - 32);
 
   /* Now save gpr's.  */
-  if (first_reg == 31)
-    fprintf (file, "\tst 31,%d(1)\n", -4 - (64 - first_fp_reg) * 8);
+  if (! TARGET_POWER || first_reg == 31)
+    {
+      int regno, loc;
+
+      for (regno = first_reg,
+	   loc = - (32 - first_reg) * 4 - (64 - first_fp_reg) * 8;
+	   regno < 32;
+	   regno++, loc += 4)
+	asm_fprintf (file, "\t{st|stw} %d,%d(1)\n", regno, loc);
+    }
+
   else if (first_reg != 32)
-    fprintf (file, "\tstm %d,%d(1)\n", first_reg,
+    asm_fprintf (file, "\t{stm|stmw} %d,%d(1)\n", first_reg,
 	     - (32 - first_reg) * 4 - (64 - first_fp_reg) * 8);
 
   /* Save lr if we used it.  */
   if (regs_ever_live[65])
-    fprintf (file, "\tst 0,8(1)\n");
+    asm_fprintf (file, "\t{st|stw} 0,8(1)\n");
 
   /* Save CR if we use any that must be preserved.  */
   if (must_save_cr ())
-    fprintf (file, "\tst 12,4(1)\n");
+    asm_fprintf (file, "\t{st|stw} 12,4(1)\n");
 
   /* Update stack and set back pointer.  */
   if (must_push)
     {
       if (total_size < 32767)
-	fprintf (file, "\tstu 1,%d(1)\n", - total_size);
+	asm_fprintf (file, "\t{stu|stwu} 1,%d(1)\n", - total_size);
       else
 	{
-	  fprintf (file, "\tcau 0,0,%d\n\toril 0,0,%d\n",
+	  asm_fprintf (file, "\t{cau|addis} 0,0,%d\n\t{oril|ori} 0,0,%d\n",
 		   (total_size >> 16) & 0xffff, total_size & 0xffff);
-	  fprintf (file, "\tsf 12,0,1\n\tst 1,0(12)\n\toril 1,12,0\n");
+	  asm_fprintf (file, "\t{sf|subfc} 12,0,1\n");
+	  asm_fprintf (file, "\t{st|stw} 1,0(12)\n\t{oril|ori} 1,12,0\n");
 	}
     }
 
   /* Set frame pointer, if needed.  */
   if (frame_pointer_needed)
-    fprintf (file, "\toril 31,1,0\n");
+    asm_fprintf (file, "\t{oril|ori} 31,1,0\n");
 
   /* If TARGET_MINIMAL_TOC, and the constant pool is needed, then load the
      TOC_TABLE address into register 30.  */
   if (TARGET_MINIMAL_TOC && get_pool_size () != 0)
-    fprintf (file, "\tl 30,LCTOC..0(2)\n");
+    asm_fprintf (file, "\t{l|lwz} 30,LCTOC..0(2)\n");
 }
 
 /* Write function epilogue.  */
@@ -1489,49 +1524,58 @@ output_epilog (file, size)
 	 we know what size to update it with.  */
       if (frame_pointer_needed || current_function_calls_alloca
 	  || total_size > 32767)
-	fprintf (file, "\tl 1,0(1)\n");
+	asm_fprintf (file, "\t{l|lwz} 1,0(1)\n");
       else if (must_push)
-	fprintf (file, "\tai 1,1,%d\n", total_size);
+	asm_fprintf (file, "\t{ai|addic} 1,1,%d\n", total_size);
 
       /* Get the old lr if we saved it.  */
       if (regs_ever_live[65])
-	fprintf (file, "\tl 0,8(1)\n");
+	asm_fprintf (file, "\t{l|lwz} 0,8(1)\n");
 
       /* Get the old cr if we saved it.  */
       if (must_save_cr ())
-	fprintf (file, "\tl 12,4(1)\n");
+	asm_fprintf (file, "\t{l|lwz} 12,4(1)\n");
 
       /* Set LR here to try to overlap restores below.  */
       if (regs_ever_live[65])
-	fprintf (file, "\tmtlr 0\n");
+	asm_fprintf (file, "\tmtlr 0\n");
 
       /* Restore gpr's.  */
-      if (first_reg == 31)
-	fprintf (file, "\tl 31,%d(1)\n", -4 - (64 - first_fp_reg) * 8);
+      if (! TARGET_POWER || first_reg == 31)
+	{
+	  int regno, loc;
+
+	  for (regno = first_reg,
+	       loc = - (32 - first_reg) * 4 - (64 - first_fp_reg) * 8;
+	       regno < 32;
+	       regno++, loc += 4)
+	    asm_fprintf (file, "\t{l|lwz} %d,%d(1)\n", regno, loc);
+	}
+
       else if (first_reg != 32)
-	fprintf (file, "\tlm %d,%d(1)\n", first_reg,
-		 - (32 - first_reg) * 4 - (64 - first_fp_reg) * 8);
+	asm_fprintf (file, "\t{lm|lmw} %d,%d(1)\n", first_reg,
+	     - (32 - first_reg) * 4 - (64 - first_fp_reg) * 8);
 
       /* Restore fpr's if we can do it without calling a function.  */
       if (first_fp_reg == 62)
-	fprintf (file, "\tlfd 30,-16(1)\n\tlfd 31,-8(1)\n");
+	asm_fprintf (file, "\tlfd 30,-16(1)\n\tlfd 31,-8(1)\n");
       else if (first_fp_reg == 63)
-	fprintf (file, "\tlfd 31,-8(1)\n");
+	asm_fprintf (file, "\tlfd 31,-8(1)\n");
 
       /* If we saved cr, restore it here.  Just those of cr2, cr3, and cr4
 	 that were used.  */
       if (must_save_cr ())
-	fprintf (file, "\tmtcrf %d,12\n",
-		 (regs_ever_live[70] != 0) * 0x20
-		 + (regs_ever_live[71] != 0) * 0x10
-		 + (regs_ever_live[72] != 0) * 0x8);
+	asm_fprintf (file, "\tmtcrf %d,12\n",
+		     (regs_ever_live[70] != 0) * 0x20
+		     + (regs_ever_live[71] != 0) * 0x10
+		     + (regs_ever_live[72] != 0) * 0x8);
 
       /* If we have to restore more than two FP registers, branch to the
 	 restore function.  It will return to our caller.  */
       if (first_fp_reg < 62)
-	fprintf (file, "\tb ._restf%d\n", first_fp_reg - 32);
+	asm_fprintf (file, "\tb ._restf%d\n", first_fp_reg - 32);
       else
-	fprintf (file, "\tbr\n");
+	asm_fprintf (file, "\t{br|blr}\n");
     }
 
   /* Output a traceback table here.  See /usr/include/sys/debug.h for info
