@@ -487,6 +487,7 @@ static const char * const unsupported_options[] = {
   "enum-int-equiv",
   "guiding-decls",
   "labels-ok",
+  "new-abi",
   "nonnull-objects",
   "squangle",
   "strict-prototype",
