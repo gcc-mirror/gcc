@@ -99,6 +99,12 @@ struct reload
   /* The mode this operand should have when reloaded, on output.  */
   enum machine_mode outmode;
 
+  /* The mode of the reload register.  */
+  enum mode;
+
+  /* the largest number of registers this reload will require.  */
+  int nregs;
+
   /* Positive amount to increment or decrement by if
      reload_in is a PRE_DEC, PRE_INC, POST_DEC, POST_INC.
      Ignored otherwise (don't assume it is zero).  */
