@@ -884,14 +884,16 @@ OBJS-common = \
  cfg.o cfganal.o cfgbuild.o cfgcleanup.o cfglayout.o cfgloop.o		   \
  cfgloopanal.o cfgloopmanip.o loop-init.o loop-unswitch.o loop-unroll.o	   \
  cfgrtl.o combine.o conflict.o convert.o coverage.o cse.o cselib.o 	   \
- dbxout.o debug.o df.o diagnostic.o dojump.o dominance.o loop-doloop.o	   \
+ dbxout.o ddg.o								   \
+ debug.o df.o diagnostic.o dojump.o dominance.o loop-doloop.o		   \
  dwarf2asm.o dwarf2out.o emit-rtl.o except.o explow.o loop-iv.o		   \
  expmed.o expr.o final.o flow.o fold-const.o function.o gcse.o		   \
  genrtl.o ggc-common.o global.o graph.o gtype-desc.o			   \
  haifa-sched.o hooks.o ifcvt.o insn-attrtab.o insn-emit.o insn-modes.o	   \
  insn-extract.o insn-opinit.o insn-output.o insn-peep.o insn-recog.o	   \
  integrate.o intl.o jump.o  langhooks.o lcm.o lists.o local-alloc.o  	   \
- loop.o optabs.o options.o opts.o params.o postreload.o predict.o	   \
+ loop.o modulo-sched.o							   \
+ optabs.o options.o opts.o params.o postreload.o predict.o		   \
  print-rtl.o print-tree.o value-prof.o var-tracking.o			   \
  profile.o ra.o ra-build.o ra-colorize.o ra-debug.o ra-rewrite.o	   \
  real.o recog.o reg-stack.o regclass.o regmove.o regrename.o		   \
@@ -1997,6 +1999,15 @@ alias.o : alias.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) flags.h \
 regmove.o : regmove.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) insn-config.h \
    $(RECOG_H) output.h $(REGS_H) hard-reg-set.h flags.h function.h \
    $(EXPR_H) $(BASIC_BLOCK_H) toplev.h $(TM_P_H) except.h reload.h
+ddg.o : ddg.c ddg.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TARGET_H) \
+   toplev.h $(RTL_H) $(TM_P_H) $(BASIC_BLOCK_H) regs.h function.h flags.h \
+   insn-config.h insn-attr.h except.h $(RECOG_H) sched-int.h \
+   cfglayout.h cfgloop.h $(EXPR_H)
+modulo-sched.o : modulo-sched.c ddg.h cfgloop.h $(CONFIG_H) \
+   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TARGET_H) \
+   toplev.h $(RTL_H) $(TM_P_H) $(BASIC_BLOCK_H) regs.h function.h flags.h \
+   insn-config.h insn-attr.h except.h $(RECOG_H) sched-int.h \
+   cfglayout.h cfgloop.h $(EXPR_H) params.h $(COVERAGE_H)
 haifa-sched.o : haifa-sched.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    sched-int.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h flags.h insn-config.h function.h \
    $(INSN_ATTR_H) toplev.h $(RECOG_H) except.h $(TM_P_H) $(TARGET_H)

@@ -154,6 +154,7 @@ enum dump_file_index
   DFI_combine,
   DFI_ce2,
   DFI_regmove,
+  DFI_sms,
   DFI_sched,
   DFI_lreg,
   DFI_greg,
@@ -178,7 +179,7 @@ enum dump_file_index
 
    Remaining -d letters:
 
-	"   e        m   q         "
+	"   e            q         "
 	"          K   O Q     WXY "
 */
 
@@ -207,6 +208,7 @@ static struct dump_file_info dump_file_tbl[DFI_MAX] =
   { "combine",	'c', 1, 0, 0 },
   { "ce2",	'C', 1, 0, 0 },
   { "regmove",	'N', 1, 0, 0 },
+  { "sms",      'm', 0, 0, 0 },
   { "sched",	'S', 1, 0, 0 },
   { "lreg",	'l', 1, 0, 0 },
   { "greg",	'g', 1, 0, 0 },
@@ -742,6 +744,29 @@ rest_of_handle_reorder_blocks (tree decl, rtx insns)
 static void
 rest_of_handle_sched (tree decl, rtx insns)
 {
+  timevar_push (TV_SMS);
+  if (optimize > 0 && flag_modulo_sched)
+    {
+
+      /* Perform SMS module scheduling.  */
+      open_dump_file (DFI_sms, decl);
+
+      /* We want to be able to create new pseudos.  */
+      no_new_pseudos = 0;
+      sms_schedule (dump_file);
+      close_dump_file (DFI_sms, print_rtl, get_insns ());
+
+
+      /* Update the life information, becuase we add pseudos.  */
+      max_regno = max_reg_num ();
+      allocate_reg_info (max_regno, FALSE, FALSE);
+      update_life_info_in_dirty_blocks (UPDATE_LIFE_GLOBAL_RM_NOTES,
+					(PROP_DEATH_NOTES
+					 | PROP_KILL_DEAD_CODE
+					 | PROP_SCAN_DEAD_CODE));
+      no_new_pseudos = 1;
+    }
+  timevar_pop (TV_SMS);
   timevar_push (TV_SCHED);
 
   /* Print function header into sched dump now

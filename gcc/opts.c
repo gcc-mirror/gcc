@@ -1398,7 +1398,9 @@ common_handle_option (size_t scode, const char *arg,
     case OPT_fsched_stalled_insns_dep_:
       flag_sched_stalled_insns_dep = value;
       break;
-
+    case OPT_fmodulo_sched:
+      flag_modulo_sched = 1;
+      break;
     case OPT_fshared_data:
       flag_shared_data = value;
       break;

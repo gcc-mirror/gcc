@@ -707,6 +707,9 @@ int flag_schedule_speculative_load_dangerous = 0;
 int flag_sched_stalled_insns = 0;
 int flag_sched_stalled_insns_dep = 1;
 
+/* The following flag controls the module scheduling activation. */
+int flag_modulo_sched = 0;
+
 int flag_single_precision_constant;
 
 /* flag_branch_on_count_reg means try to replace add-1,compare,branch tupple
@@ -1007,6 +1010,7 @@ static const lang_independent_options f_options[] =
   {"sched-stalled-insns-dep", &flag_sched_stalled_insns_dep, 1 },
   {"sched2-use-superblocks", &flag_sched2_use_superblocks, 1 },
   {"sched2-use-traces", &flag_sched2_use_traces, 1 },
+  {"modulo-sched", &flag_modulo_sched, 1 },
   {"branch-count-reg",&flag_branch_on_count_reg, 1 },
   {"pic", &flag_pic, 1 },
   {"PIC", &flag_pic, 2 },

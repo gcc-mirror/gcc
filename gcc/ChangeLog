@@ -1,3 +1,38 @@
+2004-05-25  Ayal Zaks  <zaks@il.ibm.com>
+	Mostafa Hagog  <mustafa@il.ibm.com>
+
+	* Makefile.in (modulo-sched.o, ddg.o): New.
+	* ddg.h, ddg.c, modulo-sched.c: New files.
+	* cfglayout.c (duplicate_insn_chain): Remove "static" and push
+	internals to "dupicate_insn".
+	(duplicate_insn): New function.
+	* cfglayout.h (duplicate_insn_chain, duplicate_insn): New
+	declarations.
+	* common.opt (fmodulo-sched): New flag.
+	* df.c (df_bb_regno_last_use_find, df_bb_regno_first_def_find):
+	Remove static and forward declaration.
+	(df_find_def, df_reg_used, df_bb_regno_last_def_find): New
+	functions.
+	* df.h (df_bb_regno_last_use_find, df_bb_regno_first_def_find,
+	df_bb_regno_last_def_find, df_find_def, df_reg_used): New
+	declarations.
+	* flags.h (flag_modulo_sched): New flag.
+	* opts.c (common_handle_option): Handle modulo-sched flag.
+	* params.def (max-sms-loop-number, sms-max-ii-factor,
+	sms-dfa-history, sms-loop-average-count-threshold): New
+	parameters.
+	* params.h (MAX_SMS_LOOP_NUMBER, SMS_MAX_II_FACTOR,
+	SMS_DFA_HISTORY, SMS_LOOP_AVERAGE_COUNT_THRESHOLD): New
+	parameters.
+	* passes.c ("sms", "sms-vcg"): New dumps.
+	(rest_of_handle_sched): Call sms_schedule.
+	* rtl.h (sms_schedule): New declaration.
+	* timevar.def (TV_SMS): New.
+	* toplev.c (flag_modulo_sched): Initialize.
+	(f_options): Handle -fmodulo-sched option.
+	* docs/invoke.texi: Document -fmodulo-sched & -dm options.
+	* docs/passes.texi: Document new SMS pass.
+
 2004-05-25  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.in (OBJS): Add rtlhooks.o.
