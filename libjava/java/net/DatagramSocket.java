@@ -174,9 +174,6 @@ public class DatagramSocket
 	}
     impl.create();
 
-    // For multicasting, set the socket to be reused (Stevens pp. 195-6).
-    if (this instanceof MulticastSocket)
-      impl.setOption(SocketOptions.SO_REUSEADDR, new Boolean(true));
 
     impl.bind(port, laddr == null ? InetAddress.ANY_IF : laddr);
     
@@ -293,9 +290,6 @@ public class DatagramSocket
    */
   public int getLocalPort()
   {
-    if (!isBound ())
-      return -1;
-
     return impl.getLocalPort();
   }
 
