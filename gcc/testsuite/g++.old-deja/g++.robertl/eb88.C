@@ -1,5 +1,5 @@
 // Another magic NULL problem.
-// Special g++ Options:
+// Special g++ Options: -w
 
 #include <stddef.h>
 

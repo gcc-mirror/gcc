@@ -1,6 +1,5 @@
 // Build don't link: 
 // GROUPS passed operators
-// excess errors test - XFAIL *-*-*
 // (Message bugs/opr-del:4)
 // From: jamshid@ses.com (Jamshid Afshar)
 // Date:     Fri, 25 Feb 94 18:44:01 CST

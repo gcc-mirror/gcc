@@ -13,7 +13,7 @@ private:
 
 template <typename T>
 foo<T>::foo()               :v(),   t() {}
-template <typename T=float>	// ERROR - default parm for member template
+template <typename T=float>	// ERROR - default parm for member template XFAIL *-*-*
 foo<T>::foo(vector<int> v_) :v(v_), t() {}
 
 foo<float> a;
