@@ -1,4 +1,4 @@
-/* Definitions of target machine for GNU compiler for Intel 80386.
+/* Definitions of target machine for GNU compiler for Intel X86 (386, 486, pentium)
    Copyright (C) 1988, 1992, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -62,66 +62,101 @@ extern int target_flags;
 #define TARGET_CPU_DEFAULT 0
 #endif
 
-/* Compile 80387 insns for floating point (not library calls).  */
-#define TARGET_80387 (target_flags & 1)
-/* Compile code for an i486. */
-#define TARGET_486 (target_flags & 2)
+/* Masks for the -m switches */
+#define MASK_80387		000000000001	/* Hardware floating point */
+#define MASK_486		000000000002	/* 80486 specific */
+#define MASK_NOTUSED		000000000004	/* bit not currently used */
+#define MASK_RTD		000000000010	/* Use ret that pops args */
+#define MASK_REGPARM		000000000020	/* Pass args in eax, edx */
+#define MASK_SVR3_SHLIB		000000000040	/* Uninit locals into bss */
+#define MASK_IEEE_FP		000000000100	/* IEEE fp comparisons */
+#define MASK_FLOAT_RETURNS	000000000200	/* Return float in st(0) */
+#define MASK_NO_FANCY_MATH_387	000000000400	/* Disable sin, cos, sqrt */
+
+						/* Temporary codegen switches */
+#define MASK_DEBUG_ADDR		000001000000	/* Debug GO_IF_LEGITIMATE_ADDRESS */
+#define MASK_NO_WIDE_MULTIPLY	000002000000	/* Disable 32x32->64 multiplies */
+#define MASK_NO_MOVE		000004000000	/* Don't generate mem->mem */
+
+/* Use the floating point instructions */
+#define TARGET_80387 (target_flags & MASK_80387)
+
 /* Compile using ret insn that pops args.
    This will not work unless you use prototypes at least
    for all functions that can take varying numbers of args.  */  
-#define TARGET_RTD (target_flags & 8)
+#define TARGET_RTD (target_flags & MASK_RTD)
+
 /* Compile passing first two args in regs 0 and 1.
    This exists only to test compiler features that will
    be needed for RISC chips.  It is not usable
    and is not intended to be usable on this cpu.  */
-#define TARGET_REGPARM (target_flags & 020)
+#define TARGET_REGPARM (target_flags & MASK_RTD)
 
 /* Put uninitialized locals into bss, not data.
    Meaningful only on svr3.  */
-#define TARGET_SVR3_SHLIB (target_flags & 040)
+#define TARGET_SVR3_SHLIB (target_flags & MASK_SVR3_SHLIB)
 
 /* Use IEEE floating point comparisons.  These handle correctly the cases
    where the result of a comparison is unordered.  Normally SIGFPE is
    generated in such cases, in which case this isn't needed.  */
-#define TARGET_IEEE_FP (target_flags & 0100)
+#define TARGET_IEEE_FP (target_flags & MASK_IEEE_FP)
 
 /* Functions that return a floating point value may return that value
    in the 387 FPU or in 386 integer registers.  If set, this flag causes
    the 387 to be used, which is compatible with most calling conventions. */
-#define TARGET_FLOAT_RETURNS_IN_80387 (target_flags & 0200)
+#define TARGET_FLOAT_RETURNS_IN_80387 (target_flags & MASK_FLOAT_RETURNS)
 
 /* Disable generation of FP sin, cos and sqrt operations for 387.
    This is because FreeBSD lacks these in the math-emulator-code */
-#define TARGET_NO_FANCY_MATH_387 (target_flags & 0400)
+#define TARGET_NO_FANCY_MATH_387 (target_flags & MASK_NO_FANCY_MATH_387)
 
-/* Macro to define tables used to set the flags.
-   This is a list in braces of pairs in braces,
-   each pair being { "NAME", VALUE }
-   where VALUE is the bits to set or minus the bits to clear.
-   An empty string NAME is used to identify the default VALUE.  */
+/* Temporary switches for tuning code generation */
 
-#define TARGET_SWITCHES  \
-  { { "80387", 1},				\
-    { "no-80387", -1},				\
-    { "soft-float", -1},			\
-    { "no-soft-float", 1},			\
-    { "486", 2},				\
-    { "no-486", -2},				\
-    { "386", -2},				\
-    { "rtd", 8},				\
-    { "no-rtd", -8},				\
-    { "regparm", 020},				\
-    { "no-regparm", -020},			\
-    { "svr3-shlib", 040},			\
-    { "no-svr3-shlib", -040},			\
-    { "ieee-fp", 0100},				\
-    { "no-ieee-fp", -0100},			\
-    { "fp-ret-in-387", 0200},			\
-    { "no-fp-ret-in-387", -0200},		\
-    { "no-fancy-math-387", 0400},		\
-    { "fancy-math-387", -0400},			\
-    SUBTARGET_SWITCHES                          \
-    { "", TARGET_DEFAULT | TARGET_CPU_DEFAULT}}
+/* Disable 32x32->64 bit multiplies that are used for long long multiplies
+   and division by constants, but sometimes cause reload problems.  */
+#define TARGET_NO_WIDE_MULTIPLY (target_flags & MASK_NO_WIDE_MULTIPLY)
+#define TARGET_WIDE_MULTIPLY (!TARGET_NO_WIDE_MULTIPLY)
+
+/* Debug GO_IF_LEGITIMATE_ADDRESS */
+#define TARGET_DEBUG_ADDR (target_flags & MASK_DEBUG_ADDR)
+
+/* Hack macros for tuning code generation */
+#define TARGET_MOVE	((target_flags & MASK_NO_MOVE) == 0)	/* Don't generate memory->memory */
+
+/* Specific hardware switches */
+#define TARGET_486	(target_flags & MASK_486)	/* 80486DX, 80486SX, 80486DX[24] */
+#define TARGET_386	(!TARGET_486) 			/* 80386 */
+
+#define TARGET_SWITCHES							\
+{ { "80387",			 MASK_80387 },				\
+  { "no-80387",			-MASK_80387 },				\
+  { "hard-float",		 MASK_80387 },				\
+  { "soft-float",		-MASK_80387 },				\
+  { "no-soft-float",		 MASK_80387 },				\
+  { "386",			-MASK_486 },				\
+  { "no-386",			 MASK_486 },				\
+  { "486",			 MASK_486 },				\
+  { "no-486",			-MASK_486 },				\
+  { "rtd",			 MASK_RTD },				\
+  { "no-rtd",			-MASK_RTD },				\
+  { "regparm",			 MASK_REGPARM },			\
+  { "no-regparm",		-MASK_REGPARM },			\
+  { "svr3-shlib",		 MASK_SVR3_SHLIB },			\
+  { "no-svr3-shlib",		-MASK_SVR3_SHLIB },			\
+  { "ieee-fp",			 MASK_IEEE_FP },			\
+  { "no-ieee-fp",		-MASK_IEEE_FP },			\
+  { "fp-ret-in-387",		 MASK_FLOAT_RETURNS },			\
+  { "no-fp-ret-in-387",		-MASK_FLOAT_RETURNS },			\
+  { "no-fancy-math-387",	 MASK_NO_FANCY_MATH_387 },		\
+  { "fancy-math-387",		-MASK_NO_FANCY_MATH_387 },		\
+  { "no-wide-multiply",		 MASK_NO_WIDE_MULTIPLY },		\
+  { "wide-multiply",		-MASK_NO_WIDE_MULTIPLY },		\
+  { "debug-addr",		 MASK_DEBUG_ADDR },			\
+  { "no-debug-addr",		-MASK_DEBUG_ADDR },			\
+  { "move",			-MASK_NO_MOVE },			\
+  { "no-move",			 MASK_NO_MOVE },			\
+  SUBTARGET_SWITCHES							\
+  { "", TARGET_DEFAULT | TARGET_CPU_DEFAULT}}
 
 /* This is meant to be redefined in the host dependent files */
 #define SUBTARGET_SWITCHES
@@ -259,15 +294,30 @@ extern int target_flags;
 /*ax,dx,cx,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7,arg*/ \
 {  1, 1, 1, 0, 0, 0, 0, 1, 1,  1,  1,  1,  1,  1,  1,  1,  1 }
 
-/* Order in which to allocate registers.  First allocate registers
-   for which no insn operand demands that register, next those that are
-   demanded by the least number of insns.  List frame pointer late and fixed 
-   egisters last.  Note that, in general, we want to put nonsaved registers
-   late, but we put bx relatively early since it is not demanded by
-   any insn operand.  */
+/* Order in which to allocate registers.  Each register must be
+   listed once, even those in FIXED_REGISTERS.  List frame pointer
+   late and fixed registers last.  Note that, in general, we prefer
+   registers listed in CALL_USED_REGISTERS, keeping the others
+   available for storage of persistent values.
+
+   Three different versions of REG_ALLOC_ORDER have been tried:
+
+   If the order is edx, ecx, eax, ... it produces a slightly faster compiler,
+   but slower code on simple functions returning values in eax.
+
+   If the order is eax, ecx, edx, ... it causes reload to abort when compiling
+   perl 4.036 due to not being able to create a DImode register (to hold a 2
+   word union).
+
+   If the order is eax, edx, ecx, ... it produces better code for simple
+   functions, and a slightly slower compiler.  Users complained about the code
+   generated by allocating edx first, so restore the 'natural' order of things. */
+
+#if 0
 #define REG_ALLOC_ORDER \
-/*si,di,bx,cx,dx,ax,bp,sp,st,st1,st2,st3,st4,st5,st6,st7,arg*/ \
-{  4, 5, 3, 2, 1, 0, 6, 7, 8,  9, 10, 11, 12, 13, 14, 15, 16}
+/*dx,cx,ax,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7,arg*/ \
+{  1, 2, 0, 3, 4, 5, 6, 7, 8,  9, 10, 11, 12, 13, 14, 15, 16 }
+#endif
 
 /* Macro to conditionally modify fixed_regs/call_used_regs.  */
 #define CONDITIONAL_REGISTER_USAGE			\
@@ -925,36 +975,35 @@ do {						\
    After reload, it makes no difference, since pseudo regs have
    been eliminated by then.  */
 
-#ifndef REG_OK_STRICT
 
-/* Nonzero if X is a hard reg that can be used as an index or if
-   it is a pseudo reg.  */
-
-#define REG_OK_FOR_INDEX_P(X) \
-  (REGNO (X) < STACK_POINTER_REGNUM \
+/* Non strict versions, pseudos are ok */
+#define REG_OK_FOR_INDEX_NONSTRICT_P(X)					\
+  (REGNO (X) < STACK_POINTER_REGNUM					\
    || REGNO (X) >= FIRST_PSEUDO_REGISTER)
 
-/* Nonzero if X is a hard reg that can be used as a base reg
-   of if it is a pseudo reg.  */
-  /* ?wfs */
+#define REG_OK_FOR_BASE_NONSTRICT_P(X)					\
+  (REGNO (X) <= STACK_POINTER_REGNUM					\
+   || REGNO (X) == ARG_POINTER_REGNUM					\
+   || REGNO (X) >= FIRST_PSEUDO_REGISTER)
 
-#define REG_OK_FOR_BASE_P(X) \
-  (REGNO (X) <= STACK_POINTER_REGNUM \
-   || REGNO (X) == ARG_POINTER_REGNUM \
-   || REGNO(X) >= FIRST_PSEUDO_REGISTER)
-
-#define REG_OK_FOR_STRREG_P(X) \
+#define REG_OK_FOR_STRREG_NONSTRICT_P(X)				\
   (REGNO (X) == 4 || REGNO (X) == 5 || REGNO (X) >= FIRST_PSEUDO_REGISTER)
 
-#else
-
-/* Nonzero if X is a hard reg that can be used as an index.  */
-#define REG_OK_FOR_INDEX_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
-/* Nonzero if X is a hard reg that can be used as a base reg.  */
-#define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
-#define REG_OK_FOR_STRREG_P(X) \
+/* Strict versions, hard registers only */
+#define REG_OK_FOR_INDEX_STRICT_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
+#define REG_OK_FOR_BASE_STRICT_P(X)  REGNO_OK_FOR_BASE_P (REGNO (X))
+#define REG_OK_FOR_STRREG_STRICT_P(X)					\
   (REGNO_OK_FOR_DIREG_P (REGNO (X)) || REGNO_OK_FOR_SIREG_P (REGNO (X)))
 
+#ifndef REG_OK_STRICT
+#define REG_OK_FOR_INDEX_P(X)  REG_OK_FOR_INDEX_NONSTRICT_P(X)
+#define REG_OK_FOR_BASE_P(X)   REG_OK_FOR_BASE_NONSTRICT_P(X)
+#define REG_OK_FOR_STRREG_P(X) REG_OK_FOR_STRREG_NONSTRICT_P(X)
+
+#else
+#define REG_OK_FOR_INDEX_P(X)  REG_OK_FOR_INDEX_STRICT_P(X)
+#define REG_OK_FOR_BASE_P(X)   REG_OK_FOR_BASE_STRICT_P(X)
+#define REG_OK_FOR_STRREG_P(X) REG_OK_FOR_STRREG_STRICT_P(X)
 #endif
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
@@ -980,61 +1029,21 @@ do {						\
 
 #define LEGITIMATE_CONSTANT_P(X) 1
 
-#define GO_IF_INDEXABLE_BASE(X, ADDR)	\
- if (GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X)) goto ADDR
-
-#define LEGITIMATE_INDEX_REG_P(X)   \
-  (GET_CODE (X) == REG && REG_OK_FOR_INDEX_P (X))
-
-/* Return 1 if X is an index or an index times a scale.  */
-
-#define LEGITIMATE_INDEX_P(X)   \
-   (LEGITIMATE_INDEX_REG_P (X)				\
-    || (GET_CODE (X) == MULT				\
-	&& LEGITIMATE_INDEX_REG_P (XEXP (X, 0))		\
-	&& GET_CODE (XEXP (X, 1)) == CONST_INT		\
-	&& (INTVAL (XEXP (X, 1)) == 2			\
-	    || INTVAL (XEXP (X, 1)) == 4		\
-	    || INTVAL (XEXP (X, 1)) == 8)))
-
-/* Go to ADDR if X is an index term, a base reg, or a sum of those.  */
-
-#define GO_IF_INDEXING(X, ADDR)	\
-{ if (LEGITIMATE_INDEX_P (X)) goto ADDR;				\
-  GO_IF_INDEXABLE_BASE (X, ADDR);					\
-  if (GET_CODE (X) == PLUS && LEGITIMATE_INDEX_P (XEXP (X, 0)))		\
-    { GO_IF_INDEXABLE_BASE (XEXP (X, 1), ADDR); }			\
-  if (GET_CODE (X) == PLUS && LEGITIMATE_INDEX_P (XEXP (X, 1)))		\
-    { GO_IF_INDEXABLE_BASE (XEXP (X, 0), ADDR); } }
-
-/* We used to allow this, but it isn't ever used.
-   || ((GET_CODE (X) == POST_DEC || GET_CODE (X) == POST_INC)		\
-       && REG_P (XEXP (X, 0))						\
-       && REG_OK_FOR_STRREG_P (XEXP (X, 0)))				\
-*/
-
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)	\
+#ifdef REG_OK_STRICT
+#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)				\
 {									\
-  if (CONSTANT_ADDRESS_P (X)						\
-      && (! flag_pic || LEGITIMATE_PIC_OPERAND_P (X)))			\
+  if (legitimate_address_p (MODE, X, 1))				\
     goto ADDR;								\
-  GO_IF_INDEXING (X, ADDR);						\
-  if (GET_CODE (X) == PLUS && CONSTANT_ADDRESS_P (XEXP (X, 1)))		\
-    {									\
-      rtx x0 = XEXP (X, 0);						\
-      if (! flag_pic || ! SYMBOLIC_CONST (XEXP (X, 1)))			\
-	{ GO_IF_INDEXING (x0, ADDR); }					\
-      else if (x0 == pic_offset_table_rtx)				\
-	goto ADDR;							\
-      else if (GET_CODE (x0) == PLUS)					\
-	{								\
-	  if (XEXP (x0, 0) == pic_offset_table_rtx)			\
-	    { GO_IF_INDEXABLE_BASE (XEXP (x0, 1), ADDR); }		\
-	  if (XEXP (x0, 1) == pic_offset_table_rtx)			\
-	    { GO_IF_INDEXABLE_BASE (XEXP (x0, 0), ADDR); }		\
-	}								\
-    }									\
 }
+
+#else
+#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)				\
+{									\
+  if (legitimate_address_p (MODE, X, 0))				\
+    goto ADDR;								\
+}
+
+#endif
 
 /* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.
@@ -1057,38 +1066,13 @@ do {						\
    When -fpic is used, special handling is needed for symbolic references.
    See comments by legitimize_pic_address in i386.c for details.  */
 
-#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)   \
-{ extern rtx legitimize_pic_address ();					\
-  int ch = (X) != (OLDX);						\
-  if (flag_pic && SYMBOLIC_CONST (X))					\
-    {									\
-      (X) = legitimize_pic_address (X, 0);				\
-      if (memory_address_p (MODE, X))					\
-	goto WIN;							\
-    }									\
-  if (GET_CODE (X) == PLUS)						\
-    { if (GET_CODE (XEXP (X, 0)) == MULT)				\
-	ch = 1, XEXP (X, 0) = force_operand (XEXP (X, 0), 0);		\
-      if (GET_CODE (XEXP (X, 1)) == MULT)				\
-	ch = 1, XEXP (X, 1) = force_operand (XEXP (X, 1), 0);		\
-      if (ch && GET_CODE (XEXP (X, 1)) == REG				\
-	  && GET_CODE (XEXP (X, 0)) == REG)				\
-	goto WIN;							\
-      if (flag_pic && SYMBOLIC_CONST (XEXP (X, 1)))			\
-        ch = 1, (X) = legitimize_pic_address (X, 0);			\
-      if (ch) { GO_IF_LEGITIMATE_ADDRESS (MODE, X, WIN); }		\
-      if (GET_CODE (XEXP (X, 0)) == REG)                                \
-	{ register rtx temp = gen_reg_rtx (Pmode);			\
-	  register rtx val = force_operand (XEXP (X, 1), temp);		\
-	  if (val != temp) emit_move_insn (temp, val);			\
-	  XEXP (X, 1) = temp;						\
-	  goto WIN; }							\
-      else if (GET_CODE (XEXP (X, 1)) == REG)				\
-	{ register rtx temp = gen_reg_rtx (Pmode);			\
-	  register rtx val = force_operand (XEXP (X, 0), temp);		\
-	  if (val != temp) emit_move_insn (temp, val);			\
-	  XEXP (X, 0) = temp;						\
-	  goto WIN; }}}
+#define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)				\
+{									\
+  rtx orig_x = (X);							\
+  (X) = legitimize_address (X, OLDX, MODE);				\
+  if (memory_address_p (MODE, X))					\
+    goto WIN;								\
+}
 
 /* Nonzero if the constant value X is a legitimate general operand
    when generating PIC code.  It is given that flag_pic is on and 
@@ -1657,6 +1641,47 @@ extern char *qi_high_reg_name[];
 
 #define RET return ""
 #define AT_SP(mode) (gen_rtx (MEM, (mode), stack_pointer_rtx))
+
+/* Functions in i386.c */
+extern void output_op_from_reg ();
+extern void output_to_reg ();
+extern char *singlemove_string ();
+extern char *output_move_double ();
+extern int standard_80387_constant_p ();
+extern char *output_move_const_single ();
+extern int symbolic_operand ();
+extern int call_insn_operand ();
+extern int expander_call_insn_operand ();
+extern int symbolic_reference_mentioned_p ();
+extern void emit_pic_move ();
+extern void function_prologue ();
+extern int simple_386_epilogue ();
+extern void function_epilogue ();
+extern int legitimate_address_p ();
+extern struct rtx_def *legitimize_pic_address ();
+extern struct rtx_def *legitimize_address ();
+extern void print_operand ();
+extern void print_operand_address ();
+extern void notice_update_cc ();
+extern void split_di ();
+extern int binary_387_op ();
+extern int shift_op ();
+extern int VOIDmode_compare_op ();
+extern char *output_387_binary_op ();
+extern char *output_fix_trunc ();
+extern char *output_float_compare ();
+extern char *output_fp_cc0_set ();
+extern void save_386_machine_status ();
+extern void restore_386_machine_status ();
+extern void clear_386_stack_locals ();
+extern struct rtx_def *assign_386_stack_local ();
+
+/* External variables used */
+extern int optimize;		/* optimization level */
+extern int obey_regdecls;	/* TRUE if stupid register allocation */
+
+/* External functions used */
+extern struct rtx_def *force_operand ();
 
 /*
 Local variables:
