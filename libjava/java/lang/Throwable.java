@@ -164,6 +164,8 @@ public class Throwable implements Serializable
   // Name of this field comes from serialization spec.
   private String detailMessage;
 
+  // Setting this flag to false prevents fillInStackTrace() from running.
+  static boolean trace_enabled = true;
   private transient byte stackTrace[];
   private static final long serialVersionUID = -3042686055658047285L;
 }

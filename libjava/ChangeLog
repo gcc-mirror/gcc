@@ -1,3 +1,11 @@
+2000-12-22  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/Throwable.java (trace_enabled): New static field.
+	* java/lang/natThrowable.cc (fillInStackTrace): Do nothing if
+	trace_enabled not set.
+	* prims.cc (main_init): Turn off trace_enabled while creating
+	default exception objects.
+
 2000-12-21  Tom Tromey  <tromey@redhat.com>
 
 	* java/beans/PropertyChangeListener.java: Extends EventListener.

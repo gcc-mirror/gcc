@@ -50,6 +50,8 @@ extern "C" int __ia64_backtrace (void **array, int size);
 java::lang::Throwable *
 java::lang::Throwable::fillInStackTrace (void)
 {
+  if (! trace_enabled)
+    return this;
 #if defined (HAVE_BACKTRACE) || defined (__ia64__)
   void *p[128];
   
