@@ -1,3 +1,7 @@
+2004-05-15  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* gcc.dg/tree-ssa/20040514-1.c: Add '}' that was forgotten.
+
 2004-05-15  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/15311
