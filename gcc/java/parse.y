@@ -2765,11 +2765,7 @@ java_parser_context_restore_global (void)
   current_class = ctxp->class_type;
   input_filename = ctxp->filename;
   if (wfl_operator)
-    {
-      tree s;
-      BUILD_FILENAME_IDENTIFIER_NODE (s, input_filename);
-      EXPR_WFL_FILENAME_NODE (wfl_operator) = s;
-    }
+    EXPR_WFL_FILENAME_NODE (wfl_operator) = get_identifier (input_filename);
   current_function_decl = ctxp->function_decl;
   ctxp->saved_data = 0;
   if (ctxp->saved_data_ctx)

@@ -153,9 +153,6 @@ extern int compiling_from_source;
 #define all_class_list \
   java_global_trees[JTI_ALL_CLASS_LIST]
 
-/* List of all class filenames seen so far.  */
-#define all_class_filename java_global_trees [JTI_ALL_CLASS_FILENAME]
-
 /* List of virtual decls referred to by this translation unit, used to
    generate virtual method offset symbol table.  */
 
@@ -415,7 +412,6 @@ enum java_tree_index
   JTI_CURRENT_CLASS,
   JTI_OUTPUT_CLASS,
   JTI_ALL_CLASS_LIST,
-  JTI_ALL_CLASS_FILENAME,
 
   JTI_PREDEF_FILENAMES,
 
@@ -1673,16 +1669,6 @@ extern tree *type_map;
 /* On a TYPE_DECL, hold the list of inner classes defined within the
    scope of TYPE_DECL.  */
 #define DECL_INNER_CLASS_LIST(NODE) DECL_INITIAL (TYPE_DECL_CHECK (NODE))
-
-/* Build a IDENTIFIER_NODE for a file name we're considering. Since
-   all_class_filename is a registered root, putting this identifier
-   in a TREE_LIST it holds keeps this node alive.  */
-#define BUILD_FILENAME_IDENTIFIER_NODE(F, S)		\
-  if (!((F) = maybe_get_identifier ((S))))		\
-    {							\
-      (F) = get_identifier ((S));			\
-      tree_cons ((F), NULL_TREE, all_class_filename);	\
-    }
 
 /* Add a FIELD_DECL to RECORD_TYPE RTYPE.
    The field has name NAME (a char*), and type FTYPE.
