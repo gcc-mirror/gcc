@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Sun 68000/68020 version.
-   Copyright (C) 1987, 1988, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1993, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1356,12 +1356,8 @@ __transfer_from_trampoline ()					\
   case CONST_INT:						\
     /* Constant zero is super cheap due to clr instruction.  */	\
     if (RTX == const0_rtx) return 0;				\
-    /* Constants between -128 and 127 are cheap due to moveq */ \
-    if (INTVAL (RTX) >= -128 && INTVAL (RTX) <= 127) return 1;	\
-    /* Constants between -256 and 255 are easily generated */	\
-    /* by use of moveq and not.b 	   		   */   \
-    if ((OUTER_CODE) == SET && INTVAL (RTX) >= -256		\
-	&& INTVAL (RTX) < 256) return 2;			\
+    /* if ((OUTER_CODE) == SET) */				\
+      return const_int_cost(RTX);				\
   case CONST:							\
   case LABEL_REF:						\
   case SYMBOL_REF:						\
@@ -1947,6 +1943,7 @@ do { long l;						\
 
 /* Define functions defined in aux-output.c and used in templates.  */
 
+extern char *output_move_const_into_data_reg ();
 extern char *output_move_double ();
 extern char *output_move_const_single ();
 extern char *output_move_const_double ();
