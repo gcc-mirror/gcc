@@ -1,3 +1,7 @@
+Tue May 16 18:37:51 1995  Douglas Rupp  (drupp@cs.washington.edu)
+
+	* g++.c: Changed WINNT to _WIN32.
+
 Tue May 16 12:40:16 1995  Jason Merrill  <jason@lisa.cygnus.com>
 
 	* lex.c (handle_sysv_pragma): Don't use token_buffer.
