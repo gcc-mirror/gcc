@@ -414,6 +414,7 @@ in the following sections.
 -mnew-mnemonics  -mold-mnemonics @gol
 -mfull-toc   -mminimal-toc  -mno-fp-in-toc  -mno-sum-in-toc @gol
 -m64  -m32  -mxl-call  -mno-xl-call  -mpe @gol
+-malign-power  -malign-natural @gol
 -msoft-float  -mhard-float  -mmultiple  -mno-multiple @gol
 -mstring  -mno-string  -mupdate  -mno-update @gol
 -mfused-madd  -mno-fused-madd  -mbit-align  -mno-bit-align @gol
@@ -7105,6 +7106,16 @@ must be overridden with the @option{-specs=} option to specify the
 appropriate directory location.  The Parallel Environment does not
 support threads, so the @option{-mpe} option and the @option{-pthread}
 option are incompatible.
+
+@item -malign-natural
+@itemx -malign-power
+@opindex malign-natural
+@opindex malign-power
+On AIX, Darwin, and 64-bit PowerPC Linux, the option
+@option{-malign-natural} overrides the ABI-defined alignment of larger
+types, such as floating-point doubles, on their natural size-based boundary.
+The option @option{-malign-power} instructs GCC to follow the ABI-specified
+alignment rules.  GCC defaults to the standard alignment defined in the ABI.
 
 @item -msoft-float
 @itemx -mhard-float
