@@ -701,11 +701,7 @@ reversed_comparison_code_parts (code, arg0, arg1, insn)
       break;
     }
 
-  if (GET_MODE_CLASS (mode) == MODE_CC
-#ifdef HAVE_cc0
-      || arg0 == cc0_rtx
-#endif
-      )
+  if (GET_MODE_CLASS (mode) == MODE_CC || CC0_P (arg0))
     {
       rtx prev;
       /* Try to search for the comparison to determine the real mode.

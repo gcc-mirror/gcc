@@ -1,5 +1,14 @@
 2003-02-25  Roger Sayle  <roger@eyesopen.com>
 
+	* combine.c (combine_simplify_rtx, simplfy_comparison):  Use CC0_P.
+	* cse.c (invalidate_skipped_set):  Likewise.
+	* integrate.c (subst_constants):  Likewise.
+	* jump.c (reversed_comparison_code_parts):  Likewise.
+	* loop.c (canonicalize_condition):  Likewise.
+	* simplify-rtx.c (simplify_relational_operation):  Likewise.
+
+2003-02-25  Roger Sayle  <roger@eyesopen.com>
+
 	* builtins.def (DEF_LIB_ALWAYS_BUILTIN, DEF_UNUSED_BUILTIN): Delete.
 	(abs, labs, fabs, fabsf, fabsl, abort, exit, _exit, _Exit):  Use
 	the appropriate macro to define built-in function.

@@ -1,6 +1,6 @@
 /* Perform various loop optimizations, including strength reduction.
    Copyright (C) 1987, 1988, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -9442,11 +9442,9 @@ canonicalize_condition (insn, cond, reverse, earliest, want_reg)
 	}
     }
 
-#ifdef HAVE_cc0
   /* Never return CC0; return zero instead.  */
-  if (op0 == cc0_rtx)
+  if (CC0_P (op0))
     return 0;
-#endif
 
   return gen_rtx_fmt_ee (code, VOIDmode, op0, op1);
 }

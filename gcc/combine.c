@@ -4494,10 +4494,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	 with it.  */
       if (GET_CODE (XEXP (x, 0)) == COMPARE
 	  || (GET_MODE_CLASS (GET_MODE (XEXP (x, 0))) != MODE_CC
-#ifdef HAVE_cc0
-	      && XEXP (x, 0) != cc0_rtx
-#endif
-	      ))
+	      && ! CC0_P (XEXP (x, 0))))
 	{
 	  rtx op0 = XEXP (x, 0);
 	  rtx op1 = XEXP (x, 1);
@@ -11010,9 +11007,7 @@ simplify_comparison (code, pop0, pop1)
 	  /* We can't do anything if OP0 is a condition code value, rather
 	     than an actual data value.  */
 	  if (const_op != 0
-#ifdef HAVE_cc0
-	      || XEXP (op0, 0) == cc0_rtx
-#endif
+	      || CC0_P (XEXP (op0, 0))
 	      || GET_MODE_CLASS (GET_MODE (XEXP (op0, 0))) == MODE_CC)
 	    break;
 
