@@ -1,5 +1,10 @@
 2003-06-14  Michael Koch  <konqueror@gmx.de>
 
+	* java/security/BasicPermission.java:
+	New version from classpath.
+
+2003-06-14  Michael Koch  <konqueror@gmx.de>
+
 	* javax/naming/directory/Attribute.java:
 	New version from classpath.
 
