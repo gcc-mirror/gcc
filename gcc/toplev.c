@@ -3935,7 +3935,7 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
     {
 #ifndef TARGET_SUPPORTS_BYTECODE
       /* Just die with a fatal error if not supported */
-      fatal ("-fbytecode not supporter for this target");
+      fatal ("-fbytecode not supported for this target");
 #else
       bc_initialize ();
 #endif
