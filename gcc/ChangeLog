@@ -1,3 +1,7 @@
+2003-01-28  Fariborz Jahanian  <fjahanian@apple.com>
+
+	* pt.c (last_pending_template) Declare GTY().
+
 2003-01-28  Stan Shebs  <shebs@apple.com>
 
 	* coretypes.h (cpp_reader): Forward declare struct.
