@@ -1314,7 +1314,7 @@ xcoffout.o : xcoffout.c $(CONFIG_H) $(TREE_H) $(RTL_H) xcoffout.h flags.h
 emit-rtl.o : emit-rtl.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h except.h \
    function.h regs.h insn-config.h $(RECOG_H) real.h expr.h obstack.h \
    bytecode.h bc-opcode.h bc-typecd.h bc-typecd.def bc-optab.h bc-emit.h \
-   bc-opname.h
+   bc-opname.h hard-reg-set.h
 real.o : real.c $(CONFIG_H) $(TREE_H)
 getpwd.o : getpwd.c $(CONFIG_H)
 
