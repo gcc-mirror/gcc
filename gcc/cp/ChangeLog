@@ -1,3 +1,9 @@
+2003-02-21  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8724
+	* call.c (build_method_call): Make sure that the type destroyed in
+	an explicit destructor call is complete.
+
 2003-02-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9729

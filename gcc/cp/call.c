@@ -519,7 +519,12 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	  ("destructor name `~%T' does not match type `%T' of expression",
 	   TREE_OPERAND (name, 0), object_type);
 
-      if (! TYPE_HAS_DESTRUCTOR (complete_type (object_type)))
+      /* The destructor type must be complete.  */
+      object_type = complete_type_or_else (object_type, NULL_TREE);
+      if (!object_type || object_type == error_mark_node)
+	return error_mark_node;
+
+      if (! TYPE_HAS_DESTRUCTOR (object_type))
 	return cp_convert (void_type_node, instance);
       instance = default_conversion (instance);
       instance_ptr = build_unary_op (ADDR_EXPR, instance, 0);
