@@ -26,20 +26,23 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 extern char yytext[];
 extern int yyleng;
 
-extern char *malloc();
+extern char *malloc ();
 
 
 /* Chain of all defs built by the parser. */
 struct def *defs;
 int ndefs;
 
-static struct node *makenode();
-static struct variation *makevar();
-static struct def *makedef();
+static struct node *makenode ();
+static struct variation *makevar ();
+static struct def *makedef ();
+
+void yyerror ();
 
 %}
 
-%union{
+%union
+{
   char *string;
   struct def *def;
   struct variation *variation;
@@ -67,7 +70,7 @@ defs:
 
 def:
   DEFOP '(' STRING ',' opt_string ',' '(' variations ')' ')'
-    { $$ = makedef($3, $5, $8); }
+    { $$ = makedef ($3, $5, $8); }
   ;
 
 variations:
@@ -80,11 +83,11 @@ variation:
   '(' opt_string ')'
     { $$ = makevar($2, (struct node *) NULL, (struct node *) NULL, (struct node *) NULL); }
   | '(' opt_string ',' list ')'
-    { $$ = makevar($2, $4, (struct node *) NULL, (struct node *) NULL); }
+    { $$ = makevar ($2, $4, (struct node *) NULL, (struct node *) NULL); }
   | '(' opt_string ',' list ',' list ')'
-    { $$ = makevar($2, $4, $6, (struct node *) NULL); }
+    { $$ = makevar ($2, $4, $6, (struct node *) NULL); }
   | '(' opt_string ',' list ',' list ',' list ')'
-    { $$ = makevar($2, $4, $6, $8); }
+    { $$ = makevar ($2, $4, $6, $8); }
   ;
 
 opt_string:
@@ -108,31 +111,31 @@ items:
 
 item:
   STRING
-    { $$ = makenode($1); }
+    { $$ = makenode ($1); }
   ;
 
 %%
 
 static struct node *
-makenode(s)
+makenode (s)
      char *s;
 {
   struct node *n;
 
-  n = (struct node *) malloc(sizeof (struct node));
+  n = (struct node *) malloc (sizeof (struct node));
   n->text = s;
   n->next = NULL;
   return n;
 }
 
 static struct variation *
-makevar(name, inputs, outputs, literals)
+makevar (name, inputs, outputs, literals)
      char *name;
      struct node *inputs, *outputs, *literals;
 {
   struct variation *v;
 
-  v = (struct variation *) malloc(sizeof (struct variation));
+  v = (struct variation *) malloc (sizeof (struct variation));
   v->name = name;
   v->code = ndefs++;
   v->inputs = inputs;
@@ -143,13 +146,13 @@ makevar(name, inputs, outputs, literals)
 }
 
 static struct def *
-makedef(name, template, vars)
+makedef (name, template, vars)
      char *name, *template;
      struct variation *vars;
 {
   struct def *d;
 
-  d = (struct def *) malloc(sizeof (struct def));
+  d = (struct def *) malloc (sizeof (struct def));
   d->basename = name;
   d->template = template;
   d->variations = vars;
@@ -158,11 +161,9 @@ makedef(name, template, vars)
 }
 
 void
-yyerror(s)
+yyerror (s)
      char *s;
 {
-  extern int yylineno;
-
-  fprintf(stderr, "syntax error in line %d\n", yylineno);
-  exit(1);
+  fprintf (stderr, "syntax error in input");
+  exit (1);
 }
