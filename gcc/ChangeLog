@@ -1,3 +1,10 @@
+Sat Apr 11 16:01:11 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* function.c (target_temp_slot_level): Define here.
+	(push_temp_slots_for_target, {get,set}_target_temp_slot_level): New.
+	* stmt.c (target_temp_slot_level): Don't define here.
+	* expr.h (temp_slot_level): New declaration.
+
 Fri Apr 10 16:35:48 1998  Paul Eggert  <eggert@twinsun.com>
 
 	* c-common.c (decl_attributes): Support strftime format checking.
