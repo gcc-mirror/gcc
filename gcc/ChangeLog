@@ -1,3 +1,7 @@
+2001-02-14  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* gcc.c (do_spec_1): Fix off-by-one error for '%M' case.
+
 2001-02-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (toplev.o): Depend on params.h.
