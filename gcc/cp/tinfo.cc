@@ -31,34 +31,6 @@
 #include "tinfo.h"
 #include "new"			// for placement new
 
-namespace
-{
-// ADDR is a pointer to an object.  Convert it to a pointer to a base,
-// using OFFSET.
-inline void*
-convert_to_base (void *addr, bool is_virtual, USItype offset)
-{
-  if (!addr)
-    return NULL;
-
-  if (!is_virtual)
-    return (char *) addr + offset;
-
-#if defined(__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100
-  // Under the new ABI, the offset gives us an index into the vtable,
-  // which contains an offset to the virtual base.  The vptr is always
-  // the first thing in the object.
-  std::ptrdiff_t *vtable = *((std::ptrdiff_t **) addr);
-  return ((char *) addr) + vtable[offset];
-#else
-  // Under the old ABI, the offset gives us the address of a pointer
-  // to the virtual base.
-  return *((void **) ((char *) addr + offset));
-#endif
-}
-
-}
-
 // This file contains the minimal working set necessary to link with code
 // that uses virtual functions and -frtti but does not actually use RTTI
 // functionality.
@@ -69,6 +41,26 @@ std::type_info::
 
 #if !defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100
 // original (old) abi
+
+namespace
+{
+// ADDR is a pointer to an object.  Convert it to a pointer to a base,
+// using OFFSET.
+inline void*
+convert_to_base (void *addr, bool is_virtual, myint32 offset)
+{
+  if (!addr)
+    return NULL;
+
+  if (!is_virtual)
+    return (char *) addr + offset;
+
+  // Under the old ABI, the offset gives us the address of a pointer
+  // to the virtual base.
+  return *((void **) ((char *) addr + offset));
+}
+
+}
 
 // We can't rely on common symbols being shared between shared objects.
 bool std::type_info::
