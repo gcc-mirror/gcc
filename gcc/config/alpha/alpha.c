@@ -7571,7 +7571,7 @@ alpha_start_function (file, fnname, decl)
   /* Stack space needed for pushing registers clobbered by us.  */
   HOST_WIDE_INT sa_size;
   /* Complete stack size needed.  */
-  HOST_WIDE_INT frame_size;
+  unsigned HOST_WIDE_INT frame_size;
   /* Offset from base reg to register save area.  */
   HOST_WIDE_INT reg_offset;
   char *entry_label = (char *) alloca (strlen (fnname) + 6);
