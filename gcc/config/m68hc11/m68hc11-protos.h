@@ -49,6 +49,7 @@ extern rtx m68hc11_compare_op0;
 extern rtx m68hc11_compare_op1;
 extern rtx m68hc11_soft_tmp_reg;
 extern rtx iy_reg;
+extern rtx ix_reg;
 extern rtx d_reg;
 
 extern void m68hc11_initialize_trampoline PARAMS((rtx, rtx, rtx));
