@@ -1,3 +1,45 @@
+1999-08-06  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (bad_specifiers): It's OK to have an EH spec on a function
+	pointer.
+
+	* pt.c (maybe_get_template_decl_from_type_decl): Make sure that
+	we're looking at a class.
+
+	* decl.c (lookup_name_real): Set the complain flag if we're
+	looking for a namespace member.
+
+	* decl.c (pushdecl): Only give an error for shadowing a parm 
+	from *this* function.
+
+	* decl2.c (build_expr_from_tree, case METHOD_CALL_EXPR): Only
+	build_expr_from_tree on the args of a TEMPLATE_ID_EXPR.
+
+	* class.c (mark_overriders): Fix order of args to overrides.
+	(warn_hidden): Likewise.  Fix for having virtual and non-virtual
+	functions with the same name.
+
+	* cp-tree.h (DECL_VIRTUAL_CONTEXT): New macro.
+	* typeck.c (expand_ptrmemfunc_cst): Calculate delta correctly for
+	virtual functions and MI.  Simplify.
+
+	* typeck.c (c_expand_return): Downgrade pedwarn about returning NULL
+	from op new to warning.
+
+	* decl2.c (reparse_absdcl_as_casts): Don't warn about old-style
+	casts in system headers or extern "C" blocks.
+
+	* pt.c (do_decl_instantiation): Downgrade duplicate instantiation
+	errors to pedwarn.
+
+	* error.c (dump_type_real): Handle TREE_LIST again.
+
+	* typeck.c (comp_target_parms): Don't complain about 
+	converting from () to (...) if !flag_strict_prototype.
+
+	* class.c (instantiate_type): Downgrade errors for object-dependent
+	memfn refs to pedwarn.
+
 1999-08-06  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* pt.c (tsubst): Use build_index_type to build in-template array

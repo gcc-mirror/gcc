@@ -1327,6 +1327,10 @@ struct lang_decl
   (DECL_CONTEXT (NODE) ? DECL_CONTEXT (NODE) : global_namespace)
 #define FROB_CONTEXT(NODE)   ((NODE) == global_namespace ? NULL_TREE : (NODE))
 
+/* For a virtual function, the base where we find its vtable entry.
+   For a non-virtual function, the base where it is defined.  */
+#define DECL_VIRTUAL_CONTEXT(NODE) DECL_CONTEXT (NODE)
+
 /* 1 iff NODE has namespace scope, including the global namespace.  */
 #define DECL_NAMESPACE_SCOPE_P(NODE) \
   (DECL_CONTEXT (NODE) == NULL_TREE \

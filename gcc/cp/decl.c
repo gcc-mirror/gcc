@@ -4154,8 +4154,10 @@ pushdecl (x)
 
 	  /* Warn if shadowing an argument at the top level of the body.  */
 	  else if (oldlocal != NULL_TREE && !DECL_EXTERNAL (x)
-	      && TREE_CODE (oldlocal) == PARM_DECL
-	      && TREE_CODE (x) != PARM_DECL)
+		   && TREE_CODE (oldlocal) == PARM_DECL
+		   /* Don't complain if it's from an enclosing function.  */
+		   && DECL_CONTEXT (oldlocal) == current_function_decl
+		   && TREE_CODE (x) != PARM_DECL)
 	    {
 	      /* Go to where the parms should be and see if we
 		 find them there.  */
@@ -5815,6 +5817,7 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	    {
 	      struct tree_binding b;
 	      val = binding_init (&b);
+	      flags |= LOOKUP_COMPLAIN;
 	      if (!qualified_lookup_using_namespace (name, type, val, flags))
 		return NULL_TREE;
 	      val = select_decl (val, flags);
@@ -8706,9 +8709,9 @@ bad_specifiers (object, type, virtualp, quals, inlinep, friendp, raises)
     cp_error ("`const' and `volatile' function specifiers on `%D' invalid in %s declaration",
 	      object, type);
   if (friendp)
-    cp_error_at ("invalid friend declaration", object);
-  if (raises)
-    cp_error_at ("invalid exception specifications", object);
+    cp_error_at ("`%D' declared as a friend", object);
+  if (raises && ! TYPE_PTRFN_P (TREE_TYPE (object)))
+    cp_error_at ("`%D' declared with an exception specification", object);
 }
 
 /* CTYPE is class type, or null if non-class.

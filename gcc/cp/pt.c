@@ -3574,6 +3574,7 @@ maybe_get_template_decl_from_type_decl (decl)
   return (decl != NULL_TREE
 	  && TREE_CODE (decl) == TYPE_DECL 
 	  && DECL_ARTIFICIAL (decl)
+	  && CLASS_TYPE_P (decl)
 	  && CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (decl))) 
     ? CLASSTYPE_TI_TEMPLATE (TREE_TYPE (decl)) : decl;
 }
@@ -8909,8 +8910,8 @@ do_decl_instantiation (declspecs, declarator, storage)
 
 	 No program shall both explicitly instantiate and explicitly
 	 specialize a template.  */
-      cp_error ("explicit instantiation of `%#D' after", result);
-      cp_error_at ("explicit specialization here", result);
+      cp_pedwarn ("explicit instantiation of `%#D' after", result);
+      cp_pedwarn_at ("explicit specialization here", result);
       return;
     }
   else if (DECL_EXPLICIT_INSTANTIATION (result))
@@ -8924,7 +8925,7 @@ do_decl_instantiation (declspecs, declarator, storage)
 	 first instantiation was `extern' and the second is not, and
 	 EXTERN_P for the opposite case.  */
       if (DECL_INTERFACE_KNOWN (result) && !extern_p)
-	cp_error ("duplicate explicit instantiation of `%#D'", result);
+	cp_pedwarn ("duplicate explicit instantiation of `%#D'", result);
 
       /* If we've already instantiated the template, just return now.  */
       if (DECL_INTERFACE_KNOWN (result))

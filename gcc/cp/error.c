@@ -211,6 +211,11 @@ dump_type_real (t, v, canonical_name)
       OB_PUTS ("{unknown type}");
       break;
 
+    case TREE_LIST:
+      /* A list of function parms.  */
+      dump_parameters (t, 0, canonical_name);
+      break;
+
     case IDENTIFIER_NODE:
       OB_PUTID (t);
       break;

@@ -2785,18 +2785,18 @@ get_basefndecls (fndecl, t)
 
 /* Mark the functions that have been hidden with their overriders.
    Since we start out with all functions already marked with a hider,
-   no need to mark functions that are just hidden.  */
+   no need to mark functions that are just hidden.
+
+   Subroutine of warn_hidden.  */
 
 static void
 mark_overriders (fndecl, base_fndecls)
      tree fndecl, base_fndecls;
 {
-  while (base_fndecls)
+  for (; base_fndecls; base_fndecls = TREE_CHAIN (base_fndecls))
     {
-      if (overrides (TREE_VALUE (base_fndecls), fndecl))
+      if (overrides (fndecl, TREE_VALUE (base_fndecls)))
 	TREE_PURPOSE (base_fndecls) = fndecl;
-
-      base_fndecls = TREE_CHAIN (base_fndecls);
     }
 }
 
@@ -2884,8 +2884,15 @@ warn_hidden (t)
       tree binfos = BINFO_BASETYPES (TYPE_BINFO (t));
       int i, n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
 
-      fndecl = OVL_CURRENT (fns);
-      if (DECL_VINDEX (fndecl) == NULL_TREE)
+      /* First see if we have any virtual functions in this batch.  */
+      for (; fns; fns = OVL_NEXT (fns))
+	{
+	  fndecl = OVL_CURRENT (fns);
+	  if (DECL_VINDEX (fndecl))
+	    break;
+	}
+
+      if (fns == NULL_TREE)
 	continue;
 
       /* First we get a list of all possible functions that might be
@@ -2900,38 +2907,28 @@ warn_hidden (t)
 	}
 
       fns = OVL_NEXT (fns);
-      if (fns)
-	fndecl = OVL_CURRENT (fns);
-      else
-	fndecl = NULL_TREE;
 
       /* ...then mark up all the base functions with overriders, preferring
 	 overriders to hiders.  */
       if (base_fndecls)
-	while (fndecl)
+	for (; fns; fns = OVL_NEXT (fns))
 	  {
-	    mark_overriders (fndecl, base_fndecls);
-	    
-	    fns = OVL_NEXT (fns);
-	    if (fns)
-	      fndecl = OVL_CURRENT (fns);
-	    else
-	      fndecl = NULL_TREE;
+	    fndecl = OVL_CURRENT (fns);
+	    if (DECL_VINDEX (fndecl))
+	      mark_overriders (fndecl, base_fndecls);
 	  }
 
       /* Now give a warning for all base functions without overriders,
 	 as they are hidden.  */
-      while (base_fndecls)
+      for (; base_fndecls; base_fndecls = TREE_CHAIN (base_fndecls))
 	{
-	  if (! overrides (TREE_VALUE (base_fndecls),
-			   TREE_PURPOSE (base_fndecls)))
+	  if (! overrides (TREE_PURPOSE (base_fndecls),
+			   TREE_VALUE (base_fndecls)))
 	    {
 	      /* Here we know it is a hider, and no overrider exists.  */
 	      cp_warning_at ("`%D' was hidden", TREE_VALUE (base_fndecls));
 	      cp_warning_at ("  by `%D'", TREE_PURPOSE (base_fndecls));
 	    }
-
-	  base_fndecls = TREE_CHAIN (base_fndecls);
 	}
     }
 }
@@ -5019,15 +5016,15 @@ instantiate_type (lhstype, rhs, flags)
 	          field = OVL_FUNCTION (field);
 	        if (TREE_CODE (field) == FUNCTION_DECL)
 	          {
-		    cp_error ("object-dependent reference `%E' can only be used in a call",
+		    cp_pedwarn ("object-dependent reference `%E' can only be used in a call",
 		    	      DECL_NAME (field));
-  	    	    cp_error ("  to form a pointer to member function, say `&%T::%E'",
+  	    	    cp_pedwarn ("  to form a pointer to member function, say `&%T::%E'",
 		    	      t, DECL_NAME (field));
     	          }
 	        else
-	          cp_error ("object-dependent reference can only be used in a call");
+	          cp_pedwarn ("object-dependent reference can only be used in a call");
 	      }
-	    return error_mark_node;
+	    return r;
 	  }
 	
 	return r;
