@@ -7234,7 +7234,8 @@ validate_else (p)
    If NOWARN is nonzero, don't warn about slash-star inside a comment.
    This feature is useful when processing a comment that is going to be
    processed or was processed at another point in the preprocessor,
-   to avoid a duplicate warning.  */
+   to avoid a duplicate warning.  Likewise for unterminated comment errors.  */
+
 static U_CHAR *
 skip_to_end_of_comment (ip, line_counter, nowarn)
      register FILE_BUF *ip;
@@ -7245,6 +7246,7 @@ skip_to_end_of_comment (ip, line_counter, nowarn)
   register U_CHAR *bp = ip->bufp;
   FILE_BUF *op = &outbuf;	/* JF */
   int output = put_out_comments && !line_counter;
+  int start_line = line_counter ? *line_counter : 0;
 
 	/* JF this line_counter stuff is a crock to make sure the
 	   comment is only put out once, no matter how many times
@@ -7291,6 +7293,15 @@ skip_to_end_of_comment (ip, line_counter, nowarn)
 	warning ("`/*' within comment");
       break;
     case '\n':
+      /* If this is the end of the file, we have an unterminated comment.
+	 Don't swallow the newline.  We are guaranteed that there will be a
+	 trailing newline and various pieces assume it's there.  */
+      if (bp == limit)
+	{
+	  --bp;
+	  --limit;
+	  break;
+	}
       if (line_counter != NULL)
 	++*line_counter;
       if (output)
@@ -7308,6 +7319,9 @@ skip_to_end_of_comment (ip, line_counter, nowarn)
       break;
     }
   }
+
+  if (!nowarn)
+    error_with_line (line_for_error (start_line), "unterminated comment");
   ip->bufp = bp;
   return bp;
 }
