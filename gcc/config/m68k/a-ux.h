@@ -22,7 +22,7 @@ Boston, MA 02111-1307, USA.  */
 /* Execution environment */
 
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT 7	/* 68020, 68881 */
+#define TARGET_DEFAULT (MASK_BITFIELD|MASK_68881|MASK_68020)	/* 68020, 68881 */
 
 #define CPP_PREDEFINES "-Dunix -Dm68k -DAUX -DmacII \
 -Asystem(unix) -Asystem(AUX) -Acpu(m68k) -Amachine(m68k) -Amachine(macII)"

@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.  */
 /* See m68k.h.  7 means 68020 with 68881.  */
 
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT 7
+#define TARGET_DEFAULT (MASK_BITFIELD|MASK_68881|MASK_68020)
 #endif
 
 /* Define __HAVE_FPA__ or __HAVE_68881__ in preprocessor,
@@ -39,7 +39,7 @@ Boston, MA 02111-1307, USA.  */
    This will control the use of inline 68881 insns in certain macros.
    Also inform the program which CPU this is for.  */
 
-#if TARGET_DEFAULT & 02
+#if TARGET_DEFAULT & MASK_68881
 
 /* -m68881 is the default */
 #define CPP_SPEC \
@@ -98,7 +98,7 @@ Boston, MA 02111-1307, USA.  */
    I'm not sure what would happen below if people gave contradictory
    arguments (eg. -msoft-float -mfpa) */
 
-#if TARGET_DEFAULT & 0100
+#if TARGET_DEFAULT & MASK_FPA
 /* -mfpa is the default */
 #define STARTFILE_SPEC					\
   "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}	\
@@ -106,7 +106,7 @@ Boston, MA 02111-1307, USA.  */
    %{msoft-float:Fcrt1.o%s}				\
    %{!m68881:%{!msoft-float:Wcrt1.o%s}}"
 #else
-#if TARGET_DEFAULT & 2
+#if TARGET_DEFAULT & MASK_68881
 /* -m68881 is the default */
 #define STARTFILE_SPEC					\
   "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}	\
@@ -127,14 +127,14 @@ Boston, MA 02111-1307, USA.  */
    Control choice of libm.a (if user says -lm)
    based on fp arith default and options.  */
 
-#if TARGET_DEFAULT & 0100
+#if TARGET_DEFAULT & MASK_FPA
 /* -mfpa is the default */
 #define LIB_SPEC "%{g:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} \
 %{g:-lg} \
 %{msoft-float:-L/usr/lib/fsoft}%{m68881:-L/usr/lib/f68881}\
 %{!msoft_float:%{!m68881:-L/usr/lib/ffpa}}"
 #else
-#if TARGET_DEFAULT & 2
+#if TARGET_DEFAULT & MASK_68881
 /* -m68881 is the default */
 #define LIB_SPEC "%{g:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} \
 %{g:-lg} \

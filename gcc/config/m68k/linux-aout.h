@@ -1,5 +1,5 @@
 /* Definitions for Motorola m68k running Linux
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -22,7 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #include <linux-aout.h>
 
 /* 68020 with 68881 */
-#define TARGET_DEFAULT 7
+#define TARGET_DEFAULT (MASK_BITFIELD|MASK_68881|MASK_68020)
 
 #define DBX_DEBUGGING_INFO
 
@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
   "-Dunix -Dmc68000 -Dmc68020 -Dlinux -Asystem(unix) -Asystem(posix) -Acpu(m68k) -Amachine(m68k)"
 
 #undef CPP_SPEC
-#if TARGET_DEFAULT & 2
+#if TARGET_DEFAULT & MASK_68881
 #define CPP_SPEC \
   "%{!msoft-float:-D__HAVE_68881__} %{posix:-D_POSIX_SOURCE}"
 #else

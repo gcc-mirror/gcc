@@ -1,21 +1,6 @@
 /* Definitions of target machine for GNU compiler.
-   Copyright (C) 1990, 1994 Free Software Foundation, Inc.
-
-   Written by Robert Andersson, International Systems, Oslo, Norway.
-   Please send bug reports, questions and improvements to ra@intsys.no.
-
-   For NCR Tower 32/4x0 and 32/6x0 running System V Release 3.
-   I don't have access to 200/700/800/850 machines, so I don't know if it
-   works on those as well.  It shouldn't be far from it however.
-   The hardware floating point support is completely untested, as I do
-   not have access to a machine with a 6888x FPU in it.
-   It does not work on the System V Release 2 based OS releases.  Making it
-   work will not be easy, due to the silly way in which stack expansion is
-   implemented in the OS.
-
-   This file is included in tower-as.h.
-   Do *NOT* include this file directly.
-
+   Copyright (C) 1990, 1994, 1996 Free Software Foundation, Inc.
+   Contributed by Robert Andersson, International Systems, Oslo, ra@intsys.no.
 
 This file is part of GNU CC.
 
@@ -34,13 +19,21 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/* For NCR Tower 32/4x0 and 32/6x0 running System V Release 3.  I don't have
+   access to 200/700/800/850 machines, so I don't know if it works on those
+   as well.  It shouldn't be far from it however.  The hardware floating point
+   support is completely untested, as I do not have access to a machine with
+   a 6888x FPU in it.  It does not work on the System V Release 2 based OS
+   releases.  Making it work will not be easy, due to the silly way in which
+   stack expansion is implemented in the OS.
+
+   This file is included in tower-as.h.
+   Do *NOT* include this file directly.  */
+
 
 #include "m68k/m68k.h"
 
-
-/* See m68k.h.  5 means 68020 with no 68881.  */
-
-#define TARGET_DEFAULT 5
+#define TARGET_DEFAULT (MASK_BITFIELD|MASK_68020)
 
 /* Don't try using XFmode.  */
 #undef LONG_DOUBLE_TYPE_SIZE

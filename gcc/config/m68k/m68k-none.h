@@ -180,7 +180,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
    The default is m68k 99.9% of the time anyway.  */
 
 #if TARGET_CPU_DEFAULT == M68K_CPU_m68k || TARGET_CPU_DEFAULT == M68K_CPU_m68020
-#if TARGET_DEFAULT & 2
+#if TARGET_DEFAULT & MASK_68881
 #define MULTILIB_DEFAULTS { "m68020", "m68881" }
 #else
 #define MULTILIB_DEFAULTS { "m68020", "msoft-float" }
@@ -188,7 +188,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #endif
 
 #if TARGET_CPU_DEFAULT == M68K_CPU_m68000 || TARGET_CPU_DEFAULT == M68K_CPU_m68302
-#if TARGET_DEFAULT & 2
+#if TARGET_DEFAULT & MASK_68881
 #define MULTILIB_DEFAULTS { "m68000", "m68881" }
 #else
 #define MULTILIB_DEFAULTS { "m68000", "msoft-float" }

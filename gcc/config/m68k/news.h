@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  SONY NEWS-OS 4 version.
-   Copyright (C) 1987, 1989, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1989, 1993, 1994, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* See m68k.h.  7 means 68020 with 68881.  */
 
-#define TARGET_DEFAULT 7
+#define TARGET_DEFAULT (MASK_BITFIELD|MASK_68881|MASK_68020)
 
 /* Define __HAVE_68881__ in preprocessor, unless -msoft-float is specified.
    This will control the use of inline 68881 insns in certain macros.  */

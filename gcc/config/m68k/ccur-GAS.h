@@ -40,7 +40,7 @@ Boston, MA 02111-1307, USA.  */
 #define SPACE_AFTER_L_OPTION
 #define SWITCHES_NEED_SPACES "oL"
 
-#define TARGET_DEFAULT 0407 /* See m68k.h.  7 means 68020 with 68881.  */
+#define TARGET_DEFAULT (MASK_68040|MASK_BITFIELD|MASK_68881|MASK_68020) /* See m68k.h.  7 means 68020 with 68881.  */
 
 #include "m68k/m68k.h"
 

@@ -1,26 +1,7 @@
-/* Definitions of target machine for GNU compiler.
-   Copyright (C) 1990, 1994 Free Software Foundation, Inc.
-
-   Written by Randy Welch
-   Send bug reports, questions and improvements to any of the following
-   addresses:
-
-   randy@kcin.uucp
-   randy@tss.com
-   rwelch@netcom.com
-   plx-info@wpg.com        Plexus users mailing list
-
-   For 680X0 based Plexus Computers running SYSVR2
-
-   The Plexus port of gcc requires you to use gas ( either 1.3X with COFF 
-   patches or 2.X ),  If you use gas 2.X you have to use binutils-2.X.
-      
-   With using gas-2.X the Plexus gcc port is now capable of generating
-   output suitable for use by gdb-4.X ( send mail to above address for
-   info on getting gdb patches or other GNU items for the Plexus )
-
-   This is configured for label output default by gas as LXXX instead of
-   plexus cc/as combination requires .LXXX
+/* Definitions of target machine for GNU compiler, for 680X0 based Plexus
+   Computers running SYSVR2
+   Copyright (C) 1990, 1994, 1996 Free Software Foundation, Inc.
+   Contributed by Randy Welch (rwelch@netcom.com).
 
 This file is part of GNU CC.
 
@@ -40,12 +21,22 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
+/* The Plexus port of gcc requires you to use gas ( either 1.3X with COFF 
+   patches or 2.X ),  If you use gas 2.X you have to use binutils-2.X.
+      
+   With using gas-2.X the Plexus gcc port is now capable of generating
+   output suitable for use by gdb-4.X ( send mail to above address for
+   info on getting gdb patches or other GNU items for the Plexus )
+
+   This is configured for label output default by gas as LXXX instead of
+   plexus cc/as combination requires .LXXX  */
+
 #include "m68k/m68k.h"
 
 /* Define __HAVE_68881 in preprocessor only if -m68881 is specified.
    This will control the use of inline 68881 insns in certain macros. */
 
-#define TARGET_DEFAULT 5                      /* set to 5 if on a '020 box */
+#define TARGET_DEFAULT (MASK_BITFIELD|MASK_68020)
 
 /* Don't try using XFmode.  */
 #undef LONG_DOUBLE_TYPE_SIZE
@@ -54,7 +45,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_SPEC "%{m68881:-D__HAVE_68881__}"
 #define CPP_PREDEFINES "-Dm68 -Dunix -Dplexus -Asystem(unix)  -Acpu(m68k) -Amachine(m68k)"
 
-#if TARGET_DEFAULT & 01
+#if TARGET_DEFAULT & MASK_68020
 #define ASM_SPEC\
 "%{m68000:-mc68000}%{mc68000:-mc68000}%{!mc68000:%{!m68000:-mc68020}}"
 #undef STRICT_ALIGNMENT

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Apollo 680X0 version.
-   Copyright (C) 1989,1992 Free Software Foundation, Inc.
+   Copyright (C) 1989,1992, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
 /* See m68k.h.  7 means 68020 with 68881.  */
 
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT 7
+#define TARGET_DEFAULT (MASK_BITFIELD|MASK_68881|MASK_68020)
 #endif
 
 /* Target switches for the Apollo is the same as in m68k.h, except
@@ -54,7 +54,7 @@ Boston, MA 02111-1307, USA.  */
    This will control the use of inline 68881 insns in certain macros.
    Also inform the program which CPU this is for.  */
 
-#if TARGET_DEFAULT & 02
+#if TARGET_DEFAULT & MASK_68881
 
 /* -m68881 is the default */
 #define CPP_SPEC \
@@ -100,7 +100,7 @@ Boston, MA 02111-1307, USA.  */
    Note that includes knowledge of the default specs for gcc, ie. no
    args translates to the same effect as -m68881 */
 
-#if TARGET_DEFAULT & 2
+#if TARGET_DEFAULT & MASK_68881
 /* -m68881 is the default */
 #define STARTFILE_SPEC					\
   "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}"

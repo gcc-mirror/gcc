@@ -1,8 +1,6 @@
 /* Definitions of target machine for GNU compiler.
-
    Citicorp/TTI Unicom PBB version (using GAS with a %-register prefix)
-
-   Copyright (C) 1987, 1988, 1990 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1990, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -29,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* See m68k.h.  5 means 68020 without 68881.  */
 
-#define TARGET_DEFAULT 5
+#define TARGET_DEFAULT (MASK_BITFIELD|MASK_68020)
 
 /* Don't try using XFmode.  */
 #undef LONG_DOUBLE_TYPE_SIZE

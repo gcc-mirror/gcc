@@ -1,6 +1,6 @@
 /* Define target machine as an ISI 68000/68020 with no 68881.  */
 
-#define TARGET_DEFAULT 5
+#define TARGET_DEFAULT (MASK_BITFIELD|MASK_68020)
 
 #include "m68k/isi.h"
 
