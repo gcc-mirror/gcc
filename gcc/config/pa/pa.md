@@ -4769,6 +4769,40 @@
   return \"\";
 }")
 
+(define_peephole
+  [(set (match_operand 0 "register_operand" "f")
+	(match_operand 1 "reg_or_nonsymb_mem_operand" ""))
+   (set (match_operand 2 "register_operand" "f")
+	(match_dup 1))]
+  "! TARGET_SOFT_FLOAT
+   && GET_CODE (operands[1]) == MEM
+   && ! MEM_VOLATILE_P (operands[1])
+   && GET_MODE (operands[0]) == GET_MODE (operands[1])
+   && GET_MODE (operands[0]) == GET_MODE (operands[2])
+   && GET_MODE (operands[0]) == DFmode
+   && REGNO_REG_CLASS (REGNO (operands[1]))
+      == REGNO_REG_CLASS (REGNO (operands[2]))"
+  "*
+{
+  enum machine_mode mode = GET_MODE (operands[0]);
+  rtx xoperands[2];
+
+  if (FP_REG_P (operands[0]))
+    output_asm_insn (output_fp_move_double (operands), operands);
+  else
+    output_asm_insn (output_move_double (operands), operands);
+
+  xoperands[0] = operands[2];
+  xoperands[1] = operands[0];
+      
+  if (FP_REG_P (xoperands[1]))
+    output_asm_insn (output_fp_move_double (xoperands), xoperands);
+  else
+    output_asm_insn (output_move_double (xoperands), xoperands);
+
+  return \"\";
+}")
+
 ;; Flush the I and D cache line found at the address in operand 0.
 ;; This is used by the trampoline code for nested functions.
 ;; So long as the trampoline itself is less than 32 bytes this
