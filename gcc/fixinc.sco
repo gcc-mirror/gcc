@@ -246,6 +246,24 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
+# Fix prototype declaration of utime in sys/times.h.  In 3.2v4.0 the
+# const is missing.
+file=sys/times.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file, utime prototype
+  sed -e 's/(const char \*, struct utimbuf \*);/(const char *, const struct utimbuf *);/' ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm ${LIB}/$file
+  fi
+fi
+
 echo 'Removing unneeded directories:'
 cd $LIB
 files=`find . -type d -print | sort -r`
