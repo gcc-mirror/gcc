@@ -323,7 +323,7 @@ my_friendly_abort (i)
 	    ack ("Internal compiler error.");
 	  else
 	    ack ("Internal compiler error %d.", i);
-	  ack ("Please submit a full bug report to `bug-g++@prep.ai.mit.edu'.");
+	  ack ("Please submit a full bug report to `egcs-bugs@cygnus.com'.");
 	}
       else
 	error ("confused by earlier errors, bailing out");
@@ -337,7 +337,7 @@ my_friendly_abort (i)
   else
     error ("Internal compiler error %d.", i);
 
-  fatal ("Please submit a full bug report to `bug-g++@prep.ai.mit.edu'.");
+  fatal ("Please submit a full bug report to `egcs-bugs@cygnus.com'.");
 }
 
 void
