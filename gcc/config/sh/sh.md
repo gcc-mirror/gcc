@@ -1504,7 +1504,7 @@
 	lds	%1,%0
 	lds.l	%1,%0
 	fake	%1,%0"
-  [(set_attr "type" "move,pcload,move,load,move,store,store,move,load,move,move")
+  [(set_attr "type" "move,pcload,move,load,move,store,store,move,load,move,pcload")
    (set_attr "length" "8,*,*,*,*,*,*,*,*,*,*")])
 
 ;; t/z is first, so that it will be preferred over r/r when reloading a move
@@ -1531,7 +1531,7 @@
 	fake	%1,%0
 	lds	%1,%0
 	sts	%1,%0"
-  [(set_attr "type" "move,pcload,move,load,move,store,store,move,load,move,move,move,move")
+  [(set_attr "type" "move,pcload,move,load,move,store,store,move,load,move,pcload,move,move")
    (set_attr "length" "8,*,*,*,*,*,*,*,*,*,*,*,*")])
 
 (define_expand "movsi"
@@ -1574,7 +1574,7 @@
 	sts	%1,%0
 	lds	%1,%0
 	fake	%1,%0"
-  [(set_attr "type" "pcload,move,load,move,store,move,move,move")])
+  [(set_attr "type" "pcload,move,load,move,store,move,move,pcload")])
 
 (define_expand "movhi"
   [(set (match_operand:HI 0 "general_movdst_operand" "")
@@ -1585,13 +1585,13 @@
 ;; ??? This should be a define expand.
 
 (define_insn ""
-  [(set (match_operand:DI 0 "general_movdst_operand" "=r,r,r,m,r,r")
-	(match_operand:DI 1 "general_movsrc_operand" "Q,r,m,r,i,x"))]
+  [(set (match_operand:DI 0 "general_movdst_operand" "=r,r,r,m,r,r,r")
+	(match_operand:DI 1 "general_movsrc_operand" "Q,r,m,r,I,i,x"))]
   "arith_reg_operand (operands[0], DImode)
    || arith_reg_operand (operands[1], DImode)"
   "* return output_movedouble (insn, operands, DImode);"
   [(set_attr "length" "4")
-   (set_attr "type" "pcload,move,load,store,move,move")])
+   (set_attr "type" "pcload,move,load,store,move,pcload,move")])
 
 ;; If the output is a register and the input is memory or a register, we have
 ;; to be careful and see which word needs to be loaded first.  
@@ -1819,6 +1819,8 @@
 {
   if (REGNO (operands[0]) >= FIRST_FP_REG && REGNO (operands[0]) <= LAST_FP_REG)
     {
+      if (GET_CODE (operands[1]) != MEM)
+	FAIL;
       emit_insn (gen_mova (XEXP (operands[1], 0)));
       XEXP (operands[1], 0) = gen_rtx (REG, Pmode, 0);
     }
