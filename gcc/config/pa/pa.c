@@ -650,9 +650,21 @@ hppa_legitimize_address (x, oldx, mode)
 	}
       return plus_constant (ptr_reg, offset - newoffset);
     }
+
+  /* Try to arrange things so that indexing modes can be used, but
+     only do so if indexing is safe.  
+
+     Indexing is safe when the second operand for the outer PLUS
+     is a REG, SUBREG, SYMBOL_REF or the like.  
+
+     For 2.5, indexing is also safe for (plus (symbol_ref) (const_int)) 
+     if the integer is > 0.  */
   if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 0)) == MULT
       && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
-      && shadd_constant_p (INTVAL (XEXP (XEXP (x, 0), 1))))
+      && shadd_constant_p (INTVAL (XEXP (XEXP (x, 0), 1)))
+      && (GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) == 'o'
+	  || GET_CODE (XEXP (x, 1)) == SUBREG)
+      && GET_CODE (XEXP (x, 1)) != CONST)
     {
       int val = INTVAL (XEXP (XEXP (x, 0), 1));
       rtx reg1, reg2;
@@ -665,6 +677,41 @@ hppa_legitimize_address (x, oldx, mode)
 					  GEN_INT (val)),
 				 reg1));
     }
+
+  /* Uh-oh.  We might have an address for x[n-100000].  This needs 
+     special handling.  */
+
+  if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 0)) == MULT
+      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
+      && shadd_constant_p (INTVAL (XEXP (XEXP (x, 0), 1))))
+    {
+      /* Ugly.  We modify things here so that the address offset specified
+	 by the index expression is computed first, then added to x to form
+	 the entire address.
+
+	 For 2.5, it might be profitable to set things up so that we
+	 compute the raw (unscaled) index first, then use scaled indexing
+	 to access memory, or better yet have the MI parts of the compiler
+	 handle this.  */
+
+      rtx regx1, regy1, regy2, y;
+
+      /* Strip off any CONST.  */
+      y = XEXP (x, 1);
+      if (GET_CODE (y) == CONST)
+	y = XEXP (y, 0);
+
+      /* 'y' had better be a PLUS or MINUS expression at this point.  */
+      if (GET_CODE (y) != PLUS && GET_CODE (y) != MINUS)
+	abort();
+
+      regx1 = force_reg (Pmode, force_operand (XEXP (x, 0), 0));
+      regy1 = force_reg (Pmode, force_operand (XEXP (y, 0), 0));
+      regy2 = force_reg (Pmode, force_operand (XEXP (y, 1), 0));
+      regx1 = force_reg (Pmode, gen_rtx (GET_CODE (y), Pmode, regx1, regy2));
+      return force_reg (Pmode, gen_rtx (PLUS, Pmode, regx1, regy1));
+    }
+
   if (flag_pic) 
     return legitimize_pic_address (x, mode, gen_reg_rtx (Pmode));
 
