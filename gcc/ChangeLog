@@ -1,3 +1,9 @@
+2003-12-19  Per Bothner  <per@bothner.com>
+
+	* langhooks.c (lhd_print_error_function):  Fix for PR c/13110.
+	Don't do pp_newline; it causes an extra blank line.
+	* pretty-print.c (pp_base_flush):  Clear pp_needs_newline.
+
 2003-12-19  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (get_unwidened): Decide whether to narrow a bitfield
