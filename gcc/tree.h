@@ -1249,6 +1249,12 @@ extern tree get_pending_sizes		PROTO((void));
 
 extern tree sizetype;
 
+/* If nonzero, an upper limit on alignment of structure fields, in bits. */
+extern int maximum_field_alignment;
+
+/* If non-zero, the alignment of a bitsting or (power-)set value, in bits. */
+extern int set_alignment;
+
 /* Concatenate two lists (chains of TREE_LIST nodes) X and Y
    by making the last node in X point to Y.
    Returns X, except if X is 0 returns Y.  */
