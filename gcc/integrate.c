@@ -1464,9 +1464,20 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 	      && GET_CODE (pattern) == SET
 	      && GET_CODE (SET_DEST (pattern)) == REG
 	      && REG_FUNCTION_VALUE_P (SET_DEST (pattern)))
-	    break;
-
-	  copy = emit_insn (copy_rtx_and_substitute (pattern, map));
+	    {
+	      if (volatile_refs_p (SET_SRC (pattern)))
+		{
+		  /* If we must not delete the source,
+		     load it into a new temporary.  */
+		  copy = emit_insn (copy_rtx_and_substitute (pattern, map));
+		  SET_DEST (pattern)
+		    = gen_reg_rtx (GET_MODE (SET_DEST (pattern)));
+		}
+	      else
+		break;
+	    }
+	  else
+	    copy = emit_insn (copy_rtx_and_substitute (pattern, map));
 	  /* REG_NOTES will be copied later.  */
 
 #ifdef HAVE_cc0
