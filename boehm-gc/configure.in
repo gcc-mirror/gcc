@@ -122,6 +122,7 @@ AC_SUBST(EXTRA_TEST_LIBS)
 
 target_all=libgcjgc.la
 AC_SUBST(target_all)
+AC_SUBST(target_alias)
 
 dnl If the target is an eCos system, use the appropriate eCos
 dnl I/O routines.
