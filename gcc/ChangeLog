@@ -1,3 +1,12 @@
+2002-05-03  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genautomata.c (min_issue_delay_pass_states): Change return type
+	in the prototype.
+	(min_issue_delay_pass_states): Change the algorithm.
+	(min_issue_delay): Set up min_insn_issue_delay for the state.
+	(output_min_issue_delay_table): Interchange the nested loops and
+	and initiate min_insn_issue_delay for states.
+	
 Fri May  3 22:59:15 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* cfgcleanup.c (try_optimize_cfg):  Call merge_block only when
