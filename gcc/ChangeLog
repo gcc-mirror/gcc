@@ -1,3 +1,7 @@
+2001-03-19  Tom Tromey  <tromey@redhat.com>
+
+	* gcc.c (init_gcc_specs): Fix comment.
+
 2001-03-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* cse.c (find_comparison_args): Update documentation.  Fix
