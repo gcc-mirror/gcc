@@ -583,6 +583,44 @@ static int n_compilers;
 
 static struct compiler default_compilers[] =
 {
+  {".F", "@f77-cpp-output"},
+  {"@f77-cpp-output",
+     /* For f77 we want -traditional to avoid errors with, for
+	instance, mismatched '.  Also, we avoid unpleasant surprises
+	with substitution of names not prefixed by `_ by' using %P
+	rather than %p (although this isn't consistent with SGI and
+	Sun f77, at least) so you test `__unix' rather than `unix'.
+	-D_LANGUAGE_FORTRAN is used by some compilers like SGI and
+	might as well be in there. */
+   "cpp -lang-c -P %{nostdinc*} %{C} %{v} %{A*} %{I*} %I\
+	%{C:%{!E:%eGNU C does not support -C without using -E}}\
+	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
+        -undef -D__GNUC__=2 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
+	%{!undef:%P} -D_LANGUAGE_FORTRAN %{trigraphs} \
+        %c %{O*:-D__OPTIMIZE__} -traditional %{ftraditional:-traditional}\
+        %{traditional-cpp:-traditional}\
+	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
+        %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
+  	     "f771 %{!pipe:%g.i} \
+		   %{!Q:-quiet} -dumpbase %b.F %{d*} %{m*} %{a}\
+		   %{g*} %{O*} %{W*} %{w} %{pedantic*} \
+		   %{v:-version -fversion} %{f*}\
+		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
+		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
+              %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %{keep-local-as-symbols:-L} \
+		      %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o}\
+                      %{!pipe:%g.s} %A\n }"},
+  {".f", "@f77"},
+  {".for", "@f77"},
+  {"@f77","f771 %i \
+		   %{!Q:-quiet} -dumpbase %b.f %{d*} %{m*} %{a}\
+		   %{g*} %{O*} %{W*} %{w} %{pedantic*} \
+		   %{v:-version -fversion} %{f*}\
+		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
+		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
+              %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %{keep-local-as-symbols:-L} \
+		      %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o}\
+                      %{!pipe:%g.s} %A\n }"},
   {".c", "@c"},
   {"@c",
    "cpp -lang-c %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
