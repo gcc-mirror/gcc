@@ -1,3 +1,8 @@
+2001-12-09  David Edelsohn  <edelsohn@gnu.org>
+
+	* stor-layout.c (place_union_field): Apply ADJUST_FIELD_ALIGN
+	to unions.
+
 2001-12-08  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_unique_section): Add missing
