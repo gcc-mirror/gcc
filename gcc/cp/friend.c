@@ -101,8 +101,13 @@ is_friend (type, supplicant)
   else
     /* It's a type.  */
     {
-      if (type == supplicant)
-	return 1;
+      /* The type and its nested classes are implicitly friends, as
+	 per core issue 45 (this is a change from the standard).  */
+      for (context = supplicant;
+	   context && TYPE_P (context);
+	   context = TYPE_CONTEXT (context))
+	if (type == context)
+	  return 1;
       
       list = CLASSTYPE_FRIEND_CLASSES (TREE_TYPE (TYPE_MAIN_DECL (type)));
       for (; list ; list = TREE_CHAIN (list))

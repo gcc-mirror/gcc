@@ -63,7 +63,7 @@ extern int end_of_file;
 static const char *cond_stmt_keyword;
 
 static tree empty_parms PARAMS ((void));
-static void parse_decl PARAMS ((tree, tree, tree, int, tree *));
+static void parse_decl PARAMS ((tree, tree, tree, tree, int, tree *));
 
 /* Nonzero if we have an `extern "C"' acting as an extern specifier.  */
 int have_extern_spec;
@@ -197,7 +197,6 @@ empty_parms ()
 %type <ttype> expr_no_commas cast_expr unary_expr primary string STRING
 %type <ttype> reserved_declspecs boolean.literal
 %type <ttype> reserved_typespecquals
-%type <ttype> declmods 
 %type <ttype> SCSPEC TYPESPEC CV_QUALIFIER maybe_cv_qualifier
 %type <ttype> init initlist maybeasm maybe_init defarg defarg1
 %type <ttype> asm_operands nonnull_asm_operands asm_operand asm_clobbers
@@ -233,6 +232,7 @@ empty_parms ()
 %type <ftype> type_id new_type_id typed_typespecs typespec typed_declspecs
 %type <ftype> typed_declspecs1 type_specifier_seq nonempty_cv_qualifiers
 %type <ftype> structsp typespecqual_reserved parm named_parm full_parm
+%type <ftype> declmods
 
 %type <itype> extension
 
@@ -315,13 +315,16 @@ extern void yyprint			PARAMS ((FILE *, int, YYSTYPE));
 extern tree combine_strings		PARAMS ((tree));
 
 static void
-parse_decl (declarator, specs_attrs, attributes, initialized, decl)
+parse_decl (declarator, specs_attrs, lookups, attributes, initialized, decl)
   tree declarator;
   tree specs_attrs;
+  tree lookups;
   tree attributes;
   int initialized;
   tree* decl;
 {
+  initial_deferred_type_access_control (lookups);
+
   split_specs_attrs (specs_attrs, &current_declspecs, &prefix_attributes);
   if (current_declspecs
       && TREE_CODE (current_declspecs) != TREE_LIST)
@@ -391,7 +394,8 @@ asm_keyword:
 	;
 
 lang_extdef:
-		{ if (pending_lang_change) do_pending_lang_change(); }
+		{ if (pending_lang_change) do_pending_lang_change();
+		  type_lookups = NULL_TREE; }
 	  extdef
 		{ if (! toplevel_bindings_p ())
 		  pop_everything (); }
@@ -695,19 +699,19 @@ constructor_declarator:
 
 fn.def1:
 	  typed_declspecs declarator
-		{ if (!begin_function_definition ($1.t, $2))
+		{ if (!begin_function_definition ($1.t, $1.lookups, $2))
 		    YYERROR1; }
 	| declmods notype_declarator
-		{ if (!begin_function_definition ($1, $2))
+		{ if (!begin_function_definition ($1.t, NULL_TREE, $2))
 		    YYERROR1; }
 	| notype_declarator
-		{ if (!begin_function_definition (NULL_TREE, $1))
+		{ if (!begin_function_definition (NULL_TREE, NULL_TREE, $1))
 		    YYERROR1; }
 	| declmods constructor_declarator
-		{ if (!begin_function_definition ($1, $2))
+		{ if (!begin_function_definition ($1.t, NULL_TREE, $2))
 		    YYERROR1; }
 	| constructor_declarator
-		{ if (!begin_function_definition (NULL_TREE, $1))
+		{ if (!begin_function_definition (NULL_TREE, NULL_TREE, $1))
 		    YYERROR1; }
 	;
 
@@ -727,7 +731,7 @@ component_constructor_declarator:
 fn.def2:
 	  declmods component_constructor_declarator
 		{ tree specs, attrs;
-		  split_specs_attrs ($1, &specs, &attrs);
+		  split_specs_attrs ($1.t, &specs, &attrs);
 		  attrs = build_tree_list (attrs, NULL_TREE);
 		  $$ = start_method (specs, $2, attrs);
 		 rest_of_mdef:
@@ -746,7 +750,7 @@ fn.def2:
 		  $$ = start_method (specs, $2, attrs); goto rest_of_mdef; }
 	| declmods notype_declarator
 		{ tree specs, attrs;
-		  split_specs_attrs ($1, &specs, &attrs);
+		  split_specs_attrs ($1.t, &specs, &attrs);
 		  attrs = build_tree_list (attrs, NULL_TREE);
 		  $$ = start_method (specs, $2, attrs); goto rest_of_mdef; }
 	| notype_declarator
@@ -754,7 +758,7 @@ fn.def2:
 		  goto rest_of_mdef; }
 	| declmods constructor_declarator
 		{ tree specs, attrs;
-		  split_specs_attrs ($1, &specs, &attrs);
+		  split_specs_attrs ($1.t, &specs, &attrs);
 		  attrs = build_tree_list (attrs, NULL_TREE);
 		  $$ = start_method (specs, $2, attrs); goto rest_of_mdef; }
 	| constructor_declarator
@@ -1667,12 +1671,14 @@ type_id:
 
 typed_declspecs:
 	  typed_typespecs  %prec EMPTY
+		{ $$.lookups = type_lookups; }
 	| typed_declspecs1
+		{ $$.lookups = type_lookups; }
 	;
 
 typed_declspecs1:
 	  declmods typespec
-		{ $$.t = decl_tree_cons (NULL_TREE, $2.t, $1); 
+		{ $$.t = decl_tree_cons (NULL_TREE, $2.t, $1.t); 
 		  $$.new_type_flag = $2.new_type_flag; }
 	| typespec reserved_declspecs  %prec HYPERUNARY
 		{ $$.t = decl_tree_cons (NULL_TREE, $1.t, $2); 
@@ -1681,14 +1687,14 @@ typed_declspecs1:
 		{ $$.t = decl_tree_cons (NULL_TREE, $1.t, chainon ($2, $3)); 
 		  $$.new_type_flag = $1.new_type_flag; }
 	| declmods typespec reserved_declspecs
-		{ $$.t = decl_tree_cons (NULL_TREE, $2.t, chainon ($3, $1)); 
+		{ $$.t = decl_tree_cons (NULL_TREE, $2.t, chainon ($3, $1.t)); 
 		  $$.new_type_flag = $2.new_type_flag; }
 	| declmods typespec reserved_typespecquals
-		{ $$.t = decl_tree_cons (NULL_TREE, $2.t, chainon ($3, $1)); 
+		{ $$.t = decl_tree_cons (NULL_TREE, $2.t, chainon ($3, $1.t)); 
 		  $$.new_type_flag = $2.new_type_flag; }
 	| declmods typespec reserved_typespecquals reserved_declspecs
 		{ $$.t = decl_tree_cons (NULL_TREE, $2.t,
-					 chainon ($3, chainon ($4, $1))); 
+					 chainon ($3, chainon ($4, $1.t))); 
 		  $$.new_type_flag = $2.new_type_flag; }
 	;
 
@@ -1727,22 +1733,32 @@ reserved_declspecs:
 
 declmods:
 	  nonempty_cv_qualifiers  %prec EMPTY
-		{ $$ = $1.t; TREE_STATIC ($$) = 1; }
+		{ $$.lookups = NULL_TREE; TREE_STATIC ($$.t) = 1; }
 	| SCSPEC
-		{ $$ = hash_tree_cons (NULL_TREE, $$, NULL_TREE); }
+		{
+		  $$.t = hash_tree_cons (NULL_TREE, $1, NULL_TREE);
+		  $$.new_type_flag = 0; $$.lookups = NULL_TREE;
+		}
 	| declmods CV_QUALIFIER
-		{ $$ = hash_tree_cons (NULL_TREE, $2, $$);
-		  TREE_STATIC ($$) = 1; }
+		{
+		  $$.t = hash_tree_cons (NULL_TREE, $2, $1.t);
+		  TREE_STATIC ($$.t) = 1;
+		}
 	| declmods SCSPEC
-		{ if (extra_warnings && TREE_STATIC ($$))
+		{
+		  if (extra_warnings && TREE_STATIC ($$.t))
 		    warning ("`%s' is not at beginning of declaration",
 			     IDENTIFIER_POINTER ($2));
-		  $$ = hash_tree_cons (NULL_TREE, $2, $$);
-		  TREE_STATIC ($$) = TREE_STATIC ($1); }
+		  $$.t = hash_tree_cons (NULL_TREE, $2, $1.t);
+		  TREE_STATIC ($$.t) = TREE_STATIC ($1.t);
+		}
 	| declmods attributes
-		{ $$ = hash_tree_cons ($2, NULL_TREE, $1); }
+		{ $$.t = hash_tree_cons ($2, NULL_TREE, $1.t); }
 	| attributes  %prec EMPTY
-		{ $$ = hash_tree_cons ($1, NULL_TREE, NULL_TREE); }
+		{
+		  $$.t = hash_tree_cons ($1, NULL_TREE, NULL_TREE);
+		  $$.new_type_flag = 0; $$.lookups = NULL_TREE;
+		}
 	;
 
 /* Used instead of declspecs where storage classes are not allowed
@@ -1763,7 +1779,7 @@ typed_typespecs:
 		  $$.new_type_flag = $1.new_type_flag; }
 	| nonempty_cv_qualifiers typespec reserved_typespecquals
 		{ $$.t = decl_tree_cons (NULL_TREE, $2.t, chainon ($3, $1.t)); 
-		  $$.new_type_flag = $1.new_type_flag; }
+		  $$.new_type_flag = $2.new_type_flag; }
 	;
 
 reserved_typespecquals:
@@ -1779,20 +1795,21 @@ reserved_typespecquals:
 
 typespec:
 	  structsp
+	  	{ $$.lookups = NULL_TREE; }
 	| TYPESPEC  %prec EMPTY
-		{ $$.t = $1; $$.new_type_flag = 0; }
+		{ $$.t = $1; $$.new_type_flag = 0; $$.lookups = NULL_TREE; }
 	| complete_type_name
-		{ $$.t = $1; $$.new_type_flag = 0; }
+		{ $$.t = $1; $$.new_type_flag = 0; $$.lookups = NULL_TREE; }
 	| TYPEOF '(' expr ')'
 		{ $$.t = finish_typeof ($3);
-		  $$.new_type_flag = 0; }
+		  $$.new_type_flag = 0; $$.lookups = NULL_TREE; }
 	| TYPEOF '(' type_id ')'
 		{ $$.t = groktypename ($3.t);
-		  $$.new_type_flag = 0; }
+		  $$.new_type_flag = 0; $$.lookups = NULL_TREE; }
 	| SIGOF '(' expr ')'
 		{ tree type = TREE_TYPE ($3);
 
-                  $$.new_type_flag = 0;
+                  $$.new_type_flag = 0; $$.lookups = NULL_TREE;
 		  if (IS_AGGR_TYPE (type))
 		    {
 		      sorry ("sigof type specifier");
@@ -1807,7 +1824,7 @@ typespec:
 	| SIGOF '(' type_id ')'
 		{ tree type = groktypename ($3.t);
 
-                  $$.new_type_flag = 0;
+                  $$.new_type_flag = 0; $$.lookups = NULL_TREE;
 		  if (IS_AGGR_TYPE (type))
 		    {
 		      sorry ("sigof type specifier");
@@ -1858,15 +1875,21 @@ maybeasm:
 
 initdcl:
 	  declarator maybeasm maybe_attribute '='
-		{ $<ttype>$ = start_decl ($<ttype>1, current_declspecs, 1,
-					  $3, prefix_attributes); }
+		{
+		  deferred_type_access_control ();
+		  $<ttype>$ = start_decl ($<ttype>1, current_declspecs, 1,
+					  $3, prefix_attributes);
+		}
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
 		{ cp_finish_decl ($<ttype>5, $6, $2, LOOKUP_ONLYCONVERTING); }
 	| declarator maybeasm maybe_attribute
-		{ $<ttype>$ = start_decl ($<ttype>1, current_declspecs, 0,
+		{
+		  deferred_type_access_control ();
+		  $<ttype>$ = start_decl ($<ttype>1, current_declspecs, 0,
 					  $3, prefix_attributes);
-		  cp_finish_decl ($<ttype>$, NULL_TREE, $2, 0); }
+		  cp_finish_decl ($<ttype>$, NULL_TREE, $2, 0);
+		}
 	;
 
         /* This rule assumes a certain configuration of the parser stack.
@@ -1877,7 +1900,8 @@ initdcl:
 	   we need that reduce so we prefer fn.def1 when appropriate.  */
 initdcl0_innards:
 	  maybe_attribute '='
-		{ parse_decl ($<ttype>-1, $<ttype>-2, $1, 1, &$<ttype>$); }
+		{ parse_decl ($<ttype>-1, $<ftype>-2.t, $<ftype>-2.lookups,
+			      $1, 1, &$<ttype>$); }
           /* Note how the declaration of the variable is in effect
 	     while its init is parsed! */ 
 	  init
@@ -1885,7 +1909,8 @@ initdcl0_innards:
 				  LOOKUP_ONLYCONVERTING); }
 	| maybe_attribute
 		{ tree d;
-		  parse_decl ($<ttype>-1, $<ttype>-2, $1, 0, &d);
+		  parse_decl ($<ttype>-1, $<ftype>-2.t, $<ftype>-2.lookups,
+			      $1, 0, &d);
 		  cp_finish_decl (d, NULL_TREE, $<ttype>0, 0); }
   	;
   
@@ -1908,7 +1933,7 @@ nomods_initdcl0:
             {}
 	| constructor_declarator maybeasm maybe_attribute
 		{ tree d;
-		  parse_decl($1, NULL_TREE, $3, 0, &d);
+		  parse_decl ($1, NULL_TREE, NULL_TREE, $3, 0, &d);
 		  cp_finish_decl (d, NULL_TREE, $2, 0); }
 	;
 
@@ -2431,7 +2456,7 @@ component_decl_1:
 	| declmods notype_components
 		{ 
 		  if (!$2)
-		    grok_x_components ($1);
+		    grok_x_components ($1.t);
 		  $$ = NULL_TREE; 
 		}
 	| notype_declarator maybeasm maybe_attribute maybe_init
@@ -2455,7 +2480,7 @@ component_decl_1:
 	   parmlist? */
 	| declmods component_constructor_declarator maybeasm maybe_attribute maybe_init
 		{ tree specs, attrs;
-		  split_specs_attrs ($1, &specs, &attrs);
+		  split_specs_attrs ($1.t, &specs, &attrs);
 		  $$ = grokfield ($2, specs, $5, $3,
 				  build_tree_list ($4, attrs)); }
 	| component_constructor_declarator maybeasm maybe_attribute maybe_init
@@ -2824,6 +2849,7 @@ functional_cast:
 	| typespec fcast_or_absdcl  %prec EMPTY
 		{ $$ = reparse_absdcl_as_expr ($1.t, $2); }
 	;
+
 type_name:
 	  TYPENAME
 	| SELFNAME
@@ -3529,7 +3555,7 @@ named_parm:
 		  $$.t = build_tree_list (specs, NULL_TREE); 
 		  $$.new_type_flag = $1.new_type_flag; }
 	| declmods notype_declarator
-		{ tree specs = strip_attrs ($1);
+		{ tree specs = strip_attrs ($1.t);
 		  $$.t = build_tree_list (specs, $2); 
 		  $$.new_type_flag = 0; }
 	;

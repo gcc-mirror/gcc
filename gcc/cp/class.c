@@ -5487,7 +5487,9 @@ popclass ()
     splay_tree_delete (current_class_stack[current_class_depth].names_used);
 }
 
-/* Returns 1 if current_class_type is either T or a nested type of T.  */
+/* Returns 1 if current_class_type is either T or a nested type of T.
+   We start looking from 1 because entry 0 is from global scope, and has
+   no type.  */
 
 int
 currently_open_class (t)
@@ -5496,10 +5498,30 @@ currently_open_class (t)
   int i;
   if (t == current_class_type)
     return 1;
-  for (i = 0; i < current_class_depth; ++i)
+  for (i = 1; i < current_class_depth; ++i)
     if (current_class_stack [i].type == t)
       return 1;
   return 0;
+}
+
+/* If either current_class_type or one of its enclosing classes are derived
+   from T, return the appropriate type.  Used to determine how we found
+   something via unqualified lookup.  */
+
+tree
+currently_open_derived_class (t)
+     tree t;
+{
+  int i;
+
+  if (DERIVED_FROM_P (t, current_class_type))
+    return current_class_type;
+
+  for (i = current_class_depth - 1; i > 0; --i)
+    if (DERIVED_FROM_P (t, current_class_stack[i].type))
+      return current_class_stack[i].type;
+
+  return NULL_TREE;
 }
 
 /* When entering a class scope, all enclosing class scopes' names with

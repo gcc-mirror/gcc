@@ -1,3 +1,44 @@
+2000-02-07  Jason Merrill  <jason@casey.cygnus.com>
+
+	* cp-tree.h (struct saved_scope): Add incomplete field.
+	(namespace_scope_incomplete): New macro.
+	* decl.c (pushdecl): Use it.
+	(hack_incomplete_structures): Use it.  See through artificial
+	binding levels.
+	(mark_saved_scope): Mark it.
+
+	Implement access control for nested types.
+	* search.c (type_access_control): New fn.
+	(accessible_p): Now we do perform access control for types.
+	* semantics.c (deferred_type_access_control): New fn.
+	(initial_deferred_type_access_control): New fn.
+	(begin_function_definition): Call it.  Add lookups parm.
+	* decl.c (struct binding_level): Add this_class field.
+	(pushlevel_class): Set it.
+	(mark_binding_level): Mark it.
+	(lookup_name_real): Use it.  Call type_access_control.
+	(mark_saved_scope): Mark lookups field.
+	* cp-tree.h (flagged_type_tree): Add lookups field.
+	(struct saved_scope): Add lookups field.
+	(type_lookups): New macro.
+	* parse.y (declmods): Now <ftype>.
+	(parse_decl): Add lookups parm.  Call 
+	initial_deferred_type_access_control.
+	(lang_extdef): Clear type_lookups.
+	(typed_declspecs, declmods, typespec): Set lookups field.
+	(initdcl): Call deferred_type_access_control.
+	(fn.def1, fn.def2, typed_declspecs1, initdcl0_innards, nomods_initdcl0,
+	component_decl_1, named_parm): Adjust.
+	* friend.c (is_friend): Nested classes are friends of their
+	enclosing classes.
+
+	* class.c (currently_open_derived_class): New fn.
+	* method.c (hack_identifier): Use it.
+
+	* lex.c (do_identifier): Remove obsolete code.
+
+	* parse.y (typed_typespecs): Propagate new_type_flag properly.
+
 2000-02-05  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* tinfo.h: Remove apostrophes from C++ comment (xgettext
@@ -5481,7 +5522,7 @@ Wed Jul  7 01:26:47 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 1999-06-19  Mark Mitchell  <mark@codesourcery.com>
 
-	* semantics.c (finish_asm_statement): Apply decay conversions to
+	* semantics.c (finish_asm_stmt): Apply decay conversions to
 	input operands.
 
 	* decl.c (expand_static_init): When building an anonymous function

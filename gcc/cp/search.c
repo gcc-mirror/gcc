@@ -1072,9 +1072,44 @@ friend_accessible_p (scope, type, decl, binfo)
 
   return 0;
 }
-   
+
+/* Perform access control on TYPE_DECL VAL, which was looked up in TYPE.
+   This is fairly complex, so here's the design:
+
+   The lang_extdef nonterminal sets type_lookups to NULL_TREE before we
+     start to process a top-level declaration.
+   As we process the decl-specifier-seq for the declaration, any types we
+     see that might need access control are passed to type_access_control,
+     which defers checking by adding them to type_lookups.
+   When we are done with the decl-specifier-seq, we record the lookups we've
+     seen in the lookups field of the typed_declspecs nonterminal.
+   When we process the first declarator, either in parse_decl or
+     begin_function_definition, we call initial_deferred_type_access_control,
+     which processes any lookups from within that declarator, stores the
+     lookups from the decl-specifier-seq in current_type_lookups, and sets
+     type_lookups to error_mark_node.
+   Subsequent declarators process current_type_lookups again to make sure
+     that the types are accessible to all of the declarators.  Any lookups
+     within subsequent declarators are processed immediately.
+   Within a function, type_lookups is error_mark_node, so all lookups are
+     processed immediately.  */
+
+void
+type_access_control (type, val)
+     tree type, val;
+{
+  if (val == NULL_TREE || TREE_CODE (val) != TYPE_DECL
+      || ! DECL_CLASS_SCOPE_P (val))
+    return;
+
+  if (type_lookups == error_mark_node)
+    enforce_access (type, val);
+  else if (! accessible_p (type, val))
+    type_lookups = tree_cons (type, val, type_lookups);
+}
+
 /* DECL is a declaration from a base class of TYPE, which was the
-   classs used to name DECL.  Return non-zero if, in the current
+   class used to name DECL.  Return non-zero if, in the current
    context, DECL is accessible.  If TYPE is actually a BINFO node,
    then we can tell in what context the access is occurring by looking
    at the most derived class along the path indicated by BINFO.  */
@@ -1099,10 +1134,6 @@ accessible_p (type, decl)
   /* If this declaration is in a block or namespace scope, there's no
      access control.  */
   if (!TYPE_P (context_for_name_lookup (decl)))
-    return 1;
-
-  /* We don't do access control for types yet.  */
-  if (TREE_CODE (decl) == TYPE_DECL)
     return 1;
 
   if (!TYPE_P (type))
@@ -1145,8 +1176,8 @@ accessible_p (type, decl)
     protected_ok = friend_accessible_p (current_scope (),
 					type, decl, binfo);
 
-  /* Standardize on the same that will access_in_type will use.  We
-     don't need to know what path was chosen from this point onwards.  */ 
+  /* Standardize the binfo that access_in_type will use.  We don't
+     need to know what path was chosen from this point onwards.  */
   binfo = TYPE_BINFO (type);
 
   /* Compute the accessibility of DECL in the class hierarchy
@@ -1457,7 +1488,7 @@ lookup_field_r (binfo, data)
    1, we enforce accessibility.  If PROTECT is zero, then, for an
    ambiguous lookup, we return NULL.  If PROTECT is 1, we issue an
    error message.  If PROTECT is 2, we return a TREE_LIST whose
-   TREEE_TYPE is error_mark_node and whose TREE_VALUEs are the list of
+   TREE_TYPE is error_mark_node and whose TREE_VALUEs are the list of
    ambiguous candidates.
 
    WANT_TYPE is 1 when we should only return TYPE_DECLs, if no
