@@ -87,16 +87,16 @@ test02()
   std::ostringstream ostrst01; 
   std::ostringstream ostrst02(blank); 
   
-  // No buffer, so nothing should be added.
+  // No buffer,so should be created.
   ostrst01 << "i: " << i << " i's address:  " << pi << "\n"
 	     << "d: " << d << " d's address: " << pd << std::endl;
-  // Buffer, so this should be ok.
+  // Buffer, so existing buffer should be overwritten.
   ostrst02 << "i: " << i << " i's address:  " << pi << "\n"
 	     << "d: " << d << " d's address: " << pd << std::endl;
 
   std::string msg01 = ostrst01.str();
   std::string msg02 = ostrst02.str();
-  VERIFY( msg01 != msg02 );
+  VERIFY( msg01 == msg02 );
   VERIFY( msg02 != blank );
 
   //
