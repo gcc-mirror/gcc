@@ -1,3 +1,10 @@
+2003-01-27  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in (toolexecdir, toolexeclibdir): Set and AC_SUBST.
+	Remove USE_LIBDIR conditional.
+	* Makefile.am (toolexecdir, toolexeclibdir): Don't override.
+	* Makefile.in, configure: Rebuilt.
+
 2002-11-19  Release Manager
 
 	* GCC 3.2.1 Released.
