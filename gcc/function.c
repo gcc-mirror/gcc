@@ -1768,7 +1768,15 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
       if (XEXP (x, 0) == var)
 	{
 	  start_sequence ();
-	  *loc = force_operand (XEXP (var, 0), NULL_RTX);
+
+	  if (! validate_change (insn, loc, XEXP (var, 0), 0))
+	    {
+	      rtx y = force_operand (XEXP (var, 0), NULL_RTX);
+
+	      if (! validate_change (insn, loc, y, 0))
+		*loc = copy_to_reg (y);
+	    }
+
 	  emit_insn_before (gen_sequence (), insn);
 	  end_sequence ();
 	}
