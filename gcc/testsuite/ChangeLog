@@ -1,3 +1,7 @@
+1998-11-18  Dave Love  <d.love@dl.ac.uk>
+
+	* g77.f-torture/compile/981117-1.f: New test.
+
 1998-11-16  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.eh/throw2.C: New test.  CV-qualifiers are not
