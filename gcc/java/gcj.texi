@@ -942,7 +942,7 @@ Print version information, then exit.
 @c man title rmiregistry Remote object registry
 
 @c man begin SYNOPSIS rmiregistry
-@command{rmic} [@option{OPTION}] @dots{} [@var{port}]
+@command{rmiregistry} [@option{OPTION}] @dots{} [@var{port}]
 @ignore
   [@option{--help}]
   [@option{--version}]

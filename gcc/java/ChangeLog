@@ -1,3 +1,8 @@
+Tue Apr 23 14:31:23 2002  Anthony Green  <green@redhat.com>
+
+	* gcj.texi (Invoking rmiregistry): Fix rmiregistry command
+	synopsis.
+
 2002-04-23  Tom Tromey  <tromey@redhat.com>
 
 	For PR java/6314:
