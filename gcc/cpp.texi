@@ -2330,7 +2330,7 @@ when you run @code{gcc} or @code{cpp}.  @xref{Invocation}.
 @findex #error
 The directive @samp{#error} causes the preprocessor to report a fatal
 error.  The rest of the line that follows @samp{#error} is used as the
-error message.
+error message.  The line must consist of complete tokens.
 
 You would use @samp{#error} inside of a conditional that detects a
 combination of parameters which you know the program does not properly
@@ -2340,7 +2340,7 @@ properly on a Vax, you might write
 @smallexample
 @group
 #ifdef __vax__
-#error Won't work on Vaxen.  See comments at get_last_object.
+#error "Won't work on Vaxen.  See comments at get_last_object."
 #endif
 @end group
 @end smallexample
