@@ -1,3 +1,12 @@
+2001-12-14  Matthias Klose  <doko@debian.org>
+
+	* gcj.texi: Markup for man page generation. Document missing
+	options printed by <tool> --help.
+	Terminate description of gij's -ms option with a dot.
+	* Make-lang.in ($(srcdir)/java/*.1): New targets.
+	(java.generated-manpages java.install-man, java.uninstall,
+	java-maintainer-clean) Updated.
+
 2001-12-14  Hans Boehm  <Hans_Boehm@hp.com>
 
 	* class.c (get_dispatch_table): Fix java vtable layout
