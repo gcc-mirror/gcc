@@ -4,9 +4,12 @@
 .globl	ffi_closure_helper_SYSV
 
 ENTRY(ffi_closure_SYSV)
+.LFB1:
 	stwu %r1,-144(%r1)
+.LCFI0:
 	mflr %r0
 	stw %r31,140(%r1)
+.LCFI1:
 	stw %r0,148(%r1)
 
 # we want to build up an areas for the parameters passed
@@ -67,6 +70,7 @@ ENTRY(ffi_closure_SYSV)
 	add %r3,%r3,%r4          # add contents of table to table address
 	mtctr %r3
 	bctr               # jump to it
+.LFE1:
 	.align 2
 .L60:
 	.long .L44-.L60    # FFI_TYPE_VOID
@@ -143,6 +147,35 @@ ENTRY(ffi_closure_SYSV)
 	blr
 END(ffi_closure_SYSV)
 
-
-
-
+	.section	".eh_frame","aw"
+__FRAME_BEGIN__:
+	.4byte	.LECIE1-.LSCIE1	 # Length of Common Information Entry
+.LSCIE1:
+	.4byte	0x0	 # CIE Identifier Tag
+	.byte	0x1	 # CIE Version
+	.ascii "\0"	 # CIE Augmentation
+	.byte	0x1	 # uleb128 0x1; CIE Code Alignment Factor
+	.byte	0x7c	 # sleb128 -4; CIE Data Alignment Factor
+	.byte	0x41	 # CIE RA Column
+	.byte	0xc	 # DW_CFA_def_cfa
+	.byte	0x1	 # uleb128 0x1
+	.byte	0x0	 # uleb128 0x0
+	.align 2
+.LECIE1:
+.LSFDE1:
+	.4byte	.LEFDE1-.LASFDE1	 # FDE Length
+.LASFDE1:
+	.4byte	.LASFDE1-__FRAME_BEGIN__	 # FDE CIE offset
+	.4byte	.LFB1	 # FDE initial location
+	.4byte	.LFE1-.LFB1	 # FDE address range
+	.byte	0x4	 # DW_CFA_advance_loc4
+	.4byte	.LCFI0-.LFB1
+	.byte	0xe	 # DW_CFA_def_cfa_offset
+	.byte	144,1	 # uleb128 144
+	.byte	0x4	 # DW_CFA_advance_loc4
+	.4byte	.LCFI1-.LCFI0
+	.byte	0x2f	 # DW_CFA_GNU_negative_offset_extended
+	.byte	0x41	 # uleb128 0x41
+	.byte	0x1	 # uleb128 0x1
+	.align 2
+.LEFDE1:

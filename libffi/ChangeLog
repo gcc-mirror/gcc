@@ -1,3 +1,9 @@
+2001-06-03  Andrew Haley  <aph@redhat.com>
+
+        * src/alpha/osf.S: Add unwind info.
+        * src/powerpc/sysv.S: Add unwind info.
+        * src/powerpc/ppc_closure.S: Likewise.
+
 2000-05-31  Jeff Sturm  <jsturm@one-point.com>
 
 	* configure.in: Fix AC_ARG_ENABLE usage.
