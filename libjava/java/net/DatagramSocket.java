@@ -25,8 +25,6 @@ import java.io.IOException;
 public class DatagramSocket
 {
   DatagramSocketImpl impl;
-  // FIXME: Shouldn't this be determined by getsockname() instead?
-  InetAddress laddr;
 
   public DatagramSocket() throws SocketException
   {
@@ -53,23 +51,12 @@ public class DatagramSocket
     impl = (DatagramSocketImpl) Class.forName("java.net." + propVal +
 					"DatagramSocketImpl").newInstance();
     impl.create();
-    // TBD: if this is right then the same should be done in Socket().
-    try
-    {
-      if (laddr == null)
-	laddr = InetAddress.getLocalHost();
-    }
-    catch (UnknownHostException e)
-    {
-      throw new BindException(e.getMessage());
-    }
 
     // For multicasting, set the socket to be reused (Stevens pp. 195-6).
     if (this instanceof MulticastSocket)
       impl.setOption(SocketOptions.SO_REUSEADDR, new Boolean(true));
 
     impl.bind(port, laddr);
-    this.laddr = laddr;
   }
 
   public void close()
@@ -79,7 +66,40 @@ public class DatagramSocket
 
   public InetAddress getLocalAddress()
   {
-    return laddr;
+    SecurityManager s = System.getSecurityManager();
+    // FIXME: JCL p. 510 says this should call checkConnect.  But what
+    // string should be used as the hostname?  Maybe this is just a side
+    // effect of calling InetAddress.getLocalHost.
+    //
+    // And is getOption with SO_BINDADDR the right way to get the address?
+    // Doesn't seem to be since this method doesn't throw a SocketException
+    // and SO_BINADDR can throw one.
+    //
+    // Also see RETURNS section in JCL p. 510 about returning any local
+    // addr "if the current execution context is not allowed to connect to
+    // the network interface that is actually bound to this datagram socket."
+    // How is that done?  via InetAddress.getLocalHost?  But that throws
+    // an UnknownHostException and this method doesn't.
+    //
+    // if (s != null)
+    //   s.checkConnect("localhost", -1);
+    try
+      {
+	return (InetAddress)impl.getOption(SocketOptions.SO_BINDADDR);
+      }
+    catch (SocketException ex)
+      {
+      }
+
+    try
+      {
+	return InetAddress.getLocalHost();
+      }
+    catch (UnknownHostException ex)
+      {
+	// FIXME: This should never happen, so how can we avoid this construct?
+	return null;
+      }
   }
 
   public int getLocalPort()

@@ -1,3 +1,33 @@
+1999-05-28  Warren Levy  <warrenl@cygnus.com>
+
+	* java/net/DatagramSocket.java (laddr): Removed.
+	(DatagramSocket): Removed attempts to get or set laddr if null.
+	(getLocalAddress): Reimplemented per spec.
+	* java/net/MulticastSocket.java (setTimeToLive): Throw exception
+	when ttl is 0.
+	(joinGroup): Throw NullPointerException if any argument is null.
+	(leaveGroup): ditto.
+	* java/net/PlainDatagramSocketImpl.java: Updated comments.
+	* java/net/PlainSocketImpl.java (timeout): Added.
+	(getInputStream): Added FIXME comment on how to support timeouts
+	for TCP.
+	* java/net/ServerSocket.java (ServerSocket): Added FIXME comment.
+	* java/net/Socket.java: Added FIXME comments to identify
+	conflicting specs between the JCL and JDK 1.2 documents.
+	* java/net/natPlainDatagramSocketImpl.cc (bind): Use INADDR_ANY
+	if host is null.  Get localport value resolved by kernel if bind
+	lport is 0.
+	(receive): Implemented support for timeouts in UDP.
+	(setOption): Implemented based on natPlainSocketImpl version.
+	(getOption): ditto.
+	* java/net/natPlainSocketImpl.cc (bind): Get localport value
+	resolved by kernel if bind lport is 0.
+	(connect): Get localport value resolved by kernel if bind wasn't
+	done to set localport.
+	(accept): Implemented support for timeouts for ServerSocket.
+	(setOption): Save value for SO_TIMEOUT.
+	(getOption): Return timeout for SO_TIMEOUT.
+
 1999-05-26  Bryce McKinlay <bryce@albatross.co.nz>
 
 	* java/net/DatagramSocket.java (getSoTimeout): Verify class type.

@@ -37,6 +37,9 @@ class PlainSocketImpl extends SocketImpl
 
   int fnum = -1;
 
+  // This value is set/read by setOption/getOption.
+  int timeout = 0;
+
   public native void setOption(int optID, Object value) throws SocketException;
 
   public native Object getOption(int optID) throws SocketException;
@@ -66,6 +69,7 @@ class PlainSocketImpl extends SocketImpl
 
   protected InputStream getInputStream() throws IOException
   {
+    // FIXME: TODO - Implement class SocketInputStream timeouts in read();
     if (in == null)
       in = new FileInputStream (fd);
     return in;

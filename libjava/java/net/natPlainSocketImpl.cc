@@ -10,6 +10,8 @@ details.  */
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/time.h>
+#include <sys/select.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <errno.h>
@@ -20,6 +22,7 @@ details.  */
 #include <javaprims.h>
 #include <java/io/IOException.h>
 #include <java/io/FileDescriptor.h>
+#include <java/io/InterruptedIOException.h>
 #include <java/net/BindException.h>
 #include <java/net/ConnectException.h>
 #include <java/net/PlainSocketImpl.h>
@@ -87,7 +90,13 @@ java::net::PlainSocketImpl::bind (java::net::InetAddress *host, jint lport)
   if (::bind (fnum, ptr, len) == 0)
     {
       address = host;
-      localport = lport;
+      socklen_t addrlen = sizeof(u);
+      if (lport != 0)
+        localport = lport;
+      else if (::getsockname (fnum, (sockaddr*) &u, &addrlen) == 0)
+        localport = ntohs (u.address.sin_port);
+      else
+        goto error;
       return;
     }
  error:
@@ -128,9 +137,12 @@ java::net::PlainSocketImpl::connect (java::net::InetAddress *host, jint rport)
     goto error;
   address = host;
   port = rport;
-  if (::getsockname (fnum, (sockaddr*) &u, &addrlen) != 0)
-    goto error;
-  localport = ntohs (u.address.sin_port);
+  // A bind may not have been done on this socket; if so, set localport now.
+  if (localport == 0)
+    if (::getsockname (fnum, (sockaddr*) &u, &addrlen) == 0)
+      localport = ntohs (u.address.sin_port);
+    else
+      goto error;
   return;  
  error:
   char msg[100];
@@ -156,7 +168,25 @@ java::net::PlainSocketImpl::accept (java::net::PlainSocketImpl *s)
 {
   union SockAddr u;
   socklen_t addrlen = sizeof(u);
-  int new_socket = ::accept (fnum, (sockaddr*) &u, &addrlen);
+  int new_socket = 0; 
+
+  // Do timeouts via select since SO_RCVTIMEO is not always available.
+  if (timeout > 0)
+    {
+      fd_set rset;
+      struct timeval tv;
+      FD_ZERO(&rset);
+      FD_SET(fnum, &rset);
+      tv.tv_sec = timeout / 1000;
+      tv.tv_usec = (timeout % 1000) * 1000;
+      int retval;
+      if ((retval = select (fnum + 1, &rset, NULL, NULL, &tv)) < 0)
+	goto error;
+      else if (retval == 0)
+	JvThrow (new java::io::InterruptedIOException ());
+    }
+
+  new_socket = ::accept (fnum, (sockaddr*) &u, &addrlen);
   if (new_socket < 0)
     goto error;
   jbyteArray raddr;
@@ -260,16 +290,15 @@ java::net::PlainSocketImpl::setOption (jint optID, java::lang::Object *value)
           JvNewStringUTF ("SO_BINDADDR: read only option")));
         return;
       case _Jv_IP_MULTICAST_IF_ :
-        JvThrow (new java::lang::InternalError (
+        JvThrow (new java::net::SocketException (
           JvNewStringUTF ("IP_MULTICAST_IF: not valid for TCP")));
         return;
       case _Jv_SO_REUSEADDR_ :
-        JvThrow (new java::lang::InternalError (
-          JvNewStringUTF ("SO_REUSEADDR: option not implemented")));
+        JvThrow (new java::net::SocketException (
+          JvNewStringUTF ("SO_REUSEADDR: not valid for TCP")));
         return;
       case _Jv_SO_TIMEOUT_ :
-        JvThrow (new java::lang::InternalError (
-          JvNewStringUTF ("SO_TIMEOUT: option not implemented")));
+	timeout = val;
         return;
       default :
         errno = ENOPROTOOPT;
@@ -336,6 +365,7 @@ java::net::PlainSocketImpl::getOption (jint optID)
 #endif    
 	break;
       case _Jv_SO_BINDADDR_:
+	// FIXME: Should cache the laddr as an optimization.
 	jbyteArray laddr;
 	if (::getsockname (fnum, (sockaddr*) &u, &addrlen) != 0)
 	  goto error;
@@ -356,16 +386,15 @@ java::net::PlainSocketImpl::getOption (jint optID)
 	return new java::net::InetAddress (laddr, NULL);
 	break;
       case _Jv_IP_MULTICAST_IF_ :
-	JvThrow (new java::lang::InternalError (
-	  JvNewStringUTF ("IP_MULTICAST_IF: option not implemented")));
+	JvThrow (new java::net::SocketException (
+	  JvNewStringUTF ("IP_MULTICAST_IF: not valid for TCP")));
 	break;
       case _Jv_SO_REUSEADDR_ :
-	JvThrow (new java::lang::InternalError (
-	  JvNewStringUTF ("SO_REUSEADDR: option not implemented")));
+	JvThrow (new java::net::SocketException (
+	  JvNewStringUTF ("SO_REUSEADDR: not valid for TCP")));
 	break;
       case _Jv_SO_TIMEOUT_ :
-	JvThrow (new java::lang::InternalError (
-	  JvNewStringUTF ("SO_TIMEOUT: option not implemented")));
+	return new java::lang::Integer (timeout);
 	break;
       default :
 	errno = ENOPROTOOPT;
