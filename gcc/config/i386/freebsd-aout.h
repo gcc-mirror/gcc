@@ -94,6 +94,9 @@ Boston, MA 02111-1307, USA.  */
 
 /* Profiling routines, partially copied from i386/osfrose.h.  */
 
+/* Tell final.c that we don't need a label passed to mcount.  */
+#define NO_PROFILE_COUNTERS 1
+
 #undef MCOUNT_NAME
 #define MCOUNT_NAME "mcount"
 #undef PROFILE_COUNT_REGISTER
@@ -112,6 +115,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define TYPE_ASM_OP	"\t.type\t"
 #define SIZE_ASM_OP	"\t.size\t"
+#define SET_ASM_OP	"\t.set\t"
 
 /* The following macro defines the format used to output the second
    operand of the .type assembler directive.  Different svr4 assemblers
@@ -120,6 +124,12 @@ Boston, MA 02111-1307, USA.  */
    specific tm.h file (depending upon the particulars of your assembler).  */
 
 #define TYPE_OPERAND_FMT	"@%s"
+
+#define HANDLE_SYSV_PRAGMA	1
+
+#define ASM_WEAKEN_LABEL(FILE,NAME) \
+	do { fputs ("\t.weak\t", FILE); assemble_name (FILE, NAME); \
+	fputc ('\n', FILE); } while (0)
 
 /* Write the extra assembler code needed to declare a function's result.
    Most svr4 assemblers don't require any special declaration of the
