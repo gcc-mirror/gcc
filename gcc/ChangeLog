@@ -1,3 +1,7 @@
+2000-09-13  Michael Hayes  <mhayes@cygnus.com>
+
+
+
 2000-09-12  Jim Wilson  <wilson@cygnus.com>
 
 	* ifcvt.c (noce_process_if_block): If A and B are the same, and no
