@@ -1,4 +1,4 @@
-2002-03-05
+2002-05-02
 
 Release Notes   
 -------------
@@ -6,7 +6,7 @@ The Standard C++ Library, or libstdc++-v3, is an ongoing project
 to fully implement the ISO 14882 Standard C++ library as described in
 chapters 17 through 27 and annex D.
 
-This is the fourteenth snapshot of the libstdc++ rewrite.  It still
+This is the fifteenth snapshot of the libstdc++ rewrite.  It still
 has some incomplet and incorrekt parts, but it's a lot less incomplete
 and incorrect than some of the earlier snapshots, and quite usable.
 
@@ -22,17 +22,18 @@ URL:
 
 New: 
 --- 
-- more doxygen documentation.
-- more named locale bug fixes
-- support for symbol versioning when using GNU ld >= 2.12
-- wide-io
-- tuning for executable size
+- more doxygen documentation
+- more named locale fixups
+- stdio_filebuf that takes fd, FILE
+- io performance tuning
+- allocation tuning, valgrind fixups
+- __cxa_demangle now supported
 
 
 Bugs fixed:
 -----------
-5816, 3955, 3983, 5708, 5697, 5286, 3860, 5579
-AIX linkage and threading fixes.
+6533, 6513, 6501, 6511, 5820, 6414, 4150, 6360, 4164, 1072, 6124,
+5180, 3457, 3139, 5268, 3983, 5542, 3129, 5207, 3719, 5734
 + others.
 
 
