@@ -1,2 +1,1 @@
-CC=/usr/local/bin/gcc
-INSTALL_HEADERS=
+USER_H =  $(EXTRA_HEADERS) $(LANG_EXTRA_HEADERS)

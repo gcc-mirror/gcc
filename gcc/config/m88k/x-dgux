@@ -1,5 +1,6 @@
 CC = gcc
 BISONFLAGS = -l
-INSTALL_HEADERS = 
+USER_H =  $(EXTRA_HEADERS) $(LANG_EXTRA_HEADERS)
+
 STMP_FIXPROTO = 
 X_CFLAGS = -O -mstandard -mlegend
