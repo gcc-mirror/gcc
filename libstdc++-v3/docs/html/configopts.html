@@ -63,7 +63,7 @@ options</a></h1>
 
  <dt><code>--enable-cstdio=LIB  </code>
  <dd><p>Select a target-specific I/O package.  As of libstdc++-v3
-        snapshot 2.91, the choices are 'libio' to specify the GNU
+        snapshot 3.0.96, the choices are 'libio' to specify the GNU
         I/O package (from
         <a href="http://sources.redhat.com/glibc/">glibc</a>, the
         GNU C library), or 'stdio' to use a generic &quot;C&quot;
@@ -201,6 +201,15 @@ options</a></h1>
         <a href="19_diagnostics/howto.html#3">described here</a>.  They
         can help users discover when they break the rules of the STL, before
         their programs run.
+     </p>
+
+ <dt><code>--enable-symvers[=style]  </code>
+ <dd><p>In 3.1, tries to turn on symbol versioning in the shared library (if a
+        shared library has been requested).  The only 'style' currently
+        supported is 'gnu' which requires that a recent version of the GNU
+        linker be in use.  With no style given, the configure script will
+        try to guess if the 'gnu' style can be used, and if so, will turn it
+        on.  Hopefully people will volunteer to do other 'style' options.
      </p>
 </dl>
 </p>

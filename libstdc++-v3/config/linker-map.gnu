@@ -65,11 +65,6 @@ GLIBCPP_3.1 {
     _ZTv*;
     _ZTc*;
 
-    # libsupc++
-    __cxa_*;
-    __gxx_personality_v0;
-    __dynamic_cast;
-
     # std::_S_rb_tree_red
     _ZSt14_S_rb_tree_red;
 
@@ -88,3 +83,17 @@ GLIBCPP_3.1 {
   local:
     *;
 };
+
+
+# Symbols in the support library (libsupc++) have their own tag.
+CXXABI_1 {
+
+  global:
+    __cxa_*;
+    __gxx_personality_v0;
+    __dynamic_cast;
+
+  local:
+    *;
+};
+

@@ -1,3 +1,10 @@
+2002-02-22  Phil Edwards  <pme@gcc.gnu.org>
+
+	* acinclude.m4 (GLIBCPP_ENABLE_SYMVERS):  Fix comment.
+	* aclocal.m4:  Regenerate.
+	* docs/html/configopts.html:  Document --enable-symvers.
+	* config/linker-map.gnu:  Break libsupc++ symbols out to their own tag.
+
 2002-02-22  Philipp Thomas  <pthomas@suse.de>
 
         * include/backward/tempbuf.h: get_temporary_buffer and
