@@ -1,3 +1,8 @@
+Tue Feb 17 22:31:04 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* loop.c (rtx_equal_for_loop_p): Add some braces to disambiguate
+	a dangling else clause.
+
 Tue Feb 17 21:28:12 1998  Gavin Koch  <gavin@cygnus.com>
 
 	* mips/mips.h (CAN_ELIMINATE): Don't eliminate the frame
