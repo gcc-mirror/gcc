@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha w/ELF.
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Richard Henderson (rth@tamu.edu).
 
 This file is part of GNU CC.
@@ -55,6 +55,19 @@ Boston, MA 02111-1307, USA.    */
       %{rdynamic:-export-dynamic}				\
       %{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.2}}	\
     %{static:-static}}"
+#endif
+
+#ifndef USE_GNULIBC_1
+#undef DEFAULT_VTABLE_THUNKS
+#define DEFAULT_VTABLE_THUNKS 1
+#endif
+
+#ifndef USE_GNULIBC_1
+#undef LIB_SPEC
+#define LIB_SPEC \
+  "%{shared: -lc} \
+   %{!shared: %{mieee-fp:-lieee} %{pthread:-lpthread} \
+	%{profile:-lc_p} %{!profile: -lc}}"
 #endif
 
 /* Output at beginning of assembler file.  */
@@ -493,7 +506,7 @@ do {									 \
 #define STARTFILE_SPEC \
   "%{!shared: \
      %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}}\
-   crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
+   crti.o%s crtbegin.o%s"
 
 /* Provide a ENDFILE_SPEC appropriate for GNU/Linux.  Here we tack on
    the GNU/Linux magical crtend.o file (see crtstuff.c) which
@@ -503,4 +516,4 @@ do {									 \
 
 #undef	ENDFILE_SPEC
 #define ENDFILE_SPEC \
-  "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
+  "crtend.o%s crtn.o%s"
