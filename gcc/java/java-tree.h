@@ -902,6 +902,12 @@ union lang_tree_node
 /* The original WFL of a final variable. */
 #define DECL_FIELD_FINAL_WFL(NODE) \
   (DECL_LANG_SPECIFIC(NODE)->u.v.wfl)
+/* In a FUNCTION_DECL for which DECL_BUILT_IN does not hold, this is
+     the approximate number of statements in this function.  There is
+     no need for this number to be exact; it is only used in various
+     heuristics regarding optimization.  */
+#define DECL_NUM_STMTS(NODE) \
+  (FUNCTION_DECL_CHECK (NODE)->decl.u1.i)
 /* True if NODE is a local variable final. */
 #define LOCAL_FINAL_P(NODE) (DECL_LANG_SPECIFIC (NODE) && DECL_FINAL (NODE))
 /* True if NODE is a final field. */
@@ -1273,6 +1279,9 @@ extern void append_gpp_mangled_name PARAMS ((const char *, int));
 
 extern void add_predefined_file PARAMS ((tree));
 extern int predefined_filename_p PARAMS ((tree));
+
+extern void java_optimize_inline PARAMS ((tree));
+extern tree decl_constant_value PARAMS ((tree));
 
 #if defined(RTX_CODE) && defined (HAVE_MACHINE_MODES)
 struct rtx_def * java_expand_expr PARAMS ((tree, rtx, enum machine_mode,
