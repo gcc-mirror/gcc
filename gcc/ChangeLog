@@ -1,3 +1,7 @@
+Mon Mar 27 06:04:22 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* libgcc2.h: Use MIN_UNITS_PER_WORD, not UNITS_PER_WORD.
+
 Sun Mar 26 20:15:26 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* c-convert.c (convert): Return if output or input type is ERROR_MARK.
