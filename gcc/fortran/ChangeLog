@@ -1,3 +1,8 @@
+2004-10-07  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* primary.c (match_boz_constant): Allow kind parameter suffixes.
+	Move standard warning further to the front.
+
 2004-10-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* trans-stmt.c: Fix a comment typo.
