@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987, 88, 91, 92, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 92, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -6348,25 +6348,50 @@ c_expand_return (retval)
 
       /* Strip any conversions, additions, and subtractions, and see if
 	 we are returning the address of a local variable.  Warn if so.  */
-      while (TREE_CODE (inner) == NOP_EXPR
-	     || TREE_CODE (inner) == NON_LVALUE_EXPR
-	     || TREE_CODE (inner) == CONVERT_EXPR
-	     || TREE_CODE (inner) == PLUS_EXPR
-	     || TREE_CODE (inner) == MINUS_EXPR)
-	inner = TREE_OPERAND (inner, 0);
-
-      if (TREE_CODE (inner) == ADDR_EXPR)
+      while (1)
 	{
-	  inner = TREE_OPERAND (inner, 0);
+	  switch (TREE_CODE (inner))
+	    {
+	    case NOP_EXPR:   case NON_LVALUE_EXPR:  case CONVERT_EXPR:
+	    case PLUS_EXPR:
+	      inner = TREE_OPERAND (inner, 0);
+	      continue;
 
-	  while (TREE_CODE_CLASS (TREE_CODE (inner)) == 'r')
-	    inner = TREE_OPERAND (inner, 0);
+	    case MINUS_EXPR:
+	      /* If the second operand of the MINUS_EXPR has a pointer
+		 type (or is converted from it), this may be valid, so
+		 don't give a warning.  */
+	      {
+		tree op1 = TREE_OPERAND (inner, 1);
 
-	  if (TREE_CODE (inner) == VAR_DECL
-	      && ! DECL_EXTERNAL (inner)
-	      && ! TREE_STATIC (inner)
-	      && DECL_CONTEXT (inner) == current_function_decl)
-	    warning ("function returns address of local variable");
+		while (! POINTER_TYPE_P (TREE_TYPE (op1))
+		       && (TREE_CODE (op1) == NOP_EXPR
+			   || TREE_CODE (op1) == NON_LVALUE_EXPR
+			   || TREE_CODE (op1) == CONVERT_EXPR))
+		  op1 = TREE_OPERAND (op1, 0);
+
+		if (POINTER_TYPE_P (TREE_TYPE (op1)))
+		  break;
+
+		inner = TREE_OPERAND (inner, 0);
+		continue;
+	      }
+	      
+	    case ADDR_EXPR:
+	      inner = TREE_OPERAND (inner, 0);
+
+	      while (TREE_CODE_CLASS (TREE_CODE (inner)) == 'r')
+		inner = TREE_OPERAND (inner, 0);
+
+	      if (TREE_CODE (inner) == VAR_DECL
+		  && ! DECL_EXTERNAL (inner)
+		  && ! TREE_STATIC (inner)
+		  && DECL_CONTEXT (inner) == current_function_decl)
+		warning ("function returns address of local variable");
+	      break;
+	    }
+
+	  break;
 	}
 
       t = build (MODIFY_EXPR, TREE_TYPE (res), res, t);
