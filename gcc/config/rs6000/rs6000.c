@@ -4232,7 +4232,8 @@ output_epilog (file, size)
       /* Language type.  Unfortunately, there doesn't seem to be any
 	 official way to get this info, so we use language_string.  C
 	 is 0.  C++ is 9.  No number defined for Obj-C, so use the
-	 value for C for now.  */
+	 value for C for now.  There is no official value for Java,
+         although IBM appears to be using 13.  */
       if (! strcmp (language_string, "GNU C")
 	  || ! strcmp (language_string, "GNU Obj-C"))
 	i = 0;
@@ -4244,6 +4245,8 @@ output_epilog (file, size)
 	i = 2;
       else if (! strcmp (language_string, "GNU C++"))
 	i = 9;
+      else if (! strcmp (language_string, "GNU Java"))
+	i = 13;
       else
 	abort ();
       fprintf (file, "%d,", i);
