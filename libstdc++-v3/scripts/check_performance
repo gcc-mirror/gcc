@@ -23,7 +23,8 @@ case $BASH_VERSION in
 esac
 
 flags_script=$BUILD_DIR/scripts/testsuite_flags
-INCLUDES="`$flags_script --build-includes` -include bits/stdc++.h"
+INCLUDES=`$flags_script --build-includes`
+PCH_FLAGS=`$flags_script --cxxpchflags`
 FLAGS=`$flags_script --cxxflags`
 THREAD_FLAG='-pthread'
 COMPILER=`$flags_script --build-cxx`
@@ -31,8 +32,8 @@ SH_FLAG="-Wl,--rpath -Wl,$BUILD_DIR/../../gcc \
          -Wl,--rpath -Wl,$BUILD_DIR/src/.libs"
 ST_FLAG="-static"
 LINK=$SH_FLAG
-CXX="$COMPILER $INCLUDES $FLAGS -DNOTHREAD $LINK"
-CXX_THREAD="$COMPILER $INCLUDES $FLAGS $THREAD_FLAG $LINK"
+CXX="$COMPILER $INCLUDES $PCH_FLAGS $FLAGS -DNOTHREAD $LINK"
+CXX_THREAD="$COMPILER $INCLUDES $PCH_FLAGS $FLAGS $THREAD_FLAG $LINK"
 
 
 TESTS_FILE="testsuite_files_performance"

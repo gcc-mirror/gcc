@@ -180,6 +180,12 @@ check-performance: testsuite_files_performance ${performance_script}
 	-@(chmod + ${performance_script}; \
 	  ${performance_script} ${glibcxx_srcdir} ${glibcxx_builddir})
 
+# Runs the testsuite, but in compile only mode, and times it.
+# See script.
+compile_script=${glibcxx_srcdir}/scripts/check_compile
+check-compile: testsuite_files ${compile_script}
+	-@(chmod + ${compile_script}; \
+	  ${compile_script} ${glibcxx_srcdir} ${glibcxx_builddir})
 
 # This rule generates all of the testsuite_files* lists at once.
 ${lists_of_files}:

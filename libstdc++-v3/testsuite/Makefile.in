@@ -310,6 +310,10 @@ survey_script = ${glibcxx_builddir}/scripts/check_survey
 # running this is off by default.
 performance_script = ${glibcxx_srcdir}/scripts/check_performance
 
+# Runs the testsuite, but in compile only mode, and times it.
+# See script.
+compile_script = ${glibcxx_srcdir}/scripts/check_compile
+
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.txt *.tst *.exe core* filebuf_* tmp* ostream_* *.log *.sum \
 	     testsuite_* site.exp abi_check baseline_symbols *TEST*
@@ -662,6 +666,9 @@ check-script-install: ${survey_script}
 check-performance: testsuite_files_performance ${performance_script}
 	-@(chmod + ${performance_script}; \
 	  ${performance_script} ${glibcxx_srcdir} ${glibcxx_builddir})
+check-compile: testsuite_files ${compile_script}
+	-@(chmod + ${compile_script}; \
+	  ${compile_script} ${glibcxx_srcdir} ${glibcxx_builddir})
 
 # This rule generates all of the testsuite_files* lists at once.
 ${lists_of_files}:
