@@ -251,6 +251,7 @@ or with constant text in a single argument.
  %C     process CPP_SPEC as a spec.  A capital C is actually used here.
  %1	process CC1_SPEC as a spec.
  %2	process CC1PLUS_SPEC as a spec.
+ %|	output "-" if the input for the current command is coming from a pipe.
  %*	substitute the variable part of a matched option.  (See below.)
 	Note that each comma in the substituted string is replaced by
 	a single space.
@@ -2306,6 +2307,9 @@ static int this_is_output_file;
    search dirs for it.  */
 static int this_is_library_file;
 
+/* Nonzero means that the input of this command is coming from a pipe.  */
+static int input_from_pipe;
+
 /* Process the spec SPEC and run the commands specified therein.
    Returns 0 if the spec is successfully processed; -1 if failed.  */
 
@@ -2320,6 +2324,7 @@ do_spec (spec)
   delete_this_arg = 0;
   this_is_output_file = 0;
   this_is_library_file = 0;
+  input_from_pipe = 0;
 
   value = do_spec_1 (spec, 0, NULL_PTR);
 
@@ -2392,6 +2397,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	       Otherwise, execute now and don't pass the `|' as an arg.  */
 	    if (i < n_switches)
 	      {
+		input_from_pipe = 1;
 		switches[i].valid = 1;
 		break;
 	      }
@@ -2411,6 +2417,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	delete_this_arg = 0;
 	this_is_output_file = 0;
 	this_is_library_file = 0;
+	input_from_pipe = 0;
 	break;
 
       case '|':
@@ -2982,6 +2989,11 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      if (*p)
 		p++;
 	    }
+	    break;
+
+	  case '|':
+	    if (input_from_pipe)
+	      do_spec_1 ("-", 0, NULL_PTR);
 	    break;
 
 	  default:
