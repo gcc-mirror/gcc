@@ -30,8 +30,6 @@ extern tree make_pointer_declarator PARAMS ((tree, tree));
 extern int c_lex PARAMS ((tree *));
 extern const char *init_c_lex PARAMS ((const char *));
 
-extern int indent_level;
-
 struct cpp_reader;
 extern struct cpp_reader* parse_in;
 

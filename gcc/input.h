@@ -36,7 +36,6 @@ struct file_stack
     const char *name;
     struct file_stack *next;
     int line;
-    int indent_level;
   };
 
 /* Stack of currently pending input files.

@@ -2020,7 +2020,6 @@ push_srcloc (file, line)
   fs = (struct file_stack *) xmalloc (sizeof (struct file_stack));
   fs->name = input_filename = file;
   fs->line = lineno = line;
-  fs->indent_level = 0;
   fs->next = input_file_stack;
   input_file_stack = fs;
   input_file_stack_tick++;
