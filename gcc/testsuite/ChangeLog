@@ -1,5 +1,10 @@
 2003-10-31  Josef Zlomek  <zlomekj@suse.cz>
 
+	PR/10239
+	* gcc.c-torture/compile/20031031-2.c: New test.
+
+2003-10-31  Josef Zlomek  <zlomekj@suse.cz>
+
 	PR/11640
 	* gcc.c-torture/compile/20031031-1.c: New test.
 
