@@ -1,3 +1,8 @@
+2003-08-09  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR target/11699
+	* config/mips/mips.c (override_options): Reject -mabi=eabi -mabicalls.
+
 2003-08-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.md (extzv, extv, insv): Fix operand limit checks.  Fail if
