@@ -1466,7 +1466,12 @@ delete_unreachable_blocks ()
      support Fortran alternate entry points.  */
 
   for (e = ENTRY_BLOCK_PTR->succ; e ; e = e->succ_next)
-    *tos++ = e->dest;
+    {
+      *tos++ = e->dest;
+
+      /* Mark the block with a handy non-null value.  */
+      e->dest->aux = e;
+    }
       
   /* Iterate: find everything reachable from what we've already seen.  */
 
@@ -1474,12 +1479,12 @@ delete_unreachable_blocks ()
     {
       basic_block b = *--tos;
 
-      /* Mark the block with a handy non-null value.  */
-      b->aux = b;
-
       for (e = b->succ; e ; e = e->succ_next)
 	if (!e->dest->aux)
-	  *tos++ = e->dest;
+	  {
+	    *tos++ = e->dest;
+	    e->dest->aux = e;
+	  }
     }
 
   /* Delete all unreachable basic blocks.  Count down so that we don't

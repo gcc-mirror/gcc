@@ -1,3 +1,8 @@
+Thu Mar  4 15:00:35 1999  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (delete_unreachable_blocks): Mark blocks as they
+	are put on to the worklist, not as they are taken off.
+
 Thu Mar  4 00:05:44 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* function.c (current_function_has_computed_jump): Remove duplicate
