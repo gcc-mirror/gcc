@@ -1015,6 +1015,7 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
   int alt;
   enum op_type {OP_READ, OP_WRITE, OP_READ_WRITE} op_types[MAX_RECOG_OPERANDS];
   int i, j;
+  rtx set;
 
   /* By default, each operand is an input operand.  */
 
@@ -1349,6 +1350,31 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 				     (qq->cost[class] + alt_cost) * scale);
 	  }
     }
+
+  /* If this insn is a single set copying operand 1 to operand 0
+     and one is a pseudo with the other a hard reg that is in its
+     own register class, set the cost of that register class to -1.  */
+
+  if ((set = single_set (insn)) != 0
+      && ops[0] == SET_DEST (set) && ops[1] == SET_SRC (set)
+      && GET_CODE (ops[0]) == REG && GET_CODE (ops[1]) == REG)
+    for (i = 0; i <= 1; i++)
+      if (REGNO (ops[i]) >= FIRST_PSEUDO_REGISTER)
+	{
+	  int regno = REGNO (ops[!i]);
+	  enum machine_mode mode = GET_MODE (ops[!i]);
+	  int class;
+
+	  if (regno >= FIRST_PSEUDO_REGISTER && prefclass != 0
+	      && (reg_class_size[prefclass[regno]]
+		  == CLASS_MAX_NREGS (prefclass[regno], mode)))
+	    op_costs[i].cost[prefclass[regno]] = -1;
+	  else if (regno < FIRST_PSEUDO_REGISTER)
+	    for (class = 0; class < N_REG_CLASSES; class++)
+	      if (TEST_HARD_REG_BIT (reg_class_contents[class], regno)
+		  && reg_class_size[class] == CLASS_MAX_NREGS (class, mode))
+		op_costs[i].cost[class] = -1;
+	}
 }
 
 /* Compute the cost of loading X into (if TO_P is non-zero) or from (if
