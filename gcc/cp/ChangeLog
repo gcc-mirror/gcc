@@ -1,3 +1,36 @@
+2001-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (local_names): Define.
+	(push_local_name): New.
+	(grok_reference_init): Return init if initializing static reference
+	variable with non-constant instead of emitting it.
+	Move expand_static_init call to cp_finish_decl.
+	(layout_var_decl): Call push_local_name.
+	(maybe_commonize_var): Allow inlining functions even if they have
+	static local variables, use comdat_linkage for them if flag_weak.
+	(check_initializer): Call obscure_complex_init if
+	grok_reference_init returned non-zero.
+	(save_function_data): Clear x_local_names.
+	(pop_cp_function_context): Free x_local_names.
+	(mark_inlined_fns): Remove.
+	(mark_lang_function): Mark x_local_names.
+	(lang_mark_tree): Don't mark DECL_ACCESS for DECL_DISCRIMINATOR_P.
+	Mark inlined_fns as tree, remove call to mark_inlined_fns.
+	* class.c (alter_access): Ensure DECL_ACCESS is never set if
+	DECL_DISCRIMINATOR_P.
+	* cp-tree.h (cp_language_function): Add x_local_names.
+	(lang_decl_flags): Add discriminator into u2.
+	(lang_decl_inlined_fns): Remove.
+	(lang_decl): inlined_fns is now a TREE_VEC.
+	(DECL_DISCRIMINATOR_P, DECL_DISCRIMINATOR): Define.
+	* optimize.c (inlinable_function_p): DECL_INLINED_FNS is now a
+	TREE_VEC, not a custom structure.
+	(optimize_function): Likewise.
+	* mangle.c (discriminator_for_local_entity): Discriminate among
+	VAR_DECL local entities.
+	* search.c (dfs_access_in_type): If DECL_DISCRIMINATOR_P, DECL_ACCESS
+	is not valid.
+
 2001-03-22  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Add support for Java interface method calls.

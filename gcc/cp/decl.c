@@ -75,8 +75,9 @@ static tree store_bindings PARAMS ((tree, tree));
 static tree lookup_tag_reverse PARAMS ((tree, tree));
 static tree obscure_complex_init PARAMS ((tree, tree));
 static tree lookup_name_real PARAMS ((tree, int, int, int));
+static void push_local_name PARAMS ((tree));
 static void warn_extern_redeclared_static PARAMS ((tree, tree));
-static void grok_reference_init PARAMS ((tree, tree, tree));
+static tree grok_reference_init PARAMS ((tree, tree, tree));
 static tree grokfndecl PARAMS ((tree, tree, tree, tree, int,
 			      enum overload_flags, tree,
 			      tree, int, int, int, int, int, int, tree));
@@ -130,7 +131,6 @@ static void mark_binding_level PARAMS ((void *));
 static void mark_named_label_lists PARAMS ((void *, void *));
 static void mark_cp_function_context PARAMS ((struct function *));
 static void mark_saved_scope PARAMS ((void *));
-static void mark_inlined_fns PARAMS ((struct lang_decl_inlined_fns *));
 static void mark_lang_function PARAMS ((struct cp_language_function *));
 static void save_function_data PARAMS ((tree));
 static void check_function_type PARAMS ((tree, tree));
@@ -247,6 +247,8 @@ struct named_label_use_list
 };
 
 #define named_label_uses cp_function_chain->x_named_label_uses
+
+#define local_names cp_function_chain->x_local_names
 
 /* A list of objects which have constructors or destructors
    which reside in the global scope.  The decl is stored in
@@ -2748,6 +2750,41 @@ create_implicit_typedef (name, type)
   TYPE_NAME (type) = decl;
 
   return decl;
+}
+
+/* Remember a local name for name-mangling purposes.  */
+
+static void
+push_local_name (decl)
+     tree decl;
+{
+  size_t i, nelts;
+  tree t, name;
+
+  if (!local_names)
+    VARRAY_TREE_INIT (local_names, 8, "local_names");
+
+  name = DECL_NAME (decl);
+
+  nelts = VARRAY_ACTIVE_SIZE (local_names);
+  for (i = 0; i < nelts; i++)
+    {
+      t = VARRAY_TREE (local_names, i);
+      if (DECL_NAME (t) == name)
+	{
+	  if (!DECL_LANG_SPECIFIC (decl))
+	    retrofit_lang_decl (decl);
+	  if (DECL_LANG_SPECIFIC (t))
+	    DECL_DISCRIMINATOR (decl) = DECL_DISCRIMINATOR (t) + 1;
+	  else
+	    DECL_DISCRIMINATOR (decl) = 1;
+
+	  VARRAY_TREE (local_names, i) = decl;
+	  return;
+	}
+    }
+
+  VARRAY_PUSH_TREE (local_names, decl);
 }
 
 /* Push a tag name NAME for struct/class/union/enum type TYPE.
@@ -7292,7 +7329,7 @@ start_decl_1 (decl)
 
    Quotes on semantics can be found in ARM 8.4.3.  */
 
-static void
+static tree
 grok_reference_init (decl, type, init)
      tree decl, type, init;
 {
@@ -7304,16 +7341,16 @@ grok_reference_init (decl, type, init)
 	   || DECL_IN_AGGR_P (decl) == 0)
 	  && ! DECL_THIS_EXTERN (decl))
 	cp_error ("`%D' declared as reference but not initialized", decl);
-      return;
+      return NULL_TREE;
     }
 
   if (init == error_mark_node)
-    return;
+    return NULL_TREE;
 
   if (TREE_CODE (init) == CONSTRUCTOR)
     {
       cp_error ("ISO C++ forbids use of initializer list to initialize reference `%D'", decl);
-      return;
+      return NULL_TREE;
     }
 
   if (TREE_CODE (init) == TREE_LIST)
@@ -7342,32 +7379,26 @@ grok_reference_init (decl, type, init)
      decl);
 
   if (tmp == error_mark_node)
-    return;
-  else if (tmp != NULL_TREE)
-    {
-      init = tmp;
-      tmp = save_expr (tmp);
-      if (building_stmt_tree ())
-	{
-	  /* Initialize the declaration.  */
-	  tmp = build (INIT_EXPR, TREE_TYPE (decl), decl, tmp);
-	  finish_expr_stmt (tmp);
-	}
-      else
-	DECL_INITIAL (decl) = tmp;
-    }
-  else
+    return NULL_TREE;
+  else if (tmp == NULL_TREE)
     {
       cp_error ("cannot initialize `%T' from `%T'", type, TREE_TYPE (init));
-      return;
+      return NULL_TREE;
     }
 
-  if (TREE_STATIC (decl) && ! TREE_CONSTANT (DECL_INITIAL (decl)))
+  if (TREE_STATIC (decl) && !TREE_CONSTANT (tmp))
+    return tmp;
+
+  if (building_stmt_tree ())
     {
-      expand_static_init (decl, DECL_INITIAL (decl));
-      DECL_INITIAL (decl) = NULL_TREE;
+      /* Initialize the declaration.  */
+      tmp = build (INIT_EXPR, TREE_TYPE (decl), decl, tmp);
+      finish_expr_stmt (tmp);
     }
-  return;
+  else
+    DECL_INITIAL (decl) = tmp;
+
+  return NULL_TREE;
 }
 
 /* Fill in DECL_INITIAL with some magical value to prevent expand_decl from
@@ -7493,6 +7524,12 @@ layout_var_decl (decl)
       else
 	cp_error ("storage size of `%D' isn't constant", decl);
     }
+
+  if (TREE_STATIC (decl)
+      && !DECL_ARTIFICIAL (decl)
+      && current_function_decl
+      && DECL_CONTEXT (decl) == current_function_decl)
+    push_local_name (decl);
 }
 
 /* If a local static variable is declared in an inline function, or if
@@ -7514,12 +7551,6 @@ maybe_commonize_var (decl)
 	  || DECL_TEMPLATE_INSTANTIATION (current_function_decl))
       && TREE_PUBLIC (current_function_decl))
     {
-      /* Rather than try to get this right with inlining, we suppress
-	 inlining of such functions.  */
-      current_function_cannot_inline
-	= "function with static variable cannot be inline";
-      DECL_UNINLINABLE (current_function_decl) = 1;
-
       /* If flag_weak, we don't need to mess with this, as we can just
 	 make the function weak, and let it refer to its unique local
 	 copy.  This works because we don't allow the function to be
@@ -7546,6 +7577,8 @@ maybe_commonize_var (decl)
 	      cp_warning_at ("  you can work around this by removing the initializer", decl);
 	    }
 	}
+      else
+	comdat_linkage (decl);
     }
   else if (DECL_LANG_SPECIFIC (decl) && DECL_COMDAT (decl))
     /* Set it up again; we might have set DECL_INITIAL since the last
@@ -7632,8 +7665,9 @@ check_initializer (decl, init)
     }
   else if (!DECL_EXTERNAL (decl) && TREE_CODE (type) == REFERENCE_TYPE)
     {
-      grok_reference_init (decl, type, init);
-      init = NULL_TREE;
+      init = grok_reference_init (decl, type, init);
+      if (init)
+	init = obscure_complex_init (decl, init);
     }
   else if (init)
     {
@@ -13694,6 +13728,7 @@ save_function_data (decl)
   f->base.x_stmt_tree.x_last_expr_type = NULL_TREE;
   f->x_named_label_uses = NULL;
   f->bindings = NULL;
+  f->x_local_names = NULL;
 
   /* When we get back here again, we will be expanding.  */
   f->x_expanding_p = 1;
@@ -14312,21 +14347,14 @@ pop_cp_function_context (f)
      struct function *f;
 {
   if (f->language)
-    free (f->language);
+    {
+      struct cp_language_function *cp =
+	(struct cp_language_function *) f->language;
+      if (cp->x_local_names)
+	VARRAY_FREE (cp->x_local_names);
+      free (f->language);
+    }
   f->language = 0;
-}
-
-/* Mark I for GC.  */
-
-static void
-mark_inlined_fns (i)
-     struct lang_decl_inlined_fns *i;
-{
-  int n;
-
-  for (n = i->num_fns - 1; n >= 0; n--)
-    ggc_mark_tree (i->fns [n]);
-  ggc_set_mark (i);
 }
 
 /* Mark P for GC.  */
@@ -14345,6 +14373,7 @@ mark_lang_function (p)
   ggc_mark_tree (p->x_current_class_ptr);
   ggc_mark_tree (p->x_current_class_ref);
   ggc_mark_tree (p->x_eh_spec_try_block);
+  ggc_mark_tree_varray (p->x_local_names);
 
   mark_named_label_lists (&p->x_named_labels, &p->x_named_label_uses);
   mark_binding_level (&p->bindings);
@@ -14402,7 +14431,8 @@ lang_mark_tree (t)
 	  c_mark_lang_decl (&ld->decl_flags.base);
 	  if (!DECL_GLOBAL_CTOR_P (t)
 	      && !DECL_GLOBAL_DTOR_P (t)
-	      && !DECL_THUNK_P (t))
+	      && !DECL_THUNK_P (t)
+	      && !DECL_DISCRIMINATOR_P (t))
 	    ggc_mark_tree (ld->decl_flags.u2.access);
 	  else if (DECL_THUNK_P (t))
 	    ggc_mark_tree (ld->decl_flags.u2.vcall_offset);
@@ -14415,8 +14445,7 @@ lang_mark_tree (t)
 	      ggc_mark_tree (ld->befriending_classes);
 	      ggc_mark_tree (ld->context);
 	      ggc_mark_tree (ld->cloned_function);
-	      if (ld->inlined_fns)
-		mark_inlined_fns (ld->inlined_fns);
+	      ggc_mark_tree (ld->inlined_fns);
 	      if (TREE_CODE (t) == TYPE_DECL)
 		ggc_mark_tree (ld->u.sorted_fields);
 	      else if (TREE_CODE (t) == FUNCTION_DECL
