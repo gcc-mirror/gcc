@@ -1,3 +1,11 @@
+Thu Sep 30 00:13:27 1999  Dirk Zoller  <duz@rtsffm.com>
+
+	* cp-tree.h (warn_float_equal): Declare.
+	* decl2.c (warn_float_equal): Define.
+	(lang_decode_option): Recognize -W[no-]float-equal.
+	* typeck.c (build_binary_op_nodefault): Conditionally warn
+	about equality tests of floating point types.
+
 1999-09-29  Jason Merrill  <jason@yorick.cygnus.com>
 
 	Support normal type_info-based EH mechanisms with -fno-rtti.

@@ -277,6 +277,10 @@ int warn_missing_braces;
 
 int warn_sign_compare;
 
+/* Warn about testing equality of floating point numbers. */
+
+int warn_float_equal = 0;
+
 /* Warn about *printf or *scanf format/argument anomalies.  */
 
 int warn_format;
@@ -689,6 +693,8 @@ lang_decode_option (argc, argv)
 	warn_missing_braces = setting;
       else if (!strcmp (p, "sign-compare"))
 	warn_sign_compare = setting;
+      else if (!strcmp (p, "float-equal"))
+	warn_float_equal = setting;
       else if (!strcmp (p, "format"))
 	warn_format = setting;
       else if (!strcmp (p, "conversion"))

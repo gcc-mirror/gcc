@@ -893,6 +893,10 @@ extern int warn_missing_braces;
 
 extern int warn_sign_compare;
 
+/* Warn about testing equality of floating point numbers. */
+
+extern int warn_float_equal;
+
 /* Warn about a subscript that has type char.  */
 
 extern int warn_char_subscripts;
