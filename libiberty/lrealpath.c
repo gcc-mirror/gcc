@@ -64,6 +64,12 @@ extern char *canonicalize_file_name (const char *);
 #   define REALPATH_LIMIT MAXPATHLEN
 #  endif
 # endif
+#else
+  /* cygwin has realpath, so it won't get here.  */ 
+# if defined (_WIN32)
+#  define WIN32_LEAN_AND_MEAN
+#  include <windows.h> /* for GetFullPathName */
+# endif
 #endif
 
 char *
@@ -119,6 +125,30 @@ lrealpath (filename)
 	ret = strdup (rp ? rp : filename);
 	free (buf);
 	return ret;
+      }
+  }
+#endif
+
+  /* The MS Windows method.  If we don't have realpath, we assume we
+     don't have symlinks and just canonicalize to a Windows absolute
+     path.  GetFullPath converts ../ and ./ in relative paths to
+     absolute paths, filling in current drive if one is not given
+     or using the current directory of a specified drive (eg, "E:foo").
+     It also converts all forward slashes to back slashes.  */
+#if defined (_WIN32)
+  {
+    char buf[MAX_PATH];
+    char* basename;
+    DWORD len = GetFullPathName (filename, MAX_PATH, buf, &basename);
+    if (len == 0 || len > MAX_PATH - 1)
+      return strdup (filename);
+    else
+      {
+	/* The file system is case-preserving but case-insensitive,
+	   Canonicalize to lowercase, using the codepage associated
+	   with the process locale.  */
+        CharLowerBuff (buf, len);
+        return strdup (buf);
       }
   }
 #endif
