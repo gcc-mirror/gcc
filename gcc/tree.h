@@ -1990,6 +1990,11 @@ extern tree make_tree_vec		PARAMS ((int));
 
 extern tree get_identifier		PARAMS ((const char *));
 
+/* Identical to get_identifier, except that the length is assumed
+   known.  */
+
+extern tree get_identifier_with_length  PARAMS ((const char *, unsigned int));
+
 /* If an identifier with the name TEXT (a null-terminated string) has
    previously been referred to, return that node; otherwise return
    NULL_TREE.  */
