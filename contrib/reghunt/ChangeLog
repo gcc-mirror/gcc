@@ -1,3 +1,7 @@
+2005-01-17  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* reg_periodic, reg_search: Fix the uses of date command.
+
 2003-06-24  Janis Johnson  <janis187@us.ibm.com>
 
 	* reg_search: Replace existing uses of DATE with MADE_DATE and
