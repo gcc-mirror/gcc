@@ -3,8 +3,6 @@
 // From: Klaus-Georg Adams <Klaus-Georg.Adams@chemie.uni-karlsruhe.de> 
 // Reported against EGCS snaps 98/06/28.
 
-// { dg-error "forward declaration" "" { target *-*-* } 0 }
-
 int main()
 {
 	try {

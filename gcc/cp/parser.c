@@ -1413,7 +1413,7 @@ static tree cp_parser_function_specifier_opt
 static tree cp_parser_type_specifier
   (cp_parser *, cp_parser_flags, bool, bool, int *, bool *);
 static tree cp_parser_simple_type_specifier
-  (cp_parser *, cp_parser_flags);
+  (cp_parser *, cp_parser_flags, bool);
 static tree cp_parser_type_name
   (cp_parser *);
 static tree cp_parser_elaborated_type_specifier
@@ -3361,7 +3361,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	cp_parser_parse_tentatively (parser);
 	/* Look for the simple-type-specifier.  */
 	type = cp_parser_simple_type_specifier (parser, 
-						CP_PARSER_FLAGS_NONE);
+						CP_PARSER_FLAGS_NONE,
+						/*identifier_p=*/false);
 	/* Parse the cast itself.  */
 	if (!cp_parser_error_occurred (parser))
 	  postfix_expression 
@@ -8181,7 +8182,8 @@ cp_parser_type_specifier (cp_parser* parser,
 
   /* If we do not already have a type-specifier, assume we are looking
      at a simple-type-specifier.  */
-  type_spec = cp_parser_simple_type_specifier (parser, flags);
+  type_spec = cp_parser_simple_type_specifier (parser, flags, 
+					       /*identifier_p=*/true);
 
   /* If we didn't find a type-specifier, and a type-specifier was not
      optional in this context, issue an error message.  */
@@ -8218,11 +8220,13 @@ cp_parser_type_specifier (cp_parser* parser,
      __typeof__ ( type-id )
 
    For the various keywords, the value returned is simply the
-   TREE_IDENTIFIER representing the keyword.  For the first two
-   productions, the value returned is the indicated TYPE_DECL.  */
+   TREE_IDENTIFIER representing the keyword if IDENTIFIER_P is true.
+   For the first two productions, and if IDENTIFIER_P is false, the
+   value returned is the indicated TYPE_DECL.  */
 
 static tree
-cp_parser_simple_type_specifier (cp_parser* parser, cp_parser_flags flags)
+cp_parser_simple_type_specifier (cp_parser* parser, cp_parser_flags flags,
+				 bool identifier_p)
 {
   tree type = NULL_TREE;
   cp_token *token;
@@ -8234,18 +8238,38 @@ cp_parser_simple_type_specifier (cp_parser* parser, cp_parser_flags flags)
   switch (token->keyword)
     {
     case RID_CHAR:
+      type = char_type_node;
+      break;
     case RID_WCHAR:
+      type = wchar_type_node;
+      break;
     case RID_BOOL:
+      type = boolean_type_node;
+      break;
     case RID_SHORT:
+      type = short_integer_type_node;
+      break;
     case RID_INT:
+      type = integer_type_node;
+      break;
     case RID_LONG:
+      type = long_integer_type_node;
+      break;
     case RID_SIGNED:
+      type = integer_type_node;
+      break;
     case RID_UNSIGNED:
+      type = unsigned_type_node;
+      break;
     case RID_FLOAT:
+      type = float_type_node;
+      break;
     case RID_DOUBLE:
+      type = double_type_node;
+      break;
     case RID_VOID:
-      /* Consume the token.  */
-      return cp_lexer_consume_token (parser->lexer)->value;
+      type = void_type_node;
+      break;
 
     case RID_TYPEOF:
       {
@@ -8264,6 +8288,16 @@ cp_parser_simple_type_specifier (cp_parser* parser, cp_parser_flags flags)
 
     default:
       break;
+    }
+
+  /* If the type-specifier was for a built-in type, we're done.  */
+  if (type)
+    {
+      tree id;
+
+      /* Consume the token.  */
+      id = cp_lexer_consume_token (parser->lexer)->value;
+      return identifier_p ? id : TYPE_NAME (type);
     }
 
   /* The type-specifier must be a user-defined type.  */
@@ -8549,8 +8583,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 
 	  if (TREE_CODE (TREE_TYPE (decl)) != TYPENAME_TYPE)
 	    check_elaborated_type_specifier 
-	      (tag_type, 
-	       TREE_TYPE (decl),
+	      (tag_type, decl,
 	       (parser->num_template_parameter_lists
 		|| DECL_SELF_REFERENCE_P (decl)));
 

@@ -1,3 +1,12 @@
+2003-08-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11946
+	* convert.c (convert_to_integer): Use CONVERT_EXPR (instead of
+	NOP_EXPR) when necessary.
+	* c-common.c (c_common_signed_or_unsigned_type): Correctly handle
+	types with precisions other than those given by native machine
+	modes.
+
 2003-08-19  Geoffrey Keating  <geoffk@apple.com>
 
 	* cpppch.c (cpp_valid_state): Re-add warning about PCH not used
