@@ -1,3 +1,9 @@
+2002-08-31  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	PR fortran/6367
+	* libI77/rsne.c (x_rsne): Use local variable no2 to count further
+	list elements to read.
+
 2002-07-10  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* libI77/open.c (f_open): Do not indicate unformatted file
