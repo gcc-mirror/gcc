@@ -936,6 +936,8 @@ fatal_insn (message, insn)
     fflush (dbr_sched_dump_file);
   if (stack_reg_dump_file)
     fflush (stack_reg_dump_file);
+  fflush (stdout);
+  fflush (stderr);
   abort ();
 }
 
