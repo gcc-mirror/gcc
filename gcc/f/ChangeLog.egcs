@@ -1,5 +1,11 @@
 Thu Sep 18 17:31:38 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* proj.h (FFEPROJ_BSEARCH): Delete all references.
+	(FFEPROJ_STRTOUL): Likewise.
+	* proj.c (bsearch): Compile this if no bsearch is provided by the
+	host system.
+	(strtoul): Similarly.
+
 	* g77install.texi: Renamed from install.texi
 	* g77.texi: Corresponding changes.
 

@@ -23,7 +23,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <ctype.h>
 #include "glimits.j"
 
-#if !FFEPROJ_STRTOUL
+#ifndef HAVE_STRTOUL
 unsigned long int
 strtoul (const char *nptr, char **endptr, int base)
 {
@@ -43,10 +43,9 @@ strtoul (const char *nptr, char **endptr, int base)
 
   return number;
 }
-
 #endif
 
-#if !FFEPROJ_BSEARCH
+#ifndef HAVE_BSEARCH
 void *
 bsearch (const void *key, const void *base, size_t nmemb, size_t size,
 	 int (*compar) (const void *, const void *))
@@ -67,5 +66,4 @@ bsearch (const void *key, const void *base, size_t nmemb, size_t size,
 
   return NULL;
 }
-
 #endif
