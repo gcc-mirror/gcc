@@ -571,10 +571,6 @@ struct cumulative_args { int ints, floats; };
 #define EXPAND_BUILTIN_VA_START(valist, nextarg) \
   i860_va_start (valist, nextarg)
 
-/* Implement `va_arg'.  */
-#define EXPAND_BUILTIN_VA_ARG(valist, type) \
-  i860_va_arg (valist, type)
-
 /* Store in the variable DEPTH the initial difference between the
    frame pointer reg contents and the stack pointer reg contents,
    as of the start of the function body.  This depends on the layout

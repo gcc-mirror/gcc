@@ -46,7 +46,6 @@ extern int logic_int (rtx, enum machine_mode);
 extern int call_insn_operand (rtx, enum machine_mode);
 #ifdef TREE_CODE
 extern void i860_va_start (tree, rtx);
-extern rtx i860_va_arg (tree, tree);
 #endif /* TREE_CODE */
 #endif /* RTX_CODE */
 
