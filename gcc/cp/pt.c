@@ -5569,61 +5569,6 @@ tsubst_decl (t, args, type, in_decl)
 	if (TREE_CODE (decl) == TYPE_DECL)
 	  break;
 
-	for (spec = DECL_TEMPLATE_SPECIALIZATIONS (t);
-	     spec != NULL_TREE;
-	     spec = TREE_CHAIN (spec))
-	  {
-	    /* It helps to consider example here.  Consider:
-
-	       template <class T>
-	       struct S {
-	         template <class U>
-		 void f(U u);
-
-		 template <>
-		 void f(T* t) {}
-	       };
-	       
-	       Now, for example, we are instantiating S<int>::f(U u).  
-	       We want to make a template:
-
-	       template <class U>
-	       void S<int>::f(U);
-
-	       It will have a specialization, for the case U = int*, of
-	       the form:
-
-	       template <>
-	       void S<int>::f<int*>(int*);
-
-	       This specialization will be an instantiation of
-	       the specialization given in the declaration of S, with
-	       argument list int*.  */
-
-	    tree fn = TREE_VALUE (spec);
-	    tree spec_args;
-	    tree new_fn;
-
-	    if (!DECL_TEMPLATE_SPECIALIZATION (fn))
-	      /* Instantiations are on the same list, but they're of
-		 no concern to us.  */
-	      continue;
-
-	    if (TREE_CODE (fn) != TEMPLATE_DECL)
-	      /* A full specialization.  There's no need to record
-		 that here.  */
-	      continue;
-
-	    spec_args = tsubst (DECL_TI_ARGS (fn), args,
-				/*complain=*/1, in_decl); 
-	    new_fn
-	      = tsubst (DECL_TEMPLATE_RESULT (most_general_template (fn)), 
-			spec_args, /*complain=*/1, in_decl); 
-	    DECL_TI_TEMPLATE (new_fn) = fn;
-	    register_specialization (new_fn, r, 
-				     INNERMOST_TEMPLATE_ARGS (spec_args));
-	  }
-
 	/* Record this partial instantiation.  */
 	register_specialization (r, t, 
 				 DECL_TI_ARGS (DECL_TEMPLATE_RESULT (r)));

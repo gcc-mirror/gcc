@@ -4729,6 +4729,8 @@ redeclaration_error_message (newdecl, olddecl)
   else if (TREE_CODE (newdecl) == TEMPLATE_DECL)
     {
       if ((TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == FUNCTION_DECL
+	   && (DECL_TEMPLATE_RESULT (newdecl) 
+	       != DECL_TEMPLATE_RESULT (olddecl))
 	   && DECL_INITIAL (DECL_TEMPLATE_RESULT (newdecl))
 	   && DECL_INITIAL (DECL_TEMPLATE_RESULT (olddecl)))
 	  || (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == TYPE_DECL
