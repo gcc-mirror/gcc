@@ -223,45 +223,40 @@ typedef struct rtvec_def{
 (*({ rtx _rtx = (RTX); int _n = (N);					\
      enum rtx_code _code = GET_CODE (_rtx);				\
      if (_n < 0 || _n >= GET_RTX_LENGTH (_code))			\
-       rtl_check_failed_bounds (_rtx, _n, __FILE__, __LINE__,		\
-				__PRETTY_FUNCTION__);			\
+       rtl_check_failed_bounds (_rtx, _n, __FILE__, __LINE__, __FUNCTION__); \
      if (GET_RTX_FORMAT(_code)[_n] != C1)				\
-       rtl_check_failed_type1 (_rtx, _n, C1, __FILE__, __LINE__,	\
-			       __PRETTY_FUNCTION__);			\
+       rtl_check_failed_type1(_rtx, _n, C1, __FILE__, __LINE__, __FUNCTION__); \
      &_rtx->fld[_n]; }))
 
 #define RTL_CHECK2(RTX, N, C1, C2) __extension__			\
 (*({ rtx _rtx = (RTX); int _n = (N);					\
      enum rtx_code _code = GET_CODE (_rtx);				\
      if (_n < 0 || _n >= GET_RTX_LENGTH (_code))			\
-       rtl_check_failed_bounds (_rtx, _n, __FILE__, __LINE__,		\
-				__PRETTY_FUNCTION__);			\
+       rtl_check_failed_bounds (_rtx, _n, __FILE__, __LINE__, __FUNCTION__); \
      if (GET_RTX_FORMAT(_code)[_n] != C1				\
 	 && GET_RTX_FORMAT(_code)[_n] != C2)				\
        rtl_check_failed_type2 (_rtx, _n, C1, C2, __FILE__, __LINE__,	\
-			       __PRETTY_FUNCTION__);			\
+			       __FUNCTION__);				\
      &_rtx->fld[_n]; }))
 
 #define RTL_CHECKC1(RTX, N, C) __extension__				\
 (*({ rtx _rtx = (RTX); int _n = (N);					\
      if (GET_CODE (_rtx) != C)						\
-       rtl_check_failed_code1 (_rtx, C, __FILE__, __LINE__,		\
-			       __PRETTY_FUNCTION__);			\
+       rtl_check_failed_code1 (_rtx, C, __FILE__, __LINE__, __FUNCTION__); \
      &_rtx->fld[_n]; }))
 
 #define RTL_CHECKC2(RTX, N, C1, C2) __extension__			\
 (*({ rtx _rtx = (RTX); int _n = (N);					\
      enum rtx_code _code = GET_CODE (_rtx);				\
      if (_code != C1 && _code != C2)					\
-       rtl_check_failed_code2 (_rtx, C1, C2, __FILE__, __LINE__,	\
-			       __PRETTY_FUNCTION__);			\
+       rtl_check_failed_code2(_rtx, C1, C2, __FILE__, __LINE__, __FUNCTION__); \
      &_rtx->fld[_n]; }))
 
 #define RTVEC_ELT(RTVEC, I) __extension__				\
 (*({ rtvec _rtvec = (RTVEC); int _i = (I);				\
      if (_i < 0 || _i >= GET_NUM_ELEM (_rtvec))				\
        rtvec_check_failed_bounds (_rtvec, _i, __FILE__, __LINE__,	\
-				  __PRETTY_FUNCTION__);			\
+				  __FUNCTION__);			\
      &_rtvec->elem[_i]; }))
 
 extern void rtl_check_failed_bounds PARAMS ((rtx, int,
@@ -1809,11 +1804,7 @@ extern int read_rtx_lineno;
 
 extern void fancy_abort PARAMS ((const char *, int, const char *))
     ATTRIBUTE_NORETURN;
-#if (GCC_VERSION >= 2007)
-#define abort() fancy_abort (__FILE__, __LINE__, __PRETTY_FUNCTION__)
-#else
-#define abort() fancy_abort (__FILE__, __LINE__, 0)
-#endif
+#define abort() fancy_abort (__FILE__, __LINE__, __FUNCTION__)
 
 /* In alias.c */
 extern rtx canon_rtx                    PARAMS ((rtx));

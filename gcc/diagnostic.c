@@ -96,6 +96,9 @@ static void maybe_wrap_text PARAMS ((output_buffer *, const char *,
 static void clear_text_info PARAMS ((output_buffer *));
 static void clear_diagnostic_info PARAMS ((output_buffer *));
 
+static void error_recursion PARAMS ((void)) ATTRIBUTE_NORETURN;
+static const char *trim_filename PARAMS ((const char *));
+
 extern int rtl_dump_and_exit;
 extern int inhibit_warnings;
 extern int warnings_are_errors;
@@ -137,6 +140,10 @@ int diagnostic_message_length_per_line;
 /* Used to control every diagnostic message formatting.  Front-ends should
    call set_message_prefixing_rule to set up their politics.  */
 static int current_prefixing_rule;
+
+/* Prevent recursion into the error handler.  */
+static int diagnostic_lock;
+
 
 /* Initialize the diagnostic message outputting machinery.  */
 
@@ -900,20 +907,25 @@ diagnostic_for_decl (decl, msg, args_ptr, warn)
 {
   output_state os;
 
-  if (!count_error (warn))
-    return;
-  os = diagnostic_buffer->state;
-  report_error_function (DECL_SOURCE_FILE (decl));
-  output_set_prefix
-    (diagnostic_buffer, context_as_prefix
-     (DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl), warn));
-  output_buffer_ptr_to_format_args (diagnostic_buffer) = args_ptr;
-  output_buffer_text_cursor (diagnostic_buffer) = msg;
-  format_with_decl (diagnostic_buffer, decl);
-  finish_diagnostic ();
-  output_destroy_prefix (diagnostic_buffer);
+  if (diagnostic_lock++)
+    error_recursion ();
+
+  if (count_error (warn))
+    {
+      os = diagnostic_buffer->state;
+      report_error_function (DECL_SOURCE_FILE (decl));
+      output_set_prefix
+	(diagnostic_buffer, context_as_prefix
+	 (DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl), warn));
+      output_buffer_ptr_to_format_args (diagnostic_buffer) = args_ptr;
+      output_buffer_text_cursor (diagnostic_buffer) = msg;
+      format_with_decl (diagnostic_buffer, decl);
+      finish_diagnostic ();
+      output_destroy_prefix (diagnostic_buffer);
   
-  diagnostic_buffer->state = os;
+      diagnostic_buffer->state = os;
+    }
+  diagnostic_lock--;
 }
 
 
@@ -1254,17 +1266,6 @@ error VPARAMS ((const char *msgid, ...))
   va_end (ap);
 }
 
-/* Set the function to call when a fatal error occurs.  */
-
-static void (*fatal_function) PARAMS ((const char *, va_list));
-
-void
-set_fatal_function (f)
-     void (*f) PARAMS ((const char *, va_list));
-{
-  fatal_function = f;
-}
-
 /* Report a fatal error at the current line number.  Allow a front end to
    intercept the message.  */
 void
@@ -1274,18 +1275,13 @@ fatal VPARAMS ((const char *msgid, ...))
   const char *msgid;
 #endif
   va_list ap;
-  va_list args_for_fatal_msg;
 
   VA_START (ap, msgid);
 
 #ifndef ANSI_PROTOTYPES
   msgid = va_arg (ap, const char *);
 #endif
-  va_copy (args_for_fatal_msg, ap);
 
-  if (fatal_function != NULL)
-    (*fatal_function) (_(msgid), args_for_fatal_msg);
-  va_end (args_for_fatal_msg);
   report_diagnostic (msgid, &ap, input_filename, lineno, 0);
   va_end (ap);
   exit (FATAL_EXIT_CODE);
@@ -1482,16 +1478,77 @@ report_diagnostic (msg, args_ptr, file, line, warn)
 {
   output_state os;
 
-  if (!count_error (warn))
-    return;
-  os = diagnostic_buffer->state;
-  diagnostic_msg = msg;
-  diagnostic_args = args_ptr;
-  report_error_function (file);
-  output_set_prefix
-    (diagnostic_buffer, context_as_prefix (file, line, warn));
-  output_format (diagnostic_buffer);
-  finish_diagnostic ();
-  output_destroy_prefix (diagnostic_buffer);
-  diagnostic_buffer->state = os;
+  if (diagnostic_lock++)
+    error_recursion ();
+
+  if (count_error (warn))
+    {
+      os = diagnostic_buffer->state;
+      diagnostic_msg = msg;
+      diagnostic_args = args_ptr;
+      report_error_function (file);
+      output_set_prefix
+	(diagnostic_buffer, context_as_prefix (file, line, warn));
+      output_format (diagnostic_buffer);
+      finish_diagnostic ();
+      output_destroy_prefix (diagnostic_buffer);
+      diagnostic_buffer->state = os;
+    }
+
+  diagnostic_lock--;
+}
+
+/* Inform the user that an error occurred while trying to report some
+   other error.  This indicates catastrophic internal inconsistencies,
+   so give up now.  But do try to flush out the previous error.  */
+static void
+error_recursion ()
+{
+  if (diagnostic_lock < 3)
+    finish_diagnostic ();
+
+  fprintf (stderr,
+"Internal compiler error: Error reporting routines re-entered.\n\
+Please submit a full bug report.\n\
+See %s for instructions.\n", GCCBUGURL);
+
+  exit (FATAL_EXIT_CODE);
+}
+
+/* Given a partial pathname as input, return another pathname that
+   shares no directory elements with the pathname of __FILE__.  This
+   is used by fancy_abort() to print `Internal compiler error in expr.c'
+   instead of `Internal compiler error in ../../egcs/gcc/expr.c'.  */
+static const char *
+trim_filename (name)
+     const char *name;
+{
+  static const char this_file[] = __FILE__;
+  const char *p = name, *q = this_file;
+
+  while (*p == *q && *p != 0 && *q != 0) p++, q++;
+  while (p > name && p[-1] != DIR_SEPARATOR
+#ifdef DIR_SEPARATOR_2
+	 && p[-1] != DIR_SEPARATOR_2
+#endif
+	 )
+    p--;
+
+  return p;
+}
+
+/* Report an internal compiler error in a friendly manner and without
+   dumping core.  */
+
+void
+fancy_abort (file, line, function)
+     const char *file;
+     int line;
+     const char *function;
+{
+  fatal (
+"Internal compiler error in %s, at %s:%d\n\
+Please submit a full bug report.\n\
+See %s for instructions.",
+	 function, trim_filename (file), line, GCCBUGURL);
 }

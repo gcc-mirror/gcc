@@ -265,7 +265,7 @@ static void fatal_with_file_and_line PARAMS ((FILE *, const char *, ...))
   ATTRIBUTE_PRINTF_2 ATTRIBUTE_NORETURN;
 static void fatal_expected_char PARAMS ((FILE *, int, int)) ATTRIBUTE_NORETURN;
 static void read_name		PARAMS ((char *, FILE *));
-static const char *trim_filename PARAMS ((const char *));
+
 
 /* Allocate an rtx vector of N elements.
    Store the length, and initialize all elements to zero.  */
@@ -1196,48 +1196,3 @@ rtvec_check_failed_bounds (r, n, file, line, func)
   fancy_abort (file, line, func);
 }
 #endif /* ENABLE_RTL_CHECKING */
-
-/* These are utility functions used by fatal-error functions all over the
-   code.  rtl.c happens to be linked by all the programs that need them,
-   so these are here.  In the future we want to break out all error handling
-   to its own module.  */
-
-/* Given a partial pathname as input, return another pathname that
-   shares no directory elements with the pathname of __FILE__.  This
-   is used by fancy_abort() to print `Internal compiler error in expr.c'
-   instead of `Internal compiler error in ../../egcs/gcc/expr.c'.  */
-static const char *
-trim_filename (name)
-     const char *name;
-{
-  static const char this_file[] = __FILE__;
-  const char *p = name, *q = this_file;
-
-  while (*p == *q && *p != 0 && *q != 0) p++, q++;
-  while (p > name && p[-1] != DIR_SEPARATOR
-#ifdef DIR_SEPARATOR_2
-	 && p[-1] != DIR_SEPARATOR_2
-#endif
-	 )
-    p--;
-
-  return p;
-}
-
-/* Report an internal compiler error in a friendly manner and without
-   dumping core.  */
-
-void
-fancy_abort (file, line, function)
-     const char *file;
-     int line;
-     const char *function;
-{
-  if (function == NULL)
-    function = "?";
-  fatal (
-"Internal compiler error in `%s', at %s:%d\n\
-Please submit a full bug report.\n\
-See %s for instructions.",
-	 function, trim_filename (file), line, GCCBUGURL);
-}

@@ -4249,10 +4249,7 @@ fancy_abort (line, func)
      int line;
      const char *func;
 {
-  if (!func)
-    func = "?";
-  
-  fatal ("Internal error in \"%s\", at tradcpp.c:%d\n\
+  fatal ("Internal error in %s, at tradcpp.c:%d\n\
 Please submit a full bug report.\n\
 See %s for instructions.", func, line, GCCBUGURL);
 }

@@ -180,8 +180,7 @@ extern void varray_check_failed PARAMS ((varray_type, size_t,
 (*({ varray_type _va = VA;					\
      size_t _n = N; 						\
      if (_n >= _va->num_elements)				\
-       varray_check_failed (_va, _n, __FILE__, __LINE__,	\
-			    __PRETTY_FUNCTION__);		\
+       varray_check_failed (_va, _n, __FILE__, __LINE__, __FUNCTION__);	\
      &_va->data.T[_n]; }))
 #else
 #define VARRAY_CHECK(VA, N, T) ((VA)->data.T[N])
