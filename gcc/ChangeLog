@@ -1,3 +1,8 @@
+2001-11-05  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/arm/unknown-elf.h (ASM_OUTPUT_ALIGNED_DECL_LOCAL): Handle
+	DECL being NULL.
+
 Mon Nov  5 16:15:25 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (bb-reoder.o): Add depdendency on cfglayout.h;
