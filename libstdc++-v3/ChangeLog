@@ -1,3 +1,7 @@
+2001-03-15  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* include/bits/basic_string.tcc (operator+): Fix thinko.
+
 2001-03-14  Benjamin Kosnik  <bkoz@redhat.com>
 
 	libstdc++/2020
