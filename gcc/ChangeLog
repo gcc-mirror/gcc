@@ -1,3 +1,8 @@
+2004-10-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-lex.c (cb_def_pragma): Clean up code for making location
+	palatable to diagnostic.c.
+
 2004-10-27  Steven Bosscher  <stevenb@suse.de>
 
 	PR tree-optimization/17757
@@ -25,7 +30,7 @@
 	    patch originally created by Kelley Cook  <kcook@gcc.gnu.org>
 
 	PR middle-end/14684
-	* opts.c (OPT_fprofile_generate): Default to -funroll-loops 
+	* opts.c (OPT_fprofile_generate): Default to -funroll-loops
 	to match -fprofile-use.
 
 2004-10-27  Kazu Hirata  <kazu@cs.umass.edu>
