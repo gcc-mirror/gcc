@@ -3133,18 +3133,6 @@ eliminate_regs (x, mem_mode, insn)
 #endif
 		   )
 		  || (x_size == new_size))
-#ifdef LOAD_EXTEND_OP
-	      /* On these machines we will be reloading what is
-		 inside the SUBREG if it originally was a pseudo and
-		 the inner and outer modes are both a word or
-		 smaller.  So leave the SUBREG then.  */
-	      && ! (GET_CODE (SUBREG_REG (x)) == REG
-		    && x_size <= UNITS_PER_WORD
-		    && new_size <= UNITS_PER_WORD
-		    && x_size > new_size
-		    && INTEGRAL_MODE_P (GET_MODE (new))
-		    && LOAD_EXTEND_OP (GET_MODE (new)) != NIL)
-#endif
 	      )
 	    {
 	      int offset = SUBREG_WORD (x) * UNITS_PER_WORD;

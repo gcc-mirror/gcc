@@ -1189,8 +1189,10 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 		p++;
 		break;
 
+	      case '?':
+		alt_cost += 2;
 	      case '%':
-	      case '?':  case '!':  case '#':
+	      case '!':  case '#':
 	      case '&':
 	      case '0':  case '1':  case '2':  case '3':  case '4':
 	      case 'p':

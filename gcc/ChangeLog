@@ -1,3 +1,16 @@
+Thu Mar 26 18:34:13 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* regclass.c (record_reg_classes): '?' increases cost by two.
+
+	* reload.c (find_reloads): Double previous costs.  Output
+	reloads cost one unit extra.
+
+	* reload1.c (eliminate_regs): Delete LOAD_EXTENDED_OP code that
+	boiled down to && ! 0.
+
+	* reload.c (find_equiv_reg): Also consider a goal offset from the
+	frame pointer to be constant.
+
 Thu Mar 26 17:34:46 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.h (OPTIMIZATION_OPTIONS): Define.
