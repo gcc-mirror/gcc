@@ -1,3 +1,10 @@
+2003-07-08  Mark Wielaard <mark@klomp.org>
+
+	* gcj/cni.h: CNI now expands to Compiled Native Interface.
+
+	* java/lang/e_pow.c: CYGNUS LOCAL should be GCJ LOCAL.
+	* java/lang/fdlibm.h: Likewise.
+
 2003-07-07  Adam Megacz <adam@xwt.org>
 
         * posix.cc: added #include<stdio.h>
