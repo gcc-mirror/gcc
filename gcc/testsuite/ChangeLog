@@ -1,3 +1,7 @@
+2004-08-05  David Edelsohn  <edelsohn@gnu.org>
+
+	* gcc.dg/sh4a-fprun.c: Fix dg-do typo.
+
 2004-08-05  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.c-torture/execute/20040805-1.c: New test.
