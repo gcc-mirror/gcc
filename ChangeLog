@@ -1,3 +1,8 @@
+2002-10-02  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.tpl: Add configure-target (for src-release in src)
+	* Makefile.in: Regenerate.
+
 2002-09-30  Nick Clifton  <nickc@redhat.com>
 
 	* Makefile.in (BINUTILS_SUPPORT_DIRS): Add cpu directory.
