@@ -3320,7 +3320,7 @@ legitimate_pic_operand_p (rtx x)
 int
 legitimate_address_p (enum machine_mode mode, rtx addr, int strict)
 {
-  rtx rs1 = NULL, rs2 = NULL, imm1 = NULL, imm2;
+  rtx rs1 = NULL, rs2 = NULL, imm1 = NULL;
 
   if (REG_P (addr) || GET_CODE (addr) == SUBREG)
     rs1 = addr;
@@ -3384,7 +3384,6 @@ legitimate_address_p (enum machine_mode mode, rtx addr, int strict)
 	       && ! TARGET_CM_MEDMID
 	       && RTX_OK_FOR_OLO10_P (rs2))
 	{
-	  imm2 = rs2;
 	  rs2 = NULL;
 	  imm1 = XEXP (rs1, 1);
 	  rs1 = XEXP (rs1, 0);
@@ -3400,25 +3399,10 @@ legitimate_address_p (enum machine_mode mode, rtx addr, int strict)
       if (! CONSTANT_P (imm1) || tls_symbolic_operand (rs1))
 	return 0;
 
-      if (USE_AS_OFFSETABLE_LO10)
-	{
-	  /* We can't allow TFmode, because an offset greater than or equal to
-	     the alignment (8) may cause the LO_SUM to overflow if !v9.  */
-	  if (mode == TFmode && ! TARGET_V9)
-	    return 0;
-	}
-      else
-        {
-	  /* We prohibit LO_SUM for TFmode when there are no quad move insns
-	     and we consequently need to split.  We do this because LO_SUM
-	     is not an offsettable address.  If we get the situation in reload
-	     where source and destination of a movtf pattern are both MEMs with
-	     LO_SUM address, then only one of them gets converted to an
-	     offsettable address.  */
-	  if (mode == TFmode
-	      && ! (TARGET_FPU && TARGET_ARCH64 && TARGET_HARD_QUAD))
-	    return 0;
-	}
+      /* We can't allow TFmode in 32-bit mode, because an offset greater
+	 than the alignment (8) may cause the LO_SUM to overflow.  */
+      if (mode == TFmode && !TARGET_64BIT)
+	return 0;
     }
   else if (GET_CODE (addr) == CONST_INT && SMALL_INT (addr))
     return 1;
