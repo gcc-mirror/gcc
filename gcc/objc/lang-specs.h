@@ -27,8 +27,8 @@ Boston, MA 02111-1307, USA.  */
    {"%{E|M|MM:cpp -lang-objc %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-        -D__OBJC__ %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2}\
-	%{ansi:-trigraphs -D__STRICT_ANSI__}\
+        -D__OBJC__ %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
+	-D__GNUC_PATCHLEVEL__=%v3} %{ansi:-trigraphs -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
 	%{ffast-math:-D__FAST_MATH__}\
@@ -40,7 +40,8 @@ Boston, MA 02111-1307, USA.  */
     "%{!M:%{!MM:%{!E:cc1obj %i %1 \
 		   %{nostdinc*} %{A*} %{I*} %{P} %I\
                    %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-		   -D__OBJC__ %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2}\
+		   -D__OBJC__ %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
+		   -D__GNUC_PATCHLEVEL__=%v3}\
 		   %{!undef:%{!ansi:%p} %P} %{trigraphs}\
 		   %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
 		   %{ffast-math:-D__FAST_MATH__}\
@@ -58,7 +59,8 @@ Boston, MA 02111-1307, USA.  */
    {"cpp -lang-objc %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-        -D__OBJC__ %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2}\
+        -D__OBJC__ %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
+        -D__GNUC_PATCHLEVEL__=%v3}\
 	 %{ansi:-trigraphs -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
