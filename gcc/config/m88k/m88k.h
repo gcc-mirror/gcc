@@ -83,6 +83,8 @@ enum m88k_instruction {
 
 extern char *m88k_pound_sign;
 extern char *m88k_short_data;
+extern char *m88k_version;
+extern char m88k_volatile_code;
 
 extern int m88k_gp_threshold;
 extern int m88k_prologue_done;
@@ -90,6 +92,7 @@ extern int m88k_function_number;
 extern int m88k_fp_offset;
 extern int m88k_stack_size;
 extern int m88k_case_index;
+extern int m88k_version_0300;
 
 extern struct rtx_def *m88k_compare_reg;
 extern struct rtx_def *m88k_compare_op0;
@@ -206,9 +209,9 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"09/01/92"
+#define VERSION_INFO2	"09/18/92"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	2.2.7.7 09/01/92 17:32:13"
+#define	TM_SCCS_ID	"@(#)m88k.h	2.2.12.2 09/18/92 06:21:09"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -223,7 +226,6 @@ extern char * reg_names[];
 #define MASK_OCS_DEBUG_INFO	0x00000004 /* Emit .tdesc info */
 #define MASK_OCS_FRAME_POSITION	0x00000008 /* Debug frame = CFA, not r30 */
 #define MASK_SVR4		0x00000010 /* Target is AT&T System V.4 */
-#define MASK_VERSION_0300	0x00000020 /* Use version 03.00 syntax */
 #define MASK_NO_UNDERSCORES	0x00000040 /* Don't emit a leading `_' */
 #define MASK_BIG_PIC		0x00000080 /* PIC with large got-rel's -fPIC */
 #define MASK_TRAP_LARGE_SHIFT	0x00000100 /* Trap if shift not <= 31 */
@@ -233,10 +235,13 @@ extern char * reg_names[];
 #define MASK_IDENTIFY_REVISION	0x00001000 /* Emit ident, with GCC rev */
 #define MASK_WARN_PASS_STRUCT	0x00002000 /* Warn about passed structs */
 #define MASK_OPTIMIZE_ARG_AREA	0x00004000 /* Save stack space */
+#define MASK_SERIALIZE_VOLATILE 0x00008000 /* Serialize volatile refs */
+#define MASK_NO_SERIALIZE_VOLATILE 0x00010000 /* Don't serialize */
 
 #define MASK_88000 (MASK_88100 | MASK_88110)
 #define MASK_EITHER_LARGE_SHIFT	(MASK_TRAP_LARGE_SHIFT | \
 				 MASK_HANDLE_LARGE_SHIFT)
+#define MASK_SERIALIZE (MASK_SERIALIZE_VOLATILE | MASK_NO_SERIALIZE_VOLATILE)
 
 #define TARGET_88100   		 ((target_flags & MASK_88000) == MASK_88100)
 #define TARGET_88110		 ((target_flags & MASK_88000) == MASK_88110)
@@ -245,7 +250,6 @@ extern char * reg_names[];
 #define TARGET_OCS_DEBUG_INFO	  (target_flags & MASK_OCS_DEBUG_INFO)
 #define TARGET_OCS_FRAME_POSITION (target_flags & MASK_OCS_FRAME_POSITION)
 #define TARGET_SVR4		  (target_flags & MASK_SVR4)
-#define TARGET_VERSION_0300	  (target_flags & MASK_VERSION_0300)
 #define TARGET_NO_UNDERSCORES	  (target_flags & MASK_NO_UNDERSCORES)
 #define TARGET_BIG_PIC		  (target_flags & MASK_BIG_PIC)
 #define TARGET_TRAP_LARGE_SHIFT   (target_flags & MASK_TRAP_LARGE_SHIFT)
@@ -255,6 +259,7 @@ extern char * reg_names[];
 #define TARGET_IDENTIFY_REVISION  (target_flags & MASK_IDENTIFY_REVISION)
 #define TARGET_WARN_PASS_STRUCT   (target_flags & MASK_WARN_PASS_STRUCT)
 #define TARGET_OPTIMIZE_ARG_AREA  (target_flags & MASK_OPTIMIZE_ARG_AREA)
+#define TARGET_SERIALIZE_VOLATILE (target_flags & MASK_SERIALIZE_VOLATILE)
 
 #define TARGET_EITHER_LARGE_SHIFT (target_flags & MASK_EITHER_LARGE_SHIFT)
 
@@ -273,7 +278,6 @@ extern char * reg_names[];
     { "no-ocs-frame-position",		-MASK_OCS_FRAME_POSITION }, \
     { "svr4",			         MASK_SVR4 }, \
     { "svr3",			        -MASK_SVR4 }, \
-    { "version-03.00",		         MASK_VERSION_0300 }, \
     { "no-underscores",			 MASK_NO_UNDERSCORES }, \
     { "big-pic",			 MASK_BIG_PIC }, \
     { "trap-large-shift",		 MASK_TRAP_LARGE_SHIFT }, \
@@ -285,6 +289,8 @@ extern char * reg_names[];
     { "warn-passed-structs",		 MASK_WARN_PASS_STRUCT }, \
     { "optimize-arg-area",		 MASK_OPTIMIZE_ARG_AREA }, \
     { "no-optimize-arg-area",		-MASK_OPTIMIZE_ARG_AREA }, \
+    { "serialize-volatile",		 MASK_SERIALIZE_VOLATILE }, \
+    { "no-serialize-volatile",		 MASK_NO_SERIALIZE_VOLATILE }, \
     SUBTARGET_SWITCHES \
     /* Default switches */ \
     { "",				 TARGET_DEFAULT }, \
@@ -295,7 +301,8 @@ extern char * reg_names[];
 
 /* Macro to define table for command options with values.  */
 
-#define TARGET_OPTIONS { { "short-data-", &m88k_short_data } }
+#define TARGET_OPTIONS { { "short-data-", &m88k_short_data }, \
+			 { "version-", &m88k_version } }
 
 /* Do any checking or such that is needed after processing the -m switches.  */
 
@@ -309,18 +316,35 @@ extern char * reg_names[];
     m88k_cpu = (TARGET_88000 ? CPU_M88000				     \
 		: (TARGET_88100 ? CPU_M88100 : CPU_M88110));		     \
 									     \
+    if (! TARGET_88100 && (target_flags & MASK_SERIALIZE) == 0)		     \
+      target_flags |= MASK_SERIALIZE_VOLATILE;				     \
+									     \
+    if ((target_flags & MASK_NO_SERIALIZE_VOLATILE) != 0)		     \
+      target_flags &= ~MASK_SERIALIZE_VOLATILE;				     \
+									     \
     if (TARGET_BIG_PIC)							     \
       flag_pic = 2;							     \
 									     \
     if ((target_flags & MASK_EITHER_LARGE_SHIFT) == MASK_EITHER_LARGE_SHIFT) \
       error ("-mtrap-large-shift and -mhandle-large-shift are incompatible");\
 									     \
+    m88k_version_0300 = (m88k_version != 0				     \
+			 && strcmp (m88k_version, "03.00") >= 0);	     \
+									     \
     if (VERSION_0300_SYNTAX)						     \
       {									     \
 	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)			     \
 	  reg_names[i]--;						     \
 	m88k_pound_sign = "#";						     \
+	if (m88k_version == 0)						     \
+	  m88k_version = "03.00";		        		     \
+	else if (strcmp (m88k_version, "03.00") < 0)			     \
+	  error ("Specified assembler version (%s) is less that 03.00",	     \
+		 m88k_version);						     \
       }									     \
+									     \
+    m88k_version_0300 = (m88k_version != 0				     \
+			 && strcmp (m88k_version, "03.00") >= 0);	     \
 									     \
     if (m88k_short_data)						     \
       {									     \
@@ -1482,10 +1506,22 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
    so give the MEM rtx word mode.  */
 #define FUNCTION_MODE SImode
 
-/* A barrier will be aligned so account for the possible expansion.  */
-#define ADJUST_INSN_LENGTH(INSN, LENGTH)	\
-  if (GET_CODE (INSN) == BARRIER)		\
+/* A barrier will be aligned so account for the possible expansion.  A
+   volatile memory reference may be preceeded by a serializing instruction.  */
+#define ADJUST_INSN_LENGTH(RTX, LENGTH)					\
+  if (GET_CODE (RTX) == BARRIER						\
+      || (TARGET_SERIALIZE_VOLATILE					\
+	  && GET_CODE (RTX) == INSN					\
+	  && GET_CODE (PATTERN (RTX)) == SET				\
+	  && ((GET_CODE (SET_SRC (PATTERN (RTX))) == MEM		\
+	       && MEM_VOLATILE_P (SET_SRC (PATTERN (RTX))))		\
+	      || (GET_CODE (SET_DEST (PATTERN (RTX))) == MEM		\
+		  && MEM_VOLATILE_P (SET_DEST (PATTERN (RTX)))))))	\
     LENGTH += 1;
+
+/* Track the state of the last volatile memory reference.  Clear the
+   state with CC_STATUS_INIT for now.  */
+#define CC_STATUS_INIT m88k_volatile_code = '\0'
 
 /* Compute the cost of computing a constant rtl expression RTX
    whose rtx-code is CODE.  The body of this macro is a portion
@@ -1699,8 +1735,8 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 
 #define ASM_FIRST_LINE(FILE)						\
   do {									\
-    if (VERSION_0300_SYNTAX)						\
-      fprintf (FILE, "\t%s\t \"03.00\"\n", VERSION_ASM_OP);		\
+    if (m88k_version)							\
+      fprintf (FILE, "\t%s\t \"%s\"\n", VERSION_ASM_OP, m88k_version);	\
   } while (0)
 
 /* Override svr[34].h.  */
@@ -2315,7 +2351,8 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define INIT_SECTION_FUNCTION
 #define FINI_SECTION_FUNCTION
 
-#elif defined(USING_SVR3_H)
+#else
+#if defined(USING_SVR3_H)
 
 #define EXTRA_SECTIONS in_const, in_tdesc, in_sdata, in_ctors, in_dtors, \
 		       in_init, in_fini
@@ -2335,6 +2372,7 @@ const_section ()							\
 #define INIT_SECTION_FUNCTION
 #define FINI_SECTION_FUNCTION
 
+#endif /* USING_SVR3_H */
 #endif /* USING_SVR4_H */
 
 #undef	EXTRA_SECTION_FUNCTIONS
