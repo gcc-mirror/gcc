@@ -526,21 +526,19 @@ expand_name_space (list, len)
      unsigned int len;
 {
   const U_CHAR *old_namebuf;
-  ptrdiff_t delta;
 
   old_namebuf = list->namebuf;
   list->name_cap += len;
   list->namebuf = (unsigned char *) xrealloc (list->namebuf, list->name_cap);
 
   /* Fix up token text pointers.  */
-  delta = list->namebuf - old_namebuf;
-  if (delta)
+  if (list->namebuf != old_namebuf)
     {
       unsigned int i;
 
       for (i = 0; i < list->tokens_used; i++)
 	if (token_spellings[list->tokens[i].type].type > SPELL_NONE)
-	  list->tokens[i].val.name.text += delta;
+	  list->tokens[i].val.name.text += (list->namebuf - old_namebuf);
     }
 }
 
