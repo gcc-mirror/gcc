@@ -24,6 +24,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 %{
 #include "config.h"
 #include "system.h"
+#include "intl.h"
 #include "tradcpp.h"
 #include <setjmp.h>
 
@@ -533,10 +534,10 @@ parse_escape (string_ptr)
 }
 
 static void
-yyerror (s)
-     const char *s;
+yyerror (msgid)
+     const char *msgid;
 {
-  error ("%s", s);
+  error ("%s", _(msgid));
   longjmp (parse_return_error, 1);
 }
 

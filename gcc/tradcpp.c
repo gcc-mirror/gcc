@@ -25,6 +25,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cppdefault.h"
 #include "tradcpp.h"
 #include "mkdeps.h"
+#include "intl.h"
 
 typedef unsigned char U_CHAR;
 
@@ -382,7 +383,7 @@ static int comp_def_part	 PARAMS ((int, const U_CHAR *, int,
 static void delete_macro	 PARAMS ((HASHNODE *));
 
 /* First arg to v_message.  */
-enum msgtype { WARNING = 0, ERROR, FATAL };
+enum msgtype { MT_WARNING = 0, MT_ERROR, MT_FATAL };
 static void v_message		 PARAMS ((enum msgtype mtype, int line,
 					  const char *msgid, va_list ap))
      ATTRIBUTE_PRINTF (3, 0);
@@ -537,6 +538,8 @@ main (argc, argv)
   no_output = 0;
 
   max_include_len = cpp_GCC_INCLUDE_DIR_len + 7;  /* ??? */
+
+  gcc_init_libintl ();
 
   /* It's simplest to just create this struct whether or not it will
      be needed.  */
@@ -4654,7 +4657,7 @@ v_message (mtype, line, msgid, ap)
   const char *fname = 0;
   int i;
 
-  if (mtype == WARNING && inhibit_warnings)
+  if (mtype == MT_WARNING && inhibit_warnings)
     return;
 
   for (i = indepth; i >= 0; i--)
@@ -4670,13 +4673,13 @@ v_message (mtype, line, msgid, ap)
   else
     fprintf (stderr, "%s: ", progname);
 
-  if (mtype == WARNING)
-    fputs ("warning: ", stderr);
+  if (mtype == MT_WARNING)
+    fputs (_("warning: "), stderr);
 
-  vfprintf (stderr, msgid, ap);
+  vfprintf (stderr, _(msgid), ap);
   putc ('\n', stderr);
 
-  if (mtype == ERROR)
+  if (mtype == MT_ERROR)
     errors++;
 }
 
@@ -4689,7 +4692,7 @@ error VPARAMS ((const char *msgid, ...))
   VA_OPEN(ap, msgid);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  v_message (ERROR, 0, msgid, ap);
+  v_message (MT_ERROR, 0, msgid, ap);
   VA_CLOSE (ap);
 }
 
@@ -4700,7 +4703,7 @@ error_with_line VPARAMS ((int line, const char *msgid, ...))
   VA_FIXEDARG (ap, int, line);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  v_message (ERROR, line, msgid, ap);
+  v_message (MT_ERROR, line, msgid, ap);
   VA_CLOSE (ap);
 }
 
@@ -4719,7 +4722,7 @@ warning VPARAMS ((const char *msgid, ...))
   VA_OPEN(ap, msgid);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  v_message (WARNING, 0, msgid, ap);
+  v_message (MT_WARNING, 0, msgid, ap);
   VA_CLOSE (ap);
 }
 
@@ -4729,7 +4732,7 @@ fatal VPARAMS ((const char *msgid, ...))
   VA_OPEN(ap, msgid);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  v_message (FATAL, 0, msgid, ap);
+  v_message (MT_FATAL, 0, msgid, ap);
   VA_CLOSE (ap);
   exit (FATAL_EXIT_CODE);
 }

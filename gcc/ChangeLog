@@ -1,3 +1,13 @@
+2001-10-29  Zack Weinberg  <zack@codesourcery.com>
+
+	* tradcpp.c: Include intl.h.  Rename WARNING, ERROR, FATAL to
+	MT_WARNING, MT_ERROR, MT_FATAL.
+	(main): Call gcc_init_libintl.
+	(v_message): Call gettext on msgid and "warning: "
+	* tradcif.y: Include intl.h.
+	(yyerror): Make parameter definition consistent with
+	prototype.  Call gettext on msgid argument.
+
 2001-10-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* combine.c (num_sign_bit_copies): Avoid signed/unsigned
