@@ -911,7 +911,8 @@ namespace std
       static float denorm_min() throw()
       { return __FLT_DENORM_MIN__; }
 
-      static const bool is_iec559 = has_infinity && has_quiet_NaN;
+      static const bool is_iec559
+	= has_infinity && has_quiet_NaN && has_denorm == denorm_present;
       static const bool is_bounded = true;
       static const bool is_modulo = false;
 
@@ -968,7 +969,8 @@ namespace std
       static double denorm_min() throw()
       { return __DBL_DENORM_MIN__; }
 
-      static const bool is_iec559 = has_infinity && has_quiet_NaN;
+      static const bool is_iec559
+	= has_infinity && has_quiet_NaN && has_denorm == denorm_present;
       static const bool is_bounded = true;
       static const bool is_modulo = false;
 
@@ -1026,7 +1028,8 @@ namespace std
       static long double denorm_min() throw()
       { return __LDBL_DENORM_MIN__; }
 
-      static const bool is_iec559 = has_infinity && has_quiet_NaN;
+      static const bool is_iec559
+	= has_infinity && has_quiet_NaN && has_denorm == denorm_present;
       static const bool is_bounded = true;
       static const bool is_modulo = false;
 
