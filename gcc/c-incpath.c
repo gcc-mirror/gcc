@@ -1,6 +1,6 @@
 /* Set up combined include path chain for the preprocessor.
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
    Broken out of cppinit.c and cppfiles.c and rewritten Mar 2003.
 
@@ -332,7 +332,7 @@ add_path (char *path, int chain, int cxx_aware, bool user_supplied_p)
 
 #if defined (HAVE_DOS_BASED_FILE_SYSTEM)
   /* Convert all backslashes to slashes.  The native CRT stat()
-     function does not recognise a directory that ends in a backslash
+     function does not recognize a directory that ends in a backslash
      (unless it is a drive root dir, such "c:\").  Forward slashes,
      trailing or otherwise, cause no problems for stat().  */
   char* c;

@@ -1,6 +1,6 @@
 /* Definitions for c-common.c.
    Copyright (C) 1987, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -241,7 +241,7 @@ extern c_language_kind c_language;
 /* Information about a statement tree.  */
 
 struct stmt_tree_s GTY(()) {
-  /* The current statment list being collected.  */
+  /* The current statement list being collected.  */
   tree x_cur_stmt_list;
 
   /* In C++, Nonzero if we should treat statements as full
@@ -272,9 +272,9 @@ struct c_language_function GTY(()) {
   struct stmt_tree_s x_stmt_tree;
 };
 
-/* When building a statement-tree, this is the current statment list
+/* When building a statement-tree, this is the current statement list
    being collected.  It's TREE_CHAIN is a back-pointer to the previous
-   statment list.  */
+   statement list.  */
 
 #define cur_stmt_list (current_stmt_tree ()->x_cur_stmt_list)
 

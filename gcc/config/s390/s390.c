@@ -600,7 +600,7 @@ s390_select_ccmode (enum rtx_code code, rtx op0, rtx op1)
 
  	/* If constants are involved in an add instruction it is possible to use
  	   the resulting cc for comparisons with zero. Knowing the sign of the
-	   constant the overflow behaviour gets predictable. e.g.:
+	   constant the overflow behavior gets predictable. e.g.:
  	     int a, b; if ((b = a + c) > 0)  
  	   with c as a constant value: c < 0 -> CCAN and c >= 0 -> CCAP  */
 	if (GET_CODE (op0) == PLUS && GET_CODE (XEXP (op0, 1)) == CONST_INT

@@ -1,6 +1,6 @@
 ;; Machine description for GNU compiler, VAX Version
 ;; Copyright (C) 1987, 1988, 1991, 1994, 1995, 1996, 1998, 1999, 2000, 2001,
-;; 2002, 2004 Free Software Foundation, Inc.
+;; 2002, 2004, 2005 Free Software Foundation, Inc.
 
 ;; This file is part of GCC.
 
@@ -2007,7 +2007,7 @@
 })
 
 ;; This insn is a bit of a lier.  It actually falls through if no case
-;; matches.  But, we prevent that from ever happening by emiting a jump
+;; matches.  But, we prevent that from ever happening by emitting a jump
 ;; before this, see the define_expand above.
 (define_insn "casesi1"
   [(match_operand:SI 1 "const_int_operand" "n")

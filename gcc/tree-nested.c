@@ -1,5 +1,5 @@
 /* Nested function decomposition for trees.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -636,7 +636,7 @@ walk_all_functions (walk_tree_fn callback, struct nesting_info *root)
   while (root);
 }
 
-/* We have to check for a fairly pathalogical case.  The operands of function
+/* We have to check for a fairly pathological case.  The operands of function
    nested function are to be interpreted in the context of the enclosing
    function.  So if any are variably-sized, they will get remapped when the
    enclosing function is inlined.  But that remapping would also have to be

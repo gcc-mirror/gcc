@@ -5392,7 +5392,7 @@ fold_binary_op_with_conditional_arg (enum tree_code code, tree type,
   tree rhs = NULL_TREE;
 
   /* This transformation is only worthwhile if we don't have to wrap
-     arg in a SAVE_EXPR, and the operation can be simplified on atleast
+     arg in a SAVE_EXPR, and the operation can be simplified on at least
      one of the branches once its pushed inside the COND_EXPR.  */
   if (!TREE_CONSTANT (arg))
     return NULL_TREE;

@@ -487,7 +487,7 @@ DEFTREECODE (TARGET_EXPR, "target_expr", tcc_expression, 4)
    have VOID_TYPE.  The same constraints apply to operand 2.  */
 DEFTREECODE (COND_EXPR, "cond_expr", tcc_expression, 3)
 
-/* Vector conditional expresion. It is like COND_EXPR, but with
+/* Vector conditional expression. It is like COND_EXPR, but with
    vector operands.
 
    A = VEC_COND_EXPR ( X < Y, B, C)

@@ -1,6 +1,7 @@
 /* Subroutines used for code generation on Ubicom IP2022
    Communications Controller.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005
+   Free Software Foundation, Inc.
    Contributed by Red Hat, Inc and Ubicom, Inc.
 
    This file is part of GCC.
@@ -5245,7 +5246,7 @@ mdr_try_wreg_elim (first_insn)
 #endif /* IP2K_MD_REORG_PASS */
 
 /* We perform a lot of untangling of the RTL within the reorg pass since
-   the IP2k requires some really bizarre (and really undesireable) things
+   the IP2k requires some really bizarre (and really undesirable) things
    to happen in order to guarantee not aborting.  This pass causes several
    earlier passes to be re-run as it progressively transforms things,
    making the subsequent runs continue to win.  */
