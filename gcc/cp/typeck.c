@@ -64,6 +64,7 @@ static tree get_delta_difference PROTO((tree, tree, int));
 static int comp_cv_target_types PROTO((tree, tree, int));
 static void casts_away_constness_r PROTO((tree *, tree *));
 static int casts_away_constness PROTO ((tree, tree));
+static void maybe_warn_about_returning_address_of_local PROTO ((tree));
 
 /* Return the target type of TYPE, which means return T for:
    T*, T&, T[], T (...), and otherwise, just T.  */
@@ -6639,6 +6640,222 @@ c_expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   emit_queue ();
 }
 
+/* If RETVAL is the address of, or a reference to, a local variable or
+   temporary give an appropraite warning.  */
+
+static void
+maybe_warn_about_returning_address_of_local (retval)
+     tree retval;
+{
+  tree valtype = TREE_TYPE (DECL_RESULT (current_function_decl));
+
+  if (TREE_CODE (valtype) == REFERENCE_TYPE)
+    {
+      tree whats_returned;
+
+      /* Sort through common things to see what it is
+	 we are returning.  */
+      whats_returned = retval;
+      if (TREE_CODE (whats_returned) == COMPOUND_EXPR)
+	{
+	  whats_returned = TREE_OPERAND (whats_returned, 1);
+	  if (TREE_CODE (whats_returned) == ADDR_EXPR)
+	    whats_returned = TREE_OPERAND (whats_returned, 0);
+	}
+      while (TREE_CODE (whats_returned) == CONVERT_EXPR
+	     || TREE_CODE (whats_returned) == NOP_EXPR)
+	whats_returned = TREE_OPERAND (whats_returned, 0);
+      if (TREE_CODE (whats_returned) == ADDR_EXPR)
+	{
+	  whats_returned = TREE_OPERAND (whats_returned, 0);
+	  while (TREE_CODE (whats_returned) == AGGR_INIT_EXPR
+		 || TREE_CODE (whats_returned) == TARGET_EXPR)
+	    {
+	      /* Get the target.  */
+	      whats_returned = TREE_OPERAND (whats_returned, 0);
+	      warning ("returning reference to temporary");
+	    }
+	}
+
+      if (TREE_CODE (whats_returned) == VAR_DECL 
+	  && DECL_NAME (whats_returned))
+	{
+	  if (TEMP_NAME_P (DECL_NAME (whats_returned)))
+	    warning ("reference to non-lvalue returned");
+	  else if (TREE_CODE (TREE_TYPE (whats_returned)) != REFERENCE_TYPE
+		   && DECL_FUNCTION_SCOPE_P (whats_returned)
+		   && !(TREE_STATIC (whats_returned)
+			|| TREE_PUBLIC (whats_returned)))
+	    cp_warning_at ("reference to local variable `%D' returned", 
+			   whats_returned);
+	}
+    }
+  else if (TREE_CODE (retval) == ADDR_EXPR)
+    {
+      tree whats_returned = TREE_OPERAND (retval, 0);
+
+      if (TREE_CODE (whats_returned) == VAR_DECL
+	  && DECL_NAME (whats_returned)
+	  && DECL_FUNCTION_SCOPE_P (whats_returned)
+	  && !(TREE_STATIC (whats_returned)
+	       || TREE_PUBLIC (whats_returned)))
+	cp_warning_at ("address of local variable `%D' returned", 
+		       whats_returned);
+    }
+}
+
+/* Check that returning RETVAL from the current function is legal.
+   Return an expression explicitly showing all conversions required to
+   change RETVAL into the function return type, and to assign it to
+   the DECL_RESULT for the function.  */
+
+tree
+check_return_expr (retval)
+     tree retval;
+{
+  tree result;
+  /* The type actually returned by the function, after any
+     promotions.  */
+  tree valtype;
+  int fn_returns_value_p;
+
+  /* A `volatile' function is one that isn't supposed to return, ever.
+     (This is a G++ extension, used to get better code for functions
+     that call the `volatile' function.)  */
+  if (TREE_THIS_VOLATILE (current_function_decl))
+    warning ("function declared `noreturn' has a `return' statement");
+
+  /* Check for various simple errors.  */
+  if (retval == error_mark_node)
+    {
+      /* If an error occurred, there's nothing to do.  */
+      current_function_returns_null = 1;
+      return error_mark_node;
+    }
+  else if (dtor_label)
+    {
+      if (retval)
+	error ("returning a value from a destructor");
+      return NULL_TREE;
+    }
+  else if (in_function_try_handler
+	   && DECL_CONSTRUCTOR_P (current_function_decl))
+    {
+      /* If a return statement appears in a handler of the
+         function-try-block of a constructor, the program is ill-formed. */
+      error ("cannot return from a handler of a function-try-block of a constructor");
+      return error_mark_node;
+    }
+  else if (retval && DECL_CONSTRUCTOR_P (current_function_decl))
+    /* You can't return a value from a constructor.  */
+    error ("returning a value from a constructor");
+
+  /* Constructors actually always return `this', even though in C++
+     you can't return a value from a constructor.  */
+  if (DECL_CONSTRUCTOR_P (current_function_decl))
+    retval = current_class_ptr;
+
+  /* When no explicit return-value is given in a function with a named
+     return value, the named return value is used.  */
+  result = DECL_RESULT (current_function_decl);
+  valtype = TREE_TYPE (result);
+  my_friendly_assert (valtype != NULL_TREE, 19990924);
+  fn_returns_value_p = !same_type_p (valtype, void_type_node);
+  if (!retval && DECL_NAME (result) && fn_returns_value_p)
+    retval = result;
+
+  /* Check for a return statement with no return value in a function
+     that's supposed to return a value.  */
+  if (!retval && fn_returns_value_p)
+    {
+      pedwarn ("`return' with no value, in function returning non-void");
+      /* Clear this, so finish_function won't say that we reach the
+	 end of a non-void function (which we don't, we gave a
+	 return!).  */
+      current_function_returns_null = 0;
+    }
+  /* Check for a return statement with a value in a function that
+     isn't supposed to return a value.  */
+  else if (retval && !fn_returns_value_p)
+    {     
+      if (same_type_p (TREE_TYPE (retval), void_type_node))
+	/* You can return a `void' value from a function of `void'
+	   type.  In that case, we have to evaluate the expression for
+	   its side-effects.  */
+	  finish_expr_stmt (retval);
+      else
+	pedwarn ("`return' with a value, in function returning void");
+
+      current_function_returns_null = 1;
+
+      /* There's really no value to return, after all.  */
+      return NULL_TREE;
+    }
+  else if (!retval)
+    /* Remember that this function can sometimes return without a
+       value.  */
+    current_function_returns_null = 1;
+
+  /* Only operator new(...) throw(), can return NULL [expr.new/13].  */
+  if ((DECL_NAME (current_function_decl) == ansi_opname[(int) NEW_EXPR]
+       || DECL_NAME (current_function_decl) == ansi_opname[(int) VEC_NEW_EXPR])
+      && !TYPE_NOTHROW_P (TREE_TYPE (current_function_decl))
+      && null_ptr_cst_p (retval))
+    cp_warning ("operator new should throw an exception, not return NULL");
+
+  /* Effective C++ rule 15.  See also start_function.  */
+  if (warn_ecpp
+      && DECL_NAME (current_function_decl) == ansi_opname[(int) MODIFY_EXPR]
+      && retval != current_class_ref)
+    cp_warning ("`operator=' should return a reference to `*this'");
+
+  /* We don't need to do any conversions when there's nothing being
+     returned.  */
+  if (!retval)
+    return NULL_TREE;
+
+  /* Do any required conversions.  */
+  if (retval == result || DECL_CONSTRUCTOR_P (current_function_decl))
+    /* No conversions are required.  */
+    ;
+  else
+    {
+      /* The type the function is declared to return.  */
+      tree functype = TREE_TYPE (TREE_TYPE (current_function_decl));
+
+      /* First convert the value to the function's return type, then
+	 to the type of return value's location to handle the
+         case that functype is thiner than the valtype. */
+      retval = convert_for_initialization
+	(NULL_TREE, functype, retval, LOOKUP_NORMAL|LOOKUP_ONLYCONVERTING,
+	 "return", NULL_TREE, 0);
+      retval = convert (valtype, retval);
+
+      /* If the conversion failed, treat this just like `return;'.  */
+      if (retval == error_mark_node)
+	return NULL_TREE;
+      /* We can't initialize a register from a AGGR_INIT_EXPR.  */
+      else if (! current_function_returns_struct
+	       && TREE_CODE (retval) == TARGET_EXPR
+	       && TREE_CODE (TREE_OPERAND (retval, 1)) == AGGR_INIT_EXPR)
+	retval = build (COMPOUND_EXPR, TREE_TYPE (retval), retval,
+			TREE_OPERAND (retval, 0));
+      else
+	maybe_warn_about_returning_address_of_local (retval);
+    }
+  
+  /* Actually copy the value returned into the appropriate location.  */
+  if (retval && retval != result)
+    {
+      retval = build (INIT_EXPR, TREE_TYPE (result), result, retval);
+      TREE_SIDE_EFFECTS (retval) = 1;
+    }
+
+  /* All done.  Remember that this function did return a value.  */
+  current_function_returns_value = 1;
+  return retval;
+}
+
 /* Expand a C `return' statement.
    RETVAL is the expression for what to return,
    or a null pointer for `return;' with no value.
@@ -6654,215 +6871,14 @@ void
 c_expand_return (retval)
      tree retval;
 {
-  tree result = DECL_RESULT (current_function_decl);
-  tree valtype = TREE_TYPE (result);
-
-  if (TREE_THIS_VOLATILE (current_function_decl))
-    warning ("function declared `noreturn' has a `return' statement");
-
-  if (retval == error_mark_node)
-    {
-      current_function_returns_null = 1;
-      return;
-    }
-
-  if (dtor_label)
-    {
-      if (retval)
-	error ("returning a value from a destructor");
-
-      /* Can't just return from a destructor.  */
-      expand_goto (dtor_label);
-      return;
-    }
-  else if (in_function_try_handler
-	   && DECL_CONSTRUCTOR_P (current_function_decl))
-    {
-      /* If a return statement appears in a handler of the
-         function-try-block of a constructor, the program is ill-formed. */
-      error ("cannot return from a handler of a function-try-block of a constructor");
-      return;
-    }
-
-  /* Only operator new(...) throw(), can return NULL [expr.new/13].  */
-  if ((DECL_NAME (current_function_decl) == ansi_opname[(int) NEW_EXPR]
-       || DECL_NAME (current_function_decl) == ansi_opname[(int) VEC_NEW_EXPR])
-      && !TYPE_NOTHROW_P (TREE_TYPE (current_function_decl))
-      && null_ptr_cst_p (retval))
-    cp_warning ("operator new should throw an exception, not return NULL");
-  
-  if (retval == NULL_TREE)
-    {
-      /* A non-named return value does not count.  */
-
-      if (DECL_CONSTRUCTOR_P (current_function_decl))
-	retval = current_class_ptr;
-      else if (DECL_NAME (result) != NULL_TREE
-	       && TREE_CODE (valtype) != VOID_TYPE)
-	retval = result;
-      else
-	{
-	  current_function_returns_null = 1;
-
-	  if (valtype != NULL_TREE && TREE_CODE (valtype) != VOID_TYPE)
-	    {
-	      if (DECL_NAME (DECL_RESULT (current_function_decl)) == NULL_TREE)
-		{
-		  pedwarn ("`return' with no value, in function returning non-void");
-		  /* Clear this, so finish_function won't say that we
-		     reach the end of a non-void function (which we don't,
-		     we gave a return!).  */
-		  current_function_returns_null = 0;
-		}
-	    }
-
-	  expand_null_return ();
-	  return;
-	}
-    }
-  else if (DECL_CONSTRUCTOR_P (current_function_decl))
-    {
-      error ("returning a value from a constructor");
-      retval = current_class_ptr;
-    }
-
-  /* Effective C++ rule 15.  See also start_function.  */
-  if (warn_ecpp
-      && DECL_NAME (current_function_decl) == ansi_opname[(int) MODIFY_EXPR]
-      && retval != current_class_ref)
-    cp_warning ("`operator=' should return a reference to `*this'");
-
-  if (valtype == NULL_TREE || TREE_CODE (valtype) == VOID_TYPE)
-    {
-      current_function_returns_null = 1;
-      if (TREE_CODE (TREE_TYPE (retval)) != VOID_TYPE)
-	pedwarn ("`return' with a value, in function returning void");
-      expand_return (retval);
-      return;
-    }
-  
-  /* Now deal with possible C++ hair:
-     (1) Compute the return value.
-     (2) If there are aggregate values with destructors which
-     must be cleaned up, clean them (taking care
-     not to clobber the return value).
-     (3) If an X(X&) constructor is defined, the return
-     value must be returned via that.  */
-
-  if (retval == result
-      || DECL_CONSTRUCTOR_P (current_function_decl))
-    /* It's already done for us.  */;
-  else if (TREE_CODE (TREE_TYPE (retval)) == VOID_TYPE)
-    {
-      pedwarn ("return of void value in function returning non-void");
-      expand_expr_stmt (retval);
-      retval = 0;
-    }
+  if (!retval)
+    expand_null_return ();
   else
     {
-      tree functype = TREE_TYPE (TREE_TYPE (current_function_decl));
-
-      /* First convert the value to the function's return type, then
-	 to the type of return value's location to handle the
-         case that functype is thiner than the valtype. */
-
-      retval = convert_for_initialization
-	(NULL_TREE, functype, retval, LOOKUP_NORMAL|LOOKUP_ONLYCONVERTING,
-	 "return", NULL_TREE, 0);
-
-      retval = convert (valtype, retval);
-
-      if (retval == error_mark_node)
-	{
-	  /* Avoid warning about control reaching end of function.  */
-	  expand_null_return ();
-	  return;
-	}
-
-      /* We can't initialize a register from a AGGR_INIT_EXPR.  */
-      else if (! current_function_returns_struct
-	       && TREE_CODE (retval) == TARGET_EXPR
-	       && TREE_CODE (TREE_OPERAND (retval, 1)) == AGGR_INIT_EXPR)
-	retval = build (COMPOUND_EXPR, TREE_TYPE (retval), retval,
-			TREE_OPERAND (retval, 0));
-
-      /* Add some useful error checking for C++.  */
-      else if (TREE_CODE (valtype) == REFERENCE_TYPE)
-	{
-	  tree whats_returned;
-
-	  /* Sort through common things to see what it is
-	     we are returning.  */
-	  whats_returned = retval;
-	  if (TREE_CODE (whats_returned) == COMPOUND_EXPR)
-	    {
-	      whats_returned = TREE_OPERAND (whats_returned, 1);
-	      if (TREE_CODE (whats_returned) == ADDR_EXPR)
-		whats_returned = TREE_OPERAND (whats_returned, 0);
-	    }
-	  while (TREE_CODE (whats_returned) == CONVERT_EXPR
-		 || TREE_CODE (whats_returned) == NOP_EXPR)
-	    whats_returned = TREE_OPERAND (whats_returned, 0);
-	  if (TREE_CODE (whats_returned) == ADDR_EXPR)
-	    {
-	      whats_returned = TREE_OPERAND (whats_returned, 0);
-	      while (TREE_CODE (whats_returned) == AGGR_INIT_EXPR
-		     || TREE_CODE (whats_returned) == TARGET_EXPR)
-		{
-		  /* Get the target.  */
-		  whats_returned = TREE_OPERAND (whats_returned, 0);
-		  warning ("returning reference to temporary");
-		}
-	    }
-
-	  if (TREE_CODE (whats_returned) == VAR_DECL && DECL_NAME (whats_returned))
-	    {
-	      if (TEMP_NAME_P (DECL_NAME (whats_returned)))
-		warning ("reference to non-lvalue returned");
-	      else if (TREE_CODE (TREE_TYPE (whats_returned)) != REFERENCE_TYPE
-		       && DECL_FUNCTION_SCOPE_P (whats_returned)
-		       && !(TREE_STATIC (whats_returned)
-			    || TREE_PUBLIC (whats_returned)))
-		cp_warning_at ("reference to local variable `%D' returned", whats_returned);
-	    }
-	}
-      else if (TREE_CODE (retval) == ADDR_EXPR)
-	{
-	  tree whats_returned = TREE_OPERAND (retval, 0);
-
-	  if (TREE_CODE (whats_returned) == VAR_DECL
-	      && DECL_NAME (whats_returned)
-	      && DECL_FUNCTION_SCOPE_P (whats_returned)
-	      && !(TREE_STATIC (whats_returned)
-		   || TREE_PUBLIC (whats_returned)))
-	    cp_warning_at ("address of local variable `%D' returned", whats_returned);
-	}
+      expand_start_target_temps ();
+      expand_return (retval);
+      expand_end_target_temps ();
     }
-
-  if (retval != NULL_TREE
-      && TREE_CODE_CLASS (TREE_CODE (retval)) == 'd'
-      && ! in_control_zone_p ())
-    current_function_return_value = retval;
-
-  if (ctor_label && TREE_CODE (ctor_label) != ERROR_MARK)
-    {
-      /* Here RETVAL is CURRENT_CLASS_PTR, so there's nothing to do.  */
-      expand_goto (ctor_label);
-    }
-
-  if (retval && retval != result)
-    {
-      result = build (INIT_EXPR, TREE_TYPE (result), result, retval);
-      TREE_SIDE_EFFECTS (result) = 1;
-    }
-
-  expand_start_target_temps ();
-
-  expand_return (result);
-
-  expand_end_target_temps ();
-
-  current_function_returns_value = 1;
 }
 
 /* Start a C switch statement, testing expression EXP.
