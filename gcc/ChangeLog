@@ -1,3 +1,15 @@
+2003-07-03  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* cfglayout.c (cfg_layout_duplicate_bb): Do not update frequencies
+	at all if edge is not specified.
+	(can_copy_bbs_p, copy_bbs): New.
+	* cfglayout.h (can_copy_bbs_p, copy_bbs): Declare.
+	* cfgloop.c (get_loop_body): Comment more precisely.
+	* cfgloopmanip.c (copy_bbs, record_exit_edges): Removed.
+	(scale_bbs_frequencies): Fix comment typo.
+	(can_duplicate_loop_p): Use can_copy_bbs_p.
+	(duplicate_loop_to_header_edge): Simplify by using copy_bbs.
+
 2003-07-03  Devang Patel <dpatel@apple.com>
 
 	* c-opts.c (c_common_parse_file): Remove extra
