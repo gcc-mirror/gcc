@@ -1,5 +1,9 @@
 Tue Sep 29 09:57:26 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* combine.c (simplify_comparison, case AND): Properly check for
+	SUBREG of a low part and exclude paradoxcal SUBREG, not low part,
+	for non-WORD_REGISTER_OPERATIONS machines.
+
 	* expr.c (get_inner_reference): Fix typo in last change.
 
 Mon Sep 27 21:34:00 1998  Paul Eggert  <eggert@twinsun.com>
