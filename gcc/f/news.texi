@@ -5,7 +5,7 @@
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1997-09-09
+@c 1997-10-10
 
 @ifclear NEWSONLY
 @node News
@@ -23,6 +23,47 @@ code, new features, fixes to existing features, new
 diagnostics, internal improvements, and miscellany.
 This order is not strict---for example, some items
 involve a combination of these elements.
+
+@heading In 0.5.22:
+@itemize @bullet
+@item
+Fix code generation for iterative @code{DO} loops that
+have one or more references to the iteration variable,
+or to aliases of it, in their control expressions.
+For example, @samp{DO 10 J=2,J} now is compiled correctly.
+
+@item
+Fix a compiler crash involving optimization of
+certain complicated expressions involving @code{COMPLEX}
+arithmetic (especially multiplication).
+
+@item
+Rename the @code{gcc} keyword @code{restrict} to
+@code{__restrict__}, to avoid rejecting valid, existing,
+C programs.
+Support for @code{restrict} is now more like support
+for @code{complex}.
+
+@item
+Fix @code{DTime} intrinsic so as not to truncate
+results to integer values (on some systems).
+
+@item
+Improve diagnostic messages from @code{libf2c}
+so it is more likely that the printing of the
+active format string is limited to the string,
+with no trailing garbage being printed.
+
+(Unlike @code{f2c}, @code{g77} does not append
+a null byte to its compiled form of every
+format string specified via a @code{FORMAT} statement.
+However, @code{f2c} would exhibit the problem
+anyway for a statement like @samp{PRINT '(I)garbage', 1}
+by printing @samp{(I)garbage} as the format string.)
+
+@item
+Upgrade to @code{libf2c} as of 1997-09-23.
+@end itemize
 
 @heading In 0.5.21:
 @itemize @bullet
