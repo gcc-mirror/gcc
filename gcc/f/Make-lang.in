@@ -1,5 +1,6 @@
 # Top level -*- makefile -*- fragment for GNU Fortran.
-#   Copyright (C) 1995, 1996, 1997, 1998, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+#   Copyright (C) 1995, 1996, 1997, 1998, 2000, 2001, 2002, 2003, 2004
+#   Free Software Foundation, Inc.
 
 #This file is part of GNU Fortran.
 
@@ -106,50 +107,50 @@ f/stamp-str: f/str-1t.h f/str-1t.j f/str-2t.h f/str-2t.j \
 f/str-1t.h f/str-1t.j: f/stamp-1t ; @true
 f/stamp-1t: f/fini$(build_exeext) f/str-1t.fin
 	./f/fini$(build_exeext) $(srcdir)/f/str-1t.fin f/tmp-str-1t.j f/tmp-str-1t.h
-	$(SHELL) $(srcdir)/move-if-change f/tmp-str-1t.j f/str-1t.j
-	$(SHELL) $(srcdir)/move-if-change f/tmp-str-1t.h f/str-1t.h
+	$(SHELL) $(srcdir)/../move-if-change f/tmp-str-1t.j f/str-1t.j
+	$(SHELL) $(srcdir)/../move-if-change f/tmp-str-1t.h f/str-1t.h
 	$(STAMP) f/stamp-1t
 
 f/str-2t.h f/str-2t.j: f/stamp-2t ; @true
 f/stamp-2t: f/fini$(build_exeext) f/str-2t.fin
 	./f/fini$(build_exeext) $(srcdir)/f/str-2t.fin f/tmp-str-2t.j f/tmp-str-2t.h
-	$(SHELL) $(srcdir)/move-if-change f/tmp-str-2t.j f/str-2t.j
-	$(SHELL) $(srcdir)/move-if-change f/tmp-str-2t.h f/str-2t.h
+	$(SHELL) $(srcdir)/../move-if-change f/tmp-str-2t.j f/str-2t.j
+	$(SHELL) $(srcdir)/../move-if-change f/tmp-str-2t.h f/str-2t.h
 	$(STAMP) f/stamp-2t
 
 f/str-fo.h f/str-fo.j: f/stamp-fo ; @true
 f/stamp-fo: f/fini$(build_exeext) f/str-fo.fin
 	./f/fini$(build_exeext) $(srcdir)/f/str-fo.fin f/tmp-str-fo.j f/tmp-str-fo.h
-	$(SHELL) $(srcdir)/move-if-change f/tmp-str-fo.j f/str-fo.j
-	$(SHELL) $(srcdir)/move-if-change f/tmp-str-fo.h f/str-fo.h
+	$(SHELL) $(srcdir)/../move-if-change f/tmp-str-fo.j f/str-fo.j
+	$(SHELL) $(srcdir)/../move-if-change f/tmp-str-fo.h f/str-fo.h
 	$(STAMP) f/stamp-fo
 
 f/str-io.h f/str-io.j: f/stamp-io ; @true
 f/stamp-io: f/fini$(build_exeext) f/str-io.fin
 	./f/fini$(build_exeext) $(srcdir)/f/str-io.fin f/tmp-str-io.j f/tmp-str-io.h
-	$(SHELL) $(srcdir)/move-if-change f/tmp-str-io.j f/str-io.j
-	$(SHELL) $(srcdir)/move-if-change f/tmp-str-io.h f/str-io.h
+	$(SHELL) $(srcdir)/../move-if-change f/tmp-str-io.j f/str-io.j
+	$(SHELL) $(srcdir)/../move-if-change f/tmp-str-io.h f/str-io.h
 	$(STAMP) f/stamp-io
 
 f/str-nq.h f/str-nq.j: f/stamp-nq ; @true
 f/stamp-nq: f/fini$(build_exeext) f/str-nq.fin
 	./f/fini$(build_exeext) $(srcdir)/f/str-nq.fin f/tmp-str-nq.j f/tmp-str-nq.h
-	$(SHELL) $(srcdir)/move-if-change f/tmp-str-nq.j f/str-nq.j
-	$(SHELL) $(srcdir)/move-if-change f/tmp-str-nq.h f/str-nq.h
+	$(SHELL) $(srcdir)/../move-if-change f/tmp-str-nq.j f/str-nq.j
+	$(SHELL) $(srcdir)/../move-if-change f/tmp-str-nq.h f/str-nq.h
 	$(STAMP) f/stamp-nq
 
 f/str-op.h f/str-op.j: f/stamp-op ; @true
 f/stamp-op: f/fini$(build_exeext) f/str-op.fin
 	./f/fini$(build_exeext) $(srcdir)/f/str-op.fin f/tmp-str-op.j f/tmp-str-op.h
-	$(SHELL) $(srcdir)/move-if-change f/tmp-str-op.j f/str-op.j
-	$(SHELL) $(srcdir)/move-if-change f/tmp-str-op.h f/str-op.h
+	$(SHELL) $(srcdir)/../move-if-change f/tmp-str-op.j f/str-op.j
+	$(SHELL) $(srcdir)/../move-if-change f/tmp-str-op.h f/str-op.h
 	$(STAMP) f/stamp-op
 
 f/str-ot.h f/str-ot.j: f/stamp-ot ; @true
 f/stamp-ot: f/fini$(build_exeext) f/str-ot.fin
 	./f/fini$(build_exeext) $(srcdir)/f/str-ot.fin f/tmp-str-ot.j f/tmp-str-ot.h
-	$(SHELL) $(srcdir)/move-if-change f/tmp-str-ot.j f/str-ot.j
-	$(SHELL) $(srcdir)/move-if-change f/tmp-str-ot.h f/str-ot.h
+	$(SHELL) $(srcdir)/../move-if-change f/tmp-str-ot.j f/str-ot.j
+	$(SHELL) $(srcdir)/../move-if-change f/tmp-str-ot.h f/str-ot.h
 	$(STAMP) f/stamp-ot
 
 f/fini$(build_exeext): f/fini.o $(BUILD_LIBDEPS)

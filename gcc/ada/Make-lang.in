@@ -1107,7 +1107,7 @@ ada/stamp-sdefault : $(srcdir)/version.c Makefile
 	$(ECHO) "      return Relocate_Path (S0, S4);" >>tmp-sdefault.adb
 	$(ECHO) "   end Search_Dir_Prefix;" >>tmp-sdefault.adb
 	$(ECHO) "end Sdefault;" >> tmp-sdefault.adb
-	$(srcdir)/move-if-change tmp-sdefault.adb ada/sdefault.adb
+	$(srcdir)/../move-if-change tmp-sdefault.adb ada/sdefault.adb
 	touch ada/stamp-sdefault
 
 ada/sdefault.o : ada/sdefault.ads ada/sdefault.adb ada/types.ads \
