@@ -1,3 +1,28 @@
+Tue Jan  2 20:21:31 MET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_split_to_parts): Return number of part required;
+	handle TFmodes.
+	(print_operand, ix86_expand_branch, ix86_expand_fp_movcc): Handle
+	TFmodes.
+	(ix86_split_long_move): Use number of part returned
+	by ix86_split_to_parts
+	* i386.h (MASK_128BIT_LONG_DOUBLE, TARGET_128BIT_LONG_DOUBLE):
+	New macros.
+	(TARGET_SWITCHES): Add 128bit-long-double and 96bit-long-double
+	(LONG_DOUBLE_TYPE_SIZE): Change from constant.
+	(MAX_LONG_DOUBLE_TYPE_SIZE): New macro.
+	(INTEL_EXTENDED_IEEE_FORMAT): Likewise.
+	(ALIGN_MODE_128): Add TFmode.
+	(IS_STACK_MODE): Likewise.
+	(HARD_REGNO_NREGS): TFmode needs 3 registers.
+	(HARD_REGNO_OK): Support TFmodes.
+	(ASM_OUTPUT_LONG_DOUBLE): Handle TFmodes.
+	* i386.md (scheduler definitions): Use memory operand to determine
+	fst/fld instructions; use mode attribute to determine real mode of
+	the instruction.
+	(*tf): New patterns, expanders and splitters; based on XFmode patterns.
+	* invoke.texi (128bit-long-double, 96bit-long-double): Document.
+
 2001-01-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.def (TRUTH_NOT_EXPR): Improve documentation.

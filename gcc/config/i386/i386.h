@@ -104,6 +104,7 @@ extern int target_flags;
 #define MASK_ACCUMULATE_OUTGOING_ARGS 0x00008000/* Accumulate outgoing args */
 #define MASK_MMX		0x00010000	/* Support MMX regs/builtins */
 #define MASK_SSE		0x00020000	/* Support SSE regs/builtins */
+#define MASK_128BIT_LONG_DOUBLE 0x00040000	/* long double size is 128bit */
 
 /* Temporary codegen switches */
 #define MASK_INTEL_SYNTAX	0x00000200
@@ -143,6 +144,11 @@ extern int target_flags;
    in the 387 FPU or in 386 integer registers.  If set, this flag causes
    the 387 to be used, which is compatible with most calling conventions. */
 #define TARGET_FLOAT_RETURNS_IN_80387 (target_flags & MASK_FLOAT_RETURNS)
+
+/* Long double is 128bit instead of 96bit, even when only 80bits are used.
+   This mode wastes cache, but avoid missaligned data accesses and simplifies
+   address calculations.  */
+#define TARGET_128BIT_LONG_DOUBLE (target_flags & MASK_128BIT_LONG_DOUBLE)
 
 /* Disable generation of FP sin, cos and sqrt operations for 387.
    This is because FreeBSD lacks these in the math-emulator-code */
@@ -295,6 +301,10 @@ extern const int x86_partial_reg_dependency, x86_memory_mismatch_stall;
     N_("Support MMX and SSE builtins") },				      \
   { "no-sse",			-MASK_SSE,				      \
     N_("Do not support MMX and SSE builtins") },			      \
+  { "128bit-long-double",	 MASK_128BIT_LONG_DOUBLE,		      \
+    N_("sizeof(long double) is 16.") },					      \
+  { "96bit-long-double",	-MASK_128BIT_LONG_DOUBLE,		      \
+    N_("sizeof(long double) is 12.") },					      \
   SUBTARGET_SWITCHES							      \
   { "", TARGET_DEFAULT, 0 }}
 
@@ -446,9 +456,18 @@ extern int ix86_arch;
 
 /* target machine storage layout */
 
-/* Define for XFmode extended real floating point support.
-   This will automatically cause REAL_ARITHMETIC to be defined.  */
-#define LONG_DOUBLE_TYPE_SIZE 96
+/* Define for XFmode or TFmode extended real floating point support.
+   This will automatically cause REAL_ARITHMETIC to be defined.
+ 
+   The XFmode is specified by i386 ABI, while TFmode may be faster
+   due to alignment and simplifications in the address calculations.
+ */
+#define LONG_DOUBLE_TYPE_SIZE (TARGET_128BIT_LONG_DOUBLE ? 128 : 96)
+#define MAX_LONG_DOUBLE_TYPE_SIZE 128
+/* Tell real.c that this is the 80-bit Intel extended float format
+   packaged in a 128-bit or 96bit entity.  */
+#define INTEL_EXTENDED_IEEE_FORMAT
+
 
 /* Define if you don't want extended real, but do want to use the
    software floating point emulator for REAL_ARITHMETIC and
@@ -515,8 +534,8 @@ extern int ix86_arch;
 
 /* Decide whether a variable of mode MODE must be 128 bit aligned.  */
 #define ALIGN_MODE_128(MODE) \
- ((MODE) == XFmode || ((MODE) == TImode) || (MODE) == V4SFmode	\
-  || (MODE) == V4SImode)
+ ((MODE) == XFmode || (MODE) == TFmode || ((MODE) == TImode) \
+  || (MODE) == V4SFmode	|| (MODE) == V4SImode)
 
 /* The published ABIs say that doubles should be aligned on word
    boundaries, so lower the aligment for structure fields unless
@@ -596,7 +615,8 @@ extern int ix86_arch;
    for details. */
 
 #define STACK_REGS
-#define IS_STACK_MODE(mode) (mode==DFmode || mode==SFmode || mode==XFmode)
+#define IS_STACK_MODE(mode) (mode==DFmode || mode==SFmode \
+			     || mode==XFmode || mode==TFmode)
 
 /* Number of actual hardware registers.
    The hardware registers are assigned numbers for the compiler
@@ -740,7 +760,9 @@ extern int ix86_arch;
 
 #define HARD_REGNO_NREGS(REGNO, MODE)   \
   (FP_REGNO_P (REGNO) || SSE_REGNO_P (REGNO) || MMX_REGNO_P (REGNO) ? 1 \
-   : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
+   : (MODE == TFmode							\
+      ? 3								\
+      : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)))
 
 #define VALID_SSE_REG_MODE(MODE) \
     ((MODE) == TImode || (MODE) == V4SFmode || (MODE) == V4SImode)
@@ -765,7 +787,7 @@ extern int ix86_arch;
    : FP_REGNO_P (REGNO)						\
    ? ((GET_MODE_CLASS (MODE) == MODE_FLOAT			\
        || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)		\
-      && GET_MODE_UNIT_SIZE (MODE) <= (LONG_DOUBLE_TYPE_SIZE == 96 ? 12 : 8))\
+      && GET_MODE_UNIT_SIZE (MODE) <= 16)\
    : SSE_REGNO_P (REGNO) ? VALID_SSE_REG_MODE (MODE)		\
    : MMX_REGNO_P (REGNO) ? VALID_MMX_REG_MODE (MODE)		\
    /* Only SSE and MMX regs can hold vector modes.  */		\
@@ -2610,9 +2632,12 @@ do { long l[2];								\
 
 #undef ASM_OUTPUT_LONG_DOUBLE
 #define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  		\
-do { long l[3];						\
+do { long l[4];						\
      REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);	\
-     fprintf (FILE, "%s\t0x%lx,0x%lx,0x%lx\n", ASM_LONG, l[0], l[1], l[2]); \
+     if (TARGET_128BIT_LONG_DOUBLE)			\
+       fprintf (FILE, "%s\t0x%lx,0x%lx,0x%lx,0x0\n", ASM_LONG, l[0], l[1], l[2]); \
+     else \
+       fprintf (FILE, "%s\t0x%lx,0x%lx,0x%lx\n", ASM_LONG, l[0], l[1], l[2]); \
    } while (0)
 
 /* This is how to output an assembler line defining a `float' constant.  */
