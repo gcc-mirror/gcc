@@ -81,7 +81,7 @@ typedef mutex_t __gthread_mutex_t;
 /* This will not actually work in Solaris 2.5, since libc contains
    dummy symbols of all thr_* routines. */
 
-static void *__gthread_active_ptr = &thr_create;
+static void *__gthread_active_ptr = (void *) &thr_create;
 
 static inline int
 __gthread_active_p (void)

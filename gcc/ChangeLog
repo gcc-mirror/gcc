@@ -1,3 +1,11 @@
+2001-05-30  Loren J. Rittle  <ljrittle@acm.org>
+	    John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* gthr-posix.h (__gthread_active_ptr): Cast function pointer
+	to target type to allow ISO C++ compiler to accept it.
+	* gthr-dce.h (__gthread_active_ptr): Likewise.
+	* gthr-solaris.h (__gthread_active_ptr): Likewise.
+
 2001-05-30  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpplex.c (_cpp_lex_token): Revert patch of 16 May 2001

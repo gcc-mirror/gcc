@@ -73,7 +73,7 @@ typedef pthread_mutex_t __gthread_mutex_t;
 #pragma weak pthread_yield
 #endif
 
-static void *__gthread_active_ptr = &pthread_create;
+static void *__gthread_active_ptr = (void *) &pthread_create;
 
 static inline int
 __gthread_active_p (void)
