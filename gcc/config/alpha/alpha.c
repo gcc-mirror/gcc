@@ -114,6 +114,8 @@ int alpha_this_literal_sequence_number;
 int alpha_this_gpdisp_sequence_number;
 
 /* Declarations of static functions.  */
+static bool decl_in_text_section
+  PARAMS ((tree));
 static bool local_symbol_p
   PARAMS ((rtx));
 static void alpha_set_memflags_1
@@ -832,7 +834,7 @@ input_operand (op, mode)
 }
 
 /* Return 1 if OP is a SYMBOL_REF for a function known to be in this
-   file.  */
+   file, and in the same section as the current function.  */
 
 int
 current_file_function_operand (op, mode)
@@ -842,11 +844,18 @@ current_file_function_operand (op, mode)
   if (GET_CODE (op) != SYMBOL_REF)
     return 0;
 
-  if (! SYMBOL_REF_FLAG (op)
-      && op != XEXP (DECL_RTL (current_function_decl), 0))
-    return 0;
+  /* Easy test for recursion.  */
+  if (op == XEXP (DECL_RTL (current_function_decl), 0))
+    return 1;
 
-  return 1;
+  /* Otherwise, we need the DECL for the SYMBOL_REF, which we can't get.
+     So SYMBOL_REF_FLAG has been declared to imply that the function is
+     in the default text section.  So we must also check that the current
+     function is also in the text section.  */
+  if (SYMBOL_REF_FLAG (op) && decl_in_text_section (current_function_decl))
+    return 1;
+
+  return 0;
 }
 
 /* Return 1 if OP is a SYMBOL_REF for which we can make a call via bsr.  */
@@ -1392,6 +1401,22 @@ alpha_tablejump_best_label (insn)
   return best_label ? best_label : const0_rtx;
 }
 
+/* Return true if the function DECL will be placed in the default text
+   section.  */
+/* ??? Ideally we'd be able to always move from a SYMBOL_REF back to the
+   decl, as that would allow us to determine if two functions are in the
+   same section, which is what we really want to know.  */
+
+static bool
+decl_in_text_section (decl)
+     tree decl;
+{
+  return (DECL_SECTION_NAME (decl) == NULL_TREE
+	  && ! (flag_function_sections
+	        || (targetm.have_named_sections
+		    && DECL_ONE_ONLY (decl))));
+}
+
 /* If we are referencing a function that is static, make the SYMBOL_REF
    special.  We use this to see indicate we can branch to this function
    without setting PV or restoring GP. 
@@ -1409,8 +1434,16 @@ alpha_encode_section_info (decl)
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
-      if (! TREE_PUBLIC (decl))
-	SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+      /* We mark public functions once they are emitted; otherwise we
+	 don't know that they exist in this unit of translation.  */
+      if (TREE_PUBLIC (decl))
+	return;
+      /* Do not mark functions that are not in .text; otherwise we
+	 don't know that they are near enough for a direct branch.  */
+      if (! decl_in_text_section (decl))
+	return;
+
+      SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
       return;
     }
 
@@ -6673,10 +6706,15 @@ alpha_end_function (file, fnname, decl)
 
      Don't do this for global functions in object files destined for a
      shared library because the function may be overridden by the application
-     or other libraries.  Similarly, don't do this for weak functions.  */
+     or other libraries.  Similarly, don't do this for weak functions.
+
+     Don't do this for functions not defined in the .text section, as
+     otherwise it's not unlikely that the destination is out of range
+     for a direct branch.  */
 
   if (!DECL_WEAK (current_function_decl)
-      && (!flag_pic || !TREE_PUBLIC (current_function_decl)))
+      && (!flag_pic || !TREE_PUBLIC (current_function_decl))
+      && decl_in_text_section (current_function_decl))
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (current_function_decl), 0)) = 1;
 
   /* Output jump tables and the static subroutine information block.  */
