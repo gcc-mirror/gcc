@@ -1,3 +1,7 @@
+2000-08-28  Kazu Hirata  <kazu@hxi.com>
+
+	* xcoffout.c: Fix formatting.
+
 2000-08-28  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (attr_checksum): Also ignore DW_AT_producer.
