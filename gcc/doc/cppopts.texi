@@ -551,10 +551,10 @@ Define the macros @sc{__gnuc__}, @sc{__gnuc_minor__} and
 @command{gcc -E}; you can turn them off in that case with
 @option{-no-gcc}.
 
-@item -traditional
-@opindex traditional
-Try to imitate the behavior of old-fashioned C, as opposed to ISO
-C@.
+@item -traditional-cpp
+@opindex traditional-cpp
+Try to imitate the behavior of old-fashioned C preprocessors, as
+opposed to ISO C preprocessors.
 @ifset cppmanual
 @xref{Traditional Mode}.
 @end ifset

@@ -204,7 +204,7 @@ will be removed, and the Makefile will not work.
 
 Having said that, you can often get away with using cpp on things which
 are not C@.  Other Algol-ish programming languages are often safe
-(Pascal, Ada, etc.) So is assembly, with caution.  @option{-traditional}
+(Pascal, Ada, etc.) So is assembly, with caution.  @option{-traditional-cpp}
 mode preserves more white space, and is otherwise more permissive.  Many
 of the problems can be avoided by writing C or C++ style comments
 instead of native language comments, and keeping macros simple.
@@ -275,8 +275,8 @@ warning message.
 
 @item
 @cindex trigraphs
-If trigraphs are enabled, they are replaced by their corresponding
-single characters.
+@anchor{trigraphs}If trigraphs are enabled, they are replaced by their
+corresponding single characters.
 
 These are nine three-character sequences, all starting with @samp{??},
 that are defined by ISO C to stand for single characters.  They permit
@@ -1779,9 +1779,9 @@ In normal operation, this macro expands to the constant 1, to signify
 that this compiler conforms to ISO Standard C@.  If GNU CPP is used with
 a compiler other than GCC, this is not necessarily true; however, the
 preprocessor always conforms to the standard, unless the
-@option{-traditional} option is used.
+@option{-traditional-cpp} option is used.
 
-This macro is not defined if the @option{-traditional} option is used.
+This macro is not defined if the @option{-traditional-cpp} option is used.
 
 On some hosts, the system compiler uses a different convention, where
 @code{__STDC__} is normally 0, but is 1 if the user specifies strict
@@ -1806,8 +1806,8 @@ The value @code{199409L} signifies the 1989 C standard as amended in
 the 1999 revision of the C standard.  Support for the 1999 revision is
 not yet complete.
 
-This macro is not defined if the @option{-traditional} option is used, nor
-when compiling C++ or Objective-C@.
+This macro is not defined if the @option{-traditional-cpp} option is
+used, nor when compiling C++ or Objective-C@.
 
 @item __STDC_HOSTED__
 This macro is defined, with value 1, if the compiler's target is a
@@ -2141,13 +2141,15 @@ f (1
 f)
 @end smallexample
 
-@noindent which expands to
+@noindent
+which expands to
 
 @smallexample
 1 2 1 2
 @end smallexample
 
-@noindent with the semantics described above.
+@noindent
+with the semantics described above.
 
 @node Macro Pitfalls
 @section Macro Pitfalls
@@ -3334,91 +3336,225 @@ the directive name.
 
 Traditional (pre-standard) C preprocessing is rather different from
 the preprocessing specified by the standard.  When GCC is given the
-@option{-traditional} option, it attempts to emulate a traditional
-preprocessor.  We do not guarantee that GCC's behavior under
-@option{-traditional} matches any pre-standard preprocessor exactly.
+@option{-traditional-cpp} option, it attempts to emulate a traditional
+preprocessor.
 
-Traditional mode exists only for backward compatibility.  We have no
-plans to augment it in any way nor will we change it except to fix
-catastrophic bugs.  As of GCC 3.2, traditional mode is not supported for
-compilation, only preprocessing.
+GCC versions 3.2 and later only support traditional mode semantics in
+the preprocessor, and not in the compiler.  This chapter outlines the
+semantics we implemented in the traditional preprocessor that is
+integrated into the compiler front end.
 
-This is a list of the differences.  It may not be complete, and may not
-correspond exactly to the behavior of either GCC or a true traditional
+The implementation does not correspond precisely to the behavior of
+earlier versions of GCC, nor to any true traditional preprocessor.
+After all, inconsistencies among traditional implementations were a
+major motivation for C standardization.  However, we intend that it
+should be compatible with true traditional preprocessors in all ways
+that actually matter.
+
+@menu
+* Traditional lexical analysis::
+* Traditional macros::
+* Traditional miscellany::
+* Traditional warnings::
+@end menu
+
+@node Traditional lexical analysis
+@section Traditional lexical analysis
+
+The traditional preprocessor does not decompose its input into tokens
+the same way a standards-conforming preprocessor does.  The input is
+simply treated as a stream of text with minimal form imposed on it.
+
+This implementation does not treat trigraphs (@pxref{trigraphs})
+specially since they were created later during standardization.  It
+handles arbitrarily-positioned escaped newlines properly and splices
+the lines as you would expect; many traditional preprocessors did not
+do this.
+
+The form of horizontal whitespace in the input file is preserved in
+the output.  In particular, hard tabs remain hard tabs.  This can be
+useful if, for example, you are preprocessing a Makefile.
+
+Traditional CPP only recognizes C-style block comments, and treats the
+@samp{/*} sequence as introducing a comment only if it lies outside
+quoted text.  Quoted text is introduced by the usual single and double
+quotes, and also by @samp{<} in a @code{#include} directive.
+
+Traditionally, comments are completely removed and are not replaced
+with a space.  Since a traditional compiler does its own tokenization
+of the output of the preprocessor, comments can effectively be used as
+token paste operators.  However, comments behave like separators for
+text handled by the preprocessor itself.  For example, in
+
+@smallexample
+#if foo/**/bar
+@end smallexample
+
+@noindent
+@samp{foo} and @samp{bar} are distinct identifiers and expanded
+separately if they happen to be macros.  In other words, this
+directive is equivalent to
+
+@smallexample
+#if foo bar
+@end smallexample
+
+@noindent
+rather than
+
+@smallexample
+#if foobar
+@end smallexample
+
+Generally speaking, in traditional mode an opening quote need not have
+a matching closing quote.  In particular, a macro may be defined with
+replacement text that contains an unmatched quote.  Of course, if you
+attempt to compile preprocessed output containing an unmatched quote
+you will get a syntax error.
+
+However, all preprocessing directives other than @code{#define}
+require matching quotes.  For example:
+
+@smallexample
+#define m This macro's fine and has an unmatched quote
+"/* This is not a comment.  */
+/* This is a comment.  The following #include directive
+   is ill-formed.  */
+#include <stdio.h
+@end smallexample
+
+Just as for the ISO preprocessor, what would be a closing quote can be
+escaped with a backslash to prevent the quoted text from closing.
+
+@node Traditional macros
+@section Traditional macros
+
+The major difference between traditional and ISO macros is that the
+former expand to text rather than to a token sequence.  CPP removes
+all leading and trailing horizontal whitespace from a macro's
+replacement text before storing it, but preserves the form of internal
+whitespace.
+
+One consequence is that it is legitimate for the replacement text to
+contain an unmatched quote (@pxref{Traditional lexical analysis}). An
+unclosed string or character constant continues into the text
+following the macro call.  Similarly, the text at the end of a macro's
+expansion can run together with the text after the macro invocation to
+produce a single token.
+
+Normally comments are removed from the replacement text after the
+macro is expanded, but if the @option{-CC} option is passed on the
+command line comments are preserved.  (In fact, the current
+implementation removes comments even before saving the macro
+replacement text, but it careful to do it in such a way that the
+observed effect is identical even in the function-like macro case.)
+
+The ISO stringification operator @samp{#} and token paste operator
+@samp{##} have no special meaning.  As explained later, an effect
+similar to these operators can be obtained in a different way.  Macro
+names that are embedded in quotes, either from the main file or after
+macro replacement, do not expand.
+
+CPP replaces an unquoted object-like macro name with its replacement
+text, and then rescans it for further macros to replace.  Unlike
+standard macro expansion, traditional macro expansion has no provision
+to prevent recursion.  If an object-like macro appears unquoted in its
+replacement text, it will be replaced again during the rescan pass,
+and so on @emph{ad infinitum}.  GCC detects when it is expanding
+recursive macros, emits an error message, and continues after the
+offending macro invocation.
+
+@smallexample
+#define PLUS +
+#define INC(x) PLUS+x
+INC(foo);
+     @expansion{} ++foo;
+@end smallexample
+
+Function-like macros are similar in form but quite different in
+behavior to their ISO counterparts.  Their arguments are contained
+within parentheses, are comma-separated, and can cross physical lines.
+Commas within nested parentheses are not treated as argument
+separators.  Similarly, a quote in an argument cannot be left
+unclosed; in other words a comma or parenthesis in quotes is treated
+like any other character.  There is no facility for handling variadic
+macros.
+
+This implementation removes all comments from macro arguments, unless
+the @option{-C} option is given.  The form of all other horizontal
+whitespace in arguments is preserved, including leading and trailing
+whitespace.  In particular
+
+@smallexample
+f( )
+@end smallexample
+
+@noindent
+is treated as an invocation of the macro @samp{f} with a single
+argument consisting of a single space.  If you want to invoke a
+function-like macro that takes no arguments, you must not leave any
+whitespace between the parentheses.
+
+If a macro argument crosses a new line, the new line is replaced with
+a space when forming the argument.  If the previous line contained an
+unterminated quote, the following line inherits the quoted state.
+
+Traditional preprocessors replace parameters in the replacement text
+with their arguments regardless of whether the parameters are within
+quotes or not.  This provides a way to stringize arguments.  For
+example
+
+@smallexample
+#define str(x) "x"
+str(/* A comment */ some text)
+     @expansion{} " some text"
+@end smallexample
+
+@noindent
+Note that the comment is removed, but that the leading space is
+preserved.  Here is an example of using a comment to effect token
+pasting.
+
+@smallexample
+#define suffix(x) foo_/**/x
+suffix(bar)
+     @expansion{} foo_bar
+@end smallexample
+
+@node Traditional miscellany
+@section Traditional miscellany
+
+Here are some things to be aware of when using the traditional
 preprocessor.
 
 @itemize @bullet
 @item
-Traditional macro expansion pays no attention to single-quote or
-double-quote characters; macro argument symbols are replaced by the
-argument values even when they appear within apparent string or
-character constants.
+Preprocessing directives are recognized only when their leading
+@samp{#} appears in the first column.  There can be no whitespace
+between the beginning of the line and the @samp{#}, but whitespace can
+follow the @samp{#}.
 
 @item
-Traditionally, it is permissible for a macro expansion to end in the
-middle of a string or character constant.  The constant continues into
-the text surrounding the macro call.
+A true traditional C preprocessor does not recognize @samp{#error} or
+@samp{#pragma}, and may not recognize @samp{#elif}.  CPP supports all
+the directives in traditional mode that it supports in ISO mode,
+including extensions, with the exception that the effects of
+@samp{#pragma GCC poison} are undefined.
 
 @item
-However, the end of the line terminates a string or character constant,
-with no error.  (This is a kluge.  Traditional mode is commonly used to
-preprocess things which are not C, and have a different comment syntax.
-Single apostrophes often appear in comments.  This kluge prevents the
-traditional preprocessor from issuing errors on such comments.)
+__STDC__ is not defined.
 
 @item
-Preprocessing directives are recognized in traditional C only when their
-leading @samp{#} appears in the first column.  There can be no
-whitespace between the beginning of the line and the @samp{#}.
+If you use digraphs the behaviour is undefined.
 
-@item
-In traditional C, a comment is equivalent to no text at all.  (In ISO
-C, a comment counts as whitespace.)  It can be used sort of the same way
-that @samp{##} is used in ISO C, to paste macro arguments together.
-
-@item
-Traditional C does not have the concept of a preprocessing number.
-
-@item
-A macro is not suppressed within its own definition, in traditional C@.
-Thus, any macro that is used recursively inevitably causes an error.
-
-@item
-The @samp{#} and @samp{##} operators are not available in traditional
-C@.
-
-@item
-In traditional C, the text at the end of a macro expansion can run
-together with the text after the macro call, to produce a single token.
-This is impossible in ISO C@.
-
-@item
-None of the GNU extensions to the preprocessor are available in
-traditional mode, with the exception of a partial implementation of
-assertions, and those may be removed in the future.
-
-@item
-A true traditional C preprocessor does not recognize @samp{#elif},
-@samp{#error}, or @samp{#pragma}.  GCC supports @samp{#elif} and
-@samp{#error} even in traditional mode, but not @samp{#pragma}.
-
-@item
-Traditional mode is text-based, not token-based, and comments are
-stripped after macro expansion.  Therefore, @samp{/**/} can be used to
-paste tokens together provided that there is no whitespace between it
-and the tokens to be pasted.
-
-@item
-Traditional mode preserves the amount and form of whitespace provided by
-the user.  Hard tabs remain hard tabs.  This can be useful, e.g.@: if you
-are preprocessing a Makefile (which we do not encourage).
 @end itemize
 
+@node Traditional warnings
+@section Traditional warnings
 You can request warnings about features that did not exist, or worked
 differently, in traditional C with the @option{-Wtraditional} option.
-This works only if you do @emph{not} specify @option{-traditional}.  GCC
-does not warn about features of ISO C which you must use when you are
-using a conforming compiler, such as the @samp{#} and @samp{##}
+GCC does not warn about features of ISO C which you must use when you
+are using a conforming compiler, such as the @samp{#} and @samp{##}
 operators.
 
 Presently @option{-Wtraditional} warns about:
@@ -3441,9 +3577,9 @@ traditional implementations would not recognize @samp{#elif}, so it
 suggests avoiding it altogether.
 
 @item
-A function-like macro that appears without an argument list.  In
-traditional C this was an error.  In ISO C it merely means that the
-macro is not expanded.
+A function-like macro that appears without an argument list.  In some
+traditional preprocessors this was an error.  In ISO C it merely means
+that the macro is not expanded.
 
 @item
 The unary plus operator.  This did not exist in traditional C@.
@@ -3810,15 +3946,6 @@ a comma and a variable arguments parameter, and the variable argument is
 omitted entirely, the comma will be removed from the expansion.  If the
 variable argument is empty, or the token before @samp{##} is not a
 comma, then @samp{##} behaves as a normal token paste.
-
-@item Traditional mode and GNU extensions
-
-Traditional mode used to be implemented in the same program as normal
-preprocessing.  Therefore, all the GNU extensions to the preprocessor
-were still available in traditional mode.  It is now a separate program
-and does not implement any of the GNU extensions, except for a partial
-implementation of assertions.  Even those may be removed in a future
-release.
 
 @item @samp{#line} and @samp{#include}
 
