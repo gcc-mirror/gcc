@@ -1395,10 +1395,10 @@ if [ -r ${LIB}/$file ]; then
         dbl_max_def=`echo $dbl_max_def | sed 's/.*define[ 	]*DBL_MAX[ 	]*//'`
         sed -e "/define[ 	]HUGE_VAL[ 	]DBL_MAX/s/DBL_MAX/$dbl_max_def/" \
           ${LIB}/$file > ${LIB}/${file}.sed
+	rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
       fi
     fi
   fi
-  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
 
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
     echo Deleting ${LIB}/$file\; no fixes were needed.
