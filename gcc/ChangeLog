@@ -1,5 +1,10 @@
 2003-07-14  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (mips_in_small_data_p): Don't handle
+	TARGET_MIPS16 specially.
+
+2003-07-14  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/elf.h (ASM_OUTPUT_ALIGNED_BSS): Use
 	mips_output_aligned_bss.
 	* config/mips/linux.h: Likewise.
