@@ -178,7 +178,7 @@ static tree fold_builtin_fabs (tree, tree);
 static tree fold_builtin_abs (tree, tree);
 static tree fold_builtin_unordered_cmp (tree, tree, enum tree_code,
 					enum tree_code);
-static tree fold_builtin_1 (tree, bool);
+static tree fold_builtin_1 (tree, tree, bool);
 
 static tree fold_builtin_strpbrk (tree, tree);
 static tree fold_builtin_strstr (tree, tree);
@@ -7939,10 +7939,8 @@ fold_builtin_complex_div (tree type, tree arglist)
    if no simplification was possible.  */
 
 static tree
-fold_builtin_1 (tree exp, bool ignore)
+fold_builtin_1 (tree fndecl, tree arglist, bool ignore)
 {
-  tree fndecl = get_callee_fndecl (exp);
-  tree arglist = TREE_OPERAND (exp, 1);
   tree type = TREE_TYPE (TREE_TYPE (fndecl));
   enum built_in_function fcode;
 
@@ -8300,7 +8298,10 @@ fold_builtin_1 (tree exp, bool ignore)
 tree
 fold_builtin (tree exp, bool ignore)
 {
-  exp = fold_builtin_1 (exp, ignore);
+  tree fndecl = get_callee_fndecl (exp);
+  tree arglist = TREE_OPERAND (exp, 1);
+
+  exp = fold_builtin_1 (fndecl, arglist, ignore);
   if (exp)
     {
       /* ??? Don't clobber shared nodes such as integer_zero_node.  */

@@ -1,3 +1,8 @@
+2005-03-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* builtins.c (fold_builtin_1): Take decomposed arguments of
+	CALL_EXPR.
+
 2005-03-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR other/20564
