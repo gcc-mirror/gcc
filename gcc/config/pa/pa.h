@@ -2097,8 +2097,13 @@ readonly_data ()							\
       fprintf (FILE, "%d(0,%s)", offset, reg_names [REGNO (base)]);	\
       break;								\
     case LO_SUM:							\
-      if (flag_pic == 0 || !symbolic_operand (XEXP (addr, 1)))		\
-	fputs ("R'", FILE);						\
+      if (flag_pic == 0)						\
+	{								\
+	  if (!symbolic_operand (XEXP (addr, 1)))			\
+	    fputs ("R'", FILE);						\
+	  else								\
+	    fputs ("RR'", FILE);					\
+	}								\
       else if (flag_pic == 1)						\
 	abort ();							\
       else if (flag_pic == 2)						\
