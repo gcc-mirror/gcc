@@ -547,10 +547,18 @@ extern void abort PARAMS ((void));
 /* Get libiberty declarations. */
 #include "libiberty.h"
 
+/* Make sure that ONLY_INT_FIELDS has an integral value.  */
+#ifdef ONLY_INT_FIELDS
+#undef ONLY_INT_FIELDS
+#define ONLY_INT_FIELDS 1
+#else
+#define ONLY_INT_FIELDS 0
+#endif 
+
 /* Enumerated bitfields are safe to use unless we've been explictly told
  * otherwise or if they are signed. */
  
-#define USE_ENUM_BITFIELDS __GNUC__ || (!ONLY_INT_FIELDS && ENUM_BTIFIELDS_ARE_UNSIGNED)
+#define USE_ENUM_BITFIELDS (__GNUC__ || (!ONLY_INT_FIELDS && ENUM_BITFIELDS_ARE_UNSIGNED))
 
 #if USE_ENUM_BITFIELDS
 #define ENUM_BITFIELD(TYPE) enum TYPE

@@ -1,3 +1,8 @@
+2000-04-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* system.h (ONLY_INT_FIELDS): Make sure it is defined.
+	(USE_ENUM_BITFIELDS): Fix typo.
+
 Wed Apr 19 12:14:55 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* stor-layout.c (place_field): Set rli->offset_align properly.
