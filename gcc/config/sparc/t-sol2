@@ -23,4 +23,8 @@ crtn.o: $(srcdir)/config/sparc/sol2-cn.asm
 # we will be doing that, we just always use -fpic when compiling the
 # routines in crtstuff.c.
 
-CRTSTUFF_T_CFLAGS = -fpic
+# Since the GNU assembler doesn't support PIC yet, we need to force gcc to
+# use the native assembler when building crtstuff.  If we're a
+# cross-compiler, just give up on using PIC.
+
+CRTSTUFF_T_CFLAGS = `if [ -z "$(CROSS)" ]; then echo -fpic -B/usr/ccs/bin/; fi`
