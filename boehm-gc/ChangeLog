@@ -1,3 +1,14 @@
+1999-04-13  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (libgcjgc_a_SOURCES): Added solaris-threads.c and
+	solaris-threads.h.
+
+1999-04-09  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Use sparc_mach_dep.s when building on Solaris.
+
 1999-02-23  Tom Tromey  <tromey@cygnus.com>
 
 	* configure: Rebuilt.
