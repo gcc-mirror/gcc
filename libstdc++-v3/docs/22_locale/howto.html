@@ -9,7 +9,7 @@
    <TITLE>libstdc++-v3 HOWTO:  Chapter 22</TITLE>
 <LINK REL="home" HREF="http://sources.redhat.com/libstdc++/docs/22_locale/">
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.4 2000/08/31 01:17:53 bkoz Exp $ -->
+<!-- $Id: howto.html,v 1.5 2000/09/19 21:44:30 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -25,9 +25,10 @@
 <UL>
    <LI><A HREF="#1">Bjarne Stroustrup on Locales</A>
    <LI><A HREF="#2">Nathan Myers on Locales</A>   
-   <LI><A HREF="#3">codecvt</A>
-   <LI><A HREF="#4">ctype</A>
-   <LI><A HREF="#5">Correct Transformations</A>
+   <LI><A HREF="#3">class locale</A>
+   <LI><A HREF="#4">class codecvt</A>
+   <LI><A HREF="#5">class ctype</A>
+   <LI><A HREF="#6">Correct Transformations</A>
 </UL>
 
 <HR>
@@ -65,7 +66,16 @@
    </P>
 
 <HR>
-<H2><A NAME="3">codecvt</A></H2>
+<H2><A NAME="5">class locale</A></H2>
+   <P> Notes made during the implementation of locales can be found 
+   <A HREF="locale.html">here</A>.
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+<HR>
+<H2><A NAME="4">class codecvt</A></H2>
    <P> Notes made during the implementation of codecvt can be found 
    <A HREF="codecvt.html">here</A>.
    </P>
@@ -93,7 +103,7 @@ functionality are given.
    </P>
 
 <HR>
-<H2><A NAME="4">ctype</A></H2>
+<H2><A NAME="5">class ctype</A></H2>
    <P> Notes made during the implementation of ctype can be found 
    <A HREF="ctype.html">here</A>.
    </P>
@@ -102,7 +112,7 @@ functionality are given.
    </P>
 
 <HR>
-<H2><A NAME="5">Correct Transformations</A></H2>
+<H2><A NAME="6">Correct Transformations</A></H2>
    <!-- Jumping directly here from chapter 21. -->
    <P>A very common question on newsgroups and mailing lists is, &quot;How
       do I do &lt;foo&gt; to a character string?" where &lt;foo&gt; is
@@ -218,7 +228,7 @@ functionality are given.
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
-<BR> $Id: howto.html,v 1.4 2000/08/31 01:17:53 bkoz Exp $
+<BR> $Id: howto.html,v 1.5 2000/09/19 21:44:30 pme Exp $
 </EM></P>
 
 
