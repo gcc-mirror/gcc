@@ -268,6 +268,10 @@ requirements.
 Necessary to uncompress GCC @command{tar} files when source code is
 obtained via FTP mirror sites.
 
+@item GNU make version 3.79.1 (or later)
+
+You must have GNU make installed to build GCC.
+
 @item GNU tar version 1.12 (or later)
 
 Necessary (only on some platforms) to untar the source code.  Many
