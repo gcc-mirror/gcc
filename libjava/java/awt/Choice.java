@@ -44,6 +44,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.Serializable;
 import java.util.Vector;
+import java.util.EventListener;
 
 /**
   * This class implements a drop down choice list.
@@ -474,4 +475,31 @@ paramString()
   return ("selectedIndex=" + selectedIndex + "," + super.paramString());
 }
 
+  /**
+   * Returns an array of all the objects currently registered as FooListeners
+   * upon this Choice. FooListeners are registered using the addFooListener
+   * method.
+   *
+   * @exception ClassCastException If listenerType doesn't specify a class or
+   * interface that implements java.util.EventListener.
+   *
+   * @since 1.3
+   */
+  public EventListener[] getListeners (Class listenerType)
+  {
+    if (listenerType == ItemListener.class)
+      return AWTEventMulticaster.getListeners (item_listeners, listenerType);
+    
+    return super.getListeners (listenerType);
+  }
+
+  /**
+   * Returns all registered item listeners.
+   *
+   * @since 1.4
+   */
+  public ItemListener[] getItemListeners ()
+  {
+    return (ItemListener[]) getListeners (ItemListener.class);
+  }
 } // class Choice 

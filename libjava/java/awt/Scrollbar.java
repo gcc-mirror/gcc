@@ -42,6 +42,7 @@ import java.awt.peer.ScrollbarPeer;
 import java.awt.peer.ComponentPeer;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.AdjustmentEvent;
+import java.util.EventListener;
 import javax.accessibility.Accessible;
 
 /**
@@ -699,5 +700,29 @@ paramString()
 	 + super.paramString());
 }
 
+  /**
+   * Returns an array of all the objects currently registered as FooListeners
+   * upon this <code>Scrollbar</code>. FooListeners are registered using the 
+   * addFooListener method.
+   *
+   * @exception ClassCastException If listenerType doesn't specify a class or
+   * interface that implements java.util.EventListener.
+   */
+  public EventListener[] getListeners (Class listenerType)
+  {
+    if (listenerType == AdjustmentListener.class)
+      return AWTEventMulticaster.getListeners (adjustment_listeners,
+                                               listenerType);
+
+    return super.getListeners (listenerType);
+  }
+
+  /**
+   * Returns an array of all registered adjustment listeners.
+   */
+  public AdjustmentListener[] getAdjustmentListeners ()
+  {
+    return (AdjustmentListener[]) getListeners (AdjustmentListener.class);
+  }
 } // class Scrollbar 
 

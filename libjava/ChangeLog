@@ -1,3 +1,59 @@
+2003-02-15  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/CheckboxMenuItem.java
+	(CheckBoxMenuItem): Dont implement Serializable.
+	(getListeners): New method,
+	(getItemListeners): New method.
+	* java/awt/Choice.java
+	(getListeners): New method,
+	(getItemListeners): New method.
+	* java/awt/Container.java
+	(getListeners): Added exception documentation.
+	(setFocusTraversalKeys): Throw exceptions, added documentattion.
+	(getFocusTraversalKeys): Added documentation.
+	(areFocusTraversalKeysSet): Added documentation.
+	(applyComponentOrientation): Added documentation.
+	* java/awt/ContainerOrderFocusTraversalPolicy.java
+	(implicitDownCycleTraversal): Renamed from downCycle for
+	serialization.
+	(ContainerOrderFocusTraversalPolicy): Added documentation.
+	(accept): Reformated.
+	* java/awt/Dialog.java
+	(Dialog): Dont implement Serializable.
+	(Dialog): Added documentation.
+	* java/awt/Font.java
+	(Font): Dont use absolute class name.
+	* java/awt/Frame.java
+	(Frame): Font implement Serializable.
+	* java/awt/List.java
+	(getListeners): New method,
+	(getActionListeners): New method.	
+	(getItemListeners): New method.
+	* java/awt/Menu.java
+	(countItems): New deprecated method.
+	* java/awt/Scrollbar.java
+	(getListeners): New method,
+	(getAdjustmentListeners): New method,
+	* java/awt/TextComponent.java
+	(getListeners): New method,
+	(getTextListeners): New method,
+	* java/awt/TextField.java
+	(getListeners): New method,
+	(getActionListeners): New method.	
+	* java/awt/Window.java
+	(windowFocusListener): New member variable.
+	(windowStateListener): New member variable.
+	(getWindowFocusListeners): New method.
+	(getWindowStateListeners): New method.
+	(addWindowFocusListener): New method.
+	(addWindowStateListener): New method.
+	(removeWindowFocusListener): New method.
+	(removeWindowStateListener): New method.
+	* java/awt/datatransfer/DataFlavor.java
+	(isRepresentationClassByteBuffer): New method.
+	(isRepresentationClassCharBuffer): New method.
+	(isRepresentationClassReader): New method.
+
 2003-02-14  Mark Wielaard  <mark@klomp.org>
 
 	* java/math/BigDecimal.java (BigDecimal(String)): Always set scale to

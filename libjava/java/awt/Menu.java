@@ -175,6 +175,18 @@ getItemCount()
 {
   return(items.size());
 }
+
+/**
+ * Returns the number of items in this menu.
+ *
+ * @return The number of items in this menu.
+ *
+ * @deprecated As of JDK 1.1, replaced by getItemCount().
+ */
+public int countItems ()
+{
+  return getItemCount ();
+}
  
 /*************************************************************************/
 

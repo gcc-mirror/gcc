@@ -42,6 +42,7 @@ import java.awt.event.TextEvent;
 import java.awt.event.TextListener;
 import java.awt.peer.TextComponentPeer;
 import java.awt.peer.ComponentPeer;
+import java.util.EventListener;
 
 /**
   * This class provides common functionality for widgets than 
@@ -442,5 +443,28 @@ paramString()
   return(getClass().getName() + "(text=" + getText() + ")");
 }
 
+  /**
+   * Returns an array of all the objects currently registered as FooListeners
+   * upon this <code>TextComponent</code>. FooListeners are registered using
+   * the addFooListener method.
+   *
+   * @exception ClassCastException If listenerType doesn't specify a class or
+   * interface that implements java.util.EventListener.
+   */
+  public EventListener[] getListeners (Class listenerType)
+  {
+    if (listenerType == TextListener.class)
+      return AWTEventMulticaster.getListeners (textListener, listenerType);
+
+    return super.getListeners (listenerType);
+  }
+
+  /**
+   * Returns all text listeners registered to this object.
+   */
+  public TextListener[] getTextListeners ()
+  {
+    return (TextListener[]) getListeners (TextListener.class);
+  }
 } // class TextComponent
 

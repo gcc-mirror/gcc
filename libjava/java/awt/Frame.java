@@ -42,7 +42,6 @@ import java.awt.peer.FramePeer;
 import java.awt.peer.WindowPeer;
 import java.awt.peer.ContainerPeer;
 import java.awt.peer.ComponentPeer;
-import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -52,7 +51,7 @@ import java.util.Vector;
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public class Frame extends Window implements MenuContainer, Serializable
+public class Frame extends Window implements MenuContainer
 {
 
 /*

@@ -39,6 +39,7 @@ exception statement from your version. */
 package java.awt;
 
 import java.awt.peer.FontPeer;
+import java.io.Serializable;
 import java.util.StringTokenizer;
 
 /**
@@ -47,7 +48,7 @@ import java.util.StringTokenizer;
   * @author Aaron M. Renn (arenn@urbanophile.com)
   * @author Warren Levy <warrenl@cygnus.com>
   */
-public class Font implements java.io.Serializable
+public class Font implements Serializable
 {
 
 /*
