@@ -1,3 +1,8 @@
+Fri Feb  7 02:18:57 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* regrename.c (do_replace, find_oldest_value_reg,
+	copyprop_hardreg_forward_1): Update register attributes.
+
 2003-02-06  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* genautomata.c (VLA_PTR_CREATE, VLA_PTR_EXPAND, VLA_PTR_ADD,

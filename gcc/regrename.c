@@ -377,9 +377,12 @@ do_replace (chain, reg)
   while (chain)
     {
       unsigned int regno = ORIGINAL_REGNO (*chain->loc);
+      struct reg_attrs * attr = REG_ATTRS (*chain->loc);
+
       *chain->loc = gen_raw_REG (GET_MODE (*chain->loc), reg);
       if (regno >= FIRST_PSEUDO_REGISTER)
 	ORIGINAL_REGNO (*chain->loc) = regno;
+      REG_ATTRS (*chain->loc) = attr;
       chain = chain->next_use;
     }
 }
@@ -1393,6 +1396,7 @@ find_oldest_value_reg (class, reg, vd)
 				     regno)))
       {
 	ORIGINAL_REGNO (new) = ORIGINAL_REGNO (reg);
+        REG_ATTRS (new) = REG_ATTRS (reg);
 	return new;
       }
     }
@@ -1686,6 +1690,7 @@ copyprop_hardreg_forward_1 (bb, vd)
 		  if (validate_change (insn, &SET_SRC (set), new, 0))
 		    {
 		      ORIGINAL_REGNO (new) = ORIGINAL_REGNO (src);
+		      REG_ATTRS (new) = REG_ATTRS (src);
 		      if (rtl_dump_file)
 			fprintf (rtl_dump_file,
 				 "insn %u: replaced reg %u with %u\n",
