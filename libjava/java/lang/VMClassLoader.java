@@ -1,6 +1,6 @@
 /*
  * java.lang.ClassLoader: part of the Java Class Libraries project.
- * Copyright (C) 1998, 2001 Free Software Foundation
+ * Copyright (C) 1998, 2001, 2002 Free Software Foundation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -19,6 +19,8 @@
  */
 
 package java.lang;
+
+import java.util.*;
 
 /**
  * java.lang.VMClassLoader is a package-private helper for VMs to implement
@@ -59,4 +61,47 @@ class VMClassLoader {
      * @param type code for the primitive type.
      */
   static native Class getPrimitiveClass(char type);
+
+  /**
+   * The system default for assertion status. This is used for all system
+   * classes (those with a null ClassLoader), as well as the initial value for
+   * every ClassLoader's default assertion status.
+   *
+   * XXX - Not implemented yet; this requires native help.
+   *
+   * @return the system-wide default assertion status
+   */
+  static final boolean defaultAssertionStatus()
+  {
+    return true;
+  }
+
+  /**
+   * The system default for package assertion status. This is used for all
+   * ClassLoader's packageAssertionStatus defaults. It must be a map of
+   * package names to Boolean.TRUE or Boolean.FALSE, with the unnamed package
+   * represented as a null key.
+   *
+   * XXX - Not implemented yet; this requires native help.
+   *
+   * @return a (read-only) map for the default packageAssertionStatus
+   */
+  static final Map packageAssertionStatus()
+  {
+    return new HashMap();
+  }
+
+  /**
+   * The system default for class assertion status. This is used for all
+   * ClassLoader's classAssertionStatus defaults. It must be a map of
+   * class names to Boolean.TRUE or Boolean.FALSE
+   *
+   * XXX - Not implemented yet; this requires native help.
+   *
+   * @return a (read-only) map for the default classAssertionStatus
+   */
+  static final Map classAssertionStatus()
+  {
+    return new HashMap();
+  }
 }
