@@ -9,6 +9,8 @@
 	* tree-phinodes.c (remove_phi_node): Clean up by factoring out
 	calls to release_ssa_name and release_phi_node.
 
+	* fold-const.c (fold): Remove handling of unary expressions.
+
 2005-03-03  Roger Sayle  <roger@eyesopen.com>
 	    Andrew Pinski  <pinskia@physics.uc.edu>
 
