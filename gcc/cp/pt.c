@@ -1381,11 +1381,6 @@ push_template_decl (decl)
   int is_friend = (TREE_CODE (decl) == FUNCTION_DECL
 		   && DECL_FRIEND_P (decl));
 
-  if (current_lang_name == lang_name_c)
-    cp_error ("template with C linkage");
-  if (TREE_CODE (decl) == TYPE_DECL && ANON_AGGRNAME_P (DECL_NAME (decl)))
-    cp_error ("template class without a name");
-
   if (is_friend)
     /* For a friend, we want the context of the friend function, not
        the type of which it is a friend.  */
@@ -1415,6 +1410,14 @@ push_template_decl (decl)
     primary = 1;
   else
     primary = 0;
+
+  if (primary)
+    {
+      if (current_lang_name == lang_name_c)
+	cp_error ("template with C linkage");
+      if (TREE_CODE (decl) == TYPE_DECL && ANON_AGGRNAME_P (DECL_NAME (decl)))
+	cp_error ("template class without a name");
+    }
 
   /* Partial specialization.  */
   if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl)
