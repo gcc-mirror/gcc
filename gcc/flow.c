@@ -3573,16 +3573,29 @@ init_propagate_block_info (bb, live, local_set, flags)
       int i;
 
       /* Identify the successor blocks.  */
-      bb_false = bb->succ->succ_next->dest;
       bb_true = bb->succ->dest;
-      if (bb->succ->flags & EDGE_FALLTHRU)
+      if (bb->succ->succ_next != NULL)
 	{
-	  basic_block t = bb_false;
-	  bb_false = bb_true;
-	  bb_true = t;
+          bb_false = bb->succ->succ_next->dest;
+
+	  if (bb->succ->flags & EDGE_FALLTHRU)
+	    {
+	      basic_block t = bb_false;
+	      bb_false = bb_true;
+	      bb_true = t;
+	    }
+	  else if (! (bb->succ->succ_next->flags & EDGE_FALLTHRU))
+	    abort ();
 	}
-      else if (! (bb->succ->succ_next->flags & EDGE_FALLTHRU))
-	abort ();
+      else
+	{
+	  /* This can happen with a conditional jump to the next insn.  */
+	  if (JUMP_LABEL (bb->end) != bb_true->head)
+	    abort ();
+
+	  /* Simplest way to do nothing.  */
+	  bb_false = bb_true;
+	}
      
       /* Extract the condition from the branch.  */
       cond_true = XEXP (SET_SRC (PATTERN (bb->end)), 0);
