@@ -174,6 +174,9 @@ static tree init_selector			PROTO((int));
 static tree build_keyword_selector		PROTO((tree));
 static tree synth_id_with_class_suffix		PROTO((char *, tree));
 
+/* from expr.c */
+extern int apply_args_register_offset           PROTO((int));
+
 /* misc. bookkeeping */
 
 typedef struct hashed_entry 	*hash;
@@ -265,7 +268,7 @@ static tree build_class_reference_decl		PROTO((tree));
 static void add_class_reference			PROTO((tree));
 static tree objc_copy_list			PROTO((tree, tree *));
 static tree build_protocol_template		PROTO((void));
-static tree build_descriptor_table_initializer	PROTO((tree, tree, int *));
+static tree build_descriptor_table_initializer	PROTO((tree, tree));
 static tree build_method_prototype_list_template PROTO((tree, int));
 static tree build_method_prototype_template	PROTO((void));
 static int forwarding_offset			PROTO((tree));
@@ -279,9 +282,9 @@ static void generate_protocols			PROTO((void));
 static void check_ivars				PROTO((tree, tree));
 static tree build_ivar_list_template		PROTO((tree, int));
 static tree build_method_list_template		PROTO((tree, int));
-static tree build_ivar_list_initializer		PROTO((tree, tree, int *));
+static tree build_ivar_list_initializer		PROTO((tree, tree));
 static tree generate_ivars_list			PROTO((tree, char *, int, tree));
-static tree build_dispatch_table_initializer	PROTO((tree, tree, int *));
+static tree build_dispatch_table_initializer	PROTO((tree, tree));
 static tree generate_dispatch_table		PROTO((tree, char *, int, tree));
 static tree build_shared_structure_initializer	PROTO((tree, tree, tree, tree, tree, int, tree, tree, tree));
 static void generate_category			PROTO((tree));
@@ -2218,25 +2221,26 @@ build_protocol_template ()
 }
 
 static tree
-build_descriptor_table_initializer (type, entries, size)
+build_descriptor_table_initializer (type, entries)
      tree type;
      tree entries;
-     int *size;
 {
   tree initlist = NULLT;
 
   do
     {
-      initlist = tree_cons (NULLT, build_selector (METHOD_SEL_NAME (entries)), initlist);
+      tree eltlist = NULLT;
 
-      initlist = tree_cons (NULLT, add_objc_string (METHOD_ENCODING (entries), meth_var_types), initlist);
+      eltlist = tree_cons (NULLT, build_selector (METHOD_SEL_NAME (entries)), NULLT);
+      eltlist = tree_cons (NULLT, add_objc_string (METHOD_ENCODING (entries), meth_var_types), eltlist);
 
-      (*size)++;
+      initlist = tree_cons (NULLT, build_constructor (type, nreverse (eltlist)), initlist);
+
       entries = TREE_CHAIN (entries);
     }
   while (entries);
 
-  return build_constructor (type, nreverse (initlist));
+  return build_constructor (build_array_type (type, 0), nreverse (initlist));
 }
 
 /* struct objc_method_prototype_list {
@@ -2314,6 +2318,9 @@ build_method_prototype_template ()
   return proto_record;
 }
 
+/* True if last call to forwarding_offset yielded a register offset */
+static int offset_is_register;
+
 static int
 forwarding_offset (parm)
       tree parm;
@@ -2335,16 +2342,14 @@ forwarding_offset (parm)
 	offset_in_bytes = 0;
 
       offset_in_bytes += OBJC_FORWARDING_STACK_OFFSET;
+      offset_is_register = 0;
     }
-#ifdef OBJC_FORWARDING_REG_OFFSET
   else if (GET_CODE (DECL_INCOMING_RTL (parm)) == REG)
     {
       int regno = REGNO (DECL_INCOMING_RTL (parm));
-
-      offset_in_bytes = 4 * (regno - OBJC_FORWARDING_FIRST_REG)
-			+ OBJC_FORWARDING_REG_OFFSET;
+      offset_in_bytes = apply_args_register_offset (regno);
+      offset_is_register = 1;
     }
-#endif /* OBJC_FORWARDING_REG_OFFSET */
   else
     return 0;
 
@@ -2391,7 +2396,7 @@ encode_method_prototype (method_decl, func_decl)
 		      + (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (parms)))
 			 / BITS_PER_UNIT));
 
-      if (parm_end > max_parm_end)
+      if (!offset_is_register && max_parm_end < parm_end)
 	max_parm_end = parm_end;
     }
 
@@ -2420,6 +2425,11 @@ encode_method_prototype (method_decl, func_decl)
 
       /* compute offset */
       sprintf (buf, "%d", forwarding_offset (parms));
+
+      /* indicate register */
+      if (offset_is_register)
+	obstack_1grow (&util_obstack, '+');
+      
       obstack_grow (&util_obstack, buf, strlen (buf));
     }
 
@@ -2474,17 +2484,15 @@ generate_method_descriptors (protocol)	/* generate_dispatch_tables */
   chain = PROTOCOL_CLS_METHODS (protocol);
   if (chain)
     {
-      tree field;
-
-      size = 0;
+      size = list_length (chain);
 
       method_list_template
 	= build_method_prototype_list_template (objc_method_prototype_template,
 						size);
 
-      field = TREE_CHAIN (TYPE_FIELDS (method_list_template));
-      initlist = build_descriptor_table_initializer (TREE_TYPE (field),
-						     chain, &size);
+      initlist 
+	= build_descriptor_table_initializer (objc_method_prototype_template,
+					      chain);
 
       UOBJC_CLASS_METHODS_decl
 	= generate_descriptor_table (method_list_template,
@@ -2499,16 +2507,14 @@ generate_method_descriptors (protocol)	/* generate_dispatch_tables */
   chain = PROTOCOL_NST_METHODS (protocol);
   if (chain)
     {
-      tree field;
-
-      size = 0;
+      size = list_length (chain);
 
       method_list_template
 	= build_method_prototype_list_template (objc_method_prototype_template,
 						size);
-      field = TREE_CHAIN (TYPE_FIELDS (method_list_template));
-      initlist = build_descriptor_table_initializer (TREE_TYPE (field),
-						     chain, &size);
+      initlist
+	= build_descriptor_table_initializer (objc_method_prototype_template,
+					      chain);
 
       UOBJC_INSTANCE_METHODS_decl
 	= generate_descriptor_table (method_list_template,
@@ -3218,52 +3224,57 @@ build_method_list_template (list_type, size)
 }
 
 static tree
-build_ivar_list_initializer (type, field_decl, size)
+build_ivar_list_initializer (type, field_decl)
      tree type;
      tree field_decl;
-     int *size;
 {
   tree initlist = NULLT;
 
   do
     {
+      tree ivar = NULLT;
+
       /* set name */
       if (DECL_NAME (field_decl))
-	initlist = tree_cons (NULLT,
-			      add_objc_string (DECL_NAME (field_decl),
-					       meth_var_names),
-			      initlist);
+	ivar = tree_cons (NULLT,
+			  add_objc_string (DECL_NAME (field_decl),
+					   meth_var_names),
+			  ivar);
       else
 	/* unnamed bit-field ivar (yuck). */
-	initlist = tree_cons (NULLT, build_int_2 (0, 0), initlist);
+	ivar = tree_cons (NULLT, build_int_2 (0, 0), ivar);
 
       /* set type */
       encode_field_decl (field_decl,
 			 obstack_object_size (&util_obstack),
 			 OBJC_ENCODE_DONT_INLINE_DEFS);
       obstack_1grow (&util_obstack, 0);    /* null terminate string */
-      initlist
+      ivar
 	= tree_cons
 	  (NULLT,
 	   add_objc_string (get_identifier (obstack_finish (&util_obstack)),
 			    meth_var_types),
-	   initlist);
+	   ivar);
       obstack_free (&util_obstack, util_firstobj);
 
       /* set offset */
-      initlist
+      ivar
 	= tree_cons
 	  (NULLT,
 	   build_int_2 ((TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field_decl))
 			 / BITS_PER_UNIT),
 			0),
-	   initlist);
-      (*size)++;
+	   ivar);
+
+      initlist = tree_cons (NULLT, 
+			    build_constructor (type, nreverse (ivar)),
+			    initlist);
+
       field_decl = TREE_CHAIN (field_decl);
     }
   while (field_decl);
 
-  return build_constructor (type, nreverse (initlist));
+  return build_constructor (build_array_type (type, 0), nreverse (initlist));
 }
 
 static tree
@@ -3317,10 +3328,10 @@ generate_ivar_lists ()
   if (CLASS_SUPER_NAME (implementation_template) == NULLT
       && (chain = TYPE_FIELDS (objc_class_template)))
     {
-      size = 0;
+      size = list_length (chain);
+
       ivar_list_template = build_ivar_list_template (objc_ivar_template, size);
-      initlist = build_ivar_list_initializer (ivar_list_template,
-					      chain, &size);
+      initlist = build_ivar_list_initializer (objc_ivar_template, chain);
 
       UOBJC_CLASS_VARIABLES_decl
 	= generate_ivars_list (ivar_list_template, "_OBJC_CLASS_VARIABLES",
@@ -3334,10 +3345,9 @@ generate_ivar_lists ()
   chain = CLASS_IVARS (implementation_template);
   if (chain)
     {
-      size = 0;
+      size = list_length (chain);
       ivar_list_template = build_ivar_list_template (objc_ivar_template, size);
-      initlist = build_ivar_list_initializer (ivar_list_template,
-					      chain, &size);
+      initlist = build_ivar_list_initializer (objc_ivar_template, chain);
 
       UOBJC_INSTANCE_VARIABLES_decl
 	= generate_ivars_list (ivar_list_template, "_OBJC_INSTANCE_VARIABLES",
@@ -3352,39 +3362,45 @@ generate_ivar_lists ()
 }
 
 static tree
-build_dispatch_table_initializer (type, entries, size)
+build_dispatch_table_initializer (type, entries)
      tree type;
      tree entries;
-     int *size;
 {
   tree initlist = NULLT;
 
   do
     {
-      initlist = tree_cons (NULLT, build_selector (METHOD_SEL_NAME (entries)),
-			    initlist);
+      tree elemlist = NULLT;
 
-      initlist = tree_cons (NULLT, add_objc_string (METHOD_ENCODING (entries),
+      elemlist = tree_cons (NULLT, build_selector (METHOD_SEL_NAME (entries)),
+			    NULLT);
+
+      elemlist = tree_cons (NULLT, add_objc_string (METHOD_ENCODING (entries),
 						    meth_var_types),
+			    elemlist);
+
+      elemlist = tree_cons (NULLT, 
+			    build_unary_op (ADDR_EXPR, METHOD_DEFINITION (entries), 1),
+			    elemlist);
+
+      initlist = tree_cons (NULLT, 
+			    build_constructor (type, nreverse (elemlist)),
 			    initlist);
 
-      initlist = tree_cons (NULLT, METHOD_DEFINITION (entries), initlist);
-
-      (*size)++;
       entries = TREE_CHAIN (entries);
     }
   while (entries);
 
-  return build_constructor (type, nreverse (initlist));
+  return build_constructor (build_array_type (type, 0), nreverse (initlist));
 }
 
 /* To accomplish method prototyping without generating all kinds of
    inane warnings, the definition of the dispatch table entries were
    changed from:
 
-   	struct objc_method { SEL _cmd; id (*_imp)(); };
+   	struct objc_method { SEL _cmd; ...; id (*_imp)(); };
    to:
-   	struct objc_method { SEL _cmd; void *_imp; };  */
+   	struct objc_method { SEL _cmd; ...; void *_imp; };  */
 
 static tree
 build_method_template ()
@@ -3476,12 +3492,10 @@ generate_dispatch_tables ()
   chain = CLASS_CLS_METHODS (implementation_context);
   if (chain)
     {
-      size = 0;
+      size = list_length (chain);
 
-      method_list_template = build_method_list_template (objc_method_template,
-							 size);
-      initlist = build_dispatch_table_initializer (method_list_template,
-						   chain, &size);
+      method_list_template = build_method_list_template (objc_method_template, size);
+      initlist = build_dispatch_table_initializer (objc_method_template, chain);
 
       UOBJC_CLASS_METHODS_decl
 	= generate_dispatch_table (method_list_template,
@@ -3499,12 +3513,11 @@ generate_dispatch_tables ()
   chain = CLASS_NST_METHODS (implementation_context);
   if (chain)
     {
-      size = 0;
+      size = list_length (chain);
 
-      method_list_template = build_method_list_template (objc_method_template,
-							 size);
-      initlist = build_dispatch_table_initializer (method_list_template,
-						   chain, &size);
+      method_list_template = build_method_list_template (objc_method_template, size);
+      initlist = build_dispatch_table_initializer (objc_method_template, chain);
+
       if (TREE_CODE (implementation_context) == CLASS_IMPLEMENTATION_TYPE)
 	UOBJC_INSTANCE_METHODS_decl
 	  = generate_dispatch_table (method_list_template,
@@ -6598,7 +6611,7 @@ encode_method_def (func_decl)
 		      + (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (parms)))
 			 / BITS_PER_UNIT));
 
-      if (parm_end > max_parm_end)
+      if (!offset_is_register && parm_end > max_parm_end)
 	max_parm_end = parm_end;
     }
 
@@ -6618,6 +6631,11 @@ encode_method_def (func_decl)
 
       /* compute offset */
       sprintf (buffer, "%d", forwarding_offset (parms));
+
+      /* indicate register */
+      if (offset_is_register)
+	obstack_1grow (&util_obstack, '+');
+
       obstack_grow (&util_obstack, buffer, strlen (buffer));
     }
 
