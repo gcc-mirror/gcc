@@ -941,9 +941,13 @@ update_bb_profile_for_threading (basic_block bb, int edge_frequency,
       for (; (c = ei_safe_edge (ei)); ei_next (&ei))
 	c->probability = 0;
     }
-  else
-    FOR_EACH_EDGE (c, ei, bb->succs)
-      c->probability = ((c->probability * REG_BR_PROB_BASE) / (double) prob);
+  else if (prob != REG_BR_PROB_BASE)
+    {
+      int scale = REG_BR_PROB_BASE / prob;
+
+      FOR_EACH_EDGE (c, ei, bb->succs)
+	c->probability *= scale;
+    }
 
   if (bb != taken_edge->src)
     abort ();

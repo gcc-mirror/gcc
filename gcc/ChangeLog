@@ -1,5 +1,9 @@
 2004-11-21  Jeff Law  <law@redhat.com>
 
+	* cfg.c (update_bb_profile_for_threading): Do not rescale the
+	successor probabilities if they are not going to change.  Pull
+	division out of loop if we do need to rescale successor probabilities.
+
 	* tree-ssa-threadupdate.c (redirection_data_hash): Use the
 	index of the destination block for the hash value rather than
 	hashing a pointer.
