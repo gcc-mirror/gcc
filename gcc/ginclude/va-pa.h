@@ -21,8 +21,11 @@ typedef double *__gnuc_va_list;
   (AP) = (double *)((char *)(AP) + 4)
 #endif /* __GNUC__ > 1 */
 
+/* Call __builtin_next_arg even though we aren't using its value, so that
+   we can verify that LASTARG is correct.  */
 #ifdef _STDARG_H
-#define va_start(AP,LASTARG) __gnuc_va_start (AP)
+#define va_start(AP,LASTARG) \
+  (__builtin_next_arg (LASTARG), __gnuc_va_start (AP))
 #else
 /* The ... causes current_function_varargs to be set in cc1.  */
 #define va_dcl long va_alist; __va_ellipsis

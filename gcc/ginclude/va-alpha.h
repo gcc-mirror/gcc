@@ -35,8 +35,11 @@ typedef struct {
 
 /* ANSI alternative.  */
 
-#define va_start(pvar, firstarg)  \
-  ((pvar) = *(__gnuc_va_list *) __builtin_saveregs ())
+/* Call __builtin_next_arg even though we aren't using its value, so that
+   we can verify that firstarg is correct.  */
+#define va_start(pvar, firstarg)				\
+  (__builtin_next_arg (firstarg),				\
+   (pvar) = *(__gnuc_va_list *) __builtin_saveregs ())
 
 #endif /* _STDARG_H */
 
