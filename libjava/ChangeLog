@@ -1,3 +1,14 @@
+2001-01-11  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/Cursor.java (Cursor(String)): Set type to custom.
+	(Cursor(int), getPredefinedCursor): Throw exception if argument
+	invalid.
+
+2001-01-03  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/awt/gtk/natGtkComponentPeer.cc (setCursor): Wrote.
+	(getLocationOnScreen): Wrote.
+
 2001-01-11  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* Makefile.am: Re-enable dependencies.
