@@ -1,3 +1,9 @@
+2004-02-11  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/456
+	* gcc.dg/cpp/c90-if-comma-1.c, gcc.dg/cpp/c99-if-comma-1.c: New
+	tests.
+
 2004-02-11  Uros Bizjak  <uros@kss-loka.si>
 
 	* gcc.dg/builtins-33.c: New test.
