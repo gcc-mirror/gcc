@@ -194,6 +194,28 @@ public class ObjectStreamClass implements Serializable
 
 
   // Returns true iff the class that this ObjectStreamClass represents
+  // has the following method:
+  //
+  // private void readObject (ObjectOutputStream)
+  //
+  // This method is used by the class to override default
+  // serialization behavior.
+  boolean hasReadMethod ()
+  {
+      try
+      {
+	  Class[] readObjectParams = { ObjectInputStream.class };
+	  forClass ().getDeclaredMethod ("readObject", readObjectParams);
+	  return true;
+      }
+      catch (NoSuchMethodException e)
+      {
+	  return false;
+      }
+  }
+
+
+  // Returns true iff the class that this ObjectStreamClass represents
   // implements Serializable but does *not* implement Externalizable.
   boolean isSerializable ()
   {
