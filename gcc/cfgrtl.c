@@ -746,20 +746,9 @@ try_redirect_by_replacing_jump (e, target)
 	fprintf (rtl_dump_file, "Replacing insn %i by jump %i\n",
 		 INSN_UID (insn), INSN_UID (src->end));
 
-
+      /* Remove the original jump.  If INSN is a tablejump, the jump
+	 table will be removed later, if it is no longer needed.  */
       delete_insn_chain (kill_from, insn);
-
-      /* Recognize a tablejump that we are converting to a
-	 simple jump and remove its associated CODE_LABEL
-	 and ADDR_VEC or ADDR_DIFF_VEC.  */
-      if ((tmp = JUMP_LABEL (insn)) != NULL_RTX
-	  && (tmp = NEXT_INSN (tmp)) != NULL_RTX
-	  && GET_CODE (tmp) == JUMP_INSN
-	  && (GET_CODE (PATTERN (tmp)) == ADDR_VEC
-	      || GET_CODE (PATTERN (tmp)) == ADDR_DIFF_VEC))
-	{
-	  delete_insn_chain (JUMP_LABEL (insn), tmp);
-	}
 
       barrier = next_nonnote_insn (src->end);
       if (!barrier || GET_CODE (barrier) != BARRIER)

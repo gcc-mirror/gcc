@@ -1,3 +1,9 @@
+2003-04-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR middle-end/8866
+	* cfgtrl.c (try_redirect_by_replacing_jump): Do not delete
+	jumptables.
+
 2003-04-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR/10271
