@@ -1,3 +1,22 @@
+2005-04-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/20446
+	* config/sparc/sparc.h (NEED_INDICATE_EXEC_STACK): Define to 0.
+	* config/sparc/linux.h (TARGET_ASM_FILE_END): Delete.
+	(NEED_INDICATE_EXEC_STACK): Define to 1.
+	* config/sparc/linux64.h (TARGET_ASM_FILE_END): Delete.
+	(NEED_INDICATE_EXEC_STACK): Define to 1.
+	* config/sparc/sparc.c (TARGET_ASM_FILE_END): Set to sparc_file_end.
+	(add_pc_to_pic_symbol): Rename into pic_helper_symbol.
+	(add_pc_to_pic_symbol_name): Rename into pic_helper_symbol_name.
+	(pic_helper_emitted_p): New global.
+	(emit_pic_helper): New function extracted from...
+	(load_pic_register): ...here.  Add 'delay_pic_helper' parameter.
+	Do not call emit_pic_helper if delay_pic_helper is true.
+	(sparc_expand_prologue): Pass 'false' to load_pic_register.
+	(sparc_output_mi_thunk): Pass 'true' to load_pic_register.
+	(sparc_file_end): New function.
+
 2005-04-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/mcore/mcore-protos.h: Remove the prototypes for
