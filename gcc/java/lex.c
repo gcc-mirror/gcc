@@ -379,7 +379,7 @@ java_lineterminator (c)
 }
 
 /* Parse the end of a C style comment.
- * C is the first character after the '/*'. */
+ * C is the first character following the '/' and '*'. */
 static void
 java_parse_end_comment (c)
      unicode_t c;

@@ -333,7 +333,6 @@ maybe_add_interface (this_class, interface_class)
      tree this_class, interface_class;
 {
   tree basetype_vec = TYPE_BINFO_BASETYPES (this_class);
-  tree interface_binfo = make_tree_vec (6);
   int i;
   int n = TREE_VEC_LENGTH (basetype_vec);
   for (i = 0; ; i++)
@@ -1100,7 +1099,7 @@ make_class_data (type)
     {
       int super_index = alloc_class_constant (super);
       super = build_int_2 (super_index, 0);
-      TREE_TYPE (super) == ptr_type_node;
+      TREE_TYPE (super) = ptr_type_node;
     }
 
   /* Build and emit the array of implemented interfaces. */
@@ -1126,7 +1125,7 @@ make_class_data (type)
 	    {
 		int int_index = alloc_class_constant (iclass);
 		index = build_int_2 (int_index, 0);
-		TREE_TYPE (index) == ptr_type_node;
+		TREE_TYPE (index) = ptr_type_node;
 	    }
 	  init = tree_cons (NULL_TREE, index, init); 
 	}
@@ -1703,8 +1702,6 @@ register_class ()
 void
 emit_register_classes ()
 {
-  tree decl = getdecls ();
-
   extern tree get_file_function_name PROTO((int));
   tree init_name = get_file_function_name ('I');
   tree init_type = build_function_type (void_type_node, end_params_node);
