@@ -21,6 +21,19 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define FALSE 0
 #define TRUE 1
 
+#ifdef VAXC
+/* if compiling with VAXC, need to fix problem with <stdio.h>
+   which defines a macro called FILE_TYPE that breaks "tree.h".
+   Fortunately it uses #ifndef to suppress multiple inclusions.
+   Three possible cases:
+	1) <stdio.h> has already been included -- ours will be no-op;
+	2) <stdio.h> will be included after us -- "theirs" will be no-op;
+	3) <stdio.h> isn't needed -- including it here shouldn't hurt.
+   In all three cases, the problem macro will be removed here.  */
+#include <stdio.h>
+#undef FILE_TYPE
+#endif
+
 /* target machine dependencies.
    tm.h is a symbolic link to the actual target specific file.   */
 #include "tm.h"
