@@ -96,6 +96,10 @@ public class InputStreamReader extends Reader
   // Last available character (in work buffer) to read.
   int wcount;
 
+  /*
+   * This is the byte-character decoder class that does the reading and
+   * translation of bytes from the underlying stream.
+   */
   BytesToUnicode converter;
 
   /**
@@ -201,7 +205,20 @@ public class InputStreamReader extends Reader
       }
   }
 
-  public int read(char buf[], int offset, int length) throws IOException
+  /**
+   * This method reads up to <code>length</code> characters from the stream into
+   * the specified array starting at index <code>offset</code> into the
+   * array.
+   *
+   * @param buf The character array to recieve the data read
+   * @param offset The offset into the array to start storing characters
+   * @param length The requested number of characters to read.
+   *
+   * @return The actual number of characters read, or -1 if end of stream.
+   *
+   * @exception IOException If an error occurs
+   */
+  public int read (char[] buf, int offset, int length) throws IOException
   {
     synchronized (lock)
       {

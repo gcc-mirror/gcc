@@ -1,3 +1,21 @@
+2003-05-09  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/DataOutputStream.java
+	(writeShort): Made it synchronized.
+	(writeChar): Likewise.
+	(writeInt): Likewise.
+	(writeLong): Liekwise.
+	(writeUTF): Made it synchronized, renamed argument to match classpath.
+	* java/io/InputStreamReader.java
+	(converter): Added documentation.
+	(read): Merged documentation from classpath.
+	* java/io/OutputStreamWriter.java
+	(OutputStreamWriter): Merged documentation from classpath.
+	(close): Reformatted.
+	(getEncoding): Likewise.
+	(flush): Likewise.
+	(write): Merged documentation from classpath, reformatted.
+
 2003-05-08  Tom Tromey  <tromey@redhat.com>
 
 	* configure.host <powerpc64*-*>: Set with_libffi_default and
