@@ -1475,14 +1475,15 @@ while (0)
 /* Compute extra cost of moving data between one register class
    and another.
 
-   Make moves from SAR so expensive they should never happen.
+   Make moves from SAR so expensive they should never happen.  We used to
+   have 0xffff here, but that generates overflow in rare cases.
 
    Copies involving a FP register and a non-FP register are relatively 
    expensive because they must go through memory.
 
    Other copies are reasonably cheap.  */
 #define REGISTER_MOVE_COST(CLASS1, CLASS2) \
- (CLASS1 == SHIFT_REGS ? 0xffff					\
+ (CLASS1 == SHIFT_REGS ? 0x100					\
   : FP_REG_CLASS_P (CLASS1) && ! FP_REG_CLASS_P (CLASS2) ? 16	\
   : FP_REG_CLASS_P (CLASS2) && ! FP_REG_CLASS_P (CLASS1) ? 16	\
   : 2)
