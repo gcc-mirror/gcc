@@ -2005,7 +2005,7 @@ install-common: native install-dir xgcc $(EXTRA_PARTS) lang.install-common
 # and also as either gcc (if native) or $(tooldir)/bin/gcc.
 	-if [ -f gcc-cross$(exeext) ] ; then \
 	  rm -f $(bindir)/$(GCC_CROSS_NAME)$(exeext); \
-	  $(INSTALL_PROGRAM) gcc-cross$(exext) $(bindir)/$(GCC_CROSS_NAME)$(exeext); \
+	  $(INSTALL_PROGRAM) gcc-cross$(exeext) $(bindir)/$(GCC_CROSS_NAME)$(exeext); \
 	  if [ -d $(tooldir)/bin/. ] ; then \
 	    rm -f $(tooldir)/bin/gcc$(exeext); \
 	    $(INSTALL_PROGRAM) gcc-cross$(exeext) $(tooldir)/bin/gcc$(exeext); \
