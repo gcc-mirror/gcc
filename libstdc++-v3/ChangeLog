@@ -1,5 +1,18 @@
 2004-11-08  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/streambuf_iterator.h (class istreambuf_iterator):
+	Consistently use _M_c to cache the current char, i.e., not only
+	when operator++(int) is involved; change _M_c to mutable.
+	(_M_get()): Always save the return value of _M_sbuf->sgetc() into
+	_M_c.
+	* testsuite/22_locale/time_get/get_monthname/char/1.cc: Fix
+	(long standing) typo.
+	* testsuite/22_locale/time_get/get_monthname/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/char/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/wchar_t/1.cc: Likewise.
+
+2004-11-08  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/istream.tcc (getline(char_type*, streamsize,
 	char_type), ignore(streamsize), ignore(streamsize, int_type)):
 	Restore a generic version of the functions, not using the

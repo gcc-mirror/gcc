@@ -106,7 +106,7 @@ void test01()
   tim_get.get_weekday(is_it06, end, iss, errorstate, &time06);
   VERIFY( time06.tm_wday == 4 );
   VERIFY( errorstate == ios_base::failbit );
-  VERIFY( *is_it05 == 'u');
+  VERIFY( *is_it06 == 'u');
 }
 
 int main()
