@@ -1,3 +1,9 @@
+2004-12-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/18123
+	* parser.c (cp_parser_type_specifier): Catch template declaration
+	of enum.
+
 2004-12-01  Matt Austern  <austern@apple.com>
 
 	* name-lookup.c (namespace_binding): Omit alias check for global namespace.

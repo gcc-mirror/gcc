@@ -1,3 +1,9 @@
+2004-12-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/18123
+	* g++.dg/parse/enum2.C: New test.
+	* g++.old-deja/g++.pt/enum5.C: Adjust error location.
+
 2004-12-02  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.target/xstormy16: New test directory.

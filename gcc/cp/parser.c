@@ -9130,7 +9130,15 @@ cp_parser_type_specifier (cp_parser* parser,
 	      && cp_lexer_peek_nth_token (parser->lexer, 3)->type
 	         == CPP_OPEN_BRACE))
 	{
-	  type_spec = cp_parser_enum_specifier (parser);
+	  if (parser->num_template_parameter_lists)
+	    {
+	      error ("template declaration of %qs", "enum");
+	      cp_parser_skip_to_end_of_block_or_statement (parser);
+	      type_spec = error_mark_node;
+	    }
+	  else
+	    type_spec = cp_parser_enum_specifier (parser);
+
 	  if (declares_class_or_enum)
 	    *declares_class_or_enum = 2;
 	  if (decl_specs)
