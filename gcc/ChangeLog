@@ -1,3 +1,10 @@
+2002-04-02  Richard Henderson  <rth@redhat.com>
+
+	PR opt/4311
+	* loop.h (LOOP_FIRST_PASS): New.
+	* loop.c (strength_reduce): Mind it when deciding to unroll.
+	* toplev.c (rest_of_compilation): Set it.
+
 2002-04-02  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/sparc.md (ldd peephole2s): Fix final arg to

@@ -5213,7 +5213,8 @@ strength_reduce (loop, flags)
      collected.  Always unroll loops that would be as small or smaller
      unrolled than when rolled.  */
   if ((flags & LOOP_UNROLL)
-      || (loop_info->n_iterations > 0
+      || (!(flags & LOOP_FIRST_PASS)
+	  && loop_info->n_iterations > 0
 	  && unrolled_insn_copies <= insn_count))
     unroll_loop (loop, insn_count, 1);
 
