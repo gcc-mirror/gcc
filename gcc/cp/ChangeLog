@@ -1,3 +1,10 @@
+2004-07-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (check_bases): Don't set CLASSTYPE_NON_AGGREGATE here.
+	Don't check for incomplete base.
+	(get_vfield_name): Simplify while loop.
+	* decl.c (xref_basetypes): Set CLASSTYPE_NON_AGGREGATE here.
+
 2004-07-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* lex.c (cxx_make_type): Remove call to get_pointer_type.

@@ -9176,7 +9176,11 @@ xref_basetypes (tree ref, tree base_list)
 	  i++;
 	}
       if (i)
-	TREE_VEC_LENGTH (accesses) = TREE_VEC_LENGTH (binfos) = i;
+	{
+	  TREE_VEC_LENGTH (accesses) = TREE_VEC_LENGTH (binfos) = i;
+	  /* An aggregate cannot have baseclasses.  */
+	  CLASSTYPE_NON_AGGREGATE (ref) = 1;
+	}
       else
 	BINFO_BASE_ACCESSES (binfo) = BINFO_BASE_BINFOS (binfo) = NULL_TREE;
       if (max_vbases)
