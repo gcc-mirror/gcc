@@ -1,3 +1,10 @@
+2003-03-28  Alan Modra  <amodra@bigpond.net.au>
+
+	* loop.c: (find_mem_in_note_1, find_mem_in_note): New functions.
+	(replace_loop_mems): Add "written" param.  Remove invalid REG_EQUAL
+	notes after hoisting.
+	(load_mems): Adjust replace_loop_mems call.
+
 2003-03-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
             Richard Henderson  <rth@redhat.com>
 
