@@ -1,3 +1,7 @@
+1998-10-21  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (build_component_ref): Use of a type here is an error.
+
 1998-10-19  Jason Merrill  <jason@yorick.cygnus.com>
 
 	Revamp references to member functions.

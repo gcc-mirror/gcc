@@ -2053,8 +2053,8 @@ build_component_ref (datum, component, basetype_path, protect)
     field = component;
   else if (TREE_CODE (component) == TYPE_DECL)
     {
-      cp_pedwarn ("invalid use of type decl `%#D' as expression", component);
-      return component;
+      cp_error ("invalid use of type decl `%#D' as expression", component);
+      return error_mark_node;
     }
   else
     {
