@@ -1,3 +1,7 @@
+2000-08-13  Geoff Keating  <geoffk@cygnus.com>
+
+	* gcc.dg/c99-array-lval-1.c: The test on line 14 now passes.
+
 2000-08-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.pt/explicit81.C: New test.
