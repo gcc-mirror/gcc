@@ -1387,7 +1387,14 @@ calculate_needs_all_insns (global)
 	  if (set && GET_CODE (SET_DEST (set)) == REG
 	      && reg_renumber[REGNO (SET_DEST (set))] < 0
 	      && reg_equiv_constant[REGNO (SET_DEST (set))])
-	    continue;
+	    {
+	      /* Must clear out the shortcuts, in case they were set last
+		 time through.  */
+	      chain->need_elim = 0;
+	      chain->need_reload = 0;
+	      chain->need_operand_change = 0;
+	      continue;
+	    }
 
 	  /* If needed, eliminate any eliminable registers.  */
 	  if (num_eliminable || num_eliminable_invariants)

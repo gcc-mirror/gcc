@@ -1,3 +1,8 @@
+Fri Mar 12 12:35:01 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* reload1.c (calculate_needs_all_insns): When ignore equivalence
+	setting insn, clear need_elim, need_reload, and need_operand_change.
+
 Fri Mar 12 07:54:43 1999  Bruce Korb <korb@datadesign.com>
 
 	* fixinc/fixinc.*: Some changes from the fixincl-branch
