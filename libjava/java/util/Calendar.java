@@ -926,8 +926,21 @@ public abstract class Calendar implements Serializable, Cloneable
    * @return the actual minimum value.
    * @since jdk1.2
    */
-  // FIXME: XXX: Not abstract in JDK 1.2.
-  public abstract int getActualMinimum(int field);
+  public int getActualMinimum(int field)
+  {
+    Calendar tmp = (Calendar)clone();	// To avoid restoring state
+    int min = tmp.getGreatestMinimum(field);
+    int end = tmp.getMinimum(field);
+    tmp.set(field, min);
+    for (; min > end; min--)
+      {
+	tmp.add(field, -1);	// Try to get smaller
+	if (tmp.get(field) != min - 1)
+	  break;		// Done if not successful
+
+      }
+    return min;
+  }
 
   /**
    * Gets the actual maximum value that is allowed for the specified field.
@@ -936,8 +949,20 @@ public abstract class Calendar implements Serializable, Cloneable
    * @return the actual maximum value.  
    * @since jdk1.2
    */
-  // FIXME: XXX: Not abstract in JDK 1.2.
-  public abstract int getActualMaximum(int field);
+  public int getActualMaximum(int field)
+  {
+    Calendar tmp = (Calendar)clone();	// To avoid restoring state
+    int max = tmp.getLeastMaximum(field);
+    int end = tmp.getMaximum(field);
+    tmp.set(field, max);
+    for (; max < end; max++)
+      {
+	tmp.add(field, 1);
+	if (tmp.get(field) != max + 1)
+	  break;
+      }
+    return max;
+  }
 
   /**
    * Return a clone of this object.
