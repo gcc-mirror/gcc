@@ -1,3 +1,9 @@
+Mon Jul 13 11:54:03 1998  Craig Burley  <burley@gnu.org>
+
+	* com.c (ffecom_push_tempvar): Replace kludge that
+	munged back-end globals directly with proper calls
+	to push_topmost_sequence and pop_topmost_sequence.
+
 1998-07-12  Dave Love  <d.love@dl.ac.uk>
 
 	* version.c: Bump version.
