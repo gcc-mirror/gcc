@@ -1278,6 +1278,11 @@ reload (first, global)
   unused_insn_chains = 0;
   fixup_abnormal_edges ();
 
+  /* Replacing pseudos with their memory equivalents might have
+     created shared rtx.  Subsequent passes would get confused
+     by this, so unshare everything here.  */
+  unshare_all_rtl_again (first);
+
   return failure;
 }
 
