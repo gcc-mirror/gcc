@@ -1,5 +1,8 @@
 2002-03-19  Jim Blandy  <jimb@redhat.com>
 
+	* c-lex.c (cb_file_change): Pass the #inclusion's line number to
+	the start_source_file debug hook, not the current line number.
+
 	* cppmacro.c (cpp_macro_definition): Emit a space after the macro
 	name, even if the replacement list contains no tokens, as required
 	by Dwarf.
