@@ -1412,7 +1412,7 @@ tree
 build_function_call (function, params)
      tree function, params;
 {
-  register tree fntype, fundecl;
+  register tree fntype, fundecl = 0;
   register tree coerced_params;
   tree name = NULL_TREE, assembler_name = NULL_TREE;
 
