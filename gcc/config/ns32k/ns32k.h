@@ -854,11 +854,11 @@ __transfer_from_trampoline ()		\
 
 /* Go to ADDR if X is a valid address not using indexing.
    (This much is the easy part.)  */
-#define GO_IF_INDEXING(X, ADDR)  \
+#define GO_IF_INDEXING(X, MODE, ADDR)  \
 { register rtx xfoob = (X);						\
-  if (GET_CODE (xfoob) == PLUS && INDEX_TERM_P (XEXP (xfoob, 0)))	\
+  if (GET_CODE (xfoob) == PLUS && INDEX_TERM_P (XEXP (xfoob, 0), MODE))	\
     GO_IF_INDEXABLE_ADDRESS (XEXP (xfoob, 1), ADDR);			\
-  if (GET_CODE (xfoob) == PLUS && INDEX_TERM_P (XEXP (xfoob, 1)))	\
+  if (GET_CODE (xfoob) == PLUS && INDEX_TERM_P (XEXP (xfoob, 1), MODE))	\
     GO_IF_INDEXABLE_ADDRESS (XEXP (xfoob, 0), ADDR); }			\
 
 #define GO_IF_INDEXABLE_ADDRESS(X, ADDR) \
@@ -900,7 +900,7 @@ __transfer_from_trampoline ()		\
       else if (CONSTANT_ADDRESS_NO_LABEL_P (XEXP (xfooy, 0))		\
 	  && GET_CODE (XEXP (xfooy, 1)) == PLUS)			\
 	xfooy = XEXP (xfooy, 1);					\
-      GO_IF_INDEXING (xfooy, ADDR);					\
+      GO_IF_INDEXING (xfooy, MODE, ADDR);				\
     }									\
   else if (INDEX_TERM_P (xfooy, MODE))					\
     goto ADDR;								\
