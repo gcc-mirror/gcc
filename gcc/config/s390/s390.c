@@ -4779,11 +4779,21 @@ s390_optimize_prolog (temp_regno)
   
   for (i = 6; i < 16; i++)
     if (regs_ever_live[i])
-      break;
+      if (!global_regs[i]
+	  || i == STACK_POINTER_REGNUM 
+          || i == RETURN_REGNUM
+          || i == BASE_REGISTER 
+          || (flag_pic && i == (int)PIC_OFFSET_TABLE_REGNUM))
+	break;
 
   for (j = 15; j > i; j--)
     if (regs_ever_live[j])
-      break;
+      if (!global_regs[j]
+	  || j == STACK_POINTER_REGNUM 
+          || j == RETURN_REGNUM
+          || j == BASE_REGISTER 
+          || (flag_pic && j == (int)PIC_OFFSET_TABLE_REGNUM))
+	break;
 
   if (i == 16)
     {
@@ -5077,7 +5087,7 @@ s390_frame_info ()
   cfun->machine->save_fprs_p = 0;
   if (TARGET_64BIT)
     for (i = 24; i < 32; i++) 
-      if (regs_ever_live[i])
+      if (regs_ever_live[i] && !global_regs[i])
 	{
           cfun->machine->save_fprs_p = 1;
 	  break;
@@ -5101,8 +5111,11 @@ s390_frame_info ()
      prolog/epilog code is modified again.  */
 
   for (i = 0; i < 16; i++)
-    gprs_ever_live[i] = regs_ever_live[i];
+    gprs_ever_live[i] = regs_ever_live[i] && !global_regs[i];
 
+  if (flag_pic)
+    gprs_ever_live[PIC_OFFSET_TABLE_REGNUM] =
+    regs_ever_live[PIC_OFFSET_TABLE_REGNUM];
   gprs_ever_live[BASE_REGISTER] = 1;
   gprs_ever_live[RETURN_REGNUM] = 1;
   gprs_ever_live[STACK_POINTER_REGNUM] = cfun->machine->frame_size > 0;
@@ -5139,7 +5152,7 @@ s390_arg_frame_offset ()
   save_fprs_p = 0;
   if (TARGET_64BIT)
     for (i = 24; i < 32; i++) 
-      if (regs_ever_live[i])
+      if (regs_ever_live[i] && !global_regs[i])
 	{
           save_fprs_p = 1;
 	  break;
@@ -5368,12 +5381,12 @@ s390_emit_prologue ()
   if (!TARGET_64BIT)
     {
       /* Save fpr 4 and 6.  */
-      if (regs_ever_live[18])
+      if (regs_ever_live[18] && !global_regs[18])
 	{
 	  insn = save_fpr (stack_pointer_rtx, STACK_POINTER_OFFSET - 16, 18);
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
-      if (regs_ever_live[19]) 
+      if (regs_ever_live[19] && !global_regs[19])
 	{
 	  insn = save_fpr (stack_pointer_rtx, STACK_POINTER_OFFSET - 8, 19); 
 	  RTX_FRAME_RELATED_P (insn) = 1;
@@ -5425,7 +5438,7 @@ s390_emit_prologue ()
       insn = emit_insn (gen_add2_insn (temp_reg, GEN_INT(-64)));
 
       for (i = 24; i < 32; i++)
-	if (regs_ever_live[i])
+	if (regs_ever_live[i] && !global_regs[i])
 	  {
 	    rtx addr = plus_constant (stack_pointer_rtx, 
 				      cfun->machine->frame_size - 64 + (i-24)*8);
@@ -5523,14 +5536,14 @@ s390_emit_epilogue ()
     }
   else
     {
-      if (regs_ever_live[18])
+      if (regs_ever_live[18] && !global_regs[18])
 	{
 	  if (area_bottom > STACK_POINTER_OFFSET - 16)
 	    area_bottom = STACK_POINTER_OFFSET - 16;
 	  if (area_top < STACK_POINTER_OFFSET - 8)
 	    area_top = STACK_POINTER_OFFSET - 8;
 	}
-      if (regs_ever_live[19])
+      if (regs_ever_live[19] && !global_regs[19])
 	{
 	  if (area_bottom > STACK_POINTER_OFFSET - 8)
 	    area_bottom = STACK_POINTER_OFFSET - 8;
