@@ -1,3 +1,7 @@
+2004-09-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-dom.c: Fix comment typos.
+
 2004-09-15  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/linux-unwind.h (struct gcc_pt_regs): Extend to

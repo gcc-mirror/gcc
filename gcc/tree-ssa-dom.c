@@ -55,7 +55,7 @@ static htab_t avail_exprs;
 
 /* Stack of available expressions in AVAIL_EXPRs.  Each block pushes any
    expressions it enters into the hash table along with a marker entry
-   (null).  When we finsh processing the block, we pop off entries and
+   (null).  When we finish processing the block, we pop off entries and
    remove the expressions from the global hash table until we hit the
    marker.  */
 static varray_type avail_exprs_stack;
@@ -750,7 +750,7 @@ dom_opt_initialize_block (struct dom_walk_data *walk_data, basic_block bb)
     fprintf (dump_file, "\n\nOptimizing block #%d\n\n", bb->index);
 
   /* Push a marker on AVAIL_EXPRS_STACK so that we know how far to unwind
-     when we finalize this blcok.  */
+     when we finalize this block.  */
   VARRAY_PUSH_TREE (avail_exprs_stack, NULL_TREE);
 
   record_equivalences_from_incoming_edge (walk_data, bb);
