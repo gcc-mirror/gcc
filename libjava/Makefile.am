@@ -173,7 +173,7 @@ libgcj.zip: $(java_source_files) $(cond_awt_java_source_files)
 ## This little nastiness is here so that the backquoted stuff in the
 ## GCJ definition can be correctly expanded, if required.
 	javac="$(JAVAC)"; cd $(srcdir); \
-	  $$javac -L$(here) $(JCFLAGS) -classpath $(here):`/bin/pwd` -d $(here) \
+	  $$javac $(JCFLAGS) -classpath $(here):`/bin/pwd` -d $(here) \
 	    $(subst $(srcdir)/,,$?)
 	-@rm -f libgcj.zip
 ## Note that we explicitly want to include directory information.
