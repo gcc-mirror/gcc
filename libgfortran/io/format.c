@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2003 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -510,7 +510,7 @@ format_item:
 	}
 
       saved_token = t;
-      goto between_desc;
+      goto optional_comma;
 
     case FMT_P:		/* P and X require a prior number */
       error = "P descriptor requires leading scale factor";

@@ -1,3 +1,8 @@
+2004-05-13  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* io/format.c: (parse_format_list): No comma is required after
+	P descriptor.
+
 2004-05-13  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/15204
