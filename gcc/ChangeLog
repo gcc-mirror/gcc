@@ -1,3 +1,8 @@
+Thu Jul  8 18:06:30 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* dwarf2out.c (dwarf2out_line): Emit a line number comment after
+	the label if we're being verbose.
+
 Thu Jul  8 14:18:46 1999  Richard Henderson  <rth@cygnus.com>
 
 	* m68k.c (output_function_prologue): Add pic register to mask
