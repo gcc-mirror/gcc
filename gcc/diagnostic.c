@@ -1645,7 +1645,7 @@ See %s for instructions.\n", GCCBUGURL);
 /* Given a partial pathname as input, return another pathname that
    shares no directory elements with the pathname of __FILE__.  This
    is used by fancy_abort() to print `Internal compiler error in expr.c'
-   instead of `Internal compiler error in ../../egcs/gcc/expr.c'.  */
+   instead of `Internal compiler error in ../../GCC/gcc/expr.c'.  */
 static const char *
 trim_filename (name)
      const char *name;
