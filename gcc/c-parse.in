@@ -1062,14 +1062,14 @@ attribute_list
     ;
 
 attrib
-    : identifier
+    : IDENTIFIER
 	{ if (strcmp (IDENTIFIER_POINTER ($1), "packed")
 	      && strcmp (IDENTIFIER_POINTER ($1), "noreturn"))
 	    warning ("`%s' attribute directive ignored",
 		     IDENTIFIER_POINTER ($1));
 	  $$ = $1; }
     | TYPE_QUAL
-    | identifier '(' identifier ')'
+    | IDENTIFIER '(' IDENTIFIER ')'
 	{ /* If not "mode (m)" or "aligned", then issue warning. 
 	     If "aligned", this will later produce an error in decl_attributes
 	     since an identifier is not a valid constant, but we want to give
@@ -1084,7 +1084,7 @@ attrib
 	    }
 	  else
 	    $$ = tree_cons ($1, $3, NULL_TREE); }
-    | identifier '(' expr_no_commas ')'
+    | IDENTIFIER '(' expr_no_commas ')'
 	{ /* if not "aligned(n)", then issue warning */
 	  if (strcmp (IDENTIFIER_POINTER ($1), "aligned") != 0)
 	    {
@@ -1094,7 +1094,7 @@ attrib
 	    }
 	  else
 	    $$ = tree_cons ($1, $3, NULL_TREE); }
-    | identifier '(' identifier ',' expr_no_commas ',' expr_no_commas ')'
+    | IDENTIFIER '(' IDENTIFIER ',' expr_no_commas ',' expr_no_commas ')'
 	{ /* if not "format(...)", then issue warning */
 	  if (strcmp (IDENTIFIER_POINTER ($1), "format") != 0)
 	    {
@@ -1108,7 +1108,7 @@ attrib
 				       tree_cons ($5, $7, NULL_TREE),
 				       NULL_TREE),
 			    NULL_TREE); }
-    | identifier '(' STRING ')'
+    | IDENTIFIER '(' STRING ')'
 	{ /* If not "section (name)", then issue warning.  */
 	  if (strcmp (IDENTIFIER_POINTER ($1), "section") != 0)
 	    {
