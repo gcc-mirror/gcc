@@ -1661,6 +1661,10 @@ __gnat_initialize ()
 #include <intLib.h>
 #include <iv.h>
 
+#ifdef VTHREADS
+#include "private/vThreadsP.h"
+#endif
+
 extern int __gnat_inum_to_ivec (int);
 static void __gnat_error_handler (int, int, struct sigcontext *);
 void __gnat_map_signal (int);
@@ -1686,6 +1690,16 @@ __gnat_inum_to_ivec (int num)
   return INUM_TO_IVEC (num);
 }
 
+/* VxWorks expects the field excCnt to be zeroed when a signal is handled.
+   The VxWorks version of longjmp does this; gcc's builtin_longjmp does not */
+void
+__gnat_clear_exception_count (void)
+{
+#ifdef VTHREADS
+  taskIdCurrent->vThreads.excCnt = 0;
+#endif
+}
+
 /* Exported to 5zintman.adb in order to handle different signal
    to exception mappings in different VxWorks versions */
 void
@@ -1700,11 +1714,11 @@ __gnat_map_signal (int sig)
       exception = &constraint_error;
       msg = "SIGFPE";
       break;
+#ifdef VTHREADS
     case SIGILL:
       exception = &constraint_error;
-      msg = "SIGILL";
+      msg = "Floating point exception or SIGILL";
       break;
-#ifdef VTHREADS
     case SIGSEGV:
       exception = &storage_error;
       msg = "SIGSEGV: possible stack overflow";
@@ -1714,6 +1728,10 @@ __gnat_map_signal (int sig)
       msg = "SIGBUS: possible stack overflow";
       break;
 #else
+    case SIGILL:
+      exception = &constraint_error;
+      msg = "SIGILL";
+      break;
     case SIGSEGV:
       exception = &program_error;
       msg = "SIGSEGV";
@@ -1728,6 +1746,7 @@ __gnat_map_signal (int sig)
       msg = "unhandled signal";
     }
 
+  __gnat_clear_exception_count ();
   Raise_From_Signal_Handler (exception, msg);
 }
 
@@ -1744,11 +1763,6 @@ __gnat_error_handler (int sig, int code, struct sigcontext *sc)
   sigprocmask (SIG_SETMASK, NULL, &mask);
   sigdelset (&mask, sig);
   sigprocmask (SIG_SETMASK, &mask, NULL);
-
-  /* VxWorks will suspend the task when it gets a hardware exception.  We
-     take the liberty of resuming the task for the application. */
-  if (taskIsSuspended (taskIdSelf ()) != 0)
-    taskResume (taskIdSelf ());
 
   __gnat_map_signal (sig);
 
