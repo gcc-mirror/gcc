@@ -336,6 +336,8 @@ dnl
 dnl Defines:
 dnl  HAVE_MBSTATE_T if mbstate_t is not in wchar.h
 dnl  _GLIBCXX_USE_WCHAR_T if all the bits are found.
+dnl Substs:
+dnl  LIBICONV to a -l string containing the iconv library, if needed.
 dnl
 AC_DEFUN([GLIBCXX_CHECK_WCHAR_T_SUPPORT], [
   # Test wchar.h for mbstate_t, which is needed for char_traits and
@@ -412,9 +414,10 @@ AC_DEFUN([GLIBCXX_CHECK_WCHAR_T_SUPPORT], [
     AC_CHECK_HEADER(langinfo.h, ac_has_langinfo_h=yes, ac_has_langinfo_h=no)
 
     # Check for existence of libiconv.a providing XPG2 wchar_t support.
-    AC_CHECK_LIB(iconv, iconv, libiconv="-liconv")
+    AC_CHECK_LIB(iconv, iconv, LIBICONV="-liconv")
     ac_save_LIBS="$LIBS"
-    LIBS="$LIBS $libiconv"
+    LIBS="$LIBS $LIBICONV"
+    AC_SUBST(LIBICONV)
 
     AC_CHECK_FUNCS([iconv_open iconv_close iconv nl_langinfo],
     [ac_XPG2funcs=yes], [ac_XPG2funcs=no])
