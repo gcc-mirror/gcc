@@ -1,5 +1,10 @@
 2001-04-27  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* except.c (can_convert_eh): Don't check template parms,
+	typename types etc.
+
+2001-04-27  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* optimize.c (maybe_clone_body): Copy parameter names and locations.
 
 2001-04-27  Nathan Sidwell  <nathan@codesourcery.com>

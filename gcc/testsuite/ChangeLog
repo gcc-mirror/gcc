@@ -1,5 +1,9 @@
 2001-04-27  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.eh/crash6.C: New test.
+
+2001-04-27  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.other/warn7.C: New test.
 
 2001-04-27  Nathan Sidwell  <nathan@codesourcery.com>

@@ -821,7 +821,7 @@ can_convert_eh (to, from)
       /* else fall through */
     }
 
-  if (IS_AGGR_TYPE (to) && IS_AGGR_TYPE (from)
+  if (CLASS_TYPE_P (to) && CLASS_TYPE_P (from)
       && PUBLICLY_UNIQUELY_DERIVED_P (to, from))
     return 1;
 
