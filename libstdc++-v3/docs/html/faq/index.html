@@ -99,7 +99,7 @@ http://gcc.gnu.org/onlinedocs/libstdc++/faq/</a>.</p>
 <h1><a name="1_0">1.0 General Information</a></h1>
 <!-- I suspect these will mostly be links to/into existing documents. -->
    <h2><a name="1_1">1.1 What is libstdc++-v3?</a></h2>
-      <p>The GNU Standard C++ Library v3, or libstdc++-2.9x, is an 
+      <p>The GNU Standard C++ Library v3 is an
          ongoing project to implement the ISO 14882 Standard C++ library 
          as described in chapters 17 through 27 and annex D.  As the 
          library reaches stable plateaus, it is captured in a snapshot
@@ -109,10 +109,15 @@ http://gcc.gnu.org/onlinedocs/libstdc++/faq/</a>.</p>
          far the project has come, or just want the latest
          bleeding-edge code, the up-to-date source is available over
          anonymous CVS, and can even be browsed over the Web (see below). 
-      </p> 
+      </p>
+      <p>The older libstdc++-v2 project is no longer maintained; the code
+         has been completely replaced and rewritten.
+         <a href="#4_4_interface">If you are using V2</a>, then you need to
+         report bugs to your system vendor, not to the V3 list.
+      </p>
       <p>A more formal description of the V3 goals can be found in the
          official <a href="../17_intro/DESIGN">design document</a>. 
-      </p> 
+      </p>
 
 <hr>
    <h2><a name="1_2">1.2 Why should I use libstdc++?</a></h2>
@@ -582,8 +587,10 @@ New:
            do anyhow; see the last paragraph of the page describing
          <a href="http://gcc.gnu.org/gnatswrite.html">the GCC bug database</a>).
         </p>
-        <p>If the headers are in <CODE>${prefix}/include/g++-3</CODE>, then
-           you are using the old libstdc++-v2 library, which is nonstandard
+        <p>If the headers are in <code>${prefix}/include/g++-3</code>, or if
+           the installed library's name looks like <code>libstdc++-2.10.a</code>
+           or <code>libstdc++-libc6-2.10.so</code>,
+           then you are using the old libstdc++-v2 library, which is nonstandard
            and unmaintained.  Do not report problems with -v2 to the -v3
            mailing list.
         </p>

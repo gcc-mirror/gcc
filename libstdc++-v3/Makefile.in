@@ -507,7 +507,8 @@ doxygen:
 doxygen-maint:
 	-(srcdir=`cd ${top_srcdir}; pwd`; \
 	  outdir=`pwd`; \
-	  ${srcdir}/docs/doxygen/run_doxygen --mode=maint $${srcdir} $${outdir})
+	  /bin/sh ${srcdir}/docs/doxygen/run_doxygen \
+	            --mode=maint $${srcdir} $${outdir})
 
 .PHONY: doxygen doxygen-maint
 

@@ -48,22 +48,34 @@
 #ifndef __SGI_STL_INTERNAL_ALLOC_H
 #define __SGI_STL_INTERNAL_ALLOC_H
 
-// This implements some standard node allocators.  These are
-// NOT the same as the allocators in the C++ draft standard or in
-// in the original STL.  They do not encapsulate different pointer
-// types; indeed we assume that there is only one pointer type.
-// The allocation primitives are intended to allocate individual objects,
-// not larger arenas as with the original STL allocators.
+// This header implements some node allocators.  These are NOT the same as
+// allocators in the C++ standard, nor in the original HP STL.  They do not
+// encapsulate different pointer types; we assume that there is only one
+// pointer type.  The C++ standard allocators are intended to allocate
+// individual objects, not pools or arenas.
+//
+// In this file allocators are of two different styles:  "standard" and
+// "SGI" (quotes included).  "Standard" allocators conform to 20.4.  "SGI"
+// allocators differ in AT LEAST the following ways (add to this list as you
+// discover them):
+//
+//  - "Standard" allocate() takes two parameters (n_count,hint=0) but "SGI"
+//    allocate() takes one paramter (n_size).
+//  - Likewise, "standard" deallocate()'s n is a count, but in "SGI" is a
+//    byte size.
+//  - max_size(), construct(), and destroy() are missing in "SGI" allocators.
+//  - reallocate(p,oldsz,newsz) is added in "SGI", and behaves as
+//    if p=realloc(p,newsz).
+
 
 #include <bits/functexcept.h>   // for __throw_bad_alloc
 #include <bits/std_cstddef.h>
 #include <bits/std_cstdlib.h>
 #include <bits/std_cstring.h>
 #include <bits/std_cassert.h>
-#ifndef __RESTRICT
-#  define __RESTRICT
-#endif
 
+// To see the effects of this block of macro wrangling, jump to
+// "Default node allocator" below.
 #ifdef __STL_THREADS
 # include <bits/stl_threads.h>
 # define __NODE_ALLOCATOR_THREADS true
@@ -78,15 +90,15 @@
 	// The above is copied from malloc.h.  Including <malloc.h>
 	// would be cleaner but fails with certain levels of standard
 	// conformance.
-#   define __NODE_ALLOCATOR_LOCK if (threads && __us_rsthread_malloc) \
+#   define __NODE_ALLOCATOR_LOCK if (__threads && __us_rsthread_malloc) \
                 { _S_node_allocator_lock._M_acquire_lock(); }
-#   define __NODE_ALLOCATOR_UNLOCK if (threads && __us_rsthread_malloc) \
+#   define __NODE_ALLOCATOR_UNLOCK if (__threads && __us_rsthread_malloc) \
                 { _S_node_allocator_lock._M_release_lock(); }
 # else /* !__STL_SGI_THREADS */
 #   define __NODE_ALLOCATOR_LOCK \
-        { if (threads) _S_node_allocator_lock._M_acquire_lock(); }
+        { if (__threads) _S_node_allocator_lock._M_acquire_lock(); }
 #   define __NODE_ALLOCATOR_UNLOCK \
-        { if (threads) _S_node_allocator_lock._M_release_lock(); }
+        { if (__threads) _S_node_allocator_lock._M_release_lock(); }
 # endif
 #else
 //  Thread-unsafe
@@ -97,7 +109,13 @@
 
 namespace std
 {
-  // A new-based allocator, as required by the standard.
+  /**
+   *  @maint
+   *  A new-based allocator, as required by the standard.  Allocation and
+   *  deallocation forward to global new and delete.  "SGI" style, minus
+   *  reallocate().
+   *  @endmaint
+  */
   class __new_alloc 
   {
   public:
@@ -110,8 +128,16 @@ namespace std
     { ::operator delete(__p); }
   };
   
-  // Malloc-based allocator.  Typically slower than default alloc below.
-  // Typically thread-safe and more storage efficient.
+
+  /**
+   *  @maint
+   *  A malloc-based allocator.  Typically slower than the
+   *  __default_alloc_template (below).  Typically thread-safe and more
+   *  storage efficient.  The template argument is unused and is only present
+   *  to permit multiple instantiations (but see __default_alloc_template
+   *  for caveats).  "SGI" style, plus __set_malloc_handler for OOM conditions.
+   *  @endmaint
+  */
   template <int __inst>
     class __malloc_alloc_template 
     {
@@ -191,127 +217,141 @@ namespace std
 	}
     }
 
-  // Determines the underlying allocator choice.
-# ifdef __USE_MALLOC
-  typedef __malloc_alloc_template<0> __mem_interface;
+
+// Determines the underlying allocator choice for the node allocator.
+#ifdef __USE_MALLOC
+  typedef __malloc_alloc_template<0>  __mem_interface;
 #else
-  typedef __new_alloc __mem_interface;
+  typedef __new_alloc                 __mem_interface;
 #endif
 
-template<class _Tp, class _Alloc>
-class simple_alloc {
 
-public:
+  /**
+   *  This is used primarily (only?) in _Alloc_traits and other places to
+   *  help provide the _Alloc_type typedef.
+   *
+   *  This is neither "standard"-conforming nor "SGI".  The _Alloc parameter
+   *  must be "SGI" style.
+  */
+  template<class _Tp, class _Alloc>
+  class __simple_alloc
+  {
+  public:
     static _Tp* allocate(size_t __n)
-      { return 0 == __n ? 0 : (_Tp*) _Alloc::allocate(__n * sizeof (_Tp)); }
-    static _Tp* allocate(void)
-      { return (_Tp*) _Alloc::allocate(sizeof (_Tp)); }
+    { return 0 == __n ? 0 : (_Tp*) _Alloc::allocate(__n * sizeof (_Tp)); }
+
+    static _Tp* allocate()
+    { return (_Tp*) _Alloc::allocate(sizeof (_Tp)); }
+
     static void deallocate(_Tp* __p, size_t __n)
-      { if (0 != __n) _Alloc::deallocate(__p, __n * sizeof (_Tp)); }
+    { if (0 != __n) _Alloc::deallocate(__p, __n * sizeof (_Tp)); }
+
     static void deallocate(_Tp* __p)
-      { _Alloc::deallocate(__p, sizeof (_Tp)); }
-};
+    { _Alloc::deallocate(__p, sizeof (_Tp)); }
+  };
 
-// Allocator adaptor to check size arguments for debugging.
-// Reports errors using assert.  Checking can be disabled with
-// NDEBUG, but it's far better to just use the underlying allocator
-// instead when no checking is desired.
-// There is some evidence that this can confuse Purify.
-template <class _Alloc>
-class debug_alloc {
 
-private:
-
-  enum {_S_extra = 8};  // Size of space used to store size.  Note
-                        // that this must be large enough to preserve
-                        // alignment.
-
-public:
-
-  static void* allocate(size_t __n)
+  /**
+   *  An adaptor for an underlying allocator (_Alloc) to check the size
+   *  arguments for debugging.  Errors are reported using assert; these
+   *  checks can be disabled via NDEBUG, but the space penalty is still
+   *  paid, therefore it is far better to just use the underlying allocator
+   *  by itelf when no checking is desired.
+   *
+   *  "There is some evidence that this can confuse Purify." - SGI comment
+   *
+   *  This adaptor is "SGI" style.  The _Alloc parameter must also be "SGI".
+  */
+  template <class _Alloc>
+  class __debug_alloc
   {
-    char* __result = (char*)_Alloc::allocate(__n + (int) _S_extra);
-    *(size_t*)__result = __n;
-    return __result + (int) _S_extra;
-  }
+  private:
+    enum {_S_extra = 8};  // Size of space used to store size.  Note that this
+                          // must be large enough to preserve alignment.
+  
+  public:
+  
+    static void* allocate(size_t __n)
+    {
+      char* __result = (char*)_Alloc::allocate(__n + (int) _S_extra);
+      *(size_t*)__result = __n;
+      return __result + (int) _S_extra;
+    }
+  
+    static void deallocate(void* __p, size_t __n)
+    {
+      char* __real_p = (char*)__p - (int) _S_extra;
+      assert(*(size_t*)__real_p == __n);
+      _Alloc::deallocate(__real_p, __n + (int) _S_extra);
+    }
+  
+    static void* reallocate(void* __p, size_t __old_sz, size_t __new_sz)
+    {
+      char* __real_p = (char*)__p - (int) _S_extra;
+      assert(*(size_t*)__real_p == __old_sz);
+      char* __result = (char*)
+        _Alloc::reallocate(__real_p, __old_sz + (int) _S_extra,
+                                     __new_sz + (int) _S_extra);
+      *(size_t*)__result = __new_sz;
+      return __result + (int) _S_extra;
+    }
+  };
 
-  static void deallocate(void* __p, size_t __n)
-  {
-    char* __real_p = (char*)__p - (int) _S_extra;
-    assert(*(size_t*)__real_p == __n);
-    _Alloc::deallocate(__real_p, __n + (int) _S_extra);
-  }
 
-  static void* reallocate(void* __p, size_t __old_sz, size_t __new_sz)
-  {
-    char* __real_p = (char*)__p - (int) _S_extra;
-    assert(*(size_t*)__real_p == __old_sz);
-    char* __result = (char*)
-      _Alloc::reallocate(__real_p, __old_sz + (int) _S_extra,
-                                   __new_sz + (int) _S_extra);
-    *(size_t*)__result = __new_sz;
-    return __result + (int) _S_extra;
-  }
-
-};
-
-
-# ifdef __USE_MALLOC
+#ifdef __USE_MALLOC
 
 typedef __mem_interface alloc;
 typedef __mem_interface single_client_alloc;
 
-# else
+#else
 
 
-// Default node allocator.
-// With a reasonable compiler, this should be roughly as fast as the
-// original STL class-specific allocators, but with less fragmentation.
-// Default_alloc_template parameters are experimental and MAY
-// DISAPPEAR in the future.  Clients should just use alloc for now.
-//
-// Important implementation properties:
-// 1. If the client request an object of size > _MAX_BYTES, the resulting
-//    object will be obtained directly from malloc.
-// 2. In all other cases, we allocate an object of size exactly
-//    _S_round_up(requested_size).  Thus the client has enough size
-//    information that we can return the object to the proper free list
-//    without permanently losing part of the object.
-//
-
-// The first template parameter specifies whether more than one thread
-// may use this allocator.  It is safe to allocate an object from
-// one instance of a default_alloc and deallocate it with another
-// one.  This effectively transfers its ownership to the second one.
-// This may have undesirable effects on reference locality.
-// The second parameter is unreferenced and serves only to allow the
-// creation of multiple default_alloc instances.
-// Node that containers built on different allocator instances have
-// different types, limiting the utility of this approach.
-
-template <bool threads, int inst>
-class __default_alloc_template {
+/**
+ *  @maint
+ *  Default node allocator.
+ * 
+ *  Important implementation properties:
+ *  1. If the clients request an object of size > _MAX_BYTES, the resulting
+ *     object will be obtained directly from malloc.
+ *  2. In all other cases, we allocate an object of size exactly
+ *     _S_round_up(requested_size).  Thus the client has enough size
+ *     information that we can return the object to the proper free list
+ *     without permanently losing part of the object.
+ * 
+ *  The first template parameter specifies whether more than one thread may
+ *  use this allocator.  It is safe to allocate an object from one instance
+ *  of a default_alloc and deallocate it with another one.  This effectively
+ *  transfers its ownership to the second one.  This may have undesirable
+ *  effects on reference locality.
+ *
+ *  The second parameter is unused and serves only to allow the creation of
+ *  multiple default_alloc instances.  Note that containers built on different
+ *  allocator instances have different types, limiting the utility of this
+ *  approach.  If you do not wish to share the free lists with the main
+ *  default_alloc instance, instantiate this with a non-zero __inst.
+ *  @endmaint
+*/
+template <bool __threads, int __inst>
+class __default_alloc_template
+{
 
 private:
-  // Really we should use static const int x = N
-  // instead of enum { x = N }, but few compilers accept the former.
   enum {_ALIGN = 8};
   enum {_MAX_BYTES = 128};
   enum {_NFREELISTS = 16}; // _MAX_BYTES/_ALIGN
+
   static size_t
   _S_round_up(size_t __bytes) 
     { return (((__bytes) + (size_t) _ALIGN-1) & ~((size_t) _ALIGN - 1)); }
 
   union _Obj {
-        union _Obj* _M_free_list_link;
-        char _M_client_data[1];    /* The client sees this.        */
+    union _Obj* _M_free_list_link;
+    char        _M_client_data[1];    // The client sees this.
   };
 
   static _Obj* volatile _S_free_list[]; 
-        // Specifying a size results in duplicate def for 4.1
-  static  size_t _S_freelist_index(size_t __bytes) {
-        return (((__bytes) + (size_t)_ALIGN-1)/(size_t)_ALIGN - 1);
-  }
+  static size_t _S_freelist_index(size_t __bytes)
+    { return (((__bytes) + (size_t)_ALIGN-1)/(size_t)_ALIGN - 1); }
 
   // Returns an object of size __n, and optionally adds to size __n free list.
   static void* _S_refill(size_t __n);
@@ -324,24 +364,24 @@ private:
   static char* _S_end_free;
   static size_t _S_heap_size;
 
-# ifdef __STL_THREADS
+#ifdef __STL_THREADS
     static _STL_mutex_lock _S_node_allocator_lock;
-# endif
+#endif
 
-    // It would be nice to use _STL_auto_lock here.  But we
-    // don't need the NULL check.  And we do need a test whether
-    // threads have actually been started.
-    class _Lock;
-    friend class _Lock;
-    class _Lock {
-        public:
-            _Lock() { __NODE_ALLOCATOR_LOCK; }
-            ~_Lock() { __NODE_ALLOCATOR_UNLOCK; }
-    };
+  // It would be nice to use _STL_auto_lock here.  But we
+  // don't need the NULL check.  And we do need a test whether
+  // threads have actually been started.
+  class _Lock;
+  friend class _Lock;
+  class _Lock {
+    public:
+      _Lock() { __NODE_ALLOCATOR_LOCK; }
+      ~_Lock() { __NODE_ALLOCATOR_UNLOCK; }
+  };
 
 public:
 
-  /* __n must be > 0      */
+  // __n must be > 0
   static void* allocate(size_t __n)
   {
     void* __ret = 0;
@@ -358,7 +398,7 @@ public:
 	/*REFERENCED*/
 	_Lock __lock_instance;
 #     endif
-	_Obj* __RESTRICT __result = *__my_free_list;
+	_Obj* __restrict__ __result = *__my_free_list;
 	if (__result == 0)
 	  __ret = _S_refill(_S_round_up(__n));
 	else 
@@ -371,7 +411,7 @@ public:
     return __ret;
   };
 
-  /* __p may not be 0 */
+  // __p may not be 0
   static void deallocate(void* __p, size_t __n)
   {
     if (__n > (size_t) _MAX_BYTES)
@@ -396,8 +436,6 @@ public:
   static void* reallocate(void* __p, size_t __old_sz, size_t __new_sz);
 };
 
-typedef __default_alloc_template<__NODE_ALLOCATOR_THREADS, 0> alloc;
-typedef __default_alloc_template<false, 0> single_client_alloc;
 
 template <bool __threads, int __inst>
 inline bool operator==(const __default_alloc_template<__threads, __inst>&,
@@ -414,11 +452,9 @@ inline bool operator!=(const __default_alloc_template<__threads, __inst>&,
 }
 
 
-
-/* We allocate memory in large chunks in order to avoid fragmenting     */
-/* the malloc heap too much.                                            */
-/* We assume that size is properly aligned.                             */
-/* We hold the allocation lock.                                         */
+// We allocate memory in large chunks in order to avoid fragmenting the
+// malloc heap (or whatever __mem_interface is using) too much.  We assume
+// that __size is properly aligned.  We hold the allocation lock.
 template <bool __threads, int __inst>
 char*
 __default_alloc_template<__threads, __inst>::_S_chunk_alloc(size_t __size, 
@@ -492,9 +528,8 @@ __default_alloc_template<__threads, __inst>::_S_chunk_alloc(size_t __size,
 }
 
 
-/* Returns an object of size __n, and optionally adds to size __n free list.*/
-/* We assume that __n is properly aligned.                                */
-/* We hold the allocation lock.                                         */
+// Returns an object of size __n, and optionally adds to "size __n"'s free list.
+// We assume that __n is properly aligned.  We hold the allocation lock.
 template <bool __threads, int __inst>
 void*
 __default_alloc_template<__threads, __inst>::_S_refill(size_t __n)
@@ -525,6 +560,7 @@ __default_alloc_template<__threads, __inst>::_S_refill(size_t __n)
       }
     return(__result);
 }
+
 
 template <bool threads, int inst>
 void*
@@ -567,23 +603,35 @@ template <bool __threads, int __inst>
 typename __default_alloc_template<__threads, __inst>::_Obj* volatile
 __default_alloc_template<__threads, __inst> ::_S_free_list[
     __default_alloc_template<__threads, __inst>::_NFREELISTS
-] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };
-// The 16 zeros are necessary to make version 4.1 of the SunPro
-// compiler happy.  Otherwise it appears to allocate too little
-// space for the array.
+] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+
+// __NODE_ALLOCATOR_THREADS is predicated on __STL_THREADS being defined or not
+typedef __default_alloc_template<__NODE_ALLOCATOR_THREADS, 0> alloc;
+typedef __default_alloc_template<false, 0> single_client_alloc;
+
 
 #endif /* ! __USE_MALLOC */
 
-// This implements allocators as specified in the C++ standard.  
-//
-// Note that standard-conforming allocators use many language features
-// that are not yet widely implemented.  In particular, they rely on
-// member templates, partial specialization, partial ordering of function
-// templates, the typename keyword, and the use of the template keyword
-// to refer to a template member of a dependent type.
 
+/**
+ *  This is a "standard" allocator, as per [20.4].  The private _Alloc is
+ *  "SGI" style.  (See comments at the top of stl_alloc.h.)
+ *
+ *  The underlying allocator behaves as follows.
+ *  - if __USE_MALLOC then
+ *    - thread safety depends on malloc and is entirely out of our hands
+ *    - __malloc_alloc_template is used for memory requests
+ *  - else (the default)
+ *    - __default_alloc_template is used via two typedefs
+ *    - "single_client_alloc" typedef does no locking for threads
+ *    - "alloc" typedef is threadsafe via the locks
+ *    - __new_alloc is used for memory requests
+ *
+*/
 template <class _Tp>
-class allocator {
+class allocator
+{
   typedef alloc _Alloc;          // The underlying allocator.
 public:
   typedef size_t     size_type;
@@ -651,15 +699,18 @@ inline bool operator!=(const allocator<_T1>&, const allocator<_T2>&)
   return false;
 }
 
-// Allocator adaptor to turn an SGI-style allocator (e.g. alloc, malloc_alloc)
-// into a standard-conforming allocator.   Note that this adaptor does
-// *not* assume that all objects of the underlying alloc class are
-// identical, nor does it assume that all of the underlying alloc's
-// member functions are static member functions.  Note, also, that 
-// __allocator<_Tp, alloc> is essentially the same thing as allocator<_Tp>.
 
+/**
+ *  Allocator adaptor to turn an "SGI" style allocator (e.g. alloc,
+ *  __malloc_alloc_template) into a "standard" conformaing allocator.  Note
+ *  that this adaptor does *not* assume that all objects of the underlying
+ *  alloc class are identical, nor does it assume that all of the underlying
+ *  alloc's member functions are static member functions.  Note, also, that
+ *  __allocator<_Tp, alloc> is essentially the same thing as allocator<_Tp>.
+*/
 template <class _Tp, class _Alloc>
-struct __allocator {
+struct __allocator
+{
   _Alloc __underlying_alloc;
 
   typedef size_t    size_type;
@@ -730,6 +781,7 @@ inline bool operator!=(const __allocator<_Tp, _Alloc>& __a1,
   return __a1.__underlying_alloc != __a2.__underlying_alloc;
 }
 
+
 // Comparison operators for all of the predifined SGI-style allocators.
 // This ensures that __allocator<malloc_alloc> (for example) will
 // work correctly.
@@ -749,16 +801,17 @@ inline bool operator!=(const __malloc_alloc_template<__inst>&,
 }
 
 template <class _Alloc>
-inline bool operator==(const debug_alloc<_Alloc>&,
-                       const debug_alloc<_Alloc>&) {
+inline bool operator==(const __debug_alloc<_Alloc>&,
+                       const __debug_alloc<_Alloc>&) {
   return true;
 }
 
 template <class _Alloc>
-inline bool operator!=(const debug_alloc<_Alloc>&,
-                       const debug_alloc<_Alloc>&) {
+inline bool operator!=(const __debug_alloc<_Alloc>&,
+                       const __debug_alloc<_Alloc>&) {
   return false;
 }
+
 
 // Another allocator adaptor: _Alloc_traits.  This serves two
 // purposes.  First, make it possible to write containers that can use
@@ -804,7 +857,7 @@ template <class _Tp, class _Tp1>
 struct _Alloc_traits<_Tp, allocator<_Tp1> >
 {
   static const bool _S_instanceless = true;
-  typedef simple_alloc<_Tp, alloc> _Alloc_type;
+  typedef __simple_alloc<_Tp, alloc> _Alloc_type;
   typedef allocator<_Tp> allocator_type;
 };
 
@@ -814,7 +867,7 @@ template <class _Tp, int __inst>
 struct _Alloc_traits<_Tp, __malloc_alloc_template<__inst> >
 {
   static const bool _S_instanceless = true;
-  typedef simple_alloc<_Tp, __malloc_alloc_template<__inst> > _Alloc_type;
+  typedef __simple_alloc<_Tp, __malloc_alloc_template<__inst> > _Alloc_type;
   typedef __allocator<_Tp, __malloc_alloc_template<__inst> > allocator_type;
 };
 
@@ -823,7 +876,7 @@ template <class _Tp, bool __threads, int __inst>
 struct _Alloc_traits<_Tp, __default_alloc_template<__threads, __inst> >
 {
   static const bool _S_instanceless = true;
-  typedef simple_alloc<_Tp, __default_alloc_template<__threads, __inst> > 
+  typedef __simple_alloc<_Tp, __default_alloc_template<__threads, __inst> > 
           _Alloc_type;
   typedef __allocator<_Tp, __default_alloc_template<__threads, __inst> > 
           allocator_type;
@@ -831,11 +884,11 @@ struct _Alloc_traits<_Tp, __default_alloc_template<__threads, __inst> >
 #endif
 
 template <class _Tp, class _Alloc>
-struct _Alloc_traits<_Tp, debug_alloc<_Alloc> >
+struct _Alloc_traits<_Tp, __debug_alloc<_Alloc> >
 {
   static const bool _S_instanceless = true;
-  typedef simple_alloc<_Tp, debug_alloc<_Alloc> > _Alloc_type;
-  typedef __allocator<_Tp, debug_alloc<_Alloc> > allocator_type;
+  typedef __simple_alloc<_Tp, __debug_alloc<_Alloc> > _Alloc_type;
+  typedef __allocator<_Tp, __debug_alloc<_Alloc> > allocator_type;
 };
 
 // Versions for the __allocator adaptor used with the predefined
@@ -846,7 +899,7 @@ struct _Alloc_traits<_Tp,
                      __allocator<_Tp1, __malloc_alloc_template<__inst> > >
 {
   static const bool _S_instanceless = true;
-  typedef simple_alloc<_Tp, __malloc_alloc_template<__inst> > _Alloc_type;
+  typedef __simple_alloc<_Tp, __malloc_alloc_template<__inst> > _Alloc_type;
   typedef __allocator<_Tp, __malloc_alloc_template<__inst> > allocator_type;
 };
 
@@ -857,7 +910,7 @@ struct _Alloc_traits<_Tp,
                                   __default_alloc_template<__thr, __inst> > >
 {
   static const bool _S_instanceless = true;
-  typedef simple_alloc<_Tp, __default_alloc_template<__thr,__inst> > 
+  typedef __simple_alloc<_Tp, __default_alloc_template<__thr,__inst> > 
           _Alloc_type;
   typedef __allocator<_Tp, __default_alloc_template<__thr,__inst> > 
           allocator_type;
@@ -865,11 +918,11 @@ struct _Alloc_traits<_Tp,
 #endif
 
 template <class _Tp, class _Tp1, class _Alloc>
-struct _Alloc_traits<_Tp, __allocator<_Tp1, debug_alloc<_Alloc> > >
+struct _Alloc_traits<_Tp, __allocator<_Tp1, __debug_alloc<_Alloc> > >
 {
   static const bool _S_instanceless = true;
-  typedef simple_alloc<_Tp, debug_alloc<_Alloc> > _Alloc_type;
-  typedef __allocator<_Tp, debug_alloc<_Alloc> > allocator_type;
+  typedef __simple_alloc<_Tp, __debug_alloc<_Alloc> > _Alloc_type;
+  typedef __allocator<_Tp, __debug_alloc<_Alloc> > allocator_type;
 };
 
 } // namespace std

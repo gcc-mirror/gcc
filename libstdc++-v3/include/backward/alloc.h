@@ -48,8 +48,8 @@
 #include <bits/stl_alloc.h>
 
 using std::__malloc_alloc_template; 
-using std::simple_alloc; 
-using std::debug_alloc; 
+using std::__simple_alloc; 
+using std::__debug_alloc; 
 using std::alloc; 
 using std::single_client_alloc; 
 using std::allocator;
