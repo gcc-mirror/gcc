@@ -1178,6 +1178,7 @@ check_deps_environment_vars (void)
 	deps_file = spec;
 
       deps_append = 1;
+      deps_seen = true;
     }
 }
 
