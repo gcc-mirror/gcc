@@ -401,10 +401,12 @@ lang_init_options ()
 void
 lang_init ()
 {
+#if ! USE_CPPLIB
   /* the beginning of the file is a new line; check for # */
   /* With luck, we discover the real source file's name from that
      and put it in input_filename.  */
   put_back (check_newline ());
+#endif
   if (flag_gnu_xref) GNU_xref_begin (input_filename);
   init_repo (input_filename);
 }
@@ -473,13 +475,9 @@ init_parse (filename)
   int i;
 
 #if USE_CPPLIB
-  yy_cur = "";
-  yy_lim = yy_cur;
+  yy_cur = "\n";
+  yy_lim = yy_cur + 1;
 
-  cpp_reader_init (&parse_in);
-  parse_in.data = &parse_options;
-  cpp_options_init (&parse_options);
-  cpp_handle_options (&parse_in, 0, NULL); /* FIXME */
   parse_in.show_column = 1;
   if (! cpp_start_read (&parse_in, filename))
     abort ();

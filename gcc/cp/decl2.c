@@ -43,6 +43,13 @@ Boston, MA 02111-1307, USA.  */
 #include "dwarf2out.h"
 #include "dwarfout.h"
 
+#if USE_CPPLIB
+#include "cpplib.h"
+extern cpp_reader  parse_in;
+extern cpp_options parse_options;
+static int cpp_initialized;
+#endif
+
 static tree get_sentry PROTO((tree));
 static void mark_vtable_entries PROTO((tree));
 static void import_export_template PROTO((tree));
@@ -492,13 +499,30 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
 };
 
 /* Decode the string P as a language-specific option.
-   Return 1 if it is recognized (and handle it);
-   return 0 if not recognized.  */
+   Return the number of strings consumed for a valid option.
+   Otherwise return 0.  */
 
 int   
-lang_decode_option (p)
-     char *p;
+lang_decode_option (argc, argv)
+     int argc;
+     char **argv;
+
 {
+  int strings_processed;
+  char *p = argv[0];
+#if USE_CPPLIB
+  if (! cpp_initialized)
+    {
+      cpp_reader_init (&parse_in);
+      parse_in.data = &parse_options;
+      cpp_options_init (&parse_options);
+      cpp_initialized = 1;
+    }
+  strings_processed = cpp_handle_option (&parse_in, argc, argv);
+#else
+  strings_processed = 0;
+#endif /* ! USE_CPPLIB */
+
   if (!strcmp (p, "-ftraditional") || !strcmp (p, "-traditional"))
     flag_writable_strings = 1,
     flag_this_is_variable = 1, flag_new_for_scope = 0;
@@ -739,7 +763,7 @@ lang_decode_option (p)
 
       else if (!strcmp (p, "overloaded-virtual"))
 	warn_overloaded_virtual = setting;
-      else return 0;
+      else return strings_processed;
     }
   else if (!strcmp (p, "-ansi"))
     flag_no_nonansi_builtin = 1, flag_ansi = 1,
@@ -752,7 +776,7 @@ lang_decode_option (p)
     spew_debug = 1;
 #endif
   else
-    return 0;
+    return strings_processed;
 
   return 1;
 }
