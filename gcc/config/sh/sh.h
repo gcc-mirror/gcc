@@ -1254,7 +1254,7 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x000000ff },	\
 /* ALL_REGS:  */							\
   { 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0x01ffffff },	\
-}									 
+}
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
@@ -1645,7 +1645,7 @@ extern enum reg_class reg_class_from_letter[];
 		 || TREE_CODE (VALTYPE) == OFFSET_TYPE))		\
 	    ? (TARGET_SHMEDIA ? DImode : SImode) : TYPE_MODE (VALTYPE)), \
 	   BASE_RETURN_VALUE_REG (TYPE_MODE (VALTYPE)))
-     
+
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 #define LIBCALL_VALUE(MODE) \
@@ -2073,7 +2073,7 @@ struct sh_args {
 
 #define EXIT_IGNORE_STACK 1
 
-/* 
+/*
    On the SH, the trampoline looks like
    2 0002 D202     	   	mov.l	l2,r2
    1 0000 D301     		mov.l	l1,r3
@@ -3189,7 +3189,7 @@ extern int rtx_equal_function_value_matters;
 #define any_register_operand register_operand
 
 /* Define this macro if it is advisable to hold scalars in registers
-   in a wider mode than that declared by the program.  In such cases, 
+   in a wider mode than that declared by the program.  In such cases,
    the value is constrained to be within the bounds of the declared
    type, but kept valid in the wider mode.  The signedness of the
    extension may differ from that of the type.
@@ -3234,6 +3234,11 @@ extern int rtx_equal_function_value_matters;
    ? (TARGET_FMOVD ? FP_MODE_DOUBLE : FP_MODE_NONE) \
    : ACTUAL_NORMAL_MODE (ENTITY))
 
+#define MODE_ENTRY(ENTITY) NORMAL_MODE (ENTITY)
+
+#define MODE_EXIT(ENTITY) \
+  (sh_cfun_attr_renesas_p () ? FP_MODE_NONE : NORMAL_MODE (ENTITY))
+
 #define EPILOGUE_USES(REGNO)       ((TARGET_SH2E || TARGET_SH4)		\
 				    && (REGNO) == FPSCR_REG)
 
@@ -3241,6 +3246,12 @@ extern int rtx_equal_function_value_matters;
   (recog_memoized (INSN) >= 0						\
    ? get_attr_fp_mode (INSN)						\
    : FP_MODE_NONE)
+
+#define MODE_AFTER(MODE, INSN)                  \
+     (recog_memoized (INSN) >= 0                \
+      && get_attr_fp_set (INSN) != FP_SET_NONE  \
+      ? get_attr_fp_set (INSN)                  \
+      : (MODE))
 
 #define MODE_PRIORITY_TO_MODE(ENTITY, N) \
   ((TARGET_FPU_SINGLE != 0) ^ (N) ? FP_MODE_SINGLE : FP_MODE_DOUBLE)

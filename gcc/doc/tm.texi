@@ -320,14 +320,14 @@ default value of this macro, will expand to the value of
 @end defmac
 
 @defmac SYSROOT_SUFFIX_SPEC
-Define this macro to add a suffix to the target sysroot when GCC is 
-configured with a sysroot.  This will cause GCC to search for usr/lib, 
-et al, within sysroot+suffix. 
+Define this macro to add a suffix to the target sysroot when GCC is
+configured with a sysroot.  This will cause GCC to search for usr/lib,
+et al, within sysroot+suffix.
 @end defmac
 
 @defmac SYSROOT_HEADERS_SUFFIX_SPEC
-Define this macro to add a headers_suffix to the target sysroot when 
-GCC is configured with a sysroot.  This will cause GCC to pass the 
+Define this macro to add a headers_suffix to the target sysroot when
+GCC is configured with a sysroot.  This will cause GCC to pass the
 updated sysroot+headers_suffix to CPP@, causing it to search for
 usr/include, et al, within sysroot+headers_suffix.
 @end defmac
@@ -2696,11 +2696,11 @@ A C expression that defines the optional machine-dependent constraint
 letters, amongst those accepted by @code{EXTRA_CONSTRAINT}, that should
 be treated like memory constraints by the reload pass.
 
-It should return 1 if the operand type represented by the constraint 
+It should return 1 if the operand type represented by the constraint
 at the start of @var{str}, the first letter of which is the letter @var{c},
  comprises a subset of all memory references including
-all those whose address is simply a base register.  This allows the reload 
-pass to reload an operand, if it does not directly correspond to the operand 
+all those whose address is simply a base register.  This allows the reload
+pass to reload an operand, if it does not directly correspond to the operand
 type of @var{c}, by copying its address into a base register.
 
 For example, on the S/390, some instructions do not accept arbitrary
@@ -2720,15 +2720,15 @@ letters, amongst those accepted by @code{EXTRA_CONSTRAINT} /
 @code{EXTRA_CONSTRAINT_STR}, that should
 be treated like address constraints by the reload pass.
 
-It should return 1 if the operand type represented by the constraint 
+It should return 1 if the operand type represented by the constraint
 at the start of @var{str}, which starts with the letter @var{c}, comprises
 a subset of all memory addresses including
-all those that consist of just a base register.  This allows the reload 
-pass to reload an operand, if it does not directly correspond to the operand 
+all those that consist of just a base register.  This allows the reload
+pass to reload an operand, if it does not directly correspond to the operand
 type of @var{str}, by copying it into a base register.
 
 Any constraint marked as @code{EXTRA_ADDRESS_CONSTRAINT} can only
-be used with the @code{address_operand} predicate.  It is treated 
+be used with the @code{address_operand} predicate.  It is treated
 analogously to the @samp{p} constraint.
 @end defmac
 
@@ -2905,9 +2905,9 @@ If this RTL is a @code{REG}, you should also define
 @end defmac
 
 @defmac DWARF_ALT_FRAME_RETURN_COLUMN
-A C expression whose value is an integer giving a DWARF 2 column 
+A C expression whose value is an integer giving a DWARF 2 column
 number that may be used as an alternate return column.  This should
-be defined only if @code{DWARF_FRAME_RETURN_COLUMN} is set to a 
+be defined only if @code{DWARF_FRAME_RETURN_COLUMN} is set to a
 general register, but an alternate column needs to be used for
 signal frames.
 @end defmac
@@ -2970,10 +2970,10 @@ Typically this is a call-clobbered hard register that is otherwise
 untouched by the epilogue, but could also be a stack slot.
 
 Do not define this macro if the stack pointer is saved and restored
-by the regular prolog and epilog code in the call frame itself; in 
-this case, the exception handling library routines will update the 
-stack location to be restored in place.  Otherwise, you must define 
-this macro if you want to support call frame exception handling like 
+by the regular prolog and epilog code in the call frame itself; in
+this case, the exception handling library routines will update the
+stack location to be restored in place.  Otherwise, you must define
+this macro if you want to support call frame exception handling like
 that provided by DWARF 2.
 @end defmac
 
@@ -2986,8 +2986,8 @@ Typically this is the location in the call frame at which the normal
 return address is stored.  For targets that return by popping an
 address off the stack, this might be a memory address just below
 the @emph{target} call frame rather than inside the current call
-frame.  If defined, @code{EH_RETURN_STACKADJ_RTX} will have already 
-been assigned, so it may be used to calculate the location of the 
+frame.  If defined, @code{EH_RETURN_STACKADJ_RTX} will have already
+been assigned, so it may be used to calculate the location of the
 target call frame.
 
 Some targets have more complex requirements than storing to an
@@ -3265,7 +3265,7 @@ is different than the internal representation for unwind column.
 Given a dwarf register, this macro should return the internal unwind
 column number to use instead.
 
-See the PowerPC's SPE target for an example.  
+See the PowerPC's SPE target for an example.
 @end defmac
 
 @node Elimination
@@ -4666,7 +4666,7 @@ don't need to define this macro.
 @findex gofast_maybe_init_libfuncs
 @defmac US_SOFTWARE_GOFAST
 Define this macro if your system C library uses the US Software GOFAST
-library to provide floating point emulation.  
+library to provide floating point emulation.
 
 In addition to defining this macro, your architecture must set
 @code{TARGET_INIT_LIBFUNCS} to @code{gofast_maybe_init_libfuncs}, or
@@ -6510,7 +6510,7 @@ provided.
 A C statement (sans semicolon) to output to the stdio stream
 @var{stream} a directive telling the assembler to calculate the size of
 the symbol @var{name} by subtracting its address from the current
-address.  
+address.
 
 If you define @code{SIZE_ASM_OP}, a default definition of this macro is
 provided.  The default assumes that the assembler recognizes a special
@@ -8226,7 +8226,8 @@ return nonzero for any @var{entity} that needs mode-switching.
 If you define this macro, you also have to define
 @code{NUM_MODES_FOR_MODE_SWITCHING}, @code{MODE_NEEDED},
 @code{MODE_PRIORITY_TO_MODE} and @code{EMIT_MODE_SET}.
-@code{NORMAL_MODE} is optional.
+@code{MODE_AFTER}, @code{MODE_ENTRY}, and @code{MODE_EXIT}
+are optional.
 @end defmac
 
 @defmac NUM_MODES_FOR_MODE_SWITCHING
@@ -8250,10 +8251,24 @@ return an integer value not larger than the corresponding element in
 be switched into prior to the execution of @var{insn}.
 @end defmac
 
-@defmac NORMAL_MODE (@var{entity})
+@defmac MODE_AFTER (@var{mode}, @var{insn})
+If this macro is defined, it is evaluated for every @var{insn} during
+mode switching. It determines the mode that an insn results in (if
+different from the incoming mode).
+@end defmac
+
+@defmac MODE_ENTRY (@var{entity})
 If this macro is defined, it is evaluated for every @var{entity} that needs
-mode switching.  It should evaluate to an integer, which is a mode that
-@var{entity} is assumed to be switched to at function entry and exit.
+mode switching. It should evaluate to an integer, which is a mode that
+@var{entity} is assumed to be switched to at function entry. If @code{MODE_ENTRY}
+is defined then @code{MODE_EXIT} must be defined.
+@end defmac
+
+@defmac MODE_EXIT (@var{entity})
+If this macro is defined, it is evaluated for every @var{entity} that needs
+mode switching. It should evaluate to an integer, which is a mode that
+@var{entity} is assumed to be switched to at function exit. If @code{MODE_EXIT}
+is defined then @code{MODE_ENTRY} must be defined.
 @end defmac
 
 @defmac MODE_PRIORITY_TO_MODE (@var{entity}, @var{n})
@@ -9152,7 +9167,7 @@ to reserve space for caller-saved target registers.
 @end deftypefn
 
 @defmac POWI_MAX_MULTS
-If defined, this macro is interpreted as a signed integer C expression 
+If defined, this macro is interpreted as a signed integer C expression
 that specifies the maximum number of floating point multiplications
 that should be emitted when expanding exponentiation by an integer
 constant inline.  When this value is defined, exponentiation requiring
@@ -9160,4 +9175,3 @@ more than this number of multiplications is implemented by calling the
 system library's @code{pow}, @code{powf} or @code{powl} routines.
 The default value places no upper bound on the multiplication count.
 @end defmac
-
