@@ -1,3 +1,8 @@
+1998-06-08  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (cp_finish_decl): Disable inlining of extern inlines
+	with static variables.
+
 1998-06-08  Mark Mitchell  <mark@markmitchell.com>
 
 	* init.c (build_offset_ref): Correct previous change to use build,

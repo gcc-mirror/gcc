@@ -6992,35 +6992,20 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       if (was_temp)
 	end_temporary_allocation ();
 
-      /* Extern inline function static data has external linkage.  */
+      /* Extern inline function static data has external linkage.
+         Instead of trying to deal with that, we disable inlining of
+         such functions.  The ASM_WRITTEN check is to avoid hitting this
+         for __FUNCTION__.  */
       if (TREE_CODE (decl) == VAR_DECL
 	  && TREE_STATIC (decl)
+	  && ! TREE_ASM_WRITTEN (decl)
 	  && current_function_decl
 	  && DECL_CONTEXT (decl) == current_function_decl
 	  && DECL_THIS_INLINE (current_function_decl)
 	  && TREE_PUBLIC (current_function_decl))
 	{
-	  if (DECL_INTERFACE_KNOWN (current_function_decl))
-	    {
-	      TREE_PUBLIC (decl) = 1;
-	      DECL_EXTERNAL (decl) = DECL_EXTERNAL (current_function_decl);
-	    }
-	  /* We can only do this if we can use common or weak, and we
-	     can't if it has been initialized and we don't support weak.  */
-	  else if (DECL_INITIAL (decl) == NULL_TREE
-		   || DECL_INITIAL (decl) == error_mark_node)
-	    {
-	      TREE_PUBLIC (decl) = 1;
-	      DECL_COMMON (decl) = 1;
-	    }
-	  else if (flag_weak)
-	    make_decl_one_only (decl);
-
-	  if (TREE_PUBLIC (decl))
-	    DECL_ASSEMBLER_NAME (decl)
-	      = build_static_name (current_function_decl, DECL_NAME (decl));
-	  else if (! DECL_ARTIFICIAL (decl))
-	    cp_warning_at ("sorry: semantics of inline function static data `%#D' are wrong (you'll wind up with multiple copies)", decl);
+	  current_function_cannot_inline
+	    = "function with static variable cannot be inline";
 	}
 
       else if (TREE_CODE (decl) == VAR_DECL
