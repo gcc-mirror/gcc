@@ -1,3 +1,14 @@
+2004-11-27  Per Bothner  <per@bothner.com>
+
+	PR bootstrap/18142
+	Re-applied following, with two modifications: add a URL for the
+	fixed cctools; only exit if $build = $target.
+
+	2004-10-18  Kelley Cook  <kcook@gcc.gnu.org>
+	* configure.ac (powerpc-*-darwin*): Require assembler to support
+	.machine directive.
+	* configure: Regenerate.
+
 2004-11-28  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/16800

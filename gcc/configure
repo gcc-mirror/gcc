@@ -14444,7 +14444,39 @@ fi
     case $target in
       *-*-aix*) conftest_s='	.csect .text[PR]
 	mfcr 3,128';;
-      *-*-darwin*) conftest_s='	.text
+      *-*-darwin*)
+	echo "$as_me:$LINENO: checking assembler for .machine directive support" >&5
+echo $ECHO_N "checking assembler for .machine directive support... $ECHO_C" >&6
+if test "${gcc_cv_as_machine_directive+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  gcc_cv_as_machine_directive=no
+  if test x$gcc_cv_as != x; then
+    echo '	.machine ppc7400' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }
+    then
+	gcc_cv_as_machine_directive=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_as_machine_directive" >&5
+echo "${ECHO_T}$gcc_cv_as_machine_directive" >&6
+
+	if test x$gcc_cv_as_machine_directive != xyes; then
+	  echo "*** This target requires an assembler supporting \".machine\"" >&2
+	  echo you can get it from: ftp://gcc.gnu.org/pub/gcc/infrastructure/cctools-528.5.dmg >&2
+	  test x$build = x$target && exit 1
+	fi
+	conftest_s='	.text
 	mfcr r3,128';;
       *) conftest_s='	.machine power4
 	.text
