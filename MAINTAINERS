@@ -70,7 +70,7 @@ c++ runtime libs        Gabriel Dos Reis        dosreis@cmla.ens-cachan.fr
 *c-torture		Torbjorn Granlund	tege@swox.com
 *f-torture		Kate Hedstrom		kate@ahab.rutgers.edu
 sco5, unixware, sco udk	Robert Lipe		robertlipe@usa.net
-fixincludes		Bruce Korb		autogen@linuxbox.com
+fixincludes		Bruce Korb		bkorb@gnu.org
 gcse.c 			Jeff Law		law@cygnus.com
 global opt framework	Jeff Law		law@cygnus.com
 jump.c			David S. Miller		davem@redhat.com
