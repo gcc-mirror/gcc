@@ -1268,12 +1268,11 @@ stmp-headers: stmp-fixincludes $(USER_H) gvarargs.h gstdarg.h gstddef.h gsyslimi
 	  cp $$realfile $$objdir/include; \
 	  chmod a+r $$objdir/include/$$realfile; \
 	done
-	-cd include; \
-	if [ -f limits.h ]; then \
-	  rm -f syslimits.h; \
-	  mv limits.h syslimits.h; \
+	if [ -f include/limits.h ]; then \
+	  rm -f include/syslimits.h; \
+	  mv include/limits.h include/syslimits.h; \
 	else \
-	  cp $(srcdir)/gsyslimits.h syslimits.h; \
+	  cp $(srcdir)/gsyslimits.h include/syslimits.h; \
 	fi
 	chmod a+r include/syslimits.h
 	cp $(srcdir)/gvarargs.h include/varargs.h
