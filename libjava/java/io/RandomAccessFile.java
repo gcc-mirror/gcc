@@ -171,7 +171,11 @@ public class RandomAccessFile implements DataOutput, DataInput
 
   public int skipBytes (int count) throws IOException
   {
-    return count <= 0 ? 0 : fd.seek(count, FileDescriptor.CUR, true);
+    if (count <= 0)
+      return 0;
+    long startPos = fd.getFilePointer();
+    long endPos = fd.seek(count, FileDescriptor.CUR, true);
+    return (int) (endPos - startPos);
   }
 
   public void write (int oneByte) throws IOException
