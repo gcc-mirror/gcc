@@ -96,7 +96,8 @@ nextstep_asm_out_constructor (symbol, priority)
      int priority ATTRIBUTE_UNUSED;
 {
   constructor_section ();
-  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
+  assemble_align (POINTER_SIZE);
+  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
   fprintf (asm_out_file, ".reference .constructors_used\n");
 }
 
@@ -106,7 +107,8 @@ nextstep_asm_out_destructor (symbol, priority)
      int priority ATTRIBUTE_UNUSED;
 {
   destructor_section ();
-  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
+  assemble_align (POINTER_SIZE);
+  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
   fprintf (asm_out_file, ".reference .destructors_used\n");
 }
 

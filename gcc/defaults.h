@@ -383,4 +383,21 @@ do {								\
 #define TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER true
 #endif
 
+/* GAS and SYSV4 assemblers accept these.  */
+#ifdef OBJECT_FORMAT_ELF
+#ifndef UNALIGNED_SHORT_ASM_OP
+#define UNALIGNED_SHORT_ASM_OP		"\t.2byte\t"
+#endif
+#ifndef UNALIGNED_INT_ASM_OP
+#define UNALIGNED_INT_ASM_OP		"\t.4byte\t"
+#endif
+#ifndef UNALIGNED_DOUBLE_INT_ASM_OP
+#define UNALIGNED_DOUBLE_INT_ASM_OP	"\t.8byte\t"
+#endif
+#endif /* OBJECT_FORMAT_ELF */
+
+#ifndef ASM_BYTE_OP
+#define ASM_BYTE_OP			"\t.byte\t"
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */

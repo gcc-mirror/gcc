@@ -37,26 +37,6 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_COMMENT_START ";#"
 #endif
 
-/* Definitions of defaults for assembler-dependent names of various
-   pseudo-ops and section names.  These may be overridden in the tm.h
-   file (if necessary) for a particular assembler.  */
-
-#ifdef OBJECT_FORMAT_ELF
-#ifndef UNALIGNED_SHORT_ASM_OP
-#define UNALIGNED_SHORT_ASM_OP		"\t.2byte\t"
-#endif
-#ifndef UNALIGNED_INT_ASM_OP
-#define UNALIGNED_INT_ASM_OP		"\t.4byte\t"
-#endif
-#ifndef UNALIGNED_DOUBLE_INT_ASM_OP
-#define UNALIGNED_DOUBLE_INT_ASM_OP	"\t.8byte\t"
-#endif
-#endif /* OBJECT_FORMAT_ELF */
-
-#ifndef ASM_BYTE_OP
-#define ASM_BYTE_OP			"\t.byte\t"
-#endif
-
 /* We don't have unaligned support, let's hope the normal output works for
    .debug_frame.  But we know it won't work for .debug_info.  */
 #if !defined(UNALIGNED_INT_ASM_OP) && defined(DWARF2_DEBUGGING_INFO)
@@ -64,6 +44,9 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 
+/* Despite the fact that assemble_integer handles unaligned data,
+   continue emitting things by hand when possible, since that makes
+   the assembler commentary come out prettier.  */
 #ifdef UNALIGNED_INT_ASM_OP
 static const char * unaligned_integer_asm_op  PARAMS ((int));
 
@@ -123,7 +106,7 @@ dw2_asm_output_data VPARAMS ((int size, unsigned HOST_WIDE_INT value,
   fputs (unaligned_integer_asm_op (size), asm_out_file);
   fprintf (asm_out_file, HOST_WIDE_INT_PRINT_HEX, value);
 #else
-  assemble_integer (GEN_INT (value), size, 1);
+  assemble_integer (GEN_INT (value), size, BITS_PER_UNIT, 1);
 #endif
 
   if (flag_debug_asm && comment)
@@ -168,10 +151,9 @@ dw2_asm_output_delta VPARAMS ((int size, const char *lab1, const char *lab2,
   fputc ('-', asm_out_file);
   assemble_name (asm_out_file, lab2);
 #else
-  assemble_integer (gen_rtx_MINUS (smallest_mode_for_size (size, MODE_INT),
-				   gen_rtx_SYMBOL_REF (Pmode, lab1),
+  assemble_integer (gen_rtx_MINUS (Pmode, gen_rtx_SYMBOL_REF (Pmode, lab1),
 				   gen_rtx_SYMBOL_REF (Pmode, lab2)),
-		    size, 1);
+		    size, BITS_PER_UNIT, 1);
 #endif
 
   if (flag_debug_asm && comment)
@@ -216,7 +198,7 @@ dw2_asm_output_offset VPARAMS ((int size, const char *label,
   fputs (unaligned_integer_asm_op (size), asm_out_file);
   assemble_name (asm_out_file, label);
 #else
-  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, label), size, 1);
+  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, label), size, BITS_PER_UNIT, 1);
 #endif
 #endif
 
@@ -300,7 +282,7 @@ dw2_asm_output_addr VPARAMS ((int size, const char *label,
   fputs (unaligned_integer_asm_op (size), asm_out_file);
   assemble_name (asm_out_file, label);
 #else
-  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, label), size, 1);
+  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, label), size, BITS_PER_UNIT, 1);
 #endif
 
   if (flag_debug_asm && comment)
@@ -338,7 +320,7 @@ dw2_asm_output_addr_rtx VPARAMS ((int size, rtx addr,
   fputs (unaligned_integer_asm_op (size), asm_out_file);
   output_addr_const (asm_out_file, addr);
 #else
-  assemble_integer (addr, size, 1);
+  assemble_integer (addr, size, BITS_PER_UNIT, 1);
 #endif
 
   if (flag_debug_asm && comment)
@@ -898,7 +880,7 @@ dw2_output_indirect_constant_1 (node, data)
   sym_ref = gen_rtx_SYMBOL_REF (Pmode, sym);
 
   ASM_OUTPUT_LABEL (asm_out_file, label);
-  assemble_integer (sym_ref, POINTER_SIZE / BITS_PER_UNIT, 1);
+  assemble_integer (sym_ref, POINTER_SIZE / BITS_PER_UNIT, BITS_PER_UNIT, 1);
 
   return 0;
 }
@@ -956,7 +938,7 @@ dw2_asm_output_encoded_addr_rtx VPARAMS ((int encoding,
 
   /* NULL is _always_ represented as a plain zero.  */
   if (addr == const0_rtx)
-    assemble_integer (addr, size, 1);
+    assemble_integer (addr, size, BITS_PER_UNIT, 1);
   else
     {
     restart:
@@ -989,7 +971,7 @@ dw2_asm_output_encoded_addr_rtx VPARAMS ((int encoding,
 	  fputs (unaligned_integer_asm_op (size), asm_out_file);
 	  output_addr_const (asm_out_file, addr);
 #else
-	  assemble_integer (addr, size, 1);
+	  assemble_integer (addr, size, BITS_PER_UNIT, 1);
 #endif
 	  break;
 

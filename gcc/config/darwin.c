@@ -924,10 +924,11 @@ machopic_finish (asm_out_file)
 	  )
 	{
 	  data_section ();
-	  assemble_align (UNITS_PER_WORD * BITS_PER_UNIT);
+	  assemble_align (GET_MODE_ALIGNMENT (Pmode));
 	  assemble_label (lazy_name);
 	  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, sym_name),
-			    GET_MODE_SIZE (Pmode), 1);
+			    GET_MODE_SIZE (Pmode),
+			    GET_MODE_ALIGNMENT (Pmode), 1);
 	}
       else
 	{
@@ -939,7 +940,8 @@ machopic_finish (asm_out_file)
 	  assemble_name (asm_out_file, sym_name); 
 	  fprintf (asm_out_file, "\n");
 
-	  assemble_integer (const0_rtx, GET_MODE_SIZE (Pmode), 1);
+	  assemble_integer (const0_rtx, GET_MODE_SIZE (Pmode),
+			    GET_MODE_ALIGNMENT (Pmode), 1);
 	}
     }
 }
@@ -1117,7 +1119,8 @@ machopic_asm_out_constructor (symbol, priority)
     mod_init_section ();
   else
     constructor_section ();
-  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
+  assemble_align (POINTER_SIZE);
+  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 
   if (!flag_pic)
     fprintf (asm_out_file, ".reference .constructors_used\n");
@@ -1132,7 +1135,8 @@ machopic_asm_out_destructor (symbol, priority)
     mod_term_section ();
   else
     destructor_section ();
-  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
+  assemble_align (POINTER_SIZE);
+  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 
   if (!flag_pic)
     fprintf (asm_out_file, ".reference .destructors_used\n");

@@ -10382,7 +10382,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
   "TARGET_MIPS16"
   "*
 {
-  assemble_integer (operands[0], 1, 1);
+  assemble_integer (operands[0], 1, BITS_PER_UNIT, 1);
   return \"\";
 }"
   [(set_attr "type"	"unknown")
@@ -10394,7 +10394,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
   "TARGET_MIPS16"
   "*
 {
-  assemble_integer (operands[0], 2, 1);
+  assemble_integer (operands[0], 2, BITS_PER_UNIT * 2, 1);
   return \"\";
 }"
   [(set_attr "type"	"unknown")
@@ -10406,7 +10406,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
   "TARGET_MIPS16"
   "*
 {
-  assemble_integer (operands[0], 4, 1);
+  assemble_integer (operands[0], 4, BITS_PER_UNIT * 4, 1);
   return \"\";
 }"
   [(set_attr "type"	"unknown")
@@ -10418,7 +10418,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
   "TARGET_MIPS16"
   "*
 {
-  assemble_integer (operands[0], 8, 1);
+  assemble_integer (operands[0], 8, BITS_PER_UNIT * 8, 1);
   return \"\";
 }"
   [(set_attr "type"	"unknown")
@@ -10435,7 +10435,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
   if (GET_CODE (operands[0]) != CONST_DOUBLE)
     abort ();
   memcpy (&u, &CONST_DOUBLE_LOW (operands[0]), sizeof u);
-  assemble_real (u.d, SFmode);
+  assemble_real (u.d, SFmode, GET_MODE_ALIGNMENT (SFmode));
   return \"\";
 }"
   [(set_attr "type"	"unknown")
@@ -10452,7 +10452,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
   if (GET_CODE (operands[0]) != CONST_DOUBLE)
     abort ();
   memcpy (&u, &CONST_DOUBLE_LOW (operands[0]), sizeof u);
-  assemble_real (u.d, DFmode);
+  assemble_real (u.d, DFmode, GET_MODE_ALIGNMENT (DFmode));
   return \"\";
 }"
   [(set_attr "type"	"unknown")

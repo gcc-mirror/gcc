@@ -1807,7 +1807,7 @@ extern int s390_nr_constants;
     /* Mark entries referenced by other entries */			\
     for (pool = first_pool; pool; pool = pool->next)		       	\
       if (pool->mark)							\
-        mark_constants (pool->constant);					\
+        mark_constants (pool->constant);				\
 								       	\
     s390_asm_output_pool_prologue (FILE, FUNNAME, fndecl, size);     	\
 }
@@ -1818,46 +1818,47 @@ extern int s390_nr_constants;
 #define ASM_OUTPUT_POOL_EPILOGUE(FILE, FUNNAME, fndecl, size) return;
 
 #define ASM_OUTPUT_SPECIAL_POOL_ENTRY(FILE, EXP, MODE, ALIGN, LABELNO, WIN) \
-{                                                                       \
-  if ((s390_pool_count == 0) || (s390_pool_count > 0 && LABELNO >= 0)) 	\
-    {									\
-      fprintf (FILE, ".LC%d:\n", LABELNO);                              \
-      LABELNO = ~LABELNO;                                               \
-    }                                                                   \
-  if (s390_pool_count > 0)						\
-    {									\
-      fprintf (FILE, ".LC%d_%X:\n", ~LABELNO, s390_pool_count);         \
-    }                            					\
-									\
-  /* Output the value of the constant itself.  */			\
-  switch (GET_MODE_CLASS (pool->mode))					\
-    {									\
-    case MODE_FLOAT:							\
-      if (GET_CODE (x) != CONST_DOUBLE)					\
-	abort ();							\
-      									\
-      memcpy ((char *) &u, (char *) &CONST_DOUBLE_LOW (x), sizeof u);	\
-      assemble_real (u.d, pool->mode);					\
-      break;								\
-      									\
-    case MODE_INT:							\
-    case MODE_PARTIAL_INT:						\
-      if (flag_pic && (GET_CODE (x) == CONST ||                         \
-		   GET_CODE (x) == SYMBOL_REF ||                        \
-                   GET_CODE (x) == LABEL_REF ))                         \
-        {								\
-          fprintf (FILE, "%s\t",TARGET_64BIT ? ASM_QUAD : ASM_LONG);	\
-          s390_output_symbolic_const (FILE, x); 			\
-          fputc ('\n', (FILE));						\
-	}                                                               \
-      else                                                              \
-        assemble_integer (x, GET_MODE_SIZE (pool->mode), 1);		\
-      break;								\
-      									\
-    default:								\
-      abort ();								\
-    }									\
-  goto WIN;								\
+{									    \
+  if ((s390_pool_count == 0) || (s390_pool_count > 0 && LABELNO >= 0))	    \
+    {									    \
+      fprintf (FILE, ".LC%d:\n", LABELNO);				    \
+      LABELNO = ~LABELNO;						    \
+    }									    \
+  if (s390_pool_count > 0)						    \
+    {									    \
+      fprintf (FILE, ".LC%d_%X:\n", ~LABELNO, s390_pool_count);		    \
+    }									    \
+									    \
+  /* Output the value of the constant itself.  */			    \
+  switch (GET_MODE_CLASS (MODE))					    \
+    {									    \
+    case MODE_FLOAT:							    \
+      if (GET_CODE (EXP) != CONST_DOUBLE)				    \
+	abort ();							    \
+									    \
+      memcpy ((char *) &u, (char *) &CONST_DOUBLE_LOW (EXP), sizeof u);	    \
+      assemble_real (u.d, MODE, ALIGN);					    \
+      break;								    \
+									    \
+    case MODE_INT:							    \
+    case MODE_PARTIAL_INT:						    \
+      if (flag_pic							    \
+	  && (GET_CODE (EXP) == CONST					    \
+	      || GET_CODE (EXP) == SYMBOL_REF				    \
+	      || GET_CODE (EXP) == LABEL_REF ))				    \
+        {								    \
+          fprintf (FILE, "%s\t",TARGET_64BIT ? ASM_QUAD : ASM_LONG);	    \
+          s390_output_symbolic_const (FILE, EXP);			    \
+          fputc ('\n', (FILE));						    \
+	}								    \
+      else								    \
+        assemble_integer (EXP, GET_MODE_SIZE (MODE), ALIGN, 1);		    \
+      break;								    \
+									    \
+    default:								    \
+      abort ();								    \
+    }									    \
+  goto WIN;								    \
 }
 
 #endif 

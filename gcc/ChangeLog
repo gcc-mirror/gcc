@@ -1,5 +1,41 @@
 2001-08-17  Richard Henderson  <rth@redhat.com>
 
+	* defaults.h (UNALIGNED_SHORT_ASM_OP, UNALIGNED_INT_ASM_OP,
+	UNALIGNED_DOUBLE_INT_ASM_OP, ASM_BYTE_OP): Move from ...
+	* dwarf2asm.c: ... here.
+	* dwarfout.c: Remove them.
+
+	* varasm.c (assemble_integer): Add align parameter.
+	(assemble_real, output_constant, output_constructor): Likewise.
+	* output.h: Update decls.
+	* dwarf2asm.c, final.c, varasm.c, config/darwin.c, config/nextstep.c,
+	config/alpha/alpha.c, config/arm/arm.md, config/clipper/clipper.c,
+	config/m88k/m88k.c, config/mcore/mcore.md, config/mips/mips.h,
+	config/mips/mips.md, config/pa/pa.c, config/rs6000/rs6000.c,
+	config/rs6000/rs6000.h, config/s390/s390.h, config/sh/sh.md:
+	Update all callers.
+
+	* final.c (end_final): Abort profile block generation if we
+	havn't layed it out properly.
+	* output.h (assemble_eh_integer): Remove stale decl.
+	* varasm.c (assemble_zeros): Tidy; use assemble_integer.
+	(min_align): New.
+	(assemble_integer): Handle unaligned data.
+	(assemble_real): Abort on unaligned data.
+	(output_constructor): Don't assume ASM_OUTPUT_ALIGN 0 does
+	anything useful.
+	(default_dtor_section_asm_out_destructor): Use assemble_align.
+	(default_named_section_asm_out_constructor): Likewise.
+	(default_ctor_section_asm_out_constructor): Likewise.
+	* config/darwin.c (machopic_asm_out_constructor): Likewise.
+	(machopic_asm_out_destructor): Likewise.
+	* config/nextstep.c (nextstep_asm_out_constructor): Likewise.
+	(nextstep_asm_out_destructor): Likewise.
+	* config/alpha/alpha.c (vms_asm_out_constructor): Likewise.
+	(vms_asm_out_destructor): Likewise.
+
+2001-08-17  Richard Henderson  <rth@redhat.com>
+
 	* config/mips/iris6.h (TARGET_IRIX6): New.
 	(current_section_name, current_section_flags): New.
 	(ASM_OUTPUT_ALIGN, ASM_FILE_START, ASM_FILE_END): New.

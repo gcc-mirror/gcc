@@ -1893,7 +1893,7 @@ emit_register_classes ()
       assemble_align (POINTER_SIZE);
       for (t = registered_class; t; t = TREE_CHAIN (t))
 	assemble_integer (XEXP (DECL_RTL (t), 0),
-			  POINTER_SIZE / BITS_PER_UNIT, 1);
+			  POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 #else
       abort ();
 #endif

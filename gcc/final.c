@@ -291,6 +291,7 @@ end_final (filename)
       int long_bytes = LONG_TYPE_SIZE / BITS_PER_UNIT;
       int gcov_type_bytes = GCOV_TYPE_SIZE / BITS_PER_UNIT;
       int pointer_bytes = POINTER_SIZE / BITS_PER_UNIT;
+      unsigned int align2 = LONG_TYPE_SIZE;
 
       if (profile_block_flag)
 	size = long_bytes * count_basic_blocks;
@@ -301,6 +302,12 @@ end_final (filename)
       rounded += (BIGGEST_ALIGNMENT / BITS_PER_UNIT) - 1;
       rounded = (rounded / (BIGGEST_ALIGNMENT / BITS_PER_UNIT)
 		 * (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
+
+      /* ??? This _really_ ought to be done with a structure layout
+	 and with assemble_constructor.  If long_bytes != pointer_bytes
+	 we'll be emitting unaligned data at some point.  */
+      if (long_bytes != pointer_bytes)
+	abort ();
 
       data_section ();
 
@@ -323,70 +330,74 @@ end_final (filename)
       ASM_OUTPUT_ALIGN (asm_out_file, align);
 
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBX", 0);
-      /* zero word */
-      assemble_integer (const0_rtx, long_bytes, 1);
 
-      /* address of filename */
+      /* Zero word.  */
+      assemble_integer (const0_rtx, long_bytes, align2, 1);
+
+      /* Address of filename.  */
       ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 1);
-      assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name), pointer_bytes, 1);
+      assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name), pointer_bytes,
+			align2, 1);
 
-      /* address of count table */
+      /* Address of count table.  */
       ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 2);
-      assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name), pointer_bytes, 1);
+      assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name), pointer_bytes,
+			align2, 1);
 
-      /* count of the # of basic blocks or # of instrumented arcs */
+      /* Count of the # of basic blocks or # of instrumented arcs.  */
       if (profile_block_flag)
-	assemble_integer (GEN_INT (count_basic_blocks), long_bytes, 1);
-      else
-	assemble_integer (GEN_INT (count_instrumented_edges), long_bytes, 1);
+      assemble_integer (GEN_INT (profile_block_flag
+				 ? count_basic_blocks
+				 : count_instrumented_edges),
+			long_bytes, align2, 1);
 
-      /* zero word (link field) */
-      assemble_integer (const0_rtx, pointer_bytes, 1);
+      /* Zero word (link field).  */
+      assemble_integer (const0_rtx, pointer_bytes, align2, 1);
 
       /* address of basic block start address table */
       if (profile_block_flag)
 	{
 	  ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 3);
-	  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name), pointer_bytes,
-			    1);
+	  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name),
+			    pointer_bytes, align2, 1);
 	}
       else
-	assemble_integer (const0_rtx, pointer_bytes, 1);
+	assemble_integer (const0_rtx, pointer_bytes, align2, 1);
 
-      /* byte count for extended structure.  */
-      assemble_integer (GEN_INT (11 * UNITS_PER_WORD), long_bytes, 1);
+      /* Byte count for extended structure.  */
+      assemble_integer (GEN_INT (11 * UNITS_PER_WORD), long_bytes, align2, 1);
 
-      /* address of function name table */
+      /* Address of function name table.  */
       if (profile_block_flag)
 	{
 	  ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 4);
-	  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name), pointer_bytes,
-			    1);
+	  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name),
+			    pointer_bytes, align2, 1);
 	}
       else
-	assemble_integer (const0_rtx, pointer_bytes, 1);
+	assemble_integer (const0_rtx, pointer_bytes, align2, 1);
 
-      /* address of line number and filename tables if debugging.  */
+      /* Address of line number and filename tables if debugging.  */
       if (write_symbols != NO_DEBUG && profile_block_flag)
 	{
 	  ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 5);
 	  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name),
-			    pointer_bytes, 1);
+			    pointer_bytes, align2, 1);
 	  ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 6);
 	  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name),
-			    pointer_bytes, 1);
+			    pointer_bytes, align2, 1);
 	}
       else
 	{
-	  assemble_integer (const0_rtx, pointer_bytes, 1);
-	  assemble_integer (const0_rtx, pointer_bytes, 1);
+	  assemble_integer (const0_rtx, pointer_bytes, align2, 1);
+	  assemble_integer (const0_rtx, pointer_bytes, align2, 1);
 	}
 
-      /* space for extension ptr (link field) */
-      assemble_integer (const0_rtx, UNITS_PER_WORD, 1);
+      /* Space for extension ptr (link field).  */
+      assemble_integer (const0_rtx, UNITS_PER_WORD, align2, 1);
 
-      /* Output the file name changing the suffix to .d for Sun tcov
-	 compatibility.  */
+      /* Output the file name changing the suffix to .d for
+	 Sun tcov compatibility.  */
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBX", 1);
       {
 	char *cwd = getpwd ();
@@ -460,7 +471,7 @@ end_final (filename)
 	    {
 	      ASM_GENERATE_INTERNAL_LABEL (name, "LPB", i);
 	      assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name),
-				pointer_bytes, 1);
+				pointer_bytes, align2, 1);
 	    }
 	}
 
@@ -475,14 +486,14 @@ end_final (filename)
 		  ASM_GENERATE_INTERNAL_LABEL (name, "LPBC",
 					       ptr->func_label_num);
 		  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name),
-				    pointer_bytes, 1);
+				    pointer_bytes, align2, 1);
 		}
 	      else
-		assemble_integer (const0_rtx, pointer_bytes, 1);
+		assemble_integer (const0_rtx, pointer_bytes, align2, 1);
 	    }
 
 	  for (; i < count_basic_blocks; i++)
-	    assemble_integer (const0_rtx, pointer_bytes, 1);
+	    assemble_integer (const0_rtx, pointer_bytes, align2, 1);
 	}
 
       if (write_symbols != NO_DEBUG && profile_block_flag)
@@ -490,10 +501,10 @@ end_final (filename)
 	  /* Output the table of line numbers.  */
 	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBX", 5);
 	  for ((ptr = bb_head), (i = 0); ptr != 0; (ptr = ptr->next), i++)
-	    assemble_integer (GEN_INT (ptr->line_num), long_bytes, 1);
+	    assemble_integer (GEN_INT (ptr->line_num), long_bytes, align2, 1);
 
 	  for (; i < count_basic_blocks; i++)
-	    assemble_integer (const0_rtx, long_bytes, 1);
+	    assemble_integer (const0_rtx, long_bytes, align2, 1);
 
 	  /* Output the table of file names.  */
 	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBX", 6);
@@ -504,14 +515,14 @@ end_final (filename)
 		  ASM_GENERATE_INTERNAL_LABEL (name, "LPBC",
 					       ptr->file_label_num);
 		  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name),
-				    pointer_bytes, 1);
+				    pointer_bytes, align2, 1);
 		}
 	      else
-		assemble_integer (const0_rtx, pointer_bytes, 1);
+		assemble_integer (const0_rtx, pointer_bytes, align2, 1);
 	    }
 
 	  for (; i < count_basic_blocks; i++)
-	    assemble_integer (const0_rtx, pointer_bytes, 1);
+	    assemble_integer (const0_rtx, pointer_bytes, align2, 1);
 	}
 
       /* End with the address of the table of addresses,
@@ -519,8 +530,8 @@ end_final (filename)
       if (profile_block_flag)
 	{
 	  ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 3);
-	  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name), pointer_bytes,
-			    1);
+	  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name),
+			    pointer_bytes, align2, 1);
 	}
     }
 }
@@ -1684,7 +1695,7 @@ profile_function (file)
   data_section ();
   ASM_OUTPUT_ALIGN (file, floor_log2 (align / BITS_PER_UNIT));
   ASM_OUTPUT_INTERNAL_LABEL (file, "LP", profile_label_no);
-  assemble_integer (const0_rtx, LONG_TYPE_SIZE / BITS_PER_UNIT, 1);
+  assemble_integer (const0_rtx, LONG_TYPE_SIZE / BITS_PER_UNIT, align, 1);
 #endif
 
   function_section (current_function_decl);

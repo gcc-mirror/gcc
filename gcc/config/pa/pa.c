@@ -4377,8 +4377,8 @@ output_deferred_plabels (file)
   for (i = 0; i < n_deferred_plabels; i++)
     {
       ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (deferred_plabels[i].internal_label));
-      assemble_integer (gen_rtx_SYMBOL_REF (VOIDmode,
-					    deferred_plabels[i].name), 4, 1);
+      assemble_integer (gen_rtx_SYMBOL_REF (Pmode, deferred_plabels[i].name),
+			4, 32, 1);
     }
 }
 

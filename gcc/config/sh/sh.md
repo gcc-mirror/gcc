@@ -4131,7 +4131,7 @@
  "*
 {
   if (operands[1] != const0_rtx)
-    assemble_integer (operands[0], 2, 1);
+    assemble_integer (operands[0], 2, BITS_PER_UNIT * 2, 1);
   return \"\";
 }"
  [(set_attr "length" "2")
@@ -4147,7 +4147,7 @@
  "*
 {
   if (operands[1] != const0_rtx)
-    assemble_integer (operands[0], 4, 1);
+    assemble_integer (operands[0], 4, BITS_PER_UNIT * 4, 1);
   return \"\";
 }"
  [(set_attr "length" "4")
@@ -4163,7 +4163,7 @@
  "*
 {
   if (operands[1] != const0_rtx)
-    assemble_integer (operands[0], 8, 1);
+    assemble_integer (operands[0], 8, BITS_PER_UNIT * 8, 1);
   return \"\";
 }"
  [(set_attr "length" "8")
@@ -4182,7 +4182,7 @@
     {
       union real_extract u;
       memcpy (&u, &CONST_DOUBLE_LOW (operands[0]), sizeof u);
-      assemble_real (u.d, SFmode);
+      assemble_real (u.d, SFmode, GET_MODE_ALIGNMENT (SFmode));
     }
   return \"\";
 }"
@@ -4202,7 +4202,7 @@
     {
       union real_extract u;
       memcpy (&u, &CONST_DOUBLE_LOW (operands[0]), sizeof u);
-      assemble_real (u.d, DFmode);
+      assemble_real (u.d, DFmode, GET_MODE_ALIGNMENT (DFmode));
     }
   return \"\";
 }"

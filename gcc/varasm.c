@@ -161,7 +161,8 @@ static int mark_constant		PARAMS ((rtx *current_rtx, void *data));
 static int output_addressed_constants	PARAMS ((tree));
 static void output_after_function_constants PARAMS ((void));
 static unsigned HOST_WIDE_INT array_size_for_constructor PARAMS ((tree));
-static void output_constructor		PARAMS ((tree, int));
+static unsigned min_align		PARAMS ((unsigned, unsigned));
+static void output_constructor		PARAMS ((tree, int, unsigned));
 #ifdef ASM_WEAKEN_LABEL
 static void remove_from_pending_weak_list	PARAMS ((const char *));
 #endif
@@ -952,7 +953,7 @@ default_named_section_asm_out_destructor (symbol, priority)
 
   named_section_flags (section, SECTION_WRITE);
   assemble_align (POINTER_SIZE);
-  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
+  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 }
 
 #ifdef DTORS_SECTION_ASM_OP
@@ -973,7 +974,8 @@ default_dtor_section_asm_out_destructor (symbol, priority)
      int priority ATTRIBUTE_UNUSED;
 {
   dtors_section ();
-  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
+  assemble_align (POINTER_SIZE);
+  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 }
 #endif
 
@@ -1012,7 +1014,8 @@ default_named_section_asm_out_constructor (symbol, priority)
     }
 
   named_section_flags (section, SECTION_WRITE);
-  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
+  assemble_align (POINTER_SIZE);
+  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 }
 
 #ifdef CTORS_SECTION_ASM_OP
@@ -1033,7 +1036,8 @@ default_ctor_section_asm_out_constructor (symbol, priority)
      int priority ATTRIBUTE_UNUSED;
 {
   ctors_section ();
-  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
+  assemble_align (POINTER_SIZE);
+  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 }
 #endif
 
@@ -1172,29 +1176,8 @@ assemble_zeros (size)
   if (ASM_NO_SKIP_IN_TEXT && in_text_section ())
     {
       int i;
-
-      for (i = 0; i < size - 20; i += 20)
-	{
-#ifdef ASM_BYTE_OP
-	  fprintf (asm_out_file,
-		   "%s0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n", ASM_BYTE_OP);
-#else
-	  fprintf (asm_out_file,
-		   "\tbyte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n");
-#endif
-	}
-      if (i < size)
-        {
-#ifdef ASM_BYTE_OP
-	  fprintf (asm_out_file, "%s0", ASM_BYTE_OP);
-#else
-	  fprintf (asm_out_file, "\tbyte 0");
-#endif
-	  i++;
-	  for (; i < size; i++)
-	    fprintf (asm_out_file, ",0");
-	  fprintf (asm_out_file, "\n");
-	}
+      for (i = 0; i < size; i++)
+	assemble_integer (const0_rtx, 1, BITS_PER_UNIT, 1);
     }
   else
 #endif
@@ -1584,7 +1567,8 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
       if (DECL_INITIAL (decl))
 	/* Output the actual data.  */
 	output_constant (DECL_INITIAL (decl),
-			 tree_low_cst (DECL_SIZE_UNIT (decl), 1));
+			 tree_low_cst (DECL_SIZE_UNIT (decl), 1),
+			 align);
       else
 	/* Leave space for it.  */
 	assemble_zeros (tree_low_cst (DECL_SIZE_UNIT (decl), 1));
@@ -1801,52 +1785,90 @@ assemble_trampoline_template ()
 }
 #endif
 
-/* Assemble the integer constant X into an object of SIZE bytes.
-   X must be either a CONST_INT or CONST_DOUBLE.
+/* A and B are either alignments or offsets.  Return the minimum alignment
+   that may be assumed after adding the two together.  */
 
-   Return 1 if we were able to output the constant, otherwise 0.  If FORCE is
-   non-zero, abort if we can't output the constant.  */
+static inline unsigned
+min_align (a, b)
+     unsigned int a, b;
+{
+  return (a | b) & -(a | b);
+}
+
+/* Assemble the integer constant X into an object of SIZE bytes.  ALIGN is
+   the alignment of the integer in bits.  Return 1 if we were able to output
+   the constant, otherwise 0.  If FORCE is non-zero, abort if we can't output
+   the constant.  */
 
 int
-assemble_integer (x, size, force)
+assemble_integer (x, size, align, force)
      rtx x;
-     int size;
+     unsigned int size;
+     unsigned int align;
      int force;
 {
   /* First try to use the standard 1, 2, 4, 8, and 16 byte
      ASM_OUTPUT... macros.  */
 
-  switch (size)
-    {
+  if (align >= size * BITS_PER_UNIT)
+    switch (size)
+      {
 #ifdef ASM_OUTPUT_CHAR
-    case 1:
-      ASM_OUTPUT_CHAR (asm_out_file, x);
-      return 1;
+      case 1:
+	ASM_OUTPUT_CHAR (asm_out_file, x);
+	return 1;
 #endif
-
 #ifdef ASM_OUTPUT_SHORT
-    case 2:
-      ASM_OUTPUT_SHORT (asm_out_file, x);
-      return 1;
+      case 2:
+	ASM_OUTPUT_SHORT (asm_out_file, x);
+	return 1;
 #endif
-
 #ifdef ASM_OUTPUT_INT
-    case 4:
-      ASM_OUTPUT_INT (asm_out_file, x);
-      return 1;
+      case 4:
+	ASM_OUTPUT_INT (asm_out_file, x);
+	return 1;
 #endif
-
 #ifdef ASM_OUTPUT_DOUBLE_INT
-    case 8:
-      ASM_OUTPUT_DOUBLE_INT (asm_out_file, x);
-      return 1;
+      case 8:
+	ASM_OUTPUT_DOUBLE_INT (asm_out_file, x);
+	return 1;
 #endif
-
 #ifdef ASM_OUTPUT_QUADRUPLE_INT
-    case 16:
-      ASM_OUTPUT_QUADRUPLE_INT (asm_out_file, x);
-      return 1;
+      case 16:
+	ASM_OUTPUT_QUADRUPLE_INT (asm_out_file, x);
+	return 1;
 #endif
+      }
+  else
+    {
+      const char *asm_op = NULL;
+
+      switch (size)
+	{
+#ifdef UNALIGNED_SHORT_ASM_OP
+	case 2:
+	  asm_op = UNALIGNED_SHORT_ASM_OP;
+	  break;
+#endif
+#ifdef UNALIGNED_INT_ASM_OP
+	case 4:
+	  asm_op = UNALIGNED_INT_ASM_OP;
+	  break;
+#endif
+#ifdef UNALIGNED_DOUBLE_INT_ASM_OP
+	case 8:
+	  asm_op = UNALIGNED_DOUBLE_INT_ASM_OP;
+	  break;
+#endif
+	}
+
+      if (asm_op)
+	{
+	  fputs (asm_op, asm_out_file);
+	  output_addr_const (asm_out_file, x);
+	  fputc ('\n', asm_out_file);
+	  return 1;
+	}
     }
 
   /* If we couldn't do it that way, there are two other possibilities: First,
@@ -1861,30 +1883,54 @@ assemble_integer (x, size, force)
     }
 #endif
 
-  /* Finally, if SIZE is larger than a single word, try to output the constant
+  /* If SIZE is larger than a single word, try to output the constant
      one word at a time.  */
 
   if (size > UNITS_PER_WORD)
     {
-      int i;
       enum machine_mode mode
 	= mode_for_size (size * BITS_PER_UNIT, MODE_INT, 0);
-      rtx word;
+      unsigned align2 = min_align (align, BITS_PER_WORD);
+      unsigned int i;
 
       for (i = 0; i < size / UNITS_PER_WORD; i++)
 	{
-	  word = operand_subword (x, i, 0, mode);
-
+	  rtx word = operand_subword (x, i, 0, mode);
 	  if (word == 0)
 	    break;
-
-	  if (! assemble_integer (word, UNITS_PER_WORD, 0))
+	  if (! assemble_integer (word, UNITS_PER_WORD, align2, 0))
 	    break;
 	}
 
       if (i == size / UNITS_PER_WORD)
 	return 1;
       /* If we output at least one word and then could not finish,
+	 there is no valid way to continue.  */
+      if (i > 0)
+	abort ();
+    }
+
+  /* If unaligned, and this is a constant, emit it one byte at a time.  */
+  if (align < size * BITS_PER_UNIT)
+    {
+      enum machine_mode omode, imode;
+      unsigned int i;
+ 
+      omode = mode_for_size (BITS_PER_UNIT, MODE_INT, 0);
+      imode = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 0);
+
+      for (i = 0; i < size; i++)
+	{
+	  rtx byte = simplify_subreg (omode, x, imode, i);
+	  if (byte == 0)
+	    break;
+	  if (! assemble_integer (byte, 1, BITS_PER_UNIT, 0))
+	    break;
+	}
+
+      if (i == size)
+	return 1;
+      /* If we output at least one byte and then could not finish,
 	 there is no valid way to continue.  */
       if (i > 0)
 	abort ();
@@ -1953,13 +1999,24 @@ assemble_real_1 (p)
 }
 
 void
-assemble_real (d, mode)
+assemble_real (d, mode, align)
      REAL_VALUE_TYPE d;
      enum machine_mode mode;
+     unsigned int align;
 {
   struct assemble_real_args args;
   args.d = &d;
   args.mode = mode;
+
+  /* We cannot emit unaligned floating point constants.  This is slightly
+     complicated in that we don't know what "unaligned" means exactly.  */
+#ifdef BIGGEST_FIELD_ALIGNMENT
+  if (align >= BIGGEST_FIELD_ALIGNMENT)
+    ;
+  else
+#endif
+  if (align < GET_MODE_ALIGNMENT (mode))
+    abort ();
 
   if (do_float_handler (assemble_real_1, (PTR) &args))
     return;
@@ -3280,7 +3337,8 @@ output_constant_def_contents (exp, reloc, labelno)
 		   (TREE_CODE (exp) == STRING_CST
 		    ? MAX (TREE_STRING_LENGTH (exp),
 			   int_size_in_bytes (TREE_TYPE (exp)))
-		    : int_size_in_bytes (TREE_TYPE (exp))));
+		    : int_size_in_bytes (TREE_TYPE (exp))),
+		   align);
 
 }
 
@@ -3841,12 +3899,12 @@ output_constant_pool (fnname, fndecl)
 	    abort ();
 
 	  memcpy ((char *) &u, (char *) &CONST_DOUBLE_LOW (x), sizeof u);
-	  assemble_real (u.d, pool->mode);
+	  assemble_real (u.d, pool->mode, pool->align);
 	  break;
 
 	case MODE_INT:
 	case MODE_PARTIAL_INT:
-	  assemble_integer (x, GET_MODE_SIZE (pool->mode), 1);
+	  assemble_integer (x, GET_MODE_SIZE (pool->mode), pool->align, 1);
 	  break;
 
 	default:
@@ -3856,7 +3914,6 @@ output_constant_pool (fnname, fndecl)
 #ifdef ASM_OUTPUT_SPECIAL_POOL_ENTRY
     done: ;
 #endif
-
     }
 
 #ifdef ASM_OUTPUT_POOL_EPILOGUE
@@ -4258,12 +4315,15 @@ initializer_constant_valid_p (value, endtype)
 
    There a case in which we would fail to output exactly SIZE bytes:
    for a structure constructor that wants to produce more than SIZE bytes.
-   But such constructors will never be generated for any possible input.  */
+   But such constructors will never be generated for any possible input.
+
+   ALIGN is the alignment of the data in bits.  */
 
 void
-output_constant (exp, size)
-     register tree exp;
-     register int size;
+output_constant (exp, size, align)
+     tree exp;
+     int size;
+     unsigned int align;
 {
   register enum tree_code code = TREE_CODE (TREE_TYPE (exp));
 
@@ -4318,7 +4378,7 @@ output_constant (exp, size)
 
       if (! assemble_integer (expand_expr (exp, NULL_RTX, VOIDmode,
 					   EXPAND_INITIALIZER),
-			      size, 0))
+			      size, align, 0))
 	error ("initializer for integer value is too complicated");
       size = 0;
       break;
@@ -4328,20 +4388,22 @@ output_constant (exp, size)
 	error ("initializer for floating value is not a floating constant");
 
       assemble_real (TREE_REAL_CST (exp),
-		     mode_for_size (size * BITS_PER_UNIT, MODE_FLOAT, 0));
+		     mode_for_size (size * BITS_PER_UNIT, MODE_FLOAT, 0),
+		     align);
       size = 0;
       break;
 
     case COMPLEX_TYPE:
-      output_constant (TREE_REALPART (exp), size / 2);
-      output_constant (TREE_IMAGPART (exp), size / 2);
+      output_constant (TREE_REALPART (exp), size / 2, align);
+      output_constant (TREE_IMAGPART (exp), size / 2,
+		       min_align (align, BITS_PER_UNIT * (size / 2)));
       size -= (size / 2) * 2;
       break;
 
     case ARRAY_TYPE:
       if (TREE_CODE (exp) == CONSTRUCTOR)
 	{
-	  output_constructor (exp, size);
+	  output_constructor (exp, size, align);
 	  return;
 	}
       else if (TREE_CODE (exp) == STRING_CST)
@@ -4364,7 +4426,7 @@ output_constant (exp, size)
     case RECORD_TYPE:
     case UNION_TYPE:
       if (TREE_CODE (exp) == CONSTRUCTOR)
-	output_constructor (exp, size);
+	output_constructor (exp, size, align);
       else
 	abort ();
       return;
@@ -4373,7 +4435,7 @@ output_constant (exp, size)
       if (TREE_CODE (exp) == INTEGER_CST)
 	assemble_integer (expand_expr (exp, NULL_RTX,
 				       VOIDmode, EXPAND_INITIALIZER),
-			  size, 1);
+			  size, align, 1);
       else if (TREE_CODE (exp) == CONSTRUCTOR)
 	{
 	  unsigned char *buffer = (unsigned char *) alloca (size);
@@ -4434,9 +4496,10 @@ array_size_for_constructor (val)
    Generate at least SIZE bytes, padding if necessary.  */
 
 static void
-output_constructor (exp, size)
+output_constructor (exp, size, align)
      tree exp;
      int size;
+     unsigned int align;
 {
   tree type = TREE_TYPE (exp);
   register tree link, field = 0;
@@ -4496,6 +4559,7 @@ output_constructor (exp, size)
 	  HOST_WIDE_INT lo_index = tree_low_cst (TREE_OPERAND (index, 0), 0);
 	  HOST_WIDE_INT hi_index = tree_low_cst (TREE_OPERAND (index, 1), 0);
 	  HOST_WIDE_INT index;
+	  unsigned int align2 = min_align (align, fieldsize * BITS_PER_UNIT);
 
 	  for (index = lo_index; index <= hi_index; index++)
 	    {
@@ -4503,7 +4567,7 @@ output_constructor (exp, size)
 	      if (val == 0)
 		assemble_zeros (fieldsize);
 	      else
-		output_constant (val, fieldsize);
+		output_constant (val, fieldsize, align2);
 
 	      /* Count its size.  */
 	      total_bytes += fieldsize;
@@ -4517,6 +4581,7 @@ output_constructor (exp, size)
 	  /* Since this structure is static,
 	     we know the positions are constant.  */
 	  HOST_WIDE_INT pos = field ? int_byte_position (field) : 0;
+	  unsigned int align2;
 
 	  if (index != 0)
 	    pos = (tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (val)), 1)
@@ -4539,13 +4604,9 @@ output_constructor (exp, size)
 	      total_bytes = pos;
 	    }
 
-          else if (field != 0 && DECL_PACKED (field))
-	    /* Some assemblers automaticallly align a datum according to its
-	       size if no align directive is specified.  The datum, however,
-	       may be declared with 'packed' attribute, so we have to disable
-	       such a feature.  */
-	    ASM_OUTPUT_ALIGN (asm_out_file, 0);
-
+	  /* Find the alignment of this element.  */
+	  align2 = min_align (align, BITS_PER_UNIT * pos);
+	  
 	  /* Determine size this element should occupy.  */
 	  if (field)
 	    {
@@ -4581,7 +4642,7 @@ output_constructor (exp, size)
 	  if (val == 0)
 	    assemble_zeros (fieldsize);
 	  else
-	    output_constant (val, fieldsize);
+	    output_constant (val, fieldsize, align2);
 
 	  /* Count its size.  */
 	  total_bytes += fieldsize;

@@ -1,3 +1,8 @@
+2001-08-17  Richard Henderson  <rth@redhat.com>
+
+	* class.c (emit_register_classes): Add align parameter to
+	call to assemble_integer.
+
 2001-08-16  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* jcf-parse.c (load_class): New locals saved and class_loaded. If
