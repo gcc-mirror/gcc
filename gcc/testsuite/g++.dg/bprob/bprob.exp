@@ -27,7 +27,7 @@ if { ![check_profiling_available "-fprofile-arcs"] } {
 
 # The procedures in profopt.exp need these parameters.
 set tool g++
-set prof_ext gcda
+set prof_ext "gcda gcno"
 
 if $tracelevel then {
     strace $tracelevel

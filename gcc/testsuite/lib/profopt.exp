@@ -38,7 +38,7 @@ if ![info exists tool] {
     error "Tools is not specified."
 }
 if ![info exists prof_ext] {
-    error "No profile data file extension specified."
+    error "No profile data file extensions specified."
 }
 
 # The maximum perforance degradation can be defined in the including file.
@@ -66,14 +66,16 @@ set prof_option_list $PROFOPT_OPTIONS
 # profopt-cleanup -- remove profiling or performance results files.
 #
 # TESTCASE is the name of the test
-# EXT is the extension of file to remove
+# EXT is the extensions of files to remove
 #
-proc profopt-cleanup { testcase ext } {
+proc profopt-cleanup { testcase extlist } {
     set basename [file tail $testcase]
     set base [file rootname $basename]
-    set files [glob -nocomplain $base.$ext]
-    if { $files != "" } {
-	eval "remote_file build delete $files"
+    foreach ext $extlist {
+	set files [glob -nocomplain $base.$ext]
+	if { $files != "" } {
+	    eval "remote_file build delete $files"
+	}
     }
 }
 
@@ -181,12 +183,14 @@ proc profopt-execute { src } {
 	if { $status == "pass" } {
 	    set basename [file tail $testcase]
 	    set base [file rootname $basename]
-	    set files [glob -nocomplain $base.$prof_ext]
-	    if { $files == "" } {
-		set status "fail"
-		fail "$testcase execution: file $base.$prof_ext does not exist, $option $profile_option"
-	    } else {
-	        $status "$testcase execution,   $optstr"
+	    foreach ext $prof_ext {
+		set files [glob -nocomplain $base.$ext]
+		if { $files == "" } {
+		    set status "fail"
+		    fail "$testcase execution: file $base.$ext does not exist, $option $profile_option"
+		} else {
+	            $status "$testcase execution,   $optstr"
+		}
 	    }
 	} else {
 	    $status "$testcase execution,   $optstr"

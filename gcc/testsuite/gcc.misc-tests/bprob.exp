@@ -27,7 +27,7 @@ if { ![check_profiling_available "-fprofile-arcs"] } {
 
 # The procedures in profopt.exp need these parameters.
 set tool gcc
-set prof_ext gcda
+set prof_ext "gcda gcno"
 set perf_ext tim
 
 # Override the list defined in profopt.exp.
