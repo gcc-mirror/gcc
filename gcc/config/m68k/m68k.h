@@ -921,6 +921,11 @@ extern enum reg_class regno_reg_class[];
    On the 5200 (coldfire), sp@- in a byte insn pushes just a byte.  */
 #define PUSH_ROUNDING(BYTES) (TARGET_5200 ? BYTES : ((BYTES) + 1) & ~1)
 
+/* We want to avoid trying to push bytes. */
+#define MOVE_BY_PIECES_P(SIZE, ALIGN) \
+  (move_by_pieces_ninsns (SIZE, ALIGN) < MOVE_RATIO \
+    && (((SIZE) >=16 && (ALIGN) >= 16) || (TARGET_5200)))
+
 /* Offset of first parameter from the argument pointer register value.  */
 #define FIRST_PARM_OFFSET(FNDECL) 8
 

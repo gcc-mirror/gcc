@@ -1,3 +1,8 @@
+2001-02-28  DJ Delorie  <dj@redhat.com>
+
+	* config/m68k/m68k.h (MOVE_BY_PIECES_P): Avoid pushing bytes,
+	since that doesn't work the way gcc wants on a generic m68k.
+
 2001-02-28  Richard Henderson  <rth@redhat.com>
 
 	* caller-save.c (save_call_clobbered_regs): Fix typo in
