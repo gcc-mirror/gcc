@@ -230,7 +230,7 @@
       do_always_noconv() const throw();
 
       virtual int 
-      do_length(const state_type&, const extern_type* __from, 
+      do_length(state_type&, const extern_type* __from, 
 		const extern_type* __end, size_t __max) const;
 
       virtual int 
@@ -447,7 +447,7 @@
   template<typename _InternT, typename _ExternT>
     int 
     codecvt<_InternT, _ExternT, __enc_traits>::
-    do_length(const state_type&, const extern_type* __from, 
+    do_length(state_type&, const extern_type* __from, 
 	      const extern_type* __end, size_t __max) const
     { return std::min(__max, static_cast<size_t>(__end - __from)); }
 

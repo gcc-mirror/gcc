@@ -1,6 +1,6 @@
-// 2000-08-17 Benjamin Kosnik <bkoz@cygnus.com>
+// 2003-02-06  Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2000, 2002, 2003 Free Software Foundation
+// Copyright (C) 2003 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,27 +38,42 @@ zero_state(std::mbstate_t& state)
 
 // Required instantiation
 // codecvt<wchar_t, char, mbstate_t>
-void test01()
+//
+// Test handling of illegal input sequence in UTF-8.
+void test07()
 {
   using namespace std;
   typedef codecvt<wchar_t, char, mbstate_t> 	w_codecvt;
+  typedef wchar_t				int_type;
   typedef char					ext_type;
 
   bool 			test = true;
-  const ext_type* 	e_lit = "black pearl jasmine tea";
+  const ext_type* 	e_lit = "a\xc0\xff";
+  const ext_type*       efrom_next;
   int 			size = strlen(e_lit);
 
-  locale 		loc;
+  locale 		loc ("en_US.UTF-8");
+  locale::global(loc);
   const w_codecvt* 	cvt = &use_facet<w_codecvt>(loc); 
 
-  w_codecvt::state_type state04;
-  zero_state(state04);
-  int j = cvt->length(state04, e_lit, e_lit + size, 5);
-  VERIFY( j == 5 );
+  w_codecvt::state_type state01;
+  zero_state(state01);
+  int i = cvt->length(state01, e_lit, e_lit + size, 1);
+  VERIFY( i == 1 );
+
+  w_codecvt::state_type state02;
+  zero_state(state02);
+  int j = cvt->length(state02, e_lit, e_lit + size, size);
+  VERIFY( j == 1 );
+
+  w_codecvt::state_type state03;
+  zero_state(state03);
+  int k = cvt->length(state03, e_lit, e_lit + size, size * 2);
+  VERIFY( k == 1 );
 }
 
 int main ()
 {
-  test01();
+  test07();
   return 0;
 }

@@ -108,7 +108,7 @@ namespace std
   
   int 
   codecvt<char, char, mbstate_t>::
-  do_length (const state_type&, const extern_type* __from,
+  do_length (state_type&, const extern_type* __from,
 	     const extern_type* __end, size_t __max) const
   { return std::min(__max, static_cast<size_t>(__end - __from)); }
   
@@ -138,29 +138,14 @@ namespace std
   do_unshift(state_type&, extern_type* __to,
 	     extern_type*, extern_type*& __to_next) const
   {
+    // XXX Probably wrong for stateful encodings
     __to_next = __to;
     return noconv;
   }
-  
-  int 
-  codecvt<wchar_t, char, mbstate_t>::
-  do_encoding() const throw()
-  { return sizeof(wchar_t); }
   
   bool 
   codecvt<wchar_t, char, mbstate_t>::
   do_always_noconv() const throw()
   { return false; }
-  
-  int 
-  codecvt<wchar_t, char, mbstate_t>::
-  do_length(const state_type&, const extern_type* __from,
-	    const extern_type* __end, size_t __max) const
-  { return std::min(__max, static_cast<size_t>(__end - __from)); }
-
-  int 
-  codecvt<wchar_t, char, mbstate_t>::
-  do_max_length() const throw()
-  { return 1; }
 #endif //  _GLIBCPP_USE_WCHAR_T
 } // namespace std

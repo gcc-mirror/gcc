@@ -1,3 +1,90 @@
+2003-02-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/22_locale/codecvt/encoding/wchar_t/1.cc (test01):
+	Explicitly use the "C" locale.
+	* testsuite/22_locale/codecvt/max_length/wchar_t/1.cc (test01): Same.
+	
+2003-02-06  Petur Runolfsson  <peturr02@ru.is>
+
+	DR 75
+	DR 305
+	PR libstdc++/9028 (partial)
+	PR libstdc++/9224
+	PR libstdc++/9246
+	PR libstdc++/9247
+
+	* src/codecvt.cc
+	(codecvt<wchar_t, char, mbstate_t>::do_encoding,
+	codecvt<wchar_t, char, mbstate_t>::do_length,
+	codecvt<wchar_t, char, mbstate_t>::do_max_length):
+	Move...
+	* config/locale/generic/codecvt_members.cc:  ...here.
+	* config/locale/gnu/codecvt_members.cc:  ...and here.
+
+	* config/locale/generic/codecvt_members.cc,
+	* config/locale/gnu/codecvt_members.cc
+	(codecvt<wchar_t, char, mbstate_t>::do_encoding
+	codecvt<wchar_t, char, mbstate_t>::do_in,
+	codecvt<wchar_t, char, mbstate_t>::do_length,
+	codecvt<wchar_t, char, mbstate_t>::do_max_length,
+	codecvt<wchar_t, char, mbstate_t>::do_out):
+	New implementation that handles stateless encodings,
+	including UTF-8.
+
+	* config/locale/generic/codecvt_members.cc,
+	* config/locale/gnu/codecvt_members.cc,
+	* config/locale/ieee_1003.1-2001/codecvt_specializations.h,
+	* include/bits/codecvt.h,
+	* src/codecvt.cc
+	(codecvt::length, codecvt::do_length):
+	Change type of first argument of length and do_length from
+	'const state_type&' to 'state_type&' according to DR 75.
+
+	* testsuite/22_locale/codecvt/always_noconv/wchar_t/1.cc:  Cleanup.
+	* testsuite/22_locale/codecvt/always_noconv/wchar_t/2.cc:  New test.
+	* testsuite/22_locale/codecvt/always_noconv/wchar_t/3.cc:  New test.
+	* testsuite/22_locale/codecvt/always_noconv/wchar_t/4.cc:  New test.
+	* testsuite/22_locale/codecvt/encoding/wchar_t/1.cc:
+	Cleanup and check for correct return value from encoding
+	for "C" locale.
+	* testsuite/22_locale/codecvt/encoding/wchar_t/2.cc:  New test.
+	* testsuite/22_locale/codecvt/encoding/wchar_t/3.cc:  New test.
+	* testsuite/22_locale/codecvt/encoding/wchar_t/4.cc:  New test.
+	* testsuite/22_locale/codecvt/in/wchar_t/1.cc:  Cleanup.
+	* testsuite/22_locale/codecvt/in/wchar_t/2.cc:  New test.
+	* testsuite/22_locale/codecvt/in/wchar_t/3.cc:  New test.
+	* testsuite/22_locale/codecvt/in/wchar_t/4.cc:  New test.
+	* testsuite/22_locale/codecvt/in/wchar_t/5.cc:  New test.
+	* testsuite/22_locale/codecvt/in/wchar_t/6.cc:  New test.
+	* testsuite/22_locale/codecvt/in/wchar_t/7.cc:  New test.
+	* testsuite/22_locale/codecvt/in/wchar_t/8.cc:  New test.
+	* testsuite/22_locale/codecvt/in/wchar_t/9.cc:  New test.
+	* testsuite/22_locale/codecvt/length/char/1.cc:  Cleanup.
+	* testsuite/22_locale/codecvt/length/char/2.cc:  New test.
+	* testsuite/22_locale/codecvt/length/wchar_t/1.cc:  Cleanup.
+	* testsuite/22_locale/codecvt/length/wchar_t/2.cc:  New test.
+	* testsuite/22_locale/codecvt/length/wchar_t/3.cc:  New test.
+	* testsuite/22_locale/codecvt/length/wchar_t/4.cc:  New test.
+	* testsuite/22_locale/codecvt/length/wchar_t/5.cc:  New test.
+	* testsuite/22_locale/codecvt/length/wchar_t/6.cc:  New test.
+	* testsuite/22_locale/codecvt/length/wchar_t/7.cc:  New test.
+	* testsuite/22_locale/codecvt/max_length/wchar_t/1.cc:  Cleanup.
+	* testsuite/22_locale/codecvt/max_length/wchar_t/2.cc:  New test.
+	* testsuite/22_locale/codecvt/max_length/wchar_t/3.cc:  New test.
+	* testsuite/22_locale/codecvt/max_length/wchar_t/4.cc:  New test.
+	* testsuite/22_locale/codecvt/out/wchar_t/1.cc:  Cleanup.
+	* testsuite/22_locale/codecvt/out/wchar_t/2.cc:  New test.
+	* testsuite/22_locale/codecvt/out/wchar_t/3.cc:  New test.
+	* testsuite/22_locale/codecvt/out/wchar_t/4.cc:  New test.
+	* testsuite/22_locale/codecvt/out/wchar_t/5.cc:  New test.
+	* testsuite/22_locale/codecvt/out/wchar_t/6.cc:  New test.
+	* testsuite/22_locale/codecvt/out/wchar_t/7.cc:  New test.
+	* testsuite/22_locale/codecvt/unicode/1.cc:  New test.
+	* testsuite/22_locale/codecvt/unshift/wchar_t/1.cc:  Cleanup.
+	* testsuite/22_locale/codecvt/unshift/wchar_t/2.cc:  New test.
+	* testsuite/22_locale/codecvt/unshift/wchar_t/3.cc:  New test.
+	* testsuite/22_locale/codecvt/unshfit/wchar_t/4.cc:  New test.
+
 2003-02-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.tcc (time_put::do_put): Use __write.

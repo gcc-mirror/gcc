@@ -1,6 +1,6 @@
-// 2000-08-17 Benjamin Kosnik <bkoz@cygnus.com>
+// 2003-02-06  Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2000, 2002, 2003 Free Software Foundation
+// Copyright (C) 2003 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,15 +38,15 @@ zero_state(std::mbstate_t& state)
 
 // Required instantiation
 // codecvt<wchar_t, char, mbstate_t>
-void test01()
+void test05()
 {
   using namespace std;
   typedef codecvt<wchar_t, char, mbstate_t> 	w_codecvt;
   typedef char					ext_type;
 
   bool 			test = true;
-  const ext_type* 	e_lit = "black pearl jasmine tea";
-  int 			size = strlen(e_lit);
+  const ext_type 	e_lit[] = { '\0', '\0', 'f', '\0' };
+  int 			size = sizeof(e_lit);
 
   locale 		loc;
   const w_codecvt* 	cvt = &use_facet<w_codecvt>(loc); 
@@ -54,11 +54,11 @@ void test01()
   w_codecvt::state_type state04;
   zero_state(state04);
   int j = cvt->length(state04, e_lit, e_lit + size, 5);
-  VERIFY( j == 5 );
+  VERIFY( j == size );
 }
 
 int main ()
 {
-  test01();
+  test05();
   return 0;
 }

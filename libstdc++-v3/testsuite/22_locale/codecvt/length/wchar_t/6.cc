@@ -1,6 +1,6 @@
-// 2000-08-17 Benjamin Kosnik <bkoz@cygnus.com>
+// 2003-02-06  Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2000, 2002, 2003 Free Software Foundation
+// Copyright (C) 2003 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,9 +36,27 @@ void
 zero_state(std::mbstate_t& state)
 { std::memset(&state, 0, sizeof(std::mbstate_t)); }
 
+bool length_called = false;
+
+class length_codecvt : public std::codecvt<wchar_t, char, std::mbstate_t>
+{
+  typedef std::codecvt<wchar_t, char, std::mbstate_t> w_codecvt;
+
+public:
+  // DR75: type of first argument of do_length is state_type&
+  virtual int do_length(state_type& state, const extern_type* from,
+                        const extern_type* end, std::size_t max) const
+  {
+    length_called = true;
+    return w_codecvt::do_length(state, from, end, max);
+  }
+};
+
 // Required instantiation
 // codecvt<wchar_t, char, mbstate_t>
-void test01()
+//
+// libstdc++/9224
+void test06()
 {
   using namespace std;
   typedef codecvt<wchar_t, char, mbstate_t> 	w_codecvt;
@@ -49,16 +67,18 @@ void test01()
   int 			size = strlen(e_lit);
 
   locale 		loc;
+  loc = locale(loc, new length_codecvt);
   const w_codecvt* 	cvt = &use_facet<w_codecvt>(loc); 
 
   w_codecvt::state_type state04;
   zero_state(state04);
-  int j = cvt->length(state04, e_lit, e_lit + size, 5);
-  VERIFY( j == 5 );
+  length_called = false;
+  cvt->length(state04, e_lit, e_lit + size, 5);
+  VERIFY( length_called );
 }
 
 int main ()
 {
-  test01();
+  test06();
   return 0;
 }

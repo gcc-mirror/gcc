@@ -1,6 +1,6 @@
-// 2000-08-17 Benjamin Kosnik <bkoz@cygnus.com>
+// 2003-02-06  Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2000, 2002, 2003 Free Software Foundation
+// Copyright (C) 2003 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,27 +38,49 @@ zero_state(std::mbstate_t& state)
 
 // Required instantiation
 // codecvt<wchar_t, char, mbstate_t>
-void test01()
+//
+// Test handling of output buffer that is too small.
+// libstdc++/9247
+void test06()
 {
   using namespace std;
   typedef codecvt<wchar_t, char, mbstate_t> 	w_codecvt;
+  typedef codecvt_base::result			result;
+  typedef wchar_t				int_type;
   typedef char					ext_type;
+  typedef char_traits<char>			ext_traits;
 
   bool 			test = true;
   const ext_type* 	e_lit = "black pearl jasmine tea";
+  const int_type* 	i_lit = L"black pearl jasmine tea";
+  const int_type*       ifrom_next;
   int 			size = strlen(e_lit);
+  ext_type* 		e_arr = new ext_type[size + 1];
+  ext_type* 		e_ref = new ext_type[size + 1];
+  memset(e_arr, 0xf0, size + 1);
+  memset(e_ref, 0xf0, size + 1);
+  ext_type*		eto_next;
 
   locale 		loc;
   const w_codecvt* 	cvt = &use_facet<w_codecvt>(loc); 
 
-  w_codecvt::state_type state04;
-  zero_state(state04);
-  int j = cvt->length(state04, e_lit, e_lit + size, 5);
-  VERIFY( j == 5 );
+  // out
+  w_codecvt::state_type state02;
+  zero_state(state02);  
+  result r2 = cvt->out(state02, i_lit, i_lit + size, ifrom_next, 
+		       e_arr, e_arr + 1, eto_next);
+  VERIFY( r2 == codecvt_base::partial );
+  VERIFY( ifrom_next == i_lit + 1 );
+  VERIFY( eto_next == e_arr + 1 );
+  VERIFY( !ext_traits::compare(e_arr, e_lit, 1) );
+  VERIFY( !ext_traits::compare(eto_next, e_ref, size) );
+
+  delete [] e_arr;
+  delete [] e_ref;
 }
 
 int main ()
 {
-  test01();
+  test06();
   return 0;
 }
