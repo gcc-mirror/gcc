@@ -275,6 +275,8 @@ static tree lookup_name_current_level (tree);
 static tree grokdeclarator (tree, tree, enum decl_context, int);
 static tree grokparms (tree, int);
 static void layout_array_type (tree);
+static void store_parm_decls_newstyle (void);
+static void store_parm_decls_oldstyle (void);
 static tree c_make_fname_decl (tree, int);
 static void c_expand_body_1 (tree, int);
 static tree any_external_decl (tree);
@@ -5724,368 +5726,337 @@ start_function (tree declspecs, tree declarator, tree attributes)
   return 1;
 }
 
+/* Subroutine of store_parm_decls which handles new-style function
+   definitions (prototype format). The parms already have decls, so we
+   need only record them as in effect and complain if any redundant
+   old-style parm decls were written.  */
+static void
+store_parm_decls_newstyle (void)
+{
+  tree decl, next;
+  tree fndecl = current_function_decl;
+  tree parms = current_function_parms;
+  tree tags = current_function_parm_tags;
+
+  /* This is anything which appeared in current_function_parms that
+     wasn't a PARM_DECL.  */
+  tree nonparms = 0;
+
+  if (current_scope->names || current_scope->tags)
+    {
+      error ("%Hold-style parameter declarations in prototyped "
+	     "function definition", &DECL_SOURCE_LOCATION (fndecl));
+
+      /* Get rid of the old-style declarations.  */
+      poplevel (0, 0, 0);
+      pushlevel (0);
+    }
+
+  /* Now make all the parameter declarations visible in the function body.  */
+  parms = nreverse (parms);
+  for (decl = parms; decl; decl = next)
+    {
+      next = TREE_CHAIN (decl);
+      if (TREE_CODE (decl) != PARM_DECL)
+	{
+	  /* If we find an enum constant or a type tag,
+	     put it aside for the moment.  */
+	  TREE_CHAIN (decl) = 0;
+	  nonparms = chainon (nonparms, decl);
+	  continue;
+	}
+
+      if (DECL_NAME (decl) == 0)
+	error ("%Hparameter name omitted", &DECL_SOURCE_LOCATION (decl));
+      else
+	pushdecl (decl);
+    }
+
+  /* Record the parameter list in the function declaration.  */
+  DECL_ARGUMENTS (fndecl) = getdecls ();
+
+  /* Now make all the ancillary declarations visible, likewise.  */
+  for (decl = nonparms; decl; decl = TREE_CHAIN (decl))
+    if (DECL_NAME (decl) != 0
+	&& TYPE_MAIN_VARIANT (TREE_TYPE (decl)) != void_type_node)
+      pushdecl (decl);
+
+  /* And all the tag declarations.  */
+  storetags (tags);
+}
+
+/* Subroutine of store_parm_decls which handles old-style function
+   definitions (separate parameter list and declarations).  */
+
+static void
+store_parm_decls_oldstyle (void)
+{
+  tree parm, decl, next;
+  tree fndecl = current_function_decl;
+
+  /* This is the identifier list from the function declarator.  */
+  tree parmids = current_function_parms;
+
+  /* This is anything which appeared in current_scope->names that
+     wasn't a PARM_DECL.  */
+  tree nonparms;
+  
+  /* We use DECL_WEAK as a flag to show which parameters have been
+     seen already, since it is not used on PARM_DECL or CONST_DECL.  */
+  for (parm = current_scope->names; parm; parm = TREE_CHAIN (parm))
+    DECL_WEAK (parm) = 0;
+
+  /* Match each formal parameter name with its declaration.  Save each
+     decl in the appropriate TREE_PURPOSE slot of the parmids chain.  */
+  for (parm = parmids; parm; parm = TREE_CHAIN (parm))
+    {
+      if (TREE_VALUE (parm) == 0)
+	{
+	  error ("%Hparameter name missing from parameter list",
+		 &DECL_SOURCE_LOCATION (fndecl));
+	  TREE_PURPOSE (parm) = 0;
+	  continue;
+	}
+
+      decl = IDENTIFIER_SYMBOL_VALUE (TREE_VALUE (parm));
+      if (decl && DECL_CONTEXT (decl) == fndecl)
+	{
+	  const location_t *locus = &DECL_SOURCE_LOCATION (decl);
+	  /* If we got something other than a PARM_DECL it is an error.  */
+	  if (TREE_CODE (decl) != PARM_DECL)
+	    error ("%H\"%D\" declared as a non-parameter", locus, decl);
+	  /* If the declaration is already marked, we have a duplicate
+	     name.  Complain and ignore the duplicate.  */
+	  else if (DECL_WEAK (decl))
+	    {
+	      error ("%Hmultiple parameters named \"%D\"", locus, decl);
+	      TREE_PURPOSE (parm) = 0;
+	      continue;
+	    }
+	  /* If the declaration says "void", complain and turn it into
+	     an int.  */
+	  else if (VOID_TYPE_P (TREE_TYPE (decl)))
+	    {
+	      error ("%Hparameter \"%D\" declared void", locus, decl);
+	      TREE_TYPE (decl) = integer_type_node;
+	      DECL_ARG_TYPE (decl) = integer_type_node;
+	      layout_decl (decl, 0);
+	    }
+	}
+      /* If no declaration found, default to int.  */
+      else
+	{
+	  const location_t *locus = &DECL_SOURCE_LOCATION (fndecl);
+	  decl = build_decl (PARM_DECL, TREE_VALUE (parm), integer_type_node);
+	  DECL_ARG_TYPE (decl) = TREE_TYPE (decl);
+	  DECL_SOURCE_LOCATION (decl) = *locus;
+	  pushdecl (decl);
+
+	  if (flag_isoc99)
+	    pedwarn ("%Htype of \"%D\" defaults to \"int\"", locus, decl);
+	  else if (extra_warnings)
+	    warning ("%Htype of \"%D\" defaults to \"int\"", locus, decl);
+	}
+
+      TREE_PURPOSE (parm) = decl;
+      DECL_WEAK (decl) = 1;
+    }
+
+  /* Put anything which is in current_scope->names and which is
+     not a PARM_DECL onto the list NONPARMS.  (The types of
+     non-parm things which might appear on the list include
+     enumerators and NULL-named TYPE_DECL nodes.) Complain about
+     any actual PARM_DECLs not matched with any names.  */
+
+  nonparms = 0;
+  for (parm = current_scope->names; parm; parm = next)
+    {
+      const location_t *locus = &DECL_SOURCE_LOCATION (parm);
+      next = TREE_CHAIN (parm);
+      TREE_CHAIN (parm) = 0;
+
+      if (TREE_CODE (parm) != PARM_DECL)
+	{
+	  nonparms = chainon (nonparms, parm);
+	  continue;
+	}
+
+      if (!COMPLETE_TYPE_P (TREE_TYPE (parm)))
+	{
+	  error ("%Hparameter \"%D\" has incomplete type", locus, parm);
+	  TREE_TYPE (parm) = error_mark_node;
+	}
+
+      if (! DECL_WEAK (parm))
+	{
+	  error ("%Hdeclaration for parameter \"%D\" but no such parameter",
+		 locus, parm);
+
+	  /* Pretend the parameter was not missing.
+	     This gets us to a standard state and minimizes
+	     further error messages.  */
+	  parmids = chainon (parmids, tree_cons (parm, 0, 0));
+	}
+    }
+
+  /* Chain the declarations together in the order of the list of
+     names.  Store that chain in the function decl, replacing the
+     list of names.  */
+  DECL_ARGUMENTS (fndecl) = 0;
+  {
+    tree last;
+    for (parm = parmids; parm; parm = TREE_CHAIN (parm))
+      if (TREE_PURPOSE (parm))
+	break;
+    if (parm && TREE_PURPOSE (parm))
+      {
+	last = TREE_PURPOSE (parm);
+	DECL_ARGUMENTS (fndecl) = last;
+	DECL_WEAK (last) = 0;
+
+	for (parm = TREE_CHAIN (parm); parm; parm = TREE_CHAIN (parm))
+	  if (TREE_PURPOSE (parm))
+	    {
+	      TREE_CHAIN (last) = TREE_PURPOSE (parm);
+	      last = TREE_PURPOSE (parm);
+	      DECL_WEAK (last) = 0;
+	    }
+	TREE_CHAIN (last) = 0;
+      }
+  }
+
+  /* If there was a previous prototype,
+     set the DECL_ARG_TYPE of each argument according to
+     the type previously specified, and report any mismatches.  */
+
+  if (TYPE_ARG_TYPES (TREE_TYPE (fndecl)))
+    {
+      tree type;
+      for (parm = DECL_ARGUMENTS (fndecl),
+	     type = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+	   parm || (type && (TYPE_MAIN_VARIANT (TREE_VALUE (type))
+			     != void_type_node));
+	   parm = TREE_CHAIN (parm), type = TREE_CHAIN (type))
+	{
+	  if (parm == 0 || type == 0
+	      || TYPE_MAIN_VARIANT (TREE_VALUE (type)) == void_type_node)
+	    {
+	      error ("number of arguments doesn't match prototype");
+	      error ("%Hprototype declaration",
+		     &current_function_prototype_locus);
+	      break;
+	    }
+	  /* Type for passing arg must be consistent with that
+	     declared for the arg.  ISO C says we take the unqualified
+	     type for parameters declared with qualified type.  */
+	  if (! comptypes (TYPE_MAIN_VARIANT (DECL_ARG_TYPE (parm)),
+			   TYPE_MAIN_VARIANT (TREE_VALUE (type)),
+			   COMPARE_STRICT))
+	    {
+	      if (TYPE_MAIN_VARIANT (TREE_TYPE (parm))
+		  == TYPE_MAIN_VARIANT (TREE_VALUE (type)))
+		{
+		  /* Adjust argument to match prototype.  E.g. a previous
+		     `int foo(float);' prototype causes
+		     `int foo(x) float x; {...}' to be treated like
+		     `int foo(float x) {...}'.  This is particularly
+		     useful for argument types like uid_t.  */
+		  DECL_ARG_TYPE (parm) = TREE_TYPE (parm);
+
+		  if (PROMOTE_PROTOTYPES
+		      && INTEGRAL_TYPE_P (TREE_TYPE (parm))
+		      && TYPE_PRECISION (TREE_TYPE (parm))
+		      < TYPE_PRECISION (integer_type_node))
+		    DECL_ARG_TYPE (parm) = integer_type_node;
+
+		  if (pedantic)
+		    {
+		      pedwarn ("promoted argument \"%D\" "
+			       "doesn't match prototype", parm);
+		      pedwarn ("%Hprototype declaration",
+			       &current_function_prototype_locus);
+		    }
+		}
+	      else
+		{
+		  error ("argument \"%D\" doesn't match prototype", parm);
+		  error ("%Hprototype declaration",
+			 &current_function_prototype_locus);
+		}
+	    }
+	}
+      TYPE_ACTUAL_ARG_TYPES (TREE_TYPE (fndecl)) = 0;
+    }
+
+  /* Otherwise, create a prototype that would match.  */
+
+  else
+    {
+      tree actual = 0, last = 0, type;
+
+      for (parm = DECL_ARGUMENTS (fndecl); parm; parm = TREE_CHAIN (parm))
+	{
+	  type = tree_cons (NULL_TREE, DECL_ARG_TYPE (parm), NULL_TREE);
+	  if (last)
+	    TREE_CHAIN (last) = type;
+	  else
+	    actual = type;
+	  last = type;
+	}
+      type = tree_cons (NULL_TREE, void_type_node, NULL_TREE);
+      if (last)
+	TREE_CHAIN (last) = type;
+      else
+	actual = type;
+
+      /* We are going to assign a new value for the TYPE_ACTUAL_ARG_TYPES
+	 of the type of this function, but we need to avoid having this
+	 affect the types of other similarly-typed functions, so we must
+	 first force the generation of an identical (but separate) type
+	 node for the relevant function type.  The new node we create
+	 will be a variant of the main variant of the original function
+	 type.  */
+
+      TREE_TYPE (fndecl) = build_type_copy (TREE_TYPE (fndecl));
+
+      TYPE_ACTUAL_ARG_TYPES (TREE_TYPE (fndecl)) = actual;
+    }
+
+  /* Now store the final chain of decls for the arguments
+     as the decl-chain of the current lexical scope.
+     Put the enumerators in as well, at the front so that
+     DECL_ARGUMENTS is not modified.  */
+
+  storedecls (chainon (nonparms, DECL_ARGUMENTS (fndecl)));
+}
+
 /* Store the parameter declarations into the current function declaration.
    This is called after parsing the parameter declarations, before
    digesting the body of the function.
 
-   For an old-style definition, modify the function's type
-   to specify at least the number of arguments.  */
+   For an old-style definition, construct a prototype out of the old-style
+   parameter declarations and inject it into the function's type.  */
 
 void
 store_parm_decls (void)
 {
   tree fndecl = current_function_decl;
-  tree parm;
-
-  /* This is either a chain of PARM_DECLs (if a prototype was used)
-     or a list of IDENTIFIER_NODEs (for an old-fashioned C definition).  */
-  tree specparms = current_function_parms;
-
-  /* This is a list of types declared among parms in a prototype.  */
-  tree parmtags = current_function_parm_tags;
-
-  /* This is a chain of PARM_DECLs from old-style parm declarations.  */
-  tree parmdecls = getdecls ();
-
-  /* This is a chain of any other decls that came in among the parm
-     declarations.  If a parm is declared with  enum {foo, bar} x;
-     then CONST_DECLs for foo and bar are put here.  */
-  tree nonparms = 0;
 
   /* The function containing FNDECL, if any.  */
   tree context = decl_function_context (fndecl);
 
-  /* Nonzero if this definition is written with a prototype.  */
-  int prototype = 0;
-
-  bool saved_warn_shadow = warn_shadow;
+  /* True if this definition is written with a prototype.  */
+  bool prototype = (current_function_parms
+		    && TREE_CODE (current_function_parms) != TREE_LIST);
 
   /* Don't re-emit shadow warnings.  */
+  bool saved_warn_shadow = warn_shadow;
   warn_shadow = false;
 
-  if (specparms != 0 && TREE_CODE (specparms) != TREE_LIST)
-    {
-      /* This case is when the function was defined with an ANSI prototype.
-	 The parms already have decls, so we need not do anything here
-	 except record them as in effect
-	 and complain if any redundant old-style parm decls were written.  */
-
-      tree next;
-      tree others = 0;
-
-      prototype = 1;
-
-      if (parmdecls != 0)
-	{
-	  tree decl, link;
-
-	  error ("%Hparm types given both in parmlist and separately",
-                 &DECL_SOURCE_LOCATION (fndecl));
-	  /* Get rid of the erroneous decls; don't keep them on
-	     the list of parms, since they might not be PARM_DECLs.  */
-	  for (decl = current_scope->names;
-	       decl; decl = TREE_CHAIN (decl))
-	    if (DECL_NAME (decl))
-	      IDENTIFIER_SYMBOL_VALUE (DECL_NAME (decl)) = 0;
-	  for (link = current_scope->shadowed;
-	       link; link = TREE_CHAIN (link))
-	    IDENTIFIER_SYMBOL_VALUE (TREE_PURPOSE (link)) = TREE_VALUE (link);
-	  current_scope->names = 0;
-	  current_scope->shadowed = 0;
-	}
-
-      specparms = nreverse (specparms);
-      for (parm = specparms; parm; parm = next)
-	{
-          const location_t *locus = &DECL_SOURCE_LOCATION (parm);
-	  next = TREE_CHAIN (parm);
-	  if (TREE_CODE (parm) == PARM_DECL)
-	    {
-	      if (DECL_NAME (parm) == 0)
-                error ("%Hparameter name omitted", locus);
-	      else if (TREE_CODE (TREE_TYPE (parm)) != ERROR_MARK
-		       && VOID_TYPE_P (TREE_TYPE (parm)))
-		{
-		  error ("%Hparameter '%D' declared void", locus, parm);
-		  /* Change the type to error_mark_node so this parameter
-		     will be ignored by assign_parms.  */
-		  TREE_TYPE (parm) = error_mark_node;
-		}
-	      pushdecl (parm);
-	    }
-	  else
-	    {
-	      /* If we find an enum constant or a type tag,
-		 put it aside for the moment.  */
-	      TREE_CHAIN (parm) = 0;
-	      others = chainon (others, parm);
-	    }
-	}
-
-      /* Get the decls in their original chain order
-	 and record in the function.  */
-      DECL_ARGUMENTS (fndecl) = getdecls ();
-
-      /* Now pushdecl the enum constants.  */
-      for (parm = others; parm; parm = next)
-	{
-	  next = TREE_CHAIN (parm);
-	  if (DECL_NAME (parm) == 0)
-	    ;
-	  else if (TYPE_MAIN_VARIANT (TREE_TYPE (parm)) == void_type_node)
-	    ;
-	  else if (TREE_CODE (parm) != PARM_DECL)
-	    pushdecl (parm);
-	}
-
-      storetags (chainon (parmtags, gettags ()));
-    }
+  if (prototype)
+    store_parm_decls_newstyle ();
   else
-    {
-      /* SPECPARMS is an identifier list--a chain of TREE_LIST nodes
-	 each with a parm name as the TREE_VALUE.
-
-	 PARMDECLS is a chain of declarations for parameters.
-	 Warning! It can also contain CONST_DECLs which are not parameters
-	 but are names of enumerators of any enum types
-	 declared among the parameters.
-
-	 First match each formal parameter name with its declaration.
-	 Associate decls with the names and store the decls
-	 into the TREE_PURPOSE slots.  */
-
-      /* We use DECL_WEAK as a flag to show which parameters have been
-	 seen already since it is not used on PARM_DECL or CONST_DECL.  */
-      for (parm = parmdecls; parm; parm = TREE_CHAIN (parm))
-	DECL_WEAK (parm) = 0;
-
-      for (parm = specparms; parm; parm = TREE_CHAIN (parm))
-	{
-	  tree tail, found = NULL;
-
-	  if (TREE_VALUE (parm) == 0)
-	    {
-	      error ("%Hparameter name missing from parameter list",
-                     &DECL_SOURCE_LOCATION (fndecl));
-	      TREE_PURPOSE (parm) = 0;
-	      continue;
-	    }
-
-	  /* See if any of the parmdecls specifies this parm by name.
-	     Ignore any enumerator decls.  */
-	  for (tail = parmdecls; tail; tail = TREE_CHAIN (tail))
-	    if (DECL_NAME (tail) == TREE_VALUE (parm)
-		&& TREE_CODE (tail) == PARM_DECL)
-	      {
-		found = tail;
-		break;
-	      }
-
-	  /* If declaration already marked, we have a duplicate name.
-	     Complain, and don't use this decl twice.  */
-	  if (found && DECL_WEAK (found))
-	    {
-	      error ("%Hmultiple parameters named '%D'",
-                     &DECL_SOURCE_LOCATION (found), found);
-	      found = 0;
-	    }
-
-	  /* If the declaration says "void", complain and ignore it.  */
-	  if (found && VOID_TYPE_P (TREE_TYPE (found)))
-	    {
-	      error ("%Hparameter '%D' declared void",
-                     &DECL_SOURCE_LOCATION (found), found);
-	      TREE_TYPE (found) = integer_type_node;
-	      DECL_ARG_TYPE (found) = integer_type_node;
-	      layout_decl (found, 0);
-	    }
-
-	  /* If no declaration found, default to int.  */
-	  if (!found)
-	    {
-	      found = build_decl (PARM_DECL, TREE_VALUE (parm),
-				  integer_type_node);
-	      DECL_ARG_TYPE (found) = TREE_TYPE (found);
-	      DECL_SOURCE_LOCATION (found) = DECL_SOURCE_LOCATION (fndecl);
-	      if (flag_isoc99)
-		pedwarn ("%Htype of '%D' defaults to `int'",
-                         &DECL_SOURCE_LOCATION (found), found);
-	      else if (extra_warnings)
-		warning ("%Htype of '%D' defaults to `int'",
-                         &DECL_SOURCE_LOCATION (found), found);
-	      pushdecl (found);
-	    }
-
-	  TREE_PURPOSE (parm) = found;
-
-	  /* Mark this decl as "already found".  */
-	  DECL_WEAK (found) = 1;
-	}
-
-      /* Put anything which is on the parmdecls chain and which is
-	 not a PARM_DECL onto the list NONPARMS.  (The types of
-	 non-parm things which might appear on the list include
-	 enumerators and NULL-named TYPE_DECL nodes.) Complain about
-	 any actual PARM_DECLs not matched with any names.  */
-
-      nonparms = 0;
-      for (parm = parmdecls; parm;)
-	{
-          const location_t *locus = &DECL_SOURCE_LOCATION (parm);
-	  tree next = TREE_CHAIN (parm);
-	  TREE_CHAIN (parm) = 0;
-
-	  if (TREE_CODE (parm) != PARM_DECL)
-	    nonparms = chainon (nonparms, parm);
-	  else
-	    {
-	      /* Complain about args with incomplete types.  */
-	      if (!COMPLETE_TYPE_P (TREE_TYPE (parm)))
-		{
-		  error ("%Hparameter '%D' has incomplete type", locus, parm);
-		  TREE_TYPE (parm) = error_mark_node;
-		}
-
-	      if (! DECL_WEAK (parm))
-		{
-		  error ("%Hdeclaration for parameter '%D' but no such "
-                         "parameter", locus, parm);
-	          /* Pretend the parameter was not missing.
-		     This gets us to a standard state and minimizes
-		     further error messages.  */
-		  specparms
-		    = chainon (specparms,
-			       tree_cons (parm, NULL_TREE, NULL_TREE));
-		}
-	    }
-
-	  parm = next;
-	}
-
-      /* Chain the declarations together in the order of the list of
-         names.  Store that chain in the function decl, replacing the
-         list of names.  */
-      parm = specparms;
-      DECL_ARGUMENTS (fndecl) = 0;
-      {
-	tree last;
-	for (last = 0; parm; parm = TREE_CHAIN (parm))
-	  if (TREE_PURPOSE (parm))
-	    {
-	      if (last == 0)
-		DECL_ARGUMENTS (fndecl) = TREE_PURPOSE (parm);
-	      else
-		TREE_CHAIN (last) = TREE_PURPOSE (parm);
-	      last = TREE_PURPOSE (parm);
-	      TREE_CHAIN (last) = 0;
-	    }
-      }
-
-      /* If there was a previous prototype,
-	 set the DECL_ARG_TYPE of each argument according to
-	 the type previously specified, and report any mismatches.  */
-
-      if (TYPE_ARG_TYPES (TREE_TYPE (fndecl)))
-	{
-	  tree type;
-	  for (parm = DECL_ARGUMENTS (fndecl),
-	       type = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
-	       parm || (type && (TYPE_MAIN_VARIANT (TREE_VALUE (type))
-				 != void_type_node));
-	       parm = TREE_CHAIN (parm), type = TREE_CHAIN (type))
-	    {
-	      if (parm == 0 || type == 0
-		  || TYPE_MAIN_VARIANT (TREE_VALUE (type)) == void_type_node)
-		{
-		  error ("number of arguments doesn't match prototype");
-		  error ("%Hprototype declaration",
-                         &current_function_prototype_locus);
-		  break;
-		}
-	      /* Type for passing arg must be consistent with that
-		 declared for the arg.  ISO C says we take the unqualified
-		 type for parameters declared with qualified type.  */
-	      if (! comptypes (TYPE_MAIN_VARIANT (DECL_ARG_TYPE (parm)),
-			       TYPE_MAIN_VARIANT (TREE_VALUE (type)),
-			       COMPARE_STRICT))
-		{
-		  if (TYPE_MAIN_VARIANT (TREE_TYPE (parm))
-		      == TYPE_MAIN_VARIANT (TREE_VALUE (type)))
-		    {
-		      /* Adjust argument to match prototype.  E.g. a previous
-			 `int foo(float);' prototype causes
-			 `int foo(x) float x; {...}' to be treated like
-			 `int foo(float x) {...}'.  This is particularly
-			 useful for argument types like uid_t.  */
-		      DECL_ARG_TYPE (parm) = TREE_TYPE (parm);
-
-		      if (PROMOTE_PROTOTYPES
-			  && INTEGRAL_TYPE_P (TREE_TYPE (parm))
-			  && TYPE_PRECISION (TREE_TYPE (parm))
-			  < TYPE_PRECISION (integer_type_node))
-			DECL_ARG_TYPE (parm) = integer_type_node;
-
-		      if (pedantic)
-			{
-			  pedwarn ("promoted argument `%s' doesn't match prototype",
-				   IDENTIFIER_POINTER (DECL_NAME (parm)));
-			  warning ("%Hprototype declaration",
-                                   &current_function_prototype_locus);
-			}
-		    }
-		  else
-		    {
-		      error ("argument `%s' doesn't match prototype",
-			     IDENTIFIER_POINTER (DECL_NAME (parm)));
-		      error ("%Hprototype declaration",
-                             &current_function_prototype_locus);
-		    }
-		}
-	    }
-	  TYPE_ACTUAL_ARG_TYPES (TREE_TYPE (fndecl)) = 0;
-	}
-
-      /* Otherwise, create a prototype that would match.  */
-
-      else
-	{
-	  tree actual = 0, last = 0, type;
-
-	  for (parm = DECL_ARGUMENTS (fndecl); parm; parm = TREE_CHAIN (parm))
-	    {
-	      type = tree_cons (NULL_TREE, DECL_ARG_TYPE (parm), NULL_TREE);
-	      if (last)
-		TREE_CHAIN (last) = type;
-	      else
-		actual = type;
-	      last = type;
-	    }
-	  type = tree_cons (NULL_TREE, void_type_node, NULL_TREE);
-	  if (last)
-	    TREE_CHAIN (last) = type;
-	  else
-	    actual = type;
-
-	  /* We are going to assign a new value for the TYPE_ACTUAL_ARG_TYPES
-	     of the type of this function, but we need to avoid having this
-	     affect the types of other similarly-typed functions, so we must
-	     first force the generation of an identical (but separate) type
-	     node for the relevant function type.  The new node we create
-	     will be a variant of the main variant of the original function
-	     type.  */
-
-	  TREE_TYPE (fndecl) = build_type_copy (TREE_TYPE (fndecl));
-
-	  TYPE_ACTUAL_ARG_TYPES (TREE_TYPE (fndecl)) = actual;
-	}
-
-      /* Now store the final chain of decls for the arguments
-	 as the decl-chain of the current lexical scope.
-	 Put the enumerators in as well, at the front so that
-	 DECL_ARGUMENTS is not modified.  */
-
-      storedecls (chainon (nonparms, DECL_ARGUMENTS (fndecl)));
-    }
+    store_parm_decls_oldstyle ();
 
   /* Make sure the scope for the top of the function body
      gets a BLOCK if there are any in the function.
@@ -6102,7 +6073,7 @@ store_parm_decls (void)
   init_function_start (fndecl);
 
   /* Begin the statement tree for this function.  */
-  begin_stmt_tree (&DECL_SAVED_TREE (current_function_decl));
+  begin_stmt_tree (&DECL_SAVED_TREE (fndecl));
 
   /* If this is a nested function, save away the sizes of any
      variable-size types so that we can expand them when generating
@@ -6158,7 +6129,7 @@ finish_function (int nested, int can_defer_p)
   if (current_scope->parm_flag && keep_next_if_subblocks)
     {
       pushlevel (0);
-      poplevel (1, 0, 1);
+      poplevel (1, 0, 0);
     }
 
   BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
@@ -6560,7 +6531,6 @@ struct language_function GTY(())
   int returns_abnormally;
   int warn_about_return_type;
   int extern_inline;
-  struct c_scope *scope;
 };
 
 /* Save and reinitialize the variables
@@ -6580,7 +6550,6 @@ c_push_function_context (struct function *f)
   p->returns_abnormally = current_function_returns_abnormally;
   p->warn_about_return_type = warn_about_return_type;
   p->extern_inline = current_extern_inline;
-  p->scope = current_scope;
 }
 
 /* Restore the variables used during compilation of a C function.  */
@@ -6607,7 +6576,6 @@ c_pop_function_context (struct function *f)
   current_function_returns_abnormally = p->returns_abnormally;
   warn_about_return_type = p->warn_about_return_type;
   current_extern_inline = p->extern_inline;
-  current_scope = p->scope;
 
   f->language = NULL;
 }

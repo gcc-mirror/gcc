@@ -1,3 +1,16 @@
+2003-07-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-decl.c (store_parm_decls_newstyle, store_parm_decls_oldstyle):
+	New functions split out of store_parm_decls.
+	Avoid unnecessary work. Use local variables consistently.
+	(store_parm_decls): Likewise.
+
+	(finish_function): No need to set functionbody flag on call to
+	poplevel.
+	(struct language_function): Remove scope field.
+	(c_push_function_context, c_pop_function_context): No need to
+	save and restore current_scope.
+
 2003-07-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* doc/extend.texi (Deprecated Features): Implicit typename is
@@ -49,7 +62,7 @@
 
 2003-07-26  Geoffrey Keating  <geoffk@apple.com>
 
-	* varasm.c (output_constant_def_contents): Use 
+	* varasm.c (output_constant_def_contents): Use
 	ASM_DECLARE_CONSTANT_NAME if defined.
 	* doc/tm.texi (Label Output): Document ASM_DECLARE_CONSTANT_NAME.
 	* config/darwin.h (ASM_DECLARE_OBJECT_NAME): Ensure zero-sized
@@ -95,7 +108,7 @@
 2003-07-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Remove pedwarn_with_decl, warning_with_decl and error_with_decl
-	from GCC. 
+	from GCC.
 	* calls.c (try_to_integrate): Don't use xxx_with_decl.
 	(expand_call): Likewise.
 	* dwarfout.c (output_reg_number): Likewise.
@@ -117,7 +130,7 @@
 	* toplev.h (pedwarn_with_decl): Remove declaration.
 	(warning_with_decl): Likewise.
 	(error_with_decl): Likewise.
-	(pedwarn): Remove attribute for the time being. 
+	(pedwarn): Remove attribute for the time being.
 	* tree-inline.c (expand_call_inline): Don't use xxx_with_decl.
 	* varasm.c (named_section): Likewise.
 	(make_decl_rtl): Likewise.
