@@ -750,6 +750,10 @@ c_decode_option (argc, argv)
     warn_multichar = 1;
   else if (!strcmp (p, "-Wno-multichar"))
     warn_multichar = 0;
+  else if (!strcmp (p, "-Wdiv-by-zero"))
+    warn_div_by_zero = 1;
+  else if (!strcmp (p, "-Wno-div-by-zero"))
+    warn_div_by_zero = 0;
   else if (!strcmp (p, "-Wunknown-pragmas"))
     /* Set to greater than 1, so that even unknown pragmas in system
        headers will be warned about.  */

@@ -1,3 +1,14 @@
+2001-10-22  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-common.c (warn_div_by_zero): New.
+	* c-common.h (warn_div_by_zero): New.
+	* c-decl.c (c_decode_option): Take it on the command line.
+ 	* c-typeck.c (build_binary_op): Warn about division by zero.
+	* doc/invoke.texi: Document the new command line option, fix
+	documentation of -Wmultichar.
+ 	* testsuite/gcc.dg/divbyzero.c: New tests.
+ 	* testsuite/gcc.dg/noncompile/20010524-1.c: Update.
+
 Tue Oct 23 15:30:23 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_expand_int_movcc): Cleanup; use expand_simple_*op.

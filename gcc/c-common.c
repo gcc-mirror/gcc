@@ -194,6 +194,9 @@ int flag_short_wchar;
 
 int warn_sequence_point;
 
+/* Nonzero means to warn about compile-time division by zero.  */
+int warn_div_by_zero = 1;
+
 /* The elements of `ridpointers' are identifier nodes for the reserved
    type names and storage classes.  It is indexed by a RID_... value.  */
 tree *ridpointers;

@@ -1973,6 +1973,11 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
     case FLOOR_DIV_EXPR:
     case ROUND_DIV_EXPR:
     case EXACT_DIV_EXPR:
+      /* Floating point division by zero is a legitimate way to obtain
+	 infinities and NaNs.  */
+      if (warn_div_by_zero && skip_evaluation == 0 && integer_zerop (op1))
+	warning ("division by zero");
+
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
 	   || code0 == COMPLEX_TYPE)
 	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE
@@ -2026,6 +2031,9 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 
     case TRUNC_MOD_EXPR:
     case FLOOR_MOD_EXPR:
+      if (warn_div_by_zero && skip_evaluation == 0 && integer_zerop (op1))
+	warning ("division by zero");
+
       if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	{
 	  /* Although it would be tempting to shorten always here, that loses
