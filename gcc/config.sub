@@ -78,7 +78,7 @@ case $basic_machine in
 	# Recognize the basic CPU types with without company name.
 	# Some are omitted here because they have special meanings below.
 	tahoe | i[34]86 | i860 | m68k | m68000 | m88k | ns32k | arm | pyramid \
-		| tron | a29k | 580 | i960 | h8300 | hppa)
+		| tron | a29k | 580 | i960 | h8300 | hppa1.0 | hppa1.1)
 		basic_machine=$basic_machine-unknown
 		;;
 	# Recognize the basic CPU types with with company name.
@@ -86,7 +86,7 @@ case $basic_machine in
 	      | sparc-* | ns32k-* | fx80-* | arm-* | c[123]* \
 	      | mips-* | pyramid-* | tron-* | a29k-* | romp-* | rs6000-* \
 	      | none-* | 580-* | cray2-* | h8300-* | i960-* | xmp-* | ymp-* \
-	      | hppa-*)
+	      | hppa1.0-* | hppa1.1-*)
 		;;
 	# Recognize the various machine names and aliases which stand
 	# for a CPU type and a company and sometimes even an OS.
@@ -249,11 +249,11 @@ case $basic_machine in
 	hp9k31[0-9] | hp9k2[0-9][0-9])
 		basic_machine=m68000-hp
 		;;
-	hp9k8[0-9][0-9] | hp8[0-9][0-9])
-		basic_machine=hp800-hp
+	hp9k7[0-9][0-9] | hp7[0-9][0-9] | hp9k8[0-9]7 | hp8[0-9]7)
+		basic_machine=hppa1.1-hp
 		;;
-	hp9k7[0-9][0-9] | hp7[0-9][0-9])
-		basic_machine=hp700-hp
+	hp9k8[0-9][0-9] | hp8[0-9][0-9])
+		basic_machine=hppa1.0-hp
 		;;
 	isi68 | isi)
 		basic_machine=m68k-isi
@@ -440,11 +440,8 @@ case $os in
 	-bsd* | -sysv* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
 	      | -vms* | -sco* | -esix* | -isc* | -aix* | -sunos* | -hpux* \
 	      | -unos* | -osf* | -luna* | -dgux* | -solari* | -sym* | -amix* \
-	      | -amigados* | -msdos* | -unicos* | -aos* \
+	      | -amigados* | -msdos* | -newsos* | -unicos* | -aos* \
 	      | -nindy* | -vxworks* | -ebmon* | -hds* | -m88kbcs*)
-		;;
-	-newsos*)
-		os=-bsd
 		;;
 	-osfrose*)
 		os=-osf
