@@ -6756,6 +6756,7 @@ The following are a set of changes to ISO/IEC 14882:1998 (aka C++98)
 that document the exact semantics of the language extension.
 
 @itemize @bullet
+@item
 @b{[intro.execution]}
 
 New text after paragraph 4
