@@ -924,8 +924,11 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
 
 /* Value is 1 if MODE is a supported vector mode.  */
 #define VECTOR_MODE_SUPPORTED_P(MODE) \
-  (TARGET_FPU_ANY \
-   && ((MODE) == V2SFmode || (MODE) == V4SFmode || (MODE) == V16SFmode))
+  ((TARGET_FPU_ANY \
+    && ((MODE) == V2SFmode || (MODE) == V4SFmode || (MODE) == V16SFmode)) \
+   || (TARGET_SHMEDIA \
+       && ((MODE) == V8QImode || (MODE) == V2HImode || (MODE) == V4HImode \
+	   || (MODE) == V2SImode)))
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
@@ -2312,10 +2315,27 @@ while (0)
 #define EXTRA_CONSTRAINT_T(OP) \
   (NON_PIC_REFERENCE_P (OP))
 
+/* A zero in any shape or form.  */
+#define EXTRA_CONSTRAINT_U(OP) \
+  ((OP) == const0_rtx \
+   || (GET_CODE (OP) == SUBREG && VECTOR_MODE_SUPPORTED_P(GET_MODE (OP)) \
+       && SUBREG_REG (OP) == const0_rtx && SUBREG_BYTE (OP) == 0) \
+   || GET_CODE (OP) == CONST_VECTOR && zero_vec_operand ((OP), VOIDmode))
+
+/* Any vector constant we can handle.  */
+#define EXTRA_CONSTRAINT_W(OP) \
+  (GET_CODE (OP) == CONST_VECTOR \
+   && (sh_rep_vec ((OP), VOIDmode) \
+       || (HOST_BITS_PER_WIDE_INT >= 64 \
+	   ? sh_const_vec ((OP), VOIDmode) \
+	   : sh_1el_vec ((OP), VOIDmode))))
+
 #define EXTRA_CONSTRAINT(OP, C)		\
   ((C) == 'Q' ? EXTRA_CONSTRAINT_Q (OP)	\
    : (C) == 'S' ? EXTRA_CONSTRAINT_S (OP) \
    : (C) == 'T' ? EXTRA_CONSTRAINT_T (OP) \
+   : (C) == 'U' ? EXTRA_CONSTRAINT_U (OP) \
+   : (C) == 'W' ? EXTRA_CONSTRAINT_W (OP) \
    : 0)
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
@@ -2669,6 +2689,8 @@ while (0)
   case CONST_INT:				\
     if (TARGET_SHMEDIA)				\
       {						\
+	if ((OUTER_CODE) == AND && and_operand ((RTX), DImode)) \
+	  return 0;				\
 	if (CONST_OK_FOR_J (INTVAL (RTX)))	\
           return COSTS_N_INSNS (1);		\
 	else if (CONST_OK_FOR_J (INTVAL (RTX) >> 16)) \
@@ -3188,7 +3210,6 @@ extern int current_function_interrupt;
 extern struct rtx_def *sp_switch;
 
 extern int rtx_equal_function_value_matters;
-extern struct rtx_def *fpscr_rtx;
 
 
 /* Instructions with unfilled delay slots take up an
@@ -3200,23 +3221,32 @@ extern struct rtx_def *fpscr_rtx;
 
 /* Define the codes that are matched by predicates in sh.c.  */
 #define PREDICATE_CODES \
+  {"and_operand", {SUBREG, REG, CONST_INT}},				\
   {"arith_operand", {SUBREG, REG, CONST_INT}},				\
+  {"arith_reg_dest", {SUBREG, REG}},					\
   {"arith_reg_operand", {SUBREG, REG}},					\
   {"arith_reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\
   {"binary_float_operator", {PLUS, MULT}},				\
   {"commutative_float_operator", {PLUS, MULT}},				\
+  {"extend_reg_operand", {SUBREG, REG, TRUNCATE}},			\
+  {"extend_reg_or_0_operand", {SUBREG, REG, TRUNCATE, CONST_INT}},	\
   {"fp_arith_reg_operand", {SUBREG, REG}},				\
   {"fpscr_operand", {REG}},						\
   {"fpul_operand", {REG}},						\
   {"general_movsrc_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE, MEM}}, \
   {"general_movdst_operand", {SUBREG, REG, MEM}},			\
   {"logical_operand", {SUBREG, REG, CONST_INT}},			\
+  {"mextr_bit_offset", {CONST_INT}},					\
   {"noncommutative_float_operator", {MINUS, DIV}},			\
   {"shmedia_6bit_operand", {SUBREG, REG, CONST_INT}},			\
   {"target_reg_operand", {SUBREG, REG}},				\
-  {"target_operand", {SUBREG, REG, LABEL_REF, SYMBOL_REF}},		\
+  {"target_operand", {SUBREG, REG, LABEL_REF, SYMBOL_REF, CONST, UNSPEC}},\
   {"register_operand", {SUBREG, REG}},					\
-  {"symbol_ref_operand", {SYMBOL_REF}},
+  {"sh_const_vec", {CONST_VECTOR}},					\
+  {"sh_1el_vec", {CONST_VECTOR, PARALLEL}},				\
+  {"sh_rep_vec", {CONST_VECTOR, PARALLEL}},				\
+  {"symbol_ref_operand", {SYMBOL_REF}},					\
+  {"zero_vec_operand", {CONST_VECTOR}},
 
 /* Define this macro if it is advisable to hold scalars in registers
    in a wider mode than that declared by the program.  In such cases, 

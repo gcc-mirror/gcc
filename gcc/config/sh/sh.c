@@ -42,6 +42,7 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "target-def.h"
 #include "real.h"
+#include "langhooks.h"
 
 int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
 
@@ -204,6 +205,10 @@ static bool sh_ms_bitfield_layout_p PARAMS ((tree));
 
 static void sh_encode_section_info PARAMS ((tree, int));
 static const char *sh_strip_name_encoding PARAMS ((const char *));
+static void sh_init_builtins (void);
+static void sh_media_init_builtins (void);
+static rtx sh_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
+
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
@@ -246,6 +251,11 @@ static const char *sh_strip_name_encoding PARAMS ((const char *));
 #define TARGET_ENCODE_SECTION_INFO sh_encode_section_info
 #undef TARGET_STRIP_NAME_ENCODING
 #define TARGET_STRIP_NAME_ENCODING sh_strip_name_encoding
+
+#undef TARGET_INIT_BUILTINS
+#define TARGET_INIT_BUILTINS sh_init_builtins
+#undef TARGET_EXPAND_BUILTIN
+#define TARGET_EXPAND_BUILTIN sh_expand_builtin
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -320,6 +330,7 @@ print_operand_address (stream, x)
    'S'  print the MSW of a dp value - changes if in little endian
    'T'  print the next word of a dp value - same as 'R' in big endian mode.
    'M'  print an `x' if `m' will print `base,index'.
+   'N'  print 'r63' if the operand is (const_int 0).
    'm'  print a pair `base,offset' or `base,index', for LD and ST.
    'u'  prints the lowest 16 bits of CONST_INT, as an unsigned value.
    'o'  output an operator.  */
@@ -422,6 +433,13 @@ print_operand (stream, x, code)
 	}
       break;
 
+    case 'N':
+      if (x == const0_rtx)
+	{
+	  fprintf ((stream), "r63");
+	  break;
+	}
+      goto default_output;
     case 'u':
       if (GET_CODE (x) == CONST_INT)
         {
@@ -430,6 +448,7 @@ print_operand (stream, x, code)
 	}
       /* Fall through.  */
 
+    default_output:
     default:
       switch (GET_CODE (x))
 	{
@@ -5846,6 +5865,20 @@ arith_reg_operand (op, mode)
   return 0;
 }
 
+/* Like above, but for DImode destinations: forbid paradoxical DImode subregs,
+   because this would lead to missing sign extensions when truncating from
+   DImode to SImode.  */
+int
+arith_reg_dest (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (mode == DImode && GET_CODE (op) == SUBREG
+      && GET_MODE_SIZE (GET_MODE (SUBREG_REG (op))) < 8)
+    return 0;
+  return arith_reg_operand (op, mode);
+}
+
 int
 fp_arith_reg_operand (op, mode)
      rtx op;
@@ -5944,6 +5977,25 @@ logical_operand (op, mode)
     }
   else if (GET_CODE (op) == CONST_INT && CONST_OK_FOR_L (INTVAL (op)))
     return 1;
+
+  return 0;
+}
+
+int
+and_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (logical_operand (op, mode))
+    return 1;
+
+  /* Check mshflo.l / mshflhi.l opportunities.  */
+  if (TARGET_SHMEDIA
+      && mode == DImode
+      && GET_CODE (op) == CONST_INT
+      && (INTVAL (op) == (unsigned) 0xffffffff
+	  || INTVAL (op) == (HOST_WIDE_INT) -1 << 32))
+	return 1;
 
   return 0;
 }
@@ -6129,6 +6181,135 @@ target_operand (op, mode)
   return target_reg_operand (op, mode);
 }
 
+int
+mextr_bit_offset (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  HOST_WIDE_INT i;
+
+  if (GET_CODE (op) != CONST_INT)
+    return 0;
+  i = INTVAL (op);
+  return i >= 1*8 && i <= 7*8 && (i & 7) == 0;
+}
+
+int
+extend_reg_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (GET_CODE (op) == TRUNCATE
+	  ? arith_operand
+	  : arith_reg_operand) (op, mode);
+}
+
+int
+extend_reg_or_0_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (GET_CODE (op) == TRUNCATE
+	  ? arith_operand
+	  : arith_reg_or_0_operand) (op, mode);
+}
+
+/* Return nonzero if V is a zero vector matching MODE.  */
+int
+zero_vec_operand (v, mode)
+     rtx v;
+     enum machine_mode mode;
+{
+  int i;
+
+  if (GET_CODE (v) != PARALLEL
+      || (GET_MODE (v) != mode && mode != VOIDmode))
+    return 0;
+  for (i = XVECLEN (v, 0) - 1; i >= 0; i--)
+    if (XVECEXP (v, 0, i) != const0_rtx)
+      return 0;
+  return 1;
+}
+
+int
+sh_rep_vec (v, mode)
+     rtx v;
+     enum machine_mode mode;
+{
+  int i;
+  rtx x, y;
+
+  if ((GET_CODE (v) != CONST_VECTOR && GET_CODE (v) != PARALLEL)
+      || (GET_MODE (v) != mode && mode != VOIDmode))
+    return 0;
+  i = XVECLEN (v, 0) - 2;
+  x = XVECEXP (v, 0, i + 1);
+  if (GET_MODE_UNIT_SIZE (mode) == 1)
+    {
+      y = XVECEXP (v, 0, i);
+      for (i -= 2 ; i >= 0; i -= 2)
+	if (! rtx_equal_p (XVECEXP (v, 0, i + 1), x)
+	    || ! rtx_equal_p (XVECEXP (v, 0, i), y))
+          return 0;
+    }
+  else
+    for (; i >= 0; i--)
+      if (XVECEXP (v, 0, i) != x)
+        return 0;
+  return 1;
+}
+
+/* Determine if V is a constant vector matching MODE with only one element
+   that is not a sign extension.  Two byte-sized elements count as one.  */
+int
+sh_1el_vec (v, mode)
+     rtx v;
+     enum machine_mode mode;
+{
+  int unit_size;
+  int i, last, least, sign_ix;
+  rtx sign;
+
+  if (GET_CODE (v) != CONST_VECTOR
+      || (GET_MODE (v) != mode && mode != VOIDmode))
+    return 0;
+  /* Determine numbers of last and of least significat elements.  */
+  last = XVECLEN (v, 0) - 1;
+  least = TARGET_LITTLE_ENDIAN ? 0 : last;
+  if (GET_CODE (XVECEXP (v, 0, least)) != CONST_INT)
+    return 0;
+  sign_ix = least;
+  if (GET_MODE_UNIT_SIZE (mode) == 1)
+    sign_ix = TARGET_LITTLE_ENDIAN ? 1 : last - 1;
+  if (GET_CODE (XVECEXP (v, 0, sign_ix)) != CONST_INT)
+    return 0;
+  unit_size = GET_MODE_UNIT_SIZE (GET_MODE (v));
+  sign = (INTVAL (XVECEXP (v, 0, sign_ix)) >> (unit_size * BITS_PER_UNIT - 1)
+	  ? constm1_rtx : const0_rtx);
+  i = XVECLEN (v, 0) - 1;
+  do
+    if (i != least && i != sign_ix && XVECEXP (v, 0, i) != sign)
+      return 0;
+  while (--i);
+  return 1;
+}
+
+int
+sh_const_vec (v, mode)
+     rtx v;
+     enum machine_mode mode;
+{
+  int i;
+
+  if (GET_CODE (v) != CONST_VECTOR
+      || (GET_MODE (v) != mode && mode != VOIDmode))
+    return 0;
+  i = XVECLEN (v, 0) - 1;
+  for (; i >= 0; i--)
+    if (GET_CODE (XVECEXP (v, 0, i)) != CONST_INT)
+      return 0;
+  return 1;
+}
 
 /* Return the destination address of a branch.  */
    
@@ -6446,8 +6627,8 @@ sh_insn_length_adjustment (insn)
   /* Instructions with unfilled delay slots take up an extra two bytes for
      the nop in the delay slot.  */
   if (((GET_CODE (insn) == INSN
-        && GET_CODE (PATTERN (insn)) != USE
-        && GET_CODE (PATTERN (insn)) != CLOBBER)
+	&& GET_CODE (PATTERN (insn)) != USE
+	&& GET_CODE (PATTERN (insn)) != CLOBBER)
        || GET_CODE (insn) == CALL_INSN
        || (GET_CODE (insn) == JUMP_INSN
 	   && GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC
@@ -6588,7 +6769,8 @@ legitimize_pic_address (orig, mode, reg)
 
 /* Mark the use of a constant in the literal table. If the constant
    has multiple labels, make it unique.  */
-static rtx mark_constant_pool_use (x)
+static rtx
+mark_constant_pool_use (x)
      rtx x;
 {
   rtx insn, lab, pattern;
@@ -6848,4 +7030,299 @@ sh_strip_name_encoding (str)
   return str;
 }
 
+
+/* Machine specific built-in functions.  */
+
+struct builtin_description
+{
+  const enum insn_code icode;
+  const char *const name;
+  int signature;
+};
+
+/* describe number and signedness of arguments; arg[0] == result
+   (1: unsigned, 2: signed, 4: don't care, 8: pointer 0: no argument */
+static const char signature_args[][4] =
+{
+#define SH_BLTIN_V2SI2 0
+  { 4, 4 },
+#define SH_BLTIN_V4HI2 1
+  { 4, 4 },
+#define SH_BLTIN_V2SI3 2
+  { 4, 4, 4 },
+#define SH_BLTIN_V4HI3 3
+  { 4, 4, 4 },
+#define SH_BLTIN_V8QI3 4
+  { 4, 4, 4 },
+#define SH_BLTIN_MAC_HISI 5
+  { 1, 4, 4, 1 },
+#define SH_BLTIN_SH_HI 6
+  { 4, 4, 1 },
+#define SH_BLTIN_SH_SI 7
+  { 4, 4, 1 },
+#define SH_BLTIN_V4HI2V2SI 8
+  { 4, 4, 4 },
+#define SH_BLTIN_V4HI2V8QI 9
+  { 4, 4, 4 },
+#define SH_BLTIN_SISF 10
+  { 4, 2 },
+#define SH_BLTIN_LDUA_L 11
+  { 2, 8 },
+#define SH_BLTIN_LDUA_Q 12
+  { 1, 8 },
+#define SH_BLTIN_STUA_L 13
+  { 0, 8, 2 },
+#define SH_BLTIN_STUA_Q 14
+  { 0, 8, 1 },
+#define SH_BLTIN_NUM_SHARED_SIGNATURES 15
+#define SH_BLTIN_2 15
+#define SH_BLTIN_SU 15
+  { 1, 2 },
+#define SH_BLTIN_3 16
+#define SH_BLTIN_SUS 16
+  { 2, 2, 1 },
+#define SH_BLTIN_PSSV 17
+  { 0, 8, 2, 2 },
+#define SH_BLTIN_XXUU 18
+#define SH_BLTIN_UUUU 18
+  { 1, 1, 1, 1 },
+#define SH_BLTIN_PV 19
+  { 0, 8 },
+};
+/* mcmv: operands considered unsigned. */
+/* mmulsum_wq, msad_ubq: result considered unsigned long long.  */
+/* mperm: control value considered unsigned int. */
+/* mshalds, mshard, mshards, mshlld, mshlrd: shift count is unsigned int. */
+/* mshards_q: returns signed short.  */
+/* nsb: takes long long arg, returns unsigned char.  */
+static const struct builtin_description bdesc[] =
+{
+  { CODE_FOR_absv2si2,	"__builtin_absv2si2", SH_BLTIN_V2SI2 },
+  { CODE_FOR_absv4hi2,	"__builtin_absv4hi2", SH_BLTIN_V4HI2 },
+  { CODE_FOR_addv2si3,	"__builtin_addv2si3", SH_BLTIN_V2SI3 },
+  { CODE_FOR_addv4hi3,	"__builtin_addv4hi3", SH_BLTIN_V4HI3 },
+  { CODE_FOR_ssaddv2si3,"__builtin_ssaddv2si3", SH_BLTIN_V2SI3 },
+  { CODE_FOR_usaddv8qi3,"__builtin_usaddv8qi3", SH_BLTIN_V8QI3 },
+  { CODE_FOR_ssaddv4hi3,"__builtin_ssaddv4hi3", SH_BLTIN_V4HI3 },
+#if 0
+  { CODE_FOR_alloco32,	"__builtin_sh_media_ALLOCO", SH_BLTIN_PV },
+  { CODE_FOR_alloco64,	"__builtin_sh_media_ALLOCO", SH_BLTIN_PV },
+#endif
+  { CODE_FOR_negcmpeqv8qi,"__builtin_sh_media_MCMPEQ_B", SH_BLTIN_V8QI3 },
+  { CODE_FOR_negcmpeqv2si,"__builtin_sh_media_MCMPEQ_L", SH_BLTIN_V2SI3 },
+  { CODE_FOR_negcmpeqv4hi,"__builtin_sh_media_MCMPEQ_W", SH_BLTIN_V4HI3 },
+  { CODE_FOR_negcmpgtuv8qi,"__builtin_sh_media_MCMPGT_UB", SH_BLTIN_V8QI3 },
+  { CODE_FOR_negcmpgtv2si,"__builtin_sh_media_MCMPGT_L", SH_BLTIN_V2SI3 },
+  { CODE_FOR_negcmpgtv4hi,"__builtin_sh_media_MCMPGT_W", SH_BLTIN_V4HI3 },
+  { CODE_FOR_mcmv,	"__builtin_sh_media_MCMV", SH_BLTIN_UUUU },
+  { CODE_FOR_mcnvs_lw,	"__builtin_sh_media_MCNVS_LW", SH_BLTIN_3 },
+  { CODE_FOR_mcnvs_wb,	"__builtin_sh_media_MCNVS_WB", SH_BLTIN_V4HI2V8QI },
+  { CODE_FOR_mcnvs_wub,	"__builtin_sh_media_MCNVS_WUB", SH_BLTIN_V4HI2V8QI },
+  { CODE_FOR_mextr1,	"__builtin_sh_media_MEXTR1", SH_BLTIN_V8QI3 },
+  { CODE_FOR_mextr2,	"__builtin_sh_media_MEXTR2", SH_BLTIN_V8QI3 },
+  { CODE_FOR_mextr3,	"__builtin_sh_media_MEXTR3", SH_BLTIN_V8QI3 },
+  { CODE_FOR_mextr4,	"__builtin_sh_media_MEXTR4", SH_BLTIN_V8QI3 },
+  { CODE_FOR_mextr5,	"__builtin_sh_media_MEXTR5", SH_BLTIN_V8QI3 },
+  { CODE_FOR_mextr6,	"__builtin_sh_media_MEXTR6", SH_BLTIN_V8QI3 },
+  { CODE_FOR_mextr7,	"__builtin_sh_media_MEXTR7", SH_BLTIN_V8QI3 },
+  { CODE_FOR_mmacfx_wl,	"__builtin_sh_media_MMACFX_WL", SH_BLTIN_MAC_HISI },
+  { CODE_FOR_mmacnfx_wl,"__builtin_sh_media_MMACNFX_WL", SH_BLTIN_MAC_HISI },
+  { CODE_FOR_mulv2si3,	"__builtin_mulv2si3", SH_BLTIN_V2SI3, },
+  { CODE_FOR_mulv4hi3,	"__builtin_mulv4hi3", SH_BLTIN_V4HI3 },
+  { CODE_FOR_mmulfx_l,	"__builtin_sh_media_MMULFX_L", SH_BLTIN_V2SI3 },
+  { CODE_FOR_mmulfx_w,	"__builtin_sh_media_MMULFX_W", SH_BLTIN_V4HI3 },
+  { CODE_FOR_mmulfxrp_w,"__builtin_sh_media_MMULFXRP_W", SH_BLTIN_V4HI3 },
+  { CODE_FOR_mmulhi_wl,	"__builtin_sh_media_MMULHI_WL", SH_BLTIN_V4HI2V2SI },
+  { CODE_FOR_mmullo_wl,	"__builtin_sh_media_MMULLO_WL", SH_BLTIN_V4HI2V2SI },
+  { CODE_FOR_mmulsum_wq,"__builtin_sh_media_MMULSUM_WQ", SH_BLTIN_XXUU },
+  { CODE_FOR_mperm_w,	"__builtin_sh_media_MPERM_W", SH_BLTIN_SH_HI },
+  { CODE_FOR_msad_ubq,	"__builtin_sh_media_MSAD_UBQ", SH_BLTIN_XXUU },
+  { CODE_FOR_mshalds_l,	"__builtin_sh_media_MSHALDS_L", SH_BLTIN_SH_SI },
+  { CODE_FOR_mshalds_w,	"__builtin_sh_media_MSHALDS_W", SH_BLTIN_SH_HI },
+  { CODE_FOR_ashrv2si3,	"__builtin_ashrv2si3", SH_BLTIN_SH_SI },
+  { CODE_FOR_ashrv4hi3,	"__builtin_ashrv4hi3", SH_BLTIN_SH_HI },
+  { CODE_FOR_mshards_q,	"__builtin_sh_media_MSHARDS_Q", SH_BLTIN_SUS },
+  { CODE_FOR_mshfhi_b,	"__builtin_sh_media_MSHFHI_B", SH_BLTIN_V8QI3 },
+  { CODE_FOR_mshfhi_l,	"__builtin_sh_media_MSHFHI_L", SH_BLTIN_V2SI3 },
+  { CODE_FOR_mshfhi_w,	"__builtin_sh_media_MSHFHI_W", SH_BLTIN_V4HI3 },
+  { CODE_FOR_mshflo_b,	"__builtin_sh_media_MSHFLO_B", SH_BLTIN_V8QI3 },
+  { CODE_FOR_mshflo_l,	"__builtin_sh_media_MSHFLO_L", SH_BLTIN_V2SI3 },
+  { CODE_FOR_mshflo_w,	"__builtin_sh_media_MSHFLO_W", SH_BLTIN_V4HI3 },
+  { CODE_FOR_ashlv2si3,	"__builtin_ashlv2si3", SH_BLTIN_SH_SI },
+  { CODE_FOR_ashlv4hi3,	"__builtin_ashlv4hi3", SH_BLTIN_SH_HI },
+  { CODE_FOR_lshrv2si3,	"__builtin_lshrv2si3", SH_BLTIN_SH_SI },
+  { CODE_FOR_lshrv4hi3,	"__builtin_lshrv4hi3", SH_BLTIN_SH_HI },
+  { CODE_FOR_subv2si3,	"__builtin_subv2si3", SH_BLTIN_V2SI3 },
+  { CODE_FOR_subv4hi3,	"__builtin_subv4hi3", SH_BLTIN_V4HI3 },
+  { CODE_FOR_sssubv2si3,"__builtin_sssubv2si3", SH_BLTIN_V2SI3 },
+  { CODE_FOR_ussubv8qi3,"__builtin_ussubv8qi3", SH_BLTIN_V8QI3 },
+  { CODE_FOR_sssubv4hi3,"__builtin_sssubv4hi3", SH_BLTIN_V4HI3 },
+  { CODE_FOR_fcosa_s,	"__builtin_sh_media_FCOSA_S", SH_BLTIN_SISF },
+  { CODE_FOR_fsina_s,	"__builtin_sh_media_FSINA_S", SH_BLTIN_SISF },
+  { CODE_FOR_fipr,	"__builtin_sh_media_FIPR_S", SH_BLTIN_3 },
+  { CODE_FOR_ftrv,	"__builtin_sh_media_FTRV_S", SH_BLTIN_3 },
+  { CODE_FOR_fsrra_s,	"__builtin_sh_media_FSRRA_S", SH_BLTIN_2 },
+#if 0
+  { CODE_FOR_ldhi_l,	"__builtin_sh_media_LDHI_L", SH_BLTIN_LDUA_L },
+  { CODE_FOR_ldhi_q,	"__builtin_sh_media_LDHI_Q", SH_BLTIN_LDUA_Q },
+  { CODE_FOR_ldlo_l,	"__builtin_sh_media_LDLO_L", SH_BLTIN_LDUA_L },
+  { CODE_FOR_ldlo_q,	"__builtin_sh_media_LDLO_Q", SH_BLTIN_LDUA_Q },
+  { CODE_FOR_sthi_l,	"__builtin_sh_media_STHI_L", SH_BLTIN_STUA_L },
+  { CODE_FOR_sthi_q,	"__builtin_sh_media_STHI_Q", SH_BLTIN_STUA_Q },
+  { CODE_FOR_stlo_l,	"__builtin_sh_media_STLO_L", SH_BLTIN_STUA_L },
+  { CODE_FOR_stlo_q,	"__builtin_sh_media_STLO_Q", SH_BLTIN_STUA_Q },
+  { CODE_FOR_ldhi_l64,	"__builtin_sh_media_LDHI_L", SH_BLTIN_LDUA_L },
+  { CODE_FOR_ldhi_q64,	"__builtin_sh_media_LDHI_Q", SH_BLTIN_LDUA_Q },
+  { CODE_FOR_ldlo_l64,	"__builtin_sh_media_LDLO_L", SH_BLTIN_LDUA_L },
+  { CODE_FOR_ldlo_q64,	"__builtin_sh_media_LDLO_Q", SH_BLTIN_LDUA_Q },
+  { CODE_FOR_sthi_l64,	"__builtin_sh_media_STHI_L", SH_BLTIN_STUA_L },
+  { CODE_FOR_sthi_q64,	"__builtin_sh_media_STHI_Q", SH_BLTIN_STUA_Q },
+  { CODE_FOR_stlo_l64,	"__builtin_sh_media_STLO_L", SH_BLTIN_STUA_L },
+  { CODE_FOR_stlo_q64,	"__builtin_sh_media_STLO_Q", SH_BLTIN_STUA_Q },
+  { CODE_FOR_nsb,	"__builtin_sh_media_NSB", SH_BLTIN_SU },
+  { CODE_FOR_byterev,	"__builtin_sh_media_BYTEREV", SH_BLTIN_2 },
+  { CODE_FOR_prefetch32,"__builtin_sh_media_PREFO", SH_BLTIN_PSSV },
+  { CODE_FOR_prefetch64,"__builtin_sh_media_PREFO", SH_BLTIN_PSSV }
+#endif
+};
+
+static void
+sh_media_init_builtins ()
+{
+  tree shared[SH_BLTIN_NUM_SHARED_SIGNATURES];
+  const struct builtin_description *d;
+
+  bzero (shared, sizeof shared);
+  for (d = bdesc; d - bdesc < sizeof bdesc / sizeof bdesc[0]; d++)
+    {
+      tree type, arg_type;
+      int signature = d->signature;
+      int i;
+
+      if (signature < SH_BLTIN_NUM_SHARED_SIGNATURES && shared[signature])
+	type = shared[signature];
+      else
+	{
+	  int has_result = signature_args[signature][0] != 0;
+
+	  if (signature_args[signature][1] == 8
+	      && (insn_data[d->icode].operand[has_result].mode != Pmode))
+	    continue;
+	  if (! TARGET_FPU_ANY
+	      && FLOAT_MODE_P (insn_data[d->icode].operand[0].mode))
+	    continue;
+	  type = void_list_node;
+	  for (i = 3; ; i--)
+	    {
+	      int arg = signature_args[signature][i];
+	      int opno = i - 1 + has_result;
+
+	      if (arg == 8)
+		arg_type = ptr_type_node;
+	      else if (arg)
+		arg_type = ((*lang_hooks.types.type_for_mode)
+			    (insn_data[d->icode].operand[opno].mode,
+			     (arg & 1)));
+	      else if (i)
+		continue;
+	      else
+		arg_type = void_type_node;
+	      if (i == 0)
+		break;
+	      type = tree_cons (NULL_TREE, arg_type, type);
+	    }
+	  type = build_function_type (arg_type, type);
+	  if (signature < SH_BLTIN_NUM_SHARED_SIGNATURES)
+	    shared[signature] = type;
+	}
+      builtin_function (d->name, type, d - bdesc, BUILT_IN_MD, NULL);
+    }
+}
+
+static void
+sh_init_builtins ()
+{
+  if (TARGET_SHMEDIA)
+    sh_media_init_builtins ();
+}
+
+/* Expand an expression EXP that calls a built-in function,
+   with result going to TARGET if that's convenient
+   (and in mode MODE if that's convenient).
+   SUBTARGET may be used as the target for computing one of EXP's operands.
+   IGNORE is nonzero if the value is to be ignored.  */
+
+static rtx
+sh_expand_builtin (exp, target, subtarget, mode, ignore)
+     tree exp;
+     rtx target;
+     rtx subtarget ATTRIBUTE_UNUSED;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+     int ignore;
+{
+  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  tree arglist = TREE_OPERAND (exp, 1);
+  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  const struct builtin_description *d = &bdesc[fcode];
+  enum insn_code icode = d->icode;
+  int signature = d->signature;
+  enum machine_mode tmode = VOIDmode;
+  int nop = 0, i;
+  rtx op[4];
+  rtx pat;
+
+  if (signature_args[signature][0])
+    {
+      if (ignore)
+	return 0;
+
+      tmode = insn_data[icode].operand[0].mode;
+      if (! target
+	  || GET_MODE (target) != tmode
+	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+	target = gen_reg_rtx (tmode);
+      op[nop++] = target;
+    }
+  else
+    target = 0;
+
+  for (i = 1; i <= 3; i++, nop++)
+    {
+      tree arg;
+      enum machine_mode opmode, argmode;
+
+      if (! signature_args[signature][i])
+	break;
+      arg = TREE_VALUE (arglist);
+      arglist = TREE_CHAIN (arglist);
+      opmode = insn_data[icode].operand[nop].mode;
+      argmode = TYPE_MODE (TREE_TYPE (arg));
+      if (argmode != opmode)
+	arg = build1 (NOP_EXPR,
+		      (*lang_hooks.types.type_for_mode) (opmode, 0), arg);
+      op[nop] = expand_expr (arg, NULL_RTX, opmode, 0);
+      if (! (*insn_data[icode].operand[nop].predicate) (op[nop], opmode))
+	op[nop] = copy_to_mode_reg (opmode, op[nop]);
+    }
+
+  switch (nop)
+    {
+    case 1:
+      pat = (*insn_data[d->icode].genfun) (op[0]);
+      break;
+    case 2:
+      pat = (*insn_data[d->icode].genfun) (op[0], op[1]);
+      break;
+    case 3:
+      pat = (*insn_data[d->icode].genfun) (op[0], op[1], op[2]);
+      break;
+    case 4:
+      pat = (*insn_data[d->icode].genfun) (op[0], op[1], op[2], op[3]);
+      break;
+    }
+  if (! pat)
+    return 0;
+  emit_insn (pat);
+  return target;
+}
 #include "gt-sh.h"
