@@ -1,5 +1,11 @@
 2001-05-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11.md (*tbne, *tbeq): New patterns for 68HC12.
+	(extendqisi2, extendqihi2, extendhisi2): Use sex for 68HC12.
+	(uminqi3, umaxqi3, uminhi3, umaxhi3): New pattern for 68HC12.
+
+2001-05-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11.h (CONST_COSTS): Make the cost of
 	constants cheap after reload.
 	* config/m68hc11/m68hc11.c (m68hc11_shift_cost): Shift by 16 and 32
