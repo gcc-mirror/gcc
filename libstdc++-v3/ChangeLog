@@ -1,5 +1,13 @@
 2004-06-18  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/ext/mt_allocator (__mt_alloc<>::_Tune): Add _M_align,
+	the alignment requested.
+	(__mt_alloc<>::_Tune::_Tune): Tweak consistently.
+	(__mt_alloc<>::allocate): Use it instead of sizeof(_Block_record).
+	(__mt_alloc<>::deallocate): Likewise.
+
+2004-06-18  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/16020
 	* include/debug/safe_base.h
 	(_Safe_sequence_base::_Safe_sequence_base(const _Safe_sequence_base&),
