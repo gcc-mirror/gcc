@@ -480,7 +480,7 @@ template <typename _Alloc>
   
     void _M_range_check(size_type __n) const {
       if (__n >= this->size())
-        __throw_out_of_range("vector<bool>");
+        __throw_out_of_range(__N("vector<bool>"));
     }
   
     reference at(size_type __n)
@@ -607,7 +607,7 @@ template <typename _Alloc>
   
     void reserve(size_type __n) {
       if (__n > this->max_size())
-	__throw_length_error("vector::reserve");
+	__throw_length_error(__N("vector::reserve"));
       if (this->capacity() < __n) {
         _Bit_type * __q = _M_bit_alloc(__n);
         this->_M_finish = copy(begin(), end(), iterator(__q, 0));

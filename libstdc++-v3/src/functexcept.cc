@@ -1,4 +1,4 @@
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,6 +32,12 @@
 #include <new>
 #include <typeinfo>
 #include <ios>
+#ifdef _GLIBCPP_HAVE_LIBINTL_H
+# include <libintl.h>
+# define _(msgid)   gettext (msgid)
+#else
+# define _(msgid)   (msgid)
+#endif
 
 namespace std 
 {
@@ -54,43 +60,43 @@ namespace std
 
   void
   __throw_logic_error(const char* __s)
-  { throw logic_error(__s); }
+  { throw logic_error(_(__s)); }
 
   void
   __throw_domain_error(const char* __s)
-  { throw domain_error(__s); }
+  { throw domain_error(_(__s)); }
 
   void
   __throw_invalid_argument(const char* __s)
-  { throw invalid_argument(__s); }
+  { throw invalid_argument(_(__s)); }
 
   void
   __throw_length_error(const char* __s)
-  { throw length_error(__s); }
+  { throw length_error(_(__s)); }
 
   void
   __throw_out_of_range(const char* __s)
-  { throw out_of_range(__s); }
+  { throw out_of_range(_(__s)); }
 
   void
   __throw_runtime_error(const char* __s)
-  { throw runtime_error(__s); }
+  { throw runtime_error(_(__s)); }
 
   void
   __throw_range_error(const char* __s)
-  { throw range_error(__s); }
+  { throw range_error(_(__s)); }
 
   void
   __throw_overflow_error(const char* __s)
-  { throw overflow_error(__s); }
+  { throw overflow_error(_(__s)); }
 
   void
   __throw_underflow_error(const char* __s)
-  { throw underflow_error(__s); }
+  { throw underflow_error(_(__s)); }
 
   void
   __throw_ios_failure(const char* __s)
-  { throw ios_base::failure(__s); }
+  { throw ios_base::failure(_(__s)); }
 #else
   void
   __throw_bad_exception(void)

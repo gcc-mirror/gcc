@@ -264,7 +264,7 @@ namespace std
     {
       for (size_t __i = 1; __i < _Nw; ++__i)
 	if (_M_w[__i])
-	  __throw_overflow_error("bitset -- too large to fit in unsigned long");
+	  __throw_overflow_error(__N("bitset value is too large to fit in unsigned long"));
       return _M_w[0];
     }
 
@@ -466,7 +466,7 @@ namespace std
       // localized to this single should-never-get-this-far function.
       _WordT&
       _M_getword(size_t) const
-      { __throw_out_of_range("bitset -- zero-length"); return *new _WordT; }
+      { __throw_out_of_range(__N("bitset is zero-length")); return *new _WordT; }
 
       _WordT
       _M_hiword() const { return 0; }
@@ -862,7 +862,7 @@ namespace std
     set(size_t __pos, bool __val = true)
     {
       if (__pos >= _Nb)
-	__throw_out_of_range("bitset -- set() argument too large");
+	__throw_out_of_range(__N("bitset::set() argument too large"));
       return _Unchecked_set(__pos, __val);
     }
 
@@ -887,7 +887,7 @@ namespace std
     reset(size_t __pos)
     {
       if (__pos >= _Nb)
-	__throw_out_of_range("bitset -- reset() argument too large");
+	__throw_out_of_range(__N("bitset::reset() argument too large"));
       return _Unchecked_reset(__pos);
     }
 
@@ -911,7 +911,7 @@ namespace std
     flip(size_t __pos)
     {
       if (__pos >= _Nb)
-	__throw_out_of_range("bitset -- flip() argument too large");
+	__throw_out_of_range(__N("bitset::flip() argument too large"));
       return _Unchecked_flip(__pos);
     }
 
@@ -1014,7 +1014,7 @@ namespace std
     test(size_t __pos) const
     {
       if (__pos >= _Nb)
-	__throw_out_of_range("bitset -- test() argument too large");
+	__throw_out_of_range(__N("bitset::test() argument too large"));
       return _Unchecked_test(__pos);
     }
 
