@@ -1,3 +1,7 @@
+2000-09-11  Kazu Hirata  <kazu@hxi.com>
+
+	* integrate.c: Fix formatting.
+
 2000-09-11  Geoff Keating  <geoffk@cygnus.com>
 
 	* alias.c (memrefs_conflict_p): An ADDRESSOF does conflict, sorry.
