@@ -1,3 +1,12 @@
+2003-01-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/8564
+	* init.c (build_vec_init): Re-add maxindex parm.
+	(perform_member_init, build_aggr_init): Pass it.
+	(build_new_1): Pass it. Use an incomplete array type for full_type.
+	* typeck.c (build_modify_expr): Pass it.
+	* cp-tree.h: Adjust.
+
 2003-01-16  Jeffrey D. Oldham  <oldham@codesourcery.com>
 
 	* cp-tree.h (tsubst_copy_and_build): New declaration.

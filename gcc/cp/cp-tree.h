@@ -3957,7 +3957,7 @@ extern tree build_member_call			(tree, tree, tree);
 extern tree build_offset_ref			(tree, tree);
 extern tree resolve_offset_ref			(tree);
 extern tree build_new				(tree, tree, tree, int);
-extern tree build_vec_init			(tree, tree, int);
+extern tree build_vec_init			(tree, tree, tree, int);
 extern tree build_x_delete			(tree, int, tree);
 extern tree build_delete			(tree, tree, special_function_kind, int, int);
 extern void push_base_cleanups			(void);
