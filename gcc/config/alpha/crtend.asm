@@ -92,10 +92,10 @@ __do_global_ctors_aux:
 	.mask   0x4000200,-16
 	.prologue 1
 
-	lda     $9,__CTOR_END__
+	lda     $9,__CTOR_END__-8
 	br      1f
 0:	jsr     $26,($27)
-1:	ldq     $27,-8($9)
+1:	ldq     $27,0($9)
 	subq    $9,8,$9
 	not     $27,$0
 	bne     $0,0b
