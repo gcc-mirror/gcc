@@ -1252,9 +1252,13 @@ build_string (len, str)
      int len;
      char *str;
 {
+  /* Put the string in saveable_obstack since it will be placed in the RTL
+     for an "asm" statement and will also be kept around a while if
+     deferring constant output in varasm.c.  */
+
   register tree s = make_node (STRING_CST);
   TREE_STRING_LENGTH (s) = len;
-  TREE_STRING_POINTER (s) = obstack_copy0 (expression_obstack, str, len);
+  TREE_STRING_POINTER (s) = obstack_copy0 (saveable_obstack, str, len);
   return s;
 }
 
