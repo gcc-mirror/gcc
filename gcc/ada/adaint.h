@@ -4,7 +4,7 @@
  *                                                                          *
  *                               A D A I N T                                *
  *                                                                          *
- *                            $Revision: 1.4 $
+ *                            $Revision$
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
@@ -129,8 +129,8 @@ extern void   __gnat_expect_portable_execvp	   PARAMS ((char *, char *[]));
 extern int    __gnat_pipe			   PARAMS ((int *));
 extern int    __gnat_expect_poll		   PARAMS ((int *, int, int,
 							    int *));
-extern void    __gnat_set_binary_mode		   PARAMS ((FILE *));
-extern void    __gnat_set_text_mode		   PARAMS ((FILE *));
+extern void    __gnat_set_binary_mode		   PARAMS ((int));
+extern void    __gnat_set_text_mode		   PARAMS ((int));
 extern char   *__gnat_ttyname			   PARAMS ((int));
 
 #ifdef IN_RTS
