@@ -1234,10 +1234,11 @@ do {						\
 #define CONSTANT_POOL_ADDRESS_P(RTX)					\
   (RTL_FLAG_CHECK1("CONSTANT_POOL_ADDRESS_P", (RTX), SYMBOL_REF)->unchanging)
 
-/* 1 if RTX is a symbol_ref that addresses this function's string constant
-   pool  */
-#define STRING_POOL_ADDRESS_P(RTX)					\
-  (RTL_FLAG_CHECK1("STRING_POOL_ADDRESS_P", (RTX), SYMBOL_REF)->frame_related)
+/* 1 if RTX is a symbol_ref that addresses a value in the file's constant
+   pool which has not yet been output.  This information is private to
+   varasm.c.  */
+#define DEFERRED_CONSTANT_P(RTX)					\
+  (RTL_FLAG_CHECK1("DEFERRED_CONSTANT_P", (RTX), SYMBOL_REF)->frame_related)
 
 /* Used if RTX is a symbol_ref, for machine-specific purposes.  */
 #define SYMBOL_REF_FLAG(RTX)						\

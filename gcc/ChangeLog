@@ -1,3 +1,35 @@
+2003-05-05  Zack Weinberg  <zack@codesourcery.com>
+
+	* rtl.h (STRING_POOL_ADDRESS_P): Rename to DEFERRED_CONSTANT_P.
+	* varasm.c (struct varasm_status): Add deferred_constants field.
+	(n_deferred_strings): Delete variable.
+	(n_deferred_constants): New #define.
+	(struct constant_descriptor_tree): Kill next and label fields.
+	(const_hash_table, MAX_HASH_TABLE): Delete.
+	(const_desc_htab): New static variable.
+	(const_hash): Rename const_desc_hash, and make it fit the
+	hashtab.h interface.
+	(const_desc_eq): New.
+	(const_hash_1, compare_constant): Const-ify arguments.
+	(build_constant_desc): Set DEFERRED_CONSTANT_P on all new
+	SYMBOL_REFs.  Clarify comments.  Don't set desc->label.
+	(output_constant_def): Do the lookup/insert using the
+	hashtab.h interface.  Don't muck with n_deferred_constants or
+	DEFERRED_CONSTANT_P here.
+	Always call maybe_output_constant_def_contents.
+	(maybe_output_constant_def_contents): Take a pointer to the
+	descriptor, not the EXP and RTL separately.  Return
+	immediately if this constant is not deferred.  Defer output of
+	everything, except writable string constants.  Update
+	n_deferred_constants here.
+	(output_constant_def_contents): Now takes just one argument,
+	an rtx.  Clear DEFERRED_CONSTANT_P here.
+	(mark_constant_pool): Update for rename of n_deferred_strings.
+	(mark_constant): Don't clear DEFERRED_CONSTANT_P here.
+
+	(init_varasm_status): Clear p->deferred_constants.
+	(init_varasm_once): Call htab_create_ggc for const_desc_htab.
+
 2003-05-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_stpcpy): Only expand when the length
@@ -5,9 +37,9 @@
 
 2003-05-05  Aldy Hernandez  <aldyh@redhat.com>
 
-        * testsuite/gcc.c-torture/compile/simd-6.c: New.
+	* testsuite/gcc.c-torture/compile/simd-6.c: New.
 
-        * c-typeck.c (digest_init): Handle arrays of vector constants.
+	* c-typeck.c (digest_init): Handle arrays of vector constants.
 
 2003-05-05  Jakub Jelinek  <jakub@redhat.com>
 
@@ -19,17 +51,17 @@
 
 2003-05-05  Aldy Hernandez  <aldyh@redhat.com>
 
-        * testsuite/gcc.dg/20030505.c: New.
+	* testsuite/gcc.dg/20030505.c: New.
 
-        * c-typeck.c (convert_for_assignment): Opaque pointers can
-        interconvert.
+	* c-typeck.c (convert_for_assignment): Opaque pointers can
+	interconvert.
 
-        * config/rs6000/rs6000.c: New global opaque_p_V2SI_type_node.
-        (rs6000_init_builtins): Initialize opaque_p_V2SI_type_node.
-        (spe_init_builtins): Rename all pv2si_type_node to
-        opaque_p_V2SI_type_node.
-        Remove declaration of pv2si_type_node.
-        (is_ev64_opaque_type): Accept opaque pointers.
+	* config/rs6000/rs6000.c: New global opaque_p_V2SI_type_node.
+	(rs6000_init_builtins): Initialize opaque_p_V2SI_type_node.
+	(spe_init_builtins): Rename all pv2si_type_node to
+	opaque_p_V2SI_type_node.
+	Remove declaration of pv2si_type_node.
+	(is_ev64_opaque_type): Accept opaque pointers.
 
 2003-05-05  Geoffrey Keating  <geoffk@apple.com>
 
@@ -40,27 +72,27 @@
 	(rs6000_generate_compare): Use flag_finite_math_only.
 	(rs6000_emit_cmove): Handle UNLE.  Support UNEQ under -ffast-math.
 	Use HONOR_* rather than flag_unsafe_math_optimizations.  Correct
-	UNGE and GT cases.  Handle UNEQ and LTGT when ! HONOR_NANS.  
+	UNGE and GT cases.  Handle UNEQ and LTGT when ! HONOR_NANS.
 
 	* toplev.c (check_global_declarations): Suppress not-used warning
 	for volatile variables.
 
 2003-05-05  Olivier Hainque  <hainque@act-europe.fr>
 
-        * expr.c (expand_expr, case BIT_FIELD_REF): Refine the test forcing
-        usage of bitfield instructions for mode1 != BLKmode, only ignoring
-        SLOW_UNALIGNED_ACCESS if the field is not byte aligned. 
-        (store_field): Likewise.
+	* expr.c (expand_expr, case BIT_FIELD_REF): Refine the test forcing
+	usage of bitfield instructions for mode1 != BLKmode, only ignoring
+	SLOW_UNALIGNED_ACCESS if the field is not byte aligned.
+	(store_field): Likewise.
 
 2003-05-05  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c (rs6000_expand_binop_builtin): Add
-        evsubifw to builtins accepting 5-bit unsigned constants.
-        (easy_vector_constant): Return if V1DImode.  Fix typo.
+	* config/rs6000/rs6000.c (rs6000_expand_binop_builtin): Add
+	evsubifw to builtins accepting 5-bit unsigned constants.
+	(easy_vector_constant): Return if V1DImode.  Fix typo.
 
 2003-05-05  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/spe.h: Revert licensing change from last patch.
+	* config/rs6000/spe.h: Revert licensing change from last patch.
 
 2003-05-05  DJ Delorie  <dj@redhat.com>
 
@@ -77,7 +109,7 @@
 2003-05-05  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* libgcov.c (__gcov_merge_add): Do not use gcov_type when inhibit_libc
-	is defined.	
+	is defined.
 
 2003-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 

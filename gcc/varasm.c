@@ -96,6 +96,10 @@ struct varasm_status GTY(())
   /* Current offset in constant pool (does not include any machine-specific
      header).  */
   HOST_WIDE_INT x_pool_offset;
+
+  /* Number of tree-constants deferred during the expansion of this
+     function.  */
+  unsigned int deferred_constants;
 };
 
 #define const_rtx_hash_table (cfun->varasm->x_const_rtx_hash_table)
@@ -103,6 +107,7 @@ struct varasm_status GTY(())
 #define first_pool (cfun->varasm->x_first_pool)
 #define last_pool (cfun->varasm->x_last_pool)
 #define pool_offset (cfun->varasm->x_pool_offset)
+#define n_deferred_constants (cfun->varasm->deferred_constants)
 
 /* Number for making the label on the next
    constant that is stored in memory.  */
@@ -138,12 +143,12 @@ static HOST_WIDE_INT const_alias_set;
 static const char *strip_reg_name	PARAMS ((const char *));
 static int contains_pointers_p		PARAMS ((tree));
 static void decode_addr_const		PARAMS ((tree, struct addr_const *));
-static unsigned int const_hash		PARAMS ((tree));
-static unsigned int const_hash_1	PARAMS ((tree));
-static int compare_constant		PARAMS ((tree, tree));
+static hashval_t const_desc_hash	PARAMS ((const void *));
+static int const_desc_eq		PARAMS ((const void *, const void *));
+static hashval_t const_hash_1		PARAMS ((const tree));
+static int compare_constant		PARAMS ((const tree, const tree));
 static tree copy_constant		PARAMS ((tree));
-static void maybe_output_constant_def_contents PARAMS ((tree, rtx, int));
-static void output_constant_def_contents  PARAMS ((tree, const char *));
+static void output_constant_def_contents  PARAMS ((rtx));
 static void decode_rtx_const		PARAMS ((enum machine_mode, rtx,
 					       struct rtx_const *));
 static unsigned int const_hash_rtx	PARAMS ((enum machine_mode, rtx));
@@ -2143,12 +2148,6 @@ struct rtx_const GTY(())
 
 struct constant_descriptor_tree GTY(())
 {
-  /* More constant_descriptors with the same hash code.  */
-  struct constant_descriptor_tree *next;
-
-  /* The label of the constant.  */
-  const char *label;
-
   /* A MEM for the constant.  */
   rtx rtl;
 
@@ -2156,28 +2155,28 @@ struct constant_descriptor_tree GTY(())
   tree value;
 };
 
-#define MAX_HASH_TABLE 1009
-static GTY(()) struct constant_descriptor_tree *
-  const_hash_table[MAX_HASH_TABLE];
+static GTY((param_is (struct constant_descriptor_tree)))
+     htab_t const_desc_htab;
 
 static struct constant_descriptor_tree * build_constant_desc PARAMS ((tree));
-static unsigned int n_deferred_strings = 0;
+static void maybe_output_constant_def_contents
+    PARAMS ((struct constant_descriptor_tree *, int));
 
 /* Compute a hash code for a constant expression.  */
 
-static unsigned int
-const_hash (exp)
-     tree exp;
+static hashval_t
+const_desc_hash (ptr)
+     const void *ptr;
 {
-  return const_hash_1 (exp) % MAX_HASH_TABLE;
+  return const_hash_1 (((struct constant_descriptor_tree *)ptr)->value);
 }
 
-static unsigned int
+static hashval_t
 const_hash_1 (exp)
-     tree exp;
+     const tree exp;
 {
   const char *p;
-  unsigned int hi;
+  hashval_t hi;
   int len, i;
   enum tree_code code = TREE_CODE (exp);
 
@@ -2198,7 +2197,6 @@ const_hash_1 (exp)
       p = TREE_STRING_POINTER (exp);
       len = TREE_STRING_LENGTH (exp);
       break;
-
     case COMPLEX_CST:
       return (const_hash_1 (TREE_REALPART (exp)) * 5
 	      + const_hash_1 (TREE_IMAGPART (exp)));
@@ -2272,13 +2270,23 @@ const_hash_1 (exp)
   return hi;
 }
 
+/* Wrapper of compare_constant, for the htab interface.  */
+static int
+const_desc_eq (p1, p2)
+     const void *p1;
+     const void *p2;
+{
+  return compare_constant (((struct constant_descriptor_tree *)p1)->value,
+			   ((struct constant_descriptor_tree *)p2)->value);
+}
+
 /* Compare t1 and t2, and return 1 only if they are known to result in
    the same bit pattern on output.  */
 
 static int
 compare_constant (t1, t2)
-     tree t1;
-     tree t2;
+     const tree t1;
+     const tree t2;
 {
   enum tree_code typecode;
 
@@ -2531,11 +2539,18 @@ build_constant_desc (exp)
   /* Set flags or add text to the name to record information, such as
      that it is a local symbol.  If the name is changed, the macro
      ASM_OUTPUT_LABELREF will have to know how to strip this
-     information.  */
+     information.  This call might invalidate our local variable
+     SYMBOL; we can't use it afterward.  */
+
   (*targetm.encode_section_info) (exp, rtl, true);
 
+  /* Descriptors start out deferred; this simplifies the logic in
+     maybe_output_constant_def_contents.  However, we do not bump
+     n_deferred_constants here, because we don't know if we're inside
+     a function and have an n_deferred_constants to bump.  */
+  DEFERRED_CONSTANT_P (XEXP (rtl, 0)) = 1;
+
   desc->rtl = rtl;
-  desc->label = XSTR (XEXP (desc->rtl, 0), 0);
 
   return desc;
 }
@@ -2548,8 +2563,8 @@ build_constant_desc (exp)
    Otherwise, output such a constant in memory
    and generate an rtx for it.
 
-   If DEFER is nonzero, the output of string constants can be deferred
-   and output only if referenced in the function after all optimizations.
+   If DEFER is nonzero, this constant can be deferred and output only
+   if referenced in the function after all optimizations.
 
    The const_hash_table records which constants already have label strings.  */
 
@@ -2558,70 +2573,64 @@ output_constant_def (exp, defer)
      tree exp;
      int defer;
 {
-  int hash;
   struct constant_descriptor_tree *desc;
+  struct constant_descriptor_tree key;
+  void **loc;
 
-  /* Compute hash code of EXP.  Search the descriptors for that hash code
-     to see if any of them describes EXP.  If yes, the descriptor records
-     the label number already assigned.  */
+  /* Look up EXP in the table of constant descriptors.  If we didn't find
+     it, create a new one.  */
+  key.value = exp;
+  loc = htab_find_slot (const_desc_htab, &key, INSERT);
 
-  hash = const_hash (exp);
-  for (desc = const_hash_table[hash]; desc; desc = desc->next)
-    if (compare_constant (exp, desc->value))
-      break;
-
+  desc = *loc;
   if (desc == 0)
     {
       desc = build_constant_desc (exp);
-      desc->next = const_hash_table[hash];
-      const_hash_table[hash] = desc;
-
-      maybe_output_constant_def_contents (exp, desc->rtl, defer);
-    }
-  else if (!defer && STRING_POOL_ADDRESS_P (XEXP (desc->rtl, 0)))
-    {
-      /* This string is currently deferred but we need to output it
-	 now; mark it no longer deferred.  */
-      STRING_POOL_ADDRESS_P (XEXP (desc->rtl, 0)) = 0;
-      n_deferred_strings--;
-      maybe_output_constant_def_contents (exp, desc->rtl, 0);
+      *loc = desc;
     }
 
+  maybe_output_constant_def_contents (desc, defer);
   return desc->rtl;
 }
 
-/* Subroutine of output_constant_def:
-   Decide whether or not to defer the output of EXP, which can be
-   accesed through rtl RTL, and either do the output or record EXP in
-   the table of deferred strings.  */
+/* Subroutine of output_constant_def: Decide whether or not we need to
+   output the constant DESC now, and if so, do it.  */
 static void
-maybe_output_constant_def_contents (exp, rtl, defer)
-     tree exp;
-     rtx rtl;
+maybe_output_constant_def_contents (desc, defer)
+     struct constant_descriptor_tree *desc;
      int defer;
 {
+  rtx symbol = XEXP (desc->rtl, 0);
+
   if (flag_syntax_only)
     return;
 
-  /* Is this a string constant that can be deferred?  */
-  if (defer && TREE_CODE (exp) == STRING_CST && !flag_writable_strings)
+  if (!DEFERRED_CONSTANT_P (symbol))
+    /* Already output; don't do it again.  */
+    return;
+
+  /* The only constants that cannot safely be deferred, assuming the
+     context allows it, are strings under flag_writable_strings.  */
+  if (defer && (TREE_CODE (desc->value) != STRING_CST
+		|| !flag_writable_strings))
     {
-      STRING_POOL_ADDRESS_P (XEXP (rtl, 0)) = 1;
-      n_deferred_strings++;
+      if (cfun)
+	n_deferred_constants++;
       return;
     }
 
-  output_constant_def_contents (exp, XSTR (XEXP (rtl, 0), 0));
+  output_constant_def_contents (symbol);
 }
 
-/* Now output assembler code to define the label for EXP,
-   and follow it with the data of EXP.  */
+/* We must output the constant data referred to by SYMBOL; do so.  */
 
 static void
-output_constant_def_contents (exp, label)
-     tree exp;
-     const char *label;
+output_constant_def_contents (symbol)
+     rtx symbol;
 {
+  tree exp = SYMBOL_REF_DECL (symbol);
+  const char *label = XSTR (symbol, 0);
+
   /* Make sure any other constants whose addresses appear in EXP
      are assigned label numbers.  */
   int reloc = output_addressed_constants (exp);
@@ -2631,6 +2640,9 @@ output_constant_def_contents (exp, label)
 #ifdef CONSTANT_ALIGNMENT
   align = CONSTANT_ALIGNMENT (exp, align);
 #endif
+
+  /* We are no longer deferring this constant.  */
+  DEFERRED_CONSTANT_P (symbol) = 0;
 
   if (IN_NAMED_SECTION (exp))
     named_section (exp, NULL, reloc);
@@ -2715,6 +2727,7 @@ init_varasm_status (f)
 
   p->x_first_pool = p->x_last_pool = 0;
   p->x_pool_offset = 0;
+  p->deferred_constants = 0;
 }
 
 
@@ -3329,8 +3342,8 @@ output_constant_pool (fnname, fndecl)
 }
 
 /* Look through the instructions for this function, and mark all the
-   entries in the constant pool which are actually being used.
-   Emit used deferred strings.  */
+   entries in the constant pool which are actually being used.  Emit
+   deferred constants which have indeed been used.  */
 
 static void
 mark_constant_pool ()
@@ -3339,7 +3352,7 @@ mark_constant_pool ()
   rtx link;
   struct pool_constant *pool;
 
-  if (first_pool == 0 && n_deferred_strings == 0)
+  if (first_pool == 0 && n_deferred_constants == 0)
     return;
 
   for (pool = first_pool; pool; pool = pool->next)
@@ -3453,11 +3466,10 @@ mark_constant (current_rtx, data)
 	  else
 	    return -1;
 	}
-      else if (STRING_POOL_ADDRESS_P (x))
+      else if (DEFERRED_CONSTANT_P (x))
 	{
-	  STRING_POOL_ADDRESS_P (x) = 0;
-	  n_deferred_strings--;
-	  output_constant_def_contents (SYMBOL_REF_DECL (x), XSTR (x, 0));
+	  n_deferred_constants--;
+	  output_constant_def_contents (x);
 	}
     }
   return 0;
@@ -4544,6 +4556,8 @@ init_varasm_once ()
 {
   in_named_htab = htab_create_ggc (31, in_named_entry_hash,
 				   in_named_entry_eq, NULL);
+  const_desc_htab = htab_create_ggc (1009, const_desc_hash,
+				     const_desc_eq, NULL);
 
   const_alias_set = new_alias_set ();
 }
