@@ -1,3 +1,9 @@
+2002-02-24  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpplex.c (cpp_interpret_charconst): Get signedness or
+	otherwise of wide character constants correct.
+	* cppexp.c (lex): Get signedness of wide charconsts correct.
+
 Sun Feb 24 07:41:31 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* optabs.c (widen_operand): Only call convert_modes for
