@@ -3207,7 +3207,7 @@ assign_parms (fndecl, second_time)
 		  /* This is a variable sized object.  */
 		  /* ??? Can we use expr_size here?  */
 		  rtx size_rtx = expand_expr (size_in_bytes (type), NULL_RTX,
-					      TYPE_MODE(sizetype), 0);
+					      TYPE_MODE (sizetype), 0);
 
 		  copy = gen_rtx (MEM, BLKmode,
 				  allocate_dynamic_stack_space (size_rtx, NULL_RTX,
