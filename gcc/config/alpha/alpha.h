@@ -611,18 +611,20 @@ extern void override_options ();
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    On Alpha, the integer registers can hold any mode.  The floating-point
    registers can hold 32-bit and 64-bit integers as well, but not 16-bit
-   or 8-bit values.  If we only allowed the larger integers into FP registers,
-   we'd have to say that QImode and SImode aren't tiable, which is a
-   pain.  So say all registers can hold everything and see how that works.  */
+   or 8-bit values.  */
 
-#define HARD_REGNO_MODE_OK(REGNO, MODE) 1
+#define HARD_REGNO_MODE_OK(REGNO, MODE) 			\
+  ((REGNO) < 32 || ((MODE) != QImode && (MODE) != HImode))
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
    If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
    for any hard reg, then this must be 0 for correct output.  */
 
-#define MODES_TIEABLE_P(MODE1, MODE2) 1
+#define MODES_TIEABLE_P(MODE1, MODE2) 				\
+  ((MODE1) == QImode || (MODE1) == HImode			\
+   ? (MODE2) == QImode || (MODE2) == HImode			\
+   : 1)
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */

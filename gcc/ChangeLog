@@ -1,3 +1,8 @@
+Thu Mar 11 14:00:58 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.h (HARD_REGNO_MODE_OK): Disallow QI/HImode in fp regs.
+	(MODES_TIEABLE_P): Update.
+
 Thu Mar 11 00:20:52 1999  Alexandre Oliva <oliva@dcc.unicamp.br>
 
 	* gcc.texi: Update bug reporting instructions to match
