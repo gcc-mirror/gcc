@@ -1325,11 +1325,13 @@ structsp:
 		{ $$ = start_struct (UNION_TYPE, $2); }
 	  component_decl_list '}' maybe_attribute
 		{ $$ = finish_struct ($<ttype>4, $5);
+		  decl_attributes ($$, $7, NULL_TREE);
+		}
+	| UNION '{' component_decl_list '}' maybe_attribute
+		{ $$ = finish_struct (start_struct (UNION_TYPE, NULL_TREE),
+				      $3);
 		  decl_attributes ($$, $5, NULL_TREE);
 		}
-	| UNION '{' component_decl_list '}'
-		{ $$ = finish_struct (start_struct (UNION_TYPE, NULL_TREE),
-				      $3); }
 	| UNION identifier
 		{ $$ = xref_tag (UNION_TYPE, $2); }
 	| ENUM identifier '{'
