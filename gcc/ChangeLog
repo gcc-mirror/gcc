@@ -1,3 +1,21 @@
+2004-04-11  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* varasm.c (text_section): Use TEXT_SECTION_ASM_OP and
+	ASM_OUTPUT_ALIGN instead of SECTION_FORMAT_STRING
+	and NORMAL_TEXT_SECTION_NAME.
+	(unlikely_text_section): Check targetm.have_named_sections
+	instead of TARGET_ASM_NAMED_SECTION and use TEXT_SECTION_ASM_OP
+	instead of SECTION_FORMAT_STRING.
+	* config/mips/iris5.h (current_section_name): Add
+	in_unlikely_executed_text case and move the abort into the switch.
+	* config/rs6000/sysv4.h (HOT_TEXT_SECTION_NAME): Remove.
+	(NORMAL_TEXT_SECTION_NAME): Remove.
+	(UNLIKELY_EXECUTED_TEXT_SECTION_NAME): Remove.
+	(SECTION_FORMAT_STRING): Remove.
+	* defaults.h (SECTION_FORMAT_STRING): Remove.
+	* tm.texi (NORMAL_TEXT_SECTION_NAME): Remove.
+	(SECTION_FORMAT_STRING): Remove.
+
 2004-04-10  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-typeck.c (common_type): Prefer long long to long when same
