@@ -1,3 +1,13 @@
+1999-11-28  Anthony Green  <green@cygnus.com>
+
+	* tree.h (struct tree_decl): Add malloc_flag.
+	(DECL_IS_MALLOC): Define.
+	* c-common.c (attrs): Add A_MALLOC attribute.
+	(init_attributes): Add this attribute to the table.
+	(decl_attributes): Handle malloc attribute.
+	* calls.c (special_function_p): Check for the malloc attribute.
+	* extend.texi (Function Attributes): Document malloc attribute.
+
 Sun Nov 28 13:21:00 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.md (reload shift-add patterns): Remove.

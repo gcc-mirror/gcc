@@ -1310,6 +1310,7 @@ hack ((union foo) x);
 @cindex functions that never return
 @cindex functions that have no side effects
 @cindex functions in arbitrary sections
+@cindex functions that bahave like malloc
 @cindex @code{volatile} applied to function
 @cindex @code{const} applied to function
 @cindex functions with @code{printf}, @code{scanf} or @code{strftime} style arguments
@@ -1323,10 +1324,10 @@ carefully.
 
 The keyword @code{__attribute__} allows you to specify special
 attributes when making a declaration.  This keyword is followed by an
-attribute specification inside double parentheses.  Nine attributes,
+attribute specification inside double parentheses.  Ten attributes,
 @code{noreturn}, @code{const}, @code{format},
-@code{no_instrument_function}, @code{section},
-@code{constructor}, @code{destructor}, @code{unused} and @code{weak} are
+@code{no_instrument_function}, @code{section}, @code{constructor},
+@code{destructor}, @code{unused}, @code{weak} and @code{malloc} are
 currently defined for functions.  Other attributes, including
 @code{section} are supported for variables declarations (@pxref{Variable
 Attributes}) and for types (@pxref{Type Attributes}).
@@ -1539,6 +1540,13 @@ library functions which can be overridden in user code, though it can
 also be used with non-function declarations.  Weak symbols are supported
 for ELF targets, and also for a.out targets when using the GNU assembler
 and linker.
+
+@item malloc
+@cindex @code{malloc} attribute
+The @code{malloc} attribute is used to tell the compiler that a function
+may be treated as if it were the malloc function.  The compiler assumes
+that calls to malloc result in a pointers that cannot alias anything.
+This will often improve optimization.
 
 @item alias ("target")
 @cindex @code{alias} attribute

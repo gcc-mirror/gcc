@@ -1238,6 +1238,11 @@ struct tree_type
    to redefine for any purpose whatever.  */
 #define DECL_BUILT_IN_NONANSI(NODE) ((NODE)->common.unsigned_flag)
 
+/* Nonzero in a FUNCTION_DECL means this function should be treated
+   as if it were a malloc, meaning it returns a pointer that is
+   not an alias.  */
+#define DECL_IS_MALLOC(NODE) (DECL_CHECK (NODE)->decl.malloc_flag)
+
 /* Nonzero in a FIELD_DECL means it is a bit field, and must be accessed
    specially.  */
 #define DECL_BIT_FIELD(NODE) (DECL_CHECK (NODE)->decl.bit_field_flag)
@@ -1370,6 +1375,7 @@ struct tree_decl
   unsigned no_instrument_function_entry_exit : 1;
   unsigned no_check_memory_usage : 1;
   unsigned comdat_flag : 1;
+  unsigned malloc_flag : 1;
 
   /* For a FUNCTION_DECL, if inline, this is the size of frame needed.
      If built-in, this is the code for which built-in function.
