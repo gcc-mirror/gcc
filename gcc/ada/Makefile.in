@@ -339,7 +339,7 @@ GNATBIND_OBJS = \
 
 GNATCHOP_RTL_OBJS = adaint.o argv.o cio.o cstreams.o exit.o \
  final.o init.o raise.o sysdep.o ada.o a-comlin.o gnat.o a-string.o \
- a-stmaco.o a-strsea.o a-charac.o a-chlat1.o g-except.o \
+ a-stmaco.o a-strsea.o a-charac.o a-chlat1.o g-except.o s-io.o \
  a-chahan.o a-strunb.o a-strfix.o a-strmap.o g-casuti.o g-comlin.o hostparm.o \
  g-dirope.o g-hesora.o g-htable.o g-regexp.o interfac.o system.o s-assert.o \
  s-parame.o i-cstrea.o s-exctab.o a-ioexce.o s-except.o s-stache.o s-stoele.o \
@@ -449,6 +449,7 @@ GNATLS_RTL_OBJS = \
  s-fileio.o \
  s-imgenu.o \
  s-imgint.o \
+ s-io.o \
  s-mastop.o \
  s-parame.o \
  s-secsta.o \
@@ -544,7 +545,7 @@ GNATMAKE_RTL_OBJS = adaint.o argv.o raise.o exit.o a-comlin.o \
  s-imgenu.o s-assert.o s-secsta.o s-stoele.o s-soflin.o s-fileio.o \
  s-valenu.o s-valuti.o g-casuti.o \
  system.o s-exctab.o s-strops.o s-sopco3.o s-sopco4.o s-sopco5.o \
- g-htable.o g-regexp.o s-crc32.o s-wchcnv.o
+ g-htable.o s-io.o g-regexp.o s-crc32.o s-wchcnv.o
 
 GNATMAKE_OBJS = ali.o ali-util.o \
  alloc.o atree.o binderr.o butil.o casing.o csets.o debug.o einfo.o elists.o \
@@ -646,7 +647,7 @@ GNATPREP_RTL_OBJS = adaint.o argv.o raise.o exit.o final.o init.o \
    a-except.o tracebak.o s-memory.o s-traceb.o s-mastop.o s-except.o \
    a-finali.o a-filico.o a-ioexce.o a-stream.o a-string.o a-strmap.o \
    a-stmaco.o a-strfix.o s-imgenu.o a-strsea.o a-strunb.o \
-   sysdep.o a-tags.o a-textio.o gnat.o g-hesora.o \
+   sysdep.o a-tags.o a-textio.o gnat.o g-hesora.o s-io.o \
    g-casuti.o g-dirope.o g-os_lib.o g-regexp.o g-comlin.o i-cstrea.o \
    system.o s-bitops.o g-except.o s-exctab.o s-ficobl.o s-fileio.o s-finimp.o \
    s-finroo.o s-imgint.o s-parame.o s-secsta.o s-stache.o s-stalib.o \
@@ -694,7 +695,7 @@ GNATXREF_RTL_OBJS =  \
    s-imgint.o a-comlin.o s-soflin.o s-stache.o s-secsta.o s-stalib.o \
    g-os_lib.o s-strops.o a-tags.o   a-stream.o s-sopco3.o s-sopco4.o \
    s-sopco5.o s-memory.o s-traceb.o a-except.o s-unstyp.o a-strmap.o \
-   a-stmaco.o \
+   a-stmaco.o s-io.o \
    a-chahan.o a-strsea.o a-strfix.o s-stratt.o s-finroo.o g-except.o \
    s-bitops.o s-finimp.o a-finali.o a-filico.o a-strunb.o g-dirope.o \
    g-comlin.o s-ficobl.o s-fileio.o a-textio.o g-regexp.o g-io_aux.o \
@@ -715,7 +716,7 @@ GNATFIND_RTL_OBJS = \
    a-tags.o a-textio.o  \
    gnat.o g-casuti.o g-comlin.o g-dirope.o g-except.o  \
    g-hesora.o g-htable.o g-io_aux.o g-os_lib.o g-regexp.o \
-   interfac.o i-cstrea.o \
+   interfac.o i-cstrea.o s-io.o \
    system.o s-assert.o s-bitops.o s-except.o s-exctab.o \
    s-imgenu.o s-ficobl.o s-fileio.o s-finimp.o s-finroo.o s-imgint.o \
    s-mastop.o s-parame.o s-secsta.o s-soflin.o s-sopco3.o \
@@ -737,7 +738,7 @@ GNATDLL_RTL_OBJS = \
    a-strsea.o a-stmaco.o a-strunb.o a-tags.o a-textio.o ada.o \
    g-casuti.o g-comlin.o g-dirope.o g-except.o g-hesora.o g-htable.o \
    g-os_lib.o g-regexp.o gnat.o \
-   i-cstrea.o interfac.o \
+   i-cstrea.o interfac.o s-io.o \
    s-bitops.o s-except.o s-exctab.o s-ficobl.o s-fileio.o s-finimp.o \
    s-finroo.o s-imgint.o s-mastop.o s-parame.o s-secsta.o s-soflin.o \
    s-sopco3.o s-sopco4.o s-stache.o s-stalib.o s-stoele.o s-stratt.o \

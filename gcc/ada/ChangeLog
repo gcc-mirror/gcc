@@ -1,3 +1,7 @@
+2001-12-05  Robert Dewar <dewar@gnat.com>
+
+	* Makefile.in: Add dependencies for System.IO for GNAT.Regexp
+
 2001-12-05  Ed Schonberg <schonber@gnat.com>
 
 	* sem_ch3.adb (Build_Derived_Concurrent_Type): If derivation imposes a
