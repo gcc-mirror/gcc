@@ -1,3 +1,7 @@
+2000-10-18  Marc Espie <espie@openbsd.org>
+
+	* tm.texi (LIBGCC_SPEC): Synch with reality.
+
 2000-10-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (check_format_types): Check for writing through a
