@@ -1,3 +1,25 @@
+2005-03-01  Daniel Berlin <dberlin@dberlin.org>
+
+	* Makefile.in (tree-ssa-sink.o): New.
+	(OBJS-common): Add tree-ssa-sink.o.
+	* common.opt: Add -ftree-sink
+	* opts.c (decode_options): flag_tree_sink is set at O1 or higher.
+	* timevar.def (TV_TREE_SINK): new timevar.
+	* tree-flow.h (is_hidden_global_store): Prototype.
+	* tree-optimize.c (init_tree_optimization_passes): Add
+	pass_sink_code.
+	* tree-pass.h (pass_sink_code): New.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Move checking
+	for non-obvious global store store to is_hidden_global_store, and
+	call that new function.
+	* tree-ssa-sink.c: New file.
+	* doc/invoke.texi: Document -fdump-tree-sink and -ftree-sink.
+	* doc/passes.texi: Document forward store motion.
+	* testsuite/gcc.dg/tree-ssa/ssa-sink-1.c: New test
+	* testsuite/gcc.dg/tree-ssa/ssa-sink-2.c: New test
+	* testsuite/gcc.dg/tree-ssa/ssa-sink-3.c: New test
+	* testsuite/gcc.dg/tree-ssa/ssa-sink-4.c: New test
+
 2005-03-01  Per Bothner  <per@bothner.com>
 
 	* diagnostic.c (diagnostic_build_prefix): If USE_MAPPED_LOCATION
