@@ -12751,12 +12751,16 @@ if test "x$gcc_cv_as" = x; then
 		gcc_cv_as=`echo as | sed "${program_transform_name}"`$host_exeext
 	fi
 
-	test_dirs="$test_prefix/libexec/gcc/$target_noncanonical/$gcc_version \
-		   $test_prefix/libexec/gcc/$target_noncanonical \
-		   /usr/lib/gcc/$target_noncanonical/$gcc_version \
-		   /usr/lib/gcc/$target_noncanonical \
-		   $test_prefix/$target_noncanonical/bin/$target_noncanonical/$gcc_version \
-		   $test_prefix/$target_noncanonical/bin"
+	if test x$host = x$build; then
+	    test_dirs="$test_prefix/libexec/gcc/$target_noncanonical/$gcc_version \
+		       $test_prefix/libexec/gcc/$target_noncanonical \
+		       /usr/lib/gcc/$target_noncanonical/$gcc_version \
+		       /usr/lib/gcc/$target_noncanonical \
+		       $test_prefix/$target_noncanonical/bin/$target_noncanonical/$gcc_version \
+		       $test_prefix/$target_noncanonical/bin"
+	else
+	    test_dirs=
+	fi
 
 	if test x$host = x$target; then
 	    test_dirs="$test_dirs \
@@ -12872,12 +12876,16 @@ if test "x$gcc_cv_ld" = x; then
 		gcc_cv_ld=`echo ld | sed "${program_transform_name}"`$host_exeext
 	fi
 
-	test_dirs="$test_prefix/libexec/gcc/$target_noncanonical/$gcc_version \
-		   $test_prefix/libexec/gcc/$target_noncanonical \
-		   /usr/lib/gcc/$target_noncanonical/$gcc_version \
-		   /usr/lib/gcc/$target_noncanonical \
-		   $test_prefix/$target_noncanonical/bin/$target_noncanonical/$gcc_version \
-		   $test_prefix/$target_noncanonical/bin"
+	if test x$host = x$build; then
+	    test_dirs="$test_prefix/libexec/gcc/$target_noncanonical/$gcc_version \
+		       $test_prefix/libexec/gcc/$target_noncanonical \
+		       /usr/lib/gcc/$target_noncanonical/$gcc_version \
+		       /usr/lib/gcc/$target_noncanonical \
+		       $test_prefix/$target_noncanonical/bin/$target_noncanonical/$gcc_version \
+		       $test_prefix/$target_noncanonical/bin"
+	else
+	    test_dirs=
+	fi
 
 	if test x$host = x$target; then
 	    test_dirs="$test_dirs \
