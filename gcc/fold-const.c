@@ -1444,14 +1444,14 @@ size_int_wide (number, high, bit_p)
       /* Make this a permanent node.  */
       end_temporary_allocation ();
       t = build_int_2 (number, 0);
-      TREE_TYPE (t) = sizetype_tab[bit_p];
+      TREE_TYPE (t) = bit_p ? bitsizetype : sizetype;
       size_table[number][bit_p] = t;
       pop_obstacks ();
     }
   else
     {
       t = build_int_2 (number, high);
-      TREE_TYPE (t) = sizetype_tab[bit_p];
+      TREE_TYPE (t) = bit_p ? bitsizetype : sizetype;
       TREE_OVERFLOW (t) = TREE_CONSTANT_OVERFLOW (t) = force_fit_type (t, 0);
     }
   return t;

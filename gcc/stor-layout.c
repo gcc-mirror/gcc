@@ -32,10 +32,9 @@ Boston, MA 02111-1307, USA.  */
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 
 /* Data type for the expressions representing sizes of data types.
-   It is the first integer type laid out.
-   In C, this is int.  */
+   It is the first integer type laid out.  */
 
-tree sizetype_tab[2], sbitsizetype, ubitsizetype;
+struct sizetype_tab sizetype_tab;
 
 /* An integer constant with value 0 whose type is sizetype.  */
 
@@ -1103,14 +1102,14 @@ make_unsigned_type (precision)
   return type;
 }
 
-/* Set sizetype to TYPE, and initialize *bitsizetype accordingly.
+/* Set sizetype to TYPE, and initialize *sizetype accordingly.
    Also update the type of any standard type's sizes made so far.  */
 
 void
 set_sizetype (type)
      tree type;
 {
-  int precision = TYPE_PRECISION (type);
+  int oprecision = TYPE_PRECISION (type), precision;
 
   sizetype = type;
 
@@ -1124,18 +1123,32 @@ set_sizetype (type)
   if (! bitsizetype)
     bitsizetype = make_node (INTEGER_TYPE);
 
-  precision += BITS_PER_UNIT_LOG + 1;
+  precision = oprecision + BITS_PER_UNIT_LOG + 1;
   /* However, when cross-compiling from a 32 bit to a 64 bit host,
      we are limited to 64 bit precision.  */
   if (precision > 2 * HOST_BITS_PER_WIDE_INT)
     precision = 2 * HOST_BITS_PER_WIDE_INT;
   TYPE_PRECISION (bitsizetype) = precision;
-  (TREE_UNSIGNED (type) ? fixup_unsigned_type : fixup_signed_type)
-    (bitsizetype);
+  if (TREE_UNSIGNED (type))
+    fixup_unsigned_type (bitsizetype);
+  else
+    fixup_signed_type (bitsizetype);
   layout_type (bitsizetype);
 
-  sbitsizetype = make_signed_type (precision);
-  ubitsizetype = make_unsigned_type (precision);
+  if (TREE_UNSIGNED (type))
+    {
+      usizetype = sizetype;
+      ubitsizetype = bitsizetype;
+      ssizetype = make_signed_type (oprecision);
+      sbitsizetype = make_signed_type (precision);
+    }
+  else
+    {
+      ssizetype = sizetype;
+      sbitsizetype = bitsizetype;
+      usizetype = make_unsigned_type (oprecision);
+      ubitsizetype = make_unsigned_type (precision);
+    }
 }
 
 /* Set the extreme values of TYPE based on its precision in bits,
