@@ -1,3 +1,8 @@
+2003-09-22  Jeff Sturm  <jsturm@one-point.com>
+
+	* decl.c (java_init_decl_processing): Don't emit otable decls
+	if flag_indirect_dispatch is not set.
+
 2003-09-21  Richard Henderson  <rth@redhat.com>
 
 	* class.c, decl.c, jcf-parse.c, jcf-write.c, parse.y, 
