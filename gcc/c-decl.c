@@ -7149,7 +7149,7 @@ c_dup_lang_specific_decl (decl)
 /* Mark the language specific bits in T for GC.  */
 
 void
-lang_mark_tree (t)
+c_mark_tree (t)
      tree t;
 {
   if (TREE_CODE (t) == IDENTIFIER_NODE)

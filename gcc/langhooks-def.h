@@ -83,6 +83,7 @@ tree lhd_tree_inlining_convert_parm_for_inlining PARAMS ((tree, tree, tree));
 #define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL lhd_do_nothing_t
 #define LANG_HOOKS_UNSAVE_EXPR_NOW	lhd_unsave_expr_now
 #define LANG_HOOKS_MAYBE_BUILD_CLEANUP	lhd_return_null_tree
+#define LANG_HOOKS_MARK_TREE		lhd_do_nothing_t
 #define LANG_HOOKS_HONOR_READONLY	false
 #define LANG_HOOKS_PRINT_STATISTICS	lhd_do_nothing
 #define LANG_HOOKS_PRINT_XNODE		lhd_print_tree_nothing
@@ -178,6 +179,7 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_DUP_LANG_SPECIFIC_DECL, \
   LANG_HOOKS_UNSAVE_EXPR_NOW, \
   LANG_HOOKS_MAYBE_BUILD_CLEANUP, \
+  LANG_HOOKS_MARK_TREE, \
   LANG_HOOKS_HONOR_READONLY, \
   LANG_HOOKS_PRINT_STATISTICS, \
   LANG_HOOKS_PRINT_XNODE, \

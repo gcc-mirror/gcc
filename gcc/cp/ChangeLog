@@ -1,3 +1,9 @@
+2002-03-26  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp-lang.c (LANG_HOOKS_MARK_TREE): Redefine.
+	* cp-tree.h (cxx_mark_tree): New.
+	* decl.c (lang_mark_tree): Rename cxx_mark_tree.
+
 2002-03-25  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cp-tree.h (cxx_maybe_build_cleanup): New.

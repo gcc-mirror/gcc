@@ -59,6 +59,8 @@ static bool ok_to_generate_alias_set_for_type PARAMS ((tree));
 #define LANG_HOOKS_UNSAVE_EXPR_NOW cxx_unsave_expr_now
 #undef LANG_HOOKS_MAYBE_BUILD_CLEANUP
 #define LANG_HOOKS_MAYBE_BUILD_CLEANUP cxx_maybe_build_cleanup
+#undef LANG_HOOKS_MARK_TREE
+#define LANG_HOOKS_MARK_TREE cxx_mark_tree
 #undef LANG_HOOKS_PRINT_STATISTICS
 #define LANG_HOOKS_PRINT_STATISTICS cxx_print_statistics
 #undef LANG_HOOKS_PRINT_XNODE

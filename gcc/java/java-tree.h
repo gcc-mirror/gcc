@@ -1038,6 +1038,7 @@ struct lang_type
 
 extern void java_set_yydebug PARAMS ((int));
 extern void java_parse_file PARAMS ((void));
+extern void java_mark_tree PARAMS ((tree));
 extern void add_assume_compiled PARAMS ((const char *, int));
 extern tree lookup_class PARAMS ((tree));
 extern tree lookup_java_constructor PARAMS ((tree, tree));

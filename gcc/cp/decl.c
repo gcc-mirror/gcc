@@ -14624,7 +14624,7 @@ mark_cp_function_context (f)
 }
 
 void
-lang_mark_tree (t)
+cxx_mark_tree (t)
      tree t;
 {
   enum tree_code code = TREE_CODE (t);
