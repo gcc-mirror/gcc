@@ -1,5 +1,10 @@
 2003-07-01  Mark Mitchell  <mark@codesourcery.com>
 
+	* call.c (resolve_scoped_fn_name): Return error_mark_node for
+	erroneous cases.
+
+2003-07-01  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/11149
 	* call.c (resolve_scoped_fn_name): Check that the qualifying scope
 	is a class type.
