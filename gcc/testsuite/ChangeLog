@@ -1,3 +1,7 @@
+2004-07-01  Release Manager
+
+	* GCC 3.4.1 released.
+
 2004-06-28  Neil Booth  <neil@duron.akihabara.co.uk>
 
 	* gcc.dg/cpp/if-mop.c: Two new testcases.
