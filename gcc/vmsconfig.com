@@ -30,8 +30,31 @@ $EOD
 $ echo "Created `hconfig.h'.
 $ !
 $ if f$search("tm.h") .nes. "" then delete tm.h.*
-$ copy [.config.vax]vms.h []tm.h
-$ echo "Linked `tm.h' to `[.config.vax]vms.h'.
+$!! copy [.config.vax]vms.h []tm.h
+$ edit/tpu/nojournal/nosection/nodisplay/command=sys$input -
+        [.config.vax]vms.h /output=[]tm.h
+$DECK
+!
+!  Copy file, changing lines of the form
+!	#include "vax/*"
+!  into
+!	#include "[.config.vax]*"
+!
+   file := CREATE_BUFFER("file", GET_INFO(COMMAND_LINE, "file_name"));
+   targ := LINE_BEGIN & '#include' & SPAN(ASCII(32)+ASCII(9)) & '"vax/';
+   rang := CREATE_RANGE(BEGINNING_OF(file), END_OF(file));
+   LOOP
+      incl := SEARCH_QUIETLY(targ, FORWARD, EXACT, rang);
+      EXITIF incl = 0;
+      POSITION(BEGINNING_OF(incl));
+      ERASE(incl);
+      COPY_TEXT('#include "[.config.vax]');
+      rang := CREATE_RANGE(END_OF(incl), END_OF(file));
+   ENDLOOP;
+   WRITE_FILE(file, GET_INFO(COMMAND_LINE, "output_file"));
+   QUIT
+$EOD
+$ echo "Generated `tm.h' from `[.config.vax]vms.h'.
 $ !
 $ if f$search("md.") .nes. "" then delete md..*
 $ copy [.config.vax]vax.md []md.
