@@ -3661,11 +3661,18 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	    return gen_lowpart (mode, remainder);
 	}
 
-      /* Produce the quotient.  */
-      /* Try a quotient insn, but not a library call.  */
-      quotient = sign_expand_binop (compute_mode, udiv_optab, sdiv_optab,
-				    op0, op1, rem_flag ? NULL_RTX : target,
-				    unsignedp, OPTAB_WIDEN);
+      /* Produce the quotient.  Try a quotient insn, but not a library call.
+	 If we have a divmod in this mode, use it in preference to widening
+	 the div (for this test we assume it will not fail). Note that optab2
+	 is set to the one of the two optabs that the call below will use.  */
+      quotient
+	= sign_expand_binop (compute_mode, udiv_optab, sdiv_optab,
+			     op0, op1, rem_flag ? NULL_RTX : target,
+			     unsignedp,
+			     ((optab2->handlers[(int) compute_mode].insn_code
+			       != CODE_FOR_nothing)
+			      ? OPTAB_DIRECT : OPTAB_WIDEN));
+
       if (quotient == 0)
 	{
 	  /* No luck there.  Try a quotient-and-remainder insn,
