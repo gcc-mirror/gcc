@@ -7701,6 +7701,7 @@
     return output_return_instruction (operands[0], TRUE, TRUE);
   }"
   [(set_attr "conds" "use")
+   (set_attr "length" "12")
    (set_attr "type" "load1")]
 )
 
