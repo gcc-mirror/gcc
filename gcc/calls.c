@@ -60,7 +60,7 @@ struct arg_data
   /* Initially-compute RTL value for argument; only for const functions.  */
   rtx initial_value;
   /* Register to pass this argument in, 0 if passed on stack, or an
-     EXPR_LIST if the arg is to be copied into multiple different
+     PARALLEL if the arg is to be copied into multiple non-contiguous
      registers.  */
   rtx reg;
   /* If REG was promoted from the actual mode of the argument expression,
@@ -1112,12 +1112,12 @@ expand_call (exp, target, ignore)
 
       args[i].pass_on_stack = MUST_PASS_IN_STACK (mode, type);
 
-      /* If FUNCTION_ARG returned an (expr_list (nil) FOO), it means that
-	 we are to pass this arg in the register(s) designated by FOO, but
-	 also to pass it in the stack.  */
-      if (args[i].reg && GET_CODE (args[i].reg) == EXPR_LIST
-	  && XEXP (args[i].reg, 0) == 0)
-	args[i].pass_on_stack = 1, args[i].reg = XEXP (args[i].reg, 1);
+      /* If FUNCTION_ARG returned a (parallel [(expr_list (nil) ...) ...]),
+	 it means that we are to pass this arg in the register(s) designated
+	 by the PARALLEL, but also to pass it in the stack.  */
+      if (args[i].reg && GET_CODE (args[i].reg) == PARALLEL
+	  && XEXP (XVECEXP (args[i].reg, 0, 0), 0) == 0)
+	args[i].pass_on_stack = 1;
 
       /* If this is an addressable type, we must preallocate the stack
 	 since we must evaluate the object into its final location.
@@ -1846,20 +1846,12 @@ expand_call (exp, target, ignore)
 
   for (i = 0; i < num_actuals; i++)
     {
-      rtx list = args[i].reg;
+      rtx reg = args[i].reg;
       int partial = args[i].partial;
+      int nregs;
 
-      while (list)
+      if (reg)
 	{
-	  rtx reg;
-	  int nregs;
-
-	  /* Process each register that needs to get this arg.  */
-	  if (GET_CODE (list) == EXPR_LIST)
-	    reg = XEXP (list, 0), list = XEXP (list, 1);
-	  else
-	    reg = list, list = 0;
-
 	  /* Set to non-negative if must move a word at a time, even if just
 	     one word (e.g, partial == 1 && mode == DFmode).  Set to -1 if
 	     we just use a normal move insn.  This value can be zero if the
@@ -1870,11 +1862,17 @@ expand_call (exp, target, ignore)
 			  + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
 		      : -1));
 
+	  /* Handle calls that pass values in multiple non-contiguous
+	     locations.  The Irix 6 ABI has examples of this.  */
+
+	  if (GET_CODE (reg) == PARALLEL)
+	    emit_group_load (reg, args[i].value);
+
 	  /* If simple case, just do move.  If normal partial, store_one_arg
 	     has already loaded the register for us.  In all other cases,
 	     load the register(s) from memory.  */
 
-	  if (nregs == -1)
+	  else if (nregs == -1)
 	    emit_move_insn (reg, args[i].value);
 
 	  /* If we have pre-computed the values to put in the registers in
@@ -1885,19 +1883,19 @@ expand_call (exp, target, ignore)
 	      emit_move_insn (gen_rtx (REG, word_mode, REGNO (reg) + j),
 			      args[i].aligned_regs[j]);
 
-	  else if (args[i].partial == 0 || args[i].pass_on_stack)
+	  else if (partial == 0 || args[i].pass_on_stack)
 	    move_block_to_reg (REGNO (reg),
 			       validize_mem (args[i].value), nregs,
 			       args[i].mode);
 
-	  if (nregs == -1)
+	  /* Handle calls that pass values in multiple non-contiguous
+	     locations.  The Irix 6 ABI has examples of this.  */
+	  if (GET_CODE (reg) == PARALLEL)
+	    use_group_regs (&call_fusage, reg);
+	  else if (nregs == -1)
 	    use_reg (&call_fusage, reg);
 	  else
 	    use_regs (&call_fusage, REGNO (reg), nregs == 0 ? 1 : nregs);
-
-	  /* PARTIAL referred only to the first register, so clear it for the
-	     next time.  */
-	  partial = 0;
 	}
     }
 
@@ -2032,6 +2030,20 @@ expand_call (exp, target, ignore)
        If they refer to the same register, this move will be a no-op, except
        when function inlining is being done.  */
     emit_move_insn (target, valreg);
+  /* Handle calls that return values in multiple non-contiguous locations.
+     The Irix 6 ABI has examples of this.  */
+  else if (GET_CODE (valreg) == PARALLEL)
+    {
+      if (target == 0)
+	{
+	  int bytes = int_size_in_bytes (TREE_TYPE (exp));
+	  target = assign_stack_temp (BLKmode, bytes, 0);
+	  MEM_IN_STRUCT_P (target) = AGGREGATE_TYPE_P (TREE_TYPE (exp));
+	  preserve_temp_slots (target);
+	}
+
+      emit_group_store (target, valreg);
+    }
   else if (TYPE_MODE (TREE_TYPE (exp)) == BLKmode)
     {
       /* Some machines (the PA for example) want to return all small
@@ -2326,7 +2338,7 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
       argvec[count].mode = mode;
 
       argvec[count].reg = FUNCTION_ARG (args_so_far, mode, NULL_TREE, 1);
-      if (argvec[count].reg && GET_CODE (argvec[count].reg) == EXPR_LIST)
+      if (argvec[count].reg && GET_CODE (argvec[count].reg) == PARALLEL)
 	abort ();
 #ifdef FUNCTION_ARG_PARTIAL_NREGS
       argvec[count].partial
@@ -2674,7 +2686,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
       argvec[count].mode = mode;
 
       argvec[count].reg = FUNCTION_ARG (args_so_far, mode, NULL_TREE, 1);
-      if (argvec[count].reg && GET_CODE (argvec[count].reg) == EXPR_LIST)
+      if (argvec[count].reg && GET_CODE (argvec[count].reg) == PARALLEL)
 	abort ();
 #ifdef FUNCTION_ARG_PARTIAL_NREGS
       argvec[count].partial
@@ -3030,12 +3042,6 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
   if (arg->n_aligned_regs != 0)
     reg = 0;
   
-  /* If this is being partially passed in a register, but multiple locations
-     are specified, we assume that the one partially used is the one that is
-     listed first.  */
-  if (reg && GET_CODE (reg) == EXPR_LIST)
-    reg = XEXP (reg, 0);
-
   /* If this is being passed partially in a register, we can't evaluate
      it directly into its stack slot.  Otherwise, we can.  */
   if (arg->value == 0)
