@@ -49,35 +49,45 @@ Boston, MA 02111-1307, USA.  */
 
 /* The GNU linker supports one-only sections.  */
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
-#undef UNIQUE_SECTION_P
+#undef  UNIQUE_SECTION_P
 #define UNIQUE_SECTION_P(DECL) (DECL_ONE_ONLY (DECL))
-#define UNIQUE_SECTION(DECL,RELOC)				\
-do {								\
-  int len;							\
-  char *name, *string, *prefix;					\
-								\
-  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));	\
-								\
-  if (! DECL_ONE_ONLY (DECL))					\
+#define UNIQUE_SECTION(DECL, RELOC)				\
+  do								\
     {								\
-      prefix = ".";                                             \
+      int len;							\
+      int sec;							\
+      char *name;						\
+      char *string;						\
+      char *prefix;						\
+      static char *prefixes[4][2] =				\
+      {								\
+	{ ".text.",   ".gnu.linkonce.t." },			\
+	{ ".rodata.", ".gnu.linkonce.r." },			\
+	{ ".data.",   ".gnu.linkonce.d." },			\
+	/* Do not generate unique sections for uninitialised 	\
+	   data since we do not have support for this in the    \
+	   linker scripts yet...				\
+        { ".bss.",    ".gnu.linkonce.b." }  */			\
+	{ "", "" }						\
+      };							\
+      								\
       if (TREE_CODE (DECL) == FUNCTION_DECL)			\
-	prefix = ".text.";					\
+	sec = 0;						\
+      else if (DECL_INITIAL (DECL) == 0				\
+	       || DECL_INITIAL (DECL) == error_mark_node)	\
+	sec = 3;						\
       else if (DECL_READONLY_SECTION (DECL, RELOC))		\
-	prefix = ".rodata.";					\
+	sec = 1;						\
       else							\
-	prefix = ".data.";					\
+	sec = 2;						\
+      								\
+      name   = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));	\
+      prefix = prefixes[sec][DECL_ONE_ONLY(DECL)];		\
+      len    = strlen (name) + strlen (prefix);			\
+      string = alloca (len + 1);				\
+      								\
+      sprintf (string, "%s%s", prefix, name);			\
+      								\
+      DECL_SECTION_NAME (DECL) = build_string (len, string);	\
     }								\
-  else if (TREE_CODE (DECL) == FUNCTION_DECL)			\
-    prefix = ".gnu.linkonce.t.";				\
-  else if (DECL_READONLY_SECTION (DECL, RELOC))			\
-    prefix = ".gnu.linkonce.r.";				\
-  else								\
-    prefix = ".gnu.linkonce.d.";				\
-								\
-  len = strlen (name) + strlen (prefix);			\
-  string = alloca (len + 1);					\
-  sprintf (string, "%s%s", prefix, name);			\
-								\
-  DECL_SECTION_NAME (DECL) = build_string (len, string);	\
-} while (0)
+  while (0)

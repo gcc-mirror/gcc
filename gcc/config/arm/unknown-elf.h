@@ -122,38 +122,90 @@ do {								\
 #define NAME__MAIN "__gccmain"
 #define SYMBOL__MAIN __gccmain
 
+/* Return a non-zero value if DECL has a section attribute.  */
+#define IN_NAMED_SECTION(DECL)						\
+  ((TREE_CODE (DECL) == FUNCTION_DECL || TREE_CODE (DECL) == VAR_DECL)	\
+   && DECL_SECTION_NAME (DECL) != NULL_TREE)
+
+
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
-#define UNIQUE_SECTION_P(DECL) (DECL_ONE_ONLY (DECL))
-#define UNIQUE_SECTION(DECL,RELOC)				\
-do {								\
-  int len;							\
-  char * name, * string, * prefix;				\
-								\
-  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));	\
-								\
-  if (! DECL_ONE_ONLY (DECL))					\
-    {								\
-      prefix = ".";                                             \
-      if (TREE_CODE (DECL) == FUNCTION_DECL)			\
-	prefix = ".text.";					\
-      else if (DECL_READONLY_SECTION (DECL, RELOC))		\
-	prefix = ".rodata.";					\
-      else							\
-	prefix = ".data.";					\
-    }								\
-  else if (TREE_CODE (DECL) == FUNCTION_DECL)			\
-    prefix = ".gnu.linkonce.t.";				\
-  else if (DECL_READONLY_SECTION (DECL, RELOC))			\
-    prefix = ".gnu.linkonce.r.";				\
-  else								\
-    prefix = ".gnu.linkonce.d.";				\
-								\
-  len = strlen (name) + strlen (prefix);			\
-  string = alloca (len + 1);					\
-  sprintf (string, "%s%s", prefix, name);			\
-								\
-  DECL_SECTION_NAME (DECL) = build_string (len, string);	\
-} while (0)
+     
+#define UNIQUE_SECTION_P(DECL) (DECL_ONE_ONLY (DECL) || flag_data_sections)
+     
+#define UNIQUE_SECTION(DECL, RELOC)					\
+  do									\
+    {									\
+      int len;								\
+      int sec;								\
+      char *name;							\
+      char *string;							\
+      char *prefix;							\
+      static char *prefixes[4][2] =					\
+      {									\
+	{ ".text.",   ".gnu.linkonce.t." },				\
+	{ ".rodata.", ".gnu.linkonce.r." },				\
+	{ ".data.",   ".gnu.linkonce.d." },				\
+        { ".bss.",    ".gnu.linkonce.b." }				\
+      };								\
+      									\
+      if (TREE_CODE (DECL) == FUNCTION_DECL)				\
+	sec = 0;							\
+      else if (DECL_INITIAL (DECL) == 0					\
+	       || DECL_INITIAL (DECL) == error_mark_node)		\
+	sec = 3;							\
+      else if (DECL_READONLY_SECTION (DECL, RELOC))			\
+	sec = 1;							\
+      else								\
+	sec = 2;							\
+      									\
+      prefix = prefixes[sec][DECL_ONE_ONLY(DECL)];			\
+      name   = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));		\
+      									\
+      /* Strip off any encoding in name.  */				\
+      STRIP_NAME_ENCODING (name, name);					\
+									\
+      len    = strlen (name) + strlen (prefix);				\
+      string = alloca (len + 1);					\
+      									\
+      sprintf (string, "%s%s", prefix, name);				\
+      									\
+      DECL_SECTION_NAME (DECL) = build_string (len, string);		\
+    }									\
+  while (0)
+
+#undef  ASM_OUTPUT_ALIGNED_BSS
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)   	\
+  do									\
+    {									\
+      if (IN_NAMED_SECTION (DECL))					\
+	named_section (DECL, NULL, 0);					\
+      else								\
+	bss_section ();							\
+      									\
+      ASM_GLOBALIZE_LABEL (FILE, NAME);					\
+      									\
+      ASM_OUTPUT_ALIGN (FILE, floor_log2 (ALIGN / BITS_PER_UNIT));	\
+									\
+      last_assemble_variable_decl = DECL;				\
+      ASM_DECLARE_OBJECT_NAME (FILE, NAME, DECL);			\
+      ASM_OUTPUT_SKIP (FILE, SIZE ? SIZE : 1);				\
+    } 									\
+  while (0)
+
+#undef  ASM_OUTPUT_ALIGNED_DECL_LOCAL
+#define ASM_OUTPUT_ALIGNED_DECL_LOCAL(FILE, DECL, NAME, SIZE, ALIGN)	\
+  do									\
+    {									\
+      if (IN_NAMED_SECTION (DECL))					\
+	named_section (DECL, NULL, 0);					\
+      else								\
+	bss_section ();							\
+									\
+      ASM_OUTPUT_ALIGN (FILE, floor_log2 (ALIGN / BITS_PER_UNIT));	\
+      ASM_OUTPUT_LABEL (FILE, NAME);					\
+      fprintf (FILE, "\t.space\t%d\n", SIZE);				\
+    }									\
+  while (0)
 
 #ifndef CPP_APCS_PC_DEFAULT_SPEC
 #define CPP_APCS_PC_DEFAULT_SPEC	"-D__APCS_32__"

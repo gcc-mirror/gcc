@@ -4999,7 +4999,9 @@ A C statement to build up a unique section name, expressed as a
 STRING_CST node, and assign it to @samp{DECL_SECTION_NAME (@var{decl})}.
 @var{reloc} indicates whether the initial value of @var{exp} requires
 link-time relocations.  If you do not define this macro, GCC will use
-the symbol name prefixed by @samp{.} as the section name.
+the symbol name prefixed by @samp{.} as the section name.  Note - this
+macro can now be called for unitialised data items as well as
+initialised data and functions.
 @end table
 
 @node PIC
@@ -5512,7 +5514,6 @@ is not corresponding variable.  If you define this macro, GCC wil use it
 in place of both @code{ASM_OUTPUT_DECL} and
 @code{ASM_OUTPUT_ALIGNED_DECL}.  Define this macro when you need to see
 the variable's decl in order to chose what to output.
-
 
 @findex ASM_OUTPUT_SHARED_LOCAL
 @item ASM_OUTPUT_SHARED_LOCAL (@var{stream}, @var{name}, @var{size}, @var{rounded})
