@@ -2,7 +2,7 @@
    Contributed by Axis Communications.
    Written by Hans-Peter Nilsson <hp@axis.se>, c:a 1992.
 
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -64,7 +64,8 @@ struct quot_rem
 /* This is the worker function for div and mod.  It is inlined into the
    respective library function.  */
 static __inline__ struct quot_rem
-do_31div (unsigned long a, unsigned long b) __attribute__ ((__const__));
+do_31div (unsigned long a, unsigned long b)
+     __attribute__ ((__const__, __always_inline__));
 
 static __inline__ struct quot_rem
 do_31div (unsigned long a, unsigned long b)
@@ -161,7 +162,8 @@ do_31div (unsigned long a, unsigned long b)
 static __inline__
 #endif
 unsigned long
-__Udiv (unsigned long a, unsigned long b) __attribute__ ((__const__));
+__Udiv (unsigned long a, unsigned long b)
+     __attribute__ ((__const__, __always_inline__));
 
 #ifndef L_udivsi3
 static __inline__
@@ -238,7 +240,8 @@ __Div (long a, long b)
 static __inline__
 #endif
 unsigned long
-__Umod (unsigned long a, unsigned long b) __attribute__ ((__const__));
+__Umod (unsigned long a, unsigned long b)
+     __attribute__ ((__const__, __always_inline__));
 
 #ifndef L_umodsi3
 static __inline__
