@@ -1,3 +1,9 @@
+1998-10-06  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* g++.old-deja/g++.pt/friend35.C: New test.  A template function
+ 	must be declared before its specializations can be named in friend
+ 	declarations.
+
 1998-10-05  Dave Love  <d.love@dl.ac.uk>
 
 	* g77.f-torture/execute/u77-test.f: Add regression test for RAND.
