@@ -1,3 +1,7 @@
+Sun Jan 31 22:04:37 1999  Richard Henderson  <rth@cygnus.com>
+
+	* loop.c (recombine_givs): Dump recombination and derivation data.
+
 Sun Jan 31 20:34:29 1999  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* flags.h: Declare flag_no_ident.
