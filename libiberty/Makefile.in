@@ -26,6 +26,7 @@
 # Makefile for libiberty directory
 #
 
+libiberty_topdir = @libiberty_topdir@
 srcdir = @srcdir@
 VPATH = @srcdir@
 
@@ -50,7 +51,7 @@ MULTICLEAN = true
 INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
-mkinstalldirs = $(SHELL) $(srcdir)/../mkinstalldirs
+mkinstalldirs = $(SHELL) $(libiberty_topdir)/mkinstalldirs
 
 # Some compilers can't handle cc -c blah.c -o foo/blah.o.
 OUTPUT_OPTION = @OUTPUT_OPTION@
