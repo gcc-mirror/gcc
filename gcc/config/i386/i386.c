@@ -624,6 +624,12 @@ static int ix86_comp_type_attributes PARAMS ((tree, tree));
 #undef TARGET_COMP_TYPE_ATTRIBUTES
 #define TARGET_COMP_TYPE_ATTRIBUTES ix86_comp_type_attributes
 
+#undef TARGET_INIT_BUILTINS
+#define TARGET_INIT_BUILTINS ix86_init_builtins
+
+#undef TARGET_EXPAND_BUILTIN
+#define TARGET_EXPAND_BUILTIN ix86_expand_builtin
+
 #if defined (OSF_OS) || defined (TARGET_OSF1ELF)
    static void ix86_osf_output_function_prologue PARAMS ((FILE *,
 							  HOST_WIDE_INT));
@@ -9340,11 +9346,19 @@ static struct builtin_description bdesc_1arg[] =
 
 };
 
-/* Expand all the target specific builtins.  This is not called if TARGET_MMX
+/* Set up all the target-specific builtins.  */
+void
+ix86_init_builtins ()
+{
+  if (TARGET_MMX)
+    ix86_init_mmx_sse_builtins ();
+}
+
+/* Set up all the MMX/SSE builtins.  This is not called if TARGET_MMX
    is zero.  Otherwise, if TARGET_SSE is not set, only expand the MMX
    builtins.  */
 void
-ix86_init_builtins ()
+ix86_init_mmx_sse_builtins ()
 {
   struct builtin_description * d;
   size_t i;

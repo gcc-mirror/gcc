@@ -907,6 +907,9 @@ extern rtx expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int));
 extern void std_expand_builtin_va_start PARAMS ((int, tree, rtx));
 extern rtx std_expand_builtin_va_arg PARAMS ((tree, tree));
 extern rtx expand_builtin_va_arg PARAMS ((tree, tree));
+extern void default_init_builtins PARAMS ((void));
+extern rtx default_expand_builtin PARAMS ((tree, rtx, rtx,
+					   enum machine_mode, int));
 #endif
 
 extern void expand_builtin_setjmp_setup PARAMS ((rtx, rtx));

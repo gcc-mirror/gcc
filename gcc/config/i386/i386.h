@@ -2176,21 +2176,6 @@ enum ix86_builtins
 
   IX86_BUILTIN_MAX
 };
-
-/* Initialize the target-specific builtin functions.  Only do something
-   if TARGET_MMX is nonzero; we take care in ix86_init_builtins not to
-   enable any SSE builtins if TARGET_SSE is zero.  */
-#define MD_INIT_BUILTINS	\
-  do				\
-    {				\
-      if (TARGET_MMX)		\
-	ix86_init_builtins ();	\
-    }				\
-  while (0)
-
-/* Expand a target-specific builtin function.  */
-#define MD_EXPAND_BUILTIN(EXP, TARGET, SUBTARGET, MODE, IGNORE) \
-  ix86_expand_builtin (EXP, TARGET, SUBTARGET, MODE, IGNORE)
 
 /* Define this macro if references to a symbol must be treated
    differently depending on something about the variable or

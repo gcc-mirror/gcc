@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "predict.h"
 #include "tm_p.h"
+#include "target.h"
 
 #define CALLED_AS_BUILT_IN(NODE) \
    (!strncmp (IDENTIFIER_POINTER (DECL_NAME (NODE)), "__builtin_", 10))
@@ -3401,10 +3402,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
   tree arglist = TREE_OPERAND (exp, 1);
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
 
-#ifdef MD_EXPAND_BUILTIN
   if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
-    return MD_EXPAND_BUILTIN (exp, target, subtarget, mode, ignore);
-#endif
+    return (*targetm.expand_builtin) (exp, target, subtarget, mode, ignore);
   
   /* When not optimizing, generate calls to library functions for a certain
      set of builtins.  */
@@ -3896,4 +3895,24 @@ validate_arglist VPARAMS ((tree arglist, ...))
     }
     arglist = TREE_CHAIN (arglist);
   } while (1);
+}
+
+/* Default version of target-specific builtin setup that does nothing.  */
+
+void
+default_init_builtins ()
+{
+}
+
+/* Default target-specific builtin expander that does nothing.  */
+
+rtx
+default_expand_builtin (exp, target, subtarget, mode, ignore)
+     tree exp ATTRIBUTE_UNUSED;
+     rtx target ATTRIBUTE_UNUSED;
+     rtx subtarget ATTRIBUTE_UNUSED;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+     int ignore ATTRIBUTE_UNUSED;
+{
+  return NULL_RTX;
 }

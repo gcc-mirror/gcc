@@ -8663,10 +8663,9 @@ A C expression to cancel any machine dependent modifications in
 converting code to conditional execution in the basic blocks
 @code{TEST_BB}, @code{THEN_BB}, @code{ELSE_BB}, and @code{JOIN_BB}.
 
-@findex MD_INIT_BUILTINS
-@item MD_INIT_BUILTINS
-Define this macro if you have any machine-specific built-in functions that
-need to be defined.  It should be a C expression that performs the
+@deftypefn {Target Hook} void TARGET_INIT_BUILTINS ()
+Define this hook if you have any machine-specific built-in functions
+that need to be defined.  It should be a function that performs the
 necessary setup.
 
 Machine specific built-in functions can be useful to expand special machine
@@ -8678,17 +8677,17 @@ To create a built-in function, call the function @code{builtin_function}
 which is defined by the language front end.  You can use any type nodes set
 up by @code{build_common_tree_nodes} and @code{build_common_tree_nodes_2};
 only language front ends that use these two functions will use
-@samp{MD_INIT_BUILTINS}.
+@samp{TARGET_INIT_BUILTINS}.
 
-@findex MD_EXPAND_BUILTIN
-@item MD_EXPAND_BUILTIN(@var{exp}, @var{target}, @var{subtarget}, @var{mode}, @var{ignore})
+@deftypefn {Target Hook} rtx TARGET_EXPAND_BUILTIN (tree @var{exp}, rtx @var{target}, rtx @var{subtarget}, enum machine_mode @var{mode}, int @var{ignore})
 
 Expand a call to a machine specific built-in function that was set up by
-@samp{MD_INIT_BUILTINS}.  @var{exp} is the expression for the function call;
-the result should go to @var{target} if that is convenient, and have mode
-@var{mode} if that is convenient.  @var{subtarget} may be used as the target
-for computing one of @var{exp}'s operands.  @var{ignore} is nonzero if the value
-is to be ignored.
-This macro should return the result of the call to the built-in function.
+@samp{TARGET_INIT_BUILTINS}.  @var{exp} is the expression for the
+function call; the result should go to @var{target} if that is
+convenient, and have mode @var{mode} if that is convenient.
+@var{subtarget} may be used as the target for computing one of
+@var{exp}'s operands.  @var{ignore} is nonzero if the value is to be
+ignored.  This function should return the result of the call to the
+built-in function.
 
 @end table

@@ -145,6 +145,12 @@ static void ia64_output_function_end_prologue PARAMS ((FILE *));
 #undef TARGET_VALID_TYPE_ATTRIBUTE
 #define TARGET_VALID_TYPE_ATTRIBUTE ia64_valid_type_attribute
 
+#undef TARGET_INIT_BUILTINS
+#define TARGET_INIT_BUILTINS ia64_init_builtins
+
+#undef TARGET_EXPAND_BUILTIN
+#define TARGET_EXPAND_BUILTIN ia64_expand_builtin
+
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE ia64_output_function_prologue
 #undef TARGET_ASM_FUNCTION_END_PROLOGUE

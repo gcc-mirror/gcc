@@ -1,3 +1,49 @@
+2001-07-09  Stan Shebs  <shebs@apple.com>
+
+	* target.h (struct gcc_target): New fields init_builtins and
+	expand_builtin.
+	* target-def.h (TARGET_INIT_BUILTINS): New macro.
+	(TARGET_EXPAND_BUILTIN): New macro.
+	(TARGET_INITIALIZER): Add them.
+	* builtins.c: Include target.h.
+	(expand_builtin): Use targetm.expand_builtin.
+	(default_init_builtins): New function.
+	(default_expand_builtin): New function.
+	* expr.h (default_init_builtins): Declare.
+	(default_expand_builtin): Declare.
+	* c-common.c (c_common_nodes_and_builtins): Use
+	targetm.init_builtins.
+	* defaults.h (MD_INIT_BUILTINS): Remove.
+	* Makefile.in (builtins.o): Depend on target.h.
+
+	* config/arm/arm.c (TARGET_INIT_BUILTINS): Define.
+	(TARGET_EXPAND_BUILTIN): Define.
+	* config/arm/arm.h (MD_INIT_BUILTINS): Remove.
+	(MD_EXPAND_BUILTIN): Remove.
+
+	* config/c4x/c4x.c (TARGET_INIT_BUILTINS): Define.
+	(TARGET_EXPAND_BUILTIN): Define.
+	(c4x_init_builtins): Make endlink arg a local.
+	(c4x_print_operand): Fix typos in adjust_address usages.
+	* config/c4x/c4x-protos.h (c4x_init_builtins): Update decl.
+	* config/c4x/c4x.h (MD_INIT_BUILTINS): Remove.
+	(MD_EXPAND_BUILTIN): Remove.
+
+	* config/i386/i386.c (TARGET_INIT_BUILTINS): Define.
+	(TARGET_EXPAND_BUILTIN): Define.
+	(ix86_init_mmx_sse_builtins): New function, was ix86_init_builtins.
+	(ix86_init_builtins): Call new function only if TARGET_MMX.
+	* config/i386/i386-protos.h (ix86_init_mmx_sse_builtins): Declare.
+	* config/i386/i386.h (MD_INIT_BUILTINS): Remove.
+	(MD_EXPAND_BUILTIN): Remove.
+
+	* config/ia64/ia64.c (TARGET_INIT_BUILTINS): Define.
+	(TARGET_EXPAND_BUILTIN): Define.
+	* config/ia64/ia64.h (MD_INIT_BUILTINS): Remove.
+	(MD_EXPAND_BUILTIN): Remove.
+
+	* doc/tm.texi: Document these changes.
+
 2001-07-09  Diego Novillo  <dnovillo@redhat.com>
 
 	* basic-block.h (tree_node): Forward declare if needed.

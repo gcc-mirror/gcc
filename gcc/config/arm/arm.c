@@ -148,6 +148,12 @@ static void	 arm_set_default_type_attributes	PARAMS ((tree));
 #undef TARGET_SET_DEFAULT_TYPE_ATTRIBUTES
 #define TARGET_SET_DEFAULT_TYPE_ATTRIBUTES arm_set_default_type_attributes
 
+#undef TARGET_INIT_BUILTINS
+#define TARGET_INIT_BUILTINS arm_init_builtins
+
+#undef TARGET_EXPAND_BUILTIN
+#define TARGET_EXPAND_BUILTIN arm_expand_builtin
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Obstack for minipool constant handling.  */

@@ -44,6 +44,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
    to gradually reduce the amount of conditional compilation that is
    scattered throughout GCC.  */
 
+/* Forward declaration for the benefit of prototypes.  */
+struct rtx_def;
+
 struct gcc_target
 {
   /* Functions that output assembler for the target.  */
@@ -93,6 +96,16 @@ struct gcc_target
 
   /* Insert attributes on the newly created DECL.  */
   void (* insert_attributes) PARAMS ((tree decl, tree *attributes));
+
+  /* Set up target-specific built-in functions.  */
+  void (* init_builtins) PARAMS ((void));
+
+  /* Expand a target-specific builtin.  */
+  struct rtx_def * (* expand_builtin) PARAMS ((tree exp,
+					       struct rtx_def *target,
+					       struct rtx_def *subtarget,
+					       enum machine_mode mode,
+					       int ignore));
 };
 
 extern struct gcc_target targetm;
