@@ -1,3 +1,8 @@
+2003-06-20  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/mips/mips.h (PUT_SDB_FUNCTION_END): Pass 0 as third arg
+	to ASM_OUTPUT_SOURCE_LINE.
+
 2003-06-20  Daniel Egger  <degger@fhm.edu>
             Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 

@@ -1388,7 +1388,7 @@ do {							\
 
 #define PUT_SDB_FUNCTION_END(LINE)			\
 do {							\
-  ASM_OUTPUT_SOURCE_LINE (asm_out_file, LINE + sdb_begin_function_line); \
+  ASM_OUTPUT_SOURCE_LINE (asm_out_file, LINE + sdb_begin_function_line, 0); \
 } while (0)
 
 #define PUT_SDB_EPILOGUE_END(NAME)
