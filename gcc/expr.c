@@ -155,23 +155,28 @@ init_expr_once ()
       direct_load[(int) mode] = direct_store[(int) mode] = 0;
       PUT_MODE (mem, mode);
 
-      /* Find a register that can be used in this mode, if any.  */
-      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	if (HARD_REGNO_MODE_OK (regno, mode))
-	  break;
+      /* See if there is some register that can be used in this mode and
+	 directly loaded or stored from memory.  */
 
-      if (regno == FIRST_PSEUDO_REGISTER)
-	continue;
+      for (regno = 0; regno < FIRST_PSEUDO_REGISTER
+	   && (direct_load[(int) mode] == 0 || direct_store[(int) mode] == 0);
+	   regno++)
+	{
+	  if (! HARD_REGNO_MODE_OK (regno, mode))
+	    continue;
 
-      reg = gen_rtx (REG, mode, regno);
+	  reg = gen_rtx (REG, mode, regno);
 
-      SET_SRC (pat) = mem;
-      SET_DEST (pat) = reg;
-      direct_load[(int) mode] = (recog (pat, insn, &num_clobbers)) >= 0;
+	  SET_SRC (pat) = mem;
+	  SET_DEST (pat) = reg;
+	  if (recog (pat, insn, &num_clobbers) >= 0)
+	    direct_load[(int) mode] = 1;
 
-      SET_SRC (pat) = reg;
-      SET_DEST (pat) = mem;
-      direct_store[(int) mode] = (recog (pat, insn, &num_clobbers)) >= 0;
+	  SET_SRC (pat) = reg;
+	  SET_DEST (pat) = mem;
+	  if (recog (pat, insn, &num_clobbers) >= 0)
+	    direct_store[(int) mode] = 1;
+	}
 
       movstr_optab[(int) mode] = CODE_FOR_nothing;
     }
