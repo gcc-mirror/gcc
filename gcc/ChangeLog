@@ -1,3 +1,17 @@
+2003-08-14  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (negate_expr_p): MULT_EXPRs and RDIV_EXPRs are easy
+	to negate if either operand is easy to negate, if we don't care
+	about sign-dependent rounding.
+	(negate_expr): Make the logic to negate a REAL_CST explicit.
+	Attempt to negate a MULT_EXPR or RDIV_EXPR by negating an operand
+	that's easy to negate, if we don't honor sign-dependent rounding.
+	(fold <MULT_EXPR>): Optimize -A * B as A * -B if B is easy to
+	negate, and the symmetric A * -B as -A * B if A is easy to negate.
+	(fold <RDIV_EXPR>): Likewise, optimize -A/B and C/-D as A/-B and
+	-C/D if B and C are cheap to negate.  Add an explicit rule to
+	optimize X/-1.0 as -X when we don't care about signaling NaNs.
+
 2003-08-14  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in (tm_file): Rename tm_include_list.
