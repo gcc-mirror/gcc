@@ -1,5 +1,5 @@
 /* SecureRandom.java --- Secure Random class implmentation
-   Copyright (C) 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -53,7 +53,6 @@ public class SecureRandom extends Random
 
   //Serialized Field
   long counter = 0;		//Serialized
-  MessageDigest digest = null;
   Provider provider = null;
   byte[] randomBytes = null;	//Always null
   int randomBytesUsed = 0;
@@ -83,41 +82,29 @@ public class SecureRandom extends Random
     Enumeration e;
     for (i = 0; i < p.length; i++)
       {
-	e = p[i].propertyNames();
-	while (e.hasMoreElements())
-	  {
-	    key = (String) e.nextElement();
-	    if (key.startsWith("SecureRandom."))
-	      if ((classname = p[i].getProperty(key)) != null)
-		break;
+        e = p[i].propertyNames();
+        while (e.hasMoreElements())
+          {
+            key = (String) e.nextElement();
+            if (key.startsWith("SECURERANDOM."))
+	      {
+		if ((classname = p[i].getProperty(key)) != null)
+		  {
+		    try
+		      {
+			secureRandomSpi = (SecureRandomSpi) Class.
+			  forName(classname).newInstance();
+			provider = p[i];
+			return;
+		      }
+		    catch (Throwable ignore) { }
+		  }
+	      }
 	  }
-	if (classname != null)
-	    break;
       }
 
-    //if( classname == null)
-    //  throw new NoSuchAlgorithmException();
-
-    try
-      {
-	this.secureRandomSpi =
-	  (SecureRandomSpi) Class.forName(classname).newInstance();
-
-	//s.algorithm = algorithm;
-	this.provider = p[i];
-      }
-    catch (ClassNotFoundException cnfe)
-      {
-	//throw new NoSuchAlgorithmException("Class not found");
-      }
-    catch (InstantiationException ie)
-      {
-	//throw new NoSuchAlgorithmException("Class instantiation failed");
-      }
-    catch (IllegalAccessException iae)
-      {
-	//throw new NoSuchAlgorithmException("Illegal Access");
-      }
+    // Nothing found. Fall back to SHA1PRNG
+    secureRandomSpi = new gnu.java.security.provider.SHA1PRNG();
   }
 
   /**
@@ -167,40 +154,17 @@ public class SecureRandom extends Random
     NoSuchAlgorithmException
   {
     Provider p[] = Security.getProviders();
-
-    //Format of Key: SecureRandom.algname
-    StringBuffer key = new StringBuffer("SecureRandom.");
-    key.append(algorithm);
-
-    String classname = null;
-    int i;
-    for (i = 0; i < p.length; i++)
+    for (int i = 0; i < p.length; i++)
       {
-	if ((classname = p[i].getProperty(key.toString())) != null)
-	  break;
+	try
+	  {
+	    return getInstance(algorithm, p[i]);
+	  }
+	catch (NoSuchAlgorithmException ignored) { }
       }
 
-    if (classname == null)
-        throw new NoSuchAlgorithmException();
-
-    try
-      {
-	return new SecureRandom((SecureRandomSpi) Class.forName(classname).
-				newInstance(), p[i]);
-      }
-    catch (ClassNotFoundException cnfe)
-      {
-	throw new NoSuchAlgorithmException("Class not found");
-      }
-    catch (InstantiationException ie)
-      {
-	throw new NoSuchAlgorithmException("Class instantiation failed");
-      }
-    catch (IllegalAccessException iae)
-      {
-	throw new NoSuchAlgorithmException("Illegal Access");
-      }
-
+    // None found.
+    throw new NoSuchAlgorithmException(algorithm);
   }
 
   /**
@@ -222,33 +186,91 @@ public class SecureRandom extends Random
     Provider p = Security.getProvider(provider);
     if (p == null)
       throw new NoSuchProviderException();
+    
+    return getInstance(algorithm, p);
+  }
 
-    //Format of Key: SecureRandom.algName
-    StringBuffer key = new StringBuffer("SecureRandom.");
-    key.append(algorithm);
+  /**
+     Returns an instance of a SecureRandom. It creates the class for
+     the specified algorithm from the given provider.
 
-    String classname = p.getProperty(key.toString());
-    if (classname == null)
-      throw new NoSuchAlgorithmException();
+     @param algorithm The SecureRandom algorithm to create.
+     @param provider  The provider to get the instance from.
 
-    try
-      {
-	return new SecureRandom((SecureRandomSpi) Class.forName(classname).
-				newInstance(), p);
-      }
-    catch (ClassNotFoundException cnfe)
-      {
-	throw new NoSuchAlgorithmException("Class not found");
-      }
-    catch (InstantiationException ie)
-      {
-	throw new NoSuchAlgorithmException("Class instantiation failed");
-      }
-    catch (IllegalAccessException iae)
-      {
-	throw new NoSuchAlgorithmException("Illegal Access");
-      }
+     @throws NoSuchAlgorithmException If the algorithm cannot be found, or
+             if the class cannot be instantiated.
+   */
+  public static SecureRandom getInstance(String algorithm,
+                                         Provider provider) throws
+    NoSuchAlgorithmException
+  {
+    return getInstance(algorithm, provider, true);
+  }
 
+  /**
+     Creates the instance of SecureRandom, recursing to resolve aliases.
+
+     @param algorithm The SecureRandom algorithm to create.
+     @param provider  The provider to get the implementation from.
+     @param recurse   Whether or not to recurse to resolve aliases.
+
+     @throws NoSuchAlgorithmException If the algorithm cannot be found,
+             if there are too many aliases, or if the class cannot be
+             instantiated.
+   */
+  private static SecureRandom getInstance(String algorithm,
+                                          Provider provider,
+                                          boolean recurse)
+    throws NoSuchAlgorithmException
+  {
+    String msg = algorithm;
+    for (Enumeration e = provider.propertyNames(); e.hasMoreElements(); )
+      {
+        // We could replace the boolean with an integer, incrementing it
+        // every
+        String key = (String) e.nextElement();
+        if (key.startsWith("SECURERANDOM.")
+            && key.substring(13).equalsIgnoreCase(algorithm))
+	  {
+	    try
+	      {
+		Class c = Class.forName(provider.getProperty(key));
+		return new SecureRandom((SecureRandomSpi) c.newInstance(),
+					provider);
+	      }
+	    catch (Throwable ignored) { }
+	  }
+	else if (key.startsWith("ALG.ALIAS.SECURERANDOM.")
+		 && key.substring(23).equalsIgnoreCase(algorithm) && recurse)
+	  {
+	    try
+	      {
+		// First see if this alias refers to a class in this
+		// provider.
+		return getInstance(provider.getProperty(key), provider, false);
+	      }
+	    catch (NoSuchAlgorithmException nsae)
+	      {
+		Provider[] provs = Security.getProviders();
+		for (int i = 0; i < provs.length; i++)
+		  {
+		    if (provs[i] == provider)
+		      continue;
+		    // Now try other providers for the implementation
+		    try
+		      {
+			return getInstance(provider.getProperty(key),
+					   provs[i], false);
+		      }
+		    catch (NoSuchAlgorithmException nsae2)
+		      {
+			msg = nsae2.getMessage();
+		      }
+		  }
+	      }
+	  }
+      }
+    throw new NoSuchAlgorithmException(algorithm);
   }
 
   /**

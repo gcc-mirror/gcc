@@ -1,3 +1,19 @@
+2002-12-13  Casey Marshall  <rsdio@metastatic.org>
+	    Mark Wielaard  <mark@klomp.org>
+
+	* java/security/SecurityRandom (digest): Removed field.
+	(SecureRandom): Check all providers for case-insensitive SecureRandom
+	implementation. Don't ignore classname == null. Fallback to SHA1PRNG
+	if necessary.
+	(getInstance(String,Provider,boolean): New method.
+	(getInstance(String)): Use new method.
+	(getInstance(String,String)): Likewise.
+	(getInstance(String,Provider)): Likewise.
+
+2002-12-13  Casey Marshall  <rsdio@metastatic.org>
+
+	* java/security/Security.java (loadProviders): Increment i only once.
+
 2002-12-12  Mark Wielaard  <mark@klomp.org>
 
 	* java/lang/ClassLoader.java (resolveClass0): Transform
