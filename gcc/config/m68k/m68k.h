@@ -675,11 +675,6 @@ extern enum reg_class regno_reg_class[];
    On the ColdFire, sp@- in a byte insn pushes just a byte.  */
 #define PUSH_ROUNDING(BYTES) (TARGET_COLDFIRE ? BYTES : ((BYTES) + 1) & ~1)
 
-/* We want to avoid trying to push bytes.  */
-#define MOVE_BY_PIECES_P(SIZE, ALIGN) \
-  (move_by_pieces_ninsns (SIZE, ALIGN) < MOVE_RATIO \
-    && (((SIZE) >=16 && (ALIGN) >= 16) || (TARGET_COLDFIRE)))
-
 #define FIRST_PARM_OFFSET(FNDECL) 8
 
 /* On the 68000, the RTS insn cannot pop anything.
