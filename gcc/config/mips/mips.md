@@ -8240,6 +8240,19 @@ move\\t%0,%z4\\n\\
      }
 }")
 
+(define_expand "bunge"
+  [(set (pc)
+	(if_then_else (unge:CC (cc0)
+			       (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  ""
+  "
+{
+  gen_conditional_branch (operands, UNGE);
+  DONE;
+}")
+
 (define_expand "buneq"
   [(set (pc)
 	(if_then_else (uneq:CC (cc0)
@@ -8256,6 +8269,19 @@ move\\t%0,%z4\\n\\
      }
 }")
 
+(define_expand "bltgt"
+  [(set (pc)
+	(if_then_else (ltgt:CC (cc0)
+			       (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  ""
+  "
+{
+  gen_conditional_branch (operands, LTGT);
+  DONE;
+}")
+
 (define_expand "bunle"
   [(set (pc)
 	(if_then_else (unle:CC (cc0)
@@ -8270,6 +8296,19 @@ move\\t%0,%z4\\n\\
 	gen_conditional_branch (operands, UNLE);
 	DONE;
      }
+}")
+
+(define_expand "bungt"
+  [(set (pc)
+	(if_then_else (ungt:CC (cc0)
+			       (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
+  ""
+  "
+{
+  gen_conditional_branch (operands, UNGT);
+  DONE;
 }")
 
 (define_expand "beq"
@@ -9340,18 +9379,6 @@ move\\t%0,%z4\\n\\
  [(set_attr "type"      "fcmp")
   (set_attr "mode"      "FPSW")])
 
-(define_insn "sordered_df"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(ordered:CC (match_operand:DF 1 "register_operand" "f")
-		    (match_operand:DF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
-  "*
-{
- return mips_fill_delay_slot (\"c.or.d\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
-}"
- [(set_attr "type"      "fcmp")
-  (set_attr "mode"      "FPSW")])
-
 (define_insn "sunlt_df"
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(unlt:CC (match_operand:DF 1 "register_operand" "f")
@@ -9456,18 +9483,6 @@ move\\t%0,%z4\\n\\
   "*
 {
  return mips_fill_delay_slot (\"c.un.s\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
-}"
- [(set_attr "type"	"fcmp")
-  (set_attr "mode"	"FPSW")])
-
-(define_insn "sordered_sf"
-  [(set (match_operand:CC 0 "register_operand" "=z")
-	(ordered:CC (match_operand:SF 1 "register_operand" "f")
-		    (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT"
-  "*
-{
- return mips_fill_delay_slot (\"c.or.s\\t%Z0%1,%2\", DELAY_FCMP, operands, insn);
 }"
  [(set_attr "type"	"fcmp")
   (set_attr "mode"	"FPSW")])

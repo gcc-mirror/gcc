@@ -1,5 +1,12 @@
 2002-10-01  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md (bunge, bltgt, bungt): New define_expands.
+	(sordered_df, sordered_sf): Remove.
+	* config/mips/mips.c (get_float_compare_codes): New fn.
+	(gen_int_relational, gen_conditional_move): Use it.
+
+2002-10-01  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips-protos.h (mips_emit_fcc_reload): Declare.
 	* config/mips/mips.h (PREDICATE_CODES): Add fcc_register_operand.
 	* config/mips/mips.c (fcc_register_operand): New function.

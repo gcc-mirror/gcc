@@ -84,6 +84,8 @@ enum internal_test {
 struct constant;
 struct mips_arg_info;
 static enum internal_test map_test_to_internal_test	PARAMS ((enum rtx_code));
+static void get_float_compare_codes PARAMS ((enum rtx_code, enum rtx_code *,
+					     enum rtx_code *));
 static int mips16_simple_memory_operand		PARAMS ((rtx, rtx,
 							enum machine_mode));
 static int m16_check_op				PARAMS ((rtx, int, int, int));
@@ -3313,6 +3315,34 @@ gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
   return result;
 }
 
+/* Work out how to check a floating-point condition.  We need a
+   separate comparison instruction (C.cond.fmt), followed by a
+   branch or conditional move.  Given that IN_CODE is the
+   required condition, set *CMP_CODE to the C.cond.fmt code
+   and *action_code to the branch or move code.  */
+
+static void
+get_float_compare_codes (in_code, cmp_code, action_code)
+     enum rtx_code in_code, *cmp_code, *action_code;
+{
+  switch (in_code)
+    {
+    case NE:
+    case UNGE:
+    case UNGT:
+    case LTGT:
+    case ORDERED:
+      *cmp_code = reverse_condition_maybe_unordered (in_code);
+      *action_code = EQ;
+      break;
+
+    default:
+      *cmp_code = in_code;
+      *action_code = NE;
+      break;
+    }
+}
+
 /* Emit the common code for doing conditional branches.
    operand[0] is the label to jump to.
    The comparison operands are saved away by cmp{si,di,sf,df}.  */
@@ -3326,6 +3356,7 @@ gen_conditional_branch (operands, test_code)
   rtx cmp0 = branch_cmp[0];
   rtx cmp1 = branch_cmp[1];
   enum machine_mode mode;
+  enum rtx_code cmp_code;
   rtx reg;
   int invert;
   rtx label1, label2;
@@ -3358,15 +3389,10 @@ gen_conditional_branch (operands, test_code)
       else
 	reg = gen_reg_rtx (CCmode);
 
-      /* For cmp0 != cmp1, build cmp0 == cmp1, and test for result ==
-         0 in the instruction built below.  The MIPS FPU handles
-         inequality testing by testing for equality and looking for a
-         false result.  */
+      get_float_compare_codes (test_code, &cmp_code, &test_code);
       emit_insn (gen_rtx_SET (VOIDmode, reg,
-			      gen_rtx (test_code == NE ? EQ : test_code,
-				       CCmode, cmp0, cmp1)));
+			      gen_rtx (cmp_code, CCmode, cmp0, cmp1)));
 
-      test_code = test_code == NE ? EQ : NE;
       mode = CCmode;
       cmp0 = reg;
       cmp1 = const0_rtx;
@@ -3460,8 +3486,8 @@ gen_conditional_move (operands)
 	  abort ();
 	}
     }
-  else if (cmp_code == NE)
-    cmp_code = EQ, move_code = EQ;
+  else
+    get_float_compare_codes (cmp_code, &cmp_code, &move_code);
 
   if (mode == SImode || mode == DImode)
     cmp_mode = mode;
