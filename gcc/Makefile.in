@@ -2088,6 +2088,8 @@ distclean: clean bytecode.distclean lang.distclean
 	-rm -f c-parse.output
 	-rm -f *.asm
 	-rm -f float.h
+	-rm -f site.exp site.bak testsuite/site.exp testsuite/site.bak
+	-rm -f testsuite/{gcc,g++}.{log,sum}
 
 # Delete anything likely to be found in the source directory
 # that shouldn't be in the distribution.
