@@ -3666,7 +3666,10 @@ build_c_cast (type, expr)
 
       if (TREE_CODE (type) == POINTER_TYPE
 	  && TREE_CODE (otype) == INTEGER_TYPE
-	  && TYPE_PRECISION (type) != TYPE_PRECISION (otype))
+	  && TYPE_PRECISION (type) != TYPE_PRECISION (otype)
+	  /* Don't warn about converting 0 to pointer,
+	     provided the 0 was explicit--not cast or made by folding.  */
+	  && !(TREE_CODE (value) == INTEGER_CST && integer_zerop (value)))
 	warning ("cast to pointer from integer of different size");
 
       value = convert (type, value);
@@ -3953,7 +3956,9 @@ convert_for_assignment (type, rhs, errtype, funname, parmnum)
     }
   else if (codel == POINTER_TYPE && coder == INTEGER_TYPE)
     {
-      if (! integer_zerop (rhs))
+      /* An explicit constant 0 can convert to a pointer,
+	 but not a 0 that results from casting or folding.  */
+      if (! (TREE_CODE (rhs) == INTEGER_CST && integer_zerop (rhs)))
 	{
 	  warn_for_assignment ("%s makes pointer from integer without a cast",
 			       get_spelling (errtype), funname, parmnum);
