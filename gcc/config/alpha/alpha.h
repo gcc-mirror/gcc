@@ -2240,6 +2240,9 @@ do {									\
   const char *fn_name = XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0);	\
   int reg;								\
 									\
+  if (! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT)				\
+    fprintf (FILE, "\tldgp $29,0($27)\n");				\
+									\
   /* Mark end of prologue.  */						\
   output_end_prologue (FILE);						\
 									\

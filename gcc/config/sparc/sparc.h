@@ -3231,42 +3231,15 @@ do {									\
    Used for C++ multiple inheritance.  */
 #define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	\
 do {									\
-  int big_delta = (DELTA) >= 4096 || (DELTA) < -4096;			\
-  if (big_delta)							\
-    fprintf (FILE, "\tset %d,%%g1\n\tadd %%o0,%%g1,%%o0\n", (DELTA));	\
-  /* Don't use the jmp solution unless we know the target is local to	\
-     the application or shared object.  				\
-     XXX: Wimp out and don't actually check anything except if this is	\
-     an embedded target where we assume there are no shared libs.  */	\
-  if (!TARGET_CM_EMBMEDANY || flag_pic)					\
-    {									\
-      if (! big_delta)							\
-	fprintf (FILE, "\tadd %%o0,%d,%%o0\n", DELTA);			\
-      fprintf (FILE, "\tmov %%o7,%%g1\n");				\
-      fprintf (FILE, "\tcall ");					\
-      assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	\
-      fprintf (FILE, ",0\n");						\
-    }									\
-  else if (TARGET_CM_EMBMEDANY)						\
-    {									\
-      fprintf (FILE, "\tsetx ");					\
-      assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	\
-      fprintf (FILE, ",%%g5,%%g1\n\tjmp %%g1\n");			\
-    }									\
+  if ((DELTA) >= 4096 || (DELTA) < -4096)				\
+    fprintf (FILE, "\tset\t%d, %%g1\n\tadd\t%%o0, %%g1, %%o0\n", (DELTA));\
   else									\
-    {									\
-      fprintf (FILE, "\tsethi %%hi(");					\
-      assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	\
-      fprintf (FILE, "),%%g1\n\tjmp %%g1+%%lo(");			\
-      assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	\
-      fprintf (FILE, ")\n");						\
-    }									\
-  if (!TARGET_CM_EMBMEDANY || flag_pic)					\
-    fprintf (FILE, "\tmov %%g1,%%o7\n");				\
-  else if (big_delta)							\
-    fprintf (FILE, "\tnop\n");						\
-  else									\
-    fprintf (FILE, "\tadd %%o0,%d,%%o0\n", DELTA);			\
+    fprintf (FILE, "\tadd\t%%o0, %d, %%o0\n", DELTA);			\
+  fprintf (FILE, "\tor\t%%o7, %%g0, %%g1\n");				\
+  fprintf (FILE, "\tcall\t");						\
+  assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	\
+  fprintf (FILE, ", 0\n");						\
+  fprintf (FILE, "\t or\t%%g1, %%g0, %%o7\n");				\
 } while (0)
 
 /* Define the parentheses used to group arithmetic operations
