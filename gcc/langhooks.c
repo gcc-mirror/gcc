@@ -1,5 +1,5 @@
 /* Default language-specific hooks.
-   Copyright 2001 Free Software Foundation, Inc.
+   Copyright 2001, 2002 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GNU CC.
@@ -110,7 +110,7 @@ lhd_set_yydebug (value)
 void
 lhd_clear_binding_stack ()
 {
-  while (! global_bindings_p ())
+  while (! (*lang_hooks.decls.global_bindings_p) ())
     poplevel (0, 0, 0);
 }
 

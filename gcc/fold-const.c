@@ -52,6 +52,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "ggc.h"
 #include "hashtab.h"
+#include "langhooks.h"
 
 static void encode		PARAMS ((HOST_WIDE_INT *,
 					 unsigned HOST_WIDE_INT,
@@ -3336,7 +3337,7 @@ fold_range_test (exp)
 		      TREE_TYPE (exp), TREE_OPERAND (exp, 0),
 		      TREE_OPERAND (exp, 1));
 
-      else if (global_bindings_p () == 0
+      else if ((*lang_hooks.decls.global_bindings_p) () == 0
 	       && ! contains_placeholder_p (lhs))
 	{
 	  tree common = save_expr (lhs);
@@ -4341,7 +4342,7 @@ fold_binary_op_with_conditional_arg (code, type, cond, arg, cond_first_p)
      in that case.  */
   
   if (TREE_CODE (arg) != SAVE_EXPR && ! TREE_CONSTANT (arg)
-      && global_bindings_p () == 0
+      && (*lang_hooks.decls.global_bindings_p) () == 0
       && ((TREE_CODE (arg) != VAR_DECL
 	   && TREE_CODE (arg) != PARM_DECL)
 	  || TREE_SIDE_EFFECTS (arg)))
@@ -4623,7 +4624,7 @@ fold (expr)
 	       && (TREE_CODE (arg0) != COND_EXPR
 		   || count_cond (arg0, 25) + count_cond (arg1, 25) <= 25)
 	       && (! TREE_SIDE_EFFECTS (arg0)
-		   || (global_bindings_p () == 0
+		   || ((*lang_hooks.decls.global_bindings_p) () == 0
 		       && ! contains_placeholder_p (arg0))))
 	return 
 	  fold_binary_op_with_conditional_arg (code, type, arg1, arg0,
@@ -4637,7 +4638,7 @@ fold (expr)
 	       && (TREE_CODE (arg1) != COND_EXPR
 		   || count_cond (arg0, 25) + count_cond (arg1, 25) <= 25)
 	       && (! TREE_SIDE_EFFECTS (arg1)
-		   || (global_bindings_p () == 0
+		   || ((*lang_hooks.decls.global_bindings_p) () == 0
 		       && ! contains_placeholder_p (arg1))))
 	return 
 	  fold_binary_op_with_conditional_arg (code, type, arg0, arg1,
@@ -5249,7 +5250,8 @@ fold (expr)
 	  if (real_onep (arg1))
 	    return non_lvalue (convert (type, arg0));
 	  /* x*2 is x+x */
-	  if (! wins && real_twop (arg1) && global_bindings_p () == 0
+	  if (! wins && real_twop (arg1)
+	      && (*lang_hooks.decls.global_bindings_p) () == 0
 	      && ! contains_placeholder_p (arg0))
 	    {
 	      tree arg = save_expr (arg0);

@@ -1,5 +1,5 @@
 /* The lang_hooks data structure.
-   Copyright 2001 Free Software Foundation, Inc.
+   Copyright 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -63,6 +63,43 @@ struct lang_hooks_for_tree_dump
 
   /* Determine type qualifiers in a language-specific way.  */
   int (*type_quals) PARAMS ((tree));
+};
+
+/* Language hooks related to decls and the symbol table.  */
+
+struct lang_hooks_for_decls
+{
+  /* Enter a new lexical scope.  Argument is always zero when called
+     from outside the front end.  */
+  void (*pushlevel) PARAMS ((int));
+
+  /* Exit a lexical scope and return a BINDING for that scope.
+     Takes three arguments:
+     KEEP -- nonzero if there were declarations in this scope.
+     REVERSE -- reverse the order of decls before returning them.
+     FUNCTIONBODY -- nonzero if this level is the body of a function.  */
+  tree (*poplevel) PARAMS ((int, int, int));
+
+  /* Returns non-zero if we are in the global binding level.  Ada
+     returns -1 for an undocumented reason used in stor-layout.c.  */
+  int (*global_bindings_p) PARAMS ((void));
+
+  /* Insert BLOCK at the end of the list of subblocks of the
+     current binding level.  This is used when a BIND_EXPR is expanded,
+     to handle the BLOCK node inside the BIND_EXPR.  */
+  void (*insert_block) PARAMS ((tree));
+
+  /* Set the BLOCK node for the current scope level.  */
+  void (*set_block) PARAMS ((tree));
+
+  /* Function to add a decl to the current scope level.  Takes one
+     argument, a decl to add.  Returns that decl, or, if the same
+     symbol is already declared, may return a different decl for that
+     name.  */
+  tree (*pushdecl) PARAMS ((tree));
+
+  /* Returns the chain of decls so far in the current scope level.  */
+  tree (*getdecls) PARAMS ((void));
 };
 
 /* Language-specific hooks.  See langhooks-def.h for defaults.  */
@@ -176,6 +213,8 @@ struct lang_hooks
   struct lang_hooks_for_tree_inlining tree_inlining;
   
   struct lang_hooks_for_tree_dump tree_dump;
+
+  struct lang_hooks_for_decls decls;
 
   /* Whenever you add entries here, make sure you adjust langhooks-def.h
      and langhooks.c accordingly.  */

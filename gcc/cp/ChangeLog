@@ -1,3 +1,8 @@
+2002-03-21  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp-tree.h (pushdecl, pushlevel, poplevel, set_block,
+	insert_block, getdecls, global_bindings_p): New.
+
 2002-03-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/4361

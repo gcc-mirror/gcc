@@ -1240,7 +1240,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
        this block to the list of blocks at this binding level.  We
        can't do it the way it's done for function-at-a-time mode the
        superblocks have not been created yet.  */
-    insert_block (block);
+    (*lang_hooks.decls.insert_block) (block);
   else
     {
       BLOCK_CHAIN (block)

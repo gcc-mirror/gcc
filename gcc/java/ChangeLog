@@ -1,3 +1,8 @@
+2002-03-21  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp-tree.h (pushdecl, pushlevel, poplevel, set_block,
+	insert_block, getdecls, kept_level_p, global_bindings_p): New.
+
 2002-03-20  Nic Ferrier  <nferrier@tapsellferrier.co.uk>
 
        	* gcj.texi: @code{gcj} becomes @command{gcj}. 
