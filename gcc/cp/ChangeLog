@@ -1,5 +1,9 @@
 2003-08-01  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/11525
+	* parser.c (cp_parser_primary_expression): Do not set
+	non-constant-p merely because it is a dependent scope.
+
 	PR c++/9447
 	* decl2.c (do_class_using_decl): Set type to NULL_TREE.
 	* semantics.c (finish_expr_stmt): Do not convert to void in a

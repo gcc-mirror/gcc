@@ -1,5 +1,8 @@
 2003-08-01  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/11525
+	* g++.dg/parse/constant4.C: New test.
+
 	PR c++/9447
 	* g++.dg/template/using5.C: New test.
 
