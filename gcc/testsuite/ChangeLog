@@ -1,3 +1,11 @@
+2002-03-09  Michael Meissner  <meissner@redhat.com>
+
+	* gcc.c-torture/execute/memcpy-2.c: New test.
+	* gcc.c-torture/execute/memset-1.c: New test.
+	* gcc.c-torture/execute/strlen-1.c: New test.
+	* gcc.c-torture/execute/strcmp-1.c: New test.
+	* gcc.c-torture/execute/strncmp-1.c: New test.
+
 2002-03-09  Geoffrey Keating  <geoffk@redhat.com>
 
 	* gcc.dg/ppc-ldstruct.c: New test.
