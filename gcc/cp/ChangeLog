@@ -1,5 +1,9 @@
 2003-05-10  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	* pt.c (instantiate_decl): Call push/pop_deferring_access_checks.
+
+2003-05-10  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/9252
 	* cp-tree.h (saved_scope): Remove check_access field.
 	(tsubst_flags_t): Remove tf_parsing.
