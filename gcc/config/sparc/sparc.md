@@ -7686,6 +7686,8 @@
      really needed.  */
   /*emit_insn (gen_rtx_USE (VOIDmode, frame_pointer_rtx));*/
   emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
+
+#if 0
   /* Return, restoring reg window and jumping to goto handler.  */
   if (TARGET_V9 && GET_CODE (chain) == CONST_INT
       && ! (INTVAL (chain) & ~(HOST_WIDE_INT)0xffffffff))
@@ -7697,6 +7699,8 @@
     }
   /* Put in the static chain register the nonlocal label address.  */
   emit_move_insn (static_chain_rtx, chain);
+#endif
+
   emit_insn (gen_rtx_USE (VOIDmode, static_chain_rtx));
   emit_insn (gen_goto_handler_and_restore (labreg));
   emit_barrier ();
@@ -7718,27 +7722,27 @@
   [(set_attr "type" "misc")
    (set_attr "length" "2")])
 
-(define_insn "goto_handler_and_restore_v9"
-  [(unspec_volatile [(match_operand:SI 0 "register_operand" "=r,r")
-		     (match_operand:SI 1 "register_operand" "=r,r")
-		     (match_operand:SI 2 "const_int_operand" "I,n")] 3)]
-  "TARGET_V9 && ! TARGET_ARCH64"
-  "@
-   return\\t%0+0\\n\\tmov\\t%2, %Y1
-   sethi\\t%%hi(%2), %1\\n\\treturn\\t%0+0\\n\\tor\\t%Y1, %%lo(%2), %Y1"
-  [(set_attr "type" "misc")
-   (set_attr "length" "2,3")])
-
-(define_insn "*goto_handler_and_restore_v9_sp64"
-  [(unspec_volatile [(match_operand:DI 0 "register_operand" "=r,r")
-		     (match_operand:DI 1 "register_operand" "=r,r")
-		     (match_operand:SI 2 "const_int_operand" "I,n")] 3)]
-  "TARGET_V9 && TARGET_ARCH64"
-  "@
-   return\\t%0+0\\n\\tmov\\t%2, %Y1
-   sethi\\t%%hi(%2), %1\\n\\treturn\\t%0+0\\n\\tor\\t%Y1, %%lo(%2), %Y1"
-  [(set_attr "type" "misc")
-   (set_attr "length" "2,3")])
+;;(define_insn "goto_handler_and_restore_v9"
+;;  [(unspec_volatile [(match_operand:SI 0 "register_operand" "=r,r")
+;;		     (match_operand:SI 1 "register_operand" "=r,r")
+;;		     (match_operand:SI 2 "const_int_operand" "I,n")] 3)]
+;;  "TARGET_V9 && ! TARGET_ARCH64"
+;;  "@
+;;   return\\t%0+0\\n\\tmov\\t%2, %Y1
+;;   sethi\\t%%hi(%2), %1\\n\\treturn\\t%0+0\\n\\tor\\t%Y1, %%lo(%2), %Y1"
+;;  [(set_attr "type" "misc")
+;;   (set_attr "length" "2,3")])
+;;
+;;(define_insn "*goto_handler_and_restore_v9_sp64"
+;;  [(unspec_volatile [(match_operand:DI 0 "register_operand" "=r,r")
+;;		     (match_operand:DI 1 "register_operand" "=r,r")
+;;		     (match_operand:SI 2 "const_int_operand" "I,n")] 3)]
+;;  "TARGET_V9 && TARGET_ARCH64"
+;;  "@
+;;   return\\t%0+0\\n\\tmov\\t%2, %Y1
+;;   sethi\\t%%hi(%2), %1\\n\\treturn\\t%0+0\\n\\tor\\t%Y1, %%lo(%2), %Y1"
+;;  [(set_attr "type" "misc")
+;;   (set_attr "length" "2,3")])
 
 ;; Pattern for use after a setjmp to store FP and the return register
 ;; into the stack area.

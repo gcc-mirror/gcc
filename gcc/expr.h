@@ -105,10 +105,12 @@ extern int inhibit_defer_pop;
 
 extern int function_call_count;
 
-/* RTX for stack slot that holds the current handler for nonlocal gotos.
+/* List (chain of EXPR_LIST) of stack slots that hold the current handlers
+   for nonlocal gotos.  There is one for every nonlocal label in the function;
+   this list matches the one in nonlocal_labels.
    Zero when function does not have nonlocal labels.  */
 
-extern rtx nonlocal_goto_handler_slot;
+extern rtx nonlocal_goto_handler_slots;
 
 /* RTX for stack slot that holds the stack pointer value to restore
    for a nonlocal goto.

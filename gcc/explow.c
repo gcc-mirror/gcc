@@ -1303,7 +1303,7 @@ allocate_dynamic_stack_space (size, target, known_align)
 #endif
 
   /* Record the new stack level for nonlocal gotos.  */
-  if (nonlocal_goto_handler_slot != 0)
+  if (nonlocal_goto_handler_slots != 0)
     emit_stack_save (SAVE_NONLOCAL, &nonlocal_goto_stack_level, NULL_RTX);
 
   return target;
