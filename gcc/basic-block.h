@@ -848,14 +848,13 @@ enum cdi_direction
 enum dom_state
 {
   DOM_NONE,		/* Not computed at all.  */
-  DOM_CONS_OK,		/* The data is conservatively OK, i.e. if it says you that A dominates B,
-			   it indeed does.  */
   DOM_NO_FAST_QUERY,	/* The data is OK, but the fast query data are not usable.  */
   DOM_OK		/* Everything is ok.  */
 };
 
 extern enum dom_state dom_computed[2];
 
+extern bool dom_info_available_p (enum cdi_direction);
 extern void calculate_dominance_info (enum cdi_direction);
 extern void free_dominance_info (enum cdi_direction);
 extern basic_block nearest_common_dominator (enum cdi_direction,

@@ -1927,8 +1927,7 @@ cleanup_control_expr_graph (basic_block bb, block_stmt_iterator bsi)
   taken_edge->flags = EDGE_FALLTHRU;
 
   /* We removed some paths from the cfg.  */
-  if (dom_computed[CDI_DOMINATORS] >= DOM_CONS_OK)
-    dom_computed[CDI_DOMINATORS] = DOM_CONS_OK;
+  free_dominance_info (CDI_DOMINATORS);
 
   return retval;
 }
@@ -3908,7 +3907,7 @@ thread_jumps (void)
 	    }
 
 	  /* Update the dominators.  */
-	  if (dom_computed[CDI_DOMINATORS] >= DOM_CONS_OK)
+	  if (dom_info_available_p (CDI_DOMINATORS))
 	    {
 	      /* If the dominator of the destination was in the path, set its
 		 dominator to the start of the redirected edge.  */
