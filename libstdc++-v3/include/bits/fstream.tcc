@@ -193,9 +193,6 @@ namespace std
 	  // fileops happen...
 	  _M_destroy_pback();
 
-	  const size_t __buflen = this->_M_buf_size > 1
-	                          ? this->_M_buf_size - 1 : 1;
-
 	  if (this->_M_in_cur < this->_M_in_end)
 	    {
 	      __ret = traits_type::to_int_type(*this->_M_in_cur);
@@ -205,10 +202,13 @@ namespace std
 	    }
 
 	  // Sync internal and external buffers.
-	  if (__testout && this->_M_out_beg < this->_M_out_lim)
-	    this->overflow();
+	  if (__testout && this->_M_out_beg < this->_M_out_lim
+	      && traits_type::eq_int_type(this->overflow(), __ret))
+	    return __ret;
 	  
 	  // Get and convert input sequence.
+	  const size_t __buflen = this->_M_buf_size > 1
+	                          ? this->_M_buf_size - 1 : 1;
 	  streamsize __elen = 0;
 	  streamsize __ilen = 0;
 	  if (__check_facet(_M_codecvt).always_noconv())
@@ -348,8 +348,8 @@ namespace std
 	    {
 	      // Unbuffered.
 	      char_type __conv = traits_type::to_char_type(__c);
-	      if (!__testeof && _M_convert_to_external(&__conv, 1))
-		__ret = __c;
+	      if (__testeof || _M_convert_to_external(&__conv, 1))
+		__ret = traits_type::not_eof(__c);
 	    }
 	}
       _M_last_overflowed = true;	
