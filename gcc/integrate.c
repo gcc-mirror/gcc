@@ -1353,6 +1353,7 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
      register number fits in const_equiv_map.  Then we store all non-register
      parameters into their memory location.  */
 
+  push_temp_slots ();
   for (i = 0; i < nargs; i++)
     {
       rtx copy = arg_vals[i];
@@ -1458,6 +1459,8 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 	  free_temp_slots ();
 	}
     }
+
+  pop_temp_slots ();
 
   /* Deal with the places that the function puts its result.
      We are driven by what is placed into DECL_RESULT.
