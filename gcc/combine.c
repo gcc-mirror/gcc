@@ -2674,7 +2674,7 @@ find_split_point (loc, insn)
 	     is known to be on, this can be converted into a NEG of a shift. */
 	  if (STORE_FLAG_VALUE == -1 && XEXP (SET_SRC (x), 1) == const0_rtx
 	      && GET_MODE (SET_SRC (x)) == GET_MODE (XEXP (SET_SRC (x), 0))
-	      && 1 <= (len = exact_log2
+	      && 1 <= (pos = exact_log2
 		       (nonzero_bits (XEXP (SET_SRC (x), 0),
 				      GET_MODE (XEXP (SET_SRC (x), 0))))))
 	    {
@@ -2684,7 +2684,7 @@ find_split_point (loc, insn)
 		     gen_rtx_combine (NEG, mode,
 				      gen_rtx_combine (LSHIFTRT, mode,
 						       XEXP (SET_SRC (x), 0),
-						       GEN_INT (len))));
+						       GEN_INT (pos))));
 
 	      split = find_split_point (&SET_SRC (x), insn);
 	      if (split && split != &SET_SRC (x))
