@@ -351,6 +351,22 @@ readonly_data ()							\
 
 #define ASM_FILE_END(FILE) output_deferred_plabels (FILE)
 
+/* We want __gcc_plt_call to appear in every program built by
+   gcc, so we make a reference to it out of __main.
+   We use the asm statement to fool the optimizer into not
+   removing the dead (but important) initialization of
+   REFERENCE.  */
+
+#define DO_GLOBAL_DTORS_BODY			\
+do {						\
+  extern void __gcc_plt_call ();		\
+  void (*reference)() = &__gcc_plt_call;	\
+  func_ptr *p;					\
+  __asm__ ("" : : "r" (reference));		\
+  for (p = __DTOR_LIST__ + 1; *p; )		\
+    (*p++) ();					\
+} while (0)
+
 /* The .align directive in the HP assembler allows up to a 32 alignment.  */
 #define MAX_OFILE_ALIGNMENT 32768
 
