@@ -1,5 +1,9 @@
 2000-10-23  Geoff Keating  <geoffk@cygnus.com>
 
+	* reload1.c (reload_reg_reaches_end_p): A RELOAD_OTHER can
+	overwrite the value in a RELOAD_FOR_INPUT and other kinds of
+	reloads just like an RELOAD_FOR_OUTPUT would.
+
 	* local-alloc.c (update_equiv_regs): Add an abort().  When
 	deleting or moving insns, update reg_equiv[regno].init_insns.
 

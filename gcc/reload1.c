@@ -4480,8 +4480,9 @@ reload_reg_reaches_end_p (regno, opnum, type)
       if (TEST_HARD_REG_BIT (reload_reg_used_in_op_addr_reload, regno))
 	return 0;
 
-      return (! TEST_HARD_REG_BIT (reload_reg_used_in_op_addr, regno)
-	      && ! TEST_HARD_REG_BIT (reload_reg_used_in_insn, regno));
+      return (!TEST_HARD_REG_BIT (reload_reg_used_in_op_addr, regno)
+	      && !TEST_HARD_REG_BIT (reload_reg_used_in_insn, regno)
+	      && !TEST_HARD_REG_BIT (reload_reg_used, regno));
 
     case RELOAD_FOR_INPUT:
       /* Similar to input address, except we start at the next operand for
@@ -4506,7 +4507,7 @@ reload_reg_reaches_end_p (regno, opnum, type)
 	    || TEST_HARD_REG_BIT (reload_reg_used_in_output[i], regno))
 	  return 0;
 
-      return 1;
+      return (!TEST_HARD_REG_BIT (reload_reg_used, regno));
 
     case RELOAD_FOR_OPADDR_ADDR:
       for (i = 0; i < reload_n_operands; i++)
@@ -4515,8 +4516,9 @@ reload_reg_reaches_end_p (regno, opnum, type)
 	    || TEST_HARD_REG_BIT (reload_reg_used_in_output[i], regno))
 	  return 0;
 
-      return (! TEST_HARD_REG_BIT (reload_reg_used_in_op_addr, regno)
-	      && !TEST_HARD_REG_BIT (reload_reg_used_in_insn, regno));
+      return (!TEST_HARD_REG_BIT (reload_reg_used_in_op_addr, regno)
+	      && !TEST_HARD_REG_BIT (reload_reg_used_in_insn, regno)
+	      && !TEST_HARD_REG_BIT (reload_reg_used, regno));
 
     case RELOAD_FOR_INSN:
       /* These conflict with other outputs with RELOAD_OTHER.  So
