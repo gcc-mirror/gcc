@@ -1,5 +1,12 @@
 2004-12-31  Richard Henderson  <rth@redhat.com>
 
+	* src/types.c (FFI_AGGREGATE_TYPEDEF): Remove.
+	(FFI_TYPEDEF): Rename from FFI_INTEGRAL_TYPEDEF.  Replace size and
+	offset parameters with a type parameter; deduce size and structure
+	alignment.  Update all users.
+
+2004-12-31  Richard Henderson  <rth@redhat.com>
+
 	* src/types.c (FFI_TYPE_POINTER): Define with sizeof.
 	(FFI_TYPE_LONGDOUBLE): Fix for ia64.
 	* src/ia64/ffitarget.h (struct ffi_ia64_trampoline_struct): Move 
