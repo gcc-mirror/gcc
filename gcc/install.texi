@@ -1096,23 +1096,6 @@ seems not to have this problem.
 See @ref{Sun Install}, for information on installing GNU CC on Sun
 systems.
 
-@item i[345]86-*-winnt3.5
-This version requires a GAS that has not yet been released.  Until it
-is, you can get a prebuilt binary version via anonymous ftp from
-@uref{ftp://cs.washington.edu/pub/gnat} or @uref{ftp://cs.nyu.edu/pub/gnat}. You
-must also use the Microsoft header files from the Windows NT 3.5 SDK.
-Find these on the CDROM in the @file{/mstools/h} directory dated 9/4/94.  You
-must use a fixed version of Microsoft linker made especially for NT 3.5,
-which is also is available on the NT 3.5 SDK CDROM.  If you do not have
-this linker, can you also use the linker from Visual C/C++ 1.0 or 2.0.
-
-Installing GNU CC for NT builds a wrapper linker, called @file{ld.exe},
-which mimics the behaviour of Unix @file{ld} in the specification of
-libraries (@samp{-L} and @samp{-l}).  @file{ld.exe} looks for both Unix
-and Microsoft named libraries.  For example, if you specify
-@samp{-lfoo}, @file{ld.exe} will look first for @file{libfoo.a}
-and then for @file{foo.lib}.
-
 @item i860-intel-osf1
 This is the Paragon.
 @ifset INSTALLONLY

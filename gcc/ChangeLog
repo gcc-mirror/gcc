@@ -1,3 +1,9 @@
+2000-12-09  Laurynas Biveinis  <lauras@softhome.net>
+
+	* install.texi: remove i[345]86-*-winnt3.5 section.
+	* configur.bat: removed.
+	* config/msdos: directory removed.
+
 2000-12-09  Neil Booth  <neilb@earthling.net>
 
         * cppfiles.c (NEVER_REREAD, DO_NOT_REREAD): Move from cpphash.h.
