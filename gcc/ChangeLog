@@ -1,3 +1,8 @@
+2004-08-19  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gimplify.c (gimplify_minimax_expr): Remove.
+	(gimplify_expr) <MIN_EXPR, MAX_EXPR>: Remove special handling.
+
 2004-08-19  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* tree-vectorizer.c (vect_can_force_dr_alignment_p): Replace 
