@@ -1,3 +1,11 @@
+2001-06-23  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* cppmacro.c (make_string_token): Avoid warning.
+	(cpp_macro_definition): Prepend the macro name.  Update
+	comments.
+	* cppmain.c (cb_define, dump_macro): Update for changes
+	to cpp_macro_definition.
+
 Sat Jun 23 10:20:03 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* flow.c (attempt_auto_inc, try_pre_increment_1): Fix typo.

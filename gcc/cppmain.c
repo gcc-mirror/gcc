@@ -364,11 +364,13 @@ cb_define (pfile, node)
      cpp_hashnode *node;
 {
   maybe_print_line (cpp_get_line (pfile)->output_line);
-  fprintf (print.outf, "#define %s", NODE_NAME (node));
+  fputs ("#define ", print.outf);
 
   /* -dD command line option.  */
   if (options->dump_macros == dump_definitions)
     fputs ((const char *) cpp_macro_definition (pfile, node), print.outf);
+  else
+    fputs ((const char *) NODE_NAME (node), print.outf);
 
   putc ('\n', print.outf);
   print.lineno++;
@@ -446,7 +448,7 @@ dump_macro (pfile, node, v)
 {
   if (node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))
     {
-      fprintf (print.outf, "#define %s", NODE_NAME (node));
+      fputs ("#define ", print.outf);
       fputs ((const char *) cpp_macro_definition (pfile, node), print.outf);
       putc ('\n', print.outf);
       print.lineno++;
