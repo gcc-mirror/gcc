@@ -1,3 +1,8 @@
+2004-09-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* version.c (version_string): Restore pre-release marker.
+	* doc/include/gcc-common.texi: Set version to 3.4.3.
+	
 2004-09-06  Release Manager
 
 	* GCC 3.4.2 released.
