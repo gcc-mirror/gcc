@@ -1,7 +1,7 @@
 /* This is a software floating point library which can be used instead of
    the floating point routines in libgcc1.c for targets without hardware
    floating point. 
- Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+ Copyright (C) 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -663,6 +663,12 @@ _fpadd_parts (fp_number_type * a,
     }
   if (iszero (b))
     {
+      if (iszero (a))
+	{
+	  *tmp = *a;
+	  tmp->sign = a->sign & b->sign;
+	  return tmp;
+	}
       return a;
     }
   if (iszero (a))
@@ -1028,7 +1034,7 @@ _fpdiv_parts (fp_number_type * a,
   if (iszero (b))
     {
       a->class = CLASS_INFINITY;
-      return b;
+      return a;
     }
 
   /* Calculate the mantissa by multiplying both 64bit numbers to get a

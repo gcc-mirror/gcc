@@ -1,3 +1,8 @@
+Mon Jun  1 12:14:28 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* config/fp-bit.c (_fp{add,div}_parts): Return correct IEEE result
+	in the presence of IEEE negative 0's.
+
 Sun May 31 16:11:41 1998  John Wehle  (john@feith.com)
 
 	* reload.c (find_reloads): Record the existing mode if
