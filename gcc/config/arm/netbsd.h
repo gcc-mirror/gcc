@@ -36,7 +36,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define SUBTARGET_CPU_DEFAULT TARGET_CPU_arm6
 
 /* Default is to use APCS-32 mode.  */
-#define TARGET_DEFAULT ARM_FLAG_APCS_32
+#define TARGET_DEFAULT (ARM_FLAG_APCS_32 | ARM_FLAG_SOFT_FLOAT)
 
 #include "arm/aout.h"
 
@@ -66,6 +66,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Because TARGET_DEFAULT sets ARM_FLAG_APCS_32 */
 #undef CPP_APCS_PC_DEFAULT_SPEC
 #define CPP_APCS_PC_DEFAULT_SPEC "-D__APCS_32__"
+
+/* Because TARGET_DEFAULT sets ARM_FLAG_SOFT_FLOAT */
+#undef CPP_FLOAT_DEFAULT_SPEC
+#define CPP_FLOAT_DEFAULT_SPEC "-D__SOFTFP__"
 
 /* Pass -X to the linker so that it will strip symbols starting with 'L' */
 #undef LINK_SPEC
