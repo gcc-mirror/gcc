@@ -391,8 +391,7 @@ specifier to the string type description of the instance variable named
 as argument.
 
 @c =========================================================================
-@node Constant string objects, compatibility_alias , Garbage Collection, Top
-@comment  node-name,  next,  previous,  up
+@node Constant string objects
 @section Constant string objects
 
 GNU Objective-C provides constant string objects that are generated
@@ -438,8 +437,7 @@ compiler nor the linker impose any restrictions in doing this.
 @include fdl.texi
 
 @c =========================================================================
-@node compatibility_alias,  , Constant string objects, Top
-@comment  node-name,  next,  previous,  up
+@node compatibility_alias
 @section compatibility_alias
 
 This is a feature of the Objective-C compiler rather than of the
