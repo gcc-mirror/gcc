@@ -1,13 +1,20 @@
+2001-04-04  Andreas Jaeger  <aj@suse.de>
+
+	* gcj/Makefile.am (AUTOMAKE_OPTIONS): Remove no-installinfo.
+	* gcj/Makefile.in: Rebuilt.
+	* Makefile.am (AUTOMAKE_OPTIONS): Remove no-installinfo.
+	* Makefile.in: Rebuilt.
+	* testsuite/Makefile.am (AUTOMAKE_OPTIONS): Remove no-installinfo.
+	* testsuite/Makefile.in: Rebuild.
+	* include/Makefile.am (AUTOMAKE_OPTIONS): Remove no-installinfo.
+	* include/Makefile.in: Rebuild.
+
 2001-04-02 Zack Weinberg <zackw@stanford.edu>
 
 	* testsuite/lib/libjava.exp: Correct typo: 'output from source
 	compiled test', not 'execution from source compiled test'.
 	Use UNTESTED, not XFAIL, for tests which are not run because
 	they depend on a previous test which failed.
-
-2001-04-02  Marcus G. Daniels  <mgd@swarm.org>
-
-	* jni.cc (wrap_value<jclass>): New specialization.
 
 2001-04-02  Tom Tromey  <tromey@redhat.com>
 
