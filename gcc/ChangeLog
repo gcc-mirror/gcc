@@ -1,3 +1,12 @@
+2004-03-19  Richard Sandiford  <rsandifo@redhat.com>
+
+	* expmed.c (choose_mult_variant, expand_mult_const): New, split from...
+	(expand_mult): ...here.
+	(extract_high_half): New, split out from expand_mult_highpart.
+	(expand_highpart_optab): Likewise.  Don't clobber target prematurely.
+	(expand_highpart): Evaluate the cost of a shift/add sequence,
+	then see if any of the specialized optabs are cheaper.
+
 2004-03-18  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* mklibgcc.in: Remove obsolete MAYBE_USE_COLLECT2.
