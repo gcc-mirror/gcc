@@ -1,3 +1,11 @@
+2003-10-20  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/9781, c++/10583, c++/11862
+	* decl.c (cp_finish_decl): Exit immediately if decl is an
+	error_mark_node.
+	* pt.c (push_template_decl_real): Return error_mark_node for
+	invalid template declaration of variable.
+
 2003-10-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/12495
