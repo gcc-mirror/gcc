@@ -7475,19 +7475,25 @@ tsubst_expr (t, args, complain, in_decl)
 	  finish_handler_sequence (stmt);
 	}
       break;
-
+      
     case HANDLER:
-      prep_stmt (t);
-      stmt = begin_handler ();
-      if (HANDLER_PARMS (t))
-	expand_start_catch_block
-	  (tsubst (DECL_STMT_DECL (HANDLER_PARMS (t)), 
-		   args, complain, in_decl));
-      else
-	expand_start_catch_block (NULL_TREE);
-      finish_handler_parms (stmt);
-      tsubst_expr (HANDLER_BODY (t), args, complain, in_decl);
-      finish_handler (stmt);
+      {
+	tree decl;
+	tree blocks;
+
+	prep_stmt (t);
+	stmt = begin_handler ();
+	if (HANDLER_PARMS (t))
+	  {
+	    decl = DECL_STMT_DECL (HANDLER_PARMS (t));
+	    decl = tsubst (decl, args, complain, in_decl);
+	  }
+	else
+	  decl = NULL_TREE;
+	blocks = finish_handler_parms (decl, stmt);
+	tsubst_expr (HANDLER_BODY (t), args, complain, in_decl);
+	finish_handler (blocks, stmt);
+      }
       break;
 
     case TAG_DEFN:

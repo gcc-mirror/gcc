@@ -2656,6 +2656,7 @@ create_temporary_var (type)
   DECL_SOURCE_FILE (decl) = input_filename;
   DECL_SOURCE_LINE (decl) = lineno;
   DECL_IGNORED_P (decl) = 1;
+  DECL_CONTEXT (decl) = current_function_decl;
 
   return decl;
 }

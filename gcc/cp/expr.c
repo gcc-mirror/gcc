@@ -456,5 +456,6 @@ do_case (start, end)
 	    cp_error ("case label `%E' within scope of cleanup or variable array", start);
 	}
     }
-  define_case_label ();
+
+  current_function_return_value = NULL_TREE;
 }

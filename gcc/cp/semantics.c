@@ -41,8 +41,6 @@
    parsing into this file; that will make implementing the new parser
    much easier since it will be able to make use of these routines.  */
 
-static void do_pushlevel PROTO((void));
-static tree do_poplevel PROTO((void));
 static void finish_expr_stmt_real PROTO((tree, int));
 static tree expand_cond PROTO((tree));
 static tree maybe_convert_cond PROTO((tree));
@@ -623,7 +621,12 @@ finish_case_label (low_value, high_value)
 {
   if (building_stmt_tree ())
     {
+      /* Add a representation for the case label to the statement
+	 tree.  */
       add_tree (build_min_nt (CASE_LABEL, low_value, high_value));
+      /* And warn about crossing initializations, etc.  */
+      if (!processing_template_decl)
+	define_case_label ();
       return;
     }
 
@@ -648,6 +651,7 @@ finish_goto_stmt (destination)
       if (TREE_CODE (destination) == LABEL_DECL)
 	{
 	  TREE_USED (destination) = 1;
+	  label_rtx (destination);
 	  expand_goto (destination); 
 	}
       else
@@ -761,8 +765,9 @@ finish_function_try_block (try_block)
     {
       end_protect_partials ();
       expand_start_all_catch ();
-      in_function_try_handler = 1;
     }
+
+  in_function_try_handler = 1;
 }
 
 /* Finish a handler-sequence for a try-block, which may be given by
@@ -784,13 +789,12 @@ void
 finish_function_handler_sequence (try_block)
      tree try_block;
 {
+  in_function_try_handler = 0;
+
   if (building_stmt_tree ())
     RECHAIN_STMTS (try_block, TRY_HANDLERS (try_block));
   else
-    {
-      in_function_try_handler = 0;
-      expand_end_all_catch ();
-    }
+    expand_end_all_catch ();
 }
 
 /* Begin a handler.  Returns a HANDLER if appropriate.  */
@@ -814,26 +818,71 @@ begin_handler ()
 }
 
 /* Finish the handler-parameters for a handler, which may be given by
-   HANDLER.  */
+   HANDLER.  DECL is the declaration for the catch parameter, or NULL
+   if this is a `catch (...)' clause.  */
 
-void
-finish_handler_parms (handler)
+tree
+finish_handler_parms (decl, handler)
+     tree decl;
      tree handler;
 {
-  if (building_stmt_tree ())
-    RECHAIN_STMTS (handler, HANDLER_PARMS (handler));
+  tree blocks = NULL_TREE;
+
+  if (processing_template_decl)
+    {
+      if (decl)
+	{
+	  decl = pushdecl (decl);
+	  decl = push_template_decl (decl);
+	  add_decl_stmt (decl);
+	  RECHAIN_STMTS (handler, HANDLER_PARMS (handler));
+	}
+    }
+  else if (building_stmt_tree ())
+    blocks = expand_start_catch_block (decl);
+
+  return blocks;
 }
 
-/* Finish a handler, which may be given by HANDLER.  */
+/* Note the beginning of a handler for TYPE.  This function is called
+   at the point to which control should be transferred when an
+   appropriately-typed exception is thrown.  */
 
 void
-finish_handler (handler)
-     tree handler;
+begin_catch_block (type)
+     tree type;
 {
   if (building_stmt_tree ())
-    RECHAIN_STMTS (handler, HANDLER_BODY (handler));
+    add_tree (build (START_CATCH_STMT, type));
   else
-    expand_end_catch_block ();
+    start_catch_handler (type);
+}
+
+/* Finish a handler, which may be given by HANDLER.  The BLOCKs are
+   the return value from the matching call to finish_handler_parms.  */
+
+void
+finish_handler (blocks, handler)
+     tree blocks;
+     tree handler;
+{
+  if (!processing_template_decl)
+    {
+      if (building_stmt_tree ())
+	expand_end_catch_block (blocks);
+
+      if (!building_stmt_tree ())
+	{
+	  /* Fall to outside the try statement when done executing
+	     handler and we fall off end of handler.  This is jump
+	     Lresume in the documentation.  */
+	  expand_goto (top_label_entry (&caught_return_label_stack));
+	  end_catch_handler ();
+	}
+    }
+
+  if (building_stmt_tree ())
+    RECHAIN_STMTS (handler, HANDLER_BODY (handler));
 
   do_poplevel ();
 }
@@ -1044,7 +1093,8 @@ finish_decl_cleanup (decl, cleanup)
 {
   if (building_stmt_tree ())
     add_tree (build_min_nt (CLEANUP_STMT, decl, cleanup));
-  else if (DECL_SIZE (decl) && TREE_TYPE (decl) != error_mark_node)
+  else if (!decl 
+	   || (DECL_SIZE (decl) && TREE_TYPE (decl) != error_mark_node))
     expand_decl_cleanup (decl, cleanup);
 }
 
@@ -1089,7 +1139,8 @@ finish_named_return_value (return_id, init)
     {
       /* Let `cp_finish_decl' know that this initializer is ok.  */
       DECL_INITIAL (decl) = init;
-      pushdecl (decl);
+      if (doing_semantic_analysis_p ())
+	pushdecl (decl);
 
       if (building_stmt_tree ())
 	add_tree (build_min_nt (RETURN_INIT, return_id, init));
@@ -1127,7 +1178,7 @@ setup_vtbl_ptr ()
 
 /* Begin a new scope.  */
 
-static void
+void
 do_pushlevel ()
 {
   if (!building_stmt_tree ())
@@ -1137,24 +1188,53 @@ do_pushlevel ()
     }
   push_momentary ();
   if (stmts_are_full_exprs_p)
-    pushlevel (0);
-  if (!building_stmt_tree () && stmts_are_full_exprs_p)
-    expand_start_bindings (0);
+    {
+      pushlevel (0);
+      if (!building_stmt_tree ()
+	  && !current_function->x_whole_function_mode_p)
+	expand_start_bindings (0);
+      else if (building_stmt_tree () && !processing_template_decl)
+	{
+	  tree ss = build_min_nt (SCOPE_STMT);
+	  SCOPE_BEGIN_P (ss) = 1;
+	  add_tree (ss);
+	  current_scope_stmt_stack 
+	    = tree_cons (NULL_TREE, ss, current_scope_stmt_stack);
+	}
+    }
 }
 
 /* Finish a scope.  */
 
-static tree
+tree
 do_poplevel ()
 {
-  tree t;
+  tree t = NULL_TREE;
 
-  if (!building_stmt_tree () && stmts_are_full_exprs_p)
-    expand_end_bindings (getdecls (), kept_level_p (), 0);
   if (stmts_are_full_exprs_p)
-    t = poplevel (kept_level_p (), 1, 0);
-  else
-    t = NULL_TREE;
+    {
+      if (!building_stmt_tree ()
+	  && !current_function->x_whole_function_mode_p)
+	expand_end_bindings (getdecls (), kept_level_p (), 0);
+      else if (building_stmt_tree () && !processing_template_decl)
+	{
+	  tree ss = build_min_nt (SCOPE_STMT);
+	  SCOPE_NULLIFIED_P (ss) = !kept_level_p ();
+	  SCOPE_NULLIFIED_P (TREE_VALUE (current_scope_stmt_stack))
+	    = SCOPE_NULLIFIED_P (ss);
+	  add_tree (ss);
+	  current_scope_stmt_stack = TREE_CHAIN (current_scope_stmt_stack);
+
+	  /* When not in function-at-a-time mode, expand_end_bindings
+	     will warn about unused variables.  But, in
+	     function-at-a-time mode expand_end_bindings is not passed
+	     the list of variables in the current scope, and therefore
+	     no warning is emitted.  So, we explicitly warn here.  */
+	  warn_about_unused_variables (getdecls ());
+	}
+
+      t = poplevel (kept_level_p (), 1, 0);
+    }
   pop_momentary ();
   return t;
 }
@@ -2141,47 +2221,30 @@ expand_stmt (t)
 
 	    emit_line_note (input_filename, lineno);
 	    decl = DECL_STMT_DECL (t);
-	    if (TREE_CODE (decl) == LABEL_DECL)
-	      finish_label_decl (DECL_NAME (decl));
-	    else
-	      {
-		/* If we marked this variable as dead when we processed it
-		   before, we must undo that now.  The variable has been
-		   resuscitated.  */
-		if (TREE_CODE (decl) == VAR_DECL)
-		  DECL_DEAD_FOR_LOCAL (decl) = 0;
-		/* We need to clear DECL_CONTEXT so that maybe_push_decl
-		   will push it into the current scope.  */
-		if (DECL_CONTEXT (decl) == current_function_decl)
-		  {
-		    DECL_CONTEXT (decl) = NULL_TREE;
-		    maybe_push_decl (decl);
-		  }
-		/* If this is a declaration for an automatic local
-		   variable, initialize it.  Note that we might also see a
-		   declaration for a namespace-scope object (declared with
-		   `extern') or an object with static storage duration
-		   (declared with `static').  We don't have to handle the
-		   initialization of those objects here; the former can
-		   never be a definition (only a declaration), and the
-		   latter is handled in finish_file.  */
-		if (TREE_CODE (decl) == VAR_DECL 
-		    && !TREE_STATIC (decl)
-		    && !DECL_EXTERNAL (decl))
-		  {
-		    /* Support the old for-scope rules for backwards
-		       compatibility.  */
-		    maybe_inject_for_scope_var (decl);
-		    /* Let the back-end know about this variable.  */
-		    emit_local_var (decl);
-		  }
-	      }
+	    /* If this is a declaration for an automatic local
+	       variable, initialize it.  Note that we might also see a
+	       declaration for a namespace-scope object (declared with
+	       `extern') or an object with static storage duration
+	       (declared with `static').  We don't have to handle the
+	       initialization of those objects here; the former can
+	       never be a definition (only a declaration), and the
+	       latter is handled in finish_file.  */
+	    if (TREE_CODE (decl) == VAR_DECL 
+		&& !TREE_STATIC (decl)
+		&& !DECL_EXTERNAL (decl))
+	      /* Let the back-end know about this variable.  */
+	      emit_local_var (decl);
+
 	    resume_momentary (i);
 	  }
 	  break;
 
 	case CLEANUP_STMT:
 	  finish_decl_cleanup (CLEANUP_DECL (t), CLEANUP_EXPR (t));
+	  break;
+
+	case START_CATCH_STMT:
+	  begin_catch_block (TREE_TYPE (t));
 	  break;
 
 	case FOR_STMT:
@@ -2266,14 +2329,11 @@ expand_stmt (t)
 	  break;
 
 	case LABEL_STMT:
-	  finish_label_stmt (DECL_NAME (LABEL_STMT_LABEL (t)));
+	  expand_label (LABEL_STMT_LABEL (t));
 	  break;
 
 	case GOTO_STMT:
-	  if (TREE_CODE (GOTO_DESTINATION (t)) == LABEL_DECL)
-	    finish_goto_stmt (DECL_NAME (GOTO_DESTINATION (t)));
-	  else
-	    finish_goto_stmt (GOTO_DESTINATION (t));
+	  finish_goto_stmt (GOTO_DESTINATION (t));
 	  break;
 
 	case ASM_STMT:
@@ -2291,27 +2351,57 @@ expand_stmt (t)
 	    }
 	  else
 	    {
-	      begin_try_block ();
+	      if (FN_TRY_BLOCK_P (t))
+		begin_function_try_block ();
+	      else
+		begin_try_block ();
+
 	      expand_stmt (TRY_STMTS (t));
-	      finish_try_block (NULL_TREE);
-	      expand_stmt (TRY_HANDLERS (t));
-	      finish_handler_sequence (NULL_TREE);
+
+	      if (FN_TRY_BLOCK_P (t))
+		{
+		  finish_function_try_block (NULL_TREE);
+		  expand_stmt (TRY_HANDLERS (t));
+		  finish_function_handler_sequence (NULL_TREE);
+		}
+	      else
+		{
+		  finish_try_block (NULL_TREE);
+		  expand_stmt (TRY_HANDLERS (t));
+		  finish_handler_sequence (NULL_TREE);
+		}
 	    }
 	  break;
 
 	case HANDLER:
 	  begin_handler ();
-	  if (HANDLER_PARMS (t))
-	    expand_start_catch_block (DECL_STMT_DECL (HANDLER_PARMS (t)));
-	  else
-	    expand_start_catch_block (NULL_TREE);
-	  finish_handler_parms (NULL_TREE);
 	  expand_stmt (HANDLER_BODY (t));
-	  finish_handler (NULL_TREE);
+	  finish_handler (NULL_TREE, NULL_TREE);
 	  break;
 
 	case SUBOBJECT:
 	  finish_subobject (SUBOBJECT_CLEANUP (t));
+	  break;
+
+	case SCOPE_STMT:
+	  if (SCOPE_BEGIN_P (t))
+	    expand_start_bindings (2 * SCOPE_NULLIFIED_P (t));
+	  else if (SCOPE_END_P (t))
+	    expand_end_bindings (NULL_TREE, !SCOPE_NULLIFIED_P (t), 0);
+	  break;
+
+	case CTOR_INITIALIZER:
+	  current_member_init_list = TREE_OPERAND (t, 0);
+	  current_base_init_list = TREE_OPERAND (t, 1);
+	  setup_vtbl_ptr ();
+	  break;
+
+	case RETURN_INIT:
+	  /* Clear this out so that finish_named_return_value can set it
+	     again.  */
+	  DECL_NAME (DECL_RESULT (current_function_decl)) = NULL_TREE;
+	  finish_named_return_value (TREE_OPERAND (t, 0), 
+				     TREE_OPERAND (t, 1));
 	  break;
 
 	default:
@@ -2337,8 +2427,6 @@ expand_body (fn)
 {
   int saved_lineno;
   char *saved_input_filename;
-  tree t;
-  tree try_block;
 
   /* When the parser calls us after finishing the body of a template
      function, we don't really want to expand the body.  When we're
@@ -2367,48 +2455,8 @@ expand_body (fn)
      function body.  */
   current_function_name_declared = 1;
 
-  /* There are a few things that we do not handle recursively.  For
-     example, a function try-block is handled differently from an
-     ordinary try-block, so we must handle it here.  */
-  t = DECL_SAVED_TREE (fn);
-  try_block = NULL_TREE;
-  if (t && TREE_CODE (t) == TRY_BLOCK)
-    {
-      try_block = t;
-      begin_function_try_block ();
-      t = TRY_STMTS (try_block);
-    }
-
-  if (t && TREE_CODE (t) == RETURN_INIT)
-    {
-      /* Clear this out so that finish_named_return_value can set it
-	 again.  */
-      DECL_NAME (DECL_RESULT (fn)) = NULL_TREE;
-      finish_named_return_value (TREE_OPERAND (t, 0), TREE_OPERAND (t, 1));
-      t = TREE_CHAIN (t);
-    }
-
-  if (t && TREE_CODE (t) == CTOR_INITIALIZER)
-    {
-      current_member_init_list = TREE_OPERAND (t, 0);
-      current_base_init_list = TREE_OPERAND (t, 1);
-      t = TREE_CHAIN (t);
-    }
-
-  /* If this is a constructor, we need to initialize our members and
-     base-classes.  */
-  setup_vtbl_ptr ();
-
   /* Expand the body.  */
-  expand_stmt (t);
-
-  /* If there was a function try-block, expand the handlers.  */
-  if (try_block)
-    {
-      finish_function_try_block (NULL_TREE);
-      expand_stmt (TRY_HANDLERS (try_block));
-      finish_function_handler_sequence (NULL_TREE);
-    }
+  expand_stmt (DECL_SAVED_TREE (fn));
 
   /* Statements should always be full-expressions at the outermost set
      of curly braces for a function.  */

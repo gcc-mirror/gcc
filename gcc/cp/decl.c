@@ -822,10 +822,12 @@ void
 pushlevel (tag_transparent)
      int tag_transparent;
 {
-  register struct binding_level *newlevel = NULL_BINDING_LEVEL;
+  struct binding_level *newlevel;
+
+  if (current_function && !doing_semantic_analysis_p ())
+    return;
 
   /* Reuse or create a struct for this binding level.  */
-
 #if defined(DEBUG_CP_BINDING_LEVELS)
   if (0)
 #else /* !defined(DEBUG_CP_BINDING_LEVELS) */
@@ -1185,17 +1187,24 @@ poplevel (keep, reverse, functionbody)
      Put it into forward order, just for cleanliness.  */
   tree decls;
   int tmp = functionbody;
-  int real_functionbody = current_binding_level->keep == 2
-    ? ((functionbody = 0), tmp) : functionbody;
-  tree tags = functionbody >= 0 ? current_binding_level->tags : 0;
-  tree subblocks = functionbody >= 0 ? current_binding_level->blocks : 0;
+  int real_functionbody;
+  tree tags;
+  tree subblocks;
   tree block = NULL_TREE;
   tree decl;
   int block_previously_created;
   int leaving_for_scope;
 
+  if (current_function && !doing_semantic_analysis_p ())
+    return NULL_TREE;
+
   my_friendly_assert (current_binding_level->parm_flag != 2,
 		      19990916);
+
+  real_functionbody = (current_binding_level->keep == 2
+		       ? ((functionbody = 0), tmp) : functionbody);
+  tags = functionbody >= 0 ? current_binding_level->tags : 0;
+  subblocks = functionbody >= 0 ? current_binding_level->blocks : 0;
 
   my_friendly_assert (!current_binding_level->class_shadowed,
 		      19990414);
@@ -3631,8 +3640,16 @@ pushdecl (x)
      tree x;
 {
   register tree t;
-  register tree name = DECL_ASSEMBLER_NAME (x);
-  int need_new_binding = 1;
+  register tree name;
+  int need_new_binding;
+
+  /* We shouldn't be calling pushdecl when we're generating RTL for a
+     function that we already did semantic analysis on previously.  */
+  my_friendly_assert (!current_function || doing_semantic_analysis_p (),
+		      19990913);
+
+  name = DECL_ASSEMBLER_NAME (x);
+  need_new_binding = 1;
 
   if (DECL_TEMPLATE_PARM_P (x))
     /* Template parameters have no context; they are not X::T even
@@ -4119,10 +4136,9 @@ tree
 pushdecl_top_level (x)
      tree x;
 {
-  tree cur_namespace = current_namespace;
-  current_namespace = global_namespace;
+  push_to_top_level ();
   x = pushdecl_namespace_level (x);
-  current_namespace = cur_namespace;
+  pop_from_top_level ();
   return x;
 }
 
@@ -4606,12 +4622,8 @@ make_label_decl (id, local_p)
 {
   tree decl;
 
-  if (building_stmt_tree ())
-    push_permanent_obstack ();
   decl = build_decl (LABEL_DECL, id, void_type_node);
-  if (building_stmt_tree ())
-    pop_obstacks ();
-  else
+  if (expanding_p)
     /* Make sure every label has an rtx.  */
     label_rtx (decl);
 
@@ -7742,9 +7754,6 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
   if (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == FUNCTION_DECL
       || TREE_CODE (decl) == RESULT_DECL)
     {
-      /* ??? FIXME: What about nested classes?  */
-      int toplev = toplevel_bindings_p ();
-
       if (TREE_CODE (decl) == VAR_DECL)
 	maybe_commonize_var (decl);
 
@@ -7773,10 +7782,11 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	      || TYPE_NEEDS_DESTRUCTOR (type))
 	    expand_static_init (decl, init);
 	}
-      else if (! toplev)
+      else if (TREE_CODE (CP_DECL_CONTEXT (decl)) == FUNCTION_DECL)
 	{
 	  /* This is a local declaration.  */
-	  maybe_inject_for_scope_var (decl);
+	  if (doing_semantic_analysis_p ())
+	    maybe_inject_for_scope_var (decl);
 	  /* Initialize the local variable.  But, if we're building a
 	     statement-tree, we'll do the initialization when we
 	     expand the tree.  */
@@ -7787,8 +7797,11 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	    }
 	  else
 	    {
+	      /* If we're not building RTL, then we need to do so
+		 now.  */
 	      if (!building_stmt_tree ())
 		emit_local_var (decl);
+	      /* Initialize the variable.  */
 	      initialize_local_var (decl, init, flags);
 	      /* Clean up the variable.  */
 	      destroy_local_var (decl);
@@ -8043,7 +8056,7 @@ expand_static_init (decl, init)
 
 /* Finish the declaration of a catch-parameter.  */
 
-void
+tree
 start_handler_parms (declspecs, declarator)
      tree declspecs;
      tree declarator;
@@ -8058,7 +8071,8 @@ start_handler_parms (declspecs, declarator)
     }
   else
     decl = NULL_TREE;
-  expand_start_catch_block (decl);
+
+  return decl;
 }
 
 
@@ -12767,6 +12781,16 @@ start_function (declspecs, declarator, attrs, flags)
 	    }
 	}
     }
+  
+  /* Sometimes we don't notice that a function is a static member, and
+     build a METHOD_TYPE for it.  Fix that up now.  */
+  if (ctype != NULL_TREE && DECL_STATIC_FUNCTION_P (decl1)
+      && TREE_CODE (TREE_TYPE (decl1)) == METHOD_TYPE)
+    {
+      revert_static_member_fn (&decl1, NULL, NULL);
+      last_function_parms = TREE_CHAIN (last_function_parms);
+      ctype = NULL_TREE;
+    }
 
   /* Warn if function was previously implicitly declared
      (but not if we warned then).  */
@@ -12798,7 +12822,8 @@ start_function (declspecs, declarator, attrs, flags)
 
   /* Make the init_value nonzero so pushdecl knows this is not tentative.
      error_mark_node is replaced below (in poplevel) with the BLOCK.  */
-  DECL_INITIAL (decl1) = error_mark_node;
+  if (!DECL_INITIAL (decl1))
+    DECL_INITIAL (decl1) = error_mark_node;
 
 #ifdef SET_DEFAULT_DECL_ATTRIBUTES
   SET_DEFAULT_DECL_ATTRIBUTES (decl1, attrs);
@@ -12892,6 +12917,48 @@ start_function (declspecs, declarator, attrs, flags)
   current_function_decl = decl1;
   current_function->decl = decl1;
 
+  /* Initialize the per-function data.  */
+  if (!DECL_PENDING_INLINE_P (decl1) && DECL_SAVED_FUNCTION_DATA (decl1))
+    {
+      /* If we already parsed this function, and we're just expanding it
+	 now, restore saved state.  */
+      struct binding_level *bl = current_binding_level;
+      *cp_function_chain = *DECL_SAVED_FUNCTION_DATA (decl1);
+      current_binding_level = bl;
+
+      /* This function has not assigned to `this' yet.  */
+      current_function_assigns_this = 0;
+      current_function_just_assigned_this = 0;
+
+      /* This function is being processed in whole-function mode; we
+	 already did semantic analysis.  */
+      current_function->x_whole_function_mode_p = 1;
+
+      /* We don't need the saved data anymore.  */
+      free (DECL_SAVED_FUNCTION_DATA (decl1));
+      DECL_SAVED_FUNCTION_DATA (decl1) = NULL;
+    }
+  else if (ctype && !doing_friend && !DECL_STATIC_FUNCTION_P (decl1))
+    {
+      /* We know that this was set up by `grokclassfn'.  We do not
+	 wait until `store_parm_decls', since evil parse errors may
+	 never get us to that point.  Here we keep the consistency
+	 between `current_class_type' and `current_class_ptr'.  */
+      tree t = DECL_ARGUMENTS (decl1);
+	      
+      my_friendly_assert (t != NULL_TREE && TREE_CODE (t) == PARM_DECL, 
+			  162);
+      my_friendly_assert (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE,
+			  19990811);
+	  
+      cp_function_chain->x_current_class_ref 
+	= build_indirect_ref (t, NULL_PTR);
+      cp_function_chain->x_current_class_ptr = t;
+
+      if (DECL_DESTRUCTOR_P (decl1))
+	current_in_charge_parm = TREE_CHAIN (t);
+    }
+
   if (DECL_INTERFACE_KNOWN (decl1))
     {
       tree ctx = hack_decl_function_context (decl1);
@@ -12957,61 +13024,11 @@ start_function (declspecs, declarator, attrs, flags)
 	DECL_INTERFACE_KNOWN (decl1) = 1;
     }
 
-  if (ctype != NULL_TREE && DECL_STATIC_FUNCTION_P (decl1))
+  if (doing_semantic_analysis_p ())
     {
-      if (TREE_CODE (fntype) == METHOD_TYPE)
-	TREE_TYPE (decl1) = fntype
-	  = build_function_type (TREE_TYPE (fntype),
-				 TREE_CHAIN (TYPE_ARG_TYPES (fntype)));
-      current_function_parms = TREE_CHAIN (current_function_parms);
-      DECL_ARGUMENTS (decl1) = current_function_parms;
-      ctype = NULL_TREE;
+      pushlevel (0);
+      current_binding_level->parm_flag = 1;
     }
-
-  my_friendly_assert (current_class_ptr == NULL_TREE, 19990908);
-  my_friendly_assert (current_class_ref == NULL_TREE, 19990908);
-  if (ctype)
-    {
-      /* If we're compiling a friend function, neither of the variables
-	 current_class_ptr nor current_class_type will have values.  */
-      if (! doing_friend)
-	{
-	  /* We know that this was set up by `grokclassfn'.
-	     We do not wait until `store_parm_decls', since evil
-	     parse errors may never get us to that point.  Here
-	     we keep the consistency between `current_class_type'
-	     and `current_class_ptr'.  */
-	  tree t = current_function_parms;
-	  int i;
-	      
-	  my_friendly_assert (t != NULL_TREE
-			      && TREE_CODE (t) == PARM_DECL, 162);
-	  my_friendly_assert (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE,
-			      19990811);
-	  
-	  if (! hack_decl_function_context (decl1))
-	    temporary_allocation ();
-	  i = suspend_momentary ();
-	  
-	  /* Normally, build_indirect_ref returns current_class_ref
-	     whenever current_class_ptr is dereferenced.  This time,
-	     however, we want it to *create* current_class_ref, so we
-	     temporarily clear current_class_ptr to fool it.  */
-	  cp_function_chain->x_current_class_ref 
-	    = build_indirect_ref (t, NULL_PTR);
-	  cp_function_chain->x_current_class_ptr = t;
-	  
-	  if (DECL_DESTRUCTOR_P (decl1))
-	    current_in_charge_parm = TREE_CHAIN (t);
-
-	  resume_momentary (i);
-	  if (! hack_decl_function_context (decl1))
-	    end_temporary_allocation ();
-	}
-    }
-
-  pushlevel (0);
-  current_binding_level->parm_flag = 1;
 
   if (attrs)
     cplus_decl_attributes (decl1, NULL_TREE, attrs);
@@ -13057,16 +13074,9 @@ start_function (declspecs, declarator, attrs, flags)
 
   if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (decl1))
       && DECL_LANGUAGE (decl1) == lang_cplusplus)
-    {
-      dtor_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-      ctor_label = NULL_TREE;
-    }
-  else
-    {
-      dtor_label = NULL_TREE;
-      if (DECL_CONSTRUCTOR_P (decl1))
-	ctor_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-    }
+    dtor_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
+  else if (DECL_CONSTRUCTOR_P (decl1))
+    ctor_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
 
   return 1;
 }
@@ -13096,9 +13106,6 @@ store_parm_decls ()
   int parms_have_cleanups = 0;
   tree cleanups = NULL_TREE;
 
-  /* This is either a chain of PARM_DECLs (when a prototype is used).  */
-  tree specparms = current_function_parms;
-
   /* This is a list of types declared among parms in a prototype.  */
   tree parmtags = current_function_parm_tags;
 
@@ -13107,39 +13114,48 @@ store_parm_decls ()
      then CONST_DECLs for foo and bar are put here.  */
   tree nonparms = NULL_TREE;
 
-  if (toplevel_bindings_p ())
-    fatal ("parse errors have confused me too much");
-
   /* Create a binding level for the parms.  */
-  expand_start_bindings (0);
+  if (!building_stmt_tree ())
+    expand_start_bindings (2);
 
-  if (specparms != NULL_TREE)
+  if (current_function_parms)
     {
       /* This case is when the function was defined with an ANSI prototype.
 	 The parms already have decls, so we need not do anything here
 	 except record them as in effect
 	 and complain if any redundant old-style parm decls were written.  */
 
-      register tree next;
+      tree specparms = current_function_parms;
+      tree next;
 
-      /* Must clear this because it might contain TYPE_DECLs declared
-	 at class level.  */
-      storedecls (NULL_TREE);
+      if (doing_semantic_analysis_p ())
+	{
+	  /* Must clear this because it might contain TYPE_DECLs declared
+	     at class level.  */
+	  storedecls (NULL_TREE);
 
-      for (parm = nreverse (specparms); parm; parm = next)
+	  /* If we're doing semantic analysis, then we'll call pushdecl
+	     for each of these.  We must do them in reverse order so that
+	     they end in the correct forward order.  */
+	  specparms = nreverse (specparms);
+	}
+
+      for (parm = specparms; parm; parm = next)
 	{
 	  next = TREE_CHAIN (parm);
 	  if (TREE_CODE (parm) == PARM_DECL)
 	    {
 	      tree cleanup;
-	      if (DECL_NAME (parm) == NULL_TREE)
+	      
+	      if (doing_semantic_analysis_p ())
 		{
-		  pushdecl (parm);
+		  if (DECL_NAME (parm) == NULL_TREE
+		      || TREE_CODE (TREE_TYPE (parm)) != VOID_TYPE)
+		    pushdecl (parm);
+		  else
+		    cp_error ("parameter `%D' declared void", parm);
 		}
-	      else if (TREE_CODE (TREE_TYPE (parm)) == VOID_TYPE)
-		cp_error ("parameter `%D' declared void", parm);
-	      else
-		pushdecl (parm);
+
 	      if (! building_stmt_tree ()
 		  && (cleanup = maybe_build_cleanup (parm), cleanup))
 		{
@@ -13159,12 +13175,17 @@ store_parm_decls ()
 	    }
 	}
 
-      /* Get the decls in their original chain order
-	 and record in the function.  This is all and only the
-	 PARM_DECLs that were pushed into scope by the loop above.  */
-      DECL_ARGUMENTS (fndecl) = getdecls ();
+      if (doing_semantic_analysis_p ())
+	{
+	  /* Get the decls in their original chain order
+	     and record in the function.  This is all and only the
+	     PARM_DECLs that were pushed into scope by the loop above.  */
+	  DECL_ARGUMENTS (fndecl) = getdecls ();
+	  storetags (chainon (parmtags, gettags ()));
 
-      storetags (chainon (parmtags, gettags ()));
+	  /* We built up the cleanups in reversed order.  */
+	  cleanups = nreverse (cleanups);
+	}
     }
   else
     DECL_ARGUMENTS (fndecl) = NULL_TREE;
@@ -13173,8 +13194,8 @@ store_parm_decls ()
      as the decl-chain of the current lexical scope.
      Put the enumerators in as well, at the front so that
      DECL_ARGUMENTS is not modified.  */
-
-  storedecls (chainon (nonparms, DECL_ARGUMENTS (fndecl)));
+  if (doing_semantic_analysis_p ())
+    storedecls (chainon (nonparms, DECL_ARGUMENTS (fndecl)));
 
   /* Initialize the RTL code for the function.  */
   DECL_SAVED_INSNS (fndecl) = 0;
@@ -13192,17 +13213,15 @@ store_parm_decls ()
      cleanups.  We cannot do this before, since expand_decl_cleanup
      should not be called before the parm can be used.  */
   if (cleanups && !building_stmt_tree ())
-    {
-      for (cleanups = nreverse (cleanups); 
-	   cleanups; 
-	   cleanups = TREE_CHAIN (cleanups))
-	{
-	  if (! expand_decl_cleanup (TREE_PURPOSE (cleanups), 
-				     TREE_VALUE (cleanups)))
-	    cp_error ("parser lost in parsing declaration of `%D'",
-		      TREE_PURPOSE (cleanups));
-	}
-    }
+    while (cleanups)
+      {
+	if (! expand_decl_cleanup (TREE_PURPOSE (cleanups), 
+				   TREE_VALUE (cleanups)))
+	  cp_error ("parser lost in parsing declaration of `%D'",
+		    TREE_PURPOSE (cleanups));
+	
+	cleanups = TREE_CHAIN (cleanups);
+      }
 
   /* Create a binding contour which can be used to catch
      cleanup-generated temporaries.  Also, if the return value needs or
@@ -13211,15 +13230,14 @@ store_parm_decls ()
     {
       pushlevel (0);
       if (!building_stmt_tree ())
-	expand_start_bindings (0);
+	expand_start_bindings (2);
     }
 
-  if (! building_stmt_tree () && flag_exceptions)
-    {
-      /* Do the starting of the exception specifications, if we have any.  */
-      if (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)))
-	expand_start_eh_spec ();
-    }
+  /* Do the starting of the exception specifications, if we have any.  */
+  if (flag_exceptions && !processing_template_decl 
+      && building_stmt_tree () 
+      && TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)))
+    current_eh_spec_try_block = expand_start_eh_spec ();
 
   last_parm_cleanup_insn = get_last_insn ();
   last_dtor_insn = get_last_insn ();
@@ -13306,7 +13324,6 @@ finish_function (lineno, flags)
   rtx fn_last_parm_insn, insns;
   /* Label to use if this function is supposed to return a value.  */
   tree no_return_label = NULL_TREE;
-  tree decls = NULL_TREE;
   int call_poplevel = (flags & 1) != 0;
   int inclass_inline = (flags & 2) != 0;
   int expand_p;
@@ -13334,20 +13351,14 @@ finish_function (lineno, flags)
   if (building_stmt_tree ())
     {
       if (DECL_CONSTRUCTOR_P (fndecl) && call_poplevel)
-	{
-	  decls = getdecls ();
-	  expand_end_bindings (decls, decls != NULL_TREE, 0);
-	  poplevel (decls != NULL_TREE, 0, 0);
-	}
+	do_poplevel ();
 
-      /* Because we do not call expand_function_end, we won't call
-	 expand_end_bindings to match the call to
-	 expand_start_bindings we did in store_parm_decls.  Therefore,
-	 we explicitly call expand_end_bindings here.  However, we
-	 really shouldn't be calling expand_start_bindings at all when
-	 building_stmt_tree; it's conceptually an RTL-generation
-	 function, rather than a front-end function.  */
-      expand_end_bindings (0, 0, 0);
+      /* Finish dealing with exception specifiers.  */
+      if (flag_exceptions && !processing_template_decl
+	  && TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)))
+	expand_end_eh_spec (TYPE_RAISES_EXCEPTIONS 
+			    (TREE_TYPE (current_function_decl)),
+			    current_eh_spec_try_block);
     }
   else
     {
@@ -13401,8 +13412,7 @@ finish_function (lineno, flags)
 
 	  /* These initializations might go inline.  Protect
 	     the binding level of the parms.  */
-	  pushlevel (0);
-	  expand_start_bindings (0);
+	  do_pushlevel ();
 
 	  if (current_function_assigns_this)
 	    {
@@ -13511,8 +13521,7 @@ finish_function (lineno, flags)
 	    }
 
 	  /* End of destructor.  */
-	  expand_end_bindings (NULL_TREE, getdecls () != NULL_TREE, 0);
-	  poplevel (getdecls () != NULL_TREE, 0, 0);
+	  do_poplevel ();
 
 	  /* Back to the top of destructor.  */
 	  /* Don't execute destructor code if `this' is NULL.  */
@@ -13560,77 +13569,59 @@ finish_function (lineno, flags)
 	  if (! ok_to_optimize_dtor)
 	    expand_end_cond ();
 	}
-      else if (current_function_assigns_this)
-	{
-	  /* Does not need to call emit_base_init, because
-	     that is done (if needed) just after assignment to this
-	     is seen.  */
-
-	  if (DECL_CONSTRUCTOR_P (current_function_decl))
-	    {
-	      end_protect_partials ();
-	      expand_label (ctor_label);
-	      ctor_label = NULL_TREE;
-
-	      if (call_poplevel)
-		{
-		  decls = getdecls ();
-		  expand_end_bindings (decls, decls != NULL_TREE, 0);
-		  poplevel (decls != NULL_TREE, 0, 0);
-		}
-	      /* c_expand_return knows to return 'this' from a constructor.  */
-	      c_expand_return (NULL_TREE);
-	    }
-	  else if (TREE_CODE (TREE_TYPE (DECL_RESULT (current_function_decl))) != VOID_TYPE
-		   && return_label != NULL_RTX)
-	    no_return_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-
-	  current_function_assigns_this = 0;
-	  current_function_just_assigned_this = 0;
-	  base_init_expr = NULL_TREE;
-	}
       else if (DECL_CONSTRUCTOR_P (fndecl))
 	{
-	  tree cond = NULL_TREE, thenclause = NULL_TREE;
-	  /* Allow constructor for a type to get a new instance of the object
-	     using `build_new'.  */
-	  tree abstract_virtuals = CLASSTYPE_ABSTRACT_VIRTUALS (current_class_type);
-	  CLASSTYPE_ABSTRACT_VIRTUALS (current_class_type) = NULL_TREE;
-
-	  if (flag_this_is_variable > 0)
+	  /* If the current function assigns to `this', then code to
+	     initialize members and base-classes will be generated
+	     directly after the assignment.  */
+	  if (!current_function_assigns_this)
 	    {
-	      cond = build_binary_op (EQ_EXPR,
-				      current_class_ptr, integer_zero_node);
-	      thenclause = build_modify_expr (current_class_ptr, NOP_EXPR,
-					      build_new (NULL_TREE, current_class_type, void_type_node, 0));
+	      start_sequence ();
+
+	      if (flag_this_is_variable > 0)
+		{
+		  /* Allow constructor for a type to get a new instance of
+		     the object using `build_new'.  */
+		  tree cond = NULL_TREE, thenclause = NULL_TREE;
+		  tree abstract_virtuals 
+		    = CLASSTYPE_ABSTRACT_VIRTUALS (current_class_type);
+		  CLASSTYPE_ABSTRACT_VIRTUALS (current_class_type) = NULL_TREE;
+
+		  cond = build_binary_op (EQ_EXPR,
+					  current_class_ptr, integer_zero_node);
+
+		  expand_start_cond (cond, 0);
+
+		  thenclause 
+		    = build_modify_expr (current_class_ptr, NOP_EXPR,
+					 build_new (NULL_TREE,
+						    current_class_type,
+
+						    void_type_node, 0));
+		  CLASSTYPE_ABSTRACT_VIRTUALS (current_class_type) 
+		    = abstract_virtuals;
+		  expand_expr_stmt (thenclause);
+		  expand_end_cond ();
+		}
+
+	      /* Emit insns from `emit_base_init' which sets up
+		 virtual function table pointer(s).  Don't do this for
+		 a function which assigns to `this' as we will emit
+		 the appropriate code right after the assignment.  */
+	      if (!current_function_assigns_this && base_init_expr)
+		{
+		  expand_expr_stmt (base_init_expr);
+		  base_init_expr = NULL_TREE;
+		}
+
+	      insns = get_insns ();
+	      end_sequence ();
+
+	      emit_insns_after (insns, last_parm_cleanup_insn);
 	    }
 
-	  CLASSTYPE_ABSTRACT_VIRTUALS (current_class_type) = abstract_virtuals;
-
-	  start_sequence ();
-
-	  if (flag_this_is_variable > 0)
-	    {
-	      expand_start_cond (cond, 0);
-	      expand_expr_stmt (thenclause);
-	      expand_end_cond ();
-	    }
-
-	  /* Emit insns from `emit_base_init' which sets up virtual
-	     function table pointer(s).  */
-	  if (base_init_expr)
-	    {
-	      expand_expr_stmt (base_init_expr);
-	      base_init_expr = NULL_TREE;
-	    }
-
-	  insns = get_insns ();
-	  end_sequence ();
-
-	  /* This is where the body of the constructor begins.  */
-
-	  emit_insns_after (insns, last_parm_cleanup_insn);
-
+	  /* This is where the body of the constructor begins.  All
+	     subobjects have been fully constructed at this point.  */
 	  end_protect_partials ();
 
 	  /* This is where the body of the constructor ends.  */
@@ -13638,11 +13629,7 @@ finish_function (lineno, flags)
 	  ctor_label = NULL_TREE;
 
 	  if (call_poplevel)
-	    {
-	      decls = getdecls ();
-	      expand_end_bindings (decls, decls != NULL_TREE, 0);
-	      poplevel (decls != NULL_TREE, 1, 0);
-	    }
+	    do_poplevel ();
 
 	  /* c_expand_return knows to return 'this' from a constructor.  */
 	  c_expand_return (NULL_TREE);
@@ -13660,8 +13647,13 @@ finish_function (lineno, flags)
 #endif
 	}
       else if (return_label != NULL_RTX
-	       && current_function_return_value == NULL_TREE
-	       && ! DECL_NAME (DECL_RESULT (current_function_decl)))
+	       && ((flag_this_is_variable <= 0
+		    && current_function_return_value == NULL_TREE
+		    && ! DECL_NAME (DECL_RESULT (current_function_decl)))
+		   || (flag_this_is_variable > 0
+		       && (TREE_CODE (TREE_TYPE (DECL_RESULT
+						 (current_function_decl)))
+			   == VOID_TYPE))))
 	no_return_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
 
       if (flag_exceptions)
@@ -13743,9 +13735,12 @@ finish_function (lineno, flags)
   /* This must come after expand_function_end because cleanups might
      have declarations (from inline functions) that need to go into
      this function's blocks.  */
-  if (current_binding_level->parm_flag != 1)
-    my_friendly_abort (122);
-  poplevel (1, 0, 1);
+  if (doing_semantic_analysis_p ())
+    {
+      if (current_binding_level->parm_flag != 1)
+	my_friendly_abort (122);
+      poplevel (1, 0, 1);
+    }
 
   /* Remember that we were in class scope.  */
   if (current_class_name)
@@ -13887,7 +13882,7 @@ finish_function (lineno, flags)
   if (! nested)
     permanent_allocation (1);
 
-  if (DECL_SAVED_INSNS (fndecl) == 0)
+  if (!DECL_SAVED_INSNS (fndecl) && !DECL_SAVED_FUNCTION_DATA (fndecl))
     {
       tree t;
 
@@ -14314,9 +14309,9 @@ push_cp_function_context (f)
        xcalloc (1, sizeof (struct language_function)));
   f->language = p;
 
-  /* For now, we always assume we're expanding all the way to RTL
-     unless we're explicitly doing otherwise.  */
-  expanding_p = 1;
+  /* It takes an explicit call to expand_body to generate RTL for a
+     function.  */
+  expanding_p = 0;
 
   /* Whenever we start a new function, we destroy temporaries in the
      usual way.  */
@@ -14353,6 +14348,8 @@ mark_lang_function (p)
   ggc_mark_tree (p->x_current_class_ref);
   ggc_mark_tree (p->x_last_tree);
   ggc_mark_tree (p->x_last_expr_type);
+  ggc_mark_tree (p->x_eh_spec_try_block);
+  ggc_mark_tree (p->x_scope_stmt_stack);
 
   ggc_mark_rtx (p->x_last_dtor_insn);
   ggc_mark_rtx (p->x_last_parm_cleanup_insn);
