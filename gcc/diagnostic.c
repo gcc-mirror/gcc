@@ -1243,26 +1243,7 @@ void
 report_error_function (file)
   const char *file ATTRIBUTE_UNUSED;
 {
-  struct file_stack *p;
-
-  if (output_needs_newline (diagnostic_buffer))
-    {
-      verbatim ("\n");
-      output_needs_newline (diagnostic_buffer) = 0;
-    }
-
-  if (input_file_stack && input_file_stack->next != 0
-      && error_function_changed ())
-    {
-      for (p = input_file_stack->next; p; p = p->next)
-	if (p == input_file_stack->next)
-	  verbatim ("In file included from %s:%d", p->name, p->line);
-	else
-	  verbatim (",\n                 from %s:%d", p->name, p->line);
-      verbatim (":\n");
-      record_last_error_function ();
-    }
-
+  report_problematic_module (diagnostic_buffer);
   (*print_error_function) (input_filename);
 }
 
@@ -1675,6 +1656,33 @@ set_diagnostic_context (dc, message, args_ptr, file, line, warn)
   diagnostic_is_warning (dc) = warn;
   diagnostic_starter (dc) = lang_diagnostic_starter;
   diagnostic_finalizer (dc) = lang_diagnostic_finalizer;
+}
+
+void
+report_problematic_module (buffer)
+     output_buffer *buffer;
+{
+  struct file_stack *p;
+
+  if (output_needs_newline (buffer))
+    {
+      output_verbatim (buffer, "\n");
+      output_needs_newline (buffer) = 0;
+    }
+
+  if (input_file_stack && input_file_stack->next != 0
+      && error_function_changed ())
+    {
+      for (p = input_file_stack->next; p; p = p->next)
+	if (p == input_file_stack->next)
+	  output_verbatim
+            (buffer, "In file included from %s:%d", p->name, p->line);
+	else
+	  output_verbatim
+            (buffer, ",\n                 from %s:%d", p->name, p->line);
+      output_verbatim (buffer, ":\n");
+      record_last_error_function ();
+    }
 }
 
 static void

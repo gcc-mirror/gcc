@@ -1,3 +1,9 @@
+2000-08-22  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* diagnostic.h (report_problematic_module): Declare.
+	* diagnostic.c (report_problematic_module): New function.
+	(report_error_function): Tweak.
+
 Tue Aug 22 02:31:26 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* stmt.c (expand_goto_internal, fixup_gotos): Only check
