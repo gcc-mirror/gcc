@@ -1,3 +1,8 @@
+2001-10-11  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (rtl_for_decl_location): If no DECL_RTL, look
+	for a DECL_INITIAL.
+
 2001-10-11  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/xcoff.h (UNALIGNED_DOUBLE_INT_ASM_OP): Only
