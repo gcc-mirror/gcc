@@ -58,6 +58,7 @@
 #include "obstack.h"
 #include "toplev.h"
 #include "varray.h"
+#include "flags.h"
 
 /* Debugging support.  */
 

@@ -179,6 +179,9 @@ Common
 fPIE
 Common
 
+fabi-version=
+Common Joined UInteger
+
 falign-functions
 Common
 Align the start of functions
