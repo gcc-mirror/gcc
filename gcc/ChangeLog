@@ -1,3 +1,15 @@
+2004-07-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* vec.h (VEC_embedded_alloc): Remove.
+	(VEC_embedded_size, VEC_embedded_init): New.
+	(VEC_alloc, VEC_reserve, VEC_safe_push, VEC_safe_insert): Add
+	MEM_STAT_INFO.
+	(VEC_truncate): New.
+	(vec_p_reserve, vec_o_reserve): Add MEM_STAT_DECL.
+	(vec_embedded_alloc): Remove.
+	* vec.c (vec_p_reserve, vec_o_reserve): Add MEM_STAT_DECL, adjust.
+	(vec_embedded_alloc): Remove.
+
 2004-07-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (langhooks.o): Do not depend on gt-langhooks.h.
