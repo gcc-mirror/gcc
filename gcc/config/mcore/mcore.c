@@ -23,7 +23,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "tree.h"
 #include "tm_p.h"
 #include "assert.h"
-#include "gansidecl.h"
 #include "mcore.h"
 #include "regs.h"
 #include "hard-reg-set.h"

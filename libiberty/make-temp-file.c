@@ -61,9 +61,9 @@ extern int mkstemps PARAMS ((char *, int));
    If success, DIR is returned.
    Otherwise NULL is returned.  */
 
-static const char *try PARAMS ((const char *, const char *));
+static inline const char *try PARAMS ((const char *, const char *));
 
-static const char *
+static inline const char *
 try (dir, base)
      const char *dir, *base;
 {

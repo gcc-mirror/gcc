@@ -1901,7 +1901,7 @@ $(HOST_PREFIX_1)ggc-none.o: ggc-none.c $(HCONFIG_H) $(SYSTEM_H)
 #
 # Remake internationalization support.
 
-intl.o: intl.c intl.h gansidecl.h Makefile
+intl.o: intl.c intl.h Makefile
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DLOCALEDIR=\"$(localedir)\" \
 	  -c $(srcdir)/intl.c

@@ -1,6 +1,6 @@
 /* intl.c - internationalization */
 
-#include "gansidecl.h"
+#include "ansidecl.h"
 #include "intl.h"
 
 const char localedir[] = LOCALEDIR;

@@ -18,7 +18,6 @@ along with GNU CC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
-#include "gansidecl.h"
 #include "varray.h"
 
 /* Symbols are marked with `ggc' for `gcc gc' so as not to interfere with

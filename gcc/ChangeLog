@@ -1,3 +1,19 @@
+2001-04-03  Zack Weinberg  <zackw@stanford.edu>
+
+	* gansidecl.h: Delete file.
+	* configure.in: Change all refs to gansidecl.h to use
+	ansidecl.h.  Adjust *_file_list so they know where ansidecl.h
+	lives.
+	* configure: Regenerate.
+
+	* Makefile.in (intl.o): Don't depend on gansidecl.h.
+	* defaults.h: s/gansidecl.h/ansidecl.h/ in comment.
+	* ggc.h, config/fr30/fr30.h, config/mcore/mcore.c:
+	Don't include gansidecl.h.
+	* intl.c, main.c, version.c, fixinc/fixlib.h,
+	fixinc/procopen.c, fixinc/server.c: Include ansidecl.h not
+	gansidecl.h.
+
 Tue Apr  3 19:41:21 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_force_to_memory, ix86_free_from_memory):
@@ -21,7 +37,7 @@ Tue Apr  3 19:41:21 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-04-03  Jakub Jelinek  <jakub@redhat.com>
 	    David S. Miller  <davem@pierdol.cobaltmicro.com>
-            Andrew MacLeod  <amacleod@redhat.com>
+	    Andrew MacLeod  <amacleod@redhat.com>
 
 	Use byte offsets in SUBREGs instead of words.
 
@@ -66,7 +82,7 @@ Tue Apr  3 19:41:21 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(constant_subword): New function, pulled out all constant cases
 	from operand_subword and changed second argument name to offset.
 	(operand_subword): Detect non REG/SUBREG/CONCAT/MEM cases early
-	and call constant_subword to do the work.  Return const0_rtx if 
+	and call constant_subword to do the work.  Return const0_rtx if
 	looking for a word outside of OP.
 	(operand_subword_force): Change second arg name to offset.
 	* expmed.c (store_bit_field): Use SUBREG_BYTE.
@@ -74,7 +90,7 @@ Tue Apr  3 19:41:21 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(extract_bit_field): Use SUBREG_BYTE.
 	(extract_split_bit_field): Use SUBREG_BYTE.
 	(expand_shift): Use SUBREG_BYTE.
-	* expr.c (store_expr, expand_expr): Use gen_lowpart_SUBREG. 
+	* expr.c (store_expr, expand_expr): Use gen_lowpart_SUBREG.
 	* final.c (alter_subreg) Use subreg_hard_regno and SUBREG_BYTE.
 	* flow.c (set_noop_p): Use SUBREG_BYTE.
 	(mark_set_1): Remove ALTER_HARD_SUBREG. Use subreg_regno_offset instead.
@@ -84,7 +100,7 @@ Tue Apr  3 19:41:21 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(optimize_bit_field): Use SUBREG_BYTE.
 	(purge_addressof_1): Use SUBREG_BYTE.
 	(purge_single_hard_subreg_set): Use subreg_regno_offset function.
-	(assign_params): Mark arguments SUBREG_PROMOTED_VAR_P if they are 
+	(assign_params): Mark arguments SUBREG_PROMOTED_VAR_P if they are
 	actually promoted by the caller and PROMOTE_FOR_CALLS_ONLY is true.
 	* gengenrtl.c (special_rtx): Add SUBREG.
 	* global.c (mark_reg_store): Use SUBREG_BYTE.
@@ -99,7 +115,7 @@ Tue Apr  3 19:41:21 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* local-alloc.c (combine_regs): Use subreg_regno_offset function.
 	(reg_is_born): Use subreg_hard_regno.
 	* recog.c (valid_replace_rtx_1): Use SUBREG_BYTE and remove byte
-	endian correction code.  Don't combine subregs unless resulting 
+	endian correction code.  Don't combine subregs unless resulting
 	offset aligns with type.  Fix subreg constant extraction for DImode.
 	Simplify SUBREG of VOIDmode CONST_DOUBLE.
 	(general_operand): Remove dead mode_altering_drug code.
@@ -110,13 +126,13 @@ Tue Apr  3 19:41:21 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(optimize_reg_copy_3): Use gen_lowpart_SUBREG.
 	* regs.h (REG_SIZE): Allow target to override.
 	(REGMODE_NATURAL_SIZE): New macro which target can override.
-	* reload.c (reload_inner_reg_of_subreg): subreg_regno should be used 
+	* reload.c (reload_inner_reg_of_subreg): subreg_regno should be used
 	on the entire subreg rtx.
 	(push_reload): Use SUBREG_BYTE in comments and code.
 	(find_dummy_reload): Use subreg_regno_offset.  Only adjust offsets
 	for hard registers inside subregs.
 	(operands_match_p): Use subreg_regno_offset.
-	(find_reloads): Use SUBREG_BYTE and only advance offset for subregs 
+	(find_reloads): Use SUBREG_BYTE and only advance offset for subregs
 	containing hard regs.
 	(find_reload_toplev): Use SUBREG_BYTE.  Remove byte endian
 	corrections when fixing up MEM subregs.
@@ -136,7 +152,7 @@ Tue Apr  3 19:41:21 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(emit_input_reload_insns): Use SUBREG_BYTE.
 	(reload_combine_note_store): Use subreg_regno_offset.
 	(move2add_note_store): Use subreg_regno_offset.
-	* resource.c (update_live_status, mark_referenced_resources): Use 
+	* resource.c (update_live_status, mark_referenced_resources): Use
 	subreg_regno function.
 	(mark_set_resources): Use subreg_regno function.
 	* rtl.h (SUBREG_WORD): Rename to SUBREG_BYTE.
@@ -224,11 +240,11 @@ Tue Apr  3 19:41:21 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	it is congruent to SUBREG's mode size.
 	(smulsi3_highpart_v8plus): Fix explicit subregs in rtl to use byte
 	offsets.
-	(cmp_siqi_trunc, cmp_siqi_trunc_set, cmp_diqi_trunc, 
-	cmp_diqi_trunc_set, lshrdi3_v8plus+1, lshrdi3_v8plus+2, 
+	(cmp_siqi_trunc, cmp_siqi_trunc_set, cmp_diqi_trunc,
+	cmp_diqi_trunc_set, lshrdi3_v8plus+1, lshrdi3_v8plus+2,
 	lshrdi3_v8plus+3, lshrdi3_v8plus+4): Use proper
 	SUBREG_BYTE offset for non-paradoxical subregs in patterns.
-	* config/v850/v850.c (print_operand, output_move_double): Use 
+	* config/v850/v850.c (print_operand, output_move_double): Use
 	subreg_regno function.
 
 2001-04-03  Alexandre Oliva  <aoliva@redhat.com>
@@ -386,7 +402,7 @@ Fri Mar 30 00:21:41 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	output template.
 
 	* MAINTAINERS: Added self.
-	
+
 2001-03-28  Richard Henderson  <rth@redhat.com>
 
 	* Makefile.in (cs-tconfig.h): Depend on CONFIG_H, not GCONFIG_H.
@@ -403,7 +419,7 @@ Fri Mar 30 00:21:41 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* tradcif.y (yyerror): Likewise.  Add format specifier in call to
 	`error'.
-	
+
 	* tradcpp.c (macroexpand): Likewise for call to `error_with_line'.
 
 2001-03-28  DJ Delorie  <dj@redhat.com>
@@ -525,7 +541,7 @@ Fri Mar 30 00:21:41 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(LTI_unwind_sjlj_register, LTI_unwind_sjlj_unregister): Add.
 	* final.c (final): Don't call check_exception_handler_labels,
 	init_insn_eh_region, or free_insn_eh_region.
-	(final_scan_insn): Always emit debug labels for 
+	(final_scan_insn): Always emit debug labels for
 	NOTE_INSN_EH_REGION notes.
 	* flags.h (flag_new_exceptions): Remove.
 	* flow.c (entry_exit_blocks): Remove eh_beg, eh_end.
@@ -542,7 +558,7 @@ Fri Mar 30 00:21:41 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(flow_delete_block): Use maybe_remove_eh_handler.
 	(delete_eh_regions): Remove.
 	(merge_blocks): Don't check for eh region match.
-	(mark_regs_live_at_end): Handle EH_RETURN_DATA_REGNO, 
+	(mark_regs_live_at_end): Handle EH_RETURN_DATA_REGNO,
 	EH_RETURN_STACKADJ_RTX, EH_RETURN_HANDLER_RTX.
 	(init_propagate_block_info): Disable dead frame store optimization
 	when current_function_calls_eh_return.
@@ -624,7 +640,7 @@ Fri Mar 30 00:21:41 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	jump.c, toplev.c:
 	Rename asynchronous_exceptions to flag_non_call_exceptions.
 
-	* gthr-single.h (UNUSED): New.  Distinguish between how C 
+	* gthr-single.h (UNUSED): New.  Distinguish between how C
 	and C++ mark unused function arguments.  Use throughout.
 
 	* Makefile.in (cs-tconfig.h): Copy USING_SJLJ_EXCEPTIONS

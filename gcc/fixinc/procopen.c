@@ -46,7 +46,7 @@
  * If you do not wish that, delete this exception notice.
  */
 #include "auto-host.h"
-#include "gansidecl.h"
+#include "ansidecl.h"
 #include "system.h"
 
 #include "server.h"

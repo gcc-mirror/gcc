@@ -592,11 +592,11 @@ CFLAGS="$CFLAGS -I${srcdir} -I${srcdir}/../include"
 gcc_AC_CHECK_DECLS(getenv atol sbrk abort atof getcwd getwd \
 	strsignal putc_unlocked fputs_unlocked strstr environ \
 	malloc realloc calloc free basename getopt, , ,[
-#include "gansidecl.h"
+#include "ansidecl.h"
 #include "system.h"])
 
 gcc_AC_CHECK_DECLS(getrlimit setrlimit getrusage, , ,[
-#include "gansidecl.h"
+#include "ansidecl.h"
 #include "system.h"
 #ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
@@ -802,9 +802,9 @@ else
 fi
 
 tm_file="${tm_file} defaults.h"
-host_xm_file="auto-host.h gansidecl.h ${host_xm_file} ${tm_file}"
-build_xm_file="${build_auto} gansidecl.h ${build_xm_file} ${tm_file}"
-xm_file="gansidecl.h ${xm_file} ${tm_file}"
+host_xm_file="auto-host.h ansidecl.h ${host_xm_file} ${tm_file}"
+build_xm_file="${build_auto} ansidecl.h ${build_xm_file} ${tm_file}"
+xm_file="ansidecl.h ${xm_file} ${tm_file}"
 
 # Truncate the target if necessary
 if test x$host_truncate_target != x; then
@@ -975,7 +975,9 @@ out_object_file=`basename $out_file .c`.o
 tm_file_list=
 for f in $tm_file; do
   case $f in
-    gansidecl.h | defaults.h )
+    ansidecl.h )
+       tm_file_list="${tm_file_list} \$(srcdir)/../include/ansidecl.h" ;;
+    defaults.h )
        tm_file_list="${tm_file_list} $f" ;;
     *) tm_file_list="${tm_file_list} \$(srcdir)/config/$f" ;;
   esac
@@ -989,7 +991,9 @@ done
 host_xm_file_list=
 for f in $host_xm_file; do
   case $f in
-    auto-host.h | gansidecl.h | defaults.h )
+    ansidecl.h )
+       host_xm_file_list="${host_xm_file_list} \$(srcdir)/../include/ansidecl.h" ;;
+    auto-host.h | defaults.h )
        host_xm_file_list="${host_xm_file_list} $f" ;;
     *) host_xm_file_list="${host_xm_file_list} \$(srcdir)/config/$f" ;;
   esac
@@ -998,7 +1002,9 @@ done
 build_xm_file_list=
 for f in $build_xm_file; do
   case $f in
-    auto-build.h | auto-host.h | gansidecl.h | defaults.h )
+    ansidecl.h )
+       build_xm_file_list="${build_xm_file_list} \$(srcdir)/../include/ansidecl.h" ;;
+    auto-build.h | auto-host.h | defaults.h )
        build_xm_file_list="${build_xm_file_list} $f" ;;
     *) build_xm_file_list="${build_xm_file_list} \$(srcdir)/config/$f" ;;
   esac
