@@ -915,6 +915,14 @@ gen_shifty_op (code, operands)
 	    }
 	}
     }
+  else if (value == 0)
+    {
+      /* This can happen when not optimizing.  We must output something here
+	 to prevent the compiler from aborting in final.c after the try_split
+	 call.  */
+      emit_insn (gen_nop ());
+      return;
+    }
 
   max = shift_insns[value];
   for (i = 0; i < max; i++)
@@ -1232,6 +1240,8 @@ find_barrier (from)
   int found_si = 0;
   rtx found_barrier = 0;
   rtx found_mova = 0;
+  int si_limit;
+  int hi_limit;
 
   /* For HImode: range is 510, add 4 because pc counts from address of
      second instruction after this one, subtract 2 for the jump instruction
@@ -1240,7 +1250,24 @@ find_barrier (from)
      second instruction after this one, subtract 2 in case pc is 2 byte
      aligned, subtract 2 for the jump instruction that we may need to emit
      before the table.  This gives 1020.  */
-  while (from && count_si < 1020 && count_hi < 512)
+
+  /* If not optimizing, then it is possible that the jump instruction we add
+     won't be shortened, and thus will have a length of 14 instead of 2.
+     We must adjust the limits downwards to account for this, giving a limit
+     of 1008 for SImode and 500 for HImode.  */
+
+  if (optimize)
+    {
+      si_limit = 1020;
+      hi_limit = 512;
+    }
+  else
+    {
+      si_limit = 1008;
+      hi_limit = 500;
+    }
+
+  while (from && count_si < si_limit && count_hi < hi_limit)
     {
       int inc = get_attr_length (from);
 
@@ -1249,9 +1276,15 @@ find_barrier (from)
 
       if (broken_move (from))
 	{
-	  rtx src = SET_SRC (PATTERN (from));
+	  rtx pat = PATTERN (from);
+	  rtx src = SET_SRC (pat);
+	  rtx dst = SET_DEST (pat);
+	  enum machine_mode mode = GET_MODE (dst);
 
-	  if (hi_const (src))
+	  /* We must explicitly check the mode, because sometimes the
+	     front end will generate code to load unsigned constants into
+	     HImode targets without properly sign extending them.  */
+	  if (mode == HImode || (mode == SImode && hi_const (src)))
 	    {
 	      found_hi = 1;
 	      /* We put the short constants before the long constants, so
@@ -1296,7 +1329,7 @@ find_barrier (from)
       /* If we exceeded the range, then we must back up over the last
 	 instruction we looked at.  Otherwise, we just need to undo the
 	 NEXT_INSN at the end of the loop.  */
-      if (count_hi > 512 || count_si > 1020)
+      if (count_hi > hi_limit || count_si > si_limit)
 	from = PREV_INSN (PREV_INSN (from));
       else
 	from = PREV_INSN (from);
@@ -1646,7 +1679,17 @@ machine_dependent_reorg (first)
 						      dst, newsrc), scan);
 		  REG_NOTES (newinsn) = REG_NOTES (scan);
 		  REG_NOTES (scan) = NULL_RTX;
-		  delete_insn (scan);
+		  /* If not optimizing, then delete_insn doesn't remove the
+		     insn from the chain, and hence is not useful.  We
+		     convert the instruction to a NOTE in that case.  */
+		  if (optimize)
+		    delete_insn (scan);
+		  else
+		    {
+		      PUT_CODE (scan, NOTE);
+		      NOTE_LINE_NUMBER (scan) = NOTE_INSN_DELETED;
+		      NOTE_SOURCE_FILE (insn) = 0;
+		    }
 		  scan = newinsn;
 		}
 	    }
