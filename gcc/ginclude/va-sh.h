@@ -23,9 +23,6 @@ typedef struct {
 
 typedef void *__gnuc_va_list;
 
-#define __va_rounded_size(TYPE)  \
-  (((sizeof (TYPE) + sizeof (int) - 1) / sizeof (int)) * sizeof (int))
-
 #endif /* ! SH3E */
 
 #endif /* __GNUC_VA_LIST */
@@ -116,6 +113,17 @@ enum __va_type_classes {
 #endif
 #define va_end(pvar)	((void)0)
 
+#ifdef __LITTLE_ENDIAN__
+#define __LITTLE_ENDIAN_P 1
+#else
+#define __LITTLE_ENDIAN_P 0
+#endif
+
+#define __SCALAR_TYPE(TYPE)					\
+  ((TYPE) == __integer_type_class				\
+   || (TYPE) == __char_type_class				\
+   || (TYPE) == __enumeral_type_class)
+
 /* RECORD_TYPE args passed using the C calling convention are
    passed by invisible reference.  ??? RECORD_TYPE args passed
    in the stack are made to be word-aligned; for an aggregate that is
@@ -123,97 +131,52 @@ enum __va_type_classes {
 
 #ifdef __SH3E__
 
-#ifdef __LITTLE_ENDIAN__
+#define __PASS_AS_FLOAT(TYPE_CLASS,SIZE) \
+  (TYPE_CLASS == __real_type_class && SIZE == 4)
 
 #define va_arg(pvar,TYPE)					\
 __extension__							\
-(*({int __type = __builtin_classify_type (* (TYPE *) 0);	\
-  void * __result;						\
-  if (__type == __real_type_class && sizeof(TYPE) == 4)		\
-						/* float? */	\
+({int __type = __builtin_classify_type (* (TYPE *) 0);		\
+  void * __result_p;						\
+  if (__PASS_AS_FLOAT (__type, sizeof(TYPE)))			\
     {								\
-      __va_freg *__r;						\
       if (pvar.__va_next_fp < pvar.__va_next_fp_limit)		\
-	__r = (__va_freg *) pvar.__va_next_fp++;		\
+	{							\
+	  __result_p = &pvar.__va_next_fp;			\
+	}							\
       else							\
-	__r = (__va_freg *) pvar.__va_next_stack++;		\
-      __result = (char *) __r;					\
+	__result_p = &pvar.__va_next_stack;			\
     }								\
   else								\
     {								\
-      __va_greg *_r;						\
       if (pvar.__va_next_o + ((sizeof (TYPE) + 3) / 4)		\
 	  <= pvar.__va_next_o_limit) 				\
-	{							\
-	  _r = pvar.__va_next_o;				\
-	  pvar.__va_next_o += (sizeof (TYPE) + 3) / 4;		\
-	}							\
+	__result_p = &pvar.__va_next_o;				\
       else							\
-	{							\
-	  _r = pvar.__va_next_stack;				\
-	  pvar.__va_next_stack += (sizeof (TYPE) + 3) / 4;	\
-	}							\
-      __result = (char *) _r;					\
+	__result_p = &pvar.__va_next_stack;			\
     } 								\
-  (TYPE *) __result;}))
-
-#else /* ! __LITTLE_ENDIAN__ */
-
-#define va_arg(pvar,TYPE)					\
-__extension__							\
-(*({int __type = __builtin_classify_type (* (TYPE *) 0);	\
-  void * __result;						\
-  if (__type == __real_type_class && sizeof(TYPE) == 4)		\
-						/* float? */	\
-    {								\
-      __va_freg *__r;						\
-      if (pvar.__va_next_fp < pvar.__va_next_fp_limit)		\
-	__r = (__va_freg *) pvar.__va_next_fp++;		\
-      else							\
-	__r = (__va_freg *) pvar.__va_next_stack++;		\
-      __result = (char *) __r;					\
-    }								\
-  else								\
-    {								\
-      __va_greg *_r;						\
-      if (pvar.__va_next_o + ((sizeof (TYPE) + 3) / 4)		\
-	  <= pvar.__va_next_o_limit) 				\
-	{							\
-	  pvar.__va_next_o += (sizeof (TYPE) + 3) / 4;		\
-	  _r = pvar.__va_next_o;				\
-	}							\
-      else							\
-	{							\
-	  pvar.__va_next_stack += (sizeof (TYPE) + 3) / 4;	\
-	  _r = pvar.__va_next_stack;				\
-	}							\
-      __result = ((char *) _r					\
-		  - (sizeof (TYPE) < 4 ? sizeof (TYPE)		\
-		     : ((sizeof (TYPE) + 3) / 4) * 4));		\
-    } 								\
-  (TYPE *) __result;}))
-
-#endif /* __LITTLE_ENDIAN__ */
+  /* When this is a smaller-than-int integer, using		\
+     auto-increment in the promoted (SImode) is fastest;	\
+     however, we have to be wary of small structures and	\
+     their ilk.  */						\
+  ((sizeof (TYPE) < 4 && ! __SCALAR_TYPE(__type)			\
+    && ! __LITTLE_ENDIAN_P)					\
+   ? *(TYPE *) ((char *) ++*(int **) __result_p - sizeof (TYPE))\
+   : sizeof (TYPE) < 4						\
+   ? ((union { TYPE t; int i;} )*(*(int **) __result_p)++).t	\
+   : *(*(TYPE **) __result_p)++);})
 
 #else /* ! SH3E */
 
-#ifdef __LITTLE_ENDIAN__
-
-/* This is for little-endian machines; small args are padded upward.  */
-#define va_arg(AP, TYPE)						\
- (AP = (__gnuc_va_list) ((char *) (AP) + __va_rounded_size (TYPE)),	\
-  *((TYPE *) (void *) ((char *) (AP) - __va_rounded_size (TYPE))))
-
-#else /* ! __LITTLE_ENDIAN__ */
-
-/* This is for big-endian machines; small args are padded downward.  */
-#define va_arg(AP, TYPE)						\
- (AP = (__gnuc_va_list) ((char *) (AP) + __va_rounded_size (TYPE)),	\
-  *((TYPE *) (void *) ((char *) (AP)					\
-		       - ((sizeof (TYPE) < __va_rounded_size (char)	\
-			   ? sizeof (TYPE) : __va_rounded_size (TYPE))))))
-
-#endif /* __LITTLE_ENDIAN__ */
+#define va_arg(AP, TYPE) __extension__ 				\
+__extension__							\
+({int __type = __builtin_classify_type (* (TYPE *) 0);		\
+  ((sizeof (TYPE) < 4 && ! __SCALAR_TYPE(__type)			\
+    && ! __LITTLE_ENDIAN_P)					\
+   ? *(TYPE *) ((char *) ++(int *) (AP) - sizeof (TYPE))	\
+   : sizeof (TYPE) < 4						\
+   ? ((union { TYPE t; int i;} )*((int *) (AP))++).t		\
+   : *((TYPE *) (AP))++);})
 
 #endif /* SH3E */
 
