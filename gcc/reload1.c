@@ -5627,7 +5627,7 @@ emit_reload_insns (insn)
 	      && REGNO (oldequiv) < FIRST_PSEUDO_REGISTER
 	      && spill_reg_order[REGNO (oldequiv)] >= 0
 	      && spill_reg_store[reload_spill_index[REGNO (oldequiv)]] != 0
-	      && dead_or_set_p (insn, reload_in[j])
+	      && find_reg_note (insn, REG_DEAD, reload_in[j])
 	      /* This is unsafe if operand occurs more than once in current
 		 insn.  Perhaps some occurrences weren't reloaded.  */
 	      && count_occurrences (PATTERN (insn), reload_in[j]) == 1
