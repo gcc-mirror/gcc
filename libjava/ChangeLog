@@ -26,9 +26,10 @@
 
 2000-09-30  Tom Tromey  <tromey@cygnus.com>
 
-        * posix-threads.cc (_Jv_CondWait): Check to see if we are
-        interrupted before modifying the cv's wait set.
-	
+	* posix-threads.cc (_Jv_CondWait): Check to see if we are
+	interrupted before modifying the cv's wait set.
+	From Corey Minyard.
+
 2000-09-30  Hans Boehm  <boehm@acm.org>
 	    Bryce McKinlay  <bryce@albatross.co.nz>
 	    
