@@ -1,3 +1,7 @@
+2001-03-15  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* lex.c: Delete duplicate pending_lang_change.
+
 2001-03-15  Zack Weinberg  <zackw@stanford.edu>
 
 	* decl.c: Replace all uses of 'boolean' with 'bool'.

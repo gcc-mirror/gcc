@@ -84,10 +84,6 @@ static void init_operators PARAMS ((void));
 
 #include "cpplib.h"
 
-/* Pending language change.
-   Positive is push count, negative is pop count.  */
-int pending_lang_change = 0;
-
 extern int yychar;		/*  the lookahead symbol		*/
 extern YYSTYPE yylval;		/*  the semantic value of the		*/
 				/*  lookahead symbol			*/
