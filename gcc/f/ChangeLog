@@ -1,3 +1,10 @@
+2001-05-23  Theodore Papadopoulo  <Theodore.Papadopoulo@sophia.inria.fr>
+
+	* Make-lang.in ($(srcdir)/f/g77.info): Added dependencies on
+	fdl.texi.
+	(f/g77.dvi): Use TEXI2DVI instead of custom tex calls.  Create the
+	dvi file in the f directory.
+
 2001-05-25  Sam TH  <sam@uchicago.edu>
 
 	* bad.h: Fix header include guards.
