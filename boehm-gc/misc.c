@@ -819,7 +819,6 @@ struct callinfo info[NFRAMES];
 
 #endif /* SAVE_CALL_CHAIN */
 
-# ifdef SRC_M3
 void GC_enable()
 {
     GC_dont_gc--;
@@ -829,7 +828,6 @@ void GC_disable()
 {
     GC_dont_gc++;
 }
-# endif
 
 #if !defined(NO_DEBUGGING)
 
