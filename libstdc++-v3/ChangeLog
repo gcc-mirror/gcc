@@ -1,3 +1,9 @@
+2001-07-30  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* configure.target: Remove mips from cpu table.
+	* config/cpu/mips/bits/atomicity.h: Remove generic
+	versions. Comment sgidefs include.
+	
 2001-07-25  H.J. Lu <hjl@gnu.org>
 
 	* configure.target (cpu_include_dir): Set to `config/cpu/mips'
