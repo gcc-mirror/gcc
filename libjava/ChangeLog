@@ -1,7 +1,13 @@
+2001-04-30  Andrew Haley  <aph@cambridge.redhat.com>
+
+	* libgcj.spec.in (jc1): Add EXCEPTIONSPEC.
+	* configure.host (EXCEPTIONSPEC): New.
+	* configure.in (EXCEPTIONSPEC): New.
+	* configure: Rebuilt.
+
 2001-05-02  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
-	* doc/*.texi: Remove generated documentation.
-
+	
 2001-04-30  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
 
 	* java/io/natFile.cc (performSetReadOnly): Fix #ifdef test.
