@@ -106,14 +106,23 @@ static void alpha_sa_mask	PROTO((unsigned long *imaskP,
 #else
 #define NUM_ARGS current_function_args_info
 #endif
+
+#if OPEN_VMS
+#define REG_PV 27
+#define REG_RA 26
+#else
+#define REG_RA 26
+#endif
 
 /* Parse target option strings. */
 
 void
 override_options ()
 {
+  /* 971208 -- EV6 scheduling parameters are still secret, so don't even
+     pretend and just schedule for an EV5 for now.  -- r~  */
   alpha_cpu
-    = TARGET_CPU_DEFAULT & MASK_CPU_EV6 ? PROCESSOR_EV6
+    = TARGET_CPU_DEFAULT & MASK_CPU_EV6 ? PROCESSOR_EV5
       : (TARGET_CPU_DEFAULT & MASK_CPU_EV5 ? PROCESSOR_EV5 : PROCESSOR_EV4);
 
   if (alpha_cpu_string)
@@ -138,7 +147,8 @@ override_options ()
 	  target_flags &= ~ (MASK_CIX | MASK_MAX);
 	}
       else if (! strcmp (alpha_cpu_string, "pca56")
-	       || ! strcmp (alpha_cpu_string, "21164PC"))
+	       || ! strcmp (alpha_cpu_string, "21164PC")
+	       || ! strcmp (alpha_cpu_string, "21164pc"))
 	{
 	  alpha_cpu = PROCESSOR_EV5;
 	  target_flags |= MASK_BWX | MASK_MAX;
@@ -147,7 +157,7 @@ override_options ()
       else if (! strcmp (alpha_cpu_string, "ev6")
 	       || ! strcmp (alpha_cpu_string, "21264"))
 	{
-	  alpha_cpu = PROCESSOR_EV6;
+	  alpha_cpu = PROCESSOR_EV5;
 	  target_flags |= MASK_BWX | MASK_CIX | MASK_MAX;
 	}
       else
@@ -1191,6 +1201,7 @@ alpha_adjust_cost (insn, link, dep_insn, cost)
      int cost;
 {
   rtx set, set_src;
+  enum attr_type insn_type, dep_insn_type;
 
   /* If the dependence is an anti-dependence, there is no cost.  For an
      output dependence, there is sometimes a cost, but it doesn't seem
@@ -1199,17 +1210,22 @@ alpha_adjust_cost (insn, link, dep_insn, cost)
   if (REG_NOTE_KIND (link) != 0)
     return 0;
 
+  /* If we can't recognize the insns, we can't really do anything.  */
+  if (recog_memoized (insn) < 0 || recog_memoized (dep_insn) < 0)
+    return cost;
+
+  insn_type = get_attr_type (insn);
+  dep_insn_type = get_attr_type (dep_insn);
+
   if (alpha_cpu == PROCESSOR_EV5)
     {
       /* And the lord DEC saith:  "A special bypass provides an effective
 	 latency of 0 cycles for an ICMP or ILOG insn producing the test
 	 operand of an IBR or CMOV insn." */
-      if (recog_memoized (dep_insn) >= 0
-	  && (get_attr_type (dep_insn) == TYPE_ICMP
-	      || get_attr_type (dep_insn) == TYPE_ILOG)
-	  && recog_memoized (insn) >= 0
-	  && (get_attr_type (insn) == TYPE_IBR
-	      || (get_attr_type (insn) == TYPE_CMOV
+      if ((dep_insn_type == TYPE_ICMP
+	   || dep_insn_type == TYPE_ILOG)
+	  && (insn_type == TYPE_IBR
+	      || (insn_type == TYPE_CMOV
 		  && !((set = single_set (dep_insn)) != 0
 		       && GET_CODE (PATTERN (insn)) == SET
 		       && (set_src = SET_SRC (PATTERN (insn)),
@@ -1219,14 +1235,15 @@ alpha_adjust_cost (insn, link, dep_insn, cost)
 			   || rtx_equal_p (set, XEXP (set_src, 2)))))))
 	return 0;
 
-      /* On EV5 it takes longer to get data to the multiplier than to
-	 anywhere else, so increase costs.  */
+      /* "The multiplier is unable to receive data from IEU bypass paths.
+	 The instruction issues at the expected time, but its latency is
+	 increased by the time it takes for the input data to become
+	 available to the multiplier" -- which happens in pipeline stage
+	 six, when results are comitted to the register file.  */
 
-      if (recog_memoized (insn) >= 0
-	  && recog_memoized (dep_insn) >= 0
-	  && (get_attr_type (insn) == TYPE_IMULL
-	      || get_attr_type (insn) == TYPE_IMULQ
-	      || get_attr_type (insn) == TYPE_IMULH)
+      if ((insn_type == TYPE_IMULL
+	   || insn_type == TYPE_IMULQ
+	   || insn_type == TYPE_IMULH)
 	  && (set = single_set (dep_insn)) != 0
 	  && GET_CODE (PATTERN (insn)) == SET
 	  && (set_src = SET_SRC (PATTERN (insn)),
@@ -1235,19 +1252,19 @@ alpha_adjust_cost (insn, link, dep_insn, cost)
 	      rtx_equal_p (set, XEXP (set_src, 0))
 	      || rtx_equal_p (set, XEXP (set_src, 1))))
 	{
-	  switch (get_attr_type (insn))
+	  switch (dep_insn_type)
 	    {
+	    /* These insns produce their results in pipeline stage five.  */
 	    case TYPE_LD:
 	    case TYPE_CMOV:
 	    case TYPE_IMULL:
 	    case TYPE_IMULQ:
 	    case TYPE_IMULH:
+	    case TYPE_MVI:
 	      return cost + 1;
-	    case TYPE_JSR:
-	    case TYPE_IADD:
-	    case TYPE_ILOG:
-	    case TYPE_SHIFT:
-	    case TYPE_ICMP:
+
+	    /* Other integer insns produce results in pipeline stage four.  */
+	    default:
 	      return cost + 2;
 	    }
 	}
@@ -1257,12 +1274,12 @@ alpha_adjust_cost (insn, link, dep_insn, cost)
       /* On EV4, if INSN is a store insn and DEP_INSN is setting the data
 	 being stored, we can sometimes lower the cost.  */
 
-      if (recog_memoized (insn) >= 0 && get_attr_type (insn) == TYPE_ST
+      if (insn_type == TYPE_ST
 	  && (set = single_set (dep_insn)) != 0
 	  && GET_CODE (PATTERN (insn)) == SET
 	  && rtx_equal_p (SET_DEST (set), SET_SRC (PATTERN (insn))))
 	{
-	  switch (get_attr_type (dep_insn))
+	  switch (dep_insn_type)
 	    {
 	    case TYPE_LD:
 	      /* No savings here.  */
@@ -1285,11 +1302,9 @@ alpha_adjust_cost (insn, link, dep_insn, cost)
 	 two in the MD file.  The only case that it is actually two is
 	 for the address in loads and stores.  */
 
-      if (recog_memoized (dep_insn) >= 0
-	  && (get_attr_type (dep_insn) == TYPE_IADD
-	      || get_attr_type (dep_insn) == TYPE_ILOG))
+      if (dep_insn_type == TYPE_IADD || dep_insn_type == TYPE_ILOG)
 	{
-	  switch (get_attr_type (insn))
+	  switch (insn_type)
 	    {
 	    case TYPE_LD:
 	    case TYPE_ST:
@@ -1302,10 +1317,7 @@ alpha_adjust_cost (insn, link, dep_insn, cost)
       /* The final case is when a compare feeds into an integer branch;
 	 the cost is only one cycle in that case.  */
 
-      if (recog_memoized (dep_insn) >= 0
-	  && get_attr_type (dep_insn) == TYPE_ICMP
-	  && recog_memoized (insn) >= 0
-	  && get_attr_type (insn) == TYPE_IBR)
+      if (dep_insn_type == TYPE_ICMP && insn_type == TYPE_IBR)
 	return 1;
     }
 
@@ -1781,39 +1793,6 @@ alpha_builtin_saveregs (arglist)
     }
 }
 
-#if OPEN_VMS
-#define REG_PV 27
-#define REG_RA 26
-#else
-#define REG_RA 26
-#endif
-
-/* Find the current function's return address.
-
-   ??? It would be better to arrange things such that if we would ordinarily
-   have been a leaf function and we didn't spill the hard reg that we
-   wouldn't have to save the register in the prolog.  But it's not clear
-   how to get the right information at the right time.  */
-
-static rtx alpha_return_addr_rtx;
-
-rtx
-alpha_return_addr ()
-{
-  rtx ret;
-
-  if ((ret = alpha_return_addr_rtx) == NULL)
-    {
-      alpha_return_addr_rtx = ret = gen_reg_rtx (Pmode);
-
-      emit_insn_after (gen_rtx (SET, VOIDmode, ret,
-			        gen_rtx (REG, Pmode, REG_RA)),
-		       get_insns ());
-    }
-
-  return ret;
-}
-
 /* This page contains routines that are used to determine what the function
    prologue and epilogue code will do and write them out.  */
 
@@ -2725,8 +2704,6 @@ output_epilog (file, size)
 
   /* Show that we know this function if it is called again.  */
   SYMBOL_REF_FLAG (XEXP (DECL_RTL (current_function_decl), 0)) = 1;
-
-  alpha_return_addr_rtx = 0;
 }
 #endif /* !OPEN_VMS */
 
