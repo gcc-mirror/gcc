@@ -2657,7 +2657,8 @@ aggregate_value_p (exp)
   if (flag_pcc_struct_return
       && (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
 	  || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE
-	  || TREE_CODE (TREE_TYPE (exp)) == QUAL_UNION_TYPE))
+	  || TREE_CODE (TREE_TYPE (exp)) == QUAL_UNION_TYPE
+	  || TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE))
     return 1;
   /* Make sure we have suitable call-clobbered regs to return
      the value in; if not, we must return it in memory.  */
