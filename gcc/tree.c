@@ -131,7 +131,7 @@ tree
 decl_assembler_name (tree decl)
 {
   if (!DECL_ASSEMBLER_NAME_SET_P (decl))
-    (*lang_hooks.set_decl_assembler_name) (decl);
+    lang_hooks.set_decl_assembler_name (decl);
   return DECL_CHECK (decl)->decl.assembler_name;
 }
 
@@ -171,7 +171,7 @@ tree_size (tree node)
 	case VECTOR_CST:	return sizeof (struct tree_vector);
 	case STRING_CST:	return sizeof (struct tree_string);
 	default:
-	  return (*lang_hooks.tree_size) (code);
+	  return lang_hooks.tree_size (code);
 	}
 
     case 'x':  /* something random, like an identifier.  */
@@ -187,7 +187,7 @@ tree_size (tree node)
 	case PLACEHOLDER_EXPR:	return sizeof (struct tree_common);
 
 	default:
-	  return (*lang_hooks.tree_size) (code);
+	  return lang_hooks.tree_size (code);
 	}
 
     default:
@@ -1119,7 +1119,7 @@ size_in_bytes (tree type)
 
   if (t == 0)
     {
-      (*lang_hooks.types.incomplete_type_error) (NULL_TREE, type);
+      lang_hooks.types.incomplete_type_error (NULL_TREE, type);
       return size_zero_node;
     }
 
@@ -1313,7 +1313,7 @@ staticp (tree arg)
     default:
       if ((unsigned int) TREE_CODE (arg)
 	  >= (unsigned int) LAST_AND_UNUSED_TREE_CODE)
-	return (*lang_hooks.staticp) (arg);
+	return lang_hooks.staticp (arg);
       else
 	return 0;
     }
@@ -1653,7 +1653,7 @@ unsafe_for_reeval (tree expr)
       return exp ? unsafe_for_reeval (exp) : 0;
 
     default:
-      tmp = (*lang_hooks.unsafe_for_reeval) (expr);
+      tmp = lang_hooks.unsafe_for_reeval (expr);
       if (tmp >= 0)
 	return tmp;
       break;
@@ -4290,7 +4290,7 @@ get_unwidened (tree op, tree for_type)
 	= tree_low_cst (DECL_SIZE (TREE_OPERAND (op, 1)), 1);
       int unsignedp = (TREE_UNSIGNED (TREE_OPERAND (op, 1))
 		       || TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op, 1))));
-      type = (*lang_hooks.types.type_for_size) (innerprec, unsignedp);
+      type = lang_hooks.types.type_for_size (innerprec, unsignedp);
 
       /* We can get this structure field in the narrowest type it fits in.
 	 If FOR_TYPE is 0, do this only for a field that matches the
@@ -4375,7 +4375,7 @@ get_narrower (tree op, int *unsignedp_ptr)
 	= tree_low_cst (DECL_SIZE (TREE_OPERAND (op, 1)), 1);
       int unsignedp = (TREE_UNSIGNED (TREE_OPERAND (op, 1))
 		       || TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op, 1))));
-      tree type = (*lang_hooks.types.type_for_size) (innerprec, unsignedp);
+      tree type = lang_hooks.types.type_for_size (innerprec, unsignedp);
 
       /* We can get this structure field in a narrower type that fits it,
 	 but the resulting extension to its nominal type (a fullword type)
@@ -4539,7 +4539,7 @@ variably_modified_type_p (tree type)
 
   /* The current language may have other cases to check, but in general,
      all other types are not variably modified.  */
-  return (*lang_hooks.tree_inlining.var_mod_type_p) (type);
+  return lang_hooks.tree_inlining.var_mod_type_p (type);
 }
 
 /* Given a DECL or TYPE, return the scope in which it was declared, or
@@ -4660,7 +4660,7 @@ get_callee_fndecl (tree call)
   
   /* We couldn't figure out what was being called.  Maybe the front
      end has some idea.  */
-  return (*lang_hooks.lang_get_callee_fndecl) (call);
+  return lang_hooks.lang_get_callee_fndecl (call);
 }
 
 /* Print debugging information about tree nodes generated during the compile,
@@ -4693,7 +4693,7 @@ dump_tree_statistics (void)
   fprintf (stderr, "(No per-node statistics)\n");
 #endif
   print_type_hash_statistics ();
-  (*lang_hooks.print_statistics) ();
+  lang_hooks.print_statistics ();
 }
 
 #define FILE_FUNCTION_FORMAT "_GLOBAL__%s_%s"

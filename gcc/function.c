@@ -345,7 +345,7 @@ push_function_context_to (tree context)
   outer_function_chain = p;
   p->fixup_var_refs_queue = 0;
 
-  (*lang_hooks.function.enter_nested) (p);
+  lang_hooks.function.enter_nested (p);
 
   cfun = 0;
 }
@@ -373,7 +373,7 @@ pop_function_context_from (tree context ATTRIBUTE_UNUSED)
 
   restore_emit_status (p);
 
-  (*lang_hooks.function.leave_nested) (p);
+  lang_hooks.function.leave_nested (p);
 
   /* Finish doing put_var_into_stack for any of our variables which became
      addressable during the nested function.  If only one entry has to be
@@ -425,7 +425,7 @@ free_after_parsing (struct function *f)
   /* f->varasm is used by code generation.  */
   /* f->eh->eh_return_stub_label is used by code generation.  */
 
-  (*lang_hooks.function.final) (f);
+  lang_hooks.function.final (f);
   f->stmt = NULL;
 }
 
@@ -532,7 +532,7 @@ assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size, int align,
 
       /* Allow the target to (possibly) increase the alignment of this
 	 stack slot.  */
-      type = (*lang_hooks.types.type_for_mode) (mode, 0);
+      type = lang_hooks.types.type_for_mode (mode, 0);
       if (type)
 	alignment = LOCAL_ALIGNMENT (type, alignment);
 
@@ -660,7 +660,7 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size, int keep
     align = GET_MODE_ALIGNMENT (mode);
 
   if (! type)
-    type = (*lang_hooks.types.type_for_mode) (mode, 0);
+    type = lang_hooks.types.type_for_mode (mode, 0);
 
   if (type)
     align = LOCAL_ALIGNMENT (type, align);
@@ -1375,7 +1375,7 @@ put_var_into_stack (tree decl, int rescan)
 	 to the whole CONCAT, lest we do double fixups for the latter
 	 references.  */
       enum machine_mode part_mode = GET_MODE (XEXP (reg, 0));
-      tree part_type = (*lang_hooks.types.type_for_mode) (part_mode, 0);
+      tree part_type = lang_hooks.types.type_for_mode (part_mode, 0);
       rtx lopart = XEXP (reg, 0);
       rtx hipart = XEXP (reg, 1);
 #ifdef FRAME_GROWS_DOWNWARD
@@ -6422,7 +6422,7 @@ allocate_struct_function (tree fndecl)
   init_stmt_for_function ();
   init_eh_for_function ();
 
-  (*lang_hooks.function.init) (cfun);
+  lang_hooks.function.init (cfun);
   if (init_machine_status)
     cfun->machine = (*init_machine_status) ();
 
@@ -8131,7 +8131,7 @@ init_function_once (void)
 const char *
 current_function_name (void)
 {
-  return (*lang_hooks.decl_printable_name) (cfun->decl, 2);
+  return lang_hooks.decl_printable_name (cfun->decl, 2);
 }
 
 #include "gt-function.h"

@@ -377,7 +377,7 @@ init_eh (void)
     {
       tree f_jbuf, f_per, f_lsda, f_prev, f_cs, f_data, tmp;
 
-      sjlj_fc_type_node = (*lang_hooks.types.make_type) (RECORD_TYPE);
+      sjlj_fc_type_node = lang_hooks.types.make_type (RECORD_TYPE);
 
       f_prev = build_decl (FIELD_DECL, get_identifier ("__prev"),
 			   build_pointer_type (sjlj_fc_type_node));
@@ -388,7 +388,7 @@ init_eh (void)
       DECL_FIELD_CONTEXT (f_cs) = sjlj_fc_type_node;
 
       tmp = build_index_type (build_int_2 (4 - 1, 0));
-      tmp = build_array_type ((*lang_hooks.types.type_for_mode) (word_mode, 1),
+      tmp = build_array_type (lang_hooks.types.type_for_mode (word_mode, 1),
 			      tmp);
       f_data = build_decl (FIELD_DECL, get_identifier ("__data"), tmp);
       DECL_FIELD_CONTEXT (f_data) = sjlj_fc_type_node;

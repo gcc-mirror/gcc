@@ -418,7 +418,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
       print_node (file, "result", DECL_RESULT_FLD (node), indent + 4);
       print_node_brief (file, "initial", DECL_INITIAL (node), indent + 4);
 
-      (*lang_hooks.print_decl) (file, node, indent);
+      lang_hooks.print_decl (file, node, indent);
 
       if (DECL_RTL_SET_P (node))
 	{
@@ -549,7 +549,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
       if (TYPE_CONTEXT (node))
 	print_node_brief (file, "context", TYPE_CONTEXT (node), indent + 4);
 
-      (*lang_hooks.print_type) (file, node, indent);
+      lang_hooks.print_type (file, node, indent);
 
       if (TYPE_POINTER_TO (node) || TREE_CHAIN (node))
 	indent_to (file, indent + 3);
@@ -708,7 +708,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	  break;
 
 	case IDENTIFIER_NODE:
-	  (*lang_hooks.print_identifier) (file, node, indent);
+	  lang_hooks.print_identifier (file, node, indent);
 	  break;
 
 	case TREE_LIST:
@@ -731,7 +731,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 
 	default:
 	  if (TREE_CODE_CLASS (TREE_CODE (node)) == 'x')
-	    (*lang_hooks.print_xnode) (file, node, indent);
+	    lang_hooks.print_xnode (file, node, indent);
 	  break;
 	}
 

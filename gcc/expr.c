@@ -4128,10 +4128,10 @@ store_expr (tree exp, rtx target, int want_value)
 	  if (TREE_UNSIGNED (TREE_TYPE (exp))
 	      != SUBREG_PROMOTED_UNSIGNED_P (target))
 	    exp = convert
-	      ((*lang_hooks.types.signed_or_unsigned_type)
+	      (lang_hooks.types.signed_or_unsigned_type
 	       (SUBREG_PROMOTED_UNSIGNED_P (target), TREE_TYPE (exp)), exp);
 
-	  exp = convert ((*lang_hooks.types.type_for_mode)
+	  exp = convert (lang_hooks.types.type_for_mode
 			 (GET_MODE (SUBREG_REG (target)),
 			  SUBREG_PROMOTED_UNSIGNED_P (target)),
 			 exp);
@@ -4655,7 +4655,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 
 	      if (TYPE_PRECISION (type) < BITS_PER_WORD)
 		{
-		  type = (*lang_hooks.types.type_for_size)
+		  type = lang_hooks.types.type_for_size
 		    (BITS_PER_WORD, TREE_UNSIGNED (type));
 		  value = convert (type, value);
 		}
@@ -5122,7 +5122,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	    {
 	      targetx
 		= assign_temp
-		  ((build_qualified_type ((*lang_hooks.types.type_for_mode)
+		  ((build_qualified_type (lang_hooks.types.type_for_mode
 					  (GET_MODE (target), 0),
 					  TYPE_QUAL_CONST)),
 		   0, 1, 1);
@@ -5937,7 +5937,7 @@ safe_from_p (rtx x, tree exp, int top_p)
 	 special handling.  */
       if ((unsigned int) TREE_CODE (exp)
 	  >= (unsigned int) LAST_AND_UNUSED_TREE_CODE
-	  && !(*lang_hooks.safe_from_p) (x, exp))
+	  && !lang_hooks.safe_from_p (x, exp))
 	return 0;
     }
 
@@ -6386,7 +6386,7 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
 	  DECL_NONLOCAL (exp) = 1;
 	  if (DECL_NO_STATIC_CHAIN (current_function_decl))
 	    abort ();
-	  (*lang_hooks.mark_addressable) (exp);
+	  lang_hooks.mark_addressable (exp);
 	  if (GET_CODE (DECL_RTL (exp)) != MEM)
 	    abort ();
 	  addr = XEXP (DECL_RTL (exp), 0);
@@ -6649,7 +6649,7 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
 	rtx temp;
 	temp = expand_expr (TREE_OPERAND (exp, 0), target, tmode, modifier);
 	TREE_OPERAND (exp, 0)
-	  = (*lang_hooks.unsave_expr_now) (TREE_OPERAND (exp, 0));
+	  = lang_hooks.unsave_expr_now (TREE_OPERAND (exp, 0));
 	return temp;
       }
 
@@ -6724,7 +6724,7 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
 	/* Mark the corresponding BLOCK for output in its proper place.  */
 	if (TREE_OPERAND (exp, 2) != 0
 	    && ! TREE_USED (TREE_OPERAND (exp, 2)))
-	  (*lang_hooks.decls.insert_block) (TREE_OPERAND (exp, 2));
+	  lang_hooks.decls.insert_block (TREE_OPERAND (exp, 2));
 
 	/* If VARS have not yet been expanded, expand them now.  */
 	while (vars)
@@ -7484,6 +7484,7 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
 	{
 	  if (DECL_BUILT_IN_CLASS (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
 	      == BUILT_IN_FRONTEND)
+	  /* ??? Use (*fun) form because expand_expr is a macro.  */
 	    return (*lang_hooks.expand_expr) (exp, original_target,
 					      tmode, modifier,
 					      alt_rtl);
@@ -8613,7 +8614,7 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
 
 		if (TREE_OPERAND (exp, 2) == 0)
 		  TREE_OPERAND (exp, 2)
-		    = (*lang_hooks.maybe_build_cleanup) (slot);
+		    = lang_hooks.maybe_build_cleanup (slot);
 		cleanups = TREE_OPERAND (exp, 2);
 	      }
 	  }
@@ -9067,8 +9068,9 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
       abort ();
 
     default:
-      return (*lang_hooks.expand_expr) (exp, original_target, tmode, modifier,
-					alt_rtl);
+      /* ??? Use (*fun) form because expand_expr is a macro.  */
+      return (*lang_hooks.expand_expr) (exp, original_target, tmode,
+					modifier, alt_rtl);
     }
 
   /* Here to do an ordinary binary operator, generating an instruction
@@ -9539,7 +9541,7 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode, int only_cheap)
       && TREE_CODE (arg0) == BIT_AND_EXPR && integer_zerop (arg1)
       && integer_pow2p (TREE_OPERAND (arg0, 1)))
     {
-      tree type = (*lang_hooks.types.type_for_mode) (mode, unsignedp);
+      tree type = lang_hooks.types.type_for_mode (mode, unsignedp);
       return expand_expr (fold_single_bit_test (code == NE ? NE_EXPR : EQ_EXPR,
 						arg0, arg1, type),
 			  target, VOIDmode, EXPAND_NORMAL);
@@ -9683,7 +9685,7 @@ try_casesi (tree index_type, tree index_expr, tree minval, tree range,
     {
       if (TYPE_MODE (index_type) != index_mode)
 	{
-	  index_expr = convert ((*lang_hooks.types.type_for_size)
+	  index_expr = convert (lang_hooks.types.type_for_size
 				(index_bits, 0), index_expr);
 	  index_type = TREE_TYPE (index_expr);
 	}

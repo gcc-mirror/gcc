@@ -353,7 +353,7 @@ cgraph_rtl_info (tree decl)
 const char *
 cgraph_node_name (struct cgraph_node *node)
 {
-  return (*lang_hooks.decl_printable_name) (node->decl, 2);
+  return lang_hooks.decl_printable_name (node->decl, 2);
 }
 
 /* Dump the callgraph.  */
@@ -628,7 +628,7 @@ cgraph_function_possibly_inlined_p (tree decl)
   if (!cgraph_global_info_ready)
     return (DECL_INLINE (decl)
 	    && (!flag_really_no_inline
-		|| (*lang_hooks.tree_inlining.disregard_inline_limits) (decl)));
+		|| lang_hooks.tree_inlining.disregard_inline_limits (decl)));
   return cgraph_node (decl)->global.inlined;
 }
 

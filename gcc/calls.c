@@ -1829,7 +1829,7 @@ try_to_integrate (tree fndecl, tree actparms, rtx target, int ignore,
       warning ("%Jinlining failed in call to '%F'", fndecl, fndecl);
       warning ("called from here");
     }
-  (*lang_hooks.mark_addressable) (fndecl);
+  lang_hooks.mark_addressable (fndecl);
   return (rtx) (size_t) - 1;
 }
 
@@ -2201,7 +2201,7 @@ expand_call (tree exp, rtx target, int ignore)
 	      warning ("%Jcan't inline call to '%F'", fndecl, fndecl);
 	      warning ("called from here");
 	    }
-	  (*lang_hooks.mark_addressable) (fndecl);
+	  lang_hooks.mark_addressable (fndecl);
 	}
 
       if (ignore
@@ -2284,7 +2284,7 @@ expand_call (tree exp, rtx target, int ignore)
 	    /* In case this is a static function, note that it has been
 	       used.  */
 	    if (! TREE_ADDRESSABLE (fndecl))
-	      (*lang_hooks.mark_addressable) (fndecl);
+	      lang_hooks.mark_addressable (fndecl);
 	    is_integrable = 0;
 	  }
       }
@@ -2532,7 +2532,7 @@ expand_call (tree exp, rtx target, int ignore)
 	  != RETURN_POPS_ARGS (current_function_decl,
 			       TREE_TYPE (current_function_decl),
 			       current_function_args_size))
-      || !(*lang_hooks.decls.ok_for_sibcall) (fndecl))
+      || !lang_hooks.decls.ok_for_sibcall (fndecl))
     try_tail_call = 0;
 
   if (try_tail_call || try_tail_recursion)
@@ -3751,7 +3751,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
      decide where in memory it should come back.  */
   if (outmode != VOIDmode)
     {
-      tfom = (*lang_hooks.types.type_for_mode) (outmode, 0);
+      tfom = lang_hooks.types.type_for_mode (outmode, 0);
       if (aggregate_value_p (tfom, 0))
 	{
 #ifdef PCC_STATIC_STRUCT_RETURN
@@ -3896,13 +3896,13 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	    slot = val;
 	  else if (must_copy)
 	    {
-	      slot = assign_temp ((*lang_hooks.types.type_for_mode) (mode, 0),
+	      slot = assign_temp (lang_hooks.types.type_for_mode (mode, 0),
 				  0, 1, 1);
 	      emit_move_insn (slot, val);
 	    }
 	  else
 	    {
-	      tree type = (*lang_hooks.types.type_for_mode) (mode, 0);
+	      tree type = lang_hooks.types.type_for_mode (mode, 0);
 
 	      slot
 		= gen_rtx_MEM (mode,

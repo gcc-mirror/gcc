@@ -1,3 +1,65 @@
+2004-03-14  Roger Sayle  <roger@eyesopen.com>
+
+	* alias.c (get_alias_set): Replace calls via (*lang_hooks.foo) ()
+	with lang_hooks.foo ().
+	* builtins.c (expand_builtin_va_arg): Likewise.
+	* c-common.c (fname_as_string, c_common_truthvalue_conversion,
+	c_common_type_for_mode, c_common_nodes_and_builtins,
+	handle_mode_attribute, handle_vector_size_attribute): Likewise.
+	* c-convert.c (convert): Likewise.
+	* c-format.c (check_format_types): Likewise.
+	* c-objc-common.c (c_tree_printer): Likewise.
+	* c-typeck.c (build_unary_op, build_conditional_expr,
+	build_binary_op): Likewise.
+	* calls.c (try_to_integrate, expand_call,
+	emit_library_call_value_1): Likewise.
+	* cgraph.c (cgraph_node_name, cgraph_function_possibly_inlined_p):
+	Likewise.
+	* cgraphunit.c (record_call_1, cgraph_analyze_function,
+	cgraph_expand_function): Likewise.
+	* convert.c (convert_to_pointer, convert_to_integer): Likewise.
+	* coverage.c (build_fn_info_type, build_ctr_info_type,
+	build_gcov_info, create_coverage): Likewise.
+	* dbxout.c (dbxout_init): Likewise.
+	* diagnostic.c (diagnostic_report_current_function): Likewise.
+	* dojump.c (do_jump): Likewise.
+	* dwarf2out.c (dwarf2_name): Likewise.
+	* except.c (init_eh): Likewise.
+	* explow.c (expr_size, int_expr_size): Likewise.
+	* expmed.c (make_tree, const_mult_add_overflow_p, expand_mult_add):
+	Likewise.
+	* expr.c (store_expr, store_constructor, safe_from_p,
+	expand_expr_real, do_store_flag, try_casesi): Likewise.
+	* function.c (push_function_context_to, pop_function_context_from,
+	free_after_parsing, assign_stack_local_1, assign_stack_temp_for_type,
+	put_var_into_stack, allocate_struct_function, current_function_name):
+	Likewise.
+	* integrate.c (copy_decl_for_inlining, expand_inline_function):
+	Likewise.
+	* langhooks.c (lhd_clear_binding_stack, write_global_declarations,
+	lhd_print_error_function): Likewise.
+	* opts.c (handle_option, decode_options): Likewise.
+	* passes.c (open_dump_file): Likewise.
+	* print-tree.c (print_node): Likewise.
+	* stmt.c (expand_fixup, fixup_gotos, expand_asm_operands,
+	expand_decl_cleanup, emit_case_nodes): Likewise.
+	* stor-layout.c (variable_size): Likewise.
+	* toplev.c (announce_function, wrapup_global_declarations,
+	check_global_declarations, compile_file, default_tree_printer,
+	process_options, lang_dependent_init, finalize): Likewise.
+	* tree-dump.c (dequeue_and_dump): Likewise.
+	* tree-inline.c (remap_decl, remap_block, copy_body_r,
+	initialize_inlined_parameters, declare_return_variable,
+	inlinable_function_p, expand_call_inline, optimize_inline_calls,
+	walk_tree, copy_tree_r): Likewise.
+	* tree-optimize.c (tree_rest_of_compilation): Likewise.
+	* tree.c (decl_assembler_name, tree_size, size_in_bytes, staticp,
+	unsafe_for_reeval, get_unwidened, get_narrower, get_callee_fndecl,
+	variably_modified_type_p, dump_tree_statistics): Likewise.
+	* varasm.c (assemble_variable, compare_constant, copy_constant,
+	force_const_mem, compute_reloc_for_constant, output_constant,
+	output_addressed_constants, initializer_constant_valid_p): Likewise.
+
 2004-03-14  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* doc/install.texi: Make autoconf 2.13 the exception, not the rule.

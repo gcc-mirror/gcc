@@ -131,7 +131,7 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
   expand_function_start (fndecl, 0);
 
   /* Allow language dialects to perform special processing.  */
-  (*lang_hooks.rtl_expand.start) ();
+  lang_hooks.rtl_expand.start ();
 
   /* If this function is `main', emit a call to `__main'
      to run global initializers, etc.  */
@@ -141,7 +141,7 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
     expand_main_function ();
 
   /* Generate the RTL for this function.  */
-  (*lang_hooks.rtl_expand.stmt) (DECL_SAVED_TREE (fndecl));
+  lang_hooks.rtl_expand.stmt (DECL_SAVED_TREE (fndecl));
 
   /* We hard-wired immediate_size_expand to zero above.
      expand_function_end will decrement this variable.  So, we set the
@@ -150,7 +150,7 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
   immediate_size_expand = 1;
 
   /* Allow language dialects to perform special processing.  */
-  (*lang_hooks.rtl_expand.end) ();
+  lang_hooks.rtl_expand.end ();
 
   /* Generate rtl for function exit.  */
   expand_function_end ();

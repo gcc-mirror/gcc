@@ -215,7 +215,7 @@ lhd_can_use_bit_fields_p (void)
 void
 lhd_clear_binding_stack (void)
 {
-  while (! (*lang_hooks.decls.global_bindings_p) ())
+  while (! lang_hooks.decls.global_bindings_p ())
     poplevel (0, 0, 0);
 }
 
@@ -495,7 +495,7 @@ write_global_declarations (void)
      Really output inline functions that must actually be callable
      and have not been output so far.  */
 
-  tree globals = (*lang_hooks.decls.getdecls) ();
+  tree globals = lang_hooks.decls.getdecls ();
   int len = list_length (globals);
   tree *vec = xmalloc (sizeof (tree) * len);
   int i;
@@ -540,11 +540,11 @@ lhd_print_error_function (diagnostic_context *context, const char *file)
 	  if (TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE)
 	    pp_printf
 	      (context->printer, "In member function `%s':",
-	       (*lang_hooks.decl_printable_name) (current_function_decl, 2));
+	       lang_hooks.decl_printable_name (current_function_decl, 2));
 	  else
 	    pp_printf
 	      (context->printer, "In function `%s':",
-	       (*lang_hooks.decl_printable_name) (current_function_decl, 2));
+	       lang_hooks.decl_printable_name (current_function_decl, 2));
 	}
 
       diagnostic_set_last_function (context);

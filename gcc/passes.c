@@ -270,7 +270,7 @@ open_dump_file (enum dump_file_index index, tree decl)
 
   if (decl)
     fprintf (dump_file, "\n;; Function %s%s\n\n",
-	     (*lang_hooks.decl_printable_name) (decl, 2),
+	     lang_hooks.decl_printable_name (decl, 2),
 	     cfun->function_frequency == FUNCTION_FREQUENCY_HOT
 	     ? " (hot)"
 	     : cfun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED

@@ -2285,7 +2285,7 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	  error ("wrong type argument to unary exclamation mark");
 	  return error_mark_node;
 	}
-      arg = (*lang_hooks.truthvalue_conversion) (arg);
+      arg = lang_hooks.truthvalue_conversion (arg);
       return invert_truthvalue (arg);
 
     case NOP_EXPR:
@@ -2658,7 +2658,7 @@ build_conditional_expr (tree ifexp, tree op1, tree op2)
   tree result_type = NULL;
   tree orig_op1 = op1, orig_op2 = op2;
 
-  ifexp = (*lang_hooks.truthvalue_conversion) (default_conversion (ifexp));
+  ifexp = lang_hooks.truthvalue_conversion (default_conversion (ifexp));
 
   /* Promote both alternatives.  */
 
@@ -6566,8 +6566,8 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	     but that does not mean the operands should be
 	     converted to ints!  */
 	  result_type = integer_type_node;
-	  op0 = (*lang_hooks.truthvalue_conversion) (op0);
-	  op1 = (*lang_hooks.truthvalue_conversion) (op1);
+	  op0 = lang_hooks.truthvalue_conversion (op0);
+	  op1 = lang_hooks.truthvalue_conversion (op1);
 	  converted = 1;
 	}
       break;

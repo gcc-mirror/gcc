@@ -240,7 +240,7 @@ eliminate_constant_term (rtx x, rtx *constptr)
 rtx
 expr_size (tree exp)
 {
-  tree size = (*lang_hooks.expr_size) (exp);
+  tree size = lang_hooks.expr_size (exp);
 
   if (CONTAINS_PLACEHOLDER_P (size))
     size = build (WITH_RECORD_EXPR, sizetype, size, exp);
@@ -254,7 +254,7 @@ expr_size (tree exp)
 HOST_WIDE_INT
 int_expr_size (tree exp)
 {
-  tree t = (*lang_hooks.expr_size) (exp);
+  tree t = lang_hooks.expr_size (exp);
 
   if (t == 0
       || TREE_CODE (t) != INTEGER_CST
