@@ -8834,10 +8834,28 @@ EOF
 fi
 echo "$ac_t""$gcc_cv_as_weak" 1>&6
 
+echo $ac_n "checking assembler hidden support""... $ac_c" 1>&6
+echo "configure:8839: checking assembler hidden support" >&5
+gcc_cv_as_hidden=
+if test x$gcc_cv_as != x; then
+	# Check if we have .hidden
+	echo "	.hidden foobar" > conftest.s
+	echo "foobar:" >> conftest.s
+	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+		cat >> confdefs.h <<\EOF
+#define HAVE_GAS_HIDDEN 1
+EOF
+
+		gcc_cv_as_hidden="yes"
+	fi
+	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
+fi
+echo "$ac_t""$gcc_cv_as_hidden" 1>&6
+
 case "$target" in 
   sparc*-*-*)
     echo $ac_n "checking assembler .register pseudo-op support""... $ac_c" 1>&6
-echo "configure:8841: checking assembler .register pseudo-op support" >&5
+echo "configure:8859: checking assembler .register pseudo-op support" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_register_pseudo_op'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -8867,7 +8885,7 @@ EOF
     case "$tm_file" in
     *64*)
 	echo $ac_n "checking for 64 bit support in assembler ($gcc_cv_as)""... $ac_c" 1>&6
-echo "configure:8871: checking for 64 bit support in assembler ($gcc_cv_as)" >&5
+echo "configure:8889: checking for 64 bit support in assembler ($gcc_cv_as)" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_flags64'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -8912,7 +8930,7 @@ EOF
 
     if test "x$gcc_cv_as_flags64" != xno; then
 	echo $ac_n "checking for assembler offsetable %lo() support""... $ac_c" 1>&6
-echo "configure:8916: checking for assembler offsetable %lo() support" >&5
+echo "configure:8934: checking for assembler offsetable %lo() support" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_offsetable_lo10'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -8951,7 +8969,7 @@ EOF
 
   i[34567]86-*-*)
     echo $ac_n "checking assembler instructions""... $ac_c" 1>&6
-echo "configure:8955: checking assembler instructions" >&5
+echo "configure:8973: checking assembler instructions" >&5
     gcc_cv_as_instructions=
     if test x$gcc_cv_as != x; then
 	set "filds fists" "filds mem; fists mem"

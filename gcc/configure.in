@@ -4382,6 +4382,20 @@ if test x$gcc_cv_as != x; then
 fi
 AC_MSG_RESULT($gcc_cv_as_weak)
 
+AC_MSG_CHECKING(assembler hidden support)
+gcc_cv_as_hidden=
+if test x$gcc_cv_as != x; then
+	# Check if we have .hidden
+	echo "	.hidden foobar" > conftest.s
+	echo "foobar:" >> conftest.s
+	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+		AC_DEFINE(HAVE_GAS_HIDDEN)
+		gcc_cv_as_hidden="yes"
+	fi
+	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
+fi
+AC_MSG_RESULT($gcc_cv_as_hidden)
+
 case "$target" in 
   sparc*-*-*)
     AC_CACHE_CHECK([assembler .register pseudo-op support],

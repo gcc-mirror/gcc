@@ -73,6 +73,9 @@
 /* Define if your assembler supports .weak.  */
 #undef HAVE_GAS_WEAK
 
+/* Define if your assembler supports .hidden.  */
+#undef HAVE_GAS_HIDDEN
+
 /* Define if your assembler uses the old HImode fild and fist notation.  */
 #undef HAVE_GAS_FILDS_FISTS
 
