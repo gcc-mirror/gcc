@@ -4805,7 +4805,6 @@ package body Sem_Ch4 is
          Set_Analyzed (Call_Node, False);
          Rewrite (Node_To_Replace, Call_Node);
          Analyze (Node_To_Replace);
-
       end Complete_Object_Operation;
 
       --------------------------------
@@ -4920,6 +4919,9 @@ package body Sem_Ch4 is
                      --  Allocate the node only once
 
                      if not Present (Call_Node_Case) then
+                        Analyze_Expression (Obj);
+                        Set_Analyzed       (Obj);
+
                         Transform_Object_Operation (
                           Call_Node       => Call_Node_Case,
                           First_Actual    => Obj,
@@ -5018,6 +5020,9 @@ package body Sem_Ch4 is
                   --  Allocate the node only once
 
                   if not Present (Call_Node_Case) then
+                     Analyze_Expression (Obj);
+                     Set_Analyzed       (Obj);
+
                      Transform_Object_Operation (
                        Call_Node       => Call_Node_Case,
                        First_Actual    => Obj,
@@ -5093,8 +5098,7 @@ package body Sem_Ch4 is
       if Is_Subprg_Call and then N = Name (Parent (N)) then
          Actual := First (Parameter_Associations (Parent (N)));
          while Present (Actual) loop
-            Analyze (Actual);
-            Check_Parameterless_Call (Actual);
+            Analyze_Expression (Actual);
             Next (Actual);
          end loop;
       end if;
@@ -5109,6 +5113,9 @@ package body Sem_Ch4 is
       else
          First_Actual := Obj;
       end if;
+
+      Analyze_Expression (First_Actual);
+      Set_Analyzed       (First_Actual);
 
       --  Build a subprogram call node
 
