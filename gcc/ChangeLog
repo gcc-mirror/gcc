@@ -1,3 +1,9 @@
+Wed Oct 28 10:29:09 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* expr.c (convert_move): Use shifts to perform the move if a
+	suitable extend pattern cannot be found.  Code written by
+	Richard Henderson <rth@cygnus.com>.
+
 Wed Oct 28 03:59:29 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
 	* regclass.c (renumber, regno_allocated): New static variables, moved
