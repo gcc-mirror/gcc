@@ -523,13 +523,13 @@ write_float (fnode *f, const char *source, int len)
          }
 
          memset(p, ' ', nb);
-         res = isinf (n);
+         res = isinf (n); 
          if (res != 0)
          {
-            if (res > 0)
-               fin = '+';
-            else
+            if (signbit(n))   
                fin = '-';
+            else
+               fin = '+';
 
             if (nb > 7)
                memcpy(p + nb - 8, "Infinity", 8); 
