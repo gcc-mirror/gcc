@@ -1,5 +1,9 @@
 Fri Nov 19 06:32:19 CET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
+	* i386.md (extend?f?f): Split to expander and pattern, refuse two
+	memory operands in patterns.
+	(fop*): Refuse two memory operands.
+
 	* i386.md (ashrsi3_31): Allow cltd when optimizing for size even
 	on !TARGET_USE_CLTD CPUs.
 
