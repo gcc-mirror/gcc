@@ -10,3 +10,9 @@
 #define sys_siglist _sys_siglist
 #undef SYS_SIGLIST_DECLARED
 #define SYS_SIGLIST_DECLARED
+
+/* If not compiled with GNU C, use the portable alloca.  */
+#ifndef __GNUC__
+#define USE_C_ALLOCA
+#endif
+
