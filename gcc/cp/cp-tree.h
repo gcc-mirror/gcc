@@ -4353,8 +4353,6 @@ extern void friendly_abort			PARAMS ((int, const char *,
 							 int, const char *))
   ATTRIBUTE_NORETURN;
 
-#define my_friendly_abort(N) \
-  friendly_abort (N, __FILE__, __LINE__, __FUNCTION__)
 #define my_friendly_assert(EXP, N) (void) \
  (((EXP) == 0) ? (friendly_abort (N, __FILE__, __LINE__, __FUNCTION__), 0) : 0)
 

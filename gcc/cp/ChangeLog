@@ -1,3 +1,7 @@
+2002-01-23  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	* cp-tree.h (my_friendly_abort): Remove.
+
 2002-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* spew.c (pending_inlines, pending_inlines_tail,
