@@ -632,6 +632,12 @@ scan_linker_output (fname)
 	  /* Then try "double quotes".  */
 	  else if (p = strchr (oldq, '"'), p)
 	    p++, q = strchr (p, '"');
+	  else {
+	    /* Then try entire line.  */
+	    q = strchr (oldq, 0);
+	    if (q != oldq)
+	      p = oldq;
+	  }
 
 	  if (p)
 	    {
