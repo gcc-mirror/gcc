@@ -1,3 +1,9 @@
+2003-05-06  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR other/10650
+	* unwind-dw2.c (uw_update_context_1): Don't set sp as cfa on s390.
+	(uw_init_context_1): Set initial sp to outer cfa on s390.
+
 2003-05-06  Mark Mitchell  <mark@codesourcery.com>
 
 	PR other/10658

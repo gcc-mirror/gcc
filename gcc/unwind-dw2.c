@@ -1062,8 +1062,10 @@ uw_update_context_1 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
      Given that other unwind mechanisms generally won't work if you try
      to represent stack pointer saves and restores directly, we don't
      bother conditionalizing this at all.  */
+#ifndef __s390__
   tmp_sp = (_Unwind_Ptr) context->cfa;
   orig_context.reg[__builtin_dwarf_sp_column ()] = &tmp_sp;
+#endif
 
   /* Compute this frame's CFA.  */
   switch (fs->cfa_how)
@@ -1164,6 +1166,9 @@ uw_init_context_1 (struct _Unwind_Context *context,
 
   /* Force the frame state to use the known cfa value.  */
   context->cfa = outer_cfa;
+#ifdef __s390__
+  context->reg[__builtin_dwarf_sp_column ()] = &outer_cfa;
+#endif
   fs.cfa_how = CFA_REG_OFFSET;
   fs.cfa_reg = __builtin_dwarf_sp_column ();
   fs.cfa_offset = 0;
