@@ -913,6 +913,11 @@ assign_stack_temp (mode, size, keep)
       p->level = temp_slot_level;
       p->keep = keep;
     }
+
+  /* We may be reusing an old slot, so clear any MEM flags that may have been
+     set from before.  */
+  RTX_UNCHANGING_P (p->slot) = 0;
+  MEM_IN_STRUCT_P (p->slot) = 0;
   return p->slot;
 }
 
