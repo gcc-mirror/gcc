@@ -8095,14 +8095,17 @@ cp_parser_template_name (cp_parser* parser,
       if (is_declaration 
 	  && !template_keyword_p 
 	  && parser->scope && TYPE_P (parser->scope)
-	  && dependent_type_p (parser->scope))
+	  && dependent_type_p (parser->scope)
+	  /* Do not do this for dtors (or ctors), since they never
+	     need the template keyword before their name.  */
+	  && !constructor_name_p (identifier, parser->scope))
 	{
 	  ptrdiff_t start;
 	  cp_token* token;
 	  /* Explain what went wrong.  */
 	  error ("non-template `%D' used as template", identifier);
-	  error ("(use `%T::template %D' to indicate that it is a template)",
-		 parser->scope, identifier);
+	  inform ("use `%T::template %D' to indicate that it is a template",
+		  parser->scope, identifier);
 	  /* If parsing tentatively, find the location of the "<"
 	     token.  */
 	  if (cp_parser_parsing_tentatively (parser)
