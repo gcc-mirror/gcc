@@ -1012,8 +1012,8 @@
   [(set (reg:CC_NOOV 24)
 	(compare:CC_NOOV (zero_extract:SI
 			  (match_operand:SI 0 "s_register_operand" "r")
-		 	  (match_operand:SI 1 "immediate_operand" "n")
-			  (match_operand:SI 2 "immediate_operand" "n"))
+		 	  (match_operand 1 "const_int_operand" "n")
+			  (match_operand 2 "const_int_operand" "n"))
 			 (const_int 0)))]
   "INTVAL (operands[2]) >= 0 && INTVAL (operands[2]) < 32
    && INTVAL (operands[1]) > 0 
@@ -1037,8 +1037,8 @@
   [(set (reg:CC_NOOV 24)
 	(compare:CC_NOOV (zero_extract:SI
 			  (match_operand:QI 0 "memory_operand" "m")
-		 	  (match_operand 1 "immediate_operand" "n")
-			  (match_operand 2 "immediate_operand" "n"))
+			  (match_operand 1 "const_int_operand" "n")
+			  (match_operand 2 "const_int_operand" "n"))
 			 (const_int 0)))
    (clobber (match_scratch:QI 3 "=r"))]
   "INTVAL (operands[2]) >= 0 && INTVAL (operands[2]) < 8
@@ -1875,6 +1875,36 @@
   "ldr%?h\\t%0, %1"
 [(set_attr "type" "load")])
 
+(define_split
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(zero_extend:SI (match_operand:HI 1 "alignable_memory_operand" "")))
+   (clobber (match_operand:SI 2 "s_register_operand" ""))]
+  "! arm_arch4"
+  [(set (match_dup 2) (match_dup 1))
+   (set (match_dup 0) (lshiftrt:SI (match_dup 2) (const_int 16)))]
+  "
+{
+  if ((operands[1] = gen_rotated_half_load (operands[1])) == NULL)
+    FAIL;
+}")
+
+(define_split
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(match_operator:SI 3 "shiftable_operator"
+	 [(zero_extend:SI (match_operand:HI 1 "alignable_memory_operand" ""))
+	  (match_operand:SI 4 "s_register_operand" "")]))
+   (clobber (match_operand:SI 2 "s_register_operand" ""))]
+  "! arm_arch4"
+  [(set (match_dup 2) (match_dup 1))
+   (set (match_dup 0)
+	(match_op_dup 3
+	 [(lshiftrt:SI (match_dup 2) (const_int 16)) (match_dup 4)]))]
+  "
+{
+  if ((operands[1] = gen_rotated_half_load (operands[1])) == NULL)
+    FAIL;
+}")
+
 (define_expand "zero_extendqisi2"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(zero_extend:SI
@@ -1906,8 +1936,8 @@
   "")
 
 (define_insn "*compareqi_eq0"
-  [(set (reg:CC_NOOV 24)
-	(compare:CC_NOOV (match_operand:QI 0 "s_register_operand" "r")
+  [(set (reg:CC_Z 24)
+	(compare:CC_Z (match_operand:QI 0 "s_register_operand" "r")
 			 (const_int 0)))]
   ""
   "tst\\t%0, #255"
@@ -1974,6 +2004,36 @@
   "arm_arch4"
   "ldr%?sh\\t%0, %1"
 [(set_attr "type" "load")])
+
+(define_split
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(sign_extend:SI (match_operand:HI 1 "alignable_memory_operand" "")))
+   (clobber (match_operand:SI 2 "s_register_operand" ""))]
+  "! arm_arch4"
+  [(set (match_dup 2) (match_dup 1))
+   (set (match_dup 0) (ashiftrt:SI (match_dup 2) (const_int 16)))]
+  "
+{
+  if ((operands[1] = gen_rotated_half_load (operands[1])) == NULL)
+    FAIL;
+}")
+
+(define_split
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(match_operator:SI 3 "shiftable_operator"
+	 [(sign_extend:SI (match_operand:HI 1 "alignable_memory_operand" ""))
+	  (match_operand:SI 4 "s_register_operand" "")]))
+   (clobber (match_operand:SI 2 "s_register_operand" ""))]
+  "! arm_arch4"
+  [(set (match_dup 2) (match_dup 1))
+   (set (match_dup 0)
+	(match_op_dup 3
+	 [(ashiftrt:SI (match_dup 2) (const_int 16)) (match_dup 4)]))]
+  "
+{
+  if ((operands[1] = gen_rotated_half_load (operands[1])) == NULL)
+    FAIL;
+}")
 
 (define_expand "extendqihi2"
   [(set (match_dup 2)
@@ -2366,21 +2426,96 @@
 	}
       else if (! arm_arch4)
 	{
-	  if (TARGET_SHORT_BY_BYTES && GET_CODE (operands[1]) == MEM)
+	  if (GET_CODE (operands[1]) == MEM)
 	    {
-	      rtx reg = gen_reg_rtx (SImode);
-	      emit_insn (gen_movhi_bytes (reg, operands[1]));
-	      operands[1] = gen_lowpart (HImode, reg);
-	    }
-	  else if (BYTES_BIG_ENDIAN && GET_CODE (operands[1]) == MEM)
-	    {
-	      emit_insn (gen_movhi_bigend (operands[0], operands[1]));
-	      DONE;
+	      if (TARGET_SHORT_BY_BYTES)
+		{
+		  rtx base;
+		  rtx offset = const0_rtx;
+		  rtx reg = gen_reg_rtx (SImode);
+
+		  if ((GET_CODE (base = XEXP (operands[1], 0)) == REG
+		       || (GET_CODE (base) == PLUS
+			   && GET_CODE (offset = XEXP (base, 1)) == CONST_INT
+			   && GET_CODE (base = XEXP (base, 0)) == REG))
+		      && REGNO_POINTER_ALIGN (REGNO (base)) >= 4)
+		    {
+		      HOST_WIDE_INT new_offset = INTVAL (offset) & ~2;
+
+		      emit_insn (gen_movsi (reg, gen_rtx (MEM, SImode,
+					   plus_constant (base, new_offset))));
+		      if (((INTVAL (offset) & 2) != 0)
+			  ^ (BYTES_BIG_ENDIAN ? 1 : 0))
+			{
+			  rtx reg2 = gen_reg_rtx (SImode);
+
+			  emit_insn (gen_lshrsi3 (reg2, reg, GEN_INT (16)));
+			  reg = reg2;
+			}
+		    }
+		  else
+		    emit_insn (gen_movhi_bytes (reg, operands[1]));
+
+		  operands[1] = gen_lowpart (HImode, reg);
+		}
+	      else if (BYTES_BIG_ENDIAN)
+		{
+		  rtx base;
+		  rtx offset = const0_rtx;
+
+		  if ((GET_CODE (base = XEXP (operands[1], 0)) == REG
+		       || (GET_CODE (base) == PLUS
+			   && GET_CODE (offset = XEXP (base, 1)) == CONST_INT
+			   && GET_CODE (base = XEXP (base, 0)) == REG))
+		      && REGNO_POINTER_ALIGN (REGNO (base)) >= 4)
+		    {
+		      rtx reg = gen_reg_rtx (SImode);
+		      rtx new_mem;
+
+		      if ((INTVAL (offset) & 2) == 2)
+			{
+			  HOST_WIDE_INT new_offset = INTVAL (offset) ^ 2;
+			  new_mem = gen_rtx (MEM, SImode,
+					     plus_constant (base, new_offset));
+
+			  emit_insn (gen_movsi (reg, new_mem));
+			}
+		      else
+			{
+			  new_mem = gen_rtx (MEM, SImode,
+					     XEXP (operands[1], 0));
+			  emit_insn (gen_rotated_loadsi (reg, new_mem));
+			}
+
+		      operands[1] = gen_lowpart (HImode, reg);
+		    }
+		  else
+		    {
+		      emit_insn (gen_movhi_bigend (operands[0], operands[1]));
+		      DONE;
+		    }
+		}
 	    }
 	}
     }
 }
 ")
+
+(define_insn "rotated_loadsi"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(rotate:SI (match_operand:SI 1 "offsettable_memory_operand" "o")
+		   (const_int 16)))]
+  "! TARGET_SHORT_BY_BYTES"
+  "*
+{
+  rtx ops[2];
+
+  ops[0] = operands[0];
+  ops[1] = gen_rtx (MEM, SImode, plus_constant (XEXP (operands[1], 0), 2));
+  output_asm_insn (\"ldr%?\\t%0, %1\\t%@ load-rotate\", ops);
+  return \"\";
+}"
+[(set_attr "type" "load")])
 
 (define_expand "movhi_bytes"
   [(set (match_dup 2) (zero_extend:SI (mem:QI (match_operand:HI 1 "" ""))))
