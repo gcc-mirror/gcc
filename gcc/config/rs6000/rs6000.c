@@ -6231,6 +6231,10 @@ spe_init_builtins ()
 			    SPE_BUILTIN_EVSEL_CMPGTS,
 			    SPE_BUILTIN_EVSEL_FSTSTEQ);
 
+  (*lang_hooks.decls.pushdecl)
+    (build_decl (TYPE_DECL, get_identifier ("__ev64_opaque__"),
+		 opaque_V2SI_type_node));
+
   /* Initialize irregular SPE builtins.  */
   
   def_builtin (target_flags, "__builtin_spe_mtspefscr", void_ftype_int, SPE_BUILTIN_MTSPEFSCR);
@@ -14770,13 +14774,7 @@ is_ev64_opaque_type (type)
   return (TARGET_SPE
 	  && (type == opaque_V2SI_type_node
 	      || type == opaque_V2SF_type_node
-	      || type == opaque_p_V2SI_type_node
-	      || (TREE_CODE (type) == VECTOR_TYPE
-		  && TYPE_NAME (type)
-		  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-		  && DECL_NAME (TYPE_NAME (type))
-		  && strcmp (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))),
-			     "__ev64_opaque__") == 0)));
+	      || type == opaque_p_V2SI_type_node));
 }
 
 static rtx
