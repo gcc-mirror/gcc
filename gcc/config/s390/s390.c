@@ -4067,13 +4067,13 @@ s390_output_constant_pool (start_label, end_label)
     {
       readonly_data_section ();
       ASM_OUTPUT_ALIGN (asm_out_file, 3);
-      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", 
-                                 CODE_LABEL_NUMBER (start_label));
+      (*targetm.asm_out.internal_label) (asm_out_file, "L", 
+					 CODE_LABEL_NUMBER (start_label));
     } 
   else 
     {
-      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
-                                 CODE_LABEL_NUMBER (start_label));
+      (*targetm.asm_out.internal_label) (asm_out_file, "L",
+					 CODE_LABEL_NUMBER (start_label));
       ASM_OUTPUT_ALIGN (asm_out_file, 2);      
     }
 
@@ -4085,7 +4085,8 @@ s390_output_constant_pool (start_label, end_label)
   else
     {
       ASM_OUTPUT_ALIGN (asm_out_file, 1);
-      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", CODE_LABEL_NUMBER (end_label));
+      (*targetm.asm_out.internal_label) (asm_out_file, "L", 
+					 CODE_LABEL_NUMBER (end_label));
     }
 }
 
