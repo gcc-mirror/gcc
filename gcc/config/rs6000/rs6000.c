@@ -497,8 +497,7 @@ short_cint_operand (op, mode)
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return ((GET_CODE (op) == CONST_INT
-	   && (unsigned HOST_WIDE_INT) (INTVAL (op) + 0x8000) < 0x10000)
-	  || GET_CODE (op) == CONSTANT_P_RTX);
+	   && (unsigned HOST_WIDE_INT) (INTVAL (op) + 0x8000) < 0x10000));
 }
 
 /* Similar for a unsigned D field.  */
@@ -509,8 +508,7 @@ u_short_cint_operand (op, mode)
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return ((GET_CODE (op) == CONST_INT
-	   && (INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff)) == 0)
-	  || GET_CODE (op) == CONSTANT_P_RTX);
+	   && (INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff)) == 0));
 }
 
 /* Return 1 if OP is a CONST_INT that cannot fit in a signed D field.  */
@@ -598,7 +596,6 @@ reg_or_cint_operand (op, mode)
     enum machine_mode mode;
 {
      return (GET_CODE (op) == CONST_INT
-	     || GET_CODE (op) == CONSTANT_P_RTX
 	     || gpc_reg_operand (op, mode));
 }
 
@@ -883,8 +880,7 @@ logical_operand (op, mode)
   return (gpc_reg_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT
 	      && ((INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff)) == 0
-		  || (INTVAL (op) & 0xffff) == 0))
-	  || GET_CODE (op) == CONSTANT_P_RTX);
+		  || (INTVAL (op) & 0xffff) == 0)));
 }
 
 /* Return 1 if C is a constant that is not a logical operand (as
@@ -1110,6 +1106,10 @@ input_operand (op, mode)
   if (memory_operand (op, mode))
     return 1;
 
+  /* Only a tiny bit of handling for CONSTANT_P_RTX is necessary.  */
+  if (GET_CODE (op) == CONST && GET_CODE (XEXP (op, 0)) == CONSTANT_P_RTX)
+    return 1;
+
   /* For floating-point, easy constants are valid.  */
   if (GET_MODE_CLASS (mode) == MODE_FLOAT
       && CONSTANT_P (op)
@@ -1119,7 +1119,6 @@ input_operand (op, mode)
   /* Allow any integer constant.  */
   if (GET_MODE_CLASS (mode) == MODE_INT
       && (GET_CODE (op) == CONST_INT
-	  || GET_CODE (op) == CONSTANT_P_RTX
 	  || GET_CODE (op) == CONST_DOUBLE))
     return 1;
 
@@ -2747,15 +2746,15 @@ print_operand (file, x, code)
       /* If the high bit is set and the low bit is not, the value is zero.
 	 If the high bit is zero, the value is the first 1 bit we find from
 	 the left.  */
-      if (val < 0 && (val & 1) == 0)
+      if ((val & 0x80000000) && ((val & 1) == 0))
 	{
 	  putc ('0', file);
 	  return;
 	}
-      else if (val >= 0)
+      else if ((val & 0x80000000) == 0)
 	{
 	  for (i = 1; i < 32; i++)
-	    if ((val <<= 1) < 0)
+	    if ((val <<= 1) & 0x80000000)
 	      break;
 	  fprintf (file, "%d", i);
 	  return;
@@ -2782,7 +2781,7 @@ print_operand (file, x, code)
       /* If the low bit is set and the high bit is not, the value is 31.
 	 If the low bit is zero, the value is the first 1 bit we find from
 	 the right.  */
-      if ((val & 1) && val >= 0)
+      if ((val & 1) && ((val & 0x80000000) == 0))
 	{
 	  fputs ("31", file);
 	  return;
@@ -2802,7 +2801,7 @@ print_operand (file, x, code)
       /* Otherwise, look for the first 0 bit from the left.  The result is its
 	 number minus 1. We know the high-order bit is one.  */
       for (i = 0; i < 32; i++)
-	if ((val <<= 1) >= 0)
+	if (((val <<= 1) & 0x80000000) == 0)
 	  break;
 
       fprintf (file, "%d", i);
@@ -3448,7 +3447,6 @@ rs6000_stack_info ()
 	}
     }
 
-
   /* Determine if we need to save the link register */
   if (regs_ever_live[65]
       || (DEFAULT_ABI == ABI_AIX && profile_flag)
@@ -3473,13 +3471,6 @@ rs6000_stack_info ()
       info_ptr->cr_save_p = 1;
       if (abi == ABI_V4 || abi == ABI_NT || abi == ABI_SOLARIS)
 	info_ptr->cr_size = reg_size;
-    }
-
-  /* Ensure that fp_save_offset will be aligned to an 8-byte boundary. */
-  if (info_ptr->fpmem_p)
-    {
-      info_ptr->gp_size = RS6000_ALIGN (info_ptr->gp_size, 8);
-      info_ptr->main_size = RS6000_ALIGN (info_ptr->main_size, 8);
     }
 
   /* Determine various sizes */
@@ -3535,6 +3526,7 @@ rs6000_stack_info ()
       break;
     }
 
+  /* Ensure that fpmem_offset will be aligned to an 8-byte boundary. */
   if (info_ptr->fpmem_p
       && (info_ptr->main_save_offset - info_ptr->fpmem_size) % 8)
     info_ptr->fpmem_size += reg_size;

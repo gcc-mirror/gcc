@@ -1,3 +1,19 @@
+Tue Jan 12 14:05:37 1999   David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.c (print_operand, cases 'm' and 'M'): Do not depend on
+	HOST_WIDE_INT word-size.
+	(rs6000_stack_info): Remove redundant alignment of fpmem.
+
+Tue Jan 12 14:05:37 1999   Richard Henderson  <rth@cygnus.com>
+
+	* rs6000.c (short_cint_operand): Remove CONSTANT_P_RTX handling.
+	(u_short_cint_operand, reg_or_cint_operand, logical_operand): Likewise.
+	(input_operand): Adjust CONSTANT_P_RTX handling.
+	* rs6000.h (PREDICATE_CODES): Remove CONSTANT_P_RTX references.
+	* rs6000.md (movsi): Adjust CONSTANT_P_RTX handling.
+	(movhi, movqi): Remove CONSANT_P_RTX handling.
+	(movdi): Adjust CONSTANT_P_RTX handling.
+
 Tue Jan 12 10:23:24 1999  Stan Cox  <scox@cygnus.com>
 
 	* mips.md (call_value_internal3c): New pattern for -mips16 -mlong-calls.
