@@ -261,6 +261,7 @@ for machine in $build $host $target; do
 		tm_file="${tm_file} alpha/linux.h alpha/elf.h"
 		xm_file="${xm_file} alpha/xm-linux.h"
 		target_cpu_default=4
+		tmake_file="t-linux alpha/t-linux"
 		xmake_file=none
 		fixincludes=Makefile.in
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
