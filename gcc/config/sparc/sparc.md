@@ -1187,7 +1187,8 @@
   [(set (match_operand:DI 0 "register_operand" "")
         (ne:DI (match_operand:DI 1 "register_operand" "")
                (const_int 0)))]
-  "TARGET_ARCH64"
+  "TARGET_ARCH64
+   && ! reg_overlap_mentioned_p (operands[1], operands[0])"
   [(set (match_dup 0) (const_int 0))
    (set (match_dup 0) (if_then_else:DI (ne:DI (match_dup 1)
                                               (const_int 0))
@@ -1208,7 +1209,8 @@
   [(set (match_operand:DI 0 "register_operand" "")
         (neg:DI (ne:DI (match_operand:DI 1 "register_operand" "")
                        (const_int 0))))]
-  "TARGET_ARCH64"
+  "TARGET_ARCH64
+   && ! reg_overlap_mentioned_p (operands[1], operands[0])"
   [(set (match_dup 0) (const_int 0))
    (set (match_dup 0) (if_then_else:DI (ne:DI (match_dup 1)
                                               (const_int 0))
@@ -1229,7 +1231,8 @@
   [(set (match_operand:SI 0 "register_operand" "")
         (ne:SI (match_operand:DI 1 "register_operand" "")
                (const_int 0)))]
-  "TARGET_ARCH64"
+  "TARGET_ARCH64
+   && ! reg_overlap_mentioned_p (operands[1], operands[0])"
   [(set (match_dup 0) (const_int 0))
    (set (match_dup 0) (if_then_else:SI (ne:DI (match_dup 1)
                                               (const_int 0))
@@ -1314,7 +1317,8 @@
   [(set (match_operand:DI 0 "register_operand" "")
         (eq:DI (match_operand:DI 1 "register_operand" "")
                (const_int 0)))]
-  "TARGET_ARCH64"
+  "TARGET_ARCH64
+   && ! reg_overlap_mentioned_p (operands[1], operands[0])"
   [(set (match_dup 0) (const_int 0))
    (set (match_dup 0) (if_then_else:DI (eq:DI (match_dup 1)
                                               (const_int 0))
@@ -1335,7 +1339,8 @@
   [(set (match_operand:DI 0 "register_operand" "")
         (neg:DI (eq:DI (match_operand:DI 1 "register_operand" "")
                        (const_int 0))))]
-  "TARGET_ARCH64"
+  "TARGET_ARCH64
+   && ! reg_overlap_mentioned_p (operands[1], operands[0])"
   [(set (match_dup 0) (const_int 0))
    (set (match_dup 0) (if_then_else:DI (eq:DI (match_dup 1)
                                               (const_int 0))
@@ -1356,7 +1361,8 @@
   [(set (match_operand:SI 0 "register_operand" "")
         (eq:SI (match_operand:DI 1 "register_operand" "")
                (const_int 0)))]
-  "TARGET_ARCH64"
+  "TARGET_ARCH64
+   && ! reg_overlap_mentioned_p (operands[1], operands[0])"
   [(set (match_dup 0) (const_int 0))
    (set (match_dup 0) (if_then_else:SI (eq:DI (match_dup 1)
                                               (const_int 0))

@@ -1,3 +1,10 @@
+2000-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.md (snedi_zero+1, neg_snedi_zero+1,
+	snedi_zero_trunc+1, seqdi_zero+1, neg_seqdi_zero+1,
+	seqdi_zero_trunc+1): Allow splits only if registers are
+	different.
+
 2000-04-04  Ulrich Drepper  <drepper@cygnus.com>
 
 	* acconfig.h: Add HAVE_GAS_HIDDEN.
