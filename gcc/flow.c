@@ -6459,7 +6459,8 @@ flow_loops_dump (loops, file, verbose)
 		  /* If the union of LOOP and OLOOP is different than
 		     the larger of LOOP and OLOOP then LOOP and OLOOP
 		     must be disjoint.  */
-		  disjoint = ! flow_loop_nested_p (smaller ? loop : oloop);
+		  disjoint = ! flow_loop_nested_p (smaller ? loop : oloop,
+						   smaller ? oloop : loop);
 		  fprintf (file, ";; loop header %d shared by loops %d, %d"
 			   " %s\n",
 			   loop->header->index, i, j,

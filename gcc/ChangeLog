@@ -1,3 +1,8 @@
+1999-12-05  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* flow.c (flow_loops_dump): Add missing argument when calling
+	flow_loop_nested_p.
+
 1999-12-04  Geoffrey Keating  <geoffk@cygnus.com>
 	    Greg McGary  <gkm@gnu.org>
 
