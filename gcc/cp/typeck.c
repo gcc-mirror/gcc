@@ -2917,19 +2917,18 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 	 load-with-sign-extend, while the second used normal load then
 	 shift to sign-extend.  An optimizer flaw, perhaps, but it's
 	 easier to make this change.  */
+      idx = cp_build_binary_op (TRUNC_DIV_EXPR, 
+				build1 (NOP_EXPR, vtable_index_type, e3),
+				TYPE_SIZE_UNIT (vtable_entry_type));
       switch (TARGET_PTRMEMFUNC_VBIT_LOCATION)
 	{
 	case ptrmemfunc_vbit_in_pfn:
-	  idx = cp_build_binary_op (TRUNC_DIV_EXPR, 
-				    build1 (NOP_EXPR, vtable_index_type, e3),
-				    TYPE_SIZE_UNIT (vtable_entry_type));
 	  e1 = cp_build_binary_op (BIT_AND_EXPR,
 				   build1 (NOP_EXPR, vtable_index_type, e3),
 				   integer_one_node);
 	  break;
 
 	case ptrmemfunc_vbit_in_delta:
-	  idx = build1 (NOP_EXPR, vtable_index_type, e3);
 	  e1 = cp_build_binary_op (BIT_AND_EXPR,
 				   delta, integer_one_node);
 	  delta = cp_build_binary_op (RSHIFT_EXPR,
