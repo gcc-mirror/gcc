@@ -444,6 +444,7 @@ enum cpp_buffer_type {BUF_FAKE, BUF_FILE, BUF_BUILTIN,
 #define NODE_POISONED	(1 << 1)	/* Poisoned identifier.  */
 #define NODE_BUILTIN	(1 << 2)	/* Builtin macro.  */
 #define NODE_DIAGNOSTIC (1 << 3)	/* Possible diagnostic when lexed.  */
+#define NODE_WARN	(1 << 4)	/* Warn if redefined or undefined.  */
 
 /* Different flavors of hash node.  */
 enum node_type
@@ -604,6 +605,7 @@ extern void cpp_forall_identifiers	PARAMS ((cpp_reader *,
 extern void cpp_scan_buffer_nooutput	PARAMS ((cpp_reader *, int));
 extern void cpp_start_lookahead		PARAMS ((cpp_reader *));
 extern void cpp_stop_lookahead		PARAMS ((cpp_reader *, int));
+extern int  cpp_sys_objmacro_p		PARAMS ((cpp_reader *));
 
 /* In cppfiles.c */
 extern int cpp_included	PARAMS ((cpp_reader *, const char *));

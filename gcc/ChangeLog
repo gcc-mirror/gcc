@@ -1,3 +1,38 @@
+2001-02-28  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cppinit.c (builtin_array): Update.
+        (init_builtins): Flag builtins to warn if redefined or
+        undefined.  Define __GXX_WEAK as a normal macro.
+        * cpplib.c (do_undef): Warn if flagged NODE_WARN.
+        * cpplib.h (NODE_WARN): New flag.
+        * cppmacro.c (builtin_macro): Remove handling of __GXX_WEAK__.
+        Handle __STDC__ as a builtin only on Solaris.
+        (warn_of_redefinition): Renamed from check_macro_definition.
+        Reverse sense of test.  Always warn if NODE_WARN.
+        (_cpp_create_definition): Use warn_of_redefinition.  Flag
+        any macro beginning with "__STDC_" to require a mandatory
+        warning if redefined or undefined.
+        * cppinit.c (set_lang):  Move builtin handling to...
+        (init_builtins): ...here.
+        (_cpp_create_reader): Move call to set_lang.
+        * cppfiles.c (stack_include_file): Generate dependencies
+        here, and manage include_count here too.
+        (PRINT_THIS_DEP): Delete.
+        (_cpp_execute_include): Do not generate dependencies here,
+        apart from the case of a missing header.  Do not manage
+        include_count.
+        (_cpp_read_file): Leave dependency generation to
+        stack_include_file.
+        * cppexp.c (parse_number): Similarly.
+        * cpplib.h (NODE_SYSHDR, cpp_sys_objmacro_p): New.
+        * cppmacro.c (struct cpp_macro): New member node.
+        (parse_args): Only warn about missing rest args if not
+        a system macro.
+        (funlike_invocation_p): Similarly for uninvoked funlike macros.
+        (cpp_sys_objmacro_p): New.
+        (_cpp_create_definition): Store the node with the macro defn.
+        Remember if the macro is defined in a system header.
+
 2001-02-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* extend.texi (Deprecated Features): Deprecate float and

@@ -477,7 +477,7 @@ do_undef (pfile)
       if (pfile->cb.undef)
 	(*pfile->cb.undef) (pfile, node);
 
-      if (node->flags & NODE_BUILTIN)
+      if (node->flags & NODE_WARN)
 	cpp_warning (pfile, "undefining \"%s\"", node->name);
 
       _cpp_free_definition (node);

@@ -371,8 +371,6 @@ set_lang (pfile, lang)
      cpp_reader *pfile;
      enum c_lang lang;
 {
-  struct cpp_pending *pend = CPP_OPTION (pfile, pending);
-
   /* Defaults.  */
   CPP_OPTION (pfile, lang) = lang;
   CPP_OPTION (pfile, objc) = 0;
@@ -388,7 +386,6 @@ set_lang (pfile, lang)
       CPP_OPTION (pfile, cplusplus_comments) = 1;
       CPP_OPTION (pfile, digraphs) = 1;
       CPP_OPTION (pfile, c99) = 1;
-      new_pending_directive (pend, "__STDC_VERSION__=199901L", cpp_define);
       break;
     case CLK_GNUC89:
       CPP_OPTION (pfile, trigraphs) = 0;
@@ -400,7 +397,6 @@ set_lang (pfile, lang)
 
       /* ISO C.  */
     case CLK_STDC94:
-      new_pending_directive (pend, "__STDC_VERSION__=199409L", cpp_define);
     case CLK_STDC89:
       CPP_OPTION (pfile, trigraphs) = 1;
       CPP_OPTION (pfile, dollars_in_ident) = 0;
@@ -408,7 +404,6 @@ set_lang (pfile, lang)
       CPP_OPTION (pfile, digraphs) = lang == CLK_STDC94;
       CPP_OPTION (pfile, c99) = 0;
       CPP_OPTION (pfile, extended_numbers) = 0;
-      new_pending_directive (pend, "__STRICT_ANSI__", cpp_define);
       break;
     case CLK_STDC99:
       CPP_OPTION (pfile, trigraphs) = 1;
@@ -416,13 +411,10 @@ set_lang (pfile, lang)
       CPP_OPTION (pfile, cplusplus_comments) = 1;
       CPP_OPTION (pfile, digraphs) = 1;
       CPP_OPTION (pfile, c99) = 1;
-      new_pending_directive (pend, "__STRICT_ANSI__", cpp_define);
-      new_pending_directive (pend, "__STDC_VERSION__=199901L", cpp_define);
       break;
 
       /* Objective C.  */
     case CLK_OBJCXX:
-      new_pending_directive (pend, "__cplusplus", cpp_define);
       CPP_OPTION (pfile, cplusplus) = 1;
     case CLK_OBJC:
       CPP_OPTION (pfile, trigraphs) = 0;
@@ -431,7 +423,6 @@ set_lang (pfile, lang)
       CPP_OPTION (pfile, digraphs) = 1;
       CPP_OPTION (pfile, c99) = 0;
       CPP_OPTION (pfile, objc) = 1;
-      new_pending_directive (pend, "__OBJC__", cpp_define);
       break;
 
       /* C++.  */
@@ -443,7 +434,6 @@ set_lang (pfile, lang)
       CPP_OPTION (pfile, cplusplus_comments) = 1;
       CPP_OPTION (pfile, digraphs) = 1;
       CPP_OPTION (pfile, c99) = 0;
-      new_pending_directive (pend, "__cplusplus", cpp_define);
       break;
 
       /* Assembler.  */
@@ -453,7 +443,6 @@ set_lang (pfile, lang)
       CPP_OPTION (pfile, cplusplus_comments) = 1;
       CPP_OPTION (pfile, digraphs) = 0; 
       CPP_OPTION (pfile, c99) = 0;
-      new_pending_directive (pend, "__ASSEMBLER__", cpp_define);
       break;
     }
 }
@@ -509,6 +498,7 @@ cpp_create_reader (lang)
 
   pfile = (cpp_reader *) xcalloc (1, sizeof (cpp_reader));
 
+  set_lang (pfile, lang);
   CPP_OPTION (pfile, warn_import) = 1;
   CPP_OPTION (pfile, discard_comments) = 1;
   CPP_OPTION (pfile, show_column) = 1;
@@ -517,9 +507,6 @@ cpp_create_reader (lang)
 
   CPP_OPTION (pfile, pending) =
     (struct cpp_pending *) xcalloc (1, sizeof (struct cpp_pending));
-
-  /* After creating pfile->pending.  */
-  set_lang (pfile, lang);
 
   /* It's simplest to just create this struct whether or not it will
      be needed.  */
@@ -620,7 +607,9 @@ cpp_destroy (pfile)
 /* This structure defines one built-in identifier.  A node will be
    entered in the hash table under the name NAME, with value VALUE (if
    any).  If flags has OPERATOR, the node's operator field is used; if
-   flags has BUILTIN the node's builtin field is used.
+   flags has BUILTIN the node's builtin field is used.  Macros that are
+   known at build time should not be flagged BUILTIN, as then they do
+   not appear in macro dumps with e.g. -dM or -dD.
 
    Two values are not compile time constants, so we tag
    them in the FLAGS field instead:
@@ -645,7 +634,6 @@ struct builtin
 #define OPERATOR  	0x10
 
 #define B(n, t)       { U n, 0, t, 0, BUILTIN, sizeof n - 1 }
-#define BC(n, t)      { U n, 0, t, 0, BUILTIN | CPLUS, sizeof n - 1 }
 #define C(n, v)       { U n, v, 0, 0, 0, sizeof n - 1 }
 #define X(n, f)       { U n, 0, 0, 0, f, sizeof n - 1 }
 #define O(n, c, f)    { U n, 0, 0, c, OPERATOR | f, sizeof n - 1 }
@@ -657,8 +645,6 @@ static const struct builtin builtin_array[] =
   B("__BASE_FILE__",	 BT_BASE_FILE),
   B("__LINE__",		 BT_SPECLINE),
   B("__INCLUDE_LEVEL__", BT_INCLUDE_LEVEL),
-  B("__STDC__",		 BT_STDC),
-  BC("__GXX_WEAK__",     BT_WEAK),
 
   X("__VERSION__",		VERS),
   X("__USER_LABEL_PREFIX__",	ULP),
@@ -675,6 +661,11 @@ static const struct builtin builtin_array[] =
 #endif
 #ifndef NO_BUILTIN_WINT_TYPE
   C("__WINT_TYPE__",		WINT_TYPE),
+#endif
+#ifdef STDC_0_IN_SYSTEM_HEADERS
+  B("__STDC__",		 BT_STDC),
+#else
+  C("__STDC__",		 "1"),
 #endif
 
   /* Named operators known to the preprocessor.  These cannot be #defined
@@ -727,7 +718,7 @@ init_builtins (pfile)
 	  else
 	    {
 	      hp->type = NT_MACRO;
-	      hp->flags |= NODE_BUILTIN;
+	      hp->flags |= NODE_BUILTIN | NODE_WARN;
 	      hp->value.builtin = b->builtin;
 	    }
 	}
@@ -757,6 +748,29 @@ init_builtins (pfile)
 	  _cpp_define_builtin (pfile, str);
 	}
     }
+
+  if (CPP_OPTION (pfile, cplusplus))
+    {
+      _cpp_define_builtin (pfile, "__cplusplus 1");
+      if (SUPPORTS_ONE_ONLY)
+	_cpp_define_builtin (pfile, "__GXX_WEAK__ 1");
+      else
+	_cpp_define_builtin (pfile, "__GXX_WEAK__ 0");
+    }
+  if (CPP_OPTION (pfile, objc))
+    _cpp_define_builtin (pfile, "__OBJC__ 1");
+
+  if (CPP_OPTION (pfile, lang) == CLK_STDC94)
+    _cpp_define_builtin (pfile, "__STDC_VERSION__ 199409L");
+  else if (CPP_OPTION (pfile, c99))
+    _cpp_define_builtin (pfile, "__STDC_VERSION__ 199901L");
+
+  if (CPP_OPTION (pfile, lang) == CLK_STDC89
+      || CPP_OPTION (pfile, lang) == CLK_STDC94
+      || CPP_OPTION (pfile, lang) == CLK_STDC99)
+    _cpp_define_builtin (pfile, "__STRICT_ANSI__ 1");
+  else if (CPP_OPTION (pfile, lang) == CLK_ASM)
+    _cpp_define_builtin (pfile, "__ASSEMBLER__ 1");
 }
 #undef BUILTIN
 #undef OPERATOR

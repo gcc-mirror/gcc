@@ -29,10 +29,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "cpplib.h"
 #include "cpphash.h"
 
-#ifndef STDC_0_IN_SYSTEM_HEADERS
-#define STDC_0_IN_SYSTEM_HEADERS 0 /* Boolean macro.  */
-#endif
-
 struct cpp_macro
 {
   cpp_hashnode **params;	/* Parameters, if any.  */
@@ -44,6 +40,7 @@ struct cpp_macro
   unsigned int fun_like : 1;	/* If a function-like macro.  */
   unsigned int variadic : 1;	/* If a variadic macro.  */
   unsigned int disabled : 1;	/* If macro is disabled.  */
+  unsigned int syshdr   : 1;	/* If macro defined in system header.  */
 };
 
 typedef struct macro_arg macro_arg;
@@ -91,9 +88,8 @@ static void free_lookahead PARAMS ((cpp_lookahead *));
 /* #define directive parsing and handling.  */
 
 static cpp_token *lex_expansion_token PARAMS ((cpp_reader *, cpp_macro *));
-static int check_macro_redefinition PARAMS ((cpp_reader *,
-					     const cpp_hashnode *,
-					     const cpp_macro *));
+static int warn_of_redefinition PARAMS ((cpp_reader *, const cpp_hashnode *,
+					 const cpp_macro *));
 static int save_parameter PARAMS ((cpp_reader *, cpp_macro *, cpp_hashnode *));
 static int parse_params PARAMS ((cpp_reader *, cpp_macro *));
 static void check_trad_stringification PARAMS ((cpp_reader *,
@@ -183,11 +179,8 @@ builtin_macro (pfile, token)
 
     case BT_STDC:
       {
-	int stdc = 1;
-
-	if (STDC_0_IN_SYSTEM_HEADERS && CPP_IN_SYSTEM_HEADER (pfile)
-	    && pfile->spec_nodes.n__STRICT_ANSI__->type == NT_VOID)
-	  stdc = 0;
+	int stdc = (!CPP_IN_SYSTEM_HEADER (pfile)
+		    || pfile->spec_nodes.n__STRICT_ANSI__->type != NT_VOID);
 	make_number_token (pfile, token, stdc);
       }
       break;
@@ -214,10 +207,6 @@ builtin_macro (pfile, token)
 		   tb->tm_hour, tb->tm_min, tb->tm_sec);
 	}
       *token = node->value.builtin == BT_DATE ? pfile->date: pfile->time;
-      break;
-
-    case BT_WEAK:
-      make_number_token (pfile, token, SUPPORTS_ONE_ONLY);
       break;
 
     default:
@@ -562,7 +551,7 @@ parse_args (pfile, node)
 
       if (argc + 1 == macro->paramc && macro->variadic)
 	{
-	  if (CPP_PEDANTIC (pfile))
+	  if (CPP_PEDANTIC (pfile) && ! macro->syshdr)
 	    cpp_pedwarn (pfile, "ISO C99 requires rest arguments to be used");
 	}
       else
@@ -616,7 +605,7 @@ funlike_invocation_p (pfile, node, list)
 
   if (maybe_paren.type == CPP_OPEN_PAREN)
     args = parse_args (pfile, node);
-  else if (CPP_WTRADITIONAL (pfile))
+  else if (CPP_WTRADITIONAL (pfile) && ! node->value.macro->syshdr)
     cpp_warning (pfile,
 	 "function-like macro \"%s\" must be used with arguments in traditional C",
 		 node->name);
@@ -995,6 +984,18 @@ cpp_get_token (pfile, token)
     save_lookahead_token (pfile, token);
 }
 
+/* Returns true if we're expanding an object-like macro that was
+   defined in a system header.  Just checks the macro at the top of
+   the stack.  Used for diagnostic suppression.  */
+int
+cpp_sys_objmacro_p (pfile)
+     cpp_reader *pfile;
+{
+  cpp_macro *macro = pfile->context->macro;
+
+  return macro && ! macro->fun_like && macro->syshdr;
+}
+
 /* Read each token in, until EOF.  Directives are transparently
    processed.  */
 void
@@ -1165,9 +1166,9 @@ _cpp_push_token (pfile, token, pos)
 
 /* #define directive parsing and handling.  */
 
-/* Returns non-zero if a macro redefinition is trivial.  */
+/* Returns non-zero if a macro redefinition warning is required.  */
 static int
-check_macro_redefinition (pfile, node, macro2)
+warn_of_redefinition (pfile, node, macro2)
      cpp_reader *pfile;
      const cpp_hashnode *node;
      const cpp_macro *macro2;
@@ -1175,9 +1176,15 @@ check_macro_redefinition (pfile, node, macro2)
   const cpp_macro *macro1;
   unsigned int i;
 
-  if (node->type != NT_MACRO || node->flags & NODE_BUILTIN)
-    return ! pfile->done_initializing;
+  /* Some redefinitions need to be warned about regardless.  */
+  if (node->flags & NODE_WARN)
+    return 1;
 
+  if (! CPP_PEDANTIC (pfile))
+    return 0;
+
+  /* Redefinition of a macro is allowed if and only if the old and new
+     definitions are the same.  (6.10.3 paragraph 2). */
   macro1 = node->value.macro;
 
   /* The quick failures.  */
@@ -1185,19 +1192,19 @@ check_macro_redefinition (pfile, node, macro2)
       || macro1->paramc != macro2->paramc
       || macro1->fun_like != macro2->fun_like
       || macro1->variadic != macro2->variadic)
-    return 0;
+    return 1;
 
   /* Check each token.  */
   for (i = 0; i < macro1->count; i++)
     if (! _cpp_equiv_tokens (&macro1->expansion[i], &macro2->expansion[i]))
-      return 0;
+      return 1;
 
   /* Check parameter spellings.  */
   for (i = 0; i < macro1->paramc; i++)
     if (macro1->params[i] != macro2->params[i])
-      return 0;
+      return 1;
 
-  return 1;
+  return 0;
 }
 
 /* Free the definition of hashnode H.  */
@@ -1453,22 +1460,21 @@ _cpp_create_definition (pfile, node)
 		     && macro->expansion[0].type == CPP_NAME
 		     && macro->expansion[0].val.node == node);
 
+  /* To suppress some diagnostics.  */
+  macro->syshdr = pfile->buffer->sysp != 0;
+
   /* Commit the memory.  */
   POOL_COMMIT (&pfile->macro_pool, macro->count * sizeof (cpp_token));
 
-  /* Redefinition of a macro is allowed if and only if the old and new
-     definitions are the same.  (6.10.3 paragraph 2). */
   if (node->type != NT_VOID)
     {
-      if (CPP_PEDANTIC (pfile)
-	  && !check_macro_redefinition (pfile, node, macro))
+      if (warn_of_redefinition (pfile, node, macro))
 	{
 	  cpp_pedwarn_with_line (pfile, pfile->directive_pos.line,
 				 pfile->directive_pos.col,
 				 "\"%s\" redefined", node->name);
 
-	  if (pfile->done_initializing && node->type == NT_MACRO
-	      && !(node->flags & NODE_BUILTIN))
+	  if (node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))
 	    cpp_pedwarn_with_file_and_line (pfile,
 					    node->value.macro->file,
 					    node->value.macro->line, 1,
@@ -1480,6 +1486,8 @@ _cpp_create_definition (pfile, node)
   /* Enter definition in hash table.  */
   node->type = NT_MACRO;
   node->value.macro = macro;
+  if (! ustrncmp (node->name, DSC ("__STDC_")))
+    node->flags |= NODE_WARN;
 
  cleanup:
 
