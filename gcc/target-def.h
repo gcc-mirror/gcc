@@ -40,7 +40,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_ASM_ALIGNED_TI_OP NULL
 
 /* GAS and SYSV4 assemblers accept these.  */
-#if defined (OBJECT_FORMAT_ELF) || defined (OBJECT_FORMAT_ROSE)
+#if defined (OBJECT_FORMAT_ELF)
 #define TARGET_ASM_UNALIGNED_HI_OP "\t.2byte\t"
 #define TARGET_ASM_UNALIGNED_SI_OP "\t.4byte\t"
 #define TARGET_ASM_UNALIGNED_DI_OP "\t.8byte\t"
@@ -50,7 +50,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_ASM_UNALIGNED_SI_OP NULL
 #define TARGET_ASM_UNALIGNED_DI_OP NULL
 #define TARGET_ASM_UNALIGNED_TI_OP NULL
-#endif /* OBJECT_FORMAT_ELF || OBJECT_FORMAT_ROSE */
+#endif /* OBJECT_FORMAT_ELF */
 
 #define TARGET_ASM_INTEGER default_assemble_integer
 
