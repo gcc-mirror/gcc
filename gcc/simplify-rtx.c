@@ -2446,6 +2446,9 @@ simplify_gen_subreg (outermode, op, innermode, byte)
       || byte >= GET_MODE_SIZE (innermode))
     abort ();
 
+  if (GET_CODE (op) == QUEUED)
+    return NULL_RTX;
+
   new = simplify_subreg (outermode, op, innermode, byte);
   if (new)
     return new;
