@@ -5,6 +5,9 @@
 AM_CFLAGS = -std=gnu99
 ACLOCAL_AMFLAGS = -I ../config
 
+## May be used by toolexeclibdir.
+gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+
 toolexeclib_LTLIBRARIES = libgfortran.la libgfortranbegin.la
 
 libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lm
