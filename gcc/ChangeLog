@@ -1,3 +1,11 @@
+2003-04-04  Zack Weinberg  <zack@codesourcery.com>
+
+	PR bootstrap/10216
+	* configure.in: Check whether it is necessary to link against
+	libm to use ldexp.
+	* configure: Regenerate.
+	* Makefile.in: Add LDEXP_LIB substitution variable.
+
 2003-04-03  Jason Merrill  <jason@redhat.com>
 
 	PR c/10175
