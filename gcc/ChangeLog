@@ -1,3 +1,8 @@
+2002-05-30	Marc Espie <espie@openbsd.org>
+	* config.gcc (sparc64-*-openbsd*):  New.
+	* config/sparc/openbsd1-64.h:  New.
+	* config/sparc/openbsd64.h:  New.
+
 2002-05-30  Jeff Law <law@redhat.com>
 
 	* flow.c (propagate_one_insn): Revise yesterday's patch.  Delete
