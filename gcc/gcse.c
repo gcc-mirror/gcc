@@ -4046,7 +4046,6 @@ alloc_pre_mem (n_blocks, n_exprs)
   pre_delete_map = NULL;
   ae_in = NULL;
   ae_out = NULL;
-  transpout = sbitmap_vector_alloc (n_blocks, n_exprs);
   ae_kill = sbitmap_vector_alloc (n_blocks, n_exprs);
 
   /* pre_insert and pre_delete are allocated later.  */
@@ -4070,8 +4069,6 @@ free_pre_mem ()
     free (pre_insert_map);
   if (pre_delete_map)
     free (pre_delete_map);
-  if (transpout)
-    free (transpout);
 
   if (ae_in)
     free (ae_in);
@@ -4080,7 +4077,7 @@ free_pre_mem ()
 
   transp = comp = NULL;
   pre_optimal = pre_redundant = pre_insert_map = pre_delete_map = NULL;
-  transpout = ae_in = ae_out = NULL;
+  ae_in = ae_out = NULL;
 }
 
 /* Top level routine to do the dataflow analysis needed by PRE.  */
@@ -4091,7 +4088,6 @@ compute_pre_data ()
   int i;
 
   compute_local_properties (transp, comp, antloc, 0);
-  compute_transpout ();
   sbitmap_vector_zero (ae_kill, n_basic_blocks);
 
   /* Compute ae_kill for each basic block using:
