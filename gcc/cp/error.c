@@ -1815,16 +1815,12 @@ dump_expr (tree t, int flags)
       dump_decl (t, flags);
       break;
 
+    case BIND_EXPR:
     case STMT_EXPR:
+    case STATEMENT_LIST:
       /* We don't yet have a way of dumping statements in a
 	 human-readable format.  */
       pp_string (cxx_pp, "({...})");
-      break;
-
-    case BIND_EXPR:
-      pp_cxx_left_brace (cxx_pp);
-      dump_expr (TREE_OPERAND (t, 1), flags & ~TFF_EXPR_IN_PARENS);
-      pp_cxx_right_brace (cxx_pp);
       break;
 
     case LOOP_EXPR:

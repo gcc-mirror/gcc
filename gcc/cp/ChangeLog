@@ -1,5 +1,21 @@
 2005-02-22  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/19991
+	* init.c (integral_constant_value): Iterate if the value of a decl
+	is itself a constant.
+
+	PR c++/20152
+	* parser.c (cp_parser_class_head): Check for redefintions here.
+	* semantics.c (begin_class_definition): Not here.
+	
+	PR c++/20153
+	* decl2.c (build_anon_union_vars): Add type parameter.
+	(finish_anon_union): Pass it.
+
+	PR c++/20148
+	* error.c (dump_expr): Do not print the body of a BIND_EXPR.
+	Handle STATEMENT_LIST.
+
 	PR c++/19883
 	* parser.c (cp_parser_direct_declarator): Always complain about
 	non-constant array bounds when in a function scope.
