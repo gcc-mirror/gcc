@@ -514,7 +514,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  insn-attr.h insn-attrtab.c insn-opinit.c \
  stamp-flags stamp-config stamp-codes \
  stamp-output stamp-recog stamp-emit stamp-extract stamp-peep \
- stamp-attr stamp-attrtab stamp-opinit stamp-proto stamp-crt \
+ stamp-attr stamp-attrtab stamp-opinit stamp-proto stamp-crt stamp-crtS \
  genemit$(exeext) genoutput$(exeext) genrecog$(exeext) genextract$(exeext) \
  genflags$(exeext) gencodes$(exeext) genconfig$(exeext) genpeep$(exeext) \
  genattrtab$(exeext) genattr$(exeext) genopinit$(exeext) \
@@ -999,7 +999,8 @@ sublibobjc.a: cc1obj stmp-int-hdrs libgcc2.ready
 	  GCC_CFLAGS="$(GCC_CFLAGS)"
 
 # Compile two additional files that are linked with every program
-# linked using GCC on system V, for the sake of C++ constructors.
+# linked using GCC on systems using COFF or ELF, for the sake of C++
+# constructors.
 crtbegin.o: stamp-crt ; @true
 crtend.o: stamp-crt; @true
 
@@ -1013,6 +1014,21 @@ stamp-crt:	crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
 	  -g0 -c $(srcdir)/crtstuff.c
 	mv crtstuff$(objext) crtend$(objext)
 	touch stamp-crt
+
+# On some systems we also want to install versions of these files
+# compiled using PIC for use in shared libraries.
+crtbeginS.o crtendS.o: stamp-crtS ; @true
+
+stamp-crtS:	crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
+	  -DCRT_BEGIN -finhibit-size-directive -fno-inline-functions \
+	  -g0 -c $(srcdir)/crtstuff.c -fPIC
+	mv crtstuff$(objext) crtbeginS$(objext)
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
+	  -DCRT_END -finhibit-size-directive -fno-inline-functions \
+	  -g0 -c $(srcdir)/crtstuff.c -fPIC
+	mv crtstuff$(objext) crtendS$(objext)
+	touch stamp-crtS
 
 # Compiling object files from source files.
 
