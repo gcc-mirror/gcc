@@ -637,9 +637,6 @@ JvConvertArgv (int argc, const char **argv)
 // Command line arguments.
 static jobject arg_vec;
 
-// The primary threadgroup.
-static java::lang::ThreadGroup *main_group;
-
 // The primary thread.
 static java::lang::Thread *main_thread;
 
@@ -882,9 +879,7 @@ JvRunMain (jclass klass, int argc, const char **argv)
 #endif
 
   arg_vec = JvConvertArgv (argc - 1, argv + 1);
-  main_group = new java::lang::ThreadGroup (23);
-  main_thread = new gnu::gcj::runtime::FirstThread (main_group, 
-						    klass, arg_vec);
+  main_thread = new gnu::gcj::runtime::FirstThread (klass, arg_vec);
 
   main_thread->start();
   _Jv_ThreadWait ();
@@ -906,9 +901,7 @@ _Jv_RunMain (const char *class_name, int argc, const char **argv)
 #endif
 
   arg_vec = JvConvertArgv (argc - 1, argv + 1);
-  main_group = new java::lang::ThreadGroup (23);
-  main_thread = new gnu::gcj::runtime::FirstThread (main_group,
-						    JvNewStringLatin1 (class_name),
+  main_thread = new gnu::gcj::runtime::FirstThread (JvNewStringLatin1 (class_name),
 						    arg_vec);
   main_thread->start();
   _Jv_ThreadWait ();
