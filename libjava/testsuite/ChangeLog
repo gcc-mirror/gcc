@@ -1,3 +1,10 @@
+2003-09-17  Ranjit Mathew  <rmathew@hotmail.com>
+
+	PR java/9577
+	* libjava.cni/PR9577.java: New file.
+	* libjava.cni/natPR9577.cc: New file.
+	* libjava.cni/PR9577.out: New file.
+
 2003-09-04  Jeff Sturm  <jsturm@one-point.com>
 
 	* libjava.compile/compile.exp: Test with -O3 rather than -O.
