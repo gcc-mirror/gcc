@@ -174,6 +174,22 @@ test_04()
   exit(0);
 }
 
+// Charles Leggett <CGLeggett@lbl.gov>
+void test_05()
+{
+  bool test = true;
+
+  std::fstream scratch_file;
+
+  scratch_file.open("SCRATCH", std::ios::out);
+  scratch_file.close();
+
+  scratch_file.open("SCRATCH", std::ios::in);
+  scratch_file.close();
+
+  VERIFY(scratch_file);
+}
+
 int
 main()
 {
@@ -181,6 +197,7 @@ main()
   test_02();
   test_03();
   test_04();
+  test_05();
   return 0;
 }
 
