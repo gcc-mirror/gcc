@@ -1,3 +1,13 @@
+2002-11-11  Benjamin Kosnik  <bkoz@redhat.com>
+ 
+        PR libstdc++/6746
+        * include/bits/fstream.tcc (filebuf::open): Set input pointers.
+	* config/io/basic_file_stdio.cc (__basic_file::_M_open_mode): Set
+	__p_mode as well.
+	(__basic_file::open): Set to non-block for input.
+	* testsuite/27_io/istream_unformatted.cc (test12): Add.
+	(test13): Same.
+	
 2002-11-11  Jonathan Wakely <redi@gcc.gnu.org>
 
 	* docs/html/17_intro/howto.html: Make "chapter 22 notes" a link.

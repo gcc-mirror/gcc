@@ -90,11 +90,21 @@ namespace std
 	    {
 	      _M_allocate_internal_buffer();
 	      _M_mode = __mode;
+
+	      // Setup initial position of buffer.
 	      _M_set_indeterminate();
 
+	      // Set input buffer to something real.
+	      // NB: Must open in non-blocking way to do this, or must
+	      // set the initial position in a different manner than
+	      // using underflow.
+ 	      if (__mode & ios_base::in && _M_buf_allocated)
+ 		this->underflow();
+	      
 	      if ((__mode & ios_base::ate)
 		  && this->seekoff(0, ios_base::end, __mode) < 0)
 		this->close();
+
 	      __ret = this;
 	    }
 	}

@@ -32,6 +32,7 @@
 //
 
 #include <bits/basic_file.h>
+#include <fcntl.h>
 
 namespace std 
 {
@@ -43,8 +44,8 @@ namespace std
   { this->close(); }
       
   void 
-  __basic_file<char>::_M_open_mode(ios_base::openmode __mode, int&, int&, 
-				   char* __c_mode)
+  __basic_file<char>::_M_open_mode(ios_base::openmode __mode, int& __p_mode, 
+				   int&, char* __c_mode)
   {  
     bool __testb = __mode & ios_base::binary;
     bool __testi = __mode & ios_base::in;
@@ -52,18 +53,39 @@ namespace std
     bool __testt = __mode & ios_base::trunc;
     bool __testa = __mode & ios_base::app;
       
+    // Set __c_mode for use in fopen.
+    // Set __p_mode for use in open.
     if (!__testi && __testo && !__testt && !__testa)
-      strcpy(__c_mode, "w");
+      {
+	strcpy(__c_mode, "w");
+	__p_mode = (O_WRONLY | O_CREAT);
+      }
     if (!__testi && __testo && !__testt && __testa)
-      strcpy(__c_mode, "a");
+      {
+	strcpy(__c_mode, "a");
+	__p_mode |=  O_WRONLY | O_CREAT | O_APPEND;
+      }
     if (!__testi && __testo && __testt && !__testa)
-      strcpy(__c_mode, "w");
+      {
+	strcpy(__c_mode, "w");
+	__p_mode |=  O_WRONLY | O_CREAT | O_TRUNC;
+      }
+
     if (__testi && !__testo && !__testt && !__testa)
-      strcpy(__c_mode, "r");
+      {
+	strcpy(__c_mode, "r");
+	__p_mode |=  O_RDONLY | O_NONBLOCK;
+      }
     if (__testi && __testo && !__testt && !__testa)
-      strcpy(__c_mode, "r+");
+      {
+	strcpy(__c_mode, "r+");
+	__p_mode |=  O_RDWR | O_CREAT;
+      }
     if (__testi && __testo && __testt && !__testa)
-      strcpy(__c_mode, "w+");
+      {
+	strcpy(__c_mode, "w+");
+	__p_mode |=  O_RDWR | O_CREAT | O_TRUNC;
+      }
     if (__testb)
       strcat(__c_mode, "b");
   }
@@ -128,6 +150,11 @@ namespace std
 	if ((_M_cfile = fopen(__name, __c_mode)))
 	  {
 	    _M_cfile_created = true;
+
+	    // Set input to nonblocking for fifos.
+	    if (__mode & ios_base::in)
+	      fcntl(this->fd(), F_SETFL, O_NONBLOCK);
+
 	    __ret = this;
 	  }
       }

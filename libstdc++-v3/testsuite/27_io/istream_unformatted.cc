@@ -569,7 +569,54 @@ void test11()
   VERIFY(istr.rdstate() == ios_base::goodbit);
 }
 
-
+// libstdc++/6746   
+void test12()
+{
+  using namespace std;
+  bool test = true;
+  streamsize sum = 0;
+  istringstream iss("shamma shamma");
+      
+  // test01
+  size_t i = iss.rdbuf()->in_avail();
+  VERIFY( i != 0 );
+    
+  // test02
+  streamsize extracted;
+  do
+    {
+      char buf[1024];
+      extracted = iss.readsome(buf, sizeof buf);
+      sum += extracted;
+    }
+  while (iss.good() && extracted);
+  VERIFY( sum != 0 );  
+}
+    
+// libstdc++/6746   
+void test13()
+{
+  using namespace std;
+  bool test = true;
+  streamsize sum = 0;
+  ifstream ifs("istream_unformatted-1.tst");
+      
+  // test01
+  size_t i = ifs.rdbuf()->in_avail();
+  VERIFY( i != 0 );
+    
+  // test02
+  streamsize extracted;
+  do
+    {
+      char buf[1024];
+      extracted = ifs.readsome(buf, sizeof buf);
+      sum += extracted;
+    }
+  while (ifs.good() && extracted);
+  VERIFY( sum != 0 );  
+}
+ 
 int 
 main()
 {
@@ -584,5 +631,9 @@ main()
   test09();
   test10();
   test11();
+
+  test12();
+  test13();
+
   return 0;
 }
