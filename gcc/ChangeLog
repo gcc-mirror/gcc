@@ -1,3 +1,54 @@
+Fri Jun 12 14:57:59 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mips.c (small_int): Mark parameter `mode' with ATTRIBUTE_UNUSED.
+	(large_int): Likewise.
+	(pc_or_label_operand): Likewise.
+	(call_insn_operand): Likewise.
+	(consttable_operand): Likewise.
+	(m16_uimm3_b): Likewise.
+	(m16_simm4_1): Likewise.
+	(m16_nsimm4_1): Likewise.
+	(m16_simm5_1): Likewise.
+	(m16_nsimm5_1): Likewise.
+	(m16_uimm5_4): Likewise.
+	(m16_nuimm5_4): Likewise.
+	(m16_simm8_1): Likewise.
+	(m16_nsimm8_1): Likewise.
+	(m16_uimm8_1): Likewise.
+	(m16_nuimm8_1): Likewise.
+	(m16_uimm8_m1_1): Likewise.
+	(m16_uimm8_4): Likewise.
+	(m16_nuimm8_4): Likewise.
+	(m16_simm8_8): Likewise.
+	(m16_nsimm8_8): Likewise.
+	(m16_usym8_4): Likewise.
+	(m16_usym5_4): Likewise.
+	(mips_move_1word): Change type of variable `i' from int to size_t.
+	(mips_move_2words): Likewise.
+	(output_block_move): Mark parameter `libname' with ATTRIBUTE_UNUSED.
+	(function_arg_advance): Use HOST_PTR_PRINTF to print an address.
+	(function_arg): Likewise.
+	(function_arg_partial_nregs): Mark parameter `named' with
+ 	ATTRIBUTE_UNUSED.
+	(override_options): Use ISDIGIT instead of isdigit.
+	(mips_output_external): Mark parameter `file' with ATTRIBUTE_UNUSED.
+	(final_prescan_insn): Likewise for parameters `opvec' and `noperands'.
+	(save_restore_insns): Cast HOST_WIDE_INT arguments passed to
+	function `fatal' to long before printing.  Use
+	HOST_WIDE_INT_PRINT_DEC in fprintf.  Both changes done several
+	times in this function.
+	(function_prologue): Mark parameter `size' with ATTRIBUTE_UNUSED.
+	(function_epilogue): Likewise for parameters `file' and `size'.
+	Print an int with "%d" not "%ld".
+	(mips_select_rtx_section): Mark parameter `x' with ATTRIBUTE_UNUSED.
+	(mips_function_value): Likewise for parameter `func'.
+	(function_arg_pass_by_reference): Likewise for parameters `cum'
+	and `named'.
+	(extend_operator): Likewise for parameter `mode'
+	(highpart_shift_operator): Likewise.
+
+	* mips.md (mul_acc_si): Remove unused variable `macc'.
+
 Fri Jun 12 09:33:44 1998  Richard Henderson <rth@cygnus.com>
 
 	* fold-const.c (fold): Revert last change.  It breaks constant

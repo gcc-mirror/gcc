@@ -476,7 +476,7 @@ arith32_operand (op, mode)
 int
 small_int (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT && SMALL_INT (op));
 }
@@ -487,7 +487,7 @@ small_int (op, mode)
 int
 large_int (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   HOST_WIDE_INT value;
 
@@ -930,7 +930,7 @@ cmp_op (op, mode)
 int
 pc_or_label_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (op == pc_rtx)
     return 1;
@@ -949,7 +949,7 @@ pc_or_label_operand (op, mode)
 int
 call_insn_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (CONSTANT_ADDRESS_P (op)
 	  || (GET_CODE (op) == REG && op != arg_pointer_rtx
@@ -1132,7 +1132,7 @@ se_nonimmediate_operand (op, mode)
 int
 consttable_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return CONSTANT_P (op);
 }
@@ -1194,7 +1194,7 @@ m16_check_op (op, low, high, mask)
 int
 m16_uimm3_b (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return m16_check_op (op, 0x1, 0x8, 0);
 }
@@ -1202,7 +1202,7 @@ m16_uimm3_b (op, mode)
 int
 m16_simm4_1 (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return m16_check_op (op, - 0x8, 0x7, 0);
 }
@@ -1210,7 +1210,7 @@ m16_simm4_1 (op, mode)
 int
 m16_nsimm4_1 (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return m16_check_op (op, - 0x7, 0x8, 0);
 }
@@ -1218,7 +1218,7 @@ m16_nsimm4_1 (op, mode)
 int
 m16_simm5_1 (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return m16_check_op (op, - 0x10, 0xf, 0);
 }
@@ -1226,7 +1226,7 @@ m16_simm5_1 (op, mode)
 int
 m16_nsimm5_1 (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return m16_check_op (op, - 0xf, 0x10, 0);
 }
@@ -1234,7 +1234,7 @@ m16_nsimm5_1 (op, mode)
 int
 m16_uimm5_4 (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return m16_check_op (op, (- 0x10) << 2, 0xf << 2, 3);
 }
@@ -1242,7 +1242,7 @@ m16_uimm5_4 (op, mode)
 int
 m16_nuimm5_4 (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return m16_check_op (op, (- 0xf) << 2, 0x10 << 2, 3);
 }
@@ -1250,7 +1250,7 @@ m16_nuimm5_4 (op, mode)
 int
 m16_simm8_1 (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return m16_check_op (op, - 0x80, 0x7f, 0);
 }
@@ -1258,7 +1258,7 @@ m16_simm8_1 (op, mode)
 int
 m16_nsimm8_1 (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return m16_check_op (op, - 0x7f, 0x80, 0);
 }
@@ -1266,7 +1266,7 @@ m16_nsimm8_1 (op, mode)
 int
 m16_uimm8_1 (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return m16_check_op (op, 0x0, 0xff, 0);
 }
@@ -1274,7 +1274,7 @@ m16_uimm8_1 (op, mode)
 int
 m16_nuimm8_1 (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return m16_check_op (op, - 0xff, 0x0, 0);
 }
@@ -1282,7 +1282,7 @@ m16_nuimm8_1 (op, mode)
 int
 m16_uimm8_m1_1 (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return m16_check_op (op, - 0x1, 0xfe, 0);
 }
@@ -1290,7 +1290,7 @@ m16_uimm8_m1_1 (op, mode)
 int
 m16_uimm8_4 (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return m16_check_op (op, 0x0, 0xff << 2, 3);
 }
@@ -1298,7 +1298,7 @@ m16_uimm8_4 (op, mode)
 int
 m16_nuimm8_4 (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return m16_check_op (op, (- 0xff) << 2, 0x0, 3);
 }
@@ -1306,7 +1306,7 @@ m16_nuimm8_4 (op, mode)
 int
 m16_simm8_8 (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return m16_check_op (op, (- 0x80) << 3, 0x7f << 3, 7);
 }
@@ -1314,7 +1314,7 @@ m16_simm8_8 (op, mode)
 int
 m16_nsimm8_8 (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return m16_check_op (op, (- 0x7f) << 3, 0x80 << 3, 7);
 }
@@ -1328,7 +1328,7 @@ m16_nsimm8_8 (op, mode)
 int
 m16_usym8_4 (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == SYMBOL_REF
       && SYMBOL_REF_FLAG (op)
@@ -1355,7 +1355,7 @@ m16_usym8_4 (op, mode)
 int
 m16_usym5_4 (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == SYMBOL_REF
       && SYMBOL_REF_FLAG (op)
@@ -1767,7 +1767,7 @@ mips_move_1word (operands, insn, unsignedp)
 
 	  if (ret != (char *)0 && MEM_VOLATILE_P (op1))
 	    {
-	      int i = strlen (ret);
+	      size_t i = strlen (ret);
 	      if (i > sizeof (volatile_buffer) - sizeof ("%{%}"))
 		abort ();
 
@@ -1991,7 +1991,7 @@ mips_move_1word (operands, insn, unsignedp)
 
       if (ret != 0 && MEM_VOLATILE_P (op0))
 	{
-	  int i = strlen (ret);
+	  size_t i = strlen (ret);
 
 	  if (i > sizeof (volatile_buffer) - sizeof ("%{%}"))
 	    abort ();
@@ -2324,7 +2324,7 @@ mips_move_2words (operands, insn)
 
 	  if (ret != 0 && MEM_VOLATILE_P (op1))
 	    {
-	      int i = strlen (ret);
+	      size_t i = strlen (ret);
 
 	      if (i > sizeof (volatile_buffer) - sizeof ("%{%}"))
 		abort ();
@@ -2435,7 +2435,7 @@ mips_move_2words (operands, insn)
 
       if (ret != 0 && MEM_VOLATILE_P (op0))
 	{
-	  int i = strlen (ret);
+	  size_t i = strlen (ret);
 
 	  if (i > sizeof (volatile_buffer) - sizeof ("%{%}"))
 	    abort ();
@@ -3538,9 +3538,9 @@ output_block_move (insn, operands, num_regs, move_type)
 
 void
 init_cumulative_args (cum, fntype, libname)
-     CUMULATIVE_ARGS *cum;	/* argument info to initialize */
-     tree fntype;		/* tree ptr for function decl */
-     rtx libname;		/* SYMBOL_REF of library name or 0 */
+     CUMULATIVE_ARGS *cum;		/* argument info to initialize */
+     tree fntype;			/* tree ptr for function decl */
+     rtx libname ATTRIBUTE_UNUSED;	/* SYMBOL_REF of library name or 0 */
 {
   static CUMULATIVE_ARGS zero_cum;
   tree param, next_param;
@@ -3588,10 +3588,14 @@ function_arg_advance (cum, mode, type, named)
      int named;			/* whether or not the argument was named */
 {
   if (TARGET_DEBUG_E_MODE)
-    fprintf (stderr,
-	     "function_adv({gp reg found = %d, arg # = %2d, words = %2d}, %4s, 0x%.8x, %d )\n\n",
-	     cum->gp_reg_found, cum->arg_number, cum->arg_words,
-	     GET_MODE_NAME (mode), type, named);
+    {
+      fprintf (stderr,
+	       "function_adv({gp reg found = %d, arg # = %2d, words = %2d}, %4s, ",
+	       cum->gp_reg_found, cum->arg_number, cum->arg_words,
+	       GET_MODE_NAME (mode));
+      fprintf (stderr, HOST_PTR_PRINTF, type);
+      fprintf (stderr, ", %d )\n\n", named);
+    }
 
   cum->arg_number++;
   switch (mode)
@@ -3667,10 +3671,15 @@ function_arg (cum, mode, type, named)
 		      || TREE_CODE (type) == QUAL_UNION_TYPE));
 
   if (TARGET_DEBUG_E_MODE)
-    fprintf (stderr,
-	     "function_arg( {gp reg found = %d, arg # = %2d, words = %2d}, %4s, 0x%.8x, %d ) = ",
-	     cum->gp_reg_found, cum->arg_number, cum->arg_words,
-	     GET_MODE_NAME (mode), type, named);
+    {
+      fprintf (stderr,
+	       "function_arg( {gp reg found = %d, arg # = %2d, words = %2d}, %4s, ",
+	       cum->gp_reg_found, cum->arg_number, cum->arg_words,
+	       GET_MODE_NAME (mode));
+      fprintf (stderr, HOST_PTR_PRINTF, type);
+      fprintf (stderr, ", %d ) = ", named);
+    }
+  
 
   cum->last_arg_fp = 0;
   switch (mode)
@@ -3902,7 +3911,7 @@ function_arg_partial_nregs (cum, mode, type, named)
      CUMULATIVE_ARGS *cum;	/* current arg information */
      enum machine_mode mode;	/* current arg mode */
      tree type;			/* type of the argument or 0 if lib support */
-     int named;			/* != 0 for normal args, == 0 for ... args */
+     int named ATTRIBUTE_UNUSED;/* != 0 for normal args, == 0 for ... args */
 {
   if ((mode == BLKmode
        || GET_MODE_CLASS (mode) != MODE_COMPLEX_INT
@@ -3995,7 +4004,7 @@ override_options ()
   if (mips_isa_string == 0)
     mips_isa = MIPS_ISA_DEFAULT;
 
-  else if (isdigit (*mips_isa_string))
+  else if (ISDIGIT (*mips_isa_string))
     {
       mips_isa = atoi (mips_isa_string);
       if (mips_isa == 16)
@@ -4959,7 +4968,7 @@ print_operand_address (file, addr)
 
 int
 mips_output_external (file, decl, name)
-     FILE *file;
+     FILE *file ATTRIBUTE_UNUSED;
      tree decl;
      char *name;
 {
@@ -5171,8 +5180,8 @@ mips_output_lineno (stream, line)
 void
 final_prescan_insn (insn, opvec, noperands)
      rtx insn;
-     rtx opvec[];
-     int noperands;
+     rtx opvec[] ATTRIBUTE_UNUSED;
+     int noperands ATTRIBUTE_UNUSED;
 {
   if (dslots_number_nops > 0)
     {
@@ -5671,7 +5680,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 
       if (gp_offset < 0 || end_offset < 0)
 	fatal ("gp_offset (%ld) or end_offset (%ld) is less than zero.",
-	       gp_offset, end_offset);
+	       (long) gp_offset, (long) end_offset);
 
       /* If we see a large frame in mips16 mode, we save the registers
          before adjusting the stack pointer, and load them afterward.  */
@@ -5749,13 +5758,16 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 	  else
-	    fprintf (file, "\tli\t%s,0x%.08lx\t# %ld\n\t%s\t%s,%s,%s\n",
-		     reg_names[MIPS_TEMP2_REGNUM],
-		     base_offset, base_offset,
-		     Pmode == DImode ? "daddu" : "addu",
-		     reg_names[MIPS_TEMP2_REGNUM],
-		     reg_names[MIPS_TEMP2_REGNUM],
-		     reg_names[STACK_POINTER_REGNUM]);
+	    {
+	      fprintf (file, "\tli\t%s,0x%.08lx\t# ",
+		       reg_names[MIPS_TEMP2_REGNUM], base_offset);
+	      fprintf (file, HOST_WIDE_INT_PRINT_DEC, base_offset);
+	      fprintf (file, "\n\t%s\t%s,%s,%s\n",
+		       Pmode == DImode ? "daddu" : "addu",
+		       reg_names[MIPS_TEMP2_REGNUM],
+		       reg_names[MIPS_TEMP2_REGNUM],
+		       reg_names[STACK_POINTER_REGNUM]);
+	    }
 	}
 
       /* When we restore the registers in MIPS16 mode, then if we are
@@ -5848,13 +5860,14 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 				     reg_names[r], reg_names[regno]);
 			  }
 		      }
-		    fprintf (file, "\t%s\t%s,%ld(%s)\n",
+		    fprintf (file, "\t%s\t%s,",
 			     (TARGET_64BIT
 			      ? (store_p) ? "sd" : "ld"
 			      : (store_p) ? "sw" : "lw"),
-			     reg_names[r],
-			     gp_offset - base_offset,
-			     reg_names[REGNO(base_reg_rtx)]);
+			     reg_names[r]);
+		    fprintf (file, HOST_WIDE_INT_PRINT_DEC, 
+			     gp_offset - base_offset);
+		    fprintf (file, "(%s)\n", reg_names[REGNO(base_reg_rtx)]);
 		    if (! store_p
 			&& TARGET_MIPS16
 			&& regno != GP_REG_FIRST + 31
@@ -5882,7 +5895,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 
       if (fp_offset < 0 || end_offset < 0)
 	fatal ("fp_offset (%ld) or end_offset (%ld) is less than zero.",
-	       fp_offset, end_offset);
+	       (long) fp_offset, (long) end_offset);
 
       else if (fp_offset < 32768)
 	base_reg_rtx = stack_pointer_rtx, base_offset  = 0;
@@ -5962,13 +5975,16 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 	  else
-	    fprintf (file, "\tli\t%s,0x%.08lx\t# %ld\n\t%s\t%s,%s,%s\n",
-		     reg_names[MIPS_TEMP2_REGNUM],
-		     base_offset, base_offset,
-		     Pmode == DImode ? "daddu" : "addu",
-		     reg_names[MIPS_TEMP2_REGNUM],
-		     reg_names[MIPS_TEMP2_REGNUM],
-		     reg_names[STACK_POINTER_REGNUM]);
+	    {
+	      fprintf (file, "\tli\t%s,0x%.08lx\t# ",
+		       reg_names[MIPS_TEMP2_REGNUM], base_offset);
+	      fprintf (file, HOST_WIDE_INT_PRINT_DEC, base_offset);
+	      fprintf (file, "\n\t%s\t%s,%s,%s\n",
+		       Pmode == DImode ? "daddu" : "addu",
+		       reg_names[MIPS_TEMP2_REGNUM],
+		       reg_names[MIPS_TEMP2_REGNUM],
+		       reg_names[STACK_POINTER_REGNUM]);
+	    }
 	}
 
       for (regno = FP_REG_LAST-1; regno >= FP_REG_FIRST; regno -= fp_inc)
@@ -5994,13 +6010,16 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		  emit_move_insn (reg_rtx, mem_rtx);
 	      }
 	    else
-	      fprintf (file, "\t%s\t%s,%ld(%s)\n",
-		       (TARGET_SINGLE_FLOAT
-			? (store_p ? "s.s" : "l.s")
-			: (store_p ? "s.d" : "l.d")),
-		       reg_names[regno],
-		       fp_offset - base_offset,
-		       reg_names[REGNO(base_reg_rtx)]);
+	      {
+		fprintf (file, "\t%s\t%s,",
+			 (TARGET_SINGLE_FLOAT
+			  ? (store_p ? "s.s" : "l.s")
+			  : (store_p ? "s.d" : "l.d")),
+			 reg_names[regno]);
+		fprintf (file, HOST_WIDE_INT_PRINT_DEC,
+			 fp_offset - base_offset);
+		fprintf (file, "(%s)\n", reg_names[REGNO(base_reg_rtx)]);
+	      }
 
 	    fp_offset -= fp_size;
 	  }
@@ -6012,7 +6031,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 void
 function_prologue (file, size)
      FILE *file;
-     int size;
+     int size ATTRIBUTE_UNUSED;
 {
 #ifndef FUNCTION_NAME_ALREADY_DECLARED
   char *fnname;
@@ -6570,8 +6589,8 @@ mips_expand_prologue ()
 
 void
 function_epilogue (file, size)
-     FILE *file;
-     HOST_WIDE_INT size;
+     FILE *file ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
   char *fnname;
 
@@ -6602,7 +6621,7 @@ function_epilogue (file, size)
       dslots_load_total += num_regs;
 
       fprintf (stderr,
-	       "%-20s fp=%c leaf=%c alloca=%c setjmp=%c stack=%4ld arg=%3ld reg=%2d/%d delay=%3d/%3dL %3d/%3dJ refs=%3d/%3d/%3d",
+	       "%-20s fp=%c leaf=%c alloca=%c setjmp=%c stack=%4ld arg=%3d reg=%2d/%d delay=%3d/%3dL %3d/%3dJ refs=%3d/%3d/%3d",
 	       name, frame_pointer_needed ? 'y' : 'n',
 	       (current_frame_info.mask & RA_MASK) != 0 ? 'n' : 'y',
 	       current_function_calls_alloca ? 'y' : 'n',
@@ -6804,7 +6823,7 @@ mips_can_use_return_insn ()
 void
 mips_select_rtx_section (mode, x)
      enum machine_mode mode;
-     rtx x;
+     rtx x ATTRIBUTE_UNUSED;
 {
   if (TARGET_MIPS16)
     {
@@ -6904,7 +6923,7 @@ mips_select_section (decl, reloc)
 rtx
 mips_function_value (valtype, func)
      tree valtype;
-     tree func;
+     tree func ATTRIBUTE_UNUSED;
 {
   int reg = GP_RETURN;
   enum machine_mode mode = TYPE_MODE (valtype);
@@ -6999,10 +7018,10 @@ mips_function_value (valtype, func)
 
 int
 function_arg_pass_by_reference (cum, mode, type, named)
-     CUMULATIVE_ARGS *cum;
+     CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED;
      enum machine_mode mode;
      tree type;
-     int named;
+     int named ATTRIBUTE_UNUSED;
 {
   int size;
 
@@ -8395,7 +8414,7 @@ machine_dependent_reorg (first)
 int
 extend_operator (x, mode)
      rtx x;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   enum rtx_code code = GET_CODE (x);
   return code == SIGN_EXTEND || code == ZERO_EXTEND;
@@ -8408,7 +8427,7 @@ extend_operator (x, mode)
 int
 highpart_shift_operator (x, mode)
      rtx x;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   enum rtx_code code = GET_CODE (x);
   return (code == LSHIFTRT
