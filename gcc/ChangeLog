@@ -1,5 +1,9 @@
 2000-07-07  Jakub Jelinek  <jakub@redhat.com>
 
+	* integrate.c (copy_insn_list): Remove REG_LABEL notes.
+
+2000-07-07  Jakub Jelinek  <jakub@redhat.com>
+
 	* sibcall.c (uses_addressof): Add INMEM argument, check for
 	current_function_internal_arg_pointer outside of MEM rtxs in addition
 	to ADDRESSOFs.

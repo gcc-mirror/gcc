@@ -1581,13 +1581,21 @@ copy_insn_list (insns, map, static_chain_value)
 	&& map->insn_map[INSN_UID (insn)]
 	&& REG_NOTES (insn))
       {
-	rtx tem = copy_rtx_and_substitute (REG_NOTES (insn), map, 0);
+	rtx next, note = copy_rtx_and_substitute (REG_NOTES (insn), map, 0);
 
 	/* We must also do subst_constants, in case one of our parameters
 	   has const type and constant value.  */
-	subst_constants (&tem, NULL_RTX, map, 0);
+	subst_constants (&note, NULL_RTX, map, 0);
 	apply_change_group ();
-	REG_NOTES (map->insn_map[INSN_UID (insn)]) = tem;
+	REG_NOTES (map->insn_map[INSN_UID (insn)]) = note;
+
+	/* Finally, delete any REG_LABEL notes from the chain.  */	          
+	for (; note; note = next)
+	  {
+	    next = XEXP (note, 1);
+	    if (REG_NOTE_KIND (note) == REG_LABEL)
+	      remove_note (map->insn_map[INSN_UID (insn)], note);
+	  }
       }
 
   if (local_return_label)
