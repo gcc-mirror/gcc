@@ -347,6 +347,7 @@ in the following sections.
 -mlong-calls -mno-long-calls -mep -mno-ep
 -mprolog-function -mno-prolog-function -mspace
 -mtda=@var{n} -msda=@var{n} -mzda=@var{n}
+-mv850
 @end smallexample
 
 @item Code Generation Options
@@ -4971,6 +4972,10 @@ area can hold up to 64 kilobytes.
 @item -mzda=@var{n}
 Put static or global variables whose size is @var{n} bytes or less into
 the first 32 kilobytes of memory.
+ 
+@item -mv850
+Specify that the target processor is the V850.
+
 @end table
 
 @node Code Gen Options

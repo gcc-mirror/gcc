@@ -2610,6 +2610,7 @@ m88k_builtin_saveregs (arglist)
 
   /* Allocate the va_list constructor */
   block = assign_stack_local (BLKmode, 3 * UNITS_PER_WORD, BITS_PER_WORD);
+  MEM_IN_STRUCT_P (block) = 1;
   RTX_UNCHANGING_P (block) = 1;
   RTX_UNCHANGING_P (XEXP (block, 0)) = 1;
 
