@@ -5869,10 +5869,10 @@ tsubst_decl (t, args, type, in_decl)
 
     case VAR_DECL:
       {
-	tree argvec;
-	tree gen_tmpl;
+	tree argvec = NULL_TREE;
+	tree gen_tmpl = NULL_TREE;
 	tree spec;
-	tree tmpl;
+	tree tmpl = NULL_TREE;
 	tree ctx;
 	int local_p;
 

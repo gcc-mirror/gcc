@@ -175,6 +175,7 @@ static tree dfs_mark_primary_bases PARAMS ((tree, void *));
 static void mark_primary_bases PARAMS ((tree));
 static void clone_constructors_and_destructors PARAMS ((tree));
 static tree build_clone PARAMS ((tree, tree));
+static void update_vtable_entry_for_fn PARAMS ((tree, tree, tree, tree *));
 
 /* Variables shared between class.c and call.c.  */
 
