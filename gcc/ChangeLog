@@ -4,7 +4,12 @@ Thu May  7 18:14:31  Paul Eggert  <eggert@twinsun.com>
 	curses.h if it contains `typedef char bool;', as suggested by
 	Manfred Hollstein <manfred@s-direktnet.de>.
 
-	* configure.in: Rename fixinc.math to fixinc.wrap.
+	* configure.in (arm-*-netbsd*, i[34567]86-*-freebsdelf*,
+	i[34567]86-*-freebsd*, i[34567]86-*-netbsd*,
+	i[34567]86-*-solaris2*, m68k-*-netbsd*, mips-dec-netbsd*,
+	ns32k-pc532-netbsd*, powerpcle-*-solaris2*, sparc-*-netbsd*,
+	sparc-*-solaris2*, vax-*-netbsd*): Rename fixinc.math to
+	fixinc.wrap.
 
 Wed May  6 06:44:28 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
@@ -289,7 +294,7 @@ Wed Mar 25 16:09:01 1998  Michael Meissner  <meissner@cygnus.com>
  
 Wed Mar 25 02:39:01 1998  Paul Eggert  <eggert@twinsun.com>
 
-	* configure.in (i[[34567]]86-*-solaris2*, powerpcle-*-solaris2*,
+	* configure.in (i[34567]86-*-solaris2*, powerpcle-*-solaris2*,
 	sparc-*-solaris2*): Use fixinc.svr4 if Solaris 2.0 through 2.4.
 
 Mon Mar 23 07:27:19 1998  Philippe De Muyter  <phdm@macqel.be>
