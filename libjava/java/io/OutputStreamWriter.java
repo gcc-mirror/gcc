@@ -32,9 +32,9 @@ public class OutputStreamWriter extends Writer
 
   private OutputStreamWriter(OutputStream out, UnicodeToBytes encoder)
   {
-    super(out);
-    this.out = out instanceof BufferedOutputStream ? (BufferedOutputStream) out
-      : new BufferedOutputStream(out, 2048);
+    super((this.out = (out instanceof BufferedOutputStream
+		       ? (BufferedOutputStream) out
+		       : new BufferedOutputStream(out, 250))));
     this.converter = encoder;
   } 
 
@@ -90,12 +90,17 @@ public class OutputStreamWriter extends Writer
       }
   }
 
+  /** Writes characters through to the inferior BufferedOutputStream.
+   * Ignores wcount and the work buffer. */
   private void writeChars(char[] buf, int offset, int count)
     throws IOException
   {
     while (count > 0)
       {
-	if (out.count != 0)
+	// We must flush if out.count == out.buf.length.
+	// It is probably a good idea to flush if out.buf is almost full.
+	// This test is an approximation for "almost full".
+	if (out.count + count >= out.buf.length)
 	  {
 	    out.flush();
 	    if (out.count != 0)
