@@ -1,3 +1,14 @@
+
+2000-05-16  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/README:  corrected return address
+	* fixinc/check.diff:  regenerate, now that test works
+	* fixinc/fixfixes.c(format_fix,format_write): reformatted
+	(char_macro_def_fix,char_macro_use_fix): corrected and
+	rewrote to use regex to parse the text
+	* fixinc/inclhack.def: more testing
+	* fixinc/fixincl.x:  regenerated
+
 2000-05-16  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* config/mn10300/mn10300.h (ASM_OUTPUT_DWARF2_ADDR_CONST): Remove.

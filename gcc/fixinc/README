@@ -33,7 +33,7 @@ broken by the manufacturer, or is broken by the fixinclude process,
 then you will need to alter or add information to the include fix
 definitions file, ``inclhack.def''.  Please also send relevant
 information to gcc-bugs@gcc.gnu.org, gcc-patches@gcc.gnu.org and,
-please, to me:  autogen@linuxbox.com.
+please, to me:  bkorb@gnu.org.
 
 Here are the rules for making fixes in the inclhack.def file:
 
@@ -109,6 +109,8 @@ Here are the rules for making fixes in the inclhack.def file:
     3.  A C language subroutine method for both tests and fixes.
         See ``fixtests.c'' for instructions on writing C-language
         applicability tests and ``fixfixes.c'' for C-language fixing.
+        These files also contain tables that describe the currently
+        implemented fixes and tests.
 
     4.  Replacement text.  If the replacement is empty, then no
         fix is applied.  Otherwise, the replacement text is

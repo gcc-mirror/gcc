@@ -704,16 +704,6 @@
 *** 1,33 ****
   
   
-  #ifndef IO_QUOTES_DEF_CHECK
-! #define BSD43__IOWR(n, x) (('n'<<8)+x)
-  #endif  /* IO_QUOTES_DEF_CHECK */
-  
-  
-  #ifndef IO_QUOTES_USE_CHECK
-! #define TIOCFOO BSD43__IOWR(T, 1)
-  #endif  /* IO_QUOTES_USE_CHECK */
-  
-  
   #ifndef CTRL_QUOTES_DEF_CHECK
 ! #define BSD43_CTRL(n, x) (('n'<<8)+x)
   #endif  /* CTRL_QUOTES_DEF_CHECK */
@@ -722,6 +712,16 @@
   #ifndef CTRL_QUOTES_USE_CHECK
 ! #define TIOCFOO BSD43_CTRL(T, 1)
   #endif  /* CTRL_QUOTES_USE_CHECK */
+  
+  
+  #ifndef IO_QUOTES_DEF_CHECK
+! #define BSD43__IOWR(n, x) (('n'<<8)+x)
+  #endif  /* IO_QUOTES_DEF_CHECK */
+  
+  
+  #ifndef IO_QUOTES_USE_CHECK
+! #define TIOCFOO BSD43__IOWR(T, 1)
+  #endif  /* IO_QUOTES_USE_CHECK */
   
   
   #ifndef MACHINE_NAME_CHECK
@@ -738,16 +738,6 @@
 --- 1,37 ----
   
   
-  #ifndef IO_QUOTES_DEF_CHECK
-! #define BSD43__IOWR(n, x) ((n<<8)+x)
-  #endif  /* IO_QUOTES_DEF_CHECK */
-  
-  
-  #ifndef IO_QUOTES_USE_CHECK
-! #define TIOCFOO BSD43__IOWR('T', 1)
-  #endif  /* IO_QUOTES_USE_CHECK */
-  
-  
   #ifndef CTRL_QUOTES_DEF_CHECK
 ! #define BSD43_CTRL(n, x) ((n<<8)+x)
   #endif  /* CTRL_QUOTES_DEF_CHECK */
@@ -756,6 +746,16 @@
   #ifndef CTRL_QUOTES_USE_CHECK
 ! #define TIOCFOO BSD43_CTRL('T', 1)
   #endif  /* CTRL_QUOTES_USE_CHECK */
+  
+  
+  #ifndef IO_QUOTES_DEF_CHECK
+! #define BSD43__IOWR(n, x) ((n<<8)+x)
+  #endif  /* IO_QUOTES_DEF_CHECK */
+  
+  
+  #ifndef IO_QUOTES_USE_CHECK
+! #define TIOCFOO BSD43__IOWR('T', 1)
+  #endif  /* IO_QUOTES_USE_CHECK */
   
   
   #ifndef MACHINE_NAME_CHECK
