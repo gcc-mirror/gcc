@@ -1563,7 +1563,9 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 
   if (!dont_output_data)
     {
-      if (DECL_INITIAL (decl) && DECL_INITIAL (decl) != error_mark_node)
+      if (DECL_INITIAL (decl)
+	  && DECL_INITIAL (decl) != error_mark_node
+	  && !initializer_zerop (DECL_INITIAL (decl)))
 	/* Output the actual data.  */
 	output_constant (DECL_INITIAL (decl),
 			 tree_low_cst (DECL_SIZE_UNIT (decl), 1),
@@ -4611,7 +4613,11 @@ categorize_decl_for_section (tree decl, int reloc, int shlib)
   else if (TREE_CODE (decl) == VAR_DECL)
     {
       if (DECL_INITIAL (decl) == NULL
-	  || DECL_INITIAL (decl) == error_mark_node)
+	  || DECL_INITIAL (decl) == error_mark_node
+	  || (flag_zero_initialized_in_bss
+	      /* Leave constant zeroes in .rodata so they can be shared.  */
+	      && !TREE_READONLY (decl)
+	      && initializer_zerop (DECL_INITIAL (decl))))
 	ret = SECCAT_BSS;
       else if (! TREE_READONLY (decl)
 	       || TREE_SIDE_EFFECTS (decl)
@@ -4653,7 +4659,11 @@ categorize_decl_for_section (tree decl, int reloc, int shlib)
   /* There are no read-only thread-local sections.  */
   if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL (decl))
     {
-      if (ret == SECCAT_BSS)
+      /* Note that this would be *just* SECCAT_BSS, except that there's
+	 no concept of a read-only thread-local-data section.  */
+      if (ret == SECCAT_BSS
+	  || (flag_zero_initialized_in_bss
+	      && initializer_zerop (DECL_INITIAL (decl))))
 	ret = SECCAT_TBSS;
       else
 	ret = SECCAT_TDATA;
