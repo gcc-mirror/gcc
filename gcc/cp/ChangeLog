@@ -1,3 +1,10 @@
+2002-03-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/5659
+	* decl.c (xref_tag): Don't set CLASSTYPE_DECLARED_CLASS here.
+	* decl2.c (handle_class_head): Set CLASSTYPE_DECLARED_CLASS for
+	definitions.
+
 2002-03-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Revert 2001-03-26  Nathan Sidwell  <nathan@codesourcery.com>,

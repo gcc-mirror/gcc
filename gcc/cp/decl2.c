@@ -5263,7 +5263,13 @@ handle_class_head (aggr, scope, id, defn_p, new_type_p)
 		     && TREE_CODE (context) != BOUND_TEMPLATE_TEMPLATE_PARM);
       if (*new_type_p)
 	push_scope (context);
-  
+
+      if (TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE)
+	/* It is legal to define a class with a different class key,
+	   and this changes the default member access.  */
+	CLASSTYPE_DECLARED_CLASS (TREE_TYPE (decl))
+	  = aggr == class_type_node;
+	
       if (!xrefd_p && PROCESSING_REAL_TEMPLATE_DECL_P ())
 	decl = push_template_decl (decl);
     }

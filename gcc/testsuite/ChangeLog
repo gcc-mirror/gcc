@@ -1,3 +1,7 @@
+2002-03-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/other/access1.C: New test.
+
 2002-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/wchar_t-1.c: New test.
