@@ -1,3 +1,12 @@
+Thu Jan 28 18:51:26 1999  Per Bothner  <bothner@cygnus.com>
+
+	* jcf-write.c (localvar_alloc):  Only emit entry for
+	LocalVariableTable if debug_info_level > DINFO_LEVEL_TERSE.
+	(generate_bytecode_insns):  Only call put_linenumber if
+	debug_info_level > DINFO_LEVEL_NONE.
+	* jvspec.c (lang_specific_driver):  If no -O* or -g* option
+	is specified, add -g1 (for compatibility wih javac).
+
 Thu Jan 28 09:17:51 1999  Hans-Peter Nilsson  <hp@axis.se>
 
 	* java/Makefile.in: Add missing dependencies for jcf-dump.o,
