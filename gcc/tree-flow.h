@@ -583,6 +583,7 @@ extern void delete_tree_ssa (void);
 extern void register_new_def (tree, varray_type *);
 extern void walk_use_def_chains (tree, walk_use_def_chains_fn, void *, bool);
 extern void kill_redundant_phi_nodes (void);
+extern bool stmt_references_memory_p (tree);
 
 /* In tree-into-ssa.c  */
 extern void rewrite_into_ssa (bool);

@@ -902,6 +902,23 @@ tree_ssa_useless_type_conversion (tree expr)
   return false;
 }
 
+/* Returns true if statement STMT may read memory.  */
+
+bool
+stmt_references_memory_p (tree stmt)
+{
+  stmt_ann_t ann;
+
+  get_stmt_operands (stmt);
+  ann = stmt_ann (stmt);
+
+  if (ann->has_volatile_ops)
+    return true;
+
+  return (NUM_VUSES (VUSE_OPS (ann)) > 0
+	  || NUM_V_MAY_DEFS (V_MAY_DEF_OPS (ann)) > 0
+	  || NUM_V_MUST_DEFS (V_MUST_DEF_OPS (ann)) > 0);
+}
 
 /* Internal helper for walk_use_def_chains.  VAR, FN and DATA are as
    described in walk_use_def_chains.
