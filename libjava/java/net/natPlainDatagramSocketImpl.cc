@@ -10,7 +10,7 @@ details.  */
 
 #include<platform.h>
 
-make #ifdef WIN32
+#ifdef WIN32
 #include <errno.h>
 #include <string.h>
 #ifndef ENOPROTOOPT
