@@ -1,5 +1,12 @@
 2003-01-03  Tom Tromey  <tromey@redhat.com>
 
+	Fix for PR java/8712:
+	* expr.c (build_instanceof): Build an NE_EXPR, not a COND_EXPR,
+	when simply checking against `null'.
+
+
+2003-01-03  Tom Tromey  <tromey@redhat.com>
+
 	* gcj.texi (Standard Properties): Document http.proxyHost and
 	http.proxyPort.
 
