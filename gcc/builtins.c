@@ -524,8 +524,6 @@ expand_builtin_setjmp_setup (rtx buf_addr, rtx receiver_label)
 
   buf_addr = force_reg (Pmode, force_operand (buf_addr, NULL_RTX));
 
-  emit_queue ();
-
   /* We store the frame pointer and the address of receiver_label in
      the buffer and use the rest of it for the stack save area, which
      is machine-dependent.  */
@@ -961,9 +959,8 @@ expand_builtin_prefetch (tree arglist)
 	}
       emit_insn (gen_prefetch (op0, op1, op2));
     }
-  else
 #endif
-    op0 = protect_from_queue (op0, 0);
+
   /* Don't do anything with direct references to volatile memory, but
      generate code to handle other side effects.  */
   if (!MEM_P (op0) && side_effects_p (op0))
@@ -1271,9 +1268,6 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
   incoming_args = expand_simple_binop (Pmode, MINUS, incoming_args, argsize,
 				       incoming_args, 0, OPTAB_LIB_WIDEN);
 #endif
-
-  /* Perform postincrements before actually calling the function.  */
-  emit_queue ();
 
   /* Push a new argument block and copy the arguments.  Do not allow
      the (potential) memcpy call below to interfere with our stack
@@ -1778,7 +1772,6 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
 
       op0 = expand_expr (arg, subtarget, VOIDmode, 0);
 
-      emit_queue ();
       start_sequence ();
 
       /* Compute into TARGET.
@@ -1933,7 +1926,6 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
   op0 = expand_expr (arg0, subtarget, VOIDmode, 0);
   op1 = expand_expr (arg1, 0, VOIDmode, 0);
 
-  emit_queue ();
   start_sequence ();
 
   /* Compute into TARGET.
@@ -2038,7 +2030,6 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
 
       op0 = expand_expr (arg, subtarget, VOIDmode, 0);
 
-      emit_queue ();
       start_sequence ();
 
       /* Compute into TARGET.
@@ -5693,9 +5684,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
   tree arglist = TREE_OPERAND (exp, 1);
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
   enum machine_mode target_mode = TYPE_MODE (TREE_TYPE (exp));
-
-  /* Perform postincrements before expanding builtin functions.  */
-  emit_queue ();
 
   if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
     return targetm.expand_builtin (exp, target, subtarget, mode, ignore);

@@ -39,25 +39,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define BRANCH_COST 1
 #endif
 
-/* Macros to access the slots of a QUEUED rtx.
-   Here rather than in rtl.h because only the expansion pass
-   should ever encounter a QUEUED.  */
-
-/* The variable for which an increment is queued.  */
-#define QUEUED_VAR(P) XEXP (P, 0)
-/* If the increment has been emitted, this is the insn
-   that does the increment.  It is zero before the increment is emitted.
-   If more than one insn is emitted, this is the first insn.  */
-#define QUEUED_INSN(P) XEXP (P, 1)
-/* If a pre-increment copy has been generated, this is the copy
-   (it is a temporary reg).  Zero if no copy made yet.  */
-#define QUEUED_COPY(P) XEXP (P, 2)
-/* This is the body to use for the insn to do the increment.
-   It is used to emit the increment.  */
-#define QUEUED_BODY(P) XEXP (P, 3)
-/* Next QUEUED in the queue.  */
-#define QUEUED_NEXT(P) XEXP (P, 4)
-
 /* This is the 4th arg to `expand_expr'.
    EXPAND_STACK_PARM means we are possibly expanding a call param onto
    the stack.  Choosing a value of 2 isn't special;  It just allows
@@ -304,8 +285,7 @@ extern void emit_libcall_block (rtx, rtx, rtx, rtx);
 
 /* Create but don't emit one rtl instruction to perform certain operations.
    Modes must match; operands must meet the operation's predicates.
-   Likewise for subtraction and for just copying.
-   These do not call protect_from_queue; caller must do so.  */
+   Likewise for subtraction and for just copying.  */
 extern rtx gen_add2_insn (rtx, rtx);
 extern rtx gen_add3_insn (rtx, rtx, rtx);
 extern rtx gen_sub2_insn (rtx, rtx);
@@ -388,19 +368,6 @@ extern void init_expr_once (void);
 
 /* This is run at the start of compiling a function.  */
 extern void init_expr (void);
-
-/* This is run at the end of compiling a function.  */
-extern void finish_expr_for_function (void);
-
-/* Use protect_from_queue to convert a QUEUED expression
-   into something that you can put immediately into an instruction.  */
-extern rtx protect_from_queue (rtx, int);
-
-/* Perform all the pending incrementations.  */
-extern void emit_queue (void);
-
-/* Tell if something has a queued subexpression.  */
-extern int queued_subexp_p (rtx);
 
 /* Emit some rtl insns to move data between rtx's, converting machine modes.
    Both modes must be floating or both fixed.  */

@@ -167,8 +167,6 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
   tree type;
   enum machine_mode mode;
 
-  emit_queue ();
-
   switch (code)
     {
     case ERROR_MARK:
@@ -306,7 +304,6 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
       preserve_temp_slots (NULL_RTX);
       free_temp_slots ();
       pop_temp_slots ();
-      emit_queue ();
       do_pending_stack_adjust ();
       do_jump (TREE_OPERAND (exp, 1), if_false_label, if_true_label);
       break;
@@ -619,8 +616,6 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
         temp = copy_to_reg (temp);
 #endif
       do_pending_stack_adjust ();
-      /* Do any postincrements in the expression that was tested.  */
-      emit_queue ();
 
       if (GET_CODE (temp) == CONST_INT
           || (GET_CODE (temp) == CONST_DOUBLE && GET_MODE (temp) == VOIDmode)
@@ -1017,9 +1012,6 @@ do_compare_and_jump (tree exp, enum rtx_code signed_code,
       op1 = new_op1;
     }
 #endif
-
-  /* Do any postincrements in the expression that was tested.  */
-  emit_queue ();
 
   do_compare_rtx_and_jump (op0, op1, code, unsignedp, mode,
                            ((mode == BLKmode)

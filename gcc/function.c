@@ -4078,12 +4078,7 @@ expand_pending_sizes (tree pending_sizes)
 
   /* Evaluate now the sizes of any types declared among the arguments.  */
   for (tem = pending_sizes; tem; tem = TREE_CHAIN (tem))
-    {
-      expand_expr (TREE_VALUE (tem), const0_rtx, VOIDmode, 0);
-      /* Flush the queue in case this parameter declaration has
-	 side-effects.  */
-      emit_queue ();
-    }
+    expand_expr (TREE_VALUE (tem), const0_rtx, VOIDmode, 0);
 }
 
 /* Start the RTL for a new function, and set variables used for
@@ -4342,8 +4337,6 @@ void
 expand_function_end (void)
 {
   rtx clobber_after;
-
-  finish_expr_for_function ();
 
   /* If arg_pointer_save_area was referenced only from a nested
      function, we will not have initialized it yet.  Do that now.  */

@@ -353,8 +353,6 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       op0 = SUBREG_REG (op0);
     }
 
-  value = protect_from_queue (value, 0);
-
   /* Use vec_set patterns for inserting parts of vectors whenever
      available.  */
   if (VECTOR_MODE_P (GET_MODE (op0))
@@ -602,8 +600,6 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	}
       offset = 0;
     }
-  else
-    op0 = protect_from_queue (op0, 1);
 
   /* If VALUE is a floating-point mode, access it as an integer of the
      corresponding size.  This can occur on a machine with 64 bit registers
@@ -771,9 +767,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
    The field starts at position BITPOS within the byte.
     (If OP0 is a register, it may be a full word or a narrower mode,
      but BITPOS still counts within a full word,
-     which is significant on bigendian machines.)
-
-   Note that protect_from_queue has already been done on OP0 and VALUE.  */
+     which is significant on bigendian machines.)  */
 
 static void
 store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT offset,
@@ -1369,8 +1363,6 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	}
       offset = 0;
     }
-  else
-    op0 = protect_from_queue (str_rtx, 1);
 
   /* Now OFFSET is nonzero only for memory operands.  */
 
@@ -1487,8 +1479,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	  bitsize_rtx = GEN_INT (bitsize);
 	  bitpos_rtx = GEN_INT (xbitpos);
 
-	  pat = gen_extzv (protect_from_queue (xtarget, 1),
-			   xop0, bitsize_rtx, bitpos_rtx);
+	  pat = gen_extzv (xtarget, xop0, bitsize_rtx, bitpos_rtx);
 	  if (pat)
 	    {
 	      emit_insn (pat);
@@ -1616,8 +1607,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	  bitsize_rtx = GEN_INT (bitsize);
 	  bitpos_rtx = GEN_INT (xbitpos);
 
-	  pat = gen_extv (protect_from_queue (xtarget, 1),
-			  xop0, bitsize_rtx, bitpos_rtx);
+	  pat = gen_extv (xtarget, xop0, bitsize_rtx, bitpos_rtx);
 	  if (pat)
 	    {
 	      emit_insn (pat);
@@ -2522,10 +2512,6 @@ expand_mult_const (enum machine_mode mode, rtx op0, HOST_WIDE_INT val,
   rtx insn, accum, tem;
   int opno;
   enum machine_mode nmode;
-
-  /* op0 must be register to make mult_cost match the precomputed
-     shiftadd_cost array.  */
-  op0 = protect_from_queue (op0, 0);
 
   /* Avoid referencing memory over and over.
      For speed, but also for correctness when mem is volatile.  */
@@ -4564,10 +4550,6 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
   rtx last = get_last_insn ();
   rtx pattern, comparison;
 
-  /* ??? Ok to do this and then fail? */
-  op0 = protect_from_queue (op0, 0);
-  op1 = protect_from_queue (op1, 0);
-
   if (unsignedp)
     code = unsigned_condition (code);
 
@@ -4672,7 +4654,6 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	 first.  */
       if (GET_MODE_SIZE (target_mode) > GET_MODE_SIZE (mode))
 	{
-	  op0 = protect_from_queue (op0, 0);
 	  op0 = convert_modes (target_mode, mode, op0, 0);
 	  mode = target_mode;
 	}
@@ -4704,13 +4685,8 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
       insn_operand_predicate_fn pred;
 
       /* We think we may be able to do this with a scc insn.  Emit the
-	 comparison and then the scc insn.
+	 comparison and then the scc insn.  */
 
-	 compare_from_rtx may call emit_queue, which would be deleted below
-	 if the scc insn fails.  So call it ourselves before setting LAST.
-	 Likewise for do_pending_stack_adjust.  */
-
-      emit_queue ();
       do_pending_stack_adjust ();
       last = get_last_insn ();
 
@@ -4947,7 +4923,6 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	tem = expand_unop (mode, ffs_optab, op0, subtarget, 1);
       else if (GET_MODE_SIZE (mode) < UNITS_PER_WORD)
 	{
-	  op0 = protect_from_queue (op0, 0);
 	  tem = convert_modes (word_mode, mode, op0, 1);
 	  mode = word_mode;
 	}

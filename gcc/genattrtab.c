@@ -838,7 +838,6 @@ attr_copy_rtx (rtx orig)
   switch (code)
     {
     case REG:
-    case QUEUED:
     case CONST_INT:
     case CONST_DOUBLE:
     case CONST_VECTOR:
@@ -2218,7 +2217,6 @@ encode_units_mask (rtx x)
       return attr_rtx (CONST_STRING, attr_printf (MAX_DIGITS, "%d", j));
 
     case REG:
-    case QUEUED:
     case CONST_INT:
     case CONST_DOUBLE:
     case CONST_VECTOR:
@@ -4174,7 +4172,6 @@ clear_struct_flag (rtx x)
   switch (code)
     {
     case REG:
-    case QUEUED:
     case CONST_INT:
     case CONST_DOUBLE:
     case CONST_VECTOR:

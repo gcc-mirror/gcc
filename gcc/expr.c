@@ -119,7 +119,6 @@ struct store_by_pieces
   int reverse;
 };
 
-static rtx enqueue_insn (rtx, rtx);
 static unsigned HOST_WIDE_INT move_by_pieces_ninsns (unsigned HOST_WIDE_INT,
 						     unsigned int);
 static void move_by_pieces_1 (rtx (*) (rtx, ...), enum machine_mode,
@@ -151,7 +150,6 @@ static unsigned HOST_WIDE_INT highest_pow2_factor (tree);
 static unsigned HOST_WIDE_INT highest_pow2_factor_for_target (tree, tree);
 
 static int is_aligning_offset (tree, tree);
-static rtx expand_increment (tree, int, int);
 static void expand_operands (tree, tree, rtx, rtx*, rtx*,
 			     enum expand_modifier);
 static rtx reduce_to_bit_field_precision (rtx, rtx, tree);
@@ -312,215 +310,6 @@ init_expr (void)
 {
   cfun->expr = ggc_alloc_cleared (sizeof (struct expr_status));
 }
-
-/* Small sanity check that the queue is empty at the end of a function.  */
-
-void
-finish_expr_for_function (void)
-{
-  if (pending_chain)
-    abort ();
-}
-
-/* Manage the queue of increment instructions to be output
-   for POSTINCREMENT_EXPR expressions, etc.  */
-
-/* Queue up to increment (or change) VAR later.  BODY says how:
-   BODY should be the same thing you would pass to emit_insn
-   to increment right away.  It will go to emit_insn later on.
-
-   The value is a QUEUED expression to be used in place of VAR
-   where you want to guarantee the pre-incrementation value of VAR.  */
-
-static rtx
-enqueue_insn (rtx var, rtx body)
-{
-  pending_chain = gen_rtx_QUEUED (GET_MODE (var), var, NULL_RTX, NULL_RTX,
-				  body, pending_chain);
-  return pending_chain;
-}
-
-/* Use protect_from_queue to convert a QUEUED expression
-   into something that you can put immediately into an instruction.
-   If the queued incrementation has not happened yet,
-   protect_from_queue returns the variable itself.
-   If the incrementation has happened, protect_from_queue returns a temp
-   that contains a copy of the old value of the variable.
-
-   Any time an rtx which might possibly be a QUEUED is to be put
-   into an instruction, it must be passed through protect_from_queue first.
-   QUEUED expressions are not meaningful in instructions.
-
-   Do not pass a value through protect_from_queue and then hold
-   on to it for a while before putting it in an instruction!
-   If the queue is flushed in between, incorrect code will result.  */
-
-rtx
-protect_from_queue (rtx x, int modify)
-{
-  RTX_CODE code = GET_CODE (x);
-
-#if 0  /* A QUEUED can hang around after the queue is forced out.  */
-  /* Shortcut for most common case.  */
-  if (pending_chain == 0)
-    return x;
-#endif
-
-  if (code != QUEUED)
-    {
-      /* A special hack for read access to (MEM (QUEUED ...)) to facilitate
-	 use of autoincrement.  Make a copy of the contents of the memory
-	 location rather than a copy of the address, but not if the value is
-	 of mode BLKmode.  Don't modify X in place since it might be
-	 shared.  */
-      if (code == MEM && GET_MODE (x) != BLKmode
-	  && GET_CODE (XEXP (x, 0)) == QUEUED && !modify)
-	{
-	  rtx y = XEXP (x, 0);
-	  rtx new = replace_equiv_address_nv (x, QUEUED_VAR (y));
-
-	  if (QUEUED_INSN (y))
-	    {
-	      rtx temp = gen_reg_rtx (GET_MODE (x));
-
-	      emit_insn_before (gen_move_insn (temp, new),
-				QUEUED_INSN (y));
-	      return temp;
-	    }
-
-	  /* Copy the address into a pseudo, so that the returned value
-	     remains correct across calls to emit_queue.  */
-	  return replace_equiv_address (new, copy_to_reg (XEXP (new, 0)));
-	}
-
-      /* Otherwise, recursively protect the subexpressions of all
-	 the kinds of rtx's that can contain a QUEUED.  */
-      if (code == MEM)
-	{
-	  rtx tem = protect_from_queue (XEXP (x, 0), 0);
-	  if (tem != XEXP (x, 0))
-	    {
-	      x = copy_rtx (x);
-	      XEXP (x, 0) = tem;
-	    }
-	}
-      else if (code == PLUS || code == MULT)
-	{
-	  rtx new0 = protect_from_queue (XEXP (x, 0), 0);
-	  rtx new1 = protect_from_queue (XEXP (x, 1), 0);
-	  if (new0 != XEXP (x, 0) || new1 != XEXP (x, 1))
-	    {
-	      x = copy_rtx (x);
-	      XEXP (x, 0) = new0;
-	      XEXP (x, 1) = new1;
-	    }
-	}
-      return x;
-    }
-  /* If the increment has not happened, use the variable itself.  Copy it
-     into a new pseudo so that the value remains correct across calls to
-     emit_queue.  */
-  if (QUEUED_INSN (x) == 0)
-    return copy_to_reg (QUEUED_VAR (x));
-  /* If the increment has happened and a pre-increment copy exists,
-     use that copy.  */
-  if (QUEUED_COPY (x) != 0)
-    return QUEUED_COPY (x);
-  /* The increment has happened but we haven't set up a pre-increment copy.
-     Set one up now, and use it.  */
-  QUEUED_COPY (x) = gen_reg_rtx (GET_MODE (QUEUED_VAR (x)));
-  emit_insn_before (gen_move_insn (QUEUED_COPY (x), QUEUED_VAR (x)),
-		    QUEUED_INSN (x));
-  return QUEUED_COPY (x);
-}
-
-/* Return nonzero if X contains a QUEUED expression:
-   if it contains anything that will be altered by a queued increment.
-   We handle only combinations of MEM, PLUS, MINUS and MULT operators
-   since memory addresses generally contain only those.  */
-
-int
-queued_subexp_p (rtx x)
-{
-  enum rtx_code code = GET_CODE (x);
-  switch (code)
-    {
-    case QUEUED:
-      return 1;
-    case MEM:
-      return queued_subexp_p (XEXP (x, 0));
-    case MULT:
-    case PLUS:
-    case MINUS:
-      return (queued_subexp_p (XEXP (x, 0))
-	      || queued_subexp_p (XEXP (x, 1)));
-    default:
-      return 0;
-    }
-}
-
-/* Retrieve a mark on the queue.  */
-  
-static rtx
-mark_queue (void)
-{
-  return pending_chain;
-}
-
-/* Perform all the pending incrementations that have been enqueued
-   after MARK was retrieved.  If MARK is null, perform all the
-   pending incrementations.  */
-
-static void
-emit_insns_enqueued_after_mark (rtx mark)
-{
-  rtx p;
-
-  /* The marked incrementation may have been emitted in the meantime
-     through a call to emit_queue.  In this case, the mark is not valid
-     anymore so do nothing.  */
-  if (mark && ! QUEUED_BODY (mark))
-    return;
-
-  while ((p = pending_chain) != mark)
-    {
-      rtx body = QUEUED_BODY (p);
-
-      switch (GET_CODE (body))
-	{
-	case INSN:
-	case JUMP_INSN:
-	case CALL_INSN:
-	case CODE_LABEL:
-	case BARRIER:
-	case NOTE:
-	  QUEUED_INSN (p) = body;
-	  emit_insn (body);
-	  break;
-
-#ifdef ENABLE_CHECKING
-	case SEQUENCE:
-	  abort ();
-	  break;
-#endif
-
-	default:
-	  QUEUED_INSN (p) = emit_insn (body);
-	  break;
-	}
-
-      QUEUED_BODY (p) = 0;
-      pending_chain = QUEUED_NEXT (p);
-    }
-}
-
-/* Perform all the pending incrementations.  */
-
-void
-emit_queue (void)
-{
-  emit_insns_enqueued_after_mark (NULL_RTX);
-}
 
 /* Copy data from FROM to TO, where the machine modes are not the same.
    Both modes may be integer, or both may be floating.
@@ -541,8 +330,6 @@ convert_move (rtx to, rtx from, int unsignedp)
   enum rtx_code equiv_code = (unsignedp < 0 ? UNKNOWN
 			      : (unsignedp ? ZERO_EXTEND : SIGN_EXTEND));
 
-  to = protect_from_queue (to, 1);
-  from = protect_from_queue (from, 0);
 
   if (to_real != from_real)
     abort ();
@@ -899,10 +686,7 @@ convert_move (rtx to, rtx from, int unsignedp)
    Both X and MODE may be floating, or both integer.
    UNSIGNEDP is nonzero if X is an unsigned value.
    This can be done by referring to a part of X in place
-   or by copying to a new temporary with conversion.
-
-   This function *must not* call protect_from_queue
-   except when putting X into an insn (in which case convert_move does it).  */
+   or by copying to a new temporary with conversion.  */
 
 rtx
 convert_to_mode (enum machine_mode mode, rtx x, int unsignedp)
@@ -918,10 +702,7 @@ convert_to_mode (enum machine_mode mode, rtx x, int unsignedp)
    This can be done by referring to a part of X in place
    or by copying to a new temporary with conversion.
 
-   You can give VOIDmode for OLDMODE, if you are sure X has a nonvoid mode.
-
-   This function *must not* call protect_from_queue
-   except when putting X into an insn (in which case convert_move does it).  */
+   You can give VOIDmode for OLDMODE, if you are sure X has a nonvoid mode.  */
 
 rtx
 convert_modes (enum machine_mode mode, enum machine_mode oldmode, rtx x, int unsignedp)
@@ -1040,8 +821,7 @@ can_move_by_pieces (unsigned HOST_WIDE_INT len,
 }
 
 /* Generate several move instructions to copy LEN bytes from block FROM to
-   block TO.  (These are MEM rtx's with BLKmode).  The caller must pass FROM
-   and TO through protect_from_queue before calling.
+   block TO.  (These are MEM rtx's with BLKmode).
 
    If PUSH_ROUNDING is defined and TO is NULL, emit_single_push_insn is
    used to push FROM to the stack.
@@ -1342,10 +1122,6 @@ emit_block_move (rtx x, rtx y, rtx size, enum block_op_methods method)
 
   align = MIN (MEM_ALIGN (x), MEM_ALIGN (y));
 
-  x = protect_from_queue (x, 1);
-  y = protect_from_queue (y, 0);
-  size = protect_from_queue (size, 0);
-
   if (!MEM_P (x))
     abort ();
   if (!MEM_P (y))
@@ -1513,24 +1289,9 @@ emit_block_move_via_libcall (rtx dst, rtx src, rtx size)
   enum machine_mode size_mode;
   rtx retval;
 
-  /* DST, SRC, or SIZE may have been passed through protect_from_queue.
-
-     It is unsafe to save the value generated by protect_from_queue and reuse
-     it later.  Consider what happens if emit_queue is called before the
-     return value from protect_from_queue is used.
-
-     Expansion of the CALL_EXPR below will call emit_queue before we are
-     finished emitting RTL for argument setup.  So if we are not careful we
-     could get the wrong value for an argument.
-
-     To avoid this problem we go ahead and emit code to copy the addresses of
-     DST and SRC and SIZE into new pseudos.
-
-     Note this is not strictly needed for library calls since they do not call
-     emit_queue before loading their arguments.  However, we may need to have
-     library calls call emit_queue in the future since failing to do so could
-     cause problems for targets which define SMALL_REGISTER_CLASSES and pass
-     arguments in registers.  */
+  /* Emit code to copy the addresses of DST and SRC and SIZE into new
+     pseudos.  We can then place those new pseudos into a VAR_DECL and
+     use them later.  */
 
   dst_addr = copy_to_mode_reg (Pmode, XEXP (dst, 0));
   src_addr = copy_to_mode_reg (Pmode, XEXP (src, 0));
@@ -1926,8 +1687,6 @@ emit_group_load (rtx dst, rtx orig_src, tree type ATTRIBUTE_UNUSED, int ssize)
 				build_int_2 (shift, 0), tmps[i], 0);
     }
 
-  emit_queue ();
-
   /* Copy the extracted pieces into the proper (probable) hard regs.  */
   for (i = start; i < XVECLEN (dst, 0); i++)
     emit_move_insn (XEXP (XVECEXP (dst, 0, i), 0), tmps[i]);
@@ -1982,7 +1741,6 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
       tmps[i] = gen_reg_rtx (GET_MODE (reg));
       emit_move_insn (tmps[i], reg);
     }
-  emit_queue ();
 
   /* If we won't be storing directly into memory, protect the real destination
      from strange tricks we might play.  */
@@ -2075,8 +1833,6 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
 	store_bit_field (dest, bytelen * BITS_PER_UNIT, bytepos * BITS_PER_UNIT,
 			 mode, tmps[i]);
     }
-
-  emit_queue ();
 
   /* Copy from the pseudo into the (probable) hard reg.  */
   if (orig_dst != dst)
@@ -2322,7 +2078,6 @@ store_by_pieces (rtx to, unsigned HOST_WIDE_INT len,
 
   if (! STORE_BY_PIECES_P (len, align))
     abort ();
-  to = protect_from_queue (to, 1);
   data.constfun = constfun;
   data.constfundata = constfundata;
   data.len = len;
@@ -2360,8 +2115,7 @@ store_by_pieces (rtx to, unsigned HOST_WIDE_INT len,
 }
 
 /* Generate several move instructions to clear LEN bytes of block TO.  (A MEM
-   rtx with BLKmode).  The caller must pass TO through protect_from_queue
-   before calling. ALIGN is maximum alignment we can assume.  */
+   rtx with BLKmode).  ALIGN is maximum alignment we can assume.  */
 
 static void
 clear_by_pieces (rtx to, unsigned HOST_WIDE_INT len, unsigned int align)
@@ -2391,8 +2145,7 @@ clear_by_pieces_1 (void *data ATTRIBUTE_UNUSED,
 
 /* Subroutine of clear_by_pieces and store_by_pieces.
    Generate several move instructions to store LEN bytes of block TO.  (A MEM
-   rtx with BLKmode).  The caller must pass TO through protect_from_queue
-   before calling.  ALIGN is maximum alignment we can assume.  */
+   rtx with BLKmode).  ALIGN is maximum alignment we can assume.  */
 
 static void
 store_by_pieces_1 (struct store_by_pieces *data ATTRIBUTE_UNUSED,
@@ -2532,9 +2285,6 @@ clear_storage (rtx object, rtx size)
     emit_move_insn (object, CONST0_RTX (GET_MODE (object)));
   else
     {
-      object = protect_from_queue (object, 1);
-      size = protect_from_queue (size, 0);
-
       if (size == const0_rtx)
 	;
       else if (GET_CODE (size) == CONST_INT
@@ -2615,24 +2365,8 @@ clear_storage_via_libcall (rtx object, rtx size)
   enum machine_mode size_mode;
   rtx retval;
 
-  /* OBJECT or SIZE may have been passed through protect_from_queue.
-
-     It is unsafe to save the value generated by protect_from_queue
-     and reuse it later.  Consider what happens if emit_queue is
-     called before the return value from protect_from_queue is used.
-
-     Expansion of the CALL_EXPR below will call emit_queue before
-     we are finished emitting RTL for argument setup.  So if we are
-     not careful we could get the wrong value for an argument.
-
-     To avoid this problem we go ahead and emit code to copy OBJECT
-     and SIZE into new pseudos.
-
-     Note this is not strictly needed for library calls since they
-     do not call emit_queue before loading their arguments.  However,
-     we may need to have library calls call emit_queue in the future
-     since failing to do so could cause problems for targets which
-     define SMALL_REGISTER_CLASSES and pass arguments in registers.  */
+  /* Emit code to copy OBJECT and SIZE into new pseudos.  We can then
+     place those into new pseudos into a VAR_DECL and use them later.  */
 
   object = copy_to_mode_reg (Pmode, XEXP (object, 0));
 
@@ -2735,9 +2469,6 @@ emit_move_insn (rtx x, rtx y)
   enum machine_mode mode = GET_MODE (x);
   rtx y_cst = NULL_RTX;
   rtx last_insn, set;
-
-  x = protect_from_queue (x, 1);
-  y = protect_from_queue (y, 0);
 
   if (mode == BLKmode || (GET_MODE (y) != mode && GET_MODE (y) != VOIDmode))
     abort ();
@@ -3403,7 +3134,7 @@ emit_push_insn (rtx x, enum machine_mode mode, tree type, rtx size,
     if (where_pad != none)
       where_pad = (where_pad == downward ? upward : downward);
 
-  xinner = x = protect_from_queue (x, 0);
+  xinner = x;
 
   if (mode == BLKmode)
     {
@@ -3847,8 +3578,6 @@ expand_assignment (tree to, tree from, int want_value)
 		  && (bitsize != 1 || TREE_CODE (op1) != INTEGER_CST))
 		break;
 	      value = expand_expr (op1, NULL_RTX, VOIDmode, 0);
-	      value = protect_from_queue (value, 0);
-	      to_rtx = protect_from_queue (to_rtx, 1);
 	      binop = TREE_CODE (src) == PLUS_EXPR ? add_optab : sub_optab;
 	      if (bitsize == 1
 		  && count + bitsize != GET_MODE_BITSIZE (GET_MODE (to_rtx)))
@@ -4030,7 +3759,6 @@ store_expr (tree exp, rtx target, int want_value)
 {
   rtx temp;
   rtx alt_rtl = NULL_RTX;
-  rtx mark = mark_queue ();
   int dont_return_target = 0;
   int dont_store_target = 0;
 
@@ -4050,7 +3778,6 @@ store_expr (tree exp, rtx target, int want_value)
 	 part.  */
       expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode,
 		   want_value & 2 ? EXPAND_STACK_PARM : EXPAND_NORMAL);
-      emit_queue ();
       return store_expr (TREE_OPERAND (exp, 1), target, want_value);
     }
   else if (TREE_CODE (exp) == COND_EXPR && GET_MODE (target) == BLKmode)
@@ -4062,46 +3789,18 @@ store_expr (tree exp, rtx target, int want_value)
 
       rtx lab1 = gen_label_rtx (), lab2 = gen_label_rtx ();
 
-      emit_queue ();
-      target = protect_from_queue (target, 1);
-
       do_pending_stack_adjust ();
       NO_DEFER_POP;
       jumpifnot (TREE_OPERAND (exp, 0), lab1);
       store_expr (TREE_OPERAND (exp, 1), target, want_value & 2);
-      emit_queue ();
       emit_jump_insn (gen_jump (lab2));
       emit_barrier ();
       emit_label (lab1);
       store_expr (TREE_OPERAND (exp, 2), target, want_value & 2);
-      emit_queue ();
       emit_label (lab2);
       OK_DEFER_POP;
 
       return want_value & 1 ? target : NULL_RTX;
-    }
-  else if (queued_subexp_p (target))
-    /* If target contains a postincrement, let's not risk
-       using it as the place to generate the rhs.  */
-    {
-      if (GET_MODE (target) != BLKmode && GET_MODE (target) != VOIDmode)
-	{
-	  /* Expand EXP into a new pseudo.  */
-	  temp = gen_reg_rtx (GET_MODE (target));
-	  temp = expand_expr (exp, temp, GET_MODE (target),
-			      (want_value & 2
-			       ? EXPAND_STACK_PARM : EXPAND_NORMAL));
-	}
-      else
-	temp = expand_expr (exp, NULL_RTX, GET_MODE (target),
-			    (want_value & 2
-			     ? EXPAND_STACK_PARM : EXPAND_NORMAL));
-
-      /* If target is volatile, ANSI requires accessing the value
-	 *from* the target, if it is accessed.  So make that happen.
-	 In no case return the target itself.  */
-      if (! MEM_VOLATILE_P (target) && (want_value & 1) != 0)
-	dont_return_target = 1;
     }
   else if ((want_value & 1) != 0
 	   && MEM_P (target)
@@ -4273,9 +3972,6 @@ store_expr (tree exp, rtx target, int want_value)
 	 bit-initialized.  */
       && expr_size (exp) != const0_rtx)
     {
-      emit_insns_enqueued_after_mark (mark);
-      target = protect_from_queue (target, 1);
-      temp = protect_from_queue (temp, 0);
       if (GET_MODE (temp) != GET_MODE (target)
 	  && GET_MODE (temp) != VOIDmode)
 	{
@@ -5031,7 +4727,6 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 
 		  /* Build the head of the loop.  */
 		  do_pending_stack_adjust ();
-		  emit_queue ();
 		  emit_label (loop_start);
 
 		  /* Assign value to element index.  */
@@ -5060,9 +4755,10 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 
 		  /* Update the loop counter, and jump to the head of
 		     the loop.  */
-		  expand_increment (build (PREINCREMENT_EXPR,
-					   TREE_TYPE (index),
-					   index, integer_one_node), 0, 0);
+		  expand_assignment (index,
+			             build2 (PLUS_EXPR, TREE_TYPE (index),
+					     index, integer_one_node), 0);
+
 		  emit_jump (loop_start);
 
 		  /* Build the end of the loop.  */
@@ -8153,7 +7849,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
     case COMPOUND_EXPR:
       expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode, 0);
-      emit_queue ();
       return expand_expr_real (TREE_OPERAND (exp, 1),
 			       (ignore ? const0_rtx : target),
 			       VOIDmode, modifier, alt_rtl);
@@ -8492,7 +8187,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    else
 	      expand_expr (TREE_OPERAND (exp, 1),
 			   ignore ? const0_rtx : NULL_RTX, VOIDmode, 0);
-	    emit_queue ();
 	    emit_jump_insn (gen_jump (op1));
 	    emit_barrier ();
 	    emit_label (op0);
@@ -8505,7 +8199,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 			   ignore ? const0_rtx : NULL_RTX, VOIDmode, 0);
 	  }
 
-	emit_queue ();
 	emit_label (op1);
 	OK_DEFER_POP;
 
@@ -8580,15 +8273,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	expand_return (TREE_OPERAND (exp, 0));
       return const0_rtx;
 
-    case PREINCREMENT_EXPR:
-    case PREDECREMENT_EXPR:
-      return REDUCE_BIT_FIELD (expand_increment (exp, 0, ignore));
-
-    case POSTINCREMENT_EXPR:
-    case POSTDECREMENT_EXPR:
-      /* Faster to treat as pre-increment if result is not used.  */
-      return REDUCE_BIT_FIELD (expand_increment (exp, ! ignore, ignore));
-
     case ADDR_EXPR:
       if (modifier == EXPAND_STACK_PARM)
 	target = 0;
@@ -8618,10 +8302,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	     think we are taking the address of the constant.  */
 	  if (ignore)
 	    return op0;
-
-	  /* Pass 1 for MODIFY, so that protect_from_queue doesn't get
-	     clever and returns a REG when given a MEM.  */
-	  op0 = protect_from_queue (op0, 1);
 
 	  /* We would like the object in memory.  If it is a constant, we can
 	     have it be statically allocated into memory.  For a non-constant,
@@ -8836,6 +8516,10 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case FILTER_EXPR:
       return get_exception_filter (cfun);
 
+    case PREINCREMENT_EXPR:
+    case PREDECREMENT_EXPR:
+    case POSTINCREMENT_EXPR:
+    case POSTDECREMENT_EXPR:
     case FDESC_EXPR:
       /* Function descriptors are not valid except for as
 	 initialization constants, and should not be expanded.  */
@@ -9071,209 +8755,6 @@ string_constant (tree arg, tree *ptr_offset)
   return 0;
 }
 
-/* Expand code for a post- or pre- increment or decrement
-   and return the RTX for the result.
-   POST is 1 for postinc/decrements and 0 for preinc/decrements.  */
-
-static rtx
-expand_increment (tree exp, int post, int ignore)
-{
-  rtx op0, op1;
-  rtx temp, value;
-  tree incremented = TREE_OPERAND (exp, 0);
-  optab this_optab = add_optab;
-  int icode;
-  enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
-  int op0_is_copy = 0;
-  int single_insn = 0;
-  /* 1 means we can't store into OP0 directly,
-     because it is a subreg narrower than a word,
-     and we don't dare clobber the rest of the word.  */
-  int bad_subreg = 0;
-
-  /* Stabilize any component ref that might need to be
-     evaluated more than once below.  */
-  if (!post
-      || TREE_CODE (incremented) == BIT_FIELD_REF
-      || (TREE_CODE (incremented) == COMPONENT_REF
-	  && (TREE_CODE (TREE_OPERAND (incremented, 0)) != INDIRECT_REF
-	      || DECL_BIT_FIELD (TREE_OPERAND (incremented, 1)))))
-    incremented = stabilize_reference (incremented);
-  /* Nested *INCREMENT_EXPRs can happen in C++.  We must force innermost
-     ones into save exprs so that they don't accidentally get evaluated
-     more than once by the code below.  */
-  if (TREE_CODE (incremented) == PREINCREMENT_EXPR
-      || TREE_CODE (incremented) == PREDECREMENT_EXPR)
-    incremented = save_expr (incremented);
-
-  /* Compute the operands as RTX.
-     Note whether OP0 is the actual lvalue or a copy of it:
-     I believe it is a copy iff it is a register or subreg
-     and insns were generated in computing it.  */
-
-  temp = get_last_insn ();
-  op0 = expand_expr (incremented, NULL_RTX, VOIDmode, 0);
-
-  /* If OP0 is a SUBREG made for a promoted variable, we cannot increment
-     in place but instead must do sign- or zero-extension during assignment,
-     so we copy it into a new register and let the code below use it as
-     a copy.
-
-     Note that we can safely modify this SUBREG since it is know not to be
-     shared (it was made by the expand_expr call above).  */
-
-  if (GET_CODE (op0) == SUBREG && SUBREG_PROMOTED_VAR_P (op0))
-    {
-      if (post)
-	SUBREG_REG (op0) = copy_to_reg (SUBREG_REG (op0));
-      else
-	bad_subreg = 1;
-    }
-  else if (GET_CODE (op0) == SUBREG
-	   && GET_MODE_BITSIZE (GET_MODE (op0)) < BITS_PER_WORD)
-    {
-      /* We cannot increment this SUBREG in place.  If we are
-	 post-incrementing, get a copy of the old value.  Otherwise,
-	 just mark that we cannot increment in place.  */
-      if (post)
-	op0 = copy_to_reg (op0);
-      else
-	bad_subreg = 1;
-    }
-
-  op0_is_copy = ((GET_CODE (op0) == SUBREG || REG_P (op0))
-		 && temp != get_last_insn ());
-  op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode, 0);
-
-  /* Decide whether incrementing or decrementing.  */
-  if (TREE_CODE (exp) == POSTDECREMENT_EXPR
-      || TREE_CODE (exp) == PREDECREMENT_EXPR)
-    this_optab = sub_optab;
-
-  /* Convert decrement by a constant into a negative increment.  */
-  if (this_optab == sub_optab
-      && GET_CODE (op1) == CONST_INT)
-    {
-      op1 = GEN_INT (-INTVAL (op1));
-      this_optab = add_optab;
-    }
-
-  if (TYPE_TRAP_SIGNED (TREE_TYPE (exp)))
-    this_optab = this_optab == add_optab ? addv_optab : subv_optab;
-
-  /* For a preincrement, see if we can do this with a single instruction.  */
-  if (!post)
-    {
-      icode = (int) this_optab->handlers[(int) mode].insn_code;
-      if (icode != (int) CODE_FOR_nothing
-	  /* Make sure that OP0 is valid for operands 0 and 1
-	     of the insn we want to queue.  */
-	  && (*insn_data[icode].operand[0].predicate) (op0, mode)
-	  && (*insn_data[icode].operand[1].predicate) (op0, mode)
-	  && (*insn_data[icode].operand[2].predicate) (op1, mode))
-	single_insn = 1;
-    }
-
-  /* If OP0 is not the actual lvalue, but rather a copy in a register,
-     then we cannot just increment OP0.  We must therefore contrive to
-     increment the original value.  Then, for postincrement, we can return
-     OP0 since it is a copy of the old value.  For preincrement, expand here
-     unless we can do it with a single insn.
-
-     Likewise if storing directly into OP0 would clobber high bits
-     we need to preserve (bad_subreg).  */
-  if (op0_is_copy || (!post && !single_insn) || bad_subreg)
-    {
-      /* This is the easiest way to increment the value wherever it is.
-	 Problems with multiple evaluation of INCREMENTED are prevented
-	 because either (1) it is a component_ref or preincrement,
-	 in which case it was stabilized above, or (2) it is an array_ref
-	 with constant index in an array in a register, which is
-	 safe to reevaluate.  */
-      tree newexp = build (((TREE_CODE (exp) == POSTDECREMENT_EXPR
-			     || TREE_CODE (exp) == PREDECREMENT_EXPR)
-			    ? MINUS_EXPR : PLUS_EXPR),
-			   TREE_TYPE (exp),
-			   incremented,
-			   TREE_OPERAND (exp, 1));
-
-      while (TREE_CODE (incremented) == NOP_EXPR
-	     || TREE_CODE (incremented) == CONVERT_EXPR)
-	{
-	  newexp = convert (TREE_TYPE (incremented), newexp);
-	  incremented = TREE_OPERAND (incremented, 0);
-	}
-
-      temp = expand_assignment (incremented, newexp, ! post && ! ignore);
-      return post ? op0 : temp;
-    }
-
-  if (post)
-    {
-      /* We have a true reference to the value in OP0.
-	 If there is an insn to add or subtract in this mode, queue it.
-	 Queuing the increment insn avoids the register shuffling
-	 that often results if we must increment now and first save
-	 the old value for subsequent use.  */
-
-#if 0  /* Turned off to avoid making extra insn for indexed memref.  */
-      op0 = stabilize (op0);
-#endif
-
-      icode = (int) this_optab->handlers[(int) mode].insn_code;
-      if (icode != (int) CODE_FOR_nothing
-	  /* Make sure that OP0 is valid for operands 0 and 1
-	     of the insn we want to queue.  */
-	  && (*insn_data[icode].operand[0].predicate) (op0, mode)
-	  && (*insn_data[icode].operand[1].predicate) (op0, mode))
-	{
-	  if (! (*insn_data[icode].operand[2].predicate) (op1, mode))
-	    op1 = force_reg (mode, op1);
-
-	  return enqueue_insn (op0, GEN_FCN (icode) (op0, op0, op1));
-	}
-      if (icode != (int) CODE_FOR_nothing && MEM_P (op0))
-	{
-	  rtx addr = (general_operand (XEXP (op0, 0), mode)
-		      ? force_reg (Pmode, XEXP (op0, 0))
-		      : copy_to_reg (XEXP (op0, 0)));
-	  rtx temp, result;
-
-	  op0 = replace_equiv_address (op0, addr);
-	  temp = force_reg (GET_MODE (op0), op0);
-	  if (! (*insn_data[icode].operand[2].predicate) (op1, mode))
-	    op1 = force_reg (mode, op1);
-
-	  /* The increment queue is LIFO, thus we have to `queue'
-	     the instructions in reverse order.  */
-	  enqueue_insn (op0, gen_move_insn (op0, temp));
-	  result = enqueue_insn (temp, GEN_FCN (icode) (temp, temp, op1));
-	  return result;
-	}
-    }
-
-  /* Preincrement, or we can't increment with one simple insn.  */
-  if (post)
-    /* Save a copy of the value before inc or dec, to return it later.  */
-    temp = value = copy_to_reg (op0);
-  else
-    /* Arrange to return the incremented value.  */
-    /* Copy the rtx because expand_binop will protect from the queue,
-       and the results of that would be invalid for us to return
-       if our caller does emit_queue before using our result.  */
-    temp = copy_rtx (value = op0);
-
-  /* Increment however we can.  */
-  op1 = expand_binop (mode, this_optab, value, op1, op0,
-		      TYPE_UNSIGNED (TREE_TYPE (exp)), OPTAB_LIB_WIDEN);
-
-  /* Make sure the value is stored into OP0.  */
-  if (op1 != op0)
-    emit_move_insn (op0, op1);
-
-  return temp;
-}
-
 /* Generate code to calculate EXP using a store-flag instruction
    and return an rtx for the result.  EXP is either a comparison
    or a TRUTH_NOT_EXPR whose operand is a comparison.
@@ -9481,9 +8962,7 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode, int only_cheap)
      because, if the emit_store_flag does anything it will succeed and
      OP0 and OP1 will not be used subsequently.  */
 
-  result = emit_store_flag (target, code,
-			    queued_subexp_p (op0) ? copy_rtx (op0) : op0,
-			    queued_subexp_p (op1) ? copy_rtx (op1) : op1,
+  result = emit_store_flag (target, code, op0, op1,
 			    operand_mode, unsignedp, 1);
 
   if (result)
@@ -9588,8 +9067,7 @@ try_casesi (tree index_type, tree index_expr, tree minval, tree range,
 
       index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
     }
-  emit_queue ();
-  index = protect_from_queue (index, 0);
+
   do_pending_stack_adjust ();
 
   op_mode = insn_data[(int) CODE_FOR_casesi].operand[0].mode;
@@ -9715,8 +9193,6 @@ try_tablejump (tree index_type, tree index_expr, tree minval, tree range,
 			    convert (index_type, index_expr),
 			    convert (index_type, minval)));
   index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
-  emit_queue ();
-  index = protect_from_queue (index, 0);
   do_pending_stack_adjust ();
 
   do_tablejump (index, TYPE_MODE (index_type),

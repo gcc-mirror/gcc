@@ -2227,7 +2227,6 @@ verify_rtx_sharing (rtx orig, rtx insn)
   switch (code)
     {
     case REG:
-    case QUEUED:
     case CONST_INT:
     case CONST_DOUBLE:
     case CONST_VECTOR:
@@ -2408,7 +2407,6 @@ copy_most_rtx (rtx orig, rtx may_share)
   switch (code)
     {
     case REG:
-    case QUEUED:
     case CONST_INT:
     case CONST_DOUBLE:
     case CONST_VECTOR:
@@ -2525,7 +2523,6 @@ repeat:
   switch (code)
     {
     case REG:
-    case QUEUED:
     case CONST_INT:
     case CONST_DOUBLE:
     case CONST_VECTOR:
@@ -2651,7 +2648,6 @@ repeat:
   switch (code)
     {
     case REG:
-    case QUEUED:
     case CONST_INT:
     case CONST_DOUBLE:
     case CONST_VECTOR:
@@ -2721,7 +2717,6 @@ set_used_flags (rtx x)
   switch (code)
     {
     case REG:
-    case QUEUED:
     case CONST_INT:
     case CONST_DOUBLE:
     case CONST_VECTOR:
@@ -5005,7 +5000,6 @@ copy_insn_1 (rtx orig)
   switch (code)
     {
     case REG:
-    case QUEUED:
     case CONST_INT:
     case CONST_DOUBLE:
     case CONST_VECTOR:

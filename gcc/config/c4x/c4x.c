@@ -4815,7 +4815,6 @@ c4x_expand_builtin (tree exp, rtx target,
     case C4X_BUILTIN_FIX:
       arg0 = TREE_VALUE (arglist);
       r0 = expand_expr (arg0, NULL_RTX, QFmode, 0);
-      r0 = protect_from_queue (r0, 0);
       if (! target || ! register_operand (target, QImode))
 	target = gen_reg_rtx (QImode);
       emit_insn (gen_fixqfqi_clobber (target, r0));
@@ -4824,7 +4823,6 @@ c4x_expand_builtin (tree exp, rtx target,
     case C4X_BUILTIN_FIX_ANSI:
       arg0 = TREE_VALUE (arglist);
       r0 = expand_expr (arg0, NULL_RTX, QFmode, 0);
-      r0 = protect_from_queue (r0, 0);
       if (! target || ! register_operand (target, QImode))
 	target = gen_reg_rtx (QImode);
       emit_insn (gen_fix_truncqfqi2 (target, r0));
@@ -4837,8 +4835,6 @@ c4x_expand_builtin (tree exp, rtx target,
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
       r0 = expand_expr (arg0, NULL_RTX, QImode, 0);
       r1 = expand_expr (arg1, NULL_RTX, QImode, 0);
-      r0 = protect_from_queue (r0, 0);
-      r1 = protect_from_queue (r1, 0);
       if (! target || ! register_operand (target, QImode))
 	target = gen_reg_rtx (QImode);
       emit_insn (gen_mulqi3_24_clobber (target, r0, r1));
@@ -4849,7 +4845,6 @@ c4x_expand_builtin (tree exp, rtx target,
 	break;
       arg0 = TREE_VALUE (arglist);
       r0 = expand_expr (arg0, NULL_RTX, QFmode, 0);
-      r0 = protect_from_queue (r0, 0);
       if (! target || ! register_operand (target, QFmode))
 	target = gen_reg_rtx (QFmode);
       emit_insn (gen_toieee (target, r0));
@@ -4860,7 +4855,6 @@ c4x_expand_builtin (tree exp, rtx target,
 	break;
       arg0 = TREE_VALUE (arglist);
       r0 = expand_expr (arg0, NULL_RTX, QFmode, 0);
-      r0 = protect_from_queue (r0, 0);
       if (register_operand (r0, QFmode))
 	{
 	  r1 = assign_stack_local (QFmode, GET_MODE_SIZE (QFmode), 0);
@@ -4877,7 +4871,6 @@ c4x_expand_builtin (tree exp, rtx target,
 	break;
       arg0 = TREE_VALUE (arglist);
       r0 = expand_expr (arg0, NULL_RTX, QFmode, 0);
-      r0 = protect_from_queue (r0, 0);
       if (! target || ! register_operand (target, QFmode))
 	target = gen_reg_rtx (QFmode);
       emit_insn (gen_rcpfqf_clobber (target, r0));

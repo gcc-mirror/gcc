@@ -443,14 +443,6 @@ memory_address (enum machine_mode mode, rtx x)
   if (! cse_not_expected && CONSTANT_P (x) && CONSTANT_ADDRESS_P (x))
     x = force_reg (Pmode, x);
 
-  /* Accept a QUEUED that refers to a REG
-     even though that isn't a valid address.
-     On attempting to put this in an insn we will call protect_from_queue
-     which will turn it into a REG, which is valid.  */
-  else if (GET_CODE (x) == QUEUED
-      && REG_P (QUEUED_VAR (x)))
-    ;
-
   /* We get better cse by rejecting indirect addressing at this stage.
      Let the combiner create indirect addresses where appropriate.
      For now, generate the code so that the subexpressions useful to share
@@ -855,7 +847,6 @@ void
 adjust_stack (rtx adjust)
 {
   rtx temp;
-  adjust = protect_from_queue (adjust, 0);
 
   if (adjust == const0_rtx)
     return;
@@ -885,7 +876,6 @@ void
 anti_adjust_stack (rtx adjust)
 {
   rtx temp;
-  adjust = protect_from_queue (adjust, 0);
 
   if (adjust == const0_rtx)
     return;

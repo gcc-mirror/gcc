@@ -163,8 +163,6 @@ rtx
 prepare_call_address (rtx funexp, rtx static_chain_value,
 		      rtx *call_fusage, int reg_parm_seen, int sibcallp)
 {
-  funexp = protect_from_queue (funexp, 0);
-
   /* Make a valid memory address and copy constants through pseudo-regs,
      but not for a constant address if -fno-function-cse.  */
   if (GET_CODE (funexp) != SYMBOL_REF)
@@ -663,10 +661,6 @@ precompute_register_parameters (int num_actuals, struct arg_data *args, int *reg
 					 VOIDmode, 0);
 	    preserve_temp_slots (args[i].value);
 	    pop_temp_slots ();
-
-	    /* ANSI doesn't require a sequence point here,
-	       but PCC has one, so this will avoid some problems.  */
-	    emit_queue ();
 	  }
 
 	/* If the value is a non-legitimate constant, force it into a
@@ -1256,15 +1250,8 @@ precompute_arguments (int flags, int num_actuals, struct arg_data *args)
       if (TREE_ADDRESSABLE (TREE_TYPE (args[i].tree_value)))
 	abort ();
 
-      args[i].value
-	= expand_expr (args[i].tree_value, NULL_RTX, VOIDmode, 0);
-
-      /* ANSI doesn't require a sequence point here,
-	 but PCC has one, so this will avoid some problems.  */
-      emit_queue ();
-
       args[i].initial_value = args[i].value
-	= protect_from_queue (args[i].value, 0);
+	= expand_expr (args[i].tree_value, NULL_RTX, VOIDmode, 0);
 
       mode = TYPE_MODE (TREE_TYPE (args[i].tree_value));
       if (mode != args[i].mode)
@@ -1439,7 +1426,6 @@ rtx_for_function_call (tree fndecl, tree addr)
       push_temp_slots ();
       funexp = expand_expr (addr, NULL_RTX, VOIDmode, 0);
       pop_temp_slots ();	/* FUNEXP can't be BLKmode.  */
-      emit_queue ();
     }
   return funexp;
 }
@@ -2365,10 +2351,6 @@ expand_call (tree exp, rtx target, int ignore)
 
       if (pass == 0)
 	{
-	  /* Emit any queued insns now; otherwise they would end up in
-             only one of the alternates.  */
-	  emit_queue ();
-
 	  /* State variables we need to save and restore between
 	     iterations.  */
 	  save_pending_stack_adjust = pending_stack_adjust;
@@ -2789,9 +2771,6 @@ expand_call (tree exp, rtx target, int ignore)
 
       load_register_parameters (args, num_actuals, &call_fusage, flags,
 				pass == 0, &sibcall_failure);
-
-      /* Perform postincrements before actually calling the function.  */
-      emit_queue ();
 
       /* Save a pointer to the last insn before the call, so that we can
 	 later safely search backwards to find the CALL_INSN.  */
@@ -3548,9 +3527,6 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	  || (GET_MODE (val) != mode && GET_MODE (val) != VOIDmode))
 	abort ();
 
-      /* There's no need to call protect_from_queue, because
-	 either emit_move_insn or emit_push_insn will do that.  */
-
       /* Make sure it is a reasonable operand for a move or push insn.  */
       if (!REG_P (val) && !MEM_P (val)
 	  && ! (CONSTANT_P (val) && LEGITIMATE_CONSTANT_P (val)))
@@ -4056,7 +4032,6 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
    for a value of mode OUTMODE,
    with NARGS different arguments, passed as alternating rtx values
    and machine_modes to convert them to.
-   The rtx values should have been passed through protect_from_queue already.
 
    FN_TYPE should be LCT_NORMAL for `normal' calls, LCT_CONST for `const'
    calls, LCT_PURE for `pure' calls, LCT_CONST_MAKE_BLOCK for `const' calls
@@ -4427,10 +4402,6 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
   /* Once we have pushed something, pops can't safely
      be deferred during the rest of the arguments.  */
   NO_DEFER_POP;
-
-  /* ANSI doesn't require a sequence point here,
-     but PCC has one, so this will avoid some problems.  */
-  emit_queue ();
 
   /* Free any temporary slots made in processing this argument.  Show
      that we might have taken the address of something and pushed that
