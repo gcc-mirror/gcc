@@ -128,7 +128,7 @@ get_stmt_uid (tree stmt)
 bool
 for_each_index (tree *addr_p, bool (*cbck) (tree, tree *, void *), void *data)
 {
-  tree *nxt;
+  tree *nxt, *idx;
 
   for (; ; addr_p = nxt)
     {
@@ -144,11 +144,21 @@ for_each_index (tree *addr_p, bool (*cbck) (tree, tree *, void *), void *data)
 	  return cbck (*addr_p, nxt, data);
 
 	case BIT_FIELD_REF:
-	case COMPONENT_REF:
 	case VIEW_CONVERT_EXPR:
 	case ARRAY_RANGE_REF:
 	case REALPART_EXPR:
 	case IMAGPART_EXPR:
+	  nxt = &TREE_OPERAND (*addr_p, 0);
+	  break;
+
+	case COMPONENT_REF:
+	  /* If the component has varying offset, it behaves like index
+	     as well.  */
+	  idx = &TREE_OPERAND (*addr_p, 2);
+	  if (*idx
+	      && !cbck (*addr_p, idx, data))
+	    return false;
+
 	  nxt = &TREE_OPERAND (*addr_p, 0);
 	  break;
 
