@@ -1,3 +1,7 @@
+Sun Nov 28 00:59:39 1999  Philippe De Muyter  <phdm@macqel.be>
+
+	* hashtab.c (sys/types.h): File included.
+
 1999-11-22  Jason Merrill  <jason@casey.cygnus.com>
 
 	* strtoul.c, strtol.c, random.c: Remove advertising clause from
