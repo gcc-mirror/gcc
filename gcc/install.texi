@@ -793,11 +793,11 @@ make a difference.  For example, you can write @samp{bsd4.3} or
 number is most needed for @samp{sysv3} and @samp{sysv4}, which are often
 treated differently.
 
-@samp{linux} and @samp{linux-gnu} are equivalent.  The distinction is
-purely political, and has no effect on the compiler.  The version of
-the kernel in use is not relevant on these systems.  A suffix such as
-@samp{libc1} or @samp{aout} distinguishes major versions of the C library;
-all of the suffixed versions are obsolete.
+@samp{linux-gnu} is the canonical name for the GNU/Linux target; however
+GNU CC will also accept @samp{linux}.  The version of the kernel in use is
+not relevant on these systems.  A suffix such as @samp{libc1} or @samp{aout}
+distinguishes major versions of the C library; all of the suffixed versions
+are obsolete.
 
 If you specify an impossible combination such as @samp{i860-dg-vms},
 then you may get an error message from @file{configure}, or it may
