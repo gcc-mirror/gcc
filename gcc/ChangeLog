@@ -1,3 +1,8 @@
+2002-04-10  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* reload1.c (choose_reload_regs): HARD_FRAME_POINTER_REGNUM
+	is only used as frame pointer when frame_pointer_needed is true.
+
 2002-04-10  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/817

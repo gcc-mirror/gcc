@@ -5565,6 +5565,7 @@ choose_reload_regs (chain)
 				  && ! TEST_HARD_REG_BIT (reg_reloaded_dead, i))
 			      /* Don't clobber the frame pointer.  */
 			      || (i == HARD_FRAME_POINTER_REGNUM
+				  && frame_pointer_needed
 				  && rld[r].out)
 			      /* Don't really use the inherited spill reg
 				 if we need it wider than we've got it.  */
@@ -5735,7 +5736,9 @@ choose_reload_regs (chain)
 
 	      /* If we found an equivalent reg, say no code need be generated
 		 to load it, and use it as our reload reg.  */
-	      if (equiv != 0 && regno != HARD_FRAME_POINTER_REGNUM)
+	      if (equiv != 0 
+		  && (regno != HARD_FRAME_POINTER_REGNUM 
+		      || !frame_pointer_needed))
 		{
 		  int nr = HARD_REGNO_NREGS (regno, rld[r].mode);
 		  int k;
