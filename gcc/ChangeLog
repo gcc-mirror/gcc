@@ -1,3 +1,31 @@
+2001-09-30  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpphash.h (POOL_ALIGN, POOL_FRONT, POOL_LIMIT, POOL_BASE,
+	POOL_SIZE, POOL_ROOM, POOL_COMMIT, struct cpp_chunk,
+	struct cpp_pool, _cpp_init_pool, _cpp_free_pool, _cpp_pool_reserve,
+	_cpp_pool_alloc, _cpp_next_chunk): Remove.
+	(_cpp_extend_buff, BUFF_ROOM): Update.
+	(_cpp_append_extend_buff): New.
+	(struct cpp_reader): Remove macro_pool, add a_buff.
+	* cppinit.c (cpp_create_reader): Initialize a_buff, instead of
+	macro_pool.
+	(cpp_destroy): Free a_buff instead of macro_pool.
+	* cpplex.c (new_chunk, chunk_suitable, _cpp_next_chunk,
+	new_chunk, _cpp_init_pool, _cpp_free_pool, _cpp_pool_reserve,
+	_cpp_pool_alloc, ): Remove.
+	(parse_number, parse_string): Update use of _cpp_extend_buff.
+	(_cpp_extend_buff): Update.
+	(_cpp_append_extend_buff, cpp_aligned_alloc): New.
+	* cpplib.c (glue_header_name, parse_answer):
+	Update use of _cpp_extend_buff.
+	(cpp_register_pragma, cpp_register_pragma_space): Use
+	_cpp_aligned_alloc.
+	(do_assert, do_unassert): Check for EOL, update.
+	* cppmacro.c (stringify_arg, collect_args): Update to use
+	_cpp_extend_buff and _cpp_append_extend_buff.
+	(save_parameter, parse_params, alloc_expansion_token,
+	_cpp_create_definition): Rework memory management.
+
 2001-09-29  Andris Pavenis  <pavenis@lanet.lv>
 
 	* config/i386/xm-djgpp.h (GCC_DRIVER_HOST_INITIALIZATION): Don't

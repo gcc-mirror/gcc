@@ -104,8 +104,6 @@ static int maybe_read_ucs PARAMS ((cpp_reader *, const unsigned char **,
 				   const unsigned char *, unsigned int *));
 static tokenrun *next_tokenrun PARAMS ((tokenrun *));
 
-static cpp_chunk *new_chunk PARAMS ((unsigned int));
-static int chunk_suitable PARAMS ((cpp_chunk *, unsigned int));
 static unsigned int hex_digit_value PARAMS ((unsigned int));
 static _cpp_buff *new_buff PARAMS ((size_t));
 
@@ -609,7 +607,7 @@ parse_number (pfile, number, c, leading_period)
     {
       if (dest == limit)
 	{
-	  pfile->u_buff = _cpp_extend_buff (pfile, pfile->u_buff, 1);
+	  _cpp_extend_buff (pfile, &pfile->u_buff, 1);
 	  dest = BUFF_FRONT (pfile->u_buff);
 	  limit = BUFF_LIMIT (pfile->u_buff);
 	}
@@ -624,7 +622,7 @@ parse_number (pfile, number, c, leading_period)
 	  if ((size_t) (limit - dest) < 2)
 	    {
 	      size_t len_so_far = dest - BUFF_FRONT (pfile->u_buff);
-	      pfile->u_buff = _cpp_extend_buff (pfile, pfile->u_buff, 2);
+	      _cpp_extend_buff (pfile, &pfile->u_buff, 2);
 	      dest = BUFF_FRONT (pfile->u_buff) + len_so_far;
 	      limit = BUFF_LIMIT (pfile->u_buff);
 	    }
@@ -726,7 +724,7 @@ parse_string (pfile, token, terminator)
       if ((size_t) (limit - dest) < 1)
 	{
 	  size_t len_so_far = dest - BUFF_FRONT (pfile->u_buff);
-	  pfile->u_buff = _cpp_extend_buff (pfile, pfile->u_buff, 2);
+	  _cpp_extend_buff (pfile, &pfile->u_buff, 2);
 	  dest = BUFF_FRONT (pfile->u_buff) + len_so_far;
 	  limit = BUFF_LIMIT (pfile->u_buff);
 	}
@@ -2112,20 +2110,42 @@ _cpp_get_buff (pfile, min_size)
   return result;
 }
 
-/* Return a buffer chained on the end of BUFF.  Copy to it the
-   uncommitted remaining bytes of BUFF, with at least MIN_EXTRA more
-   bytes.  */
+/* Creates a new buffer with enough space to hold the the uncommitted
+   remaining bytes of BUFF, and at least MIN_EXTRA more bytes.  Copies
+   the excess bytes to the new buffer.  Chains the new buffer after
+   BUFF, and returns the new buffer.  */
 _cpp_buff *
-_cpp_extend_buff (pfile, buff, min_extra)
+_cpp_append_extend_buff (pfile, buff, min_extra)
      cpp_reader *pfile;
      _cpp_buff *buff;
      size_t min_extra;
 {
   size_t size = EXTENDED_BUFF_SIZE (buff, min_extra);
+  _cpp_buff *new_buff = _cpp_get_buff (pfile, size);
 
-  buff->next = _cpp_get_buff (pfile, size);
-  memcpy (buff->next->base, buff->cur, buff->limit - buff->cur);
-  return buff->next;
+  buff->next = new_buff;
+  memcpy (new_buff->base, buff->cur, BUFF_ROOM (buff));
+  return new_buff;
+}
+
+/* Creates a new buffer with enough space to hold the the uncommitted
+   remaining bytes of the buffer pointed to by BUFF, and at least
+   MIN_EXTRA more bytes.  Copies the excess bytes to the new buffer.
+   Chains the new buffer before the buffer pointed to by BUFF, and
+   updates the pointer to point to the new buffer.  */
+void
+_cpp_extend_buff (pfile, pbuff, min_extra)
+     cpp_reader *pfile;
+     _cpp_buff **pbuff;
+     size_t min_extra;
+{
+  _cpp_buff *new_buff, *old_buff = *pbuff;
+  size_t size = EXTENDED_BUFF_SIZE (old_buff, min_extra);
+
+  new_buff = _cpp_get_buff (pfile, size);
+  memcpy (new_buff->base, old_buff->cur, BUFF_ROOM (old_buff));
+  new_buff->next = old_buff;
+  *pbuff = new_buff;
 }
 
 /* Free a chain of buffers starting at BUFF.  */
@@ -2163,120 +2183,23 @@ _cpp_unaligned_alloc (pfile, len)
   return result;
 }
 
-static int
-chunk_suitable (chunk, size)
-     cpp_chunk *chunk;
-     unsigned int size;
-{
-  /* Being at least twice SIZE means we can use memcpy in
-     _cpp_next_chunk rather than memmove.  Besides, it's a good idea
-     anyway.  */
-  return (chunk && (unsigned int) (chunk->limit - chunk->base) >= size * 2);
-}
-
-/* Returns the end of the new pool.  PTR points to a char in the old
-   pool, and is updated to point to the same char in the new pool.  */
+/* Allocate permanent, unaligned storage of length LEN.  */
 unsigned char *
-_cpp_next_chunk (pool, len, ptr)
-     cpp_pool *pool;
-     unsigned int len;
-     unsigned char **ptr;
+_cpp_aligned_alloc (pfile, len)
+     cpp_reader *pfile;
+     size_t len;
 {
-  cpp_chunk *chunk = pool->cur->next;
+  _cpp_buff *buff = pfile->a_buff;
+  unsigned char *result = buff->cur;
 
-  /* LEN is the minimum size we want in the new pool.  */
-  len += POOL_ROOM (pool);
-  if (! chunk_suitable (chunk, len))
+  if (len > (size_t) (buff->limit - result))
     {
-      chunk = new_chunk (POOL_SIZE (pool) * 2 + len);
-
-      chunk->next = pool->cur->next;
-      pool->cur->next = chunk;
+      buff = _cpp_get_buff (pfile, len);
+      buff->next = pfile->a_buff;
+      pfile->a_buff = buff;
+      result = buff->cur;
     }
 
-  /* Update the pointer before changing chunk's front.  */
-  if (ptr)
-    *ptr += chunk->base - POOL_FRONT (pool);
-
-  memcpy (chunk->base, POOL_FRONT (pool), POOL_ROOM (pool));
-  chunk->front = chunk->base;
-
-  pool->cur = chunk;
-  return POOL_LIMIT (pool);
-}
-
-static cpp_chunk *
-new_chunk (size)
-     unsigned int size;
-{
-  unsigned char *base;
-  cpp_chunk *result;
-
-  size = POOL_ALIGN (size, DEFAULT_ALIGNMENT);
-  base = (unsigned char *) xmalloc (size + sizeof (cpp_chunk));
-  /* Put the chunk descriptor at the end.  Then chunk overruns will
-     cause obvious chaos.  */
-  result = (cpp_chunk *) (base + size);
-  result->base = base;
-  result->front = base;
-  result->limit = base + size;
-  result->next = 0;
-
-  return result;
-}
-
-void
-_cpp_init_pool (pool, size, align, temp)
-     cpp_pool *pool;
-     unsigned int size, align, temp;
-{
-  if (align == 0)
-    align = DEFAULT_ALIGNMENT;
-  if (align & (align - 1))
-    abort ();
-  pool->align = align;
-  pool->first = new_chunk (size);
-  pool->cur = pool->first;
-  if (temp)
-    pool->cur->next = pool->cur;
-}
-
-void
-_cpp_free_pool (pool)
-     cpp_pool *pool;
-{
-  cpp_chunk *chunk = pool->first, *next;
-
-  do
-    {
-      next = chunk->next;
-      free (chunk->base);
-      chunk = next;
-    }
-  while (chunk && chunk != pool->first);
-}
-
-/* Reserve LEN bytes from a memory pool.  */
-unsigned char *
-_cpp_pool_reserve (pool, len)
-     cpp_pool *pool;
-     unsigned int len;
-{
-  len = POOL_ALIGN (len, pool->align);
-  if (len > (unsigned int) POOL_ROOM (pool))
-    _cpp_next_chunk (pool, len, 0);
-
-  return POOL_FRONT (pool);
-}
-
-/* Allocate LEN bytes from a memory pool.  */
-unsigned char *
-_cpp_pool_alloc (pool, len)
-     cpp_pool *pool;
-     unsigned int len;
-{
-  unsigned char *result = _cpp_pool_reserve (pool, len);
-
-  POOL_COMMIT (pool, len);
+  buff->cur = result + len;
   return result;
 }
