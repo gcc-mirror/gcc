@@ -1,5 +1,10 @@
 2000-09-05  Richard Henderson  <rth@cygnus.com>
 
+	* config/ia64.md (movsi and movdi patterns): Allow moves from
+	8-bit constants to AR registers.
+
+2000-09-05  Richard Henderson  <rth@cygnus.com>
+
 	* config/ia64/ia64.md (mulhi3): New.
 
 2000-09-05  Richard Henderson  <rth@cygnus.com>
