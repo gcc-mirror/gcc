@@ -426,7 +426,9 @@ public abstract class CharBuffer extends Buffer
       return new String (array (), position (), length ());
 
     char[] buf = new char [length ()];
-    get (position (), buf);
+    int pos = position ();
+    get (buf, 0, buf.length);
+    position (pos);
     return new String (buf);
   }
 
