@@ -1,5 +1,8 @@
 2003-06-16  Andreas Jaeger  <aj@suse.de>
 
+	* basic-block.h: Remove duplicate prototype of
+	note_prediction_to_br_prob.
+
 	* tree.h: Remove duplicate prototype of strip_float_extensions.
 
 2003-06-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
@@ -141,8 +144,8 @@
 
 2003-06-15  Nathanael Nerode  <neroden@gcc.gnu.org>
 
-	* config/gofast.h, config/interix.h, config/interix3.h, 
-	config/libgloss.h, config/linux-aout.h, config/linux.h, 
+	* config/gofast.h, config/interix.h, config/interix3.h,
+	config/libgloss.h, config/linux-aout.h, config/linux.h,
 	config/lynx-ng.h, config/lynx.h: GNU CC -> GCC.
 	* config/kaos.h: "GNU compiler" -> GCC.
 	* config/linux-aout.h, config/lynx.h: Clarify comment describing file.
@@ -151,7 +154,7 @@
 	config/ip2k/ip2k.c, config/ip2k/ip2k.md, config/ip2k/libgcc.S:
 	GNU CC -> GCC.
 
-	* config/svr3.h: Remove #if 0 code, misleading comments.  
+	* config/svr3.h: Remove #if 0 code, misleading comments.
 	GNU CC -> GCC.
 
 2003-06-15  Zack Weinberg  <zack@codesourcery.com>
