@@ -1,3 +1,32 @@
+2001-12-11  Robert Dewar <dewar@gnat.com>
+
+	* lib-xref.adb (Output_Refs): Don't output type references outside 
+	the main unit if they are not otherwise referenced.
+	
+2001-12-11  Ed Schonberg <schonber@gnat.com>
+
+	* sem_attr.adb (Analyze_attribute, case Address and Size): Simplify 
+	code and diagnose additional illegal uses
+	
+	* sem_util.adb (Is_Object_Reference): An indexed component is an 
+	object only if the prefix is.
+	
+2001-12-11  Vincent Celier <celier@gnat.com>
+
+	* g-diopit.adb: Initial version.
+	
+	* g-diopit.ads: Initial version.
+	
+	* g-dirope.adb:
+	(Expand_Path): Avoid use of Unbounded_String
+	(Find, Wildcard_Iterator): Moved to child package Iteration
+	
+	* Makefile.in: Added g-diopit.o to GNATRTL_NONTASKING_OBJS
+	
+2001-12-11  Richard Kenner <dewar@gnat.com>
+
+	* sem_attr.adb: Minor reformatting
+
 2001-12-11  Ed Schonberg <schonber@gnat.com>
 
 	* sem_ch3.adb: Clarify some ???.

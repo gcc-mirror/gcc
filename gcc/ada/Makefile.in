@@ -1666,6 +1666,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-curexc.o \
   g-debuti.o \
   g-debpoo.o \
+  g-diopit.o \
   g-dirope.o \
   g-except.o \
   g-exctra.o \
@@ -3171,10 +3172,18 @@ g-comlin.o : ada.ads a-comlin.ads a-except.ads a-finali.ads a-filico.ads \
    s-parame.ads s-secsta.ads s-soflin.ads s-stache.ads s-stalib.ads \
    s-stoele.ads s-stratt.ads s-strops.ads s-unstyp.ads unchconv.ads 
 
+g-diopit.o : ada.ads a-charac.ads a-chahan.ads a-chlat1.ads a-except.ads \
+   a-finali.ads a-filico.ads a-stream.ads a-string.ads a-strfix.ads \
+   a-strmap.ads a-tags.ads gnat.ads g-dirope.ads g-dirope.adb \
+   g-os_lib.ads g-regexp.ads system.ads s-exctab.ads s-finimp.ads \
+   s-finroo.ads s-parame.ads s-secsta.ads s-soflin.ads s-stache.ads \
+   s-stalib.ads s-stoele.ads s-stratt.ads s-strops.ads s-unstyp.ads \
+   unchconv.ads unchdeal.ads 
+
 g-dirope.o : ada.ads a-charac.ads a-chahan.ads a-chlat1.ads a-except.ads \
    a-finali.ads a-filico.ads a-stream.ads a-string.ads a-strfix.ads \
-   a-strmap.ads a-strunb.ads a-tags.ads gnat.ads g-dirope.ads g-dirope.adb \
-   g-os_lib.ads g-regexp.ads system.ads s-exctab.ads s-finimp.ads \
+   a-strmap.ads a-tags.ads gnat.ads g-dirope.ads g-dirope.adb \
+   g-os_lib.ads system.ads s-exctab.ads s-finimp.ads \
    s-finroo.ads s-parame.ads s-secsta.ads s-soflin.ads s-stache.ads \
    s-stalib.ads s-stoele.ads s-stratt.ads s-strops.ads s-unstyp.ads \
    unchconv.ads unchdeal.ads 

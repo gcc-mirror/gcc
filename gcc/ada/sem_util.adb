@@ -3053,7 +3053,7 @@ package body Sem_Util is
       else
          case Nkind (N) is
             when N_Indexed_Component | N_Slice =>
-               return True;
+               return Is_Object_Reference (Prefix (N));
 
             --  In Ada95, a function call is a constant object.
 

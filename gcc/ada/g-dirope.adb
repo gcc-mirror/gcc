@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.2 $
+--                            $Revision$
 --                                                                          --
 --            Copyright (C) 1998-2001 Ada Core Technologies, Inc.           --
 --                                                                          --
@@ -34,13 +34,11 @@
 
 with Ada.Characters.Handling;
 with Ada.Strings.Fixed;
-with Ada.Strings.Unbounded;
 with Ada.Strings.Maps;
 with Unchecked_Deallocation;
 with Unchecked_Conversion;
 with System;  use System;
 
-with GNAT.Regexp;
 with GNAT.OS_Lib;
 
 package body GNAT.Directory_Operations is
@@ -50,10 +48,6 @@ package body GNAT.Directory_Operations is
    type Dir_Type_Value is new System.Address;
    --  This is the low-level address directory structure as returned by the C
    --  opendir routine.
-
-   Dir_Seps : constant Strings.Maps.Character_Set :=
-                Strings.Maps.To_Set ("/\");
-   --  UNIX and DOS style directory separators.
 
    procedure Free is new
      Unchecked_Deallocation (Dir_Type_Value, Dir_Type);
@@ -220,7 +214,16 @@ package body GNAT.Directory_Operations is
    -----------------
 
    function Expand_Path (Path : Path_Name) return String is
-      use Ada.Strings.Unbounded;
+
+      Result      : OS_Lib.String_Access := new String (1 .. 200);
+      Result_Last : Natural := 0;
+
+      procedure Append (C : Character);
+      procedure Append (S : String);
+      --  Append to Result
+
+      procedure Double_Result_Size;
+      --  Reallocate Result, doubling its size
 
       procedure Read (K : in out Positive);
       --  Update Result while reading current Path starting at position K. If
@@ -230,10 +233,43 @@ package body GNAT.Directory_Operations is
       --  Translate variable name starting at position K with the associated
       --  environment value.
 
-      procedure Free is
-         new Unchecked_Deallocation (String, OS_Lib.String_Access);
+      ------------
+      -- Append --
+      ------------
 
-      Result : Unbounded_String;
+      procedure Append (C : Character) is
+      begin
+         if Result_Last = Result'Last then
+            Double_Result_Size;
+         end if;
+
+         Result_Last := Result_Last + 1;
+         Result (Result_Last) := C;
+      end Append;
+
+      procedure Append (S : String) is
+      begin
+         while Result_Last + S'Length - 1 > Result'Last loop
+            Double_Result_Size;
+         end loop;
+
+         Result (Result_Last + 1 .. Result_Last + S'Length - 1) := S;
+         Result_Last := Result_Last + S'Length - 1;
+      end Append;
+
+      ------------------------
+      -- Double_Result_Size --
+      ------------------------
+
+      procedure Double_Result_Size is
+         New_Result : constant OS_Lib.String_Access :=
+           new String (1 .. 2 * Result'Last);
+
+      begin
+         New_Result (1 .. Result_Last) := Result (1 .. Result_Last);
+         OS_Lib.Free (Result);
+         Result := New_Result;
+      end Double_Result_Size;
 
       ----------
       -- Read --
@@ -253,7 +289,7 @@ package body GNAT.Directory_Operations is
                      --  Not a variable after all, this is a double $, just
                      --  insert one in the result string.
 
-                     Append (Result, '$');
+                     Append ('$');
                      K := K + 1;
 
                   else
@@ -266,13 +302,13 @@ package body GNAT.Directory_Operations is
                else
                   --  We have an ending $ sign
 
-                  Append (Result, '$');
+                  Append ('$');
                end if;
 
             else
                --  This is a standard character, just add it to the result
 
-               Append (Result, Path (K));
+               Append (Path (K));
             end if;
 
             --  Skip to next character
@@ -311,15 +347,16 @@ package body GNAT.Directory_Operations is
                           OS_Lib.Getenv (Path (K + 1 .. E - 1));
 
                begin
-                  Append (Result, Env.all);
-                  Free (Env);
+                  Append (Env.all);
+                  OS_Lib.Free (Env);
                end;
 
             else
                --  No closing curly bracket, not a variable after all or a
                --  syntax error, ignore it, insert string as-is.
 
-               Append (Result, '$' & Path (K .. E));
+               Append ('$');
+               Append (Path (K .. E));
             end if;
 
          else
@@ -350,14 +387,15 @@ package body GNAT.Directory_Operations is
                   Env : OS_Lib.String_Access := OS_Lib.Getenv (Path (K .. E));
 
                begin
-                  Append (Result, Env.all);
-                  Free (Env);
+                  Append (Env.all);
+                  OS_Lib.Free (Env);
                end;
 
             else
                --  This is not a variable after all
 
-               Append (Result, '$' & Path (E));
+               Append ('$');
+               Append (Path (E));
             end if;
 
          end if;
@@ -373,7 +411,14 @@ package body GNAT.Directory_Operations is
 
       begin
          Read (K);
-         return To_String (Result);
+
+         declare
+            Returned_Value : constant String := Result (1 .. Result_Last);
+
+         begin
+            OS_Lib.Free (Result);
+            return Returned_Value;
+         end;
       end;
    end Expand_Path;
 
@@ -412,91 +457,6 @@ package body GNAT.Directory_Operations is
    begin
       return Base_Name (Path);
    end File_Name;
-
-   ----------
-   -- Find --
-   ----------
-
-   procedure Find
-     (Root_Directory : Dir_Name_Str;
-      File_Pattern   : String)
-   is
-      File_Regexp : constant Regexp.Regexp := Regexp.Compile (File_Pattern);
-      Index       : Natural := 0;
-
-      procedure Read_Directory (Directory : Dir_Name_Str);
-      --  Open Directory and read all entries. This routine is called
-      --  recursively for each sub-directories.
-
-      function Make_Pathname (Dir, File : String) return String;
-      --  Returns the pathname for File by adding Dir as prefix.
-
-      -------------------
-      -- Make_Pathname --
-      -------------------
-
-      function Make_Pathname (Dir, File : String) return String is
-      begin
-         if Dir (Dir'Last) = '/' or else Dir (Dir'Last) = '\' then
-            return Dir & File;
-         else
-            return Dir & Dir_Separator & File;
-         end if;
-      end Make_Pathname;
-
-      --------------------
-      -- Read_Directory --
-      --------------------
-
-      procedure Read_Directory (Directory : Dir_Name_Str) is
-         Dir    : Dir_Type;
-         Buffer : String (1 .. 2_048);
-         Last   : Natural;
-         Quit   : Boolean;
-
-      begin
-         Open (Dir, Directory);
-
-         loop
-            Read (Dir, Buffer, Last);
-            exit when Last = 0;
-
-            declare
-               Dir_Entry : constant String := Buffer (1 .. Last);
-               Pathname  : constant String
-                 := Make_Pathname (Directory, Dir_Entry);
-            begin
-               if Regexp.Match (Dir_Entry, File_Regexp) then
-                  Quit  := False;
-                  Index := Index + 1;
-
-                  begin
-                     Action (Pathname, Index, Quit);
-                  exception
-                     when others =>
-                        Close (Dir);
-                        raise;
-                  end;
-
-                  exit when Quit;
-               end if;
-
-               --  Recursively call for sub-directories, except for . and ..
-
-               if not (Dir_Entry = "." or else Dir_Entry = "..")
-                 and then OS_Lib.Is_Directory (Pathname)
-               then
-                  Read_Directory (Pathname);
-               end if;
-            end;
-         end loop;
-
-         Close (Dir);
-      end Read_Directory;
-
-   begin
-      Read_Directory (Root_Directory);
-   end Find;
 
    ---------------------
    -- Get_Current_Dir --
@@ -716,269 +676,5 @@ package body GNAT.Directory_Operations is
    begin
       rmdir (C_Dir_Name);
    end Remove_Dir;
-
-   -----------------------
-   -- Wildcard_Iterator --
-   -----------------------
-
-   procedure Wildcard_Iterator (Path : Path_Name) is
-
-      Index : Natural := 0;
-
-      procedure Read
-        (Directory      : String;
-         File_Pattern   : String;
-         Suffix_Pattern : String);
-      --  Read entries in Directory and call user's callback if the entry
-      --  match File_Pattern and Suffix_Pattern is empty otherwise it will go
-      --  down one more directory level by calling Next_Level routine above.
-
-      procedure Next_Level
-        (Current_Path : String;
-         Suffix_Path  : String);
-      --  Extract next File_Pattern from Suffix_Path and call Read routine
-      --  above.
-
-      ----------------
-      -- Next_Level --
-      ----------------
-
-      procedure Next_Level
-        (Current_Path : String;
-         Suffix_Path  : String)
-      is
-         DS : Natural;
-         SP : String renames Suffix_Path;
-
-      begin
-         if SP'Length > 2
-           and then SP (SP'First) = '.'
-           and then Strings.Maps.Is_In (SP (SP'First + 1), Dir_Seps)
-         then
-            --  Starting with "./"
-
-            DS := Strings.Fixed.Index
-              (SP (SP'First + 2 .. SP'Last),
-               Dir_Seps);
-
-            if DS = 0 then
-
-               --  We have "./"
-
-               Read (Current_Path & ".", "*", "");
-
-            else
-               --  We have "./dir"
-
-               Read (Current_Path & ".",
-                     SP (SP'First + 2 .. DS - 1),
-                     SP (DS .. SP'Last));
-            end if;
-
-         elsif SP'Length > 3
-           and then SP (SP'First .. SP'First + 1) = ".."
-           and then Strings.Maps.Is_In (SP (SP'First + 2), Dir_Seps)
-         then
-            --  Starting with "../"
-
-            DS := Strings.Fixed.Index
-              (SP (SP'First + 3 .. SP'Last),
-               Dir_Seps);
-
-            if DS = 0 then
-
-               --  We have "../"
-
-               Read (Current_Path & "..", "*", "");
-
-            else
-               --  We have "../dir"
-
-               Read (Current_Path & "..",
-                     SP (SP'First + 4 .. DS - 1),
-                     SP (DS .. SP'Last));
-            end if;
-
-         elsif Current_Path = ""
-           and then SP'Length > 1
-           and then Characters.Handling.Is_Letter (SP (SP'First))
-           and then SP (SP'First + 1) = ':'
-         then
-            --  Starting with "<drive>:"
-
-            if SP'Length > 2
-              and then Strings.Maps.Is_In (SP (SP'First + 2), Dir_Seps)
-            then
-               --  Starting with "<drive>:\"
-
-               DS :=  Strings.Fixed.Index
-                        (SP (SP'First + 3 .. SP'Last), Dir_Seps);
-
-               if DS = 0 then
-
-                  --  Se have "<drive>:\dir"
-
-                  Read (SP (SP'First .. SP'First + 1),
-                        SP (SP'First + 3 .. SP'Last),
-                        "");
-
-               else
-                  --  We have "<drive>:\dir\kkk"
-
-                  Read (SP (SP'First .. SP'First + 1),
-                        SP (SP'First + 3 .. DS - 1),
-                        SP (DS .. SP'Last));
-               end if;
-
-            else
-               --  Starting with "<drive>:"
-
-               DS :=  Strings.Fixed.Index
-                        (SP (SP'First + 2 .. SP'Last), Dir_Seps);
-
-               if DS = 0 then
-
-                  --  We have "<drive>:dir"
-
-                  Read (SP (SP'First .. SP'First + 1),
-                        SP (SP'First + 2 .. SP'Last),
-                        "");
-
-               else
-                  --  We have "<drive>:dir/kkk"
-
-                  Read (SP (SP'First .. SP'First + 1),
-                        SP (SP'First + 2 .. DS - 1),
-                        SP (DS .. SP'Last));
-               end if;
-
-            end if;
-
-         elsif Strings.Maps.Is_In (SP (SP'First), Dir_Seps) then
-
-            --  Starting with a /
-
-            DS := Strings.Fixed.Index
-              (SP (SP'First + 1 .. SP'Last),
-               Dir_Seps);
-
-            if DS = 0 then
-
-               --  We have "/dir"
-
-               Read (Current_Path,
-                     SP (SP'First + 1 .. SP'Last),
-                     "");
-            else
-               --  We have "/dir/kkk"
-
-               Read (Current_Path,
-                     SP (SP'First + 1 .. DS - 1),
-                     SP (DS .. SP'Last));
-            end if;
-
-         else
-            --  Starting with a name
-
-            DS := Strings.Fixed.Index (SP, Dir_Seps);
-
-            if DS = 0 then
-
-               --  We have "dir"
-
-               Read (Current_Path & '.',
-                     SP,
-                     "");
-            else
-               --  We have "dir/kkk"
-
-               Read (Current_Path & '.',
-                     SP (SP'First .. DS - 1),
-                     SP (DS .. SP'Last));
-            end if;
-
-         end if;
-      end Next_Level;
-
-      ----------
-      -- Read --
-      ----------
-
-      Quit : Boolean := False;
-      --  Global state to be able to exit all recursive calls.
-
-      procedure Read
-        (Directory      : String;
-         File_Pattern   : String;
-         Suffix_Pattern : String)
-      is
-         File_Regexp : constant Regexp.Regexp :=
-                         Regexp.Compile (File_Pattern, Glob => True);
-         Dir    : Dir_Type;
-         Buffer : String (1 .. 2_048);
-         Last   : Natural;
-
-      begin
-         if OS_Lib.Is_Directory (Directory) then
-            Open (Dir, Directory);
-
-            Dir_Iterator : loop
-               Read (Dir, Buffer, Last);
-               exit Dir_Iterator when Last = 0;
-
-               declare
-                  Dir_Entry : constant String := Buffer (1 .. Last);
-                  Pathname  : constant String :=
-                                Directory & Dir_Separator & Dir_Entry;
-               begin
-                  --  Handle "." and ".." only if explicit use in the
-                  --  File_Pattern.
-
-                  if not
-                    ((Dir_Entry = "." and then File_Pattern /= ".")
-                       or else
-                     (Dir_Entry = ".." and then File_Pattern /= ".."))
-                  then
-                     if Regexp.Match (Dir_Entry, File_Regexp) then
-
-                        if Suffix_Pattern = "" then
-
-                           --  No more matching needed, call user's callback
-
-                           Index := Index + 1;
-
-                           begin
-                              Action (Pathname, Index, Quit);
-
-                           exception
-                              when others =>
-                                 Close (Dir);
-                                 raise;
-                           end;
-
-                           exit Dir_Iterator when Quit;
-
-                        else
-                           --  Down one level
-
-                           Next_Level
-                             (Directory & Dir_Separator & Dir_Entry,
-                              Suffix_Pattern);
-                        end if;
-                     end if;
-                  end if;
-               end;
-
-               exit Dir_Iterator when Quit;
-
-            end loop Dir_Iterator;
-
-            Close (Dir);
-         end if;
-      end Read;
-
-   begin
-      Next_Level ("", Path);
-   end Wildcard_Iterator;
 
 end GNAT.Directory_Operations;
