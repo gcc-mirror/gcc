@@ -52,6 +52,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    so it can store the operation numbers in them.  */
 #ifndef NEXT_OBJC_RUNTIME
 #define OBJC_SELECTORS_WITHOUT_LABELS
+#endif
 
 /* This is the default way of generating a method name.  */
 #ifndef OBJC_GEN_METHOD_LABEL
