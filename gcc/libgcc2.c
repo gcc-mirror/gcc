@@ -3846,7 +3846,7 @@ label:
 /* This is needed to provide the old names of the frame info registering
    code for compatibility.  It should be deleted in GCC 2.9.0.  */
 
-#include <stdlib.h>
+extern void *malloc ();
 
 struct object {
   void *pc_begin;
