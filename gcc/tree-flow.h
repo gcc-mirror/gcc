@@ -40,12 +40,15 @@ typedef struct basic_block_def *basic_block;
 /*---------------------------------------------------------------------------
 		   Tree annotations stored in tree_common.ann
 ---------------------------------------------------------------------------*/
-enum tree_ann_type { TREE_ANN_COMMON, VAR_ANN, STMT_ANN };
+enum tree_ann_type { TREE_ANN_COMMON, VAR_ANN, CST_ANN, EXPR_ANN, STMT_ANN };
 
 struct tree_ann_common_d GTY(())
 {
   /* Annotation type.  */
   enum tree_ann_type type;
+
+  /* The value handle for this expression.  Used by GVN-PRE.  */
+  tree GTY((skip)) value_handle;
 };
 
 /* It is advantageous to avoid things like life analysis for variables which
@@ -164,6 +167,11 @@ struct var_ann_d GTY(())
      live at the same time and this can happen for each call to the
      dominator optimizer.  */
   tree current_def;
+
+  /* The set of expressions represented by this variable if it is a
+     value handle.  This is used by GVN-PRE.  */
+  PTR GTY ((skip)) expr_set;
+  
 };
 
 
@@ -256,17 +264,38 @@ struct stmt_ann_d GTY(())
 };
 
 
+struct cst_ann_d GTY (())
+{
+  struct tree_ann_common_d common;
+  
+};
+
+struct expr_ann_d GTY(())
+{
+  struct tree_ann_common_d common;
+  
+};
+
+
 union tree_ann_d GTY((desc ("ann_type ((tree_ann)&%h)")))
 {
   struct tree_ann_common_d GTY((tag ("TREE_ANN_COMMON"))) common;
   struct var_ann_d GTY((tag ("VAR_ANN"))) decl;
+  struct expr_ann_d GTY((tag ("EXPR_ANN"))) expr;
+  struct cst_ann_d GTY((tag ("CST_ANN"))) cst;
   struct stmt_ann_d GTY((tag ("STMT_ANN"))) stmt;
 };
 
 typedef union tree_ann_d *tree_ann;
 typedef struct var_ann_d *var_ann_t;
 typedef struct stmt_ann_d *stmt_ann_t;
+typedef struct expr_ann_d *expr_ann_t;
+typedef struct cst_ann_d *cst_ann_t;
 
+static inline cst_ann_t cst_ann (tree);
+static inline cst_ann_t get_cst_ann (tree);
+static inline expr_ann_t expr_ann (tree);
+static inline expr_ann_t get_expr_ann (tree);
 static inline var_ann_t var_ann (tree);
 static inline var_ann_t get_var_ann (tree);
 static inline stmt_ann_t stmt_ann (tree);
@@ -464,6 +493,8 @@ extern void dump_generic_bb (FILE *, basic_block, int, int);
 
 /* In tree-dfa.c  */
 extern var_ann_t create_var_ann (tree);
+extern cst_ann_t create_cst_ann (tree);
+extern expr_ann_t create_expr_ann (tree);
 extern stmt_ann_t create_stmt_ann (tree);
 extern tree create_phi_node (tree, basic_block);
 extern void add_phi_arg (tree *, tree, edge);
@@ -566,6 +597,12 @@ extern bool tree_could_throw_p (tree);
 extern bool tree_can_throw_internal (tree);
 extern bool tree_can_throw_external (tree);
 extern void add_stmt_to_eh_region (tree, int);
+
+/* In tree-ssa-pre.c */
+tree get_value_handle (tree);
+void set_value_handle (tree, tree);
+void debug_value_expressions (tree);
+void print_value_expressions (FILE *, tree);
 
 #include "tree-flow-inline.h"
 

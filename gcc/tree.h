@@ -1184,6 +1184,10 @@ struct tree_exp GTY(())
 #define SSA_NAME_PTR_INFO(N) \
     SSA_NAME_CHECK (N)->ssa_name.ptr_info
 
+/* Get the value of this SSA_NAME, if available.  */
+#define SSA_NAME_VALUE(N) \
+   SSA_NAME_CHECK (N)->ssa_name.value_handle
+
 #ifndef GCC_BITMAP_H
 struct bitmap_head_def;
 #endif
@@ -1223,6 +1227,9 @@ struct tree_ssa_name GTY(())
 
   /* Pointer attributes used for alias analysis.  */
   struct ptr_info_def *ptr_info;
+
+  /* Value for SSA name used by GVN.  */ 
+  tree GTY((skip)) value_handle;
 };
 
 /* In a PHI_NODE node.  */

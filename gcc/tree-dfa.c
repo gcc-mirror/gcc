@@ -463,6 +463,52 @@ create_stmt_ann (tree t)
 }
 
 
+/* Create a new annotation for a constant T.  */
+
+cst_ann_t
+create_cst_ann (tree t)
+{
+  cst_ann_t ann;
+
+#if defined ENABLE_CHECKING
+  if (t == NULL_TREE
+      || (t->common.ann
+	  && t->common.ann->common.type != CST_ANN))
+    abort ();
+#endif
+
+  ann = ggc_alloc (sizeof (*ann));
+  memset ((void *) ann, 0, sizeof (*ann));
+
+  ann->common.type = CST_ANN;
+  t->common.ann = (tree_ann) ann;
+
+  return ann;
+}
+
+/* Create a new annotation for an expression T.  */
+
+expr_ann_t
+create_expr_ann (tree t)
+{
+  expr_ann_t ann;
+
+#if defined ENABLE_CHECKING
+  if (t == NULL_TREE
+      || (t->common.ann
+	  && t->common.ann->common.type != EXPR_ANN))
+    abort ();
+#endif
+
+  ann = ggc_alloc (sizeof (*ann));
+  memset ((void *) ann, 0, sizeof (*ann));
+
+  ann->common.type = EXPR_ANN;
+  t->common.ann = (tree_ann) ann;
+
+  return ann;
+}
+
 /* Build a temporary.  Make sure and register it to be renamed.  */
 
 tree
