@@ -1,3 +1,9 @@
+2003-09-18  Mark Mitchell  <mark@codesourcery.com>
+
+	PR target/11184
+	* builtins.c (expand_builtin_apply): Use convert_memory_address
+	before returning the value.
+
 2003-09-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.in (gcc_cv_as_hidden): Only disable if no GNU ld

@@ -1344,7 +1344,12 @@ expand_builtin_apply (function, arguments, argsize)
   OK_DEFER_POP;
 
   /* Return the address of the result block.  */
-  return copy_addr_to_reg (XEXP (result, 0));
+  result = copy_addr_to_reg (XEXP (result, 0));
+#ifdef POINTERS_EXTEND_UNSIGNED
+  if (GET_MODE (result) != ptr_mode)
+    result = convert_memory_address (ptr_mode, result);
+#endif
+  return result;
 }
 
 /* Perform an untyped return.  */
