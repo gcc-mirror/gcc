@@ -71,9 +71,6 @@ crt2.o%s "
    and bzero */
 #define TARGET_MEM_FUNCTIONS
 
-/* Provide support for pascal strings */
-#define SUPPORT_PASCAL_STRINGS
-
 /* Resize standard types */
 
 #undef SIZE_TYPE
