@@ -1,3 +1,10 @@
+2003-09-04  DJ Delorie  <dj@redhat.com>
+
+	* builtins.c (apply_args_size): Guard against a NULL cfun.
+	(expand_builtin_apply_args_1): Likewise.
+	(expand_builtin_apply_args_1): Likewise.
+	(expand_builtin_apply): Likewise.
+
 2003-09-04  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.in (gcc_cv_as_ix86_cmov_sun_syntax): Check if

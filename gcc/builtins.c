@@ -941,7 +941,7 @@ apply_args_size (void)
 
       /* The second value is the structure value address unless this is
 	 passed as an "invisible" first argument.  */
-      if (targetm.calls.struct_value_rtx (TREE_TYPE (cfun->decl), 0))
+      if (targetm.calls.struct_value_rtx (cfun ? TREE_TYPE (cfun->decl) : 0, 0))
 	size += GET_MODE_SIZE (Pmode);
 
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
@@ -1116,7 +1116,7 @@ expand_builtin_apply_args_1 (void)
   rtx registers;
   int size, align, regno;
   enum machine_mode mode;
-  rtx struct_incoming_value = targetm.calls.struct_value_rtx (TREE_TYPE (cfun->decl), 1);
+  rtx struct_incoming_value = targetm.calls.struct_value_rtx (cfun ? TREE_TYPE (cfun->decl) : 0, 1);
 
   /* Create a block where the arg-pointer, structure value address,
      and argument registers can be saved.  */
@@ -1124,7 +1124,7 @@ expand_builtin_apply_args_1 (void)
 
   /* Walk past the arg-pointer and structure value address.  */
   size = GET_MODE_SIZE (Pmode);
-  if (targetm.calls.struct_value_rtx (TREE_TYPE (cfun->decl), 0))
+  if (targetm.calls.struct_value_rtx (cfun ? TREE_TYPE (cfun->decl) : 0, 0))
     size += GET_MODE_SIZE (Pmode);
 
   /* Save each register used in calling a function to the block.  */
@@ -1211,7 +1211,7 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
   rtx incoming_args, result, reg, dest, src, call_insn;
   rtx old_stack_level = 0;
   rtx call_fusage = 0;
-  rtx struct_value = targetm.calls.struct_value_rtx (TREE_TYPE (cfun->decl), 0);
+  rtx struct_value = targetm.calls.struct_value_rtx (cfun ? TREE_TYPE (cfun->decl) : 0, 0);
 
 #ifdef POINTERS_EXTEND_UNSIGNED
   if (GET_MODE (arguments) != Pmode)
