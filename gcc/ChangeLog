@@ -1,3 +1,7 @@
+2002-05-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* protoize.c: Fix formatting.
+
 2002-05-19  Richard Henderson  <rth@redhat.com>
 
 	* gensupport.c (init_include_reader): Merge into ...
