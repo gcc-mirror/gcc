@@ -1,3 +1,8 @@
+2000-07-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (layout_class_type): Add pointers to virtual bases after
+	base classes under the old ABI.
+
 2000-07-10  Benjamin Chelf  <chelf@codesourcery.com>
 
 	* semantics.c (finish_for_stmt): Remove call to emit_line_note.

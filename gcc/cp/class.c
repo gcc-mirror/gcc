@@ -4795,11 +4795,11 @@ layout_class_type (t, empty_p, vfuns_p,
       place_field (rli, vptr);
     }
 
+  /* Build FIELD_DECLs for all of the non-virtual base-types.  */
+  v = build_base_fields (rli, empty_p);
   /* Add pointers to all of our virtual base-classes.  */
   TYPE_FIELDS (t) = chainon (build_vbase_pointer_fields (rli, empty_p),
 			     TYPE_FIELDS (t));
-  /* Build FIELD_DECLs for all of the non-virtual base-types.  */
-  v = build_base_fields (rli, empty_p);
 
   /* CLASSTYPE_INLINE_FRIENDS is really TYPE_NONCOPIED_PARTS.  Thus,
      we have to save this before we start modifying
