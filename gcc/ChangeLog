@@ -1,3 +1,7 @@
+Thu Apr 23 01:41:02 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Bump for 1.0.3 pre-release.
+
 Mon Apr 20 02:17:37 1998  Richard Henderson  <rth@cygnus.com>               
 			  Jim Wilson  <wilson@cygnus.com>
 			  J"orn Rennecke <amylaar@cygnus.co.uk>
