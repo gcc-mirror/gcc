@@ -20,15 +20,14 @@
 
 #include "config.h"
 #include "system.h"
-#include "gansidecl.h"
 #include "dyn-string.h"
 
 extern char *xmalloc ();
 extern char *xrealloc ();
 
-/* Create a new dynamic string capable of holding at least SPACE
-   characters, including the terminating NUL.  If SPACE is 0, it
-   will be silently increased to 1.  */
+/* Create a new dynamic string capable of holding at least SPACE characters,
+   including the terminating NUL.  If SPACE is 0, it will be silently
+   increased to 1.  */
 
 dyn_string_t 
 dyn_string_new (space)
@@ -36,13 +35,12 @@ dyn_string_new (space)
 {
   dyn_string_t result = (dyn_string_t) xmalloc (sizeof (struct dyn_string));
  
+  /* We need at least one byte in which to store the terminating NUL.  */
   if (space == 0)
-    /* We need at least one byte in which to store the terminating
-       NUL.  */
     space = 1;
 
   result->allocated = space;
-  result->s = (char*) xmalloc (space);
+  result->s = (char *) xmalloc (space);
   result->length = 0;
   result->s[0] = '\0';
 
@@ -59,8 +57,7 @@ dyn_string_delete (ds)
   free (ds);
 }
 
-/* Append the NUL-terminated string S to DS, resizing DS if
-   necessary.  */
+/* Append the NUL-terminated string S to DS, resizing DS if necessary.  */
 
 dyn_string_t 
 dyn_string_append (ds, s)
@@ -68,16 +65,19 @@ dyn_string_append (ds, s)
      char *s;
 {
   int len = strlen (s);
-  dyn_string_resize (ds, ds->length + len + 1 /* '\0' */);
+
+  /* The new length is the old length plus the size of our string, plus
+     one for the null at the end.  */
+  dyn_string_resize (ds, ds->length + len + 1);
   strcpy (ds->s + ds->length, s);
   ds->length += len;
 
   return ds;
 }
 
-/* Increase the capacity of DS so that it can hold at least SPACE
-   characters, including the terminating NUL.  This function will not
-   (at present) reduce the capacity of DS.  */
+/* Increase the capacity of DS so it can hold at least SPACE characters,
+   including the terminating NUL.  This function will not (at present)
+   reduce the capacity of DS.  */
 
 dyn_string_t 
 dyn_string_resize (ds, space)
@@ -93,7 +93,7 @@ dyn_string_resize (ds, space)
     {
       /* We actually need more space.  */
       ds->allocated = new_allocated;
-      ds->s = (char*) xrealloc (ds->s, ds->allocated);
+      ds->s = (char *) xrealloc (ds->s, ds->allocated);
     }
 
   return ds;
