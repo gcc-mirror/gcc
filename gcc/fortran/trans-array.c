@@ -1027,6 +1027,8 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript)
   gfc_se se;
   int n;
 
+  /* TODO: This can generate bad code if there are ordering dependencies.
+     eg. a callee allocated function and an unknown size constructor.  */
   assert (ss != NULL);
 
   for (; ss != gfc_ss_terminator; ss = ss->loop_chain)
@@ -1100,7 +1102,8 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript)
 	  break;
 
         case GFC_SS_TEMP:
-          /* Do nothing.  This will be handled later.  */
+	case GFC_SS_COMPONENT:
+          /* Do nothing.  These are handled elsewhere.  */
           break;
 
 	default:
@@ -1446,9 +1449,12 @@ gfc_conv_array_index_offset (gfc_se * se, gfc_ss_info * info, int dim, int i,
     }
   else
     {
-      /* Temporary array.  */
+      /* Temporary array or derived type component.  */
       assert (se->loop);
       index = se->loop->loopvar[se->loop->order[i]];
+      if (!integer_zerop (info->delta[i]))
+	index = fold (build (PLUS_EXPR, gfc_array_index_type, index,
+			     info->delta[i]));
     }
 
   /* Multiply by the stride.  */
@@ -1597,7 +1603,8 @@ gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
 	continue;
 
       if (ss->type != GFC_SS_SECTION
-	  && ss->type != GFC_SS_FUNCTION && ss->type != GFC_SS_CONSTRUCTOR)
+	  && ss->type != GFC_SS_FUNCTION && ss->type != GFC_SS_CONSTRUCTOR
+	  && ss->type != GFC_SS_COMPONENT)
 	continue;
 
       info = &ss->data.info;
@@ -1819,7 +1826,8 @@ gfc_trans_scalarized_loop_boundary (gfc_loopinfo * loop, stmtblock_t * body)
 	continue;
 
       if (ss->type != GFC_SS_SECTION
-	  && ss->type != GFC_SS_FUNCTION && ss->type != GFC_SS_CONSTRUCTOR)
+	  && ss->type != GFC_SS_FUNCTION && ss->type != GFC_SS_CONSTRUCTOR
+	  && ss->type != GFC_SS_COMPONENT)
 	continue;
 
       ss->data.info.offset = ss->data.info.saved_offset;
@@ -1975,6 +1983,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	case GFC_SS_SECTION:
 	case GFC_SS_CONSTRUCTOR:
 	case GFC_SS_FUNCTION:
+	case GFC_SS_COMPONENT:
 	  loop->dimen = ss->data.info.dimen;
 	  break;
 
@@ -1990,6 +1999,9 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
   /* Loop over all the SS in the chain.  */
   for (ss = loop->ss; ss != gfc_ss_terminator; ss = ss->loop_chain)
     {
+      if (ss->expr && ss->expr->shape && !ss->shape)
+	ss->shape = ss->expr->shape;
+
       switch (ss->type)
 	{
 	case GFC_SS_SECTION:
@@ -2271,7 +2283,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
          loop for this dimension.  We try to pick the simplest term.  */
       for (ss = loop->ss; ss != gfc_ss_terminator; ss = ss->loop_chain)
 	{
-	  if (ss->expr && ss->expr->shape)
+	  if (ss->shape)
 	    {
 	      /* The frontend has worked out the size for us.  */
 	      loopspec[n] = ss;
@@ -2280,6 +2292,10 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
 
 	  if (ss->type == GFC_SS_CONSTRUCTOR)
 	    {
+	      /* An unknown size constructor will always be rank one.
+		 Higher rank constructors will wither have known shape,
+		 or still be wrapped in a call to reshape.  */
+	      assert (loop->dimen == 1);
 	      /* Try to figure out the size of the constructor.  */
 	      /* TODO: avoid this by making the frontend set the shape.  */
 	      gfc_get_array_cons_size (&i, ss->expr->value.constructor);
@@ -2295,7 +2311,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
 	    }
 
 	  /* TODO: Pick the best bound if we have a choice between a
-	     functions and something else.  */
+	     function and something else.  */
           if (ss->type == GFC_SS_FUNCTION)
             {
               loopspec[n] = ss;
@@ -2304,8 +2320,6 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
 
 	  if (ss->type != GFC_SS_SECTION)
 	    continue;
-
-	  info = &ss->data.info;
 
 	  if (loopspec[n])
 	    specinfo = &loopspec[n]->data.info;
@@ -2321,6 +2335,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
 	   */
 	  if (!specinfo)
 	    loopspec[n] = ss;
+	  /* TODO: Is != contructor correct?  */
 	  else if (loopspec[n]->type != GFC_SS_CONSTRUCTOR)
 	    {
 	      if (integer_onep (info->stride[n])
@@ -2345,7 +2360,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
       info = &loopspec[n]->data.info;
 
       /* Set the extents of this range.  */
-      cshape = loopspec[n]->expr->shape;
+      cshape = loopspec[n]->shape;
       if (cshape && INTEGER_CST_P (info->start[n])
 	  && INTEGER_CST_P (info->stride[n]))
 	{
@@ -2440,7 +2455,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
   /* Calculate the translation from loop variables to array indices.  */
   for (ss = loop->ss; ss != gfc_ss_terminator; ss = ss->loop_chain)
     {
-      if (ss->type != GFC_SS_SECTION)
+      if (ss->type != GFC_SS_SECTION && ss->type != GFC_SS_COMPONENT)
 	continue;
 
       info = &ss->data.info;
@@ -2449,7 +2464,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
 	{
 	  dim = info->dim[n];
 
-	  /* If we are specifying the range the delta may already be set.  */
+	  /* If we are specifying the range the delta is already set.  */
 	  if (loopspec[n] != ss)
 	    {
 	      /* Calculate the offset relative to the loop variable.
@@ -2705,7 +2720,11 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
       /* A single scalar or derived type value.  Create an array with all
          elements equal to that value.  */
       gfc_init_se (&se, NULL);
-      gfc_conv_expr (&se, expr);
+      
+      if (expr->expr_type == EXPR_CONSTANT)
+	gfc_conv_constant (&se, expr);
+      else
+	gfc_conv_structure (&se, expr, 1);
 
       tmp = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
       assert (tmp && INTEGER_CST_P (tmp));

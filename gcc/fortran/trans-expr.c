@@ -43,6 +43,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Only for gfc_trans_assign and gfc_trans_pointer_assign.  */
 #include "trans-stmt.h"
 
+static tree gfc_trans_structure_assign (tree dest, gfc_expr * expr);
 
 /* Copy the scalarization loop variables.  */
 
@@ -1413,6 +1414,209 @@ gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
     }
 }
   
+static tree
+gfc_trans_subarray_assign (tree dest, gfc_component * cm, gfc_expr * expr)
+{
+  gfc_se rse;
+  gfc_se lse;
+  gfc_ss *rss;
+  gfc_ss *lss;
+  stmtblock_t body;
+  stmtblock_t block;
+  gfc_loopinfo loop;
+  int n;
+  tree tmp;
+
+  gfc_start_block (&block);
+
+  /* Initialize the scalarizer.  */
+  gfc_init_loopinfo (&loop);
+
+  gfc_init_se (&lse, NULL);
+  gfc_init_se (&rse, NULL);
+
+  /* Walk the rhs.  */
+  rss = gfc_walk_expr (expr);
+  if (rss == gfc_ss_terminator)
+    {
+      /* The rhs is scalar.  Add a ss for the expression.  */
+      rss = gfc_get_ss ();
+      rss->next = gfc_ss_terminator;
+      rss->type = GFC_SS_SCALAR;
+      rss->expr = expr;
+    }
+
+  /* Create a SS for the destination.  */
+  lss = gfc_get_ss ();
+  lss->type = GFC_SS_COMPONENT;
+  lss->expr = NULL;
+  lss->shape = gfc_get_shape (cm->as->rank);
+  lss->next = gfc_ss_terminator;
+  lss->data.info.dimen = cm->as->rank;
+  lss->data.info.descriptor = dest;
+  lss->data.info.data = gfc_conv_array_data (dest);
+  lss->data.info.offset = gfc_conv_array_offset (dest);
+  for (n = 0; n < cm->as->rank; n++)
+    {
+      lss->data.info.dim[n] = n;
+      lss->data.info.start[n] = gfc_conv_array_lbound (dest, n);
+      lss->data.info.stride[n] = gfc_index_one_node;
+
+      mpz_init (lss->shape[n]);
+      mpz_sub (lss->shape[n], cm->as->upper[n]->value.integer,
+	       cm->as->lower[n]->value.integer);
+      mpz_add_ui (lss->shape[n], lss->shape[n], 1);
+    }
+  
+  /* Associate the SS with the loop.  */
+  gfc_add_ss_to_loop (&loop, lss);
+  gfc_add_ss_to_loop (&loop, rss);
+
+  /* Calculate the bounds of the scalarization.  */
+  gfc_conv_ss_startstride (&loop);
+
+  /* Setup the scalarizing loops.  */
+  gfc_conv_loop_setup (&loop);
+
+  /* Setup the gfc_se structures.  */
+  gfc_copy_loopinfo_to_se (&lse, &loop);
+  gfc_copy_loopinfo_to_se (&rse, &loop);
+
+  rse.ss = rss;
+  gfc_mark_ss_chain_used (rss, 1);
+  lse.ss = lss;
+  gfc_mark_ss_chain_used (lss, 1);
+
+  /* Start the scalarized loop body.  */
+  gfc_start_scalarized_body (&loop, &body);
+
+  gfc_conv_tmp_array_ref (&lse);
+  gfc_conv_expr (&rse, expr);
+
+  tmp = gfc_trans_scalar_assign (&lse, &rse, cm->ts.type);
+  gfc_add_expr_to_block (&body, tmp);
+
+  if (rse.ss != gfc_ss_terminator)
+    abort ();
+
+  /* Generate the copying loops.  */
+  gfc_trans_scalarizing_loops (&loop, &body);
+
+  /* Wrap the whole thing up.  */
+  gfc_add_block_to_block (&block, &loop.pre);
+  gfc_add_block_to_block (&block, &loop.post);
+
+  gfc_cleanup_loop (&loop);
+
+  for (n = 0; n < cm->as->rank; n++)
+    mpz_clear (lss->shape[n]);
+  gfc_free (lss->shape);
+
+  return gfc_finish_block (&block);
+}
+
+/* Assign a single component of a derived type constructor.  */
+
+static tree
+gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr)
+{
+  gfc_se se;
+  gfc_ss *rss;
+  stmtblock_t block;
+  tree tmp;
+
+  gfc_start_block (&block);
+  if (cm->pointer)
+    {
+      gfc_init_se (&se, NULL);
+      /* Pointer component.  */
+      if (cm->dimension)
+	{
+	  /* Array pointer.  */
+	  if (expr->expr_type == EXPR_NULL)
+	    {
+	      dest = gfc_conv_descriptor_data (dest);
+	      tmp = fold_convert (TREE_TYPE (se.expr),
+				  null_pointer_node);
+	      gfc_add_modify_expr (&block, dest, tmp);
+	    }
+	  else
+	    {
+	      rss = gfc_walk_expr (expr);
+	      se.direct_byref = 1;
+	      se.expr = dest;
+	      gfc_conv_expr_descriptor (&se, expr, rss);
+	      gfc_add_block_to_block (&block, &se.pre);
+	      gfc_add_block_to_block (&block, &se.post);
+	    }
+	}
+      else
+	{
+	  /* Scalar pointers.  */
+	  se.want_pointer = 1;
+	  gfc_conv_expr (&se, expr);
+	  gfc_add_block_to_block (&block, &se.pre);
+	  gfc_add_modify_expr (&block, dest,
+			       fold_convert (TREE_TYPE (dest), se.expr));
+	  gfc_add_block_to_block (&block, &se.post);
+	}
+    }
+  else if (cm->dimension)
+    {
+      tmp = gfc_trans_subarray_assign (dest, cm, expr);
+      gfc_add_expr_to_block (&block, tmp);
+    }
+  else if (expr->ts.type == BT_DERIVED)
+    {
+      /* Nested dervived type.  */
+      tmp = gfc_trans_structure_assign (dest, expr);
+      gfc_add_expr_to_block (&block, tmp);
+    }
+  else
+    {
+      /* Scalar component.  */
+      gfc_se lse;
+
+      gfc_init_se (&se, NULL);
+      gfc_init_se (&lse, NULL);
+
+      gfc_conv_expr (&se, expr);
+      if (cm->ts.type == BT_CHARACTER)
+	lse.string_length = cm->ts.cl->backend_decl;
+      lse.expr = dest;
+      tmp = gfc_trans_scalar_assign (&lse, &se, cm->ts.type);
+      gfc_add_expr_to_block (&block, tmp);
+    }
+  return gfc_finish_block (&block);
+}
+
+/* Assign a derived type contructor to a variable.  */
+
+static tree
+gfc_trans_structure_assign (tree dest, gfc_expr * expr)
+{
+  gfc_constructor *c;
+  gfc_component *cm;
+  stmtblock_t block;
+  tree field;
+  tree tmp;
+
+  gfc_start_block (&block);
+  cm = expr->ts.derived->components;
+  for (c = expr->value.constructor; c; c = c->next, cm = cm->next)
+    {
+      /* Skip absent members in default initializers.  */
+      if (!c->expr)
+        continue;
+
+      field = cm->backend_decl;
+      tmp = build (COMPONENT_REF, TREE_TYPE (field), dest, field, NULL_TREE);
+      tmp = gfc_trans_subcomponent_assign (tmp, cm, c->expr);
+      gfc_add_expr_to_block (&block, tmp);
+    }
+  return gfc_finish_block (&block);
+}
+
 /* Build an expression for a constructor. If init is nonzero then
    this is part of a static variable initializer.  */
 
@@ -1424,11 +1628,22 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
   tree head;
   tree tail;
   tree val;
-  gfc_se cse;
   tree type;
+  tree tmp;
 
-  assert (expr->expr_type == EXPR_STRUCTURE || expr->expr_type == EXPR_NULL);
+  assert (se->ss == NULL);
+  assert (expr->expr_type == EXPR_STRUCTURE);
   type = gfc_typenode_for_spec (&expr->ts);
+
+  if (!init)
+    {
+      /* Create a temporary variable and fill it in.  */
+      se->expr = gfc_create_var (type, expr->ts.derived->name);
+      tmp = gfc_trans_structure_assign (se->expr, expr);
+      gfc_add_expr_to_block (&se->pre, tmp);
+      return;
+    }
+
   head = build1 (CONSTRUCTOR, type, NULL_TREE);
   tail = NULL_TREE;
 
@@ -1439,22 +1654,11 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
       if (!c->expr)
         continue;
 
-      gfc_init_se (&cse, se);
-      /* Evaluate the expression for this component.  */
-      if (init)
-	{
-	  cse.expr = gfc_conv_initializer (c->expr, &cm->ts,
-	      TREE_TYPE (cm->backend_decl), cm->dimension, cm->pointer);
-	}
-      else
-	{
-	  gfc_conv_expr (&cse, c->expr);
-	  gfc_add_block_to_block (&se->pre, &cse.pre);
-	  gfc_add_block_to_block (&se->post, &cse.post);
-	}
+      val = gfc_conv_initializer (c->expr, &cm->ts,
+	  TREE_TYPE (cm->backend_decl), cm->dimension, cm->pointer);
 
       /* Build a TREE_CHAIN to hold it.  */
-      val = tree_cons (cm->backend_decl, cse.expr, NULL_TREE);
+      val = tree_cons (cm->backend_decl, val, NULL_TREE);
 
       /* Add it to the list.  */
       if (tail == NULL_TREE)
@@ -1497,7 +1701,7 @@ gfc_conv_expr (gfc_se * se, gfc_expr * expr)
   if (se->ss && se->ss->expr == expr
       && (se->ss->type == GFC_SS_SCALAR || se->ss->type == GFC_SS_REFERENCE))
     {
-      /* Substiture a scalar expression evaluated outside the scalarization
+      /* Substitute a scalar expression evaluated outside the scalarization
          loop.  */
       se->expr = se->ss->data.scalar.expr;
       se->string_length = se->ss->data.scalar.string_length;
