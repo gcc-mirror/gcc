@@ -1,3 +1,8 @@
+2004-12-08  Uros Bizjak  <uros@kss-loka.si>
+
+	* config/i386/i386.c (output_387_binary_op,
+	ix86_prepare_fp_compare_args): Fix is_sse condition.
+
 2004-12-07  Uros Bizjak  <uros@kss-loka.si>
 
 	* config/i386/i386-protos.h (ix86_split_fp_branch): New rtx
