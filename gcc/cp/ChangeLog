@@ -1,3 +1,8 @@
+2000-06-28  Alex Samuel  <samuel@codesourcery.com>
+
+	* mangle.c (find_substitution): Use same_type_p.
+	(write_encoding): Don't check for substitutions.
+
 2000-06-30  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* parse.y (expr_no_comma_rangle): New non-terminal.
@@ -78,6 +83,7 @@
 	(overloaded_template_name): Adjust.
 	* semantics.c (finish_template_template_parm): Adjust.
 
+>>>>>>> 1.1867
 2000-06-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (CLEAR_BINFO_NEW_VTABLE_MARKED): Remove.

@@ -1,4 +1,4 @@
-/* Copyright (C) 1993, 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1993, 1997, 2000 Free Software Foundation, Inc.
    This file is part of the GNU IO Library.
 
    This library is free software; you can redistribute it and/or
@@ -603,7 +603,7 @@ extern int _IO_vscanf __P ((const char *, _IO_va_list));
 #  endif
 # else
 #  define VTABLE_LABEL(NAME, CLASS, CNLENGTH) \
-  extern char NAME[] asm ("_ZN" #CNLENGTH #CLASS "TVE");
+  extern char NAME[] asm ("_ZTV" #CNLENGTH #CLASS);
 # endif /* (!defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100) */
 #endif /* __GNUC__ */
 

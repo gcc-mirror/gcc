@@ -1,3 +1,13 @@
+2000-06-28  Alex Samuel  <samuel@codesourcery.com>
+
+	* cp-demangle.c (demangle_encoding): Accept no substitutions.
+	(demangle_name): Handle <substitution> followed by
+	<unqualified-template-name>.
+	(demangle_type): Follow special substitutions with
+	<class-enum-type>
+	(demangle_subtitution): Set template_p for special substitutions.
+	(main): Fix typos.
+	
 2000-06-27  Alex Samuel  <samuel@codesourcery.com>
 
 	* cp-demangle.c (demangle_special_name): Swap base and derived

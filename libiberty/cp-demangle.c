@@ -902,16 +902,14 @@ demangle_mangled_name (dm)
 
     <encoding>		::= <function name> <bare-function-type>
 			::= <data name>
-			::= <substitution>  */
+			::= <special-name>  */
 
 static status_t
 demangle_encoding (dm)
      demangling_t dm;
 {
   int template_p;
-  int special_std_substitution;
   int start_position;
-  int start = substitution_start (dm);
   template_arg_list_t old_arg_list = current_template_arg_list (dm);
   char peek = peek_char (dm);
 
@@ -921,18 +919,7 @@ demangle_encoding (dm)
      function, we'll have to insert the return type here.  */
   start_position = result_length (dm);
 
-  if (peek == 'S')
-    {
-      RETURN_IF_ERROR (demangle_substitution (dm, &template_p,
-					      &special_std_substitution));
-      if (special_std_substitution)
-	{
-	  /* This was the magic `std::' substitution.  */
-	  RETURN_IF_ERROR (result_append (dm, "::"));
-	  RETURN_IF_ERROR (demangle_encoding (dm));
-	}
-    }
-  else if (peek == 'G' || peek == 'T')
+  if (peek == 'G' || peek == 'T')
     RETURN_IF_ERROR (demangle_special_name (dm));
   else
     {
@@ -955,9 +942,6 @@ demangle_encoding (dm)
 	    RETURN_IF_ERROR 
 	      (demangle_bare_function_type (dm, BFT_NO_RETURN_TYPE)); 
 	}
-
-      RETURN_IF_ERROR (substitution_add (dm, start, template_p, 
-					 NOT_TEMPLATE_PARM));
     }
 
   /* Pop off template argument lists that were built during the
@@ -1004,8 +988,7 @@ demangle_name (dm, template_p)
 
     case 'S':
       /* The `St' substitution allows a name nested in std:: to appear
-	 without being enclosed in a nested name.
-	   <name> ::= St <unqualified-name>     # ::std::  */
+	 without being enclosed in a nested name.  */
       if (peek_char_next (dm) == 't') 
 	{
 	  (void) next_char (dm);
@@ -1025,6 +1008,14 @@ demangle_name (dm, template_p)
 	      RETURN_IF_ERROR (result_append (dm, "::"));
 	      RETURN_IF_ERROR (demangle_name (dm, template_p));
 	    }
+	}
+      /* Check if a template argument list immediately follows.
+	 If so, then we just demangled an <unqualified-template-name>.  */
+      if (peek_char (dm) == 'I') 
+	{
+	  RETURN_IF_ERROR (substitution_add (dm, start, 0, 
+					     NOT_TEMPLATE_PARM));
+	  RETURN_IF_ERROR (demangle_template_args (dm));
 	}
       break;
 
@@ -1947,6 +1938,7 @@ demangle_type (dm)
 {
   int start = substitution_start (dm);
   char peek = peek_char (dm);
+  char peek_next;
   int template_p = 0;
   int special_std_substitution;
   int is_builtin_type = 0;
@@ -2016,15 +2008,16 @@ demangle_type (dm)
 	break;
 
       case 'S':
-	RETURN_IF_ERROR (demangle_substitution (dm, &template_p,
-						&special_std_substitution));
-	if (special_std_substitution)
-	  {
-	    /* This was the magic `std::' substitution.  What follows
-	       must be a class name in that namespace.  */
-	    RETURN_IF_ERROR (result_append (dm, "::"));
-	    RETURN_IF_ERROR (demangle_class_enum_type (dm, &template_p));
-	  }
+	/* First check if this is a special substitution.  If it is,
+	   this is a <class-enum-type>.  Special substitutions have a
+	   letter following the `S'; other substitutions have a digit
+	   or underscore.  */
+	peek_next = peek_char_next (dm);
+	if (IS_DIGIT (peek_next) || peek_next == '_')
+	  RETURN_IF_ERROR (demangle_substitution (dm, &template_p,
+						  &special_std_substitution));
+	else
+	  demangle_class_enum_type (dm, &template_p);
 	break;
 
       case 'P':
@@ -2792,11 +2785,13 @@ demangle_substitution (dm, template_p, special_std_substitution)
 	case 'a':
 	  RETURN_IF_ERROR (result_append (dm, "std::allocator"));
 	  new_last_source_name = "allocator";
+	  *template_p = 1;
 	  break;
 
 	case 'b':
 	  RETURN_IF_ERROR (result_append (dm, "std::basic_string"));
 	  new_last_source_name = "basic_string";
+	  *template_p = 1;
 	  break;
 	  
 	case 's':
@@ -2810,6 +2805,7 @@ demangle_substitution (dm, template_p, special_std_substitution)
 	      RETURN_IF_ERROR (result_append (dm, "std::basic_string<char, std::char_traits<char>, std::allocator<char> >"));
 	      new_last_source_name = "basic_string";
 	    }
+	  *template_p = 0;
 	  break;
 
 	case 'i':
@@ -2823,6 +2819,7 @@ demangle_substitution (dm, template_p, special_std_substitution)
 	      RETURN_IF_ERROR (result_append (dm, "std::basic_istream<char, std::char_traints<char> >"));
 	      new_last_source_name = "basic_istream";
 	    }
+	  *template_p = 0;
 	  break;
 
 	case 'o':
@@ -2836,6 +2833,7 @@ demangle_substitution (dm, template_p, special_std_substitution)
 	      RETURN_IF_ERROR (result_append (dm, "std::basic_ostream<char, std::char_traits<char> >"));
 	      new_last_source_name = "basic_ostream";
 	    }
+	  *template_p = 0;
 	  break;
 
 	case 'd':
@@ -2849,6 +2847,7 @@ demangle_substitution (dm, template_p, special_std_substitution)
 	      RETURN_IF_ERROR (result_append (dm, "std::basic_iostream<char, std::char_traits<char> >"));
 	      new_last_source_name = "basic_iostream";
 	    }
+	  *template_p = 0;
 	  break;
 
 	default:
@@ -2872,7 +2871,7 @@ demangle_substitution (dm, template_p, special_std_substitution)
      substitution, `S0_' is the second-most-recent, etc., shift the
      numbering by one.  */
   text = substitution_get (dm, seq_id + 1, template_p);
-  if (text == NULL)
+  if (text == NULL) 
     return "Substitution number out of range.";
 
   /* Emit the substitution text.  */
@@ -3390,10 +3389,10 @@ main (argc, argv)
 	  if (STATUS_NO_ERROR (status))
 	    printf ("%s\n", dyn_string_buf (result));
 	  /* Abort on allocaiton failures.  */
-	  if (status == STATUS_ALLOCATION_FAILED)
+	  else if (status == STATUS_ALLOCATION_FAILED)
 	    {
 	      fprintf (stderr, "Memory allocaiton failed.\n");
-	      abort ():
+	      abort ();
 	    }
 	  /* If not, print the error message to stderr instead.  */
 	  else 
