@@ -224,11 +224,14 @@ toc_section ()						\
 #define RESTORE_FP_SUFFIX ""
 
 /* Function name to call to do profiling.  */
+#undef RS6000_MCOUNT
 #define RS6000_MCOUNT ".__mcount"
 
 /* Function names to call to do floating point truncation.  */
 
+#undef RS6000_ITRUNC
 #define RS6000_ITRUNC "__itrunc"
+#undef RS6000_UITRUNC
 #define RS6000_UITRUNC "__uitrunc"
 
 /* This outputs NAME to FILE up to the first null or '['.  */
@@ -376,6 +379,7 @@ toc_section ()						\
 
 /* This says how to output an external.  */
 
+#undef ASM_OUTPUT_EXTERNAL
 #define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)	\
 { rtx _symref = XEXP (DECL_RTL (DECL), 0);	\
   if ((TREE_CODE (DECL) == VAR_DECL		\

@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* AIX increases natural record alignment to doubleword if the first
    field is an FP double while the FP fields remain word aligned.  */
+#undef ROUND_TYPE_ALIGN
 #define ROUND_TYPE_ALIGN(STRUCT, COMPUTED, SPECIFIED)	\
   ((TREE_CODE (STRUCT) == RECORD_TYPE			\
     || TREE_CODE (STRUCT) == UNION_TYPE			\

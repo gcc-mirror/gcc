@@ -1,5 +1,18 @@
 2001-12-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* i386/uwin.h (MD_STARTFILE_PREFIX): Avoid redefinition warnings.
+	* interix.h (TARGET_MEM_FUNCTIONS): Likewise.
+	* psos.h (CPP_PREDEFINES): Likewise.
+	* rs6000/linux64.h (ROUND_TYPE_ALIGN): Likewise.
+	* rs6000/xcoff.h (RS6000_MCOUNT, RS6000_ITRUNC, RS6000_UITRUNC,
+	ASM_OUTPUT_EXTERNAL): Likewise.
+	* sparc/liteelf.h (DWARF_DEBUGGING_INFO, DWARF2_DEBUGGING_INFO):
+	Likewise.
+	* sparc/sp64-elf.h (UNALIGNED_DOUBLE_INT_ASM_OP): Likewise.
+	* sparc/sp86x-elf.h (DWARF_DEBUGGING_INFO, DWARF2_DEBUGGING_INFO):
+	Likewise.
+	* sparc/sunos4.h (SUNOS4_SHARED_LIBRARIES): Likewise.
+
 	* c-lex.c (lex_number): Use ISXDIGIT/hex_value.
 	* vax/xm-vms.h (FILE_NAME_NONDIRECTORY): Use ISUPPER/TOLOWER.
 	* fold-const.c (real_hex_to_f): Use hex_value.
