@@ -7713,8 +7713,9 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 		  if (v->giv_type == DEST_REG
 		      && reg_mentioned_p (v->dest_reg,
 					  XEXP (loop_store_mems, 0))
-		      && (INSN_LUID (v->insn)
-			  > INSN_LUID (first_loop_store_insn)))
+		      && (INSN_UID (v->insn) >= max_uid_for_loop
+			  || (INSN_LUID (v->insn)
+			      > INSN_LUID (first_loop_store_insn))))
 		    reversible_mem_store = 0;
 		}
 	    }

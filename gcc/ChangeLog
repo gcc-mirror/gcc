@@ -1,3 +1,8 @@
+1999-02-05  Michael Meissner  <meissner@cygnus.com>
+
+	* loop.c (check_dbra_loop): A store using an address giv for which
+	we have no life information is not reversible.
+
 Fri Feb  5 17:08:01 1999  Dave Brolley  <brolley@cygnus.com>
 
         * function.c (fixup_var_refs): Scan catch_clauses too.
