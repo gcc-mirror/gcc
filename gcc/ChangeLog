@@ -1,5 +1,12 @@
 Sat Jun 20 00:36:16 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* calls.c (expand_call): Initialize "src" and "dest".
+	* stmt.c (expand_return): Likewise.
+	* expmed.c (extract_split_bit_field): Similarly for "result"
+	* gcse.c (compute_hash_table): Mark first arg as unused.
+	* jump.c (jump_optimize): Initialize reversep.
+	* tree.c (make_node): Initialize length.
+
 	* c-common.c (check_format_info): Initialize length_char and
 	fci to keep -Wall quiet.
 

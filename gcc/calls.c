@@ -2116,7 +2116,7 @@ expand_call (exp, target, ignore)
 	 Deal with them explicitly by copying from the return registers
 	 into the target MEM locations.  */
       int bytes = int_size_in_bytes (TREE_TYPE (exp));
-      rtx src, dst;
+      rtx src = NULL, dst = NULL;
       int bitsize = MIN (TYPE_ALIGN (TREE_TYPE (exp)), BITS_PER_WORD);
       int bitpos, xbitpos, big_endian_correction = 0;
       

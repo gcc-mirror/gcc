@@ -936,7 +936,7 @@ make_node (code)
 {
   register tree t;
   register int type = TREE_CODE_CLASS (code);
-  register int length;
+  register int length = 0;
   register struct obstack *obstack = current_obstack;
   register int i;
 #ifdef GATHER_STATISTICS
