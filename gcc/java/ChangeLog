@@ -1,3 +1,7 @@
+Mon Dec 10 06:09:57 2001  Douglas B. Rupp  <rupp@gnat.com>
+
+	* Make-lang.in (jvspec.o): Add $(OUTPUT_OPTION).
+
 2001-12-09  Per Bothner  <per@bothner.com>
 
 	* check-init.c (current_switch_has_default):  New static field.

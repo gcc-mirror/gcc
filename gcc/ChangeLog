@@ -10,6 +10,8 @@ Mon Dec 10 06:15:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 Mon Dec 10 06:09:57 2001  Douglas B. Rupp  <rupp@gnat.com>
 
+	* Makefile.in: Add $(OUTPUT_OPTION) to compilation rules.
+
 	* config.gcc (alpha*-dec-vms*): Change to alpha*-dec-*vms*
 	(exeext, target_alias, prefix, local_prefix): Define.
 	* config/alpha/x-vms (USE_COLLECT2): Make empty.
