@@ -2695,7 +2695,12 @@ expand_byte_code (JCF *jcf, tree method)
 	      linenumber_pointer += 4;
 	      if (pc == PC)
 		{
-		  input_location.line = GET_u2 (linenumber_pointer - 2);
+		  int line = GET_u2 (linenumber_pointer - 2);
+#ifdef USE_MAPPED_LOCATION
+		  input_location = linemap_line_start (&line_table, line, 1);
+#else
+		  input_location.line = line;
+#endif
 		  if (!(instruction_bits[PC] & BCODE_HAS_MULTI_LINENUMBERS))
 		    break;
 		}
@@ -3225,21 +3230,33 @@ force_evaluation_order (tree node)
    recursively more than one file (Java is one of them).  */
 
 tree
-build_expr_wfl (tree node, const char *file, int line, int col)
+build_expr_wfl (tree node,
+#ifdef USE_MAPPED_LOCATION
+		source_location location
+#else
+		const char *file, int line, int col
+#endif
+)
 {
+  tree wfl;
+#ifdef USE_MAPPED_LOCATION
+  wfl = make_node (EXPR_WITH_FILE_LOCATION);
+  SET_EXPR_LOCATION (wfl, location);
+#else
+  wfl = make_node (EXPR_WITH_FILE_LOCATION);
+
   static const char *last_file = 0;
   static tree last_filenode = NULL_TREE;
-  tree wfl = make_node (EXPR_WITH_FILE_LOCATION);
 
-  EXPR_WFL_NODE (wfl) = node;
   EXPR_WFL_SET_LINECOL (wfl, line, col);
   if (file != last_file)
     {
       last_file = file;
       last_filenode = file ? get_identifier (file) : NULL_TREE;
     }
-
   EXPR_WFL_FILENAME_NODE (wfl) = last_filenode;
+#endif
+  EXPR_WFL_NODE (wfl) = node;
   if (node)
     {
       if (IS_NON_TYPE_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (node))))
@@ -3250,6 +3267,42 @@ build_expr_wfl (tree node, const char *file, int line, int col)
   return wfl;
 }
 
+#ifdef USE_MAPPED_LOCATION
+tree
+expr_add_location (tree node, source_location location, bool statement)
+{
+  tree wfl;
+#if 0
+  /* FIXME. This optimization causes failures in code that expects an
+     EXPR_WITH_FILE_LOCATION.  E.g. in resolve_qualified_expression_name. */
+  if (node && ! (statement && flag_emit_class_files))
+    {
+      source_location node_loc = EXPR_LOCATION (node);
+      if (node_loc == location || location == UNKNOWN_LOCATION)
+	return node;
+      if (node_loc == UNKNOWN_LOCATION
+	  && IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (node))))
+	{
+	  SET_EXPR_LOCATION (node, location);
+	  return node;
+	}
+    }
+#endif
+  wfl = make_node (EXPR_WITH_FILE_LOCATION);
+  SET_EXPR_LOCATION (wfl, location);
+  EXPR_WFL_NODE (wfl) = node;
+  if (statement && debug_info_level != DINFO_LEVEL_NONE)
+    EXPR_WFL_EMIT_LINE_NOTE (wfl) = 1;
+  if (node)
+    {
+      if (IS_NON_TYPE_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (node))))
+	TREE_SIDE_EFFECTS (wfl) = TREE_SIDE_EFFECTS (node);
+      TREE_TYPE (wfl) = TREE_TYPE (node);
+    }
+
+  return wfl;
+}
+#endif
 
 /* Build a node to represent empty statements and blocks. */
 
