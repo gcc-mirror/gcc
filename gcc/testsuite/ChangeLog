@@ -2,6 +2,8 @@
 
 	* objc/execute/protocol.m (main): Added. Patch from Nicola Pero.
 
+	* objc/execute/nested-1.m: Added. New test from Nicola Pero.
+
 2001-03-06  Zack Weinberg  <zackw@stanford.edu>
 
         * objc/execute/string1.m, objc/execute/string2.m: Compare the
