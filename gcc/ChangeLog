@@ -1,3 +1,8 @@
+Mon Aug 17 09:15:47 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* toplev.c (main): Enable -fstrict-aliasing for -O2 and above.
+	* invoke.texi: Corresponding changes.
+
 Mon Aug 17 02:03:55 1998  Richard Henderson  <rth@cygnus.com>
 
 	* regclass.c (allocate_reg_info): Respect MIN when clearing data.

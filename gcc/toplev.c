@@ -4290,9 +4290,7 @@ main (argc, argv, envp)
       flag_schedule_insns_after_reload = 1;
 #endif
       flag_regmove = 1;
-      /* We don't set flag_strict_aliasing here because we're still
-	 testing the functionality.  After it has been tested, it
-	 should be turned on here.  */
+      flag_strict_aliasing = 1;
     }
 
   if (optimize >= 3)
