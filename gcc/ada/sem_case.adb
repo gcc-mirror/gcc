@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.13 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1996-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -264,10 +264,7 @@ package body Sem_Case is
          C := UI_To_Int (Value);
 
          if C in 16#20# .. 16#7E# then
-            Name_Buffer (1) := ''';
-            Name_Buffer (2) := Character'Val (C);
-            Name_Buffer (3) := ''';
-            Name_Len := 3;
+            Set_Character_Literal_Name (Char_Code (UI_To_Int (Value)));
             return Name_Find;
          end if;
 

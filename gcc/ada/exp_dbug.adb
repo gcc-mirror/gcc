@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.56 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1996-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -705,9 +705,13 @@ package body Exp_Dbug is
 
       --  Or if this is a dummy type for a renaming
 
-        or else Name_Buffer (Name_Len - 2 .. Name_Len) = "_XR"
-        or else Name_Buffer (Name_Len - 3 .. Name_Len) = "_XRE"
-        or else Name_Buffer (Name_Len - 3 .. Name_Len) = "_XRP"
+        or else (Name_Len >= 3 and then
+                   Name_Buffer (Name_Len - 2 .. Name_Len) = "_XR")
+
+        or else (Name_Len >= 4 and then
+                   (Name_Buffer (Name_Len - 3 .. Name_Len) = "_XRE"
+                      or else
+                    Name_Buffer (Name_Len - 3 .. Name_Len) = "_XRP"))
 
       --  For all these cases, just return the name unchanged
 

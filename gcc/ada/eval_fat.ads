@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.4 $                              --
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,7 +49,9 @@ package Eval_Fat is
    --  The compile time representation of the floating-point root type
 
    type Rounding_Mode is (Floor, Ceiling, Round, Round_Even);
+   for Rounding_Mode use (0, 1, 2, 3);
    --  Used to indicate rounding mode for Machine attribute
+   --  Note that C code in gigi knows that Round_Even is 3
 
    Rounding_Was_Biased : Boolean;
    --  Set if last use of Machine rounded a halfway case away from zero

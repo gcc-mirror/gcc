@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.13 $
+--                             $Revision$
 --                                                                          --
 --              Copyright (C) 1999-2001 Ada Core Technologies               --
 --                                                                          --
@@ -253,9 +253,9 @@ package body System.Tasking.Restricted.Stages is
          Self_ID.Common.Task_Entry_Point (Self_ID.Common.Task_Arg);
          Terminate_Task (Self_ID);
 
-      exception                         --  not needed in no exc mode
-         when others =>                 --  not needed in no exc mode
-            Terminate_Task (Self_ID);   --  not needed in no exc mode
+      exception
+         when others =>
+            Terminate_Task (Self_ID);
       end;
    end Task_Wrapper;
 
@@ -285,10 +285,10 @@ package body System.Tasking.Restricted.Stages is
    procedure Activate_Restricted_Tasks
      (Chain_Access : Activation_Chain_Access)
    is
-      Self_ID        : constant Task_ID := STPO.Self;
-      C              : Task_ID;
-      Activate_Prio  : System.Any_Priority;
-      Success        : Boolean;
+      Self_ID       : constant Task_ID := STPO.Self;
+      C             : Task_ID;
+      Activate_Prio : System.Any_Priority;
+      Success       : Boolean;
 
    begin
       pragma Assert (Self_ID = Environment_Task);
@@ -525,22 +525,25 @@ package body System.Tasking.Restricted.Stages is
 
       SSL.Lock_Task              := Task_Lock'Access;
       SSL.Unlock_Task            := Task_Unlock'Access;
+
       SSL.Get_Jmpbuf_Address     := Get_Jmpbuf_Address'Access;
       SSL.Set_Jmpbuf_Address     := Set_Jmpbuf_Address'Access;
-      SSL.Get_Sec_Stack_Addr     := Get_Sec_Stack_Addr'Access;
-      SSL.Set_Sec_Stack_Addr     := Set_Sec_Stack_Addr'Access;
       SSL.Get_Machine_State_Addr := Get_Machine_State_Addr'Access;
       SSL.Set_Machine_State_Addr := Set_Machine_State_Addr'Access;
       SSL.Get_Current_Excep      := Get_Current_Excep'Access;
-      SSL.Timed_Delay            := Timed_Delay_T'Access;
-      SSL.Adafinal               := Finalize_Global_Tasks'Access;
+      SSL.Set_Jmpbuf_Address     (SSL.Get_Jmpbuf_Address_NT);
+      SSL.Set_Machine_State_Addr (SSL.Get_Machine_State_Addr_NT);
+
+      SSL.Get_Sec_Stack_Addr     := Get_Sec_Stack_Addr'Access;
+      SSL.Set_Sec_Stack_Addr     := Set_Sec_Stack_Addr'Access;
 
       --  No need to create a new Secondary Stack, since we will use the
       --  default one created in s-secsta.adb
 
-      SSL.Set_Sec_Stack_Addr     (SSL.Get_Sec_Stack_Addr_NT);
-      SSL.Set_Jmpbuf_Address     (SSL.Get_Jmpbuf_Address_NT);
-      SSL.Set_Machine_State_Addr (SSL.Get_Machine_State_Addr_NT);
+      Set_Sec_Stack_Addr (SSL.Get_Sec_Stack_Addr_NT);
+
+      SSL.Timed_Delay            := Timed_Delay_T'Access;
+      SSL.Adafinal               := Finalize_Global_Tasks'Access;
    end Init_RTS;
 
 begin

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.14 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -7212,7 +7212,13 @@ package body Sem_Ch12 is
             Ancestor :=
               Get_Instance_Of (Base_Type (Etype (A_Gen_T)));
 
-         elsif Is_Derived_Type (Get_Instance_Of (A_Gen_T)) then
+         --  The type may be a local derivation, or a type extension of
+         --  a previous formal, or of a formal of a parent package.
+
+         elsif Is_Derived_Type (Get_Instance_Of (A_Gen_T))
+          or else
+            Ekind (Get_Instance_Of (A_Gen_T)) = E_Record_Type_With_Private
+         then
             Ancestor :=
               Get_Instance_Of (Base_Type (Get_Instance_Of (A_Gen_T)));
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.304 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -3083,9 +3083,16 @@ package body Exp_Attr is
          Ttyp := Underlying_Type (Ttyp);
 
          if Prefix_Is_Type then
-            Rewrite (N,
-              Unchecked_Convert_To (RTE (RE_Tag),
-                New_Reference_To (Access_Disp_Table (Ttyp), Loc)));
+
+            --  For JGNAT we leave the type attribute unexpanded because
+            --  there's not a dispatching table to reference.
+
+            if not Java_VM then
+               Rewrite (N,
+                 Unchecked_Convert_To (RTE (RE_Tag),
+                   New_Reference_To (Access_Disp_Table (Ttyp), Loc)));
+               Analyze_And_Resolve (N, RTE (RE_Tag));
+            end if;
 
          else
             Rewrite (N,
@@ -3093,9 +3100,8 @@ package body Exp_Attr is
                 Prefix => Relocate_Node (Pref),
                 Selector_Name =>
                   New_Reference_To (Tag_Component (Ttyp), Loc)));
+            Analyze_And_Resolve (N, RTE (RE_Tag));
          end if;
-
-         Analyze_And_Resolve (N, RTE (RE_Tag));
       end Tag;
 
       ----------------

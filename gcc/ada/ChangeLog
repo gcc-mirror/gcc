@@ -1,3 +1,65 @@
+2001-12-17  Joel Brobecker <brobecke@gnat.com>
+
+	* gnat_rm.texi: Fix minor typos. Found while reading the section 
+	regarding "Bit_Order Clauses" that was sent to a customer.
+	Very interesting documentation!
+	
+2001-12-17  Robert Dewar <dewar@gnat.com>
+
+	* sem_case.adb (Choice_Image): Avoid creating improper character 
+	literal names by using the routine Set_Character_Literal_Name. This 
+	fixes bombs in certain error message cases.
+	
+2001-12-17  Arnaud Charlet <charlet@gnat.com>
+
+	* a-reatim.adb: Minor reformatting.
+	
+2001-12-17  Ed Schonberg <schonber@gnat.com>
+
+	* sem_ch12.adb (Validate_Derived_Type_Instance): Handle properly the 
+	case where the formal is an extension of another formal in the current 
+	unit or in a parent generic unit.
+	
+2001-12-17  Arnaud Charlet <charlet@gnat.com>
+
+	* s-tposen.adb: Update comments.  Minor reformatting. 
+	Minor code clean up.
+	
+	* s-tarest.adb: Update comments.  Minor code reorganization.
+	
+2001-12-17  Gary Dismukes <dismukes@gnat.com>
+
+	* exp_attr.adb (Attribute_Tag): Suppress expansion of <type_name>'Tag 
+	when Java_VM.
+	
+2001-12-17  Robert Dewar <dewar@gnat.com>
+
+	* exp_attr.adb: Minor reformatting
+	
+2001-12-17  Ed Schonberg <schonber@gnat.com>
+
+	* sem_ch3.adb (Build_Derived_Private_Type): Refine check to handle 
+	derivations nested within a child unit: verify that the parent
+	type is declared in an outer scope.
+	
+2001-12-17  Robert Dewar <dewar@gnat.com>
+
+	* sem_ch12.adb: Minor reformatting
+	
+2001-12-17  Ed Schonberg <schonber@gnat.com>
+
+	* sem_warn.adb (Check_One_Unit): In No_Run_Time mode, do not post 
+	warning if current unit is a predefined one, from which bodies may 
+	have been deleted.
+	
+2001-12-17  Robert Dewar <dewar@gnat.com>
+
+	* eval_fat.ads: Add comment that Round_Even is referenced in Ada code
+	Fix header format. Add 2001 to copyright date.
+	
+	* exp_dbug.adb (Get_Encoded_Name): Fix out of bounds reference, 
+	which caused CE during compilation if checks were enabled.
+
 2001-12-17  Vincent Celier <celier@gnat.com>
 
 	* make.adb:
