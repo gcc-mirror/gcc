@@ -75,10 +75,10 @@ template <typename _Tp, typename _Sequence = deque<_Tp> >
 class queue;
 
 template <typename _Tp, typename _Seq>
-inline bool operator==(const queue<_Tp, _Seq>&, const queue<_Tp, _Seq>&);
+inline bool operator==(const queue<_Tp,_Seq>&, const queue<_Tp,_Seq>&);
 
 template <typename _Tp, typename _Seq>
-inline bool operator<(const queue<_Tp, _Seq>&, const queue<_Tp, _Seq>&);
+inline bool operator<(const queue<_Tp,_Seq>&, const queue<_Tp,_Seq>&);
 
 
 /**
@@ -291,8 +291,8 @@ template <typename _Tp, typename _Sequence>
  *  defining a strict weak ordering.
  *
  *  Members not found in "normal" containers are @c container_type,
- *  which is a typedef for the second Sequence parameter, and @c push and
- *  @c pop, which are standard %queue/FIFO operations.
+ *  which is a typedef for the second Sequence parameter, and @c push,
+ *  @c pop, and @c top, which are standard %queue/FIFO operations.
  *
  *  @note  No equality/comparison operators are provided for %priority_queue.
  *

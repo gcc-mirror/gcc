@@ -149,6 +149,8 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
       __a = __b;                   // const required for argument to assignment
     }
     _Tp __a;
+    // possibly should be "Tp* a;" and then dereference "a" in constraint
+    // functions?  present way would require a default ctor, i think...
   };
 
   template <class _Tp>
