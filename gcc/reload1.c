@@ -4109,15 +4109,18 @@ order_regs_for_reload (chain)
 
   COPY_HARD_REG_SET (bad_spill_regs, bad_spill_regs_global);
 
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    {
+      hard_reg_n_uses[i].regno = i;
+      hard_reg_n_uses[i].uses = 0;
+    }
+
   /* Count number of uses of each hard reg by pseudo regs allocated to it
      and then order them by decreasing use.  */
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
       int j;
-
-      hard_reg_n_uses[i].regno = i;
-      hard_reg_n_uses[i].uses = 0;
 
       /* Test the various reasons why we can't use a register for
 	 spilling in this insn.  */
