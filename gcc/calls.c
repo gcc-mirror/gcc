@@ -1663,12 +1663,12 @@ compute_argument_addresses (args, argblock, num_actuals)
    FNDECL is the tree node for the target function.  For an indirect call
    FNDECL will be NULL_TREE.
 
-   EXP is the CALL_EXPR for this call.  */
+   ADDR is the operand 0 of CALL_EXPR for this call.  */
 
 static rtx
-rtx_for_function_call (fndecl, exp)
+rtx_for_function_call (fndecl, addr)
      tree fndecl;
-     tree exp;
+     tree addr;
 {
   rtx funexp;
 
@@ -1690,7 +1690,7 @@ rtx_for_function_call (fndecl, exp)
     /* Generate an rtx (probably a pseudo-register) for the address.  */
     {
       push_temp_slots ();
-      funexp = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, VOIDmode, 0);
+      funexp = expand_expr (addr, NULL_RTX, VOIDmode, 0);
       pop_temp_slots ();	/* FUNEXP can't be BLKmode.  */
       emit_queue ();
     }
@@ -2212,6 +2212,7 @@ expand_call (exp, target, ignore)
   int old_stack_allocated;
   rtx call_fusage;
   tree p = TREE_OPERAND (exp, 0);
+  tree addr = TREE_OPERAND (exp, 0);
   int i;
   /* The alignment of the stack, in bits.  */
   HOST_WIDE_INT preferred_stack_boundary;
@@ -2343,7 +2344,7 @@ expand_call (exp, target, ignore)
   preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
 
   /* Operand 0 is a pointer-to-function; get the type of the function.  */
-  funtype = TREE_TYPE (TREE_OPERAND (exp, 0));
+  funtype = TREE_TYPE (addr);
   if (! POINTER_TYPE_P (funtype))
     abort ();
   funtype = TREE_TYPE (funtype);
@@ -2480,8 +2481,8 @@ expand_call (exp, target, ignore)
 
   /* Tail recursion fails, when we are not dealing with recursive calls.  */
   if (!try_tail_recursion
-      || TREE_CODE (TREE_OPERAND (exp, 0)) != ADDR_EXPR
-      || TREE_OPERAND (TREE_OPERAND (exp, 0), 0) != current_function_decl)
+      || TREE_CODE (addr) != ADDR_EXPR
+      || TREE_OPERAND (addr, 0) != current_function_decl)
     try_tail_recursion = 0;
 
   /*  Rest of purposes for tail call optimizations to fail.  */
@@ -2503,7 +2504,7 @@ expand_call (exp, target, ignore)
       /* Functions that do not return exactly once may not be sibcall
          optimized.  */
       || (flags & (ECF_RETURNS_TWICE | ECF_LONGJMP | ECF_NORETURN))
-      || TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0))))
+      || TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (addr)))
       /* If this function requires more stack slots than the current
 	 function, we cannot change it into a sibling call.  */
       || args_size.constant > current_function_args_size
@@ -2558,7 +2559,7 @@ expand_call (exp, target, ignore)
 	}
       /* Do the same for the function address if it is an expression. */
       if (!fndecl)
-        TREE_OPERAND (exp, 0) = fix_unsafe_tree (TREE_OPERAND (exp, 0));
+        addr = fix_unsafe_tree (addr);
       /* Expanding one of those dangerous arguments could have added
 	 cleanups, but otherwise give it a whirl.  */
       if (any_pending_cleanups (1))
@@ -2949,7 +2950,7 @@ expand_call (exp, target, ignore)
 	 be deferred during the evaluation of the arguments.  */
       NO_DEFER_POP;
 
-      funexp = rtx_for_function_call (fndecl, exp);
+      funexp = rtx_for_function_call (fndecl, addr);
 
       /* Figure out the register where the value, if any, will come back.  */
       valreg = 0;
