@@ -93,7 +93,7 @@ enum unw_register_index
   UNW_REG_F31 = UNW_REG_F2 + 29,
 
   /* Branch registers.  */
-  UNW_REG_B1,
+  UNW_REG_B0, UNW_REG_B1,
   UNW_REG_B5 = UNW_REG_B1 + 4,
 
   UNW_NUM_REGS
@@ -205,7 +205,7 @@ struct _Unwind_Context
     } nat;
   } ireg[32 - 2];
 
-  unsigned long *br_loc[6 - 1];
+  unsigned long *br_loc[7];
   void *fr_loc[32 - 2];
 };
 
@@ -1471,6 +1471,21 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 	 not profide a personality routine or LSDA.  */
 #ifdef MD_FALLBACK_FRAME_STATE_FOR
       MD_FALLBACK_FRAME_STATE_FOR (context, fs, success);
+
+      /* [SCRA 11.4.1] A leaf function with no memory stack, no exception
+	 handlers, and which keeps the return value in B0 does not need
+	 an unwind table entry.
+
+	 This can only happen in the frame after unwinding through a signal
+	 handler.  Avoid infinite looping by requiring that B0 != RP.  */
+      if (context->br_loc[0] && *context->br_loc[0] != context->rp)
+	{
+	  fs->curr.reg[UNW_REG_RP].where = UNW_WHERE_BR;
+	  fs->curr.reg[UNW_REG_RP].when = -1;
+	  fs->curr.reg[UNW_REG_RP].val = 0;
+	  goto success;
+	}
+
       return _URC_END_OF_STACK;
     success:
       return _URC_NO_REASON;
@@ -1557,8 +1572,11 @@ uw_update_reg_address (struct _Unwind_Context *context,
       break;
 
     case UNW_WHERE_BR:
-      if (rval >= 1 && rval <= 5)
-	addr = context->br_loc[rval - 1];
+      /* Note that while RVAL can only be 1-5 from normal descriptors,
+	 we can want to look at B0 due to having manually unwound a
+	 signal frame.  */
+      if (rval >= 0 && rval <= 5)
+	addr = context->br_loc[rval];
       else
 	abort ();
       break;
@@ -1624,7 +1642,7 @@ uw_update_reg_address (struct _Unwind_Context *context,
       break;
 
     case UNW_REG_B1 ... UNW_REG_B5:
-      context->br_loc[regno - UNW_REG_B1] = addr;
+      context->br_loc[regno - UNW_REG_B0] = addr;
       break;
 
     case UNW_REG_BSP:
