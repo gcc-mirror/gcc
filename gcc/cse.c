@@ -4296,9 +4296,13 @@ simplify_relational_operation (code, mode, op0, op1)
   if (GET_CODE (op0) == COMPARE && op1 == const0_rtx)
     op1 = XEXP (op0, 1), op0 = XEXP (op0, 0);
 
-  /* What to do with MODE_CC isn't clear yet.
-     Let's make sure nothing erroneous is done.  */
-  if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_CC)
+  /* We can't simplify MODE_CC values since we don't know what the
+     actual comparison is.  */
+  if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_CC
+#ifdef HAVE_cc0
+      || op0 == cc0_rtx
+#endif
+      )
     return 0;
 
   /* For integer comparisons of A and B maybe we can simplify A - B and can
