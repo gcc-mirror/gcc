@@ -135,7 +135,6 @@ void pushlevel (int ignore);
 tree poplevel (int keep, int reverse, int functionbody);
 int global_bindings_p (void);
 void insert_block (tree block);
-void set_block (tree block);
 tree pushdecl (tree decl);
 tree getdecls (void);
 int kept_level_p (void);
@@ -451,7 +450,7 @@ tree_code_create_function_initial (tree prev_saved,
   /* Function.c requires a push at the start of the function. that
      looks like a bug to me but let's make it happy.  */
 
-  (*lang_hooks.decls.pushlevel) (0);
+  pushlevel (0);
 
   /* Create rtl for the start of a new scope.  */
 
@@ -482,7 +481,7 @@ tree_code_create_function_initial (tree prev_saved,
 
   /* Add a new level to the debugger symbol table.  */
 
-  (*lang_hooks.decls.pushlevel) (0);
+  pushlevel (0);
 
   /* Create rtl for the start of a new scope.  */
 
@@ -504,7 +503,7 @@ tree_code_create_function_wrapup (location_t loc)
 
   /* Get completely built level from debugger symbol table.  */
 
-  block = (*lang_hooks.decls.poplevel) (1, 0, 0);
+  block = poplevel (1, 0, 0);
 
   /* Emit rtl for end of scope.  */
 
@@ -516,7 +515,7 @@ tree_code_create_function_wrapup (location_t loc)
 
   /* Pop the level.  */
 
-  block = (*lang_hooks.decls.poplevel) (1, 0, 1);
+  block = poplevel (1, 0, 1);
 
   /* And attach it to the function.  */
 
@@ -1057,14 +1056,6 @@ struct binding_level
   /* For each level (except the global one), a chain of BLOCK nodes for all
      the levels that were entered and exited one level down from this one.  */
   tree blocks;
-  /* The back end may need, for its own internal processing, to create a BLOCK
-     node. This field is set aside for this purpose. If this field is non-null
-     when the level is popped, i.e. when poplevel is invoked, we will use such
-     block instead of creating a new one from the 'names' field, that is the
-     ..._DECL nodes accumulated so far.  Typically the routine 'pushlevel'
-     will be called before setting this field, so that if the front-end had
-     inserted ..._DECL nodes in the current block they will not be lost.   */
-  tree block_created_by_back_end;
   /* The binding level containing this one (the enclosing binding level). */
   struct binding_level *level_chain;
 };
@@ -1077,7 +1068,7 @@ static struct binding_level *current_binding_level = NULL;
 static struct binding_level *global_binding_level;
 
 /* Binding level structures are initialized by copying this one.  */
-static struct binding_level clear_binding_level = {NULL, NULL, NULL, NULL};
+static struct binding_level clear_binding_level = {NULL, NULL, NULL };
 
 /* Return non-zero if we are currently in the global binding level.  */
 
@@ -1145,7 +1136,6 @@ poplevel (int keep, int reverse, int functionbody)
   tree decl_chain;
   tree subblock_chain = current_binding_level->blocks;
   tree subblock_node;
-  tree block_created_by_back_end;
 
   /* Reverse the list of *_DECL nodes if desired.  Note that the ..._DECL
      nodes chained through the `names' field of current_binding_level are in
@@ -1154,23 +1144,10 @@ poplevel (int keep, int reverse, int functionbody)
   decl_chain = (reverse) ? nreverse (current_binding_level->names)
 			 : current_binding_level->names;
 
-  block_created_by_back_end = current_binding_level->block_created_by_back_end;
-  if (block_created_by_back_end != 0)
-    {
-      block_node = block_created_by_back_end;
-
-      /* Check if we are about to discard some information that was gathered
-	 by the front-end. Nameley check if the back-end created a new block 
-	 without calling pushlevel first. To understand why things are lost
-	 just look at the next case (i.e. no block created by back-end.  */
-      if ((keep || functionbody) && (decl_chain || subblock_chain))
-	abort ();
-    }
-
   /* If there were any declarations in the current binding level, or if this
      binding level is a function body, or if there are any nested blocks then
      create a BLOCK node to record them for the life of this function.  */
-  else if (keep || functionbody)
+  if (keep || functionbody)
     block_node = build_block (keep ? decl_chain : 0, 0, subblock_chain, 0, 0);
 
   /* Record the BLOCK node just built as the subblock its enclosing scope.  */
@@ -1207,9 +1184,8 @@ poplevel (int keep, int reverse, int functionbody)
     }
   else if (block_node)
     {
-      if (block_created_by_back_end == NULL)
-	current_binding_level->blocks
-	  = chainon (current_binding_level->blocks, block_node);
+      current_binding_level->blocks
+	= chainon (current_binding_level->blocks, block_node);
     }
 
   /* If we did not make a block for the level just exited, any blocks made for
@@ -1235,15 +1211,6 @@ insert_block (tree block)
   TREE_USED (block) = 1;
   current_binding_level->blocks
     = chainon (current_binding_level->blocks, block);
-}
-
-/* Set the BLOCK node for the innermost scope
-   (the one we are currently in).  */
-
-void
-set_block (tree block)
-{
-  current_binding_level->block_created_by_back_end = block;
 }
 
 /* Records a ..._DECL node DECL as belonging to the current lexical scope.

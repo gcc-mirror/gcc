@@ -299,10 +299,6 @@ struct binding_level GTY(())
        that were entered and exited one level down.  */
     tree blocks;
 
-    /* The BLOCK node for this level, if one has been preallocated.
-       If 0, the BLOCK is allocated (if needed) when the level is popped.  */
-    tree this_block;
-
     /* The binding level which this one is contained in (inherits from).  */
     struct binding_level *level_chain;
 
@@ -348,7 +344,6 @@ static const struct binding_level clear_binding_level
     NULL_TREE, /* names */
     NULL_TREE, /* shadowed */
     NULL_TREE, /* blocks */
-    NULL_TREE, /* this_lock */
     NULL_BINDING_LEVEL, /* level_chain */
     LARGEST_PC, /* end_pc */
     0, /* start_pc */
@@ -1276,7 +1271,6 @@ poplevel (int keep, int reverse, int functionbody)
   tree block = 0;
   tree decl;
   tree bind = 0;
-  int block_previously_created;
 
 #if defined(DEBUG_JAVA_BINDING_LEVELS)
   binding_depth--;
@@ -1319,10 +1313,7 @@ poplevel (int keep, int reverse, int functionbody)
      create a BLOCK to record them for the life of this function.  */
 
   block = 0;
-  block_previously_created = (current_binding_level->this_block != 0);
-  if (block_previously_created)
-    block = current_binding_level->this_block;
-  else if (keep || functionbody)
+  if (keep || functionbody)
     {
       block = make_node (BLOCK);
       TREE_TYPE (block) = void_type_node;
@@ -1466,9 +1457,8 @@ poplevel (int keep, int reverse, int functionbody)
     {
       if (block)
 	{
-	  if (!block_previously_created)
-	    current_binding_level->blocks
-	      = chainon (current_binding_level->blocks, block);
+	  current_binding_level->blocks
+	    = chainon (current_binding_level->blocks, block);
 	}
       /* If we did not make a block for the level just exited,
 	 any blocks made for inner levels
@@ -1569,19 +1559,6 @@ insert_block (tree block)
   TREE_USED (block) = 1;
   current_binding_level->blocks
     = chainon (current_binding_level->blocks, block);
-}
-
-/* Set the BLOCK node for the innermost scope
-   (the one we are currently in).  */
-
-void
-set_block (tree block)
-{
-  current_binding_level->this_block = block;
-  current_binding_level->names = chainon (current_binding_level->names,
-					  BLOCK_VARS (block));
-  current_binding_level->blocks = chainon (current_binding_level->blocks,
-					   BLOCK_SUBBLOCKS (block));
 }
 
 /* integrate_decl_tree calls this function. */

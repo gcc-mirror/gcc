@@ -3311,10 +3311,6 @@ extern GTY(()) tree current_file_decl;
 
 extern int all_types_permanent;
 
-/* Exit a binding level.  This function is provided by each language
-   frontend.  */
-extern tree poplevel (int, int, int);
-
 /* Declare a predefined function.  Return the declaration.  This function is
    provided by each language frontend.  */
 extern tree builtin_function (const char *, tree, int, enum built_in_class,

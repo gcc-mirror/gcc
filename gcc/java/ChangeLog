@@ -1,3 +1,13 @@
+2004-07-11  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* java-tree.h (set_block): Remove.
+	* lang.c (java_clear_binding_stack): New.
+	(LANG_HOOKS_CLEAR_BINDING_STACK): Define.
+	* decl.c (struct binding_level): Remove this_block.
+	(clear_binding_level): Likewise.
+	(poplevel): Don't handle this_block.
+	(set_block): Remove.
+
 2004-07-10  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* class.c (common_enclosing_context_p): Remove statement with no

@@ -3672,8 +3672,8 @@ extern void clone_function_decl                 (tree, int);
 extern void adjust_clone_args			(tree);
 
 /* decl.c */
+extern tree poplevel				(int, int, int);
 extern void insert_block			(tree);
-extern void set_block				(tree);
 extern tree pushdecl				(tree);
 extern void cxx_init_decl_processing		(void);
 enum cp_tree_node_structure_enum cp_tree_node_structure 

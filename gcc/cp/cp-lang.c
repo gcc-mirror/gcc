@@ -76,8 +76,6 @@ static void cxx_initialize_diagnostics (diagnostic_context *);
 #define LANG_HOOKS_PARSE_FILE c_common_parse_file
 #undef LANG_HOOKS_DUP_LANG_SPECIFIC_DECL
 #define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL cxx_dup_lang_specific_decl
-#undef LANG_HOOKS_MAYBE_BUILD_CLEANUP
-#define LANG_HOOKS_MAYBE_BUILD_CLEANUP cxx_maybe_build_cleanup
 #undef LANG_HOOKS_TRUTHVALUE_CONVERSION
 #define LANG_HOOKS_TRUTHVALUE_CONVERSION c_common_truthvalue_conversion
 #undef LANG_HOOKS_UNSAFE_FOR_REEVAL
@@ -100,16 +98,10 @@ static void cxx_initialize_diagnostics (diagnostic_context *);
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	cxx_printable_name
 #undef LANG_HOOKS_PRINT_ERROR_FUNCTION
 #define LANG_HOOKS_PRINT_ERROR_FUNCTION	cxx_print_error_function
-#undef LANG_HOOKS_PUSHLEVEL
-#define LANG_HOOKS_PUSHLEVEL lhd_do_nothing_i
-#undef LANG_HOOKS_POPLEVEL
-#define LANG_HOOKS_POPLEVEL lhd_do_nothing_iii_return_null_tree
 #undef LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL
 #define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL cxx_warn_unused_global_decl
 #undef LANG_HOOKS_WRITE_GLOBALS
 #define LANG_HOOKS_WRITE_GLOBALS lhd_do_nothing
-#undef LANG_HOOKS_UPDATE_DECL_AFTER_SAVING
-#define LANG_HOOKS_UPDATE_DECL_AFTER_SAVING cp_update_decl_after_saving
 
 
 #undef LANG_HOOKS_FUNCTION_INIT
