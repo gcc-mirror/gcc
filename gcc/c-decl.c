@@ -1761,7 +1761,7 @@ duplicate_decls (newdecl, olddecl)
       if (DECL_BUILT_IN (olddecl))
 	{
 	  DECL_BUILT_IN (newdecl) = 1;
-	  DECL_SET_FUNCTION_CODE (newdecl, DECL_FUNCTION_CODE (olddecl));
+	  DECL_FUNCTION_CODE (newdecl) = DECL_FUNCTION_CODE (olddecl);
 	}
       else
 	DECL_FRAME_SIZE (newdecl) = DECL_FRAME_SIZE (olddecl);
@@ -2090,7 +2090,7 @@ pushdecl (x)
 		  if (DECL_BUILT_IN (oldglobal))
 		    {
 		      DECL_BUILT_IN (x) = DECL_BUILT_IN (oldglobal);
-		      DECL_SET_FUNCTION_CODE (x, DECL_FUNCTION_CODE (oldglobal));
+		      DECL_FUNCTION_CODE (x) = DECL_FUNCTION_CODE (oldglobal);
 		    }
 		  /* Keep the arg types from a file-scope fcn defn.  */
 		  if (TYPE_ARG_TYPES (TREE_TYPE (oldglobal)) != 0
@@ -3125,7 +3125,7 @@ builtin_function (name, type, function_code, library_name)
   if (function_code != NOT_BUILT_IN)
     {
       DECL_BUILT_IN (decl) = 1;
-      DECL_SET_FUNCTION_CODE (decl, function_code);
+      DECL_FUNCTION_CODE (decl) = function_code;
     }
   /* Warn if a function in the namespace for users
      is used without an occasion to consider it declared.  */
