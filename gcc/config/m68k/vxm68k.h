@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Vxworks m68k version.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,18 +20,50 @@ Boston, MA 02111-1307, USA.  */
 
 /* This comment is here to see if it will keep Sun's cpp from dying.  */
 
-#define CPP_PREDEFINES "-Dmc68000 -D__vxworks -D__vxworks_5 -Acpu(m68k) -Amachine(m68k)"
-
-/* Vxworks header files require that the macro CPU be set, so we must override
-   the CPP_SPEC from m68k-none.h.  */
-
-#define CPP_SPEC \
-"%{!mc68000:%{!m68000:%{!m68332:%{!msoft-float:%{mfpa:-D__HAVE_FPA__ }%{!mfpa:-D__HAVE_68881__ }}}}}\
-%{!ansi:%{m68000:-DCPU=MC68000 }%{m68010:-Dmc68010 -DCPU=MC68010 }%{m68020:-Dmc68020 -DCPU=MC68020 }%{mc68020:-Dmc68020 -DCPU=MC68020 }%{m68030:-Dmc68030 -DCPU=MC68030 }%{m68040:-Dmc68040 -DCPU=MC68040 }%{m68020-40:-Dmc68020 -Dmc68030 -Dmc68040 -DCPU=MC68020 }%{m68302:-Dmc68302 -DCPU=MC68000 }%{m68332:-Dmc68332 -DCPU=CPU32 }%{!mc68000:%{!m68000:%{!m68010:%{!mc68020:%{!m68020:%{!m68030:%{!m68040:%{!m68020-40:%{!m68302:%{!m68332:-Dmc68020 -DCPU=MC68020 }}}}}}}}}}}\
-%{m68010:-D__mc68010__ -D__mc68010 }%{m68020:-D__mc68020__ -D__mc68020 }%{mc68020:-D__mc68020__ -D__mc68020 }%{m68030:-D__mc68030__ -D__mc68030 }%{m68040:-D__mc68040__ -D__mc68040 }%{m68020-40:-D__mc68020__ -D__mc68030__ -D__mc68040__ -D__mc68020 -D__mc68030 -D__mc68040 }%{m68302:-D__mc68302__ -D__mc68302 }%{m68332:-D__mc68332__ -D__mc68332 }%{!mc68000:%{!m68000:%{!m68010:%{!mc68020:%{!m68020:%{!m68030:%{!m68040:%{!m68020-40:%{!m68302:%{!m68332:-D__mc68020__ -D__mc68020 }}}}}}}}}}"
-
 #include "m68k/m68k-none.h"
 #include "aoutos.h"
+
+#undef CPP_PREDEFINES
+#define CPP_PREDEFINES "-Dmc68000 -D__vxworks -D__vxworks_5 -Acpu(m68k) -Amachine(m68k)"
+
+/* The default value for -DCPU=.  */
+#if TARGET_CPU_DEFAULT == M68K_CPU_m68k || TARGET_CPU_DEFAULT == M68K_CPU_m68020
+#define CPP_SUBTARGET_CPU_DEFAULT_SPEC "-DCPU=MC68020"
+#else
+#if TARGET_CPU_DEFAULT == M68K_CPU_m68000
+#define CPP_SUBTARGET_CPU_DEFAULT_SPEC "-DCPU=MC68000"
+#else
+#if TARGET_CPU_DEFAULT == M68K_CPU_m68030
+#define CPP_SUBTARGET_CPU_DEFAULT_SPEC "-DCPU=MC68030"
+#else
+#if TARGET_CPU_DEFAULT == M68K_CPU_m68040
+#define CPP_SUBTARGET_CPU_DEFAULT_SPEC "-DCPU=MC68040"
+#else
+#if TARGET_CPU_DEFAULT == M68K_CPU_m68302
+#define CPP_SUBTARGET_CPU_DEFAULT_SPEC "-DCPU=MC68302"
+#else
+#if TARGET_CPU_DEFAULT == M68K_CPU_m68332
+#define CPP_SUBTARGET_CPU_DEFAULT_SPEC "-DCPU=MC68332"
+#else
+Unrecognized value in TARGET_CPU_DEFAULT.
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+
+#undef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS \
+{ "cpp_subtarget_cpu_default", CPP_SUBTARGET_CPU_DEFAULT_SPEC }
+
+/* Vxworks header files require that the macro CPU be set.  */
+/* ??? The previous code didn't set CPU if -ansi.  */
+#undef CPP_SUBTARGET_SPEC
+#define CPP_SUBTARGET_SPEC "\
+%{m68000:-DCPU=MC68000 }%{m68010:-DCPU=MC68010 }%{m68020:-DCPU=MC68020 }%{mc68020:-DCPU=MC68020 }%{m68030:-DCPU=MC68030 }%{m68040:-DCPU=MC68040 }%{m68020-40:-DCPU=MC68020 }%{m68302:-DCPU=MC68000 }%{m68332:-DCPU=CPU32 } \
+%{!mc68000:%{!m68000:%{!m68010:%{!mc68020:%{!m68020:%{!m68030:%{!m68040:%{!m68020-40:%{!m68302:%{!m68332:%(cpp_subtarget_cpu_default) }}}}}}}}}} \
+"
 
 #define DBX_DEBUGGING_INFO
 #undef SDB_DEBUGGING_INFO
