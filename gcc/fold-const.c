@@ -5641,8 +5641,8 @@ fold (tree expr)
 	  if (TYPE_MAIN_VARIANT (inside_type) == TYPE_MAIN_VARIANT (final_type)
 	      && ((inter_int && final_int) || (inter_float && final_float))
 	      && inter_prec >= final_prec)
-	    return fold_convert (final_type,
-				 TREE_OPERAND (TREE_OPERAND (t, 0), 0));
+	    return fold (build1 (code, final_type,
+				 TREE_OPERAND (TREE_OPERAND (t, 0), 0)));
 
 	  /* Likewise, if the intermediate and final types are either both
 	     float or both integer, we don't need the middle conversion if
@@ -5657,16 +5657,16 @@ fold (tree expr)
 	      && ! (final_prec != GET_MODE_BITSIZE (TYPE_MODE (final_type))
 		    && TYPE_MODE (final_type) == TYPE_MODE (inter_type))
 	      && ! final_ptr)
-	    return fold_convert (final_type,
-				 TREE_OPERAND (TREE_OPERAND (t, 0), 0));
+	    return fold (build1 (code, final_type,
+				 TREE_OPERAND (TREE_OPERAND (t, 0), 0)));
 
 	  /* If we have a sign-extension of a zero-extended value, we can
 	     replace that by a single zero-extension.  */
 	  if (inside_int && inter_int && final_int
 	      && inside_prec < inter_prec && inter_prec < final_prec
 	      && inside_unsignedp && !inter_unsignedp)
-	    return fold_convert (final_type,
-				 TREE_OPERAND (TREE_OPERAND (t, 0), 0));
+	    return fold (build1 (code, final_type,
+				 TREE_OPERAND (TREE_OPERAND (t, 0), 0)));
 
 	  /* Two conversions in a row are not needed unless:
 	     - some conversion is floating-point (overstrict for now), or
@@ -5690,8 +5690,8 @@ fold (tree expr)
 	      && ! (final_prec != GET_MODE_BITSIZE (TYPE_MODE (final_type))
 		    && TYPE_MODE (final_type) == TYPE_MODE (inter_type))
 	      && ! final_ptr)
-	    return fold_convert (final_type,
-				 TREE_OPERAND (TREE_OPERAND (t, 0), 0));
+	    return fold (build1 (code, final_type,
+				 TREE_OPERAND (TREE_OPERAND (t, 0), 0)));
 	}
 
       if (TREE_CODE (TREE_OPERAND (t, 0)) == MODIFY_EXPR
