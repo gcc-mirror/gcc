@@ -1,3 +1,28 @@
+2005-02-19  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/net/protocol/ftp/ActiveModeDTP.java,
+	gnu/java/net/protocol/ftp/BlockInputStream.java,
+	gnu/java/net/protocol/ftp/BlockOutputStream.java,
+	gnu/java/net/protocol/ftp/CompressedInputStream.java,
+	gnu/java/net/protocol/ftp/CompressedOutputStream.java,
+	gnu/java/net/protocol/ftp/DTPInputStream.java,
+	gnu/java/net/protocol/ftp/DTP.java,
+	gnu/java/net/protocol/ftp/DTPOutputStream.java,
+	gnu/java/net/protocol/ftp/FTPConnection.java,
+	gnu/java/net/protocol/ftp/FTPException.java,
+	gnu/java/net/protocol/ftp/FTPResponse.java,
+	gnu/java/net/protocol/ftp/FTPURLConnection.java,
+	gnu/java/net/protocol/ftp/Handler.java,
+	gnu/java/net/protocol/ftp/PassiveModeDTP.java,
+	gnu/java/net/protocol/ftp/StreamInputStream.java,
+	gnu/java/net/protocol/ftp/StreamOutputStream.java,
+	gnu/java/net/CRLFInputStream.java,
+	gnu/java/net/CRLFOutputStream.java,
+	gnu/java/net/GetLocalHostAction.java,
+	gnu/java/net/protocol/ftp/package.html: New files.
+	* Makefile.am: Added new files.
+	* Makefile.in: Regenerated.
+
 2005-02-18  Tom Tromey  <tromey@redhat.com>
 
 	* link.cc (make_vtable): Remove abstract method check.
