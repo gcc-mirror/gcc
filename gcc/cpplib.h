@@ -208,11 +208,6 @@ struct cpp_toklist
 
   unsigned int line;		/* starting line number */
 
-  /* Comment copying.  */
-  cpp_token *comments;		/* comment tokens.  */
-  unsigned int comments_used;	/* comment tokens used.  */
-  unsigned int comments_cap;	/* comment token capacity.  */
-
   /* The handler to call after lexing the rest of this line.
      -1 for none */
   short dirno;
