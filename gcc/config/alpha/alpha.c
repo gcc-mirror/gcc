@@ -1527,7 +1527,7 @@ alpha_emit_floatuns (operands)
   enum machine_mode mode;
 
   out = operands[0];
-  in = operands[1];
+  in = force_reg (DImode, operands[1]);
   mode = GET_MODE (out);
   neglab = gen_label_rtx ();
   donelab = gen_label_rtx ();
