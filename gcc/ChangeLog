@@ -1,3 +1,8 @@
+2000-07-15  Richard Henderson  <rth@cygnus.com>
+
+	* fold-const.c (extract_muldiv): Don't optimize past an unsigned
+	cast around an expression.  Tidy other unsigned tests.
+
 2000-07-15  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* diagnostic.c (doing_line_wrapping, line_wrapper_printf, notice,
