@@ -663,7 +663,7 @@ expand_builtin_dwarf_reg_size (reg_tree, target)
 	  t = fold (build (COND_EXPR, integer_type_node, t2,
 			   build_int_2 (ranges[n_ranges].size, 0), t));
 	}
-      while (--n_ranges > 0);
+      while (--n_ranges >= 0);
     }
   return expand_expr (t, target, Pmode, 0);
 }
