@@ -1,3 +1,10 @@
+2002-09-27  Alexander N. Kabaev <ak03@gte.com>
+
+	PR preprocessor/8055
+	* cppmacro.c (stringify_arg): Do not overflow the buffer
+	with the terminating NUL when the argument to be stringified
+	has no tokens.
+
 2002-09-27  Richard Henderson  <rth@redhat.com>
 
 	* unroll.c (simplify_cmp_and_jump_insns): New.
@@ -74,7 +81,7 @@
 
 	* dbxout.c (FORCE_TEXT): Switch to current_function_decl, not
 	text_section.
-	* xcoffout.h (DBX_STATIC_BLOCK_START): Remove explicit change to 
+	* xcoffout.h (DBX_STATIC_BLOCK_START): Remove explicit change to
 	text section.
 	* config/rs6000/rs6000.c (rs6000_override_options): Allow
 	function-sections and data-sections functionality on AIX.
@@ -143,12 +150,12 @@
 
 2002-09-24  Eric Christopher  <echristo@redhat.com>
 
-        * config/mips/elf.h: Add HANDLE_SYSV_PRAGMA.
-        * config/mips/elf64.h: Ditto.
+	* config/mips/elf.h: Add HANDLE_SYSV_PRAGMA.
+	* config/mips/elf64.h: Ditto.
 
 2002-09-24  Eric Christopher  <echristo@redhat.com>
 
-        * except.c (expand_builtin_extract_return_address): Handle case
+	* except.c (expand_builtin_extract_return_address): Handle case
 	where Pmode != ptr_mode.
 
 2002-09-26  Steve Ellcey  <sje@cup.hp.com>
@@ -224,11 +231,11 @@
 
 2002-09-24  Adam Nemet  <anemet@lnxw.com>
 
-        * config/arm/arm.c (thumb_unexpanded_epilogue): Don't generate
-        epilogue for naked functions.
+	* config/arm/arm.c (thumb_unexpanded_epilogue): Don't generate
+	epilogue for naked functions.
 
 2002-09-24  Adam Nemet  <anemet@lnxw.com>
-            Nick Clifton  <nickc@redhat.com>
+	    Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.h (THUMB_FUNCTION_PROFILER): Remove.
 	(FUNCTION_PROFILER): Only invoke THUMB_FUNCTION_PROFILER if it
