@@ -35,7 +35,7 @@ SHLIB   = libstdc++.so.$(VERSION)
 SHARLIB = libstdc++-sh.a
 SHLINK  = libstdc++.so
 MSHLINK = libstdc++.so.`echo $(VERSION) | sed 's/\([0-9][.][0-9]\).*/\1/'`
-SHFLAGS = 
+SHFLAGS =
 SHDEPS  =
 
 STAMP   = bigstmp
@@ -90,7 +90,7 @@ $(ARLIB): stdlist
 
 $(ARLINK):
 	-rm -f $(ARLINK)
-	ln -s $(ARLIB) $(ARLINK)
+	$(LN_S) $(ARLIB) $(ARLINK) || cp $(ARLIB) $(ARLINK)
 
 marlink:
 	@$(MAKE) $(MARLINK) "ARLINK=$(MARLINK)"
@@ -106,7 +106,7 @@ $(SHARLIB): $(SHLIB)
 
 $(SHLINK):
 	-rm -f $(SHLINK)
-	ln -s $(SHLIB) $(SHLINK)
+	$(LN_S) $(SHLIB) $(SHLINK) || cp $(ARLIB) $(ARLINK)
 
 mshlink:
 	@$(MAKE) $(MSHLINK) "SHLINK=$(MSHLINK)"
@@ -315,28 +315,34 @@ install:
 	  if [ $$FILE = $(SHLINK) ] ; then \
 	    if [ -f $${INSTALLDIR}/$(MSHLINK) ]; then \
 	      rm -f $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
-	      ln -s $${RELINSTALLDIR}$(MSHLINK) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
+	      $(LN_S) $${RELINSTALLDIR}$(MSHLINK) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE \
+		|| cp $${RELINSTALLDIR}$(MSHLINK) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
 	    else \
 	      rm -f $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
-	      ln -s $${RELINSTALLDIR}$(SHLIB) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
+	      $(LN_S) $${RELINSTALLDIR}$(SHLIB) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE \
+		|| cp $${RELINSTALLDIR}$(SHLIB) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
 	    fi; \
 	  elif [ $$FILE = $(ARLINK) ] ; then \
 	    if [ -f $${INSTALLDIR}/$(MARLINK) ]; then \
 	      rm -f $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
-	      ln -s $${RELINSTALLDIR}$(MARLINK) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
+	      $(LN_S) $${RELINSTALLDIR}$(MARLINK) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE \
+		|| cp $${RELINSTALLDIR}$(MARLINK) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
 	    else \
 	      rm -f $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
-	      ln -s $${RELINSTALLDIR}$(ARLIB) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
+	      $(LN_S) $${RELINSTALLDIR}$(ARLIB) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE \
+		|| cp $${RELINSTALLDIR}$(ARLIB) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
 	    fi; \
 	  elif [ $$FILE = mshlink ]; then \
 	    for FILE in $(MSHLINK) ; do \
 	      rm -f $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
-	      ln -s $(SHLIB) $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
+	      $(LN_S) $(SHLIB) $${INSTALLDIR}$(MULTISUBDIR)/$$FILE \
+		|| cp $(SHLIB) $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
 	    done; \
 	  elif [ $$FILE = marlink ]; then \
 	    for FILE in $(MARLINK) ; do \
 	      rm -f $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
-	      ln -s $(ARLIB) $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
+	      $(LN_S) $(ARLIB) $${INSTALLDIR}$(MULTISUBDIR)/$$FILE \
+		|| cp $(ARLIB) $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
 	    done; \
 	  elif [ $$FILE = $(SHLIB) ]; then \
 	    $(INSTALL_PROGRAM) $$FILE $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \

@@ -1,3 +1,8 @@
+1999-01-13  Ulrich Drepper  <drepper@cygnus.com>
+
+	* configure.in: Test for "ln -s" and set LN_S in generated Makefile.
+	* Makefile.in: Use $(LN_S) instead of explicitly ln -s.
+
 Sun Jan 03 03:16:02 1999  Robert Lipe  <robertlipe@usa.net>
 
 	* configure.in:  (*-*-sysv5, *-*-*udk*):  Treat like sysv4.
