@@ -5250,6 +5250,11 @@ cse_insn (insn, libcall_insn)
 
 	      PATTERN (insn) = gen_jump (XEXP (trial, 0));
 	      INSN_CODE (insn) = -1;
+
+	      if (NEXT_INSN (insn) != 0
+		  && GET_CODE (NEXT_INSN (insn)) != BARRIER)
+		emit_barrier_after (insn);
+
 	      cse_jumps_altered = 1;
 	      break;
 	    }
