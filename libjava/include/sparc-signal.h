@@ -20,8 +20,13 @@ details.  */
 #define SIGNAL_HANDLER(_name) 						\
 static void _name (int _dummy, siginfo_t *_info, void *arg)
 
+#ifdef __arch64__
+#define FLUSH_REGISTER_WINDOWS					\
+  asm volatile ("flushw");
+#else
 #define FLUSH_REGISTER_WINDOWS					\
   asm volatile ("ta 3");
+#endif
 
 #define MAKE_THROW_FRAME(_exception)				\
 do								\
@@ -29,8 +34,8 @@ do								\
   ucontext_t *_context = (ucontext_t *) arg;                    \
   (void)_dummy;							\
   (void)_info;							\
-  register int sp = _context->uc_mcontext.gregs[REG_SP];	\
-  register int retaddr = _context->uc_mcontext.gregs[REG_O7];	\
+  register long sp = _context->uc_mcontext.gregs[REG_SP];	\
+  register long retaddr = _context->uc_mcontext.gregs[REG_O7];	\
   FLUSH_REGISTER_WINDOWS;					\
   asm volatile ("mov %0, %%i6; mov %1, %%i7"			\
 		: : "r"(sp), "r"(retaddr));			\
