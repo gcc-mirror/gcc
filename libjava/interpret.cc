@@ -10,9 +10,6 @@ details.  */
 
 /* Author: Kresten Krab Thorup <krab@gnu.org>  */
 
-/* define this to get instruction timings.  */
-/* #define TIME_MAINLOOP  */
-
 #include <config.h>
 
 #pragma implementation "java-interp.h"
@@ -38,10 +35,6 @@ details.  */
 #include <java/lang/IncompatibleClassChangeError.h>
 #include <java-insns.h>
 #include <java-signal.h>
-#ifdef TIME_MAINLOOP
-#include <sys/time.h>
-#include <stdio.h>
-#endif
 
 #ifndef INTERPRETER
 
@@ -89,7 +82,7 @@ static void throw_arithmetic_exception ()
 #endif
 
 
-static inline void dupx (_Jv_word *&sp, int n, int x)
+static inline void dupx (_Jv_word *sp, int n, int x)
 {
   // first "slide" n+x elements n to the right
   int top = n-1;
@@ -104,8 +97,6 @@ static inline void dupx (_Jv_word *&sp, int n, int x)
       sp[top-(n+x)-i] = sp[top-i];
     }
   
-  // the net effect
-  sp += n;
 };
 
 
@@ -151,7 +142,7 @@ static inline void dupx (_Jv_word *&sp, int n, int x)
 #define PEEKI(I)  (locals+(I))->i
 #define PEEKA(I)  (locals+(I))->o
 
-#define POKEI(I,V)  (*(jint*) (locals+(I)) = (V))
+#define POKEI(I,V)  ((locals+(I))->i = (V))
 
 
 #define BINOPI(OP) { \
@@ -418,7 +409,7 @@ gnu::gcj::runtime::MethodInvocation::continue1 (gnu::gcj::RawData *meth,
 /*
   This proceeds execution, as designated in "inv".  If an exception
   happens, then it is simply thrown, and handled in Java.  Thus, the pc
-  needs to be stored in the invocation at all times, so we can figure
+  needs to be stored in the inv->pc at all times, so we can figure
   out which handler (if any) to invoke.
 
   One design issue, which I have not completely considered, is if it
@@ -427,146 +418,325 @@ gnu::gcj::runtime::MethodInvocation::continue1 (gnu::gcj::RawData *meth,
 */
 
 
-#ifdef TIME_MAINLOOP
-static jlong insn_time [256] = { 0 };
-static jlong insn_count[256] = { 0 };
-
-static void
-dump_time ()
-{
-  double total_all = 0;
-  for (int i = 0; i < 256; i++)
-    {
-      total_all += insn_time[i];
-    }
-
-  for (int i = 0; i < 256; i++)
-    {
-      jlong total  = insn_time[i];
-      jlong count  = insn_count[i];
-
-      if (count == 0) continue;
-
-      jlong amount = total/count;
-
-      printf ("in 0x%02x: %7Li %7Li %7Li %2.1f%%\n", i,
-	      (long long)count, (long long)total, (long long)amount,
-	      (float) (100.0*(double)total/total_all)
-	      );
-    }
-}
+#ifdef __i386__
+#define PC_REGISTER_ASM  asm("%esi")
+#else
+#define PC_REGISTER_ASM
 #endif
-  
+
 void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 {
-  _Jv_word      *sp     = inv->sp;
-  unsigned char *pc     = inv->pc;
-  _Jv_word      *locals = inv->local_base ();
-  int            opcode;
+  register _Jv_word      *sp                  = inv->sp;
+  register unsigned char *pc PC_REGISTER_ASM  = inv->pc;
+  _Jv_word               *locals              = inv->local_base ();
 
-  jclass defining_class = this->defining_class;
   _Jv_word *pool_data   = defining_class->constants.data;
   
   /* these two are used in the invokeXXX instructions */
   void (*fun)(...);
   _Jv_ResolvedMethod* rmeth;
 
-#ifdef TIME_MAINLOOP
-  struct timeval tv;
-  int   last_opcode;
-  jlong last_time;
-  static jlong time_warp = 0;
+#define INSN_LABEL(op) &&insn_##op
+#define GOTO_INSN(op) goto *(insn_target[op])
 
-#define USEC(TV) \
-   ((jlong) (TV).tv_sec * 1000000LL + (jlong)(TV).tv_usec)
+  static const void *const insn_target[] = 
+  {
+    INSN_LABEL(nop),
+    INSN_LABEL(aconst_null),
+    INSN_LABEL(iconst_m1),
+    INSN_LABEL(iconst_0),
+    INSN_LABEL(iconst_1),
+    INSN_LABEL(iconst_2),
+    INSN_LABEL(iconst_3),
+    INSN_LABEL(iconst_4),
+    INSN_LABEL(iconst_5),
+    INSN_LABEL(lconst_0),
+    INSN_LABEL(lconst_1),
+    INSN_LABEL(fconst_0),
+    INSN_LABEL(fconst_1),
+    INSN_LABEL(fconst_2),
+    INSN_LABEL(dconst_0),
+    INSN_LABEL(dconst_1),
+    INSN_LABEL(bipush),
+    INSN_LABEL(sipush),
+    INSN_LABEL(ldc),
+    INSN_LABEL(ldc_w),
+    INSN_LABEL(ldc2_w),
+    INSN_LABEL(iload),
+    INSN_LABEL(lload),
+    INSN_LABEL(fload),
+    INSN_LABEL(dload),
+    INSN_LABEL(aload),
+    INSN_LABEL(iload_0),
+    INSN_LABEL(iload_1),
+    INSN_LABEL(iload_2),
+    INSN_LABEL(iload_3),
+    INSN_LABEL(lload_0),
+    INSN_LABEL(lload_1),
+    INSN_LABEL(lload_2),
+    INSN_LABEL(lload_3),
+    INSN_LABEL(fload_0),
+    INSN_LABEL(fload_1),
+    INSN_LABEL(fload_2),
+    INSN_LABEL(fload_3),
+    INSN_LABEL(dload_0),
+    INSN_LABEL(dload_1),
+    INSN_LABEL(dload_2),
+    INSN_LABEL(dload_3),
+    INSN_LABEL(aload_0),
+    INSN_LABEL(aload_1),
+    INSN_LABEL(aload_2),
+    INSN_LABEL(aload_3),
+    INSN_LABEL(iaload),
+    INSN_LABEL(laload),
+    INSN_LABEL(faload),
+    INSN_LABEL(daload),
+    INSN_LABEL(aaload),
+    INSN_LABEL(baload),
+    INSN_LABEL(caload),
+    INSN_LABEL(saload),
+    INSN_LABEL(istore),
+    INSN_LABEL(lstore),
+    INSN_LABEL(fstore),
+    INSN_LABEL(dstore),
+    INSN_LABEL(astore),
+    INSN_LABEL(istore_0),
+    INSN_LABEL(istore_1),
+    INSN_LABEL(istore_2),
+    INSN_LABEL(istore_3),
+    INSN_LABEL(lstore_0),
+    INSN_LABEL(lstore_1),
+    INSN_LABEL(lstore_2),
+    INSN_LABEL(lstore_3),
+    INSN_LABEL(fstore_0),
+    INSN_LABEL(fstore_1),
+    INSN_LABEL(fstore_2),
+    INSN_LABEL(fstore_3),
+    INSN_LABEL(dstore_0),
+    INSN_LABEL(dstore_1),
+    INSN_LABEL(dstore_2),
+    INSN_LABEL(dstore_3),
+    INSN_LABEL(astore_0),
+    INSN_LABEL(astore_1),
+    INSN_LABEL(astore_2),
+    INSN_LABEL(astore_3),
+    INSN_LABEL(iastore),
+    INSN_LABEL(lastore),
+    INSN_LABEL(fastore),
+    INSN_LABEL(dastore),
+    INSN_LABEL(aastore),
+    INSN_LABEL(bastore),
+    INSN_LABEL(castore),
+    INSN_LABEL(sastore),
+    INSN_LABEL(pop),
+    INSN_LABEL(pop2),
+    INSN_LABEL(dup),
+    INSN_LABEL(dup_x1),
+    INSN_LABEL(dup_x2),
+    INSN_LABEL(dup2),
+    INSN_LABEL(dup2_x1),
+    INSN_LABEL(dup2_x2),
+    INSN_LABEL(swap),
+    INSN_LABEL(iadd),
+    INSN_LABEL(ladd),
+    INSN_LABEL(fadd),
+    INSN_LABEL(dadd),
+    INSN_LABEL(isub),
+    INSN_LABEL(lsub),
+    INSN_LABEL(fsub),
+    INSN_LABEL(dsub),
+    INSN_LABEL(imul),
+    INSN_LABEL(lmul),
+    INSN_LABEL(fmul),
+    INSN_LABEL(dmul),
+    INSN_LABEL(idiv),
+    INSN_LABEL(ldiv),
+    INSN_LABEL(fdiv),
+    INSN_LABEL(ddiv),
+    INSN_LABEL(irem),
+    INSN_LABEL(lrem),
+    INSN_LABEL(frem),
+    INSN_LABEL(drem),
+    INSN_LABEL(ineg),
+    INSN_LABEL(lneg),
+    INSN_LABEL(fneg),
+    INSN_LABEL(dneg),
+    INSN_LABEL(ishl),
+    INSN_LABEL(lshl),
+    INSN_LABEL(ishr),
+    INSN_LABEL(lshr),
+    INSN_LABEL(iushr),
+    INSN_LABEL(lushr),
+    INSN_LABEL(iand),
+    INSN_LABEL(land),
+    INSN_LABEL(ior),
+    INSN_LABEL(lor),
+    INSN_LABEL(ixor),
+    INSN_LABEL(lxor),
+    INSN_LABEL(iinc),
+    INSN_LABEL(i2l),
+    INSN_LABEL(i2f),
+    INSN_LABEL(i2d),
+    INSN_LABEL(l2i),
+    INSN_LABEL(l2f),
+    INSN_LABEL(l2d),
+    INSN_LABEL(f2i),
+    INSN_LABEL(f2l),
+    INSN_LABEL(f2d),
+    INSN_LABEL(d2i),
+    INSN_LABEL(d2l),
+    INSN_LABEL(d2f),
+    INSN_LABEL(i2b),
+    INSN_LABEL(i2c),
+    INSN_LABEL(i2s),
+    INSN_LABEL(lcmp),
+    INSN_LABEL(fcmpl),
+    INSN_LABEL(fcmpg),
+    INSN_LABEL(dcmpl),
+    INSN_LABEL(dcmpg),
+    INSN_LABEL(ifeq),
+    INSN_LABEL(ifne),
+    INSN_LABEL(iflt),
+    INSN_LABEL(ifge),
+    INSN_LABEL(ifgt),
+    INSN_LABEL(ifle),
+    INSN_LABEL(if_icmpeq),
+    INSN_LABEL(if_icmpne),
+    INSN_LABEL(if_icmplt),
+    INSN_LABEL(if_icmpge),
+    INSN_LABEL(if_icmpgt),
+    INSN_LABEL(if_icmple),
+    INSN_LABEL(if_acmpeq),
+    INSN_LABEL(if_acmpne),
+    INSN_LABEL(goto), 
+    INSN_LABEL(jsr),
+    INSN_LABEL(ret),
+    INSN_LABEL(tableswitch),
+    INSN_LABEL(lookupswitch),
+    INSN_LABEL(ireturn),
+    INSN_LABEL(lreturn),
+    INSN_LABEL(freturn),
+    INSN_LABEL(dreturn),
+    INSN_LABEL(areturn),
+    INSN_LABEL(return),
+    INSN_LABEL(getstatic),
+    INSN_LABEL(putstatic),
+    INSN_LABEL(getfield),
+    INSN_LABEL(putfield),
+    INSN_LABEL(invokevirtual),
+    INSN_LABEL(invokespecial),
+    INSN_LABEL(invokestatic),
+    INSN_LABEL(invokeinterface),
+    0, /* op_xxxunusedxxx1, */
+    INSN_LABEL(new),
+    INSN_LABEL(newarray),
+    INSN_LABEL(anewarray),
+    INSN_LABEL(arraylength),
+    INSN_LABEL(athrow),
+    INSN_LABEL(checkcast),
+    INSN_LABEL(instanceof),
+    INSN_LABEL(monitorenter),
+    INSN_LABEL(monitorexit),
+    INSN_LABEL(wide),
+    INSN_LABEL(multianewarray),
+    INSN_LABEL(ifnull),
+    INSN_LABEL(ifnonnull),
+    INSN_LABEL(goto_w),
+    INSN_LABEL(jsr_w),
 
+    INSN_LABEL(putfield_1),
+    INSN_LABEL(putfield_2),
+    INSN_LABEL(putfield_4),
+    INSN_LABEL(putfield_8),
+    INSN_LABEL(putfield_a),
 
-  if (time_warp == 0) 
-    {
-      struct timeval tv2;
+    INSN_LABEL(putstatic_1),
+    INSN_LABEL(putstatic_2),
+    INSN_LABEL(putstatic_4),
+    INSN_LABEL(putstatic_8),
+    INSN_LABEL(putstatic_a),
 
-      gettimeofday (&tv, 0); 
-      for (int i = 0; i < 100; i++)
-	gettimeofday (&tv2, 0); 
-      
-      jlong then = USEC(tv); 
-      jlong now = USEC(tv2);
-      time_warp = (now - then) / 100;
+    INSN_LABEL(getfield_1),
+    INSN_LABEL(getfield_2s),
+    INSN_LABEL(getfield_2u),
+    INSN_LABEL(getfield_4),
+    INSN_LABEL(getfield_8),
+    INSN_LABEL(getfield_a),
 
-      if (time_warp == 0)
-	time_warp = 1;
-    }    
+    INSN_LABEL(getstatic_1),
+    INSN_LABEL(getstatic_2s),
+    INSN_LABEL(getstatic_2u),
+    INSN_LABEL(getstatic_4),
+    INSN_LABEL(getstatic_8),
+    INSN_LABEL(getstatic_a),
+  };
 
-#define TIME_SUSPEND do { \
-  gettimeofday (&tv, 0); \
-  jlong now = USEC(tv); \
-  insn_time[last_opcode] += (now - last_time) - time_warp; \
-} while(0)
+#define SAVE_PC   inv->pc = pc-1
 
-#define TIME_RESUME do { \
-  gettimeofday (&tv, 0); \
-  last_time = USEC(tv); \
-} while(0)
+  /* If the macro INLINE_SWITCH is not defined, then the main loop
+     operates as one big (normal) switch statement.  If it is defined,
+     then the case selection is performed `inline' in the end of the
+     code for each case.  The latter saves a native branch instruction
+     for each java-instruction, but expands the code size somewhat.
 
-  last_opcode = 0; 
-  gettimeofday (&tv, 0); 
-  last_time = (jlong)tv.tv_sec * 1000000LL + (jlong)tv.tv_usec; 
+     NOTE: On i386 defining INLINE_SWITCH improves over all
+     performance approximately seven percent, but it may be different
+     for other machines.  At some point, this may be made into a proper
+     configuration parameter.  */
 
+#define INLINE_SWITCH 
+
+#ifdef  INLINE_SWITCH
+
+#define NEXT_INSN GOTO_INSN(*pc++)
+  NEXT_INSN;
 #else
 
-#define TIME_SUSPEND 
-#define TIME_RESUME
-
-#endif
+#define NEXT_INSN goto next_insn
 
  next_insn:
-  inv->pc = pc;
-
-#ifdef TIME_MAINLOOP
-
-  gettimeofday (&tv, 0); 
-  jlong now = USEC(tv); 
-  insn_time[last_opcode] += (now - last_time) - time_warp; 
-  last_time = now; 
-  last_opcode = *pc; 
-  insn_count[last_opcode] += 1;
+  GOTO_INSN (*pc++);
 
 #endif
-  opcode = *pc++;
 
-  switch (opcode)
-    {
-    case op_aload_0:		// 0x2a
+  /* The first few instructions here are ordered according to their
+     frequency, in the hope that this will improve code locality a
+     little.  */
+
+     insn_aload_0:		// 0x2a
       LOADA(0);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_iload:		// 0x15
+     insn_iload:		// 0x15
       LOADI (get1u (pc++));
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_getfield_4:		// 0xd8
+     insn_getfield_4:		// 0xd8
+      SAVE_PC;
       {
 	jobject obj   = POPA();
 	NULLCHECK(obj);
 	jint field_offset = get2u (pc); pc += 2;
 	PUSHI (*(jint*) ((char*)obj + field_offset));
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_iload_1:		// 0x1b
+     insn_iload_1:		// 0x1b
       LOADI (1);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_getfield_a:		// 0xda
+     insn_getfield_a:		// 0xda
+      SAVE_PC;
       {
 	jobject obj   = POPA();
 	NULLCHECK(obj);
 	jint field_offset = get2u (pc); pc += 2;
 	PUSHA(*(jobject*) ((char*)obj + field_offset));
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_invokevirtual:	// 0xb6
+     insn_invokevirtual:	// 0xb6
+      SAVE_PC;
       {
 	int index = get2u (pc); pc += 2;
 
@@ -596,7 +766,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       }
       goto perform_invoke;
 
-    perform_invoke:
+     perform_invoke:
       {
 	/* here goes the magic again... */
 	ffi_cif *cif = &rmeth->cif;
@@ -604,9 +774,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 
 	jdouble rvalue;
 
-	TIME_SUSPEND;
 	ffi_raw_call (cif, fun, (void*)&rvalue, raw);
-	TIME_RESUME;
 
 	int rtype = cif->rtype->type;
 
@@ -658,520 +826,623 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	  case FFI_TYPE_SINT64:
 	    PUSHL (*(jlong*)&rvalue);
 	    break;
-	
+
 	  default:
 	    throw_internal_error ("unknown return type in invokeXXX");
 	  }
-	
+
       }
-      goto next_insn;
+      NEXT_INSN;
 
 
-    case op_nop:
-      goto next_insn;
+     insn_nop:
+      NEXT_INSN;
 
-    case op_aconst_null:
+     insn_aconst_null:
       PUSHA (NULL);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_iconst_m1:
-    case op_iconst_0:
-    case op_iconst_1:
-    case op_iconst_2:
-    case op_iconst_3:
-    case op_iconst_4:
-    case op_iconst_5:
-      PUSHI (opcode-op_iconst_0);
-      goto next_insn;
+     insn_iconst_m1:
+      PUSHI (-1);
+      NEXT_INSN;
 
-    case op_lconst_0:
-    case op_lconst_1:
-      PUSHL ((jlong) (opcode-op_lconst_0));
-      goto next_insn;
-      
-    case op_fconst_0:
-    case op_fconst_1:
-    case op_fconst_2:
-      PUSHF ((jfloat) (opcode-op_fconst_0));
-      goto next_insn;
+     insn_iconst_0:
+      PUSHI (0);
+      NEXT_INSN;
 
-    case op_dconst_0:
-    case op_dconst_1:
-      PUSHD ((jdouble) (opcode-op_dconst_0));
-      goto next_insn;
+     insn_iconst_1:
+      PUSHI (1);
+      NEXT_INSN;
 
-    case op_bipush:
+     insn_iconst_2:
+      PUSHI (2);
+      NEXT_INSN;
+
+     insn_iconst_3:
+      PUSHI (3);
+      NEXT_INSN;
+
+     insn_iconst_4:
+      PUSHI (4);
+      NEXT_INSN;
+
+     insn_iconst_5:
+      PUSHI (5);
+      NEXT_INSN;
+
+     insn_lconst_0:
+      PUSHL (0);
+      NEXT_INSN;
+
+     insn_lconst_1:
+      PUSHL (1);
+      NEXT_INSN;
+
+     insn_fconst_0:
+      PUSHF (0);
+      NEXT_INSN;
+
+     insn_fconst_1:
+      PUSHF (1);
+      NEXT_INSN;
+
+     insn_fconst_2:
+      PUSHF (2);
+      NEXT_INSN;
+
+     insn_dconst_0:
+      PUSHD (0);
+      NEXT_INSN;
+
+     insn_dconst_1:
+      PUSHD (1);
+      NEXT_INSN;
+
+     insn_bipush:
       PUSHI (get1s(pc++));
-      goto next_insn;
-      
-    case op_sipush:
-      PUSHI (get2s(pc)); pc += 2;
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_ldc:
+     insn_sipush:
+      PUSHI (get2s(pc)); pc += 2;
+      NEXT_INSN;
+
+     insn_ldc:
       {
 	int index = get1u (pc++);
 	PUSHA(pool_data[index].o);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_ldc_w:
+     insn_ldc_w:
       {
 	int index = get2u (pc); pc += 2;
 	PUSHA(pool_data[index].o);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_ldc2_w:
+     insn_ldc2_w:
       {
 	int index = get2u (pc); pc += 2;
 	memcpy (sp, &pool_data[index], 2*sizeof (_Jv_word));
 	sp += 2;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_lload:
+     insn_lload:
       LOADL (get1u (pc++));
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_fload:
+     insn_fload:
       LOADF (get1u (pc++));
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_dload:
+     insn_dload:
       LOADD (get1u (pc++));
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_aload:
+     insn_aload:
       LOADA (get1u (pc++));
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_iload_0:
+     insn_iload_0:
       LOADI (0);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_iload_2:
+     insn_iload_2:
       LOADI (2);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_iload_3:
+     insn_iload_3:
       LOADI (3);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_lload_0:
-    case op_lload_1:
-    case op_lload_2:
-    case op_lload_3:
-      LOADL (opcode-op_lload_0);
-      goto next_insn;
+     insn_lload_0:
+      LOADL (0);
+      NEXT_INSN;
 
-    case op_fload_0:
-    case op_fload_1:
-    case op_fload_2:
-    case op_fload_3:
-      LOADF (opcode-op_fload_0);
-      goto next_insn;
+     insn_lload_1:
+      LOADL (1);
+      NEXT_INSN;
 
-    case op_dload_0:
-    case op_dload_1:
-    case op_dload_2:
-    case op_dload_3:
-      LOADD (opcode-op_dload_0);
-      goto next_insn;
+     insn_lload_2:
+      LOADL (2);
+      NEXT_INSN;
 
-    case op_aload_1:
+     insn_lload_3:
+      LOADL (3);
+      NEXT_INSN;
+
+     insn_fload_0:
+      LOADF (0);
+      NEXT_INSN;
+
+     insn_fload_1:
+      LOADF (1);
+      NEXT_INSN;
+
+     insn_fload_2:
+      LOADF (2);
+      NEXT_INSN;
+
+     insn_fload_3:
+      LOADF (3);
+      NEXT_INSN;
+
+     insn_dload_0:
+      LOADD (0);
+      NEXT_INSN;
+
+     insn_dload_1:
+      LOADD (1);
+      NEXT_INSN;
+
+     insn_dload_2:
+      LOADD (2);
+      NEXT_INSN;
+
+     insn_dload_3:
+      LOADD (3);
+      NEXT_INSN;
+
+     insn_aload_1:
       LOADA(1);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_aload_2:
+     insn_aload_2:
       LOADA(2);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_aload_3:
+     insn_aload_3:
       LOADA(3);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_iaload:
+     insn_iaload:
+      SAVE_PC;
       {
 	jint index = POPI();
 	jintArray arr = (jintArray) POPA();
 	NULLCHECK (arr);
 	if (index < 0 || index >= arr->length)
- 	  {
-	    TIME_SUSPEND;
+	  {
 	    _Jv_ThrowBadArrayIndex (index);
 	  }
 	PUSHI( elements(arr)[index] );
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_laload:
+     insn_laload:
+      SAVE_PC;
       {
 	jint index = POPI();
 	jlongArray arr = (jlongArray) POPA();
 	NULLCHECK (arr);
 	if (index < 0 || index >= arr->length)
- 	  {
-	    TIME_SUSPEND;
+	  {
 	    _Jv_ThrowBadArrayIndex (index);
 	  }
 	PUSHL( elements(arr)[index] );
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_faload:
+     insn_faload:
+      SAVE_PC;
       {
 	jint index = POPI();
 	jfloatArray arr = (jfloatArray) POPA();
 	NULLCHECK (arr);
 	if (index < 0 || index >= arr->length)
- 	  {
-	    TIME_SUSPEND;
+	  {
 	    _Jv_ThrowBadArrayIndex (index);
 	  }
 	PUSHF( elements(arr)[index] );
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_daload:
+     insn_daload:
+      SAVE_PC;
       {
 	jint index = POPI();
 	jdoubleArray arr = (jdoubleArray) POPA();
 	NULLCHECK (arr);
 	if (index < 0 || index >= arr->length)
- 	  {
-	    TIME_SUSPEND;
+	  {
 	    _Jv_ThrowBadArrayIndex (index);
 	  }
 	PUSHD( elements(arr)[index] );
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_aaload:
+     insn_aaload:
+      SAVE_PC;
       {
 	jint index = POPI();
 	jobjectArray arr = (jobjectArray) POPA();
 	NULLCHECK (arr);
 	if (index < 0 || index >= arr->length)
- 	  {
-	    TIME_SUSPEND;
+	  {
 	    _Jv_ThrowBadArrayIndex (index);
 	  }
 	PUSHA( elements(arr)[index] );
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_baload:
+     insn_baload:
+      SAVE_PC;
       {
 	jint index = POPI();
 	jbyteArray arr = (jbyteArray) POPA();
 	NULLCHECK (arr);
 	if (index < 0 || index >= arr->length)
- 	  {
-	    TIME_SUSPEND;
+	  {
 	    _Jv_ThrowBadArrayIndex (index);
 	  }
 	PUSHI( elements(arr)[index] );
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_caload:
+     insn_caload:
+      SAVE_PC;
       {
 	jint index = POPI();
 	jcharArray arr = (jcharArray) POPA();
 	NULLCHECK (arr);
 	if (index < 0 || index >= arr->length)
- 	  {
-	    TIME_SUSPEND;
+	  {
 	    _Jv_ThrowBadArrayIndex (index);
 	  }
 	PUSHI( elements(arr)[index] );
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_saload:
+     insn_saload:
+      SAVE_PC;
       {
 	jint index = POPI();
 	jshortArray arr = (jshortArray) POPA();
 	NULLCHECK (arr);
 	if (index < 0 || index >= arr->length)
- 	  {
-	    TIME_SUSPEND;
+	  {
 	    _Jv_ThrowBadArrayIndex (index);
 	  }
 	PUSHI( elements(arr)[index] );
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_istore:
+     insn_istore:
       STOREI (get1u (pc++));
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_lstore:
+     insn_lstore:
       STOREL (get1u (pc++));
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_fstore:
+     insn_fstore:
       STOREF (get1u (pc++));
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_dstore:
+     insn_dstore:
       STORED (get1u (pc++));
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_astore:
+     insn_astore:
       STOREI (get1u (pc++));
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_istore_0:
-    case op_istore_1:
-    case op_istore_2:
-    case op_istore_3:
-      STOREI (opcode-op_istore_0);
-      goto next_insn;
+     insn_istore_0:
+      STOREI (0);
+      NEXT_INSN;
 
-    case op_lstore_0:
-    case op_lstore_1:
-    case op_lstore_2:
-    case op_lstore_3:
-      STOREL (opcode-op_lstore_0);
-      goto next_insn;
+     insn_istore_1:
+      STOREI (1);
+      NEXT_INSN;
 
-    case op_fstore_0:
-    case op_fstore_1:
-    case op_fstore_2:
-    case op_fstore_3:
-      STOREF (opcode-op_fstore_0);
-      goto next_insn;
+     insn_istore_2:
+      STOREI (2);
+      NEXT_INSN;
 
-    case op_dstore_0:
-    case op_dstore_1:
-    case op_dstore_2:
-    case op_dstore_3:
-      STORED (opcode-op_dstore_0);
-      goto next_insn;
+     insn_istore_3:
+      STOREI (3);
+      NEXT_INSN;
 
-    case op_astore_0:
-    case op_astore_1:
-    case op_astore_2:
-    case op_astore_3:
-      STOREA (opcode-op_astore_0);
-      goto next_insn;
+     insn_lstore_0:
+      STOREL (0);
+      NEXT_INSN;
 
-    case op_iastore:
+     insn_lstore_1:
+      STOREL (1);
+      NEXT_INSN;
+
+     insn_lstore_2:
+      STOREL (2);
+      NEXT_INSN;
+
+     insn_lstore_3:
+      STOREL (3);
+      NEXT_INSN;
+
+     insn_fstore_0:
+      STOREF (0);
+      NEXT_INSN;
+
+     insn_fstore_1:
+      STOREF (1);
+      NEXT_INSN;
+
+     insn_fstore_2:
+      STOREF (2);
+      NEXT_INSN;
+
+     insn_fstore_3:
+      STOREF (3);
+      NEXT_INSN;
+
+     insn_dstore_0:
+      STORED (0);
+      NEXT_INSN;
+
+     insn_dstore_1:
+      STORED (1);
+      NEXT_INSN;
+
+     insn_dstore_2:
+      STORED (2);
+      NEXT_INSN;
+
+     insn_dstore_3:
+      STORED (3);
+      NEXT_INSN;
+
+     insn_astore_0:
+      STOREA(0);
+      NEXT_INSN;
+
+     insn_astore_1:
+      STOREA(1);
+      NEXT_INSN;
+
+     insn_astore_2:
+      STOREA(2);
+      NEXT_INSN;
+
+     insn_astore_3:
+      STOREA(3);
+      NEXT_INSN;
+
+     insn_iastore:
+      SAVE_PC;
       {
 	jint value = POPI();
 	jint index  = POPI();
 	jintArray arr = (jintArray) POPA();
 	NULLCHECK (arr);
 	if (index < 0 || index >= arr->length)
- 	  {
-	    TIME_SUSPEND;
+	  {
 	    _Jv_ThrowBadArrayIndex (index);
 	  }
 	elements(arr)[index] = value;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_lastore:
+     insn_lastore:
+      SAVE_PC;
       {
 	jlong value = POPL();
 	jint index  = POPI();
 	jlongArray arr = (jlongArray) POPA();
 	NULLCHECK (arr);
 	if (index < 0 || index >= arr->length)
- 	  {
-	    TIME_SUSPEND;
+	  {
 	    _Jv_ThrowBadArrayIndex (index);
 	  }
 	elements(arr)[index] = value;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_fastore:
+     insn_fastore:
+      SAVE_PC;
       {
 	jfloat value = POPF();
 	jint index  = POPI();
 	jfloatArray arr = (jfloatArray) POPA();
 	NULLCHECK (arr);
 	if (index < 0 || index >= arr->length)
- 	  {
-	    TIME_SUSPEND;
+	  {
 	    _Jv_ThrowBadArrayIndex (index);
 	  }
 	elements(arr)[index] = value;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_dastore:
+     insn_dastore:
+      SAVE_PC;
       {
 	jdouble value = POPD();
 	jint index  = POPI();
 	jdoubleArray arr = (jdoubleArray) POPA();
 	NULLCHECK (arr);
 	if (index < 0 || index >= arr->length)
- 	  {
-	    TIME_SUSPEND;
+	  {
 	    _Jv_ThrowBadArrayIndex (index);
 	  }
 	elements(arr)[index] = value;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_aastore:
+     insn_aastore:
+      SAVE_PC;
       {
 	jobject value = POPA();
 	jint index  = POPI();
 	jobjectArray arr = (jobjectArray) POPA();
 	NULLCHECK (arr);
 	if (index < 0 || index >= arr->length)
- 	  {
-	    TIME_SUSPEND;
+	  {
 	    _Jv_ThrowBadArrayIndex (index);
 	  }
 	_Jv_CheckArrayStore (arr, value);
 	elements(arr)[index] = value;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_bastore:
+     insn_bastore:
+      SAVE_PC;
       {
 	jbyte value = (jbyte) POPI();
 	jint index  = POPI();
 	jbyteArray arr = (jbyteArray) POPA();
 	NULLCHECK (arr);
 	if (index < 0 || index >= arr->length)
- 	  {
-	    TIME_SUSPEND;
+	  {
 	    _Jv_ThrowBadArrayIndex (index);
 	  }
 	elements(arr)[index] = value;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_castore:
+     insn_castore:
+      SAVE_PC;
       {
 	jchar value = (jchar) POPI();
 	jint index  = POPI();
 	jcharArray arr = (jcharArray) POPA();
 	NULLCHECK (arr);
 	if (index < 0 || index >= arr->length)
- 	  {
-	    TIME_SUSPEND;
+	  {
 	    _Jv_ThrowBadArrayIndex (index);
 	  }
 	elements(arr)[index] = value;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_sastore:
+     insn_sastore:
+      SAVE_PC;
       {
 	jshort value = (jshort) POPI();
 	jint index  = POPI();
 	jshortArray arr = (jshortArray) POPA();
 	NULLCHECK (arr);
 	if (index < 0 || index >= arr->length)
- 	  {
-	    TIME_SUSPEND;
+	  {
 	    _Jv_ThrowBadArrayIndex (index);
 	  }
 	elements(arr)[index] = value;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_pop:
+     insn_pop:
       sp -= 1;
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_pop2:
+     insn_pop2:
       sp -= 2;
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_dup:
+     insn_dup:
       sp[0] = sp[-1];
       sp += 1;
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_dup_x1:
-      dupx (sp, 1, 1);
-      goto next_insn;
+     insn_dup_x1:
+      dupx (sp, 1, 1); sp+=1;
+      NEXT_INSN;
 
-    case op_dup_x2:
-      dupx (sp, 1, 2);
-      goto next_insn;
+     insn_dup_x2:
+      dupx (sp, 1, 2); sp+=1;
+      NEXT_INSN;
 
-    case op_dup2:
+     insn_dup2:
       sp[0] = sp[-2];
       sp[1] = sp[-1];
       sp += 2;
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_dup2_x1:
-      dupx (sp, 2, 1);
-      goto next_insn;
+     insn_dup2_x1:
+      dupx (sp, 2, 1); sp+=2;
+      NEXT_INSN;
 
-    case op_dup2_x2:
-      dupx (sp, 2, 2);
-      goto next_insn;
+     insn_dup2_x2:
+      dupx (sp, 2, 2); sp+=2;
+      NEXT_INSN;
 
-    case op_swap:
+     insn_swap:
       {
 	jobject tmp1 = POPA();
 	jobject tmp2 = POPA();
 	PUSHA (tmp1);
 	PUSHA (tmp2);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_iadd:
+     insn_iadd:
       BINOPI(+);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_ladd:
+     insn_ladd:
       BINOPL(+);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_fadd:
+     insn_fadd:
       BINOPF(+);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_dadd:
+     insn_dadd:
       BINOPD(+);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_isub:
+     insn_isub:
       BINOPI(-);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_lsub:
+     insn_lsub:
       BINOPL(-);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_fsub:
+     insn_fsub:
       BINOPF(-);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_dsub:
+     insn_dsub:
       BINOPD(-);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_imul:
+     insn_imul:
       BINOPI(*);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_lmul:
+     insn_lmul:
       BINOPL(*);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_fmul:
+     insn_fmul:
       BINOPF(*);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_dmul:
+     insn_dmul:
       BINOPD(*);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_idiv:
+     insn_idiv:
+      SAVE_PC;
       {
 	jint value2 = POPI();
 	jint value1 = POPI();
@@ -1179,19 +1450,21 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jint res = value1 / value2;
 	PUSHI (res);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_ldiv:
-       {
+     insn_ldiv:
+      SAVE_PC;
+      {
 	jlong value2 = POPL();
 	jlong value1 = POPL();
 	ZEROCHECK (value2);
 	jlong res = value1 / value2;
 	PUSHL (res);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_fdiv:
+     insn_fdiv:
+      SAVE_PC;
       {
 	jfloat value2 = POPF();
 	jfloat value1 = POPF();
@@ -1199,9 +1472,10 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jfloat res = value1 / value2;
 	PUSHF (res);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_ddiv:
+     insn_ddiv:
+      SAVE_PC;
       {
 	jdouble value2 = POPD();
 	jdouble value1 = POPD();
@@ -1209,9 +1483,10 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jdouble res = value1 / value2;
 	PUSHD (res);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_irem:
+     insn_irem:
+      SAVE_PC;
       {
 	jint value2 = POPI();
 	jint value1 = POPI();
@@ -1219,19 +1494,21 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jint res = value1 % value2;
 	PUSHI (res);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_lrem:
-       {
+     insn_lrem:
+      SAVE_PC;
+      {
 	jlong value2 = POPL();
 	jlong value1 = POPL();
 	ZEROCHECK (value2);
 	jlong res = value1 % value2;
 	PUSHL (res);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_frem:
+     insn_frem:
+      SAVE_PC;
       {
 	jfloat value2 = POPF();
 	jfloat value1 = POPF();
@@ -1239,9 +1516,10 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jfloat res    = __ieee754_fmod (value1, value2);
 	PUSHF (res);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_drem:
+     insn_drem:
+      SAVE_PC;
       {
 	jdouble value2 = POPD();
 	jdouble value1 = POPD();
@@ -1249,165 +1527,177 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jdouble res    = __ieee754_fmod (value1, value2);
 	PUSHD (res);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_ineg:
-      *(jint*) (sp-1) *= -1;
-      goto next_insn;
+     insn_ineg:
+      {
+	jint value = POPI();
+	PUSHI (value * -1);
+      }
+      NEXT_INSN;
 
-    case op_lneg:
-      *(jlong*) (sp-1) *= -1;
-      goto next_insn;
+     insn_lneg:
+      {
+	jlong value = POPL();
+	PUSHL (value * -1);
+      }
+      NEXT_INSN;
 
-    case op_fneg:
-      *(jfloat*) (sp-1) *= -1;
-      goto next_insn;
+     insn_fneg:
+      {
+	jfloat value = POPF();
+	PUSHF (value * -1);
+      }
+      NEXT_INSN;
 
-    case op_dneg:
-      *(jdouble*) (sp-1) *= -1;
-      goto next_insn;
+     insn_dneg:
+      {
+	jdouble value = POPD();
+	PUSHD (value * -1);
+      }
+      NEXT_INSN;
 
-    case op_ishl:
+     insn_ishl:
       {
 	jint shift = (POPI() & 0x1f);
 	jint value = POPI();
 	PUSHI (value << shift);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_lshl:
+     insn_lshl:
       {
 	jint shift = (POPI() & 0x3f);
 	jlong value = POPL();
 	PUSHL (value << shift);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_ishr:
+     insn_ishr:
       {
 	jint shift = (POPI() & 0x1f);
 	jint value = POPI();
 	PUSHI (value >> shift);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_lshr:
+     insn_lshr:
       {
 	jint shift = (POPI() & 0x3f);
 	jlong value = POPL();
 	PUSHL (value >> shift);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_iushr:
+     insn_iushr:
       {
 	jint shift = (POPI() & 0x1f);
 	unsigned long value = POPI();
 	PUSHI ((jint) (value >> shift));
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_lushr:
+     insn_lushr:
       {
 	jint shift = (POPI() & 0x3f);
 	UINT64 value = (UINT64) POPL();
 	PUSHL ((value >> shift));
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_iand:
+     insn_iand:
       BINOPI (&);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_land:
+     insn_land:
       BINOPL (&);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_ior:
+     insn_ior:
       BINOPI (|);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_lor:
+     insn_lor:
       BINOPL (|);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_ixor:
+     insn_ixor:
       BINOPI (^);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_lxor:
+     insn_lxor:
       BINOPL (^);
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_iinc:
+     insn_iinc:
       {
 	jint index  = get1u (pc++);
 	jint amount = get1s (pc++);
-	*(jint*) (locals + index) += amount;
+	locals[index].i += amount;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_i2l:
+     insn_i2l:
       {jlong value = POPI(); PUSHL (value);}
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_i2f:
+     insn_i2f:
       {jfloat value = POPI(); PUSHF (value);}
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_i2d:
+     insn_i2d:
       {jdouble value = POPI(); PUSHD (value);}
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_l2i:
+     insn_l2i:
       {jint value = POPL(); PUSHI (value);}
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_l2f:
+     insn_l2f:
       {jfloat value = POPL(); PUSHF (value);}
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_l2d:
+     insn_l2d:
       {jdouble value = POPL(); PUSHD (value);}
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_f2i:
+     insn_f2i:
       { jint value = (jint)POPF (); PUSHI(value); }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_f2l:
+     insn_f2l:
       { jlong value = (jlong)POPF (); PUSHL(value); }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_f2d:
+     insn_f2d:
       { jdouble value = POPF (); PUSHD(value); }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_d2i:
+     insn_d2i:
       { jint value = (jint)POPD (); PUSHI(value); }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_d2l:
+     insn_d2l:
       { jlong value = (jlong)POPD (); PUSHL(value); }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_d2f:
+     insn_d2f:
       { jfloat value = POPD (); PUSHF(value); }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_i2b:
+     insn_i2b:
       { jbyte value = POPI (); PUSHI(value); }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_i2c:
+     insn_i2c:
       { jchar value = POPI (); PUSHI(value); }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_i2s:
+     insn_i2s:
       { jshort value = POPI (); PUSHI(value); }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_lcmp:
+     insn_lcmp:
       {
 	jlong value2 = POPL ();
 	jlong value1 = POPL ();
@@ -1418,10 +1708,10 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	else
 	  { PUSHI (-1); }
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_fcmpl:
-    case op_fcmpg:
+     insn_fcmpl:
+     insn_fcmpg:
       {
 	jfloat value2 = POPF ();
 	jfloat value1 = POPF ();
@@ -1431,15 +1721,15 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	  PUSHI (0);
 	else if (value1 < value2)
 	  PUSHI (-1);
-	else if (opcode == op_fcmpg)
+	else if ((*(pc-1)) == op_fcmpg)
 	  PUSHI (1);
 	else
 	  PUSHI (-1);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_dcmpl:
-    case op_dcmpg:
+     insn_dcmpl:
+     insn_dcmpg:
       {
 	jdouble value2 = POPD ();
 	jdouble value1 = POPD ();
@@ -1449,14 +1739,14 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	  PUSHI (0);
 	else if (value1 < value2)
 	  PUSHI (-1);
-	else if (opcode == op_dcmpg)
+	else if ((*(pc-1)) == op_dcmpg)
 	  PUSHI (1);
 	else
 	  PUSHI (-1);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_ifeq:
+     insn_ifeq:
       {
 	jint offset = get2s (pc); 
 	if (POPI() == 0)
@@ -1464,9 +1754,9 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	else
 	  pc = pc+2;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_ifne:
+     insn_ifne:
       {
 	jint offset = get2s (pc); 
 	if (POPI() != 0)
@@ -1474,9 +1764,9 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	else
 	  pc = pc+2;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_iflt:
+     insn_iflt:
       {
 	jint offset = get2s (pc); 
 	if (POPI() < 0)
@@ -1484,9 +1774,9 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	else
 	  pc = pc+2;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_ifge:
+     insn_ifge:
       {
 	jint offset = get2s (pc); 
 	if (POPI() >= 0)
@@ -1494,9 +1784,9 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	else
 	  pc = pc+2;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_ifgt:
+     insn_ifgt:
       {
 	jint offset = get2s (pc); 
 	if (POPI() > 0)
@@ -1504,9 +1794,9 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	else
 	  pc = pc+2;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_ifle:
+     insn_ifle:
       {
 	jint offset = get2s (pc); 
 	if (POPI() <= 0)
@@ -1514,9 +1804,9 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	else
 	  pc = pc+2;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_if_icmpeq:
+     insn_if_icmpeq:
       {
 	jint offset = get2s (pc); 
 	jint value2 = POPI();
@@ -1526,9 +1816,9 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	else
 	  pc = pc+2;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_if_icmpne:
+     insn_if_icmpne:
       {
 	jint offset = get2s (pc); 
 	jint value2 = POPI();
@@ -1538,9 +1828,9 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	else
 	  pc = pc+2;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_if_icmplt:
+     insn_if_icmplt:
       {
 	jint offset = get2s (pc); 
 	jint value2 = POPI();
@@ -1550,9 +1840,9 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	else
 	  pc = pc+2;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_if_icmpge:
+     insn_if_icmpge:
       {
 	jint offset = get2s (pc); 
 	jint value2 = POPI();
@@ -1562,9 +1852,9 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	else
 	  pc = pc+2;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_if_icmpgt:
+     insn_if_icmpgt:
       {
 	jint offset = get2s (pc); 
 	jint value2 = POPI();
@@ -1574,9 +1864,9 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	else
 	  pc = pc+2;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_if_icmple:
+     insn_if_icmple:
       {
 	jint offset = get2s (pc); 
 	jint value2 = POPI();
@@ -1586,9 +1876,9 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	else
 	  pc = pc+2;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_if_acmpeq:
+     insn_if_acmpeq:
       {
 	jint offset = get2s (pc); 
 	jobject value2 = POPA();
@@ -1598,9 +1888,9 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	else
 	  pc = pc+2;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_if_acmpne:
+     insn_if_acmpne:
       {
 	jint offset = get2s (pc); 
 	jobject value2 = POPA();
@@ -1610,36 +1900,36 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	else
 	  pc = pc+2;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_goto: 
+     insn_goto: 
       {
 	jint offset = get2s (pc);
 	pc = pc-1+offset;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_jsr:
+     insn_jsr:
       {
 	unsigned char *base_pc = pc-1;
 	jint offset = get2s (pc); pc += 2;
 	PUSHA ((jobject)pc);
 	pc = base_pc+offset;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_ret:
+     insn_ret:
       {
 	jint index = get1u (pc);
 	pc = (unsigned char*) PEEKA (index);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_tableswitch:
+     insn_tableswitch:
       {
 	unsigned char *base_pc = pc-1;
 	int index = POPI();
-	
+
 	unsigned char* base = bytecode ();
 	while ((pc-base) % 4 != 0)
 	  pc++;
@@ -1653,20 +1943,20 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	else
 	  pc = base_pc + get4 (pc+4*(index-low+3));
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_lookupswitch:
+     insn_lookupswitch:
       {
 	unsigned char *base_pc = pc-1;
 	int index = POPI();
-	
+
 	unsigned char* base = bytecode ();
 	while ((pc-base) % 4 != 0)
 	  pc++;
-	
+
 	jint def     = get4 (pc);
 	jint npairs  = get4 (pc+4);
-	
+
 	int max = npairs-1;
 	int min = 0;
 
@@ -1681,30 +1971,30 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 
 	    else if (index < match)
 	      max = half-1;
-	    
+
 	    else
 	      min = half+1;
 	  }
-	
+
 	if (index == get4 (pc+ 4*(2 + 2*min)))
 	  pc = base_pc + get4 (pc+ 4*(2 + 2*min + 1));
 	else
 	  pc = base_pc + def;    
       }
-      goto next_insn;
+      NEXT_INSN;
 
       /* on return, just save the sp and return to caller */
-    case op_ireturn:
-    case op_lreturn:
-    case op_freturn:
-    case op_dreturn:
-    case op_areturn:
-    case op_return:
+     insn_ireturn:
+     insn_lreturn:
+     insn_freturn:
+     insn_dreturn:
+     insn_areturn:
+     insn_return:
       inv->sp = sp;
-      TIME_SUSPEND;
       return;
 
-    case op_getstatic:
+     insn_getstatic:
+      SAVE_PC;
       {
 	unsigned char *base_pc = pc-1;
 	jint fieldref_index = get2u (pc); pc += 2;
@@ -1724,7 +2014,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	      case 1:
 		*base_pc = op_getstatic_1;
 		break;
-	    
+
 	      case 2:
 		if (type == JvPrimClass (char))
 		  *base_pc = op_getstatic_2u;
@@ -1745,12 +2035,13 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	  {
 	    *base_pc = op_getstatic_a;
 	  }
-	
+
 	pc = base_pc;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_getfield:
+     insn_getfield:
+      SAVE_PC;
       {
 	unsigned char *base_pc = pc-1;
 	jint fieldref_index = get2u (pc); pc += 2;
@@ -1770,7 +2061,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	      case 1:
 		*base_pc = op_getfield_1;
 		break;
-	    
+
 	      case 2:
 		if (type == JvPrimClass (char))
 		  *base_pc = op_getfield_2u;
@@ -1791,7 +2082,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	  {
 	    *base_pc = op_getfield_a;
 	  }
-	
+
 	if (field->u.boffset > 0xffff)
 	  JvThrow (new java::lang::VirtualMachineError);
 
@@ -1800,9 +2091,10 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 
 	pc = base_pc;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_putstatic:
+     insn_putstatic:
+      SAVE_PC;
       {
 	unsigned char* base_pc = pc-1;
 	jint fieldref_index = get2u (pc); pc += 2;
@@ -1830,11 +2122,11 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	      case 2:
 		*base_pc = op_putstatic_2;
 		break;
-		
+
 	      case 4:
 		*base_pc = op_putstatic_4;
 		break;
-		
+
 	      case 8:
 		*base_pc = op_putstatic_8;
 		break;
@@ -1848,10 +2140,11 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	// do the instruction again!
 	pc = base_pc;
       }
-      goto next_insn;
+      NEXT_INSN;
 
 
-    case op_putfield:
+     insn_putfield:
+      SAVE_PC;
       {
 	unsigned char* base_pc = pc-1;
 	jint fieldref_index = get2u (pc); pc += 2;
@@ -1899,94 +2192,99 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	// do the instruction again!
 	pc = base_pc;
       }
-      goto next_insn;
+      NEXT_INSN;
 
 
-    case op_getfield_1:
+     insn_getfield_1:
+      SAVE_PC;
       {
 	jobject obj   = POPA();
 	NULLCHECK(obj);
 	jint field_offset = get2u (pc); pc += 2;
 	PUSHI (*(jbyte*) ((char*)obj + field_offset));
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_getfield_2s:
+     insn_getfield_2s:
+      SAVE_PC;
       {
 	jobject obj   = POPA();
 	NULLCHECK(obj);
 	jint field_offset = get2u (pc); pc += 2;
 	PUSHI (*(jshort*) ((char*)obj + field_offset));
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_getfield_2u:
+     insn_getfield_2u:
+      SAVE_PC;
       {
 	jobject obj   = POPA();
 	NULLCHECK(obj);
 	jint field_offset = get2u (pc); pc += 2;
 	PUSHI (*(jchar*) ((char*)obj + field_offset));
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_getfield_8:
+     insn_getfield_8:
+      SAVE_PC;
       {
 	jobject obj   = POPA();
 	NULLCHECK(obj);
 	jint field_offset = get2u (pc); pc += 2;
 	PUSHL(*(jlong*) ((char*)obj + field_offset));
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_getstatic_1:
+     insn_getstatic_1:
       {
 	jint fieldref_index = get2u (pc); pc += 2;
 	_Jv_Field *field = pool_data[fieldref_index].field;
 	PUSHI (*(jbyte*) (field->u.addr));
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_getstatic_2s:
+     insn_getstatic_2s:
       {
 	jint fieldref_index = get2u (pc); pc += 2;
 	_Jv_Field *field = pool_data[fieldref_index].field;
 	PUSHI(*(jshort*) (field->u.addr));
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_getstatic_2u:
+     insn_getstatic_2u:
       {
 	jint fieldref_index = get2u (pc); pc += 2;
 	_Jv_Field *field = pool_data[fieldref_index].field;
 	PUSHI(*(jchar*) (field->u.addr));
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_getstatic_4:
+     insn_getstatic_4:
       {
 	jint fieldref_index = get2u (pc); pc += 2;
 	_Jv_Field *field = pool_data[fieldref_index].field;
 	PUSHI(*(jint*) (field->u.addr));
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_getstatic_8:
+     insn_getstatic_8:
       {
 	jint fieldref_index = get2u (pc); pc += 2;
 	_Jv_Field *field = pool_data[fieldref_index].field;
 	PUSHL(*(jlong*) (field->u.addr));
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_getstatic_a:
+     insn_getstatic_a:
       {
 	jint fieldref_index = get2u (pc); pc += 2;
 	_Jv_Field *field = pool_data[fieldref_index].field;
 	PUSHA(*(jobject*) (field->u.addr));
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_putfield_1:
+     insn_putfield_1:
+      SAVE_PC;
       {
 	jint    value = POPI();
 	jobject obj   = POPA();
@@ -1994,9 +2292,10 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jint field_offset = get2u (pc); pc += 2;
 	*(jbyte*) ((char*)obj + field_offset) = value;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_putfield_2:
+     insn_putfield_2:
+      SAVE_PC;
       {
 	jint    value = POPI();
 	jobject obj   = POPA();
@@ -2004,9 +2303,10 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jint field_offset = get2u (pc); pc += 2;
 	*(jchar*) ((char*)obj + field_offset) = value;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_putfield_4:
+     insn_putfield_4:
+      SAVE_PC;
       {
 	jint    value = POPI();
 	jobject obj   = POPA();
@@ -2014,9 +2314,10 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jint field_offset = get2u (pc); pc += 2;
 	*(jint*) ((char*)obj + field_offset) = value;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_putfield_8:
+     insn_putfield_8:
+      SAVE_PC;
       {
 	jlong   value = POPL();
 	jobject obj   = POPA();
@@ -2024,9 +2325,10 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jint field_offset = get2u (pc); pc += 2;
 	*(jlong*) ((char*)obj + field_offset) = value;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_putfield_a:
+     insn_putfield_a:
+      SAVE_PC;
       {
 	jobject value = POPA();
 	jobject obj   = POPA();
@@ -2034,81 +2336,84 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jint field_offset = get2u (pc); pc += 2;
 	*(jobject*) ((char*)obj + field_offset) = value;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_putstatic_1:
+     insn_putstatic_1:
       {
 	jint    value = POPI();
 	jint fieldref_index = get2u (pc); pc += 2;
 	_Jv_Field *field = pool_data[fieldref_index].field;
 	*(jbyte*) (field->u.addr) = value;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_putstatic_2:
+     insn_putstatic_2:
       {
 	jint    value = POPI();
 	jint fieldref_index = get2u (pc); pc += 2;
 	_Jv_Field *field = pool_data[fieldref_index].field;
 	*(jchar*) (field->u.addr) = value;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_putstatic_4:
+     insn_putstatic_4:
       {
 	jint    value = POPI();
 	jint fieldref_index = get2u (pc); pc += 2;
 	_Jv_Field *field = pool_data[fieldref_index].field;
 	*(jint*) (field->u.addr) = value;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_putstatic_8:
+     insn_putstatic_8:
       {
 	jlong    value = POPL();
 	jint fieldref_index = get2u (pc); pc += 2;
 	_Jv_Field *field = pool_data[fieldref_index].field;
 	*(jlong*) (field->u.addr) = value;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_putstatic_a:
+     insn_putstatic_a:
       {
 	jobject value = POPA();
 	jint fieldref_index = get2u (pc); pc += 2;
 	_Jv_Field *field = pool_data[fieldref_index].field;
 	*(jobject*) (field->u.addr) = value;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_invokespecial:
+     insn_invokespecial:
+      SAVE_PC;
       {
 	int index = get2u (pc); pc += 2;
 
 	rmeth = (_Jv_ResolvePoolEntry (defining_class, index)).rmethod;
 
 	sp -= rmeth->stack_item_count;
-	
+
 	NULLCHECK(sp[0]);
 
 	fun = (void (*) (...))rmeth->method->ncode;
       }
       goto perform_invoke;
 
-    case op_invokestatic:
+     insn_invokestatic:
+      SAVE_PC;
       {
 	int index = get2u (pc); pc += 2;
 
 	rmeth = (_Jv_ResolvePoolEntry (defining_class, index)).rmethod;
 
 	sp -= rmeth->stack_item_count;
-	
+
 	_Jv_InitClass (rmeth->klass);
 	fun = (void (*) (...))rmeth->method->ncode;
       }
       goto perform_invoke;
 
-    case op_invokeinterface:
+     insn_invokeinterface:
+      SAVE_PC;
       {
 	int index = get2u (pc); pc += 2;
 
@@ -2119,7 +2424,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 
 	sp -= rmeth->stack_item_count;
 	NULLCHECK(sp[0]);
-	
+
 	jobject rcv = sp[0].o;
 
 	fun = (void (*) (...))
@@ -2130,7 +2435,8 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       goto perform_invoke;
 
 
-    case op_new:
+     insn_new:
+      SAVE_PC;
       {
 	int index = get2u (pc); pc += 2;
 	jclass klass = (_Jv_ResolvePoolEntry (defining_class, index)).clazz;
@@ -2138,18 +2444,20 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jobject res = _Jv_AllocObject (klass, klass->size_in_bytes);
 	PUSHA (res);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_newarray:
+     insn_newarray:
+      SAVE_PC;
       {
 	int atype = get1u (pc++);
 	int size  = POPI();
 	jobject result = _Jv_NewArray (atype, size);
 	PUSHA (result);
       }
-      goto next_insn;
-      
-    case op_anewarray:
+      NEXT_INSN;
+
+     insn_anewarray:
+      SAVE_PC;
       {
 	int index = get2u (pc); pc += 2;
 	jclass klass = (_Jv_ResolvePoolEntry (defining_class, index)).clazz;
@@ -2158,24 +2466,26 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	jobject result = _Jv_NewObjectArray (size, klass, 0);
 	PUSHA (result);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_arraylength:
+     insn_arraylength:
+      SAVE_PC;
       {
 	__JArray *arr = (__JArray*)POPA();
 	PUSHI (arr->length);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_athrow:
+     insn_athrow:
+      SAVE_PC;
       {
 	jobject value = POPA();
-	TIME_SUSPEND;
 	JvThrow (value);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_checkcast:
+     insn_checkcast:
+      SAVE_PC;
       {
 	jobject value = POPA();
 	jint index = get2u (pc); pc += 2;
@@ -2183,41 +2493,43 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 
 	if (value != NULL && ! to->isInstance (value))
 	  {
-	    TIME_SUSPEND;
 	    JvThrow (new java::lang::ClassCastException
 		     (to->getName()));
 	  }
 
 	PUSHA (value);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_instanceof:
+     insn_instanceof:
+      SAVE_PC;
       {
 	jobject value = POPA();
 	jint index = get2u (pc); pc += 2;
 	jclass to = (_Jv_ResolvePoolEntry (defining_class, index)).clazz;
 	PUSHI (to->isInstance (value));
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_monitorenter:
+     insn_monitorenter:
+      SAVE_PC;
       {
 	jobject value = POPA();
 	NULLCHECK(value);
 	_Jv_MonitorEnter (value);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_monitorexit:
+     insn_monitorexit:
+      SAVE_PC;
       {
 	jobject value = POPA();
 	NULLCHECK(value);
 	_Jv_MonitorExit (value);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_ifnull:
+     insn_ifnull:
       {
 	unsigned char* base_pc = pc-1;
 	jint offset = get2s (pc); pc += 2;
@@ -2225,9 +2537,9 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	if (val == NULL)
 	  pc = base_pc+offset;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_ifnonnull:
+     insn_ifnonnull:
       {
 	unsigned char* base_pc = pc-1;
 	jint offset = get2s (pc); pc += 2;
@@ -2235,9 +2547,10 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	if (val != NULL)
 	  pc = base_pc+offset;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_wide:
+     insn_wide:
+      SAVE_PC;
       {
 	jint the_mod_op = get1u (pc++);
 	jint wide       = get2u (pc); pc += 2;
@@ -2246,43 +2559,43 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	  {
 	  case op_istore:
 	    STOREI (wide);
-	    goto next_insn;
+	    NEXT_INSN;
 
 	  case op_fstore:
 	    STOREF (wide);
-	    goto next_insn;
+	    NEXT_INSN;
 
 	  case op_astore:
 	    STOREA (wide);
-	    goto next_insn;
+	    NEXT_INSN;
 
 	  case op_lload:
 	    LOADL (wide);
-	    goto next_insn;
+	    NEXT_INSN;
 
 	  case op_dload:
 	    LOADD (wide);
-	    goto next_insn;
+	    NEXT_INSN;
 
 	  case op_iload:
 	    LOADI (wide);
-	    goto next_insn;
+	    NEXT_INSN;
 
 	  case op_aload:
 	    LOADA (wide);
-	    goto next_insn;
+	    NEXT_INSN;
 
 	  case op_lstore:
 	    STOREL (wide);
-	    goto next_insn;
+	    NEXT_INSN;
 
 	  case op_dstore:
 	    STORED (wide);
-	    goto next_insn;
+	    NEXT_INSN;
 
 	  case op_ret:
 	    pc = (unsigned char*) PEEKA (wide);
-	    goto next_insn;
+	    NEXT_INSN;
 
 	  case op_iinc:
 	    {
@@ -2290,7 +2603,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	      jint value = PEEKI (wide);
 	      POKEI (wide, value+amount);
 	    }
-	    goto next_insn;
+	    NEXT_INSN;
 
 	  default:
 	    throw_internal_error ("illegal bytecode modified by wide");
@@ -2298,7 +2611,8 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 
       }
 
-    case op_multianewarray:
+     insn_multianewarray:
+      SAVE_PC;
       {
 	int kind_index = get2u (pc); pc += 2;
 	int dim        = get1u (pc); pc += 1;
@@ -2312,35 +2626,29 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	  {
 	    sizes[i] = POPI ();
 	  }
-	
+
 	jobject res    = _Jv_NewMultiArray (type,dim, sizes);
-	
+
 	PUSHA (res);
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_goto_w:
+     insn_goto_w:
       {
 	unsigned char* base_pc = pc-1;
 	int offset = get4 (pc); pc += 4;
 	pc = base_pc+offset;
       }
-      goto next_insn;
+      NEXT_INSN;
 
-    case op_jsr_w:
+     insn_jsr_w:
       {
 	unsigned char* base_pc = pc-1;
 	int offset = get4 (pc); pc += 4;
 	PUSHA((jobject)pc);
 	pc = base_pc+offset;
       }
-      goto next_insn;
-
-    default:
-      throw_internal_error ("opcode not implemented");
-
-    }
-  goto next_insn;
+      NEXT_INSN;
 }
 
 
@@ -2381,57 +2689,5 @@ throw_arithmetic_exception ()
 }
 #endif
 
-void
-jvdump(jobject o)
-{
-  _Jv_InterpMethod::dump_object(o);
-}
-
-/* FIXME: This is not finished! */
-void
-_Jv_InterpMethod::dump_object(jobject o)
-{
-  java::io::PrintStream *out = java::lang::System::out;
-
-  if (o == NULL)
-    {
-      out->println (JvNewStringLatin1 ("<null>"));
-      return;
-    }
-
-  jclass klass = o->getClass ();
-
-  out->print (klass->getName ());
-  out->print (JvNewStringLatin1 ("@0x"));
-  out->print (java::lang::Integer::toHexString ((jint)o));
-  out->print (JvNewStringLatin1 ("{"));
-#if 0
-  while (klass && klass != &ObjectClass)
-    {
-      _Jv_Field *fields = klass->fields;
-      int max           = klass->field_count;
-      
-      for (int i = 0; i < max; ++i)
-	{
-	  out->print (_Jv_NewStringUTF (field->name->data));
-	  out->print (JvNewStringLatin1 ("="));
-
-	  if (JvFieldIsRef (field))
-	    {
-	      if (field->flags & STATIC)
-		out->print (JvGetSt)
-	    }
-	  field = field->getNextInstanceField ();
-
-	  if (i+1 < max && klass->getSuperclass () != null)
-	    out->print (JvNewStringLatin1 ("; "));
-	}
-
-      klass = klass->getSuperclass();
-    }
-#endif
-  out->print (JvNewStringLatin1 ("}\n"));
-
-}
 
 #endif // INTERPRETER

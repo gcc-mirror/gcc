@@ -215,32 +215,30 @@ static const int op_jsr_w = 0xc9;
 
 static const int op_putfield_1 = 0xca;
 static const int op_putfield_2 = 0xcb;
-static const int op_putfield_4 = 0xcd;
-static const int op_putfield_8 = 0xce;
-static const int op_putfield_a = 0xcf;
+static const int op_putfield_4 = 0xcc;
+static const int op_putfield_8 = 0xcd;
+static const int op_putfield_a = 0xce;
 
-static const int op_putstatic_1 = 0xd0;
-static const int op_putstatic_2 = 0xd1;
-static const int op_putstatic_4 = 0xd2;
-static const int op_putstatic_8 = 0xd3;
-static const int op_putstatic_a = 0xd4;
+static const int op_putstatic_1 = 0xcf;
+static const int op_putstatic_2 = 0xd0;
+static const int op_putstatic_4 = 0xd1;
+static const int op_putstatic_8 = 0xd2;
+static const int op_putstatic_a = 0xd3;
 
-static const int op_getfield_1 = 0xd5;
-static const int op_getfield_2s = 0xd6;
-static const int op_getfield_2u = 0xd7;
-static const int op_getfield_4 = 0xd8;
-static const int op_getfield_8 = 0xd9;
-static const int op_getfield_a = 0xda;
+static const int op_getfield_1 = 0xd4;
+static const int op_getfield_2s = 0xd5;
+static const int op_getfield_2u = 0xd6;
+static const int op_getfield_4 = 0xd7;
+static const int op_getfield_8 = 0xd8;
+static const int op_getfield_a = 0xd9;
 
-static const int op_getstatic_1 = 0xdb;
-static const int op_getstatic_2s = 0xdc;
-static const int op_getstatic_2u = 0xdd;
-static const int op_getstatic_4 = 0xde;
-static const int op_getstatic_8 = 0xdf;
-static const int op_getstatic_a = 0xe0;
+static const int op_getstatic_1 = 0xda;
+static const int op_getstatic_2s = 0xdb;
+static const int op_getstatic_2u = 0xdc;
+static const int op_getstatic_4 = 0xdd;
+static const int op_getstatic_8 = 0xde;
+static const int op_getstatic_a = 0xdf;
 
-static const int op_invokefinal  = 0xe1;
-static const int op_invokevtable = 0xe2;
 
 
 

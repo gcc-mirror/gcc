@@ -220,9 +220,9 @@ static const int ALL_FLAGS    = 0x7FF;
 
 
 /** This function does class-preparation for compiled classes.  
-    NOTE: This function replicates functionality from
+    NOTE: It contains replicated functionality from
     _Jv_ResolvePoolEntry, and this is intentional, since that function
-    is 
+    lives in resolve.cc which is entirely conditionally compiled.
  */
 void
 _Jv_PrepareCompiledClass(jclass klass)
@@ -253,17 +253,8 @@ _Jv_PrepareCompiledClass(jclass klass)
 	      JvThrow (new java::lang::ClassNotFoundException (str));
 	    }
 
-	  if ((found->accflags & PUBLIC) == PUBLIC
-	      || (_Jv_ClassNameSamePackage (found->name,
-					    klass->name)))
-	    {
-	      pool->data[index].clazz = found;
-	      pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
-	    }
-	  else
-	    {
-	      JvThrow (new java::lang::IllegalAccessError (found->getName()));
-	    }
+	  pool->data[index].clazz = found;
+	  pool->tags[index] |= JV_CONSTANT_ResolvedFlag;
 	}
 	    
       else if (pool->tags[index] == JV_CONSTANT_String)

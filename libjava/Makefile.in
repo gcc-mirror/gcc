@@ -298,12 +298,6 @@ built_java_source_files = java/lang/ConcreteProcess.java
 ordinary_java_source_files = $(convert_source_files) \
 gnu/gcj/runtime/MethodInvocation.java \
 gnu/gcj/runtime/VMClassLoader.java \
-gnu/gcj/util/path/SearchPath.java \
-gnu/gcj/util/path/PathEntry.java \
-gnu/gcj/util/path/DirectoryPathEntry.java \
-gnu/gcj/util/path/ZipPathEntry.java \
-gnu/gcj/util/path/URLPathEntry.java \
-gnu/gcj/util/path/CacheEntry.java \
 gnu/gcj/text/BaseBreakIterator.java \
 gnu/gcj/text/CharacterBreakIterator.java \
 gnu/gcj/text/LineBreakIterator.java \
@@ -746,13 +740,7 @@ DEP_FILES =  .deps/boehm.P .deps/defineclass.P .deps/dtoa.P \
 .deps/gnu/gcj/text/LocaleData_en_US.P \
 .deps/gnu/gcj/text/SentenceBreakIterator.P \
 .deps/gnu/gcj/text/WordBreakIterator.P \
-.deps/gnu/gcj/util/EnumerationChain.P \
-.deps/gnu/gcj/util/path/CacheEntry.P \
-.deps/gnu/gcj/util/path/DirectoryPathEntry.P \
-.deps/gnu/gcj/util/path/PathEntry.P \
-.deps/gnu/gcj/util/path/SearchPath.P \
-.deps/gnu/gcj/util/path/URLPathEntry.P \
-.deps/gnu/gcj/util/path/ZipPathEntry.P .deps/interpret.P \
+.deps/gnu/gcj/util/EnumerationChain.P .deps/interpret.P \
 .deps/java/io/BufferedInputStream.P \
 .deps/java/io/BufferedOutputStream.P .deps/java/io/BufferedReader.P \
 .deps/java/io/BufferedWriter.P .deps/java/io/ByteArrayInputStream.P \
@@ -1087,25 +1075,6 @@ gnu/gcj/runtime/MethodInvocation.lo: \
 	.deps/gnu/gcj/runtime/.dirstamp
 gnu/gcj/runtime/VMClassLoader.lo: gnu/gcj/runtime/VMClassLoader.java \
 	gnu/gcj/runtime/.dirstamp .deps/gnu/gcj/runtime/.dirstamp
-gnu/gcj/util/path/.dirstamp:
-	@$(mkinstalldirs) gnu/gcj/util/path
-	@: > gnu/gcj/util/path/.dirstamp
-.deps/gnu/gcj/util/path/.dirstamp:
-	@$(mkinstalldirs) .deps/gnu/gcj/util/path
-	@: > .deps/gnu/gcj/util/path/.dirstamp
-gnu/gcj/util/path/SearchPath.lo: gnu/gcj/util/path/SearchPath.java \
-	gnu/gcj/util/path/.dirstamp .deps/gnu/gcj/util/path/.dirstamp
-gnu/gcj/util/path/PathEntry.lo: gnu/gcj/util/path/PathEntry.java \
-	gnu/gcj/util/path/.dirstamp .deps/gnu/gcj/util/path/.dirstamp
-gnu/gcj/util/path/DirectoryPathEntry.lo: \
-	gnu/gcj/util/path/DirectoryPathEntry.java \
-	gnu/gcj/util/path/.dirstamp .deps/gnu/gcj/util/path/.dirstamp
-gnu/gcj/util/path/ZipPathEntry.lo: gnu/gcj/util/path/ZipPathEntry.java \
-	gnu/gcj/util/path/.dirstamp .deps/gnu/gcj/util/path/.dirstamp
-gnu/gcj/util/path/URLPathEntry.lo: gnu/gcj/util/path/URLPathEntry.java \
-	gnu/gcj/util/path/.dirstamp .deps/gnu/gcj/util/path/.dirstamp
-gnu/gcj/util/path/CacheEntry.lo: gnu/gcj/util/path/CacheEntry.java \
-	gnu/gcj/util/path/.dirstamp .deps/gnu/gcj/util/path/.dirstamp
 gnu/gcj/text/.dirstamp:
 	@$(mkinstalldirs) gnu/gcj/text
 	@: > gnu/gcj/text/.dirstamp
@@ -2212,9 +2181,6 @@ clean-local:
 	find . -name '*.class' -print | xargs rm -f
 
 .class.lo:
-	$(GCJCOMPILE) -o $@ $<
-
-.java.lo:
 	$(GCJCOMPILE) -o $@ $<
 
 $(nat_files): %.lo: %.cc
