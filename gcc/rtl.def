@@ -242,10 +242,6 @@ DEF_RTL_EXPR(DEFINE_INSN_AND_SPLIT, "define_insn_and_split", "sEsTsESV", 'x')
    Follows the same arguments as define_split.  */
 DEF_RTL_EXPR(DEFINE_PEEPHOLE2, "define_peephole2", "EsES", 'x')
 
-/* Definition of a combiner pattern.
-   Operands not defined yet.  */
-DEF_RTL_EXPR(DEFINE_COMBINE, "define_combine", "Ess", 'x')
-
 /* Define how to generate multiple insns for a standard insn name.
    1st operand: the insn name.
    2nd operand: vector of insn-patterns.
