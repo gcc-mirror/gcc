@@ -114,7 +114,6 @@ static int build_primary_vtable PARAMS ((tree, tree));
 static int build_secondary_vtable PARAMS ((tree, tree));
 static void finish_vtbls PARAMS ((tree));
 static void modify_vtable_entry PARAMS ((tree, tree, tree, tree, tree *));
-static void add_virtual_function PARAMS ((tree *, tree *, int *, tree, tree));
 static tree delete_duplicate_fields_1 PARAMS ((tree, tree));
 static void delete_duplicate_fields PARAMS ((tree));
 static void finish_struct_bits PARAMS ((tree));
@@ -150,8 +149,8 @@ static void check_methods PARAMS ((tree));
 static void remove_zero_width_bit_fields PARAMS ((tree));
 static void check_bases PARAMS ((tree, int *, int *, int *));
 static void check_bases_and_members PARAMS ((tree, int *));
-static tree create_vtable_ptr PARAMS ((tree, int *, int *, tree *, tree *));
-static void layout_class_type PARAMS ((tree, int *, int *, tree *, tree *));
+static tree create_vtable_ptr PARAMS ((tree, int *, int *, tree *));
+static void layout_class_type PARAMS ((tree, int *, int *, tree *));
 static void fixup_pending_inline PARAMS ((tree));
 static void fixup_inline_methods PARAMS ((tree));
 static void set_primary_base PARAMS ((tree, tree, int *));
@@ -791,61 +790,6 @@ set_vindex (decl, vfuns_p)
   *vfuns_p += (TARGET_VTABLE_USES_DESCRIPTORS
 	       ? TARGET_VTABLE_USES_DESCRIPTORS : 1);
   DECL_VINDEX (decl) = build_shared_int_cst (vindex);
-}
-
-/* Add a virtual function to all the appropriate vtables for the class
-   T.  DECL_VINDEX(X) should be error_mark_node, if we want to
-   allocate a new slot in our table.  If it is error_mark_node, we
-   know that no other function from another vtable is overridden by X.
-   VFUNS_P keeps track of how many virtuals there are in our
-   main vtable for the type, and we build upon the NEW_VIRTUALS list
-   and return it.  */
-
-static void
-add_virtual_function (new_virtuals_p, overridden_virtuals_p,
-		      vfuns_p, fndecl, t)
-     tree *new_virtuals_p;
-     tree *overridden_virtuals_p;
-     int *vfuns_p;
-     tree fndecl;
-     tree t; /* Structure type.  */
-{
-  tree new_virtual;
-
-  /* If this function doesn't override anything from a base class, we
-     can just assign it a new DECL_VINDEX now.  Otherwise, if it does
-     override something, we keep it around and assign its DECL_VINDEX
-     later, in modify_all_vtables.  */
-  if (TREE_CODE (DECL_VINDEX (fndecl)) == INTEGER_CST)
-    /* We've already dealt with this function.  */
-    return;
-
-  new_virtual = make_node (TREE_LIST);
-  BV_FN (new_virtual) = fndecl;
-  BV_DELTA (new_virtual) = integer_zero_node;
-
-  if (DECL_VINDEX (fndecl) == error_mark_node)
-    {
-      /* FNDECL is a new virtual function; it doesn't override any
-	 virtual function in a base class.  */
-
-      /* We remember that this was the base sub-object for rtti.  */
-      CLASSTYPE_RTTI (t) = t;
-
-      /* Now assign virtual dispatch information.  */
-      set_vindex (fndecl, vfuns_p);
-      DECL_VIRTUAL_CONTEXT (fndecl) = t;
-
-      /* Save the state we've computed on the NEW_VIRTUALS list.  */
-      TREE_CHAIN (new_virtual) = *new_virtuals_p;
-      *new_virtuals_p = new_virtual;
-    }
-  else
-    {
-      /* FNDECL overrides a function from a base class.  */
-      TREE_CHAIN (new_virtual) = *overridden_virtuals_p;
-      *overridden_virtuals_p = new_virtual;
-    }
 }
 
 /* Add method METHOD to class TYPE.  If ERROR_P is true, we are adding
@@ -2632,18 +2576,18 @@ dfs_modify_vtables (binfo, data)
 
 /* Update all of the primary and secondary vtables for T.  Create new
    vtables as required, and initialize their RTTI information.  Each
-   of the functions in OVERRIDDEN_VIRTUALS overrides a virtual
-   function from a base class; find and modify the appropriate entries
-   to point to the overriding functions.  Returns a list, in
-   declaration order, of the functions that are overridden in this
-   class, but do not appear in the primary base class vtable, and
-   which should therefore be appended to the end of the vtable for T.  */
+   of the functions in VIRTUALS is declared in T and may override a
+   virtual function from a base class; find and modify the appropriate
+   entries to point to the overriding functions.  Returns a list, in
+   declaration order, of the virtual functions that are declared in T,
+   but do not appear in the primary base class vtable, and which
+   should therefore be appended to the end of the vtable for T.  */
 
 static tree
-modify_all_vtables (t, vfuns_p, overridden_virtuals)
+modify_all_vtables (t, vfuns_p, virtuals)
      tree t;
      int *vfuns_p;
-     tree overridden_virtuals;
+     tree virtuals;
 {
   tree binfo = TYPE_BINFO (t);
   tree *fnsp;
@@ -2655,14 +2599,16 @@ modify_all_vtables (t, vfuns_p, overridden_virtuals)
 	    t);
   dfs_walk (binfo, dfs_unmark, dfs_marked_real_bases_queue_p, t);
 
-  /* Include overriding functions for secondary vtables in our primary
-     vtable.  */
-  for (fnsp = &overridden_virtuals; *fnsp; )
+  /* Add virtual functions not already in our primary vtable. These
+     will be both those introduced by this class, and those overridden
+     from secondary bases.  It does not include virtuals merely
+     inherited from secondary bases.  */
+  for (fnsp = &virtuals; *fnsp; )
     {
       tree fn = TREE_VALUE (*fnsp);
 
-      if (!BINFO_VIRTUALS (binfo)
-	  || !value_member (fn, BINFO_VIRTUALS (binfo)))
+      if (!value_member (fn, BINFO_VIRTUALS (binfo))
+	  || DECL_VINDEX (fn) == error_mark_node)
 	{
 	  /* Set the vtable index.  */
 	  set_vindex (fn, vfuns_p);
@@ -2675,8 +2621,7 @@ modify_all_vtables (t, vfuns_p, overridden_virtuals)
 	  BV_DELTA (*fnsp) = integer_zero_node;
 	  BV_VCALL_INDEX (*fnsp) = NULL_TREE;
 
-	  /* This is an overridden function not already in our
-	     vtable.  Keep it.  */
+	  /* This is a function not already in our vtable.  Keep it.  */
 	  fnsp = &TREE_CHAIN (*fnsp);
 	}
       else
@@ -2684,7 +2629,7 @@ modify_all_vtables (t, vfuns_p, overridden_virtuals)
 	*fnsp = TREE_CHAIN (*fnsp);
     }
   
-  return overridden_virtuals;
+  return virtuals;
 }
 
 /* Here, we already know that they match in every respect.
@@ -2754,16 +2699,14 @@ check_for_override (decl, ctype)
        || IDENTIFIER_VIRTUAL_P (DECL_NAME (decl)))
       && look_for_overrides (ctype, decl)
       && !DECL_STATIC_FUNCTION_P (decl))
-    {
-      /* Set DECL_VINDEX to a value that is neither an
-	 INTEGER_CST nor the error_mark_node so that
-	 add_virtual_function will realize this is an
-	 overriding function.  */
-      DECL_VINDEX (decl) = decl;
-    }
+    /* Set DECL_VINDEX to a value that is neither an INTEGER_CST nor
+       the error_mark_node so that we know it is an overriding
+       function.  */
+    DECL_VINDEX (decl) = decl;
+
   if (DECL_VIRTUAL_P (decl))
     {
-      if (DECL_VINDEX (decl) == NULL_TREE)
+      if (!DECL_VINDEX (decl))
 	DECL_VINDEX (decl) = error_mark_node;
       IDENTIFIER_VIRTUAL_P (DECL_NAME (decl)) = 1;
     }
@@ -4385,31 +4328,37 @@ check_bases_and_members (t, empty_p)
    accordingly.  If a new vfield was created (because T doesn't have a
    primary base class), then the newly created field is returned.  It
    is not added to the TYPE_FIELDS list; it is the caller's
-   responsibility to do that.  */
+   responsibility to do that.  Accumulate declared virtual functions
+   on VIRTUALS_P.  */
 
 static tree
-create_vtable_ptr (t, empty_p, vfuns_p,
-		   new_virtuals_p, overridden_virtuals_p)
+create_vtable_ptr (t, empty_p, vfuns_p, virtuals_p)
      tree t;
      int *empty_p;
      int *vfuns_p;
-     tree *new_virtuals_p;
-     tree *overridden_virtuals_p;
+     tree *virtuals_p;
 {
   tree fn;
 
-  /* Loop over the virtual functions, adding them to our various
-     vtables.  */
+  /* Collect the virtual functions declared in T.  */
   for (fn = TYPE_METHODS (t); fn; fn = TREE_CHAIN (fn))
-    if (DECL_VINDEX (fn) && !DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (fn))
-      add_virtual_function (new_virtuals_p, overridden_virtuals_p,
-			    vfuns_p, fn, t);
+    if (DECL_VINDEX (fn) && !DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (fn)
+	&& TREE_CODE (DECL_VINDEX (fn)) != INTEGER_CST)
+      {
+	tree new_virtual = make_node (TREE_LIST);
+	
+	BV_FN (new_virtual) = fn;
+	BV_DELTA (new_virtual) = integer_zero_node;
 
+	TREE_CHAIN (new_virtual) = *virtuals_p;
+	*virtuals_p = new_virtual;
+      }
+  
   /* If we couldn't find an appropriate base class, create a new field
      here.  Even if there weren't any new virtual functions, we might need a
      new virtual function table if we're supposed to include vptrs in
      all classes that need them.  */
-  if (!TYPE_VFIELD (t) && (*vfuns_p || TYPE_CONTAINS_VPTR_P (t)))
+  if (!TYPE_VFIELD (t) && (*virtuals_p || TYPE_CONTAINS_VPTR_P (t)))
     {
       /* We build this decl with vtbl_ptr_type_node, which is a
 	 `vtable_entry_type*'.  It might seem more precise to use
@@ -4801,16 +4750,14 @@ splay_tree_compare_integer_csts (k1, k2)
 
 /* Calculate the TYPE_SIZE, TYPE_ALIGN, etc for T.  Calculate
    BINFO_OFFSETs for all of the base-classes.  Position the vtable
-   pointer.  */
+   pointer.  Accumulate declared virtual functions on VIRTUALS_P. */
 
 static void
-layout_class_type (t, empty_p, vfuns_p, 
-		   new_virtuals_p, overridden_virtuals_p)
+layout_class_type (t, empty_p, vfuns_p, virtuals_p)
      tree t;
      int *empty_p;
      int *vfuns_p;
-     tree *new_virtuals_p;
-     tree *overridden_virtuals_p;
+     tree *virtuals_p;
 {
   tree non_static_data_members;
   tree field;
@@ -4832,8 +4779,7 @@ layout_class_type (t, empty_p, vfuns_p,
   determine_primary_base (t, vfuns_p);
 
   /* Create a pointer to our virtual function table.  */
-  vptr = create_vtable_ptr (t, empty_p, vfuns_p,
-			    new_virtuals_p, overridden_virtuals_p);
+  vptr = create_vtable_ptr (t, empty_p, vfuns_p, virtuals_p);
 
   /* The vptr is always the first thing in the class.  */
   if (vptr)
@@ -5040,15 +4986,8 @@ finish_struct_1 (t)
 {
   tree x;
   int vfuns;
-  /* The NEW_VIRTUALS is a TREE_LIST.  The TREE_VALUE of each node is
-     a FUNCTION_DECL.  Each of these functions is a virtual function
-     declared in T that does not override any virtual function from a
-     base class.  */
-  tree new_virtuals = NULL_TREE;
-  /* The OVERRIDDEN_VIRTUALS list is like the NEW_VIRTUALS list,
-     except that each declaration here overrides the declaration from
-     a base class.  */
-  tree overridden_virtuals = NULL_TREE;
+  /* A TREE_LIST.  The TREE_VALUE of each node is a FUNCTION_DECL. */
+  tree virtuals = NULL_TREE;
   int n_fields = 0;
   tree vfield;
   int empty = 1;
@@ -5078,8 +5017,7 @@ finish_struct_1 (t)
   check_bases_and_members (t, &empty);
 
   /* Layout the class itself.  */
-  layout_class_type (t, &empty, &vfuns,
-		     &new_virtuals, &overridden_virtuals);
+  layout_class_type (t, &empty, &vfuns, &virtuals);
 
   /* Make sure that we get our own copy of the vfield FIELD_DECL.  */
   vfield = TYPE_VFIELD (t);
@@ -5103,8 +5041,7 @@ finish_struct_1 (t)
   else
     my_friendly_assert (!vfield || DECL_FIELD_CONTEXT (vfield) == t, 20010726);
 
-  overridden_virtuals 
-    = modify_all_vtables (t, &vfuns, nreverse (overridden_virtuals));
+  virtuals = modify_all_vtables (t, &vfuns, nreverse (virtuals));
 
   /* If we created a new vtbl pointer for this class, add it to the
      list.  */
@@ -5113,9 +5050,8 @@ finish_struct_1 (t)
       = chainon (CLASSTYPE_VFIELDS (t), build_tree_list (NULL_TREE, t));
 
   /* If necessary, create the primary vtable for this class.  */
-  if (new_virtuals || overridden_virtuals || TYPE_CONTAINS_VPTR_P (t))
+  if (virtuals || TYPE_CONTAINS_VPTR_P (t))
     {
-      new_virtuals = nreverse (new_virtuals);
       /* We must enter these virtuals into the table.  */
       if (!CLASSTYPE_HAS_PRIMARY_BASE_P (t))
 	build_primary_vtable (NULL_TREE, t);
@@ -5128,7 +5064,6 @@ finish_struct_1 (t)
 	 constructors might clobber the virtual function table.  But
 	 they don't if the derived class shares the exact vtable of the base
 	 class.  */
-
       CLASSTYPE_NEEDS_VIRTUAL_REINIT (t) = 1;
     }
   /* If we didn't need a new vtable, see if we should copy one from
@@ -5154,14 +5089,8 @@ finish_struct_1 (t)
 			    20000116);
 
       CLASSTYPE_VSIZE (t) = vfuns;
-      /* Entries for virtual functions defined in the primary base are
-	 followed by entries for new functions unique to this class.  */
-      TYPE_BINFO_VIRTUALS (t) 
-	= chainon (TYPE_BINFO_VIRTUALS (t), new_virtuals);
-      /* Finally, add entries for functions that override virtuals
-	 from non-primary bases.  */
-      TYPE_BINFO_VIRTUALS (t) 
-	= chainon (TYPE_BINFO_VIRTUALS (t), overridden_virtuals);
+      /* Add entries for virtual functions introduced by this class.  */
+      TYPE_BINFO_VIRTUALS (t) = chainon (TYPE_BINFO_VIRTUALS (t), virtuals);
     }
 
   finish_struct_bits (t);

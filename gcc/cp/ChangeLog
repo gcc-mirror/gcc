@@ -1,3 +1,16 @@
+2002-08-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR 7470.
+	C++ ABI change - vfunc ordering.
+	* class.c (add_virtual_function): Remove.
+	(dfs_modify_all_vtables): Take list of all declared
+	virtuals. Assign all that are not in primary base.
+	(check_for_override): Adjust comments.
+	(create_vtable_ptr): Take single list of virtuals. Build chain
+	of declared virtuals here.
+	(layout_class_type): Take single list of virtuals. Adjust.
+	(finish_struct_1): Keep virtuals on single list. Adjust.
+
 2002-07-30  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* lang-specs.h: Remove __GXX_ABI_VERSION, moved to gcc.c.
