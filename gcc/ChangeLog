@@ -1,5 +1,10 @@
 2002-03-03  Richard Henderson  <rth@redhat.com>
 
+	* toplev.c (rest_of_decl_compilation): Do not invoke make_decl_rtl
+	for types or labels.
+
+2002-03-03  Richard Henderson  <rth@redhat.com>
+
 	* c-decl.c (start_decl): Initialized variables are not common.
 
 2002-03-02  Per Bothner  <per@bothner.com>
