@@ -45,7 +45,7 @@
  * choice whether to permit this exception to apply to your modifications.
  * If you do not wish that, delete this exception notice.
  */
-#include "config.h"
+#include "auto-host.h"
 
 #include <sys/types.h>
 #ifdef HAVE_FCNTL_H
