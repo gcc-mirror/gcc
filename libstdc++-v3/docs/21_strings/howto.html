@@ -9,7 +9,7 @@
    <TITLE>libstdc++-v3 HOWTO:  Chapter 21</TITLE>
 <LINK REL="home" HREF="http://sources.redhat.com/libstdc++/docs/21_strings/">
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.3 2000/07/11 21:45:07 pme Exp $ -->
+<!-- $Id: howto.html,v 1.4 2000/09/19 21:44:30 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -279,7 +279,12 @@
       So, if all your input forevermore consists of only those 96
       characters (hahahahahaha), then you're done.
    </P>
-   <P>At minimum, you can write 
+   <P>At minimum, you can write short wrappers like
+      <PRE>
+   char toLower (char c)
+   {
+      return tolower(static_cast&lt;unsigned char&gt;(c));
+   }</PRE>
    </P>
    <P>The correct method is to use a facet for a particular locale
       and call its conversion functions.  These are discussed more in
@@ -320,7 +325,7 @@
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
-<BR> $Id: howto.html,v 1.3 2000/07/11 21:45:07 pme Exp $
+<BR> $Id: howto.html,v 1.4 2000/09/19 21:44:30 pme Exp $
 </EM></P>
 
 
