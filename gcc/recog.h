@@ -1,5 +1,5 @@
 /* Declarations for interface to insn recognizer and insn-output.c.
-   Copyright (C) 1987 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -18,14 +18,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Add prototype support.  */
-#ifndef PROTO
-#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
-#define PROTO(ARGS) ARGS
-#else
-#define PROTO(ARGS) ()
-#endif
-#endif
+#include "gansidecl.h"
 
 /* Recognize an insn and return its insn-code,
    which is the sequence number of the DEFINE_INSN that it matches.
@@ -73,12 +66,6 @@ extern rtx *recog_dup_loc[];
 /* Indexed by N, gives the operand number that was duplicated in the
    Nth duplicate-appearance of an operand.  */
 extern char recog_dup_num[];
-
-#ifndef __STDC__
-#ifndef const
-#define const
-#endif
-#endif
 
 /* Access the output function for CODE.  */
 
