@@ -235,6 +235,11 @@ static tree current_function_parms;
 /* Similar, for last_function_parm_tags.  */
 static tree current_function_parm_tags;
 
+/* Similar, for the file and line that the prototype came from if this is
+   an old-style definition.  */
+static char *current_function_prototype_file;
+static int current_function_prototype_line;
+
 /* A list (chain of TREE_LIST nodes) of all LABEL_DECLs in the function
    that have names.  Here so we can clear out their names' definitions
    at the end of the function.  */
@@ -5555,7 +5560,11 @@ start_function (declspecs, declarator, nested)
       && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (decl1)))
 	  == TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (old_decl))))
       && TYPE_ARG_TYPES (TREE_TYPE (decl1)) == 0)
-    TREE_TYPE (decl1) = TREE_TYPE (old_decl);
+    {
+      TREE_TYPE (decl1) = TREE_TYPE (old_decl);
+      current_function_prototype_file = DECL_SOURCE_FILE (old_decl);
+      current_function_prototype_line = DECL_SOURCE_LINE (old_decl);
+    }
 
   /* Optionally warn of old-fashioned def with no previous prototype.  */
   if (warn_strict_prototypes
@@ -5922,6 +5931,9 @@ store_parm_decls ()
 		  || TYPE_MAIN_VARIANT (TREE_VALUE (type)) == void_type_node)
 		{
 		  error ("number of arguments doesn't match prototype");
+		  error_with_file_and_line (current_function_prototype_file,
+					    current_function_prototype_line,
+					    "prototype declaration");
 		  break;
 		}
 	      /* Type for passing arg must be consistent
@@ -5944,16 +5956,27 @@ store_parm_decls ()
 			DECL_ARG_TYPE (parm) = integer_type_node;
 #endif
 		      if (pedantic)
-			pedwarn ("promoted argument `%s' doesn't match prototype",
-				 IDENTIFIER_POINTER (DECL_NAME (parm)));
+			{
+			  warning ("promoted argument `%s' doesn't match prototype",
+				   IDENTIFIER_POINTER (DECL_NAME (parm)));
+			  warning_with_file_and_line
+			    (current_function_prototype_file,
+			     current_function_prototype_line,
+			     "prototype declaration");
+			}
 		    }
 		  /* If -traditional, allow `int' argument to match
 		     `unsigned' prototype.  */
 		  else if (! (flag_traditional
 			      && TYPE_MAIN_VARIANT (TREE_TYPE (parm)) == integer_type_node
 			      && TYPE_MAIN_VARIANT (TREE_VALUE (type)) == unsigned_type_node))
-		    error ("argument `%s' doesn't match prototype",
-			   IDENTIFIER_POINTER (DECL_NAME (parm)));
+		    {
+		      error ("argument `%s' doesn't match prototype",
+			     IDENTIFIER_POINTER (DECL_NAME (parm)));
+		      error_with_file_and_line (current_function_prototype_file,
+						current_function_prototype_line,
+						"prototype declaration");
+		    }
 		}
 	    }
 	  TYPE_ACTUAL_ARG_TYPES (TREE_TYPE (fndecl)) = 0;
