@@ -1233,14 +1233,15 @@ typedef struct {
 } format_char_info;
 
 static format_char_info print_char_table[] = {
-  { "di",	0,	T_I,	T_I,	T_I,	T_L,	T_LL,	T_LL,	T_ST,	T_PD,	T_IM,	"-wp0 +"	},
+  { "di",	0,	T_I,	T_I,	T_I,	T_L,	T_LL,	T_LL,	T_ST,	T_PD,	T_IM,	"-wp0 +'"	},
   { "oxX",	0,	T_UI,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	T_ST,	T_PD,	T_UIM,	"-wp0#"		},
-  { "u",	0,	T_UI,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	T_ST,	T_PD,	T_UIM,	"-wp0"		},
+  { "u",	0,	T_UI,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	T_ST,	T_PD,	T_UIM,	"-wp0'"		},
 /* A GNU extension.  */
   { "m",	0,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
-  { "fFeEgGaA",	0,	T_D,	NULL,	NULL,	T_D,	NULL,	T_LD,	NULL,	NULL,	NULL,	"-wp0 +#"	},
+  { "fFgG",	0,	T_D,	NULL,	NULL,	T_D,	NULL,	T_LD,	NULL,	NULL,	NULL,	"-wp0 +#'"	},
+  { "eEaA",	0,	T_D,	NULL,	NULL,	T_D,	NULL,	T_LD,	NULL,	NULL,	NULL,	"-wp0 +#"	},
   { "c",	0,	T_I,	NULL,	NULL,	T_WI,	NULL,	NULL,	NULL,	NULL,	NULL,	"-w"		},
-  { "C",	0,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-w"		},
+  { "C",	0,	T_WI,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-w"		},
   { "s",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
   { "S",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
   { "p",	1,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-w"		},
@@ -1699,6 +1700,9 @@ check_format_info (info, params)
 		{
 		  int opnum = atoi (format_chars);
 
+		  if (pedantic)
+		    warning ("ANSI C does not support printf %%n$");
+
 		  params = first_fillin_param;
 		  format_chars = p + 1;
 		  has_operand_number = 1;
@@ -1714,7 +1718,7 @@ check_format_info (info, params)
 		}
 	    }
 
-	  while (*format_chars != 0 && index (" +#0-", *format_chars) != 0)
+	  while (*format_chars != 0 && index (" +#0-'", *format_chars) != 0)
 	    {
 	      if (index (flag_chars, *format_chars) != 0)
 		warning ("repeated `%c' flag in format", *format_chars++);
@@ -1735,6 +1739,8 @@ check_format_info (info, params)
 	  if (index (flag_chars, '0') != 0
 	      && index (flag_chars, '-') != 0)
 	    warning ("use of both `0' and `-' flags in format");
+	  if (index (flag_chars, '\'') && pedantic)
+	    warning ("ANSI C does not support the `'' format flag");
 	  if (*format_chars == '*')
 	    {
 	      wide = TRUE;
