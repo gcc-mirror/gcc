@@ -1,3 +1,13 @@
+2002-05-17  Kurt Wall <kwall@kurtwerks.com>
+
+	* doc/install.texi (Testing): Mention two common DejaGnu warnings
+	that can be ignored.
+
+2002-05-16  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi (Final install): Recommend to install into a
+	"clean" target directory.
+
 2002-05-17  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.md: Use braced strings instead of quoted strings
