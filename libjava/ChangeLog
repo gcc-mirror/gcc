@@ -1,5 +1,13 @@
 2003-06-11  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/MappedByteBuffer.java,
+	java/nio/channels/Channels.java,
+	java/nio/channels/ServerSocketChannel.java,
+	java/nio/channels/spi/AbstractSelector.java:
+	Removed unneeded imports.
+
+2003-06-11  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/DatagramSocket.java:
 	Partly merged with classpath.
 
