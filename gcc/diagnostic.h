@@ -41,9 +41,17 @@ typedef enum
 
 #define pedantic_error_kind() (flag_pedantic_errors ? DK_ERROR : DK_WARNING)
 
-#define DIAGNOSTICS_SHOW_PREFIX_ONCE       0x0
-#define DIAGNOSTICS_SHOW_PREFIX_NEVER      0x1
-#define DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE 0x2
+/* How often diagnostics are prefixed by their locations:
+   o DIAGNOSTICS_SHOW_PREFIX_NEVER: never - not yet supported;
+   o DIAGNOSTICS_SHOW_PREFIX_ONCE: emit only once;
+   o DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE: emit each time a physical
+   line is started.  */
+typedef enum
+{
+  DIAGNOSTICS_SHOW_PREFIX_ONCE       = 0x0,
+  DIAGNOSTICS_SHOW_PREFIX_NEVER      = 0x1,
+  DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE = 0x2
+} diagnostic_prefixing_rule_t;
 
 /* The type of front-end specific hook that formats trees into an
    output_buffer.  A language specific printer returns a truth value if
@@ -73,12 +81,8 @@ typedef struct
   /* Nonzero means one should emit a newline before outputing anything.  */
   int need_newline_p;
 
-  /* Tells how often current PREFIX should be emitted:
-     o DIAGNOSTICS_SHOW_PREFIX_NEVER: never - not yet supported;
-     o DIAGNOSTICS_SHOW_PREFIX_ONCE: emit current PREFIX only once;
-     o DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE: emit current PREFIX each time
-       a physical line is started.  */
-  int prefixing_rule;
+  /* Current prefixing rule.  */
+  diagnostic_prefixing_rule_t prefixing_rule;
 
   /* The current char to output.  Updated by front-end (*format_map) when
      it is called to report front-end printer for a specified format.  */  
@@ -246,7 +250,7 @@ extern void output_clear_message_text	PARAMS ((output_buffer *));
 extern void output_printf		PARAMS ((output_buffer *, const char *,
 						 ...)) ATTRIBUTE_PRINTF_2;
 extern int output_is_line_wrapping	PARAMS ((output_buffer *));
-extern void set_message_prefixing_rule	PARAMS ((int));
+extern void set_message_prefixing_rule	PARAMS ((diagnostic_prefixing_rule_t));
 extern void output_verbatim		PARAMS ((output_buffer *, const char *,
 						 ...)) ATTRIBUTE_PRINTF_2;
 extern void verbatim			PARAMS ((const char *, ...))

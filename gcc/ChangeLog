@@ -1,3 +1,9 @@
+2001-06-26  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* diagnostic.h (diagnostic_prefixing_rule_t): New enum type.
+	(set_message_prefixing_rule): Adjust prototype.
+	* diagnostic.c (current_prefixing_rule): Adjust type.
+
 2001-06-26  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* defaults.h: Default escape sequences to ASCII.
