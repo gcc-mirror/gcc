@@ -1,3 +1,13 @@
+Wed Sep  9 01:07:30 1998  Jakub Jelinek  <jj@sunsite.ms.mff.cuni.cz>
+
+	* config/sparc/sparc.h (TARGET_CM_MEDMID): Fix documentation.
+	(CASE_VECTOR_MODE): Set to SImode even if PTR64, when MEDLOW and
+	not doing pic.
+	(ASM_OUTPUT_ADDR_{VEC,DIFF}_ELT): Check CASE_VECTOR_MODE not
+	Pmode.
+	* config/sparc/sparc.md (tablejump): Likewise, and sign extend op0
+	to Pmode if CASE_VECTOR_MODE is something else.
+
 Wed Sep  9 00:10:31 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* prefix.c (update_path): Correctly handle cases where PATH is
