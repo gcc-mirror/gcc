@@ -1,3 +1,8 @@
+2003-03-06  Dale Johannesen  <dalej@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_binds_local_p):  Consider
+	global functions for inlining on Darwin.
+
 2003-03-06  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* haifa-sched.c (schedule_block): Don't call reorder when sorting

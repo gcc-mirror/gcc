@@ -464,8 +464,8 @@ rs6000_override_options (default_cpu)
 	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | MASK_PPC_GPOPT},
 	 {"power4", PROCESSOR_POWER4,
-	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
-	    POWER_MASKS | MASK_PPC_GPOPT},
+            MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
+            POWER_MASKS | MASK_PPC_GPOPT},
 	 {"powerpc", PROCESSOR_POWERPC,
 	    MASK_POWERPC | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
@@ -8629,7 +8629,7 @@ output_cbranch (op, label, reversed, insn)
 	{
 	  if (abs (prob) > REG_BR_PROB_BASE / 20
 	      && ((prob > 0) ^ need_longbranch))
-	    pred = "+";
+              pred = "+";
 	  else
 	    pred = "-";
 	}
@@ -13320,13 +13320,15 @@ rs6000_xcoff_encode_section_info (decl, first)
 }
 
 /* Cross-module name binding.  For AIX and PPC64 Linux, which always are
-   PIC, use private copy of flag_pic.  */
+   PIC, use private copy of flag_pic.  Darwin does not support overriding
+   functions at dynamic-link time.  */
 
 static bool
 rs6000_binds_local_p (decl)
      tree decl;
 {
-  return default_binds_local_p_1 (decl, flag_pic || rs6000_flag_pic);
+  return default_binds_local_p_1 (decl, 
+	DEFAULT_ABI == ABI_DARWIN ? 0 : flag_pic || rs6000_flag_pic);
 }
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete
