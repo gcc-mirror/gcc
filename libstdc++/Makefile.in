@@ -28,7 +28,8 @@ HEADERS= cassert cctype cerrno cfloat ciso646 climits clocale cmath complex \
 	 cwchar cwctype string stdexcept \
 	 algorithm deque functional hash_map hash_set iterator list map \
 	 memory numeric pthread_alloc queue rope set slist stack utility \
-	 vector fstream iomanip iostream strstream iosfwd bitset valarray
+	 vector fstream iomanip iostream strstream iosfwd bitset valarray \
+	 sstream
 
 ARLIB   = libstdc++.a.$(VERSION)
 ARLINK  = libstdc++.a
