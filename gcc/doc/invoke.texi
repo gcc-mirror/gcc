@@ -8134,7 +8134,7 @@ implemented for this chip.)
 @item c3-2
 Via C3-2 CPU with MMX and SSE instruction set support.  (No scheduling is
 implemented for this chip.)
-@end table.
+@end table
 
 While picking a specific @var{cpu-type} will schedule things appropriately
 for that particular chip, the compiler will not generate any code that

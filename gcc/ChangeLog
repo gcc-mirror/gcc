@@ -1,5 +1,7 @@
 2004-01-06  Jan Hubicka  <jh@suse.cz>
 
+	* invoke.texi:  Remove typo in last change.
+
 	PR target/10301
 	* config.gcc: Accept opteron and athlon-64 as variants
 	of k8.
