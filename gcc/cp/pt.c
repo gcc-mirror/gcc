@@ -3639,11 +3639,16 @@ coerce_template_template_parms (tree parm_parms,
 
 	case PARM_DECL:
 	  /* The tsubst call is used to handle cases such as
-	       template <class T, template <T> class TT> class D;  
+
+	       template <int> class C {};
+	       template <class T, template <T> class TT> class D {};
+	       D<int, C> d;
+
 	     i.e. the parameter list of TT depends on earlier parameters.  */
-	  if (!same_type_p
-	      (tsubst (TREE_TYPE (parm), outer_args, complain, in_decl),
-	       TREE_TYPE (arg)))
+	  if (!dependent_type_p (TREE_TYPE (arg))
+	      && !same_type_p
+		    (tsubst (TREE_TYPE (parm), outer_args, complain, in_decl),
+			     TREE_TYPE (arg)))
 	    return 0;
 	  break;
 	  
