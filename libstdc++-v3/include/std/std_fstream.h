@@ -234,11 +234,11 @@ namespace std
 
       // [documentation is inherited]
       virtual int_type
-      underflow() { return _M_underflow_common(false); }
+      underflow();
 
       // [documentation is inherited]
       virtual int_type
-      uflow() { return _M_underflow_common(true); }
+      uflow();
 
       // [documentation is inherited]
       virtual int_type
@@ -431,7 +431,7 @@ namespace std
       }
     };
 
-  // Explicit specializations, defined in src/fstream.cc.
+  // Explicit specialization declarations, defined in src/fstream.cc.
   template<> 
     basic_filebuf<char>::int_type 
     basic_filebuf<char>::_M_underflow_common(bool __bump);
@@ -441,6 +441,18 @@ namespace std
     basic_filebuf<wchar_t>::int_type 
     basic_filebuf<wchar_t>::_M_underflow_common(bool __bump);
  #endif
+
+  // Generic definitions.
+  template <typename _CharT, typename _Traits>
+    basic_filebuf<_CharT, _Traits>::int_type
+    basic_filebuf<_CharT, _Traits>::underflow() 
+    { return _M_underflow_common(false); }
+
+  template <typename _CharT, typename _Traits>
+    basic_filebuf<_CharT, _Traits>::int_type
+    basic_filebuf<_CharT, _Traits>::uflow() 
+    { return _M_underflow_common(true); }
+
 
   // [27.8.1.5] Template class basic_ifstream
   /**
