@@ -1129,7 +1129,7 @@ write_gc_structure_fields (of, s, val, prev_val, opts, indent, line, bitmap,
 	      oprintf (of, "%*ssize_t i%d;\n", indent, "", loopcounter);
 	      oprintf (of, "%*sggc_set_mark (%s.%s);\n", indent, "", 
 		       val, f->name);
-	      oprintf (of, "%*sfor (i%d = 0; i%d < (", indent, "", 
+	      oprintf (of, "%*sfor (i%d = 0; i%d < (size_t)(", indent, "", 
 		       loopcounter, loopcounter);
 	      output_escaped_param (of, length, val, prev_val, "length", line);
 	      oprintf (of, "); i%d++) {\n", loopcounter);
