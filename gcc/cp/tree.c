@@ -2162,7 +2162,8 @@ cp_cannot_inline_tree_fn (fnp)
       && TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (fn)))
     {
       fn = *fnp = instantiate_decl (fn, /*defer_ok=*/0);
-      return TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (fn));
+      if (TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (fn)))
+	return 1;
     }
 
   if (varargs_function_p (fn))
