@@ -1630,6 +1630,7 @@
 	  (lo_sum:SI (match_operand:SI 1 "register_operand" "r")
 		     (unspec:SI
 			[(match_operand:SI 2 "symbolic_operand" "")] 0))))]
+  ""
   "*
 {
   if (flag_pic != 2)
