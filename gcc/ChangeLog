@@ -1,3 +1,13 @@
+2003-10-14  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/linux64.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Choose
+	MASK_ALIGN_NATURAL if rs6000_alignment_string not given.  Don't
+	assign DEFAULT_ABI.
+	(ADJUST_FIELD_ALIGN, ROUND_TYPE_ALIGN): Update comment.
+	* config/rs6000/rs6000.c: Formatting.
+	(rs6000_parse_alignment_option): Only set rs6000_alignment_flags
+	when rs6000_alignment_string given.
+
 2003-10-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/12538
