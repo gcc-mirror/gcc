@@ -10110,11 +10110,10 @@ fold_relational_hi_lo (enum tree_code *code_p, const tree type, tree *op0_p,
 			    fold_convert (st0, op0),
 			    fold_convert (st1, integer_zero_node));
 
-	      retval
-		= nondestructive_fold_binary_to_constant (TREE_CODE (exp),
-							  TREE_TYPE (exp),
-							  TREE_OPERAND (exp, 0),
-							  TREE_OPERAND (exp, 1));
+	      retval = fold_binary_to_constant (TREE_CODE (exp),
+						TREE_TYPE (exp),
+						TREE_OPERAND (exp, 0),
+						TREE_OPERAND (exp, 1));
 
 	      /* If we are in gimple form, then returning EXP would create
 		 non-gimple expressions.  Clearing it is safe and insures
@@ -10145,8 +10144,7 @@ fold_relational_hi_lo (enum tree_code *code_p, const tree type, tree *op0_p,
    simpler than the generic fold routine.  */
 
 tree
-nondestructive_fold_binary_to_constant (enum tree_code code, tree type,
-					tree op0, tree op1)
+fold_binary_to_constant (enum tree_code code, tree type, tree op0, tree op1)
 {
   int wins = 1;
   tree subop0;
@@ -10440,8 +10438,7 @@ nondestructive_fold_binary_to_constant (enum tree_code code, tree type,
    the generic fold routine.  */
 
 tree
-nondestructive_fold_unary_to_constant (enum tree_code code, tree type,
-				       tree op0)
+fold_unary_to_constant (enum tree_code code, tree type, tree op0)
 {
   /* Make sure we have a suitable constant argument.  */
   if (code == NOP_EXPR || code == FLOAT_EXPR || code == CONVERT_EXPR)

@@ -96,9 +96,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    this.  */
 #define AVG_LOOP_NITER(LOOP) 5
 
-/* Just to shorten the ugly names.  */
-#define EXEC_BINARY nondestructive_fold_binary_to_constant
-#define EXEC_UNARY nondestructive_fold_unary_to_constant
 
 /* Representation of the induction variable.  */
 struct iv
@@ -1364,12 +1361,13 @@ idx_find_step (tree base, tree *idx, void *data)
       return false;
     }
 
-  step = EXEC_BINARY (MULT_EXPR, type, step, iv_step);
+  step = fold_binary_to_constant (MULT_EXPR, type, step, iv_step);
 
   if (!*dta->step_p)
     *dta->step_p = step;
   else
-    *dta->step_p = EXEC_BINARY (PLUS_EXPR, type, *dta->step_p, step);
+    *dta->step_p = fold_binary_to_constant (PLUS_EXPR, type,
+					    *dta->step_p, step);
 
   return true;
 }
