@@ -1,5 +1,8 @@
 Fri Jun 19 20:38:34 1998  H.J. Lu  (hjl@gnu.org)
 
+	* c-lex.c (yyprint): Add prototype.
+	(check_newline, build_objc_string): Remove declaration.
+
 	* c-tree.h (comptypes_record_hook): Removed.
 	(finish_incomplete_decl): New prototype.
 
