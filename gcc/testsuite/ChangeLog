@@ -1,3 +1,7 @@
+2003-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/20030313-1.c: New test.
+
 2003-03-14  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/inline-2.c: Adjust alpha test for external call.
