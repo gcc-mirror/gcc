@@ -2736,12 +2736,16 @@ st_to_string(symbol_type)
 }
 
 
-/* Read a line from standard input, and return the start of the
-   buffer (which is grows if the line is too big).  */
+/* Read a line from standard input, and return the start of the buffer
+   (which is grows if the line is too big).  We split lines at the
+   semi-colon, and return each logical line indpendently.  */
 
 STATIC char *
 read_line __proto((void))
 {
+  static   int line_split_p	= 0;
+  register int string_p		= 0;
+  register int comment_p	= 0;
   register int ch;
   register char *ptr;
 
@@ -2751,8 +2755,11 @@ read_line __proto((void))
       cur_line_alloc = PAGE_SIZE;
     }
 
+  if (!line_split_p)
+    line_number++;
+
+  line_split_p = 0;
   cur_line_nbytes = 0;
-  line_number++;
 
   for (ptr = cur_line_start; (ch = getchar ()) != EOF; *ptr++ = ch)
     {
@@ -2774,6 +2781,27 @@ read_line __proto((void))
 	  *ptr = '\0';
 	  cur_line_ptr = cur_line_start;
 	  return cur_line_ptr;
+	}
+
+      else if (ch == '\0')
+	error ("Null character found in input");
+
+      else if (!comment_p)
+	{
+	  if (ch == '"')
+	    string_p = !string_p;
+
+	  else if (ch == '#')
+	    comment_p++;
+
+	  else if (ch == ';')
+	    {
+	      line_split_p = 1;
+	      *ptr++ = '\n';
+	      *ptr = '\0';
+	      cur_line_ptr = cur_line_start;
+	      return cur_line_ptr;
+	    }
 	}
     }
 

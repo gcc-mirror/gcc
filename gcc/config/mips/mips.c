@@ -1662,16 +1662,21 @@ gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
       cmp1 = temp;
     }
 
-  reg = (invert || eqne_p) ? gen_reg_rtx (SImode) : result;
-  emit_move_insn (reg, gen_rtx (p_info->test_code, SImode, cmp0, cmp1));
-
   if (test == ITEST_NE && GET_CODE (cmp1) == CONST_INT && INTVAL (cmp1) == 0)
+    reg = cmp0;
+  else
+    {
+      reg = (invert || eqne_p) ? gen_reg_rtx (SImode) : result;
+      emit_move_insn (reg, gen_rtx (p_info->test_code, SImode, cmp0, cmp1));
+    }
+
+  if (test == ITEST_NE)
     {
       emit_move_insn (result, gen_rtx (GTU, SImode, reg, const0_rtx));
       invert = FALSE;
     }
 
-  else if (eqne_p)
+  else if (test == ITEST_EQ)
     {
       reg2 = (invert) ? gen_reg_rtx (SImode) : result;
       emit_move_insn (reg2, gen_rtx (LTU, SImode, reg, const1_rtx));
@@ -3567,9 +3572,6 @@ mips_asm_file_start (stream)
   /* Generate the pseudo ops that the Pyramid based System V.4 wants.  */
   if (TARGET_ABICALLS)
     fprintf (stream, "\t.abicalls\n");
-
-  /* put gcc_compiled. in data, not text */
-  data_section ();
 
   if (TARGET_GP_OPT)
     {
