@@ -1311,7 +1311,9 @@ walk_tree (tp, func, data, htab)
       break;
 
     case TREE_LIST:
-      WALK_SUBTREE (TREE_PURPOSE (*tp));
+      /* A BASELINK_P's TREE_PURPOSE is a BINFO, and hence circular.  */
+      if (!BASELINK_P (*tp))
+        WALK_SUBTREE (TREE_PURPOSE (*tp));
       WALK_SUBTREE (TREE_VALUE (*tp));
       WALK_SUBTREE (TREE_CHAIN (*tp));
       break;
