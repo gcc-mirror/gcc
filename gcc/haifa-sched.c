@@ -1561,7 +1561,7 @@ reemit_notes (insn, last)
 	  if (note_type == NOTE_INSN_SETJMP)
 	    {
 	      retval = emit_note_after (NOTE_INSN_SETJMP, insn);
-	      CONST_CALL_P (retval) = CONST_CALL_P (note);
+	      CONST_OR_PURE_CALL_P (retval) = CONST_OR_PURE_CALL_P (note);
 	      remove_note (insn, note);
 	      note = XEXP (note, 1);
 	    }

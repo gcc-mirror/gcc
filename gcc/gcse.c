@@ -2514,8 +2514,7 @@ compute_hash_table (set_p)
 		if (TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
 		  record_last_reg_set_info (insn, regno);
 
-	      if (! CONST_CALL_P (insn))
-		record_last_mem_set_info (insn);
+	      mark_call (insn);
 	    }
 
 	  note_stores (PATTERN (insn), record_last_set_info, insn);
@@ -2794,7 +2793,7 @@ static void
 mark_call (insn)
      rtx insn;
 {
-  if (! CONST_CALL_P (insn))
+  if (! CONST_OR_PURE_CALL_P (insn))
     record_last_mem_set_info (insn);
 }
 
@@ -6478,6 +6477,9 @@ find_loads (x, store_pattern)
   int i,j;
   int ret = 0;
 
+  if (!x)
+    return 0;
+
   if (GET_CODE (x) == SET) 
     x = SET_SRC (x);
 
@@ -6513,7 +6515,7 @@ store_killed_in_insn (x, insn)
   
   if (GET_CODE (insn) == CALL_INSN)
     {
-      if (CONST_CALL_P (insn))
+      if (CONST_OR_PURE_CALL_P (insn))
 	return 0;
       else
 	return 1;

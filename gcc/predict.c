@@ -386,7 +386,7 @@ estimate_probability (loops_info)
 		if (GET_CODE (insn) == CALL_INSN
 		    /* Constant and pure calls are hardly used to signalize
 		       something exceptional.  */
-		    && ! CONST_CALL_P (insn))
+		    && ! CONST_OR_PURE_CALL_P (insn))
 		  {
 		    predict_edge_def (e, PRED_CALL, NOT_TAKEN);
 		    break;

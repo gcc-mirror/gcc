@@ -5956,7 +5956,7 @@ cse_insn (insn, libcall_insn)
 
   if (GET_CODE (insn) == CALL_INSN)
     {
-      if (! CONST_CALL_P (insn))
+      if (! CONST_OR_PURE_CALL_P (insn))
 	invalidate_memory ();
       invalidate_for_call ();
     }
@@ -6636,7 +6636,7 @@ invalidate_skipped_block (start)
 
       if (GET_CODE (insn) == CALL_INSN)
 	{
-	  if (! CONST_CALL_P (insn))
+	  if (! CONST_OR_PURE_CALL_P (insn))
 	    invalidate_memory ();
 	  invalidate_for_call ();
 	}

@@ -1343,7 +1343,7 @@ sched_analyze (deps, head, tail)
 	     all pending reads and writes, and start new dependencies starting
 	     from here.  But only flush writes for constant calls (which may
 	     be passed a pointer to something we haven't written yet).  */
-	  flush_pending_lists (deps, insn, CONST_CALL_P (insn));
+	  flush_pending_lists (deps, insn, CONST_OR_PURE_CALL_P (insn));
 
 	  /* Depend this function call (actually, the user of this
 	     function call) on all hard register clobberage.  */
@@ -1393,7 +1393,7 @@ sched_analyze (deps, head, tail)
 	  loop_notes = alloc_EXPR_LIST (REG_SAVE_NOTE,
 					GEN_INT (NOTE_LINE_NUMBER (insn)),
 					loop_notes);
-	  CONST_CALL_P (loop_notes) = CONST_CALL_P (insn);
+	  CONST_OR_PURE_CALL_P (loop_notes) = CONST_OR_PURE_CALL_P (insn);
 	}
 
       if (insn == tail)

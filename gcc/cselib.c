@@ -1279,7 +1279,7 @@ cselib_process_insn (insn)
 	if (call_used_regs[i])
 	  cselib_invalidate_regno (i, VOIDmode);
 
-      if (! CONST_CALL_P (insn))
+      if (! CONST_OR_PURE_CALL_P (insn))
 	cselib_invalidate_mem (callmem);
     }
 

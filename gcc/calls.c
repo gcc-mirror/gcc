@@ -598,7 +598,7 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
 
   /* If this is a const call, then set the insn's unchanging bit.  */
   if (ecf_flags & (ECF_CONST | ECF_PURE))
-    CONST_CALL_P (call_insn) = 1;
+    CONST_OR_PURE_CALL_P (call_insn) = 1;
 
   /* If this call can't throw, attach a REG_EH_REGION reg note to that
      effect.  */
