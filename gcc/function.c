@@ -4640,7 +4640,7 @@ assign_parms (fndecl)
 	      else
 		copy = assign_stack_temp (TYPE_MODE (type),
 					  int_size_in_bytes (type), 1);
-	      set_mem_attributes (copy, parm);
+	      set_mem_attributes (copy, parm, 1);
 
 	      store_expr (parm, copy, 0);
 	      emit_move_insn (parmreg, XEXP (copy, 0));
