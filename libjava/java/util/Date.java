@@ -460,7 +460,6 @@ public class Date implements Cloneable, Comparable, java.io.Serializable
 			int curYear = 1900 + new Date().getYear();
 			int firstYear = curYear - 80;
 			year = firstYear / 100 * 100 + num;
-			int yx = year;
 			if (year < firstYear)
 			  year += 100;
 		      }
