@@ -1,3 +1,9 @@
+2004-02-09  Geoffrey Keating  <geoffk@apple.com>
+
+	PR 12028
+	* config/rs6000/rs6000.c (ccr_bit): Don't let consistency check
+	failure stop compilation, just print helpful message.
+
 2004-02-09  Fariborz Jahanian <fjahanian@apple.com>
 
 	* expr.c (emit_group_load): split constant

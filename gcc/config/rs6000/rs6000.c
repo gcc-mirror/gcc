@@ -8464,7 +8464,14 @@ ccr_bit (rtx op, int scc_p)
      allowed.  */
   if (scc_p && code != EQ && code != GT && code != LT && code != UNORDERED
       && code != GTU && code != LTU)
-    abort ();
+    {
+#if ! ENABLE_CHECKING
+      if (TARGET_E500)
+	inform ("your function will be miscompiled");
+      else
+#endif
+      abort ();
+    }
   
   switch (code)
     {
