@@ -1508,7 +1508,7 @@ c_common_post_options (pfilename)
       if (out_stream == NULL)
 	{
 	  fatal_io_error ("opening output file %s", out_fname);
-	  return NULL;
+	  return false;
 	}
 
       init_pp_output (out_stream);

@@ -1,3 +1,8 @@
+2003-03-09  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* c-opts.c (c_common_post_options): On fopen failure, return
+	false, not NULL.
+
 2003-03-08  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/cris/cris_abi_symbol.c: #include tconfig.h and tm.h, not
