@@ -36,10 +36,17 @@
 #error Use the "-maltivec" flag to enable PowerPC AltiVec support
 #endif
 
+/* If __APPLE_ALTIVEC__ is defined, the compiler supports 'vector',
+   'pixel' and 'bool' as context-sensitive AltiVec keywords (in 
+   non-AltiVec contexts, they revert to their original meanings,
+   if any), so we do not need to define them as macros.  */
+
+#if !defined(__APPLE_ALTIVEC__)
 /* You are allowed to undef these for C++ compatibility.  */
 #define vector __vector
 #define pixel __pixel
 #define bool __bool
+#endif
 
 /* Condition register codes for AltiVec predicates. */
 
