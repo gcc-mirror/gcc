@@ -5377,7 +5377,7 @@ else
 	cd ..
 	rm -rf $tempdir
 	build_auto=auto-build.h
-	FORBUILD=../$(build_subdir)
+	FORBUILD=../${build_subdir}
 fi
 
 
