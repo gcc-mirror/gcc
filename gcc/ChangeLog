@@ -1,3 +1,15 @@
+2003-03-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.h (enum floating_point_type): Delete.  Replace with...
+	(enum fputype): ... new.
+	(FPUTYPE_DEFAULT): Renamed from FP_DEFAULT.  Values reworked.
+	* linux-elf.h (FPUTYPE_DEFAULT): Likewise.
+	* arm.md (attr fpu): Reworked for new underlying enum values.
+	* arm.c	(arm_fpu_arch): Now enum fputype.
+	(arm_fpu_tune): Renamed from arm_fpu.  Now enum fputype.
+	(arm_override_options, arm_output_epilogue, arm_expand_prologue):
+	Update uses of arm_fpu_arch and arm_fpu_tune.
+
 2003-03-10  Josef Zlomek  <zlomekj@suse.cz>
 
 	* cfgcleanup.c (outgoing_edges_match): Compare the jump tables. 

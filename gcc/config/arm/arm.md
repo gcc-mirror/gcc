@@ -116,7 +116,8 @@
 ; Floating Point Unit.  If we only have floating point emulation, then there
 ; is no point in scheduling the floating point insns.  (Well, for best
 ; performance we should try and group them together).
-(define_attr "fpu" "fpa,fpe2,fpe3" (const (symbol_ref "arm_fpu_attr")))
+(define_attr "fpu" "softfpa,fpa,fpe2,fpe3,maverick"
+  (const (symbol_ref "arm_fpu_attr")))
 
 ; LENGTH of an instruction (in bytes)
 (define_attr "length" "" (const_int 4))

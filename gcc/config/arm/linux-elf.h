@@ -111,8 +111,8 @@
   while (0)
 
 /* NWFPE always understands FPA instructions.  */
-#undef  FP_DEFAULT
-#define FP_DEFAULT FP_SOFT3
+#undef  FPUTYPE_DEFAULT
+#define FPUTYPE_DEFAULT FPUTYPE_FPA_EMU3
 
 /* Call the function profiler with a given profile label.  */
 #undef  ARM_FUNCTION_PROFILER

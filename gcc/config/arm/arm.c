@@ -239,10 +239,10 @@ int making_const_table;
 rtx arm_compare_op0, arm_compare_op1;
 
 /* What type of floating point are we tuning for?  */
-enum floating_point_type arm_fpu;
+enum fputype arm_fpu_tune;
 
 /* What type of floating point instructions are available?  */
-enum floating_point_type arm_fpu_arch;
+enum fputype arm_fpu_arch;
 
 /* What program mode is the cpu running in? 26-bit mode or 32-bit mode.  */
 enum prog_mode_type arm_prgmode;
@@ -726,7 +726,7 @@ arm_override_options ()
 
   if (arm_is_cirrus)
     {
-      arm_fpu = FP_CIRRUS;
+      arm_fpu_tune = FPUTYPE_MAVERICK;
 
       /* Ignore -mhard-float if -mcpu=ep9312.  */
       if (TARGET_HARD_FLOAT)
@@ -738,34 +738,34 @@ arm_override_options ()
        assume the user has an FPA.
        Note: this does not prevent use of floating point instructions,
        -msoft-float does that.  */
-    arm_fpu = (tune_flags & FL_CO_PROC) ? FP_HARD : FP_SOFT3;
+    arm_fpu_tune = (tune_flags & FL_CO_PROC) ? FPUTYPE_FPA : FPUTYPE_FPA_EMU3;
   
   if (target_fp_name)
     {
       if (streq (target_fp_name, "2"))
-	arm_fpu_arch = FP_SOFT2;
+	arm_fpu_arch = FPUTYPE_FPA_EMU2;
       else if (streq (target_fp_name, "3"))
-	arm_fpu_arch = FP_SOFT3;
+	arm_fpu_arch = FPUTYPE_FPA_EMU3;
       else
 	error ("invalid floating point emulation option: -mfpe-%s",
 	       target_fp_name);
     }
   else
-    arm_fpu_arch = FP_DEFAULT;
+    arm_fpu_arch = FPUTYPE_DEFAULT;
   
   if (TARGET_FPE)
     {
-      if (arm_fpu == FP_SOFT3)
-	arm_fpu = FP_SOFT2;
-      else if (arm_fpu == FP_CIRRUS)
-	warning ("-mpfpe switch not supported by ep9312 target cpu - ignored.");
-      else if (arm_fpu != FP_HARD)
-    arm_fpu = FP_SOFT2;
+      if (arm_fpu_tune == FPUTYPE_FPA_EMU3)
+	arm_fpu_tune = FPUTYPE_FPA_EMU2;
+      else if (arm_fpu_tune == FPUTYPE_MAVERICK)
+	warning ("-mfpe switch not supported by ep9312 target cpu - ignored.");
+      else if (arm_fpu_tune != FPUTYPE_FPA)
+	arm_fpu_tune = FPUTYPE_FPA_EMU2;
     }
   
   /* For arm2/3 there is no need to do any scheduling if there is only
      a floating point emulator, or we are doing software floating-point.  */
-  if ((TARGET_SOFT_FLOAT || arm_fpu != FP_HARD)
+  if ((TARGET_SOFT_FLOAT || arm_fpu_tune != FPUTYPE_FPA)
       && (tune_flags & FL_MODE32) == 0)
     flag_schedule_insns = flag_schedule_insns_after_reload = 0;
   
@@ -8452,7 +8452,7 @@ arm_output_epilogue (really_return)
     {
       int vfp_offset = 4;
 
-      if (arm_fpu_arch == FP_SOFT2)
+      if (arm_fpu_arch == FPUTYPE_FPA_EMU2)
 	{
 	  for (reg = LAST_ARM_FP_REGNUM; reg >= FIRST_ARM_FP_REGNUM; reg--)
 	    if (regs_ever_live[reg] && !call_used_regs[reg])
@@ -8535,7 +8535,7 @@ arm_output_epilogue (really_return)
 	  output_add_immediate (operands);
 	}
 
-      if (arm_fpu_arch == FP_SOFT2)
+      if (arm_fpu_arch == FPUTYPE_FPA_EMU2)
 	{
 	  for (reg = FIRST_ARM_FP_REGNUM; reg <= LAST_ARM_FP_REGNUM; reg++)
 	    if (regs_ever_live[reg] && !call_used_regs[reg])
@@ -9294,10 +9294,11 @@ arm_expand_prologue ()
 
   if (! IS_VOLATILE (func_type))
     {
-      /* Save any floating point call-saved registers used by this function.  */
-      if (arm_fpu_arch == FP_SOFT2)
+      /* Save any floating point call-saved registers used by this
+	 function.  */
+      if (arm_fpu_arch == FPUTYPE_FPA_EMU2)
 	{
-	  for (reg = LAST_ARM_FP_REGNUM; reg >= FIRST_ARM_FP_REGNUM; reg --)
+	  for (reg = LAST_ARM_FP_REGNUM; reg >= FIRST_ARM_FP_REGNUM; reg--)
 	    if (regs_ever_live[reg] && !call_used_regs[reg])
 	      {
 		insn = gen_rtx_PRE_DEC (XFmode, stack_pointer_rtx);
@@ -9311,7 +9312,7 @@ arm_expand_prologue ()
 	{
 	  int start_reg = LAST_ARM_FP_REGNUM;
 
-	  for (reg = LAST_ARM_FP_REGNUM; reg >= FIRST_ARM_FP_REGNUM; reg --)
+	  for (reg = LAST_ARM_FP_REGNUM; reg >= FIRST_ARM_FP_REGNUM; reg--)
 	    {
 	      if (regs_ever_live[reg] && !call_used_regs[reg])
 		{
@@ -9356,7 +9357,8 @@ arm_expand_prologue ()
 	    insn = gen_rtx_REG (SImode, 3);
 	  else /* if (current_function_pretend_args_size == 0) */
 	    {
-	      insn = gen_rtx_PLUS (SImode, hard_frame_pointer_rtx, GEN_INT (4));
+	      insn = gen_rtx_PLUS (SImode, hard_frame_pointer_rtx,
+				   GEN_INT (4));
 	      insn = gen_rtx_MEM (SImode, insn);
 	    }
 
