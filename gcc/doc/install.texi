@@ -1107,6 +1107,11 @@ that you successfully built and installed GCC.
 Include the output from running @file{@var{srcdir}/config.guess}.  (Do
 not send us the @file{config.guess} file itself, just the one-line output from
 running it!)  Also specify which version you built.
+If the build was for GNU/Linux, also include the distribution name and version
+(e.g., Red Hat 7.1 or Debian 2.2.3, available from @file{/etc/issue})
+and the version of glibc you used; for RPM-based systems like Red Hat,
+Mandrake, and SuSE type @samp{rpm -q glibc} to get the glibc version,
+and on systems like Debian and Progeny use @samp{dpkg -l libc6}.
 
 We'd also like to know if the
 @ifnothtml
