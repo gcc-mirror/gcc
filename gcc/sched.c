@@ -2098,18 +2098,45 @@ sched_analyze (head, tail)
 	     past a void call (i.e. it does not explicitly set the hard
 	     return reg).  */
 
-	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	    if (call_used_regs[i] || global_regs[i])
-	      {
-		for (u = reg_last_uses[i]; u; u = XEXP (u, 1))
-		  add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-		reg_last_uses[i] = 0;
-		if (reg_last_sets[i])
-		  add_dependence (insn, reg_last_sets[i], REG_DEP_ANTI);
-		reg_last_sets[i] = insn;
-		/* Insn, being a CALL_INSN, magically depends on
-		   `last_function_call' already.  */
-	      }
+	  /* If this call is followed by a NOTE_INSN_SETJMP, then assume that
+	     all registers, not just hard registers, may be clobbered by this
+	     call.  */
+
+	  /* Insn, being a CALL_INSN, magically depends on
+	     `last_function_call' already.  */
+
+	  if (NEXT_INSN (insn) && GET_CODE (NEXT_INSN (insn)) == NOTE
+	      && NOTE_LINE_NUMBER (NEXT_INSN (insn)) == NOTE_INSN_SETJMP)
+	    {
+	      int max_reg = max_reg_num ();
+	      for (i = 0; i < max_reg; i++)
+		{
+		  for (u = reg_last_uses[i]; u; u = XEXP (u, 1))
+		    add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
+		  reg_last_uses[i] = 0;
+		  if (reg_last_sets[i])
+		    add_dependence (insn, reg_last_sets[i], 0);
+		  reg_last_sets[i] = insn;
+		}
+
+	      /* Add a fake REG_NOTE which we will later convert
+		 back into a NOTE_INSN_SETJMP note.  */
+	      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_DEAD, constm1_rtx,
+					  REG_NOTES (insn));
+	    }
+	  else
+	    {
+	      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+		if (call_used_regs[i] || global_regs[i])
+		  {
+		    for (u = reg_last_uses[i]; u; u = XEXP (u, 1))
+		      add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
+		    reg_last_uses[i] = 0;
+		    if (reg_last_sets[i])
+		      add_dependence (insn, reg_last_sets[i], REG_DEP_ANTI);
+		    reg_last_sets[i] = insn;
+		  }
+	    }
 
 	  /* For each insn which shouldn't cross a call, add a dependence
 	     between that insn and this call insn.  */
@@ -2885,7 +2912,11 @@ unlink_notes (insn, tail)
       if (write_symbols != NO_DEBUG && NOTE_LINE_NUMBER (insn) > 0)
 	/* Record line-number notes so they can be reused.  */
 	LINE_NOTE (insn) = insn;
-      else
+
+      /* Don't save away NOTE_INSN_SETJMPs, because they must remain
+	 immediately after the call they follow.  We use a fake
+	 (REG_DEAD (const_int -1)) note to remember them.  */
+      else if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_SETJMP)
 	{
 	  /* Insert the note at the end of the notes list.  */
 	  PREV_INSN (insn) = note_list;
@@ -3701,6 +3732,18 @@ schedule_block (b, file)
       NEXT_INSN (insn) = last;
       PREV_INSN (last) = insn;
       last = insn;
+
+      /* Check to see if we need to re-emit a NOTE_INSN_SETJMP here.  */
+      if (GET_CODE (insn) == CALL_INSN)
+	{
+	  rtx note = find_reg_note (insn, REG_DEAD, constm1_rtx);
+
+	  if (note)
+	    {
+	      emit_note_after (NOTE_INSN_SETJMP, insn);
+	      remove_note (insn, note);
+	    }
+	}
 
       /* Everything that precedes INSN now either becomes "ready", if
 	 it can execute immediately before INSN, or "pending", if
