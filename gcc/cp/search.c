@@ -93,7 +93,7 @@ struct lookup_base_data_s
 };
 
 /* Worker function for lookup_base.  See if we've found the desired
-   base and update DATA_ (a pointer to LOOKIP_BASE_DATA_S).  */
+   base and update DATA_ (a pointer to LOOKUP_BASE_DATA_S).  */
 
 static tree
 dfs_lookup_base (tree binfo, void *data_)

@@ -1,3 +1,7 @@
+2004-10-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* search.c: Fix a comment typo.
+
 2004-10-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c (dfs_modify_vtables): Simplify condition. Return
