@@ -1,3 +1,9 @@
+2002-01-15  Benjamin Kosnik  <bkoz@redhat.com>
+	    Alexandre Oliva  <aoliva@redhat.com>
+
+	* libmath/Makefile.am (LINK): Add --tag CC.
+	* libmath/Makefile.in: Regenerate.
+
 2002-01-15  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* config/os/hpux/bits/ctype_noninline.h: Use __SB_masks for address

@@ -169,7 +169,10 @@ libmath_la_DEPENDENCIES = $(libmath_la_LIBADD)
 
 libmath_la_SOURCES = signbit.c signbitf.c stubs.c
 
-LINK = $(LIBTOOL) --mode=link "$(CCLD)" $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
+LINK = \
+	$(LIBTOOL) --tag CC --mode=link "$(CCLD)" \
+	$(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
+
 
 # Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
 TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
