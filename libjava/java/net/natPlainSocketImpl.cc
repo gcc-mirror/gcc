@@ -118,7 +118,9 @@ _Jv_accept (int fd, struct sockaddr *addr, socklen_t *addrlen)
 #include <java/net/ConnectException.h>
 #include <java/net/PlainSocketImpl.h>
 #include <java/net/InetAddress.h>
+#include <java/net/InetSocketAddress.h>
 #include <java/net/SocketException.h>
+#include <java/net/SocketTimeoutException.h>
 #include <java/lang/InternalError.h>
 #include <java/lang/Object.h>
 #include <java/lang/Boolean.h>
@@ -146,7 +148,7 @@ java::net::PlainSocketImpl::bind (java::net::InetAddress *, jint)
 }
 
 void
-java::net::PlainSocketImpl::connect (java::net::InetAddress *, jint)
+java::net::PlainSocketImpl::connect (java::net::SocketAddress *, jint)
 {
   throw new ConnectException (
     JvNewStringLatin1 ("SocketImpl.connect: unimplemented"));
@@ -206,6 +208,13 @@ java::net::PlainSocketImpl::write(jbyteArray b, jint offset, jint len)
 {
   throw new SocketException (
     JvNewStringLatin1 ("SocketImpl.write: unimplemented"));
+}
+
+void
+java::net::PlainSocketImpl::sendUrgentData(jint data)
+{
+  throw new SocketException (
+    JvNewStringLatin1 ("SocketImpl.sendUrgentData: unimplemented"));
 }
 
 jint
@@ -316,8 +325,13 @@ java::net::PlainSocketImpl::bind (java::net::InetAddress *host, jint lport)
 }
 
 void
-java::net::PlainSocketImpl::connect (java::net::InetAddress *host, jint rport)
+java::net::PlainSocketImpl::connect (java::net::SocketAddress *addr,
+		                     jint timeout)
 {
+  java::net::InetSocketAddress *tmp = (java::net::InetSocketAddress*) addr;
+  java::net::InetAddress *host = tmp->getAddress();
+  jint rport = tmp->getPort();
+	
   union SockAddr u;
   socklen_t addrlen = sizeof(u);
   jbyteArray haddress = host->addr;
@@ -343,8 +357,34 @@ java::net::PlainSocketImpl::connect (java::net::InetAddress *host, jint rport)
   else
     throw new java::net::SocketException (JvNewStringUTF ("invalid length"));
 
-  if (_Jv_connect (fnum, ptr, len) != 0)
-    goto error;
+  if (timeout > 0)
+    {
+      int flags = ::fcntl (fnum, F_GETFL);
+      ::fcntl (fnum, F_SETFL, flags | O_NONBLOCK);
+      
+      if ((_Jv_connect (fnum, ptr, len) != 0) && (errno != EINPROGRESS))
+        goto error;
+
+      fd_set rset;
+      struct timeval tv;
+      FD_ZERO(&rset);
+      FD_SET(fnum, &rset);
+      tv.tv_sec = timeout / 1000;
+      tv.tv_usec = (timeout % 1000) * 1000;
+      int retval;
+      
+      if ((retval = _Jv_select (fnum + 1, &rset, NULL, NULL, &tv)) < 0)
+	goto error;
+      else if (retval == 0)
+	throw new java::net::SocketTimeoutException ( 
+	         JvNewStringUTF("Connect timed out"));
+    }
+  else
+    {
+      if (_Jv_connect (fnum, ptr, len) != 0)
+        goto error;
+    }
+
   address = host;
   port = rport;
   // A bind may not have been done on this socket; if so, set localport now.
@@ -518,6 +558,12 @@ java::net::PlainSocketImpl::write(jbyteArray b, jint offset, jint len)
     }
 }
 
+void
+java::net::PlainSocketImpl::sendUrgentData (jint)
+{
+  throw new SocketException (JvNewStringLatin1 (
+    "PlainSocketImpl: sending of urgent data not supported by this socket"));
+}
 
 // Read a single byte from the socket.
 jint
@@ -756,10 +802,10 @@ java::net::PlainSocketImpl::setOption (jint optID, java::lang::Object *value)
 	
       case _Jv_SO_OOBINLINE_ :
         if (::setsockopt (fnum, SOL_SOCKET, SO_OOBINLINE, (char *) &val,
-	    val_len) != 0)
-	  goto error;
-	break;
-	
+            val_len) != 0)
+          goto error;
+        break;
+
       case _Jv_SO_LINGER_ :
 #ifdef SO_LINGER
         struct linger l_val;
@@ -877,13 +923,13 @@ java::net::PlainSocketImpl::getOption (jint optID)
         if (::getsockopt (fnum, SOL_SOCKET, SO_BROADCAST, (char *) &val,
 	   &val_len) != 0)
 	  goto error;    
-        return new java::lang::Boolean ((__java_boolean)val);
+        return new java::lang::Boolean ((jboolean)val);
 	
       case _Jv_SO_OOBINLINE_ :
         if (::getsockopt (fnum, SOL_SOCKET, SO_OOBINLINE, (char *) &val,
 	    &val_len) != 0)
 	  goto error;    
-        return new java::lang::Boolean ((__java_boolean)val);
+        return new java::lang::Boolean ((jboolean)val);
 	
       case _Jv_SO_RCVBUF_ :
       case _Jv_SO_SNDBUF_ :

@@ -67,10 +67,15 @@ class PlainSocketImpl extends SocketImpl
 
   protected void connect (String host, int port) throws IOException
   {
-    connect(InetAddress.getByName(host), port);
+    connect (new InetSocketAddress (InetAddress.getByName(host), port), 0);
   }
 
-  protected native void connect (InetAddress host, int port)
+  protected void connect (InetAddress host, int port) throws IOException
+  {
+    connect (new InetSocketAddress (host, port), 0);
+  }
+
+  protected native void connect (SocketAddress addr, int timeout)
     throws IOException;
 
   protected native void bind (InetAddress host, int port) throws IOException;
@@ -88,6 +93,8 @@ class PlainSocketImpl extends SocketImpl
 
   protected native void close () throws IOException;
 
+  protected native void sendUrgentData(int data)
+    throws IOException;
 
   // Stream handling.
 

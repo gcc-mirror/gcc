@@ -1,3 +1,16 @@
+2002-09-10  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/SocketImpl.java
+	(connect): New method.
+	(supportsUrgentData): New method.
+	(sendUrgentData): New method.
+	* java/net/PlainSocketImpl.java
+	(connect): One new method and two new implementation.
+	(sendUrgentData): New method.
+	* java/natPlainSocketImpl.cc
+	(connect): Arguments changed, added support for timeouts.
+	(getOption): Another __java_boolean to jboolean.
+
 2002-09-07  Adam Megacz <adam@xwt.org>
 
 	* java/net/natPlainDatagramSocket.cc: include ws2tcpip.h for
