@@ -1,3 +1,8 @@
+2004-10-14  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* tree-vectorizer.c (vect_transform_loop): Declare vectorization_factor
+	always.
+
 2004-10-14  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config/rs6000/rs6000.h (REG_CLASS_FROM_LETTER): Return NO_REGS
