@@ -1,3 +1,9 @@
+2004-11-16  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.c: Use rtl _P predicates.
+	* config/mips/mips.h: Ditto.
+	* config/mips/mips.md: Ditto.
+
 2004-11-16  Fariborz Jahanian <fjahanian@apple.com>
 
 	* config/rs6000/altivec.md (altivec_vandc): Canonicalize
@@ -21,7 +27,7 @@
 	* gcc/cse.c (struct change_cc_mode_args): New structure.
 	(cse_change_cc_mode_insn): New function.
 	(cse_change_cc_mode): Use validate_change to perfom changes.
-	(cse_change_cc_mode_insns, cse_condition_code_reg): 
+	(cse_change_cc_mode_insns, cse_condition_code_reg):
 	Call cse_change_cc_mode_insn.
 
 2004-11-16  Steven Bosscher  <stevenb@suse.de>

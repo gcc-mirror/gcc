@@ -632,7 +632,7 @@
 	(plus:SI (match_dup 0)
 		 (match_operand:SI 1 "const_int_operand")))]
   "TARGET_MIPS16 && reload_completed && !TARGET_DEBUG_D_MODE
-   && GET_CODE (operands[0]) == REG
+   && REG_P (operands[0])
    && M16_REG_P (REGNO (operands[0]))
    && GET_CODE (operands[1]) == CONST_INT
    && ((INTVAL (operands[1]) > 0x7f
@@ -661,9 +661,9 @@
 	(plus:SI (match_operand:SI 1 "register_operand")
 		 (match_operand:SI 2 "const_int_operand")))]
   "TARGET_MIPS16 && reload_completed && !TARGET_DEBUG_D_MODE
-   && GET_CODE (operands[0]) == REG
+   && REG_P (operands[0])
    && M16_REG_P (REGNO (operands[0]))
-   && GET_CODE (operands[1]) == REG
+   && REG_P (operands[1])
    && M16_REG_P (REGNO (operands[1]))
    && REGNO (operands[0]) != REGNO (operands[1])
    && GET_CODE (operands[2]) == CONST_INT
@@ -693,7 +693,7 @@
 	(plus:DI (match_dup 0)
 		 (match_operand:DI 1 "const_int_operand")))]
   "TARGET_MIPS16 && TARGET_64BIT && reload_completed && !TARGET_DEBUG_D_MODE
-   && GET_CODE (operands[0]) == REG
+   && REG_P (operands[0])
    && M16_REG_P (REGNO (operands[0]))
    && GET_CODE (operands[1]) == CONST_INT
    && ((INTVAL (operands[1]) > 0xf
@@ -722,9 +722,9 @@
 	(plus:DI (match_operand:DI 1 "register_operand")
 		 (match_operand:DI 2 "const_int_operand")))]
   "TARGET_MIPS16 && TARGET_64BIT && reload_completed && !TARGET_DEBUG_D_MODE
-   && GET_CODE (operands[0]) == REG
+   && REG_P (operands[0])
    && M16_REG_P (REGNO (operands[0]))
-   && GET_CODE (operands[1]) == REG
+   && REG_P (operands[1])
    && M16_REG_P (REGNO (operands[1]))
    && REGNO (operands[0]) != REGNO (operands[1])
    && GET_CODE (operands[2]) == CONST_INT
@@ -3145,7 +3145,7 @@ beq\t%2,%.,1b\;\
 			 (match_operand:DI 1 "const_int_operand"))))]
   "TARGET_64BIT && TARGET_MIPS16 && reload_completed
    && !TARGET_DEBUG_D_MODE
-   && GET_CODE (operands[0]) == REG
+   && REG_P (operands[0])
    && M16_REG_P (REGNO (operands[0]))
    && GET_CODE (operands[1]) == CONST_INT
    && ((INTVAL (operands[1]) < 0
@@ -3239,7 +3239,7 @@ beq\t%2,%.,1b\;\
 	(mem:SI (plus:SI (match_dup 0)
 			 (match_operand:SI 1 "const_int_operand"))))]
   "TARGET_MIPS16 && reload_completed && !TARGET_DEBUG_D_MODE
-   && GET_CODE (operands[0]) == REG
+   && REG_P (operands[0])
    && M16_REG_P (REGNO (operands[0]))
    && GET_CODE (operands[1]) == CONST_INT
    && ((INTVAL (operands[1]) < 0
@@ -3280,7 +3280,7 @@ beq\t%2,%.,1b\;\
   [(set (match_operand:SI 0 "register_operand")
 	(match_operand:SI 1 "const_int_operand"))]
   "TARGET_MIPS16 && reload_completed && !TARGET_DEBUG_D_MODE
-   && GET_CODE (operands[0]) == REG
+   && REG_P (operands[0])
    && M16_REG_P (REGNO (operands[0]))
    && GET_CODE (operands[1]) == CONST_INT
    && INTVAL (operands[1]) >= 0x100
@@ -3447,7 +3447,7 @@ beq\t%2,%.,1b\;\
 	(mem:HI (plus:SI (match_dup 0)
 			 (match_operand:SI 1 "const_int_operand"))))]
   "TARGET_MIPS16 && reload_completed && !TARGET_DEBUG_D_MODE
-   && GET_CODE (operands[0]) == REG
+   && REG_P (operands[0])
    && M16_REG_P (REGNO (operands[0]))
    && GET_CODE (operands[1]) == CONST_INT
    && ((INTVAL (operands[1]) < 0
@@ -3542,7 +3542,7 @@ beq\t%2,%.,1b\;\
 	(mem:QI (plus:SI (match_dup 0)
 			 (match_operand:SI 1 "const_int_operand"))))]
   "TARGET_MIPS16 && reload_completed && !TARGET_DEBUG_D_MODE
-   && GET_CODE (operands[0]) == REG
+   && REG_P (operands[0])
    && M16_REG_P (REGNO (operands[0]))
    && GET_CODE (operands[1]) == CONST_INT
    && ((INTVAL (operands[1]) < 0
