@@ -1,5 +1,5 @@
 ;;- Machine description for GNU compiler, Vax Version
-;;   Copyright (C) 1987, 1988, 1991, 1994, 1995 Free Software Foundation, Inc.
+;;   Copyright (C) 1987, 88, 91, 94, 95, 1996 Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
 
@@ -1322,7 +1322,7 @@
 ;; which can usually be done with move instructions.
 
 (define_insn ""
-  [(set (zero_extract:SI (match_operand:SI 0 "nonimmediate_operand" "+ro")
+  [(set (zero_extract:SI (match_operand:SI 0 "register_operand" "+ro")
 			 (match_operand:QI 1 "const_int_operand" "n")
 			 (match_operand:SI 2 "const_int_operand" "n"))
 	(match_operand:SI 3 "general_operand" "g"))]
@@ -1348,7 +1348,7 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "general_operand" "=&g")
-	(zero_extract:SI (match_operand:SI 1 "nonimmediate_operand" "ro")
+	(zero_extract:SI (match_operand:SI 1 "register_operand" "ro")
 			 (match_operand:QI 2 "const_int_operand" "n")
 			 (match_operand:SI 3 "const_int_operand" "n")))]
   "(INTVAL (operands[2]) == 8 || INTVAL (operands[2]) == 16)
@@ -1373,7 +1373,7 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "general_operand" "=g")
-	(sign_extract:SI (match_operand:SI 1 "nonimmediate_operand" "ro")
+	(sign_extract:SI (match_operand:SI 1 "register_operand" "ro")
 			 (match_operand:QI 2 "const_int_operand" "n")
 			 (match_operand:SI 3 "const_int_operand" "n")))]
   "(INTVAL (operands[2]) == 8 || INTVAL (operands[2]) == 16)
@@ -1401,7 +1401,7 @@
 (define_insn ""
   [(set (cc0)
 	(compare
-	 (sign_extract:SI (match_operand:SI 0 "nonmemory_operand" "r")
+	 (sign_extract:SI (match_operand:SI 0 "register_operand" "r")
 			  (match_operand:QI 1 "general_operand" "g")
 			  (match_operand:SI 2 "general_operand" "g"))
 	 (match_operand:SI 3 "general_operand" "g")))]
@@ -1425,7 +1425,7 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "general_operand" "=g")
-	(sign_extract:SI (match_operand:SI 1 "nonimmediate_operand" "ro")
+	(sign_extract:SI (match_operand:SI 1 "register_operand" "ro")
 			 (match_operand:QI 2 "general_operand" "g")
 			 (match_operand:SI 3 "general_operand" "g")))]
   ""
@@ -1442,7 +1442,7 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "general_operand" "=g")
-	(zero_extract:SI (match_operand:SI 1 "nonimmediate_operand" "ro")
+	(zero_extract:SI (match_operand:SI 1 "register_operand" "ro")
 			 (match_operand:QI 2 "general_operand" "g")
 			 (match_operand:SI 3 "general_operand" "g")))]
   ""
@@ -1469,7 +1469,7 @@
 (define_insn ""
   [(set (cc0)
 	(compare
-	 (sign_extract:SI (match_operand:QI 0 "nonimmediate_operand" "rm")
+	 (sign_extract:SI (match_operand:QI 0 "memory_operand" "m")
 			  (match_operand:QI 1 "general_operand" "g")
 			  (match_operand:SI 2 "general_operand" "g"))
 	 (match_operand:SI 3 "general_operand" "g")))]
@@ -1488,7 +1488,7 @@
 
 (define_insn "extv"
   [(set (match_operand:SI 0 "general_operand" "=g")
-	(sign_extract:SI (match_operand:QI 1 "nonimmediate_operand" "rm")
+	(sign_extract:SI (match_operand:QI 1 "memory_operand" "m")
 			 (match_operand:QI 2 "general_operand" "g")
 			 (match_operand:SI 3 "general_operand" "g")))]
   ""
@@ -1507,9 +1507,17 @@
   return \"rotl %R3,%1,%0\;cvtwl %0,%0\";
 }")
 
-(define_insn "extzv"
+(define_expand "extzv"
+  [(set (match_operand:SI 0 "general_operand" "")
+	(zero_extract:SI (match_operand:SI 1 "general_operand" "")
+			 (match_operand:QI 2 "general_operand" "")
+			 (match_operand:SI 3 "general_operand" "")))]
+  ""
+  "")
+
+(define_insn ""
   [(set (match_operand:SI 0 "general_operand" "=g")
-	(zero_extract:SI (match_operand:QI 1 "nonimmediate_operand" "rm")
+	(zero_extract:SI (match_operand:QI 1 "memory_operand" "m")
 			 (match_operand:QI 2 "general_operand" "g")
 			 (match_operand:SI 3 "general_operand" "g")))]
   ""
@@ -1529,8 +1537,16 @@
   return \"rotl %R3,%1,%0\;bicl2 %M2,%0\";
 }")
 
-(define_insn "insv"
-  [(set (zero_extract:SI (match_operand:QI 0 "nonimmediate_operand" "+g")
+(define_expand "insv"
+  [(set (zero_extract:SI (match_operand:SI 0 "general_operand" "")
+			 (match_operand:QI 1 "general_operand" "")
+			 (match_operand:SI 2 "general_operand" ""))
+	(match_operand:SI 3 "general_operand" ""))]
+  ""
+  "")
+
+(define_insn ""
+  [(set (zero_extract:SI (match_operand:QI 0 "memory_operand" "+g")
 			 (match_operand:QI 1 "general_operand" "g")
 			 (match_operand:SI 2 "general_operand" "g"))
 	(match_operand:SI 3 "general_operand" "g"))]
@@ -1538,7 +1554,7 @@
   "insv %3,%2,%1,%0")
 
 (define_insn ""
-  [(set (zero_extract:SI (match_operand:SI 0 "nonimmediate_operand" "+r")
+  [(set (zero_extract:SI (match_operand:SI 0 "register_operand" "+r")
 			 (match_operand:QI 1 "general_operand" "g")
 			 (match_operand:SI 2 "general_operand" "g"))
 	(match_operand:SI 3 "general_operand" "g"))]
@@ -1660,7 +1676,7 @@
 (define_insn ""
   [(set (pc)
 	(if_then_else
-	 (ne (zero_extract:SI (match_operand:QI 0 "nonimmediate_operand" "rQ,g")
+	 (ne (zero_extract:SI (match_operand:QI 0 "memory_operand" "Q,g")
 			      (const_int 1)
 			      (match_operand:SI 1 "general_operand" "I,g"))
 	     (const_int 0))
@@ -1674,7 +1690,7 @@
 (define_insn ""
   [(set (pc)
 	(if_then_else
-	 (eq (zero_extract:SI (match_operand:QI 0 "nonimmediate_operand" "rQ,g")
+	 (eq (zero_extract:SI (match_operand:QI 0 "memory_operand" "Q,g")
 			      (const_int 1)
 			      (match_operand:SI 1 "general_operand" "I,g"))
 	     (const_int 0))

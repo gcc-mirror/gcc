@@ -1,5 +1,5 @@
 ;;- Machine description for GNU compiler, Fujitsu Gmicro Version
-;;  Copyright (C) 1990, 1994 Free Software Foundation, Inc.
+;;  Copyright (C) 1990, 1994, 1996 Free Software Foundation, Inc.
 ;;  Contributed by M.Yuhara, Fujitsu Laboratories LTD.
 
 ;; This file is part of GNU CC.
@@ -221,21 +221,14 @@
 ;; Recognizers for btst instructions.
 
 (define_insn ""
-  [(set (cc0) (zero_extract (match_operand:QI 0 "nonimmediate_operand" "rm")
+  [(set (cc0) (zero_extract (match_operand:QI 0 "memory_operand" "m")
 			    (const_int 1)
 			    (match_operand:SI 1 "general_operand" "rmi")))]
   ""
   "btst %1.w,%0.b")
 
 (define_insn ""
-  [(set (cc0) (zero_extract (match_operand:HI 0 "nonimmediate_operand" "rm")
-			    (const_int 1)
-			    (match_operand:SI 1 "general_operand" "rmi")))]
-  ""
-  "btst %1.w,%0.h")
-
-(define_insn ""
-  [(set (cc0) (zero_extract (match_operand:SI 0 "nonimmediate_operand" "rm")
+  [(set (cc0) (zero_extract (match_operand:SI 0 "register_operand" "rm")
 			    (const_int 1)
 			    (match_operand:SI 1 "general_operand" "rmi")))]
   ""
@@ -246,7 +239,7 @@
 ;; are automatically masked to 3 or 5 bits when the base is a register.
 
 (define_insn ""
-  [(set (cc0) (zero_extract (match_operand:QI 0 "nonimmediate_operand" "r")
+  [(set (cc0) (zero_extract (match_operand:QI 0 "memory_operand" "m")
 			    (const_int 1)
 			    (and:SI
 			       (match_operand:SI 1 "general_operand" "rmi")
@@ -255,7 +248,7 @@
   "btst %1.w,%0.b")
 
 (define_insn ""
-  [(set (cc0) (zero_extract (match_operand:SI 0 "nonimmediate_operand" "r")
+  [(set (cc0) (zero_extract (match_operand:SI 0 "register_operand" "r")
 			    (const_int 1)
 			    (and:SI
 			       (match_operand:SI 1 "general_operand" "rmi")
@@ -268,7 +261,9 @@
 
 
 (define_insn ""
-  [(set (cc0) (and:SI (sign_extend:SI (sign_extend:HI (match_operand:QI 0 "nonimmediate_operand" "rm")))
+  [(set (cc0) (and:SI (sign_extend:SI
+		       (sign_extend:HI
+			(match_operand:QI 0 "nonimmediate_operand" "rm")))
 		      (match_operand:SI 1 "general_operand" "i")))]
   "(GET_CODE (operands[1]) == CONST_INT
     && (unsigned) INTVAL (operands[1]) < 0x100
@@ -1990,7 +1985,7 @@
 ;; Should I add  mode_dependent_address_p ????
 
 (define_insn ""
-  [(set (zero_extract:SI (match_operand:SI 0 "nonimmediate_operand" "+rm")
+  [(set (zero_extract:SI (match_operand:SI 0 "register_operand" "+rm")
 			 (match_operand:SI 1 "immediate_operand" "i")
 			 (match_operand:SI 2 "immediate_operand" "i"))
 	(match_operand:SI 3 "general_operand" "rm"))]
@@ -2025,7 +2020,7 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "general_operand" "=&r")
-	(zero_extract:SI (match_operand:SI 1 "nonimmediate_operand" "rm")
+	(zero_extract:SI (match_operand:SI 1 "register_operand" "rm")
 			 (match_operand:SI 2 "immediate_operand" "i")
 			 (match_operand:SI 3 "immediate_operand" "i")))]
   "TARGET_BITFIELD
@@ -2096,7 +2091,7 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "general_operand" "=r")
-	(sign_extract:SI (match_operand:SI 1 "nonimmediate_operand" "ro")
+	(sign_extract:SI (match_operand:SI 1 "register_operand" "ro")
 			 (match_operand:SI 2 "immediate_operand" "i")
 			 (match_operand:SI 3 "immediate_operand" "i")))]
   "TARGET_BITFIELD
@@ -2173,18 +2168,34 @@
 ;;        r.w    m            r.w/#    rmi  
 ;;        %0     %1           %2       %3
 
-(define_insn "extv"
+(define_expand "extv"
+  [(set (match_operand:SI 0 "general_operand" "")
+	(sign_extract:SI (match_operand:SI 1 "general_operand" "")
+			 (match_operand:SI 2 "general_operand" "")
+			 (match_operand:SI 3 "general_operand" "")))]
+  "TARGET_BITFIELD"
+  "")
+
+(define_insn ""
   [(set (match_operand:SI 0 "general_operand" "=r")
-	(sign_extract:SI (match_operand:QI 1 "nonimmediate_operand" "m")
+	(sign_extract:SI (match_operand:QI 1 "memory_operand" "m")
 			 (match_operand:SI 2 "general_operand" "ri")
 			 (match_operand:SI 3 "general_operand" "rmi")))]
   "TARGET_BITFIELD"
   "bfext %3,%2,%1,%0")
 
 
-(define_insn "extzv"
+(define_expand "extzv"
+  [(set (match_operand:SI 0 "general_operand" "")
+	(zero_extract:SI (match_operand:SI 1 "general_operand" "")
+			 (match_operand:SI 2 "general_operand" "")
+			 (match_operand:SI 3 "general_operand" "")))]
+  "TARGET_BITFIELD"
+  "")
+
+(define_insn ""
   [(set (match_operand:SI 0 "general_operand" "=r")
-	(zero_extract:SI (match_operand:QI 1 "nonimmediate_operand" "m")
+	(zero_extract:SI (match_operand:QI 1 "memory_operand" "m")
 			 (match_operand:SI 2 "general_operand" "ri")
 			 (match_operand:SI 3 "general_operand" "rmi")))]
   "TARGET_BITFIELD"
@@ -2198,13 +2209,22 @@
 ;;        0                1        2       3
 
 
-(define_insn "insv"
-  [(set (zero_extract:SI (match_operand:QI 0 "nonimmediate_operand" "+m,m")
+(define_expand "insv"
+  [(set (zero_extract:SI (match_operand:SI 0 "general_operand" "")
+			 (match_operand:SI 1 "general_operand" "")
+			 (match_operand:SI 2 "general_operand" ""))
+	(match_operand:SI 3 "general_operand" ""))]
+  "TARGET_BITFIELD"
+  "")
+
+(define_insn ""
+  [(set (zero_extract:SI (match_operand:QI 0 "memory_operand" "+m,m")
 			 (match_operand:SI 1 "general_operand" "r,i")
 			 (match_operand:SI 2 "general_operand" "rmi,i"))
 	(match_operand:SI 3 "general_operand" "ri,ri"))]
   "TARGET_BITFIELD"
   "bfinsu %3,%2,%1,%0")
+
 ;;; bfins/bfinsu ????????
 
 ;; == == == == == == == == == == == == == 
@@ -2225,7 +2245,7 @@
 ;;
 (define_insn ""
   [(set (match_operand:SI 0 "general_operand" "=r")
-	(sign_extract:SI (match_operand:SI 1 "nonimmediate_operand" "r")
+	(sign_extract:SI (match_operand:SI 1 "register_operand" "r")
 			 (match_operand:SI 2 "immediate_operand" "i")
 			 (match_operand:SI 3 "immediate_operand" "i")))]
   "TARGET_BITFIELD"
@@ -2242,7 +2262,7 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "general_operand" "=r")
-	(zero_extract:SI (match_operand:SI 1 "nonimmediate_operand" "r")
+	(zero_extract:SI (match_operand:SI 1 "register_operand" "r")
 			 (match_operand:SI 2 "immediate_operand" "i")
 			 (match_operand:SI 3 "immediate_operand" "i")))]
   "TARGET_BITFIELD"
