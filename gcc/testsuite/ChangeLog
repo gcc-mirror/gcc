@@ -1,3 +1,7 @@
+2002-05-10  David S. Miller  <davem@redhat.com>
+
+	* gcc.c-torture/execute/conversion.c: Test long double too.
+
 2002-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* lib/g77.exp (g77_link_flags): Append all multilib dirs containing
