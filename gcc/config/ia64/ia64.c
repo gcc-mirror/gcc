@@ -78,7 +78,7 @@ int ia64_local_regs;
 int ia64_need_regstk;
 
 /* Register names for ia64_expand_prologue.  */
-char *ia64_reg_numbers[96] =
+static const char * const ia64_reg_numbers[96] =
 { "r32", "r33", "r34", "r35", "r36", "r37", "r38", "r39",
   "r40", "r41", "r42", "r43", "r44", "r45", "r46", "r47",
   "r48", "r49", "r50", "r51", "r52", "r53", "r54", "r55",
@@ -93,11 +93,11 @@ char *ia64_reg_numbers[96] =
   "r120","r121","r122","r123","r124","r125","r126","r127"};
 
 /* ??? These strings could be shared with REGISTER_NAMES.  */
-char *ia64_input_reg_names[8] =
+static const char * const ia64_input_reg_names[8] =
 { "in0",  "in1",  "in2",  "in3",  "in4",  "in5",  "in6",  "in7" };
 
 /* ??? These strings could be shared with REGISTER_NAMES.  */
-char *ia64_local_reg_names[80] =
+static const char * const ia64_local_reg_names[80] =
 { "loc0", "loc1", "loc2", "loc3", "loc4", "loc5", "loc6", "loc7",
   "loc8", "loc9", "loc10","loc11","loc12","loc13","loc14","loc15",
   "loc16","loc17","loc18","loc19","loc20","loc21","loc22","loc23",
@@ -110,7 +110,7 @@ char *ia64_local_reg_names[80] =
   "loc72","loc73","loc74","loc75","loc76","loc77","loc78","loc79" };
 
 /* ??? These strings could be shared with REGISTER_NAMES.  */
-char *ia64_output_reg_names[8] =
+static const char * const ia64_output_reg_names[8] =
 { "out0", "out1", "out2", "out3", "out4", "out5", "out6", "out7" };
 
 /* String used with the -mfixed-range= option.  */
@@ -119,8 +119,20 @@ const char *ia64_fixed_range_string;
 /* Variables which are this size or smaller are put in the sdata/sbss
    sections.  */
 
-int ia64_section_threshold;
-
+unsigned int ia64_section_threshold;
+
+static enum machine_mode hfa_element_mode PARAMS ((tree, int));
+static void fix_range PARAMS ((const char *));
+static void ia64_add_gc_roots PARAMS ((void));
+static void ia64_init_machine_status PARAMS ((struct function *));
+static void ia64_mark_machine_status PARAMS ((struct function *));
+static void emit_insn_group_barriers PARAMS ((rtx));
+static void emit_predicate_relation_info PARAMS ((rtx));
+static int process_set PARAMS ((FILE *, rtx));
+static rtx ia64_expand_compare_and_swap PARAMS ((enum insn_code, tree,
+						 rtx, int));
+static rtx ia64_expand_binop_builtin PARAMS ((enum insn_code, tree, rtx));
+
 /* Return 1 if OP is a valid operand for the MEM of a CALL insn.  */
 
 int
@@ -486,6 +498,42 @@ predicate_operator (op, mode)
 	  && (code == EQ || code == NE));
 }
 
+/* Begin the assembly file.  */
+
+void
+ia64_file_start (f)
+     FILE *f;
+{
+  unsigned int rs, re;
+  int out_state;
+
+  rs = 1;
+  out_state = 0;
+  while (1)
+    {
+      while (rs < 64 && call_used_regs[PR_REG (rs)])
+	rs++;
+      if (rs >= 64)
+	break;
+      for (re = rs + 1; re < 64 && ! call_used_regs[PR_REG (re)]; re++)
+	continue;
+      if (out_state == 0)
+	{
+	  fputs ("\t.pred.safe_across_calls ", f);
+	  out_state = 1;
+	}
+      else
+	fputc (',', f);
+      if (re == rs + 1)
+	fprintf (f, "p%u", rs);
+      else
+	fprintf (f, "p%u-p%u", rs, re - 1);
+      rs = re + 1;
+    }
+  if (out_state)
+    fputc ('\n', f);
+}
+
 /* Structure to be filled in by ia64_compute_frame_size with register
    save masks and offsets for the current function.  */
 
@@ -1834,7 +1882,7 @@ ia64_print_operand (file, x, code)
     case 'U':
       if (! TARGET_GNU_AS && GET_CODE (x) == CONST_INT)
 	{
-	  char *prefix = "0x";
+	  const char *prefix = "0x";
 	  if (INTVAL (x) & 0x80000000)
 	    {
 	      fprintf (file, "0xffffffff");
@@ -2028,17 +2076,21 @@ ia64_asm_output_external (file, decl, name)
 /* Parse the -mfixed-range= option string.  */
 
 static void
-fix_range (str)
-     char *str;
+fix_range (const_str)
+     const char *const_str;
 {
   int i, first, last;
-  char *dash, *comma;
+  char *str, *dash, *comma;
 
   /* str must be of the form REG1'-'REG2{,REG1'-'REG} where REG1 and
      REG2 are either register names or register numbers.  The effect
      of this option is to mark the registers in the range from REG1 to
      REG2 as ``fixed'' so they won't be used by the compiler.  This is
      used, e.g., to ensure that kernel mode code doesn't use f32-f127.  */
+
+  i = strlen (const_str);
+  str = (char *) alloca (i + 1);
+  memcpy (str, const_str, i + 1);
 
   while (1)
     {
@@ -2187,6 +2239,11 @@ struct reg_flags
   unsigned int is_fp : 1;	/* Is register used as part of an fp op?  */
   unsigned int is_branch : 1;	/* Is register used as part of a branch?  */
 };
+
+static void rws_update PARAMS ((struct reg_write_state *, int,
+				struct reg_flags, int));
+static int rws_access_reg PARAMS ((int, struct reg_flags, int));
+static int rtx_needs_barrier PARAMS ((rtx, struct reg_flags, int));
 
 /* Update *RWS for REGNO, which is being written by the current instruction,
    with predicate PRED, and associated register flags in FLAGS.  */
@@ -2637,6 +2694,10 @@ rtx_needs_barrier (x, flags, pred)
 	  need_barrier = rws_access_reg (REG_AR_PFS, new_flags, pred);
 	  break;
 
+	case 5: /* set_bsp  */
+	  need_barrier = 1;
+          break;
+
 	case 6: /* mov pr= */
 	  /* This writes all predicate registers.  */
 	  new_flags.is_write = 1;
@@ -2647,9 +2708,8 @@ rtx_needs_barrier (x, flags, pred)
 	    need_barrier |= rws_access_reg (i, new_flags, pred);
 	  break;
 
-	case 5: /* set_bsp  */
-	  need_barrier = 1;
-          break;
+	case 7: /* pred.rel.mutex */
+	  return 0;
 
 	default:
 	  abort ();
@@ -2809,12 +2869,54 @@ emit_insn_group_barriers (insns)
     }
 }
 
+/* Emit pseudo-ops for the assembler to describe predicate relations.
+   At present this assumes that we only consider predicate pairs to
+   be mutex, and that the assembler can deduce proper values from
+   straight-line code.  */
+
+static void
+emit_predicate_relation_info (insns)
+     rtx insns;
+{
+  int i;
+
+  /* Make sure the CFG and global_live_at_start are correct.  */
+  find_basic_blocks (insns, max_reg_num (), NULL);
+  life_analysis (insns, NULL, 0);
+
+  for (i = n_basic_blocks - 1; i >= 0; --i)
+    {
+      basic_block bb = BASIC_BLOCK (i);
+      int r;
+      rtx head = bb->head;
+
+      /* We only need such notes at code labels.  */
+      if (GET_CODE (head) != CODE_LABEL)
+	continue;
+      if (GET_CODE (NEXT_INSN (head)) == NOTE
+	  && NOTE_LINE_NUMBER (NEXT_INSN (head)) == NOTE_INSN_BASIC_BLOCK)
+	head = NEXT_INSN (head);
+
+      for (r = PR_REG (0); r < PR_REG (64); r += 2)
+	if (REGNO_REG_SET_P (bb->global_live_at_start, r))
+	  {
+	    rtx p1 = gen_rtx_REG (CCmode, r);
+	    rtx p2 = gen_rtx_REG (CCmode, r + 1);
+	    rtx n = emit_insn_after (gen_pred_rel_mutex (p1, p2), head);
+	    if (head == bb->end)
+	      bb->end = n;
+	    head = n;
+	  }
+    }
+}
+
 /* Perform machine dependent operations on the rtl chain INSNS.  */
 
 void
 ia64_reorg (insns)
      rtx insns;
 {
+  emit_predicate_relation_info (insns);
   emit_insn_group_barriers (insns);
 }
 
@@ -2916,7 +3018,8 @@ ia64_encode_section_info (decl)
 
   /* Careful not to prod global register variables.  */
   if (TREE_CODE (decl) != VAR_DECL
-      || GET_CODE (DECL_RTL (decl)) != SYMBOL_REF)
+      || GET_CODE (DECL_RTL (decl)) != MEM
+      || GET_CODE (XEXP (DECL_RTL (decl), 0)) != SYMBOL_REF)
     return;
     
   symbol_str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
@@ -3250,62 +3353,87 @@ struct builtin_description
 /* All 32 bit intrinsics that take 2 arguments. */
 static struct builtin_description bdesc_2argsi[] =
 {
-  { CODE_FOR_fetch_and_add_si, "__sync_fetch_and_add_si", IA64_BUILTIN_FETCH_AND_ADD_SI, 0, 0 },
-  { CODE_FOR_fetch_and_sub_si, "__sync_fetch_and_sub_si", IA64_BUILTIN_FETCH_AND_SUB_SI, 0, 0 },
-  { CODE_FOR_fetch_and_or_si, "__sync_fetch_and_or_si", IA64_BUILTIN_FETCH_AND_OR_SI, 0, 0 },
-  { CODE_FOR_fetch_and_and_si, "__sync_fetch_and_and_si", IA64_BUILTIN_FETCH_AND_AND_SI, 0, 0 },
-  { CODE_FOR_fetch_and_xor_si, "__sync_fetch_and_xor_si", IA64_BUILTIN_FETCH_AND_XOR_SI, 0, 0 },
-  { CODE_FOR_fetch_and_nand_si, "__sync_fetch_and_nand_si", IA64_BUILTIN_FETCH_AND_NAND_SI, 0, 0 },
-  { CODE_FOR_add_and_fetch_si, "__sync_add_and_fetch_si", IA64_BUILTIN_ADD_AND_FETCH_SI, 0, 0 },
-  { CODE_FOR_sub_and_fetch_si, "__sync_sub_and_fetch_si", IA64_BUILTIN_SUB_AND_FETCH_SI, 0, 0 },
-  { CODE_FOR_or_and_fetch_si, "__sync_or_and_fetch_si", IA64_BUILTIN_OR_AND_FETCH_SI, 0, 0 },
-  { CODE_FOR_and_and_fetch_si, "__sync_and_and_fetch_si", IA64_BUILTIN_AND_AND_FETCH_SI, 0, 0 },
-  { CODE_FOR_xor_and_fetch_si, "__sync_xor_and_fetch_si", IA64_BUILTIN_XOR_AND_FETCH_SI, 0, 0 },
-  { CODE_FOR_nand_and_fetch_si, "__sync_nand_and_fetch_si", IA64_BUILTIN_NAND_AND_FETCH_SI, 0, 0 }
+  { CODE_FOR_fetch_and_add_si, "__sync_fetch_and_add_si",
+    IA64_BUILTIN_FETCH_AND_ADD_SI, 0, 0 },
+  { CODE_FOR_fetch_and_sub_si, "__sync_fetch_and_sub_si",
+    IA64_BUILTIN_FETCH_AND_SUB_SI, 0, 0 },
+  { CODE_FOR_fetch_and_or_si, "__sync_fetch_and_or_si",
+    IA64_BUILTIN_FETCH_AND_OR_SI, 0, 0 },
+  { CODE_FOR_fetch_and_and_si, "__sync_fetch_and_and_si",
+    IA64_BUILTIN_FETCH_AND_AND_SI, 0, 0 },
+  { CODE_FOR_fetch_and_xor_si, "__sync_fetch_and_xor_si",
+    IA64_BUILTIN_FETCH_AND_XOR_SI, 0, 0 },
+  { CODE_FOR_fetch_and_nand_si, "__sync_fetch_and_nand_si",
+    IA64_BUILTIN_FETCH_AND_NAND_SI, 0, 0 },
+  { CODE_FOR_add_and_fetch_si, "__sync_add_and_fetch_si",
+    IA64_BUILTIN_ADD_AND_FETCH_SI, 0, 0 },
+  { CODE_FOR_sub_and_fetch_si, "__sync_sub_and_fetch_si",
+    IA64_BUILTIN_SUB_AND_FETCH_SI, 0, 0 },
+  { CODE_FOR_or_and_fetch_si, "__sync_or_and_fetch_si",
+    IA64_BUILTIN_OR_AND_FETCH_SI, 0, 0 },
+  { CODE_FOR_and_and_fetch_si, "__sync_and_and_fetch_si",
+    IA64_BUILTIN_AND_AND_FETCH_SI, 0, 0 },
+  { CODE_FOR_xor_and_fetch_si, "__sync_xor_and_fetch_si",
+    IA64_BUILTIN_XOR_AND_FETCH_SI, 0, 0 },
+  { CODE_FOR_nand_and_fetch_si, "__sync_nand_and_fetch_si",
+    IA64_BUILTIN_NAND_AND_FETCH_SI, 0, 0 }
 };
 
 /* All 64 bit intrinsics that take 2 arguments. */
 static struct builtin_description bdesc_2argdi[] =
 {
-  { CODE_FOR_fetch_and_add_di, "__sync_fetch_and_add_di", IA64_BUILTIN_FETCH_AND_ADD_DI, 0, 0 },
-  { CODE_FOR_fetch_and_sub_di, "__sync_fetch_and_sub_di", IA64_BUILTIN_FETCH_AND_SUB_DI, 0, 0 },
-  { CODE_FOR_fetch_and_or_di, "__sync_fetch_and_or_di", IA64_BUILTIN_FETCH_AND_OR_DI, 0, 0 },
-  { CODE_FOR_fetch_and_and_di, "__sync_fetch_and_and_di", IA64_BUILTIN_FETCH_AND_AND_DI, 0, 0 },
-  { CODE_FOR_fetch_and_xor_di, "__sync_fetch_and_xor_di", IA64_BUILTIN_FETCH_AND_XOR_DI, 0, 0 },
-  { CODE_FOR_fetch_and_nand_di, "__sync_fetch_and_nand_di", IA64_BUILTIN_FETCH_AND_NAND_DI, 0, 0 },
-  { CODE_FOR_add_and_fetch_di, "__sync_add_and_fetch_di", IA64_BUILTIN_ADD_AND_FETCH_DI, 0, 0 },
-  { CODE_FOR_sub_and_fetch_di, "__sync_sub_and_fetch_di", IA64_BUILTIN_SUB_AND_FETCH_DI, 0, 0 },
-  { CODE_FOR_or_and_fetch_di, "__sync_or_and_fetch_di", IA64_BUILTIN_OR_AND_FETCH_DI, 0, 0 },
-  { CODE_FOR_and_and_fetch_di, "__sync_and_and_fetch_di", IA64_BUILTIN_AND_AND_FETCH_DI, 0, 0 },
-  { CODE_FOR_xor_and_fetch_di, "__sync_xor_and_fetch_di", IA64_BUILTIN_XOR_AND_FETCH_DI, 0, 0 },
-  { CODE_FOR_nand_and_fetch_di, "__sync_nand_and_fetch_di", IA64_BUILTIN_NAND_AND_FETCH_DI, 0, 0 }
+  { CODE_FOR_fetch_and_add_di, "__sync_fetch_and_add_di",
+    IA64_BUILTIN_FETCH_AND_ADD_DI, 0, 0 },
+  { CODE_FOR_fetch_and_sub_di, "__sync_fetch_and_sub_di",
+    IA64_BUILTIN_FETCH_AND_SUB_DI, 0, 0 },
+  { CODE_FOR_fetch_and_or_di, "__sync_fetch_and_or_di",
+    IA64_BUILTIN_FETCH_AND_OR_DI, 0, 0 },
+  { CODE_FOR_fetch_and_and_di, "__sync_fetch_and_and_di",
+    IA64_BUILTIN_FETCH_AND_AND_DI, 0, 0 },
+  { CODE_FOR_fetch_and_xor_di, "__sync_fetch_and_xor_di",
+    IA64_BUILTIN_FETCH_AND_XOR_DI, 0, 0 },
+  { CODE_FOR_fetch_and_nand_di, "__sync_fetch_and_nand_di",
+    IA64_BUILTIN_FETCH_AND_NAND_DI, 0, 0 },
+  { CODE_FOR_add_and_fetch_di, "__sync_add_and_fetch_di",
+    IA64_BUILTIN_ADD_AND_FETCH_DI, 0, 0 },
+  { CODE_FOR_sub_and_fetch_di, "__sync_sub_and_fetch_di",
+    IA64_BUILTIN_SUB_AND_FETCH_DI, 0, 0 },
+  { CODE_FOR_or_and_fetch_di, "__sync_or_and_fetch_di",
+    IA64_BUILTIN_OR_AND_FETCH_DI, 0, 0 },
+  { CODE_FOR_and_and_fetch_di, "__sync_and_and_fetch_di",
+    IA64_BUILTIN_AND_AND_FETCH_DI, 0, 0 },
+  { CODE_FOR_xor_and_fetch_di, "__sync_xor_and_fetch_di",
+    IA64_BUILTIN_XOR_AND_FETCH_DI, 0, 0 },
+  { CODE_FOR_nand_and_fetch_di, "__sync_nand_and_fetch_di",
+    IA64_BUILTIN_NAND_AND_FETCH_DI, 0, 0 }
 };
 
 void
 ia64_init_builtins ()
 {
-  int i;
-  struct builtin_description *d;
+  size_t i;
 
   tree psi_type_node = build_pointer_type (integer_type_node);
   tree pdi_type_node = build_pointer_type (long_integer_type_node);
   tree endlink = tree_cons (NULL_TREE, void_type_node, NULL_TREE);
-
 
   /* __sync_val_compare_and_swap_si, __sync_bool_compare_and_swap_si */
   tree si_ftype_psi_si_si
     = build_function_type (integer_type_node,
                            tree_cons (NULL_TREE, psi_type_node,
                                       tree_cons (NULL_TREE, integer_type_node,
-                                                 tree_cons (NULL_TREE, integer_type_node,
+                                                 tree_cons (NULL_TREE,
+							    integer_type_node,
                                                             endlink))));
 
   /* __sync_val_compare_and_swap_di, __sync_bool_compare_and_swap_di */
   tree di_ftype_pdi_di_di
     = build_function_type (long_integer_type_node,
                            tree_cons (NULL_TREE, pdi_type_node,
-                                      tree_cons (NULL_TREE, long_integer_type_node,
-                                                 tree_cons (NULL_TREE, long_integer_type_node,
+                                      tree_cons (NULL_TREE,
+						 long_integer_type_node,
+                                                 tree_cons (NULL_TREE,
+							    long_integer_type_node,
                                                             endlink))));
   /* __sync_synchronize */
   tree void_ftype_void
@@ -3321,45 +3449,59 @@ ia64_init_builtins ()
   tree di_ftype_pdi_di
     = build_function_type (long_integer_type_node,
                            tree_cons (NULL_TREE, pdi_type_node,
-                           tree_cons (NULL_TREE, long_integer_type_node, endlink)));
+                           tree_cons (NULL_TREE, long_integer_type_node,
+				      endlink)));
 
   /* __sync_lock_release_si */
   tree void_ftype_psi
-    = build_function_type (void_type_node, tree_cons (NULL_TREE, psi_type_node, endlink));
+    = build_function_type (void_type_node, tree_cons (NULL_TREE, psi_type_node,
+						      endlink));
 
   /* __sync_lock_release_di */
   tree void_ftype_pdi
-    = build_function_type (void_type_node, tree_cons (NULL_TREE, pdi_type_node, endlink));
+    = build_function_type (void_type_node, tree_cons (NULL_TREE, pdi_type_node,
+						      endlink));
 
-  def_builtin ("__sync_val_compare_and_swap_si", si_ftype_psi_si_si, IA64_BUILTIN_VAL_COMPARE_AND_SWAP_SI);
+  def_builtin ("__sync_val_compare_and_swap_si", si_ftype_psi_si_si,
+	       IA64_BUILTIN_VAL_COMPARE_AND_SWAP_SI);
 
-  def_builtin ("__sync_val_compare_and_swap_di", di_ftype_pdi_di_di, IA64_BUILTIN_VAL_COMPARE_AND_SWAP_DI);
+  def_builtin ("__sync_val_compare_and_swap_di", di_ftype_pdi_di_di,
+	       IA64_BUILTIN_VAL_COMPARE_AND_SWAP_DI);
 
-  def_builtin ("__sync_bool_compare_and_swap_si", si_ftype_psi_si_si, IA64_BUILTIN_BOOL_COMPARE_AND_SWAP_SI);
+  def_builtin ("__sync_bool_compare_and_swap_si", si_ftype_psi_si_si,
+	       IA64_BUILTIN_BOOL_COMPARE_AND_SWAP_SI);
 
-  def_builtin ("__sync_bool_compare_and_swap_di", di_ftype_pdi_di_di, IA64_BUILTIN_BOOL_COMPARE_AND_SWAP_DI);
+  def_builtin ("__sync_bool_compare_and_swap_di", di_ftype_pdi_di_di,
+	       IA64_BUILTIN_BOOL_COMPARE_AND_SWAP_DI);
 
-  def_builtin ("__sync_synchronize", void_ftype_void, IA64_BUILTIN_SYNCHRONIZE);
+  def_builtin ("__sync_synchronize", void_ftype_void,
+	       IA64_BUILTIN_SYNCHRONIZE);
 
-  def_builtin ("__sync_lock_test_and_set_si", si_ftype_psi_si, IA64_BUILTIN_LOCK_TEST_AND_SET_SI);
+  def_builtin ("__sync_lock_test_and_set_si", si_ftype_psi_si,
+	       IA64_BUILTIN_LOCK_TEST_AND_SET_SI);
 
-  def_builtin ("__sync_lock_test_and_set_di", di_ftype_pdi_di, IA64_BUILTIN_LOCK_TEST_AND_SET_DI);
+  def_builtin ("__sync_lock_test_and_set_di", di_ftype_pdi_di,
+	       IA64_BUILTIN_LOCK_TEST_AND_SET_DI);
 
-  def_builtin ("__sync_lock_release_si", void_ftype_psi, IA64_BUILTIN_LOCK_RELEASE_SI);
+  def_builtin ("__sync_lock_release_si", void_ftype_psi,
+	       IA64_BUILTIN_LOCK_RELEASE_SI);
 
-  def_builtin ("__sync_lock_release_di", void_ftype_pdi, IA64_BUILTIN_LOCK_RELEASE_DI);
+  def_builtin ("__sync_lock_release_di", void_ftype_pdi,
+	       IA64_BUILTIN_LOCK_RELEASE_DI);
 
-  def_builtin ("__builtin_ia64_bsp", build_function_type (ptr_type_node, endlink), IA64_BUILTIN_BSP);
+  def_builtin ("__builtin_ia64_bsp",
+	       build_function_type (ptr_type_node, endlink),
+	       IA64_BUILTIN_BSP);
 
   def_builtin ("__builtin_ia64_flushrs", 
 	       build_function_type (void_type_node, endlink), 
 	       IA64_BUILTIN_FLUSHRS);
 
   /* Add all builtins that are operations on two args. */
-  for (i=0, d = bdesc_2argsi; i < sizeof(bdesc_2argsi) / sizeof *d; i++, d++)
-    def_builtin (d->name, si_ftype_psi_si, d->code);
-  for (i=0, d = bdesc_2argdi; i < sizeof(bdesc_2argdi) / sizeof *d; i++, d++)
-    def_builtin (d->name, di_ftype_pdi_di, d->code);
+  for (i = 0; i < sizeof(bdesc_2argsi) / sizeof *bdesc_2argsi; i++)
+    def_builtin (bdesc_2argsi[i].name, si_ftype_psi_si, bdesc_2argsi[i].code);
+  for (i = 0; i < sizeof(bdesc_2argdi) / sizeof *bdesc_2argdi; i++)
+    def_builtin (bdesc_2argdi[i].name, si_ftype_psi_si, bdesc_2argdi[i].code);
 }
 
 /* Expand fetch_and_op intrinsics.  The basic code sequence is:
@@ -3679,7 +3821,7 @@ ia64_expand_builtin (exp, target, subtarget, mode, ignore)
   int fcode = DECL_FUNCTION_CODE (fndecl);
   enum machine_mode tmode, mode0, mode1;
   enum insn_code icode;
-  int i;
+  size_t i;
   struct builtin_description *d;
 
   switch (fcode)
@@ -3705,7 +3847,7 @@ ia64_expand_builtin (exp, target, subtarget, mode, ignore)
       tmp_reg = gen_rtx_REG (DImode, GR_REG(0));
       target = gen_rtx_MEM (BLKmode, tmp_reg);
       emit_insn (gen_mf (target));
-      return 0;
+      return const0_rtx;
 
     case IA64_BUILTIN_LOCK_TEST_AND_SET_SI:
       icode = CODE_FOR_lock_test_and_set_si;
@@ -3759,7 +3901,7 @@ ia64_expand_builtin (exp, target, subtarget, mode, ignore)
       op0 = gen_rtx_MEM (SImode, copy_to_mode_reg (Pmode, op0));
       MEM_VOLATILE_P (op0) = 1;
       emit_insn (gen_movsi (op0, GEN_INT(0)));
-      return 0;
+      return const0_rtx;
 
     case IA64_BUILTIN_LOCK_RELEASE_DI:
       arg0 = TREE_VALUE (arglist);
@@ -3767,7 +3909,7 @@ ia64_expand_builtin (exp, target, subtarget, mode, ignore)
       op0 = gen_rtx_MEM (DImode, copy_to_mode_reg (Pmode, op0));
       MEM_VOLATILE_P (op0) = 1;
       emit_insn (gen_movdi (op0, GEN_INT(0)));
-      return 0;
+      return const0_rtx;
 
     case IA64_BUILTIN_BSP:
       {
@@ -3777,10 +3919,8 @@ ia64_expand_builtin (exp, target, subtarget, mode, ignore)
       }
 
     case IA64_BUILTIN_FLUSHRS:
-      {
-	emit_insn (gen_flushrs ());
-	return 0;
-      }
+      emit_insn (gen_flushrs ());
+      return const0_rtx;
 
     default:
       break;

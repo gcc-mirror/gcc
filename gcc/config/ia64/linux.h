@@ -10,6 +10,7 @@
 
 /* ??? ia64 gas doesn't accept standard svr4 assembler options?  */
 #undef ASM_SPEC
+#define ASM_SPEC "-x"
 
 /* Define this for shared library support because it isn't in the main
    linux.h file.  */

@@ -238,10 +238,10 @@ extern const char *ia64_fixed_range_string;
 
 #if ((TARGET_CPU_DEFAULT | TARGET_DEFAULT) & MASK_GNU_AS) != 0
 /* GNU AS.  */
-#define ASM_SPEC "%{mno-gnu-as:-N so}"
+#define ASM_SPEC "%{mno-gnu-as:-N so}%{!mno-gnu-as: -x}"
 #else
 /* Intel ias.  */
-#define ASM_SPEC "%{!mgnu-as:-N so}"
+#define ASM_SPEC "%{!mgnu-as:-N so}%{mgnu-as: -x}"
 #endif
 
 /* A C string constant that tells the GNU CC driver program options to pass to
@@ -543,8 +543,8 @@ while (0)
 #define FIRST_PSEUDO_REGISTER 330
 
 /* Ranges for the various kinds of registers.  */
-#define ADDL_REGNO_P(REGNO) ((REGNO) >= 0 && (REGNO) <= 3)
-#define GR_REGNO_P(REGNO) ((REGNO) >= 0 && (REGNO) <= 127)
+#define ADDL_REGNO_P(REGNO) ((unsigned HOST_WIDE_INT) (REGNO) <= 3)
+#define GR_REGNO_P(REGNO) ((unsigned HOST_WIDE_INT) (REGNO) <= 127)
 #define FR_REGNO_P(REGNO) ((REGNO) >= 128 && (REGNO) <= 255)
 #define PR_REGNO_P(REGNO) ((REGNO) >= 256 && (REGNO) <= 319)
 #define BR_REGNO_P(REGNO) ((REGNO) >= 320 && (REGNO) <= 327)
@@ -1067,9 +1067,12 @@ enum reg_class
 /* A C expression that defines the optional machine-dependent constraint
    letters (`Q', `R', `S', `T', `U') that can be used to segregate specific
    types of operands, usually memory references, for the target machine.  */
-/* ??? This might be useful considering that we have already used all of the
-   integer constant contraint letters.  */
-/* #define EXTRA_CONSTRAINT(VALUE, C) */
+
+#define CONSTRAINT_OK_FOR_Q(VALUE) \
+  (memory_operand((VALUE), VOIDmode) && ! MEM_VOLATILE_P (VALUE))
+
+#define EXTRA_CONSTRAINT(VALUE, C) \
+  ((C) == 'Q' ? CONSTRAINT_OK_FOR_Q (VALUE) : 0)
 
 /* Basic Stack Layout */
 
@@ -1459,6 +1462,11 @@ do {									\
 
 #define FUNCTION_EPILOGUE(FILE, SIZE) \
   ia64_function_epilogue (FILE, SIZE)
+
+/* Output at beginning of assembler file.  */
+
+#define ASM_FILE_START(FILE) \
+  ia64_file_start (FILE)
 
 /* A C compound statement that outputs the assembler code for a thunk function,
    used to implement C++ virtual function calls with multiple inheritance.  */
