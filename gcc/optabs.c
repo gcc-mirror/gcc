@@ -1,5 +1,5 @@
 /* Expand the basic unary and binary arithmetic operations, for GNU compiler.
-   Copyright (C) 1987-1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -189,7 +189,6 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 {
   enum mode_class class;
   enum machine_mode wider_mode;
-  enum machine_mode submode = mode_for_size (BITS_PER_WORD, MODE_INT, 0);
   register rtx temp;
   int commutative_op = 0;
   int shift_op = (binoptab->code ==  ASHIFT
@@ -219,10 +218,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
     op0 = force_reg (mode, op0);
 
   if (CONSTANT_P (op1) && preserve_subexpressions_p () && rtx_cost (op1) > 2)
-    op1 = force_reg ((shift_op
-		      ? mode_for_size (BITS_PER_WORD, MODE_INT, 0)
-		      : mode),
-		     op1);
+    op1 = force_reg (shift_op ? word_mode : mode, op1);
 
 #if 0  /* Turned off because it seems to be a kludgy method.  */
   /* If subtracting integer from pointer, and the pointer has a special mode,
@@ -341,7 +337,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
   if ((binoptab == and_optab || binoptab == ior_optab || binoptab == xor_optab)
       && class == MODE_INT
       && GET_MODE_SIZE (mode) > UNITS_PER_WORD
-      && binoptab->handlers[(int) submode].insn_code != CODE_FOR_nothing)
+      && binoptab->handlers[(int) word_mode].insn_code != CODE_FOR_nothing)
     {
       int i;
       rtx insns;
@@ -358,7 +354,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       for (i = 0; i < GET_MODE_BITSIZE (mode) / BITS_PER_WORD; i++)
 	{
 	  rtx target_piece = operand_subword (target, i, 1, mode);
-	  rtx x = expand_binop (submode, binoptab,
+	  rtx x = expand_binop (word_mode, binoptab,
 				operand_subword_force (op0, i, mode),
 				operand_subword_force (op1, i, mode),
 				target_piece, unsignedp, methods);
@@ -382,10 +378,10 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
   if ((binoptab == add_optab || binoptab == sub_optab)
       && class == MODE_INT
       && GET_MODE_SIZE (mode) >= 2 * UNITS_PER_WORD
-      && binoptab->handlers[(int) submode].insn_code != CODE_FOR_nothing)
+      && binoptab->handlers[(int) word_mode].insn_code != CODE_FOR_nothing)
     {
       int i;
-      rtx carry_tmp = gen_reg_rtx (submode);
+      rtx carry_tmp = gen_reg_rtx (word_mode);
       optab otheroptab = binoptab == add_optab ? sub_optab : add_optab;
       int nwords = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
       rtx carry_in, carry_out;
@@ -417,7 +413,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  rtx x;
 
 	  /* Main add/subtract of the input operands.  */
-	  x = expand_binop (submode, binoptab,
+	  x = expand_binop (word_mode, binoptab,
 			    op0_piece, op1_piece,
 			    target_piece, unsignedp, methods);
 	  if (x == 0)
@@ -426,11 +422,11 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  if (i + 1 < nwords)
 	    {
 	      /* Store carry from main add/subtract.  */
-	      carry_out = gen_reg_rtx (submode);
+	      carry_out = gen_reg_rtx (word_mode);
 	      carry_out = emit_store_flag (carry_out,
 					   binoptab == add_optab ? LTU : GTU,
 					   x, op0_piece,
-					   submode, 1, normalizep);
+					   word_mode, 1, normalizep);
 	      if (!carry_out)
 		break;
 	    }
@@ -438,7 +434,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  if (i > 0)
 	    {
 	      /* Add/subtract previous carry to main result.  */
-	      x = expand_binop (submode,
+	      x = expand_binop (word_mode,
 				normalizep == 1 ? binoptab : otheroptab,
 				x, carry_in,
 				target_piece, 1, methods);
@@ -453,9 +449,9 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 					       binoptab == add_optab
 					         ? LTU : GTU,
 					       x, carry_in,
-					       submode, 1, normalizep);
+					       word_mode, 1, normalizep);
 		  /* Logical-ior the two poss. carry together.  */
-		  carry_out = expand_binop (submode, ior_optab,
+		  carry_out = expand_binop (word_mode, ior_optab,
 					    carry_out, carry_tmp,
 					    carry_out, 0, methods);
 		  if (!carry_out)
@@ -486,19 +482,19 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
      because we are not operating on one word at a time. 
 
      The multiplication proceeds as follows:
-			     _______________________
-			    [__op0_high_|__op0_low__]
-			     _______________________
-    *			    [__op1_high_|__op1_low__]
-    _______________________________________________
-			     _______________________
-(1)			    [__op0_low__*__op1_low__]
-		 _______________________
-(2a)		[__op0_low__*__op1_high_]
-		 _______________________
-(2b)		[__op0_high_*__op1_low__]
-     _______________________
-(3) [__op0_high_*__op1_high_]
+			         _______________________
+			        [__op0_high_|__op0_low__]
+			         _______________________
+        *			    [__op1_high_|__op1_low__]
+        _______________________________________________
+			         _______________________
+    (1)			    [__op0_low__*__op1_low__]
+		     _______________________
+    (2a)		[__op0_low__*__op1_high_]
+		     _______________________
+    (2b)		[__op0_high_*__op1_low__]
+         _______________________
+    (3) [__op0_high_*__op1_high_]
 
 
     This gives a 4-word result.  Since we are only interested in the
@@ -533,8 +529,8 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
   if (binoptab == smul_optab
       && class == MODE_INT
       && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
-      && smul_optab->handlers[(int) submode].insn_code != CODE_FOR_nothing
-      && add_optab->handlers[(int) submode].insn_code != CODE_FOR_nothing
+      && smul_optab->handlers[(int) word_mode].insn_code != CODE_FOR_nothing
+      && add_optab->handlers[(int) word_mode].insn_code != CODE_FOR_nothing
       && ((umul_widen_optab->handlers[(int) mode].insn_code
 	   != CODE_FOR_nothing)
 	  || (smul_widen_optab->handlers[(int) mode].insn_code
@@ -578,32 +574,32 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  rtx wordm1 = gen_rtx (CONST_INT, VOIDmode, BITS_PER_WORD - 1);
 	  product = expand_binop (mode, smul_widen_optab, op0_low, op1_low,
 				  target, 1, OPTAB_DIRECT);
-	  op0_xhigh = expand_binop (submode, lshr_optab, op0_low, wordm1,
+	  op0_xhigh = expand_binop (word_mode, lshr_optab, op0_low, wordm1,
 				    0, 1, OPTAB_DIRECT);
 	  if (op0_xhigh)
-	    op0_xhigh = expand_binop (submode, add_optab, op0_high, op0_xhigh,
-				      op0_xhigh, 0, OPTAB_DIRECT);
+	    op0_xhigh = expand_binop (word_mode, add_optab, op0_high,
+				      op0_xhigh, op0_xhigh, 0, OPTAB_DIRECT);
 	  else
 	    {
-	      op0_xhigh = expand_binop (submode, ashr_optab, op0_low, wordm1,
+	      op0_xhigh = expand_binop (word_mode, ashr_optab, op0_low, wordm1,
 					0, 0, OPTAB_DIRECT);
 	      if (op0_xhigh)
-		op0_xhigh = expand_binop (submode, sub_optab, op0_high,
+		op0_xhigh = expand_binop (word_mode, sub_optab, op0_high,
 					  op0_xhigh, op0_xhigh, 0,
 					  OPTAB_DIRECT);
 	    }
 
-	  op1_xhigh = expand_binop (submode, lshr_optab, op1_low, wordm1,
+	  op1_xhigh = expand_binop (word_mode, lshr_optab, op1_low, wordm1,
 				    0, 1, OPTAB_DIRECT);
 	  if (op1_xhigh)
-	    op1_xhigh = expand_binop (SImode, add_optab, op1_high, op1_xhigh,
-				      op1_xhigh, 0, OPTAB_DIRECT);
+	    op1_xhigh = expand_binop (word_mode, add_optab, op1_high,
+				      op1_xhigh, op1_xhigh, 0, OPTAB_DIRECT);
 	  else
 	    {
-	      op1_xhigh = expand_binop (submode, ashr_optab, op1_low, wordm1,
+	      op1_xhigh = expand_binop (word_mode, ashr_optab, op1_low, wordm1,
 					0, 0, OPTAB_DIRECT);
 	      if (op1_xhigh)
-		op1_xhigh = expand_binop (SImode, sub_optab, op1_high,
+		op1_xhigh = expand_binop (word_mode, sub_optab, op1_high,
 					  op1_xhigh, op1_xhigh, 0,
 					  OPTAB_DIRECT);
 	    }
@@ -623,21 +619,21 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	{
 	  rtx product_piece;
 	  rtx product_high = operand_subword (product, high, 1, mode);
-	  rtx temp = expand_binop (submode, binoptab, op0_low, op1_xhigh, 0,
+	  rtx temp = expand_binop (word_mode, binoptab, op0_low, op1_xhigh, 0,
 				   0, OPTAB_DIRECT);
 
 	  if (temp)
 	    {
-	      product_piece = expand_binop (submode, add_optab, temp,
+	      product_piece = expand_binop (word_mode, add_optab, temp,
 					    product_high, product_high,
 					    0, OPTAB_LIB_WIDEN);
 	      if (product_piece != product_high)
 		emit_move_insn (product_high, product_piece);
 
-	      temp = expand_binop (submode, binoptab, op1_low, op0_xhigh, 0,
+	      temp = expand_binop (word_mode, binoptab, op1_low, op0_xhigh, 0,
 				   0, OPTAB_DIRECT);
 
-	      product_piece = expand_binop (submode, add_optab, temp,
+	      product_piece = expand_binop (word_mode, add_optab, temp,
 					    product_high, product_high,
 					    0, OPTAB_LIB_WIDEN);
 	      if (product_piece != product_high)
@@ -674,9 +670,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	 if the libcall is cse'd or moved.  */
       emit_library_call (binoptab->handlers[(int) mode].libfunc,
 			 1, mode, 2, op0, mode, op1,
-			 (shift_op
-			  ? mode_for_size (BITS_PER_WORD, MODE_INT, 0)
-			  : mode));
+			 (shift_op ? word_mode : mode));
 
       insns = get_insns ();
       end_sequence ();
@@ -701,15 +695,12 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
   methods = (methods == OPTAB_LIB_WIDEN ? OPTAB_LIB : OPTAB_DIRECT);
 
-  /* Widening is now independent of specific machine modes.
-     It is assumed that widening may be performed to any
-     higher numbered mode in the same mode class.  */
+  /* Look for a wider mode of the same class for which it appears we can do
+     the operation.  */
 
   if (class == MODE_INT || class == MODE_FLOAT || class == MODE_COMPLEX_FLOAT)
     {
-      for (wider_mode = GET_MODE_WIDER_MODE (mode);
-	   ((int) wider_mode < (int) MAX_MACHINE_MODE
-	    && GET_MODE_CLASS (wider_mode) == class);
+      for (wider_mode = GET_MODE_WIDER_MODE (mode); wider_mode != VOIDmode;
 	   wider_mode = GET_MODE_WIDER_MODE (wider_mode))
 	{
 	  if ((binoptab->handlers[(int) wider_mode].insn_code
@@ -720,53 +711,39 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	      rtx xop0 = op0, xop1 = op1;
 	      int no_extend = 0;
 
-	      /* For certain operations, we need not actually extend
+	      /* For certain integer operations, we need not actually extend
 		 the narrow operands, as long as we will truncate
 		 the results to the same narrowness.  */
 
-	      if (binoptab == ior_optab || binoptab == and_optab
-		  || binoptab == xor_optab
-		  || binoptab == add_optab || binoptab == sub_optab
-		  || binoptab == smul_optab
-		  || binoptab == ashl_optab || binoptab == lshl_optab)
+	      if ((binoptab == ior_optab || binoptab == and_optab
+		   || binoptab == xor_optab
+		   || binoptab == add_optab || binoptab == sub_optab
+		   || binoptab == smul_optab
+		   || binoptab == ashl_optab || binoptab == lshl_optab)
+		  && class == MODE_INT)
 		no_extend = 1;
 
-	      if (GET_MODE (xop0) != VOIDmode
-		  && GET_MODE_BITSIZE (wider_mode) <= HOST_BITS_PER_INT)
-		{
-		  if (no_extend)
-		    {
-		      temp = force_reg (GET_MODE (xop0), xop0);
-		      xop0 = gen_rtx (SUBREG, wider_mode, temp, 0);
-		    }
-		  else
-		    {
-		      temp = gen_reg_rtx (wider_mode);
-		      convert_move (temp, xop0, unsignedp);
-		      xop0 = temp;
-		    }
-		}
-	      if (GET_MODE (xop1) != VOIDmode
-		  && GET_MODE_BITSIZE (wider_mode) <= HOST_BITS_PER_INT)
-		{
-		  if (no_extend)
-		    {
-		      temp = force_reg (GET_MODE (xop1), xop1);
-		      xop1 = gen_rtx (SUBREG, wider_mode, temp, 0);
-		    }
-		  else
-		    {
-		      temp = gen_reg_rtx (wider_mode);
-		      convert_move (temp, xop1, unsignedp);
-		      xop1 = temp;
-		    }
-		}
+	      /* If an operand is a constant integer, we might as well
+		 convert it since that is more efficient than using a SUBREG,
+		 unlike the case for other operands.  */
+
+	      if (no_extend && GET_MODE (xop0) != VOIDmode)
+		xop0 = gen_rtx (SUBREG, wider_mode,
+				force_reg (GET_MODE (xop0), xop0), 0);
+	      else
+		xop0 = convert_to_mode (wider_mode, xop0, unsignedp);
+
+	      if (no_extend && GET_MODE (xop1) != VOIDmode)
+		xop1 = gen_rtx (SUBREG, wider_mode,
+				force_reg (GET_MODE (xop1), xop1), 0);
+	      else
+		xop1 = convert_to_mode (wider_mode, xop1, unsignedp);
 
 	      temp = expand_binop (wider_mode, binoptab, xop0, xop1, 0,
 				   unsignedp, methods);
 	      if (temp)
 		{
-		  if (class == MODE_FLOAT)
+		  if (class != MODE_INT)
 		    {
 		      if (target == 0)
 			target = gen_reg_rtx (mode);
@@ -940,8 +917,7 @@ expand_twoval_binop (binoptab, op0, op1, targ0, targ1, unsignedp)
 
   if (class == MODE_INT || class == MODE_FLOAT || class == MODE_COMPLEX_FLOAT)
     {
-      for (wider_mode = GET_MODE_WIDER_MODE (mode);
-	   GET_MODE_CLASS (wider_mode) == class;
+      for (wider_mode = GET_MODE_WIDER_MODE (mode); wider_mode != VOIDmode;
 	   wider_mode = GET_MODE_WIDER_MODE (wider_mode))
 	{
 	  if (binoptab->handlers[(int) wider_mode].insn_code
@@ -991,7 +967,6 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
 {
   enum mode_class class;
   enum machine_mode wider_mode;
-  enum machine_mode submode = mode_for_size (BITS_PER_WORD, MODE_INT, 0);
   register rtx temp;
   rtx last = get_last_insn ();
   rtx pat;
@@ -1053,7 +1028,7 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
   if (unoptab == one_cmpl_optab
       && class == MODE_INT
       && GET_MODE_SIZE (mode) > UNITS_PER_WORD
-      && unoptab->handlers[(int) submode].insn_code != CODE_FOR_nothing)
+      && unoptab->handlers[(int) word_mode].insn_code != CODE_FOR_nothing)
     {
       int i;
       rtx insns;
@@ -1067,7 +1042,7 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
       for (i = 0; i < GET_MODE_BITSIZE (mode) / BITS_PER_WORD; i++)
 	{
 	  rtx target_piece = operand_subword (target, i, 1, mode);
-	  rtx x = expand_unop (submode, unoptab,
+	  rtx x = expand_unop (word_mode, unoptab,
 			       operand_subword_force (op0, i, mode),
 			       target_piece, unsignedp);
 	  if (target_piece != x)
@@ -1107,32 +1082,41 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
 
   if (class == MODE_INT || class == MODE_FLOAT || class == MODE_COMPLEX_FLOAT)
     {
-      for (wider_mode = GET_MODE_WIDER_MODE (mode);
-	   GET_MODE_CLASS (wider_mode) == class;
+      for (wider_mode = GET_MODE_WIDER_MODE (mode); wider_mode != VOIDmode;
 	   wider_mode = GET_MODE_WIDER_MODE (wider_mode))
 	{
 	  if ((unoptab->handlers[(int) wider_mode].insn_code
 	       != CODE_FOR_nothing)
 	      || unoptab->handlers[(int) wider_mode].libfunc)
 	    {
-	      if (GET_MODE (op0) != VOIDmode
-		  && GET_MODE_BITSIZE (wider_mode) <= HOST_BITS_PER_INT)
-		{
-		  temp = gen_reg_rtx (wider_mode);
-		  convert_move (temp, op0, unsignedp);
-		  op0 = temp;
-		}
+	      rtx xop0 = op0;
+
+	      /* For certain operations, we need not actually extend
+		 the narrow operand, as long as we will truncate the
+		 results to the same narrowness.  */
+
+	      if ((unoptab == neg_optab || unoptab == one_cmpl_optab)
+		  && class == MODE_INT)
+		xop0 = gen_rtx (SUBREG, wider_mode, force_reg (mode, xop0), 0);
+	      else
+		xop0 = convert_to_mode (wider_mode, xop0, unsignedp);
 	      
-	      target = expand_unop (wider_mode, unoptab, op0, 0, unsignedp);
-	      if (class == MODE_FLOAT)
+	      temp = expand_unop (wider_mode, unoptab, xop0, 0, unsignedp);
+
+	      if (temp)
 		{
-		  if (target == 0)
-		    target = gen_reg_rtx (mode);
-		  convert_move (target, temp, 0);
-		  return target;
+		  if (class != MODE_INT)
+		    {
+		      if (target == 0)
+			target = gen_reg_rtx (mode);
+		      convert_move (target, temp, 0);
+		      return target;
+		    }
+		  else
+		    return gen_lowpart (mode, temp);
 		}
 	      else
-		return gen_lowpart (mode, target);
+		delete_insns_since (last);
 	    }
 	}
     }
@@ -1563,8 +1547,7 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
 
   if (class == MODE_INT || class == MODE_FLOAT || class == MODE_COMPLEX_FLOAT)
     {
-      for (wider_mode = GET_MODE_WIDER_MODE (mode);
-	   GET_MODE_CLASS (wider_mode) == class;
+      for (wider_mode = GET_MODE_WIDER_MODE (mode); wider_mode != VOIDmode;
 	   wider_mode = GET_MODE_WIDER_MODE (wider_mode))
 	{
 	  if (cmp_optab->handlers[(int) wider_mode].insn_code
@@ -1695,8 +1678,7 @@ emit_float_lib_cmp (x, y, comparison)
     {
       enum machine_mode wider_mode;
 
-      for (wider_mode = GET_MODE_WIDER_MODE (mode);
-	   GET_MODE_CLASS (wider_mode) == MODE_FLOAT;
+      for (wider_mode = GET_MODE_WIDER_MODE (mode); wider_mode != VOIDmode;
 	   wider_mode = GET_MODE_WIDER_MODE (wider_mode))
 	{
 	  if ((cmp_optab->handlers[(int) wider_mode].insn_code
@@ -1863,21 +1845,18 @@ gen_move_insn (x, y)
 }
 
 /* Tables of patterns for extending one integer mode to another.  */
-static enum insn_code zero_extend_codes[MAX_MACHINE_MODE][MAX_MACHINE_MODE];
-static enum insn_code sign_extend_codes[MAX_MACHINE_MODE][MAX_MACHINE_MODE];
+static enum insn_code extendtab[MAX_MACHINE_MODE][MAX_MACHINE_MODE][2];
 
-/* Return nonzero if it's possible to extend FROM_MODE to TO_MODE.
-   UNSIGNEDP specifies zero-extension instead of sign-extension.
+/* Return the insn code used to extend FROM_MODE to TO_MODE.
+   UNSIGNEDP specifies zero-extension instead of sign-extension.  If
+   no such operation exists, CODE_FOR_nothing will be returned.  */
 
-   Actually, the value is the instruction code for the extension pattern.  */
-
-int
+enum insn_code
 can_extend_p (to_mode, from_mode, unsignedp)
      enum machine_mode to_mode, from_mode;
      int unsignedp;
 {
-  return ((unsignedp ? zero_extend_codes : sign_extend_codes)
-	  [(int) to_mode][(int) from_mode]);
+  return extendtab[(int) to_mode][(int) from_mode][unsignedp];
 }
 
 /* Generate the body of an insn to extend Y (with mode MFROM)
@@ -1889,97 +1868,99 @@ gen_extend_insn (x, y, mto, mfrom, unsignedp)
      enum machine_mode mto, mfrom;
      int unsignedp;
 {
-  return (GEN_FCN ((unsignedp ? zero_extend_codes : sign_extend_codes)
-		   [(int)mto][(int)mfrom])
-	  (x, y));
+  return (GEN_FCN (extendtab[(int) mto][(int) mfrom][unsignedp]) (x, y));
 }
 
 static void
 init_extends ()
 {
-  bzero (sign_extend_codes, sizeof sign_extend_codes);
-  bzero (zero_extend_codes, sizeof zero_extend_codes);
+  enum insn_code *p;
+
+  for (p = extendtab[0][0];
+       p < extendtab[0][0] + sizeof extendtab / sizeof extendtab[0][0][0];
+       p++)
+    *p = CODE_FOR_nothing;
 
 #ifdef HAVE_extendditi2
   if (HAVE_extendditi2)
-    sign_extend_codes[(int) TImode][(int) DImode] = CODE_FOR_extendditi2;
+    extendtab[(int) TImode][(int) DImode][0] = CODE_FOR_extendditi2;
 #endif
 #ifdef HAVE_extendsiti2
   if (HAVE_extendsiti2)
-    sign_extend_codes[(int) TImode][(int) SImode] = CODE_FOR_extendsiti2;
+    extendtab[(int) TImode][(int) SImode][0] = CODE_FOR_extendsiti2;
 #endif
 #ifdef HAVE_extendhiti2
   if (HAVE_extendhiti2)
-    sign_extend_codes[(int) TImode][(int) HImode] = CODE_FOR_extendhiti2;
+    extendtab[(int) TImode][(int) HImode][0] = CODE_FOR_extendhiti2;
 #endif
 #ifdef HAVE_extendqiti2
   if (HAVE_extendqiti2)
-    sign_extend_codes[(int) TImode][(int) QImode] = CODE_FOR_extendqiti2;
+    extendtab[(int) TImode][(int) QImode][0] = CODE_FOR_extendqiti2;
 #endif
 #ifdef HAVE_extendsidi2
   if (HAVE_extendsidi2)
-    sign_extend_codes[(int) DImode][(int) SImode] = CODE_FOR_extendsidi2;
+    extendtab[(int) DImode][(int) SImode][0] = CODE_FOR_extendsidi2;
 #endif
 #ifdef HAVE_extendhidi2
   if (HAVE_extendhidi2)
-    sign_extend_codes[(int) DImode][(int) HImode] = CODE_FOR_extendhidi2;
+    extendtab[(int) DImode][(int) HImode][0] = CODE_FOR_extendhidi2;
 #endif
 #ifdef HAVE_extendqidi2
   if (HAVE_extendqidi2)
-    sign_extend_codes[(int) DImode][(int) QImode] = CODE_FOR_extendqidi2;
+    extendtab[(int) DImode][(int) QImode][0] = CODE_FOR_extendqidi2;
 #endif
 #ifdef HAVE_extendhisi2
   if (HAVE_extendhisi2)
-    sign_extend_codes[(int) SImode][(int) HImode] = CODE_FOR_extendhisi2;
+    extendtab[(int) SImode][(int) HImode][0] = CODE_FOR_extendhisi2;
 #endif
 #ifdef HAVE_extendqisi2
   if (HAVE_extendqisi2)
-    sign_extend_codes[(int) SImode][(int) QImode] = CODE_FOR_extendqisi2;
+    extendtab[(int) SImode][(int) QImode][0] = CODE_FOR_extendqisi2;
 #endif
 #ifdef HAVE_extendqihi2
   if (HAVE_extendqihi2)
-    sign_extend_codes[(int) HImode][(int) QImode] = CODE_FOR_extendqihi2;
+    extendtab[(int) HImode][(int) QImode][0] = CODE_FOR_extendqihi2;
 #endif
 
 #ifdef HAVE_zero_extendditi2
   if (HAVE_zero_extendsiti2)
-    zero_extend_codes[(int) TImode][(int) DImode] = CODE_FOR_zero_extendditi2;
+    extendtab[(int) TImode][(int) DImode][1] = CODE_FOR_zero_extendditi2;
 #endif
 #ifdef HAVE_zero_extendsiti2
   if (HAVE_zero_extendsiti2)
-    zero_extend_codes[(int) TImode][(int) SImode] = CODE_FOR_zero_extendsiti2;
+    extendtab[(int) TImode][(int) SImode][1] = CODE_FOR_zero_extendsiti2;
 #endif
 #ifdef HAVE_zero_extendhiti2
   if (HAVE_zero_extendhiti2)
-    zero_extend_codes[(int) TImode][(int) HImode] = CODE_FOR_zero_extendhiti2;
+    extendtab[(int) TImode][(int) HImode][1] = CODE_FOR_zero_extendhiti2;
 #endif
 #ifdef HAVE_zero_extendqiti2
   if (HAVE_zero_extendqiti2)
-    zero_extend_codes[(int) TImode][(int) QImode] = CODE_FOR_zero_extendqiti2;
+    extendtab[(int) TImode][(int) QImode][1] = CODE_FOR_zero_extendqiti2;
 #endif
 #ifdef HAVE_zero_extendsidi2
   if (HAVE_zero_extendsidi2)
-    zero_extend_codes[(int) DImode][(int) SImode] = CODE_FOR_zero_extendsidi2;
+    extendtab[(int) DImode][(int) SImode][1] = CODE_FOR_zero_extendsidi2;
 #endif
 #ifdef HAVE_zero_extendhidi2
   if (HAVE_zero_extendhidi2)
-    zero_extend_codes[(int) DImode][(int) HImode] = CODE_FOR_zero_extendhidi2;
+    extendtab[(int) DImode][(int) HImode][1] = CODE_FOR_zero_extendhidi2;
 #endif
 #ifdef HAVE_zero_extendqidi2
   if (HAVE_zero_extendqidi2)
-    zero_extend_codes[(int) DImode][(int) QImode] = CODE_FOR_zero_extendqidi2;
+    extendtab[(int) DImode][(int) QImode][1] = CODE_FOR_zero_extendqidi2;
 #endif
 #ifdef HAVE_zero_extendhisi2
   if (HAVE_zero_extendhisi2)
-    zero_extend_codes[(int) SImode][(int) HImode] = CODE_FOR_zero_extendhisi2;
+    extendtab[(int) SImode][(int) HImode][1] = CODE_FOR_zero_extendhisi2;
 #endif
 #ifdef HAVE_zero_extendqisi2
   if (HAVE_zero_extendqisi2)
-    zero_extend_codes[(int) SImode][(int) QImode] = CODE_FOR_zero_extendqisi2;
+    extendtab[(int) SImode][(int) QImode][1] = CODE_FOR_zero_extendqisi2;
 #endif
 #ifdef HAVE_zero_extendqihi2
   if (HAVE_zero_extendqihi2)
-    zero_extend_codes[(int) HImode][(int) QImode] = CODE_FOR_zero_extendqihi2;
+    extendtab[(int) HImode][(int) QImode][1] = CODE_FOR_zero_extendqihi2;
 #endif
 }
 
@@ -2421,7 +2402,7 @@ init_floattab ()
 }
 
 /* Generate code to convert FROM to floating point
-   and store in TO.  FROM must be fixed point.
+   and store in TO.  FROM must be fixed point and not VOIDmode.
    UNSIGNEDP nonzero means regard FROM as unsigned.
    Normally this is done by correcting the final value
    if it is negative.  */
@@ -2434,6 +2415,10 @@ expand_float (to, from, unsignedp)
   enum insn_code icode;
   register rtx target = to;
   enum machine_mode fmode, imode;
+
+  /* Crash now, because we won't be able to decide which mode to use.  */
+  if (GET_MODE (from) == VOIDmode)
+    abort ();
 
   /* Look for an insn to do the conversion.  Do it in the specified
      modes if possible; otherwise convert either input, output or both to

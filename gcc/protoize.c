@@ -2,7 +2,7 @@
    and Computer Technology Corporation (MCC).  The author's current
    E-mail address is <rfg@ncd.com>.
 
-   Copyright (C) 1989, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1992 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -34,29 +34,28 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define VOLATILE
 #endif
 
-/* It is incorrect to include config.h here, because this file is being
-   compiled for the target, and hence definitions concerning only the host
-   do not apply.  Instead we include tconfig.h, which is the xm file
-   *for the target*, which also includes the tm.h file *for the target*.
-   This way, we get definitions of POSIX, USG and VMS for the target.  */
-
-#include "tconfig.h"
-
-/* The documentation says to use TARGET_POSIX, so check for it as well
-   as POSIX.  */
-#if defined(TARGET_POSIX) && !defined(POSIX)
-#define POSIX
+#ifndef __STDC__
+#define const
 #endif
 
+#include "config.h"
+
+#ifdef POSIX /* We should be able to define _POSIX_SOURCE unconditionally,
+		but some systems respond in buggy ways to it,
+		including Sunos 4.1.1.  Which we don't classify as POSIX.  */
+/* In case this is a POSIX system with an ANSI C compiler,
+   ask for definition of all POSIX facilities.  */
+#define _POSIX_SOURCE
+#endif
+
+#if 0
+/* Users are not supposed to use _POSIX_SOURCE to say the
+   system is a POSIX system.  That is not what _POSIX_SOURCE means! -- rms  */ 
 /* If the user asked for POSIX via _POSIX_SOURCE, turn on POSIX code.  */
 #if defined(_POSIX_SOURCE) && !defined(POSIX)
 #define POSIX
 #endif
-
-/* On a POSIX system, request definition of all the POSIX facilities.  */
-#if defined(POSIX) && !defined(_POSIX_SOURCE)
-#define _POSIX_SOURCE
-#endif
+#endif /* 0 */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -64,14 +63,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/dir.h>
+#if ! defined (USG) || defined (SVR4)
 #include <sys/wait.h>
+#endif
 #include <setjmp.h>
 #include "gvarargs.h"
 #include "getopt.h"
 
 #ifndef PATH_MAX	/* <limits.h> defines this on most POSIX systems.  */
 #include <sys/param.h>
-#define PATH_MAX MAXPATHLEN
 /* Sometimes <sys/param.h> defines these macros.  */
 #undef CHAR_BIT
 #undef CHAR_MAX
@@ -95,14 +95,6 @@ extern int errno;
 extern char *sys_errlist[];
 extern char *version_string;
 
-#if defined(POSIX)
-
-#include <stdlib.h>
-#include <unistd.h>
-#include <signal.h>
-#include <fcntl.h>
-#include <string.h>
-
 /* Systems which are compatible only with POSIX 1003.1-1988 (but *not*
    with POSIX 1003.1-1990), e.g. Ultrix 4.2, might not have
    const qualifiers in the prototypes in the system include files.
@@ -110,17 +102,39 @@ extern char *version_string;
    calls to the following functions.  To eliminate these warnings we
    provide the following #defines.  */
 
-#if (_POSIX_VERSION < 199009)
+#define my_access(file,flag)	access((char *)file, flag)
+#define my_stat(file,pkt)	stat((char *)file, pkt)
+#define my_execvp(prog,argv)	execvp((char *)prog, (char **)argv)
+#define my_link(file1, file2)	link((char *)file1, (char *)file2)
+#define my_unlink(file)		unlink((char *)file)
+#define my_open(file, mode, flag)	open((char *)file, mode, flag)
+#define my_chmod(file, mode)	chmod((char *)file, mode)
 
-#define access(file,flag)	access((char *)file, flag)
-#define stat(file,pkt)		stat((char *)file, pkt)
-#define execvp(prog,argv)	execvp((char *)prog, (char **)argv)
-#define link(file1, file2)	link((char *)file1, (char *)file2)
-#define unlink(file)		unlink((char *)file)
-#define open(file, mode, flag)	open((char *)file, mode, flag)
-#define chmod(file, mode)	chmod((char *)file, mode)
+#if !(defined (USG) || defined (VMS) || defined (POSIX))
+#define GUESSPATHLEN (MAXPATHLEN + 1)
+#else /* (defined (USG) || defined (VMS) || defined (POSIX)) */
+/* We actually use this as a starting point, not a limit.  */
+#define GUESSPATHLEN 200
+#endif /* (defined (USG) || defined (VMS) || defined (POSIX)) */
 
-#endif /* (_POSIX_VERSION < 199009) */
+/* Aliases for pointers to void.
+   These were made to facilitate compilation with other compilers.  */
+
+#ifdef __STDC__
+typedef void * pointer_type;
+typedef const void * const_pointer_type;
+#else
+typedef char * pointer_type;
+typedef char * const_pointer_type;
+#endif
+
+#if defined(POSIX)
+
+#include <stdlib.h>
+#include <unistd.h>
+#include <signal.h>
+#include <fcntl.h>
+#include <string.h>
 
 #else /* !defined(POSIX) */
 
@@ -137,61 +151,58 @@ extern char *version_string;
    the few exceptions to the general rule here.  */
 
 #if !(defined (USG) || defined (VMS))
-extern char *getwd (char *);
+extern char *getwd ();
 #define getcwd(buf,len) getwd(buf)
 #else /* (defined (USG) || defined (VMS)) */
-extern char *getcwd (char *, size_t);
+extern char *getcwd ();
 #endif /* (defined (USG) || defined (VMS)) */
 
 /* Declaring stat or __flsbuf with a prototype
    causes conflicts with system headers on some systems.  */
 
 #ifndef abort
-extern VOLATILE void abort (void);
+extern VOLATILE void abort ();
 #endif
-extern int kill(int, int);
-extern int creat (const char *, int);
-extern int open (const char *, int, ...);
+extern int kill();
+extern int creat ();
 #if 0 /* These conflict with stdio.h on some systems.  */
 extern int fprintf (FILE *, const char *, ...);
 extern int printf (const char *, ...);
 #endif /* 0 */
-extern void exit (int);
-extern void *malloc (size_t);
-extern void *realloc (void *, size_t);
-extern void free (void *);
-extern int read (int, void *, size_t);
-extern int write (int, const void *, size_t);
-extern int close (int);
-extern int link (const char *, const char *);
-extern int unlink (const char *);
-extern int fflush (FILE *);
-extern int atoi (const char *);
-extern int access (const char *, int);
-extern int puts (const char *);
-extern int fputs (const char *, FILE *);
-extern int fputc (int, FILE *);
-extern int execvp (const char *, char *const *);
-extern int setjmp (jmp_buf);
-extern void longjmp (jmp_buf, int);
+extern void exit ();
+extern pointer_type malloc ();
+extern pointer_type realloc ();
+extern void free ();
+extern int read ();
+extern int write ();
+extern int close ();
+extern int fflush ();
+extern int atoi ();
+extern int puts ();
+extern int fputs ();
+extern int fputc ();
+#if 0 /* Causes trouble on some systems that define setjmp as a macro.  */
+extern int setjmp ();
+extern void longjmp ();
+#endif
 
-extern char *   strcat(char *, const char *);
-extern int      strcmp(const char *, const char *);
-extern char *   strcpy(char *, const char *);
+extern char *   strcat();
+extern int      strcmp();
+extern char *   strcpy();
 #if 0 /* size_t from sys/types.h may fail to match GCC.
 	 If so, we would get a warning from this.
 	 So do without the prototype.  */
 extern size_t   strlen(const char *);
 #endif
-extern int      strncmp(const char *, const char *, size_t);
-extern char *   strncpy(char *, const char *, size_t);
-extern char *   strrchr(const char *, int);
+extern int      strncmp();
+extern char *   strncpy();
+extern char *   strrchr();
 
 #if !(defined (USG) || defined (VMS))
-extern int vfork (void);
+extern int vfork ();
 #define fork vfork
 #else
-extern int fork (void);
+extern int fork ();
 #endif /* !(defined (USG) || defined (VMS)) */
 
 #endif /* !defined(POSIX) */
@@ -200,15 +211,13 @@ extern int fork (void);
 
 #define NONCONST
 
-/* Aliases for pointers to void.
-   These were made to facilitate compilation with other compilers.  */
+/* Define a STRINGIFY macro that's right for ANSI or traditional C.  */
 
-typedef void * pointer_type;
-typedef const void * const_pointer_type;
-
-/* Define a STRINGIFY macro that's right for ANSI C.  */
-
+#ifdef __STDC__
 #define STRINGIFY(STRING) #STRING
+#else
+#define STRINGIFY(STRING) "STRING"
+#endif
 
 /* POSIX systems will not have definitions for WIFEXITED or WEXITSTATUS.
    Define them correctly and so that they work for all environments.  */
@@ -471,22 +480,22 @@ static int errors = 0;
 /* ??? These comments should say what the flag mean as well as the options
    that set them.  */
 
-static int version_flag = 0;		/* set by -V option */
-static int quiet_flag = 0;		/* set by -q option */
-#if 0
-static int force_flag = 0;		/* set by -f option */
-#endif
-static int nochange_flag = 0;		/* set by -n option */
-static int nosave_flag = 0;		/* set by -N option */
-static int keep_flag = 0;		/* set by -k option */
-static const char ** compile_params = 0;	/* set by -c option */
+static int version_flag = 0;		/* Print our version number.  */
+static int quiet_flag = 0;		/* Don't print messages normally.  */
+static int nochange_flag = 0;		/* Don't convert, just say what files
+					   we would have converted.  */
+static int nosave_flag = 0;		/* Don't save the old version.  */
+static int keep_flag = 0;		/* Don't delete the .X files.  */
+static const char ** compile_params = 0;	/* Option string for gcc.  */
 #ifdef UNPROTOIZE
-static const char *indent_string = "     ";	/* set by -i option */
+static const char *indent_string = "     ";	/* Indentation for newly
+						   inserted parm decls.  */
 #else /* !defined(UNPROTOIZE) */
-static int local_flag = 0;		/* set by -l option */
+static int local_flag = 0;		/* Insert new local decls (when?).  */
 static int global_flag = 0;		/* set by -g option */
-static int cplusplus_flag = 0;		/* set by -C option */
-static const char* nondefault_syscalls_dir = 0; /* set by -B option */
+static int cplusplus_flag = 0;		/* Rename converted files to *.C.  */
+static const char* nondefault_syscalls_dir = 0; /* Dir to look for
+						   SYSCALLS.c.X in.  */
 #endif /* !defined(UNPROTOIZE) */
 
 /* An index into the compile_params array where we should insert the filename
@@ -602,16 +611,18 @@ static char * saved_repl_write_ptr;
 
 /* Forward declaration.  */
 
-static const char *shortpath (const char *cwd, const char *filename);
+static const char *shortpath ();
 
 /* Allocate some space, but check that the allocation was successful.  */
 
 static pointer_type
-xmalloc (size_t byte_count)
+xmalloc (byte_count)
+     size_t byte_count;
 {
   pointer_type rv;
 
-  if ((rv = malloc (byte_count)) == NULL)
+  rv = malloc (byte_count);
+  if (rv == NULL)
     {
       fprintf (stderr, "\n%s: fatal error: can't allocate %u more bytes of memory\n",
 	       pname, byte_count);
@@ -625,11 +636,14 @@ xmalloc (size_t byte_count)
 /* Reallocate some space, but check that the reallocation was successful.  */
 
 static pointer_type
-xrealloc (pointer_type old_space, size_t byte_count)
+xrealloc (old_space, byte_count)
+     pointer_type old_space;
+     size_t byte_count;
 {
   pointer_type rv;
 
-  if ((rv = realloc (old_space, byte_count)) == NULL)
+  rv = realloc (old_space, byte_count);
+  if (rv == NULL)
     {
       fprintf (stderr, "\n%s: fatal error: can't allocate %u more bytes of memory\n",
 	       pname, byte_count);
@@ -645,7 +659,8 @@ xrealloc (pointer_type old_space, size_t byte_count)
    is non-null.  */
 
 static void
-xfree (const_pointer_type p)
+xfree (p)
+     const_pointer_type p;
 {
   if (p)
     free ((NONCONST pointer_type) p);
@@ -654,7 +669,9 @@ xfree (const_pointer_type p)
 /* Make a copy of a string INPUT with size SIZE.  */
 
 static char *
-savestring (const char *input, int size)
+savestring (input, size)
+     const char *input;
+     int size;
 {
   char *output = (char *) xmalloc (size + 1);
   strcpy (output, input);
@@ -674,7 +691,8 @@ fancy_abort ()
 /* Make a duplicate of a given string in a newly allocated area.  */
 
 static char *
-dupstr (const char *s)
+dupstr (s)
+     const char *s;
 {
   return strcpy ((char *) xmalloc (strlen (s) + 1), s);
 }
@@ -683,7 +701,9 @@ dupstr (const char *s)
    allocated area.  */
 
 static char *
-dupnstr (const char *s, size_t n)
+dupnstr (s, n)
+     const char *s;
+     size_t n;
 {
   char *ret_val = strncpy ((char *) xmalloc (n + 1), s, n);
 
@@ -695,7 +715,9 @@ dupnstr (const char *s, size_t n)
    does not occur within s1.  Assume neither s1 nor s2 are null pointers.  */
 
 static const char *
-substr (const char *s1, const char *const s2)
+substr (s1, s2)
+     const char *s1;
+     const char *const s2;
 {
   for (; *s1 ; s1++)
     {
@@ -716,7 +738,7 @@ outer:
 /* Get setup to recover in case the edit we are about to do goes awry.  */
 
 void
-save_pointers (void)
+save_pointers ()
 {
   saved_clean_read_ptr = clean_read_ptr;
   saved_repl_write_ptr = repl_write_ptr;
@@ -726,7 +748,7 @@ save_pointers (void)
    too confusing in the source code we are trying to edit.  */
 
 void
-restore_pointers (void)
+restore_pointers ()
 {
   clean_read_ptr = saved_clean_read_ptr;
   repl_write_ptr = saved_repl_write_ptr;
@@ -734,8 +756,9 @@ restore_pointers (void)
 
 /* Return true if the given character is a legal identifier character.  */
 
-inline static int
-is_id_char (char ch)
+static int
+is_id_char (ch)
+     char ch;
 {
   return (isalnum (ch) || (ch == '_') || (ch == '$'));
 }
@@ -744,7 +767,7 @@ is_id_char (char ch)
    exit with non-zero status.  */
 
 static void
-usage (void)
+usage ()
 {
 #ifdef UNPROTOIZE
   fprintf (stderr, "%s: usage '%s [ -VqfnkN ] [ -i <istring> ] [ filename ... ]'\n",
@@ -761,7 +784,8 @@ usage (void)
    include directories.  */
 
 static int
-in_system_include_dir (const char *path)
+in_system_include_dir (path)
+     const char *path;
 {
   struct default_include *p;
 
@@ -785,7 +809,7 @@ file_could_be_converted (const char *path)
 {
   char *const dir_name = (char *) alloca (strlen (path) + 1);
 
-  if (access (path, R_OK))
+  if (my_access (path, R_OK))
     return 0;
 
   {
@@ -799,7 +823,7 @@ file_could_be_converted (const char *path)
       abort ();  /* Should have been an absolutized filename.  */
   }
 
-  if (access (path, W_OK))
+  if (my_access (path, W_OK))
     return 0;
 
   return 1;
@@ -833,7 +857,7 @@ file_normally_convertable (const char *path)
       abort ();  /* Should have been an absolutized filename.  */
   }
 
-  if (access (path, R_OK))
+  if (my_access (path, R_OK))
     {
       if (!quiet_flag)
         fprintf (stderr, "%s: warning: no read access for file `%s'\n",
@@ -841,7 +865,7 @@ file_normally_convertable (const char *path)
       return 0;
     }
 
-  if (access (path, W_OK))
+  if (my_access (path, W_OK))
     {
       if (!quiet_flag)
         fprintf (stderr, "%s: warning: no write access for file `%s'\n",
@@ -849,7 +873,7 @@ file_normally_convertable (const char *path)
       return 0;
     }
 
-  if (access (dir_name, W_OK))
+  if (my_access (dir_name, W_OK))
     {
       if (!quiet_flag)
         fprintf (stderr, "%s: warning: no write access for dir containing `%s'\n",
@@ -867,7 +891,8 @@ file_normally_convertable (const char *path)
    file.  Return false otherwise.  */
 
 static int
-is_syscalls_file (const file_info *fi_p)
+is_syscalls_file (fi_p)
+     const file_info *fi_p;
 {
   return (substr (fi_p->hash_entry->symbol, syscalls_filename) != NULL);
 }
@@ -884,7 +909,8 @@ is_syscalls_file (const file_info *fi_p)
    by connect_defs_and_decs().  */
 
 static int
-needs_to_be_converted (const file_info *file_p)
+needs_to_be_converted (file_p)
+     const file_info *file_p;
 {
   const def_dec_info *ddp;
 
@@ -922,7 +948,8 @@ needs_to_be_converted (const file_info *file_p)
    that should be converted.  */
 
 static int
-directory_specified_p (const char *name)
+directory_specified_p (name)
+     const char *name;
 {
   struct string_list *p;
 
@@ -937,7 +964,8 @@ directory_specified_p (const char *name)
 /* Return 1 if the file named NAME should be excluded from conversion.  */
 
 static int
-file_excluded_p (const char *name)
+file_excluded_p (name)
+     const char *name;
 {
   struct string_list *p;
   int len = strlen (name);
@@ -954,9 +982,13 @@ file_excluded_p (const char *name)
    STRING is the new element value, and REST holds the remaining elements.  */
 
 static struct string_list *
-string_list_cons (char *string, struct string_list *rest)      
+string_list_cons (string, rest)
+     char *string;
+     struct string_list *rest;      
 {
-  struct string_list *temp = xmalloc (sizeof (struct string_list));
+  struct string_list *temp
+    = (struct string_list *) xmalloc (sizeof (struct string_list));
+
   temp->next = rest;
   temp->name = string;
   return temp;
@@ -972,7 +1004,9 @@ string_list_cons (char *string, struct string_list *rest)
    argument.  */
 
 static void
-visit_each_hash_node (const hash_table_entry *hash_tab_p, void (*func) (const hash_table_entry *))
+visit_each_hash_node (hash_tab_p, func)
+     const hash_table_entry *hash_tab_p;
+     void (*func)();
 {
   const hash_table_entry *primary;
 
@@ -993,7 +1027,9 @@ visit_each_hash_node (const hash_table_entry *hash_tab_p, void (*func) (const ha
    called.  */
 
 static hash_table_entry *
-add_symbol (hash_table_entry *p, const char *s)
+add_symbol (p, s)
+     hash_table_entry *p;
+     const char *s;
 {
   p->hash_next = NULL;
   p->symbol = dupstr (s);
@@ -1008,7 +1044,9 @@ add_symbol (hash_table_entry *p, const char *s)
    hash table entry for the given name.  */
 
 static hash_table_entry *
-lookup (hash_table_entry *hash_tab_p, const char *search_symbol)
+lookup (hash_tab_p, search_symbol)
+     hash_table_entry *hash_tab_p;
+     const char *search_symbol;
 {
   int hash_value = 0;
   const char *search_symbol_char_p = search_symbol;
@@ -1038,8 +1076,9 @@ lookup (hash_table_entry *hash_tab_p, const char *search_symbol)
    Also, since we are not using this record anymore, free up all of the
    stuff it pointed to.  */
 
-inline static void
-free_def_dec (def_dec_info *p)
+static void
+free_def_dec (p)
+     def_dec_info *p;
 {
   xfree (p->ansi_decl);
 
@@ -1065,7 +1104,8 @@ free_def_dec (def_dec_info *p)
    return a pointer to the unexpanded copy.  Otherwise return NULL.  */
 
 static char *
-unexpand_if_needed (const char *aux_info_line)
+unexpand_if_needed (aux_info_line)
+     const char *aux_info_line;
 {
   static char *line_buf = 0;
   static int line_buf_size = 0;
@@ -1147,7 +1187,9 @@ continue_outer: ;
    NULL.  */
 
 static char *
-abspath (const char *cwd, const char *rel_filename)
+abspath (cwd, rel_filename)
+     const char *cwd;
+     const char *rel_filename;
 {
   /* Setup the current working directory as needed.  */
   const char *cwd2 = (cwd) ? cwd : cwd_buffer;
@@ -1250,7 +1292,9 @@ abspath (const char *cwd, const char *rel_filename)
    subpart of the original filename is actually a symbolic link.  */
 
 static const char *
-shortpath (const char *cwd, const char *filename)
+shortpath (cwd, filename)
+     const char *cwd;
+     const char *filename;
 {
   char *rel_buffer;
   char *rel_buf_p;
@@ -1302,12 +1346,10 @@ shortpath (const char *cwd, const char *filename)
       --rel_buf_p;
       if (*(rel_buf_p-1) == '/')
         *--rel_buf_p = '\0';
-      if (strlen (rel_buffer) > strlen (filename))
+      if (strlen (rel_buffer) > (unsigned) strlen (filename))
 	strcpy (rel_buffer, filename);
       return rel_buffer;
     }
-  /* NOTREACHED */
-  return 0;	/* Prevent warnings for old versions of GCC.  */
 }
 
 /* Lookup the given filename in the hash table for filenames.  If it is a
@@ -1316,7 +1358,9 @@ shortpath (const char *cwd, const char *filename)
    that record with some reasonable values.  */
 
 static file_info *
-find_file (char *filename, int do_not_stat)
+find_file (filename, do_not_stat)
+     char *filename;
+     int do_not_stat;
 /* FILENAME was const, but that causes a warning on AIX when calling stat.
    That is probably a bug in AIX, but might as well avoid the warning.  */
 {
@@ -1337,7 +1381,7 @@ find_file (char *filename, int do_not_stat)
         stat_buf.st_mtime = (time_t) 0;
       else
         {
-          if (stat (filename, &stat_buf) == -1)
+          if (my_stat (filename, &stat_buf) == -1)
             {
               fprintf (stderr, "%s: error: can't get status of `%s': %s\n",
 		       pname, shortpath (NULL, filename), sys_errlist[errno]);
@@ -1357,7 +1401,7 @@ find_file (char *filename, int do_not_stat)
    messed up.  */
 
 static void
-aux_info_corrupted (void)
+aux_info_corrupted ()
 {
   fprintf (stderr, "\n%s: fatal error: aux info file corrupted at line %d\n",
 	   pname, current_aux_info_lineno);
@@ -1367,8 +1411,9 @@ aux_info_corrupted (void)
 /* ??? This comment is vague.  Say what the condition is for.  */
 /* Check to see that a condition is true.  This is kind of like an assert().  */
 
-inline static void
-check_aux_info (int cond)
+static void
+check_aux_info (cond)
+     int cond;
 {
   if (! cond)
     aux_info_corrupted ();
@@ -1379,7 +1424,8 @@ check_aux_info (int cond)
    return a pointer to it.  */
 
 static const char *
-find_corresponding_lparen (const char *p)
+find_corresponding_lparen (p)
+     const char *p;
 {
   const char *q;
   int paren_depth;
@@ -1405,7 +1451,9 @@ find_corresponding_lparen (const char *p)
    file was created.  If so, return non-zero, else return zero.  */
 
 static int
-referenced_file_is_newer (const char *l, time_t aux_info_mtime)
+referenced_file_is_newer (l, aux_info_mtime)
+     const char *l;
+     time_t aux_info_mtime;
 {
   const char *p;
   file_info *fi_p;
@@ -1451,7 +1499,9 @@ referenced_file_is_newer (const char *l, time_t aux_info_mtime)
    pertaining to this particular function name.  */
 
 static void
-save_def_or_dec (const char *l, int is_syscalls)
+save_def_or_dec (l, is_syscalls)
+     const char *l;
+     int is_syscalls;
 {
   const char *p;
   const char *semicolon_p;
@@ -1638,7 +1688,7 @@ save_def_or_dec (const char *l, int is_syscalls)
     /* p now points to the leftmost character of the function name.  */
 
     {
-      char fn_string[past_fn - p + 1];
+      char *fn_string = (char *) alloca (past_fn - p + 1);
 
       strncpy (fn_string, p, (size_t) (past_fn - p));
       fn_string[past_fn-p] = '\0';
@@ -1827,9 +1877,10 @@ save_def_or_dec (const char *l, int is_syscalls)
    adding a final group of options like '-fgen-aux-info -S  -o /dev/null'.  */
 
 static void
-munge_compile_params (const char *params_list)
+munge_compile_params (params_list)
+     const char *params_list;
 {
-  const char *temp_params[strlen (params_list) + 10];
+  char **temp_params = (char **) alloca (strlen (params_list) + 10);
   int param_count = 0;
   const char *param;
 
@@ -1881,7 +1932,8 @@ munge_compile_params (const char *params_list)
 
   /* Make a copy of the compile_params in heap space.  */
 
-  compile_params = xmalloc (sizeof (char *) * (param_count+1));
+  compile_params
+    = (char **) xmalloc (sizeof (char *) * (param_count+1));
   memcpy (compile_params, temp_params, sizeof (char *) * param_count);
 }
 
@@ -1889,7 +1941,8 @@ munge_compile_params (const char *params_list)
    file to go with a specific base source file.  */
 
 static int
-gen_aux_info_file (const char *base_filename)
+gen_aux_info_file (base_filename)
+     const char *base_filename;
 {
   int child_pid;
 
@@ -1948,7 +2001,7 @@ gen_aux_info_file (const char *base_filename)
     }
   else
     {
-      if (execvp (compile_params[0], (char *const *) compile_params))
+      if (my_execvp (compile_params[0], (char *const *) compile_params))
         {
           fprintf (stderr, "%s: error: execvp returned: %s\n",
 		   pname, sys_errlist[errno]);
@@ -1962,7 +2015,10 @@ gen_aux_info_file (const char *base_filename)
    Save all of the important stuff for later.  */
 
 static void
-process_aux_info_file (const char *base_source_filename, int keep_it, int is_syscalls)
+process_aux_info_file (base_source_filename, keep_it, is_syscalls)
+     const char *base_source_filename;
+     int keep_it;
+     int is_syscalls;
 {
   char *const aux_info_filename
     = (char *) alloca (strlen (base_source_filename)
@@ -1987,7 +2043,7 @@ start_over: ;
     int retries = 0;
 
 retry:
-    if (access (aux_info_filename, R_OK) == -1)
+    if (my_access (aux_info_filename, R_OK) == -1)
       {
         if (errno == ENOENT && retries == 0)
           {
@@ -2018,7 +2074,7 @@ retry:
 
     /* Get some status information about this aux_info file.  */
   
-    if (stat (aux_info_filename, &stat_buf) == -1)
+    if (my_stat (aux_info_filename, &stat_buf) == -1)
       {
         fprintf (stderr, "%s: error: can't get status of aux info file `%s': %s\n",
 		 pname, shortpath (NULL, aux_info_filename),
@@ -2045,7 +2101,7 @@ retry:
 
     /* Open the aux_info file.  */
   
-    if ((aux_info_file = open (aux_info_filename, O_RDONLY, 0444 )) == -1)
+    if ((aux_info_file = my_open (aux_info_filename, O_RDONLY, 0444 )) == -1)
       {
         fprintf (stderr, "%s: error: can't open aux info file `%s' for reading: %s\n",
 		 pname, shortpath (NULL, aux_info_filename),
@@ -2088,7 +2144,7 @@ retry:
      fails for some reason, don't even worry about it.  */
 
   if (!keep_it)
-    if (unlink (aux_info_filename) == -1)
+    if (my_unlink (aux_info_filename) == -1)
       fprintf (stderr, "%s: error: can't delete aux info file `%s': %s\n",
 	       pname, shortpath (NULL, aux_info_filename),
 	       sys_errlist[errno]);
@@ -2136,7 +2192,7 @@ retry:
             if (referenced_file_is_newer (aux_info_p, aux_info_mtime))
               {
                 free (aux_info_base);
-                if (unlink (aux_info_filename) == -1)
+                if (my_unlink (aux_info_filename) == -1)
                   {
                     fprintf (stderr, "%s: error: can't delete file `%s': %s\n",
 			     pname, shortpath (NULL, aux_info_filename),
@@ -2191,7 +2247,8 @@ retry:
    function implements the -C option.  */
 
 static void
-rename_c_file (const hash_table_entry *hp)
+rename_c_file (hp)
+     const hash_table_entry *hp;
 {
   const char *filename = hp->symbol;
   int last_char_index = strlen (filename) - 1;
@@ -2209,7 +2266,7 @@ rename_c_file (const hash_table_entry *hp)
   strcpy (new_filename, filename);
   new_filename[last_char_index] = 'C';
 
-  if (link (filename, new_filename) == -1)
+  if (my_link (filename, new_filename) == -1)
     {
       fprintf (stderr, "%s: warning: can't link file `%s' to `%s': %s\n",
 	       pname, shortpath (NULL, filename),
@@ -2218,7 +2275,7 @@ rename_c_file (const hash_table_entry *hp)
       return;
     }
 
-  if (unlink (filename) == -1)
+  if (my_unlink (filename) == -1)
     {
       fprintf (stderr, "%s: warning: can't delete file `%s': %s\n",
 	       pname, shortpath (NULL, filename), sys_errlist[errno]);
@@ -2238,7 +2295,8 @@ rename_c_file (const hash_table_entry *hp)
    order here.  */
 
 static void
-reverse_def_dec_list (const hash_table_entry *hp)
+reverse_def_dec_list (hp)
+     const hash_table_entry *hp;
 {
   file_info *file_p = hp->fip;
   const def_dec_info *prev = NULL;
@@ -2279,7 +2337,9 @@ reverse_def_dec_list (const hash_table_entry *hp)
    contains all of the correct prototypes for system functions.  */
 
 static const def_dec_info *
-find_extern_def (const def_dec_info *head, const def_dec_info *user)
+find_extern_def (head, user)
+     const def_dec_info *head;
+     const def_dec_info *user;
 {
   const def_dec_info *dd_p;
   const def_dec_info *extern_def_p = NULL;
@@ -2408,13 +2468,13 @@ find_extern_def (const def_dec_info *head, const def_dec_info *user)
               {
 		/* Why copy this string into `needed' at all?
 		   Why not just use user->ansi_decl without copying?  */
-                char needed[strlen (user->ansi_decl) + 1];
+		char *needed = (char *) alloca (strlen (user->ansi_decl) + 1);
                 char *p;
 
                 strcpy (needed, user->ansi_decl);
                 p = (NONCONST char *) substr (needed, user->hash_entry->symbol)
                     + strlen (user->hash_entry->symbol) + 2;
-                strcpy (p, "???);");
+                strcpy (p, "??\?);");
 
                 fprintf (stderr, "%s: %d: `%s' used but missing from SYSCALLS\n",
 			 shortpath (NULL, file), user->line,
@@ -2434,7 +2494,8 @@ find_extern_def (const def_dec_info *head, const def_dec_info *user)
    from the def_dec_info record pointer which is passed in. */
 
 static const def_dec_info *
-find_static_definition (const def_dec_info *user)
+find_static_definition (user)
+     const def_dec_info *user;
 {
   const def_dec_info *head = user->hash_entry->ddip;
   const def_dec_info *dd_p;
@@ -2483,7 +2544,8 @@ find_static_definition (const def_dec_info *user)
    more details.  */
 
 static void
-connect_defs_and_decs (const hash_table_entry *hp)
+connect_defs_and_decs (hp)
+     const hash_table_entry *hp;
 {
   const def_dec_info *dd_p;
   const def_dec_info *extern_def_p = NULL;
@@ -2607,7 +2669,8 @@ connect_defs_and_decs (const hash_table_entry *hp)
    original source line number that the given pointer points into.  */
 
 static int
-identify_lineno (const char *clean_p)
+identify_lineno (clean_p)
+     const char *clean_p;
 {
   int line_num = 1;
   const char *scan_p;
@@ -2621,7 +2684,8 @@ identify_lineno (const char *clean_p)
 /* Issue an error message and give up on doing this particular edit.  */
 
 static void
-declare_source_confusing (const char *clean_p)
+declare_source_confusing (clean_p)
+     const char *clean_p;
 {
   if (!quiet_flag)
     {
@@ -2640,8 +2704,10 @@ declare_source_confusing (const char *clean_p)
    code is in fact true.  If not, issue an error message and give up on
    converting this particular source file.  */
 
-inline static void
-check_source (int cond, const char *clean_p)
+static void
+check_source (cond, clean_p)
+     int cond;
+     const char *clean_p;
 {
   if (!cond)
     declare_source_confusing (clean_p);
@@ -2663,7 +2729,8 @@ check_source (int cond, const char *clean_p)
    of the in-core cleaned buffer again.  */
 
 static const char *
-seek_to_line (int n)
+seek_to_line (n)
+     int n;
 {
   if (n < last_known_line_number)
     abort ();
@@ -2682,7 +2749,8 @@ seek_to_line (int n)
    to the next non-whitepace character which follows it.  */
 
 static const char *
-forward_to_next_token_char (const char *ptr)
+forward_to_next_token_char (ptr)
+     const char *ptr;
 {
   for (++ptr; isspace (*ptr); check_source (++ptr < clean_text_limit, 0))
     continue;
@@ -2694,7 +2762,9 @@ forward_to_next_token_char (const char *ptr)
    buffer ultimately go through here.  */
 
 static void
-output_bytes (const char *str, size_t len)
+output_bytes (str, len)
+     const char *str;
+     size_t len;
 {
   if ((repl_write_ptr + 1) + len >= repl_text_limit)
     {
@@ -2713,7 +2783,8 @@ output_bytes (const char *str, size_t len)
    the current output buffer.  */
 
 static void
-output_string (const char *str)
+output_string (str)
+     const char *str;
 {
   output_bytes (str, strlen (str));
 }
@@ -2738,7 +2809,8 @@ output_string (const char *str)
    byte pointed to by the argument pointer `p'.  */
 
 static void
-output_up_to (const char *p)
+output_up_to (p)
+     const char *p;
 {
   size_t copy_length = (size_t) (p - clean_read_ptr);
   const char *copy_start = orig_text_base+(clean_read_ptr-clean_text_base)+1;
@@ -2757,7 +2829,8 @@ output_up_to (const char *p)
    otherwise.  */
 
 static int
-other_variable_style_function (const char *ansi_header)
+other_variable_style_function (ansi_header)
+     const char *ansi_header;
 {
 #ifdef UNPROTOIZE
 
@@ -2795,8 +2868,9 @@ other_variable_style_function (const char *ansi_header)
    below.  */
 
 static void
-edit_fn_declaration (const def_dec_info *def_dec_p,
-		     const char *volatile clean_text_p)
+edit_fn_declaration (def_dec_p, clean_text_p)
+     const def_dec_info *def_dec_p;
+     const char *VOLATILE clean_text_p;
 {
   const char *start_formals;
   const char *end_formals;
@@ -3010,7 +3084,10 @@ edit_fn_declaration (const def_dec_info *def_dec_p,
    function doesn't match the one expected).  */
 
 static int
-edit_formals_lists (const char *end_formals, unsigned f_list_count, const def_dec_info *def_dec_p)
+edit_formals_lists (end_formals, f_list_count, def_dec_p)
+     const char *end_formals;
+     unsigned int f_list_count;
+     const def_dec_info *def_dec_p;
 {
   const char *start_formals;
   int depth;
@@ -3117,7 +3194,8 @@ edit_formals_lists (const char *end_formals, unsigned f_list_count, const def_de
 */
 
 static const char *
-find_rightmost_formals_list (const char *clean_text_p)
+find_rightmost_formals_list (clean_text_p)
+     const char *clean_text_p;
 {
   const char *end_formals;
 
@@ -3145,10 +3223,41 @@ find_rightmost_formals_list (const char *clean_text_p)
     continue;
   end_formals--;
 
+#ifdef UNPROTOIZE
+
   /* Now scan backwards while looking for the right end of the rightmost
      formals list associated with this function definition.  */
 
-  for (;;)
+  {
+    char ch;
+    const char *l_brace_p;
+
+    /* Look leftward and try to find a right-paren.  */
+
+    while (*end_formals != ')')
+      {
+	if (isspace (*end_formals))
+	  while (isspace (*end_formals))
+	    check_source (--end_formals > clean_read_ptr, 0);
+	else
+	  check_source (--end_formals > clean_read_ptr, 0);
+      }
+
+    ch = *(l_brace_p = forward_to_next_token_char (end_formals));
+    /* Since we are unprotoizing an ANSI-style (prototyped) function
+       definition, there had better not be anything (except whitespace)
+       between the end of the ANSI formals list and the beginning of the
+       function body (i.e. the '{').  */
+
+    check_source (ch == '{', l_brace_p);
+  }
+
+#else /* !defined(UNPROTOIZE) */
+
+  /* Now scan backwards while looking for the right end of the rightmost
+     formals list associated with this function definition.  */
+
+  while (1)
     {
       char ch;
       const char *l_brace_p;
@@ -3165,18 +3274,6 @@ find_rightmost_formals_list (const char *clean_text_p)
         }
 
       ch = *(l_brace_p = forward_to_next_token_char (end_formals));
-
-#ifdef UNPROTOIZE
-
-      /* Since we are unprotoizing an ANSI-style (prototyped) function
-         definition, there had better not be anything (except whitespace)
-         between the end of the ANSI formals list and the beginning of the
-         function body (i.e. the '{').  */
-
-      check_source (ch == '{', l_brace_p);
-      break;
-
-#else /* !defined(UNPROTOIZE) */
 
       /* Since it is possible that we found a right paren before the starting
          '{' of the body which IS NOT the one at the end of the real K&R
@@ -3196,10 +3293,9 @@ find_rightmost_formals_list (const char *clean_text_p)
          looking.  */
 
       check_source (--end_formals > clean_read_ptr, 0);
+    }
 
 #endif /* !defined(UNPROTOIZE) */
-
-    }
 
   return end_formals;
 }
@@ -3216,7 +3312,9 @@ find_rightmost_formals_list (const char *clean_text_p)
    parameter type checking.  */
 
 static void
-add_local_decl (const def_dec_info *def_dec_p, const char *clean_text_p)
+add_local_decl (def_dec_p, clean_text_p)
+     const def_dec_info *def_dec_p;
+     const char *clean_text_p;
 {
   const char *start_of_block;
   const char *function_to_edit = def_dec_p->hash_entry->symbol;
@@ -3322,7 +3420,9 @@ add_local_decl (const def_dec_info *def_dec_p, const char *clean_text_p)
    and then insert the new explicit declaration at that point in the file.  */
 
 static void
-add_global_decls (const file_info *file_p, const char *clean_text_p)
+add_global_decls (file_p, clean_text_p)
+     const file_info *file_p;
+     const char *clean_text_p;
 {
   const def_dec_info *dd_p;
   const char *scan_p;
@@ -3411,7 +3511,9 @@ add_global_decls (const file_info *file_p, const char *clean_text_p)
    separate routine above.  */
 
 static void
-edit_fn_definition (const def_dec_info *def_dec_p, const char *clean_text_p)
+edit_fn_definition (def_dec_p, clean_text_p)
+     const def_dec_info *def_dec_p;
+     const char *clean_text_p;
 {
   const char *end_formals;
   const char *function_to_edit = def_dec_p->hash_entry->symbol;
@@ -3553,7 +3655,9 @@ edit_fn_definition (const def_dec_info *def_dec_p, const char *clean_text_p)
    into whitespace.  Also, whiteout string and character literals.  */
 
 static void
-do_cleaning (char *new_clean_text_base, char *new_clean_text_limit)
+do_cleaning (new_clean_text_base, new_clean_text_limit)
+     char *new_clean_text_base;
+     char *new_clean_text_limit;
 {
   char *scan_p;
   int non_whitespace_since_newline = 0;
@@ -3653,7 +3757,8 @@ regular:
    and return a pointer to it.  */
 
 static const char *
-careful_find_l_paren (const char *p)
+careful_find_l_paren (p)
+     const char *p;
 {
   const char *q;
   int paren_depth;
@@ -3691,7 +3796,8 @@ careful_find_l_paren (const char *p)
    I will probably try to do this in a later version though.  */
 
 static void
-scan_for_missed_items (const file_info *file_p)
+scan_for_missed_items (file_p)
+     const file_info *file_p;
 {
   static const char *scan_p;
   const char *limit = clean_text_limit - 3;
@@ -3747,7 +3853,7 @@ scan_for_missed_items (const file_info *file_p)
                     goto not_missed;
 
 		  {
-		    char func_name[id_length + 1];
+		    char *func_name = (char *) alloca (id_length + 1);
 		    static const char * const stmt_keywords[]
 		      = { "if", "while", "for", "switch", "return", 0 };
 		    const char * const *stmt_keyword;
@@ -3805,7 +3911,8 @@ scan_for_missed_items (const file_info *file_p)
    preprocessor directives make the editing a whole lot easier.  */
    
 static void
-edit_file (const hash_table_entry *hp)
+edit_file (hp)
+     const hash_table_entry *hp;
 {
   struct stat stat_buf;
   const file_info *file_p = hp->fip;
@@ -3848,18 +3955,17 @@ edit_file (const hash_table_entry *hp)
   /* Let the user know what we are up to.  */
 
   if (nochange_flag)
-      puts (shortpath (NULL, convert_filename));
+    fprintf (stderr, "%s: would convert file `%s'\n",
+	     pname, shortpath (NULL, convert_filename));
   else
-    {
-      fprintf (stderr, "%s: converting file `%s'\n",
-	       pname, shortpath (NULL, convert_filename));
-      fflush (stderr);
-    }
+    fprintf (stderr, "%s: converting file `%s'\n",
+	     pname, shortpath (NULL, convert_filename));
+  fflush (stderr);
 
   /* Find out the size (in bytes) of the original file.  */
 
   /* The cast avoids an erroneous warning on AIX.  */
-  if (stat ((char *)convert_filename, &stat_buf) == -1)
+  if (my_stat ((char *)convert_filename, &stat_buf) == -1)
     {
       fprintf (stderr, "%s: error: can't get status for file `%s': %s\n",
 	       pname, shortpath (NULL, convert_filename), sys_errlist[errno]);
@@ -3893,7 +3999,7 @@ edit_file (const hash_table_entry *hp)
 
     /* Open the file to be converted in READ ONLY mode.  */
 
-    if ((input_file = open (convert_filename, O_RDONLY, 0444)) == -1)
+    if ((input_file = my_open (convert_filename, O_RDONLY, 0444)) == -1)
       {
         fprintf (stderr, "%s: error: can't open file `%s' for reading: %s\n",
 		 pname, shortpath (NULL, convert_filename),
@@ -4038,7 +4144,7 @@ edit_file (const hash_table_entry *hp)
   
       strcpy (new_filename, convert_filename);
       strcat (new_filename, save_suffix);
-      if (link (convert_filename, new_filename) == -1)
+      if (my_link (convert_filename, new_filename) == -1)
         {
           if (errno == EEXIST)
             {
@@ -4060,7 +4166,7 @@ edit_file (const hash_table_entry *hp)
         }
     }
 
-  if (unlink (convert_filename) == -1)
+  if (my_unlink (convert_filename) == -1)
     {
       fprintf (stderr, "%s: error: can't delete file `%s': %s\n",
 	       pname, shortpath (NULL, convert_filename), sys_errlist[errno]);
@@ -4103,7 +4209,7 @@ edit_file (const hash_table_entry *hp)
   /* Change the mode of the output file to match the original file.  */
 
   /* The cast avoids an erroneous warning on AIX.  */
-  if (chmod ((char *)convert_filename, stat_buf.st_mode) == -1)
+  if (my_chmod ((char *)convert_filename, stat_buf.st_mode) == -1)
     fprintf (stderr, "%s: error: can't change mode of file `%s': %s\n",
 	     pname, shortpath (NULL, convert_filename), sys_errlist[errno]);
 
@@ -4118,7 +4224,7 @@ edit_file (const hash_table_entry *hp)
    in the command line.  */
 
 static void
-do_processing (void)
+do_processing ()
 {
   const char * const *base_pp;
   const char * const * const end_pps
@@ -4145,18 +4251,18 @@ do_processing (void)
     {
       syscalls_absolute_filename
         = (char *) xmalloc (strlen (nondefault_syscalls_dir)
-                            + strlen (syscalls_filename) + 1);
+                            + strlen (syscalls_filename) + 2);
       strcpy (syscalls_absolute_filename, nondefault_syscalls_dir);
     }
   else
     {
       syscalls_absolute_filename
         = (char *) xmalloc (strlen (default_syscalls_dir)
-                            + strlen (syscalls_filename) + 1);
+                            + strlen (syscalls_filename) + 2);
       strcpy (syscalls_absolute_filename, default_syscalls_dir);
     }
 
-  syscalls_len = strlen (syscalls_filename);
+  syscalls_len = strlen (syscalls_absolute_filename);
   if (*(syscalls_absolute_filename + syscalls_len - 1) != '/')
     {
       *(syscalls_absolute_filename + syscalls_len++) = '/';
@@ -4232,7 +4338,9 @@ static struct option longopts[] =
 };
 
 int
-main (int argc, char **const argv)
+main (argc, argv)
+     int argc;
+     char **const argv;
 {
   int longind;
   int c;
@@ -4242,7 +4350,7 @@ main (int argc, char **const argv)
   pname = pname ? pname+1 : argv[0];
 
   /* Read the working directory, avoiding arbitrary limit.  */
-  size = 100;
+  size = GUESSPATHLEN;
   while (1)
     {
       char *value;
