@@ -905,8 +905,10 @@ readescape (ignore_ptr)
 #endif
       return TARGET_VT;
 
+    case 'e':
     case 'E':
-      pedwarn ("non-ANSI-standard escape sequence, `\\E'");
+      if (pedantic)
+	pedwarn ("non-ANSI-standard escape sequence, `\\%c'", c);
       return 033;
 
     case '?':
