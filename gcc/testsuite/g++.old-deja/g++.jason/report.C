@@ -55,7 +55,7 @@ bar2 baz (X::Y y)
   bar2 wa [5];
   wa[0] = baz(f);
   undef2 (1); // ERROR - implicit declaration
-} // ERROR - non-void
+}
 
 int ninny ()
 {
@@ -70,4 +70,4 @@ int ninny ()
 int darg (char X::*p)
 {
    undef3 (1); // ERROR - implicit declaration
-} // ERROR - non-void
+}
