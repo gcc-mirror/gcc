@@ -1,3 +1,15 @@
+2000-10-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in (GCJ): Avoid bogus error message when looking for
+	(and not finding) gcj in the build tree.
+	* configure: Rebuilt.
+
+2000-10-09  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Include sys/types.h when checking for socklen_t.
+	From Arno J. Klaassen.
+
 2000-10-09  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* include/jvm.h: Enable __builtin_expect().
