@@ -39,6 +39,9 @@ load_file_data (fp)
   int    space_left = -1;  /* allow for terminating NUL */
   size_t space_used = 0;
 
+  if (fp == (FILE*)NULL)
+    return pz_data;
+
   do
     {
       size_t  size_read;
@@ -62,7 +65,6 @@ load_file_data (fp)
                 fprintf (stderr, "error %d (%s) reading input\n", err,
                          xstrerror (err));
               free ((void *) pz_data);
-              fclose (fp);
               return (char *) NULL;
             }
         }
@@ -73,7 +75,6 @@ load_file_data (fp)
 
   pz_data = xrealloc ((void*)pz_data, space_used+1 );
   pz_data[ space_used ] = NUL;
-  fclose (fp);
 
   return pz_data;
 }

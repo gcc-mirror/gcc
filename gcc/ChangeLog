@@ -1,3 +1,10 @@
+2001-01-30  Bruce Korb  <bkorb@gnu.org>
+
+        fixinc/fixincl.c(process):  Emit error message only if appropriate :)
+        (load_file): do not rely on load_file_data() to close file pointer
+        fixinc/fixlib.c(load_file_data): do not close passed in file pointer
+	fixinc/inclhack.def(irix_limits_const): add test_text
+
 2001-02-06  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cppexp.c (parse_defined): Improve diagnostics for invalid
