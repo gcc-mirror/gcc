@@ -1,3 +1,8 @@
+2001-11-05  Geoffrey Keating  <geoffk@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_select_section): Handle
+	CONSTRUCTORs too.
+
 2001-11-05  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/arm/arm.c (arm_return_in_memory): Cope with

@@ -8311,6 +8311,11 @@ rs6000_select_section (decl, reloc)
 		&& DECL_INITIAL (decl)
 		&& DECL_INITIAL (decl) != error_mark_node
 		&& TREE_CONSTANT (DECL_INITIAL (decl)));
+  else if (TREE_CODE (decl) == CONSTRUCTOR)
+    readonly = (! (flag_pic && reloc)
+		&& TREE_READONLY (decl)
+		&& ! TREE_SIDE_EFFECTS (decl)
+		&& TREE_CONSTANT (DECL_INITIAL (decl)));
   else
     readonly = 1;
   if (needs_sdata && rs6000_sdata != SDATA_EABI)
