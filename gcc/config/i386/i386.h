@@ -34,20 +34,6 @@ Boston, MA 02111-1307, USA.  */
    ADDR_BEG, ADDR_END, PRINT_IREG, PRINT_SCALE, PRINT_B_I_S, and many
    that start with ASM_ or end in ASM_OP.  */
 
-/* Stubs for half-pic support if not OSF/1 reference platform.  */
-
-#ifndef HALF_PIC_P
-#define HALF_PIC_P() 0
-#define HALF_PIC_NUMBER_PTRS 0
-#define HALF_PIC_NUMBER_REFS 0
-#define HALF_PIC_ENCODE(DECL)
-#define HALF_PIC_DECLARE(NAME)
-#define HALF_PIC_INIT()	error ("half-pic init called on systems that don't support it")
-#define HALF_PIC_ADDRESS_P(X) 0
-#define HALF_PIC_PTR(X) (X)
-#define HALF_PIC_FINISH(STREAM)
-#endif
-
 /* Define the specific costs for a given cpu */
 
 struct processor_costs {
@@ -140,7 +126,7 @@ extern int target_flags;
 
 /* Compile using ret insn that pops args.
    This will not work unless you use prototypes at least
-   for all functions that can take varying numbers of args.  */  
+   for all functions that can take varying numbers of args.  */
 #define TARGET_RTD (target_flags & MASK_RTD)
 
 /* Align doubles to a two word boundary.  This breaks compatibility with
@@ -712,7 +698,7 @@ extern int x86_prefetch_sse;
    and all fundamental data types supported by the hardware
    might need to be aligned. No data type wants to be aligned
    rounder than this.
-   
+
    Pentium+ preferrs DFmode values to be aligned to 64 bit boundary
    and Pentium Pro XFmode values at 128 bit boundaries.  */
 
@@ -826,7 +812,7 @@ extern int x86_prefetch_sse;
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
    On the 80386, the stack pointer is such, as is the arg pointer.
- 
+
    The value is an mask - bit 1 is set for fixed registers
    for 32bit target, while 2 is set for fixed registers for 64bit.
    Proper value is computed in the CONDITIONAL_REGISTER_USAGE.
@@ -844,15 +830,15 @@ extern int x86_prefetch_sse;
      1,   1,   1,   1,   1,   1,   1,   1,			\
 /*xmm8,xmm9,xmm10,xmm11,xmm12,xmm13,xmm14,xmm15*/		\
      1,   1,    1,    1,    1,    1,    1,    1}
- 
+
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
    registers that can be used without being saved.
    The latter must include the registers where values are returned
    and the register where structure-value addresses are passed.
-   Aside from that, you can include as many other registers as you like. 
- 
+   Aside from that, you can include as many other registers as you like.
+
    The value is an mask - bit 1 is set for call used
    for 32bit target, while 2 is set for call used for 64bit.
    Proper value is computed in the CONDITIONAL_REGISTER_USAGE.
@@ -938,7 +924,7 @@ do {									\
    This is ordinarily the length in words of a value of mode MODE
    but can be less for certain modes in special long registers.
 
-   Actually there are no two word move instructions for consecutive 
+   Actually there are no two word move instructions for consecutive
    registers.  And only registers 0-3 may have mov byte instructions
    applied to them.
    */
@@ -1051,7 +1037,7 @@ do {									\
 
 #define FIRST_SSE_REG (FRAME_POINTER_REGNUM + 1)
 #define LAST_SSE_REG  (FIRST_SSE_REG + 7)
- 
+
 #define FIRST_MMX_REG  (LAST_SSE_REG + 1)
 #define LAST_MMX_REG   (FIRST_MMX_REG + 7)
 
@@ -1087,7 +1073,7 @@ do {									\
 /* Register to hold the addressing base for position independent
    code access to data items.  We don't use PIC pointer for 64bit
    mode.  Define the regnum to dummy value to prevent gcc from
-   pessimizing code dealing with EBX. 
+   pessimizing code dealing with EBX.
 
    To avoid clobbering a call-saved register unnecessarily, we renumber
    the pic register when possible.  The change is visible after the
@@ -1300,7 +1286,7 @@ enum reg_class
 
 #define MMX_REGNO_P(N) ((N) >= FIRST_MMX_REG && (N) <= LAST_MMX_REG)
 #define MMX_REG_P(XOP) (REG_P (XOP) && MMX_REGNO_P (REGNO (XOP)))
-  
+
 #define STACK_REG_P(XOP)		\
   (REG_P (XOP) &&		       	\
    REGNO (XOP) >= FIRST_STACK_REG &&	\
@@ -1431,7 +1417,7 @@ enum reg_class
   ix86_secondary_memory_needed ((CLASS1), (CLASS2), (MODE), 1)
 
 /* QImode spills from non-QI registers need a scratch.  This does not
-   happen often -- the only example so far requires an uninitialized 
+   happen often -- the only example so far requires an uninitialized
    pseudo.  */
 
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, OUT)			\
@@ -1478,7 +1464,7 @@ enum reg_class
    || ((CLASS) == DIREG))
 
 /* A C statement that adds to CLOBBERS any hard regs the port wishes
-   to automatically clobber for all asms. 
+   to automatically clobber for all asms.
 
    We do this in the new i386 backend to maintain source compatibility
    with the old cc0-based compiler.  */
@@ -1516,7 +1502,7 @@ enum reg_class
    On 386 pushw decrements by exactly 2 no matter what the position was.
    On the 386 there is no pushb; we use pushw instead, and this
    has the effect of rounding up to 2.
- 
+
    For 64bit ABI we round up to 8 bytes.
  */
 
@@ -1737,7 +1723,7 @@ do {									\
    the stack pointer does not matter.  The value is tested only in
    functions that have frame pointers.
    No definition is equivalent to always zero.  */
-/* Note on the 386 it might be more efficient not to define this since 
+/* Note on the 386 it might be more efficient not to define this since
    we have to restore it ourselves from the frame pointer, in order to
    use pop */
 
@@ -1956,7 +1942,7 @@ do {									\
 #define REWRITE_ADDRESS(X) rewrite_address (X)
 
 /* Nonzero if the constant value X is a legitimate general operand
-   when generating PIC code.  It is given that flag_pic is on and 
+   when generating PIC code.  It is given that flag_pic is on and
    that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 
 #define LEGITIMATE_PIC_OPERAND_P(X) legitimate_pic_operand_p (X)
@@ -2146,7 +2132,7 @@ enum ix86_builtins
   IX86_BUILTIN_RSQRTSS,
   IX86_BUILTIN_SQRTPS,
   IX86_BUILTIN_SQRTSS,
-  
+
   IX86_BUILTIN_UNPCKHPS,
   IX86_BUILTIN_UNPCKLPS,
 
@@ -2519,7 +2505,7 @@ do {							\
    precise value of the constant, which is available for examination
    in X, and the rtx code of the expression in which it is contained,
    found in OUTER_CODE.
-  
+
    CODE is the expression code--redundant, since it can be obtained
    with `GET_CODE (X)'.  */
 
@@ -2851,8 +2837,8 @@ do {							\
 /* Add any extra modes needed to represent the condition code.
 
    For the i386, we need separate modes when floating-point
-   equality comparisons are being done. 
-   
+   equality comparisons are being done.
+
    Add CCNO to indicate comparisons against zero that requires
    Overflow flag to be unset.  Sign bit test is used instead and
    thus can be used to form "a&b>0" type of tests.
@@ -2911,7 +2897,7 @@ do {							\
    For float regs, the stack top is sometimes referred to as "%st(0)"
    instead of just "%st".  PRINT_REG handles this with the "y" code.  */
 
-#undef  HI_REGISTER_NAMES						
+#undef  HI_REGISTER_NAMES
 #define HI_REGISTER_NAMES						\
 {"ax","dx","cx","bx","si","di","bp","sp",				\
  "st","st(1)","st(2)","st(3)","st(4)","st(5)","st(6)","st(7)","",	\
@@ -2961,7 +2947,7 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 /* Before the prologue, RA is at 0(%esp).  */
 #define INCOMING_RETURN_ADDR_RTX \
   gen_rtx_MEM (VOIDmode, gen_rtx_REG (VOIDmode, STACK_POINTER_REGNUM))
- 
+
 /* After the prologue, RA is at -4(AP) in the current frame.  */
 #define RETURN_ADDR_RTX(COUNT, FRAME)					   \
   ((COUNT) == 0								   \
@@ -3034,7 +3020,7 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 #define JUMP_TABLES_IN_TEXT_SECTION \
   (!TARGET_64BIT && flag_pic && !HAVE_AS_GOTOFF_IN_DATA)
 
-/* A C statement that outputs an address constant appropriate to 
+/* A C statement that outputs an address constant appropriate to
    for DWARF debugging.  */
 
 #define ASM_OUTPUT_DWARF_ADDR_CONST(FILE, X) \
@@ -3291,7 +3277,7 @@ extern const char *ix86_asm_string;
 extern enum asm_dialect ix86_asm_dialect;
 
 extern int ix86_regparm;
-extern const char *ix86_regparm_string;	
+extern const char *ix86_regparm_string;
 
 extern int ix86_preferred_stack_boundary;
 extern const char *ix86_preferred_stack_boundary_string;
@@ -3319,12 +3305,12 @@ extern rtx ix86_compare_op1;	/* operand 1 for comparisons */
    redundant computation of new control word by the mode switching pass.
    The fldcw instructions are still emitted redundantly, but this is probably
    not going to be noticeable problem, as most CPUs do have fast path for
-   the sequence.  
+   the sequence.
 
    The machinery is to emit simple truncation instructions and split them
    before reload to instructions having USEs of two memory locations that
    are filled by this code to old and new control word.
- 
+
    Post-reload pass may be later used to eliminate the redundant fildcw if
    needed.  */
 

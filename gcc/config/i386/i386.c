@@ -49,7 +49,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* Processor costs (relative to an add) */
-static const 
+static const
 struct processor_costs size_cost = {	/* costs for tunning for size */
   2,					/* cost of an add instruction */
   3,					/* cost of a lea instruction */
@@ -86,7 +86,7 @@ struct processor_costs size_cost = {	/* costs for tunning for size */
   0,					/* number of parallel prefetches */
 };
 /* Processor costs (relative to an add) */
-static const 
+static const
 struct processor_costs i386_cost = {	/* 386 specific costs */
   1,					/* cost of an add instruction */
   1,					/* cost of a lea instruction */
@@ -123,7 +123,7 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
   0,					/* number of parallel prefetches */
 };
 
-static const 
+static const
 struct processor_costs i486_cost = {	/* 486 specific costs */
   1,					/* cost of an add instruction */
   1,					/* cost of a lea instruction */
@@ -160,7 +160,7 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
   0,					/* number of parallel prefetches */
 };
 
-static const 
+static const
 struct processor_costs pentium_cost = {
   1,					/* cost of an add instruction */
   1,					/* cost of a lea instruction */
@@ -197,7 +197,7 @@ struct processor_costs pentium_cost = {
   0,					/* number of parallel prefetches */
 };
 
-static const 
+static const
 struct processor_costs pentiumpro_cost = {
   1,					/* cost of an add instruction */
   1,					/* cost of a lea instruction */
@@ -234,7 +234,7 @@ struct processor_costs pentiumpro_cost = {
   6,					/* number of parallel prefetches */
 };
 
-static const 
+static const
 struct processor_costs k6_cost = {
   1,					/* cost of an add instruction */
   2,					/* cost of a lea instruction */
@@ -271,7 +271,7 @@ struct processor_costs k6_cost = {
   1,					/* number of parallel prefetches */
 };
 
-static const 
+static const
 struct processor_costs athlon_cost = {
   1,					/* cost of an add instruction */
   2,					/* cost of a lea instruction */
@@ -308,7 +308,7 @@ struct processor_costs athlon_cost = {
   6,					/* number of parallel prefetches */
 };
 
-static const 
+static const
 struct processor_costs pentium4_cost = {
   1,					/* cost of an add instruction */
   1,					/* cost of a lea instruction */
@@ -801,12 +801,6 @@ static enum x86_64_reg_class merge_classes PARAMS ((enum x86_64_reg_class,
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN ix86_expand_builtin
 
-#if defined (OSF_OS) || defined (TARGET_OSF1ELF)
-   static void ix86_osf_output_function_prologue PARAMS ((FILE *,
-							  HOST_WIDE_INT));
-#  undef TARGET_ASM_FUNCTION_PROLOGUE
-#  define TARGET_ASM_FUNCTION_PROLOGUE ix86_osf_output_function_prologue
-#endif
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE ix86_output_function_epilogue
 
@@ -841,7 +835,7 @@ static enum x86_64_reg_class merge_classes PARAMS ((enum x86_64_reg_class,
 #define TARGET_SCHED_INIT ix86_sched_init
 #undef TARGET_SCHED_REORDER
 #define TARGET_SCHED_REORDER ix86_sched_reorder
-#undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE 
+#undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
 #define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE \
   ia32_use_dfa_pipeline_interface
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
@@ -1040,7 +1034,7 @@ override_options ()
 
   /* Arrange to set up i386_stack_locals for all functions.  */
   init_machine_status = ix86_init_machine_status;
-  
+
   /* Validate -mregparm= value.  */
   if (ix86_regparm_string)
     {
@@ -1208,7 +1202,7 @@ override_options ()
 	  else
 	    ix86_fpmath = FPMATH_SSE | FPMATH_387;
 	}
-      else 
+      else
 	error ("bad value (%s) for -mfpmath= switch", ix86_fpmath_string);
     }
 
@@ -1353,105 +1347,6 @@ ix86_handle_regparm_attribute (node, name, args, flags, no_add_attrs)
 
   return NULL_TREE;
 }
-
-#if defined (OSF_OS) || defined (TARGET_OSF1ELF)
-
-/* Generate the assembly code for function entry.  FILE is a stdio
-   stream to output the code to.  SIZE is an int: how many units of
-   temporary storage to allocate.
-
-   Refer to the array `regs_ever_live' to determine which registers to
-   save; `regs_ever_live[I]' is nonzero if register number I is ever
-   used in the function.  This function is responsible for knowing
-   which registers should not be saved even if used.
-
-   We override it here to allow for the new profiling code to go before
-   the prologue and the old mcount code to go after the prologue (and
-   after %ebx has been set up for ELF shared library support).  */
-
-static void
-ix86_osf_output_function_prologue (file, size)
-     FILE *file;
-     HOST_WIDE_INT size;
-{
-  const char *prefix = "";
-  const char *const lprefix = LPREFIX;
-  int labelno = current_function_profile_label_no;
-
-#ifdef OSF_OS
-
-  if (TARGET_UNDERSCORES)
-    prefix = "_";
-
-  if (current_function_profile && OSF_PROFILE_BEFORE_PROLOGUE)
-    {
-      if (!flag_pic && !HALF_PIC_P ())
-	{
-	  fprintf (file, "\tmovl $%sP%d,%%edx\n", lprefix, labelno);
-	  fprintf (file, "\tcall *%s_mcount_ptr\n", prefix);
-	}
-
-      else if (HALF_PIC_P ())
-	{
-	  rtx symref;
-
-	  HALF_PIC_EXTERNAL ("_mcount_ptr");
-	  symref = HALF_PIC_PTR (gen_rtx_SYMBOL_REF (Pmode,
-						     "_mcount_ptr"));
-
-	  fprintf (file, "\tmovl $%sP%d,%%edx\n", lprefix, labelno);
-	  fprintf (file, "\tmovl %s%s,%%eax\n", prefix,
-		   XSTR (symref, 0));
-	  fprintf (file, "\tcall *(%%eax)\n");
-	}
-
-      else
-	{
-	  static int call_no = 0;
-
-	  fprintf (file, "\tcall %sPc%d\n", lprefix, call_no);
-	  fprintf (file, "%sPc%d:\tpopl %%eax\n", lprefix, call_no);
-	  fprintf (file, "\taddl $_GLOBAL_OFFSET_TABLE_+[.-%sPc%d],%%eax\n",
-		   lprefix, call_no++);
-	  fprintf (file, "\tleal %sP%d@GOTOFF(%%eax),%%edx\n",
-		   lprefix, labelno);
-	  fprintf (file, "\tmovl %s_mcount_ptr@GOT(%%eax),%%eax\n",
-		   prefix);
-	  fprintf (file, "\tcall *(%%eax)\n");
-	}
-    }
-
-#else  /* !OSF_OS */
-
-  if (current_function_profile && OSF_PROFILE_BEFORE_PROLOGUE)
-    {
-      if (!flag_pic)
-	{
-	  fprintf (file, "\tmovl $%sP%d,%%edx\n", lprefix, labelno);
-	  fprintf (file, "\tcall *%s_mcount_ptr\n", prefix);
-	}
-
-      else
-	{
-	  static int call_no = 0;
-
-	  fprintf (file, "\tcall %sPc%d\n", lprefix, call_no);
-	  fprintf (file, "%sPc%d:\tpopl %%eax\n", lprefix, call_no);
-	  fprintf (file, "\taddl $_GLOBAL_OFFSET_TABLE_+[.-%sPc%d],%%eax\n",
-		   lprefix, call_no++);
-	  fprintf (file, "\tleal %sP%d@GOTOFF(%%eax),%%edx\n",
-		   lprefix, labelno);
-	  fprintf (file, "\tmovl %s_mcount_ptr@GOT(%%eax),%%eax\n",
-		   prefix);
-	  fprintf (file, "\tcall *(%%eax)\n");
-	}
-    }
-#endif /* !OSF_OS */
-
-  function_prologue (file, size);
-}
-
-#endif  /* OSF_OS || TARGET_OSF1ELF */
 
 /* Return 0 if the attributes for two types are incompatible, 1 if they
    are compatible, and 2 if they are nearly compatible (which causes a
@@ -2403,9 +2298,9 @@ ix86_build_va_list ()
   record = (*lang_hooks.types.make_type) (RECORD_TYPE);
   type_decl = build_decl (TYPE_DECL, get_identifier ("__va_list_tag"), record);
 
-  f_gpr = build_decl (FIELD_DECL, get_identifier ("gp_offset"), 
+  f_gpr = build_decl (FIELD_DECL, get_identifier ("gp_offset"),
 		      unsigned_type_node);
-  f_fpr = build_decl (FIELD_DECL, get_identifier ("fp_offset"), 
+  f_fpr = build_decl (FIELD_DECL, get_identifier ("fp_offset"),
 		      unsigned_type_node);
   f_ovf = build_decl (FIELD_DECL, get_identifier ("overflow_arg_area"),
 		      ptr_type_node);
@@ -2431,7 +2326,7 @@ ix86_build_va_list ()
 }
 
 /* Perform any needed actions needed for a function that is receiving a
-   variable number of arguments. 
+   variable number of arguments.
 
    CUM is as above.
 
@@ -2999,7 +2894,7 @@ pic_symbolic_operand (op, mode)
       if (GET_CODE (XEXP (op, 0)) == UNSPEC)
 	return 1;
     }
-  else 
+  else
     {
       if (GET_CODE (op) == UNSPEC)
 	return 1;
@@ -3037,7 +2932,7 @@ local_symbolic_operand (op, mode)
     return 1;
 
   /* There is, however, a not insubstantial body of code in the rest of
-     the compiler that assumes it can just stick the results of 
+     the compiler that assumes it can just stick the results of
      ASM_GENERATE_INTERNAL_LABEL in a symbol_ref and have done.  */
   /* ??? This is a hack.  Should update the body of the compiler to
      always create a DECL an invoke targetm.encode_section_info.  */
@@ -3138,11 +3033,6 @@ call_insn_operand (op, mode)
   /* Explicitly allow SYMBOL_REF even if pic.  */
   if (GET_CODE (op) == SYMBOL_REF)
     return 1;
-
-  /* Half-pic doesn't allow anything but registers and constants.
-     We've just taken care of the later.  */
-  if (HALF_PIC_P ())
-    return register_operand (op, Pmode);
 
   /* Otherwise we can allow any general_operand in the address.  */
   return general_operand (op, Pmode);
@@ -4099,7 +3989,7 @@ ix86_select_alt_pic_regnum ()
 
   return INVALID_REGNUM;
 }
-  
+
 /* Return 1 if we need to save REGNO.  */
 static int
 ix86_save_reg (regno, maybe_eh_return)
@@ -4965,7 +4855,7 @@ constant_address_p (x)
 }
 
 /* Nonzero if the constant value X is a legitimate general operand
-   when generating PIC code.  It is given that flag_pic is on and 
+   when generating PIC code.  It is given that flag_pic is on and
    that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 
 bool
@@ -5080,7 +4970,7 @@ legitimate_pic_address_disp_p (disp)
 	return false;
       return local_dynamic_symbolic_operand (XVECEXP (disp, 0, 0), Pmode);
     }
-    
+
   return 0;
 }
 
@@ -5290,15 +5180,6 @@ legitimate_address_p (mode, addr, strict)
 	     can be handled by separate addsi pattern for this case
 	     that never results in lea, this seems to be easier and
 	     correct fix for crash to disable this test.  */
-	}
-      else if (HALF_PIC_P ())
-	{
-	  if (! HALF_PIC_ADDRESS_P (disp)
-	      || (base != NULL_RTX || index != NULL_RTX))
-	    {
-	      reason = "displacement is an invalid half-pic reference";
-	      goto report_error;
-	    }
 	}
       else if (!CONSTANT_ADDRESS_P (disp))
 	{
@@ -5582,7 +5463,7 @@ get_thread_pointer ()
 
   return tp;
 }
-  
+
 /* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.
    This macro is used in only one place: `memory_address' in explow.c.
@@ -6528,7 +6409,7 @@ print_operand (file, x, code)
 
 	  /* Like above, but reverse condition */
 	case 'c':
-	  /* Check to see if argument to %c is really a constant 
+	  /* Check to see if argument to %c is really a constant
 	     and not a condition code which needs to be reversed.  */
 	  if (GET_RTX_CLASS (GET_CODE (x)) != '<')
 	  {
@@ -7565,7 +7446,7 @@ ix86_expand_vector_move (mode, operands)
     }
 
   emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
-}  
+}
 
 /* Attempt to expand a binary operator.  Make the expansion closer to the
    actual machine, then just general_operand, which will allow 3 separate
@@ -8430,7 +8311,7 @@ ix86_expand_branch (code, label)
 
 	code = ix86_prepare_fp_compare_args (code, &ix86_compare_op0,
 					     &ix86_compare_op1);
-	
+
 	ix86_fp_comparison_codes (code, &bypass_code, &first_code, &second_code);
 
 	/* Check whether we will use the natural sequence with one jump.  If
@@ -10626,7 +10507,7 @@ ix86_expand_call (retval, fnaddr, callarg1, callarg2, pop)
   if (use)
     CALL_INSN_FUNCTION_USAGE (call) = use;
 }
-  
+
 
 /* Clear stack slot assignments remembered from previous functions.
    This is called from INIT_EXPANDERS once before RTL is emitted for each
@@ -11214,7 +11095,7 @@ ix86_sched_reorder (dump, sched_verbose, ready, n_readyp, clock_var)
   int n_ready = *n_readyp;
   rtx *e_ready = ready + n_ready - 1;
 
-  /* Make sure to go ahead and initialize key items in 
+  /* Make sure to go ahead and initialize key items in
      ix86_sched_data if we are not going to bother trying to
      reorder the ready queue.  */
   if (n_ready < 2)
@@ -12689,7 +12570,7 @@ ix86_expand_binop_builtin (icode, arglist, target)
   return target;
 }
 
-/* In type_for_mode we restrict the ability to create TImode types 
+/* In type_for_mode we restrict the ability to create TImode types
    to hosts with 64-bit H_W_I.  So we've defined the SSE logicals
    to have a V4SFmode signature.  Convert them in-place to TImode.  */
 
@@ -12819,11 +12700,11 @@ ix86_expand_unop1_builtin (icode, arglist, target)
 
   if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
     op0 = copy_to_mode_reg (mode0, op0);
-  
+
   op1 = op0;
   if (! (*insn_data[icode].operand[2].predicate) (op1, mode0))
     op1 = copy_to_mode_reg (mode0, op1);
-  
+
   pat = GEN_FCN (icode) (target, op0, op1);
   if (! pat)
     return 0;
@@ -13820,7 +13701,7 @@ x86_order_regs_for_local_alloc ()
    if (!TARGET_SSE_MATH)
      for (i = FIRST_STACK_REG; i <= LAST_STACK_REG; i++)
        reg_alloc_order [pos++] = i;
-   
+
    /* SSE registers.  */
    for (i = FIRST_SSE_REG; i <= LAST_SSE_REG; i++)
      reg_alloc_order [pos++] = i;
