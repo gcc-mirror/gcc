@@ -684,7 +684,7 @@ mse * mark_stack_limit;
               current = *current_p;
 	      FIXUP_POINTER(current);
 	      if ((ptr_t)current >= least_ha && (ptr_t)current < greatest_ha) {
-		PREFETCH(current);
+		PREFETCH((ptr_t)current);
                 HC_PUSH_CONTENTS((ptr_t)current, mark_stack_top,
 			      mark_stack_limit, current_p, exit1);
 	      }
@@ -760,7 +760,7 @@ mse * mark_stack_limit;
 	  FIXUP_POINTER(deferred);
 	  limit = (word *)((char *)limit - ALIGNMENT);
 	  if ((ptr_t)deferred >= least_ha && (ptr_t)deferred <  greatest_ha) {
-	    PREFETCH(deferred);
+	    PREFETCH((ptr_t)deferred);
 	    break;
 	  }
 	  if (current_p > limit) goto next_object;
@@ -770,7 +770,7 @@ mse * mark_stack_limit;
 	  FIXUP_POINTER(deferred);
 	  limit = (word *)((char *)limit - ALIGNMENT);
 	  if ((ptr_t)deferred >= least_ha && (ptr_t)deferred <  greatest_ha) {
-	    PREFETCH(deferred);
+	    PREFETCH((ptr_t)deferred);
 	    break;
 	  }
 	  if (current_p > limit) goto next_object;
@@ -787,7 +787,7 @@ mse * mark_stack_limit;
         if ((ptr_t)current >= least_ha && (ptr_t)current <  greatest_ha) {
   	  /* Prefetch the contents of the object we just pushed.  It's	*/
   	  /* likely we will need them soon.				*/
-  	  PREFETCH(current);
+  	  PREFETCH((ptr_t)current);
           HC_PUSH_CONTENTS((ptr_t)current, mark_stack_top,
   		           mark_stack_limit, current_p, exit2);
         }
