@@ -1,3 +1,10 @@
+2001-10-29  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++/3647
+	* include/bits/fstream.tcc (filebuf::showmanyc): Simplify.
+	* testsuite/27_io/filebuf.cc (test07): New test.
+	(test03): Modify showmanyc test.
+
 2001-10-26  Benjamin Kosnik  <bkoz@redhat.com>
 
 	libstdc++/4503
