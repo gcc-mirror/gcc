@@ -1,3 +1,12 @@
+1998-06-25  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* cp-tree.h (mark_all_runtime_matches): Add function prototype.
+	* except.c (mark_all_runtime_matches): Set TREE_SYMBOL_REFERENCED
+	flag for all function decls which are in the exception table. 
+	* exception.cc (__cplus_type_matcher): Check for CATCH_ALL_TYPE match.
+	* decl2.c (finish_file): Call mark_all_runtime_matches to make sure
+	code is emitted for any referenced rtti function.
+
 1998-06-25  Dave Brolley  <brolley@cygnus.com>
 
 	* lang-specs.h: Use new | syntax to eliminate

@@ -2523,6 +2523,7 @@ extern tree start_anon_func			PROTO((void));
 extern void end_anon_func			PROTO((void));
 extern void expand_throw			PROTO((tree));
 extern tree build_throw				PROTO((tree));
+extern void mark_all_runtime_matches            PROTO((void));
 
 /* in expr.c */
 extern void init_cplus_expand			PROTO((void));

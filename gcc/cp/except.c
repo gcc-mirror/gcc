@@ -472,6 +472,34 @@ build_eh_type (exp)
   return build_eh_type_type (TREE_TYPE (exp));
 }
 
+/* This routine is called to mark all the symbols representing runtime
+   type functions in the exception table as haveing been referenced.
+   This will make sure code is emitted for them. Called from finish_file. */
+void 
+mark_all_runtime_matches () 
+{
+  int x,num;
+  void **ptr;
+  tree exp;
+  
+  num = find_all_handler_type_matches (&ptr);
+  if (num == 0 || ptr == NULL)
+    return;
+  
+  for (x=0; x <num; x++)
+    {
+      exp = (tree) ptr[x];
+      if (TREE_CODE (exp) == ADDR_EXPR)
+        {
+          exp = TREE_OPERAND (exp, 0);
+          if (TREE_CODE (exp) == FUNCTION_DECL)
+            TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (exp)) = 1;
+        }
+    }
+  
+  free (ptr);
+}
+
 /* Build up a call to __cp_pop_exception, to destroy the exception object
    for the current catch block.  HANDLER is either true or false, telling
    the library whether or not it is being called from an exception handler;
@@ -721,7 +749,7 @@ process_start_catch_block (declspecs, declarator)
   if (decl)
     start_catch_handler (build_eh_type_type_ref (TREE_TYPE (decl)));
   else
-    start_catch_handler (NULL_TREE);
+    start_catch_handler (CATCH_ALL_TYPE);
 
   emit_line_note (input_filename, lineno);
 
