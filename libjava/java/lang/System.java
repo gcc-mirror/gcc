@@ -99,6 +99,11 @@ public final class System
 
     defaultProperties.put("gnu.cpu.endian",
 			  isWordsBigEndian() ? "big" : "little");
+
+    // GCJ LOCAL: Classpath sets common encoding aliases here.
+    // Since we don't (yet) have gnu.java.io.EncodingManager, these
+    // are a waste of time and just slow down system startup.
+
     // XXX FIXME - Temp hack for old systems that set the wrong property
     if (defaultProperties.get("java.io.tmpdir") == null)
       defaultProperties.put("java.io.tmpdir",
