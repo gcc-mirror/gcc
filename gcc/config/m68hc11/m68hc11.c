@@ -1,5 +1,5 @@
 /* Subroutines for code generation on Motorola 68HC11 and 68HC12.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Stephane Carrez (stcarrez@nerim.fr)
 
 This file is part of GCC.
@@ -87,6 +87,8 @@ static unsigned int m68hc11_section_type_flags (tree, const char*, int);
 static int autoinc_mode (rtx);
 static int m68hc11_make_autoinc_notes (rtx *, void *);
 static void m68hc11_init_libfuncs (void);
+static rtx m68hc11_struct_value_rtx (tree, int);
+static bool m68hc11_return_in_memory (tree, tree);
 
 /* Must be set to 1 to produce debug messages.  */
 int debug_m6811 = 0;
@@ -253,6 +255,11 @@ static int nb_soft_regs;
 
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS m68hc11_init_libfuncs
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX m68hc11_struct_value_rtx
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY m68hc11_return_in_memory
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5518,6 +5525,25 @@ m68hc11_asm_out_destructor (rtx symbol, int priority)
 {
   default_dtor_section_asm_out_destructor (symbol, priority);
   fprintf (asm_out_file, "\t.globl\t__do_global_dtors\n");
+}
+
+static rtx
+m68hc11_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
+			  int incoming ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (Pmode, HARD_D_REGNUM);
+}
+
+/* Return true if type TYPE should be returned in memory.
+   Blocks and data types largers than 4 bytes cannot be returned
+   in the register (D + X = 4).  */
+
+static bool
+m68hc11_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+{
+  return ((TYPE_MODE (type) == BLKmode)
+	  ? (int_size_in_bytes (type) > 4)
+	  : (GET_MODE_SIZE (TYPE_MODE (type)) > 4));
 }
 
 #include "gt-m68hc11.h"

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Motorola 68HC11 and 68HC12.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Stephane Carrez (stcarrez@nerim.fr)
 
 This file is part of GCC.
@@ -1004,9 +1004,6 @@ extern enum reg_class m68hc11_tmp_regs_class;
 
 /* Passing Function Arguments on the Stack.  */
 
-/* When a prototype says `char' or `short', really pass an `int'.  */
-/* #define PROMOTE_PROTOTYPES */
-
 /* If we generate an insn to push BYTES bytes, this says how many the
    stack pointer really advances by. No rounding or alignment needed
    for MC6811.  */
@@ -1020,15 +1017,6 @@ extern enum reg_class m68hc11_tmp_regs_class;
    The standard MC6811 call, with arg count word, includes popping the
    args as part of the call template.  */
 #define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE)	0
-
-/* Nonzero if type TYPE should be returned in memory.
-   Blocks and data types largers than 4 bytes cannot be returned
-   in the register (D + X = 4).  */
-#define RETURN_IN_MEMORY(TYPE)				\
-    ((TYPE_MODE (TYPE) == BLKmode)			\
-     ? (int_size_in_bytes (TYPE) > 4)			\
-     : (GET_MODE_SIZE (TYPE_MODE (TYPE)) > 4))
-
 
 /* Passing Arguments in Registers.  */
 
@@ -1147,10 +1135,6 @@ typedef struct m68hc11_args
 /* 1 if N is a possible register number for a function value.  */
 #define FUNCTION_VALUE_REGNO_P(N) \
      ((N) == HARD_D_REGNUM || (N) == HARD_X_REGNUM)
-
-/* Register in which address to store a structure value is passed to a
-   function.  */
-#define STRUCT_VALUE_REGNUM	HARD_D_REGNUM
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in functions
