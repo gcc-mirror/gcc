@@ -422,9 +422,6 @@
 /* Define to 1 if you have the `modfl' function. */
 #undef HAVE_MODFL
 
-/* Define to 1 if you have the `nan' function. */
-#undef HAVE_NAN
-
 /* Define to 1 if you have the <nan.h> header file. */
 #undef HAVE_NAN_H
 

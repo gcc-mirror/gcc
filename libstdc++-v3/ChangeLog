@@ -1,3 +1,13 @@
+2004-01-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR c/13814
+	* config/linker-map.gnu (nan): Delete.
+	* libmath/mathconf.h (NAN, nan): Delete.
+	* linkage.m4 (nan): Don't check for it.
+	* libmath/nan.c: Delete file.
+
+	* config.h.in, configure: Regenerate.
+
 2004-01-23  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/basic_string.h (push_back(_CharT)):
