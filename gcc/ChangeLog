@@ -1,3 +1,25 @@
+2004-10-01  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390-protos.h (s390_comparison): Add prototype.
+	* config/s390/s390.c (s390_comparison): New function.
+	(s390_branch_condition_mask): Return -1 for invalid comparisons.
+	(s390_branch_condition_mnemonic): Assert valid comparison.
+	* config/s390/s390.h (PREDICATE_CODES): Add s390_comparison.
+	* config/s390/s390.md ("*cjump_64", "*cjump_31", "*cjump_long",
+	"*icjump_64", "*icjump_31", "*icjump_long", "*trap"): Use
+	s390_comparison instead of comparison_operator.
+
+	* config/s390/s390.md (UNSPEC_CMPINT): New constant.
+	("cmpmemdi"): Remove.
+	("cmpmem_short", "*cmpmem_short"): Use CCUmode instead of CCSmode.
+	("cmpmem_long", "*cmpmem_long_64", "*cmpmem_long_31"): Likewise.
+	("cmpint_si"): Rename to ...
+	("*cmpint_si"): ... this.  Use UNSPEC_CMPINT.
+	("cmpint_di", "*cmpint_di"): Likewise.
+	* config/s390/s390.c (s390_canonicalize_comparison): Remove
+	redundant UNSPEC_CMPINT conversions.
+	(s390_expand_cmpmem): Adapt to cmpint pattern changes.
+
 2004-10-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* collect2.c (COLLECT_PARSE_FLAG): Remove.

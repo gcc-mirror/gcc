@@ -1025,6 +1025,9 @@ do {									\
   {"consttable_operand", { SYMBOL_REF, LABEL_REF, CONST, 		\
 			   CONST_INT, CONST_DOUBLE }},			\
   {"s390_plus_operand", { PLUS }},					\
+  {"s390_comparison",     { EQ, NE, LT, GT, LE, GE, LTU, GTU, LEU, GEU,	\
+			    UNEQ, UNLT, UNGT, UNLE, UNGE, LTGT,		\
+			    UNORDERED, ORDERED }},			\
   {"s390_alc_comparison", { ZERO_EXTEND, SIGN_EXTEND, 			\
 			    LTU, GTU, LEU, GEU }},			\
   {"s390_slb_comparison", { ZERO_EXTEND, SIGN_EXTEND,			\
