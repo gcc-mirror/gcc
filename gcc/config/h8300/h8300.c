@@ -757,13 +757,7 @@ single_one_operand (operand, mode)
     {
       /* We really need to do this masking because 0x80 in QImode is
 	 represented as -128 for example.  */
-      unsigned HOST_WIDE_INT mask =
-	(GET_MODE_BITSIZE (mode) < HOST_BITS_PER_WIDE_INT)
-	? ((unsigned HOST_WIDE_INT) 1 << GET_MODE_BITSIZE (mode)) - 1
-	: ~(unsigned HOST_WIDE_INT) 0;
-      unsigned HOST_WIDE_INT value = INTVAL (operand);
-
-      if (exact_log2 (value & mask) >= 0)
+      if (exact_log2 (INTVAL (operand) & GET_MODE_MASK (mode)) >= 0)
 	return 1;
     }
 
@@ -782,13 +776,7 @@ single_zero_operand (operand, mode)
     {
       /* We really need to do this masking because 0x80 in QImode is
 	 represented as -128 for example.  */
-      unsigned HOST_WIDE_INT mask =
-	(GET_MODE_BITSIZE (mode) < HOST_BITS_PER_WIDE_INT)
-	? ((unsigned HOST_WIDE_INT) 1 << GET_MODE_BITSIZE (mode)) - 1
-	: ~(unsigned HOST_WIDE_INT) 0;
-      unsigned HOST_WIDE_INT value = INTVAL (operand);
-
-      if (exact_log2 (~value & mask) >= 0)
+      if (exact_log2 (~INTVAL (operand) & GET_MODE_MASK (mode)) >= 0)
 	return 1;
     }
 
