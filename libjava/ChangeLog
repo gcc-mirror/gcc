@@ -1,5 +1,8 @@
 2002-01-16  Tom Tromey  <tromey@redhat.com>
 
+	* java/awt/Point.java (toString): Use getClass().getName().
+	Added javadoc.
+
 	* java/util/IdentityHashMap.java (IdentityHashMap): Removed
 	commented code.
 	(hash): Correctly compute initial value for `h'.
