@@ -4011,6 +4011,9 @@ update_headers __proto((void))
 	      register Size_t len = strlen (str);
 	      register shash_t *hash_ptr;
 
+	      /* Ignore internal labels.  */
+	      if (str[0] == '$' && str[1] == 'L')
+		continue;
 	      hash_ptr = hash_string (str,
 				      (Ptrdiff_t)len,
 				      &file_ptr->shash_head[0],
