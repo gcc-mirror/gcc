@@ -1,5 +1,12 @@
 2001-08-23  Lars Brinkhoff  <lars@nocrew.org>
 
+	* config/mcore/mcore.h (MACHINE_DEPENDENT_SIMPLIFY): Remove.
+	* config/mcore/mcore.c (mcore_dependent_simplify_rtx): Likewise.
+	* config/mcore/mcore-protos.h (mcore_dependent_simplify_rtx):
+	Remove prototype.
+
+2001-08-23  Lars Brinkhoff  <lars@nocrew.org>
+
 	* genconstants.c, genpreds.c, libfuncs.h, optabs.h, rtl-error.h:
 	replace "GNU CC" with "GCC".
 
