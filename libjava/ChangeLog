@@ -1,6 +1,8 @@
 Sun Aug 20 09:51:48 2000  Anthony Green  <green@redhat.com>
 
 	* java/net/URLClassLoader.java: Find the JarEntry via the JarFile.
+	Read the entire contents of the class file, not just what is
+	available().
 
 	* java/net/JarURLConnection.java: getEntry doesn't take any
 	arguments.  Return null if element is null.
