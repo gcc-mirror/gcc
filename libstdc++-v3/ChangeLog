@@ -9,6 +9,7 @@
 
 	* include/ext/array_allocator.h (array_allocator<>::allocate):
 	Avoid __used.  Use __array_used instead.
+	* docs/html/17_intro/BADNAMES: Add list for FreeBSD.
 
 2005-01-18  David Edelsohn  <edelsohn@gnu.org>
 
