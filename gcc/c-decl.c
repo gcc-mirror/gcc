@@ -1325,7 +1325,14 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	{
 	  if (DECL_EXTERNAL (newdecl))
 	    {
-	      if (warn_traditional)
+	      if (!DECL_FILE_SCOPE_P (olddecl))
+		{
+		  error ("%Jextern declaration of %qD follows "
+			 "declaration with no linkage", newdecl, newdecl);
+		  locate_old_decl (olddecl, error);
+		  return false;
+		}
+	      else if (warn_traditional)
 		{
 		  warning ("%Jnon-static declaration of '%D' follows "
 			   "static declaration", newdecl, newdecl);
@@ -1347,13 +1354,10 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	}
       /* Two objects with the same name declared at the same block
 	 scope must both be external references (6.7p3).  */
-      else if (!DECL_FILE_SCOPE_P (newdecl)
-	       && DECL_CONTEXT (newdecl) == DECL_CONTEXT (olddecl)
-	       && (!DECL_EXTERNAL (newdecl) || !DECL_EXTERNAL (olddecl)))
+      else if (!DECL_FILE_SCOPE_P (newdecl))
 	{
 	  if (DECL_EXTERNAL (newdecl))
-	    error ("%Jextern declaration of '%D' follows "
-		   "declaration with no linkage", newdecl, newdecl);
+	    abort ();
 	  else if (DECL_EXTERNAL (olddecl))
 	    error ("%Jdeclaration of '%D' with no linkage follows "
 		   "extern declaration", newdecl, newdecl);
