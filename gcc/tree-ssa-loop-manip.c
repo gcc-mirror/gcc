@@ -571,7 +571,7 @@ set_phi_def_stmts (basic_block bb)
     SSA_NAME_DEF_STMT (PHI_RESULT (phi)) = phi;
 }
 
-/* The same ad cfgloopmanip.c:duplicate_loop_to_header_edge, but also updates
+/* The same as cfgloopmanip.c:duplicate_loop_to_header_edge, but also updates
    ssa.  In order to achieve this, only loops whose exits all lead to the same
    location are handled.
    

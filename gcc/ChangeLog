@@ -1,3 +1,7 @@
+2004-11-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-loop-manip.c: Fix a comment typo.
+
 2004-11-12  Mike Stump  <mrs@apple.com>
 
 	* doc/cppinternals.texi (Index): Fix html generation with makeinfo by
