@@ -99,7 +99,7 @@ in the following sections.
 -ansi -fstd  -fallow-single-precision  -fcond-mismatch  -fno-asm
 -fno-builtin  -ffreestanding  -fhosted  -fsigned-bitfields  -fsigned-char
 -funsigned-bitfields  -funsigned-char  -fwritable-strings
--traditional  -traditional-cpp  -trigraphs
+-traditional  -traditional-cpp  -trigraphs -fsingle-precision-constant
 @end smallexample
 
 @item C++ Language Options
@@ -178,7 +178,7 @@ in the following sections.
 -fregmove -frerun-cse-after-loop  -frerun-loop-opt  -freduce-all-givs
 -fschedule-insns  -fschedule-insns2  -fssa -fstrength-reduce
 -fstrict-aliasing  -fthread-jumps  -funroll-all-loops
--funroll-loops
+-funroll-loops 
 -O  -O0  -O1  -O2  -O3 -Os
 @end smallexample
 
@@ -2896,6 +2896,10 @@ flow graph is translated into SSA form, optimizations are performed, and
 the flow graph is translated back from SSA form.  (Currently, no
 SSA-based optimizations are implemented, but converting into and out of
 SSA form is not an invariant operation, and generated code may differ.)
+
+@item -fsingle-precision-constant
+Treat floating point constant as single precision constant instead of
+implicitly converting it to double precision constant.
 
 @end table
 

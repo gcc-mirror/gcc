@@ -1176,6 +1176,8 @@ parse_float (data)
   else
     {
       errno = 0;
+      if (flag_single_precision_constant)
+        args->type = float_type_node;
       if (args->base == 16)
 	args->value = REAL_VALUE_HTOF (copy, TYPE_MODE (args->type));
       else

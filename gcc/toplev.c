@@ -744,6 +744,8 @@ int flag_schedule_speculative = 1;
 int flag_schedule_speculative_load = 0;
 int flag_schedule_speculative_load_dangerous = 0;
 
+int flag_single_precision_constant;
+
 /* flag_on_branch_count_reg means try to replace add-1,compare,branch tupple
    by a cheaper branch, on a count register. */
 int flag_branch_on_count_reg;
@@ -1103,7 +1105,9 @@ lang_independent_options f_options[] =
   {"bounded-pointers", &flag_bounded_pointers, 1,
    "Compile pointers as triples: value, base & end" },
   {"bounds-check", &flag_bounds_check, 1,
-   "Generate code to check bounds before dereferencing pointers and arrays" }
+   "Generate code to check bounds before dereferencing pointers and arrays" },
+  {"single-precision-constant", &flag_single_precision_constant, 1,
+  "Convert floating point constant to single precision constant"}
 };
 
 #define NUM_ELEM(a)  (sizeof (a) / sizeof ((a)[0]))

@@ -1,3 +1,12 @@
+2000-07-10  Chandrakala Chavva  <cchavva@redhat.com>
+
+	* flags.h : Add new variable flag_single_precision_constant.
+	* toplev.c (display_help) : Add -fsingle-precision-constant option.
+	(flag_single_precision_constant): New.
+	* c-lex.c (yylex): Convert floating point constant to single
+	precision constant.
+	* invoke.texi : Add documentation for this new option.
+
 2000-07-10  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* diagnostic.c (output_octal): Second parameter is unsigned.
