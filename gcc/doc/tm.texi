@@ -4196,7 +4196,8 @@ function.
 Define this macro as a C expression that is nonzero if the return
 instruction or the function epilogue ignores the value of the stack
 pointer; in other words, if it is safe to delete an instruction to
-adjust the stack pointer before a return from the function.
+adjust the stack pointer before a return from the function.  The
+default is 0.
 
 Note that this macro's value is relevant only for functions for which
 frame pointers are maintained.  It is never safe to delete a final

@@ -689,4 +689,11 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define LOCAL_REGNO(REGNO)  0
 #endif
 
+/* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
+   the stack pointer does not matter.  The value is tested only in
+   functions that have frame pointers.  */
+#ifndef EXIT_IGNORE_STACK
+#define EXIT_IGNORE_STACK 0
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */

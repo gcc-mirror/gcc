@@ -141,14 +141,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "obstack.h"
 #include "splay-tree.h"
 
-/* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
-   the stack pointer does not matter.  The value is tested only in
-   functions that have frame pointers.
-   No definition is equivalent to always zero.  */
-#ifndef EXIT_IGNORE_STACK
-#define EXIT_IGNORE_STACK 0
-#endif
-
 #ifndef HAVE_epilogue
 #define HAVE_epilogue 0
 #endif

@@ -57,7 +57,6 @@ init_pending_stack_adjust (void)
 void
 clear_pending_stack_adjust (void)
 {
-#ifdef EXIT_IGNORE_STACK
   if (optimize > 0
       && (! flag_omit_frame_pointer || current_function_calls_alloca)
       && EXIT_IGNORE_STACK
@@ -67,7 +66,6 @@ clear_pending_stack_adjust (void)
       stack_pointer_delta -= pending_stack_adjust,
       pending_stack_adjust = 0;
     }
-#endif
 }
 
 /* Pop any previously-pushed arguments that have not been popped yet.  */
