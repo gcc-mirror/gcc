@@ -657,7 +657,7 @@ public class Socket
     if (isClosed())
       throw new SocketException("socket is closed");
     
-    getImpl().setOption(SocketOptions.TCP_NODELAY, new Boolean(on));
+    getImpl().setOption(SocketOptions.TCP_NODELAY, Boolean.valueOf(on));
   }
 
   /**
@@ -719,7 +719,7 @@ public class Socket
       }
     else
       {
-        getImpl().setOption(SocketOptions.SO_LINGER, new Boolean(false));
+        getImpl().setOption(SocketOptions.SO_LINGER, Boolean.valueOf(false));
       }
   }
 
@@ -784,7 +784,7 @@ public class Socket
     if (isClosed())
       throw new SocketException("socket is closed");
     
-    getImpl().setOption(SocketOptions.SO_OOBINLINE, new Boolean(on));
+    getImpl().setOption(SocketOptions.SO_OOBINLINE, Boolean.valueOf(on));
   }
 
   /**
@@ -975,7 +975,7 @@ public class Socket
     if (isClosed())
       throw new SocketException("socket is closed");
     
-    getImpl().setOption(SocketOptions.SO_KEEPALIVE, new Boolean(on));
+    getImpl().setOption(SocketOptions.SO_KEEPALIVE, Boolean.valueOf(on));
   }
 
   /**
@@ -1150,7 +1150,7 @@ public class Socket
    */
   public void setReuseAddress (boolean on) throws SocketException
   {
-    getImpl().setOption (SocketOptions.SO_REUSEADDR, new Boolean (on));
+    getImpl().setOption (SocketOptions.SO_REUSEADDR, Boolean.valueOf(on));
   }
 
   /**

@@ -415,7 +415,7 @@ public abstract class URLStreamHandler
     InetAddress addr1 = getHostAddress (url1);
     InetAddress addr2 = getHostAddress (url2);
 
-    if (addr1 != null || addr2 != null)
+    if (addr1 != null && addr2 != null)
       return addr1.equals (addr2);
 
     String host1 = url1.getHost();
@@ -511,7 +511,7 @@ public abstract class URLStreamHandler
     int size = protocol.length() + host.length() + file.length() + 24;
     StringBuffer sb = new StringBuffer(size);
 
-    if (protocol != null && protocol.length() > 0)
+    if (protocol.length() != 0)
       {
 	sb.append(protocol);
 	sb.append(":");

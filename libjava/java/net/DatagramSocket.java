@@ -798,7 +798,7 @@ public class DatagramSocket
     if (isClosed())
       throw new SocketException("socket is closed");
 
-    getImpl().setOption (SocketOptions.SO_REUSEADDR, new Boolean (on));
+    getImpl().setOption (SocketOptions.SO_REUSEADDR, Boolean.valueOf(on));
   }
 
   /**
@@ -837,7 +837,7 @@ public class DatagramSocket
     if (isClosed())
       throw new SocketException("socket is closed");
 
-    getImpl().setOption(SocketOptions.SO_BROADCAST, new Boolean(enable));
+    getImpl().setOption(SocketOptions.SO_BROADCAST, Boolean.valueOf(enable));
   }
 
   /**

@@ -255,7 +255,7 @@ public class MulticastSocket extends DatagramSocket
     if (isClosed())
       throw new SocketException("socket is closed");
 
-    getImpl().setOption (SocketOptions.IP_MULTICAST_LOOP, new Boolean (disable));
+    getImpl().setOption (SocketOptions.IP_MULTICAST_LOOP, Boolean.valueOf(disable));
   }
 
   /**

@@ -956,7 +956,7 @@ public abstract class URLConnection
     ContentHandler handler;
 
     // No content type so just handle it as the default.
-    if (contentType == null || contentType == "")
+    if (contentType == null || contentType.equals(""))
       return null;
 
     // See if a handler has been cached for this content type.
