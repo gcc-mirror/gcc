@@ -991,13 +991,6 @@ ereal_isneg (x)
 #define TLOSS		5	/* total loss of precision */
 #define PLOSS		6	/* partial loss of precision */
 
-#ifndef EDOM
-#define EDOM		33
-#endif
-#ifndef ERANGE
-#define ERANGE		34
-#endif
-
 /*  e type constants used by high precision check routines */
 
 /*include "ehead.h"*/
