@@ -1,5 +1,7 @@
 2000-06-20  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
+	* function.c (round_down): Delete obsolete prototype.
+
 	* pa.h (CPP_SPEC): Add whitespace after -D__STDC_EXT__.
 
 2000-06-20  Zack Weinberg  <zack@wolery.cumb.org>
