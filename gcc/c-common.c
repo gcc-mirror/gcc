@@ -275,11 +275,11 @@ found_attr:;
     else if ( args = TREE_CHAIN(name),
 	      !strcmp (IDENTIFIER_POINTER (name = TREE_PURPOSE (name)), "mode")
 	      && list_length (args) == 1
-	      && TREE_CODE (TREE_VALUE (args)) == STRING_CST)
+	      && TREE_CODE (TREE_VALUE (args)) == IDENTIFIER_NODE)
       {
 	int i;
 	char *specified_name
-	  = TREE_STRING_POINTER (TREE_VALUE (args));
+	  = IDENTIFIER_POINTER (TREE_VALUE (args));
 
 	/* Give this decl a type with the specified mode.  */
 	for (i = 0; i < NUM_MACHINE_MODES; i++)
