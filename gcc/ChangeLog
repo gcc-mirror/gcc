@@ -1,3 +1,7 @@
+2000-12-13  DJ Delorie  <dj@redhat.com>
+
+	* config.gcc (cygwin, win32, mingw32): Use float-i386.h.
+
 2000-12-13  Tom Tromey  <tromey@redhat.com>
 
 	* gcc.c (handle_braces): Handle %{<S*} spec correctly.
