@@ -1179,7 +1179,14 @@ AIX:
 DOS---@uref{http://www.delorie.com/djgpp/,,DJGPP};
 
 @item
+HP-UX:
+@itemize
+@item
 @uref{http://hpux.cae.wisc.edu/,,HP-UX Porting Center};
+
+@item
+@uref{ftp://sunsite.informatik.rwth-aachen.de/pub/packages/gcc_hpux/,,Binaries for HP-UX 11.00 at Aachen University of Technology}.
+@end itemize
 
 @item
 @uref{http://www.sco.com/skunkware/devtools/index.html#gcc,,SCO

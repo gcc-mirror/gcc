@@ -1,3 +1,9 @@
+2001-09-13  Markus Werle <numerical.simulation@web.de>
+            Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi (Binaries): Add "Binaries for HP-UX 11.00 at
+	Aachen University of Technology".
+
 2001-09-13  Andreas Schwab  <schwab@suse.de>
 
 	* config/float-m68k.h: Define DECIMAL_DIG and FLT_EVAL_METHOD for
