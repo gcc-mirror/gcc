@@ -1217,7 +1217,7 @@ strstr.o: $(srcdir)/../libiberty/strstr.c $(GCONFIG_H) system.h
 	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) \
 		strstr.c $(OUTPUT_OPTION)
 
-splay-tree.o: $(srcdir)/../libiberty/splay-tree.c \
+splay-tree.o: $(srcdir)/../libiberty/splay-tree.c $(GCONFIG_H) \
   $(srcdir)/../include/splay-tree.h $(srcdir)/../include/libiberty.h
 	rm -f splay-tree.c
 	$(LN_S) $(srcdir)/../libiberty/splay-tree.c splay-tree.c
