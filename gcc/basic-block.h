@@ -630,6 +630,7 @@ extern void dump_regset			PARAMS ((regset, FILE *));
 extern void debug_regset		PARAMS ((regset));
 extern void allocate_reg_life_data      PARAMS ((void));
 extern void allocate_bb_life_data	PARAMS ((void));
+extern void expunge_block		PARAMS ((basic_block));
 extern void find_unreachable_blocks	PARAMS ((void));
 extern void delete_noop_moves		PARAMS ((rtx));
 extern basic_block redirect_edge_and_branch_force PARAMS ((edge, basic_block));
