@@ -153,8 +153,7 @@ update_aliases (tree decl, int index, int pc)
 	  tree src = build1 (NOP_EXPR, tmp_type, decl);
 	  if (LOCAL_VAR_OUT_OF_SCOPE_P (tmp))
 	    abort ();
-	  java_add_stmt 
-	    (build (MODIFY_EXPR, tmp_type, tmp, src));
+	  java_add_stmt (build2 (MODIFY_EXPR, tmp_type, tmp, src));
 	}
     }
 }
@@ -196,8 +195,7 @@ initialize_local_variable (tree decl, int index)
 	  /* At the point of its creation this decl inherits whatever
 	     is in the slot.  */
 	  tree src = build1 (NOP_EXPR, decl_type, tmp);
-	  java_add_stmt 
-	    (build (MODIFY_EXPR, decl_type, decl, src));	
+	  java_add_stmt (build2 (MODIFY_EXPR, decl_type, decl, src));	
 	}
     }
   else
@@ -216,10 +214,10 @@ initialize_local_variable (tree decl, int index)
 		      && INTEGRAL_TYPE_P (decl_type)
 		      && TYPE_PRECISION (decl_type) <= 32
 		      && TYPE_PRECISION (tmp_type) <= 32
-		      && TYPE_PRECISION (tmp_type) >= TYPE_PRECISION (decl_type))))
+		      && TYPE_PRECISION (tmp_type)
+			 >= TYPE_PRECISION (decl_type))))
 	    {
-	      java_add_stmt 
-		(build (MODIFY_EXPR, decl_type, decl, tmp));	
+	      java_add_stmt (build2 (MODIFY_EXPR, decl_type, decl, tmp));	
 	      return;
 	    }
 	}  

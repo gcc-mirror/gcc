@@ -1,3 +1,24 @@
+2004-08-01  Roger Sayle  <roger@eyesopen.com>
+
+	* decl.c (update_aliases, initialize_local_variable): Replace calls
+	to build with calls to buildN.
+	* java-gimplify.c (java_gimplify_modify_expr): Likewise.
+	* java-tree.h (BUILD_MONITOR_ENTER, BUILD_MONITOR_EXIT): Likewise.
+	* parse.h (BUILD_THROW): Likewise.
+	* parse.y (switch_expression, synchronized_statement,
+	catch_clause_parameter, array_creation_expression,
+	conditional_expression, make_qualified_name,
+	resolve_qualified_expression_name, patch_method_invocation,
+	patch_invoke, build_method_invocation, build_new_invocation,
+	build_assignment, patch_assignment, build_binop, patch_binop,
+	build_string_concatenation, build_incdec, patch_unaryop,
+	patch_cast, build_array_ref, build_newarray_node, patch_newarray,
+	patch_return, build_if_else_statement, build_labeled_block,
+	build_new_loop, build_loop_body, build_bc_statement,
+	build_assertion, encapsulate_with_try_catch, build_try_statement,
+	build_try_finally_statement, patch_synchronized_statement,
+	emit_test_initialization): Likewise, replace build with buildN.
+
 2004-07-28  Eric Christopher  <echristo@redhat.com>
 
 	* lang.c (LANG_HOOKS_UNSAFE_FOR_REEVAL): Delete.
