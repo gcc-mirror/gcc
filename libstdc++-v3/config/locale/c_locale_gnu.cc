@@ -61,6 +61,10 @@ namespace std
       __freelocale(__cloc); 
   }
 
+  __c_locale
+  locale::facet::_S_clone_c_locale(__c_locale& __cloc)
+  { return __duplocale(__cloc); }
+
   template<> 
     void
     numpunct<char>::_M_initialize_numpunct(__c_locale __cloc)

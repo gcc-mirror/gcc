@@ -1,6 +1,4 @@
-// 2001-01-23  Benjamin Kosnik  <bkoz@redhat.com>
-
-// Copyright (C) 2001 Free Software Foundation
+// Copyright (C) 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,31 +16,14 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 22.2.3  The numeric punctuation facet
+#include <libintl.h>
+#define gettext_noop(Str) Str
 
-#include <locale>
+// For messages testsuite files.
+const char* msgstr1 = gettext_noop("please");
+const char* msgstr2 = gettext_noop("thank you");
 
-void test01()
-{
-  // Check for required base class.
-  typedef std::numpunct<char> test_type;
-  typedef std::locale::facet base_type;
-  const test_type& obj = std::use_facet<test_type>(std::locale()); 
-  const base_type* base = &obj;
-}
+// For numpunct implementation.
+const char* msgstr3 = gettext_noop("true");
+const char* msgstr4 = gettext_noop("false");
 
-// Should be able to instantiate this for other types besides char, wchar_t
-class gnu_numpunct: public std::numpunct<unsigned char> 
-{ };
-
-void test02()
-{ 
-  gnu_numpunct facet01;
-}
-
-int main()
-{
-  test01();
-  test02();
-  return 0;
-}

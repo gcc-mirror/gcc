@@ -1,4 +1,4 @@
-// 2001-01-23  Benjamin Kosnik  <bkoz@redhat.com>
+// 2001-07-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 // Copyright (C) 2001 Free Software Foundation
 //
@@ -18,26 +18,32 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 22.2.3  The numeric punctuation facet
+// 22.2.7 The message retrieval category
 
 #include <locale>
 
 void test01()
 {
   // Check for required base class.
-  typedef std::numpunct<char> test_type;
-  typedef std::locale::facet base_type;
+  typedef std::messages<char> test_type;
+  typedef std::locale::facet base_type1;
+  typedef std::messages_base base_type2;
   const test_type& obj = std::use_facet<test_type>(std::locale()); 
-  const base_type* base = &obj;
+  const base_type1* base1 = &obj;
+  const base_type2* base2 = &obj;
+
+  // Check for required typedefs
+  typedef test_type::char_type char_type;
+  typedef test_type::string_type string_type;
 }
 
 // Should be able to instantiate this for other types besides char, wchar_t
-class gnu_numpunct: public std::numpunct<unsigned char> 
+class gnu_messages: public std::messages<unsigned char> 
 { };
 
 void test02()
 { 
-  gnu_numpunct facet01;
+  gnu_messages facet01;
 }
 
 int main()

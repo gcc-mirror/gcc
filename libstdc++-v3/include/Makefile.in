@@ -67,55 +67,78 @@ AR = @AR@
 AS = @AS@
 ATOMICITY_INC_SRCDIR = @ATOMICITY_INC_SRCDIR@
 BASIC_FILE_H = @BASIC_FILE_H@
+CATALOGS = @CATALOGS@
+CATOBJEXT = @CATOBJEXT@
 CC = @CC@
 CCODECVT_C = @CCODECVT_C@
+CCODECVT_H = @CCODECVT_H@
 CLOCALE_H = @CLOCALE_H@
+CMESSAGES_H = @CMESSAGES_H@
 CPP = @CPP@
 CSHADOW_FLAGS = @CSHADOW_FLAGS@
 CSTDIO_H = @CSTDIO_H@
 CXXCPP = @CXXCPP@
 C_INCLUDE_DIR = @C_INCLUDE_DIR@
+DATADIRNAME = @DATADIRNAME@
 DEBUG_FLAGS = @DEBUG_FLAGS@
 DLLTOOL = @DLLTOOL@
 EXEEXT = @EXEEXT@
 EXTRA_CXX_FLAGS = @EXTRA_CXX_FLAGS@
 GCJ = @GCJ@
 GCJFLAGS = @GCJFLAGS@
+GENCAT = @GENCAT@
 GLIBCPP_INCLUDES = @GLIBCPP_INCLUDES@
 GLIBCPP_IS_CROSS_COMPILING = @GLIBCPP_IS_CROSS_COMPILING@
+GMOFILES = @GMOFILES@
+GMSGFMT = @GMSGFMT@
+GT_NO = @GT_NO@
+GT_YES = @GT_YES@
+INCLUDE_LOCALE_H = @INCLUDE_LOCALE_H@
+INSTOBJEXT = @INSTOBJEXT@
+INTLDEPS = @INTLDEPS@
+INTLLIBS = @INTLLIBS@
+INTLOBJS = @INTLOBJS@
 LIBIO_INCLUDES = @LIBIO_INCLUDES@
 LIBMATHOBJS = @LIBMATHOBJS@
 LIBMATH_INCLUDES = @LIBMATH_INCLUDES@
-LIBSTRINGOBJS = @LIBSTRINGOBJS@
 LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 LIBSUPCXX_PICFLAGS = @LIBSUPCXX_PICFLAGS@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
+MKINSTALLDIRS = @MKINSTALLDIRS@
+MSGFMT = @MSGFMT@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
 OPT_LDFLAGS = @OPT_LDFLAGS@
 OS_INC_SRCDIR = @OS_INC_SRCDIR@
 PACKAGE = @PACKAGE@
+POFILES = @POFILES@
+POSUB = @POSUB@
 RANLIB = @RANLIB@
 SECTION_FLAGS = @SECTION_FLAGS@
 SECTION_LDFLAGS = @SECTION_LDFLAGS@
 STRIP = @STRIP@
 TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 USE_COMPLEX_LONG_DOUBLE = @USE_COMPLEX_LONG_DOUBLE@
+USE_INCLUDED_LIBINTL = @USE_INCLUDED_LIBINTL@
+USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 WARN_FLAGS = @WARN_FLAGS@
 WERROR = @WERROR@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 glibcpp_CXX = @glibcpp_CXX@
+glibcpp_MOFILES = @glibcpp_MOFILES@
 glibcpp_basedir = @glibcpp_basedir@
+glibcpp_localedir = @glibcpp_localedir@
 glibcpp_prefixdir = @glibcpp_prefixdir@
 glibcpp_toolexecdir = @glibcpp_toolexecdir@
 glibcpp_toolexeclibdir = @glibcpp_toolexeclibdir@
 ifGNUmake = @ifGNUmake@
+l = @l@
 libio_la = @libio_la@
 toplevel_srcdir = @toplevel_srcdir@
 
@@ -166,8 +189,8 @@ thread_headers =  	${thread_builddir}/gthr.h 	${thread_builddir}/gthr-single.h 	
 
 # List of all timestamp files.  By keeping only one copy of this list, both
 # CLEANFILES and all-local are kept up-to-date.
-# XXX stamp-c_compatibility 
-allstamps = stamp-std stamp-bits stamp-c_base stamp-backward stamp-ext 	stamp-target stamp-thread stamp-file_model stamp-io stamp-locale
+# XXX stamp-c_compatibility not implemented yet.
+allstamps = stamp-std stamp-bits stamp-c_base stamp-backward stamp-ext 	stamp-target stamp-thread stamp-file_model stamp-io 	stamp-locale stamp-messages_model stamp-codecvt_model
 
 
 # By adding these files here, automake will remove them for 'make clean'
@@ -179,7 +202,7 @@ uppercase = [ABCDEFGHIJKLMNOPQRSTUVWXYZ_]
 # One big happy istallation:  just copy everything from the build to the
 # install tree (except for the build stamps).
 gxx_include_dir = @gxx_include_dir@
-CONFIG_HEADER = ../config.h
+CONFIG_HEADER = ../config.h ../config.h ../testsuite/testsuite_hooks.h
 CONFIG_CLEAN_FILES = 
 DIST_COMMON =  Makefile.am Makefile.in
 
@@ -351,6 +374,14 @@ stamp-locale: ${glibcpp_srcdir}/@CLOCALE_H@ ${target_builddir}
 	@(cd ${target_builddir} && @LN_S@ ${glibcpp_srcdir}/@CLOCALE_H@ c++locale.h) ;\
 	echo `date` > stamp-locale
 
+stamp-messages_model: ${glibcpp_srcdir}/@CMESSAGES_H@ ${target_builddir}
+	@(cd ${target_builddir} && @LN_S@ ${glibcpp_srcdir}/@CMESSAGES_H@ messages_members.h) ;\
+	echo `date` > stamp-messages_model
+
+stamp-codecvt_model: ${glibcpp_srcdir}/@CCODECVT_H@ ${target_builddir}
+	@(cd ${target_builddir} && @LN_S@ ${glibcpp_srcdir}/@CCODECVT_H@ codecvt_specializations.h) ;\
+	echo `date` > stamp-codecvt_model
+
 # This target is kinda special.  The timestamp on a directory gets modified
 # whenever a file it contains gets modified, and that'll throw off all the
 # build dependencies that need this target.  On the other hand, someone
@@ -400,7 +431,7 @@ ${thread_builddir}/gthr-default.h:
 	    < ${glibcpp_srcdir}/../gcc/${glibcpp_thread_h} > $@
 
 install-data-local:
-	for file in `find . ! -name stamp-\* -print`; do \
+	for file in `find . ! -name stamp-\* ! -name Makefile -print`; do \
 	installFile=${gxx_include_dir}/$${file} ;\
 	if [ -d $${file} ]; then \
 	  $(INSTALL) -d $${installFile} ;\

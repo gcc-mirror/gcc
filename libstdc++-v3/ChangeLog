@@ -1,3 +1,125 @@
+2001-08-07  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Implement std::messages.
+	Make config a fully-nested directory.
+	* config/locale: New directory.
+	* config/c_locale_generic.cc: Move into locale subdirectory.
+	* config/c_locale_generic.h: Same.
+	* config/c_locale_gnu.cc: Same.
+	* config/c_locale_gnu.h: Same.
+	* config/c_locale_ieee_1003.1-200x.cc: Same.
+	* config/c_locale_ieee_1003.1-200x_.h: Same.
+	* config/codecvt_specializations_generic.h: Same.
+	* config/codecvt_specializations_ieee_1003.1-200x.h: Same.	
+	* config/messages_members_gnu.h: Same.
+	* config/messaages_members_gnu.cc: Same.
+	* config/messages_members_generic.h: Same.
+	* config/messaages_members_generic.cc: Same.
+	* config/messages_members_ieee_1003.1-200x.h: Same.
+	* config/messaages_members_ieee_1003.1-200x.cc: Same.
+	* config/io: New directory.
+	* config/basic_file_libio.h: Move into io subdirectory.	
+	* config/basic_file_libio.cc: Same.
+	* config/c_io_libio.h: Same.
+	* config/c_io_libio_codecvt.c: Same.	
+	* config/basic_file_stdio.h: Same.
+	* config/basic_file_stdio.cc: Same.
+	* config/c_io_stdio.h: Same.
+	
+	* po: New directory.
+	* po/POTFILES.in: New file.
+	* po/Makefile.am: New file.
+	* po/Makefile.in: New file.	
+	* po/libstdc++.pot: Generic translation file.
+	* po/fr.po: Preliminary French translation.
+	* po/de.po: Preliminary German translation.
+	* intl: New directory.
+	* intl/Makefile.am: New file.
+	* intl/Makefile.in: New file.	
+	* intl/string_literals.cc: New file.
+	* acinclude.m4 (GLIBCPP_CONFIGURE): Bump VERSION to 3.1.0. Add
+	requisite setup for gettext. Re-arrange.
+	* aclocal.m4: Regenerate.
+	* configure.in: Don't call GLIBCPP_CHECK_COMPILER_VERSION.
+	Output Makefile bits for po and intl.
+	* configure: Regenerate.
+	* Makefile.am (SUBDIRS): Add intl, po. Add rule for dist.
+	* Makefile.in: Regenerate.
+	* acconfig.h: Add ENABLE_NLS, HAVE_CATGETS, HAVE_GETTEXT, HAVE_STPCPY.
+	* config.h.in: Regenerate.
+
+	* acinclude.m4 (AC_REPLACE_STRINGFUNCS): Remove.
+	
+	* include/Makefile.am (install-data-local): Don't install Makefile.
+	* include/Makefile.in: Regenerate.
+	
+	* include/bits/locale_facet.h (locale::facet::_S_clone_c_locale):
+	Add member.
+	* config/locale/c_locale_gnu.cc (_S_clone_c_locale): Add definition.
+	* config/locale/c_locale_generic.cc: Same.
+	* config/locale/c_locale_ieee_1003.1-200x.cc: Same.
+
+	* include/bits/codecvt.h: Excise non-standard, non-required
+	bits. This includes __enc_traits, and partial specializations of
+	codecvt for __enc_traits.
+	* src/codecvt.cc (__enc_traits::_S_max_size): Guard 
+	* config/codecvt_partials_ieee_1003.1-200x.h: New file.	
+	* config/codecvt_partials_generic.h: New file.		
+	* include/Makefile.am (allstamps): Add stamp-codecvt_model.
+	(stamp-codecvt_model): Add.
+	* include/Makefile.in: Regenerate.
+	* acinclude.m4 (GLIBCPP_ENABLE_CLOCALE): Add in codecvt configury.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* testsuite/22_locale/codecvt_unicode_wchar_t.cc: Use macro guard.
+	* testsuite/22_locale/codecvt_unicode_char.cc: Same.
+	* testsuite/22_locale/ctor_copy_dtor.cc: And here.
+	
+	* include/bits/localefwd.h (class locale::facet): Add __enc_traits
+	as a friend for _S_*_c_locale functions.
+	* include/bits/codecvt.h (__enc_traits::__enc_traits): Add locale
+	argument to default constructor so that CODESET information can be
+	deduced.
+	* include/bits/locale_facets.h (messages_byname):
+	Re-implement. Remove specializations.
+	* src/locale.cc (messages_byname<char>): Remove specialization.
+	(messages_byname<wchar_t>): Same.
+	* config/locale/c_locale_ieee_1003.1-200x.cc: New file.
+	* config/locale/c_locale_ieee_1003.1-200x.h: New file.	
+	* config/locale/messages_members_ieee_1003.1-200x.cc: New file.
+	* config/locale/messages_members_ieee_1003.1-200x.h: New file.	
+	* config/locale/messages_members_gnu.cc: New file.
+	* config/locale/messages_members_gnu.h: New file.	
+	* config/locale/messages_members_generic.cc: New file.
+	* config/locale/messages_members_generic.h: New file.	
+	
+	* docs/html/configopts.html: Add documentation for new locale
+	model, ieee_1003.1. Adjust other flags for current defaults.
+	* docs/html/22_locale/locale.html: Update.
+	* docs/html/22_locale/howto.html: Add link to messages.html. Organize.
+	* docs/html/22_locale/messages.html: New.
+
+	* src/Makefile.am (sources): Add messages_virtuals.cc.
+	* src/Makefile.in: Regenerate.
+	* include/Makefile.am (allstamps): Add stamp-messages_model.
+	(stamp-messages_model): Add.
+	* include/Makefile.in: Regenerate.
+	* acinclude.m4 (GLIBCPP_ENABLE_CLOCALE): Add in messages configury.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
+	* testsuite_flags.in (--cxxflags): Add LOCALEDIR.
+	* testsuite/lib/libstdc++-v3-dg.exp: Remove broken LD_LIBRARY_PATH
+	bits for Irix. 
+	* acinclude (GLIBCPP_ENABLE_CLOCALE): Set glibcpp_localedir to the
+	build directories message catalog base directory, and export.
+	Eventually this should probably be made to deal with build and
+	install directories. For now, punt on this as the library itself
+	doesn't use message catalogs (yet).
+	* testsuite/22_locale/messages.cc: New file.
+	* testsuite/22_locale/messages_char_members.cc: New file.
+	* testsuite/22_locale/messages_byname.cc: New file.
+
 2001-08-06  Phil Edwards  <pme@sources.redhat.com>
 
 	* acinclude.m4 (GLIBCPP_CONFIGURE_TESTSUITE):  New macro, calls...

@@ -41,15 +41,13 @@
 #include <bits/std_ctime.h>	// For struct tm
 #include <bits/std_ios.h>	// For ios_base
 #ifdef _GLIBCPP_USE_WCHAR_T
-# include <langinfo.h>		// For codecvt
 # include <bits/std_cwctype.h>	// For wctype_t
-# include <iconv.h>		// For codecvt using iconv, iconv_t
 #endif 
 
 namespace std
 {
   // 22.2.1.1  Template class ctype
-  // Include host-specific ctype enums for ctype_base.
+  // Include host and configuration specific ctype enums for ctype_base.
   #include <bits/ctype_base.h>
 
   // __ctype_abstract_base is the common base for ctype<_CharT>.  
@@ -388,7 +386,7 @@ namespace std
     use_facet<ctype<wchar_t> >(const locale& __loc);
 #endif //_GLIBCPP_USE_WCHAR_T
 
-  // Include host-specific ctype inlines.
+  // Include host and configuration specific ctype inlines.
   #include <bits/ctype_inline.h>
 
   // 22.2.1.2  Template class ctype_byname
@@ -820,6 +818,7 @@ namespace std
   template <typename _CharT, typename _OutIter>
     locale::id num_put<_CharT, _OutIter>::id;
 
+
   template<typename _CharT>
     class numpunct : public locale::facet
     {
@@ -848,23 +847,23 @@ namespace std
 
       char_type    
       decimal_point() const
-      { return do_decimal_point(); }
+      { return this->do_decimal_point(); }
 
       char_type    
       thousands_sep() const
-      { return do_thousands_sep(); }
+      { return this->do_thousands_sep(); }
 
       string       
       grouping() const
-      { return do_grouping(); }
+      { return this->do_grouping(); }
 
       string_type  
       truename() const
-      { return do_truename(); }
+      { return this->do_truename(); }
 
       string_type  
       falsename() const
-      { return do_falsename(); }
+      { return this->do_falsename(); }
 
     protected:
       virtual 
@@ -918,7 +917,9 @@ namespace std
   template<typename _CharT>
     class numpunct_byname : public numpunct<_CharT>
     {
+      // Data Member.
       __c_locale			_M_c_locale_numpunct;
+
     public:
       typedef _CharT               	char_type;
       typedef basic_string<_CharT> 	string_type;
@@ -1462,68 +1463,147 @@ namespace std
     class messages : public locale::facet, public messages_base
     {
     public:
+      // Types:
       typedef _CharT 			char_type;
       typedef basic_string<_CharT> 	string_type;
 
+    protected:
+      // Underlying "C" library locale information saved from
+      // initialization, needed by messages_byname as well.
+      __c_locale	_M_c_locale_messages;
+      #if 1
+      // Only needed if glibc < 2.3
+      const char*	_M_name_messages;
+      #endif
+
+    public:
       static locale::id id;
 
       explicit 
-      messages(size_t __refs = 0) : locale::facet(__refs) { }
+      messages(size_t __refs = 0) 
+      : locale::facet(__refs), _M_c_locale_messages(NULL), 
+      _M_name_messages("C")
+      { }
+
+      explicit 
+      messages(__c_locale __cloc, const char* __name, size_t __refs = 0) 
+      : locale::facet(__refs)
+      { 
+	_M_name_messages = __name;
+	if (__cloc)
+	  _M_c_locale_messages = _S_clone_c_locale(__cloc); 
+      }
 
       catalog 
       open(const basic_string<char>& __s, const locale& __loc) const
-      { return do_open(__s, __loc); }
+      { return this->do_open(__s, __loc); }
+
+      // Non-standard and unorthodox, yet effective.
+      catalog 
+      open(const basic_string<char>&, const locale&, const char*) const;
 
       string_type  
       get(catalog __c, int __set, int __msgid, const string_type& __s) const
-      { return do_get(__c,__set,__msgid,__s); }
+      { return this->do_get(__c, __set, __msgid, __s); }
 
       void 
       close(catalog __c) const
-      { return do_close(__c); }
+      { return this->do_close(__c); }
 
     protected:
       virtual 
-      ~messages() { }
+      ~messages();
 
-      // NB: Probably these should be pure, and implemented only in
-      //  specializations of messages<>.  But for now...
       virtual catalog 
-      do_open(const basic_string<char>&, const locale&) const
-      { return 0; }
+      do_open(const basic_string<char>&, const locale&) const;
 
       virtual string_type  
-      do_get(catalog, int, int /*__msgid*/, const string_type& __dfault) const
-      { return __dfault; }
+      do_get(catalog, int, int, const string_type& __dfault) const;
 
       virtual void    
-      do_close(catalog) const { }
-    };
+      do_close(catalog) const;
+
+      // Returns a locale and codeset-converted string, given a char* message.
+      char*
+      _M_convert_to_char(const string_type& __msg) const
+      {
+	// XXX
+	return reinterpret_cast<char*>(const_cast<_CharT*>(__msg.c_str()));
+      }
+
+      // Returns a locale and codeset-converted string, given a char* message.
+      string_type
+      _M_convert_from_char(char* __msg) const
+      {
+	// Length of message string without terminating null.
+	size_t __len = char_traits<char>::length(__msg) - 1;
+
+	// "everybody can easily convert the string using
+	// mbsrtowcs/wcsrtombs or with iconv()"
+#if 0
+	// Convert char* to _CharT in locale used to open catalog.
+	// XXX need additional template parameter on messages class for this..
+	// typedef typename codecvt<char, _CharT, _StateT> __codecvt_type;
+	typedef typename codecvt<char, _CharT, mbstate_t> __codecvt_type;      
+
+	__codecvt_type::state_type __state;
+	// XXX may need to initialize state.
+	//initialize_state(__state._M_init());
+	
+	char* __from_next;
+	// XXX what size for this string?
+	_CharT* __to = static_cast<_CharT*>(__builtin_alloca(__len + 1));
+	const __codecvt_type& __cvt = use_facet<__codecvt_type>(_M_locale_conv);
+	__cvt.out(__state, __msg, __msg + __len, __from_next,
+		  __to, __to + __len + 1, __to_next);
+	return string_type(__to);
+#endif
+#if 0
+	typedef ctype<_CharT> __ctype_type;
+	// const __ctype_type& __cvt = use_facet<__ctype_type>(_M_locale_msg);
+	const __ctype_type& __cvt = use_facet<__ctype_type>(locale());
+	// XXX Again, proper length of converted string an issue here.
+	// For now, assume the converted length is not larger.
+	_CharT* __dest = static_cast<_CharT*>(__builtin_alloca(__len + 1));
+	__cvt.widen(__msg, __msg + __len, __dest);
+	return basic_string<_CharT>(__dest);
+#endif
+	return string_type();
+      }
+     };
 
   template<typename _CharT>
     locale::id messages<_CharT>::id;
+
+  // Specializations for required instantiations.
+  template<>
+    string
+    messages<char>::do_get(catalog, int, int, const string&) const;
+
+  // Include host and configuration specific messages virtual functions.
+  #include <bits/messages_members.h>
 
   template<typename _CharT>
     class messages_byname : public messages<_CharT>
     {
     public:
-      typedef _CharT char_type;
-      typedef basic_string<_CharT> string_type;
+      typedef _CharT               	char_type;
+      typedef basic_string<_CharT> 	string_type;
 
       explicit 
-      messages_byname(const char*, size_t __refs = 0);
+      messages_byname(const char* __s, size_t __refs = 0)
+      : messages<_CharT>(__refs) 
+      { 
+	_S_create_c_locale(_M_c_locale_messages, __s); 
+	_M_name_messages = __s;
+      }
 
     protected:
       virtual 
-      ~messages_byname() { }
+      ~messages_byname() 
+      { }
     };
 
-  template<>
-    messages_byname<char>::messages_byname(const char*, size_t __refs);
-#ifdef _GLIBCPP_USE_WCHAR_T
-  template<>
-    messages_byname<wchar_t>::messages_byname(const char*, size_t __refs);
-#endif
 
   // Subclause convenience interfaces, inlines 
   // NB: these are inline

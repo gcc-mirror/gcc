@@ -5,7 +5,7 @@
   </H1>
 </HEAD>
 <I>
-prepared by Benjamin Kosnik (bkoz@redhat.com) on January 24, 2001
+prepared by Benjamin Kosnik (bkoz@redhat.com) on August 8, 2001
 </I>
 
 <P>
@@ -95,6 +95,16 @@ More information can be found in the following testcases:
 	<LI> locale initialization: at what point does _S_classic,
 	_S_global get initialized? Can named locales assume this
 	initialization has already taken place?
+
+	<LI> document how named locales error check when filling data
+	members. Ie, a fr_FR locale that doesn't have
+	numpunct::truename(): does it use "true"? Or is it a blank
+	string? What's the convention?
+
+	<li> explain how locale aliasing happens. When does "de_DE"
+	use "de" information? What is the rule for locales composed of
+	just an ISO language code (say, "de") and locales with both an
+	ISO language code and ISO country code (say, "de_DE").
 </UL>
 
 

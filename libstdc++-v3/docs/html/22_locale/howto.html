@@ -8,7 +8,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 HOWTO:  Chapter 22</TITLE>
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.2 2001/02/07 00:03:20 pme Exp $ -->
+<!-- $Id: howto.html,v 1.3 2001/04/03 00:26:55 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -22,19 +22,60 @@
 <HR>
 <H1>Contents</H1>
 <UL>
-   <LI><A HREF="#1">Bjarne Stroustrup on Locales</A>
-   <LI><A HREF="#2">Nathan Myers on Locales</A>   
-   <LI><A HREF="#3">class locale</A>
-   <LI><A HREF="#4">class codecvt</A>
-   <LI><A HREF="#5">class ctype</A>
-   <LI><A HREF="#6">Correct Transformations</A>
+   <LI><A HREF="#1">class locale</A>
+   <LI><A HREF="#2">class codecvt</A>
+   <LI><A HREF="#3">class ctype</A>
+   <LI><A HREF="#4">class messages</A>
+   <LI><A HREF="#5">Bjarne Stroustrup on Locales</A>
+   <LI><A HREF="#6">Nathan Myers on Locales</A>   
+   <LI><A HREF="#7">Correct Transformations</A>
 </UL>
-
-<HR>
 
 <!-- ####################################################### -->
 
-<H2><A NAME="1">Stroustrup on Locales</A></H2>
+<HR>
+<H2><A NAME="1">class locale</A></H2>
+   <P> Notes made during the implementation of locales can be found 
+       <A HREF="locale.html">here</A>.
+   </P>
+
+<HR>
+<H2><A NAME="2">class codecvt</A></H2>
+   <P> Notes made during the implementation of codecvt can be found 
+       <A HREF="codecvt.html">here</A>.
+   </P>
+
+   <P> The following is the abstract from the implementation notes:
+   <BLOCKQUOTE>
+   The standard class codecvt attempts to address conversions between
+   different character encoding schemes. In particular, the standard
+   attempts to detail conversions between the implementation-defined
+   wide characters (hereafter referred to as wchar_t) and the standard
+   type char that is so beloved in classic &quot;C&quot; (which can
+   now be referred to as narrow characters.)  This document attempts
+   to describe how the GNU libstdc++-v3 implementation deals with the
+   conversion between wide and narrow characters, and also presents a
+   framework for dealing with the huge number of other encodings that
+   iconv can convert, including Unicode and UTF8. Design issues and
+   requirements are addressed, and examples of correct usage for both
+   the required specializations for wide and narrow characters and the
+   implementation-provided extended functionality are given.
+   </BLOCKQUOTE>
+
+<HR>
+<H2><A NAME="3">class ctype</A></H2>
+   <P> Notes made during the implementation of ctype can be found 
+       <A HREF="ctype.html">here</A>.
+   </P>
+
+<HR>
+<H2><A NAME="4">class messages</A></H2>
+   <P> Notes made during the implementation of messages can be found 
+       <A HREF="messages.html">here</A>.
+   </P>
+
+<HR>
+<H2><A NAME="5">Stroustrup on Locales</A></H2>
    <P>Dr. Bjarne Stroustrup has released a
       <A HREF="http://www.research.att.com/~bs/3rd_loc0.html">pointer</A>
       to Appendix D of his book,
@@ -50,68 +91,16 @@
       avoid it.
       </EM></BLOCKQUOTE>
    </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
 
 <HR>
-<H2><A NAME="2">Nathan Myers on Locales</A></H2>
+<H2><A NAME="6">Nathan Myers on Locales</A></H2>
    <P> An article entitled &quot;The Standard C++ Locale&quot; was
        published in Dr. Dobb's Journal and can be found
       <A HREF="http://www.cantrip.org/locale.html">here</A>.
    </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
 
 <HR>
-<H2><A NAME="5">class locale</A></H2>
-   <P> Notes made during the implementation of locales can be found 
-       <A HREF="locale.html">here</A>.
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
-
-<HR>
-<H2><A NAME="4">class codecvt</A></H2>
-   <P> Notes made during the implementation of codecvt can be found 
-       <A HREF="codecvt.html">here</A>.
-   </P>
-
-   <P> The following is the abstract from the implementation notes:
-<BLOCKQUOTE>
-	The standard class codecvt attempts to address conversions
-between different character encoding schemes. In particular, the
-standard attempts to detail conversions between the
-implementation-defined wide characters (hereafter referred to as
-wchar_t) and the standard type char that is so beloved in classic
-&quot;C&quot; (which can now be referred to as narrow characters.)
-This document attempts to describe how the GNU libstdc++-v3
-implementation deals with the conversion between wide and narrow
-characters, and also presents a framework for dealing with the huge
-number of other encodings that iconv can convert, including Unicode
-and UTF8. Design issues and requirements are addressed, and examples
-of correct usage for both the required specializations for wide and
-narrow characters and the implementation-provided extended
-functionality are given.
-</BLOCKQUOTE>
-
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
-
-<HR>
-<H2><A NAME="5">class ctype</A></H2>
-   <P> Notes made during the implementation of ctype can be found 
-       <A HREF="ctype.html">here</A>.
-   </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
-
-<HR>
-<H2><A NAME="6">Correct Transformations</A></H2>
+<H2><A NAME="7">Correct Transformations</A></H2>
    <!-- Jumping directly here from chapter 21. -->
    <P>A very common question on newsgroups and mailing lists is, &quot;How
       do I do &lt;foo&gt; to a character string?&quot; where &lt;foo&gt; is
@@ -213,11 +202,6 @@ functionality are given.
       shown it here because no compilers currently available to me will
       handle it.
    </P>
-   <P>Return <A HREF="#top">to top of page</A> or
-      <A HREF="../faq/index.html">to the FAQ</A>.
-   </P>
-
-
 
 
 <!-- ####################################################### -->
@@ -226,7 +210,7 @@ functionality are given.
 <P CLASS="fineprint"><EM>
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.2 2001/02/07 00:03:20 pme Exp $
+<BR> $Id: howto.html,v 1.3 2001/04/03 00:26:55 pme Exp $
 </EM></P>
 
 

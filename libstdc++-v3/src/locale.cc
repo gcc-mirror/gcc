@@ -1058,11 +1058,6 @@ namespace std
 						   size_t __refs)
   : moneypunct<char, true>(__refs) { }
   
-  template<>
-  messages_byname<char>::
-  messages_byname(const char* /*__s*/, size_t __refs)
-  : messages<char>(__refs) { }
-
 #ifdef _GLIBCPP_USE_WCHAR_T  
   ctype<wchar_t>::__wmask_type
   ctype<wchar_t>::_M_convert_to_wmask(const mask __m) const
@@ -1255,11 +1250,5 @@ namespace std
   collate_byname<wchar_t>::
   collate_byname(const char* /*__s*/, size_t __refs)
   : collate<wchar_t> (__refs) { }
-  
-  template<>
-  messages_byname<wchar_t>::
-  messages_byname(const char* /*__s*/, size_t __refs)
-  : messages<wchar_t> (__refs) { }
 #endif //  _GLIBCPP_USE_WCHAR_T
 } // namespace std
-
