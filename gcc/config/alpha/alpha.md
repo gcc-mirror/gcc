@@ -1620,14 +1620,14 @@
 (define_insn "abssf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(abs:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")))]
-  "TARGET_FP && alpha_fptm == ALPHA_FPTM_N"
+  "TARGET_FP"
   "cpys $f31,%R1,%0"
   [(set_attr "type" "fcpys")])
 
 (define_insn "absdf2"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(abs:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
-  "TARGET_FP && alpha_fptm == ALPHA_FPTM_N"
+  "TARGET_FP"
   "cpys $f31,%R1,%0"
   [(set_attr "type" "fcpys")])
 
