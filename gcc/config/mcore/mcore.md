@@ -1980,7 +1980,7 @@
   "jmp	%0"
   [(set_attr "type" "jmp")])
 
-(define_insn "return"
+(define_insn "*return"
  [(return)]
  "reload_completed && ! mcore_naked_function_p ()"
  "jmp	r15"

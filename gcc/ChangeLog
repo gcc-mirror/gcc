@@ -1,3 +1,13 @@
+2000-10-25  Nick Clifton  <nickc@redhat.com>
+
+	* config/mcore/mcore.c: Include config.h before system.h.
+
+2000-10-25  Ray Essick  <essick@ddna.labs.mot.com>
+
+	* config/mcore/mcore.md (return): Force function epilogue to
+	always be generated to work around epilogue suppression bug in
+	M*Core backend.
+
 2000-10-25  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-decl.c (grokdeclarator): Move warning for qualified void
