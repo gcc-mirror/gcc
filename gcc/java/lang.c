@@ -360,6 +360,13 @@ java_decode_option (argc, argv)
       return 1;
     }
 #undef CLARG
+#define CLARG "-fextdirs="
+  if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
+    {
+      jcf_path_extdirs_arg (p + sizeof (CLARG) - 1);
+      return 1;
+    }
+#undef CLARG
   else if (strncmp (p, "-I", 2) == 0)
     {
       jcf_path_include_arg (p + 2);

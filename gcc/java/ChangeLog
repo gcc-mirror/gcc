@@ -1,3 +1,31 @@
+2002-04-10  Andreas Jaeger  <aj@suse.de>
+
+	* gcj.texi (Input Options): Fix extdirs patch.
+
+2002-04-10  Anthony Green  <green@redhat.com>
+
+	* jcf-path.c (jcf_path_init) : Clean up local extdirs declaration.
+
+2002-04-09  Anthony Green  <green@redhat.com>
+
+	* gcj.texi (Input Options): Add --extdirs documentation.
+	* jcf-dump.c (OPT_extdirs): New macro.
+	(options): Add extdirs option.
+	(help): Describe --extdirs.
+	(main): Handle OPT_extdirs.
+	* gjavah.c (OPT_extdirs): New macro.
+	(options): Add extdirs option.
+	(help): Describe --extdirs.
+	(main): Handle OPT_extdirs.
+	* jcf-path.c (jcf_path_init): Add extdirs support.
+	(jcf_path_extdirs_arg): New function.
+	(extensions): New variable to hold extensions path entries.
+	* jvspec.c: Remove -fextdirs= when compiling main().
+	* lang.c (java_decode_option): Handle -fextdirs=.
+	* jcf.h (jcf_path_extdirs_arg): Declare new function.
+	* Make-lang.in: Compile jcf-path with version info for use in
+	identifying the appropriate libgcj.jar.
+
 2002-04-08  Tom Tromey  <tromey@redhat.com>
 
 	For PR libgcj/5303:
