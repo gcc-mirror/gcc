@@ -1,3 +1,14 @@
+2003-06-16  Paolo Carlini  <pcarlini@unitus.it>
+
+	* testsuite/27_io/basic_filebuf/sungetc/char/1.cc: Split and
+        fix for missing seeks between gets and puts into...
+	* testsuite/27_io/basic_filebuf/sungetc/char/1-in.cc: New.
+	* testsuite/27_io/basic_filebuf/sungetc/char/1-io.cc: New.
+	* testsuite/27_io/basic_filebuf/sungetc/char/1-out.cc: New.
+	* testsuite/27_io/basic_filebuf/sungetc/char/2-in.cc: New.
+	* testsuite/27_io/basic_filebuf/sungetc/char/2-io.cc: New.
+	* testsuite/27_io/basic_filebuf/sungetc/char/2-out.cc: New.
+		
 2003-06-15  Richard Henderson  <rth@redhat.com>
 
 	* config/linker-map.gnu: Export virtual function thunks for
