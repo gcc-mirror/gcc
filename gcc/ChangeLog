@@ -1,3 +1,8 @@
+2001-06-04  Anthony Green  <green@redhat.com>
+
+	* config/sparc/elf.h (CPP_PREDEFINES): Don't assert cpu or
+	machine.  This is now done in sparc.h.
+
 2001-06-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Correct CVS resurrection of invoke.texi.
