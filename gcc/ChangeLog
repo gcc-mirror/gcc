@@ -1,3 +1,17 @@
+2004-09-11  Steven Bosscher  <stevenb@suse.de>
+
+	PR c++/17412
+	* fold-const.c (fold): Do not try to fold the operand of a
+	CLEANUP_POINT_EXPR if that operand does itself not have any
+	operands.
+
+	PR middle-end/17417
+	* langhooks.c (lhd_decl_printable_name): Make sure that this
+	function is called with is a decl node that has an identifier.
+	* tree-pretty-print.c (dump_function_name): New function to
+	wrap PRINT_FUNCTION_NAME and dump_decl_name.
+	(print_call_name): Use it.
+
 2004-09-11  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* ggc-none.c: Include "bconfig.h" if -DGENERATOR_FILE,

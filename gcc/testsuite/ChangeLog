@@ -1,3 +1,7 @@
+2004-09-11  Steven Bosscher  <stevenb@suse.de>
+
+	* g++.dg/parse/break-in-for.C: New test.
+
 2004-09-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/tree-ssa/20040911-1.c: New test.

@@ -8946,29 +8946,31 @@ fold (tree expr)
 					   TREE_OPERAND (arg0, 1)))));
       return t;
 
+    case CLEANUP_POINT_EXPR:
       /* Pull arithmetic ops out of the CLEANUP_POINT_EXPR where
          appropriate.  */
-    case CLEANUP_POINT_EXPR:
       if (! has_cleanups (arg0))
 	return TREE_OPERAND (t, 0);
 
       {
 	enum tree_code code0 = TREE_CODE (arg0);
 	int kind0 = TREE_CODE_CLASS (code0);
-	tree arg00 = TREE_OPERAND (arg0, 0);
-	tree arg01;
 
 	if (kind0 == '1' || code0 == TRUTH_NOT_EXPR)
-	  return fold (build1 (code0, type,
-			       fold (build1 (CLEANUP_POINT_EXPR,
-					     TREE_TYPE (arg00), arg00))));
+	  {
+	    tree arg00 = TREE_OPERAND (arg0, 0);
+	    return fold (build1 (code0, type,
+				 fold (build1 (CLEANUP_POINT_EXPR,
+					       TREE_TYPE (arg00), arg00))));
+	  }
 
 	if (kind0 == '<' || kind0 == '2'
 	    || code0 == TRUTH_ANDIF_EXPR || code0 == TRUTH_ORIF_EXPR
 	    || code0 == TRUTH_AND_EXPR   || code0 == TRUTH_OR_EXPR
 	    || code0 == TRUTH_XOR_EXPR)
 	  {
-	    arg01 = TREE_OPERAND (arg0, 1);
+	    tree arg00 = TREE_OPERAND (arg0, 0);
+	    tree arg01 = TREE_OPERAND (arg0, 1);
 
 	    if (TREE_CONSTANT (arg00)
 		|| ((code0 == TRUTH_ANDIF_EXPR || code0 == TRUTH_ORIF_EXPR)

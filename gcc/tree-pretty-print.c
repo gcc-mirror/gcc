@@ -172,6 +172,17 @@ dump_decl_name (pretty_printer *buffer, tree node, int flags)
     }
 }
 
+/* Like the above, but used for pretty printing function calls.  */
+
+static void
+dump_function_name (pretty_printer *buffer, tree node)
+{
+  if (DECL_NAME (node))
+    PRINT_FUNCTION_NAME (node);
+  else
+    dump_decl_name (buffer, node, 0);
+}
+
 /* Dump a function declaration.  NODE is the FUNCTION_TYPE.  BUFFER, SPC and
    FLAGS are as in dump_generic_node.  */
 
@@ -1892,7 +1903,7 @@ print_call_name (pretty_printer *buffer, tree node)
     {
     case VAR_DECL:
     case PARM_DECL:
-      PRINT_FUNCTION_NAME (op0);
+      dump_function_name (buffer, op0);
       break;
 
     case ADDR_EXPR:
@@ -1914,7 +1925,7 @@ print_call_name (pretty_printer *buffer, tree node)
       /* The function is a pointer contained in a structure.  */
       if (TREE_CODE (TREE_OPERAND (op0, 0)) == INDIRECT_REF ||
 	  TREE_CODE (TREE_OPERAND (op0, 0)) == VAR_DECL)
-	PRINT_FUNCTION_NAME (TREE_OPERAND (op0, 1));
+	dump_function_name (buffer, TREE_OPERAND (op0, 1));
       else
 	dump_generic_node (buffer, TREE_OPERAND (op0, 0), 0, 0, false);
       /* else
@@ -1925,7 +1936,7 @@ print_call_name (pretty_printer *buffer, tree node)
 
     case ARRAY_REF:
       if (TREE_CODE (TREE_OPERAND (op0, 0)) == VAR_DECL)
-	PRINT_FUNCTION_NAME (TREE_OPERAND (op0, 0));
+	dump_function_name (buffer, TREE_OPERAND (op0, 0));
       else
 	dump_generic_node (buffer, op0, 0, 0, false);
       break;
