@@ -1,3 +1,9 @@
+2003-10-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc
+	(time_get<>::_M_extract_via_format): Deal with case 'C' too,
+	equivalent to 'y'.
+
 2003-10-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/html/documentation.html: Add a pointer to the doxygen style

@@ -1691,6 +1691,7 @@ namespace std
 					__times[0]);
 		  break;
 		case 'y':
+		case 'C': // C99
 		  // Two digit year. [tm_year]
 		  _M_extract_num(__beg, __end, __tm->tm_year, 0, 99, 2, 
 				 __ctype, __err);
