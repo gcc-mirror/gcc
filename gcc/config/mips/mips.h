@@ -1262,7 +1262,7 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
    `STRUCT_VALUE' as an expression returning an RTX for the place
    where the address is passed.  If it returns 0, the address is
    passed as an "invisible" first argument.  */
-#define STRUCT_VALUE ((rtx)0)
+#define STRUCT_VALUE 0
 
 /* Mips registers used in prologue/epilogue code when the stack frame
    is larger than 32K bytes.  These registers must come from the
