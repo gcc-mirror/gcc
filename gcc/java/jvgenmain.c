@@ -41,19 +41,6 @@ error (const char *str)
   exit (-1);
 }
 
-void *
-xmalloc (size)
-     size_t size;
-{
-  void *ptr = malloc (size);
-  if (ptr == NULL)
-    {
-      fprintf (stderr, "Not enough memory!\n");
-      exit (-1);
-    }
-  return ptr;
-}
-
 void
 gcc_obstack_init (obstack)
      struct obstack *obstack;

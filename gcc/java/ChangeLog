@@ -1,3 +1,11 @@
+Sun Nov 15 13:52:39 1998  Anthony Green  <green@cygnus.com>
+
+	* Makefile.in: jv-scan and jvgenmain all require libiberty.
+	* Make-lang.in: Ditto.
+
+	* jv-scan.c: Remove xmalloc and xstrdup definitions.
+	* jvgenmain: Ditto.
+
 Sun Nov 15 14:10:56 1998  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-parse.c (HANDLE_EXCEPTIONS_ATTRIBUTE):  New macro.
