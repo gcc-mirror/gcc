@@ -5395,19 +5395,6 @@ init_class_processing (void)
 /* Set global variables CURRENT_CLASS_NAME and CURRENT_CLASS_TYPE as
    appropriate for TYPE.
 
-   If MODIFY is 1, we set IDENTIFIER_CLASS_VALUE's of names
-   which can be seen locally to the class.  They are shadowed by
-   any subsequent local declaration (including parameter names).
-
-   If MODIFY is 2, we set IDENTIFIER_CLASS_VALUE's of names
-   which have static meaning (i.e., static members, static
-   member functions, enum declarations, etc).
-
-   If MODIFY is 3, we set IDENTIFIER_CLASS_VALUE of names
-   which can be seen locally to the class (as in 1), but
-   know that we are doing this for declaration purposes
-   (i.e. friend foo::bar (int)).
-
    So that we may avoid calls to lookup_name, we cache the _TYPE
    nodes of local TYPE_DECLs in the TREE_TYPE field of the name.
 
@@ -5420,7 +5407,7 @@ init_class_processing (void)
    that name becomes `error_mark_node'.  */
 
 void
-pushclass (tree type, bool modify)
+pushclass (tree type)
 {
   type = TYPE_MAIN_VARIANT (type);
 
@@ -5464,39 +5451,36 @@ pushclass (tree type, bool modify)
 
   /* If we're about to enter a nested class, clear
      IDENTIFIER_CLASS_VALUE for the enclosing classes.  */
-  if (modify && current_class_depth > 1)
+  if (current_class_depth > 1)
     clear_identifier_class_values ();
 
   pushlevel_class ();
 
-  if (modify)
+  if (type != previous_class_type || current_class_depth > 1)
+    push_class_decls (type);
+  else
     {
-      if (type != previous_class_type || current_class_depth > 1)
-	push_class_decls (type);
-      else
+      tree item;
+
+      /* We are re-entering the same class we just left, so we don't
+	 have to search the whole inheritance matrix to find all the
+	 decls to bind again.  Instead, we install the cached
+	 class_shadowed list, and walk through it binding names and
+	 setting up IDENTIFIER_TYPE_VALUEs.  */
+      set_class_shadows (previous_class_values);
+      for (item = previous_class_values; item; item = TREE_CHAIN (item))
 	{
-	  tree item;
-
-	  /* We are re-entering the same class we just left, so we
-	     don't have to search the whole inheritance matrix to find
-	     all the decls to bind again.  Instead, we install the
-	     cached class_shadowed list, and walk through it binding
-	     names and setting up IDENTIFIER_TYPE_VALUEs.  */
-	  set_class_shadows (previous_class_values);
-	  for (item = previous_class_values; item; item = TREE_CHAIN (item))
-	    {
-	      tree id = TREE_PURPOSE (item);
-	      tree decl = TREE_TYPE (item);
-
-	      push_class_binding (id, decl);
-	      if (TREE_CODE (decl) == TYPE_DECL)
-		set_identifier_type_value (id, TREE_TYPE (decl));
-	    }
-	  unuse_fields (type);
+	  tree id = TREE_PURPOSE (item);
+	  tree decl = TREE_TYPE (item);
+	  
+	  push_class_binding (id, decl);
+	  if (TREE_CODE (decl) == TYPE_DECL)
+	    set_identifier_type_value (id, TREE_TYPE (decl));
 	}
-
-      cxx_remember_type_decls (CLASSTYPE_NESTED_UTDS (type));
+      unuse_fields (type);
     }
+  
+  cxx_remember_type_decls (CLASSTYPE_NESTED_UTDS (type));
 }
 
 /* When we exit a toplevel class scope, we save the
@@ -5598,7 +5582,7 @@ push_nested_class (tree type)
 
   if (context && CLASS_TYPE_P (context))
     push_nested_class (context);
-  pushclass (type, true);
+  pushclass (type);
 }
 
 /* Undoes a push_nested_class call.  */

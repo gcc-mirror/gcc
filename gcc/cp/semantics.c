@@ -2025,7 +2025,7 @@ begin_class_definition (tree t)
       pushtag (TYPE_IDENTIFIER (t), t, 0);
     }
   maybe_process_partial_specialization (t);
-  pushclass (t, true);
+  pushclass (t);
   TYPE_BEING_DEFINED (t) = 1;
   TYPE_PACKED (t) = flag_pack_struct;
   /* Reset the interface data, at the earliest possible

@@ -5225,7 +5225,7 @@ instantiate_class_template (tree type)
      correctly.  This is precisely analogous to what we do in
      begin_class_definition when defining an ordinary non-template
      class.  */
-  pushclass (type, true);
+  pushclass (type);
 
   /* Now members are processed in the order of declaration.  */
   for (member = CLASSTYPE_DECL_LIST (pattern);
