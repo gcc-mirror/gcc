@@ -41,25 +41,7 @@ do									\
   _sc->sc_pc += 4;							\
 }									\
 while (0)
-
-#elif defined(__ia64__)
-
-#define MAKE_THROW_FRAME(_exception)					\
-do									\
-{									\
-  /* IA-64 either leaves PC pointing at a faulting instruction or the	\
-   following instruction, depending on the signal.  SEGV always does	\
-   the former, so we adjust the saved PC to point to the following	\
-   instruction; this is what the handler in libgcc expects.  */		\
-  /* Note that we are lying to the unwinder here, which expects the	\
-   faulting pc, not pc+1.  But we claim the unwind information can't	\
-   be changed by such a ld or st instruction, so it doesn't matter. */	\
-  struct sigcontext *_sc = (struct sigcontext *)_p;			\
-  _sc->sc_ip++;								\
-}									\
-while (0)
 #else
-#error
 #define MAKE_THROW_FRAME(_exception)		\
 do						\
 {						\
@@ -67,16 +49,6 @@ do						\
 }						\
 while (0)
 #endif
-
-// FIXME: We shouldn't be using libc_sigaction here, since it should
-// be glibc private.  But using syscall here would mean translating to
-// the kernel's struct sigaction and argument sequence, which we
-// shouldn't either.  The right solution is to call sigaction and to
-// make sure that we can unwind correctly through the pthread signal
-// wrapper.
-extern "C" int __libc_sigaction (int __sig, 
-		      __const struct sigaction *__restrict __act,
-                      struct sigaction *__restrict __oact) throw ();
 
 #define INIT_SEGV						\
 do								\
@@ -86,7 +58,7 @@ do								\
     act.sa_sigaction = _Jv_catch_segv;      			\
     sigemptyset (&act.sa_mask);					\
     act.sa_flags = SA_SIGINFO;	       				\
-    __libc_sigaction (SIGSEGV, &act, NULL);		\
+    syscall (SYS_sigaction, SIGSEGV, &act, NULL);		\
   }								\
 while (0)  
 
@@ -99,7 +71,7 @@ do								\
     act.sa_sigaction = _Jv_catch_fpe;				\
     sigemptyset (&act.sa_mask);					\
     act.sa_flags = SA_SIGINFO;		       			\
-    __libc_sigaction (SIGFPE, &act, NULL);		\
+    syscall (SYS_sigaction, SIGFPE, &act, NULL);		\
   }								\
 while (0)  
 

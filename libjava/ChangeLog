@@ -1,3 +1,7 @@
+2002-03-25  Hans Boehm <Hans_Boehm@hp.com>
+
+	* include/dwarf2-signal.h: Temporarily back out last change.
+
 2002-03-25  Andrew Haley <aph@cambridge.redhat.com>, Hans Boehm <Hans_Boehm@hp.com>
 
 	* configure.in, configure: enable dwarf2-exception-style
