@@ -1,3 +1,10 @@
+2001-07-31 Hartmut Penner <hpenner@de.ibm.com>
+
+        * doc/install.texi: Add s390 and s390x as new targets.
+        * doc/invoke.texi: Add documantation of S/390 and zSeries
+        target options.
+        * doc/md.texi: Add documantation of S/390 and zSeries constraints.
+
 2001-07-30  Roman Zippel  <zippel@linux-m68k.org>
 
 	* config/m68k/m68k.md: Replace all general_operand with
