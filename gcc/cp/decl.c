@@ -336,10 +336,6 @@ extern int flag_no_builtin;
 
 extern int flag_no_nonansi_builtin;
 
-/* Nonzero if we want to support huge (> 2^(sizeof(short)*8-1) bytes)
-   objects.  */
-extern int flag_huge_objects;
-
 /* Nonzero if we want to conserve space in the .o files.  We do this
    by putting uninitialized data and runtime initialized data into
    .common instead of .data at the expense of not flagging multiple

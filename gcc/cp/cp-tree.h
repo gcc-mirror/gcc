@@ -219,6 +219,11 @@ extern int flag_honor_std;
 
 extern int flag_rtti;
 
+/* Nonzero if we want to support huge (> 2^(sizeof(short)*8-1) bytes)
+   objects.  */
+
+extern int flag_huge_objects;
+
 /* Nonzero if virtual base class offsets are stored in the virtual
    function table.  Zero if, instead, a pointer to the virtual base is
    stored in the object itself.  */
@@ -1767,7 +1772,7 @@ struct lang_type
 
       struct A {};
       struct B : public A { };
-      struct C : virtual public B { void f(); };
+      struct C : virtual public B { void f(); int i; };
 
    `A' is the primary base class for `B'.  But, `B' is not a primary
    base class for `C'.  So, in the copy of `A' that appears in the

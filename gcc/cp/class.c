@@ -146,7 +146,6 @@ static void layout_virtual_bases PARAMS ((tree, varray_type *));
 static tree dfs_set_offset_for_shared_vbases PARAMS ((tree, void *));
 static tree dfs_set_offset_for_unshared_vbases PARAMS ((tree, void *));
 static void build_vbase_offset_vtbl_entries PARAMS ((tree, vcall_offset_data *));
-static tree dfs_vcall_offset_queue_p PARAMS ((tree, void *));
 static tree dfs_build_vcall_offset_vtbl_entries PARAMS ((tree, void *));
 static void build_vcall_offset_vtbl_entries PARAMS ((tree, vcall_offset_data *));
 static void layout_vtable_decl PARAMS ((tree, int));
@@ -977,9 +976,9 @@ make_new_vtable (t, binfo)
 
 /* Make *VIRTUALS, an entry on the BINFO_VIRTUALS list for BINFO
    (which is in the hierarchy dominated by T) list FNDECL as its
-   BV_FN.  DELTA is the required adjustment from the `this' pointer
-   where the vtable entry appears to the `this' required when the
-   function is actually called.  */
+   BV_FN.  DELTA is the required constant adjustment from the `this'
+   pointer where the vtable entry appears to the `this' required when
+   the function is actually called.  */
 
 static void
 modify_vtable_entry (t, binfo, fndecl, delta, virtuals)
@@ -989,15 +988,12 @@ modify_vtable_entry (t, binfo, fndecl, delta, virtuals)
      tree delta;
      tree *virtuals;
 {
-  tree vcall_index;
   tree v;
 
   v = *virtuals;
-  vcall_index = integer_zero_node;
 
   if (fndecl != BV_FN (v)
-      || !tree_int_cst_equal (delta, BV_DELTA (v))
-      || !tree_int_cst_equal (vcall_index, BV_VCALL_INDEX (v)))
+      || !tree_int_cst_equal (delta, BV_DELTA (v)))
     {
       tree base_fndecl;
 
@@ -1015,7 +1011,7 @@ modify_vtable_entry (t, binfo, fndecl, delta, virtuals)
 
       base_fndecl = BV_FN (v);
       BV_DELTA (v) = delta;
-      BV_VCALL_INDEX (v) = vcall_index;
+      BV_VCALL_INDEX (v) = integer_zero_node;
       BV_FN (v) = fndecl;
 
       /* Now assign virtual dispatch information, if unset.  We can
@@ -1087,7 +1083,8 @@ add_virtual_function (new_virtuals_p, overridden_virtuals_p,
     /* We've already dealt with this function.  */
     return;
 
-  new_virtual = build_tree_list (integer_zero_node, fndecl);
+  new_virtual = build_tree_list (NULL_TREE, fndecl);
+  BV_DELTA (new_virtual) = integer_zero_node;
   BV_VCALL_INDEX (new_virtual) = integer_zero_node;
 
   if (DECL_VINDEX (fndecl) == error_mark_node)
@@ -2470,6 +2467,84 @@ dfs_find_base (binfo, data)
 	  ? binfo : NULL_TREE);
 }
 
+/* Update a entry in the vtable for BINFO, which is in the hierarchy
+   dominated by T.  FN has been overridden in BINFO; VIRTUALS points
+   to the corresponding position in the BINFO_VIRTUALS list.  */
+
+static void
+update_vtable_entry_for_fn (t, binfo, fn, virtuals)
+     tree t;
+     tree binfo;
+     tree fn;
+     tree *virtuals;
+{
+  tree b;
+  tree overrider;
+  tree vindex;
+  tree delta;
+  HOST_WIDE_INT vindex_val;
+  HOST_WIDE_INT i;
+
+  /* Find the function which originally caused this vtable
+     entry to be present.  */
+  vindex = DECL_VINDEX (fn);
+  b = dfs_walk (binfo, dfs_find_base, NULL, DECL_VIRTUAL_CONTEXT (fn));
+  fn = BINFO_VIRTUALS (TYPE_BINFO (BINFO_TYPE (b)));
+  i = first_vfun_index (BINFO_TYPE (b));
+  vindex_val = tree_low_cst (vindex, 0);
+  while (i < vindex_val)
+    {
+      fn = TREE_CHAIN (fn);
+      ++i;
+    }
+  fn = BV_FN (fn);
+
+  /* Handle the case of a virtual function defined in BINFO itself.  */
+  overrider = find_final_overrider (t, b, fn);
+  if (overrider == error_mark_node)
+    return;
+
+  /* Compute the constant adjustment to the `this' pointer.  The
+     `this' pointer, when this function is called, will point at the
+     class whose vtable this is.  */
+  delta = size_binop (PLUS_EXPR,
+		      get_derived_offset (binfo,
+					  DECL_VIRTUAL_CONTEXT (fn)),
+		      BINFO_OFFSET (binfo));
+  if (flag_new_abi)
+    {
+      /* Under the new ABI, we only need to adjust as far as the
+	 nearest virtual base.  Then we use the vcall offset in the
+	 virtual bases vtable.  */
+      for (b = binfo; b; b = BINFO_INHERITANCE_CHAIN (b))
+	{
+	  if (TREE_VIA_VIRTUAL (b))
+	    break;
+	  if (same_type_p (BINFO_TYPE (b), 
+			   BINFO_TYPE (TREE_VALUE (overrider))))
+	    break;
+	}
+    }
+  else
+    b = NULL_TREE;
+
+  if (b && TREE_VIA_VIRTUAL (b))
+    /* The `this' pointer needs to be adjusted to the nearest virtual
+       base.  */
+    delta = size_diffop (BINFO_OFFSET (b), delta);
+  else
+    /* The `this' pointer needs to be adjusted from pointing to
+       BINFO to pointing at the base where the final overrider
+       appears.  */
+    delta = size_diffop (BINFO_OFFSET (TREE_VALUE (overrider)), delta);
+
+  modify_vtable_entry (t, 
+		       binfo, 
+		       TREE_PURPOSE (overrider),
+		       delta,
+		       virtuals);
+}
+
 /* Called from modify_all_vtables via dfs_walk.  */
 
 static tree
@@ -2503,51 +2578,10 @@ dfs_modify_vtables (binfo, data)
 	   virtuals;
 	   virtuals = TREE_CHAIN (virtuals),
 	     old_virtuals = TREE_CHAIN (old_virtuals))
-	{
-	  tree b;
-	  tree fn;
-	  tree overrider;
-	  tree vindex;
-	  tree delta;
-	  HOST_WIDE_INT vindex_val;
-	  HOST_WIDE_INT i;
-
-	  /* Find the function which originally caused this vtable
-	     entry to be present.  */
-	  fn = BV_FN (old_virtuals);
-	  vindex = DECL_VINDEX (fn);
-	  b = dfs_walk (binfo, dfs_find_base, NULL, DECL_VIRTUAL_CONTEXT (fn));
-	  fn = BINFO_VIRTUALS (TYPE_BINFO (BINFO_TYPE (b)));
-	  i = first_vfun_index (BINFO_TYPE (b));
-	  vindex_val = tree_low_cst (vindex, 0);
-	  while (i < vindex_val)
-	    {
-	      fn = TREE_CHAIN (fn);
-	      ++i;
-	    }
-	  fn = BV_FN (fn);
-
-	  /* Handle the case of a virtual function defined in BINFO
-	     itself.  */
-	  overrider = find_final_overrider (t, b, fn);
-	  if (overrider == error_mark_node)
-	    continue;
-
-	  /* The `this' pointer needs to be adjusted from pointing to
-	     BINFO to pointing at the base where the final overrider
-	     appears.  */
-	  delta = size_binop (PLUS_EXPR,
-			      get_derived_offset (binfo,
-						  DECL_VIRTUAL_CONTEXT (fn)),
-			      BINFO_OFFSET (binfo));
-	  delta = size_diffop (BINFO_OFFSET (TREE_VALUE (overrider)), delta);
-
-	  modify_vtable_entry (t, 
-			       binfo, 
-			       TREE_PURPOSE (overrider),
-			       delta,
-			       &virtuals);
-	}
+	update_vtable_entry_for_fn (t, 
+				    binfo, 
+				    BV_FN (old_virtuals),
+				    &virtuals);
     }
 
   SET_BINFO_MARKED (binfo);
@@ -2591,8 +2625,8 @@ modify_all_vtables (t, vfuns_p, overridden_virtuals)
 	{
 	  tree fn = TREE_VALUE (*fnsp);
 
-	  if (BINFO_VIRTUALS (binfo)
-	      && !value_member (fn, BINFO_VIRTUALS (binfo)))
+	  if (!BINFO_VIRTUALS (binfo)
+	      || !value_member (fn, BINFO_VIRTUALS (binfo)))
 	    {
 	      /* Set the vtable index.  */
 	      set_vindex (t, fn, vfuns_p);
@@ -3891,7 +3925,7 @@ build_clone (fn, name)
 	DECL_VINDEX (clone) = NULL_TREE;
     }
 
-  /* If there was an in-charge paramter, drop it from the function
+  /* If there was an in-charge parameter, drop it from the function
      type.  */
   if (DECL_HAS_IN_CHARGE_PARM_P (clone))
     {
@@ -3990,11 +4024,14 @@ clone_function_decl (fn, update_method_vec_p)
 
       /* For each destructor, we need two variants: an in-charge
 	 version, a not-in-charge version, and an in-charge deleting
-	 version.  */
-      clone = build_clone (fn, complete_dtor_identifier);
+	 version.  We clone the deleting version first because that
+	 means it will go second on the TYPE_METHODS list -- and that
+	 corresponds to the correct layout order in the virtual
+	 function table.  */
+      clone = build_clone (fn, deleting_dtor_identifier);
       if (update_method_vec_p)
 	add_method (DECL_CONTEXT (clone), NULL, clone);
-      clone = build_clone (fn, deleting_dtor_identifier);
+      clone = build_clone (fn, complete_dtor_identifier);
       if (update_method_vec_p)
 	add_method (DECL_CONTEXT (clone), NULL, clone);
       clone = build_clone (fn, base_dtor_identifier);
@@ -6637,9 +6674,9 @@ build_vbase_offset_vtbl_entries (binfo, vod)
 				vod->index, integer_one_node));
 
       /* The initializer is the delta from BINFO to this virtual base.
-	   The vbase offsets go in reverse inheritance-graph order, and
-	   we are walking in inheritance graph order so these end up in
-	   the right order.  */
+	 The vbase offsets go in reverse inheritance-graph order, and
+	 we are walking in inheritance graph order so these end up in
+	 the right order.  */
       delta = size_diffop (BINFO_OFFSET (b), BINFO_OFFSET (binfo));
       vod->inits = tree_cons (NULL_TREE, 
 			      fold (build1 (NOP_EXPR, 
@@ -6652,58 +6689,69 @@ build_vbase_offset_vtbl_entries (binfo, vod)
 /* Called from build_vcall_offset_vtbl_entries via dfs_walk.  */
 
 static tree
-dfs_vcall_offset_queue_p (binfo, data)
-     tree binfo;
-     void *data;
-{
-  vcall_offset_data* vod = (vcall_offset_data *) data;
-
-  return (binfo == vod->vbase) ? binfo : dfs_skip_vbases (binfo, NULL);
-}
-
-/* Called from build_vcall_offset_vtbl_entries via dfs_walk.  */
-
-static tree
 dfs_build_vcall_offset_vtbl_entries (binfo, data)
      tree binfo;
      void *data;
 {
   vcall_offset_data* vod;
-  tree virtuals;
+  tree derived_virtuals;
+  tree base_virtuals;
   tree binfo_inits;
+  tree non_primary_binfo;
   tree b;
   int i;
 
   vod = (vcall_offset_data *) data;
   binfo_inits = NULL_TREE;
-  
+
+  /* We might be a primary base class.  Go up the inheritance
+     hierarchy until we find the class of which we are a primary base:
+     it is the BINFO_VIRTUALS there that we need to consider.  */
+  non_primary_binfo = binfo;
+  while (BINFO_PRIMARY_MARKED_P (non_primary_binfo))
+    non_primary_binfo = BINFO_INHERITANCE_CHAIN (non_primary_binfo);
+
   /* Skip virtuals that we have already handled in a primary base
      class.  */
-  virtuals = BINFO_VIRTUALS (binfo);
+  base_virtuals = BINFO_VIRTUALS (binfo);
+  derived_virtuals = BINFO_VIRTUALS (non_primary_binfo);
   b = BINFO_PRIMARY_BINFO (binfo);
   if (b)
     for (i = 0; i < CLASSTYPE_VSIZE (BINFO_TYPE (b)); ++i)
-      virtuals = TREE_CHAIN (virtuals);
+      {
+	base_virtuals = TREE_CHAIN (base_virtuals);
+	derived_virtuals = TREE_CHAIN (derived_virtuals);
+      }
 
   /* Make entries for the rest of the virtuals.  */
-  while (virtuals)
+  while (base_virtuals)
     {
       /* Figure out what function we're looking at.  */
-      tree fn = TREE_VALUE (virtuals);
+      tree fn = TREE_VALUE (derived_virtuals);
       tree base = DECL_CONTEXT (fn);
       /* The FN comes from BASE.  So, we must caculate the adjustment
 	 from the virtual base that derived from BINFO to BASE.  */
       tree base_binfo = get_binfo (base, vod->derived, /*protect=*/0);
 
+      /* Compute the vcall offset.  */
       binfo_inits
 	= tree_cons (NULL_TREE,
 		     fold (build1 (NOP_EXPR, vtable_entry_type,
 				   size_diffop (BINFO_OFFSET (base_binfo),
 						BINFO_OFFSET (vod->vbase)))),
 		     binfo_inits);
+
+      /* Keep track of the vtable index where this vcall offset can be
+	 found.  */
+      BV_VCALL_INDEX (derived_virtuals) = vod->index;
+      /* The next vcall offset will be found at a more negative
+	 offset.  */
       vod->index = fold (build (MINUS_EXPR, integer_type_node,
 				vod->index, integer_one_node));
-      virtuals = TREE_CHAIN (virtuals);
+
+      /* Go to the next entries in the list.  */
+      derived_virtuals = TREE_CHAIN (derived_virtuals);
+      base_virtuals = TREE_CHAIN (base_virtuals);
     }
 
   /* The offests are built up in reverse order, so we straighten them
@@ -6772,7 +6820,7 @@ build_vcall_offset_vtbl_entries (binfo, vod)
   dfs_walk_real (binfo,
 		 dfs_build_vcall_offset_vtbl_entries,
 		 NULL,
-		 dfs_vcall_offset_queue_p,
+		 dfs_skip_vbases,
 		 vod);
   vod->inits = chainon (vod->inits, inits);
 }
@@ -6880,7 +6928,7 @@ build_vtable_entry (delta, vcall_index, entry)
       idelta = tree_low_cst (delta, 0);
       ivindex = tree_low_cst (vcall_index, 0);
       if ((idelta || ivindex) 
-	  && ! DECL_PURE_VIRTUAL_P (TREE_OPERAND (entry, 0)))
+	  && TREE_OPERAND (entry, 0) != abort_fndecl)
 	{
 	  entry = make_thunk (entry, idelta, ivindex);
 	  entry = build1 (ADDR_EXPR, vtable_entry_type, entry);
@@ -6894,7 +6942,6 @@ build_vtable_entry (delta, vcall_index, entry)
     }
   else
     {
-      extern int flag_huge_objects;
       tree elems = tree_cons (NULL_TREE, delta,
 			      tree_cons (NULL_TREE, integer_zero_node,
 					 build_tree_list (NULL_TREE, entry)));

@@ -108,10 +108,10 @@ void S4::s1 ()
 
    S2-in-S4 secondary vtable
 
-     S4::s1 vcall offset
      S1 vbase offset
-     S2:s0 vcall offset
+     S4::s1 vcall offset
      S0 vbase offset
+     S2:s0 vcall offset
      S2 offset to top
      S4 RTTI
      S2::s0
@@ -151,10 +151,12 @@ int main ()
     return 5;
   if (*vtbl++ != (ptrdiff_t) &s1__2S4)
     return 6;
-  // All the vcall and vbase offsets should be zero.
+  // The S1 vbase offset.
   if (*vtbl++ != 0)
     return 7;
-  if (*vtbl++ != 0)
+  // The S4::s1 vcall offset is negative; once you convert to S2, you
+  // have to convert to S4 to find the final overrider.
+  if (*vtbl++ != ((char*) &s4 - (char*) (S2*) &s4))
     return 8;
   if (*vtbl++ != 0)
     return 9;

@@ -1,3 +1,26 @@
+2000-04-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.def (THUNK_DECL): Add to documentation.
+	* cp-tree.h (flag_huge_objects): Declare.
+	* class.c (modify_vtable_entry): Tidy.
+	(update_vtable_entry_for_fn): Split out from dfs_modify_vtables.
+	Calculate delta appropriately for the new ABI.
+	(dfs_modify_vtables): Use it.
+	(modify_all_vtables): Fix thinko in code to add overriding copies
+	of functions to primary vtables.
+	(build_clone): Fix typo in comment.
+	(clone_function_decl): Correct order of destructors in vtable.
+	(build_vbase_offset_vtbl_entries): Adjust comment.
+	(dfs_vcall_offset_queue_p): Remove.
+	(dfs_build_vcall_offset_vtbl_entries): Update BV_VCALL_INDEX.
+	(build_vcall_offset_vtbl_entries): Juse use dfs_skip_vbases.
+	(build_vtable_entry): Correct check for pure virtual functions.
+	Don't declare flag_huge_objects.
+	* decl.c (flag_huge_objects): Remove declaration.
+	* method.c (make_thunk): Tweak mangling for vcall offset thunks.
+	Use int_size_in_bytes.
+	(emit_thunk): Handle vcall offset thunks.
+	
 Sat Apr 15 16:00:01 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* decl2.c (parse_time, varconst_time): Delete declarations.
