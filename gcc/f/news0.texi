@@ -1,9 +1,0 @@
-\input texinfo  @c -*-texinfo-*-
-@c %**start of header
-@setfilename NEWS
-@c %**end of header
-
-@c This tells news.texi that it's generating just the NEWS file.
-@set DOC-NEWS
-@include news.texi
-@bye

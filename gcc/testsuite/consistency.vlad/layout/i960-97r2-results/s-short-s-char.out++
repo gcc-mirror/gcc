@@ -1,4 +1,0 @@
-+++Struct char inside struct starting with short:
-size=4,align=2
-offset-short=0,offset-sss-char=2,
-align-short=2,align-sss-char=1

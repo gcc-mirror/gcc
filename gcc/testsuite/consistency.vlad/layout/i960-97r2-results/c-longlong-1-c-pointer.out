@@ -1,4 +1,0 @@
-++Class with pointer inhereting class with longlong:
-size=16,align=8
-offset-longlong=0,offset-pointer=8,
-align-longlong=8,align-pointer=4

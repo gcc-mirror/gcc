@@ -1,7 +1,0 @@
-CP=@CP@
-STRIP=@STRIP@
-CHMOD=@CHMOD@
-
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-BINDIR=@bindir@

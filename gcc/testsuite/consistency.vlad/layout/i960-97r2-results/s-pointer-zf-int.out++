@@ -1,4 +1,0 @@
-+++int zerofield inside struct starting with pointer:
-size=12,align=4
-offset-pointer=0,offset-last=8,
-align-pointer=4,align-last=4

@@ -1,4 +1,0 @@
-++Class with longdouble inhereting class with int:
-size=32,align=16
-offset-int=0,offset-longdouble=16,
-align-int=4,align-longdouble=16

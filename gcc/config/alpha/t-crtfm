@@ -1,4 +1,0 @@
-EXTRA_PARTS += crtfastmath.o
-
-crtfastmath.o: $(srcdir)/config/alpha/crtfastmath.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -c -o crtfastmath.o $(srcdir)/config/alpha/crtfastmath.c

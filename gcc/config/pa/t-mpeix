@@ -1,5 +1,0 @@
-LIB2FUNCS_EXTRA= quadlib.c
-
-quadlib.c: $(srcdir)/config/pa/quadlib.c
-	rm -f quadlib.c
-	cp $(srcdir)/config/pa/quadlib.c .

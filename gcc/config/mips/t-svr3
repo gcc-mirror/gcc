@@ -1,3 +1,0 @@
-# Exactly the same as t-mips, except we must define SYSTEM_HEADER_DIR
-# to point to the svr3 include files.
-SYSTEM_HEADER_DIR = /sysv/usr/include

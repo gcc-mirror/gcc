@@ -1,9 +1,0 @@
-#
-# This spec file is read by gcj when linking.
-# It is used to specify the standard libraries we need in order
-# to link with libgcj.
-#
-%rename lib liborig
-*lib: -lgcj -lm @LIBICONV@ @GCSPEC@ @THREADSPEC@ @ZLIBSPEC@ @SYSTEMSPEC@ %(libgcc) %(liborig)
-
-*jc1: @HASH_SYNC_SPEC@ @DIVIDESPEC@ @JC1GCSPEC@ @EXCEPTIONSPEC@ -fkeep-inline-functions

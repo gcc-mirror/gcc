@@ -1,4 +1,0 @@
-16 0 * * * sh /home/gccadmin/scripts/update_version
-50 0 * * * sh /home/gccadmin/scripts/update_web_docs
-55 0 * * * sh /home/gccadmin/scripts/update_web_docs_libstdcxx
-40 16 * * 1 sh /home/gccadmin/scripts/gcc_release -s -l -d /sourceware/snapshot-tmp all

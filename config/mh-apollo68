@@ -1,3 +1,0 @@
-HDEFINES = -DUSG
-RANLIB=true
-CC= cc -A ansi -A runtype,any -A systype,any -U__STDC__ -DUSG

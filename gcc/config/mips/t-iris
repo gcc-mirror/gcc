@@ -1,2 +1,0 @@
-# Find all of the declarations from the header files
-FIXPROTO_DEFINES= -D__EXTENSIONS__ -D_SGI_SOURCE -D_LANGUAGE_C_PLUS_PLUS
