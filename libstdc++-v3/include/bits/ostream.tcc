@@ -358,7 +358,7 @@ namespace std
       if (__cerb) 
 	{
 	  int_type __put = rdbuf()->sputc(__c); 
-	  if (__put != traits_type::to_int_type(__c))
+	  if (traits_type::eq_int_type(__put, traits_type::eof()))
 	    this->setstate(ios_base::badbit);
 	}
       return *this;

@@ -337,6 +337,30 @@ namespace gnu
 class gnu::something_derived : std::streambuf { };
 #endif
 
+// libstdc++/3599
+class testbuf2 : public std::streambuf
+{
+public:
+  typedef std::streambuf::traits_type traits_type;
+
+  testbuf2() : std::streambuf() { }
+ 
+protected:
+  int_type 
+  overflow(int_type c = traits_type::eof()) 
+  { return traits_type::not_eof(0); }
+};
+
+void
+test07()
+{
+  testbuf2 ob;
+  std::ostream out(&ob); 
+
+  VERIFY(out << "gasp");
+  VERIFY(out << std::endl);
+}
+
 int main() 
 {
   test01();
@@ -345,5 +369,7 @@ int main()
 
   test04();
   test05();
+
+  test07();
   return 0;
 }
