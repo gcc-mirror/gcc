@@ -1,5 +1,18 @@
 2004-12-06  Tom Tromey  <tromey@redhat.com>
 
+	* Make-lang.in (JAVA_MANFILES): Added gcj-dbtool.
+	(java.uninstall): Likewise.
+	(java.maintainer-clean): Likewise.
+	(.INTERMEDIATE): Likewise.
+	(java.install-man): Likewise.
+	(gcj-dbtool.pod): New target.
+	* gcj.texi (Code Generation): Document -findirect-dispatch.
+	(libgcj Runtime Properties): Document
+	gnu.gcj.precompiled.db.path.
+	(Top): Link to "Invoking gcj-dbtool".
+
+2004-12-06  Tom Tromey  <tromey@redhat.com>
+
 	PR java/14853:
 	* java-tree.h (extract_field_decl): Declare.
 	* parse.y (extract_field_decl): Renamed from
