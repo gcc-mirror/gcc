@@ -217,9 +217,9 @@ output_function_prologue (stream, size)
 	  if (TARGET_5200)
 	    {
 #ifdef MOTOROLA
-	      asm_fprintf (stream, "\tlea (%0I%d,%Rsp),%Rsp\n", - (fsize + 4));
+	      asm_fprintf (stream, "\tlea (%d,%Rsp),%Rsp\n", - (fsize + 4));
 #else
-	      asm_fprintf (stream, "\tlea %Rsp@(%0I%d),%Rsp\n", - (fsize + 4));
+	      asm_fprintf (stream, "\tlea %Rsp@(%d),%Rsp\n", - (fsize + 4));
 #endif
 	    }
 	  else
@@ -325,10 +325,10 @@ output_function_prologue (stream, size)
 		newmask |= (1 << (15-i));
 
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tlea (%0I%d,%Rsp),%Rsp\n", -num_saved_regs*4);
+	  asm_fprintf (stream, "\tlea (%d,%Rsp),%Rsp\n", -num_saved_regs*4);
 	  asm_fprintf (stream, "\tmovm.l %0I0x%x,(%Rsp)\n", newmask);
 #else
-	  asm_fprintf (stream, "\tlea %Rsp@(%0I%d),%Rsp\n", -num_saved_regs*4);
+	  asm_fprintf (stream, "\tlea %Rsp@(%d),%Rsp\n", -num_saved_regs*4);
 	  asm_fprintf (stream, "\tmoveml %0I0x%x,%Rsp@\n", newmask);
 #endif
 	}
@@ -636,9 +636,9 @@ output_function_epilogue (stream, size)
 	  if (TARGET_5200)
 	    { 
 #ifdef MOTOROLA
-	      asm_fprintf (stream, "\tlea (%0I%d,%Rsp),%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\tlea (%d,%Rsp),%Rsp\n", fsize + 4);
 #else
-	      asm_fprintf (stream, "\tlea %Rsp@(%0I%d),%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\tlea %Rsp@(%d),%Rsp\n", fsize + 4);
 #endif
 	    }
 	  else
