@@ -1,3 +1,8 @@
+2000-06-26  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* c-typeck.c (digest_init): Return error_mark_node node when
+	TREE_TYPE (init)  == error_mark_node.
+
 2000-06-26  Philipp Thomas  <pthomas@suse.de>
 
 	* aclocal.m4 (AM_WITH_NLS): Don't set MSGFMT or GMSGFMT to no,
