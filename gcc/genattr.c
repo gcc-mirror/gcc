@@ -106,7 +106,8 @@ gen_attr (attr)
 	  putchar ('_');
 	  while (tag != p)
 	    putchar (TOUPPER (*tag++));
-	  fputs (", ", stdout);
+	  if (*p == ',')
+	    fputs (", ", stdout);
 	}
 
       fputs ("};\n", stdout);

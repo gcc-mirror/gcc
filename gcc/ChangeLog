@@ -1,3 +1,8 @@
+2002-05-13  Zack Weinberg  <zack@codesourcery.com>
+
+	* genattr.c (gen_attr): Don't emit a comma after the last
+	enumerator.
+
 2002-05-13  Richard Henderson  <rth@redhat.com>
 
 	* cfgrtl.c (purge_dead_edges): Handle abnormal call edges created
