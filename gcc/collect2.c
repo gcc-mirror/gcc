@@ -916,7 +916,7 @@ main (argc, argv)
   obstack_begin (&permanent_obstack, 0);
   temporary_firstobj = (char *) obstack_alloc (&temporary_obstack, 0);
 
-  current_demangling_style = gnu_demangling;
+  current_demangling_style = auto_demangling;
   p = getenv ("COLLECT_GCC_OPTIONS");
   while (p && *p)
     {
