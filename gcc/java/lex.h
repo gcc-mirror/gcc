@@ -234,7 +234,7 @@ extern void set_float_handler PARAMS ((jmp_buf));
     char msg [1024];							  \
     int i = ctxp->c_line->current;					  \
     ctxp->c_line->current = number_beginning;				  \
-    sprintf (msg, "Floating pointer literal exceeds range of `%s'", (m)); \
+    sprintf (msg, "Floating point literal exceeds range of `%s'", (m)); \
     java_lex_error (msg, 0);						  \
     ctxp->c_line->current = i;						  \
   }
