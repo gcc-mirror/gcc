@@ -1,3 +1,9 @@
+2001-07-23  lars brinkhoff  <lars@nocrew.org>
+
+	* tm.texi (TARGET_FLOAT_FORMAT): Document IBM_FLOAT_FORMAT
+	and C4X_FLOAT_FORMAT.
+	(BOOL_TYPE_SIZE): Document.
+
 Mon Jul 23 11:54:23 2001  Clinton Popetz  <cpopetz@cpopetz.com>
 
 	* unroll.c (loop_iterations): Fix miscalculation of initial
