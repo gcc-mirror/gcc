@@ -1043,7 +1043,7 @@ pre_event_handler (GtkWidget *widget, GdkEvent *event, jobject peer)
 
         /* A widget with a grab will get key events */
 	if (!GTK_IS_WINDOW (widget))
-	    *focus_obj_ptr = peer;
+	  focus_obj_ptr = &peer;
 	else
 	  {
             GtkWindow *window;

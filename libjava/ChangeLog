@@ -1,3 +1,8 @@
+2003-12-22  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c
+	(pre_event_handler): Don't dereference NULL focus_obj_ptr.
+
 2003-12-21  Michael Koch  <konqueror@gmx.de>
 
 	* javax/print/attribute/AttributeSetUtilities.java,
