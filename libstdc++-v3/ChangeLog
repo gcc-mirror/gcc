@@ -1,3 +1,9 @@
+2001-08-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/Makefile.am: Consolidate target rules. Don't clean stamp
+	files. Tweak target build directory stamp.
+	* include/Makefile.in: Regenerate.
+	
 2001-08-14  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
 	* libstdc++-v3/libmath/stubs.c: Fix PR/3988, replace
