@@ -1,3 +1,10 @@
+2005-03-23  Dorit Naishlos  <dorit@il.ib.com>
+ 
+	PR tree-optimization/20501
+	* tree-vect-analyze.c (vect_enhance_data_refs_alignment): Debug print
+	reporting that peeling for alignment is applied moved to...
+	* (vect_analyze_data_refs_alignment): Here.
+
 2005-03-23  Ian Lance Taylor  <ian@airs.com>
 
 	* reorg.c (dbr_schedule): Remove #if 0 code to call final.
