@@ -1,3 +1,8 @@
+Tue Jan 13 21:59:39 1998  Mumit Khan <khan@xraylith.wisc.edu>
+
+	* i386/cygwin32.h (STRIP_NAME_ENCODING): Define for Win32 to strip
+	off the trailing @[NUM] added by ENCODE_SECTION_INFO.
+
 Tue Jan 13 21:55:06 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* arm/netbsd.h (DWARF2_UNWIND_INFO): Define as zero for now.
