@@ -1,3 +1,9 @@
+2002-08-23  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (output_mi_thunk): Don't determine insns
+	for loading delta with num_insns_constant_wide.  Calculate
+	delta_low, delta_high without using a conditional.
+
 2002-08-20  Andreas Jaeger  <aj@suse.de>
 
 	Merge from trunk:
