@@ -1,5 +1,5 @@
 /* Machine mode definitions for GNU C-Compiler; included by rtl.h and tree.h.
-   Copyright (C) 1991  Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993  Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -103,6 +103,17 @@ enum mode_class { MODE_RANDOM, MODE_INT, MODE_FLOAT, MODE_PARTIAL_INT, MODE_CC,
 
 extern enum mode_class mode_class[];
 #define GET_MODE_CLASS(MODE)		(mode_class[(int)(MODE)])
+
+/* Nonzero if MODE is an integral mode.  */
+#define INTEGRAL_MODE_P(MODE)			\
+  (GET_MODE_CLASS (MODE) == MODE_INT		\
+   || GET_MODE_CLASS (MODE) == MODE_PARTIAL_INT \
+   || GET_MODE_CLASS (MODE) == MODE_COMPLEX_INT)
+
+/* Nonzero if MODE is a floating-point mode.  */
+#define FLOAT_MODE_P(MODE)		\
+  (GET_MODE_CLASS (MODE) == MODE_FLOAT	\
+   || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)
 
 /* Get the size in bytes of an object of mode MODE.  */
 
