@@ -887,12 +887,6 @@ do {									\
    If you don't define this, the default is one word.  */
 #define INT_TYPE_SIZE 32
 
-/* Maximum number for the size in bits of the type `int' on the target machine.
-   If this is undefined, the default is `INT_TYPE_SIZE'.  Otherwise, it is the
-   constant value that is the largest value that `INT_TYPE_SIZE' can have at
-   run-time.  This is used in `cpp'.  */
-/* #define MAX_INT_TYPE_SIZE */
-
 /* A C expression for the size in bits of the type `short' on the target
    machine.  If you don't define this, the default is half a word.  (If this
    would be less than one storage unit, it is rounded up to one unit.)  */
@@ -2156,12 +2150,6 @@ typedef struct d30v_stack {
   else									\
     abort ();								\
 }
-
-/* Define this macro if the `longjmp' function restores registers from the
-   stack frames, rather than from those saved specifically by `setjmp'.
-   Certain quantities must not be kept in registers across a call to `setjmp'
-   on such machines.  */
-/* #define LONGJMP_RESTORE_FROM_STACK */
 
 
 /* Passing Function Arguments on the Stack */
@@ -5203,22 +5191,10 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
 /* Define if loading short immediate values into registers sign extends.  */
 #define SHORT_IMMEDIATES_SIGN_EXTEND
 
-/* An alias for a tree code that should be used by default for conversion of
-   floating point values to fixed point.  Normally, `FIX_ROUND_EXPR' is used.  */
-#define IMPLICIT_FIX_EXPR FIX_ROUND_EXPR
-
 /* Define this macro if the same instructions that convert a floating point
    number to a signed fixed point number also convert validly to an unsigned
    one.  */
 /* #define FIXUNS_TRUNC_LIKE_FIX_TRUNC */
-
-/* An alias for a tree code that is the easiest kind of division to compile
-   code for in the general case.  It may be `TRUNC_DIV_EXPR', `FLOOR_DIV_EXPR',
-   `CEIL_DIV_EXPR' or `ROUND_DIV_EXPR'.  These four division operators differ
-   in how they round the result to an integer.  `EASY_DIV_EXPR' is used when it
-   is permissible to use any of those kinds of division and the choice should
-   be made on the basis of efficiency.  */
-#define EASY_DIV_EXPR TRUNC_DIV_EXPR
 
 /* The maximum number of bytes that a single instruction can move quickly from
    memory to memory.  */

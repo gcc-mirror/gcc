@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  TMS320C[34]x
    Copyright (C) 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
    Contributed by Michael Hayes (m.hayes@elec.canterbury.ac.nz)
               and Herman Ten Brugge (Haj.Ten.Brugge@net.HCC.nl).
@@ -2102,10 +2102,6 @@ do { fprintf (asm_out_file, "\t.sdef\t");		\
      fprintf (asm_out_file,				\
 	      "%s\t.val\t.%s\t.scl\t-1%s\t.endef\n",	\
 	      SDB_DELIM, SDB_DELIM, SDB_DELIM); } while (0)
-
-/* This is the kind of divide that is easiest to do in the general case.  */
-
-#define EASY_DIV_EXPR TRUNC_DIV_EXPR
 
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 

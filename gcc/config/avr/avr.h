@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for ATMEL AVR at90s8515, ATmega103/103L, ATmega603/603L microcontrollers.
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (denisc@overta.ru)
 
 This file is part of GNU CC.
@@ -2569,15 +2569,6 @@ extern int avr_case_values_threshold;
    mode smaller than a word are always performed on the entire
    register.  Most RISC machines have this property and most CISC
    machines do not.  */
-
-#define EASY_DIV_EXPR TRUNC_DIV_EXPR
-/* An alias for a tree code that is the easiest kind of division to
-   compile code for in the general case.  It may be `TRUNC_DIV_EXPR',
-   `FLOOR_DIV_EXPR', `CEIL_DIV_EXPR' or `ROUND_DIV_EXPR'.  These four
-   division operators differ in how they round the result to an
-   integer.  `EASY_DIV_EXPR' is used when it is permissible to use
-   any of those kinds of division and the choice should be made on
-   the basis of efficiency.  */
 
 #define MOVE_MAX 4
 /* The maximum number of bytes that a single instruction can move

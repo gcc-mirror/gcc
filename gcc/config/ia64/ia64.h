@@ -1,5 +1,5 @@
 /* Definitions of target machine GNU compiler.  IA-64 version.
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by James E. Wilson <wilson@cygnus.com> and
    		  David Mosberger <davidm@hpl.hp.com>.
 
@@ -2457,18 +2457,6 @@ do {									\
    read.  */
 
 #define LOAD_EXTEND_OP(MODE) ZERO_EXTEND
-
-/* An alias for a tree code that should be used by default for conversion of
-   floating point values to fixed point.  */
-
-/* ??? Looks like this macro is obsolete and should be deleted everywhere.  */
-
-#define IMPLICIT_FIX_EXPR FIX_ROUND_EXPR
-
-/* An alias for a tree code that is the easiest kind of division to compile
-   code for in the general case.  */
-
-#define EASY_DIV_EXPR TRUNC_DIV_EXPR
 
 /* The maximum number of bytes that a single instruction can move quickly from
    memory to memory.  */

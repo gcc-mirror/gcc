@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler.  Convex version.
-   Copyright (C) 1988, 1994, 1995, 1996, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1994, 1995, 1996, 2000, 2001, 2002
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1018,12 +1019,6 @@ enum reg_class {
    when the index is out of range.  Don't define it if the case insn
    jumps to the default label instead.  */
 /* #define CASE_DROPS_THROUGH */
-
-/* Specify the tree operation to be used to convert reals to integers.  */
-#define IMPLICIT_FIX_EXPR FIX_ROUND_EXPR
-
-/* This is the kind of divide that is easiest to do in the general case.  */
-#define EASY_DIV_EXPR TRUNC_DIV_EXPR
 
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 1

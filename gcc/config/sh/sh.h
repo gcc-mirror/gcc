@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for Hitachi Super-H.
-   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
@@ -1644,12 +1644,6 @@ extern int current_function_anonymous_args;
    table.
    Do not define this if the table should contain absolute addresses.  */
 #define CASE_VECTOR_PC_RELATIVE 1
-
-/* Specify the tree operation to be used to convert reals to integers.  */
-#define IMPLICIT_FIX_EXPR  FIX_ROUND_EXPR
-
-/* This is the kind of divide that is easiest to do in the general case.  */
-#define EASY_DIV_EXPR  TRUNC_DIV_EXPR
 
 /* Since the SH3e has only `float' support, it is desirable to make all
    floating point types equivalent to `float'.  */

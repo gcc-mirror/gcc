@@ -1,5 +1,5 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Axis Communications.  Written by Hans-Peter Nilsson.
 
 This file is part of GCC.
@@ -1790,11 +1790,7 @@ struct cum_args {int regs;};
 /* FIXME: Investigate CASE_VECTOR_SHORTEN_MODE to make sure HImode is not
    used when broken-.word could possibly fail (plus test-case).  */
 
-#define IMPLICIT_FIX_EXPR FIX_ROUND_EXPR
-
 #define FIXUNS_TRUNC_LIKE_FIX_TRUNC
-
-#define EASY_DIV_EXPR TRUNC_DIV_EXPR
 
 /* This is the number of bytes that can be moved in one
    reasonably fast instruction sequence.  For CRIS, this is two
