@@ -1,3 +1,8 @@
+2000-06-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* parse.y (program): Always call finish_translation_unit.
+	* parse.c, parse.h: Rebuilt.
+
 2000-06-20  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* method.c: Don't include hard-reg-set.h.

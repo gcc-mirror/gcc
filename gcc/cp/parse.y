@@ -431,6 +431,7 @@ extern void yyprint			PARAMS ((FILE *, int, YYSTYPE));
 %%
 program:
 	  /* empty */
+               { finish_translation_unit (); }
 	| extdefs
                { finish_translation_unit (); }
 	;
