@@ -2718,10 +2718,12 @@
 		(const_int -7)))
    (set (match_operand:DI 3 "register_operand" "")
 	(mem:DI (match_dup 2)))
+   (set (match_operand:DI 4 "register_operand" "")
+	(and:DI (match_dup 1) (const_int -2)))
    (set (subreg:DI (match_operand:HI 0 "register_operand" "") 0)
 	(zero_extract:DI (match_dup 3)
 			 (const_int 16)
-			 (ashift:DI (match_dup 1) (const_int 3))))]
+			 (ashift:DI (match_dup 4) (const_int 3))))]
   ""
   "")
        
@@ -2794,13 +2796,15 @@
 	(and:DI (match_dup 2) (const_int -7)))
    (set (match_operand:DI 4 "register_operand" "")
 	(mem:DI (match_dup 3)))
+   (set (match_operand:DI 10 "register_operand" "")
+	(and:DI (match_dup 2) (const_int -2)))
    (set (match_operand:DI 5 "register_operand" "")
 	(and:DI (not:DI (ashift:DI (const_int 65535)
-				   (ashift:DI (match_dup 2) (const_int 3))))
+				   (ashift:DI (match_dup 10) (const_int 3))))
 		(match_dup 4)))
    (set (match_operand:DI 6 "register_operand" "")
 	(ashift:DI (zero_extend:DI (match_operand:HI 1 "register_operand" ""))
-		   (ashift:DI (match_dup 2) (const_int 3))))
+		   (ashift:DI (match_dup 10) (const_int 3))))
    (set (match_operand:DI 7 "register_operand" "")
 	(ior:DI (match_dup 5) (match_dup 6)))
    (set (match_operand:DI 8 "register_operand" "") (match_dup 0))
@@ -2948,8 +2952,10 @@
 					NULL_RTX));
 	  rtx scratch1 = gen_reg_rtx (DImode);
 	  rtx scratch2 = gen_reg_rtx (DImode);
+	  rtx scratch3 = gen_reg_rtx (DImode);
+
 	  rtx seq = gen_unaligned_loadhi (operands[0], addr, scratch1,
-					  scratch2);
+					  scratch2, scratch3);
 
 	  alpha_set_memflags (seq, operands[1]);
 	  emit_insn (seq);
@@ -2988,9 +2994,12 @@
 	  rtx temp6 = gen_reg_rtx (DImode);
 	  rtx temp7 = gen_reg_rtx (DImode);
 	  rtx temp8 = gen_reg_rtx (DImode);
+	  rtx temp9 = gen_reg_rtx (DImode);
+
 	  rtx seq = gen_unaligned_storehi (get_unaligned_address (operands[0]),
 					   operands[1], temp1, temp2,temp3,
-					   temp4, temp5, temp6,temp7, temp8);
+					   temp4, temp5, temp6,temp7,
+					   temp8, temp9);
 
 	  alpha_set_memflags (seq, operands[0]);
 	  emit_insn (seq);
@@ -3038,7 +3047,7 @@
       addr = scratch2;
     }
       
-  seq = gen_unaligned_loadhi (operands[0], addr, scratch1, scratch1);
+  seq = gen_unaligned_loadhi (operands[0], addr, scratch1, scratch1, scratch2);
   alpha_set_memflags (seq, operands[1]);
   emit_insn (seq);
   DONE;
@@ -3112,7 +3121,7 @@
       seq = gen_unaligned_storehi (addr, operands[1], scratch_a,
 				   scratch2, scratch2, scratch2,
 				   scratch1, scratch2, scratch_a,
-				   scratch1);
+				   scratch1, scratch_a);
       alpha_set_memflags (seq, operands[0]);
       emit_insn (seq);
     }
