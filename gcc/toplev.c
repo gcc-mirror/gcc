@@ -610,8 +610,6 @@ char *lang_options[] =
   "-fno-memoize-lookups",
   "-felide-constructors",
   "-fno-elide-constructors",
-  "-finline-debug",
-  "-fno-inline-debug",
   "-fhandle-exceptions",
   "-fno-handle-exceptions",
   "-fansi-exceptions",
