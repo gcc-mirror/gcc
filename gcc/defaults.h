@@ -699,4 +699,8 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define OUTGOING_REGNO(N) (N)
 #endif
 
+#ifndef SHIFT_COUNT_TRUNCATED
+#define SHIFT_COUNT_TRUNCATED 0
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */
