@@ -75,7 +75,7 @@ struct _Jv_ClassReader {
   // allways on.  You always want this as far as I can see, but it also
   // controls weither identifiers and type descriptors/signatures are
   // verified as legal.  This could be somewhat more expensive since it
-  // will call Characher.isJavaIdentifier{Start,Part} for each character
+  // will call Character.isJavaIdentifier{Start,Part} for each character
   // in any identifier (field name or method name) it comes by.  Thus,
   // it might be useful to turn off this verification for classes that
   // come from a trusted source.  However, for GCJ, trusted classes are
@@ -403,15 +403,15 @@ void _Jv_ClassReader::read_fields ()
       int name_index       = read2u ();
       int descriptor_index = read2u ();
       int attributes_count = read2u ();
-      
+
       check_tag (name_index, JV_CONSTANT_Utf8);
       prepare_pool_entry (name_index, JV_CONSTANT_Utf8);
 
       check_tag (descriptor_index, JV_CONSTANT_Utf8);
       prepare_pool_entry (descriptor_index, JV_CONSTANT_Utf8);
-      
+
       handleField (i, access_flags, name_index, descriptor_index);
-      
+
       for (int j = 0; j < attributes_count; j++)
 	{
 	  read_one_field_attribute (i);
@@ -1071,14 +1071,25 @@ void _Jv_ClassReader::handleField (int field_no,
   field->nameIndex = name;
 #endif
 
-  if (verify)
-    verify_identifier (field_name);
-
-  // ignore flags we don't know about.  
+  // Ignore flags we don't know about.  
   field->flags = flags & Modifier::ALL_FLAGS;
+
+  _Jv_Utf8Const* sig = pool_data[desc].utf8;
 
   if (verify)
     {
+      verify_identifier (field_name);
+
+      for (int i = 0; i < field_no; ++i)
+	{
+	  if (_Jv_equalUtf8Consts (field_name, def->fields[i].name)
+	      && _Jv_equalUtf8Consts (sig,
+				      // We know the other fields are
+				      // unresolved.
+				      (_Jv_Utf8Const *) def->fields[i].type))
+	    throw_class_format_error ("duplicate field name");
+	}
+
       if (field->flags & (Modifier::SYNCHRONIZED
 			  | Modifier::NATIVE
 			  | Modifier::INTERFACE
@@ -1090,8 +1101,6 @@ void _Jv_ClassReader::handleField (int field_no,
 		+((field->flags & Modifier::PROTECTED) ? 1 : 0)))
 	throw_class_format_error ("erroneous field access flags");
     }
-
-  _Jv_Utf8Const* sig = pool_data[desc].utf8;
 
   if (verify)
     _Jv_VerifyFieldSignature (sig);
@@ -1232,6 +1241,14 @@ void _Jv_ClassReader::handleMethod
 	verify_identifier (method->name);
 
       _Jv_VerifyMethodSignature (method->signature);
+
+      for (int i = 0; i < mth_index; ++i)
+	{
+	  if (_Jv_equalUtf8Consts (method->name, def->methods[i].name)
+	      && _Jv_equalUtf8Consts (method->signature,
+				      def->methods[i].signature))
+	    throw_class_format_error ("duplicate method");
+	}
 
       if (method->accflags & (Modifier::VOLATILE
 			      | Modifier::TRANSIENT
