@@ -1,3 +1,11 @@
+Sat Apr  4 18:07:16 1998  David Mosberger-Tang  (davidm@mostang.com)
+
+	* alpha.h (PRINT_OPERAND_PUNCT_VALID_P): Accept '(' for s/sv/svi.
+	* alpha.c (print_operand): Handle it.
+	* alpha.md (fix_truncsfdi2): Use it.  Add earlyclobber pattern
+	for ALPHA_TP_INSN.
+	(fix_truncdfdi2): Likewise.
+
 Sat Apr  4 17:42:05 1998  Richard Henderson  <rth@cygnus.com>
 
 	* tree.h (sizetype_tab[2], sbitsizetype, ubitsizetype): Merge all
