@@ -630,11 +630,15 @@ with a subgrouping for each command option.
 Each subgrouping contains a string constant, that defines the option
 name, a number, which contains the bits to set in
 @code{target_flags}, and a second string which is the description
-displayed by --help.  If the number is negative then the bits specified
+displayed by @option{--help}.  If the number is negative then the bits specified
 by the number are cleared instead of being set.  If the description
 string is present but empty, then no help information will be displayed
 for that option, but it will not count as an undocumented option.  The
 actual option name is made by appending @samp{-m} to the specified name.
+Non-empty description strings should be marked with @code{N_(@dots{})} for
+@command{xgettext}.  In addition to the description for @option{--help},
+more detailed documentation for each option should be added to
+@file{invoke.texi}.
 
 One of the subgroupings should have a null string.  The number in
 this grouping is the default value for @code{target_flags}.  Any
@@ -646,7 +650,8 @@ with opposite meanings, and picks the latter as the default:
 @smallexample
 #define TARGET_SWITCHES \
   @{ @{ "68020", TARGET_MASK_68020, "" @},      \
-    @{ "68000", -TARGET_MASK_68020, "Compile for the 68000" @}, \
+    @{ "68000", -TARGET_MASK_68020, \
+      N_("Compile for the 68000") @}, \
     @{ "", TARGET_MASK_68020, "" @}@}
 @end smallexample
 
@@ -657,10 +662,12 @@ options that have values.  Its definition is an initializer with a
 subgrouping for each command option.
 
 Each subgrouping contains a string constant, that defines the fixed part
-of the option name, the address of a variable, and a description string.
+of the option name, the address of a variable, and a description string
+(which should again be marked with @code{N_(@dots{})}).
 The variable, type @code{char *}, is set to the variable part of the
 given option if the fixed part matches.  The actual option name is made
-by appending @samp{-m} to the specified name.
+by appending @samp{-m} to the specified name.  Again, each option should
+also be documented in @file{invoke.texi}.
 
 Here is an example which defines @samp{-mshort-data-@var{number}}.  If the
 given option is @samp{-mshort-data-512}, the variable @code{m88k_short_data}
@@ -669,7 +676,8 @@ will be set to the string @code{"512"}.
 @smallexample
 extern char *m88k_short_data;
 #define TARGET_OPTIONS \
- @{ @{ "short-data-", &m88k_short_data, "Specify the size of the short data section" @} @}
+ @{ @{ "short-data-", &m88k_short_data, \
+     N_("Specify the size of the short data section") @} @}
 @end smallexample
 
 @findex TARGET_VERSION

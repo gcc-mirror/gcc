@@ -1,3 +1,10 @@
+2001-06-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/tm.texi (TARGET_SWITCHES, TARGET_OPTIONS): Adjust markup.
+	Document use of N_(...), and show it in examples.  Note that
+	documentation should be added to invoke.texi.  Avoid an overfull
+	hbox.
+
 Thu Jun  7 17:09:50 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (rest_of_compilation): Revert previous patch.
