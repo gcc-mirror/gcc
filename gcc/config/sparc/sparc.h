@@ -123,6 +123,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 %{mf930:-D__sparclite__} %{mf934:-D__sparclite__} \
 %{mv8:-D__sparc_v8__} \
 %{msupersparc:-D__supersparc__ -D__sparc_v8__} \
+%{mcpu=sparclet:-D__sparclet__} %{mcpu=tsc701:-D__sparclet__} \
 %{mcpu=sparclite:-D__sparclite__} \
 %{mcpu=f930:-D__sparclite__} %{mcpu=f934:-D__sparclite__} \
 %{mcpu=v8:-D__sparc_v8__} \
@@ -163,6 +164,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 
 /* Override in target specific files.  */
 #define ASM_CPU_SPEC "\
+%{mcpu=sparclet:-Asparclet} %{mcpu=tsc701:-Asparclet} \
 %{msparclite:-Asparclite} \
 %{mf930:-Asparclite} %{mf934:-Asparclite} \
 %{mcpu=sparclite:-Asparclite} \
@@ -379,6 +381,14 @@ extern int target_flags;
 #define MASK_LIVE_G0 0x100000
 #define TARGET_LIVE_G0 (target_flags & MASK_LIVE_G0)
 
+/* Non-zero means the cpu has broken `save' and `restore' insns, only
+   the trivial versions work (save %g0,%g0,%g0; restore %g0,%g0,%g0).
+   We assume the environment will properly handle or otherwise avoid
+   trouble associated with an interrupt occuring after the `save' or trap
+   occuring during it.  */
+#define MASK_BROKEN_SAVERESTORE 0x200000
+#define TARGET_BROKEN_SAVERESTORE (target_flags & MASK_BROKEN_SAVERESTORE)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -458,7 +468,7 @@ enum processor_type {
   PROCESSOR_F930,
   PROCESSOR_F934,
   PROCESSOR_SPARCLET,
-  PROCESSOR_90C701,
+  PROCESSOR_TSC701,
   PROCESSOR_V8PLUS,
   PROCESSOR_V9,
   PROCESSOR_ULTRASPARC
