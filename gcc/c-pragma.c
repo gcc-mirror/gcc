@@ -29,6 +29,22 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define HANDLE_PRAGMA_WEAK 1
 #endif
 
+/* See varasm.c for an identical definition.  */
+enum pragma_state
+{
+  ps_start,
+  ps_done,
+  ps_bad,
+  ps_weak,
+  ps_name,
+  ps_equals,
+  ps_value,
+  ps_pack,
+  ps_left,
+  ps_align,
+  ps_right
+};
+
 /* When structure field packing is in effect, this variable is the
    number of bits to use as the maximum alignment.  When packing is not
    in effect, this is zero. */

@@ -3648,6 +3648,22 @@ output_constructor (exp, size)
 /* Support #pragma weak by default if WEAK_ASM_OP is defined.  */
 #if defined (HANDLE_PRAGMA_WEAK) || (defined (WEAK_ASM_OP) && defined (SET_ASM_OP))
 
+/* See c-pragma.c for an identical definition.  */
+enum pragma_state
+{
+  ps_start,
+  ps_done,
+  ps_bad,
+  ps_weak,
+  ps_name,
+  ps_equals,
+  ps_value,
+  ps_pack,
+  ps_left,
+  ps_align,
+  ps_right
+};
+
 /* Output asm to handle ``#pragma weak'' */
 void
 handle_pragma_weak (what, asm_out_file, name, value)
