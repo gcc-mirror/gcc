@@ -20,13 +20,14 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "c-common.h"
 #include "function.h"
 #include "splay-tree.h"
 #include "varray.h"
 
 #ifndef _CP_TREE_H
 #define _CP_TREE_H
+
+#include "c-common.h"
 
 /* Usage of TREE_LANG_FLAG_?:
    0: BINFO_MARKED (BINFO nodes).
@@ -207,6 +208,7 @@ Boston, MA 02111-1307, USA.  */
 #define RECORD_OR_UNION_TYPE_CHECK(NODE)	NODE
 
 #endif
+
 
 /* ABI control.  */
 
@@ -351,6 +353,37 @@ typedef struct ptrmem_cst
   namespace_binding (NODE, current_namespace)
 #define SET_IDENTIFIER_NAMESPACE_VALUE(NODE, VAL) \
   set_namespace_binding (NODE, current_namespace, VAL)
+
+#define CLEANUP_P(NODE)         TREE_LANG_FLAG_0 (TRY_BLOCK_CHECK (NODE))
+#define CLEANUP_DECL(NODE)      TREE_OPERAND (CLEANUP_STMT_CHECK (NODE), 0)
+#define CLEANUP_EXPR(NODE)      TREE_OPERAND (CLEANUP_STMT_CHECK (NODE), 1)
+
+/* Returns nonzero iff TYPE1 and TYPE2 are the same type, in the usual
+   sense of `same'.  */
+#define same_type_p(type1, type2) \
+  comptypes ((type1), (type2), COMPARE_STRICT)
+
+/* Returns nonzero iff TYPE1 and TYPE2 are the same type, ignoring
+   top-level qualifiers.  */
+#define same_type_ignoring_top_level_qualifiers_p(type1, type2) \
+  same_type_p (TYPE_MAIN_VARIANT (type1), TYPE_MAIN_VARIANT (type2))
+
+/* Non-zero if we are presently building a statement tree, rather
+   than expanding each statement as we encounter it.  */
+#define building_stmt_tree() (last_tree != NULL_TREE)
+
+/* Returns non-zero iff NODE is a declaration for the global function
+   `main'.  */
+#define DECL_MAIN_P(NODE)				\
+   (DECL_EXTERN_C_FUNCTION_P (NODE)                     \
+    && DECL_NAME (NODE) != NULL_TREE			\
+    && MAIN_NAME_P (DECL_NAME (NODE)))
+
+/* Returns non-zero iff ID_NODE is an IDENTIFIER_NODE whose name is
+   `main'.  */
+#define MAIN_NAME_P(ID_NODE) \
+   (strcmp (IDENTIFIER_POINTER (ID_NODE), "main") == 0)
+
 
 struct tree_binding
 {
@@ -1233,6 +1266,7 @@ extern void (*back_end_hook) PARAMS ((tree));
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
 enum cplus_tree_code {
   __DUMMY = LAST_AND_UNUSED_TREE_CODE,
+#include "c-common.def"
 #include "cp-tree.def"
   LAST_CPLUS_TREE_CODE
 };
@@ -1939,9 +1973,25 @@ struct lang_decl
   } u2;
 };
 
+/* An un-parsed default argument looks like an identifier.  */
+#define DEFARG_LENGTH(NODE)  (DEFAULT_ARG_CHECK(NODE)->identifier.length)
+#define DEFARG_POINTER(NODE) (DEFAULT_ARG_CHECK(NODE)->identifier.pointer)
+
 /* Non-zero if NODE is a _DECL with TREE_READONLY set.  */
 #define TREE_READONLY_DECL_P(NODE) \
   (TREE_READONLY (NODE) && DECL_P (NODE))
+
+/* DECL_NEEDED_P holds of a declaration when we need to emit its
+   definition.  This is true when the back-end tells us that
+   the symbol has been referenced in the generated code.  If, however,
+   we are not generating code, then it is also true when a symbol has
+   just been used somewhere, even if it's not really needed.  We need
+   anything that isn't comdat, but we don't know for sure whether or
+   not something is comdat until end-of-file.  */
+#define DECL_NEEDED_P(DECL)					\
+  ((at_eof && !DECL_COMDAT (DECL))				\
+   || (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME ((DECL))))	\
+   || (flag_syntax_only && TREE_USED ((DECL))))
 
 /* Non-zero iff DECL is memory-based.  The DECL_RTL of
    certain const variables might be a CONST_INT, or a REG
@@ -3107,74 +3157,19 @@ extern int flag_new_for_scope;
 #define THUNK_VCALL_OFFSET(DECL) \
   (DECL_LANG_SPECIFIC (DECL)->decl_flags.u2.vcall_offset)
 
-/* DECL_NEEDED_P holds of a declaration when we need to emit its
-   definition.  This is true when the back-end tells us that
-   the symbol has been referenced in the generated code.  If, however,
-   we are not generating code, then it is also true when a symbol has
-   just been used somewhere, even if it's not really needed.  We need
-   anything that isn't comdat, but we don't know for sure whether or
-   not something is comdat until end-of-file.  */
-#define DECL_NEEDED_P(DECL)					\
-  ((at_eof && !DECL_COMDAT (DECL))				\
-   || (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME ((DECL))))	\
-   || (flag_syntax_only && TREE_USED ((DECL))))
-
-/* An un-parsed default argument looks like an identifier.  */
-#define DEFARG_LENGTH(NODE)  (DEFAULT_ARG_CHECK(NODE)->identifier.length)
-#define DEFARG_POINTER(NODE) (DEFAULT_ARG_CHECK(NODE)->identifier.pointer)
 
 /* These macros provide convenient access to the various _STMT nodes
    created when parsing template declarations.  */
-#define IF_COND(NODE)           TREE_OPERAND (IF_STMT_CHECK (NODE), 0)
-#define THEN_CLAUSE(NODE)       TREE_OPERAND (IF_STMT_CHECK (NODE), 1)
-#define ELSE_CLAUSE(NODE)       TREE_OPERAND (IF_STMT_CHECK (NODE), 2)
-#define WHILE_COND(NODE)        TREE_OPERAND (WHILE_STMT_CHECK (NODE), 0)
-#define WHILE_BODY(NODE)        TREE_OPERAND (WHILE_STMT_CHECK (NODE), 1)
-#define DO_COND(NODE)           TREE_OPERAND (DO_STMT_CHECK (NODE), 0)
-#define DO_BODY(NODE)           TREE_OPERAND (DO_STMT_CHECK (NODE), 1)
-#define RETURN_EXPR(NODE)       TREE_OPERAND (RETURN_STMT_CHECK (NODE), 0)
-#define EXPR_STMT_EXPR(NODE)    TREE_OPERAND (EXPR_STMT_CHECK (NODE), 0)
-#define FOR_INIT_STMT(NODE)     TREE_OPERAND (FOR_STMT_CHECK (NODE), 0)
-#define FOR_COND(NODE)          TREE_OPERAND (FOR_STMT_CHECK (NODE), 1)
-#define FOR_EXPR(NODE)          TREE_OPERAND (FOR_STMT_CHECK (NODE), 2)
-#define FOR_BODY(NODE)          TREE_OPERAND (FOR_STMT_CHECK (NODE), 3)
-#define SWITCH_COND(NODE)       TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 0)
-#define SWITCH_BODY(NODE)       TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 1)
-#define CASE_LOW(NODE)          TREE_OPERAND (CASE_LABEL_CHECK (NODE), 0)
-#define CASE_HIGH(NODE)         TREE_OPERAND (CASE_LABEL_CHECK (NODE), 1)
-#define GOTO_DESTINATION(NODE)  TREE_OPERAND (GOTO_STMT_CHECK (NODE), 0)
 #define TRY_STMTS(NODE)         TREE_OPERAND (TRY_BLOCK_CHECK (NODE), 0)
 #define TRY_HANDLERS(NODE)      TREE_OPERAND (TRY_BLOCK_CHECK (NODE), 1)
-#define CLEANUP_P(NODE)         TREE_LANG_FLAG_0 (TRY_BLOCK_CHECK (NODE))
+
 /* Nonzero if this try block is a function try block.  */
 #define FN_TRY_BLOCK_P(NODE)    TREE_LANG_FLAG_3 (TRY_BLOCK_CHECK (NODE))
 #define HANDLER_PARMS(NODE)     TREE_OPERAND (HANDLER_CHECK (NODE), 0)
 #define HANDLER_BODY(NODE)      TREE_OPERAND (HANDLER_CHECK (NODE), 1)
-#define COMPOUND_BODY(NODE)     TREE_OPERAND (COMPOUND_STMT_CHECK (NODE), 0)
-#define ASM_CV_QUAL(NODE)       TREE_OPERAND (ASM_STMT_CHECK (NODE), 0)
-#define ASM_STRING(NODE)        TREE_OPERAND (ASM_STMT_CHECK (NODE), 1)
-#define ASM_OUTPUTS(NODE)       TREE_OPERAND (ASM_STMT_CHECK (NODE), 2)
-#define ASM_INPUTS(NODE)        TREE_OPERAND (ASM_STMT_CHECK (NODE), 3)
-#define ASM_CLOBBERS(NODE)      TREE_OPERAND (ASM_STMT_CHECK (NODE), 4)
-#define DECL_STMT_DECL(NODE)    TREE_OPERAND (DECL_STMT_CHECK (NODE), 0)
-#define STMT_EXPR_STMT(NODE)    TREE_OPERAND (STMT_EXPR_CHECK (NODE), 0)
 #define SUBOBJECT_CLEANUP(NODE) TREE_OPERAND (SUBOBJECT_CHECK (NODE), 0)
-#define CLEANUP_DECL(NODE)      TREE_OPERAND (CLEANUP_STMT_CHECK (NODE), 0)
-#define CLEANUP_EXPR(NODE)      TREE_OPERAND (CLEANUP_STMT_CHECK (NODE), 1)
 #define START_CATCH_TYPE(NODE)  TREE_TYPE (START_CATCH_STMT_CHECK (NODE))
-#define LABEL_STMT_LABEL(NODE)  TREE_OPERAND (LABEL_STMT_CHECK (NODE), 0)
 
-/* Nonzero if this SCOPE_STMT is for the beginning of a scope.  */
-#define SCOPE_BEGIN_P(NODE) \
-  (TREE_LANG_FLAG_0 (SCOPE_STMT_CHECK (NODE))) 
-
-/* Nonzero if this SCOPE_STMT is for the end of a scope.  */
-#define SCOPE_END_P(NODE) \
-  (!SCOPE_BEGIN_P (SCOPE_STMT_CHECK (NODE)))
-
-/* The BLOCK containing the declarations contained in this scope.  */
-#define SCOPE_STMT_BLOCK(NODE) \
-  (TREE_OPERAND (SCOPE_STMT_CHECK (NODE), 0))
 
 /* Nonzero if this CTOR_STMT is for the beginning of a constructor.  */
 #define CTOR_BEGIN_P(NODE) \
@@ -3183,46 +3178,6 @@ extern int flag_new_for_scope;
 /* Nonzero if this CTOR_STMT is for the end of a constructor.  */
 #define CTOR_END_P(NODE) \
   (!CTOR_BEGIN_P (NODE))
-
-/* Nonzero for a SCOPE_STMT if there were no variables in this scope.  */
-#define SCOPE_NULLIFIED_P(NODE) \
-  (SCOPE_STMT_BLOCK ((NODE)) == NULL_TREE)
-
-/* Nonzero for a SCOPE_STMT which represents a lexical scope, but
-   which should be treated as non-existant from the point of view of
-   running cleanup actions.  */
-#define SCOPE_NO_CLEANUPS_P(NODE) \
-  (TREE_LANG_FLAG_3 (SCOPE_STMT_CHECK (NODE)))
-
-/* Nonzero for a SCOPE_STMT if this statement is for a partial scope.
-   For example, in:
-  
-     S s;
-     l:
-     S s2;
-     goto l;
-
-   there is (implicitly) a new scope after `l', even though there are
-   no curly braces.  In particular, when we hit the goto, we must
-   destroy s2 and then re-construct it.  For the implicit scope,
-   SCOPE_PARTIAL_P will be set.  */
-#define SCOPE_PARTIAL_P(NODE) \
-  (TREE_LANG_FLAG_4 (SCOPE_STMT_CHECK (NODE)))
-
-/* Nonzero for an ASM_STMT if the assembly statement is volatile.  */
-#define ASM_VOLATILE_P(NODE)			\
-  (ASM_CV_QUAL (ASM_STMT_CHECK (NODE)) != NULL_TREE)
-
-/* The line-number at which a statement began.  But if
-   STMT_LINENO_FOR_FN_P does holds, then this macro gives the
-   line number for the end of the current function instead.  */
-#define STMT_LINENO(NODE)			\
-  (TREE_COMPLEXITY ((NODE)))
-
-/* If non-zero, the STMT_LINENO for NODE is the line at which the
-   function ended.  */
-#define STMT_LINENO_FOR_FN_P(NODE) 		\
-  (TREE_LANG_FLAG_2 ((NODE)))
 
 /* The parameters for a call-declarator.  */
 #define CALL_DECLARATOR_PARMS(NODE) \
@@ -3793,15 +3748,6 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 				   in the class body.  */
 #define SF_EXPAND            4  /* Generate RTL for this function.  */
 
-/* Returns nonzero iff TYPE1 and TYPE2 are the same type, in the usual
-   sense of `same'.  */
-#define same_type_p(type1, type2) \
-  comptypes ((type1), (type2), COMPARE_STRICT)
-
-/* Returns nonzero iff TYPE1 and TYPE2 are the same type, ignoring
-   top-level qualifiers.  */
-#define same_type_ignoring_top_level_qualifiers_p(type1, type2) \
-  same_type_p (TYPE_MAIN_VARIANT (type1), TYPE_MAIN_VARIANT (type2))
 
 /* Returns nonzero iff TYPE1 and TYPE2 are the same type, or if TYPE2
    is derived from TYPE1, or if TYPE2 is a pointer (reference) to a
@@ -3855,6 +3801,10 @@ enum tree_string_flags
 };
 
 /* in lex.c  */
+/* Indexed by TREE_CODE, these tables give C-looking names to
+   operators represented by TREE_CODES.  For example,
+   opname_tab[(int) MINUS_EXPR] == "-".  */
+extern const char **opname_tab, **assignop_tab;
 
 typedef struct operator_name_info_t
 {
@@ -3871,7 +3821,6 @@ extern operator_name_info_t operator_name_info[];
 /* Similar, but for assignment operators.  */
 extern operator_name_info_t assignment_operator_name_info[];
 
-
 /* in call.c */
 extern int check_dtor_name			PARAMS ((tree, tree));
 extern int get_arglist_len_in_bytes		PARAMS ((tree));
@@ -4546,9 +4495,6 @@ extern void prep_stmt                           PARAMS ((tree));
 extern tree add_scope_stmt                      PARAMS ((int, int));
 extern void do_pushlevel                        PARAMS ((void));
 extern tree do_poplevel                         PARAMS ((void));
-/* Non-zero if we are presently building a statement tree, rather
-   than expanding each statement as we encounter it.  */
-#define building_stmt_tree() (last_tree != NULL_TREE)
 
 /* in spew.c */
 extern void init_spew				PARAMS ((void));

@@ -1,3 +1,50 @@
+2000-06-14  Benjamin Chelf  <chelf@cabriolet.stanford.edu>
+
+	* c-common.h (IF_COND): Moved here from cp/cp-tree.h.
+	(THEN_CLAUSE): Likewise.
+	(ELSE_CLAUSE): Likewise.
+	(WHILE_COND): Likewise.
+	(WHILE_BODY): Likewise.
+	(DO_COND): Likewise.
+	(DO_BODY): Likewise.
+	(RETURN_EXPR): Likewise.
+	(EXPR_STMT_EXPR): Likewise.
+	(FOR_INIT_STMT): Likewise.
+	(FOR_COND): Likewise.
+	(FOR_EXPR): Likewise.
+	(FOR_BODY): Likewise.
+	(SWITCH_COND): Likewise.
+	(SWITCH_BODY): Likewise.
+	(CASE_LOW): Likewise.
+	(CASE_HIGH): Likewise.
+	(GOTO_DESTINATION): Likewise.
+	(COMPOUND_BODY): Likewise.
+	(ASM_CV_QUAL): Likewise.
+	(ASM_STRING): Likewise.
+	(ASM_OUTPUTS): Likewise.
+	(ASM_INPUTS): Likewise.
+	(ASM_CLOBBERS): Likewise.
+	(DECL_STMT_DECL): Likewise.
+	(STMT_EXPR_STMT): Likewise.
+	(LABEL_STMT_LABEL): Likewise.
+	(SCOPE_BEGIN_P): Likewise.
+	(SCOPE_END_P): Likewise.
+	(SCOPE_STMT_BLOCK): Likewise.
+	(SCOPE_NULLIFIED_P): Likewise.
+	(SCOPE_NO_CLEANUPS_P): Likewise.
+	(SCOPE_PARTIAL_P): Likewise.
+	(ASM_VOLATILE_P): Likewise.
+	(STMT_LINENO): Likewise.
+	(STMT_LINENO_FOR_FN_P): Likewise.
+
+	* c-common.def: Added SRCLOC, SIZEOF_EXPR, ARROW_EXPR,
+	ALIGNOF_EXPR, EXPR_STMT, COMPOUND_STMT, DECL_STMT, IF_STMT,
+	FOR_STMT, WHILE_STMT, DO_STMT, RETURN_STMT, BREAK_STMT,
+	CONTINUE_STMT, SWITCH_STMT, GOTO_STMT, LABEL_STMT, ASM_STMT,
+	SCOPE_STMT, CASE_LABEL, STMT_EXPR.
+
+	* gencheck.c (tree_codes[]): Added '#include "c-common.def"'.
+	
 2000-06-14  David O'Brien  <obrien@FreeBSD.org>
 
 	* gcc.c (main): Quiet compiler warnings.  argv is assumed to be

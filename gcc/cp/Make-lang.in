@@ -110,6 +110,7 @@ $(DEMANGLER_PROG): cxxmain.o underscore.o $(LIBDEPS)
 	  cxxmain.o underscore.o $(LIBS)
 
 CXX_SRCS = $(srcdir)/cp/call.c $(srcdir)/cp/class.c $(srcdir)/cp/cp-tree.def \
+ $(srcdir)/c-common.def \
  $(srcdir)/cp/cp-tree.h $(srcdir)/cp/cvt.c $(srcdir)/cp/decl.c \
  $(srcdir)/cp/decl.h $(srcdir)/cp/decl2.c $(srcdir)/cp/dump.c \
  $(srcdir)/cp/errfn.c $(srcdir)/cp/error.c $(srcdir)/cp/except.c \
@@ -123,7 +124,7 @@ CXX_SRCS = $(srcdir)/cp/call.c $(srcdir)/cp/class.c $(srcdir)/cp/cp-tree.def \
 
 cc1plus$(exeext): $(P) $(CXX_SRCS) $(LIBDEPS) stamp-objlist c-common.o \
         c-pragma.o $(srcdir)/cp/cp-tree.h $(srcdir)/cp/cp-tree.def \
-	$(srcdir)/cp/gxx.gperf $(srcdir)/cp/cfns.gperf hash.o \
+	$(srcdir)/c-common.def $(srcdir)/cp/gxx.gperf $(srcdir)/cp/cfns.gperf hash.o \
 	$(srcdir)/cp/operators.def
 	cd cp; $(MAKE) $(LANG_FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) ../cc1plus$(exeext)
 #

@@ -163,3 +163,86 @@ extern tree build_va_arg			PARAMS ((tree, tree));
 
 extern int self_promoting_args_p		PARAMS ((tree));
 extern tree simple_type_promotes_to		PARAMS ((tree));
+
+
+/* These macros provide convenient access to the various _STMT nodes
+   created when parsing template declarations.  */
+#define IF_COND(NODE)           TREE_OPERAND (IF_STMT_CHECK (NODE), 0)
+#define THEN_CLAUSE(NODE)       TREE_OPERAND (IF_STMT_CHECK (NODE), 1)
+#define ELSE_CLAUSE(NODE)       TREE_OPERAND (IF_STMT_CHECK (NODE), 2)
+#define WHILE_COND(NODE)        TREE_OPERAND (WHILE_STMT_CHECK (NODE), 0)
+#define WHILE_BODY(NODE)        TREE_OPERAND (WHILE_STMT_CHECK (NODE), 1)
+#define DO_COND(NODE)           TREE_OPERAND (DO_STMT_CHECK (NODE), 0)
+#define DO_BODY(NODE)           TREE_OPERAND (DO_STMT_CHECK (NODE), 1)
+#define RETURN_EXPR(NODE)       TREE_OPERAND (RETURN_STMT_CHECK (NODE), 0)
+#define EXPR_STMT_EXPR(NODE)    TREE_OPERAND (EXPR_STMT_CHECK (NODE), 0)
+#define FOR_INIT_STMT(NODE)     TREE_OPERAND (FOR_STMT_CHECK (NODE), 0)
+#define FOR_COND(NODE)          TREE_OPERAND (FOR_STMT_CHECK (NODE), 1)
+#define FOR_EXPR(NODE)          TREE_OPERAND (FOR_STMT_CHECK (NODE), 2)
+#define FOR_BODY(NODE)          TREE_OPERAND (FOR_STMT_CHECK (NODE), 3)
+#define SWITCH_COND(NODE)       TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 0)
+#define SWITCH_BODY(NODE)       TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 1)
+#define CASE_LOW(NODE)          TREE_OPERAND (CASE_LABEL_CHECK (NODE), 0)
+#define CASE_HIGH(NODE)         TREE_OPERAND (CASE_LABEL_CHECK (NODE), 1)
+#define GOTO_DESTINATION(NODE)  TREE_OPERAND (GOTO_STMT_CHECK (NODE), 0)
+#define COMPOUND_BODY(NODE)     TREE_OPERAND (COMPOUND_STMT_CHECK (NODE), 0)
+#define ASM_CV_QUAL(NODE)       TREE_OPERAND (ASM_STMT_CHECK (NODE), 0)
+#define ASM_STRING(NODE)        TREE_OPERAND (ASM_STMT_CHECK (NODE), 1)
+#define ASM_OUTPUTS(NODE)       TREE_OPERAND (ASM_STMT_CHECK (NODE), 2)
+#define ASM_INPUTS(NODE)        TREE_OPERAND (ASM_STMT_CHECK (NODE), 3)
+#define ASM_CLOBBERS(NODE)      TREE_OPERAND (ASM_STMT_CHECK (NODE), 4)
+#define DECL_STMT_DECL(NODE)    TREE_OPERAND (DECL_STMT_CHECK (NODE), 0)
+#define STMT_EXPR_STMT(NODE)    TREE_OPERAND (STMT_EXPR_CHECK (NODE), 0)
+#define LABEL_STMT_LABEL(NODE)  TREE_OPERAND (LABEL_STMT_CHECK (NODE), 0)
+
+/* Nonzero if this SCOPE_STMT is for the beginning of a scope.  */
+#define SCOPE_BEGIN_P(NODE) \
+  (TREE_LANG_FLAG_0 (SCOPE_STMT_CHECK (NODE))) 
+
+/* Nonzero if this SCOPE_STMT is for the end of a scope.  */
+#define SCOPE_END_P(NODE) \
+  (!SCOPE_BEGIN_P (SCOPE_STMT_CHECK (NODE)))
+
+/* The BLOCK containing the declarations contained in this scope.  */
+#define SCOPE_STMT_BLOCK(NODE) \
+  (TREE_OPERAND (SCOPE_STMT_CHECK (NODE), 0))
+
+/* Nonzero for a SCOPE_STMT if there were no variables in this scope.  */
+#define SCOPE_NULLIFIED_P(NODE) \
+  (SCOPE_STMT_BLOCK ((NODE)) == NULL_TREE)
+
+/* Nonzero for a SCOPE_STMT which represents a lexical scope, but
+   which should be treated as non-existant from the point of view of
+   running cleanup actions.  */
+#define SCOPE_NO_CLEANUPS_P(NODE) \
+  (TREE_LANG_FLAG_3 (SCOPE_STMT_CHECK (NODE)))
+
+/* Nonzero for a SCOPE_STMT if this statement is for a partial scope.
+   For example, in:
+  
+     S s;
+     l:
+     S s2;
+     goto l;
+
+   there is (implicitly) a new scope after `l', even though there are
+   no curly braces.  In particular, when we hit the goto, we must
+   destroy s2 and then re-construct it.  For the implicit scope,
+   SCOPE_PARTIAL_P will be set.  */
+#define SCOPE_PARTIAL_P(NODE) \
+  (TREE_LANG_FLAG_4 (SCOPE_STMT_CHECK (NODE)))
+
+/* Nonzero for an ASM_STMT if the assembly statement is volatile.  */
+#define ASM_VOLATILE_P(NODE)			\
+  (ASM_CV_QUAL (ASM_STMT_CHECK (NODE)) != NULL_TREE)
+
+/* The line-number at which a statement began.  But if
+   STMT_LINENO_FOR_FN_P does holds, then this macro gives the
+   line number for the end of the current function instead.  */
+#define STMT_LINENO(NODE)			\
+  (TREE_COMPLEXITY ((NODE)))
+
+/* If non-zero, the STMT_LINENO for NODE is the line at which the
+   function ended.  */
+#define STMT_LINENO_FOR_FN_P(NODE) 		\
+  (TREE_LANG_FLAG_2 ((NODE)))
