@@ -37,54 +37,215 @@ exception statement from your version. */
 
 package java.nio.charset;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.spi.CharsetProvider;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Locale;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import gnu.java.nio.charset.Provider;
 
-import java.nio.*;
-
-public class Charset
-{
-    public static Charset forName(String name)
-    {
-	return new Charset();
-    }
-
-/*
-    public CharsetDecoder newDecoder()
-    {	
-	return new CharsetDecoder(this,2,2)
-	    {
-		protected CoderResult decodeLoop(ByteBuffer  in,
-						 CharBuffer  out)
-		{
-		    while (in.hasRemaining())
-			{
-			    char a = (char) in.get();
-			    out.put(a);
-			}
-		    return null;
-		}
-	    };
-    }
-
-    public CharsetEncoder newEncoder()
-    {		
-	return new CharsetEncoder(this,2,2)
-	    {
-		protected CoderResult encodeLoop(CharBuffer  in,
-						 ByteBuffer  out)
-		{
-		    //System.out.println("in encode loop:"+in.hasRemaining());
-
-		    while (in.hasRemaining())
-			{
-			    char a = in.get();
-			    out.put((byte)a);
-
-			    //int len = out.position();
-			    //System.out.println("pos="+len + ","+a);
-			}
-		    return null;
-		}
-	    };
-    }
+/**
+ * @author Jesse Rosenstock
+ * @since 1.4
  */
+public abstract class Charset implements Comparable
+{
+  private final String canonicalName;
+  private final String[] aliases;
+  
+  protected Charset (String canonicalName, String[] aliases)
+  {
+    checkName (canonicalName);
+    if (aliases != null)
+      {
+        int n = aliases.length;
+        for (int i = 0; i < n; ++i)
+            checkName (aliases[i]);
+      }
+
+    this.canonicalName = canonicalName;
+    this.aliases = aliases;
+  }
+
+  /**
+   * @throws IllegalCharsetNameException  if the name is illegal
+   */
+  private static void checkName (String name)
+  {
+    int n = name.length ();
+
+    if (n == 0)
+      throw new IllegalCharsetNameException (name);
+
+    char ch = name.charAt (0);
+    if (!(('A' <= ch && ch <= 'Z')
+          || ('a' <= ch && ch <= 'z')
+          || ('0' <= ch && ch <= '9')))
+      throw new IllegalCharsetNameException (name);
+
+    for (int i = 1; i < n; ++i)
+      {
+        ch = name.charAt (i);
+        if (!(('A' <= ch && ch <= 'Z')
+              || ('a' <= ch && ch <= 'z')
+              || ('0' <= ch && ch <= '9')
+              || ch == '-' || ch == '.' || ch == ':' || ch == '_'))
+          throw new IllegalCharsetNameException (name);
+      }
+  }
+
+  public static boolean isSupported (String charsetName)
+  {
+    return charsetForName (charsetName) != null;
+  }
+ 
+  public static Charset forName (String charsetName)
+  {
+    Charset cs = charsetForName (charsetName);
+    if (cs == null)
+      throw new UnsupportedCharsetException (charsetName);
+    return cs;
+  }
+
+  /**
+   * Retrieves a charset for the given charset name.
+   *
+   * @return A charset object for the charset with the specified name, or
+   *   <code>null</code> if no such charset exists.
+   *
+   * @throws IllegalCharsetNameException  if the name is illegal
+   */
+  private static Charset charsetForName (String charsetName)
+  {
+    checkName (charsetName);
+    return provider ().charsetForName (charsetName);
+  }
+
+  public static SortedMap availableCharsets ()
+  {
+    TreeMap charsets = new TreeMap (String.CASE_INSENSITIVE_ORDER);
+
+    for (Iterator i = provider ().charsets (); i.hasNext (); )
+      {
+        Charset cs = (Charset) i.next ();
+        charsets.put (cs.name (), cs);
+      }
+
+    return Collections.unmodifiableSortedMap (charsets);
+  }
+
+  // XXX: we need to support multiple providers, reading them from
+  // java.nio.charset.spi.CharsetProvider in the resource directory
+  // META-INF/services
+  private static final CharsetProvider provider ()
+  {
+    return Provider.provider ();
+  }
+
+  public final String name ()
+  {
+    return canonicalName;
+  }
+
+  public final Set aliases ()
+  {
+    if (aliases == null)
+      return Collections.EMPTY_SET;
+
+    // should we cache the aliasSet instead?
+    int n = aliases.length;
+    HashSet aliasSet = new HashSet (n);
+    for (int i = 0; i < n; ++i)
+        aliasSet.add (aliases[i]);
+    return Collections.unmodifiableSet (aliasSet);
+  }
+
+  public String displayName ()
+  {
+    return canonicalName;
+  }
+
+  public String displayName (Locale locale)
+  {
+    return canonicalName;
+  }
+
+  public final boolean isRegistered (String name)
+  {
+    return !name.startsWith ("x-") && !name.startsWith ("X-");
+  }
+
+  public abstract boolean contains (Charset cs);
+
+  public abstract CharsetDecoder newDecoder ();
+
+  public abstract CharsetEncoder newEncoder ();
+
+  public boolean canEncode ()
+  {
+    return true;
+  }
+
+  public final ByteBuffer encode (CharBuffer cb)
+  {
+    try
+      {
+        // TODO: cache encoders between sucessive invocations
+        return newEncoder ().onMalformedInput (CodingErrorAction.REPLACE)
+                            .onUnmappableCharacter (CodingErrorAction.REPLACE)
+                            .encode (cb);
+      }
+    catch (CharacterCodingException e)
+      {
+        throw new AssertionError (e);
+      }
+  }
+  
+  public final ByteBuffer encode (String str)
+  {
+    return encode (CharBuffer.wrap (str));
+  }
+
+  public CharBuffer decode (ByteBuffer bb)
+  {
+    try
+     {
+        // TODO: cache encoders between sucessive invocations
+        return newDecoder ().onMalformedInput (CodingErrorAction.REPLACE)
+                            .onUnmappableCharacter (CodingErrorAction.REPLACE)
+                            .decode (bb);
+      }
+    catch (CharacterCodingException e)
+      {
+        throw new AssertionError (e);
+      }
+  }
+
+  public final int compareTo (Object ob)
+  {
+    return canonicalName.compareToIgnoreCase (((Charset) ob).canonicalName);
+  }
+
+  public final int hashCode ()
+  {
+    return canonicalName.hashCode ();
+  }
+
+  public final boolean equals (Object ob)
+  {
+    if (ob instanceof Charset)
+      return canonicalName.equalsIgnoreCase (((Charset) ob).canonicalName);
+    else
+      return false;
+  }
+
+  public final String toString ()
+  {
+    return canonicalName;
+  }
 }
