@@ -1,5 +1,9 @@
 2003-10-14  Geoffrey Keating  <geoffk@apple.com>
 
+	* expr.c (block_move_libcall_safe_for_call_parm): Clean up,
+	and add case for machines where outgoing register parameters
+	get stack space.
+
 	* config/darwin.c (machopic_indirect_data_reference): Use a scratch
 	register when generating indirect address.
 
