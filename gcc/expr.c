@@ -6417,8 +6417,11 @@ expand_expr (exp, target, tmode, modifier)
 #endif
 	      }
 
+	    /* A constant address in TO_RTX can have VOIDmode, we must not try
+	       to call force_reg for that case.  Avoid that case.  */
 	    if (GET_CODE (op0) == MEM
 		&& GET_MODE (op0) == BLKmode
+		&& GET_MODE (XEXP (op0, 0)) != VOIDmode
 		&& bitsize
 		&& (bitpos % bitsize) == 0 
 		&& (bitsize % GET_MODE_ALIGNMENT (mode1)) == 0
