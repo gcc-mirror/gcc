@@ -203,6 +203,10 @@ int pending_invalid_xref_line;
 
 static tree enum_next_value;
 
+/* Nonzero means that there was overflow computing enum_next_value.  */
+
+static int enum_overflow;
+
 /* Parsing a function declarator leaves a list of parameter names
    or a chain or parameter decls here.  */
 
@@ -3100,7 +3104,7 @@ void
 push_parm_decl (parm)
      tree parm;
 {
-  tree decl;
+  tree decl, olddecl;
   int old_immediate_size_expand = immediate_size_expand;
   /* Don't try computing parm sizes now -- wait till fn is called.  */
   immediate_size_expand = 0;
@@ -3109,6 +3113,12 @@ push_parm_decl (parm)
   push_obstacks_nochange ();
 
   decl = grokdeclarator (TREE_VALUE (parm), TREE_PURPOSE (parm), PARM, 0);
+  if (DECL_NAME (decl))
+    {
+      olddecl = lookup_name (DECL_NAME (decl));
+      if (pedantic && olddecl != 0 && TREE_CODE (olddecl) == TYPE_DECL)
+	pedwarn_with_decl (decl, "ANSI C forbids parameter `%s' shadowing typedef");
+    }
   decl = pushdecl (decl);
 
   immediate_size_expand = old_immediate_size_expand;
@@ -3339,7 +3349,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		      longlong = 1;
 		  }
 		else if (specbits & (1 << i))
-		  warning ("duplicate `%s'", IDENTIFIER_POINTER (id));
+		  pedwarn ("duplicate `%s'", IDENTIFIER_POINTER (id));
 		specbits |= 1 << i;
 		goto found;
 	      }
@@ -3490,9 +3500,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
   volatilep = !! (specbits & 1 << (int) RID_VOLATILE) + TYPE_VOLATILE (type);
   inlinep = !! (specbits & (1 << (int) RID_INLINE));
   if (constp > 1)
-    warning ("duplicate `const'");
+    pedwarn ("duplicate `const'");
   if (volatilep > 1)
-    warning ("duplicate `volatile'");
+    pedwarn ("duplicate `volatile'");
   if (! flag_gen_aux_info && (TYPE_READONLY (type) || TYPE_VOLATILE (type)))
     type = TYPE_MAIN_VARIANT (type);
 
@@ -4793,6 +4803,7 @@ start_enum (name)
     }
 
   enum_next_value = integer_zero_node;
+  enum_overflow = 0;
 
   return enumtype;
 }
@@ -4931,7 +4942,11 @@ build_enumerator (name, value)
   /* It should no longer be possible to have NON_LVALUE_EXPR
      in the default.  */
   if (value == 0)
-    value = enum_next_value;
+    {
+      value = enum_next_value;
+      if (enum_overflow)
+	error ("overflow in enumeration values");
+    }
 
   if (pedantic && ! int_fits_type_p (value, integer_type_node))
     {
@@ -4941,6 +4956,7 @@ build_enumerator (name, value)
 
   /* Set basis for default for next value.  */
   enum_next_value = build_binary_op (PLUS_EXPR, value, integer_one_node, 0);
+  enum_overflow = tree_int_cst_lt (enum_next_value, value);
 
   /* Now create a declaration for the enum value name.  */
 
@@ -5081,9 +5097,6 @@ start_function (declspecs, declarator, nested)
      (or an implicit decl), propagate certain information about the usage.  */
   if (TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (current_function_decl)))
     TREE_ADDRESSABLE (current_function_decl) = 1;
-
-  /* Declare __NAME__ for this function.  */
-  declare_function_name (IDENTIFIER_POINTER (DECL_NAME (current_function_decl)));
 
   return 1;
 }
@@ -5459,6 +5472,9 @@ store_parm_decls ()
 
   if (c_function_varargs)
     mark_varargs ();
+
+  /* Declare __NAME__ for this function.  */
+  declare_function_name (IDENTIFIER_POINTER (DECL_NAME (current_function_decl)));
 
   /* Set up parameters and prepare for return, for the function.  */
 
