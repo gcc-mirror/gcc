@@ -1,5 +1,9 @@
 2000-07-31  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-decl.c (get_parm_info): Don't treat 'const void', 'volatile
+	void' or 'register void' as being the special case of 'void' alone
+	in a parameter list.
+
 	* c-typeck.c (build_c_cast): Change -Wcast-qual pedwarn for
 	discarding qualifiers into a plain warning.
 
