@@ -165,17 +165,18 @@ extern int target_flags;
     { "68060", - (MASK_5200|MASK_68040)},				\
     { "68060", (MASK_68020|MASK_68881|MASK_BITFIELD			\
 		|MASK_68040_ONLY|MASK_68060)},				\
-    { "5200", - (MASK_68060|MASK_68040|MASK_68020|MASK_BITFIELD|MASK_68881)}, \
+    { "5200", - (MASK_68060|MASK_68040|MASK_68020|MASK_BITFIELD		\
+		|MASK_68881)},						\
     { "5200", (MASK_5200)},						\
     { "68851", 0},							\
     { "no-68851", 0},							\
     { "68302", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY	\
 		  |MASK_68020|MASK_BITFIELD|MASK_68881)},		\
     { "68332", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY	\
-		  |MASK_BITFIELD)},					\
+		  |MASK_BITFIELD|MASK_68881)},				\
     { "68332", MASK_68020},						\
     { "cpu32", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY	\
-		  |MASK_BITFIELD)},					\
+		  |MASK_BITFIELD|MASK_68881)},				\
     { "cpu32", MASK_68020},						\
     { "align-int", MASK_ALIGN_INT },					\
     { "no-align-int", -MASK_ALIGN_INT },				\
@@ -1040,7 +1041,7 @@ while(0)
 	|| defined(__mc68020__) || defined(mc68020) \
 	|| defined(__mc68030__) || defined(mc68030) \
 	|| defined(__mc68040__) || defined(mc68040) \
-	|| defined(__mc68332__) || defined(mc68332)
+	|| defined(__mcpu32__) || defined(mcpu32)
 #define MACHINE_STATE_m68010_up
 #endif
 
