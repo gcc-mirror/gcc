@@ -563,7 +563,10 @@ int main (void)\n\
 #include \"t%03d_test.h\"\n\
 #undef TX\n\
   if (fails)\n\
-    abort ();\n\
+    {\n\
+      fflush (stdout);\n\
+      abort ();\n\
+    }\n\
   exit (0);\n\
 }\n", srcdir, srcdir, filecnt, filecnt);
   fclose (outfile);
@@ -1198,6 +1201,20 @@ choose_type (enum FEATURE features, struct entry *e, int r)
     abort ();
 }
 
+/* This is from gcc.c-torture/execute/builtin-bitops-1.c.  */
+static int
+my_ffsll (unsigned long long x)
+{
+  int i;
+  if (x == 0)
+    return 0;
+  /* We've tested LLONG_MAX for 64 bits so this should be safe.  */
+  for (i = 0; i < 64; i++)
+    if (x & (1ULL << i))
+      break;
+  return i + 1;
+}
+
 void
 generate_fields (enum FEATURE features, struct entry *e, struct entry *parent,
 		 int len)
@@ -1310,9 +1327,9 @@ generate_fields (enum FEATURE features, struct entry *e, struct entry *parent,
 	        case 'B': ma = 1; break;
 	        case ' ':
 		  if (e[j].type->type == TYPE_UENUM)
-		    mi = ffsll (e[j].type->maxval + 1) - 1;
+		    mi = my_ffsll (e[j].type->maxval + 1) - 1;
 		  else if (e[j].type->type == TYPE_SENUM)
-		    mi = ffsll (e[j].type->maxval + 1);
+		    mi = my_ffsll (e[j].type->maxval + 1);
 		  else
 		    abort ();
 		  if (!mi)
