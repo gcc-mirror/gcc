@@ -1,6 +1,11 @@
+2002-06-02  Richard Henderson  <rth@redhat.com>
+
+	* gcse.c (bypass_conditional_jumps): Fix typo last change.
+
 Sun Jun  2 23:02:11 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
-	* loop.c (emit_prefetch_instructions): Properly place the address computation.
+	* loop.c (emit_prefetch_instructions): Properly place the address
+	computation.
 
 Sun Jun  2 22:56:48 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
