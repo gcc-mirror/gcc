@@ -1,3 +1,11 @@
+Mon Dec 17 16:54:56 2001  Nicola Pero  <nicola@brainstorm.co.uk>
+
+	* objc.dg/special/: New directory.
+	* objc.dg/special/special.exp: New file.
+	* objc.dg/special/unclaimed-category-1.h: New file.
+	* objc.dg/special/unclaimed-category-1a.m: New file.
+	* objc.dg/special/unclaimed-category-1.m: New file.
+
 2001-12-17  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.c-torture/compile/20011217-2.c: New test.
