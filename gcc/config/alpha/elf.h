@@ -24,6 +24,9 @@ Boston, MA 02111-1307, USA.    */
 #undef EXTENDED_COFF
 #define OBJECT_FORMAT_ELF
 
+/* ??? Move all SDB stuff from alpha.h to osf.h.  */
+#undef SDB_DEBUGGING_INFO
+
 #define DBX_DEBUGGING_INFO
 #define DWARF2_DEBUGGING_INFO
 
