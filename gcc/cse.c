@@ -2602,7 +2602,7 @@ canon_reg (x, insn)
   return x;
 }
 
-/* LOC is a location with INSN that is an operand address (the contents of
+/* LOC is a location within INSN that is an operand address (the contents of
    a MEM).  Find the best equivalent address to use that is valid for this
    insn.
 
