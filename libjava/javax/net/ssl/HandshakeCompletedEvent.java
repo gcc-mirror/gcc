@@ -39,6 +39,7 @@ exception statement from your version. */
 package javax.net.ssl;
 
 import java.security.cert.Certificate;
+
 import javax.security.cert.X509Certificate;
 
 /**

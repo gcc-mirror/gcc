@@ -38,8 +38,9 @@ exception statement from your version. */
 
 package javax.net.ssl;
 
-import java.lang.reflect.InvocationTargetException;
+import gnu.java.security.Engine;
 
+import java.lang.reflect.InvocationTargetException;
 import java.security.AccessController;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
@@ -50,8 +51,6 @@ import java.security.PrivilegedAction;
 import java.security.Provider;
 import java.security.Security;
 import java.security.UnrecoverableKeyException;
-
-import gnu.java.security.Engine;
 
 /**
  * A class that creates key manager implementations based on a

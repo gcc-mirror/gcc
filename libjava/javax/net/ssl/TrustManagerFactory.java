@@ -38,8 +38,9 @@ exception statement from your version. */
 
 package javax.net.ssl;
 
-import java.lang.reflect.InvocationTargetException;
+import gnu.java.security.Engine;
 
+import java.lang.reflect.InvocationTargetException;
 import java.security.AccessController;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
@@ -49,8 +50,6 @@ import java.security.NoSuchProviderException;
 import java.security.PrivilegedAction;
 import java.security.Provider;
 import java.security.Security;
-
-import gnu.java.security.Engine;
 
 /**
  * A factory for creating trust manager objects.
