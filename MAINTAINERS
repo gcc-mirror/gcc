@@ -109,8 +109,6 @@ C front end/ISO C99	Richard Henderson	rth@redhat.com
 Ada front end		Geert Bosch		bosch@gnat.com
 Ada front end		Robert Dewar		dewar@gnat.com
 Ada front end		Arnaud Charlet		charlet@act-europe.fr
-fortran			Richard Henderson	rth@redhat.com
-fortran			Toon Moene		toon@moene.indiv.nluug.nl
 fortran 95		Paul Brook		paul@codesourcery.com
 fortran 95		Steven Bosscher		stevenb@suse.de
 fortran 95		Toon Moene		toon@moene.indiv.nluug.nl
@@ -173,7 +171,6 @@ docs co-maintainer	Gerald Pfeifer		gerald@pfeifer.com
 docs co-maintainer	Joseph Myers		jsm@polyomino.org.uk
 predict.def		Jan Hubicka		jh@suse.cz
 contrib/regression	Geoff Keating		geoffk@geoffk.org
-new regalloc (ra*)	Michael Matz		matz@suse.de
 gcov			Jan Hubicka		jh@suse.cz
 gcov			Nathan Sidwell		nathan@codesourcery.com
 option handling		Neil Booth		neil@daikokuya.co.uk

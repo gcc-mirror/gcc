@@ -1,3 +1,7 @@
+2005-01-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* MAINTAINERS: Remove obsolete entries.
+
 2005-01-19  Neil Booth  <neil@daikokuya.co.uk>
 
 	* MAINTAINERS: Remove self as cpplib maintainer.
