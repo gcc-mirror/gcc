@@ -258,7 +258,7 @@ extern int target_flags;
 #define TARGET_POWERPC64	(target_flags & MASK_POWERPC64)
 #endif
 
-#define TARGET_XL_CALL 0
+#define TARGET_XL_COMPAT 0
 
 /* Run-time compilation parameters selecting different hardware subsets.
 
