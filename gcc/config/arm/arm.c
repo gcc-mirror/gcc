@@ -2868,7 +2868,7 @@ arm_legitimate_index_p (enum machine_mode mode, rtx index, int strict_p)
 	  && INTVAL (index) > -range);
 }
 
-/* Return nonzero if X is valid as an Thumb state base register.  */
+/* Return nonzero if X is valid as a Thumb state base register.  */
 static int
 thumb_base_register_rtx_p (rtx x, enum machine_mode mode, int strict_p)
 {
@@ -2887,7 +2887,7 @@ thumb_base_register_rtx_p (rtx x, enum machine_mode mode, int strict_p)
 	  || regno == FRAME_POINTER_REGNUM
 	  || (GET_MODE_SIZE (mode) >= 4
 	      && (regno == STACK_POINTER_REGNUM
-		  || x >= FIRST_PSEUDO_REGISTER
+		  || regno >= FIRST_PSEUDO_REGISTER
 		  || x == hard_frame_pointer_rtx
 		  || x == arg_pointer_rtx)));
 }
