@@ -1,5 +1,8 @@
 2001-07-10  Jason Merrill  <jason_merrill@redhat.com>
 
+	* dwarf2out.c (dwarf2out_line): Emit -dA comment even when we have
+	.loc support.
+
 	* collect2.c (main): Set COLLECT_NO_DEMANGLE for subprocesses.
 	(dump_file): Only pad the demangled name with spaces if the 
 	mangled name was padded with spaces.

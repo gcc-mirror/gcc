@@ -11202,6 +11202,11 @@ dwarf2out_line (filename, line)
     {
       function_section (current_function_decl);
 
+      /* If requested, emit something human-readable.  */
+      if (flag_debug_asm)
+	fprintf (asm_out_file, "\t%s %s:%d\n", ASM_COMMENT_START,
+		 filename, line);
+
       if (DWARF2_ASM_LINE_DEBUG_INFO)
 	{
 	  unsigned file_num = lookup_filename (filename);
@@ -11221,9 +11226,6 @@ dwarf2out_line (filename, line)
 	  register dw_separate_line_info_ref line_info;
 	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, SEPARATE_LINE_CODE_LABEL,
 				     separate_line_info_table_in_use);
-	  if (flag_debug_asm)
-	    fprintf (asm_out_file, "\t%s %s:%d\n", ASM_COMMENT_START,
-		     filename, line);
 
 	  /* expand the line info table if necessary */
 	  if (separate_line_info_table_in_use
@@ -11250,9 +11252,6 @@ dwarf2out_line (filename, line)
 
 	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, LINE_CODE_LABEL,
 				     line_info_table_in_use);
-	  if (flag_debug_asm)
-	    fprintf (asm_out_file, "\t%s %s:%d\n", ASM_COMMENT_START,
-		     filename, line);
 
 	  /* Expand the line info table if necessary.  */
 	  if (line_info_table_in_use == line_info_table_allocated)
