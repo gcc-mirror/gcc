@@ -255,7 +255,7 @@ do { union { double f; long l[2];} tem;			\
        sp@, (sp) or (%sp) depending on the style of syntax.
    '#' for an immediate operand prefix (# in MIT and Motorola syntax
        but & in SGS syntax, $ in unos syntax).
-   '!' for the cc register (used in an `and to cc' insn).
+   '!' for the fpcr register (used in some float-to-fixed conversions).
 
    'b' for byte insn (no effect, on the Sun; this is for the ISI).
    'd' to force memory addressing to be absolute, not relative.
@@ -281,7 +281,7 @@ do { union { double f; long l[2];} tem;			\
   else if (CODE == '-') fprintf (FILE, "-(sp)");			\
   else if (CODE == '+') fprintf (FILE, "(sp)+");			\
   else if (CODE == '@') fprintf (FILE, "(sp)");				\
-  else if (CODE == '!') fprintf (FILE, "cc");				\
+  else if (CODE == '!') fprintf (FILE, "fpcr");				\
   else if (GET_CODE (X) == REG)						\
     { if (REGNO (X) < 16 && (CODE == 'y' || CODE == 'x') && GET_MODE (X) == DFmode)	\
         fprintf (FILE, "%s:%s", reg_names[REGNO (X)], reg_names[REGNO (X)+1]); \
