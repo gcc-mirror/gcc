@@ -53,6 +53,13 @@ Boston, MA 02111-1307, USA.  */
    in this table.  */
 static htab_t avail_exprs;
 
+/* Stack of available expressions in AVAIL_EXPRs.  Each block pushes any
+   expressions it enters into the hash table along with a marker entry
+   (null).  When we finsh processing the block, we pop off entries and
+   remove the expressions from the global hash table until we hit the
+   marker.  */
+static varray_type avail_exprs_stack;
+
 /* Stack of statements we need to rescan during finalization for newly
    exposed variables.
 
@@ -180,12 +187,6 @@ static varray_type vrp_data;
 
 struct dom_walk_block_data
 {
-  /* Array of all the expressions entered into the global expression
-     hash table by this block.  During finalization we use this array to
-     know what expressions to remove from the global expression hash
-     table.  */
-  varray_type avail_exprs;
-
   /* Array of dest, src pairs that need to be restored during finalization
      into the global const/copies table during finalization.  */
   varray_type const_and_copies;
@@ -217,23 +218,22 @@ static void optimize_stmt (struct dom_walk_data *,
 			   block_stmt_iterator);
 static inline tree get_value_for (tree, varray_type table);
 static inline void set_value_for (tree, tree, varray_type table);
-static tree lookup_avail_expr (tree, varray_type *, bool);
-static struct eq_expr_value get_eq_expr_value (tree, int, varray_type *,
+static tree lookup_avail_expr (tree, bool);
+static struct eq_expr_value get_eq_expr_value (tree, int,
 					       basic_block, varray_type *);
 static hashval_t avail_expr_hash (const void *);
 static hashval_t real_avail_expr_hash (const void *);
 static int avail_expr_eq (const void *, const void *);
 static void htab_statistics (FILE *, htab_t);
-static void record_cond (tree, tree, varray_type *);
-static void record_dominating_conditions (tree, varray_type *);
+static void record_cond (tree, tree);
+static void record_dominating_conditions (tree);
 static void record_const_or_copy (tree, tree, varray_type *);
 static void record_equality (tree, tree, varray_type *);
-static tree update_rhs_and_lookup_avail_expr (tree, tree, varray_type *, bool);
+static tree update_rhs_and_lookup_avail_expr (tree, tree, bool);
 static tree simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *,
 						tree, int);
-static tree simplify_cond_and_lookup_avail_expr (tree, varray_type *,
-						 stmt_ann_t, int);
-static tree simplify_switch_and_lookup_avail_expr (tree, varray_type *, int);
+static tree simplify_cond_and_lookup_avail_expr (tree, stmt_ann_t, int);
+static tree simplify_switch_and_lookup_avail_expr (tree, int);
 static tree find_equivalent_equality_comparison (tree);
 static void record_range (tree, basic_block, varray_type *);
 static bool extract_range_from_cond (tree, tree *, tree *, int *);
@@ -242,7 +242,7 @@ static void record_equivalences_from_incoming_edge (struct dom_walk_data *,
 						    basic_block);
 static bool eliminate_redundant_computations (struct dom_walk_data *,
 					      tree, stmt_ann_t);
-static void record_equivalences_from_stmt (tree, varray_type *, varray_type *,
+static void record_equivalences_from_stmt (tree, varray_type *,
 					   int, stmt_ann_t);
 static void thread_across_edge (struct dom_walk_data *, edge);
 static void dom_opt_finalize_block (struct dom_walk_data *, basic_block);
@@ -250,9 +250,7 @@ static void dom_opt_initialize_block_local_data (struct dom_walk_data *,
 						 basic_block, bool);
 static void dom_opt_initialize_block (struct dom_walk_data *, basic_block);
 static void cprop_into_phis (struct dom_walk_data *, basic_block);
-static void remove_local_expressions_from_table (varray_type locals,
-						 unsigned limit,
-						 htab_t table);
+static void remove_local_expressions_from_table (void);
 static void restore_vars_to_original_value (varray_type locals,
 					    unsigned limit, 
 					    varray_type table);
@@ -314,6 +312,7 @@ tree_ssa_dominator_optimize (void)
 
   /* Create our hash tables.  */
   avail_exprs = htab_create (1024, real_avail_expr_hash, avail_expr_eq, free);
+  VARRAY_TREE_INIT (avail_exprs_stack, 20, "Available expression stack");
   VARRAY_TREE_INIT (const_and_copies, num_ssa_names, "const_and_copies");
   nonzero_vars = BITMAP_XMALLOC ();
   VARRAY_GENERIC_PTR_INIT (vrp_data, num_ssa_names, "vrp_data");
@@ -489,7 +488,7 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
       if (TREE_CODE (TREE_OPERAND (stmt, 1)) == SSA_NAME)
 	cached_lhs = TREE_OPERAND (stmt, 1);
       else
-	cached_lhs = lookup_avail_expr (stmt, NULL, false);
+	cached_lhs = lookup_avail_expr (stmt, false);
 
       lhs = TREE_OPERAND (stmt, 0);
 
@@ -535,7 +534,7 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 	    }
 
 	  /* Try to lookup the new expression.  */
-	  cached_lhs = lookup_avail_expr (stmt, NULL, false);
+	  cached_lhs = lookup_avail_expr (stmt, false);
 
 	  /* Restore the statement's original uses/defs.  */
 	  for (i = 0; i < NUM_USES (uses); i++)
@@ -654,11 +653,10 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 	     otherwise look it up in the hash tables.  */
 	  cached_lhs = local_fold (COND_EXPR_COND (dummy_cond));
 	  if (! is_gimple_min_invariant (cached_lhs))
-	    cached_lhs = lookup_avail_expr (dummy_cond, NULL, false);
+	    cached_lhs = lookup_avail_expr (dummy_cond, false);
  	  if (!cached_lhs || ! is_gimple_min_invariant (cached_lhs))
 	    {
 	      cached_lhs = simplify_cond_and_lookup_avail_expr (dummy_cond,
-								NULL,
 								NULL,
 								false);
 	    }
@@ -674,7 +672,7 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 	    cached_lhs = 0;
 	}
       else
-	cached_lhs = lookup_avail_expr (stmt, NULL, false);
+	cached_lhs = lookup_avail_expr (stmt, false);
 
       if (cached_lhs)
 	{
@@ -730,8 +728,6 @@ dom_opt_initialize_block_local_data (struct dom_walk_data *walk_data ATTRIBUTE_U
      make sure we clear them before using them!  */
   if (recycled)
     {
-      gcc_assert (!bd->avail_exprs
-		  || VARRAY_ACTIVE_SIZE (bd->avail_exprs) == 0);
       gcc_assert (!bd->const_and_copies
 		  || VARRAY_ACTIVE_SIZE (bd->const_and_copies) == 0);
       gcc_assert (!bd->nonzero_vars
@@ -752,6 +748,10 @@ dom_opt_initialize_block (struct dom_walk_data *walk_data, basic_block bb)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\n\nOptimizing block #%d\n\n", bb->index);
+
+  /* Push a marker on AVAIL_EXPRS_STACK so that we know how far to unwind
+     when we finalize this blcok.  */
+  VARRAY_PUSH_TREE (avail_exprs_stack, NULL_TREE);
 
   record_equivalences_from_incoming_edge (walk_data, bb);
 
@@ -805,22 +805,20 @@ initialize_hash_element (tree expr, tree lhs, struct expr_hash_elt *element)
    LIMIT entries left in LOCALs.  */
 
 static void
-remove_local_expressions_from_table (varray_type locals,
-				     unsigned limit,
-				     htab_t table)
+remove_local_expressions_from_table (void)
 {
-  if (! locals)
-    return;
-
   /* Remove all the expressions made available in this block.  */
-  while (VARRAY_ACTIVE_SIZE (locals) > limit)
+  while (VARRAY_ACTIVE_SIZE (avail_exprs_stack) > 0)
     {
       struct expr_hash_elt element;
-      tree expr = VARRAY_TOP_TREE (locals);
-      VARRAY_POP (locals);
+      tree expr = VARRAY_TOP_TREE (avail_exprs_stack);
+      VARRAY_POP (avail_exprs_stack);
+
+      if (expr == NULL_TREE)
+	break;
 
       initialize_hash_element (expr, NULL, &element);
-      htab_remove_elt_with_hash (table, &element, element.hash);
+      htab_remove_elt_with_hash (avail_exprs, &element, element.hash);
     }
 }
 
@@ -953,24 +951,26 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
       if (get_immediate_dominator (CDI_DOMINATORS, true_edge->dest) != bb
 	  || phi_nodes (true_edge->dest))
 	{
-	  unsigned avail_expr_limit;
 	  unsigned const_and_copies_limit;
 	  unsigned currdefs_limit;
 
-	  avail_expr_limit
-	    = bd->avail_exprs ? VARRAY_ACTIVE_SIZE (bd->avail_exprs) : 0;
 	  const_and_copies_limit
 	    = bd->const_and_copies ? VARRAY_ACTIVE_SIZE (bd->const_and_copies)
 				   : 0;
 	  currdefs_limit
 	    = bd->block_defs ? VARRAY_ACTIVE_SIZE (bd->block_defs) : 0;
 
+	  /* Push a marker onto the available expression stack so that we
+	     unwind any expressions related to the TRUE arm before processing
+	     the false arm below.  */
+	  VARRAY_PUSH_TREE (avail_exprs_stack, NULL_TREE);
+
 	  /* Record any equivalences created by following this edge.  */
 	  if (TREE_CODE_CLASS (cond_code) == '<')
 	    {
-	      record_cond (cond, boolean_true_node, &bd->avail_exprs);
-	      record_dominating_conditions (cond, &bd->avail_exprs);
-	      record_cond (inverted, boolean_false_node, &bd->avail_exprs);
+	      record_cond (cond, boolean_true_node);
+	      record_dominating_conditions (cond);
+	      record_cond (inverted, boolean_false_node);
 	    }
 	  else if (cond_code == SSA_NAME)
 	    record_const_or_copy (cond, boolean_true_node,
@@ -981,9 +981,7 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 
 	  /* And restore the various tables to their state before
 	     we threaded this edge.  */
-	  remove_local_expressions_from_table (bd->avail_exprs,
-					       avail_expr_limit,
-					       avail_exprs);
+	  remove_local_expressions_from_table ();
 	  restore_vars_to_original_value (bd->const_and_copies,
 					  const_and_copies_limit,
 					  const_and_copies);
@@ -997,9 +995,9 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 	  /* Record any equivalences created by following this edge.  */
 	  if (TREE_CODE_CLASS (cond_code) == '<')
 	    {
-	      record_cond (cond, boolean_false_node, &bd->avail_exprs);
-	      record_cond (inverted, boolean_true_node, &bd->avail_exprs);
-	      record_dominating_conditions (inverted, &bd->avail_exprs);
+	      record_cond (cond, boolean_false_node);
+	      record_cond (inverted, boolean_true_node);
+	      record_dominating_conditions (inverted);
 	    }
 	  else if (cond_code == SSA_NAME)
 	    record_const_or_copy (cond, boolean_false_node,
@@ -1013,7 +1011,7 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 	}
     }
 
-  remove_local_expressions_from_table (bd->avail_exprs, 0, avail_exprs);
+  remove_local_expressions_from_table ();
   restore_nonzero_vars_to_original_value (bd->nonzero_vars, 0, nonzero_vars);
   restore_vars_to_original_value (bd->const_and_copies, 0, const_and_copies);
   restore_currdefs_to_original_value (bd->block_defs, 0);
@@ -1228,7 +1226,6 @@ record_equivalences_from_incoming_edge (struct dom_walk_data *walk_data,
       && (edge_flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE)))
     eq_expr_value = get_eq_expr_value (parent_block_last_stmt,
 				       (edge_flags & EDGE_TRUE_VALUE) != 0,
-				       &bd->avail_exprs,
 				       bb,
 				       &bd->vrp_variables);
   /* Similarly when the parent block ended in a SWITCH_EXPR.
@@ -1358,7 +1355,7 @@ record_var_is_nonzero (tree var, varray_type *block_nonzero_vars_p)
    that the condition COND has the value VALUE.  */
 
 static void
-record_cond (tree cond, tree value, varray_type *block_avail_exprs_p)
+record_cond (tree cond, tree value)
 {
   struct expr_hash_elt *element = xmalloc (sizeof (struct expr_hash_elt));
   void **slot;
@@ -1370,9 +1367,7 @@ record_cond (tree cond, tree value, varray_type *block_avail_exprs_p)
   if (*slot == NULL)
     {
       *slot = (void *) element;
-      if (! *block_avail_exprs_p)
-	VARRAY_TREE_INIT (*block_avail_exprs_p, 20, "block_avail_exprs");
-      VARRAY_PUSH_TREE (*block_avail_exprs_p, cond);
+      VARRAY_PUSH_TREE (avail_exprs_stack, cond);
     }
   else
     free (element);
@@ -1384,7 +1379,7 @@ record_cond (tree cond, tree value, varray_type *block_avail_exprs_p)
    For example, if a < b is true, then a <= b must also be true.  */
 
 static void
-record_dominating_conditions (tree cond, varray_type *block_avail_exprs_p)
+record_dominating_conditions (tree cond)
 {
   switch (TREE_CODE (cond))
     {
@@ -1392,46 +1387,38 @@ record_dominating_conditions (tree cond, varray_type *block_avail_exprs_p)
       record_cond (build2 (LE_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       record_cond (build2 (ORDERED_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       record_cond (build2 (NE_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       record_cond (build2 (LTGT_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       break;
 
     case GT_EXPR:
       record_cond (build2 (GE_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       record_cond (build2 (ORDERED_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       record_cond (build2 (NE_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       record_cond (build2 (LTGT_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       break;
 
     case GE_EXPR:
@@ -1439,111 +1426,93 @@ record_dominating_conditions (tree cond, varray_type *block_avail_exprs_p)
       record_cond (build2 (ORDERED_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       break;
 
     case EQ_EXPR:
       record_cond (build2 (ORDERED_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       record_cond (build2 (LE_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       record_cond (build2 (GE_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       break;
 
     case UNORDERED_EXPR:
       record_cond (build2 (NE_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       record_cond (build2 (UNLE_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       record_cond (build2 (UNGE_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       record_cond (build2 (UNEQ_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       record_cond (build2 (UNLT_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       record_cond (build2 (UNGT_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       break;
 
     case UNLT_EXPR:
       record_cond (build2 (UNLE_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       record_cond (build2 (NE_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       break;
 
     case UNGT_EXPR:
       record_cond (build2 (UNGE_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       record_cond (build2 (NE_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       break;
 
     case UNEQ_EXPR:
       record_cond (build2 (UNLE_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       record_cond (build2 (UNGE_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       break;
 
     case LTGT_EXPR:
       record_cond (build2 (NE_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
       record_cond (build2 (ORDERED_EXPR, boolean_type_node,
 			   TREE_OPERAND (cond, 0),
 			   TREE_OPERAND (cond, 1)),
-		   boolean_true_node,
-		   block_avail_exprs_p);
+		   boolean_true_node);
 
     default:
       break;
@@ -1638,8 +1607,6 @@ simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
   tree rhs = TREE_OPERAND (stmt, 1);
   enum tree_code rhs_code = TREE_CODE (rhs);
   tree result = NULL;
-  struct dom_walk_block_data *bd
-    = VARRAY_TOP_GENERIC_PTR (walk_data->block_data_stack);
 
   /* If we have lhs = ~x, look and see if we earlier had x = ~y.
      In which case we can change this statement to be lhs = y.
@@ -1665,7 +1632,6 @@ simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
 	      && ! SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs_def_operand))
 	    result = update_rhs_and_lookup_avail_expr (stmt,
 						       rhs_def_operand,
-						       &bd->avail_exprs,
 						       insert);
 	}
     }
@@ -1749,8 +1715,7 @@ simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
 			   || TREE_CODE_CLASS (TREE_CODE (t)) == '<')
 			  && TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME
 			  && is_gimple_val (TREE_OPERAND (t, 1))))
-		    result = update_rhs_and_lookup_avail_expr
-		      (stmt, t, &bd->avail_exprs, insert);
+		    result = update_rhs_and_lookup_avail_expr (stmt, t, insert);
 		}
 	    }
 	}
@@ -1790,9 +1755,7 @@ simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
 	      TREE_OPERAND (TREE_OPERAND (dummy_cond, 0), 1)
 		= integer_zero_node;
 	    }
-	  val = simplify_cond_and_lookup_avail_expr (dummy_cond,
-						     &bd->avail_exprs,
-						     NULL, false);
+	  val = simplify_cond_and_lookup_avail_expr (dummy_cond, NULL, false);
 	}
 
       if (val && integer_onep (val))
@@ -1809,8 +1772,7 @@ simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
 		       local_fold (build (MINUS_EXPR, TREE_TYPE (op1),
 					  op1, integer_one_node)));
 
-	  result = update_rhs_and_lookup_avail_expr (stmt, t,
-						     &bd->avail_exprs, insert);
+	  result = update_rhs_and_lookup_avail_expr (stmt, t, insert);
 	}
     }
 
@@ -1845,9 +1807,7 @@ simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
 	      TREE_OPERAND (TREE_OPERAND (dummy_cond, 0), 1)
 		= build_int_cst (type, 0);
 	    }
-	  val = simplify_cond_and_lookup_avail_expr (dummy_cond,
-						     &bd->avail_exprs,
-						     NULL, false);
+	  val = simplify_cond_and_lookup_avail_expr (dummy_cond, NULL, false);
 
 	  if (!val)
 	    {
@@ -1857,7 +1817,6 @@ simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
 		= build_int_cst (type, 0);
 
 	      val = simplify_cond_and_lookup_avail_expr (dummy_cond,
-							 &bd->avail_exprs,
 							 NULL, false);
 
 	      if (val)
@@ -1880,8 +1839,7 @@ simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
 	  else
 	    t = op;
 
-	  result = update_rhs_and_lookup_avail_expr (stmt, t,
-						     &bd->avail_exprs, insert);
+	  result = update_rhs_and_lookup_avail_expr (stmt, t, insert);
 	}
     }
 
@@ -1892,8 +1850,7 @@ simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
       tree t = fold_read_from_constant_string (rhs);
 
       if (t)
-        result = update_rhs_and_lookup_avail_expr (stmt, t,
-						   &bd->avail_exprs, insert);
+        result = update_rhs_and_lookup_avail_expr (stmt, t, insert);
     }
 
   return result;
@@ -1968,7 +1925,6 @@ find_equivalent_equality_comparison (tree cond)
 
 static tree
 simplify_cond_and_lookup_avail_expr (tree stmt,
-				     varray_type *block_avail_exprs_p,
 				     stmt_ann_t ann,
 				     int insert)
 {
@@ -2008,8 +1964,7 @@ simplify_cond_and_lookup_avail_expr (tree stmt,
 
 		  /* Lookup the condition and return its known value if it
 		     exists.  */
-		  new_cond = lookup_avail_expr (stmt, block_avail_exprs_p,
-						insert);
+		  new_cond = lookup_avail_expr (stmt, insert);
 		  if (new_cond)
 		    return new_cond;
 
@@ -2198,9 +2153,7 @@ simplify_cond_and_lookup_avail_expr (tree stmt,
    condition which we may be able to optimize better.  */
 
 static tree
-simplify_switch_and_lookup_avail_expr (tree stmt,
-				       varray_type *block_avail_exprs_p,
-				       int insert)
+simplify_switch_and_lookup_avail_expr (tree stmt, int insert)
 {
   tree cond = SWITCH_COND (stmt);
   tree def, to, ti;
@@ -2246,7 +2199,7 @@ simplify_switch_and_lookup_avail_expr (tree stmt,
 		  SWITCH_COND (stmt) = def;
 		  modify_stmt (stmt);
 
-		  return lookup_avail_expr (stmt, block_avail_exprs_p, insert);
+		  return lookup_avail_expr (stmt, insert);
 		}
 	    }
 	}
@@ -2378,8 +2331,6 @@ eliminate_redundant_computations (struct dom_walk_data *walk_data,
   bool insert = true;
   tree cached_lhs;
   bool retval = false;
-  struct dom_walk_block_data *bd
-    = VARRAY_TOP_GENERIC_PTR (walk_data->block_data_stack);
 
   if (TREE_CODE (stmt) == MODIFY_EXPR)
     def = TREE_OPERAND (stmt, 0);
@@ -2394,28 +2345,21 @@ eliminate_redundant_computations (struct dom_walk_data *walk_data,
     insert = false;
 
   /* Check if the expression has been computed before.  */
-  cached_lhs = lookup_avail_expr (stmt, &bd->avail_exprs, insert);
+  cached_lhs = lookup_avail_expr (stmt, insert);
 
   /* If this is an assignment and the RHS was not in the hash table,
      then try to simplify the RHS and lookup the new RHS in the
      hash table.  */
   if (! cached_lhs && TREE_CODE (stmt) == MODIFY_EXPR)
-    cached_lhs = simplify_rhs_and_lookup_avail_expr (walk_data,
-						     stmt,
-						     insert);
+    cached_lhs = simplify_rhs_and_lookup_avail_expr (walk_data, stmt, insert);
   /* Similarly if this is a COND_EXPR and we did not find its
      expression in the hash table, simplify the condition and
      try again.  */
   else if (! cached_lhs && TREE_CODE (stmt) == COND_EXPR)
-    cached_lhs = simplify_cond_and_lookup_avail_expr (stmt,
-						      &bd->avail_exprs,
-						      ann,
-						      insert);
+    cached_lhs = simplify_cond_and_lookup_avail_expr (stmt, ann, insert);
   /* Similarly for a SWITCH_EXPR.  */
   else if (!cached_lhs && TREE_CODE (stmt) == SWITCH_EXPR)
-    cached_lhs = simplify_switch_and_lookup_avail_expr (stmt,
-						        &bd->avail_exprs,
-						        insert);
+    cached_lhs = simplify_switch_and_lookup_avail_expr (stmt, insert);
 
   opt_stats.num_exprs_considered++;
 
@@ -2471,7 +2415,6 @@ eliminate_redundant_computations (struct dom_walk_data *walk_data,
 
 static void
 record_equivalences_from_stmt (tree stmt,
-			       varray_type *block_avail_exprs_p,
 			       varray_type *block_nonzero_vars_p,
 			       int may_optimize_p,
 			       stmt_ann_t ann)
@@ -2598,7 +2541,7 @@ record_equivalences_from_stmt (tree stmt,
 
 	  /* Finally enter the statement into the available expression
 	     table.  */
-	  lookup_avail_expr (new, block_avail_exprs_p, true);
+	  lookup_avail_expr (new, true);
 	}
     }
 }
@@ -2803,7 +2746,6 @@ optimize_stmt (struct dom_walk_data *walk_data, basic_block bb,
   /* Record any additional equivalences created by this statement.  */
   if (TREE_CODE (stmt) == MODIFY_EXPR)
     record_equivalences_from_stmt (stmt,
-				   &bd->avail_exprs,
 				   &bd->nonzero_vars,
 				   may_optimize_p,
 				   ann);
@@ -2870,9 +2812,7 @@ optimize_stmt (struct dom_walk_data *walk_data, basic_block bb,
    hash table to account for the changes made to STMT.  */
 
 static tree
-update_rhs_and_lookup_avail_expr (tree stmt, tree new_rhs, 
-				  varray_type *block_avail_exprs_p,
-				  bool insert)
+update_rhs_and_lookup_avail_expr (tree stmt, tree new_rhs, bool insert)
 {
   tree cached_lhs = NULL;
 
@@ -2889,7 +2829,7 @@ update_rhs_and_lookup_avail_expr (tree stmt, tree new_rhs,
   TREE_OPERAND (stmt, 1) = new_rhs;
 
   /* Now lookup the updated statement in the hash table.  */
-  cached_lhs = lookup_avail_expr (stmt, block_avail_exprs_p, insert);
+  cached_lhs = lookup_avail_expr (stmt, insert);
 
   /* We have now called lookup_avail_expr twice with two different
      versions of this same statement, once in optimize_stmt, once here.
@@ -2913,7 +2853,7 @@ update_rhs_and_lookup_avail_expr (tree stmt, tree new_rhs,
      we found a copy of this statement in the second hash table lookup
      we want _no_ copies of this statement in BLOCK_AVAIL_EXPRs.  */
   if (insert)
-    VARRAY_POP (*block_avail_exprs_p);
+    VARRAY_POP (avail_exprs_stack);
 
   /* And make sure we record the fact that we modified this
      statement.  */
@@ -2935,7 +2875,7 @@ update_rhs_and_lookup_avail_expr (tree stmt, tree new_rhs,
    aliased references.  */
 
 static tree
-lookup_avail_expr (tree stmt, varray_type *block_avail_exprs_p, bool insert)
+lookup_avail_expr (tree stmt, bool insert)
 {
   void **slot;
   tree lhs;
@@ -2989,9 +2929,7 @@ lookup_avail_expr (tree stmt, varray_type *block_avail_exprs_p, bool insert)
   if (*slot == NULL)
     {
       *slot = (void *) element;
-      if (! *block_avail_exprs_p)
-        VARRAY_TREE_INIT (*block_avail_exprs_p, 20, "block_avail_exprs");
-      VARRAY_PUSH_TREE (*block_avail_exprs_p, stmt ? stmt : element->rhs);
+      VARRAY_PUSH_TREE (avail_exprs_stack, stmt ? stmt : element->rhs);
       return NULL_TREE;
     }
 
@@ -3134,7 +3072,6 @@ record_range (tree cond, basic_block bb, varray_type *vrp_variables_p)
 static struct eq_expr_value
 get_eq_expr_value (tree if_stmt,
 		   int true_arm,
-		   varray_type *block_avail_exprs_p,
 		   basic_block bb,
 		   varray_type *vrp_variables_p)
 {
@@ -3200,9 +3137,9 @@ get_eq_expr_value (tree if_stmt,
 	     condition into the hash table.  */
 	  if (true_arm)
 	    {
-	      record_cond (cond, boolean_true_node, block_avail_exprs_p);
-	      record_dominating_conditions (cond, block_avail_exprs_p);
-	      record_cond (inverted, boolean_false_node, block_avail_exprs_p);
+	      record_cond (cond, boolean_true_node);
+	      record_dominating_conditions (cond);
+	      record_cond (inverted, boolean_false_node);
 
 	      if (TREE_CONSTANT (op1))
 		record_range (cond, bb, vrp_variables_p);
@@ -3219,9 +3156,9 @@ get_eq_expr_value (tree if_stmt,
 	  else
 	    {
 
-	      record_cond (inverted, boolean_true_node, block_avail_exprs_p);
-	      record_dominating_conditions (inverted, block_avail_exprs_p);
-	      record_cond (cond, boolean_false_node, block_avail_exprs_p);
+	      record_cond (inverted, boolean_true_node);
+	      record_dominating_conditions (inverted);
+	      record_cond (cond, boolean_false_node);
 
 	      if (TREE_CONSTANT (op1))
 		record_range (inverted, bb, vrp_variables_p);
