@@ -29,8 +29,22 @@
 # fact return.  Users may put any desired instructions in those sections.
 # This file is the last thing linked into any executable.
 
+#include "xtensa-config.h"
+
 	.section .init
+#if XCHAL_HAVE_WINDOWED && !__XTENSA_CALL0_ABI__
 	retw
+#else
+	l32i	a0, sp, 0
+	addi	sp, sp, 32
+	ret
+#endif
 
 	.section .fini
+#if XCHAL_HAVE_WINDOWED && !__XTENSA_CALL0_ABI__
 	retw
+#else
+	l32i	a0, sp, 0
+	addi	sp, sp, 32
+	ret
+#endif

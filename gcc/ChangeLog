@@ -1,3 +1,13 @@
+2003-08-18  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/crti.asm (_init, _fini): Add alternate code for new
+	call0 ABI.
+	* config/xtensa/crtn.asm (_init, _fini): Likewise.
+	* config/xtensa/lib1funcs.asm (__mulsi3, __udivsi3, __divsi3,
+	__umodsi3, __modsi3): Likewise.
+	* config/xtensa/t-xtensa (crti.o, crtn.o): Add $(GCC_CFLAGS) and
+	$(INCLUDES).
+
 2003-08-18  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/spe.md ("*nabssf2_gpr"): New.
