@@ -3083,101 +3083,132 @@ alpha_initialize_trampoline (tramp, fnaddr, cxt, fnofs, cxtofs, jmpofs)
     emit_insn (gen_imb ());
 }
 
-/* Do what is necessary for `va_start'.  The argument is ignored;
-   We look at the current function to determine if stdarg or varargs
-   is used and fill in an initial va_list.  A pointer to this constructor
-   is returned.  */
-
-struct rtx_def *
-alpha_builtin_saveregs (arglist)
-     tree arglist ATTRIBUTE_UNUSED;
+tree
+alpha_build_va_list ()
 {
-  rtx block, addr, dest, argsize;
-  tree fntype = TREE_TYPE (current_function_decl);
-  int stdarg = (TYPE_ARG_TYPES (fntype) != 0
-		&& (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
-		    != void_type_node));
-
-  /* Compute the current position into the args, taking into account
-     both registers and memory.  Both of these are already included in
-     NUM_ARGS.  */
-
-  argsize = GEN_INT (NUM_ARGS * UNITS_PER_WORD);
-
-  /* For Unix, SETUP_INCOMING_VARARGS moves the starting address base up by 48,
-     storing fp arg registers in the first 48 bytes, and the integer arg
-     registers in the next 48 bytes.  This is only done, however, if any
-     integer registers need to be stored.
-
-     If no integer registers need be stored, then we must subtract 48 in
-     order to account for the integer arg registers which are counted in
-     argsize above, but which are not actually stored on the stack.  */
+  tree base, ofs, record;
 
   if (TARGET_OPEN_VMS)
-    addr = plus_constant (virtual_incoming_args_rtx,
-			  NUM_ARGS <= 5 + stdarg
-			  ? UNITS_PER_WORD : - 6 * UNITS_PER_WORD);
+    return ptr_type_node;
+
+  record = make_node (RECORD_TYPE);
+  /* C++? SET_IS_AGGR_TYPE (record, 1); */
+
+  ofs = build_decl (FIELD_DECL, get_identifier ("__offset"),
+		    integer_type_node);
+  DECL_FIELD_CONTEXT (ofs) = record;
+
+  base = build_decl (FIELD_DECL, get_identifier ("__base"),
+		     ptr_type_node);
+  DECL_FIELD_CONTEXT (base) = record;
+  TREE_CHAIN (base) = ofs;
+
+  TYPE_FIELDS (record) = base;
+  layout_type (record);
+
+  return record;
+}
+
+void
+alpha_va_start (stdarg_p, valist, nextarg)
+     int stdarg_p;
+     tree valist;
+     rtx nextarg ATTRIBUTE_UNUSED;
+{
+  HOST_WIDE_INT offset;
+  tree t, offset_field, base_field;
+
+  if (TARGET_OPEN_VMS)
+    std_expand_builtin_va_start (stdarg_p, valist, nextarg);
+
+  /* For Unix, SETUP_INCOMING_VARARGS moves the starting address base
+     up by 48, storing fp arg registers in the first 48 bytes, and the
+     integer arg registers in the next 48 bytes.  This is only done,
+     however, if any integer registers need to be stored.
+
+     If no integer registers need be stored, then we must subtract 48
+     in order to account for the integer arg registers which are counted
+     in argsize above, but which are not actually stored on the stack.  */
+
+  if (NUM_ARGS <= 5 + stdarg_p)
+    offset = 6 * UNITS_PER_WORD;
   else
-    addr = (NUM_ARGS <= 5 + stdarg
-	    ? plus_constant (virtual_incoming_args_rtx,
-			     6 * UNITS_PER_WORD)
-	    : plus_constant (virtual_incoming_args_rtx,
-			     - (6 * UNITS_PER_WORD)));
+    offset = -6 * UNITS_PER_WORD;
 
-  /* For VMS, we include the argsize, while on Unix, it's handled as
-     a separate field.  */
+  base_field = TYPE_FIELDS (TREE_TYPE (valist));
+  offset_field = TREE_CHAIN (base_field);
+
+  base_field = build (COMPONENT_REF, TREE_TYPE (base_field),
+		      valist, base_field);
+  offset_field = build (COMPONENT_REF, TREE_TYPE (offset_field),
+			valist, offset_field);
+
+  t = make_tree (ptr_type_node, virtual_incoming_args_rtx);
+  t = build (PLUS_EXPR, ptr_type_node, t, build_int_2 (offset, 0));
+  t = build (MODIFY_EXPR, TREE_TYPE (base_field), base_field, t);
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  t = build_int_2 (NUM_ARGS*UNITS_PER_WORD, 0);
+  t = build (MODIFY_EXPR, TREE_TYPE (offset_field), offset_field, t);
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+}
+
+rtx
+alpha_va_arg (valist, type)
+     tree valist, type;
+{
+  HOST_WIDE_INT tsize;
+  rtx addr;
+  tree t;
+  tree offset_field, base_field, addr_tree, addend;
+  tree wide_type, wide_ofs;
+
   if (TARGET_OPEN_VMS)
-    addr = plus_constant (addr, INTVAL (argsize));
+    return std_expand_builtin_va_arg (valist, type);
 
-  addr = force_operand (addr, NULL_RTX);
+  tsize = ((TREE_INT_CST_LOW (TYPE_SIZE (type)) / BITS_PER_UNIT + 7) / 8) * 8;
 
-#ifdef POINTERS_EXTEND_UNSIGNED
-  addr = convert_memory_address (ptr_mode, addr);
-#endif
+  base_field = TYPE_FIELDS (TREE_TYPE (valist));
+  offset_field = TREE_CHAIN (base_field);
 
-  if (TARGET_OPEN_VMS)
-    return addr;
-  else
+  base_field = build (COMPONENT_REF, TREE_TYPE (base_field),
+		      valist, base_field);
+  offset_field = build (COMPONENT_REF, TREE_TYPE (offset_field),
+			valist, offset_field);
+
+  wide_type = make_signed_type (64);
+  wide_ofs = save_expr (build1 (CONVERT_EXPR, wide_type, offset_field));
+
+  addend = wide_ofs;
+  if (FLOAT_TYPE_P (type))
     {
-      /* Allocate the va_list constructor */
-      block = assign_stack_local (BLKmode, 2 * UNITS_PER_WORD, BITS_PER_WORD);
-      RTX_UNCHANGING_P (block) = 1;
-      RTX_UNCHANGING_P (XEXP (block, 0)) = 1;
+      tree fpaddend, cond;
 
-      /* Store the address of the first integer register in the __base
-	 member.  */
+      fpaddend = fold (build (PLUS_EXPR, TREE_TYPE (addend),
+			      addend, build_int_2 (-6*8, 0)));
 
-      dest = change_address (block, ptr_mode, XEXP (block, 0));
-      emit_move_insn (dest, addr);
+      cond = fold (build (LT_EXPR, integer_type_node,
+			  wide_ofs, build_int_2 (6*8, 0)));
 
-      if (current_function_check_memory_usage)
-	emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
-			   dest, ptr_mode,
-			   GEN_INT (GET_MODE_SIZE (ptr_mode)),
-			   TYPE_MODE (sizetype),
-			   GEN_INT (MEMORY_USE_RW), 
-			   TYPE_MODE (integer_type_node));
-  
-      /* Store the argsize as the __va_offset member.  */
-      dest = change_address (block, TYPE_MODE (integer_type_node),
-			     plus_constant (XEXP (block, 0),
-					    POINTER_SIZE/BITS_PER_UNIT));
-      emit_move_insn (dest, argsize);
-
-      if (current_function_check_memory_usage)
-	emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
-			   dest, ptr_mode,
-			   GEN_INT (GET_MODE_SIZE
-				    (TYPE_MODE (integer_type_node))),
-			   TYPE_MODE (sizetype),
-			   GEN_INT (MEMORY_USE_RW),
-			   TYPE_MODE (integer_type_node));
-
-      /* Return the address of the va_list constructor, but don't put it in a
-	 register.  Doing so would fail when not optimizing and produce worse
-	 code when optimizing.  */
-      return XEXP (block, 0);
+      addend = fold (build (COND_EXPR, TREE_TYPE (addend), cond,
+			    fpaddend, addend));
     }
+
+  addr_tree = build (PLUS_EXPR, TREE_TYPE (base_field),
+		     base_field, addend);
+
+  addr = expand_expr (addr_tree, NULL_RTX, Pmode, EXPAND_NORMAL);
+  addr = copy_to_reg (addr);
+
+  t = build (MODIFY_EXPR, TREE_TYPE (offset_field), offset_field,
+	     build (PLUS_EXPR, TREE_TYPE (offset_field), 
+		    offset_field, build_int_2 (tsize, 0)));
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  return addr;
 }
 
 /* This page contains routines that are used to determine what the function

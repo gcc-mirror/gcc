@@ -1,3 +1,14 @@
+Sun Jul 25 22:45:55 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.h (EXPAND_BUILTIN_SAVEREGS): Delete.
+	(BUILD_VA_LIST_TYPE): New.
+	(EXPAND_BUILTIN_VA_START): New.
+	(EXPAND_BUILTIN_VA_ARG): New.
+	* alpha.c (alpha_builtin_saveregs): Delete.
+	(alpha_build_va_list): New.
+	(alpha_va_start): New.
+	(alpha_va_arg): New.
+
 Sun Jul 25 21:40:33 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.texi: More changes related to list conversion.

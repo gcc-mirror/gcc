@@ -1161,19 +1161,22 @@ extern int alpha_memory_latency;
     {									\
       if (! (NO_RTL))							\
 	{								\
+	  rtx tmp; int set = get_varargs_alias_set ();			\
+	  tmp = gen_rtx_MEM (BLKmode,					\
+		             plus_constant (virtual_incoming_args_rtx,	\
+				            ((CUM) + 6)* UNITS_PER_WORD)); \
+	  MEM_ALIAS_SET (tmp) = set;					\
 	  move_block_from_reg						\
-	    (16 + CUM,							\
-	     gen_rtx (MEM, BLKmode,					\
-		      plus_constant (virtual_incoming_args_rtx,		\
-				     ((CUM) + 6)* UNITS_PER_WORD)),	\
+	    (16 + CUM, tmp,						\
 	     6 - (CUM), (6 - (CUM)) * UNITS_PER_WORD);			\
+									\
+	  tmp = gen_rtx_MEM (BLKmode,					\
+		             plus_constant (virtual_incoming_args_rtx,	\
+				            (CUM) * UNITS_PER_WORD));	\
+	  MEM_ALIAS_SET (tmp) = set;					\
 	  move_block_from_reg						\
-	    (16 + (TARGET_FPREGS ? 32 : 0) + CUM,			\
-	     gen_rtx (MEM, BLKmode,					\
-		      plus_constant (virtual_incoming_args_rtx,		\
-				     (CUM) * UNITS_PER_WORD)),		\
+	    (16 + (TARGET_FPREGS ? 32 : 0) + CUM, tmp,			\
 	     6 - (CUM), (6 - (CUM)) * UNITS_PER_WORD);			\
-	   emit_insn (gen_blockage ());					\
 	 }								\
       PRETEND_SIZE = 12 * UNITS_PER_WORD;				\
     }									\
@@ -1188,11 +1191,6 @@ extern struct rtx_def *alpha_emit_set_const ();
 extern struct rtx_def *alpha_emit_set_long_const ();
 extern struct rtx_def *alpha_emit_conditional_branch ();
 extern struct rtx_def *alpha_emit_conditional_move ();
-
-/* Generate necessary RTL for __builtin_saveregs().
-   ARGLIST is the argument list; see expr.c.  */
-extern struct rtx_def *alpha_builtin_saveregs ();
-#define EXPAND_BUILTIN_SAVEREGS(ARGLIST) alpha_builtin_saveregs (ARGLIST)
 
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  Note that we can't use "rtx" here
@@ -2348,6 +2346,18 @@ do {									\
   {"reg_not_elim_operand", {SUBREG, REG}},				\
   {"reg_no_subreg_operand", {REG}},
 
+/* Define the `__builtin_va_list' type for the ABI.  */
+#define BUILD_VA_LIST_TYPE(VALIST) \
+  (VALIST) = alpha_build_va_list ()
+
+/* Implement `va_start' for varargs and stdarg.  */
+#define EXPAND_BUILTIN_VA_START(stdarg, valist, nextarg) \
+  alpha_va_start (stdarg, valist, nextarg)
+
+/* Implement `va_arg'.  */
+#define EXPAND_BUILTIN_VA_ARG(valist, type) \
+  alpha_va_arg (valist, type)
+
 /* Tell collect that the object format is ECOFF.  */
 #define OBJECT_FORMAT_COFF
 #define EXTENDED_COFF
@@ -2548,3 +2558,6 @@ extern int alpha_expand_block_move ();
 extern int alpha_expand_block_clear ();
 extern void alpha_expand_prologue ();
 extern void alpha_expand_epilogue ();
+extern union tree_node *alpha_build_va_list ();
+extern void alpha_va_start ();
+extern struct rtx_def *alpha_va_arg ();
