@@ -2204,7 +2204,6 @@ extern void expand_throw			PROTO((tree));
 extern tree build_throw				PROTO((tree));
 
 /* in expr.c */
-/* skip cplus_expand_expr */
 extern void init_cplus_expand			PROTO((void));
 extern void fixup_result_decl			PROTO((tree, struct rtx_def *));
 extern int extract_init				PROTO((tree, tree));
@@ -2289,6 +2288,7 @@ extern tree snarf_defarg			PROTO((void));
 extern void add_defarg_fn			PROTO((tree));
 extern void do_pending_defargs			PROTO((void));
 extern int identifier_type			PROTO((tree));
+extern void yyhook				PROTO((int));
 
 /* in method.c */
 extern void init_method				PROTO((void));

@@ -197,7 +197,8 @@ CXX_TREE_H = $(TREE_H) cp-tree.h cp-tree.def
 PARSE_H = $(srcdir)/parse.h
 PARSE_C = $(srcdir)/parse.c
 
-parse.o : $(PARSE_C) $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h lex.h
+parse.o : $(PARSE_C) $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h lex.h \
+	$(srcdir)/../except.h $(srcdir)/../output.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(BIG_SWITCHFLAG) \
   `echo $(PARSE_C) | sed 's,^\./,,'`
 
@@ -230,15 +231,19 @@ spew.o : spew.c $(CONFIG_H) $(CXX_TREE_H) \
 lex.o : lex.c $(CONFIG_H) $(CXX_TREE_H) \
   $(PARSE_H) input.c $(srcdir)/../flags.h hash.h lex.h $(srcdir)/../c-pragma.h
 decl.o : decl.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
-  lex.h decl.h $(srcdir)/../stack.h
+  lex.h decl.h $(srcdir)/../stack.h $(srcdir)/../output.h  \
+  $(srcdir)/../except.h
 decl2.o : decl2.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
-  lex.h decl.h
+  lex.h decl.h $(srcdir)/../expr.h ../insn-codes.h $(srcdir)/../except.h \
+  $(srcdir)/../output.h $(srcdir)/../except.h
 typeck2.o : typeck2.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h
-typeck.o : typeck.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H)
+typeck.o : typeck.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \
+  $(srcdir)/../expr.h ../insn-codes.h
 class.o : class.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h
 call.o : call.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h class.h
 friend.o : friend.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H)
-init.o : init.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H)
+init.o : init.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \
+  $(srcdir)/../expr.h ../insn-codes.h
 method.o : method.c $(CONFIG_H) $(CXX_TREE_H) class.h
 cvt.o : cvt.c $(CONFIG_H) $(CXX_TREE_H) class.h
 search.o : search.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../stack.h $(srcdir)/../flags.h

@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cp-tree.h"
 #include "flags.h"
 #include "output.h"
+#include "expr.h"
 
 #ifdef HAVE_STRING_H
 #include <string.h>
@@ -5645,7 +5646,7 @@ expand_target_expr (t)
   do_pending_stack_adjust ();
   start_sequence_for_rtl_expr (xval);
   emit_note (0, -1);
-  rtxval = expand_expr (t, NULL_RTX, VOIDmode, 0);
+  rtxval = expand_expr (t, NULL_RTX, VOIDmode, EXPAND_NORMAL);
   do_pending_stack_adjust ();
   TREE_SIDE_EFFECTS (xval) = 1;
   RTL_EXPR_SEQUENCE (xval) = get_insns ();
@@ -7119,7 +7120,7 @@ c_expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       if (o[i] != TREE_VALUE (tail))
 	{
 	  expand_expr (build_modify_expr (o[i], NOP_EXPR, TREE_VALUE (tail)),
-		       const0_rtx, VOIDmode, 0);
+		       const0_rtx, VOIDmode, EXPAND_NORMAL);
 	  free_temp_slots ();
 	}
       /* Detect modification of read-only values.
