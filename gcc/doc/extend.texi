@@ -4316,7 +4316,7 @@ extern int printf (char *, ...);
 
 class a @{
  public:
-  sub (int i)
+  void sub (int i)
     @{
       printf ("__FUNCTION__ = %s\n", __FUNCTION__);
       printf ("__PRETTY_FUNCTION__ = %s\n", __PRETTY_FUNCTION__);
