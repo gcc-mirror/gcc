@@ -1,5 +1,11 @@
 2004-07-06  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/cpp_type_traits.h: Move the additions to
+	namespace __gnu_internal outside of namespace std; trivial
+	formatting fixes.
+
+2004-07-06  Paolo Carlini  <pcarlini@suse.de>
+
 	* docs/html/17_intro/contribute.html: Update some links.
 	* docs/html/17_intro/porting-howto.html: Likewise.
 	* docs/html/17_intro/porting-howto.xml: Likewise.
