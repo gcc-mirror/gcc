@@ -112,6 +112,7 @@ s/^cccp *:/cccp.exe :/
 s/cccp$/cccp.exe/
 s/cccp /cccp.exe /
 s/CCCP=cccp.exe/CCCP=cccp/
+s/(CCCP)$/(CCCP)$(exeext)/
 s/^cpp *:/cpp.exe :/
 s/cpp$/cpp.exe/
 s/cpp /cpp.exe /
