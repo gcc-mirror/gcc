@@ -1,3 +1,8 @@
+Wed Oct  7 17:33:39 1998  Richard Henderson  <rth@cygnus.com>
+
+	* gcse.c (pre_insert_insn): Tweek to notice that calls do not
+	always end basic blocks for abnormal edge reasons.
+
 Wed Oct  7 14:40:43 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/i386/i386.h: Remove definition of
