@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for HPPA.
-   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.c
 
 This file is part of GNU CC.
@@ -2878,7 +2878,7 @@ print_operand (file, x, code)
       else
 	fprintf (file, "0x%x", u1.i);
     }
-  else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) != DImode)
+  else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) != VOIDmode)
     {
       union { double d; int i[2]; } u;
       u.i[0] = XINT (x, 0); u.i[1] = XINT (x, 1);
