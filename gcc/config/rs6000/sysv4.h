@@ -1256,7 +1256,7 @@ do {						\
   %{rdynamic:-export-dynamic} \
   %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}}}"
 
-#define CPP_OS_GNU_SPEC "-D__unix__ -Dgnu_hurd -D__GNU__	\
+#define CPP_OS_GNU_SPEC "-D__unix__ -D__gnu_hurd__ -D__GNU__	\
 %{!undef:					                \
   %{!ansi: -Dunix -D__unix}}			                \
 -Asystem=gnu -Asystem=unix -Asystem=posix %{pthread:-D_REENTRANT}"

@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #undef STARTFILE_SPEC
 #undef ENDFILE_SPEC
 
-#define CPP_PREDEFINES "-D__ELF__ -Dunix -D__pj__ -Dgnu_linux -Dlinux -Asystem=posix"
+#define CPP_PREDEFINES "-D__ELF__ -Dunix -D__pj__ -D__gnu_linux__ -Dlinux -Asystem=posix"
 #define STARTFILE_SPEC "crt1.o%s crti.o%s crtbegin.o%s"
 #define ENDFILE_SPEC   "crtend.o%s crtn.o%s"
 

@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
 /* Names to predefine in the preprocessor for this target machine.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-DGCC -Dgcc -D__ELF__ -Dunix -Dgnu_linux -Dlinux -Asystem=posix -Acpu=i370 -Amachine=i370"
+#define CPP_PREDEFINES "-DGCC -Dgcc -D__ELF__ -Dunix -D__gnu_linux__ -Dlinux -Asystem=posix -Acpu=i370 -Amachine=i370"
 
 /* Options for this target machine.  */
 
