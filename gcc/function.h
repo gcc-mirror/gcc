@@ -127,6 +127,14 @@ struct function
   int emit_lineno;
   struct goto_fixup *goto_fixup_chain;
 
+  /* For exception handling information.  */
+  struct eh_stack ehstack;
+  struct eh_queue ehqueue;
+  rtx catch_clauses;
+  struct label_node *false_label_stack;
+  struct label_node *caught_return_label_stack;
+  tree protect_list;
+
   /* For expr.c.  */
   int pending_stack_adjust;
   int inhibit_defer_pop;

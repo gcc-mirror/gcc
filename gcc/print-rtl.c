@@ -108,6 +108,14 @@ print_rtx (in_rtx)
       {
       case 'S':
       case 's':
+	if (i == 3 && GET_CODE (in_rtx) == NOTE
+	    && (NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_EH_REGION_BEG
+		|| NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_EH_REGION_END))
+	  {
+	    fprintf (outfile, " %d", NOTE_BLOCK_NUMBER (in_rtx));
+	    sawclose = 1;
+	    break;
+	  }
 	if (XSTR (in_rtx, i) == 0)
 	  fprintf (outfile, " \"\"");
 	else

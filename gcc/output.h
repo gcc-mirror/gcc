@@ -140,6 +140,9 @@ extern void named_section		PROTO((tree, char *));
 /* Tell assembler to switch to the section for function DECL.  */
 extern void function_section		PROTO((tree));
 
+/* Tell assembler to switch to the section for the exception table.  */
+extern void exception_section		PROTO((void));
+
 /* Create the rtl to represent a function, for a function definition.
    DECL is a FUNCTION_DECL node which describes which function.
    The rtl is stored into DECL.  */

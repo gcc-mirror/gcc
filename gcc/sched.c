@@ -111,9 +111,11 @@ Boston, MA 02111-1307, USA.  */
    reg_n_calls_crossed, and reg_live_length.  Also, basic_block_head,
    basic_block_end.
 
-   The information in the line number notes is carefully retained by this
-   pass.  All other NOTE insns are grouped in their same relative order at
-   the beginning of basic blocks that have been scheduled.  */
+   The information in the line number notes is carefully retained by
+   this pass.  Notes that refer to the starting and ending of
+   exception regions are also carefully retained by this pass.  All
+   other NOTE insns are grouped in their same relative order at the
+   beginning of basic blocks that have been scheduled.  */
 
 #include <stdio.h>
 #include "config.h"
@@ -2078,7 +2080,7 @@ sched_analyze_insn (x, insn, loop_notes)
 	  sched_analyze_2 (XEXP (link, 0), insn);
       }
 
-  /* If there is a LOOP_{BEG,END} note in the middle of a basic block, then
+  /* If there is a {LOOP,EHREGION}_{BEG,END} note in the middle of a basic block, then
      we must be sure that no instructions are scheduled across it.
      Otherwise, the reg_n_refs info (which depends on loop_depth) would
      become incorrect.  */
@@ -2240,8 +2242,13 @@ sched_analyze (head, tail)
 		}
 	      reg_pending_sets_all = 1;
 
-	      /* Add a fake REG_NOTE which we will later convert
-		 back into a NOTE_INSN_SETJMP note.  */
+	      /* Add a pair of fake REG_NOTEs which we will later
+		 convert back into a NOTE_INSN_SETJMP note.  See
+		 reemit_notes for why we use a pair of of NOTEs.  */
+
+	      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_DEAD,
+					  GEN_INT (0),
+					  REG_NOTES (insn));
 	      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_DEAD,
 					  GEN_INT (NOTE_INSN_SETJMP),
 					  REG_NOTES (insn));
@@ -2285,12 +2292,18 @@ sched_analyze (head, tail)
 	  last_function_call = insn;
 	  n_insns += 1;
 	}
+
+      /* See comments on reemit_notes as to why we do this.  */
       else if (GET_CODE (insn) == NOTE
 	       && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
 		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END
+		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG
+		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END
 		   || (NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP
 		       && GET_CODE (PREV_INSN (insn)) != CALL_INSN)))
 	{
+	  loop_notes = gen_rtx (EXPR_LIST, REG_DEAD,
+				GEN_INT (NOTE_BLOCK_NUMBER (insn)), loop_notes);
 	  loop_notes = gen_rtx (EXPR_LIST, REG_DEAD,
 				GEN_INT (NOTE_LINE_NUMBER (insn)), loop_notes);
 	  CONST_CALL_P (loop_notes) = CONST_CALL_P (insn);
@@ -3077,10 +3090,12 @@ unlink_notes (insn, tail)
       /* Don't save away NOTE_INSN_SETJMPs, because they must remain
 	 immediately after the call they follow.  We use a fake
 	 (REG_DEAD (const_int -1)) note to remember them.
-	 Likewise with NOTE_INSN_LOOP_BEG and NOTE_INSN_LOOP_END.  */
+	 Likewise with NOTE_INSN_{LOOP,EHREGION}_{BEG, END}.  */
       else if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_SETJMP
 	       && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_BEG
-	       && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_END)
+	       && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_END
+	       && NOTE_LINE_NUMBER (insn) != NOTE_INSN_EH_REGION_BEG
+	       && NOTE_LINE_NUMBER (insn) != NOTE_INSN_EH_REGION_END)
 	{
 	  /* Insert the note at the end of the notes list.  */
 	  PREV_INSN (insn) = note_list;
@@ -3143,10 +3158,12 @@ finish_sometimes_live (regs_sometimes_live, sometimes_max)
     }
 }
 
-/* Search INSN for fake REG_DEAD notes for NOTE_INSN_SETJMP,
-   NOTE_INSN_LOOP_BEG, and NOTE_INSN_LOOP_END; and convert them back
-   into NOTEs.  LAST is the last instruction output by the instruction
-   scheduler.  Return the new value of LAST.  */
+/* Search INSN for fake REG_DEAD note pairs for NOTE_INSN_SETJMP,
+   NOTE_INSN_{LOOP,EHREGION}_{BEG,END}; and convert them back into
+   NOTEs.  The REG_DEAD note following first one is contains the saved
+   value for NOTE_BLOCK_NUMBER which is useful for
+   NOTE_INSN_EH_REGION_{BEG,END} NOTEs.  LAST is the last instruction
+   output by the instruction scheduler.  Return the new value of LAST.  */
 
 static rtx
 reemit_notes (insn, last)
@@ -3161,10 +3178,19 @@ reemit_notes (insn, last)
 	  && GET_CODE (XEXP (note, 0)) == CONST_INT)
 	{
 	  if (INTVAL (XEXP (note, 0)) == NOTE_INSN_SETJMP)
-	    CONST_CALL_P (emit_note_after (INTVAL (XEXP (note, 0)), insn))
-	      = CONST_CALL_P (note);
+	    {
+	      CONST_CALL_P (emit_note_after (INTVAL (XEXP (note, 0)), insn))
+		= CONST_CALL_P (note);
+	      remove_note (insn, note);
+	      note = XEXP (note, 1);
+	    }
 	  else
-	    last = emit_note_before (INTVAL (XEXP (note, 0)), last);
+	    {
+	      last = emit_note_before (INTVAL (XEXP (note, 0)), last);
+	      remove_note (insn, note);
+	      note = XEXP (note, 1);
+	      NOTE_BLOCK_NUMBER (last) = INTVAL (XEXP (note, 0));
+	    }
 	  remove_note (insn, note);
 	}
     }
@@ -3961,8 +3987,8 @@ schedule_block (b, file)
 	    }
 	}
 
-      /* Put back NOTE_INSN_SETJMP, NOTE_INSN_LOOP_BEGIN, and
-	 NOTE_INSN_LOOP_END notes.  */
+      /* Put back NOTE_INSN_SETJMP,
+         NOTE_INSN_{LOOP,EHREGION}_{BEGIN,END} notes.  */
 
       /* To prime the loop.  We need to handle INSN and all the insns in the
          sched group.  */

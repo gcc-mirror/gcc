@@ -118,6 +118,8 @@ rtx bcmp_libfunc;
 rtx memset_libfunc;
 rtx bzero_libfunc;
 
+rtx throw_libfunc;
+
 rtx eqhf2_libfunc;
 rtx nehf2_libfunc;
 rtx gthf2_libfunc;
@@ -4246,6 +4248,8 @@ init_optabs ()
   bcmp_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__gcc_bcmp");
   memset_libfunc = gen_rtx (SYMBOL_REF, Pmode, "memset");
   bzero_libfunc = gen_rtx (SYMBOL_REF, Pmode, "bzero");
+
+  throw_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__throw");
 
   eqhf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__eqhf2");
   nehf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__nehf2");

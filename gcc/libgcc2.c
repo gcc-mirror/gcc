@@ -2989,6 +2989,13 @@ int _exit_dummy_decl = 0;	/* prevent compiler & linker warnings */
 #endif /* L_exit */
 
 #ifdef L_eh
+
+#ifdef EH_TABLE_LOOKUP
+
+EH_TABLE_LOOKUP
+
+#else
+
 typedef struct {
   void *start;
   void *end;
@@ -3095,21 +3102,9 @@ void *pc;
 #endif
 
 #if 0
-  printf("find_first_eh_table_match(): else: returning NULL!\n");
+  printf ("find_first_eh_table_match(): else: returning NULL!\n");
 #endif
-  return (void*)0;
-}
-
-void *
-__throw_type_match (void *catch_type, void *throw_type, void* obj)
-{
-#if 0
- printf("__throw_type_match (): catch_type = %s, throw_type = %s\n",
-	catch_type, throw_type);
-#endif
- if (strcmp ((const char *)catch_type, (const char *)throw_type) == 0)
-   return obj;
- return 0;
+  return (void *) 0;
 }
 
 void
@@ -3139,6 +3134,19 @@ __register_exceptions (exception_table *table)
 
   node->next = exception_table_list;
   exception_table_list = node;
+}
+#endif
+
+void *
+__throw_type_match (void *catch_type, void *throw_type, void *obj)
+{
+#if 0
+ printf ("__throw_type_match (): catch_type = %s, throw_type = %s\n",
+	 catch_type, throw_type);
+#endif
+ if (strcmp ((const char *)catch_type, (const char *)throw_type) == 0)
+   return obj;
+ return 0;
 }
 
 void
