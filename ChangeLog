@@ -1,3 +1,7 @@
+2001-11-12  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	* MAINTAINERS (Write After Approval): Add self.
+
 2001-11-12  David O'Brien  <obrien@FreeBSD.org>
 
 	* MAINTAINERS: mips and s390 are also CPU ports.
