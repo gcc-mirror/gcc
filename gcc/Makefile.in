@@ -207,7 +207,6 @@ LIBGCC2_INCLUDES =
 
 # Things which must be built before building libgcc2.a.
 # Some targets override this to stmp-int-hdrs
-# Use of fixproto also depends on this.
 LIBGCC2_DEPS =
 
 # Enquire target (This is a variable so that a target can choose not to
@@ -1585,8 +1584,8 @@ patch-header: patch-header.o scan-decls.o scan.o xsys-protos.h $(HOST_OBSTACK)
 
 patch-header.o: xsys-protos.h
 
-# LIBGCC2_DEPS is to make sure fixincludes has already finished.
-stmp-fixproto: patch-header xsys-protos.h fixproto $(LIBGCC2_DEPS)
+# stmp-headers is to make sure fixincludes has already finished.
+stmp-fixproto: patch-header xsys-protos.h fixproto stmp-headers
 	CPP="$(GCC_FOR_TARGET) -E"; export CPP; \
 	  ${srcdir}/fixproto include include $(SYSTEM_HEADER_DIR)
 	touch stmp-fixproto
