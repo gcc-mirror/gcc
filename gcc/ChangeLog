@@ -1,3 +1,12 @@
+2000-10-17  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (FMT_FLAG_DOLLAR_MULTIPLE): Define.
+	(format_types): Use it for printf.
+	(maybe_read_dollar_number): Add parameter for the kind of format
+	involved.  Warn for multiple use for arguments if this is
+	inappropriate for the kind of format involved.
+	(check_format_info_main): Update calls to maybe_read_dollar_number.
+
 2000-10-17  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* inclhack.def (hpux_maxint): Also apply fix to values.h.

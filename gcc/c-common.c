@@ -1272,7 +1272,10 @@ enum
   FMT_FLAG_SCANF_A_KLUDGE = 2,
   /* A % during parsing a specifier is allowed to be a modified % rather
      that indicating the format is broken and we are out-of-sync.  */
-  FMT_FLAG_FANCY_PERCENT_OK = 4
+  FMT_FLAG_FANCY_PERCENT_OK = 4,
+  /* With $ operand numbers, it is OK to reference the same argument more
+     than once.  */
+  FMT_FLAG_DOLLAR_MULTIPLE = 8
   /* Not included here: details of whether width or precision may occur
      (controlled by width_char and precision_char); details of whether
      '*' can be used for these (width_type and precision_type); details
@@ -1692,7 +1695,7 @@ static const format_kind_info format_types[] =
 {
   { "printf",   printf_length_specs, print_char_table, " +#0-'I", NULL, 
     printf_flag_specs, printf_flag_pairs,
-    FMT_FLAG_ARG_CONVERT, 'w', 'p', 0, 'L',
+    FMT_FLAG_ARG_CONVERT|FMT_FLAG_DOLLAR_MULTIPLE, 'w', 'p', 0, 'L',
     &integer_type_node, &integer_type_node
   },
   { "scanf",    scanf_length_specs,  scan_char_table,  "*'I", NULL, 
@@ -1769,7 +1772,8 @@ static void status_warning PARAMS ((int *, const char *, ...))
 
 static void init_dollar_format_checking		PARAMS ((int, tree));
 static int maybe_read_dollar_number		PARAMS ((int *, const char **, int,
-							 tree, tree *));
+							 tree, tree *,
+							 const format_kind_info *));
 static void finish_dollar_format_checking	PARAMS ((int *, format_check_results *));
 
 static const format_flag_spec *get_flag_spec	PARAMS ((const format_flag_spec *,
@@ -2059,12 +2063,14 @@ init_dollar_format_checking (first_arg_num, params)
    a $ format is found, *FORMAT is updated to point just after it.  */
 
 static int
-maybe_read_dollar_number (status, format, dollar_needed, params, param_ptr)
+maybe_read_dollar_number (status, format, dollar_needed, params, param_ptr,
+			  fki)
      int *status;
      const char **format;
      int dollar_needed;
      tree params;
      tree *param_ptr;
+     const format_kind_info *fki;
 {
   int argnum;
   int overflow_flag;
@@ -2125,7 +2131,16 @@ maybe_read_dollar_number (status, format, dollar_needed, params, param_ptr)
 	      nalloc - dollar_arguments_alloc);
       dollar_arguments_alloc = nalloc;
     }
-  dollar_arguments_used[argnum - 1] = 1;
+  if (!(fki->flags & FMT_FLAG_DOLLAR_MULTIPLE)
+      && dollar_arguments_used[argnum - 1] == 1)
+    {
+      dollar_arguments_used[argnum - 1] = 2;
+      status_warning (status,
+		      "format argument %d used more than once in %s format",
+		      argnum, fki->name);
+    }
+  else
+    dollar_arguments_used[argnum - 1] = 1;
   if (dollar_first_arg_num)
     {
       int i;
@@ -2531,7 +2546,7 @@ check_format_info_main (status, res, info, format_chars, format_length,
 	  int opnum;
 	  opnum = maybe_read_dollar_number (status, &format_chars, 0,
 					    first_fillin_param,
-					    &main_arg_params);
+					    &main_arg_params, fki);
 	  if (opnum == -1)
 	    return;
 	  else if (opnum > 0)
@@ -2583,7 +2598,7 @@ check_format_info_main (status, res, info, format_chars, format_length,
 		  opnum = maybe_read_dollar_number (status, &format_chars,
 						    has_operand_number == 1,
 						    first_fillin_param,
-						    &params);
+						    &params, fki);
 		  if (opnum == -1)
 		    return;
 		  else if (opnum > 0)
@@ -2662,7 +2677,7 @@ check_format_info_main (status, res, info, format_chars, format_length,
 		  opnum = maybe_read_dollar_number (status, &format_chars,
 						    has_operand_number == 1,
 						    first_fillin_param,
-						    &params);
+						    &params, fki);
 		  if (opnum == -1)
 		    return;
 		  else if (opnum > 0)
