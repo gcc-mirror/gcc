@@ -2590,6 +2590,20 @@
 	    }
 	}
     }
+  /* Handle loading a large integer during reload */
+  else if (GET_CODE (operands[1]) == CONST_INT
+	   && ! const_ok_for_arm (INTVAL (operands[1]))
+	   && ! const_ok_for_arm (~INTVAL (operands[1])))
+    {
+      /* Writing a constant to memory needs a scratch, which should
+	 be handled with SECONDARY_RELOADs.  */
+      if (GET_CODE (operands[0]) != REG)
+	abort ();
+
+      operands[0] = gen_rtx (SUBREG, SImode, operands[0], 0);
+      emit_insn (gen_movsi (operands[0], operands[1]));
+      DONE;
+    }
 }
 ")
 
