@@ -1682,19 +1682,38 @@ demangle_special_name (dm)
 	  /* TC is a special g++ mangling for a construction vtable. */
 	  if (!flag_strict)
 	    {
+	      dyn_string_t derived_type;
+
 	      advance_char (dm);
 	      RETURN_IF_ERROR (result_append (dm, "construction vtable for "));
+
+	      /* Demangle the derived type off to the side.  */
+	      RETURN_IF_ERROR (result_push (dm));
 	      RETURN_IF_ERROR (demangle_type (dm));
+	      derived_type = (dyn_string_t) result_pop (dm);
+
 	      /* Demangle the offset.  */
 	      number = dyn_string_new (4);
 	      if (number == NULL)
-		return STATUS_ALLOCATION_FAILED;
+		{
+		  dyn_string_delete (derived_type);
+		  return STATUS_ALLOCATION_FAILED;
+		}
 	      demangle_number_literally (dm, number, 10, 1);
 	      /* Demangle the underscore separator.  */
-	      RETURN_IF_ERROR (demangle_char (dm, '_'));
+	      status = demangle_char (dm, '_');
+
 	      /* Demangle the base type.  */
-	      RETURN_IF_ERROR (result_append (dm, "-in-"));
-	      RETURN_IF_ERROR (demangle_type (dm));
+	      if (STATUS_NO_ERROR (status))
+		status = demangle_type (dm);
+
+	      /* Emit the derived type.  */
+	      if (STATUS_NO_ERROR (status))
+		status = result_append (dm, "-in-");
+	      if (STATUS_NO_ERROR (status))
+		status = result_append_string (dm, derived_type);
+	      dyn_string_delete (derived_type);
+
 	      /* Don't display the offset unless in verbose mode.  */
 	      if (flag_verbose)
 		{
