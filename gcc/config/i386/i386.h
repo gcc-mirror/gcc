@@ -3223,6 +3223,9 @@ struct machine_function GTY(())
   /* Set by ix86_compute_frame_layout and used by prologue/epilogue expander to
      determine the style used.  */
   int use_fast_prologue_epilogue;
+  /* Number of saved registers USE_FAST_PROLOGUE_EPILOGUE has been computed
+     for.  */
+  int use_fast_prologue_epilogue_nregs;
 };
 
 #define ix86_stack_locals (cfun->machine->stack_locals)
