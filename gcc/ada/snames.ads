@@ -751,7 +751,7 @@ package Snames is
    --  are added, the first character must be distinct.
 
    First_Task_Dispatching_Policy_Name  : constant Name_Id := N + 440;
-   Name_Fifo_Within_Priorities         : constant Name_Id := N + 440;
+   Name_FIFO_Within_Priorities         : constant Name_Id := N + 440;
    Last_Task_Dispatching_Policy_Name   : constant Name_Id := N + 440;
 
    --  Names of recognized checks for pragma Suppress

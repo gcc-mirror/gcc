@@ -1475,8 +1475,12 @@ package body Sem_Ch10 is
             end if;
          end if;
 
+         Set_Is_Immediately_Visible (Par_Unit, False);
+
          Analyze_Subunit_Context;
+
          Re_Install_Parents (Lib_Unit, Par_Unit);
+         Set_Is_Immediately_Visible (Par_Unit);
 
          --  If the context includes a child unit of the parent of the
          --  subunit, the parent will have been removed from visibility,

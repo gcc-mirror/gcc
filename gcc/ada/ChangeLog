@@ -1,3 +1,95 @@
+2004-02-12  Olivier Hainque  <hainque@act-europe.fr>
+
+	* decl.c (components_to_record): Don't claim that the internal fields
+	we make to hold the variant parts are semantically addressable, because
+	they are not.
+
+	* exp_pakd.adb (Create_Packed_Array_Type): Rename Esiz into PASize and
+	adjust the comment describing the modular type form when we can use it.
+	(Install_PAT): Account for the Esiz renaming.
+
+	* init.c (__gnat_error_handler for alpha-tru64): Arrange to clear the
+	sc_onstack context indication before raising the exception to which
+	the signal is mapped. Allows better handling of later signals possibly
+	triggered by the resumed user code if the exception is handled.
+
+2004-02-12  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* 5zinit.adb: Removed, no longer used.
+
+2004-02-12  Robert Dewar  <dewar@gnat.com>
+
+	* ali.adb: Remove separating space between parameters on R line. Makes
+	format consistent with format used by the binder for Set_Globals call.
+
+	* atree.ads, atree.adb: Minor reformatting (new function header format)
+
+	* bindgen.adb: Add Run-Time Globals documentation section containing
+	detailed documentation of the globals passed from the binder file to
+	the run time.
+
+	* gnatls.adb: Minor reformatting
+
+	* init.c (__gnat_set_globals): Add note pointing to documentation in
+	bindgen.
+
+	* lib-writ.ads, lib-writ.adb: Remove separating space between
+	parameters on R line.
+	Makes format consistent with format used by the binder for Set_Globals
+	call.
+
+	* osint.ads: Add 2004 to copyright notice
+	Minor reformatting
+
+	* snames.ads: Correct capitalization of FIFO_Within_Priorities
+	Noticed during code reading, documentation issue only
+
+	* usage.adb: Remove junk line for obsolete C switch
+	Noticed during code reading
+
+2004-02-12  Vincent Celier  <celier@gnat.com>
+
+	* bld.adb (Process_Declarative_Items): For Source_Dirs call gprcmd
+	extend for each directory, so that multiple /** directories are
+	extended individually.
+	(Recursive_Process): Set the default for LANGUAGES to ada
+
+	* gprcmd.adb: Define new command "ignore", to do nothing.
+	Implement new comment "path".
+
+	* Makefile.generic: Suppress output when SILENT is set
+	Make sure that when compiler for C/C++ is gcc, the correct -x switch is
+	used, so that the correct compiler is invoked.
+	When compiler is gcc/g++, put search path in env vars C_INCLUDE_PATH/
+	CXX_INCLUDE_PATH, to avoid failure with too long command lines.
+
+2004-02-12  Jerome Guitton  <guitton@act-europe.fr>
+
+	* Makefile.in: Clean ups and remove obsolete targets.
+
+2004-02-12  Ed Schonberg  <schonberg@gnat.com>
+
+	* exp_ch5.adb: Remove Possible_Unligned_Slice, in favor of the similar
+	predicate declared in exp_util.
+
+	* exp_util.adb: Add comments.
+
+	* sem_ch10.adb (Analyze_Subunit): Remove ultimate parent unit from
+	visibility before compiling context of the subunit.
+
+	* sem_res.adb (Check_Parameterless_Call): If the context expects a
+	value but the name is a procedure, do not attempt to analyze as a call,
+	in order to obtain more telling diagnostics.
+
+	* sem_util.adb (Wrong_Type): Further enhancement to diagnose missing
+	'Access on parameterless function calls.
+	(Normalize_Actuals): For a parameterless function call with missing
+	actuals, defer diagnostic until resolution of enclosing call.
+
+	* sem_util.adb (Wrong_Type): If the context type is an access to
+	subprogram and the expression is a procedure name, suggest a missing
+	'attribute.
+
 2004-02-10  Arnaud Charlet  <charlet@act-europe.fr>,
 	    Nathanael Nerode  <neroden@gcc.gnu.org>
 

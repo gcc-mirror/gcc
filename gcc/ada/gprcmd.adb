@@ -38,6 +38,9 @@
 --    deps         post process dependency makefiles
 --    stamp        copy file time stamp from file1 to file2
 --    prefix       get the prefix of the GNAT installation
+--    path         convert a list of directories to a path list, inserting a
+--                 path separator after each directory, including the last one
+--    ignore       do nothing
 
 with Gnatvsn;
 with Osint;   use Osint;
@@ -349,6 +352,10 @@ procedure Gprcmd is
                                 "copy file time stamp from file1 to file2");
       Put_Line (Standard_Error, "  prefix      " &
                                 "get the prefix of the GNAT installation");
+      Put_Line (Standard_Error, "  path        " &
+                                "convert a directory list into a path list");
+      Put_Line (Standard_Error, "  ignore      " &
+                                "do nothing");
       OS_Exit (1);
    end Usage;
 
@@ -363,7 +370,8 @@ begin
    begin
       if Cmd = "-v" then
 
-         --  Should this be on Standard_Error ???
+         --  Output on standard error, because only returned values should
+         --  go to standard output.
 
          Put (Standard_Error, "GPRCMD ");
          Put (Standard_Error, Gnatvsn.Gnat_Version_String);
@@ -473,6 +481,19 @@ begin
                end if;
             end if;
          end;
+
+      --  For "path" just add path separator after each directory argument
+
+      elsif Cmd = "path" then
+         for J in 2 .. Argument_Count loop
+            Put (Argument (J));
+            Put (Path_Separator);
+         end loop;
+
+      --  For "ignore" do nothing
+
+      elsif Cmd = "ignore" then
+         null;
 
       --  Unknown command
 

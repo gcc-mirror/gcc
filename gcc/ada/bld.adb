@@ -1504,11 +1504,11 @@ package body Bld is
                            --  being an absolute directory name.
 
                            Put (Project_Name &
-                                ".src_dirs:=$(shell gprcmd extend $(");
-                           Put (Project_Name);
-                           Put (".base_dir) '$(");
+                                ".src_dirs:=$(foreach name,$(");
                            Put_Attribute (Project, Pkg, Item_Name, No_Name);
-                           Put_Line (")')");
+                           Put ("),$(shell gprcmd extend $(");
+                           Put (Project_Name);
+                           Put_Line (".base_dir) '$(name)'))");
 
                         elsif Item_Name = Snames.Name_Source_Files then
 
@@ -2691,6 +2691,13 @@ package body Bld is
 
                IO.Mark (Src_List_File_Init);
                Put_Line ("src_list_file.specified:=FALSE");
+
+               --  Default language is Ada, but variable LANGUAGES may have
+               --  been changed by an imported Makefile. So, we set it
+               --  to "ada"; if attribute Languages is defined in the project
+               --  file, it will be redefined.
+
+               Put_Line ("LANGUAGES:=ada");
 
                --  <PROJECT>.src_dirs is set by default to the project
                --  directory.
