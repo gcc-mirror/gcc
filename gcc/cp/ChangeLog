@@ -1,3 +1,8 @@
+Sat Apr  4 12:52:35 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* method.c (check_btype): Add missing argument to xrealloc.
+	(check_ktype): Likewise.
+
 Fri Apr  3 02:22:59 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	Implement empty base optimization.
