@@ -175,7 +175,7 @@ java::lang::Thread::finish_ ()
 {
   natThread *nt = (natThread *) data;
   
-  group->remove (this);
+  group->removeThread (this);
 
 #ifdef ENABLE_JVMPI  
   if (_Jv_JVMPI_Notify_THREAD_END)

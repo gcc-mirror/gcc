@@ -1,3 +1,11 @@
+2000-06-21  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/ThreadGroup.java (add(Thread)): Rename to addThread() to
+	comply with classpath VM spec.
+	(add(Group)): Rename to addGroup().
+	* java/lang/Thread.java (Thread): Use addThread().
+	* java/lang/natThread.cc (finish_): Use removeThread().
+
 2000-06-20  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/ThreadGroup.java: Merged with classpath.
@@ -591,6 +599,7 @@
 	* include/i386-signal.h (MAKE_THROW_FRAME): Ditto.
 	* include/ppc-signal.h: New file.
 
+>>>>>>> 1.385
 2000-05-18  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/Thread.java: Declare `data' as Object, not RawData.
