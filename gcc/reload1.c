@@ -89,7 +89,7 @@ rtx *reg_equiv_constant;
    prior to any register elimination (such as frame pointer to stack
    pointer).  Depending on whether or not it is a valid address, this value
    is transferred to either reg_equiv_address or reg_equiv_mem.  */
-static rtx *reg_equiv_memory_loc;
+rtx *reg_equiv_memory_loc;
 
 /* Element N is the address of stack slot to which pseudo reg N is equivalent.
    This is used when the address is not valid as a memory address

@@ -1148,26 +1148,27 @@ SYSCALLS.c.X: $(srcdir)/sys-types.h $(srcdir)/sys-protos.h $(GCC_PASSES)
 	-rm -f SYSCALLS.c
 
 test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
-	-rm -f tmp-proto.*
+	-rm -f tmp-proto.[cso]
 	cp $(srcdir)/protoize.c tmp-proto.c
 	chmod u+w tmp-proto.c
-	./protoize -N -B ./ -c "-B./ -Wall -Wwrite-strings $(CFLAGS) \
-	  $(INCLUDES) \
+	./protoize -N -B ./ -x getopt.h -c "-B./ -Wall -Wwrite-strings \
+	  $(CFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=0 \
 	  -DGPLUSPLUS_INCLUDE_DIR=0 \
 	  -DCROSS_INCLUDE_DIR=0 \
 	  -DSTD_PROTO_DIR=0" tmp-proto.c
-	@echo Expect 324 lines of differences.
-	diff $(srcdir)/protoize.c tmp-proto.c | wc -l
-	./unprotoize -N -c "-B./ -Wall -Wwrite-strings $(CFLAGS) \
-	  $(INCLUDES) \
+	@echo '**********' Expect 402 lines of differences.
+	-diff $(srcdir)/protoize.c tmp-proto.c > tmp-proto.diff
+	-wc -l tmp-proto.diff
+	./unprotoize -N -x getopt.h -c "-B./ -Wall -Wwrite-strings \
+	  $(CFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=0 \
 	  -DGPLUSPLUS_INCLUDE_DIR=0 \
 	  -DCROSS_INCLUDE_DIR=0 \
 	  -DSTD_PROTO_DIR=0" tmp-proto.c
 	@echo Expect zero differences.
 	diff $(srcdir)/protoize.c tmp-proto.c | cat
-	-rm -f tmp-proto.*
+	-rm -f tmp-proto.[cso]
 
 # Remake the info files.
 
@@ -1203,8 +1204,8 @@ mostlyclean:
 	-rm -f tmplibgcc* tmpcopy
 	for name in $(LIB1FUNCS); do rm -f $${name}.c; done
 # Delete other temporary files.
-	-rm -f tmp-float.h tmp-*proto.1 tmp-gcc.xtar.Z tmp-limits.h gccnew
-	-rm -f tmp-foo1 tmp-foo2 tmp-proto.c
+	-rm -f tmp-float.h tmp-gcc.xtar.Z tmp-limits.h gccnew
+	-rm -f tmp-foo1 tmp-foo2 tmp-proto.*
 # Delete the stamp files.
 	-rm -f stamp-* tmp-*
 # Delete debugging dump files.
@@ -1374,7 +1375,9 @@ install-common: native install-dir
 	  ln $(bindir)/gcc $(bindir)/gcc-$(target)-1; \
 	  mv $(bindir)/gcc-$(target)-1 $(bindir)/gcc-$(target); \
 	fi
+	-rm -f $(bindir)/c++
 	$(INSTALL_PROGRAM) $(srcdir)/c++ $(bindir)/c++
+	-rm -f $(bindir)/g++
 	$(INSTALL_PROGRAM) $(srcdir)/g++ $(bindir)/g++
 	-rm -f $(libsubdir)/cpp
 	$(INSTALL_PROGRAM) cpp $(libsubdir)/cpp
