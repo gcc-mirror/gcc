@@ -1,3 +1,7 @@
+Tue Dec  2 19:40:43 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* stmt.c (expand_decl_cleanup): Update thisblock after eh_region_start.
+
 Tue Dec  2 12:54:33 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* unroll.c (find_splittable_givs):  Remove last change.  Handle givs
