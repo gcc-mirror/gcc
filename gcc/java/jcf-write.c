@@ -2935,7 +2935,8 @@ generate_classfile (clas, state)
       i = (body != NULL_TREE) + (DECL_FUNCTION_THROWS (part) != NULL_TREE);
 
       /* Make room for the Synthetic attribute (of zero length.)  */
-      if (DECL_FINIT_P (part) 
+      if (DECL_FINIT_P (part)
+	  || DECL_INSTINIT_P (part)
 	  || OUTER_FIELD_ACCESS_IDENTIFIER_P (DECL_NAME (part))
 	  || TYPE_DOT_CLASS (clas) == part)
 	{

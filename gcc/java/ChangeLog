@@ -1,3 +1,17 @@
+2001-08-16  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* jcf-parse.c (load_class): New locals saved and class_loaded. If
+	loading a class_or_name fails, try considering an innerclass name
+	and load the enclosing context.
+	* parse.y (resolve_inner_class): New function.
+	(find_as_inner_class): Added leading comment.
+	(register_incomplete_type): Keep the current context as enclosing
+	context for JDEP_FIELD dependencies.
+	(do_resolve_class): Locals new_class_decl and super initialized to
+	NULL. Call resolve_inner_class, explore the enclosing context
+	superclass if necessary.
+	Fixes PR java/4007
+
 2001-08-16  Tom Tromey  <tromey@redhat.com>
 
 	* jcf-dump.c (main): Updated for change to jcf_path_seal.
@@ -13,6 +27,47 @@
 	* Make-lang.in (java/decl.o): Update dependencies.
 	* decl.c: Include libfuncs.h, don't include toplev.h.
 
+2001-08-12  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* decl.c (init_decl_processing): exception_type_node,
+	class_not_found_type_node, and no_class_def_found_type_node
+	initialized. predef_filenames augmented accordingly.
+	instinit_identifier_node initialized.
+	* java-tree.def (INSTANCE_INITIALIZERS_EXPR): Entry removed.
+	* java-tree.h (enum java_tree_index): New entries
+	JTI_EXCEPTION_TYPE_NODE, JTI_CLASS_NOT_FOUND_TYPE_NODE,
+	JTI_NO_CLASS_DEF_FOUND_TYPE_NODE, JTI_INSTINIT_IDENTIFIER_NODE.
+	(exception_type_node): New macro.
+	(class_not_found_type_node): Likewise.
+	(no_class_def_found_type_node): Likewise.
+	(instinit_identifier_node): Likewise.
+	(PREDEF_FILENAMES_SIZE): Adjusted.
+	(TYPE_HAS_FINAL_VARIABLE): Fixed typo.
+	(struct lang_type): Fixed typo in bitfield name.
+	(DECL_INSTINIT_P): New macro.
+	(ID_INSTINIT_P): Likewise.
+	* jcf-write.c (generate_classfile): instinit$ bears the Synthetic
+	attribute.
+	* parse.y (encapsulate_with_try_catch): New function.
+	(generate_instinit): Likewise.
+	(build_instinit_invocation): Likewise.
+	(ctors_unchecked_throws_clause_p): Likewise.
+	(add_instance_initializer): Deleted.
+	(build_instance_initializer): Likewise.
+	(in_instance_initializer): Likewise.
+	(check_method_redefinition): instinit$ not to be verified.
+	(java_complete_expand_methods): Generate instinit$, simplified code.
+	(build_dot_class_method): Eliminated unnecessary locals. Use
+	encapsulate_with_try_catch, removed unnecessary code.
+	(fix_constructors): New local iii. Use build_instinit_invocation.
+	(patch_method_invocation): Added comment.
+	(maybe_use_access_method): Don't consider instinit$.
+	(find_applicable_accessible_methods_list): Shorten the search for
+	instinit$ too.
+	(java_complete_lhs): case INSTANCE_INITIALIZERS_EXPR removed.
+	(patch_return): Use DECL_INSTINIT_P instead of in_instance_initializer.
+	(patch_throw_statement): Likewise. Fixed typo.
+	
 2001-08-12  David Edelsohn  <edelsohn@gnu.org>
 
 	Revert:
@@ -30,6 +85,11 @@
 
 	* lex.h: Don't include setjmp.h.  Don't define
 	SET_FLOAT_HANDLER or prototype set_float_handler.
+
+2001-08-09  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* expr.c (java_lang_expand_expr): Call `expand_end_bindings' and
+	`poplevel' in the right order.
 
 2001-08-09  Richard Henderson  <rth@redhat.com>
 
@@ -390,7 +450,7 @@
 
 2001-05-07  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
-	* parse.y (fix_constructors): Removed unecessary assignment to
+	* parse.y (fix_constructors): Removed unnecessary assignment to
 	local. Moved assignment to `this$<n>', fixed comments and
 	indentation.
 	(build_wfl_wrap): Fixed indentation.
@@ -2912,7 +2972,7 @@ Sun Aug  6 00:47:24 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 2000-06-25  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (do_resolve_class): Minor optimiztion in the package
-	list search. Removed unecessary test and return statement.
+	list search. Removed unnecessary test and return statement.
 	(valid_ref_assignconv_cast_p): Order of arguments to
 	enclosing_context_p fixed.
 
@@ -3296,7 +3356,7 @@ Mon Apr 24 14:59:36 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 2000-04-24  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
-	* parse.y (source_start_java_method): Deleted unecessary code.
+	* parse.y (source_start_java_method): Deleted unnecessary code.
 	(patch_method_invocation): Fixed comment.
 
 2000-04-24  Robert Lipe <robertlipe@usa.net>
@@ -3860,7 +3920,7 @@ Fri Feb 25 18:00:37 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (resolve_expression_name): Use `orig' as a second
  	argument to resolve_field_access.
-	(resolve_field_access): Removed unecessary code when dealing with
+	(resolve_field_access): Removed unnecessary code when dealing with
  	static fields.
 
 Wed Feb 23 17:41:50 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
@@ -11650,7 +11710,7 @@ Thu Sep 11 19:45:18 1997  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	layout.
 	* typeck.c: (parse_signature_string): Temporary use permanent_obstack.
 	(build_java_signature): Temporary use permanent_obstack.
-	* verify.c: (verify_jvm_instruction): removed unecessary verification
+	* verify.c: (verify_jvm_instruction): removed unnecessary verification
 	on ACC_SUPER flag.
 	* java-tree.h (METHOD_NATIVE, METHOD_TRANSIENT): Defined.
 	(FIELD_VOLATILE, FIELD_TRANSIENT): Defined.

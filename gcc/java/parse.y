@@ -221,6 +221,7 @@ static tree string_constant_concatenation PARAMS ((tree, tree));
 static tree build_string_concatenation PARAMS ((tree, tree));
 static tree patch_string_cst PARAMS ((tree));
 static tree patch_string PARAMS ((tree));
+static tree encapsulate_with_try_catch PARAMS ((int, tree, tree, tree));
 static tree build_try_statement PARAMS ((int, tree, tree));
 static tree build_try_finally_statement PARAMS ((int, tree, tree));
 static tree patch_try_statement PARAMS ((tree));
@@ -229,6 +230,7 @@ static tree patch_throw_statement PARAMS ((tree, tree));
 static void check_thrown_exceptions PARAMS ((int, tree));
 static int check_thrown_exceptions_do PARAMS ((tree));
 static void purge_unchecked_exceptions PARAMS ((tree));
+static bool ctors_unchecked_throws_clause_p PARAMS ((tree));
 static void check_throws_clauses PARAMS ((tree, tree, tree));
 static void finish_method_declaration PARAMS ((tree));
 static tree build_super_invocation PARAMS ((tree));
@@ -239,8 +241,8 @@ static tree build_this_super_qualified_invocation PARAMS ((int, tree, tree,
 static const char *get_printable_method_name PARAMS ((tree));
 static tree patch_conditional_expr PARAMS ((tree, tree, tree));
 static tree generate_finit PARAMS ((tree));
-static void add_instance_initializer PARAMS ((tree));
-static tree build_instance_initializer PARAMS ((tree));
+static tree generate_instinit PARAMS ((tree));
+static tree build_instinit_invocation PARAMS ((tree));
 static void fix_constructors PARAMS ((tree));
 static tree build_alias_initializer_parameter_list PARAMS ((int, tree,
 							    tree, int *));
@@ -300,6 +302,8 @@ static tree maybe_make_nested_class_name PARAMS ((tree));
 static void make_nested_class_name PARAMS ((tree));
 static void set_nested_class_simple_name_value PARAMS ((tree, int));
 static void link_nested_class_to_enclosing PARAMS ((void));
+static tree resolve_inner_class PARAMS ((struct hash_table *, tree, tree *,
+					 tree *, tree));
 static tree find_as_inner_class PARAMS ((tree, tree, tree));
 static tree find_as_inner_class_do PARAMS ((tree, tree));
 static int check_inner_class_redefinition PARAMS ((tree, tree));
@@ -349,9 +353,6 @@ int do_not_fold;
 /* Cyclic inheritance report, as it can be set by layout_class */
 const char *cyclic_inheritance_report;
  
-/* Tell when we're within an instance initializer */
-static int in_instance_initializer;
-
 /* The current parser context */
 struct parser_ctxt *ctxp;
 
@@ -3528,6 +3529,74 @@ check_inner_class_redefinition (raw_name, cl)
   return 0;
 }
 
+/* Tries to find a decl for CLASS_TYPE within ENCLOSING. If we fail,
+   we remember ENCLOSING and SUPER.  */
+
+static tree
+resolve_inner_class (circularity_hash, cl, enclosing, super, class_type)
+     struct hash_table *circularity_hash;
+     tree cl, *enclosing, *super, class_type;
+{
+  tree local_enclosing = *enclosing;
+  tree local_super = NULL_TREE;
+
+  while (local_enclosing)
+    {
+      tree intermediate, decl;
+
+      hash_lookup (circularity_hash, 
+		   (const  hash_table_key) local_enclosing, TRUE, NULL);
+
+      if ((decl = find_as_inner_class (local_enclosing, class_type, cl)))
+	return decl;
+
+      intermediate = local_enclosing;
+      /* Explore enclosing contexts. */
+      while (INNER_CLASS_DECL_P (intermediate))
+	{
+	  intermediate = DECL_CONTEXT (intermediate);
+	  if ((decl = find_as_inner_class (intermediate, class_type, cl)))
+	    return decl;
+	}
+
+      /* Now go to the upper classes, bail out if necessary. We will
+	 analyze the returned SUPER and act accordingly (see
+	 do_resolve_class.) */
+      local_super = CLASSTYPE_SUPER (TREE_TYPE (local_enclosing));
+      if (!local_super || local_super == object_type_node)
+        break;
+
+      if (TREE_CODE (local_super) == POINTER_TYPE)
+        local_super = do_resolve_class (NULL, local_super, NULL, NULL);
+      else
+	local_super = TYPE_NAME (local_super);
+
+      /* We may not have checked for circular inheritance yet, so do so
+         here to prevent an infinite loop. */
+      if (hash_lookup (circularity_hash,
+		       (const hash_table_key) local_super, FALSE, NULL))
+        {
+          if (!cl)
+            cl = lookup_cl (local_enclosing);
+	  
+          parse_error_context
+            (cl, "Cyclic inheritance involving %s",
+	     IDENTIFIER_POINTER (DECL_NAME (local_enclosing)));
+	  local_enclosing = NULL_TREE;
+        }
+      local_enclosing = local_super;
+    }
+
+  /* We failed. Return LOCAL_SUPER and LOCAL_ENCLOSING. */
+  *super = local_super;
+  *enclosing = local_enclosing;
+
+  return NULL_TREE;
+}
+
+/* Within ENCLOSING, find a decl for NAME and return it. NAME can be
+   qualified. */
+
 static tree
 find_as_inner_class (enclosing, name, cl)
      tree enclosing, name, cl;
@@ -4363,29 +4432,71 @@ generate_finit (class_type)
   return mdecl;
 }
 
-static tree
-build_instance_initializer (mdecl)
-     tree mdecl;
-{
-  tree compound = NULL_TREE;
-  tree stmt_list = TYPE_II_STMT_LIST (DECL_CONTEXT (mdecl));
-  tree current;
+/* Generate a function to run the instance initialization code. The
+   private method is called `instinit$'. Unless we're dealing with an
+   anonymous class, we determine whether all ctors of CLASS_TYPE
+   declare a checked exception in their `throws' clause in order to
+   see whether it's necessary to encapsulate the instance initializer
+   statements in a try/catch/rethrow sequence.  */
 
-  for (current = stmt_list; current; current = TREE_CHAIN (current))
+static tree
+generate_instinit (class_type)
+     tree class_type;
+{
+  tree current;
+  tree compound = NULL_TREE;
+  tree parms = tree_cons (this_identifier_node,
+			  build_pointer_type (class_type), end_params_node);
+  tree mdecl = create_artificial_method (class_type, ACC_PRIVATE,
+					 void_type_node,
+					 instinit_identifier_node, parms);
+
+  layout_class_method (class_type, CLASSTYPE_SUPER (class_type),
+		       mdecl, NULL_TREE);
+
+  /* Gather all the statements in a compound */
+  for (current = TYPE_II_STMT_LIST (class_type); 
+       current; current = TREE_CHAIN (current))
     compound = add_stmt_to_compound (compound, NULL_TREE, current);
 
-  return compound;
+  /* We need to encapsulate COMPOUND by a try/catch statement to
+     rethrow exceptions that might occur in the instance initializer.
+     We do that only if all ctors of CLASS_TYPE are set to catch a
+     checked exception. This doesn't apply to anonymous classes (since
+     they don't have declared ctors.) */
+  if (!ANONYMOUS_CLASS_P (class_type) && 
+      ctors_unchecked_throws_clause_p (class_type))
+    {
+      compound = encapsulate_with_try_catch (0, exception_type_node, compound, 
+					     build1 (THROW_EXPR, NULL_TREE,
+						     build_wfl_node (wpv_id)));
+      DECL_FUNCTION_THROWS (mdecl) = build_tree_list (NULL_TREE,
+						      exception_type_node);
+    }
+
+  start_artificial_method_body (mdecl);
+  java_method_add_stmt (mdecl, compound);
+  end_artificial_method_body (mdecl);
+
+  return mdecl;
 }
 
-static void
-add_instance_initializer (mdecl)
-     tree mdecl;
+/* FIXME */
+static tree
+build_instinit_invocation (class_type)
+     tree class_type;
 {
-  tree compound = build_instance_initializer (mdecl);
+  tree to_return = NULL_TREE;
 
-  if (compound)
-    java_method_add_stmt (mdecl, build1 (INSTANCE_INITIALIZERS_EXPR,
-					 NULL_TREE, compound));
+  if (TYPE_II_STMT_LIST (class_type))
+    {
+      tree parm = build_tree_list (NULL_TREE,
+				   build_wfl_node (this_identifier_node));
+      to_return =
+	build_method_invocation (build_wfl_node (instinit_identifier_node),
+				 parm);
+    }
+  return to_return;
 }
 
 /* Shared accros method_declarator and method_header to remember the
@@ -5095,7 +5206,7 @@ register_incomplete_type (kind, wfl, decl, ptr)
   /* For some dependencies, set the enclosing class of the current
      class to be the enclosing context */
   if ((kind == JDEP_SUPER || kind == JDEP_INTERFACE 
-       || kind == JDEP_ANONYMOUS || kind == JDEP_FIELD)
+       || kind == JDEP_ANONYMOUS)
       && GET_ENCLOSING_CPC ())
     JDEP_ENCLOSING (new) = TREE_VALUE (GET_ENCLOSING_CPC ());
   else
@@ -5574,7 +5685,7 @@ tree
 do_resolve_class (enclosing, class_type, decl, cl)
      tree enclosing, class_type, decl, cl;
 {
-  tree new_class_decl, super;
+  tree new_class_decl = NULL_TREE, super = NULL_TREE;
   struct hash_table _ht, *circularity_hash = &_ht;
 
   /* This hash table is used to register the classes we're going
@@ -5590,57 +5701,24 @@ do_resolve_class (enclosing, class_type, decl, cl)
      being loaded from class file. FIXME. */
   while (enclosing)
     {
-      tree intermediate;
+      new_class_decl = resolve_inner_class (circularity_hash, cl, &enclosing,
+					    &super, class_type);
+      if (new_class_decl)
+	break;
 
-      hash_lookup (circularity_hash, 
-		   (const  hash_table_key) enclosing, TRUE, NULL);
-
-      if ((new_class_decl = find_as_inner_class (enclosing, class_type, cl)))
-	{
-	  hash_table_free (circularity_hash);
-	  return new_class_decl;
-	}
-
-      intermediate = enclosing;
-      /* Explore enclosing contexts. */
-      while (INNER_CLASS_DECL_P (intermediate))
-	{
-	  intermediate = DECL_CONTEXT (intermediate);
-	  if ((new_class_decl = find_as_inner_class (intermediate, 
-						     class_type, cl)))
-	    {
-	      hash_table_free (circularity_hash);
-	      return new_class_decl;
-	    }
-	}
-
-      /* Now go to the upper classes, bail out if necessary. */
-      super = CLASSTYPE_SUPER (TREE_TYPE (enclosing));
-      if (!super || super == object_type_node)
-        break;
-
-      if (TREE_CODE (super) == POINTER_TYPE)
-        super = do_resolve_class (NULL, super, NULL, NULL);
+      /* If we haven't found anything because SUPER reached Object and
+	 ENCLOSING happens to be an innerclass, try the enclosing context. */
+      if ((!super || super == object_type_node) && 
+	  enclosing && INNER_CLASS_DECL_P (enclosing))
+	enclosing = DECL_CONTEXT (enclosing);
       else
-	super = TYPE_NAME (super);
-
-      /* We may not have checked for circular inheritance yet, so do so
-         here to prevent an infinite loop. */
-      if (hash_lookup (circularity_hash,
-		       (const hash_table_key) super, FALSE, NULL))
-        {
-          if (!cl)
-            cl = lookup_cl (enclosing);
-	  
-          parse_error_context
-            (cl, "Cyclic inheritance involving %s",
-	     IDENTIFIER_POINTER (DECL_NAME (enclosing)));
-          break;
-        }
-      enclosing = super;
+	enclosing = NULL_TREE;
     }
 
   hash_table_free (circularity_hash);
+
+  if (new_class_decl)
+    return new_class_decl;
 
   /* 1- Check for the type in single imports. This will change
      TYPE_NAME() if something relevant is found */
@@ -5920,8 +5998,9 @@ check_method_redefinition (class, method)
 {
   tree redef, sig;
 
-  /* There's no need to verify <clinit> and finit$ */
-  if (DECL_CLINIT_P (method) || DECL_FINIT_P (method))
+  /* There's no need to verify <clinit> and finit$ and instinit$ */
+  if (DECL_CLINIT_P (method)
+      || DECL_FINIT_P (method) || DECL_INSTINIT_P (method))
     return 0;
 
   sig = TYPE_ARGUMENT_SIGNATURE (TREE_TYPE (method));
@@ -7460,7 +7539,7 @@ static void
 java_complete_expand_methods (class_decl)
      tree class_decl;
 {
-  tree clinit, finit, decl, first_decl;
+  tree clinit, decl, first_decl;
 
   current_class = TREE_TYPE (class_decl);
 
@@ -7482,13 +7561,15 @@ java_complete_expand_methods (class_decl)
   first_decl = TYPE_METHODS (current_class);
   clinit = maybe_generate_pre_expand_clinit (current_class);
 
-  /* Then generate finit$ (if we need to) because constructor will
+  /* Then generate finit$ (if we need to) because constructors will
    try to use it.*/
   if (TYPE_FINIT_STMT_LIST (current_class))
-    {
-      finit = generate_finit (current_class);
-      java_complete_expand_method (finit);
-    }
+    java_complete_expand_method (generate_finit (current_class));
+
+  /* Then generate instinit$ (if we need to) because constructors will
+     try to use it. */
+  if (TYPE_II_STMT_LIST (current_class))
+    java_complete_expand_method (generate_instinit (current_class));
 
   /* Now do the constructors */
   for (decl = first_decl ; !java_error_count && decl; decl = TREE_CHAIN (decl))
@@ -8498,9 +8579,7 @@ build_dot_class_method (class)
 #define BWF(S) build_wfl_node (get_identifier ((S)))
 #define MQN(X,Y) make_qualified_name ((X), (Y), 0)
   tree args, tmp, saved_current_function_decl, mdecl;
-  tree stmt, throw_stmt, catch, catch_block, try_block;
-  tree catch_clause_param;
-  tree class_not_found_exception, no_class_def_found_error;
+  tree stmt, throw_stmt;
 
   static tree get_message_wfl, type_parm_wfl;
 
@@ -8520,33 +8599,24 @@ build_dot_class_method (class)
   /* Build the qualified name java.lang.Class.forName */
   tmp = MQN (MQN (MQN (BWF ("java"), 
 		       BWF ("lang")), BWF ("Class")), BWF ("forName"));
-
-  /* For things we have to catch and throw */
-  class_not_found_exception = 
-    lookup_class (get_identifier ("java.lang.ClassNotFoundException"));
-  no_class_def_found_error = 
-    lookup_class (get_identifier ("java.lang.NoClassDefFoundError"));
-  load_class (class_not_found_exception, 1);
-  load_class (no_class_def_found_error, 1);
-
+  load_class (class_not_found_type_node, 1);
+  load_class (no_class_def_found_type_node, 1);
+  
   /* Create the "class$" function */
   mdecl = create_artificial_method (class, ACC_STATIC, 
 				    build_pointer_type (class_type_node),
 				    classdollar_identifier_node, args);
-  DECL_FUNCTION_THROWS (mdecl) = build_tree_list (NULL_TREE,
-						  no_class_def_found_error);
-  
+  DECL_FUNCTION_THROWS (mdecl) = 
+    build_tree_list (NULL_TREE, no_class_def_found_type_node);
+
   /* We start by building the try block. We need to build:
        return (java.lang.Class.forName (type)); */
   stmt = build_method_invocation (tmp, 
 				  build_tree_list (NULL_TREE, type_parm_wfl));
   stmt = build_return (0, stmt);
-  /* Put it in a block. That's the try block */
-  try_block = build_expr_block (stmt, NULL_TREE);
 
   /* Now onto the catch block. We start by building the expression
-     throwing a new exception: 
-       throw new NoClassDefFoundError (_.getMessage); */
+     throwing a new exception: throw new NoClassDefFoundError (_.getMessage) */
   throw_stmt = make_qualified_name (build_wfl_node (wpv_id), 
 				    get_message_wfl, 0);
   throw_stmt = build_method_invocation (throw_stmt, NULL_TREE);
@@ -8559,27 +8629,9 @@ build_dot_class_method (class)
   /* Build the throw, (it's too early to use BUILD_THROW) */
   throw_stmt = build1 (THROW_EXPR, NULL_TREE, throw_stmt);
 
-  /* Build the catch block to encapsulate all this. We begin by
-     building an decl for the catch clause parameter and link it to
-     newly created block, the catch block. */
-  catch_clause_param = 
-    build_decl (VAR_DECL, wpv_id, 
-		build_pointer_type (class_not_found_exception));
-  catch_block = build_expr_block (NULL_TREE, catch_clause_param);
-  
-  /* We initialize the variable with the exception handler. */
-  catch = build (MODIFY_EXPR, NULL_TREE, catch_clause_param,
-		 build (JAVA_EXC_OBJ_EXPR, ptr_type_node));
-  add_stmt_to_block (catch_block, NULL_TREE, catch);
-
-  /* We add the statement throwing the new exception */
-  add_stmt_to_block (catch_block, NULL_TREE, throw_stmt);
-
-  /* Build a catch expression for all this */
-  catch_block = build1 (CATCH_EXPR, NULL_TREE, catch_block);
-
-  /* Build the try/catch sequence */
-  stmt = build_try_statement (0, try_block, catch_block);
+  /* Encapsulate STMT in a try block. The catch clause executes THROW_STMT */
+  stmt = encapsulate_with_try_catch (0, class_not_found_type_node,
+				     stmt, throw_stmt);
 
   fix_method_argument_names (args, mdecl);
   layout_class_method (class, NULL_TREE, mdecl, NULL_TREE);
@@ -8620,6 +8672,7 @@ static void
 fix_constructors (mdecl)
      tree mdecl;
 {
+  tree iii;			/* Instance Initializer Invocation */
   tree body = DECL_FUNCTION_BODY (mdecl);
   tree thisn_assign, compound = NULL_TREE;
   tree class_type = DECL_CONTEXT (mdecl);
@@ -8661,9 +8714,9 @@ fix_constructors (mdecl)
 	 of that. */
       java_method_add_stmt (mdecl, build_super_invocation (mdecl));
 
-      /* Insert the instance initializer block right here, after the
-         super invocation. */
-      add_instance_initializer (mdecl);
+      /* FIXME */
+      if ((iii = build_instinit_invocation (class_type)))
+	java_method_add_stmt (mdecl, iii);
 
       end_artificial_method_body (mdecl);
     }
@@ -8674,7 +8727,6 @@ fix_constructors (mdecl)
       int invokes_this = 0;
       tree found_call = NULL_TREE;
       tree main_block = BLOCK_EXPR_BODY (body);
-      tree ii;			/* Instance Initializer */
       
       while (body)
 	switch (TREE_CODE (body))
@@ -8717,8 +8769,8 @@ fix_constructors (mdecl)
 	}
       
       /* Insert the instance initializer block right after. */
-      if (!invokes_this && (ii = build_instance_initializer (mdecl)))
-	compound = add_stmt_to_compound (compound, NULL_TREE, ii);
+      if (!invokes_this && (iii = build_instinit_invocation (class_type)))
+	compound = add_stmt_to_compound (compound, NULL_TREE, iii);
 
       /* Fix the constructor main block if we're adding extra stmts */
       if (compound)
@@ -10285,6 +10337,8 @@ patch_method_invocation (patch, primary, where, from_super,
   if (ret_decl)
     *ret_decl = list;
   patch = patch_invoke (patch, list, args);
+
+  /* Now is a good time to insert the call to finit$ */
   if (is_super_init && CLASS_HAS_FINIT_P (current_class))
     {
       tree finit_parms, finit_call;
@@ -10346,7 +10400,8 @@ maybe_use_access_method (is_super_init, mdecl, this_arg)
   if (is_super_init 
       || DECL_CONTEXT (md) == current_class
       || !PURE_INNER_CLASS_TYPE_P (current_class) 
-      || DECL_FINIT_P (md))
+      || DECL_FINIT_P (md)
+      || DECL_INSTINIT_P (md))
     return 0;
   
   /* If we're calling a method found in an enclosing class, generate
@@ -10717,10 +10772,10 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
       search_applicable_methods_list (lc, TYPE_METHODS (class), 
 				      name, arglist, &list, &all_list);
 
-      /* When looking finit$ or class$, we turn LC to 1 so that we
-	 only search in class. Note that we should have found
+      /* When looking finit$, class$ or instinit$, we turn LC to 1 so
+	 that we only search in class. Note that we should have found
 	 something at this point. */
-      if (ID_FINIT_P (name) || ID_CLASSDOLLAR_P (name))
+      if (ID_FINIT_P (name) || ID_CLASSDOLLAR_P (name) || ID_INSTINIT_P (name))
 	{
 	  lc = 1;
 	  if (!list)
@@ -11998,16 +12053,6 @@ java_complete_lhs (node)
       CAN_COMPLETE_NORMALLY (node) = 1;
       node = patch_incomplete_class_ref (node);
       if (node == error_mark_node)
-	return error_mark_node;
-      break;
-
-    case INSTANCE_INITIALIZERS_EXPR:
-      in_instance_initializer++;
-      node = java_complete_tree (TREE_OPERAND (node, 0));
-      in_instance_initializer--;
-      if (node != error_mark_node)
-	TREE_TYPE (node) = void_type_node;
-      else
 	return error_mark_node;
       break;
 
@@ -14709,12 +14754,12 @@ patch_return (node)
   if (!return_exp && (mtype != void_type_node && !DECL_CONSTRUCTOR_P (meth)))
     error_found = 2;
   
-  if (in_instance_initializer)
+  if (DECL_INSTINIT_P (current_function_decl))
     error_found = 1;
 
   if (error_found)
     {
-      if (in_instance_initializer)
+      if (DECL_INSTINIT_P (current_function_decl))
 	parse_error_context (wfl_operator,
 			     "`return' inside instance initializer");
 	
@@ -15234,6 +15279,39 @@ patch_switch_statement (node)
 
 /* 14.18 The try/catch statements */
 
+/* Encapsulate TRY_STMTS' in a try catch sequence. The catch clause
+   catches TYPE and executes CATCH_STMTS.  */
+
+static tree
+encapsulate_with_try_catch (location, type, try_stmts, catch_stmts)
+     int location;
+     tree type, try_stmts, catch_stmts;
+{
+  tree try_block, catch_clause_param, catch_block, catch;
+
+  /* First build a try block */
+  try_block = build_expr_block (try_stmts, NULL_TREE);
+
+  /* Build a catch block: we need a catch clause parameter */
+  catch_clause_param = build_decl (VAR_DECL, 
+				   wpv_id, build_pointer_type (type));
+  /* And a block */
+  catch_block = build_expr_block (NULL_TREE, catch_clause_param);
+  
+  /* Initialize the variable and store in the block */
+  catch = build (MODIFY_EXPR, NULL_TREE, catch_clause_param,
+		 build (JAVA_EXC_OBJ_EXPR, ptr_type_node));
+  add_stmt_to_block (catch_block, NULL_TREE, catch);
+
+  /* Add the catch statements */
+  add_stmt_to_block (catch_block, NULL_TREE, catch_stmts);
+
+  /* Now we can build a CATCH_EXPR */
+  catch_block = build1 (CATCH_EXPR, NULL_TREE, catch_block);
+
+  return build_try_statement (location, try_block, catch_block);
+}
+
 static tree
 build_try_statement (location, try_block, catches)
      int location;
@@ -15468,12 +15546,13 @@ patch_throw_statement (node, wfl_op1)
   unchecked_ok = IS_UNCHECKED_EXCEPTION_P (TREE_TYPE (type));
 
   SET_WFL_OPERATOR (wfl_operator, node, wfl_op1);
-  /* An instance can't throw a checked excetion unless that exception
+  /* An instance can't throw a checked exception unless that exception
      is explicitely declared in the `throws' clause of each
      constructor. This doesn't apply to anonymous classes, since they
      don't have declared constructors. */
   if (!unchecked_ok 
-      && in_instance_initializer && !ANONYMOUS_CLASS_P (current_class))
+      && DECL_INSTINIT_P (current_function_decl)
+      && !ANONYMOUS_CLASS_P (current_class))
     {
       tree current;
       for (current = TYPE_METHODS (current_class); current; 
@@ -15619,6 +15698,38 @@ purge_unchecked_exceptions (mdecl)
     }
   /* List is inverted here, but it doesn't matter */
   DECL_FUNCTION_THROWS (mdecl) = new;
+}
+
+/* This function goes over all of CLASS_TYPE ctors and checks whether
+   each of then features at least one unchecked exception in it
+   `throws' clause. If it's the case, it returns `true', `false'
+   otherwise.  */
+
+static bool
+ctors_unchecked_throws_clause_p (class_type)
+     tree class_type;
+{
+  tree current;
+
+  for (current = TYPE_METHODS (class_type); current;
+       current = TREE_CHAIN (current))
+    {
+      bool ctu = false;	/* Ctor Throws Unchecked */
+      if (DECL_CONSTRUCTOR_P (current))
+	{
+	  tree throws;
+	  for (throws = DECL_FUNCTION_THROWS (current); throws && !ctu;
+	       throws = TREE_CHAIN (throws))
+	    if (inherits_from_p (TREE_VALUE (throws), exception_type_node))
+	      ctu = true;
+	}
+      /* We return false as we found one ctor that is unfit. */
+      if (!ctu && DECL_CONSTRUCTOR_P (current))
+	return false;
+    }
+  /* All ctors feature at least one unchecked exception in their
+     `throws' clause. */
+  return true;
 }
 
 /* 15.24 Conditional Operator ?: */
