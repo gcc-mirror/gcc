@@ -710,6 +710,19 @@ count_register_operand (op, mode)
   return 0;
 }
 
+/* Returns 1 if op is an altivec register.  */
+int
+altivec_register_operand (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  
+  return (register_operand (op, mode)
+	  && (GET_CODE (op) != REG
+	      || REGNO (op) > FIRST_PSEUDO_REGISTER
+	      || ALTIVEC_REGNO_P (REGNO (op))));
+}
+
 int
 xer_operand (op, mode)
      rtx op;

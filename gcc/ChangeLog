@@ -1,3 +1,17 @@
+2002-02-12  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.md: Use predicate altivec_register_operand
+        for altivec_lvx* and altivec_stvx*.
+        ("*movv4si_internal"): Add constraint for loading from GPRs.
+        ("*movv8hi_internal1"): Same.
+        ("*movv16qi_internal1"): Same.
+        ("*movv4sf_internal1"): Same.
+
+        * config/rs6000/rs6000.c (altivec_register_operand): New.
+
+        * config/rs6000/rs6000.h (PREDICATE_CODES): Add
+        altivec_register_operand.
+
 2002-02-13  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.c (mmix_assemble_integer) <case 4>: Don't
