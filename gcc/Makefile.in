@@ -188,6 +188,10 @@ INSTALL_LIBGCC = install-libgcc
 # with or for libgcc1.a.
 LIBGCC1 = libgcc1.a
 
+# Specify the rule for making libgcc1.a for a cross-compiler.
+# The default rule assumes that libgcc1.a is supplied by the user.
+CROSS_LIBGCC1 = libgcc1.cross
+
 # Specify the rule for actually making libgcc2.a.
 LIBGCC2 = libgcc2.a
 
