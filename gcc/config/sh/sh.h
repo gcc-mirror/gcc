@@ -931,9 +931,6 @@ extern int current_function_anonymous_args;
    to do instead of doing that itself.  */
 #define SHIFT_COUNT_TRUNCATED 1
 
-/* We have the vprintf function.  */
-#define HAVE_VPRINTF 1
-
 /* All integers have the same format so truncation is easy.  */
 #define TRULY_NOOP_TRUNCATION(OUTPREC,INPREC)  1
 
