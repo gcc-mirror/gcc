@@ -1,3 +1,18 @@
+2003-12-27  Michael Koch  <konqueror@gmx.de>
+
+	* javax/print/attribute/ResolutionSyntax.java,
+	javax/print/attribute/SetOfIntegerSyntax.java,
+	javax/print/attribute/Size2DSyntax.java,
+	javax/print/attribute/standard/Copies.java,
+	javax/print/attribute/standard/JobImpressions.java,
+	javax/print/attribute/standard/JobMediaSheets.java,
+	javax/print/attribute/standard/NumberOfDocuments.java,
+	javax/print/attribute/standard/NumberOfInterveningJobs.java,
+	javax/print/attribute/standard/PagesPerMinute.java,
+	javax/print/attribute/standard/PagesPerMinuteColor.java,
+	javax/print/attribute/standard/QueuedJobCount.java:
+	Fixed typo (s/then/than/).
+
 2003-12-27  Guilhem Lavaux  <guilhem@kaffe.org>
 
 	* java/rmi/Naming.java (lookup): Check if the first character of the

@@ -60,7 +60,7 @@ public final class QueuedJobCount extends IntegerSyntax
     super(value);
 
     if (value < 0)
-      throw new IllegalArgumentException("value may not be less then 0");
+      throw new IllegalArgumentException("value may not be less than 0");
   }
   
   /**

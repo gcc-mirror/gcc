@@ -89,7 +89,7 @@ public abstract class SetOfIntegerSyntax
   protected SetOfIntegerSyntax(int member)
   {
     if (member < 0)
-      throw new IllegalArgumentException("member may not be less then 0");
+      throw new IllegalArgumentException("member may not be less than 0");
 
     this.members = new int[][]{{member, member}};
   }

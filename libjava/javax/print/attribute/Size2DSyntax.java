@@ -69,7 +69,7 @@ public abstract class Size2DSyntax implements Cloneable, Serializable
   protected Size2DSyntax(float x, float y, int units)
   {
     if (x < 0.0f || y < 0.0f)
-      throw new IllegalArgumentException("x and/or y may not be less then 0");
+      throw new IllegalArgumentException("x and/or y may not be less than 0");
 
     if (units < 1)
       throw new IllegalArgumentException("units may not be less then 1");

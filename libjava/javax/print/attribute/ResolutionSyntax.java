@@ -75,7 +75,7 @@ public abstract class ResolutionSyntax
     if (crossFeedResolution < 1
         || feedResolution < 1
         || units < 1)
-      throw new IllegalArgumentException("no argument may be less then 1");
+      throw new IllegalArgumentException("no argument may be less than 1");
 
     this.crossFeedResolution = crossFeedResolution * units;
     this.feedResolution = feedResolution * units;
