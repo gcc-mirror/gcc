@@ -871,7 +871,9 @@ register_operand (op, mode)
 	  && TEST_HARD_REG_BIT (reg_class_contents[(int) CLASS_CANNOT_CHANGE_SIZE],
 				REGNO (SUBREG_REG (op)))
 	  && (GET_MODE_SIZE (mode)
-	      != GET_MODE_SIZE (GET_MODE (SUBREG_REG (op)))))
+	      != GET_MODE_SIZE (GET_MODE (SUBREG_REG (op))))
+	  && GET_MODE_CLASS (GET_MODE (SUBREG_REG (op))) != MODE_COMPLEX_INT
+	  && GET_MODE_CLASS (GET_MODE (SUBREG_REG (op))) != MODE_COMPLEX_FLOAT)
 	return 0;
 #endif
 
