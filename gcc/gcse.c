@@ -928,7 +928,8 @@ free_gcse_mem ()
 
    SETP controls which hash table to look at.  If zero, this routine
    looks at the expr hash table; if nonzero this routine looks at
-   the set hash table.  */
+   the set hash table.  Additionally, TRANSP is computed as ~TRANSP,
+   since this is really cprop's ABSALTERED.  */
  
 static void
 compute_local_properties (transp, comp, antloc, setp)
@@ -942,7 +943,12 @@ compute_local_properties (transp, comp, antloc, setp)
   
   /* Initialize any bitmaps that were passed in.  */
   if (transp)
-    sbitmap_vector_ones (transp, n_basic_blocks);
+    {
+      if (setp)
+	sbitmap_vector_zero (transp, n_basic_blocks);
+      else
+	sbitmap_vector_ones (transp, n_basic_blocks);
+    }
   if (comp)
     sbitmap_vector_zero (comp, n_basic_blocks);
   if (antloc)

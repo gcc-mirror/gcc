@@ -1,3 +1,8 @@
+Sat Apr 17 21:30:11 1999  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
+
+	* gcse.c (compute_local_properties): If setp is nonzero, clear
+	TRANSP instead of setting it to all ones.
+
 Sat Apr 17 21:10:10 1999  Jan Hubicka <hubicka@freesoft.cz>
 
         * i386.c (i386_preferred_stack_boundary_string): New global variable.
