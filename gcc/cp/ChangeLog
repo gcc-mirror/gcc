@@ -1,3 +1,41 @@
+Thu Oct 13 17:44:55 1994  Jason Merrill  (jason@phydeaux.cygnus.com)
+
+        * method.c (build_decl_overload): Set numeric_outputed_need_bar to 0.
+
+Wed Oct 12 13:27:57 1994  Jason Merrill  (jason@phydeaux.cygnus.com)
+
+        * lex.c (real_yylex): Use HOST_BITS_PER_WIDE_INT to determine the
+        bitmask for lexing character constants.
+
+        * call.c (build_method_call): Disable code that tries to do tricky
+        stuff with a default parameter that is a constructor call, but
+        actually does other tricky stuff that breaks things.
+
+Wed Oct 12 16:14:01 1994  Benoit Belley  <belley@cae.ca>
+
+        * decl.c (finish_enum): Disable code which forces enums to be signed,
+        since this conflicts with their use as bitfields. type_promotes_to
+        handles promotion of enums of underlying unsigned types to signed
+        integer types.
+
+Wed Oct 12 13:24:03 1994  Jason Merrill  (jason@phydeaux.cygnus.com)
+
+        * cvt.c (type_promotes_to): Also promote enums to long if
+        appropriate.
+
+        * typeck.c (default_conversion): Don't expect type_promotes_to to
+        return a main variant.
+
+Wed Oct 12 12:19:45 1994  Jason Merrill  (jason@phydeaux.cygnus.com)
+
+        * call.c (build_scoped_method_call): Don't lose side effects in the
+        object expression when calling a non-existent destructor.
+
+Fri Sep  2 19:05:21 1994  Rohan Lenard  (rjl@iassf.easams.com.au)
+
+        * call.c (build_scoped_method_call): Remove erroneous error message
+        when destructor call is written as a scoped call.
+
 Tue Oct 11 23:48:31 1994  Jason Merrill  (jason@phydeaux.cygnus.com)
   
         * various: Cast pointer arguments to bzero and bcopy to char *.
