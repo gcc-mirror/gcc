@@ -48,6 +48,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define CPP_PREDEFINES "-Dunix -Di386 -Dsun386 -Dsun"
 
+/* Define size_t for built-in functions.  */
+
+#define SIZE_TYPE "int"
+
 /* Allow #sccs in preprocessor.  */
 
 #define SCCS_DIRECTIVE
