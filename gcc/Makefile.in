@@ -466,7 +466,7 @@ float.h: enquire
 enquire: enquire.o $(GCC_PARTS)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ENQUIRE_LDFLAGS) enquire.o -o $@
 enquire.o: $(srcdir)/enquire.c $(GCC_PASSES)
-	if [ "$(srcdir)" != "." ]; then rm -f enquire.c; else false; fi
+	-if [ "$(srcdir)" != "." ]; then rm -f enquire.c; else true; fi
 	-cp $(srcdir)/enquire.c . > /dev/null 2>&1
 # Breaking this line caused a problem with one version of GNU make.
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) $(ENQUIRE_CFLAGS) -I. -c enquire.c
@@ -741,7 +741,7 @@ rtl.o : rtl.c $(CONFIG_H) $(RTL_H)
 print-rtl.o : print-rtl.c $(CONFIG_H) $(RTL_H)
 rtlanal.o : rtlanal.c $(CONFIG_H) $(RTL_H)
 
-varasm.o : varasm.c $(CONFIG_H) $(TREE_H) $(RTL_H) flags.h \
+varasm.o : varasm.c $(CONFIG_H) $(TREE_H) $(RTL_H) flags.h defaults.h \
    insn-codes.h expr.h hard-reg-set.h regs.h xcoffout.h
 function.o : function.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h  \
    insn-flags.h insn-codes.h expr.h regs.h hard-reg-set.h insn-config.h \
@@ -1431,8 +1431,8 @@ install-common-headers: install-dir $(USER_H) gvarargs.h gstdarg.h gstddef.h
 # so that fixinc.svr4 can get at it if necessary.
 # If the dirs are the same, this won't do anything.
 # Delete file first in case it is read-only
-	if [ "$(srcdir)" != "." ]; then rm -f byteorder.h; else false; fi
-	-cp $(srcdir)/byteorder.h .
+	-if [ "$(srcdir)" != "." ]; then rm -f byteorder.h; else true; fi
+	-cp $(srcdir)/byteorder.h . > /dev/null 2>&1
 
 # $(libsubdir)/include:
 #	-if [ -d $(libsubdir)/include ] ; then true ; else mkdir $(libsubdir)/include ; fi
@@ -1556,8 +1556,11 @@ maketest:
 	-rm tm.h aux-output.c config.h md
 	make clean
 # You must then run config to set up for compilation.
-
-bootstrap: all force
+bootstrap: force
+# Only build the C compiler for stage1, because that is the only one that
+# we can guarantee will build with the native compiler, and also it is the
+# only thing useful for building stage2.
+	$(MAKE) LANGUAGES=c
 	$(MAKE) stage1
 # This used to define ALLOCA as empty, but that would lead to bad results
 # for a subsequent `make install' since that would not have ALLOCA empty.

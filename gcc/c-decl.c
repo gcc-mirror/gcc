@@ -2226,6 +2226,7 @@ init_decl_processing ()
   tree traditional_ptr_type_node;
   /* Data type of memcpy.  */
   tree memcpy_ftype;
+  tree void_ftype_any;
   int wchar_type_size;
   tree temp;
 
@@ -2386,6 +2387,9 @@ init_decl_processing ()
 
   endlink = tree_cons (NULL_TREE, void_type_node, NULL_TREE);
 
+  void_ftype_any
+    = build_function_type (void_type_node, 0);
+
   double_ftype_double
     = build_function_type (double_type_node,
 			   tree_cons (NULL_TREE, double_type_node, endlink));
@@ -2486,7 +2490,6 @@ init_decl_processing ()
 		    BUILT_IN_ALLOCA, "alloca");
   if (! flag_no_builtin && !flag_no_nonansi_builtin)
     {
-      tree exit_type;
       temp = builtin_function ("alloca",
 			       build_function_type (ptr_type_node,
 						    tree_cons (NULL_TREE,
@@ -2495,7 +2498,7 @@ init_decl_processing ()
 			       BUILT_IN_ALLOCA, 0);
       /* Suppress error if redefined as a non-function.  */
       DECL_BUILT_IN_NONANSI (temp) = 1;
-      temp = builtin_function ("_exit", exit_type, NOT_BUILT_IN, 0);
+      temp = builtin_function ("_exit", void_ftype_any, NOT_BUILT_IN, 0);
       TREE_THIS_VOLATILE (temp) = 1;
       TREE_SIDE_EFFECTS (temp) = 1;
       /* Suppress error if redefined as a non-function.  */
@@ -2548,8 +2551,6 @@ init_decl_processing ()
      However, honor the -fno-builtin option.  */
   if (!flag_no_builtin)
     {
-      tree exit_type;
-
       builtin_function ("abs", int_ftype_int, BUILT_IN_ABS, 0);
       builtin_function ("fabs", double_ftype_double, BUILT_IN_FABS, 0);
       builtin_function ("labs", long_ftype_long, BUILT_IN_LABS, 0);
@@ -2564,17 +2565,14 @@ init_decl_processing ()
 	 to avoid spurious "control drops through" warnings.  */
       /* Don't specify the argument types, to avoid errors
 	 from certain code which isn't valid in ANSI but which exists.  */
-      temp = builtin_function ("abort",
-			       build_function_type (void_type_node, 0),
-			       NOT_BUILT_IN, 0);
+      temp = builtin_function ("abort", void_ftype_any, NOT_BUILT_IN, 0);
       TREE_THIS_VOLATILE (temp) = 1;
       TREE_SIDE_EFFECTS (temp) = 1;
 #if 0
       /* Suppress error if redefined as a non-function.  */
       DECL_BUILT_IN_NONANSI (temp) = 1;
 #endif
-      exit_type = build_function_type (void_type_node, 0);
-      temp = builtin_function ("exit", exit_type, NOT_BUILT_IN, 0);
+      temp = builtin_function ("exit", void_ftype_any, NOT_BUILT_IN, 0);
       TREE_THIS_VOLATILE (temp) = 1;
       TREE_SIDE_EFFECTS (temp) = 1;
 #if 0
