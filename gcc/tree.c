@@ -3437,10 +3437,12 @@ type_hash_eq (const void *va, const void *vb)
     {
     case VOID_TYPE:
     case COMPLEX_TYPE:
-    case VECTOR_TYPE:
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       return 1;
+
+    case VECTOR_TYPE:
+      return TYPE_VECTOR_SUBPARTS (a->type) == TYPE_VECTOR_SUBPARTS (b->type);
 
     case ENUMERAL_TYPE:
       if (TYPE_VALUES (a->type) != TYPE_VALUES (b->type)
@@ -5542,9 +5544,12 @@ make_vector_type (tree innertype, int nunits, enum machine_mode mode)
 {
   tree t = make_node (VECTOR_TYPE);
 
-  TREE_TYPE (t) = innertype;
+  TREE_TYPE (t) = TYPE_MAIN_VARIANT (innertype);
   TYPE_VECTOR_SUBPARTS (t) = nunits;
   TYPE_MODE (t) = mode;
+  TYPE_READONLY (t) = TYPE_READONLY (innertype);
+  TYPE_VOLATILE (t) = TYPE_VOLATILE (innertype);
+
   layout_type (t);
 
   {
@@ -5562,6 +5567,16 @@ make_vector_type (tree innertype, int nunits, enum machine_mode mode)
        numbers equal.  */
     TYPE_UID (rt) = TYPE_UID (t);
   }
+
+  /* Build our main variant, based on the main variant of the inner type.  */
+  if (TYPE_MAIN_VARIANT (innertype) != innertype)
+    {
+      tree innertype_main_variant = TYPE_MAIN_VARIANT (innertype);
+      unsigned int hash = TYPE_HASH (innertype_main_variant);
+      TYPE_MAIN_VARIANT (t)
+        = type_hash_canon (hash, make_vector_type (innertype_main_variant,
+						   nunits, mode));
+    }
 
   return t;
 }

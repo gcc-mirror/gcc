@@ -1,3 +1,11 @@
+2004-11-24  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c++/16882
+
+	* call.c (standard_conversion): Move check for conversions between
+	vector pointers...
+	* typeck.c (ptr_reasonably_similar): ... here.
+
 2004-11-23  Ben Elliston  <bje@au.ibm.com>
 
 	* cp-tree.h (context_as_string): Remove extern.
