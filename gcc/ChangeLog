@@ -1,3 +1,11 @@
+2000-10-09  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* README.NS32K: Remove file.
+
+2000-10-09  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* README-bugs: Remove file.
+
 2000-10-08  Philipp Thomas  <pthomas@suse.de>
 	* aclocal.m4 (AM_GNU_GETTEXT): Fix non portable use of == operator
 	for test.
