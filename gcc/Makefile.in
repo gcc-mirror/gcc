@@ -692,7 +692,7 @@ cc1obj: $(P) $(OBJC_OBJS) $(OBJS) $(BC_OBJS) $(LIBDEPS)
 
 # Copy float.h from its source.
 gfloat.h: $(FLOAT_H)
-	rm -f gfloat.h
+	-rm -f gfloat.h
 	cp $(FLOAT_H) gfloat.h
 
 # Create float.h source for the native machine.
