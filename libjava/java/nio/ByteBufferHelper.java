@@ -88,13 +88,13 @@ final class ByteBufferHelper
 
     if (buffer.order() == ByteOrder.LITTLE_ENDIAN)
       {
-        buffer.put ((byte) (((int) value) & 0x00ff));
-        buffer.put ((byte) ((((int) value) & 0xff00) >> 8));
+        buffer.put ((byte) (value & 0x00ff));
+        buffer.put ((byte) ((value & 0xff00) >> 8));
       }
     else
       {
-        buffer.put ((byte) ((((int) value) & 0xff00) >> 8));
-        buffer.put ((byte) (((int) value) & 0x00ff));
+        buffer.put ((byte) ((value & 0xff00) >> 8));
+        buffer.put ((byte) (value & 0x00ff));
       }
 
     return buffer;
@@ -106,8 +106,8 @@ final class ByteBufferHelper
     
     if (buffer.order() == ByteOrder.LITTLE_ENDIAN)
       {
-        return (char) (((buffer.get (index + 1) & 0xff) << 8)
-                       + (buffer.get (index) & 0xff));
+        return (char) ((buffer.get (index) & 0xff)
+                       + ((buffer.get (index + 1) & 0xff) << 8));
       }
 
     return (char) (((buffer.get (index) & 0xff) << 8)
@@ -121,13 +121,13 @@ final class ByteBufferHelper
 
     if (buffer.order() == ByteOrder.LITTLE_ENDIAN)
       {
-        buffer.put (index + 1, (byte) ((((int) value) & 0x00ff) >> 8));
-        buffer.put (index, (byte) (((int) value) & 0xff00));
+        buffer.put (index, (byte) (value & 0xff00));
+        buffer.put (index + 1, (byte) ((value & 0x00ff) >> 8));
       }
     else
       {
-        buffer.put (index, (byte) ((((int) value) & 0xff00) >> 8));
-        buffer.put (index + 1, (byte) (((int) value) & 0x00ff));
+        buffer.put (index, (byte) ((value & 0xff00) >> 8));
+        buffer.put (index + 1, (byte) (value & 0x00ff));
       }
     
     return buffer;
@@ -153,13 +153,13 @@ final class ByteBufferHelper
 
     if (buffer.order() == ByteOrder.LITTLE_ENDIAN)
       {
-        buffer.put ((byte) (((int) value) & 0x00ff));
-        buffer.put ((byte) ((((int) value) & 0xff00) >> 8));
+        buffer.put ((byte) (value & 0x00ff));
+        buffer.put ((byte) ((value & 0xff00) >> 8));
       }
     else
       {
-        buffer.put ((byte) ((((int) value) & 0xff00) >> 8));
-        buffer.put ((byte) (((int) value) & 0x00ff));
+        buffer.put ((byte) ((value & 0xff00) >> 8));
+        buffer.put ((byte) (value & 0x00ff));
       }
 
     return buffer;
@@ -186,13 +186,13 @@ final class ByteBufferHelper
 
     if (buffer.order() == ByteOrder.LITTLE_ENDIAN)
       {
-        buffer.put (index + 1, (byte) ((((int) value) & 0xff00) >> 8));
-        buffer.put (index, (byte) (((int) value) & 0x00ff));
+        buffer.put (index, (byte) (value & 0x00ff));
+        buffer.put (index + 1, (byte) ((value & 0xff00) >> 8));
       }
     else
       {
-        buffer.put (index, (byte) ((((int) value) & 0xff00) >> 8));
-        buffer.put (index + 1, (byte) (((int) value) & 0x00ff));
+        buffer.put (index, (byte) ((value & 0xff00) >> 8));
+        buffer.put (index + 1, (byte) (value & 0x00ff));
       }
     
     return buffer;
@@ -263,10 +263,10 @@ final class ByteBufferHelper
 
     if (buffer.order() == ByteOrder.LITTLE_ENDIAN)
       {
-        buffer.put (index + 3, (byte) ((value & 0xff000000) >> 24));
-        buffer.put (index + 2, (byte) ((value & 0x00ff0000) >> 16));
-        buffer.put (index + 1, (byte) ((value & 0x0000ff00) >> 8));
         buffer.put (index, (byte) (value & 0x000000ff));
+        buffer.put (index + 1, (byte) ((value & 0x0000ff00) >> 8));
+        buffer.put (index + 2, (byte) ((value & 0x00ff0000) >> 16));
+        buffer.put (index + 3, (byte) ((value & 0xff000000) >> 24));
       }
     else
       {
@@ -289,16 +289,16 @@ final class ByteBufferHelper
                        + ((buffer.get() & 0xff) << 8)
                        + ((buffer.get() & 0xff) << 16)
                        + ((buffer.get() & 0xff) << 24)
-                       + ((buffer.get() & 0xff) << 32)
-                       + ((buffer.get() & 0xff) << 40)
-                       + ((buffer.get() & 0xff) << 48)
-                       + ((buffer.get() & 0xff) << 56));
+                       + ((buffer.get() & 0xffL) << 32)
+                       + ((buffer.get() & 0xffL) << 40)
+                       + ((buffer.get() & 0xffL) << 48)
+                       + ((buffer.get() & 0xffL) << 56));
       }
 
-    return (long) (((buffer.get() & 0xff) << 56)
-                   + ((buffer.get() & 0xff) << 48)
-                   + ((buffer.get() & 0xff) << 40)
-                   + ((buffer.get() & 0xff) << 32)
+    return (long) (((buffer.get() & 0xffL) << 56)
+                   + ((buffer.get() & 0xffL) << 48)
+                   + ((buffer.get() & 0xffL) << 40)
+                   + ((buffer.get() & 0xffL) << 32)
                    + ((buffer.get() & 0xff) << 24)
                    + ((buffer.get() & 0xff) << 16)
                    + ((buffer.get() & 0xff) << 8)
@@ -311,25 +311,25 @@ final class ByteBufferHelper
 
     if (buffer.order() == ByteOrder.LITTLE_ENDIAN)
       {
-        buffer.put ((byte) (value & 0xff00000000000000L));
-        buffer.put ((byte) ((value & 0x00ff000000000000L) >> 8));
-        buffer.put ((byte) ((value & 0x0000ff0000000000L) >> 16));
-        buffer.put ((byte) ((value & 0x000000ff00000000L) >> 24));
-        buffer.put ((byte) ((value & 0x00000000ff000000L) >> 32));
-        buffer.put ((byte) ((value & 0x0000000000ff0000L) >> 40));
-        buffer.put ((byte) ((value & 0x000000000000ff00L) >> 48));
-        buffer.put ((byte) ((value & 0x00000000000000ffL) >> 56));
+        buffer.put ((byte) (((int) value) & 0xff));
+        buffer.put ((byte) (((int) (value >> 8)) & 0xff));
+        buffer.put ((byte) (((int) (value >> 16)) & 0xff));
+        buffer.put ((byte) (((int) (value >> 24)) & 0xff));
+        buffer.put ((byte) (((int) (value >> 32)) & 0xff));
+        buffer.put ((byte) (((int) (value >> 40)) & 0xff));
+        buffer.put ((byte) (((int) (value >> 48)) & 0xff));
+        buffer.put ((byte) (((int) (value >> 56)) & 0xff));
       }
     else
       {
-        buffer.put ((byte) ((value & 0xff00000000000000L) >> 56));
-        buffer.put ((byte) ((value & 0x00ff000000000000L) >> 48));
-        buffer.put ((byte) ((value & 0x0000ff0000000000L) >> 40));
-        buffer.put ((byte) ((value & 0x000000ff00000000L) >> 32));
-        buffer.put ((byte) ((value & 0x00000000ff000000L) >> 24));
-        buffer.put ((byte) ((value & 0x0000000000ff0000L) >> 16));
-        buffer.put ((byte) ((value & 0x000000000000ff00L) >> 8));
-        buffer.put ((byte) (value & 0x00000000000000ffL));
+        buffer.put ((byte) (((int) (value >> 56)) & 0xff));
+        buffer.put ((byte) (((int) (value >> 48)) & 0xff));
+        buffer.put ((byte) (((int) (value >> 40)) & 0xff));
+        buffer.put ((byte) (((int) (value >> 32)) & 0xff));
+        buffer.put ((byte) (((int) (value >> 24)) & 0xff));
+        buffer.put ((byte) (((int) (value >> 16)) & 0xff));
+        buffer.put ((byte) (((int) (value >> 8)) & 0xff));
+        buffer.put ((byte) (((int) value) & 0xff));
       }
     
     return buffer;
@@ -345,16 +345,16 @@ final class ByteBufferHelper
                        + ((buffer.get (index + 1) & 0xff) << 8)
                        + ((buffer.get (index + 2) & 0xff) << 16)
                        + ((buffer.get (index + 3) & 0xff) << 24)
-                       + ((buffer.get (index + 4) & 0xff) << 32)
-                       + ((buffer.get (index + 5) & 0xff) << 40)
-                       + ((buffer.get (index + 6) & 0xff) << 48)
-                       + ((buffer.get (index + 7) & 0xff) << 56));
+                       + ((buffer.get (index + 4) & 0xffL) << 32)
+                       + ((buffer.get (index + 5) & 0xffL) << 40)
+                       + ((buffer.get (index + 6) & 0xffL) << 48)
+                       + ((buffer.get (index + 7) & 0xffL) << 56));
       }
 
-    return (long) (((buffer.get (index) & 0xff) << 56)
-                   + ((buffer.get (index + 1) & 0xff) << 48)
-                   + ((buffer.get (index + 2) & 0xff) << 40)
-                   + ((buffer.get (index + 3) & 0xff) << 32)
+    return (long) (((buffer.get (index) & 0xffL) << 56)
+                   + ((buffer.get (index + 1) & 0xffL) << 48)
+                   + ((buffer.get (index + 2) & 0xffL) << 40)
+                   + ((buffer.get (index + 3) & 0xffL) << 32)
                    + ((buffer.get (index + 4) & 0xff) << 24)
                    + ((buffer.get (index + 5) & 0xff) << 16)
                    + ((buffer.get (index + 6) & 0xff) << 8)
@@ -368,25 +368,25 @@ final class ByteBufferHelper
 
     if (buffer.order() == ByteOrder.LITTLE_ENDIAN)
       {
-        buffer.put (index + 7, (byte) ((value & 0xff00000000000000L) >> 56));
-        buffer.put (index + 6, (byte) ((value & 0x00ff000000000000L) >> 48));
-        buffer.put (index + 5, (byte) ((value & 0x0000ff0000000000L) >> 40));
-        buffer.put (index + 4, (byte) ((value & 0x000000ff00000000L) >> 32));
-        buffer.put (index + 3, (byte) ((value & 0x00000000ff000000L) >> 24));
-        buffer.put (index + 2, (byte) ((value & 0x0000000000ff0000L) >> 16));
-        buffer.put (index + 1, (byte) ((value & 0x000000000000ff00L) >> 8));
-        buffer.put (index, (byte) (value & 0x00000000000000ffL));
+        buffer.put (index, (byte) (((int) value) & 0xff));
+        buffer.put (index + 1, (byte) (((int) (value >> 8)) & 0xff));
+        buffer.put (index + 2, (byte) (((int) (value >> 16)) & 0xff));
+        buffer.put (index + 3, (byte) (((int) (value >> 24)) & 0xff));
+        buffer.put (index + 4, (byte) (((int) (value >> 32)) & 0xff));
+        buffer.put (index + 5, (byte) (((int) (value >> 40)) & 0xff));
+        buffer.put (index + 6, (byte) (((int) (value >> 48)) & 0xff));
+        buffer.put (index + 7, (byte) (((int) (value >> 56)) & 0xff));
       }
     else
       {
-        buffer.put (index, (byte) ((value & 0xff00000000000000L) >> 56));
-        buffer.put (index + 1, (byte) ((value & 0x00ff000000000000L) >> 48));
-        buffer.put (index + 2, (byte) ((value & 0x0000ff0000000000L) >> 40));
-        buffer.put (index + 3, (byte) ((value & 0x000000ff00000000L) >> 32));
-        buffer.put (index + 4, (byte) ((value & 0x00000000ff000000L) >> 24));
-        buffer.put (index + 5, (byte) ((value & 0x0000000000ff0000L) >> 16));
-        buffer.put (index + 6, (byte) ((value & 0x000000000000ff00L) >> 8));
-        buffer.put (index + 7, (byte) (value & 0x00000000000000ffL));
+        buffer.put (index, (byte) (((int) (value >> 56)) & 0xff));
+        buffer.put (index + 1, (byte) (((int) (value >> 48)) & 0xff));
+        buffer.put (index + 2, (byte) (((int) (value >> 40)) & 0xff));
+        buffer.put (index + 3, (byte) (((int) (value >> 32)) & 0xff));
+        buffer.put (index + 4, (byte) (((int) (value >> 24)) & 0xff));
+        buffer.put (index + 5, (byte) (((int) (value >> 16)) & 0xff));
+        buffer.put (index + 6, (byte) (((int) (value >> 8)) & 0xff));
+        buffer.put (index + 7, (byte) (((int) value) & 0xff));
       }
     
     return buffer;
@@ -394,196 +394,44 @@ final class ByteBufferHelper
 
   public static final float getFloat (ByteBuffer buffer)
   {
-    checkRemainingForRead (buffer, 4);
-
-    if (buffer.order() == ByteOrder.LITTLE_ENDIAN)
-      {
-        return (float) ((buffer.get() & 0xff)
-                        + ((buffer.get() & 0xff) << 8)
-                        + ((buffer.get() & 0xff) << 16)
-                        + ((buffer.get() & 0xff) << 24));
-      }
-
-    return (float) (((buffer.get() & 0xff) << 24)
-                    + ((buffer.get() & 0xff) << 16)
-                    + ((buffer.get() & 0xff) << 8)
-                    + (buffer.get() & 0xff));
+    return Float.intBitsToFloat (getInt (buffer));
   }
   
   public static final ByteBuffer putFloat (ByteBuffer buffer, float value)
   {
-    checkRemainingForWrite (buffer, 4);
-
-    if (buffer.order() == ByteOrder.LITTLE_ENDIAN)
-      {
-        buffer.put ((byte) (((int) value) & 0xff000000));
-        buffer.put ((byte) ((((int) value) & 0x00ff0000) >> 8));
-        buffer.put ((byte) ((((int) value) & 0x0000ff00) >> 16));
-        buffer.put ((byte) ((((int) value) & 0x000000ff) >> 24));
-      }
-    else
-      {
-        buffer.put ((byte) ((((int) value) & 0xff000000) >> 24));
-        buffer.put ((byte) ((((int) value) & 0x00ff0000) >> 16));
-        buffer.put ((byte) ((((int) value) & 0x0000ff00) >> 8));
-        buffer.put ((byte) (((int) value) & 0x000000ff));
-      }
-
-    return buffer;
+    return putInt (buffer, Float.floatToIntBits (value));
   }
   
   public static final float getFloat (ByteBuffer buffer, int index)
   {
-    checkAvailableForRead (buffer, index, 4);
-
-    if (buffer.order() == ByteOrder.LITTLE_ENDIAN)
-      {
-        return (float) ((buffer.get (index) & 0xff)
-                        + ((buffer.get (index + 1) & 0xff) << 8)
-                        + ((buffer.get (index + 2) & 0xff) << 16)
-                        + ((buffer.get (index + 3) & 0xff) << 24));
-      }
-
-    return (float) (((buffer.get (index) & 0xff) << 24)
-                    + ((buffer.get (index + 1) & 0xff) << 16)
-                    + ((buffer.get (index + 2) & 0xff) << 8)
-                    + (buffer.get (index + 3) & 0xff));
+    return Float.intBitsToFloat (getInt (buffer, index));
   }
 
   public static final ByteBuffer putFloat (ByteBuffer buffer, int index,
                                            float value)
   {
-    checkAvailableForWrite (buffer, index, 4);
-
-    if (buffer.order() == ByteOrder.LITTLE_ENDIAN)
-      {
-        buffer.put (index + 3, (byte) ((((int) value) & 0xff000000) >> 24));
-        buffer.put (index + 2, (byte) ((((int) value) & 0x00ff0000) >> 16));
-        buffer.put (index + 1, (byte) ((((int) value) & 0x0000ff00) >> 8));
-        buffer.put (index, (byte) (((int) value) & 0x000000ff));
-      }
-    else
-      {
-        buffer.put (index, (byte) ((((int) value) & 0xff000000) >> 24));
-        buffer.put (index + 1, (byte) ((((int) value) & 0x00ff0000) >> 16));
-        buffer.put (index + 2, (byte) ((((int) value) & 0x0000ff00) >> 8));
-        buffer.put (index + 3, (byte) (((int) value) & 0x000000ff));
-      }
-
-    return buffer;
+    return putInt (buffer, index, Float.floatToIntBits (value));
   }
 
   public static final double getDouble (ByteBuffer buffer)
   {
-    checkRemainingForRead (buffer, 8);
-
-    if (buffer.order() == ByteOrder.LITTLE_ENDIAN)
-      {
-        return (double) ((buffer.get() & 0xff)
-                         + ((buffer.get() & 0xff) << 8)
-                         + ((buffer.get() & 0xff) << 16)
-                         + ((buffer.get() & 0xff) << 24)
-                         + ((buffer.get() & 0xff) << 32)
-                         + ((buffer.get() & 0xff) << 40)
-                         + ((buffer.get() & 0xff) << 48)
-                         + ((buffer.get() & 0xff) << 56));
-      }
-
-    return (double) (((buffer.get() & 0xff) << 56)
-                     + ((buffer.get() & 0xff) << 48)
-                     + ((buffer.get() & 0xff) << 40)
-                     + ((buffer.get() & 0xff) << 32)
-                     + ((buffer.get() & 0xff) << 24)
-                     + ((buffer.get() & 0xff) << 16)
-                     + ((buffer.get() & 0xff) << 8)
-                     + (buffer.get() & 0xff));
+    return Double.longBitsToDouble (getLong (buffer));
   }
 
   public static final ByteBuffer putDouble (ByteBuffer buffer, double value)
   {
-    checkRemainingForWrite (buffer, 8);
-
-    if (buffer.order() == ByteOrder.LITTLE_ENDIAN)
-      {
-        buffer.put ((byte) (((long) value) & 0xff00000000000000L));
-        buffer.put ((byte) ((((long) value) & 0x00ff000000000000L) >> 8));
-        buffer.put ((byte) ((((long) value) & 0x0000ff0000000000L) >> 16));
-        buffer.put ((byte) ((((long) value) & 0x000000ff00000000L) >> 24));
-        buffer.put ((byte) ((((long) value) & 0x00000000ff000000L) >> 32));
-        buffer.put ((byte) ((((long) value) & 0x0000000000ff0000L) >> 40));
-        buffer.put ((byte) ((((long) value) & 0x000000000000ff00L) >> 48));
-        buffer.put ((byte) ((((long) value) & 0x00000000000000ffL) >> 56));
-      }
-    else
-      {
-        buffer.put ((byte) ((((long) value) & 0xff00000000000000L) >> 56));
-        buffer.put ((byte) ((((long) value) & 0x00ff000000000000L) >> 48));
-        buffer.put ((byte) ((((long) value) & 0x0000ff0000000000L) >> 40));
-        buffer.put ((byte) ((((long) value) & 0x000000ff00000000L) >> 32));
-        buffer.put ((byte) ((((long) value) & 0x00000000ff000000L) >> 24));
-        buffer.put ((byte) ((((long) value) & 0x0000000000ff0000L) >> 16));
-        buffer.put ((byte) ((((long) value) & 0x000000000000ff00L) >> 8));
-        buffer.put ((byte) (((long) value) & 0x00000000000000ffL));
-      }
-    
-    return buffer;
+    return putLong (buffer, Double.doubleToLongBits (value));
   }
   
   public static final double getDouble (ByteBuffer buffer, int index)
   {
-    checkAvailableForRead (buffer, index, 8);
-
-    if (buffer.order() == ByteOrder.LITTLE_ENDIAN)
-      {
-        return (double) ((buffer.get (index) & 0xff)
-                         + ((buffer.get (index + 1) & 0xff) << 8)
-                         + ((buffer.get (index + 2) & 0xff) << 16)
-                         + ((buffer.get (index + 3) & 0xff) << 24)
-                         + ((buffer.get (index + 4) & 0xff) << 32)
-                         + ((buffer.get (index + 5) & 0xff) << 40)
-                         + ((buffer.get (index + 6) & 0xff) << 48)
-                         + ((buffer.get (index + 7) & 0xff) << 56));
-      }
-
-    return (double) (((buffer.get (index) & 0xff) << 56)
-                     + ((buffer.get (index + 1) & 0xff) << 48)
-                     + ((buffer.get (index + 2) & 0xff) << 40)
-                     + ((buffer.get (index + 3) & 0xff) << 32)
-                     + ((buffer.get (index + 4) & 0xff) << 24)
-                     + ((buffer.get (index + 5) & 0xff) << 16)
-                     + ((buffer.get (index + 6) & 0xff) << 8)
-                     + (buffer.get (index + 7) & 0xff));
+    return Double.longBitsToDouble (getLong (buffer, index));
   }
   
   public static final ByteBuffer putDouble (ByteBuffer buffer, int index,
                                             double value)
   {
-    checkAvailableForWrite (buffer, index, 8);
-
-    if (buffer.order() == ByteOrder.LITTLE_ENDIAN)
-      {
-        buffer.put (index + 7, (byte) ((((long) value) & 0xff00000000000000L) >> 56));
-        buffer.put (index + 6, (byte) ((((long) value) & 0x00ff000000000000L) >> 48));
-        buffer.put (index + 5, (byte) ((((long) value) & 0x0000ff0000000000L) >> 40));
-        buffer.put (index + 4, (byte) ((((long) value) & 0x000000ff00000000L) >> 32));
-        buffer.put (index + 3, (byte) ((((long) value) & 0x00000000ff000000L) >> 24));
-        buffer.put (index + 2, (byte) ((((long) value) & 0x0000000000ff0000L) >> 16));
-        buffer.put (index + 1, (byte) ((((long) value) & 0x000000000000ff00L) >> 8));
-        buffer.put (index, (byte) (((long) value) & 0x00000000000000ffL));
-      }
-    else
-      {
-        buffer.put (index, (byte) ((((long) value) & 0xff00000000000000L) >> 56));
-        buffer.put (index + 1, (byte) ((((long) value) & 0x00ff000000000000L) >> 48));
-        buffer.put (index + 2, (byte) ((((long) value) & 0x0000ff0000000000L) >> 40));
-        buffer.put (index + 3, (byte) ((((long) value) & 0x000000ff00000000L) >> 32));
-        buffer.put (index + 4, (byte) ((((long) value) & 0x00000000ff000000L) >> 24));
-        buffer.put (index + 5, (byte) ((((long) value) & 0x0000000000ff0000L) >> 16));
-        buffer.put (index + 6, (byte) ((((long) value) & 0x000000000000ff00L) >> 8));
-        buffer.put (index + 7, (byte) (((long) value) & 0x00000000000000ffL));
-      }
-    
-    return buffer;
+    return putLong (buffer, index, Double.doubleToLongBits (value));
   }
 
 } // ByteBufferHelper
