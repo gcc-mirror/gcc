@@ -14,6 +14,13 @@
 
 1999-09-15  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (warn_extern_redeclared_static): Simplify.  Catch
+	problems with extern "C" functions redeclared as static.
+	(duplicate_decls): When a builtin is redeclared static, make the
+	new function have internal linkage.
+	
+1999-09-15  Mark Mitchell  <mark@codesourcery.com>
+
 	* decl2.c (build_expr_from_tree): Handle VA_ARG_EXPR.
 	* pt.c (tsubst_copy): Likewise.
 	* tree.c (search_tree): Likewise.
