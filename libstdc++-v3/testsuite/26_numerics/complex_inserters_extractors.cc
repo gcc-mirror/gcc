@@ -106,6 +106,7 @@ struct gnu_char_traits : public std::char_traits<char>
 { };
 
 typedef std::basic_ostringstream<char, gnu_char_traits> gnu_sstream;
+template class std::basic_string<char, gnu_char_traits, std::allocator<char> >;
 
 void test02()
 {
@@ -142,4 +143,7 @@ main()
 
   return 0;
 }
+
+
+
 

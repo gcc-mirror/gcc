@@ -189,8 +189,9 @@ sources = \
 	complex_io.cc functexcept.cc globals.cc ios.cc limits.cc \
 	locale.cc locale-inst.cc localename.cc \
 	collate.cc messages.cc moneypunct.cc numpunct.cc time.cc \
+	vterminate.cc \
 	misc-inst.cc stdexcept.cc stl-inst.cc string-inst.cc strstream.cc \
-	valarray-inst.cc wstring-inst.cc concept-inst.cc vterminate.cc
+	valarray-inst.cc wstring-inst.cc concept-inst.cc ext-inst.cc
 
 
 VPATH = $(top_srcdir)/src:$(top_srcdir)
@@ -266,9 +267,9 @@ LIBS = @LIBS@
 libstdc___la_OBJECTS =  basic_file.lo bitset.lo c++locale.lo cmath.lo \
 codecvt.lo complex_io.lo functexcept.lo globals.lo ios.lo limits.lo \
 locale.lo locale-inst.lo localename.lo collate.lo messages.lo \
-moneypunct.lo numpunct.lo time.lo misc-inst.lo stdexcept.lo stl-inst.lo \
-string-inst.lo strstream.lo valarray-inst.lo wstring-inst.lo \
-concept-inst.lo vterminate.lo
+moneypunct.lo numpunct.lo time.lo vterminate.lo misc-inst.lo \
+stdexcept.lo stl-inst.lo string-inst.lo strstream.lo valarray-inst.lo \
+wstring-inst.lo concept-inst.lo ext-inst.lo
 CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
