@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
+#include "real.h"
 
 int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
 
