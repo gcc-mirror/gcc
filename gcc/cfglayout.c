@@ -95,6 +95,7 @@ static void relate_bbs_with_scopes	PARAMS ((scope));
 static scope make_new_scope		PARAMS ((int, rtx));
 static void build_scope_forest		PARAMS ((scope_forest_info *));
 static void remove_scope_notes		PARAMS ((void));
+static void insert_intra_before_1	PARAMS ((scope, rtx *, basic_block));
 static void insert_intra_1		PARAMS ((scope, rtx *, basic_block));
 static void insert_intra_bb_scope_notes PARAMS ((basic_block));
 static void insert_inter_bb_scope_notes PARAMS ((basic_block, basic_block));
@@ -578,6 +579,32 @@ insert_intra_1 (s, ip, bb)
     }
 }
 
+/* Insert scope note pairs for a contained scope tree S before insn IP.  */
+
+static void
+insert_intra_before_1 (s, ip, bb)
+     scope s;
+     rtx *ip;
+     basic_block bb;
+{
+  scope p;
+
+  if (NOTE_BLOCK (s->note_beg))
+    {  
+      *ip = emit_note_before (NOTE_INSN_BLOCK_END, *ip);
+      NOTE_BLOCK (*ip) = NOTE_BLOCK (s->note_end);
+    } 
+
+  for (p = s->inner; p; p = p->next)
+    insert_intra_before_1 (p, ip, bb);
+
+  if (NOTE_BLOCK (s->note_beg))
+    {  
+      *ip = emit_note_before (NOTE_INSN_BLOCK_BEG, *ip);
+      NOTE_BLOCK (*ip) = NOTE_BLOCK (s->note_beg);
+    }
+}
+
 /* Insert NOTE_INSN_BLOCK_END notes and NOTE_INSN_BLOCK_BEG notes for
    scopes that are contained within BB.  */
 
@@ -661,15 +688,24 @@ insert_inter_bb_scope_notes (bb1, bb2)
   if (bb1)
     {
       rtx end = bb1->end;
-      scope s;
+      scope s, p;
 
       ip = RBI (bb1)->eff_end;
       for (s = RBI (bb1)->scope; s != com; s = s->outer)
-	if (NOTE_BLOCK (s->note_beg))
-	  {  
-	    ip = emit_note_after (NOTE_INSN_BLOCK_END, ip);
-	    NOTE_BLOCK (ip) = NOTE_BLOCK (s->note_end);
-	  }
+	{
+	  if (NOTE_BLOCK (s->note_beg))
+	    {  
+	      ip = emit_note_after (NOTE_INSN_BLOCK_END, ip);
+	      NOTE_BLOCK (ip) = NOTE_BLOCK (s->note_end);
+	    }
+
+	  /* Now emit all sibling scopes which don't span any basic
+	     blocks.  */
+	  if (s->outer)
+	    for (p = s->outer->inner; p; p = p->next)
+	      if (p != s && p->bb_beg == bb1 && p->bb_beg == p->bb_end)
+		insert_intra_1 (p, &ip, bb1);
+	}
 
       /* Emitting note may move the end of basic block to unwanted place.  */
       bb1->end = end;
@@ -678,15 +714,24 @@ insert_inter_bb_scope_notes (bb1, bb2)
   /* Open scopes.  */
   if (bb2)
     {
-      scope s;
+      scope s, p;
 
       ip = bb2->head;
       for (s = RBI (bb2)->scope; s != com; s = s->outer)
-	if (NOTE_BLOCK (s->note_beg))
-	  {  
-	    ip = emit_note_before (NOTE_INSN_BLOCK_BEG, ip);
-	    NOTE_BLOCK (ip) = NOTE_BLOCK (s->note_beg);
-	  }
+	{
+	  if (NOTE_BLOCK (s->note_beg))
+	    {  
+	      ip = emit_note_before (NOTE_INSN_BLOCK_BEG, ip);
+	      NOTE_BLOCK (ip) = NOTE_BLOCK (s->note_beg);
+	    }
+
+	  /* Now emit all sibling scopes which don't span any basic
+	     blocks.  */
+	  if (s->outer)
+	    for (p = s->outer->inner; p; p = p->next)
+	      if (p != s && p->bb_beg == bb2 && p->bb_beg == p->bb_end)
+		insert_intra_before_1 (p, &ip, bb2);
+	}
     }
 }
 
