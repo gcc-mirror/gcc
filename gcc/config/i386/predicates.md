@@ -553,11 +553,22 @@
   return op == const1_rtx || op == constm1_rtx;
 })
 
+;; True for registers, or 1 or -1.  Used to optimize double-word shifts.
+(define_predicate "reg_or_pm1_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (match_code "const_int")
+	    (match_test "op == const1_rtx || op == constm1_rtx"))))
+
 ;; True if OP is acceptable as operand of DImode shift expander.
 (define_predicate "shiftdi_operand"
   (if_then_else (match_test "TARGET_64BIT")
     (match_operand 0 "nonimmediate_operand")
     (match_operand 0 "register_operand")))
+
+(define_predicate "ashldi_input_operand"
+  (if_then_else (match_test "TARGET_64BIT")
+    (match_operand 0 "nonimmediate_operand")
+    (match_operand 0 "reg_or_pm1_operand")))
 
 ;; Return true if OP is a vector load from the constant pool with just
 ;; the first element non-zero.
