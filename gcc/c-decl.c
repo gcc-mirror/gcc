@@ -4266,6 +4266,10 @@ parmlist_tags_warning ()
   for (elt = current_binding_level->tags; elt; elt = TREE_CHAIN (elt))
     {
       enum tree_code code = TREE_CODE (TREE_VALUE (elt));
+      /* An anonymous union parm type is meaningful as a GNU extension.
+	 So don't warn for that.  */
+      if (code == UNION_TYPE && !pedantic)
+	continue;
       if (TREE_PURPOSE (elt) != 0)
 	warning ("`%s %s' declared inside parameter list",
 		 (code == RECORD_TYPE ? "struct"
