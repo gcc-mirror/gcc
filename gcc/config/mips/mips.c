@@ -6362,6 +6362,7 @@ compute_frame_size (size)
   long fmask;			/* mask of saved fp registers */
   int  fp_inc;			/* 1 or 2 depending on the size of fp regs */
   long fp_bits;			/* bitmask to use for each fp register */
+  tree return_type;
 
   gp_reg_size = 0;
   fp_reg_size = 0;
@@ -6380,6 +6381,7 @@ compute_frame_size (size)
     args_size = 4 * UNITS_PER_WORD;
 
   total_size = var_size + args_size + extra_size;
+  return_type = DECL_RESULT (current_function_decl);
 
   /* Calculate space needed for gp registers.  */
   for (regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
@@ -6398,12 +6400,9 @@ compute_frame_size (size)
 	      && regno == GP_REG_FIRST + 31
 	      && mips16_hard_float
 	      && ! mips_entry
-	      && ! aggregate_value_p (DECL_RESULT (current_function_decl))
-	      && (GET_MODE_CLASS (DECL_MODE (DECL_RESULT (current_function_decl)))
-		  == MODE_FLOAT)
-	      && (! TARGET_SINGLE_FLOAT
-		  || (GET_MODE_SIZE (DECL_MODE (DECL_RESULT (current_function_decl)))
-		      <= 4))))
+	      && ! aggregate_value_p (return_type)
+	      && GET_MODE_CLASS (DECL_MODE (return_type)) == MODE_FLOAT
+	      && GET_MODE_SIZE (DECL_MODE (return_type)) <= UNITS_PER_FPVALUE))
 	{
 	  gp_reg_size += GET_MODE_SIZE (gpr_mode);
 	  mask |= 1L << (regno - GP_REG_FIRST);
@@ -6854,12 +6853,10 @@ save_restore_insns (store_p, large_reg, large_offset, file)
   /* Save floating point registers if needed.  */
   if (fmask)
     {
-      int fp_inc = (TARGET_FLOAT64 || TARGET_SINGLE_FLOAT) ? 1 : 2;
-      int fp_size = fp_inc * UNITS_PER_FPREG;
-
       /* Pick which pointer to use as a base register.  */
       fp_offset = current_frame_info.fp_sp_offset;
-      end_offset = fp_offset - (current_frame_info.fp_reg_size - fp_size);
+      end_offset = fp_offset - (current_frame_info.fp_reg_size
+				- UNITS_PER_FPVALUE);
 
       if (fp_offset < 0 || end_offset < 0)
 	internal_error
@@ -6905,9 +6902,9 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 
       /* This loop must iterate over the same space as its companion in
 	 compute_frame_size.  */
-      for (regno = (FP_REG_LAST - fp_inc + 1);
+      for (regno = (FP_REG_LAST - FP_INC + 1);
 	   regno >= FP_REG_FIRST;
-	   regno -= fp_inc)
+	   regno -= FP_INC)
 	if (BITSET_P (fmask, regno - FP_REG_FIRST))
 	  {
 	    if (file == 0)
@@ -6939,7 +6936,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		fprintf (file, "(%s)\n", reg_names[REGNO(base_reg_rtx)]);
 	      }
 
-	    fp_offset -= fp_size;
+	    fp_offset -= UNITS_PER_FPVALUE;
 	  }
     }
 }
@@ -7769,23 +7766,24 @@ mips_expand_epilogue ()
 int
 mips_can_use_return_insn ()
 {
+  tree return_type;
+
   if (! reload_completed)
     return 0;
 
   if (regs_ever_live[31] || current_function_profile)
     return 0;
 
+  return_type = DECL_RESULT (current_function_decl);
+
   /* In mips16 mode, a function which returns a floating point value
      needs to arrange to copy the return value into the floating point
      registers.  */
   if (TARGET_MIPS16
       && mips16_hard_float
-      && ! aggregate_value_p (DECL_RESULT (current_function_decl))
-      && (GET_MODE_CLASS (DECL_MODE (DECL_RESULT (current_function_decl)))
-	  == MODE_FLOAT)
-      && (! TARGET_SINGLE_FLOAT
-	  || (GET_MODE_SIZE (DECL_MODE (DECL_RESULT (current_function_decl)))
-	      <= 4)))
+      && ! aggregate_value_p (return_type)
+      && GET_MODE_CLASS (DECL_MODE (return_type)) == MODE_FLOAT
+      && GET_MODE_SIZE (DECL_MODE (return_type)) <= UNITS_PER_FPVALUE)
     return 0;
 
   if (current_frame_info.initialized)
@@ -7951,41 +7949,23 @@ mips_function_value (valtype, func)
      just as PROMOTE_MODE does.  */
   mode = promote_mode (valtype, mode, &unsignedp, 1);
 
-  if (mclass == MODE_FLOAT)
+  if (mclass == MODE_FLOAT && GET_MODE_SIZE (mode) <= UNITS_PER_FPVALUE)
+    reg = FP_RETURN;
+
+  else if (mclass == MODE_COMPLEX_FLOAT
+	   && GET_MODE_SIZE (mode) <= UNITS_PER_FPVALUE * 2)
     {
-      if (TARGET_SINGLE_FLOAT
-	  && (mclass == MODE_FLOAT
-	      ? GET_MODE_SIZE (mode) > 4 : GET_MODE_SIZE (mode) / 2 > 4))
-	reg = GP_RETURN;
-      else
-	reg = FP_RETURN;
-    }
+      enum machine_mode cmode = TYPE_MODE (TREE_TYPE (valtype));
 
-  else if (mclass == MODE_COMPLEX_FLOAT)
-    {
-      if (TARGET_FLOAT64)
-	reg = FP_RETURN;
-      else if (mode == SCmode)
-	{
-	  /* When FP registers are 32 bits, we can't directly reference
-	     the odd numbered ones, so let's make a pair of evens.  */
-
-	  enum machine_mode cmode = TYPE_MODE (TREE_TYPE (valtype));
-
-	  return gen_rtx_PARALLEL
-	    (VOIDmode,
-	     gen_rtvec (2,
-			gen_rtx_EXPR_LIST (VOIDmode,
-					   gen_rtx_REG (cmode,
-							FP_RETURN),
-					   GEN_INT (0)),
-			gen_rtx_EXPR_LIST (VOIDmode,
-					   gen_rtx_REG (cmode,
-							FP_RETURN + 2),
-					   GEN_INT (4))));
-	}
-      else
-	reg = FP_RETURN;
+      return gen_rtx_PARALLEL
+	(VOIDmode,
+	 gen_rtvec (2,
+		    gen_rtx_EXPR_LIST (VOIDmode,
+				       gen_rtx_REG (cmode, FP_RETURN),
+				       GEN_INT (0)),
+		    gen_rtx_EXPR_LIST (VOIDmode,
+				       gen_rtx_REG (cmode, FP_RETURN + FP_INC),
+				       GEN_INT (GET_MODE_SIZE (cmode)))));
     }
 
   else if (TREE_CODE (valtype) == RECORD_TYPE
@@ -8680,8 +8660,7 @@ build_mips16_call_stub (retval, fnmem, arg_size, fp_code)
      register.  */
   fpret = (retval != 0
 	   && GET_MODE_CLASS (GET_MODE (retval)) == MODE_FLOAT
-	   && (! TARGET_SINGLE_FLOAT
-	       || GET_MODE_SIZE (GET_MODE (retval)) <= 4));
+	   && GET_MODE_SIZE (GET_MODE (retval)) <= UNITS_PER_FPVALUE);
 
   /* We don't need to do anything if there were no floating point
      arguments and the value will not be returned in a floating point

@@ -1591,6 +1591,13 @@ do {							\
 /* For MIPS, width of a floating point register.  */
 #define UNITS_PER_FPREG (TARGET_FLOAT64 ? 8 : 4)
 
+/* If register $f0 holds a floating-point value, $f(0 + FP_INC) is
+   the next available register.  */
+#define FP_INC (TARGET_FLOAT64 || TARGET_SINGLE_FLOAT ? 1 : 2)
+
+/* The largest size of value that can be held in floating-point registers.  */
+#define UNITS_PER_FPVALUE (FP_INC * UNITS_PER_FPREG)
+
 /* A C expression for the size in bits of the type `int' on the
    target machine.  If you don't define this, the default is one
    word.  */
