@@ -1642,6 +1642,7 @@ uninstall:
 	-rm -rf $(bindir)/protoize
 	-rm -rf $(bindir)/unprotoize
 	-rm -rf $(mandir)/gcc$(manext)
+	-rm -rf $(mandir)/g++$(manext)
 	-rm -rf $(mandir)/cccp$(manext)
 	-rm -rf $(mandir)/protoize$(manext)
 	-rm -rf $(mandir)/unprotoize$(manext)
@@ -1673,7 +1674,8 @@ gcc.xtar: distdir
 # Make the distribution.
 	tar chf gcc.xtar gcc-$(version)
 
-distdir: doc $(srcdir)/INSTALL c-parse.y objc-parse.y
+distdir: doc $(srcdir)/INSTALL c-parse.y objc-parse.y cp-parse.y \
+  c-parse.c cp-parse.c objc-parse.c cexp.c
 	if grep -s "for version ${version}" gcc.texi; \
 	then true; \
 	else echo "You must update the version number in \`gcc.texi'"; sleep 10;\
