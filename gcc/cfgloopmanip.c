@@ -988,6 +988,27 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e, struct loops *loops,
       /* Copy bbs.  */
       copy_bbs (bbs, n, new_bbs, spec_edges, 2, new_spec_edges, loop, loops);
 
+      /* Note whether the blocks and edges belong to an irreducible loop.  */
+      if (add_irreducible_flag)
+	{
+	  for (i = 0; i < n; i++)
+	    new_bbs[i]->rbi->duplicated = 1;
+	  for (i = 0; i < n; i++)
+	    {
+	      new_bb = new_bbs[i];
+	      if (new_bb->loop_father == target)
+		new_bb->flags |= BB_IRREDUCIBLE_LOOP;
+
+	      for (ae = new_bb->succ; ae; ae = ae->succ_next)
+		if (ae->dest->rbi->duplicated
+		    && (ae->src->loop_father == target
+			|| ae->dest->loop_father == target))
+		  ae->flags |= EDGE_IRREDUCIBLE_LOOP;
+	    }
+	  for (i = 0; i < n; i++)
+	    new_bbs[i]->rbi->duplicated = 0;
+	}
+
       /* Redirect the special edges.  */
       if (is_latch)
 	{
@@ -1010,22 +1031,6 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e, struct loops *loops,
       /* Record exit edge in this copy.  */
       if (orig && TEST_BIT (wont_exit, j + 1))
 	to_remove[(*n_to_remove)++] = new_spec_edges[SE_ORIG];
-
-      /* Note whether the blocks and edges belong to an irreducible loop.  */
-      if (add_irreducible_flag)
-	{
-	  for (i = 0; i < n; i++)
-	    {
-	      new_bb = new_bbs[i];
-	      if (new_bb->loop_father == target)
-		new_bb->flags |= BB_IRREDUCIBLE_LOOP;
-
-	      for (ae = new_bb->succ; ae; ae = ae->succ_next)
-		if (ae->src->loop_father == target
-		    || ae->dest->loop_father == target)
-		  ae->flags |= EDGE_IRREDUCIBLE_LOOP;
-	    }
-	}
 
       /* Record the first copy in the control flow order if it is not
 	 the original loop (i.e. in case of peeling).  */
