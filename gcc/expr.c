@@ -3459,7 +3459,7 @@ expand_assignment (to, from, want_value, suggest_reg)
 					     bitpos / BITS_PER_UNIT));
 
 	  emit_block_move (inner_to_rtx, from_rtx, expr_size (from),
-			   MIN (alignment, from_align) / BITS_PER_UNIT);
+			   MIN (alignment, from_align / BITS_PER_UNIT));
 	  free_temp_slots ();
 	  pop_temp_slots ();
 	  return to_rtx;
