@@ -1,3 +1,11 @@
+2004-08-30  Paolo Carlini  <pcarlini@suse.de>
+	    Kenneth C. Schalk  <ken@xorian.net>
+
+	PR libstdc++/17215
+	* config/io/basic_file_stdio.cc (__basic_file<char>::close()):
+	Check the return value of fclose/sync, loop on EINTR.
+	(__basic_file<char>::sys_open): Likewise, for sync.
+
 2004-08-29  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (time_get<>::_M_extract_via_format,
