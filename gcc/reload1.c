@@ -9094,9 +9094,6 @@ static int move2add_last_label_luid;
        && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (OUTMODE), \
 				 GET_MODE_BITSIZE (INMODE))))
 
-/* The source of the last set to cc0 we've seen.  */
-static rtx move2add_last_cc0;
-
 static void
 reload_cse_move2add (first)
      rtx first;
@@ -9109,7 +9106,6 @@ reload_cse_move2add (first)
 
   move2add_last_label_luid = 0;
   move2add_luid = 2;
-  move2add_last_cc0 = NULL_RTX;
   for (insn = first; insn; insn = NEXT_INSN (insn), move2add_luid++)
     {
       rtx pat, note;
@@ -9292,29 +9288,6 @@ reload_cse_move2add (first)
 	    }
 	}
       note_stores (PATTERN (insn), move2add_note_store, NULL);
-
-      /* If INSN is a conditional branch, we try to extract an
-	 implicit set out of it.  */
-      if (any_condjump_p (insn) && onlyjump_p (insn))
-	{
-	  rtx cnd = get_condition (insn, NULL);
-
-#ifdef HAVE_cc0
-	  if (cnd != NULL_RTX && move2add_last_cc0 != NULL_RTX)
-	    cnd = simplify_replace_rtx (cnd, cc0_rtx, move2add_last_cc0);
-#endif
-	  if (cnd != NULL_RTX
-	      && GET_CODE (cnd) == NE
-	      && GET_CODE (XEXP (cnd, 0)) == REG
-	      && SCALAR_INT_MODE_P (GET_MODE (XEXP (cnd, 0)))
-	      && GET_CODE (XEXP (cnd, 1)) == CONST_INT)
-	    {
-	      rtx implicit_set =
-		gen_rtx_SET (VOIDmode, SET_DEST (cnd), SET_SRC (cnd));
-	      move2add_note_store (SET_DEST (implicit_set), implicit_set, 0);
-	    }
-	}
-
       /* If this is a CALL_INSN, all call used registers are stored with
 	 unknown values.  */
       if (GET_CODE (insn) == CALL_INSN)
@@ -9359,13 +9332,6 @@ move2add_note_store (dst, set, data)
       if (GET_CODE (dst) == PRE_INC || GET_CODE (dst) == POST_INC
 	  || GET_CODE (dst) == PRE_DEC || GET_CODE (dst) == POST_DEC)
 	reg_set_luid[REGNO (XEXP (dst, 0))] = 0;
-      return;
-    }
-  /* Note a store into cc0 so that we can later find an implicit
-     set.  */
-  if (CC0_P (dst))
-    {
-      move2add_last_cc0 = SET_SRC (set);
       return;
     }
   if (GET_CODE (dst) != REG)
