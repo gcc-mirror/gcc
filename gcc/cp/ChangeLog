@@ -1,3 +1,7 @@
+2000-09-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* ir.texi: Move to ../c-tree.texi.
+
 2000-09-20  Jason Merrill  <jason@redhat.com>
 
 	* decl2.c (get_guard): Check DECL_FUNCTION_SCOPE_P.

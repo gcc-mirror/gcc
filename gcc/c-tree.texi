@@ -24,12 +24,12 @@
 @c ---------------------------------------------------------------------
 
 @setfilename ir.info
-@settitle G++ Internal Representation
+@settitle C/C++ Internal Representation
 @setchapternewpage on
 
 @ifinfo
-This manual documents the internal representation used by G++ to represent
-C++ source programs.
+This manual documents the internal representation used by GCC to represent
+C and C++ source programs.
 
 Copyright (c) 1999, 2000 Free Software Foundation, Inc.
 @end ifinfo
@@ -39,7 +39,7 @@ Copyright (c) 1999, 2000 Free Software Foundation, Inc.
 @c ---------------------------------------------------------------------
 
 @titlepage
-@title G++ Internal Representation
+@title C/C++ Internal Representation
 @author CodeSourcery, LLC <info@@codesourcery.com>
 @page
 @vskip 0pt plus 1filll
@@ -51,36 +51,43 @@ Copyright @copyright{} 1999, 2000 Free Software Foundation, Inc.
 @c ---------------------------------------------------------------------
 
 @node Top
-@top G++ Internal Representation
+@top C/C++ Internal Representation
 
-This manual documents the internal representation used by G++ to
-represent C++ source programs.  When presented with a C++ source
-program, G++ parses the program, performs semantic analysis (including
-the generation of error messages), and then produces the internal
-representation described here.  This representation contains a complete
-representation for the entire translation unit provided as input to the
-G++ front-end.  This representation is then typically processed by a
-code-generator in order to produce machine code, but could also be used
-in the creation of source browsers, intelligent editors, automatic
+This manual documents the internal representation used by GCC and C++ to
+represent C and C++ source programs.  When presented with a C or C++
+source program, GCC parses the program, performs semantic analysis
+(including the generation of error messages), and then produces the
+internal representation described here.  This representation contains a
+complete representation for the entire translation unit provided as
+input to the front-end.  This representation is then typically processed
+by a code-generator in order to produce machine code, but could also be
+used in the creation of source browsers, intelligent editors, automatic
 documentation generators, interpreters, and any other programs needing
-the ability to process C++ code.
+the ability to process C or C++ code.
 
 This manual explains the internal representation.  In particular, this
-manual documents the internal representation for C++ source constructs,
-and the macros, functions, and variables that can be used to access
-these constructs.
+manual documents the internal representation for C and C++ source
+constructs, and the macros, functions, and variables that can be used to
+access these constructs.
 
 If you are developing a ``back-end'', be it is a code-generator or some
 other tool, that uses this representation, you may occasionally find
 that you need to ask questions not easily answered by the functions and
 macros available here.  If that situation occurs, it is quite likely
-that G++ already supports the functionality you desire, but that the
+that GCC already supports the functionality you desire, but that the
 interface is simply not documented here.  In that case, you should ask
-the G++ maintainers (via mail to @url{mailto:gcc@@gcc.gnu.org}) about
+the GCC maintainers (via mail to @url{mailto:gcc@@gcc.gnu.org}) about
 documenting the functionality you require.  Similarly, if you find
 yourself writing functions that do not deal directly with your back-end,
-but instead might be useful to other people using the G++ front-end, you
-should submit your patches for inclusion in G++.
+but instead might be useful to other people using the GCC front-end, you
+should submit your patches for inclusion in GCC.
+
+This manual documents the C++ representation which is largely a superset
+of the representation used in the C front-end.  There is only one
+construct used in C that does not appear in the C++ front-end and that
+is the GNU ``nested function'' extension.  Many of the macros documented
+here do not apply in C because the corresponding language constructs do
+not appear in C.
 
 @menu
 * Deficiencies::        Topics net yet covered in this document.
@@ -344,9 +351,9 @@ The elements are indexed from zero.
 @findex TYPE_FIELDS
 @findex TYPE_PTROBV_P
 
-All C++ types have corresponding tree nodes.  However, you should not
-assume that there is exactly one tree node corresponding to each C++
-type.  There are often several.
+All types have corresponding tree nodes.  However, you should not assume
+that there is exactly one tree node corresponding to each type.  There
+are often several nodes each of which correspond to the same type.
 
 For the most part, different kinds of types have different tree codes.
 (For example, pointer types use a @code{POINTER_TYPE} code while arrays
@@ -1068,6 +1075,20 @@ the @code{DECL_REAL_CONTEXT} for @code{f} will be the
 @code{global_namespace}, but the @code{DECL_CLASS_CONTEXT} will be the
 @code{RECORD_TYPE} for @code{C}.
 
+The @code{DECL_REAL_CONTEXT} and @code{DECL_CLASS_CONTEXT} are not
+availble in C; instead you should simply use @code{DECL_CONTEXT}.  In C,
+the @code{DECL_CONTEXT} for a function maybe another function.  This
+representation indicates that the GNU nested function extension is in
+use.  For details on the semantics of nested functions, see the GCC
+Manual.  The nested function can refer to local variables in its
+containing function.  Such references are not explicitly marked in the
+tree sturcture; back-ends must look at the @code{DECL_CONTEXT} for the
+referenced @code{VAR_DECL}.  If the @code{DECL_CONTEXT} for the
+referenced @code{VAR_DECL} is not the same as the function currently
+being processed, and neither @code{DECL_EXTERNAL} nor @code{DECL_STATIC}
+hold, then the reference is to a local variable in a containing
+function, and the back-end must take appropriate action.
+
 @menu
 * Function Basics::     Function names, linkage, and so forth.
 * Function Bodies::     The statements that make up a function body.
@@ -1429,7 +1450,7 @@ statement like:
 asm ("mov x, y");
 @end example
 The @code{ASM_STRING} macro will return a @code{STRING_CST} node for
-@code{"mov x, y"}.  If the original statement made use of G++'s
+@code{"mov x, y"}.  If the original statement made use of the 
 extended-assembly syntax, then @code{ASM_OUTPUTS},
 @code{ASM_INPUTS}, and @code{ASM_CLOBBERS} will be the outputs, inputs,
 and clobbers for the statement, represented as @code{STRING_CST} nodes.
@@ -1467,7 +1488,7 @@ the same type as the condition expression in the switch statement.
 
 Otherwise, if both @code{CASE_LOW} and @code{CASE_HIGH} are defined, the
 statement is a range of case labels.  Such statements originate with the
-G++ extension that allows users to write things of the form:
+extension that allows users to write things of the form:
 @example
 case 2 ... 5:
 @end example
@@ -1508,7 +1529,10 @@ Used to mark the beginning (if @code{CTOR_BEGIN_P} holds) or end (if
 Used to represent a local declaration.  The @code{DECL_STMT_DECL} macro
 can be used to obtain the entity declared.  This declaration may be a
 @code{LABEL_DECL}, indicating that the label declared is a local label.
-(As an extension, GCC allows the declaration of labels with scope.)
+(As an extension, GCC allows the declaration of labels with scope.)  In
+C, this declaration may be a @code{FUNCTION_DECL}, indicating the
+use of the GCC nested function extension.  For more information,
+@pxref{Functions}.
 
 @item DO_STMT
 
@@ -1542,7 +1566,7 @@ expressions.
 @item GOTO_STMT
 
 Used to represent a @code{goto} statement.  The @code{GOTO_DESTINATION}
-will usually be a @code{LABEL_DECL}.  However, if G++'s ``computed
+will usually be a @code{LABEL_DECL}.  However, if the ``computed
 goto'' extension has been used, the @code{GOTO_DESTINATION} will be an
 arbitrary expression indicating the destination.  This expression will
 always have pointer type.
@@ -1731,11 +1755,11 @@ certain kinds of node being shared, nor should rely on certain kinds of
 nodes being unshared.
 
 The following macros can be used with all expression nodes:
+
 @ftable @code
 @item TREE_TYPE
 Returns the type of the expression.  This value may not be precisely the
-same type that would be given the expression in the original C++
-program.
+same type that would be given the expression in the original program.
 @end ftable
 
 In what follows, some nodes that one might expect to always have type
@@ -1750,6 +1774,7 @@ Below, we list the various kinds of expression nodes.  Except where
 noted otherwise, the operands to an expression are accessed using the
 @code{TREE_OPERAND} macro.  For example, to access the first operand to
 a binary plus expression @code{expr}, use:
+
 @example
 TREE_OPERAND (expr, 0)
 @end example
@@ -1759,6 +1784,7 @@ As this example indicates, the operands are zero-indexed.
 The table below begins with constants, moves on to unary expressions,
 then proceeds to binary expressions, and concludes with various other
 kinds of expressions:
+
 @table @code
 @item INTEGER_CST
 These nodes represent integer constants.  Note that the type of these
@@ -1871,7 +1897,7 @@ These nodes are used to represent the address of an object.  (These
 expressions will always have pointer or reference type.)  The operand may
 be another expression, or it may be a declaration.
 
-As an extension, G++ allows users to take the address of a label.  In
+As an extension, GCC allows users to take the address of a label.  In
 this case, the operand of the @code{ADDR_EXPR} will be a
 @code{LABEL_DECL}.  The type of such an expression is @code{void*}.
 
@@ -1939,7 +1965,7 @@ an expression for the code that should be executed to throw the
 exception.  However, there is one implicit action not represented in
 that expression; namely the call to @code{__throw}.  This function takes
 no arguments.  If @code{setjmp}/@code{longjmp} exceptions are used, the
-function @code{__sjthrow} is called instead.  The normal G++ back-end
+function @code{__sjthrow} is called instead.  The normal GCC back-end
 uses the function @code{emit_throw} to generate this code; you can
 examine this function to see what needs to be done.
 
@@ -1972,7 +1998,7 @@ boolean or integral type.
 @itemx TRUTH_XOR_EXPR
 These nodes represent logical and, logical or, and logical exclusive or.
 They are strict; both arguments are always evaluated.  There are no
-corresponding operators in C++, but the front-end will sometimes
+corresponding operators in C or C++, but the front-end will sometimes
 generate these expressions anyhow, if it can tell that strictness does
 not matter.
 
@@ -2038,26 +2064,30 @@ operand is the object (rather than a pointer to it); the second operand
 is the @code{FIELD_DECL} for the data member.
 
 @item COMPOUND_EXPR
-These nodes represent C or C++ comma-expressions.  The first operand is
-an expression whose value is computed and thrown away prior to the
+These nodes represent comma-expressions.  The first operand is an
+expression whose value is computed and thrown away prior to the
 evaluation of the second operand.  The value of the entire expression is
 the value of the second operand.
 
 @item COND_EXPR
-These nodes represent C or C++ @code{?:} expressions.  The first operand
+These nodes represent @code{?:} expressions.  The first operand
 is of boolean or integral type.  If it evaluates to a non-zero value,
 the second operand should be evaluated, and returned as the value of the
 expression.  Otherwise, the third operand is evaluated, and returned as
 the value of the expression.  As a GNU extension, the middle operand of
 the @code{?:} operator may be omitted in the source, like this:
+
 @example
 x ? : 3
 @end example
 @noindent
 which is equivalent to 
+
 @example
 x ? x : 3
 @end example
+
+@noindent
 assuming that @code{x} is an expression without side-effects.  However,
 in the case that the first operation causes side effects, the
 side-effects occur only once.  Consumers of the internal representation
@@ -2080,7 +2110,7 @@ arguments and some arguments are not explicitly provided at the call
 sites.
 
 @item STMT_EXPR
-These nodes are used to represent G++'s statement-expression extension.
+These nodes are used to represent GCC's statement-expression extension.
 The statement-expression extension allows code like this:
 @example
 int f() @{ return (@{ int j; j = 3; j + 7; @}); @}

@@ -1,3 +1,10 @@
+2000-09-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-tree.texi: Moved here from cp/ir.texi.  Documented nested
+	functions.  Generalize to handle both C and C++.
+	* Makefile.in (c-tree.info): New target.
+	(info): Add c-tree.info.
+	
 Sun Sep 24 09:15:48 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (store_field): If BITSIZE is negative, use size of type.
