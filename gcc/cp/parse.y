@@ -1338,8 +1338,8 @@ cast_expr:
 		  tree init = build_nt (CONSTRUCTOR, NULL_TREE,
 					nreverse ($3)); 
 		  if (pedantic)
-		    pedwarn ("ISO C++ forbids constructor-expressions");
-		  /* Indicate that this was a GNU C constructor expression.  */
+		    pedwarn ("ISO C++ forbids compound literals");
+		  /* Indicate that this was a C99 compound literal.  */
 		  TREE_HAS_CONSTRUCTOR (init) = 1;
 
 		  $$ = reparse_absdcl_as_casts ($$, init);
