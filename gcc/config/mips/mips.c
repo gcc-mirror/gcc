@@ -6884,10 +6884,10 @@ mips_select_rtx_section (mode, x)
 {
   if (TARGET_MIPS16)
     {
-      /* In mips16 mode, the constant table always goes in the .text
-         section, so that constants can be loaded using PC relative
+      /* In mips16 mode, the constant table always goes in the same section
+         as the function, so that constants can be loaded using PC relative
          addressing.  */
-      text_section ();
+      function_section (current_function_decl);
     }
   else if (TARGET_EMBEDDED_DATA)
     {

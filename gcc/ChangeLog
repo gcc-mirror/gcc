@@ -1,3 +1,11 @@
+Fri May  7 12:38:54 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* mips/elf64.h (MAKE_DECL_ONE_ONLY, UNIQUE_SECTION_P): Define.
+	* mips/mips.c (mips_select_rtx_section): When TARGET_MIPS16, use
+	function_section instead of text_section.
+	* mips/mips.h (ENCODE_SECTION_INFO): Add check for UNIQUE_SECTION_P
+	in TARGET_MIPS16 STRING_CST handling.
+
 Fri May  7 09:54:11 1999  Nick Clifton  <nickc@cygnus.com>
 
 	Patch from: Nick Burrett  <nick.burrett@btinternet.com>
