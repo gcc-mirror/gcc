@@ -998,16 +998,17 @@ tempfile (void)
 
 
 /* regular_file()-- Open a regular file.
- * Change flags->action if it is ACTION_UNSPECIFIED on entry.
+ * Change flags->action if it is ACTION_UNSPECIFIED on entry,
+ * unless an error occurs.
  * Returns the descriptor, which is less than zero on error. */
 
 static int
 regular_file (unit_flags *flags)
 {
   char path[PATH_MAX + 1];
-  struct stat statbuf;
   int mode;
   int rwflag;
+  int crflag;
   int fd;
 
   if (unpack_filename (path, ioparm.file, ioparm.file_len))
@@ -1040,21 +1041,20 @@ regular_file (unit_flags *flags)
   switch (flags->status)
     {
     case STATUS_NEW:
-      rwflag |= O_CREAT | O_EXCL;
+      crflag = O_CREAT | O_EXCL;
       break;
 
-    case STATUS_OLD:		/* file must exist, so check for its existence */
-      if (stat (path, &statbuf) < 0)
-	return -1;
+    case STATUS_OLD:		/* open will fail if the file does not exist*/
+      crflag = 0;
       break;
 
     case STATUS_UNKNOWN:
     case STATUS_SCRATCH:
-      rwflag |= O_CREAT;
+      crflag = O_CREAT;
       break;
 
     case STATUS_REPLACE:
-        rwflag |= O_CREAT | O_TRUNC;
+        crflag = O_CREAT | O_TRUNC;
       break;
 
     default:
@@ -1064,29 +1064,39 @@ regular_file (unit_flags *flags)
   /* rwflag |= O_LARGEFILE; */
 
   mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
-  fd = open (path, rwflag, mode);
-  if (flags->action == ACTION_UNSPECIFIED)
+  fd = open (path, rwflag | crflag, mode);
+  if (flags->action != ACTION_UNSPECIFIED)
+      return fd;
+
+  if (fd >= 0)
     {
-      if (fd < 0)
-        {
-          rwflag = rwflag & !O_RDWR | O_RDONLY;
-          fd = open (path, rwflag, mode);
-          if (fd < 0)
-            {
-	      rwflag = rwflag & !O_RDONLY | O_WRONLY;
-              fd = open (path, rwflag, mode);
-              if (fd < 0)
-                flags->action = ACTION_READWRITE; /* Could not open at all.  */
-              else
-                flags->action = ACTION_WRITE;
-            }
-          else
-            flags->action = ACTION_READ;
-        }
-      else
-        flags->action = ACTION_READWRITE;
+      flags->action = ACTION_READWRITE;
+      return fd;
     }
-  return fd;
+  if (errno != EACCES)
+     return fd;
+
+  /* retry for read-only access */
+  rwflag = O_RDONLY;
+  fd = open (path, rwflag | crflag, mode);
+  if (fd >=0)
+    {
+      flags->action = ACTION_READ;
+      return fd;               /* success */
+    }
+  
+  if (errno != EACCES)
+    return fd;                 /* failure */
+
+  /* retry for write-only access */
+  rwflag = O_WRONLY;
+  fd = open (path, rwflag | crflag, mode);
+  if (fd >=0)
+    {
+      flags->action = ACTION_WRITE;
+      return fd;               /* success */
+    }
+  return fd;                   /* failure */
 }
 
 
@@ -1109,7 +1119,8 @@ open_external (unit_flags *flags)
     }
   else
     {
-      /* regular_file resets flags->action if it is ACTION_UNSPECIFIED.  */
+      /* regular_file resets flags->action if it is ACTION_UNSPECIFIED and
+       * if it succeeds */
       fd = regular_file (flags);
     }
 
