@@ -511,7 +511,11 @@ find_idf (bitmap def_blocks, bitmap *dfs)
 
   /* Seed the work list with all the blocks in DEF_BLOCKS.  */
   EXECUTE_IF_SET_IN_BITMAP (def_blocks, 0, bb_index, bi)
-    VEC_safe_push (int, work_stack, bb_index);
+    /* We use VEC_quick_push here for speed.  This is safe because we
+       know that the number of definition blocks is no greater than
+       the number of basic blocks, which is the initial capacity of
+       WORK_STACK.  */
+    VEC_quick_push (int, work_stack, bb_index);
 
   /* Pop a block off the worklist, add every block that appears in
      the original block's DF that we have not already processed to
