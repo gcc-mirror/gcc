@@ -1,3 +1,8 @@
+2005-03-20  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_generate_compare): Test
+	flag_finite_math_only, not flag_unsafe_math_optimizations.
+
 2005-03-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* builtins.c (fold_builtin_1): Update a call to
