@@ -703,7 +703,7 @@ RECOG_H = recog.h gansidecl.h
 .SUFFIXES: .in .def
 
 $(srcdir)/version.c: $(VERSION_DEP)
-	(cd $(srcdir); cvs log -h $?) >tmp-ver
+	(cd $(srcdir); cvs log -h `basename $?`) >tmp-ver
 	tag=`sed '1,/^sym/d;s/	*gcc-//;s/:.*$$//;q' tmp-ver`; \
 	ver=`echo $${tag} | sed 's/-.*//' | sed 's/_/./g'`; \
 	date=`echo $${tag} | sed 's/.*-//'`; \
