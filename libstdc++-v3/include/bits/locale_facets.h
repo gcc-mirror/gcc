@@ -421,12 +421,6 @@ namespace std
   class __num_base 
   {
   protected:
-    // Used to establish gating factor for base 16 input.
-    static const double _S_scale_hex;
-    
-    // Used to establish gating factor for base 8 input.
-    static const double _S_scale_oct;
-
     // String literal of acceptable (narrow) input, for num_get.
     // "0123456789eEabcdfABCDF"
     static const char _S_atoms[];
