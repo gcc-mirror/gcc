@@ -1,3 +1,9 @@
+1998-07-28  Vladimir N. Makarov  <vmakarov@cygnus.com>
+
+	* cse.c (cse_insn): Enable subsitution inside libcall only for REG,
+	SUBREG, MEM.
+	* rtlanal.c (replace_rtx): Prohibit replaces in	CONST_DOUBLE. 
+
 Tue Jul 28 11:33:09 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* cplus-dem.c (type_kind_t): New type.

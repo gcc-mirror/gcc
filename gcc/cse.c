@@ -6117,8 +6117,9 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
    Then install the new sources and destinations in the table
    of available values. 
 
-   If IN_LIBCALL_BLOCK is nonzero, don't record any equivalence made in
-   the insn.  */
+   If LIBCALL_INSN is nonzero, don't record any equivalence made in
+   the insn.  It means that INSN is inside libcall block.  In this
+   case LIBCALL_INSN is the corresponding insn with REG_LIBCALL. */
 
 /* Data on one SET contained in the instruction.  */
 
@@ -6948,7 +6949,10 @@ cse_insn (insn, libcall_insn)
 	      /* If we just made a substitution inside a libcall, then we
 		 need to make the same substitution in any notes attached
 		 to the RETVAL insn.  */
-	      if (libcall_insn)
+	      if (libcall_insn
+		  && (GET_CODE (old_src) == REG
+		      || GET_CODE (old_src) == SUBREG
+		      ||  GET_CODE (old_src) == MEM))
 		replace_rtx (REG_NOTES (libcall_insn), old_src, 
 			     canon_reg (SET_SRC (sets[i].rtl), insn));
 
