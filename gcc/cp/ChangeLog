@@ -1,3 +1,7 @@
+2004-06-28  Mark Mitchell  <mark@codesourcery.com>
+
+	* parser.c (cp_parser_set_decl_spec_type): Fix thinko.
+
 2004-06-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR c++/14123	
