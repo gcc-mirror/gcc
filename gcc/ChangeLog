@@ -1,3 +1,8 @@
+2004-09-02  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (expand_block_move): Use SImode and
+	HImode with STRICT_ALIGNMENT.
+
 2004-09-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/arm/bpabi.h (TARGET_BPABI_CPP_BUILTINS): Define.
