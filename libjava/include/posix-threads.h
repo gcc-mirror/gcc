@@ -114,7 +114,7 @@ _Jv_PthreadCheckMonitor (_Jv_Mutex_t *mu)
   // On Linux we exploit knowledge of the implementation.
   int r = pmu->m_count == 1;
 #elif defined (PTHREAD_MUTEX_HAVE___M_COUNT)
-  int r = pmu->__m_count == 1;
+  int r = (pthread_t) pmu->__m_owner == pthread_self ();
 #else
   int r = mu->count == 0;
 #endif

@@ -1,3 +1,8 @@
+1999-09-08  Tom Tromey  <tromey@cygnus.com>
+
+	* include/posix-threads.h (_Jv_PthreadCheckMonitor): Changed test
+	in __m_count case.
+
 1999-09-07  Tom Tromey  <tromey@cygnus.com>
 
 	* posix-threads.cc (_Jv_CondWait): pthread_ calls return error
@@ -6,7 +11,7 @@
 	* posix-threads.cc (_Jv_CondWait): Check `errno' against EINTR,
 	not `r'.  Changed `done_sleeping' to a `bool'.
 
-1999-09-07  Matt Welsh <mdw@cs.berkeley.edu
+1999-09-07  Matt Welsh <mdw@cs.berkeley.edu>
 
 	* libjava/posix-threads.cc: Added _Jv_ThreadDataKey.
 	Added FLAG_INTERRUPTED to indicate that a thread was interrupted
