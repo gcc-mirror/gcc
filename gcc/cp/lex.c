@@ -85,6 +85,12 @@ static void begin_definition_of_inclass_inline PROTO((struct pending_inline*));
 static void parse_float PROTO((PTR));
 static int is_global PROTO((tree));
 static void init_filename_times PROTO((void));
+static void extend_token_buffer_to PROTO((int));
+#ifdef HANDLE_PRAGMA
+static int pragma_getc PROTO((void));
+static void pragma_ungetc PROTO((int));
+#endif
+static int read_line_number PROTO((int *));
 
 /* Given a file name X, return the nondirectory portion.
    Keep in mind that X can be computed more than once.  */
@@ -134,8 +140,8 @@ extern struct obstack token_obstack;
 
 /* Holds translations from TREE_CODEs to operator name strings,
    i.e., opname_tab[PLUS_EXPR] == "+".  */
-char **opname_tab;
-char **assignop_tab;
+const char **opname_tab;
+const char **assignop_tab;
 
 extern int yychar;		/*  the lookahead symbol		*/
 extern YYSTYPE yylval;		/*  the semantic value of the		*/
@@ -240,7 +246,7 @@ set_quals_and_spec (call_declarator, cv_qualifiers, exception_specification)
 tree ansi_opname[LAST_CPLUS_TREE_CODE];
 tree ansi_assopname[LAST_CPLUS_TREE_CODE];
 
-char *
+const char *
 operator_name_string (name)
      tree name;
 {
@@ -530,9 +536,9 @@ init_parse (filename)
 	 (char *)(tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE),
 	 (LAST_CPLUS_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (char *));
 
-  opname_tab = (char **)oballoc ((int)LAST_CPLUS_TREE_CODE * sizeof (char *));
+  opname_tab = (const char **)oballoc ((int)LAST_CPLUS_TREE_CODE * sizeof (char *));
   bzero ((char *)opname_tab, (int)LAST_CPLUS_TREE_CODE * sizeof (char *));
-  assignop_tab = (char **)oballoc ((int)LAST_CPLUS_TREE_CODE * sizeof (char *));
+  assignop_tab = (const char **)oballoc ((int)LAST_CPLUS_TREE_CODE * sizeof (char *));
   bzero ((char *)assignop_tab, (int)LAST_CPLUS_TREE_CODE * sizeof (char *));
 
   ansi_opname[0] = get_identifier ("<invalid operator>");
@@ -3606,8 +3612,8 @@ real_yylex ()
     case 'z':
     case '_':
     case '$':
-    letter:
 #if USE_CPPLIB
+    letter:
       if (cpp_token == CPP_NAME)
 	{
 	  /* Note that one character has already been read from

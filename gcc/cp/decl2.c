@@ -1505,7 +1505,7 @@ finish_static_data_member_decl (decl, init, asmspec_tree, need_pop, flags)
      int need_pop;
      int flags;
 {
-  char* asmspec = 0;
+  const char *asmspec = 0;
 
   if (asmspec_tree)
     asmspec = TREE_STRING_POINTER (asmspec_tree);
@@ -1581,7 +1581,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
      tree declarator, declspecs, init, asmspec_tree, attrlist;
 {
   register tree value;
-  char *asmspec = 0;
+  const char *asmspec = 0;
   int flags = LOOKUP_ONLYCONVERTING;
 
   /* Convert () initializers to = initializers.  */

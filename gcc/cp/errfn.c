@@ -106,7 +106,7 @@ cp_thing (errfn, atarg1, format, ap)
 
       if (function || *f == 's')
 	{
-	  char *p;
+	  const char *p;
 	  int plen;
 
 	  if (*f == 's')
@@ -180,7 +180,7 @@ cp_thing (errfn, atarg1, format, ap)
 
   if (atarg)
     {
-      char *file = cp_file_of (atarg);
+      const char *file = cp_file_of (atarg);
       int   line = cp_line_of (atarg);
       (*errfn) (file, line, "%s", buf);
     }

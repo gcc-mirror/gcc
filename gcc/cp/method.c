@@ -79,7 +79,7 @@ static void end_squangling PROTO((void));
 static int check_ktype PROTO((tree, int));
 static int issue_ktype PROTO((tree));
 static void build_overload_scope_ref PROTO((tree));
-static void build_mangled_template_parm_index PROTO((char *, tree));
+static void build_mangled_template_parm_index PROTO((const char *, tree));
 #if HOST_BITS_PER_WIDE_INT >= 64
 static void build_mangled_C9x_name PROTO((int));
 #endif
@@ -574,7 +574,7 @@ build_overload_int (value, in_template)
 	  int i;
 	  int operands = tree_code_length[(int) TREE_CODE (value)];
 	  tree id;
-	  char* name;
+	  const char *name;
 
 	  id = ansi_opname [(int) TREE_CODE (value)];
 	  my_friendly_assert (id != NULL_TREE, 0);
@@ -657,7 +657,7 @@ build_overload_int (value, in_template)
 
 static void 
 build_mangled_template_parm_index (s, index)
-     char* s;
+     const char *s;
      tree index;
 {
   OB_PUTCP (s);
@@ -1591,7 +1591,7 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
      tree targs;
      int for_method;
 {
-  char *name = IDENTIFIER_POINTER (dname);
+  const char *name = IDENTIFIER_POINTER (dname);
 
   /* member operators new and delete look like methods at this point.  */
   if (! for_method && parms != NULL_TREE && TREE_CODE (parms) == TREE_LIST
@@ -1798,7 +1798,7 @@ build_overload_with_type (name, type)
 
 tree
 get_id_2 (name, name2)
-     char *name;
+     const char *name;
      tree name2;
 {
   OB_INIT ();

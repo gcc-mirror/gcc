@@ -2801,7 +2801,7 @@ extern tree current_class_name;	/* IDENTIFIER_NODE: name of current class */
 /* Indexed by TREE_CODE, these tables give C-looking names to
    operators represented by TREE_CODES.  For example,
    opname_tab[(int) MINUS_EXPR] == "-".  */
-extern char **opname_tab, **assignop_tab;
+extern const char **opname_tab, **assignop_tab;
 
 /* in call.c */
 extern int check_dtor_name			PROTO((tree, tree));
@@ -3171,7 +3171,7 @@ extern tree make_pointer_declarator		PROTO((tree, tree));
 extern tree make_reference_declarator		PROTO((tree, tree));
 extern tree make_call_declarator		PROTO((tree, tree, tree, tree));
 extern void set_quals_and_spec			PROTO((tree, tree, tree));
-extern char *operator_name_string		PROTO((tree));
+extern const char *operator_name_string		PROTO((tree));
 extern void lang_init				PROTO((void));
 extern void lang_finish				PROTO((void));
 #if 0
@@ -3234,7 +3234,7 @@ extern tree hack_identifier			PROTO((tree, tree));
 extern tree make_thunk				PROTO((tree, int));
 extern void emit_thunk				PROTO((tree));
 extern void synthesize_method			PROTO((tree));
-extern tree get_id_2				PROTO((char *, tree));
+extern tree get_id_2				PROTO((const char *, tree));
 
 /* in pt.c */
 extern void check_template_shadow		PROTO ((tree));
@@ -3599,7 +3599,8 @@ extern void expand_ptrmemfunc_cst               PROTO((tree, tree *, tree *, tre
 extern tree delta2_from_ptrmemfunc              PROTO((tree));
 extern tree pfn_from_ptrmemfunc                 PROTO((tree));
 extern tree type_after_usual_arithmetic_conversions PROTO((tree, tree));
-extern tree composite_pointer_type              PROTO((tree, tree, tree, tree, char*));
+extern tree composite_pointer_type              PROTO((tree, tree, tree, tree,
+						       const char*));
 
 /* in typeck2.c */
 extern tree error_not_base_type			PROTO((tree, tree));
@@ -3637,7 +3638,7 @@ extern void GNU_xref_hier			PROTO((tree, tree, int, int, int));
 extern void GNU_xref_member			PROTO((tree, tree));
 
 /* in dump.c */
-extern void dump_node_to_file                   PROTO ((tree, char *));
+extern void dump_node_to_file                   PROTO ((tree, const char *));
 
 /* -- end of C++ */
 

@@ -101,8 +101,8 @@ static void dump_simple_decl PROTO((tree, tree, int));
 static void dump_decl PROTO((tree, int));
 static void dump_function_decl PROTO((tree, int));
 static void dump_expr PROTO((tree, int));
-static void dump_unary_op PROTO((char *, tree, int));
-static void dump_binary_op PROTO((char *, tree));
+static void dump_unary_op PROTO((const char *, tree, int));
+static void dump_binary_op PROTO((const char *, tree));
 static void dump_aggr_type PROTO((tree, int, int));
 static void dump_type_prefix PROTO((tree, int, int));
 static void dump_type_suffix PROTO((tree, int, int));
@@ -113,7 +113,7 @@ static void dump_qualifiers PROTO((tree, enum pad));
 static void dump_char PROTO((int));
 static void dump_parameters PROTO((tree, int, int));
 static void dump_exception_spec PROTO((tree, int));
-static char *aggr_variety PROTO((tree));
+static const char *aggr_variety PROTO((tree));
 static tree ident_fndecl PROTO((tree));
 static int interesting_scope_p PROTO((tree));
 
@@ -346,7 +346,7 @@ dump_type_real (t, v, canonical_name)
     }
 }
 
-static char *
+static const char *
 aggr_variety (t)
      tree t;
 {
@@ -379,7 +379,7 @@ dump_aggr_type (t, v, canonical_name)
      int canonical_name;
 {
   tree name;
-  char *variety = aggr_variety (t);
+  const char *variety = aggr_variety (t);
 
   dump_qualifiers (t, after);
 
@@ -659,7 +659,7 @@ static void
 dump_global_iord (t)
      tree t;
 {
-  char *name = IDENTIFIER_POINTER (t);
+  const char *name = IDENTIFIER_POINTER (t);
 
   OB_PUTS ("(static ");
   if (name [sizeof (GLOBAL_THING) - 1] == 'I')
@@ -807,7 +807,7 @@ dump_decl (t, v)
 	  }
 	else if (IDENTIFIER_OPNAME_P (t))
 	  {
-	    char *name_string = operator_name_string (t);
+	    const char *name_string = operator_name_string (t);
 	    OB_PUTS ("operator ");
 	    OB_PUTCP (name_string);
 	  }
@@ -1135,7 +1135,7 @@ dump_function_name (t)
     }
   else if (IDENTIFIER_OPNAME_P (name))
     {
-      char *name_string = operator_name_string (name);
+      const char *name_string = operator_name_string (name);
       OB_PUTS ("operator ");
       OB_PUTCP (name_string);
     }
@@ -1303,7 +1303,7 @@ dump_expr (t, nop)
 	/* If it's an enum, output its tag, rather than its value.  */
 	if (TREE_CODE (type) == ENUMERAL_TYPE)
 	  {
-	    char *p = enum_name_string (t, type);
+	    const char *p = enum_name_string (t, type);
 	    OB_PUTCP (p);
 	  }
 	else if (type == boolean_type_node)
@@ -1352,7 +1352,7 @@ dump_expr (t, nop)
       sprintf (digit_buffer, "%g", TREE_REAL_CST (t));
 #else
       {
-	unsigned char *p = (unsigned char *) &TREE_REAL_CST (t);
+	const unsigned char *p = (const unsigned char *) &TREE_REAL_CST (t);
 	size_t i;
 	strcpy (digit_buffer, "0x");
 	for (i = 0; i < sizeof TREE_REAL_CST (t); i++)
@@ -1371,7 +1371,7 @@ dump_expr (t, nop)
 
     case STRING_CST:
       {
-	char *p = TREE_STRING_POINTER (t);
+	const char *p = TREE_STRING_POINTER (t);
 	int len = TREE_STRING_LENGTH (t) - 1;
 	int i;
 
@@ -1842,7 +1842,7 @@ dump_expr (t, nop)
 
 static void
 dump_binary_op (opstring, t)
-     char *opstring;
+     const char *opstring;
      tree t;
 {
   OB_PUTC ('(');
@@ -1859,7 +1859,7 @@ dump_binary_op (opstring, t)
 
 static void
 dump_unary_op (opstring, t, nop)
-     char *opstring;
+     const char *opstring;
      tree t;
      int nop;
 {

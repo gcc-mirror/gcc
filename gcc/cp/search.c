@@ -1888,7 +1888,7 @@ covariant_return_p (brettype, drettype)
 /* Check that virtual overrider OVERRIDER is acceptable for base function
    BASEFN. Issue diagnostic, and return zero, if unacceptable.  */
 
-int
+static int
 check_final_overrider (overrider, basefn)
      tree overrider, basefn;
 {
