@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -funit-at-a-time" } */
-/* { dg-final { scan-assembler-not "link_error" } } */
+/* { dg-final { if [ istarget hppa*-*-* ] { scan-assembler-not "link_error,%r" } else { scan-assembler-not "link_error" } } } */
 /*  In unit-at-time the functions should be assembled in order
     e q t main, so we realize that they are pure.  */
  

@@ -1,7 +1,7 @@
 /* Verify that DECL_INLINE gets copied between DECLs properly.  */
 /* { dg-do compile } */
 /* { dg-options "-O1" } */
-/* { dg-final { scan-assembler-not "xyzzy" } } */
+/* { dg-final { if [ istarget hppa*-*-* ] { scan-assembler-not "xyzzy?,%r" } else { scan-assembler-not "xyzzy" } } } */
 
 /* Test that declaration followed by definition inlines.  */
 static inline int xyzzy0 (int);

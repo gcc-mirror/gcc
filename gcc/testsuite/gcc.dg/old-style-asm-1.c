@@ -24,4 +24,4 @@ void foo(int v)
    because for example it depends on the target macro
    ASM_GENERATE_INTERNAL_LABEL to generate a name matching this regexp (as
    with the default definition).  */
-/* { dg-final { scan-assembler "L(:)?2" } } */
+/* { dg-final { scan-assembler "L(:|\\\$0*)?2" } } */
