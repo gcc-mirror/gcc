@@ -1,3 +1,8 @@
+Fri Jun 18 11:15:24 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* libI77/backspace.c: Undo Wednesday's change, in
+	preparation for slightly different Netlib change.
+
 Wed Jun 16 11:38:58 1999  Craig Burley  <craig@jcb-sc.com>
 
 	From Ian Watson <WATSON_IAN_A@Lilly.com> 1999-06-12:
