@@ -1895,7 +1895,6 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	{
 	  tree local;
 	  tree body = BLOCK_EXPR_BODY (exp);
-	  struct rtx_def *to_return;
 	  pushlevel (2);	/* 2 and above */
 	  expand_start_bindings (0);
 	  local = BLOCK_EXPR_DECLS (exp);
@@ -1913,10 +1912,11 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	      emit_queue ();
 	      body = TREE_OPERAND (body, 1);
 	    }
-	  to_return = expand_expr (body, target, tmode, modifier);
+	  expand_expr (body, const0_rtx, VOIDmode, 0);
+	  emit_queue ();
 	  poplevel (1, 1, 0);
 	  expand_end_bindings (getdecls (), 1, 0);
-	  return to_return;
+	  return const0_rtx;
 	}
       break;
 

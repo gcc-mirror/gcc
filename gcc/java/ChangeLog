@@ -1,3 +1,8 @@
+1999-07-14  Andrew Haley  <aph@cygnus.com>
+
+        * expr.c (expand_expr): Do not return the last statement in a
+        block as the block's value.
+
 Sat Jul  3 22:26:32 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* expr.c (force_evaluation_order): Save the COMPOUND_EXPR'ed
