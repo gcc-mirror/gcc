@@ -1782,11 +1782,7 @@ reversed_comparison_code_parts (code, arg0, arg1, insn)
       case UNLE:
       case UNGT:
       case UNGE:
-	/* We don't have safe way to reverse these yet - we would need
-	   ordered compares that may not trap.  */
-	if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	    || flag_unsafe_math_optimizations)
-	  return reverse_condition_maybe_unordered (code);
+	/* We don't have safe way to reverse these yet.  */
 	return UNKNOWN;
       default:
 	break;
@@ -1844,12 +1840,6 @@ reversed_comparison_code_parts (code, arg0, arg1, insn)
 	    return UNKNOWN;
 	}
     }
-
-  /* In case of floating point modes, we may reverse here, since
-     we will be always converting an ordered compare to unordered.
-     The unsafe code has been caught earlier.  */
-  if (FLOAT_MODE_P (mode))
-    return reverse_condition_maybe_unordered (code);
 
   /* An integer condition.  */
   if (GET_CODE (arg0) == CONST_INT
