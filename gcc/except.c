@@ -390,7 +390,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "defaults.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
@@ -404,10 +404,6 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-config.h"
 #include "recog.h"
 #include "output.h"
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
 
 /* One to use setjmp/longjmp method of generating code for exception
    handling.  */

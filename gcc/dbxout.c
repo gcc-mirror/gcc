@@ -68,17 +68,7 @@ Boston, MA 02111-1307, USA.  */
    For more on data type definitions, see `dbxout_type'.  */
 
 #include "config.h"
-
-#include <stdio.h>
-#include <errno.h>
-
-#ifdef HAVE_STRING_H
-#include <string.h>
-#else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#endif
+#include "system.h"
 
 #include "tree.h"
 #include "rtl.h"
@@ -88,10 +78,6 @@ Boston, MA 02111-1307, USA.  */
 #include "reload.h"
 #include "defaults.h"
 #include "output.h" /* ASM_OUTPUT_SOURCE_LINE may refer to sdb functions.  */
-
-#ifndef errno
-extern int errno;
-#endif
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"

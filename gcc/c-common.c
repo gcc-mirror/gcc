@@ -19,26 +19,12 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "tree.h"
 #include "c-lex.h"
 #include "c-tree.h"
 #include "flags.h"
 #include "obstack.h"
-#include <ctype.h>
-
-#ifdef HAVE_STRING_H
-#include <string.h>
-#else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#endif
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
 
 #ifndef WCHAR_TYPE_SIZE
 #ifdef INT_TYPE_SIZE

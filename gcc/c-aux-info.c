@@ -22,14 +22,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
-#ifdef HAVE_STRING_H
-# include <string.h>
-#else
-# ifdef HAVE_STRINGS_H
-#  include <strings.h>
-#endif
-#endif
+#include "system.h"
 #include "flags.h"
 #include "tree.h"
 #include "c-tree.h"

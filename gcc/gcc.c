@@ -33,17 +33,16 @@ compilation is specified by a string called a "spec".  */
 
 #include "config.h"
 
-#include "gansidecl.h"
-#include "system.h"
-
-#include <signal.h>
-#include <sys/stat.h>
 #ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
 #endif
+#include "system.h"
+#include <signal.h>
+#include <sys/stat.h>
 
+#include "gansidecl.h"
 #include "obstack.h"
 
 
@@ -4416,7 +4415,7 @@ main (argc, argv)
 	first_time = FALSE;
 	obstack_grow (&collect_obstack, "'-", 2);
         q = switches[i].part1;
-	while ((p = (char *) index (q,'\'')))
+	while ((p = index (q,'\'')))
           {
             obstack_grow (&collect_obstack, q, p-q);
             obstack_grow (&collect_obstack, "'\\''", 4);
@@ -4429,7 +4428,7 @@ main (argc, argv)
 	  {
 	    obstack_grow (&collect_obstack, " '", 2);
 	    q = *args;
-	    while ((p = (char *) index (q,'\'')))
+	    while ((p = index (q,'\'')))
 	      {
 		obstack_grow (&collect_obstack, q, p-q);
 		obstack_grow (&collect_obstack, "'\\''", 4);

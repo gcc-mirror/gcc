@@ -29,43 +29,12 @@ Boston, MA 02111-1307, USA.  */
 #else
 #include <varargs.h>
 #endif
-#include <stdio.h>
-#include <signal.h>
-#include <setjmp.h>
-#include <sys/types.h>
-#include <ctype.h>
-#include <sys/stat.h>
-#undef FLOAT
-#ifdef HAVE_SYS_PARAM_H
-#include <sys/param.h>
-#endif
-#if HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-#ifdef HAVE_STRING_H
-#include <string.h>
-#else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#endif
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
 #undef FLOAT /* This is for hpux. They should change hpux.  */
 #undef FFS  /* Some systems define this in param.h.  */
-
-#ifdef TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else
-# if HAVE_SYS_TIME_H
-# include <sys/time.h>
-# else
-#  include <time.h>
-#endif
-#endif
+#include "system.h"
+#include <signal.h>
+#include <setjmp.h>
+#include <sys/stat.h>
 
 #ifdef HAVE_SYS_RESOURCE_H
 # include <sys/resource.h>

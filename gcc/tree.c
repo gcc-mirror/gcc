@@ -34,30 +34,18 @@ Boston, MA 02111-1307, USA.  */
    by all passes of the compiler.  */
 
 #include "config.h"
+#ifdef __STDC__
+#include <stdarg.h>
+#else
+#include <varargs.h>
+#endif
+#include "system.h"
 #include <setjmp.h>
 #include "flags.h"
 #include "tree.h"
 #include "except.h"
 #include "function.h"
 #include "obstack.h"
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-#include <stdio.h>
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef NEED_DECLARATION_FREE
-extern void free PROTO((void *));
-#endif
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free

@@ -1,3 +1,31 @@
+Fri Mar 20 17:36:23 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (alias.o, bitmap.o, c-aux-info.o, c-common.o,
+	c-decl.o, c-iterate.o, c-lang.o, c-lex.o, c-pragma.o, c-typeck.o,
+	caller-save.o, calls.o, collect2.o, combine.o, cse.o, dbxout.o,
+	dwarf2out.o, dwarfout.o, emit-rtl.o, except.o, explow.o, expmed.o,
+	expr.o, final.o, flow.o, function.o, getpwd.o, global.o,
+	integrate.o, jump.o, local-alloc.o, loop.o, optabs.o, pexecute.o,
+	prefix.o, print-rtl.o, print-tree.o, profile.o, real.o, recog.o,
+	reg-stack.o, regclass.o, regmove.o, reload.o, reload1.o, reorg.o,
+	rtl.o, rtlanal.o, sdbout.o, stmt.o, stor-layout.o, stupid.o,
+	tlink.o, toplev.o, tree.o, unroll.o, varasm.o, xcoffout.o): Depend
+	on system.h.
+
+	* alias.c, bitmap.c, c-aux-info.c, c-common.c, c-decl.c,
+	c-iterate.c, c-lang.c, c-lex.c, c-pragma.c, c-typeck.c,
+	caller-save.c, calls.c, collect2.c, combine.c, cse.c, dbxout.c,
+	dwarf2out.c, dwarfout.c, emit-rtl.c, except.c, explow.c, expmed.c,
+	expr.c, final.c, flow.c, function.c, gcc.c, getpwd.c, global.c,
+	integrate.c, jump.c, local-alloc.c, loop.c, optabs.c, pexecute.c,
+	prefix.c, print-rtl.c, print-tree.c, profile.c, real.c, recog.c,
+	reg-stack.c, regclass.c, regmove.c, reload.c, reload1.c, reorg.c,
+	rtl.c, rtlanal.c, sched.c, sdbout.c, stmt.c, stor-layout.c,
+	stupid.c, tlink.c, toplev.c, tree.c, unroll.c, varasm.c,
+	xcoffout.c: Include system.h.  Organize include ordering so
+	that stdarg/varargs comes before other system headers.  Remove
+	spurious casts of functions assured of a prototype in system.h.
+
 Fri Mar 20 11:19:40 1998  Stan Cox  <scox@equinox.cygnus.com>
 
 	* reg-stack.c (pop_stack): Define. Pops any register on the

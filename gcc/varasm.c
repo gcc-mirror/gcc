@@ -27,10 +27,7 @@ Boston, MA 02111-1307, USA.  */
    and are responsible for combining constants with the same value.  */
 
 #include "config.h"
-#include <stdio.h>
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
+#include "system.h"
 #include <setjmp.h>
 /* #include <stab.h> */
 #include "rtl.h"
@@ -51,8 +48,6 @@ Boston, MA 02111-1307, USA.  */
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"
 #endif
-
-#include <ctype.h>
 
 #ifndef TRAMPOLINE_ALIGNMENT
 #define TRAMPOLINE_ALIGNMENT FUNCTION_BOUNDARY

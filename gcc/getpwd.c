@@ -1,21 +1,14 @@
 /* getpwd.c - get the working directory */
 
 #include "config.h"
-
-#include <errno.h>
-#include <sys/types.h>
+#include "system.h"
 #include <sys/stat.h>
-
-#ifndef errno
-extern int errno;
-#endif
 
 /* Virtually every UN*X system now in common use (except for pre-4.3-tahoe
    BSD systems) now provides getcwd as called for by POSIX.  Allow for
    the few exceptions to the general rule here.  */
 
 #if !(defined (POSIX) || defined (USG) || defined (VMS)) || defined (HAVE_GETWD)
-#include <sys/param.h>
 extern char *getwd ();
 #define getcwd(buf,len) getwd(buf)
 #ifdef MAXPATHLEN
@@ -29,10 +22,9 @@ extern char *getcwd ();
 #define GUESSPATHLEN 100
 #endif /* (defined (USG) || defined (VMS)) */
 
-char *getenv ();
 char *xmalloc ();
 
-#ifndef VMS
+#if !(defined (VMS) || (defined(_WIN32) && !defined(__CYGWIN32__)))
 
 /* Get the working directory.  Use the PWD environment variable if it's
    set correctly, since this is faster and gives more uniform answers
@@ -80,7 +72,7 @@ getpwd ()
   return p;
 }
 
-#else	/* VMS */
+#else	/* VMS || _WIN32 && !__CYGWIN32__ */
 
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 255
@@ -91,8 +83,13 @@ getpwd ()
 {
   static char *pwd = 0;
 
-  if (!pwd) pwd = getcwd (xmalloc (MAXPATHLEN+1), MAXPATHLEN+1);
+  if (!pwd)
+    pwd = getcwd (xmalloc (MAXPATHLEN + 1), MAXPATHLEN + 1
+#ifdef VMS
+		  , 0
+#endif
+		  );
   return pwd;
 }
 
-#endif	/* VMS */
+#endif	/* VMS || _WIN32 && !__CYGWIN32__ */

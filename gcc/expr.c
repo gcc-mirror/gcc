@@ -20,7 +20,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "machmode.h"
 #include "rtl.h"
 #include "tree.h"

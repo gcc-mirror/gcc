@@ -50,18 +50,7 @@ Boston, MA 02111-1307, USA.  */
 #else
 #include <varargs.h>
 #endif
-#include <stdio.h>
-#include <ctype.h>
-#if HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-#ifdef HAVE_STRING_H
-#include <string.h>
-#else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#endif
+#include "system.h"
 
 #include "tree.h"
 #include "rtl.h"

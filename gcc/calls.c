@@ -19,17 +19,17 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
-#include "rtl.h"
-#include "tree.h"
-#include "flags.h"
-#include "expr.h"
-#include "regs.h"
 #ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
 #endif
+#include "system.h"
+#include "rtl.h"
+#include "tree.h"
+#include "flags.h"
+#include "expr.h"
+#include "regs.h"
 #include "insn-flags.h"
 
 /* Decide whether a function's arguments should be processed

@@ -30,8 +30,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <varargs.h>
 #endif
 
-/* Must precede rtl.h for FFS.  */
-#include <stdio.h>
+/* stdio.h must precede rtl.h for FFS.  */
+#include "system.h"
 
 #include "rtl.h"
 #include "insn-config.h"

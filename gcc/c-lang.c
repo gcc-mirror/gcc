@@ -20,8 +20,8 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
+#include "system.h"
 #include "tree.h"
-#include <stdio.h>
 #include "input.h"
 
 /* Each of the functions defined here
