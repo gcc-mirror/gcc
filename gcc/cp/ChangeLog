@@ -1,3 +1,11 @@
+1999-12-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (lang_type): Add nearly_empty_p.  Adjust dummy.
+	(CLASSTYPE_NEARLY_EMPTY_P): New macro.
+	* class.c (check_bases): Update CLASSTYPE_NEARLY_EMPTY_P.
+	(check_field_decls): Likewise.
+	(check_bases_and_members): Likewise.
+
 1999-12-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (do_inline_function_hair): Remove.
