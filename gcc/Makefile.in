@@ -2260,7 +2260,8 @@ PREPROCESSOR_DEFINES = \
   -DGPLUSPLUS_BACKWARD_INCLUDE_DIR=\"$(gcc_gxx_include_dir)/backward\" \
   -DLOCAL_INCLUDE_DIR=\"$(local_includedir)\" \
   -DCROSS_INCLUDE_DIR=\"$(CROSS_SYSTEM_HEADER_DIR)\" \
-  -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\"
+  -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\" \
+  @TARGET_SYSTEM_ROOT_DEFINE@
 
 LIBCPP_OBJS =	cpplib.o cpplex.o cppmacro.o cppexp.o cppfiles.o cpptrad.o \
 		cpphash.o cpperror.o cppinit.o cppdefault.o cppmain.o \

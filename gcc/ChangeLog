@@ -1,3 +1,36 @@
+2003-02-13  Daniel Jacobowitz  <drow@mvista.com>
+
+	* Makefile.in (PREPROCESSOR_DEFINES): Add
+	@TARGET_SYSTEM_ROOT_DEFINE@.
+	* configure.in (PREFIX_INCLUDE_DIR): Don't define if $with_sysroot
+	is specified or if building a cross compiler.
+	(TARGET_SYSTEM_ROOT_DEFINE): Add TARGET_SYSTEM_ROOT_RELOCATABLE
+	if the sysroot is under $exec_prefix.
+	* configure: Regenerated.
+	* cppdefault.h: Use native include paths if TARGET_SYSTEM_ROOT is
+	defined.
+	(struct default_include): Add add_sysroot field.
+	(cpp_SYSROOT): Declare.
+	* cppdefault.c (cpp_include_defaults): Fill in add_sysroot
+	field.
+	(cpp_SYSROOT): New variable.
+	* cppinit.c (cpp_create_reader): Initialize
+	CPP_OPTION (pfile, sysroot).
+	(init_standard_includes): Handle add_sysroot.  Do not
+	add unrelocated copies of relocated directories.
+	(COMMAND_LINE_OPTIONS): Add -isysroot.
+	(cpp_handle_option): Handle -isysroot.
+	* cpplib.h (struct cpp_options): Add sysroot member.
+	* gcc.c (The Specs Language): Update description of %I.
+	(target_system_root_changed): New variable.
+	(process_command): Conditionalize make_relative_prefix call
+	on !VMS and TARGET_SYSTEM_ROOT_RELOCATABLE.  Set
+	target_system_root_changed.
+	(do_spec_1): Add -isysroot to %I.
+	* doc/invoke.texi (Spec Files): Update description of %I.
+	* doc/install.texi (--with-sysroot): Update comment about
+	relocation.
+
 2003-02-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (a peephole2): New.
