@@ -1635,8 +1635,6 @@ expand_return (tree retval)
       expand_null_return ();
       return;
     }
-  else if (TREE_CODE (retval) == RESULT_DECL)
-    retval_rhs = retval;
   else if ((TREE_CODE (retval) == MODIFY_EXPR
 	    || TREE_CODE (retval) == INIT_EXPR)
 	   && TREE_CODE (TREE_OPERAND (retval, 0)) == RESULT_DECL)
@@ -1646,6 +1644,11 @@ expand_return (tree retval)
 
   result_rtl = DECL_RTL (DECL_RESULT (current_function_decl));
 
+  /* If we are returning the RESULT_DECL, then the value has already
+     been stored into it, so we don't have to do anything special.  */
+  if (TREE_CODE (retval_rhs) == RESULT_DECL)
+    expand_value_return (result_rtl);
+
   /* If the result is an aggregate that is being returned in one (or more)
      registers, load the registers here.  The compiler currently can't handle
      copying a BLKmode value into registers.  We could put this code in a
@@ -1653,9 +1656,9 @@ expand_return (tree retval)
      call/return), but until this feature is generally usable it is kept here
      (and in expand_call).  */
 
-  if (retval_rhs != 0
-      && TYPE_MODE (TREE_TYPE (retval_rhs)) == BLKmode
-      && REG_P (result_rtl))
+  else if (retval_rhs != 0
+	   && TYPE_MODE (TREE_TYPE (retval_rhs)) == BLKmode
+	   && REG_P (result_rtl))
     {
       int i;
       unsigned HOST_WIDE_INT bitpos, xbitpos;
