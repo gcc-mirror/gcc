@@ -1,3 +1,15 @@
+2001-06-12  Tom Tromey  <tromey@redhat.com>
+
+	* aclocal.m4, configure: Rebuilt.
+	* acinclude.m4: Find configure.host in srcdir.
+
+2001-06-07  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR libgcj/3059:
+	* java/lang/natSystem.cc (init_properties): Define `java.home'.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (AM_CXXFLAGS): Define PREFIX.
+
 2001-06-10  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* exception.cc (cstdlib): Replaces stdlib.h.
