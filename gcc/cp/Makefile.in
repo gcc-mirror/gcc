@@ -225,8 +225,9 @@ parse.o : $(PARSE_C) $(CXX_TREE_H) $(srcdir)/../flags.h lex.h \
 CONFLICTS = expect 33 shift/reduce conflicts and 58 reduce/reduce conflicts.
 $(PARSE_H) $(PARSE_C) : $(srcdir)/parse.y
 	@echo $(CONFLICTS)
-	cd $(srcdir); $(BISON) $(BISONFLAGS) -d -o parse.c parse.y
-	cd $(srcdir); grep '^#define[ 	]*YYEMPTY' parse.c >>parse.h
+	cd $(srcdir); $(BISON) $(BISONFLAGS) -d -o p$$$$.c parse.y ; \
+	grep '^#define[ 	]*YYEMPTY' p$$$$.c >> p$$$$.h ; \
+	mv -f p$$$$.c $(PARSE_C) ; mv -f p$$$$.h $(PARSE_H)
 #$(PARSE_C) $(PARSE_H) : stamp-parse ; @true
 #stamp-parse: $(srcdir)/parse.y
 #	@echo $(CONFLICTS)

@@ -1,3 +1,9 @@
+2000-10-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (c-parse.c, tradcif.c): Create atomically.
+	
+	* objc/Make-lang.in (objc-parse.c): Likewise.
+
 2000-10-13  Richard Earnshaw <rearnsha@arm.com>
 
 	* arm.c: Include obstack.h

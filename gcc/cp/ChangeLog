@@ -1,3 +1,7 @@
+2000-10-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (parse.c, parse.h): Create atomically.
+
 2000-10-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (current_obstack): Remove.

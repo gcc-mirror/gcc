@@ -230,12 +230,14 @@ PARSE_H = $(srcdir)/parse.h
 
 $(PARSE_C):  $(srcdir)/parse.y
 	$(SET_BISON); \
-	cd $(PARSE_DIR) && $$bison -t $(BISONFLAGS) $(JAVABISONFLAGS) \
-	    -o parse.c $(PARSE_RELDIR)/parse.y
+	cd $(PARSE_DIR) ; $$bison -t $(BISONFLAGS) $(JAVABISONFLAGS) \
+	    -o p$$$$.c $(PARSE_RELDIR)/parse.y ; \
+	mv -f p$$$$.c parse.c
 $(PARSE_SCAN_C):  $(srcdir)/parse-scan.y
 	$(SET_BISON); \
-	cd $(PARSE_DIR) && $$bison -t $(BISONFLAGS) -o parse-scan.c \
-	    $(PARSE_RELDIR)/parse-scan.y
+	cd $(PARSE_DIR) ; $$bison -t $(BISONFLAGS) -o ps$$$$.c \
+	    $(PARSE_RELDIR)/parse-scan.y ; \
+	mv -f ps$$$$.c parse-scan.c
 
 lex.c: keyword.h lex.h
 
