@@ -5154,8 +5154,6 @@ do_local_using_decl (decl)
   if (building_stmt_tree ()
       && at_function_scope_p ())
     add_decl_stmt (decl);
-  if (processing_template_decl)
-    return;
 
   oldval = lookup_name_current_level (name);
   oldtype = lookup_type_current_level (name);
