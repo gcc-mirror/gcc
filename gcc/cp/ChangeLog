@@ -1,3 +1,12 @@
+1998-08-20  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (search_tree, no_linkage_helper, no_linkage_check): New fn.
+	* pt.c (coerce_template_parms): Use no_linkage_check.
+	* decl.c (grokvardecl): Likewise.
+	(grokfndecl): Likewise.  Members of anonymous types have no linkage.
+
+	* method.c (process_overload_item): Remove useless code.
+
 1998-08-20  Per Bothner  <bothner@cygnus.com>
 
 	Handle new'ing of Java classes.

@@ -1411,11 +1411,6 @@ process_overload_item (parmtype, extra_Gcode)
       {
         tree name = TYPE_NAME (parmtype);
 
-        if (TREE_CODE (name) == IDENTIFIER_NODE)
-          {
-            build_overload_identifier (TYPE_NAME (parmtype));
-            break;
-          }
         my_friendly_assert (TREE_CODE (name) == TYPE_DECL, 248);
 
         build_qualified_name (name);

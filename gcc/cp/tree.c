@@ -1557,6 +1557,252 @@ copy_template_template_parm (t)
   return t2;
 }
 
+/* Walk through the tree structure T, applying func.  If func ever returns
+   non-null, return that value.  */
+
+static tree
+search_tree (t, func)
+     tree t;
+     tree (*func) PROTO((tree));
+{
+#define TRY(ARG) if (tmp = walk_tree (ARG, func), tmp != NULL_TREE) return tmp
+
+  tree tmp;
+
+  if (t == NULL_TREE)
+    return t;
+
+  if (tmp = func (t), tmp != NULL_TREE)
+    return tmp;
+
+  switch (TREE_CODE (t))
+    {
+    case ERROR_MARK:
+      break;
+
+    case IDENTIFIER_NODE:
+      break;
+
+    case VAR_DECL:
+    case FUNCTION_DECL:
+    case CONST_DECL:
+    case TEMPLATE_DECL:
+    case NAMESPACE_DECL:
+      break;
+
+    case TYPE_DECL:
+      TRY (TREE_TYPE (t));
+      break;
+
+    case PARM_DECL:
+      TRY (TREE_TYPE (t));
+      TRY (TREE_CHAIN (t));
+      break;
+
+    case TREE_LIST:
+      TRY (TREE_PURPOSE (t));
+      TRY (TREE_VALUE (t));
+      TRY (TREE_CHAIN (t));
+      break;
+
+    case OVERLOAD:
+      TRY (OVL_FUNCTION (t));
+      TRY (OVL_CHAIN (t));
+      break;
+
+    case TREE_VEC:
+      {
+	int len = TREE_VEC_LENGTH (t);
+
+	t = copy_node (t);
+	while (len--)
+	  TRY (TREE_VEC_ELT (t, len));
+      }
+      break;
+
+    case INTEGER_CST:
+    case REAL_CST:
+    case STRING_CST:
+    case DEFAULT_ARG:
+      break;
+
+    case COND_EXPR:
+    case TARGET_EXPR:
+    case AGGR_INIT_EXPR:
+    case NEW_EXPR:
+      TRY (TREE_OPERAND (t, 0));
+      TRY (TREE_OPERAND (t, 1));
+      TRY (TREE_OPERAND (t, 2));
+      break;
+
+    case MODIFY_EXPR:
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case MULT_EXPR:
+    case TRUNC_DIV_EXPR:
+    case TRUNC_MOD_EXPR:
+    case MIN_EXPR:
+    case MAX_EXPR:
+    case LSHIFT_EXPR:
+    case RSHIFT_EXPR:
+    case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
+    case BIT_AND_EXPR:
+    case BIT_ANDTC_EXPR:
+    case TRUTH_ANDIF_EXPR:
+    case TRUTH_ORIF_EXPR:
+    case LT_EXPR:
+    case LE_EXPR:
+    case GT_EXPR:
+    case GE_EXPR:
+    case EQ_EXPR:
+    case NE_EXPR:
+    case CEIL_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case ROUND_DIV_EXPR:
+    case CEIL_MOD_EXPR:
+    case FLOOR_MOD_EXPR:
+    case ROUND_MOD_EXPR:
+    case COMPOUND_EXPR:
+    case PREDECREMENT_EXPR:
+    case PREINCREMENT_EXPR:
+    case POSTDECREMENT_EXPR:
+    case POSTINCREMENT_EXPR:
+    case ARRAY_REF:
+    case SCOPE_REF:
+    case TRY_CATCH_EXPR:
+    case WITH_CLEANUP_EXPR:
+    case CALL_EXPR:
+      TRY (TREE_OPERAND (t, 0));
+      TRY (TREE_OPERAND (t, 1));
+      break;
+
+    case SAVE_EXPR:
+    case CONVERT_EXPR:
+    case ADDR_EXPR:
+    case INDIRECT_REF:
+    case NEGATE_EXPR:
+    case BIT_NOT_EXPR:
+    case TRUTH_NOT_EXPR:
+    case NOP_EXPR:
+    case NON_LVALUE_EXPR:
+    case COMPONENT_REF:
+    case CLEANUP_POINT_EXPR:
+    case LOOKUP_EXPR:
+    case SIZEOF_EXPR:
+    case ALIGNOF_EXPR:
+      TRY (TREE_OPERAND (t, 0));
+      break;
+
+    case MODOP_EXPR:
+    case CAST_EXPR:
+    case REINTERPRET_CAST_EXPR:
+    case CONST_CAST_EXPR:
+    case STATIC_CAST_EXPR:
+    case DYNAMIC_CAST_EXPR:
+    case ARROW_EXPR:
+    case DOTSTAR_EXPR:
+    case TYPEID_EXPR:
+      break;
+
+    case COMPLEX_CST:
+      TRY (TREE_REALPART (t));
+      TRY (TREE_IMAGPART (t));
+      break;
+
+    case CONSTRUCTOR:
+      TRY (CONSTRUCTOR_ELTS (t));
+      break;
+
+    case TEMPLATE_TEMPLATE_PARM:
+    case TEMPLATE_PARM_INDEX:
+    case TEMPLATE_TYPE_PARM:
+      break;
+
+    case BIND_EXPR:
+      break;
+
+    case REAL_TYPE:
+    case COMPLEX_TYPE:
+    case VOID_TYPE:
+    case BOOLEAN_TYPE:
+    case TYPENAME_TYPE:
+    case UNION_TYPE:
+    case ENUMERAL_TYPE:
+      break;
+
+    case POINTER_TYPE:
+    case REFERENCE_TYPE:
+      TRY (TREE_TYPE (t));
+      break;
+
+    case FUNCTION_TYPE:
+    case METHOD_TYPE:
+      TRY (TREE_TYPE (t));
+      TRY (TYPE_ARG_TYPES (t));
+      break;
+
+    case ARRAY_TYPE:
+      TRY (TREE_TYPE (t));
+      TRY (TYPE_DOMAIN (t));
+      break;
+
+    case INTEGER_TYPE:
+      TRY (TYPE_MAX_VALUE (t));
+      break;
+
+    case OFFSET_TYPE:
+      TRY (TREE_TYPE (t));
+      TRY (TYPE_OFFSET_BASETYPE (t));
+      break;
+
+    case RECORD_TYPE:
+      if (TYPE_PTRMEMFUNC_P (t))
+	TRY (TYPE_PTRMEMFUNC_FN_TYPE (t));
+      break;
+      
+      /*  This list is incomplete, but should suffice for now.
+	  It is very important that `sorry' not call
+	  `report_error_function'.  That could cause an infinite loop.  */
+    default:
+      sorry ("initializer contains unrecognized tree code");
+      return error_mark_node;
+
+    }
+
+  return NULL_TREE;
+
+#undef TRY
+}
+
+/* Passed to search_tree.  Checks for the use of types with no linkage.  */
+
+static tree
+no_linkage_helper (t)
+     tree t;
+{
+  if (TYPE_P (t)
+      && (IS_AGGR_TYPE (t) || TREE_CODE (t) == ENUMERAL_TYPE)
+      && (decl_function_context (TYPE_MAIN_DECL (t))
+	  || ANON_AGGRNAME_P (TYPE_IDENTIFIER (t))))
+    return t;
+  return NULL_TREE;
+}
+
+/* Check if the type T depends on a type with no linkage and if so, return
+   it.  */
+
+tree
+no_linkage_check (t)
+     tree t;
+{
+  t = search_tree (t, no_linkage_helper);
+  if (t != error_mark_node)
+    return t;
+  return NULL_TREE;
+}
+
+
 /* Subroutine of copy_to_permanent
 
    Assuming T is a node build bottom-up, make it all exist on
