@@ -1,3 +1,8 @@
+2004-07-30  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-alias.c (create_alias_map_for): Do not get the
+	alias set of the inner type of ARRAY_TYPEs.
+
 2004-07-29  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-ccp.c (visit_assignment): Move code to prevent

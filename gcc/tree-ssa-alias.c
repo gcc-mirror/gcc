@@ -1253,11 +1253,7 @@ create_alias_map_for (tree var, struct alias_info *ai)
   struct alias_map_d *alias_map;
   alias_map = xcalloc (1, sizeof (*alias_map));
   alias_map->var = var;
-
-  if (TREE_CODE (TREE_TYPE (var)) == ARRAY_TYPE)
-    alias_map->set = get_alias_set (TREE_TYPE (TREE_TYPE (var)));
-  else
-    alias_map->set = get_alias_set (var);
+  alias_map->set = get_alias_set (var);
   ai->addressable_vars[ai->num_addressable_vars++] = alias_map;
 }
 
