@@ -3131,7 +3131,6 @@ finish_struct_1 (t, warn_anon)
       cant_have_const_ctor = base_info.cant_have_const_ctor;
       no_const_asn_ref = base_info.no_const_asn_ref;
       aggregate = 0;
-      empty = 0;
     }
   else
     {
@@ -3208,6 +3207,9 @@ finish_struct_1 (t, warn_anon)
 #endif
 	}
     }
+
+  if (n_baseclasses)
+    fields = chainon (build_vbase_pointer_fields (t), fields);
 
   last_x = NULL_TREE;
   for (x = fields; x; x = TREE_CHAIN (x))
@@ -3757,9 +3759,6 @@ finish_struct_1 (t, warn_anon)
     
   }
 
-  if (n_baseclasses)
-    fields = chainon (build_vbase_pointer_fields (t), fields);
-
   if (vfield == NULL_TREE && has_virtual)
     {
       /* We build this decl with ptr_type_node, and
@@ -3852,21 +3851,33 @@ finish_struct_1 (t, warn_anon)
   TYPE_FIELDS (t) = fields;
 
   if (n_baseclasses)
-    TYPE_FIELDS (t) = chainon (build_base_fields (t), fields);
-  else if (empty)
+    {
+      last_x = build_base_fields (t);
+
+      /* If all our bases are empty, we can be empty too.  */
+      for (x = last_x; empty && x; x = TREE_CHAIN (x))
+	if (DECL_SIZE (x) != integer_zero_node)
+	  empty = 0;
+    }
+  if (empty)
     {
       /* C++: do not let empty structures exist.  */
       tree decl = build_lang_field_decl
 	(FIELD_DECL, NULL_TREE, char_type_node);
-      TREE_CHAIN (decl) = TYPE_FIELDS (t);
+      TREE_CHAIN (decl) = fields;
       TYPE_FIELDS (t) = decl;
     }
+  if (n_baseclasses)
+    TYPE_FIELDS (t) = chainon (last_x, TYPE_FIELDS (t));
 
   layout_type (t);
 
   /* Remember the size and alignment of the class before adding
      the virtual bases.  */
-  CLASSTYPE_SIZE (t) = TYPE_SIZE (t);
+  if (empty && flag_new_abi)
+    CLASSTYPE_SIZE (t) = integer_zero_node;
+  else
+    CLASSTYPE_SIZE (t) = TYPE_SIZE (t);
   CLASSTYPE_ALIGN (t) = TYPE_ALIGN (t);
 
   finish_struct_anon (t);

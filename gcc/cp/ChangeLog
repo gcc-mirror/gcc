@@ -1,5 +1,14 @@
 Fri Apr  3 02:22:59 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
+	Implement empty base optimization.
+	* class.c (finish_struct_1): Add vbase fields earlier.  Set 
+	CLASSTYPE_SIZE of an empty base to 0.  Types with bases can be empty.
+	* search.c (dfs_check_overlap, dfs_no_overlap_yet): New fns.
+	(types_overlap_p): New fn.
+	* tree.c (avoid_overlap): New fn.
+	(build_base_fields): Use it to avoid overlapping empty bases.
+	* cp-tree.h, decl2.c, lang-options.h: Add -fnew-abi.
+
 	* decl.c (cplus_expand_expr_stmt): Strip unused INDIRECT_REFs.
 
 	Re-implement allocation of base class subobjects.

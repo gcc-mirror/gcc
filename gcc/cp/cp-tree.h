@@ -1914,6 +1914,10 @@ extern int flag_implicit_templates;
 
 extern int flag_weak;
 
+/* Nonzero to enable experimental ABI changes.  */
+
+extern int flag_new_abi;
+
 /* Nonzero if we're done parsing and into end-of-file activities.  */
 
 extern int at_eof;

@@ -401,6 +401,8 @@ int flag_new_for_scope = 1;
 
 int flag_weak = 1;
 
+int flag_new_abi = 1;
+
 /* Maximum template instantiation depth. Must be at least 17 for ANSI
    compliance. */
 
@@ -467,7 +469,8 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"check-new", &flag_check_new, 1},
   {"repo", &flag_use_repository, 1},
   {"for-scope", &flag_new_for_scope, 2},
-  {"weak", &flag_weak, 1}
+  {"weak", &flag_weak, 1},
+  {"new-abi", &flag_new_abi, 1}
 };
 
 /* Decode the string P as a language-specific option.

@@ -3830,3 +3830,49 @@ get_template_base (template, binfo)
 
   return rval;
 }
+
+/* Check whether the empty class indicated by EMPTY_BINFO is also present
+   at offset 0 in COMPARE_TYPE, and set found_overlap if so.  */
+
+static tree compare_type;
+static int found_overlap;
+static void
+dfs_check_overlap (empty_binfo)
+     tree empty_binfo;
+{
+  tree binfo;
+  for (binfo = TYPE_BINFO (compare_type); ; binfo = BINFO_BASETYPE (binfo, 0))
+    {
+      if (BINFO_TYPE (binfo) == BINFO_TYPE (empty_binfo))
+	{
+	  found_overlap = 1;
+	  break;
+	}
+      else if (BINFO_BASETYPES (binfo) == NULL_TREE)
+	break;
+    }
+}
+
+/* Trivial function to stop base traversal when we find something.  */
+
+static int
+dfs_no_overlap_yet (t)
+     tree t;
+{
+  return found_overlap == 0;
+}
+
+/* Returns nonzero if EMPTY_TYPE or any of its bases can also be found at
+   offset 0 in NEXT_TYPE.  Used in laying out empty base class subobjects.  */
+
+int
+types_overlap_p (empty_type, next_type)
+     tree empty_type, next_type;
+{
+  if (! IS_AGGR_TYPE (next_type))
+    return 0;
+  compare_type = next_type;
+  found_overlap = 0;
+  dfs_walk (TYPE_BINFO (empty_type), dfs_check_overlap, dfs_no_overlap_yet);
+  return found_overlap;
+}

@@ -750,6 +750,28 @@ layout_basetypes (rec, max)
   return max;
 }
 
+/* If the empty base field in DECL overlaps with a base of the same type in
+   NEWDECL, which is either another base field or the first data field of
+   the class, pad the base just before NEWDECL and return 1.  Otherwise,
+   return 0.  */
+
+static int
+avoid_overlap (decl, newdecl)
+     tree decl, newdecl;
+{
+  tree field;
+
+  if (newdecl == NULL_TREE
+      || ! types_overlap_p (TREE_TYPE (decl), TREE_TYPE (newdecl)))
+    return 0;
+
+  for (field = decl; TREE_CHAIN (field) && TREE_CHAIN (field) != newdecl;
+       field = TREE_CHAIN (field))
+    ;
+
+  DECL_SIZE (field) = integer_one_node;
+}
+
 /* Returns a list of fields to stand in for the base class subobjects
    of REC.  These fields are later removed by layout_basetypes.  */
 
@@ -762,8 +784,8 @@ build_base_fields (rec)
   tree base_decls = NULL_TREE;
   tree binfos = TYPE_BINFO_BASETYPES (rec);
   int n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-  tree decl;
-  int i;
+  tree decl, nextdecl;
+  int i, saw_empty = 0;
   unsigned int base_align = 0;
 
   for (i = 0; i < n_baseclasses; ++i)
@@ -787,18 +809,54 @@ build_base_fields (rec)
       TREE_CHAIN (decl) = base_decls;
       base_decls = decl;
 
-      /* Brain damage for backwards compatibility.  For no good reason, the
-	 old layout_basetypes made every base at least as large as the
-	 alignment for the bases up to that point, gratuitously wasting
-	 space.  So we do the same thing here.  */
-      base_align = MAX (base_align, DECL_ALIGN (decl));
-      DECL_SIZE (decl) = size_int (MAX (TREE_INT_CST_LOW (DECL_SIZE (decl)),
-					base_align));
+      if (! flag_new_abi)
+	{
+	  /* Brain damage for backwards compatibility.  For no good reason,
+	     the old layout_basetypes made every base at least as large as
+	     the alignment for the bases up to that point, gratuitously
+	     wasting space.  So we do the same thing here.  */
+	  base_align = MAX (base_align, DECL_ALIGN (decl));
+	  DECL_SIZE (decl)
+	    = size_int (MAX (TREE_INT_CST_LOW (DECL_SIZE (decl)),
+			     base_align));
+	}
+      else if (DECL_SIZE (decl) == integer_zero_node)
+	saw_empty = 1;
     }
 
   /* Reverse the list of fields so we allocate the bases in the proper
      order.  */
-  return nreverse (base_decls);
+  base_decls = nreverse (base_decls);
+
+  /* In the presence of empty base classes, we run the risk of allocating
+     two objects of the same class on top of one another.  Avoid that.  */
+  if (flag_new_abi && saw_empty)
+    for (decl = base_decls; decl; decl = TREE_CHAIN (decl))
+      {
+	if (DECL_SIZE (decl) == integer_zero_node)
+	  {
+	    /* First step through the following bases until we find
+	       an overlap or a non-empty base.  */
+	    for (nextdecl = TREE_CHAIN (decl); nextdecl;
+		 nextdecl = TREE_CHAIN (nextdecl))
+	      {
+		if (avoid_overlap (decl, nextdecl)
+		    || DECL_SIZE (nextdecl) != integer_zero_node)
+		  goto nextbase;
+	      }
+
+	    /* If we're still looking, also check against the first
+	       field.  */
+	    for (nextdecl = TYPE_FIELDS (rec);
+		 nextdecl && TREE_CODE (nextdecl) != FIELD_DECL;
+		 nextdecl = TREE_CHAIN (nextdecl))
+	      /* keep looking */;
+	    avoid_overlap (decl, nextdecl);
+	  }
+      nextbase:;
+      }
+
+  return base_decls;
 }
 
 /* Returns list of virtual base class pointers in a FIELD_DECL chain.  */
