@@ -523,11 +523,6 @@ ffeintrin_check_ (ffeintrinImp imp, ffebldOp op,
 	} while (TRUE);
     }
 
-  /* Ignore explicit trailing omitted args.  */
-
-  while ((arg != NULL) && (ffebld_head (arg) == NULL))
-    arg = ffebld_trail (arg);
-
   if (arg != NULL)
     return FFEBAD_INTRINSIC_TOOMANY;
 
@@ -1371,7 +1366,8 @@ ffeintrin_fulfill_generic (ffebld *expr, ffeinfo *info, ffelexToken t)
       if ((ffesymbol_attrs (ffebld_symter (symter)) & FFESYMBOL_attrsTYPE)
 	  && (((bt != ffesymbol_basictype (ffebld_symter (symter)))
 	       || (kt != ffesymbol_kindtype (ffebld_symter (symter)))
-	       || (sz != ffesymbol_size (ffebld_symter (symter))))))
+	       || ((sz != FFETARGET_charactersizeNONE)
+		   && (sz != ffesymbol_size (ffebld_symter (symter)))))))
 	{
 	  ffebad_start (FFEBAD_INTRINSIC_TYPE);
 	  ffebad_here (0, ffelex_token_where_line (t),
