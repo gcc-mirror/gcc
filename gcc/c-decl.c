@@ -2052,7 +2052,7 @@ pushdecl (x)
           else if (TREE_TYPE (x) != error_mark_node)
             {
               tree tt = TREE_TYPE (x);
-
+	      DECL_ORIGINAL_TYPE (x) = tt;
               tt = build_type_copy (tt);
               TYPE_NAME (tt) = x;
               TREE_TYPE (x) = tt;
