@@ -1,3 +1,7 @@
+2001-02-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* rtl.c (rtl_check_failed_code2): Fix typo in last change.
+
 2001-02-23  Per Bothner  <per@bothner.com>
 
 	* gcc.c (record_temp_file, pfatal_with_name, error):  Make non-static,
