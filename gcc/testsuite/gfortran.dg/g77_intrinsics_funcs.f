@@ -1,4 +1,4 @@
-! {dg-do compile}
+! { dg-do compile }
 ! Testing g77 intrinsics as subroutines
       integer*8 i8
       integer*4 i4

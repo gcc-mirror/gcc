@@ -1,4 +1,4 @@
-! {dg-do run}
+! { dg-do run }
 !
 ! PR libfortran/20660 and other bugs (not filed in bugzilla) relating
 ! to negative units
