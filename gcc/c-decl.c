@@ -4262,12 +4262,18 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  ;
 	else
 	  {
-	    error ((decl_context == FIELD
-		    ? "storage class specified for structure field `%s'"
-		    : (decl_context == PARM
-		       ? "storage class specified for parameter `%s'"
-		       : "storage class specified for typename")),
-		   name);
+	    switch (decl_context)
+	      {
+	      case FIELD:
+		error ("storage class specified for structure field `%s'", name);
+		break;
+	      case PARM:
+		error ("storage class specified for parameter `%s'", name);
+		break;
+	      default:
+		error ("storage class specified for typename");
+		break;
+	      }
 	    specbits &= ~ ((1 << (int) RID_TYPEDEF) | (1 << (int) RID_REGISTER)
 			   | (1 << (int) RID_AUTO) | (1 << (int) RID_STATIC)
 			   | (1 << (int) RID_EXTERN));
@@ -5243,8 +5249,8 @@ start_struct (code, name)
       C_TYPE_BEING_DEFINED (ref) = 1;
       TYPE_PACKED (ref) = flag_pack_struct;
       if (TYPE_FIELDS (ref))
-	error ((code == UNION_TYPE ? "redefinition of `union %s'"
-		: "redefinition of `struct %s'"),
+	error ("redefinition of `%s %s'",
+	       code == UNION_TYPE ? "union" : "struct",
 	       IDENTIFIER_POINTER (name));
 
       return ref;
@@ -5316,11 +5322,11 @@ finish_struct (t, fieldlist, attributes)
     if (in_parm_level_p ())
       {
 	if (pedantic)
-	  pedwarn ((TREE_CODE (t) == UNION_TYPE ? "union defined inside parms"
-		    : "structure defined inside parms"));
+	  pedwarn ("%s defined inside parms",
+		   TREE_CODE (t) == UNION_TYPE ? "union" : "structure");
 	else if (! flag_traditional)
-	  warning ((TREE_CODE (t) == UNION_TYPE ? "union defined inside parms"
-		    : "structure defined inside parms"));
+	  warning ("%s defined inside parms",
+		   TREE_CODE (t) == UNION_TYPE ? "union" : "structure");
       }
 
   old_momentary = suspend_momentary ();
@@ -5332,10 +5338,9 @@ finish_struct (t, fieldlist, attributes)
 	  break;
 
       if (x == 0)
-	pedwarn ((fieldlist
-		  ? "%s has no named members"
-		  : "%s has no members"),
-		 TREE_CODE (t) == UNION_TYPE ? "union" : "struct");
+	pedwarn ("%s has no %smembers",
+		 TREE_CODE (t) == UNION_TYPE ? "union" : "struct",
+		 fieldlist ? "named " : "");
     }
 
   /* Install struct as DECL_CONTEXT of each field decl.

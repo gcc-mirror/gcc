@@ -1549,10 +1549,14 @@ default_print_error_function (file)
       if (current_function_decl == NULL)
 	notice ("At top level:\n");
       else
-	notice ((TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE
-		 ? "In method `%s':\n"
-		 : "In function `%s':\n"),
-		(*decl_printable_name) (current_function_decl, 2));
+	{
+	  if (TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE)
+	    notice ("In method `%s':\n",
+		    (*decl_printable_name) (current_function_decl, 2));
+	  else
+	    notice ("In function `%s':\n",
+		    (*decl_printable_name) (current_function_decl, 2));
+	}
 
       last_error_function = current_function_decl;
     }
@@ -1584,10 +1588,10 @@ report_error_function (file)
       && input_file_stack_tick != last_error_tick)
     {
       for (p = input_file_stack->next; p; p = p->next)
-	notice ((p == input_file_stack->next
-		 ?    "In file included from %s:%d"
-		 : ",\n                 from %s:%d"),
-		p->name, p->line);
+	if (p == input_file_stack->next)
+	  notice ("In file included from %s:%d", p->name, p->line);
+	else
+	  notice (",\n                 from %s:%d", p->name, p->line);
       fprintf (stderr, ":\n");
       last_error_tick = input_file_stack_tick;
     }
@@ -1979,7 +1983,7 @@ _fatal_insn (msgid, insn, file, line, function)
      int line;
      const char *function;
 {
-  error (msgid);
+  error ("%s", msgid);
   debug_rtx (insn);
   fancy_abort (file, line, function);
 }

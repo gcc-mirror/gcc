@@ -6064,13 +6064,20 @@ check_macro_name (symname, assertion)
   sym_length = p - symname;
   if (sym_length == 0
       || (sym_length == 1 && *symname == 'L' && (*p == '\'' || *p == '"')))
-    error (assertion ? "invalid assertion name" : "invalid macro name");
+    {
+      if (assertion)
+	error ("invalid assertion name");
+      else
+	error ("invalid macro name");
+    }
   else if (!is_idstart[*symname]
 	   || (sym_length == 7 && ! bcmp (symname, "defined", 7)))
-    error ((assertion
-	    ? "invalid assertion name `%.*s'"
-	    : "invalid macro name `%.*s'"),
-	   sym_length, symname);
+    {
+      if (assertion)
+	error ("invalid assertion name `%.*s'", sym_length, symname);
+      else
+	error ("invalid macro name `%.*s'", sym_length, symname);
+    }
   return sym_length;
 }
 
@@ -7419,9 +7426,12 @@ do_xifdef (buf, limit, op, keyword)
   if (end == buf) {
     skip = (keyword->type == T_IFDEF);
     if (! traditional)
-      pedwarn (end == limit ? "`#%s' with no argument"
-	       : "`#%s' argument starts with punctuation",
-	       keyword->name);
+      {
+	if (end == limit)
+	  pedwarn ("`#%s' with no argument", keyword->name);
+	else
+	  pedwarn ("`#%s' argument starts with punctuation", keyword->name);
+      }
   } else {
     HASHNODE *hp;
 
@@ -9627,7 +9637,10 @@ vwarning_with_line (line, msgid, args)
   if (ip != NULL) {
     fwrite (ip->nominal_fname, sizeof ip->nominal_fname[0],
 	    ip->nominal_fname_len, stderr);
-    fprintf (stderr, line ? ":%d: " : ": ", line);
+    if (line)
+      fprintf (stderr, ":%d: ", line);
+    else
+      fputs (": ", stderr);
   }
   notice ("warning: ");
   vnotice (msgid, args);

@@ -5027,7 +5027,7 @@ catch_signal (signum)
      int signum;
 {
   (void) signal (signum, SIG_DFL);	/* just in case...  */
-  fatal (strsignal(signum));
+  fatal ("%s", strsignal(signum));
 }
 
 /* Print a fatal error message.  NAME is the text.
@@ -5630,7 +5630,7 @@ void
 botch (s)
      const char *s;
 {
-  fatal (s);
+  fatal ("%s", s);
 }
 
 

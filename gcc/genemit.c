@@ -377,7 +377,10 @@ gen_insn (insn)
   /* Output the function name and argument declarations.  */
   printf ("rtx\ngen_%s (", XSTR (insn, 0));
   for (i = 0; i < operands; i++)
-    printf (i ? ", operand%d" : "operand%d", i);
+    if (i)
+      printf (", operand%d", i);
+    else
+      printf ("operand%d", i);
   printf (")\n");
   for (i = 0; i < operands; i++)
     printf ("     rtx operand%d;\n", i);
@@ -428,7 +431,10 @@ gen_expand (expand)
   /* Output the function name and argument declarations.  */
   printf ("rtx\ngen_%s (", XSTR (expand, 0));
   for (i = 0; i < operands; i++)
-    printf (i ? ", operand%d" : "operand%d", i);
+    if (i)
+      printf (", operand%d", i);
+    else
+      printf ("operand%d", i);
   printf (")\n");
   for (i = 0; i < operands; i++)
     printf ("     rtx operand%d;\n", i);

@@ -1157,9 +1157,8 @@ build_component_ref (datum, component)
 
       if (!field)
 	{
-	  error (code == RECORD_TYPE
-		 ? "structure has no member named `%s'"
-		 : "union has no member named `%s'",
+	  error ("%s has no member named `%s'",
+		 code == RECORD_TYPE ? "structure" : "union",
 		 IDENTIFIER_POINTER (component));
 	  return error_mark_node;
 	}
@@ -2807,9 +2806,9 @@ build_unary_op (code, xarg, noconvert)
       if (typecode != POINTER_TYPE
 	  && typecode != INTEGER_TYPE && typecode != REAL_TYPE)
 	{
-	  error (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR
-		 ? "wrong type argument to increment"
-		 : "wrong type argument to decrement");
+	  error ("wrong type argument to %s",
+		 code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR
+		 ? "increment" : "decrement");
 	  return error_mark_node;
 	}
 
@@ -2827,15 +2826,15 @@ build_unary_op (code, xarg, noconvert)
 	    /* If pointer target is an undefined struct,
 	       we just cannot know how to do the arithmetic.  */
 	    if (TYPE_SIZE (TREE_TYPE (result_type)) == 0)
-	      error (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR
-		     ? "increment of pointer to unknown structure"
-		     : "decrement of pointer to unknown structure");
+	      error ("%s of pointer to unknown structure",
+		     code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR
+		     ? "increment" : "decrement");
 	    else if ((pedantic || warn_pointer_arith)
 		     && (TREE_CODE (TREE_TYPE (result_type)) == FUNCTION_TYPE
 			 || TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE))
-	      pedwarn (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR
-		       ? "wrong type argument to increment"
-		       : "wrong type argument to decrement");
+	      pedwarn ("wrong type argument to %s",
+		       code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR
+		       ? "increment" : "decrement");
 	    inc = c_size_in_bytes (TREE_TYPE (result_type));
 	  }
 	else
@@ -3119,7 +3118,7 @@ lvalue_or_else (ref, msgid)
   int win = lvalue_p (ref);
 
   if (! win)
-    error (msgid);
+    error ("%s", msgid);
 
   return win;
 }
@@ -3173,11 +3172,18 @@ pedantic_lvalue_warning (code)
      enum tree_code code;
 {
   if (pedantic)
-    pedwarn (code == COND_EXPR
-	     ? "ANSI C forbids use of conditional expressions as lvalues"
-	     : code == COMPOUND_EXPR
-	     ? "ANSI C forbids use of compound expressions as lvalues"
-	     : "ANSI C forbids use of cast expressions as lvalues");
+    switch (code)
+      {
+      case COND_EXPR:
+	pedwarn ("ANSI C forbids use of conditional expressions as lvalues");
+	break;
+      case COMPOUND_EXPR:
+	pedwarn ("ANSI C forbids use of compound expressions as lvalues");
+	break;
+      default:
+	pedwarn ("ANSI C forbids use of cast expressions as lvalues");
+	break;
+      }
 }
 
 /* Warn about storing in something that is `const'.  */
@@ -4444,7 +4450,7 @@ error_init (msgid)
 {
   char *ofwhat;
 
-  error (msgid);
+  error ("%s", msgid);
   ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
   if (*ofwhat)
     error ("(near initialization for `%s')", ofwhat);
@@ -4460,7 +4466,7 @@ pedwarn_init (msgid)
 {
   char *ofwhat;
 
-  pedwarn (msgid);
+  pedwarn ("%s", msgid);
   ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
   if (*ofwhat)
     pedwarn ("(near initialization for `%s')", ofwhat);
@@ -4476,7 +4482,7 @@ warning_init (msgid)
 {
   char *ofwhat;
 
-  warning (msgid);
+  warning ("%s", msgid);
   ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
   if (*ofwhat)
     warning ("(near initialization for `%s')", ofwhat);
