@@ -34,6 +34,8 @@
 #ifndef _CPP_BITS_FPOS_H
 #define _CPP_BITS_FPOS_H 1
 
+#pragma GCC system_header
+
 // Need this here as well as in std_ios because fpos is used in
 // char_traits, and char_traits is used by string, which may or may
 // not have included the std_ios file.

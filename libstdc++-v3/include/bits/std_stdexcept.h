@@ -34,6 +34,8 @@
 #ifndef _CPP_STDEXCEPT
 #define _CPP_STDEXCEPT 	  1
 
+#pragma GCC system_header
+
 #include <exception>
 #include <bits/stringfwd.h>
 

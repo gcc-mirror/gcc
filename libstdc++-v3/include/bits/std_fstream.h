@@ -34,6 +34,8 @@
 #ifndef _CPP_FSTREAM
 #define _CPP_FSTREAM	1
 
+#pragma GCC system_header
+
 #include <bits/std_istream.h>
 #include <bits/std_ostream.h>
 #include <bits/basic_file.h>

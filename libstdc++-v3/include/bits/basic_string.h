@@ -34,6 +34,8 @@
 #ifndef _CPP_BITS_STRING_H
 #define _CPP_BITS_STRING_H	1
 
+#pragma GCC system_header
+
 #include <bits/atomicity.h>
 
 namespace std {

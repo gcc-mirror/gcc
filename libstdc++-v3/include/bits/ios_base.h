@@ -34,6 +34,8 @@
 #ifndef _CPP_BITS_IOSBASE_H
 #define _CPP_BITS_IOSBASE_H 1
 
+#pragma GCC system_header
+
 namespace std {
 
   // The following definitions of bitmask types are enums, not ints,

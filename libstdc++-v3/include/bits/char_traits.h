@@ -34,6 +34,8 @@
 #ifndef _CPP_BITS_CHAR_TRAITS_H
 #define _CPP_BITS_CHAR_TRAITS_H 1
 
+#pragma GCC system_header
+
 #include <bits/std_cwchar.h> 	// For mbstate_t.
 #include <bits/std_cstring.h> 	// For memmove, memset, memchr
 #include <bits/fpos.h> 		// For streamoff, streamsize

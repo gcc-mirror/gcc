@@ -27,6 +27,8 @@
 #ifndef _CPP_ITERATOR
 #define _CPP_ITERATOR 1
 
+#pragma GCC system_header
+
 #include <bits/stl_config.h>
 #include <bits/std_cstddef.h>
 #include <bits/std_iosfwd.h>

@@ -1,3 +1,57 @@
+2001-02-19  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* include/bits/basic_file.h: Add #pragma system_header
+	* include/bits/basic_ios.h: Ditto.
+	* include/bits/basic_string.h: Ditto.
+	* include/bits/char_traits.h: Ditto.
+	* include/bits/codecvt.h: Ditto.
+	* include/bits/cpp_type_traits.h:  Ditto.
+	* include/bits/fpos.h: Ditto.
+	* include/bits/gslice.h: Ditto.
+	* include/bits/gslice_array.h: Ditto.
+	* include/bits/indirect_array.h: Ditto.
+	* include/bits/ios_base.h: Ditto.
+	* include/bits/limits_generic.h: Ditto.
+	* include/bits/locale_facets.h: Ditto.
+	* include/bits/localefwd.h: Ditto.
+	* include/bits/mask_array.h: Ditto.
+	* include/bits/sbuf_iter.h: Ditto.
+	* include/bits/sequence_concepts.h: Ditto.
+	* include/bits/slice.h: Ditto.
+	* include/bits/slice_array.h: Ditto.
+	* include/bits/std_algorithm.h: Likewise.
+	* include/bits/std_bitset.h: Likewise.
+	* include/bits/std_complex.h: Likewise.
+	* include/bits/std_deque.h: Likewise.
+	* include/bits/std_fstream.h: Likewise.
+	* include/bits/std_functional.h: Likewise.
+	* include/bits/std_iomanip.h: Likewise.
+	* include/bits/std_ios.h: Likewise.
+	* include/bits/std_iosfwd.h: Likewise.
+	* include/bits/std_iostream.h: Likewise.
+	* include/bits/std_istream.h: Likewise.
+	* include/bits/std_iterator.h: Likewise.
+	* include/bits/std_list.h: Likewise.
+	* include/bits/std_locale.h: Likewise.
+	* include/bits/std_map.h: Likewise.
+	* include/bits/std_memory.h: Likewise.
+	* include/bits/std_numeric.h: Likewise.
+	* include/bits/std_ostream.h: Likewise.
+	* include/bits/std_queue.h: Likewise.
+	* include/bits/std_set.h: Likewise.
+	* include/bits/std_sstream.h: Likewise.
+	* include/bits/std_stack.h: Likewise.
+	* include/bits/std_stdexcept.h: Likewise.
+	* include/bits/std_streambuf.h: Likewise.
+	* include/bits/std_string.h: Likewise.
+	* include/bits/std_utility.h: Likewise.
+	* include/bits/std_valarray.h: Likewise.
+	* include/bits/std_vector.h: Likewise.
+	* include/bits/stringfwd.h: Likewise.
+	* include/bits/type_traits.h: Likewise.
+	* include/bits/valarray_array.h: Likewise.
+	* include/bits/valarray_meta.h: Likewise.
+	
 2001-02-19  Andreas Jaeger  <aj@suse.de>
 
 	* config/cpu/sparc/sparc64/bits/atomicity.h (__compare_and_swap):

@@ -30,6 +30,8 @@
 #ifndef _CPP_BITS_BASICIOS_H
 #define _CPP_BITS_BASICIOS_H 1
 
+#pragma GCC system_header
+
 #include <bits/sbuf_iter.h>
 #include <bits/locale_facets.h>
 

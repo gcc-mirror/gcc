@@ -27,6 +27,8 @@
 #ifndef _CPP_VECTOR
 #define _CPP_VECTOR 1
 
+#pragma GCC system_header
+
 #include <bits/functexcept.h>
 #include <bits/stl_algobase.h>
 #include <bits/stl_alloc.h>

@@ -34,6 +34,8 @@
 #ifndef _CPP_LOCALE
 #define _CPP_LOCALE	1
 
+#pragma GCC system_header
+
 #include <bits/localefwd.h>
 #include <bits/locale_facets.h>
 #include <bits/locale_facets.tcc>
