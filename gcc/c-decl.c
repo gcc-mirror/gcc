@@ -3268,6 +3268,14 @@ finish_decl (decl, init, asmspec_tree)
   if (TREE_CODE (decl) == PARM_DECL)
     init = 0;
 
+  if (ITERATOR_P (decl))
+    {
+      if (init == 0)
+	error_with_decl (decl, "iterator has no initial value");
+      else
+	init = save_expr (init);
+    }
+
   if (init)
     {
       if (TREE_CODE (decl) != TYPE_DECL)
@@ -3880,6 +3888,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
     if (specbits & 1 << (int) RID_EXTERN) nclasses++;
     if (specbits & 1 << (int) RID_REGISTER) nclasses++;
     if (specbits & 1 << (int) RID_TYPEDEF) nclasses++;
+    if (specbits & 1 << (int) RID_ITERATOR) nclasses++;
 
     /* Warn about storage classes that are invalid for certain
        kinds of declarations (parameters, typenames, etc.).  */
@@ -3933,6 +3942,18 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
     else if (current_binding_level == global_binding_level
 	     && specbits & (1 << (int) RID_AUTO))
       error ("top-level declaration of `%s' specifies `auto'", name);
+    else if ((specbits & 1 << (int) RID_ITERATOR)
+	     && TREE_CODE (declarator) != IDENTIFIER_NODE)
+      {
+	error ("iterator `%s' has derived type", name);
+	type = error_mark_node;
+      }
+    else if ((specbits & 1 << (int) RID_ITERATOR)
+	     && TREE_CODE (type) != INTEGER_TYPE)
+      {
+	error ("iterator `%s' has noninteger type", name);
+	type = error_mark_node;
+      }
   }
 
   /* Now figure out the structure of the declarator proper.
@@ -4449,6 +4470,14 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	    TREE_STATIC (decl) = (specbits & (1 << (int) RID_STATIC)) != 0;
 	    TREE_PUBLIC (decl) = DECL_EXTERNAL (decl);
 	  }
+
+	if (specbits & 1 << (int) RID_ITERATOR)
+	  ITERATOR_P (decl) = 1;
+      {
+	error ("iterator `%s' has derived type", name);
+	type = error_mark_node;
+      }
+
       }
 
     /* Record `register' declaration for warnings on &
