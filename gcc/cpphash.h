@@ -226,7 +226,9 @@ extern unsigned char _cpp_IStable[256];
 #define CPP_PRINT_DEPS(PFILE) CPP_OPTION (PFILE, print_deps)
 #define CPP_TRADITIONAL(PFILE) CPP_OPTION (PFILE, traditional)
 #define CPP_PEDANTIC(PFILE) \
-  (CPP_OPTION (PFILE, pedantic) && !CPP_BUFFER (pfile)->system_header_p)
+  (CPP_OPTION (PFILE, pedantic) && !CPP_BUFFER (PFILE)->system_header_p)
+#define CPP_WTRADITIONAL(PF) \
+  (CPP_OPTION (PF, warn_traditional) && !CPP_BUFFER (PF)->system_header_p)
 
 /* CPP_IS_MACRO_BUFFER is true if the buffer contains macro expansion.
    (Note that it is false while we're expanding macro *arguments*.) */

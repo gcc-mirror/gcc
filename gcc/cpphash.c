@@ -406,7 +406,7 @@ collect_expansion (pfile, arglist)
 	  if (last_token == STRIZE)
 	    cpp_error (pfile, "`#' is not followed by a macro argument name");
 
-	  if (CPP_TRADITIONAL (pfile) || CPP_OPTION (pfile, warn_stringify))
+	  if (CPP_TRADITIONAL (pfile) || CPP_WTRADITIONAL (pfile))
 	    goto maybe_trad_stringify;
 	  else
 	    goto norm;
@@ -480,7 +480,7 @@ collect_expansion (pfile, arglist)
 			     (int) argv[i].len, argv[i].name);
 		continue;
 	      }
-	    if (CPP_OPTION (pfile, warn_stringify))
+	    if (CPP_WTRADITIONAL (pfile))
 	      cpp_warning (pfile, "macro argument `%.*s' is stringified",
 			     (int) argv[i].len, argv[i].name);
 

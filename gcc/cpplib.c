@@ -26,6 +26,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpphash.h"
 #include "hashtab.h"
 #include "intl.h"
+#include "symcat.h"
 
 #define PEEKN(N) (CPP_BUFFER (pfile)->rlimit - CPP_BUFFER (pfile)->cur >= (N) \
 		  ? CPP_BUFFER (pfile)->cur[N] : EOF)
@@ -37,10 +38,11 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 struct directive
 {
-  unsigned int length;		/* Length of name */
-  const char *name;		/* Name of directive */
   int (*func)			/* Function to handle directive */
     PARAMS ((cpp_reader *));
+  const char *name;		/* Name of directive */
+  unsigned short length;	/* Length of name */
+  unsigned short origin;	/* Origin of this directive */
 };
 
 /* Stack of conditionals currently in progress
@@ -72,6 +74,9 @@ static int consider_directive_while_skipping
 					PARAMS ((cpp_reader *, IF_STACK *));
 static int get_macro_name		PARAMS ((cpp_reader *));
 
+/* Values for the "origin" field of the table below.  */
+enum { KANDR = 0, STDC89, EXTENSION };
+
 /* This is the table of directive handlers.  It is ordered by
    frequency of occurrence; the numbers at the end are directive
    counts from all the source code I have lying around (egcs and libc
@@ -82,26 +87,33 @@ static int get_macro_name		PARAMS ((cpp_reader *));
    of which all but #warning and #include_next are deprecated.  The name
    is where the extension appears to have come from.  */
 
+/* #sccs is not always recognized.  */
+#ifdef SCCS_DIRECTIVE
+# define SCCS_ENTRY D(sccs, T_SCCS, EXTENSION)		/*     0 - SVR2? */
+#else
+# define SCCS_ENTRY /* nothing */
+#endif
+
 #define DIRECTIVE_TABLE							\
-D("define",	  do_define,	   T_DEFINE)		/* 270554 */	\
-D("include",	  do_include,	   T_INCLUDE)		/*  52262 */	\
-D("endif",	  do_endif,	   T_ENDIF)		/*  45855 */	\
-D("ifdef",	  do_ifdef,	   T_IFDEF)		/*  22000 */	\
-D("if",		  do_if,	   T_IF)		/*  18162 */	\
-D("else",	  do_else,	   T_ELSE)		/*   9863 */	\
-D("ifndef",	  do_ifndef,	   T_IFNDEF)		/*   9675 */	\
-D("undef",	  do_undef,	   T_UNDEF)		/*   4837 */	\
-D("line",	  do_line,	   T_LINE)		/*   2465 */	\
-D("elif",	  do_elif,	   T_ELIF)		/*    610 */	\
-D("error",	  do_error,	   T_ERROR)		/*    475 */	\
-D("pragma",	  do_pragma,	   T_PRAGMA)		/*    195 */	\
-D("warning",	  do_warning,	   T_WARNING)		/*     22 - GNU   */ \
-D("include_next", do_include_next, T_INCLUDE_NEXT)	/*     19 - GNU   */ \
-D("ident",	  do_ident,	   T_IDENT)		/*     11 - SVR4  */ \
-D("import",	  do_import,	   T_IMPORT)		/*      0 - ObjC  */ \
-D("assert",	  do_assert,	   T_ASSERT)		/*      0 - SVR4  */ \
-D("unassert",	  do_unassert,	   T_UNASSERT)		/*      0 - SVR4  */ \
-D("sccs",	  do_sccs,	   T_SCCS)		/*      0 - SVR2? */
+D(define,	T_DEFINE,	KANDR)		/* 270554 */		\
+D(include,	T_INCLUDE,	KANDR)		/*  52262 */		\
+D(endif,	T_ENDIF,	KANDR)		/*  45855 */		\
+D(ifdef,	T_IFDEF,	KANDR)		/*  22000 */		\
+D(if,		T_IF,		KANDR)		/*  18162 */		\
+D(else,		T_ELSE,		KANDR)		/*   9863 */		\
+D(ifndef,	T_IFNDEF,	KANDR)		/*   9675 */		\
+D(undef,	T_UNDEF,	KANDR)		/*   4837 */		\
+D(line,		T_LINE,		KANDR)		/*   2465 */		\
+D(elif,		T_ELIF,		KANDR)		/*    610 */		\
+D(error,	T_ERROR,	STDC89)		/*    475 */		\
+D(pragma,	T_PRAGMA,	STDC89)		/*    195 */		\
+D(warning,	T_WARNING,	EXTENSION)	/*     22 - GNU   */	\
+D(include_next,	T_INCLUDE_NEXT,	EXTENSION)	/*     19 - GNU   */	\
+D(ident,	T_IDENT,	EXTENSION)	/*     11 - SVR4  */	\
+D(import,	T_IMPORT,	EXTENSION)	/*      0 - ObjC  */	\
+D(assert,	T_ASSERT,	EXTENSION)	/*      0 - SVR4  */	\
+D(unassert,	T_UNASSERT,	EXTENSION)	/*      0 - SVR4  */	\
+SCCS_ENTRY
 
 /* Use the table to generate a series of prototypes, an enum for the
    directive names, and an array of directive handlers.  */
@@ -110,11 +122,11 @@ D("sccs",	  do_sccs,	   T_SCCS)		/*      0 - SVR2? */
    instead of void, because some old compilers have trouble with
    pointers to functions returning void.  */
 
-#define D(name, fun, tag) static int fun PARAMS ((cpp_reader *));
+#define D(name, t, o) static int CONCAT2(do_, name) PARAMS ((cpp_reader *));
 DIRECTIVE_TABLE
 #undef D
 
-#define D(name, fun, tag) tag,
+#define D(n, tag, o) tag,
 enum
 {
   DIRECTIVE_TABLE
@@ -122,7 +134,8 @@ enum
 };
 #undef D
 
-#define D(name, fun, tag) { sizeof name - 1, name, fun },
+#define D(name, t, origin) \
+{ CONCAT2(do_, name), STRINGX(name), sizeof STRINGX(name) - 1, origin },
 static const struct directive dtable[] =
 {
 DIRECTIVE_TABLE
@@ -138,6 +151,7 @@ _cpp_handle_directive (pfile)
      cpp_reader *pfile;
 {
   int c, i;
+  int hash_at_bol;
   unsigned int len;
   U_CHAR *ident;
   long old_written = CPP_WRITTEN (pfile);
@@ -148,6 +162,10 @@ _cpp_handle_directive (pfile)
       return 0;
     }
 
+  /* -traditional directives are recognized only with the # in column 1.
+     XXX Layering violation.  */
+  hash_at_bol = (CPP_BUFFER (pfile)->cur - CPP_BUFFER (pfile)->line_base == 1);
+  
   _cpp_skip_hspace (pfile);
 
   c = PEEKC ();
@@ -163,7 +181,7 @@ _cpp_handle_directive (pfile)
       if (CPP_PEDANTIC (pfile)
 	  && ! CPP_OPTION (pfile, preprocessed)
 	  && ! CPP_BUFFER (pfile)->manual_pop)
-	cpp_pedwarn (pfile, "`#' followed by integer");
+	cpp_pedwarn (pfile, "# followed by integer");
       do_line (pfile);
       return 1;
     }
@@ -180,7 +198,7 @@ _cpp_handle_directive (pfile)
   len = CPP_PWRITTEN (pfile) - ident;
   if (len == 0)
     {
-      /* A line of just `#' becomes blank.  A line with something
+      /* A line of just # becomes blank.  A line with something
 	 other than an identifier after the # is reparsed as a non-
 	 directive line.  */
       CPP_SET_WRITTEN (pfile, old_written);
@@ -206,10 +224,26 @@ _cpp_handle_directive (pfile)
       cpp_error (pfile, "`#%s' may not be used inside a macro argument",
 		 dtable[i].name);
       _cpp_skip_rest_of_line (pfile);
+      return 1;
     }
-  else
-    (*dtable[i].func) (pfile);
 
+  if (CPP_PEDANTIC (pfile) && dtable[i].origin == EXTENSION)
+    cpp_pedwarn (pfile, "ISO C does not allow #%s", dtable[i].name);
+  if (CPP_WTRADITIONAL (pfile))
+    {
+      if (!hash_at_bol && dtable[i].origin == KANDR)
+	cpp_warning (pfile, "the # in #%s should be at the left margin",
+		     dtable[i].name);
+      else if (hash_at_bol && dtable[i].origin != KANDR)
+	cpp_warning (pfile,
+		     "the # in #%s should not be at the left margin",
+		     dtable[i].name);
+    }
+
+  if (CPP_TRADITIONAL (pfile) && !hash_at_bol)
+    return 0;
+
+  (*dtable[i].func) (pfile);
   return 1;
 }
 
@@ -527,9 +561,6 @@ do_import (pfile)
   unsigned int len;
   char *token;
 
-  if (CPP_PEDANTIC (pfile))
-    cpp_pedwarn (pfile, "ANSI C does not allow `#import'");
-
   if (CPP_OPTION (pfile, warn_import)
       && !CPP_BUFFER (pfile)->system_header_p && !pfile->import_warning)
     {
@@ -559,9 +590,6 @@ do_include_next (pfile)
   char *token;
   struct file_name_list *search_start = 0;
 
-  if (CPP_PEDANTIC (pfile))
-    cpp_pedwarn (pfile, "ANSI C does not allow `#include_next'");
-  
   len = parse_include (pfile, dtable[T_INCLUDE_NEXT].name);
   if (len == 0)
     return 0;
@@ -835,9 +863,6 @@ do_warning (pfile)
   _cpp_skip_rest_of_line (pfile);
   limit = CPP_BUFFER (pfile)->cur;
 
-  if (CPP_PEDANTIC (pfile))
-    cpp_pedwarn (pfile, "ANSI C does not allow `#warning'");
-
   cpp_warning (pfile, "#warning %.*s", (int)(limit - text), text);
   return 0;
 }
@@ -849,10 +874,6 @@ do_ident (pfile)
      cpp_reader *pfile;
 {
   long old_written = CPP_WRITTEN (pfile);
-
-  /* Allow #ident in system headers, since that's not user's fault.  */
-  if (CPP_PEDANTIC (pfile))
-    cpp_pedwarn (pfile, "ANSI C does not allow `#ident'");
 
   CPP_PUTS (pfile, "#ident ", 7);
 
@@ -1066,20 +1087,15 @@ do_pragma_poison (pfile)
 }
  
 /* Just ignore #sccs, on systems where we define it at all.  */
+#ifdef SCCS_DIRECTIVE
 static int
 do_sccs (pfile)
      cpp_reader *pfile;
 {
-#ifdef SCCS_DIRECTIVE
-  if (CPP_PEDANTIC (pfile))
-    cpp_pedwarn (pfile, "ANSI C does not allow `#sccs'");
-#else
-  cpp_error (pfile, "undefined or invalid # directive `sccs'");
-#endif
   _cpp_skip_rest_of_line (pfile);
   return 0;
 }
-
+#endif
 
 /* We've found an `#if' directive.  If the only thing before it in
    this file is white space, and if it is of the form
@@ -1612,9 +1628,6 @@ do_assert (pfile)
   size_t blen, tlen;
   unsigned long bhash, thash;
 
-  if (CPP_PEDANTIC (pfile) && pfile->done_initializing)
-    cpp_pedwarn (pfile, "ANSI C does not allow `#assert'");
-
   _cpp_skip_hspace (pfile);
   sym = CPP_PWRITTEN (pfile);	/* remember where it starts */
   ret = _cpp_parse_assertion (pfile);
@@ -1678,9 +1691,6 @@ do_unassert (pfile)
   long baselen, thislen;
   HASHNODE *base, *this, *next;
   
-  if (CPP_PEDANTIC (pfile) && pfile->done_initializing)
-    cpp_pedwarn (pfile, "ANSI C does not allow `#unassert'");
-
   _cpp_skip_hspace (pfile);
 
   sym = CPP_PWRITTEN (pfile);	/* remember where it starts */
