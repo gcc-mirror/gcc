@@ -1,3 +1,12 @@
+2002-02-28  Richard Henderson  <rth@redhat.com>
+
+	* haifa-sched.c (sched_emit_insn): New.
+	(schedule_block): Use last_scheduled_insn to track last insn.
+	* sched-int.h (sched_emit_insn): Prototype.
+	* config/ia64/ia64.c (last_issued): Remove.
+	(ia64_variable_issue): Don't set it.
+	(nop_cycles_until): Use sched_emit_insn.
+
 2002-02-28  Andrew MacLeod  <amacleod@redhat.com>
 
 	* config/sparc/sparc.c (sparc64_initialize_trampoline): Generate sign

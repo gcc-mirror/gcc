@@ -6074,12 +6074,6 @@ static int prev_cycle;
    value of sched_data.first_slot.  */
 static int prev_first;
 
-/* The last insn that has been scheduled.  At the start of a new cycle
-   we know that we can emit new insns after it; the main scheduling code
-   has already emitted a cycle_display insn after it and is using that
-   as its current last insn.  */
-static rtx last_issued;
-
 /* Emit NOPs to fill the delay between PREV_CYCLE and CLOCK_VAR.  Used to
    pad out the delay between MM (shifts, etc.) and integer operations.  */
 
@@ -6095,8 +6089,7 @@ nop_cycles_until (clock_var, dump)
   /* Finish the previous cycle; pad it out with NOPs.  */
   if (sched_data.cur == 3)
     {
-      rtx t = gen_insn_group_barrier (GEN_INT (3));
-      last_issued = emit_insn_after (t, last_issued);
+      sched_emit_insn (gen_insn_group_barrier (GEN_INT (3)));
       did_stop = true;
       maybe_rotate (dump);
     }
@@ -6116,12 +6109,9 @@ nop_cycles_until (clock_var, dump)
 	  int i;
 	  for (i = sched_data.cur; i < split; i++)
 	    {
-	      rtx t;
-
-	      t = gen_nop_type (sched_data.packet->t[i]);
-	      last_issued = emit_insn_after (t, last_issued);
+	      rtx t = sched_emit_insn (gen_nop_type (sched_data.packet->t[i]));
 	      sched_data.types[i] = sched_data.packet->t[sched_data.cur];
-	      sched_data.insns[i] = last_issued;
+	      sched_data.insns[i] = t;
 	      sched_data.stopbit[i] = 0;
 	    }
 	  sched_data.cur = split;
@@ -6133,12 +6123,9 @@ nop_cycles_until (clock_var, dump)
 	  int i;
 	  for (i = sched_data.cur; i < 6; i++)
 	    {
-	      rtx t;
-
-	      t = gen_nop_type (sched_data.packet->t[i]);
-	      last_issued = emit_insn_after (t, last_issued);
+	      rtx t = sched_emit_insn (gen_nop_type (sched_data.packet->t[i]));
 	      sched_data.types[i] = sched_data.packet->t[sched_data.cur];
-	      sched_data.insns[i] = last_issued;
+	      sched_data.insns[i] = t;
 	      sched_data.stopbit[i] = 0;
 	    }
 	  sched_data.cur = 6;
@@ -6148,8 +6135,7 @@ nop_cycles_until (clock_var, dump)
 
       if (need_stop || sched_data.cur == 6)
 	{
-	  rtx t = gen_insn_group_barrier (GEN_INT (3));
-	  last_issued = emit_insn_after (t, last_issued);
+	  sched_emit_insn (gen_insn_group_barrier (GEN_INT (3)));
 	  did_stop = true;
 	}
       maybe_rotate (dump);
@@ -6158,22 +6144,16 @@ nop_cycles_until (clock_var, dump)
   cycles_left--;
   while (cycles_left > 0)
     {
-      rtx t = gen_bundle_selector (GEN_INT (0));
-      last_issued = emit_insn_after (t, last_issued);
-      t = gen_nop_type (TYPE_M);
-      last_issued = emit_insn_after (t, last_issued);
-      t = gen_nop_type (TYPE_I);
-      last_issued = emit_insn_after (t, last_issued);
+      sched_emit_insn (gen_bundle_selector (GEN_INT (0)));
+      sched_emit_insn (gen_nop_type (TYPE_M));
+      sched_emit_insn (gen_nop_type (TYPE_I));
       if (cycles_left > 1)
 	{
-	  t = gen_insn_group_barrier (GEN_INT (2));
-	  last_issued = emit_insn_after (t, last_issued);
+	  sched_emit_insn (gen_insn_group_barrier (GEN_INT (2)));
 	  cycles_left--;
 	}
-      t = gen_nop_type (TYPE_I);
-      last_issued = emit_insn_after (t, last_issued);
-      t = gen_insn_group_barrier (GEN_INT (3));
-      last_issued = emit_insn_after (t, last_issued);
+      sched_emit_insn (gen_nop_type (TYPE_I));
+      sched_emit_insn (gen_insn_group_barrier (GEN_INT (3)));
       did_stop = true;
       cycles_left--;
     }
@@ -6492,8 +6472,6 @@ ia64_variable_issue (dump, sched_verbose, insn, can_issue_more)
      int can_issue_more ATTRIBUTE_UNUSED;
 {
   enum attr_type t = ia64_safe_type (insn);
-
-  last_issued = insn;
 
   if (sched_data.last_was_stop)
     {
