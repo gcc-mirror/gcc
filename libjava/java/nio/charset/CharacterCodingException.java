@@ -39,7 +39,10 @@ package java.nio.charset;
 
 import java.io.IOException;
 
-class CharacterCodingException extends IOException
+/**
+ * @since 1.4
+ */
+public class CharacterCodingException extends IOException
 {
   /**
    * Creates the exception

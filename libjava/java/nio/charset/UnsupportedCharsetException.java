@@ -37,17 +37,17 @@ exception statement from your version. */
 
 package java.nio.charset;
 
-class UnsupportedCharsetException extends IllegalArgumentException
+/**
+ * @since 1.4
+ */
+public class UnsupportedCharsetException extends IllegalArgumentException
 {
-  private String charsetName;
-  
   /**
    * Creates the exception
    */
   public UnsupportedCharsetException (String charsetName)
   {
-    super ();
-    this.charsetName = charsetName;
+    super (charsetName);
   }
 
   /**
@@ -55,6 +55,6 @@ class UnsupportedCharsetException extends IllegalArgumentException
    */
   public String getCharsetName ()
   {
-    return charsetName;
+    return getMessage ();
   }
 }
