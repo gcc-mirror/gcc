@@ -7112,7 +7112,7 @@ Add @code{__thread} to the list of specifiers in paragraph 3.
 New section before @b{[basic.stc.static]}
 
 @quotation
-The keyword @code{__thread} applied to an non-local object gives the
+The keyword @code{__thread} applied to a non-local object gives the
 object thread storage duration.
 
 A local variable or class data member declared both @code{static}
