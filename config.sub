@@ -131,6 +131,9 @@ case $os in
 		os=-sco3.2v2
 		basic_machine=`echo $1 | sed -e 's/86-.*/86-pc/'`
 		;;
+	-udk*)
+		basic_machine=`echo $1 | sed -e 's/86-.*/86-pc/'`
+		;;
 	-isc)
 		os=-isc2.2
 		basic_machine=`echo $1 | sed -e 's/86-.*/86-pc/'`
@@ -916,7 +919,7 @@ case $os in
 	      | -ptx* | -coff* | -ecoff* | -winnt* | -domain* | -vsta* \
 	      | -udi* | -eabi* | -lites* | -ieee* | -go32* | -aux* \
 	      | -cygwin32* | -pe* | -psos* | -moss* | -proelf* | -rtems* \
-            | -mingw32* | -linux-gnu* | -uxpv* | -mpeix*)
+	      | -mingw32* | -linux-gnu* | -uxpv* | -mpeix* | -udk* )
 	# Remember, each alternative MUST END IN *, to match a version number.
 		;;
 	# CYGNUS LOCAL
