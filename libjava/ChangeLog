@@ -411,6 +411,9 @@
 	* gnu/awt/xlib/XGraphicsConfiguration.java,
 	gnu/awt/xlib/XToolkit.java: Updated to compile against 1.4 abstract
 	API.
+	
+	* javax/swing/plaf/metal/MetalLookAndFeel.java: New file from 
+	GNU Classpath.
 
 	* Makefile.am: Add new files.
 	* Makefile.in: Rebuilt.
