@@ -3907,9 +3907,6 @@ tree_forwarder_block_p (basic_block bb)
   gcc_assert (bb != ENTRY_BLOCK_PTR);
 #endif
 
-  if (find_edge (ENTRY_BLOCK_PTR, bb))
-    return false;
-
   /* Now walk through the statements.  We can ignore labels, anything else
      means this is not a forwarder block.  */
   for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
@@ -3927,6 +3924,9 @@ tree_forwarder_block_p (basic_block bb)
 	  return false;
 	}
     }
+
+  if (find_edge (ENTRY_BLOCK_PTR, bb))
+    return false;
 
   return true;
 }
