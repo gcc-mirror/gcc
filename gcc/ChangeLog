@@ -6,6 +6,10 @@
 
 	* rtlanal.c (may_trap_p): Check operand modes of COMPARE.
 
+2000-10-15  Diego Novillo  <dnovillo@cygnus.com>
+
+	* i386.md (*movsi_or): Switch operand order for intel syntax.
+
 2000-10-14  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* PROBLEMS: Remove.
