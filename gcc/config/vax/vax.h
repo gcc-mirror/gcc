@@ -689,14 +689,14 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
       && GET_CODE (xfoob) == REG && REG_OK_FOR_BASE_P (xfoob))		\
     goto ADDR; }
 
-/* 1 if PROD is either a reg times size of mode MODE
-   or just a reg, if MODE is just one byte.
+/* 1 if PROD is either a reg times size of mode MODE and MODE is less
+   than or equal 8 bytes, or just a reg if MODE is one byte.
    This macro's expansion uses the temporary variables xfoo0 and xfoo1
    that must be declared in the surrounding context.  */
 #define INDEX_TERM_P(PROD, MODE)   \
 (GET_MODE_SIZE (MODE) == 1						\
  ? (GET_CODE (PROD) == REG && REG_OK_FOR_BASE_P (PROD))			\
- : (GET_CODE (PROD) == MULT						\
+ : (GET_CODE (PROD) == MULT && GET_MODE_SIZE (MODE) <= 8		\
     &&									\
     (xfoo0 = XEXP (PROD, 0), xfoo1 = XEXP (PROD, 1),			\
      ((((GET_CODE (xfoo0) == CONST_INT					\
