@@ -174,8 +174,9 @@ do {									\
 
 /* The Objective-C keywords.  These are included in C and in
    Objective C, so that the token codes are the same in both.  */
-%token INTERFACE IMPLEMENTATION END SELECTOR DEFS ENCODE
-%token CLASSNAME PUBLIC PRIVATE PROTECTED PROTOCOL OBJECTNAME CLASS ALIAS
+%token AT_INTERFACE AT_IMPLEMENTATION AT_END AT_SELECTOR AT_DEFS AT_ENCODE
+%token CLASSNAME AT_PUBLIC AT_PRIVATE AT_PROTECTED AT_PROTOCOL 
+%token OBJECTNAME AT_CLASS AT_ALIAS
 %token AT_THROW AT_TRY AT_CATCH AT_FINALLY AT_SYNCHRONIZED
 %token OBJC_STRING
 
@@ -1760,7 +1761,7 @@ component_decl_list2:	/* empty */
 		    pedwarn ("extra semicolon in struct or union specified"); }
 @@ifobjc
 	/* foo(sizeof(struct{ @defs(ClassName)})); */
-	| DEFS '(' CLASSNAME ')'
+	| AT_DEFS '(' CLASSNAME ')'
 		{ $$ = nreverse (get_class_ivars_from_name ($3)); }
 @@end_ifobjc
 	;
@@ -2636,7 +2637,7 @@ objcdef:
 	| aliasdecl
 	| protocoldef
 	| methoddef
-	| END
+	| AT_END
 		{
 		  if (objc_implementation_context)
                     {
@@ -2658,14 +2659,14 @@ identifier_list:
 	;
 
 classdecl:
-	  CLASS identifier_list ';'
+	  AT_CLASS identifier_list ';'
 		{
 		  objc_declare_class ($2);
 		}
 	;
 
 aliasdecl:
-	  ALIAS identifier identifier ';'
+	  AT_ALIAS identifier identifier ';'
 		{
 		  objc_declare_alias ($2, $3);
 		}
@@ -2682,7 +2683,7 @@ class_ivars:
 	;
 
 classdef:
-	  INTERFACE identifier superclass protocolrefs
+	  AT_INTERFACE identifier superclass protocolrefs
 		{
 		  objc_interface_context = objc_ivar_context
 		    = start_class (CLASS_INTERFACE_TYPE, $2, $3, $4);
@@ -2692,13 +2693,13 @@ classdef:
 		{
                   continue_class (objc_interface_context);
 		}
-	  methodprotolist END
+	  methodprotolist AT_END
 		{
 		  finish_class (objc_interface_context);
 		  objc_interface_context = NULL_TREE;
 		}
 
-	| IMPLEMENTATION identifier superclass
+	| AT_IMPLEMENTATION identifier superclass
 		{
 		  objc_implementation_context = objc_ivar_context
 		    = start_class (CLASS_IMPLEMENTATION_TYPE, $2, $3, NULL_TREE);
@@ -2710,19 +2711,19 @@ classdef:
 		    = continue_class (objc_implementation_context);
 		}
 
-	| INTERFACE identifier '(' identifier ')' protocolrefs
+	| AT_INTERFACE identifier '(' identifier ')' protocolrefs
 		{
 		  objc_interface_context
 		    = start_class (CATEGORY_INTERFACE_TYPE, $2, $4, $6);
                   continue_class (objc_interface_context);
 		}
-	  methodprotolist END
+	  methodprotolist AT_END
 		{
 		  finish_class (objc_interface_context);
 		  objc_interface_context = NULL_TREE;
 		}
 
-	| IMPLEMENTATION identifier '(' identifier ')'
+	| AT_IMPLEMENTATION identifier '(' identifier ')'
 		{
 		  objc_implementation_context
 		    = start_class (CATEGORY_IMPLEMENTATION_TYPE, $2, $4, NULL_TREE);
@@ -2732,13 +2733,13 @@ classdef:
 	;
 
 protocoldef:
-	  PROTOCOL identifier protocolrefs
+	  AT_PROTOCOL identifier protocolrefs
 		{
 		  objc_pq_context = 1;
 		  objc_interface_context
 		    = start_protocol(PROTOCOL_INTERFACE_TYPE, $2, $3);
 		}
-	  methodprotolist END
+	  methodprotolist AT_END
 		{
 		  objc_pq_context = 0;
 		  finish_protocol(objc_interface_context);
@@ -2747,7 +2748,7 @@ protocoldef:
 	/* The @protocol forward-declaration production introduces a
 	   reduce/reduce conflict on ';', which should be resolved in
 	   favor of the production 'identifier_list -> identifier'.  */
-	| PROTOCOL identifier_list ';'
+	| AT_PROTOCOL identifier_list ';'
 		{
 		  objc_declare_protocols ($2);
 		}
@@ -2777,9 +2778,9 @@ ivar_decl_list:
         ;
 
 visibility_spec:
-	  PRIVATE { objc_public_flag = 2; }
-	| PROTECTED { objc_public_flag = 0; }
-	| PUBLIC { objc_public_flag = 1; }
+	  AT_PRIVATE { objc_public_flag = 2; }
+	| AT_PROTECTED { objc_public_flag = 0; }
+	| AT_PUBLIC { objc_public_flag = 1; }
 	;
 
 ivar_decls:
@@ -3138,14 +3139,14 @@ keywordname:
 	;
 
 objcselectorexpr:
-	  SELECTOR '(' selectorarg ')'
+	  AT_SELECTOR '(' selectorarg ')'
 		{
 		  $$ = $3;
 		}
 	;
 
 objcprotocolexpr:
-	  PROTOCOL '(' identifier ')'
+	  AT_PROTOCOL '(' identifier ')'
 		{
 		  $$ = $3;
 		}
@@ -3154,7 +3155,7 @@ objcprotocolexpr:
 /* extension to support C-structures in the archiver */
 
 objcencodeexpr:
-	  ENCODE '(' typename ')'
+	  AT_ENCODE '(' typename ')'
 		{
 		  $$ = groktypename ($3);
 		}
@@ -3411,23 +3412,23 @@ static const short rid_to_yy[RID_MAX] =
 
   /* Objective C */
   /* RID_ID */			OBJECTNAME,
-  /* RID_AT_ENCODE */		ENCODE,
-  /* RID_AT_END */		END,
-  /* RID_AT_CLASS */		CLASS,
-  /* RID_AT_ALIAS */		ALIAS,
-  /* RID_AT_DEFS */		DEFS,
-  /* RID_AT_PRIVATE */		PRIVATE,
-  /* RID_AT_PROTECTED */	PROTECTED,
-  /* RID_AT_PUBLIC */		PUBLIC,
-  /* RID_AT_PROTOCOL */		PROTOCOL,
-  /* RID_AT_SELECTOR */		SELECTOR,
+  /* RID_AT_ENCODE */		AT_ENCODE,
+  /* RID_AT_END */		AT_END,
+  /* RID_AT_CLASS */		AT_CLASS,
+  /* RID_AT_ALIAS */		AT_ALIAS,
+  /* RID_AT_DEFS */		AT_DEFS,
+  /* RID_AT_PRIVATE */		AT_PRIVATE,
+  /* RID_AT_PROTECTED */	AT_PROTECTED,
+  /* RID_AT_PUBLIC */		AT_PUBLIC,
+  /* RID_AT_PROTOCOL */		AT_PROTOCOL,
+  /* RID_AT_SELECTOR */		AT_SELECTOR,
   /* RID_AT_THROW */		AT_THROW,
   /* RID_AT_TRY */		AT_TRY,
   /* RID_AT_CATCH */		AT_CATCH,
   /* RID_AT_FINALLY */		AT_FINALLY,
   /* RID_AT_SYNCHRONIZED */	AT_SYNCHRONIZED,
-  /* RID_AT_INTERFACE */	INTERFACE,
-  /* RID_AT_IMPLEMENTATION */	IMPLEMENTATION
+  /* RID_AT_INTERFACE */	AT_INTERFACE,
+  /* RID_AT_IMPLEMENTATION */	AT_IMPLEMENTATION
 };
 
 static void
