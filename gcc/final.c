@@ -2184,28 +2184,30 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	     PENDING_BLOCKS and output debugging info based on that.  */
 
 	  --block_depth;
+	  if (block_depth < 0)
+	    abort ();
 
 #ifdef XCOFF_DEBUGGING_INFO
-	  if (write_symbols == XCOFF_DEBUG && block_depth >= 0)
+	  if (write_symbols == XCOFF_DEBUG)
 	    xcoffout_end_block (file, high_block_linenum,
 				pending_blocks[block_depth]);
 #endif
 #ifdef DBX_DEBUGGING_INFO
-	  if (write_symbols == DBX_DEBUG && block_depth >= 0)
+	  if (write_symbols == DBX_DEBUG)
 	    ASM_OUTPUT_INTERNAL_LABEL (file, "LBE",
 				       pending_blocks[block_depth]);
 #endif
 #ifdef SDB_DEBUGGING_INFO
-	  if (write_symbols == SDB_DEBUG && block_depth >= 0)
+	  if (write_symbols == SDB_DEBUG)
 	    sdbout_end_block (file, high_block_linenum,
 			      pending_blocks[block_depth]);
 #endif
 #ifdef DWARF_DEBUGGING_INFO
-	  if (write_symbols == DWARF_DEBUG && block_depth >= 0)
+	  if (write_symbols == DWARF_DEBUG)
 	    dwarfout_end_block (pending_blocks[block_depth]);
 #endif
 #ifdef DWARF2_DEBUGGING_INFO
-	  if (write_symbols == DWARF2_DEBUG && block_depth >= 0)
+	  if (write_symbols == DWARF2_DEBUG)
 	    dwarf2out_end_block (pending_blocks[block_depth]);
 #endif
 	}
