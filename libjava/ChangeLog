@@ -1,3 +1,9 @@
+2000-07-30  Anthony Green  <green@redhat.com>
+
+	* java/awt/Component.java: Add treeLock object.
+	(getTreeLock): Implement.
+	(isShowing): Implement.
+
 2000-07-30  Tom Tromey  <tromey@cygnus.com>
 
 	* java/awt/BorderLayout.java (BorderLayout()): New constructor.
