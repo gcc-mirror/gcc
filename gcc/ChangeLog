@@ -1,3 +1,13 @@
+Fri Oct  9 15:49:29 1998  Richard Henderson  <rth@cygnus.com>
+
+	* expmed.c (store_bit_field): Pun non-integral str_rtx modes.
+	Take extra care for op0 now possibly being a subreg.
+	(extract_bit_field): Likewise.
+	* function.c (purge_addressof_1): Revert Oct 4 change.  Drop
+	the reg to memory if there is no equal sized integral mode.
+	* stor-layout.c (int_mode_for_mode): New function.
+	* machmode.h: Prototype it.
+
 Fri Oct  9 14:26:44 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* global.c (build_insn_chain): Verify no real insns exist past the

@@ -211,6 +211,11 @@ extern unsigned char mode_wider_mode[];
 
 extern enum machine_mode mode_for_size PROTO((unsigned int, enum mode_class, int));
 
+/* Return an integer mode of the exact same size as the input mode,
+   or BLKmode on failure.  */
+
+extern enum machine_mode int_mode_for_mode PROTO((enum machine_mode));
+
 /* Find the best mode to use to access a bit field.  */
 
 extern enum machine_mode get_best_mode PROTO((int, int, int, enum machine_mode, int));
