@@ -1,3 +1,14 @@
+2001-06-13  Zack Weinberg  <zackw@stanford.edu>
+
+	* Makefile.in: Move _bb and __gcc_bcmp to LIB2FUNCS_ST.
+	* libgcc-std.ver: Take out __bb* and __gcc_bcmp.                        
+
+	* config/t-slibgcc-elf-ver, config/t-slibgcc-sld,
+	config/alpha/t-osf4, config/mips/t-iris6: Extract all
+	references to @shlib_map_file@, @shlib_objs@, or     
+	@shlib_base_name@ to Makefile variables.
+	Bump soname version of libgcc to 1.
+
 2001-06-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/install.texi: Use more logical markup.  Include @node
