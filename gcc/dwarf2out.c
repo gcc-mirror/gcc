@@ -637,6 +637,7 @@ static void decls_for_scope ();
 static void gen_decl_die ();
 static unsigned lookup_filename ();
 static int constant_size PROTO((long unsigned));
+static enum dwarf_form value_format PROTO((dw_val_ref));
 
 /* Definitions of defaults for assembler-dependent names of various
    pseudo-ops and section names.
@@ -2775,14 +2776,8 @@ build_abbrev_table (die)
 	      while (a_attr != NULL && d_attr != NULL)
 		{
 		  if ((a_attr->dw_attr != d_attr->dw_attr)
-		      || (a_attr->dw_attr_val.val_class
-			  != d_attr->dw_attr_val.val_class)
-		      || (a_attr->dw_attr_val.val_class
-			  == dw_val_class_unsigned_const
-			  && (constant_size (a_attr->dw_attr_val
-					     .v.val_unsigned)
-			      != constant_size (d_attr->dw_attr_val
-						.v.val_unsigned))))
+		      || (value_format (&a_attr->dw_attr_val)
+			  != value_format (&d_attr->dw_attr_val)))
 		    {
 		      break;
 		    }
@@ -2979,6 +2974,17 @@ size_of_loc_descr (loc)
   return size;
 }
 
+/* Return the size of a series of location descriptors.  */
+static unsigned long
+size_of_locs (loc)
+     register dw_loc_descr_ref loc;
+{
+  register unsigned long size = 0;
+  for (; loc != NULL; loc = loc->dw_loc_next)
+    size += size_of_loc_descr (loc);
+  return size;
+}
+
 /* Return the power-of-two number of bytes necessary to represent VALUE.  */
 static int
 constant_size (value)
@@ -3015,13 +3021,14 @@ size_of_die (die)
 	  size += PTR_SIZE;
 	  break;
 	case dw_val_class_loc:
-	  /* Block length.  */
-	  size += 2;
-	  for (loc = a->dw_attr_val.v.val_loc; loc != NULL;
-	       loc = loc->dw_loc_next)
-	    {
-	      size += size_of_loc_descr (loc);
-	    }
+	  {
+	    register unsigned long lsize
+	      = size_of_locs (a->dw_attr_val.v.val_loc);
+
+	    /* Block length.  */
+	    size += constant_size (lsize);
+	    size += lsize;
+	  }
 	  break;
 	case dw_val_class_const:
 	  size += 4;
@@ -3321,63 +3328,64 @@ output_sleb128 (value)
   while (more);
 }
 
+/* Select the encoding of an attribute value.  */
+static enum dwarf_form
+value_format (v)
+     dw_val_ref v;
+{
+  switch (v->val_class)
+    {
+    case dw_val_class_addr:
+      return DW_FORM_addr;
+    case dw_val_class_loc:
+      switch (constant_size (size_of_locs (v->v.val_loc)))
+	{
+	case 1:
+	  return DW_FORM_block1;
+	case 2:
+	  return DW_FORM_block2;
+	default:
+	  abort ();
+	}
+    case dw_val_class_const:
+      return DW_FORM_data4;
+    case dw_val_class_unsigned_const:
+      switch (constant_size (v->v.val_unsigned))
+	{
+	case 1:
+	  return DW_FORM_data1;
+	case 2:
+	  return DW_FORM_data2;
+	case 4:
+	  return DW_FORM_data4;
+	default:
+	  abort ();
+	}
+    case dw_val_class_double_const:
+      return DW_FORM_data8;
+    case dw_val_class_flag:
+      return DW_FORM_flag;
+    case dw_val_class_die_ref:
+      return DW_FORM_ref;
+    case dw_val_class_fde_ref:
+      return DW_FORM_data;
+    case dw_val_class_lbl_id:
+      return DW_FORM_addr;
+    case dw_val_class_section_offset:
+      return DW_FORM_data;
+    case dw_val_class_str:
+      return DW_FORM_string;
+    default:
+      abort ();
+    }
+}
+
 /* Output the encoding of an attribute value.  */
 static void
 output_value_format (v)
      dw_val_ref v;
 {
-  enum dwarf_form form;
-  switch (v->val_class)
-    {
-    case dw_val_class_addr:
-      form = DW_FORM_addr;
-      break;
-    case dw_val_class_loc:
-      form = DW_FORM_block2;
-      break;
-    case dw_val_class_const:
-      form = DW_FORM_data4;
-      break;
-    case dw_val_class_unsigned_const:
-      switch (constant_size (v->v.val_unsigned))
-	{
-	case 1:
-	  form = DW_FORM_data1;
-	  break;
-	case 2:
-	  form = DW_FORM_data2;
-	  break;
-	case 4:
-	  form = DW_FORM_data4;
-	  break;
-	default:
-	  abort ();
-	}
-      break;
-    case dw_val_class_double_const:
-      form = DW_FORM_data8;
-      break;
-    case dw_val_class_flag:
-      form = DW_FORM_flag;
-      break;
-    case dw_val_class_die_ref:
-      form = DW_FORM_ref;
-      break;
-    case dw_val_class_fde_ref:
-      form = DW_FORM_data;
-      break;
-    case dw_val_class_lbl_id:
-      form = DW_FORM_addr;
-      break;
-    case dw_val_class_section_offset:
-      form = DW_FORM_data;
-      break;
-    case dw_val_class_str:
-      form = DW_FORM_string;
-      break;
-    default:
-      abort ();
-    }
+  enum dwarf_form form = value_format (v);
   output_uleb128 (form);
   if (flag_verbose_asm)
     {
@@ -3604,14 +3612,19 @@ output_die (die)
 				       a->dw_attr_val.v.val_addr);
 	  break;
 	case dw_val_class_loc:
-	  size = 0;
-	  for (loc = a->dw_attr_val.v.val_loc; loc != NULL;
-	       loc = loc->dw_loc_next)
-	    {
-	      size += size_of_loc_descr (loc);
-	    }
+	  size = size_of_locs (a->dw_attr_val.v.val_loc);
 	  /* Output the block length for this list of location operations.  */
-	  ASM_OUTPUT_DWARF_DATA2 (asm_out_file, size);
+	  switch (constant_size (size))
+	    {
+	    case 1:
+	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, size);
+	      break;
+	    case 2:
+	      ASM_OUTPUT_DWARF_DATA2 (asm_out_file, size);
+	      break;
+	    default:
+	      abort ();
+	    }
 	  if (flag_verbose_asm)
 	    {
 	      fprintf (asm_out_file, "\t%s %s",
