@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler.  Clipper version.
-   Copyright (C) 1987, 88, 91, 93-96, 98, 99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1993, 1994, 1995, 1996, 1998,
+   1999, 2000 Free Software Foundation, Inc.
    Contributed by Holger Teutsch (holger@hotbso.rhein-main.de)
 
 This file is part of GNU CC.
