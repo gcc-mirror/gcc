@@ -471,6 +471,25 @@ proc dg-xfail-if { args } {
     }
 }
 
+# Given an optional keyword "target" or "xfail" and the result of a
+# condition which has been evaluated by the framework, return a list
+# containing the keyword and "*-*-*" if the condition is true or
+# "empty-empty-empty" if the condition is false.
+
+proc dg-target-list { what cond } {
+    switch $what {
+	"target" { set result [list $what] }
+	"xfail"  { set result [list $what] }
+	""       { set result [list] }
+	default  { error "`$what' not allowed here" }
+    }
+    if { $cond } {
+	lappend result "*-*-*"
+    } else {
+	lappend result "empty-empty-empty"
+    }
+    return $result
+}
 
 # We need to make sure that additional_* are cleared out after every
 # test.  It is not enough to clear them out *before* the next test run
