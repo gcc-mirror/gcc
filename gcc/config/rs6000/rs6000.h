@@ -3199,6 +3199,7 @@ extern void rs6000_set_default_type_attributes ();
 extern struct rtx_def *rs6000_dll_import_ref ();
 extern struct rtx_def *rs6000_longcall_ref ();
 extern int function_arg_padding ();
+extern void rs6000_fatal_bad_address ();
 
 /* See nonlocal_goto_receiver for when this must be set.  */
 
