@@ -5514,7 +5514,7 @@ choose_reload_regs (chain)
 		 In particular, we then can't use EQUIV for a
 		 RELOAD_FOR_OUTPUT_ADDRESS reload.  */
 
-	      if (equiv != 0 && regno_clobbered_p (regno, insn))
+	      if (equiv != 0 && regno_clobbered_p (regno, insn, rld[r].mode))
 		{
 		  switch (rld[r].when_needed)
 		    {
@@ -6536,7 +6536,7 @@ emit_output_reload_insns (chain, rl, j)
 	  || !(set = single_set (insn))
 	  || rtx_equal_p (old, SET_DEST (set))
 	  || !reg_mentioned_p (old, SET_SRC (set))
-	  || !regno_clobbered_p (REGNO (old), insn))
+	  || !regno_clobbered_p (REGNO (old), insn, rl->mode))
 	gen_reload (old, reloadreg, rl->opnum,
 		    rl->when_needed);
     }
