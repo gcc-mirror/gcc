@@ -137,12 +137,13 @@ __mulhi3_skip1:
 	add	r_arg2L,r_arg2L	; shift multiplicand
 	adc	r_arg2H,r_arg2H
 
-	cpc	r_arg2L,__zero_reg__
+	cp	r_arg2L,__zero_reg__
+	cpc	r_arg2H,__zero_reg__
 	breq	__mulhi3_exit	; while multiplicand != 0
 
 	lsr	r_arg1H		; gets LSB of multiplier
 	ror	r_arg1L
-	cpc	r_arg1H,__zero_reg__
+	sbiw	r_arg1L,0
 	brne	__mulhi3_loop	; exit if multiplier = 0
 __mulhi3_exit:
 	mov	r_arg1H,r_resH	; result to return register
