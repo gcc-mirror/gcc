@@ -115,6 +115,7 @@ reorg			Jeff Law		law@redhat.com
 caller-save.c		Jeff Law		law@redhat.com
 debugging code		Jim Wilson		wilson@redhat.com
 dwarf debugging code	Jason Merrill		jason@redhat.com
+c++ runtime libs	Paolo Carlini		pcarlini@unitus.it
 c++ runtime libs        Gabriel Dos Reis        dosreis@cmla.ens-cachan.fr
 c++ runtime libs	Ulrich Drepper		drepper@redhat.com
 c++ runtime libs	Phil Edwards		pme@gcc.gnu.org
@@ -156,7 +157,6 @@ Jim Blandy					jimb@redhat.com
 Phil Blundell					pb@futuretv.com
 Hans Boehm					hboehm@gcc.gnu.org
 Andrew Cagney					cagney@redhat.com
-Paolo Carlini					pcarlini@unitus.it
 Chandra Chavva					cchavva@redhat.com
 William Cohen					wcohen@redhat.com
 Chris Demetriou					cgd@broadcom.com
