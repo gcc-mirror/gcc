@@ -1217,10 +1217,9 @@ sched_analyze_2 (x, insn)
 	rtx link;
 
 	/* User of CC0 depends on immediately preceding insn.
-	   All notes are removed from the list of insns to schedule before we
-	   reach here, so the previous insn must be the setter of cc0.  */
-	if (GET_CODE (PREV_INSN (insn)) != INSN)
-	  abort ();
+	   There may be a note before this insn now, but all notes will
+	   be removed before we actually try to schedule the insns, so
+	   it doesn't matter.  */
 	SCHED_GROUP_P (insn) = 1;
 
 	/* Make a copy of all dependencies on PREV_INSN, and add to this insn.
