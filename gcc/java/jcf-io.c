@@ -29,11 +29,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include <sys/stat.h>
 #include <sys/wait.h>
 
-/* This is true if the user specified a `.java' file on the command
-   line.  Otherwise it is 0.  FIXME: this is temporary, until our
-   .java parser is fully working.  */
-int saw_java_source = 0;
-
 /* DOS brain-damage */
 #ifndef O_BINARY
 #define O_BINARY 0 /* MS-DOS brain-damage */
@@ -94,56 +89,76 @@ DEFUN(jcf_filbuf_from_stdio, (jcf, count),
 
 struct ZipFileCache *SeenZipFiles = NULL;
 
+/* Open a zip file with the given name, and cache directory and file
+   descriptor.  If the file is missing, treat it as an empty archive.
+   Return NULL if the .zip file is malformed.
+*/
+
+ZipFile *
+DEFUN(opendir_in_zip, (zipfile, is_system),
+      const char *zipfile AND int is_system)
+{
+  struct ZipFileCache* zipf;
+  char magic [4];
+  int fd;
+  for (zipf = SeenZipFiles;  zipf != NULL;  zipf = zipf->next)
+    {
+      if (strcmp (zipf->name, zipfile) == 0)
+	return &zipf->z;
+    }
+
+  zipf = ALLOC (sizeof (struct ZipFileCache) + strlen (zipfile) + 1);
+  zipf->next = SeenZipFiles;
+  zipf->name = (char*)(zipf+1);
+  strcpy (zipf->name, zipfile);
+  SeenZipFiles = zipf;
+  fd = open (zipfile, O_RDONLY | O_BINARY);
+  zipf->z.fd = fd;
+  if (fd < 0)
+    {
+      /* A missing zip file is not considered an error.
+       We may want to re-consider that.  FIXME. */
+      zipf->z.count = 0;
+      zipf->z.dir_size = 0;
+      zipf->z.central_directory = NULL;
+    }
+  else
+    {
+      jcf_dependency_add_file (zipfile, is_system);
+      if (read (fd, magic, 4) != 4 || GET_u4 (magic) != (JCF_u4)ZIPMAGIC)
+	return NULL;
+      lseek (fd, 0L, SEEK_SET);
+      if (read_zip_archive (&zipf->z) != 0)
+	return NULL;
+    }
+  return &zipf->z;
+}
+
+/* Returns:
+   0:  OK - zipmember found.
+   -1: Not found.
+   -2: Malformed archive.
+*/
+
 int
-DEFUN(open_in_zip, (jcf, zipfile, zipmember),
+DEFUN(open_in_zip, (jcf, zipfile, zipmember, is_system),
       JCF *jcf AND const char *zipfile AND const char *zipmember
       AND int is_system)
 {
-  struct ZipFileCache* zipf;
   ZipDirectory *zipd;
   int i, len;
-  for (zipf = SeenZipFiles; ; zipf = zipf->next)
-    {
-      if (zipf == NULL)
-	{
-	  char magic [4];
-	  int fd = open (zipfile, O_RDONLY | O_BINARY);
-	  jcf_dependency_add_file (zipfile, is_system);
-	  if (read (fd, magic, 4) != 4 || GET_u4 (magic) != (JCF_u4)ZIPMAGIC)
-	    return -1;
-	  lseek (fd, 0L, SEEK_SET);
-	  zipf = ALLOC (sizeof (struct ZipFileCache) + strlen (zipfile) + 1);
-	  zipf->next = SeenZipFiles;
-	  zipf->name = (char*)(zipf+1);
-	  strcpy (zipf->name, zipfile);
-	  SeenZipFiles = zipf;
-	  zipf->z.fd = fd;
-	  if (fd == -1)
-	    {
-	      /* A missing zip file is not considered an error. */
-	      zipf->z.count = 0;
-	      zipf->z.dir_size = 0;
-	      zipf->z.central_directory = NULL;
-	      return -1;
-	    }
-	  else
-	    {
-	      if (read_zip_archive (&zipf->z) != 0)
-		return -2; /* This however should be an error - FIXME */
-	    }
-	  break;
-	}
-      if (strcmp (zipf->name, zipfile) == 0)
-	break;
-    }
+  ZipFile *zipf = opendir_in_zip (zipfile, is_system);
+
+  if (zipf == NULL)
+    return -2;
 
   if (!zipmember)
     return 0;
 
   len = strlen (zipmember);
   
-  zipd = (struct ZipDirectory*) zipf->z.central_directory;
-  for (i = 0; i < zipf->z.count; i++, zipd = ZIPDIR_NEXT (zipd))
+  zipd = (struct ZipDirectory*) zipf->central_directory;
+  for (i = 0; i < zipf->count; i++, zipd = ZIPDIR_NEXT (zipd))
     {
       if (len == zipd->filename_length &&
 	  strncmp (ZIPDIR_FILENAME (zipd), zipmember, len) == 0)
@@ -157,8 +172,8 @@ DEFUN(open_in_zip, (jcf, zipfile, zipmember),
 	  jcf->filename = strdup (zipfile);
 	  jcf->classname = strdup (zipmember);
 	  jcf->zipd = (void *)zipd;
-	  if (lseek (zipf->z.fd, zipd->filestart, 0) < 0
-	      || read (zipf->z.fd, jcf->buffer, zipd->size) != zipd->size)
+	  if (lseek (zipf->fd, zipd->filestart, 0) < 0
+	      || read (zipf->fd, jcf->buffer, zipd->size) != zipd->size)
 	    return -2;
 	  return 0;
 	}
@@ -244,14 +259,12 @@ DEFUN(find_classfile, (filename, jcf, dep_name),
 
 /* Returns a freshly malloc'd string with the fully qualified pathname
    of the .class file for the class CLASSNAME.  Returns NULL on
-   failure.  If JCF != NULL, it is suitably initialized.  With
-   DO_CLASS_FILE set to 1, search a .class/.java file named after
-   CLASSNAME, otherwise, search a ZIP directory entry named after
-   CLASSNAME.  */
+   failure.  If JCF != NULL, it is suitably initialized.
+   SOURCE_OK is true if we should also look for .java file. */
 
 char *
-DEFUN(find_class, (classname, classname_length, jcf, do_class_file),
-      const char *classname AND int classname_length AND JCF *jcf AND int do_class_file)
+DEFUN(find_class, (classname, classname_length, jcf, source_ok),
+      const char *classname AND int classname_length AND JCF *jcf AND int source_ok)
 
 {
 #if JCF_USE_STDIO
@@ -259,10 +272,10 @@ DEFUN(find_class, (classname, classname_length, jcf, do_class_file),
 #else
   int fd;
 #endif
-  int i, k, java, class = -1;
+  int i, k, java = -1, class = -1;
   struct stat java_buf, class_buf;
   char *dep_file;
-  void *entry, *java_entry;
+  void *entry;
   char *java_buffer;
 
   /* Allocate and zero out the buffer, since we don't explicitly put a
@@ -277,99 +290,66 @@ DEFUN(find_class, (classname, classname_length, jcf, do_class_file),
 
   for (entry = jcf_path_start (); entry != NULL; entry = jcf_path_next (entry))
     {
-      int dir_len;
-
-      strcpy (buffer, jcf_path_name (entry));
-      i = strlen (buffer);
-
-      /* This is right because we know that `.zip' entries will have a
-	 trailing slash.  See jcf-path.c.  */
-      dir_len = i - 1;
-
-      for (k = 0; k < classname_length; k++, i++)
+      char *path_name = jcf_path_name (entry);
+      if (class != 0)
 	{
-	  char ch = classname[k];
-	  buffer[i] = ch == '.' ? '/' : ch;
-	}
-      if (do_class_file)
-	strcpy (buffer+i, ".class");
+	  int dir_len;
 
-      if (jcf_path_is_zipfile (entry))
-	{
-	  int err_code;
-	  JCF _jcf;
-	  if (!do_class_file)
-	    strcpy (buffer+i, "/");
-	  buffer[dir_len] = '\0';
-	  if (do_class_file)
-	    SOURCE_FRONTEND_DEBUG 
-	      (("Trying [...%s]:%s", 
-		&buffer[dir_len-(dir_len > 15 ? 15 : dir_len)], 
-		buffer+dir_len+1));
-	  if (jcf == NULL)
-	    jcf = &_jcf;
-	  err_code = open_in_zip (jcf, buffer, buffer+dir_len+1,
-				  jcf_path_is_system (entry));
-	  if (err_code == 0)
+	  strcpy (buffer, path_name);
+	  i = strlen (buffer);
+
+	  /* This is right because we know that `.zip' entries will have a
+	     trailing slash.  See jcf-path.c.  */
+	  dir_len = i - 1;
+
+	  for (k = 0; k < classname_length; k++, i++)
 	    {
-	      if (!do_class_file)
-		jcf->seen_in_zip = 1;
-	      else
+	      char ch = classname[k];
+	      buffer[i] = ch == '.' ? '/' : ch;
+	    }
+	  strcpy (buffer+i, ".class");
+
+	  if (jcf_path_is_zipfile (entry))
+	    {
+	      int err_code;
+	      JCF _jcf;
+	      buffer[dir_len] = '\0';
+	      SOURCE_FRONTEND_DEBUG 
+		(("Trying [...%s]:%s", 
+		  &buffer[dir_len-(dir_len > 15 ? 15 : dir_len)], 
+		  buffer+dir_len+1));
+	      if (jcf == NULL)
+		jcf = &_jcf;
+	      err_code = open_in_zip (jcf, buffer, buffer+dir_len+1,
+				      jcf_path_is_system (entry));
+	      if (err_code == 0)
 		{
+		  /* Should we check if .zip is out-of-date wrt .java? */
 		  buffer[dir_len] = '(';
 		  strcpy (buffer+i, ".class)");
+		  if (jcf == &_jcf)
+		    JCF_FINISH (jcf);
+		  return buffer;
 		}
-	      if (jcf == &_jcf)
-		JCF_FINISH (jcf);
-	      return buffer;
+	      else
+		continue;
 	    }
-	  else
-	    continue;
+	  class = stat (buffer, &class_buf);
 	}
 
-      /* If we do directories, do them here */
-      if (!do_class_file)
+      if (source_ok)
 	{
-	  struct stat dir_buff;
-	  int dir;
-	  buffer[i] = '\0';	/* Was previously unterminated here. */
-	  if (!(dir = stat (buffer, &dir_buff)))
-	    {
-	      jcf->seen_in_zip = 0;
-	      goto found;
-	    }
+	  /* Compute name of .java file.  */
+	  int l, m;
+	  strcpy (java_buffer, path_name);
+	  l = strlen (java_buffer);
+	  for (m = 0; m < classname_length; ++m)
+	    java_buffer[m + l] = (classname[m] == '.' ? '/' : classname[m]);
+	  strcpy (java_buffer + m + l, ".java");
+	  java = stat (java_buffer, &java_buf);
+	  if (java == 0)
+	    break;
 	}
-
-      class = stat (buffer, &class_buf);
-      if (class == 0)
-	break;
-    }
-
-  /* Check for out of synch .class/.java files.  */
-  java = 1;
-  for (java_entry = jcf_path_start ();
-       java && java_entry != NULL;
-       java_entry = jcf_path_next (java_entry))
-    {
-      int m, l;
-
-      if (jcf_path_is_zipfile (java_entry))
-	continue;
-
-      /* Compute name of .java file.  */
-      strcpy (java_buffer, jcf_path_name (java_entry));
-      l = strlen (java_buffer);
-      for (m = 0; m < classname_length; ++m)
-	java_buffer[m + l] = (classname[m] == '.' ? '/' : classname[m]);
-      strcpy (java_buffer + m + l, ".java");
-
-      /* FIXME: until the `.java' parser is fully working, we only
-	 look for a .java file when one was mentioned on the
-	 command line.  This lets us test the .java parser fairly
-	 easily, without compromising our ability to use the
-	 .class parser without fear.  */
-      if (saw_java_source)
-	java = stat (java_buffer, &java_buf);
     }
 
   if (! java && ! class && java_buf.st_mtime >= class_buf.st_mtime)
@@ -437,7 +417,7 @@ DEFUN(find_class, (classname, classname_length, jcf, do_class_file),
       jcf->filename = (char *) strdup (buffer);
       close (fd);		/* We use STDIO for source file */
     }
-  else if (do_class_file)
+  else
     buffer = open_class (buffer, jcf, fd, dep_file);
   jcf->classname = (char *) ALLOC (classname_length + 1);
   strncpy (jcf->classname, classname, classname_length + 1);
