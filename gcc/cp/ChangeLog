@@ -1,5 +1,10 @@
 2000-09-06  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* init.c (build_offset_ref): Deal with namespace scoped
+	TEMPLATE_ID_EXPRs.
+
+2000-09-06  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* class.c (resolve_address_of_overloaded_function): Add
 	explanation message.
 	* decl.c (define_case_label): Reformat explanation.

@@ -1624,21 +1624,6 @@ build_offset_ref (type, name)
   if (processing_template_decl || uses_template_parms (type))
     return build_min_nt (SCOPE_REF, type, name);
 
-  /* Handle namespace names fully here.  */
-  if (TREE_CODE (type) == NAMESPACE_DECL)
-    {
-      t = lookup_namespace_name (type, name);
-      if (t != error_mark_node && ! type_unknown_p (t))
-	{
-	  mark_used (t);
-	  t = convert_from_reference (t);
-	}
-      return t;
-    }
-
-  if (type == NULL_TREE || ! is_aggr_type (type, 1))
-    return error_mark_node;
-
   if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
     {
       /* If the NAME is a TEMPLATE_ID_EXPR, we are looking at
@@ -1665,6 +1650,30 @@ build_offset_ref (type, name)
 
       my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 0);
     }
+
+  if (type == NULL_TREE)
+    return error_mark_node;
+  
+  /* Handle namespace names fully here.  */
+  if (TREE_CODE (type) == NAMESPACE_DECL)
+    {
+      t = lookup_namespace_name (type, name);
+      if (t == error_mark_node)
+        return t;
+      if (TREE_CODE (orig_name) == TEMPLATE_ID_EXPR)
+        /* Reconstruct the TEMPLATE_ID_EXPR.  */
+        t = build (TEMPLATE_ID_EXPR, TREE_TYPE (t),
+                   t, TREE_OPERAND (orig_name, 1));
+      if (! type_unknown_p (t))
+	{
+	  mark_used (t);
+	  t = convert_from_reference (t);
+	}
+      return t;
+    }
+
+  if (! is_aggr_type (type, 1))
+    return error_mark_node;
 
   if (TREE_CODE (name) == BIT_NOT_EXPR)
     {
