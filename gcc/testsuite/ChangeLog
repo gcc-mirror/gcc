@@ -1,3 +1,9 @@
+2004-12-04  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/17011, c++/17971
+	* g++.dg/template/error15.C: Adjust expected error.
+	* g++.dg/template/instantiate3.C: Likewise.
+
 2004-12-03  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/altivec-18.c: Fix for darwin
