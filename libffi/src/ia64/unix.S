@@ -42,13 +42,24 @@
 
 #define FLOAT_SZ	8 /* in-memory size of fp operands	*/
 
+/* Allocate an ia64_args structure on the stack; call ffi_prep_args	*/
+/* to fill it in with argument values; copy those to the real 		*/
+/* registers, leaving overflow arguments on the stack.  Then call fn	*/
+/* and move the result from registers into *raddr.			*/
+	.pred.safe_across_calls p1-p5,p16-p63
 .text
         .align 16
-        .global ffi_call_unix#
-        .proc ffi_call_unix#
+        .global ffi_call_unix
+        .proc ffi_call_unix
 ffi_call_unix:
-	alloc   loc0=ar.pfs,6,5,8,0
+	.prologue
+	.save	ar.pfs,r38 /* loc0 */
+	alloc   loc0=ar.pfs,6,6,8,0
+	.save	rp,loc1
 	mov 	loc1=b0;
+	.vframe	loc5
+	mov	loc5=sp;
+	.body
 	sub	sp=sp,bytes
 	mov	loc4=r1		/* Save gp 	*/
 	ld8	r8=[callback],8	/* code address of callback	*/
@@ -104,7 +115,7 @@ fp_done:
 	;;
 	ld8	r1=[fn]		/* Set up gp */
 	mov	b6=r8;;
-	br.call.sptk.many b0 = b6	/* call ffi_prep_args	*/
+	br.call.sptk.many b0 = b6	/* call fn	*/
 	
 	/* Handle return value. */
 	cmp.eq	p6,p0=0,raddr
@@ -126,6 +137,7 @@ fp_done:
 (p8)	stfs	[raddr]=f8
 (p9)	stfd	[raddr]=f8
 	;;
+	.label_state 1
 (p6)	br.cond.dpnt.few handle_float_hfa
 (p7)	br.cond.dpnt.few handle_double_hfa
 	br done
@@ -151,9 +163,13 @@ done:
 	mov	r1=loc4		/* Restore gp	*/
 	mov	ar.pfs = loc0
 	mov	b0 = loc1
+	.restore sp
+	mov	sp = loc5
 	br.ret.sptk.many b0
 
 handle_double_hfa:
+	.body
+	.copy_state 1
 	/* Homogeneous floating point array of doubles is returned in	*/
 	/* registers f8-f15.  Save one at a time to return area.	*/
 	and	flags=0xf,flags	/* Retrieve size	*/
@@ -242,13 +258,19 @@ shfa2:	add 	loc3=1*4,raddr
         .endp ffi_call_unix
 
 
+	.pred.safe_across_calls p1-p5,p16-p63
 .text
         .align 16
         .global ffi_closure_UNIX
         .proc ffi_closure_UNIX
 ffi_closure_UNIX:
-	alloc   loc0=ar.pfs,8,2,2,0
+	.prologue
+	.save 	ar.pfs,r40 /* loc0 */
+	alloc   loc0=ar.pfs,8,3,2,0
+	.save	rp,loc1
 	mov	loc1=b0
+	.vframe	loc2
+	mov	loc2=sp
 	/* Retrieve closure pointer and real gp.	*/
 	mov	out0=gp
 	add	gp=16,gp
@@ -295,7 +317,8 @@ ffi_closure_UNIX:
 	;;
 	mov	b0=loc1
 	mov 	ar.pfs=loc0
-	add	sp=BASIC_ARGS_SZ,sp
+	.restore sp
+	mov	sp=loc2
 	br.ret.sptk.many b0
 	.endp ffi_closure_UNIX
 	

@@ -35,7 +35,7 @@
 /* type long enough to hold an entire register.  For now we use double.	*/
 typedef double float80;
 
-/* The stack layout at call to ffi_prep_regs.  Other_args will remain	*/
+/* The stack layout at call to ffi_prep_args.  Other_args will remain	*/
 /* on the stack for the actual call.  Everything else we be transferred	*/
 /* to registers and popped by the assembly code.			*/
 
@@ -123,7 +123,8 @@ static bool is_homogeneous_fp_aggregate(ffi_type * type, int n,
 } 
 
 /* ffi_prep_args is called by the assembly routine once stack space
-   has been allocated for the function's arguments.  Returns nonzero
+   has been allocated for the function's arguments.  It fills in
+   the arguments in the structure referenced by stack. Returns nonzero
    if fp registers are used for arguments. */
 
 static bool
@@ -463,7 +464,7 @@ ffi_prep_incoming_args_UNIX(struct ia64_args *args, void **rvalue,
  */
 
 /* ffi_closure_UNIX is an assembly routine, which copies the register 	*/
-/* state into s struct ia64_args, and the invokes			*/
+/* state into a struct ia64_args, and then invokes			*/
 /* ffi_closure_UNIX_inner.  It also recovers the closure pointer	*/
 /* from its fake gp pointer.						*/
 void ffi_closure_UNIX();
@@ -473,7 +474,7 @@ void ffi_closure_UNIX();
 #endif
 void
 ffi_closure_UNIX_inner (ffi_closure *closure, struct ia64_args * args)
-/* Hopefully declarint this as a varargs function will force all args	*/
+/* Hopefully declaring this as a varargs function will force all args	*/
 /* to memory.								*/
 {
   // this is our return value storage
