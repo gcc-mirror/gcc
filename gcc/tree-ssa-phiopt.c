@@ -415,7 +415,6 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 		   basic_block phi_bb, edge e0, edge e1, tree phi,
 		   tree arg0, tree arg1)
 {
-  tree result;
   tree cond;
   edge true_edge, false_edge;
 
@@ -428,7 +427,6 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
     return false;
 
   cond = COND_EXPR_COND (last_stmt (cond_bb));
-  result = PHI_RESULT (phi);
 
   /* This transformation is only valid for equality comparisons.  */
   if (TREE_CODE (cond) != NE_EXPR && TREE_CODE (cond) != EQ_EXPR)
