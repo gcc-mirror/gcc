@@ -2858,7 +2858,7 @@ simplify_unary_operation (code, mode, op, op_mode)
 	  break;
 
 	case ABS:
-	  if (REAL_VALUES_LESS (d, 0.0))
+	  if (REAL_VALUE_NEGATIVE (d))
 	    d = REAL_VALUE_NEGATE (d);
 	  break;
 
@@ -3860,7 +3860,9 @@ simplify_relational_operation (code, mode, op0, op1)
 	    if (CONSTANT_P (op0) && op1 == const0_rtx)
 	      return const0_rtx;
 #endif
-	    if (NONZERO_BASE_PLUS_P (op0) && op1 == const0_rtx)
+	    if (NONZERO_BASE_PLUS_P (op0) && op1 == const0_rtx
+		/* On some machines, the ap reg can be 0 sometimes.  */
+		&& op0 != arg_pointer_rtx)
 	      return const0_rtx;
 	    break;
 	  }
@@ -3871,7 +3873,9 @@ simplify_relational_operation (code, mode, op0, op1)
 	  if (CONSTANT_P (op0) && op1 == const0_rtx)
 	    return const_true_rtx;
 #endif
-	  if (NONZERO_BASE_PLUS_P (op0) && op1 == const0_rtx)
+	  if (NONZERO_BASE_PLUS_P (op0) && op1 == const0_rtx
+	      /* On some machines, the ap reg can be 0 sometimes.  */
+	      && op0 != arg_pointer_rtx)
 	    return const_true_rtx;
 	  break;
 
@@ -6577,6 +6581,65 @@ cse_around_loop (loop_start)
     }
 }
 
+/* Variable used for communications between the next two routines.  */
+
+static struct write_data skipped_writes_memory;
+
+/* Process one SET of an insn that was skipped.  We ignore CLOBBERs
+   since they are done elsewhere.  This function is called via note_stores.  */
+
+static void
+invalidate_skipped_set (dest, set)
+     rtx set;
+     rtx dest;
+{
+  if (GET_CODE (set) == CLOBBER
+#ifdef HAVE_cc0
+      || dest == cc0_rtx
+#endif
+      || dest == pc_rtx)
+    return;
+
+  if (GET_CODE (dest) == MEM)
+    note_mem_written (dest, &skipped_writes_memory);
+
+  if (GET_CODE (dest) == REG || GET_CODE (dest) == SUBREG
+      || (! skipped_writes_memory.all && ! cse_rtx_addr_varies_p (dest)))
+    invalidate (dest);
+}
+
+/* Invalidate all insns from START up to the end of the function or the
+   next label.  This called when we wish to CSE around a block that is
+   conditionally executed.  */
+
+static void
+invalidate_skipped_block (start)
+     rtx start;
+{
+  rtx insn;
+  int i;
+  static struct write_data init = {0, 0, 0, 0};
+  static struct write_data everything = {0, 1, 1, 1};
+
+  for (insn = start; insn && GET_CODE (insn) != CODE_LABEL;
+       insn = NEXT_INSN (insn))
+    {
+      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+	continue;
+
+      skipped_writes_memory = init;
+
+      if (GET_CODE (insn) == CALL_INSN)
+	{
+	  invalidate_for_call ();
+	  skipped_writes_memory = everything;
+	}
+
+      note_stores (PATTERN (insn), invalidate_skipped_set);
+      invalidate_from_clobbers (&skipped_writes_memory, PATTERN (insn));
+    }
+}
+
 /* Used for communication between the following two routines; contains a
    value to be checked for modification.  */
 
@@ -6706,7 +6769,7 @@ cse_set_around_loop (x, insn, loop_start)
    The branch path indicates which branches should be followed.  If a non-zero
    path size is specified, the block should be rescanned and a different set
    of branches will be taken.  The branch path is only used if
-   FLAG_CSE_FOLLOW_JUMPS is non-zero.
+   FLAG_CSE_FOLLOW_JUMPS or FLAG_CSE_SKIP_BLOCKS is non-zero.
 
    DATA is a pointer to a struct cse_basic_block_data, defined below, that is
    used to describe the block.  It is filled in with the information about
@@ -6732,17 +6795,20 @@ struct cse_basic_block_data {
   struct branch_path {
     /* The branch insn. */
     rtx branch;
-    /* Whether it should be taken or not.  */
-    enum taken {TAKEN, NOT_TAKEN} status;
+    /* Whether it should be taken or not.  AROUND is the same as taken
+       except that it is used when the destination label is not preceded
+       by a BARRIER.  */
+    enum taken {TAKEN, NOT_TAKEN, AROUND} status;
   } path[PATHLENGTH];
 };
 
 void
-cse_end_of_basic_block (insn, data, follow_jumps, after_loop)
+cse_end_of_basic_block (insn, data, follow_jumps, after_loop, skip_blocks)
      rtx insn;
      struct cse_basic_block_data *data;
      int follow_jumps;
      int after_loop;
+     int skip_blocks;
 {
   rtx p = insn, q;
   int nsets = 0;
@@ -6757,7 +6823,7 @@ cse_end_of_basic_block (insn, data, follow_jumps, after_loop)
      at least one branch must have been taken if PATH_SIZE is non-zero.  */
   while (path_size > 0)
     {
-      if (data->path[path_size - 1].status == TAKEN)
+      if (data->path[path_size - 1].status != NOT_TAKEN)
 	{
 	  data->path[path_size - 1].status = NOT_TAKEN;
 	  break;
@@ -6802,15 +6868,15 @@ cse_end_of_basic_block (insn, data, follow_jumps, after_loop)
 	nsets += 1;
 	
       if (INSN_CUID (p) > high_cuid)
-        high_cuid = INSN_CUID (p);
+	high_cuid = INSN_CUID (p);
       if (INSN_CUID (p) < low_cuid)
-        low_cuid = INSN_CUID(p);
+	low_cuid = INSN_CUID(p);
 
       /* See if this insn is in our branch path.  If it is and we are to
 	 take it, do so.  */
       if (path_entry < path_size && data->path[path_entry].branch == p)
 	{
-	  if (data->path[path_entry].status == TAKEN)
+	  if (data->path[path_entry].status != NOT_TAKEN)
 	    p = JUMP_LABEL (p);
 	  
 	  /* Point to next entry in path, if any.  */
@@ -6820,8 +6886,14 @@ cse_end_of_basic_block (insn, data, follow_jumps, after_loop)
       /* If this is a conditional jump, we can follow it if -fcse-follow-jumps
 	 was specified, we haven't reached our maximum path length, there are
 	 insns following the target of the jump, this is the only use of the
-	 jump label, and the target label is preceded by a BARRIER.  */
-      else if (follow_jumps && path_size < PATHLENGTH - 1
+	 jump label, and the target label is preceded by a BARRIER.
+
+	 Alternatively, we can follow the jump if it branches around a
+	 block of code and there are no other branches into the block.
+	 In this case invalidate_skipped_block will be called to invalidate any
+	 registers set in the block when following the jump.  */
+
+      else if ((follow_jumps || skip_blocks) && path_size < PATHLENGTH - 1
 	       && GET_CODE (p) == JUMP_INSN
       	       && GET_CODE (PATTERN (p)) == SET
 	       && GET_CODE (SET_SRC (PATTERN (p))) == IF_THEN_ELSE
@@ -6837,7 +6909,7 @@ cse_end_of_basic_block (insn, data, follow_jumps, after_loop)
 
 	  /* If we ran into a BARRIER, this code is an extension of the
 	     basic block when the branch is taken.  */
-	  if (q != 0 && GET_CODE (q) == BARRIER)
+	  if (follow_jumps && q != 0 && GET_CODE (q) == BARRIER)
 	    {
 	      /* Don't allow ourself to keep walking around an
 		 always-executed loop.  */
@@ -6865,8 +6937,40 @@ cse_end_of_basic_block (insn, data, follow_jumps, after_loop)
 	      /* Mark block so we won't scan it again later.  */
 	      PUT_MODE (NEXT_INSN (p), QImode);
 	    }
+	  /* Detect a branch around a block of code.  */
+	  else if (skip_blocks && q != 0 && GET_CODE (q) != CODE_LABEL)
+	    {
+	      register rtx tmp;
+
+	      if (next_real_insn (q) == next_real_insn (insn))
+		break;
+
+	      for (i = 0; i < path_entry; i++)
+		if (data->path[i].branch == p)
+		  break;
+
+	      if (i != path_entry)
+		break;
+
+	      /* This is no_labels_between_p (p, q) with an added check for
+		 reaching the end of a function (in case Q precedes P).  */
+	      for (tmp = NEXT_INSN (p); tmp && tmp != q; tmp = NEXT_INSN (tmp))
+		if (GET_CODE (tmp) == CODE_LABEL)
+		  break;
+	      
+	      if (tmp == q)
+		{
+		  data->path[path_entry].branch = p;
+		  data->path[path_entry++].status = AROUND;
+
+		  path_size = path_entry;
+
+		  p = JUMP_LABEL (p);
+		  /* Mark block so we won't scan it again later.  */
+		  PUT_MODE (NEXT_INSN (p), QImode);
+		}
+	    }
 	}
-	
       p = NEXT_INSN (p);
     }
 
@@ -6878,7 +6982,7 @@ cse_end_of_basic_block (insn, data, follow_jumps, after_loop)
   /* If all jumps in the path are not taken, set our path length to zero
      so a rescan won't be done.  */
   for (i = path_size - 1; i >= 0; i--)
-    if (data->path[i].status == TAKEN)
+    if (data->path[i].status != NOT_TAKEN)
       break;
 
   if (i == -1)
@@ -6998,9 +7102,8 @@ cse_main (f, nregs, after_loop, file)
   insn = f;
   while (insn)
     {
-      int tem;
-
-      cse_end_of_basic_block (insn, &val, flag_cse_follow_jumps, after_loop);
+      cse_end_of_basic_block (insn, &val, flag_cse_follow_jumps, after_loop,
+			      flag_cse_skip_blocks);
 
       /* If this basic block was already processed or has no sets, skip it.  */
       if (val.nsets == 0 || GET_MODE (insn) == QImode)
@@ -7042,7 +7145,8 @@ cse_main (f, nregs, after_loop, file)
 	     us a new branch path to investigate.  */
 	  cse_jumps_altered = 0;
 	  temp = cse_basic_block (insn, val.last, val.path, ! after_loop);
-	  if (cse_jumps_altered == 0 || flag_cse_follow_jumps == 0)
+	  if (cse_jumps_altered == 0
+	      || (flag_cse_follow_jumps == 0 && flag_cse_skip_blocks == 0))
 	    insn = temp;
 
 	  cse_jumps_altered |= old_cse_jumps_altered;
@@ -7116,9 +7220,14 @@ cse_basic_block (from, to, next_branch, around_loop)
 	 to be taken, do so.  */
       if (next_branch->branch == insn)
 	{
-	  if (next_branch++->status == TAKEN)
+	  enum taken status = next_branch++->status;
+	  if (status != NOT_TAKEN)
 	    {
-	      record_jump_equiv (insn, 1);
+	      if (status == TAKEN)
+		record_jump_equiv (insn, 1);
+	      else
+		invalidate_skipped_block (NEXT_INSN (insn));
+
 	      /* Set the last insn as the jump insn; it doesn't affect cc0.
 		 Then follow this branch.  */
 #ifdef HAVE_cc0
@@ -7200,7 +7309,7 @@ cse_basic_block (from, to, next_branch, around_loop)
 
 	  to_usage = 0;
 	  val.path_size = 0;
-	  cse_end_of_basic_block (insn, &val, 0, 0);
+	  cse_end_of_basic_block (insn, &val, 0, 0, 0);
 
 	  /* If the tables we allocated have enough space left
 	     to handle all the SETs in the next basic block,
@@ -7230,7 +7339,8 @@ cse_basic_block (from, to, next_branch, around_loop)
      we can cse into the loop.  Don't do this if we changed the jump
      structure of a loop unless we aren't going to be following jumps.  */
 
-  if ((cse_jumps_altered == 0 || flag_cse_follow_jumps == 0)
+  if ((cse_jumps_altered == 0
+       || (flag_cse_follow_jumps == 0 && flag_cse_skip_blocks == 0))
       && around_loop && to != 0
       && GET_CODE (to) == NOTE && NOTE_LINE_NUMBER (to) == NOTE_INSN_LOOP_END
       && GET_CODE (PREV_INSN (to)) == JUMP_INSN

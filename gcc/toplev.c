@@ -293,6 +293,10 @@ int flag_float_store = 0;
 
 int flag_cse_follow_jumps;
 
+/* Nonzero for -fcse-skip-blocks:
+   have cse follow a branch around a block.  */
+int flag_cse_skip_blocks;
+
 /* Nonzero for -fexpensive-optimizations:
    perform miscellaneous relatively-expensive optimizations.  */
 int flag_expensive_optimizations;
@@ -451,6 +455,7 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"defer-pop", &flag_defer_pop, 1},
   {"omit-frame-pointer", &flag_omit_frame_pointer, 1},
   {"cse-follow-jumps", &flag_cse_follow_jumps, 1},
+  {"cse-skip-blocks", &flag_cse_skip_blocks, 1},
   {"expensive-optimizations", &flag_expensive_optimizations, 1},
   {"thread-jumps", &flag_thread_jumps, 1},
   {"strength-reduce", &flag_strength_reduce, 1},
@@ -2593,6 +2598,7 @@ main (argc, argv, envp)
   if (optimize >= 2)
     {
       flag_cse_follow_jumps = 1;
+      flag_cse_skip_blocks = 1;
       flag_expensive_optimizations = 1;
       flag_strength_reduce = 1;
       flag_rerun_cse_after_loop = 1;
