@@ -37,6 +37,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "c-lex.h"
 #include "cpplib.h"
 #include "target.h"
+#include "langhooks.h"
 cpp_reader *parse_in;		/* Declared in c-lex.h.  */
 
 #undef WCHAR_TYPE_SIZE
@@ -483,7 +484,7 @@ fname_as_string (pretty_p)
   
   if (pretty_p)
     name = (current_function_decl
-	    ? (*decl_printable_name) (current_function_decl, 2)
+	    ? (*lang_hooks.decl_printable_name) (current_function_decl, 2)
 	    : "top level");
   else if (current_function_decl && DECL_NAME (current_function_decl))
     name = IDENTIFIER_POINTER (DECL_NAME (current_function_decl));

@@ -59,6 +59,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "tm_p.h"
 #include "integrate.h"
+#include "langhooks.h"
 
 #ifndef TRAMPOLINE_ALIGNMENT
 #define TRAMPOLINE_ALIGNMENT FUNCTION_BOUNDARY
@@ -6259,7 +6260,7 @@ init_function_start (subr, filename, line)
 {
   prepare_function_start ();
 
-  current_function_name = (*decl_printable_name) (subr, 2);
+  current_function_name = (*lang_hooks.decl_printable_name) (subr, 2);
   cfun->decl = subr;
 
   /* Nonzero if this is a nested function that uses a static chain.  */

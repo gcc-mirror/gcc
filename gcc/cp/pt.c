@@ -7364,7 +7364,7 @@ tsubst_expr (t, args, complain, in_decl)
 		    /* For __PRETTY_FUNCTION__ we have to adjust the
 		       initializer.  */
 		    const char *const name
-		      = (*decl_printable_name) (current_function_decl, 2);
+		      = cxx_printable_name (current_function_decl, 2);
 		    init = cp_fname_init (name);
 		    TREE_TYPE (decl) = TREE_TYPE (init);
 		  }

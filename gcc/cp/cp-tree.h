@@ -4263,7 +4263,7 @@ extern tree build_overload                      PARAMS ((tree, tree));
 extern tree function_arg_chain			PARAMS ((tree));
 extern int promotes_to_aggr_type		PARAMS ((tree, enum tree_code));
 extern int is_aggr_type_2			PARAMS ((tree, tree));
-extern const char *lang_printable_name		PARAMS ((tree, int));
+extern const char *cxx_printable_name		PARAMS ((tree, int));
 extern tree build_exception_variant		PARAMS ((tree, tree));
 extern tree bind_template_template_parm		PARAMS ((tree, tree));
 extern tree array_type_nelts_total		PARAMS ((tree));

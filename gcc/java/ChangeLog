@@ -1,3 +1,9 @@
+2002-03-20  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* decl.c (start_java_method): Use new hook.
+	* lang.c (LANG_HOOKS_DECL_PRINTABLE_NAME): Redefine.
+	(java_init): Remove old hook.
+
 2002-03-18  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* builtins.c (define_builtin): Do nothing if `type' is null.

@@ -160,6 +160,14 @@ struct lang_hooks
   lang_print_tree_hook print_type;
   lang_print_tree_hook print_identifier;
 
+  /* Computes the name to use to print a declaration.  DECL is the
+     non-NULL declaration in question.  VERBOSITY determines what
+     information will be printed: 0: DECL_NAME, demangled as
+     necessary.  1: and scope information.  2: and any other
+     information that might be interesting, such as function parameter
+     types in C++.  */
+  const char *(*decl_printable_name) PARAMS ((tree decl, int verbosity));
+
   /* Set yydebug for bison-based parsers, when -dy is given on the
      command line.  By default, if the parameter is non-zero, prints a
      warning that the front end does not use such a parser.  */

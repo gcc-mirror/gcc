@@ -225,6 +225,8 @@ static int dependency_tracking = 0;
 #define LANG_HOOKS_PARSE_FILE java_parse_file
 #undef LANG_HOOKS_DUP_LANG_SPECIFIC_DECL
 #define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL java_dup_lang_specific_decl
+#undef LANG_HOOKS_DECL_PRINTABLE_NAME
+#define LANG_HOOKS_DECL_PRINTABLE_NAME lang_printable_name
 
 /* Each front end provides its own.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
@@ -506,7 +508,6 @@ java_init (filename)
   jcf_path_init ();
   jcf_path_seal (version_flag);
 
-  decl_printable_name = lang_printable_name;
   print_error_function = lang_print_error;
   lang_expand_expr = java_lang_expand_expr;
 

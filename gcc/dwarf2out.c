@@ -6493,16 +6493,16 @@ output_comp_unit (die)
     unmark_dies (die);
 }
 
-/* The DWARF2 pubname for a nested thingy looks like "A::f".  The output
-   of decl_printable_name for C++ looks like "A::f(int)".  Let's drop the
-   argument list, and maybe the scope.  */
+/* The DWARF2 pubname for a nested thingy looks like "A::f".  The
+   output of lang_hooks.decl_printable_name for C++ looks like
+   "A::f(int)".  Let's drop the argument list, and maybe the scope.  */
 
 static const char *
 dwarf2_name (decl, scope)
      tree decl;
      int scope;
 {
-  return (*decl_printable_name) (decl, scope ? 1 : 0);
+  return (*lang_hooks.decl_printable_name) (decl, scope ? 1 : 0);
 }
 
 /* Add a new entry to .debug_pubnames if appropriate.  */

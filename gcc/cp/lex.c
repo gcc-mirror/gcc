@@ -642,7 +642,6 @@ const char *
 cxx_init (filename)
      const char *filename;
 {
-  decl_printable_name = lang_printable_name;
   input_filename = "<internal>";
 
   init_reswords ();

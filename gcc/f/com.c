@@ -364,7 +364,7 @@ static void delete_block (tree block);
 static int duplicate_decls (tree newdecl, tree olddecl);
 static void finish_decl (tree decl, tree init, bool is_top_level);
 static void finish_function (int nested);
-static const char *lang_printable_name (tree decl, int v);
+static const char *ffe_printable_name (tree decl, int v);
 static tree lookup_name_current_level (tree name);
 static struct binding_level *make_binding_level (void);
 static void pop_f_function_context (void);
@@ -13630,7 +13630,7 @@ finish_function (int nested)
    nested function and all).  */
 
 static const char *
-lang_printable_name (tree decl, int v)
+ffe_printable_name (tree decl, int v)
 {
   /* Just to keep GCC quiet about the unused variable.
      In theory, differing values of V should produce different
@@ -14215,6 +14215,8 @@ static void ffe_print_identifier PARAMS ((FILE *, tree, int));
 #define LANG_HOOKS_PARSE_FILE		ffe_parse_file
 #undef  LANG_HOOKS_PRINT_IDENTIFIER
 #define LANG_HOOKS_PRINT_IDENTIFIER	ffe_print_identifier
+#undef  LANG_HOOKS_DECL_PRINTABLE_NAME
+#define LANG_HOOKS_DECL_PRINTABLE_NAME	ffe_printable_name
 
 /* We do not wish to use alias-set based aliasing at all.  Used in the
    extreme (every object with its own set, with equivalences recorded) it
@@ -14277,7 +14279,6 @@ ffe_init (filename)
 #endif
 
   ffecom_init_decl_processing ();
-  decl_printable_name = lang_printable_name;
   print_error_function = lang_print_error_function;
 
   /* If the file is output from cpp, it should contain a first line

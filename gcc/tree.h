@@ -2713,16 +2713,6 @@ extern tree current_function_func_begin_label;
 
 extern int all_types_permanent;
 
-/* Pointer to function to compute the name to use to print a declaration.
-   DECL is the declaration in question.
-   VERBOSITY determines what information will be printed:
-     0: DECL_NAME, demangled as necessary.
-     1: and scope information.
-     2: and any other information that might be interesting, such as function
-        parameter types in C++.  */
-
-extern const char *(*decl_printable_name)	PARAMS ((tree, int));
-
 /* Pointer to function to finish handling an incomplete decl at the
    end of compilation.  */
 

@@ -109,6 +109,8 @@ static void gnat_parse_file		PARAMS ((void));
 #define LANG_HOOKS_PRINT_DECL		gnat_print_decl
 #undef LANG_HOOKS_PRINT_TYPE
 #define LANG_HOOKS_PRINT_TYPE		gnat_print_type
+#undef LANG_HOOKS_DECL_PRINTABLE_NAME
+#define LANG_HOOKS_DECL_PRINTABLE_NAME	gnat_printable_name
 
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
@@ -358,7 +360,6 @@ gnat_init (filename)
      it, but it's where g++ does it.  */
 
   lang_expand_expr = gnat_expand_expr;
-  decl_printable_name = gnat_printable_name;
 
   gnat_init_decl_processing ();
 
