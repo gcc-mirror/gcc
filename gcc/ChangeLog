@@ -1,3 +1,10 @@
+2005-03-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/20527
+	* combine.c (can_combine_p) [AUTO_INC_DEC]: When INSN has an
+	REG_INC note, test that the register also isn't mentioned in PRED
+	or SUCC.
+
 2005-03-22  Ben Elliston  <bje@au.ibm.com>
 
 	* dwarf2out.c (dwarf_type_encoding_name): Remove unused prototype
