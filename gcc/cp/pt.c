@@ -132,6 +132,12 @@ is_member_template (t)
 {
   int r = 0;
 
+  if (TREE_CODE (t) != FUNCTION_DECL
+      && !DECL_FUNCTION_TEMPLATE_P (t))
+    /* Anything that isn't a template or a template functon is
+       certainly not a member template.  */
+    return 0;
+
   if (DECL_FUNCTION_MEMBER_P (t) ||
       (TREE_CODE (t) == TEMPLATE_DECL && 
        DECL_FUNCTION_MEMBER_P (DECL_TEMPLATE_RESULT (t))))
