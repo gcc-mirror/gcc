@@ -1,3 +1,8 @@
+2003-12-31  Roger Sayle  <roger@eyesopen.com>
+
+	* config/ia64/hpux.h (TARGET_OS_CPP_BUILTINS): Define
+	_INCLUDE_LONGLONG.
+
 2003-12-31  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.c (init_spec): Add -lunwind to shared case too if

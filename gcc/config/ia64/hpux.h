@@ -39,6 +39,7 @@ do {							\
 	builtin_define_std("unix");			\
 	builtin_define("__IA64__");			\
 	builtin_define("_LONGLONG");			\
+	builtin_define("_INCLUDE_LONGLONG");		\
 	builtin_define("_UINT128_T");			\
 	if (c_dialect_cxx () || !flag_iso)		\
 	  {						\
