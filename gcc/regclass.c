@@ -103,7 +103,17 @@ int reg_alloc_order[FIRST_PSEUDO_REGISTER] = REG_ALLOC_ORDER;
 
 /* For each reg class, a HARD_REG_SET saying which registers are in it.  */
 
-HARD_REG_SET reg_class_contents[] = REG_CLASS_CONTENTS;
+HARD_REG_SET reg_class_contents[N_REG_CLASSES];
+
+/* The same information, but as an array of ints.  We copy from these
+   ints to the table above.  This is done so that the tm.h files do
+   not have to be aware of the wordsize for machines with <= 64 regs.  */
+
+#define N_REG_INTS  \
+  ((FIRST_PSEUDO_REGISTER + (HOST_BITS_PER_INT - 1)) / HOST_BITS_PER_INT)
+
+static int int_reg_class_contents[N_REG_CLASSES][N_REG_INTS] 
+  = REG_CLASS_CONTENTS;
 
 /* For each reg class, number of regs it contains.  */
 
@@ -157,6 +167,19 @@ void
 init_reg_sets ()
 {
   register int i, j;
+
+  /* First copy the register information from the initial int form into
+     the regsets.  */
+
+  for (i = 0; i < N_REG_CLASSES; i++)
+    {
+      CLEAR_HARD_REG_SET (reg_class_contents[i]);
+
+      for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
+	if (int_reg_class_contents[i][j / HOST_BITS_PER_INT]
+	    & (1 << (j % HOST_BITS_PER_INT)))
+	  SET_HARD_REG_BIT (reg_class_contents[i], j);
+    }
 
   bcopy (initial_fixed_regs, fixed_regs, sizeof fixed_regs);
   bcopy (initial_call_used_regs, call_used_regs, sizeof call_used_regs);

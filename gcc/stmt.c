@@ -3240,9 +3240,6 @@ pushcase (value, label, duplicate)
   if (index_type == error_mark_node)
     return 0;
 
-  /* There may be NOP_EXPR around the value if we got it from an enum.  */
-  STRIP_NOPS (value);
-
   /* Convert VALUE to the type in which the comparisons are nominally done.  */
   if (value != 0)
     value = convert (nominal_type, value);
@@ -3371,10 +3368,6 @@ pushcase_range (value1, value2, label, duplicate)
 	}
     }
   case_stack->data.case_stmt.seenlabel = 1;
-
-  /* There may be NOP_EXPR around the value if we got it from an enum.  */
-  STRIP_NOPS (value1);
-  STRIP_NOPS (value2);
 
   /* Convert VALUEs to type in which the comparisons are nominally done.  */
   if (value1 == 0)  /* Negative infinity. */
