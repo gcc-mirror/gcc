@@ -889,8 +889,14 @@ default_conversion (exp)
       type = TREE_TYPE (exp);
     }
 
-  /* Strip NON_LVALUE_EXPRs, etc., since we aren't using as an lvalue.  */
-  STRIP_NOPS (exp);
+  /* Strip NON_LVALUE_EXPRs and no-op conversions, since we aren't using as
+     an lvalue.  */
+  /* Do not use STRIP_NOPS here!  It will remove conversions from pointer
+     to integer and cause infinite recursion.  */
+  while (TREE_CODE (exp) == NON_LVALUE_EXPR
+	 || (TREE_CODE (exp) == NOP_EXPR
+	     && TREE_TYPE (TREE_OPERAND (exp, 0)) == TREE_TYPE (exp)))
+    exp = TREE_OPERAND (exp, 0);
 
   /* Normally convert enums to int,
      but convert wide enums to something wider.  */
@@ -1774,7 +1780,7 @@ build_function_call (function, params)
   tree name = NULL_TREE;
 
   /* Strip NON_LVALUE_EXPRs, etc., since we aren't using as an lvalue.  */
-  STRIP_NOPS (function);
+  STRIP_TYPE_NOPS (function);
 
   /* Convert anything with function type to a pointer-to-function.  */
   if (TREE_CODE (function) == FUNCTION_DECL)
@@ -2226,8 +2232,8 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
   code1 = TREE_CODE (type1);
 
   /* Strip NON_LVALUE_EXPRs, etc., since we aren't using as an lvalue.  */
-  STRIP_NOPS (op0);
-  STRIP_NOPS (op1);
+  STRIP_TYPE_NOPS (op0);
+  STRIP_TYPE_NOPS (op1);
 
   /* If an error was already reported for one of the arguments,
      avoid reporting another error.  */
