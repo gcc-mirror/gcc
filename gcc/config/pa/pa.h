@@ -42,7 +42,7 @@ extern int target_flags;
 
 /* Disable all FP registers (they all become fixed).  This may be necessary
    for compiling kernels which perform lazy context switching of FP regs.
-   Note if you use this option and try to perform floating point operations 
+   Note if you use this option and try to perform floating point operations
    the compiler will abort!  */
 
 #define TARGET_DISABLE_FPREGS (target_flags & 2)
@@ -53,7 +53,7 @@ extern int target_flags;
 /* Force all function calls to indirect addressing via a register.  This
    avoids lossage when the function is very far away from the current PC.
 
-   ??? What about simple jumps, they can suffer from the same problem.  
+   ??? What about simple jumps, they can suffer from the same problem.
    Would require significant surgery in pa.md.  */
 
 #define TARGET_LONG_CALLS (target_flags & 16)
@@ -64,7 +64,7 @@ extern int target_flags;
 
 /* Emit directives only understood by GAS.  This allows parameter
    relocations to work for static functions.  There is no way
-   to make them work the HP assembler at this time. 
+   to make them work the HP assembler at this time.
 
    Also forces a colon to be tacked onto the end of local and
    global labes.  */
@@ -115,7 +115,7 @@ extern int target_flags;
 /* Defines for a K&R CC */
 
 #define CC1_SPEC "%{pg:} %{p:}"
-  
+
 #define LINK_SPEC "-u main"
 
 /* Allow $ in identifiers.  */
@@ -144,7 +144,7 @@ extern int target_flags;
 }
 
 /* Omit frame pointer at high optimization levels.  */
-  
+
 #define OPTIMIZATION_OPTIONS(OPTIMIZE) \
 {  								\
   if (OPTIMIZE >= 2) 						\
@@ -244,9 +244,9 @@ extern int target_flags;
    HP-PA 1.0 has 32 fullword registers and 16 floating point
    registers. The floating point registers hold either word or double
    word values.
-   
+
    16 additional registers are reserved.
-   
+
    HP-PA 1.1 has 32 fullword registers and 32 floating point
    registers. However, the floating point registers behave
    differently: the left and right halves of registers are addressable
@@ -291,7 +291,6 @@ extern int target_flags;
    Freg 8L-11R	= Temporary Registers
    Freg 12L-21R	= Preserved Registers
    Freg 22L-31R = Temporary Registers
-   
 
 */
 
@@ -335,7 +334,7 @@ extern int target_flags;
   0, 0, 0, 0, 1, 1, 1, 1, \
   1, 1, 1, 1, 1, 1, 1, 1, \
   1, 1, 1, 1, 1, 1, 1, 1, \
-  1}    
+  1}
 
 /* Make sure everything's fine if we *don't* have a given processor.
    This assumes that putting a register in fixed_regs will keep the
@@ -371,8 +370,10 @@ extern int target_flags;
        if (TEST_HARD_REG_BIT (x, i)) 		\
 	fixed_regs[i] = call_used_regs[i] = 1; 	\
     } 						\
+  /* This makes cse think PIC_OFFSET_TABLE_REGNUM is not clobbered
+     in calls.					\
   if (flag_pic)					\
-    fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;	\
+    fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1; */	\
 }
 
 /* Allocated the call used registers first.  This should minimize
@@ -452,7 +453,7 @@ extern int target_flags;
 
 /* Value should be nonzero if functions must have frame pointers. */
 #define FRAME_POINTER_REQUIRED (current_function_calls_alloca)
-  
+
 
 /* C statement to store the difference between the frame pointer
    and the stack pointer values immediately after the function prologue.
@@ -475,7 +476,6 @@ extern int target_flags;
 
 #define PIC_OFFSET_TABLE_REGNUM 19
 
-#define INITIALIZE_PIC initialize_pic ()
 #define FINALIZE_PIC finalize_pic ()
 
 /* SOM ABI says that objects larger than 64 bits are returned in memory.  */
@@ -515,7 +515,7 @@ extern int target_flags;
 
 enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
   HI_SNAKE_FP_REGS, SNAKE_FP_REGS, GENERAL_OR_SNAKE_FP_REGS,
-  FP_OR_SNAKE_FP_REGS, NON_SHIFT_REGS, SHIFT_REGS, ALL_REGS, LIM_REG_CLASSES}; 
+  FP_OR_SNAKE_FP_REGS, NON_SHIFT_REGS, SHIFT_REGS, ALL_REGS, LIM_REG_CLASSES};
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
@@ -567,7 +567,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
   (CLASS == FP_REGS || CLASS == SNAKE_FP_REGS || CLASS == HI_SNAKE_FP_REGS)
 
 /* Get reg_class from a letter such as appears in the machine description.
-   Note 'Z' is not the same as 'r' since SHIFT_REGS is not part of 
+   Note 'Z' is not the same as 'r' since SHIFT_REGS is not part of
    GENERAL_REGS.  */
 
 #define REG_CLASS_FROM_LETTER(C) \
@@ -628,7 +628,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 #define SECONDARY_RELOAD_CLASS(CLASS,MODE,IN) \
   secondary_reload_class (CLASS, MODE, IN)
 
-/* On the PA it is not possible to directly move data between 
+/* On the PA it is not possible to directly move data between
    GENERAL_REGS and FP_REGS.  */
 #define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)  \
   ((FP_REG_CLASS_P (CLASS1) && ! FP_REG_CLASS_P (CLASS2))	\
@@ -678,12 +678,12 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 
    ??? Have to check on this.*/
 
-#define FIRST_PARM_OFFSET(FNDECL) -32 
+#define FIRST_PARM_OFFSET(FNDECL) -32
 
 /* Absolute value of offset from top-of-stack address to location to store the
    function parameter if it can't go in a register.
    Addresses for following parameters are computed relative to this one.  */
-#define FIRST_PARM_CALLER_OFFSET(FNDECL) -32 
+#define FIRST_PARM_CALLER_OFFSET(FNDECL) -32
 
 
 /* When a parameter is passed in a register, stack space is still
@@ -699,11 +699,11 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
    doesn't behave itself when the stack pointer moves within
    the function!  */
 #define ACCUMULATE_OUTGOING_ARGS
-  
-/* The weird HPPA calling conventions require a minimum of 48 bytes on 
+
+/* The weird HPPA calling conventions require a minimum of 48 bytes on
    the stack: 16 bytes for register saves, and 32 bytes for magic.
    This is the difference between the logical top of stack and the
-   actual sp. */ 
+   actual sp. */
 #define STACK_POINTER_OFFSET -32
 
 #define STACK_DYNAMIC_OFFSET(FNDECL)	\
@@ -726,7 +726,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
-  gen_rtx (REG, TYPE_MODE (VALTYPE), ((TYPE_MODE (VALTYPE) == SFmode ||\
+  gen_rtx (REG, TYPE_MODE (VALTYPE), ((TYPE_MODE (VALTYPE) == SFmode ||	\
 				       TYPE_MODE (VALTYPE) == DFmode) ? \
 				      (TARGET_SNAKE ? 44 : 32) : 28))
 
@@ -822,12 +822,6 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 		  ? (TARGET_SNAKE ? 44 + 2 * (CUM) : 32  + (CUM))	\
 		  : (27 - (CUM) - FUNCTION_ARG_SIZE ((MODE), (TYPE))))))\
    : 0)
-
-/* Define where a function finds its arguments.
-   This would be different from FUNCTION_ARG if we had register windows.  */
-
-#define FUNCTION_INCOMING_ARG(CUM, MODE, TYPE, NAMED)	\
-  FUNCTION_ARG (CUM, MODE, TYPE, NAMED)
 
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.
@@ -1002,9 +996,9 @@ extern union tree_node *current_function_decl;
 
    This code template is copied from text segment to stack location
    and then patched with INITIALIZE_TRAMPOLINE to contain
-   valid values, and then entered as a subroutine. 
+   valid values, and then entered as a subroutine.
 
-   It is best to keep this as small as possible to avoid having to 
+   It is best to keep this as small as possible to avoid having to
    flush multiple lines in the cache.  */
 
 #define TRAMPOLINE_TEMPLATE(FILE) \
@@ -1026,7 +1020,7 @@ extern union tree_node *current_function_decl;
 
    Flush the cache entries corresponding to the first and last addresses
    of the trampoline.  This is necessary as the trampoline may cross two
-   cache lines.  
+   cache lines.
 
    If the code part of the trampoline ever grows to > 32 bytes, then it
    will become necessary to hack on the cacheflush pattern in pa.md.  */
@@ -1126,7 +1120,7 @@ extern union tree_node *current_function_decl;
   (GET_MODE_CLASS (GET_MODE (X)) != MODE_FLOAT	\
     || (X) == CONST0_RTX (GET_MODE (X)))
 
-/* Subroutine for EXTRA_CONSTRAINT.  
+/* Subroutine for EXTRA_CONSTRAINT.
 
    Return 1 iff OP is a pseudo which did not get a hard register and
    we are running the reload pass.  */
@@ -1146,7 +1140,7 @@ extern union tree_node *current_function_decl;
    constrain_operands to fail.
 
    Also note `Q' accepts any memory operand during the reload pass.
-   This includes out-of-range displacements in reg+d addressing. 
+   This includes out-of-range displacements in reg+d addressing.
    This makes for better code.  (??? For 2.5 address this issue).
 
    `R' is unused.
@@ -1352,7 +1346,7 @@ do							\
       }							\
   }							\
 while (0)
-  
+
 /* Store the user-specified part of SYMBOL_NAME in VAR.
    This is sort of inverse to ENCODE_SECTION_INFO.  */
 
@@ -1437,7 +1431,7 @@ while (0)
    is a byte address (for indexing purposes)
    so give the MEM rtx a byte's mode.  */
 #define FUNCTION_MODE SImode
-  
+
 /* Define this if addresses of constant functions
    shouldn't be put through pseudo regs where they can be cse'd.
    Desirable on machines where ordinary constants are expensive
@@ -1483,7 +1477,7 @@ while (0)
    Make moves from SAR so expensive they should never happen.  We used to
    have 0xffff here, but that generates overflow in rare cases.
 
-   Copies involving a FP register and a non-FP register are relatively 
+   Copies involving a FP register and a non-FP register are relatively
    expensive because they must go through memory.
 
    Other copies are reasonably cheap.  */
@@ -1498,17 +1492,21 @@ while (0)
    switch on CODE.  The purpose for the cost of MULT is to encourage
    `synth_mult' to find a synthetic multiply when reasonable.  */
 
-#define RTX_COSTS(X,CODE,OUTER_CODE)			\
-  case MULT:						\
-    return TARGET_SNAKE && ! TARGET_DISABLE_FPREGS	\
-      ? COSTS_N_INSNS (8) : COSTS_N_INSNS (20); 	\
-  case DIV:						\
-  case UDIV:						\
-  case MOD:						\
-  case UMOD:						\
-    return COSTS_N_INSNS (60);				\
-  case PLUS: /* this includes shNadd insns */		\
-    return COSTS_N_INSNS (1) + 2;
+#define RTX_COSTS(X,CODE,OUTER_CODE) \
+  case MULT:							\
+    return TARGET_SNAKE && ! TARGET_DISABLE_FPREGS		\
+      ? COSTS_N_INSNS (8) : COSTS_N_INSNS (20); 		\
+  case DIV:							\
+  case UDIV:							\
+  case MOD:							\
+  case UMOD:							\
+    return COSTS_N_INSNS (60);					\
+  case PLUS:							\
+    if (GET_CODE (XEXP (X, 0)) == MULT				\
+	&& shadd_operand (XEXP (XEXP (X, 0), 1), VOIDmode))	\
+      return (2 + rtx_cost (XEXP (XEXP (X, 0), 0), OUTER_CODE)	\
+	      + rtx_cost (XEXP (X, 1), OUTER_CODE));		\
+    break;
 
 /* Adjust the cost of dependencies.  */
 
@@ -1531,8 +1529,8 @@ while (0)
    are expected to clobber their arguments, %r1, %r29, and %r31 and
    nothing else.
 
-   These macros tell reorg that the references to arguments and 
-   register clobbers for millicode calls do not appear to happen 
+   These macros tell reorg that the references to arguments and
+   register clobbers for millicode calls do not appear to happen
    until after the millicode call.  This allows reorg to put insns
    which set the argument registers into the delay slot of the millicode
    call -- thus they act more like traditional CALL_INSNs.
@@ -1552,7 +1550,7 @@ while (0)
     && GET_CODE (PATTERN (X)) != SEQUENCE	\
     && GET_CODE (PATTERN (X)) != USE		\
     && GET_CODE (PATTERN (X)) != CLOBBER	\
-    && get_attr_type (X) == TYPE_MILLI))	
+    && get_attr_type (X) == TYPE_MILLI))
 
 
 /* Control the assembler format that we output.  */
@@ -1702,7 +1700,7 @@ readonly_data ()							\
 	 }\
      } while (0)
 
-/* The bogus HP assembler requires ALL external references to be 
+/* The bogus HP assembler requires ALL external references to be
    "imported", even library calls. They look a bit different, so
    here's this macro. */
 
@@ -1790,7 +1788,7 @@ readonly_data ()							\
   output_ascii ((FILE), (P), (SIZE))
 
 #define ASM_OUTPUT_REG_PUSH(FILE,REGNO)
-#define ASM_OUTPUT_REG_POP(FILE,REGNO) 
+#define ASM_OUTPUT_REG_POP(FILE,REGNO)
 /* This is how to output an element of a case-vector that is absolute.
    Note that this method makes filling these branch delay slots
    impossible.  */
@@ -1928,15 +1926,12 @@ extern char *output_ior ();
 extern char *output_move_double ();
 extern char *output_fp_move_double ();
 extern char *output_block_move ();
-extern char *output_scc_insn ();
 extern char *output_cbranch ();
 extern char *output_bb ();
 extern char *output_dbra ();
 extern char *output_movb ();
 extern char *output_return ();
 extern char *output_call ();
-extern char *output_floatsisf2 ();
-extern char *output_floatsidf2 ();
 extern char *output_mul_insn ();
 extern char *output_div_insn ();
 extern char *output_mod_insn ();
@@ -1948,3 +1943,38 @@ extern struct rtx_def *gen_cmp_fp ();
 extern void hppa_encode_label ();
 
 extern struct rtx_def *hppa_save_pic_table_rtx;
+
+#if 0
+#define PREDICATE_CODES \
+  {"reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\
+  {"reg_or_cint_move_operand", {SUBREG, REG, CONST_INT}},		\
+  {"arith_operand", {SUBREG, REG, CONST_INT}},				\
+  {"arith32_operand", {SUBREG, REG, CONST_INT}},			\
+  {"arith11_operand", {SUBREG, REG, CONST_INT}},			\
+  {"arith5_operand", {SUBREG, REG, CONST_INT}},				\
+  {"pre_cint_operand", {CONST_INT}},					\
+  {"post_cint_operand", {CONST_INT}},					\
+  {"int5_operand", {CONST_INT}},					\
+  {"uint5_operand", {CONST_INT}},					\
+  {"uint32_operand", {CONST_INT}},					\
+  {"int11_operand", {CONST_INT}},					\
+  {"and_operand", {SUBREG, REG, CONST_INT}},				\
+  {"ior_operand", {CONST_INT}},						\
+  {"lhs_lshift_operand", {SUBREG, REG, CONST_INT}},			\
+  {"lhs_lshift_cint_operand", {CONST_INT}},				\
+  {"plus_xor_ior_operator", {PLUS, XOR, IOR}},				\
+  {"shadd_operand", {CONST_INT}},					\
+  {"eq_neq_comparison_operator", {EQ, NE}},				\
+  {"movb_comparison_operator", {EQ, NE, LT, GE}},			\
+  {"pc_or_label_operand", {LABEL_REF, PC}},				\
+  {"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST}},			\
+  {"reg_or_nonsymb_mem_operand", {REG, SUBREG, MEM}},			\
+  {"move_operand", {REG, SUBREG, CONST_INT, MEM}},			\
+  {"pic_operand", {REG, SUBREG, CONST_INT, SYMBOL_REF, LABEL_REF,	\
+		   CONST, HIGH, PC}},	/* No clue */			\
+  {"function_label_operand", {SYMBOL_REF}},				\
+  {"reg_or_0_or_nonsymb_mem_operand", {REG, SUBREG, CONST_INT, MEM}},	\
+  {"div_operand", {REG, CONST_INT}},					\
+  {"call_operand_address", {LABEL_REF, SYMBOL_REF, CONST_INT,		\
+			    CONST, HIGH}},
+#endif
