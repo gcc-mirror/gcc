@@ -1,3 +1,8 @@
+Thu Dec 18 00:19:38 1997  Robert Lipe <robertl@dgii.com>
+
+	* i386/x-sco5 (CLIB) Deleted.  (ALLOCA) Added.
+	* i386/xm-sco5.h  (USE_C_ALLOCA) Added.
+
 Tue Dec 16 18:51:00 1997  Bill Moyer <billm@cygnus.com>
 	 
         * config/m68k/m68k.c (output_function_prologue): Typecast
