@@ -2886,6 +2886,11 @@ sparc_type_code (type)
   register unsigned long qualifiers = 0;
   register unsigned shift = 6;
 
+  /* Only the first 30 bits of the qualifer are valid.  We must refrain from
+     setting more, since some assemblers will give an error for this.  Also,
+     we must be careful to avoid shifts of 32 bits or more to avoid getting
+     unpredictable results.  */
+
   for (;;)
     {
       switch (TREE_CODE (type))
@@ -2894,14 +2899,16 @@ sparc_type_code (type)
 	  return qualifiers;
   
 	case ARRAY_TYPE:
-	  qualifiers |= (3 << shift);
+	  if (shift < 30)
+	    qualifiers |= (3 << shift);
 	  shift += 2;
 	  type = TREE_TYPE (type);
 	  break;
 
 	case FUNCTION_TYPE:
 	case METHOD_TYPE:
-	  qualifiers |= (2 << shift);
+	  if (shift < 30)
+	    qualifiers |= (2 << shift);
 	  shift += 2;
 	  type = TREE_TYPE (type);
 	  break;
@@ -2909,7 +2916,8 @@ sparc_type_code (type)
 	case POINTER_TYPE:
 	case REFERENCE_TYPE:
 	case OFFSET_TYPE:
-	  qualifiers |= (1 << shift);
+	  if (shift < 30)
+	    qualifiers |= (1 << shift);
 	  shift += 2;
 	  type = TREE_TYPE (type);
 	  break;
