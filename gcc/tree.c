@@ -1641,7 +1641,7 @@ binfo_member (elem, list)
   return NULL_TREE;
 }
 
-/* Return nonzero if ELEM is part of the chain CHAIN.  */
+/* Return nonzero if ELEM is part of the chain CHAIN. */
 
 int
 chain_member (elem, chain)
@@ -1650,6 +1650,23 @@ chain_member (elem, chain)
   while (chain)
     {
       if (elem == chain)
+	return 1;
+      chain = TREE_CHAIN (chain);
+    }
+
+  return 0;
+}
+
+/* Return nonzero if ELEM is equal to TREE_VALUE (CHAIN) for any piece of
+   chain CHAIN. */
+
+int
+chain_member_value (elem, chain)
+     tree elem, chain;
+{
+  while (chain)
+    {
+      if (elem == TREE_VALUE (chain))
 	return 1;
       chain = TREE_CHAIN (chain);
     }
@@ -2766,7 +2783,19 @@ build_block (vars, tags, subblocks, supercontext, chain)
   BLOCK_CHAIN (block) = chain;
   return block;
 }
+
 
+/* Return a declaration like DDECL except that its DECL_MACHINE_ATTRIBUTE
+   is ATTRIBUTE. */
+
+tree
+build_decl_attribute_variant (ddecl, attribute)
+     tree ddecl, attribute;
+{
+  DECL_MACHINE_ATTRIBUTES (ddecl) = attribute;
+  return ddecl;
+}
+
 /* Return a type like TTYPE except that its TYPE_ATTRIBUTE
    is ATTRIBUTE.
 
@@ -2824,6 +2853,67 @@ build_type_attribute_variant (ttype, attribute)
     }
 
   return ttype;
+}
+
+/* Return a 1 if NEW_ATTR is valid for either declaration DECL or type TYPE 
+   and 0 otherwise.  Validity is determined the configuration macros 
+   VALID_MACHINE_DECL_ATTRIBUTE and VALID_MACHINE_TYPE_ATTRIBUTE. */
+
+int
+valid_machine_attribute (new_attr, decl, type)
+  tree new_attr;
+  tree decl;
+  tree type;
+{
+  int valid = 0;
+  tree decl_attr_list = DECL_MACHINE_ATTRIBUTES (decl);
+  tree type_attr_list = TYPE_ATTRIBUTES (type);
+
+#ifdef VALID_MACHINE_DECL_ATTRIBUTE
+  if (VALID_MACHINE_DECL_ATTRIBUTE (decl, 
+                                    decl_attr_list, 
+                                    new_attr))
+    {
+      tree attr_list;
+      int in_list = 0;
+
+      for (attr_list = decl_attr_list; 
+           attr_list;
+           attr_list = TREE_CHAIN (attr_list))
+	if (TREE_VALUE (attr_list) == new_attr)
+	  in_list = 1;
+
+      if (! in_list)
+        decl_attr_list = tree_cons (NULL_TREE, new_attr, decl_attr_list);
+
+      decl = build_decl_attribute_variant (decl, decl_attr_list);
+      valid = 1;
+    }
+#endif
+
+#ifdef VALID_MACHINE_TYPE_ATTRIBUTE
+  if (VALID_MACHINE_TYPE_ATTRIBUTE (type,
+                                    type_attr_list, 
+                                    new_attr))
+    {
+      tree attr_list;
+      int in_list = 0;
+
+      for (attr_list = type_attr_list;
+           attr_list;
+	   attr_list = TREE_CHAIN (attr_list))
+	if (TREE_VALUE (attr_list) == new_attr)
+	  in_list = 1;
+
+      if (!in_list)
+        type_attr_list = tree_cons (NULL_TREE, new_attr, type_attr_list);
+
+      decl = build_type_attribute_variant (type, type_attr_list);
+      valid = 1;
+    }
+#endif
+
+  return valid;
 }
 
 /* Return a type like TYPE except that its TYPE_READONLY is CONSTP
