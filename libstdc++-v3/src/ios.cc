@@ -288,7 +288,6 @@ namespace std
     _M_width = 0;
     _M_flags = skipws | dec;
     _M_callbacks = 0;
-    _M_word_size = 0;
     _M_ios_locale = locale();
   }  
   
@@ -302,7 +301,8 @@ namespace std
     return __old;
   }
 
-  ios_base::ios_base() : _M_callbacks(0), _M_word(0), _M_locale_cache(0)
+  ios_base::ios_base() : _M_callbacks(0), _M_word(_M_local_word),
+			 _M_word_size(_S_local_word_size), _M_locale_cache(0)
   {
     // Do nothing: basic_ios::init() does it.  
     // NB: _M_callbacks and _M_word must be zero for non-initialized
@@ -314,7 +314,7 @@ namespace std
   {
     _M_call_callbacks(erase_event);
     _M_dispose_callbacks();
-    if (_M_word && _M_word != _M_local_word) 
+    if (_M_word != _M_local_word) 
       {
 	delete [] _M_word;
 	_M_word = 0;
