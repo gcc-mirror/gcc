@@ -437,7 +437,7 @@ layout_record (rec)
 	     That can happen because the width exceeds BIGGEST_ALIGNMENT
 	     or because it exceeds maximum_field_alignment.  */
 	  if (const_size / type_align
-	      != (const_size + field_size - 1) / type_align)
+	      != (const_size + (field_size % type_align) - 1) / type_align)
 	    const_size = CEIL (const_size, type_align) * type_align;
 	}
 #endif
