@@ -38,7 +38,7 @@
 	* config/rs6000/rs6000.c (first_reg_to_save): Likewise.
 	(rs6000_stack_info): Likewise.
 	* config/rs6000/sysv4.h (ASM_DECLARE_FUNCTION_NAME): Likewise.
-	* config/rs6000/xcoff.h (toc_section): Likewise.
+	* config/rs6000/xcoff.h (ASM_FILE_START): Likewise.
 	* config/v850/v850.c (compute_register_save_size): Likewise.
 
 2002-01-03  Jakub Jelinek  <jakub@redhat.com>
