@@ -5442,6 +5442,9 @@ resolve_address_of_overloaded_function (target_type,
 			&& (TREE_CODE (TREE_TYPE (target_type)) 
 			    == METHOD_TYPE)), 0);
 
+  if (TREE_CODE (overload) == COMPONENT_REF)
+    overload = TREE_OPERAND (overload, 1);
+
   /* Check that the TARGET_TYPE is reasonable.  */
   if (TYPE_PTRFN_P (target_type))
     /* This is OK.  */
@@ -5651,6 +5654,7 @@ instantiate_type (lhstype, rhs, flags)
 {
   int complain = (flags & 1);
   int strict = (flags & 2) ? COMPARE_NO_ATTRIBUTES : COMPARE_STRICT;
+  tree r;
 
   if (TREE_CODE (lhstype) == UNKNOWN_TYPE)
     {
@@ -5711,8 +5715,9 @@ instantiate_type (lhstype, rhs, flags)
 
     case COMPONENT_REF:
       {
-	tree r = instantiate_type (lhstype, TREE_OPERAND (rhs, 1), flags);
+	r = instantiate_type (lhstype, TREE_OPERAND (rhs, 1), flags);
 
+      comp:
 	if (r != error_mark_node && TYPE_PTRMEMFUNC_P (lhstype)
 	    && complain && !flag_ms_extensions)
 	  {
@@ -5747,12 +5752,23 @@ instantiate_type (lhstype, rhs, flags)
       /* Fall through.  */
 
     case TEMPLATE_ID_EXPR:
-      return 
-	resolve_address_of_overloaded_function (lhstype,
-						TREE_OPERAND (rhs, 0),
-						complain,
-						/*template_only=*/1,
-						TREE_OPERAND (rhs, 1));
+      {
+	tree fns = TREE_OPERAND (rhs, 0);
+	tree args = TREE_OPERAND (rhs, 1);
+
+	r =
+	  resolve_address_of_overloaded_function (lhstype,
+						  fns,
+						  complain,
+						  /*template_only=*/1,
+						  args);
+	if (TREE_CODE (fns) == COMPONENT_REF)
+	  {
+	    rhs = fns;
+	    goto comp;
+	  }
+	return r;
+      }
 
     case OVERLOAD:
       return 

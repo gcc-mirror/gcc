@@ -141,6 +141,9 @@ finish_expr_stmt (expr)
 		  || TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE))
 	    expr = default_conversion (expr);
 
+	  if (stmts_are_full_exprs_p)
+	    expr = convert_to_void (expr, "statement");
+
 	  if (!processing_template_decl)
 	    expr = break_out_cleanups (expr);
 

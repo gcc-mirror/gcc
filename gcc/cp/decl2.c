@@ -4472,6 +4472,8 @@ static tree
 decl_namespace (decl)
      tree decl;
 {
+  if (TYPE_P (decl))
+    decl = TYPE_STUB_DECL (decl);
   while (DECL_CONTEXT (decl))
     {
       decl = DECL_CONTEXT (decl);
