@@ -164,6 +164,10 @@ function_cannot_inline_p (fndecl)
   if (forced_labels)
     return "function with label addresses used in initializers cannot inline";
 
+  /* We cannot inline a nested function that jumps to a nonlocal label.  */
+  if (current_function_has_nonlocal_goto)
+    return "function with nonlocal goto cannot be inline";
+
   return 0;
 }
 
