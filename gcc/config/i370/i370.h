@@ -1036,12 +1036,6 @@ enum reg_class
 /* ------------------------------------------ */
 /* Control the assembler format that we output.  */
 
-/* Define the parentheses used to group arithmetic operations
-   in assembler code.  */
-
-#define ASM_OPEN_PAREN "("
-#define ASM_CLOSE_PAREN ")"
-
 /* Define standard character escape sequences for non-ASCII targets
    only.  */
 

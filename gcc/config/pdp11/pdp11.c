@@ -61,6 +61,11 @@ static void pdp11_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE pdp11_output_function_epilogue
 
+#undef TARGET_ASM_OPEN_PAREN
+#define TARGET_ASM_OPEN_PAREN "["
+#undef TARGET_ASM_CLOSE_PAREN
+#define TARGET_ASM_CLOSE_PAREN "]"
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Nonzero if OP is a valid second operand for an arithmetic insn.  */
@@ -1555,9 +1560,9 @@ output_addr_const_pdp11 (file, x)
       if (GET_CODE (XEXP (x, 1)) == CONST_INT
 	  && INTVAL (XEXP (x, 1)) < 0)
 	{
-	  fprintf (file, ASM_OPEN_PAREN);
+	  fprintf (file, targetm.asm_out.open_paren);
 	  output_addr_const_pdp11 (file, XEXP (x, 1));
-	  fprintf (file, ASM_CLOSE_PAREN);
+	  fprintf (file, targetm.asm_out.close_paren);
 	}
       else
 	output_addr_const_pdp11 (file, XEXP (x, 1));

@@ -1879,12 +1879,6 @@ while (0)
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 12),	\
   sprintf ((OUTPUT), "%s___%d", (NAME), (LABELNO)))
 
-/* Define the parentheses used to group arithmetic operations
-   in assembler code.  */
-
-#define ASM_OPEN_PAREN "("
-#define ASM_CLOSE_PAREN ")"
-
 /* All HP assemblers use "!" to separate logical lines.  */
 #define IS_ASM_LOGICAL_LINE_SEPARATOR(C) ((C) == '!')
 

@@ -1,3 +1,59 @@
+2001-07-09  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* final.c (output_addr_const): Use target opening and
+	closing parentheses.
+	* target-def.h: Define TARGET_ASM_OPEN_PAREN, TARGET_ASM_CLOSE_PAREN
+	defaults, add to TARGET_ASM_OUT.
+	* target.h (struct gcc_target): Add open_paren and close_paren.
+	* doc/md.texi: Update.
+	* doc/tm.texi: Document TARGET_ASM_FUNCTION_END_PROLOGUE,
+	TARGET_ASM_FUNCTION_BEGIN_EPILOGUE, TARGET_ASM_OPEN_PAREN and
+	TARGET_ASM_CLOSE_PAREN.
+config:
+	* i386/i386.c (TARGET_ASM_OPEN_PAREN, TARGET_ASM_CLOSE_PAREN):
+	Override.
+	* pdp11/pdp11.c (TARGET_ASM_OPEN_PAREN, TARGET_ASM_CLOSE_PAREN):
+	Override.
+	* 1750a/1750a.h (ASM_OPEN_PAREN, ASM_CLOSE_PAREN): Remove.
+	* a29k/a29k.h: Similarly.
+	* alpha/alpha.h: Similarly.
+	* arc/arc.h: Similarly.
+	* arm/aof.h: Similarly.
+	* arm/aout.h: Similarly.
+	* avr/avr.h: Similarly.
+	* c4x/c4x.h: Similarly.
+	* clipper/clipper.h: Similarly.
+	* convex/convex.h: Similarly.
+	* d30v/d30v.h: Similarly.
+	* dsp16xx/dsp16xx.h: Similarly.
+	* elxsi/elxsi.h: Similarly.
+	* fr30/fr30.h: Similarly.
+	* h8300/h8300.h: Similarly.
+	* i370/i370.h: Similarly.
+	* i386/i386.h: Similarly.
+	* i860/i860.h: Similarly.
+	* i960/i960.h: Similarly.
+	* ia64/ia64.h: Similarly.
+	* m32r/m32r.h: Similarly.
+	* m68hc11/m68hc11.h: Similarly.
+	* m68k/m68k.h: Similarly.
+	* m88k/m88k.h: Similarly.
+	* mcore/mcore.h: Similarly.
+	* mips/mips.h: Similarly.
+	* mn10200/mn10200.h: Similarly.
+	* mn10300/mn10300.h: Similarly.
+	* ns32k/ns32k.h: Similarly.
+	* pa/pa.h: Similarly.
+	* pdp11/pdp11.h: Similarly.
+	* pj/pj.h: Similarly.
+	* romp/romp.h: Similarly.
+	* rs6000/rs6000.h: Similarly.
+	* sh/sh.h: Similarly.
+	* sparc/sparc.h: Similarly.
+	* v850/v850.h: Similarly.
+	* vax/vax.h: Similarly.
+	* we32k/we32k.h: Similarly.
+
 2001-07-09  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/c-tree.texi: Document representation of attributes.

@@ -2221,11 +2221,6 @@ do {									 \
 
 /* Length in instructions of the code output by ASM_OUTPUT_REG_POP.  */
 #define REG_POP_LENGTH 2
-
-/* Define the parentheses used to group arithmetic operations
-   in assembler code.  */
-#define ASM_OPEN_PAREN "("
-#define ASM_CLOSE_PAREN ")"
 
 /* Macros to deal with OCS debug information */
 

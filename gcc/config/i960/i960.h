@@ -1508,12 +1508,6 @@ extern struct rtx_def *i960_compare_op0, *i960_compare_op1;
 #define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
 	( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
 	  sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
-
-/* Define the parentheses used to group arithmetic operations
-   in assembler code.  */
-
-#define ASM_OPEN_PAREN "("
-#define ASM_CLOSE_PAREN ")"
 
 /* Output assembler code to FILE to initialize this source file's
    basic block profiling info, if that has not already been done.  */

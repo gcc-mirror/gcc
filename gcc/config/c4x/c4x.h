@@ -2253,10 +2253,6 @@ dtors_section ()							\
 
 #define ASM_OUTPUT_ASCII(FILE, PTR, LEN) c4x_output_ascii (FILE, PTR, LEN)
 
-#define ASM_OPEN_PAREN "("
-#define ASM_CLOSE_PAREN ")"
-
-
 /* Output and Generation of Labels.  */
 
 #define NO_DOT_IN_LABEL		/* Only required for TI format.  */

@@ -4520,12 +4520,6 @@ do									\
   }									\
 while (0)
 
-/* Define the parentheses used to group arithmetic operations
-   in assembler code.  */
-
-#define ASM_OPEN_PAREN "("
-#define ASM_CLOSE_PAREN ")"
-
 /* How to start an assembler comment.
    The leading space is important (the mips native assembler requires it).  */
 #ifndef ASM_COMMENT_START

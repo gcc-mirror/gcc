@@ -1646,13 +1646,6 @@ do { long l;						\
 #define ASM_OUTPUT_BYTE(FILE,VALUE)			\
   fprintf ((FILE), "%s0x%x\n", ASM_BYTE_OP, (VALUE))
 
-
-/* Define the parentheses used to group arithmetic operations in assembler
- * code.  
- */
-#define ASM_OPEN_PAREN		"("
-#define ASM_CLOSE_PAREN		")"
-
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
 

@@ -2900,25 +2900,27 @@ is to be used, and simple moves to @code{EH_RETURN_STACKADJ_RTX} and
 @code{EH_RETURN_HANDLER_RTX} are not sufficient.
 
 @cindex @code{prologue} instruction pattern
+@anchor{prologue instruction pattern}
 @item @samp{prologue}
 This pattern, if defined, emits RTL for entry to a function.  The function
 entry is responsible for setting up the stack frame, initializing the frame
 pointer register, saving callee saved registers, etc.
 
 Using a prologue pattern is generally preferred over defining
-@code{FUNCTION_PROLOGUE} to emit assembly code for the prologue.
+@code{TARGET_ASM_FUNCTION_PROLOGUE} to emit assembly code for the prologue.
 
 The @code{prologue} pattern is particularly useful for targets which perform
 instruction scheduling.
 
 @cindex @code{epilogue} instruction pattern
+@anchor{epilogue instruction pattern}
 @item @samp{epilogue}
 This pattern, if defined, emits RTL for exit from a function.  The function
 exit is responsible for deallocating the stack frame, restoring callee saved
 registers and emitting the return instruction.
 
 Using an epilogue pattern is generally preferred over defining
-@code{FUNCTION_EPILOGUE} to emit assembly code for the prologue.
+@code{TARGET_ASM_FUNCTION_EPILOGUE} to emit assembly code for the epilogue.
 
 The @code{epilogue} pattern is particularly useful for targets which perform
 instruction scheduling or which have delay slots for their return instruction.

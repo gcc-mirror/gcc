@@ -858,12 +858,6 @@ do { char dstr[30];					\
 #define ASM_OUTPUT_BYTE(FILE, VALUE)  \
   fprintf (FILE, "\t.byte 0x%x\n", (VALUE))
 
-/* Define the parentheses used to group arithmetic operations
-   in assembler code.  */
-
-#define ASM_OPEN_PAREN "("
-#define ASM_CLOSE_PAREN ")"
-
 /* This says how to output the assembler to define a global
    uninitialized but not common symbol.
    Try to use asm_output_bss to implement this macro.  */

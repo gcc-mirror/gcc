@@ -2161,10 +2161,6 @@ do { char dstr[30];					\
 ( fputs ("\t.lcomm ", (FILE)),				\
   assemble_name ((FILE), (NAME)),			\
   fprintf ((FILE), ",%d\n", (SIZE)))
-
-/* The assembler's parentheses characters.  */
-#define ASM_OPEN_PAREN "("
-#define ASM_CLOSE_PAREN ")"
 
 /* A C statement to be executed just prior to the output of
    assembler code for INSN, to modify the extracted operands so

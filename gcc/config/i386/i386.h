@@ -2922,12 +2922,6 @@ do { long l;						\
 
 #define ASM_SIMPLIFY_DWARF_ADDR(X) \
   i386_simplify_dwarf_addr(X)
-
-/* Define the parentheses used to group arithmetic operations
-   in assembler code.  */
-
-#define ASM_OPEN_PAREN ""
-#define ASM_CLOSE_PAREN ""
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.

@@ -1394,10 +1394,6 @@ extern long mcore_current_compilation_timestamp;
 #undef  ENCODE_SECTION_INFO
 #define ENCODE_SECTION_INFO(DECL) mcore_encode_section_info (DECL)
 
-/* The assembler's parentheses characters.  */
-#define ASM_OPEN_PAREN "("
-#define ASM_CLOSE_PAREN ")"
-
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
    For `%' followed by punctuation, CODE is the punctuation and X is null.  */

@@ -3766,6 +3766,20 @@ or by a debugger, there is no reason why the stack layout used by GCC
 need agree with that used by other compilers for a machine.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_ASM_FUNCTION_END_PROLOGUE (FILE *@var{file})
+If defined, a function that outputs assembler code at the end of a
+prologue.  This should be used when the function prologue is being
+emitted as RTL, and you have some extra assembler that needs to be
+emitted.  @xref{prologue instruction pattern}.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_ASM_FUNCTION_BEGIN_EPILOGUE (FILE *@var{file})
+If defined, a function that outputs assembler code at the start of an
+epilogue.  This should be used when the function epilogue is being
+emitted as RTL, and you have some extra assembler that needs to be
+emitted.  @xref{epilogue instruction pattern}.
+@end deftypefn
+
 @deftypefn {Target Hook} void TARGET_ASM_FUNCTION_EPILOGUE (FILE *@var{file}, HOST_WIDE_INT @var{size})
 If defined, a function that outputs the assembler code for exit from a
 function.  The epilogue is responsible for restoring the saved
@@ -5965,21 +5979,13 @@ used as a logical line separator by the assembler.
 
 If you do not define this macro, the default is that only
 the character @samp{;} is treated as a logical line separator.
-
-
-@findex ASM_OPEN_PAREN
-@findex ASM_CLOSE_PAREN
-@item ASM_OPEN_PAREN
-@itemx ASM_CLOSE_PAREN
-These macros are defined as C string constants, describing the syntax
-in the assembler for grouping arithmetic expressions.  The following
-definitions are correct for most assemblers:
-
-@example
-#define ASM_OPEN_PAREN "("
-#define ASM_CLOSE_PAREN ")"
-@end example
 @end table
+
+@deftypevar {Target Hook} {const char *} TARGET_ASM_OPEN_PAREN
+@deftypevar {Target Hook} {const char *} TARGET_ASM_CLOSE_PAREN
+These target hooks are C string constants, describing the syntax in the
+assembler for grouping arithmetic expressions.  If not overridden, they
+default to normal parentheses, which is correct for most assemblers.
 
   These macros are provided by @file{real.h} for writing the definitions
 of @code{ASM_OUTPUT_DOUBLE} and the like:

@@ -323,10 +323,6 @@ Boston, MA 02111-1307, USA.  */
   asm_fprintf (STREAM, "%@ - - - ident %s\n", STRING)
 #endif
      
-/* The assembler's parentheses characters.  */
-#define ASM_OPEN_PAREN 		"("
-#define ASM_CLOSE_PAREN 	")"
-
 #ifndef ASM_COMMENT_START
 #define ASM_COMMENT_START 	"@"
 #endif

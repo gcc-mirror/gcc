@@ -20,7 +20,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  what you give them.   Help stamp out software-hoarding!  */
 
 /* This file contains a data structure that describes a GCC target.
-   At present, it is incomplete, but in future it should grow to
+   At present it is incomplete, but in future it should grow to
    contain most or all target machine and target O/S specific
    information.
 
@@ -38,17 +38,20 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
    struct gcc_target targetm = TARGET_INITIALIZER;
 
    Doing things this way allows us to bring together everything that
-   defines a target to GCC.  By supplying a default that is
-   appropriate to most targets, we can easily add new items without
-   needing to edit dozens of target configuration files.  It should
-   also allow us to gradually reduce the amount of conditional
-   compilation that is scattered throughout GCC.  */
+   defines a GCC target.  By supplying a default that is appropriate
+   to most targets, we can easily add new items without needing to
+   edit dozens of target configuration files.  It should also allow us
+   to gradually reduce the amount of conditional compilation that is
+   scattered throughout GCC.  */
 
 struct gcc_target
 {
   /* Functions that output assembler for the target.  */
   struct asm_out
   {
+    /* Opening and closing parentheses for asm expression grouping.  */
+    const char *open_paren, *close_paren;
+
     /* Output the assembler code for entry to a function.  */
     void (* function_prologue) PARAMS ((FILE *, HOST_WIDE_INT));
 

@@ -1779,10 +1779,6 @@ do {							\
 #define ASM_OUTPUT_BYTE(FILE, VALUE)				\
   fprintf (FILE, "%s0x%x\n", ASM_BYTE_OP, (VALUE))
 
-/* The assembler's parentheses characters.  */
-#define ASM_OPEN_PAREN "("
-#define ASM_CLOSE_PAREN ")"
-
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
 /* On the M32R we need to ensure the next instruction starts on a 32 bit
