@@ -665,7 +665,7 @@ lv_adjust_loop_header_phi (basic_block first, basic_block second,
 
   for (phi2 = phi_nodes (second), phi1 = phi_nodes (first); 
        phi2 && phi1; 
-       phi2 = TREE_CHAIN (phi2),  phi1 = TREE_CHAIN (phi1))
+       phi2 = PHI_CHAIN (phi2),  phi1 = PHI_CHAIN (phi1))
     {
       int i;
       for (i = 0; i < PHI_NUM_ARGS (phi2); i++)

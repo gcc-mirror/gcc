@@ -1,12 +1,18 @@
+2004-11-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-cfg.c, tree-if-conv.c, tree-ssa-loop-ivopts.c,
+	tree-ssa-loop-manip.c, tree-vectorizer.c: Replace TREE_CHAIN
+	with PHI_CHAIN where appropriate.
+
 2004-11-13  Dale Johannesen  <dalej@apple.com>
 
-	* tree-flow.h (bsi_commit_one_edge_insert):  Remove name from prototype.
-	(tree_block_label):  Ditto.
-	(flush_pending_stmts):  Ditto.
-	(insert_edge_copies):  Ditto.
-	(expr_invariant_in_loop_p):  Ditto.
-	(TDF_USE_OPS):  Parenthesize definition.
-	(TDF_USE_VOPS):  Ditto.
+	* tree-flow.h (bsi_commit_one_edge_insert): Remove name from prototype.
+	(tree_block_label): Ditto.
+	(flush_pending_stmts): Ditto.
+	(insert_edge_copies): Ditto.
+	(expr_invariant_in_loop_p): Ditto.
+	(TDF_USE_OPS): Parenthesize definition.
+	(TDF_USE_VOPS): Ditto.
 
 2004-11-13  David Edelsohn  <edelsohn@gnu.org>
 
