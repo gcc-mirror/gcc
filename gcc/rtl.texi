@@ -405,6 +405,13 @@ other functions or by aliasing.)  Stored in the
 Nonzero in an insn if it resulted from an in-line function call.
 Stored in the @code{integrated} field and printed as @samp{/i}.
 
+@findex RTX_FRAME_RELATED_P
+@item RTX_FRAME_RELATED_P (@var{x})
+Nonzero in an insn or expression which is part of a function
+prologue and sets the stack pointer, sets the frame pointer, or saves a 
+register. This flag is required for exception handling support
+on targets with RTL prologues.
+
 @findex SYMBOL_REF_USED
 @cindex @code{used}, in @code{symbol_ref}
 @item SYMBOL_REF_USED (@var{x})
