@@ -1,3 +1,8 @@
+2003-12-16  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c: Include langhooks.h
+	(mips_build_builtin_va_list): Use lang_hooks.types.make_type.
+
 2003-12-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/13313
