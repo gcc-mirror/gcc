@@ -2720,7 +2720,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 						  remainder, 1,
 						  OPTAB_LIB_WIDEN);
 			if (remainder)
-			  return remainder;
+			  return gen_lowpart (mode, remainder);
 		      }
 		    quotient = expand_shift (RSHIFT_EXPR, compute_mode, op0,
 					     build_int_2 (pre_shift, 0),
@@ -2958,7 +2958,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 						  GEN_INT (((HOST_WIDE_INT) 1 << pre_shift) - 1),
 						  remainder, 0, OPTAB_LIB_WIDEN);
 			if (remainder)
-			  return remainder;
+			  return gen_lowpart (mode, remainder);
 		      }
 		    quotient = expand_shift (RSHIFT_EXPR, compute_mode, op0,
 					     build_int_2 (pre_shift, 0),
@@ -3054,10 +3054,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	    expand_dec (quotient, const1_rtx);
 	    expand_inc (remainder, op1);
 	    emit_label (label);
-	    if (rem_flag)
-	      return remainder;
-	    else
-	      return quotient;
+	    return gen_lowpart (mode, rem_flag ? remainder : quotient);
 	  }
 
 	/* No luck with division elimination or divmod.  Have to do it
@@ -3146,7 +3143,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		expand_inc (quotient, const1_rtx);
 		expand_dec (remainder, op1);
 		emit_label (label);
-		return rem_flag ? remainder : quotient;
+		return gen_lowpart (mode, rem_flag ? remainder : quotient);
 	      }
 
 	    /* No luck with division elimination or divmod.  Have to do it
@@ -3213,7 +3210,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		expand_inc (quotient, const1_rtx);
 		expand_dec (remainder, op1);
 		emit_label (label);
-		return rem_flag ? remainder : quotient;
+		return gen_lowpart (mode, rem_flag ? remainder : quotient);
 	      }
 
 	    /* No luck with division elimination or divmod.  Have to do it
