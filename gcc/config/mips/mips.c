@@ -7339,11 +7339,7 @@ mips_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
       if (type == NULL_TREE || mode == DImode || mode == DFmode)
 	return 0;
 
-      if (type)
-        size = int_size_in_bytes (type);
-      else
-	size = GET_MODE_SIZE (mode);
-
+      size = int_size_in_bytes (type);
       return size == -1 || size > UNITS_PER_WORD;
     }
   else
