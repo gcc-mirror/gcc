@@ -39,7 +39,7 @@ Boston, MA 02111-1307, USA.  */
    It's safe to pass -s always, even if -g is not used. */
 #undef ASM_SPEC
 #define ASM_SPEC "\
-%{V} %{v:%{!V:-V}} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Wa,*:%*} -s \
+%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Wa,*:%*} -s \
 %{fpic:-K PIC} %{fPIC:-K PIC} \
 %(asm_cpu) \
 "
@@ -129,7 +129,7 @@ Boston, MA 02111-1307, USA.  */
 /* This should be the same as in svr4.h, except with -R added.  */
 #undef LINK_SPEC
 #define LINK_SPEC \
-  "%{h*} %{V} %{v:%{!V:-V}} \
+  "%{h*} %{v:-V} \
    %{b} %{Wl,*:%*} \
    %{static:-dn -Bstatic} \
    %{shared:-G -dy %{!mimpure-text:-z text} %{!h*:%{o*:-h %*}}} \
