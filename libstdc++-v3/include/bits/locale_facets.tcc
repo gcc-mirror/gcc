@@ -1130,6 +1130,34 @@ namespace std
       return __s;
     }
 
+  template<typename _CharT, bool _Intl>
+    struct __use_cache<__moneypunct_cache<_CharT, _Intl> >
+    {
+      const __moneypunct_cache<_CharT, _Intl>*
+      operator() (const locale& __loc) const
+      {
+	const size_t __i = moneypunct<_CharT, _Intl>::id._M_id();
+	const locale::facet** __caches = __loc._M_impl->_M_caches;
+	if (!__caches[__i])
+	  {
+	    __moneypunct_cache<_CharT, _Intl>* __tmp = NULL;
+	    try
+	      {
+		__tmp = new __moneypunct_cache<_CharT, _Intl>;
+		__tmp->_M_cache(__loc);
+	      }
+	    catch(...)
+	      {
+		delete __tmp;
+		__throw_exception_again;
+	      }
+	    __loc._M_impl->_M_install_cache(__tmp, __i);
+	  }
+	return static_cast<
+	  const __moneypunct_cache<_CharT, _Intl>*>(__caches[__i]);
+      }
+    };
+
   template<typename _CharT, typename _InIter>
     _InIter
     money_get<_CharT, _InIter>::
@@ -1365,168 +1393,168 @@ namespace std
     { return _M_extract(__beg, __end, __intl, __io, __err, __units); }
 
   template<typename _CharT, typename _OutIter>
-    _OutIter
-    money_put<_CharT, _OutIter>::
-    _M_insert(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
-	      const string_type& __digits) const
-    {
-      typedef typename string_type::size_type	size_type;
-      typedef money_base::part			part;
+    template<bool _Intl>
+      _OutIter
+      money_put<_CharT, _OutIter>::
+      _M_insert(iter_type __s, ios_base& __io, char_type __fill,
+		const string_type& __digits) const
+      {
+	typedef typename string_type::size_type	          size_type;
+	typedef money_base::part                          part;
+	typedef moneypunct<_CharT, _Intl>                 __moneypunct_type;
+	typedef typename __moneypunct_type::__cache_type  __cache_type;
       
-      const locale __loc = __io.getloc();
-      const size_type __width = static_cast<size_type>(__io.width());
+	const locale& __loc = __io._M_getloc();
+	const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
 
-      // These contortions are quite unfortunate.
-      typedef moneypunct<_CharT, true> __money_true;
-      typedef moneypunct<_CharT, false> __money_false;
-      const __money_true& __mpt = use_facet<__money_true>(__loc);
-      const __money_false& __mpf = use_facet<__money_false>(__loc);
-      const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
+	__use_cache<__cache_type> __uc;
+	const __cache_type* __lc = __uc(__loc);
+	const char_type* __lit = __lc->_M_atoms;
 
-      // Determine if negative or positive formats are to be used, and
-      // discard leading negative_sign if it is present.
-      const char_type* __beg = __digits.data();
-      const char_type* __end = __beg + __digits.size();
-      money_base::pattern __p;
-      string_type __sign;
-      if (*__beg != __ctype.widen('-'))
-	{
-	  __p = __intl ? __mpt.pos_format() : __mpf.pos_format();
-	  __sign = __intl ? __mpt.positive_sign() : __mpf.positive_sign();
-	}
-      else
-	{
-	  __p = __intl ? __mpt.neg_format() : __mpf.neg_format();
-	  __sign = __intl ? __mpt.negative_sign() : __mpf.negative_sign();
-	  ++__beg;
-	}
+	// Determine if negative or positive formats are to be used, and
+	// discard leading negative_sign if it is present.
+	const char_type* __beg = __digits.data();
+	const char_type* __end = __beg + __digits.size();
 
-      // Look for valid numbers in the current ctype facet within input digits.
-      __end = __ctype.scan_not(ctype_base::digit, __beg, __end);
-      if (__beg != __end)
-	{
-	  // Assume valid input, and attempt to format.
-	  // Break down input numbers into base components, as follows:
-	  //   final_value = grouped units + (decimal point) + (digits)
-	  string_type __res;
-	  string_type __value;
-	  const string_type __symbol = __intl ? __mpt.curr_symbol()
-					      : __mpf.curr_symbol();
-
-	  // Deal with decimal point, decimal digits.
-	  const int __frac = __intl ? __mpt.frac_digits()
-				    : __mpf.frac_digits();
-	  if (__frac > 0)
-	    {
-	      const char_type __d = __intl ? __mpt.decimal_point()
-					   : __mpf.decimal_point();
-	      if (__end - __beg >= __frac)
-		{
-		  __value = string_type(__end - __frac, __end);
-		  __value.insert(__value.begin(), __d);
-		  __end -= __frac;
-		}
-	      else
-		{
-		  // Have to pad zeros in the decimal position.
-		  __value = string_type(__beg, __end);
-		  const int __paddec = __frac - (__end - __beg);
-		  const char_type __zero = __ctype.widen('0');
-		  __value.insert(__value.begin(), __paddec, __zero);
-		  __value.insert(__value.begin(), __d);
-		  __beg = __end;
-		}
-	    }
-
-	  // Add thousands separators to non-decimal digits, per
-	  // grouping rules.
-	  if (__beg != __end)
-	    {
-	      const string __grouping = __intl ? __mpt.grouping()
-					       : __mpf.grouping();
-	      if (__grouping.size())
-		{
-		  const char_type __sep = __intl ? __mpt.thousands_sep()
-					         : __mpf.thousands_sep();
-		  const char* __gbeg = __grouping.data();
-		  const size_t __glen = __grouping.size();
-		  const int __n = (__end - __beg) * 2;
-		  _CharT* __ws2 =
-	          static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __n));
-		  _CharT* __ws_end = std::__add_grouping(__ws2, __sep, __gbeg,
-							 __glen, __beg, __end);
-		  __value.insert(0, __ws2, __ws_end - __ws2);
-		}
-	      else
-		__value.insert(0, string_type(__beg, __end));
-	    }
-
-	  // Calculate length of resulting string.
-	  const ios_base::fmtflags __f = __io.flags() & ios_base::adjustfield;
-	  size_type __len = __value.size() + __sign.size();
-	  __len += (__io.flags() & ios_base::showbase) ? __symbol.size() : 0;
-	  const bool __testipad = __f == ios_base::internal && __len < __width;
-
-	  // Fit formatted digits into the required pattern.
-	  for (int __i = 0; __i < 4; ++__i)
-	    {
-	      const part __which = static_cast<part>(__p.field[__i]);
-	      switch (__which)
-		{
-		case money_base::symbol:
-		  if (__io.flags() & ios_base::showbase)
-		    __res += __symbol;
-		  break;
-		case money_base::sign:
-		  // Sign might not exist, or be more than one
-		  // charater long. In that case, add in the rest
-		  // below.
-		  if (__sign.size())
-		    __res += __sign[0];
-		  break;
-		case money_base::value:
-		  __res += __value;
-		  break;
-		case money_base::space:
-		  // At least one space is required, but if internal
-		  // formatting is required, an arbitrary number of
-		  // fill spaces will be necessary.
-		  if (__testipad)
-		    __res += string_type(__width - __len, __fill);
-		  else
-		    __res += __ctype.widen(__fill);
-		  break;
-		case money_base::none:
-		  if (__testipad)
-		    __res += string_type(__width - __len, __fill);
-		  break;
-		}
-	    }
-
-	  // Special case of multi-part sign parts.
-	  if (__sign.size() > 1)
-	    __res += string_type(__sign.begin() + 1, __sign.end());
-
-	  // Pad, if still necessary.
-	  __len = __res.size();
-	  if (__width > __len)
-	    {
-	      if (__f == ios_base::left)
-		// After.
-		__res.append(__width - __len, __fill);
-	      else
-		// Before.
-		__res.insert(0, string_type(__width - __len, __fill));
-	      __len = __width;
-	    }
-
-	  // Write resulting, fully-formatted string to output iterator.
-	  __s = std::__write(__s, __res.data(), __len);
-	}
-      __io.width(0);
-      return __s;    
-    }
-
+	money_base::pattern __p;
+	const char_type* __sign;
+	size_type __sign_size;
+	if (*__beg != __lit[_S_minus])
+	  {
+	    __p = __lc->_M_pos_format;
+	    __sign = __lc->_M_positive_sign;
+	    __sign_size = __lc->_M_positive_sign_size;
+	  }
+	else
+	  {
+	    __p = __lc->_M_neg_format;
+	    __sign = __lc->_M_negative_sign;
+	    __sign_size = __lc->_M_negative_sign_size;
+	    ++__beg;
+	  }
+       
+	// Look for valid numbers in the ctype facet within input digits.
+	__end = __ctype.scan_not(ctype_base::digit, __beg, __end);
+	if (__beg != __end)
+	  {
+	    // Assume valid input, and attempt to format.
+	    // Break down input numbers into base components, as follows:
+	    //   final_value = grouped units + (decimal point) + (digits)
+	    string_type __res;
+	    string_type __value;
+	   
+	    // Deal with decimal point, decimal digits.
+	    if (__lc->_M_frac_digits > 0)
+	      {
+		if (__end - __beg >= __lc->_M_frac_digits)
+		  {
+		    __value = string_type(__end - __lc->_M_frac_digits, __end);
+		    __value.insert(__value.begin(), __lc->_M_decimal_point);
+		    __end -= __lc->_M_frac_digits;
+		  }
+		else
+		  {
+		    // Have to pad zeros in the decimal position.
+		    __value = string_type(__beg, __end);
+		    const int __paddec = __lc->_M_frac_digits - (__end - __beg);
+		    __value.insert(__value.begin(), __paddec, __lit[_S_zero]);
+		    __value.insert(__value.begin(), __lc->_M_decimal_point);
+		    __beg = __end;
+		  }
+	      }
+	    
+	    // Add thousands separators to non-decimal digits, per
+	    // grouping rules.
+	    if (__beg != __end)
+	      {
+		if (__lc->_M_grouping_size)
+		  {
+		    const int __n = (__end - __beg) * 2;
+		    _CharT* __ws2 =
+		      static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
+							    * __n));
+		    _CharT* __ws_end =
+		      std::__add_grouping(__ws2, __lc->_M_thousands_sep,
+					  __lc->_M_grouping,
+					  __lc->_M_grouping_size,
+					  __beg, __end);
+		    __value.insert(0, __ws2, __ws_end - __ws2);
+		  }
+		else
+		  __value.insert(0, string_type(__beg, __end));
+	      }
+	    
+	    // Calculate length of resulting string.
+	    const ios_base::fmtflags __f = __io.flags() & ios_base::adjustfield;
+	    size_type __len = __value.size() + __sign_size;
+	    __len += ((__io.flags() & ios_base::showbase)
+		      ? __lc->_M_curr_symbol_size : 0);
+	    __res.reserve(__len);
+	    
+	    const size_type __width = static_cast<size_type>(__io.width());	  
+	    const bool __testipad = (__f == ios_base::internal
+				     && __len < __width);
+	    // Fit formatted digits into the required pattern.
+	    for (int __i = 0; __i < 4; ++__i)
+	      {
+		const part __which = static_cast<part>(__p.field[__i]);
+		switch (__which)
+		  {
+		  case money_base::symbol:
+		    if (__io.flags() & ios_base::showbase)
+		      __res.append(__lc->_M_curr_symbol,
+				   __lc->_M_curr_symbol_size);
+		    break;
+		  case money_base::sign:
+		    // Sign might not exist, or be more than one
+		    // charater long. In that case, add in the rest
+		    // below.
+		    if (__sign_size)
+		      __res += __sign[0];
+		    break;
+		  case money_base::value:
+		    __res += __value;
+		    break;
+		  case money_base::space:
+		    // At least one space is required, but if internal
+		    // formatting is required, an arbitrary number of
+		    // fill spaces will be necessary.
+		    if (__testipad)
+		      __res += string_type(__width - __len, __fill);
+		    else
+		      __res += __fill;
+		    break;
+		  case money_base::none:
+		    if (__testipad)
+		      __res += string_type(__width - __len, __fill);
+		    break;
+		  }
+	      }
+	    
+	    // Special case of multi-part sign parts.
+	    if (__sign_size > 1)
+	      __res.append(__sign + 1, __sign_size - 1);
+	    
+	    // Pad, if still necessary.
+	    __len = __res.size();
+	    if (__width > __len)
+	      {
+		if (__f == ios_base::left)
+		  // After.
+		  __res.append(__width - __len, __fill);
+		else
+		  // Before.
+		  __res.insert(0, string_type(__width - __len, __fill));
+		__len = __width;
+	      }
+	    
+	    // Write resulting, fully-formatted string to output iterator.
+	    __s = std::__write(__s, __res.data(), __len);
+	  }
+	__io.width(0);
+	return __s;    
+      }
+  
   template<typename _CharT, typename _OutIter>
     _OutIter
     money_put<_CharT, _OutIter>::
@@ -1562,7 +1590,8 @@ namespace std
 							   * __cs_size));
       __ctype.widen(__cs, __cs + __len, __ws);
       const string_type __digits(__ws, __len);
-      return _M_insert(__s, __intl, __io, __fill, __digits);
+      return __intl ? _M_insert<true>(__s, __io, __fill, __digits)
+	            : _M_insert<false>(__s, __io, __fill, __digits);
     }
 
   template<typename _CharT, typename _OutIter>
@@ -1570,7 +1599,8 @@ namespace std
     money_put<_CharT, _OutIter>::
     do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
 	   const string_type& __digits) const
-    { return _M_insert(__s, __intl, __io, __fill, __digits); }
+    { return __intl ? _M_insert<true>(__s, __io, __fill, __digits)
+	            : _M_insert<false>(__s, __io, __fill, __digits); }
 
   // NB: Not especially useful. Without an ios_base object or some
   // kind of locale reference, we are left clawing at the air where

@@ -1,3 +1,48 @@
+2004-02-21  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.h (class money_base): Add { _S_minus,
+	_S_zero, _S_end } enum, _S_atoms.
+	(struct __moneypunct_cache<>): Parameterize on _Intl too; add
+	_M_grouping_size, _M_curr_symbol_size, _M_positive_sign_size,
+	_M_negative_sign_size, _M_atoms; tweak constructor consistently.
+	(__moneypunct_cache<>::~__moneypunct_cache): Update.
+	(__moneypunct_cache<>::_M_cache): Fill the cache.
+	(class moneypunct): Tweak __cache_type typedef.
+	(class money_put): Inherit from money_base too; tweak declaration
+	of _M_insert, now parameterized on _Intl.
+	* include/bits/locale_facets.tcc
+	(struct __use_cache<__moneypunct_cache<_CharT, _Intl> >): New.
+	(money_put<>::_M_insert): Update definition to use the cache;
+	call reserve on __res to avoid multiple reallocations.
+	(money_put<>::do_put(long double),
+	money_put<>::do_put(const string_type&): Update calls of _M_insert.
+	* config/locale/generic/monetary_members.cc
+	(moneypunct<char, true>::_M_initialize_moneypunct,
+	moneypunct<char, false>::_M_initialize_moneypunct,
+	moneypunct<wchar_t, true>::_M_initialize_moneypunct,
+	moneypunct<wchar_t, false>::_M_initialize_moneypunct): Update.
+	* config/locale/gnu/monetary_members.cc: Likewise.
+	* config/locale/gnu/monetary_members.cc
+	(moneypunct<wchar_t, true>::~moneypunct(),
+	moneypunct<wchar_t, false>::~moneypunct()): Likewise.
+	* src/globals_locale.cc: Tweak fake_money_cache_c.
+	* src/locale-inst.cc: Add instantiations for
+	money_put::_M_insert<false> and money_put::_M_insert<true> and
+	__moneypunct_cache<C, false>, __moneypunct_cache<C, true>.
+	* src/locale_facets.cc: Define money_base::_S_atoms.
+	* src/locale_init.cc: Update placement new of
+	__moneypunct_cache<char, false>, __moneypunct_cache<char, true>,
+	__moneypunct_cache<wchar_t, false>, __moneypunct_cache<wchar_T, true>.
+
+	* config/locale/generic/numeric_members.cc: Clean up.
+	* config/locale/gnu/numeric_members.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/1.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/2.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/3.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/3.cc: Likewise.
+
 2004-02-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/27_io/basic_filebuf/showmanyc/char/9533-1.cc: Open
