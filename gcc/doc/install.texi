@@ -1712,6 +1712,13 @@ As of GCC 3.2, versions before @code{alpha*-dec-osf4} are no longer
 supported.  (These are the versions which identify themselves as DEC
 OSF/1.)
 
+In Digital Unix V4.0, virtual memory exhausted bootstrap failures
+may be fixed by configuring with @option{--with-gc=simple},
+reconfiguring Kernel Virtual Memory and Swap parameters
+per the @command{/usr/sbin/sys_check} Tuning Suggestions,
+or applying the patch in
+@uref{http://gcc.gnu.org/ml/gcc/2002-08/msg00822.html}.
+
 In Tru64 UNIX V5.1, Compaq introduced a new assembler that does not
 currently (2001-06-13) work with @command{mips-tfile}.  As a workaround,
 we need to use the old assembler, invoked via the barely documented
