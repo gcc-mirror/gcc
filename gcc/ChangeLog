@@ -1,3 +1,8 @@
+2001-01-20  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cppmacro.c (funlike_invocation_p): Don't move back up to the
+        context of the top of the stack.
+
 2001-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* function.c (fixup_var_refs): Move CALL_PLACEHOLDER handling...
