@@ -49,7 +49,7 @@ case ${query} in
       ;;
     --cxxflags)
       CXXFLAGS=' -g @SECTION_FLAGS@ @SECTION_LDFLAGS@
-		 -fmessage-length=0
+		 -fmessage-length=0 @EXTRA_CXX_FLAGS@
 		 -DDEBUG_ASSERT  -DLOCALEDIR="@glibcpp_localedir@" '
       echo ${CXXFLAGS}
       ;;
