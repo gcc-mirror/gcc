@@ -26,7 +26,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Because we include sparc/sysv4.h.  */
 #undef  CPP_PREDEFINES
-#define CPP_PREDEFINES FBSD_CPP_PREDEFINES
+/* Do not define it here, we now use TARGET_OS_CPP_BUILTINS.  */
 
 #define LINK_SPEC "%(link_arch)						\
   %{!mno-relax:%{!r:-relax}}						\

@@ -20,11 +20,13 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-/* Provide a CPP_SPEC appropriate for FreeBSD/alpha.  Besides the dealing with
+/* Provide a FBSD_TARGET_CPU_CPP_BUILTINS and CPP_SPEC appropriate for
+   FreeBSD/alpha.  Besides the dealing with
    the GCC option `-posix', and PIC issues as on all FreeBSD platforms, we must
    deal with the Alpha's FP issues.  */
 
-#define TARGET_OS_CPP_BUILTINS()		\
+#undef FBSD_TARGET_CPU_CPP_BUILTINS
+#define FBSD_TARGET_CPU_CPP_BUILTINS()		\
   do						\
     {						\
       if (flag_pic)				\
