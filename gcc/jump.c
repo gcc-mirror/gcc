@@ -1256,17 +1256,33 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		     if one we think we may be able to handle.  */
 		  if (++num_insns > BRANCH_COST
 		      || last_insn
-		      || (temp2 = single_set (temp1)) == 0
-		      || side_effects_p (SET_SRC (temp2))
-		      || may_trap_p (SET_SRC (temp2)))
-		    failed = 1;
-		  else
+		      || (((temp2 = single_set (temp1)) == 0
+			   || side_effects_p (SET_SRC (temp2))
+			   || may_trap_p (SET_SRC (temp2)))
+			  && GET_CODE (temp1) != CALL_INSN))
+		      failed = 1;
+		  else if (temp2 != 0)
 		    validate_change (temp1, &SET_SRC (temp2),
 				     gen_rtx_IF_THEN_ELSE
 				     (GET_MODE (SET_DEST (temp2)),
 				      copy_rtx (ourcond),
 				      SET_SRC (temp2), SET_DEST (temp2)),
 				     1);
+		  else
+		    {
+		      /* This is a CALL_INSN that doesn't have a SET.  */
+		      rtx *call_loc = &PATTERN (temp1);
+
+		      if (GET_CODE (*call_loc) == PARALLEL)
+			call_loc = &XVECEXP (*call_loc, 0, 0);
+
+		      validate_change (temp1, call_loc,
+				       gen_rtx_IF_THEN_ELSE
+				       (VOIDmode, copy_rtx (ourcond),
+					*call_loc, const0_rtx),
+				       1);
+		    }
+
 
 		  if (modified_in_p (ourcond, temp1))
 		    last_insn = 1;
