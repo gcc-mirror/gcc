@@ -1512,7 +1512,7 @@ __gnat_is_symbolic_link (char *name ATTRIBUTE_UNUSED)
 #if defined (__vxworks)
   return 0;
 
-#elif defined (_AIX) || defined (unix)
+#elif defined (_AIX) || defined (__unix__)
   int ret;
   struct stat statbuf;
 
@@ -2441,7 +2441,7 @@ _flush_cache()
   || (! (defined (sparc) && defined (sun) && defined (__SVR4)) \
       && ! (defined (linux) && defined (i386)) \
       && ! defined (__FreeBSD__) \
-      && ! defined (hpux) \
+      && ! defined (__hpux__) \
       && ! defined (_AIX) \
       && ! (defined (__alpha__)  && defined (__osf__)) \
       && ! defined (__MINGW32__) \

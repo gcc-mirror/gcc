@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2004 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -289,7 +289,7 @@ __gnat_ttyname (int filedes)
 
 #if defined (linux) || defined (sun) || defined (sgi) || defined (__EMX__) \
   || (defined (__osf__) && ! defined (__alpha_vxworks)) || defined (WINNT) \
-  || defined (__MACHTEN__) || defined (hpux) || defined (_AIX) \
+  || defined (__MACHTEN__) || defined (__hpux__) || defined (_AIX) \
   || (defined (__svr4__) && defined (i386)) || defined (__Lynx__) \
   || defined (__CYGWIN__) || defined (__FreeBSD__)
 
@@ -346,7 +346,7 @@ getc_immediate_common (FILE *stream,
 {
 #if defined (linux) || defined (sun) || defined (sgi) || defined (__EMX__) \
     || (defined (__osf__) && ! defined (__alpha_vxworks)) \
-    || defined (__CYGWIN32__) || defined (__MACHTEN__) || defined (hpux) \
+    || defined (__CYGWIN32__) || defined (__MACHTEN__) || defined (__hpux__) \
     || defined (_AIX) || (defined (__svr4__) && defined (i386)) \
     || defined (__Lynx__) || defined (__FreeBSD__)
   char c;
@@ -365,7 +365,7 @@ getc_immediate_common (FILE *stream,
       termios_rec.c_lflag = termios_rec.c_lflag & ~ICANON & ~ECHO;
 
 #if defined(linux) || defined (sun) || defined (sgi) || defined (__EMX__) \
-    || defined (__osf__) || defined (__MACHTEN__) || defined (hpux) \
+    || defined (__osf__) || defined (__MACHTEN__) || defined (__hpux__) \
     || defined (_AIX) || (defined (__svr4__) && defined (i386)) \
     || defined (__Lynx__) || defined (__FreeBSD__)
       eof_ch = termios_rec.c_cc[VEOF];
