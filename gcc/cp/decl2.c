@@ -346,11 +346,6 @@ int flag_labels_ok;
 int flag_ms_extensions;
 
 /* C++ specific flags.  */   
-/* Zero means that `this' is a *const.  This gives nice behavior in the
-   2.0 world.  1 gives 1.2-compatible behavior.  2 gives Spring behavior.
-   -2 means we're constructing an object and it has fixed type.  */
-
-int flag_this_is_variable;
 
 /* Nonzero means we should attempt to elide constructors when possible.  */
 
