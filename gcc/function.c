@@ -6319,14 +6319,25 @@ diddle_return_value (doit, arg)
      void *arg;
 {
   rtx outgoing = current_function_return_rtx;
+  int pcc;
 
   if (! outgoing)
     return;
 
-  if (GET_CODE (outgoing) == REG
-      && REGNO (outgoing) >= FIRST_PSEUDO_REGISTER)
+  pcc = (current_function_returns_struct
+         || current_function_returns_pcc_struct);
+
+  if ((GET_CODE (outgoing) == REG
+       && REGNO (outgoing) >= FIRST_PSEUDO_REGISTER)
+      || pcc)
     {
       tree type = TREE_TYPE (DECL_RESULT (current_function_decl));
+
+      /* A PCC-style return returns a pointer to the memory in which
+	 the structure is stored.  */
+      if (pcc)
+	type = build_pointer_type (type);
+
 #ifdef FUNCTION_OUTGOING_VALUE
       outgoing = FUNCTION_OUTGOING_VALUE (type, current_function_decl);
 #else
@@ -6337,6 +6348,7 @@ diddle_return_value (doit, arg)
       if (GET_MODE (outgoing) == BLKmode)
 	PUT_MODE (outgoing,
 		  GET_MODE (DECL_RTL (DECL_RESULT (current_function_decl))));
+      REG_FUNCTION_VALUE_P (outgoing) = 1;
     }
 
   if (GET_CODE (outgoing) == REG)
