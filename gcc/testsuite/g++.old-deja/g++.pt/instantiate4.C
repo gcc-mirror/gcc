@@ -26,3 +26,5 @@ int main () {
     
     rab.bar();
 }
+
+// { dg-final { cleanup-repo-files } }
