@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995-1999
 
-@set last-update-news 1999-05-26
+@set last-update-news 1999-06-04
 
 @include root.texi
 
@@ -151,7 +151,7 @@ is available at
 
 The following information was last updated on @value{last-update-news}:
 
-@heading In 0.5.25 (@code{EGCS} 1.2) versus @code{EGCS} 1.1.2:
+@heading In 0.5.25, @code{GCC} 2.95 (@code{EGCS} 1.2) versus @code{EGCS} 1.1.2:
 @itemize @bullet
 @ifclear USERVISONLY
 @item
@@ -220,6 +220,12 @@ The @samp{-ax} option is now obeyed when compiling Fortran programs.
 The new @samp{-fbounds-check} option
 causes @code{g77} to compile run-time bounds checks
 of array subscripts, as well as of substring start and end points.
+
+@item
+@code{libg2c} now supports building as multilibbed library,
+which provides better support for systems
+that require options such as @samp{-mieee}
+to work properly.
 
 @item
 Source file names with the suffixes @samp{.FOR} and @samp{.FPP}
