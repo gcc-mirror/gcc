@@ -2,7 +2,7 @@
 # Install modified versions of certain problematic Irix include files.
 # If possible, create a wrapper (see fixinc.wrap) instead of copying files.
 #
-# Copyright (C) 1997 Free Software Foundation, Inc.
+# Copyright (C) 1997, 1998 Free Software Foundation, Inc.
 # Contributed by Brendan Kehoe (brendan@cygnus.com).
 #
 # This file is part of GNU CC.
