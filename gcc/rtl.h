@@ -340,6 +340,8 @@ extern char *reg_note_name[];
 #define NOTE_INSN_PROLOGUE_END -10
 /* This marks the point immediately prior to the first epilogue insn.  */
 #define NOTE_INSN_EPILOGUE_BEG -11
+/* Generated in place of user-declared labels when they are deleted.  */
+#define NOTE_INSN_DELETED_LABEL -12
 /* Don't forget to change note_insn_name in rtl.c.  */
 
 #define NOTE_DECL_NAME(INSN) ((INSN)->fld[3].rtstr)

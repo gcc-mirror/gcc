@@ -1040,6 +1040,15 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	    dwarfout_end_block (pending_blocks[block_depth]);
 #endif
 	}
+      else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED_LABEL
+	       && (debug_info_level == DINFO_LEVEL_NORMAL
+		   || debug_info_level == DINFO_LEVEL_VERBOSE))
+	{
+#ifdef DWARF_DEBUGGING_INFO
+          if (write_symbols == DWARF_DEBUG)
+            dwarfout_label (insn);
+#endif
+	}
       else if (NOTE_LINE_NUMBER (insn) > 0)
 	/* This note is a line-number.  */
 	{
