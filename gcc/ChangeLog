@@ -1,3 +1,7 @@
+2001-09-07  Andreas Jaeger  <aj@suse.de>
+
+	* i386.h (TARGET_SWITCHES): Fix descriptions.
+
 2001-09-07  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
 
 	* stor-layout.c (compute_record_mode): Check DECL_SIZE is set.
@@ -111,12 +115,12 @@ Wed Sep  5 17:28:49 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-09-05  David Billinghurst <David.Billinghurst@riotinto.com>
 
-	* gcc.c: (process_command) Add parentheses around assignment 
+	* gcc.c: (process_command) Add parentheses around assignment
 	used as truth value.
 
 2001-09-05  Richard Sandiford  <rsandifo@redhat.com>
 
- 	* config/mips/mips.c (save_restore_insns): Don't mark any register
+	* config/mips/mips.c (save_restore_insns): Don't mark any register
 	save slots as unchanging if current_function_calls_eh_return.
 
 2001-09-05  Richard Henderson  <rth@redhat.com>

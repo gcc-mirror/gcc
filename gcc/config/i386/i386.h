@@ -346,7 +346,7 @@ extern const int x86_epilogue_using_move;
   { "mix-sse-i387",		 MASK_MIX_SSE_I387,			      \
     N_("Use both SSE and i387 instruction sets for floating point arithmetics") },\
   { "nomix-sse-i387",		-MASK_MIX_SSE_I387,			      \
-    N_("Use both SSE and i387 instruction sets for floating point arithmetics") },\
+    N_("Do not use both SSE and i387 instruction sets for floating point arithmetics") },\
   { "128bit-long-double",	 MASK_128BIT_LONG_DOUBLE,		      \
     N_("sizeof(long double) is 16.") },					      \
   { "96bit-long-double",	-MASK_128BIT_LONG_DOUBLE,		      \
@@ -358,7 +358,7 @@ extern const int x86_epilogue_using_move;
   { "red-zone",			-MASK_NO_RED_ZONE,			      \
     N_("Use red-zone in the x86-64 code") },				      \
   { "no-red-zone",		MASK_NO_RED_ZONE,			      \
-    N_("do not use red-zone in the x86-64 code") },			      \
+    N_("Do not use red-zone in the x86-64 code") },			      \
   SUBTARGET_SWITCHES							      \
   { "", TARGET_DEFAULT, 0 }}
 
