@@ -341,6 +341,7 @@ typedef HANDLE __gthread_mutex_t;
 
 #define __GTHREAD_ONCE_INIT {FALSE, -1}
 #define __GTHREAD_MUTEX_INIT_FUNCTION __gthread_mutex_init_function
+#define __GTHREAD_MUTEX_INIT_DEFAULT 0
 
 #if __MINGW32_MAJOR_VERSION >= 1 || \
   (__MINGW32_MAJOR_VERSION == 0 && __MINGW32_MINOR_VERSION > 2)
