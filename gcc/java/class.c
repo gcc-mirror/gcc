@@ -45,6 +45,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "except.h"
 #include "cgraph.h"
 #include "tree-iterator.h"
+#include "cgraph.h"
 
 /* DOS brain-damage */
 #ifndef O_BINARY
@@ -910,6 +911,7 @@ build_utf8_ref (tree name)
   layout_decl (decl, 0);
   pushdecl (decl);
   rest_of_decl_compilation (decl, global_bindings_p (), 0);
+  cgraph_varpool_mark_needed_node (cgraph_varpool_node (decl));
   utf8_decl_list = decl;
   make_decl_rtl (decl);
   ref = build1 (ADDR_EXPR, utf8const_ptr_type, decl);
@@ -2436,8 +2438,11 @@ emit_register_classes (tree *list_p)
       named_section_flags (JCR_SECTION_NAME, SECTION_WRITE);
       assemble_align (POINTER_SIZE);
       for (t = registered_class; t; t = TREE_CHAIN (t))
-	assemble_integer (XEXP (DECL_RTL (t), 0),
-			  POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
+	{
+	  mark_decl_referenced (t);
+	  assemble_integer (XEXP (DECL_RTL (t), 0),
+			    POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
+	}
 #else
       /* A target has defined TARGET_USE_JCR_SECTION, but doesn't have a
 	 JCR_SECTION_NAME.  */

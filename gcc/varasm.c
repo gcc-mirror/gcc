@@ -1883,7 +1883,13 @@ mark_decl_referenced (tree decl)
         cgraph_mark_needed_node (cgraph_node (decl));
     }
   else if (TREE_CODE (decl) == VAR_DECL)
-    cgraph_varpool_mark_needed_node (cgraph_varpool_node (decl));
+    {
+      struct cgraph_varpool_node *node = cgraph_varpool_node (decl);
+      cgraph_varpool_mark_needed_node (node);
+      /* C++ frontend use mark_decl_references to force COMDAT variables
+         to be output that might appear dead otherwise.  */
+      node->force_output = true;
+    }
   /* else do nothing - we can get various sorts of CST nodes here,
      which do not need to be marked.  */
 }

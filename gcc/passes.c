@@ -225,7 +225,7 @@ rest_of_decl_compilation (tree decl,
 	 (see gcc.c-torture/compile/920624-1.c) */
       if ((at_end
 	   || !DECL_DEFER_OUTPUT (decl)
-	   || (flag_unit_at_a_time && DECL_INITIAL (decl)))
+	   || DECL_INITIAL (decl))
 	  && !DECL_EXTERNAL (decl))
 	{
 	  if (flag_unit_at_a_time && !cgraph_global_info_ready

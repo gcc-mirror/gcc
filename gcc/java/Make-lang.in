@@ -299,13 +299,13 @@ java/check-init.o: java/check-init.c $(CONFIG_H) $(JAVA_TREE_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) toplev.h
 java/class.o: java/class.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(JAVA_TREE_H) $(RTL_H) java/jcf.h java/parse.h toplev.h output.h $(GGC_H) \
-  $(TARGET_H) function.h gt-java-class.h
+  $(TARGET_H) function.h gt-java-class.h cgraph.h
 java/constants.o: java/constants.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
   toplev.h $(SYSTEM_H) coretypes.h $(TM_H) $(GGC_H) gt-java-constants.h
 java/decl.o: java/decl.c $(CONFIG_H) $(JAVA_TREE_H) $(RTL_H) java/jcf.h \
   toplev.h flags.h $(SYSTEM_H) coretypes.h $(TM_H) function.h expr.h \
   libfuncs.h except.h java/java-except.h $(GGC_H) real.h gt-java-decl.h \
-  target.h
+  target.h cgraph.h
 java/except.o: java/except.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h real.h \
   $(RTL_H) java/javaop.h java/java-opcodes.h except.h java/java-except.h \
   toplev.h $(SYSTEM_H) coretypes.h $(TM_H) function.h 

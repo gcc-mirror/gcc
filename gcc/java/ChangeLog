@@ -1,3 +1,11 @@
+2005-03-31  Jan Hubicka  <jh@suse.cz>
+
+	* Make-lang.in (class.o, decl.o): Depend on cgraph.h.
+	* class.c: Include cgraph.h
+	(make_local_functoin_alias): Mark aslias as needed.
+	* resource.c: Include cgraph.h
+	(compile_resource_data): Go via cgraph interface.
+
 2005-03-30  Ian Lance Taylor  <ian@airs.com>
 
 	* parse.y (maybe_yank_clinit): Don't crash if bbody is NULL.

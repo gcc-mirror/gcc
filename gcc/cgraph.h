@@ -151,6 +151,12 @@ struct cgraph_varpool_node GTY(())
   /* Set when function must be output - it is externally visible
      or its address is taken.  */
   bool needed;
+  /* Needed variables might become dead by optimization.  This flag
+     forces the variable to be output even if it appears dead otherwise.  */
+  bool force_output;
+  /* Set once the variable has been instantiated and its callee
+     lists created.  */
+  bool analyzed;
   /* Set once it has been finalized so we consider it to be output.  */
   bool finalized;
   /* Set when function is scheduled to be assembled.  */
@@ -165,11 +171,14 @@ extern GTY(()) int cgraph_max_uid;
 extern bool cgraph_global_info_ready;
 extern GTY(()) struct cgraph_node *cgraph_nodes_queue;
 
+extern GTY(()) struct cgraph_varpool_node *cgraph_varpool_first_unanalyzed_node;
 extern GTY(()) struct cgraph_varpool_node *cgraph_varpool_nodes_queue;
 
 /* In cgraph.c  */
 void dump_cgraph (FILE *);
 void dump_cgraph_node (FILE *, struct cgraph_node *);
+void dump_varpool (FILE *);
+void dump_cgraph_varpool_node (FILE *, struct cgraph_varpool_node *);
 void cgraph_remove_edge (struct cgraph_edge *);
 void cgraph_remove_node (struct cgraph_node *);
 void cgraph_node_remove_callees (struct cgraph_node *node);
@@ -190,14 +199,17 @@ struct cgraph_varpool_node *cgraph_varpool_node (tree decl);
 struct cgraph_varpool_node *cgraph_varpool_node_for_asm (tree asmname);
 void cgraph_varpool_mark_needed_node (struct cgraph_varpool_node *);
 void cgraph_varpool_finalize_decl (tree);
-bool cgraph_varpool_assemble_pending_decls (void);
 void cgraph_redirect_edge_callee (struct cgraph_edge *, struct cgraph_node *);
 
 bool cgraph_function_possibly_inlined_p (tree);
 void cgraph_unnest_node (struct cgraph_node *node);
+void cgraph_varpool_enqueue_needed_node (struct cgraph_varpool_node *);
+void cgraph_varpool_reset_queue (void);
+bool decide_is_variable_needed (struct cgraph_varpool_node *, tree);
 
 /* In cgraphunit.c  */
 bool cgraph_assemble_pending_functions (void);
+bool cgraph_varpool_assemble_pending_decls (void);
 void cgraph_finalize_function (tree, bool);
 void cgraph_finalize_compilation_unit (void);
 void cgraph_create_edges (struct cgraph_node *, tree);

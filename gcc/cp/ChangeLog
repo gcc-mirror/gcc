@@ -1,3 +1,8 @@
+2005-03-31  Jan Hubicka  <jh@suse.cz>
+
+	* decl2.c (finish_objects): Mark ctor as needed.
+	(cp_finish_file): Output variables only in nonunit-at-a-time.
+
 2005-03-29  Richard Henderson  <rth@redhat.com>
 
 	PR c/20519
