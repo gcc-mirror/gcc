@@ -1,3 +1,7 @@
+2001-01-27  Richard Henderson  <rth@redhat.com>
+
+	* mt-alphaieee: New file.
+
 2001-01-02  Laurynas Biveinis  <lauras@softhome.net>
 
 	* mh-djgpp: do not set CFLAGS.

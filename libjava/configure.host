@@ -65,6 +65,7 @@ case "${host}" in
 	DIVIDESPEC=-fno-use-divide-subroutine
 	;;
   alpha*-*)
+	libgcj_flags="${libgcj_flags} -mieee"
 	libgcj_interpreter=yes
 	;;
   sparc-*)

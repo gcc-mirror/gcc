@@ -364,6 +364,13 @@ case "${target}" in
   powerpc-*-netware*)
     target_makefile_frag="${target_makefile_frag} config/mt-netware"
     ;;
+  alpha*-*-linux*)
+    target_makefile_frag="${target_makefile_frag} config/mt-linux"
+    target_makefile_frag="${target_makefile_frag} config/mt-alphaieee"
+    ;;
+  alpha*-*-*)
+    target_makefile_frag="${target_makefile_frag} config/mt-alphaieee"
+    ;;
   *-*-linux*)
     target_makefile_frag="${target_makefile_frag} config/mt-linux"
     ;;
