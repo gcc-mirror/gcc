@@ -5,8 +5,6 @@
 
 /* Test lexing of strings and character constants.  */
 
-#include <string.h>
-
 #ifndef __WCHAR_TYPE__
 #define __WCHAR_TYPE__ int
 #endif
