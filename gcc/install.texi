@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,89,92,93,94,95,96 Free Software Foundation, Inc.
+@c Copyright (C) 1988,89,92,93,94,95,96,97,1998 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -64,8 +64,8 @@ to specify a configuration when building a native compiler unless
 wrong.
 
 In those cases, specify the build machine's @dfn{configuration name}
-with the @samp{--build} option; the host and target will default to be
-the same as the build machine.  (If you are building a cross-compiler,
+with the @samp{--host} option; the host and target will default to be
+the same as the host machine.  (If you are building a cross-compiler,
 see @ref{Cross-Compiler}.)
 
 Here is an example:
@@ -178,14 +178,14 @@ make a difference.
 
 @cindex Objective C threads
 @cindex threads, Objective C
-@item --enable-objcthreads=@var{type}
-Certain systems, notably Linux, can't be relied on to supply a threads
-facility for the Objective C runtime and so will default to
-single-threaded runtime.  They may, however, have a library threads
-implementation available, in which case threads can be enabled with this
-option by supplying a suitable @var{type}, probably @samp{posix}.
-The possibilities for @var{type} are @samp{single}, @samp{posix},
-@samp{win32}, @samp{solaris}, @samp{irix} and @samp{mach}.
+@item --enable-threads=@var{type}
+Certain systems, notably Linux-based GNU systems, can't be relied on to
+supply a threads facility for the Objective C runtime and so will
+default to single-threaded runtime.  They may, however, have a library
+threads implementation available, in which case threads can be enabled
+with this option by supplying a suitable @var{type}, probably
+@samp{posix}.  The possibilities for @var{type} are @samp{single},
+@samp{posix}, @samp{win32}, @samp{solaris}, @samp{irix} and @samp{mach}.
 @end table
 
 The @file{configure} script searches subdirectories of the source
@@ -494,11 +494,11 @@ This copies the files @file{cc1}, @file{cpp} and @file{libgcc.a} to
 files @file{cc1}, @file{cpp} and @file{libgcc.a} in the directory
 @file{/usr/local/lib/gcc-lib/@var{target}/@var{version}}, which is where
 the compiler driver program looks for them.  Here @var{target} is the
-target machine type specified when you ran @file{configure}, and
-@var{version} is the version number of GNU CC.  This naming scheme
-permits various versions and/or cross-compilers to coexist.
-It also copies the executables for compilers for other languages
-(e.g., @file{cc1plus} for C++) to the same directory.
+cannonicalized form of target machine type specified when you ran
+@file{configure}, and @var{version} is the version number of GNU CC.
+This naming scheme permits various versions and/or cross-compilers to
+coexist.  It also copies the executables for compilers for other
+languages (e.g., @file{cc1plus} for C++) to the same directory.
 
 This also copies the driver program @file{xgcc} into
 @file{/usr/local/bin/gcc}, so that it appears in typical execution
@@ -521,12 +521,57 @@ since they usually run faster than the ones compiled with some other
 compiler.)
 
 @item
+@cindex C++ runtime library
+@cindex @code{libstdc++}
 If you're going to use C++, it's likely that you need to also install
-the libg++ distribution.  It should be available from the same
-place where you got the GNU C distribution.  Just as GNU C does not
-distribute a C runtime library, it also does not include a C++ run-time
+a C++ runtime library.  Just as GNU C does not
+distribute a C runtime library, it also does not include a C++ runtime
 library.  All I/O functionality, special class libraries, etc., are
-available in the libg++ distribution.
+provided by the C++ runtime library.
+
+The standard C++ runtime library for GNU CC is called @samp{libstdc++}.
+An obsolescent library @samp{libg++} may also be available, but it's
+necessary only for older software that hasn't been converted yet; if
+you don't know whether you need @samp{libg++} then you probably don't
+need it.
+
+Here's one way to build and install @samp{libstdc++} for GNU CC:
+
+@itemize @bullet
+@item
+Build and install GNU CC, so that invoking @samp{gcc} obtains the GNU CC
+that was just built.
+
+@item
+Obtain a copy of a compatible @samp{libstdc++} distribution.  For
+example, the @samp{libstdc++-2.8.0.tar.gz} distribution should be
+compatible with GCC 2.8.0.  GCC distributors normally distribute
+@samp{libstdc++} as well.
+
+@item
+Set the @samp{CXX} environment variable to @samp{gcc} while running the
+@samp{libstdc++} distribution's @file{configure} command.  Use the same
+@file{configure} options that you used when you invoked GCC's
+@file{configure} command.
+
+@item
+Invoke @samp{make} to build the C++ runtime.
+
+@item
+Invoke @samp{make install} to install the C++ runtime.
+
+@end itemize
+
+To summarize, after building and installing GNU CC, invoke the following
+shell commands in the topmost directory of the C++ library distribution.
+For @var{configure-options}, use the same options that
+you used to configure GNU CC.
+
+@example
+$ CXX=gcc ./configure @var{configure-options}
+$ make
+$ make install
+@end example
 
 @item
 GNU CC includes a runtime library for Objective-C because it is an
@@ -609,8 +654,8 @@ just @samp{@var{cpu}-@var{system}}, if it is not needed.  For example,
 Here is a list of system types:
 
 @quotation
-386bsd, aix, acis, amigados, aos, aout, aux, bosx, bsd, clix, coff, ctix, cxux,
-dgux, dynix, ebmon, ecoff, elf, esix, freebsd, hms, genix, gnu, gnu/linux,
+386bsd, aix, acis, amigaos, aos, aout, aux, bosx, bsd, clix, coff, ctix, cxux,
+dgux, dynix, ebmon, ecoff, elf, esix, freebsd, hms, genix, gnu, linux-gnu,
 hiux, hpux, iris, irix, isc, luna, lynxos, mach, minix, msdos, mvs,
 netbsd, newsos, nindy, ns, osf, osfrose, ptx, riscix, riscos, rtu, sco, sim,
 solaris, sunos, sym, sysv, udi, ultrix, unicos, uniplus, unos, vms, vsta,
@@ -714,8 +759,7 @@ GNU CC.
 @item alpha-*-osf1
 Systems using processors that implement the DEC Alpha architecture and
 are running the DEC Unix (OSF/1) operating system, for example the DEC
-Alpha AXP systems.  (VMS on the Alpha is not currently supported by GNU
-CC.)
+Alpha AXP systems.CC.)
 
 GNU CC writes a @samp{.verstamp} directive to the assembler output file
 unless it is built as a cross-compiler.  It gets the version to use from
@@ -759,22 +803,37 @@ To avoid this behavior, specify @samp{-gstabs+} and use GDB instead of
 DBX.  DEC is now aware of this problem with the assembler and hopes to
 provide a fix shortly.
 
-@item arm
+@item arc-*-elf
+Argonaut ARC processor.
+This configuration is intended for embedded systems.
+
+@item arm-*-aout
 Advanced RISC Machines ARM-family processors.  These are often used in
 embedded applications.  There are no standard Unix configurations.
 This configuration corresponds to the basic instruction sequences and will
-produce a.out format object modules.
+produce @file{a.out} format object modules.
 
 You may need to make a variant of the file @file{arm.h} for your particular
 configuration.
 
+@item arm-*-linuxaout
+Any of the ARM family processors running the Linux-based GNU system with
+the @file{a.out} binary format (ELF is not yet supported).  You must use
+version 2.8.1.0.7 or later of the GNU/Linux binutils, which you can download
+from @file{sunsite.unc.edu:/pub/Linux/GCC} and other mirror sites for
+Linux-based GNU systems.
+
 @item arm-*-riscix
-The ARM2 or ARM3 processor running RISC iX, Acorn's port of BSD Unix.  If
-you are running a version of RISC iX prior to 1.2 then you must specify
-the version number during configuration.  Note that the assembler
-shipped with RISC iX does not support stabs debugging information; a
-new version of the assembler, with stabs support included, is now
-available from Acorn.
+The ARM2 or ARM3 processor running RISC iX, Acorn's port of BSD Unix.
+If you are running a version of RISC iX prior to 1.2 then you must
+specify the version number during configuration.  Note that the
+assembler shipped with RISC iX does not support stabs debugging
+information; a new version of the assembler, with stabs support
+included, is now available from Acorn and via ftp
+@file{ftp.acorn.com:/pub/riscix/as+xterm.tar.Z}.  To enable stabs
+debugging, pass @samp{--with-gnu-as} to configure.
+
+You will need to install GNU @file{sed} before you can run configure.
 
 @item a29k
 AMD Am29k-family processors.  These are normally used in embedded
@@ -848,6 +907,8 @@ output from GNU CC.
 @end ignore
 
 @item h8300-*-*
+Hitachi H8/300 series of processors.
+
 The calling convention and structure layout has changed in release 2.6.
 All code must be recompiled.  The calling convention now passes the
 first three arguments in function calls in registers.  Structures are no
@@ -880,19 +941,19 @@ option before building.
 This port is very preliminary and has many known bugs.  We hope to
 have a higher-quality port for this machine soon.
 
-@item i386-*-linuxoldld
-Use this configuration to generate a.out binaries on Linux if you do not
-have gas/binutils version 2.5.2 or later installed. This is an obsolete
-configuration.
+@item i386-*-linux-gnuoldld
+Use this configuration to generate @file{a.out} binaries on Linux-based
+GNU systems if you do not have gas/binutils version 2.5.2 or later
+installed. This is an obsolete configuration.
 
-@item i386-*-linuxaout
-Use this configuration to generate a.out binaries on Linux. This configuration
-is being superseded. You must use gas/binutils version 2.5.2 or
-later.
+@item i386-*-linux-gnuaout
+Use this configuration to generate @file{a.out} binaries on Linux-based
+GNU systems. This configuration is being superseded. You must use
+gas/binutils version 2.5.2 or later.
 
-@item i386-*-linux
-Use this configuration to generate ELF binaries on Linux.  You must
-use gas/binutils version 2.5.2 or later.
+@item i386-*-linux-gnu
+Use this configuration to generate ELF binaries on Linux-based GNU
+systems.  You must use gas/binutils version 2.5.2 or later.
 
 @item i386-*-sco
 Compilation with RCC is recommended.  Also, it may be a good idea to
@@ -902,18 +963,26 @@ link with GNU malloc instead of the malloc that comes with the system.
 Use this configuration for SCO release 3.2 version 4.
 
 @item i386-*-sco3.2v5*
-Use this for SCO Open Server Release 5.0.  GNU CC can generate ELF
-binaries (if you specify @samp{-melf}) or COFF binaries (the default).
-If you are going to build your compiler in ELF mode (once you have
-bootstrapped the first stage compiler) you @strong{must} specify
-@samp{-melf} as part of CC, @emph{not} CFLAGS.  You should
-use some variant of: @samp{CC="stage1/xgcc -melf" CFLAGS="-Bstage1/"} etc.
-If you do not do this, the boostrap will generate completely bogus versions
-of libgcc.a generated.
+Use this for the SCO OpenServer Release family including 5.0.0, 5.0.2, 
+5.0.4, Internet FastStart 1.0, and Internet FastStart 1.1.
+
+GNU CC can generate ELF binaries (if you specify @samp{-melf}) or COFF 
+binaries (the default).  If you are going to build your compiler in ELF 
+mode (once you have bootstrapped the first stage compiler) you 
+@strong{must} specify @samp{-melf} as part of @code{CC},
+@emph{not} @code{CFLAGS}, for example as
+@samp{CC="stage1/xgcc -melf -Bstage1/" }.  If you do not do this, the
+bootstrap will generate incorrect versions of @file{libgcc.a}.
 
 You must have TLS597 (from ftp.sco.com/TLS) installed for ELF
 binaries to work correctly. Note that Open Server 5.0.2 @emph{does}
 need TLS597 installed.
+
+@emph{NOTE:} You must follow the instructions about invoking
+@samp{make bootstrap} because the native OpenServer compiler builds
+a @file{cc1plus} that will not correctly parse many valid C++ programs.
+You must do a @samp{make bootstrap} if you are building with the native
+compiler.
 
 @item i386-*-isc
 It may be a good idea to link with GNU malloc instead of the malloc that
@@ -931,9 +1000,7 @@ You need to use GAS version 2.1 or later, and LD from
 GNU binutils version 2.2 or later.
 
 @item i386-sequent-bsd
-Go to the Berkeley universe before compiling.  In addition, you probably
-need to create a file named @file{string.h} containing just one line:
-@samp{#include <strings.h>}.
+Go to the Berkeley universe before compiling.
 
 @item i386-sequent-ptx1*
 Sequent DYNIX/ptx 1.x.
@@ -952,7 +1019,7 @@ See @ref{Sun Install}, for information on installing GNU CC on Sun
 systems.
 
 @item i[345]86-*-winnt3.5
-This version requires a GAS that has not let been released.  Until it
+This version requires a GAS that has not yet been released.  Until it
 is, you can get a prebuilt binary version via anonymous ftp from
 @file{cs.washington.edu:pub/gnat} or @file{cs.nyu.edu:pub/gnat}. You
 must also use the Microsoft header files from the Windows NT 3.5 SDK.
@@ -1017,10 +1084,11 @@ LynxOS 2.2 and earlier comes with GNU CC 1.x already installed as
 You can tell GNU CC to use the GNU assembler and linker, by specifying
 @samp{--with-gnu-as --with-gnu-ld} when configuring.  These will produce
 COFF format object files and executables;  otherwise GNU CC will use the
-installed tools, which produce a.out format executables.
+installed tools, which produce @file{a.out} format executables.
 
 @item m32r-*-elf
-Embedded M32R system.
+Mitsubishi M32R processor.
+This configuration is intended for embedded systems.
 
 @item m68000-hp-bsd
 HP 9000 series 200 running BSD.  Note that the C compiler that comes
@@ -1057,7 +1125,7 @@ the following procedure might work.  We are unable to test it.
 
 @enumerate
 @item
-Comment out the @samp{#include "config.h"} line on line 37 of
+Comment out the @samp{#include "config.h"} line near the start of
 @file{cccp.c} and do @samp{make cpp}.  This makes a preliminary version
 of GNU cpp.
 
@@ -1308,9 +1376,7 @@ and @code{malloc}; you must get the compiled versions of these from GNU
 Emacs.
 
 @item ns32k-sequent
-Go to the Berkeley universe before compiling.  In addition, you probably
-need to create a file named @file{string.h} containing just one line:
-@samp{#include <strings.h>}.
+Go to the Berkeley universe before compiling.
 
 @item ns32k-utek
 UTEK ns32000 system (``merlin'').  The C compiler that comes with this
@@ -1378,8 +1444,8 @@ PowerPC system in big endian mode, running System V.4.
 You can specify a default version for the @samp{-mcpu=}@var{cpu_type}
 switch by using the configure option @samp{--with-cpu-}@var{cpu_type}.
 
-@item powerpc-*-linux
-PowerPC system in big endian mode, running Linux.
+@item powerpc-*-linux-gnu
+PowerPC system in big endian mode, running the Linux-based GNU system.
 
 You can specify a default version for the @samp{-mcpu=}@var{cpu_type}
 switch by using the configure option @samp{--with-cpu-}@var{cpu_type}.
@@ -1893,8 +1959,12 @@ To install the cross-compiler, use @samp{make install}, as usual.
 @cindex Sun installation
 @cindex installing GNU CC on the Sun
 
-On Solaris (version 2.1), do not use the linker or other tools in
+On Solaris, do not use the linker or other tools in
 @file{/usr/ucb} to build GNU CC.  Use @code{/usr/ccs/bin}.
+
+If the assembler reports @samp{Error: misaligned data} when bootstrapping,
+you are probably using an obsolete version of the GNU assembler.  Upgrade
+to the latest version of GNU @code{binutils}, or use the Solaris assembler.
 
 Make sure the environment variable @code{FLOAT_OPTION} is not set when
 you compile @file{libgcc.a}.  If this option were set to @code{f68881}
@@ -1993,8 +2063,8 @@ $ assign /system /translation=concealed -
 
 @noindent
 with the appropriate disk and directory name.  If you are going to be
-using libg++, this is where the libg++ install procedure will install
-the libg++ header files.
+using a C++ runtime library, this is where its install procedure will install
+its header files.
 
 @item
 Obtain the file @file{gcc-cc1plus.exe}, and place this in the same
@@ -2266,7 +2336,7 @@ are already suitable for ANSI C and GNU CC, nothing special need be
 done).
 
 @code{GPLUS_INCLUDE_DIR} means the same thing for native and cross.  It
-is where @code{g++} looks first for header files.  @code{libg++}
+is where @code{g++} looks first for header files.  The C++ library
 installs only target independent header files in that directory.
 
 @code{LOCAL_INCLUDE_DIR} is used only for a native compiler.  It is
