@@ -1,3 +1,8 @@
+2003-02-04  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* pt.c (more_specialized_class): Increase processing_template_decl
+	while partial ordering.
+
 2004-02-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13925
