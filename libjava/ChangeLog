@@ -1,3 +1,25 @@
+2000-05-20  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (hack1): Removed.
+	(awto_files): Likewise.
+	(libgcjawt_la_SOURCES): Likewise.
+	(EXTRA_libgcjawt_la_SOURCES): Likewise.
+	(libgcjawt_la_DEPENDENCIES): Likewise.
+	(libgcjawt_la_LIBADD): Likewise.
+	(libgcjawt_la_LDFLAGS): Likewise.
+	(libgcjawt_la_LINK): Likewise.
+	($(awt_java_source_files:.java=.class)): Likewise.
+	(libgcj.zip): Don't depend on AWT files.
+	(MOSTLYCLEANFILES): Don't include AWT files.
+	($(awto_files)): Removed.
+	(nat_headers): Removed AWT files.
+	(cond_awt_java_source_files): Removed.
+	(ordinary_java_source_files): Added awt_java_source_files.
+	* libgcj.spec.in (*lib): Removed -lgcjawt.
+	* configure: Rebuilt.
+	* configure.in: Removed --enable-java-awt option.
+
 2000-05-20  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/util/zip/ZipEntry.java: Implement Cloneable, per JDK1.2 docs.
