@@ -25,7 +25,7 @@ enum rtx_code
   UNKNOWN,
   NIL,
   REG,
-  LAST_AND_UNUSED_RTX_CODE
+  LAST_AND_UNUSED_RTX_CODE = 256
 };
 
 typedef struct
