@@ -930,18 +930,6 @@ namespace std
       return __r;
     }
 
-  template <class _CharT, class _Traits, class _Alloc>
-    void
-    _S_string_copy(const basic_string<_CharT, _Traits, _Alloc>& __str,
-		   _CharT* __buf, typename _Alloc::size_type __bufsiz)
-    {
-      typedef typename _Alloc::size_type size_type;
-      size_type __strsize = __str.size();
-      size_type __bytes = std::min(__strsize, __bufsiz - 1);
-      _Traits::copy(__buf, __str.data(), __bytes);
-      __buf[__bytes] = _CharT();
-    }
-
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.  
   // NB: This syntax is a GNU extension.

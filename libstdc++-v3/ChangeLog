@@ -1,3 +1,7 @@
+2003-01-15  Phil Edwards  <pme@gcc.gnu.org>
+
+	* include/bits/basic_string.tcc (_S_string_copy): Unused, remove.
+
 2003-01-15  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4 (GLIBCPP_CHECK_WCHAR_T_SUPPORT): Substitute
