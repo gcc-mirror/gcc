@@ -1,3 +1,19 @@
+2001-07-25  Jason Merrill  <jason_merrill@redhat.com>
+	
+	* call.c (joust): Only prefer a non-builtin candidate to a builtin
+	one if they have the same signature.
+
+	* cvt.c (build_up_reference): Take DECL parm.  Check TREE_STATIC on
+	it rather than toplevel_bindings_p.  Give it a mangled name if static.
+	(convert_to_reference): Adjust.
+	* decl2.c (get_temp_name): Lose.
+	* mangle.c (mangle_ref_init_variable): New fn.
+	(mangle_guard_variable): Strip the ref-init header.
+	* cp-tree.h: Adjust.
+	* decl.c (cp_finish_decl): Add the DECL_STMT after processing the
+	initializer.
+	(grok_reference_init): Always use DECL_INITIAL.
+
 2001-07-25  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/3416

@@ -5353,22 +5353,6 @@ joust (cand1, cand2, warn)
         return winner;
     }
 
-  /* a non-template user function is better than a builtin.  (Pedantically
-     the builtin which matched the user function should not be added to
-     the overload set, but we spot it here.
-     
-     [over.match.oper]
-     ... the builtin candidates include ...
-     - do not have the same parameter type list as any non-template
-       non-member candidate.  */
-                            
-  if (TREE_CODE (cand1->fn) != IDENTIFIER_NODE
-      && TREE_CODE (cand2->fn) == IDENTIFIER_NODE)
-    return 1;
-  else if (TREE_CODE (cand1->fn) == IDENTIFIER_NODE
-           && TREE_CODE (cand2->fn) != IDENTIFIER_NODE)
-    return -1;
-  
   /* or, if not that,
      the  context  is  an  initialization by user-defined conversion (see
      _dcl.init_  and  _over.match.user_)  and  the  standard   conversion
@@ -5384,21 +5368,42 @@ joust (cand1, cand2, warn)
         return winner;
     }
   
-  /* If the built-in candidates are the same, arbitrarily pick one.  */
-  if (cand1->fn == cand2->fn
-      && TREE_CODE (cand1->fn) == IDENTIFIER_NODE)
+  /* Check whether we can discard a builtin candidate, either because we
+     have two identical ones or matching builtin and non-builtin candidates.
+
+     (Pedantically in the latter case the builtin which matched the user
+     function should not be added to the overload set, but we spot it here.
+     
+     [over.match.oper]
+     ... the builtin candidates include ...
+     - do not have the same parameter type list as any non-template
+       non-member candidate.  */
+                            
+  if (TREE_CODE (cand1->fn) == IDENTIFIER_NODE
+      || TREE_CODE (cand2->fn) == IDENTIFIER_NODE)
     {
       for (i = 0; i < len; ++i)
 	if (!same_type_p (TREE_TYPE (TREE_VEC_ELT (cand1->convs, i)),
 			  TREE_TYPE (TREE_VEC_ELT (cand2->convs, i))))
 	  break;
       if (i == TREE_VEC_LENGTH (cand1->convs))
-	return 1;
+	{
+	  if (cand1->fn == cand2->fn)
+	    /* Two built-in candidates; arbitrarily pick one.  */
+	    return 1;
+	  else if (TREE_CODE (cand1->fn) == IDENTIFIER_NODE)
+	    /* cand1 is built-in; prefer cand2.  */
+	    return -1;
+	  else
+	    /* cand2 is built-in; prefer cand1.  */
+	    return 1;
+	}
 
       /* Kludge around broken overloading rules whereby
 	 Integer a, b; test ? a : b; is ambiguous, since there's a builtin
 	 that takes references and another that takes values.  */
-      if (cand1->fn == ansi_opname (COND_EXPR))
+      if (cand1->fn == cand2->fn
+	  && cand1->fn == ansi_opname (COND_EXPR))
 	{
 	  tree c1 = TREE_VEC_ELT (cand1->convs, 1);
 	  tree c2 = TREE_VEC_ELT (cand2->convs, 1);

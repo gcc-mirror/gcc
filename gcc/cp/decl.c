@@ -7386,14 +7386,7 @@ grok_reference_init (decl, type, init)
   if (TREE_STATIC (decl) && !TREE_CONSTANT (tmp))
     return tmp;
 
-  if (building_stmt_tree ())
-    {
-      /* Initialize the declaration.  */
-      tmp = build (INIT_EXPR, TREE_TYPE (decl), decl, tmp);
-      finish_expr_stmt (tmp);
-    }
-  else
-    DECL_INITIAL (decl) = tmp;
+  DECL_INITIAL (decl) = tmp;
 
   return NULL_TREE;
 }
@@ -8010,17 +8003,16 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
   if (type == error_mark_node)
     return;
 
-  /* Add this declaration to the statement-tree.  */
-  if (building_stmt_tree ()
-      && at_function_scope_p ()
-      && TREE_CODE (decl) != RESULT_DECL)
-    add_decl_stmt (decl);
-
   if (TYPE_HAS_MUTABLE_P (type))
     TREE_READONLY (decl) = 0;
 
   if (processing_template_decl)
     {
+      /* Add this declaration to the statement-tree.  */
+      if (at_function_scope_p ()
+	  && TREE_CODE (decl) != RESULT_DECL)
+	add_decl_stmt (decl);
+
       if (init && DECL_INITIAL (decl))
 	DECL_INITIAL (decl) = init;
       goto finish_end0;
@@ -8088,6 +8080,12 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
   init = check_initializer (decl, init);
 
   GNU_xref_decl (current_function_decl, decl);
+
+  /* Add this declaration to the statement-tree.  */
+  if (building_stmt_tree ()
+      && at_function_scope_p ()
+      && TREE_CODE (decl) != RESULT_DECL)
+    add_decl_stmt (decl);
 
   if (TREE_CODE (decl) == VAR_DECL)
     layout_var_decl (decl);

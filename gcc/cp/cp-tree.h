@@ -3784,7 +3784,6 @@ extern void cplus_decl_attributes		PARAMS ((tree *, tree, tree, int));
 extern tree constructor_name_full		PARAMS ((tree));
 extern tree constructor_name			PARAMS ((tree));
 extern void defer_fn            		PARAMS ((tree));
-extern tree get_temp_name			PARAMS ((tree));
 extern void finish_anon_union			PARAMS ((tree));
 extern tree finish_table			PARAMS ((tree, tree, tree, int));
 extern void finish_builtin_type			PARAMS ((tree, const char *,
@@ -4384,6 +4383,7 @@ extern tree mangle_ctor_vtbl_for_type           PARAMS ((tree, tree));
 extern tree mangle_thunk                        PARAMS ((tree, tree, tree));
 extern tree mangle_conv_op_name_for_type        PARAMS ((tree));
 extern tree mangle_guard_variable               PARAMS ((tree));
+extern tree mangle_ref_init_variable            PARAMS ((tree));
 
 /* in dump.c */
 extern int cp_dump_tree                         PARAMS ((dump_info_p, tree));

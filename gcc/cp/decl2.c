@@ -1946,41 +1946,6 @@ defer_fn (fn)
   VARRAY_PUSH_TREE (deferred_fns, fn);
 }
 
-/* Hand off a unique name which can be used for variable we don't really
-   want to know about anyway, for example, the anonymous variables which
-   are needed to make references work.  Declare this thing so we can use it.
-   The variable created will be of type TYPE, and will have internal
-   linkage.  */
-
-tree
-get_temp_name (type)
-     tree type;
-{
-  char buf[sizeof (AUTO_TEMP_FORMAT) + 20];
-  tree decl;
-  int toplev = toplevel_bindings_p ();
-
-  sprintf (buf, AUTO_TEMP_FORMAT, global_temp_name_counter++);
-  decl = build_decl (VAR_DECL, get_identifier (buf), type);
-  DECL_ARTIFICIAL (decl) = 1;
-  TREE_USED (decl) = 1;
-  TREE_STATIC (decl) = 1;
-  
-  decl = pushdecl_top_level (decl);
-
-  /* If this is a local variable, then lay out its rtl now.
-     Otherwise, callers of this function are responsible for dealing
-     with this variable's rtl.  */
-  if (! toplev)
-    {
-      expand_decl (decl);
-      my_friendly_assert (DECL_INITIAL (decl) == NULL_TREE,
-			  19990826);
-    }
-
-  return decl;
-}
-
 /* Hunts through the global anonymous union ANON_DECL, building
    appropriate VAR_DECLs.  Stores cleanups on the list of ELEMS, and
    returns a VAR_DECL whose size is the same as the size of the
