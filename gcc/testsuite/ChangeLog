@@ -1,3 +1,9 @@
+2004-09-16  Frank Ch. Eigler  <fche@redhat.com>
+
+	* gcc.misc-tests/bprob.exp, g++.dg/bprob/bprob.exp: Iterate tests
+	with -ftree-based-profiling also.
+	* lib/profopt.exp: Support late-set profile_option/feedback_option.
+
 2004-09-16  Victor Leikehman  <lei@il.ibm.com>
 
 	PR/15364
