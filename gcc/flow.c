@@ -242,7 +242,12 @@ static int loop_depth;
 static int cc0_live;
 
 /* During propagate_block, this contains a list of all the MEMs we are
-   tracking for dead store elimination.  */
+   tracking for dead store elimination. 
+
+   ?!? Note we leak memory by not free-ing items on this list.  We need to
+   write some generic routines to operate on memory lists since cse, gcse,
+   loop, sched, flow and possibly other passes all need to do basically the
+   same operations on these lists.  */
 
 static rtx mem_set_list;
 
@@ -3593,7 +3598,6 @@ mark_used_regs (needed, live, x, final, insn)
     case PC:
     case ADDR_VEC:
     case ADDR_DIFF_VEC:
-    case ASM_INPUT:
       return;
 
 #ifdef HAVE_cc0
@@ -3907,6 +3911,44 @@ mark_used_regs (needed, live, x, final, insn)
 	    )
 	  SET_REGNO_REG_SET (live, i);
       break;
+
+    case ASM_OPERANDS:
+    case UNSPEC_VOLATILE:
+    case TRAP_IF:
+    case ASM_INPUT:
+      {
+	/* Traditional and volatile asm instructions must be considered to use
+	   and clobber all hard registers, all pseudo-registers and all of
+	   memory.  So must TRAP_IF and UNSPEC_VOLATILE operations.
+
+	   Consider for instance a volatile asm that changes the fpu rounding
+	   mode.  An insn should not be moved across this even if it only uses
+	   pseudo-regs because it might give an incorrectly rounded result. 
+
+	   ?!? Unfortunately, marking all hard registers as live causes massive
+	   problems for the register allocator and marking all pseudos as live
+	   creates mountains of uninitialized variable warnings.
+
+	   So for now, just clear the memory set list and mark any regs
+	   we can find in ASM_OPERANDS as used.  */
+	if (code != ASM_OPERANDS || MEM_VOLATILE_P (x))
+	  mem_set_list = NULL_RTX;
+
+        /* For all ASM_OPERANDS, we must traverse the vector of input operands.
+	   We can not just fall through here since then we would be confused
+	   by the ASM_INPUT rtx inside ASM_OPERANDS, which do not indicate
+	   traditional asms unlike their normal usage.  */
+	if (code == ASM_OPERANDS)
+	  {
+	    int j;
+
+	    for (j = 0; j < ASM_OPERANDS_INPUT_LENGTH (x); j++)
+	      mark_used_regs (needed, live, ASM_OPERANDS_INPUT (x, j),
+			      final, insn);
+	  }
+	break;
+      }
+
 
     default:
       break;

@@ -1,3 +1,7 @@
+Sat Mar 27 16:13:50 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c (mark_used_regs): Improve handling of ASMs.
+
 1999-03-26 Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* Makefile.in (xcpp, cppspec.o): New targets.
