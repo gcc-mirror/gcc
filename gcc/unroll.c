@@ -193,15 +193,22 @@ static rtx loop_final_value;
 
 /* Forward declarations.  */
 
-static void init_reg_map ();
-static int precondition_loop_p ();
-static void copy_loop_body ();
-static void iteration_info ();
-static rtx approx_final_value ();
-static int find_splittable_regs ();
-static int find_splittable_givs ();
-static rtx fold_rtx_mult_add ();
-static rtx remap_split_bivs ();
+static void init_reg_map PROTO((struct inline_remap *, int));
+static int precondition_loop_p PROTO((rtx *, rtx *, rtx *, rtx, rtx));
+static rtx calculate_giv_inc PROTO((rtx, rtx, int));
+static rtx initial_reg_note_copy PROTO((rtx, struct inline_remap *));
+static void final_reg_note_copy PROTO((rtx, struct inline_remap *));
+static void copy_loop_body PROTO((rtx, rtx, struct inline_remap *, rtx, int,
+				  enum unroll_types, rtx, rtx, rtx, rtx));
+static int back_branch_in_range_p PROTO((rtx, rtx, rtx));
+static void iteration_info PROTO((rtx, rtx *, rtx *, rtx, rtx));
+static rtx approx_final_value PROTO((enum rtx_code, rtx, int *, int *));
+static int find_splittable_regs PROTO((enum unroll_types, rtx, rtx, rtx, int));
+static int find_splittable_givs PROTO((struct iv_class *,enum unroll_types,
+				       rtx, rtx, rtx, int));
+static int reg_dead_after_loop PROTO((rtx, rtx, rtx));
+static rtx fold_rtx_mult_add PROTO((rtx, rtx, rtx, enum machine_mode));
+static rtx remap_split_bivs PROTO((rtx));
 
 /* Try to unroll one loop and split induction variables in the loop.
 
@@ -231,6 +238,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
   rtx insert_before;
   struct inline_remap *map;
   char *local_label;
+  char *local_regno;
   int maxregnum;
   int new_maxregnum;
   rtx exit_label = 0;
@@ -711,6 +719,27 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
   addr_combined_regs
     = (struct induction **) alloca (maxregnum * sizeof (struct induction *));
   bzero ((char *) addr_combined_regs, maxregnum * sizeof (struct induction *));
+  local_regno = (char *) alloca (maxregnum);
+  bzero (local_regno, maxregnum);
+
+  /* Mark all local registers, i.e. the ones which are referenced only
+     inside the loop. */
+  {
+    int copy_start_luid = INSN_LUID (copy_start);
+    int copy_end_luid = INSN_LUID (copy_end);
+
+    for (j = 0; j < maxregnum; ++j)
+      {
+	int first_uid = regno_first_uid[j];
+	int last_uid = regno_last_uid[j];
+
+	if (first_uid > 0 && first_uid <= max_uid_for_loop
+	    && uid_luid[first_uid] >= copy_start_luid
+	    && last_uid > 0 && last_uid <= max_uid_for_loop
+	    && uid_luid[last_uid] <= copy_end_luid)
+	  local_regno[j] = 1;
+      }
+  }
 
   /* If this loop requires exit tests when unrolled, check to see if we
      can precondition the loop so as to make the exit tests unnecessary.
@@ -923,6 +952,10 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 		if (local_label[j])
 		  map->label_map[j] = gen_label_rtx ();
 
+	      for (j = 0; j < maxregnum; j++)
+		if (local_regno[j])
+		  map->reg_map[j] = gen_reg_rtx (GET_MODE (regno_reg_rtx[j]));
+
 	      /* The last copy needs the compare/branch insns at the end,
 		 so reset copy_end here if the loop ends with a conditional
 		 branch.  */
@@ -1059,6 +1092,10 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
       for (j = 0; j < max_labelno; j++)
 	if (local_label[j])
 	  map->label_map[j] = gen_label_rtx ();
+
+      for (j = 0; j < maxregnum; j++)
+	if (local_regno[j])
+	  map->reg_map[j] = gen_reg_rtx (GET_MODE (regno_reg_rtx[j]));
 
       /* If loop starts with a branch to the test, then fix it so that
 	 it points to the test of the first unrolled copy of the loop.  */
