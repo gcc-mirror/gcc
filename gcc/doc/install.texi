@@ -290,7 +290,6 @@ systems' @command{tar} programs will also work, only try GNU
 
 @heading Tools/packages necessary for modifying GCC
 @table @asis
-
 @item autoconf versions 2.13 and 2.57
 @itemx GNU m4 version 1.4 (or later)
 
