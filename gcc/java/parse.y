@@ -7375,6 +7375,13 @@ declare_local_variables (int modifier, tree type, tree vlist)
       if (init && java_error_count)
 	init = NULL_TREE;
 
+      /* Remember it if this is an initialized-upon-declaration final
+         variable.  */
+      if (init && final_p)
+        {
+          DECL_LOCAL_FINAL_IUD (decl) = 1;
+        }
+
       /* Add the initialization function to the current function's code */
       if (init)
 	{
