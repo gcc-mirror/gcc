@@ -2342,15 +2342,13 @@ fill_simple_delay_slots (first, non_jumps_p)
 	  mark_referenced_resources (trial, &needed, 1);
 	}
 
-      if (slots_filled == slots_to_fill)
-	/* happy.  */ ;
-
       /* If all needed slots haven't been filled, we come here.  */
 
       /* Try to optimize case of jumping around a single insn.  */
 #if defined(ANNUL_IFFALSE_SLOTS) || defined(ANNUL_IFTRUE_SLOTS)
-      else if (delay_list == 0
-	       && GET_CODE (insn) == JUMP_INSN && condjump_p (insn))
+      if (slots_filled != slots_to_fill
+	  && delay_list == 0
+	  && GET_CODE (insn) == JUMP_INSN && condjump_p (insn))
 	{
 	  delay_list = optimize_skip (insn);
 	  if (delay_list)
@@ -2382,9 +2380,10 @@ fill_simple_delay_slots (first, non_jumps_p)
 	 later unconditional jump branches to.  In that case, we don't
 	 care about the number of uses of our label.  */
 
-      else if (GET_CODE (insn) != JUMP_INSN
-	       || (condjump_p (insn) && ! simplejump_p (insn)
-		   && JUMP_LABEL (insn) != 0))
+      if (slots_filled != slots_to_fill
+          && (GET_CODE (insn) != JUMP_INSN
+	      || (condjump_p (insn) && ! simplejump_p (insn)
+		   && JUMP_LABEL (insn) != 0)))
 	{
 	  rtx target = 0;
 	  int maybe_never = 0;
@@ -2401,12 +2400,18 @@ fill_simple_delay_slots (first, non_jumps_p)
 	      mark_referenced_resources (insn, &needed, 1);
 	      maybe_never = 1;
 	    }
-	  else if (GET_CODE (insn) == JUMP_INSN)
+	  else 
 	    {
-	      /* Get our target and show how many more uses we want to
-		 see before we hit the label.  */
-	      target = JUMP_LABEL (insn);
-	      target_uses = LABEL_NUSES (target) - 1;
+	      mark_set_resources (insn, &set, 0, 0);
+	      mark_referenced_resources (insn, &needed, 0);
+	      if (GET_CODE (insn) == JUMP_INSN)
+		{
+		  /* Get our target and show how many more uses we want to
+		     see before we hit the label.  */
+		  target = JUMP_LABEL (insn);
+		  target_uses = LABEL_NUSES (target) - 1;
+		}
+		
 	    }
 
 	  for (trial = next_nonnote_insn (insn); trial; trial = next_trial)
