@@ -539,6 +539,24 @@ execute_pass_list (struct tree_opt_pass *pass)
     }
   while (pass);
 }
+
+
+/* update recursivly all inlined_to pointers of functions
+   inlined into NODE to INLINED_TO.  */
+static void
+update_inlined_to_pointers (struct cgraph_node *node,
+			    struct cgraph_node *inlined_to)
+{
+  struct cgraph_edge *e;
+  for (e = node->callees; e; e = e->next_callee)
+    {
+      if (e->callee->global.inlined_to)
+	{
+	  e->callee->global.inlined_to = inlined_to;
+	  update_inlined_to_pointers (e->callee, node);
+	}
+    }
+}
 
 
 /* For functions-as-trees languages, this performs all optimization and
@@ -630,6 +648,7 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
       if (!flag_unit_at_a_time)
 	{
 	  struct cgraph_edge *e;
+	  verify_cgraph ();
 	  while (node->callees)
 	    cgraph_remove_edge (node->callees);
 	  node->callees = saved_node->callees;
@@ -637,7 +656,10 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
 	  for (e = node->callees; e; e = e->next_callee)
 	    {
 	      if (e->callee->global.inlined_to)
-		e->callee->global.inlined_to = node;
+		{
+		  e->callee->global.inlined_to = node;
+		  update_inlined_to_pointers (e->callee, node);
+		}
 	      e->caller = node;
 	    }
 	  cgraph_remove_node (saved_node);
