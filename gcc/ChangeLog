@@ -1,3 +1,7 @@
+2001-01-24  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* c4x.c (c4x_r11_set_p): Calculate rtx code correctly.
+
 2001-01-23  Chris Demetriou  <cgd@sibyte.com>
 	    Neil Booth  <neil@daikokuya.demon.co.uk>
 

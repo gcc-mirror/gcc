@@ -3363,17 +3363,15 @@ src_operand (op, mode)
       || GET_CODE (op) == CONST)
     return 0;
 
-  /* If TARGET_EXPOSE_LDP is zero, allow direct memory access to
-     symbolic addresses.  These will be rejected by
-     GO_IF_LEGITIMATE_ADDRESS and fixed up by
-     LEGITIMIZE_RELOAD_ADDRESS.  If TARGET_EXPOSE_LDP is nonzero,
-     disallow direct memory access to symbolic addresses.  These
-     should be converted to a HIGH/LO_SUM pair by the movqi expander.  */
+  /* If TARGET_LOAD_DIRECT_MEMS is non-zero, disallow direct memory
+     access to symbolic addresses.  These operands will get forced
+     into a register and the movqi expander will generate a
+     HIGH/LO_SUM pair if TARGET_EXPOSE_LDP is non-zero.  */
   if (GET_CODE (op) == MEM
       && ((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
 	   || GET_CODE (XEXP (op, 0)) == LABEL_REF
 	   || GET_CODE (XEXP (op, 0)) == CONST)))
-    return ! TARGET_EXPOSE_LDP && GET_MODE (op) == mode;
+    return ! TARGET_LOAD_DIRECT_MEMS && GET_MODE (op) == mode;
 
   return general_operand (op, mode);
 }
@@ -4797,7 +4795,6 @@ static int
 c4x_r11_set_p(x)
     rtx x;
 {
-  RTX_CODE code;
   rtx set;
   int i, j;
   const char *fmt;
@@ -4805,18 +4802,17 @@ c4x_r11_set_p(x)
   if (x == 0)
     return 0;
 
-  code = GET_CODE (x);
-  if (code == INSN && GET_CODE (PATTERN (x)) == SEQUENCE)
+  if (INSN_P (x) && GET_CODE (PATTERN (x)) == SEQUENCE)
     x = XVECEXP (PATTERN (x), 0, XVECLEN (PATTERN (x), 0) - 1);
 
-  if (code == INSN && (set = single_set (x)))
-    return c4x_r11_set_p (SET_DEST (set));
+  if (INSN_P (x) && (set = single_set (x)))
+    x = SET_DEST (set);
 
-  if (code == REG && REGNO (x) == R11_REGNO)
+  if (GET_CODE (x) == REG && REGNO (x) == R11_REGNO)
     return 1;
 
   fmt = GET_RTX_FORMAT (GET_CODE (x));
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+  for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
 	{
