@@ -1,3 +1,10 @@
+2000-09-04  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.in (STAGESTUFF): Remove libgcc.
+	(stage1-start, stage2-start, stage3-start): Copy the contents of
+	the libgcc directory explicitly.
+	(mostlyclean): Clean libgcc.
+
 2000-09-04  Andrew Haley  <aph@redhat.com>
 
 	* dwarf2out.c: (stack_adjust_offset): New prototype.

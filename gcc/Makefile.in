@@ -725,7 +725,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) cc1obj$(exeext) \
  enquire$(exeext) protoize$(exeext) unprotoize$(exeext) \
  specs collect2$(exeext) $(USE_COLLECT2) underscore.c tradcpp0$(exeext) \
- gcov$(exeext) *.[0-9][0-9].* *.[si] libcpp.a libbackend.a libgcc libgcc.mk \
+ gcov$(exeext) *.[0-9][0-9].* *.[si] libcpp.a libbackend.a libgcc.mk \
  $(LANG_STAGESTUFF)
 
 # Members of libgcc1.a.
@@ -2134,6 +2134,7 @@ INSTALL: $(srcdir)/install1.texi $(srcdir)/install.texi
 INTL_MOSTLYCLEAN = intl.mostlyclean
 mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 	-rm -f $(STAGESTUFF)
+	-rm -rf libgcc
 # Delete the temporary source copies for cross compilation.
 	-rm -f $(HOST_PREFIX_1)rtl.c $(HOST_PREFIX_1)rtlanal.c
 	-rm -f $(HOST_PREFIX_1)alloca.c $(HOST_PREFIX_1)malloc.c
@@ -2861,12 +2862,13 @@ gnucompare gnucompare3 gnucompare4 gnucompare-lean gnucompare3-lean gnucompare4-
 # Copy the object files from a particular stage into a subdirectory.
 stage1-start:
 	-if [ -d stage1 ] ; then true ; else mkdir stage1 ; fi
-	-for dir in intl $(SUBDIRS) ; \
+	-for dir in intl libgcc $(SUBDIRS) ; \
 	 do \
 	   if [ -d stage1/$$dir ] ; then true ; else mkdir stage1/$$dir ; fi ; \
 	 done
 	-mv $(STAGESTUFF) stage1
 	-mv intl/*$(objext) stage1/intl
+	-mv libgcc/*$(objext) stage1/libgcc
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
 	-if [ -f as$(exeext) ] ; then $(LN_S) ../as$(exeext) stage1 ; else true ; fi
@@ -2885,12 +2887,13 @@ stage1: force stage1-start lang.stage1
 
 stage2-start:
 	-if [ -d stage2 ] ; then true ; else mkdir stage2 ; fi
-	-for dir in intl $(SUBDIRS) ; \
+	-for dir in intl libgcc $(SUBDIRS) ; \
 	 do \
 	   if [ -d stage2/$$dir ] ; then true ; else mkdir stage2/$$dir ; fi ; \
 	 done
 	-mv $(STAGESTUFF) stage2
 	-mv intl/*$(objext) stage2/intl
+	-mv libgcc/*$(objext) stage2/libgcc
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
 	-if [ -f as$(exeext) ] ; then $(LN_S) ../as$(exeext) stage2 ; else true ; fi
@@ -2909,12 +2912,13 @@ stage2: force stage2-start lang.stage2
 
 stage3-start:
 	-if [ -d stage3 ] ; then true ; else mkdir stage3 ; fi
-	-for dir in intl $(SUBDIRS) ; \
+	-for dir in intl libgcc $(SUBDIRS) ; \
 	 do \
 	   if [ -d stage3/$$dir ] ; then true ; else mkdir stage3/$$dir ; fi ; \
 	 done
 	-mv $(STAGESTUFF) stage3
 	-mv intl/*$(objext) stage3/intl
+	-mv libgcc/*$(objext) stage3/libgcc
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
 	-if [ -f as$(exeext) ] ; then $(LN_S) ../as$(exeext) stage3 ; else true ; fi
@@ -2933,12 +2937,13 @@ stage3: force stage3-start lang.stage3
 
 stage4-start:
 	-if [ -d stage4 ] ; then true ; else mkdir stage4 ; fi
-	-for dir in intl $(SUBDIRS) ; \
+	-for dir in intl libgcc $(SUBDIRS) ; \
 	 do \
 	   if [ -d stage4/$$dir ] ; then true ; else mkdir stage4/$$dir ; fi ; \
 	 done
 	-mv $(STAGESTUFF) stage4
 	-mv intl/*$(objext) stage4/intl
+	-mv libgcc/*$(objext) stage4/libgcc
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
 	-if [ -f as$(exeext) ] ; then $(LN_S) ../as$(exeext) stage4 ; else true ; fi
