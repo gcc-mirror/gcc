@@ -23,7 +23,7 @@ extern void dwarf2out_finish		PARAMS ((void));
 
 extern void dwarf2out_define		PARAMS ((unsigned, const char *));
 extern void dwarf2out_undef 		PARAMS ((unsigned, const char *));
-extern void dwarf2out_start_source_file	PARAMS ((const char *));
+extern void dwarf2out_start_source_file	PARAMS ((unsigned, const char *));
 extern void dwarf2out_end_source_file 	PARAMS ((void));
 
 extern void dwarf2out_begin_block	PARAMS ((unsigned));

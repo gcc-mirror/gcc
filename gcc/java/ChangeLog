@@ -1,3 +1,8 @@
+2001-07-04  Daniel Berlin  <dan@cgsoftware.com>
+
+	* jcf-parse.c (parse_class_file): Add lineno parameter to
+	debug_start_source_file call.
+
 2001-07-04  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcj.texi: Use gpl.texi.

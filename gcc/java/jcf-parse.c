@@ -773,7 +773,7 @@ parse_class_file ()
 
   input_filename = DECL_SOURCE_FILE (TYPE_NAME (current_class));
   lineno = 0;
-  debug_start_source_file (input_filename);
+  debug_start_source_file (lineno, input_filename);
   init_outgoing_cpool ();
 
   /* Currently we always have to emit calls to _Jv_InitClass when

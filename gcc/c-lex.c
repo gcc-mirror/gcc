@@ -249,7 +249,7 @@ cb_file_change (pfile, fc)
 	  lineno = fc->from.lineno;
 	  push_srcloc (fc->to.filename, 1);
 	  input_file_stack->indent_level = indent_level;
-	  debug_start_source_file (fc->to.filename);
+	  debug_start_source_file (fc->from.lineno, fc->to.filename);
 #ifndef NO_IMPLICIT_EXTERN_C
 	  if (c_header_level)
 	    ++c_header_level;
@@ -334,7 +334,7 @@ cb_define (pfile, node)
      cpp_reader *pfile;
      cpp_hashnode *node;
 {
-  debug_define (lineno, (const char *) cpp_macro_definition (pfile, node));
+  debug_define (cpp_get_line (parse_in)->line,  (const char *) cpp_macro_definition (pfile, node));
 }
 
 /* #undef callback for DWARF and DWARF2 debug info.  */
@@ -343,7 +343,7 @@ cb_undef (pfile, node)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
      cpp_hashnode *node;
 {
-  debug_undef (lineno, (const char *) NODE_NAME (node));
+  debug_undef (cpp_get_line (parse_in)->line, (const char *) NODE_NAME (node));
 }
 
 #if 0 /* not yet */
