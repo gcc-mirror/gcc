@@ -1,6 +1,5 @@
 // Create many threads waiting on a monitor. Interrupt some of them. Do the 
 // others wake up correctly with notify() and/or notifyAll()?
-// Origin: Bryce McKinlay <bryce@albatross.co.nz>
 
 import java.util.Vector;
 

@@ -46,7 +46,7 @@ class ThreadTest extends Thread {
 	    d.set (Integer.toString (value));
 
 	    try {
-		sleep((int)(Math.random() * 500));
+		sleep((int)((Math.random() * 20)));
 	    } catch (InterruptedException e) {}
 	}
 

@@ -1,5 +1,4 @@
 // Test that Thread.sleep() works.
-// Origin: Bryce McKinlay <bryce@albatross.co.nz>
 
 public class Thread_Sleep
 {
@@ -9,9 +8,9 @@ public class Thread_Sleep
     {
       long start = System.currentTimeMillis();
       System.out.println("sleeping");
-      Thread.sleep(1000);
+      Thread.sleep(50);
       long end = System.currentTimeMillis();
-      if ((end - start) > 1100 || (end - start) < 990)
+      if ((end - start) < 50)
         System.out.println ("failed");
       else
 	System.out.println("ok");

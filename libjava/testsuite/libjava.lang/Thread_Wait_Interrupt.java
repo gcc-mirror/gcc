@@ -1,6 +1,5 @@
 // Create two threads waiting on a monitor. Interrupt one of them. Does the 
 // other wake up correctly?
-// Origin: Bryce McKinlay <bryce@albatross.co.nz>
 
 class Waiter extends Thread
 {

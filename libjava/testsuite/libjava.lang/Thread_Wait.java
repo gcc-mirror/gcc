@@ -1,5 +1,4 @@
 // Test basic thread creation and wait/notify functionality.
-// Origin: Bryce McKinlay <bryce@albatross.co.nz>
 
 public class Thread_Wait implements Runnable
 {

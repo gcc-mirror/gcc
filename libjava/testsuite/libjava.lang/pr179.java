@@ -4,8 +4,6 @@
 // Class.isInstance() and Class.isAssignableFrom(), and isAssignableFrom()
 // functionality in the event that an interface argument that is not 
 // implemented by any loaded class is given.
-//
-// Bryce McKinlay <bryce@albatross.co.nz>
 
 class A
 {

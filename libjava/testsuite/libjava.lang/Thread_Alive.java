@@ -1,6 +1,5 @@
 // Test the status of the isAlive() flag before, during, and after thread 
 // execution. Check that thread's threadgroup is null after thread exits.
-// Origin: Bryce McKinlay <bryce@albatross.co.nz>
 
 public class Thread_Alive implements Runnable
 {
@@ -12,7 +11,7 @@ public class Thread_Alive implements Runnable
     t.start();
     System.out.println(t.isAlive());
 
-    Thread.sleep(100);
+    Thread.sleep(50);
     
     synchronized (ta)
     {

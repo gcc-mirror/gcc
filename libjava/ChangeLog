@@ -1,5 +1,25 @@
 2004-07-27  Bryce McKinlay  <mckinlay@redhat.com>
 
+	* testsuite/libjava.lang/TLtest.java: Reduce sleep time.
+	* testsuite/libjava.lang/Thread_Alive.java: Remove old email address.
+	Reduce sleep time.
+	* testsuite/libjava.lang/Thread_HoldsLock.java: Modify to work around
+	compiler bug.
+	* testsuite/libjava.lang/Thread_Interrupt.java: Remove old email 
+	address. Reduce sleep times. Synchronize with target threads before
+	attempting to interrupt them. Don't try to calibrate yeild count,
+	instead, always loop for a fixed time.
+	* testsuite/libjava.lang/Thread_Join.java: Remove old email address.
+	* testsuite/libjava.lang/Thread_Monitor.java: Likewise.
+	* testsuite/libjava.lang/Thread_Wait.java: Likewise.
+	* testsuite/libjava.lang/Thread_Wait_2.java: Likewise.
+	* testsuite/libjava.lang/Thread_Wait_Interrupt.java: Likewise.
+	* testsuite/libjava.lang/pr179.java: Likewise.
+	* testsuite/libjava.lang/Thread_Sleep.java: Likewise. Reduce sleep
+	time. Remove upper bounds check on sleep time. 
+
+2004-07-27  Bryce McKinlay  <mckinlay@redhat.com>
+
 	* testsuite/libjava.lang/Thread_HoldsLock.java: New test case.
 	* testsuite/libjava.lang/Thread_HoldsLock.out: New.	
 

@@ -1,5 +1,4 @@
 // Test that monitor locks work and are recursive.
-// Origin: Bryce McKinlay <bryce@albatross.co.nz>
 
 class T implements Runnable
 {

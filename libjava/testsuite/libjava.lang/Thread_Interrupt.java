@@ -1,11 +1,21 @@
 // Test interrupt() behaviour on a thread in wait(), sleep(), and spinning 
 // in a loop.
-// Origin: Bryce McKinlay <bryce@albatross.co.nz>
 
-class Waiter extends Thread
+class ThreadBase extends Thread
+{
+  boolean ready = false;
+  
+  synchronized void ready()
+  {
+    ready = true;
+  }
+}
+
+class Waiter extends ThreadBase
 {
   public synchronized void run()
   {
+    super.ready();
     System.out.println ("wait()");
     try
     {
@@ -22,14 +32,15 @@ class Waiter extends Thread
   }
 }
 
-class Sleeper extends Thread
+class Sleeper extends ThreadBase
 {
   public void run()
   {
+    super.ready();
     System.out.println ("sleep()");
     try
     {
-      sleep(2000);
+      sleep(5000);
       System.out.println("Error: sleep() completed normally.");
     }
     catch (InterruptedException x)
@@ -42,39 +53,22 @@ class Sleeper extends Thread
   }
 }
 
-class Looper extends Thread
+class Looper extends ThreadBase
 {
-  // Return the number of Thread.yield()s we can do in 500ms.
-  static long calibrate ()
-  {
-    long i = 1;
-
-    for (int tries = 0; tries < 40; tries++)
-      {
-	long t = System.currentTimeMillis();
-	for (long n = 0; n < i; n++)
-	  Thread.yield();
-	long t_prime = System.currentTimeMillis();
-	if (t_prime - t > 500)
-	  return i;
-	i *= 2;
-      }
-    // We have no system clock.  Give up.
-    throw new RuntimeException ("We have no system clock.");
-  }
-
-  static long yields = calibrate ();
-
   public void run()
   {
+    super.ready();
     System.out.println ("Busy waiting");
 
     int count = 0;
-    for (long i=0; i < yields; i++)
+    long start = System.currentTimeMillis();
+    while (true)
       {
         Thread.yield();
-	count += 5;
 	if (isInterrupted ())
+	  break;
+	long now = System.currentTimeMillis();	
+	if ((now - start) > 5000)
 	  break;
       }
     synchronized (this)
@@ -91,10 +85,11 @@ class Looper extends Thread
   }
 }
 
-class Joiner extends Thread
+class Joiner extends ThreadBase
 {
   public void run()
   {
+    super.ready();
     System.out.println("join()");
     try
     {
@@ -133,11 +128,17 @@ public class Thread_Interrupt
     sleep_and_interrupt (j);
   }
   
-  public static void sleep_and_interrupt(Thread t)
+  public static void sleep_and_interrupt(ThreadBase t)
   {
     try
     {
-      Thread.sleep (250);
+      synchronized (t)
+        {
+	  while (!t.ready)
+	    t.wait(10);
+	}
+    
+      Thread.sleep (50);
       t.interrupt ();
       long t1 = System.currentTimeMillis();
       t.join (5000);
