@@ -40,7 +40,7 @@ static struct objc_list* unclaimed_proto_list = 0; 	/* !T:MUTEX */
 static struct objc_list *uninitialized_statics = 0; 	/* !T:MUTEX */
 
 /* Global runtime "write" mutex. */
-_objc_mutex_t __objc_runtime_mutex;
+objc_mutex_t __objc_runtime_mutex;
 
 /* Number of threads that are alive. */
 int __objc_runtime_threads_alive = 1;			/* !T:MUTEX */

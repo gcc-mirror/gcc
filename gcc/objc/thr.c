@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime Thread Interface
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Galen C. Hunt (gchunt@cs.rochester.edu)
 
 This file is part of GNU CC.
@@ -110,11 +110,11 @@ __objc_thread_detach_function(struct __objc_thread_start_state *istate)
  *  Thread is started by sending message with selector to object.  Message
  *  takes a single argument.
  */
-_objc_thread_t
+objc_thread_t
 objc_thread_detach(SEL selector, id object, id argument)
 {
   struct __objc_thread_start_state *istate;   /* Initialial thread state. */
-  _objc_thread_t        thread_id = NULL;     /* Detached thread id.      */
+  objc_thread_t        thread_id = NULL;     /* Detached thread id.      */
 
   if (!(istate = (struct __objc_thread_start_state *)
 	objc_malloc(sizeof(*istate))))     /* Can we allocate state?   */
@@ -137,14 +137,14 @@ objc_thread_detach(SEL selector, id object, id argument)
 #undef objc_mutex_unlock()
 
 int
-objc_mutex_unlock_x(_objc_mutex_t mutex, const char *f, int l)
+objc_mutex_unlock_x(objc_mutex_t mutex, const char *f, int l)
 {
     printf("%16.16s#%4d < unlock", f, l);
     return objc_mutex_unlock(mutex);
 }
 
 int
-objc_mutex_lock_x(_objc_mutex_t mutex, const char *f, int l)
+objc_mutex_lock_x(objc_mutex_t mutex, const char *f, int l)
 {
     printf("%16.16s#%4d < lock", f, l);
     return objc_mutex_lock(mutex);

@@ -63,7 +63,7 @@ extern BOOL __objc_class_links_resolved;
 extern int __objc_selector_max_index;
 
 /* Mutex locking __objc_selector_max_index and its arrays. */
-extern _objc_mutex_t __objc_runtime_mutex;
+extern objc_mutex_t __objc_runtime_mutex;
 
 /* Number of threads which are alive. */
 extern int __objc_runtime_threads_alive;
