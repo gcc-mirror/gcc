@@ -1,5 +1,11 @@
 2004-04-19  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.ac: Fix stupid brain-fade; set default_gnattools_target
+	correctly.
+	* configure: Regenerate.
+
+2004-04-19  Nathanael Nerode  <neroden@gcc.gnu.org>
+
 	* Makefile.in: Revert most of Arnaud's last change.  Prefer anything
 	over error-prone Make abuse.  Remove temporary debug code.
 	(gnatlib-zcx): New target.

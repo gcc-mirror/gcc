@@ -81,12 +81,18 @@ if test $build = $target \
    && test ${enable_shared} = yes ; then
   # Note that build=target is almost certainly the wrong test; FIXME
   default_gnatlib_target="gnatlib-shared"
-  default_gnattools_target="gnattools-cross"
 else
   default_gnatlib_target="gnatlib-plain"
-  default_gnattools_target="gnattools-native"
 fi
 AC_SUBST([default_gnatlib_target])
+
+# Determine what to build for 'gnattools'
+if test $build = $target ; then
+  # Note that build=target is almost certainly the wrong test; FIXME
+  default_gnattools_target="gnattools-native"
+else
+  default_gnattools_target="gnattools-cross"
+fi
 AC_SUBST([default_gnattools_target])
 
 # Output: create a Makefile.
