@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for MIPS
-   Copyright (C) 1989, 90, 91, 93-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 90, 91, 93-97, 1998 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky, lich@inria.inria.fr.
    Changes by Michael Meissner, meissner@osf.org.
    64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
@@ -5506,7 +5506,8 @@ mips_expand_prologue ()
 	}
 
       if (TARGET_ABICALLS && mips_abi != ABI_32)
-	emit_insn (gen_loadgp (XEXP (DECL_RTL (current_function_decl), 0)));
+	emit_insn (gen_loadgp (XEXP (DECL_RTL (current_function_decl), 0),
+			       gen_rtx (REG, DImode, 25)));
     }
 
   /* If we are profiling, make sure no instructions are scheduled before
