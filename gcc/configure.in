@@ -201,10 +201,12 @@ AC_CACHE_VAL(gcc_cv_header_inttypes_h,
   [#include <sys/types.h>
 #include <inttypes.h>],
   [intmax_t i = -1;],
-  [AC_DEFINE_UNQUOTED(HAVE_INTTYPES_H)
-   gcc_cv_header_inttypes_h=yes],
+  [gcc_cv_header_inttypes_h=yes],
   gcc_cv_header_inttypes_h=no)])
 AC_MSG_RESULT($gcc_cv_header_inttypes_h)
+if test $gcc_cv_header_inttypes_h = yes; then
+  AC_DEFINE(HAVE_INTTYPES_H)
+fi
 
 AC_CHECK_FUNCS(strtoul bsearch strerror putenv popen bcopy bzero bcmp \
 	index rindex strchr strrchr kill getrlimit setrlimit atoll atoq \

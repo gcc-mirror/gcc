@@ -1,5 +1,9 @@
 Wed Feb 24 23:17:41 1999  Jeffrey A Law  (law@cygnus.com)
 
+	Wed Nov 19 12:56:54 1997  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+	* configure.in: Fix check for <inttypes.h>.
+	* configure: Rebuilt.
+
 	* varasm.c (declare_weak): If HANDLE_PRAGMA_WEAK, call
 	handle_pragma_weak.
 	
