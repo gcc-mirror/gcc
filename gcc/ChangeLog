@@ -1,3 +1,10 @@
+2001-02-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* mkdeps.c (deps_add_default_target): Robustify. Add
+	basename component only.
+	* cpp.texi (-M): Describe how default target is generated.
+	* invoke.texi (-M): Likewise.
+
 2001-02-12  Kazu Hirata  <kazu@hxi.com>
 
 	* toplev.c (push_float_handler): Remove.
