@@ -1922,6 +1922,10 @@ find_auto_inc (needed, x, insn)
 		}
 
 	      emit_insns_before (insns, insn);
+
+	      if (basic_block_head[BLOCK_NUM (insn)] == insn)
+		basic_block_head[BLOCK_NUM (insn)] = insns;
+
 	      XEXP (x, 0) = q;
 	      XEXP (y, 0) = q;
 
