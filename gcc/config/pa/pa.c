@@ -3230,27 +3230,6 @@ print_operand (file, x, code)
 	  abort ();
 	}
       return;
-    /* Reversed floating point comparison.  Need special conditions to
-       deal with NaNs properly.  */
-    case 'y':
-      switch (GET_CODE (x))
-	{
-	case EQ:
-	  fputs ("=", file);  break;
-	case NE:
-	  fputs ("!=", file);  break;
-	case GT:
-	  fputs ("!<=", file);  break;
-	case GE:
-	  fputs ("!<", file);  break;
-	case LT:
-	  fputs ("!>=", file);  break;
-	case LE:
-	  fputs ("!>", file);  break;
-	default:
-	  abort ();
-	}
-      return;
     case 'S':			/* Condition, operands are (S)wapped.  */
       switch (GET_CODE (x))
 	{
@@ -5521,6 +5500,88 @@ pa_reorg (insns)
      rtx insns;
 {
   rtx insn;
+
+  /* This is fairly cheap, so always run it if optimizing.  */
+  if (optimize > 0)
+    {
+      /* Find all floating point compare + branch insns.  If possible,
+	 reverse the comparison & the branch to avoid add,tr insns.  */
+      insns = get_insns ();
+      for (insn = insns; insn; insn = NEXT_INSN (insn))
+	{
+	  rtx tmp, next_insn;
+
+	  /* Ignore anything that isn't an INSN.  */
+	  if (GET_CODE (insn) != INSN)
+	    continue;
+
+	  tmp = PATTERN (insn);
+
+	  /* It must be a set.  */
+	  if (GET_CODE (tmp) != SET)
+	    continue;
+
+	  /* The destination must be CCFP, which is register zero.  */
+	  tmp = SET_DEST (tmp);
+	  if (GET_CODE (tmp) != REG || REGNO (tmp) != 0)
+	    continue;
+
+	  /* INSN should be a set of CCFP.
+
+	     See if the result of this insn is used in a reversed FP
+	     conditional branch.  If so, reverse our condition and
+	     the branch.  Doing so avoids useless add,tr insns.  */
+	  next_insn = NEXT_INSN (insn);
+	  while (next_insn)
+	    {
+	      /* Jumps, calls and labels stop our search.  */
+	      if (GET_CODE (next_insn) == JUMP_INSN
+		  || GET_CODE (next_insn) == CALL_INSN
+		  || GET_CODE (next_insn) == CODE_LABEL)
+		break;
+
+	      /* As does another fcmp insn.  */
+	      if (GET_CODE (next_insn) == INSN
+		  && GET_CODE (PATTERN (next_insn)) == SET
+		  && GET_CODE (SET_DEST (PATTERN (next_insn))) == REG
+		  && REGNO (SET_DEST (PATTERN (next_insn))) == 0)
+		break;
+
+	      next_insn = NEXT_INSN (next_insn);
+	    }
+
+	  /* Is NEXT_INSN a branch?  */
+	  if (next_insn
+	      && GET_CODE (next_insn) == JUMP_INSN)
+	    {
+	      rtx pattern = PATTERN (next_insn);
+
+	      /* If it a reversed fp conditional branch (eg uses add,tr)
+		 and CCFP dies, then reverse our conditional and the branch
+		 to avoid the add,tr.  */
+	      if (GET_CODE (pattern) == SET
+		  && SET_DEST (pattern) == pc_rtx
+		  && GET_CODE (SET_SRC (pattern)) == IF_THEN_ELSE
+		  && GET_CODE (XEXP (SET_SRC (pattern), 0)) == NE
+		  && GET_CODE (XEXP (XEXP (SET_SRC (pattern), 0), 0)) == REG
+		  && REGNO (XEXP (XEXP (SET_SRC (pattern), 0), 0)) == 0
+		  && GET_CODE (XEXP (SET_SRC (pattern), 1)) == PC
+		  && find_regno_note (next_insn, REG_DEAD, 0))
+		{
+		  /* Reverse the branch.  */
+		  tmp = XEXP (SET_SRC (pattern), 1);
+		  XEXP (SET_SRC (pattern), 1) = XEXP (SET_SRC (pattern), 2);
+		  XEXP (SET_SRC (pattern), 2) = tmp;
+		  INSN_CODE (next_insn) = -1;
+
+		  /* Reverse our condition.  */
+		  tmp = PATTERN (insn);
+		  PUT_CODE (XEXP (tmp, 1),
+			    reverse_condition (GET_CODE (XEXP (tmp, 1))));
+		}
+	    }
+	}
+    }
 
   /* This is fairly cheap, so always run it if optimizing.  */
   if (optimize > 0)

@@ -385,71 +385,7 @@
 			     [(match_operand:SF 0 "reg_or_0_operand" "fG")
 			      (match_operand:SF 1 "reg_or_0_operand" "fG")]))]
   "! TARGET_SOFT_FLOAT"
-  "*
-{
-  rtx next_insn;
-
-  /* See if this is later used in a reversed FP branch.  If so, reverse our
-     condition and the branch.  Doing so avoids a useless add,tr. 
-
-     Don't do this if fcmp is in a delay slot since it's too much of a
-     headache to track down things on multiple paths.  */
-  if (dbr_sequence_length ())
-    next_insn = NULL;
-  else
-    next_insn = NEXT_INSN (insn);
-  while (next_insn)
-    {
-      /* Jumps, calls and labels stop our search.  */
-      if (GET_CODE (next_insn) == JUMP_INSN
-	  || GET_CODE (next_insn) == CALL_INSN
-	  || GET_CODE (next_insn) == CODE_LABEL)
-	break;
-
-      /* As does another fcmp insn.  */
-      if (GET_CODE (next_insn) == INSN
-	  && GET_CODE (PATTERN (next_insn)) == SET
-	  && GET_CODE (SET_DEST (PATTERN (next_insn))) == REG
-	  && REGNO (SET_DEST (PATTERN (next_insn))) == 0)
-	break;
-
-      if (GET_CODE (next_insn) == INSN
-	  && GET_CODE (PATTERN (next_insn)) == SEQUENCE)
-	next_insn = XVECEXP (PATTERN (next_insn), 0, 0);
-      else
-	next_insn = NEXT_INSN (next_insn);
-    }
-
-  /* Is NEXT_INSN a branch?  */
-  if (next_insn
-      && GET_CODE (next_insn) == JUMP_INSN)
-    {
-      rtx pattern = PATTERN (next_insn);
-
-      /* Is it a reversed fp conditional branch (eg uses add,tr) and
-	 CCFP dies, then reverse our conditional and the branch to
-	 avoid the add,tr.  */
-      if (GET_CODE (pattern) == SET
-	  && SET_DEST (pattern) == pc_rtx
-	  && GET_CODE (SET_SRC (pattern)) == IF_THEN_ELSE
-	  && GET_CODE (XEXP (SET_SRC (pattern), 0)) == NE
-	  && GET_CODE (XEXP (XEXP (SET_SRC (pattern), 0), 0)) == REG
-	  && REGNO (XEXP (XEXP (SET_SRC (pattern), 0), 0)) == 0
-	  && GET_CODE (XEXP (SET_SRC (pattern), 1)) == PC
-	  && find_regno_note (next_insn, REG_DEAD, 0))
-
-	{
-	  rtx tmp;
-
-	  tmp = XEXP (SET_SRC (pattern), 1);
-	  XEXP (SET_SRC (pattern), 1) = XEXP (SET_SRC (pattern), 2);
-	  XEXP (SET_SRC (pattern), 2) = tmp;
-	  INSN_CODE (next_insn) = -1;
-	  return \"fcmp,sgl,%y2 %r0,%r1\";
-	}
-    }
-  return \"fcmp,sgl,%Y2 %r0,%r1\";
-}"
+  "fcmp,sgl,%Y2 %r0,%r1"
   [(set_attr "length" "4")
    (set_attr "type" "fpcc")])
 
@@ -459,71 +395,7 @@
 			     [(match_operand:DF 0 "reg_or_0_operand" "fG")
 			      (match_operand:DF 1 "reg_or_0_operand" "fG")]))]
   "! TARGET_SOFT_FLOAT"
-  "*
-{
-  rtx next_insn;
-
-  /* See if this is later used in a reversed FP branch.  If so, reverse our
-     condition and the branch.  Doing so avoids a useless add,tr. 
-
-     Don't do this if fcmp is in a delay slot since it's too much of a
-     headache to track down things on multiple paths.  */
-  if (dbr_sequence_length ())
-    next_insn = NULL;
-  else
-    next_insn = NEXT_INSN (insn);
-  while (next_insn)
-    {
-      /* Jumps, calls and labels stop our search.  */
-      if (GET_CODE (next_insn) == JUMP_INSN
-	  || GET_CODE (next_insn) == CALL_INSN
-	  || GET_CODE (next_insn) == CODE_LABEL)
-	break;
-
-      /* As does another fcmp insn.  */
-      if (GET_CODE (next_insn) == INSN
-	  && GET_CODE (PATTERN (next_insn)) == SET
-	  && GET_CODE (SET_DEST (PATTERN (next_insn))) == REG
-	  && REGNO (SET_DEST (PATTERN (next_insn))) == 0)
-	break;
-
-      if (GET_CODE (next_insn) == INSN
-	  && GET_CODE (PATTERN (next_insn)) == SEQUENCE)
-	next_insn = XVECEXP (PATTERN (next_insn), 0, 0);
-      else
-	next_insn = NEXT_INSN (next_insn);
-    }
-
-  /* Is NEXT_INSN a branch?  */
-  if (next_insn
-      && GET_CODE (next_insn) == JUMP_INSN)
-    {
-      rtx pattern = PATTERN (next_insn);
-
-      /* Is it a reversed fp conditional branch (eg uses add,tr) and
-	 CCFP dies, then reverse our conditional and the branch to
-	 avoid the add,tr.  */
-      if (GET_CODE (pattern) == SET
-	  && SET_DEST (pattern) == pc_rtx
-	  && GET_CODE (SET_SRC (pattern)) == IF_THEN_ELSE
-	  && GET_CODE (XEXP (SET_SRC (pattern), 0)) == NE
-	  && GET_CODE (XEXP (XEXP (SET_SRC (pattern), 0), 0)) == REG
-	  && REGNO (XEXP (XEXP (SET_SRC (pattern), 0), 0)) == 0
-	  && GET_CODE (XEXP (SET_SRC (pattern), 1)) == PC
-	  && find_regno_note (next_insn, REG_DEAD, 0))
-
-	{
-	  rtx tmp;
-
-	  tmp = XEXP (SET_SRC (pattern), 1);
-	  XEXP (SET_SRC (pattern), 1) = XEXP (SET_SRC (pattern), 2);
-	  XEXP (SET_SRC (pattern), 2) = tmp;
-	  INSN_CODE (next_insn) = -1;
-	  return \"fcmp,dbl,%y2 %r0,%r1\";
-	}
-    }
-  return \"fcmp,dbl,%Y2 %r0,%r1\";
-}"
+  "fcmp,dbl,%Y2 %r0,%r1"
   [(set_attr "length" "4")
    (set_attr "type" "fpcc")])
 
