@@ -986,8 +986,8 @@ default_conversion (exp)
       if (!lvalue_p (exp)
 	  && ! (TREE_CODE (exp) == CONSTRUCTOR && TREE_STATIC (exp)))
 	{
-	  error ("invalid use of non-lvalue array");
-	  return error_mark_node;
+	  /* Non-lvalue arrays do not decay into pointers.  */
+	  return exp;
 	}
 
       if (TYPE_READONLY (type) || TYPE_VOLATILE (type))
@@ -3560,11 +3560,6 @@ build_conditional_expr (ifexp, op1, op2)
 
   ifexp = truthvalue_conversion (default_conversion (ifexp));
 
-  if (TREE_CODE (ifexp) == ERROR_MARK
-      || TREE_CODE (TREE_TYPE (op1)) == ERROR_MARK
-      || TREE_CODE (TREE_TYPE (op2)) == ERROR_MARK)
-    return error_mark_node;
-
 #if 0 /* Produces wrong result if within sizeof.  */
   /* Don't promote the operands separately if they promote
      the same way.  Return the unpromoted type and let the combined
@@ -3582,12 +3577,17 @@ build_conditional_expr (ifexp, op1, op2)
     }
 #endif
 
-  /* They don't match; promote them both and then try to reconcile them.  */
+  /* Promote both alternatives.  */
 
   if (TREE_CODE (TREE_TYPE (op1)) != VOID_TYPE)
     op1 = default_conversion (op1);
   if (TREE_CODE (TREE_TYPE (op2)) != VOID_TYPE)
     op2 = default_conversion (op2);
+
+  if (TREE_CODE (ifexp) == ERROR_MARK
+      || TREE_CODE (TREE_TYPE (op1)) == ERROR_MARK
+      || TREE_CODE (TREE_TYPE (op2)) == ERROR_MARK)
+    return error_mark_node;
 
   type1 = TREE_TYPE (op1);
   code1 = TREE_CODE (type1);
