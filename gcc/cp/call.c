@@ -2765,6 +2765,8 @@ resolve_scoped_fn_name (tree scope, tree name)
   
   if (TREE_CODE (scope) == NAMESPACE_DECL)
     fn = lookup_namespace_name (scope, name);
+  else if (!CLASS_TYPE_P (scope))
+    error ("`%T' is not a class type", scope);
   else
     {
       if (!TYPE_BEING_DEFINED (scope)
