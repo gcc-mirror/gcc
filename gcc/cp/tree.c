@@ -416,7 +416,7 @@ build_cplus_array_type_1 (elt_type, index_type)
       saveable_obstack = &permanent_obstack;
     }
 
-  if (processing_template_decl
+  if (uses_template_parms (elt_type)
       || uses_template_parms (index_type))
     {
       t = make_node (ARRAY_TYPE);
@@ -1467,15 +1467,20 @@ build_exception_variant (type, raises)
 
   for (; v; v = TYPE_NEXT_VARIANT (v))
     {
+      tree t;
+      tree u;
+
       if (TYPE_QUALS (v) != type_quals)
 	continue;
 
-      /* @@ This should do set equality, not exact match.  */
-      if (simple_cst_list_equal (TYPE_RAISES_EXCEPTIONS (v), raises))
-	/* List of exceptions raised matches previously found list.
+      for (t = TYPE_RAISES_EXCEPTIONS (v), u = raises;
+	   t != NULL_TREE && u != NULL_TREE;
+	   t = TREE_CHAIN (t), u = TREE_CHAIN (v))
+	if (!same_type_p (TREE_VALUE (t), TREE_VALUE (u)))
+	  break;
 
-	   @@ Nice to free up storage used in consing up the
-	   @@ list of exceptions raised.  */
+      if (!t && !u)
+	/* There's a memory leak here; RAISES is not freed.  */
 	return v;
     }
 

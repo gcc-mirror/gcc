@@ -1,3 +1,45 @@
+1998-12-14  Mark Mitchell  <mark@markmitchell.com>
+
+	* class.c (pushclass): Tweak handling of class-level bindings.
+	(resolve_address_of_overloaded_function): Update pointer-to-member
+	handling. 
+	(instantiate_type): Likewise.
+	* cvt.c (cp_convert_to_pointer): Likewise.
+	* decl.c (pop_binding): Take the DECL to pop, not just the name.
+	Deal with `struct stat' hack.
+	(binding_level): Add to documentation.
+	(push_binding): Clear BINDING_TYPE.
+	(add_binding): New function.
+	(push_local_binding): Use it.
+	(push_class_binding): Likewise.
+	(poplevel): Adjust calls to pop_binding.
+	(poplevel_class): Likewise.
+	(pushdecl): Adjust handling of TYPE_DECLs; add bindings for hidden
+	declarations to current binding level.
+	(push_class_level_binding): Likewise.
+	(push_overloaded_decl): Adjust handling of OVERLOADs in local
+	bindings. 
+	(lookup_namespace_name): Don't crash when confronted with a
+	TEMPLATE_DECL. 
+	(lookup_name_real): Do `struct stat' hack in local binding
+	contexts. 
+	(build_ptrmemfunc_type): Adjust documentation.
+	(grokdeclarator): Don't avoid building real array types when
+	processing templates unless really necessary.
+	(finish_method): Adjust calls to pop_binding.
+	* decl2.c (reparse_absdcl_as_expr): Recursively call ourselves,
+	not reparse_decl_as_expr.
+	(build_expr_from_tree): Deal with a template-id as the function to
+	call in a METHOD_CALL_EXPR.
+	* pt.c (convert_nontype_argument): Tweak pointer-to-member handling.
+	(maybe_adjust_types_For_deduction): Don't do peculiar things with
+	METHOD_TYPEs here.
+	(resolve_overloaded_unification): Handle COMPONENT_REFs.  Build
+	pointer-to-member types where necessary.
+	* tree.c (build_cplus_array_type_1): Don't avoid building real
+	array types when processing templates unless really necessary.
+	(build_exception_variant): Compare the exception lists correctly. 
+	
 1998-12-13  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.def (CPLUS_BINDING): Update documentation.

@@ -4789,7 +4789,7 @@ pushclass (type, modify)
 	  for (item = previous_class_values; item; item = TREE_CHAIN (item))
 	    {
 	      tree id = TREE_PURPOSE (item);
-	      tree decl = IDENTIFIER_CLASS_VALUE (id);
+	      tree decl = TREE_TYPE (item);
 
 	      push_class_binding (id, decl);
 	      if (TREE_CODE (decl) == TYPE_DECL)
@@ -4808,8 +4808,6 @@ pushclass (type, modify)
 	  if (! (IS_AGGR_TYPE_CODE (TREE_CODE (tag_type))
 		 && CLASSTYPE_IS_TEMPLATE (tag_type)))
 	    pushtag (TREE_PURPOSE (tags), tag_type, 0);
-	  else
-	    pushdecl_class_level (CLASSTYPE_TI_TEMPLATE (tag_type));
 	}
 
       current_function_decl = this_fndecl;
@@ -5028,11 +5026,12 @@ resolve_address_of_overloaded_function (target_type,
      interoperability with most_specialized_instantiation.  */
   tree matches = NULL_TREE;
 
-  /* If the TARGET_TYPE is a pointer-to-a-method, we convert it to
-     proper pointer-to-member type here.  */
-  if (TREE_CODE (target_type) == POINTER_TYPE
-      && TREE_CODE (TREE_TYPE (target_type)) == METHOD_TYPE)
-    target_type = build_ptrmemfunc_type (target_type);
+  /* By the time we get here, we should be seeing only real
+     pointer-to-member types, not the internal POINTER_TYPE to
+     METHOD_TYPE representation.  */
+  my_friendly_assert (!(TREE_CODE (target_type) == POINTER_TYPE
+			&& (TREE_CODE (TREE_TYPE (target_type)) 
+			    == METHOD_TYPE)), 0);
 
   /* Check that the TARGET_TYPE is reasonable.  */
   if (TYPE_PTRFN_P (target_type))
@@ -5475,15 +5474,20 @@ instantiate_type (lhstype, rhs, complain)
 	if (fn == error_mark_node)
 	  return error_mark_node;
 	mark_addressable (fn);
-	TREE_TYPE (rhs) = lhstype;
 	TREE_OPERAND (rhs, 0) = fn;
 	TREE_CONSTANT (rhs) = staticp (fn);
-	if (TREE_CODE (lhstype) == POINTER_TYPE
-	    && TREE_CODE (TREE_TYPE (lhstype)) == METHOD_TYPE)
+	if (TYPE_PTRMEMFUNC_P (lhstype))
 	  {
-	    build_ptrmemfunc_type (lhstype);
-	    rhs = build_ptrmemfunc (lhstype, rhs, 0);
+	    /* We must use the POINTER_TYPE to METHOD_TYPE on RHS here
+	       so that build_ptrmemfunc knows that RHS we have is not
+	       already a pointer-to-member constant.  Instead, it is
+	       just a ADDR_EXPR over a FUNCTION_DECL.  */
+	    TREE_TYPE (rhs) = TYPE_PTRMEMFUNC_FN_TYPE (lhstype);
+	    rhs = build_ptrmemfunc (TREE_TYPE (rhs), rhs, 0);
 	  }
+	else
+	  /* Here, things our simple; we have exactly what we need.  */
+	  TREE_TYPE (rhs) = lhstype;
       }
       return rhs;
 
