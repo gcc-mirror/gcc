@@ -90,8 +90,16 @@ extern int target_flags;
    run on a 68030 and 68881/2. */
 #define TARGET_68040 (target_flags & 01400)
 
-/* Use the 68040-only fp instructions (-m68040).  */
+/* Use the 68040-only fp instructions (-m68040 or -m68060).  */
 #define TARGET_68040_ONLY (target_flags & 01000)
+
+/* Optimize for 68060, but still allow execution on 68020
+   (-m68060).
+   The 68060 will execute all 68030 and 68881/2 instructions, but some
+   of them must be emulated in software by the OS.  When TARGET_68060 is
+   turned on, these instructions won't be used.  This code will still
+   run on a 68030 and 68881/2. */
+#define TARGET_68060 (target_flags & 02000)
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
@@ -100,15 +108,15 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES  \
-  { { "68020", -01400},				\
-    { "c68020", -01400},			\
+  { { "68020", -03400},				\
+    { "c68020", -03400},			\
     { "68020", 5},				\
     { "c68020", 5},				\
     { "68881", 2},				\
     { "bitfield", 4},				\
-    { "68000", -01405},				\
-    { "c68000", -01405},			\
-    { "soft-float", -01102},			\
+    { "68000", -03405},				\
+    { "c68000", -03405},			\
+    { "soft-float", -03102},			\
     { "nobitfield", -4},			\
     { "rtd", 8},				\
     { "nortd", -8},				\
@@ -119,9 +127,10 @@ extern int target_flags;
     { "sky", 0200},				\
     { "nosky", -0200},				\
     { "68020-40", 0407},			\
-    { "68030", -01400},				\
+    { "68030", -03400},				\
     { "68030", 5},				\
     { "68040", 01007},				\
+    { "68060", 03007},				\
     { "68851", 0},	/* Affects *_SPEC and/or GAS.  */	\
     { "no-68851", 0},	/* Affects *_SPEC and/or GAS.  */	\
     { "68302", 0},	/* Affects *_SPEC and/or GAS.  */	\
