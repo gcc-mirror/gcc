@@ -885,7 +885,8 @@ static int
 apply_args_size ()
 {
   static int size = -1;
-  int align, regno;
+  int align;
+  unsigned int regno;
   enum machine_mode mode;
 
   /* The values computed by this function never change.  */
