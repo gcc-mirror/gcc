@@ -33,6 +33,15 @@
 #include <sys/sysmp.h>
 #endif
 
+#if HAVE_SYS_SYSINFO_H && HAVE_MACHINE_HAL_SYSINFO_H
+#  include <sys/sysinfo.h>
+#  include <machine/hal_sysinfo.h>
+#endif
+
+#if HAVE_SYS_TABLE_H
+#  include <sys/table.h>
+#endif
+
 #include "libiberty.h"
 
 /* Return the total amount of physical memory.  */
@@ -70,6 +79,21 @@ physmem_total ()
 	double pages = realmem.physmem;
 	if (0 <= pages && 0 <= pagesize)
           return pages * pagesize;
+      }
+  }
+#endif
+
+#if HAVE_GETSYSINFO
+  { /* This works on Tru64 UNIX V4/5.  */
+    int physmem;
+
+    if (getsysinfo (GSI_PHYSMEM, (caddr_t) &physmem, sizeof (physmem),
+		    NULL, NULL, NULL) == 1)
+      {
+	double kbytes = physmem;
+
+	if (0 <= kbytes)
+	  return kbytes * 1024.0;
       }
   }
 #endif
@@ -115,6 +139,21 @@ physmem_available ()
 	double pages = realmem.availrmem;
 	if (0 <= pages && 0 <= pagesize)
           return pages * pagesize;
+      }
+  }
+#endif
+
+#if HAVE_TABLE && HAVE_SYS_TABLE_H
+  { /* This works on Tru64 UNIX V4/5.  */
+    struct tbl_vmstats vmstats;
+
+    if (table (TBL_VMSTATS, 0, &vmstats, 1, sizeof (vmstats)) == 1)
+      {
+	double pages = vmstats.free_count;
+	double pagesize = vmstats.pagesize;
+
+	if (0 <= pages && 0 <= pagesize)
+	  return pages * pagesize;
       }
   }
 #endif
