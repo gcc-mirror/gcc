@@ -1,3 +1,21 @@
+2002-04-18  Zack Weinberg  <zack@codesourcery.com>
+
+	* real.h: Define REAL_VALUE_TYPE_SIZE as 96 or 160, as
+	appropriate.  Document need for extended precision even when
+	MAX_LONG_DOUBLE_TYPE_SIZE is smaller.  Define REAL_WIDTH here,
+	based on REAL_VALUE_TYPE_SIZE.  Use REAL_WIDTH to size
+	REAL_VALUE_TYPE.  Define CONST_DOUBLE_FORMAT here.  Use #error
+	instead of relying on later syntax error when REAL_WIDTH > 5.
+	* real.c: Define NE based only on whether or not we have a
+	full 128-bit extended type (not INTEL_EXTENDED_IEEE_FORMAT).
+	Require sizeof(REAL_VALUE_TYPE) == 2*NE.  Unconditionally
+	define GET_REAL and PUT_REAL as simple memcpy operations; no
+	need to byteswap or round.
+	Use #error instead of #ifdef-ing out the entire file, for
+	prompt error detection.
+
+	* rtl.c, gengenrtl.c: No need to calculate CONST_DOUBLE_FORMAT here.
+
 2002-04-18  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/sparc.h (BRANCH_COST): Define.
@@ -17,17 +35,17 @@
 	* config/ia64/ia64.c (ia64_function_arg_pass_by_reference): New.
 	(ia64_va_arg): Expect variable sized types by reference.
 	* config/ia64/ia64-protos.h: Update.
-	* config/ia64/ia64.h (FUNCTION_ARG_PASS_BY_REFERENCE): Use 
+	* config/ia64/ia64.h (FUNCTION_ARG_PASS_BY_REFERENCE): Use
 	ia64_function_arg_pass_by_reference.
 
 2002-04-18  Richard Henderson  <rth@redhat.com>
 
-        * ifcvt.c: Include except.h.
-        (block_has_only_trap): Break out from find_cond_trap.
-        (find_cond_trap): Use it.  Always delete the trap block.
-        (merge_if_block): Allow then block null.  Be less simplistic about
-        what insns can end a block.
-        * Makefile.in (ifcvt.o): Depend on except.h.
+	* ifcvt.c: Include except.h.
+	(block_has_only_trap): Break out from find_cond_trap.
+	(find_cond_trap): Use it.  Always delete the trap block.
+	(merge_if_block): Allow then block null.  Be less simplistic about
+	what insns can end a block.
+	* Makefile.in (ifcvt.o): Depend on except.h.
 
 	* config/ia64/ia64.md (trap, conditional_trap): New.
 
@@ -94,7 +112,7 @@ Thu Apr 18 15:49:12 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* combine.c (subst): Avoid trying to make a vector mode subreg of
 	an integer constant.
 	(gen_lowpart_for_combine): Likewise.
-			
+
 2002-04-18  Roger Sayle  <roger@eyesopen.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
@@ -163,21 +181,21 @@ Thu Apr 18 15:49:12 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-04-17  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/altivec.h (vec_ld): Add array variants.
-        (vec_lde): Same.
-        (vec_ldl): Same.
+	* config/rs6000/altivec.h (vec_ld): Add array variants.
+	(vec_lde): Same.
+	(vec_ldl): Same.
 
 2002-04-17  Alan Matsuoka  <alanm@redhat.com>
-            Aldy Hernandez <aldyh@redhat.com>
+	    Aldy Hernandez <aldyh@redhat.com>
 
-        * config/rs6000/altivec.h: Define __ALTIVEC__.
-        (bool): New.
-        (__pixel): New.
-        (pixel): New.
-        (vec_cfux): New.
-        (vec_vmaddfp): New.
-        (vec_vsldoi): New.
-        Add parentheses to all macro arguments.
+	* config/rs6000/altivec.h: Define __ALTIVEC__.
+	(bool): New.
+	(__pixel): New.
+	(pixel): New.
+	(vec_cfux): New.
+	(vec_vmaddfp): New.
+	(vec_vsldoi): New.
+	Add parentheses to all macro arguments.
 
 2002-04-16  Richard Henderson  <rth@redhat.com>
 
@@ -233,7 +251,7 @@ Thu Apr 18 15:49:12 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	PR target/6305
 	* config/s390/s390.md (mulsidi3): Set both subregs of the
-	multiword register. 
+	multiword register.
 
 2002-04-16  Aldy Hernandez  <aldyh@redhat.com>
 
@@ -272,7 +290,7 @@ Thu Apr 18 15:49:12 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	the only supported ways to configure gcc.
 
 2002-04-15  Roland McGrath  <roland@frob.com>
- 
+
 	* config.gcc (alpha*-*-gnu*): New target configuration.
 	* config/alpha/gnu.h: New file for it.
 	* config/gnu.h (TARGET_MEM_FUNCTIONS): #undef before #define.
@@ -285,7 +303,7 @@ Thu Apr 18 15:49:12 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* stmt.c (expand_start_stmt_expr): Add has_scope parameter.
 	* tree-inline.c (expand_call_inline): Set STMT_EXPR_NO_SCOPE
 	on the STMT_EXPR created for the inline function.
-	
+
 2002-04-15  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/linux.h, config/arm/linux-elf.h, config/i370/linux.h,
@@ -526,7 +544,7 @@ Fri Apr 12 15:42:59 2002  Jeffrey A Law  (law@redhat.com)
 	* config/ia64/ia64.h (ASM_SPEC): Moved from here ...
 	* config/ia64/sysv4.h (ASM_SPEC): ... to here, so that it
 	overrides the definition in config/svr4.h.
-	
+
 2002-04-12	Eric Norum <eric.norum@usask.ca>
 
 	* config/rtems.h, config/a29k/rtems.h, config/arm/rtems-elf.h,
@@ -574,7 +592,7 @@ Fri Apr 12 10:51:38 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* flow.c (mark_used_reg): Manage reg_cond_dead properly for
 	modes spanning multiple hard regs.
-    
+
 	* recog.c (peephole2_optimize): Rebuild jump labels as needed.
 
 2002-04-11  John David Anglin  <dave@hiauly1.hia.nrc.ca>

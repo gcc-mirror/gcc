@@ -76,19 +76,49 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* **** Start of software floating point emulator interface macros **** */
 
 /* REAL_VALUE_TYPE is an array of the minimum number of HOST_WIDE_INTs
-   required to hold MAX_LONG_DOUBLE_TYPE_SIZE bits.  */
-#if MAX_LONG_DOUBLE_TYPE_SIZE == 128
-/* For 128 bit reals, we calculate internally with extra precision.  */
-#define N (160 / BITS_PER_UNIT)
+   required to hold either a 96- or 160-bit extended precision floating
+   point type.  This is true even if the maximum precision floating
+   point type on the target is smaller.  */
+#if MAX_LONG_DOUBLE_TYPE_SIZE == 128 && !INTEL_EXTENDED_IEEE_FORMAT
+#define REAL_VALUE_TYPE_SIZE 160
 #else
-#define N (MAX_LONG_DOUBLE_TYPE_SIZE / BITS_PER_UNIT)
+#define REAL_VALUE_TYPE_SIZE 96
 #endif
-#define S sizeof (HOST_WIDE_INT)
+#define REAL_WIDTH \
+  (REAL_VALUE_TYPE_SIZE/HOST_BITS_PER_WIDE_INT \
+   + (REAL_VALUE_TYPE_SIZE%HOST_BITS_PER_WIDE_INT ? 1 : 0)) /* round up */
 typedef struct {
-  HOST_WIDE_INT r[N/S + (N%S ? 1 : 0)]; /* round up */
+  HOST_WIDE_INT r[REAL_WIDTH];
 } REAL_VALUE_TYPE;
-#undef N
-#undef S
+
+/* Calculate the format for CONST_DOUBLE.  We need as many slots as
+   are necessary to overlay a REAL_VALUE_TYPE on them.  This could be
+   as many as five (32-bit HOST_WIDE_INT, 160-bit REAL_VALUE_TYPE).
+
+   A number of places assume that there are always at least two 'w'
+   slots in a CONST_DOUBLE, so we provide them even if one would suffice.  */
+
+#if REAL_WIDTH == 1
+# define CONST_DOUBLE_FORMAT	 "0ww"
+#else
+# if REAL_WIDTH == 2
+#  define CONST_DOUBLE_FORMAT	 "0ww"
+# else
+#  if REAL_WIDTH == 3
+#   define CONST_DOUBLE_FORMAT	 "0www"
+#  else
+#   if REAL_WIDTH == 4
+#    define CONST_DOUBLE_FORMAT	 "0wwww"
+#   else
+#    if REAL_WIDTH == 5
+#     define CONST_DOUBLE_FORMAT "0wwwww"
+#    else
+      #error "REAL_WIDTH > 5 not supported"
+#    endif
+#   endif
+#  endif
+# endif
+#endif
 
 extern unsigned int significand_size	PARAMS ((enum machine_mode));
 

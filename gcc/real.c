@@ -165,8 +165,7 @@ unknown arithmetic type
 #define EMUSHORT_SIZE HOST_BITS_PER_LONG
 #define EMULONG_SIZE (2 * HOST_BITS_PER_LONG)
 #else
-/*  You will have to modify this program to have a smaller unit size.  */
-#define EMU_NON_COMPILE
+  #error "You will have to modify this program to have a smaller unit size."
 #endif
 #endif
 #endif
@@ -199,92 +198,45 @@ typedef unsigned int UHItype __attribute__ ((mode (HI)));
 #if HOST_BITS_PER_LONGLONG >= EMULONG_SIZE
 #define EMULONG long long int
 #else
-/*  You will have to modify this program to have a smaller unit size.  */
-#define EMU_NON_COMPILE
+  #error "You will have to modify this program to have a smaller unit size."
 #endif
 #endif
 #endif
 #endif
 
-
-/* The host interface doesn't work if no 16-bit size exists.  */
 #if EMUSHORT_SIZE != 16
-#define EMU_NON_COMPILE
+  #error "The host interface doesn't work if no 16-bit size exists."
 #endif
 
-/* OK to continue compilation.  */
-#ifndef EMU_NON_COMPILE
+/* Calculate the size of the generic "e" type.  This always has
+   identical in-memory size and representation to REAL_VALUE_TYPE.
+   There are only two supported sizes: ten and six 16-bit words (160
+   or 96 bits).  */
+
+#if MAX_LONG_DOUBLE_TYPE_SIZE == 128 && !INTEL_EXTENDED_IEEE_FORMAT
+/* TFmode */
+# define NE 10
+# define MAXDECEXP 4932
+# define MINDECEXP -4977
+#else
+# define NE 6
+# define MAXDECEXP 4932
+# define MINDECEXP -4956
+#endif
+
+/* Fail compilation if 2*NE is not the appropriate size.  */
+
+struct compile_test_dummy {
+  char twice_NE_must_equal_sizeof_REAL_VALUE_TYPE
+  [(sizeof (REAL_VALUE_TYPE) == 2*NE) ? 1 : -1];
+};
 
 /* Construct macros to translate between REAL_VALUE_TYPE and e type.
    In GET_REAL and PUT_REAL, r and e are pointers.
    A REAL_VALUE_TYPE is guaranteed to occupy contiguous locations
    in memory, with no holes.  */
-
-#if MAX_LONG_DOUBLE_TYPE_SIZE == 96 || \
-    ((INTEL_EXTENDED_IEEE_FORMAT != 0) && MAX_LONG_DOUBLE_TYPE_SIZE == 128)
-/* Number of 16 bit words in external e type format */
-# define NE 6
-# define MAXDECEXP 4932
-# define MINDECEXP -4956
-# define GET_REAL(r,e)  memcpy ((e), (r), 2*NE)
-# define PUT_REAL(e,r)						\
-	do {							\
-	  memcpy ((r), (e), 2*NE);				\
-	  if (2*NE < sizeof (*r))				\
-	    memset ((char *) (r) + 2*NE, 0, sizeof (*r) - 2*NE);	\
-	} while (0)
-# else /* no XFmode */
-#  if MAX_LONG_DOUBLE_TYPE_SIZE == 128
-#   define NE 10
-#   define MAXDECEXP 4932
-#   define MINDECEXP -4977
-#   define GET_REAL(r,e) memcpy ((e), (r), 2*NE)
-#   define PUT_REAL(e,r)					\
-	do {							\
-	  memcpy ((r), (e), 2*NE);				\
-	  if (2*NE < sizeof (*r))				\
-	    memset ((char *) (r) + 2*NE, 0, sizeof (*r) - 2*NE);	\
-	} while (0)
-#else
-#define NE 6
-#define MAXDECEXP 4932
-#define MINDECEXP -4956
-/* Emulator uses target format internally
-   but host stores it in host endian-ness.  */
-
-#define GET_REAL(r,e)							\
-do {									\
-     if (HOST_FLOAT_WORDS_BIG_ENDIAN == REAL_WORDS_BIG_ENDIAN)		\
-       e53toe ((const UEMUSHORT *) (r), (e));				\
-     else								\
-       {								\
-	 UEMUSHORT w[4];					\
-         memcpy (&w[3], ((const EMUSHORT *) r), sizeof (EMUSHORT));	\
-         memcpy (&w[2], ((const EMUSHORT *) r) + 1, sizeof (EMUSHORT));	\
-         memcpy (&w[1], ((const EMUSHORT *) r) + 2, sizeof (EMUSHORT));	\
-         memcpy (&w[0], ((const EMUSHORT *) r) + 3, sizeof (EMUSHORT));	\
-	 e53toe (w, (e));						\
-       }								\
-   } while (0)
-
-#define PUT_REAL(e,r)							\
-do {									\
-     if (HOST_FLOAT_WORDS_BIG_ENDIAN == REAL_WORDS_BIG_ENDIAN)		\
-       etoe53 ((e), (UEMUSHORT *) (r));				\
-     else								\
-       {								\
-	 UEMUSHORT w[4];					\
-	 etoe53 ((e), w);						\
-         memcpy (((EMUSHORT *) r), &w[3], sizeof (EMUSHORT));		\
-         memcpy (((EMUSHORT *) r) + 1, &w[2], sizeof (EMUSHORT));	\
-         memcpy (((EMUSHORT *) r) + 2, &w[1], sizeof (EMUSHORT));	\
-         memcpy (((EMUSHORT *) r) + 3, &w[0], sizeof (EMUSHORT));	\
-       }								\
-   } while (0)
-
-#endif /* not TFmode */
-#endif /* not XFmode */
-
+#define GET_REAL(r, e)  memcpy ((e), (r), 2*NE)
+#define PUT_REAL(e, r)  memcpy ((r), (e), 2*NE)
 
 /* Number of 16 bit words in internal format */
 #define NI (NE+3)
@@ -6918,7 +6870,6 @@ esqrt (x, y)
   emovo (sq, y);
 }
 #endif
-#endif /* EMU_NON_COMPILE not defined */
 
 /* Return the binary precision of the significand for a given
    floating point mode.  The mode can hold an integer value
