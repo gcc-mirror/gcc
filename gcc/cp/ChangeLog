@@ -1,5 +1,8 @@
 2002-07-05  Jason Merrill  <jason@redhat.com>
 
+	* cvt.c (cp_convert_to_pointer): Call force_fit_type for null
+	pointers.
+
 	PR optimization/7145
 	* tree.c (cp_copy_res_decl_for_inlining): Also copy DECL_INITIAL.
 
