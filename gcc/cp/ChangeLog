@@ -1,5 +1,17 @@
 2004-02-04  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/13969
+	* cp-tree.h (fold_non_dependent_expr): New function.
+	* parser.c (cp_parser_fold_non_dependent_expr): Remove.
+	(cp_parser_template_argument): Use fold_non_dependent_expr.
+	(cp_parser_direct_declarator): Likewise.
+	* pt.c (fold_non_dependent_expr): New function.
+	(convert_nontype_argument): Use it.
+	(tsubst_qualified_id): Simplify.
+	(tsubst_copy_and_build): Likewise.
+
+2004-02-04  Mark Mitchell  <mark@codesourcery.com>
+
 	* decl.c (cxx_push_function_context): Do not set
 	current_function_is_thunk.
 	* method.c (use_thunk): Set CALL_FROM_THUNK on the call to the

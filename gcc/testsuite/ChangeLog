@@ -1,3 +1,8 @@
+2004-02-04  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13969
+	* g++.dg/template/static6.C: New test.
+
 2004-02-04  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* gcc.dg/arm-mmx-1.c: Don't look for ldmfd if -mthumb.
