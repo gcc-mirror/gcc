@@ -1,3 +1,24 @@
+2003-01-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init):
+	Additionally handle files one level deeper in glob patterns.
+	* testsuite/libstdc++-v3.dg/dg.exp: Likewise.
+	
+	* testsuite/27_io/istream_extractor_arith.cc: Delete, split...
+	* testsuite/27_io/istream_extractor_arith/01.cc,
+	testsuite/27_io/istream_extractor_arith/02.cc,
+	testsuite/27_io/istream_extractor_arith/03.cc,
+	testsuite/27_io/istream_extractor_arith/06.cc,
+	testsuite/27_io/istream_extractor_arith/07.cc,
+	testsuite/27_io/istream_extractor_arith/08.cc,
+	testsuite/27_io/istream_extractor_arith/09.cc,
+	testsuite/27_io/istream_extractor_arith/10.cc,
+	testsuite/27_io/istream_extractor_arith/11.cc,
+	testsuite/27_io/istream_extractor_arith/12.cc,
+	testsuite/27_io/istream_extractor_arith/13.cc: ... to new files.
+	* testsuite/27_io/istream_extractor_arith/12.cc: Add XFAIL for
+	sparc*-*-solaris2*.
+
 2003-01-05  Paolo Carlini <pcarlini@unitus.it>
 
 	PR libstdc++/9168

@@ -40,7 +40,7 @@ remote_exec host ${shell-ulimit-command} "-d ${maximum-memory-usage}"
 remote_exec host ${shell-ulimit-command} "-v ${maximum-memory-usage}"
 
 # Main loop.
-dg-runtest [lsort [glob -nocomplain $srcdir/*/*.cc]] \
+dg-runtest [lsort [glob -nocomplain $srcdir/{,*/}*/*.cc]] \
         "" $DEFAULT_CXXFLAGS
 
 # All done.
