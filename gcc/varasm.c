@@ -106,6 +106,18 @@ tree last_assemble_variable_decl;
 
 bool unlikely_section_label_printed = false;
 
+/* The following global variable indicates the label name to be put at
+   the start of the first cold section within each function, when
+   partitioning basic blocks into hot and cold sections.  */
+
+char *unlikely_section_label = NULL;
+ 
+/* The following global variable indicates the section name to be used
+   for the current cold section, when partitioning hot and cold basic
+   blocks into separate sections.  */
+
+char *unlikely_text_section_name = NULL;
+
 /* RTX_UNCHANGING_P in a MEM can mean it is stored into, for initialization.
    So giving constant the alias set for the type will allow such
    initializations to appear to conflict with the load of the constant.  We
@@ -206,7 +218,6 @@ text_section (void)
     {
       in_section = in_text;
       fprintf (asm_out_file, "%s\n", TEXT_SECTION_ASM_OP);
-      ASM_OUTPUT_ALIGN (asm_out_file, 2);
     }
 }
 
@@ -229,13 +240,8 @@ unlikely_text_section (void)
       
       if (!unlikely_section_label_printed)
 	{
-	  fprintf (asm_out_file, "__%s_unlikely_section:\n", 
-		   current_function_name ());
+	  ASM_OUTPUT_LABEL (asm_out_file, unlikely_section_label);
 	  unlikely_section_label_printed = true;
-
-	  /* Make sure that we have appropriate alignment for instructions
-	     in this section.  */
-	  assemble_align (FUNCTION_BOUNDARY);
 	}
     }
 }
@@ -1094,7 +1100,16 @@ assemble_start_function (tree decl, const char *fnname)
 {
   int align;
 
+  if (unlikely_text_section_name)
+    free (unlikely_text_section_name);
+
   unlikely_section_label_printed = false;
+  unlikely_text_section_name = NULL;
+  
+  if (unlikely_section_label)
+    free (unlikely_section_label);
+  unlikely_section_label = xmalloc ((strlen (fnname) + 18) * sizeof (char));
+  sprintf (unlikely_section_label, "%s_unlikely_section", fnname);
 
   /* The following code does not need preprocessing in the assembler.  */
 
@@ -1102,6 +1117,20 @@ assemble_start_function (tree decl, const char *fnname)
 
   if (CONSTANT_POOL_BEFORE_FUNCTION)
     output_constant_pool (fnname, decl);
+
+  /* Make sure the cold text (code) section is properly aligned.  This
+     is necessary here in the case where the function has both hot and
+     cold sections, because we don't want to re-set the alignment when the
+     section switch happens mid-function.  We don't need to set the hot
+     section alignment here, because code further down in this function
+     sets the alignment for whichever section comes first, and if there
+     is a hot section it is guaranteed to be first.  */
+
+  if (flag_reorder_blocks_and_partition)
+    {
+      unlikely_text_section ();
+      assemble_align (FUNCTION_BOUNDARY);
+    }
 
   resolve_unique_section (decl, 0, flag_function_sections);
   function_section (decl);
@@ -1153,6 +1182,13 @@ assemble_start_function (tree decl, const char *fnname)
   /* Standard thing is just output label for the function.  */
   ASM_OUTPUT_LABEL (asm_out_file, fnname);
 #endif /* ASM_DECLARE_FUNCTION_NAME */
+
+  if (in_unlikely_text_section ()
+      && !unlikely_section_label_printed)
+    {
+      ASM_OUTPUT_LABEL (asm_out_file, unlikely_section_label);
+      unlikely_section_label_printed = true;
+    }
 }
 
 /* Output assembler code associated with defining the size of the

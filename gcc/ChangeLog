@@ -1,3 +1,15 @@
+2004-08-10  Caroline Tice  <ctice@apple.com
+
+	* varasm.c (unlikely_section_label): New global variable.
+	(unlikely_text_section_name): New global variable.
+	(text_section):  Remove alignment statement.
+	(unlikely_text_section): Remove alignment statement; use 
+	unlikely_section_label rather than hard-coded string.
+	(assemble_start_function): Initialize unlikely_section_label and
+	unlikely_text_section_name;  make sure cold section is properly
+	aligned at start of function; output unlikely_section_label if
+	appropriate.
+
 2004-08-10  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390-protos.h (s390_canonicalize_comparison): Declare.
