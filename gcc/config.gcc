@@ -658,10 +658,15 @@ arm*-*-eabi* | arm*-*-symbianelf* )
 	# TImode.
 	need_64bit_hwint=yes
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/bpabi.h"
-	tmake_file="t-slibgcc-elf-ver arm/t-arm arm/t-arm-elf arm/t-bpabi"
+	tmake_file="t-slibgcc-elf-ver arm/t-arm arm/t-arm-elf"
 	case ${target} in
+	arm*-*-eabi*)
+	  tmake_file="${tmake_file} arm/t-bpabi"
+	  ;;
 	arm*-*-symbianelf*)
 	  tm_file="${tm_file} arm/symbian.h"
+	  # We do not include t-bpabi for Symbian OS because the system
+	  # provides its own implementation of the BPABI functions.
 	  tmake_file="${tmake_file} arm/t-symbian"
 	  ;;
 	esac
