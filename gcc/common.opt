@@ -76,6 +76,10 @@ Wextra
 Common
 Print extra (possibly unwanted) warnings
 
+Wfatal-errors
+Common
+Exit on the first error occurred
+
 Winline
 Common
 Warn when an inlined function cannot be inlined

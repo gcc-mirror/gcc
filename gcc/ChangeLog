@@ -1,3 +1,12 @@
+2004-04-29  Richard Guenther  <richard.guenther@uni-tuebingen.de>
+
+	* commom.opt (Wfatal-errors): Add it.
+	* diagnostic.c (flag_fatal_errors): Define it.
+	(diagnostic_action_after_output): Check for flag_fatal_errors.
+	* flags.h (flag_fatal_errors): Declare it.
+	* opts.c (common_handle_option): Add OPT_Wfatal_errors.
+	* doc/invoke.texi (Warning Options): Document -Wfatal-errors.
+
 2004-04-30  Josef Zlomek  <zlomekj@suse.cz>
 
 	* gcse.c (remove_reachable_equiv_notes): Delete notes also in
