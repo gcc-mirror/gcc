@@ -1,3 +1,12 @@
+2001-01-10  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cppinit.c (OPT_g): Remove.
+        (cpp_handle_option): Update for removed -g3. 
+        (print_help): Update.
+        * cpplib.h (struct cpp_options): Remove debug_output.
+        * cppmain.c (setup_callbacks, cb_define): Update.
+        * gcc.c (cpp_options): Translate -g3 to -dD.  
+
 2001-01-10  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/i960/i960.md: Change modifier to + on the zero_extract

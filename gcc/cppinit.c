@@ -1062,7 +1062,6 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("fpreprocessed",            0,      OPT_fpreprocessed)              \
   DEF_OPT("fshow-column",             0,      OPT_fshow_column)               \
   DEF_OPT("ftabstop=",                no_num, OPT_ftabstop)                   \
-  DEF_OPT("g",                        no_arg, OPT_g)  /* arg optional */      \
   DEF_OPT("h",                        0,      OPT_h)                          \
   DEF_OPT("idirafter",                no_dir, OPT_idirafter)                  \
   DEF_OPT("imacros",                  no_fil, OPT_imacros)                    \
@@ -1230,10 +1229,10 @@ cpp_handle_option (pfile, argc, argv)
 	{
 	  arg = &argv[i][cl_options[opt_index].opt_len + 1];
 
-	  /* Yuk. Special case for -g and -W as they must not swallow
+	  /* Yuk. Special case for -W as it must not swallow
 	     up any following argument.  If this becomes common, add
 	     another field to the cl_options table.  */
-	  if (arg[0] == '\0' && !(opt_code == OPT_g || opt_code == OPT_W))
+	  if (arg[0] == '\0' && opt_code != OPT_W)
 	    {
 	      arg = argv[++i];
 	      if (!arg)
@@ -1281,10 +1280,6 @@ cpp_handle_option (pfile, argc, argv)
 	  break;
 	case OPT_w:
 	  CPP_OPTION (pfile, inhibit_warnings) = 1;
-	  break;
-	case OPT_g:  /* Silently ignore anything but -g3.  */
-	  if (!strcmp(&argv[i][2], "3"))
-	    CPP_OPTION (pfile, debug_output) = 1;
 	  break;
 	case OPT_h:
 	case OPT__help:
@@ -1826,7 +1821,6 @@ Switches:\n\
   -MP			    Generate phony targets for all headers\n\
   -MQ <target>              Add a MAKE-quoted target\n\
   -MT <target>              Add an unquoted target\n\
-  -g3                       Include #define and #undef directives in the output\n\
 "), stdout);
   fputs (_("\
   -D<macro>                 Define a <macro> with string '1' as its value\n\

@@ -411,14 +411,6 @@ struct cpp_options
   /* Nonzero means dump macros in some fashion - see above.  */
   unsigned char dump_macros;
 
-  /* Nonzero means pass all #define and #undef directives which we
-     actually process through to the output stream.  This feature is
-     used primarily to allow cc1 to record the #defines and #undefs
-     for the sake of debuggers which understand about preprocessor
-     macros, but it may also be useful with -E to figure out how
-     symbols are defined, and where they are defined.  */
-  unsigned char debug_output;
-
   /* Nonzero means pass #include lines through to the output.  */
   unsigned char dump_includes;
 

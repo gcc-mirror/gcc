@@ -168,8 +168,7 @@ setup_callbacks ()
   if (CPP_OPTION (pfile, dump_includes))
     pfile->cb.include  = cb_include;
 
-  if (CPP_OPTION (pfile, debug_output)
-      || CPP_OPTION (pfile, dump_macros) == dump_names
+  if (CPP_OPTION (pfile, dump_macros) == dump_names
       || CPP_OPTION (pfile, dump_macros) == dump_definitions)
     {
       pfile->cb.define = cb_define;
@@ -350,9 +349,8 @@ cb_define (pfile, node)
       maybe_print_line (cpp_get_line (pfile)->output_line);
       fprintf (print.outf, "#define %s", node->name);
 
-      /* -dD or -g3 command line options.  */
-      if (CPP_OPTION (pfile, debug_output)
-	  || CPP_OPTION (pfile, dump_macros) == dump_definitions)
+      /* -dD command line option.  */
+      if (CPP_OPTION (pfile, dump_macros) == dump_definitions)
 	fputs ((const char *) cpp_macro_definition (pfile, node), print.outf);
 
       putc ('\n', print.outf);

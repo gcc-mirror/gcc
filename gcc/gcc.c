@@ -602,7 +602,7 @@ static const char *cpp_options =
  %{fshow-column} %{fno-show-column}\
  %{fleading-underscore} %{fno-leading-underscore}\
  %{fno-operator-names} %{ftabstop=*} %{remap}\
- %{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*&U*&A*} %{i*} %Z %i\
+ %{g3:-dD} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*&U*&A*} %{i*} %Z %i\
  %{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}}";
 
 /* NB: This is shared amongst all front-ends.  */
