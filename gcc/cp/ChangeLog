@@ -1,3 +1,8 @@
+2004-01-02  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR target/12729
+	* method.c (use_thunk): Pass the CALL_EXPR through force_target_expr.
+
 2004-01-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/13520
