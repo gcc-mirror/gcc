@@ -53,8 +53,8 @@ namespace std {
   const locale::category 	locale::messages;
   const locale::category 	locale::all;
 
-  locale::_Impl* 		locale::_S_global; 
   locale::_Impl* 		locale::_S_classic;
+  locale::_Impl* 		locale::_S_global; 
   const int 			locale::_S_categories_num;
   const int 			locale::_S_facets_num;
 
