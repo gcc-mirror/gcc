@@ -1,3 +1,7 @@
+2003-01-15  Josef Zlomek  <zlomekj@suse.cz>
+
+	* MAINTAINERS: Add myself to write-after-approval list.
+
 2003-01-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (noconfigdirs): Don't skip gas on IRIX 6.
