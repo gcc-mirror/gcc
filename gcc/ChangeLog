@@ -1,3 +1,11 @@
+Mon Jan  5 11:39:49 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* mips.c (mips_expand_prologue): Handle large frame with no outgoing
+	arguments for mips16.
+	(mips_expand_epilogue): Pass "orig_tsize" to save_restore_insns.
+	Don't lose if tsize is zero after handling large stack for mips16.
+	* mips.md (return): For trivial return, return address is in $31.
+
 Sun Jan  4 20:24:00 1998  Nigel Stephens  <nigel@algor.co.uk>
 
 	*  mips/mips16.S: Various changes to make it work with -msingle-float
