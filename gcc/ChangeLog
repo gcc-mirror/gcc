@@ -1,3 +1,8 @@
+Sat Feb 17 10:52:34 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* reg-stack.c (stack_def): Make field reg unsigned.
+	(remove_regno_note): Unsignetize parameter.
+
 2001-02-16  Jes Sorensen  <jes@linuxcare.com>
 
 	* ia64.c (errata_emit_nops): Add VOIDmode as second argument to
