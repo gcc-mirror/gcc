@@ -1,3 +1,8 @@
+Tue Oct  7 15:37:35 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* dwarf2out.c (output_call_frame_info): Reinstate last change
+	using flag_debug_asm check instead of flag_verbose_asm.
+
 Tue Oct  7 12:57:26 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* dwarf2out.c (output_call_frame_info): Remove last change.
