@@ -1,3 +1,9 @@
+Wed May 22 14:16:07 CEST 2002JanHUbicka  <jh@suse.cz>
+
+	* i386.c  (expand_movstr, expand_clrstr): Fix inline-all-stringops
+	sequence.
+	(ix86_expand_clrstr): Fix typo.
+
 2002-05-22  Duraid Madina   <duraid@fl.net.au>
 
 	* tradcpp.c (fixup_newlines): Use old-style function header.

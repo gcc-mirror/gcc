@@ -7959,6 +7959,10 @@ ix86_expand_int_movcc (operands)
       && GET_CODE (ix86_compare_op1) == CONST_INT
       && mode != HImode
       && (unsigned int) INTVAL (ix86_compare_op1) != 0xffffffff
+      /* The operand still must be representable as sign extended value.  */
+      && (!TARGET_64BIT
+	  || GET_MODE (ix86_compare_op0) != DImode
+	  || (unsigned int) INTVAL (ix86_compare_op1) != 0x7fffffff)
       && GET_CODE (operands[2]) == CONST_INT
       && GET_CODE (operands[3]) == CONST_INT)
     {
@@ -9130,6 +9134,9 @@ ix86_expand_movstr (dst, src, count_exp, align_exp)
     {
       rtx countreg2;
       rtx label = NULL;
+      int desired_alignment = (TARGET_PENTIUMPRO
+			       && (count == 0 || count >= (unsigned int) 260)
+			       ? 8 : UNITS_PER_WORD);
 
       /* In case we don't know anything about the alignment, default to
          library version, since it is usually equally fast and result in
@@ -9159,10 +9166,7 @@ ix86_expand_movstr (dst, src, count_exp, align_exp)
          This is quite costy.  Maybe we can revisit this decision later or
          add some customizability to this code.  */
 
-      if (count == 0
-	  && align < (TARGET_PENTIUMPRO && (count == 0
-					    || count >= (unsigned int) 260)
-		      ? 8 : UNITS_PER_WORD))
+      if (count == 0 && align < desired_alignment)
 	{
 	  label = gen_label_rtx ();
 	  emit_cmp_and_jump_insns (countreg, GEN_INT (UNITS_PER_WORD - 1),
@@ -9184,10 +9188,7 @@ ix86_expand_movstr (dst, src, count_exp, align_exp)
 	  emit_label (label);
 	  LABEL_NUSES (label) = 1;
 	}
-      if (align <= 4
-	  && ((TARGET_PENTIUMPRO && (count == 0
-				     || count >= (unsigned int) 260))
-	      || TARGET_64BIT))
+      if (align <= 4 && desired_alignment > 4)
 	{
 	  rtx label = ix86_expand_aligntest (destreg, 4);
 	  emit_insn (gen_strmovsi (destreg, srcreg));
@@ -9196,6 +9197,12 @@ ix86_expand_movstr (dst, src, count_exp, align_exp)
 	  LABEL_NUSES (label) = 1;
 	}
 
+      if (label && desired_alignment > 4 && !TARGET_64BIT)
+	{
+	  emit_label (label);
+	  LABEL_NUSES (label) = 1;
+	  label = NULL_RTX;
+	}
       if (!TARGET_SINGLE_STRINGOP)
 	emit_insn (gen_cld ());
       if (TARGET_64BIT)
@@ -9341,6 +9348,10 @@ ix86_expand_clrstr (src, count_exp, align_exp)
     {
       rtx countreg2;
       rtx label = NULL;
+      /* Compute desired alignment of the string operation.  */
+      int desired_alignment = (TARGET_PENTIUMPRO
+			       && (count == 0 || count >= (unsigned int) 260)
+			       ? 8 : UNITS_PER_WORD);
 
       /* In case we don't know anything about the alignment, default to
          library version, since it is usually equally fast and result in
@@ -9355,13 +9366,10 @@ ix86_expand_clrstr (src, count_exp, align_exp)
       countreg = copy_to_mode_reg (counter_mode, count_exp);
       zeroreg = copy_to_mode_reg (Pmode, const0_rtx);
 
-      if (count == 0
-	  && align < (TARGET_PENTIUMPRO && (count == 0
-					    || count >= (unsigned int) 260)
-		      ? 8 : UNITS_PER_WORD))
+      if (count == 0 && align < desired_alignment)
 	{
 	  label = gen_label_rtx ();
-	  emit_cmp_and_jump_insns (countreg, GEN_INT (UNITS_PER_WORD - 1),
+	  emit_cmp_and_jump_insns (countreg, GEN_INT (desired_alignment - 1),
 				   LEU, 0, counter_mode, 1, label);
 	}
       if (align <= 1)
@@ -9382,8 +9390,7 @@ ix86_expand_clrstr (src, count_exp, align_exp)
 	  emit_label (label);
 	  LABEL_NUSES (label) = 1;
 	}
-      if (align <= 4 && TARGET_PENTIUMPRO && (count == 0
-					      || count >= (unsigned int) 260))
+      if (align <= 4 && desired_alignment > 4)
 	{
 	  rtx label = ix86_expand_aligntest (destreg, 4);
 	  emit_insn (gen_strsetsi (destreg, (TARGET_64BIT
@@ -9392,6 +9399,13 @@ ix86_expand_clrstr (src, count_exp, align_exp)
 	  ix86_adjust_counter (countreg, 4);
 	  emit_label (label);
 	  LABEL_NUSES (label) = 1;
+	}
+
+      if (label && desired_alignment > 4 && !TARGET_64BIT)
+	{
+	  emit_label (label);
+	  LABEL_NUSES (label) = 1;
+	  label = NULL_RTX;
 	}
 
       if (!TARGET_SINGLE_STRINGOP)
@@ -9409,18 +9423,18 @@ ix86_expand_clrstr (src, count_exp, align_exp)
 	  emit_insn (gen_rep_stossi (destreg, countreg2, zeroreg,
 				     destreg, countreg2));
 	}
-
       if (label)
 	{
 	  emit_label (label);
 	  LABEL_NUSES (label) = 1;
 	}
+
       if (TARGET_64BIT && align > 4 && count != 0 && (count & 4))
 	emit_insn (gen_strsetsi (destreg,
 				 gen_rtx_SUBREG (SImode, zeroreg, 0)));
       if (TARGET_64BIT && (align <= 4 || count == 0))
 	{
-	  rtx label = ix86_expand_aligntest (destreg, 2);
+	  rtx label = ix86_expand_aligntest (countreg, 2);
 	  emit_insn (gen_strsetsi (destreg,
 				   gen_rtx_SUBREG (SImode, zeroreg, 0)));
 	  emit_label (label);
@@ -9431,7 +9445,7 @@ ix86_expand_clrstr (src, count_exp, align_exp)
 				 gen_rtx_SUBREG (HImode, zeroreg, 0)));
       if (align <= 2 || count == 0)
 	{
-	  rtx label = ix86_expand_aligntest (destreg, 2);
+	  rtx label = ix86_expand_aligntest (countreg, 2);
 	  emit_insn (gen_strsethi (destreg,
 				   gen_rtx_SUBREG (HImode, zeroreg, 0)));
 	  emit_label (label);
@@ -9442,7 +9456,7 @@ ix86_expand_clrstr (src, count_exp, align_exp)
 				 gen_rtx_SUBREG (QImode, zeroreg, 0)));
       if (align <= 1 || count == 0)
 	{
-	  rtx label = ix86_expand_aligntest (destreg, 1);
+	  rtx label = ix86_expand_aligntest (countreg, 1);
 	  emit_insn (gen_strsetqi (destreg,
 				   gen_rtx_SUBREG (QImode, zeroreg, 0)));
 	  emit_label (label);
