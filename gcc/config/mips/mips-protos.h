@@ -87,18 +87,13 @@ extern bool		mips_expand_unaligned_load PARAMS ((rtx, rtx,
 extern bool		mips_expand_unaligned_store PARAMS ((rtx, rtx,
 							     unsigned int,
 							     int));
-extern void		final_prescan_insn PARAMS ((rtx, rtx *, int));
 extern void		init_cumulative_args PARAMS ((CUMULATIVE_ARGS *,
 						      tree, rtx));
 extern void		gen_conditional_move PARAMS ((rtx *));
 extern void		mips_gen_conditional_trap PARAMS ((rtx *));
 extern void		mips_emit_fcc_reload PARAMS ((rtx, rtx, rtx));
 extern void		mips_set_return_address PARAMS ((rtx, rtx));
-extern void		mips_count_memory_refs PARAMS ((rtx, int));
 extern HOST_WIDE_INT	mips_debugger_offset PARAMS ((rtx, HOST_WIDE_INT));
-extern const char      *mips_fill_delay_slot PARAMS ((const char *,
-						      enum delay_type, rtx *,
-						      rtx));
 extern rtx		mips_subword PARAMS ((rtx, int));
 extern bool		mips_split_64bit_move_p PARAMS ((rtx, rtx));
 extern void		mips_split_64bit_move PARAMS ((rtx, rtx));

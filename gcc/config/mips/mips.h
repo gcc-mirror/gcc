@@ -43,14 +43,6 @@ enum cmp_type {
   CMP_MAX				/* max comparison type */
 };
 
-/* types of delay slot */
-enum delay_type {
-  DELAY_NONE,				/* no delay slot */
-  DELAY_LOAD,				/* load from memory delay */
-  DELAY_HILO,				/* move from/to hi/lo registers */
-  DELAY_FCMP				/* delay after doing c.<xx>.{d,s} */
-};
-
 /* Which processor to schedule for.  Since there is no difference between
    a R2000 and R3000 in terms of the scheduler, we collapse them into
    just an R3000.  The elements of the enumeration must match exactly
@@ -164,16 +156,6 @@ extern const char *mips_abi_string;	/* for -mabi={32,n32,64} */
 extern const char *mips_entry_string;	/* for -mentry */
 extern const char *mips_no_mips16_string;/* for -mno-mips16 */
 extern const char *mips_cache_flush_func;/* for -mflush-func= and -mno-flush-func */
-extern int dslots_load_total;		/* total # load related delay slots */
-extern int dslots_load_filled;		/* # filled load delay slots */
-extern int dslots_jump_total;		/* total # jump related delay slots */
-extern int dslots_jump_filled;		/* # filled jump delay slots */
-extern int dslots_number_nops;		/* # of nops needed by previous insn */
-extern int num_refs[3];			/* # 1/2/3 word references */
-extern GTY(()) rtx mips_load_reg;	/* register to check for load delay */
-extern GTY(()) rtx mips_load_reg2;	/* 2nd reg to check for load delay */
-extern GTY(()) rtx mips_load_reg3;	/* 3rd reg to check for load delay */
-extern GTY(()) rtx mips_load_reg4;	/* 4th reg to check for load delay */
 extern int mips_string_length;		/* length of strings for mips16 */
 extern const struct mips_cpu_info mips_cpu_info_table[];
 extern const struct mips_cpu_info *mips_arch_info;
@@ -202,7 +184,7 @@ extern void		sbss_section PARAMS ((void));
 #define MASK_GPOPT	   0x00000008	/* Optimize for global pointer */
 #define MASK_GAS	   0x00000010	/* Gas used instead of MIPS as */
 #define MASK_NAME_REGS	   0x00000020	/* Use MIPS s/w reg name convention */
-#define MASK_STATS	   0x00000040	/* print statistics to stderr */
+#define MASK_EXPLICIT_RELOCS 0x00000040 /* Use relocation operators.  */
 #define MASK_MEMCPY	   0x00000080	/* call memcpy instead of inline code*/
 #define MASK_SOFT_FLOAT	   0x00000100	/* software floating point */
 #define MASK_FLOAT64	   0x00000200	/* fp registers are 64 bits */
@@ -228,7 +210,6 @@ extern void		sbss_section PARAMS ((void));
 					   multiply-add operations.  */
 #define MASK_BRANCHLIKELY  0x02000000   /* Generate Branch Likely
 					   instructions.  */
-#define MASK_EXPLICIT_RELOCS 0x04000000 /* Use relocation operators.  */
 
 					/* Debug switches, not documented */
 #define MASK_DEBUG	0		/* unused */
@@ -273,9 +254,6 @@ extern void		sbss_section PARAMS ((void));
 
 					/* Optimize for Sdata/Sbss */
 #define TARGET_GP_OPT		(target_flags & MASK_GPOPT)
-
-					/* print program statistics */
-#define TARGET_STATS		(target_flags & MASK_STATS)
 
 					/* call memcpy instead of inline code */
 #define TARGET_MEMCPY		(target_flags & MASK_MEMCPY)
@@ -590,9 +568,9 @@ extern void		sbss_section PARAMS ((void));
      N_("Don't use GP relative sdata/sbss sections")},			\
   {"no-gpopt",		 -MASK_GPOPT,					\
      N_("Don't use GP relative sdata/sbss sections")},			\
-  {"stats",		  MASK_STATS,					\
-     N_("Output compiler statistics")},					\
-  {"no-stats",		 -MASK_STATS,					\
+  {"stats",		  0,						\
+     N_("Output compiler statistics (now ignored)")},			\
+  {"no-stats",		  0,						\
      N_("Don't output compiler statistics")},				\
   {"memcpy",		  MASK_MEMCPY,					\
      N_("Don't optimize block moves")},					\
@@ -3403,26 +3381,6 @@ typedef struct mips_args {
 
 #define SPECIAL_MODE_PREDICATES \
   "pc_or_label_operand",
-
-
-/* If defined, a C statement to be executed just prior to the
-   output of assembler code for INSN, to modify the extracted
-   operands so they will be output differently.
-
-   Here the argument OPVEC is the vector containing the operands
-   extracted from INSN, and NOPERANDS is the number of elements of
-   the vector which contain meaningful data for this insn.  The
-   contents of this vector are what will be used to convert the
-   insn template into assembler code, so you can change the
-   assembler output by changing the contents of the vector.
-
-   We use it to check if the current insn needs a nop in front of it
-   because of load delays, and also to update the delay slot
-   statistics.  */
-
-#define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS)			\
-  final_prescan_insn (INSN, OPVEC, NOPERANDS)
-
 
 /* Control the assembler format that we output.  */
 
@@ -3816,7 +3774,6 @@ do									\
     if (set_noreorder > 0 && --set_noreorder == 0)			\
       fputs ("\t.set\treorder\n", STREAM);				\
 									\
-    dslots_jump_filled++;						\
     fputs ("\n", STREAM);						\
   }									\
 while (0)
@@ -4107,8 +4064,6 @@ do									\
     if (! set_noreorder)						\
       fprintf (STREAM, "\t.set\tnoreorder\n");				\
 									\
-    dslots_load_total++;						\
-    dslots_load_filled++;						\
     fprintf (STREAM, "\t%s\t%s,0(%s)\n\t%s\t%s,%s,8\n",			\
 	     TARGET_64BIT ? "ld" : "lw",				\
 	     reg_names[REGNO],						\

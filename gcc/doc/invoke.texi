@@ -472,7 +472,7 @@ in the following sections.
 -mno-memcpy  -mno-mips-tfile  -mno-rnames  -mno-stats @gol
 -mrnames  -msoft-float @gol
 -m4650  -msingle-float  -mmad @gol
--mstats  -EL  -EB  -G @var{num}  -nocpp @gol
+-EL  -EB  -G @var{num}  -nocpp @gol
 -mabi=32  -mabi=n32  -mabi=64  -mabi=eabi  -mabi-fake-default @gol
 -mfix7000  -mno-crt0 -mflush-func=@var{func} -mno-flush-func @gol
 -mbranch-likely -mno-branch-likely}
@@ -7862,15 +7862,6 @@ before the instructions in the text section, this allows the MIPS
 assembler to generate one word memory references instead of using two
 words for short global or static data items.  This is on by default if
 optimization is selected.
-
-@item -mstats
-@itemx -mno-stats
-@opindex mstats
-@opindex mno-stats
-For each non-inline function processed, the @option{-mstats} switch
-causes the compiler to emit one line to the standard error file to
-print statistics about the program (number of registers saved, stack
-size, etc.).
 
 @item -mmemcpy
 @itemx -mno-memcpy
