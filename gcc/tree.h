@@ -246,12 +246,19 @@ struct tree_common
    implicitly and should not lead to an "unused value" warning.  */
 #define TREE_NO_UNUSED_WARNING(NODE) ((NODE)->common.static_flag)
 
-/* In an INTEGER_CST, this means there was overflow in folding.  */
-#define TREE_CONSTANT_OVERFLOW(NODE) ((NODE)->common.static_flag)
-
 /* Nonzero for a TREE_LIST or TREE_VEC node means that the derivation
    chain is via a `virtual' declaration.  */
 #define TREE_VIA_VIRTUAL(NODE) ((NODE)->common.static_flag)
+
+/* In an INTEGER_CST, this means there was an overflow in folding.
+   This is distinct from TREE_OVERFLOW because ANSI C requires a diagnostic
+   when overflows occur in constant expressions.  */
+#define TREE_CONSTANT_OVERFLOW(NODE) ((NODE)->common.static_flag)
+
+/* In an INTEGER_CST, this means there was an overflow in folding,
+   and no warning has been issued for this subexpression.
+   TREE_OVERFLOW implies TREE_CONSTANT_OVERFLOW, but not vice versa.  */
+#define TREE_OVERFLOW(NODE) ((NODE)->common.public_flag)
 
 /* In a VAR_DECL or FUNCTION_DECL,
    nonzero means name is to be accessible from outside this module.
@@ -1415,8 +1422,8 @@ extern void expand_end_bindings			PROTO((tree, int, int));
 extern tree last_cleanup_this_contour		PROTO((void));
 extern void expand_start_case			PROTO((int, tree, tree, char *));
 extern void expand_end_case			PROTO((tree));
-extern int pushcase				PROTO((tree, tree, tree *));
-extern int pushcase_range			PROTO((tree, tree, tree, tree *));
+extern int pushcase				PROTO((tree, tree (*) (tree, tree), tree, tree *));
+extern int pushcase_range			PROTO((tree, tree, tree (*) (tree, tree), tree, tree *));
 
 /* In fold-const.c */
 
