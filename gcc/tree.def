@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    tree codes used in the GNU C compiler.
-   Copyright (C) 1987, 1988, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1993, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
