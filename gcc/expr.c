@@ -2907,6 +2907,16 @@ expand_assignment (to, from, want_value, suggest_reg)
 
 	  if (GET_CODE (to_rtx) != MEM)
 	    abort ();
+
+	  if (GET_MODE (offset_rtx) != ptr_mode)
+	    {
+#ifdef POINTERS_EXTEND_UNSIGNED
+	      offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 1);
+#else
+	      offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
+#endif
+	    }
+
 	  to_rtx = change_address (to_rtx, VOIDmode,
 				   gen_rtx_PLUS (ptr_mode, XEXP (to_rtx, 0),
 						 force_reg (ptr_mode, offset_rtx)));
@@ -3307,7 +3317,7 @@ store_expr (exp, target, want_value)
     {
       target = protect_from_queue (target, 1);
       if (GET_MODE (temp) != GET_MODE (target)
-	  && GET_MODE (temp) != VOIDmode)
+	  && GET_MODE (target) != VOIDmode)
 	{
 	  int unsignedp = TREE_UNSIGNED (TREE_TYPE (exp));
 	  if (dont_return_target)
@@ -3672,6 +3682,15 @@ store_constructor (exp, target, cleared)
 	      offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode, 0);
 	      if (GET_CODE (to_rtx) != MEM)
 		abort ();
+
+              if (GET_MODE (offset_rtx) != ptr_mode)
+                {
+#ifdef POINTERS_EXTEND_UNSIGNED
+                  offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 1);
+#else
+                  offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
+#endif
+                }
 
 	      to_rtx
 		= change_address (to_rtx, VOIDmode,
@@ -5752,11 +5771,13 @@ expand_expr (exp, target, tmode, modifier)
 	      abort ();
 
 	    if (GET_MODE (offset_rtx) != ptr_mode)
+	      {
 #ifdef POINTERS_EXTEND_UNSIGNED
-	      offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 1);
+		offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 1);
 #else
-	      offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
+		offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
 #endif
+	      }
 
 	    op0 = change_address (op0, VOIDmode,
 				  gen_rtx_PLUS (ptr_mode, XEXP (op0, 0),
