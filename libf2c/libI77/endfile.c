@@ -70,7 +70,7 @@ t_runc(a) alist *a;
 t_runc(alist *a)
 #endif
 {
-	long loc, len;
+	off_t loc, len;
 	unit *b;
 	int rc;
 	FILE *bf;
@@ -131,10 +131,7 @@ done:
 	f__cf = b->ufd = bf;
 #else  /* !defined(HAVE_FTRUNCATE) */
 	fflush(b->ufd);
-	/* The cast of loc is helpful on FreeBSD.  It helps
-	in any case where ftruncate() prototype is somehow missing
-	even though autoconf test found it properly.  */
-	rc = ftruncate(fileno(b->ufd), (off_t)loc);
+	rc = ftruncate(fileno(b->ufd), loc);
 #endif /* !defined(HAVE_FTRUNCATE) */
 	if (rc)
 		err(a->aerr,111,"endfile");

@@ -2,7 +2,7 @@
 #include "f2c.h"
 #include "fio.h"
 extern uiolen f__reclen;
-long f__recloc;
+off_t f__recloc;
 
 #ifdef KR_headers
 c_sue(a) cilist *a;
@@ -67,7 +67,7 @@ integer s_wsue(cilist *a)
 	return(0);
 }
 integer e_wsue(Void)
-{	long loc;
+{	off_t loc;
 	f__init = 1;
 	fwrite((char *)&f__reclen,sizeof(uiolen),1,f__cf);
 #ifdef ALWAYS_FLUSH

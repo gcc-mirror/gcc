@@ -210,7 +210,7 @@ f__nowreading(x) unit *x;
 f__nowreading(unit *x)
 #endif
 {
-	long loc;
+	off_t loc;
 	int ufmt, urw;
 	extern char *f__r_mode[], *f__w_mode[];
 

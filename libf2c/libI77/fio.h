@@ -34,7 +34,7 @@ typedef struct
 	long uinode;
 	int udev;
 #endif
-	int url;	/*0=sequential*/
+	off_t url;	/*0=sequential*/
 	flag useek;	/*true=can backspace, use dir, ...*/
 	flag ufmt;
 	flag urw;	/* (1 for can read) | (2 for can write) */
