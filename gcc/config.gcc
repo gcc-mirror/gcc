@@ -347,15 +347,6 @@ case $machine in
 	*) echo 'Unknown thread configuration for FreeBSD'; exit 1;;
 	esac
 	fbsd_tm_file="${fbsd_tm_file} freebsd.h"
-	if test x${thread_file} = xposix; then
-	  if test x${enable_libgcj} = xyes; then
-	    echo 'FreeBSD does not currently handle --enable-threads (now'
-	    echo 'the default to match system compiler) and --enable-libgcj.'
-	    echo 'Please explicitly configure with --disable-threads or'
-	    echo '--disable-libgcj'
-	    exit 1
-	  fi
-	fi
 	;;
 esac
 

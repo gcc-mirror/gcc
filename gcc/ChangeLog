@@ -1,3 +1,7 @@
+2001-11-20  Loren J. Rittle  <ljrittle@acm.org>
+
+	* config.gcc (*-*-freebsd*): Remove configuration block.
+
 2001-11-19  Loren J. Rittle  <ljrittle@acm.org>
 
 	bootstrap/4422
