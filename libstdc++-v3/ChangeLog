@@ -1,3 +1,10 @@
+2001-01-10  Loren J. Rittle  <ljrittle@acm.org>
+
+	* config/os/bsd/freebsd/bits/ctype_inline.h (is): (Make right
+	code path:) Remove magic constants and restructure to handle
+	ctype.h bit mask layout changes more gracefully.  (Make fast
+	code path:) Use __maskrune (), if available.
+	(is): Remove special case for digit and xdigit masks.
 
 2001-01-09  Robert Lipe <robertlipe@usa.net>
 
