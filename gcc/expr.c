@@ -1,5 +1,5 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
-   Copyright (C) 1988, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -5129,11 +5129,7 @@ expand_expr (exp, target, tmode, modifier)
 	if (tem == exp)
 	  abort ();
 
-	/* In some cases, we will be offsetting OP0's address by a constant.
-	   So get it as a sum, if possible.  If we will be using it
-	   directly in an insn, we validate it. 
-
-	   If TEM's type is a union of variable size, pass TARGET to the inner
+	/* If TEM's type is a union of variable size, pass TARGET to the inner
 	   computation, since it will need a temporary and TARGET is known
 	   to have to do.  This occurs in unchecked conversion in Ada.  */
   
@@ -5142,7 +5138,7 @@ expand_expr (exp, target, tmode, modifier)
 			    && (TREE_CODE (TYPE_SIZE (TREE_TYPE (tem)))
 				!= INTEGER_CST)
 			    ? target : NULL_RTX),
-			   VOIDmode, EXPAND_SUM);
+			   VOIDmode, 0);
 
 	/* If this is a constant, put it into a register if it is a
 	   legitimate constant and memory if it isn't.  */
