@@ -1,3 +1,10 @@
+2001-06-15  Zack Weinberg  <zackw@stanford.edu>
+
+	* doc/cpp.texi: Formatting corrections.
+	Correct buggy example of use of __GNUC__ etc.
+	Clarify $ in identifiers.
+	* doc/cpp.1: Regenerate.
+
 2001-06-15  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* doc/install.texi (Specific, alpha*-*-*): Fixed Tru64 UNIX
