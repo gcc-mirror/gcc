@@ -300,6 +300,8 @@ void debug_dependencies PARAMS ((void));
 
 static void init_regions PARAMS ((void));
 static void schedule_region PARAMS ((int));
+static rtx concat_INSN_LIST PARAMS ((rtx, rtx));
+static void concat_insn_mem_list PARAMS ((rtx, rtx, rtx *, rtx *));
 static void propagate_deps PARAMS ((int, struct deps *));
 static void free_pending_lists PARAMS ((void));
 
@@ -2299,8 +2301,7 @@ add_branch_dependences (head, tail)
     {
       if (GET_CODE (insn) != NOTE)
 	{
-	  if (last != 0
-	      && !find_insn_list (insn, LOG_LINKS (last)))
+	  if (last != 0 && !find_insn_list (insn, LOG_LINKS (last)))
 	    {
 	      add_dependence (last, insn, REG_DEP_ANTI);
 	      INSN_REF_COUNT (insn)++;
@@ -2356,125 +2357,122 @@ add_branch_dependences (head, tail)
 
 static struct deps *bb_deps;
 
+/* Duplicate the INSN_LIST elements of COPY and prepend them to OLD.  */
+
+static rtx
+concat_INSN_LIST (copy, old)
+     rtx copy, old;
+{
+  rtx new = old;
+  for (; copy ; copy = XEXP (copy, 1))
+    new = alloc_INSN_LIST (XEXP (copy, 0), new);
+  return new;
+}
+
+static void
+concat_insn_mem_list (copy_insns, copy_mems, old_insns_p, old_mems_p)
+     rtx copy_insns, copy_mems;
+     rtx *old_insns_p, *old_mems_p;
+{
+  rtx new_insns = *old_insns_p;
+  rtx new_mems = *old_mems_p;
+
+  while (copy_insns)
+    {
+      new_insns = alloc_INSN_LIST (XEXP (copy_insns, 0), new_insns);
+      new_mems = alloc_EXPR_LIST (VOIDmode, XEXP (copy_mems, 0), new_mems);
+      copy_insns = XEXP (copy_insns, 1);
+      copy_mems = XEXP (copy_mems, 1);
+    }
+
+  *old_insns_p = new_insns;
+  *old_mems_p = new_mems;
+}
+
 /* After computing the dependencies for block BB, propagate the dependencies
    found in TMP_DEPS to the successors of the block.  */
 static void
-propagate_deps (bb, tmp_deps)
+propagate_deps (bb, pred_deps)
      int bb;
-     struct deps *tmp_deps;
+     struct deps *pred_deps;
 {
   int b = BB_TO_BLOCK (bb);
   int e, first_edge;
-  int reg;
-  rtx link_insn, link_mem;
-  rtx u;
-
-  /* These lists should point to the right place, for correct
-     freeing later.  */
-  bb_deps[bb].pending_read_insns = tmp_deps->pending_read_insns;
-  bb_deps[bb].pending_read_mems = tmp_deps->pending_read_mems;
-  bb_deps[bb].pending_write_insns = tmp_deps->pending_write_insns;
-  bb_deps[bb].pending_write_mems = tmp_deps->pending_write_mems;
 
   /* bb's structures are inherited by its successors.  */
   first_edge = e = OUT_EDGES (b);
-  if (e <= 0)
-    return;
+  if (e > 0)
+    do
+      {
+	int b_succ = TO_BLOCK (e);
+	int bb_succ = BLOCK_TO_BB (b_succ);
+	struct deps *succ_deps = bb_deps + bb_succ;
+	int reg;
 
-  do
-    {
-      rtx x;
-      int b_succ = TO_BLOCK (e);
-      int bb_succ = BLOCK_TO_BB (b_succ);
-      struct deps *succ_deps = bb_deps + bb_succ;
+	/* Only bbs "below" bb, in the same region, are interesting.  */
+	if (CONTAINING_RGN (b) != CONTAINING_RGN (b_succ)
+	    || bb_succ <= bb)
+	  {
+	    e = NEXT_OUT (e);
+	    continue;
+	  }
 
-      /* Only bbs "below" bb, in the same region, are interesting.  */
-      if (CONTAINING_RGN (b) != CONTAINING_RGN (b_succ)
-	  || bb_succ <= bb)
-	{
-	  e = NEXT_OUT (e);
-	  continue;
-	}
+	/* The reg_last lists are inherited by bb_succ.  */
+	EXECUTE_IF_SET_IN_REG_SET (&pred_deps->reg_last_in_use, 0, reg,
+	  {
+	    struct deps_reg *pred_rl = &pred_deps->reg_last[reg];
+	    struct deps_reg *succ_rl = &succ_deps->reg_last[reg];
 
-      /* The reg_last lists are inherited by bb_succ.  */
-      EXECUTE_IF_SET_IN_REG_SET (&tmp_deps->reg_last_in_use, 0, reg,
-	{
-	  struct deps_reg *tmp_deps_reg = &tmp_deps->reg_last[reg];
-	  struct deps_reg *succ_deps_reg = &succ_deps->reg_last[reg];
+	    succ_rl->uses = concat_INSN_LIST (pred_rl->uses, succ_rl->uses);
+	    succ_rl->sets = concat_INSN_LIST (pred_rl->sets, succ_rl->sets);
+	    succ_rl->clobbers = concat_INSN_LIST (pred_rl->clobbers,
+						  succ_rl->clobbers);
+	  });
+	IOR_REG_SET (&succ_deps->reg_last_in_use, &pred_deps->reg_last_in_use);
 
-	  for (u = tmp_deps_reg->uses; u; u = XEXP (u, 1))
-	    if (! find_insn_list (XEXP (u, 0), succ_deps_reg->uses))
-	      succ_deps_reg->uses
-		= alloc_INSN_LIST (XEXP (u, 0), succ_deps_reg->uses);
+	/* Mem read/write lists are inherited by bb_succ.  */
+	concat_insn_mem_list (pred_deps->pending_read_insns,
+			      pred_deps->pending_read_mems,
+			      &succ_deps->pending_read_insns,
+			      &succ_deps->pending_read_mems);
+	concat_insn_mem_list (pred_deps->pending_write_insns,
+			      pred_deps->pending_write_mems,
+			      &succ_deps->pending_write_insns,
+			      &succ_deps->pending_write_mems);
 
-	  for (u = tmp_deps_reg->sets; u; u = XEXP (u, 1))
-	    if (! find_insn_list (XEXP (u, 0), succ_deps_reg->sets))
-	      succ_deps_reg->sets
-		= alloc_INSN_LIST (XEXP (u, 0), succ_deps_reg->sets);
+	succ_deps->last_pending_memory_flush
+	  = concat_INSN_LIST (pred_deps->last_pending_memory_flush,
+			      succ_deps->last_pending_memory_flush);
+	
+	succ_deps->pending_lists_length += pred_deps->pending_lists_length;
+	succ_deps->pending_flush_length += pred_deps->pending_flush_length;
 
-	  for (u = tmp_deps_reg->clobbers; u; u = XEXP (u, 1))
-	    if (! find_insn_list (XEXP (u, 0), succ_deps_reg->clobbers))
-	      succ_deps_reg->clobbers
-		= alloc_INSN_LIST (XEXP (u, 0), succ_deps_reg->clobbers);
-	});
-      IOR_REG_SET (&succ_deps->reg_last_in_use, &tmp_deps->reg_last_in_use);
+	/* last_function_call is inherited by bb_succ.  */
+	succ_deps->last_function_call
+	  = concat_INSN_LIST (pred_deps->last_function_call,
+			      succ_deps->last_function_call);
 
-      /* Mem read/write lists are inherited by bb_succ.  */
-      link_insn = tmp_deps->pending_read_insns;
-      link_mem = tmp_deps->pending_read_mems;
-      while (link_insn)
-	{
-	  if (!(find_insn_mem_list (XEXP (link_insn, 0),
-				    XEXP (link_mem, 0),
-				    succ_deps->pending_read_insns,
-				    succ_deps->pending_read_mems)))
-	    add_insn_mem_dependence (succ_deps, &succ_deps->pending_read_insns,
-				     &succ_deps->pending_read_mems,
-				     XEXP (link_insn, 0), XEXP (link_mem, 0));
-	  link_insn = XEXP (link_insn, 1);
-	  link_mem = XEXP (link_mem, 1);
-	}
+	/* sched_before_next_call is inherited by bb_succ.  */
+	succ_deps->sched_before_next_call
+	  = concat_INSN_LIST (pred_deps->sched_before_next_call,
+			      succ_deps->sched_before_next_call);
 
-      link_insn = tmp_deps->pending_write_insns;
-      link_mem = tmp_deps->pending_write_mems;
-      while (link_insn)
-	{
-	  if (!(find_insn_mem_list (XEXP (link_insn, 0),
-				    XEXP (link_mem, 0),
-				    succ_deps->pending_write_insns,
-				    succ_deps->pending_write_mems)))
-	    add_insn_mem_dependence (succ_deps,
-				     &succ_deps->pending_write_insns,
-				     &succ_deps->pending_write_mems,
-				     XEXP (link_insn, 0), XEXP (link_mem, 0));
+	e = NEXT_OUT (e);
+      }
+    while (e != first_edge);
 
-	  link_insn = XEXP (link_insn, 1);
-	  link_mem = XEXP (link_mem, 1);
-	}
+  /* These lists should point to the right place, for correct
+     freeing later.  */
+  bb_deps[bb].pending_read_insns = pred_deps->pending_read_insns;
+  bb_deps[bb].pending_read_mems = pred_deps->pending_read_mems;
+  bb_deps[bb].pending_write_insns = pred_deps->pending_write_insns;
+  bb_deps[bb].pending_write_mems = pred_deps->pending_write_mems;
 
-      /* last_function_call is inherited by bb_succ.  */
-      for (u = tmp_deps->last_function_call; u; u = XEXP (u, 1))
-	if (! find_insn_list (XEXP (u, 0), succ_deps->last_function_call))
-	  succ_deps->last_function_call
-	    = alloc_INSN_LIST (XEXP (u, 0), succ_deps->last_function_call);
-
-      /* last_pending_memory_flush is inherited by bb_succ.  */
-      for (u = tmp_deps->last_pending_memory_flush; u; u = XEXP (u, 1))
-	if (! find_insn_list (XEXP (u, 0),
-			      succ_deps->last_pending_memory_flush))
-	  succ_deps->last_pending_memory_flush
-	    = alloc_INSN_LIST (XEXP (u, 0),
-			       succ_deps->last_pending_memory_flush);
-
-      /* sched_before_next_call is inherited by bb_succ.  */
-      x = LOG_LINKS (tmp_deps->sched_before_next_call);
-      for (; x; x = XEXP (x, 1))
-	add_dependence (succ_deps->sched_before_next_call,
-			XEXP (x, 0), REG_DEP_ANTI);
-
-      e = NEXT_OUT (e);
-    }
-  while (e != first_edge);
+  /* Can't allow these to be freed twice.  */
+  pred_deps->pending_read_insns = 0;
+  pred_deps->pending_read_mems = 0;
+  pred_deps->pending_write_insns = 0;
+  pred_deps->pending_write_mems = 0;
 }
 
 /* Compute backward dependences inside bb.  In a multiple blocks region:
