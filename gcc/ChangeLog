@@ -1,5 +1,14 @@
 2002-09-21  Richard Henderson  <rth@redhat.com>
 
+	* c-common.c (cpp_define_data_format): Remove __GCC_LITTLE_ENDIAN__,
+	__GCC_BIG_ENDIAN__, __TARGET_BITS_ORDER__, __TARGET_BYTES_ORDER__,
+	__TARGET_INT_WORDS_ORDER__, __TARGET_FLOAT_WORDS_ORDER__,
+	__TARGET_USES_VAX_F_FLOAT__, __TARGET_USES_VAX_D_FLOAT__,
+	__TARGET_USES_VAX_G_FLOAT__, __TARGET_USES_VAX_H_FLOAT__.
+	* doc/cpp.texi: Don't document them.
+
+2002-09-21  Richard Henderson  <rth@redhat.com>
+
 	* c-common.c (builtin_define_float_constants): Use real_format
 	to get the floating-point parameters.
 
