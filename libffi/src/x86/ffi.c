@@ -267,7 +267,6 @@ ffi_prep_incoming_args_SYSV(char *stack, void **rvalue,
 {
   register unsigned int i;
   register int tmp;
-  register unsigned int avn;
   register void **p_argv;
   register char *argp;
   register ffi_type **p_arg;
@@ -280,12 +279,9 @@ ffi_prep_incoming_args_SYSV(char *stack, void **rvalue,
     argp += 4;
   }
 
-  avn = cif->nargs;
   p_argv = avalue;
 
-  for (i = cif->nargs, p_arg = cif->arg_types;
-       (i != 0) && (avn != 0);
-       i--, p_arg++)
+  for (i = cif->nargs, p_arg = cif->arg_types; (i != 0); i--, p_arg++)
     {
       size_t z;
 
@@ -294,19 +290,14 @@ ffi_prep_incoming_args_SYSV(char *stack, void **rvalue,
 	argp = (char *) ALIGN(argp, (*p_arg)->alignment);
       }
 
-      if (avn != 0) 
-	{
-	  avn--;
-	  z = (*p_arg)->size;
+      z = (*p_arg)->size;
 
-	  /* because we're little endian, this is 
-	     what it turns into.   */
+      /* because we're little endian, this is what it turns into.   */
 
-	  *p_argv = (void*) argp;
+      *p_argv = (void*) argp;
 
-	  p_argv++;
-	  argp += z;
-	}
+      p_argv++;
+      argp += z;
     }
   
   return;

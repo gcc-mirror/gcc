@@ -1,3 +1,8 @@
+2002-05-28  Bo Thorsen  <bo@suse.de>
+
+	* src/x86/ffi.c (ffi_prep_incoming_args_SYSV): Remove
+	the same unused avn var from this one too.
+
 2002-05-27  Roger Sayle  <roger@eyesopen.com>
 
 	* src/x86/ffi.c (ffi_prep_args): Remove reference to avn.
@@ -182,13 +187,13 @@
 	
 2001-06-06  Andrew Haley  <aph@redhat.com>
 
-        * src/alpha/osf.S (__FRAME_BEGIN__): Conditionalize for ELF.
+	* src/alpha/osf.S (__FRAME_BEGIN__): Conditionalize for ELF.
 
 2001-06-03  Andrew Haley  <aph@redhat.com>
 
-        * src/alpha/osf.S: Add unwind info.
-        * src/powerpc/sysv.S: Add unwind info.
-        * src/powerpc/ppc_closure.S: Likewise.
+	* src/alpha/osf.S: Add unwind info.
+	* src/powerpc/sysv.S: Add unwind info.
+	* src/powerpc/ppc_closure.S: Likewise.
 
 2000-05-31  Jeff Sturm  <jsturm@one-point.com>
 
@@ -347,14 +352,14 @@
 	(Multilib support.): Add section.
 	* Makefile.in: Rebuilt.
 	* ltconfig (extra_compiler_flags, extra_compiler_flags_value):
-        New variables. Set for gcc using -print-multi-lib. Export them
-        to libtool.
-        (sparc64-*-linux-gnu*): Use libsuff 64 for search paths.
-        * ltmain.sh (B|b|V): Don't throw away gcc's -B, -b and -V options
-        for -shared links.
-        (extra_compiler_flags_value, extra_compiler_flags): Check these
-        for extra compiler options which need to be passed down in
-        compiler_flags.
+	New variables. Set for gcc using -print-multi-lib. Export them
+	to libtool.
+	(sparc64-*-linux-gnu*): Use libsuff 64 for search paths.
+	* ltmain.sh (B|b|V): Don't throw away gcc's -B, -b and -V options
+	for -shared links.
+	(extra_compiler_flags_value, extra_compiler_flags): Check these
+	for extra compiler options which need to be passed down in
+	compiler_flags.
 
 2000-04-16  Anthony Green  <green@redhat.com>
 
@@ -363,7 +368,7 @@
 
 2000-04-14  Jakub Jelinek  <jakub@redhat.com>
 
-        * include/ffi.h.in (SPARC64): Define for 64bit SPARC builds.
+	* include/ffi.h.in (SPARC64): Define for 64bit SPARC builds.
 	Set SPARC FFI_DEFAULT_ABI based on SPARC64 define.
 	* src/sparc/ffi.c (ffi_prep_args_v8): Renamed from ffi_prep_args.
 	Replace all void * sizeofs with sizeof(int).
@@ -473,7 +478,7 @@
 	* configure: Rebuilt.
 	* configure.in: Change version to 2.00-beta.
 
-        * fficonfig.h.in: Rebuilt.
+	* fficonfig.h.in: Rebuilt.
 	* acconfig.h (FFI_NO_STRUCTS, FFI_NO_RAW_API): Define.
 
 	* src/x86/ffi.c (ffi_raw_call): Rename.

@@ -8,6 +8,17 @@
 	and less-than-half-precision cases.
 	(num_trim, num_positive, num_div_op): Cast constants.
 
+2002-05-27  Bo Thorsen  <bo@suse.de>
+
+	* config/i386/libgcc-x86_64-glibc.ver: Copy this file from the
+	3.1 branch. The file was made by Jakub Jelinek.
+	* config/i386/linux64.h (MD_FALLBACK_FRAME_STATE_FOR): Add i386
+	support so multilib doesn't break. And don't define this at all
+	when -Dinhibit_libc is used.
+	(MULTILIB_DEFAULTS): Always set default to 64 bit compilation.
+	* config/i386/t-linux64: Implement full multilib support. Patch
+	originally done by Andreas Jaeger and Jakub Jelinek.
+
 2002-05-27  Roger Sayle  <roger@eyesopen.com>
 
 	* c-common.c: Add support for __attribute__((nothrow)) to specify
