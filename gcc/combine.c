@@ -1567,7 +1567,8 @@ try_combine (i3, i2, i1)
 
 	  i2_code_number = recog_for_combine (&newi2pat, i2, &new_i2_notes);
 	  if (i2_code_number >= 0)
-	    insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
+	    insn_code_number = recog_for_combine (&newi3pat, i3,
+						  &new_i3_notes);
 
 	  if (insn_code_number >= 0)
 	    newpat = newi3pat;
