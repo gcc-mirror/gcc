@@ -1172,7 +1172,6 @@
 		 (high:SI (match_operand 2 "" ""))))]
   "symbolic_operand (operands[2], Pmode)
    && ! function_label_operand (operands[2])
-   && ! read_only_operand (operands[2])
    && flag_pic == 2"
   "addil LT'%G2,%1"
   [(set_attr "type" "binary")
