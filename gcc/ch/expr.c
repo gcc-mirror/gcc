@@ -3469,7 +3469,6 @@ compare_records (exp0, exp1)
   int have_variants = 0;
 
   tree result = boolean_true_node;
-  extern int maximum_field_alignment;
 
   if (TREE_CODE (type) != RECORD_TYPE)
     abort ();

@@ -50,8 +50,6 @@ int special_UC = 0;
 char* chill_real_input_filename;
 extern FILE* finput;
 
-extern int maximum_field_alignment;
-
 static int deep_const_expr			PARAMS ((tree));
 static void chill_print_error_function		PARAMS ((const char *));
 

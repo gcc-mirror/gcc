@@ -763,8 +763,7 @@ build_tasking_struct ()
   /* We temporarily reset the maximum_field_alignment to zero so the
      compiler's init data structures can be compatible with the
      run-time system, even when we're compiling with -fpack. */
-  extern int maximum_field_alignment;
-  int save_maximum_field_alignment = maximum_field_alignment;
+  unsigned int save_maximum_field_alignment = maximum_field_alignment;
   maximum_field_alignment = 0;
 
   decl1 = build_decl (FIELD_DECL, get_identifier ("TaskName"),
@@ -1239,8 +1238,7 @@ build_tasking_message_type ()
   tree temp;
   /* We temporarily reset maximum_field_alignment to deal with
      the runtime system. */
-  extern int maximum_field_alignment;
-  int save_maximum_field_alignment = maximum_field_alignment;
+  unsigned int save_maximum_field_alignment = maximum_field_alignment;
   tree field1, field2, field3;
 
   maximum_field_alignment = 0;

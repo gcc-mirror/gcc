@@ -1,3 +1,24 @@
+2000-02-11  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* expr.c (compare_records): Delete maximum_field_alignment declaration.
+	* inout.c (inout_init): Likewise.
+	(build_chill_gettextaccess): Likewise.
+	(build_enum_tables): Likewise.
+	* lang.c: Likewise.
+	* satisfy.c (satisfy): Likewise.
+	* tasking.c (build_tasking_struct): Likewise.
+	(build_tasking_message_type): Likewise.
+	* typeck.c (build_init_struct): Likewise.
+
+	* except.c (emit_setup_handler): Make save_maximum_field_alignment
+	unsigned int to match maximum_field_alignment.
+	* inout.c (inout_init): Likewise.
+	(build_chill_gettextaccess): Likewise.
+	(build_enum_tables): Likewise.
+	* tasking.c (build_tasking_struct): Likewise.
+	(build_tasking_message_type): Likewise.
+	* typeck.c (build_init_struct): Likewise.
+
 2000-02-10  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* except.c (maximum_field_alignment): Remove duplicate declaration.
