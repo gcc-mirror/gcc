@@ -1,4 +1,13 @@
 2004-03-19  Paolo Carlini  <pcarlini@suse.de>
+	    Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/12077
+	* include/ext/stdio_sync_filebuf.h (showmanyc): Remove, there's
+	no way to find out the conversion used by the underlying FILE*.
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/12077.cc: New.
+	* testsuite/27_io/objects/char/9.cc: Tweak.
+
+2004-03-19  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/14648
 	* include/ext/ropeimpl.h (rope<>::_S_apply_to_pieces): Fix
