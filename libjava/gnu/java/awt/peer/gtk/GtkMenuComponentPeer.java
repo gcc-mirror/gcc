@@ -37,7 +37,7 @@ exception statement from your version. */
 
 
 package gnu.java.awt.peer.gtk;
-import java.awt.*;
+
 import java.awt.peer.MenuComponentPeer;
 
 public class GtkMenuComponentPeer extends GtkGenericPeer

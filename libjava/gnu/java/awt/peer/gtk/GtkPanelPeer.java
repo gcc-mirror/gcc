@@ -37,8 +37,9 @@ exception statement from your version. */
 
 
 package gnu.java.awt.peer.gtk;
-import java.awt.peer.*;
-import java.awt.*;
+
+import java.awt.Panel;
+import java.awt.peer.PanelPeer;
 
 public class GtkPanelPeer extends GtkContainerPeer
   implements PanelPeer

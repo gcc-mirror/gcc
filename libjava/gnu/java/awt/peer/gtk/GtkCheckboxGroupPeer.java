@@ -37,9 +37,9 @@ exception statement from your version. */
 
 
 package gnu.java.awt.peer.gtk;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
+
+import java.awt.CheckboxGroup;
+import java.util.WeakHashMap;
 
 // Note that there is no peer interface for a CheckboxGroup.  We
 // introduce our own in order to make it easier to keep a piece of

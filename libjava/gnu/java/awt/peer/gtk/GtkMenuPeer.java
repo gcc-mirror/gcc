@@ -37,7 +37,12 @@ exception statement from your version. */
 
 
 package gnu.java.awt.peer.gtk;
-import java.awt.*;
+
+import java.awt.Component;
+import java.awt.Menu;
+import java.awt.MenuContainer;
+import java.awt.MenuItem;
+import java.awt.MenuShortcut;
 import java.awt.peer.MenuPeer;
 import java.awt.peer.MenuItemPeer;
 

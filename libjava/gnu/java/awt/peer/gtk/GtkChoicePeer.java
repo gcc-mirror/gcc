@@ -37,9 +37,10 @@ exception statement from your version. */
 
 
 package gnu.java.awt.peer.gtk;
-import java.awt.peer.*;
-import java.awt.*;
-import java.awt.event.*;
+
+import java.awt.Choice;
+import java.awt.event.ItemEvent;
+import java.awt.peer.ChoicePeer;
 
 public class GtkChoicePeer extends GtkComponentPeer
   implements ChoicePeer

@@ -37,9 +37,11 @@ exception statement from your version. */
 
 
 package gnu.java.awt.peer.gtk;
+
+import java.awt.FileDialog;
+import java.awt.Graphics;
+import java.awt.peer.FileDialogPeer;
 import java.io.FilenameFilter;
-import java.awt.peer.*;
-import java.awt.*;
 
 public class GtkFileDialogPeer extends GtkDialogPeer implements FileDialogPeer
 {

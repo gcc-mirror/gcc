@@ -53,7 +53,7 @@ public class GtkDialogPeer extends GtkWindowPeer
 
   void create ()
   {
-    create (GTK_WINDOW_DIALOG);
+    create (GTK_WINDOW_POPUP);
   }
 
   public void getArgs (Component component, GtkArgList args)

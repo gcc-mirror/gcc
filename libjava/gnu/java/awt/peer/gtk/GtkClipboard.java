@@ -35,15 +35,17 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package gnu.java.awt.peer.gtk;
 
-import java.awt.*;
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.awt.datatransfer.*;
-import java.awt.image.*;
-import java.awt.peer.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.IOException;
 
 public class GtkClipboard extends Clipboard
 {

@@ -37,8 +37,12 @@ exception statement from your version. */
 
 
 package gnu.java.awt.peer.gtk;
-import java.awt.*;
-import java.awt.peer.ComponentPeer;
+
+import java.awt.Component;
+import java.awt.Event;
+import java.awt.MenuItem;
+import java.awt.Point;
+import java.awt.PopupMenu;
 import java.awt.peer.PopupMenuPeer;
 
 public class GtkPopupMenuPeer extends GtkMenuPeer

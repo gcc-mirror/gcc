@@ -35,10 +35,15 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package gnu.java.awt.peer.gtk;
-import java.awt.*;
+
+import java.awt.AWTEvent;
+import java.awt.Canvas;
+import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.event.PaintEvent;
-import java.awt.peer.*;
+import java.awt.peer.CanvasPeer;
 
 public class GtkCanvasPeer extends GtkComponentPeer implements CanvasPeer
 {
