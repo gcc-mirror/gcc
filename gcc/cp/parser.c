@@ -15439,13 +15439,21 @@ cp_parser_set_decl_spec_type (cp_decl_specifier_seq *decl_specs,
 	  || decl_specs->specs[(int) ds_short]
 	  || decl_specs->specs[(int) ds_unsigned]
 	  || decl_specs->specs[(int) ds_signed]))
-    decl_specs->redefined_builtin_type = type_spec;
+    {
+      decl_specs->redefined_builtin_type = type_spec;
+      if (!decl_specs->type)
+	{
+	  decl_specs->type = type_spec;
+	  decl_specs->user_defined_type_p = false;
+	}
+    }
   else if (decl_specs->type)
     decl_specs->multiple_types_p = true;
   else
     {
       decl_specs->type = type_spec;
       decl_specs->user_defined_type_p = user_defined_p;
+      decl_specs->redefined_builtin_type = NULL_TREE;
     }
 }
 
