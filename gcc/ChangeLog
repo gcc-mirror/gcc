@@ -1,3 +1,16 @@
+2000-06-05  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* objc/objc-act.c (generate_method_descriptors): Register
+	objc_method_prototype_template as a GC root.
+	(comp_method_with_proto): Register function_type as a GC root.
+	(comp_proto_with_proto): Replace function_type1 and
+	function_type2 with a two-element array; register it as a GC root.
+
+	(generate_protocols, build_protocol_initializer,
+	generate_protocol_list, build_category_initializer,
+	build_shared_structure_initializer): Do not cache cast_type
+	and/or cast_type2.
+
 2000-06-05  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* function.c (assign_parms): Add missing argument to set_mem_attributes

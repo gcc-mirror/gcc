@@ -3017,7 +3017,10 @@ generate_method_descriptors (protocol)	/* generate_dispatch_tables */
   int size;
 
   if (!objc_method_prototype_template)
-    objc_method_prototype_template = build_method_prototype_template ();
+    {
+      objc_method_prototype_template = build_method_prototype_template ();
+      ggc_add_tree_root (&objc_method_prototype_template, 1);
+    }
 
   cast = build_tree_list (build_tree_list (NULL_TREE, xref_tag (RECORD_TYPE,
 				get_identifier (UTAG_METHOD_PROTOTYPE_LIST))),
@@ -3178,7 +3181,7 @@ generate_protocols ()
   tree p, tmp_decl, encoding;
   tree sc_spec, decl_specs, decl;
   tree initlist, protocol_name_expr, refs_decl, refs_expr;
-  tree cast_type2 = 0;
+  tree cast_type2;
 
   tmp_decl = build_tmp_function_decl ();
 
@@ -3244,9 +3247,8 @@ generate_protocols ()
 
       if (refs_decl)
 	{
-	  if (!cast_type2)
-	    cast_type2
-	      = groktypename
+	  cast_type2
+	    = groktypename
 		(build_tree_list (build_tree_list (NULL_TREE,
 						   objc_protocol_template),
 				  build1 (INDIRECT_REF, NULL_TREE,
@@ -3282,16 +3284,14 @@ build_protocol_initializer (type, protocol_name, protocol_list,
      tree class_methods;
 {
   tree initlist = NULL_TREE, expr;
-  static tree cast_type = 0;
+  tree cast_type;
 
-  if (!cast_type)
-    cast_type
-      = groktypename
-	(build_tree_list
-	 (build_tree_list (NULL_TREE,
-			   xref_tag (RECORD_TYPE,
-				     get_identifier (UTAG_CLASS))),
-	  build1 (INDIRECT_REF, NULL_TREE, NULL_TREE)));
+  cast_type = groktypename
+    (build_tree_list
+     (build_tree_list (NULL_TREE,
+		       xref_tag (RECORD_TYPE,
+				 get_identifier (UTAG_CLASS))),
+      build1 (INDIRECT_REF, NULL_TREE, NULL_TREE)));
 
   /* Filling the "isa" in with one allows the runtime system to
      detect that the version change...should remove before final release.  */
@@ -4202,9 +4202,9 @@ static tree
 generate_protocol_list (i_or_p)
      tree i_or_p;
 {
-  static tree cast_type = 0;
   tree initlist, decl_specs, sc_spec;
   tree refs_decl, expr_decl, lproto, e, plist;
+  tree cast_type;
   int size = 0;
 
   if (TREE_CODE (i_or_p) == CLASS_INTERFACE_TYPE
@@ -4215,14 +4215,12 @@ generate_protocol_list (i_or_p)
   else
     abort ();
 
-  if (!cast_type)
-    cast_type
-      = groktypename
-	(build_tree_list
-	 (build_tree_list (NULL_TREE,
-			   xref_tag (RECORD_TYPE,
-				     get_identifier (UTAG_PROTOCOL))),
-	  build1 (INDIRECT_REF, NULL_TREE, NULL_TREE)));
+  cast_type = groktypename
+    (build_tree_list
+     (build_tree_list (NULL_TREE,
+		       xref_tag (RECORD_TYPE,
+				 get_identifier (UTAG_PROTOCOL))),
+      build1 (INDIRECT_REF, NULL_TREE, NULL_TREE)));
 
   /* Compute size.  */
   for (lproto = plist; lproto; lproto = TREE_CHAIN (lproto))
@@ -4321,17 +4319,13 @@ build_category_initializer (type, cat_name, class_name,
      initlist = tree_cons (NULL_TREE, build_int_2 (0, 0), initlist);
   else
      {
-	static tree cast_type2;
-
-	if (!cast_type2)
-	  cast_type2
-	    = groktypename
-	      (build_tree_list
-	       (build_tree_list (NULL_TREE,
-				 xref_tag (RECORD_TYPE,
-					   get_identifier (UTAG_PROTOCOL))),
-		build1 (INDIRECT_REF, NULL_TREE,
-			build1 (INDIRECT_REF, NULL_TREE, NULL_TREE))));
+       tree cast_type2 = groktypename
+	 (build_tree_list
+	  (build_tree_list (NULL_TREE,
+			    xref_tag (RECORD_TYPE,
+				      get_identifier (UTAG_PROTOCOL))),
+	   build1 (INDIRECT_REF, NULL_TREE,
+		   build1 (INDIRECT_REF, NULL_TREE, NULL_TREE))));
 
 	expr = build_unary_op (ADDR_EXPR, protocol_list, 0);
 	TREE_TYPE (expr) = cast_type2;
@@ -4432,17 +4426,14 @@ build_shared_structure_initializer (type, isa, super, name, size, status,
     initlist = tree_cons (NULL_TREE, build_int_2 (0, 0), initlist);
   else
      {
-     static tree cast_type2;
-
-     if (!cast_type2)
-        cast_type2
-	  = groktypename
-	    (build_tree_list
-	     (build_tree_list (NULL_TREE,
-			       xref_tag (RECORD_TYPE,
-					 get_identifier (UTAG_PROTOCOL))),
-	      build1 (INDIRECT_REF, NULL_TREE,
-		      build1 (INDIRECT_REF, NULL_TREE, NULL_TREE))));
+       tree cast_type2
+	 = groktypename
+	 (build_tree_list
+	  (build_tree_list (NULL_TREE,
+			    xref_tag (RECORD_TYPE,
+				      get_identifier (UTAG_PROTOCOL))),
+	   build1 (INDIRECT_REF, NULL_TREE,
+		   build1 (INDIRECT_REF, NULL_TREE, NULL_TREE))));
 
      expr = build_unary_op (ADDR_EXPR, protocol_list, 0);
      TREE_TYPE (expr) = cast_type2;
@@ -7116,7 +7107,10 @@ comp_method_with_proto (method, proto)
 
   /* Create a function_type node once.  */
   if (!function_type)
-    function_type = make_node (FUNCTION_TYPE);
+    {
+      function_type = make_node (FUNCTION_TYPE);
+      ggc_add_tree_root (&function_type, 1);
+    }
 
   /* Install argument types - normally set by build_function_type.  */
   TYPE_ARG_TYPES (function_type) = get_arg_type_list (proto, METHOD_DEF, 0);
@@ -7130,27 +7124,28 @@ comp_method_with_proto (method, proto)
 /* Return 1 if PROTO1 is consistent with PROTO2.  */
 
 static int
-comp_proto_with_proto (proto1, proto2)
-     tree proto1, proto2;
+comp_proto_with_proto (proto0, proto1)
+     tree proto0, proto1;
 {
-  static tree function_type1 = 0, function_type2 = 0;
+  static tree function_type[2];
 
   /* Create a couple function_type node's once.  */
-  if (!function_type1)
+  if (!function_type[0])
     {
-      function_type1 = make_node (FUNCTION_TYPE);
-      function_type2 = make_node (FUNCTION_TYPE);
+      function_type[0] = make_node (FUNCTION_TYPE);
+      function_type[1] = make_node (FUNCTION_TYPE);
+      ggc_add_tree_root (function_type, 2);
     }
 
   /* Install argument types; normally set by build_function_type.  */
-  TYPE_ARG_TYPES (function_type1) = get_arg_type_list (proto1, METHOD_REF, 0);
-  TYPE_ARG_TYPES (function_type2) = get_arg_type_list (proto2, METHOD_REF, 0);
+  TYPE_ARG_TYPES (function_type[0]) = get_arg_type_list (proto0, METHOD_REF, 0);
+  TYPE_ARG_TYPES (function_type[1]) = get_arg_type_list (proto1, METHOD_REF, 0);
 
   /* Install return type.  */
-  TREE_TYPE (function_type1) = groktypename (TREE_TYPE (proto1));
-  TREE_TYPE (function_type2) = groktypename (TREE_TYPE (proto2));
+  TREE_TYPE (function_type[0]) = groktypename (TREE_TYPE (proto0));
+  TREE_TYPE (function_type[1]) = groktypename (TREE_TYPE (proto1));
 
-  return comptypes (function_type1, function_type2);
+  return comptypes (function_type[0], function_type[1]);
 }
 
 /* - Generate an identifier for the function. the format is "_n_cls",
