@@ -115,31 +115,48 @@ here = @here@
 libgcj_basedir = @libgcj_basedir@
 
 AUTOMAKE_OPTIONS = foreign no-installinfo
-@TESTSUBDIR_TRUE@SUBDIRS = @TESTSUBDIR_TRUE@$(DIRLTDL) testsuite gcj include
-@TESTSUBDIR_FALSE@SUBDIRS = @TESTSUBDIR_FALSE@$(DIRLTDL) gcj include
-@USE_LIBDIR_TRUE@toolexeclibdir = @USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexeclibdir = @USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexecdir = @USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
+@TESTSUBDIR_TRUE@SUBDIRS = \
+@TESTSUBDIR_TRUE@$(DIRLTDL) testsuite gcj include
+@TESTSUBDIR_FALSE@SUBDIRS = \
+@TESTSUBDIR_FALSE@$(DIRLTDL) gcj include
+@USE_LIBDIR_TRUE@toolexeclibdir = \
+@USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexeclibdir = \
+@USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexecdir = \
+@USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
 
 toolexeclib_LTLIBRARIES = libgcj.la
 toolexeclib_DATA = libgcj.spec
 data_DATA = libgcj.zip
 
-@NEEDS_DATA_START_TRUE@toolexeclib_LIBRARIES = @NEEDS_DATA_START_TRUE@libgcjdata.a
-@NEEDS_DATA_START_TRUE@libgcjdata_a_SOURCES = @NEEDS_DATA_START_TRUE@libgcjdata.c
+@NEEDS_DATA_START_TRUE@toolexeclib_LIBRARIES = \
+@NEEDS_DATA_START_TRUE@libgcjdata.a
+@NEEDS_DATA_START_TRUE@libgcjdata_a_SOURCES = \
+@NEEDS_DATA_START_TRUE@libgcjdata.c
 
-@NATIVE_TRUE@bin_PROGRAMS = @NATIVE_TRUE@jv-convert gij
+@NATIVE_TRUE@bin_PROGRAMS = \
+@NATIVE_TRUE@jv-convert gij
 
 bin_SCRIPTS = addr2name.awk
-@CANADIAN_TRUE@@NULL_TARGET_TRUE@GCJ = @CANADIAN_TRUE@@NULL_TARGET_TRUE@gcj
-@CANADIAN_TRUE@@NULL_TARGET_FALSE@GCJ = @CANADIAN_TRUE@@NULL_TARGET_FALSE@$(target_alias)-gcj
-@CANADIAN_FALSE@GCJ = @CANADIAN_FALSE@$(expanded)/gcj$(EXEEXT) -B$(expanded)/
-@CANADIAN_TRUE@@NULL_TARGET_TRUE@ZIP = @CANADIAN_TRUE@@NULL_TARGET_TRUE@$(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
-@CANADIAN_TRUE@@NULL_TARGET_FALSE@ZIP = @CANADIAN_TRUE@@NULL_TARGET_FALSE@zip
-@CANADIAN_FALSE@ZIP = @CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
-@CANADIAN_TRUE@GCJH = @CANADIAN_TRUE@gcjh
-@CANADIAN_FALSE@GCJH = @CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
-@CANADIAN_FALSE@expanded = @CANADIAN_FALSE@`cd $(MULTIBUILDTOP)../$(COMPPATH)/gcc && pwd`
+@CANADIAN_TRUE@@NULL_TARGET_TRUE@GCJ = \
+@CANADIAN_TRUE@@NULL_TARGET_TRUE@gcj
+@CANADIAN_TRUE@@NULL_TARGET_FALSE@GCJ = \
+@CANADIAN_TRUE@@NULL_TARGET_FALSE@$(target_alias)-gcj
+@CANADIAN_FALSE@GCJ = \
+@CANADIAN_FALSE@$(expanded)/gcj$(EXEEXT) -B$(expanded)/
+@CANADIAN_TRUE@@NULL_TARGET_TRUE@ZIP = \
+@CANADIAN_TRUE@@NULL_TARGET_TRUE@$(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
+@CANADIAN_TRUE@@NULL_TARGET_FALSE@ZIP = \
+@CANADIAN_TRUE@@NULL_TARGET_FALSE@zip
+@CANADIAN_FALSE@ZIP = \
+@CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
+@CANADIAN_TRUE@GCJH = \
+@CANADIAN_TRUE@gcjh
+@CANADIAN_FALSE@GCJH = \
+@CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
+@CANADIAN_FALSE@expanded = \
+@CANADIAN_FALSE@`cd $(MULTIBUILDTOP)../$(COMPPATH)/gcc && pwd`
 
 GCJCOMPILE = CLASSPATH=$(here) $(LIBTOOL) --mode=compile $(GCJ) -fassume-compiled -L$(here) $(JC1FLAGS) -c
 GCJLINK = $(LIBTOOL) --mode=link $(GCJ) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
@@ -153,8 +170,10 @@ WARNINGS = -W -Wall
 AM_CXXFLAGS = -fno-rtti -fvtable-thunks -fasynchronous-exceptions \
 	@LIBGCJ_CXXFLAGS@ @EXCEPTIONSPEC@ $(WARNINGS) -D_GNU_SOURCE
 
-@USING_GCC_TRUE@AM_CFLAGS = @USING_GCC_TRUE@@LIBGCJ_CFLAGS@ $(WARNINGS)
-@USING_GCC_FALSE@AM_CFLAGS = @USING_GCC_FALSE@@LIBGCJ_CFLAGS@
+@USING_GCC_TRUE@AM_CFLAGS = \
+@USING_GCC_TRUE@@LIBGCJ_CFLAGS@ $(WARNINGS)
+@USING_GCC_FALSE@AM_CFLAGS = \
+@USING_GCC_FALSE@@LIBGCJ_CFLAGS@
 
 JCFLAGS = -g
 JC1FLAGS = -g @LIBGCJ_JAVAFLAGS@
@@ -206,7 +225,8 @@ extra_headers = java/lang/Object.h java/lang/Class.h
 
 NM = nm
 
-@NATIVE_TRUE@@MAINTAINER_MODE_TRUE@noinst_PROGRAMS = @NATIVE_TRUE@@MAINTAINER_MODE_TRUE@gen-from-JIS
+@NATIVE_TRUE@@MAINTAINER_MODE_TRUE@noinst_PROGRAMS = \
+@NATIVE_TRUE@@MAINTAINER_MODE_TRUE@gen-from-JIS
 
 CONVERT_DIR = gnu/gcj/convert
 
@@ -1025,7 +1045,7 @@ libgcj-test.spec.in libgcj.spec.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
@@ -1834,7 +1854,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$d/$$file $(distdir)/$$file; \
+	    cp -pr $$/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
@@ -2103,7 +2123,7 @@ java/lang/String.h: java/lang/String.class libgcj.zip
 java/lang/reflect/Constructor.h: java/lang/reflect/Constructor.class libgcj.zip
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'jmethodID _Jv_FromReflectedConstructor (java::lang::reflect::Constructor *);' \
-	    -friend 'java::lang::Class;' \
+	    -friend 'class java::lang::Class;' \
 	    -friend 'jobject _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID, jboolean);' \
 	    $(basename $<)
 
@@ -2111,19 +2131,19 @@ java/lang/reflect/Field.h: java/lang/reflect/Field.class libgcj.zip
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'jfieldID _Jv_FromReflectedField (java::lang::reflect::Field *);' \
 	    -friend 'jobject _Jv_JNI_ToReflectedField (_Jv_JNIEnv*, jclass, jfieldID, jboolean);' \
-	    -friend 'java::lang::Class;' \
+	    -friend 'class java::lang::Class;' \
 	    $(basename $<)
 
 java/lang/reflect/Method.h: java/lang/reflect/Method.class libgcj.zip
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'jmethodID _Jv_FromReflectedMethod (java::lang::reflect::Method *);' \
-	    -friend 'java::lang::Class;' \
+	    -friend 'class java::lang::Class;' \
 	    -friend 'jobject _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID, jboolean);' \
 	    $(basename $<)
 
 gnu/gcj/runtime/VMClassLoader.h: gnu/gcj/runtime/VMClassLoader.class libgcj.zip
 	$(GCJH) -classpath $(top_builddir) \
-	    -friend 'java::lang::ClassLoader;' \
+	    -friend 'class java::lang::ClassLoader;' \
 	    $(basename $<)
 
 java/io/ObjectInputStream$$GetField.h: libgcj.zip
