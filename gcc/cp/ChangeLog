@@ -1,3 +1,8 @@
+1999-03-19  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* Make-lang.in: ($(INTL_TARGETS)): depend on cp/parse.c
+	($(srcdir)/cp/parse.c): moved from ../Makefile.in
+
 1999-03-17  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* parse.y (named_complex_class_head_sans_basetype): 
