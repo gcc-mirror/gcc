@@ -219,7 +219,8 @@ rm stdheader
 # implementations of man(1), e.g., Linux's.  We need to have another top-level
 # *roff tag to /stop/ the .SH NAME entry.
 #problematic=`egrep --files-without-match '^\.SH SYNOPSIS' [A-Z]*.3`
-problematic='Containers.3 Sequences.3 Assoc_containers.3 Allocators.3'
+problematic='Containers.3 Sequences.3 Assoc_containers.3 Allocators.3
+             Iterator_types.3'
 for f in $problematic; do
     sed '/^\.SH NAME/{
 n

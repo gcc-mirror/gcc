@@ -1,13 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)">
-   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 20.">
-   <meta name="GENERATOR" content="vi and eight fingers">
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)" />
+   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL" />
+   <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 20." />
+   <meta name="GENERATOR" content="vi and eight fingers" />
    <title>libstdc++-v3 HOWTO:  Chapter 20</title>
-<link rel="StyleSheet" href="../lib3styles.css">
+<link rel="StyleSheet" href="../lib3styles.css" />
 </head>
 <body>
 
@@ -19,16 +18,16 @@
 
 
 <!-- ####################################################### -->
-<hr>
+<hr />
 <h1>Contents</h1>
 <ul>
-   <li><a href="#1"><code>auto_ptr</code> is not omnipotent</a>
-   <li><a href="#2"><code>auto_ptr</code> inside container classes</a>
-   <li><a href="#3">Functors</a>
-   <li><a href="#4">Pairs</a>
+   <li><a href="#1"><code>auto_ptr</code> is not omnipotent</a></li>
+   <li><a href="#2"><code>auto_ptr</code> inside container classes</a></li>
+   <li><a href="#3">Functors</a></li>
+   <li><a href="#4">Pairs</a></li>
 </ul>
 
-<hr>
+<hr />
 
 <!-- ####################################################### -->
 
@@ -47,7 +46,8 @@
    </p>
    <p>AP <em>is</em> meant to prevent nasty leaks in the presence of
       exceptions.  That's <em>all</em>.  This code is AP-friendly:
-      <pre>
+   </p>
+   <pre>
     // not a recommend naming scheme, but good for web-based FAQs
     typedef std::auto_ptr&lt;MyClass&gt;  APMC;
 
@@ -62,21 +62,24 @@
 
         function_taking_MyClass_pointer (ap.get());
     }
-      </pre>When an exception gets thrown, the instance of MyClass that's
+   </pre>
+   <p>When an exception gets thrown, the instance of MyClass that's
       been created on the heap will be <code>delete</code>'d as the stack is
       unwound past <code>func()</code>.
    </p>
    <p>Changing that code as follows is <em>not</em> AP-friendly:
-      <pre>
+   </p>
+   <pre>
         APMC  ap (new MyClass[22]);
-      </pre>You will get the same problems as you would without the use
+   </pre>
+   <p>You will get the same problems as you would without the use
       of AP:
-      <pre>
+   </p>
+   <pre>
         char*  array = new char[10];       // array new...
         ...
         delete array;                      // ...but single-object delete
-      </pre>
-   </p>
+   </pre>
    <p>AP cannot tell whether the pointer you've passed at creation points
       to one or many things.  If it points to many things, you are about
       to die.  AP is trivial to write, however, so you could write your
@@ -87,18 +90,19 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="2"><code>auto_ptr</code> inside container classes</a></h2>
    <p>All of the <a href="../23_containers/howto.html">containers</a>
       described in the standard library require their contained types
       to have, among other things, a copy constructor like this:
-      <pre>
+   </p>
+   <pre>
     struct My_Type
     {
         My_Type (My_Type const&amp;);
     };
-      </pre>
-      Note the const keyword; the object being copied shouldn't change.
+   </pre>
+   <p>Note the const keyword; the object being copied shouldn't change.
       The template class <code>auto_ptr</code> (called AP here) does not
       meet this requirement.  Creating a new AP by copying an existing
       one transfers ownership of the pointed-to object, which means that
@@ -113,7 +117,8 @@
       <a href="../19_diagnostics/howto.html#3">concept checks</a> built
       in to this implementation will issue an error if you try to
       compile code like this:
-      <pre>
+   </p>
+   <pre>
     #include &lt;vector&gt;
     #include &lt;memory&gt;
     
@@ -121,14 +126,14 @@
     {
         std::vector&lt; std::auto_ptr&lt;int&gt; &gt;   vec_ap_int;
     }
-      </pre>
-      Should you try this with the checks enabled, you will see an error.
+   </pre>
+   <p>Should you try this with the checks enabled, you will see an error.
    </p>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="3">Functors</a></h2>
    <p>If you don't know what functors are, you're not alone.  Many people
       get slightly the wrong idea.  In the interest of not reinventing
@@ -141,7 +146,7 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="4">Pairs</a></h2>
    <p>The <code>pair&lt;T1,T2&gt;</code> is a simple and handy way to
       carry around a pair of objects.  One is of type T1, and another of
@@ -151,16 +156,20 @@
    </p>
    <p>Construction is simple.  The default ctor initializes each member
       with its respective default ctor.  The other simple ctor,
-      <pre>
+   </p>
+   <pre>
     pair (const T1&amp; x, const T2&amp; y);
-      </pre>does what you think it does, <code>first</code> getting <code>x</code>
+   </pre>
+   <p>does what you think it does, <code>first</code> getting <code>x</code>
       and <code>second</code> getting <code>y</code>.
    </p>
    <p>There is a copy constructor, but it requires that your compiler
       handle member function templates:
-      <pre>
+   </p>
+   <pre>
     template &lt;class U, class V&gt; pain (const pair&lt;U,V&gt;&amp; p);
-      </pre>The compiler will convert as necessary from U to T1 and from
+   </pre>
+   <p>The compiler will convert as necessary from U to T1 and from
       V to T2 in order to perform the respective initializations.
    </p>
    <p>The comparison operators are done for you.  Equality
@@ -170,24 +179,25 @@
       <code>operator==</code> functions (for types like MyClass) or builtin
       comparisons (for types like int, char, etc).
    </p>
-   <a name="pairlt">
-   <p>The less-than operator is a bit odd the first time you see it.  It
+   <p><a name="pairlt">
+      The less-than operator is a bit odd the first time you see it.  It
       is defined as evaluating to:
-      <pre>
+      </a>
+   </p>
+   <pre>
     x.first  &lt;  y.first  ||
         ( !(y.first  &lt;  x.first)  &amp;&amp;  x.second  &lt;  y.second )
-      </pre>
-      The other operators are not defined using the <code>rel_ops</code>
+   </pre>
+   <p>The other operators are not defined using the <code>rel_ops</code>
       functions above, but their semantics are the same.
    </p>
-   </a>
    <p>Finally, there is a template function called <code>make_pair</code>
       that takes two references-to-const objects and returns an
       instance of a pair instantiated on their respective types:
-      <pre>
-    pair&lt;int,MyClass&gt; p = make_pair(4,myobject);
-      </pre>
    </p>
+   <pre>
+    pair&lt;int,MyClass&gt; p = make_pair(4,myobject);
+   </pre>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
@@ -197,7 +207,7 @@
 
 <!-- ####################################################### -->
 
-<hr>
+<hr />
 <p class="fineprint"><em>
 See <a href="../17_intro/license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to

@@ -1,13 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)">
-   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 19.">
-   <meta name="GENERATOR" content="vi and eight fingers">
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)" />
+   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL" />
+   <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 19." />
+   <meta name="GENERATOR" content="vi and eight fingers" />
    <title>libstdc++-v3 HOWTO:  Chapter 19</title>
-<link rel="StyleSheet" href="../lib3styles.css">
+<link rel="StyleSheet" href="../lib3styles.css" />
 </head>
 <body>
 
@@ -20,16 +19,16 @@
 
 
 <!-- ####################################################### -->
-<hr>
+<hr />
 <h1>Contents</h1>
 <ul>
-   <li><a href="#1">Adding data to exceptions</a>
-   <li><a href="#2">Exception class hierarchy diagram</a>
-   <li><a href="#3">Concept checkers -- <strong>new and improved!</strong></a>
-   <li><a href="#4">Verbose <code>terminate</code></a>
+   <li><a href="#1">Adding data to exceptions</a></li>
+   <li><a href="#2">Exception class hierarchy diagram</a></li>
+   <li><a href="#3">Concept checkers -- <strong>new and improved!</strong></a></li>
+   <li><a href="#4">Verbose <code>terminate</code></a></li>
 </ul>
 
-<hr>
+<hr />
 
 <!-- ####################################################### -->
 
@@ -56,7 +55,7 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="2">Exception class hierarchy diagram</a></h2>
    <p>At one point we were going to make up a PDF of the exceptions
       hierarchy, akin to the one done for the I/O class hierarchy.
@@ -72,7 +71,7 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="3">Concept checkers -- <strong>new and improved!</strong></a></h2>
    <p>Better taste!  Less fat!  Literally!</p>
    <p>In 1999, SGI added <em>concept checkers</em> to their implementation
@@ -89,7 +88,7 @@
       were found in it on more than one occasion.
    </p>
    <p>The primary author of the checking code, Jeremy Siek, had already
-      started work on a replcement implementation.  The new code has been
+      started work on a replacement implementation.  The new code has been
       formally reviewed and accepted into
       <a href="http://www.boost.org/libs/concept_check/concept_check.htm">the
       Boost libraries</a>, and we are pleased to incorporate it into the
@@ -109,12 +108,13 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="4">Verbose <code>terminate</code></a></h2>
    <p>If you are having difficulty with uncaught exceptions and want a
       little bit of help debugging the causes of the core dumps, you can
       make use of a GNU extension in GCC 3.1 and later:
-      <pre>
+   </p>
+   <pre>
    #include &lt;exception&gt;
 
    int main()
@@ -123,7 +123,6 @@
        ...
        throw <em>anything</em>;
    }</pre>
-   </p>
    <p>The <code> __verbose_terminate_handler </code> function obtains the name
       of the current exception, attempts to demangle it, and prints it to
       stderr.  If the exception is derived from <code> std::exception </code>
@@ -133,7 +132,8 @@
       without returning; this one calls abort.
    </p>
    <p>For example:
-      <pre>
+   </p>
+   <pre>
    #include &lt;exception&gt;
    #include &lt;stdexcept&gt;
 
@@ -151,9 +151,9 @@
        else
            throw argc;
    }</pre>
-   </p>
    <p>In GCC 3.1 and later, this gives
-      <pre>
+   </p>
+   <pre>
    % ./a.out
    terminate called after throwing a `int'
    Aborted
@@ -162,7 +162,7 @@
    what(): argc is greater than 5!
    Aborted
    %</pre>
-      The 'Aborted' line comes from the call to abort(), of course.
+   <p>The 'Aborted' line comes from the call to abort(), of course.
    </p>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
@@ -171,7 +171,7 @@
 
 <!-- ####################################################### -->
 
-<hr>
+<hr />
 <p class="fineprint"><em>
 See <a href="../17_intro/license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to
