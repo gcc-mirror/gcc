@@ -1,0 +1,284 @@
+#   Copyright (C) 2001 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+#
+# This script was submitted by Janis Johnson <janis187@us.ibm.com>.
+
+# Test the functionality and optionally, performance improvement, of
+# programs compiled with profile-directed optimizations.  Compile and
+# run a test with profile options, compile it with options using the
+# profile feedback, and then run the test again.  Optionally compile
+# and run a third time without the profile-directed optimization and
+# compare timing results of the program with normal optimization and
+# with the profile-directed optimization. Each test is run using
+# multiple sets of optimization and/or code generation options in
+# addition to the profiling and feedback options.
+
+# If perf_ext is defined and the performance value for the
+# profile-directed test run is non-zero then the performance check will
+# be done.
+
+global PROFOPT_OPTIONS perf_delta
+
+# The including .exp file must define these.
+global tool profile_option feedback_option prof_ext
+if ![info exists tool] {
+    error "Tools is not specified."
+}
+if ![info exists profile_option] {
+    error "No profile option specified for first compile."
+}
+if ![info exists feedback_option] {
+    error "No feedback option specified for second compile."
+}
+if ![info exists prof_ext] {
+    error "No profile data file extension specified."
+}
+
+# The maximum perforance degradation can be defined in the including file.
+if ![info exists perf_delta] {
+    set perf_delta 4
+}
+
+# The default option list can be overridden by
+# PROFOPT_OPTIONS="{ { list1 } ... { list2 } }"
+
+if ![info exists PROFOPT_OPTIONS] {
+    set PROFOPT_OPTIONS [list \
+	{ -g } \
+	{ -O0 } \
+	{ -O1 } \
+	{ -O2 } \
+	{ -O3 } \
+	{ -O3 -g } \
+	{ -Os } ]
+}
+
+set option_list $PROFOPT_OPTIONS
+
+#
+# profopt-cleanup -- remove profiling or performance results files.
+#
+# EXT is the extension of files to remove
+#
+proc profopt-cleanup { ext } {
+    set files [glob -nocomplain *.$ext]
+    if { $files != "" } {
+	eval "remote_file build delete $files"
+    }
+}
+
+#
+# profopt-perf-value -- get performance value for a test
+#
+# TESTCASE is the name of the test
+# PERF_EXT is the extension of the performance result file
+# OPTSTR is the string of compiler options
+#
+proc profopt-perf-value { testcase perf_ext optstr } {
+    set basename [file tail $testcase]
+    set base [file rootname $basename]
+    set files [glob -nocomplain $base.$perf_ext]
+    # The file doesn't exist; let the caller decide if that's a problem.
+    if { $files == "" } {
+        return -2 
+    }
+    remote_upload host $base.$perf_ext $base.$perf_ext
+    set fd [open $base.$perf_ext r]
+    gets $fd line
+    set val -2
+    if [regexp "TIME" $line] {
+        if [regexp "TIME -1" $line] {
+	    fail "$testcase perf check: no consistent time available, $optstr"
+	    set val -1
+	} elseif ![regexp "(\[0-9\]+)" "$line" val] {
+	    set val -2
+	}
+    }
+    # Report problems with an existing file.
+    if { $val == -2 } {
+	fail "$testcase perf check: file $base.$perf_ext has wrong format, $optstr"
+    }
+    close $fd
+    profopt-cleanup $perf_ext
+    return $val
+}
+
+#
+# c-prof-execute -- compile for profiling and then feedback, then normal
+#
+# SRC is the full pathname of the testcase.
+#
+proc profopt-execute { src } {
+    global srcdir tmpdir
+    global option_list
+    global tool profile_option feedback_option prof_ext perf_ext perf_delta
+    global verbose
+
+    regsub "^$srcdir/?" $src "" testcase
+    # If we couldn't rip $srcdir out of `src' then just do the best we can.
+    # The point is to reduce the unnecessary noise in the logs.  Don't strip
+    # out too much because different testcases with the same name can confuse
+    # `test-tool'.
+    if [string match "/*" $testcase] {
+	set testcase "[file tail [file dirname $src]]/[file tail $src]"
+    }
+
+    set executable $tmpdir/[file tail [file rootname $src].x]
+
+    set count 0
+    foreach option $option_list {
+	set execname1 "${executable}${count}1"
+	set execname2 "${executable}${count}2"
+	set execname3 "${executable}${count}3"
+	incr count
+
+	remote_file build delete $execname1
+	remote_file build delete $execname2
+	remote_file build delete $execname3
+	verbose "Testing $testcase, $option" 1
+
+	# Compile for profiling.
+
+	set options ""
+	lappend options "additional_flags=$option $profile_option"
+	set optstr "$option $profile_option"
+	set comp_output [${tool}_target_compile "$src" "$execname1" executable $options];
+	if ![${tool}_check_compile "$testcase compilation" $optstr $execname1 $comp_output] {
+ 	    unresolved "$testcase execution,   $optstr"
+ 	    unresolved "$testcase compilation, $option $feedback_option"
+ 	    unresolved "$testcase execution,   $option $feedback_option"
+	    continue
+	}
+
+	# Run the profiled test.
+
+	set result [${tool}_load $execname1 "" ""]
+	set status [lindex $result 0]
+	# Make sure the profile data was generated, and fail if not.
+	if { $status == "pass" } {
+	    set basename [file tail $testcase]
+	    set base [file rootname $basename]
+	    set files [glob -nocomplain $base.$prof_ext]
+	    if { $files == "" } {
+		set status "fail"
+		fail "$testcase execution: file $base.$prof_ext does not exist, $option $profile_option"
+	    } else {
+	        $status "$testcase execution,   $optstr"
+	    }
+	} else {
+	    $status "$testcase execution,   $optstr"
+	}
+	# Quit for this round if it failed
+	if { $status != "pass" } {
+ 	    unresolved "$testcase compilation, $option $feedback_option"
+ 	    unresolved "$testcase execution,   $option $feedback_option"
+	    continue
+	}
+	remote_file build delete $execname1
+
+	# Compile with feedback-directed optimizations.
+
+	set options ""
+	lappend options "additional_flags=$option $feedback_option"
+	set optstr "$option $feedback_option"
+	set comp_output [${tool}_target_compile "$src" "$execname2" "executable" $options];
+	if ![${tool}_check_compile "$testcase compilation" $optstr $execname2 $comp_output] {
+ 	    unresolved "$testcase execution,   $optstr"
+	    continue
+	}
+
+	# Run the profile-directed optimized test.
+
+	set result [${tool}_load "$execname2" "" ""]
+	set status [lindex $result 0]
+	$status "$testcase execution,   $optstr"
+	if { $status != "pass" } {
+	    continue
+	}
+
+	# Remove the profiling data files.
+	profopt-cleanup $prof_ext
+
+	# If the test is not expected to produce performance data then
+	# we're done now.
+	if ![info exists perf_ext] {
+	    remote_file build delete $execname2
+	    continue
+	}
+
+	# Get the performance data from the test built with
+	# profile-directed optimization.  If the file doesn't exist or if
+	# the value is zero, skip the performance comparison.
+	set val2 [profopt-perf-value $testcase $perf_ext $optstr]
+	if { $val2 <= 0 } {
+	    remote_file build delete $execname2
+	    continue
+	}
+
+	# Compile with normal optimizations.
+
+	set options ""
+	lappend options "additional_flags=$option"
+	set optstr "$option"
+	set comp_output [${tool}_target_compile "$src" "$execname3" "executable" $options];
+	if ![${tool}_check_compile "$testcase compilation" $optstr $execname3 $comp_output] {
+ 	    unresolved "$testcase execution,   $optstr"
+	    unresolved "$testcase perf check,  $optstr"
+	    continue
+	}
+
+	# Run the test with normal optimizations.
+
+	set result [${tool}_load "$execname3" "" ""]
+	set status [lindex $result 0]
+	$status "$testcase execution,   $optstr"
+	if { $status != "pass" } {
+	    unresolved "$testcase perf check, $optstr"
+	    continue
+	}
+
+	# Get the performance data from the test built with normal
+	# optimization.
+	set val1 [profopt-perf-value $testcase $perf_ext $optstr]
+	if { $val1 < 0 } {
+	    if { $val1 == -2 } {
+		# The data file existed with the profile-directed
+		# optimization so this one should, too.
+		fail "$testcase perf check: file $base.$perf_ext does not exist, $optstr"
+	    }
+	    continue
+	}
+
+	# Compare results of the two runs and fail if the time with the
+	# profile-directed optimization is significantly more than the time
+	# without it.
+	set status "pass"
+	if { $val2 > $val1 } {
+	    # Check for a performance degration outside of allowable limits.
+	    if { [expr $val2 - $val1] > [expr [expr $val1 * $perf_delta] / 100] } {
+		set status "fail"
+	    }
+	}
+	if { $status == "fail" } {
+	    fail "$testcase perf check: orig: $val1  new: $val2, $optstr"
+	} else {
+	    $status "$testcase perf check,  $optstr"
+	    verbose "$testcase orig: $val1  new: $val2, $optstr" 2
+	    remote_file build delete $execname2
+	    remote_file build delete $execname3
+	}
+    }
+}
