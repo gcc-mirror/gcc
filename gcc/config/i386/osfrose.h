@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Intel 386 (OSF/1 with OSF/rose) version.
-   Copyright (C) 1991 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -36,6 +36,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define MASK_NO_IDENT		0x08000000	/* suppress .ident */
 #define MASK_NO_UNDERSCORES	0x04000000	/* suppress leading _ */
 #define MASK_LARGE_ALIGN	0x02000000	/* align to >word boundaries */
+#define MASK_MCOUNT		0x01000000	/* profiling uses mcount */
 
 #define TARGET_HALF_PIC		(target_flags & MASK_HALF_PIC)
 #define TARGET_DEBUG		(target_flags & MASK_HALF_PIC_DEBUG)
@@ -45,6 +46,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define TARGET_IDENT		((target_flags & MASK_NO_IDENT) == 0)
 #define TARGET_UNDERSCORES	((target_flags & MASK_NO_UNDERSCORES) == 0)
 #define TARGET_LARGE_ALIGN	(target_flags & MASK_LARGE_ALIGN)
+#define TARGET_MCOUNT		(target_flags & MASK_MCOUNT)
 
 #undef	SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
@@ -58,8 +60,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
      { "no-ident",	 MASK_NO_IDENT},				\
      { "underscores",	-MASK_NO_UNDERSCORES},				\
      { "no-underscores", MASK_NO_UNDERSCORES},				\
+     { "large-align",	 MASK_LARGE_ALIGN},				\
      { "no-large-align",-MASK_LARGE_ALIGN},				\
-     { "large-align",	 MASK_LARGE_ALIGN},
+     { "mcount",	 MASK_MCOUNT},					\
+     { "no-mcount",	-MASK_MCOUNT},
 
 /* OSF/rose uses stabs, not dwarf.  */
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
@@ -148,11 +152,67 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Temporarily turn off long double being 96 bits.  */
 #undef LONG_DOUBLE_TYPE_SIZE
 
-/* Tell final.c we don't need a label passed to mcount.  */
-#define NO_PROFILE_DATA
-
 #undef  FUNCTION_PROFILER
-#define FUNCTION_PROFILER(FILE, LABELNO) fprintf (FILE, "\tcall _mcount\n")
+#define FUNCTION_PROFILER(FILE, LABELNO)				\
+do									\
+  {									\
+    if (TARGET_MCOUNT && flag_pic)					\
+      {									\
+	fprintf (FILE, "\tleal %sP%d@GOTOFF(%%ebx),%%edx\n",		\
+		 LPREFIX, LABELNO);					\
+	fprintf (FILE, "\tcall *_mcount@GOT(%%ebx)\n");			\
+      }									\
+									\
+    /* Note that OSF/rose blew it in terms of calling mcount, since	\
+       OSF/rose prepends a leading underscore, but mcount's doesn't.	\
+       OSF/elf fixes this by not prepending leading underscores.  */	\
+    else if (TARGET_MCOUNT)						\
+      {									\
+	fprintf (FILE, "\tmovl $%sP%d,%%edx\n", LPREFIX, LABELNO);	\
+	fprintf (FILE, "\tcall _mcount\n");				\
+      }									\
+									\
+    else								\
+      {									\
+	char *underscore = (TARGET_UNDERSCORES) ? "_" : "";		\
+	char *func = IDENTIFIER_POINTER (DECL_NAME (current_function_decl)); \
+									\
+	if (flag_pic)							\
+	  {								\
+	    fprintf (FILE, "\tmovl %s_real_mcount@GOT(%%ebx),%%eax)\n",	\
+		     underscore);					\
+	    fprintf (FILE, "\tmovl (%%eax),%%eax\n");			\
+	  }								\
+	else								\
+	  fprintf (FILE, "\tmovl %s_real_mcount,%%eax\n", underscore);	\
+									\
+	if (flag_omit_frame_pointer)					\
+	  abort ();							\
+	else								\
+	  fprintf (FILE, "\tmovl 4(%%ebp),%%ecx\n");			\
+									\
+	if (flag_pic)							\
+	  {								\
+	    fprintf (FILE, "\tleal %sP%d@GOTOFF(%%ebx),%%edx\n",	\
+		     LPREFIX, LABELNO);					\
+	    fprintf (FILE, "\tpushl %%edx\n");				\
+	    fprintf (FILE, "\tpushl %%ecx\n");				\
+	    fprintf (FILE, "\tleal $%s%s@GOTOFF(%%ebx),%%ecx\n",	\
+		     underscore, func);					\
+	    fprintf (FILE, "\tpushl %%ecx\n");				\
+	  }								\
+	else								\
+	  {								\
+	    fprintf (FILE, "\tpushl $%sP%d\n", LPREFIX, LABELNO);	\
+	    fprintf (FILE, "\tpushl %%ecx\n");				\
+	    fprintf (FILE, "\tpushl $%s%s\n", underscore, func);	\
+	  }								\
+									\
+	fprintf (FILE, "\tcall *%%eax\n");				\
+	fprintf (FILE, "\taddl $12,%%esp\n");				\
+      }									\
+  }									\
+while (0)
 
 /* A C statement or compound statement to output to FILE some
    assembler code to initialize basic-block profiling for the current
