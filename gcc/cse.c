@@ -2694,9 +2694,9 @@ find_best_addr (insn, loc)
 #ifdef ADDRESS_COST
 	  && (ADDRESS_COST (folded) < ADDRESS_COST (addr)
 	      || (ADDRESS_COST (folded) == ADDRESS_COST (addr)
-		  && rtx_cost (folded) > rtx_cost (addr)))
+		  && rtx_cost (folded, MEM) > rtx_cost (addr, MEM)))
 #else
-	  && rtx_cost (folded) < rtx_cost (addr)
+	  && rtx_cost (folded, MEM) < rtx_cost (addr, MEM)
 #endif
 	  && validate_change (insn, loc, folded, 0))
 	addr = folded;
