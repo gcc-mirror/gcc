@@ -1,4 +1,4 @@
-/* This used fail on H8/300 due to incorrect specification of pushi1.  */
+/* This used to fail on H8/300 due to incorrect specification of pushi1.  */
 
 /* { dg-do run } */
 /* { dg-options "-O2" } */
