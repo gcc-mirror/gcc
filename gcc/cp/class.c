@@ -4993,9 +4993,10 @@ layout_class_type (tree t, tree *virtuals_p)
       normalize_rli (rli);
     }
 
-  /* Make sure that empty classes are reflected in RLI at this 
-     point.  */
-  include_empty_classes(rli);
+  /* G++ 3.2 does not allow virtual bases to be overlaid with tail
+     padding.  */
+  if (!abi_version_at_least (2))
+    include_empty_classes(rli);
 
   /* Delete all zero-width bit-fields from the list of fields.  Now
      that the type is laid out they are no longer important.  */
@@ -5022,8 +5023,17 @@ layout_class_type (tree t, tree *virtuals_p)
 	}
       else
 	{
-	  TYPE_SIZE (base_t) = rli_size_so_far (rli);
-	  TYPE_SIZE_UNIT (base_t) = rli_size_unit_so_far (rli);
+	  TYPE_SIZE_UNIT (base_t) 
+	    = size_binop (MAX_EXPR,
+			  rli_size_unit_so_far (rli),
+			  end_of_class (t, /*include_virtuals_p=*/0));
+	  TYPE_SIZE (base_t) 
+	    = size_binop (MAX_EXPR,
+			  rli_size_so_far (rli),
+			  size_binop (MULT_EXPR,
+				      convert (bitsizetype,
+					       TYPE_SIZE_UNIT (base_t)),
+				      bitsize_int (BITS_PER_UNIT)));
 	}
       TYPE_ALIGN (base_t) = rli->record_align;
       TYPE_USER_ALIGN (base_t) = TYPE_USER_ALIGN (t);
