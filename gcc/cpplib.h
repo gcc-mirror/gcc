@@ -1,5 +1,5 @@
 /* Definitions for CPP library.
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
@@ -280,9 +280,6 @@ struct cpp_options
   /* File name which deps are being written to.  This is 0 if deps are
      being written to stdout.  */
   const char *deps_file;
-
-  /* Target-name to write with the dependency information.  */
-  char *deps_target;
 
   /* Search paths for include files.  */
   struct file_name_list *quote_include;	 /* First dir to search for "file" */

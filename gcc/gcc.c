@@ -1,6 +1,6 @@
 /* Compiler driver program that can handle many languages.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -584,7 +584,7 @@ static const char *cpp_options =
 "%{C:%{!E:%eGNU C does not support -C without using -E}}\
  %{std*} %{nostdinc*}\
  %{C} %{v} %{I*} %{P} %{$} %I\
- %{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
+ %{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG} %{MT}\
  %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
  %{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
  %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\

@@ -1,6 +1,6 @@
 /* CPP Library.
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -753,34 +753,27 @@ initialize_dependency_output (pfile)
 	    return;
 	}
 
+      if (! pfile->deps)
+	pfile->deps = deps_init ();
+
       /* Find the space before the DEPS_TARGET, if there is one.  */
       s = strchr (spec, ' ');
       if (s)
 	{
-	  CPP_OPTION (pfile, deps_target) = s + 1;
+	  deps_add_target (pfile->deps, s + 1);
 	  output_file = (char *) xmalloc (s - spec + 1);
 	  memcpy (output_file, spec, s - spec);
 	  output_file[s - spec] = 0;
 	}
       else
-	{
-	  CPP_OPTION (pfile, deps_target) = 0;
-	  output_file = spec;
-	}
+	output_file = spec;
 
       CPP_OPTION (pfile, deps_file) = output_file;
       CPP_OPTION (pfile, print_deps_append) = 1;
     }
 
-  pfile->deps = deps_init ();
-
-  /* Print the expected object file name as the target of this Make-rule.  */
-  if (CPP_OPTION (pfile, deps_target))
-    deps_add_target (pfile->deps, CPP_OPTION (pfile, deps_target));
-  else if (*CPP_OPTION (pfile, in_fname) == 0)
-    deps_add_target (pfile->deps, "-");
-  else
-    deps_calc_target (pfile->deps, CPP_OPTION (pfile, in_fname));
+  /* Set the default target (if there is none already).  */
+  deps_add_default_target (pfile->deps, CPP_OPTION (pfile, in_fname));
 
   if (CPP_OPTION (pfile, in_fname))
     deps_add_dep (pfile->deps, CPP_OPTION (pfile, in_fname));
@@ -1063,6 +1056,7 @@ new_pending_directive (pend, text, handler)
 #define no_mac N_("Macro name missing after %s")
 #define no_pth N_("Path name missing after %s")
 #define no_num N_("Number missing after %s")
+#define no_tgt N_("Target missing after %s")
 
 /* This is the list of all command line options, with the leading
    "-" removed.  It must be sorted in ASCII collating order.  */
@@ -1083,6 +1077,7 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("MG",                       0,      OPT_MG)                         \
   DEF_OPT("MM",                       0,      OPT_MM)                         \
   DEF_OPT("MMD",                      no_fil, OPT_MMD)                        \
+  DEF_OPT("MT",                       no_tgt, OPT_MT)                         \
   DEF_OPT("P",                        0,      OPT_P)                          \
   DEF_OPT("U",                        no_mac, OPT_U)                          \
   DEF_OPT("W",                        no_arg, OPT_W)  /* arg optional */      \
@@ -1484,6 +1479,9 @@ cpp_handle_option (pfile, argc, argv)
 	case OPT_MD:
 	case OPT_MM:
 	case OPT_MMD:
+	  if (! pfile->deps)
+	    pfile->deps = deps_init ();
+
 	  if (opt_code == OPT_M || opt_code == OPT_MD)
 	    CPP_OPTION (pfile, print_deps) = 2;
  	  else
@@ -1497,6 +1495,14 @@ cpp_handle_option (pfile, argc, argv)
  	  else
 	      CPP_OPTION (pfile, no_output) = 1;
 	  break;
+
+	case OPT_MT:
+	  /* Add a target.  */
+	  if (! pfile->deps)
+	    pfile->deps = deps_init ();
+	  deps_add_target (pfile->deps, arg);
+	  break;
+
 	case OPT_A:
 	  if (arg[0] == '-')
 	    {

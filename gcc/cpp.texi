@@ -17,7 +17,7 @@
 This file documents the GNU C Preprocessor.
 
 Copyright 1987, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-1999, 2000 Free Software Foundation, Inc.
+1999, 2000, 2001 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -53,7 +53,7 @@ C Language manual.
 @vskip 0pt plus 1filll
 @c man begin COPYRIGHT
 Copyright @copyright{} 1987, 1989, 1991, 1992, 1993, 1994, 1995, 1996,
-1997, 1998, 1999, 2000
+1997, 1998, 1999, 2000, 2001
 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
@@ -3475,6 +3475,15 @@ files into a single dependency file suitable for using with the
 @findex -MMD
 Like @samp{-MD} except mention only user header files, not system
 header files.
+
+@item -MT @var{target}
+@findex -MT
+By default CPP uses the base file name and appends the object suffix,
+normally ``.o'', to it to obtain the name of the target for dependency
+generation.  With @samp{-MT} you can specify one or more of your own
+targets; doing so overrides the default.
+
+The targets are output in the order they appear on the command line.
 
 @item -H
 @findex -H

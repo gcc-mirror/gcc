@@ -1,3 +1,18 @@
+2001-01-04  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cpp.texi: Update for -MT.
+        * cppinit.c (initialize_dependency_output): Add a default
+        target if none has been given already.
+        (no_tgt, OPT_MT): New.
+        (cpp_handle_option): Handle -MT.  Update -M etc.
+        * cpplib.h (struct cpp_options): Remove deps_target.
+        * gcc.c (cpp_options): Handle -MT.
+        * mkdeps.c (struct deps): Move from mkdeps.h.
+        (deps_calc_target): Rename deps_add_default_target.  Add a
+        default target if none has been specified already.
+        * mkdeps.h (struct deps): Move to mkdeps.c.
+        (deps_calc_target): Rename deps_add_default_target.
+
 2000-01-03  Richard Henderson  <rth@redhat.com>
 
 	* c-decl.c (grokdeclarator): Give zero-length arrays size zero.
