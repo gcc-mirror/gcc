@@ -47,14 +47,14 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
     *:NetBSD:*:*)
 	echo ${UNAME_MACHINE}-unknown-netbsd`echo ${UNAME_RELEASE}|sed -e 's/[-_].*//'`
 	exit 0 ;;
-    alpha:OSF1:1.*:*)
+    alpha:OSF1:V*:*)
+	# After 1.2, OSF1 uses "V1.3" for uname -r.
+	echo alpha-dec-osf`echo ${UNAME_RELEASE} | sed -e 's/^V//'`
+	exit 0 ;;
+    alpha:OSF1:*:*)
 	# 1.2 uses "1.2" for uname -r.
 	echo alpha-dec-osf${UNAME_RELEASE}
         exit 0 ;;
-    alpha:OSF1:V1.*:* | alpha:OSF1:V[2-9].*:*)
-	# 1.3 and later use "V1.3", etc. for uname -r.
-	echo alpha-dec-osf`echo ${UNAME_RELEASE} | sed -e 's/^V//'`
-	exit 0 ;;
     arm:RISC*:1.[012]*:*|arm:riscix:1.[012]*:*)
 	echo arm-acorn-riscix${UNAME_RELEASE}
 	exit 0;;
@@ -88,6 +88,9 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	exit 0 ;;
     mips:*:5*:RISCos)
 	echo mips-mips-riscos${UNAME_RELEASE}
+	exit 0 ;;
+    m88k:CX/UX:7*:*)
+	echo m88k-harris-cxux7
 	exit 0 ;;
     m88k:*:4*:R4*)
 	echo m88k-motorola-sysv4
@@ -146,7 +149,7 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
     hp300:4.4BSD:*:* | 9000/[34]??:4.3bsd:2.*:*)
 	echo m68k-hp-bsd4.4
 	exit 0 ;;
-    9000/[3478]??:HP-UX:*:* | 9000/8?7:HP-UX:*:* )
+    9000/[3478]??:HP-UX:*:*)
 	case "${UNAME_MACHINE}" in
 	    9000/31? )            HP_ARCH=m68000 ;;
 	    9000/[34]?? )         HP_ARCH=m68k ;;
@@ -155,7 +158,7 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	esac
 	case ${UNAME_RELEASE} in
 	    *.B7.* )          HPUX_REV=7 ;;
-	    *.B8.* | *.08.* ) HPUX_REV=8 ;;
+	    *.[B0]8.* )       HPUX_REV=8 ;;
 	    *.09.* )          HPUX_REV=9 ;;
 	esac
 	echo ${HP_ARCH}-hp-hpux${HPUX_REV}
@@ -167,9 +170,10 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	main ()
 	{
 	  long cpu = sysconf (_SC_CPU_VERSION);
-	  if (CPU_IS_HP_MC68K (cpu))
-	    puts ("m68k-hitachi-hiuxwe2");
-	  else if (CPU_IS_PA_RISC (cpu))
+	  /* The order matters, because CPU_IS_HP_MC68K erroneously returns
+	     true for CPU_PA_RISC1_0.  CPU_IS_PA_RISC returns correct
+	     results, however.  */
+	  if (CPU_IS_PA_RISC (cpu))
 	    {
 	      switch (cpu)
 		{
@@ -179,6 +183,8 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 		  default: puts ("hppa-hitachi-hiuxwe2"); break;
 		}
 	    }
+	  else if (CPU_IS_HP_MC68K (cpu))
+	    puts ("m68k-hitachi-hiuxwe2");
 	  else puts ("unknown-hitachi-hiuxwe2");
 	  exit (0);
 	}
@@ -192,6 +198,12 @@ EOF
 	exit 0 ;;
     9000/8??:4.3bsd:*:*)
 	echo hppa1.0-hp-bsd
+	exit 0 ;;
+    hp7??:OSF1:*:* | hp8?7:OSF1:*:* )
+	echo hppa1.1-hp-osf
+	exit 0 ;;
+    hp8??:OSF1:*:*)
+	echo hppa1.0-hp-osf
 	exit 0 ;;
     C1*:ConvexOS:*:* | convex:ConvexOS:C1:*)
 	echo c1-convex-bsd
@@ -208,6 +220,9 @@ EOF
     CRAY-2:UNICOS:*:*)
 	echo cray2-cray-unicos
         exit 0 ;;
+    hp3[0-9][05]:NetBSD:*:*)
+	echo m68k-hp-netbsd${UNAME_RELEASE}
+	exit 0 ;;
     i[34]86:BSD/386:*:*)
 	echo ${UNAME_MACHINE}-unknown-bsdi${UNAME_RELEASE}
 	exit 0 ;;
@@ -236,6 +251,14 @@ EOF
 		echo ${UNAME_MACHINE}-unknown-sysv32
 	fi
 	exit 0 ;;
+# ptx 4.0 does uname -s correctly, with DYNIX/ptx in there.  earlier versions
+# are messed up and put the nodename in both sysname and nodename.
+    i[34]86:DYNIX/ptx:4*:*)
+	echo i386-sequent-sysv4
+	exit 0 ;;
+    Intel:Mach:3*:*)
+	echo i386-unknown-mach3
+	exit 0 ;;
     i860:*:4.*:*) # i860-SVR4
 	if grep Stardent /usr/include/sys/uadmin.h >/dev/null 2>&1 ; then
 	  echo i860-stardent-sysv${UNAME_RELEASE} # Stardent Vistra i860-SVR4
@@ -263,6 +286,20 @@ EOF
 	exit 0 ;;
     TSUNAMI:LynxOS:2.2*:*)
 	echo sparc-lynx-lynxos${UNAME_RELEASE}
+	exit 0 ;;
+    rs6000:LynxOS:2.2*:*)
+	echo rs6000-lynx-lynxos${UNAME_RELEASE}
+	exit 0 ;;
+    RM*:SINIX-*:*:*)
+	echo mips-sni-sysv4
+	exit 0 ;;
+    *:SINIX-*:*:*)
+	if uname -p 2>/dev/null >/dev/null ; then
+		UNAME_MACHINE=`(uname -p) 2>/dev/null`
+		echo ${UNAME_MACHINE}-sni-sysv4
+	else
+		echo ns32k-sni-sysv
+	fi
 	exit 0 ;;
 esac
 
@@ -296,16 +333,8 @@ main ()
 #endif
   int version;
   version=`(hostinfo | sed -n 's/.*NeXT Mach \([0-9]*\).*/\1/p') 2>/dev/null`;
-  if (version==2)
-    {
-      printf ("%s-next-ns2\n", __ARCHITECTURE__);
-      exit (0);
-    }
-  else
-    {
-      printf ("%s-next-ns3\n", __ARCHITECTURE__);
-      exit (0);
-    }
+  printf ("%s-next-neststep%s\n", __ARCHITECTURE__,  version==2 ? "2" : "3");
+  exit (0);
 #endif
 
 #if defined (MULTIMAX) || defined (n16)
@@ -320,7 +349,7 @@ main ()
 #endif
 #endif
 
-#if defined (__386BSD__) || (defined (__bsdi__) && defined (__i386__))
+#if defined (__386BSD__)
   printf ("i386-unknown-bsd\n"); exit (0);
 #endif
 
