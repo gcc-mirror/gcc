@@ -7,7 +7,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 configure options</TITLE>
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: configopts.html,v 1.18 2000/12/03 23:47:46 jsm28 Exp $ -->
+<!-- $Id: configopts.html,v 1.1 2000/12/10 04:03:08 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -75,10 +75,12 @@ options</A></H1>
         templates and the like).
      </P>
 
- <DT><TT>--enable-cshadow-headers  </TT>
- <DD><P>This turns on the code to construct shadowed C headers, and to
-        use c headers in the std:: namespace.  Very experimental as of
-        this writing.
+ <DT><TT>--enable-cheaders=OPTION  </TT>
+ <DD><P>This allows the user to define what kind of C headers are
+	used.  Options are: c, c_std, and c_shadow. These correspond
+	to the source directory's include/c, include/c_std, and
+	include/c_shadow directories.
+ 	The default is c_std.
      </P>
 
  <DT><TT>--enable-threads  </TT>
@@ -167,7 +169,7 @@ options</A></H1>
 
 <HR>
 <P CLASS="fineprint"><EM>
-$Id: configopts.html,v 1.18 2000/12/03 23:47:46 jsm28 Exp $
+$Id: configopts.html,v 1.1 2000/12/10 04:03:08 pme Exp $
 </EM></P>
 
 

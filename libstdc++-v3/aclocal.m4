@@ -1504,43 +1504,51 @@ AC_DEFUN(GLIBCPP_ENABLE_LONG_LONG, [dnl
 
 
 dnl
-dnl Check for whether or not to do shadowed C headers.
+dnl Check for what kind of C headers to use.
 dnl
-dnl GLIBCPP_ENABLE_SHADOW
-dnl --enable-cshadow-headers [does stuff].
-dnl --disable-cshadow-headers [does not do stuff].
-dnl  +  This will eventually need to be on by default.
-dnl  +  Usage:  GLIBCPP_ENABLE_SHADOW[(DEFAULT)]
-dnl       Where DEFAULT is either `yes' or `no'.  If ommitted, it
-dnl       defaults to `no'.
-AC_DEFUN(GLIBCPP_ENABLE_SHADOW, [dnl
-define([GLIBCPP_ENABLE_SHADOW_DEFAULT], ifelse($1, yes, yes, no))dnl
-AC_MSG_CHECKING([for enabled cshadow headers])
-AC_ARG_ENABLE(cshadow-headers,
+dnl GLIBCPP_ENABLE_CHEADERS
+dnl --enable-cheaders= [does stuff].
+dnl --disable-cheaders [does not do anything, really].
+dnl  +  This will eventually need to be 'c_shadow' by default.
+dnl  +  Usage:  GLIBCPP_ENABLE_CHEADERS[(DEFAULT)]
+dnl       Where DEFAULT is either `c' or `c_std' or 'c_shadow'.  
+dnl       If ommitted, it defaults to `c_std'.
+AC_DEFUN(GLIBCPP_ENABLE_CHEADERS, [dnl
+define([GLIBCPP_ENABLE_CHEADERS_DEFAULT], ifelse($1, c_std, c_std, c_std))dnl
+AC_MSG_CHECKING([for c header strategy to use])
+AC_ARG_ENABLE(cheaders,
 changequote(<<, >>)dnl
-<<  --enable-cshadow-headers construct "shadowed" C header files for
-                           g++ [default=>>GLIBCPP_ENABLE_SHADOW_DEFAULT],
+<<  --enable-cheaders construct "C" header files for
+                           g++ [default=>>GLIBCPP_ENABLE_CHEADERS_DEFAULT],
 changequote([, ])
   [case "$enableval" in
-   yes) enable_cshadow_headers=yes 
+   c) 
+	enable_cheaders=c 
         ;;
-   no)  enable_cshadow_headers=no 
+   c_std)  
+	enable_cheaders=c_std 
         ;;
-   *)   AC_MSG_ERROR([Unknown argument to enable/disable shadowed C headers]) 
+   c_shadow)  
+	enable_cheaders=c_shadow 
+        ;;
+   *)   AC_MSG_ERROR([Unknown argument to enable/disable "C" headers]) 
         ;;
   esac],
-  enable_cshadow_headers=GLIBCPP_ENABLE_SHADOW_DEFAULT)
-  AC_MSG_RESULT($enable_cshadow_headers)
+  enable_cheaders=GLIBCPP_ENABLE_CHEADERS_DEFAULT)
+  AC_MSG_RESULT($enable_cheaders)
 
   dnl Option parsed, now set things appropriately
-  dnl NB: these things may be duplicated in c++config.h as well.
-  case "$enable_cshadow_headers" in
-    yes) 
+  case "$enable_cheaders" in
+    c_shadow) 
         CSHADOW_FLAGS="-fno-builtin"
-        C_INCLUDE_DIR='${top_srcdir}/include/c_std'
+        C_INCLUDE_DIR='${top_srcdir}/include/c_shadow'
         AC_DEFINE(_GLIBCPP_USE_SHADOW_HEADERS)
         ;;
-    no)   
+    c_std)   
+        CSHADOW_FLAGS=""
+        C_INCLUDE_DIR='${top_srcdir}/include/c_std'
+        ;;
+    c)   
         CSHADOW_FLAGS=""
         C_INCLUDE_DIR='${top_srcdir}/include/c'
         ;;
@@ -1548,7 +1556,7 @@ changequote([, ])
 
   AC_SUBST(CSHADOW_FLAGS)
   AC_SUBST(C_INCLUDE_DIR)
-  AM_CONDITIONAL(GLIBCPP_USE_CSHADOW, test "$enable_cshadow_headers" = yes)
+  AM_CONDITIONAL(GLIBCPP_USE_CSHADOW, test "$enable_cheaders" = c_shadow)
 ])
 
 
@@ -1596,7 +1604,7 @@ AC_DEFUN(GLIBCPP_EXPORT_INCLUDES, [
 
   # Can either use include/c or include/c_std to grab "C" headers. This
   # variable is set to the include directory currently in use.
-  # set with C_INCLUDE_DIR in GLIBCPP_ENABLE_SHADOW
+  # set with C_INCLUDE_DIR in GLIBCPP_ENABLE_CHEADERS
    
   # Passed down for canadian crosses.
   if  test x"$CANADIAN" = xyes; then
