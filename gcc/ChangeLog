@@ -623,23 +623,7 @@ Thu Mar  8 06:32:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(*return_16bit, *unnamed peepholes): Likewise.
 
 2001-03-03  Laurynas Biveinis  <lauras@softhome.net>
-<<<<<<< ChangeLog
->>>>>>> 1.9240.2.146
 
-<<<<<<< ChangeLog
-2001-03-03  Laurynas Biveinis  <lauras@softhome.net>
-
-	* gcc.c (convert_filename): Append executable suffix
-	if NO_AUTO_EXE_SUFFIX is not defined.
-	* gcc.texi: Document NO_AUTO_EXE_SUFFIX.
-	* config/i386/djgpp.h: Define NO_AUTO_EXE_SUFFIX.
-=======
->>>>>>> 1.9240.2.165
-
-<<<<<<< ChangeLog
-=======
-=======
->>>>>>> 1.9240.2.165
 	* gcc.c (convert_filename): Append executable suffix
 	if NO_AUTO_EXE_SUFFIX is not defined.
 	* gcc.texi: Document NO_AUTO_EXE_SUFFIX.
