@@ -1068,7 +1068,7 @@ do_include (pfile, keyword)
 
   int fd;
 
-  if (CPP_PEDANTIC (pfile) && !CPP_BUFFER (pfile)->system_header_p)
+  if (CPP_PEDANTIC (pfile))
     {
       if (importing)
 	cpp_pedwarn (pfile, "ANSI C does not allow `#import'");
@@ -1555,7 +1555,7 @@ do_warning (pfile, keyword)
   skip_rest_of_line (pfile);
   limit = CPP_BUFFER (pfile)->cur;
 
-  if (CPP_PEDANTIC (pfile) && !CPP_BUFFER (pfile)->system_header_p)
+  if (CPP_PEDANTIC (pfile))
     cpp_pedwarn (pfile, "ANSI C does not allow `#warning'");
 
   cpp_warning (pfile, "#warning %.*s", (int)(limit - text), text);
@@ -1572,7 +1572,7 @@ do_ident (pfile, keyword)
   long old_written = CPP_WRITTEN (pfile);
 
   /* Allow #ident in system headers, since that's not user's fault.  */
-  if (CPP_PEDANTIC (pfile) && !CPP_BUFFER (pfile)->system_header_p)
+  if (CPP_PEDANTIC (pfile))
     cpp_pedwarn (pfile, "ANSI C does not allow `#ident'");
 
   CPP_PUTS (pfile, "#ident ", 7);
@@ -2292,7 +2292,7 @@ validate_else (pfile, directive)
      cpp_reader *pfile;
      const char *directive;
 {
-  if (! CPP_PEDANTIC (pfile) || CPP_BUFFER (pfile)->system_header_p)
+  if (! CPP_PEDANTIC (pfile))
     return;
 
   cpp_skip_hspace (pfile);
@@ -3060,8 +3060,7 @@ do_assert (pfile, keyword)
   HASHNODE *base, *this;
   int baselen, thislen;
 
-  if (CPP_PEDANTIC (pfile) && CPP_OPTIONS (pfile)->done_initializing
-      && !CPP_BUFFER (pfile)->system_header_p)
+  if (CPP_PEDANTIC (pfile) && CPP_OPTIONS (pfile)->done_initializing)
     cpp_pedwarn (pfile, "ANSI C does not allow `#assert'");
 
   cpp_skip_hspace (pfile);
@@ -3125,8 +3124,7 @@ do_unassert (pfile, keyword)
   long baselen, thislen;
   HASHNODE *base, *this, *next;
   
-  if (CPP_PEDANTIC (pfile) && CPP_OPTIONS (pfile)->done_initializing
-      && !CPP_BUFFER (pfile)->system_header_p)
+  if (CPP_PEDANTIC (pfile) && CPP_OPTIONS (pfile)->done_initializing)
     cpp_pedwarn (pfile, "ANSI C does not allow `#unassert'");
 
   cpp_skip_hspace (pfile);
