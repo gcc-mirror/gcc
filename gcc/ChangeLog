@@ -1,3 +1,8 @@
+2002-07-29  Richard Henderson  <rth@redhat.com>
+
+	* unroll.c (verify_addresses): Remove.
+	(find_splittable_givs): Never split DEST_ADDR givs.
+
 2002-07-29  Geoffrey Keating  <geoffk@redhat.com>
 
 	* doc/gty.texi (GGC Roots): Clarify that the list of syntaxes
