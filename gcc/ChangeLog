@@ -1,3 +1,8 @@
+2002-04-15  David S. Miller  <davem@redhat.com>
+
+	* rtlanal.c (note_stores): Don't present PARALLEL SET_DESTs
+	as being CLOBBERed.
+
 2002-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/6290
