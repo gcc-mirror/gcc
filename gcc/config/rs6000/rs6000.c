@@ -2368,35 +2368,59 @@ rs6000_emit_set_const (dest, mode, source, n)
      enum machine_mode mode;
      int n ATTRIBUTE_UNUSED;
 {
+  rtx result, insn, set;
   HOST_WIDE_INT c0, c1;
 
-  if (mode == QImode || mode == HImode || mode == SImode)
+  if (mode == QImode || mode == HImode)
     {
       if (dest == NULL)
         dest = gen_reg_rtx (mode);
       emit_insn (gen_rtx_SET (VOIDmode, dest, source));
       return dest;
     }
+  else if (mode == SImode)
+    {
+      result = no_new_pseudos ? dest : gen_reg_rtx (SImode);
 
-  if (GET_CODE (source) == CONST_INT)
-    {
-      c0 = INTVAL (source);
-      c1 = -(c0 < 0);
+      emit_insn (gen_rtx_SET (VOIDmode, result,
+			      GEN_INT (INTVAL (source)
+				       & (~ (HOST_WIDE_INT) 0xffff))));
+      emit_insn (gen_rtx_SET (VOIDmode, dest,
+			      gen_rtx_IOR (SImode, result,
+					   GEN_INT (INTVAL (source) & 0xffff))));
+      result = dest;
     }
-  else if (GET_CODE (source) == CONST_DOUBLE)
+  else if (mode == DImode)
     {
+      if (GET_CODE (source) == CONST_INT)
+	{
+	  c0 = INTVAL (source);
+	  c1 = -(c0 < 0);
+	}
+      else if (GET_CODE (source) == CONST_DOUBLE)
+	{
 #if HOST_BITS_PER_WIDE_INT >= 64
-      c0 = CONST_DOUBLE_LOW (source);
-      c1 = -(c0 < 0);
+	  c0 = CONST_DOUBLE_LOW (source);
+	  c1 = -(c0 < 0);
 #else
-      c0 = CONST_DOUBLE_LOW (source);
-      c1 = CONST_DOUBLE_HIGH (source);
+	  c0 = CONST_DOUBLE_LOW (source);
+	  c1 = CONST_DOUBLE_HIGH (source);
 #endif
+	}
+      else
+	abort ();
+
+      result = rs6000_emit_set_long_const (dest, c0, c1);
     }
   else
     abort ();
 
-  return rs6000_emit_set_long_const (dest, c0, c1);
+  insn = get_last_insn ();
+  set = single_set (insn);
+  if (! CONSTANT_P (SET_SRC (set)))
+    set_unique_reg_note (insn, REG_EQUAL, source);
+
+  return result;
 }
 
 /* Having failed to find a 3 insn sequence in rs6000_emit_set_const,
