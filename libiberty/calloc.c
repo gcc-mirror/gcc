@@ -1,3 +1,6 @@
+/* calloc -- allocate memory which has been initialized to zero.
+   This function is in the public domain. */
+ 
 #include "ansidecl.h"
 #include "libiberty.h"
  
