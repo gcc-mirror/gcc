@@ -1,3 +1,10 @@
+2003-02-20  Sean McNeil  <sean@blue.mcneil.com>
+
+	* Makefile.tpl: Add definition of CPPFLAGS to pass into
+	configure-target-* as some target builds may require additional
+	flags for preprocessor tests.
+	* Makefile.in: Regenerated.
+
 2003-02-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	* libtool.m4 (LD): Append -melf* option to LD on IRIX with GNU ld.

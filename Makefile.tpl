@@ -987,7 +987,8 @@ configure-target-[+module+]: $(TARGET_SUBDIR)/[+module+]/multilib.out
 	    AR="$(AR_FOR_TARGET)"; export AR; \
 	    AS="$(AS_FOR_TARGET)"; export AS; \
 	    CC="$(CC_FOR_TARGET)"; export CC; \
-	    CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \[+ 
+	    CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	    CPPFLAGS="$(CFLAGS_FOR_TARGET)"; export CPPFLAGS; \[+ 
 	IF raw_cxx +]
 	    CXX_FOR_TARGET="$(RAW_CXX_FOR_TARGET)"; export CXX_FOR_TARGET; \
 	    CXX="$(RAW_CXX_FOR_TARGET)"; export CXX; \[+ 
