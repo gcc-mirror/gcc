@@ -1874,7 +1874,7 @@ gnatlib: ../stamp-gnatlib1 ../stamp-gnatlib2
 	        ADA_INCLUDES="$(ADA_INCLUDES_FOR_SUBDIR)" \
                 CFLAGS="$(GNATLIBCFLAGS)" ADA_CFLAGS="$(GNATLIBCFLAGS)" \
 	        ADAFLAGS="$(GNATLIBFLAGS)" \
-		srcdir=$(fsrcdir) \
+		srcdir=$(fsrcdir) VPATH=$(fsrcdir) \
 	        -f ../Makefile \
 	        $(GNATRTL_OBJS)
 	$(RM) rts/libgnat$(arext) rts/libgnarl$(arext)
@@ -1951,7 +1951,7 @@ internal-hielib: ../stamp-gnatlib1
 	  ADA_INCLUDES="$(ADA_INCLUDES_FOR_SUBDIR)" \
 	  CFLAGS="$(GNATLIBCFLAGS)" \
 	  ADAFLAGS="$(GNATLIBFLAGS)" \
-	  srcdir=$(fsrcdir) \
+	  srcdir=$(fsrcdir) VPATH=$(fsrcdir) \
 	  -f ../Makefile \
 	  $(HIE_OBJS)
 	$(CHMOD) a-wx rts/*.ali
@@ -1974,7 +1974,7 @@ internal-ravenlib: ../stamp-gnatlib1
 	  ADA_INCLUDES="$(ADA_INCLUDES_FOR_SUBDIR)" \
 	  CFLAGS="$(GNATLIBCFLAGS)" \
 	  ADAFLAGS="$(GNATLIBFLAGS)" \
-	  srcdir=$(fsrcdir) \
+	  srcdir=$(fsrcdir) VPATH=$(fsrcdir) \
 	  -f ../Makefile \
 	  $(RAVEN_OBJS)
 	$(CHMOD) a-wx rts/*.ali
