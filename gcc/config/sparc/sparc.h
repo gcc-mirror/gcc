@@ -85,7 +85,7 @@ extern int target_flags;
 
 /* Nonzero means that reference doublewords as if they were guaranteed
    to be aligned...if they aren't, too bad for the user!
-   Like -fast in Sun cc.  */
+   Like -dalign in Sun cc.  */
 #define TARGET_HOPE_ALIGN (target_flags & 16)
 
 /* Nonzero means that make sure all doubles are on 8-byte boundaries.  */
