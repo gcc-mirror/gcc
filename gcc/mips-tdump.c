@@ -33,12 +33,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifndef CROSS_COMPILE
 #include <a.out.h>
 #else
-#include "symconst.h"
-#define LANGUAGE_C
-#include "sym.h"
-#include "filehdr.h"
-#define ST_RFDESCAPE    0xfff
-#endif
+#include "mips/a.out.h"
+#endif /* CROSS_COMPILE */
 
 #ifndef MIPS_IS_STAB
 /* Macros for mips-tfile.c to encapsulate stabs in ECOFF, and for
