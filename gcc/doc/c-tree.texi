@@ -27,7 +27,7 @@ the ability to process C or C++ code.
 This chapter explains the internal representation.  In particular, it
 documents the internal representation for C and C++ source
 constructs, and the macros, functions, and variables that can be used to
-access these constructs.  The C++ representation which is largely a superset
+access these constructs.  The C++ representation is largely a superset
 of the representation used in the C front end.  There is only one
 construct used in C that does not appear in the C++ front end and that
 is the GNU ``nested function'' extension.  Many of the macros documented
