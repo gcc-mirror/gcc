@@ -127,8 +127,8 @@ int stack_arg_under_construction;
 static int calls_function	PROTO ((tree, int));
 static int calls_function_1	PROTO ((tree, int));
 static void emit_call_1		PROTO ((rtx, tree, tree, HOST_WIDE_INT,
-				        HOST_WIDE_INT, rtx, rtx,
-				        int, rtx, int));
+					HOST_WIDE_INT, HOST_WIDE_INT, rtx,
+					rtx, int, rtx, int));
 static void special_function_p	PROTO ((char *, tree, int *, int *,
 					int *, int *));
 static void precompute_register_parameters	PROTO ((int, struct arg_data *,
@@ -374,13 +374,14 @@ prepare_call_address (funexp, fndecl, call_fusage, reg_parm_seen)
    IS_CONST is true if this is a `const' call.  */
 
 static void
-emit_call_1 (funexp, fndecl, funtype, stack_size, struct_value_size, 
-             next_arg_reg, valreg, old_inhibit_defer_pop, call_fusage,
-	     is_const)
+emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
+	     struct_value_size, next_arg_reg, valreg, old_inhibit_defer_pop,
+	     call_fusage, is_const)
      rtx funexp;
      tree fndecl ATTRIBUTE_UNUSED;
      tree funtype ATTRIBUTE_UNUSED;
      HOST_WIDE_INT stack_size;
+     HOST_WIDE_INT rounded_stack_size;
      HOST_WIDE_INT struct_value_size;
      rtx next_arg_reg;
      rtx valreg;
@@ -393,6 +394,7 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, struct_value_size,
   rtx call_insn;
 #ifndef ACCUMULATE_OUTGOING_ARGS
   int already_popped = 0;
+  HOST_WIDE_INT n_popped = RETURN_POPS_ARGS (fndecl, funtype, stack_size);
 #endif
 
   /* Ensure address is valid.  SYMBOL_REF is already valid, so no need,
@@ -403,11 +405,9 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, struct_value_size,
 
 #ifndef ACCUMULATE_OUTGOING_ARGS
 #if defined (HAVE_call_pop) && defined (HAVE_call_value_pop)
-  if (HAVE_call_pop && HAVE_call_value_pop
-      && (RETURN_POPS_ARGS (fndecl, funtype, stack_size) > 0 
-          || stack_size == 0))
+  if (HAVE_call_pop && HAVE_call_value_pop && n_popped > 0)
     {
-      rtx n_pop = GEN_INT (RETURN_POPS_ARGS (fndecl, funtype, stack_size));
+      rtx n_pop = GEN_INT (n_popped);
       rtx pat;
 
       /* If this subroutine pops its own args, record that in the call insn
@@ -485,23 +485,23 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, struct_value_size,
      If returning from the subroutine does pop the args, indicate that the
      stack pointer will be changed.  */
 
-  if (stack_size != 0 && RETURN_POPS_ARGS (fndecl, funtype, stack_size) > 0)
+  if (n_popped > 0)
     {
       if (!already_popped)
 	CALL_INSN_FUNCTION_USAGE (call_insn)
 	  = gen_rtx_EXPR_LIST (VOIDmode,
 			       gen_rtx_CLOBBER (VOIDmode, stack_pointer_rtx),
 			       CALL_INSN_FUNCTION_USAGE (call_insn));
-      stack_size -= RETURN_POPS_ARGS (fndecl, funtype, stack_size);
-      stack_size_rtx = GEN_INT (stack_size);
+      stack_size -= n_popped;
+      rounded_stack_size -= n_popped;
     }
 
-  if (stack_size != 0)
+  if (rounded_stack_size != 0)
     {
       if (flag_defer_pop && inhibit_defer_pop == 0 && !is_const)
-	pending_stack_adjust += stack_size;
+	pending_stack_adjust += rounded_stack_size;
       else
-	adjust_stack (stack_size_rtx);
+	adjust_stack (GEN_INT (rounded_stack_size));
     }
 #endif
 }
@@ -1168,8 +1168,11 @@ compute_argument_block_size (reg_parm_stack_space, args_size)
   else
     {
 #ifdef PREFERRED_STACK_BOUNDARY
-      args_size->constant = (((args_size->constant + (STACK_BYTES - 1))
-			      / STACK_BYTES) * STACK_BYTES);
+      args_size->constant = (((args_size->constant
+			       + pending_stack_adjust
+			       + STACK_BYTES - 1)
+			      / STACK_BYTES * STACK_BYTES)
+			     - pending_stack_adjust);
 #endif
 
       args_size->constant = MAX (args_size->constant,
@@ -2272,7 +2275,8 @@ expand_call (exp, target, ignore)
   /* All arguments and registers used for the call must be set up by now!  */
 
   /* Generate the actual call instruction.  */
-  emit_call_1 (funexp, fndecl, funtype, args_size.constant, struct_value_size,
+  emit_call_1 (funexp, fndecl, funtype, unadjusted_args_size,
+	       args_size.constant, struct_value_size,
 	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
 	       valreg, old_inhibit_defer_pop, call_fusage, is_const);
 
@@ -2957,7 +2961,7 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
                get_identifier (XSTR (orgfun, 0)), 
 	       build_function_type (outmode == VOIDmode ? void_type_node
 				    : type_for_mode (outmode, 0), NULL_TREE),
-               args_size.constant, 0,
+	       original_args_size.constant, args_size.constant, 0,
 	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
 	       outmode != VOIDmode ? hard_libcall_value (outmode) : NULL_RTX,
 	       old_inhibit_defer_pop + 1, call_fusage, no_queue);
@@ -3530,7 +3534,8 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
   emit_call_1 (fun, 
                get_identifier (XSTR (orgfun, 0)),
 	       build_function_type (type_for_mode (outmode, 0), NULL_TREE),
-               args_size.constant, struct_value_size,
+               original_args_size.constant, args_size.constant,
+	       struct_value_size,
 	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
 	       mem_value == 0 ? hard_libcall_value (outmode) : NULL_RTX,
 	       old_inhibit_defer_pop + 1, call_fusage, is_const);
