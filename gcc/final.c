@@ -1972,7 +1972,7 @@ final (first, file, optimize, prescan)
 		     && NOTE_LINE_NUMBER (insn) == NOTE_LINE_NUMBER (last)
 		     && NOTE_SOURCE_FILE (insn) == NOTE_SOURCE_FILE (last)))
 	      {
-		delete_note (insn);
+		delete_insn (insn);	/* Use delete_note.  */
 		continue;
 	      }
 	    last = insn;
