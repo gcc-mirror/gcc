@@ -1,3 +1,9 @@
+2002-03-18  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.h (GO_IF_MODE_DEPENDENT_ADDRESS): Treat
+	constant-pool addresses as "mode-dependent".
+	(GO_IF_LEGITIMATE_ADDRESS): Rename macro arguments.
+
 2002-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/5740
