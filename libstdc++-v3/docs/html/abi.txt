@@ -1,0 +1,166 @@
+
+===========================
+
+See http://gcc.gnu.org/ml/libstdc++/2002-07/msg00054.html for why this
+document exists, why it's incomplete, and what needs to be done still.
+
+===========================
+
+2002-07-01 Benjamin Kosnik
+
+Description of the libstdc++ ABI.
+
+I. What is an ABI? What's covered? What's not?
+
+- What's the deal with C++? Why can't different compiler's object
+  files link with each other? Bug? Feature?
+
+- scope of document, of use to system integrators.
+
+- compilation includes and linked library binary must match up..
+
+- library ABI, compiler ABI different (but effects)
+
+- GNU C++ does not have a compiler command line option to switch
+  between various different C++ ABIs. For instance, there is no way to
+  switch between the gcc-3.0.x ABI, gcc-3.1.x ABI, and the gcc-3.2.x
+  ABI during compilation. Other C++ compilers do allow this, and some
+  g++ command line options may change the ABI (-fno-exceptions, see
+  the complete list), but there is no version switch. Sorry. The GNU
+  Project recommends that
+
+- shared library only, static is immutable.
+
+- Minimum environment that supports a versioned ABI: what's needed?  A
+  supported dynamic linker, a GNU linker of sufficient vintage to
+  understand demangled C++ name globbing (ld), a shared executable
+  compiled with g++, and shared libraries (libgcc_s, libstdc++-v3)
+  compiled by a compiler (g++) with a compatible ABI. Phew.
+
+  On top of all that, an additional constraint: libstdc++ did not
+  attempt to version symbols (or age gracefully, really) until version
+  3.1.0. 
+
+  Most modern Linux and BSD versions, particularly ones using
+  gcc-3.1.x tools, will meet the requirements above.
+
+- What configure options impact symbol versioning?
+  There is only one: --enable-symvers. For more information see:
+  http://gcc.gnu.org/onlinedocs/libstdc++/configopts.html
+
+  In particular, libstdc++-v3/acinclude.m4 has a macro called
+  GLIBCPP_ENABLE_SYMVERS that defaults to yes (or the argument passed
+  in via --enable-symvers=foo). At that point, the macro attempts to
+  make sure that all the requirement for symbol versioning are in
+  place. For more information, please consult acinclude.m4. 
+
+- How can I tell if symbol versioning is, indeed, active? 
+
+  When the GNU C++ library is being built with symbol versioning on,
+  you should see the following at configure time for libstdc++-v3:
+
+checking versioning on shared library symbols... gnu
+
+  If you don't see this line in the configure output, or if this line
+  appears but the last word is 'no', then you are out of luck.
+
+  If the compiler is pre-installed, a quick way to test is to compile
+  the following (or any) simple C++ file:
+
+#include <iostream>
+
+int main()
+{ std::cout << "hello" << std::endl; return 0; }
+
+%g++ hello.cc -o hello.out
+%nm hello.out
+
+If you see symbols in the resulting output with "GLIBCPP_3.x" as part
+of the name, then the executable is versioned. Here's an example:
+
+         U _ZNSt8ios_base4InitC1Ev@@GLIBCPP_3.1
+
+
+
+
+
+
+II. ABI changes
+
+- (anything) changing size of an exported symbol
+
+- (anything) changing alignment of an exported symbol
+
+- (anything) changing the layout of an exported symbol
+
+- (anything) changing mangling on an exported symbol
+
+- (anything) adding or deleting an exported symbol
+
+
+III. Versioning
+
+- include files
+
+  - versioning headers with version, why necessary
+    (need to control member/non-member functions, add delete files)
+
+- shared library binaries
+
+  - release versions
+
+  - libtool versions
+
+  - when does so version get a bump? what are the options?
+
+  - how is the link map used?  
+
+  - in an non-abi breaking minor release, how are symbols added?
+    removed?
+
+  - in an abi-breaking major release, what happens? symbol fall back
+
+
+IV. Testing ABI changes
+
+- 'make check-abi'??
+
+- other ABI checkers
+
+
+V. Issues not directly addressed, and possible suggestions
+
+- what to do about multi-ABI systems (nathan scenario)?
+
+  - compatibility libs
+
+  --enable-version-specific-runtime-libs
+
+  - Alexandre Oliva proposal to have extended name attributes, modify ld
+ 
+  - directory-level versioning
+
+- wrapping C++ API's n "C" to use the C ABI.
+
+
+V. References
+
+ABIcheck, a vauge idea of checking ABI compatibility
+http://abicheck.sourceforge.net/
+
+C++ ABI reference
+http://www.codesourcery.com/cxx-abi/
+
+Intel ABI documentation
+"Intel® Compilers for Linux* -Compatibility with the GNU Compilers"
+(included in icc 6.0)
+
+Sun Solaris 2.9 docs
+Linker and Libraries Guide (document 816-1386)
+C++ Migration Guide (document 816-2459)
+http://docs.sun.com/db/prod/solaris.9
+http://docs.sun.com/?p=/doc/816-1386&a=load
+
+Ulrich Drepper, "ELF Symbol Versioning"
+http://people.redhat.com/drepper/symbol-versioning
+

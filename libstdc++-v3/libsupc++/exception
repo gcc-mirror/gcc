@@ -41,11 +41,13 @@ extern "C++" {
 
 namespace std 
 {
-  /** This is the base class for all exceptions thrown by the standard
+  /**
+   *  @brief Base class for all library exceptions.
+   *
+   *  This is the base class for all exceptions thrown by the standard
    *  library, and by certain language expressions.  You are free to derive
    *  your own %exception classes, or use a different hierarchy, or to
    *  throw non-class data (e.g., fundamental types).
-   *  @brief Base class for all library exceptions.
    */
   class exception 
   {

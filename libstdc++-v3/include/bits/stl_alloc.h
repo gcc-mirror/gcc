@@ -75,7 +75,7 @@
  *  @endif
  *
  *  @note The @c reallocate member functions have been deprecated for 3.2
- *        and will be removed in 3.3.  You must define @c _GLIBCPP_DEPRECATED
+ *        and will be removed in 3.4.  You must define @c _GLIBCPP_DEPRECATED
  *        to make this visible in 3.2; see c++config.h.
  *
  *  The canonical description of these classes is in docs/html/ext/howto.html
@@ -221,7 +221,8 @@ namespace std
   /**
    *  @if maint
    *  This is used primarily (only?) in _Alloc_traits and other places to
-   *  help provide the _Alloc_type typedef.
+   *  help provide the _Alloc_type typedef.  All it does is forward the
+   *  requests after some minimal checking.
    *
    *  This is neither "standard"-conforming nor "SGI".  The _Alloc parameter
    *  must be "SGI" style.
@@ -620,8 +621,10 @@ namespace std
 
 
   /**
-   *  This is a "standard" allocator, as per [20.4].  The private _Alloc is
-   *  "SGI" style.  (See comments at the top of stl_alloc.h.)
+   *  @brief  The "standard" allocator, as per [20.4].
+   *
+   *  The private _Alloc is "SGI" style.  (See comments at the top
+   *  of stl_alloc.h.)
    *
    *  The underlying allocator behaves as follows.
    *  - if __USE_MALLOC then

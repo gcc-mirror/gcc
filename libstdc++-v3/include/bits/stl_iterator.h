@@ -317,6 +317,8 @@ namespace std
 
   // 24.4.2.2.1 back_insert_iterator
   /**
+   *  @brief  Turns assignment into insertion.
+   *
    *  These are output iterators, constructed from a container-of-T.
    *  Assigning a T to the iterator appends it to the container using
    *  push_back.
@@ -387,6 +389,8 @@ namespace std
     { return back_insert_iterator<_Container>(__x); }
 
   /**
+   *  @brief  Turns assignment into insertion.
+   *
    *  These are output iterators, constructed from a container-of-T.
    *  Assigning a T to the iterator prepends it to the container using
    *  push_front.
@@ -456,6 +460,8 @@ namespace std
     { return front_insert_iterator<_Container>(__x); }
 
   /**
+   *  @brief  Turns assignment into insertion.
+   *
    *  These are output iterators, constructed from a container-of-T.
    *  Assigning a T to the iterator inserts it in the container at the
    *  %iterator's position, rather than overwriting the value at that
