@@ -1,3 +1,7 @@
+2001-11-02  Graham Stott  <grahams@redhat.com>
+
+	* g++.dgother/debug1.C: Fix typos.
+
 2001-11-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/other/debug1.C: New test.
