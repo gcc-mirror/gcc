@@ -1,3 +1,18 @@
+Sat Feb 14 15:54:28 1998  H.J. Lu  (hjl@gnu.org)
+
+	* config/alpha/elf.h (LIB_SPEC): New. Defined if
+	USE_GNULIBC_1 is not defined.
+
+	* config/linux.h (LIB_SPEC): Add -lc for -shared if
+	USE_GNULIBC_1 is not defined.
+	* config/sparc/linux.h: Ditto.
+
+	* config/sparc/linux64.h (LIB_SPEC): Add -lc for -shared.
+
+	* config/sparc/linux64.h (LIBGCC_SPEC): Removed.
+	(CPP_SUBTARGET_SPEC): Add %{pthread:-D_REENTRANT}.
+	(LIB_SPEC): Updated for glibc 2.
+
 Sat Nov 29 12:45:51 1997  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* config/i386/cygwin32.h (DWARF2_UNWIND): Exception handling 

@@ -104,7 +104,8 @@ Boston, MA 02111-1307, USA.  */
      %{!profile:%{!ggdb:-lc} %{ggdb:-lg}}}"
 #else
 #define LIB_SPEC \
-  "%{!shared: %{mieee-fp:-lieee} %{pthread:-lpthread} \
+  "%{shared: -lc} \
+   %{!shared: %{mieee-fp:-lieee} %{pthread:-lpthread} \
 	%{profile:-lc_p} %{!profile: -lc}}"
 #endif
 #else
