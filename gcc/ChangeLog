@@ -1,3 +1,7 @@
+Wed Apr  4 00:28:23 2001  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* sparc/sol2-sld-64.h (STARTFILE_SPEC): Added missing blank.
+
 Wed Apr 11 14:06:10 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (floatsisf_sse): Fix output template
