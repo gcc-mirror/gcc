@@ -8389,7 +8389,6 @@ package body Sem_Prag is
          begin
             GNAT_Pragma;
             Check_Arg_Count (1);
-            Check_Valid_Configuration_Pragma;
             Check_No_Identifiers;
 
             if Nkind (A) = N_String_Literal then
