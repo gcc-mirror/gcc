@@ -63,6 +63,24 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #define COMPARE_FILENAMES(X, Y) strcmp ((X), (Y))
 #endif
 
+/* On case-insensitive file systems, we need to ensure that a request
+   to open a .java or .class file is honored only if the file to be
+   opened is of the exact case we are asking for. In other words, we
+   want to override the inherent case insensitivity of the underlying
+   file system. On other platforms, this macro becomes the vanilla
+   open() call.
+
+   If you want to add another host, add your define to the list below
+   (i.e. defined(WIN32) || defined(YOUR_HOST)) and add an host-specific
+   .c file to Make-lang.in similar to win32-host.c  */
+#if defined(WIN32)
+extern int
+jcf_open_exact_case (const char* filename, int oflag);
+#define JCF_OPEN_EXACT_CASE(X, Y) jcf_open_exact_case (X, Y)
+#else
+#define JCF_OPEN_EXACT_CASE open
+#endif /* WIN32 */
+
 struct JCF;
 typedef int (*jcf_filbuf_t) PARAMS ((struct JCF*, int needed));
 

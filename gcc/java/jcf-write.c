@@ -279,6 +279,9 @@ struct jcf_partial
 
   /* Information about the current switch statement. */
   struct jcf_switch_state *sw_state;
+
+  /* The count of jsr instructions that have been emmitted.  */
+  long num_jsrs;
 };
 
 static void generate_bytecode_insns (tree, int, struct jcf_partial *);
@@ -293,7 +296,7 @@ static void define_jcf_label (struct jcf_block *, struct jcf_partial *);
 static struct jcf_block * get_jcf_label_here (struct jcf_partial *);
 static void put_linenumber (int, struct jcf_partial *);
 static void localvar_alloc (tree, struct jcf_partial *);
-static void localvar_free (tree, struct jcf_partial *);
+static void maybe_free_localvar (tree, struct jcf_partial *, int);
 static int get_access_flags (tree);
 static void write_chunks (FILE *, struct chunk *);
 static int adjust_typed_op (tree, int);
@@ -601,7 +604,7 @@ localvar_alloc (tree decl, struct jcf_partial *state)
 }
 
 static void
-localvar_free (tree decl, struct jcf_partial *state)
+maybe_free_localvar (tree decl, struct jcf_partial *state, int really)
 {
   struct jcf_block *end_label = get_jcf_label_here (state);
   int index = DECL_LOCAL_INDEX (decl);
@@ -613,6 +616,8 @@ localvar_free (tree decl, struct jcf_partial *state)
 
   if (info->decl != decl)
     abort ();
+  if (! really)
+    return;
   ptr[0] = NULL;
   if (wide)
     {
@@ -1066,6 +1071,7 @@ emit_jsr (struct jcf_block *target, struct jcf_partial *state)
   OP1 (OPCODE_jsr);
   /* Value is 1 byte from reloc back to start of instruction.  */
   emit_reloc (RELOCATION_VALUE_1, OPCODE_jsr_w, target, state);
+  state->num_jsrs++;
 }
 
 /* Generate code to evaluate EXP.  If the result is true,
@@ -1347,7 +1353,7 @@ generate_bytecode_return (tree exp, struct jcf_partial *state)
 	  emit_store (state->return_value_decl, state);
 	  call_cleanups (NULL, state);
 	  emit_load (state->return_value_decl, state);
-	  /* If we call localvar_free (state->return_value_decl, state),
+	  /* If we call maybe_free_localvar (state->return_value_decl, state, 1),
 	     then we risk the save decl erroneously re-used in the
 	     finalizer.  Instead, we keep the state->return_value_decl
 	     allocated through the rest of the method.  This is not
@@ -1384,6 +1390,7 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 	{
 	  tree local;
 	  tree body = BLOCK_EXPR_BODY (exp);
+	  long jsrs = state->num_jsrs;
 	  for (local = BLOCK_EXPR_DECLS (exp); local; )
 	    {
 	      tree next = TREE_CHAIN (local);
@@ -1397,10 +1404,11 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 	      body = TREE_OPERAND (body, 1);
 	    }
 	  generate_bytecode_insns (body, target, state);
+	  
 	  for (local = BLOCK_EXPR_DECLS (exp); local; )
 	    {
 	      tree next = TREE_CHAIN (local);
-	      localvar_free (local, state);
+	      maybe_free_localvar (local, state, state->num_jsrs <= jsrs);
 	      local = next;
 	    }
 	}
@@ -2354,8 +2362,8 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 	if (CAN_COMPLETE_NORMALLY (finally))
 	  {
 	    maybe_wide (OPCODE_ret, DECL_LOCAL_INDEX (return_link), state);
-	    localvar_free (exception_decl, state);
-	    localvar_free (return_link, state);
+	    maybe_free_localvar (exception_decl, state, 1);
+	    maybe_free_localvar (return_link, state, 1);
 	    define_jcf_label (finished_label, state);
 	  }
       }
@@ -2960,6 +2968,7 @@ generate_classfile (tree clas, struct jcf_partial *state)
 	  get_jcf_label_here (state);  /* Force a first block. */
 	  for (t = DECL_ARGUMENTS (part);  t != NULL_TREE;  t = TREE_CHAIN (t))
 	    localvar_alloc (t, state);
+	  state->num_jsrs = 0;
 	  generate_bytecode_insns (body, IGNORE_TARGET, state);
 	  if (CAN_COMPLETE_NORMALLY (body))
 	    {
@@ -2969,9 +2978,9 @@ generate_classfile (tree clas, struct jcf_partial *state)
 	      OP1 (OPCODE_return);
 	    }
 	  for (t = DECL_ARGUMENTS (part);  t != NULL_TREE;  t = TREE_CHAIN (t))
-	    localvar_free (t, state);
+	    maybe_free_localvar (t, state, 1);
 	  if (state->return_value_decl != NULL_TREE)
-	    localvar_free (state->return_value_decl, state);
+	    maybe_free_localvar (state->return_value_decl, state, 1);
 	  finish_jcf_block (state);
 	  perform_relocations (state);
 
