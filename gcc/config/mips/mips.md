@@ -204,11 +204,8 @@
 	       (ne (symbol_ref "TARGET_MIPS16") (const_int 0)))
 	  (const_int 8)
 
-	  (and (eq_attr "type" "idiv")
-	       (ne (symbol_ref "TARGET_CHECK_ZERO_DIV") (const_int 0)))
-	  (cond [(ne (symbol_ref "TARGET_MIPS16") (const_int 0))
-		 (const_int 12)]
-		(const_int 16))
+	  (eq_attr "type" "idiv")
+	  (symbol_ref "mips_idiv_insns () * 4")
 	  ] (const_int 4)))
 
 ;; Attribute describing the processor.  This attribute must match exactly

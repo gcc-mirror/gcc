@@ -1,3 +1,17 @@
+2004-02-28  Maciej W. Rozycki  <macro@ds2.pg.gda.pl>
+
+	* config/mips/mips-protos.h (mips_idiv_insns): Declare.
+	* config/mips/mips.h (MASK_FIX_SB1): Bump.
+	(MASK_FIX_R4000, TARGET_FIX_R4000): New macros.
+	(TARGET_SWITCHES): Add -mfix-r4000 and -mno-fix-r4000.
+	* config/mips/mips.c (mips_idiv_insns): New function.
+	(override_options): Make -march=r4000 imply -mfix-r4000 by default.
+	(mips_output_division): Add a workaround for the R4000 divide/shift
+	errata.
+	* config/mips/mips.md (length): Use mips_idiv_insns() to calculate
+	the length of an "idiv" instruction.
+	* doc/invoke.texi: Document the new switches.
+
 2004-02-28  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/tm.texi (IS_COSTLY_DEPENDENCE): Change to

@@ -30,6 +30,7 @@ extern int mips_regno_mode_ok_for_base_p (int, enum machine_mode, int);
 extern int mips_address_insns (rtx, enum machine_mode);
 extern int mips_const_insns (rtx);
 extern int mips_fetch_insns (rtx);
+extern int mips_idiv_insns (void);
 extern bool mips_legitimate_address_p (enum machine_mode, rtx, int);
 extern bool mips_legitimize_address (rtx *, enum machine_mode);
 extern rtx mips_gotoff_page (rtx);
