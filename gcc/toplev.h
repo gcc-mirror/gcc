@@ -5,6 +5,10 @@
 #ifndef __GCC_TOPLEV_H__
 #define __GCC_TOPLEV_H__
 
+#ifdef __STDC__
+union tree_node;
+#endif
+
 extern int count_error			PROTO ((int));
 extern void strip_off_ending		PROTO ((char *, int));
 extern void print_time			PROTO ((char *, int));
