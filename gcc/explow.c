@@ -1300,6 +1300,10 @@ probe_stack_range (first, size)
       emit_note (NULL_PTR, NOTE_INSN_LOOP_END);
       emit_label (end_lab);
 
+      /* If will be doing stupid optimization, show test_addr is still live. */
+      if (obey_regdecls)
+	emit_insn (gen_rtx (USE, VOIDmode, test_addr));
+
       emit_stack_probe (last_addr);
     }
 }
