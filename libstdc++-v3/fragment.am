@@ -20,7 +20,3 @@ WARN_CXXFLAGS = \
 # -I/-D flags to pass when compiling.
 AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
 
-
-
-
-## vim:ft=automake
