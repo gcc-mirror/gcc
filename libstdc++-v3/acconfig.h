@@ -4,35 +4,11 @@
 #undef PACKAGE
 #undef VERSION
 
+// Define if <float.h> exists.
+#undef HAVE_FLOAT_H
 
-// Define if code specialized for long long should be used.
-#undef _GLIBCXX_USE_LONG_LONG
-
-// Define if code specialized for wchar_t should be used.
-#undef _GLIBCXX_USE_WCHAR_T
-
-// Define if C99 functions or macros from <wchar.h>, <math.h>,
-// <complex.h>, <stdio.h>, and <stdlib.h> can be used or exposed.
-#undef _GLIBCXX_USE_C99
-
-// Define if C99 functions or macros in <math.h> should be imported in
-// <cmath> in namespace std.
-#undef _GLIBCXX_USE_C99_MATH
-
-// Define if C99 functions in <complex.h> should be used in
-// <complex>. Using compiler builtins for these functions requires
-// corresponding C99 library functions to be present.
-#undef _GLIBCXX_USE_C99_COMPLEX
-
-// Define if using setrlimit to set resource limits during 'make check'.
-#undef _GLIBCXX_RES_LIMITS
-
-// Define to use concept checking code from the boost libraries.
-#undef _GLIBCXX_CONCEPT_CHECKS
-
-// Define to use symbol versioning in the shared library.
-#undef _GLIBCXX_SYMVER
-
+// @BOTTOM@
+//
 // Define symbol versioning in assember directives. If symbol
 // versioning is beigng used, and the assembler supports this kind of
 // thing, then use it.
@@ -44,44 +20,6 @@
   #define _GLIBCXX_ASM_SYMVER(cur, old, version)
 #endif
 
-// Define if LFS support is available.
-#undef _GLIBCXX_USE_LFS
-
-// Define if a fully dynamic basic_string is wanted.
-#undef _GLIBCXX_FULLY_DYNAMIC_STRING
-
-// Define if NLS translations are to be used.
-#undef _GLIBCXX_USE_NLS
-
-// Define if gthr-default.h exists (meaning that threading support is enabled).
-#undef HAVE_GTHR_DEFAULT
-
-// Define if mbstate_t exists in wchar.h.
-#undef HAVE_MBSTATE_T
-
-// Define if poll is available in <poll.h>.
-#undef HAVE_POLL
-
-// Define if S_ISREG (Posix) is available in <sys/stat.h>.
-#undef HAVE_S_ISREG
-
-// Define if S_IFREG is available in <sys/stat.h>.
-#undef HAVE_S_IFREG
-
-// Define if writev is available in <sys/uio.h>.
-#undef HAVE_WRITEV
-
-// Define if int64_t is available in <stdint.h>.
-#undef HAVE_INT64_T
-
-// Define if LC_MESSAGES is available in <locale.h>.
-#undef HAVE_LC_MESSAGES
-
-// Define if <float.h> exists.
-#undef HAVE_FLOAT_H
-
-// @BOTTOM@
-//
 // Systems that have certain non-standard functions prefixed with an
 // underscore, we'll handle those here. Must come after config.h.in.
 //

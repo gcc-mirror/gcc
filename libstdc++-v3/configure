@@ -6210,7 +6210,8 @@ fi
 
   fi
   if test $USE_NLS = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define _GLIBCXX_USE_NLS 1
 _ACEOF
 
@@ -6553,7 +6554,8 @@ rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
   echo "$as_me:$LINENO: result: $have_mbstate_t" >&5
 echo "${ECHO_T}$have_mbstate_t" >&6
   if test x"$have_mbstate_t" = xyes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE_MBSTATE_T 1
 _ACEOF
 
@@ -6641,7 +6643,8 @@ fi
   echo "$as_me:$LINENO: result: $ac_c99_math" >&5
 echo "${ECHO_T}$ac_c99_math" >&6
   if test x"$ac_c99_math" = x"yes"; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define _GLIBCXX_USE_C99_MATH 1
 _ACEOF
 
@@ -6897,7 +6900,8 @@ rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
   echo "$as_me:$LINENO: result: $ac_c99_complex" >&5
 echo "${ECHO_T}$ac_c99_complex" >&6
   if test x"$ac_c99_complex" = x"yes"; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define _GLIBCXX_USE_C99_COMPLEX 1
 _ACEOF
 
@@ -7568,7 +7572,8 @@ echo "${ECHO_T}$ac_c99_wchar" >&6
      test x"$ac_c99_wchar" = x"no"; then
     enable_c99=no;
   else
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define _GLIBCXX_USE_C99 1
 _ACEOF
 
@@ -7604,7 +7609,8 @@ else
 fi;
 
   if test $enable_long_long = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define _GLIBCXX_USE_LONG_LONG 1
 _ACEOF
 
@@ -7631,7 +7637,8 @@ else
 fi;
 
   if test x"$ac_c99_wchar" = x"yes" && test x"$enable_wchar_t" = x"yes"; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define _GLIBCXX_USE_WCHAR_T 1
 _ACEOF
 
@@ -7658,7 +7665,8 @@ else
 fi;
 
   if test $enable_concept_checks = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define _GLIBCXX_CONCEPT_CHECKS 1
 _ACEOF
 
@@ -7763,7 +7771,8 @@ else
 fi;
 
   if test $enable_fully_dynamic_string = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define _GLIBCXX_FULLY_DYNAMIC_STRING 1
 _ACEOF
 
@@ -7779,7 +7788,8 @@ echo $ECHO_N "checking for thread model used by GCC... $ECHO_C" >&6
 echo "${ECHO_T}$target_thread_file" >&6
 
   if test $target_thread_file != single; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE_GTHR_DEFAULT 1
 _ACEOF
 
@@ -29148,7 +29158,8 @@ rm -f conftest.err conftest.$ac_objext \
 fi
 
   if test $glibcxx_cv_POLL = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE_POLL 1
 _ACEOF
 
@@ -29276,12 +29287,14 @@ rm -f conftest.err conftest.$ac_objext \
 fi
 
   if test $glibcxx_cv_S_ISREG = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE_S_ISREG 1
 _ACEOF
 
   elif test $glibcxx_cv_S_IFREG = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE_S_IFREG 1
 _ACEOF
 
@@ -29500,7 +29513,8 @@ rm -f conftest.err conftest.$ac_objext \
 fi
 
   if test $glibcxx_cv_WRITEV = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE_WRITEV 1
 _ACEOF
 
@@ -29562,7 +29576,8 @@ rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 
   if test $glibcxx_cv_INT64_T = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE_INT64_T 1
 _ACEOF
 
@@ -29649,7 +29664,8 @@ rm -f conftest.err conftest.$ac_objext \
 fi
 
   if test $glibcxx_cv_LFS = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define _GLIBCXX_USE_LFS 1
 _ACEOF
 
@@ -29863,7 +29879,8 @@ fi
 echo "$as_me:$LINENO: result: $ac_cv_val_LC_MESSAGES" >&5
 echo "${ECHO_T}$ac_cv_val_LC_MESSAGES" >&6
     if test $ac_cv_val_LC_MESSAGES = yes; then
-      cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE_LC_MESSAGES 1
 _ACEOF
 
@@ -51751,7 +51768,8 @@ rm -f conftest.err conftest.$ac_objext \
 fi
 
   if test $glibcxx_cv_POLL = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE_POLL 1
 _ACEOF
 
@@ -51879,12 +51897,14 @@ rm -f conftest.err conftest.$ac_objext \
 fi
 
   if test $glibcxx_cv_S_ISREG = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE_S_ISREG 1
 _ACEOF
 
   elif test $glibcxx_cv_S_IFREG = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE_S_IFREG 1
 _ACEOF
 
@@ -52103,7 +52123,8 @@ rm -f conftest.err conftest.$ac_objext \
 fi
 
   if test $glibcxx_cv_WRITEV = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE_WRITEV 1
 _ACEOF
 
@@ -73415,12 +73436,14 @@ rm -f conftest.err conftest.$ac_objext \
 fi
 
   if test $glibcxx_cv_S_ISREG = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE_S_ISREG 1
 _ACEOF
 
   elif test $glibcxx_cv_S_IFREG = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE_S_IFREG 1
 _ACEOF
 
@@ -77812,7 +77835,8 @@ rm -f conftest.err conftest.$ac_objext \
 fi
 
   if test $glibcxx_cv_POLL = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE_POLL 1
 _ACEOF
 
@@ -77940,12 +77964,14 @@ rm -f conftest.err conftest.$ac_objext \
 fi
 
   if test $glibcxx_cv_S_ISREG = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE_S_ISREG 1
 _ACEOF
 
   elif test $glibcxx_cv_S_IFREG = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE_S_IFREG 1
 _ACEOF
 
@@ -78164,7 +78190,8 @@ rm -f conftest.err conftest.$ac_objext \
 fi
 
   if test $glibcxx_cv_WRITEV = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE_WRITEV 1
 _ACEOF
 
@@ -82587,7 +82614,8 @@ rm -f conftest.err conftest.$ac_objext \
 fi
 
   if test $glibcxx_cv_POLL = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE_POLL 1
 _ACEOF
 
@@ -82715,12 +82743,14 @@ rm -f conftest.err conftest.$ac_objext \
 fi
 
   if test $glibcxx_cv_S_ISREG = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE_S_ISREG 1
 _ACEOF
 
   elif test $glibcxx_cv_S_IFREG = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE_S_IFREG 1
 _ACEOF
 
@@ -82939,7 +82969,8 @@ rm -f conftest.err conftest.$ac_objext \
 fi
 
   if test $glibcxx_cv_WRITEV = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE_WRITEV 1
 _ACEOF
 
@@ -86821,7 +86852,8 @@ case $enable_symvers in
     ;;
   gnu)
     SYMVER_MAP=config/linker-map.gnu
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define _GLIBCXX_SYMVER 1
 _ACEOF
 
@@ -87338,7 +87370,8 @@ fi
 echo $ECHO_N "checking for testsuite resource limits support... $ECHO_C" >&6
   if test $setrlimit_have_headers = yes && test $ac_setrlimit = yes; then
     ac_res_limits=yes
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define _GLIBCXX_RES_LIMITS 1
 _ACEOF
 
