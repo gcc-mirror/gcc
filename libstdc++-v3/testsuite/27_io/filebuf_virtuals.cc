@@ -21,6 +21,11 @@
 // 27.8.1.4 Overridden virtual functions
 
 #include <fstream>
+#include <unistd.h>
+#include <signal.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <locale>
 #include <testsuite_hooks.h>
 
@@ -739,6 +744,71 @@ void test14()
   fbin.close();
 }
 
+class UnderBuf : public std::filebuf
+{
+public:
+  int_type
+  pub_underflow()
+  { return underflow(); }
+
+  std::streamsize
+  pub_showmanyc()
+  { return showmanyc(); }
+};
+
+// libstdc++/10097
+void test15()
+{
+  using namespace std;
+  bool test = true;
+
+  const char* name = "tmp_fifo1";
+  
+  signal(SIGPIPE, SIG_IGN);
+  unlink(name);
+  
+  if (0 != mkfifo(name, S_IRWXU))
+    {
+      VERIFY( false );
+    }
+  
+  int fval = fork();
+  if (fval == -1)
+    {
+      unlink(name);
+      VERIFY( false );
+    }
+  else if (fval == 0)
+    {
+      filebuf fbout;
+      fbout.open(name, ios_base::out);
+      fbout.sputn("0123456789", 10);
+      fbout.pubsync();
+      sleep(2);
+      fbout.close();
+      exit(0);
+    }
+
+  UnderBuf fb;
+  fb.open(name, ios_base::in);
+  sleep(1);
+  
+  fb.sgetc();
+  streamsize n = fb.pub_showmanyc();
+
+  while (n > 0)
+    {
+      --n;
+      
+      UnderBuf::int_type c = fb.pub_underflow();
+      VERIFY( c != UnderBuf::traits_type::eof() );
+      
+      fb.sbumpc();
+    }
+
+  fb.close();
+}
+
 main() 
 {
   test01();
@@ -757,5 +827,6 @@ main()
   test12();
   test13();
   test14();
+  test15();
   return 0;
 }

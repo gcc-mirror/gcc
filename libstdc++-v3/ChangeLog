@@ -1,3 +1,15 @@
+2003-03-25  Paolo Carlini  <pcarlini@unitus.it>
+	    Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/10097
+	* src/fstream.cc (basic_filebuf<char>::_M_underflow_common,
+	basic_filebuf<wchar_t>::_M_underflow_common):
+	if (gptr() < egptr()) return *gptr().
+	* testsuite/27_io/filebuf_virtuals.cc (test15): Add.
+
+	* testsuite/27_io/filebuf_members.cc (test_04): Minor
+	changes: unlink fifo before making it, fix spelling error.
+
 2003-03-22  Loren J. Rittle  <ljrittle@acm.org>
 
 	* config/os/hpux/ctype_noninline.h (ctype<char>::classic_table):
