@@ -1,3 +1,8 @@
+Mon Oct  4 11:28:37 1999  Richard Henderson  <rth@cygnus.com>
+
+	* toplev.c (rest_of_compilation): Turn on cse_not_expected
+	before cse2 instead of after.
+
 Mon Oct 4 09:55:17 1999  Stan Cox  <scox@cygnus.com>
 
 	* mips.h (GO_IF_LEGITIMATE_ADDRESS): Let leasi/liadi handle large

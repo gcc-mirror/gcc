@@ -3856,6 +3856,11 @@ rest_of_compilation (decl)
 	ggc_collect ();
     }
 
+  /* ??? Well, nearly.  If HAVE_conditional_arithmetic, jump_optimize
+     has put off all if-conversion until "after CSE".  If we put this
+     off any longer we may miss out doing if-conversion entirely.  */
+  cse_not_expected = 1;
+
   if (optimize > 0)
     {
       if (cse2_dump)
@@ -3924,10 +3929,6 @@ rest_of_compilation (decl)
       if (ggc_p)
 	ggc_collect ();
     }
-
-  /* We are no longer anticipating cse in this function, at least.  */
-
-  cse_not_expected = 1;
 
   /* Now we choose between stupid (pcc-like) register allocation
      (if we got the -noreg switch and not -opt)
