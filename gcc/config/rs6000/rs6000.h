@@ -2466,7 +2466,7 @@ do {									\
   {"easy_fp_constant", {CONST_DOUBLE}},				\
   {"reg_or_mem_operand", {SUBREG, MEM, REG}},			\
   {"lwa_operand", {SUBREG, MEM, REG}},				\
-  {"low_32_bit_operand", {CONST_DOUBLE, CONST_INT}},		\
+  {"offsettable_mem_operand", {MEM}},				\
   {"fp_reg_or_mem_operand", {SUBREG, MEM, REG}},		\
   {"mem_or_easy_const_operand", {SUBREG, MEM, CONST_DOUBLE}},	\
   {"add_operand", {SUBREG, REG, CONST_INT}},			\
@@ -2503,7 +2503,7 @@ extern int reg_or_neg_short_operand ();
 extern int reg_or_u_short_operand ();
 extern int reg_or_cint_operand ();
 extern int easy_fp_constant ();
-extern int low_32_bit_operand ();
+extern int offsettable_mem_operand ();
 extern int fp_reg_or_mem_operand ();
 extern int mem_or_easy_const_operand ();
 extern int add_operand ();
@@ -2551,3 +2551,6 @@ extern void output_ascii ();
 extern void rs6000_gen_section_name ();
 extern void output_function_profiler ();
 extern int rs6000_adjust_cost ();
+
+/* Temporary used to convert int->float.  */
+extern struct rtx_def *float_conv_temp;
