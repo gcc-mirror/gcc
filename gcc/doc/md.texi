@@ -383,7 +383,7 @@ predicate function, and that function is solely responsible for
 deciding whether the expression to be matched ``has'' that mode.
 
 When constructing an insn, argument 3 of the gen-function will specify
-the operation (i.e. the expression code) for the expression to be
+the operation (i.e.@: the expression code) for the expression to be
 made.  It should be an RTL expression, whose expression code is copied
 into a new expression whose operands are arguments 1 and 2 of the
 gen-function.  The subexpressions of argument 3 are not used;
@@ -2487,8 +2487,8 @@ This instruction pattern should be defined to support
 @code{__builtin_apply} on machines where special instructions are needed
 to call a subroutine with arbitrary arguments or to save the value
 returned.  This instruction pattern is required on machines that have
-multiple registers that can hold a return value (i.e.
-@code{FUNCTION_VALUE_REGNO_P} is true for more than one register).
+multiple registers that can hold a return value
+(i.e.@: @code{FUNCTION_VALUE_REGNO_P} is true for more than one register).
 
 @cindex @code{return} instruction pattern
 @item @samp{return}
@@ -4898,7 +4898,7 @@ if the current insn is predicated, and will otherwise be @code{NULL}.
 
 When @code{define_cond_exec} is used, an implicit reference to
 the @code{predicable} instruction attribute is made.
-@xref{Insn Attributes}.  This attribute must be boolean (i.e. have
+@xref{Insn Attributes}.  This attribute must be boolean (i.e.@: have
 exactly two elements in its @var{list-of-values}).  Further, it must
 not be used with complex expressions.  That is, the default and all
 uses in the insns must be a simple constant, not dependent on the

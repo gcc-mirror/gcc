@@ -913,7 +913,7 @@ possible values are
 Same as @option{-ansi}
 
 @item iso9899:199409
-ISO C as modified in amend. 1
+ISO C as modified in amendment 1
 
 @item iso9899:1999
 ISO C99.  Note that this standard is not yet fully supported; see
@@ -1367,7 +1367,7 @@ be removed from a future version of G++.
 @item -fno-implicit-templates
 @opindex fno-implicit-templates
 Never emit code for non-inline templates which are instantiated
-implicitly (i.e. by use); only emit code for explicit instantiations.
+implicitly (i.e.@: by use); only emit code for explicit instantiations.
 @xref{Template Instantiation}, for more information.
 
 @item -fno-implicit-inline-templates
@@ -1655,9 +1655,9 @@ Warn if a selector has multiple methods of different types defined.
 @cindex message formatting
 
 Traditionally, diagnostic messages have been formatted irrespective of
-the output device's aspect (e.g. its width, @dots{}).  The options described
+the output device's aspect (e.g.@: its width, @dots{}).  The options described
 below can be used to control the diagnostic messages formatting
-algorithm, e.g. how many characters per line, how often source location
+algorithm, e.g.@: how many characters per line, how often source location
 information should be reported.  Right now, only the C++ front end can
 honor these options.  However it is expected, in the near future, that
 the remaining front ends would be able to digest them correctly.
@@ -2275,7 +2275,7 @@ The unary plus operator.
 The @samp{U} integer constant suffix, or the @samp{F} or @samp{L} floating point
 constant suffixes.  (Traditional C does support the @samp{L} suffix on integer
 constants.)  Note, these suffixes appear in macros defined in the system
-headers of most modern systems, e.g. the @samp{_MIN}/@samp{_MAX} macros in @code{<limits.h>}.
+headers of most modern systems, e.g.@: the @samp{_MIN}/@samp{_MAX} macros in @code{<limits.h>}.
 Use of these macros in user code might normally lead to spurious
 warnings, however gcc's integrated preprocessor has enough context to
 avoid warning in these cases.
@@ -2294,7 +2294,7 @@ This construct is not accepted by some traditional C compilers.
 @item
 The ISO type of an integer constant has a different width or
 signedness from its traditional type.  This warning is only issued if
-the base of the constant is ten.  I.e. hexadecimal or octal values, which
+the base of the constant is ten.  I.e.@: hexadecimal or octal values, which
 typically represent bit patterns, are not warned about.
 
 @item
@@ -2310,7 +2310,7 @@ namespace for labels.
 @item
 Initialization of unions.  If the initializer is zero, the warning is
 omitted.  This is done under the assumption that the zero initializer in
-user code appears conditioned on e.g. @code{__STDC__} to avoid missing
+user code appears conditioned on e.g.@: @code{__STDC__} to avoid missing
 initializer warnings and relies on default initialization to zero in the
 traditional C case.
 
@@ -4738,7 +4738,7 @@ string after this option will not.
 @item %@{@code{S}*:@code{X}@}
 Substitutes @code{X} if one or more switches whose names start with
 @code{-S} are specified to GCC.  Note that the tail part of the
-@code{-S} option (i.e. the part matched by the @samp{*}) will be substituted
+@code{-S} option (i.e.@: the part matched by the @samp{*}) will be substituted
 for each occurrence of @samp{%*} within @code{X}.
 
 @item %@{@code{S}:@code{X}@}
@@ -4908,7 +4908,7 @@ command with the @option{-V} option.
 
 Earlier we discussed the standard option @option{-b} which chooses among
 different installed compilers for completely different target
-machines, such as Vax vs. 68000 vs. 80386.
+machines, such as Vax vs.@: 68000 vs.@: 80386.
 
 In addition, each of these target machine types can have its own
 special options, starting with @samp{-m}, to choose among various
@@ -5796,7 +5796,7 @@ objects in memory.
 @opindex mno-alignment-traps
 Generate code that assumes that the MMU will not trap unaligned
 accesses.  This produces better code when the target instruction set
-does not have half-word memory operations (i.e. implementations prior to
+does not have half-word memory operations (i.e.@: implementations prior to
 ARMv4).
 
 Note that you cannot use this option to access unaligned word objects,
@@ -8005,7 +8005,7 @@ Produce code for a C300 Clipper processor.  This is the default.
 
 @item -mc400
 @opindex mc400
-Produce code for a C400 Clipper processor i.e. use floating point
+Produce code for a C400 Clipper processor i.e.@: use floating point
 registers f8---f15.
 @end table
 
@@ -8899,7 +8899,7 @@ use exception handling.
 Generate code that allows trapping instructions to throw exceptions.
 Note that this requires platform-specific runtime support that does
 not exist everywhere.  Moreover, it only allows @emph{trapping}
-instructions to throw exceptions, i.e. memory references or floating
+instructions to throw exceptions, i.e.@: memory references or floating
 point instructions.  It does not allow exceptions to be thrown from
 arbitrary signal handlers such as @code{SIGALRM}.
 

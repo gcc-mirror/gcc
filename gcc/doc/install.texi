@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.1.2.32 2001/06/26 22:51:13 jsm28 Exp $
+@comment $Id: install.texi,v 1.1.2.33 2001/06/26 23:26:27 jsm28 Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -438,7 +438,7 @@ defaults to @file{/usr/local} unless overridden by the
 target system triple, such as @var{sparc-sun-solaris2.7}, and
 @var{version} denotes the GCC version, such as 2.95.2.
 @item
-Check operating system specific directories (e.g. @file{/usr/ccs/bin} on
+Check operating system specific directories (e.g.@: @file{/usr/ccs/bin} on
 Sun Solaris).
 @end itemize
 Note that these rules do not check for the value of @env{PATH}.  You may
@@ -545,7 +545,7 @@ Microsoft Win32 API thread support.
 Specify which cpu variant the
 compiler should generate code for by default.  This is currently
 only supported on the some ports, specifically arm, powerpc, and
-SPARC.  If configure does not recognize the model name (e.g. arm700,
+SPARC.  If configure does not recognize the model name (e.g.@: arm700,
 603e, or ultrasparc) you provide, please check the configure script
 for a complete list of supported models.
 
@@ -923,7 +923,7 @@ Now you may need specific preparations:
 @item
 In order to run the libio tests in GCC 2.95 and earlier versions of GCC
 on targets which do not fully
-support Unix/POSIX commands (e.g. Cygwin), the references to the @file{dbz}
+support Unix/POSIX commands (e.g.@: Cygwin), the references to the @file{dbz}
 directory have to be deleted from @file{libio/configure.in}.
 
 @item
@@ -2311,7 +2311,7 @@ raises some of the arbitrary limits found in the original.
 <hr>
 @end html
 @heading @anchor{m68k-att-sysv}m68k-att-sysv
-AT&T 3b1, a.k.a. 7300 PC.  This version of GCC cannot
+AT&T 3b1, a.k.a.@: 7300 PC.  This version of GCC cannot
 be compiled with the system C compiler, which is too buggy.
 You will need to get a previous version of GCC and use it to
 bootstrap.  Binaries are available from the OSU-CIS archive, at
@@ -2784,7 +2784,7 @@ smaller than 16 bytes and which are not 8 bytes.  The problem is very
 involved and difficult to fix.  It affects a number of other targets also,
 but IRIX 6 is affected the most, because it is a 64 bit target, and 4 byte
 structures are common.  The exact problem is that structures are being padded
-at the wrong end, e.g. a 4 byte structure is loaded into the lower 4 bytes
+at the wrong end, e.g.@: a 4 byte structure is loaded into the lower 4 bytes
 of the register when it should be loaded into the upper 4 bytes of the
 register.
 
