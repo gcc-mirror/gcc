@@ -1,3 +1,7 @@
+1999-08-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (build_conditional_expr): Fix typo in comment.
+
 1999-08-01  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* decl.c (finish_stmt): Don't declare and test cond_stack, loop_stack,
