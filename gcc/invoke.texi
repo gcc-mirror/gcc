@@ -5270,15 +5270,15 @@ option, GCC will produce code that is slower and larger but which
 uses extremely little TOC space.  You may wish to use this option
 only on files that contain less frequently executed code. @refill
 
-@item -m64
-@itemx -m32
-@kindex -m64
-@kindex -m32
-Enable 64-bit PowerPC ABI and calling convention: 64-bit pointers, 64-bit
+@item -maix64
+@itemx -maix32
+@kindex -maix64
+@kindex -maix32
+Enable 64-bit AIX ABI and calling convention: 64-bit pointers, 64-bit
 @code{long} type, and the infrastructure needed to support them.
-Specifying @samp{-m64} implies @samp{-mpowerpc64} and
-@samp{-mpowerpc}, while @samp{-m32} disables the 64-bit ABI and
-implies @samp{-mno-powerpc64}.  GCC defaults to @samp{-m32}.
+Specifying @samp{-maix64} implies @samp{-mpowerpc64} and
+@samp{-mpowerpc}, while @samp{-maix32} disables the 64-bit ABI and
+implies @samp{-mno-powerpc64}.  GCC defaults to @samp{-maix32}.
 
 @item -mxl-call
 @itemx -mno-xl-call
