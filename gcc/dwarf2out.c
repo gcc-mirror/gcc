@@ -1487,6 +1487,11 @@ output_call_frame_info (for_eh)
   int eh_ptr = for_eh && exception_table_p ();
 
   fputc ('\n', asm_out_file);
+
+  /* We're going to be generating comments, so turn on app.  */
+  if (flag_verbose_asm)
+    app_enable ();
+
   if (for_eh)
     {
 #ifdef EH_FRAME_SECTION
@@ -1642,6 +1647,10 @@ output_call_frame_info (for_eh)
      get a value of 0.  Putting .align 0 after the label fixes it.  */
   ASM_OUTPUT_ALIGN (asm_out_file, 0);
 #endif
+
+  /* Turn off app to make assembly quicker.  */
+  if (flag_verbose_asm)
+    app_disable ();
 }
 
 /* Output a marker (i.e. a label) for the beginning of a function, before
