@@ -621,6 +621,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		    != XEXP (XVECEXP (pat, diff_vec_p, 0), 0))
 		  break;
 	      if (i == len
+		  && dispatch != 0
 		  && GET_CODE (dispatch) == JUMP_INSN
 		  && JUMP_LABEL (dispatch) != 0
 		  /* Don't mess with a casesi insn.  */
