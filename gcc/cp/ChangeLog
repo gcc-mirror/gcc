@@ -1,5 +1,13 @@
 1999-10-04  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (struct language_function): Remove static_labelno.
+	(static_labelno): Remove macro.
+	* method.c (build_overload_nested_name): Make static_labelno
+	static here.
+	
+	* pt.c (instantiate_decl): Use DECL_SAVED_TREE, not DECL_INITIAL,
+	to decide whether or not a function is defined.
+
 	* call.c (build_over_call): Don't set TREE_SIDE_EFFECTS for
 	situations where make_node will do it automatically.
 	* decl.c (grok_reference_init): Likewise.

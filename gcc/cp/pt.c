@@ -9555,7 +9555,7 @@ instantiate_decl (d)
   code_pattern = DECL_TEMPLATE_RESULT (td);
 
   if (TREE_CODE (d) == FUNCTION_DECL)
-    pattern_defined = (DECL_INITIAL (code_pattern) != NULL_TREE);
+    pattern_defined = (DECL_SAVED_TREE (code_pattern) != NULL_TREE);
   else
     pattern_defined = ! DECL_IN_AGGR_P (code_pattern);
 
