@@ -1,3 +1,8 @@
+Thu Jun 27 15:23:21 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* gcc.c-torture/execute/simd-2.c (i, j): Add initializer elements to
+	avoid division by zero.
+
 2002-06-27  Neil Booth  <neil@daikokuya.co.uk>
 
 	* gcc.dg/Wunknownprag.c: New tests.

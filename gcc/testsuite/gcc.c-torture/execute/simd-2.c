@@ -5,8 +5,8 @@
 
 typedef int __attribute__((mode(V8HI))) vecint;
 
-vecint i = { 150, 100, 150, 200 };
-vecint j = { 10, 13, 20, 30 };
+vecint i = { 150, 100, 150, 200, 0, 0, 0, 0 };
+vecint j = { 10, 13, 20, 30, 1, 1, 1, 1 };
 vecint k;
 
 union {
