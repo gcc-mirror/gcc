@@ -4896,10 +4896,10 @@ Intrinsic groups: @code{unix}.
 Description:
 
 Attempts to move Fortran unit @var{Unit} to the specified
-@var{Offset}: absolute offset if @var{Offset}=0; relative to the
-current offset if @var{Offset}=1; relative to the end of the file if
-@var{Offset}=2.
-It branches to label @var{Whence} if @var{Unit} is
+@var{Offset}: absolute offset if @var{Whence}=0; relative to the
+current offset if @var{Whence}=1; relative to the end of the file if
+@var{Whence}=2.
+It branches to label @var{ErrLab} if @var{Unit} is
 not open or if the call otherwise fails.
 
 @node FStat Intrinsic (subroutine)
@@ -5454,9 +5454,10 @@ Some non-GNU implementations of Fortran provide this intrinsic as
 only a function, not as a subroutine, or do not support the
 (optional) @var{Status} argument.
 
-On some systems (specifically SCO) it might be necessary to link the
-``socket'' library if you call this routine, i.e.@: append
-@samp{-lg2c -lsocket -lm} to the @code{g77} arguments.
+On some systems (specifically SCO) it may be necessary to link the
+``socket'' library if you call this routine.
+Typically this means adding @samp{-lg2c -lsocket -lm}
+to the @code{g77} command line when linking the program.
 
 For information on other intrinsics with the same name:
 @xref{HostNm Intrinsic (function)}.
@@ -5487,9 +5488,10 @@ Fills @var{Name} with the system's host name returned by
 @code{gethostname(2)}, returning 0 on success or a non-zero error code
 (@code{ENOSYS} if the system does not provide @code{gethostname(2)}).
 
-On some systems (specifically SCO) it might be necessary to link the
-``socket'' library if you call this routine, i.e.@: append
-@samp{-lg2c -lsocket -lm} to the @code{g77} arguments.
+On some systems (specifically SCO) it may be necessary to link the
+``socket'' library if you call this routine.
+Typically this means adding @samp{-lg2c -lsocket -lm}
+to the @code{g77} command line when linking the program.
 
 For information on other intrinsics with the same name:
 @xref{HostNm Intrinsic (subroutine)}.
