@@ -202,3 +202,6 @@ void FN ()                                                            \
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend%O%s crtn%O%s"
+
+/* We support #pragma.  */
+#define HANDLE_SYSV_PRAGMA 1
