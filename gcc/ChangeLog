@@ -1,3 +1,18 @@
+2004-07-25  Matthias Klose  <doko@debian.org>
+
+	Backport:
+	PR rtl-optimization/14700
+
+	2004-06-24  Eric Christopher  <echristo@redhat.com>
+
+ 	* combine.c (distribute_notes): Don't delete sets to
+ 	global register variables.
+ 
+	2004-06-29  Zack Weinberg  <zack@codesourcery.com>
+ 
+ 	* combine.c (distribute_notes): Don't look at global_regs for
+ 	pseudos.
+
 2004-07-23  James E Wilson  <wilson@specifixinc.com>
 
 	PR target/16559
