@@ -1273,17 +1273,6 @@ all-gcc:
 	  true; \
 	fi
 
-.PHONY: all-bootstrap
-all-bootstrap:
-	@if [ -f ./gcc/Makefile ] ; then \
-	  r=`pwd`; export r; \
-	  s=`cd $(srcdir); pwd`; export s; \
-	  $(SET_LIB_PATH) \
-	  (cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) bootstrap); \
-	else \
-	  true; \
-	fi
-
 # Building GCC uses some tools for rebuilding "source" files
 # like texinfo, bison/byacc, etc.  So we must depend on those.
 #
@@ -1294,13 +1283,13 @@ all-bootstrap:
 # In theory, on an SMP all those dependencies can be resolved
 # in parallel.
 #
-.PHONY: bootstrap
-bootstrap: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
+.PHONY: bootstrap bootstrap2 bootstrap3
+bootstrap bootstrap2 bootstrap3: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
 	@r=`pwd`; export r; \
 	s=`cd $(srcdir); pwd`; export s; \
 	$(SET_LIB_PATH) \
 	echo "Bootstrapping the compiler with -O2 -g"; \
-	cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) BOOT_CFLAGS="-O2 -g" bootstrap
+	cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) BOOT_CFLAGS="-O2 -g" $@
 	@r=`pwd`; export r; \
 	s=`cd $(srcdir); pwd`; export s; \
 	$(SET_LIB_PATH) \
@@ -1378,7 +1367,6 @@ all-gash: all-tcl
 all-gawk:
 ALL_GCC = all-gcc
 all-gcc: all-bison all-byacc all-binutils all-gas all-ld
-all-bootstrap: all-libiberty all-bison all-byacc all-binutils all-gas all-ld
 GDB_TK = all-tk all-tcl all-itcl all-tix
 all-gdb: all-libiberty all-opcodes all-bfd all-mmalloc all-readline all-bison all-byacc all-sim $(gdbnlmrequirements) $(GDB_TK)
 all-gnuserv:
