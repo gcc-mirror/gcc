@@ -1,5 +1,7 @@
 2004-09-09  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* tree-nested.c (create_tmp_var_for): Correct missinverted assert.
+
 	* tree-outof-ssa.c (free_temp_expr_table): Add missed assert.
 	* tree-ssa-ccp.c (set_lattice_value): Correct missapplied de
 	Morgan's theorem in last checkin.
