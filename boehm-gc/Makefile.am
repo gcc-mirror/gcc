@@ -54,7 +54,7 @@ all_objs = @addobjs@ $(libgcjgc_la_OBJECTS)
 $(all_objs) : config.h gc_priv.h gc_hdrs.h gc.h gc_mark.h
 
 ## FIXME: we shouldn't have to do this, but automake forces us to.
-.s.o:
+.s.lo:
 	$(LTCOMPILE) -x assembler-with-cpp -c $<
 
 ## We have our own definition of LTCOMPILE because we want to use our
