@@ -93,7 +93,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Don't default to pcc-struct-return, because gcc is the only compiler, and
    we want to retain compatibility with older gcc versions.  */
+#ifndef LINUX_ELF
 #define DEFAULT_PCC_STRUCT_RETURN 0
+#endif
 
 /* We need that too. */
 #define HANDLE_SYSV_PRAGMA
@@ -106,3 +108,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #else
 #define LINK_SPEC	"%{v:-dll-verbose} %{m486:-m486}"
 #endif
+
+/* Get perform_* macros to build libgcc.a.  */
+#include "i386/perform.h"
