@@ -623,8 +623,24 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define HOT_TEXT_SECTION_NAME "text.hot"
 #endif
 
+#ifndef NORMAL_TEXT_SECTION_NAME
+#define NORMAL_TEXT_SECTION_NAME ".text"
+#endif
+
 #ifndef UNLIKELY_EXECUTED_TEXT_SECTION_NAME
 #define UNLIKELY_EXECUTED_TEXT_SECTION_NAME "text.unlikely"
+#endif
+
+#ifndef SECTION_FORMAT_STRING
+#define SECTION_FORMAT_STRING "\t.section\t%s\n\t.align 2\n"
+#endif
+
+#ifndef HAS_LONG_COND_BRANCH
+#define HAS_LONG_COND_BRANCH 0
+#endif
+
+#ifndef HAS_LONG_UNCOND_BRANCH
+#define HAS_LONG_UNCOND_BRANCH 0
 #endif
 
 #ifndef VECTOR_MODE_SUPPORTED_P

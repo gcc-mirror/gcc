@@ -35,6 +35,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "target.h"
 #include "ggc.h"
 #include "alloc-pool.h"
+#include "flags.h"
 
 /* The contents of the current function definition are allocated
    in this obstack, and all are freed at the end of the function.  */
@@ -57,6 +58,7 @@ void verify_insn_chain (void);
 static void fixup_fallthru_exit_predecessor (void);
 static rtx duplicate_insn_chain (rtx, rtx);
 static tree insn_scope (rtx);
+static void update_unlikely_executed_notes (basic_block);
 
 rtx
 unlink_insn_chain (rtx first, rtx last)
@@ -635,6 +637,7 @@ fixup_reorder_chain (void)
       edge e_fall, e_taken, e;
       rtx bb_end_insn;
       basic_block nb;
+      basic_block old_bb;
 
       if (bb->succ == NULL)
 	continue;
@@ -711,6 +714,11 @@ fixup_reorder_chain (void)
 		    }
 		}
 
+	      /* If the "jumping" edge is a crossing edge, and the fall
+		 through edge is non-crossing, leave things as they are.  */
+	      else if (e_taken->crossing_edge && !e_fall->crossing_edge)
+		continue;
+
 	      /* Otherwise we can try to invert the jump.  This will
 		 basically never fail, however, keep up the pretense.  */
 	      else if (invert_jump (bb_end_insn,
@@ -768,7 +776,34 @@ fixup_reorder_chain (void)
 	  nb->rbi->next = bb->rbi->next;
 	  bb->rbi->next = nb;
 	  /* Don't process this new block.  */
+	  old_bb = bb;
 	  bb = nb;
+	  
+	  /* Make sure new bb is tagged for correct section (same as
+	     fall-thru source).  */
+	  e_fall->src->partition = bb->pred->src->partition;
+	  if (flag_reorder_blocks_and_partition)
+	    {
+	      if (bb->pred->src->partition == COLD_PARTITION)
+		{
+		  rtx new_note;
+		  rtx note = BB_HEAD (e_fall->src);
+		  
+		  while (!INSN_P (note)
+			 && note != BB_END (e_fall->src))
+		    note = NEXT_INSN (note);
+		  
+		  new_note = emit_note_before 
+                                          (NOTE_INSN_UNLIKELY_EXECUTED_CODE, 
+					   note);
+		  NOTE_BASIC_BLOCK (new_note) = bb;
+		}
+	      if (GET_CODE (BB_END (bb)) == JUMP_INSN
+		  && !any_condjump_p (BB_END (bb))
+		  && bb->succ->crossing_edge )
+		REG_NOTES (BB_END (bb)) = gen_rtx_EXPR_LIST 
+		  (REG_CROSSING_JUMP, NULL_RTX, REG_NOTES (BB_END (bb)));
+	    }
 	}
     }
 
@@ -803,6 +838,8 @@ fixup_reorder_chain (void)
       bb->index = index;
       BASIC_BLOCK (index) = bb;
 
+      update_unlikely_executed_notes (bb);
+
       bb->prev_bb = prev_bb;
       prev_bb->next_bb = bb;
     }
@@ -818,6 +855,21 @@ fixup_reorder_chain (void)
       if (e && !can_fallthru (e->src, e->dest))
 	force_nonfallthru (e);
     }
+}
+
+/* Update the basic block number information in any 
+   NOTE_INSN_UNLIKELY_EXECUTED_CODE notes within the basic block.  */
+
+static void
+update_unlikely_executed_notes (basic_block bb)
+{
+  rtx cur_insn;
+
+  for (cur_insn = BB_HEAD (bb); cur_insn != BB_END (bb); 
+       cur_insn = NEXT_INSN (cur_insn)) 
+    if (GET_CODE (cur_insn) == NOTE
+	&& NOTE_LINE_NUMBER (cur_insn) == NOTE_INSN_UNLIKELY_EXECUTED_CODE)
+      NOTE_BASIC_BLOCK (cur_insn) = bb;
 }
 
 /* Perform sanity checks on the insn chain.
@@ -990,6 +1042,7 @@ duplicate_insn_chain (rtx from, rtx to)
 	      abort ();
 	      break;
 	    case NOTE_INSN_REPEATED_LINE_NUMBER:
+	    case NOTE_INSN_UNLIKELY_EXECUTED_CODE:
 	      emit_note_copy (insn);
 	      break;
 

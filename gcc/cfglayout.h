@@ -45,3 +45,4 @@ extern bool can_copy_bbs_p (basic_block *, unsigned);
 extern void copy_bbs (basic_block *, unsigned, basic_block *,
 		      edge *, unsigned, edge *, struct loop *);
 extern void cfg_layout_initialize_rbi (basic_block);
+extern bool scan_ahead_for_unlikely_executed_note (rtx);

@@ -99,6 +99,7 @@ can_delete_note_p (rtx note)
 {
   return (NOTE_LINE_NUMBER (note) == NOTE_INSN_DELETED
 	  || NOTE_LINE_NUMBER (note) == NOTE_INSN_BASIC_BLOCK
+	  || NOTE_LINE_NUMBER (note) == NOTE_INSN_UNLIKELY_EXECUTED_CODE
 	  || NOTE_LINE_NUMBER (note) == NOTE_INSN_PREDICTION);
 }
 
@@ -319,6 +320,7 @@ create_basic_block_structure (rtx head, rtx end, rtx bb_note, basic_block after)
   link_block (bb, after);
   BASIC_BLOCK (bb->index) = bb;
   update_bb_for_insn (bb);
+  bb->partition = UNPARTITIONED;
 
   /* Tag the block so that we know it has been used when considering
      other basic block notes.  */
@@ -620,11 +622,24 @@ rtl_merge_blocks (basic_block a, basic_block b)
 static bool
 rtl_can_merge_blocks (basic_block a,basic_block b)
 {
+  bool partitions_ok = true;
+
+  /* If we are partitioning hot/cold basic blocks, we don't want to
+     mess up unconditional or indirect jumps that cross between hot
+     and cold sections.  */
+  
+  if (flag_reorder_blocks_and_partition
+      && (find_reg_note (BB_END (a), REG_CROSSING_JUMP, NULL_RTX)
+	  || find_reg_note (BB_END (b), REG_CROSSING_JUMP, NULL_RTX)
+	  || a->partition != b->partition))
+    partitions_ok = false;
+
   /* There must be exactly one edge in between the blocks.  */
   return (a->succ && !a->succ->succ_next && a->succ->dest == b
 	  && !b->pred->pred_next && a != b
 	  /* Must be simple edge.  */
 	  && !(a->succ->flags & EDGE_COMPLEX)
+	  && partitions_ok
 	  && a->next_bb == b
 	  && a != ENTRY_BLOCK_PTR && b != EXIT_BLOCK_PTR
 	  /* If the jump insn has side effects,
@@ -664,6 +679,15 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
   edge tmp;
   rtx set;
   int fallthru = 0;
+
+
+  /* If we are partitioning hot/cold basic blocks, we don't want to
+     mess up unconditional or indirect jumps that cross between hot
+     and cold sections.  */
+  
+  if (flag_reorder_blocks_and_partition
+      && find_reg_note (insn, REG_CROSSING_JUMP, NULL_RTX))
+    return false;
 
   /* Verify that all targets will be TARGET.  */
   for (tmp = src->succ; tmp; tmp = tmp->succ_next)
@@ -1064,6 +1088,33 @@ force_nonfallthru_and_redirect (edge e, basic_block target)
 			target->global_live_at_start);
 	  COPY_REG_SET (jump_block->global_live_at_end,
 			target->global_live_at_start);
+	}
+
+      /* Make sure new block ends up in correct hot/cold section.  */
+
+      jump_block->partition = e->src->partition;
+      if (flag_reorder_blocks_and_partition)
+	{
+	  if (e->src->partition == COLD_PARTITION)
+	    {
+	      rtx bb_note, new_note;
+	      for (bb_note = BB_HEAD (jump_block); 
+		   bb_note && bb_note != NEXT_INSN (BB_END (jump_block));
+		   bb_note = NEXT_INSN (bb_note))
+		if (GET_CODE (bb_note) == NOTE
+		    && NOTE_LINE_NUMBER (bb_note) == NOTE_INSN_BASIC_BLOCK)
+		  break;
+	      new_note = emit_note_after (NOTE_INSN_UNLIKELY_EXECUTED_CODE,
+					  bb_note);
+	      NOTE_BASIC_BLOCK (new_note) = jump_block; 
+	      jump_block->partition = COLD_PARTITION;
+	    }
+	  if (GET_CODE (BB_END (jump_block)) == JUMP_INSN
+	      && !any_condjump_p (BB_END (jump_block))
+	      && jump_block->succ->crossing_edge )
+	    REG_NOTES (BB_END (jump_block)) = gen_rtx_EXPR_LIST 
+	      (REG_CROSSING_JUMP, NULL_RTX, 
+	       REG_NOTES (BB_END (jump_block)));
 	}
 
       /* Wire edge in.  */
@@ -1480,6 +1531,10 @@ commit_one_edge_insertion (edge e, int watch_calls)
 	    tmp = NEXT_INSN (tmp);
 	  if (NOTE_INSN_BASIC_BLOCK_P (tmp))
 	    tmp = NEXT_INSN (tmp);
+	  if (tmp 
+	      && GET_CODE (tmp) == NOTE
+	      && NOTE_LINE_NUMBER (tmp) == NOTE_INSN_UNLIKELY_EXECUTED_CODE)
+	    tmp = NEXT_INSN (tmp);
 	  if (tmp == BB_HEAD (bb))
 	    before = tmp;
 	  else if (tmp)
@@ -1522,6 +1577,38 @@ commit_one_edge_insertion (edge e, int watch_calls)
 	{
 	  bb = split_edge (e);
 	  after = BB_END (bb);
+
+	  /* If we are partitioning hot/cold basic blocks, we must make sure
+	     that the new basic block ends up in the correct section.  */
+
+	  bb->partition = e->src->partition;
+	  if (flag_reorder_blocks_and_partition
+	      && e->src != ENTRY_BLOCK_PTR
+	      && e->src->partition == COLD_PARTITION)
+	    {
+	      rtx bb_note, new_note, cur_insn;
+
+	      bb_note = NULL_RTX;
+	      for (cur_insn = BB_HEAD (bb); cur_insn != NEXT_INSN (BB_END (bb));
+		   cur_insn = NEXT_INSN (cur_insn))
+		if (GET_CODE (cur_insn) == NOTE
+		    && NOTE_LINE_NUMBER (cur_insn) == NOTE_INSN_BASIC_BLOCK)
+		  {
+		    bb_note = cur_insn;
+		    break;
+		  }
+
+	      new_note = emit_note_after (NOTE_INSN_UNLIKELY_EXECUTED_CODE,
+					  bb_note);
+	      NOTE_BASIC_BLOCK (new_note) = bb;
+	      if (GET_CODE (BB_END (bb)) == JUMP_INSN
+		  && !any_condjump_p (BB_END (bb))
+		  && bb->succ->crossing_edge )
+		REG_NOTES (BB_END (bb)) = gen_rtx_EXPR_LIST 
+		  (REG_CROSSING_JUMP, NULL_RTX, REG_NOTES (BB_END (bb)));
+	      if (after == bb_note)
+		after = new_note;
+	    }
 	}
     }
 
@@ -1791,6 +1878,7 @@ update_br_prob_note (basic_block bb)
    - tails of basic blocks (ensure that boundary is necessary)
    - scans body of the basic block for JUMP_INSN, CODE_LABEL
      and NOTE_INSN_BASIC_BLOCK
+   - verify that no fall_thru edge crosses hot/cold partition boundaries
 
    In future it can be extended check a lot of other stuff as well
    (reachability of basic blocks, life information, etc. etc.).  */
@@ -1878,7 +1966,15 @@ rtl_verify_flow_info_1 (void)
       for (e = bb->succ; e; e = e->succ_next)
 	{
 	  if (e->flags & EDGE_FALLTHRU)
-	    n_fallthru++, fallthru = e;
+	    {
+	      n_fallthru++, fallthru = e;
+	      if (e->crossing_edge)
+		{ 
+		  error ("Fallthru edge crosses section boundary (bb %i)",
+			 e->src->index);
+		  err = 1;
+		}
+	    }
 
 	  if ((e->flags & ~(EDGE_DFS_BACK
 			    | EDGE_CAN_FALLTHRU
@@ -2553,11 +2649,24 @@ cfg_layout_delete_block (basic_block bb)
 static bool
 cfg_layout_can_merge_blocks_p (basic_block a, basic_block b)
 {
+  bool partitions_ok = true;
+
+  /* If we are partitioning hot/cold basic blocks, we don't want to
+     mess up unconditional or indirect jumps that cross between hot
+     and cold sections.  */
+  
+  if (flag_reorder_blocks_and_partition
+      && (find_reg_note (BB_END (a), REG_CROSSING_JUMP, NULL_RTX)
+	  || find_reg_note (BB_END (b), REG_CROSSING_JUMP, NULL_RTX)
+	  || a->partition != b->partition))
+    partitions_ok = false;
+
   /* There must be exactly one edge in between the blocks.  */
   return (a->succ && !a->succ->succ_next && a->succ->dest == b
 	  && !b->pred->pred_next && a != b
 	  /* Must be simple edge.  */
 	  && !(a->succ->flags & EDGE_COMPLEX)
+	  && partitions_ok
 	  && a != ENTRY_BLOCK_PTR && b != EXIT_BLOCK_PTR
 	  /* If the jump insn has side effects,
 	     we can't kill the edge.  */
