@@ -1,3 +1,8 @@
+Thu May 11 11:57:02 MET DST 2000  Jan Hubicka <jh@suse.cz>
+
+	* toplev.c (rest_of_compilation): Remove dead code after
+	combine.
+
 2000-05-11  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpphash.c (collect_funlike_expansion): Make "# is not
