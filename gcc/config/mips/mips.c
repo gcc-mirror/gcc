@@ -5068,22 +5068,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		  if (store_p)
 		    {
 		      rtx insn = emit_move_insn (mem_rtx, reg_rtx);
-
-		      if (write_symbols == DWARF2_DEBUG)
-			{
-			  int offset = (gp_offset
-					- current_frame_info.total_size);
-			  if (regno == GP_REG_FIRST + 31)
-			    REG_NOTES (insn)
-			      = gen_rtx (EXPR_LIST, REG_RETURN_SAVE,
-					 GEN_INT (offset), REG_NOTES (insn));
-			  else
-			    REG_NOTES (insn)
-			      = gen_rtx (EXPR_LIST, REG_SAVE,
-					 gen_rtx (EXPR_LIST, VOIDmode, reg_rtx,
-						  GEN_INT (offset)),
-					 REG_NOTES (insn));
-			}
+		      RTX_FRAME_RELATED_P (insn) = 1;
 		    }
 		  else if (!TARGET_ABICALLS || mips_abi != ABI_32
 			   || regno != (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))
@@ -5199,17 +5184,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		  if (store_p)
 		    {
 		      rtx insn = emit_move_insn (mem_rtx, reg_rtx);
-
-		      if (write_symbols == DWARF2_DEBUG)
-			{
-			  int offset = (gp_offset
-					- current_frame_info.total_size);
-			  REG_NOTES (insn)
-			    = gen_rtx (EXPR_LIST, REG_SAVE,
-				       gen_rtx (EXPR_LIST, VOIDmode, reg_rtx,
-						GEN_INT (offset)),
-				       REG_NOTES (insn));
-			}
+		      RTX_FRAME_RELATED_P (insn) = 1;
 		    }
 		  else
 		    emit_move_insn (reg_rtx, mem_rtx);
@@ -5452,12 +5427,7 @@ mips_expand_prologue ()
 	    insn = emit_insn (gen_subsi3 (stack_pointer_rtx, stack_pointer_rtx,
 					  tsize_rtx));
 
-	  if (write_symbols == DWARF2_DEBUG)
-	    REG_NOTES (insn)
-	      = gen_rtx (EXPR_LIST, REG_FRAME,
-			 gen_rtx (PLUS, VOIDmode, stack_pointer_rtx,
-				  GEN_INT (tsize)),
-			 REG_NOTES (insn));
+	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
 
       save_restore_insns (TRUE, tmp_rtx, tsize, (FILE *)0);
@@ -5471,12 +5441,7 @@ mips_expand_prologue ()
 	  else
 	    insn= emit_insn (gen_movsi (frame_pointer_rtx, stack_pointer_rtx));
 
-	  if (write_symbols == DWARF2_DEBUG)
-	    REG_NOTES (insn)
-	      = gen_rtx (EXPR_LIST, REG_FRAME,
-			 gen_rtx (PLUS, VOIDmode, frame_pointer_rtx,
-				  GEN_INT (tsize)),
-			 REG_NOTES (insn));
+	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
 
       if (TARGET_ABICALLS && mips_abi != ABI_32)

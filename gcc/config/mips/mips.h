@@ -927,10 +927,15 @@ while (0)
    This mapping does not allow for tracking DBX register 0, since column 0
    is used for the frame address, but since register 0 is fixed this is
    not really a problem.  */
-#define DWARF_FRAME_REGNUM(REG) (DBX_REGISTER_NUMBER (REG))
+#define DWARF_FRAME_REGNUM(REG)				\
+  (REG == GP_REG_FIRST + 31 ? DWARF_FRAME_RETURN_COLUMN	\
+   : DBX_REGISTER_NUMBER (REG))
 
 /* The DWARF 2 CFA column which tracks the return address.  */
 #define DWARF_FRAME_RETURN_COLUMN (FP_REG_LAST + 1)
+
+/* Before the prologue, RA lives in r31.  */
+#define INCOMING_RETURN_ADDR_RTX  gen_rtx (REG, VOIDmode, GP_REG_FIRST + 31)
 
 /* Overrides for the COFF debug format.  */
 #define PUT_SDB_SCL(a)					\

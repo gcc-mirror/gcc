@@ -140,6 +140,10 @@ typedef struct rtx_def
      In a REG, nonzero means this reg refers to the return value
      of the current function.  */
   unsigned integrated : 1;
+  /* Nonzero if this rtx is related to the call frame, either changing how
+     we compute the frame address or saving and restoring registers in
+     the prologue and epilogue.  */
+  unsigned frame_related : 1;
   /* The first element of the operands of this rtx.
      The number of operands and their types are controlled
      by the `code' field, according to rtl.def.  */
@@ -165,6 +169,7 @@ typedef struct rtx_def
 
 #define RTX_INTEGRATED_P(RTX) ((RTX)->integrated)
 #define RTX_UNCHANGING_P(RTX) ((RTX)->unchanging)
+#define RTX_FRAME_RELATED_P(RTX) ((RTX)->frame_related)
 
 /* RTL vector.  These appear inside RTX's when there is a need
    for a variable number of things.  The principle use is inside
