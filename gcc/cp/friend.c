@@ -352,6 +352,8 @@ do_friend (ctype, declarator, decl, parmdecls, attrlist,
 
       if (is_friend_template)
 	decl = DECL_TI_TEMPLATE (push_template_decl (decl));
+      else if (DECL_TEMPLATE_INFO (decl))
+	;
       else if (template_class_depth (current_class_type))
 	decl = push_template_decl_real (decl, /*is_friend=*/1);
 

@@ -1,5 +1,13 @@
 2003-10-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	PR c++/12369
+	* decl.c (grokdeclarator): Handle TEMPLATE_ID_EXPR if friend
+	is a member of other class.
+	* friend.c (do_friend): Don't build TEMPLATE_DECL if friend
+	is a specialization of function template.
+
+2003-10-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/7939
 	* typeck.c (comptypes): Don't ICE when its first argument is
 	error_mark_node.
