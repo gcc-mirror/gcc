@@ -1959,7 +1959,12 @@ finish_unary_op_expr (enum tree_code code, tree expr)
       && TREE_CODE (result) == INTEGER_CST
       && !TYPE_UNSIGNED (TREE_TYPE (result))
       && INT_CST_LT (result, integer_zero_node))
-    TREE_NEGATED_INT (result) = 1;
+    {
+      /* RESULT may be a cached INTEGER_CST, so we must copy it before
+	 setting TREE_NEGATED_INT.  */
+      result = copy_node (result);
+      TREE_NEGATED_INT (result) = 1;
+    }
   overflow_warning (result);
   return result;
 }

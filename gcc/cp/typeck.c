@@ -5813,57 +5813,6 @@ pfn_from_ptrmemfunc (tree t)
   return build_ptrmemfunc_access_expr (t, pfn_identifier);
 }
 
-/* Expression EXPR is about to be implicitly converted to TYPE.  Warn
-   if this is a potentially dangerous thing to do.  Returns a possibly
-   marked EXPR.  */
-
-tree
-dubious_conversion_warnings (tree type, tree expr,
-			     const char *errtype, tree fndecl, int parmnum)
-{
-  type = non_reference (type);
-  
-  /* Issue warnings about peculiar, but valid, uses of NULL.  */
-  if (ARITHMETIC_TYPE_P (type) && expr == null_node)
-    {
-      if (fndecl)
-        warning ("passing NULL used for non-pointer %s %P of %qD",
-                 errtype, parmnum, fndecl);
-      else
-        warning ("%s to non-pointer type %qT from NULL", errtype, type);
-    }
-  
-  /* Warn about assigning a floating-point type to an integer type.  */
-  if (TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE
-      && TREE_CODE (type) == INTEGER_TYPE)
-    {
-      if (fndecl)
-	warning ("passing %qT for %s %P of %qD",
-                 TREE_TYPE (expr), errtype, parmnum, fndecl);
-      else
-	warning ("%s to %qT from %qT", errtype, type, TREE_TYPE (expr));
-    }
-  /* And warn about assigning a negative value to an unsigned
-     variable.  */
-  else if (TYPE_UNSIGNED (type) && TREE_CODE (type) != BOOLEAN_TYPE)
-    {
-      if (TREE_CODE (expr) == INTEGER_CST && TREE_NEGATED_INT (expr))
-	{
-	  if (fndecl)
-	    warning ("passing negative value %qE for %s %P of %qD",
-                     expr, errtype, parmnum, fndecl);
-	  else
-	    warning ("%s of negative value %qE to %qT", errtype, expr, type);
-	}
-
-      overflow_warning (expr);
-
-      if (TREE_CONSTANT (expr))
-	expr = fold_if_not_in_template (expr);
-    }
-  return expr;
-}
-
 /* Convert value RHS to type TYPE as preparation for an assignment to
    an lvalue of type TYPE.  ERRTYPE is a string to use in error
    messages: "assignment", "return", etc.  If FNDECL is non-NULL, we

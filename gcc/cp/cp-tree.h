@@ -4298,7 +4298,6 @@ extern tree build_const_cast			(tree, tree);
 extern tree build_c_cast			(tree, tree);
 extern tree build_x_modify_expr			(tree, enum tree_code, tree);
 extern tree build_modify_expr			(tree, enum tree_code, tree);
-extern tree dubious_conversion_warnings         (tree, tree, const char *, tree, int);
 extern tree convert_for_initialization		(tree, tree, tree, int, const char *, tree, int);
 extern int comp_ptr_ttypes			(tree, tree);
 extern int ptr_reasonably_similar		(tree, tree);

@@ -1,3 +1,8 @@
+2005-01-30  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19457
+	* g++.dg/warn/conv3.C: New test.
+
 2005-01-30  Bud Davis  <bdavis@gfortran.org>
 
 	PR fortran/19647

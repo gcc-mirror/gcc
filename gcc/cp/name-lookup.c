@@ -3024,9 +3024,9 @@ pushdecl_namespace_level (tree x)
 
   /* Now, the type_shadowed stack may screw us.  Munge it so it does
      what we want.  */
-  if (TREE_CODE (x) == TYPE_DECL)
+  if (TREE_CODE (t) == TYPE_DECL)
     {
-      tree name = DECL_NAME (x);
+      tree name = DECL_NAME (t);
       tree newval;
       tree *ptr = (tree *)0;
       for (; !global_scope_p (b); b = b->level_chain)
@@ -3041,12 +3041,12 @@ pushdecl_namespace_level (tree x)
 		   PT names.  It's gross, but I haven't time to fix it.  */
               }
         }
-      newval = TREE_TYPE (x);
+      newval = TREE_TYPE (t);
       if (ptr == (tree *)0)
         {
           /* @@ This shouldn't be needed.  My test case "zstring.cc" trips
              up here if this is changed to an assertion.  --KR  */
-	  SET_IDENTIFIER_TYPE_VALUE (name, x);
+	  SET_IDENTIFIER_TYPE_VALUE (name, t);
 	}
       else
         {
