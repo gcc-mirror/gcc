@@ -1,3 +1,17 @@
+2001-11-19  Geoffrey Keating  <geoffk@redhat.com>
+
+	* configure.in (HAVE_AS_GDWARF2_DEBUG_FLAG): Define.
+	(HAVE_AS_GSTABS_DEBUG_FLAG): Define.
+	* configure: Regenerate.
+	* config.in: Add dummy definitions of new flags.
+	* toplev.c (PREFERRED_DEBUGGING_TYPE): Move definition to...
+	* defaults.h (PREFERRED_DEBUGGING_TYPE): ... here.
+	* gcc.c (ASM_DEBUG_SPEC): New macro.
+	(asm_debug): New static variable.
+	(default_compilers): Add asm_debug when assembling from
+	user input.
+	(static_specs): Add asm_debug.
+
 2001-11-20  Loren J. Rittle  <ljrittle@acm.org>
 
 	* config.gcc (*-*-freebsd*): Remove configuration block.

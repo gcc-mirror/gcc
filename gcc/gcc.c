@@ -586,6 +586,20 @@ proper position among the other output files.  */
 #define LINKER_NAME "collect2"
 #endif
 
+/* Define ASM_DEBUG_SPEC to be a spec suitable for translating '-g'
+   to the assembler.  */
+#ifndef ASM_DEBUG_SPEC
+# if defined(HAVE_AS_GDWARF2_DEBUG_FLAG) && defined(HAVE_AS_GSTABS_DEBUG_FLAG)
+#  if PREFERRED_DEBUGGING_FORMAT == DBX_DEBUG
+#    define ASM_DEBUG_SPEC "%{gdwarf-2*:--gdwarf2}%{!gdwarf-2*:%{g*:--gstabs}}"
+#  else
+#    define ASM_DEBUG_SPEC "%{gstabs*:--gstabs}%{!gstabs*:%{g*:--gdwarf2}}"
+#  endif
+# else
+#  define ASM_DEBUG_SPEC ""
+# endif
+#endif
+
 /* Here is the spec for running the linker, after compiling all files.  */
 
 /* -u* was put back because both BSD and SysV seem to support it.  */
@@ -613,6 +627,7 @@ proper position among the other output files.  */
 # endif
 #endif
 
+static const char *asm_debug = ASM_DEBUG_SPEC;
 static const char *cpp_spec = CPP_SPEC;
 static const char *cpp_predefines = CPP_PREDEFINES;
 static const char *cc1_spec = CC1_SPEC;
@@ -820,11 +835,12 @@ static struct compiler default_compilers[] =
    "%{!M:%{!MM:%{!E:cc1 -fpreprocessed %i %(cc1_options) %{!fsyntax-only:%(invoke_as)}}}}", 0},
   {".s", "@assembler", 0},
   {"@assembler",
-   "%{!M:%{!MM:%{!E:%{!S:as %(asm_options) %i %A }}}}", 0},
+   "%{!M:%{!MM:%{!E:%{!S:as %(asm_debug) %(asm_options) %i %A }}}}", 0},
   {".S", "@assembler-with-cpp", 0},
   {"@assembler-with-cpp",
    "%(trad_capable_cpp) -lang-asm %(cpp_options)\
-	%{!M:%{!MM:%{!E:%(invoke_as)}}}", 0},
+      %{!M:%{!MM:%{!E:%{!S:-o %{|!pipe:%g.s} |\n\
+       as %(asm_debug) %(asm_options) %{!pipe:%g.s} %A }}}}", 0},
 #include "specs.h"
   /* Mark end of table */
   {0, 0, 0}
@@ -1327,6 +1343,7 @@ struct spec_list
 static struct spec_list static_specs[] =
 {
   INIT_STATIC_SPEC ("asm",			&asm_spec),
+  INIT_STATIC_SPEC ("asm_debug",		&asm_debug),
   INIT_STATIC_SPEC ("asm_final",		&asm_final_spec),
   INIT_STATIC_SPEC ("asm_options",		&asm_options),
   INIT_STATIC_SPEC ("invoke_as",		&invoke_as),
