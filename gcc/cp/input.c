@@ -53,12 +53,6 @@ static struct input_source *input, *free_inputs;
 extern char *input_filename;
 extern int lineno;
 
-#ifdef __GNUC__
-#define inline __inline__
-#else
-#define inline
-#endif
-
 #if USE_CPPLIB
 extern unsigned char *yy_cur, *yy_lim;
 extern int yy_get_token ();
