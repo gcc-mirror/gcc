@@ -1,4 +1,10 @@
 2002-07-10  Roger Sayle  <roger@eyesopen.com>
+
+	PR c/2454
+	* combine.c (nonzero_bits): LOAD_EXTEND_OP should only apply
+	to SUBREGs of MEMs.  (num_sign_bit_copies): Likewise.
+
+2002-07-10  Roger Sayle  <roger@eyesopen.com>
 	    Zack Weinberg <zack@codesourcery.com>
 
 	* builtins.def: Make the argument types of abort and exit
