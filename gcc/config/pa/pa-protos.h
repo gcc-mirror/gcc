@@ -137,7 +137,7 @@ extern struct rtx_def *hppa_builtin_saveregs (void);
 
 extern void override_options (void);
 extern void output_ascii (FILE *, const char *, int);
-extern int compute_frame_size (int, int *);
+extern HOST_WIDE_INT compute_frame_size (HOST_WIDE_INT, int *);
 extern int and_mask_p (unsigned HOST_WIDE_INT);
 extern int cint_ok_for_move (HOST_WIDE_INT);
 extern void hppa_expand_prologue (void);

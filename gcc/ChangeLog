@@ -1,3 +1,22 @@
+2004-01-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa-protos.h (compute_frame_size): Use HOST_WIDE_INT for frame sizes.
+	* pa.c (store_reg, store_reg_modify, load_reg, set_reg_plus_d):
+	Likewise.  Handle frames larger than 0x7fffffff on 64-bit ports.
+	(emit_move_sequence): Check scratch_reg first in various if statements.
+	Extend source simplification to handle all 64-bit CONST_INTs.
+	(pa_output_function_prologue): Use HOST_WIDE_INT_PRINT_DEC for printing
+	frame size.
+	(hppa_expand_prologue, hppa_expand_epilogue): Use HOST_WIDE_INT for
+	frame offset calculations.
+	* pa.h (NEW_HP_ASSEMBLER): Add comment.
+	(MAX_LEGIT_64BIT_CONST_INT, MIN_LEGIT_64BIT_CONST_INT,
+	LEGITIMATE_64BIT_CONST_INT_P): Define.
+	(LEGITIMATE_CONSTANT_P): Use LEGITIMATE_64BIT_CONST_INT_P.  Treat
+	any CONST_INT as legitimate during and after reload.
+	(VAL_32_BITS_P, INT_32_BITS): Define.
+	(LEGITIMIZE_RELOAD_ADDRESS): Handle large frame offsets.
+
 2004-01-21  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/sysv4.h (DWARF2_FRAME_REG_OUT): Define.
