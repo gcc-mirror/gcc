@@ -206,7 +206,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_OUTPUT_FLOAT_OPERAND(FILE,VALUE)				\
   (REAL_VALUE_ISINF ((VALUE))						\
    ? (asm_fprintf (FILE, "%I0r%s99e999", ((VALUE) > 0 ? "" : "-")), 0)	\
-   : (VALUE) == -0.0							\
+   : REAL_VALUE_MINUS_ZERO (VALUE)					\
    ? (asm_fprintf (FILE, "%I0r-0.0"), 0)				\
    : (asm_fprintf (FILE, "%I0r%.9g", (VALUE)), 0))
 
@@ -214,6 +214,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_OUTPUT_DOUBLE_OPERAND(FILE,VALUE)				\
   (REAL_VALUE_ISINF ((VALUE))						\
    ? (asm_fprintf (FILE, "%I0r%s99e999", ((VALUE) > 0 ? "" : "-")), 0)	\
-   : (VALUE) == -0.0							\
+   : REAL_VALUE_MINUS_ZERO (VALUE)					\
    ? (asm_fprintf (FILE, "%I0r-0.0"), 0)				\
    : (asm_fprintf (FILE, "%I0r%.17g", (VALUE)), 0))
