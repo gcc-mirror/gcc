@@ -244,7 +244,7 @@ public abstract class ResourceBundle
 
   /** Cache key for the ResourceBundle cache.  Resource bundles are keyed
       by the combination of bundle name, locale, and class loader. */
-  private static class BundleKey implements Cloneable
+  private static class BundleKey
   {
     String baseName;
     Locale locale;
@@ -281,18 +281,6 @@ public abstract class ResourceBundle
 	baseName.equals(key.baseName) &&
         locale.equals(key.locale) &&
 	classLoader.equals(key.classLoader);
-    }
-    
-    public Object clone()
-    {
-      Object clone = null;
-      try
-      {
-	clone = super.clone();
-      }
-      catch (CloneNotSupportedException x) {}
-      
-      return clone;
     }    
   }
   
@@ -417,7 +405,7 @@ public abstract class ResourceBundle
 	if (bundle == null && !locale.equals(defaultLocale))
 	  bundle = tryBundle(baseName, defaultLocale, classLoader, true);
 
-	BundleKey key = (BundleKey) lookupKey.clone();
+	BundleKey key = new BundleKey(baseName, locale, classLoader);
         if (bundle == null)
 	  {
 	    // Cache the fact that this lookup has previously failed.

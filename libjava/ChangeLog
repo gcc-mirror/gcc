@@ -1,3 +1,10 @@
+2004-11-25  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* java/util/ResourceBundle.java (BundleKey): Don't implement
+	Cloneable.
+	(BundleKey.clone): Removed.
+	(getBundle): Copy BundleKey using constructor, not clone().
+
 2004-11-25  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure: Regenerate for libtool reversion.
