@@ -1719,6 +1719,7 @@ expand_invoke (opcode, method_ref_index, nargs)
     (current_jcf, COMPONENT_REF_CLASS_INDEX(&current_jcf->cpool, method_ref_index));
   const char *self_name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (self_type)));
   tree call, func, method, arg_list, method_type;
+  tree cond = NULL_TREE;
 
   if (! CLASS_LOADED_P (self_type))
     {
@@ -1781,13 +1782,29 @@ expand_invoke (opcode, method_ref_index, nargs)
   flush_quick_stack ();
 
   func = NULL_TREE;
-  if (opcode == OPCODE_invokestatic || opcode == OPCODE_invokespecial
-      || (opcode == OPCODE_invokevirtual
-	  && (METHOD_PRIVATE (method)
-	      || METHOD_FINAL (method) 
-	      || CLASS_FINAL (TYPE_NAME (self_type)))))
+  if (opcode == OPCODE_invokestatic)
     func = build_known_method_ref (method, method_type, self_type,
 				   method_signature, arg_list);
+  else if (opcode == OPCODE_invokespecial
+	   || (opcode == OPCODE_invokevirtual
+	       && (METHOD_PRIVATE (method)
+		   || METHOD_FINAL (method) 
+		   || CLASS_FINAL (TYPE_NAME (self_type)))))
+    {
+      /* If the object for the method call is null, we throw an
+	 exception.  We don't do this if the object is the current
+	 method's `this'.  In other cases we just rely on an
+	 optimization pass to eliminate redundant checks.  FIXME:
+	 Unfortunately there doesn't seem to be a way to determine
+	 what the current method is right now.  */
+      /* We use a SAVE_EXPR here to make sure we only evaluate
+	 the new `self' expression once.  */
+      tree save_arg = save_expr (TREE_VALUE (arg_list));
+      TREE_VALUE (arg_list) = save_arg;
+      cond = build (EQ_EXPR, boolean_type_node, save_arg, null_pointer_node);
+      func = build_known_method_ref (method, method_type, self_type,
+				     method_signature, arg_list);
+    }
   else
     {
       tree dtable = invoke_build_dtable (opcode == OPCODE_invokeinterface, 
@@ -1800,6 +1817,23 @@ expand_invoke (opcode, method_ref_index, nargs)
   func = build1 (NOP_EXPR, build_pointer_type (method_type), func);
   call = build (CALL_EXPR, TREE_TYPE (method_type), func, arg_list, NULL_TREE);
   TREE_SIDE_EFFECTS (call) = 1;
+
+  if (cond != NULL_TREE)
+    {
+      /* We have to make the `then' branch a compound expression to
+	 make the types turn out right.  This seems bizarre.  */
+      call = build (COND_EXPR, TREE_TYPE (call), cond,
+		    build (COMPOUND_EXPR, TREE_TYPE (call),
+			   build (CALL_EXPR, void_type_node,
+				  build_address_of (soft_nullpointer_node),
+				  NULL_TREE, NULL_TREE),
+			   (FLOAT_TYPE_P (TREE_TYPE (call))
+			    ? build_real (TREE_TYPE (call), dconst0)
+			    : build1 (CONVERT_EXPR, TREE_TYPE (call),
+				      integer_zero_node))),
+		    call);
+      TREE_SIDE_EFFECTS (call) = 1;
+    }
 
   if (TREE_CODE (TREE_TYPE (method_type)) == VOID_TYPE)
     expand_expr_stmt (call);

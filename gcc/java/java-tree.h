@@ -290,6 +290,7 @@ extern tree soft_newarray_node;
 extern tree soft_anewarray_node;
 extern tree soft_multianewarray_node;
 extern tree soft_badarrayindex_node;
+extern tree soft_nullpointer_node;
 extern tree throw_node[];
 extern tree soft_checkarraystore_node;
 extern tree soft_monitorenter_node;

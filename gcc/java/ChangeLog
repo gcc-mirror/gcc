@@ -1,3 +1,15 @@
+2000-04-27  Tom Tromey  <tromey@cygnus.com>
+
+	Fix for PR gcj/2:
+	* expr.c (expand_invoke): Generate check to see if object pointer
+	is null in nonvirtual invocation case.
+	* java-tree.h (soft_nullpointer_node): Declare.
+	* decl.c (soft_nullpointer_node): New global.
+	(init_decl_processing): Initialize soft_nullpointer_node.
+	* parse.y (invocation_mode): Return INVOKE_NONVIRTUAL for `final'
+	or `private' methods.
+	(patch_invoke): Handle INVOKE_NONVIRTUAL case.
+
 Wed Apr 26 14:29:33 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* decl.c (complete_start_java_method): Don't call _Jv_InitClass

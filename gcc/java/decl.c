@@ -375,6 +375,7 @@ tree soft_newarray_node;
 tree soft_anewarray_node;
 tree soft_multianewarray_node;
 tree soft_badarrayindex_node;
+tree soft_nullpointer_node;
 tree throw_node [2];
 tree soft_checkarraystore_node;
 tree soft_monitorenter_node;
@@ -812,6 +813,15 @@ init_decl_processing ()
      effects.  */
   TREE_THIS_VOLATILE (soft_badarrayindex_node) = 1;
   TREE_SIDE_EFFECTS (soft_badarrayindex_node) = 1;
+
+  soft_nullpointer_node
+    = builtin_function ("_Jv_ThrowNullPointerException",
+			build_function_type (void_type_node, endlink),
+			0, NOT_BUILT_IN, NULL_PTR);
+  /* Mark soft_nullpointer_node as a `noreturn' function with side
+     effects.  */
+  TREE_THIS_VOLATILE (soft_nullpointer_node) = 1;
+  TREE_SIDE_EFFECTS (soft_nullpointer_node) = 1;
 
   t = tree_cons (NULL_TREE, class_ptr_type,
 		 tree_cons (NULL_TREE, object_ptr_type_node, endlink));
