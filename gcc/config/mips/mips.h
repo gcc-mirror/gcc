@@ -586,12 +586,16 @@ extern void		mips_select_section ();
 #endif
 #endif
 
-#ifndef MULTILIB_DEFAULTS
+#ifndef MULTILIB_ENDIAN_DEFAULT
 #if TARGET_ENDIAN_DEFAULT == 0
-#define MULTILIB_DEFAULTS { "EL", "mips1" }
+#define MULTILIB_ENDIAN_DEFAULT "EL"
 #else
-#define MULTILIB_DEFAULTS { "EB", "mips1" }
+#define MULTILIB_ENDIAN_DEFAULT "EB"
 #endif
+#endif
+
+#ifndef MULTILIB_DEFAULTS
+#define MULTILIB_DEFAULTS { MULTILIB_ENDIAN_DEFAULT, "mips1" }
 #endif
 
 /* We must pass -EL to the linker by default for little endian embedded

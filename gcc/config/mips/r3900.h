@@ -46,7 +46,7 @@ Boston, MA 02111-1307, USA.  */
 #define MIPS_CPU_STRING_DEFAULT "R3900"
 #define MIPS_ISA_DEFAULT 1
 
-#define MULTILIB_DEFAULTS { "EB", "msoft-float" }
+#define MULTILIB_DEFAULTS { MULTILIB_ENDIAN_DEFAULT, "msoft-float" }
 
 /* We use the MIPS EABI by default.  */
 #define MIPS_ABI_DEFAULT ABI_EABI
