@@ -1,6 +1,7 @@
 2001-02-18  Kazu Hirata  <kazu@hxi.com>
 
-	* config/h8300/h8300.md: Do not output an extra newline character.
+	* config/h8300/h8300.md: Update copyright.
+	(andsi3): Do not output an extra newline character.
 
 Sun Feb 18 15:45:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
