@@ -5193,7 +5193,8 @@ check_for_full_enumeration_handling (type)
       /* We deliberately use calloc here, not cmalloc, so that we can suppress
 	 this optimization if we don't have enough memory rather than
 	 aborting, as xmalloc would do.  */
-      && (cases_seen = (unsigned char *) calloc (bytes_needed, 1)) != NULL)
+      && (cases_seen =
+	  (unsigned char *) really_call_calloc (bytes_needed, 1)) != NULL)
     {
       HOST_WIDE_INT i;
       tree v = TYPE_VALUES (type);

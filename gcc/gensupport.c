@@ -871,7 +871,7 @@ xcalloc (nelem, elsize)
   if (nelem == 0 || elsize == 0)
     nelem = elsize = 1;
 
-  newmem = calloc (nelem, elsize);
+  newmem = really_call_calloc (nelem, elsize);
   if (!newmem)
     fatal ("virtual memory exhausted");
   return (newmem);
@@ -884,9 +884,9 @@ xrealloc (old, size)
 {
   register PTR ptr;
   if (old)
-    ptr = (PTR) realloc (old, size);
+    ptr = (PTR) really_call_realloc (old, size);
   else
-    ptr = (PTR) malloc (size);
+    ptr = (PTR) really_call_malloc (size);
   if (!ptr)
     fatal ("virtual memory exhausted");
   return ptr;
@@ -896,7 +896,7 @@ PTR
 xmalloc (size)
   size_t size;
 {
-  register PTR val = (PTR) malloc (size);
+  register PTR val = (PTR) really_call_malloc (size);
 
   if (val == 0)
     fatal ("virtual memory exhausted");

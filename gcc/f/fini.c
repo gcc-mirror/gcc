@@ -367,7 +367,7 @@ main (int argc, char **argv)
 
       /* Make new name object to store name and its keyword. */
 
-      newname = (name) malloc (sizeof (*newname));
+      newname = (name) really_call_malloc (sizeof (*newname));
       newname->namelen = strlen (buf);
       newname->kwlen = strlen (kwname);
       total_length = newname->kwlen + fixlengths;

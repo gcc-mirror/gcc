@@ -1,3 +1,7 @@
+Fri Mar  9 22:52:55 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fini.c (main): Use really_call_malloc, not malloc.
+
 Thu Mar  8 13:27:47 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* com.c: Don't rely on the POSIX macro to define autoconf stuff.
