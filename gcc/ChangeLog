@@ -1,3 +1,7 @@
+2001-06-13  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* inclhack.def (hpux10_cpp_pow_inline): New hack.
+
 2001-06-13  Richard Henderson  <rth@redhat.com>
 
 	* ifcvt.c (dead_or_predicable): Fix return value last patch.

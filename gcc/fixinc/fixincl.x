@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 139 fixup descriptions.
+ * This file contains 140 fixup descriptions.
  *
  * See README for more information.
  *
@@ -1941,6 +1941,48 @@ static const char* apzHp_SysfilePatch[] = {
     "format",
     "(struct file *, ...)",
     "\\(\\.\\.\\.\\)",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ *  Description of Hpux10_Cpp_Pow_Inline fix
+ */
+tSCC zHpux10_Cpp_Pow_InlineName[] =
+     "hpux10_cpp_pow_inline";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zHpux10_Cpp_Pow_InlineList[] =
+  "|math.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+#define apzHpux10_Cpp_Pow_InlineMachs (const char**)NULL
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zHpux10_Cpp_Pow_InlineSelect0[] =
+       "^# +ifdef +__cplusplus\n\
+ +}\n\
+ +inline +double +pow\\(double +__d,int +__expon\\) +{\n\
+[ \t]+return +pow\\(__d,\\(double\\)__expon\\);\n\
+ +}\n\
+ +extern +\"C\" +{\n\
+#else\n\
+# +endif";
+
+#define    HPUX10_CPP_POW_INLINE_TEST_CT  1
+static tTestDesc aHpux10_Cpp_Pow_InlineTests[] = {
+  { TT_EGREP,    zHpux10_Cpp_Pow_InlineSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Hpux10_Cpp_Pow_Inline
+ */
+static const char* apzHpux10_Cpp_Pow_InlinePatch[] = {
+    "format",
+    "",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -5424,9 +5466,9 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          146
+#define REGEX_COUNT          147
 #define MACH_LIST_SIZE_LIMIT 279
-#define FIX_COUNT            139
+#define FIX_COUNT            140
 
 /*
  *  Enumerate the fixes
@@ -5480,6 +5522,7 @@ typedef enum {
     GNU_TYPES_FIXIDX,
     HP_INLINE_FIXIDX,
     HP_SYSFILE_FIXIDX,
+    HPUX10_CPP_POW_INLINE_FIXIDX,
     HPUX11_FABSF_FIXIDX,
     HPUX11_UINT32_C_FIXIDX,
     HPUX8_BOGUS_INLINES_FIXIDX,
@@ -5813,6 +5856,11 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzHp_SysfileMachs,
      HP_SYSFILE_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aHp_SysfileTests,   apzHp_SysfilePatch, 0 },
+
+  {  zHpux10_Cpp_Pow_InlineName,    zHpux10_Cpp_Pow_InlineList,
+     apzHpux10_Cpp_Pow_InlineMachs,
+     HPUX10_CPP_POW_INLINE_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aHpux10_Cpp_Pow_InlineTests,   apzHpux10_Cpp_Pow_InlinePatch, 0 },
 
   {  zHpux11_FabsfName,    zHpux11_FabsfList,
      apzHpux11_FabsfMachs,

@@ -1149,6 +1149,39 @@ fix = {
 
 
 /*
+ * Delete C++ double pow (double, int) inline function from HP-UX 10
+ * math.h to prevent clash with define in c_std/bits/std_cmath.h.
+ */
+fix = {
+    hackname  = hpux10_cpp_pow_inline;
+    files     = math.h;
+    select    = <<-	END_POW_INLINE
+	^# +ifdef +__cplusplus
+	 +}
+	 +inline +double +pow\(double +__d,int +__expon\) +{
+	[ 	]+return +pow\(__d,\(double\)__expon\);
+	 +}
+	 +extern +"C" +{
+	#else
+	# +endif
+	END_POW_INLINE;
+ 
+    c_fix     = format;
+    c_fix_arg = "";
+
+    test_text =
+	"#    ifdef __cplusplus\n"
+	"     }\n"
+	"     inline double pow(double __d,int __expon) {\n"
+	"\t return pow(__d,(double)__expon);\n"
+	"     }\n"
+	'     extern "C"' " {\n"
+	"#else\n"
+	"#    endif";
+};
+
+
+/*
  *  Keep HP-UX 11 from stomping on C++ math namespace
  *  with defines for fabsf.
  */
