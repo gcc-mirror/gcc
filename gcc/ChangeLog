@@ -3,6 +3,8 @@ Fri Mar 12 07:54:43 1999  Bruce Korb <korb@datadesign.com>
 	* fixinc/fixinc.*: Some changes from the fixincl-branch
 	were not applied (??!!).  Corrected.
 
+	* fixinc/Makefile.in: same thing.
+
 Fri Mar 12 00:51:43 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* expr.c (expand_expr): Allow a CALL_EXPR with a mode wider than

@@ -58,7 +58,7 @@ INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config -I$(srcdir)
 ##
 ## # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-OBJ = fixincl.o server.o regex.o
+OBJ = fixincl.o server.o regex.o procopen.o
 HDR = server.h regex.h
 LIBERTY = ../../libiberty/libiberty.a
 
