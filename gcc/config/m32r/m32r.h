@@ -453,14 +453,10 @@ if (GET_MODE_CLASS (MODE) == MODE_INT		\
 /* If defined, an initializer for a vector of integers, containing the
    numbers of hard registers in the order in which GNU CC should
    prefer to use them (from most preferred to least).  */
-/* FIXME: revisit.
-   GCC seemed very poor at optimizing register allocations for libcalls.
-   By ordering the regs according to function arguments, all problems were
-   alleviated.  Leave changed for now but revisit again in awhile.  */
-#if 0
+#if 1 /* better for int code */
 #define REG_ALLOC_ORDER \
 { 4, 5, 6, 7, 2, 3, 8, 9, 10, 11, 12, 13, 14, 0, 1, 15, 16, 17 }
-#else
+#else /* better for fp code at expense of int code */
 #define REG_ALLOC_ORDER \
 { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 }
 #endif
