@@ -264,7 +264,8 @@ in the following sections.
 @gccoptlist{-falign-functions=@var{n}  -falign-jumps=@var{n} @gol
 -falign-labels=@var{n}  -falign-loops=@var{n}  @gol
 -fbranch-probabilities -fprofile-values -fvpt -fbranch-target-load-optimize @gol
--fbranch-target-load-optimize2 -fcaller-saves  -fcprop-registers @gol
+-fbranch-target-load-optimize2 -fbtr-bb-exclusive @gol
+-fcaller-saves  -fcprop-registers @gol
 -fcse-follow-jumps  -fcse-skip-blocks  -fdata-sections @gol
 -fdelayed-branch  -fdelete-null-pointer-checks @gol
 -fexpensive-optimizations  -ffast-math  -ffloat-store @gol
@@ -4650,6 +4651,11 @@ a separate optimization pass.
 @opindex fbranch-target-load-optimize2
 Perform branch target register load optimization after prologue / epilogue
 threading.
+
+@item -fbtr-bb-exclusive
+@opindex fbtr-bb-exclusive
+WHen performing branch target register load optimization, don't reuse
+branch target registers in within any basic block.
 
 @item --param @var{name}=@var{value}
 @opindex param

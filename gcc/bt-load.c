@@ -1,5 +1,5 @@
 /* Perform branch target register load optimizations.
-   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -36,6 +36,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "flags.h"
 #include "insn-attr.h"
 #include "function.h"
+#include "except.h"
 #include "tm_p.h"
 
 /* Target register optimizations - these are performed after reload.  */
@@ -159,6 +160,10 @@ static struct obstack migrate_btrl_obstack;
    live in that block.  */
 static HARD_REG_SET *btrs_live;
 
+/* Array indexed by basic block number, giving the set of registers live at
+  the end of that block, including any uses by a final jump insn, if any.  */
+static HARD_REG_SET *btrs_live_at_end;
+
 /* Set of all target registers that we are willing to allocate.  */
 static HARD_REG_SET all_btrs;
 
@@ -168,8 +173,7 @@ static int first_btr, last_btr;
 
 
 
-/* Return an estimate of the frequency of execution of block bb.
-   If we have a profiling count available, we could use it here.  */
+/* Return an estimate of the frequency of execution of block bb.  */
 static int
 basic_block_freq (basic_block bb)
 {
@@ -462,6 +466,7 @@ compute_defs_uses_and_gen (fibheap_t all_btr_defs, btr_def *def_array,
       btr_def defs_this_bb = NULL;
       rtx insn;
       rtx last;
+      int can_throw = 0;
 
       info.users_this_bb = NULL;
       info.bb_gen = bb_gen[i];
@@ -544,7 +549,7 @@ compute_defs_uses_and_gen (fibheap_t all_btr_defs, btr_def *def_array,
 						  call_used_reg_set);
 			      clobbered = &call_saved;
 			    }
-			      
+
 		      for (regno = first_btr; regno <= last_btr; regno++)
 			if (TEST_HARD_REG_BIT (*clobbered, regno))
 			  note_btr_set (regno_reg_rtx[regno], NULL_RTX, &info);
@@ -555,6 +560,35 @@ compute_defs_uses_and_gen (fibheap_t all_btr_defs, btr_def *def_array,
 
       COPY_HARD_REG_SET (btrs_live[i], info.btrs_live_in_block);
       COPY_HARD_REG_SET (btrs_written[i], info.btrs_written_in_block);
+
+      REG_SET_TO_HARD_REG_SET (btrs_live_at_end[i], bb->global_live_at_end);
+      /* If this block ends in a jump insn, add any uses or even clobbers
+	 of branch target registers that it might have.  */
+      for (insn = BB_END (bb); insn != BB_HEAD (bb) && ! INSN_P (insn); )
+	insn = PREV_INSN (insn);
+      /* ??? for the fall-through edge, it would make sense to insert the
+	 btr set on the edge, but that would require to split the block
+	 early on so that we can distinguish between dominance from the fall
+	 through edge - which can use the call-clobbered registers - from
+	 dominance by the throw edge.  */
+      if (can_throw_internal (insn))
+	{
+	  HARD_REG_SET tmp;
+
+	  COPY_HARD_REG_SET (tmp, call_used_reg_set);
+	  AND_HARD_REG_SET (tmp, all_btrs);
+	  IOR_HARD_REG_SET (btrs_live_at_end[i], tmp);
+	  can_throw = 1;
+	}
+      if (can_throw || GET_CODE (insn) == JUMP_INSN)
+	{
+	  int regno;
+
+	  for (regno = first_btr; regno <= last_btr; regno++)
+	    if (refers_to_regno_p (regno, regno+1, insn, NULL))
+	      SET_HARD_REG_BIT (btrs_live_at_end[i], regno);
+	}
+
       if (rtl_dump_file)
 	dump_btrs_live(i);
     }
@@ -797,6 +831,7 @@ clear_btr_from_live_range (btr_def def)
 	   || !block_at_edge_of_live_range_p (bb, def))
 	 {
 	   CLEAR_HARD_REG_BIT (btrs_live[bb], def->btr);
+	   CLEAR_HARD_REG_BIT (btrs_live_at_end[bb], def->btr);
 	   if (rtl_dump_file)
 	     dump_btrs_live (bb);
 	 }
@@ -815,6 +850,7 @@ add_btr_to_live_range (btr_def def)
     (def->live_range, 0, bb,
      {
        SET_HARD_REG_BIT (btrs_live[bb], def->btr);
+       SET_HARD_REG_BIT (btrs_live_at_end[bb], def->btr);
        if (rtl_dump_file)
 	 dump_btrs_live (bb);
      });
@@ -845,11 +881,18 @@ augment_live_range (bitmap live_range, HARD_REG_SET *btrs_live_in_range,
       int new_block = new_bb->index;
 
       bitmap_set_bit (live_range, new_block);
-      IOR_HARD_REG_SET (*btrs_live_in_range, btrs_live[new_block]);
+      if (flag_btr_bb_exclusive)
+	IOR_HARD_REG_SET (*btrs_live_in_range, btrs_live[new_block]);
+      else
+	{
+	  IOR_HARD_REG_SET (*btrs_live_in_range, btrs_live_at_end[new_block]);
+	  IOR_HARD_REG_SET (*btrs_live_in_range, btrs_live[head_bb->index]);
+	}
       if (rtl_dump_file)
 	{
 	  fprintf (rtl_dump_file,
-		   "Adding block %d to live range\n", new_block);
+		   "Adding end of block %d and rest of %d to live range\n",
+		   new_block, head_bb->index);
 	  fprintf (rtl_dump_file,"Now live btrs are ");
 	  dump_hard_reg_set (*btrs_live_in_range);
 	  fprintf (rtl_dump_file, "\n");
@@ -929,7 +972,11 @@ btr_def_live_range (btr_def def, HARD_REG_SET *btrs_live_in_range)
       def->live_range = BITMAP_XMALLOC ();
 
       bitmap_set_bit (def->live_range, def->bb->index);
-      COPY_HARD_REG_SET (*btrs_live_in_range, btrs_live[def->bb->index]);
+      if (flag_btr_bb_exclusive)
+	COPY_HARD_REG_SET (*btrs_live_in_range, btrs_live[def->bb->index]);
+      else
+	COPY_HARD_REG_SET (*btrs_live_in_range,
+			   btrs_live_at_end[def->bb->index]);
 
       for (user = def->uses; user != NULL; user = user->next)
 	augment_live_range (def->live_range, btrs_live_in_range,
@@ -942,14 +989,23 @@ btr_def_live_range (btr_def def, HARD_REG_SET *btrs_live_in_range)
 	 of other PT instructions may have affected it.
       */
       int bb;
+      int def_bb = def->bb->index;
 
       CLEAR_HARD_REG_SET (*btrs_live_in_range);
-      EXECUTE_IF_SET_IN_BITMAP
-	(def->live_range, 0, bb,
-	 {
-	   IOR_HARD_REG_SET (*btrs_live_in_range,
-	     btrs_live[bb]);
-	 });
+      if (flag_btr_bb_exclusive)
+	EXECUTE_IF_SET_IN_BITMAP
+	  (def->live_range, 0, bb,
+	   {
+	     IOR_HARD_REG_SET (*btrs_live_in_range, btrs_live[bb]);
+	   });
+      else
+	EXECUTE_IF_SET_IN_BITMAP
+	  (def->live_range, 0, bb,
+	   {
+	     IOR_HARD_REG_SET (*btrs_live_in_range,
+			       (def_bb == bb
+				? btrs_live_at_end : btrs_live) [bb]);
+	   });
     }
   if (!def->other_btr_uses_before_def &&
       !def->other_btr_uses_after_use)
@@ -1073,7 +1129,8 @@ move_btr_def (basic_block new_def_bb, int btr, btr_def def, bitmap live_range,
   def->bb = new_def_bb;
   def->luid = 0;
   def->cost = basic_block_freq (new_def_bb);
-  def->other_btr_uses_before_def = 0;
+  def->other_btr_uses_before_def
+    = TEST_HARD_REG_BIT (btrs_live[b->index], btr) ? 1 : 0;
   bitmap_copy (def->live_range, live_range);
   combine_btr_defs (def, btrs_live_in_range);
   btr = def->btr;
@@ -1084,6 +1141,16 @@ move_btr_def (basic_block new_def_bb, int btr, btr_def def, bitmap live_range,
      optimizations can result in insp being both first and last insn of
      its basic block.  */
   /* ?? some assertions to check that insp is sensible? */
+
+  if (def->other_btr_uses_before_def)
+    {
+      insp = BB_END (b);
+      for (insp = BB_END (b); ! INSN_P (insp); insp = PREV_INSN (insp))
+	if (insp == BB_HEAD (b))
+	  abort ();
+      if (GET_CODE (insp) == JUMP_INSN || can_throw_internal (insp))
+	insp = PREV_INSN (insp);
+    }
 
   set = single_set (old_insn);
   src = SET_SRC (set);
@@ -1312,6 +1379,7 @@ migrate_btr_defs (enum reg_class btr_class, int allow_callee_save)
       }
 
   btrs_live = xcalloc (n_basic_blocks, sizeof (HARD_REG_SET));
+  btrs_live_at_end = xcalloc (n_basic_blocks, sizeof (HARD_REG_SET));
 
   build_btr_def_use_webs (all_btr_defs);
 
@@ -1338,6 +1406,7 @@ migrate_btr_defs (enum reg_class btr_class, int allow_callee_save)
     }
 
   free (btrs_live);
+  free (btrs_live_at_end);
   obstack_free (&migrate_btrl_obstack, NULL);
   fibheap_delete (all_btr_defs);
 }

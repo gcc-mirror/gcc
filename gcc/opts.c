@@ -901,6 +901,10 @@ common_handle_option (size_t scode, const char *arg,
       flag_branch_target_load_optimize2 = value;
       break;
 
+    case OPT_fbtr_bb_exclusive:
+      flag_btr_bb_exclusive = value;
+      break;
+
     case OPT_fcall_used_:
       fix_register (arg, 0, 1);
       break;
