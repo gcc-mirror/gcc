@@ -3349,8 +3349,8 @@
 }")
 
 (define_expand "cmpdi"
-  [(set (cc0) (compare (match_operand:DI 0 "reg_or_0_operand" "")
-		       (match_operand:DI 1 "reg_or_8bit_operand" "")))]
+  [(set (cc0) (compare (match_operand:DI 0 "general_operand" "")
+		       (match_operand:DI 1 "general_operand" "")))]
   ""
   "
 {
@@ -3460,144 +3460,73 @@
   [(set (match_operand:DI 0 "register_operand" "")
 	(match_dup 1))]
   ""
-  "
-{
-  if (alpha_compare.fp_p)
-    FAIL;
-
-  operands[1] = gen_rtx_EQ (DImode, alpha_compare.op0, alpha_compare.op1);
-  alpha_compare.op0 = alpha_compare.op1 = NULL_RTX;
-}")
+  "{ if ((operands[1] = alpha_emit_setcc (EQ)) == NULL_RTX) FAIL; }")
 
 (define_expand "sne"
   [(set (match_operand:DI 0 "register_operand" "")
-	(match_dup 1))
-   (set (match_dup 0) (xor:DI (match_dup 0) (const_int 1)))]
+	(match_dup 1))]
   ""
-  "
-{
-  if (alpha_compare.fp_p)
-    FAIL;
-
-  if (alpha_compare.op1 == const0_rtx)
-    {
-      operands[1] = gen_rtx_NE (DImode, alpha_compare.op0, alpha_compare.op1);
-      alpha_compare.op0 = alpha_compare.op1 = NULL_RTX;
-      emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
-      DONE;
-    }
-
-  operands[1] = gen_rtx_EQ (DImode, alpha_compare.op0, alpha_compare.op1);
-  alpha_compare.op0 = alpha_compare.op1 = NULL_RTX;
-}")
+  "{ if ((operands[1] = alpha_emit_setcc (NE)) == NULL_RTX) FAIL; }")
 
 (define_expand "slt"
   [(set (match_operand:DI 0 "register_operand" "")
 	(match_dup 1))]
   ""
-  "
-{
-  if (alpha_compare.fp_p)
-    FAIL;
-
-  operands[1] = gen_rtx_LT (DImode, alpha_compare.op0, alpha_compare.op1);
-  alpha_compare.op0 = alpha_compare.op1 = NULL_RTX;
-}")
+  "{ if ((operands[1] = alpha_emit_setcc (LT)) == NULL_RTX) FAIL; }")
 
 (define_expand "sle"
   [(set (match_operand:DI 0 "register_operand" "")
 	(match_dup 1))]
   ""
-  "
-{
-  if (alpha_compare.fp_p)
-    FAIL;
-
-  operands[1] = gen_rtx_LE (DImode, alpha_compare.op0, alpha_compare.op1);
-  alpha_compare.op0 = alpha_compare.op1 = NULL_RTX;
-}")
+  "{ if ((operands[1] = alpha_emit_setcc (LE)) == NULL_RTX) FAIL; }")
 
 (define_expand "sgt"
   [(set (match_operand:DI 0 "register_operand" "")
 	(match_dup 1))]
   ""
-  "
-{
-  if (alpha_compare.fp_p)
-    FAIL;
-
-  operands[1] = gen_rtx_LT (DImode, force_reg (DImode, alpha_compare.op1),
-			    alpha_compare.op0);
-  alpha_compare.op0 = alpha_compare.op1 = NULL_RTX;
-}")
+  "{ if ((operands[1] = alpha_emit_setcc (GT)) == NULL_RTX) FAIL; }")
 
 (define_expand "sge"
   [(set (match_operand:DI 0 "register_operand" "")
 	(match_dup 1))]
   ""
-  "
-{
-  if (alpha_compare.fp_p)
-    FAIL;
-
-  operands[1] = gen_rtx_LE (DImode, force_reg (DImode, alpha_compare.op1),
-			    alpha_compare.op0);
-  alpha_compare.op0 = alpha_compare.op1 = NULL_RTX;
-}")
+  "{ if ((operands[1] = alpha_emit_setcc (GE)) == NULL_RTX) FAIL; }")
 
 (define_expand "sltu"
   [(set (match_operand:DI 0 "register_operand" "")
 	(match_dup 1))]
   ""
-  "
-{
-  if (alpha_compare.fp_p)
-    FAIL;
-
-  operands[1] = gen_rtx_LTU (DImode, alpha_compare.op0, alpha_compare.op1);
-  alpha_compare.op0 = alpha_compare.op1 = NULL_RTX;
-}")
+  "{ if ((operands[1] = alpha_emit_setcc (LTU)) == NULL_RTX) FAIL; }")
 
 (define_expand "sleu"
   [(set (match_operand:DI 0 "register_operand" "")
 	(match_dup 1))]
   ""
-  "
-{
-  if (alpha_compare.fp_p)
-    FAIL;
-
-  operands[1] = gen_rtx_LEU (DImode, alpha_compare.op0, alpha_compare.op1);
-  alpha_compare.op0 = alpha_compare.op1 = NULL_RTX;
-}")
+  "{ if ((operands[1] = alpha_emit_setcc (LEU)) == NULL_RTX) FAIL; }")
 
 (define_expand "sgtu"
   [(set (match_operand:DI 0 "register_operand" "")
 	(match_dup 1))]
   ""
-  "
-{
-  if (alpha_compare.fp_p)
-    FAIL;
-
-  operands[1] = gen_rtx_LTU (DImode, force_reg (DImode, alpha_compare.op1),
-			     alpha_compare.op0);
-  alpha_compare.op0 = alpha_compare.op1 = NULL_RTX;
-}")
+  "{ if ((operands[1] = alpha_emit_setcc (GTU)) == NULL_RTX) FAIL; }")
 
 (define_expand "sgeu"
   [(set (match_operand:DI 0 "register_operand" "")
 	(match_dup 1))]
   ""
-  "
-{
-  if (alpha_compare.fp_p)
-    FAIL;
+  "{ if ((operands[1] = alpha_emit_setcc (GEU)) == NULL_RTX) FAIL; }")
 
-  operands[1] = gen_rtx_LEU (DImode, force_reg (DImode, alpha_compare.op1),
-			     alpha_compare.op0);
-  alpha_compare.op0 = alpha_compare.op1 = NULL_RTX;
-}")
+(define_expand "sunordered"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(match_dup 1))]
+  ""
+  "{ if ((operands[1] = alpha_emit_setcc (UNORDERED)) == NULL_RTX) FAIL; }")
+
+(define_expand "sordered"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(match_dup 1))]
+  ""
+  "{ if ((operands[1] = alpha_emit_setcc (ORDERED)) == NULL_RTX) FAIL; }")
 
 ;; These are the main define_expand's used to make conditional moves.
 
