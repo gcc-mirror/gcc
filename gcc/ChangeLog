@@ -1,3 +1,9 @@
+Thu Apr 15 23:17:33 1999  Jerry Quinn <jquinn@nortelnetworks.com>
+
+	* pa.h (HAVE_PRE_INCREMENT, HAVE_POST_INCREMENT,
+	HAVE_PRE_DECREMENT, HAVE_POST_DECREMENT): Fix pa_cpu value from
+	8000 to PROCESSOR_8000.
+
 Thu Apr 15 20:46:57 1999  Donn Terry (donn@interix.com)
 
 	* except.c (start_catch_hadler): Be sure rtime_address is Pmode
