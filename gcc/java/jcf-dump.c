@@ -62,6 +62,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "version.h"
 
 #include <getopt.h>
+#include <math.h>
 
 /* Outout file. */
 FILE *out;
@@ -504,24 +505,86 @@ print_constant (FILE *out, JCF *jcf, int index, int verbosity)
       break;
     case CONSTANT_Float:
       {
-	union
-	{
-	  jfloat f;
-	  int32 i;
-	} pun;
-	
-	pun.f = JPOOL_FLOAT (jcf, index);
-	fprintf (out, "%s%.10g",
-		 verbosity > 0 ? "Float " : "", (double) pun.f);
+	jfloat fnum = JPOOL_FLOAT (jcf, index);
+
+	if (verbosity > 0)
+	  fputs ("Float ", out);
+
+	if (fnum.negative)
+	  putc ('-', out);
+
+	if (JFLOAT_FINITE (fnum))
+	  {
+	    int dummy;
+	    int exponent = fnum.exponent - JFLOAT_EXP_BIAS;
+	    double f;
+	    uint32 mantissa = fnum.mantissa;
+	    if (fnum.exponent == 0)
+	      /* Denormal.  */
+	      exponent++;
+	    else
+	      /* Normal; add the implicit bit.  */
+	      mantissa |= ((uint32)1 << 23);
+	    
+	    f = frexp (mantissa, &dummy);
+	    f = ldexp (f, exponent + 1);
+	    fprintf (out, "%.10g", f);
+	  }
+	else
+	  {
+	    if (fnum.mantissa == 0)
+	      fputs ("Inf", out);
+	    else if (fnum.mantissa & JFLOAT_QNAN_MASK)
+	      fprintf (out, "QNaN(%u)", (fnum.mantissa & ~JFLOAT_QNAN_MASK));
+	    else
+	      fprintf (out, "SNaN(%u)", (fnum.mantissa & ~JFLOAT_QNAN_MASK));
+	  }
+
 	if (verbosity > 1)
-	  fprintf (out, ", bits = 0x%08lx", (long) pun.i);
+	  fprintf (out, ", bits = 0x%08lx", JPOOL_UINT (jcf, index));
 	
 	break;
       }
     case CONSTANT_Double:
       {
 	jdouble dnum = JPOOL_DOUBLE (jcf, index);
-	fprintf (out, "%s%.20g", verbosity > 0 ? "Double " : "", dnum);
+
+	if (verbosity > 0)
+	  fputs ("Double ", out);
+
+	if (dnum.negative)
+	  putc ('-', out);
+
+	if (JDOUBLE_FINITE (dnum))
+	  {
+	    int dummy;
+	    int exponent = dnum.exponent - JDOUBLE_EXP_BIAS;
+	    double d;
+	    uint64 mantissa = ((((uint64) dnum.mantissa0) << 32)
+			       + dnum.mantissa1);
+	    if (dnum.exponent == 0)
+	      /* Denormal.  */
+	      exponent++;
+	    else
+	      /* Normal; add the implicit bit.  */
+	      mantissa |= ((uint64)1 << 52);
+
+	    d = frexp (mantissa, &dummy);
+	    d = ldexp (d, exponent + 1);
+	    fprintf (out, "%.20g", d);
+	  }
+	else
+	  {
+	    uint64 mantissa = dnum.mantissa0 & ~JDOUBLE_QNAN_MASK;
+	    mantissa = (mantissa << 32) + dnum.mantissa1;
+
+	    if (dnum.mantissa0 == 0 && dnum.mantissa1 == 0)
+	      fputs ("Inf", out);
+	    else if (dnum.mantissa0 & JDOUBLE_QNAN_MASK)
+	      fprintf (out, "QNaN(%llu)", (unsigned long long)mantissa);
+	    else
+	      fprintf (out, "SNaN(%llu)", (unsigned long long)mantissa);
+	  }
 	if (verbosity > 1)
 	  {
 	    int32 hi, lo;

@@ -1,3 +1,22 @@
+2003-03-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* javaop.h (jfloat, jdouble): Make them structures mirroring
+	the bit fields of IEEE float and double respectively.
+	(JFLOAT_FINITE, JFLOAT_QNAN_MASK, JFLOAT_EXP_BIAS,
+	JDOUBLE_FINITE, JDOUBLE_QNAN_MASK, JDOUBLE_EXP_BIAS): New.
+	(union Word, union DWord): Delete.
+	(WORD_TO_FLOAT, WORDS_TO_DOUBLE): Update to match.
+
+	* gjavah.c (java_float_finite, java_double_finite, F_NAN_MASK,
+	D_NAN_MASK): Delete.
+	(jni_print_float, jni_print_double): New.  Generate
+	hexadecimal floating constants.
+	(print_field_info): Use jni_print_float/double.
+
+	* jcf-dump.c: Include math.h.  Use ldexp/frexp to assemble
+	finite floating point numbers for output; special case
+	non-finite floats.
+
 2003-03-19  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* lang.c (java_dump_tree): Change return type from 'int' to 'bool'.
@@ -16,10 +35,10 @@
 
 2003-03-04  Andrew Haley  <aph@redhat.com>
 
-        * gjavah.c (is_first_data_member): New global variable.
-        (print_c_decl): If it's the first data member, align it as the
-        superclass.
-        (process_file): Set is_first_data_member.
+	* gjavah.c (is_first_data_member): New global variable.
+	(print_c_decl): If it's the first data member, align it as the
+	superclass.
+	(process_file): Set is_first_data_member.
 
 2003-03-11  Tom Tromey  <tromey@redhat.com>
 
@@ -57,7 +76,7 @@
 	"strcmp" to compare file name components.
 	Use IS_DIR_SEPARATOR instead of comparing directly against
 	DIR_SEPARATOR.
-	(jcf_path_extdirs_arg): Use IS_DIR_SEPARATOR instead of 
+	(jcf_path_extdirs_arg): Use IS_DIR_SEPARATOR instead of
 	comparing directly against DIR_SEPARATOR.
 
 2003-03-04  Tom Tromey  <tromey@redhat.com>
@@ -91,7 +110,7 @@
 
 	* java/decl.c (java_init_decl_processing): Get soft_fmod_node from
 	built_in_decls[BUILT_IN_FMOD] rather than define it ourselves.
- 
+
 2003-02-23  Tom Tromey  <tromey@redhat.com>
 
 	* lang-options.h: Added -Wdeprecated.
@@ -133,12 +152,12 @@
 
 2003-02-12  Ranjit Mathew  <rmathew@hotmail.com>
 
-	* decl.c (java_init_decl_processing): Change 
+	* decl.c (java_init_decl_processing): Change
 	soft_lookupjnimethod_node to reflect the change in
 	signature of _Jv_LookupJNIMethod in libjava/jni.cc
 	* expr.c (build_jni_stub): Calculate and pass the size
 	on the stack of the arguments to a JNI function. Use
-	new target macro MODIFY_JNI_METHOD_CALL to allow a 
+	new target macro MODIFY_JNI_METHOD_CALL to allow a
 	target to modify the call to a JNI method.
 
 2003-02-08  Roger Sayle  <roger@eyesopen.com>
@@ -324,7 +343,7 @@
 2003-01-14  Andrew Haley  <aph@redhat.com>
 
 	* decl.c (java_init_decl_processing): _Jv_NewMultiArray is a
-        varargs function -- correct.
+	varargs function -- correct.
 
 2003-01-14  Andrew Haley  <aph@redhat.com>
 
@@ -571,7 +590,7 @@
 	* gcj.texi: Change version number to 3.4.
 
 2002-12-05  Ranjit Mathew <rmathew@hotmail.com>
-        Andrew Haley <aph@redhat.com>
+	Andrew Haley <aph@redhat.com>
 
 	* parse.y (source_end_java_method): Remove custom encoding of line
 	numbers for a function decl before passing it to the back end.
