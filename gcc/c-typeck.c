@@ -6806,7 +6806,7 @@ c_end_compound_stmt (tree stmt, bool do_scope)
    meant to apply to normal control flow transfer.  */
 
 void
-push_cleanup (tree decl ATTRIBUTE_UNUSED, tree cleanup, bool eh_only)
+push_cleanup (tree ARG_UNUSED (decl), tree cleanup, bool eh_only)
 {
   enum tree_code code;
   tree stmt, list;

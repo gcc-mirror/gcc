@@ -28,37 +28,37 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "c-common.h"
 
 tree
-lookup_interface (tree arg ATTRIBUTE_UNUSED)
+lookup_interface (tree ARG_UNUSED (arg))
 {
   return 0;
 }
 
 tree
-is_class_name (tree arg ATTRIBUTE_UNUSED)
+is_class_name (tree ARG_UNUSED (arg))
 {
   return 0;
 }
 
 tree
-objc_is_object_ptr (tree arg ATTRIBUTE_UNUSED)
+objc_is_object_ptr (tree ARG_UNUSED (arg))
 {
   return 0;
 }
 
 tree
-lookup_objc_ivar (tree arg ATTRIBUTE_UNUSED)
+lookup_objc_ivar (tree ARG_UNUSED (arg))
 {
   return 0;
 }
 
 void
-objc_check_decl (tree decl ATTRIBUTE_UNUSED)
+objc_check_decl (tree ARG_UNUSED (decl))
 {
 }
    
 int
-objc_comptypes (tree lhs ATTRIBUTE_UNUSED, tree rhs ATTRIBUTE_UNUSED,
-                int reflexive ATTRIBUTE_UNUSED)
+objc_comptypes (tree ARG_UNUSED (lhs), tree ARG_UNUSED (rhs),
+                int ARG_UNUSED (reflexive))
 { 
   return -1;
 }
@@ -75,7 +75,7 @@ objc_clear_super_receiver (void)
 }
 
 int
-objc_is_public (tree expr ATTRIBUTE_UNUSED, tree identifier ATTRIBUTE_UNUSED)
+objc_is_public (tree ARG_UNUSED (expr), tree ARG_UNUSED (identifier))
 {
   return 1;
 }

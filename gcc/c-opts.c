@@ -194,7 +194,7 @@ defer_opt (enum opt_code code, const char *arg)
 
 /* Common initialization before parsing options.  */
 unsigned int
-c_common_init_options (unsigned int argc, const char **argv ATTRIBUTE_UNUSED)
+c_common_init_options (unsigned int argc, const char ** ARG_UNUSED (argv))
 {
   static const unsigned int lang_flags[] = {CL_C, CL_ObjC, CL_CXX, CL_ObjCXX};
   unsigned int result;
@@ -1354,7 +1354,7 @@ push_command_line_include (void)
 
 /* File change callback.  Has to handle -include files.  */
 static void
-cb_file_change (cpp_reader *pfile ATTRIBUTE_UNUSED,
+cb_file_change (cpp_reader * ARG_UNUSED (pfile),
 		const struct line_map *new_map)
 {
   if (flag_preprocess_only)
@@ -1367,7 +1367,7 @@ cb_file_change (cpp_reader *pfile ATTRIBUTE_UNUSED,
 }
 
 void
-cb_dir_change (cpp_reader *pfile ATTRIBUTE_UNUSED, const char *dir)
+cb_dir_change (cpp_reader * ARG_UNUSED (pfile), const char *dir)
 {
   if (! set_src_pwd (dir))
     warning ("too late for # directive to set debug directory");

@@ -391,7 +391,7 @@ write_rtx_next (void)
    are based in a complex way on the type of RTL.  */
 
 static type_p
-adjust_field_rtx_def (type_p t, options_p opt ATTRIBUTE_UNUSED)
+adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 {
   pair_p flds = NULL;
   options_p nodot;
@@ -2233,7 +2233,10 @@ write_local_func_for_structure (type_p orig_s, type_p s, type_p *param)
   oprintf (d.of, "void\n");
   oprintf (d.of, "gt_pch_p_");
   output_mangled_typename (d.of, orig_s);
-  oprintf (d.of, " (void *this_obj ATTRIBUTE_UNUSED,\n\tvoid *x_p,\n\tgt_pointer_operator op ATTRIBUTE_UNUSED,\n\tvoid *cookie ATTRIBUTE_UNUSED)\n");
+  oprintf (d.of, " (ATTRIBUTE_UNUSED void *this_obj,\n"
+	   "\tvoid *x_p,\n"
+	   "\tATTRIBUTE_UNUSED gt_pointer_operator op,\n"
+	   "\tATTRIBUTE_UNUSED void *cookie)\n");
   oprintf (d.of, "{\n");
   oprintf (d.of, "  %s %s * const x ATTRIBUTE_UNUSED = (%s %s *)x_p;\n",
 	   s->kind == TYPE_UNION ? "union" : "struct", s->u.s.tag,
@@ -2648,11 +2651,12 @@ write_array (outf_p f, pair_p v, const struct write_types_data *wtd)
       oprintf (f, "static void gt_%sa_%s\n", wtd->param_prefix, v->name);
       oprintf (f,
        "    (void *, void *, gt_pointer_operator, void *);\n");
-      oprintf (f, "static void gt_%sa_%s (void *this_obj ATTRIBUTE_UNUSED,\n",
+      oprintf (f, "static void gt_%sa_%s (ATTRIBUTE_UNUSED void *this_obj,\n",
 	       wtd->param_prefix, v->name);
-      oprintf (d.of, "      void *x_p ATTRIBUTE_UNUSED,\n");
-      oprintf (d.of, "      gt_pointer_operator op ATTRIBUTE_UNUSED,\n");
-      oprintf (d.of, "      void *cookie ATTRIBUTE_UNUSED)\n");
+      oprintf (d.of,
+	       "      ATTRIBUTE_UNUSED void *x_p,\n"
+	       "      ATTRIBUTE_UNUSED gt_pointer_operator op,\n"
+	       "      ATTRIBUTE_UNUSED void * cookie)\n");
       oprintf (d.of, "{\n");
       d.prev_val[0] = d.prev_val[1] = d.prev_val[2] = d.val = v->name;
       d.process_field = write_types_local_process_field;
@@ -2663,7 +2667,7 @@ write_array (outf_p f, pair_p v, const struct write_types_data *wtd)
   d.opt = v->opt;
   oprintf (f, "static void gt_%sa_%s (void *);\n",
 	   wtd->prefix, v->name);
-  oprintf (f, "static void\ngt_%sa_%s (void *x_p ATTRIBUTE_UNUSED)\n",
+  oprintf (f, "static void\ngt_%sa_%s (ATTRIBUTE_UNUSED void *x_p)\n",
 	   wtd->prefix, v->name);
   oprintf (f, "{\n");
   d.prev_val[0] = d.prev_val[1] = d.prev_val[2] = d.val = v->name;
@@ -2924,7 +2928,7 @@ write_roots (pair_p variables)
 
 extern int main (int argc, char **argv);
 int
-main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED)
+main(int ARG_UNUSED (argc), char ** ARG_UNUSED (argv))
 {
   unsigned i;
   static struct fileloc pos = { __FILE__, __LINE__ };

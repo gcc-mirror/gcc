@@ -138,7 +138,7 @@ extern rtx operands[];\n");
     MAYBE_EVAL (! optimize_size && ! TARGET_READ_MODIFY_WRITE) },  */
 
 static int
-write_one_condition (void **slot, void *dummy ATTRIBUTE_UNUSED)
+write_one_condition (void **slot, void * ARG_UNUSED (dummy))
 {
   const struct c_test *test = * (const struct c_test **) slot;
   const char *p;

@@ -155,7 +155,7 @@ pop_alignment (tree id)
    #pragma pack (pop)
    #pragma pack (pop, ID) */
 static void
-handle_pragma_pack (cpp_reader *dummy ATTRIBUTE_UNUSED)
+handle_pragma_pack (cpp_reader * ARG_UNUSED (dummy))
 {
   tree x, id = 0;
   int align = -1;
@@ -315,7 +315,7 @@ maybe_apply_pragma_weak (tree decl)
 
 /* #pragma weak name [= value] */
 static void
-handle_pragma_weak (cpp_reader *dummy ATTRIBUTE_UNUSED)
+handle_pragma_weak (cpp_reader * ARG_UNUSED (dummy))
 {
   tree name, value, x, decl;
   enum cpp_ttype t;
@@ -346,7 +346,7 @@ handle_pragma_weak (cpp_reader *dummy ATTRIBUTE_UNUSED)
 }
 #else
 void
-maybe_apply_pragma_weak (tree decl ATTRIBUTE_UNUSED)
+maybe_apply_pragma_weak (tree ARG_UNUSED (decl))
 {
 }
 #endif /* HANDLE_PRAGMA_WEAK */
@@ -389,7 +389,7 @@ static void handle_pragma_redefine_extname (cpp_reader *);
 
 /* #pragma redefine_extname oldname newname */
 static void
-handle_pragma_redefine_extname (cpp_reader *dummy ATTRIBUTE_UNUSED)
+handle_pragma_redefine_extname (cpp_reader * ARG_UNUSED (dummy))
 {
   tree oldname, newname, decl, x;
   enum cpp_ttype t;
@@ -458,7 +458,7 @@ static GTY(()) tree pragma_extern_prefix;
 
 /* #pragma extern_prefix "prefix" */
 static void
-handle_pragma_extern_prefix (cpp_reader *dummy ATTRIBUTE_UNUSED)
+handle_pragma_extern_prefix (cpp_reader * ARG_UNUSED (dummy))
 {
   tree prefix, x;
   enum cpp_ttype t;

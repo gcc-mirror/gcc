@@ -1,3 +1,25 @@
+2004-07-25  Bernardo Innocenti  <bernie@develer.com>
+
+	* c-common.c: Convert ATTRIBUTE_UNUSED to ARG_UNUSED in parameter
+	lists.
+	* c-decl.c: Likewise.
+	* c-format.c: Likewise.
+	* c-lex.c: Likewise.
+	* c-opts.c: Likewise.
+	* c-pragma.c: Likewise.
+	* c-typeck.c: Likewise.
+	* gencheck.c: Likewise.
+	* genconditions.c: Likewise.
+	* genconfig.c: Likewise.
+	* genflags.c: Likewise.
+	* gengtype.c: Likewise.
+	* gensupport.c: Likewise.
+	* ggc-none.c: Likewise.
+	* langhooks.c: Likewise.
+	* statistics.h: Likewise.
+	* stub-objc.c: Likewise.
+	* java/decl.c: Likewise.
+
 2004-07-24  Roman Zippel  <zippel@linux-m68k.org>
 
 	* config/m68k/m68k.c (output_scc_di): Fix coding style.
