@@ -22,7 +22,7 @@
 # Its purpose is to build the any-platforms fixinc.sh script.
 
 CFLAGS = -g
-FIXINC_DEFS = -DIN_GCC $(CFLAGS) $(CPPFLAGS) @fixinc_defs@ $(INCLUDES)
+FIXINC_DEFS = -DIN_GCC $(CFLAGS) $(CPPFLAGS) $(INCLUDES)
 
 CC = @CC@
 SHELL = /bin/sh
