@@ -1,3 +1,12 @@
+2005-01-27  Jeff Law  <law@redhat.com>
+
+	* tree-into-ssa.c (ssa_rewrite_initialize_block): Do not register
+	definitions of SSA_NAMEs which are not being rewritten.
+	(rewrite_ssa_into_ssa): Only initialize the current definition
+	of an SSA_NAME if that SSA_NAME has been marked for rewriting.
+	If checking is enabled, assert that SSA_NAME_AUX is clear for all
+	SSA_NAMEs before returning.
+
 2005-01-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-common.def, c-dump.c, c-gimplify.c, c-objc-common.c,
