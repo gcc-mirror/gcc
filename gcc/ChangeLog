@@ -1,5 +1,34 @@
 2002-03-22  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/abi64.h (SETUP_INCOMING_VARARGS): Undefine.
+	* config/mips/mips-protos.h (mips_setup_incoming_varargs): Declare.
+	(function_arg): Constify CUMULATIVE_ARGS.
+	(function_arg_partial_nregs, function_arg_pass_by_reference): Likewise.
+	* config/mips/mips.h (UNITS_PER_FPVALUE): Zero when TARGET_SOFT_FLOAT.
+	(UNITS_PER_DOUBLE): New macro.
+	(SETUP_INCOMING_VARARGS): Define.  Use mips_setup_incoming_varargs.
+	(CUMULATIVE_ARGS): Reformat.  Remove num_adjusts workaround and
+	last_arg_fp field.  Replace arg_words and fp_arg_words with gp_regs,
+	fp_regs and stack_words.
+	(EABI_FLOAT_VARARGS_P): New macro.
+	* config/mips/mips.c (struct mips_arg_info): New.
+	(mips_arg_info): New function.
+	(function_arg_advance): Use it.  Add adjustment instructions here
+	rather than in function_arg.
+	(function_arg): Constify CUMULATIVE_ARGS.  Use mips_arg_info.  Check
+	for VOIDmode at the beginning of the function.
+	(function_partial_nregs): Constify CUMULATIVE_ARGS.  Use mips_arg_info.
+	(function_arg_pass_by_reference): Likewise.
+	(mips_setup_incoming_varags): New, largely based on old abi64.h code.
+	(mips_build_va_list): Test EABI_FLOAT_VARARGS_P.
+	(mips_va_start): Likewise.  Use the new stack_words field of
+	CUMULATIVE_ARGS to set up overflow area.  Reformat.
+	(mips_va_arg): Test EABI_FLOAT_VARARGS_P.  Unify EABI handling of
+	doubles and other types, aligning the overflow pointer for non-doubles
+	too.  Remove some code duplication.  Replace hard-coded constants.
+
+2002-03-22  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.h (FUNCTION_ARG_REGNO_P): Simplify.
 	(CLASS_UNITS): Undefine.
 	(CLASS_MAX_NREGS): Use FP_INC.

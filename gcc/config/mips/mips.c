@@ -86,6 +86,7 @@ enum internal_test {
 
 
 struct constant;
+struct mips_arg_info;
 static enum internal_test map_test_to_internal_test	PARAMS ((enum rtx_code));
 static int mips16_simple_memory_operand		PARAMS ((rtx, rtx,
 							enum machine_mode));
@@ -95,6 +96,10 @@ static void block_move_loop			PARAMS ((rtx, rtx,
 							 int,
 							 rtx, rtx));
 static void block_move_call			PARAMS ((rtx, rtx, rtx));
+static void mips_arg_info		PARAMS ((const CUMULATIVE_ARGS *,
+						 enum machine_mode,
+						 tree, int,
+						 struct mips_arg_info *));
 static rtx mips_add_large_offset_to_sp		PARAMS ((HOST_WIDE_INT,
 							 FILE *));
 static void mips_annotate_frame_insn		PARAMS ((rtx, rtx));
@@ -150,6 +155,34 @@ struct machine_function {
   rtx mips16_gp_pseudo_rtx;
 };
 
+/* Information about a single argument.  */
+struct mips_arg_info
+{
+  /* True if the argument is a record or union type.  */
+  bool struct_p;
+
+  /* True if the argument is passed in a floating-point register, or
+     would have been if we hadn't run out of registers.  */
+  bool fpr_p;
+
+  /* The argument's size, in bytes.  */
+  unsigned int num_bytes;
+
+  /* The number of words passed in registers, rounded up.  */
+  unsigned int reg_words;
+
+  /* The offset of the first register from GP_ARG_FIRST or FP_ARG_FIRST,
+     or MAX_ARGS_IN_REGISTERS if the argument is passed entirely
+     on the stack.  */
+  unsigned int reg_offset;
+
+  /* The number of words that must be passed on the stack, rounded up.  */
+  unsigned int stack_words;
+
+  /* The offset from the start of the stack overflow area of the argument's
+     first stack word.  Only meaningful when STACK_WORDS is non-zero.  */
+  unsigned int stack_offset;
+};
 
 /* Global variables for machine-dependent things.  */
 
@@ -3918,6 +3951,103 @@ init_cumulative_args (cum, fntype, libname)
     }
 }
 
+static void
+mips_arg_info (cum, mode, type, named, info)
+     const CUMULATIVE_ARGS *cum;
+     enum machine_mode mode;
+     tree type;
+     int named;
+     struct mips_arg_info *info;
+{
+  bool even_reg_p;
+  unsigned int num_words, max_regs;
+
+  info->struct_p = (type != 0
+		    && (TREE_CODE (type) == RECORD_TYPE
+			|| TREE_CODE (type) == UNION_TYPE
+			|| TREE_CODE (type) == QUAL_UNION_TYPE));
+
+  /* Decide whether this argument should go in a floating-point register,
+     assuming one is free.  Later code checks for availablity.  */
+
+  info->fpr_p = false;
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT
+      && GET_MODE_SIZE (mode) <= UNITS_PER_FPVALUE)
+    {
+      switch (mips_abi)
+	{
+	case ABI_32:
+	case ABI_O64:
+	  info->fpr_p = (!cum->gp_reg_found && cum->arg_number < 2);
+	  break;
+
+	case ABI_EABI:
+	  info->fpr_p = true;
+	  break;
+
+	case ABI_MEABI:
+	  /* The MIPS eabi says only structures containing doubles get
+	     passed in a fp register, so force a structure containing
+	     a float to be passed in the integer registers.  */
+	  info->fpr_p = (named && !(mode == SFmode && info->struct_p));
+	  break;
+
+	default:
+	  info->fpr_p = named;
+	  break;
+	}
+    }
+
+  /* Now decide whether the argument must go in an even-numbered register.  */
+
+  even_reg_p = false;
+  if (info->fpr_p)
+    {
+      /* Under the O64 ABI, the second float argument goes in $f13 if it
+	 is a double, but $f14 if it is a single.  Otherwise, on a
+	 32-bit double-float machine, each FP argument must start in a
+	 new register pair.  */
+      even_reg_p = ((mips_abi == ABI_O64 && mode == SFmode) || FP_INC > 1);
+    }
+  else if (!TARGET_64BIT)
+    {
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  || GET_MODE_CLASS (mode) == MODE_FLOAT)
+	even_reg_p = (GET_MODE_SIZE (mode) > UNITS_PER_WORD);
+
+      else if (type != NULL_TREE && TYPE_ALIGN (type) > BITS_PER_WORD)
+	even_reg_p = true;
+    }
+
+  /* Set REG_OFFSET to the register count we're interested in.
+     The EABI allocates the floating-point registers separately,
+     but the other ABIs allocate them like integer registers.  */
+  info->reg_offset = (mips_abi == ABI_EABI && info->fpr_p
+		      ? cum->fp_regs
+		      : cum->gp_regs);
+
+  if (even_reg_p)
+    info->reg_offset += info->reg_offset & 1;
+
+  /* The alignment applied to registers is also applied to stack arguments.  */
+  info->stack_offset = cum->stack_words;
+  if (even_reg_p)
+    info->stack_offset += info->stack_offset & 1;
+
+  if (mode == BLKmode)
+    info->num_bytes = int_size_in_bytes (type);
+  else
+    info->num_bytes = GET_MODE_SIZE (mode);
+
+  num_words = (info->num_bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  max_regs = MAX_ARGS_IN_REGISTERS - info->reg_offset;
+
+  /* Partition the argument between registers and stack.  */
+  info->reg_words = MIN (num_words, max_regs);
+  info->stack_words = num_words - info->reg_words;
+}
+
+
 /* Advance the argument to the next argument position.  */
 
 void
@@ -3927,69 +4057,59 @@ function_arg_advance (cum, mode, type, named)
      tree type;			/* type of the argument or 0 if lib support */
      int named;			/* whether or not the argument was named */
 {
-  if (TARGET_DEBUG_E_MODE)
+  struct mips_arg_info info;
+
+  mips_arg_info (cum, mode, type, named, &info);
+
+  /* The following is a hack in order to pass 1 byte structures
+     the same way that the MIPS compiler does (namely by passing
+     the structure in the high byte or half word of the register).
+     This also makes varargs work.  If we have such a structure,
+     we save the adjustment RTL, and the call define expands will
+     emit them.  For the VOIDmode argument (argument after the
+     last real argument), pass back a parallel vector holding each
+     of the adjustments.  */
+
+  /* ??? This scheme requires everything smaller than the word size to
+     shifted to the left, but when TARGET_64BIT and ! TARGET_INT64,
+     that would mean every int needs to be shifted left, which is very
+     inefficient.  Let's not carry this compatibility to the 64 bit
+     calling convention for now.  */
+
+  if (info.struct_p
+      && info.reg_words == 1
+      && info.num_bytes < UNITS_PER_WORD
+      && !TARGET_64BIT
+      && mips_abi != ABI_EABI
+      && mips_abi != ABI_MEABI)
     {
-      fprintf (stderr,
-	       "function_adv({gp reg found = %d, arg # = %2d, words = %2d}, %4s, ",
-	       cum->gp_reg_found, cum->arg_number, cum->arg_words,
-	       GET_MODE_NAME (mode));
-      fprintf (stderr, HOST_PTR_PRINTF, (const PTR) type);
-      fprintf (stderr, ", %d )\n\n", named);
+      rtx amount = GEN_INT (BITS_PER_WORD - info.num_bytes * BITS_PER_UNIT);
+      rtx reg = gen_rtx_REG (word_mode, GP_ARG_FIRST + info.reg_offset);
+
+      if (TARGET_64BIT)
+	cum->adjust[cum->num_adjusts++] = gen_ashldi3 (reg, reg, amount);
+      else
+	cum->adjust[cum->num_adjusts++] = gen_ashlsi3 (reg, reg, amount);
     }
+
+  if (!info.fpr_p)
+    cum->gp_reg_found = true;
+
+  /* See the comment above the cumulative args structure in mips.h
+     for an explanation of what this code does.  It assumes the O32
+     ABI, which passes at most 2 arguments in float registers.  */
+  if (cum->arg_number < 2 && info.fpr_p)
+    cum->fp_code += (mode == SFmode ? 1 : 2) << ((cum->arg_number - 1) * 2);
+
+  if (mips_abi != ABI_EABI || !info.fpr_p)
+    cum->gp_regs = info.reg_offset + info.reg_words;
+  else if (info.reg_words > 0)
+    cum->fp_regs += FP_INC;
+
+  if (info.stack_words > 0)
+    cum->stack_words = info.stack_offset + info.stack_words;
 
   cum->arg_number++;
-  switch (mode)
-    {
-    case VOIDmode:
-      break;
-
-    default:
-      if (GET_MODE_CLASS (mode) != MODE_COMPLEX_INT
-	  && GET_MODE_CLASS (mode) != MODE_COMPLEX_FLOAT)
-	abort ();
-
-      cum->gp_reg_found = 1;
-      cum->arg_words += ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1)
-			 / UNITS_PER_WORD);
-      break;
-
-    case BLKmode:
-      cum->gp_reg_found = 1;
-      cum->arg_words += ((int_size_in_bytes (type) + UNITS_PER_WORD - 1)
-			 / UNITS_PER_WORD);
-      break;
-
-    case SFmode:
-      if (mips_abi == ABI_EABI && ! TARGET_SOFT_FLOAT)
-	cum->fp_arg_words++;
-      else
-	cum->arg_words++;
-      if (! cum->gp_reg_found && cum->arg_number <= 2)
-	cum->fp_code += 1 << ((cum->arg_number - 1) * 2);
-      break;
-
-    case DFmode:
-      if (mips_abi == ABI_EABI && ! TARGET_SOFT_FLOAT && ! TARGET_SINGLE_FLOAT)
-	cum->fp_arg_words += (TARGET_64BIT ? 1 : 2);
-      else
-	cum->arg_words += (TARGET_64BIT ? 1 : 2);
-      if (! cum->gp_reg_found && ! TARGET_SINGLE_FLOAT && cum->arg_number <= 2)
-	cum->fp_code += 2 << ((cum->arg_number - 1) * 2);
-      break;
-
-    case DImode:
-    case TImode:
-      cum->gp_reg_found = 1;
-      cum->arg_words += (TARGET_64BIT ? 1 : 2);
-      break;
-
-    case QImode:
-    case HImode:
-    case SImode:
-      cum->gp_reg_found = 1;
-      cum->arg_words++;
-      break;
-    }
 }
 
 /* Return an RTL expression containing the register for the given mode,
@@ -3997,329 +4117,222 @@ function_arg_advance (cum, mode, type, named)
 
 struct rtx_def *
 function_arg (cum, mode, type, named)
-     CUMULATIVE_ARGS *cum;	/* current arg information */
+     const CUMULATIVE_ARGS *cum; /* current arg information */
      enum machine_mode mode;	/* current arg mode */
      tree type;			/* type of the argument or 0 if lib support */
      int named;			/* != 0 for normal args, == 0 for ... args */
 {
-  rtx ret;
-  int regbase = -1;
-  int bias = 0;
-  unsigned int *arg_words = &cum->arg_words;
-  int struct_p = (type != 0
-		  && (TREE_CODE (type) == RECORD_TYPE
-		      || TREE_CODE (type) == UNION_TYPE
-		      || TREE_CODE (type) == QUAL_UNION_TYPE));
-
-  if (TARGET_DEBUG_E_MODE)
-    {
-      fprintf (stderr,
-	       "function_arg( {gp reg found = %d, arg # = %2d, words = %2d}, %4s, ",
-	       cum->gp_reg_found, cum->arg_number, cum->arg_words,
-	       GET_MODE_NAME (mode));
-      fprintf (stderr, HOST_PTR_PRINTF, (const PTR) type);
-      fprintf (stderr, ", %d ) = ", named);
-    }
-
-
-  cum->last_arg_fp = 0;
-  switch (mode)
-    {
-    case SFmode:
-      if (mips_abi == ABI_32 || mips_abi == ABI_O64)
-	{
-	  if (cum->gp_reg_found || cum->arg_number >= 2 || TARGET_SOFT_FLOAT)
-	    regbase = GP_ARG_FIRST;
-	  else
-	    {
-	      regbase = FP_ARG_FIRST;
-
-	      /* If the first arg was a float in a floating point register,
-		 then set bias to align this float arg properly.  */
-	      if (cum->arg_words == 1)
-		bias = 1;
-	    }
-	}
-      else if (mips_abi == ABI_EABI && ! TARGET_SOFT_FLOAT)
-	{
-	  if (! TARGET_64BIT)
-	    cum->fp_arg_words += cum->fp_arg_words & 1;
-	  cum->last_arg_fp = 1;
-	  arg_words = &cum->fp_arg_words;
-	  regbase = FP_ARG_FIRST;
-	}
-      /* The MIPS eabi says only structures containing doubles get passed in a
-         fp register, so force a structure containing a float to be passed in
-         the integer registers.  */
-      else if (mips_abi == ABI_MEABI && struct_p)
-	regbase = GP_ARG_FIRST;
-      else
-	regbase = (TARGET_SOFT_FLOAT || ! named ? GP_ARG_FIRST : FP_ARG_FIRST);
-      break;
-
-    case DFmode:
-      if (! TARGET_64BIT)
-	{
-	  if (mips_abi == ABI_EABI
-	      && ! TARGET_SOFT_FLOAT && ! TARGET_SINGLE_FLOAT)
-	    cum->fp_arg_words += cum->fp_arg_words & 1;
-	  else
-	    cum->arg_words += cum->arg_words & 1;
-	}
-
-      if (mips_abi == ABI_32 || mips_abi == ABI_O64)
-	regbase = ((cum->gp_reg_found
-		    || TARGET_SOFT_FLOAT || TARGET_SINGLE_FLOAT
-		    || cum->arg_number >= 2)
-		   ? GP_ARG_FIRST : FP_ARG_FIRST);
-      else if (mips_abi == ABI_EABI
-	       && ! TARGET_SOFT_FLOAT && ! TARGET_SINGLE_FLOAT)
-	{
-	  cum->last_arg_fp = 1;
-	  arg_words = &cum->fp_arg_words;
-	  regbase = FP_ARG_FIRST;
-	}
-      else
-	regbase = (TARGET_SOFT_FLOAT || TARGET_SINGLE_FLOAT || ! named
-		   ? GP_ARG_FIRST : FP_ARG_FIRST);
-      break;
-
-    default:
-      if (GET_MODE_CLASS (mode) != MODE_COMPLEX_INT
-	  && GET_MODE_CLASS (mode) != MODE_COMPLEX_FLOAT)
-	abort ();
-
-      /* Drops through.  */
-    case BLKmode:
-      if (type != NULL_TREE && TYPE_ALIGN (type) > (unsigned) BITS_PER_WORD
-	  && ! TARGET_64BIT && mips_abi != ABI_EABI)
-	cum->arg_words += (cum->arg_words & 1);
-      regbase = GP_ARG_FIRST;
-      break;
-
-    case VOIDmode:
-    case QImode:
-    case HImode:
-    case SImode:
-      regbase = GP_ARG_FIRST;
-      break;
-
-    case DImode:
-    case TImode:
-      if (! TARGET_64BIT)
-	cum->arg_words += (cum->arg_words & 1);
-      regbase = GP_ARG_FIRST;
-    }
-
-  if (*arg_words >= (unsigned) MAX_ARGS_IN_REGISTERS)
-    {
-      if (TARGET_DEBUG_E_MODE)
-	fprintf (stderr, "<stack>%s\n", struct_p ? ", [struct]" : "");
-
-      ret = 0;
-    }
-  else
-    {
-      if (regbase == -1)
-	abort ();
-
-      if (! type || TREE_CODE (type) != RECORD_TYPE
-	  || mips_abi == ABI_32  || mips_abi == ABI_EABI
-	  || mips_abi == ABI_O64 || mips_abi == ABI_MEABI
-	  || ! named
-	  || ! TYPE_SIZE_UNIT (type)
-	  || ! host_integerp (TYPE_SIZE_UNIT (type), 1))
-	{
-
-	  unsigned int arg_reg = (regbase + *arg_words + bias);
-	  ret = gen_rtx_REG (mode, arg_reg);
-	  if (mips_abi == ABI_MEABI
-	      && regbase == FP_ARG_FIRST
-	      && ! cum->prototype)
-	    {
-              /* To make K&R varargs work we need to pass floating
-                 point arguments in both integer and FP registers.  */
-              ret = gen_rtx_PARALLEL (mode,
-				      gen_rtvec (2,
-						 gen_rtx_EXPR_LIST (VOIDmode,
-								    gen_rtx_REG (mode,
-										 arg_reg + GP_ARG_FIRST - FP_ARG_FIRST),
-								    const0_rtx),                                                gen_rtx_EXPR_LIST (VOIDmode, ret, const0_rtx)));
-            }
-	}
-      else
-	{
-	  /* The Irix 6 n32/n64 ABIs say that if any 64 bit chunk of the
-	     structure contains a double in its entirety, then that 64 bit
-	     chunk is passed in a floating point register.  */
-	  tree field;
-
-	  /* First check to see if there is any such field.  */
-	  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
-	    if (TREE_CODE (field) == FIELD_DECL
-		&& TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
-		&& TYPE_PRECISION (TREE_TYPE (field)) == BITS_PER_WORD
-		&& host_integerp (bit_position (field), 0)
-		&& int_bit_position (field) % BITS_PER_WORD == 0)
-	      break;
-
-	  /* If the whole struct fits a DFmode register,
-	     we don't need the PARALLEL.  */
-	  if (! field || mode == DFmode)
-	    ret = gen_rtx_REG (mode, regbase + *arg_words + bias);
-	  else
-	    {
-	      /* Now handle the special case by returning a PARALLEL
-		 indicating where each 64 bit chunk goes.  */
-	      unsigned int chunks;
-	      HOST_WIDE_INT bitpos;
-	      unsigned int regno;
-	      unsigned int i;
-
-	      /* ??? If this is a packed structure, then the last hunk won't
-		 be 64 bits.  */
-
-	      chunks
-		= tree_low_cst (TYPE_SIZE_UNIT (type), 1) / UNITS_PER_WORD;
-	      if (chunks + *arg_words + bias > (unsigned) MAX_ARGS_IN_REGISTERS)
-		chunks = MAX_ARGS_IN_REGISTERS - *arg_words - bias;
-
-	      /* assign_parms checks the mode of ENTRY_PARM, so we must
-		 use the actual mode here.  */
-	      ret = gen_rtx_PARALLEL (mode, rtvec_alloc (chunks));
-
-	      bitpos = 0;
-	      regno = regbase + *arg_words + bias;
-	      field = TYPE_FIELDS (type);
-	      for (i = 0; i < chunks; i++)
-		{
-		  rtx reg;
-
-		  for (; field; field = TREE_CHAIN (field))
-		    if (TREE_CODE (field) == FIELD_DECL
-			&& int_bit_position (field) >= bitpos)
-		      break;
-
-		  if (field
-		      && int_bit_position (field) == bitpos
-		      && TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
-		      && !TARGET_SOFT_FLOAT
-		      && TYPE_PRECISION (TREE_TYPE (field)) == BITS_PER_WORD)
-		    reg = gen_rtx_REG (DFmode,
-				       regno + FP_ARG_FIRST - GP_ARG_FIRST);
-		  else
-		    reg = gen_rtx_REG (word_mode, regno);
-
-		  XVECEXP (ret, 0, i)
-		    = gen_rtx_EXPR_LIST (VOIDmode, reg,
-					 GEN_INT (bitpos / BITS_PER_UNIT));
-
-		  bitpos += 64;
-		  regno++;
-		}
-	    }
-	}
-
-      if (TARGET_DEBUG_E_MODE)
-	fprintf (stderr, "%s%s\n", reg_names[regbase + *arg_words + bias],
-		 struct_p ? ", [struct]" : "");
-
-      /* The following is a hack in order to pass 1 byte structures
-	 the same way that the MIPS compiler does (namely by passing
-	 the structure in the high byte or half word of the register).
-	 This also makes varargs work.  If we have such a structure,
-	 we save the adjustment RTL, and the call define expands will
-	 emit them.  For the VOIDmode argument (argument after the
-	 last real argument), pass back a parallel vector holding each
-	 of the adjustments.  */
-
-      /* ??? function_arg can be called more than once for each argument.
-	 As a result, we compute more adjustments than we need here.
-	 See the CUMULATIVE_ARGS definition in mips.h.  */
-
-      /* ??? This scheme requires everything smaller than the word size to
-	 shifted to the left, but when TARGET_64BIT and ! TARGET_INT64,
-	 that would mean every int needs to be shifted left, which is very
-	 inefficient.  Let's not carry this compatibility to the 64 bit
-	 calling convention for now.  */
-
-      if (struct_p && int_size_in_bytes (type) < UNITS_PER_WORD
-	  && ! TARGET_64BIT
-	  && mips_abi != ABI_EABI
-	  && mips_abi != ABI_MEABI)
-	{
-	  rtx amount = GEN_INT (BITS_PER_WORD
-				- int_size_in_bytes (type) * BITS_PER_UNIT);
-	  rtx reg = gen_rtx_REG (word_mode, regbase + *arg_words + bias);
-
-	  if (TARGET_64BIT)
-	    cum->adjust[cum->num_adjusts++] = gen_ashldi3 (reg, reg, amount);
-	  else
-	    cum->adjust[cum->num_adjusts++] = gen_ashlsi3 (reg, reg, amount);
-	}
-    }
+  struct mips_arg_info info;
 
   /* We will be called with a mode of VOIDmode after the last argument
      has been seen.  Whatever we return will be passed to the call
      insn.  If we need any shifts for small structures, return them in
      a PARALLEL; in that case, stuff the mips16 fp_code in as the
-     mode.  Otherwise, if we have need a mips16 fp_code, return a REG
+     mode.  Otherwise, if we need a mips16 fp_code, return a REG
      with the code stored as the mode.  */
   if (mode == VOIDmode)
     {
       if (cum->num_adjusts > 0)
-	ret = gen_rtx (PARALLEL, (enum machine_mode) cum->fp_code,
-		       gen_rtvec_v (cum->num_adjusts, cum->adjust));
+	return gen_rtx_PARALLEL ((enum machine_mode) cum->fp_code,
+				 gen_rtvec_v (cum->num_adjusts,
+					      (rtx *) cum->adjust));
+
       else if (TARGET_MIPS16 && cum->fp_code != 0)
-	ret = gen_rtx (REG, (enum machine_mode) cum->fp_code, 0);
+	return gen_rtx_REG ((enum machine_mode) cum->fp_code, 0);
+
+      else
+	return 0;
     }
 
-  return ret;
+  mips_arg_info (cum, mode, type, named, &info);
+
+  /* Return straight away if the whole argument is passed on the stack.  */
+  if (info.reg_offset == MAX_ARGS_IN_REGISTERS)
+    return 0;
+
+  if (type != 0
+      && TREE_CODE (type) == RECORD_TYPE
+      && (mips_abi == ABI_N32 || mips_abi == ABI_64)
+      && TYPE_SIZE_UNIT (type)
+      && host_integerp (TYPE_SIZE_UNIT (type), 1)
+      && named
+      && mode != DFmode)
+    {
+      /* The Irix 6 n32/n64 ABIs say that if any 64 bit chunk of the
+	 structure contains a double in its entirety, then that 64 bit
+	 chunk is passed in a floating point register.  */
+      tree field;
+
+      /* First check to see if there is any such field.  */
+      for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	if (TREE_CODE (field) == FIELD_DECL
+	    && TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
+	    && TYPE_PRECISION (TREE_TYPE (field)) == BITS_PER_WORD
+	    && host_integerp (bit_position (field), 0)
+	    && int_bit_position (field) % BITS_PER_WORD == 0)
+	  break;
+
+      if (field != 0)
+	{
+	  /* Now handle the special case by returning a PARALLEL
+	     indicating where each 64 bit chunk goes.  INFO.REG_WORDS
+	     chunks are passed in registers.  */
+	  unsigned int i;
+	  HOST_WIDE_INT bitpos;
+	  rtx ret;
+
+	  /* assign_parms checks the mode of ENTRY_PARM, so we must
+	     use the actual mode here.  */
+	  ret = gen_rtx_PARALLEL (mode, rtvec_alloc (info.reg_words));
+
+	  bitpos = 0;
+	  field = TYPE_FIELDS (type);
+	  for (i = 0; i < info.reg_words; i++)
+	    {
+	      rtx reg;
+
+	      for (; field; field = TREE_CHAIN (field))
+		if (TREE_CODE (field) == FIELD_DECL
+		    && int_bit_position (field) >= bitpos)
+		  break;
+
+	      if (field
+		  && int_bit_position (field) == bitpos
+		  && TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
+		  && !TARGET_SOFT_FLOAT
+		  && TYPE_PRECISION (TREE_TYPE (field)) == BITS_PER_WORD)
+		reg = gen_rtx_REG (DFmode, FP_ARG_FIRST + info.reg_offset + i);
+	      else
+		reg = gen_rtx_REG (DImode, GP_ARG_FIRST + info.reg_offset + i);
+
+	      XVECEXP (ret, 0, i)
+		= gen_rtx_EXPR_LIST (VOIDmode, reg,
+				     GEN_INT (bitpos / BITS_PER_UNIT));
+
+	      bitpos += BITS_PER_WORD;
+	    }
+	  return ret;
+	}
+    }
+
+  if (mips_abi == ABI_MEABI && info.fpr_p && !cum->prototype)
+    {
+      /* To make K&R varargs work we need to pass floating
+	 point arguments in both integer and FP registers.  */
+      return gen_rtx_PARALLEL
+	(mode,
+	 gen_rtvec (2,
+		    gen_rtx_EXPR_LIST (VOIDmode,
+				       gen_rtx_REG (mode,
+						    GP_ARG_FIRST
+						    + info.reg_offset),
+				       const0_rtx),
+		    gen_rtx_EXPR_LIST (VOIDmode,
+				       gen_rtx_REG (mode,
+						    FP_ARG_FIRST
+						    + info.reg_offset),
+				       const0_rtx)));
+    }
+
+  if (info.fpr_p)
+    return gen_rtx_REG (mode, FP_ARG_FIRST + info.reg_offset);
+  else
+    return gen_rtx_REG (mode, GP_ARG_FIRST + info.reg_offset);
 }
 
 int
 function_arg_partial_nregs (cum, mode, type, named)
-     CUMULATIVE_ARGS *cum;	/* current arg information */
+     const CUMULATIVE_ARGS *cum; /* current arg information */
      enum machine_mode mode;	/* current arg mode */
      tree type;			/* type of the argument or 0 if lib support */
-     int named ATTRIBUTE_UNUSED;/* != 0 for normal args, == 0 for ... args */
+     int named;			/* != 0 for normal args, == 0 for ... args */
 {
-  if ((mode == BLKmode
-       || GET_MODE_CLASS (mode) != MODE_COMPLEX_INT
-       || GET_MODE_CLASS (mode) != MODE_COMPLEX_FLOAT)
-      && cum->arg_words < (unsigned) MAX_ARGS_IN_REGISTERS
-      && mips_abi != ABI_EABI)
-    {
-      int words;
-      if (mode == BLKmode)
-	words = ((int_size_in_bytes (type) + UNITS_PER_WORD - 1)
-		 / UNITS_PER_WORD);
-      else
-	words = (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  struct mips_arg_info info;
 
-      if (words + cum->arg_words <= (unsigned) MAX_ARGS_IN_REGISTERS)
-	return 0;		/* structure fits in registers */
-
-      if (TARGET_DEBUG_E_MODE)
-	fprintf (stderr, "function_arg_partial_nregs = %d\n",
-		 MAX_ARGS_IN_REGISTERS - cum->arg_words);
-
-      return MAX_ARGS_IN_REGISTERS - cum->arg_words;
-    }
-
-  else if (mode == DImode
-	   && cum->arg_words == MAX_ARGS_IN_REGISTERS - (unsigned)1
-	   && ! TARGET_64BIT && mips_abi != ABI_EABI)
-    {
-      if (TARGET_DEBUG_E_MODE)
-	fprintf (stderr, "function_arg_partial_nregs = 1\n");
-
-      return 1;
-    }
-
-  return 0;
+  mips_arg_info (cum, mode, type, named, &info);
+  return info.stack_words > 0 ? info.reg_words : 0;
 }
 
+int
+mips_setup_incoming_varargs (cum, mode, type, no_rtl)
+     const CUMULATIVE_ARGS *cum;
+     enum machine_mode mode;
+     tree type;
+     int no_rtl;
+{
+  CUMULATIVE_ARGS local_cum;
+  int gp_saved, fp_saved;
+
+  if (mips_abi == ABI_32 || mips_abi == ABI_O64)
+    return 0;
+
+  /* The caller has advanced CUM up to, but not beyond, the last named
+     argument.  Advance a local copy of CUM past the last "real" named
+     argument, to find out how many registers are left over.
+
+     For K&R varargs, the last named argument is a dummy word-sized one,
+     so CUM already contains the information we need.  For stdarg, it is
+     a real argument (such as the format in printf()) and we need to
+     step over it.  */
+  local_cum = *cum;
+  if (!current_function_varargs)
+    FUNCTION_ARG_ADVANCE (local_cum, mode, type, 1);
+
+  /* Found out how many registers we need to save.  */
+  gp_saved = MAX_ARGS_IN_REGISTERS - local_cum.gp_regs;
+  fp_saved = (EABI_FLOAT_VARARGS_P
+	      ? MAX_ARGS_IN_REGISTERS - local_cum.fp_regs
+	      : 0);
+
+  if (!no_rtl)
+    {
+      if (gp_saved > 0)
+	{
+	  rtx ptr, mem;
+
+	  ptr = virtual_incoming_args_rtx;
+	  if (mips_abi == ABI_EABI)
+	    ptr = plus_constant (ptr, -gp_saved * UNITS_PER_WORD);
+	  mem = gen_rtx_MEM (BLKmode, ptr);
+
+	  /* va_arg is an array access in this case, which causes
+	     it to get MEM_IN_STRUCT_P set.  We must set it here
+	     so that the insn scheduler won't assume that these
+	     stores can't possibly overlap with the va_arg loads.  */
+	  if (mips_abi != ABI_EABI && BYTES_BIG_ENDIAN)
+	    MEM_SET_IN_STRUCT_P (mem, 1);
+
+	  move_block_from_reg (local_cum.gp_regs + GP_ARG_FIRST, mem,
+			       gp_saved, gp_saved * UNITS_PER_WORD);
+	}
+      if (fp_saved > 0)
+	{
+	  /* We can't use move_block_from_reg, because it will use
+	     the wrong mode. */
+	  enum machine_mode mode;
+	  int off, i;
+
+	  /* Set OFF to the offset from virtual_incoming_args_rtx of
+	     the first float register.   The FP save area lies below
+	     the integer one, and is aligned to UNITS_PER_FPVALUE bytes.  */
+	  off = -gp_saved * UNITS_PER_WORD;
+	  off &= ~(UNITS_PER_FPVALUE - 1);
+	  off -= fp_saved * UNITS_PER_FPREG;
+
+	  mode = TARGET_SINGLE_FLOAT ? SFmode : DFmode;
+
+	  for (i = local_cum.fp_regs; i < MAX_ARGS_IN_REGISTERS; i += FP_INC)
+	    {
+	      rtx ptr = plus_constant (virtual_incoming_args_rtx, off);
+	      emit_move_insn (gen_rtx_MEM (mode, ptr),
+			      gen_rtx_REG (mode, FP_ARG_FIRST + i));
+	      off += UNITS_PER_FPVALUE;
+	    }
+	}
+    }
+  return (gp_saved * UNITS_PER_WORD) + (fp_saved * UNITS_PER_FPREG);
+}
+
 /* Create the va_list data type.
    We keep 3 pointers, and two offsets.
    Two pointers are to the overflow area, which starts at the CFA.
@@ -4332,9 +4345,9 @@ function_arg_partial_nregs (cum, mode, type, named)
      These are downcounted as float or non-float arguments are used,
      and when they get to zero, the argument must be obtained from the
      overflow region.
-   If TARGET_SOFT_FLOAT or TARGET_SINGLE_FLOAT, then no FPR save area exists,
-     and a single pointer is enough.  It's started at the GPR save area,
-     and is advanced, period.
+   If !EABI_FLOAT_VARARGS_P, then no FPR save area exists, and a single
+     pointer is enough.  It's started at the GPR save area, and is
+     advanced, period.
    Note that the GPR save area is not constant size, due to optimization
      in the prologue.  Hence, we can't use a design with two pointers
      and two offsets, although we could have designed this with two pointers
@@ -4344,7 +4357,7 @@ function_arg_partial_nregs (cum, mode, type, named)
 tree
 mips_build_va_list ()
 {
-  if (mips_abi == ABI_EABI && !TARGET_SOFT_FLOAT && !TARGET_SINGLE_FLOAT)
+  if (EABI_FLOAT_VARARGS_P)
     {
       tree f_ovfl, f_gtop, f_ftop, f_goff, f_foff, record;
 
@@ -4392,37 +4405,24 @@ mips_va_start (stdarg_p, valist, nextarg)
      tree valist;
      rtx nextarg;
 {
-  int int_arg_words;
-  tree t;
-
-  /* Find out how many non-float named formals */
-  int_arg_words = current_function_args_info.arg_words;
+  const CUMULATIVE_ARGS *cum = &current_function_args_info;
 
   if (mips_abi == ABI_EABI)
     {
       int gpr_save_area_size;
-      /* Note UNITS_PER_WORD is 4 bytes or 8, depending on TARGET_64BIT.  */
-      if (int_arg_words < 8 )
-	/* Adjust for the prologue's economy measure */
-	gpr_save_area_size = (8 - int_arg_words) * UNITS_PER_WORD;
-      else
-	gpr_save_area_size = 0;
 
-      if (!TARGET_SOFT_FLOAT && !TARGET_SINGLE_FLOAT)
+      gpr_save_area_size
+	= (MAX_ARGS_IN_REGISTERS - cum->gp_regs) * UNITS_PER_WORD;
+
+      if (EABI_FLOAT_VARARGS_P)
 	{
 	  tree f_ovfl, f_gtop, f_ftop, f_goff, f_foff;
 	  tree ovfl, gtop, ftop, goff, foff;
-	  tree gprv;
-	  int float_formals, fpr_offset, size_excess, floats_passed_in_regs;
-	  int fpr_save_offset;
+	  tree t;
+	  int fpr_offset;
+	  int fpr_save_area_size;
 
-	  float_formals = current_function_args_info.fp_arg_words;
-	  /* If mips2, the number of formals is half the reported # of words */
-	  if (!TARGET_64BIT)
-	    float_formals /= 2;
-	  floats_passed_in_regs = (TARGET_64BIT ? 8 : 4);
-
-	  f_ovfl  = TYPE_FIELDS (va_list_type_node);
+	  f_ovfl = TYPE_FIELDS (va_list_type_node);
 	  f_gtop = TREE_CHAIN (f_ovfl);
 	  f_ftop = TREE_CHAIN (f_gtop);
 	  f_goff = TREE_CHAIN (f_ftop);
@@ -4434,84 +4434,49 @@ mips_va_start (stdarg_p, valist, nextarg)
 	  goff = build (COMPONENT_REF, TREE_TYPE (f_goff), valist, f_goff);
 	  foff = build (COMPONENT_REF, TREE_TYPE (f_foff), valist, f_foff);
 
-	  /* Emit code setting a pointer into the overflow (shared-stack) area.
-	     If there were more than 8 non-float formals, or more than 8
-	     float formals, then this pointer isn't to the base of the area.
-	     In that case, it must point to where the first vararg is.  */
-	  size_excess = 0;
-	  if (float_formals > floats_passed_in_regs)
-	    size_excess += (float_formals-floats_passed_in_regs) * 8;
-	  if (int_arg_words > 8)
-	    size_excess += (int_arg_words-8) * UNITS_PER_WORD;
-
-	  /* FIXME: for mips2, the above size_excess can be wrong.  Because the
-	     overflow stack holds mixed size items, there can be alignments,
-	     so that an 8 byte double following a 4 byte int will be on an
-	     8 byte boundary.  This means that the above calculation should
-	     take into account the exact sequence of floats and non-floats
-	     which make up the excess.  That calculation should be rolled
-	     into the code which sets the current_function_args_info struct.
-	     The above then reduces to a fetch from that struct.  */
-
-
+	  /* Emit code to initialize OVFL, which points to the next varargs
+	     stack argument.  CUM->STACK_WORDS gives the number of stack
+	     words used by named arguments.  */
 	  t = make_tree (TREE_TYPE (ovfl), virtual_incoming_args_rtx);
-	  if (size_excess)
+	  if (cum->stack_words > 0)
 	    t = build (PLUS_EXPR, TREE_TYPE (ovfl), t,
-		build_int_2 (size_excess, 0));
+		       build_int_2 (cum->stack_words * UNITS_PER_WORD, 0));
 	  t = build (MODIFY_EXPR, TREE_TYPE (ovfl), ovfl, t);
  	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-	  /* Emit code setting a ptr to the base of the overflow area.  */
+	  /* Emit code to initialize GTOP, the top of the GPR save area.  */
 	  t = make_tree (TREE_TYPE (gtop), virtual_incoming_args_rtx);
 	  t = build (MODIFY_EXPR, TREE_TYPE (gtop), gtop, t);
  	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-	  /* Emit code setting a pointer to the GPR save area.
-	     More precisely, a pointer to off-the-end of the FPR save area.
-	     If mips4, this is gpr_save_area_size below the overflow area.
-	     If mips2, also round down to an 8-byte boundary, since the FPR
-	     save area is 8-byte aligned, and GPR is 4-byte-aligned.
-	     Therefore there can be a 4-byte gap between the save areas.  */
-	  gprv = make_tree (TREE_TYPE (ftop), virtual_incoming_args_rtx);
-	  fpr_save_offset = gpr_save_area_size;
-	  if (!TARGET_64BIT)
-	    {
-	      if (fpr_save_offset & 7)
-	        fpr_save_offset += 4;
-	    }
-	  if (fpr_save_offset)
-	    gprv = build (PLUS_EXPR, TREE_TYPE (ftop), gprv,
-	      	build_int_2 (-fpr_save_offset,-1));
-	  t = build (MODIFY_EXPR, TREE_TYPE (ftop), ftop, gprv);
+	  /* Emit code to initialize FTOP, the top of the FPR save area.
+	     This address is gpr_save_area_bytes below GTOP, rounded
+	     down to the next fp-aligned boundary.  */
+	  t = make_tree (TREE_TYPE (ftop), virtual_incoming_args_rtx);
+	  fpr_offset = gpr_save_area_size + UNITS_PER_FPVALUE - 1;
+	  fpr_offset &= ~(UNITS_PER_FPVALUE - 1);
+	  if (fpr_offset)
+	    t = build (PLUS_EXPR, TREE_TYPE (ftop), t,
+		       build_int_2 (-fpr_offset, -1));
+	  t = build (MODIFY_EXPR, TREE_TYPE (ftop), ftop, t);
 	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-	  /* Emit code initting an offset to the size of the GPR save area */
+	  /* Emit code to initialize GOFF, the offset from GTOP of the
+	     next GPR argument.  */
 	  t = build (MODIFY_EXPR, TREE_TYPE (goff), goff,
-	      	build_int_2 (gpr_save_area_size,0));
+		     build_int_2 (gpr_save_area_size, 0));
 	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-	  /* Emit code initting an offset from ftop to the first float
-	     vararg.  This varies in size, since any float
-	     varargs are put in the FPR save area after the formals.
-	     Note it's 8 bytes/formal regardless of TARGET_64BIT.
-	     However, mips2 stores 4 GPRs, mips4 stores 8 GPRs.
-	     If there are 8 or more float formals, init to zero.
-	     (In fact, the formals aren't stored in the bottom of the
-	     FPR save area: they are elsewhere, and the size of the FPR
-	     save area is economized by the prologue.  But this code doesn't
-	     care.  This design is unaffected by that fact.) */
-	  if (float_formals >= floats_passed_in_regs)
-	    fpr_offset = 0;
-	  else
-	    fpr_offset = (floats_passed_in_regs - float_formals) * 8;
+	  /* Likewise emit code to initialize FOFF, the offset from FTOP
+	     of the next FPR argument.  */
+	  fpr_save_area_size
+	    = (MAX_ARGS_IN_REGISTERS - cum->fp_regs) * UNITS_PER_FPREG;
 	  t = build (MODIFY_EXPR, TREE_TYPE (foff), foff,
-		     build_int_2 (fpr_offset,0));
+		     build_int_2 (fpr_save_area_size, 0));
 	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 	}
       else
 	{
-	  /* TARGET_SOFT_FLOAT or TARGET_SINGLE_FLOAT */
-
 	  /* Everything is in the GPR save area, or in the overflow
 	     area which is contiguous with it.  */
 
@@ -4534,10 +4499,10 @@ mips_va_start (stdarg_p, valist, nextarg)
 	  /* ??? This had been conditional on
 	       _MIPS_SIM == _MIPS_SIM_ABI64 || _MIPS_SIM == _MIPS_SIM_NABI32
 	     and both iris5.h and iris6.h define _MIPS_SIM.  */
-	  if (mips_abi == ABI_N32 || mips_abi == ABI_64)
- 	    ofs = (int_arg_words >= 8 ? -UNITS_PER_WORD : 0);
-	  else if (mips_abi == ABI_MEABI)
-	    ofs = (int_arg_words >= 8 ? -UNITS_PER_WORD : 0);
+	  if (mips_abi == ABI_N32
+	      || mips_abi == ABI_64
+	      || mips_abi == ABI_MEABI)
+ 	    ofs = (cum->gp_regs < MAX_ARGS_IN_REGISTERS ? 0 : -UNITS_PER_WORD);
 	  else
 	    ofs = -UNITS_PER_WORD;
 	}
@@ -4562,13 +4527,12 @@ mips_va_arg (valist, type)
 
   if (mips_abi == ABI_EABI)
     {
-      int indirect;
-      rtx r, lab_over = NULL_RTX, lab_false;
-      tree f_ovfl, f_gtop, f_ftop, f_goff, f_foff;
-      tree ovfl, gtop, ftop, goff, foff;
+      bool indirect;
+      rtx r;
 
       indirect
 	= function_arg_pass_by_reference (NULL, TYPE_MODE (type), type, 0);
+
       if (indirect)
 	{
 	  size = POINTER_SIZE / BITS_PER_UNIT;
@@ -4577,187 +4541,166 @@ mips_va_arg (valist, type)
 
       addr_rtx = gen_reg_rtx (Pmode);
 
-      if (TARGET_SOFT_FLOAT || TARGET_SINGLE_FLOAT)
+      if (!EABI_FLOAT_VARARGS_P)
 	{
-	  /* Case of all args in a merged stack. No need to check bounds,
+	  /* Case of all args in a merged stack.  No need to check bounds,
 	     just advance valist along the stack.  */
 
 	  tree gpr = valist;
-      	  if (! indirect
-	      && ! TARGET_64BIT
+	  if (!indirect
+	      && !TARGET_64BIT
 	      && TYPE_ALIGN (type) > (unsigned) BITS_PER_WORD)
 	    {
+	      /* Align the pointer using: ap = (ap + align - 1) & -align,
+		 where align is 2 * UNITS_PER_WORD.  */
 	      t = build (PLUS_EXPR, TREE_TYPE (gpr), gpr,
-		     build_int_2 (2*UNITS_PER_WORD - 1, 0));
+			 build_int_2 (2 * UNITS_PER_WORD - 1, 0));
 	      t = build (BIT_AND_EXPR, TREE_TYPE (t), t,
-		     build_int_2 (-2*UNITS_PER_WORD, -1));
+			 build_int_2 (-2 * UNITS_PER_WORD, -1));
 	      t = build (MODIFY_EXPR, TREE_TYPE (gpr), gpr, t);
 	      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 	    }
 
-      	  t = build (POSTINCREMENT_EXPR, TREE_TYPE (gpr), gpr,
-		size_int (rsize));
-      	  r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
-     	  if (r != addr_rtx)
+	  /* Emit code to set addr_rtx to the valist, and postincrement
+	     the valist by the size of the argument, rounded up to the
+	     next word.	 */
+	  t = build (POSTINCREMENT_EXPR, TREE_TYPE (gpr), gpr,
+		     size_int (rsize));
+	  r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
+	  if (r != addr_rtx)
 	    emit_move_insn (addr_rtx, r);
 
-      	  /* flush the POSTINCREMENT */
-      	  emit_queue();
-
-      	  if (indirect)
-	    {
-	      r = gen_rtx_MEM (Pmode, addr_rtx);
-	      set_mem_alias_set (r, get_varargs_alias_set ());
-	      emit_move_insn (addr_rtx, r);
-	    }
-      	  else
-	    {
-	      if (BYTES_BIG_ENDIAN && rsize != size)
-	      addr_rtx = plus_constant (addr_rtx, rsize - size);
-	    }
-      	  return addr_rtx;
+	  /* Flush the POSTINCREMENT.  */
+	  emit_queue();
 	}
+      else
+	{
+	  /* Not a simple merged stack.	 */
 
-      /* Not a simple merged stack.  Need ptrs and indexes left by va_start.  */
+	  tree f_ovfl, f_gtop, f_ftop, f_goff, f_foff;
+	  tree ovfl, top, off;
+	  rtx lab_over = NULL_RTX, lab_false;
 
-      f_ovfl  = TYPE_FIELDS (va_list_type_node);
-      f_gtop = TREE_CHAIN (f_ovfl);
-      f_ftop = TREE_CHAIN (f_gtop);
-      f_goff = TREE_CHAIN (f_ftop);
-      f_foff = TREE_CHAIN (f_goff);
+	  f_ovfl = TYPE_FIELDS (va_list_type_node);
+	  f_gtop = TREE_CHAIN (f_ovfl);
+	  f_ftop = TREE_CHAIN (f_gtop);
+	  f_goff = TREE_CHAIN (f_ftop);
+	  f_foff = TREE_CHAIN (f_goff);
 
-      ovfl = build (COMPONENT_REF, TREE_TYPE (f_ovfl), valist, f_ovfl);
-      gtop = build (COMPONENT_REF, TREE_TYPE (f_gtop), valist, f_gtop);
-      ftop = build (COMPONENT_REF, TREE_TYPE (f_ftop), valist, f_ftop);
-      goff = build (COMPONENT_REF, TREE_TYPE (f_goff), valist, f_goff);
-      foff = build (COMPONENT_REF, TREE_TYPE (f_foff), valist, f_foff);
+	  /* We maintain separate pointers and offsets for floating-point
+	     and integer arguments, but we need similar code in both cases.
+	     Let:
 
-      lab_false = gen_label_rtx ();
-      lab_over = gen_label_rtx ();
+		 TOP be the top of the register save area;
+		 OFF be the offset from TOP of the next register;
+		 ADDR_RTX be the address of the argument; and
+		 RSIZE be the number of bytes used to store the argument.
 
-      if (TREE_CODE (type) == REAL_TYPE)
-        {
+	     The code we want is:
 
-	  /* Emit code to branch if foff == 0.  */
-          r = expand_expr (foff, NULL_RTX, TYPE_MODE (TREE_TYPE (foff)),
-	     	EXPAND_NORMAL);
-          emit_cmp_and_jump_insns (r, const0_rtx, EQ, const1_rtx, GET_MODE (r),
+		  1: off &= -rsize;	  // round down
+		  2: if (off != 0)
+		  3:   {
+		  4:	 addr_rtx = top - off;
+		  5:	 off -= rsize;
+		  6:   }
+		  7: else
+		  8:   {
+		  9:	 ovfl += ((intptr_t) ovfl + rsize - 1) & -rsize;
+		 10:	 addr_rtx = ovfl;
+		 11:	 ovfl += rsize;
+		 12:   }
+
+	     [1] and [9] can sometimes be optimized away.  */
+
+	  lab_false = gen_label_rtx ();
+	  lab_over = gen_label_rtx ();
+
+	  ovfl = build (COMPONENT_REF, TREE_TYPE (f_ovfl), valist, f_ovfl);
+
+	  if (TREE_CODE (type) == REAL_TYPE)
+	    {
+	      top = build (COMPONENT_REF, TREE_TYPE (f_ftop), valist, f_ftop);
+	      off = build (COMPONENT_REF, TREE_TYPE (f_foff), valist, f_foff);
+
+	      /* When floating-point registers are saved to the stack,
+		 each one will take up UNITS_PER_FPVALUE bytes, regardless
+		 of the float's precision.  */
+	      rsize = UNITS_PER_FPVALUE;
+	    }
+	  else
+	    {
+	      top = build (COMPONENT_REF, TREE_TYPE (f_gtop), valist, f_gtop);
+	      off = build (COMPONENT_REF, TREE_TYPE (f_goff), valist, f_goff);
+	      if (rsize > UNITS_PER_WORD)
+		{
+		  /* [1] Emit code for: off &= -rsize.	*/
+		  t = build (BIT_AND_EXPR, TREE_TYPE (off), off,
+			     build_int_2 (-rsize, -1));
+		  t = build (MODIFY_EXPR, TREE_TYPE (off), off, t);
+		  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+		}
+	    }
+
+	  /* [2] Emit code to branch if off == 0.  */
+	  r = expand_expr (off, NULL_RTX, TYPE_MODE (TREE_TYPE (off)),
+			   EXPAND_NORMAL);
+	  emit_cmp_and_jump_insns (r, const0_rtx, EQ, const1_rtx, GET_MODE (r),
 				   1, lab_false);
 
-          /* Emit code for addr_rtx = ftop - foff */
-          t = build (MINUS_EXPR, TREE_TYPE (ftop), ftop, foff );
-          r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
-          if (r != addr_rtx)
-      	    emit_move_insn (addr_rtx, r);
+	  /* [4] Emit code for: addr_rtx = top - off.  */
+	  t = build (MINUS_EXPR, TREE_TYPE (top), top, off);
+	  r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
+	  if (r != addr_rtx)
+	    emit_move_insn (addr_rtx, r);
 
-          /* Emit code for foff-=8.
-      	     Advances the offset up FPR save area by one double */
-          t = build (MINUS_EXPR, TREE_TYPE (foff), foff, build_int_2 (8, 0));
-          t = build (MODIFY_EXPR, TREE_TYPE (foff), foff, t);
-          expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	  /* [5] Emit code for: off -= rsize.  */
+	  t = build (MINUS_EXPR, TREE_TYPE (off), off, build_int_2 (rsize, 0));
+	  t = build (MODIFY_EXPR, TREE_TYPE (off), off, t);
+	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-          emit_queue();
-          emit_jump (lab_over);
-          emit_barrier ();
-          emit_label (lab_false);
+	  /* [7] Emit code to jump over the else clause, then the label
+	     that starts it.  */
+	  emit_queue();
+	  emit_jump (lab_over);
+	  emit_barrier ();
+	  emit_label (lab_false);
 
-	  if (!TARGET_64BIT)
+	  if (rsize > UNITS_PER_WORD)
 	    {
-	      /* For mips2, the overflow area contains mixed size items.
-		 If a 4-byte int is followed by an 8-byte float, then
-		 natural alignment causes a 4 byte gap.
-		 So, dynamically adjust ovfl up to a multiple of 8.  */
-	      t = build (BIT_AND_EXPR, TREE_TYPE (ovfl), ovfl,
-			build_int_2 (7, 0));
-	      t = build (PLUS_EXPR, TREE_TYPE (ovfl), ovfl, t);
+	      /* [9] Emit: ovfl += ((intptr_t) ovfl + rsize - 1) & -rsize.  */
+	      t = build (PLUS_EXPR, TREE_TYPE (ovfl), ovfl,
+			 build_int_2 (rsize - 1, 0));
+	      t = build (BIT_AND_EXPR, TREE_TYPE (ovfl), t,
+			 build_int_2 (-rsize, -1));
 	      t = build (MODIFY_EXPR, TREE_TYPE (ovfl), ovfl, t);
 	      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 	    }
 
-          /* Emit code for addr_rtx = the ovfl pointer into overflow area.
-	     Regardless of mips2, postincrement the ovfl pointer by 8.  */
-          t = build (POSTINCREMENT_EXPR, TREE_TYPE(ovfl), ovfl,
-		size_int (8));
-          r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
-          if (r != addr_rtx)
-      	    emit_move_insn (addr_rtx, r);
+	  /* [10, 11].	Emit code to store ovfl in addr_rtx, then
+	     post-increment ovfl by rsize.  */
+	  t = build (POSTINCREMENT_EXPR, TREE_TYPE (ovfl), ovfl,
+		     size_int (rsize));
+	  r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
+	  if (r != addr_rtx)
+	    emit_move_insn (addr_rtx, r);
 
-          emit_queue();
-          emit_label (lab_over);
-       	  return addr_rtx;
-        }
+	  emit_queue();
+	  emit_label (lab_over);
+	}
+      if (indirect)
+	{
+	  addr_rtx = force_reg (Pmode, addr_rtx);
+	  r = gen_rtx_MEM (Pmode, addr_rtx);
+	  set_mem_alias_set (r, get_varargs_alias_set ());
+	  emit_move_insn (addr_rtx, r);
+	}
       else
-        {
-          /* not REAL_TYPE */
-	  int step_size;
-
-	  if (! TARGET_64BIT
-	      && TREE_CODE (type) == INTEGER_TYPE
-	      && TYPE_PRECISION (type) == 64)
-	    {
-	      /* In mips2, int takes 32 bits of the GPR save area, but
-		 longlong takes an aligned 64 bits.  So, emit code
-		 to zero the low order bits of goff, thus aligning
-		 the later calculation of (gtop-goff) upwards.  */
-	       t = build (BIT_AND_EXPR, TREE_TYPE (goff), goff,
-			build_int_2 (-8, -1));
-	       t = build (MODIFY_EXPR, TREE_TYPE (goff), goff, t);
-	       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-	    }
-
-	  /* Emit code to branch if goff == 0.  */
-          r = expand_expr (goff, NULL_RTX, TYPE_MODE (TREE_TYPE (goff)),
-	     	EXPAND_NORMAL);
-          emit_cmp_and_jump_insns (r, const0_rtx, EQ, const1_rtx, GET_MODE (r),
-				   1, lab_false);
-
-          /* Emit code for addr_rtx = gtop - goff.  */
-          t = build (MINUS_EXPR, TREE_TYPE (gtop), gtop, goff);
-          r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
-          if (r != addr_rtx)
-      	    emit_move_insn (addr_rtx, r);
-
-	  /* Note that mips2 int is 32 bit, but mips2 longlong is 64.  */
-	  if (! TARGET_64BIT && TYPE_PRECISION (type) == 64)
-	    step_size = 8;
-	  else
-	    step_size = UNITS_PER_WORD;
-
-          /* Emit code for goff = goff - step_size.
-      	     Advances the offset up GPR save area over the item.  */
-          t = build (MINUS_EXPR, TREE_TYPE (goff), goff,
-		build_int_2 (step_size, 0));
-          t = build (MODIFY_EXPR, TREE_TYPE (goff), goff, t);
-          expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-
-          emit_queue();
-          emit_jump (lab_over);
-          emit_barrier ();
-          emit_label (lab_false);
-
-          /* Emit code for addr_rtx -> overflow area, postinc by step_size */
-          t = build (POSTINCREMENT_EXPR, TREE_TYPE(ovfl), ovfl,
-	    	size_int (step_size));
-          r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
-          if (r != addr_rtx)
-    	    emit_move_insn (addr_rtx, r);
-
-          emit_queue();
-          emit_label (lab_over);
-
+	{
 	  if (BYTES_BIG_ENDIAN && rsize != size)
 	    addr_rtx = plus_constant (addr_rtx, rsize - size);
-
-          if (indirect)
-   	    {
-	      addr_rtx = force_reg (Pmode, addr_rtx);
-	      r = gen_rtx_MEM (Pmode, addr_rtx);
-	      set_mem_alias_set (r, get_varargs_alias_set ());
-	      emit_move_insn (addr_rtx, r);
-	    }
-
-      	  return addr_rtx;
 	}
+      return addr_rtx;
     }
   else
     {
@@ -8083,7 +8026,7 @@ mips_function_value (valtype, func)
 
 int
 function_arg_pass_by_reference (cum, mode, type, named)
-     CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED;
+     const CUMULATIVE_ARGS *cum;
      enum machine_mode mode;
      tree type;
      int named ATTRIBUTE_UNUSED;
@@ -8103,16 +8046,9 @@ function_arg_pass_by_reference (cum, mode, type, named)
   /* ??? cum can be NULL when called from mips_va_arg.  The problem handled
      here hopefully is not relevant to mips_va_arg.  */
   if (cum && MUST_PASS_IN_STACK (mode, type)
-      && mips_abi != ABI_MEABI)
-     {
-       /* Don't pass the actual CUM to FUNCTION_ARG, because we would
-	  get double copies of any offsets generated for small structs
-	  passed in registers.  */
-       CUMULATIVE_ARGS temp;
-       temp = *cum;
-       if (FUNCTION_ARG (temp, mode, type, named) != 0)
-	 return 1;
-     }
+      && mips_abi != ABI_MEABI
+      && FUNCTION_ARG (*cum, mode, type, named) != 0)
+    return 1;
 
   /* Otherwise, we only do this if EABI is selected.  */
   if (mips_abi != ABI_EABI)
