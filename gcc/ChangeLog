@@ -1,3 +1,8 @@
+Tue Oct 28 15:29:15 1997  Richard Henderson  <rth@cygnus.com>
+
+	* reload1.c (eliminate_regs [SET]): If [SUBREG] widened the mode of
+	DEST for the spill, adjust mode of SRC to compensate.
+
 Tue Oct 28 14:36:45 1997  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (reload_inqi): Check for MEM before strict_memory_address_p,

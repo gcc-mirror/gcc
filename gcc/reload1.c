@@ -3271,6 +3271,12 @@ eliminate_regs (x, mem_mode, insn, storing)
 	    && GET_CODE (insn) != INSN_LIST)
 	  emit_insn_after (gen_rtx (CLOBBER, VOIDmode, SET_DEST (x)), insn);
 
+	/* If SET_DEST was a partial-word subreg, NEW0 may have been widened
+	   to spill the entire register (see SUBREG case above).  If the 
+	   widths of SET_DEST and NEW0 no longer match, adjust NEW1.  */
+	if (GET_MODE (SET_DEST (x)) != GET_MODE (new0))
+	  new1 = gen_rtx (SUBREG, GET_MODE (new0), new1, 0);
+
 	if (new0 != SET_DEST (x) || new1 != SET_SRC (x))
 	  return gen_rtx (SET, VOIDmode, new0, new1);
       }
