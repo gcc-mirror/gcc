@@ -1,3 +1,25 @@
+Tue Dec 18 16:39:46 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* att.h (ASM_FILE_START): Use asm_dialect.
+	* linux.h (ASM_FILE_START): Likewise.
+	* gas.h (ASM_FILE_START): Likewise.
+	* i386.c (ix86_debug_arg_string, ix86_debug_addr_string,
+	ix86_asm_string, ix86_asm_dialect): New.
+	(override_options): Set asm_dialect.
+	* i386.h (MASK_MIX_SSE_I387, MASK_INTEL_SYNTAX, MASK_DEBUG_ARG,
+	MASK_DEBUG_ADDR): Kill.
+	(MASK_64BIT, MASK_NO_RED_ZONE): renumber.
+	(TARGET_DEBUG_ADDR, TARGET_DEBUG_ARG): Use string.
+	(ASSEMBLER_DIALECT): Use asm_dialect.
+	(TARGET_SWITCHES): Undocument deprecated items; deprecate intel-syntax;
+	remove debug-addr and debug-arg.
+	(TARGET_OPTIONS): Add debug-arg, debug-addr, asm.
+	(asm_dialect): New enum.
+	(ix86_debug_arg_string, ix86_debug_addr_string,
+	ix86_asm_string, ix86_asm_dialect): Declare.
+	* invoke.texi (-mintel-syntax): Remove.
+	(-masm): Document.
+
 Tue Dec 18 16:37:42 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* libgcc2.c (__bb_exit_func): Kill -ax dumping code.
