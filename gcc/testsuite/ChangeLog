@@ -1,5 +1,10 @@
 2002-11-30  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/8214
+	* g++.dg/init/string1.C: New test.
+
+2002-11-30  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/8511
 	* g++.dg/template/friend8.C: New test.
 
