@@ -441,7 +441,7 @@ appending @samp{.sched} to the input file name.
 
 @cindex register allocation
 @item
-Register allocation.  These passes make sure that all occurences of pseudo
+Register allocation.  These passes make sure that all occurrences of pseudo
 registers are eliminated, either by allocating them to a hard register,
 replacing them by an equivalent expression (e.g.@: a constant) or by placing
 them on the stack.  This is done in several subpasses:

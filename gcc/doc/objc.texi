@@ -423,7 +423,7 @@ as @code{NXConstantString}'s structure:
 libraries may choose to inherit the customized constant string class
 from a different class than @code{Object}.  There is no requirement in
 the methods the constant string class has to implement, but the final
-ivar layour of the class must be the compatible with the given
+ivar layout of the class must be the compatible with the given
 structure.
 
 When the compiler creates the statically allocated constant string
