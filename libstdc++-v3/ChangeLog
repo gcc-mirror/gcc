@@ -1,3 +1,10 @@
+2001-11-21  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/4548
+	* include/bits/basic_string.tcc (basic_string::reserve):  Never shrink
+	below the current size.
+	* testsuite/21_strings/capacity.cc (test02):  Add test.
+
 2001-11-19  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/doxygen/Intro.3:  More notes.
