@@ -7559,7 +7559,7 @@ push_decl_scope (scope)
      subtype.  In such a case, we need to search the decl_scope_table to
      find the parent of this subtype.  */
 
-  if (TREE_CODE_CLASS (TREE_CODE (scope)) == 't')
+  if (AGGREGATE_TYPE_P (scope))
     containing_scope = TYPE_CONTEXT (scope);
   else
     containing_scope = NULL_TREE;
@@ -7609,6 +7609,12 @@ scope_die_for (t, context_die)
 
   /* Ignore namespaces for the moment.  */
   if (containing_scope && TREE_CODE (containing_scope) == NAMESPACE_DECL)
+    containing_scope = NULL_TREE;
+
+  /* Ignore function type "scopes" from the C frontend.  They mean that
+     a tagged type is local to a parmlist of a function declarator, but
+     that isn't useful to DWARF.  */
+  if (containing_scope && TREE_CODE (containing_scope) == FUNCTION_TYPE)
     containing_scope = NULL_TREE;
 
   /* Function-local tags and functions get stuck in limbo until they are
@@ -8838,7 +8844,7 @@ gen_struct_or_union_type_die (type, context_die)
     return;
 
   if (TYPE_CONTEXT (type) != NULL_TREE
-      && TREE_CODE_CLASS (TREE_CODE (TYPE_CONTEXT (type))) == 't')
+      && AGGREGATE_TYPE_P (TYPE_CONTEXT (type)))
     nested = 1;
 
   scope_die = scope_die_for (type, context_die);
@@ -9051,7 +9057,7 @@ gen_type_die (type, context_die)
       /* If this is a nested type whose containing class hasn't been
 	 written out yet, writing it out will cover this one, too.  */
       if (TYPE_CONTEXT (type)
-	  && TREE_CODE_CLASS (TREE_CODE (TYPE_CONTEXT (type))) == 't'
+	  && AGGREGATE_TYPE_P (TYPE_CONTEXT (type))
 	  && ! TREE_ASM_WRITTEN (TYPE_CONTEXT (type)))
 	{
 	  gen_type_die (TYPE_CONTEXT (type), context_die);
@@ -9070,7 +9076,7 @@ gen_type_die (type, context_die)
 	gen_struct_or_union_type_die (type, context_die);
 
       if (TYPE_CONTEXT (type)
-	  && TREE_CODE_CLASS (TREE_CODE (TYPE_CONTEXT (type))) == 't'
+	  && AGGREGATE_TYPE_P (TYPE_CONTEXT (type))
 	  && ! TREE_ASM_WRITTEN (TYPE_CONTEXT (type)))
 	pop_decl_scope ();
 
