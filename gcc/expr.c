@@ -3928,13 +3928,13 @@ expand_expr (exp, target, tmode, modifier)
 	  for (object = TREE_PURPOSE (placeholder_list);
 	       TREE_TYPE (object) != type
 	       && (TREE_CODE_CLASS (TREE_CODE (object)) == 'r'
-		   || TREE_CODE_CLASS (TREE_CODE (object) == '1'
-		   || TREE_CODE_CLASS (TREE_CODE (object) == '2'
-		   || TREE_CODE_CLASS (TREE_CODE (object) == 'e'))));
+		   || TREE_CODE_CLASS (TREE_CODE (object)) == '1'
+		   || TREE_CODE_CLASS (TREE_CODE (object)) == '2'
+		   || TREE_CODE_CLASS (TREE_CODE (object)) == 'e');
 	       object = TREE_OPERAND (object, 0))
 	    ;
 
-	  if (object && TREE_TYPE (object))
+	  if (object && TREE_TYPE (object) == type)
 	    return expand_expr (object, original_target, tmode, modifier);
 	}
 
