@@ -1,5 +1,9 @@
 2001-12-21  Kazu Hirata  <kazu@hxi.com>
 
+	* doc/passes.texi: Fix a typo.
+
+2001-12-21  Kazu Hirata  <kazu@hxi.com>
+
 	* config/h8300/h8300.h: Fix a comment typo.
 
 2001-12-21  Jakub Jelinek  <jakub@redhat.com>
