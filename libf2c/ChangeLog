@@ -1,6 +1,6 @@
 Sat Sep  5 23:06:56 1998  Craig Burley  <burley@gnu.org>
 
-	* libI77/dfe.c (e_rdfe): Restore resetting of f__init
+	* libI77/sfe.c (e_wdfe): Restore resetting of f__init
 	before returning, to avoid spurious recursive-I/O
 	diagnostic.
 
