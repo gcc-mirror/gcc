@@ -104,9 +104,11 @@ chain_open (stdin_fd, pp_args, p_child)
      t_pchar *pp_args;
      pid_t *p_child;
 {
-  t_fd_pair stdout_pair = {-1, -1};
+  t_fd_pair stdout_pair;
   pid_t ch_id;
   char *pz_cmd;
+
+  stdout_pair.read_fd = stdout_pair.write_fd = -1;
 
   /*
    *  Create a pipe it will be the child process' stdout,

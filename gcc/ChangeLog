@@ -1,3 +1,13 @@
+Thu May 20 07:06:39 1999  Alexandre Oliva  <aoliva@acm.org>
+
+	* fixinc/Makefile.in(gnu-regex.o): add $(INCLUDES) to compile options
+	* fixinc/fixincl.c(wait_for_pid): K&R-ify arguments
+	(several places): omit static initialization
+	(process): use single fd, since only the read fd is used
+	* fixinc/gnu-regex.c: define 'const' away, if not supported
+	* fixinc/procopen.c(several places): omit static initialization
+	* fixinc/server.c: define 'volitile' away, if not supported
+
 1999-05-20  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* config/dbxcoff.h (DBX_OUTPUT_MAIN_SOURCE_FILE_END): Use
