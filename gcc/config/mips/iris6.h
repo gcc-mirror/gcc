@@ -279,6 +279,7 @@ while (0)
 %{bestGnum} %{shared} %{non_shared} \
 %{call_shared} %{no_archive} %{exact_version} \
 %{!shared: %{!non_shared: %{!call_shared: -call_shared -no_unresolved}}} \
+%{rpath} \
 -_SYSTYPE_SVR4"
 
 /* ??? Debugging does not work.  We get many assembler core dumps,
