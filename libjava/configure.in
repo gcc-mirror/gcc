@@ -886,17 +886,19 @@ esac
 # builddir for the .java files.
 h=`pwd`
 : > deps.mk
-( (cd $srcdir && find . -name '*.java' -print) ;
-  find . -name '*.java' -print) | \
+( (cd $srcdir && find . \( -name '*.java' -o -name '*.cc' \) -print) ;
+  find . \( -name '*.java' -o -name '*.cc' \) -print) | \
    fgrep -v testsuite | \
-   sed -e 's/\.java/.d/' | \
+   sed -e 's/\.java/.d/'\;'s/\.cc/.d/' | \
    while read f; do
       echo "include $f" >> deps.mk
       test -f $f || {
 changequote(<<,>>)
 	 d=`echo $f | sed -e 's,/[^/]*$,,'`
 changequote([,])
-	 $libgcj_basedir/../mkinstalldirs $d
+	 if test ! -d $d; then
+	   $libgcj_basedir/../mkinstalldirs $d
+	 fi;
 	 echo > $f
       }
    done
