@@ -3491,10 +3491,24 @@ expand_expr (exp, target, tmode, modifier)
 	    }
 
 	  SAVE_EXPR_RTL (exp) = temp;
-	  store_expr (TREE_OPERAND (exp, 0), temp, 0);
 	  if (!optimize && GET_CODE (temp) == REG)
 	    save_expr_regs = gen_rtx (EXPR_LIST, VOIDmode, temp,
 				      save_expr_regs);
+
+	  /* If the mode of TEMP does not match that of the expression, it
+	     must be a promoted value.  We pass store_expr a SUBREG of the
+	     wanted mode but mark it so that we know that it was already
+	     extended.  Note that `unsignedp' was modified above in
+	     this case.  */
+
+	  if (GET_CODE (temp) == REG && GET_MODE (temp) != mode)
+	    {
+	      temp = gen_rtx (SUBREG, mode, SAVE_EXPR_RTL (exp), 0);
+	      SUBREG_PROMOTED_VAR_P (temp) = 1;
+	      SUBREG_PROMOTED_UNSIGNED_P (temp) = unsignedp;
+	    }
+
+	  store_expr (TREE_OPERAND (exp, 0), temp, 0);
 	}
 
       /* If the mode of SAVE_EXPR_RTL does not match that of the expression, it
