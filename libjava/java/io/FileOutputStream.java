@@ -1,5 +1,5 @@
 /* FileOutputStream.java -- Writes to a file on disk.
-   Copyright (C) 1998, 2001, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,7 +39,7 @@ exception statement from your version. */
 package java.io;
 
 import java.nio.channels.FileChannel;
-import java.nio.channels.FileChannelImpl;
+import gnu.java.nio.channels.FileChannelImpl;
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
@@ -57,7 +57,7 @@ public class FileOutputStream extends OutputStream
 {
   private FileDescriptor fd;
 
-  private FileChannel ch; /* cached associated file-channel */
+  private FileChannelImpl ch;
 
   /**
    * This method initializes a <code>FileOutputStream</code> object to write
@@ -84,10 +84,10 @@ public class FileOutputStream extends OutputStream
     SecurityManager s = System.getSecurityManager();
     if (s != null)
       s.checkWrite(path);
-    fd = new FileDescriptor (path, (append
-				    ? FileDescriptor.WRITE
-				      | FileDescriptor.APPEND
-				    : FileDescriptor.WRITE));
+    ch = new FileChannelImpl (path, (append
+				     ? FileChannelImpl.WRITE
+				     | FileChannelImpl.APPEND
+				     : FileChannelImpl.WRITE));
   }
 
   /**
@@ -188,6 +188,12 @@ public class FileOutputStream extends OutputStream
       s.checkWrite(fdObj);
 
     fd = fdObj;
+    ch = (FileChannelImpl) fdObj.channel;
+  }
+
+  FileOutputStream(FileChannelImpl ch)
+  {
+    this.ch = ch;
   }
 
   protected void finalize () throws IOException
@@ -206,9 +212,12 @@ public class FileOutputStream extends OutputStream
    */
   public final FileDescriptor getFD () throws IOException
   {
-    if (! fd.valid())
-      throw new IOException ();
-    return fd;
+    synchronized (this)
+      {
+	if (fd == null)
+	  fd = new FileDescriptor (ch);
+	return fd;
+      }
   }
 
   /**
@@ -220,7 +229,7 @@ public class FileOutputStream extends OutputStream
    */
   public void write (int b) throws IOException
   {
-    fd.write (b);
+    ch.write (b);
   }
 
   /**
@@ -255,7 +264,7 @@ public class FileOutputStream extends OutputStream
         || offset + len > buf.length)
       throw new ArrayIndexOutOfBoundsException ();
     
-    fd.write (buf, offset, len);
+    ch.write (buf, offset, len);
   }
 
   /**
@@ -267,8 +276,7 @@ public class FileOutputStream extends OutputStream
    */
   public void close () throws IOException
   {
-    if (fd.valid())
-      fd.close();
+    ch.close();
   }
 
   /**
@@ -279,9 +287,6 @@ public class FileOutputStream extends OutputStream
    */
   public synchronized FileChannel getChannel() 
   {
-    if (ch == null)
-      ch = new FileChannelImpl (fd, true, this);
-
     return ch;
   }
 

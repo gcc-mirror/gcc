@@ -1,5 +1,5 @@
 /* RandomAccessFile.java -- Class supporting random file I/O
-   Copyright (C) 1998, 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,7 +39,7 @@ exception statement from your version. */
 package java.io;
 
 import java.nio.channels.FileChannel;
-import java.nio.channels.FileChannelImpl;
+import gnu.java.nio.channels.FileChannelImpl;
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
@@ -61,12 +61,12 @@ public class RandomAccessFile implements DataOutput, DataInput
 {
 
   // The underlying file.
+  private FileChannelImpl ch;
   private FileDescriptor fd;
   // The corresponding input and output streams.
   private DataOutputStream out;
   private DataInputStream in;
   
-  private FileChannel ch; /* cached associated file-channel */
   
   /**
    * This method initializes a new instance of <code>RandomAccessFile</code>
@@ -119,18 +119,18 @@ public class RandomAccessFile implements DataOutput, DataInput
   {
     int fdmode;
     if (mode.equals("r"))
-      fdmode = FileDescriptor.READ;
+      fdmode = FileChannelImpl.READ;
     else if (mode.equals("rw"))
-      fdmode = FileDescriptor.READ | FileDescriptor.WRITE;
+      fdmode = FileChannelImpl.READ | FileChannelImpl.WRITE;
     else if (mode.equals("rws"))
       {
-	fdmode = (FileDescriptor.READ | FileDescriptor.WRITE
-		  | FileDescriptor.SYNC);
+	fdmode = (FileChannelImpl.READ | FileChannelImpl.WRITE
+		  | FileChannelImpl.SYNC);
       }
     else if (mode.equals("rwd"))
       {
-	fdmode = (FileDescriptor.READ | FileDescriptor.WRITE
-		  | FileDescriptor.DSYNC);
+	fdmode = (FileChannelImpl.READ | FileChannelImpl.WRITE
+		  | FileChannelImpl.DSYNC);
       }
     else
       throw new IllegalArgumentException ("invalid mode: " + mode);
@@ -141,11 +141,12 @@ public class RandomAccessFile implements DataOutput, DataInput
       {
         s.checkRead(fileName);
 
-        if ((fdmode & FileDescriptor.WRITE) != 0)
+        if ((fdmode & FileChannelImpl.WRITE) != 0)
           s.checkWrite(fileName);
       }
 
-    fd = new FileDescriptor (fileName, fdmode);
+    ch = new FileChannelImpl (fileName, fdmode);
+    fd = new FileDescriptor(ch);
     out = new DataOutputStream (new FileOutputStream (fd));
     in = new DataInputStream (new FileInputStream (fd));
   }
@@ -158,8 +159,7 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public void close () throws IOException
   {
-    if (fd.valid())
-      fd.close();
+    ch.close();
   }
 
   /**
@@ -172,10 +172,12 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public final FileDescriptor getFD () throws IOException
   {
-    if (! fd.valid())
-      throw new IOException ();
-
-    return fd;
+    synchronized (this)
+      {
+	if (fd == null)
+	  fd = new FileDescriptor (ch);
+	return fd;
+      }
   }
 
   /**
@@ -188,7 +190,7 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public long getFilePointer () throws IOException
   {
-    return fd.getFilePointer();
+    return ch.position();
   }
 
   /**
@@ -206,7 +208,7 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public void setLength (long newLen) throws IOException
   {
-    fd.setLength (newLen);
+    ch.truncate (newLen);
   }
 
   /**
@@ -218,7 +220,7 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public long length () throws IOException
   {
-    return fd.getLength ();
+    return ch.size();
   }
 
   /**
@@ -702,7 +704,7 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public void seek (long pos) throws IOException
   {
-    fd.seek (pos, FileDescriptor.SET, false);
+    ch.position(pos);
   }
 
   /**
@@ -726,10 +728,13 @@ public class RandomAccessFile implements DataOutput, DataInput
     if (numBytes == 0)
       return 0;
     
-    long curPos = fd.getFilePointer ();
-    long newPos = fd.seek (numBytes, FileDescriptor.CUR, true);
-    
-    return (int) (newPos - curPos);
+    long oldPos = ch.position();
+    long newPos = oldPos + numBytes;
+    long size = ch.size();
+    if (newPos > size)
+      newPos = size;
+    ch.position(newPos);
+    return (int) (ch.position() - oldPos);
   }
 
   /**
@@ -962,9 +967,6 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public final synchronized FileChannel getChannel ()
   {
-    if (ch == null)
-      ch = new FileChannelImpl (fd, true, this);
-
     return ch;
   }
 
