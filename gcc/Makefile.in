@@ -125,7 +125,7 @@ BOOT_CFLAGS = -g -O2
 # contain the optimization flags, as you normally want code coverage
 # without optimization.
 COVERAGE_FLAGS = @coverage_flags@
-coverageexts = .{da,bbg}
+coverageexts = .{gcda,gcno}
 
 # The warning flags are separate from BOOT_CFLAGS because people tend to
 # override optimization flags and we'd like them to still have warnings

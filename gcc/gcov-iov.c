@@ -61,7 +61,7 @@ main (int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED)
   printf ("/* Generated automatically by the program `%s'\n", argv[0]);
   printf ("   from `%s'.  */\n", version_string);
   printf ("\n");
-  printf ("#define GCOV_VERSION ((unsigned)%#08x)  /* %.4s */\n",
+  printf ("#define GCOV_VERSION ((gcov_unsigned_t)%#08x)  /* %.4s */\n",
 	  version, v);
 
   return 0;
