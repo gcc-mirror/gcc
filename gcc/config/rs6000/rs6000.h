@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
-   Contributed by Richard Kenner (kenner@nyu.edu)
+   Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
+   Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
 
@@ -76,8 +76,8 @@ extern int target_flags;
 /* Use PowerPC architecture instructions.  */
 #define MASK_POWERPC		0x04
 
-/* Use PowerPC square root instructions.  */
-#define MASK_POWERPCSQR		0x08
+/* Use PowerPC extended FP instruction including sqrt and fsel.  */
+#define MASK_PPCFPX		0x08
 
 /* Use PowerPC-64 architecture instructions.  */
 #define MASK_POWERPC64		0x10
@@ -101,7 +101,7 @@ extern int target_flags;
 #define TARGET_POWER			(target_flags & MASK_POWER)
 #define TARGET_POWER2			(target_flags & MASK_POWER2)
 #define TARGET_POWERPC			(target_flags & MASK_POWERPC)
-#define TARGET_POWERPCSQR		(target_flags & MASK_POWERPCSQR)
+#define TARGET_PPCFPX			(target_flags & MASK_PPCFPX)
 #define TARGET_POWERPC64		(target_flags & MASK_POWERPC64)
 #define TARGET_NEW_MNEMONICS		(target_flags & MASK_NEW_MNEMONICS)
 #define TARGET_NO_FP_IN_TOC		(target_flags & MASK_NO_FP_IN_TOC)
@@ -121,10 +121,10 @@ extern int target_flags;
   {"no-power2",		- MASK_POWER2},				\
   {"no-power",		- (MASK_POWER | MASK_POWER2)},		\
   {"powerpc",		MASK_POWERPC},				\
-  {"no-powerpc",	- (MASK_POWERPC | MASK_POWERPCSQR | MASK_POWERPC64)}, \
-  {"powerpc-sqr",	MASK_POWERPC | MASK_POWERPCSQR},	\
-  {"no-powerpc-sqr",	- MASK_POWERPCSQR},			\
-  {"powerpc64",		MASK_POWERPC | MASK_POWERPC64},		\
+  {"no-powerpc",	- (MASK_POWERPC | MASK_PPCFPX | MASK_POWERPC64)}, \
+  {"powerpc-fpx",	MASK_POWERPC | MASK_PPCFPX},	\
+  {"no-powerpc-fpx",	- MASK_PPCFPX},			\
+  {"powerpc64",		MASK_POWERPC | MASK_PPCFPX | MASK_POWERPC64},	\
   {"no-powerpc64",	-MASK_POWERPC64},			\
   {"new-mnemonics",	MASK_NEW_MNEMONICS},			\
   {"old-mnemonics",	-MASK_NEW_MNEMONICS},			\
