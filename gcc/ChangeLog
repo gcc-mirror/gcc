@@ -1,3 +1,7 @@
+2001-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* tradcpp.c (do_define): Make sure we don't walk past limit.
+
 2001-06-08  Jakub Jelinek  <jakub@redhat.com
 
 	* gcc.c (cpp_options): Define __NO_INLINE__ unless we are honoring

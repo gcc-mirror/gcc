@@ -1,5 +1,9 @@
 2001-06-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/cpp/tr-define.c: New test.
+
+2001-06-08  Jakub Jelinek  <jakub@redhat.com>
+
 	* g++.old-deja/g++.eh/catch13.C: New test.
 	* g++.old-deja/g++.eh/catch14.C: New test.
 

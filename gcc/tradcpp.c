@@ -2760,8 +2760,8 @@ do_define (buf, limit, op)
       }
     }
 
-    ++bp;			/* skip paren */
-    while (is_nvspace (*bp))	/* and leading whitespace */
+    ++bp;					/* skip paren */
+    while (is_nvspace (*bp) && bp < limit)	/* and leading whitespace */
       ++bp;
     /* now everything from bp before limit is the definition. */
     defn = collect_expansion (bp, limit, argno, arg_ptrs);
@@ -2788,7 +2788,7 @@ do_define (buf, limit, op)
     }
   } else {
     /* simple expansion or empty definition; skip leading whitespace */
-    while (is_nvspace (*bp))
+    while (is_nvspace (*bp) && bp < limit)
       ++bp;
     /* now everything from bp before limit is the definition. */
     defn = collect_expansion (bp, limit, -1, 0);
