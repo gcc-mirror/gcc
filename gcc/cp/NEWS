@@ -1,3 +1,27 @@
+*** Changes in GCC 3.2.2:
+
+* G++ no longer allows in-class initializations of static data members
+  that do not have arithmetic or enumeration type.  For example:
+
+    struct S { 
+      static const char* const p = "abc";
+    };
+
+  is no longer accepted.  
+
+  Use the standards-conformant form:
+
+    struct S { 
+      static const char* const p;
+    };
+
+    const char* const S::p = "abc";
+
+  instead.
+
+  (ISO C++ is even stricter; it does not allow in-class
+  initializations of floating-point types.)
+
 *** Changes in GCC 3.1:
 
 * -fhonor-std and -fno-honor-std have been removed. -fno-honor-std was

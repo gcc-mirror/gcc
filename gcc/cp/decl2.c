@@ -1583,30 +1583,32 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 	      else
 		init = digest_init (TREE_TYPE (value), init, (tree *)0);
 	    }
-	  
-	  if (TREE_CODE (init) == CONST_DECL)
-	    init = DECL_INITIAL (init);
-	  else if (TREE_READONLY_DECL_P (init))
-	    init = decl_constant_value (init);
-	  else if (TREE_CODE (init) == CONSTRUCTOR)
-	    init = digest_init (TREE_TYPE (value), init, (tree *)0);
-	  if (init == error_mark_node)
-	    /* We must make this look different than `error_mark_node'
-	       because `decl_const_value' would mis-interpret it
-	       as only meaning that this VAR_DECL is defined.  */
-	    init = build1 (NOP_EXPR, TREE_TYPE (value), init);
-	  else if (processing_template_decl)
-	    ;
-	  else if (! TREE_CONSTANT (init))
+
+	  if (!processing_template_decl)
 	    {
-	      /* We can allow references to things that are effectively
-		 static, since references are initialized with the address.  */
-	      if (TREE_CODE (TREE_TYPE (value)) != REFERENCE_TYPE
-		  || (TREE_STATIC (init) == 0
-		      && (!DECL_P (init) || DECL_EXTERNAL (init) == 0)))
+	      if (TREE_CODE (init) == CONST_DECL)
+		init = DECL_INITIAL (init);
+	      else if (TREE_READONLY_DECL_P (init))
+		init = decl_constant_value (init);
+	      else if (TREE_CODE (init) == CONSTRUCTOR)
+		init = digest_init (TREE_TYPE (value), init, (tree *)0);
+	      if (init == error_mark_node)
+		/* We must make this look different than `error_mark_node'
+		   because `decl_const_value' would mis-interpret it
+		   as only meaning that this VAR_DECL is defined.  */
+		init = build1 (NOP_EXPR, TREE_TYPE (value), init);
+	      else if (! TREE_CONSTANT (init))
 		{
-		  error ("field initializer is not constant");
-		  init = error_mark_node;
+		  /* We can allow references to things that are effectively
+		     static, since references are initialized with the
+		     address.  */
+		  if (TREE_CODE (TREE_TYPE (value)) != REFERENCE_TYPE
+		      || (TREE_STATIC (init) == 0
+			  && (!DECL_P (init) || DECL_EXTERNAL (init) == 0)))
+		    {
+		      error ("field initializer is not constant");
+		      init = error_mark_node;
+		    }
 		}
 	    }
 	}
