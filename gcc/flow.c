@@ -6220,8 +6220,7 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 		     register twice if it is modified, but that is correct.  */
 		  REG_N_SETS (i) += 1;
 		  REG_N_REFS (i) += 1;
-		  REG_FREQ (i) += (optimize_size || !pbi->bb->frequency
-				   ? 1 : pbi->bb->frequency);
+		  REG_FREQ (i) += REG_FREQ_FROM_BB (pbi->bb);
 
 	          /* The insns where a reg is live are normally counted
 		     elsewhere, but we want the count to include the insn
@@ -6888,8 +6887,7 @@ attempt_auto_inc (pbi, inc, insn, mem, incr, incr_reg)
       /* Count an extra reference to the reg.  When a reg is
 	 incremented, spilling it is worse, so we want to make
 	 that less likely.  */
-      REG_FREQ (regno) += (optimize_size || !pbi->bb->frequency
-		           ? 1 : pbi->bb->frequency);
+      REG_FREQ (regno) += REG_FREQ_FROM_BB (pbi->bb);
 
       /* Count the increment as a setting of the register,
 	 even though it isn't a SET in rtl.  */
@@ -7054,8 +7052,7 @@ mark_used_reg (pbi, reg, cond, insn)
 	    REG_BASIC_BLOCK (regno_first) = REG_BLOCK_GLOBAL;
 
 	  /* Count (weighted) number of uses of each reg.  */
-	  REG_FREQ (regno_first)
-	    += (optimize_size || !pbi->bb->frequency ? 1 : pbi->bb->frequency);
+	  REG_FREQ (regno_first) += REG_FREQ_FROM_BB (pbi->bb);
 	  REG_N_REFS (regno_first)++;
 	}
     }
@@ -7477,8 +7474,7 @@ try_pre_increment_1 (pbi, insn)
 	 so we want to make that less likely.  */
       if (regno >= FIRST_PSEUDO_REGISTER)
 	{
-	  REG_FREQ (regno) += (optimize_size || !pbi->bb->frequency
-			       ? 1 : pbi->bb->frequency);
+	  REG_FREQ (regno) += REG_FREQ_FROM_BB (pbi->bb);
 	  REG_N_SETS (regno)++;
 	}
 
