@@ -4159,7 +4159,7 @@ reshape_init_array (tree elt_type, tree max_index,
 		    tree *initp, tree new_init)
 {
   bool sized_array_p = (max_index != NULL_TREE);
-  HOST_WIDE_INT max_index_cst;
+  HOST_WIDE_INT max_index_cst = 0;
   HOST_WIDE_INT index;
 
   if (sized_array_p)
