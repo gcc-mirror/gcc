@@ -40,6 +40,7 @@ linemap_init (struct line_maps *set)
   set->depth = 0;
   set->cache = 0;
   set->highest_location = 0;
+  set->highest_line = 0;
   set->max_column_hint = 0;
 }
 
@@ -154,6 +155,7 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
   set->cache = set->used++;
   map->column_bits = 0;
   set->highest_location = start_location;
+  set->highest_line = start_location;
   set->max_column_hint = 0;
 
   if (reason == LC_ENTER)
@@ -181,7 +183,7 @@ linemap_line_start (struct line_maps *set, unsigned int to_line,
   struct line_map *map = &set->maps[set->used - 1];
   source_location highest = set->highest_location;
   source_location r;
-  unsigned int last_line = SOURCE_LINE (map, highest);
+  unsigned int last_line = SOURCE_LINE (map, set->highest_line);
   int line_delta = to_line - last_line;
   bool add_map = false;
   if (line_delta < 0
@@ -196,7 +198,7 @@ linemap_line_start (struct line_maps *set, unsigned int to_line,
   if (add_map)
     {
       int column_bits;
-      if (max_column_hint > 1000000 || highest > 0xC0000000)
+      if (max_column_hint > 100000 || highest > 0xC0000000)
 	{
 	  max_column_hint = 0;
 	  if (highest >0xF0000000)
@@ -221,9 +223,33 @@ linemap_line_start (struct line_maps *set, unsigned int to_line,
   else
     r = highest - SOURCE_COLUMN (map, highest)
       + (line_delta << map->column_bits);
+  set->highest_line = r;
   if (r > set->highest_location)
     set->highest_location = r;
   set->max_column_hint = max_column_hint;
+  return r;
+}
+
+source_location
+linemap_position_for_column (struct line_maps *set, unsigned int to_column)
+{
+  source_location r = set->highest_line;
+  if (to_column >= set->max_column_hint)
+    {
+      if (r >= 0xC000000 || to_column > 100000)
+	{
+	  /* Running low on source_locations - disable column numbers.  */
+	  return r;
+	}
+      else
+	{
+	  struct line_map *map = &set->maps[set->used - 1];
+	  r = linemap_line_start (set, SOURCE_LINE (map, r), to_column + 50);
+	}
+    }
+  r = r + to_column;
+  if (r >= set->highest_location)
+    set->highest_location = r;
   return r;
 }
 

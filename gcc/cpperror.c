@@ -144,7 +144,7 @@ cpp_error (cpp_reader * pfile, int level, const char *msgid, ...)
       if (pfile->state.in_directive)
 	src_loc = pfile->directive_line;
       else
-	src_loc = pfile->line;
+	src_loc = pfile->line_table->highest_line;
     }
   else
     {

@@ -133,7 +133,7 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
 	unsigned int len;
 	const char *name;
 	uchar *buf;
-	map = linemap_lookup (pfile->line_table, pfile->line);
+	map = linemap_lookup (pfile->line_table, pfile->line_table->highest_line);
 
 	if (node->value.builtin == BT_BASE_FILE)
 	  while (! MAIN_FILE_P (map))
@@ -158,12 +158,12 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
       break;
 
     case BT_SPECLINE:
-      map = linemap_lookup (pfile->line_table, pfile->line);
+      map = &pfile->line_table->maps[pfile->line_table->used-1];
       /* If __LINE__ is embedded in a macro, it must expand to the
 	 line of the macro's invocation, not its definition.
 	 Otherwise things like assert() will not work properly.  */
       if (CPP_OPTION (pfile, traditional))
-	number = pfile->line;
+	number = pfile->line_table->highest_line;
       else
 	number = pfile->cur_token[-1].src_loc;
       number = SOURCE_LINE (map, number);

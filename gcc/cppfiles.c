@@ -806,7 +806,7 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
 static void
 open_file_failed (cpp_reader *pfile, _cpp_file *file)
 {
-  int sysp = pfile->line > 1 && pfile->buffer ? pfile->buffer->sysp : 0;
+  int sysp = pfile->line_table->highest_line > 1 && pfile->buffer ? pfile->buffer->sysp : 0;
   bool print_dep = CPP_OPTION (pfile, deps.style) > !!sysp;
 
   errno = file->err_no;
@@ -987,14 +987,15 @@ void
 cpp_make_system_header (cpp_reader *pfile, int syshdr, int externc)
 {
   int flags = 0;
-  const struct line_map *map = linemap_lookup (pfile->line_table, pfile->line);
+  const struct line_maps *line_table = pfile->line_table;
+  const struct line_map *map = &line_table->maps[line_table->used-1];
 
   /* 1 = system header, 2 = system header to be treated as C.  */
   if (syshdr)
     flags = 1 + (externc != 0);
   pfile->buffer->sysp = flags;
   _cpp_do_file_change (pfile, LC_RENAME, map->to_file,
-		       SOURCE_LINE (map, pfile->line), flags);
+		       SOURCE_LINE (map, pfile->line_table->highest_line), flags);
 }
 
 /* Allow the client to change the current file.  Used by the front end

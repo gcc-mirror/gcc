@@ -148,7 +148,7 @@ static const uchar *
 copy_comment (cpp_reader *pfile, const uchar *cur, int in_define)
 {
   bool unterminated, copy = false;
-  source_location src_loc = pfile->line;
+  source_location src_loc = pfile->line_table->highest_line;
   cpp_buffer *buffer = pfile->buffer;
 
   buffer->cur = cur;
@@ -271,7 +271,6 @@ _cpp_overlay_buffer (cpp_reader *pfile, const uchar *start, size_t len)
   pfile->saved_cur = buffer->cur;
   pfile->saved_rlimit = buffer->rlimit;
   pfile->saved_line_base = buffer->next_line;
-  pfile->saved_line = pfile->line;
   buffer->need_line = false;
 
   buffer->cur = start;
@@ -360,7 +359,7 @@ _cpp_scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro)
   CUR (pfile->context) = pfile->buffer->cur;
   RLIMIT (pfile->context) = pfile->buffer->rlimit;
   pfile->out.cur = pfile->out.base;
-  pfile->out.first_line = pfile->line;
+  pfile->out.first_line = pfile->line_table->highest_line;
   /* start_of_input_line is needed to make sure that directives really,
      really start at the first character of the line.  */
   start_of_input_line = pfile->buffer->cur;
@@ -488,7 +487,7 @@ _cpp_scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro)
 		    {
 		      maybe_start_funlike (pfile, node, out_start, &fmacro);
 		      lex_state = ls_fun_open;
-		      fmacro.line = pfile->line;
+		      fmacro.line = pfile->line_table->highest_line;
 		      continue;
 		    }
 		  else if (!recursive_macro (pfile, node))

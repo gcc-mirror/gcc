@@ -84,6 +84,9 @@ struct line_maps
   /* Highest source_location "given out".  */
   source_location highest_location;
 
+  /* Start of line of highest source_location "given out".  */
+  source_location highest_line;
+
   /* The maximum column number we can quickly allocate.  Higher numbers
      may require allocating a new line_map.  */
   unsigned int max_column_hint;
@@ -157,32 +160,23 @@ extern void linemap_print_containing_files (struct line_maps *,
 /* Nonzero if the map is at the bottom of the include stack.  */
 #define MAIN_FILE_P(MAP) ((MAP)->included_from < 0)
 
-/* Get a source position that for the same line as the most recent
+/* Set LOC to a source position that is the same line as the most recent
    linemap_line_start, but with the specified TO_COLUMN column number.  */
 
-static inline source_location
-linemap_position_for_column (struct line_maps *set, unsigned int to_column)
-{
-  struct line_map *map = &set->maps[set->used - 1];
-  source_location r = set->highest_location;
-  if (__builtin_expect (to_column > set->max_column_hint, 0))
-    {
-      if (r >= 0xC000000 || to_column > 1000000) /* FIXME */
-	{
-	  /* Running low on source_locations - disable column numbers.  */
-	  return r - SOURCE_COLUMN (map, r);
-	}
-      else
-	{
-	  r = linemap_line_start (set, SOURCE_LINE (map, r), to_column + 50);
-	  map = &set->maps[set->used - 1];
-	  r = set->highest_location;
-	}
-    }
-  r = r - SOURCE_COLUMN (map, r) + to_column;
-  if (r >= set->highest_location)
-    set->highest_location = r;
-  return r;
-}
-						  
+#define LINEMAP_POSITION_FOR_COLUMN(LOC, SET, TO_COLUMN) { \
+  unsigned int to_column = (TO_COLUMN); \
+  struct line_maps *set = (SET); \
+  if (__builtin_expect (to_column >= set->max_column_hint, 0)) \
+    (LOC) = linemap_position_for_column (set, to_column); \
+  else { \
+    source_location r = set->highest_line; \
+    r = r + to_column; \
+    if (r >= set->highest_location) \
+      set->highest_location = r; \
+    (LOC) = r;			 \
+  }}
+    
+
+extern source_location
+linemap_position_for_column (struct line_maps *set, unsigned int to_column);
 #endif /* !GCC_LINE_MAP_H  */

@@ -65,10 +65,10 @@ typedef unsigned char uchar;
 #define CPP_BUF_COL(BUF) CPP_BUF_COLUMN(BUF, (BUF)->cur)
 
 #define CPP_INCREMENT_LINE(PFILE, COLS_HINT) do { \
-    const struct line_map *map \
-      = linemap_lookup (PFILE->line_table, PFILE->line); \
-    unsigned int line = SOURCE_LINE (map, PFILE->line) + 1; \
-    PFILE->line = linemap_line_start (PFILE->line_table, line, COLS_HINT); \
+    const struct line_maps *line_table = PFILE->line_table; \
+    const struct line_map *map = &line_table->maps[line_table->used-1]; \
+    unsigned int line = SOURCE_LINE (map, line_table->highest_line); \
+    linemap_line_start (PFILE->line_table, line + 1, COLS_HINT); \
   } while (0)
 
 /* Maximum nesting of cpp_buffers.  We use a static limit, partly for
@@ -344,7 +344,6 @@ struct cpp_reader
 
   /* Source line tracking.  */
   struct line_maps *line_table;
-  fileline line;
 
   /* The line of the '#' of the current directive.  */
   fileline directive_line;
@@ -465,10 +464,6 @@ struct cpp_reader
 
   /* Used for buffer overlays by cpptrad.c.  */
   const uchar *saved_cur, *saved_rlimit, *saved_line_base;
-
-  /* Used to save the original line number during traditional
-     preprocessing.  */
-  unsigned int saved_line;
 
   /* A saved list of the defined macros, for dependency checking
      of precompiled headers.  */

@@ -270,12 +270,12 @@ _cpp_process_line_notes (cpp_reader *pfile, int in_comment)
       if (note->type == '\\' || note->type == ' ')
 	{
 	  if (note->type == ' ' && !in_comment)
-	    cpp_error_with_line (pfile, CPP_DL_WARNING, pfile->line, col,
+	    cpp_error_with_line (pfile, CPP_DL_WARNING, pfile->line_table->highest_line, col,
 				 "backslash and newline separated by space");
 
 	  if (buffer->next_line > buffer->rlimit)
 	    {
-	      cpp_error_with_line (pfile, CPP_DL_PEDWARN, pfile->line, col,
+	      cpp_error_with_line (pfile, CPP_DL_PEDWARN, pfile->line_table->highest_line, col,
 				   "backslash-newline at end of file");
 	      /* Prevent "no newline at end of file" warning.  */
 	      buffer->next_line = buffer->rlimit;
@@ -290,14 +290,14 @@ _cpp_process_line_notes (cpp_reader *pfile, int in_comment)
 	      && (!in_comment || warn_in_comment (pfile, note)))
 	    {
 	      if (CPP_OPTION (pfile, trigraphs))
-		cpp_error_with_line (pfile, CPP_DL_WARNING, pfile->line, col,
+		cpp_error_with_line (pfile, CPP_DL_WARNING, pfile->line_table->highest_line, col,
 				     "trigraph ??%c converted to %c",
 				     note->type,
 				     (int) _cpp_trigraph_map[note->type]);
 	      else
 		{
 		  cpp_error_with_line 
-		    (pfile, CPP_DL_WARNING, pfile->line, col,
+		    (pfile, CPP_DL_WARNING, pfile->line_table->highest_line, col,
 		     "trigraph ??%c ignored, use -trigraphs to enable",
 		     note->type);
 		}
@@ -343,7 +343,7 @@ _cpp_skip_block_comment (cpp_reader *pfile)
 	    {
 	      buffer->cur = cur;
 	      cpp_error_with_line (pfile, CPP_DL_WARNING,
-				   pfile->line, CPP_BUF_COL (buffer),
+				   pfile->line_table->highest_line, CPP_BUF_COL (buffer),
 				   "\"/*\" within comment");
 	    }
 	}
@@ -375,13 +375,13 @@ static int
 skip_line_comment (cpp_reader *pfile)
 {
   cpp_buffer *buffer = pfile->buffer;
-  unsigned int orig_line = pfile->line;
+  unsigned int orig_line = pfile->line_table->highest_line;
 
   while (*buffer->cur != '\n')
     buffer->cur++;
 
   _cpp_process_line_notes (pfile, true);
-  return orig_line != pfile->line;
+  return orig_line != pfile->line_table->highest_line;
 }
 
 /* Skips whitespace, saving the next non-whitespace character.  */
@@ -400,7 +400,7 @@ skip_whitespace (cpp_reader *pfile, cppchar_t c)
       else if (c == '\0')
 	saw_NUL = true;
       else if (pfile->state.in_directive && CPP_PEDANTIC (pfile))
-	cpp_error_with_line (pfile, CPP_DL_PEDWARN, pfile->line,
+	cpp_error_with_line (pfile, CPP_DL_PEDWARN, pfile->line_table->highest_line,
 			     CPP_BUF_COL (buffer),
 			     "%s in preprocessing directive",
 			     c == '\f' ? "form feed" : "vertical tab");
@@ -777,7 +777,7 @@ _cpp_get_fresh_line (cpp_reader *pfile)
 	{
 	  /* Only warn once.  */
 	  buffer->next_line = buffer->rlimit;
-	  cpp_error_with_line (pfile, CPP_DL_PEDWARN, pfile->line,
+	  cpp_error_with_line (pfile, CPP_DL_PEDWARN, pfile->line_table->highest_line,
 			       CPP_BUF_COLUMN (buffer, buffer->cur),
 			       "no newline at end of file");
 	}
@@ -828,7 +828,7 @@ _cpp_lex_direct (cpp_reader *pfile)
 	  if (!pfile->state.in_directive)
 	    {
 	      /* Tell the compiler the line number of the EOF token.  */
-	      result->src_loc = pfile->line;
+	      result->src_loc = pfile->line_table->highest_line;
 	      result->flags = BOL;
 	    }
 	  return result;
@@ -845,19 +845,19 @@ _cpp_lex_direct (cpp_reader *pfile)
     }
   buffer = pfile->buffer;
  update_tokens_line:
-  result->src_loc = pfile->line;
+  result->src_loc = pfile->line_table->highest_line;
 
  skipped_white:
   if (buffer->cur >= buffer->notes[buffer->cur_note].pos
       && !pfile->overlaid_buffer)
     {
       _cpp_process_line_notes (pfile, false);
-      result->src_loc = pfile->line;
+      result->src_loc = pfile->line_table->highest_line;
     }
   c = *buffer->cur++;
 
-  result->src_loc = linemap_position_for_column (pfile->line_table,
-						 CPP_BUF_COLUMN (buffer, buffer->cur));
+  LINEMAP_POSITION_FOR_COLUMN (result->src_loc, pfile->line_table,
+			       CPP_BUF_COLUMN (buffer, buffer->cur));
 
   switch (c)
     {

@@ -618,7 +618,6 @@ cpp_read_state (cpp_reader *r, const char *name, FILE *f,
   struct lexer_state old_state;
   struct save_macro_item *d;
   size_t i, mac_count;
-  int saved_line = r->line;
 
   /* Restore spec_nodes, which will be full of references to the old 
      hashtable entries and so will now be invalid.  */
@@ -707,7 +706,6 @@ cpp_read_state (cpp_reader *r, const char *name, FILE *f,
     }
 
   r->state = old_state;
-  r->line = saved_line;
   free (defn);
   defn = NULL;
 
