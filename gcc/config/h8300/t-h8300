@@ -1,5 +1,6 @@
 LIB1ASMSRC = h8300/lib1funcs.asm
-LIB1ASMFUNCS = _cmpsi2 _ucmpsi2 _divhi3 _divsi3 _mulhi3 _mulsi3
+LIB1ASMFUNCS = _cmpsi2 _ucmpsi2 _divhi3 _divsi3 _mulhi3 _mulsi3 \
+  _floatdisf _fixsfdi
 
 # We do not have DF or DI types, so fake out the libgcc2 compilation.
 TARGET_LIBGCC2_CFLAGS = -DDF=SF -DDI=SI
