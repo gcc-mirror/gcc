@@ -2877,19 +2877,14 @@ emit_move_complex (enum machine_mode mode, rtx x, rtx y)
   if (push_operand (x, mode))
     return emit_move_complex_push (mode, x, y);
 
-  /* For memory to memory moves, optimal behavior can be had with the
-     existing block move logic.  */
-  if (MEM_P (x) && MEM_P (y))
-    {
-      emit_block_move (x, y, GEN_INT (GET_MODE_SIZE (mode)),
-		       BLOCK_OP_NO_LIBCALL);
-      return get_last_insn ();
-    }
-
   /* See if we can coerce the target into moving both values at once.  */
 
+  /* Move floating point as parts.  */
+  if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
+      && mov_optab->handlers[GET_MODE_INNER (mode)].insn_code != CODE_FOR_nothing)
+    try_int = false;
   /* Not possible if the values are inherently not adjacent.  */
-  if (GET_CODE (x) == CONCAT || GET_CODE (y) == CONCAT)
+  else if (GET_CODE (x) == CONCAT || GET_CODE (y) == CONCAT)
     try_int = false;
   /* Is possible if both are registers (or subregs of registers).  */
   else if (register_operand (x, mode) && register_operand (y, mode))
@@ -2907,7 +2902,18 @@ emit_move_complex (enum machine_mode mode, rtx x, rtx y)
 
   if (try_int)
     {
-      rtx ret = emit_move_via_integer (mode, x, y);
+      rtx ret;
+
+      /* For memory to memory moves, optimal behavior can be had with the
+	 existing block move logic.  */
+      if (MEM_P (x) && MEM_P (y))
+	{
+	  emit_block_move (x, y, GEN_INT (GET_MODE_SIZE (mode)),
+			   BLOCK_OP_NO_LIBCALL);
+	  return get_last_insn ();
+	}
+
+      ret = emit_move_via_integer (mode, x, y);
       if (ret)
 	return ret;
     }

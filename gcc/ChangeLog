@@ -1,3 +1,10 @@
+2005-03-11  David Edelsohn  <edelsohn@gnu.org>
+
+	PR rtl-optimization/20306
+	* expr.c (emit_move_complex): Set try_int false if mode is
+	MODE_COMPLEX_FLOAT and mov_optab exists for inner mode.  Only try
+	emit_block_move if try_int is true.
+
 2005-03-11  Richard Henderson  <rth@redhat.com>
 
 	PR target/20415
