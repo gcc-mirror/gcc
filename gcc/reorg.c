@@ -416,7 +416,7 @@ mark_referenced_resources (x, res, include_delayed_effects)
 		     rtx slot_pat = PATTERN (XVECEXP (sequence, 0, i));
 		     if (GET_CODE (slot_pat) == SET
 		         && rtx_equal_p (SET_DEST (slot_pat),
-				         SET_DEST (XEXP (link, 0)))
+				         SET_DEST (XEXP (link, 0))))
 		       break;
 		   }
 	         if (i >= seq_size)
@@ -516,6 +516,7 @@ mark_set_resources (x, res, in_dest, include_delayed_effects)
 	{
 	  rtx next = NEXT_INSN (x);
 	  rtx prev = PREV_INSN (x);
+	  rtx link;
 
 	  res->cc = res->memory = 1;
 	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -527,13 +528,10 @@ mark_set_resources (x, res, in_dest, include_delayed_effects)
 	  if (NEXT_INSN (prev) != x)
 	    next = NEXT_INSN (NEXT_INSN (prev));
 
-	 { rtx link;
-           for (link = CALL_INSN_FUNCTION_USAGE (insn);
-		link;
-		link = XEXP (link, 1))
-	     if (GET_CODE (XEXP (link, 0)) == CLOBBER)
-	       mark_set_resources (SET_DEST (XEXP (link, 0)), res, 1, 0);
-         }
+	  for (link = CALL_INSN_FUNCTION_USAGE (x);
+	       link; link = XEXP (link, 1))
+	    if (GET_CODE (XEXP (link, 0)) == CLOBBER)
+	      mark_set_resources (SET_DEST (XEXP (link, 0)), res, 1, 0);
 
 	  /* Check for a NOTE_INSN_SETJMP.  If it exists, then we must
 	     assume that this call can clobber any register.  */
