@@ -27,8 +27,8 @@
 #define LIBFFI_TARGET_H
 
 #ifndef LIBFFI_ASM
-typedef unsigned long          ffi_arg  __attribute__ ((mode (DI)));
-typedef signed long            ffi_sarg __attribute__ ((mode (DI)));
+typedef unsigned long long          ffi_arg;
+typedef signed long long            ffi_sarg;
 
 typedef enum ffi_abi {
   FFI_FIRST_ABI = 0,

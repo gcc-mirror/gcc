@@ -1,3 +1,7 @@
+2005-03-30  Hans Boehm  <Hans.Boehm@hp.com>
+
+	* src/ia64/ffitarget.h (ffi_arg): Use long long instead of DI.
+	
 2005-03-30  Steve Ellcey  <sje@cup.hp.com>
 
 	* src/ia64/ffitarget.h (ffi_arg) ADD DI attribute.
