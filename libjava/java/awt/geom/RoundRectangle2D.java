@@ -1,5 +1,5 @@
 /* RoundRectangle2D.java -- represents a rectangle with rounded corners
-   Copyright (C) 2000, 2002 Free Software Foundation
+   Copyright (C) 2000, 2002, 2003 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -36,6 +36,8 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 package java.awt.geom;
+
+import java.util.NoSuchElementException;
 
 /** This class implements a rectangle with rounded corners.
  * @author Tom Tromey <tromey@cygnus.com>
@@ -117,10 +119,163 @@ public abstract class RoundRectangle2D extends RectangularShape
   /** Return a new path iterator which iterates over this rectangle.
    * @param at An affine transform to apply to the object
    */
-  public PathIterator getPathIterator(AffineTransform at)
+  public PathIterator getPathIterator(final AffineTransform at)
   {
-    // FIXME.
-    return null;
+    final double minx = getX();
+    final double miny = getY();
+    final double maxx = minx + getWidth();
+    final double maxy = miny + getHeight();
+    final double arcwidth = getArcWidth();
+    final double archeight = getArcHeight();
+    return new PathIterator()
+    {
+      /** We iterate clockwise around the rectangle, starting in the
+       * upper left.  This variable tracks our current point, which
+       * can be on either side of a given corner.  */
+      private int current = 0;
+
+      /** Child path iterator, used for corners.  */
+      private PathIterator corner;
+
+      /** This is used when rendering the corners.  We re-use the arc
+       * for each corner.  */
+      private Arc2D arc = new Arc2D.Double();
+
+      /** Temporary array used by getPoint.  */
+      private double[] temp = new double[2];
+
+      public int getWindingRule()
+      {
+	return WIND_NON_ZERO;
+      }
+
+      public boolean isDone()
+      {
+	return current > 9;
+      }
+
+      private void getPoint(int val)
+      {
+	switch (val)
+	  {
+	  case 0:
+	  case 8:
+	    temp[0] = minx;
+	    temp[1] = miny + archeight;
+	    break;
+	  case 1:
+	    temp[0] = minx + arcwidth;
+	    temp[1] = miny;
+	    break;
+	  case 2:
+	    temp[0] = maxx - arcwidth;
+	    temp[1] = maxy;
+	    break;
+	  case 3:
+	    temp[0] = maxx;
+	    temp[1] = miny + archeight;
+	    break;
+	  case 4:
+	    temp[0] = maxx;
+	    temp[1] = maxy - archeight;
+	    break;
+	  case 5:
+	    temp[0] = maxx - arcwidth;
+	    temp[1] = maxy;
+	    break;
+	  case 6:
+	    temp[0] = minx + arcwidth;
+	    temp[1] = maxy;
+	    break;
+	  case 7:
+	    temp[0] = minx;
+	    temp[1] = maxy - archeight;
+	    break;
+	  }
+      }
+
+      public void next()
+      {
+	if (current >= 8)
+	  ++current;
+	else if (corner != null)
+	  {
+	    // We're iterating through the corner.  Work on the child
+	    // iterator; if it finishes, reset and move to the next
+	    // point along the rectangle.
+	    corner.next();
+	    if (corner.isDone())
+	      {
+		corner = null;
+		++current;
+	      }
+	  }
+	else
+	  {
+	    // Make an arc between this point on the rectangle and
+	    // the next one, and then iterate over this arc.
+	    getPoint(current);
+	    double x1 = temp[0];
+	    double y1 = temp[1];
+	    getPoint(current + 1);
+	    arc.setFrameFromDiagonal(x1, y1, temp[0], temp[1]);
+	    arc.setAngles(x1, y1, temp[0], temp[1]);
+	    corner = arc.getPathIterator(at);
+	  }
+      }
+
+      public int currentSegment(float[] coords)
+      {
+	if (corner != null)
+	  {
+	    int r = corner.currentSegment(coords);
+	    if (r == SEG_MOVETO)
+	      r = SEG_LINETO;
+	    return r;
+	  }
+
+	if (current < 9)
+	  {
+	    getPoint(current);
+	    coords[0] = (float) temp[0];
+	    coords[1] = (float) temp[1];
+	  }
+	else if (current == 9)
+	  return SEG_CLOSE;
+	else
+	  throw new NoSuchElementException("rect iterator out of bounds");
+
+	if (at != null)
+	  at.transform(coords, 0, coords, 0, 1);
+	return current == 0 ? SEG_MOVETO : SEG_LINETO;
+      }
+
+      public int currentSegment(double[] coords)
+      {
+	if (corner != null)
+	  {
+	    int r = corner.currentSegment(coords);
+	    if (r == SEG_MOVETO)
+	      r = SEG_LINETO;
+	    return r;
+	  }
+
+	if (current < 9)
+	  {
+	    getPoint(current);
+	    coords[0] = temp[0];
+	    coords[1] = temp[1];
+	  }
+	else if (current == 9)
+	  return SEG_CLOSE;
+	else
+	  throw new NoSuchElementException("rect iterator out of bounds");
+
+	if (at != null)
+	  at.transform(coords, 0, coords, 0, 1);
+	return current == 0 ? SEG_MOVETO : SEG_LINETO;
+      }
+    };
   }
 
   /** Return true if the given rectangle intersects this shape.
