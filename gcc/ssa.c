@@ -784,10 +784,16 @@ rename_block (bb, idom)
 	     not to the old version inner insn.)  */
 	  if (get_insns () != NULL_RTX)
 	    {
+	      rtx seq;
 	      int i;
 	      
 	      emit (PATTERN (insn));
-	      PATTERN (insn) = gen_sequence ();
+	      seq = gen_sequence ();
+	      /* We really want a SEQUENCE of SETs, not a SEQUENCE
+		 of INSNs.  */
+	      for (i = 0; i < XVECLEN (seq, 0); i++)
+		XVECEXP (seq, 0, i) = PATTERN (XVECEXP (seq, 0, i));
+	      PATTERN (insn) = seq;
 	    }
 	  end_sequence ();
 	  
@@ -1833,17 +1839,9 @@ rename_equivalent_regs (reg_partition)
 		  if (slen <= 1)
 		    abort();
 
-		  PATTERN (insn) = PATTERN (XVECEXP (s, 0, slen-1));
+		  PATTERN (insn) = XVECEXP (s, 0, slen-1);
 		  for (i = 0; i < slen - 1; i++)
-		    {
-		      rtx new_insn;
-		      rtx old_insn = XVECEXP (s, 0, i);
-		      
-		      new_insn = emit_block_insn_before (PATTERN (old_insn),
-							 insn, b);
-		      REG_NOTES (new_insn) = REG_NOTES (old_insn);
-		    }
-		  
+		    emit_block_insn_before (XVECEXP (s, 0, i), insn, b);
 		}
 	    }
 
