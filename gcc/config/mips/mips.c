@@ -6861,7 +6861,16 @@ mips_select_rtx_section (mode, x)
 }
 
 /* Choose the section to use for DECL.  RELOC is true if its value contains
-   any relocatable expression.  */
+   any relocatable expression.
+
+   Some of the logic used here needs to be replicated in
+   ENCODE_SECTION_INFO in mips.h so that references to these symbols
+   are done correctly.  Specifically, at least all symbols assigned
+   here to rom (.text and/or .rodata) must not be referenced via
+   ENCODE_SECTION_INFO with %gprel, as the rom might be too far away.
+
+   If you need to make a change here, you probably should check
+   ENCODE_SECTION_INFO to see if it needs a similar change.  */
 
 void
 mips_select_section (decl, reloc)

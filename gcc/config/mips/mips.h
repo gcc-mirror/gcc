@@ -3080,7 +3080,19 @@ typedef struct mips_args {
    gp addresable section, SYMBOL_REF_FLAG is set prevent gcc from
    splitting the reference so that gas can generate a gp relative
    reference.
- */
+
+   When TARGET_EMBEDDED_DATA is set, we assume that all const
+   variables will be stored in ROM, which is too far from %gp to use
+   %gprel addressing.  Note that (1) we include "extern const"
+   variables in this, which mips_select_section doesn't, and (2) we
+   can't always tell if they're really const (they might be const C++
+   objects with non-const constructors), so we err on the side of
+   caution and won't use %gprel anyway (otherwise we'd have to defer
+   this decision to the linker/loader).  The handling of extern consts
+   is why the DECL_INITIAL macros differ from mips_select_section.
+
+   If you are changing this macro, you should look at
+   mips_select_section and see if it needs a similar change.  */
 
 #define ENCODE_SECTION_INFO(DECL)					\
 do									\
@@ -3094,7 +3106,17 @@ do									\
 	    mips_string_length += TREE_STRING_LENGTH (DECL);		\
 	  }								\
       }									\
-    if (TARGET_EMBEDDED_PIC)						\
+									\
+    if (TARGET_EMBEDDED_DATA						\
+	&& (TREE_CODE (DECL) == VAR_DECL				\
+	    && TREE_READONLY (DECL) && !TREE_SIDE_EFFECTS (DECL))	\
+	    && (!DECL_INITIAL (DECL)					\
+		|| TREE_CONSTANT (DECL_INITIAL (DECL))))		\
+      {									\
+	SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 0;		\
+      }									\
+									\
+    else if (TARGET_EMBEDDED_PIC)					\
       {									\
         if (TREE_CODE (DECL) == VAR_DECL)				\
 	  SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;		\

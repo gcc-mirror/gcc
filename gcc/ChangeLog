@@ -1,3 +1,9 @@
+Mon Dec  7 15:27:09 1998  DJ Delorie  <dj@cygnus.com>
+
+	* mips/mips.h (ENCODE_SECTION_INFO): Handle TARGET_EMBEDDED_DATA.
+	Add comment.
+	* mips/mips.c (mips_select_section): Add comment.
+
 Mon Dec  7 17:55:06 1998  Mike Stump  <mrs@wrs.com>
 
 	* cccp.c (ignore_escape_flag): Add support for \ as `natural'
