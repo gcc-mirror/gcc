@@ -442,7 +442,7 @@
 	    }
 	  else 
 	    {
-	      if (__flen < __from_end - __from)
+	      if (__flen < static_cast<size_t>(__from_end - __from))
 		{
 		  __from_next = reinterpret_cast<const intern_type*>(__cfrom);
 		  __to_next = reinterpret_cast<extern_type*>(__cto);
@@ -548,7 +548,7 @@
 	    }
 	  else 
 	    {
-	      if (__flen < __from_end - __from)
+	      if (__flen < static_cast<size_t>(__from_end - __from))
 		{
 		  __from_next = reinterpret_cast<const extern_type*>(__cfrom);
 		  __to_next = reinterpret_cast<intern_type*>(__cto);
@@ -576,7 +576,7 @@
   template<typename _InternT, typename _ExternT>
     int 
     codecvt<_InternT, _ExternT, __enc_traits>::
-    do_length(const state_type& __state, const extern_type* __from, 
+    do_length(const state_type&, const extern_type* __from, 
 	      const extern_type* __end, size_t __max) const
     { return min(__max, static_cast<size_t>(__end - __from)); }
 

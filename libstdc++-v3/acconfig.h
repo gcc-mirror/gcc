@@ -98,16 +98,6 @@
 // Systems that have certain non-standard functions prefixed with an
 // underscore, we'll handle those here. Must come after config.h.in.
 //
-
-#if defined(_GLIBCPP_USE_C99) && defined(__cplusplus)
-// Placeholder for declarations in c99 namespace.
-namespace std
-{
-  namespace c99 { }
-  using namespace c99;
-}
-#endif
-
 #if defined (HAVE__ISNAN) && ! defined (HAVE_ISNAN)
 # define HAVE_ISNAN 1
 # define isnan _isnan

@@ -204,6 +204,13 @@ namespace c99
   extern "C" long long int wcstoll(const wchar_t*, wchar_t**, int); 
   extern "C" unsigned long long int wcstoull(const wchar_t*, wchar_t**, int); 
 }
+
+namespace std
+{
+  using c99::wcstold;
+  using c99::wcstoll;
+  using c99::wcstoull;
+}
 #endif
 
 #endif //_GLIBCPP_USE_WCHAR_T
