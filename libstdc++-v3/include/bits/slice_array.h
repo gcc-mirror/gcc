@@ -41,14 +41,39 @@
 
 namespace std
 {
+  /**
+   *  @brief  Class defining one-dimensional subset of an array.
+   *
+   *  The slice class represents a one-dimensional subset of an array,
+   *  specified by three parameters: start offset, size, and stride.  The
+   *  start offset is the index of the first element of the array that is part
+   *  of the subset.  The size is the total number of elements in the subset.
+   *  Stride is the distance between each successive array element to include
+   *  in the subset.
+   *
+   *  For example, with an array of size 10, and a slice with offset 1, size 3
+   *  and stride 2, the subset consists of array elements 1, 3, and 5.
+   */
   class slice
   {
   public:
+    ///  Construct an empty slice.
     slice();
+
+    /**
+     *  @brief  Construct a slice.
+     *
+     *  @param  o  Offset in array of first element.
+     *  @param  d  Number of elements in slice.
+     *  @param  s  Stride between array elements.
+     */
     slice(size_t, size_t, size_t);
     
+    ///  Return array offset of first slice element.
     size_t start() const;
+    ///  Return size of slice.
     size_t size() const;
+    ///  Return array stride of slice.
     size_t stride() const;
     
   private:
@@ -78,6 +103,19 @@ namespace std
   slice::stride() const
   { return _M_st; }
 
+  /**
+   *  @brief  Reference to one-dimensional subset of an array.
+   *
+   *  A slice_array is a reference to the actual elements of an array
+   *  specified by a slice.  The way to get a slice_array is to call
+   *  operator[](slice) on a valarray.  The returned slice_array then permits
+   *  carrying operations out on the referenced subset of elements in the
+   *  original valarray.  For example, operator+=(valarray) will add values
+   *  to the subset of elements in the underlying valarray this slice_array
+   *  refers to.
+   *
+   *  @param  Tp  Element type.
+   */
   template<typename _Tp>
     class slice_array
     {
@@ -85,22 +123,37 @@ namespace std
       typedef _Tp value_type;
 
       // This constructor is implemented since we need to return a value.
+      ///  Copy constructor.  Both slices refer to the same underlying array.
       slice_array(const slice_array&);
 
       // This operator must be public.  See DR-253.
+      ///  Assignment operator.  Assigns slice elements to corresponding
+      ///  elements of @a a.
       slice_array& operator=(const slice_array&);
 
+      ///  Assign slice elements to corresponding elements of @a v.
       void operator=(const valarray<_Tp>&) const;
+      ///  Multiply slice elements by corresponding elements of @a v.
       void operator*=(const valarray<_Tp>&) const;
+      ///  Divide slice elements by corresponding elements of @a v.
       void operator/=(const valarray<_Tp>&) const;
+      ///  Modulo slice elements by corresponding elements of @a v.
       void operator%=(const valarray<_Tp>&) const;
+      ///  Add corresponding elements of @a v to slice elements.
       void operator+=(const valarray<_Tp>&) const;
+      ///  Subtract corresponding elements of @a v from slice elements.
       void operator-=(const valarray<_Tp>&) const;
+      ///  Logical xor slice elements with corresponding elements of @a v.
       void operator^=(const valarray<_Tp>&) const;
+      ///  Logical and slice elements with corresponding elements of @a v.
       void operator&=(const valarray<_Tp>&) const;
+      ///  Logical or slice elements with corresponding elements of @a v.
       void operator|=(const valarray<_Tp>&) const;
+      ///  Left shift slice elements by corresponding elements of @a v.
       void operator<<=(const valarray<_Tp>&) const;
+      ///  Right shift slice elements by corresponding elements of @a v.
       void operator>>=(const valarray<_Tp>&) const;
+      ///  Assign all slice elements to @a t.
       void operator=(const _Tp &) const;
       //        ~slice_array ();
 

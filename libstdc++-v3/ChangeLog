@@ -1,3 +1,14 @@
+2004-02-02  Jerry Quinn  <jlquinn@optonline.net>
+
+	* include/bits/gslice.h (gslice):  Document.
+	* include/bits/gslice_array.h (gslice_array):  Document.
+	* include/bits/indirect_array (indirect_array):  Document.
+	* include/bits/mask_array (mask_array):  Document.
+	* include/bits/slice_array.h (slice,slice_array):  Document.
+	* include/bits/stl_numeric.h (accumulate, inner_product, partial_sum,
+	adjacent_difference):  Document
+	* include/std/std_valarray.h (valarray):  Document.
+
 2004-02-02  Benjamin Kosnik  <bkoz@redhat.com>
 
         * docs/html/19_diagnostics/howto.html: Move verbose terminate

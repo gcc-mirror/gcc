@@ -42,66 +42,96 @@
 
 namespace std
 {
+  /**
+   *  @brief  Reference to arbitrary subset of an array.
+   *
+   *  An indirect_array is a reference to the actual elements of an array
+   *  specified by an ordered array of indices.  The way to get an indirect_array is to
+   *  call operator[](valarray<size_t>) on a valarray.  The returned
+   *  indirect_array then permits carrying operations out on the referenced
+   *  subset of elements in the original valarray.
+   *
+   *  For example, if an indirect_array is obtained using the array (4,2,0) as
+   *  an argument, and then assigned to an array containing (1,2,3), then the
+   *  underlying array will have array[0]==3, array[2]==2, and array[4]==1.
+   *
+   *  @param  Tp  Element type.
+   */
   template <class _Tp>
-     class indirect_array
-     {
-     public:
-       typedef _Tp value_type;
+    class indirect_array
+    {
+    public:
+      typedef _Tp value_type;
 
-       // XXX: This is a proposed resolution for DR-253.
-       indirect_array& operator=(const indirect_array&);
+      // XXX: This is a proposed resolution for DR-253.
+      ///  Assignment operator.  Assigns elements to corresponding elements
+      ///  of @a a.
+      indirect_array& operator=(const indirect_array&);
        
-       void operator=(const valarray<_Tp>&) const;
-       void operator*=(const valarray<_Tp>&) const;
-       void operator/=(const valarray<_Tp>&) const;
-       void operator%=(const valarray<_Tp>&) const; 
-       void operator+=(const valarray<_Tp>&) const;
-       void operator-=(const valarray<_Tp>&) const;  
-       void operator^=(const valarray<_Tp>&) const;
-       void operator&=(const valarray<_Tp>&) const;
-       void operator|=(const valarray<_Tp>&) const;
-       void operator<<=(const valarray<_Tp>&) const;
-       void operator>>=(const valarray<_Tp>&) const; 
-       void operator= (const _Tp&) const;
-       //    ~indirect_array();
+      ///  Assign slice elements to corresponding elements of @a v.
+      void operator=(const valarray<_Tp>&) const;
+      ///  Multiply slice elements by corresponding elements of @a v.
+      void operator*=(const valarray<_Tp>&) const;
+      ///  Divide slice elements by corresponding elements of @a v.
+      void operator/=(const valarray<_Tp>&) const;
+      ///  Modulo slice elements by corresponding elements of @a v.
+      void operator%=(const valarray<_Tp>&) const; 
+      ///  Add corresponding elements of @a v to slice elements.
+      void operator+=(const valarray<_Tp>&) const;
+      ///  Subtract corresponding elements of @a v from slice elements.
+      void operator-=(const valarray<_Tp>&) const;  
+      ///  Logical xor slice elements with corresponding elements of @a v.
+      void operator^=(const valarray<_Tp>&) const;
+      ///  Logical and slice elements with corresponding elements of @a v.
+      void operator&=(const valarray<_Tp>&) const;
+      ///  Logical or slice elements with corresponding elements of @a v.
+      void operator|=(const valarray<_Tp>&) const;
+      ///  Left shift slice elements by corresponding elements of @a v.
+      void operator<<=(const valarray<_Tp>&) const;
+      ///  Right shift slice elements by corresponding elements of @a v.
+      void operator>>=(const valarray<_Tp>&) const; 
+      ///  Assign all slice elements to @a t.
+      void operator= (const _Tp&) const;
+      //    ~indirect_array();
        
-       template<class _Dom>
-         void operator=(const _Expr<_Dom, _Tp>&) const;
-       template<class _Dom>
-         void operator*=(const _Expr<_Dom, _Tp>&) const;
-       template<class _Dom>
-         void operator/=(const _Expr<_Dom, _Tp>&) const;
-       template<class _Dom>
-         void operator%=(const _Expr<_Dom, _Tp>&) const;
-       template<class _Dom>
-         void operator+=(const _Expr<_Dom, _Tp>&) const;
-       template<class _Dom>
-         void operator-=(const _Expr<_Dom, _Tp>&) const;
-       template<class _Dom>
-         void operator^=(const _Expr<_Dom, _Tp>&) const;
-       template<class _Dom>
-         void operator&=(const _Expr<_Dom, _Tp>&) const;
-       template<class _Dom>
-         void operator|=(const _Expr<_Dom, _Tp>&) const;
-       template<class _Dom>
-         void operator<<=(const _Expr<_Dom, _Tp>&) const;
-       template<class _Dom>
-         void operator>>=(const _Expr<_Dom, _Tp>&) const; 
+      template<class _Dom>
+      void operator=(const _Expr<_Dom, _Tp>&) const;
+      template<class _Dom>
+      void operator*=(const _Expr<_Dom, _Tp>&) const;
+      template<class _Dom>
+      void operator/=(const _Expr<_Dom, _Tp>&) const;
+      template<class _Dom>
+      void operator%=(const _Expr<_Dom, _Tp>&) const;
+      template<class _Dom>
+      void operator+=(const _Expr<_Dom, _Tp>&) const;
+      template<class _Dom>
+      void operator-=(const _Expr<_Dom, _Tp>&) const;
+      template<class _Dom>
+      void operator^=(const _Expr<_Dom, _Tp>&) const;
+      template<class _Dom>
+      void operator&=(const _Expr<_Dom, _Tp>&) const;
+      template<class _Dom>
+      void operator|=(const _Expr<_Dom, _Tp>&) const;
+      template<class _Dom>
+      void operator<<=(const _Expr<_Dom, _Tp>&) const;
+      template<class _Dom>
+      void operator>>=(const _Expr<_Dom, _Tp>&) const; 
 
-     private:
-       indirect_array(const indirect_array&);
-       indirect_array(_Array<_Tp>, size_t, _Array<size_t>);
+    private:
+      ///  Copy constructor.  Both slices refer to the same underlying array.
+      indirect_array(const indirect_array&);
+      indirect_array(_Array<_Tp>, size_t, _Array<size_t>);
 
-       friend class valarray<_Tp>;
-       friend class gslice_array<_Tp>;
+      friend class valarray<_Tp>;
+      friend class gslice_array<_Tp>;
        
-       const size_t 	 _M_sz;
-       const _Array<size_t> _M_index;
-       const _Array<_Tp> 	 _M_array;
+      const size_t 	 _M_sz;
+      const _Array<size_t> _M_index;
+      const _Array<_Tp> 	 _M_array;
        
-       // not implemented
-       indirect_array();
-     };
+      // not implemented
+      indirect_array();
+    };
 
   template<typename _Tp>
     inline 

@@ -42,6 +42,21 @@
 
 namespace std {
 
+  /**
+   *  @brief  Reference to selected subset of an array.
+   *
+   *  A mask_array is a reference to the actual elements of an array specified
+   *  by a bitmask in the form of an array of bool.  The way to get a
+   *  mask_array is to call operator[](valarray<bool>) on a valarray.  The
+   *  returned mask_array then permits carrying operations out on the
+   *  referenced subset of elements in the original valarray.
+   *
+   *  For example, if a mask_array is obtained using the array (false, true,
+   *  false, true) as an argument, the mask array has two elements referring
+   *  to array[1] and array[3] in the underlying array.
+   *
+   *  @param  Tp  Element type.
+   */
   template <class _Tp> 
     class mask_array
     { 
@@ -49,16 +64,27 @@ namespace std {
       typedef _Tp value_type;
     
       void operator=(const valarray<_Tp>&) const;
+      ///  Multiply slice elements by corresponding elements of @a v.
       void operator*=(const valarray<_Tp>&) const;
+      ///  Divide slice elements by corresponding elements of @a v.
       void operator/=(const valarray<_Tp>&) const;
-      void operator%=(const valarray<_Tp>&) const;
-      void operator+=(const valarray<_Tp>&) const; 
-      void operator-=(const valarray<_Tp>&) const;
-      void operator^=(const valarray<_Tp>&) const;  
+      ///  Modulo slice elements by corresponding elements of @a v.
+      void operator%=(const valarray<_Tp>&) const; 
+      ///  Add corresponding elements of @a v to slice elements.
+      void operator+=(const valarray<_Tp>&) const;
+      ///  Subtract corresponding elements of @a v from slice elements.
+      void operator-=(const valarray<_Tp>&) const;  
+      ///  Logical xor slice elements with corresponding elements of @a v.
+      void operator^=(const valarray<_Tp>&) const;
+      ///  Logical and slice elements with corresponding elements of @a v.
       void operator&=(const valarray<_Tp>&) const;
+      ///  Logical or slice elements with corresponding elements of @a v.
       void operator|=(const valarray<_Tp>&) const;
-      void operator<<=(const valarray<_Tp>&) const;  
+      ///  Left shift slice elements by corresponding elements of @a v.
+      void operator<<=(const valarray<_Tp>&) const;
+      ///  Right shift slice elements by corresponding elements of @a v.
       void operator>>=(const valarray<_Tp>&) const; 
+      ///  Assign all slice elements to @a t.
       void operator=(const _Tp&) const;
     
         //        ~mask_array ();
@@ -94,10 +120,14 @@ namespace std {
       const _Array<bool> _M_mask;
       const _Array<_Tp>   _M_array;
       
+      ///  Copy constructor.  Both slices refer to the same underlying array.
       mask_array (const mask_array&);
       
       // not implemented
       mask_array();
+
+      ///  Assignment operator.  Assigns elements to corresponding elements
+      ///  of @a a.
       mask_array& operator=(const mask_array&);
     };
 
