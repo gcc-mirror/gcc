@@ -245,9 +245,6 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
   insv_bitsize = GET_MODE_BITSIZE (op_mode);
 #endif
 
-  if (GET_CODE (str_rtx) == MEM && ! MEM_IN_STRUCT_P (str_rtx))
-    abort ();
-
   /* Discount the part of the structure before the desired byte.
      We need to know how many bytes are safe to reference after it.  */
   if (total_size >= 0)

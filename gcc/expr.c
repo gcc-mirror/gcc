@@ -2066,14 +2066,6 @@ emit_group_store (orig_dst, src, ssize, align)
       /* Make life a bit easier for combine.  */
       emit_move_insn (dst, const0_rtx);
     }
-  else if (! MEM_IN_STRUCT_P (dst))
-    {
-      /* store_bit_field requires that memory operations have
-	 mem_in_struct_p set; we might not.  */
-
-      dst = copy_rtx (orig_dst);
-      MEM_SET_IN_STRUCT_P (dst, 1);
-    }
 
   /* Process the pieces.  */
   for (i = start; i < XVECLEN (src, 0); i++)
