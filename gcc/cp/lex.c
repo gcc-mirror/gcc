@@ -63,6 +63,7 @@ static void handle_pragma_interface PARAMS ((cpp_reader *));
 static void handle_pragma_implementation PARAMS ((cpp_reader *));
 static void cxx_init PARAMS ((void));
 static void cxx_finish PARAMS ((void));
+static void cxx_init_options PARAMS ((void));
 static void cxx_post_options PARAMS ((void));
 
 #ifdef GATHER_STATISTICS
@@ -246,6 +247,8 @@ static const char *cplus_tree_code_name[] = {
 /* Each front end provides its own hooks, for toplev.c.  */
 struct lang_hooks lang_hooks = {cxx_init,
 				cxx_finish,
+				cxx_init_options,
+				cxx_decode_option,
 				cxx_post_options};
 
 /* Post-switch processing.  */
@@ -255,8 +258,8 @@ cxx_post_options ()
   cpp_post_options (parse_in);
 }
 
-void
-lang_init_options ()
+static void
+cxx_init_options ()
 {
   parse_in = cpp_create_reader (CLK_GNUCXX);
 

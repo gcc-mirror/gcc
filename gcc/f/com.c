@@ -14677,20 +14677,15 @@ insert_block (block)
 }
 
 /* Each front end provides its own.  */
-static void f_init PARAMS ((void));
-static void f_finish PARAMS ((void));
+static void ffe_init PARAMS ((void));
+static void ffe_finish PARAMS ((void));
+static void ffe_init_options PARAMS ((void));
 
-struct lang_hooks lang_hooks = {f_init,
-				f_finish,
+struct lang_hooks lang_hooks = {ffe_init,
+				ffe_finish,
+				ffe_init_options,
+				ffe_decode_option,
 				NULL /* post_options */};
-
-int
-lang_decode_option (argc, argv)
-     int argc;
-     char **argv;
-{
-  return ffe_decode_option (argc, argv);
-}
 
 /* used by print-tree.c */
 
@@ -14703,7 +14698,7 @@ lang_print_xnode (file, node, indent)
 }
 
 static void
-f_finish ()
+ffe_finish ()
 {
   ffe_terminate_0 ();
 
@@ -14732,8 +14727,8 @@ lang_get_alias_set (t)
   return 0;
 }
 
-void
-lang_init_options ()
+static void
+ffe_init_options ()
 {
   /* Set default options for Fortran.  */
   flag_move_all_movables = 1;
@@ -14744,7 +14739,7 @@ lang_init_options ()
 }
 
 static void
-f_init ()
+ffe_init ()
 {
   /* If the file is output from cpp, it should contain a first line
      `# 1 "real-filename"', and the current design of gcc (toplev.c

@@ -39,11 +39,14 @@ Boston, MA 02111-1307, USA.  */
 static int c_tree_printer PARAMS ((output_buffer *));
 static int c_missing_noreturn_ok_p PARAMS ((tree));
 static void c_init PARAMS ((void));
+static void c_init_options PARAMS ((void));
 static void c_post_options PARAMS ((void));
 
 /* Each front end provides its own.  */
 struct lang_hooks lang_hooks = {c_init,
 				NULL, /* c_finish */
+				c_init_options,
+				c_decode_option,
 				c_post_options};
 
 /* Post-switch processing.  */
@@ -53,18 +56,8 @@ c_post_options ()
   cpp_post_options (parse_in);
 }
 
-/* Each of the functions defined here
-   is an alternative to a function in objc-actions.c.  */
-int
-lang_decode_option (argc, argv)
-     int argc;
-     char **argv;
-{
-  return c_decode_option (argc, argv);
-}
-
-void
-lang_init_options ()
+static void
+c_init_options ()
 {
   parse_in = cpp_create_reader (CLK_GNUC89);
 

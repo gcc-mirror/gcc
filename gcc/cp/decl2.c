@@ -560,7 +560,7 @@ compare_options (p1, p2)
    recognise the option.  */
 
 int   
-lang_decode_option (argc, argv)
+cxx_decode_option (argc, argv)
      int argc;
      char **argv;
 {

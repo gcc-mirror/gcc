@@ -2563,9 +2563,6 @@ extern tree fold_builtin		PARAMS ((tree));
 
 /* The language front-end must define these functions.  */
 
-/* Function of no arguments for initializing options.  */
-extern void lang_init_options			PARAMS ((void));
-
 /* Function of no arguments for initializing lexical scanning.  */
 extern void init_lex				PARAMS ((void));
 /* Function of no arguments for initializing the symbol table.  */
@@ -2583,11 +2580,6 @@ extern void copy_lang_decl			PARAMS ((tree));
 
 /* Function called with no arguments to parse and compile the input.  */
 extern int yyparse				PARAMS ((void));
-/* Function called with option as argument
-   to decode options starting with -f or -W or +.
-   It should return nonzero if it handles the option.  */
-extern int lang_decode_option			PARAMS ((int, char **));
-
 /* Functions for processing symbol declarations.  */
 /* Function to enter a new lexical scope.
    Takes one argument: always zero when called from outside the front end.  */

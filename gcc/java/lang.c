@@ -46,6 +46,8 @@ struct string_option
 };
 
 static void java_init PARAMS ((void));
+static void java_init_options PARAMS ((void));
+static int java_decode_option PARAMS ((int, char **));
 static void put_decl_string PARAMS ((const char *, int));
 static void put_decl_node PARAMS ((tree));
 static void java_dummy_print PARAMS ((const char *));
@@ -190,6 +192,8 @@ static int dependency_tracking = 0;
 /* Each front end provides its own.  */
 struct lang_hooks lang_hooks = {java_init,
 				NULL, /* java_finish */
+				java_init_options,
+				java_decode_option,
 				NULL /* post_options */};
 
 /* Process an option that can accept a `no-' form.
@@ -224,8 +228,8 @@ process_option_with_no (p, table, table_size)
  * process java-specific compiler command-line options
  * return 0, but do not complain if the option is not recognised.
  */
-int
-lang_decode_option (argc, argv)
+static int
+java_decode_option (argc, argv)
      int argc __attribute__ ((__unused__));
      char **argv;
 {
@@ -678,8 +682,8 @@ void lang_init_source (level)
     print_error_function = lang_print_error;
 }
 
-void
-lang_init_options ()
+static void
+java_init_options ()
 {
   flag_new_exceptions = 1;
   flag_bounds_check = 1;

@@ -1,3 +1,28 @@
+2001-01-10  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * c-lang.c (lang_hooks): Update.
+        (lang_decode_option): Remove.
+        (lang_init_options): Rename c_init_options.
+        * toplev.c (main): Use lang_hooks for lang_init_options
+        and lang_decode_option.
+        * toplev.h (lang_hooks): Add 2 new hooks.
+        * tree.h: Remove lang_init_options and lang_decode_option.
+        * cp/cp-tree.h (lang_decode_option): Rename cxx_decode_option.
+        * cp/decl2.c: Similarly.
+        * cp/lex.c (lang_init_options): Rename cxx_init_options.
+        (lang_hooks): Update.   
+        * f/com.c (f_init, f_finish): Rename ffe_init, ffe_finish
+        for consistency.
+        (lang_init_options): Rename ffe_init_options.
+        (lang_hooks): Update.
+        (lang_decode_option): Remove.
+        * java/lang.c (lang_init_options): Rename java_init_options.
+        (lang_decode_option): Rename java_decode_option.
+        (lang_hooks): Update.
+        * objc/objc-act.c (lang_init_options): Rename objc_init_options.
+        (lang_decode_option): Rename objc_decode_option.
+        (lang_hooks): Update.
+
 2001-01-09  Nick Clifton  <nickc@redhat.com>
 
 	* config/d30v/d30v.c (d30v_eh_epilogue_sp_ofs): Delete.
