@@ -380,7 +380,9 @@ public abstract class ClassLoader
    * @return    the class defined.
    * @exception java.lang.ClassNotFoundException 
    * @exception java.lang.LinkageError
-   * @see ClassLoader#defineClass(String,byte[],int,int) */
+   * @see ClassLoader#defineClass(String,byte[],int,int)
+   * @deprecated use {@link #defineClass(String, byte[], int, int)} instead
+   */
   protected final Class defineClass(byte[] data, int off, int len) 
     throws ClassFormatError
   {
