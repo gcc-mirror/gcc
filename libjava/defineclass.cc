@@ -1,6 +1,6 @@
 // defineclass.cc - defining a class from .class format.
 
-/* Copyright (C) 1999  Red Hat, Inc.
+/* Copyright (C) 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -42,8 +42,6 @@ details.  */
 
 #define ClassClass _CL_Q34java4lang5Class
 extern java::lang::Class ClassClass;
-#define StringClass _CL_Q34java4lang6String
-extern java::lang::Class StringClass;
 #define ClassObject _CL_Q34java4lang6Object
 extern java::lang::Class ClassObject;
 
