@@ -2412,14 +2412,15 @@ such required data.
 @end enumerate
 
 When saving the stack pointer, operand 0 is the save area and operand 1
-is the stack pointer.  The mode used to allocate the save area is the
-mode of operand 0.  You must specify an integral mode, or
-@code{VOIDmode} if no save area is needed for a particular type of save
-(either because no save is needed or because a machine-specific save
-area can be used).  Operand 0 is the stack pointer and operand 1 is the
-save area for restore operations.  If @samp{save_stack_block} is
-defined, operand 0 must not be @code{VOIDmode} since these saves can be
-arbitrarily nested.
+is the stack pointer.  The mode used to allocate the save area defaults
+to @code{Pmode} but you can override that choice by defining the
+@code{STACK_SAVEAREA_MODE} macro (@pxref{Storage_Layout}).  You must
+specify an integral mode, or @code{VOIDmode} if no save area is needed
+for a particular type of save (either because no save is needed or
+because a machine-specific save area can be used).  Operand 0 is the
+stack pointer and operand 1 is the save area for restore operations.  If
+@samp{save_stack_block} is defined, operand 0 must not be
+@code{VOIDmode} since these saves can be arbitrarily nested.
 
 A save area is a @code{mem} that is at a constant offset from
 @code{virtual_stack_vars_rtx} when the stack pointer is saved for use by
