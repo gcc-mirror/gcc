@@ -1,3 +1,7 @@
+2000-01-06  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* prefix.c (update_path): Fix typo in variable name.
+
 2000-01-06  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (mark_set_1): Use loop_depth+1 as reference weight.

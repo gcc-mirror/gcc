@@ -330,7 +330,7 @@ update_path (path, key)
       do {
 	if (*new_path == '/')
 	  *new_path = DIR_SEPARATOR;
-      } while (*newpath++);
+      } while (*new_path++);
     }
 #endif
 
