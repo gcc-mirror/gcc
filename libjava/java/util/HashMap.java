@@ -381,8 +381,7 @@ public class HashMap extends AbstractMap
   public void putAll(Map m)
   {
     Iterator itr = m.entrySet().iterator();
-    int msize = m.size();
-    while (msize-- > 0)
+    while (itr.hasNext())
       {
         Map.Entry e = (Map.Entry) itr.next();
         // Optimize in case the Entry is one of our own.
@@ -709,10 +708,10 @@ public class HashMap extends AbstractMap
   void putAllInternal(Map m)
   {
     Iterator itr = m.entrySet().iterator();
-    int msize = m.size();
-    size = msize;
-    while (msize-- > 0)
+    size = 0;
+    while (itr.hasNext())
       {
+        size++;
 	Map.Entry e = (Map.Entry) itr.next();
 	Object key = e.getKey();
 	int idx = hash(key);

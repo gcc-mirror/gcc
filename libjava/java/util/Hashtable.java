@@ -510,7 +510,7 @@ public class Hashtable extends Dictionary
   {
     Iterator itr = m.entrySet().iterator();
 
-    for (int msize = m.size(); msize > 0; msize--)
+    while (itr.hasNext())
       {
         Map.Entry e = (Map.Entry) itr.next();
         // Optimize in case the Entry is one of our own.
@@ -859,11 +859,11 @@ public class Hashtable extends Dictionary
   void putAllInternal(Map m)
   {
     Iterator itr = m.entrySet().iterator();
-    int msize = m.size();
-    this.size = msize;
+    size = 0;
 
-    for (; msize > 0; msize--)
+    while (itr.hasNext())
       {
+        size++;
 	Map.Entry e = (Map.Entry) itr.next();
 	Object key = e.getKey();
 	int idx = hash(key);
