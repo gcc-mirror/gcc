@@ -2160,8 +2160,8 @@ mark_used_regs (needed, live, x, final, insn)
 	register int offset = regno / REGSET_ELT_BITS;
 	register REGSET_ELT_TYPE bit
 	  = (REGSET_ELT_TYPE) 1 << (regno % REGSET_ELT_BITS);
-	int all_needed = (needed[offset] & bit) != 0;
-	int some_needed = (needed[offset] & bit) != 0;
+	REGSET_ELT_TYPE all_needed = needed[offset] & bit;
+	REGSET_ELT_TYPE some_needed = needed[offset] & bit;
 
 	live[offset] |= bit;
 	/* A hard reg in a wide mode may really be multiple registers.
