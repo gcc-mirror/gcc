@@ -203,6 +203,7 @@ empty_parms ()
 %type <ttype> compstmt implicitly_scoped_stmt
 
 %type <ttype> declarator notype_declarator after_type_declarator
+%type <ttype> notype_declarator_intern
 %type <ttype> direct_notype_declarator direct_after_type_declarator
 %type <itype> components notype_components
 %type <ttype> component_decl component_decl_1 
@@ -216,7 +217,8 @@ empty_parms ()
 %type <ttype> xexpr parmlist parms bad_parm 
 %type <ttype> identifiers_or_typenames
 %type <ttype> fcast_or_absdcl regcast_or_absdcl
-%type <ttype> expr_or_declarator complex_notype_declarator
+%type <ttype> expr_or_declarator expr_or_declarator_intern
+%type <ttype> complex_notype_declarator
 %type <ttype> notype_unqualified_id unqualified_id qualified_id
 %type <ttype> template_id do_id object_template_id notype_template_declarator
 %type <ttype> overqualified_id notype_qualified_id any_id
@@ -725,10 +727,12 @@ fn.def2:
 	| typed_declspecs declarator
 		{ tree specs, attrs;
 		  split_specs_attrs ($1.t, &specs, &attrs);
+		  attrs = build_tree_list (attrs, NULL_TREE);
 		  $$ = start_method (specs, $2, attrs); goto rest_of_mdef; }
 	| declmods notype_declarator
 		{ tree specs, attrs;
 		  split_specs_attrs ($1, &specs, &attrs);
+		  attrs = build_tree_list (attrs, NULL_TREE);
 		  $$ = start_method (specs, $2, attrs); goto rest_of_mdef; }
 	| notype_declarator
 		{ $$ = start_method (NULL_TREE, $$, NULL_TREE); 
@@ -736,6 +740,7 @@ fn.def2:
 	| declmods constructor_declarator
 		{ tree specs, attrs;
 		  split_specs_attrs ($1, &specs, &attrs);
+		  attrs = build_tree_list (attrs, NULL_TREE);
 		  $$ = start_method (specs, $2, attrs); goto rest_of_mdef; }
 	| constructor_declarator
 		{ $$ = start_method (NULL_TREE, $$, NULL_TREE); 
@@ -1325,13 +1330,23 @@ unqualified_id:
 	| SELFNAME
 	;
 
+expr_or_declarator_intern:
+	  expr_or_declarator
+	| attributes expr_or_declarator
+		{
+		  /* Provide support for '(' attributes '*' declarator ')'
+		     etc */
+		  $$ = decl_tree_cons ($1, $2, NULL_TREE);
+		}
+	;
+
 expr_or_declarator:
 	  notype_unqualified_id
-	| '*' expr_or_declarator  %prec UNARY
+	| '*' expr_or_declarator_intern  %prec UNARY
 		{ $$ = build_parse_node (INDIRECT_REF, $2); }
-	| '&' expr_or_declarator  %prec UNARY
+	| '&' expr_or_declarator_intern  %prec UNARY
 		{ $$ = build_parse_node (ADDR_EXPR, $2); }
-	| '(' expr_or_declarator ')'
+	| '(' expr_or_declarator_intern ')'
 		{ $$ = $2; }
 	;
 
@@ -1348,8 +1363,8 @@ direct_notype_declarator:
 	   to the Koenig lookup shift in primary, below.  I hate yacc.  */
 	| notype_unqualified_id %prec '('
 	| notype_template_declarator
-	| '(' expr_or_declarator ')'
-		{ $$ = finish_decl_parsing ($2); }
+	| '(' expr_or_declarator_intern ')'
+                { $$ = finish_decl_parsing ($2); }
 	;
 
 primary:
@@ -1378,7 +1393,7 @@ primary:
 		}
 	| '(' expr ')'
 		{ $$ = finish_parenthesized_expr ($2); }
-	| '(' expr_or_declarator ')'
+	| '(' expr_or_declarator_intern ')'
 		{ $2 = reparse_decl_as_expr (NULL_TREE, $2);
 		  $$ = finish_parenthesized_expr ($2); }
 	| '(' error ')'
@@ -2774,16 +2789,26 @@ direct_after_type_declarator:
 /* A declarator allowed whether or not there has been
    an explicit typespec.  These cannot redeclare a typedef-name.  */
 
+notype_declarator_intern:
+	  notype_declarator
+	| attributes notype_declarator
+                {
+		  /* Provide support for '(' attributes '*' declarator ')'
+		     etc */
+		  $$ = decl_tree_cons ($1, $2, NULL_TREE);
+		}
+	;
+	
 notype_declarator:
-	  '*' nonempty_cv_qualifiers notype_declarator  %prec UNARY
+	  '*' nonempty_cv_qualifiers notype_declarator_intern  %prec UNARY
 		{ $$ = make_pointer_declarator ($2.t, $3); }
-	| '&' nonempty_cv_qualifiers notype_declarator  %prec UNARY
+	| '&' nonempty_cv_qualifiers notype_declarator_intern  %prec UNARY
 		{ $$ = make_reference_declarator ($2.t, $3); }
-	| '*' notype_declarator  %prec UNARY
+	| '*' notype_declarator_intern  %prec UNARY
 		{ $$ = make_pointer_declarator (NULL_TREE, $2); }
-	| '&' notype_declarator  %prec UNARY
+	| '&' notype_declarator_intern  %prec UNARY
 		{ $$ = make_reference_declarator (NULL_TREE, $2); }
-	| ptr_to_mem cv_qualifiers notype_declarator
+	| ptr_to_mem cv_qualifiers notype_declarator_intern
 		{ tree arg = make_pointer_declarator ($2, $3);
 		  $$ = build_parse_node (SCOPE_REF, $1, arg);
 		}
@@ -2791,15 +2816,15 @@ notype_declarator:
 	;
 
 complex_notype_declarator:
-	  '*' nonempty_cv_qualifiers notype_declarator  %prec UNARY
+	  '*' nonempty_cv_qualifiers notype_declarator_intern  %prec UNARY
 		{ $$ = make_pointer_declarator ($2.t, $3); }
-	| '&' nonempty_cv_qualifiers notype_declarator  %prec UNARY
+	| '&' nonempty_cv_qualifiers notype_declarator_intern  %prec UNARY
 		{ $$ = make_reference_declarator ($2.t, $3); }
 	| '*' complex_notype_declarator  %prec UNARY
 		{ $$ = make_pointer_declarator (NULL_TREE, $2); }
 	| '&' complex_notype_declarator  %prec UNARY
 		{ $$ = make_reference_declarator (NULL_TREE, $2); }
-	| ptr_to_mem cv_qualifiers notype_declarator
+	| ptr_to_mem cv_qualifiers notype_declarator_intern
 		{ tree arg = make_pointer_declarator ($2, $3);
 		  $$ = build_parse_node (SCOPE_REF, $1, arg);
 		}
@@ -2851,7 +2876,7 @@ overqualified_id:
 functional_cast:
 	  typespec '(' nonnull_exprlist ')'
 		{ $$ = build_functional_cast ($1.t, $3); }
-	| typespec '(' expr_or_declarator ')'
+	| typespec '(' expr_or_declarator_intern ')'
 		{ $$ = reparse_decl_as_expr ($1.t, $3); }
 	| typespec fcast_or_absdcl  %prec EMPTY
 		{ $$ = reparse_absdcl_as_expr ($1.t, $2); }

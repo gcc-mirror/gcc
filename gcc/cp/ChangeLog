@@ -1,3 +1,16 @@
+1998-10-18  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (fn.def2): Fix 'attrs' format.
+
+1998-10-18  Alastair J. Houghton <ajh8@doc.ic.ac.uk>
+
+	* Makefile.in (CONFLICTS): Update.
+	* parse.y (expr_or_declarator_intern): New rule.
+	(expr_or_declarator, direct_notype_declarator, primary,
+	functional_cast): Use it.
+	(notype_declarator_intern): New rule.
+	(notype_declarator, complex_notype_declarator): Use it.
+
 1998-10-17  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (grokfndecl): Set DECL_CONTEXT to namespace if appropriate.

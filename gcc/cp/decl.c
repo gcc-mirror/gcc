@@ -8555,6 +8555,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	decl = *next;
 	switch (TREE_CODE (decl))
 	  {
+	  case TREE_LIST:
+	    /* For attributes.  */
+	    next = &TREE_VALUE (decl);
+	    break;
+
 	  case COND_EXPR:
 	    ctype = NULL_TREE;
 	    next = &TREE_OPERAND (decl, 0);
@@ -9432,6 +9437,16 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	}
       switch (TREE_CODE (declarator))
 	{
+	case TREE_LIST:
+	  {
+	    /* We encode a declarator with embedded attributes using
+	       a TREE_LIST.  */
+	    tree attrs = TREE_PURPOSE (declarator);
+	    declarator = TREE_VALUE (declarator);
+	    decl_attributes (type, attrs, NULL_TREE);
+	  }
+	  break;
+
 	case ARRAY_REF:
 	  {
 	    register tree itype = NULL_TREE;
