@@ -1,5 +1,12 @@
 2003-03-04  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* Makefile.tpl: Don't set unused enable_shared, enable_threads macros.
+	* Makefile.in: Regenerate.
+	* configure.in: Remove unused logic relating to --enable-shared
+	and --enable-threads.  Remove bogus comments.  Remove redundant
+	noconfigdirs.
+	* configure: Regenerate.
+
 	* configure.in: Replace ${libstdcxx_version} by its value.
 	Remove reference to mh-dgux.
 	* configure: Regenerate.

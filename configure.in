@@ -27,8 +27,6 @@ sinclude(config/acx.m4)
 
 # clear some things potentially inherited from environment.
 
-enable_threads=no
-enable_shared=no
 enable_libstdcxx_v3=yes
 floating_point=default
 gas=default
@@ -67,15 +65,6 @@ case "${OSTYPE}" in
 esac
 
 config_shell=${CONFIG_SHELL-/bin/sh}
-
-## this is a little touchy and won't always work, but...
-##
-## if the argv[[0]] starts with a slash then it is an absolute name that can (and
-## must) be used as is.
-##
-## otherwise, if argv[[0]] has no slash in it, we can assume that it is on the
-## path.  Since PATH might include "." we also add `pwd` to the end of PATH.
-##
 
 progname=$0
 # if PWD already has a value, it is probably wrong.
@@ -421,7 +410,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-newlib"
     case "${host}" in
       *-*-cygwin*) ;; # keep gdb and readline
-      *) noconfigdirs="$noconfigdirs gdb readline ${libstdcxx_version}"
+      *) noconfigdirs="$noconfigdirs gdb readline"
 	 ;;
     esac
     ;;
@@ -1246,24 +1235,6 @@ if test x${with_newlib} != xno && echo " ${target_configdirs} " | grep " target-
   extra_host_args="$extra_host_args --with-newlib"
 fi
 
-# We default to --with-shared on platforms where -fpic is meaningless.
-# Well, we don't yet, but we will.
-if false && test "${host}" = "${target}" && test x${enable_shared} = x ; then
-  case "${target}" in
-    alpha*-dec-osf*)	enable_shared=yes ;;
-    alpha*-*-linux*)	enable_shared=yes ;;
-    mips-sgi-irix5*)	enable_shared=yes ;;
-    *)			enable_shared=no ;;
-  esac
-fi
-
-case "${enable_shared}" in
-  yes) shared=yes ;;
-  no) shared=no ;;
-  "") shared=no ;;
-  *) shared=yes ;;
-esac
-
 
 # Default to using --with-stabs for certain targets.
 if test x${with_stabs} = x ; then
@@ -1639,12 +1610,10 @@ esac
 
 # If --enable-shared was set, we must set LD_LIBRARY_PATH so that the
 # binutils tools will find libbfd.so.
-if test "${shared}" = "yes" ; then
-  SET_LIB_PATH="\$(REALLY_SET_LIB_PATH)"
-else
-  SET_LIB_PATH=
-fi
-
+case "${enable_shared}" in
+  no | "") SET_LIB_PATH= ;;
+  *) SET_LIB_PATH="\$(REALLY_SET_LIB_PATH)" ;;
+esac
 
 case "${host}" in
   *-*-hpux*) RPATH_ENVVAR=SHLIB_PATH ;;
@@ -2031,8 +2000,6 @@ AC_SUBST(RPATH_ENVVAR)
 AC_SUBST(BUILD_PREFIX)
 AC_SUBST(BUILD_PREFIX_1)
 AC_SUBST(configlinks)
-AC_SUBST(enable_shared)
-AC_SUBST(enable_threads)
 AC_SUBST(enable_version_specific_runtime_libs)
 AC_SUBST(gcc_version_trigger)
 AC_SUBST(gcc_version)

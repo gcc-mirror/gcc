@@ -87,8 +87,6 @@ INSTALL_DATA = $(INSTALL) -m 644
 # -------------------------------------------------
 
 links=@configlinks@
-enable_shared = @enable_shared@
-enable_threads = @enable_threads@
 enable_version_specific_runtime_libs = @enable_version_specific_runtime_libs@
 # The file containing GCC's version number.
 gcc_version_trigger = @gcc_version_trigger@
