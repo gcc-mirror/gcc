@@ -70,7 +70,7 @@ extern rtx frv_legitimize_address		PARAMS ((rtx, rtx,
 
 #ifdef TREE_CODE
 extern void frv_init_cumulative_args		PARAMS ((CUMULATIVE_ARGS *, tree,
-						       rtx, int, int));
+						       rtx, tree, int));
 
 extern int frv_function_arg_boundary		PARAMS ((enum machine_mode, tree));
 extern rtx frv_function_arg			PARAMS ((CUMULATIVE_ARGS *,

@@ -7748,7 +7748,7 @@ mips_expand_prologue ()
 
      This is only needed if store_args_on_stack is true.  */
 
-  INIT_CUMULATIVE_ARGS (args_so_far, fntype, NULL_RTX, 0);
+  INIT_CUMULATIVE_ARGS (args_so_far, fntype, NULL_RTX, current_function_decl);
   regno = GP_ARG_FIRST;
 
   for (cur_arg = fnargs; cur_arg != 0; cur_arg = next_arg)

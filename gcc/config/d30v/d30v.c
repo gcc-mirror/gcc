@@ -1922,7 +1922,7 @@ d30v_init_cumulative_args (cum, fntype, libname, indirect, incoming)
      CUMULATIVE_ARGS *cum;
      tree fntype;
      rtx libname;
-     int indirect;
+     tree fndecl;
      int incoming;
 {
   *cum = GPR_ARG_FIRST;
@@ -1930,7 +1930,7 @@ d30v_init_cumulative_args (cum, fntype, libname, indirect, incoming)
   if (TARGET_DEBUG_ARG)
     {
       fprintf (stderr, "\ninit_cumulative_args:");
-      if (indirect)
+      if (!fndecl && fntype)
 	fputs (" indirect", stderr);
 
       if (incoming)

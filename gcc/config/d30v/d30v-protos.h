@@ -75,7 +75,7 @@ extern int direct_return		PARAMS ((void));
 #ifdef TREE_CODE
 #ifdef RTX_CODE
 extern void d30v_init_cumulative_args	PARAMS ((CUMULATIVE_ARGS *, tree,
-						 rtx, int, int));
+						 rtx, tree, int));
 #endif
 extern int d30v_function_arg_boundary	PARAMS ((enum machine_mode, tree));
 #ifdef RTX_CODE

@@ -1957,11 +1957,11 @@ arm_float_words_big_endian ()
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is NULL.  */
 void
-arm_init_cumulative_args (pcum, fntype, libname, indirect)
+arm_init_cumulative_args (pcum, fntype, libname, fndecl)
      CUMULATIVE_ARGS * pcum;
      tree fntype;
      rtx libname  ATTRIBUTE_UNUSED;
-     int indirect ATTRIBUTE_UNUSED;
+     tree fndecl ATTRIBUTE_UNUSED;
 {
   /* On the ARM, the offset starts at 0.  */
   pcum->nregs = ((fntype && aggregate_value_p (TREE_TYPE (fntype))) ? 1 : 0);

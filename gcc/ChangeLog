@@ -1,3 +1,26 @@
+Wed Feb 19 19:00:24 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* calls.c (expand_call): Update call of INIT_CUMULATIVE_ARGS
+	* function.c (assign_params): Likewise.
+	* arm-protos.h (arm_init_cumulative_args): Update prototype.
+	* arm.c (arm_init_cumulative_args): Update function.
+	* arm.h (INIT_CUMULATIVE_ARGS): Update.
+	* avr-protos.h (init_cumulative_args): Update prototype.
+	* avr.c (init_cumulative_args): Update function.
+	* avr.h (INIT_CUMULATIVE_ARGS): Update.
+	* d30v-protos.h (d30v_init_cumulative_args): Update prototype.
+	* d30v.c (d30v_init_cumulative_args): Update function.
+	* d30v.h (INIT_CUMULATIVE_ARGS): Update.
+	* frv-protos.h (frv_init_cumulative_args): Update prototype.
+	* frv.c (frv_init_cumulative_args): Update function.
+	* frv.h (INIT_CUMULATIVE_ARGS): Update.
+	* mips.c (mips_expand_prolgue): Update call of INIT_CUMULATIVE_ARGS.
+	* pa.h (INIT_CUMULATIVE_ARGS): Update.
+	* sparc-protos.h (init_cumulative_args): Update prototype.
+	* sparc.c (init_cumulative_args): Update function.
+	* sparc.h (INIT_CUMULATIVE_ARGS): Update.
+	* tm.texi (INIT_CUMULATIVE_ARGS): Update documentation.
+
 2003-02-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*iorsi3_two_qi_sext): New.

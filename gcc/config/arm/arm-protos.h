@@ -149,7 +149,7 @@ extern int    arm_is_longcall_p 	PARAMS ((rtx, int, int));
 extern rtx    arm_function_arg		PARAMS ((CUMULATIVE_ARGS *,
 						enum machine_mode, tree, int));
 extern void   arm_init_cumulative_args	PARAMS ((CUMULATIVE_ARGS *, tree, rtx,
-						int));
+						tree));
 extern rtx    arm_va_arg                PARAMS ((tree, tree));
 extern int    arm_function_arg_pass_by_reference PARAMS ((CUMULATIVE_ARGS *,
 							 enum machine_mode,

@@ -3081,11 +3081,11 @@ frv_print_operand (file, x, code)
    FNTYPE is nonzero, but never both of them at once.  */
 
 void
-frv_init_cumulative_args (cum, fntype, libname, indirect, incoming)
+frv_init_cumulative_args (cum, fntype, libname, fndecl, incoming)
      CUMULATIVE_ARGS *cum;
      tree fntype;
      rtx libname;
-     int indirect;
+     tree fndecl;
      int incoming;
 {
   *cum = FIRST_ARG_REGNUM;
@@ -3093,7 +3093,7 @@ frv_init_cumulative_args (cum, fntype, libname, indirect, incoming)
   if (TARGET_DEBUG_ARG)
     {
       fprintf (stderr, "\ninit_cumulative_args:");
-      if (indirect)
+      if (!fndecl && fntype)
 	fputs (" indirect", stderr);
 
       if (incoming)

@@ -1955,8 +1955,8 @@ struct machine_function GTY(())
    being processed.  Thus, each time this macro is called, either LIBNAME or
    FNTYPE is nonzero, but never both of them at once.  */
 
-#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT) \
-  frv_init_cumulative_args (&CUM, FNTYPE, LIBNAME, INDIRECT, FALSE)
+#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL) \
+  frv_init_cumulative_args (&CUM, FNTYPE, LIBNAME, FNDECL, FALSE)
 
 /* Like `INIT_CUMULATIVE_ARGS' but overrides it for the purposes of finding the
    arguments for the function being compiled.  If this macro is undefined,
@@ -1967,7 +1967,7 @@ struct machine_function GTY(())
    LIBNAME exists for symmetry with `INIT_CUMULATIVE_ARGS'.  */
 
 #define INIT_CUMULATIVE_INCOMING_ARGS(CUM, FNTYPE, LIBNAME) \
-  frv_init_cumulative_args (&CUM, FNTYPE, LIBNAME, FALSE, TRUE)
+  frv_init_cumulative_args (&CUM, FNTYPE, LIBNAME, NULL, TRUE)
 
 /* A C statement (sans semicolon) to update the summarizer variable CUM to
    advance past an argument in the argument list.  The values MODE, TYPE and
