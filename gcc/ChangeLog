@@ -1,5 +1,9 @@
 2002-02-10  Kazu Hirata  <kazu@hxi.com>
 
+	* config/h8300/h8300.c (print_operand): Remove redundant code.
+
+2002-02-10  Kazu Hirata  <kazu@hxi.com>
+
 	* config/h8300/h8300-protos.h: Remove the prototype for byte_reg.
 	* config/h8300/h8300.c (byte_reg): Make it static.
 

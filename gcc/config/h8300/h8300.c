@@ -1213,22 +1213,26 @@ print_operand (file, x, code)
 	  break;
 
 	case MEM:
-	  fprintf (file, "@");
-	  output_address (XEXP (x, 0));
+	  {
+	    rtx addr = XEXP (x, 0);
 
-	  /* If this is an 'R' operand (reference into the 8-bit
-	     area), then specify a symbolic address as "foo:8",
-	     otherwise if operand is still in eight bit section, use
-	     "foo:16".  */
-	  if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
-	      && SYMBOL_REF_FLAG (XEXP (x, 0)))
-	    fprintf (file, (code == 'R' ? ":8" : ":16"));
-	  else if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
-		   && TINY_DATA_NAME_P (XSTR (XEXP (x, 0), 0)))
-	    fprintf (file, ":16");
-	  else if ((code == 'R')
-		   && EIGHTBIT_CONSTANT_ADDRESS_P (XEXP (x, 0)))
-	    fprintf (file, ":8");
+	    fprintf (file, "@");
+	    output_address (addr);
+
+	    /* If this is an 'R' operand (reference into the 8-bit
+	       area), then specify a symbolic address as "foo:8",
+	       otherwise if operand is still in eight bit section, use
+	       "foo:16".  */
+	    if (GET_CODE (addr) == SYMBOL_REF
+		&& SYMBOL_REF_FLAG (addr))
+	      fprintf (file, (code == 'R' ? ":8" : ":16"));
+	    else if (GET_CODE (addr) == SYMBOL_REF
+		     && TINY_DATA_NAME_P (XSTR (addr, 0)))
+	      fprintf (file, ":16");
+	    else if ((code == 'R')
+		     && EIGHTBIT_CONSTANT_ADDRESS_P (addr))
+	      fprintf (file, ":8");
+	  }
 	  break;
 
 	case CONST_INT:
