@@ -1787,9 +1787,10 @@ build_array_ref (tree array, tree index)
 }
 
 /* Build an external reference to identifier ID.  FUN indicates
-   whether this will be used for a function call.  */
+   whether this will be used for a function call.  LOC is the source
+   location of the identifier.  */
 tree
-build_external_ref (tree id, int fun)
+build_external_ref (tree id, int fun, location_t loc)
 {
   tree ref;
   tree decl = lookup_name (id);
@@ -1809,7 +1810,7 @@ build_external_ref (tree id, int fun)
     return error_mark_node;
   else
     {
-      undeclared_variable (id);
+      undeclared_variable (id, loc);
       return error_mark_node;
     }
 

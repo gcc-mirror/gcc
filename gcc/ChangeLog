@@ -1,3 +1,13 @@
+2005-03-02  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/8927
+	* c-tree.h (undeclared_variable, build_external_ref): Add extra
+	argument.
+	* c-decl.c (undeclared_variable): Take location as argument.
+	* c-typeck.c (build_external_ref): Likewise.
+	* c-parser.c (c_parser_postfix_expression): Pass location of
+	identifier to build_external_ref.
+
 2005-03-01  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (cceq splitter): Use operand mode, not
