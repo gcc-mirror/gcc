@@ -805,6 +805,7 @@ _cpp_replacement_text_len (macro)
     {
       const uchar *exp;
 
+      len = 0;
       for (exp = macro->exp.text;;)
 	{
 	  struct block *b = (struct block *) exp;
