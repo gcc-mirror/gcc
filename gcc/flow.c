@@ -2426,7 +2426,7 @@ mark_used_regs (needed, live, x, final, insn)
 
 		SET_REGNO_REG_SET (live, regno_n);
 		some_needed |= needed_regno;
-		some_not_needed != ! needed_regno;
+		some_not_needed |= ! needed_regno;
 	      }
 	  }
 	if (final)
