@@ -1,3 +1,7 @@
+2003-02-18  Aldy Hernandez  <aldyh@redhat.com>
+
+        * gcc.dg/20030218-1.c: New.
+
 2003-02-18  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/attr-invalid.c: Allow __used__ on static data.
