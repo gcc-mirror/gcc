@@ -2662,9 +2662,6 @@ do {									\
     FAIL;								\
 } while (0)
 
-/* Enable parsing of #pragma pack(push,<n>) and #pragma pack(pop).  */
-#define HANDLE_PRAGMA_PACK_PUSH_POP 1
-
 
 /* Functions in i386.c */
 extern void override_options ();
