@@ -2509,6 +2509,11 @@ generate_bytecode_insns (exp, target, state)
 	    else
 	      OP1 (OPCODE_invokevirtual);
 	    OP2 (index);
+	    if (interface)
+	      {
+		OP1 (nargs);
+		OP1 (0);
+	      }
 	    f = TREE_TYPE (TREE_TYPE (f));
 	    if (TREE_CODE (f) != VOID_TYPE)
 	      {
@@ -2517,11 +2522,6 @@ generate_bytecode_insns (exp, target, state)
 		  emit_pop (size, state);
 		else
 		  NOTE_PUSH (size);
-	      }
-	    if (interface)
-	      {
-		OP1 (nargs);
-		OP1 (0);
 	      }
 	    break;
 	  }

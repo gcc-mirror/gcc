@@ -1,3 +1,8 @@
+2000-01-09  Anthony Green  <green@cygnus.com>
+
+	* jcf-write.c (generate_bytecode_insns): Emit invokeinterface
+	bytecodes in the correct order.
+
 2000-01-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (jcf-dump, gcjh): Move ../errors.o before $(LIBS).
