@@ -70,8 +70,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
  %{m68881:-L/usr/lib/fp}"
 
 #define LIB_SPEC \
-"%{shlib:-lc_s} -lc crtend.o%s \
- %{m68881:/usr/lib/fp/crtn.o}%{!m68881:/lib/crtn.o}"
+"%{shlib:-lc_s} -lc crtend.o%s crtn.o%s"
+
+#define STARTFILE_SPEC \
+"%{p:mcrt1.o%s} %{!p:crt1.o%s} crtbegin.o%s"
 
 /* Use mem* functions, recognize #ident lines.  */
 
