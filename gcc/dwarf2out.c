@@ -6739,7 +6739,7 @@ gen_subprogram_die (decl, context_die)
     {
       current_function_has_inlines = 0;
       decls_for_scope (outer_scope, subr_die, 0);
-#ifdef MIPS_DEBUGGING_INFO
+#if 0 && defined (MIPS_DEBUGGING_INFO)
       if (current_function_has_inlines)
 	{
 	  add_AT_flag (subr_die, DW_AT_MIPS_has_inlines, 1);
