@@ -209,9 +209,10 @@ char *input_filename;
 
 char *main_input_filename;
 
+#if !USE_CPPLIB
 /* Stream for reading from the input file.  */
-
 FILE *finput;
+#endif
 
 /* Current line number in real source file.  */
 
@@ -2123,6 +2124,7 @@ compile_file (name)
   symout_time = 0;
   dump_time = 0;
 
+#if !USE_CPPLIB
   /* Open input file.  */
 
   if (name == 0 || !strcmp (name, "-"))
@@ -2138,12 +2140,17 @@ compile_file (name)
 #ifdef IO_BUFFER_SIZE
   setvbuf (finput, (char *) xmalloc (IO_BUFFER_SIZE), _IOFBF, IO_BUFFER_SIZE);
 #endif
+#endif /* !USE_CPPLIB */
 
   /* Initialize data in various passes.  */
 
   init_obstacks ();
   init_tree_codes ();
+#if USE_CPPLIB
+  init_parse (name);
+#else
   init_lex ();
+#endif
   /* Some of these really don't need to be called when generating bytecode,
      but the options would have to be parsed first to know that. -bson */
   init_rtl ();
@@ -2722,7 +2729,11 @@ compile_file (name)
      whether fclose returns an error, since the pages might still be on the
      buffer chain while the file is open.  */
 
+#if USE_CPPLIB
+  finish_parse ();
+#else
   fclose (finput);
+#endif
   if (ferror (asm_out_file) != 0 || fclose (asm_out_file) != 0)
     fatal_io_error (asm_file_name);
 
