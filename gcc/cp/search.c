@@ -210,7 +210,7 @@ lookup_base_r (tree binfo, tree base, base_access access,
 	  
 	case bk_same_type:
 	  bk = bk_proper_base;
-	  /* FALLTHROUGH */
+	  /* Fall through.  */
 	case bk_proper_base:
 	  my_friendly_assert (found == bk_not_base, 20010723);
 	  found = bk;

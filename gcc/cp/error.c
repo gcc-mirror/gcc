@@ -941,7 +941,7 @@ dump_decl (tree t, int flags)
 
     default:
       pp_unsupported_tree (cxx_pp, t);
-      /* Fallthrough to error.  */
+      /* Fall through to error.  */
 
     case ERROR_MARK:
       pp_identifier (cxx_pp, "<declaration error>");
