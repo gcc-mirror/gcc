@@ -416,7 +416,6 @@ extern rtx sjpopnthrow_libfunc;
 extern rtx terminate_libfunc;
 extern rtx setjmp_libfunc;
 extern rtx longjmp_libfunc;
-extern rtx get_dynamic_handler_chain_libfunc;
 
 extern rtx eqhf2_libfunc;
 extern rtx nehf2_libfunc;

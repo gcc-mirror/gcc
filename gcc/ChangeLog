@@ -1,3 +1,37 @@
+Sun Dec 28 00:32:16 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c (find_basic_blocks): Don't create a new basic block
+	for calls in a LIBCALL block.
+
+Fri Dec 12 01:19:48 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* flow.c (flow_analysis): Be consistent with find_basic_blocks in
+	determining when a new basic block starts.
+
+Thu Dec 11 22:02:10 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* flow.c (find_basic_blocks): A CALL_INSN that can throw starts
+	a new basic block.
+	(find_basic_blocks_1): Likewise.
+
+Thu Dec  4 11:51:00 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c (get_dynamic_handler_chain): Only make the call once per
+ 	function.
+
+Wed Dec  3 12:01:56 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c (expand_fixup_region_end): New fn.
+	(expand_fixup_region_start): Likewise.
+	(expand_eh_region_start_tree): Store cleanup into finalization here.
+	* stmt.c (expand_cleanups): Use them to protect fixups.
+
+Mon Nov 24 22:41:55 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.c (get_dynamic_handler_chain): Build up a FUNCTION_DECL.
+	* optabs.c (init_optabs): Lose get_dynamic_handler_chain_libfunc.
+	* expr.h: Likewise.
+
 Wed Feb 11 01:39:47 1998  Richard Henderson  <rth@cygnus.com>
 
 	* stor-layout.c (layout_type): Do upper - lower in the native type,

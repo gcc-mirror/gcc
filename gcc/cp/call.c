@@ -5498,7 +5498,10 @@ build_over_call (fn, convs, args, flags)
       && copy_args_p (fn))
     {
       tree targ;
-      arg = TREE_VALUE (TREE_CHAIN (converted_args));
+      arg = TREE_CHAIN (converted_args);
+      if (TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (fn)))
+	arg = TREE_CHAIN (arg);
+      arg = TREE_VALUE (arg);
 
       /* Pull out the real argument, disregarding const-correctness.  */
       targ = arg;

@@ -282,6 +282,7 @@ flow_analysis (f, nregs, file)
   register rtx insn;
   register int i;
   rtx nonlocal_label_list = nonlocal_label_rtx_list ();
+  int in_libcall_block = 0;
 
 #ifdef ELIMINABLE_REGS
   static struct {int from, to; } eliminables[] = ELIMINABLE_REGS;
@@ -304,11 +305,18 @@ flow_analysis (f, nregs, file)
   {
     register RTX_CODE prev_code = JUMP_INSN;
     register RTX_CODE code;
+    int eh_region = 0;
 
     max_uid_for_flow = 0;
 
     for (insn = f, i = 0; insn; insn = NEXT_INSN (insn))
       {
+
+	/* Track when we are inside in LIBCALL block.  */
+	if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+	    && find_reg_note (insn, REG_LIBCALL, NULL_RTX))
+	  in_libcall_block = 1;
+
 	code = GET_CODE (insn);
 	if (INSN_UID (insn) > max_uid_for_flow)
 	  max_uid_for_flow = INSN_UID (insn);
@@ -316,7 +324,8 @@ flow_analysis (f, nregs, file)
 	    || (GET_RTX_CLASS (code) == 'i'
 		&& (prev_code == JUMP_INSN
 		    || (prev_code == CALL_INSN
-			&& nonlocal_label_list != 0)
+			&& (nonlocal_label_list != 0 || eh_region)
+			&& ! in_libcall_block)
 		    || prev_code == BARRIER)))
 	  i++;
 
@@ -325,6 +334,14 @@ flow_analysis (f, nregs, file)
 
 	if (code != NOTE)
 	  prev_code = code;
+	else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
+	  ++eh_region;
+	else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)
+	  --eh_region;
+
+	if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+	    && find_reg_note (insn, REG_RETVAL, NULL_RTX))
+	  in_libcall_block = 0;
       }
   }
 
@@ -381,6 +398,7 @@ find_basic_blocks (f, nonlocal_label_list)
   rtx x, note, eh_note;
   enum rtx_code prev_code, code;
   int depth, pass;
+  int in_libcall_block = 0;
 
   pass = 1;
   active_eh_handler = (rtx *) alloca ((max_uid_for_flow + 1) * sizeof (rtx));
@@ -404,6 +422,12 @@ find_basic_blocks (f, nonlocal_label_list)
   for (eh_note = NULL_RTX, insn = f, i = -1, prev_code = JUMP_INSN, depth = 1;
        insn; insn = NEXT_INSN (insn))
     {
+
+      /* Track when we are inside in LIBCALL block.  */
+      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+	  && find_reg_note (insn, REG_LIBCALL, NULL_RTX))
+	in_libcall_block = 1;
+
       code = GET_CODE (insn);
       if (code == NOTE)
 	{
@@ -418,8 +442,8 @@ find_basic_blocks (f, nonlocal_label_list)
 	       || (GET_RTX_CLASS (code) == 'i'
 		   && (prev_code == JUMP_INSN
 		       || (prev_code == CALL_INSN
-			   && nonlocal_label_list != 0
-			   && ! find_reg_note (insn, REG_RETVAL, NULL_RTX))
+			   && (nonlocal_label_list != 0 || eh_note)
+			   && ! in_libcall_block)
 		       || prev_code == BARRIER)))
 	{
 	  basic_block_head[++i] = insn;
@@ -482,13 +506,17 @@ find_basic_blocks (f, nonlocal_label_list)
 	       && (asynchronous_exceptions
 		   || code == CODE_LABEL
 		   || (GET_CODE (insn) == CALL_INSN
-		       && ! find_reg_note (insn, REG_RETVAL, NULL_RTX))))
+		       && ! in_libcall_block)))
 	active_eh_handler[INSN_UID (insn)] = XEXP (eh_note, 0);
 
       BLOCK_NUM (insn) = i;
 
       if (code != NOTE)
 	prev_code = code;
+
+      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+	  && find_reg_note (insn, REG_RETVAL, NULL_RTX))
+	in_libcall_block = 0;
     }
 
   /* During the second pass, `n_basic_blocks' is only an upper bound.
