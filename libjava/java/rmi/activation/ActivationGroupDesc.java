@@ -48,6 +48,8 @@ public final class ActivationGroupDesc implements Serializable
 public static class CommandEnvironment
 	implements Serializable {
 
+static final long serialVersionUID = 6165754737887770191L;
+  
 private String cmdpath;
 private String[] argv;
 

@@ -43,6 +43,9 @@ import java.io.ObjectOutput;
 import java.io.ObjectInput;
 import java.io.StreamCorruptedException;
 
+/**
+ * @deprecated
+ */
 public interface RemoteCall {
 
 public ObjectOutput getOutputStream() throws IOException;

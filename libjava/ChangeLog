@@ -1,5 +1,36 @@
 2003-03-21  Michael Koch  <konqueror@gmx.de>
 
+	* java/rmi/activation/Activatable.java
+	(serialVersionUID): New member variable.
+	* java/rmi/activation/ActivationGroup.java
+	(serialVersionUID): New member variable.
+	* java/rmi/activation/ActivationGroupDesc.java
+	(serialVersionUID): New member variable.
+	* java/rmi/registry/Registry.java:
+	Reformated.
+	(Registry): Deprecated.
+	* java/rmi/server/LoaderHandler.java
+	Reformated.
+	(LoaderHandler): Deprecated.
+	* java/rmi/server/LogStream.java
+	Reformated.
+	(LogStream): Deprecated.
+	* java/rmi/server/Operation.java
+	(Operation): Deprecated.
+	* java/rmi/server/RMIFailureHandler.java:
+	Reformated.
+	* java/rmi/server/RMISocketFactory.java:
+	Reformated.
+	* java/rmi/server/RemoteCall.java
+	(RemoteCall): Deprecated.
+	* java/rmi/server/RemoteStub.java:
+	Reformated.
+	* java/rmi/server/Skeleton.java
+	Reformated.
+	(Skeleton): Deprecated.
+
+2003-03-21  Michael Koch  <konqueror@gmx.de>
+
 	* java/io/LineNumberReader.java
 	(LineNumberReader): Merged documentation with classpath.
 	(getLineNumber): Likewise.

@@ -37,6 +37,9 @@ exception statement from your version. */
 
 package java.rmi.server;
 
+/**
+ * @deprecated
+ */
 public class Operation {
 
 private String operation;

@@ -46,6 +46,8 @@ public abstract class ActivationGroup
 	extends UnicastRemoteObject
 	implements ActivationInstantiator {
 
+static final long serialVersionUID = -7696947875314805420L;
+
 protected ActivationGroup(ActivationGroupID groupID) throws RemoteException {
 	throw new Error("Not implemented");
 }

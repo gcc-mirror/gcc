@@ -48,6 +48,8 @@ import java.rmi.MarshalledObject;
 public abstract class Activatable
 	extends RemoteServer {
 
+static final long serialVersionUID = -3120617863591563455L;
+
 protected Activatable(String location, MarshalledObject data, boolean restart, int port) throws ActivationException, RemoteException {
 	throw new Error("Not implemented");
 }

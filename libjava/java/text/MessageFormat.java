@@ -143,6 +143,8 @@ final class MessageFormatElement
 
 public class MessageFormat extends Format
 {
+  private static final long serialVersionUID = 6479157306784022952L;
+  
   // Helper that returns the text up to the next format opener.  The
   // text is put into BUFFER.  Returns index of character after end of
   // string.  Throws IllegalArgumentException on error.
