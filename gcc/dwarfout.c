@@ -4444,7 +4444,13 @@ output_type (type, containing_scope)
 	      for (func_member = TYPE_METHODS (type);
 		   func_member;
 		   func_member = TREE_CHAIN (func_member))
-		output_decl (func_member, type);
+		{
+		  /* Don't include clones in the member list.  */
+		  if (DECL_ABSTRACT_ORIGIN (func_member))
+		    continue;
+
+		  output_decl (func_member, type);
+		}
 	    }
 
 	    --in_class;

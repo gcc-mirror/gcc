@@ -2684,19 +2684,23 @@ note_deferral_of_defined_inline_function (decl)
   /* Generate the DWARF info for the "abstract" instance of a function
      which we may later generate inlined and/or out-of-line instances
      of.  */
-  if (write_symbols == DWARF_DEBUG && DECL_INLINE (decl))
+  if (write_symbols == DWARF_DEBUG
+      && (DECL_INLINE (decl) || DECL_ABSTRACT (decl))
+      && ! DECL_ABSTRACT_ORIGIN (decl))
     {
       /* The front-end may not have set CURRENT_FUNCTION_DECL, but the
 	 DWARF code expects it to be set in this case.  Intuitively,
 	 DECL is the function we just finished defining, so setting
 	 CURRENT_FUNCTION_DECL is sensible.  */
       tree saved_cfd = current_function_decl;
+      int was_abstract = DECL_ABSTRACT (decl);
       current_function_decl = decl;
 
       /* Let the DWARF code do its work.  */
       set_decl_abstract_flags (decl, 1);
       dwarfout_file_scope_decl (decl, 0);
-      set_decl_abstract_flags (decl, 0);
+      if (! was_abstract)
+	set_decl_abstract_flags (decl, 0);
 
       /* Reset CURRENT_FUNCTION_DECL.  */
       current_function_decl = saved_cfd;

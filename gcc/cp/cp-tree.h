@@ -1811,7 +1811,7 @@ struct lang_decl_flags
   unsigned static_function : 1;
   unsigned pure_virtual : 1;
   unsigned has_in_charge_parm_p : 1;
-  unsigned uninlinable : 1;
+  unsigned has_vtt_parm_p : 1;
 
   unsigned deferred : 1;
   unsigned use_template : 2;
@@ -1828,7 +1828,7 @@ struct lang_decl_flags
   unsigned assignment_operator_p : 1;
   unsigned anticipated_p : 1;
   unsigned generate_with_vtable_p : 1;
-  unsigned has_vtt_parm_p : 1;
+  /* One unused bit.  */
 
   union {
     /* In a FUNCTION_DECL, VAR_DECL, TYPE_DECL, or TEMPLATE_DECL, this
@@ -2468,10 +2468,6 @@ extern int flag_new_for_scope;
 
 /* Record whether a typedef for type `int' was actually `signed int'.  */
 #define C_TYPEDEF_EXPLICITLY_SIGNED(exp) DECL_LANG_FLAG_1 ((exp))
-
-/* In a FUNCTION_DECL, nonzero if the function cannot be inlined.  */
-#define DECL_UNINLINABLE(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->decl_flags.uninlinable)
 
 /* Returns non-zero if DECL has external linkage, as specified by the
    language standard.  (This predicate may hold even when the

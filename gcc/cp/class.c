@@ -4179,6 +4179,7 @@ build_clone (fn, name)
   clone = copy_decl (fn);
   /* Remember where this function came from.  */
   DECL_CLONED_FUNCTION (clone) = fn;
+  DECL_ABSTRACT_ORIGIN (clone) = fn;
   /* Reset the function name.  */
   DECL_NAME (clone) = name;
   DECL_ASSEMBLER_NAME (clone) = DECL_NAME (clone);
@@ -4339,6 +4340,9 @@ clone_function_decl (fn, update_method_vec_p)
       if (update_method_vec_p)
 	add_method (DECL_CONTEXT (clone), clone, /*error_p=*/0);
     }
+
+  /* Note that this is an abstract function that is never emitted.  */
+  DECL_ABSTRACT (fn) = 1;
 }
 
 /* For each of the constructors and destructors in T, create an

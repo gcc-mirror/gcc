@@ -9390,7 +9390,8 @@ add_name_and_src_coords_attributes (die, decl)
 
       if ((TREE_CODE (decl) == FUNCTION_DECL || TREE_CODE (decl) == VAR_DECL)
 	  && TREE_PUBLIC (decl)
-	  && DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl))
+	  && DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl)
+	  && !DECL_ABSTRACT (decl))
 	add_AT_string (die, DW_AT_MIPS_linkage_name,
 		       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
     }
@@ -9936,24 +9937,22 @@ gen_formal_types_die (function_or_method_type, context_die)
 {
   register tree link;
   register tree formal_type = NULL;
-  register tree first_parm_type = TYPE_ARG_TYPES (function_or_method_type);
+  register tree first_parm_type;
+  tree arg;
 
-#if 0
-  /* In the case where we are generating a formal types list for a C++
-     non-static member function type, skip over the first thing on the
-     TYPE_ARG_TYPES list because it only represents the type of the hidden
-     `this pointer'.  The debugger should be able to figure out (without
-     being explicitly told) that this non-static member function type takes a
-     `this pointer' and should be able to figure what the type of that hidden
-     parameter is from the DW_AT_member attribute of the parent
-     DW_TAG_subroutine_type DIE.  */
-  if (TREE_CODE (function_or_method_type) == METHOD_TYPE)
-    first_parm_type = TREE_CHAIN (first_parm_type);
-#endif
+  if (TREE_CODE (function_or_method_type) == FUNCTION_DECL)
+    {
+      arg = DECL_ARGUMENTS (function_or_method_type);
+      function_or_method_type = TREE_TYPE (function_or_method_type);
+    }
+  else
+    arg = NULL_TREE;
+  
+  first_parm_type = TYPE_ARG_TYPES (function_or_method_type);
 
   /* Make our first pass over the list of formal parameter types and output a
      DW_TAG_formal_parameter DIE for each one.  */
-  for (link = first_parm_type; link; link = TREE_CHAIN (link))
+  for (link = first_parm_type; link; )
     {
       register dw_die_ref parm_die;
 
@@ -9963,9 +9962,14 @@ gen_formal_types_die (function_or_method_type, context_die)
 
       /* Output a (nameless) DIE to represent the formal parameter itself.  */
       parm_die = gen_formal_parameter_die (formal_type, context_die);
-      if (TREE_CODE (function_or_method_type) == METHOD_TYPE
-	  && link == first_parm_type)
+      if ((TREE_CODE (function_or_method_type) == METHOD_TYPE
+	   && link == first_parm_type)
+	  || (arg && DECL_ARTIFICIAL (arg)))
 	add_AT_flag (parm_die, DW_AT_artificial, 1);
+
+      link = TREE_CHAIN (link);
+      if (arg)
+	arg = TREE_CHAIN (arg);
     }
 
   /* If this function type has an ellipsis, add a
@@ -10025,19 +10029,34 @@ void
 dwarf2out_abstract_function (decl)
      tree decl;
 {
-  register dw_die_ref old_die = lookup_decl_die (decl);
+  register dw_die_ref old_die;
   tree save_fn;
+  tree context;
+  int was_abstract = DECL_ABSTRACT (decl);
 
+  /* Make sure we have the actual abstract inline, not a clone.  */
+  decl = DECL_ORIGIN (decl);
+
+  old_die = lookup_decl_die (decl);  
   if (old_die && get_AT_unsigned (old_die, DW_AT_inline))
     /* We've already generated the abstract instance.  */
     return;
 
+  /* Be sure we've emitted the in-class declaration DIE (if any) first, so
+     we don't get confused by DECL_ABSTRACT.  */
+  context = decl_class_context (decl);
+  if (context)
+    gen_type_die_for_member
+      (context, decl, decl_function_context (decl) ? NULL : comp_unit_die);
+ 
+  /* Pretend we've just finished compiling this function.  */
   save_fn = current_function_decl;
   current_function_decl = decl;
 
   set_decl_abstract_flags (decl, 1);
   dwarf2out_decl (decl);
-  set_decl_abstract_flags (decl, 0);
+  if (! was_abstract)
+    set_decl_abstract_flags (decl, 0);
 
   current_function_decl = save_fn;
 }
@@ -10087,17 +10106,6 @@ gen_subprogram_die (decl, context_die)
 
       subr_die = new_die (DW_TAG_subprogram, context_die);
       add_abstract_origin_attribute (subr_die, origin);
-    }
-  else if (old_die && DECL_ABSTRACT (decl)
-	   && get_AT_unsigned (old_die, DW_AT_inline))
-    {
-      /* This must be a redefinition of an extern inline function.
-	 We can just reuse the old die here.  */
-      subr_die = old_die;
-
-      /* Clear out the inlined attribute and parm types.  */
-      remove_AT (subr_die, DW_AT_inline);
-      remove_children (subr_die);
     }
   else if (old_die)
     {
@@ -10261,7 +10269,7 @@ gen_subprogram_die (decl, context_die)
   if (debug_info_level <= DINFO_LEVEL_TERSE)
     ;
   else if (declaration)
-    gen_formal_types_die (TREE_TYPE (decl), subr_die);
+    gen_formal_types_die (decl, subr_die);
   else
     {
       /* Generate DIEs to represent all known formal parameters */
@@ -10738,6 +10746,10 @@ gen_member_die (type, context_die)
   /* Now output info about the function members (if any).  */
   for (member = TYPE_METHODS (type); member; member = TREE_CHAIN (member))
     {
+      /* Don't include clones in the member list.  */
+      if (DECL_ABSTRACT_ORIGIN (member))
+	continue;
+
       child = lookup_decl_die (member);
       if (child)
 	splice_child_die (context_die, child);
@@ -11266,20 +11278,23 @@ gen_decl_die (decl, context_die)
 	  && (current_function_decl == NULL_TREE || DECL_ARTIFICIAL (decl)))
 	break;
 
+      /* If we're emitting a clone, emit info for the abstract instance.  */
+      if (DECL_ORIGIN (decl) != decl)
+	dwarf2out_abstract_function (DECL_ABSTRACT_ORIGIN (decl));
       /* If we're emitting an out-of-line copy of an inline function,
 	 emit info for the abstract instance and set up to refer to it.  */
-      if (DECL_INLINE (decl) && ! DECL_ABSTRACT (decl)
-	  && ! class_scope_p (context_die)
-	  /* dwarf2out_abstract_function won't emit a die if this is just a
-	     declaration.  We must avoid setting DECL_ABSTRACT_ORIGIN in
-	     that case, because that works only if we have a die.  */
-	  && DECL_INITIAL (decl) != NULL_TREE)
+      else if (DECL_INLINE (decl) && ! DECL_ABSTRACT (decl)
+	       && ! class_scope_p (context_die)
+	       /* dwarf2out_abstract_function won't emit a die if this is just
+		  a declaration.  We must avoid setting DECL_ABSTRACT_ORIGIN in
+		  that case, because that works only if we have a die.  */
+	       && DECL_INITIAL (decl) != NULL_TREE)
 	{
 	  dwarf2out_abstract_function (decl);
 	  set_decl_origin_self (decl);
 	}
-
-      if (debug_info_level > DINFO_LEVEL_TERSE)
+      /* Otherwise we're emitting the primary DIE for this decl.  */
+      else if (debug_info_level > DINFO_LEVEL_TERSE)
 	{
 	  /* Before we describe the FUNCTION_DECL itself, make sure that we
 	     have described its return type.  */

@@ -147,6 +147,9 @@ function_cannot_inline_p (fndecl)
   register tree parms;
   rtx result;
 
+  if (DECL_UNINLINABLE (fndecl))
+    return N_("function cannot be inline");
+
   /* No inlines with varargs.  */
   if ((last && TREE_VALUE (last) != void_type_node)
       || current_function_varargs)

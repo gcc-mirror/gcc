@@ -932,6 +932,9 @@ maybe_clone_body (fn)
       && !DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (fn))
     return 0;
 
+  /* Emit the DWARF1 abstract instance.  */
+  note_deferral_of_defined_inline_function (fn);
+
   /* We know that any clones immediately follow FN in the TYPE_METHODS
      list.  */
   for (clone = TREE_CHAIN (fn);
@@ -996,6 +999,7 @@ maybe_clone_body (fn)
 		 from the CLONE to this parameter.  */
 	      if (DECL_HAS_VTT_PARM_P (clone))
 		{
+		  DECL_ABSTRACT_ORIGIN (clone_parm) = parm;
 		  splay_tree_insert (id.decl_map,
 				     (splay_tree_key) parm,
 				     (splay_tree_value) clone_parm);
@@ -1013,6 +1017,7 @@ maybe_clone_body (fn)
 	     function.  */
 	  else
 	    {
+	      DECL_ABSTRACT_ORIGIN (clone_parm) = parm;
 	      splay_tree_insert (id.decl_map,
 				 (splay_tree_key) parm,
 				 (splay_tree_value) clone_parm);
@@ -1029,7 +1034,9 @@ maybe_clone_body (fn)
 
       /* Now, expand this function into RTL, if appropriate.  */
       function_name_declared_p = 1;
-      expand_body (finish_function (0));
+      finish_function (0);
+      BLOCK_ABSTRACT_ORIGIN (DECL_INITIAL (clone)) = DECL_INITIAL (fn);
+      expand_body (clone);
       pop_from_top_level ();
     }
   

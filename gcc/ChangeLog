@@ -1,3 +1,25 @@
+2001-02-21  Jason Merrill  <jason@redhat.com>
+
+	* tree.h (DECL_UNINLINABLE): Move from C++ frontend.
+	(struct tree_decl): Add uninlinable bitfield.
+	* c-decl.c (duplicate_decls): Set it.
+	* integrate.c (function_cannot_inline_p): Check it.
+
+	* dwarf2out.c (add_name_and_src_coords_attributes): Don't add 
+	DW_AT_MIPS_linkage_name to abstract methods.
+	(dwarf2out_abstract_function): Emit class context before calling
+	set_decl_abstract_flags.  Don't clear DECL_ABSTRACT.
+	(gen_subprogram_die): Remove obsolete code.
+	(gen_member_die): Don't include clones in the member list.
+	(gen_decl_die): Emit abstract info for clone origin.
+	* dwarfout.c (output_type): Don't include clones in the member list.
+	* dbxout.c (dbxout_type_methods): Ignore abstract methods.
+	* toplev.c (note_deferral_of_defined_inline_function): Don't clear
+	DECL_ABSTRACT on a function that already has it set.
+
+	* dwarf2out.c (gen_formal_types_die): Also accept a FUNCTION_DECL.
+	(get_subprogram_die): Pass it in.
+
 2001-02-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	* flow.c (mark_set_1): Make not_dead unsigned long.  For
