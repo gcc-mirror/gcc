@@ -1382,6 +1382,7 @@ HIE_OBJS =  \
  s-fatflt.o \
  s-fatlfl.o \
  s-fatllf.o \
+ s-fatsfl.o \
  s-secsta.o \
  a-tags.o $(EXTRA_HIE_OBJS)
 
@@ -1428,8 +1429,7 @@ RAVEN_SOURCES = $(NON_COMPILABLE_RAVEN_SOURCES) $(COMPILABLE_RAVEN_SOURCES)
 
 # Objects to generate for the ravenscar run time
 
-RAVEN_OBJS = \
- $(HIE_OBJS) \
+RAVEN_LIBGNARL_OBJS = \
  s-parame.o  \
  s-purexc.o  \
  s-osinte.o  \
@@ -1442,12 +1442,17 @@ RAVEN_OBJS = \
  a-intnam.o  \
  a-reatim.o  \
  a-retide.o  \
+ s-osinte.o  \
  s-taprob.o  \
  s-tposen.o  \
  s-tasres.o  \
  s-tarest.o  \
  a-sytaco.o \
  a-taside.o $(EXTRA_RAVEN_OBJS)
+
+RAVEN_OBJS = \
+ $(HIE_OBJS) \
+ $(RAVEN_LIBGNARL_OBJS)
 
 # Default run time files
 
@@ -1874,10 +1879,13 @@ rts-ravenscar: force
 	   COMPILABLE_SOURCES="$(COMPILABLE_RAVEN_SOURCES)" 
 	$(GNATMAKE) -Prts-ravenscar/ravenscar.gpr \
 	   --GCC="../../../xgcc -B../../../"
-	cd rts-ravenscar/adalib/ ; $(AR) r libgnat.a *.o
+	cd rts-ravenscar/adalib ; \
+	$(foreach FILE,$(RAVEN_LIBGNARL_OBJS), $(AR) r libgnarl.a $(FILE);) \
+	$(foreach FILE,$(HIE_OBJS), $(AR) r libgnat.a $(FILE);)
 	$(RM) rts-ravenscar/adalib/*.o
 	$(CHMOD) a-wx rts-ravenscar/adalib/*.ali
 	$(CHMOD) a-wx rts-ravenscar/adalib/libgnat.a
+	$(CHMOD) a-wx rts-ravenscar/adalib/libgnarl.a
 
 # Warning: this target assumes that LIBRARY_VERSION has been set correctly.
 gnatlib-shared-default:

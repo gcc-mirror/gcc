@@ -4317,13 +4317,15 @@ package body Sem_Ch4 is
       Nam : Entity_Id;
       Typ : Entity_Id) return Boolean
    is
-      Actuals : constant List_Id := Parameter_Associations (N);
       Actual  : Node_Id;
       Formal  : Entity_Id;
+      Call_OK : Boolean;
 
    begin
-      Actual := First (Actuals);
+      Normalize_Actuals (N, Designated_Type (Typ), False, Call_OK);
+      Actual := First_Actual (N);
       Formal := First_Formal (Designated_Type (Typ));
+
       while Present (Actual)
         and then Present (Formal)
       loop

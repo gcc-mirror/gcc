@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -222,8 +222,9 @@ package System.Tasking.Protected_Objects.Single_Entry is
    --  barrier. This is used when the state of a protected object may have
    --  changed, in particular after the execution of the statement sequence of
    --  a protected procedure.
-   --  This must be called with abortion deferred and with the corresponding
-   --  object locked.
+   --
+   --  This must be called with abort deferred and with the corresponding
+   --  object locked. Object is unlocked on return.
 
    procedure Protected_Single_Entry_Call
      (Object              : Protection_Entry_Access;

@@ -2193,7 +2193,6 @@ package body Exp_Ch7 is
       Spec         : Node_Id;
       Name         : Node_Id;
       Param        : Node_Id;
-      Unlock       : Node_Id;
       Param_Type   : Entity_Id;
       Pid          : Entity_Id := Empty;
       Cancel_Param : Entity_Id;
@@ -2274,50 +2273,53 @@ package body Exp_Ch7 is
                         Selector_Name =>
                           Make_Identifier (Loc, Name_uObject)),
                     Attribute_Name => Name_Unchecked_Access))));
-         end if;
-
-         --  Unlock (_object._object'Access);
-
-         --  _object is the record used to implement the protected object.
-         --  It is a parameter to the protected subprogram.
-
-         --  If the protected object is controlled (i.e it has entries or
-         --  needs finalization for interrupt handling), call Unlock_Entries,
-         --  except if the protected object follows the ravenscar profile, in
-         --  which case call Unlock_Entry, otherwise call the simplified
-         --  version, Unlock.
-
-         if Has_Entries (Pid)
-           or else Has_Interrupt_Handler (Pid)
-           or else (Has_Attach_Handler (Pid) and then not Restricted_Profile)
-         then
-            if Abort_Allowed
-              or else Restriction_Active (No_Entry_Queue) = False
-              or else Number_Entries (Pid) > 1
-            then
-               Unlock := New_Reference_To (RTE (RE_Unlock_Entries), Loc);
-            else
-               Unlock := New_Reference_To (RTE (RE_Unlock_Entry), Loc);
-            end if;
 
          else
-            Unlock := New_Reference_To (RTE (RE_Unlock), Loc);
+            --  Unlock (_object._object'Access);
+
+            --  object is the record used to implement the protected object.
+            --  It is a parameter to the protected subprogram.
+
+            --  If the protected object is controlled (i.e it has entries or
+            --  needs finalization for interrupt handling), call
+            --  Unlock_Entries, except if the protected object follows the
+            --  ravenscar profile, in which case call Unlock_Entry, otherwise
+            --  call the simplified version, Unlock.
+
+            if Has_Entries (Pid)
+              or else Has_Interrupt_Handler (Pid)
+              or else (Has_Attach_Handler (Pid)
+                         and then not Restricted_Profile)
+            then
+               if Abort_Allowed
+                 or else Restriction_Active (No_Entry_Queue) = False
+                 or else Number_Entries (Pid) > 1
+               then
+                  Name := New_Reference_To (RTE (RE_Unlock_Entries), Loc);
+               else
+                  Name := New_Reference_To (RTE (RE_Unlock_Entry), Loc);
+               end if;
+
+            else
+               Name := New_Reference_To (RTE (RE_Unlock), Loc);
+            end if;
+
+            Append_To (Stmt,
+              Make_Procedure_Call_Statement (Loc,
+                Name => Name,
+                Parameter_Associations => New_List (
+                  Make_Attribute_Reference (Loc,
+                    Prefix =>
+                      Make_Selected_Component (Loc,
+                        Prefix =>
+                          New_Reference_To (Defining_Identifier (Param), Loc),
+                        Selector_Name =>
+                          Make_Identifier (Loc, Name_uObject)),
+                    Attribute_Name => Name_Unchecked_Access))));
          end if;
 
-         Append_To (Stmt,
-           Make_Procedure_Call_Statement (Loc,
-             Name => Unlock,
-             Parameter_Associations => New_List (
-               Make_Attribute_Reference (Loc,
-                 Prefix =>
-                   Make_Selected_Component (Loc,
-                     Prefix =>
-                       New_Reference_To (Defining_Identifier (Param), Loc),
-                     Selector_Name =>
-                       Make_Identifier (Loc, Name_uObject)),
-                 Attribute_Name => Name_Unchecked_Access))));
-
          if Abort_Allowed then
+
             --  Abort_Undefer;
 
             Append_To (Stmt,

@@ -6,7 +6,8 @@
 --                                                                          --
 --                                   S p e c                                --
 --                                                                          --
---           Copyright (C) 1997-2002 Free Software Foundation, Inc.         --
+--             Copyright (C) 1991-1994, Florida State University            --
+--             Copyright (C) 1995-2004, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,19 +32,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the VxWorks version of this package.
---
---  VxWorks does not directly support the needed POSIX routines, but it
---  does have other routines that make it possible to code equivalent
---  POSIX compliant routines.  The approach taken is to provide an
---  FSU threads compliant interface.
+--  This is the VxWorks version of this package
 
 --  This package encapsulates all direct interfaces to OS services
 --  that are needed by children of System.
 
---  PLEASE DO NOT add any with-clauses to this package
---  or remove the pragma Elaborate_Body.
---  It is designed to be a bottom-level (leaf) package.
+--  PLEASE DO NOT add any with-clauses to this package or remove the pragma
+--  Preelaborate. This package is designed to be a bottom-level (leaf) package.
 
 with Interfaces.C;
 with System.VxWorks;

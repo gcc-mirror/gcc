@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1998-2002, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2004, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,7 +52,7 @@ pragma Style_Checks (All_Checks);
 --  mentioned above are respected, except for the No_Entry_Queue restriction
 --  that is checked dynamically in this package, since the check cannot be
 --  performed at compile time, and is relatively cheap (see PO_Do_Or_Queue,
---  PO_Service_Entry).
+--  Service_Entry).
 
 pragma Polling (Off);
 --  Turn off polling, we do not want polling to take place during tasking
@@ -530,6 +530,7 @@ package body System.Tasking.Protected_Objects.Single_Entry is
                --  Program_Error to the caller.
 
                Send_Program_Error (Self_Id, Entry_Call);
+               Unlock_Entry (Object);
                return;
             end if;
 
@@ -538,6 +539,7 @@ package body System.Tasking.Protected_Objects.Single_Entry is
               (Object.Compiler_Info, Entry_Call.Uninterpreted_Data, 1);
             Object.Call_In_Progress := null;
             Caller := Entry_Call.Self;
+            Unlock_Entry (Object);
 
             if Single_Lock then
                STPO.Lock_RTS;
@@ -556,6 +558,7 @@ package body System.Tasking.Protected_Objects.Single_Entry is
    exception
       when others =>
          Send_Program_Error (Self_Id, Entry_Call);
+         Unlock_Entry (Object);
    end Service_Entry;
 
    ---------------------------------------

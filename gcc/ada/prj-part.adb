@@ -100,7 +100,7 @@ package body Prj.Part is
    type Names_And_Id is record
       Path_Name           : Name_Id;
       Canonical_Path_Name : Name_Id;
-      Id   : Project_Node_Id;
+      Id                  : Project_Node_Id;
    end record;
 
    package Project_Stack is new Table.Table
@@ -763,10 +763,10 @@ package body Prj.Part is
 
                      for Index in 1 .. Project_Stack.Last loop
                         if Project_Stack.Table (Index).Canonical_Path_Name =
-                          Canonical_Path_Name
+                             Canonical_Path_Name
                         then
                            --  We have found the limited imported project,
-                           --  get its project id, and don't parse it.
+                           --  get its project id, and do not parse it.
 
                            Withed_Project := Project_Stack.Table (Index).Id;
                            exit;
@@ -915,6 +915,7 @@ package body Prj.Part is
       loop
          declare
             Path_Id : Name_Id := Path_Name_Of (A_Project_Name_And_Node.Node);
+
          begin
             if Path_Id /= No_Name then
                Get_Name_String (Path_Id);
@@ -947,10 +948,12 @@ package body Prj.Part is
                   if From_Extended /= None then
                      declare
                         Decl : Project_Node_Id :=
-                          Project_Declaration_Of
-                            (A_Project_Name_And_Node.Node);
+                                 Project_Declaration_Of
+                                   (A_Project_Name_And_Node.Node);
+
                         Prj : Project_Node_Id :=
-                          Extending_Project_Of (Decl);
+                                Extending_Project_Of (Decl);
+
                      begin
                         loop
                            Decl := Project_Declaration_Of (Prj);
@@ -983,7 +986,7 @@ package body Prj.Part is
       Source_Index := Load_Project_File (Path_Name);
       Tree.Save (Project_Comment_State);
 
-      --  if we cannot find it, we stop
+      --  If we cannot find it, we stop
 
       if Source_Index = No_Source_File then
          Project := Empty_Node;
