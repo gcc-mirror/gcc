@@ -1,3 +1,10 @@
+2004-09-01  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	PR fortran/16579
+	* gfortran.dg/g77/20010610.f: Now passes.
+	Copy from g77.f-torture/execute. Add dg-run directive.
+	* gfortran.dg/g77/README: Update
+
 2004-08-31  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gcc.dg/rs6000-power2-1.c (t1, t2, t3, t4): Add volatile.
