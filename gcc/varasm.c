@@ -58,7 +58,6 @@ extern struct obstack *current_obstack;
 extern struct obstack *saveable_obstack;
 extern struct obstack permanent_obstack;
 #define obstack_chunk_alloc xmalloc
-extern int xmalloc ();
 
 /* Number for making the label on the next
    constant that is stored in memory.  */

@@ -4327,10 +4327,32 @@ fold_rtx (x, insn)
 	  || (new = lookup_as_function (x, CONST_DOUBLE)) != 0)
 	return new;
 
-      /* If this is a paradoxical SUBREG, we can't do anything with
-	 it because we have no idea what value the extra bits would have.  */
+      /* If this is a paradoxical SUBREG, we have no idea what value the
+	 extra bits would have.  However, if the operand is equivalent
+	 to a SUBREG whose operand is the same as our mode, and all the
+	 modes are within a word, we can just use the inner operand
+	 because these SUBREGs just say how to treat the register.  */
+
       if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
-	return x;
+	{
+	  enum machine_mode imode = GET_MODE (SUBREG_REG (x));
+	  struct table_elt *elt;
+
+	  if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD
+	      && GET_MODE_SIZE (imode) <= UNITS_PER_WORD
+	      && (elt = lookup (SUBREG_REG (x), HASH (SUBREG_REG (x), imode),
+				imode)) != 0)
+	    {
+	      for (elt = elt->first_same_value;
+		   elt; elt = elt->next_same_value)
+		if (GET_CODE (elt->exp) == SUBREG
+		    && GET_MODE (SUBREG_REG (elt->exp)) == mode
+		    && exp_equiv_p (elt->exp, elt->exp, 1))
+		  return copy_rtx (SUBREG_REG (elt->exp));
+	    }
+
+	  return x;
+	}
 
       /* Fold SUBREG_REG.  If it changed, see if we can simplify the SUBREG.
 	 We might be able to if the SUBREG is extracting a single word in an
@@ -4364,7 +4386,12 @@ fold_rtx (x, insn)
 	 extra bits will be.  But we can find an equivalence for this SUBREG
 	 by folding that operation is the narrow mode.  This allows us to
 	 fold arithmetic in narrow modes when the machine only supports
-	 word-sized arithmetic.  */
+	 word-sized arithmetic.  
+
+	 Also look for a case where we have a SUBREG whose operand is the
+	 same as our result.  If both modes are smaller than a word, we
+	 are simply interpreting a register in different modes and we
+	 can use the inner value.  */
 
       if (GET_CODE (folded_arg0) == REG
 	  && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (folded_arg0)))
@@ -4429,6 +4456,13 @@ fold_rtx (x, insn)
 		    new = simplify_binary_operation (GET_CODE (elt->exp), mode,
 						     op0, op1);
 		}
+
+	      else if (GET_CODE (elt->exp) == SUBREG
+		       && GET_MODE (SUBREG_REG (elt->exp)) == mode
+		       && (GET_MODE_SIZE (GET_MODE (folded_arg0))
+			   <= UNITS_PER_WORD)
+		       && exp_equiv_p (elt->exp, elt->exp, 1))
+		new = copy_rtx (SUBREG_REG (elt->exp));
 
 	      if (new)
 		return new;

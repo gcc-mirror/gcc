@@ -121,9 +121,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-extern int xmalloc ();
-extern void free ();
-
 /* List of labels that must never be deleted.  */
 extern rtx forced_labels;
 

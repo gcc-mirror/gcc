@@ -855,6 +855,8 @@ union tree_node
 extern char *oballoc ();
 extern char *permalloc ();
 extern char *savealloc ();
+extern char *xmalloc ();
+extern void free ();
 
 /* Lowest level primitive for allocating a node.
    The TREE_CODE is the only argument.  Contents are initialized

@@ -129,9 +129,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-extern int xmalloc ();
-extern void free ();
-
 #ifndef ANNUL_IFTRUE_SLOTS
 #define eligible_for_annul_true(INSN, SLOTS, TRIAL) 0
 #endif

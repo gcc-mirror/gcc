@@ -54,9 +54,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define obstack_chunk_free free
 struct obstack stmt_obstack;
 
-extern int xmalloc ();
-extern void free ();
-
 /* Filename and line number of last line-number note,
    whether we actually emitted it or not.  */
 char *emit_filename;
