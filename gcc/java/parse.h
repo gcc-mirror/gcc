@@ -860,7 +860,12 @@ struct parser_ctxt {
 	&& !inherits_from_p (TREE_TYPE (TREE_TYPE (current_this)),	      \
 			     TREE_TYPE (DECL_CONTEXT (TYPE_NAME (T))))	      \
         && !common_enclosing_context_p (TREE_TYPE (TREE_TYPE (current_this)), \
-					(T)))				      \
+					(T))                                  \
+	&& INNER_CLASS_TYPE_P (TREE_TYPE (TREE_TYPE (current_this)))          \
+	&& !inherits_from_p                                                   \
+	      (TREE_TYPE (DECL_CONTEXT                                        \
+			  (TYPE_NAME (TREE_TYPE (TREE_TYPE (current_this))))),\
+	       TREE_TYPE (DECL_CONTEXT (TYPE_NAME (T)))))                     \
        /* We don't have a this. */					      \
        || !current_this))
 

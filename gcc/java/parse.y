@@ -7887,6 +7887,11 @@ outer_field_access_p (type, decl)
       || TREE_CODE (decl) != FIELD_DECL
       || DECL_CONTEXT (decl) == type)
     return 0;
+  
+  /* If the inner class extends the declaration context of the field
+     we're try to acces, then this isn't an outer field access */
+  if (inherits_from_p (type, DECL_CONTEXT (decl)))
+    return 0;
 
   for (type = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (type))); ;
        type = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (type))))
@@ -8238,7 +8243,7 @@ maybe_build_thisn_access_method (type)
 
   /* If TYPE is a top-level class, no access method is required.
      If there already is such an access method, bail out. */
-  if (CLASS_ACCESS0_GENERATED_P (type) || !INNER_CLASS_TYPE_P (type))
+  if (CLASS_ACCESS0_GENERATED_P (type) || !PURE_INNER_CLASS_TYPE_P (type))
     return NULL_TREE;
 
   /* We generate the method. The method looks like:
@@ -8866,7 +8871,14 @@ resolve_expression_name (id, orig)
 		 to access a field belonging to an outer class, build
 		 the access to the field */
 	      if (!fs && outer_field_access_p (current_class, decl))
-		return build_outer_field_access (id, decl);
+		{
+		  if (CLASS_STATIC (TYPE_NAME (current_class)))
+		    {
+		      static_ref_err (id, DECL_NAME (decl), current_class);
+		      return error_mark_node;
+		    }
+		  return build_outer_field_access (id, decl);
+		}
 
 	      /* Otherwise build what it takes to access the field */
 	      access = build_field_ref ((fs ? NULL_TREE : current_this),
