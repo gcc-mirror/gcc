@@ -339,7 +339,7 @@ do_define (pfile)
      cpp_reader *pfile;
 {
   HASHNODE **slot;
-  unsigned long hash;
+  unsigned int hash;
   int len;
   U_CHAR *sym;
   cpp_toklist *list = &pfile->directbuf;
@@ -371,7 +371,8 @@ do_define (pfile)
       goto out;
     }
 
-  slot = _cpp_lookup_slot (pfile, sym, len, INSERT, &hash);
+  hash = _cpp_calc_hash (sym, len);
+  slot = _cpp_lookup_slot (pfile, sym, len, INSERT, hash);
   if (*slot)
     {
       /* Check for poisoned identifiers now.  All other checks
@@ -686,6 +687,7 @@ do_undef (pfile)
      cpp_reader *pfile;
 {
   int len;
+  unsigned int hash;
   HASHNODE **slot;
   U_CHAR *name;
   long here = CPP_WRITTEN (pfile);
@@ -713,7 +715,8 @@ do_undef (pfile)
   name = pfile->token_buffer + here;
   CPP_SET_WRITTEN (pfile, here);
 
-  slot = _cpp_lookup_slot (pfile, name, len, NO_INSERT, 0);
+  hash = _cpp_calc_hash (name, len);
+  slot = _cpp_lookup_slot (pfile, name, len, NO_INSERT, hash);
   if (slot)
     {
       HASHNODE *hp = *slot;
@@ -949,7 +952,7 @@ do_pragma_poison (pfile)
   size_t len;
   enum cpp_ttype token;
   int writeit;
-  unsigned long hash;
+  unsigned int hash;
 
   /* As a rule, don't include #pragma poison commands in output,  
      unless the user asks for them.  */
@@ -972,7 +975,8 @@ do_pragma_poison (pfile)
 
       p = pfile->token_buffer + written;
       len = CPP_PWRITTEN (pfile) - p;
-      slot = _cpp_lookup_slot (pfile, p, len, INSERT, &hash);
+      hash = _cpp_calc_hash (p, len);
+      slot = _cpp_lookup_slot (pfile, p, len, INSERT, hash);
       if (*slot)
 	{
 	  HASHNODE *hp = *slot;
@@ -1507,7 +1511,7 @@ do_assert (pfile)
   HASHNODE *base, *this;
   HASHNODE **bslot, **tslot;
   size_t blen, tlen;
-  unsigned long bhash, thash;
+  unsigned int bhash, thash;
 
   old_written = CPP_WRITTEN (pfile);	/* remember where it starts */
   ret = _cpp_parse_assertion (pfile);
@@ -1528,14 +1532,16 @@ do_assert (pfile)
 
   sym = pfile->token_buffer + old_written;
   blen = (U_CHAR *) strchr (sym, '(') - sym;
-  tslot = _cpp_lookup_slot (pfile, sym, tlen, INSERT, &thash);
+  thash = _cpp_calc_hash (sym, tlen);
+  tslot = _cpp_lookup_slot (pfile, sym, tlen, INSERT, thash);
   if (*tslot)
     {
       cpp_warning (pfile, "%s re-asserted", sym);
       goto error;
     }
 
-  bslot = _cpp_lookup_slot (pfile, sym, blen, INSERT, &bhash);
+  bhash = _cpp_calc_hash (sym, blen);
+  bslot = _cpp_lookup_slot (pfile, sym, blen, INSERT, bhash);
   if (! *bslot)
     {
       *bslot = base = _cpp_make_hashnode (sym, blen, T_ASSERT, bhash);
