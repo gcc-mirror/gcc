@@ -265,7 +265,7 @@ print_rtx (in_rtx)
 		{
 		  basic_block bb = NOTE_BASIC_BLOCK (in_rtx);
 		  if (bb != 0)
-		    fprintf (outfile, " [bb %d]", bb->index);
+		    fprintf (outfile, " [bb %d]", bb->sindex);
 		  break;
 	        }
 

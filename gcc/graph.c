@@ -258,7 +258,6 @@ print_rtl_graph_with_bb (base, suffix, rtx_first)
     fprintf (fp, "(nil)\n");
   else
     {
-      int i;
       enum bb_state { NOT_IN_BB, IN_ONE_BB, IN_MULTIPLE_BB };
       int max_uid = get_max_uid ();
       int *start = (int *) xmalloc (max_uid * sizeof (int));
@@ -266,19 +265,19 @@ print_rtl_graph_with_bb (base, suffix, rtx_first)
       enum bb_state *in_bb_p = (enum bb_state *)
 	xmalloc (max_uid * sizeof (enum bb_state));
       basic_block bb;
+      int j;
 
-      for (i = 0; i < max_uid; ++i)
+      for (j = 0; j < max_uid; ++j)
 	{
-	  start[i] = end[i] = -1;
-	  in_bb_p[i] = NOT_IN_BB;
+	  start[j] = end[j] = -1;
+	  in_bb_p[j] = NOT_IN_BB;
 	}
 
-      for (i = n_basic_blocks - 1; i >= 0; --i)
+      FOR_ALL_BB_REVERSE (bb)
 	{
 	  rtx x;
-	  bb = BASIC_BLOCK (i);
-	  start[INSN_UID (bb->head)] = i;
-	  end[INSN_UID (bb->end)] = i;
+	  start[INSN_UID (bb->head)] = bb->sindex;
+	  end[INSN_UID (bb->end)] = bb->sindex;
 	  for (x = bb->head; x != NULL_RTX; x = NEXT_INSN (x))
 	    {
 	      in_bb_p[INSN_UID (x)]
@@ -310,12 +309,12 @@ print_rtl_graph_with_bb (base, suffix, rtx_first)
 		continue;
 	    }
 
-	  if ((i = start[INSN_UID (tmp_rtx)]) >= 0)
+	  if ((j = start[INSN_UID (tmp_rtx)]) >= 0)
 	    {
 	      /* We start a subgraph for each basic block.  */
-	      start_bb (fp, i);
+	      start_bb (fp, j);
 
-	      if (i == 0)
+	      if (j == 0)
 		draw_edge (fp, 0, INSN_UID (tmp_rtx), 1, 0);
 	    }
 
@@ -323,11 +322,11 @@ print_rtl_graph_with_bb (base, suffix, rtx_first)
 	  node_data (fp, tmp_rtx);
 	  next_insn = next_nonnote_insn (tmp_rtx);
 
-	  if ((i = end[INSN_UID (tmp_rtx)]) >= 0)
+	  if ((j = end[INSN_UID (tmp_rtx)]) >= 0)
 	    {
 	      edge e;
 
-	      bb = BASIC_BLOCK (i);
+	      bb = BASIC_BLOCK (j);
 
 	      /* End of the basic block.  */
 	      end_bb (fp);

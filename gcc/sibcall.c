@@ -583,7 +583,7 @@ optimize_sibling_and_tail_recursive_calls ()
   cleanup_cfg (CLEANUP_PRE_SIBCALL | CLEANUP_PRE_LOOP);
 
   /* If there are no basic blocks, then there is nothing to do.  */
-  if (n_basic_blocks == 0)
+  if (num_basic_blocks == 0)
     return;
 
   /* If we are using sjlj exceptions, we may need to add a call to
@@ -610,7 +610,7 @@ optimize_sibling_and_tail_recursive_calls ()
 
       /* Walk forwards through the last normal block and see if it
 	 does nothing except fall into the exit block.  */
-      for (insn = BLOCK_HEAD (n_basic_blocks - 1);
+      for (insn = EXIT_BLOCK_PTR->prev_bb->head;
 	   insn;
 	   insn = NEXT_INSN (insn))
 	{

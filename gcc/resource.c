@@ -133,7 +133,7 @@ find_basic_block (insn, search_limit)
      rtx insn;
      int search_limit;
 {
-  int i;
+  basic_block bb;
 
   /* Scan backwards to the previous BARRIER.  Then see if we can find a
      label that starts a basic block.  Return the basic block number.  */
@@ -156,9 +156,9 @@ find_basic_block (insn, search_limit)
        insn && GET_CODE (insn) == CODE_LABEL;
        insn = next_nonnote_insn (insn))
     {
-      for (i = 0; i < n_basic_blocks; i++)
-	if (insn == BLOCK_HEAD (i))
-	  return i;
+      FOR_ALL_BB (bb)
+	if (insn == bb->head)
+	  return bb->sindex;
     }
 
   return -1;
@@ -1240,7 +1240,7 @@ init_resource_info (epilogue_insn)
   /* Allocate and initialize the tables used by mark_target_live_regs.  */
   target_hash_table = (struct target_info **)
     xcalloc (TARGET_HASH_PRIME, sizeof (struct target_info *));
-  bb_ticks = (int *) xcalloc (n_basic_blocks, sizeof (int));
+  bb_ticks = (int *) xcalloc (last_basic_block, sizeof (int));
 }
 
 /* Free up the resources allcated to mark_target_live_regs ().  This

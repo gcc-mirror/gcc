@@ -928,8 +928,8 @@ insn_current_reference_address (branch)
 void
 compute_alignments ()
 {
-  int i;
   int log, max_skip, max_log;
+  basic_block bb;
 
   if (label_align)
     {
@@ -946,9 +946,8 @@ compute_alignments ()
   if (! optimize || optimize_size)
     return;
 
-  for (i = 0; i < n_basic_blocks; i++)
+  FOR_ALL_BB (bb)
     {
-      basic_block bb = BASIC_BLOCK (i);
       rtx label = bb->head;
       int fallthru_frequency = 0, branch_frequency = 0, has_fallthru = 0;
       edge e;
@@ -978,8 +977,8 @@ compute_alignments ()
 
       if (!has_fallthru
 	  && (branch_frequency > BB_FREQ_MAX / 10
-	      || (bb->frequency > BASIC_BLOCK (i - 1)->frequency * 10
-		  && (BASIC_BLOCK (i - 1)->frequency
+	      || (bb->frequency > bb->prev_bb->frequency * 10
+		  && (bb->prev_bb->frequency
 		      <= ENTRY_BLOCK_PTR->frequency / 2))))
 	{
 	  log = JUMP_ALIGN (label);
@@ -2019,7 +2018,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 #endif
 	  if (flag_debug_asm)
 	    fprintf (asm_out_file, "\t%s basic block %d\n",
-		     ASM_COMMENT_START, NOTE_BASIC_BLOCK (insn)->index);
+		     ASM_COMMENT_START, NOTE_BASIC_BLOCK (insn)->sindex);
 	  break;
 
 	case NOTE_INSN_EH_REGION_BEG:

@@ -418,8 +418,8 @@ reg_to_stack (first, file)
      rtx first;
      FILE *file;
 {
-  int i;
-  int max_uid;
+  basic_block bb;
+  int max_uid, i;
 
   /* Clean up previous run.  */
   if (stack_regs_mentioned_data)
@@ -451,10 +451,9 @@ reg_to_stack (first, file)
 
   /* Set up block info for each basic block.  */
   alloc_aux_for_blocks (sizeof (struct block_info_def));
-  for (i = n_basic_blocks - 1; i >= 0; --i)
+  FOR_ALL_BB_REVERSE (bb)
     {
       edge e;
-      basic_block bb = BASIC_BLOCK (i);
       for (e = bb->pred; e; e=e->pred_next)
 	if (!(e->flags & EDGE_DFS_BACK)
 	    && e->src != ENTRY_BLOCK_PTR)
@@ -2382,12 +2381,12 @@ print_stack (file, s)
 static int
 convert_regs_entry ()
 {
-  int inserted = 0, i;
+  int inserted = 0;
   edge e;
+  basic_block block;
 
-  for (i = n_basic_blocks - 1; i >= 0; --i)
+  FOR_ALL_BB_REVERSE (block)
     {
-      basic_block block = BASIC_BLOCK (i);
       block_info bi = BLOCK_INFO (block);
       int reg;
 
@@ -2491,7 +2490,7 @@ compensate_edge (e, file)
   current_block = block;
   regstack = bi->stack_out;
   if (file)
-    fprintf (file, "Edge %d->%d: ", block->index, target->index);
+    fprintf (file, "Edge %d->%d: ", block->sindex, target->sindex);
 
   if (target_stack->top == -2)
     {
@@ -2651,7 +2650,7 @@ convert_regs_1 (file, block)
 	  if (EDGE_CRITICAL_P (e))
 	    beste = e;
 	}
-      else if (e->src->index < beste->src->index)
+      else if (e->src->sindex < beste->src->sindex)
 	beste = e;
     }
 
@@ -2665,7 +2664,7 @@ convert_regs_1 (file, block)
 
   if (file)
     {
-      fprintf (file, "\nBasic block %d\nInput stack: ", block->index);
+      fprintf (file, "\nBasic block %d\nInput stack: ", block->sindex);
       print_stack (file, &bi->stack_in);
     }
 
@@ -2780,7 +2779,7 @@ convert_regs_2 (file, block)
   basic_block *stack, *sp;
   int inserted;
 
-  stack = (basic_block *) xmalloc (sizeof (*stack) * n_basic_blocks);
+  stack = (basic_block *) xmalloc (sizeof (*stack) * num_basic_blocks);
   sp = stack;
 
   *sp++ = block;
@@ -2815,7 +2814,8 @@ static int
 convert_regs (file)
      FILE *file;
 {
-  int inserted, i;
+  int inserted;
+  basic_block b;
   edge e;
 
   /* Initialize uninitialized registers on function entry.  */
@@ -2835,9 +2835,8 @@ convert_regs (file)
 
   /* ??? Process all unreachable blocks.  Though there's no excuse
      for keeping these even when not optimizing.  */
-  for (i = 0; i < n_basic_blocks; ++i)
+  FOR_ALL_BB (b)
     {
-      basic_block b = BASIC_BLOCK (i);
       block_info bi = BLOCK_INFO (b);
 
       if (! bi->done)

@@ -10746,7 +10746,7 @@ loop_dump_aux (loop, file, verbose)
       /* This can happen when a marked loop appears as two nested loops,
 	 say from while (a || b) {}.  The inner loop won't match
 	 the loop markers but the outer one will.  */
-      if (LOOP_BLOCK_NUM (loop->cont) != loop->latch->index)
+      if (LOOP_BLOCK_NUM (loop->cont) != loop->latch->sindex)
 	fprintf (file, ";;  NOTE_INSN_LOOP_CONT not in loop latch\n");
     }
 }

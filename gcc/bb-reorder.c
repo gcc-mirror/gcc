@@ -102,14 +102,11 @@ static void
 make_reorder_chain ()
 {
   basic_block prev = NULL;
-  int nbb_m1 = n_basic_blocks - 1;
-  basic_block next;
+  basic_block next, bb;
 
   /* Loop until we've placed every block.  */
   do
     {
-      int i;
-
       next = NULL;
 
       /* Find the next unplaced block.  */
@@ -119,12 +116,13 @@ make_reorder_chain ()
 	 remove from the list as we place.  The head of that list is
 	 what we're looking for here.  */
 
-      for (i = 0; i <= nbb_m1 && !next; ++i)
-	{
-	  basic_block bb = BASIC_BLOCK (i);
-	  if (! RBI (bb)->visited)
+      FOR_ALL_BB (bb)
+	if (! RBI (bb)->visited)
+	  {
 	    next = bb;
-	}
+	    break;
+	  }
+      
       if (next)
         prev = make_reorder_chain_1 (next, prev);
     }
@@ -158,13 +156,13 @@ make_reorder_chain_1 (bb, prev)
  restart:
       RBI (prev)->next = bb;
 
-      if (rtl_dump_file && prev->index + 1 != bb->index)
+      if (rtl_dump_file && prev->next_bb != bb)
 	fprintf (rtl_dump_file, "Reordering block %d after %d\n",
-		 bb->index, prev->index);
+		 bb->sindex, prev->sindex);
     }
   else
     {
-      if (bb->index != 0)
+      if (bb->prev_bb != ENTRY_BLOCK_PTR)
 	abort ();
     }
   RBI (bb)->visited = 1;
@@ -214,7 +212,7 @@ make_reorder_chain_1 (bb, prev)
   if (! next)
     {
       for (e = bb->succ; e ; e = e->succ_next)
-	if (e->dest->index == bb->index + 1)
+	if (e->dest == bb->next_bb)
 	  {
 	    if ((e->flags & EDGE_FALLTHRU)
 	        || (e->dest->succ
@@ -258,7 +256,7 @@ make_reorder_chain_1 (bb, prev)
 void
 reorder_basic_blocks ()
 {
-  if (n_basic_blocks <= 1)
+  if (num_basic_blocks <= 1)
     return;
 
   if ((* targetm.cannot_modify_jumps_p) ())

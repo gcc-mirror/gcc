@@ -676,6 +676,7 @@ reload (first, global)
   int i;
   rtx insn;
   struct elim_table *ep;
+  basic_block bb;
 
   /* The two pointers used to track the true location of the memory used
      for label offsets.  */
@@ -1123,8 +1124,8 @@ reload (first, global)
      pseudo.  */
 
   if (! frame_pointer_needed)
-    for (i = 0; i < n_basic_blocks; i++)
-      CLEAR_REGNO_REG_SET (BASIC_BLOCK (i)->global_live_at_start,
+    FOR_ALL_BB (bb)
+      CLEAR_REGNO_REG_SET (bb->global_live_at_start,
 			   HARD_FRAME_POINTER_REGNUM);
 
   /* Come here (with failure set nonzero) if we can't get enough spill regs
@@ -8612,6 +8613,7 @@ reload_combine ()
   int first_index_reg = -1;
   int last_index_reg = 0;
   int i;
+  basic_block bb;
   unsigned int r;
   int last_label_ruid;
   int min_labelno, n_labels;
@@ -8647,17 +8649,17 @@ reload_combine ()
   label_live = (HARD_REG_SET *) xmalloc (n_labels * sizeof (HARD_REG_SET));
   CLEAR_HARD_REG_SET (ever_live_at_start);
 
-  for (i = n_basic_blocks - 1; i >= 0; i--)
+  FOR_ALL_BB_REVERSE (bb)
     {
-      insn = BLOCK_HEAD (i);
+      insn = bb->head;
       if (GET_CODE (insn) == CODE_LABEL)
 	{
 	  HARD_REG_SET live;
 
 	  REG_SET_TO_HARD_REG_SET (live,
-				   BASIC_BLOCK (i)->global_live_at_start);
+				   bb->global_live_at_start);
 	  compute_use_by_pseudos (&live,
-				  BASIC_BLOCK (i)->global_live_at_start);
+				  bb->global_live_at_start);
 	  COPY_HARD_REG_SET (LABEL_LIVE (insn), live);
 	  IOR_HARD_REG_SET (ever_live_at_start, live);
 	}
@@ -9488,12 +9490,11 @@ copy_eh_notes (insn, x)
 void
 fixup_abnormal_edges ()
 {
-  int i;
   bool inserted = false;
+  basic_block bb;
 
-  for (i = 0; i < n_basic_blocks; i++)
+  FOR_ALL_BB (bb)
     {
-      basic_block bb = BASIC_BLOCK (i);
       edge e;
 
       /* Look for cases we are interested in - an calls or instructions causing

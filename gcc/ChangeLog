@@ -1,3 +1,151 @@
+2002-05-16  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	Basic block renumbering removal:
+	* basic_block.h (struct basic_block_def): Renamed index to sindex,
+	added prev_bb and next_bb fields.
+	(n_basic_blocks): Renamed to num_basic_blocks.
+	(last_basic_block): New, index of last basic block.
+	(FOR_BB_BETWEEN, FOR_ALL_BB, FOR_ALL_BB_REVERSE): New macros for
+	traversing basic block chain.
+	(BLOCK_NUM): index -> sindex.
+	(create_basic_block_structure, create_basic_block): Declaration changed.
+	(debug_num2bb): Declare.
+	(expunge_block_nocompact): Declaration removed.
+	(link_block, unlink_block, compact_blocks): Declare.
+	* bb-reorder.c (make_reorder_chain, make_reorder_chain_1): Modified.
+	* cfg.c (entry_exit_blocks): Initialize new fields.
+	(clear_edges, alloc_block, expunge_block, cached_make_edge,
+	redirect_edge_pred, dump_flow_info, dump_edge_info,
+	alloc_aux_for_blocks, clear_aux_for_blocks, alloc_aux_for_edges,
+	free_aux_for_edges): Modified.
+	(link_block, unlink_block, compact_blocks, debug_num2bb): New.
+	(expunge_block_nocompact): Removed.
+	* cfganal.c (can_fallthru, mark_dfs_back_edges, flow_call_edges_add,
+	find_unreachable_blocks, create_edge_list, print_edge_list,
+	verify_edge_list, flow_edge_list_print, remove_fake_successors,
+	remove_fake_edges, flow_reverse_top_sort_order_compute,
+	flow_depth_first_order_compute, flow_preorder_transversal_compute,
+	flow_dfs_compute_reverse_init, flow_dfs_compute_reverse_add_bb,
+	flow_dfs_compute_reverse_execute): Modified.
+	* cfgbuild.c (make_edges, make_eh_edge, find_basic_blocks_1,
+	find_basic_blocks, find_many_sub_basic_blocks, find_sub_basic_blocks):
+	Modified.
+	* cfgcleanup.c (try_simplify_condjump, try_forward_edges,
+	merge_blocks_move_predecessor_nojumps,
+	merge_blocks_move_successor_nojumps, merge_blocks,
+	outgoing_edges_match, try_crossjump_to_edge, try_crossjump_bb,
+	try_optimize_cfg, delete_unreachable_blocks, cleanup_cfg): Modified.
+	* cfglayout.c (skip_insns_after_block, label_for_bb,
+	record_effective_endpoints, scope_to_insns_finalize,
+	fixup_reorder_chain, verify_insn_chain, cleanup_unconditional_jumps,
+	fixup_fallthru_exit_predecessor, cfg_layout_redirect_edge,
+	cfg_layout_duplicate_bb): Modified.
+	* cfgloop.c (flow_loops_cfg_dump, flow_loop_dump, flow_loops_dump,
+	flow_loop_entry_edges_find, flow_loop_exit_edges_find,
+	flow_loop_nodes_find, flow_loop_pre_header_find, flow_loop_scan,
+	flow_loops_find, flow_loop_outside_edge_p): Modified.
+	* cfgrtl.c (create_basic_block_structure, create_basic_block,
+	flow_delete_block, compute_bb_for_insn, split_block,
+	try_redirect_by_replacing_jump, redirect_edge_and_branch,
+	force_nonfallthru_and_redirect, tidy_fallthru_edge,
+	back_edge_of_syntactic_loop_p, split_edge, commit_one_edge_insertion,
+	commit_edge_insertions, commit_edge_insertions_watch_calls,
+	dump_bb, print_rtl_with_bb, verify_flow_info, purge_dead_edges,
+	purge_all_dead_edges): Modified.
+	* combine.c (combine_instructions, set_nonzero_bits_and_sign_copies,
+	try_combine, nonzero_bits, num_sign_bit_copies, get_last_value_validate,
+	get_last_value, reg_dead_at_p, distribute_notes, distribute_links):
+	Modified.
+	* conflict.c (conflict_graph_compute): Modified.
+	* df.c (FOR_ALL_BBS): Removed.
+	(df_bitmaps_alloc, df_bitmaps_free, df_alloc, df_analyse_1,
+	df_modified_p, df_analyse, df_refs_unlink, df_insn_modify,
+	df_dump, hybrid_search_bitmap, iterative_dataflow_sbitmap): Modified.
+	* df.h (DF_BB_INFO, DF_REF_BBNO): Modified.
+	* dominance.c (init_dom_info, calc_dfs_tree_nonrec, calc_dfs_tree,
+	calc_idoms, idoms_to_doms, calculate_dominance_info): Modified.
+	* final.c (compute_alignments, final_scan_insn): Modified.
+	* flow.c (verify_local_live_at_start, update_life_info,
+	update_life_info_in_dirty_blocks, free_basic_block_vars,
+	delete_noop_moves, calculate_global_regs_live,
+	initialize_uninitialized_subregs, allocate_bb_life_data,
+	regno_uninitialized, regno_clobbered_at_setjmp, mark_set_1,
+	mark_used_reg, count_or_remove_death_notes): Modified.
+	* function.c (thread_prologue_and_epilogue_insns): Modified.
+	* gcse.c (struct null_pointer_info): Change typo of current_block
+	to basic_block.
+	(gcse_main, alloc_gcse_mem, compute_local_properties, compute_sets,
+	oprs_unchanged_p, load_killed_in_block_p, record_last_reg_set_info,
+	compute_hash_table, alloc_rd_mem, handle_rd_kill_set, compute_kill_rd,
+	alloc_avail_expr_mem, expr_killed_p, compute_ae_kill,
+	expr_reaches_here_p_work, expr_reaches_here_p, handle_avail_expr,
+	classic_gcse, one_classic_gcse_pass, compute_transp, cprop,
+	one_cprop_pass, compute_pre_data, pre_expr_reaches_here_p_work,
+	pre_expr_reaches_here_p, insert_insn_end_bb, pre_edge_insert,
+	pre_delete, one_pre_gcse_pass, compute_transpout,
+	invalidate_nonnull_info, delete_null_pointer_checks_1,
+	free_code_hoist_mem, compute_code_hoist_vbeinout,
+	hoist_expr_reaches_here_p, hoist_code, one_code_hoisting_pass,
+	compute_ld_motion_mems, store_ops_ok, find_moveable_store,
+	compute_store_table, build_store_vectors, insert_insn_start_bb,
+	insert_store, replace_store_insn, free_store_memory, store_motion):
+	Modified.
+	* global.c (global_alloc, global_conflicts, mark_elimination,
+	build_insn_chain): Modified.
+	* graph.c (print_rtl_graph_with_bb): Modified.
+	* haifa-sched.c (sched_init): Modified.
+	* ifcvt.c (SET_ORIG_INDEX, ORIG_INDEX): Removed.
+	(find_if_block, find_cond_trap, find_if_case_1, find_if_case_2,
+	if_convert): Modified.
+	* lcm.c (compute_antinout_edge, compute_earliest, compute_laterin,
+	compute_insert_delete, pre_edge_lcm, compute_available,
+	compute_farthest, compute_nearerout, compute_rev_insert_delete,
+	pre_edge_rev_lcm, make_preds_opaque, optimize_mode_switching):
+	Modified.
+	* local-alloc.c (alloc_qty, local_alloc, update_equiv_regs): Modified.
+	* loop.c (loop_dump_aux): Modified.
+	* predict.c (combine_predictions_for_insn, estimate_probability,
+	last_basic_block_p, process_note_prediction, process_note_predictions,
+	note_prediction_to_br_prob, propagate_freq, counts_to_freqs,
+	expensive_function_p, estimate_bb_frequencies,
+	compute_function_frequency): Modified.
+	* print-rtl.c (print_rtx): Modified.
+	* profile.c (GCOV_INDEX_TO_BB, BB_TO_GCOV_INDEX, instrument_edges,
+	get_exec_counts, compute_branch_probabilities, compute_checksum,
+	branch_prob, find_spanning_tree): Modified.
+	* recog.c (split_all_insns, peephole2_optimize): Modified.
+	* reg-stack.c (reg_to_stack, convert_regs_entry, compensate_edge,
+	convert_regs_1, convert_regs_2, convert_regs): Modified.
+	* regclass.c (scan_one_insn, regclass): Modified.
+	* regmove.c (mark_flags_life_zones, regmove_optimize,
+	combine_stack_adjustments): Modified.
+	* regrename.c (regrename_optimize, copyprop_hardreg_forward): Modified.
+	* reload1.c (reload, reload_combine, copy_eh_notes): Modified.
+	* reorg.c (dbr_schedule): Modified.
+	* resource.c (find_basic_block, init_resource_info): Modified.
+	* sbitmap.c (sbitmap_intersection_of_succs,
+	sbitmap_intersection_of_preds, sbitmap_union_of_succs,
+	sbitmap_union_of_preds): Modified.
+	* sched-deps.c (init_dependency_caches): Modified.
+	* sched-ebb.c (schedule_ebbs): Modified.
+	* sched-rgn.c (is_cfg_nonregular, build_control_flow, debug_regions,
+	find_rgns, compute_trg_info, init_regions, schedule_insns): Modified.
+	* sibcall.c (optimize_sibling_and_tail_recursive_call): Modified.
+	* ssa-ccp.c (examine_flow_edges, optimize_unexecutable_edges,
+	ssa_ccp_substitute_constants, ssa_ccp_df_delete_unreachable_insns,
+	ssa_const_prop): Modified.
+	* ssa-dce.c (set_control_dependent_block_to_edge_map_,
+	find_control_dependence, find_pdom, ssa_eliminate_dead_code): Modified.
+	* ssa.c (remove_phi_alternative, find_evaluations,
+	compute_dominance_frontiers_1, compute_iterated_dominance_frontiers,
+	insert_phi_node, rename_block, convert_to_ssa, eliminate_phi,
+	make_regs_equivalent_over_bad_edges,
+	make_equivalent_phi_alternatives_equival,
+	compute_conservative_reg_partition,
+	coalesce_regs_in_successor_phi_nodes, compute_coalesced_reg_partition,
+	rename_equivalent_regs, convert_from_ssa, for_each_successor_phi):
+	Modified.
+
 2002-05-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* cfgrtl.c (purge_dead_edges): Correct handling of EDGE_EH.
@@ -10,7 +158,7 @@
 	calling CONSTANT_POOL_ADDRESS_P.
 	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Fix typo in code
 	to decide whether to define __arm__ or __thumb.
-        (THUMB_GO_IF_LEGITIMATE_ADDRESS): Check for RTX being a
+	(THUMB_GO_IF_LEGITIMATE_ADDRESS): Check for RTX being a
 	SYMBOL_REF before calling CONSTANT_POOL_ADDRESS_P.
 
 2002-05-16  Neil Booth  <neil@daikokuya.demon.co.uk>
@@ -33,10 +181,10 @@
 
 2002-05-15  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/altivec.h: Cleanups for tighter typechecking.
-        Cleanups for accepting modifiers on pointers.
-        Fix predicate typos.
-        Allow long pointers as well as int pointers.
+	* config/rs6000/altivec.h: Cleanups for tighter typechecking.
+	Cleanups for accepting modifiers on pointers.
+	Fix predicate typos.
+	Allow long pointers as well as int pointers.
 
 2002-05-15  Richard Henderson  <rth@redhat.com>
 
@@ -45,7 +193,7 @@
 2002-05-15  Matt Hiller  <hiller@redhat.com>
 
 	* testsuite/gcc.c-torture/compile/20000804-1.x: Don't return 1 if
-        XFAILing.
+	XFAILing.
 	* testsuite/gcc.c-torture/compile/20001226-1.x: Ditto.
 	* testsuite/gcc.c-torture/compile/920520-1.x: Ditto.
 	* testsuite/gcc.c-torture/compile/mipscop-1.x: XFAIL for now.
@@ -55,39 +203,39 @@
 
 2002-05-15  Aldy Hernandez  <aldyh@redhat.com>
 
-        * reload1.c (forget_old_reloads_1): Do not use subreg offset.
+	* reload1.c (forget_old_reloads_1): Do not use subreg offset.
 
 2002-05-15  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.md ("altivec_mtvscr"): Set VSCR register.
-        ("altivec_mfvscr"): Read from VSCR.
+	* config/rs6000/rs6000.md ("altivec_mtvscr"): Set VSCR register.
+	("altivec_mfvscr"): Read from VSCR.
 
-        Add vscr sets for the following insns: altivec_vctuxs,
-        altivec_vaddubs, altivec_vaddsbs, altivec_vadduhs,
-        altivec_vaddshs, altivec_vadduws, altivec_vaddsws, altivec_vctsxs,
-        altivec_vmhaddshs, altivec_vmhraddshs, altivec_vmsumuhs,
-        altivec_vmsumshs, altivec_vpkuhss, altivec_vpkshss,
-        altivec_vpkuwss, altivec_vpkswss, altivec_vpkuhus,
-        altivec_vpkshus, altivec_vpkuwus, altivec_vpkswus,
-        altivec_vsububs, altivec_vsubsbs, altivec_vsubuhs,
-        altivec_vsubshs, altivec_vsubuws, altivec_vsubsws,
-        altivec_vsum4ubs, altivec_vsum4sbs, altivec_vsum4shs,
-        altivec_vsum2sws, altivec_vsumsws.
+	Add vscr sets for the following insns: altivec_vctuxs,
+	altivec_vaddubs, altivec_vaddsbs, altivec_vadduhs,
+	altivec_vaddshs, altivec_vadduws, altivec_vaddsws, altivec_vctsxs,
+	altivec_vmhaddshs, altivec_vmhraddshs, altivec_vmsumuhs,
+	altivec_vmsumshs, altivec_vpkuhss, altivec_vpkshss,
+	altivec_vpkuwss, altivec_vpkswss, altivec_vpkuhus,
+	altivec_vpkshus, altivec_vpkuwus, altivec_vpkswus,
+	altivec_vsububs, altivec_vsubsbs, altivec_vsubuhs,
+	altivec_vsubshs, altivec_vsubuws, altivec_vsubsws,
+	altivec_vsum4ubs, altivec_vsum4sbs, altivec_vsum4shs,
+	altivec_vsum2sws, altivec_vsumsws.
 
-        * config/rs6000/rs6000.h: Add VSCR fixed register.
-        (CALL_REALLY_USED_REGISTERS): Add vscr.
-        (CALL_USED_REGISTERS): Same.
-        (FIXED_REGISTERS): Same.
-        (REG_ALLOC_ORDER): Same.
-        (reg_class): Add VSCR_REGS.
-        (REG_CLASS_NAMES): Same.
-        (REG_CLASS_CONTENTS): Same.
-        (VSCR_REGNO): New.
-        (REGISTER_NAMES): Add vscr.
-        (DEBUG_REGISTER_NAMES): Same.
-        (ADDITIONAL_REGISTER_NAMES): Same.
-        (FIRST_PSEUDO_REGISTER): Increment.
-        (CONDITIONAL_REGISTER_USAGE): Set VSCR as a global register.
+	* config/rs6000/rs6000.h: Add VSCR fixed register.
+	(CALL_REALLY_USED_REGISTERS): Add vscr.
+	(CALL_USED_REGISTERS): Same.
+	(FIXED_REGISTERS): Same.
+	(REG_ALLOC_ORDER): Same.
+	(reg_class): Add VSCR_REGS.
+	(REG_CLASS_NAMES): Same.
+	(REG_CLASS_CONTENTS): Same.
+	(VSCR_REGNO): New.
+	(REGISTER_NAMES): Add vscr.
+	(DEBUG_REGISTER_NAMES): Same.
+	(ADDITIONAL_REGISTER_NAMES): Same.
+	(FIRST_PSEUDO_REGISTER): Increment.
+	(CONDITIONAL_REGISTER_USAGE): Set VSCR as a global register.
 
 2002-05-15  Jakub Jelinek  <jakub@redhat.com>
 

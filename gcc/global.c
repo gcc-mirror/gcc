@@ -583,7 +583,7 @@ global_alloc (file)
 
 #if 0 /* We need to eliminate regs even if there is no rtl code,
 	 for the sake of debugging information.  */
-  if (n_basic_blocks > 0)
+  if (num_basic_blocks > 0)
 #endif
     {
       build_insn_chain (get_insns ());
@@ -636,7 +636,8 @@ allocno_compare (v1p, v2p)
 static void
 global_conflicts ()
 {
-  int b, i;
+  int i;
+  basic_block b;
   rtx insn;
   int *block_start_allocnos;
 
@@ -645,7 +646,7 @@ global_conflicts ()
 
   block_start_allocnos = (int *) xmalloc (max_allocno * sizeof (int));
 
-  for (b = 0; b < n_basic_blocks; b++)
+  FOR_ALL_BB (b)
     {
       memset ((char *) allocnos_live, 0, allocno_row_words * sizeof (INT_TYPE));
 
@@ -664,7 +665,7 @@ global_conflicts ()
 	 are explicitly marked in basic_block_live_at_start.  */
 
       {
-	regset old = BASIC_BLOCK (b)->global_live_at_start;
+	regset old = b->global_live_at_start;
 	int ax = 0;
 
 	REG_SET_TO_HARD_REG_SET (hard_regs_live, old);
@@ -713,7 +714,7 @@ global_conflicts ()
 	     that is reached by an abnormal edge.  */
 
 	  edge e;
-	  for (e = BASIC_BLOCK (b)->pred; e ; e = e->pred_next)
+	  for (e = b->pred; e ; e = e->pred_next)
 	    if (e->flags & EDGE_ABNORMAL)
 	      break;
 	  if (e != NULL)
@@ -723,7 +724,7 @@ global_conflicts ()
 #endif
       }
 
-      insn = BLOCK_HEAD (b);
+      insn = b->head;
 
       /* Scan the code of this basic block, noting which allocnos
 	 and hard regs are born or die.  When one is born,
@@ -823,7 +824,7 @@ global_conflicts ()
 		}
 	    }
 
-	  if (insn == BLOCK_END (b))
+	  if (insn == b->end)
 	    break;
 	  insn = NEXT_INSN (insn);
 	}
@@ -1708,11 +1709,11 @@ void
 mark_elimination (from, to)
      int from, to;
 {
-  int i;
+  basic_block bb;
 
-  for (i = 0; i < n_basic_blocks; i++)
+  FOR_ALL_BB (bb)
     {
-      regset r = BASIC_BLOCK (i)->global_live_at_start; 
+      regset r = bb->global_live_at_start; 
       if (REGNO_REG_SET_P (r, from))
 	{
 	  CLEAR_REGNO_REG_SET (r, from);
@@ -1794,7 +1795,7 @@ build_insn_chain (first)
 {
   struct insn_chain **p = &reload_insn_chain;
   struct insn_chain *prev = 0;
-  int b = 0;
+  basic_block b = ENTRY_BLOCK_PTR->next_bb;
   regset_head live_relevant_regs_head;
 
   live_relevant_regs = INITIALIZE_REG_SET (live_relevant_regs_head);
@@ -1803,14 +1804,14 @@ build_insn_chain (first)
     {
       struct insn_chain *c;
 
-      if (first == BLOCK_HEAD (b))
+      if (first == b->head)
 	{
 	  int i;
 
 	  CLEAR_REG_SET (live_relevant_regs);
 
 	  EXECUTE_IF_SET_IN_BITMAP
-	    (BASIC_BLOCK (b)->global_live_at_start, 0, i,
+	    (b->global_live_at_start, 0, i,
 	     {
 	       if (i < FIRST_PSEUDO_REGISTER
 		   ? ! TEST_HARD_REG_BIT (eliminable_regset, i)
@@ -1827,7 +1828,7 @@ build_insn_chain (first)
 	  *p = c;
 	  p = &c->next;
 	  c->insn = first;
-	  c->block = b;
+	  c->block = b->sindex;
 
 	  if (INSN_P (first))
 	    {
@@ -1865,8 +1866,8 @@ build_insn_chain (first)
 	    }
 	}
 
-      if (first == BLOCK_END (b))
-	b++;
+      if (first == b->end)
+	b = b->next_bb;
 
       /* Stop after we pass the end of the last basic block.  Verify that
 	 no real insns are after the end of the last basic block.
@@ -1874,7 +1875,7 @@ build_insn_chain (first)
 	 We may want to reorganize the loop somewhat since this test should
 	 always be the right exit test.  Allow an ADDR_VEC or ADDR_DIF_VEC if
 	 the previous real insn is a JUMP_INSN.  */
-      if (b == n_basic_blocks)
+      if (b == EXIT_BLOCK_PTR)
 	{
 	  for (first = NEXT_INSN (first) ; first; first = NEXT_INSN (first))
 	    if (INSN_P (first)

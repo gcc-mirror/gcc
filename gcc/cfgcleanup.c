@@ -147,7 +147,7 @@ try_simplify_condjump (cbranch_block)
      unconditional jump.  */
   jump_block = cbranch_fallthru_edge->dest;
   if (jump_block->pred->pred_next
-      || jump_block->index == n_basic_blocks - 1
+      || jump_block->next_bb == EXIT_BLOCK_PTR
       || !FORWARDER_BLOCK_P (jump_block))
     return false;
   jump_dest_block = jump_block->succ->dest;
@@ -439,7 +439,7 @@ try_forward_edges (mode, b)
       target = first = e->dest;
       counter = 0;
 
-      while (counter < n_basic_blocks)
+      while (counter < num_basic_blocks)
 	{
 	  basic_block new_target = NULL;
 	  bool new_target_threaded = false;
@@ -449,7 +449,7 @@ try_forward_edges (mode, b)
 	    {
 	      /* Bypass trivial infinite loops.  */
 	      if (target == target->succ->dest)
-		counter = n_basic_blocks;
+		counter = num_basic_blocks;
 	      new_target = target->succ->dest;
 	    }
 
@@ -462,7 +462,7 @@ try_forward_edges (mode, b)
 		{
 		  if (!threaded_edges)
 		    threaded_edges = xmalloc (sizeof (*threaded_edges)
-					      * n_basic_blocks);
+					      * num_basic_blocks);
 		  else
 		    {
 		      int i;
@@ -474,7 +474,7 @@ try_forward_edges (mode, b)
 			  break;
 		      if (i < nthreaded_edges)
 			{
-			  counter = n_basic_blocks;
+			  counter = num_basic_blocks;
 			  break;
 			}
 		    }
@@ -483,7 +483,7 @@ try_forward_edges (mode, b)
 		  if (t->dest == b)
 		    break;
 
-		  if (nthreaded_edges >= n_basic_blocks)
+		  if (nthreaded_edges >= num_basic_blocks)
 		    abort ();
 		  threaded_edges[nthreaded_edges++] = t;
 
@@ -524,11 +524,11 @@ try_forward_edges (mode, b)
 	  threaded |= new_target_threaded;
   	}
 
-      if (counter >= n_basic_blocks)
+      if (counter >= num_basic_blocks)
 	{
 	  if (rtl_dump_file)
 	    fprintf (rtl_dump_file, "Infinite loop in BB %i.\n",
-		     target->index);
+		     target->sindex);
 	}
       else if (target == first)
 	; /* We didn't do anything.  */
@@ -552,7 +552,7 @@ try_forward_edges (mode, b)
 	      if (rtl_dump_file)
 		fprintf (rtl_dump_file,
 			 "Forwarding edge %i->%i to %i failed.\n",
-			 b->index, e->dest->index, target->index);
+			 b->sindex, e->dest->sindex, target->sindex);
 	      continue;
 	    }
 
@@ -688,7 +688,6 @@ merge_blocks_move_predecessor_nojumps (a, b)
      basic_block a, b;
 {
   rtx barrier;
-  int index;
 
   barrier = next_nonnote_insn (a->end);
   if (GET_CODE (barrier) != BARRIER)
@@ -712,16 +711,11 @@ merge_blocks_move_predecessor_nojumps (a, b)
 
   if (rtl_dump_file)
     fprintf (rtl_dump_file, "Moved block %d before %d and merged.\n",
-	     a->index, b->index);
+	     a->sindex, b->sindex);
 
-  /* Swap the records for the two blocks around.  Although we are deleting B,
-     A is now where B was and we want to compact the BB array from where
-     A used to be.  */
-  BASIC_BLOCK (a->index) = b;
-  BASIC_BLOCK (b->index) = a;
-  index = a->index;
-  a->index = b->index;
-  b->index = index;
+  /* Swap the records for the two blocks around.  */
+  unlink_block (a);
+  link_block (a, b->prev_bb);
 
   /* Now blocks A and B are contiguous.  Merge them.  */
   merge_blocks_nomove (a, b);
@@ -776,7 +770,7 @@ merge_blocks_move_successor_nojumps (a, b)
 
   if (rtl_dump_file)
     fprintf (rtl_dump_file, "Moved block %d after %d and merged.\n",
-	     b->index, a->index);
+	     b->sindex, a->sindex);
 
   /* Now blocks A and B are contiguous.  Merge them.  */
   merge_blocks_nomove (a, b);
@@ -803,7 +797,7 @@ merge_blocks (e, b, c, mode)
   /* If B has a fallthru edge to C, no need to move anything.  */
   if (e->flags & EDGE_FALLTHRU)
     {
-      int b_index = b->index, c_index = c->index;
+      int b_index = b->sindex, c_index = c->sindex;
       merge_blocks_nomove (b, c);
       update_forwarder_flag (b);
 
@@ -1230,7 +1224,7 @@ outgoing_edges_match (mode, bb1, bb2)
 	      if (rtl_dump_file)
 		fprintf (rtl_dump_file,
 			 "Outcomes of branch in bb %i and %i differs to much (%i %i)\n",
-			 bb1->index, bb2->index, b1->probability, prob2);
+			 bb1->sindex, bb2->sindex, b1->probability, prob2);
 
 	      return false;
 	    }
@@ -1238,7 +1232,7 @@ outgoing_edges_match (mode, bb1, bb2)
 
       if (rtl_dump_file && match)
 	fprintf (rtl_dump_file, "Conditionals in bb %i and %i match.\n",
-		 bb1->index, bb2->index);
+		 bb1->sindex, bb2->sindex);
 
       return match;
     }
@@ -1371,14 +1365,14 @@ try_crossjump_to_edge (mode, e1, e2)
     {
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, "Splitting bb %i before %i insns\n",
-		 src2->index, nmatch);
+		 src2->sindex, nmatch);
       redirect_to = split_block (src2, PREV_INSN (newpos2))->dest;
     }
 
   if (rtl_dump_file)
     fprintf (rtl_dump_file,
 	     "Cross jumping from bb %i to bb %i; %i common insns\n",
-	     src1->index, src2->index, nmatch);
+	     src1->sindex, src2->sindex, nmatch);
 
   redirect_to->count += src1->count;
   redirect_to->frequency += src1->frequency;
@@ -1539,6 +1533,7 @@ try_crossjump_bb (mode, bb)
 
       for (e2 = bb->pred; e2; e2 = nexte2)
 	{
+	  basic_block foll;
 	  nexte2 = e2->pred_next;
 
 	  if (e2 == e)
@@ -1552,7 +1547,10 @@ try_crossjump_bb (mode, bb)
 	     checks of crossjump(A,B).  In order to prevent redundant
 	     checks of crossjump(B,A), require that A be the block
 	     with the lowest index.  */
-	  if (e->src->index > e2->src->index)
+	  for (foll = e->src; foll && foll != e2->src; foll = foll->next_bb)
+	    {
+	    }
+	  if (!foll)
 	    continue;
 
 	  if (try_crossjump_to_edge (mode, e, e2))
@@ -1574,16 +1572,16 @@ static bool
 try_optimize_cfg (mode)
      int mode;
 {
-  int i;
   bool changed_overall = false;
   bool changed;
   int iterations = 0;
+  basic_block bb, b;
 
   if (mode & CLEANUP_CROSSJUMP)
     add_noreturn_fake_exit_edges ();
 
-  for (i = 0; i < n_basic_blocks; i++)
-    update_forwarder_flag (BASIC_BLOCK (i));
+  FOR_ALL_BB (bb)
+    update_forwarder_flag (bb);
 
   if (mode & CLEANUP_UPDATE_LIFE)
     clear_bb_flags ();
@@ -1603,19 +1601,19 @@ try_optimize_cfg (mode)
 		     "\n\ntry_optimize_cfg iteration %i\n\n",
 		     iterations);
 
-	  for (i = 0; i < n_basic_blocks;)
+	  for (b = ENTRY_BLOCK_PTR->next_bb; b != EXIT_BLOCK_PTR;)
 	    {
-	      basic_block c, b = BASIC_BLOCK (i);
+	      basic_block c;
 	      edge s;
 	      bool changed_here = false;
 
 	      /* Delete trivially dead basic blocks.  */
 	      while (b->pred == NULL)
 		{
-		  c = BASIC_BLOCK (b->index - 1);
+		  c = b->prev_bb;
 		  if (rtl_dump_file)
 		    fprintf (rtl_dump_file, "Deleting block %i.\n",
-			     b->index);
+			     b->sindex);
 
 		  flow_delete_block (b);
 		  changed = true;
@@ -1648,7 +1646,7 @@ try_optimize_cfg (mode)
 		  delete_insn_chain (label, label);
 		  if (rtl_dump_file)
 		    fprintf (rtl_dump_file, "Deleted label in block %i.\n",
-			     b->index);
+			     b->sindex);
 		}
 
 	      /* If we fall through an empty block, we can remove it.  */
@@ -1659,14 +1657,14 @@ try_optimize_cfg (mode)
 		  /* Note that forwarder_block_p true ensures that
 		     there is a successor for this block.  */
 		  && (b->succ->flags & EDGE_FALLTHRU)
-		  && n_basic_blocks > 1)
+		  && num_basic_blocks > 1)
 		{
 		  if (rtl_dump_file)
 		    fprintf (rtl_dump_file,
 			     "Deleting fallthru block %i.\n",
-			     b->index);
+			     b->sindex);
 
-		  c = BASIC_BLOCK (b->index ? b->index - 1 : 1);
+		  c = b->prev_bb == ENTRY_BLOCK_PTR ? b->next_bb : b->prev_bb;
 		  redirect_edge_succ_nodup (b->pred, b->succ->dest);
 		  flow_delete_block (b);
 		  changed = true;
@@ -1718,7 +1716,7 @@ try_optimize_cfg (mode)
 	      /* Don't get confused by the index shift caused by
 		 deleting blocks.  */
 	      if (!changed_here)
-		i = b->index + 1;
+		b = b->next_bb;
 	      else
 		changed = true;
 	    }
@@ -1750,33 +1748,22 @@ try_optimize_cfg (mode)
 bool
 delete_unreachable_blocks ()
 {
-  int i, j;
   bool changed = false;
+  basic_block b, next_bb;
 
   find_unreachable_blocks ();
 
-  /* Delete all unreachable basic blocks.  Do compaction concurrently,
-     as otherwise we can wind up with O(N^2) behaviour here when we 
-     have oodles of dead code.  */
+  /* Delete all unreachable basic blocks.  */
 
-  for (i = j = 0; i < n_basic_blocks; ++i)
+  for (b = ENTRY_BLOCK_PTR->next_bb; b != EXIT_BLOCK_PTR; b = next_bb)
     {
-      basic_block b = BASIC_BLOCK (i);
-
+      next_bb = b->next_bb;
       if (!(b->flags & BB_REACHABLE))
 	{
-	  flow_delete_block_noexpunge (b);
-	  expunge_block_nocompact (b);
+	  flow_delete_block (b);
 	  changed = true;
 	}
-      else
-	{
-	  BASIC_BLOCK (j) = b;
-	  b->index = j++;
-	}
     }
-  n_basic_blocks = j;
-  basic_block_info->num_elements = j;
 
   if (changed)
     tidy_fallthru_edges ();
@@ -1801,6 +1788,9 @@ cleanup_cfg (mode)
 	  && !reload_completed)
 	delete_trivially_dead_insns (get_insns(), max_reg_num ());
     }
+
+  compact_blocks ();
+  
   while (try_optimize_cfg (mode))
     {
       delete_unreachable_blocks (), changed = true;

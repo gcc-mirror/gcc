@@ -1494,7 +1494,7 @@ init_dependency_caches (luid)
      average number of instructions in a basic block is very high.  See
      the comment before the declaration of true_dependency_cache for
      what we consider "very high".  */
-  if (luid / n_basic_blocks > 100 * 5)
+  if (luid / num_basic_blocks > 100 * 5)
     {
       true_dependency_cache = sbitmap_vector_alloc (luid, luid);
       sbitmap_vector_zero (true_dependency_cache, luid);
