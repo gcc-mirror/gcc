@@ -247,7 +247,7 @@ extern int   opterr;
 /* Create a table of debugging stab-codes and corresponding names.  */
 
 #define __define_stab(NAME, CODE, STRING) {(int)CODE, STRING},
-struct {short code; char string[10];} stab_names[]  = {
+const struct {const short code; const char string[10];} stab_names[]  = {
 #include "stab.def"
 #undef __define_stab
 };

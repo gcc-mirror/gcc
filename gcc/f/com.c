@@ -563,7 +563,7 @@ static struct binding_level *global_binding_level;
 
 /* Binding level structures are initialized by copying this one.  */
 
-static struct binding_level clear_binding_level
+static const struct binding_level clear_binding_level
 =
 {NULL, NULL, NULL, NULL_BINDING_LEVEL, 0};
 
@@ -1283,7 +1283,7 @@ ffecom_arglist_expr_ (const char *c, ffebld expr)
   tree item;
   bool ptr = FALSE;
   tree wanted = NULL_TREE;
-  static char zed[] = "0";
+  static const char zed[] = "0";
 
   if (c == NULL)
     c = &zed[0];

@@ -3898,10 +3898,10 @@ ffelex_hash_kludge (FILE *finput)
   /* If you change this constant string, you have to change whatever
      code might thus be affected by it in terms of having to use
      ffelex_getc_() instead of getc() in the lexers and _hash_.  */
-  static char match[] = "# 1 \"";
+  static const char match[] = "# 1 \"";
   static int kludge[ARRAY_SIZE (match) + 1];
   int c;
-  char *p;
+  const char *p;
   int *q;
 
   /* Read chars as long as they match the target string.

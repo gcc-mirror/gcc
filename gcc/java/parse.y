@@ -421,7 +421,7 @@ static tree currently_caught_type_list;
    `ctxp->current_loop'.  */
 static tree case_label_list; 
 
-static tree src_parse_roots[1] = { NULL_TREE };
+static tree src_parse_roots[1];
 
 /* All classes seen from source code */
 #define gclass_list src_parse_roots[0]

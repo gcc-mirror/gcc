@@ -1,3 +1,7 @@
+2002-01-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* parse.y (src_parse_roots): Don't needlessly zero init.
+
 2001-12-31  Tom Tromey  <tromey@redhat.com>
 
 	* parse.y (dump_java_tree): New function.
