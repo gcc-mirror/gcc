@@ -1115,6 +1115,11 @@ then
 	CROSS="-DCROSS_COMPILE"
 	ALL=all.cross
 	SYSTEM_HEADER_DIR='$(CROSS_SYSTEM_HEADER_DIR)'
+	case "$host","$target" in
+	    i?86-*-*,x86_64-*-* \
+	    | powerpc*-*-*,powerpc64*-*-*)
+		CROSS="$CROSS -DNATIVE_CROSS" ;;
+	esac
 fi
 
 # If this is a cross-compiler that does not

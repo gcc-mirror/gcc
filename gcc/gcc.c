@@ -299,6 +299,7 @@ static const char *handle_braces PARAMS ((const char *));
 static char *save_string	PARAMS ((const char *, int));
 static void set_collect_gcc_options PARAMS ((void));
 static int do_spec_1		PARAMS ((const char *, int, const char *));
+static int do_spec_2		PARAMS ((const char *));
 static const char *find_file	PARAMS ((const char *));
 static int is_directory		PARAMS ((const char *, const char *, int));
 static void validate_switches	PARAMS ((const char *));
@@ -641,6 +642,10 @@ proper position among the other output files.  */
 # endif
 #endif
 
+#ifndef STARTFILE_PREFIX_SPEC
+# define STARTFILE_PREFIX_SPEC ""
+#endif
+
 static const char *asm_debug = ASM_DEBUG_SPEC;
 static const char *cpp_spec = CPP_SPEC;
 static const char *cpp_predefines = CPP_PREDEFINES;
@@ -658,6 +663,7 @@ static const char *switches_need_spaces = SWITCHES_NEED_SPACES;
 static const char *linker_name_spec = LINKER_NAME;
 static const char *link_command_spec = LINK_COMMAND_SPEC;
 static const char *link_libgcc_spec = LINK_LIBGCC_SPEC;
+static const char *startfile_prefix_spec = STARTFILE_PREFIX_SPEC;
 
 /* Standard options to cpp, cc1, and as, to reduce duplication in specs.
    There should be no need to override these in target dependent files,
@@ -1388,6 +1394,7 @@ static struct spec_list static_specs[] =
   INIT_STATIC_SPEC ("md_exec_prefix",		&md_exec_prefix),
   INIT_STATIC_SPEC ("md_startfile_prefix",	&md_startfile_prefix),
   INIT_STATIC_SPEC ("md_startfile_prefix_1",	&md_startfile_prefix_1),
+  INIT_STATIC_SPEC ("startfile_prefix_spec",	&startfile_prefix_spec),
 };
 
 #ifdef EXTRA_SPECS		/* additional specs needed */
@@ -4133,15 +4140,7 @@ do_spec (spec)
 {
   int value;
 
-  clear_args ();
-  arg_going = 0;
-  delete_this_arg = 0;
-  this_is_output_file = 0;
-  this_is_library_file = 0;
-  input_from_pipe = 0;
-  suffix_subst = NULL;
-
-  value = do_spec_1 (spec, 0, NULL);
+  value = do_spec_2 (spec);
 
   /* Force out any unfinished command.
      If -pipe, this forces out the last command if it ended in `|'.  */
@@ -4157,6 +4156,21 @@ do_spec (spec)
     }
 
   return value;
+}
+
+static int
+do_spec_2 (spec)
+     const char *spec;
+{
+  clear_args ();
+  arg_going = 0;
+  delete_this_arg = 0;
+  this_is_output_file = 0;
+  this_is_library_file = 0;
+  input_from_pipe = 0;
+  suffix_subst = NULL;
+
+  return do_spec_1 (spec, 0, NULL);
 }
 
 /* Process the sub-spec SPEC as a portion of a larger spec.
@@ -5838,8 +5852,10 @@ main (argc, argv)
   if (access (specs_file, R_OK) == 0)
     read_specs (specs_file, TRUE);
 
-  /* If not cross-compiling, look for startfiles in the standard places.  */
-  if (*cross_compile == '0')
+  /* If not cross-compiling, look for startfiles in the standard places.
+     Similarly, don't add the standard prefixes if startfile handling
+     will be under control of startfile_prefix_spec.  */
+  if (*cross_compile == '0' || *startfile_prefix_spec == 0)
     {
       if (*md_exec_prefix)
 	{
@@ -5895,6 +5911,16 @@ main (argc, argv)
 		    concat (gcc_exec_prefix, machine_suffix,
 			    standard_startfile_prefix, NULL),
 		    "BINUTILS", PREFIX_PRIORITY_LAST, 0, NULL);
+    }
+
+  if (*startfile_prefix_spec != 0
+      && do_spec_2 (startfile_prefix_spec) == 0
+      && do_spec_1 (" ", 0, NULL) == 0)
+    {
+      int ndx;
+      for (ndx = 0; ndx < argbuf_index; ndx++)
+	add_prefix (&startfile_prefixes, argbuf[ndx], "BINUTILS",
+		    PREFIX_PRIORITY_LAST, 0, NULL);
     }
 
   /* Process any user specified specs in the order given on the command
