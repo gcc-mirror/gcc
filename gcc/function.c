@@ -456,6 +456,7 @@ push_function_context ()
   p->args_size = current_function_args_size;
   p->pretend_args_size = current_function_pretend_args_size;
   p->arg_offset_rtx = current_function_arg_offset_rtx;
+  p->varargs = current_function_varargs;
   p->uses_const_pool = current_function_uses_const_pool;
   p->uses_pic_offset_table = current_function_uses_pic_offset_table;
   p->internal_arg_pointer = current_function_internal_arg_pointer;
@@ -522,6 +523,7 @@ pop_function_context ()
   current_function_args_size = p->args_size;
   current_function_pretend_args_size = p->pretend_args_size;
   current_function_arg_offset_rtx = p->arg_offset_rtx;
+  current_function_varargs = p->varargs;
   current_function_uses_const_pool = p->uses_const_pool;
   current_function_uses_pic_offset_table = p->uses_pic_offset_table;
   current_function_internal_arg_pointer = p->internal_arg_pointer;
@@ -3062,8 +3064,9 @@ assign_parms (fndecl, second_time)
   /* Nonzero if the last arg is named `__builtin_va_alist',
      which is used on some machines for old-fashioned non-ANSI varargs.h;
      this should be stuck onto the stack as if it had arrived there.  */
-  int vararg
-    = (fnargs
+  int hide_last_arg
+    = (current_function_varargs
+       && fnargs
        && (parm = tree_last (fnargs)) != 0
        && DECL_NAME (parm)
        && (! strcmp (IDENTIFIER_POINTER (DECL_NAME (parm)),
@@ -3139,7 +3142,7 @@ assign_parms (fndecl, second_time)
 	 anonymous args.  We treat it as if it were anonymous too.  */
       int last_named = ((TREE_CHAIN (parm) == 0
 			 || DECL_NAME (TREE_CHAIN (parm)) == 0)
-			&& (vararg || stdarg));
+			&& (stdarg || current_function_varargs));
 
       if (TREE_TYPE (parm) == error_mark_node
 	  /* This can happen after weird syntax errors
@@ -3155,7 +3158,7 @@ assign_parms (fndecl, second_time)
 
       /* For varargs.h function, save info about regs and stack space
 	 used by the individual args, not including the va_alist arg.  */
-      if (vararg && last_named)
+      if (hide_last_arg && last_named)
 	current_function_args_info = args_so_far;
 
       /* Find mode of arg as it is passed, and mode of arg
@@ -3784,10 +3787,10 @@ assign_parms (fndecl, second_time)
   current_function_pops_args = RETURN_POPS_ARGS (TREE_TYPE (fndecl),
 						 current_function_args_size);
 
-  /* For stdarg.h function, save info about regs and stack space
-     used by the named args.  */
+  /* For stdarg.h function, save info about
+     regs and stack space used by the named args.  */
 
-  if (stdarg)
+  if (!hide_last_arg)
     current_function_args_info = args_so_far;
 
   /* Set the rtx used for the function return value.  Put this in its
