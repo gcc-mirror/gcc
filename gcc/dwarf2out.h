@@ -35,3 +35,7 @@ extern void dwarf2out_line		PROTO ((char *, unsigned));
 extern void dwarf2out_frame_init	PROTO ((void));
 extern void dwarf2out_frame_debug	PROTO ((rtx));
 extern void dwarf2out_frame_finish	PROTO ((void));
+
+extern void debug_dwarf			PROTO ((void));
+struct die_struct;
+extern void debug_dwarf_die		PROTO ((struct die_struct *));
