@@ -1,3 +1,8 @@
+2004-07-25  Daniel Jacobowitz  <dan@debian.org>
+
+	* regmove.c (optimize_reg_copy_1): Don't try to replace call-used
+	hard registers.
+
 2004-07-25  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree-ssa-operands.c (get_stmt_operands, get_expr_operands):
