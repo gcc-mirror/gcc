@@ -2132,7 +2132,7 @@ add_insn (insn)
 
 /* Add INSN into the doubly-linked list after insn AFTER.  This and
    the next should be the only functions called to insert an insn once
-   delay slots have been filled since only they knows how to update a
+   delay slots have been filled since only they know how to update a
    SEQUENCE.  */
 
 void
@@ -2140,6 +2140,9 @@ add_insn_after (insn, after)
      rtx insn, after;
 {
   rtx next = NEXT_INSN (after);
+
+  if (INSN_DELETED_P (after))
+    abort ();
 
   NEXT_INSN (insn) = next;
   PREV_INSN (insn) = after;
@@ -2174,7 +2177,7 @@ add_insn_after (insn, after)
 
 /* Add INSN into the doubly-linked list before insn BEFORE.  This and
    the previous should be the only functions called to insert an insn once
-   delay slots have been filled since only they knows how to update a
+   delay slots have been filled since only they know how to update a
    SEQUENCE.  */
 
 void
@@ -2182,6 +2185,9 @@ add_insn_before (insn, before)
      rtx insn, before;
 {
   rtx prev = PREV_INSN (before);
+
+  if (INSN_DELETED_P (before))
+    abort ();
 
   PREV_INSN (insn) = prev;
   NEXT_INSN (insn) = before;
