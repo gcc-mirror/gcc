@@ -8835,6 +8835,15 @@ scavenge_reg (HARD_REG_SET *s)
 rtx
 sh_get_pr_initial_val (void)
 {
+  /* ??? Unfortunately, get_hard_reg_initial_val doesn't always work for the
+     PR register on SHcompact, because it might be clobbered by the prologue.
+     We don't know if that's the case before rtl generation is finished.  */
+  if (TARGET_SHCOMPACT
+      && (rtx_equal_function_value_matters
+	  || (current_function_args_info.call_cookie
+	       & ~ CALL_COOKIE_RET_TRAMP (1))
+	  || current_function_has_nonlocal_label))
+    return gen_rtx_MEM (SImode, return_address_pointer_rtx);
   return
     get_hard_reg_initial_val (Pmode, TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG);
 }

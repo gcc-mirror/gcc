@@ -1,3 +1,24 @@
+2003-08-06  J"orn Rennecke <joern.rennecke@superh.com>
+
+	Fix SHcompact exception handling:
+	* sh.c (sh_get_pr_initial_val): If PR is or miight be clobbered
+	by the prologue, return a MEM with return_address_pointer_rtx
+	as address.
+	* sh.h (HARD_REGNO_MODE_OK): PR is OK for SImode.
+	(RETURN_ADDR_OFFSET): Don't define.
+	(SH_DBX_REGISTER_NUMBER): Use SHmedia numbers for SHmedia
+	registers that are visible in compact mode.  Show that SHmedia
+	registers still exist in compact mode, even if there are not
+	readily accessible.
+	(ASM_PREFERRED_EH_DATA_FORMAT): Supply DW_EH_PE_indirect
+	if GLOBAL.  Use DW_EH_PE_textrel (nominally) for CODE,
+	and DW_EH_PE_pcrel for pic data.
+	(ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX): If DW_EH_PE_textrel,
+	set SYMBOL_FLAG_FUNCTION in symbol, and actually use
+	DW_EH_PE_pcrel / DW_EH_PE_absptr encoding.
+	(ALLOCATE_INITIAL_VALUE): Put PR on stack if prologue clobbers it.
+	* sh.md (movsi_media-1): New splitter.
+
 2003-08-06  Graeme Peterson <gp@qnx.com>
 
 	* config/i386/nto.h: New.
