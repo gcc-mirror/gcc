@@ -1,3 +1,110 @@
+2001-03-27  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppfiles.c: Update comments.
+	(struct include_file): Remove "defined" memeber.
+	(find_or_create_entry): Make a copy of the file name, and
+	simplify it.
+	(open_file): Update to ensure we use the simplified filename.
+	(stack_include_file): Don't set search_from.
+	(cpp_included): Don't simplify the path name here.
+	(find_include_file): New prototype.  Call search_from to
+	get the start of the "" include chain.  Don't simplify the
+	filenames here.
+	(_cpp_execute_include): New prototype.  Move diagnostics to
+	do_include_common.  Update.
+	(_cpp_pop_file_buffer): Don't set defined.
+	(search_from): New prototype.  Use the preprocessor's cwd
+	for files included from the command line.
+	(read_name_map): Don't simplify the pathname here.
+
+	(stack_include_file): Only increase the include
+	count if we actually process the file properly, as opposed
+	to treating it as length zero.  Only call read_include_file
+	if not DO_NOT_REREAD.  Handle the -H include file output
+	here.
+	(read_include_file): Remove now redundant DO_NOT_REREAD check.
+	(cpp_included, find_include_file): Simplify pathnames after
+	remapping them.  If remapping, don't use the remapped file
+	name's buffer as our scratch buffer.
+	(cpp_pop_file_buffer): Replace the multiple include macro
+	only if it isn't yet set.
+	(read_name_map): Simplify remapped names when reading in.
+	(remap_filename): Move code to code path that uses it.
+	(_cpp_simplify_pathname): Return the input pointer.
+
+	(NO_INCLUDE_PATH): New macro.
+	(find_include_file): Decide here which part of the include
+	chain to start the search.  Complain about an empty include
+	chain in all cases apart from an abolsute file name.
+	(_cpp_execute_include): Don't choose the search chain here.
+	Don't call handle_missing_include in the case of an empty
+	include chain.
+	(_cpp_compare_file_date): Don't choose the search chain here.
+
+	(destroy_include_file_node): Rename destroy_node.
+	(find_or_create_entry): New function.
+	(open_file, _cpp_fake_include): Use it.
+	(handle_missing_header): New function, broken out of
+	_cpp_execute include.  Don't segfault if there is no
+	system or quoted path.
+	(_cpp_execute_include): Use handle_missing_header.
+
+	(INCLUDE_LEN_FUDGE, ENOMEM): Delete.
+	(cpp_included, find_include_file): Update.
+	(search_from): Use lbasename.
+	(_cpp_execute_include): Don't make a null-terminated
+	copy of the filename.  Don't use CPP_PREV_BUFFER.  Don't call
+	strlen or strcpy; we already know the length.
+	(_cpp_compare_file_date): Similarly.
+
+	* cpphash.h: Update comments.
+	(enum include_type): New.
+	(struct buffer): Delete search from.  New search_cached.
+	(_cpp_execute_include): Update prototype.
+	(struct cpp_reader): Delete done_initialising.
+	(_cpp_simplify_pathname): Update prototype.
+	(struct cpp_buffer): Delete actual_dir.  New members
+	search_from and dir.
+	(struct cpp_reader): Remove actual_dirs.
+
+	(struct include_file): Update.
+	(stack_include_file): Use search_from.
+	(cpp_included, find_include_file): Update.
+	(cpp_execute_include): Update.  ptr->name may not be
+	null terminated.  Use the new search_from member variable
+	of cpp_buffer.
+	(_cpp_compare_file_date): Similarly.
+	(search_from): New function, similiar to actual_directory.
+	(actual_directory): Delete.
+	(remap_filename): Update.  loc->name may not be null terminated.
+	(struct file_name_list): Rename search_path.  Update.
+
+	* cppinit.c (do_includes): Use _cpp_execute_include.
+	(cpp_start_read): Don't set done_initialising.
+	(struct cpp_pending): Update for renamed objects.
+	(append_include_chain, remove_dup_dir, remove_dup_dirs,
+	merge_include_chains, cpp_destroy, cpp_start_read): Similarly.
+
+	* cpplib.c (do_include_common): New function.
+	(do_include, do_include_next, do_import): Use it.
+	(do_include_next): Move the in-main-file diagnostic
+	here from _cpp_execute_include.  Behave like #include if
+	we're in the main file.
+	(_cpp_compare_file_date): Make else unconditional.
+	(CPP_PREV_BUFFER): Delete.
+	(glue_header_name): Null-terminate.
+	(do_line): Don't leak memory.
+
+	* cpplex.c (parse_string): Guarantee null-termination.
+	(_cpp_equiv_toklists): Remove.
+
+	* cpplib.h (BT_WEAK): Delete.
+	(struct cpp_options): Update.
+
+	* cppmain.c (cb_ident): Strings are now null-terminated.
+
+	* mkdeps.c (deps_add_default_target): Use lbasename.
+
 2001-03-27  Alan Modra  <alan@linuxcare.com.au>
 
 	* c-typeck.c (digest_init): Fold init expression.

@@ -95,6 +95,7 @@ static int  strtoul_for_line	PARAMS ((const U_CHAR *, unsigned int,
 					 unsigned long *));
 static void do_diagnostic	PARAMS ((cpp_reader *, enum error_type, int));
 static cpp_hashnode *lex_macro_node	PARAMS ((cpp_reader *));
+static void do_include_common	PARAMS ((cpp_reader *, enum include_type));
 static void do_pragma_once	PARAMS ((cpp_reader *));
 static void do_pragma_poison	PARAMS ((cpp_reader *));
 static void do_pragma_system_header	PARAMS ((cpp_reader *));
@@ -525,8 +526,9 @@ glue_header_name (pfile, header)
     cpp_error (pfile, "missing terminating > character");
   else
     {
-      token_mem = _cpp_pool_alloc (&pfile->ident_pool, total_len);
+      token_mem = _cpp_pool_alloc (&pfile->ident_pool, total_len + 1);
       memcpy (token_mem, buffer, total_len);
+      token_mem[total_len] = '\0';
 
       header->type = CPP_HEADER_NAME;
       header->flags &= ~PREV_WHITE;
@@ -584,22 +586,47 @@ parse_include (pfile, header)
   return 0;
 }
 
+/* Handle #include, #include_next and #import.  */
 static void
-do_include (pfile)
+do_include_common (pfile, type)
      cpp_reader *pfile;
+     enum include_type type;
 {
   cpp_token header;
 
   if (!parse_include (pfile, &header))
-    _cpp_execute_include (pfile, &header, 0, 0);
+    {
+      /* Prevent #include recursion.  */
+      if (pfile->buffer_stack_depth >= CPP_STACK_MAX)
+	cpp_fatal (pfile, "#include nested too deeply");
+      else if (pfile->context->prev)
+	cpp_ice (pfile, "attempt to push file buffer with contexts stacked");
+      else
+	{
+	  /* For #include_next, if this is the primary source file,
+	     warn and use the normal search logic.  */
+	  if (type == IT_INCLUDE_NEXT && ! pfile->buffer->prev)
+	    {
+	      cpp_warning (pfile, "#include_next in primary source file");
+	      type = IT_INCLUDE;
+	    }
+
+	  _cpp_execute_include (pfile, &header, type);
+	}
+    }
+}
+
+static void
+do_include (pfile)
+     cpp_reader *pfile;
+{
+  do_include_common (pfile, IT_INCLUDE);
 }
 
 static void
 do_import (pfile)
      cpp_reader *pfile;
 {
-  cpp_token header;
-
   if (!pfile->import_warning && CPP_OPTION (pfile, warn_import))
     {
       pfile->import_warning = 1;
@@ -607,18 +634,14 @@ do_import (pfile)
 	   "#import is obsolete, use an #ifndef wrapper in the header file");
     }
 
-  if (!parse_include (pfile, &header))
-    _cpp_execute_include (pfile, &header, 1, 0);
+  do_include_common (pfile, IT_IMPORT);
 }
 
 static void
 do_include_next (pfile)
      cpp_reader *pfile;
 {
-  cpp_token header;
-
-  if (!parse_include (pfile, &header))
-    _cpp_execute_include (pfile, &header, 0, 1);
+  do_include_common (pfile, IT_INCLUDE_NEXT);
 }
 
 /* Subroutine of do_line.  Read possible flags after file name.  LAST
@@ -708,14 +731,10 @@ do_line (pfile)
   if (token.type == CPP_STRING)
     {
       char *fname;
-      unsigned int len;
+      unsigned int len = token.val.str.len + 1;
 
-      /* FIXME: memory leak.  */
-      len = token.val.str.len;
-      fname = xmalloc (len + 1);
+      fname = (char *) _cpp_pool_alloc (&pfile->ident_pool, len);
       memcpy (fname, token.val.str.text, len);
-      fname[len] = '\0';
-    
       _cpp_simplify_pathname (fname);
 
       /* Only accept flags for the # 55 form.  */

@@ -43,10 +43,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 # define O_BINARY 0
 #endif
 
-#ifndef INCLUDE_LEN_FUDGE
-# define INCLUDE_LEN_FUDGE 0
-#endif
-
 /* If errno is inspected immediately after a system call fails, it will be
    nonzero, and no error number will ever be zero.  */
 #ifndef ENOENT
@@ -54,9 +50,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #endif
 #ifndef ENOTDIR
 # define ENOTDIR 0
-#endif
-#ifndef ENOMEM
-# define ENOMEM 0
 #endif
 
 /* Suppress warning about function macros used w/o arguments in traditional
@@ -68,7 +61,7 @@ struct include_file
 {
   const char *name;		/* actual path name of file */
   const cpp_hashnode *cmacro;	/* macro, if any, preventing reinclusion.  */
-  const struct file_name_list *foundhere;
+  const struct search_path *foundhere;
 				/* location in search path where file was
 				   found, for #include_next and sysp.  */
   const unsigned char *buffer;	/* pointer to cached file contents */
@@ -77,54 +70,50 @@ struct include_file
   unsigned short include_count;	/* number of times file has been read */
   unsigned short refcnt;	/* number of stacked buffers using this file */
   unsigned char mapped;		/* file buffer is mmapped */
-  unsigned char defined;	/* cmacro prevents inclusion in this state */
 };
 
 /* The cmacro works like this: If it's NULL, the file is to be
    included again.  If it's NEVER_REREAD, the file is never to be
    included again.  Otherwise it is a macro hashnode, and the file is
-   to be included again if the macro is defined or not as specified by
-   DEFINED.  */
+   to be included again if the macro is defined.  */
 #define NEVER_REREAD ((const cpp_hashnode *)-1)
 #define DO_NOT_REREAD(inc) \
 ((inc)->cmacro && ((inc)->cmacro == NEVER_REREAD \
-		   || ((inc)->cmacro->type == NT_MACRO) == (inc)->defined))
+		   || (inc)->cmacro->type == NT_MACRO))
+#define NO_INCLUDE_PATH ((struct include_file *) -1)
 
 static struct file_name_map *read_name_map
 				PARAMS ((cpp_reader *, const char *));
 static char *read_filename_string PARAMS ((int, FILE *));
 static char *remap_filename 	PARAMS ((cpp_reader *, char *,
-					 struct file_name_list *));
-static struct file_name_list *actual_directory
-				PARAMS ((cpp_reader *, const char *));
-static struct include_file *find_include_file
-				PARAMS ((cpp_reader *, const char *,
-					 struct file_name_list *));
+					 struct search_path *));
+static struct search_path *search_from PARAMS ((cpp_reader *,
+						enum include_type));
+static struct include_file *
+	find_include_file PARAMS ((cpp_reader *, const cpp_token *,
+				   enum include_type));
 static struct include_file *open_file PARAMS ((cpp_reader *, const char *));
 static void read_include_file	PARAMS ((cpp_reader *, struct include_file *));
 static void stack_include_file	PARAMS ((cpp_reader *, struct include_file *));
 static void purge_cache 	PARAMS ((struct include_file *));
-static void destroy_include_file_node	PARAMS ((splay_tree_value));
+static void destroy_node	PARAMS ((splay_tree_value));
 static int report_missing_guard		PARAMS ((splay_tree_node, void *));
+static splay_tree_node find_or_create_entry PARAMS ((cpp_reader *,
+						     const char *));
+static void handle_missing_header PARAMS ((cpp_reader *, const char *, int));
 
-/* We use a splay tree to store information about all the include
-   files seen in this compilation.  The key of each tree node is the
-   physical path to the file.  The value is 0 if the file does not
-   exist, or a struct include_file pointer.  */
+/* Set up the splay tree we use to store information about all the
+   file names seen in this compilation.  We also have entries for each
+   file we tried to open but failed; this saves system calls since we
+   don't try to open it again in future.
 
-static void
-destroy_include_file_node (v)
-     splay_tree_value v;
-{
-  struct include_file *f = (struct include_file *)v;
+   The key of each node is the file name, after processing by
+   _cpp_simplify_pathname.  The path name may or may not be absolute.
+   The path string has been malloced, as is automatically freed by
+   registering free () as the splay tree key deletion function.
 
-  if (f)
-    {
-      purge_cache (f);
-      free (f);  /* The tree is registered with free to free f->name.  */
-    }
-}
-
+   A node's value is a pointer to a struct include_file, and is never
+   NULL.  */
 void
 _cpp_init_includes (pfile)
      cpp_reader *pfile;
@@ -132,14 +121,29 @@ _cpp_init_includes (pfile)
   pfile->all_include_files
     = splay_tree_new ((splay_tree_compare_fn) strcmp,
 		      (splay_tree_delete_key_fn) free,
-		      destroy_include_file_node);
+		      destroy_node);
 }
 
+/* Tear down the splay tree.  */
 void
 _cpp_cleanup_includes (pfile)
      cpp_reader *pfile;
 {
   splay_tree_delete (pfile->all_include_files);
+}
+
+/* Free a node.  The path string is automatically freed.  */
+static void
+destroy_node (v)
+     splay_tree_value v;
+{
+  struct include_file *f = (struct include_file *)v;
+
+  if (f)
+    {
+      purge_cache (f);
+      free (f);
+    }
 }
 
 /* Mark a file to not be reread (e.g. #import, read failure).  */
@@ -150,24 +154,40 @@ _cpp_never_reread (file)
   file->cmacro = NEVER_REREAD;
 }
 
-/* Put a file name in the splay tree, for the sake of cpp_included ().
-   Assume that FNAME has already had its path simplified.  */
+/* Lookup a filename, which is simplified after making a copy, and
+   create an entry if none exists.  */
+static splay_tree_node
+find_or_create_entry (pfile, fname)
+     cpp_reader *pfile;
+     const char *fname;
+{
+  splay_tree_node node;
+  struct include_file *file;
+  char *name = xstrdup (fname);
+
+  _cpp_simplify_pathname (name);
+  node = splay_tree_lookup (pfile->all_include_files, (splay_tree_key) name);
+  if (node)
+    free (name);
+  else
+    {
+      file = xcnew (struct include_file);
+      file->name = name;
+      node = splay_tree_insert (pfile->all_include_files,
+				(splay_tree_key) file->name,
+				(splay_tree_value) file);
+    }
+
+  return node;
+}
+
+/* Enter a file name in the splay tree, for the sake of cpp_included.  */
 void
 _cpp_fake_include (pfile, fname)
      cpp_reader *pfile;
      const char *fname;
 {
-  splay_tree_node nd;
-
-  nd = splay_tree_lookup (pfile->all_include_files, (splay_tree_key) fname);
-  if (! nd)
-    {
-      struct include_file *file = xcnew (struct include_file);
-      file->name = xstrdup (fname);
-      splay_tree_insert (pfile->all_include_files,
-			 (splay_tree_key) file->name,
-			 (splay_tree_value) file);
-    }
+  find_or_create_entry (pfile, fname);
 }
 
 /* Given a file name, look it up in the cache; if there is no entry,
@@ -185,36 +205,20 @@ open_file (pfile, filename)
      cpp_reader *pfile;
      const char *filename;
 {
-  splay_tree_node nd;
-  struct include_file *file;
+  splay_tree_node nd = find_or_create_entry (pfile, filename);
+  struct include_file *file = (struct include_file *) nd->value;
 
-  nd = splay_tree_lookup (pfile->all_include_files, (splay_tree_key) filename);
+  /* Don't retry opening if we failed previously.  */
+  if (file->fd == -2)
+    return 0;
 
-  if (nd)
-    {
-      file = (struct include_file *) nd->value;
-
-      /* Don't retry opening if we failed previously.  */
-      if (file->fd == -2)
-	return 0;
-
-      /* Don't reopen an idempotent file. */
-      if (DO_NOT_REREAD (file))
-        return file;
+  /* Don't reopen an idempotent file. */
+  if (DO_NOT_REREAD (file))
+    return file;
       
-      /* Don't reopen one which is already loaded. */
-      if (file->buffer != NULL)
-        return file;
-    }
-  else
-    {
-      /* In particular, this clears foundhere.  */
-      file = xcnew (struct include_file);
-      file->name = xstrdup (filename);
-      splay_tree_insert (pfile->all_include_files,
-			 (splay_tree_key) file->name,
-			 (splay_tree_value) file);
-    }
+  /* Don't reopen one which is already loaded. */
+  if (file->buffer != NULL)
+    return file;
 
   /* We used to open files in nonblocking mode, but that caused more
      problems than it solved.  Do take care not to acquire a
@@ -233,7 +237,7 @@ open_file (pfile, filename)
   if (filename[0] == '\0')
     file->fd = 0;
   else
-    file->fd = open (filename, O_RDONLY | O_NOCTTY | O_BINARY, 0666);
+    file->fd = open (file->name, O_RDONLY | O_NOCTTY | O_BINARY, 0666);
 
   if (file->fd != -1 && fstat (file->fd, &file->st) == 0)
     {
@@ -250,7 +254,7 @@ open_file (pfile, filename)
 
   /* Don't issue an error message if the file doesn't exist.  */
   if (errno != ENOENT && errno != ENOTDIR)
-    cpp_error_from_errno (pfile, filename);
+    cpp_error_from_errno (pfile, file->name);
 
   /* Create a negative node for this path, and return null.  */
   file->fd = -2;
@@ -260,7 +264,7 @@ open_file (pfile, filename)
 
 /* Place the file referenced by INC into a new buffer on PFILE's
    stack.  If there are errors, or the file should not be re-included,
-   a null buffer is pushed.  */
+   a null (zero-length) buffer is pushed.  */
 
 static void
 stack_include_file (pfile, inc)
@@ -280,27 +284,33 @@ stack_include_file (pfile, inc)
   if (CPP_OPTION (pfile, print_deps) > deps_sysp && !inc->include_count)
     deps_add_dep (pfile->deps, inc->name);
 
-  /* We don't want multiple include guard advice for the main file.  */
-  if (pfile->buffer)
-    inc->include_count++;
-
-  /* Not in cache?  */
-  if (! inc->buffer)
-    read_include_file (pfile, inc);
-
   if (! DO_NOT_REREAD (inc))
-    len = inc->st.st_size;
+    {
+      /* Not in cache?  */
+      if (! inc->buffer)
+	read_include_file (pfile, inc);
+      len = inc->st.st_size;
+
+      if (pfile->buffer)
+	{
+	  /* We don't want MI guard advice for the main file.  */
+	  inc->include_count++;
+
+	  /* Handle -H option.  */
+	  if (CPP_OPTION (pfile, print_include_names))
+	    {
+	      for (fp = pfile->buffer; fp; fp = fp->prev)
+		putc ('.', stderr);
+	      fprintf (stderr, " %s\n", inc->name);
+	    }
+	}
+    }
 
   /* Push a buffer.  */
   fp = cpp_push_buffer (pfile, inc->buffer, len, BUF_FILE, inc->name);
   fp->inc = inc;
   fp->inc->refcnt++;
   fp->sysp = sysp;
-
-  /* The ->actual_dir field is only used when ignore_srcdir is not in effect;
-     see do_include */
-  if (!CPP_OPTION (pfile, ignore_srcdir))
-    fp->actual_dir = actual_directory (pfile, inc->name);
 
   /* Initialise controlling macro state.  */
   pfile->mi_state = MI_OUTSIDE;
@@ -338,9 +348,6 @@ read_include_file (pfile, inc)
 #if MMAP_THRESHOLD
   static int pagesize = -1;
 #endif
-
-  if (DO_NOT_REREAD (inc))
-    return;
 
   if (S_ISREG (inc->st.st_mode))
     {
@@ -461,8 +468,8 @@ cpp_included (pfile, fname)
      cpp_reader *pfile;
      const char *fname;
 {
-  struct file_name_list *path;
-  char *name;
+  struct search_path *path;
+  char *name, *n;
   splay_tree_node nd;
 
   if (IS_ABSOLUTE_PATHNAME (fname))
@@ -473,60 +480,80 @@ cpp_included (pfile, fname)
     }
       
   /* Search directory path for the file.  */
-  name = (char *) alloca (strlen (fname) + pfile->max_include_len
-			  + 2 + INCLUDE_LEN_FUDGE);
+  name = (char *) alloca (strlen (fname) + pfile->max_include_len + 2);
   for (path = CPP_OPTION (pfile, quote_include); path; path = path->next)
     {
-      memcpy (name, path->name, path->nlen);
-      name[path->nlen] = '/';
-      strcpy (&name[path->nlen+1], fname);
-      _cpp_simplify_pathname (name);
+      memcpy (name, path->name, path->len);
+      name[path->len] = '/';
+      strcpy (&name[path->len + 1], fname);
       if (CPP_OPTION (pfile, remap))
-	name = remap_filename (pfile, name, path);
+	n = remap_filename (pfile, name, path);
+      else
+	n = name;
 
-      nd = splay_tree_lookup (pfile->all_include_files, (splay_tree_key) name);
+      nd = splay_tree_lookup (pfile->all_include_files, (splay_tree_key) n);
       if (nd && nd->value)
 	return 1;
     }
   return 0;
 }
 
-/* Search for include file FNAME in the include chain starting at
-   SEARCH_START.  Return 0 if there is no such file (or it's un-openable),
-   otherwise an include_file structure.  */
+/* Search for HEADER.  Return 0 if there is no such file (or it's
+   un-openable), in which case an error code will be in errno.  If
+   there is no include path to use it returns NO_INCLUDE_PATH,
+   otherwise an include_file structure.  If this request originates
+   from a #include_next directive, set INCLUDE_NEXT to true.  */
 
 static struct include_file *
-find_include_file (pfile, fname, search_start)
+find_include_file (pfile, header, type)
      cpp_reader *pfile;
-     const char *fname;
-     struct file_name_list *search_start;
+     const cpp_token *header;
+     enum include_type type;
 {
-  struct file_name_list *path;
-  char *name;
+  const char *fname = (const char *) header->val.str.text;
+  struct search_path *path;
   struct include_file *file;
+  char *name, *n;
 
   if (IS_ABSOLUTE_PATHNAME (fname))
     return open_file (pfile, fname);
-      
-  /* Search directory path for the file.  */
-  name = (char *) alloca (strlen (fname) + pfile->max_include_len
-			  + 2 + INCLUDE_LEN_FUDGE);
-  for (path = search_start; path; path = path->next)
-    {
-      memcpy (name, path->name, path->nlen);
-      name[path->nlen] = '/';
-      strcpy (&name[path->nlen+1], fname);
-      _cpp_simplify_pathname (name);
-      if (CPP_OPTION (pfile, remap))
-	name = remap_filename (pfile, name, path);
 
-      file = open_file (pfile, name);
+  /* For #include_next, skip in the search path past the dir in which
+     the current file was found, but if it was found via an absolute
+     path use the normal search logic.  */
+  if (type == IT_INCLUDE_NEXT && pfile->buffer->inc->foundhere)
+    path = pfile->buffer->inc->foundhere->next;
+  else if (header->type == CPP_HEADER_NAME)
+    path = CPP_OPTION (pfile, bracket_include);
+  else
+    path = search_from (pfile, type);
+
+  if (path == NULL)
+    {
+      cpp_error (pfile, "No include path in which to find %s", fname);
+      return NO_INCLUDE_PATH;
+    }
+
+  /* Search directory path for the file.  */
+  name = (char *) alloca (strlen (fname) + pfile->max_include_len + 2);
+  for (; path; path = path->next)
+    {
+      memcpy (name, path->name, path->len);
+      name[path->len] = '/';
+      strcpy (&name[path->len + 1], fname);
+      if (CPP_OPTION (pfile, remap))
+	n = remap_filename (pfile, name, path);
+      else
+	n = name;
+
+      file = open_file (pfile, n);
       if (file)
 	{
 	  file->foundhere = path;
 	  return file;
 	}
     }
+
   return 0;
 }
 
@@ -580,178 +607,102 @@ report_missing_guard (n, b)
   return 0;
 }
 
-void
-_cpp_execute_include (pfile, header, no_reinclude, include_next)
+/* Create a dependency, or issue an error message as appropriate.   */
+static void
+handle_missing_header (pfile, fname, angle_brackets)
      cpp_reader *pfile;
-     const cpp_token *header;
-     int no_reinclude;
-     int include_next;
+     const char *fname;
+     int angle_brackets;
 {
-  struct file_name_list *search_start = 0;
-  unsigned int len = header->val.str.len;
-  unsigned int angle_brackets = header->type == CPP_HEADER_NAME;
-  struct include_file *inc;
-  char *fname;
-  int print_dep;
-
-  /* Help protect #include or similar from recursion.  */
-  if (pfile->buffer_stack_depth >= CPP_STACK_MAX)
-    {
-      cpp_fatal (pfile, "#include nested too deeply");
-      return;
-    }
-
-  /* Check we've tidied up #include before entering the buffer.  */
-  if (pfile->context->prev)
-    {
-      cpp_ice (pfile, "attempt to push file buffer with contexts stacked");
-      return;
-    }
-
-  /* For #include_next, skip in the search path past the dir in which
-     the current file was found.  If this is the last directory in the
-     search path, don't include anything.  If the current file was
-     specified with an absolute path, use the normal search logic.  If
-     this is the primary source file, use the normal search logic and
-     generate a warning.  */
-  if (include_next)
-    {
-      if (! pfile->buffer->prev)
-	cpp_warning (pfile, "#include_next in primary source file");
-      else
-	{
-	  if (pfile->buffer->inc->foundhere)
-	    {
-	      search_start = pfile->buffer->inc->foundhere->next;
-	      if (! search_start)
-		return;
-	    }
-	}
-    }
-
-  fname = alloca (len + 1);
-  memcpy (fname, header->val.str.text, len);
-  fname[len] = '\0';
-
-  if (!search_start)
-    {
-      if (angle_brackets)
-	search_start = CPP_OPTION (pfile, bracket_include);
-      else if (CPP_OPTION (pfile, ignore_srcdir))
-	search_start = CPP_OPTION (pfile, quote_include);
-      else
-	search_start = CPP_BUFFER (pfile)->actual_dir;
-
-      if (!search_start)
-	{
-	  cpp_error (pfile, "No include path in which to find %s", fname);
-	  return;
-	}
-    }
-
-  inc = find_include_file (pfile, fname, search_start);
-  if (inc)
-    {
-      if (angle_brackets)
-	pfile->system_include_depth++;
-
-      stack_include_file (pfile, inc);
-
-      if (! DO_NOT_REREAD (inc))
-	{
-	  if (no_reinclude)
-	    _cpp_never_reread (inc);
-
-	  /* Handle -H option.  */
-	  if (CPP_OPTION (pfile, print_include_names))
-	    {
-	      cpp_buffer *fp = CPP_BUFFER (pfile);
-	      while ((fp = CPP_PREV_BUFFER (fp)) != NULL)
-		putc ('.', stderr);
-	      fprintf (stderr, " %s\n", inc->name);
-	    }
-	}
-
-      return;
-    }
-      
   /* We will try making the RHS pfile->buffer->sysp after 3.0.  */
-  print_dep = CPP_PRINT_DEPS(pfile) > (angle_brackets
-				       || pfile->system_include_depth);
+  int print_dep = CPP_PRINT_DEPS(pfile) > (angle_brackets
+					   || pfile->system_include_depth);
   if (CPP_OPTION (pfile, print_deps_missing_files) && print_dep)
     {
       if (!angle_brackets || IS_ABSOLUTE_PATHNAME (fname))
 	deps_add_dep (pfile->deps, fname);
       else
 	{
-	  char *p;
-	  struct file_name_list *ptr;
-	  int len;
-
 	  /* If requested as a system header, assume it belongs in
-	     the first system header directory. */
-	  if (CPP_OPTION (pfile, bracket_include))
-	    ptr = CPP_OPTION (pfile, bracket_include);
-	  else
-	    ptr = CPP_OPTION (pfile, quote_include);
+	     the first system header directory.  */
+	  struct search_path *ptr = CPP_OPTION (pfile, bracket_include);
+	  char *p;
+	  int len = 0, fname_len = strlen (fname);
 
-	  len = strlen (ptr->name);
-	  p = (char *) alloca (len + strlen (fname) + 2);
+	  if (ptr)
+	    len = ptr->len;
+
+	  p = (char *) alloca (len + fname_len + 2);
 	  if (len)
 	    {
 	      memcpy (p, ptr->name, len);
 	      p[len++] = '/';
 	    }
-	  strcpy (p + len, fname);
+	  memcpy (p + len, fname, fname_len + 1);
 	  _cpp_simplify_pathname (p);
 	  deps_add_dep (pfile->deps, p);
 	}
     }
-  /* If -M was specified, and this header file won't be added to
-     the dependency list, then don't count this as an error,
-     because we can still produce correct output.  Otherwise, we
-     can't produce correct output, because there may be
-     dependencies we need inside the missing file, and we don't
-     know what directory this missing file exists in. */
+  /* If -M was specified, then don't count this as an error, because
+     we can still produce correct output.  Otherwise, we can't produce
+     correct output, because there may be dependencies we need inside
+     the missing file, and we don't know what directory this missing
+     file exists in.  FIXME: Use a future cpp_diagnotic_with_errno ()
+     for both of these cases.  */
   else if (CPP_PRINT_DEPS (pfile) && ! print_dep)
-    cpp_warning (pfile, "No include path in which to find %s", fname);
+    cpp_warning (pfile, "%s: %s", fname, xstrerror (errno));
   else
     cpp_error_from_errno (pfile, fname);
 }
 
-/* Locate file F, and determine whether it is newer than PFILE. Return -1,
-   if F cannot be located or dated, 1, if it is newer and 0 if older.  */
+/* Returns non-zero if a buffer was stacked.  */
 int
-_cpp_compare_file_date (pfile, f)
+_cpp_execute_include (pfile, header, type)
      cpp_reader *pfile;
-     const cpp_token *f;
+     const cpp_token *header;
+     enum include_type type;
 {
-  unsigned int len = f->val.str.len;
-  char *fname;
-  struct file_name_list *search_start;
-  struct include_file *inc;
+  struct include_file *inc = find_include_file (pfile, header, type);
 
-  if (f->type == CPP_HEADER_NAME)
-    search_start = CPP_OPTION (pfile, bracket_include);
-  else if (CPP_OPTION (pfile, ignore_srcdir))
-    search_start = CPP_OPTION (pfile, quote_include);
-  else
-    search_start = CPP_BUFFER (pfile)->actual_dir;
+  if (inc == 0)
+    handle_missing_header (pfile, (const char *) header->val.str.text,
+			   header->type == CPP_HEADER_NAME);
+  else if (inc != NO_INCLUDE_PATH)
+    {
+      if (header->type == CPP_HEADER_NAME)
+	pfile->system_include_depth++;
 
-  fname = alloca (len + 1);
-  memcpy (fname, f->val.str.text, len);
-  fname[len] = '\0';
-  inc = find_include_file (pfile, fname, search_start);
+      stack_include_file (pfile, inc);
+
+      if (type == IT_IMPORT)
+	_cpp_never_reread (inc);
+
+      return 1;
+    }
+
+  return 0;
+}
+
+/* Locate HEADER, and determine whether it is newer than the current
+   file.  If it cannot be located or dated, return -1, if it is newer
+   newer, return 1, otherwise 0.  */
+int
+_cpp_compare_file_date (pfile, header)
+     cpp_reader *pfile;
+     const cpp_token *header;
+{
+  struct include_file *inc = find_include_file (pfile, header, 0);
   
-  if (!inc)
+  if (inc == NULL || inc == NO_INCLUDE_PATH)
     return -1;
+
   if (inc->fd > 0)
     {
       close (inc->fd);
       inc->fd = -1;
     }
     
-  return inc->st.st_mtime > CPP_BUFFER (pfile)->inc->st.st_mtime;
+  return inc->st.st_mtime > pfile->buffer->inc->st.st_mtime;
 }
 
 
@@ -788,13 +739,10 @@ _cpp_pop_file_buffer (pfile, buf)
   if (pfile->include_depth)
     pfile->include_depth--;
 
-  /* Record the inclusion-preventing macro and its definedness.  */
-  if (pfile->mi_state == MI_OUTSIDE && inc->cmacro != NEVER_REREAD)
-    {
-      /* This could be NULL meaning no controlling macro.  */
-      inc->cmacro = pfile->mi_cmacro;
-      inc->defined = 1;
-    }
+  /* Record the inclusion-preventing macro, which could be NULL
+     meaning no controlling macro, if we haven't got it already.  */
+  if (pfile->mi_state == MI_OUTSIDE && inc->cmacro == NULL)
+    inc->cmacro = pfile->mi_cmacro;
 
   /* Invalidate control macros in the #including file.  */
   pfile->mi_state = MI_FAILED;
@@ -802,6 +750,61 @@ _cpp_pop_file_buffer (pfile, buf)
   inc->refcnt--;
   if (inc->refcnt == 0 && DO_NOT_REREAD (inc))
     purge_cache (inc);
+}
+
+/* Returns the first place in the include chain to start searching for
+   "" includes.  This involves stripping away the basename of the
+   current file, unless -I- was specified.
+
+   If we're handling -include or -imacros, use the "" chain, but with
+   the preprocessor's cwd prepended.  */
+static struct search_path *
+search_from (pfile, type)
+     cpp_reader *pfile;
+     enum include_type type;
+{
+  cpp_buffer *buffer = pfile->buffer;
+  unsigned int dlen;
+
+  /* Command line uses the cwd, and does not cache the result.  */
+  if (type == IT_CMDLINE)
+    goto use_cwd;
+
+  /* Ignore the current file's directory if -I- was given.  */
+  if (CPP_OPTION (pfile, ignore_srcdir))
+    return CPP_OPTION (pfile, quote_include);
+
+  if (! buffer->search_cached)
+    {
+      buffer->search_cached = 1;
+
+      dlen = lbasename (buffer->inc->name) - buffer->inc->name;
+
+      if (dlen)
+	{
+	  /* We don't guarantee NAME is null-terminated.  This saves
+	     allocating and freeing memory, and duplicating it when faking
+	     buffers in cpp_push_buffer.  Drop a trailing '/'.  */
+	  buffer->dir.name = buffer->inc->name;
+	  if (dlen > 1)
+	    dlen--;
+	}
+      else
+	{
+	use_cwd:
+	  buffer->dir.name = ".";
+	  dlen = 1;
+	}
+
+      if (dlen > pfile->max_include_len)
+	pfile->max_include_len = dlen;
+
+      buffer->dir.len = dlen;
+      buffer->dir.next = CPP_OPTION (pfile, quote_include);
+      buffer->dir.sysp = buffer->sysp;
+    }
+
+  return &buffer->dir;
 }
 
 /* The file_name_map structure holds a mapping of file names for a
@@ -944,13 +947,13 @@ read_name_map (pfile, dirname)
   return map_list_ptr->map_list_map;
 }  
 
-/* Remap NAME based on the file_name_map (if any) for LOC. */
-
+/* Remap an unsimplified path NAME based on the file_name_map (if any)
+   for LOC.  */
 static char *
 remap_filename (pfile, name, loc)
      cpp_reader *pfile;
      char *name;
-     struct file_name_list *loc;
+     struct search_path *loc;
 {
   struct file_name_map *map;
   const char *from, *p;
@@ -958,12 +961,18 @@ remap_filename (pfile, name, loc)
 
   if (! loc->name_map)
     {
-      loc->name_map = read_name_map (pfile, loc->name ? loc->name : ".");
+      /* Get a null-terminated path.  */
+      char *dname = alloca (loc->len + 1);
+      memcpy (dname, loc->name, loc->len);
+      dname[loc->len] = '\0';
+
+      loc->name_map = read_name_map (pfile, dname);
       if (! loc->name_map)
 	return name;
     }
   
-  from = name + strlen (loc->name) + 1;
+  /* This works since NAME has not been simplified yet.  */
+  from = name + loc->len + 1;
   
   for (map = loc->name_map; map; map = map->map_next)
     if (!strcmp (map->map_from, from))
@@ -993,65 +1002,6 @@ remap_filename (pfile, name, loc)
   return name;
 }
 
-/* Given a path FNAME, extract the directory component and place it
-   onto the actual_dirs list.  Return a pointer to the allocated
-   file_name_list structure.  These structures are used to implement
-   current-directory "" include searching. */
-
-static struct file_name_list *
-actual_directory (pfile, fname)
-     cpp_reader *pfile;
-     const char *fname;
-{
-  char *last_slash, *dir;
-  size_t dlen;
-  struct file_name_list *x;
-  
-  dir = xstrdup (fname);
-  last_slash = strrchr (dir, '/');
-  if (last_slash)
-    {
-      if (last_slash == dir)
-        {
-	  dlen = 1;
-	  last_slash[1] = '\0';
-	}
-      else
-	{
-	  dlen = last_slash - dir;
-	  *last_slash = '\0';
-	}
-    }
-  else
-    {
-      free (dir);
-      dir = xstrdup (".");
-      dlen = 1;
-    }
-
-  if (dlen > pfile->max_include_len)
-    pfile->max_include_len = dlen;
-
-  for (x = pfile->actual_dirs; x; x = x->alloc)
-    if (!strcmp (x->name, dir))
-      {
-	free (dir);
-	return x;
-      }
-
-  /* Not found, make a new one. */
-  x = (struct file_name_list *) xmalloc (sizeof (struct file_name_list));
-  x->name = dir;
-  x->nlen = dlen;
-  x->next = CPP_OPTION (pfile, quote_include);
-  x->alloc = pfile->actual_dirs;
-  x->sysp = pfile->buffer->sysp;
-  x->name_map = NULL;
-
-  pfile->actual_dirs = x;
-  return x;
-}
-
 /* Simplify a path name in place, deleting redundant components.  This
    reduces OS overhead and guarantees that equivalent paths compare
    the same (modulo symlinks).
@@ -1064,9 +1014,9 @@ actual_directory (pfile, fname)
    //quux		//quux  (POSIX allows leading // as a namespace escape)
 
    Guarantees no trailing slashes. All transforms reduce the length
-   of the string.
+   of the string.  Returns PATH;
  */
-void
+char *
 _cpp_simplify_pathname (path)
     char *path;
 {
@@ -1182,5 +1132,5 @@ _cpp_simplify_pathname (path)
     
     *to = '\0';
 
-    return;
+    return path;
 }

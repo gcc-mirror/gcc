@@ -72,29 +72,32 @@ struct cpp_pool
   unsigned int locks;
 };
 
-/* List of directories to look for include files in. */
-struct file_name_list
+/* List of directories to look for include files in.  */
+struct search_path
 {
-  struct file_name_list *next;
-  struct file_name_list *alloc; /* for the cache of
-				   current directory entries */
-  char *name;
-  unsigned int nlen;
+  struct search_path *next;
+
+  /* NOTE: NAME may not be null terminated for the case of the current
+     file's directory!  */
+  const char *name;
+  unsigned int len;
   /* We use these to tell if the directory mentioned here is a duplicate
-     of an earlier directory on the search path. */
+     of an earlier directory on the search path.  */
   ino_t ino;
   dev_t dev;
-  /* If the following is nonzero, it is a C-language system include
-     directory.  */
+  /* Non-zero if it is a system include directory.  */
   int sysp;
-  /* Mapping of file names for this directory.
-     Only used on MS-DOS and related platforms. */
+  /* Mapping of file names for this directory.  Only used on MS-DOS
+     and related platforms.  */
   struct file_name_map *name_map;
 };
 
 /* Multiple-include optimisation.  */
 enum mi_state {MI_FAILED = 0, MI_OUTSIDE};
 enum mi_ind {MI_IND_NONE = 0, MI_IND_NOT};
+
+/* #include types.  */
+enum include_type {IT_INCLUDE, IT_INCLUDE_NEXT, IT_IMPORT, IT_CMDLINE};
 
 typedef struct toklist toklist;
 struct toklist
@@ -180,9 +183,6 @@ struct cpp_buffer
   /* Filename specified with #line command.  */
   const char *nominal_fname;
 
-  /* Actual directory of this file, used only for "" includes */
-  struct file_name_list *actual_dir;
-
   /* Pointer into the include table.  Used for include_next and
      to record control macros. */
   struct include_file *inc;
@@ -225,8 +225,16 @@ struct cpp_buffer
      containing files that matches the current status.  */
   unsigned char include_stack_listed;
 
+  /* Nonzero means that the directory to start searching for ""
+     include files has been calculated and stored in "dir" below.  */
+  unsigned char search_cached;
+
   /* Buffer type.  */
   ENUM_BITFIELD (cpp_buffer_type) type : 8;
+
+  /* The directory of the this buffer's file.  Its NAME member is not
+     allocated, so we don't need to worry about freeing it.  */
+  struct search_path dir;
 };
 
 /* A cpp_reader encapsulates the "state" of a pre-processor run.
@@ -297,10 +305,6 @@ struct cpp_reader
   /* Tree of other included files.  See cppfiles.c.  */
   struct splay_tree_s *all_include_files;
 
-  /* Chain of `actual directory' file_name_list entries, for ""
-     inclusion.  */
-  struct file_name_list *actual_dirs;
-
   /* Current maximum length of directory names in the search path
      for include files.  (Altered as we get more of them.)  */
   unsigned int max_include_len;
@@ -336,10 +340,6 @@ struct cpp_reader
 
   /* We're printed a warning recommending against using #import.  */
   unsigned char import_warning;
-
-  /* True after cpp_start_read completes.  Used to inhibit some
-     warnings while parsing the command line.  */
-  unsigned char done_initializing;
 
   /* True if we are skipping a failed conditional group.  */
   unsigned char skipping;
@@ -378,7 +378,6 @@ extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 
 /* Macros.  */
 
-#define CPP_PREV_BUFFER(BUFFER) ((BUFFER)->prev)
 #define CPP_PRINT_DEPS(PFILE) CPP_OPTION (PFILE, print_deps)
 #define CPP_IN_SYSTEM_HEADER(PFILE) \
   (CPP_BUFFER (PFILE) && CPP_BUFFER (PFILE)->sysp)
@@ -412,10 +411,11 @@ extern cpp_hashnode *_cpp_lookup_with_hash PARAMS ((cpp_reader*, size_t,
 /* In cppfiles.c */
 extern void _cpp_fake_include		PARAMS ((cpp_reader *, const char *));
 extern void _cpp_never_reread		PARAMS ((struct include_file *));
-extern void _cpp_simplify_pathname	PARAMS ((char *));
+extern char *_cpp_simplify_pathname	PARAMS ((char *));
 extern int _cpp_read_file		PARAMS ((cpp_reader *, const char *));
-extern void _cpp_execute_include	PARAMS ((cpp_reader *,
-						 const cpp_token *, int, int));
+extern int _cpp_execute_include		PARAMS ((cpp_reader *,
+						 const cpp_token *,
+						 enum include_type));
 extern int _cpp_compare_file_date       PARAMS ((cpp_reader *,
 						 const cpp_token *));
 extern void _cpp_report_missing_guards	PARAMS ((cpp_reader *));

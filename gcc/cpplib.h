@@ -240,8 +240,8 @@ struct cpp_options
   const char *deps_file;
 
   /* Search paths for include files.  */
-  struct file_name_list *quote_include;	 /* First dir to search for "file" */
-  struct file_name_list *bracket_include;/* First dir to search for <file> */
+  struct search_path *quote_include;	/* "" */
+  struct search_path *bracket_include;  /* <> */
 
   /* Map between header names and file names, used only on DOS where
      file names are limited in length.  */
@@ -463,9 +463,7 @@ enum builtin_type
   BT_BASE_FILE,			/* `__BASE_FILE__' */
   BT_INCLUDE_LEVEL,		/* `__INCLUDE_LEVEL__' */
   BT_TIME,			/* `__TIME__' */
-  BT_STDC,			/* `__STDC__' */
-  BT_WEAK                       /* Whether or not G++ supports weak 
-				   symbols.  */
+  BT_STDC			/* `__STDC__' */
 };
 
 /* There is a slot in the hashnode for use by front ends when integrated
