@@ -1,3 +1,8 @@
+2004-06-23  Roger Sayle  <roger@eyesopen.com>
+
+	* convert.c (strip_float_extension): Skip both NOP_EXPR and
+	CONVERT_EXPR floating point extensions.
+
 2004-06-23  Diego Novillo  <dnovillo@redhat.com>
 
 	* Makefile.in (tree-vn.o): New.
