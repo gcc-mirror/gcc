@@ -646,12 +646,17 @@ funlike_invocation_p (pfile, node)
       return collect_args (pfile, node);
     }
 
-  /* Back up.  We may have skipped padding, in which case backing up
-     more than one token when expanding macros is in general too
-     difficult.  We re-insert it in its own context.  */
-  _cpp_backup_tokens (pfile, 1);
-  if (padding)
-    push_token_context (pfile, NULL, padding, 1);
+  /* CPP_EOF can be the end of macro arguments, or the end of the
+     file.  We mustn't back up over the latter.  Ugh.  */
+  if (token->type != CPP_EOF || token == &pfile->eof)
+    {
+      /* Back up.  We may have skipped padding, in which case backing
+	 up more than one token when expanding macros is in general
+	 too difficult.  We re-insert it in its own context.  */
+      _cpp_backup_tokens (pfile, 1);
+      if (padding)
+	push_token_context (pfile, NULL, padding, 1);
+    }
 
   return NULL;
 }

@@ -1,3 +1,8 @@
+2002-04-21  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppmacro.c (funlike_invocation_p): Don't step back
+	over CPP_EOF.
+
 2002-04-21  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (output_profile_hook): Do not increment
