@@ -263,6 +263,7 @@ int cse2_dump = 0;
 int branch_prob_dump = 0;
 int flow_dump = 0;
 int combine_dump = 0;
+int regmove_dump = 0;
 int sched_dump = 0;
 int local_reg_dump = 0;
 int global_reg_dump = 0;
@@ -462,6 +463,11 @@ int flag_unroll_loops;
    This is generally not a win.  */
 
 int flag_unroll_all_loops;
+
+/* Nonzero to perform full register move optimization passes.  This is the
+   default for -O2 on targets where it is profitable.  */
+
+int flag_regmove = 0;
 
 /* Nonzero for -fwritable-strings:
    store string constants in data segment and don't uniquize them.  */
@@ -673,6 +679,7 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"pretend-float", &flag_pretend_float, 1},
   {"schedule-insns", &flag_schedule_insns, 1},
   {"schedule-insns2", &flag_schedule_insns_after_reload, 1},
+  {"optimize-register-move", &flag_regmove, 1},
   {"pic", &flag_pic, 1},
   {"PIC", &flag_pic, 2},
   {"exceptions", &flag_exceptions, 1},
@@ -895,6 +902,7 @@ FILE *cse2_dump_file;
 FILE *branch_prob_dump_file;
 FILE *flow_dump_file;
 FILE *combine_dump_file;
+FILE *regmove_dump_file;
 FILE *sched_dump_file;
 FILE *local_reg_dump_file;
 FILE *global_reg_dump_file;
@@ -915,6 +923,7 @@ int cse2_time;
 int branch_prob_time;
 int flow_time;
 int combine_time;
+int regmove_time;
 int sched_time;
 int local_alloc_time;
 int global_alloc_time;
@@ -1074,6 +1083,8 @@ fatal_insn (message, insn)
     fflush (flow_dump_file);
   if (combine_dump_file)
     fflush (combine_dump_file);
+  if (regmove_dump_file)
+    fflush (regmove_dump_file);
   if (sched_dump_file)
     fflush (sched_dump_file);
   if (local_reg_dump_file)
@@ -2159,6 +2170,7 @@ compile_file (name)
   branch_prob_time = 0;
   flow_time = 0;
   combine_time = 0;
+  regmove_time = 0;
   sched_time = 0;
   local_alloc_time = 0;
   global_alloc_time = 0;
@@ -2215,6 +2227,11 @@ compile_file (name)
   if (flag_caller_saves)
     init_caller_save ();
 
+  /* How that we can emit RTL, see if the value of flag_regmove was
+     defaulted from -O2 and, if so, set its proper default.  */
+  if (flag_regmove == 2)
+    flag_regmove = regmove_profitable_p ();
+
   /* If auxiliary info generation is desired, open the output file.
      This goes in the same directory as the source file--unlike
      all the other output files.  */
@@ -2260,6 +2277,10 @@ compile_file (name)
   /* If combine dump desired, open the output file.  */
   if (combine_dump)
     combine_dump_file = open_dump_file (dump_base_name, ".combine");
+
+  /* If regmove dump desired, open the output file.  */
+  if (regmove_dump)
+    regmove_dump_file = open_dump_file (dump_base_name, ".regmove");
 
   /* If scheduling dump desired, open the output file.  */
   if (sched_dump)
@@ -2837,6 +2858,7 @@ compile_file (name)
 	  print_time ("branch-prob", branch_prob_time);
 	  print_time ("flow", flow_time);
 	  print_time ("combine", combine_time);
+	  print_time ("regmove", regmove_time);
 	  print_time ("sched", sched_time);
 	  print_time ("local-alloc", local_alloc_time);
 	  print_time ("global-alloc", global_alloc_time);
@@ -3409,6 +3431,32 @@ rest_of_compilation (decl)
 		 fflush (combine_dump_file);
 	     });
 
+  /* Print function header into register move optimization dump now
+     because doing the optimization makes some of the dump.  */
+
+  if (regmove_dump)
+    TIMEVAR (dump_time,
+	     {
+	       fprintf (regmove_dump_file, "\n;; Function %s\n\n",
+			(*decl_printable_name) (decl, 2));
+	     });
+
+  /* Register allocation pre-pass, to reduce number of moves
+     necessary for two-address machines.  */
+  if (optimize > 0 && (flag_regmove || flag_expensive_optimizations))
+    TIMEVAR (regmove_time, regmove_optimize (insns, max_reg_num (),
+					     regmove_dump_file));
+
+  /* Dump rtl after register move optimization.  */
+
+  if (regmove_dump)
+    TIMEVAR (dump_time,
+	     {
+	       print_rtl_with_bb (regmove_dump_file, insns);
+	       if (! quiet_flag)
+		 fflush (regmove_dump_file);
+	     });
+
   /* Print function header into sched dump now
      because doing the sched analysis makes some of the dump.  */
 
@@ -3809,6 +3857,7 @@ main (argc, argv, envp)
       flag_expensive_optimizations = 1;
       flag_strength_reduce = 1;
       flag_rerun_cse_after_loop = 1;
+      flag_regmove = (flag_regmove == 0 ? 2 : 1);
       flag_caller_saves = 1;
       flag_force_mem = 1;
 #ifdef INSN_SCHEDULING
@@ -3877,6 +3926,7 @@ main (argc, argv, envp)
  		    jump2_opt_dump = 1;
  		    local_reg_dump = 1;
  		    loop_dump = 1;
+		    regmove_dump = 1;
  		    rtl_dump = 1;
  		    cse_dump = 1, cse2_dump = 1;
  		    sched_dump = 1;
@@ -3921,6 +3971,9 @@ main (argc, argv, envp)
 		    break;
 		  case 'm':
 		    flag_print_mem = 1;
+		    break;
+		  case 'N':
+		    regmove_dump = 1;
 		    break;
 		  case 'p':
 		    flag_print_asm_name = 1;
