@@ -3244,37 +3244,46 @@ mips_load_call_address (rtx dest, rtx addr, int sibcall_p)
 void
 mips_expand_call (rtx result, rtx addr, rtx args_size, rtx aux, int sibcall_p)
 {
+  rtx orig_addr, pattern, insn;
+
+  orig_addr = addr;
   if (!call_insn_operand (addr, VOIDmode))
     {
-      rtx dest = gen_reg_rtx (Pmode);
-      mips_load_call_address (dest, addr, sibcall_p);
-      addr = dest;
+      addr = gen_reg_rtx (Pmode);
+      mips_load_call_address (addr, orig_addr, sibcall_p);
     }
 
   if (TARGET_MIPS16
       && mips16_hard_float
       && build_mips16_call_stub (result, addr, args_size,
 				 aux == 0 ? 0 : (int) GET_MODE (aux)))
-    /* Nothing more to do */;
-  else if (result == 0)
-    emit_call_insn (sibcall_p
-		    ? gen_sibcall_internal (addr, args_size)
-		    : gen_call_internal (addr, args_size));
+    return;
+
+  if (result == 0)
+    pattern = (sibcall_p
+	       ? gen_sibcall_internal (addr, args_size)
+	       : gen_call_internal (addr, args_size));
   else if (GET_CODE (result) == PARALLEL && XVECLEN (result, 0) == 2)
     {
       rtx reg1, reg2;
 
       reg1 = XEXP (XVECEXP (result, 0, 0), 0);
       reg2 = XEXP (XVECEXP (result, 0, 1), 0);
-      emit_call_insn
+      pattern =
 	(sibcall_p
 	 ? gen_sibcall_value_multiple_internal (reg1, addr, args_size, reg2)
 	 : gen_call_value_multiple_internal (reg1, addr, args_size, reg2));
     }
   else
-    emit_call_insn (sibcall_p
-		    ? gen_sibcall_value_internal (result, addr, args_size)
-		    : gen_call_value_internal (result, addr, args_size));
+    pattern = (sibcall_p
+	       ? gen_sibcall_value_internal (result, addr, args_size)
+	       : gen_call_value_internal (result, addr, args_size));
+
+  insn = emit_call_insn (pattern);
+
+  /* Lazy-binding stubs require $gp to be valid on entry.  */
+  if (global_got_operand (orig_addr, VOIDmode))
+    use_reg (&CALL_INSN_FUNCTION_USAGE (insn), pic_offset_table_rtx);
 }
 
 
