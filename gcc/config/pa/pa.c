@@ -3195,15 +3195,24 @@ compute_frame_size (size, fregs_live)
      int size;
      int *fregs_live;
 {
-  int i, fsize;
+  int freg_saved = 0;
+  int i, j;
 
-  /* Space for frame pointer + filler. If any frame is allocated
-     we need to add this in because of STARTING_FRAME_OFFSET.
+  /* The code in hppa_expand_prologue and hppa_expand_epilogue must
+     be consistent with the rounding and size calculation done here.
+     Change them at the same time.  */
 
-     Similar code also appears in hppa_expand_prologue.  Change both
-     of them at the same time.  */
-  fsize = size + (size || frame_pointer_needed ? STARTING_FRAME_OFFSET : 0);
+  /* We do our own stack alignment.  First, round the size of the
+     stack locals up to a word boundary.  */
+  size = (size + UNITS_PER_WORD - 1) & ~(UNITS_PER_WORD - 1);
 
+  /* Space for previous frame pointer + filler.  If any frame is
+     allocated, we need to add in the STARTING_FRAME_OFFSET.  We
+     waste some space here for the sake of HP compatibility.  The
+     first slot is only used when the frame pointer is needed.  */
+  if (size || frame_pointer_needed)
+    size += STARTING_FRAME_OFFSET;
+  
   /* If the current function calls __builtin_eh_return, then we need
      to allocate stack space for registers that will hold data for
      the exception handler.  */
@@ -3213,41 +3222,49 @@ compute_frame_size (size, fregs_live)
 
       for (i = 0; EH_RETURN_DATA_REGNO (i) != INVALID_REGNUM; ++i)
 	continue;
-      fsize += i * UNITS_PER_WORD;
+      size += i * UNITS_PER_WORD;
     }
 
   /* Account for space used by the callee general register saves.  */
-  for (i = 18; i >= 3; i--)
+  for (i = 18, j = frame_pointer_needed ? 4 : 3; i >= j; i--)
     if (regs_ever_live[i])
-      fsize += UNITS_PER_WORD;
-
-  /* Round the stack.  */
-  fsize = (fsize + 7) & ~7;
+      size += UNITS_PER_WORD;
 
   /* Account for space used by the callee floating point register saves.  */
   for (i = FP_SAVED_REG_LAST; i >= FP_SAVED_REG_FIRST; i -= FP_REG_STEP)
     if (regs_ever_live[i]
-	|| (! TARGET_64BIT && regs_ever_live[i + 1]))
+	|| (!TARGET_64BIT && regs_ever_live[i + 1]))
       {
-	if (fregs_live)
-	  *fregs_live = 1;
+	freg_saved = 1;
 
 	/* We always save both halves of the FP register, so always
 	   increment the frame size by 8 bytes.  */
-	fsize += 8;
+	size += 8;
       }
 
+  /* If any of the floating registers are saved, account for the
+     alignment needed for the floating point register save block.  */
+  if (freg_saved)
+    {
+      size = (size + 7) & ~7;
+      if (fregs_live)
+	*fregs_live = 1;
+    }
+
   /* The various ABIs include space for the outgoing parameters in the
-     size of the current function's stack frame.  */
-  fsize += current_function_outgoing_args_size;
+     size of the current function's stack frame.  We don't need to align
+     for the outgoing arguments as their alignment is set by the final
+     rounding for the frame as a whole.  */
+  size += current_function_outgoing_args_size;
 
   /* Allocate space for the fixed frame marker.  This space must be
      allocated for any function that makes calls or otherwise allocates
      stack space.  */
-  if (!current_function_is_leaf || fsize)
-    fsize += TARGET_64BIT ? 16 : 32;
+  if (!current_function_is_leaf || size)
+    size += TARGET_64BIT ? 16 : 32;
 
-  return ((fsize + PREFERRED_STACK_BOUNDARY / 8 - 1)
+  /* Finally, round to the preferred stack boundary.  */
+  return ((size + PREFERRED_STACK_BOUNDARY / 8 - 1)
 	  & ~(PREFERRED_STACK_BOUNDARY / 8 - 1));
 }
 
@@ -3313,8 +3330,8 @@ pa_output_function_prologue (file, size)
 void
 hppa_expand_prologue ()
 {
-  int size = get_frame_size ();
   int merge_sp_adjust_with_store = 0;
+  int size = get_frame_size ();
   int i, offset;
   rtx insn, tmpreg;
 
@@ -3322,13 +3339,12 @@ hppa_expand_prologue ()
   fr_saved = 0;
   save_fregs = 0;
 
-  /* Allocate space for frame pointer + filler. If any frame is allocated
-     we need to add this in because of STARTING_FRAME_OFFSET.
-
-     Similar code also appears in compute_frame_size.  Change both
-     of them at the same time.  */
-  local_fsize = size + (size || frame_pointer_needed
-			? STARTING_FRAME_OFFSET : 0);
+  /* Compute total size for frame pointer, filler, locals and rounding to
+     the next word boundary.  Similar code appears in compute_frame_size
+     and must be changed in tandem with this code.  */
+  local_fsize = (size + UNITS_PER_WORD - 1) & ~(UNITS_PER_WORD - 1);
+  if (local_fsize || frame_pointer_needed)
+    local_fsize += STARTING_FRAME_OFFSET;
 
   actual_fsize = compute_frame_size (size, &save_fregs);
 

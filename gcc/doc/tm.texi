@@ -2816,6 +2816,16 @@ value @code{STARTING_FRAME_OFFSET}.
 @c i'm not sure if the above is still correct.. had to change it to get
 @c rid of an overfull.  --mew 2feb93
 
+@findex STACK_ALIGNMENT_NEEDED
+@item STACK_ALIGNMENT_NEEDED
+Define to zero to disable final alignment of the stack during reload.
+The non-zero default for this macro is suitable for most ports.
+
+On ports where @code{STARTING_FRAME_OFFSET} is non-zero or where there
+is a register save block following the local block that doesn't require
+alignment to @code{STACK_BOUNDARY}, it may be beneficial to disable
+stack alignment and do it in the backend.
+
 @findex STACK_POINTER_OFFSET
 @item STACK_POINTER_OFFSET
 Offset from the stack pointer register to the first location at which

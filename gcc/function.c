@@ -70,6 +70,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define LOCAL_ALIGNMENT(TYPE, ALIGNMENT) ALIGNMENT
 #endif
 
+#ifndef STACK_ALIGNMENT_NEEDED
+#define STACK_ALIGNMENT_NEEDED 1
+#endif
+
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
    give the same symbol without quotes for an alternative entry point.  You
@@ -566,16 +570,27 @@ assign_stack_local_1 (mode, size, align, function)
   frame_off = STARTING_FRAME_OFFSET % frame_alignment;
   frame_phase = frame_off ? frame_alignment - frame_off : 0;
 
-  /* Round frame offset to that alignment.
-     We must be careful here, since FRAME_OFFSET might be negative and
-     division with a negative dividend isn't as well defined as we might
-     like.  So we instead assume that ALIGNMENT is a power of two and
-     use logical operations which are unambiguous.  */
+  /* Round the frame offset to the specified alignment.  The default is
+     to always honor requests to align the stack but a port may choose to
+     do its own stack alignment by defining STACK_ALIGNMENT_NEEDED.  */
+  if (STACK_ALIGNMENT_NEEDED
+      || mode != BLKmode
+      || size != 0)
+    {
+      /*  We must be careful here, since FRAME_OFFSET might be negative and
+	  division with a negative dividend isn't as well defined as we might
+	  like.  So we instead assume that ALIGNMENT is a power of two and
+	  use logical operations which are unambiguous.  */
 #ifdef FRAME_GROWS_DOWNWARD
-  function->x_frame_offset = FLOOR_ROUND (function->x_frame_offset - frame_phase, alignment) + frame_phase;
+      function->x_frame_offset
+	= (FLOOR_ROUND (function->x_frame_offset - frame_phase, alignment)
+	   + frame_phase);
 #else
-  function->x_frame_offset = CEIL_ROUND (function->x_frame_offset - frame_phase, alignment) + frame_phase;
+      function->x_frame_offset
+	= (CEIL_ROUND (function->x_frame_offset - frame_phase, alignment)
+	   + frame_phase);
 #endif
+    }
 
   /* On a big-endian machine, if we are allocating more space than we will use,
      use the least significant bytes of those that are allocated.  */
