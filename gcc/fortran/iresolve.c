@@ -1302,6 +1302,17 @@ gfc_resolve_sum (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
 }
 
 
+/* Resolve the g77 compatibility function SYSTEM.  */
+
+void
+gfc_resolve_system (gfc_expr * f, gfc_expr * n ATTRIBUTE_UNUSED)
+{
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = 4;
+  f->value.function.name = gfc_get_string (PREFIX("system"));
+}
+
+
 void
 gfc_resolve_tan (gfc_expr * f, gfc_expr * x)
 {
@@ -1596,6 +1607,16 @@ gfc_resolve_get_environment_variable (gfc_code * code)
   code->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }
 
+/* Resolve the SYSTEM intrinsic subroutine.  */
+
+void
+gfc_resolve_system_sub (gfc_code * c)
+{
+  const char *name;
+
+  name = gfc_get_string (PREFIX("system_sub"));
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
 
 /* Determine if the arguments to SYSTEM_CLOCK are INTEGER(4) or INTEGER(8) */
 

@@ -12,6 +12,11 @@
 	* Makefile.in: Regenerate.
 	* intrinsics/mvbits.h: New file.
 
+	PR fortran/17776
+	* intrinsics/system.c: New file.
+	* Makefile.am: Add dependency for the new file.
+	* Makefile.in: Regenerate.
+
 2004-10-04  Paul Brook  <paul@codesourcery.com>
 	Bud Davis  <bdavis9659@comcast.net>
 

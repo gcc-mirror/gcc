@@ -1775,6 +1775,10 @@ add_functions (void)
 
   make_generic ("sum", GFC_ISYM_SUM);
 
+  add_sym_1 ("system", 1, 1, BT_INTEGER, di, NULL, NULL, NULL,
+	     c, BT_CHARACTER, dc, 0);
+  make_generic ("system", GFC_ISYM_SYSTEM);
+
   add_sym_1 ("tan", 1, 1, BT_REAL, dr,
 	     NULL, gfc_simplify_tan, gfc_resolve_tan, x, BT_REAL, dr, 0);
 
@@ -1950,6 +1954,11 @@ add_subroutines (void)
   add_sym_1s ("srand", 0, 1, BT_UNKNOWN, di,
              gfc_check_srand, NULL, gfc_resolve_srand,
              c, BT_INTEGER, 4, 0);
+
+  add_sym_2s ("system", 0, 1, BT_UNKNOWN, 0,
+	      NULL, NULL, gfc_resolve_system_sub,
+	      c, BT_CHARACTER, dc, 0,
+	      st, BT_INTEGER, di, 1);
 
   add_sym_3s ("system_clock", 0, 1, BT_UNKNOWN, 0,
 	     gfc_check_system_clock, NULL, gfc_resolve_system_clock,
