@@ -1,3 +1,12 @@
+2004-02-10  Ziemowit Laski  <zlaski@apple.com>
+
+	* c-common.c (vector_size_helper): Remove; call
+	reconstruct_complex_type() instead.
+	* tree.c (reconstruct_complex_type): New function
+	(formerly vector_size_helper() in c-common.c).
+	(make_vector): Make externally visible.
+	* tree.h (reconstruct_complex_type, make_vector): Add prototypes.
+
 2004-02-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300-protos.h: Add a prototype for
