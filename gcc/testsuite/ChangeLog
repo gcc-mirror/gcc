@@ -1,7 +1,9 @@
-2000-12-01  Geoffrey Keating  <geoffk@redhat.com>
+2000-12-02  Geoffrey Keating  <geoffk@redhat.com>
+
+	* gcc.dg/cpp/if-6.c: New testcase.
 
 	* gcc.dg/20001201-1.c: New testcase.
-	
+
 2000-12-02  Neil Booth  <neilb@earthling.net>
 
         * g++.old-deja/g++.other/externC4.C,
