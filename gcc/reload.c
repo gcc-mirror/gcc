@@ -413,8 +413,14 @@ get_secondary_mem (x, mode)
      by noticing that the frame size has changed.  */
 
   if (secondary_memlocs[(int) mode] == 0)
-    secondary_memlocs[(int) mode]
-      = assign_stack_local (mode, GET_MODE_SIZE (mode), 0);
+    {
+#ifdef SECONDARY_MEMORY_NEEDED_RTX
+      secondary_memlocs[(int) mode] = SECONDARY_MEMORY_NEEDED_RTX (mode);
+#else
+      secondary_memlocs[(int) mode]
+	= assign_stack_local (mode, GET_MODE_SIZE (mode), 0);
+#endif
+    }
 
   /* Get a version of the address doing any eliminations needed.  If that
      didn't give us a new MEM, make a new one if it isn't valid.  */
