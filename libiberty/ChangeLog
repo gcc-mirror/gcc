@@ -1,3 +1,7 @@
+2000-05-18  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* xmalloc.c: Include config.h for HAVE_SBRK definition.
+
 2000-05-16  Horst von Brand <vonbrand@sleipnir.valparaiso.cl>
 
         * hashtab.c (hash_pointer): Delete low-order bits which are
