@@ -297,9 +297,13 @@ public class Container extends Component
         if (peer != null)
           {
             comp.addNotify();
-
-            if (comp.isLightweight())
-              enableEvents(comp.eventMask);
+            
+            if (comp.isLightweight ())
+	      {
+		enableEvents (comp.eventMask);
+		if (!isLightweight ())
+		  enableEvents (AWTEvent.PAINT_EVENT_MASK);
+	      }
           }
 
         invalidate();
@@ -907,8 +911,8 @@ public class Container extends Component
    */
   public void addNotify()
   {
-    addNotifyContainerChildren();
     super.addNotify();
+    addNotifyContainerChildren();
   }
 
   /**
@@ -1288,8 +1292,12 @@ public class Container extends Component
         for (int i = ncomponents;  --i >= 0; )
           {
             component[i].addNotify();
-            if (component[i].isLightweight())
-              enableEvents(component[i].eventMask);
+            if (component[i].isLightweight ())
+	      {
+		enableEvents(component[i].eventMask);
+		if (peer != null && !isLightweight ())
+		  enableEvents (AWTEvent.PAINT_EVENT_MASK);
+	      }
           }
       }
   }

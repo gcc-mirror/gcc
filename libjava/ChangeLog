@@ -1,3 +1,12 @@
+2003-04-20  Scott Gilbertson  <scottg@mantatest.com>
+
+	* java/awt/Container.java (addImpl): Enable paint events if adding
+	a lightweight to a heavyweight.
+	(addNotify): Ensure that peer is created before
+	addNotifyContainerChildren.
+	(addNotifyContainerChildren): Enable paint events if a heavyweight
+	container contains a lightweight.
+
 2003-04-20  Tom Tromey  <tromey@redhat.com>
 
 	* java/io/BufferedReader.java, java/io/BufferedWriter.java,
