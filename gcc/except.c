@@ -503,6 +503,9 @@ static int can_throw		PROTO((rtx));
 static rtx scan_region		PROTO((rtx, int, int *));
 static void eh_regs		PROTO((rtx *, rtx *, int));
 static void set_insn_eh_region	PROTO((rtx *, int));
+static void jumpif_rtx		PROTO((rtx, rtx));
+static void jumpifnot_rtx	PROTO((rtx, rtx));
+
 
 rtx expand_builtin_return_addr	PROTO((enum built_in_function, int, rtx));
 
@@ -1052,7 +1055,7 @@ get_dynamic_cleanup_chain ()
 /* Generate code to evaluate X and jump to LABEL if the value is nonzero.
    LABEL is an rtx of code CODE_LABEL, in this function.  */
 
-void
+static void
 jumpif_rtx (x, label)
      rtx x;
      rtx label;
@@ -1063,7 +1066,7 @@ jumpif_rtx (x, label)
 /* Generate code to evaluate X and jump to LABEL if the value is zero.
    LABEL is an rtx of code CODE_LABEL, in this function.  */
 
-void
+static void
 jumpifnot_rtx (x, label)
      rtx x;
      rtx label;

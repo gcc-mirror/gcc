@@ -18,6 +18,9 @@ Fri Jun 19 23:06:33 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 Fri Jun 19 22:55:14 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* except.c (jumpif_rtx): Make static and add prototype.
+	(jumpifnot_rtx): Likewise.
+
 	* README.gnat: Add a build patch from Fred Fish.
 
 	* c-lang.c (GNU_xref_begin, GNU_xref_end): Deleted.
