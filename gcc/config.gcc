@@ -367,7 +367,6 @@ case ${target} in
 		thread_file='posix'
 		tmake_file="${tmake_file} t-openbsd-thread"
 	fi
-	use_fixproto=no
 	;;
 *-*-netbsd*)
 	tmake_file="t-slibgcc-elf-ver t-libc-ok t-netbsd t-libgcc-pic"
@@ -534,8 +533,8 @@ alpha*-*-openbsd*)
 	# default x-alpha is only appropriate for dec-osf.
 	target_cpu_default="MASK_GAS"
 	tmake_file="alpha/t-alpha alpha/t-ieee"
+	use_fixproto=no
 	;;
-
 alpha*-dec-osf[45]*)
 	if test x$stabs = xyes
 	then
@@ -1480,6 +1479,7 @@ mips*-*-openbsd*)
 	    tm_defines="${tm_defines} TARGET_ENDIAN_DEFAULT=0";;
 	*)  tm_defines="${tm_defines} TARGET_ENDIAN_DEFAULT=MASK_BIG_ENDIAN";;
         esac
+	use_fixproto=no
 	;;
 mipsisa32-*-elf* | mipsisa32el-*-elf*)
 	tm_file="${tm_file} mips/elf.h"
@@ -1576,6 +1576,7 @@ avr-*-*)
 #powerpc-*-openbsd*)
 #	tmake_file="${tmake_file} rs6000/t-fprules "
 #	extra_headers=
+#	use_fixproto=no
 #	;;
 powerpc64-*-linux*)
 	tm_file="rs6000/biarch64.h ${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h"
@@ -1896,6 +1897,7 @@ sparc64-*-openbsd*)
 	tm_file="sparc/openbsd1-64.h sparc/sparc.h elfos.h svr4.h sparc/sysv4.h sparc/sol2.h sparc/sp64-elf.h openbsd.h sparc/openbsd64.h"
 	gas=yes gnu_ld=yes
 	with_cpu=ultrasparc
+	use_fixproto=no
 	;;
 sparc-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sol2.h sparc/sol2.h sparc/elf.h"
@@ -2121,6 +2123,7 @@ vax-*-netbsd*)
 vax-*-openbsd*)
 	tm_file="vax/vax.h vax/openbsd1.h openbsd.h vax/openbsd.h"
 	use_collect2=yes
+	use_fixproto=no
 	;;
 vax-*-ultrix*)			# VAXen running ultrix
 	tm_file="${tm_file} vax/ultrix.h"
