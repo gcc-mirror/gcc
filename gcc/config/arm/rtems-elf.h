@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "unknown-elf.h"
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Darm -Darm_elf -Drtems -D__rtems__ -D__ELF__ \
+#define CPP_PREDEFINES "-Drtems -D__rtems__ -D__ELF__ \
    -Asystem(rtems) -Acpu(arm) -Amachine(arm)"
 
 /*#undef INVOKE_main*/

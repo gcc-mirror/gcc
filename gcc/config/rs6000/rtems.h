@@ -31,4 +31,10 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #undef STARTFILE_DEFAULT_SPEC
-#define STARTFILE_DEFAULT_SPEC "crt0.o%s"
+#define STARTFILE_DEFAULT_SPEC "ecrti.o%s crt0.o%s"
+
+#undef ENDFILE_DEFAULT_SPEC
+#define ENDFILE_DEFAULT_SPEC "ecrtn.o%s"
+
+/* Get machine-independent configuration parameters for RTEMS.  */
+#include <rtems.h>

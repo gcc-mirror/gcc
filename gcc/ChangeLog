@@ -1,3 +1,9 @@
+2001-08-16  Joel Sherrill <joel@OARcorp.com>
+
+	* config/rs6000/rtems.h: Set STARTFILE_DEFAULT_SPEC and
+	ENDFILE_DEFAULT_SPEC to correctly include ecrti and ecrtn.
+	* config/arm/rtems-elf.h: Remove bad -Darm and -Darm_elf.
+
 2001-08-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/linux64.h (CPP_PREDEFINES): Define __s390__
