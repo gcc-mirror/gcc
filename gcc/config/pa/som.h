@@ -362,10 +362,6 @@ do {						\
 /* The .align directive in the HP assembler allows up to a 32 alignment.  */
 #define MAX_OFILE_ALIGNMENT 32768
 
-/* SOM does not support the init_priority C++ attribute.  */
-#undef SUPPORTS_INIT_PRIORITY
-#define SUPPORTS_INIT_PRIORITY 0
-
 /* The SOM linker hardcodes paths into binaries.  As a result, dotdots
    must be removed from library prefixes to prevent binaries from depending
    on the location of the GCC tool directory.  The downside is GCC

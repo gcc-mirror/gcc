@@ -117,3 +117,16 @@ Boston, MA 02111-1307, USA.  */
 
 #define SIZE_TYPE "long unsigned int"
 #define PTRDIFF_TYPE "long int"
+
+/* HP-UX 11.0 and above provides initialization and finalization function
+   support from linker command line.  We don't need to invoke __main to run
+   constructors.  We also don't need chatr to determine the dependencies of
+   dynamically linked executables and shared libraries.  */
+#undef LDD_SUFFIX
+#undef PARSE_LDD_OUTPUT
+#undef HAS_INIT_SECTION
+#define HAS_INIT_SECTION 1
+#undef LD_INIT_SWITCH
+#define LD_INIT_SWITCH "+init"
+#undef LD_FINI_SWITCH
+#define LD_FINI_SWITCH "+fini"
