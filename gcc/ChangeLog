@@ -1,3 +1,8 @@
+Tue Nov 25 22:43:30 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* dwarfout.c (output_type): If finalizing, write out nested types 
+	of types we've already written.
+
 Tue Nov 25 10:00:42 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh/elf.h (PREFERRED_DEBUGGING_TYPE): Undefine before including
