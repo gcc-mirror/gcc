@@ -1546,6 +1546,7 @@ record_address_regs (x, class, scale)
 	   of index or base class, give the other the class that the hard
 	   register is not.  */
 
+#ifdef REG_OK_FOR_BASE_P
 	else if (code0 == REG && code1 == REG
 		 && REGNO (arg0) < FIRST_PSEUDO_REGISTER
 		 && (REG_OK_FOR_BASE_P (arg0) || REG_OK_FOR_INDEX_P (arg0)))
@@ -1560,6 +1561,7 @@ record_address_regs (x, class, scale)
 			       REG_OK_FOR_BASE_P (arg1)
 			       ? INDEX_REG_CLASS : BASE_REG_CLASS,
 			       scale);
+#endif
 
 	/* If one operand is known to be a pointer, it must be the base
 	   with the other operand the index.  Likewise if the other operand
