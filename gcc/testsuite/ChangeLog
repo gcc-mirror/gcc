@@ -1,3 +1,8 @@
+2003-10-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/c90-array-lval-6.c: New test.
+	* gcc.dg/c99-array-lval-6.c: New test.
+
 2003-10-03  Alexander Malmberg  <alexander@malmberg.org>
 	    Ziemowit Laski  <zlaski@apple.com>
 

@@ -1,3 +1,10 @@
+2003-10-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR c/12446
+	* c-typeck.c (convert_for_assignment): Issue an error for
+	array to pointer assignment after default conversion.
+	(digest_init): Likewise.
+
 2003-10-04  Fariborz Jahanian  <fjahanian@apple.com>
 
 	* c-decl.c (duplicate_decls): retain DECL_COMMON of old declaration

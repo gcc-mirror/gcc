@@ -3556,6 +3556,11 @@ convert_for_assignment (tree type, tree rhs, const char *errtype,
 			     errtype, funname, parmnum);
       return convert (type, rhs);
     }
+  else if (codel == POINTER_TYPE && coder == ARRAY_TYPE)
+    {
+      error ("invalid use of non-lvalue array");
+      return error_mark_node;
+    }
   else if (codel == POINTER_TYPE && coder == INTEGER_TYPE)
     {
       /* An explicit constant 0 can convert to a pointer,
@@ -4052,8 +4057,16 @@ digest_init (tree type, tree init, int require_constant)
 			    TREE_TYPE (type), COMPARE_STRICT))))
     {
       if (code == POINTER_TYPE)
-	inside_init = default_function_array_conversion (inside_init);
-      
+	{
+	  inside_init = default_function_array_conversion (inside_init);
+
+	  if (TREE_CODE (TREE_TYPE (inside_init)) == ARRAY_TYPE)
+	    {
+	      error_init ("invalid use of non-lvalue array");
+	      return error_mark_node;
+	    }
+	 }
+
       if (code == VECTOR_TYPE)
 	/* Although the types are compatible, we may require a
 	   conversion.  */
