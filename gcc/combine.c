@@ -5958,7 +5958,7 @@ force_to_mode (x, mode, mask, reg, just_select)
 	  temp = simplify_binary_operation (code == ROTATE ? ROTATERT : ROTATE,
 					    GET_MODE (x), GEN_INT (mask),
 					    XEXP (x, 1));
-	  if (temp)
+	  if (temp && GET_CODE(temp) == CONST_INT)
 	    SUBST (XEXP (x, 0),
 		   force_to_mode (XEXP (x, 0), GET_MODE (x),
 				  INTVAL (temp), reg, next_select));
@@ -7869,6 +7869,7 @@ simplify_shift_const (x, code, result_mode, varop, count)
 	      && (new = simplify_binary_operation (code, result_mode,
 						   XEXP (varop, 1),
 						   GEN_INT (count))) != 0
+	      && GET_CODE(new) == CONST_INT
 	      && merge_outer_ops (&outer_op, &outer_const, GET_CODE (varop),
 				  INTVAL (new), result_mode, &complement_p))
 	    {
@@ -7988,6 +7989,7 @@ simplify_shift_const (x, code, result_mode, varop, count)
 	      && (new = simplify_binary_operation (ASHIFT, result_mode,
 						   XEXP (varop, 1),
 						   GEN_INT (count))) != 0
+	      && GET_CODE(new) == CONST_INT
 	      && merge_outer_ops (&outer_op, &outer_const, PLUS,
 				  INTVAL (new), result_mode, &complement_p))
 	    {
