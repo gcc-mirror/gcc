@@ -1,4 +1,12 @@
 2004-03-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Backport:
+	2004-03-05  Nathan Sidwell  <nathan@codesourcery.com>
+	PR driver/13577
+	* gcc.c (cc1_options): Robustify -auxbase-strip from multiple -o
+	options.
+
+2004-03-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
         
         Endorse:
 	2004-01-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
