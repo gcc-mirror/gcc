@@ -641,11 +641,45 @@ namespace std
       return *this;
     }
 
+  // We provide three overloads, since the first two are much simpler
+  // than the general case. Also, the latter two can thus adopt the
+  // same "batchy" strategy used by getline above.
   template<typename _CharT, typename _Traits>
     basic_istream<_CharT, _Traits>&
     basic_istream<_CharT, _Traits>::
-    ignore(streamsize __n, int_type __delim)
+    ignore(void)
     {
+      _M_gcount = 0;
+      sentry __cerb(*this, true);
+      if (__cerb)
+	{
+	  ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+	  try
+	    {
+	      const int_type __eof = traits_type::eof();
+	      __streambuf_type* __sb = this->rdbuf();
+
+	      if (traits_type::eq_int_type(__sb->sbumpc(), __eof))
+		__err |= ios_base::eofbit;
+	      else
+		_M_gcount = 1;
+	    }
+	  catch(...)
+	    { this->_M_setstate(ios_base::badbit); }
+	  if (__err)
+	    this->setstate(__err);
+	}
+      return *this;
+    }
+
+  template<typename _CharT, typename _Traits>
+    basic_istream<_CharT, _Traits>&
+    basic_istream<_CharT, _Traits>::
+    ignore(streamsize __n)
+    {
+      if (__n == 1)
+	return ignore();
+      
       _M_gcount = 0;
       sentry __cerb(*this, true);
       if (__cerb && __n > 0)
@@ -655,19 +689,96 @@ namespace std
 	    {
 	      const int_type __eof = traits_type::eof();
 	      __streambuf_type* __sb = this->rdbuf();
-	      int_type __c = __eof;
-
-	      if (__n != numeric_limits<streamsize>::max())
+	      int_type __c = __sb->sgetc();
+	      
+	      const bool __bound = __n != numeric_limits<streamsize>::max();
+	      if (__bound)
 		--__n;
 	      while (_M_gcount <= __n
-		     && !traits_type::eq_int_type(__c = __sb->sbumpc(), __eof))
+		     && !traits_type::eq_int_type(__c, __eof))
 		{
-		  ++_M_gcount;
-		  if (traits_type::eq_int_type(__c, __delim))
-		    break;
+		  streamsize __size = __sb->egptr() - __sb->gptr();
+		  if (__bound)
+		    __size = std::min(__size, streamsize(__n - _M_gcount + 1));
+
+		  if (__size > 1)
+		    {
+		      __sb->gbump(__size);
+		      _M_gcount += __size;
+		      __c = __sb->sgetc();
+		    }
+		  else
+		    {
+		      ++_M_gcount;
+		      __c = __sb->snextc();
+		    }		  
 		}
 	      if (traits_type::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
+	    }
+	  catch(...)
+	    { this->_M_setstate(ios_base::badbit); }
+	  if (__err)
+	    this->setstate(__err);
+	}
+      return *this;
+    }
+
+  template<typename _CharT, typename _Traits>
+    basic_istream<_CharT, _Traits>&
+    basic_istream<_CharT, _Traits>::
+    ignore(streamsize __n, int_type __delim)
+    {
+      if (traits_type::eq_int_type(__delim, traits_type::eof()))
+	return ignore(__n);
+
+      _M_gcount = 0;
+      sentry __cerb(*this, true);
+      if (__cerb && __n > 0)
+	{
+	  ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+	  try
+	    {
+	      const char_type __cdelim = traits_type::to_char_type(__delim);	      
+	      const int_type __eof = traits_type::eof();
+	      __streambuf_type* __sb = this->rdbuf();
+	      int_type __c = __sb->sgetc();
+
+	      const bool __bound = __n != numeric_limits<streamsize>::max();
+	      if (__bound)
+		--__n;
+	      while (_M_gcount <= __n
+		     && !traits_type::eq_int_type(__c, __eof)
+		     && !traits_type::eq_int_type(__c, __delim))
+		{
+		  streamsize __size = __sb->egptr() - __sb->gptr();
+		  if (__bound)
+		    __size = std::min(__size, streamsize(__n - _M_gcount + 1));
+
+		  if (__size > 1)
+		    {
+		      const char_type* __p = traits_type::find(__sb->gptr(),
+							       __size,
+							       __cdelim);
+		      if (__p)
+			__size = __p - __sb->gptr();
+		      __sb->gbump(__size);
+		      _M_gcount += __size;
+		      __c = __sb->sgetc();
+		    }
+		  else
+		    {
+		      ++_M_gcount;
+		      __c = __sb->snextc();
+		    }		  
+		}
+	      if (traits_type::eq_int_type(__c, __eof))
+		__err |= ios_base::eofbit;
+	      else if (traits_type::eq_int_type(__c, __delim))
+		{
+		  ++_M_gcount;
+		  __sb->sbumpc();
+		}
 	    }
 	  catch(...)
 	    { this->_M_setstate(ios_base::badbit); }
