@@ -1,6 +1,5 @@
 // -*- C++ -*- 
-
-// Copyright (C) 2000 Free Software Foundation
+// Copyright (C) 2000, 2001 Free Software Foundation
 //
 // This file is part of GNU CC.
 //
@@ -47,16 +46,8 @@ extern "C" {
 
 extern void __terminate(void) __attribute__ ((__noreturn__));
 
-// The name of the function to be placed in vtables in place of a pure
-// virtual function is different in the two ABIs.
-#if !defined(__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100
-#define PURE_VIRTUAL_NAME __pure_virtual
-#else
-#define PURE_VIRTUAL_NAME __cxa_pure_virtual
-#endif
-
 void
-PURE_VIRTUAL_NAME (void)
+__cxa_pure_virtual (void)
 {
   writestr ("pure virtual method called\n");
   __terminate ();

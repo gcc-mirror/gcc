@@ -151,10 +151,6 @@ __cplus_type_matcher (__eh_info *info_, void *match_info,
   
   void *match_type = match_info;
   
-#if !defined (__GXX_ABI_VERSION) || __GXX_ABI_VERSION < 100
-  match_type  = ((void *(*)())match_type) ();
-#endif
-
   if (__throw_type_match_rtti_2 (match_type, info->type,
 				 info->original_value, &info->value))
     // Arbitrary non-null pointer.
@@ -352,7 +348,7 @@ __check_null_eh_spec (void)
 // Helpers for rtti. Although these don't return, we give them return types so
 // that the type system is not broken.
 extern "C" void *
-__cxa_bad_cast()
+__cxa_bad_cast ()
 {
 #ifdef __EXCEPTIONS  
   throw std::bad_cast();
@@ -363,7 +359,7 @@ __cxa_bad_cast()
 }
 
 extern "C" std::type_info const &
-__cxa_bad_typeid()
+__cxa_bad_typeid ()
 {
 #ifdef __EXCEPTIONS  
   throw std::bad_typeid();
