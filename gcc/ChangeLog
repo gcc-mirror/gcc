@@ -1,3 +1,8 @@
+2002-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* regrename.c (build_def_use): Share RTL between MATCH_OPERATOR and
+	corresponding MATCH_DUP.
+
 2002-03-24  Richard Henderson  <rth@redhat.com>
 
 	* unroll.c (unroll_loop): Zero label_map.

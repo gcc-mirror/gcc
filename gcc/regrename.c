@@ -764,7 +764,7 @@ build_def_use (bb)
 	  rtx note;
 	  rtx old_operands[MAX_RECOG_OPERANDS];
 	  rtx old_dups[MAX_DUP_OPERANDS];
-	  int i;
+	  int i, icode;
 	  int alt;
 	  int predicated;
 
@@ -786,6 +786,7 @@ build_def_use (bb)
 
 	  extract_insn (insn);
 	  constrain_operands (1);
+	  icode = recog_memoized (insn);
 	  preprocess_constraints ();
 	  alt = which_alternative;
 	  n_ops = recog_data.n_operands;
@@ -827,8 +828,16 @@ build_def_use (bb)
 	    }
 	  for (i = 0; i < recog_data.n_dups; i++)
 	    {
+	      int dup_num = recog_data.dup_num[i];
+
 	      old_dups[i] = *recog_data.dup_loc[i];
 	      *recog_data.dup_loc[i] = cc0_rtx;
+
+	      /* For match_dup of match_operator or match_parallel, share
+		 them, so that we don't miss changes in the dup.  */
+	      if (icode >= 0
+		  && insn_data[icode].operand[dup_num].eliminable == 0)
+		old_dups[i] = recog_data.operand[dup_num];
 	    }
 
 	  scan_rtx (insn, &PATTERN (insn), NO_REGS, terminate_all_read,
