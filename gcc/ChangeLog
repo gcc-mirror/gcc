@@ -1,3 +1,9 @@
+2002-07-02  Chris Demetriou  <cgd@broadcom.com>
+
+	* config.gcc (mips*el-*-*): Use tm_defines to set
+	TARGET_ENDIAN_DEFAULT, rather than including mips/little.h.
+	* config/mips/little.h: Remove.
+
 2002-07-02 Devang Patel <dpatel@apple.com>
 
 	* objc/objc-act.c (adjust_type_for_id_default): Do not allow an
