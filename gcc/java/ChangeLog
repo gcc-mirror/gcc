@@ -1,3 +1,13 @@
+2002-10-15  Andrew Haley  <aph@redhat.com>
+
+	* parse.y (patch_invoke): Call force_evaluation_order on a static
+	arg list.
+	(resolve_qualified_expression_name): Call force_evaluation_order
+	on a arg list that is part of a Qualified Expression Name.
+
+	* lang.c (dump_compound_expr): New.
+	(java_dump_tree): New.
+
 2002-10-20  Ranjit Mathew <rmathew@hotmail.com>
 
 	* gcj.texi: Added item describing the GCJ runtime property
