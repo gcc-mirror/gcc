@@ -947,6 +947,9 @@ union lang_tree_node
 /* True if NODE is a class initialization flag. */
 #define LOCAL_CLASS_INITIALIZATION_FLAG_P(NODE) \
     (DECL_LANG_SPECIFIC (NODE) && LOCAL_CLASS_INITIALIZATION_FLAG(NODE))
+/* True if NODE is a variable that is out of scope.  */
+#define LOCAL_VAR_OUT_OF_SCOPE_P(NODE) \
+    (DECL_LANG_SPECIFIC(NODE)->u.v.freed)
 /* Create a DECL_LANG_SPECIFIC if necessary. */
 #define MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC(T)			\
   if (DECL_LANG_SPECIFIC (T) == NULL)				\
@@ -1031,6 +1034,7 @@ struct lang_decl_var GTY(())
   tree wfl;			/* Original wfl */
   unsigned int final_iud : 1;	/* Final initialized upon declaration */
   unsigned int cif : 1;		/* True: decl is a class initialization flag */
+  unsigned int freed;		/* Decl is no longer in scope.  */
 };
 
 /* This is what 'lang_decl' really points to.  */
