@@ -1,3 +1,12 @@
+2005-02-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-cfg.c (fold_cond_expr_cond): New.
+	(make_edges): Call fold_cond_expr_cond.
+	(find_taken_edge): Accept nothing but INTEGER_CST.
+	(find_taken_edge_cond_expr): Reject INTEGER_CST other than 0
+	and 1.
+	(find_taken_edge_switch_expr): Remove a check for INTEGER_CST.
+
 2005-02-21  Jeff Law  <law@redhat.com>
 
 	* cfganal.c (find_unreachable_blocks): Manually CSE load of
