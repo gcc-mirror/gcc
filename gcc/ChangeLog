@@ -1,3 +1,8 @@
+2003-04-06  Zack Weinberg  <zack@codesourcery.com>
+
+	* mklibgcc.in: Use a here document to avoid running afoul of
+	shells that generate control-A from "echo \1".
+
 2003-04-06  Aldy Hernandez  <aldyh@redhat.com>
 
         * doc/invoke.texi (RS/6000 and PowerPC Options): Document -mspe

@@ -311,13 +311,20 @@ for ml in $MULTILIBS; do
   if [ "$SHLIB_LINK" -a "$SHLIB_MKMAP" ]; then
     mapfile="libgcc/${dir}/libgcc.map"
     tmpmapfile="libgcc/${dir}/tmp-libgcc.map"
-    echo ""
-    echo "${mapfile}: $SHLIB_MKMAP $SHLIB_MAPFILES $libgcc_sh_objs"
-    echo '	{ $(NM_FOR_TARGET)'" $SHLIB_NM_FLAGS $libgcc_sh_objs; echo %%; \\"
-    echo "	  cat $SHLIB_MAPFILES | sed -e "'"/^[ 	]*#/d" -e '\''s/^%\(if\|else\|elif\|endif\|define\)/#\1/'\'" \\"
-    echo "	  | $gcc_compile $flags -E -xassembler-with-cpp -; \\"
-    echo '	} | $(AWK)'" -f $SHLIB_MKMAP $SHLIB_MKMAP_OPTS > ${tmpmapfile}"
-    echo '	mv '"$tmpmapfile"' $@'
+    # This uses a here document instead of echos because some shells
+    # will convert the \1 in the second sed command to a control-A.
+    # The behavior of here documents is more predictable.
+    cat <<EOF
+
+${mapfile}: $SHLIB_MKMAP $SHLIB_MAPFILES $libgcc_sh_objs
+	{ \$(NM_FOR_TARGET) $SHLIB_NM_FLAGS $libgcc_sh_objs; echo %%; \\
+	  cat $SHLIB_MAPFILES \\
+	    | sed -e '/^[   ]*#/d' \\
+	          -e 's/^%\(if\|else\|elif\|endif\|define\)/#\1/' \\
+	    | $gcc_compile $flags -E -xassembler-with-cpp -; \\
+	} | \$(AWK) -f $SHLIB_MKMAP $SHLIB_MKMAP_OPTS > ${tmpmapfile}
+	mv '$tmpmapfile' \$@
+EOF
   fi
   shlib_deps="$shlib_deps $mapfile"
 
