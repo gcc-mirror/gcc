@@ -23,11 +23,19 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #ifdef HANDLE_SYSV_PRAGMA
 
+/* Support #pragma weak by default if WEAK_ASM_OP is defined.  */
+#if !defined (HANDLE_PRAGMA_WEAK) && defined (WEAK_ASM_OP)
+#define HANDLE_PRAGMA_WEAK 1
+#endif
+
 /* When structure field packing is in effect, this variable is the
    number of bits to use as the maximum alignment.  When packing is not
    in effect, this is zero. */
 
 extern int maximum_field_alignment;
+
+/* File used for outputting assembler code.  */
+extern FILE *asm_out_file;
 
 /* Handle one token of a pragma directive.  TOKEN is the
    current token, and STRING is its printable form.  */
@@ -64,27 +72,30 @@ handle_pragma_token (string, token)
 	  else
 	    warning ("malformed `#pragma pack'");
 	}
-#ifdef WEAK_ASM_OP
       else if (type == ps_weak)
 	{
-	  if (state == ps_name || state == ps_value)
+#ifdef HANDLE_PRAGMA_WEAK
+	  if (HANDLE_PRAGMA_WEAK)
 	    {
-	      fprintf (asm_out_file, "\t%s\t", WEAK_ASM_OP);
-	      ASM_OUTPUT_LABELREF (asm_out_file, name);
-	      fputc ('\n', asm_out_file);
-	      if (state == ps_value)
+	      if (state == ps_name || state == ps_value)
 		{
-		  fprintf (asm_out_file, "\t%s\t", SET_ASM_OP);
+		  fprintf (asm_out_file, "\t%s\t", WEAK_ASM_OP);
 		  ASM_OUTPUT_LABELREF (asm_out_file, name);
-		  fputc (',', asm_out_file);
-		  ASM_OUTPUT_LABELREF (asm_out_file, value);
 		  fputc ('\n', asm_out_file);
+		  if (state == ps_value)
+		    {
+		      fprintf (asm_out_file, "\t%s\t", SET_ASM_OP);
+		      ASM_OUTPUT_LABELREF (asm_out_file, name);
+		      fputc (',', asm_out_file);
+		      ASM_OUTPUT_LABELREF (asm_out_file, value);
+		      fputc ('\n', asm_out_file);
+		    }
 		}
+	      else if (! (state == ps_done || state == ps_start))
+		warning ("malformed `#pragma weak'");
 	    }
-	  else if (! (state == ps_done || state == ps_start))
-	    warning ("malformed `#pragma weak'");
+#endif /* HANDLE_PRAMA_WEAK */
 	}
-#endif /* WEAK_ASM_OP */
 
       type = state = ps_start;
       return;
@@ -97,10 +108,8 @@ handle_pragma_token (string, token)
 	{
 	  if (strcmp (IDENTIFIER_POINTER (token), "pack") == 0)
 	    type = state = ps_pack;
-#ifdef WEAK_ASM_OP
 	  else if (strcmp (IDENTIFIER_POINTER (token), "weak") == 0)
 	    type = state = ps_weak;
-#endif
 	  else
 	    type = state = ps_done;
 	}
@@ -108,7 +117,6 @@ handle_pragma_token (string, token)
 	type = state = ps_done;
       break;
 
-#ifdef WEAK_ASM_OP
     case ps_weak:
       if (token && TREE_CODE (token) == IDENTIFIER_NODE)
 	{
@@ -136,7 +144,6 @@ handle_pragma_token (string, token)
     case ps_value:
       state = ps_bad;
       break;
-#endif /* WEAK_ASM_OP */
 
     case ps_pack:
       if (strcmp (string, "(") == 0)
