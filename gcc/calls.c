@@ -1624,10 +1624,11 @@ expand_call (exp, target, ignore)
 	    && args[i].mode != BLKmode
 	    && rtx_cost (args[i].value, SET) > 2
 #ifdef SMALL_REGISTER_CLASSES
-	    && (reg_parm_seen || preserve_subexpressions_p ()))
+	    && (reg_parm_seen || preserve_subexpressions_p ())
 #else
-	    && preserve_subexpressions_p ())
+	    && preserve_subexpressions_p ()
 #endif
+	    )
 	  args[i].value = copy_to_mode_reg (args[i].mode, args[i].value);
       }
 
@@ -1908,6 +1909,14 @@ expand_call (exp, target, ignore)
       emit_libcall_block (insns, temp, valreg, note);
 
       valreg = temp;
+    }
+  else if (is_const)
+    {
+      /* Otherwise, just write out the sequence without a note.  */
+      rtx insns = get_insns ();
+
+      end_sequence ();
+      emit_insns (insns);
     }
 
   /* For calls to `setjmp', etc., inform flow.c it should complain
