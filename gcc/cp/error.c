@@ -104,7 +104,7 @@ static const char *function_category (tree);
 static void maybe_print_instantiation_context (diagnostic_context *);
 static void print_instantiation_full_context (diagnostic_context *);
 static void print_instantiation_partial_context (diagnostic_context *,
-                                                 tree, const char *, int);
+                                                 tree, location_t);
 static void cp_diagnostic_starter (diagnostic_context *, diagnostic_info *);
 static void cp_diagnostic_finalizer (diagnostic_context *, diagnostic_info *);
 static void cp_print_error_function (diagnostic_context *, diagnostic_info *);
@@ -2403,24 +2403,26 @@ print_instantiation_full_context (diagnostic_context *context)
 	}
     }
 
-  print_instantiation_partial_context (context, p,
-				       location.file, location.line);
+  print_instantiation_partial_context (context, p, location);
 }
 
 /* Same as above but less verbose.  */
 static void
 print_instantiation_partial_context (diagnostic_context *context,
-                                     tree t, const char *file, int line)
+                                     tree t, location_t loc)
 {
   for (; t; t = TREE_CHAIN (t))
     {
       output_verbatim
-        (&context->buffer, "%s:%d:   instantiated from `%s'\n", file, line,
-         decl_as_string (TINST_DECL (t), TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE));
-      line = TINST_LINE (t);
-      file = TINST_FILE (t);
+        (&context->buffer, "%s:%d:   instantiated from `%s'\n",
+	 loc.file, loc.line,
+         decl_as_string (TINST_DECL (t),
+			 TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE));
+      loc.line = TINST_LINE (t);
+      loc.file = TINST_FILE (t);
     }
-  output_verbatim (&context->buffer, "%s:%d:   instantiated from here\n", file, line);
+  output_verbatim (&context->buffer, "%s:%d:   instantiated from here\n",
+		   loc.file, loc.line);
 }
 
 /* Called from cp_thing to print the template context for an error.  */
@@ -2439,7 +2441,7 @@ void
 print_instantiation_context (void)
 {
   print_instantiation_partial_context
-    (global_dc, current_instantiation (), input_filename, input_line);
+    (global_dc, current_instantiation (), input_location);
   diagnostic_flush_buffer (global_dc);
 }
 
