@@ -1,3 +1,7 @@
+2002-04-19  David O'Brien  <obrien@FreeBSD.org>
+
+	* encoding.c (MAX, MIN, ROUNDING): #undef before defining.
+
 2002-04-09  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR objc/6107
