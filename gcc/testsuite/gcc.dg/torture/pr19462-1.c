@@ -1,4 +1,4 @@
-/* { dg-do compile { xfail cris-*-* } } */
+/* { dg-do compile } */
 /* PR rtl-optimization/19462
    Delayed branch bug: return insns generated in presence of
    current_function_epilogue_delay_list.  See also PR target/7042.  */
