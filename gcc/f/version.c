@@ -31,4 +31,4 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "version.h"
 
-char *ffe_version_string = "0.5.21-19970826";
+char *ffe_version_string = "0.5.21-19970909";
