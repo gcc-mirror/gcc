@@ -73,6 +73,7 @@ INPUT                  = @srcdir@/docs/doxygen/doxygroups.cc \
 			 include/@host_alias@/bits \
                          include/bits \
                          include/ext \
+                         include/tr1 \
                          @srcdir@/libsupc++/exception \
                          @srcdir@/libsupc++/new \
                          @srcdir@/libsupc++/typeinfo \
@@ -113,7 +114,14 @@ INPUT                  = @srcdir@/docs/doxygen/doxygroups.cc \
                          include/ext/rope \
                          include/ext/slist \
                          include/tr1/array \
-                         include/tr1/tuple 
+                         include/tr1/functional \
+                         include/tr1/hashtable \
+                         include/tr1/memory \
+                         include/tr1/tuple \
+                         include/tr1/type_traits \
+                         include/tr1/unordered_map \
+                         include/tr1/unordered_set \
+                         include/tr1/utility 
 FILE_PATTERNS          = *.h \
                          *.tcc
 RECURSIVE              = NO
