@@ -1,3 +1,8 @@
+2002-01-05  Craig Rodrigues  <crodrigu@bbn.com>
+
+	PR middle-end/1557
+	* config/ia64/ia64.h (RENAME_EXTENDED_BLOCKS): Remove.
+
 2002-01-05  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.h (TARGET_POWERPC): For IN_LIBGCC2, define
