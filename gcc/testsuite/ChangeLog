@@ -1,3 +1,14 @@
+2003-11-12  Andreas Jaeger  <aj@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+	    Andrew Pinski  <pinskia@physics.uc.edu>
+	    Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/c90-const-expr-2.c (foo): Avoid extra warning on 64-bit
+	systems.
+
+	* gcc.dg/20030926-1.c: Make it work on x86_64 systems.
+	* gcc.dg/i386-pentium4-not-mull.c: Likewise.
+
 2003-11-11  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.c-torture/execute/20020720-1.x: Test passes also on x86_64.
