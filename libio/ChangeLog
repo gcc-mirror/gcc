@@ -1,3 +1,7 @@
+Wed Sep  2 21:05:39 1998  H.J. Lu  (hjl@gnu.org)
+
+	* configure.in: Fix INSTALLDIR replacement for cross-compile.
+
 Sun Aug 30 22:27:02 1998  Lutz Wohlrab <lutz.wohlrab@informatik.tu-chemnitz.de>
 
         * dbz/Makefile.in: Avoid assumptions about "tr" behaves when
