@@ -46,7 +46,7 @@ extern char *ctime ();
 extern int flag_traditional;
 extern FILE *asm_out_file;
 
-static char out_sccs_id[] = "@(#)m88k.c	2.1.11.11 29 May 1992 11:12:23";
+static char out_sccs_id[] = "@(#)m88k.c	2.2.3.6 29 Jun 1992 16:06:14";
 static char tm_sccs_id [] = TM_SCCS_ID;
 
 char *m88k_pound_sign = "";	/* Either # for SVR4 or empty for SVR3 */
@@ -1619,8 +1619,9 @@ m88k_handle_pragma_token (string, token)
   variable space.
   */
 
-static void output_reg_adjust ();
+static void emit_add ();
 static void preserve_registers ();
+static void emit_ldst ();
 static void output_tdesc ();
 
 static int  nregs;
@@ -1629,6 +1630,7 @@ static char save_regs[FIRST_PSEUDO_REGISTER];
 static int  frame_laid_out;
 static int  frame_size;
 static int  variable_args_p;
+static int  epilogue_marked;
 
 extern char call_used_regs[];
 extern int  current_function_pretend_args_size;
@@ -1770,97 +1772,6 @@ null_epilogue ()
 	  && m88k_stack_size == 0);
 }
 
-/* Determine the number of instructions needed for the function epilogue.  */
-
-#define MAX_EPILOGUE_DELAY_INSNS 4
-
-static char epilogue_dead_regs[FIRST_PSEUDO_REGISTER];
-
-delay_slots_for_epilogue ()
-{
-  register int insns = save_regs[1] + save_regs[FRAME_POINTER_REGNUM];
-  register int regs = nregs - insns;
-
-  if (regs > 3)
-    insns += 1 + (regs & 1);
-  else if (nregs == 4)
-    /* This is a special cases of ld/ld/ld.d which has no start-up delay.  */
-    return 0;
-
-  if (insns)
-    {
-      bzero ((char *) &epilogue_dead_regs[0], sizeof (epilogue_dead_regs));
-      epilogue_dead_regs[1] = save_regs[1];
-      epilogue_dead_regs[STACK_POINTER_REGNUM] = frame_pointer_needed;
-      epilogue_dead_regs[TEMP_REGNUM] = ! ADD_INTVAL (m88k_fp_offset);
-    }
-
-  return insns;
-}
-
-/* Return 1 if X is safe to use as an epilogue insn.  */
-
-int
-ok_for_epilogue_p (x)
-     rtx x;
-{
-  register char *fmt;
-  register int i, j;
-
-  switch (GET_CODE (x))
-    {
-    case REG:
-      for (i = REGNO (x), j = i + HARD_REGNO_NREGS (i, GET_MODE (x));
-	   i < j;
-	   i++)
-	if (epilogue_dead_regs[i])
-	  return 0;
-
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST:
-    case PC:
-    case CC0:
-    case LABEL_REF:
-    case SYMBOL_REF:
-    case CODE_LABEL:
-      return 1;
-    }
-
-  fmt = GET_RTX_FORMAT (GET_CODE (x));
-  for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	{
-	  if (!ok_for_epilogue_p (XEXP (x, i)))
-	    return 0;
-	}
-      else if (fmt[i] == 'E')
-	{
-	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	    if (!ok_for_epilogue_p (XVECEXP (x, i, j)))
-	      return 0;
-	}
-    }
-  return 1;
-}
-
-int
-eligible_for_epilogue_delay (insn)
-     rtx insn;
-{
-  switch (get_attr_type (insn))
-    {
-    case TYPE_STORE:
-    case TYPE_LOADA:
-    case TYPE_ARITH:
-    case TYPE_MARITH:
-      return ok_for_epilogue_p (PATTERN (insn));
-    default:
-      return 0;
-    }
-}
-
 /* Determine if the current function has any references to the arg pointer.
    This is done indirectly by examining the DECL_ARGUMENTS' DECL_RTL.
    It is OK to return TRUE if there are no references, but FALSE must be
@@ -1892,9 +1803,26 @@ uses_arg_area_p ()
 }
 
 void
-m88k_output_prologue (stream, size)
+m88k_begin_prologue (stream, size)
      FILE *stream;
      int size;
+{
+  epilogue_marked = 0;
+  m88k_prologue_done = 1;	/* it's ok now to put out ln directives */
+}
+
+void
+m88k_end_prologue (stream)
+     FILE *stream;
+{
+  if (TARGET_OCS_DEBUG_INFO)
+    PUT_OCS_FUNCTION_START (stream);
+  if (epilogue_marked)
+    abort ();
+}
+
+void
+m88k_expand_prologue ()
 {
   int old_fp_offset = m88k_fp_offset;
   int old_stack_size = m88k_stack_size;
@@ -1924,43 +1852,34 @@ m88k_output_prologue (stream, size)
     }
 
   if (m88k_stack_size)
-    output_reg_adjust (stream, 31, 31, -m88k_stack_size, 0);
+    emit_add (stack_pointer_rtx, stack_pointer_rtx, -m88k_stack_size);
 
   if (nregs || nxregs)
-    preserve_registers (stream, m88k_fp_offset + 4, 1);
+    preserve_registers (m88k_fp_offset + 4, 1);
 
   if (frame_pointer_needed)
-    output_reg_adjust (stream, 30, 31, m88k_fp_offset, 0);
-
-  if (TARGET_OCS_DEBUG_INFO)
-    PUT_OCS_FUNCTION_START (stream);
+    emit_add (frame_pointer_rtx, stack_pointer_rtx, m88k_fp_offset);
 
   if (flag_pic && save_regs[PIC_OFFSET_TABLE_REGNUM])
     {
-      char label[256];
+      rtx return_reg = gen_rtx (REG, SImode, 1);
+      rtx label = gen_label_rtx ();
+      rtx temp_reg;
 
       if (! save_regs[1])
-	fprintf (stream, "\tor\t %s,%s,0\n",
-		 reg_names[TEMP_REGNUM], reg_names[1]);
-      ASM_GENERATE_INTERNAL_LABEL (label, "Lab", m88k_function_number);
-      fprintf (stream, "\tbsr.n\t %s\n", &label[1]);
-      fprintf (stream, "\tor.u\t %s,%s,%shi16(%s#abdiff)\n",
-	       reg_names[PIC_OFFSET_TABLE_REGNUM], reg_names[0],
-	       m88k_pound_sign, &label[1]);
-      ASM_OUTPUT_INTERNAL_LABEL (stream, "Lab", m88k_function_number);
-      fprintf (stream, "\tor\t %s,%s,%slo16(%s#abdiff)\n",
-	       reg_names[PIC_OFFSET_TABLE_REGNUM],
-	       reg_names[PIC_OFFSET_TABLE_REGNUM],
-	       m88k_pound_sign, &label[1]);
-      fprintf (stream, "\taddu\t %s,%s,%s\n",
-	       reg_names[PIC_OFFSET_TABLE_REGNUM],
-	       reg_names[PIC_OFFSET_TABLE_REGNUM], reg_names[1]);
+	{
+	  temp_reg = gen_rtx (REG, SImode, TEMP_REGNUM);
+	  emit_move_insn (temp_reg, return_reg);
+	}
+      emit_insn (gen_locate1 (pic_offset_table_rtx, label));
+      emit_insn (gen_locate2 (pic_offset_table_rtx, label));
+      emit_insn (gen_addsi3 (pic_offset_table_rtx,
+			     pic_offset_table_rtx, return_reg));
       if (! save_regs[1])
-	fprintf (stream, "\tor\t %s,%s,0\n",
-		 reg_names[1], reg_names[TEMP_REGNUM]);
+	emit_move_insn (return_reg, temp_reg);
     }
-
-  m88k_prologue_done = 1;	/* it's ok now to put out ln directives */
+  if (profile_flag || profile_block_flag)
+    emit_insn (gen_profiler ());
 }
 
 /* This function generates the assembly code for function exit,
@@ -1972,39 +1891,23 @@ m88k_output_prologue (stream, size)
    omit stack adjustments before returning.  */
 
 void
-m88k_output_epilogue (stream, size)
+m88k_begin_epilogue (stream)
+     FILE *stream;
+{
+  if (TARGET_OCS_DEBUG_INFO)
+    PUT_OCS_FUNCTION_END (stream);
+  epilogue_marked = 1;
+}
+
+void
+m88k_end_epilogue (stream, size)
      FILE *stream;
      int size;
 {
-  rtx insn = get_last_insn ();
-#if (MONITOR_GCC & 0x4) /* What are interesting prologue/epilogue values?  */
-  fprintf (stream, "; size = %d, m88k_fp_offset = %d, m88k_stack_size = %d\n",
-	   size, m88k_fp_offset, m88k_stack_size);
-#endif
-
-  output_short_branch_defs (stream);
-
-  if (TARGET_OCS_DEBUG_INFO)
+  if (TARGET_OCS_DEBUG_INFO && !epilogue_marked)
     PUT_OCS_FUNCTION_END (stream);
 
-  /* If the last insn was a BARRIER, we don't have to write any code.  */
-  if (GET_CODE (insn) == NOTE)
-    insn = prev_nonnote_insn (insn);
-  if (insn && GET_CODE (insn) == BARRIER)
-    {
-      if (current_function_epilogue_delay_list)
-	abort ();
-    }
-  else
-    {
-      if (frame_pointer_needed)
-	output_reg_adjust (stream, 31, 30, -m88k_fp_offset, 0);
-
-      if (nregs || nxregs)
-	preserve_registers (stream, m88k_fp_offset + 4, 0);
-
-      output_reg_adjust (stream, 31, 31, m88k_stack_size, 1);
-    }
+  output_short_branch_defs (stream);
 
   fprintf (stream, "\n");
 
@@ -2015,68 +1918,54 @@ m88k_output_epilogue (stream, size)
   m88k_prologue_done	= 0;		/* don't put out ln directives */
   variable_args_p	= 0;		/* has variable args */
 }
+
+void
+m88k_expand_epilogue ()
+{
+#if (MONITOR_GCC & 0x4) /* What are interesting prologue/epilogue values?  */
+  fprintf (stream, "; size = %d, m88k_fp_offset = %d, m88k_stack_size = %d\n",
+	   size, m88k_fp_offset, m88k_stack_size);
+#endif
+
+  if (frame_pointer_needed)
+    emit_add (stack_pointer_rtx, frame_pointer_rtx, -m88k_fp_offset);
+
+  if (nregs || nxregs)
+    preserve_registers (m88k_fp_offset + 4, 0);
+
+  if (m88k_stack_size)
+    emit_add (stack_pointer_rtx, stack_pointer_rtx, m88k_stack_size);
+}
 
-/* Output code to STREAM to set DSTREG to SRCREG + AMOUNT.  Issue
-   a return instruction and use it's delay slot based on RETURN_P.  */
+/* Emit insns to set DSTREG to SRCREG + AMOUNT during the prologue or
+   epilogue.  */
 
 static void
-output_reg_adjust (stream, dstreg, srcreg, amount, return_p)
-     FILE *stream;
-     int dstreg, srcreg, amount, return_p;
+emit_add (dstreg, srcreg, amount)
+     rtx dstreg;
+     rtx srcreg;
+     int amount;
 {
-  char *opname;
-  char incr[256];
-
-  if (amount < 0)
+  rtx incr = gen_rtx (CONST_INT, VOIDmode, abs (amount));
+  if (! ADD_INTVAL (amount))
     {
-      opname = "subu";
-      amount = -amount;
+      rtx temp = gen_rtx (REG, SImode, TEMP_REGNUM);
+      emit_move_insn (temp, incr);
+      incr = temp;
     }
-  else
-    opname = "addu";
-
-  if (amount == 0 && dstreg == srcreg)
-    {
-      if (return_p)
-	fprintf (stream, "\tjmp\t %s\n", reg_names[1]);
-      return;
-    }
-  else if (SMALL_INTVAL (amount))
-    sprintf (incr, "\t%s\t %s,%s,%d", opname,
-	     reg_names[dstreg], reg_names[srcreg], amount);
-  else
-    {
-      rtx operands[2];
-
-      operands[0] = gen_rtx (REG, SImode, TEMP_REGNUM);
-      operands[1] = gen_rtx (CONST_INT, VOIDmode, amount);
-      output_asm_insn (output_load_const_int (SImode, operands),
-		       operands);
-      sprintf (incr, "\t%s\t %s,%s,%s", opname,
-	       reg_names[dstreg], reg_names[srcreg], reg_names[TEMP_REGNUM]);
-    }
-
-  if (!return_p)
-    fprintf (stream, "%s\n", incr);
-  else if (flag_delayed_branch)
-    fprintf (stream, "\tjmp.n\t %s\n%s\n", reg_names[1], incr);
-  else
-    fprintf (stream, "%s\n\tjmp\t %s\n", incr, reg_names[1]);
+  emit_insn ((amount < 0 ? gen_subsi3 : gen_addsi3) (dstreg, srcreg, incr));
 }
 
 /* Save/restore the preserve registers.  base is the highest offset from
    r31 at which a register is stored.  store_p is true if stores are to
-   be done; otherwise loads.  When loading, output the epilogue delay
-   insns.  */
+   be done; otherwise loads.  */
 
 static void
-preserve_registers (stream, base, store_p)
-     FILE *stream;
+preserve_registers (base, store_p)
      int base;
      int store_p;
 {
   int regno, offset;
-  char *fmt = (store_p ? "\tst%s\t %s,%s,%d\n" : "\tld%s\t %s,%s,%d\n");
   struct mem_op {
     int regno;
     int nregs;
@@ -2095,7 +1984,7 @@ preserve_registers (stream, base, store_p)
 	 memory ops.  */
       if (nregs > 2 && !save_regs[FRAME_POINTER_REGNUM])
 	offset -= 4;
-      fprintf (stream, fmt, "", reg_names[1], reg_names[31], offset);
+      emit_ldst (store_p, 1, SImode, offset);
       offset -= 4;
       base = offset;
     }
@@ -2156,69 +2045,30 @@ preserve_registers (stream, base, store_p)
 
   mo_ptr->regno = 0;
 
-  /* Output the delay insns interleaved with the memory operations.  */
-  if (! store_p && current_function_epilogue_delay_list)
-    {
-      rtx delay_insns = current_function_epilogue_delay_list;
-      rtx insn;
-
-      /* The first delay insn goes after the restore of r1.  */
-      if (save_regs[1])
-	{
-	  final_scan_insn (XEXP (delay_insns, 0), stream, 1, 0, 1);
-	  delay_insns = XEXP (delay_insns, 1);
-	}
-
-      while (delay_insns)
-	{
-	  /* Find a memory operation that doesn't conflict with this insn.  */
-	  for (mo_ptr = mem_op; mo_ptr->regno != 0; mo_ptr++)
-	    {
-	      if (mo_ptr->nregs)
-		{
-		  int nregs = (mo_ptr->regno < FIRST_EXTENDED_REGISTER
-			       ? mo_ptr->nregs : 1);
-		  rtx ok_insns = delay_insns;
-		  int i;
-
-		  for (i = 0; i < nregs; i++)
-		    epilogue_dead_regs[mo_ptr->regno + i] = 1;
-
-		  while (ok_insns)
-		    {
-		      insn = XEXP (ok_insns, 0);
-		      ok_insns = XEXP (ok_insns, 1);
-
-		      if (! ok_for_epilogue_p (PATTERN (insn)))
-			{
-			  for (i = 0; i < nregs; i++)
-			    epilogue_dead_regs[mo_ptr->regno + i] = 0;
-			  insn = 0;
-			  break; /* foreach delay insn */
-			}
-		    }
-		  if (insn)
-		    {
-		      fprintf (stream, fmt, mo_ptr->nregs > 1 ? ".d" : "",
-			       reg_names[mo_ptr->regno], reg_names[31],
-			       mo_ptr->offset);
-		      mo_ptr->nregs = 0;
-		      break; /* foreach memory operation */
-		    }
-		}
-	    }
-	  final_scan_insn (XEXP (delay_insns, 0), stream, 1, 0, 1);
-	  delay_insns = XEXP (delay_insns, 1);
-	}
-    }
-
   /* Output the memory operations.  */
   for (mo_ptr = mem_op; mo_ptr->regno; mo_ptr++)
     {
       if (mo_ptr->nregs)
-	fprintf (stream, fmt, mo_ptr->nregs > 1 ? ".d" : "",
-		 reg_names[mo_ptr->regno], reg_names[31], mo_ptr->offset);
+	emit_ldst (store_p, mo_ptr->regno,
+		   (mo_ptr->nregs > 1 ? DImode : SImode),
+		   mo_ptr->offset);
     }
+}
+
+static void
+emit_ldst (store_p, regno, mode, offset)
+     int store_p;
+     int regno;
+     enum machine_mode mode;
+     int offset;
+{
+  rtx reg = gen_rtx (REG, mode, regno);
+  rtx mem = gen_rtx (MEM, mode, plus_constant (stack_pointer_rtx, offset));
+
+  if (store_p)
+    emit_move_insn (mem, reg);
+  else
+    emit_move_insn (reg, mem);
 }
 
 /* Convert the address expression REG to a CFA offset.  */
@@ -2348,7 +2198,7 @@ output_tdesc (file, offset)
 
   text_section ();
 }
-
+
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  NAME is the mcount function name
    (varies), SAVEP indicates whether the parameter registers need to
