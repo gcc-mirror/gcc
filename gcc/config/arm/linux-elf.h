@@ -34,8 +34,20 @@ Boston, MA 02111-1307, USA.  */
 	" %{mapcs-26:-mapcs-26} %(!mapcs-26:-mapcs-32}"
 #endif
 
+/* This was defined in linux.h.  Define it here also. */
+#undef  DEFAULT_VTABLE_THUNKS
+#define DEFAULT_VTABLE_THUNKS   1
+
+/* Handle #pragma weak and #pragma pack.  */
+#define HANDLE_SYSV_PRAGMA
+
 /* Now we define the strings used to build the spec file.  */
-#define LIB_SPEC "%{!shared:%{!symbolic:-lc}}"
+#define LIB_SPEC \
+  "%{shared: -lc} \
+   %{!shared: %{pthread:-lpthread} \
+	%{profile:-lc_p} %{!profile: -lc}}"
+
+#define LIBGCC_SPEC "%{msoft-float:-lfloat} -lgcc"
 
 /* Add the compiler's crtend, and the library's crtn.  */
 #define ENDFILE_SPEC "%{!shared:crtend.o%s} %{shared:crtendS.o%s} \
@@ -64,6 +76,10 @@ Boston, MA 02111-1307, USA.  */
 #ifndef SUBTARGET_DEFAULT_APCS26
 #undef  CPP_APCS_PC_DEFAULT_SPEC
 #define CPP_APCS_PC_DEFAULT_SPEC "-D__APCS_32__"
+/* On 32-bit machine it is always safe to assume we have the "new"
+   floating point system.  */
+#undef  FP_DEFAULT
+#define FP_DEFAULT FP_SOFT3
 #endif
 
 /* Allow #sccs in preprocessor.  */
@@ -200,6 +216,11 @@ const_section ()							\
        fputs (" = ", FILE);		 \
        assemble_name (FILE, NAME2);	 \
        fputc ('\n', FILE); } while (0)
+
+/* Make DWARF2 an option, but keep DBX as the default for now.
+   Use -gdwarf2 to turn on DWARF2.  */
+#define DWARF2_DEBUGGING_INFO
+#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
 #include "arm/elf.h"
 #include "arm/linux-gas.h"

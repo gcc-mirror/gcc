@@ -1,4 +1,4 @@
-/* Definitions of target machine for GNU compiler, for Acorn RISC Machine.
+/* Definitions of target machine for GNU compiler, for ARM.
    Copyright (C) 1991, 93, 94, 95, 96, 97, 98, 1999 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
@@ -53,6 +53,7 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_CPU_arm810	0x0020
 #define TARGET_CPU_strongarm	0x0040
 #define TARGET_CPU_strongarm110 0x0040
+#define TARGET_CPU_strongarm1100 0x0040
 #define TARGET_CPU_arm9		0x0080
 #define TARGET_CPU_arm9tdmi	0x0080
 /* Configure didn't specify */
@@ -146,6 +147,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 %{march=arm9tdmi:-D__ARM_ARCH_4T__} \
 %{march=strongarm:-D__ARM_ARCH_4__} \
 %{march=strongarm110:-D__ARM_ARCH_4__} \
+%{march=strongarm1100:-D__ARM_ARCH_4__} \
 %{march=armv2:-D__ARM_ARCH_2__} \
 %{march=armv2a:-D__ARM_ARCH_2__} \
 %{march=armv3:-D__ARM_ARCH_3__} \
@@ -175,6 +177,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
  %{mcpu=arm9tdmi:-D__ARM_ARCH_4T__} \
  %{mcpu=strongarm:-D__ARM_ARCH_4__} \
  %{mcpu=strongarm110:-D__ARM_ARCH_4__} \
+ %{mcpu=strongarm1100:-D__ARM_ARCH_4__} \
  %{!mcpu*:%{!m6:%{!m2:%{!m3:%(cpp_cpu_arch_default)}}}}} \
 "
 
@@ -258,7 +261,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 extern int target_flags;
 
 /* The floating point instruction architecture, can be 2 or 3 */
-extern char *target_fp_name;
+extern char * target_fp_name;
 
 /* Nonzero if the function prologue (and epilogue) should obey
    the ARM Procedure Call Standard.  */
@@ -318,6 +321,9 @@ extern char *target_fp_name;
    big-endian (for backwards compatibility with older versions of GCC).  */
 #define ARM_FLAG_LITTLE_WORDS	(0x2000)
 
+/* Nonzero if we need to protect the prolog from scheduling */
+#define ARM_FLAG_NO_SCHED_PRO	(0x4000)
+
 /* Nonzero if a call to abort should be generated if a noreturn 
 function tries to return. */
 #define ARM_FLAG_ABORT_NORETURN (0x8000)
@@ -337,6 +343,7 @@ function tries to return. */
 #define TARGET_BIG_END			(target_flags & ARM_FLAG_BIG_END)
 #define TARGET_THUMB_INTERWORK		(target_flags & ARM_FLAG_THUMB)
 #define TARGET_LITTLE_WORDS		(target_flags & ARM_FLAG_LITTLE_WORDS)
+#define TARGET_NO_SCHED_PRO		(target_flags & ARM_FLAG_NO_SCHED_PRO)
 #define TARGET_ABORT_NORETURN           (target_flags & ARM_FLAG_ABORT_NORETURN)
 
 /* SUBTARGET_SWITCHES is used to add flags on a per-config basis.
@@ -391,67 +398,38 @@ function tries to return. */
   {"abort-on-noreturn",         ARM_FLAG_ABORT_NORETURN,     \
    "Generate a call to abort if a noreturn function returns"}, \
   {"no-abort-on-noreturn",      -ARM_FLAG_ABORT_NORETURN, ""}, \
+  {"sched-prolog",             -ARM_FLAG_NO_SCHED_PRO, 	\
+     "Do not move instructions into a function's prologue" }, \
+  {"no-sched-prolog",           ARM_FLAG_NO_SCHED_PRO, "" }, \
   SUBTARGET_SWITCHES					\
   {"",				TARGET_DEFAULT }	\
 }
 
 #define TARGET_OPTIONS						\
 {								\
-  {"cpu=",							\
-     &arm_select[1].string,					\
-     "Specify the name of the target CPU"},			\
-  {"arch=",							\
-     &arm_select[2].string,					\
-     "Specify the name of the target architecture"},		\
-  {"tune=",							\
-     &arm_select[3].string,					\
-     "Order instructions for best performance on this CPU"},	\
-  {"fp=",							\
-     &target_fp_name,						\
-     "Specify the version of the floating point emulator"},	\
-  {"structure-size-boundary=",					\
-     &structure_size_string,					\
-     "Specify the minumum bit alignment of structures"}		\
+  {"cpu=",  & arm_select[0].string,				\
+     "Specify the name of the target CPU" },			\
+  {"arch=", & arm_select[1].string,				\
+     "Specify the name of the target architecture" }, 		\
+  {"tune=", & arm_select[2].string, "" }, 			\
+  {"fpe=",  & target_fp_name, "" }, 				\
+  {"fp=",   & target_fp_name,					\
+     "Specify the version of the floating point emulator" },	\
+  { "structure-size-boundary=", & structure_size_string, 	\
+      "Specify the minumum bit alignment of structures" } 	\
 }
 
-/* arm_select[0] is reserved for the default cpu.  */
 struct arm_cpu_select
 {
-  char *string;
-  char *name;
-  int set_tune_p;
-  int set_arch_p;
+  char *              string;
+  char *              name;
+  struct processors * processors;
 };
 
+/* This is a magic array.  If the user specifies a command line switch
+   which matches one of the entries in TARGET_OPTIONS then the corresponding
+   string pointer will be set to the value specified by the user.  */
 extern struct arm_cpu_select arm_select[];
-
-#ifndef PROCESSOR_DEFAULT
-#define PROCESSOR_DEFAULT PROCESSOR_ARM2
-#endif
-
-#ifndef TARGET_CPU_DEFAULT
-#define TARGET_CPU_DEFAULT ((char *) 0)
-#endif
-
-/* Which processor we are running on, for instruction scheduling 
-   purposes.  */
-enum processor_type 
-{
-  PROCESSOR_ARM2,
-  PROCESSOR_ARM3,
-  PROCESSOR_ARM6,
-  PROCESSOR_ARM7,
-  PROCESSOR_ARM8,
-  PROCESSOR_ARM9,
-  PROCESSOR_STARM,
-  PROCESSOR_NONE	/* NOTE: This must be last, since it doesn't
-			   appear in the attr_cpu list */
-};
-
-/* Recast the cpu class to be the cpu attribute.  */
-#define arm_cpu_attr ((enum attr_cpu)arm_cpu)
-
-extern enum processor_type arm_cpu;
 
 enum prog_mode_type
 {
@@ -492,6 +470,15 @@ extern int arm_fast_multiply;
 
 /* Nonzero if this chip supports the ARM Architecture 4 extensions */
 extern int arm_arch4;
+
+/* Nonzero if this chip can benefit from load scheduling.  */
+extern int arm_ld_sched;
+
+/* Nonzero if this chip is a StrongARM.  */
+extern int arm_is_strong;
+
+/* Nonzero if this chip is a an ARM6 or an ARM7.  */
+extern int arm_is_6_or_7;
 
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT  0
@@ -634,8 +621,8 @@ extern char * structure_size_string;
 
 	r4-r8	     S	register variable
 	r9	     S	(rfp) register variable (real frame pointer)
-
-	r10  	   F S	(sl) stack limit (not currently used)
+	
+	r10  	   F S	(sl) stack limit (used by -mapcs-stack-check)
 	r11 	   F S	(fp) argument pointer
 	r12		(ip) temp workspace
 	r13  	   F S	(sp) lower end of current stack frame
@@ -729,6 +716,11 @@ extern char * structure_size_string;
     {							\
       fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
       call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 0;	\
+    }							\
+  else if (! TARGET_APCS_STACK)				\
+    {							\
+      fixed_regs[10]     = 0;				\
+      call_used_regs[10] = 0;				\
     }							\
 }
 
@@ -1062,9 +1054,7 @@ do {									\
 /* How large values are returned */
 /* A C expression which can inhibit the returning of certain function values
    in registers, based on the type of value. */
-#define RETURN_IN_MEMORY(TYPE)						\
-  (TYPE_MODE ((TYPE)) == BLKmode ||					\
-   (AGGREGATE_TYPE_P ((TYPE)) && arm_return_in_memory ((TYPE))))
+#define RETURN_IN_MEMORY(TYPE) arm_return_in_memory (TYPE)
 
 /* Define DEFAULT_PCC_STRUCT_RETURN to 1 if all structure and union return
    values must be in memory.  On the ARM, they need only do so if larger
@@ -1779,8 +1769,8 @@ extern int arm_pic_register;
 
 #define FINALIZE_PIC arm_finalize_pic ()
 
-/* We can't directly access anything that contains a symbol, nor can
-   we indirect via the constant pool */
+/* We can't directly access anything that contains a symbol,
+   nor can we indirect via the constant pool.  */
 #define LEGITIMATE_PIC_OPERAND_P(X)				\
 	(! symbol_mentioned_p (X)				\
 	 && (! CONSTANT_POOL_ADDRESS_P (X)			\

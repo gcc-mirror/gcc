@@ -170,7 +170,7 @@ in the following sections.
 -idirafter @var{dir}
 -include @var{file}  -imacros @var{file}
 -iprefix @var{file}  -iwithprefix @var{dir}
--iwithprefixbefore @var{dir}  -isystem @var{dir}
+-iwithprefixbefore @var{dir}  -isystem @var{dir} -isystem-c++ @var{dir}
 -M  -MD  -MM  -MMD  -MG  -nostdinc  -P  -trigraphs
 -undef  -U@var{macro}  -Wp,@var{option}
 @end smallexample
@@ -259,6 +259,8 @@ in the following sections.
 -mcpu= -march= -mfpe= 
 -mstructure-size-boundary=
 -mbsd -mxopen -mno-symrename
+-mabort-on-noreturn
+-mno-sched-prolog
 
 @emph{Thumb Options}
 -mtpcs-frame -mno-tpcs-frame
@@ -1154,6 +1156,11 @@ implementing vtables was to store a pointer to the function and two
 offsets for adjusting the @samp{this} pointer at the call site.  Newer
 implementations store a single pointer to a @samp{thunk} function which
 does any necessary adjustment and then calls the target function.
+
+This option also enables a heuristic for controlling emission of
+vtables; if a class has any non-inline virtual functions, the vtable
+will be emitted in the translation unit containing the first one of
+those.
 
 Like all options that change the ABI, all C++ code, @emph{including
 libgcc.a} must be built with the same setting of this option.
@@ -3796,13 +3803,17 @@ suppresses this pass.  The post-processor is never run when the
 compiler is built for cross-compilation.
 
 @item -mcpu=<name>
+@item -mtune=<name>
 @kindex -mcpu=
+@kindex -mtune=
 This specifies the name of the target ARM processor.  GCC uses this name
 to determine what kind of instructions it can use when generating
 assembly code.  Permissable names are: arm2, arm250, arm3, arm6, arm60,
 arm600, arm610, arm620, arm7, arm7m, arm7d, arm7dm, arm7di, arm7dmi,
 arm70, arm700, arm700i, arm710, arm710c, arm7100, arm7500, arm7500fe,
-arm7tdmi, arm8, strongarm, strongarm110
+arm7tdmi, arm8, strongarm, strongarm110, strongarm1100, arm8, arm810,
+arm9, arm9tdmi.  @samp{-mtune=} is a synonym for @samp{-mcpue=} to
+support older versions of GCC.
 
 @item -march=<name>
 @kindex -march=
@@ -3813,9 +3824,12 @@ of the @samp{-mcpu=} option.  Permissable names are: armv2, armv2a,
 armv3, armv3m, armv4, armv4t
 
 @item -mfpe=<number>
+@item -mfp=<number>
 @kindex -mfpe=
+@kindex -mfp=
 This specifes the version of the floating point emulation available on
-the target.  Permissable values are 2 and 3.
+the target.  Permissable values are 2 and 3.  @samp{-mfp=} is a synonym
+for @samp{-mfpe=} to support older versions of GCC.
 
 @item -mstructure-size-boundary=<n>
 @kindex -mstructure-size-boundary
@@ -3829,6 +3843,12 @@ compiled with one value cannot necessarily expect to work with code or
 libraries compiled with the other value, if they exchange information
 using structures or unions.  Programmers are encouraged to use the 32
 value as future versions of the toolchain may default to this value.
+
+@item -mabort-on-noreturn
+@kindex -mabort-on-noreturn
+@kindex -mnoabort-on-noreturn
+Generate a call to the function abort at the end of a noreturn function.
+It will be executed if the function tries to return.
 
 @end table
 
@@ -4666,7 +4686,9 @@ All modules should be compiled with the same @samp{-G @var{num}} value.
 @itemx -mno-regnames
 On System V.4 and embedded PowerPC systems do (do not) emit register
 names in the assembly language output using symbolic forms.
+
 @end table
+
 @node RT Options
 @subsection IBM RT Options
 @cindex RT options

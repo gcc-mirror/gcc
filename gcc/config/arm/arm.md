@@ -45,10 +45,7 @@
 ; by the -mapcs-{32,26} flag, and possibly the -mcpu=... option.
 (define_attr "prog_mode" "prog26,prog32" (const (symbol_ref "arm_prog_mode")))
 
-; CPU attribute is used to determine the best instruction mix for performance
-; on the named processor.
-(define_attr "cpu" "arm2,arm3,arm6,arm7,arm8,arm9,st_arm"
-	(const (symbol_ref "arm_cpu_attr")))
+(define_attr "is_strongarm" "no,yes" (const (symbol_ref "arm_is_strong")))
 
 ; Floating Point Unit.  If we only have floating point emulation, then there
 ; is no point in scheduling the floating point insns.  (Well, for best
@@ -100,11 +97,9 @@
 	"normal,mult,block,float,fdivx,fdivd,fdivs,fmul,ffmul,farith,ffarith,float_em,f_load,f_store,f_mem_r,r_mem_f,f_2_r,r_2_f,call,load,store1,store2,store3,store4" 
 	(const_string "normal"))
 
-; Load scheduling, set from the cpu characteristic
-(define_attr "ldsched" "no,yes"
-  (if_then_else (eq_attr "cpu" "arm8,arm9,st_arm")
-		(const_string "yes")
-		(const_string "no")))
+; Load scheduling, set from the arm_ld_sched variable
+; initialised by arm_override_options() 
+(define_attr "ldsched" "no,yes" (const (symbol_ref "arm_ld_sched")))
 
 ; condition codes: this one is used by final_prescan_insn to speed up
 ; conditionalizing instructions.  It saves having to scan the rtl to see if
@@ -137,10 +132,7 @@
 ; have one.  Later ones, such as StrongARM, have write-back caches, so don't
 ; suffer blockages enough to warrent modelling this (and it can adversely
 ; affect the schedule).
-(define_attr "model_wbuf" "no,yes"
-  (if_then_else (eq_attr "cpu" "arm6,arm7")
-		(const_string "yes")
-		(const_string "no")))
+(define_attr "model_wbuf" "no,yes" (const (symbol_ref "arm_is_6_or_7")))
 
 (define_attr "write_conflict" "no,yes"
   (if_then_else (eq_attr "type"
@@ -267,13 +259,15 @@
   (and (eq_attr "fpu" "fpa") (eq_attr "type" "f_mem_r")) 7 7)
 
 (define_function_unit "core" 1 0
-  (and (eq_attr "cpu" "!arm8,st_arm") (eq_attr "type" "mult")) 16 16)
+  (and (eq_attr "ldsched" "no") (eq_attr "type" "mult")) 16 16)
 
 (define_function_unit "core" 1 0
-  (and (eq_attr "cpu" "arm8") (eq_attr "type" "mult")) 4 4)
+  (and (and (eq_attr "ldsched" "yes") (eq_attr "is_strongarm" "no"))
+       (eq_attr "type" "mult")) 4 4)
 
 (define_function_unit "core" 1 0
-  (and (eq_attr "cpu" "st_arm") (eq_attr "type" "mult")) 3 2)
+  (and (and (eq_attr "ldsched" "yes") (eq_attr "is_strongarm" "yes"))
+       (eq_attr "type" "mult")) 3 2)
 
 (define_function_unit "core" 1 0 (eq_attr "type" "store2") 3 3)
 
@@ -1209,7 +1203,7 @@
 			 (const_int 0)))
    (clobber (match_scratch:QI 3 "=r"))]
   "INTVAL (operands[2]) >= 0 && INTVAL (operands[1]) > 0
-   && (INTVAL (operands[2]) + INTVAL (operands[1]) <= 8)"
+   && ((INTVAL (operands[2]) + INTVAL (operands[1])) <= 8)"
   "*
   operands[1] = GEN_INT (((1 << INTVAL (operands[1])) - 1)
 			 << INTVAL (operands[2]));
@@ -1287,7 +1281,7 @@
 
       emit_insn (gen_ashlsi3 (op0, operands[3], GEN_INT (32 - width)));
       emit_insn (gen_iorsi3 (op1, gen_rtx_LSHIFTRT (SImode, operands[0],
-						    operands[1]),
+							    operands[1]),
 			     op0));
       emit_insn (gen_rotlsi3 (subtarget, op1, operands[1]));
     }
@@ -2173,16 +2167,20 @@
   ""
   "
 {
-  if (arm_arch4 && GET_CODE (operands[1]) == MEM)
+  if (GET_CODE (operands[1]) == MEM)
     {
-      emit_insn (gen_rtx_SET (VOIDmode, operands[0],
-			      gen_rtx_ZERO_EXTEND (SImode, operands[1])));
-      DONE;
-    }
-  if (TARGET_SHORT_BY_BYTES && GET_CODE (operands[1]) == MEM)
-    {
-      emit_insn (gen_movhi_bytes (operands[0], operands[1]));
-      DONE;
+      if (TARGET_SHORT_BY_BYTES)
+        {
+	  emit_insn (gen_movhi_bytes (operands[0], operands[1]));
+          DONE;
+        }
+      else if (arm_arch4)
+        {
+          emit_insn (gen_rtx_SET (VOIDmode,
+				  operands[0],
+				  gen_rtx_ZERO_EXTEND (SImode, operands[1])));
+          DONE;
+        }
     }
   if (! s_register_operand (operands[1], HImode))
     operands[1] = copy_to_mode_reg (HImode, operands[1]);
@@ -2274,19 +2272,21 @@
 		     (const_int 16)))]
   ""
   "
-{ 
-  if (arm_arch4 && GET_CODE (operands[1]) == MEM)
+{
+  if (GET_CODE (operands[1]) == MEM)
     {
-      emit_insn (gen_rtx_SET (VOIDmode, operands[0],
-		 gen_rtx_SIGN_EXTEND (SImode, operands[1])));
-      DONE;
-    }
-
-  if (TARGET_SHORT_BY_BYTES && GET_CODE (operands[1]) == MEM)
-    {
-      emit_insn (gen_extendhisi2_mem (operands[0], operands[1]));
-      DONE;
-    }
+      if (TARGET_SHORT_BY_BYTES)
+        {
+          emit_insn (gen_extendhisi2_mem (operands[0], operands[1]));
+          DONE;
+        }
+      else if (arm_arch4)
+        {
+          emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+		     gen_rtx_SIGN_EXTEND (SImode, operands[1])));
+          DONE;
+        }
+     }
   if (! s_register_operand (operands[1], HImode))
     operands[1] = copy_to_mode_reg (HImode, operands[1]);
   operands[1] = gen_lowpart (SImode, operands[1]);
@@ -2381,7 +2381,8 @@
 {
   if (arm_arch4 && GET_CODE (operands[1]) == MEM)
     {
-      emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+      emit_insn (gen_rtx_SET (VOIDmode,
+			      operands[0],
 			      gen_rtx_SIGN_EXTEND (HImode, operands[1])));
       DONE;
     }
@@ -2437,8 +2438,8 @@
 	     && GET_CODE (XEXP (operands[1], 1)) != CONST_INT
 	     && ! s_register_operand (XEXP (operands[1], 1), VOIDmode))
       operands[1] = gen_rtx_PLUS (GET_MODE (operands[1]),
-				  XEXP (operands[1], 1),
-				  XEXP (operands[1], 0));
+					   XEXP (operands[1], 1),
+					   XEXP (operands[1], 0));
   }
 ")
 
@@ -2454,7 +2455,8 @@
 {
   if (arm_arch4 && GET_CODE (operands[1]) == MEM)
     {
-      emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+      emit_insn (gen_rtx_SET (VOIDmode,
+			      operands[0],
 			      gen_rtx_SIGN_EXTEND (SImode, operands[1])));
       DONE;
     }
@@ -2508,8 +2510,8 @@
 	     && GET_CODE (XEXP (operands[1], 1)) != CONST_INT
 	     && ! s_register_operand (XEXP (operands[1], 1), VOIDmode))
       operands[1] = gen_rtx_PLUS (GET_MODE (operands[1]),
-				  XEXP (operands[1], 1),
-				  XEXP (operands[1], 0));
+					   XEXP (operands[1], 1),
+					   XEXP (operands[1], 0));
   }
 ")
 
@@ -3260,7 +3262,7 @@
 			   XEXP (XEXP (operands[0], 0), 1)));
 
   emit_insn (gen_rtx_SET (VOIDmode, gen_rtx_MEM (DFmode, operands[2]),
-			  operands[1]));
+				    operands[1]));
 
   if (code == POST_DEC)
     emit_insn (gen_addsi3 (operands[2], operands[2], GEN_INT (-8)));
@@ -4184,10 +4186,10 @@
   extern int arm_ccfsm_state;
 
   if (arm_ccfsm_state == 1 || arm_ccfsm_state == 2)
-  {
-    arm_ccfsm_state += 2;
-    return \"\";
-  }
+    {
+      arm_ccfsm_state += 2;
+      return \"\";
+    }
   return \"b%?\\t%l0\";
 }")
 
@@ -6135,7 +6137,6 @@
   operands[7] = gen_rtx_COMPARE (mode, operands[2], operands[3]);
 }
 ")
-
 
 ;; The next two patterns occur when an AND operation is followed by a
 ;; scc insn sequence 
