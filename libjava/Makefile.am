@@ -1895,7 +1895,9 @@ texinfo: TexinfoDoclet.class
 ## internally by libgcj. We can't make the .o files depend on nat_headers, 
 ## because in that case we'll force a complete rebuild of
 ## the C++ code whenever any .java file is touched.
-all-recursive: $(nat_headers) $(x_nat_headers)
+## Also force all the class files to build first. This makes them build in
+## the right order to improve performance.
+all-recursive: $(all_java_class_files) $(nat_headers) $(x_nat_headers)
 
 ## ################################################################
 
