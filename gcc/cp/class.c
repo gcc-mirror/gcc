@@ -341,7 +341,8 @@ build_vbase_path (code, type, expr, path, alias_this)
   if (null_expr)
     {
       TREE_OPERAND (expr, 2) = nonnull_expr;
-      TREE_TYPE (TREE_OPERAND (expr, 1)) = TREE_TYPE (nonnull_expr);
+      TREE_TYPE (expr) = TREE_TYPE (TREE_OPERAND (expr, 1))
+	= TREE_TYPE (nonnull_expr);
     }
   else
     expr = nonnull_expr;

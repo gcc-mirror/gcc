@@ -1,3 +1,7 @@
+Sun Nov  2 15:04:12 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (build_vbase_path): Propagate the result type properly.
+
 1997-11-01  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* lex.c (FILE_NAME_NONDIRECTORY): Delete macro.
