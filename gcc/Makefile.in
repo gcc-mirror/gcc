@@ -1686,8 +1686,9 @@ c-gimplify.o : c-gimplify.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) errors.h \
    $(TM_H) coretypes.h $(C_PRETTY_PRINT_H) cgraph.h
 gimplify.o : gimplify.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) errors.h \
    diagnostic.h $(TREE_GIMPLE_H) tree-inline.h varray.h langhooks.h \
-   langhooks-def.h $(TREE_FLOW_H) $(TIMEVAR_H) $(TM_H) coretypes.h except.h \
-   $(FLAGS_H) $(RTL_H) function.h $(EXPR_H) output.h $(GGC_H) gt-gimplify.h
+   langhooks-def.h $(TREE_FLOW_H) cgraph.h $(TIMEVAR_H) $(TM_H) coretypes.h \
+   except.h $(FLAGS_H) $(RTL_H) function.h $(EXPR_H) output.h $(GGC_H) \
+   gt-gimplify.h
 gimple-low.o : gimple-low.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) errors.h \
    diagnostic.h $(TREE_GIMPLE_H) tree-inline.h varray.h langhooks.h \
    langhooks-def.h $(TREE_FLOW_H) $(TIMEVAR_H) $(TM_H) coretypes.h except.h \
