@@ -2168,7 +2168,9 @@ write_action (struct decision *p, struct decision_test *test,
 	  if (test->u.insn.num_clobbers_to_add != 0)
 	    printf ("%s*pnum_clobbers = %d;\n",
 		    indent, test->u.insn.num_clobbers_to_add);
-	  printf ("%sreturn %d;\n", indent, test->u.insn.code_number);
+	  printf ("%sreturn %d;  /* %s */\n", indent,
+		  test->u.insn.code_number,
+		  insn_name_ptr[test->u.insn.code_number]);
 	  break;
 
 	case SPLIT:

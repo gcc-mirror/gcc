@@ -160,9 +160,7 @@ struct insn_def
 struct insn_ent
 {
   struct insn_ent *next;	/* Next in chain.  */
-  int insn_code;		/* Instruction number.  */
-  int insn_index;		/* Index of definition in file */
-  int lineno;			/* Line number.  */
+  struct insn_def *def;		/* Instruction definition.  */
 };
 
 /* Each value of an attribute (either constant or computed) is assigned a
@@ -1377,7 +1375,7 @@ get_attr_value (rtx value, struct attr_desc *attr, int insn_code)
   for (av = attr->first_value; av; av = av->next)
     if (rtx_equal_p (value, av->value)
 	&& (num_alt == 0 || av->first_insn == NULL
-	    || insn_alternatives[av->first_insn->insn_code]))
+	    || insn_alternatives[av->first_insn->def->insn_code]))
       return av;
 
   av = oballoc (sizeof (struct attr_value));
@@ -1524,8 +1522,7 @@ fill_attr (struct attr_desc *attr)
 	av = get_attr_value (value, attr, id->insn_code);
 
       ie = oballoc (sizeof (struct insn_ent));
-      ie->insn_code = id->insn_code;
-      ie->insn_index = id->insn_code;
+      ie->def = id;
       insert_insn_ent (av, ie);
     }
 }
@@ -1651,10 +1648,9 @@ make_length_attrs (void)
 	    new_av = get_attr_value (substitute_address (av->value,
 							 no_address_fn[i],
 							 address_fn[i]),
-				     new_attr, ie->insn_code);
+				     new_attr, ie->def->insn_code);
 	    new_ie = oballoc (sizeof (struct insn_ent));
-	    new_ie->insn_code = ie->insn_code;
-	    new_ie->insn_index = ie->insn_index;
+	    new_ie->def = ie->def;
 	    insert_insn_ent (new_av, new_ie);
 	  }
     }
@@ -1854,7 +1850,7 @@ remove_insn_ent (struct attr_value *av, struct insn_ent *ie)
     }
 
   av->num_insns--;
-  if (ie->insn_code == -1)
+  if (ie->def->insn_code == -1)
     av->has_asm_insn = 0;
 
   num_insn_ents--;
@@ -1868,7 +1864,7 @@ insert_insn_ent (struct attr_value *av, struct insn_ent *ie)
   ie->next = av->first_insn;
   av->first_insn = ie;
   av->num_insns++;
-  if (ie->insn_code == -1)
+  if (ie->def->insn_code == -1)
     av->has_asm_insn = 1;
 
   num_insn_ents++;
@@ -2826,7 +2822,7 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
 	  && (attr = find_attr (&XSTR (exp, 0), 0)) != NULL)
 	for (av = attr->first_value; av; av = av->next)
 	  for (ie = av->first_insn; ie; ie = ie->next)
-	    if (ie->insn_code == insn_code)
+	    if (ie->def->insn_code == insn_code)
 	      {
 		rtx x;
 		x = evaluate_eq_attr (exp, av->value, insn_code, insn_index);
@@ -2896,8 +2892,8 @@ optimize_attrs (void)
 	    iv->attr = attr;
 	    iv->av = av;
 	    iv->ie = ie;
-	    iv->next = insn_code_values[ie->insn_code];
-	    insn_code_values[ie->insn_code] = iv;
+	    iv->next = insn_code_values[ie->def->insn_code];
+	    insn_code_values[ie->def->insn_code] = iv;
 	    iv++;
 	  }
 
@@ -2927,8 +2923,8 @@ optimize_attrs (void)
 	  newexp = av->value;
 	  while (GET_CODE (newexp) == COND)
 	    {
-	      rtx newexp2 = simplify_cond (newexp, ie->insn_code,
-					   ie->insn_index);
+	      rtx newexp2 = simplify_cond (newexp, ie->def->insn_code,
+					   ie->def->insn_index);
 	      if (newexp2 == newexp)
 		break;
 	      newexp = newexp2;
@@ -2939,7 +2935,7 @@ optimize_attrs (void)
 	    {
 	      newexp = attr_copy_rtx (newexp);
 	      remove_insn_ent (av, ie);
-	      av = get_attr_value (newexp, attr, ie->insn_code);
+	      av = get_attr_value (newexp, attr, ie->def->insn_code);
 	      iv->av = av;
 	      insert_insn_ent (av, ie);
 	    }
@@ -3739,8 +3735,8 @@ write_attr_get (struct attr_desc *attr)
       for (av = attr->first_value; av; av = av->next)
 	if (av->num_insns != 0)
 	  write_attr_set (attr, 2, av->value, "return", ";",
-			  true_rtx, av->first_insn->insn_code,
-			  av->first_insn->insn_index);
+			  true_rtx, av->first_insn->def->insn_code,
+			  av->first_insn->def->insn_index);
 
       printf ("}\n\n");
       return;
@@ -3905,10 +3901,11 @@ write_attr_case (struct attr_desc *attr, struct attr_value *av,
   if (write_case_lines)
     {
       for (ie = av->first_insn; ie; ie = ie->next)
-	if (ie->insn_code != -1)
+	if (ie->def->insn_code != -1)
 	  {
 	    write_indent (indent);
-	    printf ("case %d:\n", ie->insn_code);
+	    printf ("case %d:  /* %s */\n",
+		    ie->def->insn_code, XSTR (ie->def->def, 0));
 	  }
     }
   else
@@ -3933,8 +3930,8 @@ write_attr_case (struct attr_desc *attr, struct attr_value *av,
     }
 
   write_attr_set (attr, indent + 2, av->value, prefix, suffix,
-		  known_true, av->first_insn->insn_code,
-		  av->first_insn->insn_index);
+		  known_true, av->first_insn->def->insn_code,
+		  av->first_insn->def->insn_index);
 
   if (strncmp (prefix, "return", 6))
     {
@@ -4384,8 +4381,9 @@ write_const_num_delay_slots (void)
 	  if (length_used)
 	    {
 	      for (ie = av->first_insn; ie; ie = ie->next)
-		if (ie->insn_code != -1)
-		  printf ("    case %d:\n", ie->insn_code);
+		if (ie->def->insn_code != -1)
+		  printf ("    case %d:  /* %s */\n",
+			  ie->def->insn_code, XSTR (ie->def->def, 0));
 	      printf ("      return 0;\n");
 	    }
 	}

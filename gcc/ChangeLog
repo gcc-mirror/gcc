@@ -1,3 +1,18 @@
+2004-08-13  Richard Sandiford  <rsandifo@redhat.com>
+
+	* genattrtab.c (insn_ent): Replace insn_code, insn_index and lineno
+	fields with a pointer to the instruction definition.
+	(get_attr_value, fill_attr, make_length_attrs, remove_insn_ent)
+	(insert_insn_ent, simplify_test_exp, optimize_attrs, write_attr_get)
+	(write_attr_case, write_const_num_delay_slots): Update accordingly.
+	(write_attr_case, write_const_num_delay_slots): Write the name of
+	an insn next to its case statement.
+	* genoutput.c (data): Add a filename field.
+	(gen_insn, gen_peephole, gen_expand, gen_split): Set it.
+	(output_insn_data): Print the location of each insn definition.
+	* genrecog.c (write_action): Print the name of an insn above
+	the statement that returns its code.
+
 2004-08-12  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/darwin-c.c (find_subframework_file): Fix spelling of cannot.
