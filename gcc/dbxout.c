@@ -2096,13 +2096,7 @@ dbxout_symbol_location (decl, type, suffix, home)
      If the decl was from an inline function, then its rtl
      is not identically the rtl that was used in this
      particular compilation.  */
-  if (GET_CODE (home) == REG)
-    {
-      regno = REGNO (home);
-      if (regno >= FIRST_PSEUDO_REGISTER)
-	return 0;
-    }
-  else if (GET_CODE (home) == SUBREG)
+  if (GET_CODE (home) == SUBREG)
     {
       rtx value = home;
 
@@ -2113,7 +2107,13 @@ dbxout_symbol_location (decl, type, suffix, home)
 	  if (REGNO (value) >= FIRST_PSEUDO_REGISTER)
 	    return 0;
 	}
-      regno = REGNO (alter_subreg (home));
+      home = alter_subreg (home);
+    }
+  if (GET_CODE (home) == REG)
+    {
+      regno = REGNO (home);
+      if (regno >= FIRST_PSEUDO_REGISTER)
+	return 0;
     }
 
   /* The kind-of-variable letter depends on where
