@@ -314,6 +314,8 @@ namespace std
 	int __ret = 0;
 	bool __testput = this->_M_out_cur
 	  && this->_M_out_beg < this->_M_out_lim;
+	// Sync with stdio.
+	bool __sync = this->_M_buf_size == 1;
 
 	// Make sure that the internal buffer resyncs its idea of
 	// the file position with the external file.
@@ -327,7 +329,7 @@ namespace std
 					 traits_type::eof()))
 	      __ret = -1;
 	    else if (__off)
-	      _M_file.seekoff(__off, ios_base::cur);
+	      _M_file.seekoff(__off, ios_base::cur, __sync);
 	  }
 	else
 	  _M_file.sync();

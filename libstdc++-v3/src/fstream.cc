@@ -43,6 +43,8 @@ namespace std
       int_type __ret = traits_type::eof();
       bool __testin = _M_mode & ios_base::in;
       bool __testout = _M_mode & ios_base::out;
+      // Sync with stdio.
+      bool __sync = _M_buf_size == 1;
 
       if (__testin)
 	{
@@ -71,15 +73,16 @@ namespace std
 		_M_really_overflow();
 	      else if (_M_in_cur != _M_filepos)
 		_M_file.seekoff(_M_in_cur - _M_filepos,
-				ios_base::cur, ios_base::in);
+				ios_base::cur, __sync, ios_base::in);
 	    }
 
 	  if (__testinit || __testget)
 	    {
 	      streamsize __elen = 0;
 	      streamsize __ilen = 0;
+
 	      __elen = _M_file.xsgetn(reinterpret_cast<char*>(_M_in_beg), 
-				      _M_buf_size);
+				      _M_buf_size, __sync);
 	      __ilen = __elen;
 
 	      if (0 < __ilen)
@@ -90,7 +93,7 @@ namespace std
 		  __ret = traits_type::to_int_type(*_M_in_cur);
 		  if (__bump)
 		    _M_in_cur_move(1);
-		  else if (_M_buf_size == 1)
+		  else if (__sync)
 		    {
 		      // If we are synced with stdio, we have to unget the
 		      // character we just read so that the file pointer
@@ -123,6 +126,8 @@ namespace std
       int_type __ret = traits_type::eof();
       bool __testin = _M_mode & ios_base::in;
       bool __testout = _M_mode & ios_base::out;
+      // Sync with stdio.
+      bool __sync = _M_buf_size == 1;
 
       if (__testin)
 	{
@@ -151,7 +156,7 @@ namespace std
 		_M_really_overflow();
 	      else if (_M_in_cur != _M_filepos)
 		_M_file.seekoff(_M_in_cur - _M_filepos,
-				ios_base::cur, ios_base::in);
+				  ios_base::cur, __sync, ios_base::in);
 	    }
 
 	  if (__testinit || __testget)
@@ -164,13 +169,13 @@ namespace std
 	      if (__cvt.always_noconv())
 		{
 		  __elen = _M_file.xsgetn(reinterpret_cast<char*>(_M_in_beg), 
-					  _M_buf_size);
+					  _M_buf_size, __sync);
 		  __ilen = __elen;
 		}
 	      else
 		{
 		  char* __buf = static_cast<char*>(__builtin_alloca(_M_buf_size));
-		  __elen = _M_file.xsgetn(__buf, _M_buf_size);
+		  __elen = _M_file.xsgetn(__buf, _M_buf_size, __sync);
 
 		  const char* __eend;
 		  char_type* __iend;
@@ -183,7 +188,7 @@ namespace std
 		    {
 		      // Unwind.
 		      __ilen = 0;
-		      _M_file.seekoff(-__elen, ios_base::cur, ios_base::in);
+		      _M_file.seekoff(-__elen, ios_base::cur, __sync, ios_base::in);
 		    }
 		}
 
@@ -195,7 +200,7 @@ namespace std
 		  __ret = traits_type::to_int_type(*_M_in_cur);
 		  if (__bump)
 		    _M_in_cur_move(1);
-		  else if (_M_buf_size == 1)
+		  else if (__sync)
 		    {
 		      // If we are synced with stdio, we have to unget the
 		      // character we just read so that the file pointer
