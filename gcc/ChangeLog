@@ -1,3 +1,10 @@
+2005-04-04  David Edelsohn  <edelsohn@gnu.org>
+	    Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* tree-eh.c (tree_could_trap_p): Allow non-constant floating point
+	trapping divide.
+	* rtlanal.c (may_trap_p): Same.
+
 2005-04-04  Dale Johannesen  <dalej@apple.com>
 
 	* ChangeLog:  remove reference to ChangeLog.12.
