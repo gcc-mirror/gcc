@@ -1,3 +1,7 @@
+2004-12-06  Ziemowit Laski  <zlaski@apple.com>
+
+	* cp-tree.h (struct lang_type_class): Add 'objc_protocols' field.
+
 2004-12-04  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/17011, c++/17971
