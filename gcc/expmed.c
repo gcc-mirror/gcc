@@ -299,6 +299,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, total_size)
   unsigned HOST_WIDE_INT offset = bitnum / unit;
   unsigned HOST_WIDE_INT bitpos = bitnum % unit;
   rtx op0 = str_rtx;
+  int byte_offset;
 
   enum machine_mode op_mode = mode_for_extraction (EP_insv, 3);
 
@@ -333,11 +334,15 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, total_size)
      done with a simple store.  For targets that support fast unaligned
      memory, any naturally sized, unit aligned field can be done directly.  */
      
+  byte_offset = (bitnum % BITS_PER_WORD) / BITS_PER_UNIT
+                + (offset * UNITS_PER_WORD);
+
   if (bitpos == 0
       && bitsize == GET_MODE_BITSIZE (fieldmode)
       && (GET_CODE (op0) != MEM
-	  ? (GET_MODE_SIZE (fieldmode) >= UNITS_PER_WORD
+	  ? ((GET_MODE_SIZE (fieldmode) >= UNITS_PER_WORD
 	     || GET_MODE_SIZE (GET_MODE (op0)) == GET_MODE_SIZE (fieldmode))
+            && byte_offset % GET_MODE_SIZE (fieldmode) == 0)
 	  : (! SLOW_UNALIGNED_ACCESS (fieldmode, MEM_ALIGN (op0))
 	     || (offset * BITS_PER_UNIT % bitsize == 0
 		 && MEM_ALIGN (op0) % GET_MODE_BITSIZE (fieldmode) == 0))))
@@ -357,9 +362,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, total_size)
 		abort ();
 	    }
 	  if (GET_CODE (op0) == REG)
-	    op0 = gen_rtx_SUBREG (fieldmode, op0,
-				  (bitnum % BITS_PER_WORD) / BITS_PER_UNIT
-				  + (offset * UNITS_PER_WORD));
+	    op0 = gen_rtx_SUBREG (fieldmode, op0, byte_offset);
 	  else
 	    op0 = adjust_address (op0, fieldmode, offset);
 	}
