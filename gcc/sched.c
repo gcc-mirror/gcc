@@ -1963,14 +1963,21 @@ sched_analyze_insn (x, insn)
   else
     sched_analyze_2 (x, insn);
 
-  /* Handle function calls.  */
-  if (GET_CODE (insn) == CALL_INSN)
+  /* Handle function calls and function returns created by the epilogue
+     threading code.  */
+  if (GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == JUMP_INSN)
     {
       rtx dep_insn;
       rtx prev_dep_insn;
 
       /* When scheduling instructions, we make sure calls don't lose their
-	 accompanying USE insns by depending them one on another in order.   */
+	 accompanying USE insns by depending them one on another in order.
+
+	 Also, we must do the same thing for returns created by the epilogue
+	 threading code.  Note this code works only in this special case,
+	 because other passes make no guarantee that they will never emit
+	 an instruction between a USE and a RETURN.  There is such a guarantee
+	 for USE instructions immediately before a call.  */
 
       prev_dep_insn = insn;
       dep_insn = PREV_INSN (insn);
