@@ -1341,6 +1341,7 @@
     operands[0]
       = adj_offsettable_operand (operands[0], INTVAL (operands[2]) / 8);
 
+  CC_STATUS_INIT;
   if (INTVAL (operands[1]) == 8)
     return \"movb %3,%0\";
   return \"movw %3,%0\";
