@@ -288,12 +288,12 @@ proc g++_target_compile { source dest type options } {
 # this on IRIX, but it shouldn't hurt to do it anywhere else.
 #
 
-proc g++_set_ld_library_path { name element op } {
+proc ${tool}_set_ld_library_path { name element op } {
   setenv LD_LIBRARYN32_PATH [getenv LD_LIBRARY_PATH]
   setenv LD_LIBRARY64_PATH [getenv LD_LIBRARY_PATH]
 }
 
-trace variable env(LD_LIBRARY_PATH) w g++_set_ld_library_path
+trace variable env(LD_LIBRARY_PATH) w ${tool}_set_ld_library_path
 
 #
 # ${tool}_option_help
