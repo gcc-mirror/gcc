@@ -2988,20 +2988,22 @@ eliminate_regs_in_insn (insn, replace)
   if (new_body != old_body)
     {
       /* If we had a move insn but now we don't, rerecognize it.  */
-      if (GET_CODE (old_body) == SET && GET_CODE (SET_SRC (old_body)) == REG
-	  && (GET_CODE (new_body) != SET
-	      || GET_CODE (SET_SRC (new_body)) != REG))
+      if ((GET_CODE (old_body) == SET && GET_CODE (SET_SRC (old_body)) == REG
+	   && (GET_CODE (new_body) != SET
+	       || GET_CODE (SET_SRC (new_body)) != REG))
+	  /* If this was an add insn before, rerecognize.  */
+	  ||
+	  (GET_CODE (old_body) == SET
+	   && GET_CODE (SET_SRC (old_body)) == PLUS))
 	{
 	  if (! validate_change (insn, &PATTERN (insn), new_body, 0))
-	    abort ();
+	    /* If recognition fails, store the new body anyway.
+	       It's normal to have recognition failures here
+	       due to bizarre memory addresses; reloading will fix them.  */
+	    PATTERN (insn) = new_body;
 	}
-      /* If this was not a move insn, rerecognize.  */
-      else if (GET_CODE (old_body) != SET
-	       || GET_CODE (SET_SRC (old_body)) != PLUS
-	       || ! validate_change (insn, &PATTERN (insn), new_body, 0))
+      else
 	PATTERN (insn) = new_body;
-      /* ??? Is it really correct to store the new body anyway
-	 if validate_change fails?  Shouldn't this abort instead?  */
 
       if (replace && REG_NOTES (insn))
 	REG_NOTES (insn) = eliminate_regs (REG_NOTES (insn), 0, NULL_RTX);
