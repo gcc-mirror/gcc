@@ -49,7 +49,8 @@ public final class Security extends Object
 
   static
   {
-    loadProviders();
+    loadProviders(System.getProperty("java.vm.name"));
+    loadProviders("classpath");
   }
 
   // This class can't be instantiated.
@@ -57,12 +58,16 @@ public final class Security extends Object
   {
   }
 
-  private static void loadProviders()
+  private static void loadProviders(String vendor)
   {
+    if (vendor == null)
+      return;
+
     String separator = System.getProperty("file.separator");
-    String secfilestr = System.getProperty("java.home") +
-      separator + "lib" + separator + "security" + separator +
-      "classpath.security";
+    String secfilestr = (System.getProperty("java.home") +
+			 separator + "lib" +
+			 separator + "security" +
+			 separator + vendor + ".security");
 
     providerCount = 0;
     try

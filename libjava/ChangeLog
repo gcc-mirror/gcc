@@ -1,3 +1,9 @@
+2001-10-17  Tom Tromey  <tromey@redhat.com>
+
+	* java/security/Security.java (loadProviders): Added `vendor'
+	argument.
+	Load both `classpath' and `java.vm.name' providers.
+
 2001-10-17  Anthony Green  <green@redhat.com>
 
 	* java/security/Security.java (loadProviders): Fix bug in how
