@@ -2308,6 +2308,86 @@
   ""
   "operands[3] = gen_rtx_REG (CC_CCRmode, ICR_TEMP);")
 
+;; Reload CC_NZmode.  This is mostly the same as the CCmode and CC_UNSmode
+;; handling, but it uses different sequences for moving between GPRs and ICCs.
+
+(define_expand "movcc_nz"
+  [(parallel [(set (match_operand:CC_NZ 0 "move_destination_operand" "")
+		   (match_operand:CC_NZ 1 "move_source_operand" ""))
+	      (clobber (match_dup 2))])]
+  ""
+  "
+{
+  if (!reload_in_progress && !reload_completed)
+    FAIL;
+  operands[2] = gen_rtx_REG (CC_CCRmode, ICR_TEMP);
+}")
+
+(define_insn "*internal_movcc_nz"
+  [(set (match_operand:CC_NZ 0 "move_destination_operand" "=t,d,d,m,d")
+	(match_operand:CC_NZ 1 "move_source_operand" "d,d,m,d,t"))
+   (clobber (match_scratch:CC_CCR 2 "=X,X,X,X,&v"))]
+  "reload_in_progress || reload_completed"
+  "@
+   cmpi %1, #0, %0
+   mov %1, %0
+   ld%I1%U1 %M1, %0
+   st%I0%U0 %1, %M0
+   #"
+  [(set_attr "length" "4,4,4,4,20")
+   (set_attr "type" "int,int,gload,gstore,multi")])
+
+;; Set the destination to a value that, when compared with zero, will
+;; restore the value of the Z and N flags.  The values of the other
+;; flags don't matter.  The sequence is:
+;;
+;;     setlos op0,#-1
+;;     ckp op1,op2
+;;     csub gr0,op0,op0,op2
+;;     ckeq op1,op2
+;;     cmov gr0,op0,op2
+(define_split
+  [(set (match_operand:CC_NZ 0 "integer_register_operand" "")
+	(match_operand:CC_NZ 1 "icc_operand" ""))
+   (clobber (match_operand:CC_CCR 2 "icr_operand" ""))]
+  "reload_in_progress || reload_completed"
+  [(set (match_dup 3)
+	(const_int -1))
+   (set (match_dup 2)
+	(ge:CC_CCR (match_dup 1)
+		   (const_int 0)))
+   (cond_exec (ne:CC_CCR (match_dup 2)
+			 (const_int 0))
+	      (set (match_dup 3)
+		   (neg:SI (match_dup 3))))
+   (set (match_dup 2)
+	(eq:CC_CCR (match_dup 1)
+		   (const_int 0)))
+   (cond_exec (ne:CC_CCR (match_dup 2)
+			 (const_int 0))
+	      (set (match_dup 3) (const_int 0)))]
+  "operands[3] = simplify_gen_subreg (SImode, operands[0], CC_NZmode, 0);")
+
+(define_expand "reload_incc_nz"
+  [(parallel [(set (match_operand:CC_NZ 2 "integer_register_operand" "=&d")
+		   (match_operand:CC_NZ 1 "memory_operand" "m"))
+	      (clobber (match_scratch:CC_CCR 3 ""))])
+   (parallel [(set (match_operand:CC_NZ 0 "icc_operand" "=t")
+		   (match_dup 2))
+	      (clobber (match_scratch:CC_CCR 4 ""))])]
+  ""
+  "")
+
+(define_expand "reload_outcc_nz"
+  [(parallel [(set (match_operand:CC_NZ 2 "integer_register_operand" "=&d")
+		   (match_operand:CC_NZ 1 "icc_operand" "t"))
+	      (clobber (match_dup 3))])
+   (parallel [(set (match_operand:CC_NZ 0 "memory_operand" "=m")
+		   (match_dup 2))
+	      (clobber (match_scratch:CC_CCR 4 ""))])]
+  ""
+  "operands[3] = gen_rtx_REG (CC_CCRmode, ICR_TEMP);")
+
 ;; Reload CC_FPmode for floating point comparisons
 ;; We use a define_expand here so that cse/gcse/combine can't accidentally
 ;; create movcc insns.  If this was a named define_insn, we would not be able
@@ -3596,33 +3676,24 @@
 ;; ::::::::::::::::::::
 
 (define_insn "*combo_intop_compare1"
-  [(set (match_operand:CC 0 "icc_operand" "=t")
-	(compare:CC (match_operator:SI 1 "intop_compare_operator"
-				       [(match_operand:SI 2 "integer_register_operand" "d")
-					(match_operand:SI 3 "gpr_or_int10_operand" "dJ")])
-		    (const_int 0)))]
+  [(set (match_operand:CC_NZ 0 "icc_operand" "=t")
+	(compare:CC_NZ
+	 (match_operator:SI 1 "intop_compare_operator"
+		       [(match_operand:SI 2 "integer_register_operand" "d")
+			(match_operand:SI 3 "gpr_or_int10_operand" "dJ")])
+	 (const_int 0)))]
   ""
   "%O1%I3cc %2, %3, %., %0"
   [(set_attr "type" "int")
    (set_attr "length" "4")])
 
 (define_insn "*combo_intop_compare2"
-  [(set (match_operand:CC_UNS 0 "icc_operand" "=t")
-	(compare:CC_UNS (match_operator:SI 1 "intop_compare_operator"
-					   [(match_operand:SI 2 "integer_register_operand" "d")
-					    (match_operand:SI 3 "gpr_or_int10_operand" "dJ")])
-			(const_int 0)))]
-  ""
-  "%O1%I3cc %2, %3, %., %0"
-  [(set_attr "type" "int")
-   (set_attr "length" "4")])
-
-(define_insn "*combo_intop_compare3"
-  [(set (match_operand:CC 0 "icc_operand" "=t")
-	(compare:CC (match_operator:SI 1 "intop_compare_operator"
-				       [(match_operand:SI 2 "integer_register_operand" "d")
-					(match_operand:SI 3 "gpr_or_int10_operand" "dJ")])
-		    (const_int 0)))
+  [(set (match_operand:CC_NZ 0 "icc_operand" "=t")
+	(compare:CC_NZ
+	 (match_operator:SI 1 "intop_compare_operator"
+			[(match_operand:SI 2 "integer_register_operand" "d")
+			 (match_operand:SI 3 "gpr_or_int10_operand" "dJ")])
+	 (const_int 0)))
    (set (match_operand:SI 4 "integer_register_operand" "=d")
 	(match_operator:SI 5 "intop_compare_operator"
 			   [(match_dup 2)
@@ -3631,22 +3702,6 @@
   "%O1%I3cc %2, %3, %4, %0"
   [(set_attr "type" "int")
    (set_attr "length" "4")])
-
-(define_insn "*combo_intop_compare4"
-  [(set (match_operand:CC_UNS 0 "icc_operand" "=t")
-	(compare:CC_UNS (match_operator:SI 1 "intop_compare_operator"
-					   [(match_operand:SI 2 "integer_register_operand" "d")
-					    (match_operand:SI 3 "gpr_or_int10_operand" "dJ")])
-		    (const_int 0)))
-   (set (match_operand:SI 4 "integer_register_operand" "=d")
-	(match_operator:SI 5 "intop_compare_operator"
-			   [(match_dup 2)
-			    (match_dup 3)]))]
-  "GET_CODE (operands[1]) == GET_CODE (operands[5])"
-  "%O1%I3cc %2, %3, %4, %0"
-  [(set_attr "type" "int")
-   (set_attr "length" "4")])
-
 
 ;; ::::::::::::::::::::
 ;; ::
@@ -3725,6 +3780,21 @@
   "cmp%I2 %1,%2,%0"
   [(set_attr "length" "4")
    (set_attr "type" "int")])
+
+;; The only requirement for a CC_NZmode GPR or memory value is that
+;; comparing it against zero must set the Z and N flags appropriately.
+;; The source operand is therefore a valid CC_NZmode value.
+(define_insn "*cmpsi_cc_nz"
+  [(set (match_operand:CC_NZ 0 "nonimmediate_operand" "=t,d,m")
+	(compare:CC_NZ (match_operand:SI 1 "integer_register_operand" "d,d,d")
+		       (const_int 0)))]
+  ""
+  "@
+   cmpi %1, #0, %0
+   mov %1, %0
+   st%I0%U0 %1, %M0"
+  [(set_attr "length" "4,4,4")
+   (set_attr "type" "int,int,gstore")])
 
 (define_insn "*cmpsf_cc_fp"
   [(set (match_operand:CC_FP 0 "fcc_operand" "=u")
@@ -3909,11 +3979,11 @@
 ;; In the above example the %B is a directive to frv_print_operand()
 ;; to decode and print the correct branch mnemonic.
 
-(define_insn "*branch_signed_true"
+(define_insn "*branch_int_true"
   [(set (pc)
-	(if_then_else (match_operator:CC 0 "signed_relational_operator"
-					 [(match_operand 1 "icc_operand" "t")
-					  (const_int 0)])
+	(if_then_else (match_operator 0 "integer_relational_operator"
+				      [(match_operand 1 "icc_operand" "t")
+				       (const_int 0)])
 		      (label_ref (match_operand 2 "" ""))
 		      (pc)))]
   ""
@@ -3941,75 +4011,11 @@
 	    (const_string "branch")
 	    (const_string "multi")))])
 
-(define_insn "*branch_signed_false"
+(define_insn "*branch_int_false"
   [(set (pc)
-	(if_then_else (match_operator:CC 0 "signed_relational_operator"
-					 [(match_operand 1 "icc_operand" "t")
-					  (const_int 0)])
-		      (pc)
-		      (label_ref (match_operand 2 "" ""))))]
-  ""
-  "*
-{
-  if (get_attr_length (insn) == 4)
-    return \"b%C0 %1,%#,%l2\";
-  else
-    return \"b%c0 %1,%#,1f\;call %l2\\n1:\";
-}"
-  [(set (attr "length")
-	(if_then_else
-	    (and (ge (minus (match_dup 2) (pc)) (const_int -32768))
-		 (le (minus (match_dup 2) (pc)) (const_int 32764)))
-	    (const_int 4)
-	    (const_int 8)))
-   (set (attr "far_jump")
-        (if_then_else
-	    (eq_attr "length" "4")
-	    (const_string "no")
-	    (const_string "yes")))
-   (set (attr "type")
-	(if_then_else
-	    (eq_attr "length" "4")
-	    (const_string "branch")
-	    (const_string "multi")))])
-
-(define_insn "*branch_unsigned_true"
-  [(set (pc)
-	(if_then_else (match_operator:CC_UNS 0 "unsigned_relational_operator"
-					     [(match_operand 1 "icc_operand" "t")
-					      (const_int 0)])
-		      (label_ref (match_operand 2 "" ""))
-		      (pc)))]
-  ""
-  "*
-{
-  if (get_attr_length (insn) == 4)
-    return \"b%c0 %1,%#,%l2\";
-  else
-    return \"b%C0 %1,%#,1f\;call %l2\\n1:\";
-}"
-  [(set (attr "length")
-	(if_then_else
-	    (and (ge (minus (match_dup 2) (pc)) (const_int -32768))
-		 (le (minus (match_dup 2) (pc)) (const_int 32764)))
-	    (const_int 4)
-	    (const_int 8)))
-   (set (attr "far_jump")
-        (if_then_else
-	    (eq_attr "length" "4")
-	    (const_string "no")
-	    (const_string "yes")))
-   (set (attr "type")
-	(if_then_else
-	    (eq_attr "length" "4")
-	    (const_string "branch")
-	    (const_string "multi")))])
-
-(define_insn "*branch_unsigned_false"
-  [(set (pc)
-	(if_then_else (match_operator:CC_UNS 0 "unsigned_relational_operator"
-					     [(match_operand 1 "icc_operand" "t")
-					      (const_int 0)])
+	(if_then_else (match_operator 0 "integer_relational_operator"
+				      [(match_operand 1 "icc_operand" "t")
+				       (const_int 0)])
 		      (pc)
 		      (label_ref (match_operand 2 "" ""))))]
   ""
@@ -4221,21 +4227,10 @@
   DONE;
 }")
 
-(define_insn "*scc_signed"
+(define_insn "*scc_int"
   [(set (match_operand:SI 0 "integer_register_operand" "=d")
-	(match_operator:SI 1 "signed_relational_operator"
-			   [(match_operand:CC 2 "icc_operand" "t")
-			    (const_int 0)]))
-   (clobber (match_operand:CC_CCR 3 "icr_operand" "=v"))]
-  ""
-  "#"
-  [(set_attr "length" "12")
-   (set_attr "type" "multi")])
-
-(define_insn "*scc_unsigned"
-  [(set (match_operand:SI 0 "integer_register_operand" "=d")
-	(match_operator:SI 1 "unsigned_relational_operator"
-			   [(match_operand:CC_UNS 2 "icc_operand" "t")
+	(match_operator:SI 1 "integer_relational_operator"
+			   [(match_operand 2 "icc_operand" "t")
 			    (const_int 0)]))
    (clobber (match_operand:CC_CCR 3 "icr_operand" "=v"))]
   ""
@@ -4267,21 +4262,10 @@
   "operands[4] = frv_split_scc (operands[0], operands[1], operands[2],
 				operands[3], (HOST_WIDE_INT) 1);")
 
-(define_insn "*scc_neg1_signed"
+(define_insn "*scc_neg1_int"
   [(set (match_operand:SI 0 "integer_register_operand" "=d")
-	(neg:SI (match_operator:SI 1 "signed_relational_operator"
-				   [(match_operand:CC 2 "icc_operand" "t")
-				    (const_int 0)])))
-   (clobber (match_operand:CC_CCR 3 "icr_operand" "=v"))]
-  ""
-  "#"
-  [(set_attr "length" "12")
-   (set_attr "type" "multi")])
-
-(define_insn "*scc_neg1_unsigned"
-  [(set (match_operand:SI 0 "integer_register_operand" "=d")
-	(neg:SI (match_operator:SI 1 "unsigned_relational_operator"
-				   [(match_operand:CC_UNS 2 "icc_operand" "t")
+	(neg:SI (match_operator:SI 1 "integer_relational_operator"
+				   [(match_operand 2 "icc_operand" "t")
 				    (const_int 0)])))
    (clobber (match_operand:CC_CCR 3 "icr_operand" "=v"))]
   ""
@@ -4321,18 +4305,8 @@
 ;; Convert ICC/FCC comparison into CCR bits so we can do conditional execution
 (define_insn "*ck_signed"
   [(set (match_operand:CC_CCR 0 "icr_operand" "=v")
-	(match_operator:CC_CCR 1 "signed_relational_operator"
-			       [(match_operand:CC 2 "icc_operand" "t")
-				(const_int 0)]))]
-  ""
-  "ck%c1 %2, %0"
-  [(set_attr "length" "4")
-   (set_attr "type" "ccr")])
-
-(define_insn "*ck_unsigned"
-  [(set (match_operand:CC_CCR 0 "icr_operand" "=v")
-	(match_operator:CC_CCR 1 "unsigned_relational_operator"
-			       [(match_operand:CC_UNS 2 "icc_operand" "t")
+	(match_operator:CC_CCR 1 "integer_relational_operator"
+			       [(match_operand 2 "icc_operand" "t")
 				(const_int 0)]))]
   ""
   "ck%c1 %2, %0"
@@ -4582,6 +4556,20 @@
   [(set_attr "length" "4")
    (set_attr "type" "int")])
 
+(define_insn "*cond_exec_cmpsi_cc_nz"
+  [(cond_exec
+    (match_operator 0 "ccr_eqne_operator"
+		    [(match_operand 1 "cr_operand" "C")
+		     (const_int 0)])
+    (set (match_operand:CC_NZ 2 "icc_operand" "=t")
+	 (compare:CC_NZ (match_operand:SI 3 "integer_register_operand" "d")
+			(const_int 0))))]
+  "reload_completed
+   && REGNO (operands[1]) == REGNO (operands[2]) - ICC_FIRST + ICR_FIRST"
+  "ccmp %3, %., %1, %e0"
+  [(set_attr "length" "4")
+   (set_attr "type" "int")])
+
 (define_insn "*cond_exec_sf_conv"
   [(cond_exec
     (match_operator 0 "ccr_eqne_operator"
@@ -4825,23 +4813,10 @@
   DONE;
 }")
 
-(define_insn "*movqicc_internal1_signed"
+(define_insn "*movqicc_internal1_int"
   [(set (match_operand:QI 0 "integer_register_operand" "=d,d,d")
-	(if_then_else:QI (match_operator:CC 1 "signed_relational_operator"
-			     [(match_operand:CC 2 "icc_operand" "t,t,t")
-			      (const_int 0)])
-			 (match_operand:QI 3 "reg_or_0_operand" "0,dO,dO")
-			 (match_operand:QI 4 "reg_or_0_operand" "dO,0,dO")))
-   (clobber (match_operand:CC_CCR 5 "icr_operand" "=v,v,v"))]
-  ""
-  "#"
-  [(set_attr "length" "8,8,12")
-   (set_attr "type" "multi")])
-
-(define_insn "*movqicc_internal1_unsigned"
-  [(set (match_operand:QI 0 "integer_register_operand" "=d,d,d")
-	(if_then_else:QI (match_operator:CC_UNS 1 "unsigned_relational_operator"
-			     [(match_operand:CC_UNS 2 "icc_operand" "t,t,t")
+	(if_then_else:QI (match_operator 1 "integer_relational_operator"
+			     [(match_operand 2 "icc_operand" "t,t,t")
 			      (const_int 0)])
 			 (match_operand:QI 3 "reg_or_0_operand" "0,dO,dO")
 			 (match_operand:QI 4 "reg_or_0_operand" "dO,0,dO")))
@@ -4864,26 +4839,10 @@
   [(set_attr "length" "8,8,12")
    (set_attr "type" "multi")])
 
-(define_insn "*movqicc_internal2_signed"
+(define_insn "*movqicc_internal2_int"
   [(set (match_operand:QI 0 "integer_register_operand" "=d,d,d,d,d")
-	(if_then_else:QI (match_operator:CC 1 "signed_relational_operator"
-			     [(match_operand:CC 2 "icc_operand" "t,t,t,t,t")
-			      (const_int 0)])
-			 (match_operand:QI 3 "const_int_operand" "O,O,L,n,n")
-			 (match_operand:QI 4 "const_int_operand" "L,n,O,O,n")))
-   (clobber (match_operand:CC_CCR 5 "icr_operand" "=v,v,v,v,v"))]
-  "(INTVAL (operands[3]) == 0
-    || INTVAL (operands[4]) == 0
-    || (IN_RANGE_P (INTVAL (operands[3]), -2048, 2047)
-        && IN_RANGE_P (INTVAL (operands[4]) - INTVAL (operands[3]), -2048, 2047)))"
-  "#"
-  [(set_attr "length" "8,12,8,12,12")
-   (set_attr "type" "multi")])
-
-(define_insn "*movqicc_internal2_unsigned"
-  [(set (match_operand:QI 0 "integer_register_operand" "=d,d,d,d,d")
-	(if_then_else:QI (match_operator:CC_UNS 1 "unsigned_relational_operator"
-			     [(match_operand:CC_UNS 2 "icc_operand" "t,t,t,t,t")
+	(if_then_else:QI (match_operator 1 "integer_relational_operator"
+			     [(match_operand 2 "icc_operand" "t,t,t,t,t")
 			      (const_int 0)])
 			 (match_operand:QI 3 "const_int_operand" "O,O,L,n,n")
 			 (match_operand:QI 4 "const_int_operand" "L,n,O,O,n")))
@@ -4939,23 +4898,10 @@
   DONE;
 }")
 
-(define_insn "*movhicc_internal1_signed"
+(define_insn "*movhicc_internal1_int"
   [(set (match_operand:HI 0 "integer_register_operand" "=d,d,d")
-	(if_then_else:HI (match_operator:CC 1 "signed_relational_operator"
-			     [(match_operand:CC 2 "icc_operand" "t,t,t")
-			      (const_int 0)])
-			 (match_operand:HI 3 "reg_or_0_operand" "0,dO,dO")
-			 (match_operand:HI 4 "reg_or_0_operand" "dO,0,dO")))
-   (clobber (match_operand:CC_CCR 5 "icr_operand" "=v,v,v"))]
-  ""
-  "#"
-  [(set_attr "length" "8,8,12")
-   (set_attr "type" "multi")])
-
-(define_insn "*movhicc_internal1_unsigned"
-  [(set (match_operand:HI 0 "integer_register_operand" "=d,d,d")
-	(if_then_else:HI (match_operator:CC_UNS 1 "unsigned_relational_operator"
-			     [(match_operand:CC_UNS 2 "icc_operand" "t,t,t")
+	(if_then_else:HI (match_operator 1 "integer_relational_operator"
+			     [(match_operand 2 "icc_operand" "t,t,t")
 			      (const_int 0)])
 			 (match_operand:HI 3 "reg_or_0_operand" "0,dO,dO")
 			 (match_operand:HI 4 "reg_or_0_operand" "dO,0,dO")))
@@ -4978,26 +4924,10 @@
   [(set_attr "length" "8,8,12")
    (set_attr "type" "multi")])
 
-(define_insn "*movhicc_internal2_signed"
+(define_insn "*movhicc_internal2_int"
   [(set (match_operand:HI 0 "integer_register_operand" "=d,d,d,d,d")
-	(if_then_else:HI (match_operator:CC 1 "signed_relational_operator"
-			     [(match_operand:CC 2 "icc_operand" "t,t,t,t,t")
-			      (const_int 0)])
-			 (match_operand:HI 3 "const_int_operand" "O,O,L,n,n")
-			 (match_operand:HI 4 "const_int_operand" "L,n,O,O,n")))
-   (clobber (match_operand:CC_CCR 5 "icr_operand" "=v,v,v,v,v"))]
-  "(INTVAL (operands[3]) == 0
-    || INTVAL (operands[4]) == 0
-    || (IN_RANGE_P (INTVAL (operands[3]), -2048, 2047)
-        && IN_RANGE_P (INTVAL (operands[4]) - INTVAL (operands[3]), -2048, 2047)))"
-  "#"
-  [(set_attr "length" "8,12,8,12,12")
-   (set_attr "type" "multi")])
-
-(define_insn "*movhicc_internal2_unsigned"
-  [(set (match_operand:HI 0 "integer_register_operand" "=d,d,d,d,d")
-	(if_then_else:HI (match_operator:CC_UNS 1 "unsigned_relational_operator"
-			     [(match_operand:CC_UNS 2 "icc_operand" "t,t,t,t,t")
+	(if_then_else:HI (match_operator 1 "integer_relational_operator"
+			     [(match_operand 2 "icc_operand" "t,t,t,t,t")
 			      (const_int 0)])
 			 (match_operand:HI 3 "const_int_operand" "O,O,L,n,n")
 			 (match_operand:HI 4 "const_int_operand" "L,n,O,O,n")))
@@ -5053,23 +4983,10 @@
   DONE;
 }")
 
-(define_insn "*movsicc_internal1_signed"
+(define_insn "*movsicc_internal1_int"
   [(set (match_operand:SI 0 "integer_register_operand" "=d,d,d")
-	(if_then_else:SI (match_operator:CC 1 "signed_relational_operator"
-			     [(match_operand:CC 2 "icc_operand" "t,t,t")
-			      (const_int 0)])
-			 (match_operand:SI 3 "reg_or_0_operand" "0,dO,dO")
-			 (match_operand:SI 4 "reg_or_0_operand" "dO,0,dO")))
-   (clobber (match_operand:CC_CCR 5 "icr_operand" "=v,v,v"))]
-  ""
-  "#"
-  [(set_attr "length" "8,8,12")
-   (set_attr "type" "multi")])
-
-(define_insn "*movsicc_internal1_unsigned"
-  [(set (match_operand:SI 0 "integer_register_operand" "=d,d,d")
-	(if_then_else:SI (match_operator:CC_UNS 1 "unsigned_relational_operator"
-			     [(match_operand:CC_UNS 2 "icc_operand" "t,t,t")
+	(if_then_else:SI (match_operator 1 "integer_relational_operator"
+			     [(match_operand 2 "icc_operand" "t,t,t")
 			      (const_int 0)])
 			 (match_operand:SI 3 "reg_or_0_operand" "0,dO,dO")
 			 (match_operand:SI 4 "reg_or_0_operand" "dO,0,dO")))
@@ -5092,26 +5009,10 @@
   [(set_attr "length" "8,8,12")
    (set_attr "type" "multi")])
 
-(define_insn "*movsicc_internal2_signed"
+(define_insn "*movsicc_internal2_int"
   [(set (match_operand:SI 0 "integer_register_operand" "=d,d,d,d,d")
-	(if_then_else:SI (match_operator:CC 1 "signed_relational_operator"
-			     [(match_operand:CC 2 "icc_operand" "t,t,t,t,t")
-			      (const_int 0)])
-			 (match_operand:SI 3 "const_int_operand" "O,O,L,n,n")
-			 (match_operand:SI 4 "const_int_operand" "L,n,O,O,n")))
-   (clobber (match_operand:CC_CCR 5 "icr_operand" "=v,v,v,v,v"))]
-  "(INTVAL (operands[3]) == 0
-    || INTVAL (operands[4]) == 0
-    || (IN_RANGE_P (INTVAL (operands[3]), -2048, 2047)
-        && IN_RANGE_P (INTVAL (operands[4]) - INTVAL (operands[3]), -2048, 2047)))"
-  "#"
-  [(set_attr "length" "8,12,8,12,12")
-   (set_attr "type" "multi")])
-
-(define_insn "*movsicc_internal2_unsigned"
-  [(set (match_operand:SI 0 "integer_register_operand" "=d,d,d,d,d")
-	(if_then_else:SI (match_operator:CC_UNS 1 "unsigned_relational_operator"
-			     [(match_operand:CC_UNS 2 "icc_operand" "t,t,t,t,t")
+	(if_then_else:SI (match_operator 1 "integer_relational_operator"
+			     [(match_operand 2 "icc_operand" "t,t,t,t,t")
 			      (const_int 0)])
 			 (match_operand:SI 3 "const_int_operand" "O,O,L,n,n")
 			 (match_operand:SI 4 "const_int_operand" "L,n,O,O,n")))
@@ -5167,23 +5068,10 @@
   DONE;
 }")
 
-(define_insn "*movsfcc_has_fprs_signed"
+(define_insn "*movsfcc_has_fprs_int"
   [(set (match_operand:SF 0 "register_operand" "=f,f,f,?f,?f,?d")
-	(if_then_else:SF (match_operator:CC 1 "signed_relational_operator"
-			     [(match_operand:CC 2 "icc_operand" "t,t,t,t,t,t")
-			      (const_int 0)])
-			 (match_operand:SF 3 "register_operand" "0,f,f,f,d,fd")
-			 (match_operand:SF 4 "register_operand" "f,0,f,d,fd,fd")))
-   (clobber (match_operand:CC_CCR 5 "icr_operand" "=v,v,v,v,v,v"))]
-  "TARGET_HAS_FPRS"
-  "#"
-  [(set_attr "length" "8,8,12,12,12,12")
-   (set_attr "type" "multi")])
-
-(define_insn "*movsfcc_has_fprs_unsigned"
-  [(set (match_operand:SF 0 "register_operand" "=f,f,f,?f,?f,?d")
-	(if_then_else:SF (match_operator:CC_UNS 1 "unsigned_relational_operator"
-			     [(match_operand:CC_UNS 2 "icc_operand" "t,t,t,t,t,t")
+	(if_then_else:SF (match_operator 1 "integer_relational_operator"
+			     [(match_operand 2 "icc_operand" "t,t,t,t,t,t")
 			      (const_int 0)])
 			 (match_operand:SF 3 "register_operand" "0,f,f,f,d,fd")
 			 (match_operand:SF 4 "register_operand" "f,0,f,d,fd,fd")))
@@ -5206,23 +5094,10 @@
   [(set_attr "length" "8,8,12,12,12,12")
    (set_attr "type" "multi")])
 
-(define_insn "*movsfcc_no_fprs_signed"
+(define_insn "*movsfcc_no_fprs_int"
   [(set (match_operand:SF 0 "integer_register_operand" "=d,d,d")
-	(if_then_else:SF (match_operator:CC 1 "signed_relational_operator"
-			     [(match_operand:CC 2 "icc_operand" "t,t,t")
-			      (const_int 0)])
-			 (match_operand:SF 3 "integer_register_operand" "0,d,d")
-			 (match_operand:SF 4 "integer_register_operand" "d,0,d")))
-   (clobber (match_operand:CC_CCR 5 "icr_operand" "=v,v,v"))]
-  "! TARGET_HAS_FPRS"
-  "#"
-  [(set_attr "length" "8,8,12")
-   (set_attr "type" "multi")])
-
-(define_insn "*movsfcc_no_fprs_unsigned"
-  [(set (match_operand:SF 0 "integer_register_operand" "=d,d,d")
-	(if_then_else:SF (match_operator:CC_UNS 1 "unsigned_relational_operator"
-			     [(match_operand:CC_UNS 2 "icc_operand" "t,t,t")
+	(if_then_else:SF (match_operator 1 "integer_relational_operator"
+			     [(match_operand 2 "icc_operand" "t,t,t")
 			      (const_int 0)])
 			 (match_operand:SF 3 "integer_register_operand" "0,d,d")
 			 (match_operand:SF 4 "integer_register_operand" "d,0,d")))
@@ -5767,9 +5642,9 @@
 
 (define_insn "*return_true"
   [(set (pc)
-	(if_then_else (match_operator:CC 0 "signed_relational_operator"
-					 [(match_operand 1 "icc_operand" "t")
-					  (const_int 0)])
+	(if_then_else (match_operator 0 "integer_relational_operator"
+				      [(match_operand 1 "icc_operand" "t")
+				       (const_int 0)])
 		      (return)
 		      (pc)))]
   "direct_return_p ()"
@@ -5779,33 +5654,9 @@
 
 (define_insn "*return_false"
   [(set (pc)
-	(if_then_else (match_operator:CC 0 "signed_relational_operator"
-					 [(match_operand 1 "icc_operand" "t")
-					  (const_int 0)])
-		      (pc)
-		      (return)))]
-  "direct_return_p ()"
-  "b%C0lr %1,%#"
-  [(set_attr "length" "4")
-   (set_attr "type" "jump")])
-
-(define_insn "*return_unsigned_true"
-  [(set (pc)
-	(if_then_else (match_operator:CC_UNS 0 "unsigned_relational_operator"
-					     [(match_operand 1 "icc_operand" "t")
-					      (const_int 0)])
-		      (return)
-		      (pc)))]
-  "direct_return_p ()"
-  "b%c0lr %1,%#"
-  [(set_attr "length" "4")
-   (set_attr "type" "jump")])
-
-(define_insn "*return_unsigned_false"
-  [(set (pc)
-	(if_then_else (match_operator:CC_UNS 0 "unsigned_relational_operator"
-					     [(match_operand 1 "icc_operand" "t")
-					      (const_int 0)])
+	(if_then_else (match_operator 0 "integer_relational_operator"
+				      [(match_operand 1 "icc_operand" "t")
+				       (const_int 0)])
 		      (pc)
 		      (return)))]
   "direct_return_p ()"
