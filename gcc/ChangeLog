@@ -1,3 +1,22 @@
+2001-08-22  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppfiles.c (stack_include_file): line-map.c now handles include
+	depth.
+	(handle_missing_handler): Similarly.
+	(_cpp_execute_include): Similarly.
+	(_cpp_pop_file_buffer): Similarly.
+	* cpphash.h (struct cpp_reader): Remove system_include_depth,
+	buffer_stack_depth and include_depth.
+	* cpplib.c (do_include_common): line-map.c now handles include depth.
+	(cpp_push_buffer): Similarly.
+	(_cpp_pop_buffer): Similarly.
+	* cppmacro.c (builtin_macro): Update.
+	* line-map.c (init_line_maps): Set depth.
+	(add_line_map): Increment "used" earlier.  Update and use the
+	include depth.
+	(trace_include): Use the include depth.
+	* line-map.h (struct line_maps): New member depth.
+
 2001-08-21  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppfiles.c (stack_include_file): Don't handle -H here.

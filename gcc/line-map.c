@@ -39,6 +39,7 @@ init_line_maps (set)
   set->used = 0;
   set->last_listed = -1;
   set->trace_includes = false;
+  set->depth = 0;
 }
 
 /* Free a line map set.  */
@@ -90,11 +91,11 @@ add_line_map (set, reason, sysp, from_line, to_file, to_line)
 	xrealloc (set->maps, set->allocated * sizeof (struct line_map));
     }
 
-  map = &set->maps[set->used];
+  map = &set->maps[set->used++];
 
   /* If we don't keep our line maps consistent, we can easily
      segfault.  Don't rely on the client to do it for us.  */
-  if (set->used == 0)
+  if (set->depth == 0)
     reason = LC_ENTER;
   else if (reason == LC_LEAVE)
     {
@@ -135,15 +136,19 @@ add_line_map (set, reason, sysp, from_line, to_file, to_line)
   map->to_line = to_line;
 
   if (reason == LC_ENTER)
-    map->included_from = set->used - 1;
+    {
+      set->depth++;
+      map->included_from = set->used - 2;
+      if (set->trace_includes)
+	trace_include (set, map);
+    }
   else if (reason == LC_RENAME)
     map->included_from = map[-1].included_from;
   else if (reason == LC_LEAVE)
-    map->included_from = INCLUDED_FROM (set, map - 1)->included_from;
-  set->used++;
-
-  if (reason == LC_ENTER && set->trace_includes)
-    trace_include (set, map);
+    {
+      set->depth--;
+      map->included_from = INCLUDED_FROM (set, map - 1)->included_from;
+    }
 
   return map;
 }
@@ -222,9 +227,9 @@ trace_include (set, map)
      const struct line_maps *set;
      const struct line_map *map;
 {
-  const struct line_map *m;
+  unsigned int i = set->depth;
 
-  for (m = map; !MAIN_FILE_P (m); m = INCLUDED_FROM (set, m))
+  while (--i)
     putc ('.', stderr);
   fprintf (stderr, " %s\n", map->to_file);
 }

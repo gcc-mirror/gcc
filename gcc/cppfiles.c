@@ -324,7 +324,6 @@ stack_include_file (pfile, inc)
   /* Initialise controlling macro state.  */
   pfile->mi_valid = true;
   pfile->mi_cmacro = 0;
-  pfile->include_depth++;
 
   /* Generate the call back.  */
   filename = inc->name;
@@ -614,9 +613,7 @@ handle_missing_header (pfile, fname, angle_brackets)
      const char *fname;
      int angle_brackets;
 {
-  /* We will try making the RHS pfile->buffer->sysp after 3.0.  */
-  int print_dep = CPP_PRINT_DEPS(pfile) > (angle_brackets
-					   || pfile->system_include_depth);
+  int print_dep = CPP_PRINT_DEPS(pfile) > (angle_brackets || pfile->map->sysp);
 
   if (CPP_OPTION (pfile, print_deps_missing_files) && print_dep)
     {
@@ -671,9 +668,6 @@ _cpp_execute_include (pfile, header, type)
 			   header->type == CPP_HEADER_NAME);
   else if (inc != NO_INCLUDE_PATH)
     {
-      if (header->type == CPP_HEADER_NAME)
-	pfile->system_include_depth++;
-
       stacked = stack_include_file (pfile, inc);
 
       if (type == IT_IMPORT)
@@ -733,11 +727,6 @@ _cpp_pop_file_buffer (pfile, buf)
      cpp_buffer *buf;
 {
   struct include_file *inc = buf->inc;
-
-  if (pfile->system_include_depth)
-    pfile->system_include_depth--;
-  if (pfile->include_depth)
-    pfile->include_depth--;
 
   /* Record the inclusion-preventing macro, which could be NULL
      meaning no controlling macro.  */
