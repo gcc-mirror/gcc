@@ -1,4 +1,8 @@
-1999-08-01 Mark Elbrecht <snowball3@bigfoot.com>
+Wed Aug 11 02:13:26 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* i386/cygwin.h (ASM_OUTPUT_ALIGNED_BSS): Define.
+
+1999-08-11 Mark Elbrecht <snowball3@bigfoot.com>
 
 	* i386/djgpp.h (ASM_OUTPUT_ALIGNED_BSS): Define.
 
