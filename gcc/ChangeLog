@@ -1,3 +1,8 @@
+2002-11-18  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/sh/sh.md (initialize_trampoline): Do not force the
+	trampoline address into R0_REGS here.
+
 2002-11-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* df.c: Fix formatting.
