@@ -1548,33 +1548,345 @@ extern int leaf_function;
     fputs ("),%o0,%o0\n", (FILE));				\
   } while (0)
 
-/* Output assembler code to FILE to initialize this source file's
-   basic block profiling info, if that has not already been done.  */
 
-#define FUNCTION_BLOCK_PROFILER(FILE, LABELNO)  \
-  do { \
-    if (TARGET_MEDANY) \
-      fprintf (FILE, "\tsethi %%hi(LPBX0),%%o0\n\tor %%0,%%lo(LPBX0),%%o0\n\tld [%s+%%o0],%%o1\n\ttst %%o1\n\tbne LPY%d\n\tadd %%o0,%s,%%o0\n\tcall ___bb_init_func\n\tnop\nLPY%d:\n", \
-	       MEDANY_BASE_REG, (LABELNO), MEDANY_BASE_REG, (LABELNO)); \
-    else \
-      fprintf (FILE, "\tsethi %%hi(LPBX0),%%o0\n\tld [%%lo(LPBX0)+%%o0],%%o1\n\ttst %%o1\n\tbne LPY%d\n\tadd %%o0,%%lo(LPBX0),%%o0\n\tcall ___bb_init_func\n\tnop\nLPY%d:\n", \
-	       (LABELNO), (LABELNO)); \
-  } while (0)
+/* There are three profiling modes for basic blocks available.
+   The modes are selected at compile time by using the options
+   -a or -ax of the gnu compiler.
+   The variable `profile_block_flag' will be set according to the
+   selected option.
 
-/* Output assembler code to FILE to increment the entry-count for
-   the BLOCKNO'th basic block in this source file.  */
+   profile_block_flag == 0, no option used:
 
-#define BLOCK_PROFILER(FILE, BLOCKNO) \
-{ \
-  int blockn = (BLOCKNO); \
-  if (TARGET_MEDANY) \
-    fprintf (FILE, "\tsethi %%hi(LPBX2+%d),%%g1\n\tor %%g1,%%lo(LPBX2+%d),%%g1\n\tld [%%g1+%s],%%g2\n\tadd %%g2,1,%%g2\n\tst %%g2,[%%g1+%s]\n", \
-	     4 * blockn, 4 * blockn, MEDANY_BASE_REG, MEDANY_BASE_REG); \
-  else \
-    fprintf (FILE, "\tsethi %%hi(LPBX2+%d),%%g1\n\tld [%%lo(LPBX2+%d)+%%g1],%%g2\n\
+      No profiling done.
+
+   profile_block_flag == 1, -a option used.
+
+      Count frequency of execution of every basic block.
+
+   profile_block_flag == 2, -ax option used.
+
+      Generate code to allow several different profiling modes at run time. 
+      Available modes are:
+             Produce a trace of all basic blocks.
+             Count frequency of jump instructions executed.
+      In every mode it is possible to start profiling upon entering
+      certain functions and to disable profiling of some other functions.
+
+    The result of basic-block profiling will be written to a file `bb.out'.
+    If the -ax option is used parameters for the profiling will be read
+    from file `bb.in'.
+
+*/
+
+/* The following macro shall output assembler code to FILE
+   to initialize basic-block profiling.
+
+   If profile_block_flag == 2
+
+	Output code to call the subroutine `__bb_init_trace_func'
+	and pass two parameters to it. The first parameter is
+	the address of a block allocated in the object module.
+	The second parameter is the number of the first basic block
+	of the function.
+
+	The name of the block is a local symbol made with this statement:
+	
+	    ASM_GENERATE_INTERNAL_LABEL (BUFFER, "LPBX", 0);
+
+	Of course, since you are writing the definition of
+	`ASM_GENERATE_INTERNAL_LABEL' as well as that of this macro, you
+	can take a short cut in the definition of this macro and use the
+	name that you know will result.
+
+	The number of the first basic block of the function is
+	passed to the macro in BLOCK_OR_LABEL.
+
+	If described in a virtual assembler language the code to be
+	output looks like:
+
+		parameter1 <- LPBX0
+		parameter2 <- BLOCK_OR_LABEL
+		call __bb_init_trace_func
+
+    else if profile_block_flag != 0
+
+	Output code to call the subroutine `__bb_init_func'
+	and pass one single parameter to it, which is the same
+	as the first parameter to `__bb_init_trace_func'.
+
+	The first word of this parameter is a flag which will be nonzero if
+	the object module has already been initialized.  So test this word
+	first, and do not call `__bb_init_func' if the flag is nonzero.
+	Note: When profile_block_flag == 2 the test need not be done
+	but `__bb_init_trace_func' *must* be called.
+
+	BLOCK_OR_LABEL may be used to generate a label number as a
+	branch destination in case `__bb_init_func' will not be called.
+
+	If described in a virtual assembler language the code to be
+	output looks like:
+
+		cmp (LPBX0),0
+		jne local_label
+		parameter1 <- LPBX0
+		call __bb_init_func
+local_label:
+
+*/
+
+#define FUNCTION_BLOCK_PROFILER(FILE, BLOCK_OR_LABEL)	\
+do							\
+  {							\
+    int bol = (BLOCK_OR_LABEL);				\
+    switch (profile_block_flag)				\
+      {							\
+      case 2:						\
+        if (TARGET_MEDANY)				\
+          fprintf (FILE, "\tsethi %%hi(LPBX0),%%o0\n\tor %%0,%%lo(LPBX0),%%o0\n\tadd %%o0,%s,%%o0\n\tsethi %%hi(%d),%%o1\n\tcall ___bb_init_trace_func\n\tadd %g0,%%lo(%d),%%o1\n",\
+                   MEDANY_BASE_REG, bol, bol);		\
+        else						\
+          fprintf (FILE, "\tsethi %%hi(LPBX0),%%o0\n\tor %%o0,%%lo(LPBX0),%%o0\n\tsethi %%hi(%d),%%o1\n\tcall ___bb_init_trace_func\n\tor %%o1,%%lo(%d),%%o1\n",\
+                   bol, bol);				\
+        break;						\
+      default:						\
+        if (TARGET_MEDANY)				\
+          fprintf (FILE, "\tsethi %%hi(LPBX0),%%o0\n\tor %%0,%%lo(LPBX0),%%o0\n\tld [%s+%%o0],%%o1\n\ttst %%o1\n\tbne LPY%d\n\tadd %%o0,%s,%%o0\n\tcall ___bb_init_func\n\tnop\nLPY%d:\n",\
+                   MEDANY_BASE_REG, bol, MEDANY_BASE_REG, bol);\
+        else						\
+          fprintf (FILE, "\tsethi %%hi(LPBX0),%%o0\n\tld [%%lo(LPBX0)+%%o0],%%o1\n\ttst %%o1\n\tbne LPY%d\n\tadd %%o0,%%lo(LPBX0),%%o0\n\tcall ___bb_init_func\n\tnop\nLPY%d:\n",\
+                   bol, bol);				\
+        break;						\
+      }							\
+  }							\
+while (0)
+
+/* The following macro shall output assembler code to FILE
+   to increment a counter associated with basic block number BLOCKNO.
+
+   If profile_block_flag == 2
+
+	Output code to initialize the global structure `__bb' and
+	call the function `__bb_trace_func' which will increment the
+	counter.
+
+	`__bb' consists of two words. In the first word the number
+	of the basic block has to be stored. In the second word
+	the address of a block allocated in the object module 
+	has to be stored.
+
+	The basic block number is given by BLOCKNO.
+
+	The address of the block is given by the label created with 
+
+	    ASM_GENERATE_INTERNAL_LABEL (BUFFER, "LPBX", 0);
+
+	by FUNCTION_BLOCK_PROFILER.
+
+	Of course, since you are writing the definition of
+	`ASM_GENERATE_INTERNAL_LABEL' as well as that of this macro, you
+	can take a short cut in the definition of this macro and use the
+	name that you know will result.
+
+	If described in a virtual assembler language the code to be
+	output looks like:
+
+		move BLOCKNO -> (__bb)
+		move LPBX0 -> (__bb+4)
+		call __bb_trace_func
+
+	Note that function `__bb_trace_func' must not change the
+	machine state, especially the flag register. To grant
+	this, you must output code to save and restore registers
+	either in this macro or in the macros MACHINE_STATE_SAVE
+	and MACHINE_STATE_RESTORE. The last two macros will be
+	used in the function `__bb_trace_func', so you must make
+	sure that the function prologue does not change any 
+	register prior to saving it with MACHINE_STATE_SAVE.
+
+   else if profile_block_flag != 0
+
+	Output code to increment the counter directly.
+	Basic blocks are numbered separately from zero within each
+	compiled object module. The count associated with block number
+	BLOCKNO is at index BLOCKNO in an array of words; the name of 
+	this array is a local symbol made with this statement:
+
+	    ASM_GENERATE_INTERNAL_LABEL (BUFFER, "LPBX", 2);
+
+	Of course, since you are writing the definition of
+	`ASM_GENERATE_INTERNAL_LABEL' as well as that of this macro, you
+	can take a short cut in the definition of this macro and use the
+	name that you know will result. 
+
+	If described in a virtual assembler language, the code to be
+	output looks like:
+
+		inc (LPBX2+4*BLOCKNO)
+
+*/
+
+#define BLOCK_PROFILER(FILE, BLOCKNO)	\
+do					\
+  {					\
+    int blockn = (BLOCKNO);		\
+    switch (profile_block_flag)		\
+      {					\
+      case 2:				\
+        if (TARGET_MEDANY)		\
+          fprintf (FILE, "\tsethi %%hi(___bb),%%g1\n\tor %%0,%%lo(___bb),%%g1\n\tsethi %%hi(%d),%%g2\n\tor %%g2,%%lo(%d),%%g2\n\tst %%g2,[%s+%%g1]\n\tsethi %%hi(LPBX0),%%g2\n\tor %%0,%%lo(LPBX0),%%g2\n\tadd %%g2,%s,%%g2\n\tadd 4,%%g1,%%g1\n\tst %%g2,[%%g1+%%lo(___bb)]\n\tmov %%o7,%%g2\n\tcall ___bb_trace_func\n\tnop\n\tmov %%g2,%%o7\n",\
+                   blockn, blockn, MEDANY_BASE_REG, MEDANY_BASE_REG); \
+        else				\
+          fprintf (FILE, "\tsethi %%hi(___bb),%%g1\n\tsethi %%hi(%d),%%g2\n\tor %%g2,%%lo(%d),%%g2\n\tst %%g2,[%%lo(___bb)+%%g1]\n\tsethi %%hi(LPBX0),%%g2\n\tor %%g2,%%lo(LPBX0),%%g2\n\tadd 4,%%g1,%%g1\n\tst %%g2,[%%lo(___bb)+%%g1]\n\tmov %%o7,%%g2\n\tcall ___bb_trace_func\n\tnop\n\tmov %%g2,%%o7\n",\
+                   blockn, blockn); \
+        break;				\
+      default:				\
+        if (TARGET_MEDANY)		\
+          fprintf (FILE, "\tsethi %%hi(LPBX2+%d),%%g1\n\tor %%g1,%%lo(LPBX2+%d),%%g1\n\tld [%%g1+%s],%%g2\n\tadd %%g2,1,%%g2\n\tst %%g2,[%%g1+%s]\n", \
+                         4 * blockn, 4 * blockn, MEDANY_BASE_REG, MEDANY_BASE_REG); \
+        else				\
+          fprintf (FILE, "\tsethi %%hi(LPBX2+%d),%%g1\n\tld [%%lo(LPBX2+%d)+%%g1],%%g2\n\
 \tadd %%g2,1,%%g2\n\tst %%g2,[%%lo(LPBX2+%d)+%%g1]\n", \
-	     4 * blockn, 4 * blockn, 4 * blockn); \
-}
+                   4 * blockn, 4 * blockn, 4 * blockn); \
+        break;				\
+      }					\
+  }					\
+while(0)
+
+/* The following macro shall output assembler code to FILE
+   to indicate a return from function during basic-block profiling.
+
+   If profiling_block_flag == 2:
+
+	Output assembler code to call function `__bb_trace_ret'.
+
+	Note that function `__bb_trace_ret' must not change the
+	machine state, especially the flag register. To grant
+	this, you must output code to save and restore registers
+	either in this macro or in the macros MACHINE_STATE_SAVE_RET
+	and MACHINE_STATE_RESTORE_RET. The last two macros will be
+	used in the function `__bb_trace_ret', so you must make
+	sure that the function prologue does not change any 
+	register prior to saving it with MACHINE_STATE_SAVE_RET.
+
+   else if profiling_block_flag != 0:
+
+	The macro will not be used, so it need not distinguish
+	these cases.
+*/
+
+#define FUNCTION_BLOCK_PROFILER_EXIT(FILE) \
+  fprintf (FILE, "\tcall ___bb_trace_ret\n\tnop\n" );
+
+/* The function `__bb_trace_func' is called in every basic block
+   and is not allowed to change the machine state. Saving (restoring)
+   the state can either be done in the BLOCK_PROFILER macro,
+   before calling function (rsp. after returning from function)
+   `__bb_trace_func', or it can be done inside the function by
+   defining the macros:
+
+	MACHINE_STATE_SAVE(ID)
+	MACHINE_STATE_RESTORE(ID)
+
+   In the latter case care must be taken, that the prologue code
+   of function `__bb_trace_func' does not already change the
+   state prior to saving it with MACHINE_STATE_SAVE.
+
+   The parameter `ID' is a string identifying a unique macro use.
+
+   On sparc it is sufficient to save the psw register to memory.
+   Unfortunately the psw register can be read in supervisor mode only,
+   so we read only the condition codes by using branch instructions
+   and hope that this is enough. */
+
+#define MACHINE_STATE_SAVE(ID) \
+  asm ("	mov %g0,%l0");\
+  asm ("	be,a LFLGNZ" ID);\
+  asm ("	or %l0,4,%l0");\
+  asm ("LFLGNZ" ID ":  bcs,a LFLGNC" ID);\
+  asm ("	or %l0,1,%l0");\
+  asm ("LFLGNC" ID ":  bvs,a LFLGNV" ID);\
+  asm ("	or %l0,2,%l0");\
+  asm ("LFLGNV" ID ":  bneg,a LFLGNN" ID);\
+  asm ("	or %l0,8,%l0");\
+  asm ("LFLGNN" ID ": sethi %hi(LFLAGS" ID "),%l1");\
+  asm ("	st %l0,[%l1+%lo(LFLAGS" ID ")]"); \
+  asm ("	st %g2,[%l1+%lo(LSAVRET" ID ")]");
+
+/* On sparc MACHINE_STATE_RESTORE restores the psw register from memory.
+   The psw register can be written in supervisor mode only,
+   which is true even for simple condition codes.
+   We use some combination of instructions to produce the
+   proper condition codes, but some flag combinations can not
+   be generated in this way. If this happens an unimplemented
+   instruction will be executed to abort the program. */
+
+#define MACHINE_STATE_RESTORE(ID) \
+  asm ("	sethi %hi(LFLGTAB" ID "),%l1");\
+  asm ("	ld [%l1+%lo(LFLGTAB" ID "-(LFLGTAB" ID "-LFLAGS" ID "))],%l0");\
+  asm ("	ld [%l1+%lo(LFLGTAB" ID "-(LFLGTAB" ID "-LSAVRET" ID "))],%g2");\
+  asm ("	sll %l0,2,%l0");\
+  asm ("	add %l0,%l1,%l0");\
+  asm ("	ld [%l0+%lo(LFLGTAB" ID ")],%l1");\
+  asm ("	jmp %l1");\
+  asm (" nop");\
+  asm (".data");\
+  asm ("LFLAGS" ID ":");\
+  asm ("	.word 0");\
+  asm ("LSAVRET" ID ":");\
+  asm (" .word 0");\
+  asm ("LFLGTAB" ID ": ");\
+  asm ("	.word LSFLG0" ID);\
+  asm ("	.word LSFLGC" ID);\
+  asm ("	.word LSFLGV" ID);\
+  asm ("	.word LSFLGVC" ID);\
+  asm ("	.word LSFLGZ" ID);\
+  asm ("	.word LSFLGZC" ID);\
+  asm ("	.word LSFLGZV" ID);\
+  asm ("	.word LSFLGZVC" ID);\
+  asm ("	.word LSFLGN" ID);\
+  asm ("	.word LSFLGNC" ID);\
+  asm ("	.word LSFLGNV" ID);\
+  asm ("	.word LSFLGNVC" ID);\
+  asm ("	.word LSFLGNZ" ID);\
+  asm ("	.word LSFLGNZC" ID);\
+  asm ("	.word LSFLGNZV" ID);\
+  asm ("	.word LSFLGNZVC" ID);\
+  asm (".text");\
+  asm ("LSFLGVC" ID ": mov -1,%l0");\
+  asm ("	addcc 2,%l0,%g0");\
+  asm ("	sethi %hi(0x80000000),%l0");\
+  asm ("	mov %l0,%l1");\
+  asm ("	ba LFLGRET" ID);\
+  asm ("	addxcc %l0,%l1,%l0");\
+  asm ("LSFLGC" ID ":	mov -1,%l0");\
+  asm ("	ba LFLGRET" ID);\
+  asm ("	addcc 2,%l0,%g0");\
+  asm ("LSFLGZC" ID ": mov -1,%l0");\
+  asm ("	ba LFLGRET" ID);\
+  asm ("	addcc 1,%l0,%l0");\
+  asm ("LSFLGZVC" ID ": sethi %hi(0x80000000),%l0");\
+  asm ("	mov %l0,%l1");\
+  asm ("	ba LFLGRET" ID);\
+  asm ("	addcc %l0,%l1,%l0");\
+  asm ("LSFLGZ" ID ":	ba LFLGRET" ID);\
+  asm ("	subcc %g0,%g0,%g0");\
+  asm ("LSFLGNC" ID ": add %g0,1,%l0");\
+  asm ("	ba LFLGRET" ID);\
+  asm ("	subcc %g0,%l0,%g0");\
+  asm ("LSFLG0" ID ":	ba LFLGRET" ID);\
+  asm ("	orcc 1,%g0,%g0");\
+  asm ("LSFLGN" ID ":	ba LFLGRET" ID);\
+  asm (" orcc -1,%g0,%g0");\
+  asm ("LSFLGV" ID ":");\
+  asm ("LSFLGZV" ID ":");\
+  asm ("LSFLGNV" ID ":");\
+  asm ("LSFLGNVC" ID ":");\
+  asm ("LSFLGNZ" ID ":");\
+  asm ("LSFLGNZC" ID ":");\
+  asm ("LSFLGNZV" ID ":");\
+  asm ("LSFLGNZVC" ID ":");\
+  asm ("	unimp");\
+  asm ("LFLGRET" ID ":");
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
