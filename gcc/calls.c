@@ -1834,10 +1834,12 @@ expand_call (exp, target, ignore)
     target = copy_to_reg (valreg);
 
 #ifdef PROMOTE_FUNCTION_RETURN
-  /* If we promoted this return value, make the proper SUBREG.  */
-  if (GET_MODE (target) != TYPE_MODE (TREE_TYPE (exp)))
+  /* If we promoted this return value, make the proper SUBREG.  TARGET
+     might be const0_rtx here, so be careful.  */
+  if (GET_CODE (target) == REG
+      && GET_MODE (target) != TYPE_MODE (TREE_TYPE (exp)))
     {
-      enum machine_mode mode = GET_MODE (target);
+      enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
       int unsignedp = TREE_UNSIGNED (TREE_TYPE (exp));
 
       if (TREE_CODE (TREE_TYPE (exp)) == INTEGER_TYPE
@@ -1850,6 +1852,10 @@ expand_call (exp, target, ignore)
 	{
 	  PROMOTE_MODE (mode, unsignedp, TREE_TYPE (exp));
 	}
+
+      /* If we didn't promote as expected, something is wrong.  */
+      if (mode != GET_MODE (target))
+	abort ();
 
       target = gen_rtx (SUBREG, TYPE_MODE (TREE_TYPE (exp)), target, 0);
       SUBREG_PROMOTED_VAR_P (target) = 1;
