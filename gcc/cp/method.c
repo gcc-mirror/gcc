@@ -57,7 +57,8 @@ static char *scratch_firstobj;
 
 static void icat PROTO((HOST_WIDE_INT));
 static void dicat PROTO((HOST_WIDE_INT, HOST_WIDE_INT));
-static int try_old_backref PROTO((tree));
+static int old_backref_index PROTO((tree));
+static int flush_repeats PROTO((int, tree));
 static void build_overload_identifier PROTO((tree));
 static void build_overload_nested_name PROTO((tree));
 static void build_overload_int PROTO((tree, int));
@@ -299,17 +300,16 @@ dicat (lo, hi)
   OB_PUTC ('0' + ulo);
 }
 
-/* Old mangling style:  If TYPE has already been used in the parameter list,
-   emit a backward reference and return non-zero; otherwise, return 0.  */
+/* Returns the index of TYPE in the typevec, or -1 if it's not there.  */
 
 static __inline int
-try_old_backref (type)
+old_backref_index (type)
      tree type;
 {
   int tindex = 0;
 
   if (! is_back_referenceable_type (type))
-    return 0;
+    return -1;
 
   /* The entry for this parm is at maxtype-1, so don't look there for
      something to repeat.  */
@@ -318,9 +318,40 @@ try_old_backref (type)
       break;
 
   if (tindex == maxtype - 1)
-    return 0;
+    return -1;
 
-  OB_PUTC ('T');
+  return tindex;
+}
+
+/* Old mangling style:  If TYPE has already been used in the parameter list,
+   emit a backward reference and return non-zero; otherwise, return 0.
+
+   NREPEATS is the number of repeats we've recorded of this type, or 0 if
+   this is the first time we've seen it and we're just looking to see if
+   it had been used before.  */
+
+static __inline int
+flush_repeats (nrepeats, type)
+     int nrepeats;
+     tree type;
+{
+  int tindex = old_backref_index (type);
+
+  if (tindex == -1)
+    {
+      my_friendly_assert (nrepeats == 0, 990316);
+      return 0;
+    }
+
+  if (nrepeats > 1)
+    {
+      OB_PUTC ('N');
+      icat (nrepeats);
+      if (nrepeats > 9)
+	OB_PUTC ('_');
+    }
+  else
+    OB_PUTC ('T');
   icat (tindex);
   if (tindex > 9)
     OB_PUTC ('_');
@@ -1129,17 +1160,16 @@ build_mangled_name (parmtypes, begin, end)
 
 	  if (old_style_repeats)
 	    {
-	      /* Note that for bug-compatibility with 2.7.2, we can't build
-		 up repeats.  So we call try_old_backref (formerly
-		 flush_repeats) every round, and only emit Tn codes.  */
-
 	      /* Every argument gets counted.  */
 	      my_friendly_assert (maxtype < typevec_size, 387);
 	      typevec[maxtype++] = parmtype;
 	    }
-	  else if (flag_do_squangling)
+
+	  if (last_type && same_type_p (parmtype, last_type))
 	    {
-	      if (last_type && same_type_p (parmtype, last_type))
+	      if (flag_do_squangling 
+		  || (old_style_repeats
+		      && is_back_referenceable_type (parmtype)))
 		{
 		  /* The next type is the same as this one.  Keep
 		     track of the repetition, and output the repeat
@@ -1147,18 +1177,24 @@ build_mangled_name (parmtypes, begin, end)
 		  nrepeats++;
 		  continue;
 		}
-	      else if (nrepeats != 0)
-		{
-		  /* Indicate how many times the previous parameter was
-		     repeated.  */
-		  issue_nrepeats (nrepeats, last_type);
-		  nrepeats = 0;
-		}
+	    }
+	  else if (nrepeats != 0)
+	    {
+	      /* Indicate how many times the previous parameter was
+		 repeated.  */
+	      if (old_style_repeats)
+		flush_repeats (nrepeats, last_type);
+	      else
+		issue_nrepeats (nrepeats, last_type);
+	      nrepeats = 0;
 	    }
 	  
 	  last_type = parmtype;
 
-	  if (old_style_repeats && try_old_backref (parmtype))
+	  /* Note that for bug-compatibility with 2.7.2, we can't build up
+	     repeats of types other than the most recent one.  So we call
+	     flush_repeats every round, if we get this far.  */
+	  if (old_style_repeats && flush_repeats (0, parmtype))
 	    continue;
 
 	  /* Output the PARMTYPE.  */
@@ -1169,7 +1205,10 @@ build_mangled_name (parmtypes, begin, end)
 	 necessary.  */
       if (nrepeats != 0)
 	{
-	  issue_nrepeats (nrepeats, last_type);
+	  if (old_style_repeats)
+	    flush_repeats (nrepeats, last_type);
+	  else
+	    issue_nrepeats (nrepeats, last_type);
 	  nrepeats = 0;
 	}
 

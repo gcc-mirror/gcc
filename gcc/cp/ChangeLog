@@ -1,3 +1,9 @@
+1999-03-16  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* method.c (old_backref_index): Split out...
+	(flush_repeats): From here.  Rename back from try_old_backref.
+	(build_mangled_name): Put back some old-style repeat handling.
+
 Mon Mar 15 21:57:16 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * lex.c: Don't include setjmp.h.
