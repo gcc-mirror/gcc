@@ -1,3 +1,8 @@
+2002-03-23  Richard Henderson  <rth@redhat.com>
+
+	* config/sparc/gmon-sol2.c (internal_mcount): Assume either
+	_start or _init begins the text segment.
+
 2002-03-23  Alan Modra  <amodra@bigpond.net.au>
 
 	* combine.c (simplify_comparison): When widening modes, ignore
