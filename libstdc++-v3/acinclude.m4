@@ -263,7 +263,7 @@ AC_DEFUN(GLIBCPP_CHECK_CPU, [
         ;;
       powerpc | rs6000)
 	cpu_include_dir="config/cpu/powerpc"
-    	CPUFLAGS='-mnew-mnemonics -Wa,-mppc -mpowerpc'
+    	CPUFLAGS='-mcpu=powerpc'
         ;;
       sparc64 | ultrasparc)
 	cpu_include_dir="config/cpu/sparc/sparc64"
@@ -308,6 +308,20 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
     AC_MSG_RESULT($ctype_linux)
     if test $ctype_linux = "yes"; then
       ctype_include_dir="config/gnu-linux"
+      ctype_default=no
+    fi
+
+    dnl Test for <ctype> functionality -- BSD
+    AC_MSG_CHECKING([<ctype> for bsd ])
+    AC_TRY_COMPILE([#include <ctype.h>],
+    [int
+    foo (int a)
+    { return _CTYPE_S + _CTYPE_R + _CTYPE_C + _CTYPE_U + _CTYPE_L + _CTYPE_A \
+	+ _CTYPE_D + _CTYPE_P + _CTYPE_X + _CTYPE_G ;}], \
+    ctype_bsd=yes, ctype_bsd=no)
+    AC_MSG_RESULT($ctype_bsd)
+    if test $ctype_bsd = "yes"; then
+      ctype_include_dir="config/bsd"
       ctype_default=no
     fi
 
