@@ -290,7 +290,8 @@ __gnat_ttyname (int filedes)
 #if defined (linux) || defined (sun) || defined (sgi) || defined (__EMX__) \
   || (defined (__osf__) && ! defined (__alpha_vxworks)) || defined (WINNT) \
   || defined (__MACHTEN__) || defined (hpux) || defined (_AIX) \
-  || (defined (__svr4__) && defined (i386)) || defined (__Lynx__)
+  || (defined (__svr4__) && defined (i386)) || defined (__Lynx__) \
+  || defined (__CYGWIN__)
 
 #ifdef __MINGW32__
 #if OLD_MINGW

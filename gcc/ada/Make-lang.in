@@ -403,10 +403,6 @@ ada.all.cross:
 	then \
 	   $(MV) gnatprep$(exeext)  gnatprep-cross$(exeext); \
 	fi
-	-if [ -f gnatpsta$(exeext) ] ; \
-	then \
-	   $(MV) gnatpsta$(exeext)  gnatpsta-cross$(exeext); \
-	fi
 	-if [ -f gnatxref$(exeext) ] ; \
 	then \
 	   $(MV) gnatxref$(exeext)  gnatxref-cross$(exeext); \
@@ -711,21 +707,6 @@ ada.install-common:
 	fi
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
-	  if [ -f gnatpsta-cross$(exeext) ] ; \
-	  then \
-	    $(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatpsta$(exeext); \
-	    $(INSTALL_PROGRAM) gnatpsta-cross$(exeext) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatpsta$(exeext); \
-	    if [ -d $(DESTDIR)$(tooldir)/bin/. ] ; then \
-	       rm -f $(DESTDIR)$(tooldir)/bin/gnatpsta$(exeext); \
-	       $(INSTALL_PROGRAM) gnatpsta-cross$(exeext) $(DESTDIR)$(tooldir)/bin/gnatpsta$(exeext); \
-	    fi; \
-	  else \
-	    $(RM) $(DESTDIR)$(bindir)/gnatpsta$(exeext); \
-	    $(INSTALL_PROGRAM) gnatpsta$(exeext) $(DESTDIR)$(bindir)/gnatpsta$(exeext); \
-	  fi ; \
-	fi
-	-if [ -f gnat1$(exeext) ] ; \
-	then \
 	  if [ -f gnatxref-cross$(exeext) ] ; \
 	  then \
 	    $(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatxref$(exeext); \
@@ -857,7 +838,6 @@ ada.uninstall:
 	-$(RM) $(DESTDIR)$(bindir)/gnatmem$(exeext)
 	-$(RM) $(DESTDIR)$(bindir)/gnatname$(exeext)
 	-$(RM) $(DESTDIR)$(bindir)/gnatprep$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/gnatpsta$(exeext)
 	-$(RM) $(DESTDIR)$(bindir)/gnatxref$(exeext)
 	-$(RM) $(DESTDIR)$(bindir)/gnatclean$(exeext)
 	-$(RM) $(DESTDIR)$(bindir)/gnatsym$(exeext)
@@ -875,7 +855,6 @@ ada.uninstall:
 	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatmem$(exeext)
 	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatname$(exeext)
 	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatprep$(exeext)
-	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatpsta$(exeext)
 	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatxref$(exeext)
 	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatclean$(exeext)
 	-$(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatsym$(exeext)
@@ -893,7 +872,6 @@ ada.uninstall:
 	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatmem$(exeext)
 	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatname$(exeext)
 	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatprep$(exeext)
-	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatpsta$(exeext)
 	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatxref$(exeext)
 	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatclean$(exeext)
 	-$(RM) $(DESTDIR)$(tooldir)/bin/gnatsym$(exeext)
@@ -923,7 +901,6 @@ ada.distclean:
 	-$(RM) gnatmem$(exeext)
 	-$(RM) gnatname$(exeext)
 	-$(RM) gnatprep$(exeext)
-	-$(RM) gnatpsta$(exeext)
 	-$(RM) gnatfind$(exeext)
 	-$(RM) gnatxref$(exeext)
 	-$(RM) gnatclean$(exeext)
