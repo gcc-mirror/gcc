@@ -3233,14 +3233,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
   if (TREE_CODE (decl) == FUNCTION_DECL && asmspec)
     {
       if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
-	{
-	  tree builtin = built_in_decls [DECL_FUNCTION_CODE (decl)];
-	  set_user_assembler_name (builtin, asmspec);
-	   if (DECL_FUNCTION_CODE (decl) == BUILT_IN_MEMCPY)
-	     init_block_move_fn (asmspec);
-	   else if (DECL_FUNCTION_CODE (decl) == BUILT_IN_MEMSET)
-	     init_block_clear_fn (asmspec);
-	 }
+	set_builtin_user_assembler_name (decl, asmspec);
       set_user_assembler_name (decl, asmspec);
     }
 
