@@ -1,3 +1,8 @@
+2000-12-29  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* toplev.c (main): Call xmalloc_set_program_name.
+	* gcc.c (main): Likewise.
+
 2000-12-29  Philip Blundell  <philb@gnu.org>
 
 	* config/arm/arm.c (arm_override_options): Fix typo in warning

@@ -4525,6 +4525,8 @@ main (argc, argv)
     --p;
   progname = p;
 
+  xmalloc_set_program_name (progname);
+
 /* LC_CTYPE determines the character set used by the terminal so it has be set
    to output messages correctly.  */
 
