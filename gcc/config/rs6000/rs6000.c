@@ -3836,7 +3836,8 @@ rs6000_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 
 void
 init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype, 
-	rtx libname ATTRIBUTE_UNUSED, int incoming, int libcall)
+		      rtx libname ATTRIBUTE_UNUSED, int incoming,
+		      int libcall, int n_named_args)
 {
   static CUMULATIVE_ARGS zero_cumulative;
 
@@ -3853,17 +3854,9 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
 	&& (TREE_VALUE (tree_last  (TYPE_ARG_TYPES (fntype)))
 	    != void_type_node));
 
-  if (incoming)
-    cum->nargs_prototype = 1000;		/* don't return a PARALLEL */
-
-  else if (cum->prototype)
-    cum->nargs_prototype = (list_length (TYPE_ARG_TYPES (fntype)) - 1
-			    + (TYPE_MODE (TREE_TYPE (fntype)) == BLKmode
-			       || rs6000_return_in_memory (TREE_TYPE (fntype),
-							   fntype)));
-
-  else
-    cum->nargs_prototype = 0;
+  cum->nargs_prototype = 0;
+  if (incoming || cum->prototype)
+    cum->nargs_prototype = n_named_args;
 
   /* Check for a longcall attribute.  */
   if (fntype
@@ -8369,10 +8362,10 @@ addrs_ok_for_quad_peep (rtx addr1, rtx addr2)
     }
 
   /* Make sure the second address is a (mem (plus (reg) (const_int)))
-      or if it is (mem (reg)) then make sure that offset1 is -8 and the same 
-      register as addr1.  */
+     or if it is (mem (reg)) then make sure that offset1 is -8 and the same 
+     register as addr1.  */
   if (offset1 == -8 && GET_CODE (addr2) == REG && reg1 == REGNO (addr2))
-   return 1;
+    return 1;
   if (GET_CODE (addr2) != PLUS)
     return 0;
 

@@ -381,7 +381,8 @@ typedef struct avr_args {
   int regno;			/* next available register number */
 } CUMULATIVE_ARGS;
 
-#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL) init_cumulative_args (&(CUM), FNTYPE, LIBNAME, FNDECL)
+#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL, N_NAMED_ARGS) \
+  init_cumulative_args (&(CUM), FNTYPE, LIBNAME, FNDECL)
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
   (function_arg_advance (&CUM, MODE, TYPE, NAMED))

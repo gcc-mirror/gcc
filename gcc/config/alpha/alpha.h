@@ -1002,7 +1002,8 @@ extern int alpha_memory_latency;
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.  */
 
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT)  (CUM) = 0
+#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
+  (CUM) = 0
 
 /* Define intermediate macro to compute the size (in registers) of an argument
    for the Alpha.  */
