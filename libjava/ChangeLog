@@ -1,3 +1,8 @@
+2003-03-12  Andreas Schwab  <schwab@suse.de>
+
+	* configure.in: Avoid trailing /. in toolexeclibdir.
+	* configure: Rebuilt.
+
 2003-03-11  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/ByteBufferImpl.java

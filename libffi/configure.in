@@ -172,7 +172,11 @@ else
   toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
   toolexeclibdir='$(libdir)'
 fi
-toolexeclibdir=$toolexeclibdir/`$CC -print-multi-os-directory`
+multi_os_directory=`$CC -print-multi-os-directory`
+case $multi_os_directory in
+  .) ;; # Avoid trailing /.
+  *) toolexeclibdir=$toolexeclibdir/$multi_os_directory ;;
+esac
 AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
 

@@ -1,3 +1,9 @@
+2003-03-12  Andreas Schwab  <schwab@suse.de>
+
+	* aclocal.m4 (GLIBCPP_EXPORT_INSTALL_INFO): Avoid trailing /. in
+	glibcpp_toolexeclibdir.
+	* configure: Rebuilt.
+
 2003-02-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in: Propagate ORIGINAL_LD_FOR_MULTILIBS to
