@@ -1026,13 +1026,13 @@ build_class_ref (type)
 	      TREE_PUBLIC (decl) = 1;
 	      DECL_IGNORED_P (decl) = 1;
 	      DECL_ARTIFICIAL (decl) = 1;
+	      if (is_compiled == 1)
+		DECL_EXTERNAL (decl) = 1;
 	      SET_DECL_ASSEMBLER_NAME (decl, 
 				       java_mangle_class_field
 				       (&temporary_obstack, type));
 	      make_decl_rtl (decl, NULL);
 	      pushdecl_top_level (decl);
-	      if (is_compiled == 1)
-		DECL_EXTERNAL (decl) = 1;
 	    }
 	}
       else

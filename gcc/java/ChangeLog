@@ -1,3 +1,7 @@
+2001-09-10  Richard Henderson  <rth@redhat.com>
+
+	* class.c (build_class_ref): Set DECL_EXTERNAL before make_decl_rtl.
+
 2001-09-07  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
 
 	* typeck.c (java_array_type_length, build_prim_array_type):
