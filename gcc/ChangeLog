@@ -1,3 +1,19 @@
+2002-08-30  Paul Koning <pkoning@equallogic.com>
+
+	* doc/c-tree.texi (RDIV_EXPR): Fix typo.
+	* doc/rtl.texi (post_modify): Remove misplaced text, remove "not
+	implemented" note.
+	* doc/md.texi (IP2K): Move machine-specific constraints before MIPS
+	for alphabetic order.
+	* doc/tm.texi (TARGET_FLOAT_FORMAT): Update description for
+	VAX_FLOAT_FORMAT.  Remove reference to HOST_FLOAT_FORMAT.
+	(VAX_HALFWORD_ORDER): Document.
+	(LARGEST_EXPONENT_IS_NORMAL): Remove note about being only for
+	IEEE float format.
+	(TARGET_SCHED_ISSUE_RATE): Reword reference to MAX_DFA_ISSUE_RATE.
+	(ASM_OUTPUT_LABEL_REF): Fix font.
+	(CASE_VECTOR_SHORTEN_MODE): Ditto.
+
 2002-08-30  Denis Chertykov  <denisc@overta.ru>
 
 	* config/ip2k/ip2k.c (ip2k_set_compare): Remove all const_double

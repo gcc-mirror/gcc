@@ -2063,7 +2063,7 @@ integral type.
 
 The result of a @code{TRUNC_DIV_EXPR} is always rounded towards zero.
 The @code{TRUNC_MOD_EXPR} of two operands @code{a} and @code{b} is
-always @code{a - a/b} where the division is as if computed by a
+always @code{a - (a/b)*b} where the division is as if computed by a
 @code{TRUNC_DIV_EXPR}.
 
 @item ARRAY_REF

@@ -2577,9 +2577,6 @@ Represents the side effect of setting @var{x} to @var{y} and
 represents @var{x} before @var{x} is modified.  @var{x} must be a
 @code{reg} or @code{mem}, but most machines allow only a @code{reg}.
 @var{m} must be the machine mode for pointers on the machine in use.
-The amount @var{x} is decremented by is the length in bytes of the
-machine mode of the containing memory reference of which this expression
-serves as the address.  Note that this is not currently implemented.
 
 The expression @var{y} must be one of three forms:
 @table @code
