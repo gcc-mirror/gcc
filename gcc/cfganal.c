@@ -67,7 +67,7 @@ flow_active_insn_p (insn)
     return true;
 
   /* A clobber of the function return value exists for buggy 
-     programs that fail to return a value.  It's effect is to
+     programs that fail to return a value.  Its effect is to
      keep the return value from being live across the entire
      function.  If we allow it to be skipped, we introduce the
      possibility for register livetime aborts.  */
