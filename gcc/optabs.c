@@ -3183,6 +3183,14 @@ emit_conditional_move (target, code, op0, op1, cmode, op2, op3, mode,
       code = swap_condition (code);
     }
 
+  /* get_condition will prefer to generate LT and GT even if the old
+     comparison was against zero, so undo that canonicalization here since
+     comparisons against zero are cheaper.  */
+  if (code == LT && GET_CODE (op1) == CONST_INT && INTVAL (op1) == 1)
+    code = LE, op1 = const0_rtx;
+  else if (code == GT && GET_CODE (op1) == CONST_INT && INTVAL (op1) == -1)
+    code = GE, op1 = const0_rtx;
+
   if (cmode == VOIDmode)
     cmode = GET_MODE (op0);
 
