@@ -1,3 +1,8 @@
+Sun Oct 24 11:35:30 1999  Mark P. Mitchell  <mark@codesourcery.com>
+
+	* config/mips/iris6.h (SUBTARGET_ASM_OPTIMIZING_SPEC): Define to
+	-O0.
+
 Sat Oct 23 21:13:00 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* integrate.c (integrate_decl_tree): Tweak setting of DECL_CONTEXT

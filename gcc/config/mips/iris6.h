@@ -236,6 +236,11 @@ Boston, MA 02111-1307, USA.  */
 #undef SUBTARGET_ASM_DEBUGGING_SPEC
 #define SUBTARGET_ASM_DEBUGGING_SPEC "-g0"
 
+/* The MIPS assembler occasionally misoptimizes.  Since GCC should be
+   doing scheduling anyhow, just turn off optimization in the assembler.  */
+#undef SUBTARGET_ASM_OPTIMIZING_SPEC
+#define SUBTARGET_ASM_OPTIMIZING_SPEC "-O0"
+
 /* Stuff for constructors.  Start here.  */
 
 /* The assembler now accepts .section pseudo-ops, but it does not allow
