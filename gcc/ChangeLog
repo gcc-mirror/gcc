@@ -1,3 +1,10 @@
+2005-02-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* basic-block.h: Adjust the prototype for find_basic_blocks.
+	* cfgbuild.c (find_basic_blocks): Remove unused arguments.
+	* passes.c (rest_of_handle_loop_optimize): Adjust the call to
+	find_basic_blocks.
+
 2005-02-14  Daniel Berlin  <dberlin@dberlin.org>
 	
 	* tree-dump.c (dump_files): Update to reflect new member
