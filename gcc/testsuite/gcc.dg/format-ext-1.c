@@ -18,7 +18,7 @@ extern int printf (const char *, ...);
 void
 foo (quad_t q, u_quad_t uq, quad_t *qn, size_t z, size_t *zn, long long int ll,
      unsigned long long int ull, int i, unsigned int u, double d,
-     char *s, void *p, wchar_t *ls, wint_t lc, int *n)
+     char *s, void *p, wchar_t *ls, wint_t lc, int *n, long int l)
 {
   /* As an extension, GCC allows the BSD length "q" for integer formats.
      This is largely obsoleted in C99 by %j, %ll and PRId64.
@@ -93,6 +93,13 @@ foo (quad_t q, u_quad_t uq, quad_t *qn, size_t z, size_t *zn, long long int ll,
   printf ("%Lm", i); /* { dg-warning "length" "bad %Lm" } */
   printf ("%qm", i); /* { dg-warning "length" "bad %qm" } */
   printf ("%Zm", i); /* { dg-warning "length" "bad %Zm" } */
+  /* It should be OK to mix %m formats with $ operand number formats.  */
+  printf ("%2$ld%m%1$d", i, l);
+  /* Likewise, %m formats with width and precision should not have an
+     operand number for the %m itself.
+  */
+  printf ("%*2$.*1$m", i, i);
+  printf ("%1$*2$.*1$m", i, i); /* { dg-warning "no argument" "printf %1\$m" } */
   /* As an extension, glibc includes the "I" flag for decimal integer
      formats, to output using the locale's digits (e.g. in Arabic).
      In GCC, we require this to be in the standard place for flags, though

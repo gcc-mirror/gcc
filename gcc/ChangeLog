@@ -1,5 +1,15 @@
 2000-09-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-common.c (check_format_info): Properly save the argument
+	number and parameter for $ operand number formats in case width
+	and precision arguments are also used.  Allow printf width and
+	precision arguments to have operand numbers even if none was
+	specified for the main format, since this is OK for %*.*m.  Only
+	object to missing $ operand number if the format used requires an
+	argument.
+
+2000-09-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* c-common.c (format_char_info): Add 'W' flag to comment.
 	(print_char_table, scan_char_table): Use it.
 	(check_format_info): Use the 'W' flag to determine whether a

@@ -1904,6 +1904,8 @@ check_format_info (info, params)
   tree format_tree;
   tree cur_param;
   tree wanted_type;
+  int main_arg_num;
+  tree main_arg_params;
   enum format_std_version wanted_type_std;
   const char *wanted_type_name;
   format_wanted_type width_wanted_type;
@@ -2051,6 +2053,8 @@ check_format_info (info, params)
 	}
       flag_chars[0] = 0;
       suppressed = wide = precise = FALSE;
+      main_arg_num = 0;
+      main_arg_params = 0;
       if (info->format_type == scanf_format_type)
 	{
 	  int non_zero_width_char = FALSE;
@@ -2062,13 +2066,14 @@ check_format_info (info, params)
 	      int opnum;
 	      opnum = maybe_read_dollar_number (&format_chars,
 						has_operand_number == 1,
-						first_fillin_param, &params);
+						first_fillin_param,
+						&main_arg_params);
 	      if (opnum == -1)
 		return;
 	      else if (opnum > 0)
 		{
 		  has_operand_number = 1;
-		  arg_num = opnum + info->first_arg_num - 1;
+		  main_arg_num = opnum + info->first_arg_num - 1;
 		}
 	      else
 		has_operand_number = 0;
@@ -2129,17 +2134,15 @@ check_format_info (info, params)
 	    {
 	      int opnum;
 	      opnum = maybe_read_dollar_number (&format_chars,
-						has_operand_number == 1,
-						first_fillin_param, &params);
+						0, first_fillin_param,
+						&main_arg_params);
 	      if (opnum == -1)
 		return;
 	      else if (opnum > 0)
 		{
 		  has_operand_number = 1;
-		  arg_num = opnum + info->first_arg_num - 1;
+		  main_arg_num = opnum + info->first_arg_num - 1;
 		}
-	      else
-		has_operand_number = 0;
 	    }
 
 	  while (*format_chars != 0 && index (" +#0-'I", *format_chars) != 0)
@@ -2178,16 +2181,22 @@ check_format_info (info, params)
 		  tfaff ();
 		  return;
 		}
-	      if (has_operand_number > 0)
+	      if (has_operand_number != 0)
 		{
 		  int opnum;
-		  opnum = maybe_read_dollar_number (&format_chars, 1,
+		  opnum = maybe_read_dollar_number (&format_chars,
+						    has_operand_number == 1,
 						    first_fillin_param,
 						    &params);
-		  if (opnum <= 0)
+		  if (opnum == -1)
 		    return;
+		  else if (opnum > 0)
+		    {
+		      has_operand_number = 1;
+		      arg_num = opnum + info->first_arg_num - 1;
+		    }
 		  else
-		    arg_num = opnum + info->first_arg_num - 1;
+		    has_operand_number = 0;
 		}
 	      if (info->first_arg_num != 0)
 		{
@@ -2230,16 +2239,22 @@ check_format_info (info, params)
 	      if (*format_chars == '*')
 		{
 		  ++format_chars;
-		  if (has_operand_number > 0)
+		  if (has_operand_number != 0)
 		    {
 		      int opnum;
-		      opnum = maybe_read_dollar_number (&format_chars, 1,
+		      opnum = maybe_read_dollar_number (&format_chars,
+							has_operand_number == 1,
 							first_fillin_param,
 							&params);
-		      if (opnum <= 0)
+		      if (opnum == -1)
 			return;
+		      else if (opnum > 0)
+			{
+			  has_operand_number = 1;
+			  arg_num = opnum + info->first_arg_num - 1;
+			}
 		      else
-			arg_num = opnum + info->first_arg_num - 1;
+			has_operand_number = 0;
 		    }
 		  if (info->first_arg_num != 0)
 		    {
@@ -2466,16 +2481,36 @@ check_format_info (info, params)
       /* Finally. . .check type of argument against desired type!  */
       if (info->first_arg_num == 0)
 	continue;
-      if (!(fci->pointer_count == 0 && wanted_type == void_type_node))
+      if (fci->pointer_count == 0 && wanted_type == void_type_node)
 	{
-	  if (params == 0)
+	  if (main_arg_num != 0)
+	    warning ("operand number specified for format taking no argument");
+	}
+      else
+	{
+	  if (main_arg_num != 0)
 	    {
-	      tfaff ();
-	      return;
+	      arg_num = main_arg_num;
+	      params = main_arg_params;
+	    }
+	  else
+	    {
+	      ++arg_num;
+	      if (has_operand_number > 0)
+		{
+		  warning ("missing $ operand number in format");
+		  return;
+		}
+	      else
+		has_operand_number = 0;
+	      if (params == 0)
+		{
+		  tfaff ();
+		  return;
+		}
 	    }
 	  cur_param = TREE_VALUE (params);
 	  params = TREE_CHAIN (params);
-	  ++arg_num;
 	  main_wanted_type.wanted_type = wanted_type;
 	  main_wanted_type.wanted_type_name = wanted_type_name;
 	  main_wanted_type.pointer_count = fci->pointer_count + aflag;
