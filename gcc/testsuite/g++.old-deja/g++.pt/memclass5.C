@@ -13,6 +13,8 @@ void f ()
   typename A<T>::template B<U> b2;
   b.A<T>::template B<U>::~B();
 }
+
+template <class T> struct C: public A<T>::B<T> { };
   
 main ()
 {
