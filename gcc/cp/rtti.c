@@ -62,16 +62,17 @@ static tree throw_bad_typeid PARAMS((void));
 static tree get_tinfo_decl_dynamic PARAMS((tree));
 static tree tinfo_from_decl PARAMS((tree));
 static int qualifier_flags PARAMS((tree));
+static int target_incomplete_p PARAMS((tree));
 static tree tinfo_base_init PARAMS((tree, tree));
 static tree generic_initializer PARAMS((tree, tree));
-static tree ptr_initializer PARAMS((tree, tree));
-static tree ptmd_initializer PARAMS((tree, tree));
+static tree ptr_initializer PARAMS((tree, tree, int *));
+static tree ptmd_initializer PARAMS((tree, tree, int *));
 static tree dfs_class_hint_mark PARAMS ((tree, void *));
 static tree dfs_class_hint_unmark PARAMS ((tree, void *));
 static int class_hint_flags PARAMS((tree));
 static tree class_initializer PARAMS((tree, tree, tree));
 static tree synthesize_tinfo_var PARAMS((tree, tree));
-static tree create_real_tinfo_var PARAMS((tree, tree, tree));
+static tree create_real_tinfo_var PARAMS((tree, tree, tree, int));
 static tree create_pseudo_type_info PARAMS((const char *, int, ...));
 static tree get_vmi_pseudo_type_info PARAMS((int));
 static void create_tinfo_types PARAMS((void));
@@ -95,14 +96,16 @@ init_rtti_processing ()
           (build_qualified_type
             (type_info_type_node, TYPE_QUAL_CONST)),
          void_list_node);
+      tinfo_var_id = get_identifier ("__ti");
     }
   else
     {
+      /* FIXME: These identifier prefixes are not set in stone yet.  */
       tinfo_decl_id = get_identifier ("__ti");
+      tinfo_var_id = get_identifier ("__tn");
       tinfo_decl_type = build_qualified_type
                           (type_info_type_node, TYPE_QUAL_CONST);
     }
-  tinfo_var_id = get_identifier ("__ti");
 }
 
 /* Given a pointer to an object with at least one virtual table
@@ -1296,16 +1299,61 @@ qualifier_flags (type)
   return flags;
 }
 
+/* Return non-zero, if the pointer chain TYPE ends at an incomplete type, or
+   contains a pointer to member of an incomplete class.  */
+
+static int
+target_incomplete_p (type)
+     tree type;
+{
+  while (TREE_CODE (type) == POINTER_TYPE)
+    if (TYPE_PTRMEM_P (type))
+      {
+        if (!COMPLETE_TYPE_P (TYPE_PTRMEM_CLASS_TYPE (type)))
+          return 1;
+        type = TYPE_PTRMEM_POINTED_TO_TYPE (type);
+      }
+    else
+      type = TREE_TYPE (type);
+  if (!COMPLETE_OR_VOID_TYPE_P (type))
+    return 1;
+  
+  return 0;
+}
+
 /* Return a CONSTRUCTOR for the common part of the type_info objects. This
-   is the vtable pointer and NTBS name.  */
+   is the vtable pointer and NTBS name.  The NTBS name is emitted as a
+   comdat const char array, so it becomes a unique key for the type. Generate
+   and emit that VAR_DECL here.  (We can't always emit the type_info itself
+   as comdat, because of pointers to incomplete.) */
 
 static tree
 tinfo_base_init (desc, target)
      tree desc;
      tree target;
 {
-  tree name_string = tinfo_name (target);
   tree init = NULL_TREE;
+  tree name_decl;
+  
+  {
+    /* Generate the NTBS array variable.  */
+    tree name_name = build_overload_with_type (tinfo_var_id, target);
+    tree name_type = build_cplus_array_type
+                     (build_qualified_type (char_type_node, TYPE_QUAL_CONST),
+                     NULL_TREE);
+    tree name_string = tinfo_name (target);
+    name_decl = build_lang_decl (VAR_DECL, name_name, name_type);
+    
+    DECL_ARTIFICIAL (name_decl) = 1;
+    TREE_READONLY (name_decl) = 1;
+    TREE_STATIC (name_decl) = 1;
+    DECL_EXTERNAL (name_decl) = 0;
+    TREE_PUBLIC (name_decl) = 1;
+    comdat_linkage (name_decl);
+    DECL_ASSEMBLER_NAME (name_decl) = DECL_NAME (name_decl);
+    DECL_INITIAL (name_decl) = name_string;
+    cp_finish_decl (name_decl, name_string, NULL_TREE, 0);
+  }
   
   if (TINFO_VTABLE_DECL (desc))
     {
@@ -1313,7 +1361,7 @@ tinfo_base_init (desc, target)
       init = tree_cons (NULL_TREE, vtbl_ptr, init);
     }
   
-  init = tree_cons (NULL_TREE, decay_conversion (name_string), init);
+  init = tree_cons (NULL_TREE, decay_conversion (name_decl), init);
   
   init = build (CONSTRUCTOR, NULL_TREE, NULL_TREE, nreverse (init));
   TREE_HAS_CONSTRUCTOR (init) = TREE_CONSTANT (init) = TREE_STATIC (init) = 1;
@@ -1343,14 +1391,21 @@ generic_initializer (desc, target)
    which adds target type and qualifier flags members to the type_info base.  */
 
 static tree
-ptr_initializer (desc, target)
+ptr_initializer (desc, target, non_public_ptr)
      tree desc;
      tree target;
+     int *non_public_ptr;
 {
   tree init = tinfo_base_init (desc, target);
   tree to = TREE_TYPE (target);
   int flags = qualifier_flags (to);
+  int incomplete = target_incomplete_p (to);
   
+  if (incomplete)
+    {
+      flags |= 8;
+      *non_public_ptr = 1;
+    }
   init = tree_cons (NULL_TREE, build_int_2 (flags, 0), init);
   init = tree_cons (NULL_TREE,
                     build_unary_op (ADDR_EXPR,
@@ -1364,18 +1419,28 @@ ptr_initializer (desc, target)
 
 /* Return the CONSTRUCTOR expr for a type_info of pointer to member data TYPE.
    DESC provides information about the particular type_info derivation,
-   which adds target type and qualifier flags members to the type_info base.  */
+   which adds class, target type and qualifier flags members to the type_info
+   base.  */
 
 static tree
-ptmd_initializer (desc, target)
+ptmd_initializer (desc, target, non_public_ptr)
      tree desc;
      tree target;
+     int *non_public_ptr;
 {
   tree init = tinfo_base_init (desc, target);
   tree to = TYPE_PTRMEM_POINTED_TO_TYPE (target);
   tree klass = TYPE_PTRMEM_CLASS_TYPE (target);
   int flags = qualifier_flags (to);
+  int incomplete = target_incomplete_p (to);
   
+  if (incomplete)
+    {
+      flags |= 0x8;
+      *non_public_ptr = 1;
+    }
+  if (!COMPLETE_TYPE_P (klass))
+    flags |= 0x10;
   init = tree_cons (NULL_TREE, build_int_2 (flags, 0), init);
   init = tree_cons (NULL_TREE,
                     build_unary_op (ADDR_EXPR,
@@ -1489,6 +1554,7 @@ synthesize_tinfo_var (target_type, real_name)
 {
   tree var_init = NULL_TREE;
   tree var_type = NULL_TREE;
+  int non_public = 0;
   
   my_friendly_assert (new_abi_rtti_p (), 20000118);
 
@@ -1498,7 +1564,7 @@ synthesize_tinfo_var (target_type, real_name)
       if (TYPE_PTRMEM_P (target_type))
         {
           var_type = ptmd_desc_type_node;
-          var_init = ptmd_initializer (var_type, target_type);
+          var_init = ptmd_initializer (var_type, target_type, &non_public);
         }
       else
         {
@@ -1513,7 +1579,7 @@ synthesize_tinfo_var (target_type, real_name)
             /* These are in the runtime.  */
             return NULL_TREE;
           var_type = ptr_desc_type_node;
-          var_init = ptr_initializer (var_type, target_type);
+          var_init = ptr_initializer (var_type, target_type, &non_public);
         }
       break;
     case ENUMERAL_TYPE:
@@ -1532,8 +1598,10 @@ synthesize_tinfo_var (target_type, real_name)
     case RECORD_TYPE:
       if (!COMPLETE_TYPE_P (target_type))
         {
-          /* FIXME: incomplete type. Awaiting specification.  */
-          return NULL_TREE;
+          /* Emit a non-public class_type_info.  */
+          non_public = 1;
+          var_type = class_desc_type_node;
+          var_init = class_initializer (var_type, target_type, NULL_TREE);
         }
       else if (!CLASSTYPE_N_BASECLASSES (target_type))
         {
@@ -1620,32 +1688,48 @@ synthesize_tinfo_var (target_type, real_name)
       my_friendly_abort (20000117);
     }
   
-  return create_real_tinfo_var (real_name, TINFO_PSEUDO_TYPE (var_type), var_init);
+  
+  return create_real_tinfo_var (real_name, TINFO_PSEUDO_TYPE (var_type),
+                                var_init, non_public);
 }
 
-/* Create the real typeinfo variable.  */
+/* Create the real typeinfo variable.  NON_PUBLIC indicates that we cannot
+   make this variable public (comdat). */
 
 static tree
-create_real_tinfo_var (name, type, init)
+create_real_tinfo_var (name, type, init, non_public)
      tree name;
      tree type;
      tree init;
+     int non_public;
 {
+  static int count = 0;
   tree decl;
+  tree hidden_name;
+  char hidden[30];
   
-  decl = build_lang_decl (VAR_DECL, name,
+  sprintf (hidden, "%.*s_%d",
+           IDENTIFIER_LENGTH (tinfo_decl_id), IDENTIFIER_POINTER (tinfo_decl_id),
+           count++);
+  hidden_name = get_identifier (hidden);
+  
+  decl = build_lang_decl (VAR_DECL, hidden_name,
                           build_qualified_type (type, TYPE_QUAL_CONST));
   DECL_ARTIFICIAL (decl) = 1;
   TREE_READONLY (decl) = 1;
   TREE_STATIC (decl) = 1;
-  TREE_PUBLIC (decl) = 1;
   DECL_EXTERNAL (decl) = 0;
   
-  comdat_linkage (decl);
+  if (!non_public)
+    {
+      TREE_PUBLIC (decl) = 1;
+      comdat_linkage (decl);
+    }
   DECL_ASSEMBLER_NAME (decl) = name;
   DECL_INITIAL (decl) = init;
   cp_finish_decl (decl, init, NULL_TREE, 0);
-  
+  pushdecl_top_level (decl);
+  TREE_USED (decl) = 1;
   return decl;
 }
 
@@ -1951,7 +2035,7 @@ tinfo_decl_p (t, data)
    actual type this is describing. The DECL_ASSEMBLER_NAME of the generated
    definition is set to that of the supplied decl, so that they can be tied
    up. Mark the supplied decl as having been dealt with. Emitting one
-   definitions might cause other declarations to be emitted.
+   definition might cause other definitions to be required.
    
    We need to do things this way, because we're trying to do something like
    

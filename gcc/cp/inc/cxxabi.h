@@ -68,7 +68,8 @@ public:
     const_mask = 0x1,
     volatile_mask = 0x2,
     restrict_mask = 0x4,
-    incomplete_mask = 0x8
+    incomplete_mask = 0x8,
+    incomplete_class_mask = 0x10
   };
 
 /* implementation defined member functions */

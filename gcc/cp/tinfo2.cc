@@ -438,10 +438,5 @@ BUILTIN (v); BUILTIN (x); BUILTIN (l); BUILTIN (i); BUILTIN (s); BUILTIN (b);
 BUILTIN (c); BUILTIN (w); BUILTIN (r); BUILTIN (d); BUILTIN (f);
 BUILTIN (Ui); BUILTIN (Ul); BUILTIN (Ux); BUILTIN (Us); BUILTIN (Uc);
 BUILTIN (Sc);
-#else
-// new abi
-
-// we need to define the fundamental type type_info's, but the name mangling is
-// not yet defined.
 
 #endif
