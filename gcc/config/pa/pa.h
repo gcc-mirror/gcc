@@ -2260,3 +2260,40 @@ extern struct rtx_def *return_addr_rtx ();
 
 /* The number of Pmode words for the setjmp buffer.  */
 #define JMP_BUF_SIZE 50
+
+#define PREDICATE_CODES							\
+  {"reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\
+  {"call_operand_address", {LABEL_REF, SYMBOL_REF, CONST_INT,		\
+			    CONST_DOUBLE, CONST, HIGH, CONSTANT_P_RTX}}, \
+  {"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST}},			\
+  {"symbolic_memory_operand", {SUBREG, MEM}},				\
+  {"reg_or_nonsymb_mem_operand", {SUBREG, REG, MEM}},			\
+  {"reg_or_0_or_nonsymb_mem_operand", {SUBREG, REG, MEM, CONST_INT,	\
+				       CONST_DOUBLE}},			\
+  {"move_operand", {SUBREG, REG, CONSTANT_P_RTX, CONST_INT, MEM}},	\
+  {"reg_or_cint_move_operand", {SUBREG, REG, CONST_INT}},		\
+  {"pic_label_operand", {LABEL_REF, CONST}},				\
+  {"fp_reg_operand", {REG}},						\
+  {"arith_operand", {SUBREG, REG, CONST_INT}},				\
+  {"arith11_operand", {SUBREG, REG, CONST_INT}},			\
+  {"pre_cint_operand", {CONST_INT}},					\
+  {"post_cint_operand", {CONST_INT}},					\
+  {"arith_double_operand", {SUBREG, REG, CONST_DOUBLE}},		\
+  {"ireg_or_int5_operand", {CONST_INT, REG}},				\
+  {"int5_operand", {CONST_INT}},					\
+  {"uint5_operand", {CONST_INT}},					\
+  {"int11_operand", {CONST_INT}},					\
+  {"uint32_operand", {CONST_INT,					\
+   HOST_BITS_PER_WIDE_INT > 32 ? 0 : CONST_DOUBLE}},			\
+  {"arith5_operand", {SUBREG, REG, CONST_INT}},				\
+  {"and_operand", {SUBREG, REG, CONST_INT}},				\
+  {"ior_operand", {CONST_INT}},						\
+  {"lhs_lshift_cint_operand", {CONST_INT}},				\
+  {"lhs_lshift_operand", {SUBREG, REG, CONST_INT}},			\
+  {"arith32_operand", {SUBREG, REG, CONST_INT}},			\
+  {"pc_or_label_operand", {PC, LABEL_REF}},				\
+  {"plus_xor_ior_operator", {PLUS, XOR, IOR}},				\
+  {"shadd_operand", {CONST_INT}},					\
+  {"basereg_operand", {REG}},						\
+  {"div_operand", {REG, CONST_INT}},					\
+  {"movb_comparison_operator", {EQ, NE, LT, GE}},
