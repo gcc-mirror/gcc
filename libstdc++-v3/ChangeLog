@@ -1,3 +1,7 @@
+2000-09-08  Felix Natter  <fnatter@gmx.net>
+
+	* docs/17_intro/porting-howto.html:  New version.
+
 2000-09-07  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* config/cpu/i386/bits/atomicity.h (__exchange_and_add): Change unused
