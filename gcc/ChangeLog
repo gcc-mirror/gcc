@@ -1,4 +1,12 @@
 2003-10-26  Andreas Jaeger  <aj@suse.de>
+	    Zack Weinberg  <zack@codesourcery.com>
+	    Andreas Tobler <toa@pop.agri.ch>
+
+	* dwarf2out.c (output_cfi): Use HOST_WIDE_INT_PRINT.
+	(output_die): Likewise.
+	(print_die): Likewise.
+
+2003-10-26  Andreas Jaeger  <aj@suse.de>
 
 	* tree.h (dwarf2out_def_cfa, dwarf2out_args_size,
 	dwarf2out_reg_save, new_loc_descr): Update prototypes for recent

@@ -1791,7 +1791,7 @@ output_cfi (dw_cfi_ref cfi, dw_fde_ref fde, int for_eh)
   if (cfi->dw_cfi_opc == DW_CFA_advance_loc)
     dw2_asm_output_data (1, (cfi->dw_cfi_opc
 			     | (cfi->dw_cfi_oprnd1.dw_cfi_offset & 0x3f)),
-			 "DW_CFA_advance_loc 0x%lx",
+			 "DW_CFA_advance_loc " HOST_WIDE_INT_PRINT_HEX,
 			 cfi->dw_cfi_oprnd1.dw_cfi_offset);
   else if (cfi->dw_cfi_opc == DW_CFA_offset)
     {
@@ -5234,10 +5234,10 @@ print_die (dw_die_ref die, FILE *outfile)
 	  fprintf (outfile, "range list");
 	  break;
 	case dw_val_class_const:
-	  fprintf (outfile, "%ld", AT_int (a));
+	  fprintf (outfile, HOST_WIDE_INT_PRINT_DEC, AT_int (a));
 	  break;
 	case dw_val_class_unsigned_const:
-	  fprintf (outfile, "%lu", AT_unsigned (a));
+	  fprintf (outfile, HOST_WIDE_INT_PRINT_UNSIGNED, AT_unsigned (a));
 	  break;
 	case dw_val_class_long_long:
 	  fprintf (outfile, "constant (%lu,%lu)",
@@ -6556,7 +6556,8 @@ output_die (dw_die_ref die)
 	  {
 	    char *p = strchr (ranges_section_label, '\0');
 
-	    sprintf (p, "+0x%lx", a->dw_attr_val.v.val_offset);
+	    sprintf (p, "+" HOST_WIDE_INT_PRINT_HEX,
+		     a->dw_attr_val.v.val_offset);
 	    dw2_asm_output_offset (DWARF_OFFSET_SIZE, ranges_section_label,
 				   "%s", name);
 	    *p = '\0';
