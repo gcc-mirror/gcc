@@ -189,6 +189,8 @@ extern int target_flags;
 
 #define CONDITIONAL_REGISTER_USAGE \
 {						\
+  unsigned int i;				\
+						\
   if (!TARGET_AM33)				\
     {						\
       for (i = FIRST_EXTENDED_REGNUM; 		\
