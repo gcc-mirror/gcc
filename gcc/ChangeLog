@@ -1,3 +1,13 @@
+2001-01-15  Philip Blundell  <philb@gnu.org>
+
+	* config/arm/arm.c (arm_finalize_pic): New arg "prologue".
+	(is_pic): Delete.
+	* config/arm/arm-protos.h (arm_finalize_pic): Update prototype.
+	(is_pic): Delete declaration.
+	* config/arm/arm.h (FINALIZE_PIC): Update call to above.
+	(OUTPUT_INT_ADDR_CONST): Remove special handling of PIC address.
+	* config/arm/arm.md (builtin_setjmp_receiver): Likewise.
+
 2001-01-15  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (use_return_insn): Don't try to determine the function type
