@@ -1,5 +1,10 @@
 2004-07-10  Bryce McKinlay  <mckinlay@redhat.com>
 
+	* testsuite/libjava.jacks/jacks.xfail: Updates to reflect current
+	status. 21 xfail's removed, 1 added.
+
+2004-07-10  Bryce McKinlay  <mckinlay@redhat.com>
+
 	* gcj/javaprims.h: Regenerate CNI namespace definitions.
 
 2004-07-10  Ito Kazumitsu  <kaz@maczuka.gcd.org>
