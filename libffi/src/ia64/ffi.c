@@ -29,622 +29,365 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include <float.h>
 
 #include "ia64_flags.h"
 
-/* Memory image of fp register contents.  Should eventually be an fp 	*/
-/* type long enough to hold an entire register.  For now we use double.	*/
-typedef double float80;
+/* A 64-bit pointer value.  In LP64 mode, this is effectively a plain
+   pointer.  In ILP32 mode, it's a pointer that's been extended to 
+   64 bits by "addp4".  */
+typedef void *PTR64 __attribute__((mode(DI)));
 
-/* The stack layout at call to ffi_prep_args.  Other_args will remain	*/
-/* on the stack for the actual call.  Everything else we be transferred	*/
-/* to registers and popped by the assembly code.			*/
+/* Memory image of fp register contents.  This is the implementation
+   specific format used by ldf.fill/stf.spill.  All we care about is
+   that it wants a 16 byte aligned slot.  */
+typedef struct
+{
+  UINT64 x[2] __attribute__((aligned(16)));
+} fpreg;
 
-struct ia64_args {
-    long scratch[2];	/* Two scratch words at top of stack.		*/
-			/* Allows sp to be passed as arg pointer.	*/
-    void * r8_contents;	/* Value to be passed in r8			*/
-    long spare;		/* Not used.					*/
-    float80 fp_regs[8]; /* Contents of 8 floating point argument 	*/
-			/* registers.					*/
-    long out_regs[8];	/* Contents of the 8 out registers used 	*/
-			/* for integer parameters.			*/
-    long other_args[0]; /* Arguments passed on stack, variable size	*/
-			/* Treated as continuation of out_regs.		*/
+
+/* The stack layout given to ffi_call_unix and ffi_closure_unix_inner.  */
+
+struct ia64_args
+{
+  fpreg fp_regs[8];	/* Contents of 8 fp arg registers.  */
+  UINT64 gp_regs[8];	/* Contents of 8 gp arg registers.  */
+  UINT64 other_args[];	/* Arguments passed on stack, variable size.  */
 };
 
-static size_t float_type_size(unsigned short tp)
+
+/* Adjust ADDR, a pointer to an 8 byte slot, to point to the low LEN bytes.  */
+
+static inline void *
+endian_adjust (void *addr, size_t len)
 {
-  switch(tp) {
-    case FFI_TYPE_FLOAT:
-      return sizeof(float);
-    case FFI_TYPE_DOUBLE:
-      return sizeof(double);
-#if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
-    case FFI_TYPE_LONGDOUBLE:
-      return sizeof(long double);
+#ifdef __BIG_ENDIAN__
+  return addr + (8 - len);
+#else
+  return addr;
 #endif
+}
+
+/* Store VALUE to ADDR in the current cpu implementation's fp spill format.  */
+
+static inline void
+stf_spill(fpreg *addr, __float80 value)
+{
+  asm ("stf.spill %0 = %1%P0" : "=m" (*addr) : "f"(value));
+}
+
+/* Load a value from ADDR, which is in the current cpu implementation's
+   fp spill format.  */
+
+static inline __float80
+ldf_fill(fpreg *addr)
+{
+  __float80 ret;
+  asm ("ldf.fill %0 = %1%P1" : "=f"(ret) : "m"(*addr));
+  return ret;
+}
+
+/* Return the size of the C type associated with with TYPE.  Which will
+   be one of the FFI_IA64_TYPE_HFA_* values.  */
+
+static size_t
+hfa_type_size (int type)
+{
+  switch (type)
+    {
+    case FFI_IA64_TYPE_HFA_FLOAT:
+      return sizeof(float);
+    case FFI_IA64_TYPE_HFA_DOUBLE:
+      return sizeof(double);
+    case FFI_IA64_TYPE_HFA_LDOUBLE:
+      return sizeof(__float80);
     default:
-      FFI_ASSERT(0);
-  }
+      abort ();
+    }
 }
 
-/*
- * Is type a struct containing at most n floats, doubles, or extended
- * doubles, all of the same fp type?
- * If so, set *element_type to the fp type.
- */
-static bool is_homogeneous_fp_aggregate(ffi_type * type, int n,
-				        unsigned short * element_type)
+/* Load from ADDR a value indicated by TYPE.  Which will be one of
+   the FFI_IA64_TYPE_HFA_* values.  */
+
+static __float80
+hfa_type_load (int type, void *addr)
 {
-  ffi_type **ptr; 
-  unsigned short element, struct_element;
-
-  int type_set = 0;
-
-  FFI_ASSERT(type != NULL);
-
-  FFI_ASSERT(type->elements != NULL);
-
-  ptr = &(type->elements[0]);
-
-  while ((*ptr) != NULL)
+  switch (type)
     {
-      switch((*ptr) -> type) {
-	case FFI_TYPE_FLOAT:
-	  if (type_set && element != FFI_TYPE_FLOAT) return 0;
-	  if (--n < 0) return false;
-	  type_set = 1;
-	  element = FFI_TYPE_FLOAT;
-	  break;
-	case FFI_TYPE_DOUBLE:
-	  if (type_set && element != FFI_TYPE_DOUBLE) return 0;
-	  if (--n < 0) return false;
-	  type_set = 1;
-	  element = FFI_TYPE_DOUBLE;
-	  break;
-	case FFI_TYPE_STRUCT:
-	  if (!is_homogeneous_fp_aggregate(type, n, &struct_element))
-	      return false;
-	  if (type_set && struct_element != element) return false;
-	  n -= (type -> size)/float_type_size(element);
-	  element = struct_element;
-	  if (n < 0) return false;
-	  break;
-	/* case FFI_TYPE_LONGDOUBLE:
-	  Not yet implemented.	*/
-	default:
-	  return false;
-      }
-      ptr++;
+    case FFI_IA64_TYPE_HFA_FLOAT:
+      return *(float *) addr;
+    case FFI_IA64_TYPE_HFA_DOUBLE:
+      return *(double *) addr;
+    case FFI_IA64_TYPE_HFA_LDOUBLE:
+      return *(__float80 *) addr;
+    default:
+      abort ();
     }
-  *element_type = element;
-  return true;
-   
-} 
-
-/* ffi_prep_args is called by the assembly routine once stack space
-   has been allocated for the function's arguments.  It fills in
-   the arguments in the structure referenced by stack. Returns nonzero
-   if fp registers are used for arguments. */
-
-static bool
-ffi_prep_args(struct ia64_args *stack, extended_cif *ecif, int bytes)
-{
-  register long i, avn;
-  register void **p_argv;
-  register long *argp = stack -> out_regs;
-  register float80 *fp_argp = stack -> fp_regs;
-  register ffi_type **p_arg;
-
-  /* For big return structs, r8 needs to contain the target address.	*/
-  /* Since r8 is otherwise dead, we set it unconditionally.		*/
-  stack -> r8_contents = ecif -> rvalue;
-  i = 0;
-  avn = ecif->cif->nargs;
-  p_arg = ecif->cif->arg_types;
-  p_argv = ecif->avalue;
-  while (i < avn)
-    {
-      size_t z; /* z is in units of arg slots or words, not bytes.	*/
-
-      switch ((*p_arg)->type)
-	{
-	case FFI_TYPE_SINT8:
-	  z = 1;
-	  *(SINT64 *) argp = *(SINT8 *)(* p_argv);
-	  break;
-		  
-	case FFI_TYPE_UINT8:
-	  z = 1;
-	  *(UINT64 *) argp = *(UINT8 *)(* p_argv);
-	  break;
-		  
-	case FFI_TYPE_SINT16:
-	  z = 1;
-	  *(SINT64 *) argp = *(SINT16 *)(* p_argv);
-	  break;
-		  
-	case FFI_TYPE_UINT16:
-	  z = 1;
-	  *(UINT64 *) argp = *(UINT16 *)(* p_argv);
-	  break;
-		  
-	case FFI_TYPE_SINT32:
-	  z = 1;
-	  *(SINT64 *) argp = *(SINT32 *)(* p_argv);
-	  break;
-		  
-	case FFI_TYPE_UINT32:
-	  z = 1;
-	  *(UINT64 *) argp = *(UINT32 *)(* p_argv);
-	  break;
-
-	case FFI_TYPE_SINT64:
-	case FFI_TYPE_UINT64:
-	case FFI_TYPE_POINTER:
-	  z = 1;
-	  *(UINT64 *) argp = *(UINT64 *)(* p_argv);
-	  break;
-
-	case FFI_TYPE_FLOAT:
-	  z = 1;
-	  if (fp_argp - stack->fp_regs < 8)
-	    {
-	      /* Note the conversion -- all the fp regs are loaded as
-		 doubles.  */
-	      *fp_argp++ = *(float *)(* p_argv);
-	    }
-	  /* Also put it into the integer registers or memory: */
-	  *(UINT64 *) argp = *(UINT32 *)(* p_argv);
-	  break;
-
-	case FFI_TYPE_DOUBLE:
-	  z = 1;
-	  if (fp_argp - stack->fp_regs < 8)
-	    *fp_argp++ = *(double *)(* p_argv);
-	  /* Also put it into the integer registers or memory: */
-	  *(double *) argp = *(double *)(* p_argv);
-	  break;
-
-	case FFI_TYPE_STRUCT:
-	  {
-	      size_t sz = (*p_arg)->size;
-	      unsigned short element_type;
-              z = ((*p_arg)->size + FFI_SIZEOF_ARG - 1)/FFI_SIZEOF_ARG;
-	      if (is_homogeneous_fp_aggregate(*p_arg, 8, &element_type)) {
-		int i;
-		int nelements = sz/float_type_size(element_type);
-		for (i = 0; i < nelements; ++i) {
-		  switch (element_type) {
-		    case FFI_TYPE_FLOAT:
-		      if (fp_argp - stack->fp_regs < 8)
-			*fp_argp++ = ((float *)(* p_argv))[i];
-		      break;
-		    case FFI_TYPE_DOUBLE:
-		      if (fp_argp - stack->fp_regs < 8)
-			*fp_argp++ = ((double *)(* p_argv))[i];
-		      break;
-		    default:
-			/* Extended precision not yet implemented. */
-			abort();
-		  }
-		}
-	      }
-	      /* And pass it in integer registers as a struct, with	*/
-	      /* its actual field sizes packed into registers.		*/
-	      memcpy(argp, *p_argv, (*p_arg)->size);
-	  }
-	  break;
-
-	default:
-	  FFI_ASSERT(0);
-	}
-
-      argp += z;
-      i++, p_arg++, p_argv++;
-    }
-  return (fp_argp != stack -> fp_regs);
 }
 
-/* Perform machine dependent cif processing */
-ffi_status
-ffi_prep_cif_machdep(ffi_cif *cif)
+/* Load VALUE into ADDR as indicated by TYPE.  Which will be one of
+   the FFI_IA64_TYPE_HFA_* values.  */
+
+static void
+hfa_type_store (int type, void *addr, __float80 value)
 {
-  long i, avn;
-  bool is_simple = true;
-  long simple_flag = FFI_SIMPLE_V;
-  /* Adjust cif->bytes to include space for the 2 scratch words,
-     r8 register contents, spare word,
-     the 8 fp register contents, and all 8 integer register contents.
-     This will be removed before the call, though 2 scratch words must
-     remain.  */
-
-  cif->bytes += 4*sizeof(long) + 8 *sizeof(float80);
-  if (cif->bytes < sizeof(struct ia64_args))
-    cif->bytes = sizeof(struct ia64_args);
-
-  /* The stack must be double word aligned, so round bytes up
-     appropriately. */
-
-  cif->bytes = ALIGN(cif->bytes, 2*sizeof(void*));
-
-  avn = cif->nargs;
-  if (avn <= 2) {
-    for (i = 0; i < avn; ++i) {
-      switch(cif -> arg_types[i] -> type) {
-	case FFI_TYPE_SINT32:
-	  simple_flag = FFI_ADD_INT_ARG(simple_flag);
-	  break;
-	case FFI_TYPE_SINT64:
-	case FFI_TYPE_UINT64:
-	case FFI_TYPE_POINTER:
-	  simple_flag = FFI_ADD_LONG_ARG(simple_flag);
-	  break;
-	default:
-	  is_simple = false;
-      }
-    }
-  } else {
-    is_simple = false;
-  }
-
-  /* Set the return type flag */
-  switch (cif->rtype->type)
+  switch (type)
     {
-    case FFI_TYPE_VOID:
-      cif->flags = FFI_TYPE_VOID;
+    case FFI_IA64_TYPE_HFA_FLOAT:
+      *(float *) addr = value;
+      break;
+    case FFI_IA64_TYPE_HFA_DOUBLE:
+      *(double *) addr = value;
+      break;
+    case FFI_IA64_TYPE_HFA_LDOUBLE:
+      *(__float80 *) addr = value;
+      break;
+    default:
+      abort ();
+    }
+}
+
+/* Is TYPE a struct containing floats, doubles, or extended doubles,
+   all of the same fp type?  If so, return the element type.  Return
+   FFI_TYPE_VOID if not.  */
+
+static int
+hfa_element_type (ffi_type *type, int nested)
+{
+  int element = FFI_TYPE_VOID;
+
+  switch (type->type)
+    {
+    case FFI_TYPE_FLOAT:
+      /* We want to return VOID for raw floating-point types, but the
+	 synthetic HFA type if we're nested within an aggregate.  */
+      if (nested)
+	element = FFI_IA64_TYPE_HFA_FLOAT;
+      break;
+
+    case FFI_TYPE_DOUBLE:
+      /* Similarly.  */
+      if (nested)
+	element = FFI_IA64_TYPE_HFA_DOUBLE;
+      break;
+
+    case FFI_TYPE_LONGDOUBLE:
+      /* Similarly, except that that HFA is true for double extended,
+	 but not quad precision.  Both have sizeof == 16, so tell the
+	 difference based on the precision.  */
+      if (LDBL_MANT_DIG == 64 && nested)
+	element = FFI_IA64_TYPE_HFA_LDOUBLE;
       break;
 
     case FFI_TYPE_STRUCT:
       {
-        size_t sz = cif -> rtype -> size;
-  	unsigned short element_type;
+	ffi_type **ptr = &type->elements[0];
 
-	is_simple = false;
-  	if (is_homogeneous_fp_aggregate(cif -> rtype, 8, &element_type)) {
-	  int nelements = sz/float_type_size(element_type);
-	  if (nelements <= 1) {
-	    if (0 == nelements) {
-	      cif -> flags = FFI_TYPE_VOID;
-	    } else {
-	      cif -> flags = element_type;
-	    }
-	  } else {
-	    switch(element_type) {
-	      case FFI_TYPE_FLOAT:
-	        cif -> flags = FFI_IS_FLOAT_FP_AGGREGATE | nelements;
-		break;
-	      case FFI_TYPE_DOUBLE:
-	        cif -> flags = FFI_IS_DOUBLE_FP_AGGREGATE | nelements;
-		break;
-	      default:
-		/* long double NYI */
-		abort();
-	    }
+	for (ptr = &type->elements[0]; *ptr ; ptr++)
+	  {
+	    int sub_element = hfa_element_type (*ptr, 1);
+	    if (sub_element == FFI_TYPE_VOID)
+	      return FFI_TYPE_VOID;
+
+	    if (element == FFI_TYPE_VOID)
+	      element = sub_element;
+	    else if (element != sub_element)
+	      return FFI_TYPE_VOID;
 	  }
-	  break;
-        }
-        if (sz <= 32) {
-	  if (sz <= 8) {
-              cif->flags = FFI_TYPE_INT;
-  	  } else if (sz <= 16) {
-              cif->flags = FFI_IS_SMALL_STRUCT2;
-  	  } else if (sz <= 24) {
-              cif->flags = FFI_IS_SMALL_STRUCT3;
-	  } else {
-              cif->flags = FFI_IS_SMALL_STRUCT4;
-	  }
-        } else {
-          cif->flags = FFI_TYPE_STRUCT;
-	}
       }
       break;
 
-    case FFI_TYPE_FLOAT:
-      is_simple = false;
-      cif->flags = FFI_TYPE_FLOAT;
+    default:
+      return FFI_TYPE_VOID;
+    }
+
+  return element;
+}
+
+
+/* Perform machine dependent cif processing. */
+
+ffi_status
+ffi_prep_cif_machdep(ffi_cif *cif)
+{
+  int flags;
+
+  /* Adjust cif->bytes to include space for the bits of the ia64_args frame
+     that preceeds the integer register portion.  The estimate that the 
+     generic bits did for the argument space required is good enough for the
+     integer component.  */
+  cif->bytes += offsetof(struct ia64_args, gp_regs[0]);
+  if (cif->bytes < sizeof(struct ia64_args))
+    cif->bytes = sizeof(struct ia64_args);
+
+  /* Set the return type flag. */
+  flags = cif->rtype->type;
+  switch (cif->rtype->type)
+    {
+    case FFI_TYPE_LONGDOUBLE:
+      /* Leave FFI_TYPE_LONGDOUBLE as meaning double extended precision,
+	 and encode quad precision as a two-word integer structure.  */
+      if (LDBL_MANT_DIG != 64)
+	flags = FFI_IA64_TYPE_SMALL_STRUCT | (16 << 8);
       break;
 
-    case FFI_TYPE_DOUBLE:
-      is_simple = false;
-      cif->flags = FFI_TYPE_DOUBLE;
+    case FFI_TYPE_STRUCT:
+      {
+        size_t size = cif->rtype->size;
+  	int hfa_type = hfa_element_type (cif->rtype, 0);
+
+	if (hfa_type != FFI_TYPE_VOID)
+	  {
+	    size_t nelts = size / hfa_type_size (hfa_type);
+	    if (nelts <= 8)
+	      flags = hfa_type | (size << 8);
+	  }
+	else
+	  {
+	    if (size <= 32)
+	      flags = FFI_IA64_TYPE_SMALL_STRUCT | (size << 8);
+	  }
+      }
       break;
 
     default:
-      cif->flags = FFI_TYPE_INT;
-      /* This seems to depend on little endian mode, and the fact that	*/
-      /* the return pointer always points to at least 8 bytes.  But 	*/
-      /* that also seems to be true for other platforms.		*/
       break;
     }
-  
-  if (is_simple) cif -> flags |= simple_flag;
+  cif->flags = flags;
+
   return FFI_OK;
 }
 
-extern int ffi_call_unix(bool (*)(struct ia64_args *, extended_cif *, int), 
-			 extended_cif *, unsigned, 
-			 unsigned, unsigned *, void (*)());
+extern int ffi_call_unix (struct ia64_args *, PTR64, void (*)(), UINT64);
 
 void
 ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
 {
-  extended_cif ecif;
-  long simple = cif -> flags & FFI_SIMPLE;
+  struct ia64_args *stack;
+  long i, avn, gpcount, fpcount;
+  ffi_type **p_arg;
 
-  /* Should this also check for Unix ABI? */
-  /* This is almost, but not quite, machine independent.  Note that	*/
-  /* we can get away with not caring about length of the result because	*/
-  /* we assume we are little endian, and the result buffer is large 	*/
-  /* enough.								*/
-  /* This needs work for HP/UX.						*/
-  if (simple) {
-    long (*lfn)() = (long (*)())fn;
-    long result;
-    switch(simple) {
-      case FFI_SIMPLE_V:
-	result = lfn();
-	break;
-      case FFI_SIMPLE_I:
-	result = lfn(*(int *)avalue[0]);
-	break;
-      case FFI_SIMPLE_L:
-	result = lfn(*(long *)avalue[0]);
-	break;
-      case FFI_SIMPLE_II:
-	result = lfn(*(int *)avalue[0], *(int *)avalue[1]);
-	break;
-      case FFI_SIMPLE_IL:
-	result = lfn(*(int *)avalue[0], *(long *)avalue[1]);
-	break;
-      case FFI_SIMPLE_LI:
-	result = lfn(*(long *)avalue[0], *(int *)avalue[1]);
-	break;
-      case FFI_SIMPLE_LL:
-	result = lfn(*(long *)avalue[0], *(long *)avalue[1]);
-	break;
-    }
-    if ((cif->flags & ~FFI_SIMPLE) != FFI_TYPE_VOID && 0 != rvalue) {
-      * (long *)rvalue = result;
-    }
-    return;
-  }
-  ecif.cif = cif;
-  ecif.avalue = avalue;
-  
-  /* If the return value is a struct and we don't have a return
-     value address then we need to make one.  */
-  
-  if (rvalue == NULL && cif->rtype->type == FFI_TYPE_STRUCT)
-    ecif.rvalue = alloca(cif->rtype->size);
-  else
-    ecif.rvalue = rvalue;
+  FFI_ASSERT (cif->abi == FFI_UNIX);
+
+  /* If we have no spot for a return value, make one.  */
+  if (rvalue == NULL && cif->rtype->type != FFI_TYPE_VOID)
+    rvalue = alloca (cif->rtype->size);
     
-  switch (cif->abi) 
-    {
-    case FFI_UNIX:
-      ffi_call_unix(ffi_prep_args, &ecif, cif->bytes,
-		    cif->flags, rvalue, fn);
-      break;
+  /* Allocate the stack frame.  */
+  stack = alloca (cif->bytes);
 
-    default:
-      FFI_ASSERT(0);
-      break;
-    }
-}
-
-/*
- * Closures represent a pair consisting of a function pointer, and
- * some user data.  A closure is invoked by reinterpreting the closure
- * as a function pointer, and branching to it.  Thus we can make an
- * interpreted function callable as a C function:  We turn the interpreter
- * itself, together with a pointer specifying the interpreted procedure,
- * into a closure.
- * On X86, the first few words of the closure structure actually contain code,
- * which will do the right thing.  On most other architectures, this
- * would raise some Icache/Dcache coherence issues (which can be solved, but
- * often not cheaply).
- * For IA64, function pointer are already pairs consisting of a code
- * pointer, and a gp pointer.  The latter is needed to access global variables.
- * Here we set up such a pair as the first two words of the closure (in
- * the "trampoline" area), but we replace the gp pointer with a pointer
- * to the closure itself.  We also add the real gp pointer to the
- * closure.  This allows the function entry code to both retrieve the
- * user data, and to restire the correct gp pointer.
- */
-
-static void 
-ffi_prep_incoming_args_UNIX(struct ia64_args *args, void **rvalue,
-			    void **avalue, ffi_cif *cif);
-
-/* This function is entered with the doctored gp (r1) value.
- * This code is extremely gcc specific.  There is some argument that
- * it should really be written in assembly code, since it depends on
- * gcc properties that might change over time.
- */
-
-/* ffi_closure_UNIX is an assembly routine, which copies the register 	*/
-/* state into a struct ia64_args, and then invokes			*/
-/* ffi_closure_UNIX_inner.  It also recovers the closure pointer	*/
-/* from its fake gp pointer.						*/
-void ffi_closure_UNIX();
-
-#ifndef __GNUC__
-#   error This requires gcc
-#endif
-void
-ffi_closure_UNIX_inner (ffi_closure *closure, struct ia64_args * args)
-/* Hopefully declaring this as a varargs function will force all args	*/
-/* to memory.								*/
-{
-  // this is our return value storage
-  long double    res;
-
-  // our various things...
-  ffi_cif       *cif;
-  unsigned short rtype;
-  void          *resp;
-  void		**arg_area;
-
-  resp = (void*)&res;
-  cif         = closure->cif;
-  arg_area    = (void**) alloca (cif->nargs * sizeof (void*));  
-
-  /* this call will initialize ARG_AREA, such that each
-   * element in that array points to the corresponding 
-   * value on the stack; and if the function returns
-   * a structure, it will re-set RESP to point to the
-   * structure return address.  */
-
-  ffi_prep_incoming_args_UNIX(args, (void**)&resp, arg_area, cif);
-  
-  (closure->fun) (cif, resp, arg_area, closure->user_data);
-
-  rtype = cif->flags;
-
-  /* now, do a generic return based on the value of rtype */
-  if (rtype == FFI_TYPE_INT)
-    {
-      asm volatile ("ld8 r8=[%0]" : : "r" (resp) : "r8");
-    }
-  else if (rtype == FFI_TYPE_FLOAT)
-    {
-      asm volatile ("ldfs f8=[%0]" : : "r" (resp) : "f8");
-    }
-  else if (rtype == FFI_TYPE_DOUBLE)
-    {
-      asm volatile ("ldfd f8=[%0]" : : "r" (resp) : "f8");
-    }
-  else if (rtype == FFI_IS_SMALL_STRUCT2)
-    {
-      asm volatile ("ld8 r8=[%0]; ld8 r9=[%1]"
-		    : : "r" (resp), "r" (resp+8) : "r8","r9");
-    }
-  else if (rtype == FFI_IS_SMALL_STRUCT3)
-    {
-      asm volatile ("ld8 r8=[%0]; ld8 r9=[%1]; ld8 r10=[%2]"
-		    : : "r" (resp), "r" (resp+8), "r" (resp+16)
-		    : "r8","r9","r10");
-    }
-  else if (rtype == FFI_IS_SMALL_STRUCT4)
-    {
-      asm volatile ("ld8 r8=[%0]; ld8 r9=[%1]; ld8 r10=[%2]; ld8 r11=[%3]"
-		    : : "r" (resp), "r" (resp+8), "r" (resp+16), "r" (resp+24)
-		    : "r8","r9","r10","r11");
-    }
-  else if (rtype != FFI_TYPE_VOID && rtype != FFI_TYPE_STRUCT)
-    {
-      /* Can only happen for homogeneous FP aggregates?	*/
-      abort();
-    }
-}
-
-static void 
-ffi_prep_incoming_args_UNIX(struct ia64_args *args, void **rvalue,
-			    void **avalue, ffi_cif *cif)
-{
-  register unsigned int i;
-  register unsigned int avn;
-  register void **p_argv;
-  register long *argp = args -> out_regs;
-  unsigned fp_reg_num = 0;
-  register ffi_type **p_arg;
-
+  gpcount = fpcount = 0;
   avn = cif->nargs;
-  p_argv = avalue;
-
-  for (i = cif->nargs, p_arg = cif->arg_types; i != 0; i--, p_arg++)
+  for (i = 0, p_arg = cif->arg_types; i < avn; i++, p_arg++)
     {
-      size_t z; /* In units of words or argument slots.	*/
-
       switch ((*p_arg)->type)
 	{
 	case FFI_TYPE_SINT8:
+	  stack->gp_regs[gpcount++] = *(SINT8 *)avalue[i];
+	  break;
 	case FFI_TYPE_UINT8:
+	  stack->gp_regs[gpcount++] = *(UINT8 *)avalue[i];
+	  break;
 	case FFI_TYPE_SINT16:
+	  stack->gp_regs[gpcount++] = *(SINT16 *)avalue[i];
+	  break;
 	case FFI_TYPE_UINT16:
+	  stack->gp_regs[gpcount++] = *(UINT16 *)avalue[i];
+	  break;
 	case FFI_TYPE_SINT32:
+	  stack->gp_regs[gpcount++] = *(SINT32 *)avalue[i];
+	  break;
 	case FFI_TYPE_UINT32:
+	  stack->gp_regs[gpcount++] = *(UINT32 *)avalue[i];
+	  break;
 	case FFI_TYPE_SINT64:
 	case FFI_TYPE_UINT64:
-	case FFI_TYPE_POINTER:
-	  z = 1;
-	  *p_argv = (void *)argp;
+	  stack->gp_regs[gpcount++] = *(UINT64 *)avalue[i];
 	  break;
-		  
+
+	case FFI_TYPE_POINTER:
+	  stack->gp_regs[gpcount++] = (UINT64)(PTR64) *(void **)avalue[i];
+	  break;
+
 	case FFI_TYPE_FLOAT:
-	  z = 1;
-	  /* Convert argument back to float in place from the saved value */
-	  if (argp - args->out_regs < 8 && fp_reg_num < 8) {
-	      *(float *)argp = args -> fp_regs[fp_reg_num++];
-	  }
-	  *p_argv = (void *)argp;
+	  if (gpcount < 8 && fpcount < 8)
+	    stf_spill (&stack->fp_regs[fpcount++], *(float *)avalue[i]);
+	  stack->gp_regs[gpcount++] = *(UINT32 *)avalue[i];
 	  break;
 
 	case FFI_TYPE_DOUBLE:
-	  z = 1;
-	  if (argp - args->out_regs < 8 && fp_reg_num < 8) {
-	      *p_argv = args -> fp_regs + fp_reg_num++;
-	  } else {
-	      *p_argv = (void *)argp;
-	  }
+	  if (gpcount < 8 && fpcount < 8)
+	    stf_spill (&stack->fp_regs[fpcount++], *(double *)avalue[i]);
+	  stack->gp_regs[gpcount++] = *(UINT64 *)avalue[i];
+	  break;
+
+	case FFI_TYPE_LONGDOUBLE:
+	  if (gpcount & 1)
+	    gpcount++;
+	  if (LDBL_MANT_DIG == 64 && gpcount < 8 && fpcount < 8)
+	    stf_spill (&stack->fp_regs[fpcount++], *(__float80 *)avalue[i]);
+	  memcpy (&stack->gp_regs[gpcount], avalue[i], 16);
+	  gpcount += 2;
 	  break;
 
 	case FFI_TYPE_STRUCT:
 	  {
-	      size_t sz = (*p_arg)->size;
-	      unsigned short element_type;
-              z = ((*p_arg)->size + FFI_SIZEOF_ARG - 1)/FFI_SIZEOF_ARG;
-	      if (argp - args->out_regs < 8
-		  && is_homogeneous_fp_aggregate(*p_arg, 8, &element_type)) {
-		int nelements = sz/float_type_size(element_type);
-		if (nelements + fp_reg_num >= 8) {
-		  /* hard case NYI.	*/
-		  abort();
-		}
-		if (element_type == FFI_TYPE_DOUBLE) {
-	          *p_argv = args -> fp_regs + fp_reg_num;
-		  fp_reg_num += nelements;
-		  break;
-		}
-		if (element_type == FFI_TYPE_FLOAT) {
-		  int j;
-		  for (j = 0; j < nelements; ++ j) {
-		     ((float *)argp)[j] = args -> fp_regs[fp_reg_num + j];
+	    size_t size = (*p_arg)->size;
+	    size_t align = (*p_arg)->alignment;
+	    int hfa_type = hfa_element_type (*p_arg, 0);
+
+	    FFI_ASSERT (align <= 16);
+	    if (align == 16 && (gpcount & 1))
+	      gpcount++;
+
+	    if (hfa_type != FFI_TYPE_VOID)
+	      {
+		size_t hfa_size = hfa_type_size (hfa_type);
+		size_t offset = 0;
+		size_t gp_offset = gpcount * 8;
+
+		while (fpcount < 8
+		       && offset < size
+		       && gp_offset < 8 * 8)
+		  {
+		    stf_spill (&stack->fp_regs[fpcount],
+			       hfa_type_load (hfa_type, avalue[i] + offset));
+		    offset += hfa_size;
+		    gp_offset += hfa_size;
+		    fpcount += 1;
 		  }
-	          *p_argv = (void *)argp;
-		  fp_reg_num += nelements;
-		  break;
-		}
-		abort();  /* Other fp types NYI */
 	      }
+
+	    memcpy (&stack->gp_regs[gpcount], avalue[i], size);
+	    gpcount += (size + 7) / 8;
 	  }
 	  break;
 
 	default:
-	  FFI_ASSERT(0);
+	  abort ();
 	}
-
-      argp += z;
-      p_argv++;
-
     }
-  
-  return;
+
+  ffi_call_unix (stack, rvalue, fn, cif->flags);
 }
 
+/* Closures represent a pair consisting of a function pointer, and
+   some user data.  A closure is invoked by reinterpreting the closure
+   as a function pointer, and branching to it.  Thus we can make an
+   interpreted function callable as a C function: We turn the
+   interpreter itself, together with a pointer specifying the
+   interpreted procedure, into a closure.
 
-/* Fill in a closure to refer to the specified fun and user_data.	*/
-/* cif specifies the argument and result types for fun.			*/
-/* the cif must already be prep'ed */
+   For IA64, function pointer are already pairs consisting of a code
+   pointer, and a gp pointer.  The latter is needed to access global
+   variables.  Here we set up such a pair as the first two words of
+   the closure (in the "trampoline" area), but we replace the gp
+   pointer with a pointer to the closure itself.  We also add the real
+   gp pointer to the closure.  This allows the function entry code to
+   both retrieve the user data, and to restire the correct gp pointer.  */
 
-/* The layout of a function descriptor.  A C function pointer really 	*/
-/* points to one of these.						*/
-typedef struct ia64_fd_struct {
-    void *code_pointer;
-    void *gp;
-} ia64_fd;
+extern void ffi_closure_unix ();
 
 ffi_status
 ffi_prep_closure (ffi_closure* closure,
@@ -652,20 +395,168 @@ ffi_prep_closure (ffi_closure* closure,
 		  void (*fun)(ffi_cif*,void*,void**,void*),
 		  void *user_data)
 {
-  struct ffi_ia64_trampoline_struct *tramp =
-    (struct ffi_ia64_trampoline_struct *) (closure -> tramp);
-  ia64_fd *fd = (ia64_fd *)(void *)ffi_closure_UNIX;
+  /* The layout of a function descriptor.  A C function pointer really 
+     points to one of these.  */
+  struct ia64_fd
+  {
+    UINT64 code_pointer;
+    UINT64 gp;
+  };
+
+  struct ffi_ia64_trampoline_struct
+  {
+    UINT64 code_pointer;	/* Pointer to ffi_closure_unix.  */
+    UINT64 fake_gp;		/* Pointer to closure, installed as gp.  */
+    UINT64 real_gp;		/* Real gp value.  */
+  };
+
+  struct ffi_ia64_trampoline_struct *tramp;
+  struct ia64_fd *fd;
 
   FFI_ASSERT (cif->abi == FFI_UNIX);
 
-  tramp -> code_pointer = fd -> code_pointer;
-  tramp -> real_gp = fd -> gp;
-  tramp -> fake_gp = closure;
-  closure->cif  = cif;
+  tramp = (struct ffi_ia64_trampoline_struct *)closure->tramp;
+  fd = (struct ia64_fd *)(void *)ffi_closure_unix;
+
+  tramp->code_pointer = fd->code_pointer;
+  tramp->real_gp = fd->gp;
+  tramp->fake_gp = (UINT64)(PTR64)closure;
+  closure->cif = cif;
   closure->user_data = user_data;
-  closure->fun  = fun;
+  closure->fun = fun;
 
   return FFI_OK;
 }
 
 
+UINT64
+ffi_closure_unix_inner (ffi_closure *closure, struct ia64_args *stack,
+			void *rvalue, void *r8)
+{
+  ffi_cif *cif;
+  void **avalue;
+  ffi_type **p_arg;
+  long i, avn, gpcount, fpcount;
+
+  cif = closure->cif;
+  avn = cif->nargs;
+  avalue = alloca (avn * sizeof (void *));
+
+  /* If the structure return value is passed in memory get that location
+     from r8 so as to pass the value directly back to the caller.  */
+  if (cif->flags == FFI_TYPE_STRUCT)
+    rvalue = r8;
+
+  gpcount = fpcount = 0;
+  for (i = 0, p_arg = cif->arg_types; i < avn; i++, p_arg++)
+    {
+      switch ((*p_arg)->type)
+	{
+	case FFI_TYPE_SINT8:
+	case FFI_TYPE_UINT8:
+	  avalue[i] = endian_adjust(&stack->gp_regs[gpcount++], 1);
+	  break;
+	case FFI_TYPE_SINT16:
+	case FFI_TYPE_UINT16:
+	  avalue[i] = endian_adjust(&stack->gp_regs[gpcount++], 2);
+	  break;
+	case FFI_TYPE_SINT32:
+	case FFI_TYPE_UINT32:
+	  avalue[i] = endian_adjust(&stack->gp_regs[gpcount++], 4);
+	  break;
+	case FFI_TYPE_SINT64:
+	case FFI_TYPE_UINT64:
+	  avalue[i] = &stack->gp_regs[gpcount++];
+	  break;
+	case FFI_TYPE_POINTER:
+	  avalue[i] = endian_adjust(&stack->gp_regs[gpcount++], sizeof(void*));
+	  break;
+
+	case FFI_TYPE_FLOAT:
+	  if (gpcount < 8 && fpcount < 8)
+	    {
+	      void *addr = &stack->fp_regs[fpcount++];
+	      avalue[i] = addr;
+	      *(float *)addr = ldf_fill (addr);
+	    }
+	  else
+	    avalue[i] = endian_adjust(&stack->gp_regs[gpcount], 4);
+	  gpcount++;
+	  break;
+
+	case FFI_TYPE_DOUBLE:
+	  if (gpcount < 8 && fpcount < 8)
+	    {
+	      void *addr = &stack->fp_regs[fpcount++];
+	      avalue[i] = addr;
+	      *(double *)addr = ldf_fill (addr);
+	    }
+	  else
+	    avalue[i] = &stack->gp_regs[gpcount];
+	  gpcount++;
+	  break;
+
+	case FFI_TYPE_LONGDOUBLE:
+	  if (gpcount & 1)
+	    gpcount++;
+	  if (LDBL_MANT_DIG == 64 && gpcount < 8 && fpcount < 8)
+	    {
+	      void *addr = &stack->fp_regs[fpcount++];
+	      avalue[i] = addr;
+	      *(__float80 *)addr = ldf_fill (addr);
+	    }
+	  else
+	    avalue[i] = &stack->gp_regs[gpcount];
+	  gpcount += 2;
+	  break;
+
+	case FFI_TYPE_STRUCT:
+	  {
+	    size_t size = (*p_arg)->size;
+	    size_t align = (*p_arg)->alignment;
+	    int hfa_type = hfa_element_type (*p_arg, 0);
+
+	    FFI_ASSERT (align <= 16);
+	    if (align == 16 && (gpcount & 1))
+	      gpcount++;
+
+	    if (hfa_type != FFI_TYPE_VOID)
+	      {
+		size_t hfa_size = hfa_type_size (hfa_type);
+		size_t offset = 0;
+		size_t gp_offset = gpcount * 8;
+		void *addr = alloca (size);
+
+		avalue[i] = addr;
+
+		while (fpcount < 8
+		       && offset < size
+		       && gp_offset < 8 * 8)
+		  {
+		    hfa_type_store (hfa_type, addr + offset, 
+				    ldf_fill (&stack->fp_regs[fpcount]));
+		    offset += hfa_size;
+		    gp_offset += hfa_size;
+		    fpcount += 1;
+		  }
+
+		if (offset < size)
+		  memcpy (addr + offset, (char *)stack->gp_regs + gp_offset,
+			  size - offset);
+	      }
+	    else
+	      avalue[i] = &stack->gp_regs[gpcount];
+
+	    gpcount += (size + 7) / 8;
+	  }
+	  break;
+
+	default:
+	  abort ();
+	}
+    }
+
+  closure->fun (cif, rvalue, avalue, closure->user_data);
+
+  return cif->flags;
+}

@@ -33,295 +33,542 @@
 #include <ffi.h>
 #include "ia64_flags.h"
 
-/* parameters:	*/
-#define callback	in0
-#define ecifp		in1
-#define bytes		in2
-#define flags		in3
-#define raddr		in4
-#define fn		in5
-
-#define FLOAT_SZ	8 /* in-memory size of fp operands	*/
-
-/* Allocate an ia64_args structure on the stack; call ffi_prep_args	*/
-/* to fill it in with argument values; copy those to the real 		*/
-/* registers, leaving overflow arguments on the stack.  Then call fn	*/
-/* and move the result from registers into *raddr.			*/
 	.pred.safe_across_calls p1-p5,p16-p63
 .text
+
+/* int ffi_call_unix (struct ia64_args *stack, PTR64 rvalue,
+		      void (*fn)(), int flags);
+ */
+
         .align 16
-        .global ffi_call_unix
-        .proc ffi_call_unix
+        .global	ffi_call_unix
+        .proc	ffi_call_unix
 ffi_call_unix:
 	.prologue
-	.save	ar.pfs,r38 /* loc0 */
-	alloc   loc0=ar.pfs,6,6,8,0
-	.save	rp,loc1
-	mov 	loc1=b0;
-	.vframe	loc5
-	mov	loc5=sp;
+	/* Bit o trickiness.  We actually share a stack frame with ffi_call.
+	   Rely on the fact that ffi_call uses a vframe and don't bother
+	   tracking one here at all.  */
+	.fframe	0
+	.save	ar.pfs, r36 // loc0
+	alloc   loc0 = ar.pfs, 4, 3, 8, 0
+	.save	rp, loc1
+	mov 	loc1 = b0
 	.body
-	sub	sp=sp,bytes
-	mov	loc4=r1		/* Save gp 	*/
-	ld8	r8=[callback],8	/* code address of callback	*/
+	add	r16 = 16, in0
+	mov	loc2 = gp
+	mov	r8 = in1
 	;;
-	mov 	out0=sp
-	mov	out1=ecifp
-	mov	out2=bytes
-	ld8	r1=[callback]	/* Set up gp for callback.  Unnecessary? */
-	mov	b6=r8
-	;;
-	br.call.sptk.many b0 = b6	/* call ffi_prep_args		*/
-	cmp.eq	p6,p0=0,r8		/* r8 nonzero ==> need fp regs	*/
- 	;;
-(p6)	add	loc2=32+8*FLOAT_SZ,sp
-(p6)	br.cond.dptk.many	fp_done
-	;;	/* Quiets warning; needed?	*/
-	add	loc2=32,sp
-	add	loc3=32+FLOAT_SZ,sp
-	;;
-	ldfd	f8=[loc2],2*FLOAT_SZ
-	ldfd	f9=[loc3],2*FLOAT_SZ
-	;;
-	ldfd	f10=[loc2],2*FLOAT_SZ
-	ldfd	f11=[loc3],2*FLOAT_SZ
-	;;
-	ldfd	f12=[loc2],2*FLOAT_SZ
-	ldfd	f13=[loc3],2*FLOAT_SZ
-	;;
-	ldfd	f14=[loc2],2*FLOAT_SZ
-	ldfd	f15=[loc3]
-	;;
-fp_done:
-	add	r9=16,sp	/* Pointer to r8_contents	*/
-	/* loc2 points at first integer register value.  */
-	add	loc3=8,loc2
-	;;
-	ld8	r8=[r9]		/* Just in case we return large struct */
-	ld8	out0=[loc2],16
-	ld8	out1=[loc3],16
-	;;
-	ld8	out2=[loc2],16
-	ld8	out3=[loc3],16
-	;;
-	ld8	out4=[loc2],16
-	ld8	out5=[loc3],16
-	;;
-	ld8	out6=[loc2]
-	ld8	out7=[loc3]
-        /* Set sp to 16 bytes below the first stack parameter.  This    */
-        /* is the value currently in loc2.                              */
-	mov	sp=loc2
-	
-	ld8 	r8=[fn],8
-	;;
-	ld8	r1=[fn]		/* Set up gp */
-	mov	b6=r8;;
-	br.call.sptk.many b0 = b6	/* call fn	*/
-	
-	/* Handle return value. */
-	cmp.eq	p6,p0=0,raddr
-	cmp.eq	p7,p0=FFI_TYPE_INT,flags
-	cmp.eq	p10,p0=FFI_IS_SMALL_STRUCT2,flags
-	cmp.eq	p11,p0=FFI_IS_SMALL_STRUCT3,flags
-	cmp.eq	p12,p0=FFI_IS_SMALL_STRUCT4,flags
-	;;
-(p6) 	br.cond.dpnt.few done		/* Dont copy ret values if raddr = 0 */
-(p7)	br.cond.dptk.few copy1
-(p10)	br.cond.dpnt.few copy2
-(p11)	br.cond.dpnt.few copy3
-(p12)	br.cond.dpnt.few copy4
-	cmp.eq	p8,p0=FFI_TYPE_FLOAT,flags
-	cmp.eq	p9,p0=FFI_TYPE_DOUBLE,flags
-	tbit.nz	p6,p0=flags,FLOAT_FP_AGGREGATE_BIT
-	tbit.nz	p7,p0=flags,DOUBLE_FP_AGGREGATE_BIT
-	;;
-(p8)	stfs	[raddr]=f8
-(p9)	stfd	[raddr]=f8
-	;;
-	.label_state 1
-(p6)	br.cond.dpnt.few handle_float_hfa
-(p7)	br.cond.dpnt.few handle_double_hfa
-	br done
 
-copy4:
-	add	loc3=24,raddr
+	/* Load up all of the argument registers.  */
+	ldf.fill f8 = [in0], 32
+	ldf.fill f9 = [r16], 32
 	;;
-	st8	[loc3]=r11
-copy3:
-	add	loc3=16,raddr
+	ldf.fill f10 = [in0], 32
+	ldf.fill f11 = [r16], 32
 	;;
-	st8	[loc3]=r10
-copy2:
-	add	loc3=8,raddr
+	ldf.fill f12 = [in0], 32
+	ldf.fill f13 = [r16], 32
 	;;
-	st8	[loc3]=r9
-copy1:
-	st8	[raddr]=r8
-	/* In the big struct case, raddr was passed as an argument.	*/
-	/* In the void case there was nothing to do.			*/
+	ldf.fill f14 = [in0], 32
+	ldf.fill f15 = [r16], 24
+	;;
+	ld8	out0 = [in0], 16
+	ld8	out1 = [r16], 16
+	;;
+	ld8	out2 = [in0], 16
+	ld8	out3 = [r16], 16
+	;;
+	ld8	out4 = [in0], 16
+	ld8	out5 = [r16], 16
+	;;
+	ld8	out6 = [in0]
+	ld8	out7 = [r16]
+	;;
 
-done:
-	mov	r1=loc4		/* Restore gp	*/
+	/* Deallocate the register save area from the stack frame.  */
+	mov	sp = in0
+
+	/* Call the target function.  */
+	ld8	r16 = [in2], 8
+	;;
+	ld8	gp = [in2]
+	mov	b6 = r16
+	br.call.sptk.many b0 = b6
+	;;
+
+	/* Dispatch to handle return value.  */
+	mov	gp = loc2
+	zxt1	r16 = in3
+	;;
+	mov	ar.pfs = loc0
+	addl	r18 = @ltoffx(.Lst_table), gp
+	;;
+	ld8.mov	r18 = [r18], .Lst_table
+	mov	b0 = loc1
+	;;
+	shladd	r18 = r16, 3, r18
+	;;
+	ld8	r17 = [r18]
+	shr	in3 = in3, 8
+	;;
+	add	r17 = r17, r18
+	;;
+	mov	b6 = r17
+	br	b6
+	;;
+
+.Lst_void:
+	br.ret.sptk.many b0
+	;;
+.Lst_uint8:
+	zxt1	r8 = r8
+	;;
+	st8	[in1] = r8
+	br.ret.sptk.many b0
+	;;
+.Lst_sint8:
+	sxt1	r8 = r8
+	;;
+	st8	[in1] = r8
+	br.ret.sptk.many b0
+	;;
+.Lst_uint16:
+	zxt2	r8 = r8
+	;;
+	st8	[in1] = r8
+	br.ret.sptk.many b0
+	;;
+.Lst_sint16:
+	sxt2	r8 = r8
+	;;
+	st8	[in1] = r8
+	br.ret.sptk.many b0
+	;;
+.Lst_uint32:
+	zxt4	r8 = r8
+	;;
+	st8	[in1] = r8
+	br.ret.sptk.many b0
+	;;
+.Lst_sint32:
+	sxt4	r8 = r8
+	;;
+	st8	[in1] = r8
+	br.ret.sptk.many b0
+	;;
+.Lst_int64:
+	st8	[in1] = r8
+	br.ret.sptk.many b0
+	;;
+.Lst_float:
+	stfs	[in1] = f8
+	br.ret.sptk.many b0
+	;;
+.Lst_double:
+	stfd	[in1] = f8
+	br.ret.sptk.many b0
+	;;
+.Lst_ldouble:
+	stfe	[in1] = f8
+	br.ret.sptk.many b0
+	;;
+
+.Lst_small_struct:
+	add	sp = -16, sp
+	cmp.lt	p6, p0 = 8, in3
+	cmp.lt	p7, p0 = 16, in3
+	cmp.lt	p8, p0 = 24, in3
+	;;
+	add	r16 = 8, sp
+	add	r17 = 16, sp
+	add	r18 = 24, sp
+	;;
+	st8	[sp] = r8
+(p6)	st8	[r16] = r9
+	mov	out0 = in1
+(p7)	st8	[r17] = r10
+(p8)	st8	[r18] = r11
+	mov	out1 = sp
+	mov	out2 = in3
+	br.call.sptk.many b0 = memcpy#
+	;;
 	mov	ar.pfs = loc0
 	mov	b0 = loc1
-	.restore sp
-	mov	sp = loc5
+	mov	gp = loc2
 	br.ret.sptk.many b0
 
-handle_double_hfa:
-	.body
-	.copy_state 1
-	/* Homogeneous floating point array of doubles is returned in	*/
-	/* registers f8-f15.  Save one at a time to return area.	*/
-	and	flags=0xf,flags	/* Retrieve size	*/
+.Lst_hfa_float:
+	add	r16 = 4, in1
+	cmp.lt	p6, p0 = 4, in3
 	;;
-	cmp.eq	p6,p0=2,flags
-	cmp.eq	p7,p0=3,flags
-	cmp.eq	p8,p0=4,flags
-	cmp.eq	p9,p0=5,flags
-	cmp.eq	p10,p0=6,flags
-	cmp.eq	p11,p0=7,flags
-	cmp.eq	p12,p0=8,flags
+	stfs	[in1] = f8, 8
+(p6)	stfs	[r16] = f9, 8
+	cmp.lt	p7, p0 = 8, in3
+	cmp.lt	p8, p0 = 12, in3
 	;;
-(p6)	br.cond.dptk.few	dhfa2
-(p7)	br.cond.dptk.few	dhfa3
-(p8)	br.cond.dptk.few	dhfa4
-(p9)	br.cond.dptk.few	dhfa5
-(p10)	br.cond.dptk.few	dhfa6
-(p11)	br.cond.dptk.few	dhfa7
-dhfa8:	add 	loc3=7*8,raddr
+(p7)	stfs	[in1] = f10, 8
+(p8)	stfs	[r16] = f11, 8
+	cmp.lt	p9, p0 = 16, in3
+	cmp.lt	p10, p0 = 20, in3
 	;;
-	stfd	[loc3]=f15
-dhfa7:	add 	loc3=6*8,raddr
+(p9)	stfs	[in1] = f12, 8
+(p10)	stfs	[r16] = f13, 8
+	cmp.lt	p6, p0 = 24, in3
+	cmp.lt	p7, p0 = 28, in3
 	;;
-	stfd	[loc3]=f14
-dhfa6:	add 	loc3=5*8,raddr
+(p6)	stfs	[in1] = f14
+(p7)	stfs	[r16] = f15
+	br.ret.sptk.many b0
 	;;
-	stfd	[loc3]=f13
-dhfa5:	add 	loc3=4*8,raddr
-	;;
-	stfd	[loc3]=f12
-dhfa4:	add 	loc3=3*8,raddr
-	;;
-	stfd	[loc3]=f11
-dhfa3:	add 	loc3=2*8,raddr
-	;;
-	stfd	[loc3]=f10
-dhfa2:	add 	loc3=1*8,raddr
-	;;
-	stfd	[loc3]=f9
-	stfd	[raddr]=f8
-	br	done
 
-handle_float_hfa:
-	/* Homogeneous floating point array of floats is returned in	*/
-	/* registers f8-f15.  Save one at a time to return area.	*/
-	and	flags=0xf,flags	/* Retrieve size	*/
+.Lst_hfa_double:
+	add	r16 = 8, in1
+	cmp.lt	p6, p0 = 8, in3
 	;;
-	cmp.eq	p6,p0=2,flags
-	cmp.eq	p7,p0=3,flags
-	cmp.eq	p8,p0=4,flags
-	cmp.eq	p9,p0=5,flags
-	cmp.eq	p10,p0=6,flags
-	cmp.eq	p11,p0=7,flags
-	cmp.eq	p12,p0=8,flags
+	stfd	[in1] = f8, 16
+(p6)	stfd	[r16] = f9, 16
+	cmp.lt	p7, p0 = 16, in3
+	cmp.lt	p8, p0 = 24, in3
 	;;
-(p6)	br.cond.dptk.few	shfa2
-(p7)	br.cond.dptk.few	shfa3
-(p8)	br.cond.dptk.few	shfa4
-(p9)	br.cond.dptk.few	shfa5
-(p10)	br.cond.dptk.few	shfa6
-(p11)	br.cond.dptk.few	shfa7
-shfa8:	add 	loc3=7*4,raddr
+(p7)	stfd	[in1] = f10, 16
+(p8)	stfd	[r16] = f11, 16
+	cmp.lt	p9, p0 = 32, in3
+	cmp.lt	p10, p0 = 40, in3
 	;;
-	stfd	[loc3]=f15
-shfa7:	add 	loc3=6*4,raddr
+(p9)	stfd	[in1] = f12, 16
+(p10)	stfd	[r16] = f13, 16
+	cmp.lt	p6, p0 = 48, in3
+	cmp.lt	p7, p0 = 56, in3
 	;;
-	stfd	[loc3]=f14
-shfa6:	add 	loc3=5*4,raddr
+(p6)	stfd	[in1] = f14
+(p7)	stfd	[r16] = f15
+	br.ret.sptk.many b0
 	;;
-	stfd	[loc3]=f13
-shfa5:	add 	loc3=4*4,raddr
+
+.Lst_hfa_ldouble:
+	add	r16 = 16, in1
+	cmp.lt	p6, p0 = 16, in3
 	;;
-	stfd	[loc3]=f12
-shfa4:	add 	loc3=3*4,raddr
+	stfe	[in1] = f8, 32
+(p6)	stfe	[r16] = f9, 32
+	cmp.lt	p7, p0 = 32, in3
+	cmp.lt	p8, p0 = 48, in3
 	;;
-	stfd	[loc3]=f11
-shfa3:	add 	loc3=2*4,raddr
+(p7)	stfe	[in1] = f10, 32
+(p8)	stfe	[r16] = f11, 32
+	cmp.lt	p9, p0 = 64, in3
+	cmp.lt	p10, p0 = 80, in3
 	;;
-	stfd	[loc3]=f10
-shfa2:	add 	loc3=1*4,raddr
+(p9)	stfe	[in1] = f12, 32
+(p10)	stfe	[r16] = f13, 32
+	cmp.lt	p6, p0 = 96, in3
+	cmp.lt	p7, p0 = 112, in3
 	;;
-	stfd	[loc3]=f9
-	stfd	[raddr]=f8
-	br	done
+(p6)	stfe	[in1] = f14
+(p7)	stfe	[r16] = f15
+	br.ret.sptk.many b0
+	;;
 
         .endp ffi_call_unix
 
-
-	.pred.safe_across_calls p1-p5,p16-p63
-.text
         .align 16
-        .global ffi_closure_UNIX
-        .proc ffi_closure_UNIX
-ffi_closure_UNIX:
-	.prologue
-	.save 	ar.pfs,r40 /* loc0 */
-	alloc   loc0=ar.pfs,8,3,2,0
-	.save	rp,loc1
-	mov	loc1=b0
-	.vframe	loc2
-	mov	loc2=sp
-	/* Retrieve closure pointer and real gp.	*/
-	mov	out0=gp
-	add	gp=16,gp
-	;;
-	ld8	gp=[gp]
-	/* Reserve a structia64_args on the stack such that arguments	*/
-	/* past the first 8 are automatically placed in the right	*/
-	/* slot.  Note that when we start the sp points at 2 8-byte	*/
-	/* scratch words, followed by the extra arguments.		*/
-#	define BASIC_ARGS_SZ (8*FLOAT_SZ+8*8+2*8)
-#	define FIRST_FP_OFFSET (4*8)
-	add	r14=-(BASIC_ARGS_SZ-FIRST_FP_OFFSET),sp
-	add	r15=-(BASIC_ARGS_SZ-FIRST_FP_OFFSET-FLOAT_SZ),sp
-	add	sp=-BASIC_ARGS_SZ,sp
-	/* r14 points to fp_regs[0], r15 points to fp_regs[1]	*/
-	;;
-	stfd	[r14]=f8,2*FLOAT_SZ
-	stfd	[r15]=f9,2*FLOAT_SZ
-	;;
-	stfd	[r14]=f10,2*FLOAT_SZ
-	stfd	[r15]=f11,2*FLOAT_SZ
-	;;
-	stfd	[r14]=f12,2*FLOAT_SZ
-	stfd	[r15]=f13,2*FLOAT_SZ
-	;;
-	stfd	[r14]=f14,2*FLOAT_SZ
-	stfd	[r15]=f15,FLOAT_SZ+8
-	;;
-	/* r14 points to first parameter register area, r15 to second. */
-	st8	[r14]=in0,2*8
-	st8	[r15]=in1,2*8
-	;;
-	st8	[r14]=in2,2*8
-	st8	[r15]=in3,2*8
-	;;
-	st8	[r14]=in4,2*8
-	st8	[r15]=in5,2*8
-	;;
-	st8	[r14]=in6,2*8
-	st8	[r15]=in7,2*8
-	/* Call ffi_closure_UNIX_inner */
-	mov	out1=sp
-	br.call.sptk.many b0=ffi_closure_UNIX_inner
-	;;
-	mov	b0=loc1
-	mov 	ar.pfs=loc0
-	.restore sp
-	mov	sp=loc2
-	br.ret.sptk.many b0
-	.endp ffi_closure_UNIX
-	
+        .global ffi_closure_unix
+        .proc ffi_closure_unix
 
+#define FRAME_SIZE	(8*16 + 8*8 + 8*16)
+
+ffi_closure_unix:
+	.prologue
+	.save	ar.pfs, r40 // loc0
+	alloc   loc0 = ar.pfs, 8, 4, 4, 0
+	.fframe	FRAME_SIZE
+	add	r12 = -FRAME_SIZE, r12
+	.save	rp, loc1
+	mov	loc1 = b0
+	.save	ar.unat, loc2
+	mov	loc2 = ar.unat
+	.body
+
+	/* Retrieve closure pointer and real gp.  */
+	mov	out0 = gp
+	add	gp = 16, gp
+	;;
+	ld8	gp = [gp]
+
+	/* Spill all of the possible argument registers.  */
+	add	r16 = 16 + 8*16, sp
+	add	r17 = 16 + 8*16 + 16, sp
+	;;
+	stf.spill [r16] = f8, 32
+	stf.spill [r17] = f9, 32
+	mov	loc3 = gp
+	;;
+	stf.spill [r16] = f10, 32
+	stf.spill [r17] = f11, 32
+	;;
+	stf.spill [r16] = f12, 32
+	stf.spill [r17] = f13, 32
+	;;
+	stf.spill [r16] = f14, 32
+	stf.spill [r17] = f15, 24
+	;;
+	.mem.offset 0, 0
+	st8.spill [r16] = in0, 16
+	.mem.offset 8, 0
+	st8.spill [r17] = in1, 16
+	add	out1 = 16 + 8*16, sp
+	;;
+	.mem.offset 0, 0
+	st8.spill [r16] = in2, 16
+	.mem.offset 8, 0
+	st8.spill [r17] = in3, 16
+	add	out2 = 16, sp
+	;;
+	.mem.offset 0, 0
+	st8.spill [r16] = in4, 16
+	.mem.offset 8, 0
+	st8.spill [r17] = in5, 16
+	mov	out3 = r8
+	;;
+	.mem.offset 0, 0
+	st8.spill [r16] = in6
+	.mem.offset 8, 0
+	st8.spill [r17] = in7
+
+	/* Invoke ffi_closure_unix_inner for the hard work.  */
+	br.call.sptk.many b0 = ffi_closure_unix_inner
+	;;
+
+	/* Dispatch to handle return value.  */
+	mov	gp = loc3
+	zxt1	r16 = r8
+	;;
+	addl	r18 = @ltoffx(.Lld_table), gp
+	mov	ar.pfs = loc0
+	;;
+	ld8.mov	r18 = [r18], .Lld_table
+	mov	b0 = loc1
+	;;
+	shladd	r18 = r16, 3, r18
+	mov	ar.unat = loc2
+	;;
+	ld8	r17 = [r18]
+	shr	r8 = r8, 8
+	;;
+	add	r17 = r17, r18
+	add	r16 = 16, sp
+	;;
+	mov	b6 = r17
+	br	b6
+	;;
+	.label_state 1
+
+.Lld_void:
+	.restore sp
+	add	sp = FRAME_SIZE, sp
+	br.ret.sptk.many b0
+	;;
+.Lld_int8:
+	.body
+	.copy_state 1
+	ld1	r8 = [r16]
+	.restore sp
+	add	sp = FRAME_SIZE, sp
+	br.ret.sptk.many b0
+	;;
+.Lld_int16:
+	.body
+	.copy_state 1
+	ld2	r8 = [r16]
+	.restore sp
+	add	sp = FRAME_SIZE, sp
+	br.ret.sptk.many b0
+	;;
+.Lld_int32:
+	.body
+	.copy_state 1
+	ld4	r8 = [r16]
+	.restore sp
+	add	sp = FRAME_SIZE, sp
+	br.ret.sptk.many b0
+	;;
+.Lld_int64:
+	.body
+	.copy_state 1
+	ld8	r8 = [r16]
+	.restore sp
+	add	sp = FRAME_SIZE, sp
+	br.ret.sptk.many b0
+	;;
+.Lld_float:
+	.body
+	.copy_state 1
+	ldfs	f8 = [r16]
+	.restore sp
+	add	sp = FRAME_SIZE, sp
+	br.ret.sptk.many b0
+	;;
+.Lld_double:
+	.body
+	.copy_state 1
+	ldfd	f8 = [r16]
+	.restore sp
+	add	sp = FRAME_SIZE, sp
+	br.ret.sptk.many b0
+	;;
+.Lld_ldouble:
+	.body
+	.copy_state 1
+	ldfe	f8 = [r16]
+	.restore sp
+	add	sp = FRAME_SIZE, sp
+	br.ret.sptk.many b0
+	;;
+
+.Lld_small_struct:
+	.body
+	.copy_state 1
+	add	r17 = 8, r16
+	cmp.lt	p6, p0 = 8, r8
+	cmp.lt	p7, p0 = 16, r8
+	cmp.lt	p8, p0 = 24, r8
+	;;
+	ld8	r8 = [r16], 16
+(p6)	ld8	r9 = [r17], 16
+	;;
+(p7)	ld8	r10 = [r16]
+(p8)	ld8	r11 = [r17]
+	.restore sp
+	add	sp = FRAME_SIZE, sp
+	br.ret.sptk.many b0
+	;;
+
+.Lld_hfa_float:
+	.body
+	.copy_state 1
+	add	r17 = 4, r16
+	cmp.lt	p6, p0 = 4, r8
+	;;
+	ldfs	f8 = [r16], 8
+(p6)	ldfs	f9 = [r17], 8
+	cmp.lt	p7, p0 = 8, r8
+	cmp.lt	p8, p0 = 12, r8
+	;;
+(p7)	ldfs	f10 = [r16], 8
+(p8)	ldfs	f11 = [r17], 8
+	cmp.lt	p9, p0 = 16, r8
+	cmp.lt	p10, p0 = 20, r8
+	;;
+(p9)	ldfs	f12 = [r16], 8
+(p10)	ldfs	f13 = [r17], 8
+	cmp.lt	p6, p0 = 24, r8
+	cmp.lt	p7, p0 = 28, r8
+	;;
+(p6)	ldfs	f14 = [r16]
+(p7)	ldfs	f15 = [r17]
+	.restore sp
+	add	sp = FRAME_SIZE, sp
+	br.ret.sptk.many b0
+	;;
+
+.Lld_hfa_double:
+	.body
+	.copy_state 1
+	add	r17 = 8, r16
+	cmp.lt	p6, p0 = 8, r8
+	;;
+	ldfd	f8 = [r16], 16
+(p6)	ldfd	f9 = [r17], 16
+	cmp.lt	p7, p0 = 16, r8
+	cmp.lt	p8, p0 = 24, r8
+	;;
+(p7)	ldfd	f10 = [r16], 16
+(p8)	ldfd	f11 = [r17], 16
+	cmp.lt	p9, p0 = 32, r8
+	cmp.lt	p10, p0 = 40, r8
+	;;
+(p9)	ldfd	f12 = [r16], 16
+(p10)	ldfd	f13 = [r17], 16
+	cmp.lt	p6, p0 = 48, r8
+	cmp.lt	p7, p0 = 56, r8
+	;;
+(p6)	ldfd	f14 = [r16]
+(p7)	ldfd	f15 = [r17]
+	.restore sp
+	add	sp = FRAME_SIZE, sp
+	br.ret.sptk.many b0
+	;;
+
+.Lld_hfa_ldouble:
+	.body
+	.copy_state 1
+	add	r17 = 16, r16
+	cmp.lt	p6, p0 = 16, r8
+	;;
+	ldfe	f8 = [r16], 32
+(p6)	ldfe	f9 = [r17], 32
+	cmp.lt	p7, p0 = 32, r8
+	cmp.lt	p8, p0 = 48, r8
+	;;
+(p7)	ldfe	f10 = [r16], 32
+(p8)	ldfe	f11 = [r17], 32
+	cmp.lt	p9, p0 = 64, r8
+	cmp.lt	p10, p0 = 80, r8
+	;;
+(p9)	ldfe	f12 = [r16], 32
+(p10)	ldfe	f13 = [r17], 32
+	cmp.lt	p6, p0 = 96, r8
+	cmp.lt	p7, p0 = 112, r8
+	;;
+(p6)	ldfe	f14 = [r16]
+(p7)	ldfe	f15 = [r17]
+	.restore sp
+	add	sp = FRAME_SIZE, sp
+	br.ret.sptk.many b0
+	;;
+
+	.endp	ffi_closure_unix
+
+	.section .rodata
+	.align	8
+.Lst_table:
+	data8	@pcrel(.Lst_void)		// FFI_TYPE_VOID
+	data8	@pcrel(.Lst_sint32)		// FFI_TYPE_INT
+	data8	@pcrel(.Lst_float)		// FFI_TYPE_FLOAT
+	data8	@pcrel(.Lst_double)		// FFI_TYPE_DOUBLE
+	data8	@pcrel(.Lst_ldouble)		// FFI_TYPE_LONGDOUBLE
+	data8	@pcrel(.Lst_uint8)		// FFI_TYPE_UINT8
+	data8	@pcrel(.Lst_sint8)		// FFI_TYPE_SINT8
+	data8	@pcrel(.Lst_uint16)		// FFI_TYPE_UINT16
+	data8	@pcrel(.Lst_sint16)		// FFI_TYPE_SINT16
+	data8	@pcrel(.Lst_uint32)		// FFI_TYPE_UINT32
+	data8	@pcrel(.Lst_sint32)		// FFI_TYPE_SINT32
+	data8	@pcrel(.Lst_int64)		// FFI_TYPE_UINT64
+	data8	@pcrel(.Lst_int64)		// FFI_TYPE_SINT64
+	data8	@pcrel(.Lst_void)		// FFI_TYPE_STRUCT
+	data8	@pcrel(.Lst_int64)		// FFI_TYPE_POINTER
+	data8 	@pcrel(.Lst_small_struct)	// FFI_IA64_TYPE_SMALL_STRUCT
+	data8	@pcrel(.Lst_hfa_float)		// FFI_IA64_TYPE_HFA_FLOAT
+	data8	@pcrel(.Lst_hfa_double)		// FFI_IA64_TYPE_HFA_DOUBLE
+	data8	@pcrel(.Lst_hfa_ldouble)	// FFI_IA64_TYPE_HFA_LDOUBLE
+
+.Lld_table:
+	data8	@pcrel(.Lld_void)		// FFI_TYPE_VOID
+	data8	@pcrel(.Lld_int32)		// FFI_TYPE_INT
+	data8	@pcrel(.Lld_float)		// FFI_TYPE_FLOAT
+	data8	@pcrel(.Lld_double)		// FFI_TYPE_DOUBLE
+	data8	@pcrel(.Lld_ldouble)		// FFI_TYPE_LONGDOUBLE
+	data8	@pcrel(.Lld_int8)		// FFI_TYPE_UINT8
+	data8	@pcrel(.Lld_int8)		// FFI_TYPE_SINT8
+	data8	@pcrel(.Lld_int16)		// FFI_TYPE_UINT16
+	data8	@pcrel(.Lld_int16)		// FFI_TYPE_SINT16
+	data8	@pcrel(.Lld_int32)		// FFI_TYPE_UINT32
+	data8	@pcrel(.Lld_int32)		// FFI_TYPE_SINT32
+	data8	@pcrel(.Lld_int64)		// FFI_TYPE_UINT64
+	data8	@pcrel(.Lld_int64)		// FFI_TYPE_SINT64
+	data8	@pcrel(.Lld_void)		// FFI_TYPE_STRUCT
+	data8	@pcrel(.Lld_int64)		// FFI_TYPE_POINTER
+	data8 	@pcrel(.Lld_small_struct)	// FFI_IA64_TYPE_SMALL_STRUCT
+	data8	@pcrel(.Lld_hfa_float)		// FFI_IA64_TYPE_HFA_FLOAT
+	data8	@pcrel(.Lld_hfa_double)		// FFI_IA64_TYPE_HFA_DOUBLE
+	data8	@pcrel(.Lld_hfa_ldouble)	// FFI_IA64_TYPE_HFA_LDOUBLE
