@@ -1,3 +1,7 @@
+2003-08-06  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.dg/cpp/spacing1.c: Update.
+
 2003-08-04  Janis Johnson  <janis187@us.ibm.com>
 
 	PR target/11739
