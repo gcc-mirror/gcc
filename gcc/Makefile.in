@@ -818,11 +818,15 @@ $(srcdir)/c-parse.y: $(srcdir)/c-parse.in
 	  -e "/^ifc$$/d" -e "/^end ifc$$/d" \
 	  $(srcdir)/c-parse.in > $(srcdir)/c-parse.y
 
+$(srcdir)/c-gperf.h: $(srcdir)/c-parse.gperf
+	gperf -p -j1 -i 1 -g -o -t -G -N is_reserved_word -k1,3,$$ \
+	   $(srcdir)/c-parse.gperf > $(srcdir)/c-gperf.h
+
 c-decl.o : c-decl.c $(CONFIG_H) $(TREE_H) c-tree.h c-lex.h flags.h
 c-typeck.o : c-typeck.c $(CONFIG_H) $(TREE_H) c-tree.h flags.h
 c-lang.o : c-lang.c $(CONFIG_H) $(TREE_H)
 c-lex.o : c-lex.c $(CONFIG_H) $(TREE_H) c-lex.h c-tree.h c-parse.h \
-    input.h flags.h
+    input.h flags.h c-gperf.h
 c-aux-info.o : c-aux-info.c  $(CONFIG_H) $(TREE_H) c-tree.h flags.h
 c-convert.o : c-convert.c $(CONFIG_H) $(TREE_H) flags.h
 c-pragma.o: c-pragma.c $(CONFIG_H) $(TREE_H)
@@ -1739,7 +1743,7 @@ extraclean: distclean
 # Get rid of every file that's generated from some other file.
 # Most of these files ARE PRESENT in the GCC distribution.
 realclean: distclean bytecode.realclean
-	-rm -f c-parse.y objc-parse.y
+	-rm -f c-parse.y c-gperf.h objc-parse.y
 	-rm -f cp-parse.c cp-parse.h cp-parse.output
 	-rm -f objc-parse.c objc-parse.output
 	-rm -f c-parse.c c-parse.h c-parse.output
@@ -2006,7 +2010,7 @@ gcc.xtar: distdir
 # Make the distribution.
 	tar chf gcc.xtar gcc-$(version)
 
-distdir: doc $(srcdir)/INSTALL c-parse.y objc-parse.y cp-parse.y \
+distdir: doc $(srcdir)/INSTALL c-parse.y c-gperf.h objc-parse.y cp-parse.y \
   c-parse.c cp-parse.c objc-parse.c cexp.c
 	@if grep -s "for version ${mainversion}" gcc.texi > /dev/null; \
 	then true; \
@@ -2055,10 +2059,11 @@ distdir: doc $(srcdir)/INSTALL c-parse.y objc-parse.y cp-parse.y \
 # creates a diff file between an older distribution and this one.
 # The -P option assumes this is GNU diff.
 diff:
-	diff -rc2P -x c-parse.y -x c-parse.c -x c-parse.h -x objc-parse.y \
-	  -x cp-parse.c -x cp-parse.h -x cexp.c -x bi-parser.c \
-	  -x objc-parse.c -x TAGS -x "gcc.??" -x "gcc.??s" -x gcc.aux \
-	  -x "cpp.??s" -x "cpp.??" -x cpp.aux -x "cpp.info*" -x "gcc.info*" \
+	diff -rc2P -x c-parse.y -x c-parse.c -x c-parse.h -x c-gperf.h \
+	  -x objc-parse.y -x cp-parse.c -x cp-parse.h -x cexp.c \
+	  -x bi-parser.c -x objc-parse.c -x TAGS -x "gcc.??" -x "gcc.??s" \
+	  -x gcc.aux -x "cpp.??s" -x "cpp.??" -x cpp.aux -x "cpp.info*"
+	  -x "gcc.info*" \
 	  gcc-$(oldversion) gcc-$(version) > diffs
 
 # do make -f ../gcc/Makefile maketest DIR=../gcc
