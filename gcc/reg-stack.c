@@ -2017,9 +2017,26 @@ compare_for_stack_reg (insn, regstack, pat)
 {
   rtx *src1, *src2;
   rtx src1_note, src2_note;
+  rtx cc0_user;
 
   src1 = get_true_reg (&XEXP (SET_SRC (pat), 0));
   src2 = get_true_reg (&XEXP (SET_SRC (pat), 1));
+  cc0_user = next_cc0_user (insn);
+
+  /* If the insn that uses cc0 is a conditional move, then the destination
+     must be the top of stack */
+  if (GET_CODE (PATTERN (cc0_user)) == SET
+      && SET_DEST (PATTERN (cc0_user)) != pc_rtx
+      && GET_CODE (SET_SRC (PATTERN (cc0_user))) == IF_THEN_ELSE)
+    {
+      rtx *dest, src_note;
+      
+      dest = get_true_reg (&SET_DEST (PATTERN (cc0_user)));
+      if (REGNO (*dest) != regstack->reg[regstack->top])
+	{
+	  emit_swap_insn (insn, regstack, *dest);	
+	}
+    }
 
   /* ??? If fxch turns out to be cheaper than fstp, give priority to
      registers that die in this insn - move those to stack top first.  */
@@ -2334,6 +2351,55 @@ subst_stack_regs_pat (insn, regstack, pat)
 	  default:
 	    abort ();
 	  }
+	break;
+
+      case IF_THEN_ELSE:
+	/* This insn requires the top of stack to be the destination. */
+
+	src1 = get_true_reg (&XEXP (SET_SRC (pat), 1));
+	src2 = get_true_reg (&XEXP (SET_SRC (pat), 2));
+
+	src1_note = find_regno_note (insn, REG_DEAD, REGNO (*src1));
+	src2_note = find_regno_note (insn, REG_DEAD, REGNO (*src2));
+
+	{
+	  rtx src_note [] = {0, src1_note, src2_note};
+	  int i;
+
+	  if (STACK_REG_P (*src1))
+	    replace_reg (src1, get_hard_regnum (regstack, *src1));
+	  if (STACK_REG_P (*src2))
+	    replace_reg (src2, get_hard_regnum (regstack, *src2));
+
+	  for (i = 1; i <= 2; i++)
+	    if (src_note [i])
+	      {
+		int regno = get_hard_regnum (regstack, XEXP (src_note [i], 0));
+
+		/* If the register that dies is not at the top of stack, then
+		   move the top of stack to the dead reg */
+		if (REGNO (XEXP (src_note[i], 0))
+		    != regstack->reg[regstack->top])
+		  {
+		    remove_regno_note (insn, REG_DEAD,
+				       REGNO (XEXP (src_note [i], 0)));
+		    emit_pop_insn (insn, regstack, XEXP (src_note[i], 0),
+				   emit_insn_after);
+		  }
+		else
+		  {
+		    CLEAR_HARD_REG_BIT (regstack->reg_set,
+					REGNO (XEXP (src_note[i], 0)));
+		    replace_reg (&XEXP (src_note[i], 0), FIRST_STACK_REG);
+		    regstack->top--;
+		  }
+		
+	      }
+
+	  SET_HARD_REG_BIT (regstack->reg_set, REGNO (*dest));
+	  replace_reg (dest, FIRST_STACK_REG);
+	}
+
 	break;
 
       default:
