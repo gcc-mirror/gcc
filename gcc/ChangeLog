@@ -1,5 +1,11 @@
 2002-04-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR optimization/3756
+	* config/i386/i386.c (ix86_expand_int_movcc): Optimize
+	x = ((int) y < 0) ? cst1 : cst2.
+
+2002-04-19  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c/6358
 	* function.c: Reapply patch for c/6358.
 	(expand_function_end): Copy decl_rtl's mode, not

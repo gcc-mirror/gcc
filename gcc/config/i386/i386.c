@@ -8131,6 +8131,61 @@ ix86_expand_int_movcc (operands)
 	      code = reverse_condition (code);
 	    }
 	}
+
+      compare_code = NIL;
+      if (GET_MODE_CLASS (GET_MODE (ix86_compare_op0)) == MODE_INT
+	  && GET_CODE (ix86_compare_op1) == CONST_INT)
+	{
+	  if (ix86_compare_op1 == const0_rtx
+	      && (code == LT || code == GE))
+	    compare_code = code;
+	  else if (ix86_compare_op1 == constm1_rtx)
+	    {
+	      if (code == LE)
+		compare_code = LT;
+	      else if (code == GT)
+		compare_code = GE;
+	    }
+	}
+
+      /* Optimize dest = (op0 < 0) ? -1 : cf.  */
+      if (compare_code != NIL
+	  && GET_MODE (ix86_compare_op0) == GET_MODE (out)
+	  && (cf == -1 || ct == -1))
+	{
+	  /* If lea code below could be used, only optimize
+	     if it results in a 2 insn sequence.  */
+
+	  if (! (diff == 1 || diff == 2 || diff == 4 || diff == 8
+		 || diff == 3 || diff == 5 || diff == 9)
+	      || (compare_code == LT && ct == -1)
+	      || (compare_code == GE && cf == -1))
+	    {
+	      /*
+	       * notl op1	(if necessary)
+	       * sarl $31, op1
+	       * orl cf, op1
+	       */
+	      if (ct != -1)
+		{
+		  cf = ct;
+	  	  ct = -1;
+		  code = reverse_condition (code);
+		}
+
+	      out = emit_store_flag (out, code, ix86_compare_op0,
+				     ix86_compare_op1, VOIDmode, 0, -1);
+
+	      out = expand_simple_binop (mode, IOR,
+					 out, GEN_INT (cf),
+					 out, 1, OPTAB_DIRECT);
+	      if (out != operands[0])
+		emit_move_insn (operands[0], out);
+
+	      return 1; /* DONE */
+	    }
+	}
+
       if ((diff == 1 || diff == 2 || diff == 4 || diff == 8
 	   || diff == 3 || diff == 5 || diff == 9)
 	  && (mode != DImode || x86_64_sign_extended_value (GEN_INT (cf))))
@@ -8223,27 +8278,58 @@ ix86_expand_int_movcc (operands)
 	      ct = cf;
 	      cf = 0;
 	      if (FLOAT_MODE_P (GET_MODE (ix86_compare_op0)))
-		{
-		  /* We may be reversing unordered compare to normal compare,
-		     that is not valid in general (we may convert non-trapping
-		     condition to trapping one), however on i386 we currently
-		     emit all comparisons unordered.  */
-		  compare_code = reverse_condition_maybe_unordered (compare_code);
-		  code = reverse_condition_maybe_unordered (code);
-		}
+		/* We may be reversing unordered compare to normal compare,
+		   that is not valid in general (we may convert non-trapping
+		   condition to trapping one), however on i386 we currently
+		   emit all comparisons unordered.  */
+		code = reverse_condition_maybe_unordered (code);
 	      else
 		{
-		  compare_code = reverse_condition (compare_code);
 		  code = reverse_condition (code);
+		  if (compare_code != NIL)
+		    compare_code = reverse_condition (compare_code);
 		}
 	    }
 
-	  out = emit_store_flag (out, code, ix86_compare_op0,
-				 ix86_compare_op1, VOIDmode, 0, 1);
+	  if (compare_code != NIL)
+	    {
+	      /* notl op1	(if needed)
+		 sarl $31, op1
+		 andl (cf-ct), op1
+	 	 addl ct, op1
 
-	  out = expand_simple_binop (mode, PLUS,
-				     out, constm1_rtx,
-				     out, 1, OPTAB_DIRECT);
+		 For x < 0 (resp. x <= -1) there will be no notl,
+		 so if possible swap the constants to get rid of the
+		 complement.
+		 True/false will be -1/0 while code below (store flag
+		 followed by decrement) is 0/-1, so the constants need
+		 to be exchanged once more.  */
+
+	      if (compare_code == GE || !cf)
+		{
+	  	  code = reverse_condition (code);
+		  compare_code = LT;
+		}
+	      else
+		{
+		  HOST_WIDE_INT tmp = cf;
+	  	  cf = ct;
+		  ct = tmp;
+		}
+
+	      out = emit_store_flag (out, code, ix86_compare_op0,
+				     ix86_compare_op1, VOIDmode, 0, -1);
+	    }
+	  else
+	    {
+	      out = emit_store_flag (out, code, ix86_compare_op0,
+				     ix86_compare_op1, VOIDmode, 0, 1);
+
+	      out = expand_simple_binop (mode, PLUS,
+					 out, constm1_rtx,
+					 out, 1, OPTAB_DIRECT);
+	    }
+
 	  out = expand_simple_binop (mode, AND,
 				     out,
 				     gen_int_mode (cf - ct, mode),
