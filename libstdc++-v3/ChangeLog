@@ -1,3 +1,7 @@
+2001-04-06   Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/backward/backward_warning.h: Re-enable.
+
 2001-04-06  Benjamin Kosnik  <bkoz@redhat.com>
             Alexandre Oliva  <aoliva@redhat.com>
 	
