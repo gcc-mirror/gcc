@@ -1,3 +1,7 @@
+2003-07-07  Dale Johannesen  <dalej@apple.com>
+
+        * config/rs6000/darwin-tramp.asm:  Fix trampolines.  PR 10900.
+
 2003-07-07  Andreas Jaeger  <aj@suse.de>
 
 	* config/i386/i386-protos.h: Convert prototypes to ISO C90.
