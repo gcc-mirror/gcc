@@ -1,3 +1,8 @@
+Mon Aug 17 10:40:34 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cplus-dem.c: Include config.h if it exists.  Also, only
+	prototype malloc/realloc if we can't get stdlib.h.
+
 Tue Jul 28 11:33:09 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* cplus-dem.c (type_kind_t): New type.
