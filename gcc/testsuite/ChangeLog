@@ -1,5 +1,8 @@
 2003-03-06  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/9965
+	* g++.dg/init/ref2.C: New test.
+
 	PR c++/9400
 	* g++.dg/warn/Wshadow-2.C: New test.
 
