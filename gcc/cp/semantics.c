@@ -1860,16 +1860,12 @@ begin_class_definition (t)
   /* Reset the interface data, at the earliest possible
      moment, as it might have been set via a class foo;
      before.  */
-  {
-    tree name = TYPE_IDENTIFIER (t);
-    
-    if (! ANON_AGGRNAME_P (name))
-      {
-	CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
-	SET_CLASSTYPE_INTERFACE_UNKNOWN_X
-	  (t, interface_unknown);
-      }
-  }
+  if (! TYPE_ANONYMOUS_P (t))
+    {
+      CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
+      SET_CLASSTYPE_INTERFACE_UNKNOWN_X
+	(t, interface_unknown);
+    }
   reset_specialization();
   
   /* Make a declaration for this class in its own scope.  */
