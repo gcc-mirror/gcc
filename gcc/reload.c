@@ -643,7 +643,7 @@ push_reload (in, out, inloc, outloc, class,
 	  || (((GET_CODE (SUBREG_REG (in)) == REG
 		&& REGNO (SUBREG_REG (in)) >= FIRST_PSEUDO_REGISTER)
 	       || GET_CODE (SUBREG_REG (in)) == MEM)
-#if defined(BYTE_LOADS_ZERO_EXTEND) || defined(BYTE_LOADS_SIGN_EXTEND)
+#ifdef LOAD_EXTEND_OP
 	      && GET_MODE_SIZE (inmode) <= UNITS_PER_WORD
 	      && GET_MODE_SIZE (GET_MODE (SUBREG_REG (in))) <= UNITS_PER_WORD
 	      && (GET_MODE_SIZE (inmode)
@@ -680,7 +680,7 @@ push_reload (in, out, inloc, outloc, class,
       in_subreg_loc = inloc;
       inloc = &SUBREG_REG (in);
       in = *inloc;
-#if ! defined(BYTE_LOADS_ZERO_EXTEND) && ! defined(BYTE_LOADS_SIGN_EXTEND)
+#ifndef LOAD_EXTEND_OP
       if (GET_CODE (in) == MEM)
 	/* This is supposed to happen only for paradoxical subregs made by
 	   combine.c.  (SUBREG (MEM)) isn't supposed to occur other ways.  */
@@ -726,7 +726,7 @@ push_reload (in, out, inloc, outloc, class,
 	  || (((GET_CODE (SUBREG_REG (out)) == REG
 		&& REGNO (SUBREG_REG (out)) >= FIRST_PSEUDO_REGISTER)
 	       || GET_CODE (SUBREG_REG (out)) == MEM)
-#if defined(BYTE_LOADS_ZERO_EXTEND) || defined(BYTE_LOADS_SIGN_EXTEND)
+#ifdef LOAD_EXTEND_OP
 	      && GET_MODE_SIZE (outmode) <= UNITS_PER_WORD
 	      && GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))) <= UNITS_PER_WORD
 	      && (GET_MODE_SIZE (outmode)
@@ -760,7 +760,7 @@ push_reload (in, out, inloc, outloc, class,
       out_subreg_loc = outloc;
       outloc = &SUBREG_REG (out);
       out = *outloc; 
-#if ! defined(BYTE_LOADS_ZERO_EXTEND) && ! defined(BYTE_LOADS_SIGN_EXTEND)
+#ifndef LOAD_EXTEND_OP
      if (GET_CODE (out) == MEM
 	  && GET_MODE_SIZE (GET_MODE (out)) > GET_MODE_SIZE (outmode))
 	abort ();
@@ -2599,7 +2599,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      /* Force reload if this is a constant or if there may may
 		 be a problem accessing OPERAND in the outer mode.  */
 	      if (CONSTANT_P (operand)
-#if defined(BYTE_LOADS_ZERO_EXTEND) || defined(BYTE_LOADS_SIGN_EXTEND)
+#ifdef LOAD_EXTEND_OP
 		  /* If we have a SUBREG where both the inner and outer
 		     modes are different size but no wider than a word,
 		     combine.c has made assumptions about the behavior of
