@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -p" } */
+/* { dg-build "profiler" "No profiler support" { xfail mmix-*-* } } */
 
 extern void abort (void);
 extern void exit (int);

@@ -1,6 +1,7 @@
 /* PR 5967, PR 7114 */
 /* { dg-do run } */
 /* { dg-options "-O2 -pg" } */
+/* { dg-build "profiler" "No profiler support" { xfail mmix-*-* } } */
 
 long foo (long x)
 {
