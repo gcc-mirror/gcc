@@ -1,3 +1,11 @@
+2003-02-06  Keith R Seitz  <keiths@redhat.com>
+
+	* Makefile.def: Remove "snavigator", "grep", and "db" modules.
+	* Makefile.tpl: Remove "all-snavigator" and "all-grep".
+	* Makefile.in: Regenerated.
+	* configure.in: Remove all traces of snavigator, db, and grep.
+	* configure: Regenerated.
+
 2003-02-06  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* MAINTAINERS: Remove duplicate entry for Bernd Schmidt from Write

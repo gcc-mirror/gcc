@@ -3,7 +3,7 @@
 #
 # Makefile for directory with subdirs to build.
 #   Copyright (C) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-#   1999, 2000, 2001, 2002 Free Software Foundation
+#   1999, 2000, 2001, 2002, 2003 Free Software Foundation
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -543,7 +543,6 @@ CLEAN_MODULES = \
 	clean-bison \
 	clean-byacc \
 	clean-bzip2 \
-	clean-db \
 	clean-dejagnu \
 	clean-diff \
 	clean-dosutils \
@@ -558,7 +557,6 @@ CLEAN_MODULES = \
 	clean-gettext \
 	clean-gnuserv \
 	clean-gprof \
-	clean-grep \
 	clean-gzip \
 	clean-hello \
 	clean-indent \
@@ -584,7 +582,6 @@ CLEAN_MODULES = \
 	clean-shellutils \
 	clean-sid \
 	clean-sim \
-	clean-snavigator \
 	clean-tar \
 	clean-texinfo \
 	clean-textutils \
@@ -1984,73 +1981,6 @@ install-bzip2: installdirs
 	  (cd bzip2 && $(MAKE) $(FLAGS_TO_PASS) install)
 
 
-.PHONY: configure-db maybe-configure-db
-maybe-configure-db:
-configure-db:
-	@test ! -f db/Makefile || exit 0; \
-	[ -d db ] || mkdir db; \
-	r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
-	CC="$(CC)"; export CC; \
-	CFLAGS="$(CFLAGS)"; export CFLAGS; \
-	CXX="$(CXX)"; export CXX; \
-	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
-	echo Configuring in db; \
-	cd db || exit 1; \
-	case $(srcdir) in \
-	  \.) \
-	    srcdiroption="--srcdir=."; \
-	    libsrcdir=".";; \
-	  /* | [A-Za-z]:[\\/]*) \
-	    srcdiroption="--srcdir=$(srcdir)/db"; \
-	    libsrcdir="$$s/db";; \
-	  *) \
-	    srcdiroption="--srcdir=../$(srcdir)/db"; \
-	    libsrcdir="$$s/db";; \
-	esac; \
-	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  || exit 1
-
-.PHONY: all-db maybe-all-db
-maybe-all-db:
-all-db: configure-db
-	@r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
-	  $(SET_LIB_PATH) \
-	  (cd db && $(MAKE) $(FLAGS_TO_PASS) all)
-
-
-.PHONY: check-db
-check-db:
-	@r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
-	  $(SET_LIB_PATH) \
-	  (cd db && $(MAKE) $(FLAGS_TO_PASS) check)
-
-
-
-.PHONY: install-db maybe-install-db
-maybe-install-db:
-install-db: installdirs
-	@r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
-	  $(SET_LIB_PATH) \
-	  (cd db && $(MAKE) $(FLAGS_TO_PASS) install)
-
-
 .PHONY: configure-dejagnu maybe-configure-dejagnu
 maybe-configure-dejagnu:
 configure-dejagnu:
@@ -2989,73 +2919,6 @@ install-gprof: installdirs
 	  s=`cd $(srcdir); ${PWD}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd gprof && $(MAKE) $(FLAGS_TO_PASS) install)
-
-
-.PHONY: configure-grep maybe-configure-grep
-maybe-configure-grep:
-configure-grep:
-	@test ! -f grep/Makefile || exit 0; \
-	[ -d grep ] || mkdir grep; \
-	r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
-	CC="$(CC)"; export CC; \
-	CFLAGS="$(CFLAGS)"; export CFLAGS; \
-	CXX="$(CXX)"; export CXX; \
-	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
-	echo Configuring in grep; \
-	cd grep || exit 1; \
-	case $(srcdir) in \
-	  \.) \
-	    srcdiroption="--srcdir=."; \
-	    libsrcdir=".";; \
-	  /* | [A-Za-z]:[\\/]*) \
-	    srcdiroption="--srcdir=$(srcdir)/grep"; \
-	    libsrcdir="$$s/grep";; \
-	  *) \
-	    srcdiroption="--srcdir=../$(srcdir)/grep"; \
-	    libsrcdir="$$s/grep";; \
-	esac; \
-	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  || exit 1
-
-.PHONY: all-grep maybe-all-grep
-maybe-all-grep:
-all-grep: configure-grep
-	@r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
-	  $(SET_LIB_PATH) \
-	  (cd grep && $(MAKE) $(FLAGS_TO_PASS) all)
-
-
-.PHONY: check-grep
-check-grep:
-	@r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
-	  $(SET_LIB_PATH) \
-	  (cd grep && $(MAKE) $(FLAGS_TO_PASS) check)
-
-
-
-.PHONY: install-grep maybe-install-grep
-maybe-install-grep:
-install-grep: installdirs
-	@r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
-	  $(SET_LIB_PATH) \
-	  (cd grep && $(MAKE) $(FLAGS_TO_PASS) install)
 
 
 .PHONY: configure-gzip maybe-configure-gzip
@@ -4719,73 +4582,6 @@ install-sim: installdirs
 	  s=`cd $(srcdir); ${PWD}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd sim && $(MAKE) $(FLAGS_TO_PASS) install)
-
-
-.PHONY: configure-snavigator maybe-configure-snavigator
-maybe-configure-snavigator:
-configure-snavigator:
-	@test ! -f snavigator/Makefile || exit 0; \
-	[ -d snavigator ] || mkdir snavigator; \
-	r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
-	CC="$(CC)"; export CC; \
-	CFLAGS="$(CFLAGS)"; export CFLAGS; \
-	CXX="$(CXX)"; export CXX; \
-	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	if [ z$(build_canonical) !=  z$(host_canoncial) ] ; then \
-	  AR="$(AR)"; export AR; \
-	  AS="$(AS)"; export AS; \
-	  CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
-	  DLLTOOL="$(DLLTOOL)"; export DLLTOOL; \
-	  LD="$(LD)"; export LD; \
-	  NM="$(NM)"; export NM; \
-	  RANLIB="$(RANLIB)"; export RANLIB; \
-	  WINDRES="$(WINDRES)"; export WINDRES; \
-	  OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
-	  OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
-	fi; \
-	echo Configuring in snavigator; \
-	cd snavigator || exit 1; \
-	case $(srcdir) in \
-	  \.) \
-	    srcdiroption="--srcdir=."; \
-	    libsrcdir=".";; \
-	  /* | [A-Za-z]:[\\/]*) \
-	    srcdiroption="--srcdir=$(srcdir)/snavigator"; \
-	    libsrcdir="$$s/snavigator";; \
-	  *) \
-	    srcdiroption="--srcdir=../$(srcdir)/snavigator"; \
-	    libsrcdir="$$s/snavigator";; \
-	esac; \
-	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
-	  || exit 1
-
-.PHONY: all-snavigator maybe-all-snavigator
-maybe-all-snavigator:
-all-snavigator: configure-snavigator
-	@r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
-	  $(SET_LIB_PATH) \
-	  (cd snavigator && $(MAKE) $(FLAGS_TO_PASS) all)
-
-
-.PHONY: check-snavigator
-check-snavigator:
-	@r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
-	  $(SET_LIB_PATH) \
-	  (cd snavigator && $(MAKE) $(FLAGS_TO_PASS) check)
-
-
-
-.PHONY: install-snavigator maybe-install-snavigator
-maybe-install-snavigator:
-install-snavigator: installdirs
-	@r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
-	  $(SET_LIB_PATH) \
-	  (cd snavigator && $(MAKE) $(FLAGS_TO_PASS) install)
 
 
 .PHONY: configure-tar maybe-configure-tar
@@ -7599,7 +7395,6 @@ all-diff: maybe-all-libiberty
 all-fastjar: maybe-all-zlib maybe-all-libiberty
 all-fileutils: maybe-all-libiberty
 all-flex: maybe-all-libiberty maybe-all-bison maybe-all-byacc
-all-grep: maybe-all-libiberty
 all-gzip: maybe-all-libiberty
 all-hello: maybe-all-libiberty
 all-m4: maybe-all-libiberty maybe-all-texinfo
@@ -7609,7 +7404,6 @@ all-prms: maybe-all-libiberty
 all-recode: maybe-all-libiberty
 all-sed: maybe-all-libiberty
 all-send-pr: maybe-all-prms
-all-snavigator: maybe-all-tcl maybe-all-tk maybe-all-itcl maybe-all-tix maybe-all-db maybe-all-grep maybe-all-libgui
 all-tar: maybe-all-libiberty
 all-uudecode: maybe-all-libiberty
 

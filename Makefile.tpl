@@ -6,7 +6,7 @@ in
 #
 # Makefile for directory with subdirs to build.
 #   Copyright (C) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-#   1999, 2000, 2001, 2002 Free Software Foundation
+#   1999, 2000, 2001, 2002, 2003 Free Software Foundation
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -1335,7 +1335,6 @@ all-diff: maybe-all-libiberty
 all-fastjar: maybe-all-zlib maybe-all-libiberty
 all-fileutils: maybe-all-libiberty
 all-flex: maybe-all-libiberty maybe-all-bison maybe-all-byacc
-all-grep: maybe-all-libiberty
 all-gzip: maybe-all-libiberty
 all-hello: maybe-all-libiberty
 all-m4: maybe-all-libiberty maybe-all-texinfo
@@ -1345,7 +1344,6 @@ all-prms: maybe-all-libiberty
 all-recode: maybe-all-libiberty
 all-sed: maybe-all-libiberty
 all-send-pr: maybe-all-prms
-all-snavigator: maybe-all-tcl maybe-all-tk maybe-all-itcl maybe-all-tix maybe-all-db maybe-all-grep maybe-all-libgui
 all-tar: maybe-all-libiberty
 all-uudecode: maybe-all-libiberty
 
