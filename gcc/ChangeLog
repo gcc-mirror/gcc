@@ -1,3 +1,7 @@
+2001-10-29  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.md (floatunssisf2): Set subreg 0 of operand 2 to zero.
+
 Mon Oct 29 07:23:33 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Makefile.in (OBJS): Put all files in alphabetical order.

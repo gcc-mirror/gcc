@@ -3507,7 +3507,7 @@
 (define_expand "floatunssisf2"
   [(set (subreg:SI (match_dup 2) 4)
 	(match_operand:SI 1 "register_operand" ""))
-   (set (subreg:SI (match_dup 2) 4)
+   (set (subreg:SI (match_dup 2) 0)
 	(const_int 0))
    (set (match_operand:SF 0 "register_operand" "")
 	(float:SF (match_dup 2)))]
