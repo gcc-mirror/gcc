@@ -233,6 +233,7 @@ proc libjava_arguments {{mode compile}} {
 #
 # Run the test specified by srcfile and resultfile. compile_args and
 # exec_args are options telling this proc how to work.
+#   `no-link'     don't try to link the program
 #   `no-exec'     don't try to run the test
 #   `xfail-gcj'   compilation from source will fail
 #   `xfail-javac' compilation with javac will fail
@@ -264,20 +265,33 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
         return
     }
 
-    set args [libjava_arguments link]
-    # Add the --main flag
-    lappend args "additional_flags=--main=[file rootname [file tail $srcfile]]"
-    if { $compile_args != "" } {
-	lappend args "additional_flags=$compile_args"
+    if {[info exists opts(no-link)]} {
+	set mode compile
+    } else {
+	set mode link
+    }
+    set args [libjava_arguments $mode]
+    if {! [info exists opts(no-link)]} {
+	# Add the --main flag
+	lappend args "additional_flags=--main=[file rootname [file tail $srcfile]]"
+	if { $compile_args != "" } {
+	    lappend args "additional_flags=$compile_args"
+	}
     }
 
     regsub "^.*/(\[^/.\]+)\[.\]\[^/]*$" "$srcfile" "\\1" out
     set executable "${objdir}/$out"
+    if {[info exists opts(no-link)]} {
+	append executable ".o"
+	set target object
+    } else {
+	set target executable
+    }
     if { $compile_args != "" } {
 	set errname "$errname $compile_args"
     }
 
-    set x [target_compile $srcfile "$executable" executable $args]
+    set x [target_compile $srcfile "$executable" $target $args]
     if {[info exists opts(xfail-gcj)]} {
 	setup_xfail *-*-*
     }
@@ -294,7 +308,8 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
     }
     pass "$errname compilation from source"
 
-    if {[info exists opts(no-exec)]} {
+    if {[info exists opts(no-exec)]
+	|| [info exists opts(no-link)]} {
 	return
     }
 
@@ -352,6 +367,7 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
 #
 # Run the test specified by srcfile and resultfile. compile_args and
 # exec_args are options telling this proc how to work.
+#   `no-link'     don't try to link the program
 #   `no-exec' don't try to run the test
 #   `xfail-gcj'   compilation from source will fail
 #   `xfail-javac' compilation with javac will fail
@@ -422,14 +438,20 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 	  [list $objdir/[file rootname [file tail $srcfile]].class]
     } else {
 	# Turn "a b" into "a.class b.class".
+	# Also, turn "foo.bar" into "foo/bar.class".
 	set class_files {}
         foreach file [split [string trim $class_out]] {
+	    set file [join [split $file .] /]
 	    lappend class_files $objdir/$file.class
 	}
     }
 
     # Usually it is an error for a test program not to have a `main'
-    # method.  However, for no-exec tests it is ok.
+    # method.  However, for no-exec tests it is ok.  Treat no-link
+    # like no-exec here.
+    if {[info exists opts(no-link)]} {
+	set opts(no-exec) x
+    }
     set largs {}
     if {$main_name == ""} {
 	if {! [info exists opts(no-exec)]} {
@@ -437,7 +459,6 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 	    return
 	} else {
 	    set type object
-	    set executable [file rootname [file tail $srcfile]].o
 	    set mode compile
 	}
     } else {
@@ -460,7 +481,20 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
     }
 
     verbose "compilation command = $args" 2
-    set x [target_compile $class_files "$executable" $type $args]
+    # When compiling and not linking, we have to build each .o
+    # separately.  We do this because DejaGNU's target_compile won't
+    # accept an empty "destfile" argument when the mode is "compile".
+    if {$mode == "compile"} {
+	foreach c_file $class_files {
+	    set executable [file rootname [file tail $c_file]].o
+	    set x [target_compile $c_file "$executable" $type $args]
+	    if {$x != ""} {
+		break
+	    }
+	}
+    } else {
+	set x [target_compile $class_files "$executable" $type $args]
+    }
     if {[info exists opts(xfail-byte)]} {
 	setup_xfail *-*-*
     }
@@ -535,6 +569,7 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 #
 # Run the test specified by srcfile and resultfile. compile_args and
 # exec_args are options telling this proc how to work.
+#   `no-link'     don't try to link the program
 #   `no-exec' don't try to run the test
 #   `xfail-gcj'   compilation from source will fail
 #   `xfail-javac' compilation with javac will fail

@@ -1,3 +1,12 @@
+1999-07-14  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.compile/G19990217_02.no-link: New file.
+	* libjava.compile/test.exp: Look for `.no-link' file.
+	* lib/libjava.exp (test_libjava_from_source): Added `no-link'
+	option.
+	(test_libjava_from_javac): Likewise.  Also, handle package
+	information from class name when creating class file name.
+
 1999-07-13  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.lang/test.exp: New file.
