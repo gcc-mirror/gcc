@@ -1,3 +1,9 @@
+2005-02-16  Julian Scheid  <julian@sektor37.de>
+
+	* gnu/java/nio/charset/UTF_8.java (decodeLoop): Set inPos to
+	in.position().
+	(encodeLoop): Likewise.
+
 2005-02-16  Mark Wielaard  <mark@klomp.org>
 
 	* Makefile.am (ordinary_java_source_files): Add new files
