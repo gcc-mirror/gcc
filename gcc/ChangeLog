@@ -1,5 +1,11 @@
 2001-04-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* Makefile.in (insn-output.o): Depend on $(EXPR_H).
+
+	* genoutput.c (output_prologue): Include expr.h in insn-output.c.
+
+2001-04-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* output.h (assemble_real): Declare if REAL_VALUE_TYPE is defined.
 
 	* real.h (ereal_atof, real_value_truncate, target_isnan,
