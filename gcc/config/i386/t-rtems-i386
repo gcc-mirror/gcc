@@ -36,17 +36,17 @@ xp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#define EXTENDED_FLOAT_STUBS' > xp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> xp-bit.c
 
-MULTILIB_OPTIONS = mcpu=i486/mcpu=pentium/mcpu=pentiumpro/mcpu=k6/mcpu=athlon \
+MULTILIB_OPTIONS = mtune=i486/mtune=pentium/mtune=pentiumpro/mtune=k6/mtune=athlon \
 msoft-float mno-fp-ret-in-387
 MULTILIB_DIRNAMES= m486 mpentium mpentiumpro k6 athlon soft-float nofp
 MULTILIB_MATCHES = msoft-float=mno-m80387
 MULTILIB_EXCEPTIONS = \
 mno-fp-ret-in-387 \
-mcpu=i486/*mno-fp-ret-in-387* \
-mcpu=pentium/*msoft-float* mcpu=pentium/*mno-fp-ret-in-387* \
-mcpu=pentiumpro/*msoft-float* mcpu=pentiumpro/*mno-fp-ret-in-387* \
-mcpu=k6/*msoft-float* mcpu=k6/*mno-fp-ret-in-387* \
-mcpu=athlon/*msoft-float* mcpu=athlon/*mno-fp-ret-in-387*
+mtune=i486/*mno-fp-ret-in-387* \
+mtune=pentium/*msoft-float* mtune=pentium/*mno-fp-ret-in-387* \
+mtune=pentiumpro/*msoft-float* mtune=pentiumpro/*mno-fp-ret-in-387* \
+mtune=k6/*msoft-float* mtune=k6/*mno-fp-ret-in-387* \
+mtune=athlon/*msoft-float* mtune=athlon/*mno-fp-ret-in-387*
 
 EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o
 
