@@ -6238,11 +6238,10 @@ if_then_else_cond (x, ptrue, pfalse)
 	   && 0 != (cond0 = if_then_else_cond (SUBREG_REG (x),
 					       &true0, &false0)))
     {
-      enum machine_mode inner_mode = GET_MODE (SUBREG_REG (x));
-      unsigned HOST_WIDE_INT mask = GET_MODE_MASK (inner_mode);
+      *ptrue = force_to_mode (true0, mode, GET_MODE_MASK (mode), NULL_RTX, 0);
+      *pfalse
+	= force_to_mode (false0, mode, GET_MODE_MASK (mode), NULL_RTX, 0);
 
-      *ptrue = force_to_mode (true0, inner_mode, mask, NULL_RTX, 0);
-      *pfalse = force_to_mode (false0, inner_mode, mask, NULL_RTX, 0);
       return cond0;
     }
 
