@@ -2185,7 +2185,11 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 #ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
 	      ASM_OUTPUT_MAX_SKIP_ALIGN (file, align, max_skip);
 #else
+#ifdef ASM_OUTPUT_ALIGN_WITH_NOP
+              ASM_OUTPUT_ALIGN_WITH_NOP (file, align);
+#else
 	      ASM_OUTPUT_ALIGN (file, align);
+#endif
 #endif
 	    }
 	}
