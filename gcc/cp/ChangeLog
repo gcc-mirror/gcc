@@ -1,3 +1,12 @@
+2002-07-20  Gabriel Dos Reis  <gdr@nerim.net>
+
+	* spew.c (struct uinparsed_test): Replace 'filename' and 'lineno'
+	members with 'locus'.  Adjust use throughout.
+	(struct feed):  Likewise.
+	(alloc_unparsed_test): Change prototype, take a 'const location_t *'.
+	Adjust use.
+	(snarf_defarg): Use error(), not error_with_file_and_line().
+
 2002-07-19  Chris Demetriou  <cgd@broadcom.com>
 
 	* lang-specs.h (@c++): Include "%2" (cc1plus_spec) wherever
