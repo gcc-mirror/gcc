@@ -971,7 +971,7 @@ Use this for the SCO OpenServer Release family including 5.0.0, 5.0.2,
 GNU CC can generate either ELF or COFF binaries.   ELF is the default.
 To get COFF output, you must specify @samp{-mcoff} on the command line.
   
-For 5.0.0 and 5.0.2, you must install TLS597 from ftp.sco.com/TLS.
+For releases 5.0.0 and 5.0.2, you must install TLS597 from ftp.sco.com/TLS.
 5.0.4 and later do not require this patch.
 
 @emph{NOTE:} You must follow the instructions about invoking
@@ -1104,7 +1104,7 @@ that configuration with + the @samp{--with-gnu-as} and @samp{--with-gnu-ld}
 options to @code{configure}.
 
 Note the C compiler that comes
-with this system cannot compile GNU CC.  You can fine binaries of GNU CC
+with this system cannot compile GNU CC.  You can find binaries of GNU CC
 for bootstrapping on @code{jagubox.gsfc.nasa.gov}.
 You will also a patched version of @file{/bin/ld} there that
 raises some of the arbitrary limits found in the original.
