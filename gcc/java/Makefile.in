@@ -148,16 +148,20 @@ ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
 # This is where we get libiberty.a from.
 LIBIBERTY = ../../libiberty/libiberty.a
 
+# This is where we get zlib from.  zlibdir is -L../../zlib by default,
+# and is nothing when configured with --enable-system-zlib.
+ZLIB = @zlibdir@ -lz
+
 # How to link with both our special library facilities
 # and the system's installed libraries.
-LIBS = $(INTLLIBS) $(LIBIBERTY) $(CLIB)
+LIBS = $(ZLIB) $(INTLLIBS) $(LIBIBERTY) $(CLIB)
 LIBDEPS = $(INTLLIBS) $(LIBIBERTY) ../errors.o
 
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order,
 # so that tm.h and config.h will be found in the compilation
 # subdirectory rather than in the source directory.
-INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config -I$(srcdir)/../../include
+INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config -I$(srcdir)/../../include @zlibinc@
 
 # Always use -I$(srcdir)/config when compiling.
 .c.o:
