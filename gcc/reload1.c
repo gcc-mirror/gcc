@@ -4938,8 +4938,8 @@ emit_reload_insns (insn)
 				    oldequiv = old, real_oldequiv = real_old;
 				  else
 				    second_reload_reg
-				      = gen_reg_rtx (REG, new_mode,
-						     REGNO (second_reload_reg));
+				      = gen_rtx (REG, new_mode,
+						 REGNO (second_reload_reg));
 				}
 			    }
 			}
