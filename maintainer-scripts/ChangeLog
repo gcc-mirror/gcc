@@ -1,3 +1,7 @@
+2005-03-10  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* gcc_release (ADA_DIRS): Add "gnattools".
+
 2005-02-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* crontab: Adjust for 4.0 branch.
