@@ -1,3 +1,50 @@
+2000-05-18  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppexp.c (parse_assertion): New.
+	(lex): Call it for CPP_HASH.  Remove CPP_ASSERTION case.
+	(_cpp_parse_expr): Remove case '#'.  Don't set
+	parsing_if_directive.
+	* cpphash.c (collect_objlike_expansion,
+	collect_funlike_expansion, collect_params,
+	_cpp_create_definition): The list no longer has a trailing
+	VSPACE token.
+	* cpphash.h (enum node_type): Add T_ASSERTION.
+	(struct hashnode): Remove aschain, add pred.
+	(struct predicate): New.
+	Update prototypes.
+
+	* cpplex.c (expand_token_space): Handle both offset and
+	nonoffset lists.
+	(init_token_list, _cpp_free_token_list, _cpp_parse_assertion): Delete.
+	(_cpp_init_toklist, _cpp_clear_toklist, _cpp_free_toklist,
+	_cpp_slice_toklist, _cpp_squeeze_toklist, _cpp_equiv_tokens,
+	_cpp_equiv_toklists): New.
+	(_cpp_scan_line): Rename to _cpp_scan_until; add ability to
+	stop at any single-character token, not just newline.
+	(_cpp_lex_token): Remove special cases for #define and #if.
+	(cpp_get_token): Expect # as a separate token type.  Remove
+	DIRECTIVE case.
+	(_cpp_get_directive_token): Remove DIRECTIVE case.
+	(_cpp_lex_line, _cpp_lex_file, _cpp_init_input_buffer): Update.
+
+	* cpplib.c (_cpp_check_directive): Set dirno and
+	SYNTAX_INCLUDE bit of flags, not dir_handler and dir_flags.
+	(_cpp_handle_directive): Run # <number> through the same logic
+	as normal directives.
+	(do_define): Don't set parsing_define_directive.  Use
+	_cpp_scan_until.  The list does not have a VSPACE at the end.
+	(do_if): Save, clear, and restore only_seen_white around 
+	_cpp_parse_expr.
+	(skip_if_group): s/CPP_DIRECTIVE/CPP_HASH/
+	(do_assert, do_unassert): Rewrite.
+
+	* cpplib.h (TTYPE_TABLE): Remove CPP_ASSERTION.
+	(LIST_OFFSET): New flag.
+	(struct cpp_toklist): Replace dir_handler and dir_flags with
+	dirno and flags.
+	(struct cpp_reader): Remove parsing_if_directive and
+	parsing_define_directive.
+
 2000-05-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fixinc/inclhack.def (broken_cabs): Update fix to handle comments

@@ -480,12 +480,6 @@ collect_objlike_expansion (pfile, list)
     {
       switch (TOK_TYPE (list, i))
 	{
-	case CPP_EOF:
-	  cpp_ice (pfile, "EOF in collect_expansion");
-	  /* fall through */
-	case CPP_VSPACE:
-	  goto done;
-
 	case CPP_PASTE:
 	  /* ## is not special if it appears right after another ##;
 	     nor is it special if -traditional.  */
@@ -506,7 +500,6 @@ collect_objlike_expansion (pfile, list)
       CPP_PUTS (pfile, TOK_NAME (list, i), TOK_LEN (list, i));
       last_was_paste = 0;
     }
- done:
 
   if (last_was_paste)
     cpp_error (pfile, "`##' at end of macro definition");
@@ -568,12 +561,6 @@ collect_funlike_expansion (pfile, list, arglist, replacement)
       len = TOK_LEN (list, i);
       switch (token)
 	{
-	case CPP_EOF:
-	  cpp_ice (pfile, "EOF in collect_expansion");
-	  /* fall through */
-	case CPP_VSPACE:
-	  goto done;
-
 	case CPP_HASH:
 	  /* # is special in function-like macros with no args.
 	     (6.10.3.2 para 1.)  However, it is not special after
@@ -677,7 +664,6 @@ collect_funlike_expansion (pfile, list, arglist, replacement)
       }
       last_token = ARG;
     }
- done:
 
   if (last_token == STRIZE)
     cpp_error (pfile, "`#' is not followed by a macro argument name");
@@ -759,8 +745,8 @@ collect_params (pfile, list, arglist)
       case CPP_CLOSE_PAREN:
 	goto scanned;
       case CPP_VSPACE:
-	cpp_error_with_line (pfile, list->line, TOK_COL (list, i),
-			     "missing right paren in macro argument list");
+      case CPP_EOF:
+	cpp_ice (pfile, "impossible token in macro argument list");
 	return 0;
 
       default:
@@ -783,9 +769,8 @@ collect_params (pfile, list, arglist)
 	  }
 	goto scanned;
       }
-
-  cpp_ice (pfile, "collect_params: unreachable - i=%d, ntokens=%d, type=%d",
-	   i, list->tokens_used, TOK_TYPE (list, i-1));
+  cpp_error_with_line (pfile, list->line, TOK_COL (list, i-1),
+		       "missing right paren in macro argument list");
   return 0;
 
  scanned:
@@ -892,9 +877,9 @@ _cpp_create_definition (pfile, list, hp)
      #define FUNC(a, b, ...) // nothing
      #define FUNC(a, b, c) FUNC(a, b, c)  */
 
-  if (list->tokens_used == 2)
+  if (list->tokens_used == 1)
     ntype = T_EMPTY;    /* Empty definition of object-like macro.  */
-  else if (list->tokens_used == 3 && TOK_TYPE (list, 1) == CPP_NAME
+  else if (list->tokens_used == 2 && TOK_TYPE (list, 1) == CPP_NAME
 	   && TOK_LEN (list, 0) == TOK_LEN (list, 1)
 	   && !ustrncmp (TOK_NAME (list, 0), TOK_NAME (list, 1),
 			 TOK_LEN (list, 0)))
