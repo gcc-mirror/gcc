@@ -576,12 +576,14 @@ struct definition {
   U_CHAR *expansion;
   int line;			/* Line number of definition */
   char *file;			/* File of definition */
+  char rest_args;		/* Nonzero if last arg. absorbs the rest */
   struct reflist {
     struct reflist *next;
     char stringify;		/* nonzero if this arg was preceded by a
 				   # operator. */
     char raw_before;		/* Nonzero if a ## operator before arg. */
     char raw_after;		/* Nonzero if a ## operator after arg. */
+    char rest_args;		/* Nonzero if this arg. absorbs the rest */
     int nchars;			/* Number of literal chars to copy before
 				   this arg occurrence.  */
     int argno;			/* Number of arg to substitute (origin-0) */
@@ -604,6 +606,20 @@ union hashval {
   KEYDEF *keydef;
 };
 
+/*
+ * special extension string that can be added to the last macro argument to 
+ * allow it to absorb the "rest" of the arguments when expanded.  Ex:
+ * 		#define wow(a, b...)		process(b, a, b)
+ *		{ wow(1, 2, 3); }	->	{ process( 2, 3, 1,  2, 3); }
+ *		{ wow(one, two); }	->	{ process( two, one,  two); }
+ * if this "rest_arg" is used with the concat token '##' and if it is not
+ * supplied then the token attached to with ## will not be outputed.  Ex:
+ * 		#define wow(a, b...)		process(b ## , a, ## b)
+ *		{ wow(1, 2); }		->	{ process( 2, 1,2); }
+ *		{ wow(one); }		->	{ process( one); {
+ */
+static char rest_extension[] = "...";
+#define REST_EXTENSION_LENGTH	(sizeof (rest_extension) - 1)
 
 /* The structure of a node in the hash table.  The hash table
    has entries for all tokens defined by #define commands (type T_MACRO),
@@ -4527,6 +4543,7 @@ struct arglist {
   U_CHAR *name;
   int length;
   int argno;
+  char rest_args;
 };
 
 /* Create a DEFINITION node from a #define directive.  Arguments are 
@@ -4541,6 +4558,7 @@ create_definition (buf, limit, op)
   int sym_length;		/* and how long it is */
   int line = instack[indepth].lineno;
   char *file = instack[indepth].nominal_fname;
+  int rest_args = 0;
 
   DEFINITION *defn;
   int arglengths = 0;		/* Accumulate lengths of arg names
@@ -4575,16 +4593,30 @@ create_definition (buf, limit, op)
       temp->name = bp;
       temp->next = arg_ptrs;
       temp->argno = argno++;
+      temp->rest_args = 0;
       arg_ptrs = temp;
 
-      if (!is_idstart[*bp])
-	pedwarn ("parameter name starts with a digit in `#define'");
+      if (rest_args)
+	pedwarn ("another parameter follows `%s'",
+		 rest_extension);
 
+      if (!is_idstart[*bp])
+	pedwarn ("invalid character in macro parameter name");
+      
       /* Find the end of the arg name.  */
       while (is_idchar[*bp]) {
 	bp++;
+	/* do we have a "special" rest-args extension here? */
+	if (limit - bp > REST_EXTENSION_LENGTH &&
+	    strncmp (rest_extension, bp, REST_EXTENSION_LENGTH) == 0) {
+	  rest_args = 1;
+	  temp->rest_args = 1;
+	  break;
+	}
       }
       temp->length = bp - temp->name;
+      if (rest_args == 1)
+	bp += REST_EXTENSION_LENGTH;
       arglengths += temp->length + 2;
       SKIP_WHITE_SPACE (bp);
       if (temp->length == 0 || (*bp != ',' && *bp != ')')) {
@@ -4621,6 +4653,7 @@ create_definition (buf, limit, op)
     if (bp < limit && (*bp == ' ' || *bp == '\t')) ++bp;
     /* now everything from bp before limit is the definition. */
     defn = collect_expansion (bp, limit, argno, arg_ptrs);
+    defn->rest_args = rest_args;
 
     /* Now set defn->args.argnames to the result of concatenating
        the argument names in reverse order
@@ -5063,6 +5096,7 @@ collect_expansion (buf, end, nargs, arglist)
 	    tpat->next = NULL;
 	    tpat->raw_before = concat == id_beg;
 	    tpat->raw_after = 0;
+	    tpat->rest_args = arg->rest_args;
 	    tpat->stringify = (traditional ? expected_delimiter != '\0'
 			       : stringify == id_beg);
 
@@ -6737,6 +6771,7 @@ macroexpand (hp, op)
   register U_CHAR *xbuf;
   int xbuf_len;
   int start_line = instack[indepth].lineno;
+  int rest_args, rest_zero;
 
   CHECK_DEPTH (return;);
 
@@ -6770,13 +6805,24 @@ macroexpand (hp, op)
 
     /* Parse all the macro args that are supplied.  I counts them.
        The first NARGS args are stored in ARGS.
-       The rest are discarded.  */
+       The rest are discarded.
+       If rest_args is set then we assume macarg absorbed the rest of the args.
+       */
     i = 0;
+    rest_args = 0;
     do {
       /* Discard the open-parenthesis or comma before the next arg.  */
       ++instack[indepth].bufp;
-      parse_error
-	= macarg ((i < nargs || (nargs == 0 && i == 0)) ? &args[i] : 0);
+      if (rest_args)
+	continue;
+      if (i < nargs || (nargs == 0 && i == 0)) {
+	/* if we are working on last arg which absorbes rest of args... */
+	if (i == nargs - 1 && defn->rest_args)
+	  rest_args = 1;
+	parse_error = macarg (&args[i], rest_args);
+      }
+      else
+	parse_error = macarg (0, 0);
       if (parse_error) {
 	error_with_line (line_for_error (start_line), parse_error);
 	break;
@@ -6793,12 +6839,16 @@ macroexpand (hp, op)
 	i = 0;
     }
 
+    rest_zero = 0;
     if (nargs == 0 && i > 0)
       error ("arguments given to macro `%s'", hp->name);
     else if (i < nargs) {
       /* traditional C allows foo() if foo wants one argument.  */
       if (nargs == 1 && i == 0 && traditional)
 	;
+      /* the rest args token is allowed to absorb 0 tokens */
+      else if (i == nargs - 1 && defn->rest_args)
+	rest_zero = 1;
       else if (i == 0)
 	error ("macro `%s' used without args", hp->name);
       else if (i == 1)
@@ -6822,7 +6872,7 @@ macroexpand (hp, op)
 				   copied a piece at a time */
       register int totlen;	/* total amount of exp buffer filled so far */
 
-      register struct reflist *ap;
+      register struct reflist *ap, *last_ap;
 
       /* Macro really takes args.  Compute the expansion of this call.  */
 
@@ -6849,11 +6899,16 @@ macroexpand (hp, op)
 	 OFFSET is the index in the definition
 	 of where we are copying from.  */
       offset = totlen = 0;
-      for (ap = defn->pattern; ap != NULL; ap = ap->next) {
+      for (last_ap = NULL, ap = defn->pattern; ap != NULL;
+	   last_ap = ap, ap = ap->next) {
 	register struct argdata *arg = &args[ap->argno];
 
-	for (i = 0; i < ap->nchars; i++)
-	  xbuf[totlen++] = exp[offset++];
+	/* add chars to XBUF unless rest_args was zero with concatenation */
+	for (i = 0; i < ap->nchars; i++, offset++)
+	  if (! (rest_zero && ((ap->rest_args && ap->raw_before)
+			       || (last_ap != NULL && last_ap->rest_args
+				   && last_ap->raw_after))))
+	    xbuf[totlen++] = exp[offset];
 
 	if (ap->stringify != 0) {
 	  int arglen = arg->raw_length;
@@ -6977,8 +7032,14 @@ macroexpand (hp, op)
       /* if there is anything left of the definition
 	 after handling the arg list, copy that in too. */
 
-      for (i = offset; i < defn->length; i++)
-	xbuf[totlen++] = exp[i];
+      for (i = offset; i < defn->length; i++) {
+	/* if we've reached the end of the macro */
+	if (exp[i] == ')')
+	  rest_zero = 0;
+	if (! (rest_zero && last_ap != NULL && last_ap->rest_args
+	       && last_ap->raw_after))
+	  xbuf[totlen++] = exp[i];
+      }
 
       xbuf[totlen] = 0;
       xbuf_len = totlen;
@@ -7024,12 +7085,14 @@ macroexpand (hp, op)
 
 /*
  * Parse a macro argument and store the info on it into *ARGPTR.
+ * REST_ARGS is passed to macarg1 to make it absorb the rest of the args.
  * Return nonzero to indicate a syntax error.
  */
 
 static char *
-macarg (argptr)
+macarg (argptr, rest_args)
      register struct argdata *argptr;
+     int rest_args;
 {
   FILE_BUF *ip = &instack[indepth];
   int paren = 0;
@@ -7039,7 +7102,7 @@ macarg (argptr)
   /* Try to parse as much of the argument as exists at this
      input stack level.  */
   U_CHAR *bp = macarg1 (ip->bufp, ip->buf + ip->length,
-			&paren, &newlines, &comments);
+			&paren, &newlines, &comments, rest_args);
 
   /* If we find the end of the argument at this level,
      set up *ARGPTR to point at it in the input stack.  */
@@ -7077,7 +7140,7 @@ macarg (argptr)
       newlines = 0;
       comments = 0;
       bp = macarg1 (ip->bufp, ip->buf + ip->length, &paren,
-		    &newlines, &comments);
+		    &newlines, &comments, rest_args);
       final_start = bufsize;
       bufsize += bp - ip->bufp;
       extra += newlines;
@@ -7166,13 +7229,15 @@ macarg (argptr)
    Value returned is pointer to stopping place.
 
    Increment *NEWLINES each time a newline is passed.
+   REST_ARGS notifies macarg1 that it should absorb the rest of the args.
    Set *COMMENTS to 1 if a comment is seen.  */
 
 static U_CHAR *
-macarg1 (start, limit, depthptr, newlines, comments)
+macarg1 (start, limit, depthptr, newlines, comments, rest_args)
      U_CHAR *start;
      register U_CHAR *limit;
      int *depthptr, *newlines, *comments;
+     int rest_args;
 {
   register U_CHAR *bp = start;
 
@@ -7243,7 +7308,8 @@ macarg1 (start, limit, depthptr, newlines, comments)
       }
       break;
     case ',':
-      if ((*depthptr) == 0)
+      /* if we've returned to lowest level and we aren't absorbing all args */
+      if ((*depthptr) == 0 && rest_args == 0)
 	return bp;
       break;
     }
