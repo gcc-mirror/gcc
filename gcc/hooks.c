@@ -62,6 +62,13 @@ hook_bool_bool_false (bool a ATTRIBUTE_UNUSED)
   return false;
 }
 
+/* Generic hook that takes (enum machine_mode) and returns false.  */
+bool
+hook_bool_mode_false (enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return false;
+}
+
 /* Generic hook that takes (FILE *, const char *) and does nothing.  */
 void
 hook_void_FILEptr_constcharptr (FILE *a ATTRIBUTE_UNUSED, const char *b ATTRIBUTE_UNUSED)

@@ -1357,12 +1357,6 @@ appropriate sizes.  If this macro is undefined, @code{GET_MODE_BITSIZE
 (DImode)} is assumed.
 @end defmac
 
-@defmac VECTOR_MODE_SUPPORTED_P (@var{mode})
-Define this macro to be nonzero if the port is prepared to handle insns
-involving vector mode @var{mode}.  At the very least, it must have move
-patterns for this mode.
-@end defmac
-
 @defmac STACK_SAVEAREA_MODE (@var{save_level})
 If defined, an expression of type @code{enum machine_mode} that
 specifies the mode of the save area operand of a
@@ -3370,7 +3364,7 @@ should return the .eh_frame register number.  The default is
 Define this macro to map register numbers held in the call frame info
 that GCC has collected using @code{DWARF_FRAME_REGNUM} to those that
 should be output in .debug_frame (@code{@var{for_eh}} is zero) and
-.eh_frame (@code{@var{for_eh}} is nonzero).  The default is to 
+.eh_frame (@code{@var{for_eh}} is nonzero).  The default is to
 return @code{@var{regno}}.
 
 @end defmac
@@ -3723,9 +3717,9 @@ register to be used by the caller for this argument; likewise
 @end defmac
 
 @deftypefn {Target Hook} bool TARGET_PASS_BY_REFERENCE (CUMULATIVE_ARGS *@var{cum}, enum machine_mode @var{mode}, tree @var{type}, bool @var{named})
-This target hook should return @code{true} if an argument at the 
+This target hook should return @code{true} if an argument at the
 position indicated by @var{cum} should be passed by reference.  This
-predicate is queried after target independent reasons for being 
+predicate is queried after target independent reasons for being
 passed by reference, such as @code{TREE_ADDRESSABLE (type)}.
 
 If the hook returns true, a copy of that argument is made in memory and a
@@ -3882,6 +3876,12 @@ This hook performs target-specific gimplification of
 @code{VA_ARG_EXPR}.  The first two parameters correspond to the
 arguments to @code{va_arg}; the latter two are as in
 @code{gimplify.c:gimplify_expr}.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_VECTOR_MODE_SUPPORTED_P (enum machine_mode @var{mode})
+Define this to return nonzero if the port is prepared to handle
+insns involving vector mode @var{mode}.  At the very least, it
+must have move patterns for this mode.
 @end deftypefn
 
 @node Scalar Return
@@ -6754,7 +6754,7 @@ hidden, protected or internal visibility as specified by @var{visibility}.
 @defmac TARGET_WEAK_NOT_IN_ARCHIVE_TOC
 A C expression that evaluates to true if the target's linker expects
 that weak symbols do not appear in a static archive's table of contents.
-The default is @code{0}.  
+The default is @code{0}.
 
 Leaving weak symbols out of an archive's table of contents means that,
 if a symbol will only have a definition in one translation unit and
@@ -8482,7 +8482,7 @@ default is long_long_integer_type_node.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_CXX_GUARD_MASK_BIT (void)
-This hook determines how guard variables are used.  It should return 
+This hook determines how guard variables are used.  It should return
 @code{false} (the default) if first byte should be used.  A return value of
 @code{true} indicates the least significant bit should be used.
 @end deftypefn

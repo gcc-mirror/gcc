@@ -384,7 +384,7 @@ layout_decl (tree decl, unsigned int known_align)
 	      enum machine_mode xmode
 		= mode_for_size_tree (DECL_SIZE (decl), MODE_INT, 1);
 
-	      if (xmode != BLKmode 
+	      if (xmode != BLKmode
 		  && (known_align == 0
 		      || known_align >= GET_MODE_ALIGNMENT (xmode)))
 		{
@@ -1559,7 +1559,7 @@ layout_type (tree type)
 	    for (; mode != VOIDmode ; mode = GET_MODE_WIDER_MODE (mode))
 	      if (GET_MODE_NUNITS (mode) == nunits
 	  	  && GET_MODE_INNER (mode) == innermode
-	  	  && VECTOR_MODE_SUPPORTED_P (mode))
+	  	  && targetm.vector_mode_supported_p (mode))
 	        break;
 
 	    /* For integers, try mapping it to a same-sized scalar mode.  */
@@ -1977,7 +1977,7 @@ set_min_and_max_values_for_integral_type (tree type,
   if (is_unsigned)
     {
       min_value = build_int_cst (type, 0, 0);
-      max_value 
+      max_value
 	= build_int_cst (type, precision - HOST_BITS_PER_WIDE_INT >= 0
 			 ? -1 : ((HOST_WIDE_INT) 1 << precision) - 1,
 			 precision - HOST_BITS_PER_WIDE_INT > 0
@@ -1988,14 +1988,14 @@ set_min_and_max_values_for_integral_type (tree type,
     }
   else
     {
-      min_value 
+      min_value
 	= build_int_cst (type,
 			 (precision - HOST_BITS_PER_WIDE_INT > 0
 			  ? 0 : (HOST_WIDE_INT) (-1) << (precision - 1)),
 			 (((HOST_WIDE_INT) (-1)
 			   << (precision - HOST_BITS_PER_WIDE_INT - 1 > 0
 			       ? precision - HOST_BITS_PER_WIDE_INT - 1
-			       : 0))));    
+			       : 0))));
       max_value
 	= build_int_cst (type,
 			 (precision - HOST_BITS_PER_WIDE_INT > 0
@@ -2026,7 +2026,7 @@ fixup_signed_type (tree type)
   if (precision > HOST_BITS_PER_WIDE_INT * 2)
     precision = HOST_BITS_PER_WIDE_INT * 2;
 
-  set_min_and_max_values_for_integral_type (type, precision, 
+  set_min_and_max_values_for_integral_type (type, precision,
 					    /*is_unsigned=*/false);
 
   /* Lay out the type: set its alignment, size, etc.  */
@@ -2049,8 +2049,8 @@ fixup_unsigned_type (tree type)
     precision = HOST_BITS_PER_WIDE_INT * 2;
 
   TYPE_UNSIGNED (type) = 1;
-  
-  set_min_and_max_values_for_integral_type (type, precision, 
+
+  set_min_and_max_values_for_integral_type (type, precision,
 					    /*is_unsigned=*/true);
 
   /* Lay out the type: set its alignment, size, etc.  */

@@ -588,7 +588,7 @@ gfc_get_dtype (tree type, int rank)
 
   assert (rank <= GFC_DTYPE_RANK_MASK);
   size = TYPE_SIZE_UNIT (type);
-    
+
   i = rank | (n << GFC_DTYPE_TYPE_SHIFT);
   if (size && INTEGER_CST_P (size))
     {
@@ -1360,38 +1360,13 @@ gfc_type_for_mode (enum machine_mode mode, int unsignedp)
   if (mode == TYPE_MODE (build_pointer_type (integer_type_node)))
     return build_pointer_type (integer_type_node);
 
-#ifdef VECTOR_MODE_SUPPORTED_P
-  if (VECTOR_MODE_SUPPORTED_P (mode))
+  if (VECTOR_MODE_P (mode))
     {
-      switch (mode)
-	{
-	case V16QImode:
-	  return unsignedp ? unsigned_V16QI_type_node : V16QI_type_node;
-	case V8HImode:
-	  return unsignedp ? unsigned_V8HI_type_node : V8HI_type_node;
-	case V4SImode:
-	  return unsignedp ? unsigned_V4SI_type_node : V4SI_type_node;
-	case V2DImode:
-	  return unsignedp ? unsigned_V2DI_type_node : V2DI_type_node;
-	case V2SImode:
-	  return unsignedp ? unsigned_V2SI_type_node : V2SI_type_node;
-	case V4HImode:
-	  return unsignedp ? unsigned_V4HI_type_node : V4HI_type_node;
-	case V8QImode:
-	  return unsignedp ? unsigned_V8QI_type_node : V8QI_type_node;
-	case V16SFmode:
-	  return V16SF_type_node;
-	case V4SFmode:
-	  return V4SF_type_node;
-	case V2SFmode:
-	  return V2SF_type_node;
-	case V2DFmode:
-	  return V2DF_type_node;
-	default:
-	  break;
-	}
+      enum machine_mode inner_mode = GET_MODE_INNER (mode);
+      tree inner_type = gfc_type_for_mode (inner_mode, unsignedp);
+      if (inner_type != NULL_TREE)
+        return build_vector_type_for_mode (inner_type, mode);
     }
-#endif
 
   return 0;
 }

@@ -229,7 +229,7 @@ extern GTY(()) rtx aof_pic_label;
 /* Nonzero if we need to protect the prolog from scheduling */
 #define ARM_FLAG_NO_SCHED_PRO	(1 << 12)
 
-/* Nonzero if a call to abort should be generated if a noreturn 
+/* Nonzero if a call to abort should be generated if a noreturn
    function tries to return.  */
 #define ARM_FLAG_ABORT_NORETURN	(1 << 13)
 
@@ -238,7 +238,7 @@ extern GTY(()) rtx aof_pic_label;
 
 /* Nonzero if all call instructions should be indirect.  */
 #define ARM_FLAG_LONG_CALLS	(1 << 15)
-  
+
 /* Nonzero means that the target ISA is the THUMB, not the ARM.  */
 #define ARM_FLAG_THUMB          (1 << 16)
 
@@ -302,7 +302,7 @@ extern GTY(()) rtx aof_pic_label;
    etc., in addition to just the AAPCS calling conventions.  */
 #ifndef TARGET_BPABI
 #define TARGET_BPABI false
-#endif 
+#endif
 
 /* SUBTARGET_SWITCHES is used to add flags on a per-config basis.  */
 #ifndef SUBTARGET_SWITCHES
@@ -537,7 +537,7 @@ extern int arm_tune_xscale;
 extern int arm_is_6_or_7;
 
 /* Nonzero if we should define __THUMB_INTERWORK__ in the
-   preprocessor.  
+   preprocessor.
    XXX This is a bit of a hack, it's intended to help work around
    problems in GLD which doesn't understand that armv5t code is
    interworking clean.  */
@@ -566,13 +566,13 @@ extern int arm_cpp_interwork;
 /* Nonzero if we need to refer to the GOT with a PC-relative
    offset.  In other words, generate
 
-   .word	_GLOBAL_OFFSET_TABLE_ - [. - (.Lxx + 8)]  
+   .word	_GLOBAL_OFFSET_TABLE_ - [. - (.Lxx + 8)]
 
    rather than
 
    .word	_GLOBAL_OFFSET_TABLE_ - (.Lxx + 8)
 
-   The default is true, which matches NetBSD.  Subtargets can 
+   The default is true, which matches NetBSD.  Subtargets can
    override this if required.  */
 #ifndef GOT_PCREL
 #define GOT_PCREL   1
@@ -609,7 +609,7 @@ extern int arm_cpp_interwork;
    in instructions that operate on numbered bit-fields.  */
 #define BITS_BIG_ENDIAN  0
 
-/* Define this if most significant byte of a word is the lowest numbered.  
+/* Define this if most significant byte of a word is the lowest numbered.
    Most ARM processors are run in little endian mode, so that is the default.
    If you want to have it run-time selectable, change the definition in a
    cover file to be TARGET_BIG_ENDIAN.  */
@@ -667,7 +667,7 @@ extern int arm_cpp_interwork;
 
 /* Make strings word-aligned so strcpy from constants will be faster.  */
 #define CONSTANT_ALIGNMENT_FACTOR (TARGET_THUMB || ! arm_tune_xscale ? 1 : 2)
-    
+
 #define CONSTANT_ALIGNMENT(EXP, ALIGN)				\
    ((TREE_CODE (EXP) == STRING_CST				\
      && (ALIGN) < BITS_PER_WORD * CONSTANT_ALIGNMENT_FACTOR)	\
@@ -725,7 +725,7 @@ extern const char * structure_size_string;
 
 	r4-r8	     S	register variable
 	r9	     S	(rfp) register variable (real frame pointer)
-	
+
 	r10  	   F S	(sl) stack limit (used by -mapcs-stack-check)
 	r11 	   F S	(fp) argument pointer
 	r12		(ip) temp workspace
@@ -809,7 +809,7 @@ extern const char * structure_size_string;
    The latter must include the registers where values are returned
    and the register where structure-value addresses are passed.
    Aside from that, you can include as many other registers as you like.
-   The CC is not preserved over function calls on the ARM 6, so it is 
+   The CC is not preserved over function calls on the ARM 6, so it is
    easier to assume this for all.  SFP is preserved, since FP is.  */
 #define CALL_USED_REGISTERS  \
 {                            \
@@ -922,7 +922,7 @@ extern const char * structure_size_string;
     }								\
   SUBTARGET_CONDITIONAL_REGISTER_USAGE				\
 }
-    
+
 /* These are a couple of extensions to the formats accepted
    by asm_fprintf:
      %@ prints out ASM_COMMENT_START
@@ -975,7 +975,7 @@ extern const char * structure_size_string;
 #define MUST_USE_SJLJ_EXCEPTIONS 1
 /* We can generate DWARF2 Unwind info, even though we don't use it.  */
 #define DWARF2_UNWIND_INFO 1
-			     
+
 /* Use r0 and r1 to pass exception handling information.  */
 #define EH_RETURN_DATA_REGNO(N) (((N) < 2) ? N : INVALID_REGNUM)
 
@@ -1054,7 +1054,7 @@ extern const char * structure_size_string;
 
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms may be accessed
-   via the stack pointer) in functions that seem suitable.  
+   via the stack pointer) in functions that seem suitable.
    If we have to have a frame pointer we might as well make use of it.
    APCS says that the frame pointer does not need to be pushed in leaf
    functions, or simple tail call functions.  */
@@ -1088,16 +1088,13 @@ extern const char * structure_size_string;
 #define MODES_TIEABLE_P(MODE1, MODE2)  \
   (GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2))
 
-#define VECTOR_MODE_SUPPORTED_P(MODE) \
- ((MODE) == V2SImode || (MODE) == V4HImode || (MODE) == V8QImode)
-
 #define VALID_IWMMXT_REG_MODE(MODE) \
- (VECTOR_MODE_SUPPORTED_P (MODE) || (MODE) == DImode)
+ (arm_vector_mode_supported_p (MODE) || (MODE) == DImode)
 
 /* The order in which register should be allocated.  It is good to use ip
    since no saving is required (though calls clobber it) and it never contains
    function parameters.  It is quite good to use lr since other calls may
-   clobber it anyway.  Allocate r0 through r3 in reverse order since r3 is 
+   clobber it anyway.  Allocate r0 through r3 in reverse order since r3 is
    least likely to contain a function parameter; in addition results are
    returned in r0.  */
 
@@ -1212,7 +1209,7 @@ enum reg_class
 #define CLASS_LIKELY_SPILLED_P(CLASS)	\
     ((TARGET_THUMB && (CLASS) == LO_REGS)	\
      || (CLASS) == CC_REG)
-				      
+
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS  (TARGET_THUMB ? LO_REGS : GENERAL_REGS)
 #define BASE_REG_CLASS   (TARGET_THUMB ? LO_REGS : GENERAL_REGS)
@@ -1255,9 +1252,9 @@ enum reg_class
    C is the letter, and VALUE is a constant value.
    Return 1 if VALUE is in the range specified by C.
 	I: immediate arithmetic operand (i.e. 8 bits shifted as required).
-	J: valid indexing constants.  
+	J: valid indexing constants.
 	K: ~value ok in rhs argument of data operand.
-	L: -value ok in rhs argument of data operand. 
+	L: -value ok in rhs argument of data operand.
         M: 0..32, or a power of 2  (for shifts, or mult done by shift).  */
 #define CONST_OK_FOR_ARM_LETTER(VALUE, C)  		\
   ((C) == 'I' ? const_ok_for_arm (VALUE) :		\
@@ -1282,7 +1279,7 @@ enum reg_class
 #define CONST_OK_FOR_LETTER_P(VALUE, C)					\
   (TARGET_ARM ?								\
    CONST_OK_FOR_ARM_LETTER (VALUE, C) : CONST_OK_FOR_THUMB_LETTER (VALUE, C))
-     
+
 /* Constant letter 'G' for the FP immediate constants.
    'H' means the same constant negated.  */
 #define CONST_DOUBLE_OK_FOR_ARM_LETTER(X, C)			\
@@ -1294,13 +1291,13 @@ enum reg_class
    CONST_DOUBLE_OK_FOR_ARM_LETTER (X, C) : 0)
 
 /* For the ARM, `Q' means that this is a memory operand that is just
-   an offset from a register.  
+   an offset from a register.
    `S' means any symbol that has the SYMBOL_REF_FLAG set or a CONSTANT_POOL
    address.  This means that the symbol is in the text segment and can be
    accessed without using a load.
    'U' Prefixes an extended memory constraint where:
-   'Uv' is an address valid for VFP load/store insns.  
-   'Uy' is an address valid for iwmmxt load/store insns.  
+   'Uv' is an address valid for VFP load/store insns.
+   'Uy' is an address valid for iwmmxt load/store insns.
    'Uq' is an address valid for ldrsb.  */
 
 #define EXTRA_CONSTRAINT_STR_ARM(OP, C, STR)			\
@@ -1366,7 +1363,7 @@ enum reg_class
    ? (((MODE) == HImode && ! arm_arch4 && true_regnum (X) == -1) \
     ? GENERAL_REGS : NO_REGS)					\
    : THUMB_SECONDARY_OUTPUT_RELOAD_CLASS (CLASS, MODE, X))
-   
+
 /* If we need to load shorts byte-at-a-time, then we need a scratch.  */
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, X)		\
   /* Restrict which direct reloads are allowed for VFP regs.  */ \
@@ -1480,7 +1477,7 @@ enum reg_class
     ARM_LEGITIMIZE_RELOAD_ADDRESS (X, MODE, OPNUM, TYPE, IND_LEVELS, WIN); \
   else									   \
     THUMB_LEGITIMIZE_RELOAD_ADDRESS (X, MODE, OPNUM, TYPE, IND_LEVELS, WIN)
-  
+
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.
    ARM regs are UNITS_PER_WORD bits while FPA regs can hold any FP mode */
@@ -1558,7 +1555,7 @@ enum reg_class
    : TARGET_ARM && TARGET_HARD_FLOAT && TARGET_MAVERICK			\
      && GET_MODE_CLASS (MODE) == MODE_FLOAT				\
    ? gen_rtx_REG (MODE, FIRST_CIRRUS_FP_REGNUM) 			\
-   : TARGET_IWMMXT_ABI && VECTOR_MODE_SUPPORTED_P (MODE)	\
+   : TARGET_IWMMXT_ABI && arm_vector_mode_supported_p (MODE)    	\
    ? gen_rtx_REG (MODE, FIRST_IWMMXT_REGNUM) 				\
    : gen_rtx_REG (MODE, ARG_REGISTER (1)))
 
@@ -1709,11 +1706,11 @@ typedef struct
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.
    For args passed entirely in registers or entirely in memory, zero.  */
-#define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED)	\
-  (VECTOR_MODE_SUPPORTED_P (MODE) ? 0 :				\
-       NUM_ARG_REGS > (CUM).nregs				\
+#define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED)	        \
+  (arm_vector_mode_supported_p (MODE) ? 0 :				\
+       NUM_ARG_REGS > (CUM).nregs				        \
    && (NUM_ARG_REGS < ((CUM).nregs + ARM_NUM_REGS2 (MODE, TYPE))	\
-   && (CUM).can_split)						\
+   && (CUM).can_split)						        \
    ?   NUM_ARG_REGS - (CUM).nregs : 0)
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
@@ -1728,7 +1725,7 @@ typedef struct
    (TYPE is null for libcalls where that information may not be available.)  */
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
   (CUM).nargs += 1;					\
-  if (VECTOR_MODE_SUPPORTED_P (MODE)			\
+  if (arm_vector_mode_supported_p (MODE)	       	\
       && (CUM).named_count > (CUM).nargs)		\
     (CUM).iwmmxt_nregs += 1;				\
   else							\
@@ -1867,7 +1864,7 @@ typedef struct
 
 /* Special case handling of the location of arguments passed on the stack.  */
 #define DEBUGGER_ARG_OFFSET(value, addr) value ? value : arm_debugger_arg_offset (value, addr)
-     
+
 /* Initialize data used by insn expanders.  This is called from insn_emit,
    once for every function before code is generated.  */
 #define INIT_EXPANDERS  arm_init_expanders ()
@@ -1920,7 +1917,7 @@ typedef struct
     ARM_TRAMPOLINE_TEMPLATE (FILE)		\
   else						\
     THUMB_TRAMPOLINE_TEMPLATE (FILE)
-       
+
 /* Length in units of the trampoline for entering a nested function.  */
 #define TRAMPOLINE_SIZE  (TARGET_ARM ? 16 : 24)
 
@@ -2013,7 +2010,7 @@ typedef struct
    On the ARM, allow any integer (invalid ones are removed later by insn
    patterns), nice doubles and symbol_refs which refer to the function's
    constant pool XXX.
-   
+
    When generating pic allow anything.  */
 #define ARM_LEGITIMATE_CONSTANT_P(X)	(flag_pic || ! label_mentioned_p (X))
 
@@ -2050,7 +2047,7 @@ typedef struct
   case SHORT_CALL_FLAG_CHAR: return 1;		\
   case LONG_CALL_FLAG_CHAR:  return 1;		\
   case '*':  return 1;				\
-  SUBTARGET_NAME_ENCODING_LENGTHS		
+  SUBTARGET_NAME_ENCODING_LENGTHS
 
 /* This is how to output a reference to a user-level label named NAME.
    `assemble_name' uses this.  */
@@ -2129,7 +2126,7 @@ typedef struct
    that is a valid memory address for an instruction.
    The MODE argument is the machine mode for the MEM expression
    that wants to use this address.  */
-     
+
 #define ARM_BASE_REGISTER_RTX_P(X)  \
   (GET_CODE (X) == REG && ARM_REG_OK_FOR_BASE_P (X))
 
@@ -2152,7 +2149,7 @@ typedef struct
   if (TARGET_ARM)							\
     ARM_GO_IF_LEGITIMATE_ADDRESS (MODE, X, WIN)  			\
   else /* if (TARGET_THUMB) */						\
-    THUMB_GO_IF_LEGITIMATE_ADDRESS (MODE, X, WIN)	
+    THUMB_GO_IF_LEGITIMATE_ADDRESS (MODE, X, WIN)
 
 
 /* Try machine-dependent ways of modifying an illegitimate address
@@ -2177,7 +2174,7 @@ do {							\
   if (memory_address_p (MODE, X))			\
     goto WIN;						\
 } while (0)
-     
+
 /* Go to LABEL if ADDR (a legitimate address expression)
    has an effect that depends on the machine mode it is used for.  */
 #define ARM_GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)  			\
@@ -2190,7 +2187,7 @@ do {							\
 /* Nothing helpful to do for the Thumb */
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)	\
   if (TARGET_ARM)					\
-    ARM_GO_IF_MODE_DEPENDENT_ADDRESS (ADDR, LABEL)  			
+    ARM_GO_IF_MODE_DEPENDENT_ADDRESS (ADDR, LABEL)
 
 
 /* Specify the machine mode that this machine uses
@@ -2227,7 +2224,7 @@ do {							\
 #define SLOW_BYTE_ACCESS 0
 
 #define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) 1
-     
+
 /* Immediate shift counts are truncated by the output routines (or was it
    the assembler?).  Shift counts in a register are truncated by ARM.  Note
    that the native compiler puts too large (> 32) immediate shift counts
@@ -2258,7 +2255,7 @@ do {							\
   (TARGET_ARM ? 10 :					\
    ((GET_MODE_SIZE (M) < 4 ? 8 : 2 * GET_MODE_SIZE (M))	\
     * (CLASS == LO_REGS ? 1 : 2)))
- 
+
 /* Try to generate sequences that don't involve branches, we can then use
    conditional instructions */
 #define BRANCH_COST \
@@ -2573,7 +2570,7 @@ extern int making_const_table;
 #define RETURN_ADDR_RTX(COUNT, FRAME) \
   arm_return_addr (COUNT, FRAME)
 
-/* Mask of the bits in the PC that contain the real return address 
+/* Mask of the bits in the PC that contain the real return address
    when running in 26-bit mode.  */
 #define RETURN_ADDR_MASK26 (0x03fffffc)
 

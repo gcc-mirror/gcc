@@ -1,3 +1,31 @@
+2004-08-23  Eric Christopher  <echristo@redhat.com>
+
+	* defaults.h (VECTOR_MODE_SUPPORTED_P): Remove macro.
+	* system.h (VECTOR_MODE_SUPPORTED_P): Poison.
+	* target-def.h (TARGET_VECTOR_MODE_SUPPORTED_P): Define.
+	* target.h: Ditto.
+	* hooks.h: Include machmode.h.
+	(hook_bool_mode_false): Declare.
+	* hooks.c (hook_bool_mode_false): Define.
+	* expr.c (vector_mode_valid_p): Use targetm.vector_mode_supported_p.
+	* stor-layout.c (layout_type): Ditto.
+	* config/alpha/alpha.c (alpha_vector_mode_supported_p): New function.
+	Define to target macro.
+	* config/alpha/alpha.h (VECTOR_MODE_SUPPORTED_P): Delete.
+	* config/arm/arm.c: Ditto. Use.
+	* config/arm/arm.h: Ditto.
+	* config/arm/arm-protos.h: Ditto.
+	* config/i386/i386.c: Ditto.
+	* config/i386/i386.h: Ditto.
+	* config/rs6000/rs6000.c: Ditto.
+	* config/rs6000/rs6000.h: Ditto.
+	* config/sh/sh.c: Ditto.
+	* config/sh/sh.h: Ditto.
+	* config/sh/sh-protos.h: Ditto.
+	* config/sh/sh.md: Use.
+	* doc/tm.texi: Move documentation for VECTOR_MODE_SUPPORTED_P
+	to TARGET_VECTOR_MODE_SUPPORTED_P.
+
 2004-08-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* Makefile.in (BUILD_ERRORS): Set to build-errors.
@@ -418,7 +446,7 @@
 	(copyprop_hardreg_forward_1): Update call to kill_value_regno.
 
 2004-08-20  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	Fix PR tree-optimization/17111
 	* tree-ssa-pre.c (create_value_expr_from): Don't change the types
 	of non-value_handles.
@@ -605,8 +633,8 @@
 	(override_options): Added checks for the new options.
 	(s390_emit_prologue): Emit stack check and trap code and perform
 	compile time stack size checking.
-	
-	* config/s390/s390.h (TARGET_OPTIONS): Added new options 
+
+	* config/s390/s390.h (TARGET_OPTIONS): Added new options
 	"warn-framesize", "warn-dynamicstack", "stack-size" and
 	"stack-guard".
 
