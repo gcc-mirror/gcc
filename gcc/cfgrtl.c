@@ -135,6 +135,9 @@ delete_insn (insn)
 
   if (really_delete)
     {
+      /* If this insn has already been deleted, something is very wrong.  */
+      if (INSN_DELETED_P (insn))
+	abort ();
       remove_insn (insn);
       INSN_DELETED_P (insn) = 1;
     }

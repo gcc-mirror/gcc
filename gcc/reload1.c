@@ -7537,9 +7537,8 @@ gen_reload (out, in, opnum, type)
   return last ? NEXT_INSN (last) : get_insns ();
 }
 
-/* Delete a previously made output-reload
-   whose result we now believe is not needed.
-   First we double-check.
+/* Delete a previously made output-reload whose result we now believe
+   is not needed.  First we double-check.
 
    INSN is the insn now being processed.
    LAST_RELOAD_REG is the hard register number for which we want to delete
@@ -7633,15 +7632,21 @@ delete_output_reload (insn, j, last_reload_reg)
 	}
     }
 
+  /* We will be deleting the insn.  Remove the spill reg information.  */
+  for (k = HARD_REGNO_NREGS (last_reload_reg, GET_MODE (reg)); k-- > 0; )
+    {
+      spill_reg_store[last_reload_reg + k] = 0;
+      spill_reg_stored_to[last_reload_reg + k] = 0;
+    }
+
   /* The caller has already checked that REG dies or is set in INSN.
-     It has also checked that we are optimizing, and thus some inaccurancies
-     in the debugging information are acceptable.
-     So we could just delete output_reload_insn.
-     But in some cases we can improve the debugging information without
-     sacrificing optimization - maybe even improving the code:
-     See if the pseudo reg has been completely replaced
-     with reload regs.  If so, delete the store insn
-     and forget we had a stack slot for the pseudo.  */
+     It has also checked that we are optimizing, and thus some
+     inaccurancies in the debugging information are acceptable.
+     So we could just delete output_reload_insn.  But in some cases
+     we can improve the debugging information without sacrificing
+     optimization - maybe even improving the code: See if the pseudo
+     reg has been completely replaced with reload regs.  If so, delete
+     the store insn and forget we had a stack slot for the pseudo.  */
   if (rld[j].out != rld[j].in
       && REG_N_DEATHS (REGNO (reg)) == 1
       && REG_N_SETS (REGNO (reg)) == 1
@@ -7650,11 +7655,10 @@ delete_output_reload (insn, j, last_reload_reg)
     {
       rtx i2;
 
-      /* We know that it was used only between here
-	 and the beginning of the current basic block.
-	 (We also know that the last use before INSN was
-	 the output reload we are thinking of deleting, but never mind that.)
-	 Search that range; see if any ref remains.  */
+      /* We know that it was used only between here and the beginning of
+	 the current basic block.  (We also know that the last use before
+	 INSN was the output reload we are thinking of deleting, but never
+	 mind that.)  Search that range; see if any ref remains.  */
       for (i2 = PREV_INSN (insn); i2; i2 = PREV_INSN (i2))
 	{
 	  rtx set = single_set (i2);
@@ -7677,7 +7681,8 @@ delete_output_reload (insn, j, last_reload_reg)
 	    }
 	}
 
-      /* Delete the now-dead stores into this pseudo.  */
+      /* Delete the now-dead stores into this pseudo.  Note that this
+	 loop also takes care of deleting output_reload_insn.  */
       for (i2 = PREV_INSN (insn); i2; i2 = PREV_INSN (i2))
 	{
 	  rtx set = single_set (i2);
@@ -7685,8 +7690,6 @@ delete_output_reload (insn, j, last_reload_reg)
 	  if (set != 0 && SET_DEST (set) == reg)
 	    {
 	      delete_address_reloads (i2, insn);
-	      /* This might be a basic block head,
-		 thus don't use delete_insn.  */
 	      delete_insn (i2);
 	    }
 	  if (GET_CODE (i2) == CODE_LABEL
@@ -7694,14 +7697,15 @@ delete_output_reload (insn, j, last_reload_reg)
 	    break;
 	}
 
-      /* For the debugging info,
-	 say the pseudo lives in this reload reg.  */
+      /* For the debugging info, say the pseudo lives in this reload reg.  */
       reg_renumber[REGNO (reg)] = REGNO (rld[j].reg_rtx);
       alter_reg (REGNO (reg), -1);
     }
-  delete_address_reloads (output_reload_insn, insn);
-  delete_insn (output_reload_insn);
-
+  else
+    {
+      delete_address_reloads (output_reload_insn, insn);
+      delete_insn (output_reload_insn);
+    }
 }
 
 /* We are going to delete DEAD_INSN.  Recursively delete loads of
