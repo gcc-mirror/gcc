@@ -1,15 +1,32 @@
+dnl See whether we can include both string.h and strings.h.
+AC_DEFUN(GCC_HEADER_STRING,
+[AC_CACHE_CHECK([whether string.h and strings.h may both be included],
+  gcc_cv_header_string,
+[AC_TRY_COMPILE([#include <string.h>
+#include <strings.h>], , gcc_cv_header_string=yes, gcc_cv_header_string=no)])
+if test $gcc_cv_header_string = yes; then
+  AC_DEFINE(STRING_WITH_STRINGS)
+fi
+])
+
 dnl See whether we need a declaration for a function.
+dnl GCC_NEED_DECLARATION(FUNCTION [, EXTRA-HEADER-FILES])
 AC_DEFUN(GCC_NEED_DECLARATION,
 [AC_MSG_CHECKING([whether $1 must be declared])
 AC_CACHE_VAL(gcc_cv_decl_needed_$1,
 [AC_TRY_COMPILE([
 #include <stdio.h>
-#ifdef HAVE_STRING_H
-#include <string.h>
+#ifdef STRING_WITH_STRINGS
+# include <string.h>
+# include <strings.h>
 #else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
+# ifdef HAVE_STRING_H
+#  include <string.h>
+# else
+#  ifdef HAVE_STRINGS_H
+#   include <strings.h>
+#  endif
+# endif
 #endif
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
@@ -22,15 +39,74 @@ AC_CACHE_VAL(gcc_cv_decl_needed_$1,
 #endif
 #ifndef HAVE_INDEX
 #define index strchr
-#endif],
+#endif
+$2],
 [char *(*pfn) = (char *(*)) $1],
-gcc_cv_decl_needed_$1=no, gcc_cv_decl_needed_$1=yes)])
-AC_MSG_RESULT($gcc_cv_decl_needed_$1)
-if test $gcc_cv_decl_needed_$1 = yes; then
+eval "gcc_cv_decl_needed_$1=no", eval "gcc_cv_decl_needed_$1=yes")])
+if eval "test \"`echo '$gcc_cv_decl_needed_'$1`\" = yes"; then
+  AC_MSG_RESULT(yes)
   gcc_tr_decl=NEED_DECLARATION_`echo $1 | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
   AC_DEFINE_UNQUOTED($gcc_tr_decl)
+else
+  AC_MSG_RESULT(no)
 fi
 ])dnl
+
+dnl Check multiple functions to see whether each needs a declaration.
+dnl GCC_NEED_DECLARATIONS(FUNCTION... [, EXTRA-HEADER-FILES])
+AC_DEFUN(GCC_NEED_DECLARATIONS,
+[for ac_func in $1
+do
+GCC_NEED_DECLARATION($ac_func, $2)
+done
+])
+
+dnl Check if we have vprintf and possibly _doprnt.
+dnl Note autoconf checks for vprintf even though we care about vfprintf.
+AC_DEFUN(GCC_FUNC_VFPRINTF_DOPRNT,
+[AC_FUNC_VPRINTF
+vfprintf=
+doprint=
+if test $ac_cv_func_vprintf != yes ; then
+  vfprintf=vfprintf.o
+  if test $ac_cv_func__doprnt != yes ; then
+    doprint=doprint.o
+  fi
+fi
+AC_SUBST(vfprintf)
+AC_SUBST(doprint)
+])    
+
+dnl See if the printf functions in libc support %p in format strings.
+AC_DEFUN(GCC_FUNC_PRINTF_PTR,
+[AC_CACHE_CHECK(whether the printf functions support %p,
+  gcc_cv_func_printf_ptr,
+[AC_TRY_RUN([#include <stdio.h>
+
+main()
+{
+  char buf[64];
+  char *p = buf, *q = NULL;
+  sprintf(buf, "%p", p);
+  sscanf(buf, "%p", &q);
+  exit (p != q);
+}], gcc_cv_func_printf_ptr=yes, gcc_cv_func_printf_ptr=no,
+	gcc_cv_func_printf_ptr=no)
+rm -f core core.* *.core])
+if test $gcc_cv_func_printf_ptr = yes ; then
+  AC_DEFINE(HAVE_PRINTF_PTR)
+fi
+])
+
+dnl See whether the stage1 host compiler accepts the volatile keyword.
+AC_DEFUN(GCC_C_VOLATILE,
+[AC_CACHE_CHECK([for volatile], gcc_cv_c_volatile,
+[AC_TRY_COMPILE(, [volatile int foo;],
+        gcc_cv_c_volatile=yes, gcc_cv_c_volatile=no)])
+if test $gcc_cv_c_volatile = yes ; then
+  AC_DEFINE(HAVE_VOLATILE)
+fi
+])
 
 #serial 1
 dnl This test replaces the one in autoconf.
