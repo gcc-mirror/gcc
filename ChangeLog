@@ -1,3 +1,7 @@
+2004-08-13  Brian Booth  <bbooth@redhat.com>
+
+	* MAINTAINERS: Remove myself from write-after-approval.
+
 2004-08-12  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* src-release: Stop distributing mmalloc with gdb (which doesn't
