@@ -1,3 +1,13 @@
+Mon Aug 24 00:53:53 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* fixinc.irix: Add curses.h handling from fixinc.wrap.
+
+Fri Aug 14 14:12:59 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* c-common.c (combine_strings): Also set TREE_READONLY.
+	Change warn_write_strings to flag_const_strings.
+	* c-decl.c, c-tree.h: Likewise.
+
 Sun Aug 23 18:39:11 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.c (sparc_emit_set_const32): If outputting a
