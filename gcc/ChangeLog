@@ -1,3 +1,23 @@
+2001-10-11  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config.gcc: Add cris-*-aout, cris-*-elf, cris-*-none,
+	cris-*-linux* cases.
+	* config/cris/cris-protos.h: New file.
+	* config/cris/cris.c: New file.
+	* config/cris/cris.h: New file.
+	* config/cris/cris.md: New file.
+	* config/cris/linux.h: New file.
+	* config/cris/aout.h: New file.
+	* config/cris/arit.c: New file.
+	* config/cris/cris_abi_symbol.c: New file.
+	* config/cris/mulsi3.asm: New file.
+	* config/cris/t-aout: New file.
+	* config/cris/t-cris: New file.
+	* config/cris/t-elfmulti: New file.
+	* config/cris/t-linux: New file.
+	* doc/invoke.texi: Add CRIS options.
+	* doc/install.texi (Specific): Add blurb for CRIS.
+
 2001-10-10  Hartmut Schirmer <SchirmerH@Innovative-Systems.de>
 
 	* config/float-i128.h: Make sure __STDC__VERSION__ is defined
