@@ -1100,10 +1100,6 @@ reload (first, global, dumpfile)
 	}
     }
 
-  /* We've finished reloading.  This reload_completed must be set before we
-     perform instruction splitting below.  */
-  reload_completed = 1;
-
   /* Make a pass over all the insns and delete all USEs which we inserted
      only to tag a REG_EQUAL note on them.  Remove all REG_DEAD and REG_UNUSED
      notes.  Delete all CLOBBER insns and simplify (subreg (reg)) operands.  */
@@ -1135,24 +1131,6 @@ reload (first, global, dumpfile)
 
 	/* And simplify (subreg (reg)) if it appears as an operand.  */
 	cleanup_subreg_operands (insn);
-
-	/* If optimizing and we are performing instruction scheduling after
-	   reload, then go ahead and split insns now since we are about to
-	   recompute flow information anyway.  */
-	if (optimize && flag_schedule_insns_after_reload)
-	  {
-	    rtx last;
-
-	    last = try_split (PATTERN (insn), insn, 1);
-
-	    if (last != insn)
-	      {
-		PUT_CODE (insn, NOTE);
-		NOTE_SOURCE_FILE (insn) = 0;
-		NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	      }
-	  }
-	   
       }
 
   /* If we are doing stack checking, give a warning if this function's
