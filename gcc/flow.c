@@ -3639,7 +3639,8 @@ init_propagate_block_info (bb, live, local_set, flags)
   /* If this block ends in a conditional branch, for each register live
      from one side of the branch and not the other, record the register
      as conditionally dead.  */
-  if (GET_CODE (bb->end) == JUMP_INSN
+  if ((flags & (PROP_DEATH_NOTES | PROP_SCAN_DEAD_CODE))
+      && GET_CODE (bb->end) == JUMP_INSN
       && any_condjump_p (bb->end))
     {
       regset_head diff_head;
@@ -3717,6 +3718,31 @@ init_propagate_block_info (bb, live, local_set, flags)
     }
 #endif
 
+  /* If this block has no successors, any stores to the frame that aren't
+     used later in the block are dead.  So make a pass over the block
+     recording any such that are made and show them dead at the end.  We do
+     a very conservative and simple job here.  */
+  if ((flags & PROP_SCAN_DEAD_CODE)
+      && (bb->succ == NULL
+          || (bb->succ->succ_next == NULL
+	      && bb->succ->dest == EXIT_BLOCK_PTR)))
+    {
+      rtx insn;
+      for (insn = bb->end; insn != bb->head; insn = PREV_INSN (insn))
+	if (GET_CODE (insn) == INSN
+	    && GET_CODE (PATTERN (insn)) == SET
+	    && GET_CODE (SET_DEST (PATTERN (insn))) == MEM)
+	  {
+	    rtx mem = SET_DEST (PATTERN (insn));
+
+	    if (XEXP (mem, 0) == frame_pointer_rtx
+		|| (GET_CODE (XEXP (mem, 0)) == PLUS
+		    && XEXP (XEXP (mem, 0), 0) == frame_pointer_rtx
+		    && GET_CODE (XEXP (XEXP (mem, 0), 1)) == CONST_INT))
+	      pbi->mem_set_list = alloc_EXPR_LIST (0, mem, pbi->mem_set_list);
+	  }
+    }
+
   return pbi;
 }
 
@@ -3771,26 +3797,6 @@ propagate_block (bb, live, local_set, flags)
       EXECUTE_IF_SET_IN_REG_SET (live, 0, i,
 				 { REG_BASIC_BLOCK (i) = REG_BLOCK_GLOBAL; });
     }
-
-  /* If this block has no successors, any stores to the frame that aren't
-     used later in the block are dead.  So make a pass over the block
-     recording any such that are made and show them dead at the end.  We do
-     a very conservative and simple job here.  */
-  if (bb->succ != 0 && bb->succ->succ_next == 0
-      && bb->succ->dest == EXIT_BLOCK_PTR)
-    for (insn = bb->end; insn != bb->head; insn = PREV_INSN (insn))
-      if (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == SET
-	  && GET_CODE (SET_DEST (PATTERN (insn))) == MEM)
-	{
-	  rtx mem = SET_DEST (PATTERN (insn));
-
-	  if ((GET_CODE (XEXP (mem, 0)) == REG
-	       && REGNO (XEXP (mem, 0)) == FRAME_POINTER_REGNUM)
-	      || (GET_CODE (XEXP (mem, 0)) == PLUS
-		  && GET_CODE (XEXP (XEXP (mem, 0), 0)) == REG
-		  && REGNO (XEXP (XEXP (mem, 0), 0)) == FRAME_POINTER_REGNUM))
-	    pbi->mem_set_list = alloc_EXPR_LIST (0, mem, pbi->mem_set_list);
-	}
 
   /* Scan the block an insn at a time from end to beginning.  */
 
