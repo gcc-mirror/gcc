@@ -4290,7 +4290,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 
 	  /* Check for some types that there cannot be arrays of.  */
 
-	  if (TYPE_MAIN_VARIANT (type) == void_type_node)
+	  if (VOID_TYPE_P (type))
 	    {
 	      error ("declaration of `%s' as array of voids", name);
 	      type = error_mark_node;
@@ -4598,7 +4598,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
      We don't complain about parms either, but that is because
      a better error message can be made later.  */
 
-  if (TYPE_MAIN_VARIANT (type) == void_type_node && decl_context != PARM
+  if (VOID_TYPE_P (type) && decl_context != PARM
       && ! ((decl_context != FIELD && TREE_CODE (type) != FUNCTION_TYPE)
 	    && ((specbits & (1 << (int) RID_EXTERN))
 		|| (current_binding_level == global_binding_level
@@ -4725,7 +4725,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  pedwarn ("ANSI C forbids qualified function types");
 
 	if (pedantic
-	    && TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (decl))) == void_type_node
+	    && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (decl)))
 	    && TYPE_QUALS (TREE_TYPE (TREE_TYPE (decl)))
 	    && ! DECL_IN_SYSTEM_HEADER (decl))
 	  pedwarn ("ANSI C forbids qualified void function return type");
@@ -4733,7 +4733,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	/* GNU C interprets a `volatile void' return type to indicate
 	   that the function does not return.  */
 	if ((type_quals & TYPE_QUAL_VOLATILE)
-	    && TREE_TYPE (TREE_TYPE (decl)) != void_type_node)
+	    && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (decl))))
 	  warning ("`noreturn' function returns non-void value");
 
 	if (extern_ref)
@@ -4948,7 +4948,7 @@ get_parm_info (void_at_end)
   /* Just `void' (and no ellipsis) is special.  There are really no parms.  */
   if (void_at_end && parms != 0
       && TREE_CHAIN (parms) == 0
-      && TYPE_MAIN_VARIANT (TREE_TYPE (parms)) == void_type_node
+      && VOID_TYPE_P (TREE_TYPE (parms))
       && DECL_NAME (parms) == 0)
     {
       parms = NULL_TREE;
@@ -5009,7 +5009,7 @@ get_parm_info (void_at_end)
 	  DECL_ARG_TYPE (decl) = integer_type_node;
 
 	types = tree_cons (NULL_TREE, TREE_TYPE (decl), types);
-	if (TYPE_MAIN_VARIANT (TREE_VALUE (types)) == void_type_node && ! erred
+	if (VOID_TYPE_P (TREE_VALUE (types)) && ! erred
 	    && DECL_NAME (decl) == 0)
 	  {
 	    error ("`void' in parameter list must be the entire list");
@@ -5993,8 +5993,7 @@ store_parm_decls ()
 	      if (DECL_NAME (parm) == 0)
 		error_with_decl (parm, "parameter name omitted");
 	      else if (TREE_CODE (TREE_TYPE (parm)) != ERROR_MARK
-		       && (TYPE_MAIN_VARIANT (TREE_TYPE (parm))
-			   == void_type_node))
+		       && VOID_TYPE_P (TREE_TYPE (parm)))
 		{
 		  error_with_decl (parm, "parameter `%s' declared void");
 		  /* Change the type to error_mark_node so this parameter
@@ -6097,7 +6096,7 @@ store_parm_decls ()
 	    }
 
 	  /* If the declaration says "void", complain and ignore it.  */
-	  if (found && TYPE_MAIN_VARIANT (TREE_TYPE (found)) == void_type_node)
+	  if (found && VOID_TYPE_P (TREE_TYPE (found)))
 	    {
 	      error_with_decl (found, "parameter `%s' declared void");
 	      TREE_TYPE (found) = integer_type_node;
@@ -6395,7 +6394,7 @@ combine_parm_decls (specparms, parmlist, void_at_end)
 	}
 
       /* If the declaration says "void", complain and ignore it.  */
-      if (found && TYPE_MAIN_VARIANT (TREE_TYPE (found)) == void_type_node)
+      if (found && VOID_TYPE_P (TREE_TYPE (found)))
 	{
 	  error_with_decl (found, "parameter `%s' declared void");
 	  TREE_TYPE (found) = integer_type_node;
@@ -6567,7 +6566,7 @@ finish_function (nested)
   if (TREE_THIS_VOLATILE (fndecl) && current_function_returns_null)
     warning ("`noreturn' function does return");
   else if (warn_return_type && can_reach_end
-	   && TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (fndecl))) != void_type_node)
+	   && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fndecl))))
     /* If this function returns non-void and control can drop through,
        complain.  */
     warning ("control reaches end of non-void function");
