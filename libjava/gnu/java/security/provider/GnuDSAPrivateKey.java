@@ -82,4 +82,10 @@ public class GnuDSAPrivateKey implements DSAPrivateKey
   {
     return x;
   }
+
+  public String toString()
+  {
+    return "GnuDSAPrivateKey: x=" + x.toString(16) + " p=" + p.toString(16)
+      + " q=" + q.toString(16) + " g=" + g.toString(16);
+  }
 }

@@ -43,6 +43,8 @@ import java.security.cert.CertificateException;
 import java.util.Date;
 import java.util.Enumeration;
 
+import gnu.java.security.Engine;
+
 /**
  * Keystore represents an in-memory collection of keys and 
  * certificates. There are two types of entries:
@@ -193,6 +195,10 @@ public class KeyStore
     catch (NoSuchAlgorithmException nsae)
       {
         throw new KeyStoreException(type);
+      }
+    catch (java.lang.reflect.InvocationTargetException ite)
+      {
+	throw new KeyStoreException(type);
       }
     catch (ClassCastException cce)
       {

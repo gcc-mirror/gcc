@@ -1416,6 +1416,7 @@ javax/naming/OperationNotSupportedException.java \
 javax/print/attribute/Attribute.java \
 javax/print/attribute/AttributeSet.java \
 javax/print/attribute/PrintRequestAttributeSet.java \
+javax/security/auth/x500/X500Principal.java \
 javax/sql/ConnectionEvent.java \
 javax/sql/ConnectionEventListener.java \
 javax/sql/ConnectionPoolDataSource.java \
@@ -1708,6 +1709,8 @@ gnu/gcj/runtime/SharedLibLoader.java \
 gnu/gcj/runtime/StackTrace.java \
 gnu/gcj/runtime/StringBuffer.java \
 gnu/gcj/runtime/VMClassLoader.java \
+gnu/java/io/ASN1ParsingException.java \
+gnu/java/io/Base64InputStream.java \
 gnu/java/io/ClassLoaderObjectInputStream.java \
 gnu/java/io/NullOutputStream.java \
 gnu/java/io/ObjectIdentityWrapper.java \
@@ -1880,10 +1883,16 @@ gnu/java/nio/charset/UTF_16Decoder.java \
 gnu/java/nio/charset/UTF_16Encoder.java \
 gnu/java/nio/charset/UTF_16LE.java \
 gnu/java/nio/charset/UTF_8.java \
+gnu/java/security/Engine.java \
+gnu/java/security/OID.java \
+gnu/java/security/der/BitString.java \
+gnu/java/security/der/DER.java \
 gnu/java/security/der/DEREncodingException.java \
-gnu/java/security/provider/DERReader.java \
-gnu/java/security/provider/DERWriter.java \
+gnu/java/security/der/DERReader.java \
+gnu/java/security/der/DERValue.java \
+gnu/java/security/der/DERWriter.java \
 gnu/java/security/provider/DefaultPolicy.java \
+gnu/java/security/provider/DSAKeyFactory.java \
 gnu/java/security/provider/DSAKeyPairGenerator.java \
 gnu/java/security/provider/DSAParameterGenerator.java \
 gnu/java/security/provider/DSAParameters.java \
@@ -1894,7 +1903,12 @@ gnu/java/security/provider/GnuDSAPublicKey.java \
 gnu/java/security/provider/MD5.java \
 gnu/java/security/provider/SHA.java \
 gnu/java/security/provider/SHA1PRNG.java \
+gnu/java/security/provider/X509CertificateFactory.java \
 gnu/java/security/util/Prime.java \
+gnu/java/security/x509/X500DistinguishedName.java \
+gnu/java/security/x509/X509Certificate.java \
+gnu/java/security/x509/X509CRLEntry.java \
+gnu/java/security/x509/X509CRL.java \
 gnu/java/text/BaseBreakIterator.java \
 gnu/java/text/CharacterBreakIterator.java \
 gnu/java/text/LineBreakIterator.java \
@@ -2056,7 +2070,6 @@ java/security/DummySignature.java \
 java/security/DigestInputStream.java \
 java/security/DomainCombiner.java \
 java/security/DummyMessageDigest.java \
-java/security/Engine.java \
 java/security/GeneralSecurityException.java \
 java/security/Guard.java \
 java/security/GuardedObject.java \
@@ -2115,6 +2128,7 @@ java/security/acl/NotOwnerException.java \
 java/security/acl/Permission.java \
 java/security/cert/CRL.java \
 java/security/cert/CRLException.java \
+java/security/cert/CRLSelector.java \
 java/security/cert/Certificate.java \
 java/security/cert/CertificateEncodingException.java \
 java/security/cert/CertificateException.java \
@@ -2124,9 +2138,30 @@ java/security/cert/CertificateFactorySpi.java \
 java/security/cert/CertificateNotYetValidException.java \
 java/security/cert/CertificateParsingException.java \
 java/security/cert/CertPath.java \
+java/security/cert/CertPathBuilder.java \
 java/security/cert/CertPathBuilderException.java \
+java/security/cert/CertPathBuilderResult.java \
+java/security/cert/CertPathBuilderSpi.java \
+java/security/cert/CertPathParameters.java \
+java/security/cert/CertPathValidator.java \
 java/security/cert/CertPathValidatorException.java \
+java/security/cert/CertPathValidatorResult.java \
+java/security/cert/CertPathValidatorSpi.java \
+java/security/cert/CertSelector.java \
+java/security/cert/CertStore.java \
 java/security/cert/CertStoreException.java \
+java/security/cert/CertStoreParameters.java \
+java/security/cert/CertStoreSpi.java \
+java/security/cert/CollectionCertStoreParameters.java \
+java/security/cert/LDAPCertStoreParameters.java \
+java/security/cert/PKIXBuilderParameters.java \
+java/security/cert/PKIXCertPathBuilderResult.java \
+java/security/cert/PKIXCertPathChecker.java \
+java/security/cert/PKIXCertPathValidatorResult.java \
+java/security/cert/PKIXParameters.java \
+java/security/cert/PolicyNode.java \
+java/security/cert/PolicyQualifierInfo.java \
+java/security/cert/TrustAnchor.java \
 java/security/cert/X509CRL.java \
 java/security/cert/X509CRLEntry.java \
 java/security/cert/X509Certificate.java \
@@ -2636,7 +2671,7 @@ libgcj-test.spec.in libgcj.spec.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
@@ -2783,6 +2818,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/beans/editors/NativeShortEditor.P \
 .deps/gnu/java/beans/editors/StringEditor.P \
 .deps/gnu/java/beans/info/ComponentBeanInfo.P \
+.deps/gnu/java/io/ASN1ParsingException.P \
+.deps/gnu/java/io/Base64InputStream.P \
 .deps/gnu/java/io/ClassLoaderObjectInputStream.P \
 .deps/gnu/java/io/NullOutputStream.P \
 .deps/gnu/java/io/ObjectIdentityWrapper.P \
@@ -2983,9 +3020,14 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/rmi/server/UnicastRemoteStub.P \
 .deps/gnu/java/rmi/server/UnicastServer.P \
 .deps/gnu/java/rmi/server/UnicastServerRef.P \
+.deps/gnu/java/security/Engine.P .deps/gnu/java/security/OID.P \
+.deps/gnu/java/security/der/BitString.P \
+.deps/gnu/java/security/der/DER.P \
 .deps/gnu/java/security/der/DEREncodingException.P \
-.deps/gnu/java/security/provider/DERReader.P \
-.deps/gnu/java/security/provider/DERWriter.P \
+.deps/gnu/java/security/der/DERReader.P \
+.deps/gnu/java/security/der/DERValue.P \
+.deps/gnu/java/security/der/DERWriter.P \
+.deps/gnu/java/security/provider/DSAKeyFactory.P \
 .deps/gnu/java/security/provider/DSAKeyPairGenerator.P \
 .deps/gnu/java/security/provider/DSAParameterGenerator.P \
 .deps/gnu/java/security/provider/DSAParameters.P \
@@ -2997,7 +3039,12 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/security/provider/MD5.P \
 .deps/gnu/java/security/provider/SHA.P \
 .deps/gnu/java/security/provider/SHA1PRNG.P \
+.deps/gnu/java/security/provider/X509CertificateFactory.P \
 .deps/gnu/java/security/util/Prime.P \
+.deps/gnu/java/security/x509/X500DistinguishedName.P \
+.deps/gnu/java/security/x509/X509CRL.P \
+.deps/gnu/java/security/x509/X509CRLEntry.P \
+.deps/gnu/java/security/x509/X509Certificate.P \
 .deps/gnu/java/text/BaseBreakIterator.P \
 .deps/gnu/java/text/CharacterBreakIterator.P \
 .deps/gnu/java/text/LineBreakIterator.P \
@@ -3576,7 +3623,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/security/DomainCombiner.P \
 .deps/java/security/DummyKeyPairGenerator.P \
 .deps/java/security/DummyMessageDigest.P \
-.deps/java/security/DummySignature.P .deps/java/security/Engine.P \
+.deps/java/security/DummySignature.P \
 .deps/java/security/GeneralSecurityException.P \
 .deps/java/security/Guard.P .deps/java/security/GuardedObject.P \
 .deps/java/security/Identity.P .deps/java/security/IdentityScope.P \
@@ -3619,10 +3666,22 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/security/acl/NotOwnerException.P \
 .deps/java/security/acl/Owner.P .deps/java/security/acl/Permission.P \
 .deps/java/security/cert/CRL.P .deps/java/security/cert/CRLException.P \
+.deps/java/security/cert/CRLSelector.P \
 .deps/java/security/cert/CertPath.P \
+.deps/java/security/cert/CertPathBuilder.P \
 .deps/java/security/cert/CertPathBuilderException.P \
+.deps/java/security/cert/CertPathBuilderResult.P \
+.deps/java/security/cert/CertPathBuilderSpi.P \
+.deps/java/security/cert/CertPathParameters.P \
+.deps/java/security/cert/CertPathValidator.P \
 .deps/java/security/cert/CertPathValidatorException.P \
+.deps/java/security/cert/CertPathValidatorResult.P \
+.deps/java/security/cert/CertPathValidatorSpi.P \
+.deps/java/security/cert/CertSelector.P \
+.deps/java/security/cert/CertStore.P \
 .deps/java/security/cert/CertStoreException.P \
+.deps/java/security/cert/CertStoreParameters.P \
+.deps/java/security/cert/CertStoreSpi.P \
 .deps/java/security/cert/Certificate.P \
 .deps/java/security/cert/CertificateEncodingException.P \
 .deps/java/security/cert/CertificateException.P \
@@ -3631,6 +3690,16 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/security/cert/CertificateFactorySpi.P \
 .deps/java/security/cert/CertificateNotYetValidException.P \
 .deps/java/security/cert/CertificateParsingException.P \
+.deps/java/security/cert/CollectionCertStoreParameters.P \
+.deps/java/security/cert/LDAPCertStoreParameters.P \
+.deps/java/security/cert/PKIXBuilderParameters.P \
+.deps/java/security/cert/PKIXCertPathBuilderResult.P \
+.deps/java/security/cert/PKIXCertPathChecker.P \
+.deps/java/security/cert/PKIXCertPathValidatorResult.P \
+.deps/java/security/cert/PKIXParameters.P \
+.deps/java/security/cert/PolicyNode.P \
+.deps/java/security/cert/PolicyQualifierInfo.P \
+.deps/java/security/cert/TrustAnchor.P \
 .deps/java/security/cert/X509CRL.P \
 .deps/java/security/cert/X509CRLEntry.P \
 .deps/java/security/cert/X509Certificate.P \
@@ -3868,6 +3937,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/javax/rmi/CORBA/Util.P .deps/javax/rmi/CORBA/UtilDelegate.P \
 .deps/javax/rmi/CORBA/ValueHandler.P .deps/javax/rmi/ORB.P \
 .deps/javax/rmi/PortableRemoteObject.P \
+.deps/javax/security/auth/x500/X500Principal.P \
 .deps/javax/sql/ConnectionEvent.P \
 .deps/javax/sql/ConnectionEventListener.P \
 .deps/javax/sql/ConnectionPoolDataSource.P .deps/javax/sql/DataSource.P \

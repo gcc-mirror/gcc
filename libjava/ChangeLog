@@ -1,3 +1,74 @@
+2003-04-30  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/security/Engine.java,
+	gnu/java/security/OID.java,
+	gnu/java/security/der/BitString.java,
+	gnu/java/security/der/DER.java,
+	gnu/java/security/der/DERReader.java,
+	gnu/java/security/der/DERValue.java,
+	gnu/java/security/der/DERWriter.java,
+	gnu/java/security/provider/DSAKeyFactory.java,
+	gnu/java/security/provider/X509CertificateFactory.java,
+	gnu/java/security/x509/X500DistinguishedName.java,
+	gnu/java/security/x509/X509CRL.java,
+	gnu/java/security/x509/X509CRLEntry.java,
+	gnu/java/security/x509/X509Certificate.java,
+	java/security/cert/CRLSelector.java,
+	java/security/cert/CertPathBuilder.java,
+	java/security/cert/CertPathBuilderResult.java,
+	java/security/cert/CertPathBuilderSpi.java,
+	java/security/cert/CertPathParameters.java,
+	java/security/cert/CertPathValidator.java,
+	java/security/cert/CertPathValidatorResult.java,
+	java/security/cert/CertPathValidatorSpi.java,
+	java/security/cert/CertSelector.java,
+	java/security/cert/CertStore.java,
+	java/security/cert/CertStoreParameters.java,
+	java/security/cert/CertStoreSpi.java,
+	java/security/cert/CollectionCertStoreParameters.java,
+	java/security/cert/LDAPCertStoreParameters.java,
+	java/security/cert/PKIXBuilderParameters.java,
+	java/security/cert/PKIXCertPathBuilderResult.java,
+	java/security/cert/PKIXCertPathChecker.java,
+	java/security/cert/PKIXCertPathValidatorResult.java,
+	java/security/cert/PKIXParameters.java,
+	java/security/cert/PolicyNode.java,
+	java/security/cert/PolicyQualifierInfo.java,
+	java/security/cert/TrustAnchor.java,
+	javax/security/auth/x500/X500Principal.java:
+	New files from classpath.
+	* gnu/java/io/ASN1ParsingException.java,
+	gnu/java/io/Base64InputStream.java,
+	gnu/java/security/der/DEREncodingException.java,
+	gnu/java/security/provider/DSAParameters.java,
+	gnu/java/security/provider/DSASignature.java,
+	gnu/java/security/provider/Gnu.java,
+	gnu/java/security/provider/GnuDSAPrivateKey.java,
+	gnu/java/security/provider/GnuDSAPublicKey.java,
+	java/security/AlgorithmParameterGenerator.java,
+	java/security/AlgorithmParameters.java,
+	java/security/KeyFactory.java,
+	java/security/KeyPairGenerator.java,
+	java/security/KeyStore.java,
+	java/security/MessageDigest.java,
+	java/security/SecureClassLoader.java,
+	java/security/SecureRandom.java,
+	java/security/Security.java,
+	java/security/Signature.java,
+	java/security/cert/Certificate.java,
+	java/security/cert/CertificateFactory.java,
+	java/security/cert/CertificateFactorySpi.java,
+	java/security/cert/X509CRL.java,
+	java/security/cert/X509Certificate.java,
+	java/security/spec/DSAPublicKeySpec.java:
+	New versions from classpath.
+	* gnu/java/security/provider/DERReader.java,
+	gnu/java/security/provider/DERWriter.java,
+	java/security/Engine.java: Removed.
+	* Makefile.am
+	(java_source_files, javax_source_files): Added new files.
+	* Makefile.in: Regenerated.
+
 2003-04-29  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/JTable.java

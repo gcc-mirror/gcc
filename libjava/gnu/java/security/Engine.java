@@ -35,7 +35,13 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-package java.security;
+package gnu.java.security;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
+import java.security.NoSuchAlgorithmException;
+import java.security.Provider;
 
 /**
  * Generic implementation of the getInstance methods in the various
@@ -51,7 +57,7 @@ package java.security;
  * @see Provider
  * @author Casey Marshall 
  */
-final class Engine
+public final class Engine
 {
 
   // Constants.
@@ -62,6 +68,9 @@ final class Engine
 
   /** Maximum number of aliases to try. */
   private static final int MAX_ALIASES = 5;
+
+  /** Argument list for no-argument constructors. */
+  private static final Object[] NO_ARGS = new Object[0];
 
   // Constructor.
   // ------------------------------------------------------------------------
@@ -85,13 +94,44 @@ final class Engine
    *         service, but callers should check that this is so.
    * @throws NoSuchAlgorithmException If the implementation cannot be
    *         found or cannot be instantiated.
+   * @throws InvocationTargetException If the SPI class's constructor
+   *         throws an exception.
    * @throws IllegalArgumentException If any of the three arguments are null.
    */
-  static Object
-  getInstance(String service, String algorithm, Provider provider)
-  throws NoSuchAlgorithmException
+  public static Object getInstance(String service, String algorithm,
+                                   Provider provider)
+    throws InvocationTargetException, NoSuchAlgorithmException
   {
-    if (service == null || algorithm == null || provider == null)
+    return getInstance(service, algorithm, provider, NO_ARGS);
+  }
+
+  /**
+   * Get the implementation for <i>algorithm</i> for service
+   * <i>service</i> from <i>provider</i>, passing <i>initArgs</i> to the
+   * SPI class's constructor (which cannot be null; pass a zero-length
+   * array if the SPI takes no arguments). The service is e.g.
+   * "Signature", and the algorithm "DSA".
+   *
+   * @param service   The service name.
+   * @param algorithm The name of the algorithm to get.
+   * @param provider  The provider to get the implementation from.
+   * @param initArgs  The arguments to pass to the SPI class's
+   *        constructor (cannot be null).
+   * @return The engine class for the specified algorithm; the object
+   *         returned is typically a subclass of the SPI class for that
+   *         service, but callers should check that this is so.
+   * @throws NoSuchAlgorithmException If the implementation cannot be
+   *         found or cannot be instantiated.
+   * @throws InvocationTargetException If the SPI class's constructor
+   *         throws an exception.
+   * @throws IllegalArgumentException If any of the four arguments are null.
+   */
+  public static Object getInstance(String service, String algorithm,
+                                   Provider provider, Object[] initArgs)
+    throws InvocationTargetException, NoSuchAlgorithmException
+  {
+    if (service == null || algorithm == null
+        || provider == null || initArgs == null)
       throw new IllegalArgumentException();
 
     // If there is no property "service.algorithm"
@@ -117,14 +157,17 @@ final class Engine
     // Find and instantiate the implementation.
     Class clazz = null;
     ClassLoader loader = provider.getClass().getClassLoader();
+    Constructor constructor = null;
     String error = algorithm;
+
     try
       {
         if (loader != null)
           clazz = loader.loadClass(provider.getProperty(service+"."+algorithm));
         else
           clazz = Class.forName(provider.getProperty(service+"."+algorithm));
-        return clazz.newInstance();
+        constructor = getCompatibleConstructor(clazz, initArgs);
+        return constructor.newInstance(initArgs);
       }
     catch (ClassNotFoundException cnfe)
       {
@@ -146,7 +189,49 @@ final class Engine
       {
         error = "security exception: " + se.getMessage();
       }
+    catch (NoSuchMethodException nsme)
+      {
+        error = "no appropriate constructor found";
+      }
 
     throw new NoSuchAlgorithmException(error);
+  }
+
+  // Own methods.
+  // ------------------------------------------------------------------------
+
+  /**
+   * Find a constructor in the given class that can take the specified
+   * argument list, allowing any of which to be null.
+   *
+   * @param clazz    The class from which to get the constructor.
+   * @param initArgs The argument list to be passed to the constructor.
+   * @return The constructor.
+   * @throws NoSuchMethodException If no constructor of the given class
+   *         can take the specified argument array.
+   */
+  private static Constructor getCompatibleConstructor(Class clazz,
+                                                      Object[] initArgs)
+    throws NoSuchMethodException
+  {
+    Constructor[] c = clazz.getConstructors();
+    outer:for (int i = 0; i < c.length; i++)
+      {
+        Class[] argTypes = c[i].getParameterTypes();
+        if (argTypes.length != initArgs.length)
+          continue;
+        for (int j = 0; j < argTypes.length; j++)
+          {
+            if (initArgs[j] != null &&
+                !argTypes[j].isAssignableFrom(initArgs[j].getClass()))
+              continue outer;
+          }
+        // If we reach this point, we know this constructor (c[i]) has
+        // the same number of parameters as the target parameter list,
+        // and all our parameters are either (1) null, or (2) assignable
+        // to the target parameter type.
+        return c[i];
+      }
+    throw new NoSuchMethodException();
   }
 }

@@ -37,6 +37,8 @@ exception statement from your version. */
 
 package java.security;
 
+import gnu.java.security.Engine;
+
 /**
  * <p>This <code>MessageDigest</code> class provides applications the
  * functionality of a message digest algorithm, such as <i>MD5</i> or <i>SHA</i>.
@@ -197,7 +199,15 @@ public abstract class MessageDigest extends MessageDigestSpi
       throw new IllegalArgumentException("Illegal provider");
 
     MessageDigest result = null;
-    Object o = Engine.getInstance(MESSAGE_DIGEST, algorithm, provider);
+    Object o = null;
+    try
+      {
+        o = Engine.getInstance(MESSAGE_DIGEST, algorithm, provider);
+      }
+    catch (java.lang.reflect.InvocationTargetException ite)
+      {
+	throw new NoSuchAlgorithmException(algorithm);
+      }
      
     if (o instanceof MessageDigestSpi)
       {

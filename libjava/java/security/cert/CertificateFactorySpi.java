@@ -1,5 +1,5 @@
 /* CertificateFactorySpi.java --- Certificate Factory Class
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999,2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,13 +37,17 @@ exception statement from your version. */
 
 
 package java.security.cert;
+
 import java.io.InputStream;
+
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 /**
    CertificateFactorySpi is the abstract class Service Provider
    Interface (SPI) for the CertificateFactory class. A provider
-   must implment all the abstract methods if they wish to 
+   must implement all the abstract methods if they wish to 
    supply a certificate factory for a particular certificate
    type. Ex: X.509
    
@@ -53,15 +57,21 @@ import java.util.Collection;
    @since JDK 1.2
    
    @author Mark Benvenuto
-*/
+ */
 public abstract class CertificateFactorySpi
 {
 
+  // Constructor.
+  // ------------------------------------------------------------------------
+
   /**
-     Constructs a new CertificateFactorySpi
-  */
+   * Constructs a new CertificateFactorySpi
+   */
   public CertificateFactorySpi()
   {}
+
+  // Abstract methods.
+  // ------------------------------------------------------------------------
 
   /**
      Generates a Certificate based on the encoded data read
@@ -77,7 +87,7 @@ public abstract class CertificateFactorySpi
      For X.509 certificates, the certificate in inStream must be
      DER encoded and supplied in binary or printable (Base64) 
      encoding. If the certificate is in Base64 encoding, it must be 
-     bounded by -----BEGINCERTIFICATE-----, and 
+     bounded by -----BEGIN CERTIFICATE-----, and 
      -----END CERTIFICATE-----. 
 
      @param inStream an input stream containing the certificate data
@@ -149,5 +159,67 @@ public abstract class CertificateFactorySpi
   */
   public abstract Collection engineGenerateCRLs(InputStream inStream)
     throws CRLException;
+
+  // 1.4 instance methods.
+  // ------------------------------------------------------------------------
+
+  /**
+   * Generate a {@link CertPath} and initialize it with data parsed from
+   * the input stream. The default encoding of this factory is used.
+   *
+   * @param inStream The InputStream containing the CertPath data.
+   * @return A CertPath initialized from the input stream data.
+   * @throws CertificateException If an error occurs decoding the
+   * CertPath.
+   */
+  public CertPath engineGenerateCertPath(InputStream inStream)
+    throws CertificateException
+  {
+    throw new UnsupportedOperationException("not implemented");
+  }
+
+  /**
+   * Generate a {@link CertPath} and initialize it with data parsed from
+   * the input stream, using the specified encoding.
+   *
+   * @param inStream The InputStream containing the CertPath data.
+   * @param encoding The encoding of the InputStream data.
+   * @return A CertPath initialized from the input stream data.
+   * @throws CertificateException If an error occurs decoding the
+   *   CertPath.
+   */
+  public CertPath engineGenerateCertPath(InputStream inStream, String encoding)
+    throws CertificateException
+  {
+    throw new UnsupportedOperationException("not implemented");
+  }
+
+  /**
+   * Generate a {@link CertPath} and initialize it with the certificates
+   * in the {@link java.util.List} argument.
+   *
+   * @param certificates The list of certificates with which to create
+   *   the CertPath.
+   * @return A CertPath initialized from the certificates.
+   * @throws CertificateException If an error occurs generating the
+   *   CertPath.
+   */
+  public CertPath engineGenerateCertPath(List certificates)
+    throws CertificateException
+  {
+    throw new UnsupportedOperationException("not implemented");
+  }
+
+  /**
+   * Returns an Iterator of CertPath encodings supported by this
+   * factory, with the default encoding first. The returned Iterator
+   * cannot be modified.
+   *
+   * @return The Iterator of supported encodings.
+   */
+  public Iterator engineGetCertPathEncodings()
+  {
+    throw new UnsupportedOperationException("not implemented");
+  }
 }
 

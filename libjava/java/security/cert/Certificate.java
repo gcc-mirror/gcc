@@ -1,5 +1,5 @@
 /* Certificate.java --- Certificate class
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999,2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,6 +37,7 @@ exception statement from your version. */
 
 
 package java.security.cert;
+
 import java.security.PublicKey;
 import java.security.NoSuchAlgorithmException;
 import java.security.InvalidKeyException;
@@ -44,34 +45,38 @@ import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.io.ObjectInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
 
 /**
-   The Certificate class is an abstract class used to manage 
-   identity certificates. An identity certificate is a
-   combination of a principal and a public key which is 
-   certified by another principal. This is the puprose of 
-   Certificate Authorities (CA).
-   
-   This class is used to manage different types of certificates
-   but have important common puposes. Different types of 
-   certificates like X.509 and OpenPGP share general certificate
-   functions (like encoding and verifying) and information like
-   public keys.
-   
-   X.509, OpenPGP, and SDSI can be implemented by subclassing this
-   class even though they differ in storage methods and information
-   stored.
-   
-   @since JDK 1.2
-   
-   @author Mark Benvenuto
-*/
+ * The Certificate class is an abstract class used to manage 
+ * identity certificates. An identity certificate is a
+ * combination of a principal and a public key which is 
+ * certified by another principal. This is the puprose of 
+ * Certificate Authorities (CA).
+ * 
+ * <p>This class is used to manage different types of certificates
+ * but have important common puposes. Different types of 
+ * certificates like X.509 and OpenPGP share general certificate
+ * functions (like encoding and verifying) and information like
+ * public keys.
+ * 
+ * <p>X.509, OpenPGP, and SDSI can be implemented by subclassing this
+ * class even though they differ in storage methods and information
+ * stored.
+ *
+ * @see CertificateFactory
+ * @see X509Certificate
+ * @since JDK 1.2
+ * @author Mark Benvenuto
+ * @author Casey Marshall
+ */
 public abstract class Certificate
 {
   static final long serialVersionUID = -6751606818319535583L;
 	
   private String type;
+
   /**
      Constructs a new certificate of the specified type. An example
      is "X.509".
@@ -203,47 +208,99 @@ public abstract class Certificate
   */
   public abstract PublicKey getPublicKey();
 
+  // Protected methods.
+  // ------------------------------------------------------------------------
 
-  /* INNER CLASS */
+  /**
+   * Returns a replacement for this certificate to be serialized. This
+   * method returns the equivalent to the following for this class:
+   *
+   * <blockquote>
+   * <pre>new CertificateRep(getType(), getEncoded());</pre>
+   * </blockquote>
+   *
+   * <p>This thusly replaces the certificate with its name and its
+   * encoded form, which can be deserialized later with the {@link
+   * CertificateFactory} implementation for this certificate's type.
+   *
+   * @return The replacement object to be serialized.
+   * @throws ObjectStreamException If the replacement could not be
+   * created.
+   */
+  public Object writeReplace() throws ObjectStreamException
+  {
+    try
+      {
+        return new CertificateRep(getType(), getEncoded());
+      }
+    catch (CertificateEncodingException cee)
+      {
+        throw new InvalidObjectException(cee.toString());
+      }
+  }
+
+  // Inner class.
+  // ------------------------------------------------------------------------
+
   /**
      Certificate.CertificateRep is an inner class used to provide an alternate
      storage mechanism for serialized Certificates.
   */
   protected static class CertificateRep implements java.io.Serializable
   {
+
+    /** From JDK1.4. */
+    private static final long serialVersionUID = -8563758940495660020L;
+  
+    /** The certificate type, e.g. "X.509". */
     private String type;
+
+    /** The encoded certificate data. */
     private byte[] data;
 
     /**
-       Create an alternate Certificate class to store a serialized Certificate
-
-       @param type the name of certificate type
-       @param data the certificate data
-    */
-    protected CertificateRep(String type,
-			     byte[] data)
+     * Create an alternative representation of this certificate. The
+     * <code>(type, data)</code> pair is typically the certificate's
+     * type as returned by {@link Certificate#getType()} (i.e. the
+     * canonical name of the certificate type) and the encoded form as
+     * returned by {@link Certificate#getEncoded()}.
+     *
+     * <p>For example, X.509 certificates would create an instance of
+     * this class with the parameters "X.509" and the ASN.1
+     * representation of the certificate, encoded as DER bytes.
+     *
+     * @param type The certificate type.
+     * @param data The encoded certificate data.
+     */
+    protected CertificateRep(String type, byte[] data)
     {
       this.type = type;
       this.data = data;
     }
 
     /**
-       Return the stored Certificate
-
-       @return the stored certificate
-
-       @throws ObjectStreamException if certificate cannot be resolved
-    */
-    protected Object readResolve()
-      throws ObjectStreamException
+     * Deserialize this certificate replacement into the appropriate
+     * certificate object. That is, this method attempts to create a
+     * {@link CertificateFactory} for this certificate's type, then
+     * attempts to parse the encoded data with that factory, returning
+     * the resulting certificate.
+     *
+     * @return The deserialized certificate.
+     * @throws ObjectStreamException If there is no appropriate
+     * certificate factory for the given type, or if the encoded form
+     * cannot be parsed.
+     */
+    protected Object readResolve() throws ObjectStreamException
     {
-      try {
-	return new ObjectInputStream( new ByteArrayInputStream( data ) ).readObject();
-      } catch ( Exception e ) {
-	e.printStackTrace();
-	throw new RuntimeException ( e.toString() );
-      }
+      try
+        {
+          CertificateFactory fact = CertificateFactory.getInstance(type);
+          return fact.generateCertificate(new ByteArrayInputStream(data));
+        }
+      catch (Exception e)
+        {
+          throw new InvalidObjectException(e.toString());
+        }
     }
   }
-
 }

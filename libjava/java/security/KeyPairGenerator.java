@@ -39,6 +39,8 @@ package java.security;
 
 import java.security.spec.AlgorithmParameterSpec;
 
+import gnu.java.security.Engine;
+
 /**
  * <p>The <code>KeyPairGenerator</code> class is used to generate pairs of
  * public and private keys. Key pair generators are constructed using the
@@ -231,7 +233,16 @@ public abstract class KeyPairGenerator extends KeyPairGeneratorSpi
     if (provider == null)
       throw new IllegalArgumentException("Illegal provider");
 
-    Object o = Engine.getInstance(KEY_PAIR_GENERATOR, algorithm, provider);
+    Object o = null;
+    try
+      {
+        o = Engine.getInstance(KEY_PAIR_GENERATOR, algorithm, provider);
+      }
+    catch (java.lang.reflect.InvocationTargetException ite)
+      {
+	throw new NoSuchAlgorithmException(algorithm);
+      }
+
     KeyPairGenerator result = null;
     if (o instanceof KeyPairGeneratorSpi)
       {

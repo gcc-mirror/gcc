@@ -93,7 +93,7 @@ public class SecureClassLoader extends ClassLoader
 
   /**
      Returns a PermissionCollection for the specified CodeSource.
-     The default implmentation invokes 
+     The default implementation invokes 
      java.security.Policy.getPermissions.
 
      This method is called by defineClass that takes a CodeSource

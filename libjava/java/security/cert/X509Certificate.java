@@ -1,5 +1,5 @@
 /* X509Certificate.java --- X.509 Certificate class
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999,2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,6 +37,7 @@ exception statement from your version. */
 
 
 package java.security.cert;
+
 import java.math.BigInteger;
 import java.security.Principal;
 import java.security.PublicKey;
@@ -47,90 +48,104 @@ import java.security.SignatureException;
 import java.util.Date;
 
 /**
-	X509Certificate is the abstract class for X.509 certificates.
-	This provides a stanard class interface for accessing all 
-	the attributes of X.509 certificates.
-
-	In June 1996, the basic X.509 v3 format was finished by 
-	ISO/IEC and ANSI X.9. The ASN.1 DER format is below:
-
-	   Certificate  ::=  SEQUENCE  {
-        	tbsCertificate       TBSCertificate,
-	        signatureAlgorithm   AlgorithmIdentifier,
-        	signatureValue       BIT STRING  }
-
-	These certificates are widely used in various Internet 
-	protocols to support authentication. It is used in 
-	Privacy Enhanced Mail (PEM), Transport Layer Security (TLS),
-	Secure Sockets Layer (SSL), code signing for trusted software
-	distribution, and Secure Electronic Transactions (SET).
-
-	The certificates are managed and vouched for by 
-	<I>Certificate Authorities</I> (CAs). CAs are companies or 
-	groups that create certificates by placing the data in the 
-	X.509 certificate format and signing it with their private
-	key. CAs serve as trusted third parties by certifying that
-	the person or group specified in the certificate is who
-	they say they are. 
-
-	The ASN.1 defintion for <I>tbsCertificate</I> is
-	
-   TBSCertificate  ::=  SEQUENCE  {
-        version         [0]  EXPLICIT Version DEFAULT v1,
-        serialNumber         CertificateSerialNumber,
-        signature            AlgorithmIdentifier,
-        issuer               Name,
-        validity             Validity,
-        subject              Name,
-        subjectPublicKeyInfo SubjectPublicKeyInfo,
-        issuerUniqueID  [1]  IMPLICIT UniqueIdentifier OPTIONAL,
-                             -- If present, version shall be v2 or v3
-        subjectUniqueID [2]  IMPLICIT UniqueIdentifier OPTIONAL,
-                             -- If present, version shall be v2 or v3
-        extensions      [3]  EXPLICIT Extensions OPTIONAL
-                             -- If present, version shall be v3
-        }
-
-   Version  ::=  INTEGER  {  v1(0), v2(1), v3(2)  }
-
-   CertificateSerialNumber  ::=  INTEGER
-
-   Validity ::= SEQUENCE {
-        notBefore      Time,
-        notAfter       Time }
-
-   Time ::= CHOICE {
-        utcTime        UTCTime,
-        generalTime    GeneralizedTime }
-
-   UniqueIdentifier  ::=  BIT STRING
-
-   SubjectPublicKeyInfo  ::=  SEQUENCE  {
-        algorithm            AlgorithmIdentifier,
-        subjectPublicKey     BIT STRING  }
-
-   Extensions  ::=  SEQUENCE SIZE (1..MAX) OF Extension
-
-   Extension  ::=  SEQUENCE  {
-        extnID      OBJECT IDENTIFIER,
-        critical    BOOLEAN DEFAULT FALSE,
-        extnValue   OCTET STRING  }
-
-
-	Certificates are created with the CertificateFactory.
-	For more information about X.509 certificates, consult
-	rfc2459.
-
-	@since JDK 1.2
-
-	@author Mark Benvenuto
-*/
+ * X509Certificate is the abstract class for X.509 certificates.
+ * This provides a stanard class interface for accessing all 
+ * the attributes of X.509 certificates.
+ *
+ * <p>In June 1996, the basic X.509 v3 format was finished by 
+ * ISO/IEC and ANSI X.9. The ASN.1 DER format is below:
+ *
+ * <blockquote><pre>
+ * Certificate  ::=  SEQUENCE  {
+ *   tbsCertificate       TBSCertificate,
+ *   signatureAlgorithm   AlgorithmIdentifier,
+ *   signatureValue       BIT STRING  }
+ * </pre></blockquote>
+ *
+ * <p>These certificates are widely used in various Internet 
+ * protocols to support authentication. It is used in 
+ * Privacy Enhanced Mail (PEM), Transport Layer Security (TLS),
+ * Secure Sockets Layer (SSL), code signing for trusted software
+ * distribution, and Secure Electronic Transactions (SET).
+ *
+ * <p>The certificates are managed and vouched for by 
+ * <I>Certificate Authorities</I> (CAs). CAs are companies or 
+ * groups that create certificates by placing the data in the 
+ * X.509 certificate format and signing it with their private
+ * key. CAs serve as trusted third parties by certifying that
+ * the person or group specified in the certificate is who
+ * they say they are. 
+ *
+ * <p>The ASN.1 defintion for <I>tbsCertificate</I> is
+ * 
+ * <blockquote><pre>
+ * TBSCertificate  ::=  SEQUENCE  {
+ *   version         [0]  EXPLICIT Version DEFAULT v1,
+ *   serialNumber         CertificateSerialNumber,
+ *   signature            AlgorithmIdentifier,
+ *   issuer               Name,
+ *   validity             Validity,
+ *   subject              Name,
+ *   subjectPublicKeyInfo SubjectPublicKeyInfo,
+ *   issuerUniqueID  [1]  IMPLICIT UniqueIdentifier OPTIONAL,
+ *                        -- If present, version shall be v2 or v3
+ *   subjectUniqueID [2]  IMPLICIT UniqueIdentifier OPTIONAL,
+ *                        -- If present, version shall be v2 or v3
+ *   extensions      [3]  EXPLICIT Extensions OPTIONAL
+ *                        -- If present, version shall be v3
+ * }
+ *
+ * Version  ::=  INTEGER  {  v1(0), v2(1), v3(2)  }
+ *
+ * CertificateSerialNumber  ::=  INTEGER
+ *
+ * Validity ::= SEQUENCE {
+ *   notBefore      Time,
+ *   notAfter       Time }
+ *
+ * Time ::= CHOICE {
+ *   utcTime        UTCTime,
+ *   generalTime    GeneralizedTime }
+ *
+ * UniqueIdentifier  ::=  BIT STRING
+ *
+ * SubjectPublicKeyInfo  ::=  SEQUENCE  {
+ *   algorithm            AlgorithmIdentifier,
+ *   subjectPublicKey     BIT STRING  }
+ *
+ * Extensions  ::=  SEQUENCE SIZE (1..MAX) OF Extension
+ *
+ * Extension  ::=  SEQUENCE  {
+ *   extnID      OBJECT IDENTIFIER,
+ *   critical    BOOLEAN DEFAULT FALSE,
+ *   extnValue   OCTET STRING  }
+ * </pre></blockquote>
+ * 
+ * Certificates are created with the CertificateFactory.
+ *
+ * <p>References:
+ *
+ * <ol>
+ * <li>Olivier Dubuisson, Philippe Fouquart (Translator) <i>ASN.1 -
+ * Communication between heterogeneous systems</i>, (C) September 2000,
+ * Morgan Kaufmann Publishers, ISBN 0-12-6333361-0. Available on-line at
+ * <a
+ * href="http://www.oss.com/asn1/dubuisson.html">http://www.oss.com/asn1/dubuisson.html</a></li>
+ * <li>R. Housley et al, <i><a href="http://www.ietf.org/rfc/rfc3280.txt">RFC
+ * 3280: Internet X.509 Public Key Infrastructure Certificate and CRL
+ * Profile</a></i>.</li>
+ * </ol>
+ *
+ * @since JDK 1.2
+ * @author Mark Benvenuto
+ * @author Casey Marshall (rsdio@metastatic.org)
+ */
 public abstract class X509Certificate extends Certificate implements X509Extension
 {
 
   /**
-     Constructs a new certificate of the specified type.
-  */
+   * Constructs a new certificate of the specified type.
+   */
   protected X509Certificate()
   {
     super( "X.509" );
@@ -451,5 +466,125 @@ public abstract class X509Certificate extends Certificate implements X509Extensi
   */
   public abstract int getBasicConstraints();
 
+  // 1.4 instance methods.
+  // ------------------------------------------------------------------------
 
+  /**
+   * Returns the <code>ExtendedKeyUsage</code> extension of this
+   * certificate, or null if there is no extension present. The returned
+   * value is a {@link java.util.List} strings representing the object
+   * identifiers of the extended key usages. This extension has the OID
+   * 2.5.29.37.
+   *
+   * <p>The ASN.1 definition for this extension is:
+   *
+   * <blockquote><pre> 
+   * ExtendedKeyUsage ::= SEQUENCE SIZE (1..MAX) OF KeyPurposeId
+   *
+   * KeyPurposeId ::= OBJECT IDENTIFIER
+   * </pre></blockquote>
+   *
+   * @return The list of extension OIDs, or null if there are none
+   * present in this certificate.
+   * @throws CertificateParsingException If this extension cannot be
+   * parsed from its encoded form.
+   */
+  public java.util.List getExtendedKeyUsage()
+    throws CertificateParsingException
+  {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Returns the alternative names for this certificate's subject (the
+   * owner), or null if there are none.
+   *
+   * <p>This is an X.509 extension with OID 2.5.29.17 and is defined by
+   * the ASN.1 construction:
+   *
+   * <blockquote><pre>
+   * SubjectAltNames ::= GeneralNames
+   *
+   * GeneralNames ::= SEQUENCE SIZE (1..MAX) OF GeneralName
+   *
+   * GeneralName ::= CHOICE {
+   *   otherName                 [0]   OtherName,
+   *   rfc822Name                [1]   IA5String,
+   *   dNSName                   [2]   IA5String,
+   *   x400Address               [3]   ORAddress,
+   *   directoryName             [4]   Name,
+   *   ediPartyName              [5]   EDIPartyName,
+   *   uniformResourceIdentifier [6]   IA5String,
+   *   iPAddress                 [7]   OCTET STRING,
+   *   registeredID              [8]   OBJECT IDENTIFIER
+   * }
+   * </pre></blockquote>
+   *
+   * <p>The returned collection contains one or more two-element Lists,
+   * with the first object being an Integer representing the choice
+   * above (with value 0 through 8) and the second being an (a) String
+   * if the <code>GeneralName</code> is a rfc822Name, dNSName,
+   * uniformResourceIdentifier, iPAddress, or registeredID, or (b) a
+   * byte array of the DER encoded form for any others.
+   *
+   * @return The collection of alternative names, or null if there are
+   * none.
+   * @throws CertificateParsingException If the encoded extension cannot
+   * be parsed.
+   * @since JDK 1.4
+   */
+  public java.util.Collection getSubjectAlternativeNames()
+    throws CertificateParsingException
+  {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Returns the alternative names for this certificate's issuer, or
+   * null if there are none.
+   *
+   * <p>This is an X.509 extension with OID 2.5.29.18, and is defined by
+   * the ASN.1 construction:
+   *
+   * <blockquote><pre>
+   * IssuerAltNames ::= GeneralNames
+   * </pre></blockquote>
+   *
+   * <p>The <code>GeneralNames</code> construct and the form of the
+   * returned collection are the same as with {@link
+   * #getSubjectAlternativeNames()}.
+   *
+   * @return The collection of alternative names, or null if there are
+   * none.
+   * @throws CertificateParsingException If the encoded extension cannot
+   * be parsed.
+   * @since JDK 1.4
+   */
+  public java.util.Collection getIssuerAlternativeNames()
+    throws CertificateParsingException
+  {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Returns the X.500 distinguished name of this certificate's subject.
+   *
+   * @return The subject's X.500 distinguished name.
+   * @since JDK 1.4
+   */
+  public javax.security.auth.x500.X500Principal getSubjectX500Principal()
+  {
+    throw new UnsupportedOperationException();
+  }
+ 
+  /**
+   * Returns the X.500 distinguished name of this certificate's issuer.
+   *
+   * @return The issuer's X.500 distinguished name.
+   * @since JDK 1.4
+   */
+  public javax.security.auth.x500.X500Principal getIssuerX500Principal()
+  {
+    throw new UnsupportedOperationException();
+  }
 }
