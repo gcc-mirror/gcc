@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
 --            Copyright (C) 1999-2001 Ada Core Technologies, Inc.           --
 --                                                                          --
@@ -95,7 +95,6 @@
 --        --  The supports switches in Get_Opt might be different
 --     end loop;
 --  end;
-
 
 with GNAT.Directory_Operations;
 with GNAT.Regexp;

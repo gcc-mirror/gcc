@@ -1,5 +1,13 @@
 2001-12-12  Geert Bosch <bosch@gnat.com>
 
+	* freeze.ads: Update copyright date.
+
+	* g-comlin.ads: Minor reformatting.
+
+	* gnat-style.texi: Fix typo.
+
+2001-12-12  Geert Bosch <bosch@gnat.com>
+
 	*  einfo.h: Regenerate.
 
 2001-12-12  Ed Schonberg <schonber@gnat.com>
