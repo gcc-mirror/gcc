@@ -3261,7 +3261,8 @@ m68hc11_gen_movhi (insn, operands)
 	{
 	  if (SP_REG_P (operands[0]))
 	    output_asm_insn ("lds\t%1", operands);
-	  else if (!D_REG_P (operands[0])
+	  else if (0 /* REG_WAS_0 note is boggus;  don't rely on it.  */
+                   && !D_REG_P (operands[0])
                    && GET_CODE (operands[1]) == CONST_INT
                    && (INTVAL (operands[1]) == 1 || INTVAL (operands[1]) == -1)
                    && find_reg_note (insn, REG_WAS_0, 0))
@@ -3454,7 +3455,8 @@ m68hc11_gen_movhi (insn, operands)
 	      cc_status = cc_prev_status;
 	      output_asm_insn ("tsx", operands);
 	    }
-	  else if (GET_CODE (operands[1]) == CONST_INT
+	  else if (0 /* REG_WAS_0 note is boggus;  don't rely on it.  */
+                   && GET_CODE (operands[1]) == CONST_INT
                    && (INTVAL (operands[1]) == 1 || INTVAL (operands[1]) == -1)
                    && find_reg_note (insn, REG_WAS_0, 0))
             {
@@ -3511,7 +3513,8 @@ m68hc11_gen_movhi (insn, operands)
 	      cc_status = cc_prev_status;
 	      output_asm_insn ("tsy", operands);
 	    }
-	  else if (GET_CODE (operands[1]) == CONST_INT
+	  else if (0 /* REG_WAS_0 note is boggus;  don't rely on it.  */
+                   && GET_CODE (operands[1]) == CONST_INT
                    && (INTVAL (operands[1]) == 1 || INTVAL (operands[1]) == -1)
                    && find_reg_note (insn, REG_WAS_0, 0))
             {
@@ -3760,7 +3763,8 @@ m68hc11_gen_movqi (insn, operands)
 		  output_asm_insn ("ldab\t%T0", operands);
 		}
 	    }
-	  else if (GET_CODE (operands[1]) == CONST_INT
+	  else if (0 /* REG_WAS_0 note is boggus;  don't rely on it.  */
+                   && GET_CODE (operands[1]) == CONST_INT
                    && (INTVAL (operands[1]) == 1 || INTVAL (operands[1]) == -1)
                    && find_reg_note (insn, REG_WAS_0, 0))
             {
