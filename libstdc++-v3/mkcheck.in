@@ -195,7 +195,7 @@ setup_size_command()
     {
       case $1 in
         TEXT)  TEXT=$(size -A $EXENAME | grep ^.text | awk '{print $2}')  ;;
-        DATA)  DATA=$(size -A $EXENAME | grep -w ^.data | awk '{print $2}')  ;;
+        DATA)  DATA=$(size -A $EXENAME | awk '/^\.data[         ]/{print $2}')  ;;
         SIZE)  SIZE=$(size -A $EXENAME | grep otal | awk '{print $2}')  ;;
       esac
     }

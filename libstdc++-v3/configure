@@ -5981,11 +5981,15 @@ cross_compiling=$ac_cv_prog_cxx_cross
 #line 5982 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  isinf(0);
 ; return 0; }
 EOF
-if { (eval echo configure:5989: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:5993: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_isinf_use=yes
 else
@@ -6012,12 +6016,12 @@ fi
     for ac_func in isinf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:6016: checking for $ac_func" >&5
+echo "configure:6020: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 6021 "configure"
+#line 6025 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -6040,7 +6044,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:6044: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:6048: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -6067,7 +6071,7 @@ done
   else
     
   echo $ac_n "checking for _isinf declaration""... $ac_c" 1>&6
-echo "configure:6071: checking for _isinf declaration" >&5
+echo "configure:6075: checking for _isinf declaration" >&5
   if test x${glibcpp_cv_func__isinf_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__isinf_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -6082,14 +6086,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 6086 "configure"
+#line 6090 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  _isinf(0);
 ; return 0; }
 EOF
-if { (eval echo configure:6093: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:6101: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__isinf_use=yes
 else
@@ -6116,12 +6124,12 @@ fi
       for ac_func in _isinf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:6120: checking for $ac_func" >&5
+echo "configure:6128: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 6125 "configure"
+#line 6133 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -6144,7 +6152,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:6148: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:6156: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -6174,7 +6182,7 @@ done
   
   
   echo $ac_n "checking for isnan declaration""... $ac_c" 1>&6
-echo "configure:6178: checking for isnan declaration" >&5
+echo "configure:6186: checking for isnan declaration" >&5
   if test x${glibcpp_cv_func_isnan_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_isnan_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -6189,14 +6197,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 6193 "configure"
+#line 6201 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  isnan(0);
 ; return 0; }
 EOF
-if { (eval echo configure:6200: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:6212: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_isnan_use=yes
 else
@@ -6223,12 +6235,12 @@ fi
     for ac_func in isnan
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:6227: checking for $ac_func" >&5
+echo "configure:6239: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 6232 "configure"
+#line 6244 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -6251,7 +6263,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:6255: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:6267: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -6278,7 +6290,7 @@ done
   else
     
   echo $ac_n "checking for _isnan declaration""... $ac_c" 1>&6
-echo "configure:6282: checking for _isnan declaration" >&5
+echo "configure:6294: checking for _isnan declaration" >&5
   if test x${glibcpp_cv_func__isnan_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__isnan_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -6293,14 +6305,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 6297 "configure"
+#line 6309 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  _isnan(0);
 ; return 0; }
 EOF
-if { (eval echo configure:6304: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:6320: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__isnan_use=yes
 else
@@ -6327,12 +6343,12 @@ fi
       for ac_func in _isnan
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:6331: checking for $ac_func" >&5
+echo "configure:6347: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 6336 "configure"
+#line 6352 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -6355,7 +6371,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:6359: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:6375: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -6385,7 +6401,7 @@ done
   
   
   echo $ac_n "checking for finite declaration""... $ac_c" 1>&6
-echo "configure:6389: checking for finite declaration" >&5
+echo "configure:6405: checking for finite declaration" >&5
   if test x${glibcpp_cv_func_finite_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_finite_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -6400,14 +6416,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 6404 "configure"
+#line 6420 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  finite(0);
 ; return 0; }
 EOF
-if { (eval echo configure:6411: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:6431: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_finite_use=yes
 else
@@ -6434,12 +6454,12 @@ fi
     for ac_func in finite
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:6438: checking for $ac_func" >&5
+echo "configure:6458: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 6443 "configure"
+#line 6463 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -6462,7 +6482,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:6466: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:6486: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -6489,7 +6509,7 @@ done
   else
     
   echo $ac_n "checking for _finite declaration""... $ac_c" 1>&6
-echo "configure:6493: checking for _finite declaration" >&5
+echo "configure:6513: checking for _finite declaration" >&5
   if test x${glibcpp_cv_func__finite_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__finite_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -6504,14 +6524,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 6508 "configure"
+#line 6528 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  _finite(0);
 ; return 0; }
 EOF
-if { (eval echo configure:6515: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:6539: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__finite_use=yes
 else
@@ -6538,12 +6562,12 @@ fi
       for ac_func in _finite
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:6542: checking for $ac_func" >&5
+echo "configure:6566: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 6547 "configure"
+#line 6571 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -6566,7 +6590,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:6570: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:6594: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -6596,7 +6620,7 @@ done
   
   
   echo $ac_n "checking for copysign declaration""... $ac_c" 1>&6
-echo "configure:6600: checking for copysign declaration" >&5
+echo "configure:6624: checking for copysign declaration" >&5
   if test x${glibcpp_cv_func_copysign_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_copysign_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -6611,14 +6635,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 6615 "configure"
+#line 6639 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  copysign(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:6622: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:6646: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_copysign_use=yes
 else
@@ -6645,12 +6669,12 @@ fi
     for ac_func in copysign
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:6649: checking for $ac_func" >&5
+echo "configure:6673: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 6654 "configure"
+#line 6678 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -6673,7 +6697,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:6677: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:6701: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -6700,7 +6724,7 @@ done
   else
     
   echo $ac_n "checking for _copysign declaration""... $ac_c" 1>&6
-echo "configure:6704: checking for _copysign declaration" >&5
+echo "configure:6728: checking for _copysign declaration" >&5
   if test x${glibcpp_cv_func__copysign_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__copysign_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -6715,14 +6739,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 6719 "configure"
+#line 6743 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  _copysign(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:6726: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:6750: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__copysign_use=yes
 else
@@ -6749,12 +6773,12 @@ fi
       for ac_func in _copysign
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:6753: checking for $ac_func" >&5
+echo "configure:6777: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 6758 "configure"
+#line 6782 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -6777,7 +6801,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:6781: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:6805: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -6807,7 +6831,7 @@ done
   
   
   echo $ac_n "checking for sincos declaration""... $ac_c" 1>&6
-echo "configure:6811: checking for sincos declaration" >&5
+echo "configure:6835: checking for sincos declaration" >&5
   if test x${glibcpp_cv_func_sincos_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_sincos_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -6822,14 +6846,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 6826 "configure"
+#line 6850 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  sincos(0, 0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:6833: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:6857: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_sincos_use=yes
 else
@@ -6856,12 +6880,12 @@ fi
     for ac_func in sincos
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:6860: checking for $ac_func" >&5
+echo "configure:6884: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 6865 "configure"
+#line 6889 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -6884,7 +6908,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:6888: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:6912: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -6911,7 +6935,7 @@ done
   else
     
   echo $ac_n "checking for _sincos declaration""... $ac_c" 1>&6
-echo "configure:6915: checking for _sincos declaration" >&5
+echo "configure:6939: checking for _sincos declaration" >&5
   if test x${glibcpp_cv_func__sincos_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__sincos_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -6926,14 +6950,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 6930 "configure"
+#line 6954 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  _sincos(0, 0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:6937: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:6961: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__sincos_use=yes
 else
@@ -6960,12 +6984,12 @@ fi
       for ac_func in _sincos
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:6964: checking for $ac_func" >&5
+echo "configure:6988: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 6969 "configure"
+#line 6993 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -6988,7 +7012,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:6992: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:7016: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -7018,7 +7042,7 @@ done
   
   
   echo $ac_n "checking for fpclass declaration""... $ac_c" 1>&6
-echo "configure:7022: checking for fpclass declaration" >&5
+echo "configure:7046: checking for fpclass declaration" >&5
   if test x${glibcpp_cv_func_fpclass_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_fpclass_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -7033,14 +7057,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 7037 "configure"
+#line 7061 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  fpclass(0);
 ; return 0; }
 EOF
-if { (eval echo configure:7044: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:7072: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_fpclass_use=yes
 else
@@ -7067,12 +7095,12 @@ fi
     for ac_func in fpclass
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:7071: checking for $ac_func" >&5
+echo "configure:7099: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 7076 "configure"
+#line 7104 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -7095,7 +7123,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:7099: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:7127: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -7122,7 +7150,7 @@ done
   else
     
   echo $ac_n "checking for _fpclass declaration""... $ac_c" 1>&6
-echo "configure:7126: checking for _fpclass declaration" >&5
+echo "configure:7154: checking for _fpclass declaration" >&5
   if test x${glibcpp_cv_func__fpclass_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__fpclass_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -7137,14 +7165,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 7141 "configure"
+#line 7169 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  _fpclass(0);
 ; return 0; }
 EOF
-if { (eval echo configure:7148: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:7180: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__fpclass_use=yes
 else
@@ -7171,12 +7203,12 @@ fi
       for ac_func in _fpclass
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:7175: checking for $ac_func" >&5
+echo "configure:7207: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 7180 "configure"
+#line 7212 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -7199,7 +7231,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:7203: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:7235: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -7229,7 +7261,7 @@ done
   
   
   echo $ac_n "checking for qfpclass declaration""... $ac_c" 1>&6
-echo "configure:7233: checking for qfpclass declaration" >&5
+echo "configure:7265: checking for qfpclass declaration" >&5
   if test x${glibcpp_cv_func_qfpclass_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_qfpclass_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -7244,14 +7276,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 7248 "configure"
+#line 7280 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  qfpclass(0);
 ; return 0; }
 EOF
-if { (eval echo configure:7255: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:7291: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_qfpclass_use=yes
 else
@@ -7278,12 +7314,12 @@ fi
     for ac_func in qfpclass
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:7282: checking for $ac_func" >&5
+echo "configure:7318: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 7287 "configure"
+#line 7323 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -7306,7 +7342,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:7310: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:7346: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -7333,7 +7369,7 @@ done
   else
     
   echo $ac_n "checking for _qfpclass declaration""... $ac_c" 1>&6
-echo "configure:7337: checking for _qfpclass declaration" >&5
+echo "configure:7373: checking for _qfpclass declaration" >&5
   if test x${glibcpp_cv_func__qfpclass_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__qfpclass_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -7348,14 +7384,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 7352 "configure"
+#line 7388 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  _qfpclass(0);
 ; return 0; }
 EOF
-if { (eval echo configure:7359: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:7399: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__qfpclass_use=yes
 else
@@ -7382,12 +7422,12 @@ fi
       for ac_func in _qfpclass
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:7386: checking for $ac_func" >&5
+echo "configure:7426: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 7391 "configure"
+#line 7431 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -7410,7 +7450,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:7414: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:7454: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -7440,7 +7480,7 @@ done
 
     
   echo $ac_n "checking for float trig functions""... $ac_c" 1>&6
-echo "configure:7444: checking for float trig functions" >&5
+echo "configure:7484: checking for float trig functions" >&5
   if eval "test \"`echo '$''{'glibcpp_cv_func_float_trig_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7454,7 +7494,7 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
     cat > conftest.$ac_ext <<EOF
-#line 7458 "configure"
+#line 7498 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
@@ -7463,7 +7503,7 @@ int main() {
                                           coshf sinhf tanhf; do echo "$x (0);"; done` 
 ; return 0; }
 EOF
-if { (eval echo configure:7467: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:7507: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_float_trig_use=yes
 else
@@ -7489,12 +7529,12 @@ fi
                                           coshf sinhf tanhf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:7493: checking for $ac_func" >&5
+echo "configure:7533: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 7498 "configure"
+#line 7538 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -7517,7 +7557,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:7521: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:7561: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -7545,7 +7585,7 @@ done
 
   
   echo $ac_n "checking for float round functions""... $ac_c" 1>&6
-echo "configure:7549: checking for float round functions" >&5
+echo "configure:7589: checking for float round functions" >&5
   if eval "test \"`echo '$''{'glibcpp_cv_func_float_round_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7559,14 +7599,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
     cat > conftest.$ac_ext <<EOF
-#line 7563 "configure"
+#line 7603 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  `for x in ceilf floorf; do echo "$x (0);"; done` 
 ; return 0; }
 EOF
-if { (eval echo configure:7570: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:7610: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_float_round_use=yes
 else
@@ -7590,12 +7630,12 @@ fi
     for ac_func in ceilf floorf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:7594: checking for $ac_func" >&5
+echo "configure:7634: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 7599 "configure"
+#line 7639 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -7618,7 +7658,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:7622: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:7662: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -7647,7 +7687,7 @@ done
   
   
   echo $ac_n "checking for isnanf declaration""... $ac_c" 1>&6
-echo "configure:7651: checking for isnanf declaration" >&5
+echo "configure:7691: checking for isnanf declaration" >&5
   if test x${glibcpp_cv_func_isnanf_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_isnanf_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -7662,14 +7702,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 7666 "configure"
+#line 7706 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  isnanf(0);
 ; return 0; }
 EOF
-if { (eval echo configure:7673: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:7717: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_isnanf_use=yes
 else
@@ -7696,12 +7740,12 @@ fi
     for ac_func in isnanf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:7700: checking for $ac_func" >&5
+echo "configure:7744: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 7705 "configure"
+#line 7749 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -7724,7 +7768,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:7728: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:7772: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -7751,7 +7795,7 @@ done
   else
     
   echo $ac_n "checking for _isnanf declaration""... $ac_c" 1>&6
-echo "configure:7755: checking for _isnanf declaration" >&5
+echo "configure:7799: checking for _isnanf declaration" >&5
   if test x${glibcpp_cv_func__isnanf_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__isnanf_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -7766,14 +7810,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 7770 "configure"
+#line 7814 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  _isnanf(0);
 ; return 0; }
 EOF
-if { (eval echo configure:7777: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:7825: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__isnanf_use=yes
 else
@@ -7800,12 +7848,12 @@ fi
       for ac_func in _isnanf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:7804: checking for $ac_func" >&5
+echo "configure:7852: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 7809 "configure"
+#line 7857 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -7828,7 +7876,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:7832: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:7880: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -7858,7 +7906,7 @@ done
   
   
   echo $ac_n "checking for isinff declaration""... $ac_c" 1>&6
-echo "configure:7862: checking for isinff declaration" >&5
+echo "configure:7910: checking for isinff declaration" >&5
   if test x${glibcpp_cv_func_isinff_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_isinff_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -7873,14 +7921,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 7877 "configure"
+#line 7925 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  isinff(0);
 ; return 0; }
 EOF
-if { (eval echo configure:7884: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:7936: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_isinff_use=yes
 else
@@ -7907,12 +7959,12 @@ fi
     for ac_func in isinff
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:7911: checking for $ac_func" >&5
+echo "configure:7963: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 7916 "configure"
+#line 7968 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -7935,7 +7987,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:7939: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:7991: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -7962,7 +8014,7 @@ done
   else
     
   echo $ac_n "checking for _isinff declaration""... $ac_c" 1>&6
-echo "configure:7966: checking for _isinff declaration" >&5
+echo "configure:8018: checking for _isinff declaration" >&5
   if test x${glibcpp_cv_func__isinff_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__isinff_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -7977,14 +8029,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 7981 "configure"
+#line 8033 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  _isinff(0);
 ; return 0; }
 EOF
-if { (eval echo configure:7988: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:8044: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__isinff_use=yes
 else
@@ -8011,12 +8067,12 @@ fi
       for ac_func in _isinff
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:8015: checking for $ac_func" >&5
+echo "configure:8071: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 8020 "configure"
+#line 8076 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -8039,7 +8095,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:8043: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:8099: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -8069,7 +8125,7 @@ done
   
   
   echo $ac_n "checking for fabsf declaration""... $ac_c" 1>&6
-echo "configure:8073: checking for fabsf declaration" >&5
+echo "configure:8129: checking for fabsf declaration" >&5
   if test x${glibcpp_cv_func_fabsf_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_fabsf_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -8084,14 +8140,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 8088 "configure"
+#line 8144 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  fabsf(0);
 ; return 0; }
 EOF
-if { (eval echo configure:8095: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:8155: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_fabsf_use=yes
 else
@@ -8118,12 +8178,12 @@ fi
     for ac_func in fabsf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:8122: checking for $ac_func" >&5
+echo "configure:8182: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 8127 "configure"
+#line 8187 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -8146,7 +8206,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:8150: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:8210: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -8173,7 +8233,7 @@ done
   else
     
   echo $ac_n "checking for _fabsf declaration""... $ac_c" 1>&6
-echo "configure:8177: checking for _fabsf declaration" >&5
+echo "configure:8237: checking for _fabsf declaration" >&5
   if test x${glibcpp_cv_func__fabsf_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__fabsf_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -8188,14 +8248,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 8192 "configure"
+#line 8252 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  _fabsf(0);
 ; return 0; }
 EOF
-if { (eval echo configure:8199: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:8263: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__fabsf_use=yes
 else
@@ -8222,12 +8286,12 @@ fi
       for ac_func in _fabsf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:8226: checking for $ac_func" >&5
+echo "configure:8290: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 8231 "configure"
+#line 8295 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -8250,7 +8314,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:8254: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:8318: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -8280,7 +8344,7 @@ done
   
   
   echo $ac_n "checking for fmodf declaration""... $ac_c" 1>&6
-echo "configure:8284: checking for fmodf declaration" >&5
+echo "configure:8348: checking for fmodf declaration" >&5
   if test x${glibcpp_cv_func_fmodf_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_fmodf_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -8295,14 +8359,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 8299 "configure"
+#line 8363 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  fmodf(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:8306: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:8370: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_fmodf_use=yes
 else
@@ -8329,12 +8393,12 @@ fi
     for ac_func in fmodf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:8333: checking for $ac_func" >&5
+echo "configure:8397: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 8338 "configure"
+#line 8402 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -8357,7 +8421,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:8361: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:8425: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -8384,7 +8448,7 @@ done
   else
     
   echo $ac_n "checking for _fmodf declaration""... $ac_c" 1>&6
-echo "configure:8388: checking for _fmodf declaration" >&5
+echo "configure:8452: checking for _fmodf declaration" >&5
   if test x${glibcpp_cv_func__fmodf_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__fmodf_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -8399,14 +8463,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 8403 "configure"
+#line 8467 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  _fmodf(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:8410: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:8474: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__fmodf_use=yes
 else
@@ -8433,12 +8497,12 @@ fi
       for ac_func in _fmodf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:8437: checking for $ac_func" >&5
+echo "configure:8501: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 8442 "configure"
+#line 8506 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -8461,7 +8525,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:8465: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:8529: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -8491,7 +8555,7 @@ done
   
   
   echo $ac_n "checking for frexpf declaration""... $ac_c" 1>&6
-echo "configure:8495: checking for frexpf declaration" >&5
+echo "configure:8559: checking for frexpf declaration" >&5
   if test x${glibcpp_cv_func_frexpf_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_frexpf_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -8506,14 +8570,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 8510 "configure"
+#line 8574 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  frexpf(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:8517: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:8581: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_frexpf_use=yes
 else
@@ -8540,12 +8604,12 @@ fi
     for ac_func in frexpf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:8544: checking for $ac_func" >&5
+echo "configure:8608: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 8549 "configure"
+#line 8613 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -8568,7 +8632,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:8572: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:8636: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -8595,7 +8659,7 @@ done
   else
     
   echo $ac_n "checking for _frexpf declaration""... $ac_c" 1>&6
-echo "configure:8599: checking for _frexpf declaration" >&5
+echo "configure:8663: checking for _frexpf declaration" >&5
   if test x${glibcpp_cv_func__frexpf_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__frexpf_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -8610,14 +8674,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 8614 "configure"
+#line 8678 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  _frexpf(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:8621: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:8685: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__frexpf_use=yes
 else
@@ -8644,12 +8708,12 @@ fi
       for ac_func in _frexpf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:8648: checking for $ac_func" >&5
+echo "configure:8712: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 8653 "configure"
+#line 8717 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -8672,7 +8736,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:8676: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:8740: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -8702,7 +8766,7 @@ done
   
   
   echo $ac_n "checking for ldexpf declaration""... $ac_c" 1>&6
-echo "configure:8706: checking for ldexpf declaration" >&5
+echo "configure:8770: checking for ldexpf declaration" >&5
   if test x${glibcpp_cv_func_ldexpf_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_ldexpf_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -8717,14 +8781,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 8721 "configure"
+#line 8785 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  ldexpf(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:8728: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:8792: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_ldexpf_use=yes
 else
@@ -8751,12 +8815,12 @@ fi
     for ac_func in ldexpf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:8755: checking for $ac_func" >&5
+echo "configure:8819: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 8760 "configure"
+#line 8824 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -8779,7 +8843,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:8783: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:8847: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -8806,7 +8870,7 @@ done
   else
     
   echo $ac_n "checking for _ldexpf declaration""... $ac_c" 1>&6
-echo "configure:8810: checking for _ldexpf declaration" >&5
+echo "configure:8874: checking for _ldexpf declaration" >&5
   if test x${glibcpp_cv_func__ldexpf_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__ldexpf_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -8821,14 +8885,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 8825 "configure"
+#line 8889 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  _ldexpf(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:8832: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:8896: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__ldexpf_use=yes
 else
@@ -8855,12 +8919,12 @@ fi
       for ac_func in _ldexpf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:8859: checking for $ac_func" >&5
+echo "configure:8923: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 8864 "configure"
+#line 8928 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -8883,7 +8947,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:8887: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:8951: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -8913,7 +8977,7 @@ done
   
   
   echo $ac_n "checking for logf declaration""... $ac_c" 1>&6
-echo "configure:8917: checking for logf declaration" >&5
+echo "configure:8981: checking for logf declaration" >&5
   if test x${glibcpp_cv_func_logf_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_logf_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -8928,14 +8992,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 8932 "configure"
+#line 8996 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  logf(0);
 ; return 0; }
 EOF
-if { (eval echo configure:8939: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:9007: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_logf_use=yes
 else
@@ -8962,12 +9030,12 @@ fi
     for ac_func in logf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:8966: checking for $ac_func" >&5
+echo "configure:9034: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 8971 "configure"
+#line 9039 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -8990,7 +9058,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:8994: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:9062: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -9017,7 +9085,7 @@ done
   else
     
   echo $ac_n "checking for _logf declaration""... $ac_c" 1>&6
-echo "configure:9021: checking for _logf declaration" >&5
+echo "configure:9089: checking for _logf declaration" >&5
   if test x${glibcpp_cv_func__logf_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__logf_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -9032,14 +9100,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 9036 "configure"
+#line 9104 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  _logf(0);
 ; return 0; }
 EOF
-if { (eval echo configure:9043: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:9115: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__logf_use=yes
 else
@@ -9066,12 +9138,12 @@ fi
       for ac_func in _logf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:9070: checking for $ac_func" >&5
+echo "configure:9142: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 9075 "configure"
+#line 9147 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -9094,7 +9166,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:9098: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:9170: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -9124,7 +9196,7 @@ done
   
   
   echo $ac_n "checking for log10f declaration""... $ac_c" 1>&6
-echo "configure:9128: checking for log10f declaration" >&5
+echo "configure:9200: checking for log10f declaration" >&5
   if test x${glibcpp_cv_func_log10f_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_log10f_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -9139,14 +9211,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 9143 "configure"
+#line 9215 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  log10f(0);
 ; return 0; }
 EOF
-if { (eval echo configure:9150: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:9226: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_log10f_use=yes
 else
@@ -9173,12 +9249,12 @@ fi
     for ac_func in log10f
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:9177: checking for $ac_func" >&5
+echo "configure:9253: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 9182 "configure"
+#line 9258 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -9201,7 +9277,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:9205: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:9281: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -9228,7 +9304,7 @@ done
   else
     
   echo $ac_n "checking for _log10f declaration""... $ac_c" 1>&6
-echo "configure:9232: checking for _log10f declaration" >&5
+echo "configure:9308: checking for _log10f declaration" >&5
   if test x${glibcpp_cv_func__log10f_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__log10f_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -9243,14 +9319,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 9247 "configure"
+#line 9323 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  _log10f(0);
 ; return 0; }
 EOF
-if { (eval echo configure:9254: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:9334: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__log10f_use=yes
 else
@@ -9277,12 +9357,12 @@ fi
       for ac_func in _log10f
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:9281: checking for $ac_func" >&5
+echo "configure:9361: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 9286 "configure"
+#line 9366 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -9305,7 +9385,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:9309: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:9389: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -9335,7 +9415,7 @@ done
   
   
   echo $ac_n "checking for modff declaration""... $ac_c" 1>&6
-echo "configure:9339: checking for modff declaration" >&5
+echo "configure:9419: checking for modff declaration" >&5
   if test x${glibcpp_cv_func_modff_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_modff_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -9350,14 +9430,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 9354 "configure"
+#line 9434 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  modff(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:9361: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:9441: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_modff_use=yes
 else
@@ -9384,12 +9464,12 @@ fi
     for ac_func in modff
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:9388: checking for $ac_func" >&5
+echo "configure:9468: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 9393 "configure"
+#line 9473 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -9412,7 +9492,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:9416: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:9496: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -9439,7 +9519,7 @@ done
   else
     
   echo $ac_n "checking for _modff declaration""... $ac_c" 1>&6
-echo "configure:9443: checking for _modff declaration" >&5
+echo "configure:9523: checking for _modff declaration" >&5
   if test x${glibcpp_cv_func__modff_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__modff_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -9454,14 +9534,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 9458 "configure"
+#line 9538 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  _modff(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:9465: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:9545: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__modff_use=yes
 else
@@ -9488,12 +9568,12 @@ fi
       for ac_func in _modff
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:9492: checking for $ac_func" >&5
+echo "configure:9572: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 9497 "configure"
+#line 9577 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -9516,7 +9596,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:9520: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:9600: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -9546,7 +9626,7 @@ done
   
   
   echo $ac_n "checking for powf declaration""... $ac_c" 1>&6
-echo "configure:9550: checking for powf declaration" >&5
+echo "configure:9630: checking for powf declaration" >&5
   if test x${glibcpp_cv_func_powf_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_powf_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -9561,14 +9641,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 9565 "configure"
+#line 9645 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  powf(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:9572: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:9652: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_powf_use=yes
 else
@@ -9595,12 +9675,12 @@ fi
     for ac_func in powf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:9599: checking for $ac_func" >&5
+echo "configure:9679: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 9604 "configure"
+#line 9684 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -9623,7 +9703,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:9627: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:9707: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -9650,7 +9730,7 @@ done
   else
     
   echo $ac_n "checking for _powf declaration""... $ac_c" 1>&6
-echo "configure:9654: checking for _powf declaration" >&5
+echo "configure:9734: checking for _powf declaration" >&5
   if test x${glibcpp_cv_func__powf_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__powf_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -9665,14 +9745,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 9669 "configure"
+#line 9749 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  _powf(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:9676: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:9756: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__powf_use=yes
 else
@@ -9699,12 +9779,12 @@ fi
       for ac_func in _powf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:9703: checking for $ac_func" >&5
+echo "configure:9783: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 9708 "configure"
+#line 9788 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -9727,7 +9807,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:9731: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:9811: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -9757,7 +9837,7 @@ done
   
   
   echo $ac_n "checking for sqrtf declaration""... $ac_c" 1>&6
-echo "configure:9761: checking for sqrtf declaration" >&5
+echo "configure:9841: checking for sqrtf declaration" >&5
   if test x${glibcpp_cv_func_sqrtf_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_sqrtf_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -9772,14 +9852,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 9776 "configure"
+#line 9856 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  sqrtf(0);
 ; return 0; }
 EOF
-if { (eval echo configure:9783: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:9867: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_sqrtf_use=yes
 else
@@ -9806,12 +9890,12 @@ fi
     for ac_func in sqrtf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:9810: checking for $ac_func" >&5
+echo "configure:9894: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 9815 "configure"
+#line 9899 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -9834,7 +9918,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:9838: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:9922: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -9861,7 +9945,7 @@ done
   else
     
   echo $ac_n "checking for _sqrtf declaration""... $ac_c" 1>&6
-echo "configure:9865: checking for _sqrtf declaration" >&5
+echo "configure:9949: checking for _sqrtf declaration" >&5
   if test x${glibcpp_cv_func__sqrtf_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__sqrtf_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -9876,14 +9960,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 9880 "configure"
+#line 9964 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  _sqrtf(0);
 ; return 0; }
 EOF
-if { (eval echo configure:9887: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:9975: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__sqrtf_use=yes
 else
@@ -9910,12 +9998,12 @@ fi
       for ac_func in _sqrtf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:9914: checking for $ac_func" >&5
+echo "configure:10002: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 9919 "configure"
+#line 10007 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -9938,7 +10026,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:9942: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:10030: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -9968,7 +10056,7 @@ done
   
   
   echo $ac_n "checking for sincosf declaration""... $ac_c" 1>&6
-echo "configure:9972: checking for sincosf declaration" >&5
+echo "configure:10060: checking for sincosf declaration" >&5
   if test x${glibcpp_cv_func_sincosf_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_sincosf_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -9983,14 +10071,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 9987 "configure"
+#line 10075 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  sincosf(0, 0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:9994: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:10082: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_sincosf_use=yes
 else
@@ -10017,12 +10105,12 @@ fi
     for ac_func in sincosf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:10021: checking for $ac_func" >&5
+echo "configure:10109: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 10026 "configure"
+#line 10114 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -10045,7 +10133,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:10049: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:10137: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -10072,7 +10160,7 @@ done
   else
     
   echo $ac_n "checking for _sincosf declaration""... $ac_c" 1>&6
-echo "configure:10076: checking for _sincosf declaration" >&5
+echo "configure:10164: checking for _sincosf declaration" >&5
   if test x${glibcpp_cv_func__sincosf_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__sincosf_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -10087,14 +10175,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 10091 "configure"
+#line 10179 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  _sincosf(0, 0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:10098: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:10186: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__sincosf_use=yes
 else
@@ -10121,12 +10209,12 @@ fi
       for ac_func in _sincosf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:10125: checking for $ac_func" >&5
+echo "configure:10213: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 10130 "configure"
+#line 10218 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -10149,7 +10237,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:10153: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:10241: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -10179,7 +10267,7 @@ done
   
   
   echo $ac_n "checking for finitef declaration""... $ac_c" 1>&6
-echo "configure:10183: checking for finitef declaration" >&5
+echo "configure:10271: checking for finitef declaration" >&5
   if test x${glibcpp_cv_func_finitef_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_finitef_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -10194,14 +10282,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 10198 "configure"
+#line 10286 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  finitef(0);
 ; return 0; }
 EOF
-if { (eval echo configure:10205: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:10297: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_finitef_use=yes
 else
@@ -10228,12 +10320,12 @@ fi
     for ac_func in finitef
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:10232: checking for $ac_func" >&5
+echo "configure:10324: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 10237 "configure"
+#line 10329 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -10256,7 +10348,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:10260: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:10352: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -10283,7 +10375,7 @@ done
   else
     
   echo $ac_n "checking for _finitef declaration""... $ac_c" 1>&6
-echo "configure:10287: checking for _finitef declaration" >&5
+echo "configure:10379: checking for _finitef declaration" >&5
   if test x${glibcpp_cv_func__finitef_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__finitef_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -10298,14 +10390,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 10302 "configure"
+#line 10394 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  _finitef(0);
 ; return 0; }
 EOF
-if { (eval echo configure:10309: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:10405: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__finitef_use=yes
 else
@@ -10332,12 +10428,12 @@ fi
       for ac_func in _finitef
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:10336: checking for $ac_func" >&5
+echo "configure:10432: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 10341 "configure"
+#line 10437 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -10360,7 +10456,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:10364: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:10460: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -10390,7 +10486,7 @@ done
 
     
   echo $ac_n "checking for long double trig functions""... $ac_c" 1>&6
-echo "configure:10394: checking for long double trig functions" >&5
+echo "configure:10490: checking for long double trig functions" >&5
   if eval "test \"`echo '$''{'glibcpp_cv_func_long_double_trig_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -10404,7 +10500,7 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
     cat > conftest.$ac_ext <<EOF
-#line 10408 "configure"
+#line 10504 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
@@ -10413,7 +10509,7 @@ int main() {
                                           coshl sinhl tanhl; do echo "$x (0);"; done` 
 ; return 0; }
 EOF
-if { (eval echo configure:10417: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:10513: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_long_double_trig_use=yes
 else
@@ -10439,12 +10535,12 @@ fi
                                           coshl sinhl tanhl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:10443: checking for $ac_func" >&5
+echo "configure:10539: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 10448 "configure"
+#line 10544 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -10467,7 +10563,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:10471: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:10567: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -10495,7 +10591,7 @@ done
 
   
   echo $ac_n "checking for long double round functions""... $ac_c" 1>&6
-echo "configure:10499: checking for long double round functions" >&5
+echo "configure:10595: checking for long double round functions" >&5
   if eval "test \"`echo '$''{'glibcpp_cv_func_long_double_round_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -10509,14 +10605,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
     cat > conftest.$ac_ext <<EOF
-#line 10513 "configure"
+#line 10609 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  `for x in ceill floorl; do echo "$x (0);"; done` 
 ; return 0; }
 EOF
-if { (eval echo configure:10520: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:10616: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_long_double_round_use=yes
 else
@@ -10540,12 +10636,12 @@ fi
     for ac_func in ceill floorl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:10544: checking for $ac_func" >&5
+echo "configure:10640: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 10549 "configure"
+#line 10645 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -10568,7 +10664,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:10572: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:10668: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -10597,7 +10693,7 @@ done
   
   
   echo $ac_n "checking for isnanl declaration""... $ac_c" 1>&6
-echo "configure:10601: checking for isnanl declaration" >&5
+echo "configure:10697: checking for isnanl declaration" >&5
   if test x${glibcpp_cv_func_isnanl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_isnanl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -10612,14 +10708,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 10616 "configure"
+#line 10712 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  isnanl(0);
 ; return 0; }
 EOF
-if { (eval echo configure:10623: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:10723: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_isnanl_use=yes
 else
@@ -10646,12 +10746,12 @@ fi
     for ac_func in isnanl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:10650: checking for $ac_func" >&5
+echo "configure:10750: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 10655 "configure"
+#line 10755 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -10674,7 +10774,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:10678: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:10778: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -10701,7 +10801,7 @@ done
   else
     
   echo $ac_n "checking for _isnanl declaration""... $ac_c" 1>&6
-echo "configure:10705: checking for _isnanl declaration" >&5
+echo "configure:10805: checking for _isnanl declaration" >&5
   if test x${glibcpp_cv_func__isnanl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__isnanl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -10716,14 +10816,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 10720 "configure"
+#line 10820 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  _isnanl(0);
 ; return 0; }
 EOF
-if { (eval echo configure:10727: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:10831: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__isnanl_use=yes
 else
@@ -10750,12 +10854,12 @@ fi
       for ac_func in _isnanl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:10754: checking for $ac_func" >&5
+echo "configure:10858: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 10759 "configure"
+#line 10863 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -10778,7 +10882,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:10782: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:10886: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -10808,7 +10912,7 @@ done
   
   
   echo $ac_n "checking for isinfl declaration""... $ac_c" 1>&6
-echo "configure:10812: checking for isinfl declaration" >&5
+echo "configure:10916: checking for isinfl declaration" >&5
   if test x${glibcpp_cv_func_isinfl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_isinfl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -10823,14 +10927,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 10827 "configure"
+#line 10931 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  isinfl(0);
 ; return 0; }
 EOF
-if { (eval echo configure:10834: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:10942: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_isinfl_use=yes
 else
@@ -10857,12 +10965,12 @@ fi
     for ac_func in isinfl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:10861: checking for $ac_func" >&5
+echo "configure:10969: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 10866 "configure"
+#line 10974 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -10885,7 +10993,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:10889: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:10997: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -10912,7 +11020,7 @@ done
   else
     
   echo $ac_n "checking for _isinfl declaration""... $ac_c" 1>&6
-echo "configure:10916: checking for _isinfl declaration" >&5
+echo "configure:11024: checking for _isinfl declaration" >&5
   if test x${glibcpp_cv_func__isinfl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__isinfl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -10927,14 +11035,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 10931 "configure"
+#line 11039 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  _isinfl(0);
 ; return 0; }
 EOF
-if { (eval echo configure:10938: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:11050: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__isinfl_use=yes
 else
@@ -10961,12 +11073,12 @@ fi
       for ac_func in _isinfl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:10965: checking for $ac_func" >&5
+echo "configure:11077: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 10970 "configure"
+#line 11082 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -10989,7 +11101,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:10993: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:11105: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -11019,7 +11131,7 @@ done
   
   
   echo $ac_n "checking for copysignl declaration""... $ac_c" 1>&6
-echo "configure:11023: checking for copysignl declaration" >&5
+echo "configure:11135: checking for copysignl declaration" >&5
   if test x${glibcpp_cv_func_copysignl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_copysignl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -11034,14 +11146,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 11038 "configure"
+#line 11150 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  copysignl(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:11045: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:11157: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_copysignl_use=yes
 else
@@ -11068,12 +11180,12 @@ fi
     for ac_func in copysignl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:11072: checking for $ac_func" >&5
+echo "configure:11184: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 11077 "configure"
+#line 11189 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -11096,7 +11208,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:11100: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:11212: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -11123,7 +11235,7 @@ done
   else
     
   echo $ac_n "checking for _copysignl declaration""... $ac_c" 1>&6
-echo "configure:11127: checking for _copysignl declaration" >&5
+echo "configure:11239: checking for _copysignl declaration" >&5
   if test x${glibcpp_cv_func__copysignl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__copysignl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -11138,14 +11250,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 11142 "configure"
+#line 11254 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  _copysignl(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:11149: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:11261: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__copysignl_use=yes
 else
@@ -11172,12 +11284,12 @@ fi
       for ac_func in _copysignl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:11176: checking for $ac_func" >&5
+echo "configure:11288: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 11181 "configure"
+#line 11293 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -11200,7 +11312,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:11204: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:11316: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -11230,7 +11342,7 @@ done
   
   
   echo $ac_n "checking for atan2l declaration""... $ac_c" 1>&6
-echo "configure:11234: checking for atan2l declaration" >&5
+echo "configure:11346: checking for atan2l declaration" >&5
   if test x${glibcpp_cv_func_atan2l_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_atan2l_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -11245,14 +11357,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 11249 "configure"
+#line 11361 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  atan2l(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:11256: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:11368: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_atan2l_use=yes
 else
@@ -11279,12 +11391,12 @@ fi
     for ac_func in atan2l
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:11283: checking for $ac_func" >&5
+echo "configure:11395: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 11288 "configure"
+#line 11400 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -11307,7 +11419,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:11311: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:11423: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -11334,7 +11446,7 @@ done
   else
     
   echo $ac_n "checking for _atan2l declaration""... $ac_c" 1>&6
-echo "configure:11338: checking for _atan2l declaration" >&5
+echo "configure:11450: checking for _atan2l declaration" >&5
   if test x${glibcpp_cv_func__atan2l_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__atan2l_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -11349,14 +11461,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 11353 "configure"
+#line 11465 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  _atan2l(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:11360: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:11472: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__atan2l_use=yes
 else
@@ -11383,12 +11495,12 @@ fi
       for ac_func in _atan2l
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:11387: checking for $ac_func" >&5
+echo "configure:11499: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 11392 "configure"
+#line 11504 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -11411,7 +11523,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:11415: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:11527: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -11441,7 +11553,7 @@ done
   
   
   echo $ac_n "checking for expl declaration""... $ac_c" 1>&6
-echo "configure:11445: checking for expl declaration" >&5
+echo "configure:11557: checking for expl declaration" >&5
   if test x${glibcpp_cv_func_expl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_expl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -11456,14 +11568,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 11460 "configure"
+#line 11572 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  expl(0);
 ; return 0; }
 EOF
-if { (eval echo configure:11467: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:11583: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_expl_use=yes
 else
@@ -11490,12 +11606,12 @@ fi
     for ac_func in expl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:11494: checking for $ac_func" >&5
+echo "configure:11610: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 11499 "configure"
+#line 11615 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -11518,7 +11634,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:11522: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:11638: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -11545,7 +11661,7 @@ done
   else
     
   echo $ac_n "checking for _expl declaration""... $ac_c" 1>&6
-echo "configure:11549: checking for _expl declaration" >&5
+echo "configure:11665: checking for _expl declaration" >&5
   if test x${glibcpp_cv_func__expl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__expl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -11560,14 +11676,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 11564 "configure"
+#line 11680 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  _expl(0);
 ; return 0; }
 EOF
-if { (eval echo configure:11571: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:11691: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__expl_use=yes
 else
@@ -11594,12 +11714,12 @@ fi
       for ac_func in _expl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:11598: checking for $ac_func" >&5
+echo "configure:11718: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 11603 "configure"
+#line 11723 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -11622,7 +11742,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:11626: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:11746: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -11652,7 +11772,7 @@ done
   
   
   echo $ac_n "checking for fabsl declaration""... $ac_c" 1>&6
-echo "configure:11656: checking for fabsl declaration" >&5
+echo "configure:11776: checking for fabsl declaration" >&5
   if test x${glibcpp_cv_func_fabsl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_fabsl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -11667,14 +11787,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 11671 "configure"
+#line 11791 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  fabsl(0);
 ; return 0; }
 EOF
-if { (eval echo configure:11678: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:11802: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_fabsl_use=yes
 else
@@ -11701,12 +11825,12 @@ fi
     for ac_func in fabsl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:11705: checking for $ac_func" >&5
+echo "configure:11829: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 11710 "configure"
+#line 11834 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -11729,7 +11853,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:11733: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:11857: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -11756,7 +11880,7 @@ done
   else
     
   echo $ac_n "checking for _fabsl declaration""... $ac_c" 1>&6
-echo "configure:11760: checking for _fabsl declaration" >&5
+echo "configure:11884: checking for _fabsl declaration" >&5
   if test x${glibcpp_cv_func__fabsl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__fabsl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -11771,14 +11895,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 11775 "configure"
+#line 11899 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  _fabsl(0);
 ; return 0; }
 EOF
-if { (eval echo configure:11782: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:11910: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__fabsl_use=yes
 else
@@ -11805,12 +11933,12 @@ fi
       for ac_func in _fabsl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:11809: checking for $ac_func" >&5
+echo "configure:11937: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 11814 "configure"
+#line 11942 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -11833,7 +11961,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:11837: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:11965: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -11863,7 +11991,7 @@ done
   
   
   echo $ac_n "checking for fmodl declaration""... $ac_c" 1>&6
-echo "configure:11867: checking for fmodl declaration" >&5
+echo "configure:11995: checking for fmodl declaration" >&5
   if test x${glibcpp_cv_func_fmodl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_fmodl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -11878,14 +12006,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 11882 "configure"
+#line 12010 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  fmodl(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:11889: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:12017: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_fmodl_use=yes
 else
@@ -11912,12 +12040,12 @@ fi
     for ac_func in fmodl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:11916: checking for $ac_func" >&5
+echo "configure:12044: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 11921 "configure"
+#line 12049 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -11940,7 +12068,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:11944: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:12072: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -11967,7 +12095,7 @@ done
   else
     
   echo $ac_n "checking for _fmodl declaration""... $ac_c" 1>&6
-echo "configure:11971: checking for _fmodl declaration" >&5
+echo "configure:12099: checking for _fmodl declaration" >&5
   if test x${glibcpp_cv_func__fmodl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__fmodl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -11982,14 +12110,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 11986 "configure"
+#line 12114 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  _fmodl(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:11993: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:12121: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__fmodl_use=yes
 else
@@ -12016,12 +12144,12 @@ fi
       for ac_func in _fmodl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:12020: checking for $ac_func" >&5
+echo "configure:12148: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 12025 "configure"
+#line 12153 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -12044,7 +12172,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:12048: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:12176: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -12074,7 +12202,7 @@ done
   
   
   echo $ac_n "checking for frexpl declaration""... $ac_c" 1>&6
-echo "configure:12078: checking for frexpl declaration" >&5
+echo "configure:12206: checking for frexpl declaration" >&5
   if test x${glibcpp_cv_func_frexpl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_frexpl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -12089,14 +12217,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 12093 "configure"
+#line 12221 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  frexpl(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:12100: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:12228: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_frexpl_use=yes
 else
@@ -12123,12 +12251,12 @@ fi
     for ac_func in frexpl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:12127: checking for $ac_func" >&5
+echo "configure:12255: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 12132 "configure"
+#line 12260 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -12151,7 +12279,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:12155: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:12283: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -12178,7 +12306,7 @@ done
   else
     
   echo $ac_n "checking for _frexpl declaration""... $ac_c" 1>&6
-echo "configure:12182: checking for _frexpl declaration" >&5
+echo "configure:12310: checking for _frexpl declaration" >&5
   if test x${glibcpp_cv_func__frexpl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__frexpl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -12193,14 +12321,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 12197 "configure"
+#line 12325 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  _frexpl(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:12204: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:12332: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__frexpl_use=yes
 else
@@ -12227,12 +12355,12 @@ fi
       for ac_func in _frexpl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:12231: checking for $ac_func" >&5
+echo "configure:12359: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 12236 "configure"
+#line 12364 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -12255,7 +12383,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:12259: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:12387: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -12285,7 +12413,7 @@ done
   
   
   echo $ac_n "checking for ldexpl declaration""... $ac_c" 1>&6
-echo "configure:12289: checking for ldexpl declaration" >&5
+echo "configure:12417: checking for ldexpl declaration" >&5
   if test x${glibcpp_cv_func_ldexpl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_ldexpl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -12300,14 +12428,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 12304 "configure"
+#line 12432 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  ldexpl(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:12311: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:12439: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_ldexpl_use=yes
 else
@@ -12334,12 +12462,12 @@ fi
     for ac_func in ldexpl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:12338: checking for $ac_func" >&5
+echo "configure:12466: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 12343 "configure"
+#line 12471 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -12362,7 +12490,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:12366: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:12494: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -12389,7 +12517,7 @@ done
   else
     
   echo $ac_n "checking for _ldexpl declaration""... $ac_c" 1>&6
-echo "configure:12393: checking for _ldexpl declaration" >&5
+echo "configure:12521: checking for _ldexpl declaration" >&5
   if test x${glibcpp_cv_func__ldexpl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__ldexpl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -12404,14 +12532,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 12408 "configure"
+#line 12536 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  _ldexpl(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:12415: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:12543: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__ldexpl_use=yes
 else
@@ -12438,12 +12566,12 @@ fi
       for ac_func in _ldexpl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:12442: checking for $ac_func" >&5
+echo "configure:12570: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 12447 "configure"
+#line 12575 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -12466,7 +12594,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:12470: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:12598: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -12496,7 +12624,7 @@ done
   
   
   echo $ac_n "checking for logl declaration""... $ac_c" 1>&6
-echo "configure:12500: checking for logl declaration" >&5
+echo "configure:12628: checking for logl declaration" >&5
   if test x${glibcpp_cv_func_logl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_logl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -12511,14 +12639,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 12515 "configure"
+#line 12643 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  logl(0);
 ; return 0; }
 EOF
-if { (eval echo configure:12522: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:12654: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_logl_use=yes
 else
@@ -12545,12 +12677,12 @@ fi
     for ac_func in logl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:12549: checking for $ac_func" >&5
+echo "configure:12681: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 12554 "configure"
+#line 12686 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -12573,7 +12705,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:12577: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:12709: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -12600,7 +12732,7 @@ done
   else
     
   echo $ac_n "checking for _logl declaration""... $ac_c" 1>&6
-echo "configure:12604: checking for _logl declaration" >&5
+echo "configure:12736: checking for _logl declaration" >&5
   if test x${glibcpp_cv_func__logl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__logl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -12615,14 +12747,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 12619 "configure"
+#line 12751 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  _logl(0);
 ; return 0; }
 EOF
-if { (eval echo configure:12626: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:12762: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__logl_use=yes
 else
@@ -12649,12 +12785,12 @@ fi
       for ac_func in _logl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:12653: checking for $ac_func" >&5
+echo "configure:12789: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 12658 "configure"
+#line 12794 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -12677,7 +12813,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:12681: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:12817: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -12707,7 +12843,7 @@ done
   
   
   echo $ac_n "checking for log10l declaration""... $ac_c" 1>&6
-echo "configure:12711: checking for log10l declaration" >&5
+echo "configure:12847: checking for log10l declaration" >&5
   if test x${glibcpp_cv_func_log10l_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_log10l_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -12722,14 +12858,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 12726 "configure"
+#line 12862 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  log10l(0);
 ; return 0; }
 EOF
-if { (eval echo configure:12733: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:12873: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_log10l_use=yes
 else
@@ -12756,12 +12896,12 @@ fi
     for ac_func in log10l
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:12760: checking for $ac_func" >&5
+echo "configure:12900: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 12765 "configure"
+#line 12905 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -12784,7 +12924,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:12788: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:12928: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -12811,7 +12951,7 @@ done
   else
     
   echo $ac_n "checking for _log10l declaration""... $ac_c" 1>&6
-echo "configure:12815: checking for _log10l declaration" >&5
+echo "configure:12955: checking for _log10l declaration" >&5
   if test x${glibcpp_cv_func__log10l_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__log10l_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -12826,14 +12966,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 12830 "configure"
+#line 12970 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  _log10l(0);
 ; return 0; }
 EOF
-if { (eval echo configure:12837: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:12981: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__log10l_use=yes
 else
@@ -12860,12 +13004,12 @@ fi
       for ac_func in _log10l
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:12864: checking for $ac_func" >&5
+echo "configure:13008: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 12869 "configure"
+#line 13013 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -12888,7 +13032,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:12892: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:13036: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -12918,7 +13062,7 @@ done
   
   
   echo $ac_n "checking for modfl declaration""... $ac_c" 1>&6
-echo "configure:12922: checking for modfl declaration" >&5
+echo "configure:13066: checking for modfl declaration" >&5
   if test x${glibcpp_cv_func_modfl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_modfl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -12933,14 +13077,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 12937 "configure"
+#line 13081 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  modfl(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:12944: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:13088: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_modfl_use=yes
 else
@@ -12967,12 +13111,12 @@ fi
     for ac_func in modfl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:12971: checking for $ac_func" >&5
+echo "configure:13115: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 12976 "configure"
+#line 13120 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -12995,7 +13139,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:12999: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:13143: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -13022,7 +13166,7 @@ done
   else
     
   echo $ac_n "checking for _modfl declaration""... $ac_c" 1>&6
-echo "configure:13026: checking for _modfl declaration" >&5
+echo "configure:13170: checking for _modfl declaration" >&5
   if test x${glibcpp_cv_func__modfl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__modfl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -13037,14 +13181,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 13041 "configure"
+#line 13185 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  _modfl(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:13048: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:13192: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__modfl_use=yes
 else
@@ -13071,12 +13215,12 @@ fi
       for ac_func in _modfl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:13075: checking for $ac_func" >&5
+echo "configure:13219: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 13080 "configure"
+#line 13224 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -13099,7 +13243,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:13103: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:13247: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -13129,7 +13273,7 @@ done
   
   
   echo $ac_n "checking for powl declaration""... $ac_c" 1>&6
-echo "configure:13133: checking for powl declaration" >&5
+echo "configure:13277: checking for powl declaration" >&5
   if test x${glibcpp_cv_func_powl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_powl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -13144,14 +13288,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 13148 "configure"
+#line 13292 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  powl(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:13155: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:13299: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_powl_use=yes
 else
@@ -13178,12 +13322,12 @@ fi
     for ac_func in powl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:13182: checking for $ac_func" >&5
+echo "configure:13326: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 13187 "configure"
+#line 13331 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -13206,7 +13350,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:13210: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:13354: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -13233,7 +13377,7 @@ done
   else
     
   echo $ac_n "checking for _powl declaration""... $ac_c" 1>&6
-echo "configure:13237: checking for _powl declaration" >&5
+echo "configure:13381: checking for _powl declaration" >&5
   if test x${glibcpp_cv_func__powl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__powl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -13248,14 +13392,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 13252 "configure"
+#line 13396 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  _powl(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:13259: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:13403: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__powl_use=yes
 else
@@ -13282,12 +13426,12 @@ fi
       for ac_func in _powl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:13286: checking for $ac_func" >&5
+echo "configure:13430: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 13291 "configure"
+#line 13435 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -13310,7 +13454,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:13314: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:13458: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -13340,7 +13484,7 @@ done
   
   
   echo $ac_n "checking for sqrtl declaration""... $ac_c" 1>&6
-echo "configure:13344: checking for sqrtl declaration" >&5
+echo "configure:13488: checking for sqrtl declaration" >&5
   if test x${glibcpp_cv_func_sqrtl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_sqrtl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -13355,14 +13499,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 13359 "configure"
+#line 13503 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  sqrtl(0);
 ; return 0; }
 EOF
-if { (eval echo configure:13366: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:13514: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_sqrtl_use=yes
 else
@@ -13389,12 +13537,12 @@ fi
     for ac_func in sqrtl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:13393: checking for $ac_func" >&5
+echo "configure:13541: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 13398 "configure"
+#line 13546 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -13417,7 +13565,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:13421: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:13569: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -13444,7 +13592,7 @@ done
   else
     
   echo $ac_n "checking for _sqrtl declaration""... $ac_c" 1>&6
-echo "configure:13448: checking for _sqrtl declaration" >&5
+echo "configure:13596: checking for _sqrtl declaration" >&5
   if test x${glibcpp_cv_func__sqrtl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__sqrtl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -13459,14 +13607,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 13463 "configure"
+#line 13611 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  _sqrtl(0);
 ; return 0; }
 EOF
-if { (eval echo configure:13470: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:13622: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__sqrtl_use=yes
 else
@@ -13493,12 +13645,12 @@ fi
       for ac_func in _sqrtl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:13497: checking for $ac_func" >&5
+echo "configure:13649: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 13502 "configure"
+#line 13654 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -13521,7 +13673,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:13525: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:13677: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -13551,7 +13703,7 @@ done
   
   
   echo $ac_n "checking for sincosl declaration""... $ac_c" 1>&6
-echo "configure:13555: checking for sincosl declaration" >&5
+echo "configure:13707: checking for sincosl declaration" >&5
   if test x${glibcpp_cv_func_sincosl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_sincosl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -13566,14 +13718,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 13570 "configure"
+#line 13722 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  sincosl(0, 0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:13577: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:13729: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_sincosl_use=yes
 else
@@ -13600,12 +13752,12 @@ fi
     for ac_func in sincosl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:13604: checking for $ac_func" >&5
+echo "configure:13756: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 13609 "configure"
+#line 13761 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -13628,7 +13780,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:13632: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:13784: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -13655,7 +13807,7 @@ done
   else
     
   echo $ac_n "checking for _sincosl declaration""... $ac_c" 1>&6
-echo "configure:13659: checking for _sincosl declaration" >&5
+echo "configure:13811: checking for _sincosl declaration" >&5
   if test x${glibcpp_cv_func__sincosl_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__sincosl_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -13670,14 +13822,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 13674 "configure"
+#line 13826 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  _sincosl(0, 0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:13681: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:13833: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__sincosl_use=yes
 else
@@ -13704,12 +13856,12 @@ fi
       for ac_func in _sincosl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:13708: checking for $ac_func" >&5
+echo "configure:13860: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 13713 "configure"
+#line 13865 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -13732,7 +13884,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:13736: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:13888: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -13762,7 +13914,7 @@ done
   
   
   echo $ac_n "checking for finitel declaration""... $ac_c" 1>&6
-echo "configure:13766: checking for finitel declaration" >&5
+echo "configure:13918: checking for finitel declaration" >&5
   if test x${glibcpp_cv_func_finitel_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_finitel_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -13777,14 +13929,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 13781 "configure"
+#line 13933 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  finitel(0);
 ; return 0; }
 EOF
-if { (eval echo configure:13788: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:13944: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_finitel_use=yes
 else
@@ -13811,12 +13967,12 @@ fi
     for ac_func in finitel
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:13815: checking for $ac_func" >&5
+echo "configure:13971: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 13820 "configure"
+#line 13976 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -13839,7 +13995,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:13843: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:13999: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -13866,7 +14022,7 @@ done
   else
     
   echo $ac_n "checking for _finitel declaration""... $ac_c" 1>&6
-echo "configure:13870: checking for _finitel declaration" >&5
+echo "configure:14026: checking for _finitel declaration" >&5
   if test x${glibcpp_cv_func__finitel_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func__finitel_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -13881,14 +14037,18 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 13885 "configure"
+#line 14041 "configure"
 #include "confdefs.h"
 #include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     
 int main() {
  _finitel(0);
 ; return 0; }
 EOF
-if { (eval echo configure:13892: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:14052: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__finitel_use=yes
 else
@@ -13915,12 +14075,12 @@ fi
       for ac_func in _finitel
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:13919: checking for $ac_func" >&5
+echo "configure:14079: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 13924 "configure"
+#line 14084 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -13943,7 +14103,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:13947: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:14107: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -13974,7 +14134,7 @@ done
         
     
   echo $ac_n "checking for _float trig functions""... $ac_c" 1>&6
-echo "configure:13978: checking for _float trig functions" >&5
+echo "configure:14138: checking for _float trig functions" >&5
   if eval "test \"`echo '$''{'glibcpp_cv_func__float_trig_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -13988,7 +14148,7 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
     cat > conftest.$ac_ext <<EOF
-#line 13992 "configure"
+#line 14152 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
@@ -13997,7 +14157,7 @@ int main() {
                                           _coshf _sinhf _tanhf; do echo "$x (0);"; done` 
 ; return 0; }
 EOF
-if { (eval echo configure:14001: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:14161: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__float_trig_use=yes
 else
@@ -14023,12 +14183,12 @@ fi
                                           _coshf _sinhf _tanhf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:14027: checking for $ac_func" >&5
+echo "configure:14187: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 14032 "configure"
+#line 14192 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -14051,7 +14211,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:14055: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:14215: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -14079,7 +14239,7 @@ done
 
   
   echo $ac_n "checking for _float round functions""... $ac_c" 1>&6
-echo "configure:14083: checking for _float round functions" >&5
+echo "configure:14243: checking for _float round functions" >&5
   if eval "test \"`echo '$''{'glibcpp_cv_func__float_round_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -14093,14 +14253,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
     cat > conftest.$ac_ext <<EOF
-#line 14097 "configure"
+#line 14257 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  `for x in _ceilf _floorf; do echo "$x (0);"; done` 
 ; return 0; }
 EOF
-if { (eval echo configure:14104: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:14264: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__float_round_use=yes
 else
@@ -14124,12 +14284,12 @@ fi
     for ac_func in _ceilf _floorf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:14128: checking for $ac_func" >&5
+echo "configure:14288: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 14133 "configure"
+#line 14293 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -14152,7 +14312,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:14156: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:14316: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -14181,7 +14341,7 @@ done
 
     
   echo $ac_n "checking for _long double trig functions""... $ac_c" 1>&6
-echo "configure:14185: checking for _long double trig functions" >&5
+echo "configure:14345: checking for _long double trig functions" >&5
   if eval "test \"`echo '$''{'glibcpp_cv_func__long_double_trig_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -14195,7 +14355,7 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
     cat > conftest.$ac_ext <<EOF
-#line 14199 "configure"
+#line 14359 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
@@ -14204,7 +14364,7 @@ int main() {
                                           _coshl _sinhl _tanhl; do echo "$x (0);"; done` 
 ; return 0; }
 EOF
-if { (eval echo configure:14208: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:14368: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__long_double_trig_use=yes
 else
@@ -14230,12 +14390,12 @@ fi
                                           _coshl _sinhl _tanhl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:14234: checking for $ac_func" >&5
+echo "configure:14394: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 14239 "configure"
+#line 14399 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -14258,7 +14418,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:14262: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:14422: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -14286,7 +14446,7 @@ done
 
   
   echo $ac_n "checking for _long double round functions""... $ac_c" 1>&6
-echo "configure:14290: checking for _long double round functions" >&5
+echo "configure:14450: checking for _long double round functions" >&5
   if eval "test \"`echo '$''{'glibcpp_cv_func__long_double_round_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -14300,14 +14460,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
     cat > conftest.$ac_ext <<EOF
-#line 14304 "configure"
+#line 14464 "configure"
 #include "confdefs.h"
 #include <math.h>
 int main() {
  `for x in _ceill _floorl; do echo "$x (0);"; done` 
 ; return 0; }
 EOF
-if { (eval echo configure:14311: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:14471: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func__long_double_round_use=yes
 else
@@ -14331,12 +14491,12 @@ fi
     for ac_func in _ceill _floorl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:14335: checking for $ac_func" >&5
+echo "configure:14495: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 14340 "configure"
+#line 14500 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -14359,7 +14519,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:14363: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:14523: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -14391,7 +14551,7 @@ done
 
   
     echo $ac_n "checking for main in -lm""... $ac_c" 1>&6
-echo "configure:14395: checking for main in -lm" >&5
+echo "configure:14555: checking for main in -lm" >&5
 ac_lib_var=`echo m'_'main | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -14399,14 +14559,14 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lm  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 14403 "configure"
+#line 14563 "configure"
 #include "confdefs.h"
 
 int main() {
 main()
 ; return 0; }
 EOF
-if { (eval echo configure:14410: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:14570: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -14436,12 +14596,12 @@ fi
   for ac_func in nan hypot hypotf atan2f expf copysignf
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:14440: checking for $ac_func" >&5
+echo "configure:14600: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 14445 "configure"
+#line 14605 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -14464,7 +14624,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:14468: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:14628: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -14498,12 +14658,12 @@ done
     for ac_func in hypotl signbitl
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:14502: checking for $ac_func" >&5
+echo "configure:14662: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 14507 "configure"
+#line 14667 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -14526,7 +14686,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:14530: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:14690: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -14560,7 +14720,7 @@ done
   
 
   echo $ac_n "checking for GNU C++ __complex__ support""... $ac_c" 1>&6
-echo "configure:14564: checking for GNU C++ __complex__ support" >&5
+echo "configure:14724: checking for GNU C++ __complex__ support" >&5
   if eval "test \"`echo '$''{'glibcpp_cv_complex'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -14574,7 +14734,7 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
     cat > conftest.$ac_ext <<EOF
-#line 14578 "configure"
+#line 14738 "configure"
 #include "confdefs.h"
 struct dcomplex { __complex__ double x; }; \
                     dcomplex f(const dcomplex& x) { return dcomplex(x); }
@@ -14583,7 +14743,7 @@ int main() {
                      dcomplex x; f(x); 
 ; return 0; }
 EOF
-if { (eval echo configure:14587: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:14747: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_complex=ok
 else
@@ -14613,7 +14773,7 @@ EOF
   fi
 
   echo $ac_n "checking for GNU C++ __complex__ float support""... $ac_c" 1>&6
-echo "configure:14617: checking for GNU C++ __complex__ float support" >&5
+echo "configure:14777: checking for GNU C++ __complex__ float support" >&5
   if eval "test \"`echo '$''{'glibcpp_cv_float_complex'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -14646,14 +14806,14 @@ cross_compiling=$ac_cv_prog_cxx_cross
       };
 EOB
     cat > conftest.$ac_ext <<EOF
-#line 14650 "configure"
+#line 14810 "configure"
 #include "confdefs.h"
 #include "conftest.h"
 int main() {
 
 ; return 0; }
 EOF
-if { (eval echo configure:14657: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:14817: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_float_complex=ok
 else
@@ -14685,16 +14845,16 @@ EOF
   
 
       echo $ac_n "checking for mbstate_t""... $ac_c" 1>&6
-echo "configure:14689: checking for mbstate_t" >&5
+echo "configure:14849: checking for mbstate_t" >&5
   cat > conftest.$ac_ext <<EOF
-#line 14691 "configure"
+#line 14851 "configure"
 #include "confdefs.h"
 #include <wchar.h>
 int main() {
 mbstate_t teststate;
 ; return 0; }
 EOF
-if { (eval echo configure:14698: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:14858: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   have_mbstate_t=yes
 else
@@ -14716,17 +14876,17 @@ EOF
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
-echo "configure:14720: checking for $ac_hdr" >&5
+echo "configure:14880: checking for $ac_hdr" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 14725 "configure"
+#line 14885 "configure"
 #include "confdefs.h"
 #include <$ac_hdr>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:14730: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:14890: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -14755,17 +14915,17 @@ done
 
   ac_safe=`echo "wctype.h" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for wctype.h""... $ac_c" 1>&6
-echo "configure:14759: checking for wctype.h" >&5
+echo "configure:14919: checking for wctype.h" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 14764 "configure"
+#line 14924 "configure"
 #include "confdefs.h"
 #include <wctype.h>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:14769: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:14929: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -14792,16 +14952,16 @@ fi
      && test x"$enable_c_mbchar" != xno; then
       
             echo $ac_n "checking for WCHAR_MIN and WCHAR_MAX""... $ac_c" 1>&6
-echo "configure:14796: checking for WCHAR_MIN and WCHAR_MAX" >&5
+echo "configure:14956: checking for WCHAR_MIN and WCHAR_MAX" >&5
     cat > conftest.$ac_ext <<EOF
-#line 14798 "configure"
+#line 14958 "configure"
 #include "confdefs.h"
 #include <wchar.h>
 int main() {
 int i = WCHAR_MIN; int j = WCHAR_MAX;
 ; return 0; }
 EOF
-if { (eval echo configure:14805: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:14965: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   has_wchar_minmax=yes
 else
@@ -14814,9 +14974,9 @@ rm -f conftest*
     echo "$ac_t""$has_wchar_minmax" 1>&6
     
             echo $ac_n "checking for WEOF""... $ac_c" 1>&6
-echo "configure:14818: checking for WEOF" >&5
+echo "configure:14978: checking for WEOF" >&5
     cat > conftest.$ac_ext <<EOF
-#line 14820 "configure"
+#line 14980 "configure"
 #include "confdefs.h"
 
       #include <wchar.h>
@@ -14825,7 +14985,7 @@ int main() {
 wint_t i = WEOF;
 ; return 0; }
 EOF
-if { (eval echo configure:14829: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:14989: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   has_weof=yes
 else
@@ -14841,12 +15001,12 @@ rm -f conftest*
     wcsrtombs mbsrtowcs
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:14845: checking for $ac_func" >&5
+echo "configure:15005: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 14850 "configure"
+#line 15010 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -14869,7 +15029,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:14873: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:15033: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -14896,7 +15056,7 @@ done
 
   
     echo $ac_n "checking for ISO C99 wchar_t support""... $ac_c" 1>&6
-echo "configure:14900: checking for ISO C99 wchar_t support" >&5
+echo "configure:15060: checking for ISO C99 wchar_t support" >&5
     if test x"$has_weof" = xyes && test x"$has_wchar_minmax" = xyes \
        && test x"$ac_wfuncs" = xyes; then
       ac_isoC99_wchar_t=yes
@@ -14907,17 +15067,17 @@ echo "configure:14900: checking for ISO C99 wchar_t support" >&5
   
             ac_safe=`echo "iconv.h" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for iconv.h""... $ac_c" 1>&6
-echo "configure:14911: checking for iconv.h" >&5
+echo "configure:15071: checking for iconv.h" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 14916 "configure"
+#line 15076 "configure"
 #include "confdefs.h"
 #include <iconv.h>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:14921: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:15081: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -14941,17 +15101,17 @@ fi
 
     ac_safe=`echo "langinfo.h" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for langinfo.h""... $ac_c" 1>&6
-echo "configure:14945: checking for langinfo.h" >&5
+echo "configure:15105: checking for langinfo.h" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 14950 "configure"
+#line 15110 "configure"
 #include "confdefs.h"
 #include <langinfo.h>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:14955: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:15115: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -14975,7 +15135,7 @@ fi
 
 
         echo $ac_n "checking for iconv in -liconv""... $ac_c" 1>&6
-echo "configure:14979: checking for iconv in -liconv" >&5
+echo "configure:15139: checking for iconv in -liconv" >&5
 ac_lib_var=`echo iconv'_'iconv | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -14983,7 +15143,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-liconv  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 14987 "configure"
+#line 15147 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -14994,7 +15154,7 @@ int main() {
 iconv()
 ; return 0; }
 EOF
-if { (eval echo configure:14998: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:15158: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -15020,12 +15180,12 @@ fi
     for ac_func in iconv_open iconv_close iconv nl_langinfo
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:15024: checking for $ac_func" >&5
+echo "configure:15184: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 15029 "configure"
+#line 15189 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -15048,7 +15208,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:15052: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:15212: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -15078,7 +15238,7 @@ done
     LIBS="$ac_save_LIBS"
 
     echo $ac_n "checking for XPG2 wchar_t support""... $ac_c" 1>&6
-echo "configure:15082: checking for XPG2 wchar_t support" >&5
+echo "configure:15242: checking for XPG2 wchar_t support" >&5
     if test x"$ac_has_iconv_h" = xyes && test x"$ac_has_langinfo_h" = xyes \
        && test x"$ac_XPG2funcs" = xyes; then
       ac_XPG2_wchar_t=yes
@@ -15088,7 +15248,7 @@ echo "configure:15082: checking for XPG2 wchar_t support" >&5
     echo "$ac_t""$ac_XPG2_wchar_t" 1>&6
   
             echo $ac_n "checking for enabled wchar_t specializations""... $ac_c" 1>&6
-echo "configure:15092: checking for enabled wchar_t specializations" >&5
+echo "configure:15252: checking for enabled wchar_t specializations" >&5
     if test x"$ac_isoC99_wchar_t" = xyes \
        && test x"$ac_XPG2_wchar_t" = xyes; then
       libinst_wstring_la="libinst-wstring.la"
@@ -15115,12 +15275,12 @@ EOF
   for ac_func in strtof
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:15119: checking for $ac_func" >&5
+echo "configure:15279: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 15124 "configure"
+#line 15284 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -15143,7 +15303,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:15147: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:15307: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -15169,7 +15329,7 @@ done
 
   
   echo $ac_n "checking for strtold declaration""... $ac_c" 1>&6
-echo "configure:15173: checking for strtold declaration" >&5
+echo "configure:15333: checking for strtold declaration" >&5
   if test x${glibcpp_cv_func_strtold_use+set} != xset; then
     if eval "test \"`echo '$''{'glibcpp_cv_func_strtold_use'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -15184,14 +15344,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
 
       cat > conftest.$ac_ext <<EOF
-#line 15188 "configure"
+#line 15348 "configure"
 #include "confdefs.h"
 #include <stdlib.h>
 int main() {
  strtold(0, 0);
 ; return 0; }
 EOF
-if { (eval echo configure:15195: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:15355: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   glibcpp_cv_func_strtold_use=yes
 else
@@ -15217,12 +15377,12 @@ fi
     for ac_func in strtold
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:15221: checking for $ac_func" >&5
+echo "configure:15381: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 15226 "configure"
+#line 15386 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -15245,7 +15405,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:15249: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:15409: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -15276,7 +15436,7 @@ done
 
 
   cat > conftest.$ac_ext <<EOF
-#line 15280 "configure"
+#line 15440 "configure"
 #include "confdefs.h"
 
 #include <setjmp.h>
@@ -15285,7 +15445,7 @@ int main() {
 sigjmp_buf env; while (! sigsetjmp (env, 1)) siglongjmp (env, 1);
 ; return 0; }
 EOF
-if { (eval echo configure:15289: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:15449: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   cat >> confdefs.h <<\EOF
 #define HAVE_SIGSETJMP 1
@@ -15301,17 +15461,17 @@ rm -f conftest*
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
-echo "configure:15305: checking for $ac_hdr" >&5
+echo "configure:15465: checking for $ac_hdr" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 15310 "configure"
+#line 15470 "configure"
 #include "confdefs.h"
 #include <$ac_hdr>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:15315: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:15475: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -15340,12 +15500,12 @@ done
 for ac_func in getpagesize
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:15344: checking for $ac_func" >&5
+echo "configure:15504: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 15349 "configure"
+#line 15509 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -15368,7 +15528,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:15372: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:15532: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -15393,7 +15553,7 @@ fi
 done
 
 echo $ac_n "checking for working mmap""... $ac_c" 1>&6
-echo "configure:15397: checking for working mmap" >&5
+echo "configure:15557: checking for working mmap" >&5
 if eval "test \"`echo '$''{'ac_cv_func_mmap_fixed_mapped'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -15401,7 +15561,7 @@ else
   ac_cv_func_mmap_fixed_mapped=no
 else
   cat > conftest.$ac_ext <<EOF
-#line 15405 "configure"
+#line 15565 "configure"
 #include "confdefs.h"
 
 /* Thanks to Mike Haertel and Jim Avera for this test.
@@ -15541,7 +15701,7 @@ main()
 }
 
 EOF
-if { (eval echo configure:15545: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:15705: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   ac_cv_func_mmap_fixed_mapped=yes
 else
@@ -15649,17 +15809,17 @@ rm -f confcache
 
   ac_safe=`echo "locale.h" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for locale.h""... $ac_c" 1>&6
-echo "configure:15653: checking for locale.h" >&5
+echo "configure:15813: checking for locale.h" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 15658 "configure"
+#line 15818 "configure"
 #include "confdefs.h"
 #include <locale.h>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:15663: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:15823: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -15677,19 +15837,19 @@ if eval "test \"`echo '$ac_cv_header_'$ac_safe`\" = yes"; then
   echo "$ac_t""yes" 1>&6
   
     echo $ac_n "checking for LC_MESSAGES""... $ac_c" 1>&6
-echo "configure:15681: checking for LC_MESSAGES" >&5
+echo "configure:15841: checking for LC_MESSAGES" >&5
 if eval "test \"`echo '$''{'ac_cv_val_LC_MESSAGES'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 15686 "configure"
+#line 15846 "configure"
 #include "confdefs.h"
 #include <locale.h>
 int main() {
 return LC_MESSAGES
 ; return 0; }
 EOF
-if { (eval echo configure:15693: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:15853: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   ac_cv_val_LC_MESSAGES=yes
 else
@@ -15734,13 +15894,13 @@ glibcpp_toolexecdir=no
 glibcpp_toolexeclibdir=no
 
 echo $ac_n "checking for interface version number""... $ac_c" 1>&6
-echo "configure:15738: checking for interface version number" >&5
+echo "configure:15898: checking for interface version number" >&5
 libstdcxx_interface=$INTERFACE
 echo "$ac_t""$libstdcxx_interface" 1>&6
 
 # Process the option --with-gxx-include-dir=<path to include-files directory>
 echo $ac_n "checking for --with-gxx-include-dir""... $ac_c" 1>&6
-echo "configure:15744: checking for --with-gxx-include-dir" >&5
+echo "configure:15904: checking for --with-gxx-include-dir" >&5
 # Check whether --with-gxx-include-dir or --without-gxx-include-dir was given.
 if test "${with_gxx_include_dir+set}" = set; then
   withval="$with_gxx_include_dir"
@@ -15764,7 +15924,7 @@ echo "$ac_t""$gxx_include_dir" 1>&6
 
 # Process the option "--enable-version-specific-runtime-libs"
 echo $ac_n "checking for --enable-version-specific-runtime-libs""... $ac_c" 1>&6
-echo "configure:15768: checking for --enable-version-specific-runtime-libs" >&5
+echo "configure:15928: checking for --enable-version-specific-runtime-libs" >&5
 # Check whether --enable-version-specific-runtime-libs or --disable-version-specific-runtime-libs was given.
 if test "${enable_version_specific_runtime_libs+set}" = set; then
   enableval="$enable_version_specific_runtime_libs"
@@ -15804,7 +15964,7 @@ if test x"$glibcpp_toolexecdir" = x"no"; then
 fi
 
 echo $ac_n "checking for install location""... $ac_c" 1>&6
-echo "configure:15808: checking for install location" >&5
+echo "configure:15968: checking for install location" >&5
 echo "$ac_t""$gxx_include_dir" 1>&6
 
 
