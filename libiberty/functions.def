@@ -63,8 +63,8 @@ DEFVAR(sys_siglist, char *sys_siglist[], sys_siglist[0] = 0)
    environment, and to generate an entry NEED_<funcname> in config.h
    if they are not found. */
 
-DEFFUNC(strerror, char*, (), NOTHING)
+DEFFUNC(strerror, char*, (errnoval), int errnoval)
 DEFFUNC(psignal, void, (signo, message), unsigned signo AND char *message)
 DEFFUNC(basename, char *, (name), CONST char *name)
 DEFFUNC(on_exit, void, (f, arg), void (*f)() AND char *arg)
-DEFFUNC(strsignal, char *, (), NOTHING)
+DEFFUNC(strsignal, const char *, (signo), int signo)
