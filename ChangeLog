@@ -1,3 +1,14 @@
+2004-05-21  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.tpl: Whenever a recursive target is defined, wrap
+	it in a special @if/@endif block, and prepare its maybe
+	dependency in the @if/@endif block
+	* configure.in: Instead of writing maybe dependencies, remove
+	the @if/@endif statements, and remove the @if/@endif blocks
+	that remain.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
 2004-05-20  Janis Johnson  <janis187@us.ibm.com>
 
 	* MAINTAINERS (Various Maintainers): Add myself for compat testsuite.

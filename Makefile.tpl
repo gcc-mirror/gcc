@@ -697,6 +697,8 @@ TAGS: do-TAGS
 [+ FOR build_modules +]
 .PHONY: configure-build-[+module+] maybe-configure-build-[+module+]
 maybe-configure-build-[+module+]:
+@if build-[+module+]
+maybe-configure-build-[+module+]: configure-build-[+module+]
 configure-build-[+module+]:
 	@test ! -f $(BUILD_SUBDIR)/[+module+]/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(BUILD_SUBDIR)/[+module+] ; \
@@ -757,13 +759,17 @@ configure-build-[+module+]:
 	  $(BUILD_CONFIGARGS) $${srcdiroption} \
 	  --with-build-subdir="$(BUILD_SUBDIR)" \
 	  || exit 1
+@endif build-[+module+]
 
 .PHONY: all-build-[+module+] maybe-all-build-[+module+]
 maybe-all-build-[+module+]:
+@if build-[+module+]
+maybe-all-build-[+module+]: all-build-[+module+]
 all-build-[+module+]: configure-build-[+module+]
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	(cd $(BUILD_SUBDIR)/[+module+] && $(MAKE) all)
+@endif build-[+module+]
 [+ ENDFOR build_modules +]
 
 # --------------------------------------
@@ -772,6 +778,8 @@ all-build-[+module+]: configure-build-[+module+]
 [+ FOR host_modules +]
 .PHONY: configure-[+module+] maybe-configure-[+module+]
 maybe-configure-[+module+]:
+@if [+module+]
+maybe-configure-[+module+]: configure-[+module+]
 configure-[+module+]:
 	@test ! -f [+module+]/Makefile || exit 0; \
 	[ -d [+module+] ] || mkdir [+module+]; \
@@ -809,9 +817,12 @@ configure-[+module+]:
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
 	  || exit 1
+@endif [+module+]
 
 .PHONY: all-[+module+] maybe-all-[+module+]
 maybe-all-[+module+]:
+@if [+module+]
+maybe-all-[+module+]: all-[+module+]
 all-[+module+]: configure-[+module+]
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -820,9 +831,12 @@ all-[+module+]: configure-[+module+]
 	  IF with_x 
 	    +] $(X11_FLAGS_TO_PASS)[+ 
 	  ENDIF with_x +] all)
+@endif [+module+]
 
 .PHONY: check-[+module+] maybe-check-[+module+]
 maybe-check-[+module+]:
+@if [+module+]
+maybe-check-[+module+]: check-[+module+]
 [+ IF no_check +]
 check-[+module+]:
 [+ ELIF no_check_cross +]
@@ -847,9 +861,12 @@ check-[+module+]:
 	    +] $(X11_FLAGS_TO_PASS)[+ 
 	  ENDIF with_x +] check)
 [+ ENDIF no_check +]
+@endif [+module+]
 
 .PHONY: install-[+module+] maybe-install-[+module+]
 maybe-install-[+module+]:
+@if [+module+]
+maybe-install-[+module+]: install-[+module+]
 [+ IF no_install +]
 install-[+module+]:
 [+ ELSE install +]
@@ -862,11 +879,14 @@ install-[+module+]: installdirs
 	    +] $(X11_FLAGS_TO_PASS)[+ 
 	  ENDIF with_x +] install)
 [+ ENDIF no_install +]
+@endif [+module+]
 
 # Other targets (info, dvi, etc.)
 [+ FOR recursive_targets +]
 .PHONY: maybe-[+make_target+]-[+module+] [+make_target+]-[+module+]
 maybe-[+make_target+]-[+module+]:
+@if [+module+]
+maybe-[+make_target+]-[+module+]: [+make_target+]-[+module+]
 [+ IF (match-value? = "missing" (get "make_target") ) +]
 # [+module+] doesn't support [+make_target+].
 [+make_target+]-[+module+]:
@@ -891,6 +911,7 @@ maybe-[+make_target+]-[+module+]:
 	          [+make_target+]) \
 	  || exit 1
 [+ ENDIF +]
+@endif [+module+]
 [+ ENDFOR recursive_targets +]
 [+ ENDFOR host_modules +]
 
@@ -900,6 +921,8 @@ maybe-[+make_target+]-[+module+]:
 [+ FOR target_modules +]
 .PHONY: configure-target-[+module+] maybe-configure-target-[+module+]
 maybe-configure-target-[+module+]:
+@if target-[+module+]
+maybe-configure-target-[+module+]: configure-target-[+module+]
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 $(TARGET_SUBDIR)/[+module+]/multilib.out: multilib.out
@@ -974,9 +997,12 @@ ENDIF raw_cxx +]
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
 	  --with-target-subdir="$(TARGET_SUBDIR)" \
 	  || exit 1
+@endif target-[+module+]
 
 .PHONY: all-target-[+module+] maybe-all-target-[+module+]
 maybe-all-target-[+module+]:
+@if target-[+module+]
+maybe-all-target-[+module+]: all-target-[+module+]
 all-target-[+module+]: configure-target-[+module+]
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -987,9 +1013,12 @@ all-target-[+module+]: configure-target-[+module+]
 	  +] 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)' [+ 
 	    ENDIF raw_cxx 
 	  +] all)
+@endif target-[+module+]
 
 .PHONY: check-target-[+module+] maybe-check-target-[+module+]
 maybe-check-target-[+module+]:
+@if target-[+module+]
+maybe-check-target-[+module+]: check-target-[+module+]
 [+ IF no_check +]
 # Dummy target for uncheckable module.
 check-target-[+module+]:
@@ -1005,9 +1034,12 @@ check-target-[+module+]:
 	    ENDIF raw_cxx 
 	  +] check)
 [+ ENDIF no_check +]
+@endif target-[+module+]
 
 .PHONY: install-target-[+module+] maybe-install-target-[+module+]
 maybe-install-target-[+module+]:
+@if target-[+module+]
+maybe-install-target-[+module+]: install-target-[+module+]
 [+ IF no_install +]
 # Dummy target for uninstallable.
 install-target-[+module+]:
@@ -1019,11 +1051,14 @@ install-target-[+module+]: installdirs
 	(cd $(TARGET_SUBDIR)/[+module+] && \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS) install)
 [+ ENDIF no_install +]
+@endif target-[+module+]
 
 # Other targets (info, dvi, etc.)
 [+ FOR recursive_targets +]
 .PHONY: maybe-[+make_target+]-target-[+module+] [+make_target+]-target-[+module+]
 maybe-[+make_target+]-target-[+module+]:
+@if target-[+module+]
+maybe-[+make_target+]-target-[+module+]: [+make_target+]-target-[+module+]
 [+ IF (match-value? = "missing" (get "make_target") ) +]
 # [+module+] doesn't support [+make_target+].
 [+make_target+]-target-[+module+]:
@@ -1048,6 +1083,7 @@ maybe-[+make_target+]-target-[+module+]:
 	          [+make_target+]) \
 	  || exit 1
 [+ ENDIF +]
+@endif target-[+module+]
 [+ ENDFOR recursive_targets +]
 [+ ENDFOR target_modules +]
 
@@ -1067,6 +1103,8 @@ maybe-[+make_target+]-target-[+module+]:
 # We must skip configuring if toplevel bootstrap is going.
 .PHONY: configure-gcc maybe-configure-gcc
 maybe-configure-gcc:
+@if gcc
+maybe-configure-gcc: configure-gcc
 configure-gcc:
 	@test ! -f gcc/Makefile || exit 0; \
 	[ -f stage_last ] && exit 0; \
@@ -1108,12 +1146,15 @@ configure-gcc:
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
 	  || exit 1
+@endif gcc
 
 # Don't 'make all' in gcc if it's already been made by 'bootstrap'; that
 # causes trouble.  This wart will be fixed eventually by moving
 # the bootstrap behavior to this file.
 .PHONY: all-gcc maybe-all-gcc
 maybe-all-gcc:
+@if gcc
+maybe-all-gcc: all-gcc
 all-gcc: configure-gcc
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -1126,6 +1167,7 @@ all-gcc: configure-gcc
 	  $(SET_LIB_PATH) \
 	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) all); \
 	fi
+@endif gcc
 
 # Building GCC uses some tools for rebuilding "source" files
 # like texinfo, bison/byacc, etc.  So we must depend on those.
@@ -1203,6 +1245,8 @@ cross: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
 
 .PHONY: check-gcc maybe-check-gcc
 maybe-check-gcc:
+@if gcc
+maybe-check-gcc: check-gcc
 check-gcc:
 	@if [ -f ./gcc/Makefile ] ; then \
 	  r=`${PWD_COMMAND}`; export r; \
@@ -1226,9 +1270,12 @@ check-gcc-c++:
 
 .PHONY: check-c++
 check-c++: check-target-libstdc++-v3 check-gcc-c++
+@endif gcc
 
 .PHONY: install-gcc maybe-install-gcc
 maybe-install-gcc:
+@if gcc
+maybe-install-gcc: install-gcc
 install-gcc:
 	@if [ -f ./gcc/Makefile ] ; then \
 	  r=`${PWD_COMMAND}`; export r; \
@@ -1238,6 +1285,7 @@ install-gcc:
 	else \
 	  true; \
 	fi
+@endif gcc
 
 # Install the gcc headers files, but not the fixed include files,
 # which Cygnus is not allowed to distribute.  This rule is very
@@ -1264,6 +1312,8 @@ gcc-no-fixedincludes:
 [+ FOR recursive_targets +]
 .PHONY: maybe-[+make_target+]-gcc [+make_target+]-gcc
 maybe-[+make_target+]-gcc:
+@if gcc
+maybe-[+make_target+]-gcc: [+make_target+]-gcc
 [+make_target+]-gcc: [+
   FOR depend +]\
     [+depend+]-gcc [+
@@ -1283,6 +1333,7 @@ maybe-[+make_target+]-gcc:
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 	          [+make_target+]) \
 	  || exit 1
+@endif gcc
 
 [+ ENDFOR recursive_targets +]
 
@@ -1711,10 +1762,6 @@ all-target-winsup: maybe-all-target-libiberty maybe-all-target-libtermcap
 configure-target-gperf: $(ALL_GCC_CXX)
 all-target-gperf: maybe-all-target-libiberty maybe-all-target-libstdc++-v3
 configure-target-qthreads: $(ALL_GCC_C)
-
-# Dependencies of maybe-foo on foo.  These are used because, for example,
-# all-gcc only depends on all-gas if gas is present and being configured.
-@maybe_dependencies@
 
 # Serialization dependencies.  Host configures don't work well in parallel to
 # each other, due to contention over config.cache.  Target configures and 
