@@ -1,3 +1,8 @@
+Sun Aug 24 17:22:21 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* Makefile.in (install-info): Don't cd into srcdir.  Add srcdir to
+	filenames.  Use sed to extract base filename for install.
+
 Sat Aug 23 18:19:40 1997  John F. Carr  <jfc@mit.edu>
 
 	* unroll.c (find_splittable_givs): Only share if two givs have the

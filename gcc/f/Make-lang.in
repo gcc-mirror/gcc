@@ -435,10 +435,14 @@ f77.install-common:
 	  fi ; \
 	else true; fi
 
+# $(INSTALL_DATA) might be a relative pathname, so we can't cd into srcdir
+# to do the install.  The sed rule was copied from stmp-int-hdrs.
 f77.install-info:
 	-rm -f $(infodir)/g77.info*
-	cd $(srcdir)/f; for f in g77.info*; \
-	do $(INSTALL_DATA) $$f $(infodir)/$$f; done
+	for f in $(srcdir)/f/g77.info*; do \
+	    realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
+	    $(INSTALL_DATA) $$f $(infodir)/$$realfile; \
+	done
 	-chmod a-x $(infodir)/g77.info*
 
 f77.install-man: $(srcdir)/f/g77.1
