@@ -1,3 +1,94 @@
+2004-09-06  Nick Clifton  <nickc@redhat.com>
+
+	* config.sub: Import latest version from master repository.
+	* config.guess: Likewise.
+	This includes these changes:
+	
+	2004-08-27  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config.sub: Handle crisv32, alias etraxfs.
+	* config.guess (crisv32:Linux:*:*): Handle.
+
+	2004-08-13  Brad Smith  <brad@comstyle.com>
+
+	* config.guess (*:OpenBSD:*:*): Remove defunct MIPS machines.
+	(sgi:OpenBSD:*:*): Emit mips64, not mipseb.
+
+	2004-08-11  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* config.guess (*:Darwin:*:*): If uname -p reports "unknown",
+	assume the processor is a powerpc.  This is because coreutils
+	uname (at least versions 4.5.7 through 5.2.1) outputs "unknown"
+	in this case, due to a MacOS X bug that causes
+	sysctl ((int[]) {CTL_HW, HW_MACHINE_ARCH}, 2, buffer, &bufsize, 0, 0)
+	to return a negative number.
+	Problem reported by Petter Reinholdtsen in:
+	http://lists.gnu.org/archive/html/bug-gnu-utils/2003-02/msg00201.html
+
+	2004-07-19  Ben Elliston  <bje@gnu.org>
+
+	* config.guess (S7501:*:4.0:3.0): Handle NCR System V UNIX machine.
+
+	2004-06-24  Ben Elliston  <bje@gnu.org>
+
+	* config.guess: Update copyright years.
+	* config.sub: Likewise.
+
+	2004-06-22  Robert Millan  <robertmh@gnu.org>
+
+	* config.guess (*:FreeBSD:*:*): Remove check for glibc (unneeded
+	since GNU/kFreeBSD systems match *:GNU/*:*:* instead).
+
+	2004-06-22  Stanley F. Quayle <stan@stanq.com>
+
+	* config.guess (*:*VMS:*:*): New entry. Replaces
+	Alpha:OpenVMS:*. Recognize and advertise all VMS flavors as dec
+	manufacturer.
+
+	2004-06-22  Ben Elliston  <bje@gnu.org>
+
+	* config.guess: Cray fixes from Wendy Palm <wendyp@cray.com>.
+	* config.sub: Likewise.
+
+	2004-06-22  Ben Elliston  <bje@gnu.org>
+
+	Reported by Hans-Peter Nilsson <hp@bitrange.com>:
+	* config.sub: Correctly handle mmix-knuth and mmix-knuth-mmixware.
+
+	2004-06-11  Ben Elliston  <bje@gnu.org>
+
+	* config.guess (pegasos:OpenBSD:*:*): Remove.
+
+	2004-06-11  Ben Elliston  <bje@gnu.org>
+
+	From Wouter Verhelst <wouter@grep.be>:
+	* config.guess (M68*:*:R3V[5678]:*): Detect R3V8.
+
+	2004-06-11  Ben Elliston  <bje@gnu.org>
+
+	* config.guess (luna88k:OpenBSD:*:*): New.
+
+	2004-03-12  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
+
+	* config.guess (m32r*:Linux:*:*): New case.
+	* config.sub: Handle m32rle.
+
+	2004-03-12  Ben Elliston  <bje@wasabisystems.com>
+
+	From Jens Petersen  <petersen@redhat.com>:
+	* config.sub: Handle sparcv8.
+
+	2004-03-03  Ben Elliston  <bje@wasabisystems.com>
+
+	From Tom Smith <smith@cag.lkg.hp.com>:
+	* config.guess: Version suffixes are equally significant on Tru64
+	V4.* and V5.*, so do not ignore them on V5.*.  Handle a version
+	prefix of "P" (patched kernel).
+
+	2004-02-23  Tal Agmon  <Tal.Agmon@nsc.com>
+
+	* config.sub: Add support for National Semiconductor CRX target.
+
 2004-09-03  Janis Johnson  <janis187@us.ibm.com>
 
 	* MAINTAINERS (Various Maintainers): Remove myself as web page
