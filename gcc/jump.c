@@ -1,5 +1,5 @@
 /* Optimize jump instructions, for GNU compiler.
-   Copyright (C) 1987, 88, 89, 91, 92, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 91, 92, 93, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2789,22 +2789,22 @@ comparison_dominates_p (code1, code2)
       break;
 
     case LT:
-      if (code2 == LE)
+      if (code2 == LE || code2 == NE)
 	return 1;
       break;
 
     case GT:
-      if (code2 == GE)
+      if (code2 == GE || code2 == NE)
 	return 1;
       break;
 
     case LTU:
-      if (code2 == LEU)
+      if (code2 == LEU || code2 == NE)
 	return 1;
       break;
 
     case GTU:
-      if (code2 == GEU)
+      if (code2 == GEU || code2 == NE)
 	return 1;
       break;
     }
