@@ -1,5 +1,21 @@
 2002-10-16  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/bits/locale_facets.h (__timepunct::__timepunct): Allocate
+	_M_name_timepunct.
+	(__timepunct::~__timepunct): Deallocate, remove specialization
+	declarations.
+	(messages::messages): Allocate _M_name_messages.
+	(messages::~messages): Deallocate.
+	(messages_byname): Same.
+	* config/locale/gnu/time_members.cc (__timepunct::~__timepunct):
+	Remove.
+	* config/locale/generic/time_members.cc (__timepunct::~__timepunct):
+	Remove.
+
+	* docs/html/install.html: Add es_MX, en_PH to required locales list.
+
+2002-10-16  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* config/linker-map.gnu: Add exports for codecvt constructors
 	where size_t == unsigned long.
 

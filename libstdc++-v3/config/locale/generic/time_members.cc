@@ -39,10 +39,6 @@
 namespace std
 {
   template<>
-    __timepunct<char>::~__timepunct()
-    { _S_destroy_c_locale(_M_c_locale_timepunct); }
-
-  template<>
     void
     __timepunct<char>::
     _M_put(char* __s, size_t __maxlen, const char* __format, 
@@ -118,10 +114,6 @@ namespace std
     }
 
 #ifdef _GLIBCPP_USE_WCHAR_T
-  template<>
-    __timepunct<wchar_t>::~__timepunct()
-    { _S_destroy_c_locale(_M_c_locale_timepunct); }
-
   template<>
     void
     __timepunct<wchar_t>::
