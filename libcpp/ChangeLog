@@ -1,3 +1,8 @@
+2004-10-10  Andreas Jaeger  <aj@suse.de>
+
+	* makedepend.c: Include mkdeps.h for prototype of deps_add_vpath.
+	* Makefile.in (makedepend.o): Add dependency on mkdeps.h.
+
 2004-10-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* pch.c (cpp_write_pch_state): Remove variable z as it is not

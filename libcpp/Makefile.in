@@ -246,7 +246,7 @@ init.o: $(srcdir)/init.c $(COMMON_DEPS) $(libcpp_incdir)/mkdeps.h localedir.h
 lex.o: $(srcdir)/lex.c $(COMMON_DEPS)
 line-map.o: $(srcdir)/line-map.c $(COMMON_DEPS)
 macro.o: $(srcdir)/macro.c $(COMMON_DEPS)
-makedepend.o: $(srcdir)/makedepend.c $(COMMON_DEPS)
+makedepend.o: $(srcdir)/makedepend.c $(COMMON_DEPS) $(libcpp_incdir)/mkdeps.h
 mkdeps.o: $(srcdir)/mkdeps.c $(COMMON_DEPS)
 
 pch.o: $(srcdir)/pch.c $(COMMON_DEPS) \
