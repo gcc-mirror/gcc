@@ -264,11 +264,8 @@ struct propagate_block_info
   /* Bit N is set if register N is conditionally or unconditionally live.  */
   regset reg_live;
 
-  /* Bit N is set if register N is unconditionally dead this insn.  */
-  regset new_dead;
-
-  /* Bit N is set if register N is live this insn.  */
-  regset new_live;
+  /* Bit N is set if register N is set this insn.  */
+  regset new_set;
 
   /* Element N is the next insn that uses (hard or pseudo) register N
      within the current basic block; or zero, if there is no such insn.  */
@@ -3376,8 +3373,7 @@ propagate_one_insn (pbi, insn)
   }
 #endif /* AUTO_INC_DEC */
 
-  CLEAR_REG_SET (pbi->new_live);
-  CLEAR_REG_SET (pbi->new_dead);
+  CLEAR_REG_SET (pbi->new_set);
 
   /* If this is not the final pass, and this insn is copying the value of
      a library call and it's dead, don't scan the insns that perform the
@@ -3490,10 +3486,6 @@ propagate_one_insn (pbi, insn)
 	}
     }
 
-  /* Update reg_live for the registers killed and used.  */
-  AND_COMPL_REG_SET (pbi->reg_live, pbi->new_dead);
-  IOR_REG_SET (pbi->reg_live, pbi->new_live);
-
   /* On final pass, update counts of how many insns in which each reg
      is live.  */
   if (flags & PROP_REG_INFO)
@@ -3528,8 +3520,7 @@ init_propagate_block_info (bb, live, local_set, flags)
   else
     pbi->reg_next_use = NULL;
 
-  pbi->new_live = BITMAP_XMALLOC ();
-  pbi->new_dead = BITMAP_XMALLOC ();
+  pbi->new_set = BITMAP_XMALLOC ();
 
   return pbi;
 }
@@ -3542,8 +3533,7 @@ free_propagate_block_info (pbi)
 {
   free_EXPR_LIST_list (&pbi->mem_set_list);
 
-  BITMAP_XFREE (pbi->new_live);
-  BITMAP_XFREE (pbi->new_dead);
+  BITMAP_XFREE (pbi->new_set);
 
   if (pbi->reg_next_use)
     free (pbi->reg_next_use);
@@ -3980,6 +3970,7 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
      int flags;
 {
   int regno_first = -1, regno_last = -1;
+  int not_dead = 0;
   int i;
 
   /* Some targets place small structures in registers for
@@ -3995,24 +3986,80 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 
   /* Modifying just one hardware register of a multi-reg value or just a
      byte field of a register does not mean the value from before this insn
-     is now dead.  But it does mean liveness of that register at the end of
-     the block is significant.
+     is now dead.  Of course, if it was dead after it's unused now.  */
 
-     Within mark_set_1, however, we treat it as if the register is indeed
-     modified.  mark_used_regs will, however, also treat this register as
-     being used.  Thus, we treat these insns as setting a new value for the
-     register as a function of its old value.  This cases LOG_LINKS to be
-     made appropriately and this will help combine. 
+  switch (GET_CODE (reg))
+    {
+    case ZERO_EXTRACT:
+    case SIGN_EXTRACT:
+    case STRICT_LOW_PART:
+      /* ??? Assumes STRICT_LOW_PART not used on multi-word registers.  */
+      do
+	reg = XEXP (reg, 0);
+      while (GET_CODE (reg) == SUBREG
+	     || GET_CODE (reg) == ZERO_EXTRACT
+	     || GET_CODE (reg) == SIGN_EXTRACT
+	     || GET_CODE (reg) == STRICT_LOW_PART);
+      not_dead = REGNO_REG_SET_P (pbi->reg_live, REGNO (reg));
+      /* FALLTHRU */
 
-     ??? This is all done incorrectly.  We should not be setting bits in
-     new_dead for these registers, since, as we just explained, they are
-     not dead.  We should be setting bits in local_set, and updating
-     LOG_LINKS, but that is different.  */
+    case REG:
+      regno_last = regno_first = REGNO (reg);
+      if (regno_first < FIRST_PSEUDO_REGISTER)
+	regno_last += HARD_REGNO_NREGS (regno_first, GET_MODE (reg)) - 1;
+      break;
 
-  while (GET_CODE (reg) == SUBREG || GET_CODE (reg) == ZERO_EXTRACT
-	 || GET_CODE (reg) == SIGN_EXTRACT
-	 || GET_CODE (reg) == STRICT_LOW_PART)
-    reg = XEXP (reg, 0);
+    case SUBREG:
+      if (GET_CODE (SUBREG_REG (reg)) == REG)
+	{
+	  enum machine_mode outer_mode = GET_MODE (reg);
+	  enum machine_mode inner_mode = GET_MODE (SUBREG_REG (reg));
+
+	  /* Identify the range of registers affected.  This is moderately
+	     tricky for hard registers.  See alter_subreg.  */
+
+	  regno_last = regno_first = REGNO (SUBREG_REG (reg));
+	  if (regno_first < FIRST_PSEUDO_REGISTER)
+	    {
+#ifdef ALTER_HARD_SUBREG
+	      regno_first = ALTER_HARD_SUBREG (outer_mode, SUBREG_WORD (reg),
+					       inner_mode, regno_first);
+#else
+	      regno_first += SUBREG_WORD (reg);
+#endif
+	      regno_last = (regno_first
+			    + HARD_REGNO_NREGS (regno_first, outer_mode) - 1);
+
+	      /* Since we've just adjusted the register number ranges, make
+		 sure REG matches.  Otherwise some_was_live will be clear
+		 when it shouldn't have been, and we'll create incorrect
+		 REG_UNUSED notes.  */
+	      reg = gen_rtx_REG (outer_mode, regno_first);
+	    }
+	  else
+	    {
+	      /* If the number of words in the subreg is less than the number
+		 of words in the full register, we have a well-defined partial
+		 set.  Otherwise the high bits are undefined.
+
+		 This is only really applicable to pseudos, since we just took
+		 care of multi-word hard registers.  */
+	      if (((GET_MODE_SIZE (outer_mode)
+		    + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+		  < ((GET_MODE_SIZE (inner_mode)
+		      + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
+		not_dead = REGNO_REG_SET_P (pbi->reg_live, regno_first);
+
+	      reg = SUBREG_REG (reg);
+	    }
+	}
+      else
+	reg = SUBREG_REG (reg);
+      break;
+
+    default:
+      break;
+    }
 
   /* If this set is a MEM, then it kills any aliased writes. 
      If this set is a REG, then it kills any MEMs which use the reg.  */
@@ -4063,9 +4110,8 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
     }
 
   if (GET_CODE (reg) == REG
-      && (regno_first = REGNO (reg),
-	  ! (regno_first == FRAME_POINTER_REGNUM
-	     && (! reload_completed || frame_pointer_needed)))
+      && ! (regno_first == FRAME_POINTER_REGNUM
+	    && (! reload_completed || frame_pointer_needed))
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
       && ! (regno_first == HARD_FRAME_POINTER_REGNUM
 	    && (! reload_completed || frame_pointer_needed))
@@ -4077,17 +4123,13 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
     {
       int some_was_live = 0, some_was_dead = 0;
 
-      if (regno_first < FIRST_PSEUDO_REGISTER)
-	regno_last = (regno_first
-		      + HARD_REGNO_NREGS (regno_first, GET_MODE (reg)) - 1);
-      else
-        regno_last = regno_first;
-
       for (i = regno_first; i <= regno_last; ++i)
 	{
 	  int needed_regno = REGNO_REG_SET_P (pbi->reg_live, i);
 	  if (pbi->local_set)
 	    SET_REGNO_REG_SET (pbi->local_set, i);
+	  if (code != CLOBBER)
+	    SET_REGNO_REG_SET (pbi->new_set, i);
 
 	  some_was_live |= needed_regno;
 	  some_was_dead |= ! needed_regno;
@@ -4162,6 +4204,8 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 		    LOG_LINKS (y) = alloc_INSN_LIST (insn, LOG_LINKS (y));
 		}
 	    }
+	  else if (not_dead)
+	    ;
 	  else if (! some_was_live)
 	    {
 	      if (flags & PROP_REG_INFO)
@@ -4207,7 +4251,7 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 	  && regno_first != STACK_POINTER_REGNUM)
 	{
 	  for (i = regno_first; i <= regno_last; ++i)
-	    SET_REGNO_REG_SET (pbi->new_dead, i);
+	    CLEAR_REGNO_REG_SET (pbi->reg_live, i);
 	}
     }
   else if (GET_CODE (reg) == REG)
@@ -4389,7 +4433,7 @@ find_auto_inc (pbi, x, insn)
 	      /* If the original source was dead, it's dead now.  */
 	      rtx note = find_reg_note (incr, REG_DEAD, NULL_RTX);
 	      if (note && XEXP (note, 0) != addr)
-		SET_REGNO_REG_SET (pbi->new_dead, REGNO (XEXP (note, 0)));
+		CLEAR_REGNO_REG_SET (pbi->reg_live, REGNO (XEXP (note, 0)));
 	      
 	      PUT_CODE (incr, NOTE);
 	      NOTE_LINE_NUMBER (incr) = NOTE_INSN_DELETED;
@@ -4422,20 +4466,17 @@ mark_used_reg (pbi, reg, cond, insn)
   int regno = REGNO (reg);
   int some_was_live = REGNO_REG_SET_P (pbi->reg_live, regno);
   int some_was_dead = ! some_was_live;
-
-  SET_REGNO_REG_SET (pbi->new_live, regno);
+  int some_not_set;
+  int n;
 
   /* A hard reg in a wide mode may really be multiple registers.
      If so, mark all of them just like the first.  */
   if (regno < FIRST_PSEUDO_REGISTER)
     {
-      int n = HARD_REGNO_NREGS (regno, GET_MODE (reg));
+      n = HARD_REGNO_NREGS (regno, GET_MODE (reg));
       while (--n > 0)
 	{
-	  int regno_n = regno + n;
-	  int needed_regno = REGNO_REG_SET_P (pbi->reg_live, regno_n);
-
-	  SET_REGNO_REG_SET (pbi->new_live, regno_n);
+	  int needed_regno = REGNO_REG_SET_P (pbi->reg_live, regno + n);
 	  some_was_live |= needed_regno;
 	  some_was_dead |= ! needed_regno;
 	}
@@ -4489,30 +4530,23 @@ mark_used_reg (pbi, reg, cond, insn)
 	}
     }
 
+  /* Find out if any of the register was set this insn.  */
+  some_not_set = ! REGNO_REG_SET_P (pbi->new_set, regno);
+  if (regno < FIRST_PSEUDO_REGISTER)
+    {
+      n = HARD_REGNO_NREGS (regno, GET_MODE (reg));
+      while (--n > 0)
+	some_not_set |= ! REGNO_REG_SET_P (pbi->new_set, regno + n);
+    }
+
   /* Record and count the insns in which a reg dies.  If it is used in
      this insn and was dead below the insn then it dies in this insn.
      If it was set in this insn, we do not make a REG_DEAD note;
-     likewise if we already made such a note. 
-
-     ??? This could be done better.  In new_dead we have a record of 
-     which registers are set or clobbered this insn (which in itself is
-     slightly incorrect, see the commentary near strict_low_part in
-     mark_set_1), which should be the set of registers that we do not
-     wish to create death notes for under the above rule.  Note that
-     we have not yet processed the call-clobbered/call-used registers,
-     and they do not quite follow the above rule, since we do want death
-     notes for call-clobbered register arguments.  Which begs the whole
-     question of whether we should in fact have death notes for registers
-     used and clobbered (but not set) in the same insn.  The only useful
-     thing we ought to be getting from dead_or_set_p is detection of
-     duplicate death notes.  */
-
-  if ((pbi->flags & PROP_DEATH_NOTES)
+     likewise if we already made such a note.  */
+  if ((pbi->flags & (PROP_DEATH_NOTES | PROP_REG_INFO))
       && some_was_dead
-      && ! dead_or_set_p (insn, reg))
+      && some_not_set)
     {
-      int n;
-
       /* Check for the case where the register dying partially
 	 overlaps the register set by this insn.  */
       if (regno < FIRST_PSEUDO_REGISTER
@@ -4520,16 +4554,20 @@ mark_used_reg (pbi, reg, cond, insn)
 	{
 	  n = HARD_REGNO_NREGS (regno, GET_MODE (reg));
 	  while (--n >= 0)
-	    some_was_live |= dead_or_set_regno_p (insn, regno + n);
+	    some_was_live |= REGNO_REG_SET_P (pbi->new_set, regno + n);
 	}
 
       /* If none of the words in X is needed, make a REG_DEAD note.
 	 Otherwise, we must make partial REG_DEAD notes.  */
       if (! some_was_live)
 	{
-	  REG_NOTES (insn)
-	    = alloc_EXPR_LIST (REG_DEAD, reg, REG_NOTES (insn));
-	  REG_N_DEATHS (regno)++;
+	  if ((pbi->flags & PROP_DEATH_NOTES)
+	      && ! find_regno_note (insn, REG_DEAD, regno))
+	    REG_NOTES (insn)
+	      = alloc_EXPR_LIST (REG_DEAD, reg, REG_NOTES (insn));
+
+	  if (pbi->flags & PROP_REG_INFO)
+	    REG_N_DEATHS (regno)++;
 	}
       else
 	{
@@ -4538,13 +4576,21 @@ mark_used_reg (pbi, reg, cond, insn)
 
 	  n = regno + HARD_REGNO_NREGS (regno, GET_MODE (reg)) - 1;
 	  for (; n >= regno; n--)
-	    if (!REGNO_REG_SET_P (pbi->reg_live, n)
+	    if (! REGNO_REG_SET_P (pbi->reg_live, n)
 		&& ! dead_or_set_regno_p (insn, n))
 	      REG_NOTES (insn)
 		= alloc_EXPR_LIST (REG_DEAD,
 				   gen_rtx_REG (reg_raw_mode[n], n),
 				   REG_NOTES (insn));
 	}
+    }
+
+  SET_REGNO_REG_SET (pbi->reg_live, regno);
+  if (regno < FIRST_PSEUDO_REGISTER)
+    {
+      n = HARD_REGNO_NREGS (regno, GET_MODE (reg));
+      while (--n > 0)
+	SET_REGNO_REG_SET (pbi->reg_live, regno + n);
     }
 }
 
