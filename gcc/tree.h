@@ -3372,6 +3372,7 @@ extern tree fold (tree);
 extern tree fold_initializer (tree);
 extern tree fold_convert (tree, tree);
 extern tree fold_single_bit_test (enum tree_code, tree, tree, tree);
+extern tree fold_ignored_result (tree);
 extern tree fold_abs_const (tree, tree);
 
 extern int force_fit_type (tree, int);

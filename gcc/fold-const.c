@@ -1999,7 +1999,7 @@ fold_convert (tree type, tree arg)
 	return fold (build1 (NOP_EXPR, type, arg));
     }
   else if (VOID_TYPE_P (type))
-    return fold (build1 (CONVERT_EXPR, type, arg));
+    return fold (build1 (CONVERT_EXPR, type, fold_ignored_result (arg)));
   abort ();
 }
 
@@ -2828,7 +2828,7 @@ omit_one_operand (tree type, tree result, tree omitted)
   tree t = fold_convert (type, result);
 
   if (TREE_SIDE_EFFECTS (omitted))
-    return build2 (COMPOUND_EXPR, type, omitted, t);
+    return build2 (COMPOUND_EXPR, type, fold_ignored_result (omitted), t);
 
   return non_lvalue (t);
 }
@@ -2841,7 +2841,7 @@ pedantic_omit_one_operand (tree type, tree result, tree omitted)
   tree t = fold_convert (type, result);
 
   if (TREE_SIDE_EFFECTS (omitted))
-    return build2 (COMPOUND_EXPR, type, omitted, t);
+    return build2 (COMPOUND_EXPR, type, fold_ignored_result (omitted), t);
 
   return pedantic_non_lvalue (t);
 }
@@ -10581,6 +10581,59 @@ build_fold_indirect_ref (tree t)
     }
 
   return build1 (INDIRECT_REF, type, t);
+}
+
+/* Strip non-trapping, non-side-effecting tree nodes from an expression
+   whose result is ignored.  The type of the returned tree need not be
+   the same as the original expression.  */
+
+tree
+fold_ignored_result (tree t)
+{
+  if (!TREE_SIDE_EFFECTS (t))
+    return integer_zero_node;
+
+  for (;;)
+    switch (TREE_CODE_CLASS (TREE_CODE (t)))
+      {
+      case '1':
+	t = TREE_OPERAND (t, 0);
+	break;
+
+      case '2':
+      case '<':
+	if (!TREE_SIDE_EFFECTS (TREE_OPERAND (t, 1)))
+	  t = TREE_OPERAND (t, 0);
+	else if (!TREE_SIDE_EFFECTS (TREE_OPERAND (t, 0)))
+	  t = TREE_OPERAND (t, 1);
+	else
+	  return t;
+	break;
+
+      case 'e':
+	switch (TREE_CODE (t))
+	  {
+	  case COMPOUND_EXPR:
+	    if (TREE_SIDE_EFFECTS (TREE_OPERAND (t, 1)))
+	      return t;
+	    t = TREE_OPERAND (t, 0);
+	    break;
+
+	  case COND_EXPR:
+	    if (TREE_SIDE_EFFECTS (TREE_OPERAND (t, 1))
+		|| TREE_SIDE_EFFECTS (TREE_OPERAND (t, 2)))
+	      return t;
+	    t = TREE_OPERAND (t, 0);
+	    break;
+
+	  default:
+	    return t;
+	  }
+	break;
+
+      default:
+	return t;
+      }
 }
 
 #include "gt-fold-const.h"

@@ -9474,8 +9474,9 @@ fold_builtin_fputs (tree arglist, bool ignore, bool unlocked, tree len)
       abort ();
     }
 
-  return fold_convert (integer_type_node,
-		       build_function_call_expr (fn, arglist));
+  /* These optimizations are only performed when the result is ignored,
+     hence there's no need to cast the result to integer_type_node.  */
+  return build_function_call_expr (fn, arglist);
 }
 
 static void
