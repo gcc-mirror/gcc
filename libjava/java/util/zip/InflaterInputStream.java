@@ -44,8 +44,6 @@ public class InflaterInputStream extends FilterInputStream
 {
   protected void fill () throws IOException
   {
-    if (inf == null)
-      throw new IOException ("stream closed");
     len = in.read(buf, 0, buf.length);
     if (len != -1)
       inf.setInput(buf, 0, len);
@@ -85,18 +83,23 @@ public class InflaterInputStream extends FilterInputStream
       return -1;
     if (inf.needsInput())
       fill ();
-    if (this.len == -1)
-      return -1; // Couldn't get any more data to feed to the Inflater
-    if (inf.needsDictionary())
-      return -1;
+    int count;
     try
       {
-	return inf.inflate(buf, off, len);
+	count = inf.inflate(buf, off, len);	
+	if (count == 0)
+	  {
+	    if (len == -1)
+	      return -1; // Couldn't get any more data to feed to the Inflater
+	    if (inf.needsDictionary())
+	      throw new ZipException ("Inflater needs Dictionary");
+	  }	      
       }
     catch (DataFormatException dfe)
       {
 	throw new ZipException (dfe.getMessage());
       }
+    return count;
   }
 
   public void close () throws IOException
