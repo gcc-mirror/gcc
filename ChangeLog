@@ -1,3 +1,9 @@
+2002-04-18  Tom Tromey  <tromey@redhat.com>
+
+	* configure.in: Disallow configuring libgcj when it is already
+	installed and we're using Solaris 2.8 linker.  Do enable libgcj on
+	Solaris 2.8 by default.  For PR libgcj/6158.
+
 2002-04-17  Nathanael Nerode  <neroden@twcny.rr.com>
 
 	* configure.in:  Move default CC setting out of config/mh-* fragments
