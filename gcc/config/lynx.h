@@ -1,5 +1,5 @@
 /* Target independent definitions for LynxOS.
-   Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -133,12 +133,11 @@ do {								\
 #undef INIT_SECTION_ASM_OP
 
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_const, in_bss, in_ctors, in_dtors, in_fini,
+#define EXTRA_SECTIONS in_const, in_ctors, in_dtors, in_fini
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS					\
   CONST_SECTION_FUNCTION					\
-  BSS_SECTION_FUNCTION						\
   CTORS_SECTION_FUNCTION					\
   DTORS_SECTION_FUNCTION					\
   FINI_SECTION_FUNCTION
