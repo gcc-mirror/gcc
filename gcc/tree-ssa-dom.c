@@ -3227,7 +3227,7 @@ extract_range_from_cond (tree cond, tree *hi_p, tree *lo_p, int *inverted_p)
 
     case LT_EXPR:
       low = TYPE_MIN_VALUE (type);
-      if (!tree_int_cst_equal (low, op1))
+      if (!tree_int_cst_lt (low, op1))
 	return 0;
       high = int_const_binop (MINUS_EXPR, op1, integer_one_node, 1);
       inverted = 0;

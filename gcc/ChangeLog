@@ -1,5 +1,9 @@
 2004-01-15  Roger Sayle  <roger@eyesopen.com>
 
+	* tree-ssa-dom.c (extract_range_from_cond): Correct condition.
+
+2004-01-15  Roger Sayle  <roger@eyesopen.com>
+
 	* harg-reg-set.h (reg_class_names): Prototype global array.
 	* regclass.c (reg_class_names): Declare here and initialize to
 	REG_CLASS_NAMES.
