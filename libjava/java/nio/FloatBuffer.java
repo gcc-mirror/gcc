@@ -41,8 +41,8 @@ import gnu.java.nio.FloatBufferImpl;
 
 public abstract class FloatBuffer extends Buffer implements Comparable
 {
-  protected float [] backing_buffer;
-  protected int array_offset;
+  int array_offset;
+  float[] backing_buffer;
 
   public static FloatBuffer allocateDirect(int capacity)
   {

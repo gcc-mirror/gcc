@@ -41,8 +41,8 @@ import gnu.java.nio.LongBufferImpl;
 
 public abstract class LongBuffer extends Buffer implements Comparable
 {
-  protected long [] backing_buffer;
-  protected int array_offset;
+  int array_offset;
+  long[] backing_buffer;
 
   public static LongBuffer allocateDirect(int capacity)
   {

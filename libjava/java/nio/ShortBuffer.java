@@ -41,8 +41,8 @@ import gnu.java.nio.ShortBufferImpl;
 
 public abstract class ShortBuffer extends Buffer implements Comparable
 {
-  protected short [] backing_buffer;
-  protected int array_offset;
+  int array_offset;
+  short[] backing_buffer;
 
   public static ShortBuffer allocateDirect(int capacity)
   {

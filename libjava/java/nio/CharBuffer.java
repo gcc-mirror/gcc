@@ -45,8 +45,8 @@ import gnu.java.nio.CharBufferImpl;
 public abstract class CharBuffer extends Buffer
   implements Comparable, CharSequence
 {
-  protected int array_offset = 0;
-  protected char [] backing_buffer;
+  int array_offset = 0;
+  char[] backing_buffer;
   
   /**
    * Allocates a new <code>CharBuffer</code> object with a given capacity.
