@@ -1,3 +1,12 @@
+2004-05-15  Tobias Schlueter <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/13742
+	* decl.c (add_init_expr_to_sym): Verify that COMMON variable is
+	not initialized in a disallowed fashion.
+	* match.c (gfc_match_common): Likewise.
+	(var_element): Verify that variable is not in the blank COMMON,
+	if it is in a common. 
+
 2004-05-15  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* Make-lang.in (f95.generated-manpages): Remove.
