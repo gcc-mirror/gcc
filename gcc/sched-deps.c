@@ -44,8 +44,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "cselib.h"
 #include "df.h"
 
-extern char *reg_known_equiv_p;
-extern rtx *reg_known_value;
 
 static regset_head reg_pending_sets_head;
 static regset_head reg_pending_clobbers_head;
@@ -113,10 +111,12 @@ deps_may_trap_p (rtx mem)
 {
   rtx addr = XEXP (mem, 0);
 
-  if (REG_P (addr)
-      && REGNO (addr) >= FIRST_PSEUDO_REGISTER
-      && reg_known_value[REGNO (addr)])
-    addr = reg_known_value[REGNO (addr)];
+  if (REG_P (addr) && REGNO (addr) >= FIRST_PSEUDO_REGISTER)
+    {
+      rtx t = get_reg_known_value (REGNO (addr));
+      if (t)
+	addr = t;
+    }
   return rtx_addr_can_trap_p (addr);
 }
 
@@ -523,10 +523,12 @@ sched_analyze_1 (struct deps *deps, rtx x, rtx insn)
 	  /* Pseudos that are REG_EQUIV to something may be replaced
 	     by that during reloading.  We need only add dependencies for
 	     the address in the REG_EQUIV note.  */
-	  if (!reload_completed
-	      && reg_known_equiv_p[regno]
-	      && GET_CODE (reg_known_value[regno]) == MEM)
-	    sched_analyze_2 (deps, XEXP (reg_known_value[regno], 0), insn);
+	  if (!reload_completed && get_reg_known_equiv_p (regno))
+	    {
+	      rtx t = get_reg_known_value (regno);
+	      if (GET_CODE (t) == MEM)
+	        sched_analyze_2 (deps, XEXP (t, 0), insn);
+	    }
 
 	  /* Don't let it cross a call after scheduling if it doesn't
 	     already cross one.  */
@@ -659,10 +661,12 @@ sched_analyze_2 (struct deps *deps, rtx x, rtx insn)
 	    /* Pseudos that are REG_EQUIV to something may be replaced
 	       by that during reloading.  We need only add dependencies for
 	       the address in the REG_EQUIV note.  */
-	    if (!reload_completed
-		&& reg_known_equiv_p[regno]
-		&& GET_CODE (reg_known_value[regno]) == MEM)
-	      sched_analyze_2 (deps, XEXP (reg_known_value[regno], 0), insn);
+	    if (!reload_completed && get_reg_known_equiv_p (regno))
+	      {
+		rtx t = get_reg_known_value (regno);
+		if (GET_CODE (t) == MEM)
+		  sched_analyze_2 (deps, XEXP (t, 0), insn);
+	      }
 
 	    /* If the register does not already cross any calls, then add this
 	       insn to the sched_before_next_call list so that it will still
