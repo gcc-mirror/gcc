@@ -123,22 +123,8 @@ static int const_int_cost (rtx);
 static bool m68k_rtx_costs (rtx, int, int, int *);
 
 
-/* Alignment to use for loops and jumps */
-/* Specify power of two alignment used for loops.  */
-const char *m68k_align_loops_string;
-/* Specify power of two alignment used for non-loop jumps.  */
-const char *m68k_align_jumps_string;
-/* Specify power of two alignment used for functions.  */
-const char *m68k_align_funcs_string;
 /* Specify the identification number of the library being built */
 const char *m68k_library_id_string;
-
-/* Specify power of two alignment used for loops.  */
-int m68k_align_loops;
-/* Specify power of two alignment used for non-loop jumps.  */
-int m68k_align_jumps;
-/* Specify power of two alignment used for functions.  */
-int m68k_align_funcs;
 
 /* Nonzero if the last compare/test insn had FP operands.  The
    sCC expanders peek at this to determine what to do for the
@@ -221,22 +207,6 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 void
 override_options (void)
 {
-  int def_align;
-  int i;
-
-  def_align = 1;
-
-  /* Validate -malign-loops= value, or provide default */
-  m68k_align_loops = def_align;
-  if (m68k_align_loops_string)
-    {
-      i = atoi (m68k_align_loops_string);
-      if (i < 1 || i > MAX_CODE_ALIGN)
-	error ("-malign-loops=%d is not between 1 and %d", i, MAX_CODE_ALIGN);
-      else
-	m68k_align_loops = i;
-    }
-
   /* Library identification */
   if (m68k_library_id_string)
     {
@@ -268,29 +238,6 @@ override_options (void)
    */
   if (TARGET_SEP_DATA || TARGET_ID_SHARED_LIBRARY)
     flag_pic = 2;
-
-  /* Validate -malign-jumps= value, or provide default */
-  m68k_align_jumps = def_align;
-  if (m68k_align_jumps_string)
-    {
-      i = atoi (m68k_align_jumps_string);
-      if (i < 1 || i > MAX_CODE_ALIGN)
-	error ("-malign-jumps=%d is not between 1 and %d", i, MAX_CODE_ALIGN);
-      else
-	m68k_align_jumps = i;
-    }
-
-  /* Validate -malign-functions= value, or provide default */
-  m68k_align_funcs = def_align;
-  if (m68k_align_funcs_string)
-    {
-      i = atoi (m68k_align_funcs_string);
-      if (i < 1 || i > MAX_CODE_ALIGN)
-	error ("-malign-functions=%d is not between 1 and %d",
-	       i, MAX_CODE_ALIGN);
-      else
-	m68k_align_funcs = i;
-    }
 
   /* -fPIC uses 32-bit pc-relative displacements, which don't exist
      until the 68020.  */
