@@ -2303,28 +2303,28 @@ extern char *dwarf2out_cfi_label	PARAMS ((void));
 
 /* Entry point to update the canonical frame address (CFA).  */
 
-extern void dwarf2out_def_cfa		PARAMS ((char *, unsigned, long));
+extern void dwarf2out_def_cfa		PARAMS ((const char *, unsigned, long));
 
 /* Add the CFI for saving a register window.  */
 
-extern void dwarf2out_window_save	PARAMS ((char *));
+extern void dwarf2out_window_save	PARAMS ((const char *));
 
 /* Add a CFI to update the running total of the size of arguments pushed
    onto the stack.  */
 
-extern void dwarf2out_args_size		PARAMS ((char *, long));
+extern void dwarf2out_args_size		PARAMS ((const char *, long));
 
 /* Entry point for saving a register to the stack.  */
 
-extern void dwarf2out_reg_save		PARAMS ((char *, unsigned, long));
+extern void dwarf2out_reg_save		PARAMS ((const char *, unsigned, long));
 
 /* Entry point for saving the return address in the stack.  */
 
-extern void dwarf2out_return_save	PARAMS ((char *, long));
+extern void dwarf2out_return_save	PARAMS ((const char *, long));
 
 /* Entry point for saving the return address in a register.  */
 
-extern void dwarf2out_return_reg	PARAMS ((char *, unsigned));
+extern void dwarf2out_return_reg	PARAMS ((const char *, unsigned));
 
 /* Output a marker (i.e. a label) for the beginning of a function, before
    the prologue.  */
@@ -2637,28 +2637,28 @@ extern char *dwarf2out_cfi_label	PARAMS ((void));
 
 /* Entry point to update the canonical frame address (CFA).  */
 
-extern void dwarf2out_def_cfa		PARAMS ((char *, unsigned, long));
+extern void dwarf2out_def_cfa		PARAMS ((const char *, unsigned, long));
 
 /* Add the CFI for saving a register window.  */
 
-extern void dwarf2out_window_save	PARAMS ((char *));
+extern void dwarf2out_window_save	PARAMS ((const char *));
 
 /* Add a CFI to update the running total of the size of arguments pushed
    onto the stack.  */
 
-extern void dwarf2out_args_size		PARAMS ((char *, long));
+extern void dwarf2out_args_size		PARAMS ((const char *, long));
 
 /* Entry point for saving a register to the stack.  */
 
-extern void dwarf2out_reg_save		PARAMS ((char *, unsigned, long));
+extern void dwarf2out_reg_save		PARAMS ((const char *, unsigned, long));
 
 /* Entry point for saving the return address in the stack.  */
 
-extern void dwarf2out_return_save	PARAMS ((char *, long));
+extern void dwarf2out_return_save	PARAMS ((const char *, long));
 
 /* Entry point for saving the return address in a register.  */
 
-extern void dwarf2out_return_reg	PARAMS ((char *, unsigned));
+extern void dwarf2out_return_reg	PARAMS ((const char *, unsigned));
 
 /* Output a marker (i.e. a label) for the beginning of a function, before
    the prologue.  */

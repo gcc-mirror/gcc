@@ -1,3 +1,22 @@
+2000-04-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* dwarf2out.c (dw_cfi_oprnd_struct, dw_fde_struct, add_fde_cfi,
+	reg_save, dwarf2out_frame_debug_expr, dwarf2out_def_cfa,
+	dwarf2out_window_save, dwarf2out_args_size, dwarf2out_reg_save,
+	dwarf2out_return_save, dwarf2out_return_reg,
+	dwarf2out_stack_adjust, dwarf2out_frame_debug, primary_filename,
+	add_AT_lbl_id, add_AT_lbl_offset, type_tag, decl_start_label,
+	gen_compile_unit_die, dwarf2out_init): Constify a char*.
+
+	* dwarf2out.h (dwarf2out_init): Likewise.
+
+	* dwarfout.c (filename_entry, primary_filename, last_filename,
+	type_tag, output_compile_unit_die, dwarfout_init): Likewise.
+
+	* tree.h (dwarf2out_def_cfa, dwarf2out_window_save,
+	dwarf2out_args_size, dwarf2out_reg_save, dwarf2out_return_save,
+	dwarf2out_return_reg): Likewise.
+
 2000-04-26  Andreas Jaeger  <aj@suse.de>
 
         * extend.texi (Function Attributes): Fix description of pure
