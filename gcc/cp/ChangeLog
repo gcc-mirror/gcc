@@ -1,3 +1,11 @@
+2004-02-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Backport from mainline
+	2004-02-02  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/13907
+	* call.c (convert_class_to_reference): Keep better track of
+	pedantically invalid user-defined conversions.
+
 2004-02-14  Release Manager
 
 	* GCC 3.3.3 Released.
