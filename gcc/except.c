@@ -707,11 +707,11 @@ add_partial_entry (handler)
   pop_obstacks ();
 }
 
-/* Emit code to get EH context to current function. */
+/* Emit code to get EH context to current function.  Should only be used
+   by emit_eh_context.  */
 
 static rtx
-call_get_eh_context (before)
-     rtx before;
+call_get_eh_context ()
 {
   static tree fn;
   tree expr;
@@ -748,10 +748,7 @@ call_get_eh_context (before)
   insns = get_insns ();
   end_sequence ();
 
-  if (before != 0)
-    emit_insns_before (insns, before);
-  else
-    emit_insns (insns);
+  emit_insns_before (insns, get_first_nonparm_insn ());
 
   return reg;
 }
@@ -764,7 +761,7 @@ call_get_eh_context (before)
    in libgcc2, and copy the value to the register we have generated. */
 
 rtx
-use_eh_context ()
+get_eh_context ()
 {
   if (current_function_ehc == 0)
     {
@@ -785,39 +782,6 @@ use_eh_context ()
   return current_function_ehc;
 }
      
-/* Get reference to EH context only once per fn. */
-
-rtx
-get_eh_context_once ()
-{
-  rtx ehc;
-
-  if (current_function_ehc == 0)
-    use_eh_context ();
-  
-  ehc = gen_reg_rtx (Pmode);
-  emit_move_insn (ehc, current_function_ehc);
-
-  return ehc;
-}
-
-/* Get reference to EH context by calling __get_eh_context. */
-
-rtx
-get_eh_context ()
-{
-  rtx ehc;
-
-  /* If we already have an EH context in the current function,
-     use it. */
-  if (current_function_ehc)
-    ehc = get_eh_context_once ();
-  else
-    ehc = call_get_eh_context (0);
-
-  return ehc;
-}
-
 /* Get a reference to the dynamic handler chain.  It points to the
    pointer to the next element in the dynamic handler chain.  It ends
    when there are no more elements in the dynamic handler chain, when
@@ -832,7 +796,7 @@ get_dynamic_handler_chain ()
 {
   rtx ehc, dhc, result;
 
-  ehc = get_eh_context_once ();
+  ehc = get_eh_context ();
   dhc = ehc;
 
   result = copy_to_reg (dhc);
@@ -858,22 +822,6 @@ get_dynamic_cleanup_chain ()
   result = copy_to_reg (dcc);
 
   /* We don't want a copy of the dcc, but rather, the single dcc.  */
-  return gen_rtx (MEM, Pmode, result);
-}
-
-/* Get a reference to the saved_pc variable. */
-
-rtx
-get_saved_pc_ref ()
-{
-  rtx ehc, ehpc, result;
-
-  /* Saved PC is the second word into the returned structure. */
-  ehc = get_eh_context ();
-  ehpc = plus_constant (ehc, GET_MODE_SIZE (Pmode));
-  result = copy_to_reg (ehpc);
-
-  /* We don't want a copy of the ehpc, but rather, the single ehpc.  */
   return gen_rtx (MEM, Pmode, result);
 }
 
@@ -1704,189 +1652,6 @@ register_exception_table ()
 		     Pmode);
 }
 
-/* Emit the RTL for the start of the per-function unwinder for the
-   current function. See emit_unwinder for further information.
-
-   DOESNT_NEED_UNWINDER is a target-specific macro that determines if
-   the current function actually needs a per-function unwinder or not.
-   By default, all functions need one.  */
-
-void
-start_eh_unwinder ()
-{
-#ifdef DOESNT_NEED_UNWINDER
-  if (DOESNT_NEED_UNWINDER)
-    return;
-#endif
-
-  /* If we are using the setjmp/longjmp implementation, we don't need a
-     per function unwinder.  */
-
-  if (exceptions_via_longjmp)
-    return;
-
-#ifdef DWARF2_UNWIND_INFO
-  return;
-#endif
-
-  expand_eh_region_start ();
-}
-
-/* Emit insns for the end of the per-function unwinder for the
-   current function.  */
-
-void
-end_eh_unwinder ()
-{
-  tree expr;
-  rtx return_val_rtx, ret_val, label, end, insns;
-
-  if (! doing_eh (0))
-    return;
-
-#ifdef DOESNT_NEED_UNWINDER
-  if (DOESNT_NEED_UNWINDER)
-    return;
-#endif
-
-  /* If we are using the setjmp/longjmp implementation, we don't need a
-     per function unwinder.  */
-
-  if (exceptions_via_longjmp)
-    return;
-
-#ifdef DWARF2_UNWIND_INFO
-  return;
-#else /* DWARF2_UNWIND_INFO */
-
-  expr = make_node (RTL_EXPR);
-  TREE_TYPE (expr) = void_type_node;
-  RTL_EXPR_RTL (expr) = const0_rtx;
-  TREE_SIDE_EFFECTS (expr) = 1;
-  start_sequence_for_rtl_expr (expr);
-
-  /* ret_val will contain the address of the code where the call
-     to the current function occurred.  */
-  ret_val = expand_builtin_return_addr (BUILT_IN_RETURN_ADDRESS,
-					0, hard_frame_pointer_rtx);
-  return_val_rtx = copy_to_reg (ret_val);
-
-  /* Get the address we need to use to determine what exception
-     handler should be invoked, and store it in __eh_pc.  */
-  return_val_rtx = eh_outer_context (return_val_rtx);
-  return_val_rtx = expand_binop (Pmode, sub_optab, return_val_rtx, GEN_INT (1),
-				 NULL_RTX, 0, OPTAB_LIB_WIDEN);
-  emit_move_insn (get_saved_pc_ref (), return_val_rtx);
-  
-  /* Either set things up so we do a return directly to __throw, or
-     we return here instead.  */
-#ifdef JUMP_TO_THROW
-  emit_move_insn (ret_val, throw_libfunc);
-#else
-  label = gen_label_rtx ();
-  emit_move_insn (ret_val, gen_rtx (LABEL_REF, Pmode, label));
-#endif
-
-#ifdef RETURN_ADDR_OFFSET
-  return_val_rtx = plus_constant (ret_val, -RETURN_ADDR_OFFSET);
-  if (return_val_rtx != ret_val)
-    emit_move_insn (ret_val, return_val_rtx);
-#endif
-  
-  end = gen_label_rtx ();
-  emit_jump (end);  
-
-  RTL_EXPR_SEQUENCE (expr) = get_insns ();
-  end_sequence ();
-
-  expand_eh_region_end (expr);
-
-  emit_jump (end);
-
-#ifndef JUMP_TO_THROW
-  emit_label (label);
-  emit_throw ();
-#endif
-  
-  expand_leftover_cleanups ();
-
-  emit_label (end);
-
-#ifdef HAVE_return
-  if (HAVE_return)
-    {
-      emit_jump_insn (gen_return ());
-      emit_barrier ();
-    }
-#endif
-#endif /* DWARF2_UNWIND_INFO */
-}
-
-/* If necessary, emit insns for the per function unwinder for the
-   current function.  Called after all the code that needs unwind
-   protection is output.  
-
-   The unwinder takes care of catching any exceptions that have not
-   been previously caught within the function, unwinding the stack to
-   the next frame, and rethrowing using the address of the current
-   function's caller as the context of the throw.
-
-   On some platforms __throw can do this by itself (or with the help
-   of __unwind_function) so the per-function unwinder is
-   unnecessary.
-  
-   We cannot place the unwinder into the function until after we know
-   we are done inlining, as we don't want to have more than one
-   unwinder per non-inlined function.  */
-
-void
-emit_unwinder ()
-{
-  rtx insns, insn;
-
-  start_sequence ();
-  start_eh_unwinder ();
-  insns = get_insns ();
-  end_sequence ();
-
-  /* We place the start of the exception region associated with the
-     per function unwinder at the top of the function.  */
-  if (insns)
-    emit_insns_after (insns, get_insns ());
-
-  start_sequence ();
-  end_eh_unwinder ();
-  insns = get_insns ();
-  end_sequence ();
-
-  /* And we place the end of the exception region before the USE and
-     CLOBBER insns that may come at the end of the function.  */
-  if (insns == 0)
-    return;
-
-  insn = get_last_insn ();
-  while (GET_CODE (insn) == NOTE
-	 || (GET_CODE (insn) == INSN
-	     && (GET_CODE (PATTERN (insn)) == USE
-		 || GET_CODE (PATTERN (insn)) == CLOBBER)))
-    insn = PREV_INSN (insn);
-
-  if (GET_CODE (insn) == CODE_LABEL
-      && GET_CODE (PREV_INSN (insn)) == BARRIER)
-    {
-      insn = PREV_INSN (insn);
-    }
-  else
-    {
-      rtx label = gen_label_rtx ();
-      emit_label_after (label, insn);
-      insn = emit_jump_insn_after (gen_jump (label), insn);
-      insn = emit_barrier_after (insn);
-    }
-    
-  emit_insns_after (insns, insn);
-}
-
 /* Emit code to get EH context.
    
    We have to scan thru the code to find possible EH context registers.
@@ -1913,9 +1678,9 @@ emit_eh_context ()
 	  {
 	    rtx insns;
 	    
-	    /* If this is the first use insn, emit the call here. */
+	    /* If this is the first use insn, emit the call. */
 	    if (ehc == 0)
-	      ehc = call_get_eh_context (insn);
+	      ehc = call_get_eh_context ();
 
 	    start_sequence ();
 	    emit_move_insn (XEXP (reg, 0), ehc);
