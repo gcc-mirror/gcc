@@ -123,9 +123,9 @@ __mulsi3:
 #elif XCHAL_HAVE_MAC16
 	mul.aa.hl a2, a3
 	mula.aa.lh a2, a3
-	rsr	a5, 16 # ACCLO
+	rsr	a5, ACCLO
 	umul.aa.ll a2, a3
-	rsr	a4, 16 # ACCLO
+	rsr	a4, ACCLO
 	slli	a5, a5, 16
 	add	a2, a4, a5
 

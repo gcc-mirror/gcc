@@ -884,8 +884,8 @@
    %v1l32r\t%0, %1
    %v1l32i\t%0, %1
    %v0s32i\t%1, %0
-   rsr\t%0, 16 # ACCLO
-   wsr\t%1, 16 # ACCLO"
+   rsr\t%0, ACCLO
+   wsr\t%1, ACCLO"
   [(set_attr "type" "move,move,move,load,store,store,move,move,move,move,load,load,store,rsr,wsr")
    (set_attr "mode"	"SI")
    (set_attr "length"	"2,2,2,2,2,2,3,3,3,6,3,3,3,3,3")])
@@ -912,8 +912,8 @@
    movi\t%0, %x1
    %v1l16ui\t%0, %1
    %v0s16i\t%1, %0
-   rsr\t%0, 16 # ACCLO
-   wsr\t%1, 16 # ACCLO"
+   rsr\t%0, ACCLO
+   wsr\t%1, ACCLO"
   [(set_attr "type"	"move,move,move,move,load,store,rsr,wsr")
    (set_attr "mode"	"HI")
    (set_attr "length"	"2,2,3,3,3,3,3,3")])
@@ -940,8 +940,8 @@
    movi\t%0, %x1
    %v1l8ui\t%0, %1
    %v0s8i\t%1, %0
-   rsr\t%0, 16 # ACCLO
-   wsr\t%1, 16 # ACCLO"
+   rsr\t%0, ACCLO
+   wsr\t%1, ACCLO"
   [(set_attr "type"	"move,move,move,move,load,store,rsr,wsr")
    (set_attr "mode"	"QI")
    (set_attr "length"	"2,2,3,3,3,3,3,3")])
