@@ -1,5 +1,10 @@
 2001-05-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11.md (lshrhi3_const1): Fix shift of
+	soft register, use ror instead of rol.
+
+2001-05-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11.c (m68hc11_check_z_replacement): Take
 	into account pre/post increment decrement for 68HC12.
 	Fix other problems in replacement and fix call to reg_mentioned_p.
