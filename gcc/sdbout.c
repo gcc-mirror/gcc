@@ -80,7 +80,7 @@ AT&T C compiler.  From the example below I would conclude the following:
 /* Line number of beginning of current function, minus one.
    Negative means not in a function or not using sdb.  */
 
-static int sdb_begin_function_line = -1;
+int sdb_begin_function_line = -1;
 
 /* Counter to generate unique "names" for nameless struct members.  */
 
