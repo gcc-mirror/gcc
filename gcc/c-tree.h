@@ -188,6 +188,7 @@ extern tree grokfield                           PARAMS ((const char *, int, tree
 extern tree groktypename                        PARAMS ((tree));
 extern tree groktypename_in_parm_context        PARAMS ((tree));
 extern tree implicitly_declare                  PARAMS ((tree));
+extern void implicit_decl_warning               PARAMS ((tree));
 extern int  in_parm_level_p                     PARAMS ((void));
 extern void init_decl_processing                PARAMS ((void));
 extern void insert_block                        PARAMS ((tree));
@@ -387,6 +388,9 @@ extern int warn_long_long;
 /* Nonzero means we are reading code that came from a system header file.  */
 
 extern int system_header_p;
+
+/* Warn about implicit declarations.  1 = warning, 2 = error.  */
+extern int mesg_implicit_function_declaration;
 
 /* Nonzero enables objc features.  */
 

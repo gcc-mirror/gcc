@@ -1,3 +1,7 @@
+2000-07-31  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc.dg/c99-impl-decl-1.c: No longer XFAIL.
+
 2000-07-31  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/noncompile/voidparam-1.c: New test.

@@ -1417,9 +1417,10 @@ build_external_ref (id, fun)
 	      /* Implicit declaration of built-in function.  Don't
 		 change the built-in declaration, but don't let this
 		 go by silently, either.  */
-	      pedwarn ("implicit declaration of function `%s'",
-		       IDENTIFIER_POINTER (DECL_NAME (decl)));
-	      C_DECL_ANTICIPATED (decl) = 0;  /* only issue this warning once */
+	      implicit_decl_warning (id);
+
+	      /* only issue this warning once */
+	      C_DECL_ANTICIPATED (decl) = 0;
 	      ref = decl;
 	    }
 	}
