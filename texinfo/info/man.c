@@ -35,6 +35,10 @@
 
 #include "man.h"
 
+#if !defined (SIGCHLD) && defined (SIGCLD)
+#define SIGCHLD	SIGCLD
+#endif
+
 #if !defined (_POSIX_VERSION)
 #define pid_t int
 #endif
