@@ -4545,6 +4545,32 @@ avr_handle_fndecl_attribute (tree *node, tree name,
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
+  else
+    {
+      const char *func_name = IDENTIFIER_POINTER (DECL_NAME (*node));
+      const char *attr = IDENTIFIER_POINTER (name);
+
+      /* If the function has the 'signal' or 'interrupt' attribute, test to
+         make sure that the name of the function is "__vector_NN" so as to
+         catch when the user misspells the interrupt vector name.  */
+
+      if (strncmp (attr, "interrupt", strlen ("interrupt")) == 0)
+        {
+          if (strncmp (func_name, "__vector", strlen ("__vector")) != 0)
+            {
+              warning ("`%s' appears to be a misspelled interrupt handler",
+                       func_name);
+            }
+        }
+      else if (strncmp (attr, "signal", strlen ("signal")) == 0)
+        {
+          if (strncmp (func_name, "__vector", strlen ("__vector")) != 0)
+            {
+              warning ("`%s' appears to be a misspelled signal handler",
+                       func_name);
+            }
+        }
+    }
 
   return NULL_TREE;
 }
