@@ -28,6 +28,7 @@
 # SHLIB_MULTILIB
 # SHLIB_MKMAP
 # SHLIB_MAPFILES
+# SHLIB_NM_FLAGS
 
 # Make needs VPATH to be literal.
 echo 'srcdir = @srcdir@'
@@ -262,7 +263,7 @@ for ml in $MULTILIBS; do
     mapfile="libgcc.map"
     echo ""
     echo "${mapfile}: $SHLIB_MKMAP $SHLIB_MAPFILES $libgcc_objs"
-    echo '	{ $(NM_FOR_TARGET) -pg'" $libgcc_objs; echo %%; cat $SHLIB_MAPFILES; } | "'$(AWK)'" -f $SHLIB_MKMAP > "'tmp-$@'
+    echo '	{ $(NM_FOR_TARGET)'" $SHLIB_NM_FLAGS $libgcc_objs; echo %%; cat $SHLIB_MAPFILES; } | "'$(AWK)'" -f $SHLIB_MKMAP > "'tmp-$@'
     echo '	mv tmp-$@ $@'
   fi
   shlib_deps="$shlib_deps $mapfile"
