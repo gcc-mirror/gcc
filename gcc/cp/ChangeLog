@@ -1,3 +1,8 @@
+2003-07-22  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/10793
+	* decl.c (xref_basetypes): Handle error_mark_node.
+
 2003-07-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (enum cp_lvalue_kind): Add clk_packed.

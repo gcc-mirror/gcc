@@ -12831,6 +12831,9 @@ xref_basetypes (tree ref, tree base_list)
   int i;
   enum tag_types tag_code;
 
+  if (ref == error_mark_node)
+    return;
+
   if (TREE_CODE (ref) == UNION_TYPE)
     {
       error ("derived union `%T' invalid", ref);
