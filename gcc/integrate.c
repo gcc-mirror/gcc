@@ -1,5 +1,5 @@
 /* Procedure integration for GNU CC.
-   Copyright (C) 1988, 91, 93-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1988, 91, 93-98, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -319,6 +319,12 @@ copy_decl_for_inlining (decl, from_fn, to_fn)
       copy = copy_node (decl);
       if (DECL_LANG_SPECIFIC (copy))
 	copy_lang_decl (copy);
+
+      /* TREE_ADDRESSABLE isn't used to indicate that a label's
+	 address has been taken; it's for internal bookkeeping in
+	 expand_goto_internal.  */
+      if (TREE_CODE (copy) == LABEL_DECL)
+	TREE_ADDRESSABLE (copy) = 0;
     }
 
   /* Set the DECL_ABSTRACT_ORIGIN so the debugging routines know what
