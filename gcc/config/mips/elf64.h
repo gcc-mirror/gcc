@@ -37,14 +37,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "mips/mips.h"
 
-/* This must be done after mips.h, because mips.h defines
-   TARGET_ENDIAN_DEFAULT.  */
 #undef MULTILIB_DEFAULTS
-#if TARGET_ENDIAN_DEFAULT == 0
-#define MULTILIB_DEFAULTS { "EL", "mips3" }
-#else
-#define MULTILIB_DEFAULTS { "EB", "mips3" }
-#endif
+#define MULTILIB_DEFAULTS { MULTILIB_ENDIAN_DEFAULT, "mips3" }
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dmips -DMIPSEB -DR4000 -D_mips -D_MIPSEB -D_R4000"
