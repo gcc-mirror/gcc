@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *                            $Revision: 1.2 $
+ *                            $Revision$
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -262,72 +262,73 @@ extern char Get_Pragma_Id PARAMS ((int));
 #define  Pragma_Export_Object               56
 #define  Pragma_Export_Procedure            57
 #define  Pragma_Export_Valued_Procedure     58
-#define  Pragma_Finalize_Storage_Only       59
-#define  Pragma_Ident                       60
-#define  Pragma_Import                      61
-#define  Pragma_Import_Exception            62
-#define  Pragma_Import_Function             63
-#define  Pragma_Import_Object               64
-#define  Pragma_Import_Procedure            65
-#define  Pragma_Import_Valued_Procedure     66
-#define  Pragma_Inline                      67
-#define  Pragma_Inline_Always               68
-#define  Pragma_Inline_Generic              69
-#define  Pragma_Inspection_Point            70
-#define  Pragma_Interface                   71
-#define  Pragma_Interface_Name              72
-#define  Pragma_Interrupt_Handler           73
-#define  Pragma_Interrupt_Priority          74
-#define  Pragma_Java_Constructor            75
-#define  Pragma_Java_Interface              76
-#define  Pragma_Link_With                   77
-#define  Pragma_Linker_Alias                78
-#define  Pragma_Linker_Options              79
-#define  Pragma_Linker_Section              80
-#define  Pragma_List                        81
-#define  Pragma_Machine_Attribute           82
-#define  Pragma_Main                        83
-#define  Pragma_Main_Storage                84
-#define  Pragma_Memory_Size                 85
-#define  Pragma_No_Return                   86
-#define  Pragma_Optimize                    87
-#define  Pragma_Pack                        88
-#define  Pragma_Page                        89
-#define  Pragma_Passive                     90
-#define  Pragma_Preelaborate                91
-#define  Pragma_Priority                    92
-#define  Pragma_Psect_Object                93
-#define  Pragma_Pure                        94
-#define  Pragma_Pure_Function               95
-#define  Pragma_Remote_Call_Interface       96
-#define  Pragma_Remote_Types                97
-#define  Pragma_Share_Generic               98
-#define  Pragma_Shared                      99
-#define  Pragma_Shared_Passive             100
-#define  Pragma_Source_Reference           101
-#define  Pragma_Stream_Convert             102
-#define  Pragma_Subtitle                   103
-#define  Pragma_Suppress_All               104
-#define  Pragma_Suppress_Debug_Info        105
-#define  Pragma_Suppress_Initialization    106
-#define  Pragma_System_Name                107
-#define  Pragma_Task_Info                  108
-#define  Pragma_Task_Name                  109
-#define  Pragma_Task_Storage               110
-#define  Pragma_Time_Slice                 111
-#define  Pragma_Title                      112
-#define  Pragma_Unchecked_Union            113
-#define  Pragma_Unimplemented_Unit         114
-#define  Pragma_Unreserve_All_Interrupts   115
-#define  Pragma_Volatile                   116
-#define  Pragma_Volatile_Components        117
-#define  Pragma_Weak_External              118
+#define  Pragma_External                    59
+#define  Pragma_Finalize_Storage_Only       60
+#define  Pragma_Ident                       61
+#define  Pragma_Import                      62
+#define  Pragma_Import_Exception            63
+#define  Pragma_Import_Function             64
+#define  Pragma_Import_Object               65
+#define  Pragma_Import_Procedure            66
+#define  Pragma_Import_Valued_Procedure     67
+#define  Pragma_Inline                      68
+#define  Pragma_Inline_Always               69
+#define  Pragma_Inline_Generic              70
+#define  Pragma_Inspection_Point            71
+#define  Pragma_Interface                   72
+#define  Pragma_Interface_Name              73
+#define  Pragma_Interrupt_Handler           74
+#define  Pragma_Interrupt_Priority          75
+#define  Pragma_Java_Constructor            76
+#define  Pragma_Java_Interface              77
+#define  Pragma_Link_With                   78
+#define  Pragma_Linker_Alias                79
+#define  Pragma_Linker_Options              80
+#define  Pragma_Linker_Section              81
+#define  Pragma_List                        82
+#define  Pragma_Machine_Attribute           83
+#define  Pragma_Main                        84
+#define  Pragma_Main_Storage                85
+#define  Pragma_Memory_Size                 86
+#define  Pragma_No_Return                   87
+#define  Pragma_Optimize                    88
+#define  Pragma_Pack                        89
+#define  Pragma_Page                        90
+#define  Pragma_Passive                     91
+#define  Pragma_Preelaborate                92
+#define  Pragma_Priority                    93
+#define  Pragma_Psect_Object                94
+#define  Pragma_Pure                        95
+#define  Pragma_Pure_Function               96
+#define  Pragma_Remote_Call_Interface       97
+#define  Pragma_Remote_Types                98
+#define  Pragma_Share_Generic               99
+#define  Pragma_Shared                     100
+#define  Pragma_Shared_Passive             101
+#define  Pragma_Source_Reference           102
+#define  Pragma_Stream_Convert             103
+#define  Pragma_Subtitle                   104
+#define  Pragma_Suppress_All               105
+#define  Pragma_Suppress_Debug_Info        106
+#define  Pragma_Suppress_Initialization    107
+#define  Pragma_System_Name                108
+#define  Pragma_Task_Info                  109
+#define  Pragma_Task_Name                  110
+#define  Pragma_Task_Storage               111
+#define  Pragma_Time_Slice                 112
+#define  Pragma_Title                      113
+#define  Pragma_Unchecked_Union            114
+#define  Pragma_Unimplemented_Unit         115
+#define  Pragma_Unreserve_All_Interrupts   116
+#define  Pragma_Volatile                   117
+#define  Pragma_Volatile_Components        118
+#define  Pragma_Weak_External              119
 
 /* The following are deliberately out of alphabetical order, see Snames */
 
-#define  Pragma_AST_Entry                  119
-#define  Pragma_Storage_Size               120
-#define  Pragma_Storage_Unit               121
+#define  Pragma_AST_Entry                  120
+#define  Pragma_Storage_Size               121
+#define  Pragma_Storage_Unit               122
 
 /* Define the numeric values for the conventions.  */
 

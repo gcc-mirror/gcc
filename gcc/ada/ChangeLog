@@ -1,3 +1,11 @@
+2001-10-10  Geert Bosch  <bosch@gnat.com>
+
+	* snames.ads: Add new names for project facility.
+
+	* snames.adb: Update to reflect snames.ads changes.
+
+	* snames.h: Update to reflect snames.ads changes.
+
 2001-10-10  Vincent Celier <celier@gnat.com>
 
 	* make.adb:
