@@ -7666,6 +7666,8 @@ fn_type_unification (fn, explicit_targs, targs, args, return_type,
       /* We've been given a return type to match, prepend it.  */
       parms = tree_cons (NULL_TREE, TREE_TYPE (fntype), parms);
       args = tree_cons (NULL_TREE, return_type, args);
+      if (len >= 0)
+	++len;
     }
 
   /* We allow incomplete unification without an error message here
@@ -8874,9 +8876,6 @@ more_specialized (pat1, pat2, len)
 {
   tree targs;
   int winner = 0;
-
-  if (len == 0)
-    return 0;
 
   targs = get_bindings_order (pat1, DECL_TEMPLATE_RESULT (pat2), len);
   if (targs)
