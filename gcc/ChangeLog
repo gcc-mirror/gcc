@@ -1,3 +1,9 @@
+2002-04-18  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi (Downloading the source): Do not mention Chill
+	any longer, but mention Ada.
+	(Configuration): Do not mention Chill any longer.
+
 2002-04-18  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.h (TARGET_VERSION): Remove local version number.
