@@ -1,3 +1,11 @@
+Thu Jul 16 14:48:47 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* mn10300.md (movXX patterns): Make sure the destination is an
+	ADDRESS_REG when substituting "zero_areg" for (const_int 0).
+	(logical patterns): Split into expanders + patterns
+	(zero and sign extension patterns): Similarly.
+	(shift patterns): Similarly.
+
 Thu Jul 16 01:17:44 1998  Richard Henderson  <rth@cygnus.com>
 
 	* loop.c (emit_iv_add_mult): Scan the entire insn list generated
