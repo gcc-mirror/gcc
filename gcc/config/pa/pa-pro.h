@@ -64,9 +64,9 @@ dtors_section ()							\
 #define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       				\
   do {									\
     dtors_section ();                   				\
-    fprintf (FILE, "\t.word\t ");				\
+    fputs ("\t.word\t ", FILE);				\
     assemble_name (FILE, NAME);              				\
-    fprintf (FILE, "\n");						\
+    fputs ("\n", FILE);						\
   } while (0)
 
 /* A C statement (sans semicolon) to output an element in the table of
@@ -74,9 +74,9 @@ dtors_section ()							\
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
   do {									\
     ctors_section ();							\
-    fprintf (FILE, "\t.word\t ");				\
+    fputs ("\t.word\t ", FILE);				\
     assemble_name (FILE, NAME);						\
-    fprintf (FILE, "\n");						\
+    fputs ("\n", FILE);						\
   } while (0)
 
 #include "pa/pa.h"
