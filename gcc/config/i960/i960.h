@@ -1312,13 +1312,8 @@ extern struct rtx_def *i960_compare_op0, *i960_compare_op1;
 	fprintf((FILE),"\t.stabd	68,0,%d\n",(LINE));	\
   } }
 
-/* This is how to output a command to make the user-level label named NAME
-   defined for reference from other files.  */
-
-#define ASM_GLOBALIZE_LABEL(FILE,NAME)		\
-{ fputs ("\t.globl ", FILE);			\
-  assemble_name (FILE, NAME);			\
-  fputs ("\n", FILE); }
+/* Globalizing directive for a label.  */
+#define GLOBAL_ASM_OP "\t.globl "
 
 /* The prefix to add to user-visible assembler symbols.  */
 

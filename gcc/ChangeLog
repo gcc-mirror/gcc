@@ -1,5 +1,13 @@
 2002-07-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* alpha.h, arc.h, arm/aout.h, avr.h, cris.h, d30v.h, dsp16xx.h,
+	fr30.h, h8300.h, i370.h, i386/sco5.h, i386/unix.h, i960.h, ia64.h,
+	ip2k.h, m32r.h, mcore.h, mips.h, mn10200.h, mn10300.h, ns32k.h,
+	openbsd.h, pa/pa-linux.h, pdp11.h, romp.h, rs6000/sysv4.h,
+	s390/linux.h, sh.h, sparc.h, stormy16.h, v850.h, vax.h, xtensa.h:
+	(ASM_GLOBALIZE_LABEL): Delete.
+	(GLOBAL_ASM_OP): Define.
+
 	* m68hc11.h, m68k.h, m88k.h (ASM_GLOBALIZE_LABEL): Delete.
 	
 	* defaults.h (ASM_GLOBALIZE_LABEL): Provide a default.

@@ -2162,18 +2162,8 @@ do {							\
    the i386) don't know about that.  Also, we don't use \v
    since some versions of gas, such as 2.2 did not accept it.  */
 
-#define ASM_GLOBALIZE_LABEL(STREAM, NAME)	\
-do {						\
-  fprintf ((STREAM), ".global\t");		\
-  assemble_name ((STREAM), (NAME));		\
-  fprintf ((STREAM), "\n");			\
-} while (0)     
-/* A C statement (sans semicolon) to output to the stdio stream
-   STREAM some commands that will make the label NAME global; that
-   is, available for reference from other files.  Use the expression
-   `assemble_name (STREAM, NAME)' to output the name itself; before
-   and after that, output the additional assembler syntax for making
-   that name global, and a newline.  */
+/* Globalizing directive for a label.  */
+#define GLOBAL_ASM_OP ".global\t"
 
 #undef ASM_FORMAT_PRIVATE_NAME
 #define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\

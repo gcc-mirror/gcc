@@ -4261,16 +4261,8 @@ do									\
  }									\
 while (0)
 
-
-/* This is how to output a command to make the user-level label named NAME
-   defined for reference from other files.  */
-
-#define ASM_GLOBALIZE_LABEL(STREAM,NAME)				\
-  do {									\
-    fputs ("\t.globl\t", STREAM);					\
-    assemble_name (STREAM, NAME);					\
-    fputs ("\n", STREAM);						\
-  } while (0)
+/* Globalizing directive for a label.  */
+#define GLOBAL_ASM_OP "\t.globl\t"
 
 /* This says how to define a global common symbol.  */
 

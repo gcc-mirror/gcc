@@ -168,9 +168,10 @@ Boston, MA 02111-1307, USA.  */
    does what we want (i.e. uses colons).  It must be compatible with
    ASM_GENERATE_INTERNAL_LABEL(), so do not define it here.  */
 
+/* Use the default.  */
 #undef ASM_GLOBALIZE_LABEL
-#define ASM_GLOBALIZE_LABEL(FILE, NAME) \
-  (fputs (".globl ", FILE), assemble_name (FILE, NAME), fputs ("\n", FILE))
+/* Globalizing directive for a label.  */
+#definef GLOBAL_ASM_OP ".globl "
 
 /* FIXME: Hacked from the <elfos.h> one so that we avoid multiple
    labels in a function declaration (since pa.c seems determined to do

@@ -1322,13 +1322,11 @@ __transfer_from_trampoline ()		\
    defined for reference from other files.  */
 
 #ifndef COLLECT
-#define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
-  do { fputs (".globl ", FILE); assemble_name (FILE, NAME); fputs ("\n", FILE);} while (0)
+/* Globalizing directive for a label.  */
+#define GLOBAL_ASM_OP ".globl "
 #else
 #define ASM_GLOBALIZE_LABEL(STREAM,NAME)				\
-do {									\
-  fprintf (STREAM, "\t.globl\t%s\n", NAME);				\
-} while (0)
+  fprintf ((STREAM), "\t.globl\t%s\n", (NAME));
 #endif
 
 /* This is how to output an internal numbered label where
