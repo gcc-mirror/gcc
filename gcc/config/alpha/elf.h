@@ -83,8 +83,9 @@ extern void output_file_directive ();
 #else
 #define ASM_FILE_END(FILE)					\
 do {				 				\
-     fprintf ((FILE), "\t%s\t\"GCC: (GNU) %s\"\n",		\
-	      IDENT_ASM_OP, version_string);			\
+     if (!flag_no_ident)					\
+	fprintf ((FILE), "\t%s\t\"GCC: (GNU) %s\"\n",		\
+		 IDENT_ASM_OP, version_string);			\
    } while (0)
 #endif
 

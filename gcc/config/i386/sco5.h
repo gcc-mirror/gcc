@@ -211,8 +211,9 @@ do {									\
 #undef ASM_FILE_END
 #define ASM_FILE_END(FILE)						\
 do {									\
-  fprintf ((FILE), "%s\t\"GCC: (GNU) %s\"\n",				\
-    IDENT_ASM_OP, version_string);					\
+     if (!flag_no_ident)						\
+	fprintf ((FILE), "%s\t\"GCC: (GNU) %s\"\n",			\
+		 IDENT_ASM_OP, version_string);				\
 } while (0)
 
 #undef ASM_FINISH_DECLARE_OBJECT

@@ -142,10 +142,6 @@ int flag_traditional;
 
 int flag_signed_bitfields = 1;
 
-/* Nonzero means handle `#ident' directives.  0 means ignore them.  */
-
-int flag_no_ident;
-
 /* Nonzero means enable obscure ANSI features and disable GNU extensions
    that might cause ANSI-compliant code to be miscompiled.  */
 
@@ -466,7 +462,6 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"cond-mismatch", &flag_cond_mismatch, 1},
   {"asm", &flag_no_asm, 0},
   {"builtin", &flag_no_builtin, 0},
-  {"ident", &flag_no_ident, 0},
 
   /* C++-only options.  */
   {"access-control", &flag_access_control, 1},

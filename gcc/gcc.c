@@ -605,7 +605,7 @@ static struct compiler default_compilers[] =
                   %{ftraditional:-traditional}\
                   %{traditional-cpp:-traditional}\
 		  %{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
-		  %{aux-info*}\
+		  %{aux-info*} %{Qn:-fno-ident}\
 		  %{--help:--help}\
 		  %{g*} %{O*} %{W*} %{w} %{pedantic*}\
 		  %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
@@ -632,7 +632,7 @@ static struct compiler default_compilers[] =
 		   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a*}\
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{std*}\
 		   %{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
-		   %{aux-info*}\
+		   %{aux-info*} %{Qn:-fno-ident}\
 		   %{--help:--help} \
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
@@ -676,7 +676,7 @@ static struct compiler default_compilers[] =
    {"%{!M:%{!MM:%{!E:cc1 %i %1 %{!Q:-quiet} %{d*} %{m*} %{a*}\
 			%{g*} %{O*} %{W*} %{w} %{pedantic*} %{std*}\
 			%{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
-			%{aux-info*}\
+			%{aux-info*} %{Qn:-fno-ident}\
 			%{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 			%{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
 		     %{!S:as %a %Y\
