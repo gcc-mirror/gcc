@@ -1,3 +1,8 @@
+2003-10-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000.md ("abssi2_isel"): Add early clobber to
+	operand 2.
+
 2003-10-08  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc: Don't accept --enable-threads=pthreads.  Clean
