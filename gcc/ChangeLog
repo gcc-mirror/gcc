@@ -1,3 +1,18 @@
+2004-05-09  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 15007
+	* c-decl.c (current_file_decl): Rename to all_translation_units,
+	adjust comment.
+	(pop_scope): If popping file_scope, construct a
+	TRANSLATION_UNIT_DECL and make it the context of all the
+	symbols in the scope.
+	(push_file_scope): Don't construct a TRANSLATION_UNIT_DECL here.
+	(pushdecl): Clarify comment.  Do not set DECL_CONTEXT of
+	anything to current_file_decl.
+	(pushdecl_top_level): Likewise.
+	(store_parm_decls_newstyle): Adjust check for nested function.
+	(c_write_global_declarations): Update for renamed variable
+.
 2004-05-09  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000-protos.h
@@ -44,7 +59,7 @@
 	Generate appropriate parallels for vector arguments
 	passed to vararg functions. (function_arg): make the call
 	to rs6000_mixed_function_arg for vector args as needed.
-	
+
 2004-05-07  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_va_arg): Fix calculation of osize for
