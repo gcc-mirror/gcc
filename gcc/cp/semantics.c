@@ -2254,8 +2254,14 @@ expand_stmt (t)
 	    if (TREE_CODE (decl) == VAR_DECL 
 		&& !TREE_STATIC (decl)
 		&& !DECL_EXTERNAL (decl))
-	      /* Let the back-end know about this variable.  */
-	      emit_local_var (decl);
+	      {
+		/* Let the back-end know about this variable.  */
+		if (!ANON_AGGR_TYPE_P (TREE_TYPE (decl)))
+		  emit_local_var (decl);
+		else
+		  expand_anon_union_decl (decl, NULL_TREE, 
+					  DECL_ANON_UNION_ELEMS (decl));
+	      }
 
 	    resume_momentary (i);
 	  }
