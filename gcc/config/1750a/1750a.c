@@ -385,46 +385,63 @@ simple_memory_operand (op, mode)
   return 0;
 }
 
+
 /* destructively add one to memory address */
-add_1_to_mem (opnd)	/* returns 1 for success, 0 for failure */
+add_1_to_mem (opnd)	/* returns 0 for success, -1 for failure */
      rtx opnd;		/* OPND must be a MEM rtx */
 {
   rtx inner = XEXP (opnd, 0);
 
   if (GET_CODE (opnd) != MEM)
-    return 0;  /* failure */
-first:
+    {
+      fprintf (stderr, "add_1_to_mem: input is not MEM\n");
+      return -1;  /* failure */
+    }
   switch (GET_CODE (inner))
     {
     case CONST:
       inner = XEXP (inner, 0);
-      goto first;
+      if (GET_CODE (inner) != PLUS
+       || GET_CODE (XEXP (inner, 1)) != CONST_INT)
+	{
+	  fprintf (stderr, "add_1_to_mem: CONST failure\n");
+	  return -1;
+	}
+      INTVAL (XEXP (XEXP (XEXP (opnd, 0), 0), 1)) += 1;
+      break;
     case REG:
+      XEXP (opnd, 0) = gen_rtx (PLUS, Pmode, inner, const1_rtx);
+      break;
     case SYMBOL_REF:
     case LABEL_REF:
-      inner = gen_rtx (PLUS, Pmode, inner, const1_rtx);
-      return 1;
+      XEXP (opnd, 0) = gen_rtx (CONST, VOIDmode,
+			 gen_rtx (PLUS, Pmode, inner, const1_rtx));
+      break;
     case PLUS:
       inner = XEXP (inner, 1);
-second:
       switch (GET_CODE (inner))
 	{
 	case CONST:
 	  inner = XEXP (inner, 0);
-	  goto second;
+	  if (GET_CODE (inner) != PLUS
+	   || GET_CODE (XEXP (inner, 1)) != CONST_INT)
+	    {
+	      fprintf (stderr, "add_1_to_mem: PLUS CONST failure\n");
+	      return -1;
+	    }
+	  INTVAL (XEXP (XEXP (XEXP (XEXP (opnd, 0), 1), 0), 1)) += 1;
+	  break;
 	case CONST_INT:
-	  INTVAL (inner) += 1;
-	  return 1;
+	  INTVAL (XEXP (XEXP (opnd, 0), 1)) += 1;
+	  break;
 	case SYMBOL_REF:
 	case LABEL_REF:
-	  inner = gen_rtx (PLUS, Pmode, inner, const1_rtx);
-	  return 1;
-	case PLUS:
-	  inner = XEXP (inner, 1);
-	  if (GET_CODE (inner) != CONST_INT)
-	    return 0;
-	  INTVAL (inner) += 1;
-	  return 1;
+	  XEXP (XEXP (opnd, 0), 1) = gen_rtx (CONST, VOIDmode,
+				     gen_rtx (PLUS, Pmode, inner, const1_rtx));
+	  break;
+	default:
+	  fprintf (stderr, "add_1_to_mem: PLUS failure\n");
+	  return -1;
 	}
     }
   return 0;
