@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in.
 
-AUTOMAKE_OPTIONS = foreign no-installinfo
+AUTOMAKE_OPTIONS = foreign no-installinfo no-dependencies
 
 if TESTSUBDIR
 SUBDIRS = $(DIRLTDL) testsuite gcj include
