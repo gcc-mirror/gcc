@@ -1057,7 +1057,8 @@ dbxout_type (type, full, show_arg_types)
      by assuming `int'.  */
   if (type == error_mark_node)
     type = integer_type_node;
-  else
+  else if (!(TYPE_NAME (type) && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+	     && DECL_ORIGINAL_TYPE (TYPE_NAME (type))))
     {
       type = TYPE_MAIN_VARIANT (type);
       if (TYPE_NAME (type)
@@ -1154,6 +1155,13 @@ dbxout_type (type, full, show_arg_types)
      we will not get into an infinite recursion of definitions.  */
 
   typevec[TYPE_SYMTAB_ADDRESS (type)].status = TYPE_DEFINED;
+
+  if (TYPE_NAME (type) && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+      && DECL_ORIGINAL_TYPE (TYPE_NAME (type)))
+    { 
+      dbxout_type (DECL_ORIGINAL_TYPE (TYPE_NAME (type)), 0, 0);
+      return;
+    }
 
   switch (TREE_CODE (type))
     {
