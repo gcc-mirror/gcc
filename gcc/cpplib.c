@@ -1689,7 +1689,7 @@ find_answer (node, candidate)
 
 /* Test an assertion within a preprocessor conditional.  Returns
    nonzero on failure, zero on success.  On success, the result of
-   the test is written into VALUE.  */
+   the test is written into VALUE, otherwise the value 0.  */
 int
 _cpp_test_assertion (pfile, value)
      cpp_reader *pfile;
@@ -1699,6 +1699,11 @@ _cpp_test_assertion (pfile, value)
   cpp_hashnode *node;
 
   node = parse_assertion (pfile, &answer, T_IF);
+
+  /* For recovery, an erroneous assertion expression is handled as a
+     failing assertion.  */
+  *value = 0;
+
   if (node)
     *value = (node->type == NT_ASSERTION &&
 	      (answer == 0 || *find_answer (node, answer) != 0));
