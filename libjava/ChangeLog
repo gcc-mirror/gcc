@@ -1,5 +1,11 @@
 2004-11-06  Tom Tromey  <tromey@redhat.com>
 
+	* java/io/ObjectOutputStream.java (currentObjectStreamClass): Now
+	package-private.
+	(setBlockDataMode): Likewise.
+
+2004-11-06  Tom Tromey  <tromey@redhat.com>
+
 	* gnu/java/nio/charset/ISO_8859_1.java (Decoder): Now
 	package-private.
 	(Encoder): Likewise.
