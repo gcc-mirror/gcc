@@ -1,3 +1,8 @@
+1998-06-07  Richard Henderson  <rth@cygnus.com>
+
+	* lex.c (lang_init_options): New function.
+	(lang_init): Remove flag_exceptions == 2 hack.
+	
 1998-06-05  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* search.c (envelope_add_decl): Tweak for implicit typename.
