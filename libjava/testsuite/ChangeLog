@@ -1,3 +1,8 @@
+2001-07-12  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* libjava.compile/anon_ctor_itf_arg.java: New file.
+	* libjava.compile/anon_ctor_itf_arg.out: New file.
+
 2001-07-12  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.lang/N19990310_4.xfail: Removed.
