@@ -1,3 +1,22 @@
+2002-12-18  Jason Merrill  <jason@redhat.com>
+
+	Handle anonymous unions at the tree level.
+	C++ ABI change: Mangle anonymous unions using the name of their
+	first named field (by depth-first search).  Should not cause
+	binary compatibility problems, though, as the compiler previously
+	didn't emit anything for affected unions.
+	* cp-tree.def (ALIAS_DECL): New tree code.
+	* decl2.c (build_anon_union_vars): Build ALIAS_DECLs.  Return the
+	first field, not the largest.
+	(finish_anon_union): Don't mess with RTL.  Do set DECL_ASSEMBLER_NAME,
+	push the decl, and write it out at namespace scope.
+	* decl.c (lookup_name_real): See through an ALIAS_DECL.
+	(pushdecl): Add namespace bindings for ALIAS_DECLs.
+	* rtti.c (unemitted_tinfo_decl_p): Don't try to look at the name
+	of a decl which doesn't have one.
+	* typeck.c (build_class_member_access_expr): Don't recurse if
+	we already have the type we want.
+
 2002-12-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/8099

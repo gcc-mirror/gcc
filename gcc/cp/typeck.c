@@ -1987,7 +1987,8 @@ build_class_member_access_expr (tree object, tree member,
 	 OBJECT so that it refers to the class containing the
 	 anonymous union.  Generate a reference to the anonymous union
 	 itself, and recur to find MEMBER.  */
-      if (ANON_AGGR_TYPE_P (DECL_CONTEXT (member)))
+      if (ANON_AGGR_TYPE_P (DECL_CONTEXT (member))
+	  && !same_type_p (object_type, DECL_CONTEXT (member)))
 	{
 	  tree anonymous_union;
 

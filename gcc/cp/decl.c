@@ -4051,6 +4051,7 @@ pushdecl (x)
   		&& t != NULL_TREE)
  	      && (TREE_CODE (x) == TYPE_DECL
  		  || TREE_CODE (x) == VAR_DECL
+ 		  || TREE_CODE (x) == ALIAS_DECL
  		  || TREE_CODE (x) == NAMESPACE_DECL
  		  || TREE_CODE (x) == CONST_DECL
  		  || TREE_CODE (x) == TEMPLATE_DECL))
@@ -6227,6 +6228,9 @@ does not match lookup in the current scope (`%#D')",
     }
   else if (from_obj)
     val = from_obj;
+
+  if (val && TREE_CODE (val) == ALIAS_DECL)
+    val = DECL_INITIAL (val);
 
   return val;
 }

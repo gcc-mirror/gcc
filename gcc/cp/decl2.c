@@ -66,7 +66,7 @@ static int maybe_emit_vtables (tree);
 static int is_namespace_ancestor PARAMS ((tree, tree));
 static void add_using_namespace PARAMS ((tree, tree, int));
 static tree ambiguous_decl PARAMS ((tree, tree, tree,int));
-static tree build_anon_union_vars PARAMS ((tree, tree*, int, int));
+static tree build_anon_union_vars PARAMS ((tree));
 static int acceptable_java_type PARAMS ((tree));
 static void output_vtable_inherit PARAMS ((tree));
 static tree start_objects PARAMS ((int, int));
@@ -1269,22 +1269,15 @@ defer_fn (fn)
   VARRAY_PUSH_TREE (deferred_fns, fn);
 }
 
-/* Hunts through the global anonymous union ANON_DECL, building
-   appropriate VAR_DECLs.  Stores cleanups on the list of ELEMS, and
-   returns a VAR_DECL whose size is the same as the size of the
-   ANON_DECL, if one is available.
+/* Walks through the namespace- or function-scope anonymous union OBJECT,
+   building appropriate ALIAS_DECLs.  Returns one of the fields for use in
+   the mangled name.  */
 
-   FIXME: we should really handle anonymous unions by binding the names
-   of the members to COMPONENT_REFs rather than this kludge.  */
-
-static tree 
-build_anon_union_vars (anon_decl, elems, static_p, external_p)
-     tree anon_decl;
-     tree* elems;
-     int static_p;
-     int external_p;
+static tree
+build_anon_union_vars (object)
+     tree object;
 {
-  tree type = TREE_TYPE (anon_decl);
+  tree type = TREE_TYPE (object);
   tree main_decl = NULL_TREE;
   tree field;
 
@@ -1298,12 +1291,14 @@ build_anon_union_vars (anon_decl, elems, static_p, external_p)
        field = TREE_CHAIN (field))
     {
       tree decl;
+      tree ref;
 
       if (DECL_ARTIFICIAL (field))
 	continue;
       if (TREE_CODE (field) != FIELD_DECL)
 	{
-	  cp_pedwarn_at ("`%#D' invalid; an anonymous union can only have non-static data members",
+	  cp_pedwarn_at ("\
+`%#D' invalid; an anonymous union can only have non-static data members",
 			 field);
 	  continue;
 	}
@@ -1313,55 +1308,25 @@ build_anon_union_vars (anon_decl, elems, static_p, external_p)
       else if (TREE_PROTECTED (field))
 	cp_pedwarn_at ("protected member `%#D' in anonymous union", field);
 
-      if (DECL_NAME (field) == NULL_TREE
-	  && ANON_AGGR_TYPE_P (TREE_TYPE (field)))
+      ref = build_class_member_access_expr (object, field, NULL_TREE,
+					    false);
+
+      if (DECL_NAME (field))
 	{
-	  decl = build_anon_union_vars (field, elems, static_p, external_p);
-	  if (!decl)
-	    continue;
-	}
-      else if (DECL_NAME (field) == NULL_TREE)
-	continue;
-      else
-	{
-	  decl = build_decl (VAR_DECL, DECL_NAME (field), TREE_TYPE (field));
-	  /* tell `pushdecl' that this is not tentative.  */
-	  DECL_INITIAL (decl) = error_mark_node;
+	  decl = build_decl (ALIAS_DECL, DECL_NAME (field), TREE_TYPE (field));
+	  DECL_INITIAL (decl) = ref;	    
 	  TREE_PUBLIC (decl) = 0;
-	  TREE_STATIC (decl) = static_p;
-	  DECL_EXTERNAL (decl) = external_p;
+	  TREE_STATIC (decl) = 0;
+	  DECL_EXTERNAL (decl) = 1;
 	  decl = pushdecl (decl);
-	  DECL_INITIAL (decl) = NULL_TREE;
 	}
+      else if (ANON_AGGR_TYPE_P (TREE_TYPE (field)))
+	decl = build_anon_union_vars (ref);
 
-      /* Only write out one anon union element--choose the largest
-	 one.  We used to try to find one the same size as the union,
-	 but that fails if the ABI forces us to align the union more
-	 strictly.  */
-      if (main_decl == NULL_TREE
-	  || tree_int_cst_lt (DECL_SIZE (main_decl), DECL_SIZE (decl)))
-	{
-	  if (main_decl)
-	    TREE_ASM_WRITTEN (main_decl) = 1;
-	  main_decl = decl;
-	}
-      else 
-	/* ??? This causes there to be no debug info written out
-	   about this decl.  */
-	TREE_ASM_WRITTEN (decl) = 1;
-      
-      if (DECL_NAME (field) == NULL_TREE
-	  && ANON_AGGR_TYPE_P (TREE_TYPE (field)))
-	/* The remainder of the processing was already done in the
-	   recursive call.  */
-	continue;
-
-      /* If there's a cleanup to do, it belongs in the
-	 TREE_PURPOSE of the following TREE_LIST.  */
-      *elems = tree_cons (NULL_TREE, decl, *elems);
-      TREE_TYPE (*elems) = type;
+      if (main_decl == NULL_TREE)
+	main_decl = decl;
     }
-  
+
   return main_decl;
 }
 
@@ -1376,8 +1341,6 @@ finish_anon_union (anon_union_decl)
   tree type = TREE_TYPE (anon_union_decl);
   tree main_decl;
   int public_p = TREE_PUBLIC (anon_union_decl);
-  int static_p = TREE_STATIC (anon_union_decl);
-  int external_p = DECL_EXTERNAL (anon_union_decl);
 
   /* The VAR_DECL's context is the same as the TYPE's context.  */
   DECL_CONTEXT (anon_union_decl) = DECL_CONTEXT (TYPE_NAME (type));
@@ -1393,29 +1356,27 @@ finish_anon_union (anon_union_decl)
 
   if (!processing_template_decl)
     {
-      main_decl 
-	= build_anon_union_vars (anon_union_decl,
-				 &DECL_ANON_UNION_ELEMS (anon_union_decl),
-				 static_p, external_p);
-      
+      main_decl = build_anon_union_vars (anon_union_decl);
+
       if (main_decl == NULL_TREE)
 	{
-	  warning ("anonymous aggregate with no members");
+	  warning ("anonymous union with no members");
 	  return;
 	}
 
-      if (static_p)
-	{
-	  make_decl_rtl (main_decl, 0);
-	  COPY_DECL_RTL (main_decl, anon_union_decl);
-	  expand_anon_union_decl (anon_union_decl, 
-				  NULL_TREE,
-				  DECL_ANON_UNION_ELEMS (anon_union_decl));
-	  return;
-	}
+      /* Use main_decl to set the mangled name.  */
+      DECL_NAME (anon_union_decl) = DECL_NAME (main_decl);
+      mangle_decl (anon_union_decl);
+      DECL_NAME (anon_union_decl) = NULL_TREE;
     }
 
-  add_decl_stmt (anon_union_decl);
+  pushdecl (anon_union_decl);
+  if (building_stmt_tree ()
+      && at_function_scope_p ())
+    add_decl_stmt (anon_union_decl);
+  else if (!processing_template_decl)
+    rest_of_decl_compilation (anon_union_decl, NULL,
+			      toplevel_bindings_p (), at_eof);
 }
 
 /* Auxiliary functions to make type signatures for
