@@ -2593,10 +2593,15 @@ static struct rtvec_def *old_asm_operands_vec, *new_asm_operands_vec;
    with the register, which we cannot do outside a MEM.  In addition, we need
    to record the fact that a register is referenced outside a MEM.
 
-   If INSN is nonzero, it is the insn containing X.  If we replace a REG
+   If INSN is an insn, it is the insn containing X.  If we replace a REG
    in a SET_DEST with an equivalent MEM and INSN is non-zero, write a
    CLOBBER of the pseudo after INSN so find_equiv_regs will know that
    that the REG is being modified.
+
+   Alternatively, INSN may be a note (an EXPR_LIST or INSN_LIST).
+   That's used when we eliminate in expressions stored in notes.
+   This means, do not set ref_outside_mem even if the reference
+   is outside of MEMs.
 
    If we see a modification to a register we know about, take the
    appropriate action (see case SET, below).
@@ -2647,7 +2652,10 @@ eliminate_regs (x, mem_mode, insn)
 	       ep++)
 	    if (ep->from_rtx == x && ep->can_eliminate)
 	      {
-		if (! mem_mode)
+		if (! mem_mode
+		    /* Refs inside notes don't count for this purpose.  */
+		    && ! (insn == 0 && (GET_CODE (insn) == EXPR_LIST
+					|| GET_CODE (insn) == INSN_LIST)))
 		  ep->ref_outside_mem = 1;
 		return plus_constant (ep->to_rtx, ep->previous_offset);
 	      }
@@ -3000,10 +3008,10 @@ eliminate_regs (x, mem_mode, insn)
 	rtx new0 = eliminate_regs (SET_DEST (x), 0, NULL_RTX);
 	rtx new1 = eliminate_regs (SET_SRC (x), 0, NULL_RTX);
 
-	/* If SET_DEST changed from a REG to a MEM and INSN is non-zero,
+	/* If SET_DEST changed from a REG to a MEM and INSN is an insn,
 	   write a CLOBBER insn.  */
 	if (GET_CODE (SET_DEST (x)) == REG && GET_CODE (new0) == MEM
-	    && insn != 0)
+	    && insn != 0 && GET_CODE (insn) != EXPR_LIST)
 	  emit_insn_after (gen_rtx (CLOBBER, VOIDmode, SET_DEST (x)), insn);
 
 	if (new0 != SET_DEST (x) || new1 != SET_SRC (x))
@@ -3243,7 +3251,7 @@ eliminate_regs_in_insn (insn, replace)
      of spill registers to be needed in the final reload pass than in
      the pre-passes.  */
   if (val && REG_NOTES (insn) != 0)
-    REG_NOTES (insn) = eliminate_regs (REG_NOTES (insn), 0, NULL_RTX);
+    REG_NOTES (insn) = eliminate_regs (REG_NOTES (insn), 0, REG_NOTES (insn));
 
   if (! replace)
     pop_obstacks ();
