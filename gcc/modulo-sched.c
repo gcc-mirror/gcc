@@ -934,7 +934,7 @@ canon_loop (struct loop *loop)
 
 /* Build the loop information without loop
    canonization, the loop canonization will
-   be perfromed if the loop is SMSable.  */
+   be performed if the loop is SMSable.  */
 static struct loops *
 build_loops_structure (FILE *dumpfile)
 {
@@ -1417,11 +1417,11 @@ sms_schedule (FILE *dump_file)
 #define DFA_HISTORY SMS_DFA_HISTORY
 
 /* Given the partial schedule PS, this function calculates and returns the
-   cycles in wich we can schedule the node with the given index I.
+   cycles in which we can schedule the node with the given index I.
    NOTE: Here we do the backtracking in SMS, in some special cases. We have
    noticed that there are several cases in which we fail    to SMS the loop
    because the sched window of a node is empty    due to tight data-deps. In
-   such cases we want to unschedule    some of the predecssors/successors
+   such cases we want to unschedule    some of the predecessors/successors
    until we get non-empty    scheduling window.  It returns -1 if the
    scheduling window is empty and zero otherwise.  */
 
@@ -2535,8 +2535,8 @@ rotate_partial_schedule (partial_schedule_ptr ps, int start_cycle)
   ps->min_cycle -= start_cycle;
 }
 
-/* Remove the node N from the partial schedule PS; becuase we restart the DFA
-   each time we want to check for resuorce conflicts; this is equivalent to
+/* Remove the node N from the partial schedule PS; because we restart the DFA
+   each time we want to check for resource conflicts; this is equivalent to
    unscheduling the node N.  */
 static bool
 ps_unschedule_node (partial_schedule_ptr ps, ddg_node_ptr n)
