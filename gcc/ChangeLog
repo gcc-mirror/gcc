@@ -1,3 +1,8 @@
+Wed Sep  3 02:09:30 1997  Torbjorn Granlund  <tege@pdc.kth..se>
+
+	* except.c (eh_outer_context): Expand masking operation using
+	expand_binop.
+
 Tue Sep  2 18:09:39 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* alpha.md (floatdisf2-1): New pattern.
