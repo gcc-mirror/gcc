@@ -356,8 +356,7 @@ cgraph_finalize_function (tree decl, bool nested)
 	      cgraph_remove_node (n);
 	}
 
-      while (node->callees)
-	cgraph_remove_edge (node->callees);
+      cgraph_node_remove_callees (node);
 
       /* We may need to re-queue the node for assembling in case
          we already proceeded it and ignored as not needed.  */
@@ -843,8 +842,7 @@ cgraph_expand_function (struct cgraph_node *node)
       DECL_INITIAL (node->decl) = error_mark_node;
       /* Eliminate all call edges.  This is important so the call_expr no longer
 	 points to the dead function body.  */
-      while (node->callees)
-	cgraph_remove_edge (node->callees);
+      cgraph_node_remove_callees (node);
     }
 }
 
@@ -1006,8 +1004,7 @@ cgraph_remove_unreachable_nodes (void)
 		      DECL_STRUCT_FUNCTION (node->decl) = NULL;
 		      DECL_INITIAL (node->decl) = error_mark_node;
 		    }
-		  while (node->callees)
-		    cgraph_remove_edge (node->callees);
+		  cgraph_node_remove_callees (node);
 		  node->analyzed = false;
 		}
 	      else
