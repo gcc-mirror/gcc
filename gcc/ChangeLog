@@ -1,3 +1,37 @@
+2004-07-08  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (fold_builtin_strcpy): Merge functionality from
+	simplify_builtin_strcpy.  Add additional len argument.  No longer
+	static.  Remove function prototype.
+	(fold_builtin_strncpy): Likewise integrate functionality from
+	simplify_builtin_strncpy.  Add additional slen argument.  No
+	longer static.  Remove function prototype.
+	(simplify_builtin_strcy, simplify_builtin_strncpy): Delete.
+	(simplify_builtin_fputs): Rename to fold_builtin_fputs.  Change
+	types of "ignore" and "unlocked" parameters to bool.
+	(fold_builtin_1):  Add additional ignore argument.  Call renamed
+	fold_builtin_fputs to simplify GCC "fputs" and "fputs_unlocked"
+	builtins.  Update arguments to fold_builtin_strncpy and
+	fold_builtin_strcpy.  Add function prototype.
+	(fold_builtin): Add additional Boolean ignore argument to pass
+	to fold_builtin_1.
+	(simplify_builtin): Call fold_builtin_fputs, fold_builtin_strcpy
+	and fold_builtin_strncpy instead of simplify_builtin_fputs,
+	simplify_builtin_strcpy and simplify_builtin_strncpy respectively.
+
+	* expr.h (simplify_builtin_fputs, simplify_builtin_strcpy,
+	simplify_builtin_strncpy): Delete function prototypes.
+	* tree.h (fold_builtin_fputs, fold_builtin_strcpy,
+	fold_builtin_strncpy): Add function prototypes here.
+	(fold_builtin): Update function prototype with new "bool ignore".
+
+	* tree-ssa-ccp.c (ccp_fold): Update call to fold_builtin.
+	(ccp_fold_builtin):  Update call to fold_builtin.  Call
+	fold_builtin_fputs, fold_builtin_strcpy and fold_builtin_strncpy
+	instead of simplify_builtin_fputs, simplify_builtin_strcpy and
+	simplify_builtin_strncpy respectively.
+	* fold-const.c (fold): Update call to fold_builtin.
+
 2004-07-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* builtins.c (expand_builtin_stpcpy): Un-simplify decay of stpcpy
