@@ -1540,7 +1540,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 
 /* We assume that the store-condition-codes instructions store 0 for false
    and some other value for true.  This is the value stored for true.  */
-#define STORE_FLAG_VALUE -1
+#define STORE_FLAG_VALUE (-1)
 
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction

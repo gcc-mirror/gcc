@@ -1,3 +1,9 @@
+Mon May 22 17:31:35 2000  Philippe De Muyter  <phdm@macqel.be>
+
+	* m68k/m68k.h (STORE_FLAG_VALUE): Macro set to (-1), not -1.
+	* fx80/fx80.h, i370/i370.h, m88k/m88k.h (STORE_FLAG_VALUE): Ditto.
+	* gmicro/gmicro.h, we32k/we32k.h (STORE_FLAG_VALUE): Ditto.
+
 2000-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.md (movdf_insn_v9only_vis): fzero has

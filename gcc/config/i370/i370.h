@@ -908,7 +908,7 @@ enum reg_class
 /* We assume that the store-condition-codes instructions store 0 for false
    and some other value for true.  This is the value stored for true.  */
 
-/* #define STORE_FLAG_VALUE -1 */
+/* #define STORE_FLAG_VALUE (-1) */
 
 /* When a prototype says `char' or `short', really pass an `int'.  */
 
