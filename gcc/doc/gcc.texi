@@ -55,6 +55,7 @@
 @c   marked up with @command, for the commands for compilation when the
 @c   emphasis is on those; "GNU C" and "GNU C++" for language dialects;
 @c   and try to avoid the older term "GNU CC".
+@c - "nonzero" rather than "non-zero".
 @c - "@code{NULL}" rather than "NULL".
 @c - "Objective-C" rather than "Objective C".
 
