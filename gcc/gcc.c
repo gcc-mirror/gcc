@@ -752,7 +752,8 @@ translate_options (argcp, argvp)
 		      else
 			continue;
 		    }
-		  else if (index (option_map[j].arg_info, '*') != 0)
+		  else if (option_map[j].arg_info != 0
+			   && index (option_map[j].arg_info, '*') != 0)
 		    error ("Incomplete `%s' option", option_map[j].name);
 
 		  /* Handle arguments.  */
