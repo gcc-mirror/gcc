@@ -207,10 +207,7 @@ check:
 
 install: all
 	$(LIBTOOL) --mode=install $(INSTALL_DATA) $(LIBG2C) $(libsubdir)/$(MULTISUBDIR)
-	(cd $(libsubdir)/$(MULTISUBDIR) ; \
-	   if [ -f $(LIBG2C_BASE).so ]; then \
-	     mv $(LIBG2C_BASE).so* $(prefix)/lib ;\
-	   fi)
+	(cd $(libsubdir)/$(MULTISUBDIR) ; mv -f $(LIBG2C_BASE).* $(prefix)/lib)
 	$(INSTALL_DATA) libfrtbegin.a $(libsubdir)/$(MULTISUBDIR)
 	$(RANLIB) $(libsubdir)/$(MULTISUBDIR)/libfrtbegin.a
 	$(INSTALL_DATA) g2c.h $(libsubdir)/include/g2c.h
