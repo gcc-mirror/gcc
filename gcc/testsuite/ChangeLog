@@ -1,3 +1,7 @@
+2004-04-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/vmx/varargs-1.c: Handle when printf outputs \r\n.
+
 2004-04-18  Zack Weinberg  <zack@codesourcery.com>
 	    Aldy Hernandez  <aldyh@redhat.com>
 
