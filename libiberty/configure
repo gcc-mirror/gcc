@@ -923,7 +923,7 @@ ac_abs_top_srcdir=`cd "$ac_dir" && cd $ac_top_srcdir && pwd`
     else
       echo "$as_me: WARNING: no configuration information is in $ac_dir" >&2
     fi
-    cd "$ac_popdir"
+    cd $ac_popdir
   done
 fi
 
@@ -1120,7 +1120,7 @@ _ASBOX
       echo "$as_me: caught signal $ac_signal"
     echo "$as_me: exit $exit_status"
   } >&5
-  rm -f core *.core &&
+  rm -f core core.* *.core &&
   rm -rf conftest* confdefs* conf$$* $ac_clean_files &&
     exit $exit_status
      ' 0
@@ -2486,7 +2486,8 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
   for ac_declaration in \
-   '' \
+   ''\
+   '#include <stdlib.h>' \
    'extern "C" void std::exit (int) throw (); using std::exit;' \
    'extern "C" void std::exit (int); using std::exit;' \
    'extern "C" void exit (int) throw ();' \
@@ -2500,8 +2501,8 @@ _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-$ac_declaration
 #include <stdlib.h>
+$ac_declaration
 int
 main ()
 {
@@ -2976,7 +2977,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
 ( exit $ac_status )
 ac_cv_c_bigendian=yes
 fi
-rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+rm -f core core.* *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
 fi
 fi
@@ -3529,7 +3530,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
 ( exit $ac_status )
 ac_cv_header_stdc=no
 fi
-rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+rm -f core core.* *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
 fi
 fi
@@ -4220,8 +4221,10 @@ cat >>conftest.$ac_ext <<_ACEOF
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func (); below.
     Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
-    <limits.h> exists even on freestanding compilers.  */
-#ifdef __STDC__
+    <limits.h> exists even on freestanding compilers.  Under hpux,
+    including <limits.h> includes <sys/time.h> and causes problems
+    checking for functions defined therein.  */
+#if defined (__STDC__) && !defined (_HPUX_SOURCE)
 # include <limits.h>
 #else
 # include <assert.h>
@@ -4645,8 +4648,10 @@ cat >>conftest.$ac_ext <<_ACEOF
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func (); below.
     Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
-    <limits.h> exists even on freestanding compilers.  */
-#ifdef __STDC__
+    <limits.h> exists even on freestanding compilers.  Under hpux,
+    including <limits.h> includes <sys/time.h> and causes problems
+    checking for functions defined therein.  */
+#if defined (__STDC__) && !defined (_HPUX_SOURCE)
 # include <limits.h>
 #else
 # include <assert.h>
@@ -4766,8 +4771,10 @@ cat >>conftest.$ac_ext <<_ACEOF
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func (); below.
     Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
-    <limits.h> exists even on freestanding compilers.  */
-#ifdef __STDC__
+    <limits.h> exists even on freestanding compilers.  Under hpux,
+    including <limits.h> includes <sys/time.h> and causes problems
+    checking for functions defined therein.  */
+#if defined (__STDC__) && !defined (_HPUX_SOURCE)
 # include <limits.h>
 #else
 # include <assert.h>
@@ -4886,7 +4893,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
 ( exit $ac_status )
 ac_cv_c_stack_direction=-1
 fi
-rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+rm -f core core.* *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
 fi
 echo "$as_me:$LINENO: result: $ac_cv_c_stack_direction" >&5
@@ -5065,8 +5072,10 @@ cat >>conftest.$ac_ext <<_ACEOF
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func (); below.
     Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
-    <limits.h> exists even on freestanding compilers.  */
-#ifdef __STDC__
+    <limits.h> exists even on freestanding compilers.  Under hpux,
+    including <limits.h> includes <sys/time.h> and causes problems
+    checking for functions defined therein.  */
+#if defined (__STDC__) && !defined (_HPUX_SOURCE)
 # include <limits.h>
 #else
 # include <assert.h>
@@ -5173,7 +5182,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
 ( exit $ac_status )
 ac_cv_func_fork_works=no
 fi
-rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+rm -f core core.* *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
 fi
 echo "$as_me:$LINENO: result: $ac_cv_func_fork_works" >&5
@@ -5328,7 +5337,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
 ( exit $ac_status )
 ac_cv_func_vfork_works=no
 fi
-rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+rm -f core core.* *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
 fi
 echo "$as_me:$LINENO: result: $ac_cv_func_vfork_works" >&5
@@ -5393,8 +5402,10 @@ cat >>conftest.$ac_ext <<_ACEOF
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func (); below.
     Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
-    <limits.h> exists even on freestanding compilers.  */
-#ifdef __STDC__
+    <limits.h> exists even on freestanding compilers.  Under hpux,
+    including <limits.h> includes <sys/time.h> and causes problems
+    checking for functions defined therein.  */
+#if defined (__STDC__) && !defined (_HPUX_SOURCE)
 # include <limits.h>
 #else
 # include <assert.h>
@@ -5486,8 +5497,10 @@ cat >>conftest.$ac_ext <<_ACEOF
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func (); below.
     Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
-    <limits.h> exists even on freestanding compilers.  */
-#ifdef __STDC__
+    <limits.h> exists even on freestanding compilers.  Under hpux,
+    including <limits.h> includes <sys/time.h> and causes problems
+    checking for functions defined therein.  */
+#if defined (__STDC__) && !defined (_HPUX_SOURCE)
 # include <limits.h>
 #else
 # include <assert.h>
@@ -5688,8 +5701,10 @@ cat >>conftest.$ac_ext <<_ACEOF
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func (); below.
     Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
-    <limits.h> exists even on freestanding compilers.  */
-#ifdef __STDC__
+    <limits.h> exists even on freestanding compilers.  Under hpux,
+    including <limits.h> includes <sys/time.h> and causes problems
+    checking for functions defined therein.  */
+#if defined (__STDC__) && !defined (_HPUX_SOURCE)
 # include <limits.h>
 #else
 # include <assert.h>
@@ -6006,8 +6021,10 @@ cat >>conftest.$ac_ext <<_ACEOF
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func (); below.
     Prefer <limits.h> to <assert.h> if __STDC__ is defined, since
-    <limits.h> exists even on freestanding compilers.  */
-#ifdef __STDC__
+    <limits.h> exists even on freestanding compilers.  Under hpux,
+    including <limits.h> includes <sys/time.h> and causes problems
+    checking for functions defined therein.  */
+#if defined (__STDC__) && !defined (_HPUX_SOURCE)
 # include <limits.h>
 #else
 # include <assert.h>
@@ -6233,7 +6250,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
 ( exit $ac_status )
 ac_cv_func_mmap_fixed_mapped=no
 fi
-rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+rm -f core core.* *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
 fi
 echo "$as_me:$LINENO: result: $ac_cv_func_mmap_fixed_mapped" >&5
@@ -6346,7 +6363,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
 ( exit $ac_status )
 ac_cv_func_strncmp_works=no
 fi
-rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+rm -f core core.* *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
 rm -f core core.* *.core
 fi
