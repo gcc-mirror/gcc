@@ -6974,8 +6974,13 @@ nonzero_bits (x, mode)
 	 stack to be momentarily aligned only to that amount, so we pick
 	 the least alignment.  */
 
+      /* We can't check for arg_pointer_rtx here, because it is not
+	 guaranteed to have as much alignment as the stack pointer.
+	 In particular, in the Irix6 n64 ABI, the stack has 128 bit
+	 alignment but the argument pointer has only 64 bit alignment.  */
+
       if (x == stack_pointer_rtx || x == frame_pointer_rtx
-	  || x == arg_pointer_rtx || x == hard_frame_pointer_rtx
+	  || x == hard_frame_pointer_rtx
 	  || (REGNO (x) >= FIRST_VIRTUAL_REGISTER
 	      && REGNO (x) <= LAST_VIRTUAL_REGISTER))
 	{
