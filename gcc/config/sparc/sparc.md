@@ -2260,8 +2260,9 @@
 (define_split
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(match_operand:DI 1 "arith_double_operand" "rIN"))]
-  "! TARGET_ARCH64 && GET_CODE (operands[1]) == REG && REGNO (operands[0]) < 32
-   && (GET_CODE (operands[1]) != REG || REGNO (operands[1]) < 32)
+  "! TARGET_ARCH64
+   && REGNO (operands[0]) < 32
+   && GET_CODE (operands[1]) == REG && REGNO (operands[1]) < 32
    && ! reg_overlap_mentioned_p (operands[0], operands[1])"
   [(set (match_dup 2) (match_dup 4))
    (set (match_dup 3) (match_dup 5))]
@@ -3723,12 +3724,23 @@ return \"srl %1,0,%0\";
 	(plus:SI (plus:SI (match_dup 7)
 			  (match_dup 8))
 		 (ltu:SI (reg:CC_NOOV 100) (const_int 0))))]
-  "operands[3] = gen_lowpart (SImode, operands[0]);
-   operands[4] = gen_lowpart (SImode, operands[1]);
-   operands[5] = gen_lowpart (SImode, operands[2]);
-   operands[6] = gen_highpart (SImode, operands[0]);
-   operands[7] = gen_highpart (SImode, operands[1]);
-   operands[8] = gen_highpart (SImode, operands[2]);")
+  "
+{
+  operands[3] = gen_lowpart (SImode, operands[0]);
+  operands[4] = gen_lowpart (SImode, operands[1]);
+  operands[5] = gen_lowpart (SImode, operands[2]);
+  operands[6] = gen_highpart (SImode, operands[0]);
+  operands[7] = gen_highpart (SImode, operands[1]);
+  if (GET_CODE (operands[2]) == CONST_INT)
+    {
+      if (INTVAL (operands[2]) < 0)
+	operands[8] = constm1_rtx;
+      else
+	operands[8] = const0_rtx;
+    }
+  else
+    operands[8] = gen_highpart (SImode, operands[2]);
+}")
 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -3746,12 +3758,23 @@ return \"srl %1,0,%0\";
 	(minus:SI (minus:SI (match_dup 7)
 			    (match_dup 8))
 		  (ltu:SI (reg:CC_NOOV 100) (const_int 0))))]
-  "operands[3] = gen_lowpart (SImode, operands[0]);
-   operands[4] = gen_lowpart (SImode, operands[1]);
-   operands[5] = gen_lowpart (SImode, operands[2]);
-   operands[6] = gen_highpart (SImode, operands[0]);
-   operands[7] = gen_highpart (SImode, operands[1]);
-   operands[8] = gen_highpart (SImode, operands[2]);")
+  "
+{
+  operands[3] = gen_lowpart (SImode, operands[0]);
+  operands[4] = gen_lowpart (SImode, operands[1]);
+  operands[5] = gen_lowpart (SImode, operands[2]);
+  operands[6] = gen_highpart (SImode, operands[0]);
+  operands[7] = gen_highpart (SImode, operands[1]);
+  if (GET_CODE (operands[2]) == CONST_INT)
+    {
+      if (INTVAL (operands[2]) < 0)
+	operands[8] = constm1_rtx;
+      else
+	operands[8] = const0_rtx;
+    }
+  else
+    operands[8] = gen_highpart (SImode, operands[2]);
+}")
 
 ;; LTU here means "carry set"
 (define_insn "*addx"
@@ -4563,12 +4586,23 @@ return \"srl %1,0,%0\";
    && GET_CODE (operands[0]) == REG && REGNO (operands[0]) < 32"
   [(set (match_dup 4) (match_op_dup:SI 1 [(match_dup 6) (match_dup 8)]))
    (set (match_dup 5) (match_op_dup:SI 1 [(match_dup 7) (match_dup 9)]))]
-  "operands[4] = gen_highpart (SImode, operands[0]);
-   operands[5] = gen_lowpart (SImode, operands[0]);
-   operands[6] = gen_highpart (SImode, operands[2]);
-   operands[7] = gen_lowpart (SImode, operands[2]);
-   operands[8] = gen_highpart (SImode, operands[3]);
-   operands[9] = gen_lowpart (SImode, operands[3]);")
+  "
+{
+  operands[4] = gen_highpart (SImode, operands[0]);
+  operands[5] = gen_lowpart (SImode, operands[0]);
+  operands[6] = gen_highpart (SImode, operands[2]);
+  operands[7] = gen_lowpart (SImode, operands[2]);
+  if (GET_CODE (operands[3]) == CONST_INT)
+    {
+      if (INTVAL (operands[3]) < 0)
+	operands[8] = constm1_rtx;
+      else
+	operands[8] = const0_rtx;
+    }
+  else
+    operands[8] = gen_highpart (SImode, operands[3]);
+  operands[9] = gen_lowpart (SImode, operands[3]);
+}")
 
 (define_insn "*and_not_di_sp32"
   [(set (match_operand:DI 0 "register_operand" "=r,b")

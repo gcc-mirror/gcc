@@ -2736,7 +2736,7 @@ output_scc_insn (operands, insn)
 	label = next;
       next = NEXT_INSN (next);
     }
-  while (next && GET_CODE (next) == NOTE || GET_CODE (next) == CODE_LABEL);
+  while (next && (GET_CODE (next) == NOTE || GET_CODE (next) == CODE_LABEL));
 
   if (next && GET_CODE (next) == JUMP_INSN && simplejump_p (next))
     label = JUMP_LABEL (next);

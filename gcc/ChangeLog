@@ -1,3 +1,12 @@
+Mon Jul 13 23:11:44 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.c (output_scc_insn): Enclose || conditions in
+	parens while walking over notes.
+	* config/sparc/sparc.md (reg movdi split): Clean up matching
+	conditions.
+	(all DI arithop splits on 32-bit): Handle immediate arguments
+	correctly when they are CONST_INTs.
+
 Mon Jul 13 23:57:21 1998  Kamil Iskra  <iskra@student.uci.agh.edu.pl>
 
 	* m68k/m68k.h (TARGET_SWITCHES): Clear MASK_68040_ONLY for
