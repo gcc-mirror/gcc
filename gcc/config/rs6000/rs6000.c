@@ -3995,6 +3995,24 @@ function_arg_boundary (enum machine_mode mode, tree type ATTRIBUTE_UNUSED)
   else
     return PARM_BOUNDARY;
 }
+
+/* Compute the size (in words) of a function argument.  */
+
+static unsigned long
+rs6000_arg_size (enum machine_mode mode, tree type)
+{
+  unsigned long size;
+
+  if (mode != BLKmode)
+    size = GET_MODE_SIZE (mode);
+  else
+    size = int_size_in_bytes (type);
+
+  if (TARGET_32BIT)
+    return (size + 3) >> 2;
+  else
+    return (size + 7) >> 3;
+}
 
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
@@ -4035,7 +4053,7 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	    align = ((6 - (cum->words & 3)) & 3);
 	  else
 	    align = cum->words & 1;
-	  cum->words += align + RS6000_ARG_SIZE (mode, type);
+	  cum->words += align + rs6000_arg_size (mode, type);
 	  
 	  if (TARGET_DEBUG_ARG)
 	    {
@@ -4062,7 +4080,7 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	    {
 	      if (mode == DFmode)
 	        cum->words += cum->words & 1;
-	      cum->words += RS6000_ARG_SIZE (mode, type);
+	      cum->words += rs6000_arg_size (mode, type);
 	    }
 	}
       else
@@ -4075,7 +4093,7 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	      || mode == TFmode)
 	    n_words = 1;
 	  else 
-	    n_words = RS6000_ARG_SIZE (mode, type);
+	    n_words = rs6000_arg_size (mode, type);
 
 	  /* Long long and SPE vectors are put in odd registers.  */
 	  if (n_words == 2 && (gregno & 1) == 0)
@@ -4112,11 +4130,11 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
       int align = (TARGET_32BIT && (cum->words & 1) != 0
 		   && function_arg_boundary (mode, type) == 64) ? 1 : 0;
 
-      cum->words += align + RS6000_ARG_SIZE (mode, type);
+      cum->words += align + rs6000_arg_size (mode, type);
 
       if (GET_MODE_CLASS (mode) == MODE_FLOAT
 	  && TARGET_HARD_FLOAT && TARGET_FPRS)
-	cum->fregno += (mode == TFmode ? 2 : 1);
+	cum->fregno += (GET_MODE_SIZE (mode) + 7) >> 3;
 
       if (TARGET_DEBUG_ARG)
 	{
@@ -4138,7 +4156,7 @@ rs6000_spe_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   if (cum->stdarg)
     {
       int gregno = cum->sysv_gregno;
-      int n_words = RS6000_ARG_SIZE (mode, type);
+      int n_words = rs6000_arg_size (mode, type);
 
       /* SPE vectors are put in odd registers.  */
       if (n_words == 2 && (gregno & 1) == 0)
@@ -4186,7 +4204,7 @@ rs6000_mixed_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 					       gen_rtx_REG (mode,
 							    cum->fregno),
 					       const0_rtx)));
-      else if (align_words + RS6000_ARG_SIZE (mode, type)
+      else if (align_words + rs6000_arg_size (mode, type)
 	       > GP_ARG_NUM_REG)
 	/* If this is partially on the stack, then we only
 	   include the portion actually in registers here.  */
@@ -4410,13 +4428,13 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	      || mode == TFmode)
 	    n_words = 1;
 	  else 
-	    n_words = RS6000_ARG_SIZE (mode, type);
+	    n_words = rs6000_arg_size (mode, type);
 
 	  /* Long long and SPE vectors are put in odd registers.  */
 	  if (n_words == 2 && (gregno & 1) == 0)
 	    gregno += 1;
 
-	  /* Long long do not split between registers and stack.  */
+	  /* Long long does not split between registers and stack.  */
 	  if (gregno + n_words - 1 <= GP_ARG_MAX_REG)
 	    return gen_rtx_REG (mode, gregno);
 	  else
@@ -4433,40 +4451,74 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
         return NULL_RTX;
 
       if (TARGET_32BIT && TARGET_POWERPC64
-	  && (mode == DFmode || mode == DImode || mode == BLKmode))
+	  && (mode == DImode || mode == BLKmode))
 	return rs6000_mixed_function_arg (cum, mode, type, align_words);
 
       if (USE_FP_FOR_ARG_P (cum, mode, type))
 	{
-	  if (! type
-	      || ((cum->nargs_prototype > 0)
-	          /* IBM AIX extended its linkage convention definition always
-		     to require FP args after register save area hole on the
-		     stack.  */
-	          && (DEFAULT_ABI != ABI_AIX
-		      || ! TARGET_XL_CALL
-		      || (align_words < GP_ARG_NUM_REG))))
-	    return gen_rtx_REG (mode, cum->fregno);
+	  rtx fpr[2];
+	  rtx *r;
+	  bool needs_psave;
+	  enum machine_mode fmode = mode;
+	  int n;
+	  unsigned long n_fpreg = (GET_MODE_SIZE (mode) + 7) >> 3;
 
-          return gen_rtx_PARALLEL (mode,
-	    gen_rtvec (2,
-		       gen_rtx_EXPR_LIST (VOIDmode,
-				((align_words >= GP_ARG_NUM_REG)
-				 ? NULL_RTX
-				 : (align_words
-				    + RS6000_ARG_SIZE (mode, type)
-				    > GP_ARG_NUM_REG
-				    /* If this is partially on the stack, then
-				       we only include the portion actually
-				       in registers here.  */
-				    ? gen_rtx_REG (Pmode,
-					       GP_ARG_MIN_REG + align_words)
-				    : gen_rtx_REG (mode,
-					       GP_ARG_MIN_REG + align_words))),
-				const0_rtx),
-		       gen_rtx_EXPR_LIST (VOIDmode,
-				gen_rtx_REG (mode, cum->fregno),
-				const0_rtx)));
+	  if (cum->fregno + n_fpreg > FP_ARG_MAX_REG + 1)
+	    {
+	      /* Long double split over regs and memory.  */
+	      if (fmode == TFmode)
+		fmode = DFmode;
+
+	      /* Currently, we only ever need one reg here because complex
+		 doubles are split.  */
+	      if (cum->fregno != FP_ARG_MAX_REG - 1)
+		abort ();
+	    }
+	  fpr[1] = gen_rtx_REG (fmode, cum->fregno);
+
+	  /* Do we also need to pass this arg in the parameter save
+	     area?  */
+	  needs_psave = (type
+			 && (cum->nargs_prototype <= 0
+			     || (DEFAULT_ABI == ABI_AIX
+				 && TARGET_XL_CALL
+				 && align_words >= GP_ARG_NUM_REG)));
+
+	  if (!needs_psave && mode == fmode)
+	    return fpr[1];
+
+          if (TARGET_32BIT && TARGET_POWERPC64
+              && mode == DFmode && cum->stdarg)
+            return rs6000_mixed_function_arg (cum, mode, type, align_words);
+
+	  /* Describe where this piece goes.  */
+	  r = fpr + 1;
+	  *r = gen_rtx_EXPR_LIST (VOIDmode, *r, const0_rtx);
+	  n = 1;
+
+	  if (needs_psave)
+	    {
+	      /* Now describe the part that goes in gprs or the stack.
+		 This piece must come first, before the fprs.  */
+	      rtx reg = NULL_RTX;
+	      if (align_words < GP_ARG_NUM_REG)
+		{
+		  unsigned long n_words = rs6000_arg_size (mode, type);
+		  enum machine_mode rmode = mode;
+
+		  if (align_words + n_words > GP_ARG_NUM_REG)
+		    /* If this is partially on the stack, then we only
+		       include the portion actually in registers here.
+		       We know this can only be one register because
+		       complex doubles are splt.  */
+		    rmode = Pmode;
+		  reg = gen_rtx_REG (rmode, GP_ARG_MIN_REG + align_words);
+		}
+	      *--r = gen_rtx_EXPR_LIST (VOIDmode, reg, const0_rtx);
+	      ++n;
+	    }
+
+	  return gen_rtx_PARALLEL (mode, gen_rtvec_v (n, r));
 	}
       else if (align_words < GP_ARG_NUM_REG)
 	return gen_rtx_REG (mode, GP_ARG_MIN_REG + align_words);
@@ -4483,27 +4535,31 @@ int
 function_arg_partial_nregs (CUMULATIVE_ARGS *cum, enum machine_mode mode, 
 			    tree type, int named)
 {
+  int ret = 0;
+
   if (DEFAULT_ABI == ABI_V4)
     return 0;
 
-  if (USE_FP_FOR_ARG_P (cum, mode, type)
-      || USE_ALTIVEC_FOR_ARG_P (cum, mode, type, named))
+  if (USE_ALTIVEC_FOR_ARG_P (cum, mode, type, named)
+      && cum->nargs_prototype >= 0)
+    return 0;
+
+  if (USE_FP_FOR_ARG_P (cum, mode, type))
     {
-      if (cum->nargs_prototype >= 0)
+      if (cum->fregno + ((GET_MODE_SIZE (mode) + 7) >> 3) > FP_ARG_MAX_REG + 1)
+	ret = FP_ARG_MAX_REG - cum->fregno;
+      else if (cum->nargs_prototype >= 0)
 	return 0;
     }
 
   if (cum->words < GP_ARG_NUM_REG
-      && GP_ARG_NUM_REG < (cum->words + RS6000_ARG_SIZE (mode, type)))
-    {
-      int ret = GP_ARG_NUM_REG - cum->words;
-      if (ret && TARGET_DEBUG_ARG)
-	fprintf (stderr, "function_arg_partial_nregs: %d\n", ret);
+      && GP_ARG_NUM_REG < cum->words + rs6000_arg_size (mode, type))
+    ret = GP_ARG_NUM_REG - cum->words;
 
-      return ret;
-    }
+  if (ret != 0 && TARGET_DEBUG_ARG)
+    fprintf (stderr, "function_arg_partial_nregs: %d\n", ret);
 
-  return 0;
+  return ret;
 }
 
 /* A C expression that indicates when an argument must be passed by
@@ -4609,7 +4665,7 @@ setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
       cfun->machine->sysv_varargs_p = 0;
 
       if (MUST_PASS_IN_STACK (mode, type))
-	first_reg_offset += RS6000_ARG_SIZE (TYPE_MODE (type), type);
+	first_reg_offset += rs6000_arg_size (TYPE_MODE (type), type);
     }
 
   set = get_varargs_alias_set ();
@@ -4799,8 +4855,42 @@ rs6000_va_arg (tree valist, tree type)
 
 	  return expand_expr (t, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 	}
-      else
-	return std_expand_builtin_va_arg (valist, type);
+      if (targetm.calls.split_complex_arg
+	  && TREE_CODE (type) == COMPLEX_TYPE)
+	{
+	  tree elem_type = TREE_TYPE (type);
+	  enum machine_mode elem_mode = TYPE_MODE (elem_type);
+	  int elem_size = GET_MODE_SIZE (elem_mode);
+
+	  if (elem_size < UNITS_PER_WORD)
+	    {
+	      rtx real_part, imag_part, dest_real, rr;
+
+	      real_part = rs6000_va_arg (valist, elem_type);
+	      imag_part = rs6000_va_arg (valist, elem_type);
+
+	      /* We're not returning the value here, but the address.
+		 real_part and imag_part are not contiguous, and we know
+		 there is space available to pack real_part next to
+		 imag_part.  float _Complex is not promoted to
+		 double _Complex by the default promotion rules that
+		 promote float to double.  */
+	      if (2 * elem_size > UNITS_PER_WORD)
+		abort ();
+
+	      real_part = gen_rtx_MEM (elem_mode, real_part);
+	      imag_part = gen_rtx_MEM (elem_mode, imag_part);
+
+	      dest_real = adjust_address (imag_part, elem_mode, -elem_size);
+	      rr = gen_reg_rtx (elem_mode);
+	      emit_move_insn (rr, real_part);
+	      emit_move_insn (dest_real, rr);
+
+	      return XEXP (dest_real, 0);
+	    }
+	}
+
+      return std_expand_builtin_va_arg (valist, type);
     }
 
   f_gpr = TYPE_FIELDS (TREE_TYPE (va_list_type_node));

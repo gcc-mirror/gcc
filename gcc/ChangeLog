@@ -1,3 +1,20 @@
+2004-06-10  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/14567
+	2004-03-13  Alan Modra  <amodra@bigpond.net.au>
+	* config/rs6000/rs6000.h (UNITS_PER_ARG, RS6000_ARG_SIZE): Delete.
+	(HARD_REGNO_MODE_OK): Disallow TFmode for fp31.
+	* config/rs6000/rs6000.c (rs6000_arg_size): New function.
+	Update all users of RS6000_ARG_SIZE.
+	(function_arg_advance): Count fregno using mode size.
+	(function_arg): Handle long double split over regs and memory.
+	(function_arg_partial_nregs): Likewise.
+	(rs6000_va_arg): Repackage complex args.
+	2004-02-23  Fariborz Jahanian <fjahanian@apple.com>
+	* config/rs6000/rs6000.c (function_arg): call to
+	rs6000_mixed_function_arg for DFmode moved to allow
+	normal DFmode incoming register assignment.
+
 2004-06-09  Mark Mitchell  <mark@codesourcery.com>
 
 	Revert:
