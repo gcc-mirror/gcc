@@ -1,5 +1,10 @@
 2003-04-14  Roger Sayle  <roger@eyesopen.com>
 
+	* builtins.c (expand_builtin_strlen):  Evaluate the lengths of
+	string literals at compile-time.
+
+2003-04-14  Roger Sayle  <roger@eyesopen.com>
+
 	* fold-const.c (fold):  Transform (c1 - x) cmp c2, where cmp is a
 	comparison operation and c1/c2 are floating point constants into
 	x swap(cmp) (c1 - c2).

@@ -1935,14 +1935,18 @@ expand_builtin_strlen (exp, target)
   else
     {
       rtx pat;
-      tree src = TREE_VALUE (arglist);
-
-      int align
-	= get_pointer_alignment (src, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
-
+      tree len, src = TREE_VALUE (arglist);
       rtx result, src_reg, char_rtx, before_strlen;
       enum machine_mode insn_mode = value_mode, char_mode;
       enum insn_code icode = CODE_FOR_nothing;
+      int align;
+
+      /* If the length can be computed at compile-time, return it.  */
+      len = c_strlen (src);
+      if (len)
+	return expand_expr (len, target, value_mode, EXPAND_NORMAL);
+
+      align = get_pointer_alignment (src, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
 
       /* If SRC is not a pointer type, don't do this operation inline.  */
       if (align == 0)
