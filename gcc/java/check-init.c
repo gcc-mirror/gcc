@@ -611,6 +611,7 @@ check_init (exp, before)
     case BIT_NOT_EXPR:
     case CONVERT_EXPR:
     case COMPONENT_REF:
+    case BIT_FIELD_REF:
     case NOP_EXPR:
     case FLOAT_EXPR:
     case FIX_TRUNC_EXPR:
