@@ -44,6 +44,20 @@ check-install: $(top_builddir)/mkcheck
 	  cd testsuite; \
 	  $${builddir}/mkcheck 1 $${builddir} $${srcdir} $(prefix))
 
+# These two rules seem messy.
+doxygen:
+	-(srcdir=`cd ${top_srcdir}; pwd`; \
+	  outdir=`pwd`; \
+	  ${srcdir}/docs/doxygen/run_doxygen --mode=user $${srcdir} $${outdir})
+
+doxygen-maint:
+	-(srcdir=`cd ${top_srcdir}; pwd`; \
+	  outdir=`pwd`; \
+	  ${srcdir}/docs/doxygen/run_doxygen --mode=maint $${srcdir} $${outdir})
+
+.PHONY: doxygen doxygen-maint
+
+
 # Multilib support.
 MAKEOVERRIDES=
 
