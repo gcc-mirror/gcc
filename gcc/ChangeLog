@@ -1,3 +1,7 @@
+2003-09-19  Phil Edwards  <phil@codesourcery.com>
+
+	* doc/install.texi:  Document the multiple testsuite options.
+
 2003-09-19  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Specific): Add the specific versions of GCC
