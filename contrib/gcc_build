@@ -62,6 +62,7 @@ cat <<EOF
 gcc_build        [-c configure_options] 
 		 [-d destination_directory]
 		 [-m make_boot_options]
+		 [-o objdir]
 		 [-u username]
 		 [-p protocol]
 		 [-t tarfile]
@@ -250,11 +251,12 @@ UPDATE=0
 ########################################################################
 
 # Parse the options.
-while getopts "c:d:m:p:t:u:" ARG; do
+while getopts "c:d:m:o:p:t:u:" ARG; do
     case $ARG in
     c)    CONFIGURE_OPTIONS="${OPTARG}";;
     d)    DESTINATION="${OPTARG}";;
     m)    MAKE_BOOTSTRAP_OPTIONS="${OPTARG}";;
+    o)    OBJDIR="${OPTARG}";;
     p)    CVS_PROTOCOL="${OPTARG}";;
     t)    CVS_TARGFILE="${OPTARG}";;
     u)    CVS_USERNAME="${OPTARG}";;
