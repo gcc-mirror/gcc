@@ -73,7 +73,12 @@ int c_header_level;	 /* depth in C headers - C++ only */
 /* Nonzero tells yylex to ignore \ in string constants.  */
 static int ignore_escape_flag;
 
-static tree lex_number		PARAMS ((const char *, unsigned int));
+static tree interpret_integer	PARAMS ((const cpp_token *, unsigned int));
+static tree interpret_float	PARAMS ((const cpp_token *, unsigned int));
+static enum integer_type_kind
+  narrowest_unsigned_type	PARAMS ((tree, unsigned int));
+static enum integer_type_kind
+  narrowest_signed_type		PARAMS ((tree, unsigned int));
 static tree lex_string		PARAMS ((const unsigned char *, unsigned int,
 					 int));
 static tree lex_charconst	PARAMS ((const cpp_token *));
@@ -664,26 +669,6 @@ utf8_extend_token (c)
   while (shift);
 }
 #endif
-
-#if 0
-struct try_type
-{
-  tree *const node_var;
-  const char unsigned_flag;
-  const char long_flag;
-  const char long_long_flag;
-};
-
-struct try_type type_sequence[] =
-{
-  { &integer_type_node, 0, 0, 0},
-  { &unsigned_type_node, 1, 0, 0},
-  { &long_integer_type_node, 0, 1, 0},
-  { &long_unsigned_type_node, 1, 1, 0},
-  { &long_long_integer_type_node, 0, 1, 1},
-  { &long_long_unsigned_type_node, 1, 1, 1}
-};
-#endif /* 0 */
 
 int
 c_lex (value)
@@ -719,7 +704,27 @@ c_lex (value)
       break;
 
     case CPP_NUMBER:
-      *value = lex_number ((const char *)tok->val.str.text, tok->val.str.len);
+      {
+	unsigned int flags = cpp_classify_number (parse_in, tok);
+
+	switch (flags & CPP_N_CATEGORY)
+	  {
+	  case CPP_N_INVALID:
+	    /* cpplib has issued an error.  */
+	    break;
+
+	  case CPP_N_INTEGER:
+	    *value = interpret_integer (tok, flags);
+	    break;
+
+	  case CPP_N_FLOATING:
+	    *value = interpret_float (tok, flags);
+	    break;
+
+	  default:
+	    abort ();
+	  }
+      }
       break;
 
     case CPP_CHAR:
@@ -745,469 +750,208 @@ c_lex (value)
   return tok->type;
 }
 
-#define ERROR(msgid) do { error(msgid); goto syntax_error; } while(0)
-
-static tree
-lex_number (str, len)
-     const char *str;
-     unsigned int len;
+/* Returns the narrowest C-visible unsigned type, starting with the
+   minimum specified by FLAGS, that can fit VALUE, or itk_none if
+   there isn't one.  */
+static enum integer_type_kind
+narrowest_unsigned_type (value, flags)
+     tree value;
+     unsigned int flags;
 {
-  int base = 10;
-  int count = 0;
-  int largest_digit = 0;
-  int numdigits = 0;
-  int overflow = 0;
-  int c;
-  tree value;
-  const char *p;
-  enum anon1 { NOT_FLOAT = 0, AFTER_POINT, AFTER_EXPON } floatflag = NOT_FLOAT;
-  
-  /* We actually store only HOST_BITS_PER_CHAR bits in each part.
-     The code below which fills the parts array assumes that a host
-     int is at least twice as wide as a host char, and that 
-     HOST_BITS_PER_WIDE_INT is an even multiple of HOST_BITS_PER_CHAR.
-     Two HOST_WIDE_INTs is the largest int literal we can store.
-     In order to detect overflow below, the number of parts (TOTAL_PARTS)
-     must be exactly the number of parts needed to hold the bits
-     of two HOST_WIDE_INTs.  */
-#define TOTAL_PARTS ((HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR) * 2)
-  unsigned int parts[TOTAL_PARTS];
-  
-  /* Optimize for most frequent case.  */
-  if (len == 1)
+  enum integer_type_kind itk;
+
+  if ((flags & CPP_N_WIDTH) == CPP_N_SMALL)
+    itk = itk_unsigned_int;
+  else if ((flags & CPP_N_WIDTH) == CPP_N_MEDIUM)
+    itk = itk_unsigned_long;
+  else
+    itk = itk_unsigned_long_long;
+
+  /* int_fits_type_p must think the type of its first argument is
+     wider than its second argument, or it won't do the proper check.  */
+  TREE_TYPE (value) = widest_unsigned_literal_type_node;
+
+  for (; itk < itk_none; itk += 2 /* skip unsigned types */)
+    if (int_fits_type_p (value, integer_types[itk]))
+      return itk;
+
+  return itk_none;
+}
+
+/* Ditto, but narrowest signed type.  */
+static enum integer_type_kind
+narrowest_signed_type (value, flags)
+     tree value;
+     unsigned int flags;
+{
+  enum integer_type_kind itk;
+
+  if ((flags & CPP_N_WIDTH) == CPP_N_SMALL)
+    itk = itk_int;
+  else if ((flags & CPP_N_WIDTH) == CPP_N_MEDIUM)
+    itk = itk_long;
+  else
+    itk = itk_long_long;
+
+  /* int_fits_type_p must think the type of its first argument is
+     wider than its second argument, or it won't do the proper check.  */
+  TREE_TYPE (value) = widest_unsigned_literal_type_node;
+
+  for (; itk < itk_none; itk += 2 /* skip signed types */)
+    if (int_fits_type_p (value, integer_types[itk]))
+      return itk;
+
+  return itk_none;
+}
+
+/* Interpret TOKEN, an integer with FLAGS as classified by cpplib.  */
+static tree
+interpret_integer (token, flags)
+     const cpp_token *token;
+     unsigned int flags;
+{
+  tree value, type;
+  enum integer_type_kind itk;
+  cpp_num integer;
+  cpp_options *options = cpp_get_options (parse_in);
+
+  integer = cpp_interpret_integer (parse_in, token, flags);
+  integer = cpp_num_sign_extend (integer, options->precision);
+  value = build_int_2_wide (integer.low, integer.high);
+
+  /* The type of a constant with a U suffix is straightforward.  */
+  if (flags & CPP_N_UNSIGNED)
+    itk = narrowest_unsigned_type (value, flags);
+  else
     {
-      if (*str == '0')
-	return integer_zero_node;
-      else if (*str == '1')
-	return integer_one_node;
+      /* The type of a potentially-signed integer constant varies
+	 depending on the base it's in, the standard in use, and the
+	 length suffixes.  */
+      enum integer_type_kind itk_u = narrowest_unsigned_type (value, flags);
+      enum integer_type_kind itk_s = narrowest_signed_type (value, flags);
+
+      /* In both C89 and C99, octal and hex constants may be signed or
+	 unsigned, whichever fits tighter.  We do not warn about this
+	 choice differing from the traditional choice, as the constant
+	 is probably a bit pattern and either way will work.  */
+      if ((flags & CPP_N_RADIX) != CPP_N_DECIMAL)
+	itk = MIN (itk_u, itk_s);
       else
-	return build_int_2 (*str - '0', 0);
-    }
-
-  for (count = 0; count < TOTAL_PARTS; count++)
-    parts[count] = 0;
-
-  /* len is known to be >1 at this point.  */
-  p = str;
-
-  if (len > 2 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
-    {
-      base = 16;
-      p = str + 2;
-    }
-  /* The ISDIGIT check is so we are not confused by a suffix on 0.  */
-  else if (str[0] == '0' && ISDIGIT (str[1]))
-    {
-      base = 8;
-      p = str + 1;
-    }
-
-  do
-    {
-      c = *p++;
-
-      if (c == '.')
 	{
-	  if (floatflag == AFTER_POINT)
-	    ERROR ("too many decimal points in floating constant");
-	  else if (floatflag == AFTER_EXPON)
-	    ERROR ("decimal point in exponent - impossible!");
-	  else
-	    floatflag = AFTER_POINT;
+	  /* In C99, decimal constants are always signed.
+	     In C89, decimal constants that don't fit in long have
+	     undefined behaviour; we try to make them unsigned long.
+	     In GCC's extended C89, that last is true of decimal
+	     constants that don't fit in long long, too.  */
 
-	  if (base == 8)
-	    base = 10;
-	}
-      else if (c == '_')
-	/* Possible future extension: silently ignore _ in numbers,
-	   permitting cosmetic grouping - e.g. 0x8000_0000 == 0x80000000
-	   but somewhat easier to read.  Ada has this?  */
-	ERROR ("underscore in number");
-      else
-	{
-	  int n;
-	  /* It is not a decimal point.
-	     It should be a digit (perhaps a hex digit).  */
-
-	  if (ISDIGIT (c)
-	      || (base == 16 && ISXDIGIT (c)))
+	  itk = itk_s;
+	  if (itk_s > itk_u && itk_s > itk_long)
 	    {
-	      n = hex_value (c);
-	    }
-	  else if (base <= 10 && (c == 'e' || c == 'E'))
-	    {
-	      base = 10;
-	      floatflag = AFTER_EXPON;
-	      break;
-	    }
-	  else if (base == 16 && (c == 'p' || c == 'P'))
-	    {
-	      floatflag = AFTER_EXPON;
-	      break;   /* start of exponent */
-	    }
-	  else
-	    {
-	      p--;
-	      break;  /* start of suffix */
-	    }
-
-	  if (n >= largest_digit)
-	    largest_digit = n;
-	  numdigits++;
-
-	  for (count = 0; count < TOTAL_PARTS; count++)
-	    {
-	      parts[count] *= base;
-	      if (count)
+	      if (!flag_isoc99)
 		{
-		  parts[count]
-		    += (parts[count-1] >> HOST_BITS_PER_CHAR);
-		  parts[count-1]
-		    &= (1 << HOST_BITS_PER_CHAR) - 1;
+		  if (itk_u < itk_unsigned_long)
+		    itk_u = itk_unsigned_long;
+		  itk = itk_u;
+		  warning ("this decimal constant is unsigned only in ISO C89");
 		}
-	      else
-		parts[0] += n;
-	    }
-
-	  /* If the highest-order part overflows (gets larger than
-	     a host char will hold) then the whole number has 
-	     overflowed.  Record this and truncate the highest-order
-	     part.  */
-	  if (parts[TOTAL_PARTS - 1] >> HOST_BITS_PER_CHAR)
-	    {
-	      overflow = 1;
-	      parts[TOTAL_PARTS - 1] &= (1 << HOST_BITS_PER_CHAR) - 1;
+	      else if (warn_traditional)
+		warning ("this decimal constant would be unsigned in ISO C89");
 	    }
 	}
     }
-  while (p < str + len);
 
-  /* This can happen on input like `int i = 0x;' */
-  if (numdigits == 0)
-    ERROR ("numeric constant with no digits");
+  if (itk == itk_none)
+    /* cpplib has already issued a warning for overflow.  */
+    type = ((flags & CPP_N_UNSIGNED)
+	    ? widest_unsigned_literal_type_node
+	    : widest_integer_literal_type_node);
+  else
+    type = integer_types[itk];
 
-  if (largest_digit >= base)
-    ERROR ("numeric constant contains digits beyond the radix");
+  if (itk > itk_unsigned_long
+      && (flags & CPP_N_WIDTH) != CPP_N_LARGE
+      && ! in_system_header && ! flag_isoc99)
+    pedwarn ("integer constant is too large for \"%s\" type",
+	     (flags & CPP_N_UNSIGNED) ? "unsigned long" : "long");
 
-  if (floatflag != NOT_FLOAT)
+  TREE_TYPE (value) = type;
+
+  /* Convert imaginary to a complex type.  */
+  if (flags & CPP_N_IMAGINARY)
+    value = build_complex (NULL_TREE, convert (type, integer_zero_node), value);
+
+  return value;
+}
+
+/* Interpret TOKEN, a floating point number with FLAGS as classified
+   by cpplib.  */
+static tree
+interpret_float (token, flags)
+     const cpp_token *token;
+     unsigned int flags;
+{
+  tree type;
+  tree value;
+  REAL_VALUE_TYPE real;
+  char *copy;
+  size_t copylen;
+  const char *typename;
+
+  /* FIXME: make %T work in error/warning, then we don't need typename.  */
+  if ((flags & CPP_N_WIDTH) == CPP_N_LARGE)
     {
-      tree type;
-      const char *typename;
-      int imag, fflag, lflag;
-      REAL_VALUE_TYPE real;
-      char *copy;
-
-      if (base == 16 && floatflag != AFTER_EXPON)
-	ERROR ("hexadecimal floating constant has no exponent");
-
-      /* Read explicit exponent if any, and put it in tokenbuf.  */
-      if ((base == 10 && ((c == 'e') || (c == 'E')))
-	  || (base == 16 && (c == 'p' || c == 'P')))
-	{
-	  if (p < str + len)
-	    c = *p++;
-	  if (p < str + len && (c == '+' || c == '-'))
-	    c = *p++;
-	  /* Exponent is decimal, even if string is a hex float.  */
-	  if (! ISDIGIT (c))
-	    ERROR ("floating constant exponent has no digits");
-	  while (p < str + len && ISDIGIT (c))
-	    c = *p++;
-	  if (! ISDIGIT (c))
-	    p--;
-	}
-
-      /* Copy the float constant now; we don't want any suffixes in the
-	 string passed to parse_float.  */
-      copy = alloca (p - str + 1);
-      memcpy (copy, str, p - str);
-      copy[p - str] = '\0';
-
-      /* Now parse suffixes.  */
-      fflag = lflag = imag = 0;
-      while (p < str + len)
-	switch (*p++)
-	  {
-	  case 'f': case 'F':
-	    if (fflag)
-	      ERROR ("more than one 'f' suffix on floating constant");
-	    else if (warn_traditional && !in_system_header
-		     && ! cpp_sys_macro_p (parse_in))
-	      warning ("traditional C rejects the 'f' suffix");
-
-	    fflag = 1;
-	    break;
-
-	  case 'l': case 'L':
-	    if (lflag)
-	      ERROR ("more than one 'l' suffix on floating constant");
-	    else if (warn_traditional && !in_system_header
-		     && ! cpp_sys_macro_p (parse_in))
-	      warning ("traditional C rejects the 'l' suffix");
-
-	    lflag = 1;
-	    break;
-
-	  case 'i': case 'I':
-	  case 'j': case 'J':
-	    if (imag)
-	      ERROR ("more than one 'i' or 'j' suffix on floating constant");
-	    else if (pedantic)
-	      pedwarn ("ISO C forbids imaginary numeric constants");
-	    imag = 1;
-	    break;
-
-	  default:
-	    ERROR ("invalid suffix on floating constant");
-	  }
-
-      type = double_type_node;
-      typename = "double";
-	
-      if (fflag)
-	{
-	  if (lflag)
-	    ERROR ("both 'f' and 'l' suffixes on floating constant");
-
-	  type = float_type_node;
-	  typename = "float";
-	}
-      else if (lflag)
-	{
-	  type = long_double_type_node;
-	  typename = "long double";
-	}
-      else if (flag_single_precision_constant)
-	{
-	  type = float_type_node;
-	  typename = "float";
-	}
-
-      /* Warn about this only after we know we're not issuing an error.  */
-      if (base == 16 && pedantic && !flag_isoc99)
-	pedwarn ("hexadecimal floating constants are only valid in C99");
-
-      /* The second argument, machine_mode, of REAL_VALUE_ATOF
-	 tells the desired precision of the binary result
-	 of decimal-to-binary conversion.  */
-      if (base == 16)
-	real = REAL_VALUE_HTOF (copy, TYPE_MODE (type));
-      else
-	real = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
-
-      /* A diagnostic is required here by some ISO C testsuites.
-	 This is not pedwarn, because some people don't want
-	 an error for this.  */
-      if (REAL_VALUE_ISINF (real) && pedantic)
-	warning ("floating point number exceeds range of 'double'");
-
-      /* Create a node with determined type and value.  */
-      if (imag)
-	value = build_complex (NULL_TREE, convert (type, integer_zero_node),
-			       build_real (type, real));
-      else
-	value = build_real (type, real);
+      type = long_double_type_node;
+      typename = "long double";
+    }
+  else if ((flags & CPP_N_WIDTH) == CPP_N_SMALL
+	   || flag_single_precision_constant)
+    {
+      type = float_type_node;
+      typename = "float";
     }
   else
     {
-      tree trad_type, type;
-      HOST_WIDE_INT high, low;
-      int spec_unsigned = 0;
-      int spec_long = 0;
-      int spec_long_long = 0;
-      int spec_imag = 0;
-      int suffix_lu = 0;
-      int warn = 0, i;
-
-      trad_type = type = NULL_TREE;
-      while (p < str + len)
-	{
-	  c = *p++;
-	  switch (c)
-	    {
-	    case 'u': case 'U':
-	      if (spec_unsigned)
-		error ("two 'u' suffixes on integer constant");
-	      else if (warn_traditional && !in_system_header
-		       && ! cpp_sys_macro_p (parse_in))
-		warning ("traditional C rejects the 'u' suffix");
-
-	      spec_unsigned = 1;
-	      if (spec_long)
-		suffix_lu = 1;
-	      break;
-
-	    case 'l': case 'L':
-	      if (spec_long)
-		{
-		  if (spec_long_long)
-		    error ("three 'l' suffixes on integer constant");
-		  else if (suffix_lu)
-		    error ("'lul' is not a valid integer suffix");
-		  else if (c != spec_long)
-		    error ("'Ll' and 'lL' are not valid integer suffixes");
-		  else if (pedantic && ! flag_isoc99
-			   && ! in_system_header && warn_long_long)
-		    pedwarn ("ISO C89 forbids long long integer constants");
-		  spec_long_long = 1;
-		}
-	      spec_long = c;
-	      break;
-
-	    case 'i': case 'I': case 'j': case 'J':
-	      if (spec_imag)
-		error ("more than one 'i' or 'j' suffix on integer constant");
-	      else if (pedantic)
-		pedwarn ("ISO C forbids imaginary numeric constants");
-	      spec_imag = 1;
-	      break;
-
-	    default:
-	      ERROR ("invalid suffix on integer constant");
-	    }
-	}
-
-      /* If the literal overflowed, pedwarn about it now.  */
-      if (overflow)
-	{
-	  warn = 1;
-	  pedwarn ("integer constant is too large for this configuration of the compiler - truncated to %d bits", HOST_BITS_PER_WIDE_INT * 2);
-	}
-
-      /* This is simplified by the fact that our constant
-	 is always positive.  */
-
-      high = low = 0;
-
-      for (i = 0; i < HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR; i++)
-	{
-	  high |= ((HOST_WIDE_INT) parts[i + (HOST_BITS_PER_WIDE_INT
-					      / HOST_BITS_PER_CHAR)]
-		   << (i * HOST_BITS_PER_CHAR));
-	  low |= (HOST_WIDE_INT) parts[i] << (i * HOST_BITS_PER_CHAR);
-	}
-
-      value = build_int_2 (low, high);
-      TREE_TYPE (value) = long_long_unsigned_type_node;
-
-      /* If warn_traditional, calculate both the ISO type and the
-	 traditional type, then see if they disagree.  */
-      if (warn_traditional)
-	{
-	  /* Traditionally, any constant is signed; but if unsigned is
-	     specified explicitly, obey that.  Use the smallest size
-	     with the right number of bits, except for one special
-	     case with decimal constants.  */
-	  if (! spec_long && base != 10
-	      && int_fits_type_p (value, unsigned_type_node))
-	    trad_type = spec_unsigned ? unsigned_type_node : integer_type_node;
-	  /* A decimal constant must be long if it does not fit in
-	     type int.  I think this is independent of whether the
-	     constant is signed.  */
-	  else if (! spec_long && base == 10
-		   && int_fits_type_p (value, integer_type_node))
-	    trad_type = spec_unsigned ? unsigned_type_node : integer_type_node;
-	  else if (! spec_long_long)
-	    trad_type = (spec_unsigned
-			 ? long_unsigned_type_node
-			 : long_integer_type_node);
-	  else if (int_fits_type_p (value,
-				    spec_unsigned 
-				    ? long_long_unsigned_type_node
-				    : long_long_integer_type_node)) 
-	    trad_type = (spec_unsigned
-			 ? long_long_unsigned_type_node
-			 : long_long_integer_type_node);
-	  else
-	    trad_type = (spec_unsigned
-			 ? widest_unsigned_literal_type_node
-			 : widest_integer_literal_type_node);
-	}
-	
-	/* Calculate the ISO type.  */
-	if (! spec_long && ! spec_unsigned
-	    && int_fits_type_p (value, integer_type_node))
-	  type = integer_type_node;
-	else if (! spec_long && (base != 10 || spec_unsigned)
-		 && int_fits_type_p (value, unsigned_type_node))
-	  type = unsigned_type_node;
-	else if (! spec_unsigned && !spec_long_long
-		 && int_fits_type_p (value, long_integer_type_node))
-	  type = long_integer_type_node;
-	else if (! spec_long_long
-		 && int_fits_type_p (value, long_unsigned_type_node))
-	  type = long_unsigned_type_node;
-	else if (! spec_unsigned
-		 && int_fits_type_p (value, long_long_integer_type_node))
-	  type = long_long_integer_type_node;
-	else if (int_fits_type_p (value, long_long_unsigned_type_node))
-	  type = long_long_unsigned_type_node;
-	else if (! spec_unsigned
-		 && int_fits_type_p (value, widest_integer_literal_type_node))
-	  type = widest_integer_literal_type_node;
-	else
-	  type = widest_unsigned_literal_type_node;
-
-      /* We assume that constants specified in a non-decimal
-	 base are bit patterns, and that the programmer really
-	 meant what they wrote.  */
-      if (warn_traditional && !in_system_header
-	  && base == 10 && trad_type != type)
-	{
-	  if (TYPE_PRECISION (trad_type) != TYPE_PRECISION (type))
-	    warning ("width of integer constant is different in traditional C");
-	  else if (TREE_UNSIGNED (trad_type) != TREE_UNSIGNED (type))
-	    warning ("integer constant is unsigned in ISO C, signed in traditional C");
-	  else
-	    warning ("width of integer constant may change on other systems in traditional C");
-	}
-
-      if (pedantic && (flag_isoc99 || !spec_long_long)
-	  && !warn
-	  && ((flag_isoc99
-	       ? TYPE_PRECISION (long_long_integer_type_node)
-	       : TYPE_PRECISION (long_integer_type_node)) < TYPE_PRECISION (type)))
-	{
-	  warn = 1;
-	  pedwarn ("integer constant larger than the maximum value of %s",
-		   (flag_isoc99
-		    ? (TREE_UNSIGNED (type)
-		       ? _("an unsigned long long int")
-		       : _("a long long int"))
-		    : _("an unsigned long int")));
-	}
-
-      if (base == 10 && ! spec_unsigned && TREE_UNSIGNED (type))
-	warning ("decimal constant is so large that it is unsigned");
-
-      if (spec_imag)
-	{
-	  if (TYPE_PRECISION (type)
-	      <= TYPE_PRECISION (integer_type_node))
-	    value = build_complex (NULL_TREE, integer_zero_node,
-				   convert (integer_type_node, value));
-	  else
-	    ERROR ("complex integer constant is too wide for 'complex int'");
-	}
-      else
-	TREE_TYPE (value) = type;
-
-      /* If it's still an integer (not a complex), and it doesn't
-	 fit in the type we choose for it, then pedwarn.  */
-
-      if (! warn
-	  && TREE_CODE (TREE_TYPE (value)) == INTEGER_TYPE
-	  && ! int_fits_type_p (value, TREE_TYPE (value)))
-	pedwarn ("integer constant is larger than the maximum value for its type");
+      type = double_type_node;
+      typename = "double";
     }
 
-  if (p < str + len)
-    error ("missing white space after number '%.*s'", (int) (p - str), str);
+  /* Copy the constant to a nul-terminated buffer.  If the constant
+     has any suffixes, cut them off; REAL_VALUE_ATOF/ REAL_VALUE_HTOF
+     can't handle them.  */
+  copylen = token->val.str.len;
+  if ((flags & CPP_N_WIDTH) != CPP_N_MEDIUM)
+    /* Must be an F or L suffix.  */
+    copylen--;
+  if (flags & CPP_N_IMAGINARY)
+    /* I or J suffix.  */
+    copylen--;
+
+  copy = alloca (copylen + 1);
+  memcpy (copy, token->val.str.text, copylen);
+  copy[copylen] = '\0';
+
+  /* The second argument, machine_mode, of REAL_VALUE_ATOF tells the
+     desired precision of the binary result of decimal-to-binary
+     conversion.  */
+  if (flags & CPP_N_HEX)
+    real = REAL_VALUE_HTOF (copy, TYPE_MODE (type));
+  else
+    real = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
+
+  /* A diagnostic is required for "soft" overflow by some ISO C
+     testsuites.  This is not pedwarn, because some people don't want
+     an error for this.
+     ??? That's a dubious reason... is this a mandatory diagnostic or
+     isn't it?   -- zw, 2001-08-21.  */
+  if (REAL_VALUE_ISINF (real) && pedantic)
+    warning ("floating constant exceeds range of \"%s\"", typename);
+
+  /* Create a node with determined type and value.  */
+  value = build_real (type, real);
+  if (flags & CPP_N_IMAGINARY)
+    value = build_complex (NULL_TREE, convert (type, integer_zero_node), value);
 
   return value;
-
- syntax_error:
-  return integer_zero_node;
 }
 
 static tree
@@ -1321,7 +1065,7 @@ lex_charconst (token)
   tree type, value;
   unsigned int chars_seen;
   int unsignedp;
- 
+
   result = cpp_interpret_charconst (parse_in, token,
  				    &chars_seen, &unsignedp);
 

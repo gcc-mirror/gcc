@@ -2,7 +2,7 @@
    Note, gcc should omit these warnings in system header files.
    By Kaveh R. Ghazi <ghazi@caip.rutgers.edu> 8/22/2000.  */
 /* { dg-do compile } */
-/* { dg-options "-Wtraditional" } */
+/* { dg-options "-std=c99 -Wtraditional" } */
 
 void
 testfunc (void)
@@ -18,12 +18,14 @@ testfunc (void)
   i = 0xFFFFFFFFFFFFFFFF;
   i = 01777777777777777777777;
 
-  /* We expect to get either a "width of integer constant changes with
-     -traditional" warning or an "integer constant is unsigned in ISO
-     C, signed with -traditional" warning depending on whether we are
-     testing on a 32 or 64 bit platform.  Either warning means the
-     test passes and both matched by checking for "integer constant".  */
-  i = 18446744073709551615; /* { dg-warning "integer constant" "integer constant" } */
+  /* Nor should values outside the range of (32-bit) unsigned long but
+     inside the range of long long.  [since -traditional has no long long,
+     we can pretend it worked the way it does in C99.]  */
+  i = 9223372036854775807;
+
+  /* But this one should, since it doesn't fit in long (long), but
+     does fit in unsigned long (long).  */
+  i = 18446744073709551615; /* { dg-warning "decimal constant|unsigned" "decimal constant" } */
   
 # 29 "sys-header.h" 3
 /* We are in system headers now, no -Wtraditional warnings should issue.  */
@@ -39,6 +41,3 @@ testfunc (void)
   i = 9223372036854775807;
   i = 18446744073709551615;
 }
-
-/* Ignore "decimal constant is so large that it is unsigned" warnings.  */
-/* { dg-warning "decimal constant" "decimal constant" { target *-*-* } 26 } */

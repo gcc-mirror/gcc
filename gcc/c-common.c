@@ -4510,6 +4510,10 @@ c_common_init (filename)
   options->warn_multichar = warn_multichar;
   options->stdc_0_in_system_headers = STDC_0_IN_SYSTEM_HEADERS;
 
+  /* We want -Wno-long-long to override -pedantic -std=non-c99
+     whatever the ordering.  */
+  options->warn_long_long = warn_long_long && !flag_isoc99 && pedantic;
+
   /* Register preprocessor built-ins before calls to
      cpp_main_file.  */
   cpp_get_callbacks (parse_in)->register_builtins = cb_register_builtins;

@@ -1,7 +1,7 @@
 /* Copyright (C) 2001 Free Software Foundation, Inc.  */
 
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99 -pedantic -Wtraditional" } */
+/* { dg-options "-std=gnu99 -pedantic -Wtraditional -fno-show-column" } */
 
 /* Tests diagnostics are suppressed for some macros defined in system
    headers.  */

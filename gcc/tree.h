@@ -2027,7 +2027,9 @@ extern tree global_trees[TI_MAX];
 #define V16SF_type_node			global_trees[TI_V16SF_TYPE]
 
 /* An enumeration of the standard C integer types.  These must be
-   ordered so that shorter types appear before longer ones.  */
+   ordered so that shorter types appear before longer ones, and so
+   that signed types appear before unsigned ones, for the correct
+   functioning of interpret_integer() in c-lex.c.  */
 enum integer_type_kind
 {
   itk_char,

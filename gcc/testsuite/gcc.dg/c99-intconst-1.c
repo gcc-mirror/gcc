@@ -4,11 +4,6 @@
 /* { dg-do compile } */
 /* { dg-options "-std=iso9899:1999 -pedantic-errors" } */
 
-/* C99 type selection didn't make it into 3.1, so this test
-   will fail on one or two entries; which ones depends on the
-   platform.
-   { dg-excess-errors "c99 not yet" } */
-
 #include <limits.h>
 
 /* Assertion that constant C is of type T.  */

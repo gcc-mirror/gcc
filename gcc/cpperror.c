@@ -92,6 +92,7 @@ _cpp_begin_message (pfile, code, line, column)
 	{
 	  if (CPP_OPTION (pfile, inhibit_errors))
 	    return 0;
+	  level = DL_ERROR;
 	  pfile->errors++;
 	}
       else if (CPP_OPTION (pfile, inhibit_warnings))
