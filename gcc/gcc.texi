@@ -2820,17 +2820,21 @@ GCC distribution.
 @node Contributing
 @chapter Contributing to GCC Development
 
-If you would like to help pretest GCC releases to assure they work
-well, or if you would like to work on improving GCC, please contact
-the maintainers at @email{gcc@@gcc.gnu.org}.  A pretester should
-be willing to try to investigate bugs as well as report them.
+If you would like to help pretest GCC releases to assure they work well,
+our current development sources are available by CVS (see
+@uref{http://gcc.gnu.org/cvs.html}).  Source and binary snapshots are
+also available for FTP; see @uref{http://gcc.gnu.org/snapshots.html}.
+Remember that snapshots of the current development sources may not be of
+production quality; if you find problems (whether compiler crashes,
+miscompiled code, poor optimization or any other problem), please report
+them following our bug reporting instructions at
+@uref{http://gcc.gnu.org/bugs.html}.
 
-If you'd like to work on improvements, please ask for suggested projects
-or suggest your own ideas.  If you have already written an improvement,
-please tell us about it.  If you have not yet started work, it is useful
-to contact @email{gcc@@gcc.gnu.org} before you start; the
-maintainers may be able to suggest ways to make your extension fit in
-better with the rest of GCC and with other development plans.
+If you would like to work on improvements to GCC, please read
+@uref{http://gcc.gnu.org/contribute.html} and
+@uref{http://gcc.gnu.org/contributewhy.html} for information on how to
+make useful contributions and avoid duplication of effort.  Suggested
+projects are listed at @uref{http://gcc.gnu.org/projects.html}.
 
 @node VMS
 @chapter Using GCC on VMS
