@@ -1659,8 +1659,23 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
 	{
 	  if (tab->version_info[SSA_NAME_VERSION (def)])
 	    {
-	      /* Mark expression as replaceable unless stmt is volatile.  */
-	      if (!ann->has_volatile_ops)
+	      bool same_root_var = false;
+	      tree def2;
+	      ssa_op_iter iter2;
+
+	      /* See if the root variables are the same.  If they are, we
+		 do not want to do the replacement to avoid problems with
+		 code size, see PR tree-optimization/17549.  */
+	      FOR_EACH_SSA_TREE_OPERAND (def2, stmt, iter2, SSA_OP_DEF)
+		if (SSA_NAME_VAR (def) == SSA_NAME_VAR (def2))
+		  {
+		    same_root_var = true;
+		    break;
+		  }
+
+	      /* Mark expression as replaceable unless stmt is volatile
+		 or DEF sets the same root variable as STMT.  */
+	      if (!ann->has_volatile_ops && !same_root_var)
 		mark_replaceable (tab, def);
 	      else
 		finish_expr (tab, SSA_NAME_VERSION (def), false);
