@@ -514,12 +514,7 @@ namespace std
     }
 #endif
 
-
   const char __num_base::_S_atoms[] = "0123456789eEabcdfABCDF";
-
-  const double __num_base::_S_scale_hex = log(10.0)/log(16.0);
-
-  const double __num_base::_S_scale_oct = log(10.0)/log(8.0);
 
   bool
   __num_base::_S_format_float(const ios_base& __io, char* __fptr, char __mod,
