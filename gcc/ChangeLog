@@ -1,3 +1,11 @@
+2001-09-05  Andreas Jaeger  <aj@suse.de>
+
+	* doc/invoke.texi (i386 Options): -mwide-multiply is not
+	available anymore, remove the documentation.
+	(i386 Options): Fix typo, cleanup index entries.
+
+	* prefix.c (concat): Remove, we can use the version from liberty.
+
 2001-09-05  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_expand_mov, alpha_expand_mov_nobwx):
@@ -72,7 +80,7 @@ Tue Sep  4 11:16:35 2001  Jeffrey A Law  (law@cygnus.com)
 	* config/sparc/sparc.c (whole file): Kill TYPE_ADDRESS
 	references.  Replace TYPE_{UNARY,BINARY,MOVE} references with
 	TYPE_IALU.
-	
+
 	Simplify length insn attribute and make more judicious use
 	of insn attribute defaulting.
 	* config/sparc/sparc.md (all insns with length > one): Mark as
@@ -85,7 +93,7 @@ Tue Sep  4 11:16:35 2001  Jeffrey A Law  (law@cygnus.com)
 	(addx): Set insn type to misc.
 	(mulsidi3_sp64, const_mulsidi3_sp64, umulsidi3_sp64,
 	const_umulsidi3_sp64): Set insn type to imul.
-	
+
 	Track SFmode vs DFmode insns according to UltraSPARC
 	scheduling rules.
 	* config/sparc/sparc.md ("fptype"): New attribute, default
