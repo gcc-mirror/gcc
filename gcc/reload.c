@@ -1076,7 +1076,7 @@ combine_reloads ()
   if (reload_in[output_reload] != 0)
     return;
 
-  /* If this reload is for an earlyclobber operand, we can't do anyting.  */
+  /* If this reload is for an earlyclobber operand, we can't do anything.  */
 
   for (i = 0; i < n_earlyclobbers; i++)
     if (reload_out[output_reload] == reload_earlyclobbers[i])
@@ -2026,7 +2026,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      RTX_UNCHANGING_P (recog_operand[i])
 		= RTX_UNCHANGING_P (regno_reg_rtx[regno]);
 	      find_reloads_address (GET_MODE (recog_operand[i]),
-				    recog_operand_loc[i],
+	      /* This is no longer a pseudo register.  To prevent later code
 				    XEXP (recog_operand[i], 0),
 				    &XEXP (recog_operand[i], 0),
 				    recog_operand[i], ind_levels);
@@ -3144,7 +3144,7 @@ alternative_allows_memconst (constraint, altnum)
 /* Scan X for memory references and scan the addresses for reloading.
    Also checks for references to "constant" regs that we want to eliminate
    and replaces them with the values they stand for.
-   We may alter X descructively if it contains a reference to such.
+   We may alter X destructively if it contains a reference to such.
    If X is just a constant reg, we return the equivalent value
    instead of X.
 

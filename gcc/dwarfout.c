@@ -243,7 +243,7 @@ static unsigned pending_siblings_allocated;
 #define PENDING_SIBLINGS_INCREMENT 64
 
 /* Non-zero if we are performing our file-scope finalization pass and if
-   we should force out Dwarf decsriptions of any and all file-scope
+   we should force out Dwarf descriptions of any and all file-scope
    tagged types which are still incomplete types.  */
 
 static int finalizing = 0;
@@ -268,11 +268,11 @@ static unsigned pending_types;
 
 #define PENDING_TYPES_INCREMENT 64
 
-/* Pointer to an artifical RECORD_TYPE which we create in dwarfout_init.
+/* Pointer to an artificial RECORD_TYPE which we create in dwarfout_init.
    This is used in a hack to help us get the DIEs describing types of
    formal parameters to come *after* all of the DIEs describing the formal
    parameters themselves.  That's necessary in order to be compatible
-   with what the brain-dammaged svr4 SDB debugger requires.  */
+   with what the brain-damaged svr4 SDB debugger requires.  */
 
 static tree fake_containing_scope;
 
@@ -2405,7 +2405,7 @@ type_tag (type)
 	 does.  It always makes the TYPE_NAME for each tagged type be either
 	 NULL (signifying an anonymous tagged type) or else a pointer to an
 	 IDENTIFIER_NODE.  Obviously, we would like to generate correct Dwarf
-	 for both C and C++, but given this inconsistancy in the TREE
+	 for both C and C++, but given this inconsistency in the TREE
 	 representation of tagged types for C and C++ in the GNU front-ends,
 	 we cannot support both languages correctly unless we introduce some
 	 front-end specific code here, and rms objects to that, so we can
@@ -3374,7 +3374,7 @@ output_type (type, containing_scope)
 
       case FILE_TYPE:
 	output_type (TREE_TYPE (type), containing_scope);
-	abort ();	/* No way to reprsent these in Dwarf yet!  */
+	abort ();	/* No way to represent these in Dwarf yet!  */
 	break;
 
       case STRING_TYPE:
@@ -4043,7 +4043,9 @@ dwarfout_file_scope_decl (decl, set_finalizing)
       if (TREE_EXTERNAL (decl) && !TREE_USED (decl))
 	return;
 
-      if (TREE_PUBLIC (decl) && ! TREE_EXTERNAL (decl))
+      if (TREE_PUBLIC (decl)
+	  && ! TREE_EXTERNAL (decl)
+	  && GET_CODE (DECL_RTL (decl)) == MEM)
 	{
 	  char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
@@ -4064,7 +4066,7 @@ dwarfout_file_scope_decl (decl, set_finalizing)
 	  if (DECL_INITIAL (decl) == NULL)
 	    {
 	      /* Output a .debug_aranges entry for a public variable
-		 which is tenatively defined in this compilation unit.  */
+		 which is tentatively defined in this compilation unit.  */
 
 	      fputc ('\n', asm_out_file);
 	      ASM_OUTPUT_PUSH_SECTION (asm_out_file, ARANGES_SECTION);
@@ -4660,7 +4662,7 @@ dwarfout_finish ()
 
      In order to force the label `..D2' to get aligned to a 4 byte boundary,
      the trick used is to insert extra (otherwise useless) padding bytes
-     into the (null) DIE that we know must preceed the ..D2 label in the
+     into the (null) DIE that we know must precede the ..D2 label in the
      .debug section.  The amount of padding required can be anywhere between
      0 and 3 bytes.  The length word at the start of this DIE (i.e. the one
      with the padding) would normally contain the value 4, but now it will

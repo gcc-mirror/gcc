@@ -8,7 +8,7 @@
  * a way that is compatible with code compiled by the Pyramid Technology
  * C compiler.
  * As such, it depends strongly on the Pyramid conventions for
- * parameter passing.ct and indepenent implementation. 
+ * parameter passing.ct and independent implementation. 
  * These (somewhat bizarre) parameter-passing conventions are described
  * in the ``OSx Operating System Porting Guide''.
  * 

@@ -2668,7 +2668,7 @@ expand_fix (to, from, unsignedp)
      one plus the highest signed number, convert, and add it back.
 
      We only need to check all real modes, since we know we didn't find
-     anything with a wider inetger mode.  */
+     anything with a wider integer mode.  */
 
   if (unsignedp && GET_MODE_BITSIZE (GET_MODE (to)) <= HOST_BITS_PER_INT)
     for (fmode = GET_MODE (from); fmode != VOIDmode;

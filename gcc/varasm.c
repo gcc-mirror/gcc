@@ -909,7 +909,7 @@ assemble_variable (decl, top_level, at_end)
      declaration.  When something like ".stabx  "aa:S-2",aa,133,0" is emitted 
      and `aa' hasn't been output yet, the assembler generates a stab entry with
      a value of zero, in addition to creating an unnecessary external entry
-     for `aa'.  Hence, we must pospone dbxout_symbol to here at the end.  */
+     for `aa'.  Hence, we must postpone dbxout_symbol to here at the end.  */
 
   /* File-scope global variables are output here.  */
   if (write_symbols == XCOFF_DEBUG && top_level)

@@ -521,7 +521,7 @@ dbxout_continue ()
   current_sym_nchars = 0;
 }
 
-/* Subtroutine of `dbxout_type'.  Output the type fields of TYPE.
+/* Subroutine of `dbxout_type'.  Output the type fields of TYPE.
    This must be a separate function because anonymous unions require
    recursive calls.  */
 
@@ -614,7 +614,7 @@ dbxout_type_fields (type)
     }
 }
 
-/* Subtroutine of `dbxout_type_methods'.  Output debug info about the
+/* Subroutine of `dbxout_type_methods'.  Output debug info about the
    method described DECL.  DEBUG_NAME is an encoding of the method's
    type signature.  ??? We may be able to do without DEBUG_NAME altogether
    now.  */

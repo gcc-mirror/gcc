@@ -32,9 +32,9 @@ enum rtx_code  {
 #include "rtl.def"		/* rtl expressions are documented here */
 #undef DEF_RTL_EXPR
 
-  LAST_AND_UNUSED_RTX_CODE};	/* A convienent way to get a value for
+  LAST_AND_UNUSED_RTX_CODE};	/* A convenient way to get a value for
 				   NUM_RTX_CODE.
-				   Assumes default enum value assignement.  */
+				   Assumes default enum value assignment.  */
 
 #define NUM_RTX_CODE ((int)LAST_AND_UNUSED_RTX_CODE)
 				/* The cast here, saves many elsewhere.  */
@@ -219,7 +219,7 @@ typedef struct rtvec_def{
 #define INSN_ANNULLED_BRANCH_P(INSN) ((INSN)->unchanging)
 
 /* 1 if insn is in a delay slot and is from the target of the branch.  If
-   the branch insn has INSN_ANULLED_BRANCH_P set, this insn should only be
+   the branch insn has INSN_ANNULLED_BRANCH_P set, this insn should only be
    executed if the branch is taken.  For annulled branches with this bit
    clear, the insn should be executed only if the branch is not taken.  */
 #define INSN_FROM_TARGET_P(INSN) ((INSN)->in_struct)

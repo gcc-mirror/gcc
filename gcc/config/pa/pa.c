@@ -1056,7 +1056,7 @@ output_block_move (operands, size_is_constant)
 	    goto copy_with_loop;
 
 	  /* Read and store using two registers, and hide latency
-	     by defering the stores until three instructions after
+	     by deferring the stores until three instructions after
 	     the corresponding load.  The last load insn will read
 	     the entire word were the last bytes are, possibly past
 	     the end of the source block, but since loads are aligned,
@@ -1144,7 +1144,7 @@ output_block_move (operands, size_is_constant)
       output_asm_insn ("addib,<,n -4,%2,.+16", operands);
     }
 
-  /* Copying loop.  Note that the first load is in the anulled delay slot
+  /* Copying loop.  Note that the first load is in the annulled delay slot
      of addib.  Is it OK on PA to have a load in a delay slot, i.e. is a
      possible page fault stopped in time?  */
   output_asm_insn ("ldws,ma 4(0,%1),%3", operands);
@@ -1170,7 +1170,7 @@ output_block_move (operands, size_is_constant)
       output_asm_insn ("addib,=,n 4,%2,.+16", operands);
 
       /* Read the entire word of the source block tail.  (Also this
-	 load is in an anulled delay slot.)  */
+	 load is in an annulled delay slot.)  */
       output_asm_insn ("ldw 0(0,%1),%3", operands);
 
       /* Make %0 point at the first byte after the destination block.  */

@@ -423,12 +423,12 @@ struct def_dec_info_struct {
 #ifndef UNPROTOIZE
   const f_list_chain_item * f_list_chain;	/* -> chain of formals lists */
   const def_dec_info *	definition;	/* -> def/dec containing related def */
-  char	        	is_static;	/* = 0 means visiblilty is "extern"  */
+  char	        	is_static;	/* = 0 means visibility is "extern"  */
   char			is_implicit;	/* != 0 for implicit func decl's */
   char			written;	/* != 0 means written for implicit */
 #else /* !defined (UNPROTOIZE) */
   const char *		formal_names;	/* -> to list of names of formals */
-  const char *		formal_decls;	/* -> to string of formal declartions */
+  const char *		formal_decls;	/* -> to string of formal declarations */
 #endif /* !defined (UNPROTOIZE) */
 };
 
@@ -701,7 +701,7 @@ dupnstr (s, n)
   return ret_val;
 }
 
-/* Return a pointer to the first occurance of s2 within s1 or NULL if s2
+/* Return a pointer to the first occurrence of s2 within s1 or NULL if s2
    does not occur within s1.  Assume neither s1 nor s2 are null pointers.  */
 
 static const char *
@@ -829,7 +829,7 @@ file_could_be_converted (const char *path)
    convert and for which we don't issue the usual warnings.  */
 
 static int
-file_normally_convertable (const char *path)
+file_normally_convertible (const char *path)
 {
   char *const dir_name = alloca (strlen (path) + 1);
 
@@ -3060,7 +3060,7 @@ edit_fn_declaration (def_dec_p, clean_text_p)
          identifier we just found.  We ignore whitespace while hunting.  If
          the next non-whitespace byte we see is *not* an open left paren,
          then we must assume that we have been fooled and we start over
-         again accordingly.  Note that there is no guarrantee, that even if
+         again accordingly.  Note that there is no guarantee, that even if
          we do see the open paren, that we are in the right place.
          Programmers do the strangest things sometimes!  */
     
@@ -4363,7 +4363,7 @@ do_processing ()
 #endif /* !defined (UNPROTOIZE) */
 
   /* When we first read in all of the information from the aux_info files
-     we saved in it decending line number order, because that was likely to
+     we saved in it descending line number order, because that was likely to
      be faster.  Now however, we want the chains of def & dec records to
      appear in ascending line number order as we get further away from the
      file_info record that they hang from.  The following line causes all of

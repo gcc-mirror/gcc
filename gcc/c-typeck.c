@@ -3554,7 +3554,7 @@ build_compound_expr (list)
 
   if (TREE_CHAIN (list) == 0)
     {
-#if 0 /* If something inside inhibited lvalueness, we shoukd not override.  */
+#if 0 /* If something inside inhibited lvalueness, we should not override.  */
       /* Consider (x, y+0), which is not an lvalue since y+0 is not.  */
 
       /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
@@ -4369,7 +4369,7 @@ get_spelling (errtype)
    into the message.
 
    If OFWHAT is null, the component name is stored on the spelling stack.
-   If the compoment name is a null string, then LOCAL is omitted entirely.  */
+   If the component name is a null string, then LOCAL is omitted entirely.  */
 
 void
 error_init (format, local, ofwhat)
@@ -4395,7 +4395,7 @@ error_init (format, local, ofwhat)
    into the message.
 
    If OFWHAT is null, the component name is stored on the spelling stack.
-   If the compoment name is a null string, then LOCAL is omitted entirely.  */
+   If the component name is a null string, then LOCAL is omitted entirely.  */
 
 void
 pedwarn_init (format, local, ofwhat)

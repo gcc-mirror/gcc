@@ -128,7 +128,7 @@ enum machine_mode word_mode;	/* Mode whose width is BITS_PER_WORD */
 
 /* Indexed by rtx code, gives a sequence of operand-types for
    rtx's of that code.  The sequence is a C string in which
-   each charcter describes one operand.  */
+   each character describes one operand.  */
 
 char *rtx_format[] = {
   /* "*" undefined.

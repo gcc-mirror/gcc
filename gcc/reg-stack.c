@@ -1266,7 +1266,7 @@ find_blocks (first)
   if (block + 1 != blocks)
     abort ();
 
-  /* generate all label references to the correspondending jump insn */
+  /* generate all label references to the corresponding jump insn */
   for (block = 0; block < blocks; block++)
     {
       insn = block_end[block];
@@ -2038,12 +2038,12 @@ subst_stack_regs_pat (insn, regstack, pat)
 
 /* Substitute hard regnums for any stack regs in INSN, which has
    N_INPUTS inputs and N_OUTPUTS outputs.  REGSTACK is the stack info
-   before the insn, and is updated with changes made here.  CONSTAINTS is
+   before the insn, and is updated with changes made here.  CONSTRAINTS is
    an array of the constraint strings used in the asm statement.
 
    OPERANDS is an array of the operands, and OPERANDS_LOC is a
    parallel array of where the operands were found.  The output operands
-   all preceed the input operands.
+   all precede the input operands.
 
    There are several requirements and assumptions about the use of
    stack-like regs in asm statements.  These rules are enforced by

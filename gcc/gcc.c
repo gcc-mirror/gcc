@@ -125,7 +125,7 @@ static int cross_compile = 0;
 static struct obstack obstack;
 
 /* This is the obstack to build an environment variable to pass to
-   collect2 that describes all of the relavant switches of what to
+   collect2 that describes all of the relevant switches of what to
    pass the compiler in building the list of pointers to constructors
    and destructors.  */
 
@@ -237,7 +237,7 @@ or with constant text in a single argument.
  %{S*:X} substitutes X if one or more switches whose names with -S are
 	specified to CC.  Note that the tail part of the -S option
 	(i.e. the part matched by the `*') will be substituted for each
-	occurance of %* within X.
+	occurrence of %* within X.
  %{S:X} substitutes X, but only if the -S switch was given to CC.
  %{!S:X} substitutes X, but only if the -S switch was NOT given to CC.
  %{|S:X} like %{S:X}, but if no S switch, substitute `-'.
@@ -549,7 +549,7 @@ static char *link_command_spec = "\
 #endif
 
 /* A vector of options to give to the linker.
-   These options are accumlated by %x
+   These options are accumulated by %x
    and substituted into the linker command with %X.  */
 static int n_linker_options;
 static char **linker_options;

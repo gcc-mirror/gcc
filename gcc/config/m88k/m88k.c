@@ -1729,7 +1729,7 @@ m88k_layout_frame ()
       }
 
   /* Achieve greatest use of double memory ops.  Either we end up saving
-     r30 or we use that slot to align the regsters we do save.  */
+     r30 or we use that slot to align the registers we do save.  */
   if (nregs >= 2 && save_regs[1] && !save_regs[FRAME_POINTER_REGNUM])
     sp_size += 4;
 

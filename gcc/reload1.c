@@ -2646,7 +2646,7 @@ eliminate_regs (x, mem_mode, insn)
 	    if (ep->to_rtx == SET_DEST (x)
 		&& SET_DEST (x) != frame_pointer_rtx)
 	      {
-		/* If it is being incrememented, adjust the offset.  Otherwise,
+		/* If it is being incremented, adjust the offset.  Otherwise,
 		   this elimination can't be done.  */
 		rtx src = SET_SRC (x);
 

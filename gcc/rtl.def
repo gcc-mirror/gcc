@@ -81,7 +81,7 @@ DEF_RTL_EXPR(EXPR_LIST, "expr_list", "ee", 'x')
 DEF_RTL_EXPR(INSN_LIST, "insn_list", "ue", 'x')
 
 /* ----------------------------------------------------------------------
-   Expression types for machine descripions.
+   Expression types for machine descriptions.
    These do not appear in actual rtl code in the compiler.
    ---------------------------------------------------------------------- */
 
@@ -408,7 +408,7 @@ DEF_RTL_EXPR(ASM_OPERANDS, "asm_operands", "ssiEEsi", 'x')
    or inside an expression.  */
 DEF_RTL_EXPR(UNSPEC, "unspec", "Ei", 'x')
 
-/* Similiar, but a volatile operation and one which may trap.  */
+/* Similar, but a volatile operation and one which may trap.  */
 DEF_RTL_EXPR(UNSPEC_VOLATILE, "unspec_volatile", "Ei", 'x')
 
 /* Vector of addresses, stored as full words.  */

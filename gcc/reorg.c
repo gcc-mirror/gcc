@@ -30,7 +30,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    optimization.  It should be the last pass to run before peephole.
    It serves primarily to fill delay slots of insns, typically branch
    and call insns.  Other insns typically involve more complicated
-   interractions of data dependencies and resource constraints, and
+   interactions of data dependencies and resource constraints, and
    are better handled by scheduling before register allocation (by the
    function `schedule_insns').
 
@@ -176,7 +176,7 @@ static struct resources end_of_function_needs;
 /* Points to the label before the end of the function.  */
 static rtx end_of_function_label;
 
-/* This structure is used to record livness information at the targets or
+/* This structure is used to record liveness information at the targets or
    fallthrough insns of branches.  We will most likely need the information
    at targets again, so save them in a hash table rather than recomputing them
    each time.  */
@@ -371,7 +371,7 @@ mark_referenced_resources (x, res, include_called_routine)
 	    }
 	}
 
-      /* ... fall through to other INSN procesing ... */
+      /* ... fall through to other INSN processing ... */
 
     case INSN:
     case JUMP_INSN:
@@ -403,7 +403,7 @@ mark_referenced_resources (x, res, include_called_routine)
 
    We never mark the insn as modifying the condition code unless it explicitly
    SETs CC0 even though this is not totally correct.  The reason for this is
-   that we require a SET of CC0 to immediately preceed the reference to CC0.
+   that we require a SET of CC0 to immediately precede the reference to CC0.
    So if some other insn sets CC0 as a side-effect, we know it cannot affect
    our computation and thus may be placed in a delay slot.   */
 
@@ -911,8 +911,8 @@ note_delay_statistics (slots_filled, index)
 
    1.  When a conditional branch skips over only one instruction,
        use an annulling branch and put that insn in the delay slot.
-       Use either a branch that annulls when the condition if true or
-       invert the test with a branch that annulls when the condition is
+       Use either a branch that annuls when the condition if true or
+       invert the test with a branch that annuls when the condition is
        false.  This saves insns, since otherwise we must copy an insn
        from the L1 target.
 
@@ -3251,7 +3251,7 @@ relax_delay_slots (first)
 	  /* If the last insn in the delay slot sets CC0 for some insn,
 	     various code assumes that it is in a delay slot.  We could
 	     put it back where it belonged and delete the register notes,
-	     but it doesn't seem worhwhile in this uncommon case.  */
+	     but it doesn't seem worthwhile in this uncommon case.  */
 	  && ! find_reg_note (XVECEXP (pat, 0, XVECLEN (pat, 0) - 1),
 			      REG_CC_USER, 0)
 #endif
