@@ -1,3 +1,17 @@
+Wed Sep 30 18:43:32 1998  Herman ten Brugge <Haj.Ten.Brugge@net.HCC.nl> 
+
+	* reorg.c (try_merge_delay_insns): Account for resources referenced
+	in each instruction in INSN's delay list before trying to eliminate
+	useless instructions.  Similarly when looking at a trial insn's delay
+	slots.
+
+        * reorg.c (check_annul_list_true_false): New function.
+        (steal_delay_list_from_{target,fallthrough}): Call it and also
+        refine tests for when we may annul if already filled a slot.
+        (fill_slots_from_thread): Likewise.
+        (delete_from_delay_slot): Return newly-created thread.
+        (try_merge_delay_isns): Use its new return value.
+
 Wed Sep 30 18:29:26 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* loop.c (check_dbra_loop): Use a vanilla loop reversal if the biv is
