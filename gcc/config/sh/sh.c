@@ -8562,7 +8562,7 @@ sh_md_init (FILE *dump ATTRIBUTE_UNUSED,
    functions that already have high pressure on r0. */
 #define R0_MAX_LIFE_REGIONS 2
 #define R0_MAX_LIVE_LENGTH 12
-/* Register Pressure threshols for SImode and SFmode registers.  */
+/* Register Pressure thresholds for SImode and SFmode registers.  */
 #define SIMODE_MAX_WEIGHT 5
 #define SFMODE_MAX_WEIGHT 10
 

@@ -774,7 +774,7 @@ rest_of_handle_sched2 (tree decl, rtx insns)
     {
       schedule_ebbs (dump_file);
       /* No liveness updating code yet, but it should be easy to do.
-	 reg-stack recompute the liveness when needed for now.  */
+	 reg-stack recomputes the liveness when needed for now.  */
       count_or_remove_death_notes (NULL, 1);
       cleanup_cfg (CLEANUP_EXPENSIVE);
     }
