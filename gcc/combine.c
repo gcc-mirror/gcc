@@ -5608,6 +5608,11 @@ force_to_mode (x, mode, mask, reg)
 	      && (code_to_optab[(int) code]->handlers[(int) mode].insn_code
 		  != CODE_FOR_nothing))
 	     ? mode : GET_MODE (x));
+  /* It is not valid to do a right-shift in a narrower mode
+     than the one it came in with.  */
+  if ((code == LSHIFTRT || code == ASHIFTRT)
+      && GET_MODE_BITSIZE (mode) < GET_MODE_BITSIZE (GET_MODE (x)))
+    op_mode = GET_MODE (x);
 
   /* Truncate MASK to fit OP_MODE.  */
   if (op_mode)
