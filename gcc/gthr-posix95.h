@@ -579,7 +579,7 @@ __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
   if (__gthread_active_p ())
     {
       if (--mutex->depth == 0)
-        {
+	{
 	   mutex->owner = (pthread_t) 0;
 	   pthread_mutex_unlock (&mutex->actual);
 	}
