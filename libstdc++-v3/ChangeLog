@@ -1,3 +1,16 @@
+2003-06-25  Phil Edwards  <pme@gcc.gnu.org>
+
+	Bulk documentation merge (copy) from trunk.
+	* docs/doxygen/filter, docs/doxygen/filter.sed,
+	docs/doxygen/mainpage.html, docs/doxygen/run_doxygen,
+	docs/doxygen/user.cfg.in, docs/html/configopts.html,
+	docs/html/documentation.html, docs/html/explanations.html,
+	docs/html/install.html, docs/html/test.html, docs/html/17_intro/BUGS,
+	docs/html/17_intro/CHECKLIST, docs/html/17_intro/contribute.html,
+	docs/html/20_util/howto.html, docs/html/ext/howto.html,
+	docs/html/ext/sgiexts.html, docs/html/faq/index.html,
+	docs/html/faq/index.txt:  Merge from trunk.
+
 2003-06-23  Loren J. Rittle  <ljrittle@acm.org>
 
 	* configure.target (freebsd*): Set abi_baseline_pair.

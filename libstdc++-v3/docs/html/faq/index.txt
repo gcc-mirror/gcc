@@ -174,7 +174,7 @@
    the SGI STL aren't maintained by us and don't get a lot of our
    attention, because they don't require a lot of our time.) It is
    entirely plausable that the "useful stuff" from libg++ might be
-   extracted into an updated utilities library, but nobody has stated
+   extracted into an updated utilities library, but nobody has started
    such a project yet.
 
    (The [64]Boost site houses free C++ libraries that do varying things,
@@ -442,7 +442,7 @@
 3.10 MIPS atomic operations
 
    The atomic locking routines for MIPS targets requires MIPS II and
-   later. A patch went in just after the 3.3.0 release to make mips* use
+   later. A patch went in just after the 3.3 release to make mips* use
    the generic implementation instead. You can also configure for
    mipsel-elf as a workaround.
 

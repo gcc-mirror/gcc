@@ -384,6 +384,7 @@ RECURSIVE              = YES
 
 EXCLUDE                = Makefile \
                          CVS \
+                         include/bits/demangle.h \
 			 stdc++.h.gch
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or directories 
@@ -433,7 +434,7 @@ IMAGE_PATH             =
 # input file. Doxygen will then use the output that the filter program writes 
 # to standard output.
 
-INPUT_FILTER           = 
+INPUT_FILTER           = "@srcdir@/docs/doxygen/filter @srcdir@/docs/doxygen/filter.sed"
 
 # If the FILTER_SOURCE_FILES tag is set to YES, the input filter (if set using 
 # INPUT_FILTER) will be used to filter the input files when producing source 
@@ -459,7 +460,7 @@ INLINE_SOURCES         = NO
 # doxygen to hide any special comment blocks from generated source code 
 # fragments. Normal C and C++ comments will always remain visible.
 
-STRIP_CODE_COMMENTS    = YES
+STRIP_CODE_COMMENTS    = NO
 
 # If the REFERENCED_BY_RELATION tag is set to YES (the default) 
 # then for each documented function all documented 

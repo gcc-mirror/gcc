@@ -48,12 +48,6 @@ design</a></h1>
    disadvantage is that the C++ code will run slower (fortunately, the layer
    is thin).
 </p>
-<p>Choosing 'libio' is the cool way; it allows C++ and C to share some
-   buffers.  It's disabled because of tricky synchronization issues.  Other
-   cool ways (various methods of sharing resources between C and C++
-   facilities, instead of layering) are possible.  This approach can speed
-   up I/O significantly.
-</p>
 <p>Other packages are possible.  For a new package, a header must be
    written to provide types like streamsize (usually just a typedef), as
    well as some internal types like<code> __c_file_type </code> and
