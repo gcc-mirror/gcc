@@ -1,3 +1,9 @@
+Wed Mar 19 09:08:12 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* pt.c (check_explicit_specialization): When reverting a static
+	member function, also remove the `this' parameter from
+	last_function_parms.
+
 Thu Mar 19 02:27:48 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (tsubst_copy, CONST_DECL): Don't bother tsubsting

@@ -975,7 +975,10 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	    }
 	  else if (DECL_STATIC_FUNCTION_P (tmpl)
 		   && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
-	    revert_static_member_fn (&decl, 0, 0);
+	    {
+	      revert_static_member_fn (&decl, 0, 0);
+	      last_function_parms = TREE_CHAIN (last_function_parms);
+	    }
 
 	  /* Mangle the function name appropriately.  Note that we do
 	     not mangle specializations of non-template member
