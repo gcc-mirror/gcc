@@ -573,6 +573,9 @@ else
    fi
 fi
 
+dnl FIXME: cross compilation
+AC_CHECK_SIZEOF(void *)
+
 ZLIBS=
 ZDEPS=
 ZINCS=

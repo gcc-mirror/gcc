@@ -285,7 +285,16 @@ typedef union {
   jint ia[1];			// Half of _Jv_word2.
   void* p;
 
-  // these are things we will store in the constant 
+  // We use __LP64__ and not SIZEOF_VOID_P here because we want
+  // something that will be predefined by the compiler.  FIXME -- this
+  // definition probably shouldn't appear here anyway.
+#ifdef __LP64__
+  // We can safely put a long or a double in here without increasing
+  // the size of _Jv_Word; we take advantage of this in the interpreter.
+  jlong l;
+  jdouble d;
+#endif
+
   jclass                     clazz;
   jstring                    string;
   struct _Jv_Field          *field;
