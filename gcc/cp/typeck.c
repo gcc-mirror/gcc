@@ -4795,21 +4795,29 @@ build_unary_op (code, xarg, noconvert)
 	  && OVL_NEXT (TREE_OPERAND (arg, 1)) == NULL_TREE)
 	{
 	  /* They're trying to take the address of a unique non-static
-	     member function.  This is ill-formed, but let's try to DTRT.  */
-	  tree base, name;
+	     member function.  This is ill-formed, but let's try to DTRT.
+	     Note: We only handle unique functions here because we don't
+	     want to complain if there's a static overload; non-unique
+	     cases will be handled by instantiate_type.  But we need to
+	     handle this case here to allow casts on the resulting PMF.  */
 
-	  if (current_class_type
-	      && TREE_OPERAND (arg, 0) == current_class_ref)
-	    /* An expression like &memfn.  */
-	    pedwarn ("taking the address of a non-static member function");
-	  else
-	    pedwarn ("taking the address of a bound member function");
+	  tree base = TREE_TYPE (TREE_OPERAND (arg, 0));
+	  tree name = DECL_NAME (OVL_CURRENT (TREE_OPERAND (arg, 1)));
 
-	  base = TREE_TYPE (TREE_OPERAND (arg, 0));
-	  name = DECL_NAME (OVL_CURRENT (TREE_OPERAND (arg, 1)));
+	  if (! flag_ms_extensions)
+	    {
+	      if (current_class_type
+		  && TREE_OPERAND (arg, 0) == current_class_ref)
+		/* An expression like &memfn.  */
+		pedwarn ("taking the address of a non-static member function");
+	      else
+		pedwarn ("taking the address of a bound member function");
 
-	  cp_pedwarn ("  to form a pointer to member function, say `&%T::%D'",
-		      base, name);
+	      cp_pedwarn
+		("  to form a pointer to member function, say `&%T::%D'",
+		 base, name);
+	    }
+
 	  arg = build_offset_ref (base, name);
 	}
 

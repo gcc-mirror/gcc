@@ -2149,6 +2149,9 @@ extern int strict_prototypes_lang_c, strict_prototypes_lang_cplusplus;
    applies, use the value of the label.  */
 extern int flag_labels_ok;
 
+/* Nonzero means allow Microsoft extensions without a pedwarn.  */
+extern int flag_ms_extensions;
+
 /* Non-zero means to collect statistics which might be expensive
    and to print them when we are done.  */
 extern int flag_detailed_statistics;
