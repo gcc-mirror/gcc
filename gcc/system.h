@@ -397,19 +397,13 @@ extern int sys_nerr;
 extern char *sys_errlist[];
 #endif /* HAVE_STRERROR */
 
-#ifdef HAVE_STRSIGNAL
-# ifdef NEED_DECLARATION_STRSIGNAL
-#  ifndef strsignal
-extern char * strsignal ();
-#  endif
+/* If the system doesn't provide strsignal, we get it defined in
+   libiberty but no declaration is supplied. */
+#ifdef NEED_DECLARATION_STRSIGNAL
+# ifndef strsignal
+extern const char *strsignal PARAMS ((int));
 # endif
-#else /* ! HAVE_STRSIGNAL */
-# ifndef SYS_SIGLIST_DECLARED
-#  ifndef NO_SYS_SIGLIST
-extern char * sys_siglist[];
-#  endif
-# endif
-#endif /* HAVE_STRSIGNAL */
+#endif
 
 #ifdef HAVE_GETRLIMIT
 # ifdef NEED_DECLARATION_GETRLIMIT
