@@ -1343,7 +1343,7 @@ fi
 
 
 for ac_func in symlink getcwd getwd lstat gethostname strerror clock \
-  getrusage times alarm
+  getrusage times alarm getlogin getgid getuid kill link ttyname
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:1350: checking for $ac_func" >&5
