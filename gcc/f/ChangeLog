@@ -1,3 +1,7 @@
+2002-10-26  Andris Pavenis  <pavenis@latnet.lv>
+
+	* lang-specs.h: Fix ratfor specs.
+
 2002-10-15  Richard Henderson  <rth@redhat.com>
 
 	* target.h (ffetarget_print_real1, ffetarget_print_real2): Use 
