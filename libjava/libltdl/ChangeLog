@@ -1,3 +1,7 @@
+2000-09-10  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Updated from libtool multi-language branch.
+
 2000-02-14  Tom Tromey  <tromey@cygnus.com>
 
 	* ltdl.c: If HAVE_BOEHM_GC defined, includ gc.h.
