@@ -171,3 +171,4 @@ unsigned HOST_WIDE_INT loop_iterations PROTO((rtx, rtx));
 rtx final_biv_value PROTO((struct iv_class *, rtx, rtx));
 rtx final_giv_value PROTO((struct induction *, rtx, rtx));
 void emit_unrolled_add PROTO((rtx, rtx, rtx));
+int back_branch_in_range_p PROTO((rtx, rtx, rtx));
