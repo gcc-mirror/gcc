@@ -1,5 +1,4 @@
 EXTRA_PASSES	= mips-tfile mips-tdump
-CONFIG2_H	= $(srcdir)/config/mips/mips.h
 
 # We have a premade insn-attrtab.c to save the hour it takes to run genattrtab.
 # PREMADE_ATTRTAB = $(srcdir)/config/mips/mips-at.c
@@ -8,39 +7,6 @@ CONFIG2_H	= $(srcdir)/config/mips/mips.h
 # Suppress building libgcc1.a, since the MIPS compiler port is complete
 # and does not need anything from libgcc1.a.
 LIBGCC1 = libgcc1.null
-
-# Add additional dependencies to recompile selected modules whenever the
-# tm.h file changes.  The files compiled are:
-#
-#	gcc.c		(*_SPEC changes)
-#	toplev.c	(new switches + assembly output changes)
-#	sdbout.c	(debug format changes)
-#	dbxout.c	(debug format changes)
-#	dwarfout.c	(debug format changes)
-#	final.c		(assembly output changes)
-#	varasm.c	(assembly output changes)
-#	cse.c		(cost functions)
-#	insn-output.c	(possible ifdef changes in tm.h)
-#	regclass.c	(fixed/call used register changes)
-#	cccp.c		(new preprocessor macros, -v version #)
-#	explow.c	(GO_IF_LEGITIMATE_ADDRESS)
-#	recog.c		(GO_IF_LEGITIMATE_ADDRESS)
-#	reload.c	(GO_IF_LEGITIMATE_ADDRESS)
-
-gcc.o: $(CONFIG2_H)
-toplev.o: $(CONFIG2_H)
-sdbout.o: $(CONFIG2_H)
-dbxout.o: $(CONFIG2_H)
-dwarfout.o: $(CONFIG2_H)
-final.o: $(CONFIG2_H)
-varasm.o: $(CONFIG2_H)
-cse.o: $(CONFIG2_H)
-insn-output.o: $(CONFIG2_H)
-regclass.o: $(CONFIG2_H)
-cccp.o: $(CONFIG2_H)
-explow.o: $(CONFIG2_H)
-recog.o: $(CONFIG2_H)
-reload.o: $(CONFIG2_H)
 
 mips-tfile: mips-tfile.o version.o $(LIBDEPS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o mips-tfile mips-tfile.o version.o $(LIBS)
