@@ -1,3 +1,7 @@
+Wed Jun  5 15:20:58 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* reg-stack.c (reg_to_stack): Do not call find_basic_blocks.
+
 2002-06-05  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/linux64.h (ASM_OUTPUT_SOURCE_LINE): Define.

@@ -441,7 +441,6 @@ reg_to_stack (first, file)
      build the CFG and run life analysis.  */
   if (!optimize)
     {
-      find_basic_blocks (first, max_reg_num (), file);
       count_or_remove_death_notes (NULL, 1);
       life_analysis (first, file, PROP_DEATH_NOTES);
     }
