@@ -1,3 +1,7 @@
+Fri Jun  1 18:55:19 2001  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2001-05-30  Hans-Peter Nilsson  <hp@axis.com>
 
 	* configure.in (libstdcxx_flags): Do not try to execute
