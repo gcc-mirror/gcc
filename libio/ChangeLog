@@ -1,3 +1,8 @@
+1998-08-25 14:34  Ulrich Drepper  <drepper@cygnus.com>
+
+	* libio/iogetline.c (_IO_getline_info): Don't read anything for
+	N == 0.  Patch by HJ Lu.
+
 1998-08-17  Ulrich Drepper  <drepper@cygnus.com>
 
 	* strfile.h: Define __PMT if not already defined.
