@@ -105,7 +105,10 @@ struct emit_status GTY(())
   tree * GTY ((length ("%h.regno_pointer_align_length"))) regno_decl;
 
   /* Indexed by pseudo register number, gives the rtx for that pseudo.
-     Allocated in parallel with regno_pointer_align.  */
+     Allocated in parallel with regno_pointer_align. 
+
+     Note MEM expressions can appear in this array due to the actions
+     of put_var_into_stack.  */
   rtx * GTY ((length ("%h.regno_pointer_align_length"))) x_regno_reg_rtx;
 };
 
