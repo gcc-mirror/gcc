@@ -524,6 +524,18 @@ gcjvers="`$GCJ -v 2>&1 | sed -n 's/^.*version \([^ ]*\).*$/\1/p'`"
 changequote([,])
 AC_DEFINE_UNQUOTED(GCJVERSION, "$gcjvers")
 
+# See if gcj supports -fuse-divide-subroutine.  gcc 2.95 does not, and
+# we want to continue to support that version.
+cat > conftest.java << 'END'
+public class conftest { }
+END
+use_fuse=yes
+$GCJ -fuse-divide-subroutine -fsyntax-only conftest.java || use_fuse=no
+rm -f conftest.java
+if test "$use_fuse" = no; then
+   DIVIDESPEC=
+fi
+
 AC_SUBST(AM_RUNTESTFLAGS)
 
 dnl We check for sys/filio.h because Solaris 2.5 defines FIONREAD there.

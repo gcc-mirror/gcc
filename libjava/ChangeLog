@@ -1,3 +1,9 @@
+1999-08-16  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Set DIVIDESPEC to empty string if compiler does
+	not support -fuse-divide-subroutine.
+
 1999-08-14  Per Bothner  <per@bothner.com>
 
 	* resolve.cc (_Jv_PrepareClass): Use ClassLoader::resolveClass0.
