@@ -219,6 +219,34 @@ of tree node types when referencing fields of that node.  This does not
 change the generated code, but adds error checking within the compiler.
 This will slow down the compiler and may only work properly if you
 are building the compiler with GNU C.
+
+@cindex Native Language Support
+@cindex NLS
+@item --enable-nls
+@itemx --disable-nls
+The @samp{--enable-nls} option enables Native Language Support (NLS),
+which lets GCC output diagnostics in languages other than American
+English.  No translations are available yet, so the main users of this
+option now are those translating GCC's diagnostics who want to test
+their work.  Once translations become available, Native Language Support
+will become enabled by default.  The @samp{--disable-nls} option
+disables NLS.
+
+@cindex @code{gettext}
+@item --with-included-gettext
+If NLS is enabled, the GCC build procedure normally attempts to use the
+host's @code{gettext} libraries, and falls back on GCC's copy of the GNU
+@code{gettext} library only if the host libraries do not suffice.  The
+@samp{--with-included-gettext} option causes the build procedure to
+prefer its copy of GNU @code{gettext}.
+
+@cindex @code{catgets}
+@item --with-catgets
+If NLS is enabled, and if the host lacks @code{gettext} but has the
+inferior @code{catgets} interface, the GCC build procedure normally
+ignores @code{catgets} and instead uses GCC's copy of the GNU
+@code{gettext} library.  The @samp{--with-catgets} option causes the
+build procedure to use the host's @code{catgets} in this situation.
 @end table
 
 @item
