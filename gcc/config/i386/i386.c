@@ -392,6 +392,7 @@ const int x86_accumulate_outgoing_args = m_ATHLON | m_PENT4 | m_PPRO;
 const int x86_prologue_using_move = m_ATHLON | m_PENT4 | m_PPRO;
 const int x86_epilogue_using_move = m_ATHLON | m_PENT4 | m_PPRO;
 const int x86_decompose_lea = m_PENT4;
+const int x86_arch_always_fancy_math_387 = m_PENT|m_PPRO|m_ATHLON|m_PENT4;
 
 /* In case the avreage insn count for single function invocation is
    lower than this constant, emit fast (but longer) prologue and
@@ -1116,6 +1117,11 @@ override_options ()
      wrt NaNs.  This lets us use a shorter comparison sequence.  */
   if (flag_unsafe_math_optimizations)
     target_flags &= ~MASK_IEEE_FP;
+
+  /* If the architecture always has an FPU, turn off NO_FANCY_MATH_387,
+     since the insns won't need emulation.  */
+  if (x86_arch_always_fancy_math_387 & (1 << ix86_arch))
+    target_flags &= ~MASK_NO_FANCY_MATH_387;
 
   if (TARGET_64BIT)
     {
