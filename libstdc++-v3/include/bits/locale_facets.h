@@ -557,15 +557,19 @@ namespace std
     static const char* _S_atoms_out;
 
     // String literal of acceptable (narrow) input, for num_get.
-    // "0123456789eEabcdfABCDF"
+    // "-+xX0123456789eEabcdfABCDF"
     static const char* _S_atoms_in;
 
     enum 
     {  
+      _S_iminus, 
+      _S_iplus, 
+      _S_ix, 
+      _S_iX, 
       _S_izero,
       _S_ie = _S_izero + 10,
       _S_iE = _S_izero + 11,
-      _S_iend = 21 + 1
+      _S_iend = 26
     };
 
     // num_put
@@ -590,8 +594,8 @@ namespace std
       // through the current locale's ctype<_CharT>.widen().
       _CharT                    	_M_atoms_out[__num_base::_S_oend + 1];
 
-      // A list of valid numeric literals for output: in the standard
-      // "C" locale, this is "0123456789eEabcdfABCDF"
+      // A list of valid numeric literals for input: in the standard
+      // "C" locale, this is "-+xX0123456789eEabcdfABCDF"
       // This array contains the chars after having been passed
       // through the current locale's ctype<_CharT>.widen().
       _CharT                    	_M_atoms_in[__num_base::_S_iend + 1];
@@ -983,8 +987,8 @@ namespace std
     protected:
       template<typename _ValueT>
         iter_type
-        _M_convert_float(iter_type, ios_base& __io, char_type __fill, 
-			 char __mod, _ValueT __v) const;
+        _M_insert_float(iter_type, ios_base& __io, char_type __fill, 
+			char __mod, _ValueT __v) const;
 
       void
       _M_group_float(const string& __grouping, char_type __sep, 
@@ -993,8 +997,8 @@ namespace std
 
       template<typename _ValueT>
         iter_type
-        _M_convert_int(iter_type, ios_base& __io, char_type __fill, 
-		       _ValueT __v) const;
+        _M_insert_int(iter_type, ios_base& __io, char_type __fill, 
+		      _ValueT __v) const;
 
       void
       _M_group_int(const string& __grouping, char_type __sep, 
