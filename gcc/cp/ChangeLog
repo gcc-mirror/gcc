@@ -1,3 +1,36 @@
+Mon May 11 00:03:34 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* cp-tree.h (finish_unary_op_expr): New function.
+	(finish_id_expr): Likewise.
+	(begin_new_placement): Likewise.
+	(finish_new_placement): Likewise.
+	(finish_declarator): Likewise.
+	(finish_translation_unit): Likewise.
+	(finish_parmlist): Likewise.
+	(begin_class_definition): Likewise.
+	(finish_class_definition): Likewise.
+	(finish_default_args): Likewise.
+	(finish_inline_definitions): Likewise.
+	* parse.y (GCC_ASM_KEYWORD): Remove.
+	(TYPENAME_ELLIPSIS): Likewise.
+	* parse.c: Regenerated.
+	Use new functions in semantics.c in the actions for many rules.
+	* gxx.gperf (GCC_ASM_KEYWORD): Just use ASM_KEYWORD.
+	* hash.h: Regenerated.
+	* semantics.c (finish_expr_stmt): Allow NULL expr.
+	(finish_unary_op_expr): New function, containing
+	code previously in parse.y.
+	(finish_id_expr): Likewise.
+	(begin_new_placement): Likewise.
+	(finish_new_placement): Likewise.
+	(finish_declarator): Likewise.
+	(finish_translation_unit): Likewise.
+	(finish_parmlist): Likewise.
+	(begin_class_definition): Likewise.
+	(finish_class_definition): Likewise.
+	(finish_default_args): Likewise.
+	(finish_inline_definitions): Likewise.
+
 Sun May 10 23:43:13 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* typeck.c (build_c_cast): Don't decay arrays and functions to

@@ -1,5 +1,6 @@
 /* C code produced by gperf version 2.5 (GNU C++ version) */
-/* Command-line: gperf -p -j1 -g -o -t -N is_reserved_word -k1,4,$,7 gxx.gperf  */
+/* Command-line: gperf -p -j1 -g -o -t -N is_reserved_word -k1,4,7,$ ../../../gcc/cp/gxx.gperf  */
+/* Command-line: gperf -p -j1 -g -o -t -N is_reserved_word -k1,4,$,7 gplus.gperf  */
 struct resword { char *name; short token; enum rid rid;};
 
 #define TOTAL_KEYWORDS 103
@@ -72,7 +73,7 @@ is_reserved_word (str, len)
       {"",}, 
       {"true",  CXX_TRUE, NORID,},
       {"",}, 
-      {"__asm__",  GCC_ASM_KEYWORD, NORID},
+      {"__asm__",  ASM_KEYWORD, NORID},
       {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, 
       {"this",  THIS, NORID,},
       {"",}, 
@@ -104,7 +105,7 @@ is_reserved_word (str, len)
       {"short",  TYPESPEC, RID_SHORT,},
       {"__imag__",  IMAGPART, NORID},
       {"delete",  DELETE, NORID,},
-      {"__asm",  GCC_ASM_KEYWORD, NORID},
+      {"__asm",  ASM_KEYWORD, NORID},
       {"xor",  '^', NORID,},
       {"not_eq",  EQCOMPARE, NORID,},
       {"xor_eq",  ASSIGN, NORID,},

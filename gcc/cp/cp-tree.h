@@ -2634,10 +2634,21 @@ extern tree finish_qualified_object_call_expr   PROTO((tree, tree, tree));
 extern tree finish_pseudo_destructor_call_expr  PROTO((tree, tree, tree));
 extern tree finish_globally_qualified_member_call_expr PROTO ((tree, tree));
 extern tree finish_label_address_expr           PROTO((tree));
+extern tree finish_unary_op_expr                PROTO((enum tree_code, tree));
+extern tree finish_id_expr                      PROTO((tree));
+extern int  begin_new_placement                 PROTO((void));
+extern tree finish_new_placement                PROTO((tree, int));
 extern int begin_function_definition            PROTO((tree, tree));
 extern tree begin_constructor_declarator        PROTO((tree, tree));
+extern tree finish_declarator                   PROTO((tree, tree, tree, tree, int));
+extern void finish_translation_unit             PROTO((void));
 extern tree finish_template_type_parm           PROTO((tree, tree));
 extern tree finish_template_template_parm       PROTO((tree, tree));
+extern tree finish_parmlist                     PROTO((tree, int));
+extern tree begin_class_definition              PROTO((tree));
+extern tree finish_class_definition             PROTO((tree, tree, tree, int));
+extern void finish_default_args                 PROTO((void));
+extern void begin_inline_definitions            PROTO((void));
 
 /* in sig.c */
 extern tree build_signature_pointer_type	PROTO((tree, int, int));

@@ -129,7 +129,7 @@ empty_parms ()
 /* the reserved words */
 /* SCO include files test "ASM", so use something else.  */
 %token SIZEOF ENUM /* STRUCT UNION */ IF ELSE WHILE DO FOR SWITCH CASE DEFAULT
-%token BREAK CONTINUE RETURN GOTO ASM_KEYWORD GCC_ASM_KEYWORD TYPEOF ALIGNOF
+%token BREAK CONTINUE RETURN GOTO ASM_KEYWORD TYPEOF ALIGNOF
 %token SIGOF
 %token ATTRIBUTE EXTENSION LABEL
 %token REALPART IMAGPART
@@ -228,7 +228,7 @@ empty_parms ()
 %type <ftype> structsp typespecqual_reserved parm named_parm full_parm
 
 /* C++ extensions */
-%token <ttype> TYPENAME_ELLIPSIS PTYPENAME
+%token <ttype> PTYPENAME
 %token <ttype> PRE_PARSED_FUNCTION_DECL EXTERN_LANG_STRING ALL
 %token <ttype> PRE_PARSED_CLASS_DECL DEFARG DEFARG_MARKER
 %type <ttype> component_constructor_declarator
@@ -328,15 +328,7 @@ parse_decl(declarator, specs_attrs, attributes, initialized, decl)
 program:
 	  /* empty */
 	| extdefs
-		{
-		  /* In case there were missing closebraces,
-		     get us back to the global binding level.  */
-		  while (! toplevel_bindings_p ())
-		    poplevel (0, 0, 0);
-		  while (current_namespace != global_namespace)
-		    pop_namespace ();
-		  finish_file ();
-		}
+               { finish_translation_unit (); }
 	;
 
 /* the reason for the strange actions in this rule
@@ -373,7 +365,6 @@ extension:
 
 asm_keyword:
 	  ASM_KEYWORD
-	| GCC_ASM_KEYWORD
 	;
 
 lang_extdef:
@@ -1010,11 +1001,7 @@ unary_expr:
 	| '~' cast_expr
 		{ $$ = build_x_unary_op (BIT_NOT_EXPR, $2); }
 	| unop cast_expr  %prec UNARY
-		{ $$ = build_x_unary_op ($1, $2);
-		  if ($1 == NEGATE_EXPR && TREE_CODE ($2) == INTEGER_CST)
-		    TREE_NEGATED_INT ($$) = 1;
-		  overflow_warning ($$);
-		}
+                { $$ = finish_unary_op_expr ($1, $2); }
 	/* Refer to the address of a label as a pointer.  */
 	| ANDAND identifier
 		{ if (pedantic)
@@ -1075,13 +1062,15 @@ unary_expr:
 	;
 
 new_placement:
-	  '(' nonnull_exprlist ')'
-		{ $$ = $2; }
-	| '{' nonnull_exprlist '}'
-		{
-		  $$ = $2; 
-		  pedwarn ("old style placement syntax, use () instead");
-		}
+	  '(' 
+                { $<itype>$ = begin_new_placement (); }
+            nonnull_exprlist ')'
+                { $$ = finish_new_placement ($3, $<itype>1); }
+	| '{' 
+                { cp_pedwarn ("old style placement syntax, use () instead");
+		  $<itype>$ = begin_new_placement (); }
+	    nonnull_exprlist '}'
+                { $$ = finish_new_placement ($3, $<itype>1); }
 	;
 
 new_initializer:
@@ -1112,13 +1101,11 @@ new_initializer:
 /* This is necessary to postpone reduction of `int ((int)(int)(int))'.  */
 regcast_or_absdcl:
 	  '(' type_id ')'  %prec EMPTY
-		{ $2.t = tree_cons (NULL_TREE, $2.t, void_list_node);
-		  TREE_PARMLIST ($2.t) = 1;
+		{ $2.t = finish_parmlist (build_tree_list (NULL_TREE, $2.t), 0);
 		  $$ = make_call_declarator (NULL_TREE, $2.t, NULL_TREE, NULL_TREE);
 		  check_for_new_type ("cast", $2); }
 	| regcast_or_absdcl '(' type_id ')'  %prec EMPTY
-		{ $3.t = tree_cons (NULL_TREE, $3.t, void_list_node);
-		  TREE_PARMLIST ($3.t) = 1;
+		{ $3.t = finish_parmlist (build_tree_list (NULL_TREE, $3.t), 0); 
 		  $$ = make_call_declarator ($$, $3.t, NULL_TREE, NULL_TREE);
 		  check_for_new_type ("cast", $3); }
 	;
@@ -1272,10 +1259,10 @@ direct_notype_declarator:
 primary:
 	  notype_unqualified_id
 		{
-		  if (TREE_CODE ($$) == BIT_NOT_EXPR)
-		    $$ = build_x_unary_op (BIT_NOT_EXPR, TREE_OPERAND ($$, 0));
-		  else if (TREE_CODE ($$) != TEMPLATE_ID_EXPR)
-		    $$ = do_identifier ($$, 1);
+		  if (TREE_CODE ($1) == BIT_NOT_EXPR)
+		    $$ = build_x_unary_op (BIT_NOT_EXPR, TREE_OPERAND ($1, 0));
+		  else 
+		    $$ = finish_id_expr ($1);
 		}		
 	| CONSTANT
 	| boolean.literal
@@ -2005,54 +1992,21 @@ structsp:
 	/* C++ extensions, merged with C to avoid shift/reduce conflicts */
 	| class_head left_curly 
           opt.component_decl_list '}' maybe_attribute
-		{
+		{ 
 		  int semi;
 
-		  $<ttype>$ = $1;
-#if 0
-		  /* Need to rework class nesting in the
-		     presence of nested classes, etc.  */
-		  shadow_tag (CLASSTYPE_AS_LIST ($1)); */
-#endif
 		  if (yychar == YYEMPTY)
 		    yychar = YYLEX;
 		  semi = yychar == ';';
-		  /* finish_struct nukes this anyway; if
-		     finish_exception does too, then it can go.  */
-		  if (semi)
-		    note_got_semicolon ($1);
 
-		  if (TREE_CODE ($1) == ENUMERAL_TYPE)
-		    ;
-		  else
-		    {
-		      $<ttype>$ = finish_struct ($1, $3, $5, semi);
-		      if (semi) note_got_semicolon ($<ttype>$);
-		    }
-
-		  pop_obstacks ();
-
-		  if (! semi)
-		    check_for_missing_semicolon ($1); 
-		  if (current_scope () == current_function_decl)
-		    do_pending_defargs ();
+		  $<ttype>$ = finish_class_definition ($1, $3, $5, semi); 
 		}
 	  pending_defargs
-		{
-		  if (pending_inlines 
-		      && current_scope () == current_function_decl)
-		    do_pending_inlines ();
-		}
+                { finish_default_args (); }
 	  pending_inlines
-		{ 
-		  $$.t = $<ttype>6;
+                { $$.t = $<ttype>6;
 		  $$.new_type_flag = 1; 
-		  if (current_class_type == NULL_TREE)
-		    clear_inline_text_obstack (); 
-
-		  /* Undo the begin_tree in left_curly.  */
-		  end_tree ();
-		}
+		  begin_inline_definitions (); }
 	| class_head  %prec EMPTY
 		{
 		  $$.new_type_flag = 0;
@@ -2334,92 +2288,7 @@ base_class_access_list:
 
 left_curly:
 	  '{'
-		{ tree t = $<ttype>0;
-		  push_obstacks_nochange ();
-		  end_temporary_allocation ();
-
-		  if (t == error_mark_node
-		      || ! IS_AGGR_TYPE (t))
-		    {
-		      t = $<ttype>0 = make_lang_type (RECORD_TYPE);
-		      pushtag (make_anon_name (), t, 0);
-		    }
-		  if (TYPE_SIZE (t))
-		    duplicate_tag_error (t);
-                  if (TYPE_SIZE (t) || TYPE_BEING_DEFINED (t))
-                    {
-                      t = make_lang_type (TREE_CODE (t));
-                      pushtag (TYPE_IDENTIFIER ($<ttype>0), t, 0);
-                      $<ttype>0 = t;
-                    }
-		  if (processing_template_decl && TYPE_CONTEXT (t)
-		      && TREE_CODE (TYPE_CONTEXT (t)) != NAMESPACE_DECL
-		      && ! current_class_type)
-		    push_template_decl (TYPE_STUB_DECL (t));
-		  pushclass (t, 0);
-		  TYPE_BEING_DEFINED (t) = 1;
-		  if (IS_AGGR_TYPE (t) && CLASSTYPE_USE_TEMPLATE (t))
-		    {
-		      if (CLASSTYPE_IMPLICIT_INSTANTIATION (t)
-			  && TYPE_SIZE (t) == NULL_TREE)
-			{
-			  SET_CLASSTYPE_TEMPLATE_SPECIALIZATION (t);
-			  if (processing_template_decl)
-			    push_template_decl (TYPE_MAIN_DECL (t));
-			}
-		      else if (CLASSTYPE_TEMPLATE_INSTANTIATION (t))
-			cp_error ("specialization after instantiation of `%T'", t);
-		    }
-		  /* Reset the interface data, at the earliest possible
-		     moment, as it might have been set via a class foo;
-		     before.  */
-		  /* Don't change signatures.  */
-		  if (! IS_SIGNATURE (t))
-		    {
-		      extern tree pending_vtables;
-		      int needs_writing;
-		      tree name = TYPE_IDENTIFIER (t);
-
-		      if (! ANON_AGGRNAME_P (name))
-			{
-			  CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
-			  SET_CLASSTYPE_INTERFACE_UNKNOWN_X
-			    (t, interface_unknown);
-			}
-
-		      /* Record how to set the access of this class's
-			 virtual functions.  If write_virtuals == 2 or 3, then
-			 inline virtuals are ``extern inline''.  */
-		      switch (write_virtuals)
-			{
-			case 0:
-			case 1:
-			  needs_writing = 1;
-			  break;
-			case 2:
-			  needs_writing = !! value_member (name, pending_vtables);
-			  break;
-			case 3:
-			  needs_writing = ! CLASSTYPE_INTERFACE_ONLY (t)
-			    && CLASSTYPE_INTERFACE_KNOWN (t);
-			  break;
-			default:
-			  needs_writing = 0;
-			}
-		      CLASSTYPE_VTABLE_NEEDS_WRITING (t) = needs_writing;
-		    }
-#if 0
-		  t = TYPE_IDENTIFIER ($<ttype>0);
-		  if (t && IDENTIFIER_TEMPLATE (t))
-		    overload_template_name (t, 1);
-#endif
-		  reset_specialization();
-
-		  /* In case this is a local class within a template
-		     function, we save the current tree structure so
-		     that we can get it back later.  */
-		  begin_tree ();
-		}
+                { $<ttype>0 = begin_class_definition ($<ttype>0); }
 	;
 
 self_reference:
@@ -3497,8 +3366,7 @@ parmlist:
 		}
 	| complex_parmlist
 	| type_id
-		{ $$ = tree_cons (NULL_TREE, $1.t, void_list_node);
-		  TREE_PARMLIST ($$) = 1; 
+		{ $$ = finish_parmlist (build_tree_list (NULL_TREE, $1.t), 0);
 		  check_for_new_type ("inside parameter list", $1); }
 	;
 
@@ -3506,49 +3374,24 @@ parmlist:
    as it is ambiguous and must be disambiguated elsewhere.  */
 complex_parmlist:
 	  parms
-		{
-		  $$ = chainon ($$, void_list_node);
-		  TREE_PARMLIST ($$) = 1;
-		}
+                { $$ = finish_parmlist ($$, 0); }
 	| parms_comma ELLIPSIS
-		{
-		  TREE_PARMLIST ($$) = 1;
-		}
+                { $$ = finish_parmlist ($1, 1); }
 	/* C++ allows an ellipsis without a separating ',' */
 	| parms ELLIPSIS
-		{
-		  TREE_PARMLIST ($$) = 1;
-		}
+                { $$ = finish_parmlist ($1, 1); }
 	| type_id ELLIPSIS
-		{
-		  $$ = build_tree_list (NULL_TREE, $1.t); 
-		  TREE_PARMLIST ($$) = 1;
-		}
+                { $$ = finish_parmlist (build_tree_list (NULL_TREE,
+							 $1.t), 1); } 
 	| ELLIPSIS
-		{
-		  $$ = NULL_TREE;
-		}
-	| TYPENAME_ELLIPSIS
-		{
-		  TREE_PARMLIST ($$) = 1;
-		}
-	| parms TYPENAME_ELLIPSIS
-		{
-		  TREE_PARMLIST ($$) = 1;
-		}
-	| type_id TYPENAME_ELLIPSIS
-		{
-		  $$ = build_tree_list (NULL_TREE, $1.t);
-		  TREE_PARMLIST ($$) = 1;
-		}
+                { $$ = finish_parmlist (NULL_TREE, 1); }
 	| parms ':'
 		{
 		  /* This helps us recover from really nasty
 		     parse errors, for example, a missing right
 		     parenthesis.  */
 		  yyerror ("possibly missing ')'");
-		  $$ = chainon ($$, void_list_node);
-		  TREE_PARMLIST ($$) = 1;
+		  $$ = finish_parmlist ($1, 0);
 		  yyungetc (':', 0);
 		  yychar = ')';
 		}
@@ -3558,8 +3401,8 @@ complex_parmlist:
 		     parse errors, for example, a missing right
 		     parenthesis.  */
 		  yyerror ("possibly missing ')'");
-		  $$ = tree_cons (NULL_TREE, $1.t, void_list_node);
-		  TREE_PARMLIST ($$) = 1;
+		  $$ = finish_parmlist (build_tree_list (NULL_TREE,
+							 $1.t), 0); 
 		  yyungetc (':', 0);
 		  yychar = ')';
 		}

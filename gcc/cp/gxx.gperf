@@ -5,8 +5,8 @@ struct resword { char *name; short token; enum rid rid;};
 %%
 __alignof, ALIGNOF, NORID
 __alignof__, ALIGNOF, NORID
-__asm, GCC_ASM_KEYWORD, NORID
-__asm__, GCC_ASM_KEYWORD, NORID
+__asm, ASM_KEYWORD, NORID
+__asm__, ASM_KEYWORD, NORID
 __attribute, ATTRIBUTE, NORID
 __attribute__, ATTRIBUTE, NORID
 __complex, TYPESPEC, RID_COMPLEX
