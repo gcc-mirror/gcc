@@ -4942,7 +4942,7 @@ move\\t%0,%z4\\n\\
 ;;
 ;; As far as the rtl is concerned, both the left-part and right-part
 ;; instructions can access the whole field.  However, the real operand
-;; refers to just the first or the last byte (depending onendianness).
+;; refers to just the first or the last byte (depending on endianness).
 ;; We therefore use two memory operands to each instruction, one to
 ;; describe the rtl effect and one to use in the assembly output.
 
