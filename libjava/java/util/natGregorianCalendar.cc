@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -7,16 +7,6 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 #include <config.h>
-
-// We want to make sure to pick up the POSIX `_r' functions.  Some
-// systems, such as Solaris 2.6, require this define in order to
-// declare the functions in the appropriate header.
-#if defined (HAVE_GMTIME_R) || defined (HAVE_LOCALTIME_R)
-#  define _POSIX_PTHREAD_SEMANTICS
-#  ifndef _REENTRANT
-#    define _REENTRANT
-#  endif /* _REENTRANT */
-#endif
 
 #ifdef ECOS
 #include <string.h>

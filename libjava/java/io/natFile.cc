@@ -1,6 +1,6 @@
 // natFile.cc - Native part of File class.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -21,10 +21,6 @@ details.  */
 #endif
 #include <stdlib.h>
 #ifdef HAVE_DIRENT_H
-#define _POSIX_PTHREAD_SEMANTICS
-#ifndef _REENTRANT
-#  define _REENTRANT
-#endif
 #include <dirent.h>
 #endif
 #include <string.h>

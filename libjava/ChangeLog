@@ -1,5 +1,18 @@
 2000-04-21  Tom Tromey  <tromey@cygnus.com>
 
+	Fix for PR libgcj/15:
+	* java/util/natGregorianCalendar.cc (_REENTRANT,
+	_POSIX_PTHREAD_SEMANTICS): Don't define.
+	* java/net/natInetAddress.cc (_REENTRANT): Don't define.
+	* java/lang/natSystem.cc (_REENTRANT, _POSIX_PTHREAD_SEMANTICS):
+	Don't define.
+	* java/io/natFile.cc (_REENTRANT, _POSIX_PTHREAD_SEMANTICS): Don't
+	define.
+	* configure: Rebuilt.
+	* configure.in: If using POSIX threads, define _REENTRANT if
+	needed.  Define _POSIX_PTHREAD_SEMANTICS.  Don't define
+	GETHOSTBYNAME_R_NEEDS_REENTRANT.
+
 	* java/io/PipedInputStream.java, java/io/PipedReader.java,
 	java/io/PipedOutputStream.java, java/io/PipedWriter.java: New
 	version from Classpath.
