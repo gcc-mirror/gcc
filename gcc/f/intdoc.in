@@ -1584,7 +1584,7 @@ almost certainly want to use something better.
 ")
 
 DEFDOC (SRAND, "Random seed.", "\
-Reinitialises the generator with the seed in @var{@1@}.
+Reinitializes the generator with the seed in @var{@1@}.
 @xref{IRand Intrinsic}.
 @xref{Rand Intrinsic}.
 ")
