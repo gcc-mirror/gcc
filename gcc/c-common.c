@@ -4351,10 +4351,28 @@ handle_mode_attribute (tree *node, tree name, tree args,
 	}
       else
         typefm = lang_hooks.types.type_for_mode (mode, TYPE_UNSIGNED (type));
+
       if (typefm == NULL_TREE)
 	{
 	  error ("no data type for mode %<%s%>", p);
 	  return NULL_TREE;
+	}
+      else if (TREE_CODE (type) == ENUMERAL_TYPE)
+	{
+	  /* For enumeral types, copy the precision from the integer
+	     type returned above.  If not an INTEGER_TYPE, we can't use
+	     this mode for this type.  */
+	  if (TREE_CODE (typefm) != INTEGER_TYPE)
+	    {
+	      error ("cannot use mode '%s' for enumeral types",
+		     GET_MODE_NAME (mode));
+	      return NULL_TREE;
+	    }
+
+	  if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
+	    type = build_variant_type_copy (type);
+	  TYPE_PRECISION (type) = TYPE_PRECISION (typefm);
+	  typefm = type;
 	}
       *node = typefm;
 
