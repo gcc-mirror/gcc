@@ -1,3 +1,7 @@
+Tue Nov 18 09:53:58 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
+
+	* stdstrbufs.cc (DEF_STDFILE): Use STD_VTABLE.
+
 Tue Nov 11 01:40:17 1997  Oleg Krivosheev <kriol@fnal.gov>
 
 	* iomanip.h: Fix guiding decls.

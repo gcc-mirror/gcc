@@ -58,7 +58,7 @@ extern char filebuf_vtable[];
 #define DEF_STDFILE(NAME, FD, CHAIN, FLAGS) \
   static _IO_lock_t _IO_stdfile_##FD##_lock = _IO_lock_initializer; \
   struct _IO_FILE_plus NAME \
-    = {FILEBUF_LITERAL(CHAIN, FLAGS, FD), &_IO_file_jumps}
+    = {FILEBUF_LITERAL(CHAIN, FLAGS, FD), STD_VTABLE}
 #else
 #define DEF_STDFILE(NAME, FD, CHAIN, FLAGS) \
   struct _IO_FILE_plus NAME = {FILEBUF_LITERAL(CHAIN, FLAGS, FD), STD_VTABLE}
