@@ -4347,13 +4347,16 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 
 	  if (STORE_FLAG_VALUE == 1
 	      && new_code == NE && GET_MODE_CLASS (mode) == MODE_INT
-	      && op1 == const0_rtx && nonzero_bits (op0, mode) == 1)
+	      && op1 == const0_rtx
+	      && mode == GET_MODE (op0)
+	      && nonzero_bits (op0, mode) == 1)
 	    return gen_lowpart_for_combine (mode,
 					    expand_compound_operation (op0));
 
 	  else if (STORE_FLAG_VALUE == 1
 		   && new_code == NE && GET_MODE_CLASS (mode) == MODE_INT
 		   && op1 == const0_rtx
+		   && mode == GET_MODE (op0)
 		   && (num_sign_bit_copies (op0, mode)
 		       == GET_MODE_BITSIZE (mode)))
 	    {
@@ -4365,6 +4368,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	  else if (STORE_FLAG_VALUE == 1
 		   && new_code == EQ && GET_MODE_CLASS (mode) == MODE_INT
 		   && op1 == const0_rtx
+		   && mode == GET_MODE (op0)
 		   && nonzero_bits (op0, mode) == 1)
 	    {
 	      op0 = expand_compound_operation (op0);
@@ -4376,6 +4380,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	  else if (STORE_FLAG_VALUE == 1
 		   && new_code == EQ && GET_MODE_CLASS (mode) == MODE_INT
 		   && op1 == const0_rtx
+		   && mode == GET_MODE (op0)
 		   && (num_sign_bit_copies (op0, mode)
 		       == GET_MODE_BITSIZE (mode)))
 	    {
@@ -4396,6 +4401,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	  else if (STORE_FLAG_VALUE == -1
 		   && new_code == NE && GET_MODE_CLASS (mode) == MODE_INT
 		   && op1 == const0_rtx
+		   && mode == GET_MODE (op0)
 		   && nonzero_bits (op0, mode) == 1)
 	    {
 	      op0 = expand_compound_operation (op0);
@@ -4406,6 +4412,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	  else if (STORE_FLAG_VALUE == -1
 		   && new_code == EQ && GET_MODE_CLASS (mode) == MODE_INT
 		   && op1 == const0_rtx
+		   && mode == GET_MODE (op0)
 		   && (num_sign_bit_copies (op0, mode)
 		       == GET_MODE_BITSIZE (mode)))
 	    {
@@ -4418,6 +4425,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	  else if (STORE_FLAG_VALUE == -1
 		   && new_code == EQ && GET_MODE_CLASS (mode) == MODE_INT
 		   && op1 == const0_rtx
+		   && mode == GET_MODE (op0)
 		   && nonzero_bits (op0, mode) == 1)
 	    {
 	      op0 = expand_compound_operation (op0);

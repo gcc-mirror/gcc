@@ -1,3 +1,14 @@
+2000-09-18  Richard Henderson  <rth@cygnus.com>
+
+	* machmode.def: Add BImode.  Add a column for bitsize.
+	* machmode.h (DEF_MACHMODE): Adjust for extra column.
+	(GET_MODE_BITSIZE): Use it.
+	* rtl.c (DEF_MACHMODE): Adjust for extra column.
+	(mode_bitsize): New.
+	(mode_mask_array): Use bitsize.
+	* combine.c (combine_simplify_rtx): Require inner and outer
+	modes to match on nonzero_bits optimizations.
+
 2000-09-18  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* reload1.c (forget_old_reloads_1): If a hard reg is stored, clear
@@ -86,8 +97,8 @@
 
 	* configure.in: Define _GNU_SOURCE only when using the GNU C
 	Library.
-        * configure: Regenerated.
-        * config.in: Regenerated.
+	* configure: Regenerated.
+	* config.in: Regenerated.
 
 2000-09-17  Mark Mitchell  <mark@codesourcery.com>
 
@@ -141,15 +152,15 @@ Sun Sep 17 10:46:17 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2000-09-17  Bernd Schmidt  <bernds@redhat.co.uk>
 
-        * expr.h (emit_library_call, emit_library_call_value): Delete
+	* expr.h (emit_library_call, emit_library_call_value): Delete
 	declarations.
 	* rtl.h (enum libcall_type): New.
 	(emit_library_call, emit_library_call_value): Change fn_type arg to
-        be of type enum libcall_type.
+	be of type enum libcall_type.
 	* calls.c: Likewise for the function definitions.  Several callers
 	throughout changed to use the new enumeration appropriately.
 	(emit_library_call_value_1): Likewise.  Put back code to make libcall
-        blocks of equal form, but only use it for the two new higher
+	blocks of equal form, but only use it for the two new higher
 	enumeration values.
 
 2000-09-16  Mark Mitchell  <mark@codesourcery.com>
@@ -611,7 +622,7 @@ Wed Sep 13 02:31:23 EDT 2000  John Wehle  (john@feith.com)
 
 2000-09-13  Michael Hayes  <mhayes@cygnus.com>
 
-        * loop.c (note_set_pseudo_multiple_uses): Correct.
+	* loop.c (note_set_pseudo_multiple_uses): Correct.
 
 2000-09-12  Jim Wilson  <wilson@cygnus.com>
 
