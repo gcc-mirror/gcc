@@ -1719,7 +1719,7 @@ tree_could_trap_p (tree expr)
   bool honor_snans = false;
   bool fp_operation = false;
   bool honor_trapv = false;
-  tree t, base, idx;
+  tree t, base;
 
   if (TREE_CODE_CLASS (code) == tcc_comparison
       || TREE_CODE_CLASS (code) == tcc_unary
@@ -1759,7 +1759,6 @@ tree_could_trap_p (tree expr)
 
     case ARRAY_REF:
       base = TREE_OPERAND (expr, 0);
-      idx = TREE_OPERAND (expr, 1);
       if (tree_could_trap_p (base))
 	return true;
 
