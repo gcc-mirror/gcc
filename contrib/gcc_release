@@ -122,8 +122,18 @@ build_sources() {
   changedir "gcc-${RELEASE}"
   contrib/gcc_update --touch
 
+  # Obtain some documentation files from the wwwdocs module.
+  inform "Retrieving bugs.html and gnats.html"
+  changedir "${WORKING_DIRECTORY}"
+  ${CVS} \
+       -z 9 export \
+	-r HEAD wwwdocs/htdocs/bugs.html wwwdocs/htdocs/gnats.html
+  cp ${WORKING_DIRECTORY}/wwwdocs/htdocs/bugs.html ${SOURCE_DIRECTORY}
+  cp ${WORKING_DIRECTORY}/wwwdocs/htdocs/gnats.html ${SOURCE_DIRECTORY}
+
   # For a prerelease or real release, we need to generate additional
   # files not present in CVS.
+  changedir "gcc-${RELEASE}"
   if [ $SNAPSHOT -ne 1 ]; then
     # Generate the documentation.
     inform "Building install docs"
