@@ -1,3 +1,8 @@
+2000-08-24  Jason Merrill  <jason@redhat.com>
+
+	* typeck.c (build_ptrmemfunc): Just reinterpret if there's no
+	adjustment necessary.
+
 2000-08-24  Greg McGary  <greg@mcgary.org>
 
 	* cp-tree.h (MAIN_NAME_P): Remove macro.
