@@ -3650,15 +3650,19 @@ expand_end_case (orig_index)
 #ifdef HAVE_casesi
 	  if (HAVE_casesi)
 	    {
+	      enum machine_mode index_mode = SImode;
+	      tree index_type = GET_MODE_BITSIZE (index_mode);
+
 	      /* Convert the index to SImode.  */
-	      if (TYPE_MODE (TREE_TYPE (index_expr)) == DImode)
+	      if (GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (index_expr)))
+		  > GET_MODE_BITSIZE (index_mode))
 		{
 		  index_expr = build (MINUS_EXPR, TREE_TYPE (index_expr),
 				      index_expr, minval);
 		  minval = integer_zero_node;
 		}
-	      if (TYPE_MODE (TREE_TYPE (index_expr)) != SImode)
-		index_expr = convert (type_for_size (GET_MODE_BITSIZE (SImode), 0),
+	      if (TYPE_MODE (TREE_TYPE (index_expr)) != index_mode)
+		index_expr = convert (type_for_size (index_type, 0),
 				      index_expr);
 	      index = expand_expr (index_expr, 0, VOIDmode, 0);
 	      emit_queue ();
