@@ -9,6 +9,12 @@
 */
 
 // // // // // // // // // // // // // // // // // // // // // // // //
+/** @namespace std
+ *  @brief Everything defined by the ISO C++ Standard is within namespace
+ *  std.
+*/
+
+// // // // // // // // // // // // // // // // // // // // // // // //
 /** @addtogroup SGIextensions STL extensions from SGI
 Because libstdc++-v3 based its implementation of the STL subsections of
 the library on the SGI 3.3 implementation, we inherited their extensions
