@@ -1,5 +1,7 @@
 2000-12-14  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/RuntimePermission.java: Class now final.
+
 	* java/io/StringWriter.java (StringWriter(int)): Now public.
 
 	* java/io/SerializablePermission.java (legal_names): Now private.
