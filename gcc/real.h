@@ -438,4 +438,7 @@ extern struct rtx_def *immed_real_const_1	PROTO((REAL_VALUE_TYPE,
 #define REAL_VALUE_TO_DECIMAL(r, fmt, s) (sprintf (s, fmt, r))
 #endif
 
+/* Replace R by 1/R in the given machine mode, if the result is exact.  */
+extern int exact_real_inverse PROTO((enum machine_mode, REAL_VALUE_TYPE *));
+
 #endif /* Not REAL_H_INCLUDED */
