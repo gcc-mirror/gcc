@@ -1,3 +1,11 @@
+2001-12-17  Phil Edwards  <pme@gcc.gnu.org>
+
+	* include/bits/basic_file.h (__basic_file::fd):  New function.
+	* config/io/basic_file_stdio.h (__basic_file::fd):  Define.
+	* include/bits/std_fstream.h (basic_filebuf::fd):  New function.
+	* include/bits/fstream.tcc (basic_filebuf::fd):  Define.
+	* testsuite/27_io/filebuf_members.cc (test_02):  New test.
+
 2001-12-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* po/Makefile.am (.po.mo): Use POSIXLY_CORRECT argument ordering.

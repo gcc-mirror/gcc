@@ -97,6 +97,10 @@ namespace std
       basic_filebuf(__c_file_type* __f, ios_base::openmode __mode, 
 		    int_type __s = static_cast<int_type>(BUFSIZ));
  
+      // Non-standard member:
+      int
+      fd();
+
       virtual 
       ~basic_filebuf() 
       { 

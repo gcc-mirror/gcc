@@ -168,6 +168,9 @@ namespace std
       bool 
       is_open();
 
+      int 
+      fd();
+
       // NB: Must match FILE specific jump table starting here--this
       // means all virtual functions starting with the dtor must match,
       // slot by slot. For glibc-based dystems, this means the _IO_FILE
