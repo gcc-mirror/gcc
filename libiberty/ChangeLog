@@ -1,3 +1,9 @@
+2003-02-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* physmem.c (physmem_total) [HAVE_GETSYSINFO]: Test for
+	GSI_PHYSMEM.
+	(physmem_available) [HAVE_TABLE]: Test for TBL_VMSTATS.
+
 2003-02-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in: Check for sys/systemcfg.h and
