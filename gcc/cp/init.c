@@ -696,7 +696,8 @@ emit_base_init (t, immediately)
 }
 
 /* Check that all fields are properly initialized after
-   an assignment to `this'.  */
+   an assignment to `this'.  Called only when such an assignment
+   is actually noted.  */
 
 void
 check_base_init (t)

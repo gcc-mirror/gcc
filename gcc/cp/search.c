@@ -2799,7 +2799,8 @@ note_debug_info_needed (type)
      could, but that would mean putting global labels in the debug output
      before each exported type and each of its functions and static data
      members.  */
-  if (write_symbols == DWARF_DEBUG || write_symbols == DWARF2_DEBUG)
+  if (write_symbols == DWARF_DEBUG || write_symbols == DWARF2_DEBUG
+      || write_symbols == NO_DEBUG)
     return;
 
   dfs_walk (TYPE_BINFO (type), dfs_debug_mark, dfs_debug_unmarkedp, 0);

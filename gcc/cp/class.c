@@ -2146,6 +2146,7 @@ duplicate_tag_error (t)
   TYPE_METHODS (t) = NULL_TREE;
   TYPE_VFIELD (t) = NULL_TREE;
   TYPE_CONTEXT (t) = NULL_TREE;
+  TYPE_NONCOPIED_PARTS (t) = NULL_TREE;
 }
 
 /* finish up all new vtables.  */
@@ -4186,7 +4187,7 @@ finish_struct (t, attributes, warn_anon)
     {
       finish_struct_methods (t);
       TYPE_SIZE (t) = integer_zero_node;
-    }      
+    }
   else
     finish_struct_1 (t, warn_anon);
 

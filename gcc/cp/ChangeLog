@@ -1,3 +1,30 @@
+1999-07-09  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (do_decl_instantiation): Downgrade duplicate instantiation
+	errors to pedwarn.
+
+1999-07-09  Michael Tiemann  <tiemann@happy.cygnus.com>
+
+	* typeck.c (comptypes): Simplify C code in look_hard.
+
+	* xref.c (PALLOC): Use xcalloc, not calloc.
+	(SALLOC): Use xmalloc, not malloc.
+
+	* rtti.c (synthesize_tinfo_fn): Add missing call to pop_momentary.
+
+	* search.c (note_debug_info_needed): Don't search if WRITE_SYMBOLS
+	is NO_DEBUG.
+
+	* decl.c (duplicate_decls): If a redeclaration doesn't match the
+	initial declaration, then don't save the inline info and by all
+	means don't mark the function as a builtin function.
+
+	* decl.c (lookup_name_real): Set NONCLASS to 1 if 
+	CURRENT_CLASS_TYPE is 0.
+
+	* class.c (duplicate_tag_error): Set TYPE_NONCOPIED_PARTS to
+	NULL_TREE.
+
 Wed Jul  7 01:26:47 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* decl2.c (mark_vtable_entries): Fix check for rtti offset.

@@ -1178,5 +1178,6 @@ synthesize_tinfo_fn (fndecl)
   tmp = cp_convert (build_pointer_type (type_info_type_node), addr);
   tmp = build_indirect_ref (tmp, 0);
   c_expand_return (tmp);
+  pop_momentary ();
   finish_function (lineno, 0, 0);
 }
