@@ -1,3 +1,8 @@
+Thu May  7 17:38:03 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* r6000/eabi.asm (__eabi): Restore LR in case __eabi is called
+	multiple times.
+
 Thu May  7 14:26:05 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* aclocal.m4 (GCC_FUNC_VFPRINTF_DOPRNT): New macro.

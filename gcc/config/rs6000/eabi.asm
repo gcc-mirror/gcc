@@ -152,6 +152,7 @@ FUNC_START(__eabi)
 	subf.	12,12,11			/* calculate difference */
 	lwzx	9,10,12				/* done flag */
 	cmplwi	2,9,0				/* init flag != 0? */
+	mtlr	0				/* restore in case branch was taken */
 	bnelr	2				/* return now, if we've been called already */
 	stwx	1,10,12				/* store a non-zero value in the done flag */
 	beq+	0,.Lsdata			/* skip if we don't need to relocate */
