@@ -6942,7 +6942,7 @@ single_set_pattern (rtx pattern)
    insn cannot be converted to be executed conditionally.  */
 
 rtx
-frv_ifcvt_modify_insn (ce_if_block_t *ce_info ATTRIBUTE_UNUSED,
+frv_ifcvt_modify_insn (ce_if_block_t *ce_info,
                        rtx pattern,
                        rtx insn)
 {
@@ -7068,7 +7068,16 @@ frv_ifcvt_modify_insn (ce_if_block_t *ce_info ATTRIBUTE_UNUSED,
          other registers.  */
       else if (frv_ifcvt.scratch_insns_bitmap
 	       && bitmap_bit_p (frv_ifcvt.scratch_insns_bitmap,
-				INSN_UID (insn)))
+				INSN_UID (insn))
+	       /* We must not unconditionally set a reg set used as
+		  scratch in the THEN branch if the same reg is live
+		  in the ELSE branch.  */
+	       && REG_P (SET_DEST (set))
+	       && (! ce_info->else_bb
+		   || BLOCK_FOR_INSN (insn) == ce_info->else_bb
+		   || ! (REGNO_REG_SET_P
+			 (ce_info->else_bb->global_live_at_start,
+			  REGNO (SET_DEST (set))))))
 	pattern = set;
 
       else if (mode == QImode || mode == HImode || mode == SImode
