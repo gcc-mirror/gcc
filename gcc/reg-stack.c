@@ -2514,12 +2514,34 @@ convert_regs_1 (file, block)
 	    }
 	}
 
+      /* Care for EH edges specially.  The normal return path may return
+	 a value in st(0), but the EH path will not, and there's no need
+	 to add popping code to the edge.  */
+      if (e->flags & EDGE_EH)
+	{
+	  /* Assert that the lifetimes are as we expect -- one value
+	     live at st(0) on the end of the source block, and no
+	     values live at the beginning of the destination block.  */
+	  HARD_REG_SET tmp;
+
+	  CLEAR_HARD_REG_SET (tmp);
+	  GO_IF_HARD_REG_EQUAL (BLOCK_INFO (e->dest)->stack_in.reg_set,
+				tmp, eh1);
+	  abort();
+	eh1:
+
+	  SET_HARD_REG_BIT (tmp, FIRST_STACK_REG);
+	  GO_IF_HARD_REG_EQUAL (BLOCK_INFO (e->src)->out_reg_set, tmp, eh2);
+	  abort();
+	eh2:;
+	}
+
       /* It is better to output directly to the end of the block
 	 instead of to the edge, because emit_swap can do minimal
 	 insn scheduling.  We can do this when there is only one
 	 edge out, and it is not abnormal.  */
-      if (block->succ->succ_next == NULL
-	  && ! (e->flags & EDGE_ABNORMAL))
+      else if (block->succ->succ_next == NULL
+	       && ! (e->flags & EDGE_ABNORMAL))
 	{
 	  /* change_stack kills values in regstack.  */
 	  tmpstack = regstack;
@@ -2532,9 +2554,9 @@ convert_regs_1 (file, block)
 	{
 	  rtx seq, after;
 
-	  /* We don't support abnormal edges.  Global takes
-	     care to avoid any live register across them, so
-	     we should never have to.  */
+	  /* We don't support abnormal edges.  Global takes care to
+	     avoid any live register across them, so we should never
+	     have to insert instructions on such edges.  */
 	  if (e->flags & EDGE_ABNORMAL)
 	    abort ();
 
