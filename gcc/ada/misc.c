@@ -87,6 +87,8 @@ static tree gnat_eh_runtime_type	PARAMS ((tree));
 static int gnat_eh_type_covers		PARAMS ((tree, tree));
 static void gnat_parse_file		PARAMS ((void));
 static void gnat_mark_tree		PARAMS ((tree));
+static rtx gnat_expand_expr		PARAMS ((tree, rtx, enum machine_mode,
+						 int));
 
 /* Structure giving our language-specific hooks.  */
 
@@ -164,8 +166,6 @@ extern int gnat_argc;
 extern char **gnat_argv;
 
 static void internal_error_function	PARAMS ((const char *, va_list *));
-static rtx gnat_expand_expr		PARAMS ((tree, rtx, enum machine_mode,
-						 int));
 static void gnat_adjust_rli		PARAMS ((record_layout_info));
 
 /* Declare functions we use as part of startup.  */
