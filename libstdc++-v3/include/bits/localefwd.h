@@ -49,6 +49,8 @@
 #include <string> 		// For string
 #include <bits/functexcept.h>
 
+#include <bits/atomicity.h>
+
 namespace std
 {
   // NB: Don't instantiate required wchar_t facets if no wchar_t support.
@@ -317,7 +319,7 @@ namespace std
 
   private:
     // Data Members.
-    size_t 				_M_references;
+    _Atomic_word			_M_references;
     __vec_facet* 			_M_facets;
     string 				_M_names[_S_num_categories];
     static const locale::id* const 	_S_id_ctype[];
@@ -330,12 +332,12 @@ namespace std
 
     inline void 
     _M_add_reference() throw()
-    { ++_M_references; }  // XXX MT
+    { __atomic_add(&_M_references, 1); }
 
     inline void 
     _M_remove_reference() throw()
     {
-      if (--_M_references == 0)  // XXX MT
+      if (__exchange_and_add(&_M_references, -1) == 1)
 	{
 	  try 
 	    { delete this; } 
@@ -392,7 +394,7 @@ namespace std
     friend class __enc_traits;
 
   private:
-    size_t _M_references;
+    _Atomic_word _M_references;
 
   protected:
     // Contains data from the underlying "C" library for default "C"
@@ -447,7 +449,7 @@ namespace std
     mutable size_t 	_M_index;
 
     // Last id number assigned
-    static size_t 	_S_highwater;   
+    static _Atomic_word 	_S_highwater;   
 
     void 
     operator=(const id&);  // not defined

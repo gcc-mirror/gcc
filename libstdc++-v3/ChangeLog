@@ -1,3 +1,15 @@
+2002-01-24  andrew@andypo.net
+	    (tweaks, test and commit by Loren J. Rittle  <ljrittle@acm.org>)
+
+	libstdc++/5432
+	* include/bits/ios_base.h: Use _Atomic_word for reference counts.
+	* include/bits/localefwd.h: Likewise.
+	Also use for std::locale::id::_S_highwater.
+	* src/ios.cc (ios_base::xalloc): Use _Atomic_word.
+	* src/locale.cc: Support new usage of _Atomic_word.
+	(std::locale::classic): Guard entire function against reentry.
+	* src/localename.cc: Support new usage of _Atomic_word.
+
 2002-01-24   Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/22_locale/num_put_members_wchar_t.cc (test03): Use

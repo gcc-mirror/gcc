@@ -41,6 +41,8 @@
 # include <cwctype>     // for towupper, etc.
 #endif
 
+#include <bits/atomicity.h>
+
 namespace std 
 {
   // Defined in globals.cc.
@@ -72,7 +74,7 @@ namespace std
 #endif
 
   // Definitions for static const data members of locale::id
-  size_t locale::id::_S_highwater;  // init'd to 0 by linker
+  _Atomic_word locale::id::_S_highwater;  // init'd to 0 by linker
 
   // Definitions for static const data members of locale::_Impl
   const locale::id* const
@@ -187,7 +189,7 @@ namespace std
   { 
     _S_initialize(); 
     (_M_impl = _S_global)->_M_add_reference(); 
-  } // XXX MT
+  }
 
   locale::locale(const locale& __other) throw()
   { (_M_impl = __other._M_impl)->_M_add_reference(); }
@@ -283,7 +285,9 @@ namespace std
   locale const&
   locale::classic()
   {
-    // XXX MT
+    static _STL_mutex_lock __lock __STL_MUTEX_INITIALIZER;
+    _STL_auto_lock __auto(__lock);
+
     if (!_S_classic)
       {
 	try 
@@ -364,13 +368,13 @@ namespace std
   void  
   locale::facet::
   _M_add_reference() throw()
-  { ++_M_references; }  // XXX MT
+  { __atomic_add(&_M_references, 1); }
 
   void  
   locale::facet::
   _M_remove_reference() throw()
   {
-    if (_M_references-- == 0)
+    if (__exchange_and_add(&_M_references, -1) == 0)
       {
         try 
 	  { delete this; }  
