@@ -61,7 +61,6 @@ OBJC_O = hash.o sarray.o class.o sendmsg.o init.o archive.o encoding.o \
          nil_method.o thr.o $(OBJC_THREAD_FILE).o
 
 libobjc.a: $(OBJC_O)
-	-rm -f libobjc.a
 	$(AR) rc libobjc.a $?
 # ranlib is run in the parent directory's makefile.
 
