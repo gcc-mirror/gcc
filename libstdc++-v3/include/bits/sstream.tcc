@@ -83,23 +83,25 @@ namespace std
       if (__builtin_expect(__testeof, false))
 	return traits_type::not_eof(__c);
 
-      // NB: Start ostringstream buffers at 512 chars. This is an
-      // experimental value (pronounced "arbitrary" in some of the
-      // hipper english-speaking countries), and can be changed to
-      // suit particular needs.
-      const __size_type __len = std::max(__size_type(_M_string.capacity() + 1),
-					 __size_type(512));
+      const __size_type __capacity = _M_string.capacity();
+      const __size_type __max_size = _M_string.max_size();
       const bool __testput = this->pptr() < this->epptr();
-      if (__builtin_expect(!__testput && __len > _M_string.max_size(), false))
+      if (__builtin_expect(!__testput && __capacity == __max_size, false))
 	return traits_type::eof();
 
       // Try to append __c into output sequence in one of two ways.
       // Order these tests done in is unspecified by the standard.
       if (!__testput)
 	{
-	  // In virtue of DR 169 (TC) we are allowed to grow more than
-	  // one char. That's easy to implement thanks to the exponential
-	  // growth policy builtin into basic_string.
+	  // NB: Start ostringstream buffers at 512 chars. This is an
+	  // experimental value (pronounced "arbitrary" in some of the
+	  // hipper english-speaking countries), and can be changed to
+	  // suit particular needs.
+	  // Then, in virtue of DR 169 (TC) we are allowed to grow more
+	  // than one char.
+	  const __size_type __opt_len = std::max(__size_type(2 * __capacity),
+						 __size_type(512));
+	  const __size_type __len = std::min(__opt_len, __max_size);
 	  __string_type __tmp;
 	  __tmp.reserve(__len);
 	  __tmp.assign(_M_string.data(), this->epptr() - this->pbase());
