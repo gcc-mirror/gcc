@@ -105,8 +105,12 @@ extern void m88k_handle_pragma_token ();
 extern void emit_bcnd ();
 extern void expand_block_move ();
 extern void m88k_layout_frame ();
-extern void m88k_output_prologue ();
-extern void m88k_output_epilogue ();
+extern void m88k_expand_prologue ();
+extern void m88k_begin_prologue ();
+extern void m88k_end_prologue ();
+extern void m88k_expand_epilogue ();
+extern void m88k_begin_epilogue ();
+extern void m88k_end_epilogue ();
 extern void output_function_profiler ();
 extern void output_function_block_profiler ();
 extern void output_block_profiler ();
@@ -203,9 +207,9 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"29 May 1992"
+#define VERSION_INFO2	"29 Jun 1992"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	2.1.11.11 29 May 1992 13:20:31"
+#define	TM_SCCS_ID	"@(#)m88k.h	2.2.3.5 29 Jun 1992 13:11:13"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -1039,7 +1043,10 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define EXPAND_BUILTIN_SAVEREGS(ARGLIST) m88k_builtin_saveregs (ARGLIST)
 
 /* Generate the assembly code for function entry. */
-#define FUNCTION_PROLOGUE(FILE, SIZE) m88k_output_prologue(FILE, SIZE)
+#define FUNCTION_PROLOGUE(FILE, SIZE) m88k_begin_prologue(FILE, SIZE)
+
+/* Perform special actions at the point where the prologue ends.  */
+#define FUNCTION_END_PROLOGUE(FILE) m88k_end_prologue(FILE)
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  Redefined in m88kv3.h, m88kv4.h and
@@ -1063,16 +1070,10 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define EXIT_IGNORE_STACK (1)
 
 /* Generate the assembly code for function exit. */
-#define FUNCTION_EPILOGUE(FILE, SIZE) m88k_output_epilogue(FILE, SIZE)
+#define FUNCTION_EPILOGUE(FILE, SIZE) m88k_end_epilogue(FILE, SIZE)
 
-/* Define the number of delay slots needed for the function epilogue.
-   These are used for scheduling the function epilogue and depend on
-   what the epilogue looks like.  */
-#define DELAY_SLOTS_FOR_EPILOGUE delay_slots_for_epilogue ()
-
-/* Define whether INSN can be placed in delay slot N for the epilogue.  */
-#define ELIGIBLE_FOR_EPILOGUE_DELAY(INSN,N) \
-  eligible_for_epilogue_delay (INSN)
+/* Perform special actions at the point where the epilogue begins.  */
+#define FUNCTION_BEGIN_EPILOGUE(FILE) m88k_begin_epilogue(FILE)
 
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms
