@@ -1,3 +1,13 @@
+2002-01-31  Jason Merrill  <jason@redhat.com>
+
+	Allow attributes in parms and casts.
+	* parse.y (named_parm): Don't strip attrs.
+	(declmods): Remove 'attributes' production.
+	(nonempty_cv_qualifiers): Accept attributes.
+	(ATTRIBUTE): Give precedence.
+	* decl.c (groktypename): Handle attributes.
+	(grokparms): Likewise.
+
 2002-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl2.c (cxx_decode_option): Pass 0 as last argument to
