@@ -1,3 +1,8 @@
+2004-10-31  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR c++/16728
+	* testsuite/23_containers/set/modifiers/16728.cc: New.
+
 2004-10-30  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/bitmap_allocator.h (allocate(size_type)): Minor tweak.
