@@ -1,3 +1,7 @@
+2001-05-25  Geoffrey Keating  <geoffk@redhat.com>
+
+	* config/rs6000/rs6000.md (fseldfsf4): Correct mode of operand 4.
+
 2001-05-25  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* i386/i386.h (CC1_CPU_SPEC): Clarify -m486 etc deprecation messages.
