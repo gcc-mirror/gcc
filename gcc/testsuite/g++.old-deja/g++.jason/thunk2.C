@@ -1,4 +1,4 @@
-// { dg-do run { xfail m68k-motorola-sysv m88k-motorola-sysv3 } }
+// { dg-do run }
 // { dg-options "-fPIC" }
 // Test that non-variadic function calls using thunks and PIC work right.
 
