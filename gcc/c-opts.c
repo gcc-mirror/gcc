@@ -33,6 +33,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 static cpp_options *cpp_opts;
 
+/* Input filename.  */
+static const char *in_fname;
+
 /* Filename and stream for preprocessed output.  */
 static const char *out_fname;
 static FILE *out_stream;
@@ -51,6 +54,11 @@ static void set_std_cxx98 PARAMS ((int));
 static void set_std_c89 PARAMS ((int, int));
 static void set_std_c99 PARAMS ((int));
 static void check_deps_environment_vars PARAMS ((void));
+static void preprocess_file PARAMS ((void));
+
+#ifndef STDC_0_IN_SYSTEM_HEADERS
+#define STDC_0_IN_SYSTEM_HEADERS 0
+#endif
 
 #define CL_C_ONLY	(1 << 0) /* Only C.  */
 #define CL_OBJC_ONLY	(1 << 1) /* Only ObjC.  */
@@ -462,8 +470,8 @@ c_common_decode_option (argc, argv)
   /* Interpret "-" or a non-switch as a file name.  */
   if (opt[0] != '-' || opt[1] == '\0')
     {
-      if (!cpp_opts->in_fname)
-	cpp_opts->in_fname = opt;
+      if (!in_fname)
+	in_fname = opt;
       else if (!out_fname)
 	out_fname = opt;
       else
@@ -565,7 +573,6 @@ c_common_decode_option (argc, argv)
       set_Wimplicit (on);
       warn_char_subscripts = on;
       warn_missing_braces = on;
-      warn_multichar = on;	/* Was C++ only.  */
       warn_parentheses = on;
       warn_return_type = on;
       warn_sequence_point = on;	/* Was C only.  */
@@ -598,6 +605,7 @@ c_common_decode_option (argc, argv)
       cpp_opts->warn_trigraphs = on;
       cpp_opts->warn_comments = on;
       cpp_opts->warn_num_sign_change = on;
+      cpp_opts->warn_multichar = on;	/* Was C++ only.  */
       break;
 
     case OPT_Wbad_function_cast:
@@ -728,7 +736,7 @@ c_common_decode_option (argc, argv)
       break;
 
     case OPT_Wmultichar:
-      warn_multichar = on;
+      cpp_opts->warn_multichar = on;
       break;
 
     case OPT_Wnested_externs:
@@ -1204,7 +1212,10 @@ c_common_decode_option (argc, argv)
 bool
 c_common_post_options ()
 {
-  /* Canonicalize the output filename.  */
+  /* Canonicalize the input and output filenames.  */
+  if (in_fname == NULL || !strcmp (in_fname, "-"))
+    in_fname = "";
+
   if (out_fname == NULL || !strcmp (out_fname, "-"))
     out_fname = "";
 
@@ -1220,6 +1231,14 @@ c_common_post_options ()
       error ("you must additionally specify either -M or -MM");
 
   cpp_post_options (parse_in);
+
+  cpp_opts->unsigned_char = !flag_signed_char;
+  cpp_opts->stdc_0_in_system_headers = STDC_0_IN_SYSTEM_HEADERS;
+
+  /* We want -Wno-long-long to override -pedantic -std=non-c99
+     and/or -Wtraditional, whatever the ordering.  */
+  cpp_opts->warn_long_long
+    = warn_long_long && ((!flag_isoc99 && pedantic) || warn_traditional);
 
   flag_inline_trees = 1;
 
@@ -1263,7 +1282,7 @@ c_common_post_options ()
 }
 
 /* Preprocess the input file to out_stream.  */
-void
+static void
 preprocess_file ()
 {
   /* Open the output now.  We must do so even if no_output is on,
@@ -1277,7 +1296,41 @@ preprocess_file ()
   if (out_stream == NULL)
     fatal_io_error ("opening output file %s", out_fname);
   else
-    cpp_preprocess_file (parse_in, out_stream);
+    cpp_preprocess_file (parse_in, in_fname, out_stream);
+}
+
+/* Front end initialization common to C, ObjC and C++.  */
+const char *
+c_common_init (filename)
+     const char *filename;
+{
+  /* Set up preprocessor arithmetic.  Must be done after call to
+     c_common_nodes_and_builtins for type nodes to be good.  */
+  cpp_opts->precision = TYPE_PRECISION (intmax_type_node);
+  cpp_opts->char_precision = TYPE_PRECISION (char_type_node);
+  cpp_opts->int_precision = TYPE_PRECISION (integer_type_node);
+  cpp_opts->wchar_precision = TYPE_PRECISION (wchar_type_node);
+  cpp_opts->unsigned_wchar = TREE_UNSIGNED (wchar_type_node);
+
+  /* Register preprocessor built-ins before calls to
+     cpp_main_file.  */
+  cpp_get_callbacks (parse_in)->register_builtins = cb_register_builtins;
+
+  /* NULL is passed up to toplev.c and we exit quickly.  */
+  if (flag_preprocess_only)
+    {
+      preprocess_file ();
+      return NULL;
+    }
+
+  /* Do this before initializing pragmas, as then cpplib's hash table
+     has been set up.  NOTE: we are using our own file name here, not
+     the one supplied.  */
+  filename = init_c_lex (in_fname);
+
+  init_pragma ();
+
+  return filename;
 }
 
 /* Common finish hook for the C, ObjC and C++ front ends.  */

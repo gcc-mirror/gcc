@@ -1,3 +1,24 @@
+2002-08-12  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-common.c (STDC_0_IN_SYSTEM_HEADERS, c_common_init): Move
+	to c-copts.c.
+	(warn_multichar): Die.
+	(cb_register_builtins): Export.
+	* c-common.h (warn_multichar, preprocess_file): Remove.
+	(cb_register_builtins): New.
+	* c-lang.c (c_init): Remove.
+	(LANG_HOOKS_INIT): Use c_objc_common_init.
+	* c-lex.c (init_c_lex): Don't canonicalize filename.
+	* c-opts.c (in_fname, STDC_0_IN_SYSTEM_HEADERS): New.
+	(preprocess_file): Make static.  Update for cpplib.
+	(c_common_decode_option): Remove warn_multichar.  Use in_fname.
+	(c_common_post_options): Set some cpp options here.
+	(c_common_init): Move from c-common.c.
+	* cppinit.c (cpp_post_options): Don't canonicalize in_fname.
+	* cpplib.h (struct cpp_options): Remove in_fname.
+	(cpp_preprocess_file): Update.
+	* cppmain.c (cpp_preprocess_file): Update for new prototypes.
+
 2002-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* config.gcc (mips*-*-netbsd*): Include ${tm_file}.
