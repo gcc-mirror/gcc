@@ -237,6 +237,7 @@ java.install-info: installdirs
 java.mostlyclean:
 	-rm -f java/*$(objext) $(DEMANGLER_PROG)
 	-rm -f java/*$(coverageexts)
+	-rm -f java/j-options.c java/j-options.h
 	-rm -f jc1$(exeext) $(GCJ)$(exeext) jvgenmain$(exeext) gcjh$(exeext) jv-scan$(exeext) jcf-dump$(exeext) s-java
 java.clean:
 java.distclean:

@@ -35,9 +35,7 @@ extern HOST_WIDE_INT hook_get_alias_set_0	PARAMS ((tree));
    The macros in this file should NOT be surrounded by a
    #ifdef...#endif pair, since this file declares the defaults.  Each
    front end overrides any hooks it wishes to, in the file containing
-   its struct lang_hooks, AFTER including this file.
-
-   Prefix all default hooks with "lhd_".  */
+   its struct lang_hooks, AFTER including this file.  */
 
 /* See langhooks.h for the definition and documentation of each hook.  */
 
@@ -45,7 +43,6 @@ extern void lhd_do_nothing PARAMS ((void));
 extern void lhd_do_nothing_t PARAMS ((tree));
 extern void lhd_do_nothing_i PARAMS ((int));
 extern void lhd_do_nothing_f PARAMS ((struct function *));
-extern int lhd_decode_option PARAMS ((int, char **));
 extern bool lhd_post_options PARAMS ((const char **));
 extern HOST_WIDE_INT lhd_get_alias_set PARAMS ((tree));
 extern tree lhd_return_tree PARAMS ((tree));
@@ -94,8 +91,7 @@ void write_global_declarations PARAMS ((void));
 #define LANG_HOOKS_PARSE_FILE		lhd_do_nothing_i
 #define LANG_HOOKS_CLEAR_BINDING_STACK	lhd_clear_binding_stack
 #define LANG_HOOKS_INIT_OPTIONS		hook_int_void_0
-#define LANG_HOOKS_DECODE_OPTION	lhd_decode_option
-#define LANG_HOOKS_HANDLE_OPTION	NULL
+#define LANG_HOOKS_HANDLE_OPTION	hook_int_size_t_constharptr_int_0
 #define LANG_HOOKS_POST_OPTIONS		lhd_post_options
 #define LANG_HOOKS_GET_ALIAS_SET	lhd_get_alias_set
 #define LANG_HOOKS_EXPAND_CONSTANT	lhd_return_tree
@@ -246,7 +242,6 @@ int lhd_tree_dump_type_quals			PARAMS ((tree));
   LANG_HOOKS_IDENTIFIER_SIZE, \
   LANG_HOOKS_TREE_SIZE, \
   LANG_HOOKS_INIT_OPTIONS, \
-  LANG_HOOKS_DECODE_OPTION, \
   LANG_HOOKS_HANDLE_OPTION, \
   LANG_HOOKS_POST_OPTIONS, \
   LANG_HOOKS_INIT, \

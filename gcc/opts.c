@@ -118,7 +118,7 @@ find_opt (const char *input, int lang_mask)
 
 /* Handle the switch beginning at ARGV, with ARGC remaining.  */
 int
-handle_option (int argc, char **argv, int lang_mask)
+handle_option (int argc ATTRIBUTE_UNUSED, char **argv, int lang_mask)
 {
   size_t opt_index;
   const char *opt, *arg = 0;
@@ -126,10 +126,6 @@ handle_option (int argc, char **argv, int lang_mask)
   bool on = true;
   int result = 0, temp;
   const struct cl_option *option;
-
-  /* If the front end isn't yet converted, use the old hook.  */
-  if (!lang_hooks.handle_option)
-    return (*lang_hooks.decode_option) (argc, argv);
 
   opt = argv[0];
 
