@@ -38,4 +38,4 @@ Boston, MA 02111-1307, USA.  */
    `MULTILIB_OPTIONS' are set by default.  *Note Target Fragment::.  */
 
 #undef	MULTILIB_DEFAULTS
-#define	MULTILIB_DEFAULTS { "mbig", "mbig-endian", "mcall-aix", "mno-sdata" }
+#define	MULTILIB_DEFAULTS { "mbig", "mcall-aix" }

@@ -37,4 +37,4 @@ Boston, MA 02111-1307, USA.  */
   "-DPPC -D__embedded__ -Asystem(embedded) -Acpu(powerpc) -Amachine(powerpc)"
 
 #undef	MULTILIB_DEFAULTS
-#define	MULTILIB_DEFAULTS { "mbig", "mbig-endian", "mcall-sysv-eabi", "mno-sdata" }
+#define	MULTILIB_DEFAULTS { "mbig", "mcall-sysv" }

@@ -4135,9 +4135,9 @@ output_toc (file, x, labelno)
      a TOC reference to an unknown section.  Thus, for vtables only,
      we emit the TOC reference to reference the symbol and not the
      section.  */
-  if (!strncmp ("_vt.", real_name, 4))
+  if (!strncmp ("_vt.", name, 4))
     {
-      RS6000_OUTPUT_BASENAME (file, real_name);
+      RS6000_OUTPUT_BASENAME (file, name);
       if (offset < 0)
 	fprintf (file, "%d", offset);
       else if (offset > 0)
@@ -4974,7 +4974,7 @@ handle_mac_pragma (finput, t)
   int retval = 0;
   register char *pname;
   char pbuf[200];
-  int c, psize;
+  int c, psize = 0;
 
   if (TREE_CODE (t) != IDENTIFIER_NODE)
     return 0;
