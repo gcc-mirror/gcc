@@ -1,3 +1,10 @@
+2004-05-22  Roger Sayle  <roger@eyesopen.com>
+
+	* name-lookup.c (check_for_out_of_scope_variable): Avoid ICE by
+	returning when TREE_TYPE is error_mark_node.
+	* typeck.c (require_complete_type): Return error_mark_node if
+	value's type is an error_mark_node.
+
 2005-05-20  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* optimize.c (calls_setjmp_r): Remove.
