@@ -9502,7 +9502,7 @@ do_decl_instantiation (declspecs, declarator, storage)
     ;
   else if (storage == ridpointers[(int) RID_EXTERN])
     {
-      if (pedantic)
+      if (pedantic && !in_system_header)
 	pedwarn ("ISO C++ forbids the use of `extern' on explicit instantiations");
       extern_p = 1;
     }
@@ -9573,7 +9573,7 @@ do_type_instantiation (t, storage, complain)
 
   if (storage != NULL_TREE)
     {
-      if (pedantic)
+      if (pedantic && !in_system_header)
 	pedwarn("ISO C++ forbids the use of `%s' on explicit instantiations", 
 		   IDENTIFIER_POINTER (storage));
 
