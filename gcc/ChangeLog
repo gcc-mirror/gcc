@@ -1,5 +1,12 @@
 2002-06-08  Jason Thorpe  <thorpej@wasabisystems.com>
 
+	* config/mips/netbsd.h (SUBTARGET_EXTRA_SPECS): Add
+	netbsd_link_spec and netbsd_entry_point.
+	(LINK_SPEC): Use %(netbsd_link_spec).
+	(NETBSD_ENTRY_POINT): Define.
+
+2002-06-08  Jason Thorpe  <thorpej@wasabisystems.com>
+
 	* config/sparc/netbsd-elf.h (LINK_ARCH32_SPEC): Only specify
 	linker emulation.
 	(LINK_ARCH64_SPEC): Likewise.

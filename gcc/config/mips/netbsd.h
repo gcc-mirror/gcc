@@ -118,7 +118,9 @@ Boston, MA 02111-1307, USA.  */
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS						\
   { "subtarget_endian_default",	SUBTARGET_ENDIAN_DEFAULT_SPEC },	\
-  { "netbsd_cpp_spec",		NETBSD_CPP_SPEC },
+  { "netbsd_cpp_spec",		NETBSD_CPP_SPEC },			\
+  { "netbsd_link_spec",		NETBSD_LINK_SPEC_ELF },			\
+  { "netbsd_entry_point",	NETBSD_ENTRY_POINT },
 
 #if TARGET_ENDIAN_DEFAULT != 0
 #define SUBTARGET_ENDIAN_DEFAULT_SPEC "-D__MIPSEB__"
@@ -136,24 +138,15 @@ Boston, MA 02111-1307, USA.  */
    the MIPS target.  */
 
 #undef LINK_SPEC
-#define LINK_SPEC							\
-  "%{assert*} %{R*} %{rpath*}						\
-   %{EL:-m elf32lmip}							\
-   %{EB:-m elf32bmip}							\
-   %(endian_spec)							\
-   %{G*} %{mips1} %{mips2} %{mips3} %{mips4} %{mips32} %{mips64}	\
-   %{bestGnum} %{call_shared} %{no_archive} %{exact_version}		\
-   %{shared:-shared}							\
-   %{!shared:								\
-     -dc -dp								\
-     %{!nostdlib:							\
-       %{!r*:								\
-	 %{!e*:-e __start}}}						\
-     %{!static:								\
-       %{rdynamic:-export-dynamic}					\
-       %{!dynamic-linker:-dynamic-linker /usr/libexec/ld.elf_so}}	\
-     %{static:-static}}"
+#define LINK_SPEC \
+  "%{EL:-m elf32lmip} \
+   %{EB:-m elf32bmip} \
+   %(endian_spec) \
+   %{G*} %{mips1} %{mips2} %{mips3} %{mips4} %{mips32} %{mips64} \
+   %{bestGnum} %{call_shared} %{no_archive} %{exact_version} \
+   %(netbsd_link_spec)"
 
+#define NETBSD_ENTRY_POINT "__start"
 
 #undef SUBTARGET_ASM_SPEC
 #define SUBTARGET_ASM_SPEC						\
