@@ -343,49 +343,45 @@ build_member_function_pointer (member)
    The new FIELD_DECLs are appended at the end of the last (and only)
    sublist of `list_of_fieldlists.'
 
+   T is the signature type.
+  
    As a side effect, each member function in the signature gets the
    `decl.ignored' bit turned on, so we don't output debug info for it.  */
 
 void
-append_signature_fields (list_of_fieldlists)
-     tree list_of_fieldlists;
+append_signature_fields (t)
+     tree t;
 {
-  tree l, x;
-  tree last_x = NULL_TREE;
+  tree x;
   tree mfptr;
   tree last_mfptr = NULL_TREE;
   tree mfptr_list = NULL_TREE;
 	      
-  /* For signatures it should actually be only a list with one element.  */
-  for (l = list_of_fieldlists; l; l = TREE_CHAIN (l))
+  for (x = TYPE_METHODS (t); x; x = TREE_CHAIN (x))
     {
-      for (x = TREE_VALUE (l); x; x = TREE_CHAIN (x))
+      if (TREE_CODE (x) == FUNCTION_DECL)
 	{
-	  if (TREE_CODE (x) == FUNCTION_DECL)
+	  mfptr = build_member_function_pointer (x);
+	  DECL_MEMFUNC_POINTER_TO (x) = mfptr;
+	  DECL_MEMFUNC_POINTING_TO (mfptr) = x;
+	  DECL_IGNORED_P (x) = 1;
+	  DECL_IN_AGGR_P (mfptr) = 1;
+	  if (! mfptr_list)
+	    mfptr_list = last_mfptr = mfptr;
+	  else
 	    {
-	      mfptr = build_member_function_pointer (x);
-	      DECL_MEMFUNC_POINTER_TO (x) = mfptr;
-	      DECL_MEMFUNC_POINTING_TO (mfptr) = x;
-	      DECL_IGNORED_P (x) = 1;
-	      DECL_IN_AGGR_P (mfptr) = 1;
-	      if (! mfptr_list)
-		mfptr_list = last_mfptr = mfptr;
-	      else
-		{
-		  TREE_CHAIN (last_mfptr) = mfptr;
-		  last_mfptr = mfptr;
-		}
+	      TREE_CHAIN (last_mfptr) = mfptr;
+	      last_mfptr = mfptr;
 	    }
-	  last_x = x;
 	}
     }
 
-  /* Append the lists.  */
-  if (last_x && mfptr_list)
-    {
-      TREE_CHAIN (last_x) = mfptr_list;
-      TREE_CHAIN (last_mfptr) = NULL_TREE;
-    }
+  /* The member function pointers must come after the TYPE_DECLs, in
+     this case, because build_signature_table_constructor depends on
+     finding opaque TYPE_DECLS before the functions that make use of
+     them.  */
+  if (last_mfptr)
+    TYPE_FIELDS (t) = chainon (TYPE_FIELDS (t), mfptr_list);
 }
 
 /* Compare the types of a signature member function and a class member

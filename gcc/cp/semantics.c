@@ -1268,14 +1268,99 @@ begin_class_definition (t)
   return t;
 }
 
-/* Finish a class definition T, with the indicated COMPONENTS, and
-   with the indicate ATTRIBUTES.  If SEMI, the definition is
-   immediately followed by a semicolon.  Returns the type.  */
+/* Finish the member declaration given by DECL.  */
+
+void
+finish_member_declaration (decl)
+     tree decl;
+{
+  if (decl == error_mark_node || decl == NULL_TREE)
+    return;
+
+  if (decl == void_type_node)
+    /* The COMPONENT was a friend, not a member, and so there's
+       nothing for us to do.  */
+    return;
+
+  /* We should see only one DECL at a time.  */
+  my_friendly_assert (TREE_CHAIN (decl) == NULL_TREE, 0);
+
+  /* Set up access control for DECL.  */
+  TREE_PRIVATE (decl) 
+    = (current_access_specifier == access_private_node);
+  TREE_PROTECTED (decl) 
+    = (current_access_specifier == access_protected_node);
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    {
+      TREE_PRIVATE (DECL_RESULT (decl)) = TREE_PRIVATE (decl);
+      TREE_PROTECTED (DECL_RESULT (decl)) = TREE_PROTECTED (decl);
+    }
+
+  /* Mark the DECL as a member of the current class.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL 
+      || DECL_FUNCTION_TEMPLATE_P (decl))
+    /* Historically, DECL_CONTEXT was not set for a FUNCTION_DECL in
+       finish_struct.  Presumably it is already set as the function is
+       parsed.  Perhaps DECL_CLASS_CONTEXT is already set, too?  */
+    DECL_CLASS_CONTEXT (decl) = current_class_type;
+  else if (TREE_CODE (decl) == TYPE_DECL)
+    /* Historically, DECL_CONTEXT was not set for a TYPE_DECL in
+       finish_struct, so we do not do it here either.  Perhaps we
+       should, though.  */
+      ;
+  else
+    DECL_CONTEXT (decl) = current_class_type;
+
+  /* Put functions on the TYPE_METHODS list and everything else on the
+     TYPE_FIELDS list.  Note that these are built up in reverse order.
+     We reverse them (to obtain declaration order) in finish_struct.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL 
+      || DECL_FUNCTION_TEMPLATE_P (decl))
+    {
+      /* We also need to add this function to the
+	 CLASSTYPE_METHOD_VEC.  */
+      add_method (current_class_type, 0, decl);
+
+      TREE_CHAIN (decl) = TYPE_METHODS (current_class_type);
+      TYPE_METHODS (current_class_type) = decl;
+    }
+  else
+    {
+      /* All TYPE_DECLs go at the end of TYPE_FIELDS.  Ordinary fields
+	 go at the beginning.  The reason is that lookup_field_1
+	 searches the list in order, and we want a field name to
+	 override a type name so that the "struct stat hack" will
+	 work.  In particular:
+
+	   struct S { enum E { }; int E } s;
+	   s.E = 3;
+
+	 is legal.  In addition, the FIELD_DECLs must be maintained in
+	 declaration order so that class layout works as expected.
+	 However, we don't need that order until class layout, so we
+	 save a little time by putting FIELD_DECLs on in reverse order
+	 here, and then reversing them in finish_struct_1.  (We could
+	 also keep a pointer to the correct insertion points in the
+	 list.)  */
+
+      if (TREE_CODE (decl) == TYPE_DECL)
+	TYPE_FIELDS (current_class_type) 
+	  = chainon (TYPE_FIELDS (current_class_type), decl);
+      else
+	{
+	  TREE_CHAIN (decl) = TYPE_FIELDS (current_class_type);
+	  TYPE_FIELDS (current_class_type) = decl;
+	}
+    }
+}
+
+/* Finish a class definition T with the indicate ATTRIBUTES.  If SEMI,
+   the definition is immediately followed by a semicolon.  Returns the
+   type.  */
 
 tree
-finish_class_definition (t, components, attributes, semi)
+finish_class_definition (t, attributes, semi)
      tree t;
-     tree components;
      tree attributes;
      int semi;
 {
@@ -1299,7 +1384,7 @@ finish_class_definition (t, components, attributes, semi)
     ;
   else
     {
-      t = finish_struct (t, components, attributes, semi);
+      t = finish_struct (t, attributes, semi);
       if (semi) 
 	note_got_semicolon (t);
     }
@@ -1342,8 +1427,7 @@ begin_inline_definitions ()
    TYPES whose template parameters are given by PARMS.  */
 
 tree
-finish_member_class_template (parms, types)
-     tree parms;
+finish_member_class_template (types)
      tree types;
 {
   tree t;
@@ -1356,13 +1440,15 @@ finish_member_class_template (parms, types)
       maybe_process_partial_specialization (TREE_VALUE (t));
 
   note_list_got_semicolon (types);
-  grok_x_components (types, NULL_TREE); 
+  grok_x_components (types);
   if (TYPE_CONTEXT (TREE_VALUE (types)) != current_class_type)
     /* The component was in fact a friend declaration.  We avoid
        finish_member_template_decl performing certain checks by
        unsetting TYPES.  */
     types = NULL_TREE;
-  finish_member_template_decl (parms, types);
+  
+  finish_member_template_decl (types);
+
   /* As with other component type declarations, we do
      not store the new DECL on the list of
      component_decls.  */
@@ -1480,3 +1566,31 @@ finish_base_specifier (access_specifier, base_class,
 
   return result;
 }
+
+/* Called when multiple declarators are processed.  If that is not
+   premitted in this context, an error is issued.  */
+
+void
+check_multiple_declarators ()
+{
+  /* [temp]
+     
+     In a template-declaration, explicit specialization, or explicit
+     instantiation the init-declarator-list in the declaration shall
+     contain at most one declarator.  
+
+     We don't just use PROCESSING_TEMPLATE_DECL for the first
+     condition since that would disallow the perfectly legal code, 
+     like `template <class T> struct S { int i, j; };'.  */
+  tree scope = current_scope ();
+
+  if (scope && TREE_CODE (scope) == FUNCTION_DECL)
+    /* It's OK to write `template <class T> void f() { int i, j;}'.  */
+    return;
+     
+  if (PROCESSING_REAL_TEMPLATE_DECL_P () 
+      || processing_explicit_instantiation
+      || processing_specialization)
+    cp_error ("multiple declarators in template declaration");
+}
+

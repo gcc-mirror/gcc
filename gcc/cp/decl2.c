@@ -860,123 +860,37 @@ warn_if_unknown_interface (decl)
 
 /* A subroutine of the parser, to handle a component list.  */
 
-tree
-grok_x_components (specs, components)
-     tree specs, components;
+void
+grok_x_components (specs)
+     tree specs;
 {
-  register tree t, x, tcode;
+  struct pending_inline **p;
+  tree t;
 
-  /* We just got some friends.  They have been recorded elsewhere.  */
-  if (components == void_type_node)
-    return NULL_TREE;
-
-  if (components == NULL_TREE)
+  t = groktypename (build_decl_list (strip_attrs (specs), NULL_TREE)); 
+  
+  if (t == NULL_TREE)
     {
-      t = groktypename (build_decl_list (strip_attrs (specs),
-					 NULL_TREE)); 
-
-      if (t == NULL_TREE)
-	{
-	  error ("error in component specification");
-	  return NULL_TREE;
-	}
-
-      switch (TREE_CODE (t))
-	{
-	case VAR_DECL:
-	  /* Static anonymous unions come out as VAR_DECLs.  */
-	  if (ANON_UNION_TYPE_P (TREE_TYPE (t)))
-	    return t;
-
-	  /* We return SPECS here, because in the parser it was ending
-	     up with not doing anything to $$, which is what SPECS
-	     represents.  */
-	  return specs;
-	  break;
-
-	case RECORD_TYPE:
-	case UNION_TYPE:
-	  if (TREE_CODE (t) == UNION_TYPE)
-	    tcode = union_type_node;
-	  else
-	    tcode = record_type_node;
-	  if (CLASSTYPE_DECLARED_CLASS (t))
-	    tcode = class_type_node;
-	  else if (IS_SIGNATURE (t))
-	    tcode = signature_type_node;
-	  
-	  if (TYPE_LANG_SPECIFIC (t) 
-	      && CLASSTYPE_USE_TEMPLATE (t))
-	    /* We have already looked up this type.  */
-	    ;
-	  else
-	    {
-	      if (CLASSTYPE_IS_TEMPLATE (t))
-		x = DECL_NAME (CLASSTYPE_TI_TEMPLATE (t));
-	      else
-		x = TYPE_IDENTIFIER (t);
-	      t = xref_tag (tcode, x, 0);
-	    }
-
-	  if (ANON_UNION_TYPE_P (t))
-	    {
-	      /* See also shadow_tag.  */
-
-	      struct pending_inline **p;
-	      tree *q;
-	      x = build_lang_field_decl (FIELD_DECL, NULL_TREE, t);
-
-	      /* Wipe out memory of synthesized methods */
-	      TYPE_HAS_CONSTRUCTOR (t) = 0;
-	      TYPE_HAS_DEFAULT_CONSTRUCTOR (t) = 0;
-	      TYPE_HAS_INIT_REF (t) = 0;
-	      TYPE_HAS_CONST_INIT_REF (t) = 0;
-	      TYPE_HAS_ASSIGN_REF (t) = 0;
-	      TYPE_HAS_ASSIGNMENT (t) = 0;
-	      TYPE_HAS_CONST_ASSIGN_REF (t) = 0;
-
-	      q = &TYPE_METHODS (t);
-	      while (*q)
-		{
-		  if (DECL_ARTIFICIAL (*q))
-		    *q = TREE_CHAIN (*q);
-		  else
-		    q = &TREE_CHAIN (*q);
-		}
-	      if (TYPE_METHODS (t))
-		error ("an anonymous union cannot have function members");
-
-	      p = &pending_inlines;
-	      for (; *p; *p = (*p)->next)
-		if (DECL_CONTEXT ((*p)->fndecl) != t)
-		  break;
-
-	      return x;
-	    }
-
-	  return NULL_TREE;
-	  break;
-
-	case ENUMERAL_TYPE:
-	  tcode = enum_type_node;
-	  t = xref_tag (tcode, TYPE_IDENTIFIER (t), 0);
-	  x = grok_enum_decls (NULL_TREE);
-	  return x;
-	  break;
-
-	default:
-	  if (t != void_type_node)
-	    error ("empty component declaration");
-	  return NULL_TREE;
-	}
+      cp_error ("invalid member declaration");
+      return;
     }
-  else
-    /* There may or may not be any enum decls to grok, but
-       grok_enum_decls will just return components, if there aren't
-       any.  We used to try to figure out whether or not there were
-       any enum decls based on the type of components, but that's too
-       hard; it might be something like `enum { a } *p;'.  */
-    return grok_enum_decls (components);
+
+  /* The only case where we need to do anything additional here is an
+     anonymous union field, e.g.: `struct S { union { int i; }; };'.  */
+  if (!ANON_UNION_TYPE_P (t))
+    return;
+
+  fixup_anonymous_union (t);
+  finish_member_declaration (build_lang_field_decl (FIELD_DECL,
+						    NULL_TREE,
+						    t)); 
+
+  /* Ignore any inline function definitions in the anonymous union
+     since an anonymous union may not have function members.  */
+  p = &pending_inlines;
+  for (; *p; *p = (*p)->next)
+    if (DECL_CONTEXT ((*p)->fndecl) != t)
+      break;
 }
 
 /* Constructors for types with virtual baseclasses need an "in-charge" flag
@@ -1459,7 +1373,7 @@ check_classfn (ctype, function)
 	  && DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (function)))
 	goto got_it;
 
-      while (++methods != end)
+      while (++methods != end && *methods)
 	{
 	  fndecl = *methods;
 	  if (fn_name == DECL_NAME (OVL_CURRENT (*methods)))
@@ -1530,14 +1444,12 @@ check_classfn (ctype, function)
 
   if (templates)
     /* This function might be an instantiation or a specialization.
-       We should verify that this is possible.  If it is, we must
-       somehow add the new declaration to the method vector for the
-       class.  Perhaps we should use add_method?  For now, we simply
-       return NULL_TREE, which lets the caller know that this
-       function is new, but we don't print an error message.  */
+       We should verify that this is possible.  For now, we simply
+       return NULL_TREE, which lets the caller know that this function
+       is new, but we don't print an error message.  */
     return NULL_TREE;
 
-  if (methods != end)
+  if (methods != end && *methods)
     {
       tree fndecl = *methods;
       cp_error ("prototype for `%#D' does not match any in class `%T'",
@@ -1640,7 +1552,6 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
       DECL_NONLOCAL (value) = 1;
       DECL_CONTEXT (value) = current_class_type;
       DECL_CLASS_CONTEXT (value) = current_class_type;
-      CLASSTYPE_LOCAL_TYPEDECLS (current_class_type) = 1;
 
       /* Now that we've updated the context, we need to remangle the
 	 name for this TYPE_DECL.  */
@@ -4129,7 +4040,9 @@ add_using_namespace (user, used, indirect)
 /* Combines two sets of overloaded functions into an OVERLOAD chain, removing
    duplicates.  The first list becomes the tail of the result.
 
-   The algorithm is O(n^2).  */
+   The algorithm is O(n^2).  We could get this down to O(n log n) by
+   doing a sort on the addresses of the functions, if that becomes
+   necessary.  */
 
 static tree
 merge_functions (s1, s2)
@@ -4414,6 +4327,7 @@ struct arg_lookup
 
 static int arg_assoc         PROTO((struct arg_lookup*, tree));
 static int arg_assoc_args    PROTO((struct arg_lookup*, tree));
+static int arg_assoc_type    PROTO((struct arg_lookup*, tree));
 
 /* Add a function to the lookup structure.
    Returns 1 on error.  */
@@ -4662,7 +4576,7 @@ arg_assoc (k, n)
 		return 1;
 	    }
 	  else if (TREE_CODE_CLASS (TREE_CODE (t)) == 't'
-		   && arg_assoc_type (t) == 1)
+		   && arg_assoc_type (k, t) == 1)
 	    return 1;
 	}
     }

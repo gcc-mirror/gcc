@@ -29,6 +29,11 @@ Boston, MA 02111-1307, USA.  */
    just won't work for us.  */
 DEFTREECODE (OFFSET_REF, "offset_ref", 'r', 2)
 
+/* A pointer-to-member constant.  For a pointer-to-member constant
+   `X::Y' The PTRMEM_CST_CLASS is the RECORD_TYPE for `X' and the
+   PTRMEM_CST_MEMBER is the _DECL for `Y'.  */
+DEFTREECODE (PTRMEM_CST, "ptrmem_cst", 'c', 1)
+
 /* For NEW_EXPR, operand 0 is the placement list.
    Operand 1 is the new-declarator.
    Operand 2 is the initializer.  */

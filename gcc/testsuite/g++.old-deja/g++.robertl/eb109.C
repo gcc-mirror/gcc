@@ -17,7 +17,7 @@ inline istream& operator>>(istream& is, Empty& ) { return is;}
 
 template<class VertexType, class EdgeType>
 class Graph
-{ // ERROR - candidates
+{ 
   public:
     // public type interface
     typedef map<int, EdgeType > Successor;
@@ -32,7 +32,7 @@ class Graph
     bool directed;
     GraphType C;          // container
     ostream* pOut;
-};      // class Graph
+}; // ERROR - candidates
 
 // all graph-methods delet
 template<class VertexType, class EdgeType>

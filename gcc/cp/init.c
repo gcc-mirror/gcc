@@ -1561,30 +1561,11 @@ build_offset_ref (type, name)
     name = ctor_identifier;
 #endif
 
-  if (TYPE_SIZE (complete_type (type)) == 0)
+  if (TYPE_SIZE (complete_type (type)) == 0
+      && !TYPE_BEING_DEFINED (type))
     {
-      if (type == current_class_type)
-	t = IDENTIFIER_CLASS_VALUE (name);
-      else
-	t = NULL_TREE;
-      if (t == 0)
-	{
-	  cp_error ("incomplete type `%T' does not have member `%D'", type,
-		      name);
-	  return error_mark_node;
-	}
-      if (TREE_CODE (t) == TYPE_DECL || TREE_CODE (t) == VAR_DECL
-	  || TREE_CODE (t) == CONST_DECL)
-	{
-	  mark_used (t);
-	  return t;
-	}
-      if (TREE_CODE (t) == FIELD_DECL)
-	sorry ("use of member in incomplete aggregate type");
-      else if (TREE_CODE (t) == FUNCTION_DECL)
-	sorry ("use of member function in incomplete aggregate type");
-      else
-	my_friendly_abort (52);
+      cp_error ("incomplete type `%T' does not have member `%D'", type,
+		name);
       return error_mark_node;
     }
 
@@ -1883,28 +1864,14 @@ decl_constant_value (decl)
      tree decl;
 {
   if (! TREE_THIS_VOLATILE (decl)
-#if 0
-      /* These may be necessary for C, but they break C++.  */
-      ! TREE_PUBLIC (decl)
-      /* Don't change a variable array bound or initial value to a constant
-	 in a place where a variable is invalid.  */
-      && ! pedantic
-#endif /* 0 */
-      && DECL_INITIAL (decl) != 0
+      && DECL_INITIAL (decl)
       && DECL_INITIAL (decl) != error_mark_node
       /* This is invalid if initial value is not constant.
 	 If it has either a function call, a memory reference,
 	 or a variable, then re-evaluating it could give different results.  */
       && TREE_CONSTANT (DECL_INITIAL (decl))
       /* Check for cases where this is sub-optimal, even though valid.  */
-      && TREE_CODE (DECL_INITIAL (decl)) != CONSTRUCTOR
-#if 0
-      /* We must allow this to work outside of functions so that
-	 static constants can be used for array sizes.  */
-      && current_function_decl != 0
-      && DECL_MODE (decl) != BLKmode
-#endif
-      )
+      && TREE_CODE (DECL_INITIAL (decl)) != CONSTRUCTOR)
     return DECL_INITIAL (decl);
   return decl;
 }

@@ -129,6 +129,7 @@ static tree tsubst_decl PROTO((tree, tree, tree, tree));
 static tree tsubst_arg_types PROTO((tree, tree, tree));
 static void check_specialization_scope PROTO((void));
 static tree process_partial_specialization PROTO((tree));
+static void set_current_access_from_decl PROTO((tree));
 
 /* We use TREE_VECs to hold template arguments.  If there is only one
    level of template arguments, then the TREE_VEC contains the
@@ -196,12 +197,9 @@ static tree process_partial_specialization PROTO((tree));
    it is a specialization, in which case the DECL itself is returned.  */
 
 tree
-finish_member_template_decl (template_parameters, decl)
-  tree template_parameters;
+finish_member_template_decl (decl)
   tree decl;
 {
-  finish_template_decl (template_parameters);
-
   if (decl == NULL_TREE || decl == void_type_node)
     return NULL_TREE;
   else if (decl == error_mark_node)
@@ -3066,9 +3064,11 @@ comp_template_args (oldargs, newargs)
 
       if (nt == ot)
 	continue;
-      if (TREE_CODE (nt) != TREE_CODE (ot))
+      else if (!nt || !ot)
 	return 0;
-      if (TREE_CODE (nt) == TREE_VEC)
+      else if (TREE_CODE (nt) != TREE_CODE (ot))
+	return 0;
+      else if (TREE_CODE (nt) == TREE_VEC)
         {
           /* For member templates */
 	  if (comp_template_args (ot, nt))
@@ -3382,14 +3382,12 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
     }
   else 
     {
-      extern tree current_local_enum;
       tree template_type = TREE_TYPE (template);
       tree type_decl;
       tree found = NULL_TREE;
       int arg_depth;
       int parm_depth;
       int is_partial_instantiation;
-      tree prev_local_enum = NULL_TREE;
 
       template = most_general_template (template);
       parmlist = DECL_TEMPLATE_PARMS (template);
@@ -3549,10 +3547,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
       if (TREE_CODE (template_type) == ENUMERAL_TYPE)
 	{
 	  if (!is_partial_instantiation)
-	    {
-	      prev_local_enum = current_local_enum;
-	      t = start_enum (TYPE_IDENTIFIER (template_type));
-	    }
+	    t = start_enum (TYPE_IDENTIFIER (template_type));
 	  else
 	    /* We don't want to call start_enum for this type, since
 	       the values for the enumeration constants may involve
@@ -3570,7 +3565,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	  TYPE_FOR_JAVA (t) = TYPE_FOR_JAVA (template_type);
 	}
 
-      /* If we called tsubst_enum above, this information will already
+      /* If we called start_enum above, this information will already
 	 be set up.  */
       if (!TYPE_NAME (t))
 	{
@@ -3599,17 +3594,14 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 
       if (TREE_CODE (t) == ENUMERAL_TYPE 
 	  && !is_partial_instantiation)
-	{
-	  /* Now that the type has been registered on the
-	     instantiations list, we set up the enumerators.  Because
-	     the enumeration constants may involve the enumeration
-	     type itself, we make sure to register the type first, and
-	     then create the constants.  That way, doing tsubst_expr
-	     for the enumeration constants won't result in recursive
-	     calls here; we'll find the instantiation and exit above.  */
-	  tsubst_enum (template_type, t, arglist);
-	  current_local_enum = prev_local_enum;
-	}
+	/* Now that the type has been registered on the instantiations
+	   list, we set up the enumerators.  Because the enumeration
+	   constants may involve the enumeration type itself, we make
+	   sure to register the type first, and then create the
+	   constants.  That way, doing tsubst_expr for the enumeration
+	   constants won't result in recursive calls here; we'll find
+	   the instantiation and exit above.  */
+	tsubst_enum (template_type, t, arglist);
 
       /* We're done with the permanent obstack, now.  */
       pop_obstacks ();
@@ -3813,6 +3805,9 @@ for_each_template_parm (t, fn, data)
     case LOOKUP_EXPR:
     case TYPENAME_TYPE:
       return 1;
+
+    case PTRMEM_CST:
+      return for_each_template_parm (TREE_TYPE (t), fn, data);
 
     case SCOPE_REF:
       return for_each_template_parm (TREE_OPERAND (t, 0), fn, data);
@@ -4256,7 +4251,7 @@ tree
 instantiate_class_template (type)
      tree type;
 {
-  tree template, args, pattern, t, *field_chain;
+  tree template, args, pattern, t;
   tree typedecl;
 
   if (type == error_mark_node)
@@ -4323,11 +4318,16 @@ instantiate_class_template (type)
     }
 
   if (pedantic && uses_template_parms (args))
-    /* If there are still template parameters amongst the args, then
-       we can't instantiate the type; there's no telling whether or not one
-       of the template parameters might eventually be instantiated to some
-       value that results in a specialization being used.  */
-    return type;
+    {
+      /* If there are still template parameters amongst the args, then
+	 we can't instantiate the type; there's no telling whether or not one
+	 of the template parameters might eventually be instantiated to some
+	 value that results in a specialization being used.  We do the
+	 type as complete so that, for example, declaring one of its
+	 members to be a friend will not be rejected.  */
+      TYPE_SIZE (type) = integer_zero_node;
+      return type;
+    }
 
   TYPE_BEING_DEFINED (type) = 1;
 
@@ -4394,8 +4394,6 @@ instantiate_class_template (type)
   TYPE_ALIGN (type) = TYPE_ALIGN (pattern);
   TYPE_FOR_JAVA (type) = TYPE_FOR_JAVA (pattern); /* For libjava's JArray<T> */
 
-  CLASSTYPE_LOCAL_TYPEDECLS (type) = CLASSTYPE_LOCAL_TYPEDECLS (pattern);
-
   /* If this is a partial instantiation, don't tsubst anything.  We will
      only use this type for implicit typename, so the actual contents don't
      matter.  All that matters is whether a particular name is a type.  */
@@ -4449,16 +4447,12 @@ instantiate_class_template (type)
 	      }
 	    TYPE_GETS_NEW (type) |= TYPE_GETS_NEW (basetype);
 	    TYPE_GETS_DELETE (type) |= TYPE_GETS_DELETE (basetype);
-	    CLASSTYPE_LOCAL_TYPEDECLS (type)
-	      |= CLASSTYPE_LOCAL_TYPEDECLS (basetype);
 	  }
 	/* Don't initialize this until the vector is filled out, or
 	   lookups will crash.  */
 	BINFO_BASETYPES (binfo) = bases;
       }
   }
-
-  field_chain = &TYPE_FIELDS (type);
 
   for (t = CLASSTYPE_TAGS (pattern); t; t = TREE_CHAIN (t))
     {
@@ -4467,35 +4461,7 @@ instantiate_class_template (type)
       tree newtag;
 
       newtag = tsubst (tag, args, NULL_TREE);
-      if (TREE_CODE (newtag) == ENUMERAL_TYPE)
-	{
-	  extern tree current_local_enum;
-	  tree prev_local_enum = current_local_enum;
-
-	  if (TYPE_VALUES (newtag))
-	    {
-	      tree v;
-
-	      /* We must set things up so that CURRENT_LOCAL_ENUM is the
-		 CONST_DECL for the last enumeration constant, since the
-		 CONST_DECLs are chained backwards.  */
-	      for (v = TYPE_VALUES (newtag); TREE_CHAIN (v); 
-		   v = TREE_CHAIN (v))
-		;
-
-	      current_local_enum 
-		= IDENTIFIER_CLASS_VALUE (TREE_PURPOSE (v));
-	      *field_chain = grok_enum_decls (NULL_TREE);
-	      current_local_enum = prev_local_enum;
-
-	      while (*field_chain)
-		{
-		  DECL_FIELD_CONTEXT (*field_chain) = type;
-		  field_chain = &TREE_CHAIN (*field_chain);
-		}
-	    }
-	}
-      else
+      if (TREE_CODE (newtag) != ENUMERAL_TYPE)
 	{
 	  /* Now, we call pushtag to put this NEWTAG into the scope of
 	     TYPE.  We first set up the IDENTIFIER_TYPE_VALUE to avoid
@@ -4530,12 +4496,27 @@ instantiate_class_template (type)
 	    DECL_EXTERNAL (r) = 1;
 	    cp_finish_decl (r, DECL_INITIAL (r), NULL_TREE, 0, 0);
 	  }
-
-	*field_chain = r;
-	field_chain = &TREE_CHAIN (r);
+	
+	/* R will have a TREE_CHAIN if and only if it has already been
+	   processed by finish_member_declaration.  This can happen
+	   if, for example, it is a TYPE_DECL for a class-scoped
+	   ENUMERAL_TYPE; such a thing will already have been added to
+	   the field list by tsubst_enum above.  */
+	if (!TREE_CHAIN (r))
+	  {
+	    set_current_access_from_decl (r);
+	    finish_member_declaration (r);
+	  }
       }
 
-  TYPE_METHODS (type) = tsubst_chain (TYPE_METHODS (pattern), args);
+  /* Set up the list (TYPE_METHODS) and vector (CLASSTYPE_METHOD_VEC)
+     for this instantiation.  */
+  for (t = TYPE_METHODS (pattern); t; t = TREE_CHAIN (t))
+    {
+      tree r = tsubst (t, args, NULL_TREE);
+      set_current_access_from_decl (r);
+      finish_member_declaration (r);
+    }
 
   /* Construct the DECL_FRIENDLIST for the new class type.  */
   typedecl = TYPE_MAIN_DECL (type);
@@ -4627,6 +4608,14 @@ instantiate_class_template (type)
 	require_complete_type (t);
       }
 
+  /* Set the file and line number information to whatever is given for
+     the class itself.  This puts error messages involving generated
+     implicit functions at a predictable point, and the same point
+     that would be used for non-template classes.  */
+  lineno = DECL_SOURCE_LINE (typedecl);
+  input_filename = DECL_SOURCE_FILE (typedecl);
+
+  unreverse_member_declarations (type);
   type = finish_struct_1 (type, 0);
   CLASSTYPE_GOT_SEMICOLON (type) = 1;
 
@@ -6787,6 +6776,7 @@ type_unification_real (tparms, targs, parms, args, subr,
 	    {
 	      tree targs;
 	      tree arg_type;
+	      int r;
 
 	      /* Have to back unify here */
 	      arg = OVL_FUNCTION (arg);
@@ -6795,10 +6785,14 @@ type_unification_real (tparms, targs, parms, args, subr,
 	      maybe_adjust_types_for_deduction (strict, &parm, &arg_type);
 	      parm = expr_tree_cons (NULL_TREE, parm, NULL_TREE);
 	      arg_type = scratch_tree_cons (NULL_TREE, arg_type, NULL_TREE);
-	      return 
-		type_unification (DECL_INNERMOST_TEMPLATE_PARMS (arg), 
-				  targs, arg_type, parm, NULL_TREE,
-				  DEDUCE_EXACT, allow_incomplete); 
+	      r = type_unification (DECL_INNERMOST_TEMPLATE_PARMS (arg), 
+				    targs, arg_type, parm, NULL_TREE,
+				    DEDUCE_EXACT, allow_incomplete);
+	      if (r)
+		/* If the back-unification failed, just bail out.  */
+		return r;
+	      else 
+		continue;
 	    }
 	  arg = TREE_TYPE (arg);
 	}
@@ -7952,16 +7946,22 @@ regenerate_decl_from_template (decl, tmpl)
      register_specialization for it.  */
   my_friendly_assert (unregistered, 0);
 
+  if (TREE_CODE (decl) == VAR_DECL)
+    /* Make sure that we can see identifiers, and compute access
+       correctly, for the class members used in the declaration of
+       this static variable.  */
+    pushclass (DECL_CONTEXT (decl), 2);
+
   /* Do the substitution to get the new declaration.  */
   new_decl = tsubst (code_pattern, args, NULL_TREE);
 
   if (TREE_CODE (decl) == VAR_DECL)
     {
       /* Set up DECL_INITIAL, since tsubst doesn't.  */
-      pushclass (DECL_CONTEXT (decl), 2);
       DECL_INITIAL (new_decl) = 
 	tsubst_expr (DECL_INITIAL (code_pattern), args, 
 		     DECL_TI_TEMPLATE (decl));
+      /* Pop the class context we pushed above.  */
       popclass (1);
     }
 
@@ -8228,27 +8228,6 @@ out:
   return d;
 }
 
-tree
-tsubst_chain (t, argvec)
-     tree t, argvec;
-{
-  if (t)
-    {
-      tree first = tsubst (t, argvec, NULL_TREE);
-      tree last = first;
-
-      for (t = TREE_CHAIN (t); t; t = TREE_CHAIN (t))
-	{
-	  tree x = tsubst (t, argvec, NULL_TREE);
-	  TREE_CHAIN (last) = x;
-	  last = x;
-	}
-
-      return first;
-    }
-  return NULL_TREE;
-}
-
 static tree
 tsubst_expr_values (t, argvec)
      tree t, argvec;
@@ -8321,6 +8300,20 @@ add_maybe_template (d, fns)
   DECL_MAYBE_TEMPLATE (d) = 1;
 }
 
+/* Set CURRENT_ACCESS_SPECIFIER based on the protection of DECL.  */
+
+static void
+set_current_access_from_decl (decl)
+     tree decl;
+{
+  if (TREE_PRIVATE (decl))
+    current_access_specifier = access_private_node;
+  else if (TREE_PROTECTED (decl))
+    current_access_specifier = access_protected_node;
+  else
+    current_access_specifier = access_public_node;
+}
+
 /* Instantiate an enumerated type.  TAG is the template type, NEWTAG
    is the instantiation (which should have been created with
    start_enum) and ARGS are the template arguments to use.  */
@@ -8335,15 +8328,20 @@ tsubst_enum (tag, newtag, args)
 
   for (e = TYPE_VALUES (tag); e; e = TREE_CHAIN (e))
     {
-      tree elt
-	= build_enumerator (TREE_PURPOSE (e), 
-			    /* Note that in a template enum, the
-			       TREE_VALUE is the CONST_DECL, not the
-			       corresponding INTEGER_CST.  */
-			    tsubst_expr (DECL_INITIAL (TREE_VALUE (e)), 
+      tree value;
+      tree elt;
+
+      /* Note that in a template enum, the TREE_VALUE is the
+	 CONST_DECL, not the corresponding INTEGER_CST.  */
+      value = tsubst_expr (DECL_INITIAL (TREE_VALUE (e)), 
 					 args,
-					 NULL_TREE),
-			    newtag); 
+					 NULL_TREE);
+
+      /* Give this enumeration constant the correct access.  */
+      set_current_access_from_decl (TREE_VALUE (e));
+
+      /* Actually build the enumerator itself.  */
+      elt = build_enumerator (TREE_PURPOSE (e), value, newtag); 
 
       /* We save the enumerators we have built so far in the
 	 TYPE_VALUES so that if the enumeration constants for
@@ -8420,7 +8418,7 @@ set_mangled_name_for_template_decl (decl)
      with the innermost level omitted.  */
   fn_type = TREE_TYPE (tmpl);
   if (DECL_STATIC_FUNCTION_P (decl))
-      context = DECL_CLASS_CONTEXT (decl);
+    context = DECL_CLASS_CONTEXT (decl);
 
   if (parm_depth == 1)
     /* No substitution is necessary.  */

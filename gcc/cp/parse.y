@@ -204,10 +204,9 @@ empty_parms ()
 
 %type <ttype> declarator notype_declarator after_type_declarator
 %type <ttype> direct_notype_declarator direct_after_type_declarator
-
-%type <ttype> opt.component_decl_list component_decl_list
-%type <ttype> component_decl component_decl_1 components notype_components
-%type <ttype> component_declarator component_declarator0 self_reference
+%type <itype> components notype_components
+%type <ttype> component_decl component_decl_1 
+%type <ttype> component_declarator component_declarator0
 %type <ttype> notype_component_declarator notype_component_declarator0
 %type <ttype> after_type_component_declarator after_type_component_declarator0
 %type <ttype> enumlist enumerator
@@ -1844,16 +1843,19 @@ typespecqual_reserved:
 initdecls:
 	  initdcl0
 	| initdecls ',' initdcl
+            { check_multiple_declarators (); }
 	;
 
 notype_initdecls:
 	  notype_initdcl0
 	| notype_initdecls ',' initdcl
+            { check_multiple_declarators (); }
 	;
 
 nomods_initdecls:
 	  nomods_initdcl0
 	| nomods_initdecls ',' initdcl
+            { check_multiple_declarators (); }
 	;
 
 maybeasm:
@@ -2112,7 +2114,7 @@ structsp:
 		    yychar = YYLEX;
 		  semi = yychar == ';';
 
-		  $<ttype>$ = finish_class_definition ($1, $3, $5, semi); 
+		  $<ttype>$ = finish_class_definition ($1, $5, semi); 
 		}
 	  pending_defargs
                 { finish_default_args (); }
@@ -2168,7 +2170,10 @@ aggr:
 
 named_class_head_sans_basetype:
 	  aggr identifier
-		{ current_aggr = $$; $$ = $2; }
+		{ 
+		  current_aggr = $1; 
+		  $$ = $2; 
+		}
 	;
 
 named_class_head_sans_basetype_defn:
@@ -2202,15 +2207,11 @@ named_complex_class_head_sans_basetype:
 		{ current_aggr = $$; $$ = $3; }
 	;
 
-do_xref_defn:
-	  /* empty */  %prec EMPTY
-		{ $<ttype>$ = xref_tag (current_aggr, $<ttype>0, 0); }
-	;
-
 named_class_head:
 	  named_class_head_sans_basetype  %prec EMPTY
 		{ $$ = xref_tag (current_aggr, $1, 1); }
-	| named_class_head_sans_basetype_defn do_xref_defn
+	| named_class_head_sans_basetype_defn 
+                { $<ttype>$ = xref_tag (current_aggr, $1, 0); }
           maybe_base_class_list  %prec EMPTY
 		{ 
 		  $$ = $<ttype>2;
@@ -2358,64 +2359,45 @@ left_curly:
 self_reference:
 	  /* empty */
 		{
-		    $$ = build_self_reference ();
+		  finish_member_declaration (build_self_reference ());
 		}
 	;
 
 opt.component_decl_list:
 	  self_reference
-		{ if ($$) $$ = build_tree_list (access_public_node, $$); }
 	| self_reference component_decl_list
-		{
-		  if (current_aggr == signature_type_node)
-		    $$ = build_tree_list (access_public_node, $2);
-		  else
-		    $$ = build_tree_list (access_default_node, $2);
-		  if ($1) $$ = tree_cons (access_public_node, $1, $$);
-		}
-	| opt.component_decl_list VISSPEC ':' component_decl_list
-		{
-		  tree visspec = $2;
+	| opt.component_decl_list access_specifier component_decl_list
+	| opt.component_decl_list access_specifier 
+	;
 
+access_specifier:
+	  VISSPEC ':'
+                {
 		  if (current_aggr == signature_type_node)
 		    {
 		      error ("access specifier not allowed in signature");
-		      visspec = access_public_node;
+		      $1 = access_public_node;
 		    }
-		  $$ = chainon ($$, build_tree_list (visspec, $4));
-		}
-	| opt.component_decl_list VISSPEC ':'
-		{
-		  if (current_aggr == signature_type_node)
-		    error ("access specifier not allowed in signature");
-		}
+
+		  current_access_specifier = $1;
+                }
 	;
 
 /* Note: we no longer warn about the semicolon after a component_decl_list.
    ARM $9.2 says that the semicolon is optional, and therefore allowed.  */
 component_decl_list:
 	  component_decl
-		{ if ($$ == void_type_node) $$ = NULL_TREE; 
+		{ 
+		  finish_member_declaration ($1);
 		}
 	| component_decl_list component_decl
-		{ /* In pushdecl, we created a reverse list of names
-		     in this binding level.  Make sure that the chain
-		     of what we're trying to add isn't the item itself
-		     (which can happen with what pushdecl's doing).  */
-		  if ($2 != NULL_TREE && $2 != void_type_node
-		      && $2 != error_mark_node)
-		    {
-		      if (TREE_CHAIN ($2) != $$)
-			$$ = chainon ($$, $2);
-		      else
-			$$ = $2;
-		    }
+		{ 
+		  finish_member_declaration ($2);
 		}
 	;
 
 component_decl:
 	  component_decl_1 ';'
-		{ }
 	| component_decl_1 '}'
 		{ error ("missing ';' before right brace");
 		  yyungetc ('}', 0); }
@@ -2435,9 +2417,20 @@ component_decl:
 		{ $$ = $2;
 		  pedantic = $<itype>1; }
         | template_header component_decl
-                { $$ = finish_member_template_decl ($1, $2); }
+                {  
+		  if ($2)
+		    $$ = finish_member_template_decl ($2);
+		  else
+		    /* The component was already processed.  */
+		    $$ = NULL_TREE;
+
+		  finish_template_decl ($1);
+		}
 	| template_header typed_declspecs ';'
-                { $$ = finish_member_class_template ($1, $2.t); }
+                { 
+		  $$ = finish_member_class_template ($2.t); 
+		  finish_template_decl ($1);
+		}
 	;
 
 component_decl_1:
@@ -2445,9 +2438,32 @@ component_decl_1:
 	   speed; we need to call grok_x_components for enums, so the
 	   speedup would be insignificant.  */
 	  typed_declspecs components
-		{ $$ = grok_x_components ($1.t, $2); }
+		{
+		  /* Most of the productions for component_decl only
+		     allow the creation of one new member, so we call
+		     finish_member_declaration in component_decl_list.
+		     For this rule and the next, however, there can be
+		     more than one member, e.g.:
+
+		       int i, j;
+
+		     and we need the first member to be fully
+		     registered before the second is processed.
+		     Therefore, the rules for components take care of
+		     this processing.  To avoid registering the
+		     components more than once, we send NULL_TREE up
+		     here; that lets finish_member_declaration now
+		     that there is nothing to do.  */
+		  if (!$2)
+		    grok_x_components ($1.t);
+		  $$ = NULL_TREE;
+		}
 	| declmods notype_components
-		{ $$ = grok_x_components ($1, $2); }
+		{ 
+		  if (!$2)
+		    grok_x_components ($1);
+		  $$ = NULL_TREE; 
+		}
 	| notype_declarator maybeasm maybe_attribute maybe_init
 		{ $$ = grokfield ($$, NULL_TREE, $4, $2,
 				  build_tree_list ($3, NULL_TREE)); }
@@ -2482,31 +2498,41 @@ component_decl_1:
 /* ??? Huh? ^^^ */
 components:
 	  /* empty: possibly anonymous */
-		{ $$ = NULL_TREE; }
+                { $$ = 0; }
 	| component_declarator0
+                { 
+		  if (PROCESSING_REAL_TEMPLATE_DECL_P ())
+		    $1 = finish_member_template_decl ($1);
+		  finish_member_declaration ($1); 
+		  $$ = 1;
+		}
 	| components ',' component_declarator
-		{
-		  /* In this context, void_type_node encodes
-		     friends.  They have been recorded elsewhere.  */
-		  if ($$ == void_type_node)
-		    $$ = $3;
-		  else
-		    $$ = chainon ($$, $3);
+                { 
+		  check_multiple_declarators ();
+		  if (PROCESSING_REAL_TEMPLATE_DECL_P ())
+		    $3 = finish_member_template_decl ($3);
+		  finish_member_declaration ($3);
+		  $$ = 2;
 		}
 	;
 
 notype_components:
 	  /* empty: possibly anonymous */
-		{ $$ = NULL_TREE; }
+                { $$ = 0; }
 	| notype_component_declarator0
+                { 
+		  if (PROCESSING_REAL_TEMPLATE_DECL_P ())
+		    $1 = finish_member_template_decl ($1);
+		  finish_member_declaration ($1);
+		  $$ = 1;
+		}
 	| notype_components ',' notype_component_declarator
-		{
-		  /* In this context, void_type_node encodes
-		     friends.  They have been recorded elsewhere.  */
-		  if ($$ == void_type_node)
-		    $$ = $3;
-		  else
-		    $$ = chainon ($$, $3);
+                { 
+		  check_multiple_declarators ();
+		  if (PROCESSING_REAL_TEMPLATE_DECL_P ())
+		    $3 = finish_member_template_decl ($3);
+		  finish_member_declaration ($3); 
+		  $$ = 2;
 		}
 	;
 

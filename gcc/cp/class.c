@@ -43,10 +43,31 @@ extern struct obstack permanent_obstack;
 
 extern void set_class_shadows PROTO ((tree));
 
-/* Way of stacking class types.  */
-static tree *current_class_base, *current_class_stack;
-static int current_class_stacksize;
+/* The number of nested classes being processed.  If we are not in the
+   scope of any class, this is zero.  */
+
 int current_class_depth;
+
+/* In order to deal with nested classes, we keep a stack of classes.
+   The topmost entry is the innermost class, and is the entry at index
+   CURRENT_CLASS_DEPTH  */
+
+typedef struct class_stack_node {
+  /* The name of the class.  */
+  tree name;
+
+  /* The _TYPE node for the class.  */
+  tree type;
+
+  /* The access specifier pending for new declarations in the scope of
+     this class.  */
+  tree access;
+}* class_stack_node_t;
+
+/* The stack itself.  This is an dynamically resized array.  The
+   number of elements allocated is CURRENT_CLASS_STACK_SIZE.  */
+static int current_class_stack_size;
+static class_stack_node_t current_class_stack;
 
 /* When we're processing a member function, current_class_ptr is the
    PARM_DECL for the `this' pointer.  The current_class_ref is an
@@ -56,6 +77,7 @@ tree current_class_ptr, current_class_ref;
 /* The following two can be derived from the previous one */
 tree current_class_name;	/* IDENTIFIER_NODE: name of current class */
 tree current_class_type;	/* _TYPE: the type of the current class */
+tree current_access_specifier;
 tree previous_class_type;	/* _TYPE: the previous type that was a class */
 tree previous_class_values;	/* TREE_LIST: copy of the class_shadowed list
 				   when leaving an outermost class scope.  */
@@ -74,7 +96,6 @@ static tree build_vtable PROTO((tree, tree));
 static void prepare_fresh_vtable PROTO((tree, tree));
 static void fixup_vtable_deltas1 PROTO((tree, tree));
 static void fixup_vtable_deltas PROTO((tree, int, tree));
-static void grow_method PROTO((tree, tree *));
 static void finish_vtbls PROTO((tree, int, tree));
 static void modify_vtable_entry PROTO((tree, tree, tree));
 static tree get_vtable_entry_n PROTO((tree, unsigned HOST_WIDE_INT));
@@ -103,6 +124,10 @@ static void build_class_init_list PROTO((tree));
 static int finish_base_struct PROTO((tree, struct base_info *));
 static void finish_struct_methods PROTO((tree));
 static void maybe_warn_about_overly_private_class PROTO ((tree));
+static void check_member_decl_is_same_in_complete_scope PROTO((tree, tree));
+static tree make_method_vec PROTO((int));
+static void free_method_vec PROTO((tree));
+static tree add_implicitly_declared_members PROTO((tree, int, int, int));
 
 /* Way of stacking language names.  */
 tree *current_lang_base, *current_lang_stack;
@@ -1046,6 +1071,46 @@ add_virtual_function (pv, phv, has_virtual, fndecl, t)
 struct obstack class_obstack;
 extern struct obstack *current_obstack;
 
+/* These are method vectors that were too small for the number of
+   methods in some class, and so were abandoned.  */
+static tree free_method_vecs;
+
+/* Returns a method vector with enough room for N methods.  N should
+   be a power of two.  */
+
+static tree
+make_method_vec (n)
+     int n;
+{
+  tree new_vec;
+  tree* t;
+  
+  for (t = &free_method_vecs; *t; t = &(TREE_CHAIN (*t)))
+    /* Note that we don't use >= n here because we don't want to
+       allocate a very large vector where it isn't needed.  */
+    if (TREE_VEC_LENGTH (*t) == n)
+      {
+	new_vec = *t;
+	*t = TREE_CHAIN (new_vec);
+	TREE_CHAIN (new_vec) = NULL_TREE;
+	bzero (&TREE_VEC_ELT (new_vec, 0), n * sizeof (tree));
+	return new_vec;
+      }
+
+  new_vec = make_tree_vec (n);
+  return new_vec;
+}
+
+/* Free the method vector VEC.  */
+
+static void
+free_method_vec (vec)
+     tree vec;
+{
+  TREE_CHAIN (vec) = free_method_vecs;
+  free_method_vecs = vec;
+}
+
 /* Add method METHOD to class TYPE.  This is used when a method
    has been defined which did not initially appear in the class definition,
    and helps cut down on spurious error messages.
@@ -1059,109 +1124,127 @@ add_method (type, fields, method)
 {
   push_obstacks (&permanent_obstack, &permanent_obstack);
 
-  if (fields && *fields)
-      *fields = build_overload (method, *fields);
-  else if (CLASSTYPE_METHOD_VEC (type) == 0)
-    {
-      tree method_vec = make_node (TREE_VEC);
-      if (TYPE_IDENTIFIER (type) == DECL_NAME (method))
-	{
-	  /* ??? Is it possible for there to have been enough room in the
-	     current chunk for the tree_vec structure but not a tree_vec
-	     plus a tree*?  Will this work in that case?  */
-	  obstack_free (current_obstack, method_vec);
-	  obstack_blank (current_obstack, sizeof (struct tree_vec) + sizeof (tree *));
-	  if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (method)))
-	    TREE_VEC_ELT (method_vec, 1) = method;
-	  else
-	    TREE_VEC_ELT (method_vec, 0) = method;
-	  TREE_VEC_LENGTH (method_vec) = 2;
-	}
-      else
-	{
-	  /* ??? Is it possible for there to have been enough room in the
-	     current chunk for the tree_vec structure but not a tree_vec
-	     plus a tree*?  Will this work in that case?  */
-	  obstack_free (current_obstack, method_vec);
-	  obstack_blank (current_obstack, sizeof (struct tree_vec) + 2*sizeof (tree *));
-	  TREE_VEC_ELT (method_vec, 2) = method;
-	  TREE_VEC_LENGTH (method_vec) = 3;
-	  obstack_finish (current_obstack);
-	}
-      CLASSTYPE_METHOD_VEC (type) = method_vec;
-    }
-  else
-    {
-      tree method_vec = CLASSTYPE_METHOD_VEC (type);
-      int len = TREE_VEC_LENGTH (method_vec);
-
-      /* Adding a new ctor or dtor.  This is easy because our
-         METHOD_VEC always has a slot for such entries.  */
-      if (TYPE_IDENTIFIER (type) == DECL_NAME (method))
-	{
-	  int idx = !!DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (method));
-	  /* TREE_VEC_ELT (method_vec, idx) = method; */
-	  if (method != TREE_VEC_ELT (method_vec, idx))
-	    TREE_VEC_ELT (method_vec, idx) =
-	      build_overload (method, TREE_VEC_ELT (method_vec, idx));
-	}
-      else
-	{
-	  /* This is trickier.  We try to extend the TREE_VEC in-place,
-	     but if that does not work, we copy all its data to a new
-	     TREE_VEC that's large enough.  */
-	  struct obstack *ob = &class_obstack;
-	  tree *end = (tree *)obstack_next_free (ob);
-
-	  if (end != TREE_VEC_END (method_vec))
-	    {
-	      ob = current_obstack;
-	      TREE_VEC_LENGTH (method_vec) += 1;
-	      TREE_VEC_ELT (method_vec, len) = NULL_TREE;
-	      method_vec = copy_node (method_vec);
-	      TREE_VEC_LENGTH (method_vec) -= 1;
-	    }
-	  else
-	    {
-	      tree tmp_vec = (tree) obstack_base (ob);
-	      if (obstack_room (ob) < sizeof (tree))
-		{
-		  obstack_blank (ob, sizeof (struct tree_common)
-				 + tree_code_length[(int) TREE_VEC]
-				   * sizeof (char *)
-				 + len * sizeof (tree));
-		  tmp_vec = (tree) obstack_base (ob);
-		  bcopy ((char *) method_vec, (char *) tmp_vec,
-			 (sizeof (struct tree_common)
-			  + tree_code_length[(int) TREE_VEC] * sizeof (char *)
-			  + (len-1) * sizeof (tree)));
-		  method_vec = tmp_vec;
-		}
-	      else
-		obstack_blank (ob, sizeof (tree));
-	    }
-
-	  obstack_finish (ob);
-	  TREE_VEC_ELT (method_vec, len) = method;
-	  TREE_VEC_LENGTH (method_vec) = len + 1;
-	  CLASSTYPE_METHOD_VEC (type) = method_vec;
-
-	  if (TYPE_BINFO_BASETYPES (type) && CLASSTYPE_BASELINK_VEC (type))
-	    {
-	      /* ??? May be better to know whether these can be extended?  */
-	      tree baselink_vec = CLASSTYPE_BASELINK_VEC (type);
-
-	      TREE_VEC_LENGTH (baselink_vec) += 1;
-	      CLASSTYPE_BASELINK_VEC (type) = copy_node (baselink_vec);
-	      TREE_VEC_LENGTH (baselink_vec) -= 1;
-
-	      TREE_VEC_ELT (CLASSTYPE_BASELINK_VEC (type), len) = 0;
-	    }
-	}
-    }
+  /* Setting the DECL_CONTEXT and DECL_CLASS_CONTEXT here is probably
+     redundant.  */
   DECL_CONTEXT (method) = type;
   DECL_CLASS_CONTEXT (method) = type;
+  
+  if (fields && *fields)
+    *fields = build_overload (method, *fields);
+  else 
+    {
+      int len;
+      tree method_vec;
 
+      if (!CLASSTYPE_METHOD_VEC (type))
+	/* Make a new method vector.  We start with 8 entries.  We must
+	   allocate at least two (for constructors and destructors), and
+	   we're going to end up with an assignment operator at some
+	   point as well.  
+
+	   We could use a TREE_LIST for now, and convert it to a
+	   TREE_VEC in finish_struct, but we would probably waste more
+	   memory making the links in the list than we would by
+	   over-allocating the size of the vector here.  Furthermore,
+	   we would complicate all the code that expects this to be a
+	   vector.  We keep a free list of vectors that we outgrew so
+	   that we don't really waste any memory.  */
+	CLASSTYPE_METHOD_VEC (type) = make_method_vec (8);
+
+      method_vec = CLASSTYPE_METHOD_VEC (type);
+      len = TREE_VEC_LENGTH (method_vec);
+
+      if (DECL_NAME (method) == constructor_name (type))
+	{
+	  /* A new constructor or destructor.  Constructors go in 
+	     slot 0; destructors go in slot 1.  */
+	  int slot 
+	    = DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (method)) ? 1 : 0;
+
+	  TREE_VEC_ELT (method_vec, slot)
+	    = build_overload (method, TREE_VEC_ELT (method_vec, slot));
+	}
+      else
+	{
+	  int i;
+
+	  /* See if we already have an entry with this name.  */
+	  for (i = 2; i < len; ++i)
+	    if (!TREE_VEC_ELT (method_vec, i)
+		|| (DECL_NAME (OVL_CURRENT (TREE_VEC_ELT (method_vec, i))) 
+		    == DECL_NAME (method)))
+	      break;
+		
+	  if (i == len)
+	    {
+	      /* We need a bigger method vector.  */
+	      tree new_vec = make_method_vec (2 * len);
+	      bcopy (&TREE_VEC_ELT (method_vec, 0),
+		     &TREE_VEC_ELT (new_vec, 0),
+		     len * sizeof (tree));
+	      free_method_vec (method_vec);
+	      len = 2 * len;
+	      method_vec = CLASSTYPE_METHOD_VEC (type) = new_vec;
+	    }
+
+	  if (IDENTIFIER_TYPENAME_P (DECL_NAME (method)))
+	    {
+	      /* Type conversion operators have to come before
+		 ordinary methods; add_conversions depends on this to
+		 speed up looking for conversion operators.  So, if
+		 necessary, we slide some of the vector elements up.
+		 In theory, this makes this algorithm O(N^2) but we
+		 don't expect many conversion operators.  */
+	      for (i = 2; i < len; ++i)
+		{
+		  tree fn = TREE_VEC_ELT (method_vec, i);
+		  tree name;
+
+		  if (!fn)
+		    /* There are no more entries in the vector, so we
+		       can insert the new conversion operator here.  */
+		    break;
+		  
+		  name = DECL_NAME (OVL_CURRENT (fn));
+		  if (!IDENTIFIER_TYPENAME_P (name))
+		    /* We can insert the new function right at the Ith
+		       position.  */
+		    break;
+		}
+
+	      if (!TREE_VEC_ELT (method_vec, i))
+		/* There is nothing in the Ith slot, so we can avoid
+		   moving anything.  */
+		; 
+	      else
+		{
+		  /* We know the last slot in the vector is empty
+		     because we know that at this point there's room for
+		     a new function.  */
+		  bcopy (&TREE_VEC_ELT (method_vec, i),
+			 &TREE_VEC_ELT (method_vec, i + 1),
+			 (len - i - 1) * sizeof (tree));
+		  TREE_VEC_ELT (method_vec, i) = NULL_TREE;
+		}
+	    }
+
+	  /* Actually insert the new method.  */
+	  TREE_VEC_ELT (method_vec, i) 
+	    = build_overload (method, TREE_VEC_ELT (method_vec, i));
+	}
+      
+      if (TYPE_BINFO_BASETYPES (type) && CLASSTYPE_BASELINK_VEC (type))
+	{
+	  /* ??? May be better to know whether these can be extended?  */
+	  tree baselink_vec = CLASSTYPE_BASELINK_VEC (type);
+	  
+	  TREE_VEC_LENGTH (baselink_vec) += 1;
+	  CLASSTYPE_BASELINK_VEC (type) = copy_node (baselink_vec);
+	  TREE_VEC_LENGTH (baselink_vec) -= 1;
+	  
+	  TREE_VEC_ELT (CLASSTYPE_BASELINK_VEC (type), len) = 0;
+	}
+    }
   pop_obstacks ();
 }
 
@@ -1360,7 +1443,7 @@ handle_using_decl (using_decl, t, method_vec, fields)
   
   name = DECL_NAME (fdecl);
   n_methods = method_vec ? TREE_VEC_LENGTH (method_vec) : 0;
-  for (i = 2; i < n_methods; i++)
+  for (i = 2; i < n_methods && TREE_VEC_ELT (method_vec, i); i++)
     if (DECL_NAME (OVL_CURRENT (TREE_VEC_ELT (method_vec, i)))
 	== name)
       {
@@ -1872,33 +1955,6 @@ finish_struct_bits (t, max_has_virtual)
     }
 }
 
-/* Add FNDECL to the method_vec growing on the class_obstack.  Used by
-   finish_struct_methods.  Note, FNDECL cannot be a constructor or
-   destructor, those cases are handled by the caller.  */
-
-static void
-grow_method (fndecl, method_vec_ptr)
-     tree fndecl;
-     tree *method_vec_ptr;
-{
-  tree method_vec = (tree)obstack_base (&class_obstack);
-
-  /* Start off past the constructors and destructor.  */
-  tree *testp = &TREE_VEC_ELT (method_vec, 2);
-
-  while (testp < (tree *) obstack_next_free (&class_obstack)
-	 && (*testp == NULL_TREE || DECL_NAME (OVL_CURRENT (*testp)) != DECL_NAME (fndecl)))
-    testp++;
-
-  if (testp < (tree *) obstack_next_free (&class_obstack))
-    *testp = build_overload (fndecl, *testp);
-  else
-    {
-      obstack_ptr_grow (&class_obstack, fndecl);
-      *method_vec_ptr = (tree)obstack_base (&class_obstack);
-    }
-}
-
 /* Issue warnings about T having private constructors, but no friends,
    and so forth.  
 
@@ -2044,9 +2100,6 @@ maybe_warn_about_overly_private_class (t)
 /* Warn about duplicate methods in fn_fields.  Also compact method
    lists so that lookup can be made faster.
 
-   Algorithm: Outer loop builds lists by method name.  Inner loop
-   checks for redundant method names within a list.
-
    Data Structure: List of method lists.  The outer list is a
    TREE_LIST, whose TREE_PURPOSE field is the field name and the
    TREE_VALUE is the DECL_CHAIN of the FUNCTION_DECLs.  TREE_CHAIN
@@ -2069,21 +2122,9 @@ finish_struct_methods (t)
      tree t;
 {
   tree fn_fields;
-  tree method_vec;
+  tree method_vec = CLASSTYPE_METHOD_VEC (t);
   tree ctor_name = constructor_name (t);
   int i, n_baseclasses = CLASSTYPE_N_BASECLASSES (t);
-
-  /* Now prepare to gather fn_fields into vector.  */
-  struct obstack *ambient_obstack = current_obstack;
-  current_obstack = &class_obstack;
-  method_vec = make_tree_vec (2);
-  current_obstack = ambient_obstack;
-
-  /* Now make this a live vector.  */
-  obstack_free (&class_obstack, method_vec);
-
-  /* Save room for constructors and destructors.  */
-  obstack_blank (&class_obstack, sizeof (struct tree_vec) + sizeof (struct tree *));
 
   /* First fill in entry 0 with the constructors, entry 1 with destructors,
      and the next few with type conversion operators (if any).  */
@@ -2119,32 +2160,8 @@ finish_struct_methods (t)
  		    TYPE_HAS_NONPUBLIC_CTOR (t) = 2;
  		}
  	    }
-	  if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (fn_fields)))
-	    {	    
-	      /* Destructors go in slot 1.  */
-	      TREE_VEC_ELT (method_vec, 1) = 
-		build_overload (fn_fields, TREE_VEC_ELT (method_vec, 1));
-	    }
-	  else
-	    {
-	      /* Constructors go in slot 0.  */
-	      TREE_VEC_ELT (method_vec, 0) = 
-		build_overload (fn_fields, TREE_VEC_ELT (method_vec, 0));
-	    }
- 	}
-      else if (IDENTIFIER_TYPENAME_P (fn_name))
-	grow_method (fn_fields, &method_vec);
-    }
-
-  for (fn_fields = TYPE_METHODS (t); fn_fields; 
-       fn_fields = TREE_CHAIN (fn_fields))
-    {
-      tree fn_name = DECL_NAME (fn_fields);
-
-      if (fn_name == ctor_name || IDENTIFIER_TYPENAME_P (fn_name))
-	continue;
-
-      if (fn_name == ansi_opname[(int) MODIFY_EXPR])
+	}
+      else if (fn_name == ansi_opname[(int) MODIFY_EXPR])
 	{
 	  tree parmtype = TREE_VALUE (FUNCTION_ARG_CHAIN (fn_fields));
 
@@ -2156,14 +2173,7 @@ finish_struct_methods (t)
 		TYPE_HAS_NONPUBLIC_ASSIGN_REF (t) = 2;
 	    }
 	}
-
-      grow_method (fn_fields, &method_vec);
     }
-
-  TREE_VEC_LENGTH (method_vec) = (tree *)obstack_next_free (&class_obstack)
-    - (&TREE_VEC_ELT (method_vec, 0));
-  obstack_finish (&class_obstack);
-  CLASSTYPE_METHOD_VEC (t) = method_vec;
 
   if (TYPE_HAS_DESTRUCTOR (t) && !TREE_VEC_ELT (method_vec, 1))
     /* We thought there was a destructor, but there wasn't.  Some
@@ -2178,6 +2188,7 @@ finish_struct_methods (t)
      destructors), compute where member functions of the same
      name reside in base classes.  */
   if (n_baseclasses != 0
+      && method_vec
       && TREE_VEC_LENGTH (method_vec) > 2)
     {
       int len = TREE_VEC_LENGTH (method_vec);
@@ -2185,11 +2196,13 @@ finish_struct_methods (t)
       int any_links = 0;
       tree baselink_binfo = build_tree_list (NULL_TREE, TYPE_BINFO (t));
 
-      for (i = 2; i < len; i++)
+      for (i = 2; i < len && TREE_VEC_ELT (method_vec, i); i++)
 	{
+	  tree ovl = TREE_VEC_ELT (method_vec, i);
+
 	  TREE_VEC_ELT (baselink_vec, i)
 	    = get_baselinks (baselink_binfo, t, 
-			     DECL_NAME (OVL_CURRENT (TREE_VEC_ELT (method_vec, i))));
+			     DECL_NAME (OVL_CURRENT (ovl)));
 	  if (TREE_VEC_ELT (baselink_vec, i) != 0)
 	    any_links = 1;
 	}
@@ -2995,7 +3008,7 @@ warn_hidden (t)
   int i;
 
   /* We go through each separately named virtual function.  */
-  for (i = 2; i < n_methods; ++i)
+  for (i = 2; i < n_methods && TREE_VEC_ELT (method_vec, i); ++i)
     {
       tree fns = TREE_VEC_ELT (method_vec, i);
       tree fndecl;
@@ -3096,6 +3109,90 @@ finish_struct_anon (t)
 
 extern int interface_only, interface_unknown;
 
+/* Create default constructors, assignment operators, and so forth for
+   the type indicated by T, if they are needed.
+   CANT_HAVE_DEFAULT_CTOR, CANT_HAVE_CONST_CTOR, and
+   CANT_HAVE_ASSIGNMENT are nonzero if, for whatever reason, the class
+   cannot have a default constructor, copy constructor taking a const
+   reference argument, or an assignment operator, respectively.  If a
+   virtual destructor is created, its DECL is returned; otherwise the
+   return value is NULL_TREE.  */
+
+static tree
+add_implicitly_declared_members (t, cant_have_default_ctor,
+				 cant_have_const_cctor,
+				 cant_have_assignment)
+     tree t;
+     int cant_have_default_ctor;
+     int cant_have_const_cctor;
+     int cant_have_assignment;
+{
+  tree default_fn;
+  tree implicit_fns = NULL_TREE;
+  tree name = TYPE_IDENTIFIER (t);
+  tree virtual_dtor = NULL_TREE;
+  tree *f;
+
+  /* Destructor.  */
+  if (TYPE_NEEDS_DESTRUCTOR (t) && !TYPE_HAS_DESTRUCTOR (t)
+      && !IS_SIGNATURE (t))
+    {
+      default_fn = cons_up_default_function (t, name, 0);
+      check_for_override (default_fn, t);
+
+      /* If we couldn't make it work, then pretend we didn't need it.  */
+      if (default_fn == void_type_node)
+	TYPE_NEEDS_DESTRUCTOR (t) = 0;
+      else
+	{
+	  TREE_CHAIN (default_fn) = implicit_fns;
+	  implicit_fns = default_fn;
+
+	  if (DECL_VINDEX (default_fn))
+	    virtual_dtor = default_fn;
+	}
+    }
+  TYPE_NEEDS_DESTRUCTOR (t) |= TYPE_HAS_DESTRUCTOR (t);
+
+  /* Default constructor.  */
+  if (! TYPE_HAS_CONSTRUCTOR (t) && ! cant_have_default_ctor
+      && ! IS_SIGNATURE (t))
+    {
+      default_fn = cons_up_default_function (t, name, 2);
+      TREE_CHAIN (default_fn) = implicit_fns;
+      implicit_fns = default_fn;
+    }
+
+  /* Copy constructor.  */
+  if (! TYPE_HAS_INIT_REF (t) && ! IS_SIGNATURE (t) && ! TYPE_FOR_JAVA (t))
+    {
+      /* ARM 12.18: You get either X(X&) or X(const X&), but
+	 not both.  --Chip  */
+      default_fn = cons_up_default_function (t, name,
+					     3 + cant_have_const_cctor);
+      TREE_CHAIN (default_fn) = implicit_fns;
+      implicit_fns = default_fn;
+    }
+
+  /* Assignment operator.  */
+  if (! TYPE_HAS_ASSIGN_REF (t) && ! IS_SIGNATURE (t) && ! TYPE_FOR_JAVA (t))
+    {
+      default_fn = cons_up_default_function (t, name,
+					     5 + cant_have_assignment);
+      TREE_CHAIN (default_fn) = implicit_fns;
+      implicit_fns = default_fn;
+    }
+
+  /* Now, hook all of the new functions on to TYPE_METHODS,
+     and add them to the CLASSTYPE_METHOD_VEC.  */
+  for (f = &implicit_fns; *f; f = &TREE_CHAIN (*f))
+    add_method (t, 0, *f);
+  *f = TYPE_METHODS (t);
+  TYPE_METHODS (t) = implicit_fns;
+
+  return virtual_dtor;
+}
+
 /* Create a RECORD_TYPE or UNION_TYPE node for a C struct or union declaration
    (or C++ class declaration).
 
@@ -3121,10 +3218,6 @@ extern int interface_only, interface_unknown;
    inheritance.  Additional virtual function tables have different
    DELTAs, which tell how to adjust `this' to point to the right thing.
 
-   LIST_OF_FIELDLISTS is just that.  The elements of the list are
-   TREE_LIST elements, whose TREE_PURPOSE field tells what access
-   the list has, and the TREE_VALUE slot gives the actual fields.
-
    ATTRIBUTES is the set of decl attributes to be applied, if any.  */
 
 tree
@@ -3133,10 +3226,8 @@ finish_struct_1 (t, warn_anon)
      int warn_anon;
 {
   int old;
-  tree name = TYPE_IDENTIFIER (t);
   enum tree_code code = TREE_CODE (t);
   tree fields = TYPE_FIELDS (t);
-  tree fn_fields = TYPE_METHODS (t);
   tree x, last_x, method_vec;
   int has_virtual;
   int max_has_virtual;
@@ -3145,6 +3236,7 @@ finish_struct_1 (t, warn_anon)
   tree abstract_virtuals = NULL_TREE;
   tree vfield;
   tree vfields;
+  tree virtual_dtor;
   int cant_have_default_ctor;
   int cant_have_const_ctor;
   int no_const_asn_ref;
@@ -3261,8 +3353,6 @@ finish_struct_1 (t, warn_anon)
       /* If this was an evil function, don't keep it in class.  */
       if (IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (x)))
 	continue;
-
-      DECL_CLASS_CONTEXT (x) = t;
 
       /* Do both of these, even though they're in the same union;
 	 if the insn `r' member and the size `i' member are
@@ -3626,32 +3716,6 @@ finish_struct_1 (t, warn_anon)
   CLASSTYPE_REF_FIELDS_NEED_INIT (t) = ref_sans_init;
   CLASSTYPE_ABSTRACT_VIRTUALS (t) = abstract_virtuals;
 
-  /* Synthesize any needed methods.  Note that methods will be synthesized
-     for anonymous unions; grok_x_components undoes that.  */
-
-  if (TYPE_NEEDS_DESTRUCTOR (t) && !TYPE_HAS_DESTRUCTOR (t)
-      && !IS_SIGNATURE (t))
-    {
-      /* Here we must cons up a destructor on the fly.  */
-      tree dtor = cons_up_default_function (t, name, 0);
-      check_for_override (dtor, t);
-
-      /* If we couldn't make it work, then pretend we didn't need it.  */
-      if (dtor == void_type_node)
-	TYPE_NEEDS_DESTRUCTOR (t) = 0;
-      else
-	{
-	  /* Link dtor onto end of fn_fields.  */
-
-	  TREE_CHAIN (dtor) = fn_fields;
-	  fn_fields = dtor;
-
-	  if (DECL_VINDEX (dtor))
-	    add_virtual_function (&pending_virtuals, &pending_hard_virtuals,
-				  &has_virtual, dtor, t);
-	}
-    }
-
   /* Effective C++ rule 11.  */
   if (has_pointers && warn_ecpp && TYPE_HAS_CONSTRUCTOR (t)
       && ! (TYPE_HAS_INIT_REF (t) && TYPE_HAS_ASSIGN_REF (t)))
@@ -3667,9 +3731,9 @@ finish_struct_1 (t, warn_anon)
       else if (! TYPE_HAS_ASSIGN_REF (t))
 	cp_warning ("  but does not override `operator=(const %T&)'", t);
     }
-
-  TYPE_NEEDS_DESTRUCTOR (t) |= TYPE_HAS_DESTRUCTOR (t);
-
+  
+  /* Do some bookkeeping that will guide the generation of implicitly
+     declared member functions.  */
   TYPE_HAS_COMPLEX_INIT_REF (t)
     |= (TYPE_HAS_INIT_REF (t) || TYPE_USES_VIRTUAL_BASECLASSES (t)
 	|| has_virtual || any_default_members);
@@ -3679,46 +3743,23 @@ finish_struct_1 (t, warn_anon)
   if (! IS_SIGNATURE (t))
     CLASSTYPE_NON_AGGREGATE (t)
       = ! aggregate || has_virtual || TYPE_HAS_CONSTRUCTOR (t);
-
-  /* ARM $12.1: A default constructor will be generated for a class X
-     only if no constructor has been declared for class X.  So we
-     check TYPE_HAS_CONSTRUCTOR also, to make sure we don't generate
-     one if they declared a constructor in this class.  */
-  if (! TYPE_HAS_CONSTRUCTOR (t) && ! cant_have_default_ctor
-      && ! IS_SIGNATURE (t))
-    {
-      tree default_fn = cons_up_default_function (t, name, 2);
-      TREE_CHAIN (default_fn) = fn_fields;
-      fn_fields = default_fn;
-    }
-
-  /* Create default copy constructor, if needed.  */
-  if (! TYPE_HAS_INIT_REF (t) && ! IS_SIGNATURE (t) && ! TYPE_FOR_JAVA (t))
-    {
-      /* ARM 12.18: You get either X(X&) or X(const X&), but
-	 not both.  --Chip  */
-      tree default_fn = cons_up_default_function (t, name,
-						  3 + cant_have_const_ctor);
-      TREE_CHAIN (default_fn) = fn_fields;
-      fn_fields = default_fn;
-    }
-
   TYPE_HAS_REAL_ASSIGNMENT (t) |= TYPE_HAS_ASSIGNMENT (t);
   TYPE_HAS_REAL_ASSIGN_REF (t) |= TYPE_HAS_ASSIGN_REF (t);
   TYPE_HAS_COMPLEX_ASSIGN_REF (t)
     |= TYPE_HAS_ASSIGN_REF (t) || TYPE_USES_VIRTUAL_BASECLASSES (t);
 
-  if (! TYPE_HAS_ASSIGN_REF (t) && ! IS_SIGNATURE (t) && ! TYPE_FOR_JAVA (t))
-    {
-      tree default_fn = cons_up_default_function (t, name,
-						  5 + no_const_asn_ref);
-      TREE_CHAIN (default_fn) = fn_fields;
-      fn_fields = default_fn;
-    }
+  /* Synthesize any needed methods.  Note that methods will be synthesized
+     for anonymous unions; grok_x_components undoes that.  */
+  virtual_dtor 
+    = add_implicitly_declared_members (t, cant_have_default_ctor,
+				       cant_have_const_ctor,
+				       no_const_asn_ref);
+  if (virtual_dtor)
+    add_virtual_function (&pending_virtuals, &pending_hard_virtuals,
+			  &has_virtual, virtual_dtor, t);
 
-  if (fn_fields)
+  if (TYPE_METHODS (t))
     {
-      TYPE_METHODS (t) = fn_fields;
       finish_struct_methods (t);
       method_vec = CLASSTYPE_METHOD_VEC (t);
     }
@@ -3806,12 +3847,12 @@ finish_struct_1 (t, warn_anon)
       for (x = fields; x; x = TREE_CHAIN (x))
 	{
 	  tree name = DECL_NAME (x);
-	  int i = 2;
+	  int i;
 
 	  if (TREE_CODE (x) == TYPE_DECL && DECL_ARTIFICIAL (x))
 	    continue;
 
-	  for (; i < n_methods; ++i)
+	  for (i = 2; i < n_methods && TREE_VEC_ELT (method_vec, i); ++i)
 	    if (DECL_NAME (OVL_CURRENT (TREE_VEC_ELT (method_vec, i)))
 		== name)
 	      {
@@ -4229,18 +4270,94 @@ finish_struct_1 (t, warn_anon)
   return t;
 }
 
+/* In [basic.scope.class] we have:
+
+     A name N used in a class S shall refer to the same declaration in
+     its context and when re-evaluated in the completed scope of S.
+     
+   This function checks this condition for X, which is a member of
+   T.  */
+
+static void
+check_member_decl_is_same_in_complete_scope (t, x)
+     tree t;
+     tree x;
+{
+  /* A name N used in a class S shall refer to the same declaration in
+     its context and when re-evaluated in the completed scope of S.
+     
+     Enums, types and static vars have already been checked.  */
+  if (TREE_CODE (x) != USING_DECL 
+      && TREE_CODE (x) != TYPE_DECL && !DECL_CLASS_TEMPLATE_P (x)
+      && TREE_CODE (x) != CONST_DECL && TREE_CODE (x) != VAR_DECL)
+    {
+      tree name = DECL_NAME (x);
+      tree icv;
+
+      /* Don't get confused by access decls.  */
+      if (name && TREE_CODE (name) == IDENTIFIER_NODE)
+	icv = IDENTIFIER_CLASS_VALUE (name);
+      else
+	icv = NULL_TREE;
+
+      if (icv
+	  /* Don't complain about constructors.  */
+	  && name != constructor_name (current_class_type)
+	  /* Or inherited names.  */
+	  && id_in_current_class (name)
+	  /* Or shadowed tags.  */
+	  && !(TREE_CODE (icv) == TYPE_DECL && DECL_CONTEXT (icv) == t))
+	{
+	  cp_pedwarn_at ("declaration of identifier `%D' as `%+#D'",
+			 name, x);
+	  cp_pedwarn_at ("conflicts with other use in class as `%#D'",
+			 icv);
+	}
+    }
+}
+
+/* When T was built up, the member declarations were added in reverse
+   order.  Rearrange them to declaration order.  */
+
+void
+unreverse_member_declarations (t)
+     tree t;
+{
+  tree next;
+  tree prev;
+  tree x;
+
+  /* The TYPE_FIELDS, TYPE_METHODS, and CLASSTYPE_TAGS are all in
+     reverse order.  Put them in declaration order now.  */
+  TYPE_METHODS (t) = nreverse (TYPE_METHODS (t));
+  CLASSTYPE_TAGS (t) = nreverse (CLASSTYPE_TAGS (t));
+
+  /* Actually, for the TYPE_FIELDS, only the non TYPE_DECLs are in
+     reverse order, so we can't just use nreverse.  */
+  prev = NULL_TREE;
+  for (x = TYPE_FIELDS (t); 
+       x && TREE_CODE (x) != TYPE_DECL; 
+       x = next)
+    {
+      next = TREE_CHAIN (x);
+      TREE_CHAIN (x) = prev;
+      prev = x;
+    }
+  if (prev)
+    {
+      TREE_CHAIN (TYPE_FIELDS (t)) = x;
+      if (prev)
+	TYPE_FIELDS (t) = prev;
+    }
+}
+
 tree
-finish_struct (t, list_of_fieldlists, attributes, warn_anon)
-     tree t, list_of_fieldlists, attributes;
+finish_struct (t, attributes, warn_anon)
+     tree t, attributes;
      int warn_anon;
 {
-  tree fields = NULL_TREE;
-  tree *tail = &TYPE_METHODS (t);
   tree name = TYPE_NAME (t);
-  tree x, last_x = NULL_TREE;
-  tree access;
-  tree dummy = NULL_TREE;
-  tree next_x = NULL_TREE;
+  tree x;
 
   if (TREE_CODE (name) == TYPE_DECL)
     {
@@ -4260,147 +4377,23 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
 
   /* Append the fields we need for constructing signature tables.  */
   if (IS_SIGNATURE (t))
-    append_signature_fields (list_of_fieldlists);
+    append_signature_fields (t);
 
-  /* Move our self-reference declaration to the end of the field list so
-     any real field with the same name takes precedence.  */
-  if (list_of_fieldlists
-      && TREE_VALUE (list_of_fieldlists)
-      && DECL_ARTIFICIAL (TREE_VALUE (list_of_fieldlists)))
+  /* Now that we've got all the field declarations, reverse everything
+     as necessary.  */
+  unreverse_member_declarations (t);
+
+  if (flag_optional_diags) 
     {
-      dummy = TREE_VALUE (list_of_fieldlists);
-      list_of_fieldlists = TREE_CHAIN (list_of_fieldlists);
+      for (x = TYPE_METHODS (t); x; x = TREE_CHAIN (x))
+	check_member_decl_is_same_in_complete_scope (t, x);
+      for (x = TYPE_FIELDS (t); x; x = TREE_CHAIN (x))
+	check_member_decl_is_same_in_complete_scope (t, x);
     }
 
-  if (last_x && list_of_fieldlists)
-    TREE_CHAIN (last_x) = TREE_VALUE (list_of_fieldlists);
-
-  while (list_of_fieldlists)
-    {
-      access = TREE_PURPOSE (list_of_fieldlists);
-
-      /* For signatures, we made all methods `public' in the parser and
-	 reported an error if a access specifier was used.  */
-      if (access == access_default_node)
-	{
-	  if (CLASSTYPE_DECLARED_CLASS (t) == 0)
-	    access = access_public_node;
-	  else
-	    access = access_private_node;
-	}
-
-      for (x = TREE_VALUE (list_of_fieldlists); x; x = next_x)
-	{
-	  next_x = TREE_CHAIN (x);
-
-	  TREE_PRIVATE (x) = access == access_private_node;
-	  TREE_PROTECTED (x) = access == access_protected_node;
-
-	  if (TREE_CODE (x) == TEMPLATE_DECL)
-	    {
-	      TREE_PRIVATE (DECL_RESULT (x)) = TREE_PRIVATE (x);
-	      TREE_PROTECTED (DECL_RESULT (x)) = TREE_PROTECTED (x);
-	    }
-
-	  /* A name N used in a class S shall refer to the same declaration
-	     in its context and when re-evaluated in the completed scope of S.
-
-             Enums, types and static vars have already been checked.  */
-	  if (TREE_CODE (x) != TYPE_DECL && TREE_CODE (x) != USING_DECL
-	      && ! (TREE_CODE (x) == TEMPLATE_DECL
-		    && TREE_CODE (DECL_RESULT (x)) == TYPE_DECL)
-	      && TREE_CODE (x) != CONST_DECL && TREE_CODE (x) != VAR_DECL)
-	    {
-	      tree name = DECL_NAME (x);
-	      tree icv;
-
-	      /* Don't get confused by access decls.  */
-	      if (name && TREE_CODE (name) == IDENTIFIER_NODE)
-		icv = IDENTIFIER_CLASS_VALUE (name);
-	      else
-		icv = NULL_TREE;
-
-	      if (icv
-		  && flag_optional_diags
-		  /* Don't complain about constructors.  */
-		  && name != constructor_name (current_class_type)
-		  /* Or inherited names.  */
-		  && id_in_current_class (name)
-		  /* Or shadowed tags.  */
-		  && !(TREE_CODE (icv) == TYPE_DECL
-		       && DECL_CONTEXT (icv) == t))
-		{
-		  cp_pedwarn_at ("declaration of identifier `%D' as `%+#D'",
-				 name, x);
-		  cp_pedwarn_at ("conflicts with other use in class as `%#D'",
-				 icv);
-		}
-	    }
-
-	  if (TREE_CODE (x) == FUNCTION_DECL 
-	      || DECL_FUNCTION_TEMPLATE_P (x))
-	    {
-	      DECL_CLASS_CONTEXT (x) = t;
-
-	      if (last_x)
-		TREE_CHAIN (last_x) = next_x;
-
-	      /* Link x onto end of TYPE_METHODS.  */
-	      *tail = x;
-	      tail = &TREE_CHAIN (x);
-	      continue;
-	    }
-
-	  if (TREE_CODE (x) != TYPE_DECL)
-	    DECL_FIELD_CONTEXT (x) = t;
-
-	  if (! fields)
-	    fields = x;
-	  last_x = x;
-	}
-      list_of_fieldlists = TREE_CHAIN (list_of_fieldlists);
-      /* link the tail while we have it! */
-      if (last_x)
-	{
-	  TREE_CHAIN (last_x) = NULL_TREE;
-
-	  if (list_of_fieldlists
-	      && TREE_VALUE (list_of_fieldlists)
-	      && TREE_CODE (TREE_VALUE (list_of_fieldlists)) != FUNCTION_DECL)
-	    TREE_CHAIN (last_x) = TREE_VALUE (list_of_fieldlists);
-	}
-    }
-
-  /* Now add the tags, if any, to the list of TYPE_DECLs
-     defined for this type.  */
-  if (CLASSTYPE_TAGS (t) || dummy)
-    {
-      /* The list of tags was built up in pushtag in reverse order; we need
-	 to fix that so that enumerators will be processed in forward order
-	 in template instantiation.  */
-      CLASSTYPE_TAGS (t) = x = nreverse (CLASSTYPE_TAGS (t));
-      while (x)
-	{
-	  tree tag_type = TREE_VALUE (x);
-	  tree tag = TYPE_MAIN_DECL (TREE_VALUE (x));
-
-	  if (IS_AGGR_TYPE_CODE (TREE_CODE (tag_type))
-	      && CLASSTYPE_IS_TEMPLATE (tag_type))
-	    tag = CLASSTYPE_TI_TEMPLATE (tag_type);
-
-	  TREE_NONLOCAL_FLAG (tag_type) = 0;
-	  x = TREE_CHAIN (x);
-	  last_x = chainon (last_x, tag);
-	}
-      if (dummy)
-	last_x = chainon (last_x, dummy);
-      if (fields == NULL_TREE)
-	fields = last_x;
-      CLASSTYPE_LOCAL_TYPEDECLS (t) = 1;
-    }
-
-  *tail = NULL_TREE;
-  TYPE_FIELDS (t) = fields;
+  /* Mark all the tags in the class as class-local.  */
+  for (x = CLASSTYPE_TAGS (t); x; x = TREE_CHAIN (x))
+    TREE_NONLOCAL_FLAG (TREE_VALUE (x)) = 0;
 
   cplus_decl_attributes (t, attributes, NULL_TREE);
 
@@ -4574,9 +4567,10 @@ void
 init_class_processing ()
 {
   current_class_depth = 0;
-  current_class_stacksize = 10;
-  current_class_base = (tree *)xmalloc(current_class_stacksize * sizeof (tree));
-  current_class_stack = current_class_base;
+  current_class_stack_size = 10;
+  current_class_stack 
+    = (class_stack_node_t) xmalloc (current_class_stack_size 
+				    * sizeof (struct class_stack_node));
 
   current_lang_stacksize = 10;
   current_lang_base = (tree *)xmalloc(current_lang_stacksize * sizeof (tree));
@@ -4639,22 +4633,33 @@ pushclass (type, modify)
 {
   type = TYPE_MAIN_VARIANT (type);
 
-  current_class_depth++;
-  *current_class_stack++ = current_class_name;
-  *current_class_stack++ = current_class_type;
-  if (current_class_stack >= current_class_base + current_class_stacksize)
+  /* Make sure there is enough room for the new entry on the stack.  */
+  if (current_class_depth + 1 >= current_class_stack_size) 
     {
-      current_class_base
-	= (tree *)xrealloc (current_class_base,
-			    sizeof (tree) * (current_class_stacksize + 10));
-      current_class_stack = current_class_base + current_class_stacksize;
-      current_class_stacksize += 10;
+      current_class_stack_size *= 2;
+      current_class_stack
+	= (class_stack_node_t) xrealloc (current_class_stack,
+					 current_class_stack_size
+					 * sizeof (struct class_stack_node));
     }
 
+  /* Insert a new entry on the class stack.  */
+  current_class_stack[current_class_depth].name = current_class_name;
+  current_class_stack[current_class_depth].type = current_class_type;
+  current_class_stack[current_class_depth].access = current_access_specifier;
+  current_class_depth++;
+
+  /* Now set up the new type.  */
   current_class_name = TYPE_NAME (type);
   if (TREE_CODE (current_class_name) == TYPE_DECL)
     current_class_name = DECL_NAME (current_class_name);
   current_class_type = type;
+
+  /* By default, things in classes are private, while things in
+     structures or unions are public.  */
+  current_access_specifier = (CLASSTYPE_DECLARED_CLASS (type) 
+			      ? access_private_node 
+			      : access_public_node);
 
   if (previous_class_type != NULL_TREE
       && (type != previous_class_type || TYPE_SIZE (previous_class_type) == NULL_TREE)
@@ -4783,8 +4788,9 @@ popclass (modify)
     pop_class_decls ();
 
   current_class_depth--;
-  current_class_type = *--current_class_stack;
-  current_class_name = *--current_class_stack;
+  current_class_name = current_class_stack[current_class_depth].name;
+  current_class_type = current_class_stack[current_class_depth].type;
+  current_access_specifier = current_class_stack[current_class_depth].access;
 
  ret:
   ;
@@ -4800,7 +4806,7 @@ currently_open_class (t)
   if (t == current_class_type)
     return 1;
   for (i = 0; i < current_class_depth; ++i)
-    if (current_class_stack [-i*2 - 1] == t)
+    if (current_class_stack [i].type == t)
       return 1;
   return 0;
 }
@@ -5505,7 +5511,6 @@ build_self_reference ()
   DECL_NONLOCAL (value) = 1;
   DECL_CONTEXT (value) = current_class_type;
   DECL_CLASS_CONTEXT (value) = current_class_type;
-  CLASSTYPE_LOCAL_TYPEDECLS (current_class_type) = 1;
   DECL_ARTIFICIAL (value) = 1;
 
   pushdecl_class_level (value);

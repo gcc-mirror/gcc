@@ -4884,7 +4884,6 @@ unary_complex_lvalue (code, arg)
       else
 	{
 	  tree type;
-	  tree offset;
 
 	  if (TREE_OPERAND (arg, 0)
 	      && (TREE_CODE (TREE_OPERAND (arg, 0)) != NOP_EXPR
@@ -4896,21 +4895,13 @@ unary_complex_lvalue (code, arg)
 	      return error_mark_node;
 	    }
 
-	  /* Add in the offset to the field.  */
-	  offset = convert (sizetype,
-			    size_binop (EASY_DIV_EXPR,
-					DECL_FIELD_BITPOS (t),
-					size_int (BITS_PER_UNIT)));
-
-	  /* We offset all pointer to data members by 1 so that we can
-	     distinguish between a null pointer to data member and the first
-	     data member of a structure.  */
-	  offset = size_binop (PLUS_EXPR, offset, size_int (1));
-
 	  type = build_offset_type (DECL_FIELD_CONTEXT (t), TREE_TYPE (t));
 	  type = build_pointer_type (type);
 
-	  return cp_convert (type, offset);
+	  t = make_node (PTRMEM_CST);
+	  TREE_TYPE (t) = type;
+	  PTRMEM_CST_MEMBER (t) = TREE_OPERAND (arg, 1);
+	  return t;
 	}
     }
 

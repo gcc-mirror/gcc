@@ -22,7 +22,7 @@ class X
 {
 public:
   static T *do_something ();
-  friend class T;
+  friend class T; // ERROR - `T' is a template parameter
   friend class XX<T, U>;
 };
 
