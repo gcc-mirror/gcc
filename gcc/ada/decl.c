@@ -1172,7 +1172,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 					  gnu_value, gnu_literal_list);
 	  }
 
-	TYPE_FIELDS (gnu_type) = nreverse (gnu_literal_list);
+	TYPE_VALUES (gnu_type) = nreverse (gnu_literal_list);
 
 	/* Note that the bounds are updated at the end of this function
 	   because to avoid an infinite recursion when we get the bounds of

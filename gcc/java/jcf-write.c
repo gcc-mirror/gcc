@@ -633,10 +633,7 @@ get_access_flags (tree decl)
 {
   int flags = 0;
   int isfield = TREE_CODE (decl) == FIELD_DECL || TREE_CODE (decl) == VAR_DECL;
-  if (CLASS_PUBLIC (decl))  /* same as FIELD_PUBLIC and METHOD_PUBLIC */
-    flags |= ACC_PUBLIC;
-  if (CLASS_FINAL (decl))  /* same as FIELD_FINAL and METHOD_FINAL */
-    flags |= ACC_FINAL;
+
   if (isfield || TREE_CODE (decl) == FUNCTION_DECL)
     {
       if (TREE_PROTECTED (decl))
@@ -646,6 +643,10 @@ get_access_flags (tree decl)
     }
   else if (TREE_CODE (decl) == TYPE_DECL)
     {
+      if (CLASS_PUBLIC (decl))
+	flags |= ACC_PUBLIC;
+      if (CLASS_FINAL (decl))
+	flags |= ACC_FINAL;
       if (CLASS_SUPER (decl))
 	flags |= ACC_SUPER;
       if (CLASS_ABSTRACT (decl))
@@ -669,6 +670,10 @@ get_access_flags (tree decl)
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
+      if (METHOD_PUBLIC (decl))
+	flags |= ACC_PUBLIC;
+      if (METHOD_FINAL (decl))
+	flags |= ACC_FINAL;
       if (METHOD_NATIVE (decl))
 	flags |= ACC_NATIVE;
       if (METHOD_STATIC (decl))
@@ -682,6 +687,10 @@ get_access_flags (tree decl)
     }
   if (isfield)
     {
+      if (FIELD_PUBLIC (decl))
+	flags |= ACC_PUBLIC;
+      if (FIELD_FINAL (decl))
+	flags |= ACC_FINAL;
       if (FIELD_STATIC (decl))
 	flags |= ACC_STATIC;
       if (FIELD_VOLATILE (decl))

@@ -1,3 +1,14 @@
+2004-03-18  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* class.c (finish_struct_bits): Use TYPE_VFIELD and TYPE_METHODS.
+	* error.c (dump_type): Use TYPEOF_TYPE_EXPR.
+	* pt.c (tsubst): Likewise.
+	* semantics.c (finish_typeof): Likewise.
+	* search.c (dfs_unuse_fields): Handle TYPENAME_TYPE, TYPEOF_TYPE,
+	and TEMPLATE_TYPE_PARM.
+	* typeck.c (comptypes): Use TYPE_ORIG_SIZE_TYPE, not TYPE_DOMAIN.
+	(build_array_ref): Use TYPE_DOMAIN, not TYPE_VALUES.
+
 2004-03-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14586

@@ -1,3 +1,11 @@
+2004-03-18  Richard Kenner <kenner@vlsi1.ultra.nyu.edu>
+
+	* java-tree.h: Changes throughout to add checking to macros
+	and numerous whitespace changes.
+	(VAR_OR_FIELD_CHECK): New macro.
+	* jcf-write.c (get_access_flags): Use FIELD_PUBLIC, METHOD_PUBLIC,
+	FIELD_FINAL, and METHOD_FINAL instead of CLASS_PUBLIC and CLASS_FINAL.
+
 2004-03-16  Per Bothner  <per@bothner.com>
 
 	* jcf-jump.c (options):  New --print-constants option.
