@@ -1,3 +1,10 @@
+2001-08-03  Zack Weinberg  <zackw@stanford.edu>
+
+	* builtins.c (fold_builtin_constant_p): Return integer_zero_node
+	for complex expressions when cfun == 0.
+	* doc/extend.texi: Document that __builtin_constant_p can be
+	used in data initializers as well as functions.
+
 2001-08-03  Richard Henderson  <rth@redhat.com>
 
 	* except.c (collect_one_action_chain): Add an explicit cleanup

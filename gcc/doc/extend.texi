@@ -3877,6 +3877,26 @@ never return 1 when you call the inline function with a string constant
 or compound literal (@pxref{Compound Literals}) and will not return 1
 when you pass a constant numeric value to the inline function unless you
 specify the @option{-O} option.
+
+You may also use @code{__builtin_constant_p} in initializers for static
+data.  For instance, you can write
+
+@smallexample
+static const int table[] = {
+   __builtin_constant_p (EXPRESSION) ? (EXPRESSION) : -1,
+   /* ... */
+};
+@end smallexample
+
+@noindent
+This is an acceptable initializer even if @var{EXPRESSION} is not a
+constant expression.  GCC must be more conservative about evaluating the
+built-in in this case, because it has no opportunity to perform
+optimization.
+
+Previous versions of GCC did not accept this built-in in data
+initializers.  The earliest version where it is completely safe is
+3.0.1.
 @end deftypefn
 
 @deftypefn {Built-in Function} long __builtin_expect (long @var{exp}, long @var{c})

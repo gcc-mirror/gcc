@@ -3665,10 +3665,14 @@ fold_builtin_constant_p (arglist)
      has side effects, show we don't know it to be a constant.
      Likewise if it's a pointer or aggregate type since in those
      case we only want literals, since those are only optimized
-     when generating RTL, not later.  */
+     when generating RTL, not later.
+     And finally, if we are compiling an initializer, not code, we
+     need to return a definite result now; there's not going to be any
+     more optimization done.  */
   if (TREE_SIDE_EFFECTS (arglist) || cse_not_expected
       || AGGREGATE_TYPE_P (TREE_TYPE (arglist))
-      || POINTER_TYPE_P (TREE_TYPE (arglist)))
+      || POINTER_TYPE_P (TREE_TYPE (arglist))
+      || cfun == 0)
     return integer_zero_node;
 
   return 0;
