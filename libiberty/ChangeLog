@@ -1,4 +1,11 @@
 2003-02-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in: Check for sys/systemcfg.h and
+	_system_configuration.
+	* physmem.c: Add support for AIX.  Tweek formatting as per
+	upstream coreutils beta.
+
+2003-02-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	    Richard Earnshaw  <rearnsha@arm.com>
 	    Geoffrey Keating  <geoffk@apple.com>
 	
