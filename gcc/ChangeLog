@@ -1,3 +1,9 @@
+2004-10-28  Adam Nemet  <anemet@lnxw.com>
+
+	PR middle-end/18160  
+	* c-typeck.c (c_mark_addressable): Issue error if address of a
+	register variable is taken.  Use "%qD" to print DECL_NAME.
+
 2004-10-28  Diego Novillo  <dnovillo@redhat.com>
 
 	* opts.c (decode_options): Don't run PRE at -Os.

@@ -2818,8 +2818,8 @@ c_mark_addressable (tree exp)
       case COMPONENT_REF:
 	if (DECL_C_BIT_FIELD (TREE_OPERAND (x, 1)))
 	  {
-	    error ("cannot take address of bit-field %qs",
-		   IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (x, 1))));
+	    error
+	      ("cannot take address of bit-field %qD", TREE_OPERAND (x, 1));
 	    return false;
 	  }
 
@@ -2846,24 +2846,19 @@ c_mark_addressable (tree exp)
 	  {
 	    if (TREE_PUBLIC (x) || TREE_STATIC (x) || DECL_EXTERNAL (x))
 	      {
-		error ("global register variable %qs used in nested function",
-		       IDENTIFIER_POINTER (DECL_NAME (x)));
+		error
+		  ("global register variable %qD used in nested function", x);
 		return false;
 	      }
-	    pedwarn ("register variable %qs used in nested function",
-		     IDENTIFIER_POINTER (DECL_NAME (x)));
+	    pedwarn ("register variable %qD used in nested function", x);
 	  }
 	else if (C_DECL_REGISTER (x))
 	  {
 	    if (TREE_PUBLIC (x) || TREE_STATIC (x) || DECL_EXTERNAL (x))
-	      {
-		error ("address of global register variable %qs requested",
-		       IDENTIFIER_POINTER (DECL_NAME (x)));
-		return false;
-	      }
-
-	    pedwarn ("address of register variable %qs requested",
-		     IDENTIFIER_POINTER (DECL_NAME (x)));
+	      error ("address of global register variable %qD requested", x);
+	    else
+	      error ("address of register variable %qD requested", x);
+	    return false;
 	  }
 
 	/* drops in */
