@@ -951,7 +951,7 @@
     {
       rtx count = copy_to_mode_reg (SImode, operands[2]);
       emit_insn (gen_negsi2 (count, count));
-      emit_insn (gen_ashlsi3_d (operands[0], operands[1], count));
+      emit_insn (gen_lshrsi3_d (operands[0], operands[1], count));
       DONE;
     }
   if (! immediate_operand (operands[2], GET_MODE (operands[2])))
