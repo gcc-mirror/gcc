@@ -1,3 +1,11 @@
+1998-04-01  Mark Mitchell  <mmitchell@usa.net>
+
+	* varasm.c (make_decl_rtl): Update the DECL_ASSEMBLER_NAME for a
+	entity in a local scope.
+
+	* fold-const.c (fold): Call truthvalue_conversion for values which
+	are folded to boolean type.
+
 Wed Apr  1 06:09:53 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* 1750a.md, arm.c, clipper.c, clipper.md: Use GEN_INT consistently.

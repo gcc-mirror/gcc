@@ -5636,6 +5636,8 @@ fold (expr)
 	TREE_INT_CST_LOW (t1) ^= 1;
 
       TREE_TYPE (t1) = type;
+      if (TREE_CODE (type) == BOOLEAN_TYPE)
+	return truthvalue_conversion (t1);
       return t1;
 
     case COND_EXPR:
