@@ -300,7 +300,7 @@ _Jv_InitThreads (void)
 _Jv_Thread_t *
 _Jv_ThreadInitData (java::lang::Thread *obj)
 {
-  _Jv_Thread_t *data = new _Jv_Thread_t;
+  _Jv_Thread_t *data = (_Jv_Thread_t *) _Jv_Malloc (sizeof (_Jv_Thread_t));
   data->flags = 0;
   data->thread_obj = obj;
 
@@ -315,7 +315,7 @@ _Jv_ThreadDestroyData (_Jv_Thread_t *data)
 {
   pthread_mutex_destroy (&data->wait_mutex);
   pthread_cond_destroy (&data->wait_cond);
-  delete data;
+  _Jv_Free ((void *)data);
 }
 
 void
