@@ -2,6 +2,11 @@
 
 	* tree-ssa-phiopt.c: Fix a comment typo.
 
+	* c-semantics.c, cfghooks.c, diagnostic.h, loop-iv.c,
+	loop-unswitch.c, modulo-sched.c, stor-layout.c, tree-gimple.h,
+	config/i386/cygwin1.c, doc/cfg.texi, doc/objc.texi: Update
+	copyright.
+
 2005-03-08  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (code_for_builtin): Replace special-case
