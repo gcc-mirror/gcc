@@ -1,3 +1,8 @@
+2000-09-08  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	* combine.c (combine_simplify_rtx): Try to simplify VEC_SELECT of a
+	VEC_CONCAT.
+
 2000-09-07  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/lib1funcs.asm (__divsi3): Use .s1 for frcpa.
