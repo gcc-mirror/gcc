@@ -41,7 +41,7 @@ import java.lang.reflect.Array;
  * Linked list implementation of the List interface.
  */
 public class LinkedList extends AbstractSequentialList
-  implements Serializable, Cloneable
+  implements List, Cloneable, Serializable
 {
   static final long serialVersionUID = 876323262645176354L;
 

@@ -1,5 +1,5 @@
 /* java.lang.FilePermission
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -30,7 +30,7 @@ package java.io;
 import java.security.*;
 
 
-public class FilePermission extends Permission implements Serializable {
+public final class FilePermission extends Permission implements Serializable {
   private static final String CURRENT_DIRECTORY = System.getProperty("user.dir");
   private boolean usingPerms = false;
   private boolean readPerm = false;

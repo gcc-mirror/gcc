@@ -1,3 +1,10 @@
+2000-12-04  Warren Levy  <warrenl@redhat.com>
+
+	* java/io/FilePermission.java: Made class final per spec.
+	* java/text/DecimalFormatSymbols.java (setCurrencySymbol): Changed
+	method name to match spec (fixed typo).
+	* java/util/LinkedList.java: Implements List.
+
 2000-12-04  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/natDouble.cc: Include fdlibm.h, not mprec.h. From 

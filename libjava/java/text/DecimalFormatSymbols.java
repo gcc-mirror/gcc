@@ -226,7 +226,7 @@ public final class DecimalFormatSymbols implements Cloneable, Serializable
       return zeroDigit << 16 + groupingSeparator << 8 + decimalSeparator;
     }
 
-  public void setCurrenySymbol (String currency)
+  public void setCurrencySymbol (String currency)
     {
       currencySymbol = currency;
     }
