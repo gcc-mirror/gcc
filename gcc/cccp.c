@@ -9568,14 +9568,7 @@ pedwarn_with_file_and_line VPROTO ((char *file, size_t file_len, int line,
 
   if (!pedantic_errors && inhibit_warnings)
     return;
-  if (file) {
-    eprint_string (file, file_len);
-    fprintf (stderr, ":%d: ", line);
-  }
-  if (pedantic_errors)
-    errors++;
-  if (!pedantic_errors)
-    fprintf (stderr, "warning: ");
+
   VA_START (args, msg);
  
 #ifndef __STDC__
@@ -9585,6 +9578,15 @@ pedwarn_with_file_and_line VPROTO ((char *file, size_t file_len, int line,
   msg = va_arg (args, char *);
 #endif
  
+  if (file) {
+    eprint_string (file, file_len);
+    fprintf (stderr, ":%d: ", line);
+  }
+  if (pedantic_errors)
+    errors++;
+  if (!pedantic_errors)
+    fprintf (stderr, "warning: ");
+
   vfprintf (stderr, msg, args);
   va_end (args);
   fprintf (stderr, "\n");
