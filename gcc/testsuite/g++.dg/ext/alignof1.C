@@ -15,5 +15,5 @@ template<typename>
 
 int main()
 {
-  return my_alignof<X<void> >();
+  return !my_alignof<X<void> >();
 }
