@@ -15,9 +15,9 @@ INSTALL_TARGET = install-cross
 LIBGCC1 = libgcc1.null
 
 # gmon build rule:
-gmon.o:	gmon-sol2.c $(GCC_PASSES) $(CONFIG_H)
+gmon.o:	config/gmon-sol2.c $(GCC_PASSES) $(CONFIG_H)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-		-c $(srcdir)/gmon-sol2.c -o gmon.o
+		-c $(srcdir)/config/gmon-sol2.c -o gmon.o
 
 # Assemble startup files.
 crt1.o: config/sol2-crt1.asm
