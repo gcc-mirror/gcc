@@ -1,3 +1,12 @@
+2003-07-09  Gawain Bolton  <gp.bolton@computer.org>
+
+	* include/bits/stl_tree.h: Move larger member functions in
+	_Rb_tree_base_iterator and _Rb_tree_node to...
+	* src/stl_tree.cc: Here.
+	* src/Makefile.in: Add stl_tree.cc.
+	* src/Makefile.in: Regenerated.
+	* config/linker-map.gnu: Add symbols here.
+
 2003-07-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/ext/pod_char_traits.cc: New.
@@ -5,7 +14,7 @@
 	* include/Makefile.am (ext_headers): Add pod_char_traits.h.
 	* include/Makefile.in: Regenerate.
 	* docs/html/21_strings/howto.html: Update.
-	
+		
 2003-07-08  Gawain Bolton  <gp.bolton@computer.org>
 
 	* testsuite/performance/list_create_fill_sort.cc: New.

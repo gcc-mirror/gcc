@@ -144,6 +144,7 @@ sources = \
 	ostream-inst.cc \
 	sstream-inst.cc \
 	stdexcept.cc \
+	stl_tree.cc \
 	streambuf-inst.cc \
 	string-inst.cc \
 	strstream.cc \
