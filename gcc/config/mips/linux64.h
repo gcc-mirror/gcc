@@ -73,12 +73,6 @@ Boston, MA 02111-1307, USA.  */
 %{mabi=64:-melf64%{EB:b}%{EL:l}tsmip} \
 %{mabi=32:-melf32%{EB:b}%{EL:l}tsmip}"
 
-#undef STARTFILE_PREFIX_SPEC
-#define STARTFILE_PREFIX_SPEC "\
-%{mabi=n32: /lib32/ /usr/lib32/} \
-%{mabi=64: /lib64/ /usr/lib64/} \
-%{mabi=32: /lib/ /usr/lib/}"
-
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX ((mips_abi == ABI_32 || mips_abi == ABI_O64) \
 			    ? "$" : ".")
