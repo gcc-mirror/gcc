@@ -1,3 +1,10 @@
+2002-05-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Makefile.in (ADAC): Define.
+	(SYSLIBS): Define.
+	(.SUFFIXES): Move before language makefile fragments.
+	(STAGE2_FLAGS_TO_PASS): Use stage CC as ADAC.
+
 2002-05-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* varasm.c (make_decl_rtl): Don't allow weak variables to be
