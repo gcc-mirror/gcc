@@ -3309,11 +3309,11 @@ rest_of_compilation (decl)
       timevar_push (TV_REORDER_BLOCKS);
       open_dump_file (DFI_bbro, decl);
 
-      /* Last attempt to optimize CFG, as scheduling, peepholing
-	 and insn splitting possibly introduced more crossjumping
-	 oppurtuntities.  */
-      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK
-		   | (flag_crossjumping ? CLEANUP_CROSSJUMP : 0));
+      /* Last attempt to optimize CFG, as scheduling, peepholing and insn
+	 splitting possibly introduced more crossjumping oppurtuntities.
+	 Except that we can't actually run crossjumping without running 
+	 another DCE pass, which we can't do after reg-stack.  */
+      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK);
       if (flag_reorder_blocks)
 	{
 	  reorder_basic_blocks ();
