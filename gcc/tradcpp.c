@@ -1220,6 +1220,9 @@ rescan (op, output_marks)
   /* Record position of last `real' newline.  */
   U_CHAR *beg_of_line;
 
+  /* This has to be a global bacause of RECACHE.  */
+  U_CHAR *obufp_before_macroname = NULL;
+
 /* Pop the innermost input stack level, assuming it is a macro expansion.  */
 
 #define POPMACRO \
@@ -1237,6 +1240,7 @@ do { ip = &instack[indepth];		\
      op->bufp = obp;			\
      check_expand (op, limit - ibp);	\
      beg_of_line = 0;			\
+     obufp_before_macroname += op->bufp - obp;  \
      obp = op->bufp; } while (0)
 
   if (no_output && instack[indepth].fname != 0)
@@ -1647,7 +1651,8 @@ randomchar:
 	     hp = hp->next) {
 
 	  if (hp->length == ident_length) {
-	    U_CHAR *obufp_before_macroname;
+	    /* obufp_before_macroname is used only in this block,
+               but it has to be global because of RECACHE.  */
 	    int op_lineno_before_macroname;
 	    register int i = ident_length;
 	    register U_CHAR *p = hp->name;

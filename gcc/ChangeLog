@@ -1,3 +1,8 @@
+2001-08-21  Sam Steingold  <sds@gnu.org>
+
+	* tradcpp.c (rescan): define obufp_before_macroname before RECACHE
+	(RECACHE): keep obufp_before_macroname up to date
+
 2001-08-21  Zack Weinberg  <zackw@panix.com>
 
 	* stmt.c: Don't include insn-codes.h.
