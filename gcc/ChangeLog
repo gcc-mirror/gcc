@@ -1,3 +1,8 @@
+Fri Apr 24 09:22:23 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-common.c (check_format_info): Don't check for the 'x' format
+	character twice, instead check for 'x' and 'X'
+
 Fri Apr 24 08:02:30 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (libgcc2.ready): Add explicit dependancy from
