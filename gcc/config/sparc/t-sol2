@@ -20,9 +20,9 @@ gmon.o:	gmon-sol2.c $(GCC_PASSES) $(CONFIG_H)
 		-c $(srcdir)/gmon-sol2.c -o gmon.o
 
 # Assemble startup files.
-crt1.o: crt1.s
-	$(CC) -c $(srcdir)/crt1.s 
-crti.o: crti.s
-	$(CC) -c $(srcdir)/crti.s
-crtn.o: crtn.s
-	$(CC) -c $(srcdir)/crtn.s
+crt1.o: config/sol2-crt1.asm
+	$(AS) -o crt1.o $(srcdir)/config/sol2-crt1.asm
+crti.o: config/sol2-crti.asm
+	$(AS) -o crti.o $(srcdir)/config/sol2-crti.asm
+crtn.o: config/sol2-crtn.asm
+	$(AS) -o crtn.o $(srcdir)/config/sol2-crtn.asm
