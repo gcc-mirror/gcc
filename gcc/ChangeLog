@@ -1,3 +1,9 @@
+2005-01-28  Roger Sayle  <roger@eyesopen.com>
+
+	* expmed.c (expand_mult_highpart_optab): When attempting to use
+	a non-widening multiplication in a wider mode, the operands need
+	to be converted (zero or sign extended) to that mode.
+
 2005-01-28  Ian Lance Taylor  <ian@airs.com>
 
 	PR middle-end/16558
