@@ -1,3 +1,8 @@
+Wed Sep 15 18:35:38 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.c (emit_move_sequence): Properly set the mode of the scratch
+	register when performing secondary reloads for the SAR register.
+
 Wed Sep 15 15:51:52 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* rtl.h (NOTE_BLOCK_NUMBER): Replace with ...

@@ -1288,16 +1288,15 @@ emit_move_sequence (operands, mode, scratch_reg)
 		   && FP_REG_CLASS_P (REGNO_REG_CLASS (REGNO (operand1)))))
 	   && scratch_reg)
     {
-      /* SCRATCH_REG will hold an address and maybe the actual data.  We want
-	 it in WORD_MODE regardless of what mode it was originally given
-	 to us.  */
-      scratch_reg = gen_rtx_REG (word_mode, REGNO (scratch_reg));
-
       /* D might not fit in 14 bits either; for such cases load D into
 	 scratch reg.  */
       if (GET_CODE (operand1) == MEM
 	  && !memory_address_p (Pmode, XEXP (operand1, 0)))
 	{
+	  /* We are reloading the address into the scratch register, so we
+	     want to make sure the scratch register is a full register.  */
+	  scratch_reg = gen_rtx_REG (word_mode, REGNO (scratch_reg));
+
 	  emit_move_insn (scratch_reg, XEXP (XEXP (operand1, 0), 1));	
 	  emit_move_insn (scratch_reg, gen_rtx_fmt_ee (GET_CODE (XEXP (operand1,
 								        0)),
@@ -1305,11 +1304,27 @@ emit_move_sequence (operands, mode, scratch_reg)
 						       XEXP (XEXP (operand1, 0),
 						       0),
 						       scratch_reg));
-	  emit_move_insn (scratch_reg, gen_rtx_MEM (GET_MODE (operand1),
+
+	  /* Now we are going to load the scratch register from memory,
+	     we want to load it in the same width as the original MEM,
+	     which must be the same as the width of the ultimate destination,
+	     OPERAND0.  */
+	  scratch_reg = gen_rtx_REG (GET_MODE (operand0), REGNO (scratch_reg));
+	  
+	  emit_move_insn (scratch_reg, gen_rtx_MEM (GET_MODE (operand0),
 						    scratch_reg));
 	}
       else
-	emit_move_insn (scratch_reg, operand1);
+	{
+	  /* We want to load the scratch register using the same mode as
+	     the ultimate destination.  */
+	  scratch_reg = gen_rtx_REG (GET_MODE (operand0), REGNO (scratch_reg));
+	  emit_move_insn (scratch_reg, operand1);
+	}
+
+      /* And emit the insn to set the ultimate destination.  We know that
+	 the scratch register has the same mode as the destination at this
+	 point.  */
       emit_move_insn (operand0, scratch_reg);
       return 1;
     }
