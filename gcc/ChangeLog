@@ -1,3 +1,10 @@
+Sun Oct 10 20:05:21 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.md (movstrsi_?reg): Use preferred rD/rS = r5 form.
+	(scc patterns): Disable most SImode variants if TARGET_POWERPC64.
+	* rs6000.c (expand_block_move): Match movstrsi_?reg register
+	changes.
+
 Sun Oct 10 16:37:01 1999  Richard Henderson  <rth@cygnus.com>
 
 	* haifa-sched.c (sched_reg_n_calls_crossed): Delete.
@@ -242,7 +249,7 @@ Thu Oct  7 22:53:00 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
         (make_lang_type_fn): Likewise.
         * rs6000.c (rs6000_build_va_list): Use make_lang_type.
 
-Thu Oct  7 00:36:17 MDT 1999	Diego Novillo <dnovillo@cygnus.com>
+Thu Oct  7 00:36:17 1999  Diego Novillo  <dnovillo@cygnus.com>
 
 	* config/rs6000/rs6000.c (secondary_reload_class): For TARGET_ELF
 	make sure that HIGH instructions are copied into BASE_REGS.

@@ -2136,12 +2136,12 @@ expand_block_move (operands)
 					    align_rtx));
 	    }
 	  else if (bytes > 16	/* move up to 24 bytes at a time */
+		   && ! fixed_regs[5]
+		   && ! fixed_regs[6]
 		   && ! fixed_regs[7]
 		   && ! fixed_regs[8]
 		   && ! fixed_regs[9]
-		   && ! fixed_regs[10]
-		   && ! fixed_regs[11]
-		   && ! fixed_regs[12])
+		   && ! fixed_regs[10])
 	    {
 	      move_bytes = (bytes > 24) ? 24 : bytes;
 	      emit_insn (gen_movstrsi_6reg (expand_block_move_mem (BLKmode,
@@ -2154,10 +2154,10 @@ expand_block_move (operands)
 					    align_rtx));
 	    }
 	  else if (bytes > 8	/* move up to 16 bytes at a time */
-		   && ! fixed_regs[9]
-		   && ! fixed_regs[10]
-		   && ! fixed_regs[11]
-		   && ! fixed_regs[12])
+		   && ! fixed_regs[5]
+		   && ! fixed_regs[6]
+		   && ! fixed_regs[7]
+		   && ! fixed_regs[8])
 	    {
 	      move_bytes = (bytes > 16) ? 16 : bytes;
 	      emit_insn (gen_movstrsi_4reg (expand_block_move_mem (BLKmode,
