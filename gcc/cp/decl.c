@@ -9460,15 +9460,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		resume_momentary (yes);
 	      }
 
-	  /* Build the array type itself, then merge any constancy or
-	     volatility into the target type.  We must do it in this order
-	     to ensure that the TYPE_MAIN_VARIANT field of the array type
-	     is set correctly.  */
-
 	    type = build_cplus_array_type (type, itype);
-	    if (constp || volatilep)
-	      type = cp_build_type_variant (type, constp, volatilep);
-
 	    ctype = NULL_TREE;
 	  }
 	  break;
@@ -9482,23 +9474,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	    /* Declaring a function type.
 	       Make sure we have a valid type for the function to return.  */
-#if 0
-	    /* Is this an error?  Should they be merged into TYPE here?  */
-	    if (pedantic && (constp || volatilep))
-	      pedwarn ("function declared to return const or volatile result");
-#else
-	    /* Merge any constancy or volatility into the function return
-               type.  */
 
-	    if (constp || volatilep)
-	      {
-		type = cp_build_type_variant (type, constp, volatilep);
-		if (IS_AGGR_TYPE (type))
-		  build_pointer_type (type);
-		constp = 0;
-		volatilep = 0;
-	      }
-#endif
+	    /* We now know that constp and volatilep don't apply to the
+               decl, but to its return type.  */
+	    constp = volatilep = 0;
 
 	    /* Warn about some types functions can't return.  */
 
@@ -9703,24 +9682,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      type = TREE_TYPE (type);
 	    }
 
-	  /* Merge any constancy or volatility into the target type
-	     for the pointer.  */
-
-	  if (constp || volatilep)
-	    {
-	      /* A const or volatile signature pointer/reference is
-		 pointing to a const or volatile object, i.e., the
-		 `optr' is const or volatile, respectively, not the
-		 signature pointer/reference itself.  */
-	      if (! IS_SIGNATURE (type))
-		{
-		  type = cp_build_type_variant (type, constp, volatilep);
-		  if (IS_AGGR_TYPE (type))
-		    build_pointer_type (type);
-		  constp = 0;
-		  volatilep = 0;
-		}
-	    }
+	  /* We now know that constp and volatilep don't apply to the
+	     decl, but to the target of the pointer.  */
+	  constp = volatilep = 0;
 
 	  if (IS_SIGNATURE (type))
 	    {
@@ -9731,8 +9695,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		    cp_warning ("empty signature `%T' used in signature reference declaration",
 				type);
 #if 0
-		  type = build_signature_reference_type (type,
-							 constp, volatilep);
+		  type = build_signature_reference_type (type);
 #else
 		  sorry ("signature reference");
 		  return NULL_TREE;
@@ -9744,8 +9707,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		      && TYPE_SIZE (type))
 		    cp_warning ("empty signature `%T' used in signature pointer declaration",
 				type);
-		  type = build_signature_pointer_type (type,
-						       constp, volatilep);
+		  type = build_signature_pointer_type (type);
 		}
 	      constp = 0;
 	      volatilep = 0;
@@ -9904,8 +9866,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		  {
 		    if (current_class_type == NULL_TREE
 			|| friendp)
-		      type = build_cplus_method_type (build_type_variant (ctype, constp, volatilep),
-						      TREE_TYPE (type), TYPE_ARG_TYPES (type));
+		      type = build_cplus_method_type (ctype, TREE_TYPE (type),
+						      TYPE_ARG_TYPES (type));
 		    else
 		      {
 			cp_error ("cannot declare member function `%T::%s' within `%T'",
@@ -9933,10 +9895,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		  {
                     if (TREE_CODE (type) == FUNCTION_TYPE)
 		      type
-			= build_cplus_method_type (build_type_variant (ctype,
-								       constp,
-								       volatilep),
-						   TREE_TYPE (type),
+			= build_cplus_method_type (ctype, TREE_TYPE (type),
 						   TYPE_ARG_TYPES (type));
   		  }
 		else
@@ -9959,7 +9918,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		else
 		  {
 		    if (TREE_CODE (type) == FUNCTION_TYPE)
-		      type = build_cplus_method_type (build_type_variant (ctype, constp, volatilep), TREE_TYPE (type), TYPE_ARG_TYPES (type));
+		      type = build_cplus_method_type (ctype, TREE_TYPE (type),
+						      TYPE_ARG_TYPES (type));
 		    else
 		      type = build_offset_type (ctype, type);
 		  }
@@ -10016,8 +9976,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
       /* Note that the grammar rejects storage classes
 	 in typenames, fields or parameters.  */
-      if (constp || volatilep)
-	type = cp_build_type_variant (type, constp, volatilep);
       if (current_lang_name == lang_name_java)
 	TYPE_FOR_JAVA (type) = 1;
 
@@ -10140,8 +10098,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	{
 	  if (IS_SIGNATURE (type))
 	    error ("`const' or `volatile' specified with signature type");
-	  else  
-	    type = cp_build_type_variant (type, constp, volatilep);
 	}
 
       /* Special case: "friend class foo" looks like a TYPENAME context.  */
@@ -10217,35 +10173,37 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   /* Now create the decl, which may be a VAR_DECL, a PARM_DECL
      or a FUNCTION_DECL, depending on DECL_CONTEXT and TYPE.  */
 
+  if (decl_context == PARM || decl_context == CATCHPARM)
+    {
+      if (ctype || in_namespace)
+	error ("cannot use `::' in parameter declaration");
+
+      /* A parameter declared as an array of T is really a pointer to T.
+	 One declared as a function is really a pointer to a function.
+	 One declared as a member is really a pointer to member.  */
+
+      if (TREE_CODE (type) == ARRAY_TYPE)
+	{
+	  /* Transfer const-ness of array into that of type pointed to.  */
+	  type = build_pointer_type (TREE_TYPE (type));
+	  volatilep = constp = 0;
+	}
+      else if (TREE_CODE (type) == FUNCTION_TYPE)
+	type = build_pointer_type (type);
+      else if (TREE_CODE (type) == OFFSET_TYPE)
+	type = build_pointer_type (type);
+      else if (TREE_CODE (type) == VOID_TYPE && declarator)
+	{
+	  error ("declaration of `%s' as void", name);
+	  return NULL_TREE;
+	}
+    }
+  
   {
     register tree decl;
 
     if (decl_context == PARM)
       {
-	if (ctype || in_namespace)
-	  error ("cannot use `::' in parameter declaration");
-
-	/* A parameter declared as an array of T is really a pointer to T.
-	   One declared as a function is really a pointer to a function.
-	   One declared as a member is really a pointer to member.  */
-
-	if (TREE_CODE (type) == ARRAY_TYPE)
-	  {
-	    /* Transfer const-ness of array into that of type pointed to.  */
-	    type = build_pointer_type
-	      (cp_build_type_variant (TREE_TYPE (type), constp, volatilep));
-	    volatilep = constp = 0;
-	  }
-	else if (TREE_CODE (type) == FUNCTION_TYPE)
-	  type = build_pointer_type (type);
-	else if (TREE_CODE (type) == OFFSET_TYPE)
-	  type = build_pointer_type (type);
-	else if (TREE_CODE (type) == VOID_TYPE && declarator)
-	  {
-	    error ("declaration of `%s' as void", name);
-	    return NULL_TREE;
-	  }
-
 	decl = build_decl (PARM_DECL, declarator, complete_type (type));
 
 	bad_specifiers (decl, "parameter", virtualp, quals != NULL_TREE,
@@ -10330,8 +10288,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		      }
 		  }
 		else if (staticp < 2)
-		  type = build_cplus_method_type (build_type_variant (ctype, constp, volatilep),
-						  TREE_TYPE (type), TYPE_ARG_TYPES (type));
+		  type = build_cplus_method_type (ctype, TREE_TYPE (type),
+						  TYPE_ARG_TYPES (type));
 	      }
 
 	    /* Tell grokfndecl if it needs to set TREE_PUBLIC on the node.  */
@@ -10571,8 +10529,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		declarator = build_decl_overload (dname, TYPE_ARG_TYPES (type), 0);
 	  }
 	else if (TREE_CODE (type) == FUNCTION_TYPE && staticp < 2)
-	  type = build_cplus_method_type (build_type_variant (ctype, constp, volatilep),
-					  TREE_TYPE (type), TYPE_ARG_TYPES (type));
+	  type = build_cplus_method_type (ctype, TREE_TYPE (type),
+					  TYPE_ARG_TYPES (type));
 
 	/* Record presence of `static'.  */
 	publicp = (ctype != NULL_TREE
@@ -10625,32 +10583,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
     else
       {
 	/* It's a variable.  */
-
-	if (decl_context == CATCHPARM)
-	  {
-	    if (ctype)
-	      {
-		ctype = NULL_TREE;
-		error ("cannot use `::' in parameter declaration");
-	      }
-
-	    /* A parameter declared as an array of T is really a pointer to T.
-	       One declared as a function is really a pointer to a function.
-	       One declared as a member is really a pointer to member.  */
-
-	    if (TREE_CODE (type) == ARRAY_TYPE)
-	      {
-		/* Transfer const-ness of array into that of type
-                   pointed to.  */
-		type = build_pointer_type
-		  (cp_build_type_variant (TREE_TYPE (type), constp, volatilep));
-		volatilep = constp = 0;
-	      }
-	    else if (TREE_CODE (type) == FUNCTION_TYPE)
-	      type = build_pointer_type (type);
-	    else if (TREE_CODE (type) == OFFSET_TYPE)
-	      type = build_pointer_type (type);
-	  }
 
 	/* An uninitialized decl with `extern' is a reference.  */
 	decl = grokvardecl (type, declarator, &specbits, 

@@ -250,23 +250,25 @@ build_signature_pointer_or_reference_type (to_type, constp, volatilep, refp)
 /* Construct, lay out and return the type of pointers to signature TO_TYPE.  */
 
 tree
-build_signature_pointer_type (to_type, constp, volatilep)
+build_signature_pointer_type (to_type)
      tree to_type;
-     int constp, volatilep;
 {
   return
-    build_signature_pointer_or_reference_type (to_type, constp, volatilep, 0);
+    build_signature_pointer_or_reference_type (TYPE_MAIN_VARIANT (to_type),
+					       TYPE_READONLY (to_type),
+					       TYPE_VOLATILE (to_type), 0);
 }
 
 /* Construct, lay out and return the type of pointers to signature TO_TYPE.  */
 
 tree
-build_signature_reference_type (to_type, constp, volatilep)
+build_signature_reference_type (to_type)
      tree to_type;
-     int constp, volatilep;
 {
   return
-    build_signature_pointer_or_reference_type (to_type, constp, volatilep, 1);
+    build_signature_pointer_or_reference_type (TYPE_MAIN_VARIANT (to_type),
+					       TYPE_READONLY (to_type),
+					       TYPE_VOLATILE (to_type), 1);
 }
 
 /* Return the name of the signature table (as an IDENTIFIER_NODE)

@@ -2960,8 +2960,8 @@ extern void enter_scope_of                      PROTO((tree));
 extern tree finish_base_specifier               PROTO((tree, tree, int));
 
 /* in sig.c */
-extern tree build_signature_pointer_type	PROTO((tree, int, int));
-extern tree build_signature_reference_type	PROTO((tree, int, int));
+extern tree build_signature_pointer_type	PROTO((tree));
+extern tree build_signature_reference_type	PROTO((tree));
 extern tree build_signature_pointer_constructor	PROTO((tree, tree));
 extern tree build_signature_method_call		PROTO((tree, tree));
 extern tree build_optr_ref			PROTO((tree));
