@@ -1194,30 +1194,21 @@ dead_or_set_regno_p (insn, test_regno)
   int regno, endregno;
   rtx link;
 
-  /* REG_READ notes are not normally maintained after reload, so we
-     ignore them if the are invalid.  */
-  if (! reload_completed
-#ifdef PRESERVE_DEATH_INFO_REGNO_P
-      || PRESERVE_DEATH_INFO_REGNO_P (test_regno)
-#endif
-      )
+  /* See if there is a death note for something that includes
+     TEST_REGNO.  */
+  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
     {
-      /* See if there is a death note for something that includes
-         TEST_REGNO.  */
-      for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
-	{
-	  if (REG_NOTE_KIND (link) != REG_DEAD
-	      || GET_CODE (XEXP (link, 0)) != REG)
-	    continue;
+      if (REG_NOTE_KIND (link) != REG_DEAD
+	  || GET_CODE (XEXP (link, 0)) != REG)
+	continue;
 
-	  regno = REGNO (XEXP (link, 0));
-	  endregno = (regno >= FIRST_PSEUDO_REGISTER ? regno + 1
-		      : regno + HARD_REGNO_NREGS (regno,
-						  GET_MODE (XEXP (link, 0))));
+      regno = REGNO (XEXP (link, 0));
+      endregno = (regno >= FIRST_PSEUDO_REGISTER ? regno + 1
+		  : regno + HARD_REGNO_NREGS (regno,
+					      GET_MODE (XEXP (link, 0))));
 
-	  if (test_regno >= regno && test_regno < endregno)
-	    return 1;
-	}
+      if (test_regno >= regno && test_regno < endregno)
+	return 1;
     }
 
   if (GET_CODE (insn) == CALL_INSN
@@ -1231,7 +1222,7 @@ dead_or_set_regno_p (insn, test_regno)
       /* A value is totally replaced if it is the destination or the
 	 destination is a SUBREG of REGNO that does not change the number of
 	 words in it.  */
-     if (GET_CODE (dest) == SUBREG
+      if (GET_CODE (dest) == SUBREG
 	  && (((GET_MODE_SIZE (GET_MODE (dest))
 		+ UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 	      == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest)))

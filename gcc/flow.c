@@ -1347,12 +1347,23 @@ life_analysis_1 (f, nregs)
      possibly excluding those that are used after they are set.  */
   regset *basic_block_significant;
   register int i;
+  char save_regs_ever_live[FIRST_PSEUDO_REGISTER];
 
   struct obstack flow_obstack;
 
   gcc_obstack_init (&flow_obstack);
 
   max_regno = nregs;
+
+  /* The post-reload life analysis have (on a global basis) the same registers
+     live as was computed by reload itself.
+
+     Otherwise elimination offsets and such may be incorrect.
+
+     Reload will make some registers as live even though they do not appear
+     in the rtl.  */
+  if (reload_completed)
+    bcopy (regs_ever_live, save_regs_ever_live, (sizeof (regs_ever_live)));
 
   bzero (regs_ever_live, sizeof regs_ever_live);
 
@@ -1436,7 +1447,8 @@ life_analysis_1 (f, nregs)
 		 basic_block_live_at_end[i], 0, j,
 		 {
 		   consider = 1;
-		   if (REGNO_REG_SET_P (basic_block_significant[i], j))
+		   if (!reload_completed
+		       && REGNO_REG_SET_P (basic_block_significant[i], j))
 		     {
 		       must_rescan = 1;
 		       goto done;
@@ -1581,6 +1593,9 @@ life_analysis_1 (f, nregs)
 				 }
 			     });
 
+  /* Restore regs_ever_live that was provided by reload.  */
+  if (reload_completed)
+    bcopy (save_regs_ever_live, regs_ever_live, (sizeof (regs_ever_live)));
 
   free_regset_vector (basic_block_live_at_end, n_basic_blocks);
   free_regset_vector (basic_block_new_live_at_end, n_basic_blocks);
@@ -1792,7 +1807,7 @@ propagate_block (old, first, last, final, significant, bnum)
 	     "delete" it by turning it into a NOTE of type NOTE_INSN_DELETED.
 	     We could really delete it with delete_insn, but that
 	     can cause trouble for first or last insn in a basic block.  */
-	  if (final && insn_is_dead)
+	  if (!reload_completed && final && insn_is_dead)
 	    {
 	      PUT_CODE (insn, NOTE);
 	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
@@ -1832,7 +1847,8 @@ propagate_block (old, first, last, final, significant, bnum)
 	    register rtx x = single_set (insn);
 
 	    /* Does this instruction increment or decrement a register?  */
-	    if (final && x != 0
+	    if (!reload_completed
+		&& final && x != 0
 		&& GET_CODE (SET_DEST (x)) == REG
 		&& (GET_CODE (SET_SRC (x)) == PLUS
 		    || GET_CODE (SET_SRC (x)) == MINUS)

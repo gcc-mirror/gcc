@@ -2077,9 +2077,6 @@ extern int  conditional_move_operand		PROTO((Rtx, int));
 extern int  carry_compare_operand		PROTO((Rtx, int));
 extern char *emit_cond_move			PROTO((Rtx *, Rtx));
 
-/* Needed by a peephole optimisation.  */
-#define PRESERVE_DEATH_INFO_REGNO_P(regno) (regno < FIRST_PSEUDO_REGISTER)
-
 extern char * m32r_output_block_move PROTO((Rtx, Rtx *));
 extern int    m32r_block_immediate_operand PROTO((Rtx, int));
 extern void   m32r_expand_block_move PROTO((Rtx *));

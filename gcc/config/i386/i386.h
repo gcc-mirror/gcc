@@ -834,11 +834,6 @@ enum reg_class
 
 #define STACK_TOP_P(xop) (REG_P (xop) && REGNO (xop) == FIRST_STACK_REG)
 
-/* Try to maintain the accuracy of the death notes for regs satisfying the
-   following.  Important for stack like regs, to know when to pop. */
-
-/* #define PRESERVE_DEATH_INFO_REGNO_P(x) FP_REGNO_P(x) */
-
 /* 1 if register REGNO can magically overlap other regs.
    Note that nonzero values work only in very special circumstances. */
 
