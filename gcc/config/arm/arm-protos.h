@@ -57,6 +57,7 @@ extern int    thumb_legitimate_address_p PARAMS ((enum machine_mode, rtx,
 						  int));
 extern int    thumb_legitimate_offset_p	PARAMS ((enum machine_mode,
 						 HOST_WIDE_INT));
+extern rtx    arm_legitimize_address	PARAMS ((rtx, rtx, enum machine_mode));
 extern int    const_double_rtx_ok_for_fpu	PARAMS ((rtx));
 extern int    neg_const_double_rtx_ok_for_fpu	PARAMS ((rtx));
 

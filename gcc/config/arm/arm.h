@@ -1964,92 +1964,28 @@ typedef struct
 
 
 /* Try machine-dependent ways of modifying an illegitimate address
-   to be legitimate.  If we find one, return the new, valid address.
-   This macro is used in only one place: `memory_address' in explow.c.
+   to be legitimate.  If we find one, return the new, valid address.  */
+#define ARM_LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)	\
+do {							\
+  X = arm_legitimize_address (X, OLDX, MODE);		\
+							\
+  if (memory_address_p (MODE, X))			\
+    goto WIN;						\
+} while (0)
 
-   OLDX is the address as it was before break_out_memory_refs was called.
-   In some cases it is useful to look at this to decide what needs to be done.
+#define THUMB_LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)		\
+do {								\
+  if (flag_pic)							\
+    (X) = legitimize_pic_address (OLDX, MODE, NULL_RTX);	\
+} while (0)
 
-   MODE and WIN are passed so that this macro can use
-   GO_IF_LEGITIMATE_ADDRESS.
-
-   It is always safe for this macro to do nothing.  It exists to recognize
-   opportunities to optimize the output.
-
-   On the ARM, try to convert [REG, #BIGCONST]
-   into ADD BASE, REG, #UPPERCONST and [BASE, #VALIDCONST],
-   where VALIDCONST == 0 in case of TImode.  */
-#define ARM_LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)			 \
-{									 \
-  if (GET_CODE (X) == PLUS)						 \
-    {									 \
-      rtx xop0 = XEXP (X, 0);						 \
-      rtx xop1 = XEXP (X, 1);						 \
-									 \
-      if (CONSTANT_P (xop0) && ! symbol_mentioned_p (xop0))		 \
-	xop0 = force_reg (SImode, xop0);				 \
-      if (CONSTANT_P (xop1) && ! symbol_mentioned_p (xop1))		 \
-	xop1 = force_reg (SImode, xop1);				 \
-      if (ARM_BASE_REGISTER_RTX_P (xop0)				 \
-	  && GET_CODE (xop1) == CONST_INT)				 \
-	{								 \
-	  HOST_WIDE_INT n, low_n;					 \
-	  rtx base_reg, val;						 \
-	  n = INTVAL (xop1);						 \
-									 \
-	  if (MODE == DImode || (TARGET_SOFT_FLOAT && MODE == DFmode))	 \
-	    {								 \
-	      low_n = n & 0x0f;						 \
-	      n &= ~0x0f;						 \
-	      if (low_n > 4)						 \
-		{							 \
-		  n += 16;						 \
-		  low_n -= 16;						 \
-		}							 \
-	    }								 \
-	  else								 \
-	    {								 \
-	      low_n = ((MODE) == TImode ? 0				 \
-		       : n >= 0 ? (n & 0xfff) : -((-n) & 0xfff));	 \
-	      n -= low_n;						 \
-	    }								 \
-	  base_reg = gen_reg_rtx (SImode);				 \
-	  val = force_operand (gen_rtx_PLUS (SImode, xop0,		 \
-					     GEN_INT (n)), NULL_RTX);	 \
-	  emit_move_insn (base_reg, val);				 \
-	  (X) = (low_n == 0 ? base_reg					 \
-		 : gen_rtx_PLUS (SImode, base_reg, GEN_INT (low_n)));	 \
-	}								 \
-      else if (xop0 != XEXP (X, 0) || xop1 != XEXP (x, 1))		 \
-	(X) = gen_rtx_PLUS (SImode, xop0, xop1);			 \
-    }									 \
-  else if (GET_CODE (X) == MINUS)					 \
-    {									 \
-      rtx xop0 = XEXP (X, 0);						 \
-      rtx xop1 = XEXP (X, 1);						 \
-									 \
-      if (CONSTANT_P (xop0))						 \
-	xop0 = force_reg (SImode, xop0);				 \
-      if (CONSTANT_P (xop1) && ! symbol_mentioned_p (xop1))		 \
-	xop1 = force_reg (SImode, xop1);				 \
-      if (xop0 != XEXP (X, 0) || xop1 != XEXP (X, 1))			 \
-	(X) = gen_rtx_MINUS (SImode, xop0, xop1);			 \
-    }									 \
-  if (flag_pic)								 \
-    (X) = legitimize_pic_address (OLDX, MODE, NULL_RTX);		 \
-  if (memory_address_p (MODE, X))					 \
-    goto WIN;								 \
-}
-
-#define THUMB_LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)	\
-  if (flag_pic)						\
-    (X) = legitimize_pic_address (OLDX, MODE, NULL_RTX);		
-     
-#define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)	\
-  if (TARGET_ARM)				\
-    ARM_LEGITIMIZE_ADDRESS (X, OLDX, MODE, WIN)	\
-  else						\
-    THUMB_LEGITIMIZE_ADDRESS (X, OLDX, MODE, WIN)
+#define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)		\
+do {							\
+  if (TARGET_ARM)					\
+    ARM_LEGITIMIZE_ADDRESS (X, OLDX, MODE, WIN);	\
+  else							\
+    THUMB_LEGITIMIZE_ADDRESS (X, OLDX, MODE, WIN);	\
+} while (0)
      
 /* Go to LABEL if ADDR (a legitimate address expression)
    has an effect that depends on the machine mode it is used for.  */
