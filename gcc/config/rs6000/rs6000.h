@@ -1638,13 +1638,8 @@ typedef struct rs6000_args
    .stabs in cc1plus.  */
    
 #define FASCIST_ASSEMBLER
-
-#ifndef ASM_OUTPUT_CONSTRUCTOR
 #define ASM_OUTPUT_CONSTRUCTOR(file, name)
-#endif
-#ifndef ASM_OUTPUT_DESTRUCTOR
 #define ASM_OUTPUT_DESTRUCTOR(file, name)
-#endif
 
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
    is done just by pretending it is already truncated.  */
