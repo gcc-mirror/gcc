@@ -406,6 +406,7 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "output.h"
 #include "toplev.h"
+#include "intl.h"
 #include "obstack.h"
 
 /* One to use setjmp/longjmp method of generating code for exception
@@ -2446,6 +2447,7 @@ save_eh_status (p)
   p->caught_return_label_stack = caught_return_label_stack;
   p->protect_list = protect_list;
   p->ehc = current_function_ehc;
+  p->eh_return_stub_label = eh_return_stub_label;
 
   init_eh_for_function ();
 }
@@ -2469,6 +2471,7 @@ restore_eh_status (p)
   ehstack = p->ehstack;
   catchstack = p->catchstack;
   current_function_ehc = p->ehc;
+  eh_return_stub_label = p->eh_return_stub_label;
 }
 
 /* This section is for the exception handling specific optimization
@@ -2791,6 +2794,8 @@ expand_eh_return ()
 
   if (!eh_return_context)
     return;
+
+  current_function_cannot_inline = N_("function uses __builtin_eh_return");
 
   eh_regs (&reg1, &reg2, &reg3, 1);
 #ifdef POINTERS_EXTEND_UNSIGNED
