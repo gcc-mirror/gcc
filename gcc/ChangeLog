@@ -1,5 +1,9 @@
 2001-05-20  Richard Henderson  <rth@redhat.com>
 
+	* Makefile.in (dwarf2asm.o): Depend on $(TREE_H).
+
+2001-05-20  Richard Henderson  <rth@redhat.com>
+
 	* config/i386/att.h (ASM_SHORT, ASM_LONG): Add trailing \t.
 	(ASM_DOUBLE): Remove.
 	* config/i386/bsd.h, config/i386/sco5.h: Likewise.
