@@ -1339,8 +1339,13 @@ extern struct rtx_def *hppa_va_arg();
    : ((C) == 'T' ? 					\
       (GET_CODE (OP) == MEM				\
        /* Using DFmode forces only short displacements	\
-	  to be recognized as valid in reg+d addresses.  */\
-       && memory_address_p (DFmode, XEXP (OP, 0))	\
+	  to be recognized as valid in reg+d addresses. \
+	  However, this is not necessary for PA2.0 since\
+	  it has long FP loads/stores.  */		\
+       && memory_address_p ((TARGET_PA_20		\
+			     ? GET_MODE (OP)		\
+			     : DFmode),			\
+			    XEXP (OP, 0))		\
        && !(GET_CODE (XEXP (OP, 0)) == PLUS		\
 	    && (GET_CODE (XEXP (XEXP (OP, 0), 0)) == MULT\
 		|| GET_CODE (XEXP (XEXP (OP, 0), 1)) == MULT)))
@@ -1437,6 +1442,11 @@ extern struct rtx_def *hppa_va_arg();
 	if (GET_CODE (index) == CONST_INT		\
 	    && ((INT_14_BITS (index)			\
 		 && (TARGET_SOFT_FLOAT			\
+		     || (TARGET_PA_20		\
+			 && ((MODE == SFmode		\
+			      && (INTVAL (index) % 4) == 0)\
+			     || (MODE == DFmode		\
+				 && (INTVAL (index) % 8) == 0)))\
 		     || ((MODE) != SFmode && (MODE) != DFmode))) \
 		|| INT_5_BITS (index)))			\
 	  goto ADDR;					\
@@ -1504,7 +1514,9 @@ extern struct rtx_def *hppa_va_arg();
 do { 									\
   int offset, newoffset, mask;						\
   rtx new, temp = NULL_RTX;						\
-  mask = GET_MODE_CLASS (MODE) == MODE_FLOAT ? 0x1f : 0x3fff;		\
+									\
+  mask = (GET_MODE_CLASS (MODE) == MODE_FLOAT				\
+	  ? (TARGET_PA_20 ? 0x3fff : 0x1f) : 0x3fff);			\
 									\
   if (optimize								\
       && GET_CODE (AD) == PLUS)						\
