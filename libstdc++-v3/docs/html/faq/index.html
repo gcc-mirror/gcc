@@ -87,6 +87,7 @@ http://gcc.gnu.org/onlinedocs/libstdc++/faq/</a>.</p>
          <li><a href="#5_5">[removed]</a>
          <li><a href="#5_6">Is libstdc++-v3 thread-safe?</a>
          <li><a href="#5_7">How do I get a copy of the ISO C++ Standard?</a>
+         <li><a href="#5_8">What's an ABI and why is it so messy?</a>
       </ol>
 
 </ol>
@@ -808,6 +809,53 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
       </p>
       <p>Who is your country's member body?  Visit the
          <a href="http://www.iso.ch/">ISO homepage</a> and find out!
+      </p>
+
+<hr>
+   <h2><a name="5_8">5.8 What's an ABI and why is it so messy?</a></h2>
+      <p>&quot;ABI&quot; stands for &quot;Application Binary Interface.&quot;
+         Conventionally, it refers to a great mass of details about how
+         arguments are arranged on the call stack and/or in registers, and
+         how various types are arranged and padded in structs.  A single CPU
+         design may suffer multiple ABIs designed by different development
+         tool vendors who made different choices, or even by the same vendor
+         for different target applications or compiler versions.  In ideal
+         circumstances the CPU designer presents one ABI and all the OSes and
+         compilers use it.  In practice every ABI omits details that compiler
+         implementers (consciously or accidentally) must choose for themselves.
+      </p>
+      <p>That ABI definition suffices for compilers to generate code so a
+         program can interact safely with an OS and its lowest-level libraries.
+         Users usually want an ABI to encompass more detail, allowing libraries
+         built with different compilers (or different releases of the same
+         compiler!) to be linked together.  For C++, this includes many more
+         details than for C, and CPU designers (for good reasons elaborated
+         below) have not stepped up to publish C++ ABIs.  The details include
+         virtual function implementation, struct inheritance layout, name
+         mangling, and exception handling.  Such an ABI has been defined for
+         GNU C++, and is immediately useful for embedded work relying only on
+         a &quot;free-standing implementation&quot; that doesn't include (much
+         of) the standard library.  It is a good basis for the work to come.
+      </p>
+      <p>A useful C++ ABI must also incorporate many details of the standard 
+         library implementation.  For a C ABI, the layouts of a few structs
+         (such as FILE, stat, jmpbuf, and the like) and a few macros suffice.
+         For C++, the details include the complete set of names of functions
+         and types used, the offsets of class members and virtual functions,
+         and the actual definitions of all inlines.  C++ exposes many more
+         library details to the caller than C does.  It makes defining
+         a complete ABI a much bigger undertaking, and requires not just
+         documenting library implementation details, but carefully designing
+         those details so that future bug fixes and optimizations don't
+         force breaking the ABI.
+      </p>
+      <p>There are ways to help isolate library implementation details from the 
+         ABI, but they trade off against speed.  Library details used in
+         inner loops (e.g., getchar) must be exposed and frozen for all
+         time, but many others may reasonably be kept hidden from user code,
+         so they may later be changed.  Deciding which, and implementing
+         the decisions, must happen before you can reasonably document a
+         candidate C++ ABI that encompasses the standard library.
       </p>
 
 <!-- ####################################################### -->
