@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #ifndef L_tmpnam
-#define L_tmpname 100
+#define L_tmpnam 100
 #endif
 #ifndef P_tmpdir
 #define P_tmpdir "/usr/tmp"
