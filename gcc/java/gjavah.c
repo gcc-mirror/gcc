@@ -146,6 +146,7 @@ static void help PARAMS ((void)) ATTRIBUTE_NORETURN;
 static void version PARAMS ((void)) ATTRIBUTE_NORETURN;
 static int overloaded_jni_method_exists_p PARAMS ((const unsigned char *, int,
 						   const char *, int));
+static void jni_print_char PARAMS ((FILE *, int));
 
 JCF_u2 current_field_name;
 JCF_u2 current_field_value;

@@ -46,6 +46,8 @@ static tree push_jvm_slot PARAMS ((int, tree));
 static tree lookup_name_current_level PARAMS ((tree));
 static tree push_promoted_type PARAMS ((const char *, tree));
 static struct binding_level *make_binding_level PARAMS ((void));
+static boolean emit_init_test_initialization PARAMS ((struct hash_entry *,
+						      hash_table_key));
 
 /* Set to non-zero value in order to emit class initilization code
    before static field references.  */
