@@ -1,3 +1,13 @@
+2002-11-19  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/ref/natReference.cc (add_to_hash): Look at `copy', not
+	`referent'.
+	(finalize_referred_to_object): Don't modify `referent' or `copy'
+	fields.
+	(add_to_hash): Correctly set `n->next' when updating list.
+	* java/lang/ref/Reference.java (enqueue): Return false if already
+	enqueued.
+
 2002-11-19  Ranjit Mathew <rmathew@hotmail.com>
 
 	* include/jni.h: Add missing JNICALL and JNIEXPORT attributes

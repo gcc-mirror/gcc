@@ -1,5 +1,5 @@
 /* java.lang.ref.Reference
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -185,7 +185,7 @@ public abstract class Reference
    */
   public boolean enqueue() 
   {
-    if (queue != null)
+    if (queue != null && nextOnQueue == null)
       {
 	queue.enqueue(this);
 	queue = null;
