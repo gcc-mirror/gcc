@@ -1,3 +1,7 @@
+2000-12-23  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* java/lang/mprec.h: Change C9X reference to refer to C99.
+
 2000-12-22  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/Throwable.java (trace_enabled): New static field.
