@@ -1,3 +1,7 @@
+2001-08-31  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/v850/v850.h (OUTPUT_ADDR_CONST_EXTRA): Define.
+
 2001-08-31  Diego Novillo  <dnovillo@redhat.com>
 
 	* c-decl.c (c_decode_option): Skip '-f' prefix before calling
