@@ -5402,11 +5402,15 @@ i386_simplify_dwarf_addr (orig_x)
 {
   rtx x = orig_x, y;
 
+  if (GET_CODE (x) == MEM)
+    x = XEXP (x, 0);
+
   if (TARGET_64BIT)
     {
       if (GET_CODE (x) != CONST
 	  || GET_CODE (XEXP (x, 0)) != UNSPEC
-	  || XINT (XEXP (x, 0), 1) != 15)
+	  || XINT (XEXP (x, 0), 1) != 15
+	  || GET_CODE (orig_x) != MEM)
 	return orig_x;
       return XVECEXP (XEXP (x, 0), 0, 0);
     }
@@ -5441,8 +5445,8 @@ i386_simplify_dwarf_addr (orig_x)
 
   x = XEXP (XEXP (x, 1), 0);
   if (GET_CODE (x) == UNSPEC
-      && (XINT (x, 1) == 6
-	  || XINT (x, 1) == 7))
+      && ((XINT (x, 1) == 6 && GET_CODE (orig_x) == MEM)
+	  || (XINT (x, 1) == 7 && GET_CODE (orig_x) != MEM)))
     {
       if (y)
 	return gen_rtx_PLUS (Pmode, y, XVECEXP (x, 0, 0));
@@ -5452,8 +5456,8 @@ i386_simplify_dwarf_addr (orig_x)
   if (GET_CODE (x) == PLUS
       && GET_CODE (XEXP (x, 0)) == UNSPEC
       && GET_CODE (XEXP (x, 1)) == CONST_INT
-      && (XINT (XEXP (x, 0), 1) == 6
-	  || XINT (XEXP (x, 0), 1) == 7))
+      && ((XINT (XEXP (x, 0), 1) == 6 && GET_CODE (orig_x) == MEM)
+	  || (XINT (XEXP (x, 0), 1) == 7 && GET_CODE (orig_x) != MEM)))
     {
       x = gen_rtx_PLUS (VOIDmode, XVECEXP (XEXP (x, 0), 0, 0), XEXP (x, 1));
       if (y)

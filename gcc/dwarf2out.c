@@ -8828,7 +8828,12 @@ rtl_for_decl_location (decl)
 	  && (CONSTANT_P (rtl)
 	      || (GET_CODE (rtl) == MEM
 	          && CONSTANT_P (XEXP (rtl, 0)))))
-	return rtl;
+	{
+#ifdef ASM_SIMPLIFY_DWARF_ADDR
+	  rtl = ASM_SIMPLIFY_DWARF_ADDR (rtl);
+#endif
+	  return rtl;
+	}
       rtl = NULL_RTX;
     }
   else if (TREE_CODE (decl) == PARM_DECL)
@@ -8930,6 +8935,10 @@ rtl_for_decl_location (decl)
 	}
     }
 
+#ifdef ASM_SIMPLIFY_DWARF_ADDR
+  if (rtl)
+    rtl = ASM_SIMPLIFY_DWARF_ADDR (rtl);
+#endif
   return rtl;
 }
 
