@@ -1884,7 +1884,7 @@ putenv (str)
   /* Add a new environment variable */
   environ = (char **) xmalloc (sizeof (char *) * (num_envs+2));
   *environ = str;
-  bcopy ((char *) old_environ, (char *) (environ + 1),
+  memcpy ((char *) (environ + 1), (char *) old_environ,
 	 sizeof (char *) * (num_envs+1));
 
 #endif	/* VMS */
@@ -4584,8 +4584,8 @@ is_directory (path1, path2, linker)
   /* Construct the path from the two parts.  Ensure the string ends with "/.".
      The resulting path will be a directory even if the given path is a
      symbolic link.  */
-  bcopy (path1, path, len1);
-  bcopy (path2, path + len1, len2);
+  memcpy (path, path1, len1);
+  memcpy (path + len1, path2, len2);
   cp = path + len1 + len2;
   if (cp[-1] != '/' && cp[-1] != DIR_SEPARATOR)
     *cp++ = DIR_SEPARATOR;

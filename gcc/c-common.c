@@ -270,7 +270,7 @@ combine_strings (strings)
 			? wchar_bytes : 1));
 	  if ((TREE_TYPE (t) == wchar_array_type_node) == wide_flag)
 	    {
-	      bcopy (TREE_STRING_POINTER (t), q, len);
+	      memcpy (q, TREE_STRING_POINTER (t), len);
 	      q += len;
 	    }
 	  else

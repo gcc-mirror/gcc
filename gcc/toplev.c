@@ -2295,10 +2295,10 @@ push_float_handler (handler, old_handler)
 
   float_handled = 1;
   if (was_handled)
-    bcopy ((char *) float_handler, (char *) old_handler,
+    memcpy ((char *) old_handler, (char *) float_handler,
 	   sizeof (float_handler));
 
-  bcopy ((char *) handler, (char *) float_handler, sizeof (float_handler));
+  memcpy ((char *) float_handler, (char *) handler, sizeof (float_handler));
   return was_handled;
 }
 

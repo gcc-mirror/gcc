@@ -547,7 +547,8 @@ HOST_LIBDEPS= $(HOST_PREFIX)$(HOST_OBSTACK) $(HOST_PREFIX)$(HOST_ALLOCA) $(HOST_
 
 # How to link with both our special library facilities
 # and the system's installed libraries.
-LIBS = $(OBSTACK) $(USE_ALLOCA) $(MALLOC) $(VFPRINTF) $(DOPRINT) $(CLIB)
+LIBS = $(OBSTACK) $(USE_ALLOCA) $(MALLOC) $(VFPRINTF) $(DOPRINT) $(CLIB) \
+	../libiberty/libiberty.a
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
