@@ -496,8 +496,6 @@ extern int cpp_start_read PARAMS ((cpp_reader *, const char *));
 extern void cpp_finish PARAMS ((cpp_reader *));
 extern int cpp_avoid_paste PARAMS ((cpp_reader *, const cpp_token *,
 				    const cpp_token *));
-extern enum cpp_ttype cpp_can_paste PARAMS ((cpp_reader *, const cpp_token *,
-					     const cpp_token *, int *));
 extern const cpp_token *cpp_get_token PARAMS ((cpp_reader *));
 extern const unsigned char *cpp_macro_definition PARAMS ((cpp_reader *,
 						  const cpp_hashnode *));

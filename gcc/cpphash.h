@@ -134,7 +134,7 @@ struct cpp_context
   union utoken last;
 
   /* If non-NULL, a buffer used for storage related to this context.
-     When the context is popped, the buffer is freed.  */
+     When the context is popped, the buffer is released.  */
   _cpp_buff *buff;
 
   /* For a macro context, these are the macro and its arguments.  */

@@ -74,8 +74,8 @@ static const cpp_token *new_string_token PARAMS ((cpp_reader *, U_CHAR *,
 static const cpp_token *new_number_token PARAMS ((cpp_reader *, int));
 static const cpp_token *stringify_arg PARAMS ((cpp_reader *, macro_arg *));
 static void paste_all_tokens PARAMS ((cpp_reader *, const cpp_token *));
-static int paste_tokens PARAMS ((cpp_reader *, cpp_token *,
-				 const cpp_token *));
+static bool paste_tokens PARAMS ((cpp_reader *, const cpp_token **,
+				  const cpp_token *));
 static int funlike_invocation_p PARAMS ((cpp_reader *, const cpp_hashnode *));
 static void replace_args PARAMS ((cpp_reader *, cpp_macro *, macro_arg *));
 
@@ -330,71 +330,49 @@ stringify_arg (pfile, arg)
   return new_string_token (pfile, start, total_len);
 }
 
-/* Try to paste two tokens.  On success, the LHS becomes the pasted
-   token, and 0 is returned.  For failure, we update the flags of the
-   RHS appropriately and return non-zero.  */
-static int
-paste_tokens (pfile, lhs, rhs)
+/* Try to paste two tokens.  On success, return non-zero.  In any
+   case, PLHS is updated to point to the pasted token, which is
+   guaranteed to not have the PASTE_LEFT flag set.  */
+static bool
+paste_tokens (pfile, plhs, rhs)
      cpp_reader *pfile;
-     cpp_token *lhs;
-     const cpp_token *rhs;
+     const cpp_token **plhs, *rhs;
 {
-  unsigned char flags = 0;
-  int digraph = 0;
-  enum cpp_ttype type;
+  unsigned char *buf, *end;
+  const cpp_token *lhs;
+  unsigned int len;
+  bool valid;
 
-  type = cpp_can_paste (pfile, lhs, rhs, &digraph);
-  
-  if (type == CPP_EOF)
-    {
-      /* Mandatory warning for all apart from assembler.  */
-      if (CPP_OPTION (pfile, lang) != CLK_ASM)
-	cpp_warning (pfile,
-	 "pasting \"%s\" and \"%s\" does not give a valid preprocessing token",
-		     cpp_token_as_text (pfile, lhs),
-		     cpp_token_as_text (pfile, rhs));
-      return 1;
-    }
+  lhs = *plhs;
+  len = cpp_token_len (lhs) + cpp_token_len (rhs) + 1;
+  buf = (unsigned char *) alloca (len);
+  end = cpp_spell_token (pfile, lhs, buf);
 
-  if (digraph)
-    flags |= DIGRAPH;
+  /* Avoid comment headers, since they are still processed in stage 3.
+     It is simpler to insert a space here, rather than modifying the
+     lexer to ignore comments in some circumstances.  Simply returning
+     false doesn't work, since we want to clear the PASTE_LEFT flag.  */
+  if (lhs->type == CPP_DIV
+      && (rhs->type == CPP_MULT || rhs->type == CPP_DIV))
+    *end++ = ' ';
+  end = cpp_spell_token (pfile, rhs, end);
 
-  /* Identifiers and numbers need spellings to be pasted.  */
-  if (type == CPP_NAME || type == CPP_NUMBER)
-    {
-      unsigned int total_len = cpp_token_len (lhs) + cpp_token_len (rhs);
-      unsigned char *result, *end;
+  cpp_push_buffer (pfile, buf, end - buf, /* from_stage3 */ true, 1);
 
-      result = _cpp_pool_alloc (&pfile->ident_pool, total_len + 1);
+  /* Tweak the column number the lexer will report.  */
+  pfile->buffer->col_adjust = pfile->cur_token[-1].col - 1;
 
-      /* Paste the spellings and null terminate.  */
-      end = cpp_spell_token (pfile, rhs, cpp_spell_token (pfile, lhs, result));
-      *end = '\0';
-      total_len = end - result;
+  /* We don't want a leading # to be interpreted as a directive.  */
+  pfile->buffer->saved_flags = 0;
 
-      if (type == CPP_NAME)
-	{
-	  lhs->val.node = cpp_lookup (pfile, result, total_len);
-	  if (lhs->val.node->flags & NODE_OPERATOR)
-	    {
-	      flags |= NAMED_OP;
-	      lhs->type = lhs->val.node->value.operator;
-	    }
-	}
-      else
-	{
-	  lhs->val.str.text = result;
-	  lhs->val.str.len = total_len;
-	}
-    }
-  else if (type == CPP_WCHAR || type == CPP_WSTRING)
-    lhs->val.str = rhs->val.str;
+  /* Set pfile->cur_token as required by _cpp_lex_direct.  */
+  pfile->cur_token = _cpp_temp_token (pfile);
+  *plhs = _cpp_lex_direct (pfile);
+  valid = (pfile->buffer->cur == pfile->buffer->rlimit
+	   && pfile->buffer->read_ahead == EOF);
+  _cpp_pop_buffer (pfile);
 
-  /* Set type and flags after pasting spellings.  */
-  lhs->type = type;
-  lhs->flags = flags;
-
-  return 0;
+  return valid;
 }
 
 /* Handles an arbitrarily long sequence of ## operators.  This
@@ -407,15 +385,8 @@ paste_all_tokens (pfile, lhs)
      cpp_reader *pfile;
      const cpp_token *lhs;
 {
-  cpp_token *pasted;
   const cpp_token *rhs;
   cpp_context *context = pfile->context;
-
-  /* Copy lhs to pasted, but preserve original line and column.  */
-  pasted = _cpp_temp_token (pfile);
-  pasted->type = lhs->type;
-  pasted->flags = lhs->flags;
-  pasted->val.str = lhs->val.str;
 
   do
     {
@@ -432,17 +403,23 @@ paste_all_tokens (pfile, lhs)
       if (rhs->type == CPP_PADDING)
 	abort ();
 
-      if (paste_tokens (pfile, pasted, rhs))
+      if (!paste_tokens (pfile, &lhs, rhs))
 	{
 	  _cpp_backup_tokens (pfile, 1);
+
+	  /* Mandatory warning for all apart from assembler.  */
+	  if (CPP_OPTION (pfile, lang) != CLK_ASM)
+	    cpp_warning (pfile,
+	 "pasting \"%s\" and \"%s\" does not give a valid preprocessing token",
+			 cpp_token_as_text (pfile, lhs),
+			 cpp_token_as_text (pfile, rhs));
 	  break;
 	}
     }
   while (rhs->flags & PASTE_LEFT);
 
-  /* Clear PASTE_LEFT flag, put the token in its own context.  */
-  pasted->flags &= ~PASTE_LEFT;
-  push_token_context (pfile, NULL, pasted, 1);
+  /* Put the resulting token in its own context.  */
+  push_token_context (pfile, NULL, lhs, 1);
 }
 
 /* Reads and returns the arguments to a function-like macro invocation.

@@ -1,5 +1,14 @@
 2001-09-27  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* cpphash.h: Update comment.
+	* cpplex.c: Update comments.
+	(_cpp_can_paste): Remove.
+	* cpplib.h (_cpp_can_paste): Remove.
+	* cppmacro.c (paste_tokens, paste_all_tokens): Update to use the
+	lexer rather than _cpp_can_paste.
+
+2001-09-27  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* doc/cppinternals.texi: Update.
 
 2001-09-26  Neil Booth  <neil@daikokuya.demon.co.uk>

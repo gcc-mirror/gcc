@@ -1218,7 +1218,6 @@ _cpp_lex_direct (pfile)
 
       /* Save the comment as a token in its own right.  */
       save_comment (pfile, result, comment_start);
-      /* Don't do MI optimisation.  */
       break;
 
     case '<':
@@ -1586,112 +1585,6 @@ _cpp_equiv_tokens (a, b)
       }
 
   return 0;
-}
-
-/* Determine whether two tokens can be pasted together, and if so,
-   what the resulting token is.  Returns CPP_EOF if the tokens cannot
-   be pasted, or the appropriate type for the merged token if they
-   can.  */
-enum cpp_ttype
-cpp_can_paste (pfile, token1, token2, digraph)
-     cpp_reader * pfile;
-     const cpp_token *token1, *token2;
-     int* digraph;
-{
-  enum cpp_ttype a = token1->type, b = token2->type;
-  int cxx = CPP_OPTION (pfile, cplusplus);
-
-  /* Treat named operators as if they were ordinary NAMEs.  */
-  if (token1->flags & NAMED_OP)
-    a = CPP_NAME;
-  if (token2->flags & NAMED_OP)
-    b = CPP_NAME;
-
-  if ((int) a <= (int) CPP_LAST_EQ && b == CPP_EQ)
-    return (enum cpp_ttype) ((int) a + ((int) CPP_EQ_EQ - (int) CPP_EQ));
-
-  switch (a)
-    {
-    case CPP_GREATER:
-      if (b == a) return CPP_RSHIFT;
-      if (b == CPP_QUERY && cxx)	return CPP_MAX;
-      if (b == CPP_GREATER_EQ)	return CPP_RSHIFT_EQ;
-      break;
-    case CPP_LESS:
-      if (b == a) return CPP_LSHIFT;
-      if (b == CPP_QUERY && cxx)	return CPP_MIN;
-      if (b == CPP_LESS_EQ)	return CPP_LSHIFT_EQ;
-      if (CPP_OPTION (pfile, digraphs))
-	{
-	  if (b == CPP_COLON)
-	    {*digraph = 1; return CPP_OPEN_SQUARE;} /* <: digraph */
-	  if (b == CPP_MOD)
-	    {*digraph = 1; return CPP_OPEN_BRACE;}	/* <% digraph */
-	}
-      break;
-
-    case CPP_PLUS: if (b == a)	return CPP_PLUS_PLUS; break;
-    case CPP_AND:  if (b == a)	return CPP_AND_AND; break;
-    case CPP_OR:   if (b == a)	return CPP_OR_OR;   break;
-
-    case CPP_MINUS:
-      if (b == a)		return CPP_MINUS_MINUS;
-      if (b == CPP_GREATER)	return CPP_DEREF;
-      break;
-    case CPP_COLON:
-      if (b == a && cxx)	return CPP_SCOPE;
-      if (b == CPP_GREATER && CPP_OPTION (pfile, digraphs))
-	{*digraph = 1; return CPP_CLOSE_SQUARE;} /* :> digraph */
-      break;
-
-    case CPP_MOD:
-      if (CPP_OPTION (pfile, digraphs))
-	{
-	  if (b == CPP_GREATER)
-	    {*digraph = 1; return CPP_CLOSE_BRACE;}  /* %> digraph */
-	  if (b == CPP_COLON)
-	    {*digraph = 1; return CPP_HASH;}         /* %: digraph */
-	}
-      break;
-    case CPP_DEREF:
-      if (b == CPP_MULT && cxx)	return CPP_DEREF_STAR;
-      break;
-    case CPP_DOT:
-      if (b == CPP_MULT && cxx)	return CPP_DOT_STAR;
-      if (b == CPP_NUMBER)	return CPP_NUMBER;
-      break;
-
-    case CPP_HASH:
-      if (b == a && (token1->flags & DIGRAPH) == (token2->flags & DIGRAPH))
-	/* %:%: digraph */
-	{*digraph = (token1->flags & DIGRAPH); return CPP_PASTE;}
-      break;
-
-    case CPP_NAME:
-      if (b == CPP_NAME)	return CPP_NAME;
-      if (b == CPP_NUMBER
-	  && name_p (pfile, &token2->val.str)) return CPP_NAME;
-      if (b == CPP_CHAR
-	  && token1->val.node == pfile->spec_nodes.n_L) return CPP_WCHAR;
-      if (b == CPP_STRING
-	  && token1->val.node == pfile->spec_nodes.n_L) return CPP_WSTRING;
-      break;
-
-    case CPP_NUMBER:
-      if (b == CPP_NUMBER)	return CPP_NUMBER;
-      if (b == CPP_NAME)	return CPP_NUMBER;
-      if (b == CPP_DOT)		return CPP_NUMBER;
-      /* Numbers cannot have length zero, so this is safe.  */
-      if ((b == CPP_PLUS || b == CPP_MINUS)
-	  && VALID_SIGN ('+', token1->val.str.text[token1->val.str.len - 1]))
-	return CPP_NUMBER;
-      break;
-
-    default:
-      break;
-    }
-
-  return CPP_EOF;
 }
 
 /* Returns nonzero if a space should be inserted to avoid an
@@ -2139,7 +2032,8 @@ struct dummy
 #define DEFAULT_ALIGNMENT (offsetof (struct dummy, u))
 #define CPP_ALIGN(size, align) (((size) + ((align) - 1)) & ~((align) - 1))
 
-/* Create a new allocation buffer.  */
+/* Create a new allocation buffer.  Place the control block at the end
+   of the buffer, so that buffer overflows will cause immediate chaos.  */
 static _cpp_buff *
 new_buff (len)
      unsigned int len;
