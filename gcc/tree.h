@@ -576,6 +576,10 @@ struct tree_block
 #define TYPE_OBSTACK(NODE) ((NODE)->type.obstack)
 #define TYPE_LANG_SPECIFIC(NODE) ((NODE)->type.lang_specific)
 
+/* A TREE_LIST of IDENTIFIER nodes of the attributes that apply
+   to this type.  */
+#define TYPE_ATTRIBUTES(NODE) ((NODE)->type.attributes)
+
 /* The alignment necessary for objects of this type.
    The value is an int, measured in bits.  */
 #define TYPE_ALIGN(NODE) ((NODE)->type.align)
@@ -612,14 +616,16 @@ struct tree_type
   char common[sizeof (struct tree_common)];
   union tree_node *values;
   union tree_node *size;
+  union tree_node *attributes;
   unsigned uid;
 
+  unsigned char precision;
 #ifdef ONLY_INT_FIELDS
   int mode : 8;
 #else
   enum machine_mode mode : 8;
 #endif
-  unsigned char precision;
+
   unsigned string_flag : 1;
   unsigned no_force_blk_flag : 1;
   unsigned lang_flag_0 : 1;
@@ -1143,6 +1149,8 @@ extern tree array_type_nelts		PROTO((tree));
 extern tree value_member		PROTO((tree, tree));
 extern tree purpose_member		PROTO((tree, tree));
 extern tree binfo_member		PROTO((tree, tree));
+extern int attribute_list_equal		PROTO((tree, tree));
+extern int attribute_list_contained	PROTO((tree, tree));
 extern int tree_int_cst_equal		PROTO((tree, tree));
 extern int tree_int_cst_lt		PROTO((tree, tree));
 extern int tree_int_cst_sgn		PROTO((tree));
@@ -1154,6 +1162,14 @@ extern int index_type_equal		PROTO((tree, tree));
 
 extern tree make_tree ();
 
+/* Return a type like TTYPE except that its TYPE_ATTRIBUTES
+   is ATTRIBUTE.
+
+   Such modified types already made are recorded so that duplicates
+   are not made. */
+
+extern tree build_type_attribute_variant PROTO((tree, tree));
+
 /* Given a type node TYPE, and CONSTP and VOLATILEP, return a type
    for the same kind of data as TYPE describes.
    Variants point to the "main variant" (which has neither CONST nor VOLATILE)
