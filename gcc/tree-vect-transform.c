@@ -82,15 +82,12 @@ static tree
 vect_get_new_vect_var (tree type, enum vect_var_kind var_kind, const char *name)
 {
   const char *prefix;
-  int prefix_len;
   tree new_vect_var;
 
   if (var_kind == vect_simple_var)
     prefix = "vect_"; 
   else
     prefix = "vect_p";
-
-  prefix_len = strlen (prefix);
 
   if (name)
     new_vect_var = create_tmp_var (type, concat (prefix, name, NULL));
