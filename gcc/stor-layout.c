@@ -1085,6 +1085,18 @@ layout_type (type)
 	      && TREE_CODE (type) != ARRAY_TYPE)))
     TYPE_ALIGN (type) = GET_MODE_ALIGNMENT (TYPE_MODE (type));
 
+  /* Do machine-dependent extra alignment.  */
+#ifdef ROUND_TYPE_ALIGN
+  TYPE_ALIGN (type)
+    = ROUND_TYPE_ALIGN (type, TYPE_ALIGN (type), BITS_PER_UNIT);
+#endif
+
+#ifdef ROUND_TYPE_SIZE
+  if (TYPE_SIZE (type) != 0)
+    TYPE_SIZE (type)
+      = ROUND_TYPE_SIZE (type, TYPE_SIZE (type), TYPE_ALIGN (type));
+#endif
+
   /* Evaluate nonconstant size only once, either now or as soon as safe.  */
   if (TYPE_SIZE (type) != 0 && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
     TYPE_SIZE (type) = variable_size (TYPE_SIZE (type));

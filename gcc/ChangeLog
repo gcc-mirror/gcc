@@ -1,3 +1,16 @@
+Thu Jan 21 14:13:31 1999  Vladimir N. Makarov  <vmakarov@cygnus.com>
+
+        * varasm.c (output_constant_pool): Use floor_log2 instead of
+	exact_log2 for ASM_OUTPUT_ALIGN.
+
+	* stor-layout.c (layout_type): Do machine-dependent extra alignment.
+
+	* emit-rtl.c (operand_subword): Handle case when a subword outside
+	the operand.
+
+	* tm.texi (ROUND_TYPE_{SIZE,ALIGN}): More accurate descriptions of
+	the macros.
+
 Thu Jan 21 01:59:30 1999  Richard Henderson  <rth@cygnus.com>
 
 	* cse.c (fold_rtx): Revert 29 Dec change.
