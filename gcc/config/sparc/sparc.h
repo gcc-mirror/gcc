@@ -693,8 +693,9 @@ extern char leaf_reg_backmap[];
    If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
    first local allocated.  Otherwise, it is the offset to the BEGINNING
    of the first local allocated.  */
-/* This is 16 to allow space for one TFmode floating point value.  */
-#define STARTING_FRAME_OFFSET (-16)
+/* This allows space for one TFmode floating point value.  */
+#define STARTING_FRAME_OFFSET \
+  (-SPARC_STACK_ALIGN (LONG_DOUBLE_TYPE_SIZE / BITS_PER_UNIT))
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
