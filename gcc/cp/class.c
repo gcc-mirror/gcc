@@ -3410,11 +3410,19 @@ walk_subobject_offsets (type, f, offset, offsets, max_offset, vbases_p)
      int vbases_p;
 {
   int r = 0;
+  tree type_binfo = NULL_TREE;
 
   /* If this OFFSET is bigger than the MAX_OFFSET, then we should
      stop.  */
   if (max_offset && INT_CST_LT (max_offset, offset))
     return 0;
+
+  if (!TYPE_P (type)) 
+    {
+      if (abi_version_at_least (2))
+	type_binfo = type;
+      type = BINFO_TYPE (type);
+    }
 
   if (CLASS_TYPE_P (type))
     {
@@ -3432,9 +3440,13 @@ walk_subobject_offsets (type, f, offset, offsets, max_offset, vbases_p)
 	return r;
 
       /* Iterate through the direct base classes of TYPE.  */
-      for (i = 0; i < CLASSTYPE_N_BASECLASSES (type); ++i)
+      if (!type_binfo)
+	type_binfo = TYPE_BINFO (type);
+      for (i = 0; i < BINFO_N_BASETYPES (type_binfo); ++i)
 	{
-	  binfo = BINFO_BASETYPE (TYPE_BINFO (type), i);
+	  tree binfo_offset;
+
+	  binfo = BINFO_BASETYPE (type_binfo, i);
 
 	  if (abi_version_at_least (2) 
 	      && TREE_VIA_VIRTUAL (binfo))
@@ -3445,11 +3457,25 @@ walk_subobject_offsets (type, f, offset, offsets, max_offset, vbases_p)
 	      && !BINFO_PRIMARY_P (binfo))
 	    continue;
 
-	  r = walk_subobject_offsets (BINFO_TYPE (binfo),
+	  if (!abi_version_at_least (2))
+	    binfo_offset = size_binop (PLUS_EXPR,
+				       offset,
+				       BINFO_OFFSET (binfo));
+	  else
+	    {
+	      tree orig_binfo;
+	      /* We cannot rely on BINFO_OFFSET being set for the base
+		 class yet, but the offsets for direct non-virtual
+		 bases can be calculated by going back to the TYPE.  */
+	      orig_binfo = BINFO_BASETYPE (TYPE_BINFO (type), i);
+	      binfo_offset = size_binop (PLUS_EXPR,	      
+					 offset,
+					 BINFO_OFFSET (orig_binfo));
+	    }
+
+	  r = walk_subobject_offsets (binfo,
 				      f,
-				      size_binop (PLUS_EXPR,
-						  offset,
-						  BINFO_OFFSET (binfo)),
+				      binfo_offset,
 				      offsets,
 				      max_offset,
 				      (abi_version_at_least (2) 
@@ -3458,30 +3484,55 @@ walk_subobject_offsets (type, f, offset, offsets, max_offset, vbases_p)
 	    return r;
 	}
 
-      /* Iterate through the virtual base classes of TYPE.  In G++
-	 3.2, we included virtual bases in the direct base class loop
-	 above, which results in incorrect results; the correct
-	 offsets for virtual bases are only known when working with
-	 the most derived type.  */
-      if (abi_version_at_least (2) && vbases_p)
+      if (abi_version_at_least (2))
 	{
 	  tree vbase;
 
-	  for (vbase = CLASSTYPE_VBASECLASSES (type);
-	       vbase;
-	       vbase = TREE_CHAIN (vbase))
+	  /* Iterate through the virtual base classes of TYPE.  In G++
+	     3.2, we included virtual bases in the direct base class
+	     loop above, which results in incorrect results; the
+	     correct offsets for virtual bases are only known when
+	     working with the most derived type.  */
+	  if (vbases_p)
+	    for (vbase = CLASSTYPE_VBASECLASSES (type);
+		 vbase;
+		 vbase = TREE_CHAIN (vbase))
+	      {
+		binfo = TREE_VALUE (vbase);
+		r = walk_subobject_offsets (binfo,
+					    f,
+					    size_binop (PLUS_EXPR,
+							offset,
+							BINFO_OFFSET (binfo)),
+					    offsets,
+					    max_offset,
+					    /*vbases_p=*/0);
+		if (r)
+		  return r;
+	      }
+	  else
 	    {
-	      binfo = TREE_VALUE (vbase);
-	      r = walk_subobject_offsets (BINFO_TYPE (binfo),
-					  f,
-					  size_binop (PLUS_EXPR,
-						      offset,
-						      BINFO_OFFSET (binfo)),
-					  offsets,
-					  max_offset,
-					  /*vbases_p=*/0);
-	      if (r)
-		return r;
+	      /* We still have to walk the primary base, if it is
+		 virtual.  (If it is non-virtual, then it was walked
+		 above.)  */
+	      vbase = get_primary_binfo (type_binfo);
+	      if (vbase && TREE_VIA_VIRTUAL (vbase))
+		{
+		  tree derived = type_binfo;
+		  while (BINFO_INHERITANCE_CHAIN (derived))
+		    derived = BINFO_INHERITANCE_CHAIN (derived);
+		  derived = TREE_TYPE (derived);
+		  vbase = binfo_for_vbase (TREE_TYPE (vbase), derived);
+
+		  if (BINFO_PRIMARY_BASE_OF (vbase) == type_binfo)
+		    {
+		      r = (walk_subobject_offsets 
+			   (vbase, f, offset,
+			    offsets, max_offset, /*vbases_p=*/0));
+		      if (r)
+			return r;
+		    }
+		}
 	    }
 	}
 
@@ -3652,7 +3703,8 @@ layout_nonempty_base_or_field (record_layout_info rli,
 	 virtual base.  */
       if (!abi_version_at_least (2) && binfo && TREE_VIA_VIRTUAL (binfo))
 	break;
-      if (layout_conflict_p (type, offset, offsets, field_p))
+      if (layout_conflict_p (field_p ? type : binfo, offset, 
+			     offsets, field_p))
 	{
 	  /* Strip off the size allocated to this field.  That puts us
 	     at the first place we could have put the field with
@@ -3726,7 +3778,7 @@ layout_empty_base (binfo, eoc, offsets, t)
 
   /* This is an empty base class.  We first try to put it at offset
      zero.  */
-  if (layout_conflict_p (BINFO_TYPE (binfo),
+  if (layout_conflict_p (binfo,
 			 BINFO_OFFSET (binfo),
 			 offsets, 
 			 /*vbases_p=*/0))
@@ -3737,7 +3789,7 @@ layout_empty_base (binfo, eoc, offsets, t)
       propagate_binfo_offsets (binfo, convert (ssizetype, eoc), t);
       while (1) 
 	{
-	  if (!layout_conflict_p (BINFO_TYPE (binfo),
+	  if (!layout_conflict_p (binfo,
 				  BINFO_OFFSET (binfo), 
 				  offsets,
 				  /*vbases_p=*/0))
@@ -3848,34 +3900,10 @@ build_base_field (record_layout_info rli, tree binfo,
     }
 
   /* Record the offsets of BINFO and its base subobjects.  */
-  record_subobject_offsets (BINFO_TYPE (binfo), 
+  record_subobject_offsets (binfo,
 			    BINFO_OFFSET (binfo),
 			    offsets, 
 			    /*vbases_p=*/0);
-
-  if (abi_version_at_least (2))
-    {
-      /* If BINFO has a primary virtual base that is really going to
-	 be located at the same offset as binfo, it will have been
-	 skipped -- but we should record empty bases from there too.  */
-      while (true) 
-	{
-	  tree b;
-
-	  b = get_primary_binfo (binfo);
-	  if (!b)
-	    break;
-	  b = CANONICAL_BINFO (b, rli->t);
-	  if (BINFO_PRIMARY_BASE_OF (b) != binfo)
-	    break;
-	  if (TREE_VIA_VIRTUAL (b))
-	    record_subobject_offsets (BINFO_TYPE (b),
-				      BINFO_OFFSET (b),
-				      offsets,
-				      /*vbases_p=*/0);
-	  binfo = b;
-	}
-    }
 
   return next_field;
 }
