@@ -1,3 +1,7 @@
+2000-01-25  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* config/fp-bit.c (_unord_f2): Fix typo.
+
 2000-01-25  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* c-common.c, c-decl.c, c-lang.c, c-lex.c, c-parse.in, c-pragma.c,
