@@ -1,5 +1,10 @@
 2003-08-19  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* c-decl.c: Follow spelling conventions.
+	* cppfiles.c: Likewise.
+
+2003-08-19  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* c-common.c: Fix comment formatting.
 	* c-common.h: Likewise.
 	* c-decl.c: Likewise.

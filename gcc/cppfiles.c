@@ -334,7 +334,7 @@ find_file_in_dir (cpp_reader *pfile, _cpp_file *file)
    add the result to our cache.
 
    If the file was not found in the filesystem, or there was an error
-   opening it, then ERR_NO is non-zero and FD is -1.  If the file was
+   opening it, then ERR_NO is nonzero and FD is -1.  If the file was
    found, then ERR_NO is zero and FD could be -1 or an open file
    descriptor.  FD can be -1 if the file was found in the cache and
    had previously been closed.  To open it again pass the return value
@@ -675,7 +675,7 @@ search_path_head (cpp_reader *pfile, const char *fname, int angle_brackets,
 }
 
 /* Strip the basename from the file's path.  It ends with a slash if
-   of non-zero length.  Note that this procedure also works for
+   of nonzero length.  Note that this procedure also works for
    <stdin>, which is represented by the empty string.  */
 static const char *
 dir_name_of_file (_cpp_file *file)
