@@ -225,6 +225,9 @@ struct obstack temporary_obstack;
 struct obstack permanent_obstack;
 char * temporary_firstobj;
 
+/* Holds the return value of pexecute.  */
+int pexecute_pid;
+
 /* Defined in the automatically-generated underscore.c.  */
 extern int prepends_underscore;
 
@@ -999,6 +1002,11 @@ main (argc, argv)
   int first_file;
   int num_c_args	= argc+9;
 
+#if defined (COLLECT2_HOST_INITIALZATION)
+  /* Perform system dependant initialization, if neccessary.  */
+  COLLECT2_HOST_INITIALZATION;
+#endif
+
 #ifdef HAVE_LC_MESSAGES
   setlocale (LC_MESSAGES, "");
 #endif
@@ -1661,7 +1669,7 @@ collect_wait (prog)
 {
   int status;
 
-  wait (&status);
+  pwait (pexecute_pid, &status, 0);
   if (status)
     {
       if (WIFSIGNALED (status))
@@ -1695,7 +1703,7 @@ do_wait (prog)
 }
 
 
-/* Fork and execute a program, and wait for the reply.  */
+/* Execute a program, and wait for the reply.  */
 
 void
 collect_execute (prog, argv, redir)
@@ -1703,7 +1711,11 @@ collect_execute (prog, argv, redir)
      char **argv;
      char *redir;
 {
-  int pid;
+  char *errmsg_fmt;
+  char *errmsg_arg;
+  int redir_handle = -1;
+  int stdout_save = -1;
+  int stderr_save = -1;
 
   if (vflag || debug)
     {
@@ -1730,24 +1742,41 @@ collect_execute (prog, argv, redir)
   if (argv[0] == 0)
     fatal ("cannot find `%s'", prog);
 
-  pid = vfork ();
-  if (pid == -1)
-    fatal_perror (VFORK_STRING);
-
-  if (pid == 0)			/* child context */
+  if (redir)
     {
-      if (redir)
-	{
-	  unlink (redir);
-	  if (freopen (redir, "a", stdout) == NULL)
-	    fatal_perror ("freopen stdout %s", redir);
-	  if (freopen (redir, "a", stderr) == NULL)
-	    fatal_perror ("freopen stderr %s", redir);
-	}
+      /* Open response file.  */
+      redir_handle = open (redir, O_WRONLY | O_TRUNC | O_CREAT);
 
-      execvp (argv[0], argv);
-      fatal_perror ("execvp %s", prog);
+      /* Duplicate the stdout and stderr file handles
+	 so they can be restored later.  */
+      stdout_save = dup (STDOUT_FILENO);
+      if (stdout_save == -1)
+	fatal_perror ("redirecting stdout: %s", redir);
+      stderr_save = dup (STDERR_FILENO);
+      if (stderr_save == -1)
+	fatal_perror ("redirecting stdout: %s", redir);
+
+      /* Redirect stdout & stderr to our response file.  */
+      dup2 (redir_handle, STDOUT_FILENO);
+      dup2 (redir_handle, STDERR_FILENO);
     }
+
+  pexecute_pid = pexecute (argv[0], argv, argv[0], NULL,
+			   &errmsg_fmt, &errmsg_arg,
+			   (PEXECUTE_FIRST | PEXECUTE_LAST | PEXECUTE_SEARCH));
+
+  if (redir)
+    {
+      /* Restore stdout and stderr to their previous settings.  */
+      dup2 (stdout_save, STDOUT_FILENO);
+      dup2 (stderr_save, STDERR_FILENO);
+
+      /* Close reponse file.  */
+      close (redir_handle);
+    }
+
+ if (pexecute_pid == -1)
+   fatal_perror (errmsg_fmt, errmsg_arg);
 }
 
 static void
