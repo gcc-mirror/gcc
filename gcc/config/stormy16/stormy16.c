@@ -51,7 +51,6 @@ Boston, MA 02111-1307, USA.  */
 static rtx emit_addhi3_postreload PARAMS ((rtx, rtx, rtx));
 static void xstormy16_asm_out_constructor PARAMS ((rtx, int));
 static void xstormy16_asm_out_destructor PARAMS ((rtx, int));
-static void xstormy16_encode_section_info PARAMS ((tree, int));
 static void xstormy16_asm_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 						   HOST_WIDE_INT, tree));
 
@@ -1530,17 +1529,6 @@ xstormy16_asm_output_mi_thunk (file, thunk_fndecl, delta,
   putc ('\n', file);
 }
 
-/* Mark functions with SYMBOL_REF_FLAG.  */
-
-static void
-xstormy16_encode_section_info (decl, first)
-     tree decl;
-     int first ATTRIBUTE_UNUSED;
-{
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
-}
-
 /* Output constructors and destructors.  Just like 
    default_named_section_asm_out_* but don't set the sections writable.  */
 #undef TARGET_ASM_CONSTRUCTOR
@@ -2284,8 +2272,6 @@ xstormy16_expand_builtin(exp, target, subtarget, mode, ignore)
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
 #undef TARGET_ASM_ALIGNED_SI_OP
 #define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
-#undef TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO xstormy16_encode_section_info
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK xstormy16_asm_output_mi_thunk

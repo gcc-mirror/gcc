@@ -2664,7 +2664,7 @@ do {							\
    definition of a symbol named SYMBOL.  */
 #define ASM_OUTPUT_SYMBOL_REF(STREAM, SYMBOL)				\
   do {									\
-    if (SYMBOL_REF_FLAG (SYMBOL))					\
+    if (SYMBOL_REF_FUNCTION_P (SYMBOL))					\
       ASM_OUTPUT_LABEL_REF ((STREAM), XSTR (SYMBOL, 0));		\
     else								\
       assemble_name (STREAM, XSTR (SYMBOL, 0));				\
