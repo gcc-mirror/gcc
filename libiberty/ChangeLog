@@ -1,3 +1,8 @@
+2003-02-24  Danny Smith  <dannysmith@users.source.forge.net>
+
+	* physmem.c (physmem_total): Add _WIN32 support.
+	(physmem_available): Likewise.
+
 2003-02-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* physmem.c (physmem_total) [HAVE_GETSYSINFO]: Test for
