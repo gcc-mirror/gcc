@@ -209,6 +209,8 @@ extern void		sbss_section PARAMS ((void));
 #define MASK_MIPS16	0x01000000	/* Generate mips16 code */
 #define MASK_NO_CHECK_ZERO_DIV 0x04000000	/* divide by zero checking */
 #define MASK_CHECK_RANGE_DIV 0x08000000	/* divide result range checking */
+#define MASK_UNINIT_CONST_IN_RODATA 0x10000000	/* Store uninitialized
+						   consts in rodata */
 
 					/* Dummy switches used only in spec's*/
 #define MASK_MIPS_TFILE	0x00000000	/* flag for mips-tfile usage */
@@ -287,6 +289,11 @@ extern void		sbss_section PARAMS ((void));
 					   reduced RAM space instead of for
 					   fastest code.  */
 #define TARGET_EMBEDDED_DATA	(target_flags & MASK_EMBEDDED_DATA)
+
+					/* always store uninitialized const
+					   variables in rodata, requires
+					   TARGET_EMBEDDED_DATA. */
+#define TARGET_UNINIT_CONST_IN_RODATA	(target_flags & MASK_UNINIT_CONST_IN_RODATA)
 
 					/* generate big endian code.  */
 #define TARGET_BIG_ENDIAN	(target_flags & MASK_BIG_ENDIAN)
@@ -392,6 +399,10 @@ extern void		sbss_section PARAMS ((void));
      "Use ROM instead of RAM"},						\
   {"no-embedded-data",	 -MASK_EMBEDDED_DATA,				\
      "Don't use ROM instead of RAM"},					\
+  {"uninit-const-in-rodata", MASK_UNINIT_CONST_IN_RODATA,		\
+     "Put uninitialized constants in ROM (needs -membedded-data)"},	\
+  {"no-uninit-const-in-rodata", -MASK_UNINIT_CONST_IN_RODATA,		\
+     "Don't put uninitialized constants in ROM"},			\
   {"eb",		  MASK_BIG_ENDIAN,				\
      "Use big-endian byte order"},					\
   {"el",		 -MASK_BIG_ENDIAN,				\
@@ -4188,8 +4199,28 @@ while (0)
 
 /* This says how to define a global common symbol.  */
 
-#define ASM_OUTPUT_COMMON(STREAM, NAME, SIZE, ROUNDED)			\
-  mips_declare_object (STREAM, NAME, "\n\t.comm\t", ",%u\n", (SIZE))
+#define ASM_OUTPUT_ALIGNED_DECL_COMMON(STREAM, DECL, NAME, SIZE, ALIGN) \
+  do {									\
+    /* If the target wants uninitialized const declarations in		\
+       .rdata then don't put them in .comm */				\
+    if (TARGET_EMBEDDED_DATA && TARGET_UNINIT_CONST_IN_RODATA		\
+	&& TREE_CODE (DECL) == VAR_DECL && TREE_READONLY (DECL)		\
+	&& (DECL_INITIAL (DECL) == 0					\
+	    || DECL_INITIAL (DECL) == error_mark_node))			\
+      {									\
+	if (TREE_PUBLIC (DECL) && DECL_NAME (DECL))			\
+	  ASM_GLOBALIZE_LABEL (STREAM, NAME);				\
+	    								\
+	READONLY_DATA_SECTION ();					\
+	ASM_OUTPUT_ALIGN (STREAM, floor_log2 (ALIGN / BITS_PER_UNIT));	\
+	mips_declare_object (STREAM, NAME, "", ":\n\t.space\t%u\n",	\
+	    (SIZE));							\
+      }									\
+    else								\
+      mips_declare_object (STREAM, NAME, "\n\t.comm\t", ",%u\n",	\
+	  (SIZE));							\
+  } while (0)
+
 
 /* This says how to define a local common symbol (ie, not visible to
    linker).  */

@@ -334,12 +334,12 @@ in the following sections.
 -mminimum-fp-blocks  -mnohc-struct-return
 
 @emph{MIPS Options}
--mabicalls  -mcpu=@var{cpu type}  -membedded-data
+-mabicalls  -mcpu=@var{cpu type}  -membedded-data -muninit-const-in-rodata
 -membedded-pic  -mfp32  -mfp64  -mgas  -mgp32  -mgp64
 -mgpopt  -mhalf-pic  -mhard-float  -mint64  -mips1
 -mips2  -mips3 -mips4 -mlong64  -mlong32 -mlong-calls  -mmemcpy
 -mmips-as  -mmips-tfile  -mno-abicalls
--mno-embedded-data  -mno-embedded-pic
+-mno-embedded-data  -mno-uninit-const-in-rodata  -mno-embedded-pic
 -mno-gpopt  -mno-long-calls
 -mno-memcpy  -mno-mips-tfile  -mno-rnames  -mno-stats
 -mrnames  -msoft-float
@@ -5574,6 +5574,11 @@ next in the small data section if possible, otherwise in data.  This gives
 slightly slower code than the default, but reduces the amount of RAM required
 when executing, and thus may be preferred for some embedded systems.
 
+@item -muninit-const-in-rodata
+@itemx -mno-uninit-const-in-rodata
+When used together with -membedded-data, it will always store uninitialized
+const variables in the read-only data section.
+  
 @item -msingle-float
 @itemx -mdouble-float
 The @samp{-msingle-float} switch tells gcc to assume that the floating
