@@ -4402,6 +4402,11 @@ extract_muldiv (t, c, code, wide_type)
       break;
 
     case MIN_EXPR:  case MAX_EXPR:
+      /* If widening the type changes the signedness, then we can't perform
+	 this optimization as that changes the result.  */
+      if (ctype != type && TREE_UNSIGNED (ctype) != TREE_UNSIGNED (type))
+	break;
+
       /* MIN (a, b) / 5 -> MIN (a / 5, b / 5)  */
       if ((t1 = extract_muldiv (op0, c, code, wide_type)) != 0
 	  && (t2 = extract_muldiv (op1, c, code, wide_type)) != 0)

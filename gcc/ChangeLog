@@ -1,3 +1,8 @@
+Wed May  3 12:55:46 2000  Jim Wilson  <wilson@cygnus.com>
+
+	* fold-const.c (extract_muldiv, case MAX_EXPR): Don't allow signedness
+	change.
+
 2000-05-03  Greg McGary  <gkm@gnu.org>
 
 	* tree.h (tree_common): Add bounded_flag member.  Remove
