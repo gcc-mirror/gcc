@@ -1,3 +1,9 @@
+2003-09-19  T. Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
+            Eric Botcazou <ebotcazou@libertysurf.fr>
+
+	PR target/12166
+	* config/sparc/sol2-c1.asm (start): Set __Argv if GCRT1.
+
 2003-09-18  Mike Stump  <mrs@apple.com>
 
 	* c-ppoutput.c (print):  Use fileline typedef for field 'line'.
