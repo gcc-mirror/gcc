@@ -1415,12 +1415,14 @@ fi
 # have its own set of headers then define
 # inhibit_libc
 
-# If this is using newlib, then define inhibit_libc in LIBGCC2_CFLAGS.
+# If this is using newlib, without having the headers available now,
+# then define inhibit_libc in LIBGCC2_CFLAGS.
 # This prevents libgcc2 from containing any code which requires libc
 # support.
 inhibit_libc=
-if { test x$host != x$target && test "x$with_headers" = x &&
-     test "x$with_sysroot" = x ; } || test x$with_newlib = xyes ; then
+if { { test x$host != x$target && test "x$with_sysroot" = x ; } ||
+       test x$with_newlib = xyes ; } &&
+     test "x$with_headers" = x ; then
        inhibit_libc=-Dinhibit_libc
 fi
 AC_SUBST(inhibit_libc)

@@ -1,3 +1,11 @@
+2003-05-23  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* configure.in (inhibit_libc): Don't define when configuring
+	with --with-newlib --with-headers.
+	* configure: Regenerate.
+
+	* t-sh: Remove LIB2FUNCS_EXTRA and embed-bb.c rules.
+
 2003-06-03  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.in (gcc_cv_as_hidden): Disable .hidden completely on
