@@ -20,13 +20,9 @@ details.  */
 #undef MIN_PRIORITY
 #undef FIONREAD
 
-// These functions make the Win32 socket API look more POSIXy
-static inline int
-close(int s)
-{
-  return closesocket(s);
-}
+#define NATIVE_CLOSE(s) closesocket (s)
 
+// These functions make the Win32 socket API look more POSIXy
 static inline int
 write(int s, void *buf, int len)
 {
@@ -62,6 +58,8 @@ read(int s, void *buf, int len)
 #include <netinet/tcp.h>
 #include <errno.h>
 #include <string.h>
+
+#define NATIVE_CLOSE(s) ::close (s)
 
 #endif /* WIN32 */
 #endif /* DISABLE_JAVA_NET */
@@ -429,7 +427,7 @@ java::net::PlainSocketImpl::close()
   JvSynchronize sync (this);
 
   // should we use shutdown here? how would that effect so_linger?
-  int res = ::close (fnum);
+  int res = NATIVE_CLOSE (fnum);
 
   if (res == -1)
     {

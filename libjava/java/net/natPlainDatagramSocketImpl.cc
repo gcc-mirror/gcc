@@ -17,13 +17,10 @@ details.  */
 #define ENOPROTOOPT 109
 #endif
 
-static inline int
-close(int s)
-{
-  return closesocket(s);
-}
+#define NATIVE_CLOSE(s) closesocket (s)
 
 #else /* WIN32 */
+
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 #endif
@@ -35,6 +32,9 @@ close(int s)
 #endif
 #include <errno.h>
 #include <string.h>
+
+#define NATIVE_CLOSE(s) ::close (s)
+
 #endif /* WIN32 */
 
 #if HAVE_BSTRING_H
@@ -303,7 +303,7 @@ java::net::PlainDatagramSocketImpl::close ()
 
   // The method isn't declared to throw anything, so we disregard
   // the return value.
-  ::close (fnum);
+  NATIVE_CLOSE (fnum);
   fnum = -1;
   timeout = 0;
 }
