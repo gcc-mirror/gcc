@@ -1,3 +1,7 @@
+Sat Jan 30 13:28:04 1999  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (xstrdup.o): Depend on config.h.
+
 Wed Jan 13 07:26:44 1999  H.J. Lu  (hjl@gnu.org)
 
 	* cplus-dem.c (mop_up): Set work->previous_argument to NULL after
