@@ -443,16 +443,7 @@ _cpp_handle_directive (pfile, indented)
     prepare_directive_trad (pfile);
 
   if (dir)
-    {
-      /* If we are processing a `#define' directive and we have been
-	 requested to expand comments into macros, then re-enable
-	 saving of comments.  */
-      if (dir == &dtable[T_DEFINE])
-	pfile->state.save_comments =
-	  ! CPP_OPTION (pfile, discard_comments_in_macro_exp);
-
-      (*pfile->directive->handler) (pfile);
-    }
+    (*pfile->directive->handler) (pfile);
   else if (skip == 0)
     _cpp_backup_tokens (pfile, 1);
 
@@ -502,16 +493,7 @@ lex_macro_node (pfile)
      In C++, it may not be any of the "named operators" either,
      per C++98 [lex.digraph], [lex.key].
      Finally, the identifier may not have been poisoned.  (In that case
-     the lexer has issued the error message for us.)
-
-     Note that if we're copying comments into macro expansions, we
-     could encounter comment tokens here, so eat them all up first.  */
-
-  if (! CPP_OPTION (pfile, discard_comments_in_macro_exp))
-    {
-      while (token->type == CPP_COMMENT)
-	token = _cpp_lex_token (pfile);
-    }
+     the lexer has issued the error message for us.)  */
 
   if (token->type == CPP_NAME)
     {
@@ -545,6 +527,11 @@ do_define (pfile)
 
   if (node)
     {
+      /* If we have been requested to expand comments into macros,
+	 then re-enable saving of comments.  */
+      pfile->state.save_comments =
+	! CPP_OPTION (pfile, discard_comments_in_macro_exp);
+
       if (_cpp_create_definition (pfile, node))
 	if (pfile->cb.define)
 	  (*pfile->cb.define) (pfile, pfile->directive_line, node);
