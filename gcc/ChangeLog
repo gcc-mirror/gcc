@@ -1,3 +1,14 @@
+Thu Apr 22 14:39:43 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* i386/xm-cygwin.h (HAVE_BCOPY): Delete unneeded macro.
+	(HAVE_BZERO): Likewise.
+	(HAVE_BCMP): Likewise.
+	(HAVE_RINDEX): Likewise.
+	(HAVE_INDEX): Likewise.
+	(DIR_SEPARATOR_2): Define.
+	(GET_ENV_PATH_LIST): Turn path lists into POSIX.
+	(PATH_SEPARATOR): Use ':'.
+
 1999-04-22 Bruce Korb <ddsinc09@ix.netcom.com>
 
 	* configure.in: enable disabling of fast fixincludes

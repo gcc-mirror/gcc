@@ -21,11 +21,6 @@ Boston, MA 02111-1307, USA. */
 
 #define EXECUTABLE_SUFFIX ".exe"
 #define NO_SYS_SIGLIST 1
-#define HAVE_BCOPY 1
-#define HAVE_BZERO 1
-#define HAVE_BCMP 1
-#define HAVE_RINDEX 1
-#define HAVE_INDEX 1
 
 /* We support both "/" and "\" since everybody tests both but we
    default to "/".  This is important because if gcc produces Win32
@@ -34,33 +29,28 @@ Boston, MA 02111-1307, USA. */
    slashes so using a forward slash shouldn't be problematic from the
    perspective of wanting gcc to produce native Win32 paths. */
 #define DIR_SEPARATOR '/'
+#define DIR_SEPARATOR_2 '\\'
 
-/* If we allow both '/' and '\' as dir separators, then
-   allow both unix and win32 PATH syntax. */
+/* Convert win32 style path lists to POSIX style for consistency. */ 
 #undef GET_ENV_PATH_LIST
 #define GET_ENV_PATH_LIST(VAR,NAME)					\
 do {									\
   char *_epath;								\
-  char *_win32epath;							\
-  _epath = _win32epath = getenv (NAME);					\
-  /* if we have a posix path list, convert to win32 path list */	\
+  char *_posixepath;							\
+  _epath = _posixepath = getenv (NAME);					\
+  /* if we have a posix path list, convert to posix path list */	\
   if (_epath != NULL && *_epath != 0					\
-      && cygwin32_posix_path_list_p (_epath))				\
+      && ! cygwin_posix_path_list_p (_epath))				\
     {									\
       char *p;								\
-      _win32epath = (char *) xmalloc					\
-	(cygwin32_posix_to_win32_path_list_buf_size (_epath));		\
-      cygwin32_posix_to_win32_path_list (_epath, _win32epath);		\
-      for (p = _win32epath; p && *p; ++p)				\
-        {								\
-	  if (*p == '\\')						\
-	    *p = '/';							\
-	}								\
+      _posixepath = (char *) xmalloc					\
+	(cygwin_win32_to_posix_path_list_buf_size (_epath));		\
+      cygwin_win32_to_posix_path_list (_epath, _posixepath);		\
     }									\
-  (VAR) = _win32epath;							\
+  (VAR) = _posixepath;							\
 } while (0)
 
-#define PATH_SEPARATOR ';'
+#define PATH_SEPARATOR ':'
 
 /* This is needed so that protoize will compile.  */
 #ifndef POSIX
