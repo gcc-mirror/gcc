@@ -31,6 +31,11 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #define NULL 0
 #endif
 
+#ifndef __STDC__
+#define const
+#define volatile
+#endif
+
 /*
  * return hash function on name.  must be compatible with the one
  * computed a step at a time, elsewhere
