@@ -1,3 +1,7 @@
+Mon Sep 13 06:30:14 1999  Mark Klein <mklein@dis.com> 
+
+	* config/mpeix.mt: New for MPEiX port.
+
 Sat Sep  4 18:00:00 PDT 1999 Mark Klein (mklein@dis.com)
 
 	* configure.in: Add mpeix.mt make fragment.
