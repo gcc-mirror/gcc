@@ -13841,7 +13841,9 @@ merge_string_cste (tree op1, tree op2, int after)
 	string = boolean_true;
       else if (op2 == boolean_false_node)
 	string = boolean_false;
-      else if (op2 == null_pointer_node)
+      else if (op2 == null_pointer_node
+	       || (integer_zerop (op2)
+		   && TREE_CODE (TREE_TYPE (op2)) == POINTER_TYPE))
 	/* FIXME: null is not a compile-time constant, so it is only safe to
 	   merge if the overall expression is non-constant. However, this
 	   code always merges without checking the overall expression.  */
