@@ -687,7 +687,6 @@ arm_split_constant (code, mode, val, target, source, subtargets)
 	 occurred before the final instruction emission).
 
 	 Ref: gcc -O1 -mcpu=strongarm gcc.c-torture/compile/980506-2.c
-	      gcc -O0 -mcpu=strongarm plumhall/c/conform/exprtest/assign.c
       */
       if (! after_arm_reorg
 	  && (arm_gen_constant (code, mode, val, target, source, 1, 0)
