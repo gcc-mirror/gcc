@@ -1,3 +1,13 @@
+2000-10-06  Vladimir Makarov  <vmakarov@touchme.toronto.redhat.com>
+
+	* haifa-sched.c (anti_dependency_cache, output_dependency_cache,
+	forward_dependency_cache): New variables.
+	(add_dependence, remove_dependence): Use anti_dependency_cache and
+	output_dependency_cache.
+	(compute_block_forward_dependences): Use forward_dependency_cache.
+	(schedule_insns): Allocate and free memory for anti/output/forward
+	dependencies caches.
+	
 2000-10-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.md (call, call_value): Use `TARGET_SH2' instead of
