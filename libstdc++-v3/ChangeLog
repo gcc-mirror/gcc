@@ -1,3 +1,9 @@
+2001-03-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/istream.tcc (basic_istream<_CharT, _Traits>&
+	operator>>(basic_istream<_CharT, _Traits>& __in, _CharT* __s)):
+	Fix typo.
+
 2001-03-11  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
         * include/ext/stl_hashtable.h: Change type of __n to size_t  
