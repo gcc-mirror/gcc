@@ -1,3 +1,7 @@
+2005-04-05  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* gfortran.dg/pr20755.f: Fixed bad format.
+
 2005-04-05  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/20763
