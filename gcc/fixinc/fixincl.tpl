@@ -22,7 +22,7 @@ _FOR fix =]
  *  Description [=_eval _index 1 + "#%3d -" _printf=] [=hackname _Cap=] fix
  */
 tSCC z[=hackname _cap=]Name[] =
-     [=hackname _cap _str=];
+     [=hackname _cap _krstr=];
 /*
  *  File name selection pattern
  */[=
@@ -41,7 +41,7 @@ tSCC z[=hackname _cap=]List[] =
   _IF mach _exist=]
 tSCC* apz[=hackname _cap=]Machs[] = {[=
     _FOR mach =]
-        [=mach _str=],[=
+        [=mach _krstr=],[=
     /mach=]
         (const char*)NULL };[=
 
@@ -58,7 +58,7 @@ tSCC* apz[=hackname _cap=]Machs[] = {[=
  */[=
     _FOR exesel =]
 tSCC z[=hackname _cap=]Select[=_eval _index=][] =
-       [=exesel _str=];[=
+       [=exesel _krstr=];[=
     /exesel =][=
 
   _ELIF select _exist=]
@@ -68,7 +68,7 @@ tSCC z[=hackname _cap=]Select[=_eval _index=][] =
  */[=
     _FOR select =]
 tSCC z[=hackname _cap=]Select[=_eval _index=][] =
-       [=select _str=];[=
+       [=select _krstr=];[=
     /select =][=
   _ENDIF =][=
 
@@ -79,7 +79,7 @@ tSCC z[=hackname _cap=]Select[=_eval _index=][] =
  */[=
     _FOR bypass =]
 tSCC z[=hackname _cap=]Bypass[=_eval _index=][] =
-       [=bypass _str=];[=
+       [=bypass _krstr=];[=
     /bypass =][=
   _ENDIF =][=
 
@@ -90,7 +90,7 @@ tSCC z[=hackname _cap=]Bypass[=_eval _index=][] =
  */[=
     _FOR test =]
 tSCC z[=hackname _cap=]Test[=_eval _index=][] =
-       [=test _str=];[=
+       [=test _krstr=];[=
     /test =][=
   _ENDIF =][=
 
@@ -157,9 +157,9 @@ tTestDesc a[=hackname _cap=]Tests[] = {[=
  */
 const char* apz[=hackname _cap=]Patch[] = {[=
     _IF   sed         _exist =] "sed"[=_FOR sed=],
-    "-e", [=sed _str=][=/sed=][=
+    "-e", [=sed _krstr=][=/sed=][=
     _ELIF shell       _exist =] "sh", "-c",
-    [=shell _str=][=
+    [=shell _krstr=][=
     _ENDIF=],
     (char*)NULL };
 
