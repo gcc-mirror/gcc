@@ -3299,7 +3299,17 @@ m68hc11_gen_movhi (insn, operands)
       if (ix_reg == 0)
 	create_regs_rtx ();
 
-      if (reg_mentioned_p (ix_reg, operands[0]))
+      if (REG_P (operands[0]) && REGNO (operands[0]) == SOFT_TMP_REGNUM)
+        {
+          output_asm_insn ("pshx", operands);
+          output_asm_insn ("tsx", operands);
+          output_asm_insn ("inx", operands);
+          output_asm_insn ("inx", operands);
+          output_asm_insn ("stx\t%0", operands);
+          output_asm_insn ("pulx", operands);
+        }
+          
+      else if (reg_mentioned_p (ix_reg, operands[0]))
 	{
 	  output_asm_insn ("sty\t%t0", operands);
 	  output_asm_insn ("tsy", operands);
