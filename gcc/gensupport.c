@@ -415,7 +415,8 @@ collect_insn_data (pattern, palt, pmax)
   switch (code)
     {
     case MATCH_OPERAND:
-      *palt = n_alternatives (XSTR (pattern, 2));
+      i = n_alternatives (XSTR (pattern, 2));
+      *palt = (i > *palt ? i : *palt);
       /* FALLTHRU */
 
     case MATCH_OPERATOR:
