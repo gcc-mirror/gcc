@@ -1,3 +1,7 @@
+Fri Jul 17 11:21:55 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* function.c (fixup_var_refs_insns): Handle CLOBBER of a CONCAT.
+
 Fri Jul 17 11:48:55 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* mn10300.c (MODES_TIEABLE_P): Fix typo.
