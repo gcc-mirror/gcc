@@ -1519,23 +1519,31 @@ i960-wrs-vxworks5 | i960-wrs-vxworks5.0*)
 	tmake_file=i960/t-vxworks960
 	use_collect2=yes
 	thread_file='vxworks'
+	c_target_objs="i960-c.o"
+	cxx_target_objs="i960-c.o"
 	;;
 i960-wrs-vxworks5* | i960-wrs-vxworks)
 	tm_file="${tm_file} dbxcoff.h i960/i960-coff.h i960/vx960-coff.h"
 	tmake_file=i960/t-vxworks960
 	use_collect2=yes
 	thread_file='vxworks'
+	c_target_objs="i960-c.o"
+	cxx_target_objs="i960-c.o"
 	;;
 i960-wrs-vxworks*)
 	tm_file="${tm_file} i960/vx960.h"
 	tmake_file=i960/t-vxworks960
 	use_collect2=yes
 	thread_file='vxworks'
+	c_target_objs="i960-c.o"
+	cxx_target_objs="i960-c.o"
 	;;
 i960-*-coff*)
 	tm_file="${tm_file} dbxcoff.h i960/i960-coff.h libgloss.h"
 	tmake_file=i960/t-960bare
 	use_collect2=yes
+	c_target_objs="i960-c.o"
+	cxx_target_objs="i960-c.o"
 	;;
 i960-*-rtems)
 	tmake_file="i960/t-960bare t-rtems"
@@ -1544,9 +1552,13 @@ i960-*-rtems)
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
 	fi
+	c_target_objs="i960-c.o"
+	cxx_target_objs="i960-c.o"
 	;;
 i960-*-*)			# Default i960 environment.
 	use_collect2=yes
+	c_target_objs="i960-c.o"
+	cxx_target_objs="i960-c.o"
 	;;
 ia64*-*-elf*)
 	tm_file=ia64/elf.h
