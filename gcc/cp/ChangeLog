@@ -1,3 +1,7 @@
+Fri Mar 20 18:07:39 1998  Kriang Lerdsuwanakij  <lerdsuwa@scf.usc.edu>
+
+	* pt.c (tsubst, TEMPLATE_TEMPLATE_PARM): Simplify.
+
 Fri Mar 20 10:42:07 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (make_implicit_typename): Rewrite removed code.
