@@ -7813,13 +7813,13 @@ add_vcall_offset (tree orig_fn, tree binfo, vtbl_init_data *vid)
 	  vcall_offset = fold (build1 (NOP_EXPR, vtable_entry_type,
 				       vcall_offset));
 	}
-      /* Add the intiailizer to the vtable.  */
+      /* Add the initializer to the vtable.  */
       *vid->last_init = build_tree_list (NULL_TREE, vcall_offset);
       vid->last_init = &TREE_CHAIN (*vid->last_init);
     }
 }
 
-/* Return vtbl initializers for the RTTI entries coresponding to the
+/* Return vtbl initializers for the RTTI entries corresponding to the
    BINFO's vtable.  The RTTI entries should indicate the object given
    by VID->rtti_binfo.  */
 

@@ -1,3 +1,20 @@
+2003-07-04  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* call.c: Fix comment typos.
+	* class.c: Likewise.
+	* cp-tree.h: Likewise.
+	* cvt.c: Likewise.
+	* decl2.c: Likewise.
+	* decl.c: Likewise.
+	* init.c: Likewise.
+	* mangle.c: Likewise.
+	* parser.c: Likewise.
+	* pt.c: Likewise.
+	* search.c: Likewise.
+	* semantics.c: Likewise.
+	* tree.c: Likewise.
+	* typeck.c: Likewise.
+
 2003-07-04  Zack Weinberg  <zack@codesourcery.com>
 
 	* parser.c (cp_lexer_read_token): No need to handle string

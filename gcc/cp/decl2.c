@@ -1996,7 +1996,7 @@ start_objects (int method_type, int initp)
 
   /* We cannot allow these functions to be elided, even if they do not
      have external linkage.  And, there's no point in deferring
-     copmilation of thes functions; they're all going to have to be
+     compilation of thes functions; they're all going to have to be
      out anyhow.  */
   current_function_cannot_inline
     = "static constructors and destructors cannot be inlined";

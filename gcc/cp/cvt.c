@@ -638,7 +638,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
       if (same_type_p (type, TREE_TYPE (e)))
 	/* The call to fold will not always remove the NOP_EXPR as
 	   might be expected, since if one of the types is a typedef;
-	   the comparsion in fold is just equality of pointers, not a
+	   the comparison in fold is just equality of pointers, not a
 	   call to comptypes.  We don't call fold in this case because
 	   that can result in infinite recursion; fold will call
 	   convert, which will call ocp_convert, etc.  */

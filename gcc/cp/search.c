@@ -1554,7 +1554,7 @@ adjust_result_of_qualified_name_lookup (tree decl,
    type in the hierarchy, in a breadth-first preorder traversal.
    If it ever returns a non-NULL value, that value is immediately
    returned and the walk is terminated.  At each node, FN is passed a
-   BINFO indicating the path from the curently visited base-class to
+   BINFO indicating the path from the currently visited base-class to
    TYPE.  Before each base-class is walked QFN is called.  If the
    value returned is nonzero, the base-class is walked; otherwise it
    is not.  If QFN is NULL, it is treated as a function which always
@@ -2536,7 +2536,7 @@ copied_binfo (tree binfo, tree here)
 }
 
 /* BINFO is some base binfo of HERE, within some other
-   hierachy. Return the equivalent binfo, but in the hierarchy
+   hierarchy. Return the equivalent binfo, but in the hierarchy
    dominated by HERE.  This is the inverse of copied_binfo.  If BINFO
    is not a base binfo of HERE, returns NULL_TREE. */
 

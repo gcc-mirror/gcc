@@ -319,7 +319,7 @@ dump_substitution_candidates ()
 /* Both decls and types can be substitution candidates, but sometimes
    they refer to the same thing.  For instance, a TYPE_DECL and
    RECORD_TYPE for the same class refer to the same thing, and should
-   be treated accordinginly in substitutions.  This function returns a
+   be treated accordingly in substitutions.  This function returns a
    canonicalized tree node representing NODE that is used when adding
    and substitution candidates and finding matches.  */
 
@@ -1428,7 +1428,7 @@ write_type (tree type)
   if (write_CV_qualifiers_for_type (type) > 0)
     /* If TYPE was CV-qualified, we just wrote the qualifiers; now
        mangle the unqualified type.  The recursive call is needed here
-       since both the qualified and uqualified types are substitution
+       since both the qualified and unqualified types are substitution
        candidates.  */
     write_type (TYPE_MAIN_VARIANT (type));
   else if (TREE_CODE (type) == ARRAY_TYPE)

@@ -3756,7 +3756,7 @@ pushdecl (tree x)
 	  else if (TREE_CODE (t) == PARM_DECL)
 	    {
 	      if (DECL_CONTEXT (t) == NULL_TREE)
-		/* This is probaby caused by too many errors, but calling
+		/* This is probably caused by too many errors, but calling
 		   abort will say that if errors have occurred.  */
 		abort ();
 
@@ -6506,7 +6506,7 @@ builtin_function_1 (const char* name,
 
 /* Entry point for the benefit of c_common_nodes_and_builtins.
 
-   Make a defintion for a builtin function named NAME and whose data type
+   Make a definition for a builtin function named NAME and whose data type
    is TYPE.  TYPE should be a function type with argument types.  This
    function places the anticipated declaration in the global namespace
    and additionally in the std namespace if appropriate.
@@ -7300,7 +7300,7 @@ layout_var_decl (tree decl)
   /* If we haven't already layed out this declaration, do so now.
      Note that we must not call complete type for an external object
      because it's type might involve templates that we are not
-     supposed to isntantiate yet.  (And it's perfectly valid to say
+     supposed to instantiate yet.  (And it's perfectly valid to say
      `extern X x' for some incomplete type `X'.)  */
   if (!DECL_EXTERNAL (decl))
     complete_type (type);
