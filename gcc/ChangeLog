@@ -1,5 +1,26 @@
 2001-03-19  Mark Mitchell  <mark@codesourcery.com>
 
+	Compute DECL_ASSEMBLER_NAME lazily.
+	* tree.h (DECL_ASSEMBLER_NAME): Compute it lazily.
+	(DECL_ASSEMBLER_NAME_SET_P): New macro.
+	(SET_DECL_ASSEMBLER_NAME): Likewise.
+	(COPY_DECL_ASSEMBLER_NAME): Likewise.
+	(set_decl_assembler_name): Declare.
+	(lang_set_decl_assembler_name): Likewise.
+	* tree.c (lang_set_decl_assembler_name): New variab.e
+	(set_decl_assembler_name): New function.
+	(init_obstacks): Set lang_set_decl_assembler_name.
+	(build_decl): Don't set DECL_ASSEMBLER_NAME.
+	* c-decl.c (duplicate_decls): Use SET_DECL_ASSEMBLER_NAME,
+	COPY_DECL_ASSEMBLER_NAME, etc.  Don't set DECL_ASSEMBLER_NAME
+	where it's not necessary.
+	(builtin_function): Likewise.
+	(finish_decl): Likewise.
+	* dbxout.c (dbxout_type_methods): Likewise.
+	* ggc-common.c (ggc_mark_trees): Likewise.
+	* profile.c (output_func_start_profiler): Likewise.
+	* varasm.c (make_decl_rtl): Likewise.
+
 	* cse.c (find_comparison_args): Update documentation.  Fix
 	mishandling of COMPARE operations.
 

@@ -2319,6 +2319,7 @@ init_tree ()
   make_lang_type_fn = cp_make_lang_type;
   lang_unsave = cp_unsave;
   lang_statement_code_p = cp_statement_code_p;
+  lang_set_decl_assembler_name = mangle_decl;
   list_hash_table = htab_create (31, list_hash, list_hash_eq, NULL);
   ggc_add_root (&list_hash_table, 1, 
 		sizeof (list_hash_table),

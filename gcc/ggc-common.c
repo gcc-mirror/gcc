@@ -373,13 +373,14 @@ ggc_mark_trees ()
 	  ggc_mark_tree (DECL_RESULT_FLD (t));
 	  ggc_mark_tree (DECL_INITIAL (t));
 	  ggc_mark_tree (DECL_ABSTRACT_ORIGIN (t));
-	  ggc_mark_tree (DECL_ASSEMBLER_NAME (t));
 	  ggc_mark_tree (DECL_SECTION_NAME (t));
 	  ggc_mark_tree (DECL_MACHINE_ATTRIBUTES (t));
 	  if (DECL_RTL_SET_P (t))
 	    ggc_mark_rtx (DECL_RTL (t));
 	  ggc_mark_rtx (DECL_LIVE_RANGE_RTL (t));
 	  ggc_mark_tree (DECL_VINDEX (t));
+	  if (DECL_ASSEMBLER_NAME_SET_P (t))
+	    ggc_mark_tree (DECL_ASSEMBLER_NAME (t));
 	  lang_mark_tree (t);
 	  break;
 

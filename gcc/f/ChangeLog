@@ -1,3 +1,7 @@
+Mon Mar 19 15:05:39 2001  Mark Mitchell  <mark@codesourcery.com>
+
+	* com.c (builtin_function): Use SET_DECL_ASSEMBLER_NAME.
+
 Wed Mar 14 09:29:27 2001  Mark Mitchell  <mark@codesourcery.com>
 
 	* com.c (ffecom_member_phase_2): Use COPY_DECL_RTL,

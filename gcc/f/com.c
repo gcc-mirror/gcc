@@ -13497,7 +13497,7 @@ builtin_function (const char *name, tree type, int function_code,
   DECL_EXTERNAL (decl) = 1;
   TREE_PUBLIC (decl) = 1;
   if (library_name)
-    DECL_ASSEMBLER_NAME (decl) = get_identifier (library_name);
+    SET_DECL_ASSEMBLER_NAME (decl, get_identifier (library_name));
   make_decl_rtl (decl, NULL_PTR);
   pushdecl (decl);
   DECL_BUILT_IN_CLASS (decl) = class;

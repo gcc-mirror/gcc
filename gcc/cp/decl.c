@@ -2827,7 +2827,6 @@ pushtag (name, type, globalize)
 	    DECL_IGNORED_P (d) = 1;
 
 	  TYPE_CONTEXT (type) = DECL_CONTEXT (d);
-	  DECL_ASSEMBLER_NAME (d) = DECL_NAME (d);
 
 	  /* If this is a local class, keep track of it.  We need this
 	     information for name-mangling, and so that it is possible to find
@@ -2838,9 +2837,6 @@ pushtag (name, type, globalize)
 	      && TREE_CODE (TYPE_CONTEXT (type)) == FUNCTION_DECL
 	      && !processing_template_decl)
 	    VARRAY_PUSH_TREE (local_classes, type);
-
-	  if (!uses_template_parms (type))
-	    DECL_ASSEMBLER_NAME (d) = mangle_type (type);
         }
       if (b->parm_flag == 2)
 	{
@@ -3161,7 +3157,7 @@ duplicate_decls (newdecl, olddecl)
 	     will be banished.  */
 	  DECL_LANGUAGE (olddecl) = DECL_LANGUAGE (newdecl);
 	  SET_DECL_RTL (olddecl, DECL_RTL (newdecl));
-	  DECL_ASSEMBLER_NAME (olddecl) = DECL_ASSEMBLER_NAME (newdecl);
+	  COPY_DECL_ASSEMBLER_NAME (olddecl, newdecl);
 	  SET_IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (newdecl),
 				       newdecl);
 	}
@@ -3633,7 +3629,7 @@ duplicate_decls (newdecl, olddecl)
       if (! types_match)
 	{
 	  DECL_LANGUAGE (olddecl) = DECL_LANGUAGE (newdecl);
-	  DECL_ASSEMBLER_NAME (olddecl) = DECL_ASSEMBLER_NAME (newdecl);
+	  COPY_DECL_ASSEMBLER_NAME (newdecl, olddecl);
 	  SET_DECL_RTL (olddecl, DECL_RTL (newdecl));
 	}
       if (! types_match || new_defines_function)
@@ -3683,7 +3679,7 @@ duplicate_decls (newdecl, olddecl)
   TREE_ADDRESSABLE (newdecl) = TREE_ADDRESSABLE (olddecl);
   TREE_ASM_WRITTEN (newdecl) = TREE_ASM_WRITTEN (olddecl);
   DECL_COMMON (newdecl) = DECL_COMMON (olddecl);
-  DECL_ASSEMBLER_NAME (newdecl) = DECL_ASSEMBLER_NAME (olddecl);
+  COPY_DECL_ASSEMBLER_NAME (olddecl, newdecl);
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
@@ -3846,8 +3842,7 @@ pushdecl (x)
 	  if (TREE_CODE (x) == FUNCTION_DECL)
 	    for (match = t; match; match = OVL_NEXT (match))
 	      {
-		if (DECL_ASSEMBLER_NAME (OVL_CURRENT (t))
-		    == DECL_ASSEMBLER_NAME (x))
+		if (decls_match (OVL_CURRENT (match), x))
 		  break;
 	      }
 	  else
@@ -4028,32 +4023,15 @@ pushdecl (x)
 	  if (IDENTIFIER_GLOBAL_VALUE (name) == NULL_TREE && TREE_PUBLIC (x))
 	    TREE_PUBLIC (name) = 1;
 
-	  /* Bind the mangled name for the entity.  In the future, we
-	     should not need to do this; mangled names are an
-	     implementation detail of which the front-end should not
-	     need to be aware.  */
-	  if (!(TREE_CODE (x) == TYPE_DECL && DECL_ARTIFICIAL (x)
-		&& t != NULL_TREE)
-	      /* For an ordinary function, we create a binding from
-		 the mangled name (i.e., NAME) to the DECL.  But, for
-		 an `extern "C"' function, the mangled name and the
-		 ordinary name are the same so we need not do this.  */
-	      && !DECL_EXTERN_C_FUNCTION_P (x))
-	    {
-	      tree mangled_name;
-
-	      if (TREE_CODE (x) == TYPE_DECL || TREE_CODE (x) == VAR_DECL
-		  || TREE_CODE (x) == NAMESPACE_DECL)
-		mangled_name = name;
-	      else
-		mangled_name = DECL_ASSEMBLER_NAME (x);
-
-	      if (TREE_CODE (x) == FUNCTION_DECL)
-		my_friendly_assert
-		  ((IDENTIFIER_GLOBAL_VALUE (mangled_name) == NULL_TREE)
-		  || (IDENTIFIER_GLOBAL_VALUE (mangled_name) == x), 378);
-	      SET_IDENTIFIER_NAMESPACE_VALUE (mangled_name, x);
-	    }
+ 	  /* Bind the name for the entity.  */
+ 	  if (!(TREE_CODE (x) == TYPE_DECL && DECL_ARTIFICIAL (x)
+  		&& t != NULL_TREE)
+ 	      && (TREE_CODE (x) == TYPE_DECL
+ 		  || TREE_CODE (x) == VAR_DECL
+ 		  || TREE_CODE (x) == NAMESPACE_DECL
+ 		  || TREE_CODE (x) == CONST_DECL
+ 		  || TREE_CODE (x) == TEMPLATE_DECL))
+ 	    SET_IDENTIFIER_NAMESPACE_VALUE (name, x);
 
 	  /* Don't forget if the function was used via an implicit decl.  */
 	  if (IDENTIFIER_IMPLICIT_DECL (name)
@@ -6670,7 +6648,8 @@ builtin_function (name, type, code, class, libname)
      we cannot change DECL_ASSEMBLER_NAME until we have installed this
      function in the namespace.  */
   if (libname)
-    DECL_ASSEMBLER_NAME (decl) = get_identifier (libname);
+    SET_DECL_ASSEMBLER_NAME (decl, get_identifier (libname));
+  make_decl_rtl (decl, NULL);
 
   /* Warn if a function in the namespace for users
      is used without an occasion to consider it declared.  */
@@ -6695,6 +6674,7 @@ build_library_fn_1 (name, operator_code, type)
   DECL_ARTIFICIAL (fn) = 1;
   TREE_NOTHROW (fn) = 1;
   SET_OVERLOADED_OPERATOR_CODE (fn, operator_code);
+  DECL_LANGUAGE (fn) = lang_c;
   return fn;
 }
 
@@ -6721,6 +6701,7 @@ build_cp_library_fn (name, operator_code, type)
   tree fn = build_library_fn_1 (name, operator_code, type);
   TREE_NOTHROW (fn) = TYPE_NOTHROW_P (type);
   DECL_CONTEXT (fn) = FROB_CONTEXT (current_namespace);
+  DECL_LANGUAGE (fn) = lang_cplusplus;
   set_mangled_name_for_decl (fn);
   return fn;
 }
@@ -7534,9 +7515,7 @@ maybe_commonize_var (decl)
 	  /* else we lose. We can only do this if we can use common,
 	     which we can't if it has been initialized.  */
 
-	  if (TREE_PUBLIC (decl))
-	    DECL_ASSEMBLER_NAME (decl) = mangle_decl (decl);
-	  else
+	  if (!TREE_PUBLIC (decl))
 	    {
 	      cp_warning_at ("sorry: semantics of inline function static data `%#D' are wrong (you'll wind up with multiple copies)", decl);
 	      cp_warning_at ("  you can work around this by removing the initializer", decl);
@@ -7721,7 +7700,7 @@ make_rtl_for_nonlocal_decl (decl, init, asmspec)
 
   /* Set the DECL_ASSEMBLER_NAME for the variable.  */
   if (asmspec)
-    DECL_ASSEMBLER_NAME (decl) = get_identifier (asmspec);
+    SET_DECL_ASSEMBLER_NAME (decl, get_identifier (asmspec));
 
   /* We don't create any RTL for local variables.  */
   if (DECL_FUNCTION_SCOPE_P (decl) && !TREE_STATIC (decl))
@@ -7751,12 +7730,15 @@ make_rtl_for_nonlocal_decl (decl, init, asmspec)
       defer_p = 1;
     }
 
-  /* If we're deferring the variable, just make RTL.  Do not actually
-     emit the variable.  */
-  if (defer_p)
+  /* If we're deferring the variable, we only need to make RTL if
+     there's an ASMSPEC.  Otherwise, we'll lazily create it later when
+     we need it.  (There's no way to lazily create RTL for things that
+     have assembly specs because the information about the specifier
+     isn't stored in the tree, yet)  */
+  if (defer_p && asmspec)
     make_decl_rtl (decl, asmspec);
   /* If we're not deferring, go ahead and assemble the variable.  */
-  else
+  else if (!defer_p)
     rest_of_decl_compilation (decl, asmspec, toplev, at_eof);
 }
 
@@ -8034,7 +8016,7 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
       /* This must override the asm specifier which was placed by
 	 grokclassfn.  Lay this out fresh.  */
       SET_DECL_RTL (TREE_TYPE (decl), NULL_RTX);
-      DECL_ASSEMBLER_NAME (decl) = get_identifier (asmspec);
+      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (asmspec));
       make_decl_rtl (decl, asmspec);
     }
 
@@ -8858,12 +8840,6 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
   if (has_default_arg)
     add_defarg_fn (decl);
 
-  /* Plain overloading: will not be grok'd by grokclassfn.  */
-  if (! ctype && ! processing_template_decl
-      && (! DECL_EXTERN_C_P (decl) || DECL_OVERLOADED_OPERATOR_P (decl))
-      && ! DECL_USE_TEMPLATE (decl))
-    set_mangled_name_for_decl (decl);
-
   if (funcdef_flag)
     /* Make the init_value nonzero so pushdecl knows this is not
        tentative.  error_mark_node is replaced later with the BLOCK.  */
@@ -8968,10 +8944,6 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
       type = TREE_TYPE (type);
       decl = build_lang_decl (VAR_DECL, declarator, type);
       DECL_CONTEXT (decl) = basetype;
-      /* DECL_ASSEMBLER_NAME is needed only for full-instantiated
-	 templates.  */
-      if (!uses_template_parms (decl))
-	DECL_ASSEMBLER_NAME (decl) = mangle_decl (decl);
     }
   else
     {
@@ -8996,7 +8968,10 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
 
       context = DECL_CONTEXT (decl);
       if (declarator && context && current_lang_name != lang_name_c)
-	DECL_ASSEMBLER_NAME (decl) = mangle_decl (decl);
+	/* We can't mangle lazily here because we don't have any
+	   way to recover whether or not a variable was `extern
+	   "C"' later.  */
+	mangle_decl (decl);
     }
 
   if (in_namespace)
@@ -11004,8 +10979,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  if (TYPE_LANG_SPECIFIC (type) && CLASSTYPE_TEMPLATE_INFO (type))
 	    DECL_NAME (CLASSTYPE_TI_TEMPLATE (type))
 	      = TYPE_IDENTIFIER (type);
-
-	  DECL_ASSEMBLER_NAME (decl) = mangle_type (type);
 
 	  /* FIXME remangle member functions; member functions of a
 	     type with external linkage have external linkage.  */
@@ -13537,18 +13510,9 @@ start_function (declspecs, declarator, attrs, flags)
   if (attrs)
     cplus_decl_attributes (decl1, NULL_TREE, attrs);
 
-  /* We need to do this even if we aren't expanding yet so that
-     assemble_external works.  */
-  make_decl_rtl (decl1, NULL);
-
   /* Promote the value to int before returning it.  */
   if (C_PROMOTING_INTEGER_TYPE_P (restype))
     restype = type_promotes_to (restype);
-
-  /* If this fcn was already referenced via a block-scope `extern' decl
-     (or an implicit decl), propagate certain information about the usage.  */
-  if (TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (decl1)))
-    TREE_ADDRESSABLE (decl1) = 1;
 
   if (DECL_RESULT (decl1) == NULL_TREE)
     {
@@ -14488,5 +14452,5 @@ cp_missing_noreturn_ok_p (decl)
      tree decl;
 {
   /* A missing noreturn is ok for the `main' function.  */
-  return MAIN_NAME_P (DECL_ASSEMBLER_NAME (decl));
+  return DECL_MAIN_P (decl);
 }

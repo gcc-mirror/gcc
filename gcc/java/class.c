@@ -899,8 +899,9 @@ build_class_ref (type)
 	      TREE_PUBLIC (decl) = 1;
 	      DECL_IGNORED_P (decl) = 1;
 	      DECL_ARTIFICIAL (decl) = 1;
-	      DECL_ASSEMBLER_NAME (decl) = 
-		java_mangle_class_field (&temporary_obstack, type);
+	      SET_DECL_ASSEMBLER_NAME (decl, 
+				       java_mangle_class_field
+				       (&temporary_obstack, type));
 	      make_decl_rtl (decl, NULL);
 	      pushdecl_top_level (decl);
 	      if (is_compiled == 1)
@@ -1701,8 +1702,9 @@ layout_class (this_class)
       if (FIELD_STATIC (field))
 	{
 	  /* Set DECL_ASSEMBLER_NAME to something suitably mangled. */
-	  DECL_ASSEMBLER_NAME (field) = 
-	    java_mangle_decl (&temporary_obstack, field);
+	  SET_DECL_ASSEMBLER_NAME (field,
+				   java_mangle_decl
+				   (&temporary_obstack, field));
 	}
     }
 
@@ -1797,8 +1799,9 @@ layout_class_method (this_class, super_class, method_decl, dtable_count)
   TREE_PUBLIC (method_decl) = 1;
 
   /* This is a good occasion to mangle the method's name */
-  DECL_ASSEMBLER_NAME (method_decl) = 
-    java_mangle_decl (&temporary_obstack, method_decl);
+  SET_DECL_ASSEMBLER_NAME (method_decl,
+			   java_mangle_decl (&temporary_obstack, 
+					     method_decl));
   /* We don't generate a RTL for the method if it's abstract, or if
      it's an interface method that isn't clinit. */
   if (! METHOD_ABSTRACT (method_decl) 
@@ -1878,7 +1881,7 @@ emit_register_classes ()
   tree t;
 
   init_decl = build_decl (FUNCTION_DECL, init_name, init_type);
-  DECL_ASSEMBLER_NAME (init_decl) = init_name;
+  SET_DECL_ASSEMBLER_NAME (init_decl, init_name);
   TREE_STATIC (init_decl) = 1;
   current_function_decl = init_decl;
   DECL_RESULT (init_decl) = build_decl(RESULT_DECL, NULL_TREE, void_type_node);

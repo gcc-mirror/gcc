@@ -1,3 +1,65 @@
+2001-03-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (get_vtable_decl): Use SET_DECL_ASSEMBLER_NAME,
+	COPY_DECL_ASSEMBLER_NAME, etc.  Don't set DECL_ASSEMBLER_NAME
+	where it's not necessary.
+	(add_method): Remove optimization involving comparison of
+	DECL_ASSEMBLER_NAME.
+	(build_vtbl_or_vbase_field): Use SET_DECL_ASSEMBLER_NAME,
+	COPY_DECL_ASSEMBLER_NAME, etc.  Don't set DECL_ASSEMBLER_NAME
+	where it's not necessary.
+	(check_methods): Likewise.
+	(build_clone): Likewise.
+	(built_vtt): Likewise.
+	* cp-tree.h (DECL_NEEDED_P): Likewise.
+	* decl.c (pushtag): Likewise.
+	(duplicate_decls): Likewise.
+	(pushdecl): Likewise.
+	(builtin_function): Likewise.
+	(build_library_fn_1): Set DECL_LANGUAGE for library functions.
+	(build_cp_library_fn): Likewise.
+	(maybe_commonize_var): Use SET_DECL_ASSEMBLER_NAME,
+	COPY_DECL_ASSEMBLER_NAME, etc.  Don't set DECL_ASSEMBLER_NAME
+	where it's not necessary.
+	(make_rtl_for_nonlocal_decl): Likewise.
+	(cp_finish_decl): Likewise.
+	(grokfndecl): Likewise.
+	(grokvardecl): Likewise.
+	(grokdeclarator): Likewise.
+	(start_function): Likewise.
+	(cp_missing_return_ok_p): Likewise.
+	* decl2.c (grokclassfn): Likewise.
+	(check_classfn): Likewise.
+	(finish_static_data_member_decl): Likewise.
+	(grokfield): Likewise.
+	* error.c (GLOBAL_IORD_P): Remove.
+	(dump_global_iord): Improve output.
+	(dump_decl): Avoid using DECL_ASSEMBLER_NAME.
+	* except.c (nothrow_libfn_p): Summarily reject any function not in
+	namespace-scope.
+	* init.c (build_java_class_ref): Don't explicitly set
+	DECL_ASSEMBLER_NAME after calling mangle_decl.
+	* mangle.c (mangle_decl_string): Handle extern "C" functions.
+	(mangle_decl): Set the DECL_ASSEMBLER_NAME for the decl.
+	* method.c (set_mangled_name_for_decl): Don't explicitly set
+	DECL_ASSEMBLER_NAME after calling mangle_decl.
+	(make_thunk): Explicitly set the DECL_ASSEMBLER_NAME and
+	IDENTIFIER_GLOBAL_VALUE for the thunk.
+	* pt.c (set_mangled_name_for_template_decl): Remove.
+	(check_explicit_specialization): Don't use it.
+	(looup_template_class): Don't set DECL_ASSEMBLER_NAME.
+	(tsubst_friend_function): Likewise.
+	(tsubst_decl): Likewise.
+	(regenerate_decl_from_template): Use COPY_DECL_ASSEMBLER_NAME.
+	* rtti.c (get_tinfo_decl): Use SET_DECL_ASSEMBLER_NAME,
+	COPY_DECL_ASSEMBLER_NAME, etc.  Don't set DECL_ASSEMBLER_NAME
+	where it's not necessary.
+	(tinfo_base_init): Likewise.
+	(create_real_tinfo_var): Likewise.
+	* search.c (looup_field_1): Likewise.
+	* semantics.c (finish_named_return_value): Likewise.
+	* tree.c (init_tree): Set lang_set_decl_assembler_name.
+	
 2001-03-15  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	Correct semantics restrictions checking in throw-expression.
