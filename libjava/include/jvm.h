@@ -177,9 +177,7 @@ void _Jv_InitGC (void);
 /* Register a finalizer.  */
 void _Jv_RegisterFinalizer (void *object, _Jv_FinalizerFunc *method);
 /* Compute the GC descriptor for a class */
-#ifdef INTERPRETER
 void * _Jv_BuildGCDescr(jclass);
-#endif
 
 /* Allocate some unscanned, unmoveable memory.  Return NULL if out of
    memory.  */

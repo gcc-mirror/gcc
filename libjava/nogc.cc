@@ -19,13 +19,11 @@ details.  */
 // Total amount of memory allocated.
 static long total = 0;
 
-#ifdef INTERPRETER
 void *
 _Jv_BuildGCDescr(jclass klass)
 {
   return 0;
 }
-#endif
 
 void *
 _Jv_AllocObj (jsize size, jclass klass)

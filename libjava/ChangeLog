@@ -1,3 +1,8 @@
+2001-12-19  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* include/jvm.h (_Jv_BuildGCDescr): Declare unconditionally.
+	* nogc.cc (_Jv_BuildGCDescr): Define unconditionally.
+
 2001-12-18  Tom Tromey  <tromey@redhat.com>
 
 	* java/text/CollationElementIterator.java (secondaryOrder): Cast
