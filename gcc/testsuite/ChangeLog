@@ -1,3 +1,7 @@
+2003-03-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/init/ref4.C: New test.
+
 Fri Mar  7 17:41:07 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/i386-local2.c: Fix problems with certain versions of dejagnu.

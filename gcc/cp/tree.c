@@ -212,6 +212,18 @@ real_lvalue_p (ref)
   return lvalue_p_1 (ref, /*treat_class_rvalues_as_lvalues=*/ 0, /*cast*/ 1);
 }
 
+/* Returns the kind of lvalue that REF is, in the sense of
+   [basic.lval].  This function should really be named lvalue_p; it
+   computes the C++ definition of lvalue.  */
+
+cp_lvalue_kind
+real_non_cast_lvalue_p (tree ref)
+{
+  return lvalue_p_1 (ref, 
+		     /*treat_class_rvalues_as_lvalues=*/0, 
+		     /*allow_cast_as_lvalue=*/0);
+}
+
 /* This differs from real_lvalue_p in that class rvalues are
    considered lvalues.  */
 
