@@ -1678,7 +1678,7 @@ record_reg_classes (n_alts, n_ops, ops, modes,
 		    if (GET_CODE (op) == MEM)
 		      win = 1;
 		  }
-		if (EXTRA_ADDRESS_CONSTRAINT (op))
+		if (EXTRA_ADDRESS_CONSTRAINT (c))
 		  {
 		    /* Every address can be reloaded to fit.  */
 		    allows_addr = 1;
