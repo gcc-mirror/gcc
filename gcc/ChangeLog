@@ -1,3 +1,8 @@
+2005-02-18  Stan Shebs  <shebs@apple.com>
+
+	* config/darwin.c (machopic_select_rtx_section): Don't put relocatable
+	expressions in the .literal8 section.
+
 2005-02-18  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/darwin-tramp.asm: Remove stray 'APPLE LOCAL' marker.
