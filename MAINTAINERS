@@ -74,6 +74,7 @@ sh port			Alexandre Oliva		aoliva@redhat.com
 sparc port		Richard Henderson	rth@redhat.com
 sparc port		David S. Miller		davem@redhat.com
 sparc port		Jakub Jelinek		jakub@redhat.com
+sparc port		Eric Botcazou		ebotcazou@libertysurf.fr
 v850 port		Nick Clifton		nickc@redhat.com
 v850 port		Michael Meissner	meissner@redhat.com
 vax port		Dave Anglin		dave.anglin@nrc.ca
@@ -171,7 +172,6 @@ Eric Blake					ericb@gcc.gnu.org
 Jim Blandy					jimb@redhat.com
 Phil Blundell					pb@futuretv.com
 Hans Boehm					hboehm@gcc.gnu.org
-Eric Botcazou					ebotcazou@libertysurf.fr
 Andrew Cagney					cagney@redhat.com
 Chandra Chavva					cchavva@redhat.com
 William Cohen					wcohen@redhat.com

@@ -1,3 +1,8 @@
+2004-01-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* MAINTAINERS: Move myself from 'Write After Approval' to
+	'CPU Port Maintainers' section as SPARC maintainer.
+
 2004-01-02  Roger Sayle  <roger@eyesopen.com>
 
 	* configure.in (ia64*-*-hpux*): Disable building java libraries.
