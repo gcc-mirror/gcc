@@ -2870,13 +2870,12 @@ canon_reg (x, insn)
    is a good approximation for that cost.  However, most RISC machines have
    only a few (usually only one) memory reference formats.  If an address is
    valid at all, it is often just as cheap as any other address.  Hence, for
-   RISC machines, we use the configuration macro `ADDRESS_COST' to compare the
-   costs of various addresses.  For two addresses of equal cost, choose the one
-   with the highest `rtx_cost' value as that has the potential of eliminating
-   the most insns.  For equal costs, we choose the first in the equivalence
-   class.  Note that we ignore the fact that pseudo registers are cheaper
-   than hard registers here because we would also prefer the pseudo registers.
-  */
+   RISC machines, we use `address_cost' to compare the costs of various
+   addresses.  For two addresses of equal cost, choose the one with the
+   highest `rtx_cost' value as that has the potential of eliminating the
+   most insns.  For equal costs, we choose the first in the equivalence
+   class.  Note that we ignore the fact that pseudo registers are cheaper than
+   hard registers here because we would also prefer the pseudo registers.  */
 
 static void
 find_best_addr (insn, loc, mode)
@@ -2886,10 +2885,8 @@ find_best_addr (insn, loc, mode)
 {
   struct table_elt *elt;
   rtx addr = *loc;
-#ifdef ADDRESS_COST
   struct table_elt *p;
   int found_better = 1;
-#endif
   int save_do_not_record = do_not_record;
   int save_hash_arg_in_memory = hash_arg_in_memory;
   int addr_volatile;
@@ -2952,22 +2949,6 @@ find_best_addr (insn, loc, mode)
     return;
 
   elt = lookup (addr, hash, Pmode);
-
-#ifndef ADDRESS_COST
-  if (elt)
-    {
-      int our_cost = elt->cost;
-
-      /* Find the lowest cost below ours that works.  */
-      for (elt = elt->first_same_value; elt; elt = elt->next_same_value)
-	if (elt->cost < our_cost
-	    && (GET_CODE (elt->exp) == REG
-		|| exp_equiv_p (elt->exp, elt->exp, 1, 0))
-	    && validate_change (insn, loc,
-				canon_reg (copy_rtx (elt->exp), NULL_RTX), 0))
-	  return;
-    }
-#else
 
   if (elt)
     {
@@ -3099,7 +3080,6 @@ find_best_addr (insn, loc, mode)
 	    }
 	}
     }
-#endif
 }
 
 /* Given an operation (CODE, *PARG1, *PARG2), where code is a comparison

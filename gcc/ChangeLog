@@ -1,4 +1,8 @@
- 2003-01-23  Mike Stump  <mrs@apple.com>
+2003-01-28  Richard Henderson  <rth@redhat.com>
+
+	* cse.c (find_best_addr): Kill !ADDRESS_COST code.
+
+2003-01-23  Mike Stump  <mrs@apple.com>
 
 	* regclass.c (init_reg_autoinc): New function.
 	(regclass): Move initialization of forbidden_inc_dec_class from
