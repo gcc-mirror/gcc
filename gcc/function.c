@@ -295,7 +295,7 @@ static tree split_complex_args (tree);
 static void set_insn_locators (rtx, int) ATTRIBUTE_UNUSED;
 
 /* Pointer to chain of `struct function' for containing functions.  */
-static GTY(()) struct function *outer_function_chain;
+struct function *outer_function_chain;
 
 /* List of insns that were postponed by purge_addressof_1.  */
 static rtx postponed_insns;

@@ -1,3 +1,8 @@
+2003-11-23  Waldek Hebisch <hebisch@math.uni.wroc.pl>
+
+	* function.c: Make outer_function-chain external.
+	* function.h: Likewise.
+
 2003-11-24  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config.gcc (mips-sgi-irix6*): Add t-iris6gld to tmake_file when

@@ -519,6 +519,9 @@ struct function GTY(())
 /* The function currently being compiled.  */
 extern GTY(()) struct function *cfun;
 
+/* Pointer to chain of `struct function' for containing functions.  */
+extern GTY(()) struct function *outer_function_chain;
+
 /* Nonzero if we've already converted virtual regs to hard regs.  */
 extern int virtuals_instantiated;
 
