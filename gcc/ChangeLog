@@ -1,3 +1,10 @@
+2003-01-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR c/8032
+	* c-typeck.c (process_init_element) [RECORD_TYPE]: For
+	an empty element, do not advance the pointer to unfilled
+	fields if there are pending initializers.
+
 2003-01-09  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
 
 	* Makefile.in (ORDINARY_FLAGS_TO_PASS): Also pass DESTDIR.
