@@ -231,6 +231,7 @@ esac
 # machines.
 tm_p_file=
 cpu_type=`echo ${target} | sed 's/-.*$//'`
+cpu_is_64bit=
 case ${target} in
 alpha*-*-*)
 	cpu_type=alpha
@@ -287,6 +288,11 @@ powerpc*-*-*)
 	cpu_type=rs6000
 	extra_headers="ppc-asm.h altivec.h spe.h"
 	need_64bit_hwint=yes
+	case x$with_cpu in
+	    xpowerpc64|xdefault64|x6[23]0|x970|xG5|xpower[345]|xrs64a)
+		cpu_is_64bit=yes
+		;;
+	esac
 	;;
 rs6000*-*-*)
 	need_64bit_hwint=yes
@@ -1536,12 +1542,10 @@ avr-*-*)
 #	extra_headers=
 #	;;
 powerpc64-*-linux*)
-	tm_file="rs6000/biarch64.h ${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h"
-	case x$with_cpu in
-	x|xpowerpc64|xdefault64|x6[23]0|x970|xG5|xpower[345]|xrs64a)
-		tm_file="${tm_file} rs6000/default64.h";;
-	esac
-	tm_file="${tm_file} rs6000/linux64.h"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h"
+	test x$with_cpu != x || cpu_is_64bit=yes
+	test x$cpu_is_64bit != xyes || tm_file="${tm_file} rs6000/default64.h"
+	tm_file="rs6000/biarch64.h ${tm_file} rs6000/linux64.h"
 	tmake_file="rs6000/t-fprules ${tmake_file} rs6000/t-ppccomm rs6000/t-linux64"
 	;;
 powerpc64-*-gnu*)
@@ -1620,8 +1624,20 @@ powerpc-*-linux*spe*)
 	tmake_file="rs6000/t-fprules rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
 	;;
 powerpc-*-linux*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/linux.h"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h"
 	tmake_file="rs6000/t-fprules rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
+	case ${enable_targets}:${cpu_is_64bit} in
+	    *powerpc64* | all:* | *:yes)
+		if test x$cpu_is_64bit = xyes; then
+		    tm_file="${tm_file} rs6000/default64.h"
+		fi
+		tm_file="rs6000/biarch64.h ${tm_file} rs6000/linux64.h"
+		tmake_file="$tmake_file rs6000/t-linux64"
+		;;
+	    *)
+		tm_file="${tm_file} rs6000/linux.h"
+		;;
+	esac
 	;;
 powerpc-*-gnu-gnualtivec*)
 	tm_file="${cpu_type}/${cpu_type}.h elfos.h svr4.h freebsd-spec.h gnu.h rs6000/sysv4.h rs6000/linux.h rs6000/linuxaltivec.h rs6000/gnu.h"

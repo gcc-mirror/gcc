@@ -1,3 +1,11 @@
+2005-03-31  Alan Modra  <amodra@bigpond.net.au>
+
+	* config.gcc (cpu_is_64bit): Set for 64-bit powerpc cpus.
+	(powerpc64-*-linux*): Use it.  Rearrange tm_file assignment.
+	(powerpc-*-linux*): Build a biarch compiler when --enable-targets
+	is given with "powerpc64*" or "all", or when --with-cpu chooses
+	a 64-bit cpu.
+
 2005-03-30  James E. Wilson  <wilson@specifixinc.com>
 
 	PR debug/20268
@@ -88,7 +96,7 @@
 	2nd argument to match int.
 	* libgcc2.h (__powisf2, __powidf2, __powixf2, __powitf2): Change
 	2nd argument type to int.
-	* libgcc2.c: Change prototype of __powi* functions to use 
+	* libgcc2.c: Change prototype of __powi* functions to use
 	int.
 
 2005-03-30  Dale Johannesen  <dalej@apple.com>
@@ -141,7 +149,7 @@
 
 2005-03-30  Sebastian Pop  <pop@cri.ensmp.fr>
 
-	* tree-scalar-evolution.c (instantiate_parameters_1): Return 
+	* tree-scalar-evolution.c (instantiate_parameters_1): Return
 	as soon as a chrec_dont_know is detected.
 
 2005-03-31  Danny Smith  <dannysmith@users.sourceforge.net>
@@ -411,7 +419,7 @@
 	(pass_tree_profile): Reference it.
 	* value-prof.c: Include tree-flow.h, tree-flow-inline.h, diagnostic.h,
 	tree.h, gcov-io.h.
-	(insn_divmod_values_to_profile): Rename to 
+	(insn_divmod_values_to_profile): Rename to
 	rtl_divmod_values_to_profile. Adjust.
 	(insn_values_to_profile): Rename to rtl_values_to_profile. Adjust.
 	(insn_prefetch_values_to_profile): Adjust.
@@ -419,7 +427,7 @@
 	(gen_divmod_fixed_value): Rename to rtl_divmod_fixed_value.
 	(gen_mod_pow2): Rename to rtl_mod_pow2.
 	(gen_mod_subtract): Rename to rtl_mod_subtract.
-	(divmod_fixed_value_transform): Rename to 
+	(divmod_fixed_value_transform): Rename to
 	rtl_divmod_fixed_value_transform.
 	(mod_pow2_value_transform): Rename to rtl_mod_pow2_value_transform.
 	(mod_subtract_transform): Rename to rtl_mod_subtract_transform.
@@ -523,7 +531,7 @@
 	(stfiwx): New.
 	* config/rs6000/rs6000.h (EXTRA_CONSTRAINT): Add 'Z'.
 	(EXTRA_MEMORY_CONSTRAINT): Likewise.
-	* config/rs6000/rs6000.c (indexed_or_indirect_operand): New. 
+	* config/rs6000/rs6000.c (indexed_or_indirect_operand): New.
 	* config/rs6000/rs6000-protos.h (indexed_or_indirect_operand): New.
 
 2005-03-25  Kazu Hirata  <kazu@cs.umass.edu>
@@ -636,7 +644,7 @@
 	not optimizing.
 
 2005-03-23  Dorit Naishlos  <dorit@il.ib.com>
- 
+
 	PR tree-optimization/20501
 	* tree-vect-analyze.c (vect_enhance_data_refs_alignment): Debug print
 	reporting that peeling for alignment is applied moved to...
@@ -756,7 +764,7 @@
 	* dwarf2out.c (dwarf2_debug_hooks): Ditto.
 	* sdbout.c (sdb_debug_hooks): Ditto.
 	* vmsdbgout.c (vmsdbg_debug_hooks): Ditto.
-	
+
 2005-03-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* doc/extend.texi: Deprecate C++ min/max operators.
@@ -906,7 +914,7 @@
 	* config/fr30/fr30.opt: New file.
 
 2005-03-18  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	Fix PR tree-optimization/20542
 
 	* tree-flow-inline.h (overlap_subvar): Move to here.
@@ -915,7 +923,7 @@
 	* tree-ssa-alias.c (add_pointed_to_var): Use overlap_subvar here.
 	* tree-ssa-loop-im.c (is_call_clobbered_ref): Return proper answer
 	for variables with subvars.
-	
+
 2005-03-21 Mostafa Hagog <mustafa@il.ibm.com>
 
 	PR middle-end/20177
@@ -3904,7 +3912,7 @@
 	not including (reg). Do not check for reg being CRIS_PC_REGNUM.
 	(EXTRA_MEMORY_CONSTRAINT): Define as 'Q'.
 	* config/cris/cris.md: Tweak comments referring to Q.
- 	("cmpsi", "cmphi", "cmpqi", "*movsi_internal", "movhi")
+	("cmpsi", "cmphi", "cmpqi", "*movsi_internal", "movhi")
 	("movstricthi", "movqi", "movstrictqi", "movsf", "addsi3")
 	("addhi3", "addqi3", "subsi3", "subhi3", "subqi3")
 	("*expanded_andsi", "*expanded_andhi", "*andhi_lowpart", "andqi3")
