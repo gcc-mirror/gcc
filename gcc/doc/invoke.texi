@@ -406,7 +406,7 @@ in the following sections.
 
 @emph{M32R/D Options}
 @gccoptlist{
--mm32rx -mcode-model=@var{model-type}  -msdata=@var{sdata-type} @gol
+-m32rx -m32r -mcode-model=@var{model-type}  -msdata=@var{sdata-type} @gol
 -G @var{num}}
 
 @emph{M88K Options}
@@ -6247,9 +6247,13 @@ This option makes symbolic debugging impossible.
 These @option{-m} options are defined for Mitsubishi M32R/D architectures:
 
 @table @gcctabopt
-@item -mm32rx
-@opindex mm32rx
-Generate code for the M32R/X.  The default is to generate code for the M32R.
+@item -m32rx
+@opindex m32rx
+Generate code for the M32R/X.
+
+@item -m32r
+@opindex m32r
+Generate code for the M32R.  This is the default.
 
 @item -mcode-model=small
 @opindex mcode-model=small
@@ -9726,7 +9730,6 @@ code can be used with the @code{PREFIX} assembly directive.
 Generate an executable in the ELF format, rather than the default
 @samp{mmo} format used by the @command{mmix} simulator.
 @end table
-
 
 @node Code Gen Options
 @section Options for Code Generation Conventions
