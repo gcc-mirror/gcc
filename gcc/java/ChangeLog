@@ -1,3 +1,8 @@
+2003-01-07  Tom Tromey  <tromey@redhat.com>
+
+	* class.c (add_assume_compiled): Don't adjust parent if we're
+	already at the root of tree.
+
 2003-01-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* lang.c (dump_compound_expr): Prototype.
