@@ -238,6 +238,12 @@ case "${host}" in
     abi_baseline_pair="mips-linux-gnu"
     cpu_include_dir="cpu/mips"
     ;;
+  s390-*-linux*)
+    abi_baseline_pair="s390-linux-gnu"
+    ;;
+  s390x-*-linux*)
+    abi_baseline_pair="s390x-linux-gnu"
+    ;;
   sparc*-*-freebsd5*)
     abi_baseline_pair="sparc-freebsd5"
     ;;
