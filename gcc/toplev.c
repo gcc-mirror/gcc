@@ -673,6 +673,8 @@ char *lang_options[] =
   "-fno-strict-prototype",
   "-fthis-is-variable",
   "-fno-this-is-variable",
+  "-fvtable-thunks",
+  "-fno-vtable-thunks",
   "-fxref",
   "-fno-xref",
 
