@@ -1,3 +1,10 @@
+2004-11-18  Daniel Jacobowitz  <dan@codesourcery.com>
+            Mark Mitchell  <mark@codesourcery.com>
+
+	* configure.ac (i[34567]86-*-solaris2.1[0-9]*): Set
+	need_64bit_hwint=yes.
+	* configure: Regenerate.
+
 2004-11-09  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* Makefile.in ($(PACKAGE).pot): New rule.  Depend on

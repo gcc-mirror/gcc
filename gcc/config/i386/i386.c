@@ -927,6 +927,7 @@ static bool ix86_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 #if defined (DO_GLOBAL_CTORS_BODY) && defined (HAS_INIT_SECTION)
 static void ix86_svr3_asm_out_constructor (rtx, int);
 #endif
+static void i386_solaris_elf_named_section (const char *, unsigned int, tree);
 
 /* Register class used for passing given 64bit part of the argument.
    These represent classes as documented by the PS ABI, with the exception
@@ -15268,6 +15269,26 @@ void ix86_emit_i387_log1p (rtx op0, rtx op1)
   emit_insn (gen_fyl2x_xf3 (op0, tmp2, tmp));
 
   emit_label (label2);
+}
+
+/* Solaris named-section hook.  Parameters are as for
+   named_section_real.  */
+
+static void
+i386_solaris_elf_named_section (const char *name, unsigned int flags,
+				tree decl)
+{
+  /* With Binutils 2.15, the "@unwind" marker must be specified on
+     every occurrence of the ".eh_frame" section, not just the first
+     one.  */
+  if (TARGET_64BIT
+      && strcmp (name, ".eh_frame") == 0)
+    {
+      fprintf (asm_out_file, "\t.section\t%s,\"%s\",@unwind\n", name,
+	       flags & SECTION_WRITE ? "aw" : "a");
+      return;
+    }
+  default_elf_asm_named_section (name, flags, decl);
 }
 
 #include "gt-i386.h"
