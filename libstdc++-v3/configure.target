@@ -81,7 +81,7 @@ case "${target_os}" in
   aix*)
     os_include_dir="config/os/aix"
     ;;
-  bsd* | freebsd*)
+  bsd* | freebsd* )
     os_include_dir="config/os/bsd"
     ;;
   cygwin*)
@@ -92,6 +92,9 @@ case "${target_os}" in
     ;;
   irix*)
     os_include_dir="config/os/irix"
+    ;;
+  netbsd*)
+    os_include_dir="config/os/netbsd"
     ;;
   solaris2.5*)
     os_include_dir="config/os/solaris/solaris2.5"
@@ -122,6 +125,9 @@ case "${target}" in
      ATOMICITYH=$os_include_dir
      ;;
    *-*-linux*)
+     ATOMICITYH=$cpu_include_dir
+     ;;
+   *-*-netbsd*)
      ATOMICITYH=$cpu_include_dir
      ;;
    sparc*-*-*)
