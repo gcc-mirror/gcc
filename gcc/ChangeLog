@@ -4,7 +4,6 @@
 	(frv_init_builtins): Change its prototype to take 4 uhalf arguments.
 	(frv_expand_mdpackh_builtin): New function.
 	(frv_expand_builtin): Use it to expand __MDPACKH.
-	* config/frv/media.h (__MDPACKH): Update prototype.
 	* doc/extend.texi (__MDPACKH): Update documentation.
 
 2005-01-28  Uros Bizjak  <uros@kss-loka.si>
