@@ -1,3 +1,8 @@
+2000-07-03  Donn Terry  (donnte@microsoft.com)
+
+	* cppinit.c (print_help): split overlong line into ISO C89
+	maximum chunks.
+
 2000-07-07  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppexp.c: Update all code for new lexer interface.

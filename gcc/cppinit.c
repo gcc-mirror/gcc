@@ -1692,6 +1692,8 @@ static void
 print_help ()
 {
   fprintf (stderr, _("Usage: %s [switches] input output\n"), progname);
+  /* To keep the lines from getting too long for some compilers, limit
+     to about 500 characters (6 lines) per chunk. */
   fputs (_("\
 Switches:\n\
   -include <file>           Include the contents of <file> before other files\n\
@@ -1700,6 +1702,8 @@ Switches:\n\
   -iwithprefix <dir>        Add <dir> to the end of the system include path\n\
   -iwithprefixbefore <dir>  Add <dir> to the end of the main include path\n\
   -isystem <dir>            Add <dir> to the start of the system include path\n\
+"), stdout);
+  fputs (_("\
   -idirafter <dir>          Add <dir> to the end of the system include path\n\
   -I <dir>                  Add <dir> to the end of the main include path\n\
   -I-                       Fine-grained include path control; see info docs\n\
@@ -1707,6 +1711,8 @@ Switches:\n\
                              (dirs specified with -isystem will still be used)\n\
   -nostdinc++               Do not search system include directories for C++\n\
   -o <file>                 Put output into <file>\n\
+"), stdout);
+  fputs (_("\
   -pedantic                 Issue all warnings demanded by strict ISO C\n\
   -pedantic-errors          Issue -pedantic warnings as errors instead\n\
   -traditional              Follow K&R pre-processor behaviour\n\
@@ -1714,11 +1720,15 @@ Switches:\n\
   -lang-c                   Assume that the input sources are in C\n\
   -lang-c89                 Assume that the input sources are in C89\n\
   -lang-c++                 Assume that the input sources are in C++\n\
+"), stdout);
+  fputs (_("\
   -lang-objc                Assume that the input sources are in ObjectiveC\n\
   -lang-objc++              Assume that the input sources are in ObjectiveC++\n\
   -lang-asm                 Assume that the input sources are in assembler\n\
   -lang-fortran		    Assume that the input sources are in Fortran\n\
   -lang-chill               Assume that the input sources are in Chill\n\
+"), stdout);
+  fputs (_("\
   -std=<std name>           Specify the conformance standard; one of:\n\
                             gnu89, gnu99, c89, c99, iso9899:1990,\n\
                             iso9899:199409, iso9899:1999\n\
@@ -1727,6 +1737,8 @@ Switches:\n\
   -Wtrigraphs               Warn if trigraphs are encountered\n\
   -Wno-trigraphs            Do not warn about trigraphs\n\
   -Wcomment{s}              Warn if one comment starts inside another\n\
+"), stdout);
+  fputs (_("\
   -Wno-comment{s}           Do not warn about comments\n\
   -Wtraditional             Warn if a macro argument is/would be turned into\n\
                              a string if -traditional is specified\n\
@@ -1734,24 +1746,32 @@ Switches:\n\
   -Wundef                   Warn if an undefined macro is used by #if\n\
   -Wno-undef                Do not warn about testing undefined macros\n\
   -Wimport                  Warn about the use of the #import directive\n\
+"), stdout);
+  fputs (_("\
   -Wno-import               Do not warn about the use of #import\n\
   -Werror                   Treat all warnings as errors\n\
   -Wno-error                Do not treat warnings as errors\n\
   -Wall                     Enable all preprocessor warnings\n\
   -M                        Generate make dependencies\n\
   -MM                       As -M, but ignore system header files\n\
+"), stdout);
+  fputs (_("\
   -MD                       As -M, but put output in a .d file\n\
   -MMD                      As -MD, but ignore system header files\n\
   -MG                       Treat missing header file as generated files\n\
   -g3                       Include #define and #undef directives in the output\n\
   -D<macro>                 Define a <macro> with string '1' as its value\n\
   -D<macro>=<val>           Define a <macro> with <val> as its value\n\
+"), stdout);
+  fputs (_("\
   -A<question> (<answer>)   Assert the <answer> to <question>\n\
   -A-<question> (<answer>)  Disable the <answer> to <question>\n\
   -U<macro>                 Undefine <macro> \n\
   -v                        Display the version number\n\
   -H                        Print the name of header files as they are used\n\
   -C                        Do not discard comments\n\
+"), stdout);
+  fputs (_("\
   -dM                       Display a list of macro definitions active at end\n\
   -dD                       Preserve macro definitions in output\n\
   -dN                       As -dD except that only the names are preserved\n\
@@ -1759,6 +1779,8 @@ Switches:\n\
   -ftabstop=<number>        Distance between tab stops for column reporting\n\
   -P                        Do not generate #line directives\n\
   -$                        Do not allow '$' in identifiers\n\
+"), stdout);
+  fputs (_("\
   -remap                    Remap file names when including files.\n\
   --version                 Display version information\n\
   -h or --help              Display this information\n\
