@@ -588,7 +588,7 @@ Thu Oct 31 18:08:00 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* i386.c (optimization_options): Set flag_omit_frame_pointer,
 	flag_asynchronous_unwind_tables, flag_pcc_struct_return to 2.
 	Do not clear -momit-leaf-frame-pointer when profiling.
-	(ix86_frame_pointer_required): Frame pointer is allways required when
+	(ix86_frame_pointer_required): Frame pointer is always required when
 	profiling.
 
 Thu Oct 31 16:09:44 CET 2002  Jan Hubicka  <jh@suse.cz>
@@ -4621,7 +4621,7 @@ Tue Sep 17 13:40:13 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* i386.c (index_register_operand): New.
 	* i386.h (predicate_codes): Add new predicate.
-	* i386.md (lea_general_*): Use index_regsiter_operand
+	* i386.md (lea_general_*): Use index_register_operand
 	(ashift to lea splitter): Do not produce invalid leas
 	(ashift to mov+ashift split): New.
 
