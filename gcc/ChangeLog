@@ -1,5 +1,12 @@
 2003-05-09  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
+	* toplev.h (warning_with_file_and_line): Don't declare.
+	(error_with_file_and_line): Likewise.
+	* diagnostic.c (error_with_file_and_line): Remove.
+	(warning_with_file_and_line): Likewise.
+
+2003-05-09  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
 	* c-parse.in (if_stmt_locus): New object.
 	(if_prefix rule): Use it.  Don't use warning_with_file_and_line.
 	(select_or_iter_stmt rule): Likewise.
