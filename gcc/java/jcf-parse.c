@@ -610,8 +610,14 @@ void
 load_class (tree class_or_name, int verbose)
 {
   tree name, saved;
-  int class_loaded;
-  tree class_decl;
+  int class_loaded = 0;
+  tree class_decl = NULL_TREE;
+  bool is_compiled_class = false;
+
+  /* We've already failed, don't try again.  */
+  if (TREE_CODE (class_or_name) == RECORD_TYPE
+      && TYPE_DUMMY (class_or_name))
+    return;
 
   /* class_or_name can be the name of the class we want to load */
   if (TREE_CODE (class_or_name) == IDENTIFIER_NODE)
@@ -624,41 +630,99 @@ load_class (tree class_or_name, int verbose)
   else
     name = DECL_NAME (TYPE_NAME (class_or_name));
 
+  class_decl = IDENTIFIER_CLASS_VALUE (name);
+  if (class_decl != NULL_TREE)
+    {
+      tree type = TREE_TYPE (class_decl);
+      is_compiled_class
+	= ((TYPE_JCF (type) && JCF_SEEN_IN_ZIP (TYPE_JCF (type)))
+	   || CLASS_FROM_CURRENTLY_COMPILED_P (type));
+    }
+
   /* If the class is from source code, then it must already be loaded.  */
   class_decl = IDENTIFIER_CLASS_VALUE (name);
   if (class_decl && CLASS_FROM_SOURCE_P (TREE_TYPE (class_decl)))
     return;
 
   saved = name;
-  while (1)
+  
+  /* If flag_verify_invocations is unset, we don't try to load a class
+     unless we're looking for Object (which is fixed by the ABI) or
+     it's a class that we're going to compile.  */
+  if (flag_verify_invocations
+      || class_or_name == object_type_node
+      || is_compiled_class
+      || TREE_CODE (class_or_name) == IDENTIFIER_NODE)
     {
-      char *separator;
-
-      if ((class_loaded = read_class (name)))
-	break;
-
-      /* We failed loading name. Now consider that we might be looking
-	 for a inner class. */
-      if ((separator = strrchr (IDENTIFIER_POINTER (name), '$'))
-	  || (separator = strrchr (IDENTIFIER_POINTER (name), '.')))
+      while (1)
 	{
-	  int c = *separator;
-	  *separator = '\0';
-	  name = get_identifier (IDENTIFIER_POINTER (name));
-	  *separator = c;
+	  char *separator;
 
-	  /* Otherwise we might get infinite recursion, if say we have
-	     String.class but not String$CaseInsensitiveComparator.class. */
-	  if (current_jcf && current_jcf->java_source == 0)
+	  /* We've already loaded it.  */
+	  if (IDENTIFIER_CLASS_VALUE (name) != NULL_TREE)
+	    {
+	      tree tmp_decl = IDENTIFIER_CLASS_VALUE (name);
+	      if (CLASS_PARSED_P (TREE_TYPE (tmp_decl)))
+		break;
+	    }
+	
+	  if (read_class (name))
+	    break;
+
+	  /* We failed loading name. Now consider that we might be looking
+	     for a inner class. */
+	  if ((separator = strrchr (IDENTIFIER_POINTER (name), '$'))
+	      || (separator = strrchr (IDENTIFIER_POINTER (name), '.')))
+	    {
+	      int c = *separator;
+	      *separator = '\0';
+	      name = get_identifier (IDENTIFIER_POINTER (name));
+	      *separator = c;
+
+	      /* Otherwise we might get infinite recursion, if say we
+		 have String.class but not
+		 String$CaseInsensitiveComparator.class. */
+	      if (current_jcf && current_jcf->java_source == 0)
+		break;
+	    }
+	  /* Otherwise, we failed, we bail. */
+	  else
 	    break;
 	}
-      /* Otherwise, we failed, we bail. */
-      else
-	break;
-    }
 
-  if (!class_loaded && verbose)
-    error ("cannot find file for class %s", IDENTIFIER_POINTER (saved));
+      {
+	/* have we found the class we're looking for?  */
+	tree type_decl = IDENTIFIER_CLASS_VALUE (saved);
+	tree type = type_decl ? TREE_TYPE (type_decl) : NULL;
+	class_loaded = type && CLASS_PARSED_P (type);
+      }	      
+    }
+  
+  if (!class_loaded)
+    {
+      if (flag_verify_invocations || ! flag_indirect_dispatch
+	  || flag_emit_class_files)
+	{
+	  if (verbose)
+	    error ("cannot find file for class %s", IDENTIFIER_POINTER (saved));
+	}
+      else if (verbose)
+	{
+	  /* This is just a diagnostic during testing, not a real problem.  */
+	  if (!quiet_flag)
+	    warning("cannot find file for class %s", 
+		    IDENTIFIER_POINTER (saved));
+	  
+	  /* Fake it.  */
+	  if (TREE_CODE (class_or_name) == RECORD_TYPE)
+	    {
+	      set_super_info (0, class_or_name, object_type_node, 0);
+	      TYPE_DUMMY (class_or_name) = 1;
+	      /* We won't be able to output any debug info for this class.  */
+	      DECL_IGNORED_P (TYPE_NAME (class_or_name)) = 1;
+	    }
+	}
+    }
 }
 
 /* Parse the .class file JCF. */
@@ -760,6 +824,7 @@ parse_class_file (void)
   java_layout_seen_class_methods ();
 
   input_location = DECL_SOURCE_LOCATION (TYPE_NAME (current_class));
+  file_start_location = input_location;
   (*debug_hooks->start_source_file) (input_line, input_filename);
 
   /* Currently we always have to emit calls to _Jv_InitClass when
@@ -775,7 +840,7 @@ parse_class_file (void)
     {
       JCF *jcf = current_jcf;
 
-      if (METHOD_ABSTRACT (method))
+      if (METHOD_ABSTRACT (method) || METHOD_DUMMY (method))
 	continue;
 
       if (METHOD_NATIVE (method))
@@ -911,6 +976,7 @@ static void
 parse_source_file_2 (void)
 {
   int save_error_count = java_error_count;
+  flag_verify_invocations = true;
   java_complete_class ();	    /* Parse unsatisfied class decl. */
   java_parse_abort_on_error ();
 }
@@ -1196,7 +1262,12 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
       input_location = DECL_SOURCE_LOCATION (node);
       if (CLASS_FILE_P (node))
 	{
+	  /* FIXME: These two flags really should be independent.  We
+	     should be able to compile fully binary compatible, but
+	     with flag_verify_invocations on.  */
+	  flag_verify_invocations = ! flag_indirect_dispatch;
 	  output_class = current_class = TREE_TYPE (node);
+
 	  current_jcf = TYPE_JCF (current_class);
 	  layout_class (current_class);
 	  load_inner_classes (current_class);
@@ -1232,13 +1303,15 @@ compute_class_name (struct ZipDirectory *zdir)
   char *class_name_in_zip_dir = ZIPDIR_FILENAME (zdir);
   char *class_name;
   int i;
-  int filename_length;
+  int filename_length = zdir->filename_length;
 
-  while (strncmp (class_name_in_zip_dir, "./", 2) == 0)
-    class_name_in_zip_dir += 2;
+  while (filename_length > 2 && strncmp (class_name_in_zip_dir, "./", 2) == 0)
+    {
+      class_name_in_zip_dir += 2;
+      filename_length -= 2;
+    }
 
-  filename_length = (strlen (class_name_in_zip_dir)
-		     - strlen (".class"));
+  filename_length -= strlen (".class");
   class_name = ALLOC (filename_length + 1);
   memcpy (class_name, class_name_in_zip_dir, filename_length);
   class_name [filename_length] = '\0';
@@ -1299,6 +1372,13 @@ parse_zip_file_entries (void)
 	    FREE (class_name);
 	    current_jcf = TYPE_JCF (class);
 	    output_class = current_class = class;
+
+	    if (TYPE_DUMMY (class))
+	      {
+		/* This is a dummy class, and now we're compiling it
+		   for real.  */
+		abort ();
+	      }
 
 	    /* This is for a corner case where we have a superclass
 	       but no superclass fields.  

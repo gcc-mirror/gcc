@@ -112,6 +112,9 @@ static JCF_u2 last_access;
 #define METHOD_IS_NATIVE(Method) \
    ((Method) & ACC_NATIVE)
 
+#define METHOD_IS_PRIVATE(Class, Method) \
+  (((Method) & ACC_PRIVATE) != 0)
+
 /* We keep a linked list of all method names we have seen.  This lets
    us determine if a method name and a field name are in conflict.  */
 struct method_name
@@ -937,7 +940,7 @@ print_method_info (FILE *stream, JCF* jcf, int name_index, int sig_index,
       fputs ("  ", out);
       if ((flags & ACC_STATIC))
 	fputs ("static ", out);
-      else if (! METHOD_IS_FINAL (jcf->access_flags, flags))
+      else if (! METHOD_IS_PRIVATE (jcf->access_flags, flags))
 	{
 	  /* Don't print `virtual' if we have a constructor.  */
 	  if (! is_init)

@@ -97,44 +97,31 @@ final class VMClassLoader
 					ProtectionDomain pd)
     throws ClassFormatError;
 
-  static final native void linkClass0 (Class klass);
-  static final native void markClassErrorState0 (Class klass);
-
   /**
    * Helper to resolve all references to other classes from this class.
    *
    * @param c the class to resolve
    */
-  static final void resolveClass(Class clazz)
-  {
-    synchronized (clazz)
-      {
-	try
-	  {
-	    linkClass0 (clazz);
-	  }
-	catch (Throwable x)
-	  {
-	    markClassErrorState0 (clazz);
+  static final native void resolveClass(Class clazz);
 
-	    LinkageError e;
-	    if (x instanceof LinkageError)
-	      e = (LinkageError) x;
-	    else if (x instanceof ClassNotFoundException)
-	      {
-		e = new NoClassDefFoundError("while resolving class: "
-					     + clazz.getName());
-		e.initCause (x);
-	      }
-	    else
-	      {
-		e = new LinkageError ("unexpected exception during linking: "
-				      + clazz.getName());
-		e.initCause (x);
-	      }
-	    throw e;
-	  }
+  static final void transformException(Class clazz, Throwable x)
+  {
+    LinkageError e;
+    if (x instanceof LinkageError)
+      e = (LinkageError) x;
+    else if (x instanceof ClassNotFoundException)
+      {
+	e = new NoClassDefFoundError("while resolving class: "
+				     + clazz.getName());
+	e.initCause (x);
       }
+    else
+      {
+	e = new LinkageError ("unexpected exception during linking: "
+			      + clazz.getName());
+	e.initCause (x);
+      }
+    throw e;
   }
 
   /**

@@ -124,7 +124,7 @@ propdir = $(libdir)
 
 ## For now, only on native systems.  FIXME.
 if NATIVE
-bin_PROGRAMS = jv-convert gij grmic grmiregistry
+bin_PROGRAMS = jv-convert gij grmic grmiregistry gcj-dbtool
 endif
 
 bin_SCRIPTS = addr2name.awk
@@ -207,7 +207,7 @@ libgij_la_LIBADD = libgcj.la
 libgij_la_DEPENDENCIES = libgcj.la libgcj.spec
 
 libgcj_la_SOURCES = prims.cc jni.cc exception.cc \
-	resolve.cc defineclass.cc interpret.cc verify.cc \
+	link.cc defineclass.cc interpret.cc verify.cc \
 	$(nat_source_files) $(math_c_source_files) $(java_source_files) \
 	$(built_java_source_files) \
 	$(BOEHMGC_SRC) $(NOGC_SRC) \
@@ -363,7 +363,7 @@ lib_gnu_java_awt_peer_gtk_la_LIBADD = $(GTK_LIBS) $(GLIB_LIBS) $(LIBART_LIBS) $(
 lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES = $(gtk_jni_headers) libgcj-@gcc_version@.jar libgcj.la libgcj.spec
 ## The mysterious backslash in the grep pattern is consumed by make.
 lib_gnu_java_awt_peer_gtk_la_LDFLAGS = \
-        -version-info `grep -v '^\#' $(srcdir)/libtool-version`
+        -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 lib_gnu_java_awt_peer_gtk_la_LINK = $(LIBLINK)
 
 lib_org_ietf_jgss_la_SOURCES = \
@@ -384,7 +384,7 @@ lib_org_ietf_jgss_la_LIBADD = -L$(here)/.libs  $(jgss_propertyo_files) \
 
 ## The mysterious backslash in the grep pattern is consumed by make.
 lib_org_ietf_jgss_la_LDFLAGS = -rpath $(toolexeclibdir) \
-	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
+	-version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 
 lib_org_w3c_dom_la_SOURCES = org/w3c/dom/Attr.java \
 org/w3c/dom/CDATASection.java \
@@ -415,7 +415,7 @@ org/w3c/dom/traversal/TreeWalker.java
 lib_org_w3c_dom_la_LIBADD = -L$(here)/.libs libgcj.la
 ## The mysterious backslash in the grep pattern is consumed by make.
 lib_org_w3c_dom_la_LDFLAGS = -rpath $(toolexeclibdir) \
-        -version-info `grep -v '^\#' $(srcdir)/libtool-version`
+        -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 
 lib_org_xml_sax_la_SOURCES = org/xml/sax/ext/DeclHandler.java \
 org/xml/sax/ext/LexicalHandler.java \
@@ -451,7 +451,7 @@ org/xml/sax/XMLReader.java
 lib_org_xml_sax_la_LIBADD = -L$(here)/.libs libgcj.la
 ## The mysterious backslash in the grep pattern is consumed by make.
 lib_org_xml_sax_la_LDFLAGS = -rpath $(toolexeclibdir) \
-        -version-info `grep -v '^\#' $(srcdir)/libtool-version`
+        -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 
 lib_gnu_awt_xlib_la_SOURCES = \
 	$(xlib_java_source_files) \
@@ -467,7 +467,7 @@ lib_gnu_awt_xlib_la_CPPFLAGS = \
 lib_gnu_awt_xlib_la_LDFLAGS = ../libstdc++-v3/src/libstdc++.la \
 	@X_PRE_LIBS@ @X_LIBS@ -lX11 @X_EXTRA_LIBS@ \
         -rpath $(toolexeclibdir) \
-        -version-info `grep -v '^\#' $(srcdir)/libtool-version`
+        -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 lib_gnu_awt_xlib_la_LINK = $(LIBLINK)
 
 all_java_source_files = \
@@ -944,6 +944,25 @@ jv_convert_LDADD = -L$(here)/.libs libgcj.la
 ## Depend on the spec file to make sure it is up to date before
 ## linking this program.
 jv_convert_DEPENDENCIES = libgcj.la libgcj.spec
+
+gcj_dbtool_SOURCES = gnu/gcj/tools/gcj_dbtool/Main.java
+## We need -nodefaultlibs because we want to avoid gcj's `-lgcj'.  We
+## need this because we are explicitly using libtool to link using the
+## `.la' file.
+gcj_dbtool_LDFLAGS = --main=gnu.gcj.tools.gcj_dbtool.Main \
+	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS)
+gcj_dbtool_LINK = $(GCJLINK)
+## We don't explicitly link in the libraries we need; libgcj.la brings
+## in all dependencies.  We need the -L so that gcj can find libgcj
+## with `-lgcj', but it must come first, otherwise the -L flags
+## brought in from libgcj.la would cause the install directories to be
+## searched before the build-tree ones, and we'd get errors because of
+## different libraries with the same SONAME from picky linkers such as
+## Solaris'.  FIXME: should be _libs on some systems.
+gcj_dbtool_LDADD = -L$(here)/.libs libgcj.la
+## Depend on the spec file to make sure it is up to date before
+## linking this program.
+gcj_dbtool_DEPENDENCIES = libgcj.la libgcj.spec
 
 gij_SOURCES = 
 ## We need -nodefaultlibs because we want to avoid gcj's `-lgcj'.  We
@@ -2140,65 +2159,35 @@ javax/print/attribute/SupportedValuesAttribute.java \
 javax/print/attribute/TextSyntax.java \
 javax/print/attribute/UnmodifiableSetException.java \
 javax/print/attribute/URISyntax.java \
-javax/print/attribute/standard/ColorSupported.java \
-javax/print/attribute/standard/Compression.java \
 javax/print/attribute/standard/Copies.java \
-javax/print/attribute/standard/CopiesSupported.java \
 javax/print/attribute/standard/DateTimeAtCompleted.java \
 javax/print/attribute/standard/DateTimeAtCreation.java \
 javax/print/attribute/standard/DateTimeAtProcessing.java \
 javax/print/attribute/standard/DocumentName.java \
-javax/print/attribute/standard/Fidelity.java \
-javax/print/attribute/standard/Finishings.java \
 javax/print/attribute/standard/JobHoldUntil.java \
 javax/print/attribute/standard/JobImpressions.java \
 javax/print/attribute/standard/JobImpressionsCompleted.java \
-javax/print/attribute/standard/JobImpressionsSupported.java \
 javax/print/attribute/standard/JobKOctets.java \
 javax/print/attribute/standard/JobKOctetsProcessed.java \
-javax/print/attribute/standard/JobKOctetsSupported.java \
 javax/print/attribute/standard/JobMediaSheets.java \
 javax/print/attribute/standard/JobMediaSheetsCompleted.java \
-javax/print/attribute/standard/JobMediaSheetsSupported.java \
 javax/print/attribute/standard/JobMessageFromOperator.java \
 javax/print/attribute/standard/JobName.java \
 javax/print/attribute/standard/JobOriginatingUserName.java \
 javax/print/attribute/standard/JobPriority.java \
 javax/print/attribute/standard/JobPrioritySupported.java \
-javax/print/attribute/standard/JobSheets.java \
-javax/print/attribute/standard/JobState.java \
-javax/print/attribute/standard/JobStateReason.java \
-javax/print/attribute/standard/JobStateReasons.java \
-javax/print/attribute/standard/Media.java \
-javax/print/attribute/standard/MediaSizeName.java \
-javax/print/attribute/standard/MultipleDocumentHandling.java \
 javax/print/attribute/standard/NumberOfDocuments.java \
 javax/print/attribute/standard/NumberOfInterveningJobs.java \
 javax/print/attribute/standard/NumberUp.java \
-javax/print/attribute/standard/NumberUpSupported.java \
-javax/print/attribute/standard/OrientationRequested.java \
 javax/print/attribute/standard/OutputDeviceAssigned.java \
-javax/print/attribute/standard/PDLOverrideSupported.java \
-javax/print/attribute/standard/PageRanges.java \
 javax/print/attribute/standard/PagesPerMinute.java \
 javax/print/attribute/standard/PagesPerMinuteColor.java \
-javax/print/attribute/standard/PresentationDirection.java \
-javax/print/attribute/standard/PrintQuality.java \
 javax/print/attribute/standard/PrinterInfo.java \
-javax/print/attribute/standard/PrinterIsAcceptingJobs.java \
 javax/print/attribute/standard/PrinterLocation.java \
 javax/print/attribute/standard/PrinterMakeAndModel.java \
 javax/print/attribute/standard/PrinterMessageFromOperator.java \
-javax/print/attribute/standard/PrinterMoreInfo.java \
-javax/print/attribute/standard/PrinterMoreInfoManufacturer.java \
 javax/print/attribute/standard/PrinterName.java \
-javax/print/attribute/standard/PrinterResolution.java \
-javax/print/attribute/standard/PrinterState.java \
-javax/print/attribute/standard/PrinterStateReason.java \
-javax/print/attribute/standard/PrinterStateReasons.java \
-javax/print/attribute/standard/PrinterURI.java \
 javax/print/attribute/standard/QueuedJobCount.java \
-javax/print/attribute/standard/ReferenceUriSchemesSupported.java \
 javax/print/attribute/standard/RequestingUserName.java \
 javax/print/attribute/standard/Severity.java \
 javax/print/attribute/standard/SheetCollate.java \
@@ -2379,6 +2368,7 @@ java/lang/UnsupportedOperationException.java \
 java/lang/VerifyError.java \
 java/lang/VirtualMachineError.java \
 java/lang/VMClassLoader.java \
+java/lang/VMCompiler.java \
 java/lang/VMSecurityManager.java \
 java/lang/VMThrowable.java \
 java/lang/Void.java \
@@ -2567,11 +2557,13 @@ gnu/gcj/runtime/FinalizerThread.java \
 gnu/gcj/runtime/JNIWeakRef.java \
 gnu/gcj/runtime/MethodRef.java \
 gnu/gcj/runtime/NameFinder.java \
+gnu/gcj/runtime/PersistentByteMap.java \
 gnu/gcj/runtime/SharedLibHelper.java \
 gnu/gcj/runtime/SharedLibLoader.java \
 gnu/gcj/runtime/StackTrace.java \
 gnu/gcj/runtime/StringBuffer.java \
 gnu/gcj/runtime/VMClassLoader.java \
+gnu/gcj/util/Debug.java \
 gnu/java/io/ASN1ParsingException.java \
 gnu/java/io/Base64InputStream.java \
 gnu/java/io/ClassLoaderObjectInputStream.java \
@@ -3282,6 +3274,7 @@ gnu/gcj/runtime/natSharedLibLoader.cc \
 gnu/gcj/runtime/natStackTrace.cc \
 gnu/gcj/runtime/natStringBuffer.cc \
 gnu/gcj/runtime/natVMClassLoader.cc \
+gnu/gcj/util/natDebug.cc \
 gnu/java/lang/natMainThread.cc \
 gnu/java/net/natPlainDatagramSocketImpl.cc \
 gnu/java/net/natPlainSocketImpl.cc \

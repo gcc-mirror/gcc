@@ -288,6 +288,8 @@ public abstract class ClassLoader
     if (c != null)
       return c;
 
+    ClassNotFoundException ex = null;
+
     // Can the class be loaded by a parent?
     try
       {
@@ -304,9 +306,20 @@ public abstract class ClassLoader
       }
     catch (ClassNotFoundException e)
       {
+	ex = e;
       }
     // Still not found, we have to do it ourself.
-    c = findClass(name);
+    try
+      {
+	c = findClass(name);
+      }
+    catch (ClassNotFoundException cause)
+      {
+	if (ex != null)
+	  throw new ClassNotFoundException(ex.toString(), cause);
+	else
+	  throw cause;
+      }
     if (resolve)
       resolveClass(c);
     return c;
@@ -435,8 +448,9 @@ public abstract class ClassLoader
       domain = defaultProtectionDomain;
     if (! initialized)
       throw new SecurityException("attempt to define class from uninitialized class loader");
+    
     Class retval = VMClassLoader.defineClass(this, name, data,
-                                             offset, len, domain);
+					     offset, len, domain);
     loadedClasses.put(retval.getName(), retval);
     return retval;
   }

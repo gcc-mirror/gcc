@@ -1,3 +1,758 @@
+2004-11-24  Tom Tromey  <tromey@redhat.com>
+
+	* Merged gcj-abi-2-dev-branch to trunk.
+
+2004-11-16  Tom Tromey  <tromey@redhat.com>
+
+	* include/java-interp.h (_Jv_DefineClass): Updated.
+	* java/lang/natVMClassLoader.cc (defineClass): Pass protection
+	domain to class reader.
+	* defineclass.cc (parse): Use print_class_loaded.
+	Include ProtectionDomain.h.
+	(_Jv_DefineClass): Added ProtectionDomain argument.
+	(_Jv_ClassReader): Likewise.
+	* include/jvm.h (_Jv_Linker::print_class_loaded): Declare.
+	* link.cc: Include CodeSource.h.
+	(print_class_loaded): New function.
+	(wait_for_state): Use it.
+
+2004-11-16  Andrew Haley  <aph@redhat.com>
+
+	* gnu/gcj/util/Debug.java (print): Add RawDataManaged.
+
+2004-11-16  Andrew Haley  <aph@redhat.com>
+
+	* configure.ac (LIBGCJ_LD_SYMBOLIC): AC_SUBST this definition.
+	* configure.host: Define libgcj_ld_symbolic for Linux hosts.
+	* Makefile.am (lib_*_la_LDFLAGS): Add LIBGCJ_LD_SYMBOLIC.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.	
+
+2004-11-15  Andrew Haley  <aph@redhat.com>
+
+	* boehm.cc (_Jv_GCRegisterDisappearingLink): Check that *objp is a
+	gc-allocated object.
+
+2004-11-15  Andrew Haley  <aph@redhat.com>
+
+	* java/net/URLClassLoader.java
+	(URLLoader.getClassPath): New method.
+	(JarURLLoader.JarURLLoader): Read mainfest to parse "Class-Path"
+	attribute and add URLs for each entry.
+	(JarURLLoader.classPath): New field.
+	(JarURLLoader.getClassPath): New method.
+	(addURLImpl): Scan through the list of extraUrls in the new
+	loader, adding them to our urlinfos.
+	(definePackage, findURLResource, findResources): Use
+	urlinfos.size(), not urls.size().
+
+2004-11-11  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/gcj/runtime/natSharedLibLoader.cc (ensureSupersLinked): New
+	method.
+	* gnu/gcj/runtime/SharedLibHelper.java (findClass): Ensure supers
+	linked.
+	(ensureSupersLinked): Declare.
+	* java/lang/natVMClassLoader.cc (loadClass): Ensure supers
+	linked.
+
+2004-11-10  Tom Tromey  <tromey@redhat.com>
+
+	* gij.cc (main): Treat -verbose the same as -verbose:class.
+	(help): Document -verbose and -verbose:class.
+
+	* link.cc (verbose_class_flag): Declare.
+	(wait_for_state): Print message when handling precompiled class.
+	* java/lang/natClass.cc (verbose_class_flag): Moved to link.cc.
+
+2004-11-09  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.lang/assign2.out: New file.
+	* testsuite/libjava.lang/assign2.java: New file.
+
+	* java/lang/natRuntime.cc (insertSystemProperties): Set
+	java.version to 1.4.2 and java.specification.version to 1.4.  Set
+	java.runtime.version.
+
+2004-11-08  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natClass.cc (_Jv_IsAssignableFromSlow): Ensure
+	supers installed.
+	* link.cc (verify_type_assertions): Don't link supers.
+
+	* include/jvm.h (_Jv_Linker::search_method_in_class): Declare.
+	* include/java-interp.h (class _Jv_InterpClass)
+	<_Jv_PrepareMissingMethods>: No longer `friend'.
+	* java/lang/Class.h (_Jv_SearchMethodInClass): No longer
+	`friend'.
+	(_Jv_PrepareMissingMethods, _Jv_PrepareCompiledClass,
+	_Jv_GetInterfaces, _Jv_GenerateITable, _Jv_FindIIndex,
+	_Jv_AppendPartialITable, _Jv_LinkSymbolTable,
+	_Jv_LayoutInterfaceMethods, _Jv_SetVTableEntries, _Jv_MakeVTable,
+	_Jv_linkExceptionClassTable, _Jv_WaitForState): Likewise.
+	* link.cc (search_method_in_class): Renamed from
+	_Jv_SearchMethodInClass.
+	(resolve_pool_entry): Updated.
+
+	* include/jvm.h (_Jv_CheckAssignment): Removed.
+	* java/lang/natClass.cc (_Jv_CheckAssignment): Removed.
+
+2004-11-05  Tom Tromey  <tromey@redhat.com>
+
+	* link.cc (verify_type_assertions): Ensure classes have supers
+	linked.  Strip off array types first.
+
+2004-11-05  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* link.cc: Include VerifyError.h. 
+	(_Jv_Linker::verify_type_assertions): New. Read and evaluate entries
+	in the type assertion table.
+	* include/execution.h (_Jv_CompiledEngine::do_verify): Use
+	verify_type_assertions.
+	* include/jvm.h (_Jv_Linker::verify_type_assertions): declare.
+	* java/lang/Class.h (JV_ASSERT_END_OF_TABLE, 
+	JV_ASSERT_TYPES_COMPATIBLE, JV_ASSERT_IS_INSTANTIABLE): Declare
+	assertion code values.
+	(struct _Jv_TypeAssertion): Declare.
+	(assertion_table): New class field.
+	(verify): Remove class field.
+
+2004-11-05  Andrew Haley  <aph@redhat.com>
+
+	* Makefile.am: Move jv_dbtool.java to
+	gnu/gcj/tools/gcj_dbtool/Main.java.
+	* Makefile.in: Rebuild.
+	* java/lang/VMCompiler.java: Rename property
+	"gnu.gcj.precompiled.db" to "gnu.gcj.precompiled.db.path".
+	* gnu/gcj/tools/gcj_dbtool/Main.java: moved here from
+	jv_dbtool.java.
+	
+2004-11-05  Andrew Haley  <aph@redhat.com>
+
+	* jv_dbtool.java (main): Allow the user to specify the size of the
+	database.  Display the capacity and the size.
+	(usage): Show the new option.
+		
+2004-11-04  Tom Tromey  <tromey@redhat.com>
+
+	* include/jvm.h (_Jv_Linker::set_vtable_entries): Updated.
+	* link.cc (make_vtable): Use correct index when searching for
+	missing method's name.  Don't use `flags'.
+	(set_vtable_entries): Removed `flags' argument.  Don't recurse
+	into superclasses.
+	(link_symbol_table): Ensure target class method table is
+	complete.  Ensure target fields are laid out before entering
+	loop.
+
+	* java/lang/natClass.cc (_Jv_getInterfaceMethod): Indentation
+	fix.
+
+	* interpret.cc (do_verify): Don't verify abstract methods.
+
+2004-11-01  Tom Tromey  <tromey@redhat.com>
+
+	* link.cc (wait_for_state): Call verify_class.
+
+	* verify.cc (state::check_no_uninitialized_objects): Removed.
+	(push_jump): Updated.
+	(push_exception_jump): Likewise.
+	(handle_ret_insn): Likewise.
+	(handle_jsr_insn): Likewise.
+
+2004-10-28  Andrew Haley  <aph@redhat.com>
+
+	* gnu/gcj/runtime/PersistentByteMap.java: New file.
+	* jv_dbtool.java: New file.
+	* Makefile.am (bin_PROGRAMS): Add jv-dbtool
+	(jv_dbtool_SOURCES, jv_dbtool_LDFLAGS, jv_dbtool_LINK)
+	(jv_dbtool_LDADD, jv_dbtool_DEPENDENCIES): New.
+	* Makefile.in: Regenerate,
+	* java/lang/VMCompiler.java: Import NoSuchAlgorithmException,
+	Enumeration, StringTokenizer, Vector, PersistentByteMap.
+	(precompiledMapFiles): New variable.
+	(VMCompiler static intializer): Read "gnu.gcj.precompiled.db" to
+	initialize precompiledMapFiles.
+	(compileClass): Look at the database of precompiled class files
+	before firing up gcj.
+
+	* gnu/gcj/runtime/VMClassLoader.java (findClass): Fix comment.
+
+2004-10-27  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/VMCompiler.java (compileClass): try looking for
+	precompiledMapFiles.
+	* gnu/gcj/runtime/PersistentByteMap.java: New file.
+
+2004-10-27  Tom Tromey  <tromey@redhat.com>
+
+	* link.cc (ensure_class_linked): Only resolve classes for
+	compiled classes.
+	(add_miranda_methods): Ensure interface supers are installed.
+	(resolve_pool_entry): Better error message.
+
+2004-10-25  Tom Tromey  <tromey@redhat.com>
+
+	* boehm.cc (_Jv_MarkObj): Test aux_info before dereferencing it.
+
+	* java/util/ResourceBundle.java (tryBundle): Use
+	Class.isAssignableFrom rather than catching ClassCastException.
+
+	* java/util/zip/InflaterInputStream.java (fill): Don't throw an
+	exception if we hit EOF of `in'.
+	(read): Handle case where inflating returns -1.
+
+	* gnu/java/text/WordBreakIterator.java (WordBreakIterator): Don't
+	initialize `iter'.
+	* gnu/java/text/SentenceBreakIterator.java
+	(SentenceBreakIterator): Don't initialize `iter'.
+	* gnu/java/text/LineBreakIterator.java (LineBreakIterator): Don't
+	initialize `iter'.
+	* gnu/java/text/CharacterBreakIterator.java
+	(CharacterBreakIterator): Don't initialize `iter'.
+	* gnu/java/text/BaseBreakIterator.java (BaseBreakIterator): New
+	constructor.
+	* java/text/BreakIterator.java: Updated documentation.
+
+2004-10-20  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/ResourceBundle.java (tryBundle): Also ignore
+	ClassCastException.
+
+2004-10-18  Tom Tromey  <tromey@redhat.com>
+
+	* interpret.cc (do_post_miranda_hook): New method.
+	* include/execution.h (_Jv_ExecutionEngine::post_miranda_hook):
+	New field.
+	(_Jv_CompiledEngine::do_post_miranda_hook): New method.
+	(_Jv_CompiledEngine): Initialize new field.
+	(_Jv_InterpreterEngine::do_post_miranda_hook): Declare.
+	(_Jv_InterpreterEngine): Initialize new field.
+	* link.cc (resolve_pool_entry): Put Miranda methods in target
+	class.
+	(ensure_method_table_complete): Call post_miranda_hook.
+	* java/lang/natVMClassLoader.cc (defineClass): Don't set class'
+	aux_info.
+	* defineclass.cc (read_one_method_attribute): Use _Jv_AllocBytes.
+	(parse): Set class' aux_info here.
+
+	* boehm.cc (_Jv_MarkObj): Mark `throws'.
+
+	* boehm.cc: Re-merged with trunk.
+
+2004-10-18  Andrew Haley  <aph@redhat.com>
+
+	PR java/18036:
+	* gnu/gcj/runtime/natStackTrace.cc (fillInStackTrace): Reorganize
+	and correct logic used to find interpreter.
+
+2004-10-13  Andrew Haley  <aph@redhat.com>
+
+	* interpret.cc (_Jv_InterpMethod::run): Initialize
+	_Jv_StartOfInterpreter.
+	(_Jv_StartOfInterpreter, _Jv_EndOfInterpreter): Functions removed.
+	(_Jv_StartOfInterpreter, _Jv_EndOfInterpreter): New variables.
+	* gnu/gcj/runtime/natStackTrace.cc (fillInStackTrace): Use
+	_Unwind_FindEnclosingFunction to discover whether PC is within the
+	interpreter.
+
+2004-10-13  Tom Tromey  <tromey@redhat.com>
+
+	* link.cc (find_iindex): Copy correct number of slots to new
+	ioffsets.
+
+2004-10-12  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.loader/loader.exp (gcj_object_file_name): New
+	proc.
+	(gcj_loader_test_one): Use it.
+	(gcj_loader_run): Likewise.
+
+	* prims.cc: Don't include FirstThread.h.
+
+2004-10-06  Tom Tromey  <tromey@redhat.com>
+
+	* link.cc (ensure_method_table_complete): Ensure superclass
+	Miranda methods installed.
+
+	* include/java-interp.h (class _Jv_JNIMethod): Added
+	JV_MARKOBJ_DECL as a friend.
+	* interpret.cc (ncode): Allocate jni_arg_types field with GC.
+	* boehm.cc (_Jv_MarkObj): Skip abstract methods when marking
+	interpreter method structures.  Mark jni_arg_types of JNI
+	methods.
+
+	* defineclass.cc (parse): Use JV_STATE_READ.
+	* java/lang/Class.h (JV_STATE_READ): New enum value.
+
+2004-10-05  Tom Tromey  <tromey@redhat.com>
+
+	* link.cc (resolve_pool_entry): Add signature info to missing
+	method's information.
+
+	* gnu/gcj/util/Debug.java (Debug(int,boolean)): New constructor.
+	* gnu/gcj/util/natDebug.cc (_Jv_StaticDeepDebug): New function.
+
+2004-10-04  Tom Tromey  <tromey@redhat.com>
+
+	* boehm.cc (_Jv_MarkObj): Correctly indicate base pointer when
+	marking IDT.
+
+2004-09-29  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.am (libgcj_la_SOURCES): Mention link.cc, not
+	resolve.cc.
+	* include/jvm.h (class _Jv_Linker): Renamed from _Jv_Resolver.
+	* jni.cc: Use _Jv_Linker.
+	* interpret.cc: Use _Jv_Linker.
+	* java/lang/reflect/natField.cc (getType): Use _Jv_Linker.
+	* java/lang/natClassLoader.cc: Use _Jv_Linker.
+	* java/lang/natVMClassLoader.cc (resolveClass): Use _Jv_Linker.
+	* java/lang/Class.h: Use _Jv_Linker.
+	* java/lang/natClass.cc (initializeClass): Use _Jv_Linker.
+	* resolve.cc: Renamed ...
+	* link.cc: ... here.  Use _Jv_Linker.
+	* defineclass.cc (checkExtends): Use _Jv_Linker.
+
+2004-09-17  Tom Tromey  <tromey@redhat.com>
+
+	* defineclass.cc (handleCodeAttribute): Don't reference
+	`deferred'.
+	(handleMethodsEnd): Likewise.
+	* include/java-interp.h (_Jv_MethodBase::deferred): Removed
+	field.
+	(_Jv_Defer_Resolution): Don't declare or define.
+	* interpret.cc (do_create_ncode): Don't resolve deferred method
+	pointers.
+	* java/lang/Class.h (_Jv_Defer_Resolution): Don't declare.
+	* resolve.cc (link_symbol_table): No need to defer resolution.
+
+2004-09-14  Tom Tromey  <tromey@redhat.com>
+
+	* boehm.cc (MAYBE_MARK): Remove unused `Exit' argument.
+	(_Jv_MarkObj): Updated.
+	(_Jv_MarkArray): Likewise.
+
+	* include/jvm.h (StringClass): Removed.
+	* jni.cc (_Jv_JNI_ThrowNew): Don't use StringClass.
+	* interpret.cc (_Jv_InitField): Don't use StringClass.
+	* java/lang/natString.cc (_Jv_StringFindSlot): Don't use
+	StringClass.
+	(rehash): Likewise
+	(intern): Likewise.
+	(_Jv_FinalizeString): Likewise.
+	(_Jv_NewStringUtf8Const): Likewise.
+	(equals): Likewise.
+	* prims.cc (JvConvertArgv): Don't use StringClass.
+
+	* gcj/field.h (struct _Jv_Field): Don't mention COMPACT_FIELDS.
+	* resolve.cc (ensure_fields_laid_out): Don't mention
+	COMPACT_FIELDS.
+	* defineclass.cc (handleField): Don't mention COMPACT_FIELDS.
+	* boehm.cc (_Jv_MarkObj): Don't mention COMPACT_FIELDS.
+
+	* java/lang/reflect/natField.cc (getType): Use resolve_field.
+	* java/lang/natVMClassLoader.cc (resolveClass): New native
+	implementation.
+	(linkClass0): Removed.
+	(markClassErrorState0): Likewise.
+	* java/lang/natClassLoader.cc: Include execution.h.  Moved class
+	preparation code to resolve.cc.
+	(_Jv_RegisterClassHookDefault): Set class's execution engine if
+	not already set.
+	(_Jv_FindClass): Use wait_for_state.
+	(_Jv_NewArrayClass): Likewise.  Simplified permissions setting.
+	* java/lang/natClass.cc (_Jv_IsInstanceOf): Include execution.h.
+	Moved interface table and class preparation code to resolve.cc.
+	(finalize): Rewrote.
+	(initializeClass): Simplified locking and class preparation.
+	* java/lang/VMClassLoader.java (linkClass0): Removed.
+	(markClassErrorState0): Likewise.
+	(resolveClass): Now native.
+	(transformException): New method.
+	* java/lang/Class.h (getSuperclass): Don't try to resolve super
+	reference.
+	(getInterface): Likewise.
+	(size): Likewise.
+	(set_state): New method.
+	(Class): Updated friend declarations.
+	(verify): Field now private.
+	(engine): New field.
+	* include/jvm.h (class _Jv_Resolver): New class declaration.
+	(_Jv_ResolveField): Removed declaration.
+	(_Jv_CheckAccessNoInit): Likewise.
+	(_Jv_isBinaryCompatible): Removed.
+	* include/java-interp.h (class _Jv_MethodBase): Updated friend
+	declarations.
+	(class _Jv_InterpMethod): Likewise.
+	(class _Jv_InterpClass): Likewise.
+	(class _Jv_JNIMethod): Likewise.
+	* include/execution.h: New file.
+	* gnu/gcj/runtime/natSharedLibLoader.cc: Include execution.h.
+	(_Jv_sharedlib_register_hook): Set `engine' on loaded class.
+	Register class after setting fields.
+	* resolve.cc: Include execution.h, VerifyError.h.  Moved
+	interpreter-specific code to interpret.cc.
+	(uaddr): New location.
+	(struct aligner): Likewise.
+	(ALIGNOF): Likewise.
+	(INITIAL_IOFFSETS_LEN): Interface dispatch code moved here.
+	(INITIAL_IFACES_LEN): Likewise.
+	(null_idt): Likewise.
+	(_Jv_GetMethodString): Likewise.
+	(_Jv_ThrowNoSuchMethodError): Likewise.
+	(_Jv_abstractMethodError): Likewise.
+	(_Jv_Resolver::get_alignment_from_class): Renamed.
+	(_Jv_Resolver::resolve_field): Likewise.
+	(_Jv_Resolver::resolve_pool_entry): Likewise.
+	(_Jv_Resolver::resolve_class_ref): Likewise.
+	(_Jv_Resolver::prepare_constant_time_tables): Likewise.
+	(_Jv_Resolver::indexof): Likewise.
+	(_Jv_Resolver::get_interfaces): Likewise.
+	(_Jv_Resolver::generate_itable): Likewise.
+	(_Jv_Resolver::append_partial_itable): Likewise.
+	(_Jv_Resolver::find_iindex): Likewise.
+	(_Jv_Resolver::link_symbol_table): Likewise.
+	(_Jv_Resolver::link_exception_table): Likewise.
+	(_Jv_Resolver::layout_interface_methods): Likewise.
+	(_Jv_Resolver::layout_vtable_methods): Likewise.
+	(_Jv_Resolver::set_vtable_entries): Likewise.
+	(_Jv_Resolver::make_vtable): Likewise.
+	(_Jv_Resolver::ensure_fields_laid_out): Likewise.
+	(_Jv_Resolver::ensure_class_linked): Likewise.
+	(_Jv_Resolver::ensure_supers_installed): Likewise.
+	(_Jv_Resolver::add_miranda_methods): Likewise.
+	(_Jv_Resolver::ensure_method_table_complete): Likewise.
+	(_Jv_Resolver::verify_class): Likewise.
+	(_Jv_Resolver::wait_for_state): Likewise.
+	* prims.cc (_Jv_soleCompiledEngine): New global.
+	(_Jv_CheckAccess): Use _Jv_IsAssignableFromSlow.
+	(_Jv_CheckAccessNoInit): Removed.
+	* jni.cc (_Jv_JNI_GetAnyFieldID): Use resolve_field.
+	* interpret.cc: Include platform.h, ClassFormatError.h,
+	Modifier.h, execution.h.
+	(_Jv_soleInterpreterEngine): New global.
+	(compile): Use resolve_pool_entry.
+	(run): Likewise.
+	(_Jv_InitField): New location.
+	(skip_one_type): Likewise.
+	(get_ffi_type_from_signature): Likewise.
+	(_Jv_count_arguments): Likewise.
+	(init_cif): Likewise.
+	(ncode_closure): Likewise.
+	(ffi_closure_fun): Likewise.
+	(ncode): Likewise.
+	(throw_class_format_error): Likewise.
+	(throw_class_format_error): Likewise.
+	(_Jv_InterpreterEngine::do_verify): New method.
+	(_Jv_InterpreterEngine::do_create_ncode): Likewise.
+	(_Jv_InterpreterEngine::do_allocate_static_fields): Likewise.
+	(_Jv_InterpreterEngine::do_resolve_method): Likewise.
+	* defineclass.cc: Include execution.h.
+	(_Jv_ClassReader): Initialize size_in_bytes, vtable_method_count,
+	engine.
+	(checkExtends): Ensure superclass has supers installed.
+	(_Jv_ClassNameSamePackage): Clarify usage constraints.
+	* boehm.cc (GC_enable, GC_disable): Declare at top of file.
+	(_Jv_MarkObj): Unconditionally mark vtable.  Mark interface
+	dispatch tables.
+
+2004-09-13  Tom Tromey  <tromey@redhat.com>
+
+	* mauve-libgcj: List some classes we don't have.
+
+2004-09-10  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/Class.h (_Jv_getInterfaceMethod(): new friend.
+	* java/lang/natClass.cc (initializeClass): Check itable.
+	(_Jv_getInterfaceMethod): New.
+	(_Jv_LinkSymbolTable): Rewrite code that handles inerface calls.
+	Check that an interface method isn't called with invokevirtual.
+
+	* java/lang/natClass.cc (_Jv_LayoutVTableMethods): Make sure
+	super_meth is virtual.
+
+2004-09-01  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Class.h (_Jv_CheckAccessNoInit): Declare as friend.
+	* java/lang/natClass.cc (_Jv_LayoutVTableMethods): Use
+	_Jv_CheckAccessNoInit.
+	* include/jvm.h (_Jv_CheckAccessNoInit): Declare.
+	* prims.cc (_Jv_CheckAccessNoInit): New method.
+
+	* java/lang/reflect/natMethod.cc (invoke): Check access against
+	declaring class, not object's class.
+	* java/lang/natClass.cc (_Jv_LookupDeclaredMethod): Added another
+	argument.
+	(_Jv_LayoutVTableMethods): Perform checks of accessibility of
+	overridden method.
+	* java/lang/Class.h (_Jv_LookupDeclaredMethod): Added another
+	argument.
+
+2004-08-30  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/natClass.cc (_Jv_CheckAssignment): Catch
+	ClassNotFoundException.
+	Throw NoClassDefFoundError.
+
+	* java/lang/natClassLoader.cc (_Jv_FindClassInCache): Remove call
+	to klass->verify() from here ...
+	(_Jv_PrepareCompiledClass): ...and put it here.
+
+2004-08-27  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/natClassLoader.cc (_Jv_FindClassInCache): Call
+	klass->verify().
+	* java/lang/natClass.cc (_Jv_LinkSymbolTable): Add debugging.
+	(_Jv_LinkSymbolTable): Call Jv_LayoutClass on target class.
+
+2004-08-27  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Class.h (_Jv_IsAssignableFromSlow): Declare as
+	friend.
+	* java/lang/natClass.cc (_Jv_CheckAssignment): New function.
+	(_Jv_IsAssignableFromSlow): New function.
+	Include VerifyError.h.
+	* include/jvm.h (_Jv_CheckAssignment): Declare.
+
+2004-08-18  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/VMCompiler.java (loadSharedLibrary): Add className
+	argument.  Pass it to findClass instead of fileName.
+	(compileClass): Pass class name to loadSharedLibrary.
+
+2004-06-22  Andrew Haley  <aph@redhat.com>
+
+	* testsuite/libjava.compile/compile.exp: Force indirect dispatch.
+
+2004-06-15  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/natSystem.cc (getenv0): Don't assume environment
+	variable is Latin 1 coded.
+
+2004-06-07  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/System.java: (getenv0): New method.
+	(getenv): Add security check.  Do the right thing.
+	* java/lang/natSystem.cc (getenv0): New method.
+
+2004-04-19    Andrew Haley  <aph@redhat.com>
+
+	* gnu/gcj/runtime/NameFinder.java: Call waitFor() on the processes
+	we destroy.
+
+	* gnu/java/net/natPlainSocketImplPosix.cc (read): The value byte
+	is returned as an int in the range 0 to 255.
+
+2004-08-13  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natClass.cc (_Jv_LinkSymbolTable): Prepare the target
+	class if it is interpreted.
+
+2004-08-12  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natClassLoader.cc (_Jv_WaitForState): Updated.
+	* java/lang/Class.h (_Jv_ResolveClassRef): Updated declaration.
+	(Class::getSuperclass): Updated.
+	(Class::getInterfaces): Likewise.
+	(Class::size): Updated.
+	(_Jv_LayoutClass): Updated declaration.
+	* java/lang/natClass.cc (_Jv_ResolveClassRef): Changed interface.
+	Synchronize on class.
+	(_Jv_LayoutClass): Changed interface.
+	(initializeClass): Updated.
+	(_Jv_LinkSymbolTable): Likewise.
+
+	* java/lang/Class.h (Class::_Jv_isBinaryCompatible): Declare as
+	friend.
+	* java/lang/natClassLoader.cc (_Jv_WaitForState): Use
+	_Jv_isBinaryCompatible.
+	* java/lang/natClass.cc (initializeClass): Use
+	_Jv_isBinaryCompatible.
+	(_Jv_LinkSymbolTable): Likewise.
+	* include/jvm.h (_Jv_isBinaryCompatible): New function.
+
+2004-08-11  Tom Tromey  <tromey@redhat.com>
+
+	* gcj/javaprims.h: Regenerated.
+	* java/lang/natClassLoader.cc (getClassLoader0): Removed.
+	(_registerClass): Likewise.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (core_java_source_files): Added VMCompiler.
+	* java/lang/Compiler.java: Rewrote in terms of VMCompiler.
+	* java/lang/VMCompiler.java: New file.
+	* gnu/gcj/runtime/SharedLibHelper.java (findClass): Removed
+	`verbose' code.
+	(copyFile): Don't use fully-qualified name.
+	(h): Removed.
+	* java/lang/natVMClassLoader.cc: Include VMCompiler.h.
+	(defineClass): Use VMCompiler.
+	* java/lang/ClassLoader.java (defineClass): Removed jit
+	compilation code and `verbose' code.
+	(getClassLoader0): Removed.
+	(_registerClass): Likewise.
+	(SharedLibHelpers): Removed.
+
+2004-08-10  Tom Tromey  <tromey@redhat.com>
+
+	* java/net/URLClassLoader.java (URLLoader(URLClassLoader, URL,
+	URL)): New constructor.
+	(SoURLLoader): Likewise.
+	(JarURLLoader): Create SoURLLoader with override URL.
+
+2004-08-10  Mark Wielaard  <mark@klomp.org>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (interpret.lo): New rule.
+
+2004-08-05  Andrew Haley  <aph@redhat.com>
+
+	* java/net/URLClassLoader.java (JarURLLoader.JarURLLoader): Look
+	aside for "GCJLIBS" in directory where jarfiles are loaded.	
+	(JarURLLoader.getClass): New method.
+	(JarURLLoader.toString):  New method.
+	(FileResource.toString):  New method.
+	* java/lang/natClassLoader.cc (_Jv_RegisterClassHookDefault):
+	Remove "Duplicate class registration: " bug.
+	(_registerClass): New method.
+	* java/lang/natClass.cc (_Jv_LinkSymbolTable): Check method index.
+	(_Jv_LinkSymbolTable): Call _Jv_LayoutClass().
+	Add debugging.
+	(_Jv_LayoutClass): Use getSuperclass() rather than directly
+	accessing the field.
+	* java/lang/ClassLoader.java (SharedLibHelpers): New variable.
+	(defineClass): Call gcj to JIT-compile a class.
+	(_registerClass): New method.
+	* gnu/gcj/runtime/SharedLibHelper.java (findHelper): A shared
+	library name can refer to more than one loaded library, so use a
+	Set of SharedLibHelpers.
+	If a shared library is already loaded, take a copy.
+	(copyFile): New function.
+
+	* testsuite/libjava.compile/compile.exp: Force
+	-findirect-dispatch.
+
+	* java/security/BasicPermission.java: Remove bogus checks.
+
+	* java/lang/System.java (getenv0): New method.
+	* java/lang/natSystem.cc (getenv0): New method.
+
+2004-05-24  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/natClass.cc (_Jv_LayoutClass): Remove warning message.
+
+2004-04-20  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* Merged with HEAD as of 20040514. Diff against
+	gcj-abi-2-merge-20040514.
+
+2004-04-16  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/natClassLoader.cc (_Jv_WaitForState): Call
+	_Jv_LayoutClass.
+	(_Jv_PrepareCompiledClass): Cast address to uaddr for comparison.
+	(_Jv_PrepareCompiledClass): If we throw an exception during
+	preparation, restore state.
+	(ClassLoader::getClassLoader0): New method.
+
+	* java/lang/natClass.cc (get_alignment_from_class): Moved here
+	from resolve.cc.
+	(ALIGNOF): Use offsetof, not __alignof__.
+	(_Jv_ResolveClassRef): Resolve a reference to a class in a
+	constant pool.
+	(getInterfaces): Emit debug output if interface hasn't been
+	resolved.
+	(initializeClass): Call _Jv_LayoutClass.
+	(_Jv_LinkSymbolTable): Add debugging output.
+	(_Jv_LinkSymbolTable): NoClassDefFoundError if target_class isn't
+	found.
+	(_Jv_LinkSymbolTable): Call _Jv_PrepareClass.
+	(_Jv_LinkSymbolTable): Pass the real class loader to
+	_Jv_FindClass.
+	(_Jv_linkExceptionClassTable): Don't throw if we fail to find an
+	exception class.
+	(_Jv_LinkSymbolTable): Assert if we find a static field reference
+	to an interpreted class.
+	(_Jv_LayoutVTableMethods): Use klass->getSuperclass to get the
+	superclass.
+	(_Jv_LayoutClass): Moved here; it was part of _Jv_PrepareClass in
+	resolve.cc.
+	
+	* java/lang/VMSecurityManager.java: Check for the system class
+	loader as well as loader != null.
+	
+	* java/lang/SecurityManager.java (checkPermission): Remove
+	security check.
+	(checkRead): Likewise.
+	(checkConnect): Likewise.
+
+	* java/lang/ClassLoader.java (loadClass): Include all class
+	loaders in stack trace string.
+	Look for class in "gcjlib.so" in the same directory.
+	(getSystemClassLoader) Use getClassLoader0.
+	(getClassLoader0): New native method.
+
+	* java/lang/Class.h (getSuperclass): New method.
+	(getInterface): New method.
+	(size): Lay out class if needed.
+	(firstMethodIndex): New method.
+	(Jv_ResolveClassRef): New declaration.
+	(_Jv_LinkSymbolTable): New declaration.
+
+	* java/io/ObjectOutputStream.java: Add DEBUG statements
+	everywhere.
+	(dumpElementln): New method.
+	(depth): New field.
+	* java/io/ObjectInputStream.java (MyIOException): new, for
+	debugging.
+	Everywhere: use MyIOException rather than IOException.
+	Indent debugging output to make nesting visible.
+	(currentClassLoader): Make native
+	(callersClassLoader): New field.
+	(depth): New field.
+	* java/io/natObjectInputStream.cc (getCallersClassLoader): New
+	method.
+	
+	(readObject): ENDBLOCKDATA is generated if the class has a write
+	method, not if it has a read method.
+
+	* include/jvm.h (_Jv_CallAnyMethodA): Add new arg, iface.
+
+	* gnu/javax/rmi/CORBA/DelegateFactory.java: Use the
+	getContextClassLoader form the current thread after our own class
+	loader.
+
+	* gnu/gcj/runtime/SharedLibHelper.java (findClass): Class loader
+	debugging.
+	(toString): New method.
+
+	* verify.cc (class _Jv_BytecodeVerifier): Don't directly access
+	interfaces array.
+
+	* resolve.cc (_Jv_PrepareMissingMethods): If interface looks like
+	a constant pool entry, resolve it now.
+	(_Jv_PrepareClass): Break out part of this function to Jv_LayoutClass
+	in natClass.cc.
+	Move get_alignment_from_class to natClass.cc.
+
+	* prims.cc (_Jv_AllocObjectNoFinalizer): Use size field from class.
+	(_Jv_AllocObjectNoInitNoFinalizer): Likewise.
+
+	* defineclass.cc (checkExtends): Don't access superclass field
+	directly.
+
+	* Makefile.in: regenerate.
+
+	* gnu/gcj/util/natDebug.cc: New
+	* gnu/gcj/util/Debug.java: New.
+
+	* Makefile.am (java/io/ObjectInputStream.lo): Use
+	-fno-optimize-sibling-calls.
+
+	* java/lang/reflect/natMethod.cc (_Jv_CallAnyMethodA): Use
+	_Jv_LookupInterfaceMethodIdx to calculate the address of a method
+	in an interface.
+	* include/jvm.h (_Jv_CallAnyMethodA): Add new arg: iface.
+
 2004-11-24  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure: Regenerate for libtool change.

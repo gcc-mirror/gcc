@@ -68,7 +68,7 @@ static const char jvgenmain_spec[] =
 		   %<fcompile-resource* %<fassert %<fno-assert \
 		   %<femit-class-file %<femit-class-files %<fencoding*\
 		   %<fuse-boehm-gc %<fhash-synchronization %<fjni\
-		   %<findirect-dispatch \
+		   %<findirect-dispatch %<fnew-verifier\
 		   %<fno-store-check %<foutput-class-dir\
 		   %<fclasspath* %<fCLASSPATH* %<fbootclasspath*\
 		   %<fextdirs*\

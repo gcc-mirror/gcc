@@ -347,8 +347,8 @@ public class ObjectOutputStream extends OutputStream
 		    fieldsAlreadyWritten = false;
 		    if (currentObjectStreamClass.hasWriteMethod())
 		      {
-			if (dump)
-			  dumpElementln ("WRITE METHOD CALLED FOR: " + obj);
+				if (dump)
+				  dumpElementln ("WRITE METHOD CALLED FOR: " + obj);
 			setBlockDataMode(true);
 			callWriteMethod(obj, currentObjectStreamClass);
 			setBlockDataMode(false);
@@ -358,10 +358,10 @@ public class ObjectOutputStream extends OutputStream
 		      }
 		    else
 		      {
-			if (dump)
-			  dumpElementln ("WRITE FIELDS CALLED FOR: " + obj);
-		      writeFields(obj, currentObjectStreamClass);
-		  }
+				if (dump)
+				  dumpElementln ("WRITE FIELDS CALLED FOR: " + obj);
+				writeFields(obj, currentObjectStreamClass);
+			  }
 		  }
 
 		this.currentObject = prevObject;

@@ -173,6 +173,7 @@ case "${host}" in
   hppa*-linux* | \
   sh-linux* | sh[34]*-linux*)
   	can_unwind_signal=yes
+	libgcj_ld_symbolic='-Wl,-Bsymbolic'
 	if test x$slow_pthread_self = xyes \
 	   && test x$cross_compiling != xyes; then
 	  cat > conftest.c <<EOF
@@ -226,7 +227,6 @@ EOF
   mips*-*-linux* )
   	sysdeps_dir=mips
   	can_unwind_signal=yes
-	libgcj_interpreter=yes
 	libgcj_flags="${libgcj_flags} -mxgot"
 	DIVIDESPEC=-fno-use-divide-subroutine
 	case "${host}" in

@@ -873,7 +873,7 @@ gij [@option{-jar}] [@option{OPTION}] @dots{} @var{CLASS} [@var{ARGS}@dots{}]
   [@option{-cp} @var{path}] [@option{-classpath} @var{path}]
   [@option{-D}@var{name}[=@var{value}]@dots{}]
   [@option{-ms=}@var{number}] [@option{-mx=}@var{number}]
-  [@option{-X@var{argument}]
+  [@option{-X@var{argument}}] [@option{-verbose}] [@option{-verbose:class}]
   [@option{--showversion}] [@option{--version}] [@option{--help}][@option{-?}]
 @c man end
 @c man begin SEEALSO gij
@@ -954,7 +954,8 @@ Print version number and continue.
 @item --version
 Print version number, then exit.
 
-@item -verbose:class
+@item -verbose
+@itemx -verbose:class
 Each time a class is initialized, print a short message on standard error.
 @end table
 
@@ -2384,6 +2385,24 @@ built-in class loader.  By default, or if this property is set to
 property is set to @samp{cache}, then any failed lookups are cached
 and not tried again.  If this property is set to @samp{never}, then
 lookups are never done.  For more information, @xref{Extensions}.
+
+@item gnu.gcj.jit.compiler
+@c FIXME we should probably have a whole node on this...
+This is the full path to @command{gcj} executable which should be
+used to compile classes just-in-time when
+@code{ClassLoader.defineClass} is called.  If not set, @command{gcj}
+will not be invoked by the runtime; this can also be controlled via
+@code{Compiler.disable}.
+
+@item gnu.gcj.jit.options
+This is a space-separated string of options which should be passed to
+@command{gcj} when in JIT mode.  If not set, a sensible default is
+chosen.
+
+@item gnu.gcj.jit.cachedir
+This is the directory where cached shared library files are
+stored.  If not set, JIT compilation is disabled.  This should never
+be set to a directory that is writable by any other user.
 
 @end table
 

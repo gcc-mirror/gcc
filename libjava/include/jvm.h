@@ -1,6 +1,6 @@
 // jvm.h - Header file for private implementation information. -*- c++ -*-
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -231,9 +231,6 @@ inline _Jv_TempUTFString::~_Jv_TempUTFString ()
   char utfstr##_buf[utfstr##_len <= 256 ? utfstr##_len : 0]; \
   _Jv_TempUTFString utfstr(utfstr##thejstr, sizeof(utfstr##_buf)==0 ? 0 : utfstr##_buf)
 
-// FIXME: remove this define.
-#define StringClass java::lang::String::class$
-
 namespace gcj
 {
   /* Some constants used during lookup of special class methods.  */
@@ -248,6 +245,43 @@ namespace gcj
   /* Print out class names as they are initialized. */
   extern bool verbose_class_flag;
 }
+
+// This class handles all aspects of class preparation and linking.
+class _Jv_Linker
+{
+private:
+  static void prepare_constant_time_tables(jclass);
+  static jshort get_interfaces(jclass, _Jv_ifaces *);
+  static void link_symbol_table(jclass);
+  static void link_exception_table(jclass);
+  static void layout_interface_methods(jclass);
+  static void layout_vtable_methods(jclass);
+  static void set_vtable_entries(jclass, _Jv_VTable *);
+  static void make_vtable(jclass);
+  static void ensure_fields_laid_out(jclass);
+  static void ensure_class_linked(jclass);
+  static void ensure_supers_installed(jclass);
+  static void add_miranda_methods(jclass, jclass);
+  static void ensure_method_table_complete(jclass);
+  static void verify_class(jclass);
+  static jshort find_iindex(jclass *, jshort *, jshort);
+  static jshort indexof(void *, void **, jshort);
+  static int get_alignment_from_class(jclass);
+  static void generate_itable(jclass, _Jv_ifaces *, jshort *);
+  static jshort append_partial_itable(jclass, jclass, void **, jshort);
+  static _Jv_Method *search_method_in_class (jclass, jclass,
+					     _Jv_Utf8Const *,
+					     _Jv_Utf8Const *);
+
+public:
+
+  static void print_class_loaded (jclass);
+  static void resolve_class_ref (jclass, jclass *);
+  static void wait_for_state(jclass, int);
+  static _Jv_word resolve_pool_entry (jclass, int);
+  static void resolve_field (_Jv_Field *, java::lang::ClassLoader *);
+  static void verify_type_assertions (jclass);
+};
 
 /* Type of pointer used as finalizer.  */
 typedef void _Jv_FinalizerFunc (jobject);
@@ -416,7 +450,6 @@ extern "C" void _Jv_RegisterClasses_Counted (const jclass *classes,
 					     size_t count);
 extern "C" void _Jv_RegisterResource (void *vptr);
 extern void _Jv_UnregisterClass (_Jv_Utf8Const*, java::lang::ClassLoader*);
-extern void _Jv_ResolveField (_Jv_Field *, java::lang::ClassLoader*);
 
 extern jclass _Jv_FindClass (_Jv_Utf8Const *name,
 			     java::lang::ClassLoader *loader);

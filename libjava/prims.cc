@@ -61,11 +61,15 @@ details.  */
 #include <java/lang/VirtualMachineError.h>
 #include <gnu/gcj/runtime/VMClassLoader.h>
 #include <gnu/gcj/runtime/FinalizerThread.h>
+#include <execution.h>
 #include <gnu/java/lang/MainThread.h>
 
 #ifdef USE_LTDL
 #include <ltdl.h>
 #endif
+
+// Execution engine for compiled code.
+_Jv_CompiledEngine _Jv_soleCompiledEngine;
 
 // We allocate a single OutOfMemoryError exception which we keep
 // around for use if we run out of memory.
@@ -723,7 +727,7 @@ JvConvertArgv (int argc, const char **argv)
 {
   if (argc < 0)
     argc = 0;
-  jobjectArray ar = JvNewObjectArray(argc, &StringClass, NULL);
+  jobjectArray ar = JvNewObjectArray(argc, &java::lang::String::class$, NULL);
   jobject *ptr = elements(ar);
   jbyteArray bytes = NULL;
   for (int i = 0;  i < argc;  i++)
@@ -1204,7 +1208,7 @@ _Jv_CheckAccess (jclass self_klass, jclass other_klass, jint flags)
   return ((self_klass == other_klass)
 	  || ((flags & Modifier::PUBLIC) != 0)
 	  || (((flags & Modifier::PROTECTED) != 0)
-	      && other_klass->isAssignableFrom (self_klass))
+	      && _Jv_IsAssignableFromSlow (other_klass, self_klass))
 	  || (((flags & Modifier::PRIVATE) == 0)
 	      && _Jv_ClassNameSamePackage (self_klass->name,
 					   other_klass->name)));

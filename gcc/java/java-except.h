@@ -53,6 +53,8 @@ struct eh_range
 
     /* The TRY_CATCH_EXPR for this EH range.  */
     tree stmt;
+
+    tree handler;
   };
 
 /* A dummy range that represents the entire method. */

@@ -1,4 +1,4 @@
-/* Copyright (C) 2001, 2003  Free Software Foundation
+/* Copyright (C) 2001, 2003, 2004  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -13,6 +13,12 @@ import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.security.*;
 import gnu.gcj.Core;
+import java.util.Set;
+import java.util.Iterator;
+import java.util.HashSet;
+import java.util.HashMap;
+import java.nio.channels.FileChannel;
+import java.io.*;
 
 public class SharedLibHelper
 {
@@ -36,11 +42,26 @@ public class SharedLibHelper
   {
     synchronized (map)
       {
-	WeakReference ref = (WeakReference) map.get(libname);
-	if (ref != null)
-	  return (SharedLibHelper) ref.get();
+	Set s = (Set)map.get(libname);
+	if (s == null)
+	  return null;
+	for (Iterator i=s.iterator(); i.hasNext();)
+	  {
+	    WeakReference ref = (WeakReference)i.next();
+	    if (ref != null)
+	      return (SharedLibHelper) ref.get();
+	  }
 	return null;
       }
+  }
+
+  static void copyFile (File in, File out) throws IOException 
+  {
+    FileChannel source = new FileInputStream(in).getChannel();
+    FileChannel destination = new FileOutputStream(out).getChannel();
+    source.transferTo(0, source.size(), destination);
+    source.close();
+    destination.close();
   }
 
   public static SharedLibHelper findHelper (ClassLoader loader, String libname,
@@ -49,21 +70,54 @@ public class SharedLibHelper
     synchronized (map)
       {
 	SharedLibHelper result;
-	WeakReference ref = (WeakReference) map.get(libname);
-	if (ref != null)
+	Set s = (Set)map.get(libname);
+	if (s == null)
 	  {
-	    result = (SharedLibHelper) ref.get();
-	    if (result != null)
+	    s = new HashSet();
+	    map.put(libname, s);
+	  }
+	else
+	  {
+	    for (Iterator i=s.iterator(); i.hasNext();)
 	      {
-		if (result.loader != loader)
-		  // FIXME
-		  throw new UnknownError();
-		return result;
+		WeakReference ref = (WeakReference)i.next();
+		if (ref != null)
+		  {
+		    result = (SharedLibHelper) ref.get();
+		    if (result != null)
+		      {			
+			// A match succeeds if the library is already
+			// loaded by LOADER or any of its ancestors.
+			ClassLoader l = loader;
+			do
+			  {
+			    if (result.loader == l)
+			      return result;
+			    l = l.getParent();
+			  }
+			while (l != null);
+		      }
+		  }
+	      }
+
+	    // Oh dear.  We've already mapped this shared library, but
+	    // with a different class loader.  We need to copy it.
+	    try
+	      {
+		File copy 
+		  = File.createTempFile(new File(libname).getName(), 
+					".so", new File ("/tmp"));
+		File src = new File(libname);
+		copyFile (src, copy);
+		libname = copy.getPath();
+	      }
+	    catch (IOException e)
+	      {
+		return null;
 	      }
 	  }
-
 	result = new SharedLibHelper(libname, loader, source, 0);
-	map.put(libname, new WeakReference(result));
+	s.add(new WeakReference(result));
 	return result;
       }
   }
@@ -73,7 +127,15 @@ public class SharedLibHelper
   public Class findClass(String name)
   {
     ensureInit();
-    return (Class) classMap.get(name);
+    Class result = (Class) classMap.get(name);
+    if (result != null)
+      {
+	// We never want to return a class without its supers linked.
+	// It isn't clear from the spec, but this is what other
+	// implementations do in practice.
+	ensureSupersLinked(result);
+      }
+    return result;
   }
 
   public URL findResource (String name)
@@ -106,6 +168,12 @@ public class SharedLibHelper
 
   native boolean hasResource(String name);
   native void init();
+  native void ensureSupersLinked(Class k);
+
+  public String toString ()
+  {
+    return "shared object " + baseName;
+  }
 
   /** Called during dlopen's processing of the init section. */
   void registerClass(String name, Class cls)
