@@ -1,5 +1,7 @@
 2004-02-29  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* doc/install.texi: Note that libada uses autoconf 2.57 also.
+
 	* doc/install.texi: Fix idiot typo in previous commit.
 
 	* doc/install.texi: Update for conversion of intl to autoconf 2.57.
