@@ -1,3 +1,8 @@
+2002-06-01  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold_truthop): Transform "a || b" into "(a|b) != 0"
+	and "!p && !q" into "(p|q) == 0" under suitable conditions.
+
 2002-06-01  Andreas Jaeger  <aj@suse.de>
 
 	* cppexp.c (cpp_classify_number): Cast precission to int for
