@@ -2600,8 +2600,8 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 #ifdef HAVE_movstrqi
 	  if (HAVE_movstrqi
 	      && GET_CODE (size) == CONST_INT
-	      && ((unsigned) INTVAL (size)
-		  < (1 << (GET_MODE_BITSIZE (QImode) - 1))))
+	      && ((unsigned HOST_WIDE_INT) INTVAL (size)
+		  <= GET_MODE_MASK (QImode)))
 	    {
 	      rtx pat = gen_movstrqi (gen_rtx_MEM (BLKmode, temp),
 				      xinner, size, GEN_INT (align));
@@ -2615,8 +2615,8 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 #ifdef HAVE_movstrhi
 	  if (HAVE_movstrhi
 	      && GET_CODE (size) == CONST_INT
-	      && ((unsigned) INTVAL (size)
-		  < (1 << (GET_MODE_BITSIZE (HImode) - 1))))
+	      && ((unsigned HOST_WIDE_INT) INTVAL (size)
+		  <= GET_MODE_MASK (HImode)))
 	    {
 	      rtx pat = gen_movstrhi (gen_rtx_MEM (BLKmode, temp),
 				      xinner, size, GEN_INT (align));
