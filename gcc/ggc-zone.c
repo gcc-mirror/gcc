@@ -1663,7 +1663,7 @@ ggc_pch_write_object (struct ggc_pch_data *d ATTRIBUTE_UNUSED,
   if (!is_string)
     {
       struct alloc_chunk *chunk = (struct alloc_chunk *) ((char *)x - CHUNK_OVERHEAD);
-      size = chunk->size;
+      size = ggc_get_size (x);
       if (fwrite (chunk, size + CHUNK_OVERHEAD, 1, f) != 1)
 	fatal_error ("can't write PCH file: %m");
       d->written += size + CHUNK_OVERHEAD;
