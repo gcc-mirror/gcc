@@ -2,6 +2,8 @@
 
 	* lex.c (java_init_lex): Avoid incorrect hardcoded constant 11.
 	* parse.y (mark_parser_ctxt): Likewise.
+	(check_modifiers, declare_local_variables): Avoid incorrect
+	hardcoded constant 10.
 
 	* lex.c (java_read_char): Avoid "comparison is always true"
 	warning.
