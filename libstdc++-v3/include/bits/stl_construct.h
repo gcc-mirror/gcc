@@ -67,10 +67,10 @@
 namespace std
 {
   /**
-   * Invoke an allocated object's constructor with an initializer.
-   *
-   * This function is not part of the C++ standard but is used internally
-   * within the library.
+   * @maint
+   * Constructs an object in existing memory by invoking an allocated
+   * object's constructor with an initializer.
+   * @endmaint
    */
   template <class _T1, class _T2>
     inline void
@@ -78,10 +78,10 @@ namespace std
     { new (static_cast<void*>(__p)) _T1(__value); }
   
   /**
-   * Invoke an allocated object's constructor without an initializer.
-   *
-   * This function is not part of the C++ standard but is used internally
-   * within the library.
+   * @maint
+   * Constructs an object in existing memory by invoking an allocated
+   * object's default constructor (no initializers).
+   * @endmaint
    */
   template <class _T1>
     inline void
@@ -89,9 +89,11 @@ namespace std
     { new (static_cast<void*>(__p)) _T1(); }
 
   /**
+   * @maint
    * Destroy a range of objects with nontrivial destructors.  
    *
    * This is a helper function used only by _Destroy().
+   * @endmaint
    */
   template <class _ForwardIterator>
     inline void
@@ -99,11 +101,13 @@ namespace std
     { for ( ; __first != __last; ++__first) _Destroy(&*__first); }
 
   /**
+   * @maint
    * Destroy a range of objects with trivial destructors.  Since the destructors
    * are trivial, there's nothing to do and hopefully this function will be
    * entirely optimized away.
    *
    * This is a helper function used only by _Destroy().
+   * @endmaint
    */
   template <class _ForwardIterator> 
     inline void
@@ -111,10 +115,9 @@ namespace std
     { }
 
   /**
+   * @maint
    * Destroy the object pointed to by a pointer type.
-   *
-   * This function is not part of the C++ standard but is used internally
-   * within the library.
+   * @endmaint
    */
   template <class _Tp>
     inline void
@@ -122,12 +125,11 @@ namespace std
     { __pointer->~_Tp(); }
   
   /**
+   * @maint
    * Destroy a range of objects.  If the value_type of the object has
    * a trivial destructor, the compiler should optimize all of this
    * away, otherwise the objects' destructors must be invoked.
-   *
-   * This function is not part of the C++ standard but is used internally
-   * within the library.
+   * @endmaint
    */
   template <class _ForwardIterator>
     inline void

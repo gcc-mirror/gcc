@@ -50,8 +50,8 @@ OUTPUT_LANGUAGE        = English
 # Private class members and static file members will be hidden unless 
 # the EXTRACT_PRIVATE and EXTRACT_STATIC tags are set to YES 
 
-#EXTRACT_ALL            = NO
-EXTRACT_ALL            = YES
+EXTRACT_ALL            = NO
+#EXTRACT_ALL            = YES
 
 # If the EXTRACT_PRIVATE tag is set to YES all private members of a class 
 # will be included in the documentation. 
@@ -125,7 +125,7 @@ INTERNAL_DOCS          = NO
 CLASS_DIAGRAMS         = YES
 
 # If the SOURCE_BROWSER tag is set to YES then a list of source files will 
-# be generated. Documented entities will be cross-referenced with these sources. 
+# be generated. Documented entities will be cross-referenced with these sources.
 
 SOURCE_BROWSER         = YES
 
@@ -234,7 +234,8 @@ GENERATE_BUGLIST       = YES
 # will result in a user defined paragraph with heading "Side Effects:". 
 # You can put \n's in the value part of an alias to insert newlines. 
 
-ALIASES                = 
+ALIASES                = "maint=\if maint" \
+                         "endmaint=\endif"
 
 # The MAX_INITIALIZER_LINES tag determines the maximum number of lines 
 # the initial value of a variable or define consist of for it to appear in 

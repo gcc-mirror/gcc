@@ -1,3 +1,24 @@
+2001-11-23  Phil Edwards  <pme@gcc.gnu.org>
+
+	* Makefile.am (doxygen-maint):  The script isn't executable in CVS.
+	* Makefile.in:  Regenerated.
+	* docs/doxygen/TODO:  New file listing doxygen work to be done.
+	* docs/doxygen/run_doxygen:  Fix up man pages.
+	* docs/doxygen/user.cfg.in:  Insert maint-only toggles.
+	* docs/doxygen/maint.cfg.in:  Copy from user.cfg and turn toggles on.
+	* include/bits/stl_construct.h:  Use new hooks for internal functions.
+
+	* docs/html/17_intro/TODO:  Small updates.
+	* docs/html/faq/index.html:  Likewise.
+	* docs/html/faq/index.txt:  Regenerated.
+
+	* include/bits/stl_alloc.h:  Doxygenate, reindent comments, remove
+	SGI-isms and wrappers.
+	(simple_alloc, debug_alloc):  Uglify class names.
+	(__default_alloc_template):  Uglify "threads" template parameter and
+	update corresponding macros.
+	* include/backward/alloc.h:  Bring up to date.
+
 2001-11-23  Jason Merrill  <jason@redhat.com>
 
 	* src/vterminate.cc (__verbose_terminate_handler): Add leading

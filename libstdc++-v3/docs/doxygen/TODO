@@ -1,0 +1,52 @@
+
+The approach I've been using for a given header is to recursively do each
+of the "bits" headers which make up the standard header.  So, e.g., while
+there are five headers making up <algorithm>, three of them were already
+documented in the course of doing other headers.
+
+"Untouched" means I've deliberately skipped it for various reasons, or
+haven't gotten to it yet.  It /will/ be done (by somebody, eventually.)
+
+
+ Area           Still needs to be doxygen-documented
+-----------------------------------------------------------
+
+c17             FINISHED (Nothing in Clause 17 "exists" in terms of code.)
+c18             <limits>, Note A
+c19             Note A
+c20             std_memory.h[20.4], rel_ops (should they be doc'd?), Note A
+c21             Untouched, Note B
+c22             Untouched
+c23             See doxygroups.cc and Note B.
+                stl_alloc.h, stl_uninitialized.h remain from the common files.
+c24             Untouched
+c25             stl_tempbuf.h (small), stl_algo.h (big)
+c26             <complex>, <valarray>, stl_numeric.h[26.4], Note A
+c27             Untouched
+
+backward/       Not scanned by doxygen.  Should it be?
+
+ext/            Untouched
+
+__gnu_cxx       Extensions such as verbose_terminate_handler are documented
+                but do not appear in output, since the __gnu_cxx namespace is
+                itself undocumented.  Should it be?  Eeeeeeehhh...
+
+[1.3.5]         "implementation-defined behavior:  behavior ... that depends
+                on the implementation *and that each implementation shall
+                document*."  [my emphasis]  Not all implementation choices
+                have been thus described; doxygen is not necessarily the
+                appropriate place for such descriptions, either.
+
+-----------------------------------------------------------
+
+NOTES:
+
+A)  So far I have not tried to document any of the <c*> headers.  So entities
+such as atexit() are undocumented throughout the library.
+
+B)  Huge chunks of containers and strings are described in common "Tables"
+in the standard.  How to reproduce this information?
+
+
+vim:ts=4:et:

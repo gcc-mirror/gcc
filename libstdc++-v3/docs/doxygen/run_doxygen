@@ -4,7 +4,7 @@
 #
 # Synopsis:  run_doxygen --mode=[user|maint]  v3srcdir  v3builddir
 #
-# Originally hacked together by Phil Edwards <pme@sources.redhat.com>
+# Originally hacked together by Phil Edwards <pme@gcc.gnu.org>
 
 
 # We can check now that the version of doxygen is >= this variable.
@@ -161,6 +161,20 @@ for f in $problematic; do
     mv TEMP $f
 done
 rm stdheader
+
+# Some of the pages for generated modules have text that confuses certain
+# implementations of man(1), e.g., Linux's.  We need to have another top-level
+# *roff tag to /stop/ the .SH NAME entry.
+#problematic=`egrep --files-without-match '^\.SH SYNOPSIS' [A-Z]*.3`
+problematic='Containers.3 Sequences.3 Assoc_containers.3'
+for f in $problematic; do
+    sed '/^\.SH NAME/{
+n
+a\
+.SH SYNOPSIS
+    }' $f > TEMP
+    mv TEMP $f
+done
 
 cp ${srcdir}/docs/doxygen/Intro.3 .
 
