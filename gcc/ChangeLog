@@ -1,3 +1,8 @@
+2004-07-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR c/16392
+	* function.c (assign_parms): Fix typo from previous change.
+
 2004-07-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/15815
