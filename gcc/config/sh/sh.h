@@ -926,7 +926,7 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
      Only the lower 32bits of R10-R14 are guaranteed to be preserved	\
      across SH5 function calls.  */					\
   0,      0,      0,      0,      0,      0,      0,      1,		\
-  1,      1,      0,      1,      1,      1,      1,      1,		\
+  1,      1,      1,      1,      1,      1,      1,      1,		\
   1,      1,      1,      1,      0,      0,      0,      0,		\
   0,      0,      0,      0,      1,      1,      1,      1,		\
   1,      1,      1,      1,      0,      0,      0,      0,		\
@@ -946,7 +946,7 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
 /* XD registers.  */							\
   1,      1,      1,      1,      1,      1,      0,      0,		\
 /*"gbr",  "ap",	  "pr",   "t",    "mach", "macl", "fpul", "fpscr", */	\
-  1,      1,      0,      1,      1,      1,      1,      1,		\
+  1,      1,      1,      1,      1,      1,      1,      1,		\
 /*"rap" */								\
   1,									\
 }

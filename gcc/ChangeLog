@@ -1,3 +1,9 @@
+2003-08-07  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (CALL_USED_REGISTERS): Include PR_REG and PR_MEDIA_REG.
+	* sh.c (calc_live_regs): Use sh_pr_n_sets to determine if pr
+	needs saving on SHmedia.
+
 2003-08-07  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md: Replace all occurrences of \\t with \t.
