@@ -1,5 +1,9 @@
 2000-04-03  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* bb-reorder.c (verify_insn_chain): #ifdef out unless ENABLE_CHECKING.
+	* i386.h (FUNCTION_ARG_REGNO_P): Remove unnecessary test for N >= 0.
+	* i386.md (call_value, call_value_pop): Remove unused variable 'addr'.
+
 	* gcc.c (C specs): Pass -fno-show-column to the preprocessor.
 	* objc/lang-specs.h: Likewise.
 

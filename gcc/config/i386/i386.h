@@ -1210,7 +1210,7 @@ enum reg_class
 #define APPLY_RESULT_SIZE (8+108)
 
 /* 1 if N is a possible register number for function argument passing.  */
-#define FUNCTION_ARG_REGNO_P(N) ((N) >= 0 && (N) < REGPARM_MAX)
+#define FUNCTION_ARG_REGNO_P(N) ((N) < REGPARM_MAX)
 
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should

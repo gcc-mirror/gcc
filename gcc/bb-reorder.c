@@ -123,8 +123,9 @@ static basic_block get_common_dest	PARAMS ((basic_block, basic_block));
 static basic_block chain_reorder_blocks	PARAMS ((edge, basic_block));
 static void make_reorder_chain		PARAMS ((basic_block));
 static void fixup_reorder_chain		PARAMS ((void));
+#ifdef ENABLE_CHECKING
 static void verify_insn_chain		PARAMS ((void));
-
+#endif
 
 /* Skip over insns BEFORE or AFTER BB which are typically associated with
    basic block BB.  */
@@ -718,7 +719,7 @@ fixup_reorder_chain ()
       reverse direction.
    2. Count insns in chain, going both directions, and check if equal.
    3. Check that get_last_insn () returns the actual end of chain.  */
-
+#ifdef ENABLE_CHECKING
 static void
 verify_insn_chain ()
 {
@@ -775,7 +776,7 @@ verify_insn_chain ()
       abort ();
     }
 }
-
+#endif
 
 /* Reorder basic blocks.  */
 
