@@ -1,3 +1,13 @@
+Thu Oct 16 00:14:48 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* method.c (build_overload_value): Handle TEMPLATE_CONST_PARMs here.
+	(build_overload_int): Not here.
+
+Wed Oct 15 00:35:28 1997  Mike Stump  <mrs@wrs.com>
+
+	* class.c (build_type_pathname): Remove.
+	(prepare_fresh_vtable): Fix problem with complex MI vtable names.
+
 1997-10-14  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* parse.y (unary_expr): Give a pedwarn if someone tries to use the
