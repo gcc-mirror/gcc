@@ -2324,6 +2324,87 @@ package body Exp_Attr is
          Analyze_And_Resolve (N, Typ);
       end Mantissa;
 
+      ---------
+      -- Mod --
+      ---------
+
+      when Attribute_Mod => Mod_Case : declare
+         Arg  : constant Node_Id := Relocate_Node (First (Exprs));
+         Hi   : constant Node_Id := Type_High_Bound (Etype (Arg));
+         Modv : constant Uint    := Modulus (Btyp);
+
+      begin
+
+         --  This is not so simple. The issue is what type to use for the
+         --  computation of the modular value.
+
+         --  The easy case is when the modulus value is within the bounds
+         --  of the signed integer type of the argument. In this case we can
+         --  just do the computation in that signed integer type, and then
+         --  do an ordinary conversion to the target type.
+
+         if Modv <= Expr_Value (Hi) then
+            Rewrite (N,
+              Convert_To (Btyp,
+                Make_Op_Mod (Loc,
+                  Left_Opnd  => Arg,
+                  Right_Opnd => Make_Integer_Literal (Loc, Modv))));
+
+         --  Here we know that the modulus is larger than type'Last of the
+         --  integer type. There are three possible cases to consider:
+
+         --    a) The integer value is non-negative. In this case, it is
+         --    returned as the result (since it is less than the modulus).
+
+         --    b) The integer value is negative. In this case, we know that
+         --    the result is modulus + value, where the value might be as
+         --    small as -modulus. The trouble is what type do we use to do
+         --    this subtraction. No type will do, since modulus can be as
+         --    big as 2**64, and no integer type accomodates this value.
+         --    Let's do a bit of algebra
+
+         --         modulus + value
+         --      =  modulus - (-value)
+         --      =  (modulus - 1) - (-value - 1)
+
+         --    Now modulus - 1 is certainly in range of the modular type.
+         --    -value is in the range 1 .. modulus, so -value -1 is in the
+         --    range 0 .. modulus-1 which is in range of the modular type.
+         --    Furthermore, (-value - 1) can be expressed as -(value + 1)
+         --    which we can compute using the integer base type.
+
+         else
+            Rewrite (N,
+              Make_Conditional_Expression (Loc,
+                Expressions => New_List (
+                  Make_Op_Ge (Loc,
+                    Left_Opnd  => Duplicate_Subexpr (Arg),
+                    Right_Opnd => Make_Integer_Literal (Loc, 0)),
+
+                  Convert_To (Btyp,
+                    Duplicate_Subexpr_No_Checks (Arg)),
+
+                  Make_Op_Subtract (Loc,
+                    Left_Opnd =>
+                      Make_Integer_Literal (Loc,
+                        Intval => Modv - 1),
+                    Right_Opnd =>
+                      Convert_To (Btyp,
+                        Make_Op_Minus (Loc,
+                          Right_Opnd =>
+                            Make_Op_Add (Loc,
+                              Left_Opnd  => Duplicate_Subexpr_No_Checks (Arg),
+                              Right_Opnd =>
+                                Make_Integer_Literal (Loc,
+                                  Intval => 1))))))));
+
+
+
+         end if;
+
+         Analyze_And_Resolve (N, Btyp);
+      end Mod_Case;
+
       -----------
       -- Model --
       -----------

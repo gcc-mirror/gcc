@@ -27,6 +27,7 @@
 --  This package deals with the implementation of the Restrictions pragma
 
 with Rident; use Rident;
+with Table;
 with Types;  use Types;
 with Uintp;  use Uintp;
 
@@ -132,6 +133,33 @@ package Restrict is
       No_Elaboration_Code                => True,
       others                             => False);
 
+   --  The following table records entries made by Restrictions pragmas
+   --  that specify a parameter for No_Dependence. Each such pragma makes
+   --  an entry in this table.
+
+   --  Note: we have chosen to implement this restriction in the "syntactic"
+   --  form, where we do not check that the named package is a language defined
+   --  package, but instead we allow arbitrary package names. The discussion of
+   --  this issue is not complete in the ARG, but the sense seems to be leaning
+   --  in this direction, which makes more sense to us, since it is much more
+   --  useful, and much easier to implement.
+
+   type ND_Entry is record
+      Unit : Node_Id;
+      --  The unit parameter from the No_Dependence pragma
+
+      Warn : Boolean;
+      --  True if from Restriction_Warnings, False if from Restrictions
+   end record;
+
+   package No_Dependence is new Table.Table (
+     Table_Component_Type => ND_Entry,
+     Table_Index_Type     => Int,
+     Table_Low_Bound      => 0,
+     Table_Initial        => 200,
+     Table_Increment      => 200,
+     Table_Name           => "Name_No_Dependence");
+
    -----------------
    -- Subprograms --
    -----------------
@@ -161,6 +189,11 @@ package Restrict is
    --  restrictions, and in this case indicates the exact count for the
    --  violation. If the exact count is not known, V is left at its
    --  default value of -1 which indicates an unknown count.
+
+   procedure Check_Restriction_No_Dependence (U : Node_Id; Err : Node_Id);
+   --  Called when a dependence on a unit is created (either implicitly, or by
+   --  an explicit WITH clause). U is a node for the unit involved, and Err
+   --  is the node to which an error will be attached if necessary.
 
    procedure Check_Elaboration_Code_Allowed (N : Node_Id);
    --  Tests to see if elaboration code is allowed by the current restrictions
@@ -240,6 +273,12 @@ package Restrict is
       V : Integer);
    --  Similar to the above, except that this is used for the case of a
    --  parameter restriction, and the corresponding value V is given.
+
+   procedure Set_Restriction_No_Dependence
+     (Unit : Node_Id;
+      Warn : Boolean);
+   --  Sets given No_Dependence restriction in table if not there already.
+   --  Warn is True if from Restriction_Warnings, False if from Restrictions.
 
    function Tasking_Allowed return Boolean;
    pragma Inline (Tasking_Allowed);

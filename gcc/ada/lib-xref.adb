@@ -32,6 +32,8 @@ with Lib.Util; use Lib.Util;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
+with Restrict; use Restrict;
+with Rident;   use Rident;
 with Sem_Prag; use Sem_Prag;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
@@ -258,6 +260,10 @@ package body Lib.Xref is
 
    begin
       pragma Assert (Nkind (E) in N_Entity);
+
+      if E = Standard_ASCII then
+         Check_Restriction (No_Obsolescent_Features, N);
+      end if;
 
       --  Never collect references if not in main source unit. However,
       --  we omit this test if Typ is 'e' or 'k', since these entries are

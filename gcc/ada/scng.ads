@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,6 +49,10 @@ generic
 
    with procedure Error_Msg_SP (Msg : String);
    --  Output a message at the start of the previous token
+
+   with procedure Obsolescent_Check (S : Source_Ptr);
+   --  Called when one of the obsolescent character replacements is
+   --  used with S pointing to the character in question.
 
    with package Style is new Styleg
      (Error_Msg, Error_Msg_S, Error_Msg_SC, Error_Msg_SP);

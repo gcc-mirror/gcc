@@ -32,6 +32,8 @@
 
 with Fname.UF; use Fname.UF;
 with Osint;    use Osint;
+with Rident;   use Rident;
+with Restrict; use Restrict;
 with Stringt;  use Stringt;
 with Stylesw;  use Stylesw;
 with Uintp;    use Uintp;
@@ -41,6 +43,7 @@ separate (Par)
 
 function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
    Pragma_Name : constant Name_Id    := Chars (Pragma_Node);
+   Prag_Id     : constant Pragma_Id  := Get_Pragma_Id (Pragma_Name);
    Pragma_Sloc : constant Source_Ptr := Sloc (Pragma_Node);
    Arg_Count   : Nat;
    Arg_Node    : Node_Id;
@@ -82,6 +85,14 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
    procedure Check_Required_Identifier (Arg : Node_Id; Id : Name_Id);
    --  Same as Check_Optional_Identifier, except that the name is required
    --  to be present and to match the given Id value.
+
+   procedure Process_Restrictions_Or_Restriction_Warnings;
+   --  Common processing for Restrictions and Restriction_Warnings pragmas.
+   --  This routine only processes the case of No_Obsolescent_Features,
+   --  which is the only restriction that has syntactic effects. No general
+   --  error checking is done, since this will be done in Sem_Prag. The
+   --  other case processed is pragma Restrictions No_Dependence, since
+   --  otherwise this is done too late.
 
    ----------
    -- Arg1 --
@@ -196,9 +207,40 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
       end if;
    end Check_Required_Identifier;
 
-   ----------
-   -- Prag --
-   ----------
+   --------------------------------------------------
+   -- Process_Restrictions_Or_Restriction_Warnings --
+   --------------------------------------------------
+
+   procedure Process_Restrictions_Or_Restriction_Warnings is
+      Arg  : Node_Id;
+      Id   : Name_Id;
+      Expr : Node_Id;
+
+   begin
+      Arg := Arg1;
+      while Present (Arg) loop
+         Id := Chars (Arg);
+         Expr := Expression (Arg);
+
+         if Id = No_Name
+           and then Nkind (Expr) = N_Identifier
+           and then Get_Restriction_Id (Chars (Expr)) = No_Obsolescent_Features
+         then
+            Set_Restriction (No_Obsolescent_Features, Pragma_Node);
+            Restriction_Warnings (No_Obsolescent_Features) :=
+              Prag_Id = Pragma_Restriction_Warnings;
+
+         elsif Id = Name_No_Dependence then
+            Set_Restriction_No_Dependence
+              (Unit => Expr,
+               Warn  => Prag_Id = Pragma_Restriction_Warnings);
+         end if;
+
+         Next (Arg);
+      end loop;
+   end Process_Restrictions_Or_Restriction_Warnings;
+
+--  Start if processing for Prag
 
 begin
    Error_Msg_Name_1 := Pragma_Name;
@@ -207,7 +249,7 @@ begin
    --  it is a semantic error, not a syntactic one (we have already checked
    --  the syntax for the unrecognized pragma as required by (RM 2.8(11)).
 
-   if not Is_Pragma_Name (Chars (Pragma_Node)) then
+   if Prag_Id = Unknown_Pragma then
       return Pragma_Node;
    end if;
 
@@ -234,7 +276,7 @@ begin
 
    --  Remaining processing is pragma dependent
 
-   case Get_Pragma_Id (Pragma_Name) is
+   case Prag_Id is
 
       ------------
       -- Ada_83 --
@@ -368,6 +410,38 @@ begin
          Check_Arg_Count (0);
          List_Pragmas.Increment_Last;
          List_Pragmas.Table (List_Pragmas.Last) := (Page, Semi);
+
+         ------------------
+         -- Restrictions --
+         ------------------
+
+         --  pragma Restrictions (RESTRICTION {, RESTRICTION});
+
+         --  RESTRICTION ::=
+         --    restriction_IDENTIFIER
+         --  | restriction_parameter_IDENTIFIER => EXPRESSION
+
+         --  We process the case of No_Obsolescent_Features, since this has
+         --  a syntactic effect that we need to detect at parse time (the use
+         --  of replacement characters such as colon for pound sign).
+
+         when Pragma_Restrictions =>
+            Process_Restrictions_Or_Restriction_Warnings;
+
+         --------------------------
+         -- Restriction_Warnings --
+         --------------------------
+
+         --  pragma Restriction_Warnings (RESTRICTION {, RESTRICTION});
+
+         --  RESTRICTION ::=
+         --    restriction_IDENTIFIER
+         --  | restriction_parameter_IDENTIFIER => EXPRESSION
+
+         --  See above comment for pragma Restrictions
+
+         when Pragma_Restriction_Warnings =>
+            Process_Restrictions_Or_Restriction_Warnings;
 
       ----------------------------------------------------------
       -- Source_File_Name and Source_File_Name_Project (GNAT) --
@@ -1003,8 +1077,6 @@ begin
            Pragma_Queuing_Policy               |
            Pragma_Remote_Call_Interface        |
            Pragma_Remote_Types                 |
-           Pragma_Restrictions                 |
-           Pragma_Restriction_Warnings         |
            Pragma_Restricted_Run_Time          |
            Pragma_Ravenscar                    |
            Pragma_Reviewable                   |

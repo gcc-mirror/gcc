@@ -56,8 +56,12 @@ package body Bcheck is
    procedure Check_Consistent_Zero_Cost_Exception_Handling;
 
    procedure Consistency_Error_Msg (Msg : String);
-   --  Produce an error or a warning message, depending on whether
-   --  an inconsistent configuration is permitted or not.
+   --  Produce an error or a warning message, depending on whether an
+   --  inconsistent configuration is permitted or not.
+
+   function Same_Unit (U1 : Name_Id; U2 : Name_Id) return Boolean;
+   --  Used to compare two unit names for No_Dependence checks. U1 is in
+   --  standard unit name format, and U2 is in literal form with periods.
 
    ------------------------------------
    -- Check_Consistent_Configuration --
@@ -539,7 +543,64 @@ package body Bcheck is
             end loop;
          end if;
       end loop;
+
+      --  Now deal with No_Dependence indications. Note that we put the loop
+      --  through entries in the no dependency table first, since this loop
+      --  is most often empty (no such pragma Restrictions in use).
+
+      for ND in No_Deps.First .. No_Deps.Last loop
+         declare
+            ND_Unit : constant Name_Id := No_Deps.Table (ND).No_Dep_Unit;
+
+         begin
+            for J in ALIs.First .. ALIs.Last loop
+               declare
+                  A : ALIs_Record renames ALIs.Table (J);
+
+               begin
+                  for K in A.First_Unit .. A.Last_Unit loop
+                     declare
+                        U : Unit_Record renames Units.Table (K);
+                     begin
+                        for L in U.First_With .. U.Last_With loop
+                           if Same_Unit (Withs.Table (L).Uname, ND_Unit) then
+                              Error_Msg_Name_1 := U.Uname;
+                              Error_Msg_Name_2 := ND_Unit;
+                              Consistency_Error_Msg
+                                ("unit & violates restriction " &
+                                 "No_Dependence => %");
+                           end if;
+                        end loop;
+                     end;
+                  end loop;
+               end;
+            end loop;
+         end;
+      end loop;
    end Check_Consistent_Restrictions;
+
+   ---------------
+   -- Same_Unit --
+   ---------------
+
+   function Same_Unit (U1 : Name_Id; U2 : Name_Id) return Boolean is
+   begin
+      --  Note, the string U1 has a terminating %s or %b, U2 does not
+
+      if Length_Of_Name (U1) - 2 = Length_Of_Name (U2) then
+         Get_Name_String (U1);
+
+         declare
+            U1_Str : constant String := Name_Buffer (1 .. Name_Len - 2);
+         begin
+            Get_Name_String (U2);
+            return U1_Str = Name_Buffer (1 .. Name_Len);
+         end;
+
+      else
+         return False;
+      end if;
+   end Same_Unit;
 
    ---------------------------------------------------
    -- Check_Consistent_Zero_Cost_Exception_Handling --

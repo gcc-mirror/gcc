@@ -8188,6 +8188,8 @@ package body Sem_Ch3 is
       --  Digits constraint present
 
       if Nkind (C) = N_Digits_Constraint then
+         Check_Restriction (No_Obsolescent_Features, C);
+
          if Warn_On_Obsolescent_Feature then
             Error_Msg_N
               ("subtype digits constraint is an " &
@@ -8389,6 +8391,8 @@ package body Sem_Ch3 is
       --  Delta constraint present
 
       if Nkind (C) = N_Delta_Constraint then
+         Check_Restriction (No_Obsolescent_Features, C);
+
          if Warn_On_Obsolescent_Feature then
             Error_Msg_S
               ("subtype delta constraint is an " &

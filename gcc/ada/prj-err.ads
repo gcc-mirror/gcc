@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2002-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -58,12 +58,12 @@ package Prj.Err is
    --  file before using any of the other routines in the package.
 
    procedure Finalize (Source_Type : String := "project")
-               renames Errutil.Finalize;
+     renames Errutil.Finalize;
    --  Finalize processing of error messages for one file and output message
    --  indicating the number of detected errors.
 
    procedure Error_Msg (Msg : String; Flag_Location : Source_Ptr)
-               renames Errutil.Error_Msg;
+     renames Errutil.Error_Msg;
    --  Output a message at specified location.
 
    procedure Error_Msg_S (Msg : String) renames Errutil.Error_Msg_S;
@@ -85,16 +85,20 @@ package Prj.Err is
    --  Instantiation of the generic style package, needed for the instantiation
    --  of the generic scanner below.
 
+   procedure Obsolescent_Check (S : Source_Ptr);
+   --  Dummy null procedure for Scng instantiation
+
    procedure Post_Scan;
    --  Convert an Ada operator symbol into a standard string
 
    package Scanner is new Scng
-     (Post_Scan    => Post_Scan,
-      Error_Msg    => Error_Msg,
-      Error_Msg_S  => Error_Msg_S,
-      Error_Msg_SC => Error_Msg_SC,
-      Error_Msg_SP => Error_Msg_SP,
-      Style        => Style);
+     (Post_Scan         => Post_Scan,
+      Error_Msg         => Error_Msg,
+      Error_Msg_S       => Error_Msg_S,
+      Error_Msg_SC      => Error_Msg_SC,
+      Error_Msg_SP      => Error_Msg_SP,
+      Obsolescent_Check => Obsolescent_Check,
+      Style             => Style);
    --  Instantiation of the generic scanner
 
 end Prj.Err;

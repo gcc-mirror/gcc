@@ -61,6 +61,10 @@ package body Restrict is
    --  in the Names table, and this table will be locked if we are
    --  generating a message from gigi.
 
+   function Same_Unit (U1, U2 : Node_Id) return Boolean;
+   --  Returns True iff U1 and U2 represent the same library unit. Used for
+   --  handling of No_Dependence => Unit restriction case.
+
    function Suppress_Restriction_Message (N : Node_Id) return Boolean;
    --  N is the node for a possible restriction violation message, but
    --  the message is to be suppressed if this is an internal file and
@@ -302,6 +306,36 @@ package body Restrict is
       end if;
    end Check_Restriction;
 
+   -------------------------------------
+   -- Check_Restriction_No_Dependence --
+   -------------------------------------
+
+   procedure Check_Restriction_No_Dependence (U : Node_Id; Err : Node_Id) is
+      DU : Node_Id;
+
+   begin
+      for J in No_Dependence.First .. No_Dependence.Last loop
+         DU := No_Dependence.Table (J).Unit;
+
+         if Same_Unit (U, DU) then
+            Error_Msg_Sloc := Sloc (DU);
+            Error_Msg_Node_1 := DU;
+
+            if No_Dependence.Table (J).Warn then
+               Error_Msg
+                 ("?violation of restriction `No_Dependence '='> &`#",
+                  Sloc (Err));
+            else
+               Error_Msg
+                 ("|violation of restriction `No_Dependence '='> &`#",
+                  Sloc (Err));
+            end if;
+
+            return;
+         end if;
+      end loop;
+   end Check_Restriction_No_Dependence;
+
    ----------------------------------------
    -- Cunit_Boolean_Restrictions_Restore --
    ----------------------------------------
@@ -496,6 +530,31 @@ package body Restrict is
       Error_Msg_N (B (1 .. P), N);
    end Restriction_Msg;
 
+   ---------------
+   -- Same_Unit --
+   ---------------
+
+   function Same_Unit (U1, U2 : Node_Id) return Boolean is
+   begin
+      if Nkind (U1) = N_Identifier then
+         return Nkind (U2) = N_Identifier and then Chars (U1) = Chars (U2);
+
+      elsif Nkind (U2) = N_Identifier then
+         return False;
+
+      elsif (Nkind (U1) = N_Selected_Component
+             or else Nkind (U1) = N_Expanded_Name)
+        and then
+          (Nkind (U2) = N_Selected_Component
+           or else Nkind (U2) = N_Expanded_Name)
+      then
+         return Same_Unit (Prefix (U1), Prefix (U2))
+           and then Same_Unit (Selector_Name (U1), Selector_Name (U2));
+      else
+         return False;
+      end if;
+   end Same_Unit;
+
    ------------------------------
    -- Set_Profile_Restrictions --
    ------------------------------
@@ -611,6 +670,38 @@ package body Restrict is
          end if;
       end if;
    end Set_Restriction;
+
+   -----------------------------------
+   -- Set_Restriction_No_Dependence --
+   -----------------------------------
+
+   procedure Set_Restriction_No_Dependence
+     (Unit : Node_Id;
+      Warn : Boolean)
+   is
+   begin
+      --  Loop to check for duplicate entry
+
+      for J in No_Dependence.First .. No_Dependence.Last loop
+
+         --  Case of entry already in table
+
+         if Same_Unit (Unit, No_Dependence.Table (J).Unit) then
+
+            --  Error has precedence over warning
+
+            if not Warn then
+               No_Dependence.Table (J).Warn := False;
+            end if;
+
+            return;
+         end if;
+      end loop;
+
+      --  Entry is in table
+
+      No_Dependence.Append ((Unit, Warn));
+   end Set_Restriction_No_Dependence;
 
    ----------------------------------
    -- Suppress_Restriction_Message --

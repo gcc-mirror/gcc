@@ -1668,6 +1668,7 @@ package body Sem_Ch10 is
       end if;
 
       U := Unit (Library_Unit (N));
+      Check_Restriction_No_Dependence (Name (N), N);
       Intunit := Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit));
 
       --  Following checks are skipped for dummy packages (those supplied
@@ -3627,6 +3628,77 @@ package body Sem_Ch10 is
 
       if Ekind (Uname) = E_Package then
          Set_From_With_Type (Uname, False);
+      end if;
+
+      --  Ada 2005 (AI-377): it is illegal for a with_clause to name a child
+      --  unit if there is a visible homograph for it declared in the same
+      --  declarative region. This pathological case can only arise when an
+      --  instance I1 of a generic unit G1 has an explicit child unit I1.G2,
+      --  G1 has a generic child also named G2, and the context includes with_
+      --  clauses for both I1.G2 and for G1.G2, making an implicit declaration
+      --  of I1.G2 visible as well.
+
+      if Is_Child_Unit (Uname)
+        and then Is_Visible_Child_Unit (Uname)
+        and then Ada_Version >= Ada_05
+      then
+         declare
+            Decl1 : constant Node_Id  := Unit_Declaration_Node (P);
+            Decl2 : Node_Id;
+            P2    : Entity_Id;
+            U2    : Entity_Id;
+
+         begin
+            U2 := Homonym (Uname);
+            while Present (U2) loop
+               P2 := Scope (U2);
+               Decl2  := Unit_Declaration_Node (P2);
+
+               if Is_Child_Unit (U2)
+                 and then Is_Visible_Child_Unit (U2)
+               then
+                  if Is_Generic_Instance (P)
+                    and then Nkind (Decl1) = N_Package_Declaration
+                    and then Generic_Parent (Specification (Decl1)) = P2
+                  then
+                     Error_Msg_N ("illegal with_clause", With_Clause);
+                     Error_Msg_N
+                       ("\child unit has visible homograph" &
+                           " ('R'M 8.3(26), 10.1.1(19))",
+                         With_Clause);
+                     exit;
+
+                  elsif Is_Generic_Instance (P2)
+                    and then Nkind (Decl2) = N_Package_Declaration
+                    and then Generic_Parent (Specification (Decl2)) = P
+                  then
+                     --  With_clause for child unit of instance appears before
+                     --  in the context. We want to place the error message on
+                     --  it, not on the generic child unit itself.
+
+                     declare
+                        Prev_Clause : Node_Id;
+
+                     begin
+                        Prev_Clause := First (List_Containing (With_Clause));
+                        while Entity (Name (Prev_Clause)) /= U2 loop
+                           Next (Prev_Clause);
+                        end loop;
+
+                        pragma Assert (Present (Prev_Clause));
+                        Error_Msg_N ("illegal with_clause", Prev_Clause);
+                        Error_Msg_N
+                          ("\child unit has visible homograph" &
+                              " ('R'M 8.3(26), 10.1.1(19))",
+                            Prev_Clause);
+                        exit;
+                     end;
+                  end if;
+               end if;
+
+               U2 := Homonym (U2);
+            end loop;
+         end;
       end if;
    end Install_Withed_Unit;
 
