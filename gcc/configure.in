@@ -1108,7 +1108,7 @@ for machine in $build $host $target; do
 		tmake_file=i960/t-vxworks960
 		use_collect2=yes
 		;;
-	i960-wrs-vxworks5*)
+	i960-wrs-vxworks5* | i960-wrs-vxworks)
 		tm_file="${tm_file} dbxcoff.h i960/i960-coff.h i960/vx960-coff.h"
 		tmake_file=i960/t-vxworks960
 		use_collect2=yes
