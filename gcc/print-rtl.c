@@ -124,7 +124,8 @@ print_rtx (in_rtx)
 
 	if (i == 3 && GET_CODE (in_rtx) == NOTE
 	    && (NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_RANGE_START
-		|| NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_RANGE_END))
+		|| NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_RANGE_END
+		|| NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_LIVE))
 	  {
 	    indent += 2;
 	    if (!sawclose)
@@ -132,16 +133,6 @@ print_rtx (in_rtx)
 	    print_rtx (NOTE_RANGE_INFO (in_rtx));
 	    indent -= 2;
 	    break;
-	  }
-
-	if (i == 3 && GET_CODE (in_rtx) == NOTE
-	    && NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_LIVE)
-	  {
-	    if (XBITMAP (in_rtx, i) == NULL)
-	      fprintf (outfile, " {null}");
-	    else
-	      bitmap_print (outfile, XBITMAP (in_rtx, i), " {", "}");
-	    sawclose = 0;
 	  }
 
 	if (XSTR (in_rtx, i) == 0)
