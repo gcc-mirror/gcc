@@ -4224,20 +4224,17 @@ fold (expr)
 			   arg1));
 	}
 
-      /* It would be nice to do this since it generates better code.
-	 Unfortunately, it doesn't produce the correct result if the
-	 first operand is negative.  */
-#if 0
       /* If this is an NE or EQ comparison of zero against the result of a
-	 signed MOD operation, make the MOD operation unsigned since it
-	 is simpler and equivalent.  */
+	 signed MOD operation whose second operand is a power of 2, make
+	 the MOD operation unsigned since it is simpler and equivalent.  */
       if ((code == NE_EXPR || code == EQ_EXPR)
 	  && integer_zerop (arg1)
 	  && ! TREE_UNSIGNED (TREE_TYPE (arg0))
 	  && (TREE_CODE (arg0) == TRUNC_MOD_EXPR
 	      || TREE_CODE (arg0) == CEIL_MOD_EXPR
 	      || TREE_CODE (arg0) == FLOOR_MOD_EXPR
-	      || TREE_CODE (arg0) == ROUND_MOD_EXPR))
+	      || TREE_CODE (arg0) == ROUND_MOD_EXPR)
+	  && integer_pow2p (TREE_OPERAND (arg0, 1)))
 	{
 	  tree newtype = unsigned_type (TREE_TYPE (arg0));
 	  tree newmod = build (TREE_CODE (arg0), newtype,
@@ -4246,7 +4243,6 @@ fold (expr)
 
 	  return build (code, type, newmod, convert (newtype, arg1));
 	}
-#endif
 
       /* If this is an NE comparison of zero with an AND of one, remove the
 	 comparison since the AND will give the correct value.  */
