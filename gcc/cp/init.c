@@ -2548,13 +2548,22 @@ build_new_1 (exp)
 	  tree cleanup;
 	  int flags = (LOOKUP_NORMAL 
 		       | (globally_qualified_p * LOOKUP_GLOBAL));
+	  tree delete_node;
+
+	  if (use_cookie)
+	    /* Subtract the padding back out to get to the pointer returned
+	       from operator new.  */
+	    delete_node = fold (build (MINUS_EXPR, TREE_TYPE (alloc_node),
+				       alloc_node, cookie_size));
+	  else
+	    delete_node = alloc_node;
 
 	  /* The Standard is unclear here, but the right thing to do
              is to use the same method for finding deallocation
              functions that we use for finding allocation functions.  */
 	  flags |= LOOKUP_SPECULATIVELY;
 
-	  cleanup = build_op_delete_call (dcode, alloc_node, size, flags,
+	  cleanup = build_op_delete_call (dcode, delete_node, size, flags,
 					  (placement_allocation_fn_p 
 					   ? alloc_call : NULL_TREE));
 

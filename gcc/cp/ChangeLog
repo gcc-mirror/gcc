@@ -1,6 +1,16 @@
-2002-02-20  Release Manager
+2002-03-18  Jason Merrill  <jason@redhat.com>
 
-	* GCC 3.0.4 Released.
+	PR c++/4377
+	* mangle.c (write_expression): Strip NOP_EXPRs sooner.  Also strip
+	NON_LVALUE_EXPRs.
+
+	PR c++/4003
+	* pt.c (tsubst_friend_function): Use decl_namespace_context.
+
+2002-03-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/5757
+	* init.c (build_new_1): Pass the right pointer to op delete.
 
 2002-02-20  Release Manager
 
