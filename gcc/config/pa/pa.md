@@ -9352,3 +9352,121 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
     }
   DONE;
 }")
+
+(define_expand "prefetch"
+  [(match_operand 0 "address_operand" "")
+   (match_operand 1 "const_int_operand" "")
+   (match_operand 2 "const_int_operand" "")]
+  "TARGET_PA_20"
+{
+  /* We change operand0 to a MEM as we don't have the infrastructure to
+     output all the supported address modes for ldw/ldd but we do have
+     it for MEMs.  */
+  operands[0] = gen_rtx_MEM (Pmode, operands[0]);
+
+  if (!TARGET_NO_SPACE_REGS
+      && !cse_not_expected
+      && GET_CODE (XEXP (operands[0], 0)) == PLUS
+      && REG_P (XEXP (XEXP (operands[0], 0), 0))
+      && REG_P (XEXP (XEXP (operands[0], 0), 1)))
+    operands[0]
+      = replace_equiv_address (operands[0],
+			       copy_to_mode_reg (Pmode,
+					 	 XEXP (operands[0], 0)));
+
+  if (TARGET_64BIT)
+    emit_insn (gen_prefetch_64 (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_prefetch_32 (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+(define_insn "prefetch_64"
+  [(prefetch (match_operand:DI 0 "prefetch_operand" "A,RQ")
+	     (match_operand:DI 1 "const_int_operand" "n,n")
+	     (match_operand:DI 2 "const_int_operand" "n,n"))]
+  "TARGET_64BIT"
+{
+  /* The SL completor indicates good spatial locality but poor temporal
+     locality.  The ldw instruction with a target of general register 0
+     prefetches a cache line for a read.  The ldd instruction prefetches
+     a cache line for a write.  */
+  static const char * const instr[2][2][2] = {
+    {
+      {
+	"ldw,sl RT'%A0,%%r0",
+	"ldw RT'%A0,%%r0",
+      },
+      {
+	"ldd,sl RT'%A0,%%r0",
+	"ldd RT'%A0,%%r0",
+      },
+    },
+    {
+      {
+	"ldw%M0,sl %0,%%r0",
+	"ldw%M0 %0,%%r0",
+      },
+      {
+	"ldd%M0,sl %0,%%r0",
+	"ldd%M0 %0,%%r0",
+      }
+    }
+  };
+  int read_or_write = INTVAL (operands[1]);
+  int locality = INTVAL (operands[2]);
+
+  if ((which_alternative != 0 && which_alternative != 1)
+      || (read_or_write != 0 && read_or_write != 1)
+      || (locality < 0 || locality > 3))
+    abort ();
+
+  return instr [which_alternative][read_or_write][locality == 0 ? 0 : 1];
+}
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
+
+(define_insn "prefetch_32"
+  [(prefetch (match_operand:SI 0 "prefetch_operand" "A,RQ")
+	     (match_operand:SI 1 "const_int_operand" "n,n")
+	     (match_operand:SI 2 "const_int_operand" "n,n"))]
+  "TARGET_PA_20"
+{
+  /* The SL completor indicates good spatial locality but poor temporal
+     locality.  The ldw instruction with a target of general register 0
+     prefetches a cache line for a read.  The ldd instruction prefetches
+     a cache line for a write.  */
+  static const char * const instr[2][2][2] = {
+    {
+      {
+	"ldw,sl RT'%A0,%%r0",
+	"ldw RT'%A0,%%r0",
+      },
+      {
+	"ldd,sl RT'%A0,%%r0",
+	"ldd RT'%A0,%%r0",
+      },
+    },
+    {
+      {
+	"ldw%M0,sl %0,%%r0",
+	"ldw%M0 %0,%%r0",
+      },
+      {
+	"ldd%M0,sl %0,%%r0",
+	"ldd%M0 %0,%%r0",
+      }
+    }
+  };
+  int read_or_write = INTVAL (operands[1]);
+  int locality = INTVAL (operands[2]);
+
+  if ((which_alternative != 0 && which_alternative != 1)
+      || (read_or_write != 0 && read_or_write != 1)
+      || (locality < 0 || locality > 3))
+    abort ();
+
+  return instr [which_alternative][read_or_write][locality == 0 ? 0 : 1];
+}
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])

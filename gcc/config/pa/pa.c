@@ -617,6 +617,27 @@ move_src_operand (rtx op, enum machine_mode mode)
   return memory_address_p (mode, XEXP (op, 0));
 }
 
+/* Accept anything that can be used as the source operand for a prefetch
+   instruction.  */
+int
+prefetch_operand (rtx op, enum machine_mode mode)
+{
+  if (GET_CODE (op) != MEM)
+    return 0;
+
+  /* Until problems with management of the REG_POINTER flag are resolved,
+     we need to delay creating prefetch insns with unscaled indexed addresses
+     until CSE is not expected.  */
+  if (!TARGET_NO_SPACE_REGS
+      && !cse_not_expected
+      && GET_CODE (XEXP (op, 0)) == PLUS
+      && REG_P (XEXP (XEXP (op, 0), 0))
+      && REG_P (XEXP (XEXP (op, 0), 1)))
+    return 0;
+
+  return memory_address_p (mode, XEXP (op, 0));
+}
+
 /* Accept REG and any CONST_INT that can be moved in one instruction into a
    general register.  */
 int

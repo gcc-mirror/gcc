@@ -80,6 +80,7 @@ extern int arith_operand (rtx, enum machine_mode);
 extern int read_only_operand (rtx, enum machine_mode);
 extern int move_dest_operand (rtx, enum machine_mode);
 extern int move_src_operand (rtx, enum machine_mode);
+extern int prefetch_operand (rtx, enum machine_mode);
 extern int and_operand (rtx, enum machine_mode);
 extern int ior_operand (rtx, enum machine_mode);
 extern int arith32_operand (rtx, enum machine_mode);
