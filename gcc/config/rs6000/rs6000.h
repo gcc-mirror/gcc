@@ -1249,8 +1249,10 @@ typedef struct rs6000_stack {
 /* Size of the fixed area on the stack */
 #define RS6000_SAVE_AREA (TARGET_32BIT ? 24 : 48)
 
-/* Address to save the TOC register */
-#define RS6000_SAVE_TOC plus_constant (stack_pointer_rtx, (TARGET_32BIT ? 20 : 40))
+/* MEM representing address to save the TOC register */
+#define RS6000_SAVE_TOC gen_rtx_MEM (Pmode, \
+				     plus_constant (stack_pointer_rtx, \
+						    (TARGET_32BIT ? 20 : 40)))
 
 /* Offset & size for fpmem stack locations used for converting between
    float and integral types.  */
@@ -3204,7 +3206,7 @@ do {									\
   {"reg_or_mem_operand", {SUBREG, MEM, REG}},			\
   {"lwa_operand", {SUBREG, MEM, REG}},				\
   {"volatile_mem_operand", {MEM}},				\
-  {"offsettable_addr_operand", {REG, SUBREG, PLUS}},		\
+  {"offsettable_mem_operand", {MEM}},				\
   {"mem_or_easy_const_operand", {SUBREG, MEM, CONST_DOUBLE}},	\
   {"add_operand", {SUBREG, REG, CONST_INT}},			\
   {"non_add_cint_operand", {CONST_INT}},			\

@@ -832,15 +832,16 @@ volatile_mem_operand (op, mode)
   return memory_address_p (mode, XEXP (op, 0));
 }
 
-/* Return 1 if the operand is an offsettable memory address.  */
+/* Return 1 if the operand is an offsettable memory operand.  */
 
 int
-offsettable_addr_operand (op, mode)
+offsettable_mem_operand (op, mode)
      register rtx op;
      enum machine_mode mode;
 {
-  return offsettable_address_p (reload_completed | reload_in_progress,
-				mode, op);
+  return ((GET_CODE (op) == MEM)
+	  && offsettable_address_p (reload_completed | reload_in_progress,
+				    mode, XEXP (op, 0)));
 }
 
 /* Return 1 if the operand is either an easy FP constant (see above) or

@@ -119,9 +119,11 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_DEFAULT 
 #define TARGET_DEFAULT (MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_NO_FP_IN_TOC | MASK_NO_SUM_IN_TOC)
 
-/* Address to save the TOC register */
+/* MEM representing address to save the TOC register */
 #undef	RS6000_SAVE_TOC
-#define RS6000_SAVE_TOC plus_constant (virtual_incoming_args_rtx, -RS6000_SAVE_AREA - 8)
+#define RS6000_SAVE_TOC gen_rtx_MEM (Pmode, \
+				     plus_constant (virtual_incoming_args_rtx,
+						    -RS6000_SAVE_AREA - 8))
 
 /* Windows NT specifies that r13 is reserved to the OS, so it is not available
    to the normal user.  */
