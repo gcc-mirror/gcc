@@ -650,7 +650,8 @@ tree_code_get_integer_value (unsigned char* chars, unsigned int length)
   for (ix = start; ix < length; ix++)
     val = val * 10 + chars[ix] - (unsigned char)'0';
   val = val*negative;
-  return build_int_cst_wide (NULL_TREE,
+  return build_int_cst_wide (start == 1 ?
+				integer_type_node : unsigned_type_node,
 			     val & 0xffffffff, (val >> 32) & 0xffffffff);
 }
 

@@ -1,5 +1,11 @@
 2005-02-26  James A. Morrison  <phython@gcc.gnu.org>
 
+	* parse.y: Do comparisons as the type of the first expression.
+	* treetree.c (tree_code_get_integer_value): Build integer constants
+	with the proper type.
+
+2005-02-26  James A. Morrison  <phython@gcc.gnu.org>
+
 	* Make-lang.in: Remove commented out code.
 	* lang-specs.h: Always pass -dumpbase to tree1.
 
