@@ -3304,16 +3304,13 @@ This is Sun bug 4237974.  This is fixed with patch 108908-02 for Solaris
 starting with Solaris 7.
 
 Starting with Solaris 7, the operating system is capable of executing
-64-bit SPARC V9 binaries.  GCC 3.0 doesn't properly support this yet.
-Although some patches or recipes to enable this support have been posted
-to various newsgroups and mailing lists, we recommend against using
-them, since the compiler may either crash or, worse, silently generate
-bad code.  If you really need this capability now, you might try a CVS
-version of GCC 3.1, which will fully support this.  If all you want is
-code tuned for the UltraSPARC CPU, you should try the
-@option{-mtune=ultrasparc} option instead, which should be safe from
-those bugs and produce code that, unlike full 64-bit code, can still run
-on non-UltraSPARC machines.
+64-bit SPARC V9 binaries.  GCC 3.1 and later should properly support
+this.  GCC 3.0 lacks the infrastructure necessary to support this
+configuration properly.  However, if all you want is code tuned for
+the UltraSPARC CPU, you should try the @option{-mtune=ultrasparc}
+option instead, which should be safe from those bugs and produce code
+that, unlike full 64-bit code, can still run on non-UltraSPARC
+machines.
 
 @html
 </p>
