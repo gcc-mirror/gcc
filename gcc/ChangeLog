@@ -1,5 +1,15 @@
 2000-12-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-common.c (format_wanted_type): Add reading_from_flag.
+	(print_char_table): Mark %s and %S formats with flag "R".
+	(check_format_info_main): Set up reading_from_flag appropriately.
+	If aflag, always set writing_in_flag rather than relying on the
+	format used being a scanf format and so having it set.
+	(check_format_types): Check for formats reading through null
+	pointers.
+
+2000-12-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* invoke.texi (-Wformat): Document what format features are
 	checked.
 
