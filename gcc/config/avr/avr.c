@@ -2401,6 +2401,10 @@ ashrhi3_out (insn,operands,len)
 	    return *len = 3, (AS1 (clr,%B0)     CR_TAB
 			      AS2 (sbrc,%A0,7)  CR_TAB
 			      AS1 (dec,%B0));
+	case 15:
+	  return *len = 3, (AS1 (lsl,%B0)     CR_TAB
+			    AS2 (sbc,%A0,%A0) CR_TAB
+			    AS2 (mov,%B0,%A0));
 	}
     }
   if (len)
@@ -2455,7 +2459,7 @@ ashrsi3_out (insn,operands,len)
 				AS1 (dec,%D0));
 	    else
 	      return (AS1 (clr,%D0)     CR_TAB
-		      AS2 (sbrc,%C0,7)  CR_TAB
+		      AS2 (sbrc,%D1,7)  CR_TAB
 		      AS1 (dec,%D0)     CR_TAB
 		      AS2 (mov,%C0,%D1) CR_TAB
 		      AS2 (mov,%B0,%C1) CR_TAB
@@ -2634,7 +2638,12 @@ lshrhi3_out (insn,operands,len)
 			      AS1 (clr,%B0));
 	  else
 	    return *len = 1, AS1 (clr,%B0);
-	    
+	  
+	case 15:
+	  return *len = 4, (AS1 (lsl,%B0)     CR_TAB
+			    AS2 (sbc,%A0,%A0) CR_TAB
+			    AS1 (neg,%A0)     CR_TAB
+			    AS1 (clr,%B0));
 	}
     }
   if (len)
@@ -3734,6 +3743,17 @@ preferred_reload_class(x,class)
       return LD_REGS;
     }
   return class;
+}
+
+int
+test_hard_reg_class(class, x)
+     enum reg_class class;
+     rtx x;
+{
+  int regno = true_regnum (x);
+  if (regno < 0)
+    return 0;
+  return TEST_HARD_REG_CLASS (class, regno);
 }
 
 void

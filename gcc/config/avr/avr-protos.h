@@ -107,9 +107,9 @@ extern char * lshrqi3_out     PARAMS ((rtx insn, rtx operands[], int *len));
 extern char * lshrhi3_out     PARAMS ((rtx insn, rtx operands[], int *len));
 extern char * lshrsi3_out     PARAMS ((rtx insn, rtx operands[], int *len));
 
-extern int    avr_address_cost       PARAMS ((rtx x));
 extern enum reg_class preferred_reload_class PARAMS ((rtx x,
 						     enum reg_class class));
+extern int    avr_address_cost       PARAMS ((rtx x));
 extern int    extra_constraint       PARAMS ((rtx x, char c));
 extern rtx    legitimize_address     PARAMS ((rtx x, rtx oldx,
 					     enum machine_mode mode));
@@ -135,6 +135,7 @@ extern int    _reg_unused_after      PARAMS ((rtx insn, rtx reg));
 extern int    avr_jump_mode          PARAMS ((rtx x, rtx insn));
 extern int    byte_immediate_operand PARAMS ((register rtx op,
 					     enum machine_mode mode));
+extern int    test_hard_reg_class    PARAMS ((enum reg_class class, rtx x));
 
 #endif /* RTX_CODE */
 

@@ -1,3 +1,26 @@
+Wed May  3 22:52:53 2000  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr-protos.h (test_hard_reg_class): Declared.
+	* config/avr/avr.c (ashrhi3_out): optimized shift by 15.
+	(lshrhi3_out): Likewise.
+	(ashrsi3_out): bugfix in shift by 8.
+	(test_hard_reg_class): New function.
+	* config/avr/avr.md: Bugfix inside conditions in peepholes.
+	(ashlhi3): removed define_expand of this pattern.
+	(*ashlhi3_insn): renamed to ashlhi3.
+	(ashlsi3): removed define_expand of this pattern.
+	(*ashlsi3_insn): renamed to ashlsi3.
+	(ashrqi3): removed define_expand of this pattern.
+	(*ashrqi3_insn): renamed to ashrqi3.
+	(ashrhi3): removed define_expand of this pattern.
+	(*ashrhi3_insn): renamed to ashrhi3.
+	(ashrsi3): removed define_expand of this pattern.
+	(*ashrsi3_insn): renamed to ashrsi3.
+	(lshrhi3): removed define_expand of this pattern.
+	(*lshrhi3_insn): renamed to lshrhi3.
+	(lshrsi3): removed define_expand of this pattern.
+	(*lshrsi3_insn): renamed to lshrsi3.
+
 2000-05-03  Rodney Brown  <RodneyBrown@pmsc.com>
 
 	* config/mcore/mcore.c: Replacing inclusion of "stdio,h" with
