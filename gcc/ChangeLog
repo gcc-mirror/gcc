@@ -1,6 +1,10 @@
 2003-01-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
-	* ChangeLog (configure.in): Don't include ansidecl.h in tconfig.h.
+	* configure.in: Revert last change.
+
+2003-01-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in: Don't include ansidecl.h in tconfig.h.
 	* gcov-io.h (PARAMS, ATTRIBUTE_UNUSED: Define if IN_LIBGCC2.
 	* unwind-dw2-fde.h (last_fde): Use __attribute__, not
 	ATTRIBUTE_UNUSED.
