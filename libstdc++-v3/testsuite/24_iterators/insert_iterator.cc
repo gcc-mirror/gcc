@@ -29,7 +29,7 @@ void test01()
 
   // Check for required base class.
   list<int> l;
-  list<int>::iterator li;
+  list<int>::iterator li = l.begin();
 
   typedef insert_iterator<list<int> > test_iterator;
   typedef iterator<output_iterator_tag, void, void, void, void> base_iterator;
@@ -55,7 +55,7 @@ void test02()
   typedef std::insert_iterator<std::list<int> > iterator_type;
 
   std::list<int> li;
-  std::list<int>::iterator liit;
+  std::list<int>::iterator liit = li.begin();
   iterator_type it01(li, liit);
   iterator_type it02 = std::inserter(li, liit);
 }
