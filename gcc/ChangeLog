@@ -1,3 +1,12 @@
+2004-06-12  Eric Christopher  <echristo@redhat.com>
+
+	* config/s390/s390.h: Rename TARGET_TPF to TARGET_TPF_PROFILING.
+	* config/s390/s390.md: Ditto.
+	* config/s390/s390.c: Ditto.
+	(s390_frame_info): Conditionalize frame and setup info on
+	TARGET_TPF_PROFILING.
+	(s390_arg_frame_offset): Ditto.
+
 2004-06-12  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (omit_two_operands): New function.

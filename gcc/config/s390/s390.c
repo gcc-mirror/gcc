@@ -5280,6 +5280,7 @@ s390_frame_info (void)
   /* Does function need to setup frame and save area.  */
 
   if (! current_function_is_leaf
+      || TARGET_TPF_PROFILING
       || cfun->machine->frame_size > 0
       || current_function_calls_alloca
       || current_function_stdarg)
@@ -5289,6 +5290,7 @@ s390_frame_info (void)
      it is going to be saved/restored.  */
 
   if (!current_function_is_leaf
+      || TARGET_TPF_PROFILING
       || regs_ever_live[RETURN_REGNUM])
     cfun->machine->save_return_addr_p = 1;
 
@@ -5356,6 +5358,7 @@ s390_arg_frame_offset (void)
   /* Does function need to setup frame and save area.  */
 
   if (! current_function_is_leaf
+      || TARGET_TPF_PROFILING
       || fsize > 0
       || current_function_calls_alloca
       || current_function_stdarg)
@@ -5557,7 +5560,7 @@ s390_emit_prologue (void)
      See below for why TPF must use the register 1.  */
 
   if (!current_function_is_leaf
-      && !TARGET_TPF)
+      && !TARGET_TPF_PROFILING)
     temp_reg = gen_rtx_REG (Pmode, RETURN_REGNUM);
   else
     temp_reg = gen_rtx_REG (Pmode, 1);
@@ -5682,7 +5685,7 @@ s390_emit_prologue (void)
   if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
     s390_load_got(true);
 
-  if (TARGET_TPF)
+  if (TARGET_TPF_PROFILING)
     {
       /* Generate a BAS instruction to serve as a function
 	 entry intercept to facilitate the use of tracing
@@ -5705,7 +5708,7 @@ s390_emit_epilogue (bool sibcall)
   rtvec p;
   int i;
 
-  if (TARGET_TPF)
+  if (TARGET_TPF_PROFILING)
     {
 
       /* Generate a BAS instruction to serve as a function
@@ -7074,7 +7077,7 @@ static bool
 s390_function_ok_for_sibcall (tree decl, tree exp)
 {
   /* The TPF epilogue uses register 1.  */
-  if (TARGET_TPF)
+  if (TARGET_TPF_PROFILING)
     return false;
 
   /* The 31 bit PLT code uses register 12 (GOT pointer - caller saved)
