@@ -1,3 +1,9 @@
+2004-09-28  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/17222:
+	* Makefile.am (libgcj.la): Restored.
+	* Makefile.in: Rebuilt.
+
 2004-09-28  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/URLConnection.java: Reformatted.

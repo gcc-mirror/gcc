@@ -211,6 +211,15 @@ libgcj_la_DEPENDENCIES = libgcj-@gcc_version@.jar \
 	java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h \
 	$(LIBLTDL) $(LIBFFI) $(ZLIBS) $(GCLIBS) $(propertyo_files)
 
+## Pass the list of object files to libtool in a temporary file to
+## avoid tripping platform command line length limits.
+libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
+	@echo Creating list of files to link...
+	@: $(call write_entries_to_file,$(libgcj_la_OBJECTS),libgcj.objectlist)
+	$(libgcj_la_LINK) -objectlist libgcj.objectlist \
+	$(libgcj_la_LIBADD) \
+	-rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(LIBS)
+
 # Include THREADLIBS here to ensure that the correct version of
 # certain linuxthread functions get linked:
 ## The mysterious backslash in the grep pattern is consumed by make.

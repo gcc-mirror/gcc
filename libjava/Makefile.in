@@ -13955,8 +13955,6 @@ sysdep/$(DEPDIR)/$(am__dirstamp):
 	@: > sysdep/$(DEPDIR)/$(am__dirstamp)
 sysdep/dwarf2-backtrace.lo: sysdep/$(am__dirstamp) \
 	sysdep/$(DEPDIR)/$(am__dirstamp)
-libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES) 
-	$(libgcj_la_LINK) -rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(libgcj_la_OBJECTS) $(libgcj_la_LIBADD) $(LIBS)
 libgij.la: $(libgij_la_OBJECTS) $(libgij_la_DEPENDENCIES) 
 	$(CXXLINK) -rpath $(toolexeclibdir) $(libgij_la_LDFLAGS) $(libgij_la_OBJECTS) $(libgij_la_LIBADD) $(LIBS)
 install-binPROGRAMS: $(bin_PROGRAMS)
@@ -23142,6 +23140,13 @@ uninstall-info: uninstall-info-recursive
 	uninstall-pkgconfigDATA uninstall-toolexeclibLTLIBRARIES \
 	uninstall-toolexecmainlibDATA
 
+
+libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
+	@echo Creating list of files to link...
+	@: $(call write_entries_to_file,$(libgcj_la_OBJECTS),libgcj.objectlist)
+	$(libgcj_la_LINK) -objectlist libgcj.objectlist \
+	$(libgcj_la_LIBADD) \
+	-rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(LIBS)
 
 $(gtk_jni_headers): $(gtk_awt_peer_sources)
 	@input=`echo $@ | sed -e 's,jniinclude/,,' -e 's,_,.,g' -e 's,.h$$,,'`; \
