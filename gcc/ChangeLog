@@ -1,3 +1,10 @@
+Tue Sep  2 12:00:36 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* alpha/alpha.h (PREFERRED_RELOAD_CLASS): Return NO_REGS if NO_REGS
+	is passed in.
+	* emit-rtl.c (gen_lowpart_common): Add code to convert CONST_INT to
+	SFmode for 64 bit hosts.
+	
 Tue Sep  2 13:42:38 1997  Paul N. Hilfinger  <hilfingr@CS.Berkeley.EDU>
 
 	* fixincludes: Permits spaces between # and define.  Discard C++
