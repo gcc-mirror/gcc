@@ -6316,6 +6316,9 @@ ultra_fpmode_conflict_exists (fpmode)
 
    NOTE: This scheme depends upon the fact that we
          have less than 32 distinct type attributes.  */
+
+static int ultra_types_avail;
+
 static rtx *
 ultra_find_type (type_mask, list, start)
      int type_mask;
@@ -6323,6 +6326,11 @@ ultra_find_type (type_mask, list, start)
      int start;
 {
   int i;
+
+  /* Short circuit if no such insn exists in the ready
+     at the moment.  */
+  if ((type_mask & ultra_types_avail) == 0)
+    return 0;
 
   for (i = start; i >= 0; i--)
     {
@@ -6366,14 +6374,22 @@ ultra_find_type (type_mask, list, start)
 		      || (check_depend == 1
 			  && GET_CODE (slot_insn) == INSN
 			  && GET_CODE (slot_pat) == SET
-			  && rtx_equal_p (SET_DEST (slot_pat),
-					  SET_SRC (pat)))
+			  && ((GET_CODE (SET_DEST (slot_pat)) == REG
+			       && GET_CODE (SET_SRC (pat)) == REG
+			       && REGNO (SET_DEST (slot_pat)) ==
+			            REGNO (SET_SRC (pat)))
+			      || (GET_CODE (SET_DEST (slot_pat)) == SUBREG
+				  && GET_CODE (SET_SRC (pat)) == SUBREG
+				  && REGNO (SUBREG_REG (SET_DEST (slot_pat))) ==
+				       REGNO (SUBREG_REG (SET_SRC (pat)))
+				  && SUBREG_WORD (SET_DEST (slot_pat)) ==
+				       SUBREG_WORD (SET_SRC (pat))))
 		      || (check_fpmode_conflict == 1
 			  && GET_CODE (slot_insn) == INSN
 			  && GET_CODE (slot_pat) == SET
 			  && ((GET_MODE (SET_DEST (slot_pat)) == SFmode
 			       || GET_MODE (SET_DEST (slot_pat)) == DFmode)
-			      && GET_MODE (SET_DEST (slot_pat)) != fpmode))))
+			      && GET_MODE (SET_DEST (slot_pat)) != fpmode)))))
 		goto next;
 	    }
 
@@ -6403,8 +6419,28 @@ ultra_find_type (type_mask, list, start)
 	  return &list[i];
 	}
     next:
+      ;
     }
   return 0;
+}
+
+static void
+ultra_build_types_avail (ready, n_ready)
+  rtx *ready;
+  int n_ready;
+{
+  int i = n_ready - 1;
+
+  ultra_types_avail = 0;
+  while(i >= 0)
+    {
+      rtx insn = ready[i];
+
+      if (recog_memoized (insn) >= 0)
+	ultra_types_avail |= TMASK (get_attr_type (insn));
+
+      i -= 1;
+    }
 }
 
 /* Place insn pointed to my IP into the pipeline.
@@ -6601,6 +6637,8 @@ ultrasparc_sched_reorder (dump, sched_verbose, ready, n_ready)
   while ((this_insn >= 0)
 	 && recog_memoized (ready[this_insn]) < 0)
     this_insn--;
+
+  ultra_build_types_avail (ready, this_insn + 1);
 
   while (this_insn >= 0) {
     int old_group_size = up->group_size;
