@@ -11,16 +11,25 @@ details.  */
 #include <config.h>
 
 #include <stddef.h>
-#include <cstdlib>
+#include <stdlib.h>
 
 #include <java/lang/Class.h>
 #include <java/lang/NullPointerException.h>
 #include <gcj/cni.h>
 #include <jvm.h>
 
+// unwind-pe.h uses std::abort(), but sometimes we compile libjava
+// without libstdc++-v3. The following hack forces it to use
+// stdlib.h's abort().
+namespace std
+{
+  void abort ()
+  {
+    ::abort ();
+  }
+}
 #include "unwind.h"
 
-
 struct alignment_test_struct
 {
   char space;
@@ -97,7 +106,7 @@ _Jv_Throw (jthrowable value)
      recover.  As is the way of such things, almost certainly we will have
      crashed before now, rather than actually being able to diagnose the
      problem.  */
-  std::abort ();
+  abort();
 }
 
 
@@ -344,7 +353,7 @@ PERSONALITY_FUNCTION (int version,
 	      // ??? Perhaps better to make them an index into a table
 	      // of null-terminated strings instead of playing games
 	      // with Utf8Const+1 as above.
-	      std::abort ();
+	      abort ();
 	    }
 
 	  if (ar_disp == 0)

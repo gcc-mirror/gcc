@@ -1,3 +1,10 @@
+2002-02-11  Adam Megacz <adam@xwt.org>
+
+	* exception.cc (_Jv_Throw, PERSONALITY_FUNCTION): Changed
+	std::abort() to simply abort(). Also added "fake" std::abort() so
+	we can #include unwind-pe.h without having to link against
+	libstdc++-v3.
+
 2002-02-10  Andreas Tobler  <toa@pop.agri.ch>
 
 	* interpret.cc (continue1) [insn_f2l]: Use PUSHL, not PUSHI.
