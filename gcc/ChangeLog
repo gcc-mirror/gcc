@@ -5,6 +5,12 @@
 	(expand_builtin_memcpy, fold_builtin_1): Update calls to
 	fold_builtin_memcpy.
 
+	* builtins.c (fold_trunc_transparent_mathfn): Take decomposed
+	arguments of CALL_EXPR.
+	(fold_builtin_trunc, fold_builtin_floor, fold_builtin_ceil,
+	fold_builtin_found, fold_builtin_1): Update calls to
+	fold_trunc_transparent_mathfn.
+
 2005-03-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/20493

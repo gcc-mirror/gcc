@@ -144,7 +144,7 @@ static tree fold_builtin_inf (tree, int);
 static tree fold_builtin_nan (tree, tree, int);
 static int validate_arglist (tree, ...);
 static bool integer_valued_real_p (tree);
-static tree fold_trunc_transparent_mathfn (tree);
+static tree fold_trunc_transparent_mathfn (tree, tree);
 static bool readonly_data_expr (tree);
 static rtx expand_builtin_fabs (tree, rtx, rtx);
 static rtx expand_builtin_signbit (tree, rtx);
@@ -6069,10 +6069,8 @@ integer_valued_real_p (tree t)
    Do the transformation.  */
 
 static tree
-fold_trunc_transparent_mathfn (tree exp)
+fold_trunc_transparent_mathfn (tree fndecl, tree arglist)
 {
-  tree fndecl = get_callee_fndecl (exp);
-  tree arglist = TREE_OPERAND (exp, 1);
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
   tree arg;
 
@@ -6524,7 +6522,7 @@ fold_builtin_trunc (tree exp)
       return build_real (type, r);
     }
 
-  return fold_trunc_transparent_mathfn (exp);
+  return fold_trunc_transparent_mathfn (fndecl, arglist);
 }
 
 /* Fold function call to builtin floor, floorf or floorl.  Return
@@ -6557,7 +6555,7 @@ fold_builtin_floor (tree exp)
 	}
     }
 
-  return fold_trunc_transparent_mathfn (exp);
+  return fold_trunc_transparent_mathfn (fndecl, arglist);
 }
 
 /* Fold function call to builtin ceil, ceilf or ceill.  Return
@@ -6590,7 +6588,7 @@ fold_builtin_ceil (tree exp)
 	}
     }
 
-  return fold_trunc_transparent_mathfn (exp);
+  return fold_trunc_transparent_mathfn (fndecl, arglist);
 }
 
 /* Fold function call to builtin round, roundf or roundl.  Return
@@ -6623,7 +6621,7 @@ fold_builtin_round (tree exp)
 	}
     }
 
-  return fold_trunc_transparent_mathfn (exp);
+  return fold_trunc_transparent_mathfn (fndecl, arglist);
 }
 
 /* Fold function call to builtin lround, lroundf or lroundl (or the
@@ -8198,7 +8196,7 @@ fold_builtin_1 (tree exp, bool ignore)
     case BUILT_IN_RINT:
     case BUILT_IN_RINTF:
     case BUILT_IN_RINTL:
-      return fold_trunc_transparent_mathfn (exp);
+      return fold_trunc_transparent_mathfn (fndecl, arglist);
 
     case BUILT_IN_LROUND:
     case BUILT_IN_LROUNDF:
