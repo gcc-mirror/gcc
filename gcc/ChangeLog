@@ -1,3 +1,51 @@
+2004-03-03  Jan Hubicka  <jh@suse.cz>
+
+	* ggc-common.c (ggc_alloc_cleared_stat, ggc_realloc_stat):
+	Rename from ...; make statistics transparent.
+	(ggc_alloc_cleared, ggc_realloc_stat): ... these.
+	(loc_descriptor): New structure.
+	(hash_descriptor, eq_descriptor, loc_descriptor, cmp_statistics,
+	add_statistics):
+	New static function.
+	(ggc_record_overhead, dump_statistics): New global function.
+	* ggc-none.c (ggc_alloc_types_stat, ggc_alloc_stat, ggc_alloc_zone_stat,
+	ggc_alloc_cleared_stat, ggc_realloc_stat, ggc_alloc_typed_stat): Rename
+	from ...; accept locations
+	(ggc_alloc_types, ggc_alloc, ggc_alloc_zone, ggc_alloc_cleared,
+	ggc_realloc, ggc_alloc_typed):  ... this one.
+	from ...; accept locations
+	* ggc-page.c (ggc_alloc_typed_stat, ggc_alloc_zone_stat,
+	ggc_alloc_stat): Rename from ... ; pass locations
+	* ggc-page.c (ggc_alloc_typed, ggc_alloc_zone, ggc_alloc):
+	... this one.
+	(ggc_alloc_stat): Record overehead.
+	* ggc.h (ggc_alloc_types, ggc_alloc, ggc_alloc_zone, ggc_alloc_cleared,
+	ggc_realloc, ggc_alloc_typed):  Turn to macros
+	(ggc_alloc_types_stat, ggc_alloc_stat, ggc_alloc_zone_stat,
+	ggc_alloc_cleared_stat, ggc_realloc_stat, ggc_alloc_typed_stat): Declare.
+	(dump_ggc_loc_satistics, ggc_record_overehead): Declare.
+	* langhooks.h (lhd_make_node): Declare.
+	(LANG_HOOKS_MAKE_TYPE): Default to new function,
+	* langhooks.c (lhd_make_node): New.
+	* rtl.c (rtx_alloc_stat, swallow_copy_rtx_stat): Rename from ... ; pass
+	locations.
+	(rtx_alloc, swallow_copy_rtx): ... this one.
+	* rtl.h (rtx_alloc, swallow_copy_rtx): Turn to macros.
+	* rtl.c (rtx_alloc_stat, swallow_copy_rtx_stat): Declare.
+	* toplpev.c (finalize): Dump stats.
+	* tree.c (make_node_stat, copy_node_stat, make_tree_vec_stat,
+	build_tree_list_stat, tree_cons_stat, build?_stat,  build_decl_stat):
+	Rename from ... ; pass locators.
+	(make_node, copy_node, make_tree_vec, build_tree_list, tree_cons,
+	build?,  build_decl): Declare.
+	* tree.h (make_node_stat, copy_node_stat, make_tree_vec_stat,
+	build_tree_list_stat, tree_cons_stat, build?_stat,  build_decl_stat):
+	Declare.
+	(make_node, copy_node, make_tree_vec, build_tree_list, tree_cons,
+	build?,  build_decl): New macros.
+	* Makefile.in (RTL_H, TREE_H): Add statistics.h dependency.
+	* statistics.h: New file.
+
 2004-03-03  Maciej W. Rozycki  <macro@ds2.pg.gda.pl>
 	    Richard Sandiford  <rsandifo@redhat.com>
 

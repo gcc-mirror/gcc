@@ -21,6 +21,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #ifndef GCC_RTL_H
 #define GCC_RTL_H
+#include "statistics.h"
 
 struct function;
 
@@ -1556,9 +1557,12 @@ extern rtx emit_copy_of_insn_after (rtx, rtx);
 extern void set_reg_attrs_from_mem (rtx, rtx);
 extern void set_mem_attrs_from_reg (rtx, rtx);
 extern void set_reg_attrs_for_parm (rtx, rtx);
+extern void set_reg_pointer_align (rtx, unsigned int);
 
 /* In rtl.c */
-extern rtx rtx_alloc (RTX_CODE);
+extern rtx rtx_alloc_stat (RTX_CODE MEM_STAT_DECL);
+#define rtx_alloc(c) rtx_alloc_stat (c MEM_STAT_INFO)
+
 extern rtvec rtvec_alloc (int);
 extern rtx copy_rtx (rtx);
 extern void dump_rtx_statistics (void);
@@ -1568,7 +1572,8 @@ extern rtx copy_rtx_if_shared (rtx);
 
 /* In rtl.c */
 extern rtx copy_most_rtx (rtx, rtx);
-extern rtx shallow_copy_rtx (rtx);
+extern rtx shallow_copy_rtx_stat (rtx MEM_STAT_DECL);
+#define shallow_copy_rtx(a) shallow_copy_rtx_stat (a MEM_STAT_INFO)
 extern int rtx_equal_p (rtx, rtx);
 
 /* In emit-rtl.c */
