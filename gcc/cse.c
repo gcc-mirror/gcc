@@ -4378,20 +4378,16 @@ simplify_relational_operation (code, mode, op0, op1)
      a register or a CONST_INT, this can't help; testing for these cases will
      prevent infinite recursion here and speed things up.
 
-     If CODE is an unsigned comparison, we can only do this if A - B is a
-     constant integer, and then we have to compare that integer with zero as a
-     signed comparison.  Note that this will give the incorrect result from
-     comparisons that overflow.  Since these are undefined, this is probably
-     OK.  If it causes a problem, we can check for A or B being an address
-     (fp + const or SYMBOL_REF) and only do it in that case.  */
+     If CODE is an unsigned comparison, then we can never do this optimization,
+     because it gives an incorrect result if the subtraction wraps around zero.
+     ANSI C defines unsigned operations such that they never overflow, and
+     thus such cases can not be ignored.  */
 
   if (INTEGRAL_MODE_P (mode) && op1 != const0_rtx
       && ! ((GET_CODE (op0) == REG || GET_CODE (op0) == CONST_INT)
 	    && (GET_CODE (op1) == REG || GET_CODE (op1) == CONST_INT))
       && 0 != (tem = simplify_binary_operation (MINUS, mode, op0, op1))
-      && (GET_CODE (tem) == CONST_INT
-	  || (code != GTU && code != GEU &&
-	      code != LTU && code != LEU)))
+      && code != GTU && code != GEU && code != LTU && code != LEU)
     return simplify_relational_operation (signed_condition (code),
 					  mode, tem, const0_rtx);
 
