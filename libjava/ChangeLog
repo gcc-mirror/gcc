@@ -1,3 +1,8 @@
+1999-04-07  Warren Levy  <warrenl@cygnus.com>
+
+	* java/lang/natString.cc (init(jbyteArray,jint,jint,jstring)):
+	Set count to 0 when InputStreamReader returns -1 for EOF.
+
 1999-04-07  Tom Tromey  <tromey@cygnus.com>
 
 	* mauve-libgcj: Omit java.text.Collator,

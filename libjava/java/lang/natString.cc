@@ -392,6 +392,10 @@ java::lang::String::init (jbyteArray bytes, jint offset, jint count,
   boffset = (char *) elements (array) - (char *) array;
   // FIXME: this can throw IOException.
   this->count = ir->read(array, 0, count);
+
+  // In case read() doesn't read anything, change -1 for EOF to a count of 0.
+  if (this->count < 0)
+    this->count = 0;
 }
 
 jboolean
