@@ -1,5 +1,7 @@
 Sat Feb  6 18:14:46 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* mn10300.md (reload_insi): Do not earlyclobber the output operand.
+
 	* README.g77, gcc.c, gcc.texi: Update email addresses.
 	* invoke.texi system.h: Likewise.
 
