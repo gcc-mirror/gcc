@@ -1,3 +1,16 @@
+2001-04-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (dfs_unshared_virtual_bases): Add ATTRIBUTE_UNUSED.
+	(layout_empty_base): Return at end flag.
+	(build_base_field): Likewise.
+	(build_base_fields): Likewise.
+	(layout_virtual_bases): Don't add 1 to eoc value.
+	(end_of_class): Use full size for empty bases.
+	(layout_class_type): Clear CLASSNEARLY_EMPTY_P if we appended
+	empty bases. Don't add 1 to eoc value. Only add trailing padding
+	if we're an empty class with no empty bases.
+	(dump_class_hierarchy): Dump size and alignment.
+
 2001-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* call.c (maybe_handle_ref_bind): Copy ICS_USER_FLAG and
