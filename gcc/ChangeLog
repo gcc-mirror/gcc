@@ -1,3 +1,10 @@
+2001-06-27  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* diagnostic.h: Add documentation. Make macros polymorphic.
+	* diagnostic.c (ideal_line_wrap_cutoff): Remove
+	definition. Replace with diagnostic_line_cutoff.
+	(prefixing_policy): Remove. Replace with diagnostic_prefixing_rule.
+
 2001-06-27  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/c-tree.texi, doc/contrib.texi, doc/cpp.texi,

@@ -76,10 +76,10 @@ typedef struct
   int indent_skip;
 
   /* Nonzero if current PREFIX was emitted at least once.  */
-  int emitted_prefix_p;
+  bool emitted_prefix_p;
 
   /* Nonzero means one should emit a newline before outputing anything.  */
-  int need_newline_p;
+  bool need_newline_p;
 
   /* Current prefixing rule.  */
   diagnostic_prefixing_rule_t prefixing_rule;
@@ -130,13 +130,30 @@ struct output_buffer
   printer_fn format_decoder;
 };
 
-#define output_buffer_state(BUFFER) (BUFFER)->state
+/* Current state of the diagnostic_context' output_buffer.  This macro
+   accepts both `diagnostic_context *' and `output_buffer *'.  */
+#define output_buffer_state(BUFFER) ((output_buffer *)BUFFER)->state
+
+/* The stream attached to the output_buffer, where the formatted
+   diagnostics will ultimately go.  Works only on `output_buffer *'.  */
 #define output_buffer_attached_stream(BUFFER) (BUFFER)->stream
+
+/* This points to the beginning of the rest of the diagnostic message
+   to be formatted.  Accepts only `output_buffer *'s.  */
 #define output_buffer_text_cursor(BUFFER) (BUFFER)->state.cursor
-#define output_buffer_format_args(BUFFER) *((BUFFER)->state.format_args)
+
+/* The rest of the `variable argument list' not yet processed.
+   This macro works on both `output_state *' and `output_buffer *'.  */
+#define output_buffer_format_args(BUFFER) \
+   *(((output_state *)BUFFER)->format_args)
+
+/* In line-wrapping mode, whether we should start a new line.  */
 #define output_needs_newline(BUFFER) (BUFFER)->state.need_newline_p
-#define output_buffer_state(BUFFER) (BUFFER)->state
+
+/* The amount of whitespace to be emitted when starting a new line.  */
 #define output_indentation(BUFFER) (BUFFER)->state.indent_skip
+
+/* A pointer to the formatted diagonstic message.  */
 #define output_message_text(BUFFER) \
    ((const char *) obstack_base (&(BUFFER)->obstack))
 
@@ -181,39 +198,65 @@ struct diagnostic_context
   void *x_data;
 };
 
+/* The diagnostic message being formatted.  */
 #define diagnostic_message(DC) (DC)->message
+
+/* A pointer to the variable argument list used in a call
+   to a diagonstic routine.  */   
 #define diagnostic_argument_list(DC) (DC)->args_ptr
+
+/* The program file to which the diagnostic is referring to.  */
 #define diagnostic_file_location(DC) (DC)->file
+
+/* The program source line referred to in the diagnostic message.  */
 #define diagnostic_line_location(DC) (DC)->line
+
+/* Tell whether the diagnostic message is to be treated as a warning.  */
 #define diagnostic_is_warning(DC) (DC)->warn
+
+/* Client supplied function to announce a diagnostic.  */
 #define diagnostic_starter(DC) (DC)->begin_diagnostic
+
+/* Client supplied function called after a diagnostic message is
+   displayed.  */
 #define diagnostic_finalizer(DC) (DC)->end_diagnostic
+
+/* Extention hook for client.  */
 #define diagnostic_auxiliary_data(DC) (DC)->x_data
-#define diagnostic_format_decoder(DC) (DC)->buffer.format_decoder
-#define diagnostic_prefixing_rule(DC) (DC)->buffer.state.prefixing_rule
+
+/* Client supplied function used to decode formats.  Can operate on both
+ `output_buffer *' and `diagnostic_context *'.  */
+#define diagnostic_format_decoder(DC) ((output_buffer *)DC)->format_decoder
+
+/* Prefixing rule used in formatting a diagnostic message.  Accepts both
+   `output_buffer *' and `diagnostic_context *'.  */
+#define diagnostic_prefixing_rule(DC) \
+   ((output_buffer *)DC)->state.prefixing_rule
 
 /* Maximum characters per line in automatic line wrapping mode.
    Zero means don't wrap lines. */
-#define diagnostic_line_cutoff(DC) (DC)->buffer.state.ideal_maximum_length
+#define diagnostic_line_cutoff(DC) \
+   ((output_buffer *)DC)->state.ideal_maximum_length
 
-/* This output buffer is used by front-ends that directly output
+/* This diagnostic context is used by front-ends that directly output
    diagnostic messages without going through `error', `warning',
-   and similar functions.  In general, such usage should be
-   avoided.  This global buffer will go away, once all such usage
-   has been removed.  */
-extern output_buffer *diagnostic_buffer;
+   and similar functions.  */
 extern diagnostic_context *global_dc;
 
-#define diagnostic_kind_count(BUFFER, DK) \
-   (BUFFER)->state.diagnostic_count[(int) DK]
+/* This will be removed shortly.  */
+extern output_buffer *diagnostic_buffer;
+
+/* The total count of a KIND of diagnostics meitted so far.  */
+#define diagnostic_kind_count(DC, DK) \
+   ((output_buffer *)DC)->state.diagnostic_count[(int) DK]
 
 /* The number of errors that have been issued so far.  Ideally, these
    would take an output_buffer as an argument.  */
-#define errorcount diagnostic_kind_count (diagnostic_buffer, DK_ERROR)
+#define errorcount diagnostic_kind_count (global_dc, DK_ERROR)
 /* Similarly, but for warnings.  */
-#define warningcount diagnostic_kind_count (diagnostic_buffer, DK_WARNING)
+#define warningcount diagnostic_kind_count (global_dc, DK_WARNING)
 /* Similarly, but for sorrys.  */
-#define sorrycount diagnostic_kind_count (diagnostic_buffer, DK_SORRY)
+#define sorrycount diagnostic_kind_count (global_dc, DK_SORRY)
 
 /* Returns non-zero if warnings should be emitted.  */
 #define diagnostic_report_warnings_p()			\

@@ -52,9 +52,7 @@ Boston, MA 02111-1307, USA.  */
 #define is_starting_newline(BUFFER) (output_text_length (BUFFER) == 0)
 #define output_prefix(BUFFER) (BUFFER)->state.prefix
 #define line_wrap_cutoff(BUFFER) (BUFFER)->state.maximum_length
-#define ideal_line_wrap_cutoff(BUFFER) (BUFFER)->state.ideal_maximum_length
 #define prefix_was_emitted_for(BUFFER) (BUFFER)->state.emitted_prefix_p
-#define prefixing_policy(BUFFER) (BUFFER)->state.prefixing_rule
 #define output_buffer_ptr_to_format_args(BUFFER) (BUFFER)->state.format_args
 
 #define diagnostic_args output_buffer_ptr_to_format_args (diagnostic_buffer)
@@ -189,7 +187,7 @@ int
 output_is_line_wrapping (buffer)
      output_buffer *buffer;
 {
-  return ideal_line_wrap_cutoff (buffer) > 0;
+  return diagnostic_line_cutoff (buffer) > 0;
 }
 
 /* Return BUFFER's prefix.  */
@@ -212,19 +210,19 @@ set_real_maximum_length (buffer)
    we'll emit prefix only once per diagnostic message, it is appropriate
   not to increase unncessarily the line-length cut-off.  */
   if (! output_is_line_wrapping (buffer)
-      || prefixing_policy (buffer) == DIAGNOSTICS_SHOW_PREFIX_ONCE
-      || prefixing_policy (buffer) == DIAGNOSTICS_SHOW_PREFIX_NEVER)
-    line_wrap_cutoff (buffer) = ideal_line_wrap_cutoff (buffer);
+      || diagnostic_prefixing_rule (buffer) == DIAGNOSTICS_SHOW_PREFIX_ONCE
+      || diagnostic_prefixing_rule (buffer) == DIAGNOSTICS_SHOW_PREFIX_NEVER)
+    line_wrap_cutoff (buffer) = diagnostic_line_cutoff (buffer);
   else
     {
       int prefix_length =
         output_prefix (buffer) ? strlen (output_prefix (buffer)) : 0;
       /* If the prefix is ridiculously too long, output at least
          32 characters.  */
-      if (ideal_line_wrap_cutoff (buffer) - prefix_length < 32)
-        line_wrap_cutoff (buffer) = ideal_line_wrap_cutoff (buffer) + 32;
+      if (diagnostic_line_cutoff (buffer) - prefix_length < 32)
+        line_wrap_cutoff (buffer) = diagnostic_line_cutoff (buffer) + 32;
       else
-        line_wrap_cutoff (buffer) = ideal_line_wrap_cutoff (buffer);
+        line_wrap_cutoff (buffer) = diagnostic_line_cutoff (buffer);
     }
 }
 
@@ -236,7 +234,7 @@ output_set_maximum_length (buffer, length)
      output_buffer *buffer;
      int length;
 {
-  ideal_line_wrap_cutoff (buffer) = length;
+  diagnostic_line_cutoff (buffer) = length;
   set_real_maximum_length (buffer);
 }
 
@@ -313,8 +311,8 @@ init_output_buffer (buffer, prefix, maximum_length)
   memset (buffer, 0, sizeof (output_buffer));
   obstack_init (&buffer->obstack);
   output_buffer_attached_stream (buffer) = stderr;
-  ideal_line_wrap_cutoff (buffer) = maximum_length;
-  prefixing_policy (buffer) = diagnostic_prefixing_rule (global_dc);
+  diagnostic_line_cutoff (buffer) = maximum_length;
+  diagnostic_prefixing_rule (buffer) = diagnostic_prefixing_rule (global_dc);
   output_set_prefix (buffer, prefix);
   output_text_length (buffer) = 0;
   clear_diagnostic_info (buffer);  
@@ -366,7 +364,7 @@ output_emit_prefix (buffer)
 {
   if (output_prefix (buffer) != NULL)
     {
-      switch (prefixing_policy (buffer))
+      switch (diagnostic_prefixing_rule (buffer))
         {
         default:
         case DIAGNOSTICS_SHOW_PREFIX_NEVER:
@@ -1559,7 +1557,7 @@ output_do_verbatim (buffer, msgid, args_ptr)
 
   os = output_buffer_state (buffer);
   output_prefix (buffer) = NULL;
-  prefixing_policy (buffer) = DIAGNOSTICS_SHOW_PREFIX_NEVER;
+  diagnostic_prefixing_rule (buffer) = DIAGNOSTICS_SHOW_PREFIX_NEVER;
   output_buffer_text_cursor (buffer) = _(msgid);
   output_buffer_ptr_to_format_args (buffer) = args_ptr;
   output_set_maximum_length (buffer, 0);
