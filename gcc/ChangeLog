@@ -1,3 +1,16 @@
+2005-02-01  Steven Bosscher  <stevenb@suse.de>
+
+	PR optimization/15242
+	* params.def (PARAM_MAX_GOTO_DUPLICATION_INSNS): New param.
+	* basic-block.h (duplicate_computed_gotos): Add prototype.
+	* bb-reorder.c (duplicate_computed_gotos): New function to
+	duplicate sufficiently small blocks ending in a computed jump.
+	* passes.c (rest_of_compilation): Call duplicate_computed_gotos
+	if not optimizing for size.
+	* cfgcleanup.c (try_crossjump_bb): If not optimizing for size,
+	never do tail merging for blocks ending in a computed jump.
+	* doc/invoke.texi: Document the max-goto-duplication-insns param.
+
 2005-02-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	Patch from Richard Sandiford <rsandifo@redhat.com>

@@ -81,6 +81,7 @@
 #include "tm_p.h"
 #include "obstack.h"
 #include "expr.h"
+#include "params.h"
 
 /* The number of rounds.  In most cases there will only be 4 rounds, but
    when partitioning hot and cold basic blocks into separate sections of
@@ -1189,8 +1190,7 @@ copy_bb_p (basic_block bb, int code_may_grow)
   if (code_may_grow && maybe_hot_bb_p (bb))
     max_size *= 8;
 
-  for (insn = BB_HEAD (bb); insn != NEXT_INSN (BB_END (bb));
-       insn = NEXT_INSN (insn))
+  FOR_BB_INSNS (bb, insn)
     {
       if (INSN_P (insn))
 	size += get_attr_length (insn);
@@ -1981,6 +1981,104 @@ reorder_basic_blocks (unsigned int flags)
     add_unlikely_executed_notes ();
 
   cfg_layout_finalize ();
+
+  timevar_pop (TV_REORDER_BLOCKS);
+}
+
+/* Duplicate the blocks containing computed gotos.  This basically unfactors
+   computed gotos that were factored early on in the compilation process to
+   speed up edge based data flow.  We used to not unfactoring them again,
+   which can seriously pessimize code with many computed jumps in the source
+   code, such as interpreters.  See e.g. PR15242.  */
+
+void
+duplicate_computed_gotos (void)
+{
+  basic_block bb, new_bb;
+  bitmap candidates;
+  int max_size;
+
+  if (n_basic_blocks <= 1)
+    return;
+
+  if (targetm.cannot_modify_jumps_p ())
+    return;
+
+  timevar_push (TV_REORDER_BLOCKS);
+
+  cfg_layout_initialize (0);
+
+  /* We are estimating the length of uncond jump insn only once
+     since the code for getting the insn length always returns
+     the minimal length now.  */
+  if (uncond_jump_length == 0)
+    uncond_jump_length = get_uncond_jump_length ();
+
+  max_size = uncond_jump_length * PARAM_VALUE (PARAM_MAX_GOTO_DUPLICATION_INSNS);
+  candidates = BITMAP_XMALLOC ();
+
+  /* Build the reorder chain for the original order of blocks.
+     Look for a computed jump while we are at it.  */
+  FOR_EACH_BB (bb)
+    {
+      if (bb->next_bb != EXIT_BLOCK_PTR)
+	bb->rbi->next = bb->next_bb;
+
+      /* If the block ends in a computed jump and it is small enough,
+	 make it a candidate for duplication.  */
+      if (computed_jump_p (BB_END (bb)))
+	{
+	  rtx insn;
+	  int size = 0;
+
+	  FOR_BB_INSNS (bb, insn)
+	    {
+	      if (INSN_P (insn))
+	        size += get_attr_length (insn);
+	      if (size > max_size)
+		break;
+	    }
+
+	  if (size <= max_size)
+	    bitmap_set_bit (candidates, bb->index);
+	}
+    }
+
+  /* Nothing to do if there is no computed jump here.  */
+  if (bitmap_empty_p (candidates))
+    goto done;
+
+  /* Duplicate computed gotos.  */
+  FOR_EACH_BB (bb)
+    {
+      if (bb->rbi->visited)
+	continue;
+
+      bb->rbi->visited = 1;
+
+      /* BB must have one outgoing edge.  That edge must not lead to
+         the exit block or the next block.
+	 The destination must have more than one predecessor.  */
+      if (EDGE_COUNT(bb->succs) != 1
+	  || EDGE_SUCC(bb,0)->dest == EXIT_BLOCK_PTR
+	  || EDGE_SUCC(bb,0)->dest == bb->next_bb
+	  || EDGE_COUNT(EDGE_SUCC(bb,0)->dest->preds) <= 1)
+	continue;
+
+      /* The successor block has to be a duplication candidate.  */
+      if (!bitmap_bit_p (candidates, EDGE_SUCC(bb,0)->dest->index))
+	continue;
+
+      new_bb = duplicate_block (EDGE_SUCC(bb,0)->dest, EDGE_SUCC(bb,0));
+      new_bb->rbi->next = bb->rbi->next;
+      bb->rbi->next = new_bb;
+      new_bb->rbi->visited = 1;
+    }
+
+done:
+  cfg_layout_finalize ();
+
+  BITMAP_XFREE (candidates);
 
   timevar_pop (TV_REORDER_BLOCKS);
 }

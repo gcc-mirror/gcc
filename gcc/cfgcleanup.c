@@ -1707,6 +1707,13 @@ try_crossjump_bb (int mode, basic_block bb)
   if (EDGE_COUNT (bb->preds) < 2)
     return false;
 
+  /* Don't crossjump if this block ends in a computed jump,
+     unless we are optimizing for size.  */
+  if (!optimize_size
+      && bb != EXIT_BLOCK_PTR
+      && computed_jump_p (BB_END (bb)))
+    return false;
+
   /* If we are partitioning hot/cold basic blocks, we don't want to
      mess up unconditional or indirect jumps that cross between hot
      and cold sections. 
