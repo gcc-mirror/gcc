@@ -642,7 +642,7 @@
 (define_insn "iordi3"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(ior:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ,rJ")
-		(match_operand:DI 2 "ior_operand" "rI,N")))]
+		(match_operand:DI 2 "or_operand" "rI,N")))]
   ""
   "@
    bis %r1,%2,%0
@@ -665,17 +665,19 @@
   [(set_attr "type" "iaddlog")])
 
 (define_insn "xordi3"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(xor:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ")
-		(match_operand:DI 2 "reg_or_8bit_operand" "rI")))]
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(xor:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ,rJ")
+		(match_operand:DI 2 "or_operand" "rI,N")))]
   ""
-  "xor %r1,%2,%0"
+  "@
+   xor %r1,%2,%0
+   eqv %r1,%N2,%0"
   [(set_attr "type" "iaddlog")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(not:DI (xor:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ")
-			(match_operand:DI 2 "reg_or_8bit_operand" "rI"))))]
+	(not:DI (xor:DI (match_operand:DI 1 "register_operand" "%rJ")
+			(match_operand:DI 2 "register_operand" "rI"))))]
   ""
   "eqv %r1,%2,%0"
   [(set_attr "type" "iaddlog")])
