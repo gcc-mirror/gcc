@@ -968,7 +968,9 @@ struct tree_type
 
 /* For any sort of a ..._DECL node, this points to the original (abstract)
    decl node which this decl is an instance of, or else it is NULL indicating
-   that this decl is not an instance of some other decl.  */
+   that this decl is not an instance of some other decl.  For example,
+   in a nested declaration of an inline function, this points back to the
+   definition.  */
 #define DECL_ABSTRACT_ORIGIN(NODE) ((NODE)->decl.abstract_origin)
 
 /* Nonzero for any sort of ..._DECL node means this decl node represents
