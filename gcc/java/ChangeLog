@@ -1,3 +1,7 @@
+1999-11-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* except.c (emit_handlers): Zero catch_clauses after emitting them.
+
 1999-11-21  Anthony Green  <green@cygnus.com>
 
 	* constants.c (find_methodref_index): Unwrap method names before
