@@ -16,7 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* This program massages a system include file (such as stdio.h),
-   into a form more conforming with ANSI/POSIX, and more suitable for C++:
+   into a form that is compatible with GNU C and GNU C++.
 
    * extern "C" { ... } braces are added (inside #ifndef __cplusplus),
    if they seem to be needed.  These prevent C++ compilers from name
@@ -145,14 +145,31 @@ typedef int symbol_flags;
 /* Used to mark names defined in the ANSI/ISO C standard.  */
 #define ANSI_SYMBOL 1
 
+/* We no longer massage include files for POSIX or XOPEN symbols,
+   as there are now several versions of the POSIX and XOPEN standards,
+   and it would be a maintenance nightmare for us to track them all.
+   Better to be compatible with the system include files.  */
+/*#define ADD_MISSING_POSIX 1 */
+/*#define ADD_MISSING_XOPEN 1 */
+
+#if ADD_MISSING_POSIX
 /* Used to mark names defined in the Posix.1 or Posix.2 standard.  */
 #define POSIX1_SYMBOL 2
 #define POSIX2_SYMBOL 4
+#else
+#define POSIX1_SYMBOL 0
+#define POSIX2_SYMBOL 0
+#endif
 
+#if ADD_MISSING_XOPEN
 /* Used to mark names defined in X/Open Portability Guide.  */
 #define XOPEN_SYMBOL 8
 /* Used to mark names defined in X/Open UNIX Extensions.  */
 #define XOPEN_EXTENDED_SYMBOL 16
+#else
+#define XOPEN_SYMBOL 0
+#define XOPEN_EXTENDED_SYMBOL 0
+#endif
 
 /* Used to indicate names that are not functions */
 #define MACRO_SYMBOL 512
@@ -1122,7 +1139,8 @@ main (argc, argv)
       cur_symbol_table_size = 0;
       for (entry = include_entry; ;)
 	{
-	  add_symbols (entry->flags, entry->names);
+	  if (entry->flags)
+	    add_symbols (entry->flags, entry->names);
 	  entry++;
 	  if (entry->name != CONTINUED)
 	    break;
