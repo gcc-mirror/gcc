@@ -707,6 +707,11 @@ extern int arm_is_6_or_7;
 
 #define FUNCTION_BOUNDARY  32
 
+/* The lowest bit is used to indicate Thumb-mode functions, so the
+   vbit must go into the delta field of pointers to member
+   functions.  */
+#define TARGET_PTRMEMFUNC_VBIT_LOCATION ptrmemfunc_vbit_in_delta
+
 #define EMPTY_FIELD_BOUNDARY  32
 
 #define BIGGEST_ALIGNMENT  32
