@@ -1,3 +1,8 @@
+2000-05-01  Vadim Egorov  <egorovv@@mailandnews.com>
+
+        * bits/char_traits.h: Fix parameter types.
+        * bits/string.tcc: Avoid traits_type::move.
+
 2000-05-01  Benjamin Kosnik  <bkoz@haight.constant.com>
 
 	* src/Makefile.am (AC_CXXFLAGS): Add CPUFLAGS here.
