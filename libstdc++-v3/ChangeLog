@@ -1,4 +1,10 @@
 2002-03-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/locale/gnu/messages_members.h: Add __uselocale bits.
+	* config/locale/gnu/messages_members.cc: Same.
+	* config/locale/gnu/time_members.cc: Same.
+	
+2002-03-22  Benjamin Kosnik  <bkoz@redhat.com>
 	
 	* src/vterminate.cc: Format, -fno-exceptions cleanup.
 
