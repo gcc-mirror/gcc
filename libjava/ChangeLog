@@ -1,3 +1,9 @@
+2002-08-18  Mark Wielaard  <mark@klomp.org>
+
+	Thanks to Vladimir Puskas <vpuskas@eunet.yu>
+	* gnu/java/security/provider/MD5.java: Extends MessageDigest, not
+	MessageDigestSpi (fixes Classpath bug #783).
+
 2002-08-14  Jesse Rosenstock  <jmr@ugcs.caltech.edu>
 
 	* java/lang/natPosixProcess.cc (cleanup): Added `path' argument.
