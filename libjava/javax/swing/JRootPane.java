@@ -119,7 +119,7 @@ public class JRootPane extends JComponent
     public void setContentPane(Container p)
     {
 	contentPane = p;    
-	getLayeredPane().add(contentPane, 0);
+	getLayeredPane().add(contentPane, JLayeredPane.FRAME_CONTENT_LAYER);
     }
 
     protected void addImpl(Component comp,

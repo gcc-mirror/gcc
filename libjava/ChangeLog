@@ -1,3 +1,10 @@
+2003-11-18  Graydon Hoare  <graydon@redhat.com>
+
+	* javax/swing/JLayeredPane.java: Implement.
+	* javax/swing/JFrame.java (getContentPane): Make public
+	* javax/swing/javax/swing/JRootPane.java (setContentPane): 
+	Use JLayeredPane.FRAME_CONTENT_LAYER.
+
 2003-11-21  Mark Wielaard  <mark@klomp.org>
 
 	* java/lang/Float.java (static): Removed.

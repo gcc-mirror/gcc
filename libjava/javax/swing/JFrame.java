@@ -149,7 +149,7 @@ public class JFrame extends Frame
     JRootPane createRootPane()
     {   return new JRootPane();    }
 
-    Container getContentPane()
+    public Container getContentPane()
     {    return getRootPane().getContentPane();     }
 
     void setContentPane(Container contentPane)
