@@ -1,3 +1,9 @@
+Thu Dec 13 10:35:33 2001  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	* objc/execute/bf-21.m: New test.
+	* objc/execute/enumeration-1.m: New test.
+	* objc/execute/enumeration-2.m: New test.
+	
 2001-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/gnu89-init-1.c: New test.
