@@ -257,6 +257,10 @@ static int next_decl_uid;
 /* Unique id for next type created.  */
 static int next_type_uid = 1;
 
+/* Here is how primitive or already-canonicalized types' hash
+   codes are made.  */
+#define TYPE_HASH(TYPE) ((HOST_WIDE_INT) (TYPE) & 0777777)
+
 extern char *mode_name[];
 
 void gcc_obstack_init ();
@@ -999,6 +1003,10 @@ make_node (code)
       TYPE_ALIGN (t) = 1;
       TYPE_MAIN_VARIANT (t) = t;
       TYPE_OBSTACK (t) = obstack;
+      TYPE_ATTRIBUTES (t) = NULL_TREE;
+#ifdef SET_DEFAULT_TYPE_ATTRIBUTES
+      SET_DEFAULT_TYPE_ATTRIBUTES (t);
+#endif
       break;
 
     case 'c':
@@ -2696,6 +2704,65 @@ build_block (vars, tags, subblocks, supercontext, chain)
   return block;
 }
 
+/* Return a type like TTYPE except that its TYPE_ATTRIBUTE
+   is ATTRIBUTE.
+
+   Such modified types already made are recorded so that duplicates
+   are not made. */
+
+tree
+build_type_attribute_variant (ttype, attribute)
+     tree ttype, attribute;
+{
+  if ( ! attribute_list_equal (TYPE_ATTRIBUTES (ttype), attribute))
+    {
+      register int hashcode;
+      register struct obstack *ambient_obstack = current_obstack;
+      tree ntype;
+
+      if (ambient_obstack != &permanent_obstack)
+        current_obstack = TYPE_OBSTACK (ttype);
+
+      ntype = copy_node (ttype);
+      current_obstack = ambient_obstack;
+
+      TYPE_POINTER_TO (ntype) = 0;
+      TYPE_REFERENCE_TO (ntype) = 0;
+      TYPE_ATTRIBUTES (ntype) = attribute;
+
+      /* Create a new main variant of TYPE.  */
+      TYPE_MAIN_VARIANT (ntype) = ntype;
+      TYPE_NEXT_VARIANT (ntype) = 0;
+      TYPE_READONLY (ntype) = TYPE_VOLATILE (ntype) = 0;
+
+      hashcode = TYPE_HASH (TREE_CODE (ntype))
+		 + TYPE_HASH (TREE_TYPE (ntype))
+		 + type_hash_list (attribute);
+
+      switch (TREE_CODE (ntype))
+        {
+	  case FUNCTION_TYPE:
+	    hashcode += TYPE_HASH (TYPE_ARG_TYPES (ntype));
+	    break;
+	  case ARRAY_TYPE:
+	    hashcode += TYPE_HASH (TYPE_DOMAIN (ntype));
+	    break;
+	  case INTEGER_TYPE:
+	    hashcode += TYPE_HASH (TYPE_MAX_VALUE (ntype));
+	    break;
+	  case REAL_TYPE:
+	    hashcode += TYPE_HASH (TYPE_PRECISION (ntype));
+	    break;
+        }
+
+      ntype = type_hash_canon (hashcode, ntype);
+      ttype = build_type_variant (ntype, TYPE_READONLY (ttype),
+				  TYPE_VOLATILE (ttype));
+    }
+
+  return ttype;
+}
+
 /* Return a type like TYPE except that its TYPE_READONLY is CONSTP
    and its TYPE_VOLATILE is VOLATILEP.
 
@@ -2818,10 +2885,6 @@ struct type_hash
 #define TYPE_HASH_SIZE 59
 struct type_hash *type_hash_table[TYPE_HASH_SIZE];
 
-/* Here is how primitive or already-canonicalized types' hash
-   codes are made.  */
-#define TYPE_HASH(TYPE) ((HOST_WIDE_INT) (TYPE) & 0777777)
-
 /* Compute a hash code for a list of types (chain of TREE_LIST nodes
    with types in the TREE_VALUE slots), by adding the hash codes
    of the individual types.  */
@@ -2850,6 +2913,8 @@ type_hash_lookup (hashcode, type)
     if (h->hashcode == hashcode
 	&& TREE_CODE (h->type) == TREE_CODE (type)
 	&& TREE_TYPE (h->type) == TREE_TYPE (type)
+        && attribute_list_equal (TYPE_ATTRIBUTES (h->type),
+				   TYPE_ATTRIBUTES (type))
 	&& (TYPE_MAX_VALUE (h->type) == TYPE_MAX_VALUE (type)
 	    || tree_int_cst_equal (TYPE_MAX_VALUE (h->type),
 				   TYPE_MAX_VALUE (type)))
@@ -2923,6 +2988,46 @@ type_hash_canon (hashcode, type)
     type_hash_add (hashcode, type);
 
   return type;
+}
+
+/* Given two lists of attributes, return true if list l2 is
+   equivalent to l1.  */
+
+int
+attribute_list_equal (l1, l2)
+     tree l1, l2;
+{
+   return attribute_list_contained (l1, l2)
+	  && attribute_list_contained (l2, l1);
+}
+
+/* Given two lists of attributes, return true if list l2 is
+   completely contained within l1.  */
+
+int
+attribute_list_contained (l1, l2)
+     tree l1, l2;
+{
+  register tree t1, t2;
+
+  /* First check the obvious, maybe the lists are identical.  */
+  if (l1 == l2)
+     return 1;
+
+  /* Then check the obvious, maybe the lists are similar.  */
+  for (t1 = l1, t2 = l2;
+       t1 && t2
+        && TREE_VALUE (t1) == TREE_VALUE (t2);
+       t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2));
+
+  /* Maybe the lists are equal.  */
+  if (t1 == 0 && t2 == 0)
+     return 1;
+
+  for (; t2; t2 = TREE_CHAIN (t2))
+     if (!value_member (l1, t2))
+	return 0;
+  return 1;
 }
 
 /* Given two lists of types
