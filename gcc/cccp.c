@@ -3340,7 +3340,9 @@ randomchar:
 #endif
 		
 		if (output_marks) {
+		  op->bufp = obp;
 		  check_expand (op, limit - ibp + 2);
+		  obp = op->bufp;
 		  *obp++ = '\n';
 		  *obp++ = '-';
 		}
