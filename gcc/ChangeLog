@@ -1,3 +1,9 @@
+Thu Jul 26 00:19:30 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (estimate_probability): Avoid duplicated predictions.
+
+	* loop.c (find_and_verify_loops): Grok multiple barriers.
+
 Wed Jul 25 18:00:05 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/alpha/alpha.c (print_operand, case '/'): Don't write '/'.

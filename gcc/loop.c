@@ -2676,6 +2676,14 @@ find_and_verify_loops (f, loops)
 		  = JUMP_LABEL (insn) ? JUMP_LABEL (insn) : get_last_insn ();
 		struct loop *target_loop = uid_loop[INSN_UID (target)];
 		rtx loc, loc2;
+		rtx tmp;
+
+		/* Search for possible garbage past the conditional jumps
+		   and look for latest barrier.  */
+		for (tmp = last_insn_to_move;
+		     tmp && GET_CODE (tmp) != CODE_LABEL; tmp = NEXT_INSN (tmp))
+		  if (GET_CODE (tmp) == BARRIER)
+		    last_insn_to_move = tmp;
 
 		for (loc = target; loc; loc = PREV_INSN (loc))
 		  if (GET_CODE (loc) == BARRIER
