@@ -1,3 +1,9 @@
+2000-04-24  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* c-pragma.c (push_alignment): Use BITS_PER_UNIT macro. 
+	(pop_alignment): Likewise.
+	(handle_pragma_token): Likewise.
+
 2000-04-24  Robert Lipe <robertlipe@usa.net>
 
 	* tree.h (tree_decl): Member `mode' now ENUM_BITFIELD.
