@@ -4517,18 +4517,33 @@
     }
 }")
 
-(define_insn "exception_receiver"
+;; Ideally we should be able to define nonlocal_goto and arrange
+;; for the pc to be in a known place.  Or perhaps branch back via
+;; br instead of jmp.
+(define_insn "nonlocal_goto_receiver_osf"
   [(unspec_volatile [(const_int 0)] 2)]
   "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT"
-  ".long 0xc3a00000\;ldgp $29,0($29)")
+  "br $29,$LGOTO%=\\n$LGOTO%=:\;ldgp $29,0($29)")
 
-(define_expand "nonlocal_goto_receiver"
+(define_expand "nonlocal_goto_receiver_vms"
   [(unspec_volatile [(const_int 0)] 1)
    (set (reg:DI 27) (mem:DI (reg:DI 29)))
    (unspec_volatile [(const_int 0)] 1)
    (use (reg:DI 27))]
   "TARGET_OPEN_VMS"
   "")
+
+(define_expand "nonlocal_goto_receiver"
+  [(unspec_volatile [(const_int 0)] 2)]
+  ""
+  "
+{
+  if (TARGET_OPEN_VMS)
+    emit_insn(gen_nonlocal_goto_receiver_vms ());
+  else if (!TARGET_WINDOWS_NT)
+    emit_insn(gen_nonlocal_goto_receiver_osf ());
+  DONE;
+}")
 
 (define_insn "arg_home"
   [(unspec [(const_int 0)] 0)

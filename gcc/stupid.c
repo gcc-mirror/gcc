@@ -230,21 +230,34 @@ stupid_life_analysis (f, nregs, file)
 	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP)
 	last_setjmp_suid = INSN_SUID (insn);
 
-      /* Mark all call-clobbered regs as live after each call insn
-	 so that a pseudo whose life span includes this insn
-	 will not go in one of them.
+      /* Mark all call-clobbered regs as dead after each call insn so that
+	 a pseudo whose life span includes this insn will not go in one of
+	 them.  If the function contains a non-local goto, mark all hard
+	 registers dead (except for stack related bits).
+
 	 Then mark those regs as all dead for the continuing scan
 	 of the insns before the call.  */
 
       if (GET_CODE (insn) == CALL_INSN)
 	{
 	  last_call_suid = INSN_SUID (insn);
-	  IOR_HARD_REG_SET (after_insn_hard_regs[last_call_suid],
-			    call_used_reg_set);
 
-	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	    if (call_used_regs[i])
-	      regs_live[i] = 0;
+	  if (current_function_has_nonlocal_label)
+	    {
+	      IOR_COMPL_HARD_REG_SET (after_insn_hard_regs[last_call_suid],
+				      fixed_reg_set);
+	      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+		if (! fixed_regs[i])
+	          regs_live[i] = 0;
+	    }
+	  else
+	    {
+	      IOR_HARD_REG_SET (after_insn_hard_regs[last_call_suid],
+				call_used_reg_set);
+	      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	        if (call_used_regs[i])
+	          regs_live[i] = 0;
+	    }
 
 	  /* It is important that this be done after processing the insn's
 	     pattern because we want the function result register to still
