@@ -2,6 +2,11 @@
 
 	* cse.c (find_best_addr): Kill !ADDRESS_COST code.
 
+	* config/cris/cris.c (cris_address_cost): Make static.
+	(TARGET_RTX_COSTS, TARGET_ADDRESS_COST): New.
+	* config/cris/cris.h (ADDRESS_COST): Remove.
+	* config/cris/cris-protos.h: Update.
+
 2003-01-23  Mike Stump  <mrs@apple.com>
 
 	* regclass.c (init_reg_autoinc): New function.
@@ -86,6 +91,8 @@
 	(TARGET_ADDRESS_COST): New.
 	* config/mn10300/mn10300-protos.h: Update.
 	* config/mn10300/mn10300.h (ADDRESS_COST): Remove.
+
+	* doc/tm.texi: Update.
 
 2003-01-28  Vladimir Makarov  <vmakarov@redhat.com>
 

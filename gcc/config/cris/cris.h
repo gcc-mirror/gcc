@@ -1336,8 +1336,6 @@ struct cum_args {int regs;};
 
 /* Node: Costs */
 
-#define ADDRESS_COST(X) cris_address_cost (X)
-
 /* FIXME: Need to define REGISTER_MOVE_COST when more register classes are
    introduced.  */
 

@@ -106,6 +106,8 @@ static void cris_operand_lossage PARAMS ((const char *, rtx));
 static void cris_asm_output_mi_thunk
   PARAMS ((FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree));
 
+static bool cris_rtx_costs PARAMS ((rtx, int, int, int *));
+static int cris_address_cost PARAMS ((rtx));
 
 /* The function cris_target_asm_function_epilogue puts the last insn to
    output here.  It always fits; there won't be a symbol operand.  Used in
@@ -163,6 +165,11 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #define TARGET_ASM_OUTPUT_MI_THUNK cris_asm_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS cris_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST cris_address_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2193,7 +2200,7 @@ cris_rtx_costs (x, code, outer_code, total)
 
 /* The ADDRESS_COST worker.  */
 
-int
+static int
 cris_address_cost (x)
      rtx x;
 {
