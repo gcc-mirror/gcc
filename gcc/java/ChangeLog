@@ -1,3 +1,56 @@
+2001-12-04  Per Bothner  <per@bothner.com>
+
+	* check-init.c:   Handle definite unassignment to finals in addition
+	to definite assignment.
+	(loop_current_locals):  New field.
+	(num_current_locals, int start_current_locals, num_current_words):
+	Make static.
+	(SET_P, CLEAR_P, SET_BIT):  Add needed but missing parentheses.
+	(ASSIGNED_P, UNASSIGNED_P, SET_ASSIGNED, SET_UNASSIGNED,
+	CLEAR_ASSIGNED, CLEAR_UNASSIGNED):  New macros.
+	(get_variable_decl, check_final_reassigned):  New functions.
+	(check_init, check_bool_init):  Modify as needed for checking finals.
+	(check_for_initialization):  Take extra parameter and return void.
+	Do extra start-up logic to check final fields for assignment.
+	* parse.y (check_static_final_variable_assignment_flag,
+	reset_static_final_variable_assignment_flag, check_final_assignment,
+	check_final_variable_local_assignment_flag,
+	reset_final_variable_indirect_assignment_flag,
+	reset_final_variable_global_assignment_flag):  Remove functions.
+	(java_complete_expand_methods, outer_field_access_fix,
+	patch_assignment): Remove no-longer used logic.
+	* java-tree.h (DECL_FIELD_FINAL_IUD):  Change usage and comments.
+	* parse.y (register_fields, java_complete_tree):  Update accordingly.
+
+	* check-init.c (ALLOC_WORDS/FREE_WORDS):  Use xmalloc/free, not alloca.
+	(DECLARE_BUFFERS, RELEASE_BUFFERS, ALLOC_BUFFER, FREE_BUFFER):  New.
+	(check_cond_init, check_bool2_init):  Use DECLARE_BUFFERS.
+
+	* java-tree.h (STATIC_CLASS_INIT_OPT_P):  Temporarily turn off.
+
+	* java-tree.h (DECL FINAL):  New bit-field.
+	(METHOD_FINAL, FIELD_FINAL, CLASS_FINAL):  Define as DECL_FINAL.
+	(LOCAL_FINAL_P):  Use DECL_FINAL rather than old LOCAL_FINAL.
+	(DECL_INIT_CALLS_THIS):  New macro.
+	(struct lang_decl):  New bit-field init_calls_this.
+	(DECL_FUNCTION_ALL_FINAL_INITIALIZED, DECL_FIELD_FINAL_LIIC,
+	DECL_FIELD_FINAL_IERR, LOCAL_FINAL, TYPE_HAS_FINAL_VARIABLE
+	(DECL_BIT_INDEX):  Change to use pointer_alias_set since we now
+	use it for both local variables and final fields.
+	(struct lang_decl_var):  Remove bit-fields final_liic, final_ierr,
+	and local_final.
+	(struct lang_type):  Remove hfv bit-field.
+	(check_for_initialization):  Change to return void.
+
+	* java-tree.h (IS_ARRAY_LENGTH_ACCESS):  New macros.
+	* expr.c (build_java_array_length_access):  Set IS_ARRAY_LENGTH_ACCESS.
+	* check-init.c (final_assign_error):  New helper function.
+	(check_final_reassigned, check_init):  Use it.
+	(check_init):  Also check IS_ARRAY_LENGTH_ACCESS for ARRAY.length.
+	
+	* java-tree.h (struct lang_decl, struct lang_decl_var):  Change all
+	bit-fields to unsigned.
+
 2001-12-03  Per Bothner  <per@bothner.com>
 
 	* parse.y (patch_binop):  Minor constant folding.
