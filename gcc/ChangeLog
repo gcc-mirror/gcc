@@ -1,5 +1,9 @@
 2000-12-11  Neil Booth  <neilb@earthling.net>
 
+	* tradcpp.h: For tradcpp, NUL is not whitespace.
+
+2000-12-11  Neil Booth  <neilb@earthling.net>
+
 	* fix-header.c (read_scan_file): Macro expansion is not a file buffer.
 
 2000-12-05  Marek Michalkiewicz  <marekm@linux.org.pl>
