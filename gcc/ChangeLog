@@ -1,3 +1,17 @@
+Mon Apr 12 09:30:03 1999  Richard Earnshaw (rearnsha@arm.com)
+
+	* arm.h (target_fp_name, structure_size_string, arm_cpu_select):
+	Const-ify.
+	* arm.c (target_fp_name, structure_size_string): Const-ify.
+
+	* arm.md (reload_inhi, reload_outhi): Make the scratch DImode.
+	* arm.c (arm_reload_in_hi): Handle cases when the input is still
+	a pseudo, make use of scratch registers for reloading the address
+	as appropriate.
+	(arm_reload_outhi): Similarly for when the output is still a pseudo.
+
+	* riscix.h (SUBTARGET_SWITCHES): Document.
+
 1999-04-12  Bruce Korb <ddsinc09@ix.netcom.com>
 
 	* fixincludes:

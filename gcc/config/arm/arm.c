@@ -84,10 +84,10 @@ enum floating_point_type arm_fpu_arch;
 enum prog_mode_type arm_prgmode;
 
 /* Set by the -mfp=... option */
-char * target_fp_name = NULL;
+const char * target_fp_name = NULL;
 
 /* Used to parse -mstructure_size_boundary command line option.  */
-char * structure_size_string = NULL;
+const char * structure_size_string = NULL;
 int    arm_structure_size_boundary = 32; /* Used to be 8 */
 
 /* Bit values used to identify processor capabilities.  */
@@ -3609,22 +3609,95 @@ void
 arm_reload_in_hi (operands)
      rtx *operands;
 {
-  rtx base = find_replacement (&XEXP (operands[1], 0));
+  rtx ref = operands[1];
+  rtx base, scratch;
+  HOST_WIDE_INT offset = 0;
 
-  emit_insn (gen_zero_extendqisi2 (operands[2], gen_rtx_MEM (QImode, base)));
+  if (GET_CODE (ref) == SUBREG)
+    {
+      offset = SUBREG_WORD (ref) * UNITS_PER_WORD;
+      if (BYTES_BIG_ENDIAN)
+	offset -= (MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (ref)))
+		   - MIN (UNITS_PER_WORD,
+			  GET_MODE_SIZE (GET_MODE (SUBREG_REG (ref)))));
+      ref = SUBREG_REG (ref);
+    }
+
+  if (GET_CODE (ref) == REG)
+    {
+      /* We have a pseudo which has been spilt onto the stack; there
+	 are two cases here: the first where there is a simple
+	 stack-slot replacement and a second where the stack-slot is
+	 out of range, or is used as a subreg.  */
+      if (reg_equiv_mem[REGNO (ref)])
+	{
+	  ref = reg_equiv_mem[REGNO (ref)];
+	  base = find_replacement (&XEXP (ref, 0));
+	}
+      else
+	/* The slot is out of range, or was dressed up in a SUBREG */
+	base = reg_equiv_address[REGNO (ref)];
+    }
+  else
+    base = find_replacement (&XEXP (ref, 0));
+
   /* Handle the case where the address is too complex to be offset by 1.  */
   if (GET_CODE (base) == MINUS
       || (GET_CODE (base) == PLUS && GET_CODE (XEXP (base, 1)) != CONST_INT))
     {
-      rtx base_plus = gen_rtx_REG (SImode, REGNO (operands[0]));
+      rtx base_plus = gen_rtx_REG (SImode, REGNO (operands[2]) + 1);
 
       emit_insn (gen_rtx_SET (VOIDmode, base_plus, base));
       base = base_plus;
     }
+  else if (GET_CODE (base) == PLUS)
+    {
+      /* The addend must be CONST_INT, or we would have dealt with it above */
+      HOST_WIDE_INT hi, lo;
 
+      offset += INTVAL (XEXP (base, 1));
+      base = XEXP (base, 0);
+
+      /* Rework the address into a legal sequence of insns */
+      /* Valid range for lo is -4095 -> 4095 */
+      lo = (offset >= 0
+	    ? (offset & 0xfff)
+	    : -((-offset) & 0xfff));
+
+      /* Corner case, if lo is the max offset then we would be out of range
+	 once we have added the additional 1 below, so bump the msb into the
+	 pre-loading insn(s).  */
+      if (lo == 4095)
+	lo &= 0x7ff;
+
+      hi = ((((offset - lo) & (HOST_WIDE_INT) 0xFFFFFFFF)
+	     ^ (HOST_WIDE_INT) 0x80000000)
+	    - (HOST_WIDE_INT) 0x80000000);
+
+      if (hi + lo != offset)
+	abort ();
+
+      if (hi != 0)
+	{
+	  rtx base_plus = gen_rtx_REG (SImode, REGNO (operands[2]) + 1);
+
+	  /* Get the base address; addsi3 knows how to handle constants
+	     that require more than one insn */
+	  emit_insn (gen_addsi3 (base_plus, base, GEN_INT (hi)));
+	  base = base_plus;
+	  offset = lo;
+	}
+    }
+
+  scratch = gen_rtx_REG (SImode, REGNO (operands[2]));
+  emit_insn (gen_zero_extendqisi2 (scratch,
+				   gen_rtx_MEM (QImode,
+						plus_constant (base,
+							       offset))));
   emit_insn (gen_zero_extendqisi2 (gen_rtx_SUBREG (SImode, operands[0], 0),
 				   gen_rtx_MEM (QImode, 
-						plus_constant (base, 1))));
+						plus_constant (base,
+							       offset + 1))));
   if (BYTES_BIG_ENDIAN)
     emit_insn (gen_rtx_SET (VOIDmode, gen_rtx_SUBREG (SImode, operands[0], 0),
 			gen_rtx_IOR (SImode, 
@@ -3632,41 +3705,183 @@ arm_reload_in_hi (operands)
 				     (SImode,
 				      gen_rtx_SUBREG (SImode, operands[0], 0),
 				      GEN_INT (8)),
-				     operands[2])));
+				     scratch)));
   else
     emit_insn (gen_rtx_SET (VOIDmode, gen_rtx_SUBREG (SImode, operands[0], 0),
 			    gen_rtx_IOR (SImode, 
-					 gen_rtx_ASHIFT (SImode, operands[2],
+					 gen_rtx_ASHIFT (SImode, scratch,
 							 GEN_INT (8)),
 					 gen_rtx_SUBREG (SImode, operands[0],
 							 0))));
 }
 
+/* Handle storing a half-word to memory during reload by synthesising as two
+   byte stores.  Take care not to clobber the input values until after we
+   have moved them somewhere safe.  This code assumes that if the DImode
+   scratch in operands[2] overlaps either the input value or output address
+   in some way, then that value must die in this insn (we absolutely need
+   two scratch registers for some corner cases).  */
 void
 arm_reload_out_hi (operands)
      rtx *operands;
 {
-  rtx base = find_replacement (&XEXP (operands[0], 0));
+  rtx ref = operands[0];
+  rtx outval = operands[1];
+  rtx base, scratch;
+  HOST_WIDE_INT offset = 0;
+
+  if (GET_CODE (ref) == SUBREG)
+    {
+      offset = SUBREG_WORD (ref) * UNITS_PER_WORD;
+      if (BYTES_BIG_ENDIAN)
+	offset -= (MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (ref)))
+		   - MIN (UNITS_PER_WORD,
+			  GET_MODE_SIZE (GET_MODE (SUBREG_REG (ref)))));
+      ref = SUBREG_REG (ref);
+    }
+
+
+  if (GET_CODE (ref) == REG)
+    {
+      /* We have a pseudo which has been spilt onto the stack; there
+	 are two cases here: the first where there is a simple
+	 stack-slot replacement and a second where the stack-slot is
+	 out of range, or is used as a subreg.  */
+      if (reg_equiv_mem[REGNO (ref)])
+	{
+	  ref = reg_equiv_mem[REGNO (ref)];
+	  base = find_replacement (&XEXP (ref, 0));
+	}
+      else
+	/* The slot is out of range, or was dressed up in a SUBREG */
+	base = reg_equiv_address[REGNO (ref)];
+    }
+  else
+    base = find_replacement (&XEXP (ref, 0));
+
+  scratch = gen_rtx_REG (SImode, REGNO (operands[2]));
+
+  /* Handle the case where the address is too complex to be offset by 1.  */
+  if (GET_CODE (base) == MINUS
+      || (GET_CODE (base) == PLUS && GET_CODE (XEXP (base, 1)) != CONST_INT))
+    {
+      rtx base_plus = gen_rtx_REG (SImode, REGNO (operands[2]) + 1);
+
+      /* Be careful not to destroy OUTVAL.  */
+      if (reg_overlap_mentioned_p (base_plus, outval))
+	{
+	  /* Updating base_plus might destroy outval, see if we can
+	     swap the scratch and base_plus.  */
+	  if (! reg_overlap_mentioned_p (scratch, outval))
+	    {
+	      rtx tmp = scratch;
+	      scratch = base_plus;
+	      base_plus = tmp;
+	    }
+	  else
+	    {
+	      rtx scratch_hi = gen_rtx_REG (HImode, REGNO (operands[2]));
+
+	      /* Be conservative and copy OUTVAL into the scratch now,
+		 this should only be necessary if outval is a subreg
+		 of something larger than a word.  */
+	      /* XXX Might this clobber base?  I can't see how it can,
+		 since scratch is known to overlap with OUTVAL, and
+		 must be wider than a word.  */
+	      emit_insn (gen_movhi (scratch_hi, outval));
+	      outval = scratch_hi;
+	    }
+	}
+
+      emit_insn (gen_rtx_SET (VOIDmode, base_plus, base));
+      base = base_plus;
+    }
+  else if (GET_CODE (base) == PLUS)
+    {
+      /* The addend must be CONST_INT, or we would have dealt with it above */
+      HOST_WIDE_INT hi, lo;
+
+      offset += INTVAL (XEXP (base, 1));
+      base = XEXP (base, 0);
+
+      /* Rework the address into a legal sequence of insns */
+      /* Valid range for lo is -4095 -> 4095 */
+      lo = (offset >= 0
+	    ? (offset & 0xfff)
+	    : -((-offset) & 0xfff));
+
+      /* Corner case, if lo is the max offset then we would be out of range
+	 once we have added the additional 1 below, so bump the msb into the
+	 pre-loading insn(s).  */
+      if (lo == 4095)
+	lo &= 0x7ff;
+
+      hi = ((((offset - lo) & (HOST_WIDE_INT) 0xFFFFFFFF)
+	     ^ (HOST_WIDE_INT) 0x80000000)
+	    - (HOST_WIDE_INT) 0x80000000);
+
+      if (hi + lo != offset)
+	abort ();
+
+      if (hi != 0)
+	{
+	  rtx base_plus = gen_rtx_REG (SImode, REGNO (operands[2]) + 1);
+
+	  /* Be careful not to destroy OUTVAL.  */
+	  if (reg_overlap_mentioned_p (base_plus, outval))
+	    {
+	      /* Updating base_plus might destroy outval, see if we
+		 can swap the scratch and base_plus.  */
+	      if (! reg_overlap_mentioned_p (scratch, outval))
+		{
+		  rtx tmp = scratch;
+		  scratch = base_plus;
+		  base_plus = tmp;
+		}
+	      else
+		{
+		  rtx scratch_hi = gen_rtx_REG (HImode, REGNO (operands[2]));
+
+		  /* Be conservative and copy outval into scratch now,
+		     this should only be necessary if outval is a
+		     subreg of something larger than a word.  */
+		  /* XXX Might this clobber base?  I can't see how it
+		     can, since scratch is known to overlap with
+		     outval.  */
+		  emit_insn (gen_movhi (scratch_hi, outval));
+		  outval = scratch_hi;
+		}
+	    }
+
+	  /* Get the base address; addsi3 knows how to handle constants
+	     that require more than one insn */
+	  emit_insn (gen_addsi3 (base_plus, base, GEN_INT (hi)));
+	  base = base_plus;
+	  offset = lo;
+	}
+    }
 
   if (BYTES_BIG_ENDIAN)
     {
-      emit_insn (gen_movqi (gen_rtx_MEM (QImode, plus_constant (base, 1)),
-			    gen_rtx_SUBREG (QImode, operands[1], 0)));
-      emit_insn (gen_lshrsi3 (operands[2],
-			      gen_rtx_SUBREG (SImode, operands[1], 0),
+      emit_insn (gen_movqi (gen_rtx_MEM (QImode, 
+					 plus_constant (base, offset + 1)),
+			    gen_rtx_SUBREG (QImode, outval, 0)));
+      emit_insn (gen_lshrsi3 (scratch,
+			      gen_rtx_SUBREG (SImode, outval, 0),
 			      GEN_INT (8)));
-      emit_insn (gen_movqi (gen_rtx_MEM (QImode, base),
-			    gen_rtx_SUBREG (QImode, operands[2], 0)));
+      emit_insn (gen_movqi (gen_rtx_MEM (QImode, plus_constant (base, offset)),
+			    gen_rtx_SUBREG (QImode, scratch, 0)));
     }
   else
     {
-      emit_insn (gen_movqi (gen_rtx_MEM (QImode, base),
-			    gen_rtx_SUBREG (QImode, operands[1], 0)));
-      emit_insn (gen_lshrsi3 (operands[2],
-			      gen_rtx_SUBREG (SImode, operands[1], 0),
+      emit_insn (gen_movqi (gen_rtx_MEM (QImode, plus_constant (base, offset)),
+			    gen_rtx_SUBREG (QImode, outval, 0)));
+      emit_insn (gen_lshrsi3 (scratch,
+			      gen_rtx_SUBREG (SImode, outval, 0),
 			      GEN_INT (8)));
-      emit_insn (gen_movqi (gen_rtx_MEM (QImode, plus_constant (base, 1)),
-			    gen_rtx_SUBREG (QImode, operands[2], 0)));
+      emit_insn (gen_movqi (gen_rtx_MEM (QImode,
+					 plus_constant (base, offset + 1)),
+			    gen_rtx_SUBREG (QImode, scratch, 0)));
     }
 }
 
