@@ -2647,7 +2647,6 @@ emit_move_insn_1 (rtx x, rtx y)
 {
   enum machine_mode mode = GET_MODE (x);
   enum machine_mode submode;
-  enum mode_class class = GET_MODE_CLASS (mode);
 
   gcc_assert ((unsigned int) mode < (unsigned int) MAX_MACHINE_MODE);
 
@@ -2656,20 +2655,21 @@ emit_move_insn_1 (rtx x, rtx y)
       emit_insn (GEN_FCN (mov_optab->handlers[(int) mode].insn_code) (x, y));
 
   /* Expand complex moves by moving real part and imag part, if possible.  */
-  else if ((class == MODE_COMPLEX_FLOAT || class == MODE_COMPLEX_INT)
+  else if (COMPLEX_MODE_P (mode)
 	   && BLKmode != (submode = GET_MODE_INNER (mode))
 	   && (mov_optab->handlers[(int) submode].insn_code
 	       != CODE_FOR_nothing))
     {
+      unsigned int modesize = GET_MODE_SIZE (mode);
+      unsigned int submodesize = GET_MODE_SIZE (submode);
+
       /* Don't split destination if it is a stack push.  */
-      int stack = push_operand (x, GET_MODE (x));
+      int stack = push_operand (x, mode);
 
 #ifdef PUSH_ROUNDING
       /* In case we output to the stack, but the size is smaller than the
 	 machine can push exactly, we need to use move instructions.  */
-      if (stack
-	  && (PUSH_ROUNDING (GET_MODE_SIZE (submode))
-	      != GET_MODE_SIZE (submode)))
+      if (stack && PUSH_ROUNDING (submodesize) != submodesize)
 	{
 	  rtx temp;
 	  HOST_WIDE_INT offset1, offset2;
@@ -2683,9 +2683,7 @@ emit_move_insn_1 (rtx x, rtx y)
 			       add_optab,
 #endif
 			       stack_pointer_rtx,
-			       GEN_INT
-				 (PUSH_ROUNDING
-				  (GET_MODE_SIZE (GET_MODE (x)))),
+			       GEN_INT (PUSH_ROUNDING (modesize)),
 			       stack_pointer_rtx, 0, OPTAB_LIB_WIDEN);
 
 	  if (temp != stack_pointer_rtx)
@@ -2693,11 +2691,10 @@ emit_move_insn_1 (rtx x, rtx y)
 
 #ifdef STACK_GROWS_DOWNWARD
 	  offset1 = 0;
-	  offset2 = GET_MODE_SIZE (submode);
+	  offset2 = submodesize;
 #else
-	  offset1 = -PUSH_ROUNDING (GET_MODE_SIZE (GET_MODE (x)));
-	  offset2 = (-PUSH_ROUNDING (GET_MODE_SIZE (GET_MODE (x)))
-		     + GET_MODE_SIZE (submode));
+	  offset1 = -PUSH_ROUNDING (modesize);
+	  offset2 = -PUSH_ROUNDING (modesize) + submodesize;
 #endif
 
 	  emit_move_insn (change_address (x, submode,
@@ -2748,42 +2745,32 @@ emit_move_insn_1 (rtx x, rtx y)
 	     memory and reload.  FIXME, we should see about using extract and
 	     insert on integer registers, but complex short and complex char
 	     variables should be rarely used.  */
-	  if (GET_MODE_BITSIZE (mode) < 2 * BITS_PER_WORD
-	      && (reload_in_progress | reload_completed) == 0)
+	  if ((reload_in_progress | reload_completed) == 0
+	      && (!validate_subreg (submode, mode, NULL, submodesize)
+		  || !validate_subreg (submode, mode, NULL, 0)))
 	    {
-	      int packed_dest_p
-		= (REG_P (x) && REGNO (x) < FIRST_PSEUDO_REGISTER);
-	      int packed_src_p
-		= (REG_P (y) && REGNO (y) < FIRST_PSEUDO_REGISTER);
-
-	      if (packed_dest_p || packed_src_p)
+	      if (REG_P (x) || REG_P (y))
 		{
-		  enum mode_class reg_class = ((class == MODE_COMPLEX_FLOAT)
-					       ? MODE_FLOAT : MODE_INT);
-
+		  rtx mem, cmem;
 		  enum machine_mode reg_mode
-		    = mode_for_size (GET_MODE_BITSIZE (mode), reg_class, 1);
+		    = mode_for_size (GET_MODE_BITSIZE (mode), MODE_INT, 1);
 
-		  if (reg_mode != BLKmode)
+		  gcc_assert (reg_mode != BLKmode);
+
+		  mem = assign_stack_temp (reg_mode, modesize, 0);
+		  cmem = adjust_address (mem, mode, 0);
+
+		  if (REG_P (x))
 		    {
-		      rtx mem = assign_stack_temp (reg_mode,
-						   GET_MODE_SIZE (mode), 0);
-		      rtx cmem = adjust_address (mem, mode, 0);
-
-		      if (packed_dest_p)
-			{
-			  rtx sreg = gen_rtx_SUBREG (reg_mode, x, 0);
-
-			  emit_move_insn_1 (cmem, y);
-			  return emit_move_insn_1 (sreg, mem);
-			}
-		      else
-			{
-			  rtx sreg = gen_rtx_SUBREG (reg_mode, y, 0);
-
-			  emit_move_insn_1 (mem, sreg);
-			  return emit_move_insn_1 (x, cmem);
-			}
+		      rtx sreg = gen_rtx_SUBREG (reg_mode, x, 0);
+		      emit_move_insn_1 (cmem, y);
+		      return emit_move_insn_1 (sreg, mem);
+		    }
+		  else
+		    {
+		      rtx sreg = gen_rtx_SUBREG (reg_mode, y, 0);
+		      emit_move_insn_1 (mem, sreg);
+		      return emit_move_insn_1 (x, cmem);
 		    }
 		}
 	    }
