@@ -374,6 +374,19 @@ do {									\
         fprintf ((FILE), "\n");						\
 } while (0) 
 
+/* Must use data section for relocatable constants when pic.  */
+#undef SELECT_RTX_SECTION
+#define SELECT_RTX_SECTION(MODE,RTX)					\
+{									\
+  if (TARGET_ELF) {							\
+    if (flag_pic && symbolic_operand (RTX))				\
+      data_section ();							\
+    else								\
+      const_section ();							\
+  } else								\
+    readonly_data_section();						\
+}
+
 #undef ASM_OUTPUT_CASE_LABEL
 #define ASM_OUTPUT_CASE_LABEL(FILE,PREFIX,NUM,JUMPTABLE)		\
 do {									\
@@ -890,7 +903,11 @@ dtors_section ()							\
 
 #undef LIB_SPEC
 #define LIB_SPEC \
- "%{!shared:%{!symbolic:-lcrypt -lgen -lc}}"
+ "%{shared:pic/libgcc.a%s}%{!shared:%{!symbolic:-lcrypt -lgen -lc}}"
+
+#undef LIBGCC_SPEC
+#define LIBGCC_SPEC \
+ "%{!shared:-lgcc}"
 
 #define MASK_COFF     		010000000000	/* Mask for elf generation */
 #define TARGET_COFF             (target_flags & MASK_COFF)
@@ -927,6 +944,7 @@ compiler at the end of the day. Onward we go ...
 
 # if defined (_SCO_ELF)
 #  define OBJECT_FORMAT_ELF
+#  define HAVE_ATEXIT
 #  define INIT_SECTION_ASM_OP INIT_SECTION_ASM_OP_ELF
 #  define FINI_SECTION_ASM_OP FINI_SECTION_ASM_OP_ELF
 #  define DTORS_SECTION_ASM_OP DTORS_SECTION_ASM_OP_ELF
@@ -948,4 +966,3 @@ do {									\
 } while (0)
 # endif /* ! _SCO_ELF */
 #endif /* CRT_BEGIN !! CRT_END */
-
