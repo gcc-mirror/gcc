@@ -23,10 +23,16 @@
 
 ;;- See file "rtl.def" for documentation on define_insn, match_*, et. al.
 
-;; cpu type.  Cpu32bit includes v7, sparclite, v8.
+;; Architecture type.  Arch32bit includes v7, sparclite, v8.
 
-(define_attr "cpu" "cpu32bit,cpu64bit"
-  (const (symbol_ref "sparc_cpu_type")))
+(define_attr "arch" "arch32bit,arch64bit"
+  (const (symbol_ref "sparc_arch_type")))
+
+;; CPU type. This is only used for instruction scheduling
+(define_attr "cpu" "cypress,supersparc"
+ (const
+  (cond [(symbol_ref "TARGET_SUPERSPARC") (const_string "supersparc")]
+	(const_string "cypress"))))
 
 ;; Insn type.  Used to default other attribute values.
 
@@ -36,7 +42,7 @@
 ;; type "call_no_delay_slot" is a call followed by an unimp instruction.
 
 (define_attr "type"
-  "move,unary,binary,compare,load,store,uncond_branch,branch,call,call_no_delay_slot,address,fpload,fpstore,fp,fpcmp,fpmul,fpdiv,fpsqrt,cmove,multi,misc"
+  "move,unary,binary,compare,load,store,ialu,shift,uncond_branch,branch,call,call_no_delay_slot,address,imul,fpload,fpstore,fp,fpcmp,fpmul,fpdivs,fpdivd,fpsqrt,cmove,multi,misc"
   (const_string "binary"))
 
 ;; Set true if insn uses call-clobbered intermediate register.
@@ -149,8 +155,10 @@
 ;; (define_function_unit "alu" 1 0
 ;;  (eq_attr "type" "unary,binary,move,address") 1 0)
 
+;; ---- cypress CY7C602 scheduling:
 ;; Memory with load-delay of 1 (i.e., 2 cycle load).
-(define_function_unit "memory" 1 1 (eq_attr "type" "load,fpload") 2 0)
+(define_function_unit "memory" 1 0 
+  (and (eq_attr "type" "load,fpload") (eq_attr "cpu" "cypress")) 2 2)
 
 ;; SPARC has two floating-point units: the FP ALU,
 ;; and the FP MUL/DIV/SQRT unit.
@@ -171,10 +179,57 @@
 ;; The CY7C602 can only support 2 fp isnsn simultaneously.
 ;; More insns cause the chip to stall.
 
-(define_function_unit "fp_alu" 1 1 (eq_attr "type" "fp") 5 0)
-(define_function_unit "fp_mds" 1 1 (eq_attr "type" "fpmul") 7 0)
-(define_function_unit "fp_mds" 1 1 (eq_attr "type" "fpdiv") 37 0)
-(define_function_unit "fp_mds" 1 1 (eq_attr "type" "fpsqrt") 63 0)
+(define_function_unit "fp_alu" 1 0
+  (and (eq_attr "type" "fp")            (eq_attr "cpu" "cypress")) 5 5)
+(define_function_unit "fp_mds" 1 0
+  (and (eq_attr "type" "fpmul")         (eq_attr "cpu" "cypress")) 7 7)
+(define_function_unit "fp_mds" 1 0
+  (and (eq_attr "type" "fpdivs,fpdivd") (eq_attr "cpu" "cypress")) 37 37)
+(define_function_unit "fp_mds" 1 0
+  (and (eq_attr "type" "fpsqrt")        (eq_attr "cpu" "cypress")) 63 63)
+
+;; ----- The TMS390Z55 scheduling
+;; The Supersparc can issue 1 - 3 insns per cycle; here we assume
+;; three insns/cycle, and hence multiply all costs by three.
+;; Combinations up to two integer, one ld/st, one fp.
+;; Memory delivers its result in one cycle to IU, zero cycles to FP
+(define_function_unit "memory" 1 0
+  (and (eq_attr "type" "load")          (eq_attr "cpu" "supersparc")) 3 3)
+(define_function_unit "memory" 1 0
+  (and (eq_attr "type" "fpload")        (eq_attr "cpu" "supersparc")) 1 3)
+;; at least one in three instructions can be a mem opt.
+(define_function_unit "memory" 1 0
+  (and (eq_attr "type" "store,fpstore") (eq_attr "cpu" "supersparc")) 1 3)
+;; at least one in three instructions can be a shift op.
+(define_function_unit "shift" 1 0
+  (and (eq_attr "type" "shift")         (eq_attr "cpu" "supersparc")) 1 3)
+
+;; There are only two write ports to the integer register file
+;; A store also uses a write port
+(define_function_unit "iwport" 2 0
+  (and (eq_attr "type" "load,store,shift,ialu") (eq_attr "cpu" "supersparc")) 1 3)
+
+;; Timings; throughput/latency
+;; FADD     1/3    add/sub, format conv, compar, abs, neg
+;; FMUL     1/3
+;; FDIVs    4/6
+;; FDIVd    7/9
+;; FSQRTs   6/8
+;; FSQRTd  10/12
+;; IMUL     4/4
+
+(define_function_unit "fp_alu" 1 0
+  (and (eq_attr "type" "fp,fpcmp") (eq_attr "cpu" "supersparc")) 9 3)
+(define_function_unit "fp_mds" 1 0
+  (and (eq_attr "type" "fpmul")    (eq_attr "cpu" "supersparc")) 9 3)
+(define_function_unit "fp_mds" 1 0
+  (and (eq_attr "type" "fpdivs")   (eq_attr "cpu" "supersparc")) 18 12)
+(define_function_unit "fp_mds" 1 0
+  (and (eq_attr "type" "fpdivd")   (eq_attr "cpu" "supersparc")) 27 21)
+(define_function_unit "fp_mds" 1 0
+  (and (eq_attr "type" "fpsqrt")   (eq_attr "cpu" "supersparc")) 36 30)
+(define_function_unit "fp_mds" 1 0
+  (and (eq_attr "type" "imul")     (eq_attr "cpu" "supersparc")) 12 12)
 
 ;; Compare instructions.
 ;; This controls RTL generation and register allocation.
@@ -3160,7 +3215,8 @@
 	(plus:SI (match_operand:SI 1 "arith_operand" "%r")
 		 (match_operand:SI 2 "arith_operand" "rI")))]
   ""
-  "add %1,%2,%0")
+  "add %1,%2,%0"
+  [(set_attr "type" "ialu")])
 
 (define_insn ""
   [(set (reg:CC_NOOV 0)
@@ -3266,7 +3322,8 @@
 	(minus:SI (match_operand:SI 1 "register_operand" "r")
 		  (match_operand:SI 2 "arith_operand" "rI")))]
   ""
-  "sub %1,%2,%0")
+  "sub %1,%2,%0"
+  [(set_attr "type" "ialu")])
 
 (define_insn ""
   [(set (reg:CC_NOOV 0)
@@ -3314,7 +3371,8 @@
 	(mult:SI (match_operand:SI 1 "arith_operand" "%r")
 		 (match_operand:SI 2 "arith_operand" "rI")))]
   "TARGET_V8 || TARGET_SPARCLITE"
-  "smul %1,%2,%0")
+  "smul %1,%2,%0"
+  [(set_attr "type" "imul")])
 
 (define_insn "muldi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -3333,7 +3391,8 @@
 	(compare:CC_NOOV (mult:SI (match_dup 1) (match_dup 2))
 			 (const_int 0)))]
   "TARGET_V8 || TARGET_SPARCLITE"
-  "smulcc %1,%2,%0")
+  "smulcc %1,%2,%0"
+  [(set_attr "type" "imul")])
 
 (define_expand "mulsidi3"
   [(set (match_operand:DI 0 "register_operand" "")
@@ -3589,7 +3648,8 @@
 	(and:SI (match_operand:SI 1 "arith_operand" "%r")
 		(match_operand:SI 2 "arith_operand" "rI")))]
   ""
-  "and %1,%2,%0")
+  "and %1,%2,%0"
+  [(set_attr "type" "ialu")])
 
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
@@ -3626,7 +3686,8 @@
 	(and:SI (not:SI (match_operand:SI 1 "register_operand" "r"))
 		(match_operand:SI 2 "register_operand" "r")))]
   ""
-  "andn %2,%1,%0")
+  "andn %2,%1,%0"
+  [(set_attr "type" "ialu")])
 
 (define_expand "iordi3"
   [(set (match_operand:DI 0 "register_operand" "")
@@ -3681,7 +3742,8 @@
 	(ior:SI (match_operand:SI 1 "arith_operand" "%r")
 		(match_operand:SI 2 "arith_operand" "rI")))]
   ""
-  "or %1,%2,%0")
+  "or %1,%2,%0"
+  [(set_attr "type" "ialu")])
 
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
@@ -3718,7 +3780,8 @@
 	(ior:SI (not:SI (match_operand:SI 1 "register_operand" "r"))
 		(match_operand:SI 2 "register_operand" "r")))]
   ""
-  "orn %2,%1,%0")
+  "orn %2,%1,%0"
+  [(set_attr "type" "ialu")])
 
 (define_expand "xordi3"
   [(set (match_operand:DI 0 "register_operand" "")
@@ -3773,7 +3836,8 @@
 	(xor:SI (match_operand:SI 1 "arith_operand" "%rJ")
 		(match_operand:SI 2 "arith_operand" "rI")))]
   ""
-  "xor %r1,%2,%0")
+  "xor %r1,%2,%0"
+  [(set_attr "type" "ialu")])
 
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
@@ -3827,7 +3891,8 @@
 	(not:SI (xor:SI (match_operand:SI 1 "reg_or_0_operand" "rJ")
 			(match_operand:SI 2 "arith_operand" "rI"))))]
   ""
-  "xnor %r1,%2,%0")
+  "xnor %r1,%2,%0"
+  [(set_attr "type" "ialu")])
 
 ;; These correspond to the above in the case where we also (or only)
 ;; want to set the condition code.  
@@ -4201,13 +4266,14 @@
   "fdmulq %1,%2,%0"
   [(set_attr "type" "fpmul")])
 
+;; don't have timing for quad-prec. divide.
 (define_insn "divtf3"
   [(set (match_operand:TF 0 "register_operand" "=f")
 	(div:TF (match_operand:TF 1 "register_operand" "f")
 		(match_operand:TF 2 "register_operand" "f")))]
   "TARGET_FPU && TARGET_HARD_QUAD"
   "fdivq %1,%2,%0"
-  [(set_attr "type" "fpdiv")])
+  [(set_attr "type" "fpdivd")])
 
 (define_insn "divdf3"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -4215,7 +4281,7 @@
 		(match_operand:DF 2 "register_operand" "f")))]
   "TARGET_FPU"
   "fdivd %1,%2,%0"
-  [(set_attr "type" "fpdiv")])
+  [(set_attr "type" "fpdivd")])
 
 (define_insn "divsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
@@ -4223,7 +4289,7 @@
 		(match_operand:SF 2 "register_operand" "f")))]
   "TARGET_FPU"
   "fdivs %1,%2,%0"
-  [(set_attr "type" "fpdiv")])
+  [(set_attr "type" "fpdivs")])
 
 (define_insn "negtf2"
   [(set (match_operand:TF 0 "register_operand" "=f,f")
@@ -4241,7 +4307,7 @@
   [(set_attr "type" "fp")
    (set_attr_alternative "length"
      [(const_int 1)
-      (if_then_else (eq_attr "cpu" "cpu32bit") (const_int 4) (const_int 1))])])
+      (if_then_else (eq_attr "arch" "arch32bit") (const_int 4) (const_int 1))])])
 
 (define_insn "negdf2"
   [(set (match_operand:DF 0 "register_operand" "=f,f")
@@ -4259,7 +4325,7 @@
   [(set_attr "type" "fp")
    (set_attr_alternative "length"
      [(const_int 1)
-      (if_then_else (eq_attr "cpu" "cpu32bit") (const_int 2) (const_int 1))])])
+      (if_then_else (eq_attr "arch" "arch32bit") (const_int 2) (const_int 1))])])
 
 (define_insn "negsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
@@ -4284,7 +4350,7 @@
   [(set_attr "type" "fp")
    (set_attr_alternative "length"
      [(const_int 1)
-      (if_then_else (eq_attr "cpu" "cpu32bit") (const_int 4) (const_int 1))])])
+      (if_then_else (eq_attr "arch" "arch32bit") (const_int 4) (const_int 1))])])
 
 (define_insn "absdf2"
   [(set (match_operand:DF 0 "register_operand" "=f,f")
@@ -4302,7 +4368,7 @@
   [(set_attr "type" "fp")
    (set_attr_alternative "length"
      [(const_int 1)
-      (if_then_else (eq_attr "cpu" "cpu32bit") (const_int 2) (const_int 1))])])
+      (if_then_else (eq_attr "arch" "arch32bit") (const_int 2) (const_int 1))])])
 
 (define_insn "abssf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
@@ -4346,7 +4412,8 @@
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
 
   return \"sll %1,%2,%0\";
-}")
+}"
+  [(set_attr "type" "shift")])
 
 (define_insn "ashldi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -4393,7 +4460,8 @@
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
 
   return \"sra %1,%2,%0\";
-}")
+}"
+  [(set_attr "type" "shift")])
 
 (define_insn "ashrdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -4421,7 +4489,8 @@
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
 
   return \"srl %1,%2,%0\";
-}")
+}"
+  [(set_attr "type" "shift")])
 
 (define_insn "lshrdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
