@@ -6119,10 +6119,24 @@ merge_assigned_reloads (insn)
 		      || rld[j].when_needed == RELOAD_FOR_INPADDR_ADDRESS)
 		  && reg_overlap_mentioned_for_reload_p (rld[j].in,
 							 rld[i].in))
-		rld[j].when_needed
-		  = ((rld[j].when_needed == RELOAD_FOR_INPUT_ADDRESS
-		      || rld[j].when_needed == RELOAD_FOR_INPADDR_ADDRESS)
-		     ? RELOAD_FOR_OTHER_ADDRESS : RELOAD_OTHER);
+		{
+		  int k;
+
+		  rld[j].when_needed
+		    = ((rld[j].when_needed == RELOAD_FOR_INPUT_ADDRESS
+			|| rld[j].when_needed == RELOAD_FOR_INPADDR_ADDRESS)
+		       ? RELOAD_FOR_OTHER_ADDRESS : RELOAD_OTHER);
+
+		  /* Check to see if we accidentally converted two reloads
+		     that use the same reload register to the same type.
+		     If so, the resulting code won't work, so abort.  */
+		  if (rld[j].reg_rtx)
+		    for (k = 0; k < j; k++)
+		      if (rld[k].in != 0 && rld[k].reg_rtx != 0
+			  && rld[k].when_needed == rld[j].when_needed
+			  && rtx_equal_p (rld[k].reg_rtx, rld[j].reg_rtx))
+			abort ();
+		}
 	}
     }
 }

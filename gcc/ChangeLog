@@ -1,3 +1,10 @@
+2002-10-15  Jim Wilson  <wilson@redhat.com>
+
+	* reload1.c (merge_assigned_reloads): After converting overlapping
+	reloads to RELOAD_OTHER, abort if there are now conflicting reloads.
+
+	* config/i386/i386.md (adddi3_1): Add call to ix86_binary_operator_ok.
+
 Tue Oct 15 22:08:35 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* expr.c (do_tablejump): Fix typo in my previous commit.
