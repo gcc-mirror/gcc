@@ -5466,6 +5466,8 @@
 
 ;; Unconditional and other jump instructions.
 
+;; This can only be used in a leaf function, so we do
+;; not need to use the PIC register.
 (define_insn "return"
   [(return)
    (use (reg:SI 2))
@@ -5482,11 +5484,16 @@
 
 ;; Use a different pattern for functions which have non-trivial
 ;; epilogues so as not to confuse jump and reorg.
+;;
+;; We use the PIC register to ensure it's restored after a
+;; call in PIC mode.  This can be non-optimal for non-PIC
+;; code but the real world cost should be unmeasurable.
 (define_insn "return_internal"
   [(return)
+   (use (match_operand:SI 0 "register_operand" "r"))
    (use (reg:SI 2))
    (const_int 1)]
-  ""
+  "true_regnum (operands[0]) == PIC_OFFSET_TABLE_REGNUM"
   "*
 {
   if (TARGET_PA_20)
@@ -5521,8 +5528,12 @@
    emit_jump_insn (gen_return ());
   else
     {
+      rtx x;
+
       hppa_expand_epilogue ();
-      emit_jump_insn (gen_return_internal ());
+      x = gen_return_internal (gen_rtx_REG (word_mode,
+					    PIC_OFFSET_TABLE_REGNUM));
+      emit_jump_insn (x);
     }
   DONE;
 }")
