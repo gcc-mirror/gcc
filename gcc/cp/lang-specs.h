@@ -38,11 +38,12 @@ Boston, MA 02111-1307, USA.  */
      %{!E:%{!M:%{!MM:\
        %{save-temps:cpp0 -lang-c++ %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
 		    %(cpp_options) %b.ii \n}\
-      cc1plus %{save-temps: -fpreprocessed %b.ii} -lang-c++\
+      cc1plus %{save-temps:-fpreprocessed %b.ii}\
+              %{!save-temps:%(cpp_options)} -lang-c++\
        %{!no-gcc:-D__GNUG__=%v1}\
        %{fnew-abi:-D__GXX_ABI_VERSION=100}\
        %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
-       %(cpp_options) %(cc1_options) %{+e*}\
+       %(cc1_options) %{+e*}\
        %{!fsyntax-only:%(invoke_as)}}}}"
 #else /* ! USE_CPPLIB */
     "cpp0 -lang-c++ %{!no-gcc:-D__GNUG__=%v1}\
