@@ -1,5 +1,7 @@
 1998-10-18  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl.c (grokvardecl): Fix thinko.
+
 	* decl.c (grokdeclarator): Embedded attrs bind to the right,
 	not the left.
 
