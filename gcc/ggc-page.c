@@ -386,11 +386,13 @@ debug_print_page_list (order)
      int order;
 {
   page_entry *p;
-  printf ("Head=%p, Tail=%p:\n", G.pages[order], G.page_tails[order]);
+  printf ("Head=%p, Tail=%p:\n", (PTR) G.pages[order],
+	  (PTR) G.page_tails[order]);
   p = G.pages[order];
   while (p != NULL)
     {
-      printf ("%p(%1d|%3d) -> ", p, p->context_depth, p->num_free_objects);
+      printf ("%p(%1d|%3d) -> ", (PTR) p, p->context_depth,
+	      p->num_free_objects);
       p = p->next;
     }
   printf ("NULL\n");
@@ -504,8 +506,8 @@ alloc_page (order)
 
   if (GGC_DEBUG_LEVEL >= 2)
     fprintf (G.debug_file, 
-	     "Allocating page at %p, object size=%d, data %p-%p\n", entry,
-	     1 << order, page, page + entry_size - 1);
+	     "Allocating page at %p, object size=%d, data %p-%p\n",
+	     (PTR) entry, 1 << order, page, page + entry_size - 1);
 
   return entry;
 }
@@ -518,7 +520,7 @@ free_page (entry)
 {
   if (GGC_DEBUG_LEVEL >= 2)
     fprintf (G.debug_file, 
-	     "Deallocating page at %p, data %p-%p\n", entry,
+	     "Deallocating page at %p, data %p-%p\n", (PTR) entry,
 	     entry->page, entry->page + entry->bytes - 1);
 
   set_page_table_entry (entry->page, NULL);
@@ -714,7 +716,7 @@ ggc_alloc (size)
   if (GGC_DEBUG_LEVEL >= 3)
     fprintf (G.debug_file, 
 	     "Allocating object, requested size=%d, actual=%d at %p on %p\n",
-	     (int) size, 1 << order, result, entry);
+	     (int) size, 1 << order, result, (PTR) entry);
 
   return result;
 }
