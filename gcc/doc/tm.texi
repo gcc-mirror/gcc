@@ -4692,7 +4692,7 @@ library routines.
 The default is to do nothing.  Most ports don't need to define this hook.
 @end deftypefn
 
-@defmac TARGET_FLOAT_LIB_COMPARE_RETURNS_BOOL (@var{mode}, @var{comparison})
+@defmac FLOAT_LIB_COMPARE_RETURNS_BOOL (@var{mode}, @var{comparison})
 This macro should return @code{true} if the library routine that
 implements the floating point comparison operator @var{comparison} in
 mode @var{mode} will return a boolean, and @var{false} if it will

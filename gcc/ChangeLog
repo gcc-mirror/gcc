@@ -1,3 +1,8 @@
+2004-02-06  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/tm.texi (TARGET_FLOAT_LIB_COMPARE_RETURNS_BOOL): Change
+	to FLOAT_LIB_COMPARE_RETURNS_BOOL.
+
 2004-02-07  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/t-linux64 (LIB2FUNCS_EXTRA): Add darwin-ldouble.c.
