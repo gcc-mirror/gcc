@@ -1,5 +1,17 @@
 2001-08-10  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (mips_add_large_offset_to_sp): New function.
+	(mips_annotate_frame_insn): New function.
+	(mips_emit_frame_related_store): New function.
+	(save_restore_insns): Don't mark instructions that set up the base
+	registers as frame-related.  Add REG_FRAME_RELATED_EXPR notes to
+	the store instructions instead.
+	(mips_expand_prologue): If the stack size is moved into a temporary
+	register, do not mark that move as frame-related.  Add a
+	REG_FRAME_RELATED_EXPR note to the stack adjustment instruction.
+
+2001-08-10  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.c (save_restore_insns): Don't mark the RA's
 	stack slot as unchanging if current_function_calls_eh_return.
 
