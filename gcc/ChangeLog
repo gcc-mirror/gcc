@@ -1,3 +1,8 @@
+2004-03-07  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips_in_small_data_p): Return false if
+	TARGET_ABICALLS.
+
 2004-03-06  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.c (m68hc11_gen_movhi): Use 2,-sp to push
