@@ -1341,18 +1341,11 @@ genrtl_asm_stmt (cv_qualifier, string, output_operands,
   emit_line_note (input_filename, lineno);
   if (output_operands != NULL_TREE || input_operands != NULL_TREE
       || clobbers != NULL_TREE)
-    {
-      tree t;
-      
-      for (t = input_operands; t; t = TREE_CHAIN (t))
-	TREE_VALUE (t) = decay_conversion (TREE_VALUE (t));
-      
-      c_expand_asm_operands (string, output_operands,
-			     input_operands, 
-			     clobbers,
-			     cv_qualifier != NULL_TREE,
-			     input_filename, lineno);
-    }
+    c_expand_asm_operands (string, output_operands,
+			   input_operands, 
+			   clobbers,
+			   cv_qualifier != NULL_TREE,
+			   input_filename, lineno);
   else
     expand_asm (string);
   
@@ -1373,6 +1366,8 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
      tree clobbers;
 {
   tree r;
+  tree t;
+
   if (TREE_CHAIN (string))
     string = combine_strings (string);
 
@@ -1383,6 +1378,10 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
 		  IDENTIFIER_POINTER (cv_qualifier));
       cv_qualifier = NULL_TREE;
     }
+
+  if (!processing_template_decl)
+    for (t = input_operands; t; t = TREE_CHAIN (t))
+      TREE_VALUE (t) = decay_conversion (TREE_VALUE (t));
 
   r = build_min_nt (ASM_STMT, cv_qualifier, string,
 		    output_operands, input_operands,
