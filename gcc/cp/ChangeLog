@@ -1,3 +1,8 @@
+2003-04-14  Ziemowit Laski  <zlaski@apple.com>
+
+	* tree.c (build_cplus_array_type_1): Do not call
+	uses_template_parms() on a NULL index_type.
+
 2003-04-14  Andreas Schwab  <schwab@suse.de>
 
 	* init.c (build_new_1): Test use_cookie instead of cookie_size to
