@@ -844,6 +844,8 @@ main (argc, argv)
      for `gld' (if native linking) or `TARGET-gld' (if cross).  */
   if (ld_file_name == 0)
     ld_file_name = find_a_file (&path, full_gld_suffix);
+#else
+  ld_file_name = 0;
 #endif
   /* Likewise for `real-ld'.  */
   if (ld_file_name == 0)
