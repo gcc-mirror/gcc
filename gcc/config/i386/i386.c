@@ -1731,7 +1731,9 @@ asm_output_function_prefix (file, name)
 	}
       prologue_node = make_node (FUNCTION_DECL);
       DECL_RESULT (prologue_node) = 0;
+#ifdef ASM_DECLARE_FUNCTION_NAME
       ASM_DECLARE_FUNCTION_NAME (file, pic_label_name, prologue_node);
+#endif
       output_asm_insn ("movl (%1),%0", xops);
       output_asm_insn ("ret", xops);
     }
