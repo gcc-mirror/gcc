@@ -1,3 +1,7 @@
+2000-02-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* execute/20000223-1.c: New test.
+
 2000-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* compile/20000127-1.c: New test.
