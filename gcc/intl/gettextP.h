@@ -44,13 +44,14 @@
 # include <byteswap.h>
 # define SWAP(i) bswap_32 (i)
 #else
-static nls_uint32 SWAP PARAMS ((nls_uint32 i));
+static nls_uint32 SWAP PARAMS ((unsigned int i));
 
 static inline nls_uint32
 SWAP (i)
-     nls_uint32 i;
+     unsigned int i;
 {
-  return (i << 24) | ((i & 0xff00) << 8) | ((i >> 8) & 0xff00) | (i >> 24);
+  nls_uint32 x = (nls_uint32) i;
+  return (x << 24) | ((x & 0xff00) << 8) | ((x >> 8) & 0xff00) | (x >> 24);
 }
 #endif
 
