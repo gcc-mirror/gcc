@@ -1195,6 +1195,7 @@ fix = {
             "   }\n";
 };
 
+
 /*
  *  Keep HP-UX 11 from stomping on C++ math namespace
  *  with defines for fabsf.
@@ -1212,6 +1213,25 @@ fix = {
     "#ifdef _PA_RISC\n"
     "#  define fabsf(x) ((float)fabs((double)(float)(x)))\n"
     "#endif";
+};
+
+
+/*
+ * Prevent HP-UX 11 from defining __size_t and preventing size_t from
+ * being defined by having it define _hpux_size_t instead.
+ */
+fix = {
+    hackname  = hpux11_size_t;
+    mach      = "*-hp-hpux*";
+    select    = "^#define __size_t size_t";
+
+    c_fix     = format;
+    c_fix_arg = "_hpux_size_t";
+    c_fix_arg = "__size_t";
+
+    test_text =
+    "#define __size_t size_t\n"
+    "       extern int getpwuid_r( char *, __size_t, struct passwd **);\n";
 };
 
 
@@ -3102,6 +3122,23 @@ fix = {
     test_text = "#define NULL 0UL\r\n#define NULL\t((void*)0)\n";
 };
 
+/*
+ * On Cray Unicos/Mk some standard headers use the C99 keyword "restrict"
+ * which must be replaced by __restrict__ for GCC.
+ */
+fix = {
+    hackname = unicosmk_restrict;
+    files    = stdio.h;
+    files    = stdlib.h;
+    files    = wchar.h;
+    mach     = "*-*-unicosmk*";
+    select   = "(\\*[ \t]*)restrict([ \t]+)";
+
+    c_fix     = format;
+    c_fix_arg = "%1__restrict__%2";
+
+    test_text = "void f (char * restrict x);";
+};
 
 /*
  * If arpa/inet.h prototypes are incompatible with the ones we just
