@@ -1,5 +1,5 @@
 ;;- Machine description for the AT&T DSP1600 for GNU C compiler
-;;  Copyright (C) 1994, 1995, 1997 Free Software Foundation, Inc.
+;;  Copyright (C) 1994, 1995, 1997, 1998 Free Software Foundation, Inc.
 ;;  Contributed by Michael Collison (collison@world.std.com).
 
 ;; This file is part of GNU CC.
@@ -185,7 +185,7 @@
 	  output_asm_insn (\"a0=%u0\;a0l=%w0\", operands);
 	}
       else
-	fatal (\"Invalid register for compare\");
+	dsp16xx_invalid_register_for_compare ();
     }
   else if (GET_CODE(operands[0]) == CONST_INT)
     {
@@ -212,7 +212,7 @@
 	  output_asm_insn (\"a1=%u1\;a1l=%w1\", operands);
 	}
       else
-	fatal (\"Invalid register for compare\");
+	dsp16xx_invalid_register_for_compare ();
     }
   else if (GET_CODE (operands[1]) == MEM)
     {
