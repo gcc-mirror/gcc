@@ -2,6 +2,11 @@
 
 	* testsuite/26_numerics/c99_classification_macros_c.cc: Add XFAIL.
 
+	* include/std/std_bitset.h (_M_do_find_next): Fix -Wall nit.
+	* include/bits/concept_check.h: Fix multi-line comment.
+	* testsuite/17_intro/headers.cc (dg-options): Add -Wall -Wsystem-header
+	when target is *-*-freebsd*.
+
 2003-04-14  Nathan Myers  <ncm@cantrip.org>
             Paolo Carlini  <pcarlini@unitus.it>
 

@@ -414,7 +414,7 @@ namespace std
       _M_do_find_next(size_t __prev, size_t __not_found) const
       {
 	++__prev;
-	if (__prev >= _GLIBCPP_BITSET_BITS_PER_WORD)
+	if (__prev >= ((size_t) _GLIBCPP_BITSET_BITS_PER_WORD))
 	  return __not_found;
 
 	_WordT __x = _M_w >> __prev;
