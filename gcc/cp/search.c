@@ -2542,17 +2542,6 @@ dfs_debug_mark (binfo)
   if (methods == 0)
     return;
 
-  /* We can't do the TYPE_DECL_SUPPRESS_DEBUG thing with DWARF, which
-     does not support name references between translation units.  Well, we
-     could, but that would mean putting global labels in the debug output
-     before each exported type and each of its functions and static data
-     members.  */
-  if (write_symbols == DWARF_DEBUG || write_symbols == DWARF2_DEBUG)
-    {
-      rest_of_type_compilation (t, global_bindings_p ());
-      return;
-    }
-
   /* If interface info is known, either we've already emitted the debug
      info or we don't need to.  */
   if (CLASSTYPE_INTERFACE_KNOWN (t)
@@ -3138,6 +3127,14 @@ note_debug_info_needed (type)
   if (current_template_parms)
     return;
 
+  /* We can't do the TYPE_DECL_SUPPRESS_DEBUG thing with DWARF, which
+     does not support name references between translation units.  Well, we
+     could, but that would mean putting global labels in the debug output
+     before each exported type and each of its functions and static data
+     members.  */
+  if (write_symbols == DWARF_DEBUG || write_symbols == DWARF2_DEBUG)
+    return;
+
   dfs_walk (TYPE_BINFO (type), dfs_debug_mark, dfs_debug_unmarkedp);
   for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
     {
@@ -3195,7 +3192,12 @@ envelope_add_decl (type, decl, values)
 	  else
 	    dont_add = 1;
 	}
-      else if (context && TYPE_DERIVES_FROM (context, type))
+      /* If we don't check CLASSTYPE_CID on CONTEXT right now, we'll end
+	 up subtracting from the address of MI_MATRIX, putting us off
+	 in la la land.  */
+      else if (context
+	       && CLASSTYPE_CID (context)
+	       && TYPE_DERIVES_FROM (context, type))
 	{
 	  /* Don't add in *values to list */
 	  *values = NULL_TREE;
@@ -3213,7 +3215,12 @@ envelope_add_decl (type, decl, values)
 	  ? DECL_CLASS_CONTEXT (value)
 	    : DECL_CONTEXT (value);
 
-	if (context && TYPE_DERIVES_FROM (context, type))
+	/* If we don't check CLASSTYPE_CID on CONTEXT right now, we'll end
+	   up subtracting from the address of MI_MATRIX, putting us off
+	   in la la land.  */
+	if (context
+	    && CLASSTYPE_CID (context)
+	    && TYPE_DERIVES_FROM (context, type))
 	  {
 	    /* remove *tmp from list */
 	    *tmp = TREE_CHAIN (*tmp);

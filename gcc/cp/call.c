@@ -1281,7 +1281,7 @@ find_scoped_type (type, inner_name, inner_types)
       if (TREE_PURPOSE (tags) == inner_name)
 	{
 	  if (inner_types == NULL_TREE)
-	    return TYPE_NAME (TREE_VALUE (tags));
+	    return TYPE_MAIN_DECL (TREE_VALUE (tags));
 	  return resolve_scope_to_name (TREE_VALUE (tags), inner_types);
 	}
       tags = TREE_CHAIN (tags);
@@ -1326,7 +1326,7 @@ resolve_scope_to_name (outer_type, inner_stuff)
 
 	  if (rval != NULL_TREE)
 	    return rval;
-	  type = DECL_CONTEXT (TYPE_NAME (type));
+	  type = DECL_CONTEXT (TYPE_MAIN_DECL (type));
 	}
     }
 
@@ -4240,6 +4240,7 @@ build_user_type_conversion_1 (totype, expr, flags)
       cand = candidates;	/* any one will do */
       cand->second_conv = build1 (AMBIG_CONV, totype, expr);
       ICS_USER_FLAG (cand->second_conv) = 1;
+      ICS_BAD_FLAG (cand->second_conv) = 1;
 
       return cand;
     }
@@ -4821,7 +4822,9 @@ static tree
 convert_like (convs, expr)
      tree convs, expr;
 {
-  if (ICS_BAD_FLAG (convs))
+  if (ICS_BAD_FLAG (convs)
+      && TREE_CODE (convs) != USER_CONV
+      && TREE_CODE (convs) != AMBIG_CONV)
     {
       tree t = convs; 
       for (; t; t = TREE_OPERAND (t, 0))

@@ -778,7 +778,10 @@ grok_x_components (specs, components)
 	  if (TREE_CODE (t) == UNION_TYPE
 	      && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
 	    {
+	      /* See also shadow_tag.  */
+
 	      struct pending_inline **p;
+	      tree *q;
 	      x = build_lang_field_decl (FIELD_DECL, NULL_TREE, t);
 
 	      /* Wipe out memory of synthesized methods */
@@ -789,6 +792,17 @@ grok_x_components (specs, components)
 	      TYPE_HAS_ASSIGN_REF (t) = 0;
 	      TYPE_HAS_ASSIGNMENT (t) = 0;
 	      TYPE_HAS_CONST_ASSIGN_REF (t) = 0;
+
+	      q = &TYPE_METHODS (t);
+	      while (*q)
+		{
+		  if (DECL_ARTIFICIAL (*q))
+		    *q = TREE_CHAIN (*q);
+		  else
+		    q = &TREE_CHAIN (*q);
+		}
+	      if (TYPE_METHODS (t))
+		error ("an anonymous union cannot have function members");
 
 	      p = &pending_inlines;
 	      for (; *p; *p = (*p)->next)
@@ -2163,6 +2177,7 @@ finish_builtin_type (type, name, fields, len, align_type)
 #else
   TYPE_NAME (type) = build_decl (TYPE_DECL, get_identifier (name), type);
 #endif
+  TYPE_STUB_DECL (type) = TYPE_NAME (type);
   layout_decl (TYPE_NAME (type), 0);
 }
 
@@ -2989,13 +3004,20 @@ finish_file ()
     {
       tree decl = TREE_VALUE (pending_statics);
 
-      if (TREE_USED (decl) == 1
-	  || TREE_READONLY (decl) == 0
-	  || DECL_INITIAL (decl) == 0)
-	{
-	  DECL_DEFER_OUTPUT (decl) = 0;
-	  rest_of_decl_compilation (decl, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)), 1, 1);
-	}
+      /* Output DWARF debug information.  */
+#ifdef DWARF_DEBUGGING_INFO
+      if (write_symbols == DWARF_DEBUG)
+	dwarfout_file_scope_decl (decl, 1);
+#endif
+#ifdef DWARF2_DEBUGGING_INFO
+      if (write_symbols == DWARF2_DEBUG)
+	dwarf2out_decl (decl);
+#endif
+
+      DECL_DEFER_OUTPUT (decl) = 0;
+      rest_of_decl_compilation
+	(decl, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)), 1, 1);
+
       pending_statics = TREE_CHAIN (pending_statics);
     }
 

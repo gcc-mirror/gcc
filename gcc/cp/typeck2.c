@@ -1377,7 +1377,10 @@ build_m_component_ref (datum, component)
   else if (binfo == error_mark_node)
     return error_mark_node;
 
-  return build (OFFSET_REF, rettype, datum, component);
+  component = build (OFFSET_REF, rettype, datum, component);
+  if (TREE_CODE (type) == OFFSET_TYPE)
+    component = resolve_offset_ref (component);
+  return component;
 }
 
 /* Return a tree node for the expression TYPENAME '(' PARMS ')'.  */

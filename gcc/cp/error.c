@@ -1486,7 +1486,7 @@ cp_file_of (t)
   if (TREE_CODE (t) == PARM_DECL)
     return DECL_SOURCE_FILE (DECL_CONTEXT (t));
   else if (TREE_CODE_CLASS (TREE_CODE (t)) == 't')
-    return DECL_SOURCE_FILE (TYPE_NAME (t));
+    return DECL_SOURCE_FILE (TYPE_MAIN_DECL (t));
   else
     return DECL_SOURCE_FILE (t);
 }
@@ -1502,7 +1502,7 @@ cp_line_of (t)
     t = TREE_TYPE (t);
 
   if (TREE_CODE_CLASS (TREE_CODE (t)) == 't')
-    line = DECL_SOURCE_LINE (TYPE_NAME (t));
+    line = DECL_SOURCE_LINE (TYPE_MAIN_DECL (t));
   else
     line = DECL_SOURCE_LINE (t);
 

@@ -817,6 +817,7 @@ layout_basetypes (rec, binfos)
 	     them too.  */
 	  DECL_ASSEMBLER_NAME (decl) = get_identifier (VTABLE_BASE);
 	  DECL_VIRTUAL_P (decl) = 1;
+	  DECL_ARTIFICIAL (decl) = 1;
 	  DECL_FIELD_CONTEXT (decl) = rec;
 	  DECL_CLASS_CONTEXT (decl) = rec;
 	  DECL_FCONTEXT (decl) = basetype;

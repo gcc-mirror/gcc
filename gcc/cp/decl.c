@@ -99,9 +99,9 @@ static struct stack_level *decl_stack;
 
 #ifndef BOOL_TYPE_SIZE
 #ifdef SLOW_BYTE_ACCESS
-#define BOOL_TYPE_SIZE ((SLOW_BYTE_ACCESS) ? (BITS_PER_WORD) : (BITS_PER_UNIT))
+#define BOOL_TYPE_SIZE ((SLOW_BYTE_ACCESS) ? (POINTER_SIZE) : (CHAR_TYPE_SIZE))
 #else
-#define BOOL_TYPE_SIZE BITS_PER_UNIT
+#define BOOL_TYPE_SIZE CHAR_TYPE_SIZE
 #endif
 #endif
 
@@ -2070,7 +2070,7 @@ pushtag (name, type, globalize)
 		  set_identifier_type_value_with_scope (name, type, b);
 		}
 	      else
-		d = TYPE_NAME (d);
+		d = TYPE_MAIN_DECL (d);
 
 	      TYPE_NAME (type) = d;
 	      DECL_CONTEXT (d) = context;
@@ -2088,7 +2088,7 @@ pushtag (name, type, globalize)
 	      newdecl = 1;
 	      d = build_decl (TYPE_DECL, name, type);
 	      SET_DECL_ARTIFICIAL (d);
-	      TYPE_MAIN_DECL (type) = d;
+	      TYPE_NAME (type) = d;
 	      DECL_CONTEXT (d) = context;
 	      if (! globalize && processing_template_decl && IS_AGGR_TYPE (type))
 		push_template_decl (d);
@@ -2097,11 +2097,8 @@ pushtag (name, type, globalize)
 	    }
 	  if (newdecl)
 	    {
-	      if (write_symbols != DWARF_DEBUG && write_symbols != DWARF2_DEBUG)
-		{
-		  if (ANON_AGGRNAME_P (name))
-		    DECL_IGNORED_P (d) = 1;
-		}
+	      if (ANON_AGGRNAME_P (name))
+		DECL_IGNORED_P (d) = 1;
 
 	      TYPE_CONTEXT (type) = DECL_CONTEXT (d);
 	      DECL_ASSEMBLER_NAME (d)
@@ -4103,7 +4100,7 @@ lookup_tag (form, name, binding_level, thislevel_only)
 		    if (TYPE_SIZE (context) == NULL_TREE)
 		      goto no_context;
 		    /* Go to next enclosing type, if any.  */
-		    context = DECL_CONTEXT (TYPE_NAME (context));
+		    context = DECL_CONTEXT (TYPE_MAIN_DECL (context));
 		    break;
 	        case 'd':
 		    context = DECL_CONTEXT (context);
@@ -4153,34 +4150,6 @@ lookup_tag_reverse (type, name)
 	      return TREE_PURPOSE (tail);
 	    }
 	}
-    }
-  return NULL_TREE;
-}
-
-/* Given type TYPE which was not declared in C++ language context,
-   attempt to find a name by which it is referred.  */
-
-tree
-typedecl_for_tag (tag)
-     tree tag;
-{
-  struct binding_level *b = current_binding_level;
-
-  if (TREE_CODE (TYPE_NAME (tag)) == TYPE_DECL)
-    return TYPE_NAME (tag);
-
-  while (b)
-    {
-      tree decls = b->names;
-      while (decls)
-	{
-	  if (TREE_CODE (decls) == TYPE_DECL && TREE_TYPE (decls) == tag)
-	    break;
-	  decls = TREE_CHAIN (decls);
-	}
-      if (decls)
-	return decls;
-      b = b->level_chain;
     }
   return NULL_TREE;
 }
@@ -4288,7 +4257,8 @@ make_typename_type (context, name)
     pop_obstacks ();
 
   TYPE_CONTEXT (t) = context;
-  TYPE_MAIN_DECL (TREE_TYPE (d)) = d;
+  TYPE_NAME (TREE_TYPE (d)) = d;
+  TYPE_STUB_DECL (TREE_TYPE (d)) = d;
   DECL_CONTEXT (d) = context;
   CLASSTYPE_GOT_SEMICOLON (t) = 1;
 
@@ -4473,7 +4443,7 @@ lookup_name_real (name, prefer_type, nonclass)
 	  || TREE_CODE (val) == TYPE_DECL || prefer_type <= 0)
 	;
       else if (IDENTIFIER_HAS_TYPE_VALUE (name))
-	val = TYPE_NAME (IDENTIFIER_TYPE_VALUE (name));
+	val = TYPE_MAIN_DECL (IDENTIFIER_TYPE_VALUE (name));
       else if (TREE_TYPE (val) == error_mark_node)
 	val = error_mark_node;
     }
@@ -5588,7 +5558,7 @@ shadow_tag (declspecs)
       code = TREE_CODE (value);
       if (IS_AGGR_TYPE_CODE (code) || code == ENUMERAL_TYPE)
 	{
-	  my_friendly_assert (TYPE_NAME (value) != NULL_TREE, 261);
+	  my_friendly_assert (TYPE_MAIN_DECL (value) != NULL_TREE, 261);
 
 	  if (IS_AGGR_TYPE (value) && CLASSTYPE_USE_TEMPLATE (value))
 	    {
@@ -5629,16 +5599,33 @@ shadow_tag (declspecs)
 	  || (TREE_CODE (TYPE_NAME (t)) == TYPE_DECL
 	      && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))))
     {
+      /* See also grok_x_components.  */
+
       tree fn;
+      tree *q;
+
+      /* Wipe out memory of synthesized methods */
+      TYPE_HAS_CONSTRUCTOR (t) = 0;
+      TYPE_HAS_DEFAULT_CONSTRUCTOR (t) = 0;
+      TYPE_HAS_INIT_REF (t) = 0;
+      TYPE_HAS_CONST_INIT_REF (t) = 0;
+      TYPE_HAS_ASSIGN_REF (t) = 0;
+      TYPE_HAS_ASSIGNMENT (t) = 0;
+      TYPE_HAS_CONST_ASSIGN_REF (t) = 0;
+
+      q = &TYPE_METHODS (t);
+      while (*q)
+	{
+	  if (DECL_ARTIFICIAL (*q))
+	    *q = TREE_CHAIN (*q);
+	  else
+	    q = &TREE_CHAIN (*q);
+	}
 
       /* ANSI C++ June 5 1992 WP 9.5.3.  Anonymous unions may not have
 	 function members.  */
-      for (fn = TYPE_METHODS (t); fn; fn = TREE_CHAIN (fn))
-	if (! DECL_ARTIFICIAL (fn))
-	  {
-	    error ("an anonymous union cannot have function members");
-	    break;
-	  }
+      if (TYPE_METHODS (t))
+	error ("an anonymous union cannot have function members");
 
       if (TYPE_FIELDS (t))
 	{
@@ -5804,12 +5791,6 @@ start_decl (declarator, declspecs, initialized)
 	      }
 	  }
       }
-
-  /* Do this before the decl is actually defined so that the DWARF debug
-     info for the class reflects the declaration, rather than the
-     definition, of this decl.  */
-  if (TREE_CODE (decl) == VAR_DECL && context)
-    note_debug_info_needed (context);
 
   if (initialized)
     {
@@ -6239,7 +6220,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       /* If we have installed this as the canonical typedef for this
 	 type, and that type has not been defined yet, delay emitting
 	 the debug informaion for it, as we will emit it later.  */
-      if (TYPE_NAME (TREE_TYPE (decl)) == decl
+      if (TYPE_MAIN_DECL (TREE_TYPE (decl)) == decl
 	  && TYPE_SIZE (TREE_TYPE (decl)) == NULL_TREE)
 	TYPE_DECL_SUPPRESS_DEBUG (decl) = 1;
 
@@ -6454,6 +6435,10 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       else if (!DECL_EXTERNAL (decl) && IS_AGGR_TYPE (ttype))
 	/* Let debugger know it should output info for this type.  */
 	note_debug_info_needed (ttype);
+
+      if (TREE_STATIC (decl) && DECL_CONTEXT (decl)
+	  && TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (decl))) == 't')
+	note_debug_info_needed (DECL_CONTEXT (decl));
 
       if ((DECL_EXTERNAL (decl) || TREE_STATIC (decl))
 	  && DECL_SIZE (decl) != NULL_TREE
@@ -7124,15 +7109,7 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
     return decl;
 
   if (check && funcdef_flag)
-    {
-      /* Do this before the decl is actually defined so that the DWARF debug
-	 info for the class reflects the declaration, rather than the
-	 definition, of this decl.  */
-      if (ctype)
-	note_debug_info_needed (ctype);
-
-      DECL_INITIAL (decl) = error_mark_node;
-    }
+    DECL_INITIAL (decl) = error_mark_node;
 
   if (flags == NO_SPECIAL && ctype && constructor_name (cname) == declarator)
     {
@@ -7242,14 +7219,15 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
 }
 
 static tree
-grokvardecl (type, declarator, specbits, initialized, constp)
+grokvardecl (type, declarator, specbits_in, initialized, constp)
      tree type;
      tree declarator;
-     RID_BIT_TYPE specbits;
+     RID_BIT_TYPE *specbits_in;
      int initialized;
      int constp;
 {
   tree decl;
+  RID_BIT_TYPE specbits = *specbits_in;
 
   if (TREE_CODE (type) == OFFSET_TYPE)
     {
@@ -8965,31 +8943,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       if (constp || volatilep)
 	type = cp_build_type_variant (type, constp, volatilep);
 
-      /* If the user declares "struct {...} foo" then `foo' will have
-	 an anonymous name.  Fill that name in now.  Nothing can
-	 refer to it, so nothing needs know about the name change.
-	 The TYPE_NAME field was filled in by build_struct_xref.  */
-      if (type != error_mark_node
-	  && TYPE_NAME (type)
-	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-	  && ANON_AGGRNAME_P (TYPE_IDENTIFIER (type)))
-	{
-	  /* replace the anonymous name with the real name everywhere.  */
-	  lookup_tag_reverse (type, declarator);
-	  TYPE_IDENTIFIER (type) = declarator;
-
-	  if (TYPE_LANG_SPECIFIC (type))
-	    TYPE_WAS_ANONYMOUS (type) = 1;
-
-	  {
-	    tree d = TYPE_NAME (type), c = DECL_CONTEXT (d);
-
-	    DECL_ASSEMBLER_NAME (d) = DECL_NAME (d);
-	    DECL_ASSEMBLER_NAME (d)
-	      = get_identifier (build_overload_name (type, 1, 1));
-	  }
-	}
-
       if (decl_context == FIELD)
 	{
 	  if (declarator == current_class_name)
@@ -9001,6 +8954,27 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	}
       else
 	decl = build_decl (TYPE_DECL, declarator, type);
+
+      /* If the user declares "struct {...} foo" then `foo' will have
+	 an anonymous name.  Fill that name in now.  Nothing can
+	 refer to it, so nothing needs know about the name change.
+	 The TYPE_NAME field was filled in by build_struct_xref.  */
+      if (type != error_mark_node
+	  && TYPE_NAME (type)
+	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+	  && ANON_AGGRNAME_P (TYPE_IDENTIFIER (type)))
+	{
+	  /* replace the anonymous name with the real name everywhere.  */
+	  lookup_tag_reverse (type, declarator);
+	  TYPE_NAME (type) = decl;
+
+	  if (TYPE_LANG_SPECIFIC (type))
+	    TYPE_WAS_ANONYMOUS (type) = 1;
+
+	  DECL_ASSEMBLER_NAME (decl) = DECL_NAME (decl);
+	  DECL_ASSEMBLER_NAME (decl)
+	    = get_identifier (build_overload_name (type, 1, 1));
+	}
 
       if (TREE_CODE (type) == OFFSET_TYPE || TREE_CODE (type) == METHOD_TYPE)
 	{
@@ -9290,7 +9264,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	       instantiation made the field's type be incomplete.  */
 	    if (current_class_type
 		&& TYPE_NAME (current_class_type)
-		&& IDENTIFIER_TEMPLATE (DECL_NAME (TYPE_NAME (current_class_type)))
+		&& IDENTIFIER_TEMPLATE (TYPE_IDENTIFIER (current_class_type))
 		&& declspecs && TREE_VALUE (declspecs)
 		&& TREE_TYPE (TREE_VALUE (declspecs)) == type)
 	      cp_error ("  in instantiation of template `%T'",
@@ -9519,7 +9493,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  }
 
 	/* An uninitialized decl with `extern' is a reference.  */
-	decl = grokvardecl (type, declarator, specbits, initialized, constp);
+	decl = grokvardecl (type, declarator, &specbits, initialized, constp);
 	bad_specifiers (decl, "variable", virtualp, quals != NULL_TREE,
 			inlinep, friendp, raises != NULL_TREE);
 
@@ -10719,8 +10693,7 @@ finish_enum (enumtype, values)
   }
 
   /* Finish debugging output for this type.  */
-  if (write_symbols != DWARF_DEBUG && write_symbols != DWARF2_DEBUG)
-    rest_of_type_compilation (enumtype, global_bindings_p ());
+  rest_of_type_compilation (enumtype, global_bindings_p ());
 
   return enumtype;
 }
@@ -10912,8 +10885,8 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
       if (! DECL_ARGUMENTS (decl1)
 	  && !DECL_STATIC_FUNCTION_P (decl1)
 	  && DECL_CONTEXT (decl1)
-	  && DECL_NAME (TYPE_NAME (DECL_CONTEXT (decl1)))
-	  && IDENTIFIER_TEMPLATE (DECL_NAME (TYPE_NAME (DECL_CONTEXT (decl1)))))
+	  && TYPE_IDENTIFIER (DECL_CONTEXT (decl1))
+	  && IDENTIFIER_TEMPLATE (TYPE_IDENTIFIER (DECL_CONTEXT (decl1))))
 	{
 	  cp_error ("redeclaration of `%#D'", decl1);
 	  if (IDENTIFIER_CLASS_VALUE (DECL_NAME (decl1)))
@@ -10998,12 +10971,6 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 	  warn_about_return_type = 0;
 	}
     }
-
-  /* Do this before the decl is actually defined so that the DWARF debug
-     info for the class reflects the declaration, rather than the
-     definition, of this decl.  */
-  if (DECL_FUNCTION_MEMBER_P (decl1))
-    note_debug_info_needed (DECL_CLASS_CONTEXT (decl1));
 
   /* Warn if function was previously implicitly declared
      (but not if we warned then).  */
@@ -11991,6 +11958,9 @@ finish_function (lineno, call_poplevel, nested)
 	  mark_inline_for_output (fndecl);
 	}
 
+      if (ctype && TREE_ASM_WRITTEN (fndecl))
+	note_debug_info_needed (ctype);
+
       current_function_returns_null |= can_reach_end;
 
       /* Since we don't normally go through c_expand_return for constructors,
@@ -12034,13 +12004,14 @@ finish_function (lineno, call_poplevel, nested)
 
   if (DECL_SAVED_INSNS (fndecl) == NULL_RTX)
     {
+      tree t;
+
       /* Stop pointing to the local nodes about to be freed.  */
       /* But DECL_INITIAL must remain nonzero so we know this
 	 was an actual function definition.  */
       DECL_INITIAL (fndecl) = error_mark_node;
-      /* And we need the arguments for template instantiation.  */
-      if (! processing_template_decl)
-	DECL_ARGUMENTS (fndecl) = NULL_TREE;
+      for (t = DECL_ARGUMENTS (fndecl); t; t = TREE_CHAIN (t))
+	DECL_RTL (t) = NULL_RTX;
     }
 
   if (DECL_STATIC_CONSTRUCTOR (fndecl))
@@ -12411,7 +12382,11 @@ cplus_expand_expr_stmt (exp)
 	 libg++ to miscompile, and tString to core dump.  */
       exp = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (exp), exp);
 #endif
-      expand_expr_stmt (break_out_cleanups (exp));
+      /* If we don't do this, we end up down inside expand_expr
+	 trying to do TYPE_MODE on the ERROR_MARK, and really
+	 go outside the bounds of the type.  */
+      if (exp != error_mark_node)
+	expand_expr_stmt (break_out_cleanups (exp));
     }
 
   /* Clean up any pending cleanups.  This happens when a function call
