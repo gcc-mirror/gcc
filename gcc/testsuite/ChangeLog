@@ -1,3 +1,9 @@
+2003-12-04  Stuart Menefy <stuart.menefy@st.com>
+	    J"orn Rennecke <joern.rennecke@superh.com>
+
+	PR optimization/13260
+	* gcc.c-torture/execute/20031204-1.c: New test.
+
 2003-12-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9127
