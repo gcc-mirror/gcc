@@ -13,7 +13,9 @@ libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 libgfortranbegin_la_SOURCES = fmain.c
 libgfortranbegin_la_LDFLAGS = -static
 
-AM_CPPFLAGS = -I$(srcdir)/io
+## io.h conflicts with some a system header on some platforms, so
+## use -iquote
+AM_CPPFLAGS = -iquote$(srcdir)/io
 
 libgfortranincludedir = $(includedir)/gforio
 

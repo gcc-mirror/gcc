@@ -297,7 +297,7 @@ toolexeclib_LTLIBRARIES = libgfortran.la libgfortranbegin.la
 libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lm
 libgfortranbegin_la_SOURCES = fmain.c
 libgfortranbegin_la_LDFLAGS = -static
-AM_CPPFLAGS = -I$(srcdir)/io
+AM_CPPFLAGS = -iquote$(srcdir)/io
 libgfortranincludedir = $(includedir)/gforio
 gfor_io_src = \
 io/backspace.c \
