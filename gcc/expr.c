@@ -2588,10 +2588,8 @@ expand_assignment (to, from, want_value, suggest_reg)
 	to_rtx = expand_expr (to, NULL_RTX, VOIDmode, 0);
 
       if (GET_MODE (to_rtx) == BLKmode)
-	{
-	  int align = MIN (TYPE_ALIGN (TREE_TYPE (from)), BITS_PER_WORD);
-	  emit_block_move (to_rtx, value, expr_size (from), align);
-	}
+	emit_block_move (to_rtx, value, expr_size (from),
+			 TYPE_ALIGN (TREE_TYPE (from)) / BITS_PER_WORD);
       else
 	emit_move_insn (to_rtx, value);
       preserve_temp_slots (to_rtx);
