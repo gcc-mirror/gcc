@@ -1,3 +1,7 @@
+Mon Aug 31 17:50:53 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* mh-aix43 (NM_FOR_TARGET): Add -X32_64 as well.
+
 Sat Aug 29 14:32:55 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* mh-aix43: New file.
