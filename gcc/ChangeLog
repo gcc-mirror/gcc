@@ -1,3 +1,12 @@
+2002-11-26  Hartmut Penner  <hpenner@de.ibm.com>
+
+	* config/s390/s390.md (literal_pool_64, literal_pool_31 ): New
+	insns.
+	* config/s390/s390.c (struct machine_function): Introduction of
+	struct machine_function.
+	* config/s390/s390-protos.h (s390_output_constant_pool): Changed 
+	prototype.
+	
 2002-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* varasm.c (output_constant_pool): For pool constants in mergeable
