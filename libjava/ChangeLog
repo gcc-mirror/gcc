@@ -1,3 +1,11 @@
+2003-07-26  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* win32.cc (_Jv_platform_initProperties): Use generic names
+	like "x86" for the "os.arch" property to be consistent with
+	what Sun's JDK produces. Use the wProcessorArchitecture
+	member of the Win32 SYSTEM_INFO structure, filled in a call 
+	to GetSystemInfo( ), instead of dwProcessorType.
+
 2003-07-26  Mohan Embar  <gnustuff@thisiscool.com>
 	    Ranjit Mathew  <rmathew@hotmail.com>
 
