@@ -1,3 +1,13 @@
+2004-07-27  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	PR optimization/15077
+	* function.h (struct function): Add field saved_static_chain_decl.
+	Fix comment for static_chain_decl.
+	* tree-inline.c (save_body): Add new arg and handle static_chain_decl.
+	* tree-inline.h (save_body): Add new arg.
+	* tree-optimize.c (tree_rest_of_compilation): Handle saving
+	static_chain_decl.
+
 2004-07-27  Richard Henderson  <rth@redhat.com>
 
 	* gimplify.c (is_gimple_addr_expr_arg_or_indirect): Remove.

@@ -173,6 +173,7 @@ struct function GTY(())
      inlining */
   tree saved_tree;
   tree saved_args;
+  tree saved_static_chain_decl;
 
   /* For function.c.  */
 
@@ -254,7 +255,7 @@ struct function GTY(())
      If stack grows up, this is the address for the next slot.  */
   HOST_WIDE_INT x_frame_offset;
 
-  /* A VAR_DECL that should contain the static chain for this function.
+  /* A PARM_DECL that should contain the static chain for this function.
      It will be initialized at the beginning of the function.  */
   tree static_chain_decl;
 

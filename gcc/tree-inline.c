@@ -1877,10 +1877,11 @@ clone_body (tree clone, tree fn, void *arg_map)
   append_to_statement_list_force (copy_body (&id), &DECL_SAVED_TREE (clone));
 }
 
-/* Save duplicate of body in FN.  MAP is used to pass around splay tree
-   used to update arguments in restore_body.  */
+/* Make and return duplicate of body in FN.  Put copies of DECL_ARGUMENTS
+   in *arg_copy and of the static chain, if any, in *sc_copy.  */
+
 tree
-save_body (tree fn, tree *arg_copy)
+save_body (tree fn, tree *arg_copy, tree *sc_copy)
 {
   inline_data id;
   tree body, *parg;
@@ -1902,6 +1903,18 @@ save_body (tree fn, tree *arg_copy)
       insert_decl_map (&id, *parg, new);
       TREE_CHAIN (new) = TREE_CHAIN (*parg);
       *parg = new;
+    }
+
+  *sc_copy = DECL_STRUCT_FUNCTION (fn)->static_chain_decl;
+  if (*sc_copy)
+    {
+      tree new = copy_node (*sc_copy);
+
+      lang_hooks.dup_lang_specific_decl (new);
+      DECL_ABSTRACT_ORIGIN (new) = DECL_ORIGIN (*sc_copy);
+      insert_decl_map (&id, *sc_copy, new);
+      TREE_CHAIN (new) = TREE_CHAIN (*sc_copy);
+      *sc_copy = new;
     }
 
   insert_decl_map (&id, DECL_RESULT (fn), DECL_RESULT (fn));
