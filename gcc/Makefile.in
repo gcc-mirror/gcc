@@ -1620,7 +1620,7 @@ reg-stack.o : reg-stack.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) $(RECOG_H) \
 dyn-string.o: dyn-string.c dyn-string.h $(CONFIG_H) system.h
 predict.o: predict.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h \
-   $(RECOG_H) insn-flags.h function.h except.h expr.h
+   $(RECOG_H) insn-flags.h function.h except.h $(EXPR_H)
 lists.o: lists.c $(CONFIG_H) system.h toplev.h $(RTL_H) ggc.h
 
 $(out_object_file): $(out_file) $(CONFIG_H) $(TREE_H) ggc.h \

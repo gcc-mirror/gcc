@@ -1,3 +1,7 @@
+2000-01-20  Brad Lucier  <lucier@math.purdue.edu>
+
+	* Makefile.in (predict.o): Depend on $(EXPR_H), not expr.h.
+
 2000-01-19  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (propagate_block): Replace FIRST, LAST and BNUM 
