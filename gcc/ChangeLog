@@ -1,3 +1,8 @@
+Mon May  1 18:20:06 2000  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr.c (address_cost): renamed to avr_address_cost.
+	* config/avr/avr.h (ADDRESS_COST): use avr_address_cost.
+
 Mon May  1 17:50:44 2000  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr.c (asm_file_start): output 0 as r0 and 1 as r1 in

@@ -3481,7 +3481,7 @@ default_rtx_costs (X, code, outer_code)
 /* Calculate the cost of a memory address */
 
 int
-address_cost (rtx x)
+avr_address_cost (rtx x)
 {
   if (GET_CODE (x) == PLUS
       && GET_CODE (XEXP (x,1)) == CONST_INT
