@@ -28,7 +28,7 @@ doit () throw (Two)
   throw One ();
 }
 
-main ()
+int main ()
 {
   std::set_unexpected (handle_unexpected);
 
