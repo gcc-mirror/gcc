@@ -1,5 +1,9 @@
 2003-10-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/6392
+	* tree.c (build_cplus_array_type): Handle all quals the same.
+	(cp_build_qualified_type_real): Look through arrays first.
+
 	* tree.c (build_cplus_new): Use build_decl to create a VAR_DECL.
 	(build_target_expr_with_type): Likewise.
 

@@ -367,16 +367,14 @@ build_cplus_array_type (tree elt_type, tree index_type)
 {
   tree t;
   int type_quals = cp_type_quals (elt_type);
-  int cv_quals = type_quals & (TYPE_QUAL_CONST|TYPE_QUAL_VOLATILE);
-  int other_quals = type_quals & ~(TYPE_QUAL_CONST|TYPE_QUAL_VOLATILE);
 
-  if (cv_quals)
-    elt_type = cp_build_qualified_type (elt_type, other_quals);
+  if (type_quals != TYPE_UNQUALIFIED)
+    elt_type = cp_build_qualified_type (elt_type, TYPE_UNQUALIFIED);
 
   t = build_cplus_array_type_1 (elt_type, index_type);
 
-  if (cv_quals)
-    t = cp_build_qualified_type (t, cv_quals);
+  if (type_quals != TYPE_UNQUALIFIED)
+    t = cp_build_qualified_type (t, type_quals);
 
   return t;
 }
@@ -420,54 +418,6 @@ cp_build_qualified_type_real (tree type,
   if (type_quals == cp_type_quals (type))
     return type;
 
-  /* A reference, fucntion or method type shall not be cv qualified.
-     [dcl.ref], [dct.fct]  */
-  if (type_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE)
-      && (TREE_CODE (type) == REFERENCE_TYPE
-	  || TREE_CODE (type) == FUNCTION_TYPE
-	  || TREE_CODE (type) == METHOD_TYPE))
-    {
-      bad_quals |= type_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
-      if (TREE_CODE (type) != REFERENCE_TYPE)
-	bad_func_quals |= type_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
-      type_quals &= ~(TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
-    }
-  
-  /* A restrict-qualified type must be a pointer (or reference)
-     to object or incomplete type.  */
-  if ((type_quals & TYPE_QUAL_RESTRICT)
-      && TREE_CODE (type) != TEMPLATE_TYPE_PARM
-      && TREE_CODE (type) != TYPENAME_TYPE
-      && !POINTER_TYPE_P (type))
-    {
-      bad_quals |= TYPE_QUAL_RESTRICT;
-      type_quals &= ~TYPE_QUAL_RESTRICT;
-    }
-
-  if (bad_quals == TYPE_UNQUALIFIED)
-    /*OK*/;
-  else if (!(complain & (tf_error | tf_ignore_bad_quals)))
-    return error_mark_node;
-  else if (bad_func_quals && !(complain & tf_error))
-    return error_mark_node;
-  else
-    {
-      if (complain & tf_ignore_bad_quals)
- 	/* We're not going to warn about constifying things that can't
- 	   be constified.  */
- 	bad_quals &= ~TYPE_QUAL_CONST;
-      bad_quals |= bad_func_quals;
-      if (bad_quals)
- 	{
- 	  tree bad_type = build_qualified_type (ptr_type_node, bad_quals);
- 
- 	  if (!(complain & tf_ignore_bad_quals)
-	      || bad_func_quals)
- 	    error ("`%V' qualifiers cannot be applied to `%T'",
-		   bad_type, type);
- 	}
-    }
-  
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
       /* In C++, the qualification really applies to the array element
@@ -520,6 +470,54 @@ cp_build_qualified_type_real (tree type,
       t = TYPE_PTRMEMFUNC_FN_TYPE (type);
       t = cp_build_qualified_type_real (t, type_quals, complain);
       return build_ptrmemfunc_type (t);
+    }
+  
+  /* A reference, function or method type shall not be cv qualified.
+     [dcl.ref], [dct.fct]  */
+  if (type_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE)
+      && (TREE_CODE (type) == REFERENCE_TYPE
+	  || TREE_CODE (type) == FUNCTION_TYPE
+	  || TREE_CODE (type) == METHOD_TYPE))
+    {
+      bad_quals |= type_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
+      if (TREE_CODE (type) != REFERENCE_TYPE)
+	bad_func_quals |= type_quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
+      type_quals &= ~(TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
+    }
+  
+  /* A restrict-qualified type must be a pointer (or reference)
+     to object or incomplete type.  */
+  if ((type_quals & TYPE_QUAL_RESTRICT)
+      && TREE_CODE (type) != TEMPLATE_TYPE_PARM
+      && TREE_CODE (type) != TYPENAME_TYPE
+      && !POINTER_TYPE_P (type))
+    {
+      bad_quals |= TYPE_QUAL_RESTRICT;
+      type_quals &= ~TYPE_QUAL_RESTRICT;
+    }
+
+  if (bad_quals == TYPE_UNQUALIFIED)
+    /*OK*/;
+  else if (!(complain & (tf_error | tf_ignore_bad_quals)))
+    return error_mark_node;
+  else if (bad_func_quals && !(complain & tf_error))
+    return error_mark_node;
+  else
+    {
+      if (complain & tf_ignore_bad_quals)
+ 	/* We're not going to warn about constifying things that can't
+ 	   be constified.  */
+ 	bad_quals &= ~TYPE_QUAL_CONST;
+      bad_quals |= bad_func_quals;
+      if (bad_quals)
+ 	{
+ 	  tree bad_type = build_qualified_type (ptr_type_node, bad_quals);
+ 
+ 	  if (!(complain & tf_ignore_bad_quals)
+	      || bad_func_quals)
+ 	    error ("`%V' qualifiers cannot be applied to `%T'",
+		   bad_type, type);
+ 	}
     }
   
   /* Retrieve (or create) the appropriately qualified variant.  */
