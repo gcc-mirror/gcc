@@ -1,7 +1,6 @@
 2004-05-04  Mark Wielaard  <mark@klomp.org>
 
-	* gnu/java/nio/channels/FileChannelImpl.java
-	(finalize): New method.
+	* gnu/java/nio/channels/FileChannelImpl.java (finalize): New method.
 
 2004-05-03  Andreas Tobler  <a.tobler@schweiz.ch>
 
