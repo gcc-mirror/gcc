@@ -1,5 +1,10 @@
 2001-06-08  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.abi/vbase2.C: New test.
+	* g++.old-deja/g++.abi/vbase3.C: New test.
+
+2001-06-08  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.pt/friend49.C: New test.
 
 2001-06-07  Nathan Sidwell  <nathan@codesourcery.com>
