@@ -1124,6 +1124,8 @@ extern enum rs6000_abi rs6000_current_abi;	/* available for use by subtarget */
 /* Default ABI to compile code for */
 #ifndef DEFAULT_ABI
 #define DEFAULT_ABI ABI_AIX
+/* The prefix to add to user-visible assembler symbols. */
+#define USER_LABEL_PREFIX "."
 #endif
 
 /* Structure used to define the rs6000 stack */

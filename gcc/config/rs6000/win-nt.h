@@ -454,6 +454,9 @@ dtors_section ()							\
   fprintf (FILE, "\n");				\
 }
 
+/* The prefix to add to user-visible assembler symbols. */
+
+#define USER_LABEL_PREFIX ".."
 
 /* Eliminate AIX style constant pool processing */
 #undef	LEGITIMATE_CONSTANT_POOL_BASE_P
