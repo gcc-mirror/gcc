@@ -1,3 +1,8 @@
+1999-02-19  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.f-torture/compile/19990218-0.f: New test.
+	* g77.f-torture/noncompile/19990218-1.f: New test.
+
 1999-02-18  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.f-torture/compile/19981216-0.f: New test.
