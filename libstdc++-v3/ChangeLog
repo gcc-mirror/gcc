@@ -1,3 +1,16 @@
+2004-03-27  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++ PR/13598
+	* config/locale/ieee_1003.1-2001/codecvt_specializations.h
+	(__enc_traits::_M_destroy): New.
+	(__enc_traits::~__enc_traits): Use it.
+	(__enc_traits::operator=): Use _M_destroy, _M_init.
+	(__enc_traits::__enc_traits): Same.
+
+2004-03-27  Petur Runolfsson  <peturr02@ru.is>
+
+	* testsuite/ext/enc_filebuf/char/13598.cc: New.
+
 2004-03-27  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/mt_allocator.h: Uglify consistently names of

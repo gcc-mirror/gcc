@@ -1,6 +1,6 @@
 // Locale support (codecvt) -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -85,6 +85,7 @@
     {
       strncpy(_M_int_enc, __int, _S_max_size);
       strncpy(_M_ext_enc, __ext, _S_max_size);
+      _M_init();
     }
 
     // 21.1.2 traits typedefs
@@ -92,12 +93,17 @@
     // typedef STATE_T state_type
     // requires: state_type shall meet the requirements of
     // CopyConstructible types (20.1.3)
+    // NB: This does not preseve the actual state of the conversion
+    // descriptor member, but it does duplicate the encoding
+    // information.
     __enc_traits(const __enc_traits& __obj): _M_in_desc(0), _M_out_desc(0)
     {
       strncpy(_M_int_enc, __obj._M_int_enc, _S_max_size);
       strncpy(_M_ext_enc, __obj._M_ext_enc, _S_max_size);
       _M_ext_bom = __obj._M_ext_bom;
       _M_int_bom = __obj._M_int_bom;
+      _M_destroy();
+      _M_init();
     }
 
     // Need assignment operator as well.
@@ -106,21 +112,15 @@
     {
       strncpy(_M_int_enc, __obj._M_int_enc, _S_max_size);
       strncpy(_M_ext_enc, __obj._M_ext_enc, _S_max_size);
-      _M_in_desc = 0;
-      _M_out_desc = 0;
       _M_ext_bom = __obj._M_ext_bom;
       _M_int_bom = __obj._M_int_bom;
+      _M_destroy();
+      _M_init();
       return *this;
     }
 
     ~__enc_traits()
-    {
-      __desc_type __err = reinterpret_cast<iconv_t>(-1);
-      if (_M_in_desc && _M_in_desc != __err) 
-	iconv_close(_M_in_desc);
-      if (_M_out_desc && _M_out_desc != __err) 
-	iconv_close(_M_out_desc);
-    } 
+    { _M_destroy(); } 
 
     void
     _M_init()
@@ -139,6 +139,22 @@
 	  if (_M_out_desc == __err)
 	    __throw_runtime_error(__N("__enc_traits::_M_init "
 				  "creating iconv output descriptor failed"));
+	}
+    }
+
+    void
+    _M_destroy()
+    {
+      const __desc_type __err = reinterpret_cast<iconv_t>(-1);
+      if (_M_in_desc && _M_in_desc != __err) 
+	{
+	  iconv_close(_M_in_desc);
+	  _M_in_desc = 0;
+	}
+      if (_M_out_desc && _M_out_desc != __err) 
+	{
+	  iconv_close(_M_out_desc);
+	  _M_out_desc = 0;
 	}
     }
 
@@ -173,7 +189,7 @@
 
     const char* 
     _M_get_external_enc()
-    { return _M_ext_enc; }
+    { return _M_ext_enc; }    
   };
 
   // Partial specialization
