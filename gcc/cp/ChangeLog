@@ -1,3 +1,16 @@
+Sun Dec  7 01:46:33 1997  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
+
+	* typeck.c (build_binary_op_nodefault, pointer_diff): Symmetric
+	handling of pointer difference expressions.
+
+	* typeck.c (comp_target_types): Comparison of function/method types
+	is independent of nptrs.
+
+Sun Dec  7 01:40:27 1997  Mark Mitchell  <mmitchell@usa.net>
+
+	* pt.c (tsubst): Avoid creating pointer to reference and
+	reference to reference types.
+
 Sat Dec  6 01:29:37 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* parse.y (do_id): New nonterminal.
