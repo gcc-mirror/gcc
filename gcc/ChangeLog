@@ -1,3 +1,7 @@
+Tue Feb 11 20:44:45 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* emit-rtl.c (emit_copy_of_insn_after): Copy insn recog cache too.
+
 2003-02-11  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_expand_movstr): Fail if esi or edi
