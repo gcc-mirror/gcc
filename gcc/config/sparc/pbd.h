@@ -111,6 +111,9 @@ Boston, MA 02111-1307, USA.  */
  *  Internal labels are prefixed with a period.
  */
 
+#undef  LOCAL_LABEL_PREFIX
+#define LOCAL_LABEL_PREFIX  "."
+
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.
