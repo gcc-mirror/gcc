@@ -85,7 +85,6 @@ LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
-NAMESPACES = @NAMESPACES@
 OBJDUMP = @OBJDUMP@
 OPTLEVEL = @OPTLEVEL@
 PACKAGE = @PACKAGE@
@@ -120,7 +119,7 @@ WERROR = -Werror
 #                      -fdata-sections -ffunction-sections \
 #		       -fvtable-gc -Wl,--gc-sections
 # AC_CXXFLAGS = @OPTLEVEL@ @CPUFLAGS@ @EXTRA_CXX_FLAGS@ @DEBUGFLAGS@ 
-AC_CXXFLAGS = @CPUFLAGS@ @DEBUGFLAGS@ 
+AC_CXXFLAGS = @CPUFLAGS@ @EXTRA_CXX_FLAGS@ @DEBUGFLAGS@
 AM_CXXFLAGS = -fno-implicit-templates \
 	      -Wall -Wno-format -W -Wwrite-strings -Winline $(WERROR) \
 	      $(OPTIMIZE_CXXFLAGS) $(AC_CXXFLAGS) 

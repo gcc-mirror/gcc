@@ -362,7 +362,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
         ctype_default=no
       else
         ctype_include_dir="config/solaris/solaris2.7"
-        AC_MSG_RESULT("solaris2.[6,7]")
+        AC_MSG_RESULT("solaris2.[7,8]")
         ctype_default=no
       fi
     fi
@@ -655,10 +655,12 @@ dnl     experimental flags such as -fhonor-std, -fsquangle, -Dfloat=char, etc.
 dnl     Somehow this same set of flags must be passed when [re]building
 dnl     libgcc.
 dnl --disable-cxx-flags passes nothing.
-dnl  +  See <URL:>
+dnl  +  See http://sourceware.cygnus.com/ml/libstdc++/2000-q2/msg00131.html
+dnl         http://sourceware.cygnus.com/ml/libstdc++/2000-q2/msg00284.html
+dnl         http://sourceware.cygnus.com/ml/libstdc++/2000-q1/msg00035.html
 dnl  +  Usage:  GLIBCPP_ENABLE_CXX_FLAGS(default flags)
-dnl       If "default flags" is an empty string, the effect is the same
-dnl       as --disable or --enable=no.
+dnl       If "default flags" is an empty string (or "none"), the effect is
+dnl       the same as --disable or --enable=no.
 AC_DEFUN(GLIBCPP_ENABLE_CXX_FLAGS, [dnl
 define([GLIBCPP_ENABLE_CXX_FLAGS_DEFAULT], ifelse($1,,, $1))dnl
 AC_ARG_ENABLE(cxx-flags,
@@ -668,11 +670,14 @@ changequote(<<, >>)dnl
 changequote([, ])dnl
 [case "x$enableval" in
  xyes)   AC_MSG_ERROR([--enable-cxx-flags needs compiler flags as arguments]) ;;
- xno|x)  enable_cxx_flags= ;;
+ xno|x)  enable_cxx_flags='' ;;
  *)      enable_cxx_flags="$enableval" ;;
  esac],
 enable_cxx_flags='GLIBCPP_ENABLE_CXX_FLAGS_DEFAULT')dnl
-dnl Run through flags (either default or command-line) and set things.
+dnl Thinko on my part during design.  This kludge is the workaround.
+if test "$enable_cxx_flags" = "none"; then enable_cxx_flags=''; fi
+dnl Run through flags (either default or command-line) and set anything
+dnl extra (e.g., #defines) that must accompany particular g++ options.
 if test -n "$enable_cxx_flags"; then
     for f in $enable_cxx_flags; do
         case "$f" in
@@ -685,40 +690,6 @@ if test -n "$enable_cxx_flags"; then
 fi
 EXTRA_CXX_FLAGS="$enable_cxx_flags"
 AC_SUBST(EXTRA_CXX_FLAGS)
-])
-
-
-dnl
-dnl Check for certain special build configurations.
-dnl
-dnl GLIBCPP_ENABLE_NAMESPACES
-dnl --enable-namespaces sets '-fhonor-std' and 
-dnl --disable-namespaces sets '-fno-honor-std' (the macro should be
-dnl     undefined by default in whatever.h.in).
-dnl  +  Eventually, this will go away.
-dnl  +  Usage:  GLIBCPP_ENABLE_NAMESPACES[(DEFAULT)]
-dnl       Where DEFAULT is either `yes' or `no'.  If ommitted, it
-dnl       defaults to `no'.
-AC_DEFUN(GLIBCPP_ENABLE_NAMESPACES, [dnl
-define([GLIBCPP_ENABLE_NAMESPACES_DEFAULT], ifelse($1, yes, yes, no))dnl
-AC_ARG_ENABLE(namespaces,
-changequote(<<, >>)dnl
-<<  --enable-namespaces     turns on 'std' [default=>>GLIBCPP_ENABLE_NAMESPACES_DEFAULT],
-changequote([, ])dnl
-[case "$enableval" in
- yes) enable_namespaces=yes ;;
- no)  enable_namespaces=no ;;
- *)   AC_MSG_ERROR([Unknown argument to enable/disable namespaces]) ;;
- esac],
-enable_namespaces=GLIBCPP_ENABLE_NAMESPACES_DEFAULT)dnl
-dnl Option parsed, now set things appropriately
-case "$enable_namespaces" in
-    yes)  NAMESPACES='-fhonor-std'
-          ;;
-    no)   NAMESPACES='-fno-honor-std'
-          ;;
-esac
-AC_SUBST(NAMESPACES)
 ])
 
 
