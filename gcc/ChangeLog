@@ -1,3 +1,7 @@
+Sun Mar 7 01:15:04 PST 1999 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sat Mar  6 17:18:44 1999  Richard Earnshaw  (rearnsha@arm.com)
 			  Richard Henderson  <rth@cygnus.com>
 
