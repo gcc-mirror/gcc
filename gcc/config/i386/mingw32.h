@@ -106,7 +106,3 @@ do {						\
   putc ('\"', asm_file);			\
 } while (0)
 
-/* Override Cygwin's definition. This is necessary now due to the way
-   Cygwin profiling code is written. Once "fixed", we can remove this.  */
-#undef SUBTARGET_PROLOGUE
-

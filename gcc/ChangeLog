@@ -1,3 +1,9 @@
+2002-12-05  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/cygwin.h (SUBTARGET_PROLOGUE): Replace with
+	PROFILE_HOOK.
+	* config/i386/mingw32.h (SUBTARGET_PROLOGUE): Don't undef.
+
 2002-12-05  Nick Clifton  <nickc@redhat.com>
 
 	* config/fr30/fr30.h (GO_IF_LEGITIMATE_ADDRESS): Check for frame

@@ -431,15 +431,15 @@ extern void i386_pe_unique_section PARAMS ((TREE, int));
 /* Don't assume anything about the header files.  */
 #define NO_IMPLICIT_EXTERN_C
 
-#define SUBTARGET_PROLOGUE						\
-  if (current_function_profile						\
-      && MAIN_NAME_P (DECL_NAME (current_function_decl)))		\
-     {									\
-      emit_call_insn (gen_rtx (CALL, VOIDmode, 				\
+#undef PROFILE_HOOK
+#define PROFILE_HOOK(LABEL)						\
+  if (MAIN_NAME_P (DECL_NAME (current_function_decl)))			\
+    {									\
+      emit_call_insn (gen_rtx (CALL, VOIDmode,				\
 	gen_rtx_MEM (FUNCTION_MODE,					\
 		     gen_rtx_SYMBOL_REF (Pmode, "_monstartup")),	\
 	const0_rtx));							\
-     }
+    }
 
 /* External function declarations.  */
 
