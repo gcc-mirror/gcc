@@ -1,3 +1,8 @@
+Thu Sep  2 22:00:08 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* stmt.c (expand_asm_operands): Fix index into inout_mode when
+	reading it.
+
 Thu Sep  2 13:00:48 1999  Richard Henderson  <rth@cygnus.com>
 
 	* stmt.c (expand_asm_operands): Invoke MD_ASM_CLOBBERS if present.
