@@ -71,7 +71,7 @@ typedef __loff_t __off64_t;
 #define __glibcpp_long_bits 64
 #endif
 
-#if defined (__alpha__) || defined (__powerpc64__) || defined (__s390__)
+#if defined (__alpha__) || (defined (__powerpc__) && !defined (__LONG_DOUBLE_128__)) || defined (__s390__)
 #define __glibcpp_long_double_bits 64
 #endif
 
