@@ -10576,9 +10576,16 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 		 put the death node there.  This prevents problems with
 		 call-state tracking in caller-save.c.  */
 	      if (REG_NOTE_KIND (note) == REG_DEAD && place == 0 && tem != 0)
-		place
-		  = emit_insn_after (gen_rtx (USE, VOIDmode, XEXP (note, 0)),
-				     tem);
+		{
+		  place
+		    = emit_insn_after (gen_rtx (USE, VOIDmode, XEXP (note, 0)),
+				       tem);
+
+		  /* If this insn was emitted between blocks, then update
+		     basic_block_head of the current block to include it.  */
+		  if (basic_block_end[this_basic_block - 1] == tem)
+		    basic_block_head[this_basic_block] = place;
+		}
 	    }
 
 	  /* If the register is set or already dead at PLACE, we needn't do
