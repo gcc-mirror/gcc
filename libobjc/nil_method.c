@@ -29,8 +29,12 @@ Boston, MA 02111-1307, USA.  */
 
 #include "runtime.h"
 
+/* nil_method is declared with variable arguments but the runtime calls it
+   in a way that does not setup the variable arguments correctly.  Some Architectures
+   that have special arg calling conventions like x86-64 do need every function with
+   variable arguments called the correct way.  */
 id
-nil_method (id receiver, SEL op __attribute__ ((__unused__)), ...)
+nil_method (id receiver, SEL op __attribute__ ((__unused__)))
 {
   return receiver;
 }
