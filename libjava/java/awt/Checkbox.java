@@ -48,6 +48,7 @@ import javax.accessibility.AccessibleAction;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleState;
+import javax.accessibility.AccessibleStateSet;
 import javax.accessibility.AccessibleValue;
 
 /**
@@ -55,7 +56,7 @@ import javax.accessibility.AccessibleValue;
  * or more Checkboxes can be grouped by a CheckboxGroup.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
- * @author Tom Tromey <tromey@redhat.com>
+ * @author Tom Tromey (tromey@redhat.com)
  */
 public class Checkbox extends Component
   implements ItemSelectable, Accessible, Serializable
@@ -94,13 +95,38 @@ private boolean state;
 // The list of listeners for this object.
 private transient ItemListener item_listeners;
 
-protected class AccessibleAWTCheckBox
+/**
+ * This class provides accessibility support for the
+ * checkbox.
+ *
+ * @author Jerry Quinn  (jlquinn@optonline.net)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
+ */
+protected class AccessibleAWTCheckbox
   extends AccessibleAWTComponent
   implements ItemListener, AccessibleAction, AccessibleValue
 {
-  
 
-  /* (non-Javadoc)
+  /**
+   * Serialization constant to match JDK 1.5
+   */
+  private static final long serialVersionUID = 7881579233144754107L;
+
+  /**
+   * Default constructor which simply calls the
+   * super class for generic component accessibility
+   * handling.
+   */
+  public AccessibleAWTCheckbox()
+  {
+    super();
+  }
+
+  /**
+   * Captures changes to the state of the checkbox and
+   * fires appropriate accessible property change events.
+   *
+   * @param event the event fired.
    * @see java.awt.event.ItemListener#itemStateChanged(java.awt.event.ItemEvent)
    */
   public void itemStateChanged(ItemEvent event)
@@ -110,58 +136,121 @@ protected class AccessibleAWTCheckBox
                        state ? AccessibleState.CHECKED : null);
   }
   
+  /**
+   * Returns an implementation of the <code>AccessibleAction</code>
+   * interface for this accessible object.  In this case, the
+   * current instance is simply returned (with a more appropriate
+   * type), as it also implements the accessible action as well as
+   * the context.
+   *
+   * @return the accessible action associated with this context.
+   * @see javax.accessibility.AccessibleAction
+   */
   public AccessibleAction getAccessibleAction()
   {
     return this;
   }
   
+  /**
+   * Returns an implementation of the <code>AccessibleValue</code>
+   * interface for this accessible object.  In this case, the
+   * current instance is simply returned (with a more appropriate
+   * type), as it also implements the accessible value as well as
+   * the context.
+   *
+   * @return the accessible value associated with this context.
+   * @see javax.accessibility.AccessibleValue
+   */
   public AccessibleValue getAccessibleValue()
   {
     return this;
   }
   
-  /* (non-Javadoc)
+  /* 
+   * The following methods are implemented in the JDK (up to
+   * 1.5) as stubs.  We do likewise here.
+   */
+
+  /**
+   * Returns the number of actions associated with this accessible
+   * object.  This default implementation returns 0.
+   *
+   * @return the number of accessible actions available.
    * @see javax.accessibility.AccessibleAction#getAccessibleActionCount()
    */
   public int getAccessibleActionCount()
   {
-    // 1.4.1 does this
+    // 1.4.1 and 1.5 do this
     return 0;
   }
 
-  /* (non-Javadoc)
+  /**
+   * Returns a description of the action with the supplied id.
+   * This default implementation always returns null.
+   *
+   * @param i the id of the action whose description should be
+   *          retrieved.
+   * @return a <code>String</code> describing the action.
    * @see javax.accessibility.AccessibleAction#getAccessibleActionDescription(int)
    */
   public String getAccessibleActionDescription(int i)
   {
+    // 1.5 does this
     return null;
   }
 
-  /* (non-Javadoc)
+  /**
+   * Executes the action with the specified id.  This
+   * default implementation simply returns false.
+   *
+   * @param i the id of the action to perform.
+   * @return true if the action was performed.
    * @see javax.accessibility.AccessibleAction#doAccessibleAction(int)
    */
   public boolean doAccessibleAction(int i)
   {
+    // 1.5 does this
     return false;
   }
 
-  /* (non-Javadoc)
+  /**
+   * Returns the current value of this accessible object.
+   * If no value has been set, null is returned.  This
+   * default implementation always returns null, regardless.
+   *
+   * @return the numeric value of this object, or null if
+   *         no value has been set.
    * @see javax.accessibility.AccessibleValue#getCurrentAccessibleValue()
    */
   public Number getCurrentAccessibleValue()
   {
+    // 1.5 does this
     return null;
   }
 
-  /* (non-Javadoc)
+  /**
+   * Sets the current value of this accessible object
+   * to that supplied.  In this default implementation,
+   * the value is never set and the method always returns
+   * false.
+   *
+   * @param number the new accessible value.
+   * @return true if the value was set.
    * @see javax.accessibility.AccessibleValue#setCurrentAccessibleValue(java.lang.Number)
    */
   public boolean setCurrentAccessibleValue(Number number)
   {
+    // 1.5 does this
     return false;
   }
 
-  /* (non-Javadoc)
+  /**
+   * Returns the minimum acceptable accessible value used
+   * by this object, or null if no minimum value exists.
+   * This default implementation always returns null.
+   *
+   * @return the minimum acceptable accessible value, or null
+   *         if there is no minimum.
    * @see javax.accessibility.AccessibleValue#getMinimumAccessibleValue()
    */
   public Number getMinimumAccessibleValue()
@@ -169,7 +258,13 @@ protected class AccessibleAWTCheckBox
     return null;
   }
 
-  /* (non-Javadoc)
+  /**
+   * Returns the maximum acceptable accessible value used
+   * by this object, or null if no maximum value exists.
+   * This default implementation always returns null.
+   *
+   * @return the maximum acceptable accessible value, or null
+   *         if there is no maximum.
    * @see javax.accessibility.AccessibleValue#getMaximumAccessibleValue()
    */
   public Number getMaximumAccessibleValue()
@@ -177,11 +272,35 @@ protected class AccessibleAWTCheckBox
     return null;
   }
   
+  /**
+   * Returns the role of this accessible object.
+   *
+   * @return the instance of <code>AccessibleRole</code>,
+   *         which describes this object.
+   * @see javax.accessibility.AccessibleRole
+   */
   public AccessibleRole getAccessibleRole() 
   {
     return AccessibleRole.CHECK_BOX;
   }
   
+  /**
+   * Returns the state set of this accessible object.
+   *
+   * @return a set of <code>AccessibleState</code>s
+   *         which represent the current state of the
+   *         accessible object.
+   * @see javax.accessibility.AccessibleState
+   * @see javax.accessibility.AccessibleStateSet
+   */
+  public AccessibleStateSet getAccessibleStateSet()
+  {
+    AccessibleStateSet set = super.getAccessibleStateSet();
+    if (state)
+      set.add(AccessibleState.CHECKED);
+    return set;
+  }
+
 }
 
 /*************************************************************************/
@@ -490,11 +609,22 @@ paramString()
 	  + "," + super.paramString());
 }
 
+/**
+ * Gets the AccessibleContext associated with this <code>Checkbox</code>.
+ * The context is created, if necessary.
+ *
+ * @return the associated context
+ */
 public AccessibleContext getAccessibleContext()
 {
-  AccessibleAWTCheckBox ac = new AccessibleAWTCheckBox();
-  addItemListener(ac);
-  return ac;
+  /* Create the context if this is the first request */
+  if (accessibleContext == null)
+  {
+    AccessibleAWTCheckbox ac = new AccessibleAWTCheckbox();
+    accessibleContext = ac;
+    addItemListener(ac);
+  }
+  return accessibleContext;
 }
 
 } // class Checkbox 

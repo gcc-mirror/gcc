@@ -1,5 +1,5 @@
 /* JMenuItem.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -60,9 +60,7 @@ import javax.swing.event.MenuKeyEvent;
 import javax.swing.event.MenuKeyListener;
 import javax.swing.plaf.MenuItemUI;
 
-
 /**
- * <p>
  * JMenuItem represents element in the menu. It inherits most of
  * its functionality from AbstractButton, however its behavior somewhat
  * varies from it. JMenuItem fire different kinds of events.
@@ -71,15 +69,11 @@ import javax.swing.plaf.MenuItemUI;
  * fired when menu item is selected. In addition to this events menuItem also
  * fire MenuDragMouseEvent and MenuKeyEvents when mouse is dragged over
  * the menu item or associated key with menu item is invoked respectively.
- * </p>
  */
 public class JMenuItem extends AbstractButton implements Accessible,
                                                          MenuElement
 {
   private static final long serialVersionUID = -1681004643499461044L;
-
-  /** name for the UI delegate for this menuItem. */
-  private static final String uiClassID = "MenuItemUI";
 
   /** Combination of keyboard keys that can be used to activate this menu item */
   private KeyStroke accelerator;
@@ -212,7 +206,7 @@ public class JMenuItem extends AbstractButton implements Accessible,
    */
   public String getUIClassID()
   {
-    return uiClassID;
+    return "MenuItemUI";
   }
 
   /**
@@ -325,11 +319,11 @@ public class JMenuItem extends AbstractButton implements Accessible,
 	break;
       case MouseEvent.MOUSE_ENTERED:
 	if (isRolloverEnabled())
-	      model.setRollover(true);
+	  model.setRollover(true);
 	break;
       case MouseEvent.MOUSE_EXITED:
 	if (isRolloverEnabled())
-	      model.setRollover(false);
+	  model.setRollover(false);
 
 	// for JMenu last element on the path is its popupMenu.
 	// JMenu shouldn't me disarmed.	
@@ -532,14 +526,14 @@ public class JMenuItem extends AbstractButton implements Accessible,
     Component parent = this.getParent();
     if (changed)
       {
-      model.setArmed(true);
+	model.setArmed(true);
 
 	if (parent != null && parent instanceof JPopupMenu)
 	  ((JPopupMenu) parent).setSelected(this);
       }
     else
       {
-      model.setArmed(false);
+	model.setArmed(false);
 
 	if (parent != null && parent instanceof JPopupMenu)
 	  ((JPopupMenu) parent).getSelectionModel().clearSelection();
@@ -551,7 +545,7 @@ public class JMenuItem extends AbstractButton implements Accessible,
    *
    * @return $MenuElement[]$ Returns array of sub-components for this menu
    *         item. By default menuItem doesn't have any subcomponents and so
-   *             empty array is returned instead.
+   *         empty array is returned instead.
    */
   public MenuElement[] getSubElements()
   {
@@ -644,7 +638,7 @@ public class JMenuItem extends AbstractButton implements Accessible,
    */
   protected String paramString()
   {
-    return "JMenuItem";
+    return super.paramString();
   }
 
   public AccessibleContext getAccessibleContext()

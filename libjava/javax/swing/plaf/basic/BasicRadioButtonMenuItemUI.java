@@ -66,11 +66,11 @@ public class BasicRadioButtonMenuItemUI extends BasicMenuItemUI
   /**
     * Factory method to create a BasicRadioButtonMenuItemUI for the given {@link
     * JComponent}, which should be a JRadioButtonMenuItem.
-   *
+    *
     * @param b The {@link JComponent} a UI is being created for.
-   *
+    *
     * @return A BasicRadioButtonMenuItemUI for the {@link JComponent}.
-   */
+    */
   public static ComponentUI createUI(JComponent b)
   {
     return new BasicRadioButtonMenuItemUI();
@@ -96,7 +96,7 @@ public class BasicRadioButtonMenuItemUI extends BasicMenuItemUI
    */
   public void processMouseEvent(JMenuItem item, MouseEvent e,
                                 MenuElement[] path,
-                         MenuSelectionManager manager)
+                                MenuSelectionManager manager)
   {
   }
 }

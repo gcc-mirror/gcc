@@ -315,10 +315,12 @@ focus_in_cb (GtkWidget *widget __attribute((unused)),
              GdkEventFocus *event __attribute((unused)),
              jobject peer)
 {
-  (*gdk_env)->CallVoidMethod (gdk_env, peer,
+  gdk_threads_leave ();
+  (*gdk_env())->CallVoidMethod (gdk_env(), peer,
                               postFocusEventID,
                               AWT_FOCUS_GAINED,
                               JNI_FALSE);
+  gdk_threads_enter ();
   return FALSE;
 }
 
@@ -327,21 +329,27 @@ focus_out_cb (GtkWidget *widget __attribute((unused)),
               GdkEventFocus *event __attribute((unused)),
               jobject peer)
 {
-  (*gdk_env)->CallVoidMethod (gdk_env, peer,
+  gdk_threads_leave ();
+  (*gdk_env())->CallVoidMethod (gdk_env(), peer,
                               postFocusEventID,
                               AWT_FOCUS_LOST,
                               JNI_FALSE);
+  gdk_threads_enter ();
   return FALSE;
 }
 
 static void
 block_expose_events_cb (GtkWidget *widget, jobject peer)
 {
-  (*gdk_env)->CallVoidMethod (gdk_env, peer,
+  gdk_threads_leave ();
+  (*gdk_env())->CallVoidMethod (gdk_env(), peer,
                               beginNativeRepaintID);
+  gdk_threads_enter ();
 
   gdk_window_process_updates (widget->window, TRUE);
 
-  (*gdk_env)->CallVoidMethod (gdk_env, peer,
+  gdk_threads_leave ();
+  (*gdk_env())->CallVoidMethod (gdk_env(), peer,
                               endNativeRepaintID);
+  gdk_threads_enter ();
 }

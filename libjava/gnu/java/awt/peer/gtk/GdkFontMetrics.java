@@ -63,8 +63,6 @@ public class GdkFontMetrics extends FontMetrics
   static final int TEXT_METRICS_X_ADVANCE = 4;
   static final int TEXT_METRICS_Y_ADVANCE = 5;
 
-  static native void getPeerFontMetrics(GdkFontPeer peer, double [] metrics);
-  static native void getPeerTextMetrics(GdkFontPeer peer, String str, double [] metrics);
 
   public GdkFontMetrics (Font font)
   {    
@@ -77,12 +75,7 @@ public class GdkFontMetrics extends FontMetrics
 
     font_metrics = new int[5];
     double [] hires = new double[5];
-
-    if (GtkToolkit.useGraphics2D ())
-      GdkGraphics2D.getPeerFontMetrics(peer, hires);
-    else
-      getPeerFontMetrics (peer, hires);
-
+    peer.getFontMetrics (hires);
     for (int i = 0; i < 5; ++i)
       font_metrics[i] = (int) hires[i];
   }
@@ -90,10 +83,7 @@ public class GdkFontMetrics extends FontMetrics
   public int stringWidth (String str)
   {
     double [] hires = new double[6];
-    if (GtkToolkit.useGraphics2D())
-      GdkGraphics2D.getPeerTextMetrics(peer, str, hires);
-    else
-      getPeerTextMetrics(peer, str, hires);
+    peer.getTextMetrics(str, hires);
     return (int) hires [TEXT_METRICS_WIDTH];
   }
 
@@ -115,7 +105,6 @@ public class GdkFontMetrics extends FontMetrics
   public int getLeading ()
   {
     return 1;
-//      return metrics[ASCENT] + metrics[DESCENT];
   }
 
   public int getAscent ()

@@ -1,5 +1,5 @@
-/* DefaultEditorKit.java -- 
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+/* DefaultEditorKit.java --
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,14 +40,16 @@ package javax.swing.text;
 
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 
 import javax.swing.Action;
-import javax.swing.JEditorPane;
 
 public class DefaultEditorKit extends EditorKit
 {
@@ -84,6 +86,7 @@ public class DefaultEditorKit extends EditorKit
     {
       super(cutAction);
     }
+
     public void actionPerformed(ActionEvent event)
     {
     }
@@ -96,6 +99,7 @@ public class DefaultEditorKit extends EditorKit
     {
       super(defaultKeyTypedAction);
     }
+
     public void actionPerformed(ActionEvent event)
     {
       JTextComponent t = getTextComponent(event);
@@ -123,6 +127,7 @@ public class DefaultEditorKit extends EditorKit
     {
       super(insertBreakAction);
     }
+
     public void actionPerformed(ActionEvent event)
     {
     }
@@ -147,6 +152,7 @@ public class DefaultEditorKit extends EditorKit
     {
       super(insertTabAction);
     }
+
     public void actionPerformed(ActionEvent event)
     {
     }
@@ -159,6 +165,7 @@ public class DefaultEditorKit extends EditorKit
     {
       super(pasteAction);
     }
+
     public void actionPerformed(ActionEvent event)
     {
     }
@@ -328,17 +335,6 @@ public class DefaultEditorKit extends EditorKit
     },
   };
 
-  /**
-   * Called when the kit is being removed from the JEditorPane.
-   */
-  public void deinstall(JEditorPane c)
-    {
-    }
-
-  public void install(JEditorPane c)
-    {
-    }
-
   public Caret createCaret()
   {
     return new DefaultCaret();
@@ -355,32 +351,47 @@ public class DefaultEditorKit extends EditorKit
   }
 
   public String getContentType()
-    {
-	return "text/plain";
-    }
-    
+  {
+    return "text/plain";
+  }
+  
   public ViewFactory getViewFactory()
-    {
-	return null;
-    }
+  {
+    return null;
+  }
 
-  public void read(InputStream in, Document doc, int pos)
+  public void read(InputStream in, Document document, int offset)
     throws BadLocationException, IOException
-    {
-    }
+  {
+    read(new InputStreamReader(in), document, offset);
+  }
 
-  public void read(Reader in, Document doc, int pos)
+  public void read(Reader in, Document document, int offset)
     throws BadLocationException, IOException
-    {
-    }
+  {
+    BufferedReader reader = new BufferedReader(in);
 
-  public void write(OutputStream out, Document doc, int pos, int len)
-    throws BadLocationException, IOException
-    {
-    }
+    String line;
+    StringBuffer content = new StringBuffer();
 
-  public void write(Writer out, Document doc, int pos, int len)
+    while ((line = reader.readLine()) != null)
+      {
+	content.append(line);
+	content.append("\n");
+      }
+    
+    document.insertString(offset, content.toString(),
+			  SimpleAttributeSet.EMPTY);
+  }
+
+  public void write(OutputStream out, Document document, int offset, int len)
     throws BadLocationException, IOException
-    {
-    }
+  {
+    write(new OutputStreamWriter(out), document, offset, len);
+  }
+
+  public void write(Writer out, Document document, int offset, int len)
+    throws BadLocationException, IOException
+  {
+  }
 }

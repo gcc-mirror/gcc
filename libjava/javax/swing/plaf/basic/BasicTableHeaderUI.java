@@ -191,8 +191,8 @@ public class BasicTableHeaderUI
     int spacing = 0;
 
     if (header.getTable() != null 
-        && header.getTable().getInterCellSpacing() != null)
-      spacing = header.getTable().getInterCellSpacing().width;
+        && header.getTable().getIntercellSpacing() != null)
+      spacing = header.getTable().getIntercellSpacing().width;
     
     for (int i = 0; i < ncols; ++i)      
       {

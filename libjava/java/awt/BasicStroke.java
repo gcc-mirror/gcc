@@ -1,5 +1,5 @@
 /* BasicStroke.java -- 
-   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,6 +48,7 @@ public class BasicStroke implements Stroke
   public static final int JOIN_MITER = 0;
   public static final int JOIN_ROUND = 1;
   public static final int JOIN_BEVEL = 2;
+
   public static final int CAP_BUTT = 0;
   public static final int CAP_ROUND = 1;
   public static final int CAP_SQUARE = 2;
@@ -208,11 +209,34 @@ public class BasicStroke implements Stroke
     return phase;
   }
 
+  /**
+   * Returns the hash code for this object. The hash is calculated by
+   * xoring the hash, cap, join, limit, dash array and phase values
+   * (converted to <code>int</code> first with
+   * <code>Float.floatToIntBits()</code> if the value is a
+   * <code>float</code>).
+   */
   public int hashCode()
   {
-    throw new Error("not implemented");
+    int hash = Float.floatToIntBits(width);
+    hash ^= cap;
+    hash ^= join;
+    hash ^= Float.floatToIntBits(limit);
+   
+    if (dash != null)
+      for (int i = 0; i < dash.length; i++)
+	hash ^=  Float.floatToIntBits(dash[i]);
+
+    hash ^= Float.floatToIntBits(phase);
+
+    return hash;
   }
 
+  /**
+   * Returns true if the given Object is an instance of BasicStroke
+   * and the width, cap, join, limit, dash array and phase are all
+   * equal.
+   */
   public boolean equals(Object o)
   {
     if (! (o instanceof BasicStroke))

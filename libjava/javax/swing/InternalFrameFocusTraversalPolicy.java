@@ -1,5 +1,5 @@
-/* AbstractSet.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+/* InternalFrameFocusTraversalPolicy.java --
+   Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,69 +35,21 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
-import java.util.AbstractCollection;
-import java.util.Collection;
-import java.util.Set;
+import java.awt.Component;
+import java.awt.FocusTraversalPolicy;
 
 /**
- * Empty
- *
- * @author Ronald Veldema (rveldema@cs.vu.nl)
+ * @author Michael Koch
+ * 
+ * @since 1.4
  */
-public abstract class AbstractSet extends AbstractCollection implements Set
+public abstract class InternalFrameFocusTraversalPolicy extends FocusTraversalPolicy
 {
-	boolean contained(Object []a1, Object b)
-	{
-		for (int i=0;i<a1.length;i++)
-		{
-			if (a1[i] == b)
-				return true;
-		}
-		return false;
-	}
-
-	public boolean equals(Object o)
-	{
-		if (! (o instanceof AbstractSet))
-			return false;
-		AbstractSet s = (AbstractSet) o;
-
-		if (s == this)
-			return true;
-
-		if (s.size() != size())
-			return false;
-
-		Object[] a1 = s.toArray();
-		Object[] a2 = toArray();
-
-		for (int i=0;i<a1.length;i++)
-		{
-			if (! contained(a2, a1[i]))
-				return false;
-		}
-		return true;
-	}
-
-	public int hashCode()
-	{
-		int hash = 0;
-		Object[] a1 = toArray();
-
-		if (a1 == null)
-			return 0;
-
-		for (int i=0; i<a1.length; i++)
-		{
-			hash += a1[i].hashCode();
-		}
-		return hash;
-	}
-
-	public boolean removeAll(Collection c)
-	{
-		return false;
-	}
+  public Component getInitialComponent(JInternalFrame frame)
+  {
+    return getDefaultComponent(frame);
+  }
 }

@@ -72,6 +72,14 @@ public class Timer implements Serializable
   /** DOCUMENT ME! */
   private Waker waker;
 
+  private Runnable drainer = new Runnable() 
+    {
+      public void run()
+      {
+        drainEvents();
+      }
+    };
+
   /**
    * DOCUMENT ME!
    */
@@ -81,14 +89,7 @@ public class Timer implements Serializable
       {
 	queue++;
 	if (queue == 1)
-	  SwingUtilities.invokeLater(new Runnable()
-	      {
-		public void run()
-		{
-		  drainEvents();
-		}
-	      });
-
+	  SwingUtilities.invokeLater(drainer);
       }
   }
 

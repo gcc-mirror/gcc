@@ -83,7 +83,7 @@ public abstract class RGBImageFilter extends ImageFilter
 	    }
 	else {
 		consumer.setColorModel(ColorModel.getRGBdefault());
-	    }
+	}
     }
     
     /**

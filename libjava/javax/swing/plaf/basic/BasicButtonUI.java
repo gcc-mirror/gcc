@@ -1,5 +1,5 @@
-/* BasicButtonUI.java
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+/* BasicButtonUI.java --
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -34,6 +34,7 @@ or based on this library.  If you modify this library, you may extend
 this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
+
 
 package javax.swing.plaf.basic;
 
@@ -133,10 +134,10 @@ public class BasicButtonUI extends ButtonUI
 
   protected BasicButtonListener createButtonListener(AbstractButton b)
   {
-    return new BasicButtonListener();
+    return new BasicButtonListener(b);
   }
 
-  public void installListeners(AbstractButton b)
+  protected void installListeners(AbstractButton b)
   {
     listener = createButtonListener(b);
     b.addChangeListener(listener);
@@ -146,7 +147,7 @@ public class BasicButtonUI extends ButtonUI
     b.addMouseMotionListener(listener);
   }
 
-  public void uninstallListeners(AbstractButton b)
+  protected void uninstallListeners(AbstractButton b)
   {
     b.removeChangeListener(listener);
     b.removePropertyChangeListener(listener);

@@ -1,5 +1,5 @@
 /* JProgressBar.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
 import java.awt.Graphics;
@@ -48,14 +49,11 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ProgressBarUI;
 
-
 /**
- * <p>
  * The ProgressBar is a widget that displays in two modes. In 
  * determinate mode, it displays fills a percentage of its bar
  * based on its current value. In indeterminate mode, it creates
  * box and bounces it between its bounds.
- * </p>
  *
  * <p>
  * JProgressBars have the following properties:
@@ -171,21 +169,6 @@ public class JProgressBar extends JComponent implements SwingConstants,
 
   private static final long serialVersionUID = 1980046021813598781L;
   
-  /** Fired in a PropertyChangeEvent when the "borderPainted" property changes. */
-  public static final String BORDER_PAINTED_CHANGED_PROPERTY = "borderPainted";
-  
-  /** Fired in a PropertyChangeEvent when the "orientation" property changes. */
-  public static final String ORIENTATION_CHANGED_PROPERTY = "orientation";
-  
-  /** Fired in a PropertyChangeEvent when the "string" property changes. */
-  public static final String STRING_CHANGED_PROPERTY = "string";
-  
-  /** Fired in a PropertyChangeEvent when the "stringPainted" property changes. */
-  public static final String STRING_PAINTED_CHANGED_PROPERTY = "stringPainted";
-  
-  /** Fired in a PropertyChangeEvent when the "indeterminate" property changes. */
-  public static final String INDETERMINATE_CHANGED_PROPERTY = "indeterminate";
-
   /** Whether the ProgressBar is determinate. */
   private transient boolean indeterminate = false;
 
@@ -331,7 +314,7 @@ public class JProgressBar extends JComponent implements SwingConstants,
       {
 	int oldOrientation = this.orientation;
 	this.orientation = orientation;
-	firePropertyChange(ORIENTATION_CHANGED_PROPERTY, oldOrientation,
+	firePropertyChange("orientation", oldOrientation,
 	                   this.orientation);
       }
   }
@@ -357,7 +340,7 @@ public class JProgressBar extends JComponent implements SwingConstants,
       {
 	boolean oldPainted = paintString;
 	paintString = painted;
-	firePropertyChange(STRING_PAINTED_CHANGED_PROPERTY, oldPainted,
+	firePropertyChange("stringPainted", oldPainted,
 	                   paintString);
       }
   }
@@ -394,7 +377,7 @@ public class JProgressBar extends JComponent implements SwingConstants,
       {
 	String oldString = progressString;
 	progressString = string;
-	firePropertyChange(STRING_CHANGED_PROPERTY, oldString, progressString);
+	firePropertyChange("string", oldString, progressString);
       }
   }
 
@@ -435,7 +418,7 @@ public class JProgressBar extends JComponent implements SwingConstants,
       {
 	boolean oldPainted = paintBorder;
 	paintBorder = painted;
-	firePropertyChange(BORDER_PAINTED_CHANGED_PROPERTY, oldPainted,
+	firePropertyChange("borderPainted", oldPainted,
 	                   paintBorder);
       }
   }
@@ -641,7 +624,7 @@ public class JProgressBar extends JComponent implements SwingConstants,
       {
 	boolean olddeter = indeterminate;
 	indeterminate = newValue;
-	firePropertyChange(INDETERMINATE_CHANGED_PROPERTY, olddeter,
+	firePropertyChange("indeterminate", olddeter,
 	                   indeterminate);
       }
   }

@@ -451,12 +451,18 @@ paramString()
     }
   }
 
-  /* (non-Javadoc)
-   * @see java.awt.MenuComponent#getAccessibleContext()
+  /**
+   * Gets the AccessibleContext associated with this <code>Menu</code>.
+   * The context is created, if necessary.
+   *
+   * @return the associated context
    */
   public AccessibleContext getAccessibleContext()
   {
-    return new AccessibleAWTMenu();
+    /* Create the context if this is the first request */
+    if (accessibleContext == null)
+      accessibleContext = new AccessibleAWTMenu();
+    return accessibleContext;
   }
 
 } // class Menu

@@ -1,5 +1,5 @@
 /* DefaultListModel.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -198,7 +198,7 @@ public class DefaultListModel extends AbstractListModel
   public void add(int index, Object element)
   {
     elements.add(index, element);
-    fireContentsChanged(this, index, index);
+    fireIntervalAdded(this, index, index);
   }
 
   /**
@@ -209,8 +209,9 @@ public class DefaultListModel extends AbstractListModel
    */
   public void addElement(Object element)
   {
+    int s = elements.size();
     elements.add(element);
-    fireIntervalAdded(this, elements.size(), elements.size());
+    fireIntervalAdded(this, s, s);
   }
 
   /**
@@ -266,8 +267,12 @@ public class DefaultListModel extends AbstractListModel
    */
   public void clear()
   {
-    elements.clear();
-    fireIntervalRemoved(this, 0, elements.size());
+    int s = elements.size();
+    if (s > 0)
+    {
+      elements.clear();
+      fireIntervalRemoved(this, 0, s - 1);
+    }
   }
 
   /**
@@ -341,7 +346,16 @@ public class DefaultListModel extends AbstractListModel
    */
   public void setSize(int size)
   {
+    int oldSize = elements.size();
     elements.setSize(size);
+    if (oldSize < size) 
+    {
+      fireIntervalAdded(this, oldSize, size - 1); 
+    }
+    else if (oldSize > size) 
+    {
+      this.fireIntervalRemoved(this, size, oldSize - 1);
+    }
   }
 
   /**

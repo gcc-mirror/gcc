@@ -1,5 +1,5 @@
 /* JScrollBar.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
 import java.awt.Adjustable;
@@ -47,10 +48,7 @@ import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleStateSet;
 import javax.accessibility.AccessibleValue;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ScrollBarUI;
-
 
 /**
  * The JScrollBar. Two buttons control how the values that the 
@@ -154,18 +152,6 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
 
   private static final long serialVersionUID = -8195169869225066566L;
   
-  /** Fired in a PropertyChangeEvent when the "blockIncrement" changes. */
-  public static final String BLOCK_INCREMENT_CHANGED_PROPERTY = "blockIncrement";
-
-  /** Fired in a PropertyChangeEvent when the "model" changes. */
-  public static final String MODEL_CHANGED_PROPERTY = "model";
-
-  /** Fired in a PropertyChangeEvent when the "orientation" changes. */
-  public static final String ORIENTATION_CHANGED_PROPERTY = "orientation";
-
-  /** Fired in a PropertyChangeEvent when the "unitIncrement" changes. */
-  public static final String UNIT_INCREMENT_CHANGED_PROPERTY = "unitIncrement";
-
   /** How much the thumb moves when moving in a block. */
   protected int blockIncrement = 10;
 
@@ -177,12 +163,6 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
 
   /** How much the thumb moves when moving in a unit. */
   protected int unitIncrement = 1;
-
-  /** The ChangeListener that listens to the model. */
-  private transient ChangeListener changeListener;
-
-  /** The ChangeEvent that's fired. */
-  private transient ChangeEvent changeEvent;
 
   /** 
    * Creates a new horizontal JScrollBar object with a minimum
@@ -223,8 +203,6 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
       throw new IllegalArgumentException(orientation
                                          + " is not a legal orientation");
     this.orientation = orientation;
-    changeListener = createChangeListener();
-    model.addChangeListener(changeListener);
     updateUI();
   }
 
@@ -297,7 +275,7 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
       {
 	int oldOrientation = this.orientation;
 	this.orientation = orientation;
-	firePropertyChange(ORIENTATION_CHANGED_PROPERTY, oldOrientation,
+	firePropertyChange("orientation", oldOrientation,
 	                   this.orientation);
       }
   }
@@ -325,9 +303,7 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
       {
 	BoundedRangeModel oldModel = model;
 	model = newModel;
-	oldModel.removeChangeListener(changeListener);
-	model.addChangeListener(changeListener);
-	firePropertyChange(MODEL_CHANGED_PROPERTY, oldModel, model);
+	firePropertyChange("model", oldModel, model);
       }
   }
 
@@ -356,7 +332,7 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
       {
 	int oldInc = this.unitIncrement;
 	this.unitIncrement = unitIncrement;
-	firePropertyChange(UNIT_INCREMENT_CHANGED_PROPERTY, oldInc,
+	firePropertyChange("unitIncrement", oldInc,
 	                   this.unitIncrement);
       }
   }
@@ -386,7 +362,7 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
       {
 	int oldInc = this.blockIncrement;
 	this.blockIncrement = blockIncrement;
-	firePropertyChange(BLOCK_INCREMENT_CHANGED_PROPERTY, oldInc,
+	firePropertyChange("blockIncrement", oldInc,
 	                   this.blockIncrement);
       }
   }
@@ -555,70 +531,6 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
       fireAdjustmentValueChanged(AdjustmentEvent.ADJUSTMENT_VALUE_CHANGED,
                                  AdjustmentEvent.TRACK, newValue);
     }
-  }
-
-  /**
-   * This method creates a new ChangeListener.
-   *
-   * @return A new ChangeListener.
-   */
-  private ChangeListener createChangeListener()
-  {
-    return new ChangeListener()
-      {
-	public void stateChanged(ChangeEvent e)
-	{
-	  fireStateChanged();
-	}
-      };
-  }
-
-  /**
-   * This method is called whenever the model fires a ChangeEvent. It should
-   * propagate the ChangeEvent to its listeners with a new ChangeEvent that
-   * identifies the scroll bar as the source.
-   */
-  private void fireStateChanged()
-  {
-    Object[] changeListeners = listenerList.getListenerList();
-    if (changeEvent == null)
-      changeEvent = new ChangeEvent(this);
-    for (int i = changeListeners.length - 2; i >= 0; i -= 2)
-      {
-	if (changeListeners[i] == ChangeListener.class)
-	  ((ChangeListener) changeListeners[i + 1]).stateChanged(changeEvent);
-      }
-  }
-
-  /**
-   * This method adds a ChangeListener to the scroll bar.
-   *
-   * @param listener The listener to add.
-   */
-  public void addChangeListener(ChangeListener listener)
-  {
-    listenerList.add(ChangeListener.class, listener);
-  }
-
-  /**
-   * This method removes a ChangeListener from the scroll bar.
-   *
-   * @param listener The listener to remove.
-   */
-  public void removeChangeListener(ChangeListener listener)
-  {
-    listenerList.remove(ChangeListener.class, listener);
-  }
-
-  /**
-   * This method returns an array of all ChangeListeners listening to this
-   * scroll bar.
-   *
-   * @return An array of ChangeListeners listening to this scroll bar.
-   */
-  public ChangeListener[] getChangeListeners()
-  {
-    return (ChangeListener[]) listenerList.getListeners(ChangeListener.class);
   }
 
   /**

@@ -73,7 +73,7 @@ public class GtkScrollbarPeer extends GtkComponentPeer
 
   protected void postAdjustmentEvent (int type, int value)
   {
-    q.postEvent (new AdjustmentEvent ((Adjustable)awtComponent, 
+    q().postEvent (new AdjustmentEvent ((Adjustable)awtComponent, 
 				      AdjustmentEvent.ADJUSTMENT_VALUE_CHANGED,
 				      type, value));
   }

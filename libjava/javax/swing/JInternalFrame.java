@@ -1,5 +1,5 @@
-/* JInternalFrame.java -- 
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+/* JInternalFrame.java --
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -780,9 +780,11 @@ public class JInternalFrame extends JComponent implements Accessible,
    * This method returns null because this must always be the root of a focus
    * traversal.
    *
-   * @return null.
+   * @return always null
+   *
+   * @since 1.4
    */
-  public Container getFocusCycleRootAncestor()
+  public final Container getFocusCycleRootAncestor()
   {
     // as defined.
     return null;
@@ -860,7 +862,7 @@ public class JInternalFrame extends JComponent implements Accessible,
   {
     JDesktopPane pane = getDesktopPane();
     if (pane != null)
-      return pane.getLayer(this).intValue();
+      return pane.getLayer(this);
     return -1;
   }
 
@@ -968,7 +970,7 @@ public class JInternalFrame extends JComponent implements Accessible,
    *
    * @return null.
    */
-  public String getWarningString()
+  public final String getWarningString()
   {
     // as defined.
     return null;
@@ -1019,9 +1021,11 @@ public class JInternalFrame extends JComponent implements Accessible,
   /**
    * This must always return true.
    *
-   * @return True
+   * @return always true
+   *
+   * @since 1.4
    */
-  public boolean isFocusCycleRoot()
+  public final boolean isFocusCycleRoot()
   {
     return true;
   }
@@ -1272,8 +1276,9 @@ public class JInternalFrame extends JComponent implements Accessible,
    */
   public void setDefaultCloseOperation(int operation)
   {
-    if (operation != DO_NOTHING_ON_CLOSE || operation != HIDE_ON_CLOSE
-        || operation != DISPOSE_ON_CLOSE)
+    if (operation != DO_NOTHING_ON_CLOSE
+	&& operation != HIDE_ON_CLOSE
+        && operation != DISPOSE_ON_CLOSE)
       throw new Error("Close operation must be one of DO_NOTHING_ON_CLOSE, HIDE_ON_CLOSE, or DISPOSE_ON_CLOSE");
     defaultCloseOperation = operation;
   }

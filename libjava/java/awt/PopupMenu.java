@@ -151,9 +151,18 @@ show(Component component, int x, int y)
     
   }
   
+  /**
+   * Gets the AccessibleContext associated with this <code>PopupMenu</code>.
+   * The context is created, if necessary.
+   *
+   * @return the associated context
+   */
   public AccessibleContext getAccessibleContext()
   {
-    return new AccessibleAWTPopupMenu();
+    /* Create the context if this is the first request */
+    if (accessibleContext == null)
+      accessibleContext = new AccessibleAWTPopupMenu();
+    return accessibleContext;
   }
 
 } // class PopupMenu

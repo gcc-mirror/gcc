@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package gnu.java.awt;
 
-import gnu.classpath.Configuration;
 import gnu.java.awt.peer.EmbeddedWindowPeer;
 import gnu.java.security.action.SetAccessibleAction;
 

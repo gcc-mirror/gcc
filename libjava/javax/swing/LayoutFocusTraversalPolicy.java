@@ -1,5 +1,5 @@
-/* DefaultCellRenderer.java -- 
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+/* LayoutFocusTraversalPolicy.java --
+   Copyright (C) 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,40 +35,53 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
-// this is what SUN basically told us to do so:
-// no icon though as that's not implemented yet....
-
 import java.awt.Component;
+import java.io.Serializable;
+import java.util.Comparator;
 
-public class DefaultCellRenderer extends JLabel implements ListCellRenderer 
+/**
+ * @author Graydon Hoare
+ * @author Michael Koch
+ * 
+ * @since 1.4
+ */
+public class LayoutFocusTraversalPolicy 
+  extends SortingFocusTraversalPolicy
+  implements Serializable
 {
-    public Component getListCellRendererComponent(JList list,
-						  Object value,           
-						  int index,            
-						  boolean isSelected,     
-						  boolean cellHasFocus)   
+  private static class LayoutComparator
+    implements Comparator
+  {
+    public LayoutComparator()
     {
-	String s = value.toString();
-	setText(s);	
-
-	//	System.out.println("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=" + s);
-
-
-	if (isSelected) 
-	    {
-		setBackground(list.getSelectionBackground());
-		setForeground(list.getSelectionForeground());
-	    }
-	else 
-	    {
-		setBackground(list.getBackground());
-		setForeground(list.getForeground());
-	    }
-
-	setEnabled(list.isEnabled());
-	setFont(list.getFont());
-	return this;
+      // Do nothing here.
     }
+    
+    public int compare(Object o1, Object o2)
+    {
+      Component comp1 = (Component) o1;
+      Component comp2 = (Component) o2;
+
+      int x1 = comp1.getX();
+      int y1 = comp1.getY();
+      int x2 = comp2.getX();
+      int y2 = comp2.getY();
+      
+      if (x1 == x2 && y1 == y2)
+	return 0;
+      
+      if ((y1 < y2) || ((y1 == y2) && (x1 < x2)))
+	return -1;
+
+      return 1;
+    }
+  }
+  
+  public LayoutFocusTraversalPolicy()
+  {
+    super(new LayoutComparator());
+  }
 }

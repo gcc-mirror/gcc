@@ -52,7 +52,7 @@ import java.io.Serializable;
  */
 public class ViewportLayout implements LayoutManager, Serializable
 {
-  static final long serialVersionUID = -788225906076097229L;
+  private static final long serialVersionUID = -788225906076097229L;
 
   public ViewportLayout() 
   {
@@ -63,17 +63,25 @@ public class ViewportLayout implements LayoutManager, Serializable
   public void removeLayoutComponent(Component c) 
   {
   }
+
   public Dimension preferredLayoutSize(Container parent) 
   {
     JViewport vp = (JViewport)parent;
     Component view = vp.getView();
+    if (view != null)
       return view.getPreferredSize();
+    else
+      return new Dimension();
   }
+
   public Dimension minimumLayoutSize(Container parent) 
   {
     JViewport vp = (JViewport)parent;
     Component view = vp.getView();
-    return view.getMinimumSize();
+    if (view != null)
+      return view.getMinimumSize();
+    else
+      return new Dimension();
   }
 
   /**
@@ -112,6 +120,9 @@ public class ViewportLayout implements LayoutManager, Serializable
 
     JViewport port = (JViewport) parent;    
     Component view = port.getView();
+
+    if (view == null)
+      return;
 
     // These dimensions and positions are in *view space*.  Do not mix
     // variables in here from port space (eg. parent.getBounds()). This

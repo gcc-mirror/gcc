@@ -208,7 +208,7 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_gtkButtonSetLabel
 static void
 item_toggled (GtkToggleButton *item, jobject peer)
 {
-  (*gdk_env)->CallVoidMethod (gdk_env, peer,
+  (*gdk_env())->CallVoidMethod (gdk_env(), peer,
 			      postItemEventID,
 			      peer,
 			      item->active ?

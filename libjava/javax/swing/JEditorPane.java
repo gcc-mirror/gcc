@@ -1,5 +1,5 @@
 /* JEditorPane.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,6 +47,7 @@ import java.net.URL;
 import javax.accessibility.AccessibleContext;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
@@ -56,29 +57,31 @@ public class JEditorPane extends JTextComponent
 {
   private static final long serialVersionUID = 3140472492599046285L;
   
-  URL page_url;
-  EditorKit kit;
-  String ctype = "text/plain";
+  private URL page;
+  private EditorKit editorKit;
+  
   boolean focus_root;
   boolean manages_focus;
 
   public JEditorPane()
   {
+    setEditorKit(createDefaultEditorKit());
   }
 
   public JEditorPane(String url) throws IOException
   {
-    setPage(url);
+    this(new URL(url));
   }
 
   public JEditorPane(String type, String text)
   {
-    ctype = text;
+    setEditorKit(createEditorKitForContentType(type));
     setText(text);
   }
 
   public JEditorPane(URL url) throws IOException
   {
+    this();
     setPage(url);
   }
 
@@ -110,14 +113,14 @@ public class JEditorPane extends JTextComponent
     return null;
   }
 
-  public String getContentType()
+  public final String getContentType()
   {
-    return ctype;
+    return getEditorKit().getContentType();
   }
 
   public EditorKit getEditorKit()
   {
-    return kit;
+    return editorKit;
   }
 
   public static String getEditorKitClassNameForContentType(String type)
@@ -127,7 +130,7 @@ public class JEditorPane extends JTextComponent
 
   public EditorKit getEditorKitForContentType(String type)
   {
-    return kit;
+    return editorKit;
   }
 
   /**
@@ -150,7 +153,7 @@ public class JEditorPane extends JTextComponent
 
   public URL getPage()
   {
-    return page_url;
+    return page;
   }
 
   protected InputStream getStream(URL page)
@@ -216,7 +219,7 @@ public class JEditorPane extends JTextComponent
   }
 
   /**
-   * Establishes the default bindings of type to classname.  
+   * Establishes the default bindings of type to classname.
    */
   public static void registerEditorKitForContentType(String type,
                                                      String classname,
@@ -240,24 +243,43 @@ public class JEditorPane extends JTextComponent
   {
   }
 
-  public void setContentType(String type)
+  public final void setContentType(String type)
   {
-    ctype = type;
-    invalidate();
-    repaint();
+    if (editorKit != null
+	&& editorKit.getContentType().equals(type))
+      return;
+    	      
+    EditorKit kit = getEditorKitForContentType(type);
+	    	
+    if (kit != null)
+      setEditorKit(kit);
   }
 
-  public void setEditorKit(EditorKit kit)
+  public void setEditorKit(EditorKit newValue)
   {
-    this.kit = kit;
+    if (editorKit == newValue)
+      return;
+    	
+    if (editorKit != null)
+      editorKit.deinstall(this);
+	    	    
+    EditorKit oldValue = editorKit;
+    editorKit = newValue;
+			    	
+    if (editorKit != null)
+      {
+	editorKit.install(this);
+	setDocument(editorKit.createDefaultDocument());
+      }
+				    	    
+    firePropertyChange("editorKit", oldValue, newValue);
     invalidate();
     repaint();
   }
 
   public void setEditorKitForContentType(String type, EditorKit k)
   {
-    ctype = type;
-    setEditorKit(k);
+    // FIXME: editorKitCache.put(type, kit);
   }
 
   /**
@@ -265,6 +287,7 @@ public class JEditorPane extends JTextComponent
    */
   public void setPage(String url) throws IOException
   {
+    setPage(new URL(url));
   }
 
   /**
@@ -272,6 +295,18 @@ public class JEditorPane extends JTextComponent
    */
   public void setPage(URL page) throws IOException
   {
+    if (page == null)
+      throw new IOException("invalid url");
+
+    try
+      {
+	this.page = page;
+	getEditorKit().read(page.openStream(), getDocument(), 0);
+      }
+    catch (BadLocationException e)
+      {
+	// Ignored. '0' is always a valid offset.
+      }
   }
 
   public void setText(String t)

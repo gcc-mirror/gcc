@@ -174,10 +174,7 @@ public class Canvas
   {
     /* Create the context if this is the first request */
     if (accessibleContext == null)
-      {
-        /* Create the context */
-        accessibleContext = new AccessibleAWTCanvas();
-      }
+      accessibleContext = new AccessibleAWTCanvas();
     return accessibleContext;
   }
 

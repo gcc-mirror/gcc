@@ -613,8 +613,17 @@ public class TextArea extends TextComponent implements java.io.Serializable
     }
   }
   
+  /**
+   * Gets the AccessibleContext associated with this <code>TextArea</code>.
+   * The context is created, if necessary.
+   *
+   * @return the associated context
+   */
   public AccessibleContext getAccessibleContext()
   {
-    return new AccessibleAWTTextArea();
+    /* Create the context if this is the first request */
+    if (accessibleContext == null)
+      accessibleContext = new AccessibleAWTTextArea();
+    return accessibleContext;
   }
 }

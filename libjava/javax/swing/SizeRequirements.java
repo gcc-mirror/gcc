@@ -47,7 +47,7 @@ import java.io.Serializable;
  */
 public class SizeRequirements implements Serializable
 {
-  static final long serialVersionUID = 9217749429906736553L;
+  private static final long serialVersionUID = 9217749429906736553L;
 
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------

@@ -1,5 +1,5 @@
 /* JViewport.java -- 
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,6 +45,7 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 
+import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ViewportUI;
@@ -157,12 +158,23 @@ public class JViewport extends JComponent
     fireStateChanged();
   }
 
+  /**
+   * Returns the viewSize when set, or the preferred size of the set
+   * Component view.  If no viewSize and no Component view is set an
+   * empty Dimension is returned.
+   */
   public Dimension getViewSize()
   {
     if (isViewSizeSet)
       return viewSize;
     else
-      return getView().getSize();
+      {
+	Component view = getView();
+	if (view != null)
+	  return view.getPreferredSize();
+	else
+	  return new Dimension();
+      }
   }
 
 
@@ -281,7 +293,7 @@ public class JViewport extends JComponent
       fireStateChanged();
   }
     
-  public void addImpl(Component comp, Object constraints, int index)
+  protected void addImpl(Component comp, Object constraints, int index)
   {
     if (getComponentCount() > 0)
       remove(getComponents()[0]);
@@ -373,5 +385,11 @@ public class JViewport extends JComponent
   public void setUI(ViewportUI ui)
   {
     super.setUI(ui);
+  }
+
+  public final void setBorder(Border border)
+  {
+    if (border != null)
+      throw new IllegalArgumentException();
   }
 }

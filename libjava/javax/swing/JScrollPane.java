@@ -1,5 +1,5 @@
 /* JScrollPane.java -- 
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -98,18 +98,6 @@ public class JScrollPane
   Border viewportBorder;
   boolean wheelScrollingEnabled;
   ChangeListener scrollListener;  
-
-  public static final String COLUMN_HEADER_CHANGED_PROPERTY = "columnHeader";
-  public static final String COMPONENT_ORIENTATION_CHANGED_PROPERTY = "componentOrientation";
-  public static final String HORIZONTAL_SCROLLBAR_CHANGED_PROPERTY = "horizontalScrollBar";
-  public static final String HORIZONTAL_SCROLLBAR_POLICY_CHANGED_PROPERTY = "horizontalScrollBarPolicy";
-  public static final String LAYOUT_CHANGED_PROPERTY = "layout";
-  public static final String ROW_HEADER_CHANGED_PROPERTY = "rowHeader";
-  public static final String VERTICAL_SCROLLBAR_CHANGED_PROPERTY = "verticalScrollBar";
-  public static final String VERTICAL_SCROLLBAR_POLICY_CHANGED_PROPERTY = "verticalScrollBarPolicy";
-  public static final String VIEWPORT_CHANGED_PROPERTY = "viewport";
-  public static final String VIEWPORT_BORDER_CHANGED_PROPERTY = "viewportBorder";
-  public static final String WHEEL_SCROLLING_ENABLED_CHANGED_PROPERTY = "wheelScrollingEnabled";
 
   public JViewport getColumnHeader()
   {
@@ -247,17 +235,20 @@ public class JScrollPane
   {
     ComponentOrientation old = super.getComponentOrientation();
     super.setComponentOrientation(co);
-    firePropertyChange(COMPONENT_ORIENTATION_CHANGED_PROPERTY, old, co);
+    firePropertyChange("componentOrientation", old, co);
     sync();
   }
 
   public void setColumnHeader(JViewport h)
   {
+    if (columnHeader == h)
+      return;
+    
     JViewport old = columnHeader;
     removeNonNull(old);
     columnHeader = h;
     addNonNull(h);
-    firePropertyChange(COLUMN_HEADER_CHANGED_PROPERTY, old, h);
+    firePropertyChange("columnHeader", old, h);
     sync();
   }
 
@@ -327,11 +318,14 @@ public class JScrollPane
 
   public void setHorizontalScrollBar(JScrollBar h)
   {
+    if (horizontalScrollBar == h)
+      return;
+
     JScrollBar old = horizontalScrollBar;
     removeNonNull(old);
     horizontalScrollBar = h;
     addNonNull(h);
-    firePropertyChange(HORIZONTAL_SCROLLBAR_CHANGED_PROPERTY, old, h);
+    firePropertyChange("horizontalScrollBar", old, h);
     sync();
 
     if (old != null)
@@ -349,14 +343,18 @@ public class JScrollPane
   }
 
   public void setHorizontalScrollBarPolicy(int h)
-  {    
+  {
+    if (horizontalScrollBarPolicy == h)
+      return;
+    
     if (h != HORIZONTAL_SCROLLBAR_AS_NEEDED
         && h != HORIZONTAL_SCROLLBAR_NEVER
         && h != HORIZONTAL_SCROLLBAR_ALWAYS)
       throw new IllegalArgumentException("unknown horizontal scrollbar policy");    
+
     int old = horizontalScrollBarPolicy;
     horizontalScrollBarPolicy = h;
-    firePropertyChange(HORIZONTAL_SCROLLBAR_POLICY_CHANGED_PROPERTY, old, h);
+    firePropertyChange("horizontalScrollBarPolicy", old, h);
     sync();
   }
 
@@ -366,17 +364,20 @@ public class JScrollPane
     ScrollPaneLayout tmp = (ScrollPaneLayout) l;
     super.setLayout(l);
     tmp.syncWithScrollPane(this);
-    firePropertyChange(LAYOUT_CHANGED_PROPERTY, old, l);
+    firePropertyChange("layout", old, l);
     sync();
   }
 
   public void setRowHeader(JViewport v)
   {
+    if (rowHeader == v)
+      return;
+    
     JViewport old = rowHeader;
     removeNonNull(old);
     rowHeader = v;
     addNonNull(v);
-    firePropertyChange(ROW_HEADER_CHANGED_PROPERTY, old, v);
+    firePropertyChange("rowHeader", old, v);
     sync();
   }
 
@@ -390,11 +391,14 @@ public class JScrollPane
 
   public void setVerticalScrollBar(JScrollBar v)
   {
+    if (verticalScrollBar == v)
+      return;
+    
     JScrollBar old = verticalScrollBar;
     removeNonNull(old);
     verticalScrollBar = v;
     addNonNull(v);
-    firePropertyChange(VERTICAL_SCROLLBAR_CHANGED_PROPERTY, old, v);
+    firePropertyChange("verticalScrollBar", old, v);
     sync();
 
     if (old != null)
@@ -413,26 +417,36 @@ public class JScrollPane
 
   public void setVerticalScrollBarPolicy(int v)
   {
+    if (verticalScrollBarPolicy == v)
+      return;
+    
     if (v != VERTICAL_SCROLLBAR_AS_NEEDED
         && v != VERTICAL_SCROLLBAR_NEVER
         && v != VERTICAL_SCROLLBAR_ALWAYS)
       throw new IllegalArgumentException("unknown vertical scrollbar policy");    
+    
     int old = verticalScrollBarPolicy;
     verticalScrollBarPolicy = v;
-    firePropertyChange(VERTICAL_SCROLLBAR_POLICY_CHANGED_PROPERTY, old, v);
+    firePropertyChange("verticalScrollBarPolicy", old, v);
     sync();
   }
 
   public void setWheelScrollingEnabled(boolean b)
   {
+    if (wheelScrollingEnabled == b)
+      return;
+    
     boolean old = wheelScrollingEnabled;
     wheelScrollingEnabled = b;
-    firePropertyChange(WHEEL_SCROLLING_ENABLED_CHANGED_PROPERTY, old, b);
+    firePropertyChange("wheelScrollingEnabled", old, b);
     sync();
   }
 
   public void setViewport(JViewport v)
   {
+    if (viewport == v)
+      return;
+    
     JViewport old = viewport;
     removeNonNull(old);
     if (old != null)
@@ -443,15 +457,18 @@ public class JScrollPane
     addNonNull(v);
     revalidate();
     repaint();
-    firePropertyChange(VIEWPORT_CHANGED_PROPERTY, old, v);
+    firePropertyChange("viewport", old, v);
     sync();
   }
 
   public void setViewportBorder(Border b)
   {
+    if (viewportBorder == b)
+      return;
+    
     Border old = viewportBorder;
     viewportBorder = b;
-    firePropertyChange(VIEWPORT_BORDER_CHANGED_PROPERTY, old, b);
+    firePropertyChange("viewportBorder", old, b);
     sync();
   }
     
@@ -588,7 +605,7 @@ public class JScrollPane
     return new ScrollBar(SwingConstants.VERTICAL);
   }
     
-  public JViewport createViewport()
+  protected JViewport createViewport()
   {
     return new JViewport();
   }
@@ -624,7 +641,7 @@ public class JScrollPane
     super.setUI(ui);
   }
 
-  class ScrollBar 
+  protected class ScrollBar 
     extends JScrollBar
     implements UIResource
   {
@@ -660,8 +677,5 @@ public class JScrollPane
                                               direction);
         }
     }
-
-
   }
-  
 }

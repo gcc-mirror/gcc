@@ -53,7 +53,7 @@ import javax.swing.event.EventListenerList;
 public abstract class AbstractCellEditor
   implements CellEditor, Serializable
 {
-  static final long serialVersionUID = -1048006551406220959L;
+  private static final long serialVersionUID = -1048006551406220959L;
 
   /**
    * listenerList

@@ -53,11 +53,11 @@ import javax.swing.plaf.ScrollPaneUI;
 public class BasicScrollPaneUI extends ScrollPaneUI
   implements ScrollPaneConstants
 {
-
-    public static ComponentUI createUI(final JComponent c) 
-    {
-	return new BasicScrollPaneUI();
-    }
+  
+  public static ComponentUI createUI(final JComponent c) 
+  {
+    return new BasicScrollPaneUI();
+  }
 
   protected void installDefaults(JScrollPane p)
   {
@@ -77,9 +77,9 @@ public class BasicScrollPaneUI extends ScrollPaneUI
     p.setBorder(null);
   }
     
-    public void installUI(final JComponent c) 
-    {
-	super.installUI(c);
+  public void installUI(final JComponent c) 
+  {
+    super.installUI(c);
     this.installDefaults((JScrollPane)c);
   }
 
@@ -87,29 +87,29 @@ public class BasicScrollPaneUI extends ScrollPaneUI
   {
     super.uninstallUI(c);
     this.uninstallDefaults((JScrollPane)c);
-    }
+  }
+
     
-    
-    public Dimension getMinimumSize(JComponent c) 
-    {
-	JScrollPane p = (JScrollPane ) c;
-        ScrollPaneLayout sl = (ScrollPaneLayout) p.getLayout();
-        return sl.minimumLayoutSize(c);
-    }
+  public Dimension getMinimumSize(JComponent c) 
+  {
+    JScrollPane p = (JScrollPane ) c;
+    ScrollPaneLayout sl = (ScrollPaneLayout) p.getLayout();
+    return sl.minimumLayoutSize(c);
+  }
 
-    public Dimension getPreferredSize(JComponent c) 
-    {
-	JScrollPane p = (JScrollPane ) c;
-        ScrollPaneLayout sl = (ScrollPaneLayout) p.getLayout();
-        return sl.preferredLayoutSize(c);
-    }
+  public Dimension getPreferredSize(JComponent c) 
+  {
+    JScrollPane p = (JScrollPane ) c;
+    ScrollPaneLayout sl = (ScrollPaneLayout) p.getLayout();
+    return sl.preferredLayoutSize(c);
+  }
 
 
-    public void paint(Graphics g, JComponent c)
-    {      
-      // do nothing; the normal painting-of-children algorithm, along with
-      // ScrollPaneLayout, does all the relevant work.
-    }
+  public void paint(Graphics g, JComponent c)
+  {      
+    // do nothing; the normal painting-of-children algorithm, along with
+    // ScrollPaneLayout, does all the relevant work.
+  }
 }
 
 

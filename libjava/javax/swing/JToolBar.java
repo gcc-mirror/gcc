@@ -1,5 +1,5 @@
 /* JToolBar.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -100,7 +100,7 @@ public class JToolBar extends JComponent implements SwingConstants, Accessible
     }
   }
 
-	/**
+  /**
    * This is the private JToolBar layout manager.
    */
   private class DefaultToolBarLayout implements LayoutManager
@@ -110,7 +110,7 @@ public class JToolBar extends JComponent implements SwingConstants, Accessible
      *
      * @param name The name of the component added.
      * @param comp The component that was added.
-	 */
+     */
     public void addLayoutComponent(String name, Component comp)
     {
       // Do nothing.
@@ -142,7 +142,7 @@ public class JToolBar extends JComponent implements SwingConstants, Accessible
       Dimension tdims = c.getSize();
       int start = 0;
       Dimension pref;
-    
+
       if (getOrientation() == SwingUtilities.HORIZONTAL)
         {
 	  start += insets.left;
@@ -194,14 +194,14 @@ public class JToolBar extends JComponent implements SwingConstants, Accessible
       return preferredLayoutSize(parent);
     }
 
-		/**
+    /**
      * This method returns the preferred size of the given container given the
      * child components.
      *
      * @param parent The container to measure.
      *
      * @return The preferred size of the given container.
-		 */
+     */
     public Dimension preferredLayoutSize(Container parent)
     {
       int orientation = getOrientation();
@@ -259,23 +259,23 @@ public class JToolBar extends JComponent implements SwingConstants, Accessible
       return new Dimension(w, h);
     }
 
-		/**
+    /**
      * This method is called when the given component  is removed from the
      * container.
      *
      * @param comp The component removed.
-		 */
+     */
     public void removeLayoutComponent(Component comp)
     {
       // Do nothing.
     }
   }
 
-		/**
+  /**
    * This is an extension of JSeparator used in toolbars. Unlike JSeparator,
    * nothing is painted for this Separator, it is only blank space that
    * separates components.
-		 */
+   */
   public static class Separator extends JSeparator
   {
     /** DOCUMENT ME! */
@@ -299,70 +299,70 @@ public class JToolBar extends JComponent implements SwingConstants, Accessible
       setPreferredSize(size);
     } // Separator()
 
-		/**
+    /**
      * This method returns the String ID of the UI class of  Separator.
      *
      * @return The UI class' String ID.
-		 */
+     */
     public String getUIClassID()
     {
       return "ToolBarSeparatorUI";
-		} // getUIClassID()
+    } // getUIClassID()
 
-		/**
+    /**
      * This method returns the preferred size of the Separator.
      *
      * @return The preferred size of the Separator.
-		 */
+     */
     public Dimension getPreferredSize()
     {
       return super.getPreferredSize();
-		} // getPreferredSize()
+    } // getPreferredSize()
 
-		/**
+    /**
      * This method returns the maximum size of the Separator.
      *
      * @return The maximum size of the Separator.
-		 */
+     */
     public Dimension getMaximumSize()
     {
       return super.getPreferredSize();
-		} // getMaximumSize()
+    } // getMaximumSize()
 
-		/**
+    /**
      * This method returns the minimum size of the Separator.
      *
      * @return The minimum size of the Separator.
-		 */
+     */
     public Dimension getMinimumSize()
     {
       return super.getPreferredSize();
-		} // getMinimumSize()
+    } // getMinimumSize()
 
-		/**
+    /**
      * This method returns the size of the Separator.
      *
      * @return The size of the Separator.
-		 */
+     */
     public Dimension getSeparatorSize()
     {
       return super.getPreferredSize();
-		} // getSeparatorSize()
+    } // getSeparatorSize()
 
-		/**
+    /**
      * This method sets the size of the Separator.
      *
      * @param size The new size of the Separator.
-		 */
+     */
     public void setSeparatorSize(Dimension size)
     {
       setPreferredSize(size);
-		} // setSeparatorSize()
-	} // Separator
+    } // setSeparatorSize()
+  } // Separator
 
   /** DOCUMENT ME! */
-    private static final long serialVersionUID = -1269915519555129643L;
-    
+  private static final long serialVersionUID = -1269915519555129643L;
+
   /** Whether the JToolBar paints its border. */
   private transient boolean paintBorder = true;
 
@@ -376,150 +376,135 @@ public class JToolBar extends JComponent implements SwingConstants, Accessible
   private transient boolean rollover;
 
   /** The orientation of the JToolBar. */
-	private int orientation = HORIZONTAL;
+  private int orientation = HORIZONTAL;
 
-  /** Fired in a PropertyChangeEvent when the orientation property changes. */
-	public static final String ORIENTATION_CHANGED_PROPERTY = "orientation";
-
-  /** Fired in a PropertyChangeEvent when the floatable property changes. */
-  public static final String FLOATABLE_CHANGED_PROPERTY = "floatable";
-
-  /** Fired in a PropertyChangeEvent when the borderPainted property changes. */
-  public static final String BORDER_PAINTED_CHANGED_PROPERTY = "borderPainted";
-
-  /** Fired in a PropertyChangeEvent when the margin property changes. */
-  public static final String MARGIN_CHANGED_PROPERTY = "margin";
-
-  /** Fired in a PropertyChangeEvent when the rollover property changes. */
-  public static final String ROLLOVER_CHANGED_PROPERTY = "rollover";
-
-	/**
+  /**
    * This method creates a new JToolBar object with horizontal orientation
    * and no name.
-	 */
+   */
   public JToolBar()
   {
     this(null, HORIZONTAL);
-	} // JToolBar()
+  } // JToolBar()
 
-	/**
+  /**
    * This method creates a new JToolBar with the given orientation and  no
    * name.
    *
-	 * @param orientation JToolBar orientation (HORIZONTAL or VERTICAL)
-	 */
+   * @param orientation JToolBar orientation (HORIZONTAL or VERTICAL)
+   */
   public JToolBar(int orientation)
   {
-          this(null, orientation);
-	} // JToolBar()
+    this(null, orientation);
+  } // JToolBar()
 
-	/**
+  /**
    * This method creates a new JToolBar object with the given name and
    * horizontal orientation.
    *
-	 * @param name Name assigned to undocked tool bar.
-	 */
+   * @param name Name assigned to undocked tool bar.
+   */
   public JToolBar(String name)
   {
-          this(name, HORIZONTAL);
-	} // JToolBar()
+    this(name, HORIZONTAL);
+  } // JToolBar()
 
-	/**
+  /**
    * This method creates a new JToolBar object with the given name and
    * orientation.
    *
-	 * @param name Name assigned to undocked tool bar.
-	 * @param orientation JToolBar orientation (HORIZONTAL or VERTICAL)
-	 */
+   * @param name Name assigned to undocked tool bar.
+   * @param orientation JToolBar orientation (HORIZONTAL or VERTICAL)
+   */
   public JToolBar(String name, int orientation)
   {
-	        setName(name);
+    setName(name);
     setOrientation(orientation);
     setLayout(new DefaultToolBarLayout());
     revalidate();
-                updateUI();	
-	} // JToolBar()
+    updateUI();
+  } // JToolBar()
 
-	/**
+  /**
    * This method adds a new JButton that performs the given Action to the
    * JToolBar.
    *
    * @param action The Action to add to the JToolBar.
    *
    * @return The JButton that wraps the Action.
-	 */
+   */
   public JButton add(Action action)
   {
     JButton b = createActionComponent(action);
     add(b);
     return b;
-	} // add()
+  } // add()
 
-	/**
+  /**
    * This method paints the border if the borderPainted property is true.
    *
    * @param graphics The graphics object to paint with.
-	 */
+   */
   protected void paintBorder(Graphics graphics)
   {
     if (paintBorder && isFloatable())
       super.paintBorder(graphics);
-	} // paintBorder()
+  } // paintBorder()
 
-	/**
+  /**
    * This method returns the UI class used to paint this JToolBar.
    *
    * @return The UI class for this JToolBar.
-	 */
+   */
   public ToolBarUI getUI()
   {
-		return (ToolBarUI) ui;
-	} // getUI()
+    return (ToolBarUI) ui;
+  } // getUI()
 
-	/**
+  /**
    * This method sets the UI used with the JToolBar.
    *
    * @param ui The UI used with the JToolBar.
-	 */
+   */
   public void setUI(ToolBarUI ui)
   {
-		super.setUI(ui);
-	} // setUI()
+    super.setUI(ui);
+  } // setUI()
 
-	/**
+  /**
    * This method resets the UI used to the Look and Feel defaults.
-	 */
+   */
   public void updateUI()
   {
-          setUI((ToolBarUI)UIManager.getUI(this));
+    setUI((ToolBarUI) UIManager.getUI(this));
     revalidate();
     repaint();
-	} // updateUI()
+  } // updateUI()
 
-	/**
+  /**
    * This method returns the String identifier for the UI class to the used
    * with the JToolBar.
    *
    * @return The String identifier for the UI class.
-	 */
+   */
   public String getUIClassID()
   {
     return "ToolBarUI";
-	} // getUIClassID()
+  } // getUIClassID()
 
-	/**
+  /**
    * This method sets the rollover property for the JToolBar. In rollover
    * mode, JButtons inside the JToolBar will only display their borders when
    * the mouse is moving over them.
    *
    * @param b The new rollover property.
-	 */
+   */
   public void setRollover(boolean b)
   {
     if (b != rollover)
       {
 	rollover = b;
-	firePropertyChange(ROLLOVER_CHANGED_PROPERTY, ! rollover, rollover);
+	firePropertyChange("rollover", ! rollover, rollover);
 	revalidate();
 	repaint();
       }
@@ -553,37 +538,37 @@ public class JToolBar extends JComponent implements SwingConstants, Accessible
 	return i;
 
     return -1;
-	} // getComponentIndex()
+  } // getComponentIndex()
 
-	/**
+  /**
    * This method returns the component at the given index.
    *
    * @param index The index of the component.
    *
    * @return The component at the given index.
-	 */
+   */
   public Component getComponentAtIndex(int index)
   {
     return getComponent(index);
-	} // getComponentAtIndex()
+  } // getComponentAtIndex()
 
-	/**
+  /**
    * This method returns the margin property.
    *
    * @return The margin property.
-	 */
+   */
   public Insets getMargin()
   {
     return margin;
-	} // getMargin()
+  } // getMargin()
 
-	/**
+  /**
    * This method sets the margin property. The margin property determines the
    * extra space between the children components of the JToolBar and the
    * border.
    *
    * @param margin The margin property.
-	 */
+   */
   public void setMargin(Insets margin)
   {
     if ((this.margin != null && margin == null)
@@ -595,142 +580,141 @@ public class JToolBar extends JComponent implements SwingConstants, Accessible
       {
 	Insets oldMargin = this.margin;
 	this.margin = margin;
-	firePropertyChange(MARGIN_CHANGED_PROPERTY, oldMargin, this.margin);
+	firePropertyChange("margin", oldMargin, this.margin);
 	revalidate();
 	repaint();
       }
-	} // setMargin()
+  } // setMargin()
 
-	/**
+  /**
    * This method returns the borderPainted property.
    *
    * @return The borderPainted property.
-	 */
+   */
   public boolean isBorderPainted()
   {
     return paintBorder;
-	} // isBorderPainted()
+  } // isBorderPainted()
 
-	/**
+  /**
    * This method sets the borderPainted property. If set to false, the border
    * will not be painted.
    *
    * @param painted Whether the border will be painted.
-	 */
+   */
   public void setBorderPainted(boolean painted)
   {
     if (painted != paintBorder)
       {
 	paintBorder = painted;
-	firePropertyChange(BORDER_PAINTED_CHANGED_PROPERTY, ! paintBorder,
+	firePropertyChange("borderPainted", ! paintBorder,
 	                   paintBorder);
 	repaint();
       }
-	} // setBorderPainted()
+  } // setBorderPainted()
 
-	/**
+  /**
    * This method returns the floatable property.
    *
    * @return The floatable property.
-	 */
+   */
   public boolean isFloatable()
   {
     return floatable;
-	} // isFloatable()
+  } // isFloatable()
 
-	/**
+  /**
    * This method sets the floatable property. If set to false, the JToolBar
    * cannot be dragged.
    *
    * @param floatable Whether the JToolBar can be dragged.
-	 */
+   */
   public void setFloatable(boolean floatable)
   {
     if (floatable != this.floatable)
       {
 	this.floatable = floatable;
-	firePropertyChange(FLOATABLE_CHANGED_PROPERTY, ! floatable, floatable);
+	firePropertyChange("floatable", ! floatable, floatable);
       }
-	} // setFloatable()
+  } // setFloatable()
 
-	/**
+  /**
    * This method returns the orientation of the JToolBar.
    *
    * @return The orientation of the JToolBar.
-	 */
+   */
   public int getOrientation()
   {
     return orientation;
-	} // getOrientation()
+  } // getOrientation()
 
-	/**
+  /**
    * This method sets the layout manager to be used with the JToolBar.
    *
    * @param mgr The Layout Manager used with the JToolBar.
-	 */
+   */
   public void setLayout(LayoutManager mgr)
   {
-	    super.setLayout(mgr);
+    super.setLayout(mgr);
     revalidate();
     repaint();
-	} // setLayout()
+  } // setLayout()
 
-	/**
+  /**
    * This method sets the orientation property for JToolBar.
    *
    * @param orientation The new orientation for JToolBar.
    *
    * @throws IllegalArgumentException If the orientation is not HORIZONTAL or
    *         VERTICAL.
-	 */
+   */
   public void setOrientation(int orientation)
   {
-		if (orientation != HORIZONTAL && orientation != VERTICAL)
+    if (orientation != HORIZONTAL && orientation != VERTICAL)
       throw new IllegalArgumentException(orientation
                                          + " is not a legal orientation");
-	    if (orientation != this.orientation)
-	    {
-		int oldOrientation = this.orientation;
-		this.orientation = orientation;
-		firePropertyChange(ORIENTATION_CHANGED_PROPERTY, oldOrientation,
-			this.orientation);
+    if (orientation != this.orientation)
+      {
+	int oldOrientation = this.orientation;
+	this.orientation = orientation;
+	firePropertyChange("orientation", oldOrientation, this.orientation);
 	revalidate();
 	repaint();
-	    }
-	} // setOrientation()
+      }
+  } // setOrientation()
 
-	/**
+  /**
    * This method adds a Separator of default size to the JToolBar.
-	 */
+   */
   public void addSeparator()
   {
     add(new Separator());
-	} // addSeparator()
+  } // addSeparator()
 
-	/**
+  /**
    * This method adds a Separator with the given size to the JToolBar.
    *
    * @param size The size of the Separator.
-	 */
+   */
   public void addSeparator(Dimension size)
   {
     add(new Separator(size));
-	} // addSeparator()
+  } // addSeparator()
 
-	/**
+  /**
    * This method is used to create JButtons which can be added to the JToolBar
    * for the given action.
    *
    * @param action The action to create a JButton for.
    *
    * @return The JButton created from the action.
-	 */
+   */
   protected JButton createActionComponent(Action action)
   {
     return new JButton(action);
-	} // createActionComponent()
+  } // createActionComponent()
 
-	/**
+  /**
    * This method creates a pre-configured PropertyChangeListener which updates
    * the control as changes are made to the Action. However, this is no
    * longer the recommended way of adding Actions to Containers. As such,
@@ -739,36 +723,36 @@ public class JToolBar extends JComponent implements SwingConstants, Accessible
    * @param button The JButton to configure a PropertyChangeListener for.
    *
    * @return null.
-	 */
+   */
   protected PropertyChangeListener createActionChangeListener(JButton button)
   {
     // XXX: As specified, this returns null. But seems kind of strange, usually deprecated methods don't just return null, verify!
     return null;
-	} // createActionChangeListener()
+  } // createActionChangeListener()
 
-	/**
+  /**
    * This method overrides Container's addImpl method. If a JButton is added,
    * it is disabled.
    *
    * @param component The Component to add.
    * @param constraints The Constraints placed on the component.
    * @param index The index to place the Component at.
-  */
+   */
   protected void addImpl(Component component, Object constraints, int index)
   {
     // XXX: Sun says disable button but test cases show otherwise.
     super.addImpl(component, constraints, index);
   } // addImpl()
 
-	/**
+  /**
    * This method returns a String description of the JToolBar.
    *
    * @return A String description of the JToolBar.
-	 */
+   */
   protected String paramString()
   {
     return "JToolBar";
-	} // paramString()
+  } // paramString()
 
   /**
    * getAccessibleContext
@@ -779,7 +763,7 @@ public class JToolBar extends JComponent implements SwingConstants, Accessible
   {
     if (accessibleContext == null)
       accessibleContext = new AccessibleJToolBar();
-    
+
     return accessibleContext;
   }
 }

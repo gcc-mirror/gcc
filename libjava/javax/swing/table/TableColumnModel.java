@@ -49,118 +49,118 @@ import javax.swing.event.TableColumnModelListener;
  */
 public interface TableColumnModel
 {
-	/**
-	 * addColumn
-	 * @param column TableColumn
-	 */
-	void addColumn(TableColumn column);
+  /**
+   * addColumn
+   * @param column TableColumn
+   */
+  void addColumn(TableColumn column);
 
-	/**
-	 * removeColumn
-	 * @param column TableColumn
-	 */
-	void removeColumn(TableColumn column);
+  /**
+   * removeColumn
+   * @param column TableColumn
+   */
+  void removeColumn(TableColumn column);
 
-	/**
-	 * moveColumn
-	 * @param columnIndex Index of column to move
-	 * @param newIndex New index of column
-	 */
-	void moveColumn(int columnIndex, int newIndex);
+  /**
+   * moveColumn
+   * @param columnIndex Index of column to move
+   * @param newIndex New index of column
+   */
+  void moveColumn(int columnIndex, int newIndex);
 
-	/**
-	 * setColumnMargin
-	 * @param margin Margin of column
-	 */
-	void setColumnMargin(int margin);
+  /**
+   * setColumnMargin
+   * @param margin Margin of column
+   */
+  void setColumnMargin(int margin);
 
-	/**
-	 * getColumnCount
+  /**
+   * getColumnCount
    * @return Column count
-	 */
-	int getColumnCount();
+   */
+  int getColumnCount();
 
-	/**
-	 * getColumns
+  /**
+   * getColumns
    * @return Enumeration of columns
-	 */
-	Enumeration getColumns();
+   */
+  Enumeration getColumns();
 
-	/**
-	 * getColumnIndex
-	 * @param columnIdentifier Column id
-	 */
-	int getColumnIndex(Object columnIdentifier);
+  /**
+   * getColumnIndex
+   * @param columnIdentifier Column id
+   */
+  int getColumnIndex(Object columnIdentifier);
 
-	/**
-	 * getColumn
-	 * @param columnIndex Index of column
-	 */
-	TableColumn getColumn(int columnIndex);
+  /**
+   * getColumn
+   * @param columnIndex Index of column
+   */
+  TableColumn getColumn(int columnIndex);
 
-	/**
-	 * getColumnMargin
+  /**
+   * getColumnMargin
    * @return Column margin
-	 */
-	int getColumnMargin();
+   */
+  int getColumnMargin();
 
-	/**
-	 * getColumnIndexAtX
+  /**
+   * getColumnIndexAtX
    * @return Column index as position x
-	 */
-	int getColumnIndexAtX(int xPosition);
+   */
+  int getColumnIndexAtX(int xPosition);
 
-	/**
-	 * getTotalColumnWidth
+  /**
+   * getTotalColumnWidth
    * @return Total column width
-	 */
-	int getTotalColumnWidth();
+   */
+  int getTotalColumnWidth();
 
-	/**
-	 * setColumnSelectionAllowed
-	 * @param value Set column selection
-	 */
-	void setColumnSelectionAllowed(boolean value);
+  /**
+   * setColumnSelectionAllowed
+   * @param value Set column selection
+   */
+  void setColumnSelectionAllowed(boolean value);
 
-	/**
-	 * getColumnSelectionAllowed
+  /**
+   * getColumnSelectionAllowed
    * @return true if column selection allowed, false otherwise
-	 */
-	boolean getColumnSelectionAllowed();
+   */
+  boolean getColumnSelectionAllowed();
 
-	/**
-	 * getSelectedColumns
+  /**
+   * getSelectedColumns
    * @return Selected columns
-	 */
-	int[] getSelectedColumns();
+   */
+  int[] getSelectedColumns();
 
-	/**
-	 * getSelectedColumnCount
+  /**
+   * getSelectedColumnCount
    * @return Count of selected columns
-	 */
-	int getSelectedColumnCount();
+   */
+  int getSelectedColumnCount();
 
-	/**
-	 * setSelectionModel
-	 * @param model ListSelectionModel
-	 */
-	void setSelectionModel(ListSelectionModel model);
+  /**
+   * setSelectionModel
+   * @param model ListSelectionModel
+   */
+  void setSelectionModel(ListSelectionModel model);
 
-	/**
-	 * getSelectionModel
-	 * @param column TableColumn
-	 */
-	ListSelectionModel getSelectionModel();
+  /**
+   * getSelectionModel
+   * @param column TableColumn
+   */
+  ListSelectionModel getSelectionModel();
 
-	/**
-	 * addColumnModelListener
-	 * @param listener TableColumnModelListener
-	 */
-	void addColumnModelListener(TableColumnModelListener listener);
+  /**
+   * addColumnModelListener
+   * @param listener TableColumnModelListener
+   */
+  void addColumnModelListener(TableColumnModelListener listener);
 
-	/**
-	 * removeColumnModelListener
-	 * @param listener TableColumnModelListener
-	 */
-	void removeColumnModelListener(TableColumnModelListener listener);
+  /**
+   * removeColumnModelListener
+   * @param listener TableColumnModelListener
+   */
+  void removeColumnModelListener(TableColumnModelListener listener);
 }

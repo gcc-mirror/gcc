@@ -52,7 +52,6 @@ import java.awt.geom.Rectangle2D;
 import java.text.CharacterIterator;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
-import java.util.Map;
 import java.awt.font.TextAttribute;
 
 import gnu.classpath.Configuration;

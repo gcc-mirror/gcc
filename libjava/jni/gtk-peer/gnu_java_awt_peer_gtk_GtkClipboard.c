@@ -110,15 +110,15 @@ selection_received (GtkWidget *widget __attribute__((unused)),
   if (selection_data->length < 0
       || selection_data->type != GDK_SELECTION_TYPE_STRING)
     {
-      (*gdk_env)->CallVoidMethod (gdk_env, cb_obj, stringSelectionReceivedID,
-				  NULL);
+      (*gdk_env())->CallVoidMethod (gdk_env(), cb_obj, stringSelectionReceivedID,
+				    NULL);
     }
   else
     {
       char *str = (char *) selection_data->data;
       
-      (*gdk_env)->CallVoidMethod (gdk_env, cb_obj, stringSelectionReceivedID,
-				  (*gdk_env)->NewStringUTF (gdk_env, str));
+      (*gdk_env())->CallVoidMethod (gdk_env(), cb_obj, stringSelectionReceivedID,
+				    (*gdk_env())->NewStringUTF (gdk_env(), str));
     }
 
   return;
@@ -135,7 +135,7 @@ selection_get (GtkWidget *widget __attribute__((unused)),
   const char *utf;
   jsize utflen;
 
-  jstr = (*gdk_env)->CallObjectMethod (gdk_env, cb_obj, 
+  jstr = (*gdk_env())->CallObjectMethod (gdk_env(), cb_obj, 
 				       stringSelectionHandlerID);
 
   if (!jstr)
@@ -145,13 +145,13 @@ selection_get (GtkWidget *widget __attribute__((unused)),
       return;
     }
 
-  utflen = (*gdk_env)->GetStringUTFLength (gdk_env, jstr);
-  utf = (*gdk_env)->GetStringUTFChars (gdk_env, jstr, NULL);
+  utflen = (*gdk_env())->GetStringUTFLength (gdk_env(), jstr);
+  utf = (*gdk_env())->GetStringUTFChars (gdk_env(), jstr, NULL);
 
   gtk_selection_data_set (selection_data, GDK_TARGET_STRING, 8,
 			  (const unsigned char*)utf, utflen);
 
-  (*gdk_env)->ReleaseStringUTFChars (gdk_env, jstr, utf);
+  (*gdk_env())->ReleaseStringUTFChars (gdk_env(), jstr, utf);
 }
 
 JNIEXPORT void JNICALL
@@ -177,7 +177,7 @@ gint
 selection_clear (GtkWidget *widget __attribute__((unused)),
 		 GdkEventSelection *event __attribute__((unused)))
 {
-  (*gdk_env)->CallVoidMethod (gdk_env, cb_obj, selectionClearID);
+  (*gdk_env())->CallVoidMethod (gdk_env(), cb_obj, selectionClearID);
 
   return TRUE;
 }

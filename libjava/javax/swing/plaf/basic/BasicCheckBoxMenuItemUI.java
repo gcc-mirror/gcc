@@ -98,7 +98,7 @@ public class BasicCheckBoxMenuItemUI extends BasicMenuItemUI
    */
   public void processMouseEvent(JMenuItem item, MouseEvent e,
                                 MenuElement[] path,
-                         MenuSelectionManager manager)
+                                MenuSelectionManager manager)
   {
   }
 }

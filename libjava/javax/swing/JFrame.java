@@ -1,5 +1,5 @@
 /* JFrame.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -123,7 +123,7 @@ public class JFrame extends Frame
     return rootPane;
   }
 
-  public void setRootPane(JRootPane root)
+  protected void setRootPane(JRootPane root)
   {
     if (rootPane != null)
       remove(rootPane);
@@ -132,7 +132,7 @@ public class JFrame extends Frame
     add(rootPane, BorderLayout.CENTER);
   }
 
-  public JRootPane createRootPane()
+  protected JRootPane createRootPane()
   {
     return new JRootPane();
   }

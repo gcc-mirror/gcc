@@ -1,5 +1,5 @@
-/* BasicTabbedPaneUI.java
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+/* BasicTabbedPaneUI.java --
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -34,6 +34,7 @@ or based on this library.  If you modify this library, you may extend
 this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
+
 
 package javax.swing.plaf.basic;
 
@@ -75,7 +76,6 @@ import javax.swing.plaf.TabbedPaneUI;
 import javax.swing.plaf.UIResource;
 import javax.swing.text.View;
 
-
 /**
  * This is the Basic Look and Feel's UI delegate for JTabbedPane.
  */
@@ -84,7 +84,7 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
   /**
    * A helper class that handles focus.
    */
-  protected class FocusHandler extends FocusAdapter
+  public class FocusHandler extends FocusAdapter
   {
     /**
      * This method is called when the component gains focus.
@@ -112,7 +112,7 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
    * sets the index appropriately. In SCROLL_TAB_MODE, this class also
    * handles the mouse clicks on the scrolling buttons.
    */
-  protected class MouseHandler extends MouseAdapter
+  public class MouseHandler extends MouseAdapter
   {
     /**
      * This method is called when the mouse is pressed. The index cannot
@@ -184,13 +184,13 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
      */
     public void propertyChange(PropertyChangeEvent e)
     {
-      if (e.getPropertyName().equals(JTabbedPane.TAB_LAYOUT_POLICY_CHANGED_PROPERTY))
+      if (e.getPropertyName().equals("tabLayoutPolicy"))
         {
 	  layoutManager = createLayoutManager();
 
 	  tabPane.setLayout(layoutManager);
         }
-      else if (e.getPropertyName().equals(JTabbedPane.TAB_PLACEMENT_CHANGED_PROPERTY)
+      else if (e.getPropertyName().equals("tabPlacement")
                && tabPane.getTabLayoutPolicy() == JTabbedPane.SCROLL_TAB_LAYOUT)
         {
 	  incrButton = createIncreaseButton();
@@ -1459,7 +1459,7 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
    *
    * @return A layout manager given the tab layout policy.
    */
-  public LayoutManager createLayoutManager()
+  protected LayoutManager createLayoutManager()
   {
     if (tabPane.getTabLayoutPolicy() == JTabbedPane.WRAP_TAB_LAYOUT)
       return new TabbedPaneLayout();

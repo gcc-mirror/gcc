@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import java.awt.Component;
-import java.awt.Font;
 import java.awt.Label;
 import java.awt.peer.LabelPeer;
 

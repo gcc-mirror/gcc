@@ -57,7 +57,7 @@ import javax.swing.border.Border;
 public class ScrollPaneLayout
   implements LayoutManager, ScrollPaneConstants, Serializable
 {
-  static final long serialVersionUID = -4480022884523193743L;
+  private static final long serialVersionUID = -4480022884523193743L;
 
   public static class UIResource extends ScrollPaneLayout 
     implements javax.swing.plaf.UIResource {
@@ -240,7 +240,7 @@ public class ScrollPaneLayout
 
             if (viewportBorder != null)
               {
-              viewportInsets = viewportBorder.getBorderInsets(parent);
+                viewportInsets = viewportBorder.getBorderInsets(parent);
                 if (viewportInsets != null)
                   viewportInsetsSize.setSize(viewportInsets.left + viewportInsets.right,
                                              viewportInsets.top + viewportInsets.bottom);
@@ -311,19 +311,19 @@ public class ScrollPaneLayout
 
             if (viewportBorder != null)
               {
-              viewportInsets = viewportBorder.getBorderInsets(parent);
+                viewportInsets = viewportBorder.getBorderInsets(parent);
                 if (viewportInsets != null)
                   viewportInsetsSize.setSize(viewportInsets.left + viewportInsets.right,
                                              viewportInsets.top + viewportInsets.bottom);
               }
-
+            
             if (insets != null)
               insetsSize.setSize(insets.left + insets.right,
                                  insets.top + insets.bottom);
 
             maybeSetMinimumSize(colHead, columnHeaderSize);
             maybeSetMinimumSize(rowHead, rowHeaderSize);
-
+            
             if (vsbPolicy != VERTICAL_SCROLLBAR_NEVER)
               maybeSetMinimumSize(vsb, verticalScrollBarSize);
 
@@ -420,7 +420,7 @@ public class ScrollPaneLayout
             
             if (!showVsb)
               x3 = x4;
-
+            
             if (!showHsb)
               y3 = y4;
 
@@ -438,7 +438,7 @@ public class ScrollPaneLayout
             if (showVsb)
               {
                 vsb.setVisible(true);
-	      vsb.setBounds(new Rectangle(x3, y2, x4-x3, y3-y2));
+                vsb.setBounds(new Rectangle(x3, y2, x4-x3, y3-y2));
               }
             else if (vsb != null)
               vsb.setVisible(false);
@@ -446,7 +446,7 @@ public class ScrollPaneLayout
             if (showHsb)
               {
                 hsb.setVisible(true);
-              hsb.setBounds(new Rectangle(x2, y3, x3-x2, y4-y3));
+                hsb.setBounds(new Rectangle(x2, y3, x3-x2, y4-y3));
               }
             else if (hsb != null)
               hsb.setVisible(false);

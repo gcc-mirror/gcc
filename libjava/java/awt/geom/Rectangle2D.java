@@ -1,5 +1,5 @@
 /* Rectangle2D.java -- generic rectangles in 2-D space
-   Copyright (C) 2000, 2001, 2002 Free Software Foundation
+   Copyright (C) 2000, 2001, 2002, 2004  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -57,30 +57,30 @@ import java.util.NoSuchElementException;
 public abstract class Rectangle2D extends RectangularShape
 {
   /**
-   * The point lies left of the rectangle (p.x < r.x).
+   * The point lies left of the rectangle (p.x &lt; r.x).
    *
-   * @see #outcode()
+   * @see #outcode(double, double)
    */
   public static final int OUT_LEFT = 1;
 
   /**
-   * The point lies above the rectangle (p.y < r.y).
+   * The point lies above the rectangle (p.y &lt; r.y).
    *
-   * @see #outcode()
+   * @see #outcode(double, double)
    */
   public static final int OUT_TOP = 2;
 
   /**
    * The point lies right of the rectangle (p.x &gt; r.maxX).
    *
-   * @see #outcode()
+   * @see #outcode(double, double)
    */
   public static final int OUT_RIGHT = 4;
 
   /**
    * The point lies below of the rectangle (p.y &gt; r.maxY).
    *
-   * @see #outcode()
+   * @see #outcode(double, double)
    */
   public static final int OUT_BOTTOM = 8;
 

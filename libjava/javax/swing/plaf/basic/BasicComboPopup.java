@@ -1,5 +1,5 @@
 /* BasicComboPopup.java --
-   Copyright (C) 2004  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -938,13 +938,13 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
 
     public void propertyChange(PropertyChangeEvent e)
     {
-      if (e.getPropertyName().equals(JComboBox.RENDERER_CHANGED_PROPERTY))
+      if (e.getPropertyName().equals("renderer"))
         {
 	  list.setCellRenderer((ListCellRenderer) e.getNewValue());
 	  revalidate();
 	  repaint();
         }
-      if (e.getPropertyName().equals(JComboBox.MODEL_CHANGED_PROPERTY))
+      if (e.getPropertyName().equals("dataModel"))
         {
 	  list.setModel((ComboBoxModel) e.getNewValue());
 	  revalidate();

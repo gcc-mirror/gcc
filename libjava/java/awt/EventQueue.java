@@ -40,8 +40,11 @@ package java.awt;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.InvocationEvent;
+import java.awt.event.WindowEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.EmptyStackException;
+
+import gnu.java.awt.ClasspathToolkit;
 
 /* Written using on-line Java 2 Platform Standard Edition v1.3 API 
  * Specification, as well as "The Java Class Libraries", 2nd edition 
@@ -71,6 +74,35 @@ public class EventQueue
   private long lastWhen = System.currentTimeMillis();
 
   private EventDispatchThread dispatchThread = new EventDispatchThread(this);
+  private boolean shutdown = false;
+
+  private long lastNativeQueueAccess = 0;
+  private long humanLatencyThreshold = 100;
+
+  synchronized void setShutdown (boolean b) 
+  {
+    shutdown = b;
+  }
+
+  synchronized boolean isShutdown ()
+  {
+    if (shutdown)
+      return true;
+
+    // This is the exact self-shutdown condition specified in J2SE:
+    // http://java.sun.com/j2se/1.4.2/docs/api/java/awt/doc-files/AWTThreadIssues.html
+    
+    if (peekEvent() == null
+        && ((ClasspathToolkit) Toolkit.getDefaultToolkit()).nativeQueueEmpty())
+      {
+        Frame[] frames = Frame.getFrames();
+        for (int i = 0; i < frames.length; ++i)
+          if (frames[i].isDisplayable())
+            return false;
+        return true;
+      }
+    return false;
+  }
 
   /**
    * Initializes a new instance of <code>EventQueue</code>.
@@ -93,9 +125,51 @@ public class EventQueue
   {
     if (next != null)
       return next.getNextEvent();
+    
+    ClasspathToolkit tk = ((ClasspathToolkit) Toolkit.getDefaultToolkit());
+    long curr = System.currentTimeMillis();
+
+    if (! tk.nativeQueueEmpty() &&
+        (curr - lastNativeQueueAccess > humanLatencyThreshold))
+      {
+        tk.iterateNativeQueue(this, false);
+        lastNativeQueueAccess = curr;
+      }
 
     while (next_in == next_out)
-      wait();
+      {
+        // Only the EventDispatchThread associated with the top of the stack is
+        // allowed to get events from the native source; everyone else just
+        // waits on the head of the queue.
+
+        if (isDispatchThread())
+          {
+            // We are not allowed to return null from this method, yet it
+            // is possible that we actually have run out of native events
+            // in the enclosing while() loop, and none of the native events
+            // happened to cause AWT events. We therefore ought to check
+            // the isShutdown() condition here, before risking a "native
+            // wait". If we check it before entering this function we may
+            // wait forever for events after the shutdown condition has
+            // arisen.
+
+            if (isShutdown())
+              throw new InterruptedException();
+
+            tk.iterateNativeQueue(this, true);
+            lastNativeQueueAccess = System.currentTimeMillis();
+          }
+        else
+          {
+            try
+              {
+                wait();
+              }
+            catch (InterruptedException ie)
+              {
+              }
+          }
+      }
 
     AWTEvent res = queue[next_out];
 
@@ -215,6 +289,22 @@ public class EventQueue
         next_out = 0;
         next_in = oldQueue.length;
       }
+    
+    if (dispatchThread == null || !dispatchThread.isAlive())
+      {
+        dispatchThread = new EventDispatchThread(this);
+        dispatchThread.start();
+      }
+
+    // Window events might represent the closing of a window, which
+    // might cause the end of the dispatch thread's life, so we'll wake
+    // it up here to give it a chance to check for shutdown.
+
+    if (!isDispatchThread() 
+        || (evt.getID() == WindowEvent.WINDOW_CLOSED)
+        || (evt.getID() == WindowEvent.WINDOW_CLOSING))
+      ((ClasspathToolkit) Toolkit.getDefaultToolkit()).wakeNativeQueue();
+
     notify();
   }
 
@@ -386,9 +476,10 @@ public class EventQueue
 	    next_in = 0;
 	    next_out = 0;
 
-            // Tell our EventDispatchThread that it can end execution
-            dispatchThread.interrupt ();
+            ((ClasspathToolkit) Toolkit.getDefaultToolkit()).wakeNativeQueue();
+            setShutdown(true);
 	    dispatchThread = null;
+            this.notifyAll();
           }
       }
   }

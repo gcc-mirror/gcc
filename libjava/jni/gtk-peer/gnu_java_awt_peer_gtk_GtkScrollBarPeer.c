@@ -160,6 +160,6 @@ post_change_event (GtkRange *range, jobject peer)
 {
   GtkAdjustment *adj;
   adj = gtk_range_get_adjustment (range);
-  (*gdk_env)->CallVoidMethod (gdk_env, peer, postAdjustmentEventID,
+  (*gdk_env())->CallVoidMethod (gdk_env(), peer, postAdjustmentEventID,
                               AWT_ADJUSTMENT_TRACK, (jint) adj->value);
 }

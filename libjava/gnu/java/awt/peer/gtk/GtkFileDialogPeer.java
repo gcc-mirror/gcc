@@ -38,12 +38,10 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import java.awt.AWTEvent;
 import java.awt.Dialog;
 import java.awt.FileDialog;
 import java.awt.Graphics;
 import java.awt.Window;
-import java.awt.event.WindowEvent;
 import java.awt.peer.FileDialogPeer;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -114,7 +112,7 @@ public class GtkFileDialogPeer extends GtkDialogPeer implements FileDialogPeer
 
     // GtkFileChooser requires absolute filenames. If the given filename
     // is not absolute, let's construct it based on current directory.
-        currentFile = fileName;
+    currentFile = fileName;
     if (fileName.indexOf(FS) == 0)
       {
         nativeSetFile (fileName);

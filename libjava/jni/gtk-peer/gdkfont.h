@@ -102,6 +102,21 @@ extern struct state_table *native_text_layout_state_table;
 #define TEXT_METRICS_Y_ADVANCE 5
 #define NUM_TEXT_METRICS 6
 
+#define NUM_GLYPH_METRICS 10
+
+#define GLYPH_LOG_X(i)      (NUM_GLYPH_METRICS * (i)    )
+#define GLYPH_LOG_Y(i)      (NUM_GLYPH_METRICS * (i) + 1)
+#define GLYPH_LOG_WIDTH(i)  (NUM_GLYPH_METRICS * (i) + 2)
+#define GLYPH_LOG_HEIGHT(i) (NUM_GLYPH_METRICS * (i) + 3)
+
+#define GLYPH_INK_X(i)      (NUM_GLYPH_METRICS * (i) + 4)
+#define GLYPH_INK_Y(i)      (NUM_GLYPH_METRICS * (i) + 5)
+#define GLYPH_INK_WIDTH(i)  (NUM_GLYPH_METRICS * (i) + 6)
+#define GLYPH_INK_HEIGHT(i) (NUM_GLYPH_METRICS * (i) + 7)
+
+#define GLYPH_POS_X(i)      (NUM_GLYPH_METRICS * (i) + 8)
+#define GLYPH_POS_Y(i)      (NUM_GLYPH_METRICS * (i) + 9)
+
 struct peerfont
 {
   PangoFont *font;
@@ -117,16 +132,6 @@ struct peerfont
    * to invoke. 
    */
   void *graphics_resource;
-};
-
-struct glyphvec 
-{
-  /* the GList is list of PangoGlyphItems, each of which is a pair of 1
-     PangoItem and 1 PangoGlyphString. */
-  GList *glyphitems;
-  PangoFontDescription *desc;
-  PangoFont *font;
-  PangoContext *ctx;
 };
 
 struct textlayout

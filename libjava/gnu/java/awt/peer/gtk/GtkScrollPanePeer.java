@@ -41,7 +41,6 @@ package gnu.java.awt.peer.gtk;
 import java.awt.Adjustable;
 import java.awt.Dimension;
 import java.awt.ScrollPane;
-import java.awt.peer.ComponentPeer;
 import java.awt.peer.ScrollPanePeer;
 
 public class GtkScrollPanePeer extends GtkContainerPeer

@@ -522,7 +522,7 @@ public class JFileChooser extends JComponent implements Accessible {
 	 * @returns int
 	 */
 	public int showOpenDialog(Component parent) {
-		return 0; // TODO
+		return CANCEL_OPTION; // TODO
 	} // showOpenDialog()
 
 	/**
@@ -531,7 +531,7 @@ public class JFileChooser extends JComponent implements Accessible {
 	 * @returns int
 	 */
 	public int showSaveDialog(Component parent) {
-		return 0; // TODO
+		return CANCEL_OPTION; // TODO
 	} // showSaveDialog()
 
 	/**
@@ -541,7 +541,7 @@ public class JFileChooser extends JComponent implements Accessible {
 	 * @returns int
 	 */
 	public int showDialog(Component parent, String approveButtonText) {
-		return 0; // TODO
+		return CANCEL_OPTION; // TODO
 	} // showDialog()
 
 	/**

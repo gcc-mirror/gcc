@@ -47,7 +47,6 @@ import java.util.EventListener;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleAction;
 import javax.accessibility.AccessibleContext;
-import javax.accessibility.AccessibleRelation;
 import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleValue;
 
@@ -429,9 +428,18 @@ paramString()
     + getWidth () + "x" + getHeight () + ",label=" + getLabel ();
 }
 
+/**
+ * Gets the AccessibleContext associated with this <code>Button</code>.
+ * The context is created, if necessary.
+ *
+ * @return the associated context
+ */
 public AccessibleContext getAccessibleContext()
 {
-  return new AccessibleAWTButton();
+  /* Create the context if this is the first request */
+  if (accessibleContext == null)
+    accessibleContext = new AccessibleAWTButton();
+  return accessibleContext;
 }
 
   /**

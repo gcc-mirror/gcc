@@ -59,7 +59,7 @@ public class MultiPixelPackedSampleModel extends SampleModel
   public MultiPixelPackedSampleModel(int dataType, int w, int h,
 				     int numberOfBits)
   {
-    this(dataType, w, h, 0, numberOfBits, 0);
+    this(dataType, w, h, numberOfBits, 0, 0);
   }
 
   public MultiPixelPackedSampleModel(int dataType, int w, int h,
@@ -101,7 +101,7 @@ public class MultiPixelPackedSampleModel extends SampleModel
 
     // Compute scan line large enough for w pixels.
     if (scanlineStride == 0)
-      scanlineStride = ((dataBitOffset + w * numberOfBits) / elemBits) + 1;
+      scanlineStride = ((dataBitOffset + w * numberOfBits) / elemBits);
     this.scanlineStride = scanlineStride;
 
     
@@ -112,8 +112,9 @@ public class MultiPixelPackedSampleModel extends SampleModel
     bitOffsets = new int[numElems];
     for (int i=0; i < numElems; i++)
       {
-	bitOffsets[i] = numberOfBits * i;
-	bitMasks[i] = ((1 << numberOfBits) - 1) << bitOffsets[i];
+	bitOffsets[numElems - i- 1] = numberOfBits * i;
+	bitMasks[numElems - i - 1] = ((1 << numberOfBits) - 1) << 
+	    bitOffsets[numElems - i - 1];
       }
   }
 

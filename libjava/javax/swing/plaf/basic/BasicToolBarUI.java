@@ -1,5 +1,5 @@
 /* BasicToolBarUI.java --
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -92,40 +92,40 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
   private static Border rolloverBorder;
 
   /** The last known BorderLayout constraint before floating. */
-    protected String constraintBeforeFloating;
+  protected String constraintBeforeFloating;
 
   /** The last known orientation of the JToolBar before floating. */
   private int lastGoodOrientation;
 
   /** The color of the border when it is dockable. */
-    protected Color dockingBorderColor;
+  protected Color dockingBorderColor;
 
   /** The background color of the JToolBar when it is dockable. */
-    protected Color dockingColor;
+  protected Color dockingColor;
 
   /** The docking listener responsible for mouse events on the JToolBar. */
-    protected MouseInputListener dockingListener;
+  protected MouseInputListener dockingListener;
 
   /** The window used for dragging the JToolBar. */
-    protected BasicToolBarUI.DragWindow dragWindow;
+  protected BasicToolBarUI.DragWindow dragWindow;
 
   /** The color of the border when it is not dockable. */
-    protected Color floatingBorderColor;
+  protected Color floatingBorderColor;
 
   /** The background color of the JToolBar when it is not dockable. */
-    protected Color floatingColor;
+  protected Color floatingColor;
 
   /** The index of the focused component. */
-    protected int focusedCompIndex;
+  protected int focusedCompIndex;
 
   /** The PropertyChangeListener for the JToolBar. */
-    protected PropertyChangeListener propertyListener;
+  protected PropertyChangeListener propertyListener;
 
   /** The JToolBar this UI delegate is responsible for. */
-    protected JToolBar toolBar;
+  protected JToolBar toolBar;
 
   /** The Container listener for the JToolBar. */
-    protected ContainerListener toolBarContListener;
+  protected ContainerListener toolBarContListener;
 
   /** The Focus listener for the JToolBar. */
   protected FocusListener toolBarFocusListener;
@@ -152,11 +152,11 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
   private transient int cachedOrientation;
 
   /**
-   * This method creates a new BasicToolBarUI object for the given JToolBar.
+   * This method creates a new <code>BasicToolBarUI</code> object for the given JToolBar.
    */
   public BasicToolBarUI()
   {
-    super();
+    // Do nothing here.
   }
 
   /**
@@ -168,13 +168,10 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    *
    * @return Whether the JToolBar can dock.
    */
-  protected boolean canDock(Component c, Point p)
-    {
-    if (areaOfClick(c, p) != -1)
-      return true;
-
-	return false;
-    }
+  public boolean canDock(Component c, Point p)
+  {
+    return areaOfClick(c, p) != -1;
+  }
 
   /**
    * This helper method returns the position of the JToolBar if it can dock.
@@ -219,10 +216,10 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    *
    * @return A new DockingListener for the JToolBar.
    */
-    protected MouseInputListener createDockingListener()
-    {
+  protected MouseInputListener createDockingListener()
+  {
     return new DockingListener(toolBar);
-    }
+  }
 
   /**
    * This method creates a new DragWindow for the given JToolBar.
@@ -231,10 +228,10 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    *
    * @return A new DragWindow.
    */
-    protected BasicToolBarUI.DragWindow createDragWindow(JToolBar toolbar)
-    {
+  protected BasicToolBarUI.DragWindow createDragWindow(JToolBar toolbar)
+  {
     return new DragWindow();
-    }
+  }
 
   /**
    * This method creates a new floating frame for the JToolBar. By default,
@@ -245,11 +242,11 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    *
    * @return A new floating frame.
    */
-    protected JFrame createFloatingFrame(JToolBar toolbar)
-    {
+  protected JFrame createFloatingFrame(JToolBar toolbar)
+  {
     // FIXME: Though deprecated, this should still work.
-      return null;
-    }
+    return null;
+  }
 
   /**
    * This method creates a new floating window for the JToolBar. This is the
@@ -259,21 +256,21 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    *
    * @return A new floating window.
    */
-    protected RootPaneContainer createFloatingWindow(JToolBar toolbar)
-    {
+  protected RootPaneContainer createFloatingWindow(JToolBar toolbar)
+  {
     // This one is used by default though.
     return new ToolBarDialog();
-    }
+  }
 
   /**
    * This method creates a new WindowListener for the JToolBar.
    *
    * @return A new WindowListener.
    */
-    protected WindowListener createFrameListener()
-    {
+  protected WindowListener createFrameListener()
+  {
     return new FrameListener();
-    }
+  }
 
   /**
    * This method creates a new nonRolloverBorder for JButtons when the
@@ -281,20 +278,20 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    *
    * @return A new NonRolloverBorder.
    */
-    protected Border createNonRolloverBorder()
-    {
+  protected Border createNonRolloverBorder()
+  {
     return new EtchedBorderUIResource();
-    }
+  }
 
   /**
    * This method creates a new PropertyChangeListener for the JToolBar.
    *
    * @return A new PropertyChangeListener.
    */
-    protected PropertyChangeListener createPropertyListener()
-    {
+  protected PropertyChangeListener createPropertyListener()
+  {
     return new PropertyListener();
-    }
+  }
 
   /**
    * This method creates a new rollover border for JButtons when the
@@ -302,8 +299,8 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    *
    * @return A new rollover border.
    */
-    protected Border createRolloverBorder()
-    {
+  protected Border createRolloverBorder()
+  {
     return new EtchedBorderUIResource()
       {
 	public void paintBorder(Component c, Graphics g, int x, int y,
@@ -316,27 +313,27 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
 	    }
 	}
       };
-    }
+  }
 
   /**
    * This method creates a new Container listener for the JToolBar.
    *
    * @return A new Container listener.
    */
-    protected ContainerListener createToolBarContListener()
-    {
+  protected ContainerListener createToolBarContListener()
+  {
     return new ToolBarContListener();
-    }
+  }
 
   /**
    * This method creates a new FocusListener for the JToolBar.
    *
    * @return A new FocusListener for the JToolBar.
    */
-    protected FocusListener createToolBarFocusListener()
-    {
+  protected FocusListener createToolBarFocusListener()
+  {
     return new ToolBarFocusListener();
-    }
+  }
 
   /**
    * This method creates a new UI delegate for the given JComponent.
@@ -357,8 +354,8 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    * @param position The mouse cursor coordinates relative to the JToolBar.
    * @param origin The screen position of the JToolBar.
    */
-    protected void dragTo(Point position, Point origin)
-    {
+  protected void dragTo(Point position, Point origin)
+  {
     int loc = areaOfClick(origParent,
                           SwingUtilities.convertPoint(toolBar, position,
                                                       origParent));
@@ -390,7 +387,7 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
       {
 	w = cachedBounds.height;
 	h = cachedBounds.width;
-    }
+      }
 
     Point p = dragWindow.getOffset();
     Insets insets = toolBar.getInsets();
@@ -414,8 +411,8 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    * @param origin The screen position of the JToolBar before the drag session
    *        started.
    */
-    protected void floatAt(Point position, Point origin)
-    {
+  protected void floatAt(Point position, Point origin)
+  {
     Point p = new Point(position);
     int aoc = areaOfClick(origParent,
                           SwingUtilities.convertPoint(toolBar, p, origParent));
@@ -434,7 +431,7 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
       {
 	floatFrame.hide();
 	newParent = origParent;
-    }
+      }
 
     String constraint;
     switch (aoc)
@@ -499,9 +496,9 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    * @return The docking color.
    */
   public Color getDockingColor()
-    {
-	return dockingColor;
-    }
+  {
+    return dockingColor;
+  }
 
   /**
    * This method returns the Color which is displayed when over a floating
@@ -510,9 +507,9 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    * @return The color which is displayed when over a floating area.
    */
   public Color getFloatingColor()
-    {
-	return floatingColor;
-    }
+  {
+    return floatingColor;
+  }
 
   /**
    * This method returns the maximum size of the given JComponent for this UI.
@@ -522,9 +519,9 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    * @return The maximum size for this UI.
    */
   public Dimension getMaximumSize(JComponent c)
-    {
+  {
     return getPreferredSize(c);
-    }
+  }
 
   /**
    * This method returns the minimum size of the given JComponent for this UI.
@@ -534,9 +531,9 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    * @return The minimum size for this UI.
    */
   public Dimension getMinimumSize(JComponent c)
-    {
+  {
     return getPreferredSize(c);
-    }
+  }
 
   /**
    * This method returns the preferred size of the given JComponent for this
@@ -547,15 +544,15 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    * @return The preferred size for this UI.
    */
   public Dimension getPreferredSize(JComponent c)
-    {
+  {
     return toolBar.getLayout().preferredLayoutSize(c);
-    }
+  }
 
   /**
    * This method installs the needed components for the JToolBar.
    */
-    protected void installComponents()
-    {
+  protected void installComponents()
+  {
     floatFrame = (Window) createFloatingWindow(toolBar);
 
     dragWindow = createDragWindow(toolBar);
@@ -569,13 +566,13 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
     borders = new Hashtable();
 
     fillHashtable();
-    }
+  }
 
   /**
    * This method installs the defaults as specified by the look and feel.
    */
-    protected void installDefaults()
-    {
+  protected void installDefaults()
+  {
     UIDefaults defaults = UIManager.getLookAndFeelDefaults();
 
     toolBar.setBorder(new ToolBarBorder());
@@ -588,24 +585,24 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
 
     floatingBorderColor = defaults.getColor("ToolBar.floatingForeground");
     floatingColor = defaults.getColor("ToolBar.floatingBackground");
-    }
+  }
 
   /**
    * This method installs the keyboard actions for the JToolBar as specified
    * by the look and feel.
    */
-    protected void installKeyboardActions()
-    {
+  protected void installKeyboardActions()
+  {
     // FIXME: implement.
-    }
+  }
 
   /**
    * This method installs listeners for the JToolBar.
    *
    * @param toolbar The JToolBar to register listeners for.
    */
-    protected void installListeners(JToolBar toolbar)
-    {
+  protected void installListeners(JToolBar toolbar)
+  {
     dockingListener = createDockingListener();
     toolBar.addMouseListener(dockingListener);
     toolBar.addMouseMotionListener(dockingListener);
@@ -630,13 +627,13 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    * @param c The JComponent whose children need to have non rollover borders
    *        installed.
    */
-    protected void installNonRolloverBorders(JComponent c)
-    {
+  protected void installNonRolloverBorders(JComponent c)
+  {
     Component[] components = toolBar.getComponents();
 
     for (int i = 0; i < components.length; i++)
       setBorderToNonRollover(components[i]);
-    }
+  }
 
   /**
    * This method installs normal (or their original) borders for each
@@ -645,13 +642,13 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    * @param c The JComponent whose children need to have their original
    *        borders installed.
    */
-    protected void installNormalBorders(JComponent c)
-    {
+  protected void installNormalBorders(JComponent c)
+  {
     Component[] components = toolBar.getComponents();
 
     for (int i = 0; i < components.length; i++)
       setBorderToNormal(components[i]);
-    }
+  }
 
   /**
    * This method install rollover borders for each component inside the given
@@ -660,13 +657,13 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    * @param c The JComponent whose children need to have rollover borders
    *        installed.
    */
-    protected void installRolloverBorders(JComponent c)
-    {
+  protected void installRolloverBorders(JComponent c)
+  {
     Component[] components = toolBar.getComponents();
 
     for (int i = 0; i < components.length; i++)
       setBorderToRollover(components[i]);
-    }
+  }
 
   /**
    * This method fills the borders hashtable with a list of components that
@@ -694,20 +691,20 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    *
    * @param c The JComponent to install a UI for.
    */
-    public void installUI(JComponent c)
-    {
-	super.installUI(c);
+  public void installUI(JComponent c)
+  {
+    super.installUI(c);
 
-	if (c instanceof JToolBar)
-	{
-	    toolBar = (JToolBar) c;
-	    toolBar.setOpaque(true);
+    if (c instanceof JToolBar)
+      {
+	toolBar = (JToolBar) c;
+	toolBar.setOpaque(true);
 	installDefaults();
 	installComponents();
-	    installListeners(toolBar);
+	installListeners(toolBar);
 	installKeyboardActions();
-	}
-    }
+      }
+  }
 
   /**
    * This method returns whether the JToolBar is floating.
@@ -715,9 +712,9 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    * @return Whether the JToolBar is floating.
    */
   public boolean isFloating()
-    {
+  {
     return floatFrame.isVisible();
-    }
+  }
 
   /**
    * This method returns whether rollover borders have been set.
@@ -725,9 +722,9 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    * @return Whether rollover borders have been set.
    */
   public boolean isRolloverBorders()
-    {
+  {
     return toolBar.isRollover();
-    }
+  }
 
   /**
    * This method navigates in the given direction giving focus to the next
@@ -735,10 +732,10 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    *
    * @param direction The direction to give focus to.
    */
-    protected void navigateFocusedComp(int direction)
-    {
+  protected void navigateFocusedComp(int direction)
+  {
     // FIXME: Implement.
-    }
+  }
 
   /**
    * This method sets the border of the given component to a non rollover
@@ -746,45 +743,45 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    *
    * @param c The Component whose border needs to be set.
    */
-    protected void setBorderToNonRollover(Component c)
-    {
+  protected void setBorderToNonRollover(Component c)
+  {
     if (c instanceof JButton)
       {
 	JButton b = (JButton) c;
 	b.setRolloverEnabled(false);
 	b.setBorder(nonRolloverBorder);
       }
-    }
+  }
 
   /**
    * This method sets the border of the given component to its original value.
    *
    * @param c The Component whose border needs to be set.
    */
-    protected void setBorderToNormal(Component c)
-    {
+  protected void setBorderToNormal(Component c)
+  {
     if (c instanceof JButton)
       {
 	JButton b = (JButton) c;
 	Border border = (Border) borders.get(b);
 	b.setBorder(border);
       }
-    }
+  }
 
   /**
    * This method sets the border of the given component to a rollover border.
    *
    * @param c The Component whose border needs to be set.
    */
-    protected void setBorderToRollover(Component c)
-    {
+  protected void setBorderToRollover(Component c)
+  {
     if (c instanceof JButton)
       {
 	JButton b = (JButton) c;
 	b.setRolloverEnabled(true);
 	b.setBorder(rolloverBorder);
       }
-    }
+  }
 
   /**
    * This method sets the docking color.
@@ -792,9 +789,9 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    * @param c The docking color.
    */
   public void setDockingColor(Color c)
-    {
-	dockingColor = c;
-    }
+  {
+    dockingColor = c;
+  }
 
   /**
    * This method sets the floating property for the JToolBar.
@@ -816,9 +813,9 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    * @param c The floating color.
    */
   public void setFloatingColor(Color c)
-    {
+  {
     floatingColor = c;
-    }
+  }
 
   /**
    * This method sets the floating location of the JToolBar.
@@ -866,7 +863,7 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    * This method uninstall UI installed components from the JToolBar.
    */
   protected void uninstallComponents()
-    {
+  {
     installNormalBorders(toolBar);
     borders = null;
     rolloverBorder = null;
@@ -890,21 +887,21 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
     dockingColor = null;
     floatingBorderColor = null;
     floatingColor = null;
-    }
+  }
 
   /**
    * This method uninstalls keyboard actions installed by the UI.
    */
   protected void uninstallKeyboardActions()
-    {
+  {
     // FIXME: implement.
-    }
+  }
 
   /**
    * This method uninstalls listeners installed by the UI.
    */
   protected void uninstallListeners()
-    {
+  {
     toolBar.removeFocusListener(toolBarFocusListener);
     toolBarFocusListener = null;
 
@@ -917,7 +914,7 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
     toolBar.removeMouseMotionListener(dockingListener);
     toolBar.removeMouseListener(dockingListener);
     dockingListener = null;
-    }
+  }
 
   /**
    * This method uninstalls the UI.
@@ -925,7 +922,7 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    * @param c The JComponent that is having this UI removed.
    */
   public void uninstallUI(JComponent c)
-    {
+  {
     uninstallKeyboardActions();
     uninstallListeners();
     uninstallComponents();
@@ -937,7 +934,7 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
    * This is the MouseHandler class that allows the user to drag the JToolBar
    * in and out of the parent and dock it if it can.
    */
-  protected class DockingListener implements MouseInputListener
+  public class DockingListener implements MouseInputListener
   {
     /** Whether the JToolBar is being dragged. */
     protected boolean isDragging;
@@ -1032,7 +1029,7 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
         {
 	  if (e.getX() > insets.left)
 	    return;
-    }
+        }
       else
         {
 	  if (e.getY() > insets.top)
@@ -1221,7 +1218,7 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
     public void propertyChange(PropertyChangeEvent e)
     {
       // FIXME: need name properties so can change floatFrame title.
-      if (e.getPropertyName().equals(JToolBar.ROLLOVER_CHANGED_PROPERTY))
+      if (e.getPropertyName().equals("rollover"))
 	setRolloverBorders(toolBar.isRollover());
     }
   }

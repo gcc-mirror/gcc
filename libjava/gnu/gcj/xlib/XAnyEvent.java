@@ -70,7 +70,8 @@ public final class XAnyEvent
   /**
    * Load next event into the event structure.
    */
-  public native void loadNext();
+  public native boolean loadNext(boolean block);
+  public native void interrupt();
 
   public native int getType();
   public native void setType(int type);
@@ -86,6 +87,7 @@ public final class XAnyEvent
   public native void send(Window destination, boolean propagate,
 			  long mask);
 
+  RawData pipefds;
   RawData structure;
   Display display;
 

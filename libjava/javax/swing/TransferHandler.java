@@ -35,44 +35,119 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
-import java.io.Serializable;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
-import java.awt.datatransfer.*;
+import java.io.Serializable;
 
 public class TransferHandler implements Serializable
 {
+  static class TransferAction extends AbstractAction
+  {
+    private String command;
+
+    public TransferAction(String command)
+    {
+      this.command = command;
+    }
+    
+    public void actionPerformed(ActionEvent event)
+    {
+      JComponent component = (JComponent) event.getSource();
+      TransferHandler transferHandler = component.getTransferHandler();
+      Clipboard clipboard = getClipboard(component);
+
+      if (command.equals(COMMAND_COPY))
+	transferHandler.exportToClipboard(component, clipboard, COPY);
+      else if (command.equals(COMMAND_CUT))
+	transferHandler.exportToClipboard(component, clipboard, MOVE);
+      else if (command.equals(COMMAND_PASTE))
+	{
+	  Transferable transferable = clipboard.getContents(null);
+
+	  if (transferable != null)
+	    transferHandler.importData(component, transferable);
+	}
+    }
+  
+    private static Clipboard getClipboard(JComponent component)
+    {
+      SecurityManager sm = System.getSecurityManager();
+    
+      if (sm != null)
+	{
+	  try
+	    {
+	      sm.checkSystemClipboardAccess();
+
+	      // We may access system clipboard.
+	      return component.getToolkit().getSystemClipboard();
+	    }
+	  catch (SecurityException e)
+	    {
+	      // We may not access system clipboard.
+	    }
+	}
+    
+      // Create VM-local clipboard if non exists yet.
+      if (clipboard == null)
+        clipboard = new Clipboard("Clipboard");
+
+      return clipboard;
+    }
+  }
+  
   private static final long serialVersionUID = -7908749299918704233L;
 
+  private static final String COMMAND_COPY = "copy";
+  private static final String COMMAND_CUT = "cut";
+  private static final String COMMAND_PASTE = "paste";
+  
   public static final int NONE = 0;
   public static final int COPY = 1;
   public static final int MOVE = 2;
   public static final int COPY_OR_MOVE = 3;
 
-  static Action getCopyAction ()
+  private static Action copyAction = new TransferAction(COMMAND_COPY);
+  private static Action cutAction = new TransferAction(COMMAND_CUT);
+  private static Action pasteAction = new TransferAction(COMMAND_PASTE);
+  
+  /**
+   * Clipboard if system clipboard may not be used.
+   */
+  private static Clipboard clipboard;
+  
+  private int sourceActions;
+  private Icon visualRepresentation;
+  
+  public static Action getCopyAction()
   {
-    return null;
+    return copyAction;
   }
 
-  static Action getCutAction ()
+  public static Action getCutAction()
   {
-    return null;
+    return cutAction;
   }
 
-  static Action getPasteAction ()
+  public static Action getPasteAction()
   {
-    return null;
+    return pasteAction;
   }
-
 
   protected TransferHandler()
   {
-    // Do nothing here.
+    this.sourceActions = NONE;
   }
 
   public TransferHandler(String property)
   {
+    this.sourceActions = property != null ? COPY : NONE;
   }
 
   public boolean canImport (JComponent c, DataFlavor[] flavors)
@@ -80,7 +155,7 @@ public class TransferHandler implements Serializable
     return false;
   }
 
-  public Transferable createTransferable(JComponent c) 
+  protected Transferable createTransferable(JComponent c) 
   {
     return null;
   }
@@ -99,17 +174,16 @@ public class TransferHandler implements Serializable
 
   public int getSourceActions (JComponent c)
   {
-    return 0;
+    return sourceActions;
   }
 
   public Icon getVisualRepresentation (Transferable t)
   {
-    return null;
+    return visualRepresentation;
   }
 
   public boolean importData (JComponent c, Transferable t) 
   {
     return false;
   }
-
 }

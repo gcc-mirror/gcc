@@ -6,6 +6,12 @@ This software is copyrighted work licensed under the terms of the
 Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
+#include <config.h>
+#include <platform.h>
+
+#include <gcj/javaprims.h>
+#include <jvm.h>
+
 #include <X11/Xlib.h>
 
 #include <gcj/cni.h>
@@ -22,24 +28,72 @@ details.  */
 #include <gnu/gcj/xlib/XExposeEvent.h>
 #include <gnu/gcj/xlib/XException.h>
 
+#include <unistd.h>
+#include <posix.h>
+
 void gnu::gcj::xlib::XAnyEvent::init()
 {
   ::XEvent* event = new ::XEvent;
+  int *pipes = new int[2];
+  pipe(pipes);
   structure = reinterpret_cast<gnu::gcj::RawData*>(event);
+  pipefds = reinterpret_cast<gnu::gcj::RawData*>(pipes);
 }
 
 void gnu::gcj::xlib::XAnyEvent::finalize()
 {
   delete structure;
+  int *pipe = reinterpret_cast<int *>(pipefds);
+  close(pipe[0]);
+  close(pipe[1]);
+  delete [] pipefds;
+  pipefds = 0;
   structure = 0;
 }
 
-void gnu::gcj::xlib::XAnyEvent::loadNext()
+jboolean gnu::gcj::xlib::XAnyEvent::loadNext(jboolean block)
 {
   ::Display* dpy = (::Display*) display->display;
   ::XEvent* evt = (::XEvent*) structure;
-  XNextEvent(dpy, evt);
-  // What does XNextEvent return?
+
+  if (XPending(dpy))
+    {
+      XNextEvent(dpy, evt);
+      return true;  
+    }
+
+  if (!block)
+    return false;
+
+  int *pipe = reinterpret_cast<int *>(pipefds);
+  int xfd = XConnectionNumber(dpy);
+  int pipefd = pipe[0];
+  int n = (xfd > pipefd ? xfd : pipefd) + 1;
+  fd_set rfds;
+  FD_ZERO(&rfds);
+  FD_SET(xfd, &rfds);
+  FD_SET(pipefd, &rfds);  
+  int sel = _Jv_select (n, &rfds, NULL, NULL, NULL);
+  if (sel > 0)
+    {
+      if (FD_ISSET(xfd, &rfds))
+	{
+	  XNextEvent(dpy, evt);
+	  return true;  
+	}
+      if (FD_ISSET(pipefd, &rfds))
+	{
+	  char c;
+	  read(pipefd, &c, 1);
+	}
+    }
+  return false;
+}
+
+void gnu::gcj::xlib::XAnyEvent::interrupt()
+{
+  int *pipe = reinterpret_cast<int *>(pipefds);
+  write(pipe[1], "W", 1);
 }
 
 jint gnu::gcj::xlib::XAnyEvent::getType()

@@ -1,5 +1,5 @@
 /* JTextField.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
 
 import java.awt.Dimension;
@@ -46,10 +47,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.accessibility.AccessibleStateSet;
+import javax.swing.Action;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.PlainDocument;
-
+import javax.swing.text.TextAction;
 
 public class JTextField extends JTextComponent
   implements SwingConstants
@@ -80,12 +82,25 @@ public class JTextField extends JTextComponent
 
   private static final long serialVersionUID = 353853209832607592L;
 
+  private static final Action[] actions;
+
   public static final String notifyAction = "notify-field-accept";
   
+  static
+  {
+    actions = new Action[1];
+    actions[0] = new TextAction(notifyAction)
+      {
+	public void actionPerformed(ActionEvent event)
+	{
+	  JTextField textField = (JTextField) event.getSource();
+	  textField.fireActionPerformed();
+	}
+      };
+  }
+  
   private int columns;
-
   private int align;
-
   private int scrollOffset;
 
   /** @since 1.3 */
@@ -272,19 +287,10 @@ public class JTextField extends JTextComponent
 
   public Dimension getPreferredSize()
   {
-    Dimension size;
-    FontMetrics fm = getFontMetrics(getFont());
-    int fontHeight = fm.getMaxAscent() + fm.getMaxDescent();
-    int columnWidth = fm.charWidth('m');
-    
+    Dimension size = super.getPreferredSize();
+
     if (columns != 0)
-      {
-	size = new Dimension(columns * columnWidth + 4, fontHeight + 4);
-      }
-    else
-      {
-	size = new Dimension(10, 10);
-      }
+      size.width = columns * getColumnWidth();
 
     return size;
   }
@@ -309,9 +315,15 @@ public class JTextField extends JTextComponent
     scrollOffset = offset;
   }
 
+  public Action[] getActions()
+  {
+    return TextAction.augmentList(super.getActions(), actions);
+  }
+
   public void postActionEvent()
   {
-    ActionEvent event = new ActionEvent(this, 0, actionCommand);
+    String command = actionCommand != null ? actionCommand : getText();
+    ActionEvent event = new ActionEvent(this, 0, command);
     ActionListener[] listeners = getActionListeners();
 
     for (int index = 0; index < listeners.length; ++index)
@@ -358,17 +370,9 @@ public class JTextField extends JTextComponent
   /**
    * @since 1.3
    */
-  public String getActionCommand()
-  {
-    return actionCommand;
-  }
-
-  /**
-   * @since 1.3
-   */
   public void setActionCommand(String command)
   {
-    this.actionCommand = command;
+    actionCommand = command;
   }
 
   /**

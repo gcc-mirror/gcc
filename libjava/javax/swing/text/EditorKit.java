@@ -1,4 +1,4 @@
-/* EditorKit.java -- 
+/* EditorKit.java --
    Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -54,31 +54,31 @@ public abstract class EditorKit
   private static final long serialVersionUID = -5044124649345887822L;
   
   public EditorKit()
-    {
-    }
+  {
+  }
 
   public Object clone()
-    {
+  {
     try
       {
 	return super.clone();
-    }
+      }
     catch (CloneNotSupportedException e)
-    {
+      {
 	return null;
-    }
+      }
   }
 
   /**
    * Called when the kit is being removed from the JEditorPane.
    */
   public void deinstall(JEditorPane c)
-    {
-    }
+  {
+  }
 
   public void install(JEditorPane c)
   {
-}
+  }
 
   public abstract Caret createCaret();
   public abstract Document createDefaultDocument();

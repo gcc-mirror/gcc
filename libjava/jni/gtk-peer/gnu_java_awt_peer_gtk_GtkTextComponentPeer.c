@@ -492,5 +492,7 @@ static void
 textcomponent_changed_cb (GtkEditable *editable __attribute__((unused)),
 			  jobject peer)
 {
-  (*gdk_env)->CallVoidMethod (gdk_env, peer, postTextEventID);
+  gdk_threads_leave ();
+  (*gdk_env())->CallVoidMethod (gdk_env(), peer, postTextEventID);
+  gdk_threads_enter ();
 }

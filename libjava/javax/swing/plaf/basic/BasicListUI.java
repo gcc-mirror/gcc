@@ -686,7 +686,7 @@ public class BasicListUI extends ListUI
       {
         Rectangle bounds = getCellBounds(list, row, row);
         if (bounds.intersects(clip))
-        paintCell(g, row, bounds, render, model, sel, lead);
+          paintCell(g, row, bounds, render, model, sel, lead);
       }
   }
 

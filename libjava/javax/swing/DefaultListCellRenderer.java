@@ -52,10 +52,10 @@ import javax.swing.border.EmptyBorder;
  * @author Andrew Selkirk
  * @version 1.0
  */
-public class DefaultListCellRenderer extends JLabel implements ListCellRenderer,
-                                                               Serializable
+public class DefaultListCellRenderer extends JLabel
+  implements ListCellRenderer, Serializable
 {
-  static final long serialVersionUID = 7708947179685189462L;
+  private static final long serialVersionUID = 7708947179685189462L;
 
   public static class UIResource extends DefaultListCellRenderer
     implements javax.swing.plaf.UIResource
@@ -89,6 +89,7 @@ public class DefaultListCellRenderer extends JLabel implements ListCellRenderer,
     String s = value.toString();
     setText(s);
     setOpaque(true);
+    setHorizontalAlignment(LEFT);
 
     if (isSelected)
       {

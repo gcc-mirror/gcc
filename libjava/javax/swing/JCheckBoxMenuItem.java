@@ -206,7 +206,7 @@ public class JCheckBoxMenuItem extends JMenuItem implements SwingConstants,
     * This method overrides JComponent.requestFocus with an empty
     * implementation, since JCheckBoxMenuItems should not
     * receve focus in general.
-   */
+    */
   public void requestFocus()
   {
     //  Should do nothing here

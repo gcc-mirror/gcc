@@ -125,7 +125,9 @@ public class IndexColorModel extends ColorModel
   public IndexColorModel(int bits, int size, byte[] reds, byte[] greens,
                          byte[] blues, byte[] alphas)
   {
-    super (bits);
+    // FIXME: This super() constructor should not be used since it can give
+    // the wrong value for hasAlpha() which is final and cannot be overloaded
+    super(bits); 
     map_size = size;
     opaque = (alphas == null);
 
@@ -416,10 +418,10 @@ public class IndexColorModel extends ColorModel
    */
   public final int getAlpha (int pixel)
   {
-    if (pixel < map_size)
-	    return (int) ((generateMask (3) & rgb[pixel]) >> (3 * pixel_bits));
-    
-    return 0;
+    if (opaque || pixel >= map_size)
+      return 255;
+
+    return (int) ((generateMask (3) & rgb[pixel]) >> (3 * pixel_bits));
   }
 
   /**

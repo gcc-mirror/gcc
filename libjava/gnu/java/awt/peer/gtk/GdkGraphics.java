@@ -426,7 +426,8 @@ public class GdkGraphics extends Graphics
 
   public void setClip (int x, int y, int width, int height)
   {
-    if (component != null && ! component.isRealized ())
+    if ((component != null && ! component.isRealized ())
+        || clip == null)
       return;
 
     clip.x = x;

@@ -49,7 +49,7 @@ import java.util.Set;
 
 
 /**
- * @author	Andrew Selkirk
+ * @author Andrew Selkirk
  * @author Michael Koch
  *
  * @since 1.3
@@ -59,31 +59,31 @@ public class InputMap
 {
   private static final long serialVersionUID = -5429059542008604257L;
 
-	/**
-	 * inputMap
-	 */
-	private Map inputMap = new HashMap();
+  /**
+   * inputMap
+   */
+  private Map inputMap = new HashMap();
 
-	/**
-	 * parent
-	 */
+  /**
+   * parent
+   */
   private InputMap parent;
 
-	/**
+  /**
    * Creates a new <code>InputMap</code> instance.
-	 */
+   */
   public InputMap()
   {
-		// TODO
+    // TODO
   }
 
-	/**
+  /**
    * Returns the binding for keystroke.
    *
    * @param key the key of the enty
    *
    * @return the binding associated with keystroke may be null
-	 */
+   */
   public Object get(KeyStroke keystroke)
   {
     Object result = inputMap.get(keystroke);
@@ -93,121 +93,121 @@ public class InputMap
     return result;
   }
 
-	/**
+  /**
    * Puts a new entry into the <code>InputMap</code>.
    * If actionMapKey is null an existing entry will be removed.
    *
    * @param keystroke the keystroke for the entry
    * @param actionMapKey the action.
-	 */
+   */
   public void put(KeyStroke keystroke, Object actionMapKey)
   {
     if (actionMapKey == null)
-			inputMap.remove(keystroke);
+      inputMap.remove(keystroke);
     else
-			inputMap.put(keystroke, actionMapKey);
+      inputMap.put(keystroke, actionMapKey);
   }
 
-	/**
+  /**
    * Remove an entry from the <code>InputMap</code>.
    *
    * @param key the key of the entry to remove
-	 */
+   */
   public void remove(KeyStroke keystroke)
   {
-		inputMap.remove(keystroke);
+    inputMap.remove(keystroke);
   }
 
-	/**
+  /**
    * Returns the parent of this <code>InputMap</code>.
    *
    * @return the parent, may be null.
-	 */
+   */
   public InputMap getParent()
   {
-		return parent;
+    return parent;
   }
 
-	/**
+  /**
    * Sets a parent for this <code>InputMap</code>.
    *
    * @param parentMap the new parent
-	 */
+   */
   public void setParent(InputMap parentMap)
   {
-		parent = parentMap;
+    parent = parentMap;
   }
 
-	/**
+  /**
    * Returns the number of entries in this <code>InputMap</code>.
    *
    * @return the number of entries
-	 */
+   */
   public int size()
   {
-		return inputMap.size();
+    return inputMap.size();
   }
 
-	/**
+  /**
    * Clears the <code>InputMap</code>.
-	 */
+   */
   public void clear()
   {
-		inputMap.clear();
+    inputMap.clear();
   }
 
-	/**
+  /**
    * Returns all keys of entries in this <code>InputMap</code>.
    *
    * @return an array of keys
-	 */
+   */
   public KeyStroke[] keys()
   {
     KeyStroke[] array = new KeyStroke[size()];
     return (KeyStroke[]) inputMap.keySet().toArray(array);
   }
 
-	/**
+  /**
    * Returns all keys of entries in this <code>InputMap</code>
    * and all its parents.
    *
    * @return an array of keys
-	 */
+   */
   public KeyStroke[] allKeys()
   {
     Set set = new HashSet();
 
     if (parent != null)
-			set.addAll(Arrays.asList(parent.allKeys()));
+      set.addAll(Arrays.asList(parent.allKeys()));
 
     set.addAll(inputMap.keySet());
     KeyStroke[] array = new KeyStroke[size()];
     return (KeyStroke[]) set.toArray(array);
   }
 
-	/**
-	 * writeObject
+  /**
+   * writeObject
    *
    * @param stream the stream to write to
    *
    * @exception IOException If an error occurs
-	 */
+   */
   private void writeObject(ObjectOutputStream stream) throws IOException
   {
-		// TODO
+    // TODO
   }
 
-	/**
-	 * readObject
+  /**
+   * readObject
    *
    * @param stream the stream to read from
    *
    * @exception ClassNotFoundException If the serialized class cannot be found
    * @exception IOException If an error occurs
-	 */
+   */
   private void readObject(ObjectInputStream stream)
     throws ClassNotFoundException, IOException
   {
-		// TODO
+    // TODO
   }
 }

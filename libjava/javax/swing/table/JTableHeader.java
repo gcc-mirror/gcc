@@ -1,5 +1,5 @@
 /* JTableHeader.java --
-   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -70,6 +70,11 @@ public class JTableHeader extends JComponent
     protected class AccessibleJTableHeaderEntry extends AccessibleContext
       implements Accessible, AccessibleComponent
     {
+      public AccessibleJTableHeaderEntry(int c, JTableHeader p, JTable t) 
+      {
+        throw new Error("not implemented");
+      }
+      
       public void addFocusListener(FocusListener l)
       {
         throw new Error("not implemented");
@@ -616,4 +621,11 @@ public class JTableHeader extends JComponent
     setUI((TableHeaderUI) UIManager.getUI(this));
   }
 
+  public int columnAtPoint(Point point)
+  {
+    if (getBounds().contains(point))
+      return columnModel.getColumnIndexAtX(point.x);
+    
+    return -1;
+  }
 }

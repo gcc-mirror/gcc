@@ -39,6 +39,7 @@ exception statement from your version. */
 package gnu.java.awt.peer.gtk;
 
 import java.awt.EventQueue;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 
 public class GtkGenericPeer
@@ -57,6 +58,11 @@ public class GtkGenericPeer
   // Dispose of our native state.
   public native void dispose ();
 
+  static EventQueue q ()
+  {
+    return Toolkit.getDefaultToolkit ().getSystemEventQueue ();
+  }
+
   protected GtkGenericPeer (Object awtWidget)
   {
     this.awtWidget = awtWidget;
@@ -70,7 +76,7 @@ public class GtkGenericPeer
 
   protected void postActionEvent (String command, int mods) 
   {
-    q.postEvent (new ActionEvent (awtWidget, ActionEvent.ACTION_PERFORMED, 
+    q().postEvent (new ActionEvent (awtWidget, ActionEvent.ACTION_PERFORMED, 
 				  command, mods));
   }
 

@@ -288,6 +288,14 @@ public class BasicInternalFrameTitlePane extends JComponent
   protected class TitlePaneLayout implements LayoutManager
   {
     /**
+     * Creates a new <code>TitlePaneLayout</code> object.
+     */
+    public TitlePaneLayout()
+    {
+      // Do nothing.
+    }
+
+    /**
      * This method is called when adding a Component to the Container.
      *
      * @param name The name to reference the added Component by.

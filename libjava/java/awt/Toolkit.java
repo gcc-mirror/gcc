@@ -526,6 +526,10 @@ public abstract class Toolkit
         toolkit = (Toolkit) obj;
         return toolkit;
       }
+    catch (ThreadDeath death)
+      {
+        throw death;
+      }
     catch (Throwable t)
       {
 	AWTError e = new AWTError("Cannot load AWT toolkit: " + toolkit_name);

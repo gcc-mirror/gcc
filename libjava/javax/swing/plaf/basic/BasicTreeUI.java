@@ -45,14 +45,13 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 
 import javax.swing.JComponent;
+import javax.swing.JTree;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
-import javax.swing.JTree;
 import javax.swing.plaf.TreeUI;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
 
 /**
  * A delegate providing the user interface for <code>JTree</code>

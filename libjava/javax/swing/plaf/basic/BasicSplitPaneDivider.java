@@ -160,6 +160,7 @@ public class BasicSplitPaneDivider extends Container
    */
   private transient int currentDividerLocation = 1;
 
+  /** DOCUMENT ME! */
   private transient Border tmpBorder = new Border()
     {
       public Insets getBorderInsets(Component c)

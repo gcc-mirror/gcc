@@ -1,5 +1,5 @@
 /* BasicMenuBarUI.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -294,9 +294,9 @@ public class BasicMenuBarUI extends MenuBarUI
      */
     public void propertyChange(PropertyChangeEvent e)
     {
-      if (e.getPropertyName().equals(JMenuBar.BORDER_PAINTED_CHANGED_PROPERTY))
+      if (e.getPropertyName().equals("borderPainted"))
 	menuBar.repaint();
-      if (e.getPropertyName().equals(JMenuBar.MARGIN_CHANGED_PROPERTY))
+      if (e.getPropertyName().equals("margin"))
 	menuBar.repaint();
     }
   }

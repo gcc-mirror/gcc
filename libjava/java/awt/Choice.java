@@ -45,6 +45,7 @@ import java.io.Serializable;
 import java.util.EventListener;
 import java.util.Vector;
 
+import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleAction;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
@@ -54,7 +55,8 @@ import javax.accessibility.AccessibleRole;
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public class Choice extends Component implements ItemSelectable, Serializable
+public class Choice extends Component
+  implements ItemSelectable, Serializable, Accessible
 {
 
 /*
@@ -83,23 +85,65 @@ private int selectedIndex = -1;
 // Listener chain
 private ItemListener item_listeners;
 
+/**
+ * This class provides accessibility support for the
+ * combo box.
+ *
+ * @author Jerry Quinn  (jlquinn@optonline.net)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
+ */
   protected class AccessibleAWTChoice
-    extends Component.AccessibleAWTComponent
-    implements AccessibleAction
+  extends AccessibleAWTComponent
+  implements AccessibleAction
   {
+
+    /**
+     * Serialization constant to match JDK 1.5
+     */
+    private static final long serialVersionUID = 7175603582428509322L;
+
+    /**
+     * Default constructor which simply calls the
+     * super class for generic component accessibility
+     * handling.
+     */
+    public AccessibleAWTChoice()
+    {
+      super();
+    }
+
+    /**
+     * Returns an implementation of the <code>AccessibleAction</code>
+     * interface for this accessible object.  In this case, the
+     * current instance is simply returned (with a more appropriate
+     * type), as it also implements the accessible action as well as
+     * the context.
+     *
+     * @return the accessible action associated with this context.
+     * @see javax.accessibility.AccessibleAction
+     */
     public AccessibleAction getAccessibleAction()
     {
       return this;
     }
 
-    // FIXME: I think this is right, but should be checked by someone who
-    // knows better.
+    /**
+     * Returns the role of this accessible object.
+     *
+     * @return the instance of <code>AccessibleRole</code>,
+     *         which describes this object.
+     * @see javax.accessibility.AccessibleRole
+     */
     public AccessibleRole getAccessibleRole()
     {
-      return AccessibleRole.POPUP_MENU;
+      return AccessibleRole.COMBO_BOX;
     }
 	  
-    /* (non-Javadoc)
+    /**
+     * Returns the number of actions associated with this accessible
+     * object.  In this case, it is the number of choices available.
+     *
+     * @return the number of choices available.
      * @see javax.accessibility.AccessibleAction#getAccessibleActionCount()
      */
     public int getAccessibleActionCount()
@@ -107,7 +151,14 @@ private ItemListener item_listeners;
       return pItems.size();
     }
 
-    /* (non-Javadoc)
+    /**
+     * Returns a description of the action with the supplied id.
+     * In this case, it is the text used in displaying the particular
+     * choice on-screen.
+     *
+     * @param i the id of the choice whose description should be
+     *          retrieved.
+     * @return the <code>String</code> used to describe the choice.
      * @see javax.accessibility.AccessibleAction#getAccessibleActionDescription(int)
      */
     public String getAccessibleActionDescription(int i)
@@ -115,7 +166,13 @@ private ItemListener item_listeners;
       return (String) pItems.get(i);
     }
 	  
-    /* (non-Javadoc)
+    /**
+     * Executes the action with the specified id.  In this case,
+     * calling this method provides the same behaviour as would
+     * choosing a choice from the list in a visual manner.
+     *
+     * @param i the id of the choice to select.
+     * @return true if a valid choice was specified.
      * @see javax.accessibility.AccessibleAction#doAccessibleAction(int)
      */
     public boolean doAccessibleAction(int i)
@@ -564,8 +621,17 @@ paramString()
     return (ItemListener[]) getListeners (ItemListener.class);
   }
 
+  /**
+   * Gets the AccessibleContext associated with this <code>Choice</code>.
+   * The context is created, if necessary.
+   *
+   * @return the associated context
+   */
   public AccessibleContext getAccessibleContext()
   {
-    return new AccessibleAWTChoice();
+    /* Create the context if this is the first request */
+    if (accessibleContext == null)
+      accessibleContext = new AccessibleAWTChoice();
+    return accessibleContext;
   }
 } // class Choice 

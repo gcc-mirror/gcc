@@ -1,5 +1,5 @@
 /* JList.java --
-   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -129,34 +129,6 @@ public class JList extends JComponent implements Accessible, Scrollable
    */
   public static final int HORIZONTAL_WRAP = 2;
 
-  /** Fired in a PropertyChangeEvent when the "cellRenderer" property changes. */
-  public static final String CELL_RENDERER_PROPERTY_CHANGED = "cellRenderer";
-
-  /** Fired in a PropertyChangeEvent when the "fixedCellHeight" property changes. */
-  public static final String FIXED_CELL_HEIGHT_PROPERTY_CHANGED = "fixedCellHeight";
-
-  /** Fired in a PropertyChangeEvent when the "fixedCellWidth" property changes. */
-  public static final String FIXED_CELL_WIDTH_PROPERTY_CHANGED = "fixedCellWidth";
-
-  /** Fired in a PropertyChangeEvent when the "layoutOrientation" property changes. */
-  public static final String LAYOUT_ORIENTATION_PROPERTY_CHANGED = "layoutOrientation";
-
-  /** Fired in a PropertyChangeEvent when the "model" property changes. */
-  public static final String MODEL_PROPERTY_CHANGED = "model";
-
-  /** Fired in a PropertyChangeEvent when the "prototypeCellValue" property changes. */
-  public static final String PROTOTYPE_CELL_VALUE_PROPERTY_CHANGED = "prototypeCellValue";
-
-  /** Fired in a PropertyChangeEvent when the "selectionBackground" property changes. */
-  public static final String SELECTION_BACKGROUND_PROPERTY_CHANGED = "selectionBackground";
-
-  /** Fired in a PropertyChangeEvent when the "selectionForeground" property changes. */
-  public static final String SELECTION_FOREGROUND_PROPERTY_CHANGED = "selectionForeground";
-
-  /** Fired in a PropertyChangeEvent when the "selectionModel" property changes. */
-  public static final String SELECTION_MODEL_PROPERTY_CHANGED = "selectionModel";
-
-
   /**
    * This property indicates whether "drag and drop" functions are enabled
    * on the list.
@@ -187,7 +159,6 @@ public class JList extends JComponent implements Accessible, Scrollable
    * is one of the integer constants {@link #VERTICAL}, {@link
    * #VERTICAL_WRAP}, or {@link #HORIZONTAL_WRAP}. 
    */
-
   int layoutOrientation;
   
   /** This property holds the data elements displayed by the list. */
@@ -250,12 +221,10 @@ public class JList extends JComponent implements Accessible, Scrollable
    */
   int visibleRowCount;
 
-
-
   /**
    * Fire a {@link ListSelectionEvent} to all the registered ListSelectionListeners.
    */
-  void fireSelectionValueChanged(int firstIndex, int lastIndex, boolean isAdjusting) 
+  protected void fireSelectionValueChanged(int firstIndex, int lastIndex, boolean isAdjusting) 
   {
     ListSelectionEvent evt = new ListSelectionEvent(this, firstIndex, lastIndex, isAdjusting);
     ListSelectionListener listeners[] = getListSelectionListeners();
@@ -264,7 +233,6 @@ public class JList extends JComponent implements Accessible, Scrollable
         listeners[i].valueChanged(evt);
       }
   }
-
 
   /**
    * This private listener propagates {@link ListSelectionEvent} events
@@ -365,11 +333,21 @@ public class JList extends JComponent implements Accessible, Scrollable
     listListener = new ListListener();
 
     setModel(new DefaultListModel());
-    setSelectionModel(new DefaultListSelectionModel());
+    setSelectionModel(createSelectionModel());
 
     updateUI();
   }
 
+  /**
+   * Creates the default <code>ListSelectionModel</code>.
+   *
+   * @return the <code>ListSelectionModel</code>
+   */
+  protected ListSelectionModel createSelectionModel()
+  {
+    return new DefaultListSelectionModel();
+  }
+  
   /**
    * Gets the value of the {@link #fixedCellHeight} property. This property
    * may be <code>-1</code> to indicate that no cell height has been
@@ -399,9 +377,12 @@ public class JList extends JComponent implements Accessible, Scrollable
    */
   public void setFixedCellHeight(int h)
   {
+    if (fixedCellHeight == h)
+      return;
+
     int old = fixedCellHeight;
     fixedCellHeight = h;
-    firePropertyChange(FIXED_CELL_WIDTH_PROPERTY_CHANGED, old, h);
+    firePropertyChange("fixedCellWidth", old, h);
   }
 
 
@@ -428,16 +409,18 @@ public class JList extends JComponent implements Accessible, Scrollable
    * #prototypeCellValue} property is set, but setting it explicitly
    * overrides the width computed from {@link #prototypeCellValue}.
    *
-   * @see #getFixedCellWidth
+   * @see #getFixedCellHeight
    * @see #getPrototypeCellValue
    */
-  public void setFixedCellWidth(int h)
+  public void setFixedCellWidth(int w)
   {
-    int old = fixedCellHeight;
-    fixedCellHeight = h;
-    firePropertyChange(FIXED_CELL_HEIGHT_PROPERTY_CHANGED, old, h);
+    if (fixedCellWidth == w)
+      return;
+    
+    int old = fixedCellWidth;
+    fixedCellWidth = w;
+    firePropertyChange("fixedCellWidth", old, w);
   }
-
 
   /** 
    * Gets the value of the {@link #visibleRowCount} property. 
@@ -501,6 +484,11 @@ public class JList extends JComponent implements Accessible, Scrollable
     return (ListSelectionListener[]) getListeners(ListSelectionListener.class);
   }
 
+  public int getSelectionMode()
+  {
+    return selectionModel.getSelectionMode();
+  }
+  
   /**
    * Sets the list's "selectionMode" property, which simply mirrors the
    * same property on the list's {@link #selectionModel} property. This
@@ -723,9 +711,12 @@ public class JList extends JComponent implements Accessible, Scrollable
    */
   public void setSelectionBackground(Color c)
   {
+    if (selectionBackground == c)
+      return;
+
     Color old = selectionBackground;
     selectionBackground = c;
-    firePropertyChange(SELECTION_BACKGROUND_PROPERTY_CHANGED, old, c);
+    firePropertyChange("selectionBackground", old, c);
     repaint();
   }
 
@@ -746,9 +737,12 @@ public class JList extends JComponent implements Accessible, Scrollable
    */
   public void setSelectionForeground(Color c)
   {
+    if (selectionForeground == c)
+      return;
+
     Color old = selectionForeground;
     selectionForeground = c;
-    firePropertyChange(SELECTION_FOREGROUND_PROPERTY_CHANGED, old, c);
+    firePropertyChange("selectionForeground", old, c);
   }
 
   /**
@@ -850,13 +844,16 @@ public class JList extends JComponent implements Accessible, Scrollable
   /**
    * Sets the value of the {@link #celLRenderer} property.
    *
-   * @param cellRenderer The new property value
+   * @param renderer The new property value
    */
-  public void setCellRenderer(ListCellRenderer cr)
+  public void setCellRenderer(ListCellRenderer renderer)
   {
+    if (cellRenderer == renderer)
+      return;
+    
     ListCellRenderer old = cellRenderer;
-    cellRenderer = cr;
-    firePropertyChange(CELL_RENDERER_PROPERTY_CHANGED, old, cr);
+    cellRenderer = renderer;
+    firePropertyChange("cellRenderer", old, renderer);
     revalidate();
     repaint();
   }
@@ -878,15 +875,21 @@ public class JList extends JComponent implements Accessible, Scrollable
    *
    * @param model The new property value
    */
-  public void setModel(ListModel m)
+  public void setModel(ListModel model)
   {
-    ListModel old = model;
-    if (old != null)
-      old.removeListDataListener(listListener);
-    model = m;
-    if (model != null)
-      model.addListDataListener(listListener);
-    firePropertyChange(MODEL_PROPERTY_CHANGED, old, m);
+    if (this.model == model)
+      return;
+    
+    if (this.model != null)
+      this.model.removeListDataListener(listListener);
+    
+    ListModel old = this.model;
+    this.model = model;
+    
+    if (this.model != null)
+      this.model.addListDataListener(listListener);
+    
+    firePropertyChange("model", old, model);
     revalidate();
     repaint();
   }
@@ -902,17 +905,23 @@ public class JList extends JComponent implements Accessible, Scrollable
    * {@link #listListener} is unsubscribed from the existing selection
    * model, if it exists, and re-subscribed to the new selection model.
    *
-   * @param l The new property value
+   * @param model The new property value
    */
-  public void setSelectionModel(ListSelectionModel l)
+  public void setSelectionModel(ListSelectionModel model)
   {
+    if (selectionModel == model)
+      return;
+    
+    if (selectionModel != null)
+      selectionModel.removeListSelectionListener(listListener);
+    
     ListSelectionModel old = selectionModel;
-    if (old != null)
-      old.removeListSelectionListener(listListener);
-    selectionModel = l;
+    selectionModel = model;
+    
     if (selectionModel != null)
       selectionModel.addListSelectionListener(listListener);
-    firePropertyChange(SELECTION_MODEL_PROPERTY_CHANGED, old, l);
+    
+    firePropertyChange("selectionModel", old, model);
     revalidate();
     repaint();
   }
@@ -992,6 +1001,9 @@ public class JList extends JComponent implements Accessible, Scrollable
    */
   public void setPrototypeCellValue(Object obj)
   {
+    if (prototypeCellValue == obj)
+      return;
+
     Object old = prototypeCellValue;
     Component comp = getCellRenderer()
       .getListCellRendererComponent(this, obj, 0, false, false); 
@@ -999,7 +1011,7 @@ public class JList extends JComponent implements Accessible, Scrollable
     fixedCellWidth = d.width;
     fixedCellHeight = d.height;
     prototypeCellValue = obj;
-    firePropertyChange(PROTOTYPE_CELL_VALUE_PROPERTY_CHANGED, old, obj);
+    firePropertyChange("prototypeCellValue", old, obj);
   }
 
   public AccessibleContext getAccessibleContext()
@@ -1195,5 +1207,120 @@ public class JList extends JComponent implements Accessible, Scrollable
   public boolean getScrollableTracksViewportHeight()
   {
     return false;
+  }
+
+  public int getAnchorSelectionIndex()
+  {
+    return selectionModel.getAnchorSelectionIndex();
+  }
+
+  public int getLeadSelectionIndex()
+  {
+    return selectionModel.getLeadSelectionIndex();
+  }
+
+  public int getMinSelectionIndex()
+  {
+    return selectionModel.getMaxSelectionIndex();
+  }
+
+  public int getMaxSelectionIndex()
+  {
+    return selectionModel.getMaxSelectionIndex();
+  }
+
+  public void clearSelection()
+  {
+    selectionModel.clearSelection();
+  }
+
+  public void setSelectionInterval(int anchor, int lead)
+  {
+    selectionModel.setSelectionInterval(anchor, lead);
+  }
+
+  public void addSelectionInterval(int anchor, int lead)
+  {
+    selectionModel.addSelectionInterval(anchor, lead);
+  }
+
+  public void removeSelectionInterval(int index0, int index1)
+  {
+    selectionModel.removeSelectionInterval(index0, index1);
+  }
+
+  /**
+   * Returns the value of the <code>valueIsAdjusting</code> property.
+   *
+   * @return the value
+   */
+  public boolean getValueIsAdjusting()
+  {
+    return valueIsAdjusting;
+  }
+
+  /**
+   * Sets the <code>valueIsAdjusting</code> property.
+   *
+   * @param isAdjusting the new value
+   */
+  public void setValueIsAdjusting(boolean isAdjusting)
+  {
+    valueIsAdjusting = isAdjusting;
+  }
+
+  /**
+   * Return the value of the <code>dragEnabled</code> property.
+   *
+   * @return the value
+   * 
+   * @since 1.4
+   */
+  public boolean getDragEnabled()
+  {
+    return dragEnabled;
+  }
+
+  /**
+   * Set the <code>dragEnabled</code> property.
+   *
+   * @param enabled new value
+   * 
+   * @since 1.4
+   */
+  public void setDragEnabled(boolean enabled)
+  {
+    dragEnabled = enabled;
+  }
+
+  /**
+   * Returns the layout orientation.
+   *
+   * @return the orientation, one of <code>JList.VERTICAL</code>,
+   * </code>JList.VERTICAL_WRAP</code> and <code>JList.HORIZONTAL_WRAP</code>
+   *
+   * @since 1.4
+   */
+  public int getLayoutOrientation()
+  {
+    return layoutOrientation;
+  }
+
+  /**
+   * Sets the layout orientation.
+   *
+   * @param orientation the orientation to set, one of <code>JList.VERTICAL</code>,
+   * </code>JList.VERTICAL_WRAP</code> and <code>JList.HORIZONTAL_WRAP</code>
+   *
+   * @since 1.4
+   */
+  public void setLayoutOrientation(int orientation)
+  {
+    if (layoutOrientation == orientation)
+      return;
+
+    int old = layoutOrientation;
+    layoutOrientation = orientation;
+    firePropertyChange("layoutOrientation", old, orientation);
   }
 }
