@@ -145,11 +145,13 @@ _Jv_name_finder::lookup (void *p)
     
     if (dladdr (p, &dl_info))
       {
-	strncpy (file_name, dl_info.dli_fname, sizeof file_name);
+        if (dl_info.dli_fname)
+	  strncpy (file_name, dl_info.dli_fname, sizeof file_name);
 	strncpy (method_name, dl_info.dli_sname, sizeof method_name);
        
        /* Don't trust dladdr() if the address is from the main program. */
-       if (_Jv_argv == NULL || strcmp (file_name, _Jv_argv[0]) != 0)
+       if (dl_info.dli_fname != NULL
+	   && (_Jv_argv == NULL || strcmp (file_name, _Jv_argv[0]) != 0))
          return true;
       }
   }

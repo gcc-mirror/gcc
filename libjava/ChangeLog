@@ -1,3 +1,7 @@
+2001-08-26  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* name-finder.cc (lookup): Ignore a null dli_fname from dladdr.
+
 2001-08-23  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/reflect/Field.java (toString): Use
