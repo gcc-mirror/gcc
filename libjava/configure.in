@@ -342,12 +342,7 @@ else
       AC_MSG_ERROR([no function found to get the time])
    fi
 
-   # We require memmove.
-   memmove_found=no
-   AC_CHECK_FUNCS(memmove, memmove_found=yes)
-   if test "$memmove_found" = no; then
-      AC_MSG_ERROR([memmove is required])
-   fi
+   AC_CHECK_FUNCS(memmove)
 
    # We require memcpy.
    memcpy_found=no

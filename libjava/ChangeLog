@@ -1,3 +1,9 @@
+1999-07-31  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* java/lang/natSystem.cc (arraycopy): Use bcopy if memmove is not
+	available.  Don't cast memmove args to (void*).
+	* configure.in: Do not abort if memmove is not available.
+
 Sun Jul 25 01:43:34 1999  Anthony Green  <green@cygnus.com>
 
 	* mauve-libgcj: Disable Object Serialization tests.
