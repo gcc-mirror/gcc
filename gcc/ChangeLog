@@ -1,3 +1,8 @@
+2001-08-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	* jump.c (mark_jump_label): Fix typo: REG_LABEL is EXPR_LIST, not
+	INSN_LIST.
+
 2001-08-28  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.md (andcmbi3, iorcmbi3): Fix typos.

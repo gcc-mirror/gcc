@@ -1474,7 +1474,7 @@ mark_jump_label (x, insn, in_mem)
 		   that are the targets of jumps, must have a
 		   REG_LABEL note.  */
 		if (! find_reg_note (insn, REG_LABEL, label))
-		  REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_LABEL, label,
+		  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LABEL, label,
 							REG_NOTES (insn));
 	      }
 	  }
