@@ -77,6 +77,9 @@ static tree current_field = NULL_TREE;
 /* The METHOD_DECL for the current method.  */
 static tree current_method = NULL_TREE;
 
+/* The Java .class file that provides main_class;  the main input file. */
+static struct JCF main_jcf[1];
+
 /* Declarations of some functions used here.  */
 static tree give_name_to_class PROTO ((JCF *jcf, int index));
 static void parse_zip_file_entries PROTO ((void));

@@ -26,9 +26,12 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 #include "config.h"
 #include "system.h"
-#include "jcf.h"
-#include "java-opcodes.h"
 #include <math.h>
+
+#include "jcf.h"
+#include "tree.h"
+#include "java-tree.h"
+#include "java-opcodes.h"
 
 /* The output file.  */
 FILE *out = NULL;
@@ -72,7 +75,6 @@ int verbose = 0;
 int stubs = 0;
 
 struct JCF *current_jcf;
-struct JCF *main_jcf;
 
 /* This holds access information for the last field we examined.  They
    let us generate "private:", "public:", and "protected:" properly.
@@ -1169,7 +1171,7 @@ DEFUN(process_file, (jcf, out),
   int code, i;
   uint32 field_start, method_end, method_start;
 
-  current_jcf = main_jcf = jcf;
+  current_jcf = jcf;
 
   last_access = -1;
 

@@ -125,7 +125,6 @@ lang_f_options[] =
   {"emit-class-files", &flag_emit_class_files, 1},
 };
 
-JCF main_jcf[1];
 JCF *current_jcf;
 
 /* Variable controlling how dependency tracking is enabled in
