@@ -486,7 +486,7 @@ namespace std
       
       int __width = 0;
       if (_M_codecvt)
-	  __width = _M_codecvt->encoding();
+	__width = _M_codecvt->encoding();
       if (__width < 0)
 	__width = 0;
 
@@ -497,7 +497,7 @@ namespace std
 	  _M_destroy_pback();
 
 	  // Sync the internal and external streams.	      
-	  off_type __computed_off = __width * __off;
+	  off_type __computed_off = __off;
 	  
 	  if (this->pbase() < this->pptr()
 	      || _M_last_overflowed)
@@ -512,7 +512,8 @@ namespace std
 	    __computed_off += this->gptr() - this->egptr();
 	  
 	  // Return pos_type(off_type(-1)) in case of failure.
-	  __ret = _M_file.seekoff(__computed_off, __way, __mode);
+	  __ret = _M_file.seekoff(__computed_off * __width, __way, __mode);
+	  
 	  _M_reading = false;
 	  _M_writing = false;
 	  _M_set_buffer(-1);
@@ -528,7 +529,15 @@ namespace std
     {
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
 // 171. Strange seekpos() semantics due to joint position
-      return this->seekoff(off_type(__pos), ios_base::beg, __mode);
+      pos_type __ret =  pos_type(off_type(-1)); 
+
+      int __width = 0;
+      if (_M_codecvt)
+	__width = _M_codecvt->encoding();
+      if (__width > 0)
+	__ret = this->seekoff(off_type(__pos) / __width, ios_base::beg, __mode);
+
+      return __ret;
 #endif
     }
 
