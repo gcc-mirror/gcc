@@ -135,6 +135,7 @@ glibcxx_toolexecdir = @glibcxx_toolexecdir@
 glibcxx_toolexeclibdir = @glibcxx_toolexeclibdir@
 ifGNUmake = @ifGNUmake@
 libtool_VERSION = @libtool_VERSION@
+port_specific_symbol_file = @port_specific_symbol_file@
 toplevel_srcdir = @toplevel_srcdir@
 
 AUTOMAKE_OPTIONS = 1.3 cygnus
@@ -346,6 +347,7 @@ ext_headers = \
 	${ext_srcdir}/mt_allocator.h \
 	${ext_srcdir}/new_allocator.h \
 	${ext_srcdir}/numeric \
+	${ext_srcdir}/pod_char_traits.h \
 	${ext_srcdir}/pool_allocator.h \
 	${ext_srcdir}/rb_tree \
 	${ext_srcdir}/rope \

@@ -414,13 +414,15 @@
       of work to do</a>, especially if you with to use i18n features
       (facets require traits information but don't have a traits argument).
    </p>
-   <p>One example of how to specialize char_traits is given
-      <a href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00260.html">in
-      this message</a>.  We agree that the way it's used with basic_string
-      (scroll down to main()) doesn't look nice, but that's because
-      <a href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00236.html">the
-      nice-looking first attempt</a> turned out to
-      <a href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00242.html">not
+   <p>One example of how to specialize char_traits is given <a
+      href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00260.html">in
+      this message</a>, which was then put into the file <code>
+      include/ext/pod_char_traits.h</code> at a later date.  We agree
+      that the way it's used with basic_string (scroll down to main())
+      doesn't look nice, but that's because <a
+      href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00236.html">the
+      nice-looking first attempt</a> turned out to <a
+      href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00242.html">not
       be conforming C++</a>, due to the rule that CharT must be a POD.
       (See how tricky this is?)
    </p>
