@@ -1422,6 +1422,57 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 	    }
 	  map->reg_map[REGNO (loc)] = copy;
 	}
+      else if (GET_CODE (loc) == CONCAT)
+	{
+	  /* This is the good case where the parameter is in a
+	     pair of separate pseudos.
+	     If it is read-only and our argument is a constant, set up the
+	     constant equivalence.
+
+	     If LOC is REG_USERVAR_P, the usual case, COPY must also have
+	     that flag set if it is a register.
+
+	     Also, don't allow hard registers here; they might not be valid
+	     when substituted into insns. */
+	  rtx locreal = gen_realpart (GET_MODE (XEXP (loc, 0)), loc);
+	  rtx locimag = gen_imagpart (GET_MODE (XEXP (loc, 0)), loc);
+	  rtx copyreal = gen_realpart (GET_MODE (locreal), copy);
+	  rtx copyimag = gen_imagpart (GET_MODE (locimag), copy);
+
+	  if ((GET_CODE (copyreal) != REG && GET_CODE (copyreal) != SUBREG)
+	      || (GET_CODE (copyreal) == REG && REG_USERVAR_P (locreal)
+		  && ! REG_USERVAR_P (copyreal))
+	      || (GET_CODE (copyreal) == REG
+		  && REGNO (copyreal) < FIRST_PSEUDO_REGISTER))
+	    {
+	      temp = copy_to_mode_reg (GET_MODE (locreal), copyreal);
+	      REG_USERVAR_P (temp) = REG_USERVAR_P (locreal);
+	      if (CONSTANT_P (copyreal) || FIXED_BASE_PLUS_P (copyreal))
+		{
+		  map->const_equiv_map[REGNO (temp)] = copyreal;
+		  map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
+		}
+	      copyreal = temp;
+	    }
+	  map->reg_map[REGNO (locreal)] = copyreal;
+
+	  if ((GET_CODE (copyimag) != REG && GET_CODE (copyimag) != SUBREG)
+	      || (GET_CODE (copyimag) == REG && REG_USERVAR_P (locimag)
+		  && ! REG_USERVAR_P (copyimag))
+	      || (GET_CODE (copyimag) == REG
+		  && REGNO (copyimag) < FIRST_PSEUDO_REGISTER))
+	    {
+	      temp = copy_to_mode_reg (GET_MODE (locimag), copyimag);
+	      REG_USERVAR_P (temp) = REG_USERVAR_P (locimag);
+	      if (CONSTANT_P (copyimag) || FIXED_BASE_PLUS_P (copyimag))
+		{
+		  map->const_equiv_map[REGNO (temp)] = copyimag;
+		  map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
+		}
+	      copyimag = temp;
+	    }
+	  map->reg_map[REGNO (locimag)] = copyimag;
+	}
       else
 	abort ();
     }
@@ -2028,6 +2079,8 @@ copy_rtx_and_substitute (orig, map)
       if (GET_CODE (copy) == SUBREG)
 	return gen_rtx (SUBREG, GET_MODE (orig), SUBREG_REG (copy),
 			SUBREG_WORD (orig) + SUBREG_WORD (copy));
+      else if (GET_CODE (copy) == CONCAT)
+	return (subreg_lowpart_p (orig) ? XEXP (copy, 0) : XEXP (copy, 1));
       else
 	return gen_rtx (SUBREG, GET_MODE (orig), copy,
 			SUBREG_WORD (orig));
