@@ -314,12 +314,13 @@ extern SItype __mulvsi3 (SItype, SItype);
 extern SItype __negvsi2 (SItype);
 #endif /* COMPAT_SIMODE_TRAPPING_ARITHMETIC */
 
+#undef int
 #if LIBGCC2_HAS_SF_MODE
 extern DWtype __fixsfdi (SFtype);
 extern SFtype __floatdisf (DWtype);
 extern UWtype __fixunssfSI (SFtype);
 extern DWtype __fixunssfDI (SFtype);
-extern SFtype __powisf2 (SFtype, Wtype);
+extern SFtype __powisf2 (SFtype, int);
 extern SCtype __divsc3 (SFtype, SFtype, SFtype, SFtype);
 extern SCtype __mulsc3 (SFtype, SFtype, SFtype, SFtype);
 #endif
@@ -328,7 +329,7 @@ extern DWtype __fixdfdi (DFtype);
 extern DFtype __floatdidf (DWtype);
 extern UWtype __fixunsdfSI (DFtype);
 extern DWtype __fixunsdfDI (DFtype);
-extern DFtype __powidf2 (DFtype, Wtype);
+extern DFtype __powidf2 (DFtype, int);
 extern DCtype __divdc3 (DFtype, DFtype, DFtype, DFtype);
 extern DCtype __muldc3 (DFtype, DFtype, DFtype, DFtype);
 #endif
@@ -338,7 +339,7 @@ extern DWtype __fixxfdi (XFtype);
 extern DWtype __fixunsxfDI (XFtype);
 extern XFtype __floatdixf (DWtype);
 extern UWtype __fixunsxfSI (XFtype);
-extern XFtype __powixf2 (XFtype, Wtype);
+extern XFtype __powixf2 (XFtype, int);
 extern XCtype __divxc3 (XFtype, XFtype, XFtype, XFtype);
 extern XCtype __mulxc3 (XFtype, XFtype, XFtype, XFtype);
 #endif
@@ -347,10 +348,11 @@ extern XCtype __mulxc3 (XFtype, XFtype, XFtype, XFtype);
 extern DWtype __fixunstfDI (TFtype);
 extern DWtype __fixtfdi (TFtype);
 extern TFtype __floatditf (DWtype);
-extern TFtype __powitf2 (TFtype, Wtype);
+extern TFtype __powitf2 (TFtype, int);
 extern TCtype __divtc3 (TFtype, TFtype, TFtype, TFtype);
 extern TCtype __multc3 (TFtype, TFtype, TFtype, TFtype);
 #endif
+#define int bogus_type
 
 /* DWstructs are pairs of Wtype values in the order determined by
    LIBGCC2_WORDS_BIG_ENDIAN.  */

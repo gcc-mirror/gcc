@@ -1,3 +1,12 @@
+2005-03-30 Fariborz Jahanian <fjahanian@apple.com>
+
+	* builtins.c (expand_builtin_powi): Fix mode of
+	2nd argument to match int.
+	* libgcc2.h (__powisf2, __powidf2, __powixf2, __powitf2): Change
+	2nd argument type to int.
+	* libgcc2.c: Change prototype of __powi* functions to use 
+	int.
+
 2005-03-30  Dale Johannesen  <dalej@apple.com>
 
 	PR middle-end/19225
