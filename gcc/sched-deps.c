@@ -923,7 +923,15 @@ sched_analyze_insn (deps, x, insn, loop_notes)
       code = GET_CODE (x);
     }
   if (code == SET || code == CLOBBER)
-    sched_analyze_1 (deps, x, insn);
+    {
+      sched_analyze_1 (deps, x, insn);
+
+      /* Bare clobber insns are used for letting life analysis, reg-stack
+	 and others know that a value is dead.  Depend on the last call
+	 instruction so that reg-stack won't get confused.  */
+      if (code == CLOBBER)
+	add_dependence_list (insn, deps->last_function_call, REG_DEP_OUTPUT);
+    }
   else if (code == PARALLEL)
     {
       int i;
