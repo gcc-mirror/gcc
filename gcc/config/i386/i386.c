@@ -3893,7 +3893,7 @@ print_operand_address (file, addr)
 	  }
 
 	/* (reg,reg,) is shorter than (,reg,2).  */
-	if(scale == 2)
+	if (scale == 2)
 	  {
 	    PRINT_B_I_S (ireg, ireg, 1, file);
 	  } 
