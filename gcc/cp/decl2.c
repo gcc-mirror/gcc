@@ -1517,7 +1517,7 @@ maybe_make_one_only (tree decl)
     {
       DECL_COMDAT (decl) = 1;
       /* Mark it needed so we don't forget to emit it.  */
-      TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)) = 1;
+      mark_referenced (DECL_ASSEMBLER_NAME (decl));
     }
 }
 
