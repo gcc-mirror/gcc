@@ -1,3 +1,7 @@
+Thu May 27 02:38:36 1999  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+
+	* gcc.c-torture/compile/990527-1.c: New test.
+
 Thu May 27 02:18:51 1999  Joern Rennecke <amylaar@cygnus.com>
 
 	* gcc.c-torture/execute/990527-1.c: New test.
