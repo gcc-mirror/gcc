@@ -114,7 +114,7 @@ c++.tags: force
 	  --regex='/DEFTREECODE [(]\([A-Z_]+\)/\1/' cp-tree.def; \
 	etags --include TAGS.sub --include ../TAGS.sub
 
-generated-manpages:: cp/g++.1
+generated-manpages:: $(docobjdir)/g++.1
 
 check-c++ : check-g++
 lang_checks += check-g++
@@ -154,14 +154,14 @@ c++.install-common: installdirs
 	  fi ; \
 	fi
 
-cp/g++.1:
+$(docobjdir)/g++.1:
 	-rm -f $@
 	-echo ".so man1/$(GCC_INSTALL_NAME).1" > $@
 
-c++.install-man: installdirs cp/g++.1
+c++.install-man: installdirs $(docobjdir)/g++.1
 	-if [ -f cc1plus$(exeext) ] ; then \
 	  rm -f $(DESTDIR)$(man1dir)/$(GXX_INSTALL_NAME)$(man1ext); \
-	  $(INSTALL_DATA) cp/g++.1 $(DESTDIR)$(man1dir)/$(GXX_INSTALL_NAME)$(man1ext); \
+	  $(INSTALL_DATA) $(docobjdir)/g++.1 $(DESTDIR)$(man1dir)/$(GXX_INSTALL_NAME)$(man1ext); \
 	  chmod a-x $(DESTDIR)$(man1dir)/$(GXX_INSTALL_NAME)$(man1ext); \
 	else true; fi
 
@@ -175,7 +175,7 @@ c++.uninstall:
 # We just have to delete files specific to us.
 
 c++.mostlyclean:
-	-rm -f cp/g++.1
+	-rm -f $(docobjdir)/g++.1
 	-rm -f cp/*$(objext)
 	-rm -f cp/*$(coverageexts)
 c++.clean:
