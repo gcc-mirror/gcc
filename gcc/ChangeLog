@@ -1,5 +1,11 @@
 2004-04-28  Paul Brook  <paul@codesourcery.com>
 
+	* calls.c (precompute_arguments): Remove PROMOTE_FOR_CALL_ONLY.
+	* function.c (assign_temp): Ditto.
+	* system.h (PROMOTE_FOR_CALL_ONLY): Poison.
+
+2004-04-28  Paul Brook  <paul@codesourcery.com>
+
 	* config/arm/lib1funcs.asm: Recognize armv5tej and armv6.
 
 2004-04-28  Josef Zlomek  <zlomekj@suse.cz>
