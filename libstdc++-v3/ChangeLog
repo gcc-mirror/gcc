@@ -1,3 +1,12 @@
+2002-11-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* libsupc++/Makefile.am (sources): Add guard.cc.
+	* libsupc++/Makefile.in: Regenerated.
+	* libsupc++/cxxabi.h (__cxa_guard_acquire): New function.
+	(__cxa_guard_release): Likewise.
+	(__cxa_guard_abort): Likewise.
+	* libsupc++/guard.cc: New file.
+
 2002-11-25  Wolfgang Bangerth  <bangerth@ticam.utexas.edu>
 
 	* include/std/std_complex.h
