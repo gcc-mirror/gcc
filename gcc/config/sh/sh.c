@@ -2132,38 +2132,25 @@ initial_elimination_offset (from, to)
    compiler.  */
 
 int
-handle_pragma (file, c)
+handle_pragma (file, t)
      FILE *file;
-     int c;
+     tree t;
 {
-  char pbuf[200];
-  int psize = 0;
+  int retval = 0;
+  register char *pname;
 
-  while (c == ' ' || c == '\t')
-    c = getc (file);
+  if (TREE_CODE (t) != IDENTIFIER_NODE)
+    return 0;
 
-  if (c != '\n' & c != EOF)
-    {
-      while (psize < sizeof (pbuf) - 1
-	     && (isalpha (c) || c == '_'))
-	{
-	  pbuf[psize++] = c;
-	  c = getc (file);
-	}
-      pbuf[psize] = 0;
+  pname = IDENTIFIER_POINTER (t);
+  if (strcmp (pname, "interrupt") == 0)
+    pragma_interrupt = retval = 1;
+  else if (strcmp (pname, "trapa") == 0)
+    pragma_interrupt = pragma_trapa = retval = 1;
+  else if (strcmp (pname, "nosave_low_regs") == 0)
+    pragma_nosave_low_regs = retval = 1;
 
-      if (strcmp (pbuf, "interrupt") == 0)
-	pragma_interrupt = 1;
-      else if (strcmp (pbuf, "trapa") == 0)
-	pragma_interrupt = pragma_trapa = 1;
-      else if (strcmp (pbuf, "nosave_low_regs") == 0)
-	pragma_nosave_low_regs = 1;
-
-      while (c != '\n' && c != EOF)
-	c = getc (file);
-    }
-
-  return c;
+  return retval;
 }
 
 /* Predicates used by the templates.  */
