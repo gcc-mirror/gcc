@@ -31,7 +31,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   (TARGET_SVR4 ? DWARF_DEBUG : SDB_DEBUG)
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.12 $"
+#define VERSION_INFO2   "$Revision: 1.13 $"
 #endif
 #ifndef NO_BUGS
 #define AS_BUG_IMMEDIATE_LABEL
@@ -64,6 +64,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define TARGET_DEFAULT	(MASK_CHECK_ZERO_DIV	 | \
 			 MASK_OCS_DEBUG_INFO	 | \
 			 MASK_OCS_FRAME_POSITION | \
+			 MASK_STANDARD		 | \
 			 MASK_SVR4)
 #undef	CPU_DEFAULT
 #define CPU_DEFAULT MASK_88000
