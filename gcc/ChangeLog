@@ -1,3 +1,7 @@
+2001-10-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cris.h (EH_RETURN_DATA_REGNO): Fix unsigned>=0 warning.
+
 Thu Oct 25 08:46:06 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alias.c (can_address_p): No longer static.
