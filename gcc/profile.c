@@ -1536,13 +1536,14 @@ output_arc_profiler (arcno, insert_after)
       rtx return_reg;
       rtx next_insert_after = next_nonnote_insn (insert_after);
 
+      /* The first insn after the call may be a stack pop, skip it.  */
+      if (GET_CODE (next_insert_after) == INSN
+	  && GET_CODE (PATTERN (next_insert_after)) == SET
+	  && SET_DEST (PATTERN (next_insert_after)) == stack_pointer_rtx)
+	next_insert_after = next_nonnote_insn (next_insert_after);
+
       if (GET_CODE (next_insert_after) == INSN)
 	{
-	  /* The first insn after the call may be a stack pop, skip it.  */
-	  if (GET_CODE (PATTERN (next_insert_after)) == SET
-	      && SET_DEST (PATTERN (next_insert_after)) == stack_pointer_rtx)
-	    next_insert_after = next_nonnote_insn (next_insert_after);
-
 	  if (GET_CODE (PATTERN (insert_after)) == SET)
 	    return_reg = SET_DEST (PATTERN (insert_after));
 	  else
