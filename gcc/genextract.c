@@ -217,6 +217,7 @@ walk_rtx (x, path)
 
     case MATCH_DUP:
     case MATCH_OP_DUP:
+    case MATCH_PAR_DUP:
       duplocs[dup_count] = copystr (path);
       dupnums[dup_count] = XINT (x, 0);
       dup_count++;
