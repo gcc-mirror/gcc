@@ -5155,6 +5155,56 @@ finish_struct (tree t, tree fieldlist, tree attributes)
 
   TYPE_FIELDS (t) = fieldlist;
 
+  /* If there are lots of fields, sort so we can look through them fast.
+    We arbitrarily consider 16 or more elts to be "a lot".  */
+
+  {
+    int len = 0;
+
+    for (x = fieldlist; x; x = TREE_CHAIN (x))
+      {
+        if (len > 15 || DECL_NAME (x) == NULL)
+          break;
+        len += 1;
+      }
+
+    if (len > 15)
+      {
+        tree *field_array;
+        struct lang_type *space;
+        struct sorted_fields_type *space2;
+        
+        len += list_length (x);
+  
+        /* Use the same allocation policy here that make_node uses, to
+          ensure that this lives as long as the rest of the struct decl.
+          All decls in an inline function need to be saved.  */
+  
+        space = ggc_alloc (sizeof (struct lang_type));
+        space2 = ggc_alloc (sizeof (struct sorted_fields_type) + len * sizeof (tree));
+        
+        len = 0;
+	space->s = space2;
+	field_array = &space2->elts[0];
+        for (x = fieldlist; x; x = TREE_CHAIN (x))
+          {
+            field_array[len++] = x;
+          
+            /* if there is anonymous struct or union break out of the loop */
+            if (DECL_NAME (x) == NULL)
+              break;
+          }
+        /* found no anonymous struct/union add the TYPE_LANG_SPECIFIC. */
+        if (x == NULL)
+          {
+            TYPE_LANG_SPECIFIC (t) = space;
+            TYPE_LANG_SPECIFIC (t)->s->len = len;
+            field_array = TYPE_LANG_SPECIFIC (t)->s->elts;
+            qsort (field_array, len, sizeof (tree), field_decl_cmp);
+          }
+      }
+  }
+  
   for (x = TYPE_MAIN_VARIANT (t); x; x = TYPE_NEXT_VARIANT (x))
     {
       TYPE_FIELDS (x) = TYPE_FIELDS (t);

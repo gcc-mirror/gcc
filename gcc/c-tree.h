@@ -109,8 +109,7 @@ struct lang_decl GTY(())
 /* In a RECORD_TYPE, a sorted array of the fields of the type.  */
 struct lang_type GTY(())
 {
-  int len;
-  tree GTY((length ("%h.len"))) elts[1];
+  struct sorted_fields_type * GTY ((reorder ("resort_sorted_fields"))) s; 
 };
 
 /* Record whether a type or decl was written with nonconstant size.

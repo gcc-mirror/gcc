@@ -24,6 +24,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "splay-tree.h"
 #include "cpplib.h"
+#include "ggc.h"
 
 /* Usage of TREE_LANG_FLAG_?:
    0: COMPOUND_STMT_NO_SCOPE (in COMPOUND_STMT).
@@ -223,6 +224,13 @@ struct c_common_identifier GTY(())
 
 extern GTY(()) tree c_global_trees[CTI_MAX];
 
+/* In a RECORD_TYPE, a sorted array of the fields of the type, not a tree for size reasons.  */
+struct sorted_fields_type GTY(())
+{
+  int len;
+  tree GTY((length ("%h.len"))) elts[1];
+};
+
 /* Mark which labels are explicitly declared.
    These may be shadowed, and may be referenced from nested functions.  */
 #define C_DECLARED_LABEL_FLAG(label) TREE_LANG_FLAG_1 (label)
@@ -343,6 +351,9 @@ extern void c_finish_while_stmt_cond (tree, tree);
 
 enum sw_kind { SW_PARAM = 0, SW_LOCAL, SW_GLOBAL };
 extern void shadow_warning (enum sw_kind, const char *, tree);
+extern int field_decl_cmp (const void *, const void *);
+extern void resort_sorted_fields (void *, void *, gt_pointer_operator, 
+                                  void *);
 
 /* Extra information associated with a DECL.  Other C dialects extend
    this structure in various ways.  The C front-end only uses this

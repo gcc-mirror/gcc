@@ -124,8 +124,6 @@ static tree modify_all_vtables (tree, tree);
 static void determine_primary_base (tree);
 static void finish_struct_methods (tree);
 static void maybe_warn_about_overly_private_class (tree);
-static int field_decl_cmp (const void *, const void *);
-static int resort_field_decl_cmp (const void *, const void *);
 static int method_name_cmp (const void *, const void *);
 static int resort_method_name_cmp (const void *, const void *);
 static void add_implicitly_declared_members (tree, int, int, int);
@@ -136,7 +134,7 @@ static tree build_vtable_entry_ref (tree, tree, tree);
 static tree build_vtbl_ref_1 (tree, tree);
 static tree build_vtbl_initializer (tree, tree, tree, tree, int *);
 static int count_fields (tree);
-static int add_fields_to_vec (tree, tree, int);
+static int add_fields_to_record_type (tree, struct sorted_fields_type*, int);
 static void check_bitfield_decl (tree);
 static void check_field_decl (tree, tree, int *, int *, int *, int *);
 static void check_field_decls (tree, tree *, int *, int *, int *);
@@ -1711,71 +1709,10 @@ maybe_warn_about_overly_private_class (tree t)
     }
 }
 
-/* Function to help qsort sort FIELD_DECLs by name order.  */
-
-static int
-field_decl_cmp (const void* x_p, const void* y_p)
-{
-  const tree *const x = x_p;
-  const tree *const y = y_p;
-  if (DECL_NAME (*x) == DECL_NAME (*y))
-    /* A nontype is "greater" than a type.  */
-    return DECL_DECLARES_TYPE_P (*y) - DECL_DECLARES_TYPE_P (*x);
-  if (DECL_NAME (*x) == NULL_TREE)
-    return -1;
-  if (DECL_NAME (*y) == NULL_TREE)
-    return 1;
-  if (DECL_NAME (*x) < DECL_NAME (*y))
-    return -1;
-  return 1;
-}
-
 static struct {
   gt_pointer_operator new_value;
   void *cookie;
 } resort_data;
-
-/* This routine compares two fields like field_decl_cmp but using the
-   pointer operator in resort_data.  */
-
-static int
-resort_field_decl_cmp (const void* x_p, const void* y_p)
-{
-  const tree *const x = x_p;
-  const tree *const y = y_p;
-
-  if (DECL_NAME (*x) == DECL_NAME (*y))
-    /* A nontype is "greater" than a type.  */
-    return DECL_DECLARES_TYPE_P (*y) - DECL_DECLARES_TYPE_P (*x);
-  if (DECL_NAME (*x) == NULL_TREE)
-    return -1;
-  if (DECL_NAME (*y) == NULL_TREE)
-    return 1;
-  {
-    tree d1 = DECL_NAME (*x);
-    tree d2 = DECL_NAME (*y);
-    resort_data.new_value (&d1, resort_data.cookie);
-    resort_data.new_value (&d2, resort_data.cookie);
-    if (d1 < d2)
-      return -1;
-  }
-  return 1;
-}
-
-/* Resort DECL_SORTED_FIELDS because pointers have been reordered.  */
-
-void 
-resort_sorted_fields (void* obj, 
-                      void* orig_obj ATTRIBUTE_UNUSED , 
-                      gt_pointer_operator new_value, 
-                      void* cookie)
-{
-  tree sf = obj;
-  resort_data.new_value = new_value;
-  resort_data.cookie = cookie;
-  qsort (&TREE_VEC_ELT (sf, 0), TREE_VEC_LENGTH (sf), sizeof (tree),
-	 resort_field_decl_cmp);
-}
 
 /* Comparison function to compare two TYPE_METHOD_VEC entries by name.  */
 
@@ -2786,18 +2723,18 @@ count_fields (tree fields)
 }
 
 /* Subroutine of finish_struct_1.  Recursively add all the fields in the
-   TREE_LIST FIELDS to the TREE_VEC FIELD_VEC, starting at offset IDX.  */
+   TREE_LIST FIELDS to the SORTED_FIELDS_TYPE elts, starting at offset IDX.  */
 
 static int
-add_fields_to_vec (tree fields, tree field_vec, int idx)
+add_fields_to_record_type (tree fields, struct sorted_fields_type *field_vec, int idx)
 {
   tree x;
   for (x = fields; x; x = TREE_CHAIN (x))
     {
       if (TREE_CODE (x) == FIELD_DECL && ANON_AGGR_TYPE_P (TREE_TYPE (x)))
-	idx = add_fields_to_vec (TYPE_FIELDS (TREE_TYPE (x)), field_vec, idx);
+	idx = add_fields_to_record_type (TYPE_FIELDS (TREE_TYPE (x)), field_vec, idx);
       else
-	TREE_VEC_ELT (field_vec, idx++) = x;
+	field_vec->elts[idx++] = x;
     }
   return idx;
 }
@@ -5160,9 +5097,11 @@ finish_struct_1 (tree t)
   n_fields = count_fields (TYPE_FIELDS (t));
   if (n_fields > 7)
     {
-      tree field_vec = make_tree_vec (n_fields);
-      add_fields_to_vec (TYPE_FIELDS (t), field_vec, 0);
-      qsort (&TREE_VEC_ELT (field_vec, 0), n_fields, sizeof (tree),
+      struct sorted_fields_type *field_vec = ggc_alloc (sizeof (struct sorted_fields_type) 
+	+ n_fields * sizeof (tree));
+      field_vec->len = n_fields;
+      add_fields_to_record_type (TYPE_FIELDS (t), field_vec, 0);
+      qsort (field_vec->elts, n_fields, sizeof (tree),
 	     field_decl_cmp);
       if (! DECL_LANG_SPECIFIC (TYPE_MAIN_DECL (t)))
 	retrofit_lang_decl (TYPE_MAIN_DECL (t));

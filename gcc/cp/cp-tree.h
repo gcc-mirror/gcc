@@ -1727,7 +1727,7 @@ struct lang_decl GTY(())
 	
 	union lang_decl_u3
 	{
-	  tree GTY ((tag ("0"), reorder ("resort_sorted_fields"))) 
+	  struct sorted_fields_type * GTY ((tag ("0"), reorder ("resort_sorted_fields"))) 
 	       sorted_fields;
  	  struct cp_token_cache * GTY ((tag ("2"))) pending_inline_info;
 	  struct language_function * GTY ((tag ("1"))) 
@@ -3553,8 +3553,6 @@ extern tree convert_to_base                     (tree, tree, bool);
 extern tree build_vtbl_ref			(tree, tree);
 extern tree build_vfn_ref			(tree, tree);
 extern tree get_vtable_decl                     (tree, int);
-extern void resort_sorted_fields 
-  (void *, void *, gt_pointer_operator, void *);
 extern void resort_type_method_vec
   (void *, void *, gt_pointer_operator, void *);
 extern void add_method				(tree, tree, int);
