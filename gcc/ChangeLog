@@ -1,3 +1,10 @@
+2001-12-04  Loren J. Rittle  <ljrittle@acm.org>
+
+	bootstrap/4422
+	* configure.in: Setup ability to run ./stage[1234]/xgcc in
+	fixinc *as if* it were a proper lang subdirectory.
+	* configure: Rebuilt.
+
 2001-12-04  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/install.texi: Use the GFDL.  Include years from old install

@@ -7841,7 +7841,7 @@ esac
 # This is virtually a duplicate of what happens in configure.lang; we do
 # an extra check to make sure this only happens if ln -s can be used.
 if test "$symbolic_link" = "ln -s"; then
- for d in .. ${subdirs} ; do
+ for d in .. ${subdirs} fixinc ; do
    if test $d != ..; then
 	STARTDIR=`pwd`
 	cd $d
