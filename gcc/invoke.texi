@@ -371,7 +371,7 @@ in the following sections.
 -mrelax  -mh -ms -mint32  -malign-300
 
 @emph{SH Options}
--m1  -m2  -m3  -m3e  -mb  -ml  -mrelax
+-m1  -m2  -m3  -m3e  -mb  -ml  -mdalign -mrelax
 
 @emph{System V Options}
 -Qy  -Qn  -YP,@var{paths}  -Ym,@var{dir}
@@ -5372,6 +5372,11 @@ Compile code for the processor in big endian mode.
 
 @item -ml
 Compile code for the processor in little endian mode.
+
+@item -mdalign
+Align doubles at 64 bit boundaries.  Note that this changes the calling
+conventions, and thus some functions from the standard C library will
+not work unless you recompile it first with -mdalign.
 
 @item -mrelax
 Shorten some address references at link time, when possible; uses the

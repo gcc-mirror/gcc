@@ -231,7 +231,7 @@ do {								\
 #define PARM_BOUNDARY  	32
 
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
-#define STACK_BOUNDARY  32
+#define STACK_BOUNDARY  BIGGEST_ALIGNMENT
 
 /* The log (base 2) of the cache line size, in bytes.  Processors prior to
    SH3 have no actual cache, but they fetch code in chunks of 4 bytes.  */

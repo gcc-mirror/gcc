@@ -1,3 +1,9 @@
+Mon Apr 27 18:23:51 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+        * sh.c (sh_expand_prologue, sh_expand_epilogue):
+        If TARGET_DOUBLE_ALIGN, preserve 64 bit stack alignment.
+        * sh.h (STACK_BOUNDARY): Likewise.
+
 Mon Apr 27 17:22:48 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.h (LEGITIMIZE_RELOAD_ADDRESS): Define.
