@@ -9568,6 +9568,11 @@ simplify_shift_const (rtx x, enum rtx_code code,
 	     (and (shift)) insns.  */
 
 	  if (GET_CODE (XEXP (varop, 1)) == CONST_INT
+	      /* We can't do this if we have (ashiftrt (xor))  and the
+		 constant has its sign bit set in shift_mode.  */
+	      && !(code == ASHIFTRT && GET_CODE (varop) == XOR
+		   && 0 > trunc_int_for_mode (INTVAL (XEXP (varop, 1)),
+					      shift_mode))
 	      && (new = simplify_binary_operation (code, result_mode,
 						   XEXP (varop, 1),
 						   GEN_INT (count))) != 0
@@ -9581,18 +9586,22 @@ simplify_shift_const (rtx x, enum rtx_code code,
 
 	  /* If we can't do that, try to simplify the shift in each arm of the
 	     logical expression, make a new logical expression, and apply
-	     the inverse distributive law.  */
-	  {
-	    rtx lhs = simplify_shift_const (NULL_RTX, code, shift_mode,
-					    XEXP (varop, 0), count);
-	    rtx rhs = simplify_shift_const (NULL_RTX, code, shift_mode,
-					    XEXP (varop, 1), count);
+	     the inverse distributive law.  This also can't be done
+	     for some (ashiftrt (xor)).  */
+	  if (code != ASHIFTRT || GET_CODE (varop)!= XOR
+	      || 0 <= trunc_int_for_mode (INTVAL (XEXP (varop, 1)),
+					  shift_mode))
+	    {
+	      rtx lhs = simplify_shift_const (NULL_RTX, code, shift_mode,
+					      XEXP (varop, 0), count);
+	      rtx rhs = simplify_shift_const (NULL_RTX, code, shift_mode,
+					      XEXP (varop, 1), count);
 
-	    varop = gen_binary (GET_CODE (varop), shift_mode, lhs, rhs);
-	    varop = apply_distributive_law (varop);
+	      varop = gen_binary (GET_CODE (varop), shift_mode, lhs, rhs);
+	      varop = apply_distributive_law (varop);
 
-	    count = 0;
-	  }
+	      count = 0;
+	    }
 	  break;
 
 	case EQ:
