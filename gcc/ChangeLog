@@ -1,3 +1,7 @@
+Wed Jun 10 13:08:41 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* mips/mips.c: Remove -mabi=o32 and -mabi=n64.
+
 Wed Jun 10 13:41:23 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* cppmain.c (fatal): New function.
