@@ -1,7 +1,15 @@
 %{
-/* Command-line: gperf -L KR-C -F ', 0, 0' -p -j1 -g -o -t -N is_reserved_word -k1,4,$,7 gplus.gperf  */
+/* Command-line: gperf -L C -F ', 0, 0' -p -j1 -g -o -t -N is_reserved_word -k1,4,$,7 gplus.gperf  */
 %}
 struct resword { const char *name; short token; enum rid rid;};
+#ifdef __GNUC__
+__inline
+#endif
+static unsigned int hash PARAMS ((const char *, unsigned int));
+#ifdef __GNUC__
+__inline
+#endif
+struct resword *is_reserved_word PARAMS ((const char *, unsigned int));
 %%
 __alignof, ALIGNOF, RID_UNUSED
 __alignof__, ALIGNOF, RID_UNUSED

@@ -2765,7 +2765,7 @@ build_vec_init (decl, base, maxindex, init, from_array)
   tree stmt_expr;
   tree compound_stmt;
   int destroy_temps;
-  tree try_block;
+  tree try_block = NULL_TREE;
   int num_initialized_elts = 0;
 
   maxindex = cp_convert (ptrdiff_type_node, maxindex);
