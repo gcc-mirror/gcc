@@ -655,6 +655,10 @@ dump_decl (t, v)
 	/* Don't say 'typedef class A' */
         if (DECL_ARTIFICIAL (t))
 	  {
+	    if (v > 0 && TREE_CODE (TREE_TYPE (t)) == TEMPLATE_TYPE_PARM)
+	      /* Say `class T' not just `T'. */
+	      OB_PUTS ("class ");
+
 	    dump_type (TREE_TYPE (t), v);
 	    break;
 	  }
