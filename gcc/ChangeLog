@@ -1,3 +1,8 @@
+2003-06-30  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* c-pch.c (c_common_write_pch): Flush asm_out_file to allow for
+	subsequent writes.
+
 Mon Jun 30 10:03:02 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cfgrtl.c (verify_flow_info): Accept degenerated condjumps
