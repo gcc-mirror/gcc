@@ -1478,6 +1478,7 @@ do {									\
         fputs ("\tdata8.ua @iplt(", FILE);				\
       else								\
         fputs ("\tdata16.ua @iplt(", FILE);				\
+      mark_decl_referenced (DECL);					\
       assemble_name (FILE, XSTR (XEXP (DECL_RTL (DECL), 0), 0));	\
       fputs (")\n", FILE);						\
       if (TARGET_ILP32)							\
