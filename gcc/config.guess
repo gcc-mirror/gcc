@@ -319,12 +319,12 @@ EOF
 	exit 0 ;;
     M680[234]0:*:R3V[567]*:*)
 	test -r /sysV68 && echo 'm68k-motorola-sysv' && exit 0 ;;
-    3[34]??:*:4.0:*)
-	uname -p 2>/dev/null | grep 86 >/dev/null \
-	  && echo i486-ncr-sysv4 && exit 0 ;;
-    33[56]0,3???:*:4.0:*)
-	uname -p 2>/dev/null | grep 86 >/dev/null \
-	  && echo i486-ncr-sysv4.3 && exit 0 ;;
+    3[34]??:*:4.0:3.0 | 3[34]??,*:*:4.0:3.0)
+        uname -p 2>/dev/null | grep 86 >/dev/null \
+          && echo i486-ncr-sysv4.3 && exit 0 ;;
+    3[34]??:*:4.0:* | 3[34]??,*:*:4.0:*)
+        uname -p 2>/dev/null | grep 86 >/dev/null \
+          && echo i486-ncr-sysv4 && exit 0 ;;
     m680[234]0:LynxOS:2.2*:*)
 	echo m68k-lynx-lynxos${UNAME_RELEASE}
 	exit 0 ;;
