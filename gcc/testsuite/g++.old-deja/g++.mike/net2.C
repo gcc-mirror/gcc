@@ -3,7 +3,7 @@
 
 class B;
 
-class A {
+class A {			// ERROR - copy ctor candidate
   private:
     A(B *);			// ERROR - 
   public:

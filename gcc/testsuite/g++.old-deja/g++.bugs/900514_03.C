@@ -7,13 +7,15 @@
 // the explicit cast syntax disambiguates the constructor as one which
 // invokes the type conversion operator rather than the conversion.
 
+// NO, IT DOESN'T.  It's still ambiguous.  --jason 2002-12-03
+
 // cfront 2.0 passes this test.
 
 // keywords: user-defined type conversion operator, constructor
 
 struct t_0_st_0;
 
-struct t_0_st_1 { // ERROR - 
+struct t_0_st_1 {
   int member;
 
   t_0_st_1 (t_0_st_0&);// ERROR - 
@@ -80,7 +82,7 @@ void t_1_local_init ()
 
 struct t_2_st_0;
 
-struct t_2_st_1 {		// ERROR - candidate
+struct t_2_st_1 {
   int member;
 
   t_2_st_1 (t_2_st_0);		// ERROR - candidate
