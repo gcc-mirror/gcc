@@ -111,7 +111,7 @@ main ()
 
   task_queue* tq[thread_pairs];
 
-#if defined(__sun) && defined(__svr4__)
+#if defined(__sun) && defined(__svr4__) && _XOPEN_VERSION >= 500
   pthread_setconcurrency (thread_pairs * 2);
 #endif
 
