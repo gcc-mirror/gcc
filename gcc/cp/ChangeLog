@@ -1,3 +1,8 @@
+2004-09-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* error.c (dump_decl): Make sure there is lang_specific info before 
+	checking for DTOR and CTOR decls.
+
 2004-09-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c (copy_virtuals): Remove.
