@@ -93,7 +93,7 @@ case "${host}" in
 	;;
   powerpc*-darwin*)
 	sysdeps_dir=powerpc
-        libgcj_interpreter=no
+        libgcj_interpreter=yes
 	;;
   sparc-*)
         ;;
