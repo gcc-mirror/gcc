@@ -68,7 +68,7 @@ Boston, MA 02111-1307, USA.  */
 /* #define ASM_OUTPUT_DESTRUCTOR(file, name) */
 
 /* The prefix to add to user-visible assembler symbols. */
-#define USER_LABEL_PREFIX "."
+#define USER_LABEL_PREFIX ""
 
 /* Don't turn -B into -L if the argument specifies a relative file name.  */
 #define RELATIVE_PREFIX_NOT_LINKDIR

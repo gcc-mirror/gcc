@@ -1,3 +1,10 @@
+2001-05-25  David Edelsohn  <edelsohn@gnu.org>
+
+	* xcoffout.h (DBX_OUTPUT_GCC_MARKER): Do not emit any marker.
+
+	* config/rs6000/aix.h (USER_LABEL_PREFIX): AIX symbols do not have
+	any prefix.
+
 2001-05-25  Jeff Knaggs  <jknaggs@redhat.com>
 
         * config/alpha/alpha.md (movtf_internal): Use reg_overlap_mentioned_p
