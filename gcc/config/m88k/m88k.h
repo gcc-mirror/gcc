@@ -241,13 +241,11 @@ extern char * reg_names[];
 #define MASK_IDENTIFY_REVISION	0x00001000 /* Emit ident, with GCC rev */
 #define MASK_WARN_PASS_STRUCT	0x00002000 /* Warn about passed structs */
 #define MASK_OPTIMIZE_ARG_AREA	0x00004000 /* Save stack space */
-#define MASK_SERIALIZE_VOLATILE 0x00008000 /* Serialize volatile refs */
-#define MASK_NO_SERIALIZE_VOLATILE 0x00010000 /* Don't serialize */
+#define MASK_NO_SERIALIZE_VOLATILE 0x00008000 /* Serialize volatile refs */
 
 #define MASK_88000 (MASK_88100 | MASK_88110)
 #define MASK_EITHER_LARGE_SHIFT	(MASK_TRAP_LARGE_SHIFT | \
 				 MASK_HANDLE_LARGE_SHIFT)
-#define MASK_SERIALIZE (MASK_SERIALIZE_VOLATILE | MASK_NO_SERIALIZE_VOLATILE)
 
 #define TARGET_88100   		 ((target_flags & MASK_88000) == MASK_88100)
 #define TARGET_88110		 ((target_flags & MASK_88000) == MASK_88110)
@@ -265,7 +263,7 @@ extern char * reg_names[];
 #define TARGET_IDENTIFY_REVISION  (target_flags & MASK_IDENTIFY_REVISION)
 #define TARGET_WARN_PASS_STRUCT   (target_flags & MASK_WARN_PASS_STRUCT)
 #define TARGET_OPTIMIZE_ARG_AREA  (target_flags & MASK_OPTIMIZE_ARG_AREA)
-#define TARGET_SERIALIZE_VOLATILE (target_flags & MASK_SERIALIZE_VOLATILE)
+#define TARGET_SERIALIZE_VOLATILE (!(target_flags & MASK_NO_SERIALIZE_VOLATILE))
 
 #define TARGET_EITHER_LARGE_SHIFT (target_flags & MASK_EITHER_LARGE_SHIFT)
 
@@ -295,8 +293,8 @@ extern char * reg_names[];
     { "warn-passed-structs",		 MASK_WARN_PASS_STRUCT }, \
     { "optimize-arg-area",		 MASK_OPTIMIZE_ARG_AREA }, \
     { "no-optimize-arg-area",		-MASK_OPTIMIZE_ARG_AREA }, \
-    { "serialize-volatile",		 MASK_SERIALIZE_VOLATILE }, \
     { "no-serialize-volatile",		 MASK_NO_SERIALIZE_VOLATILE }, \
+    { "serialize-volatile",		-MASK_NO_SERIALIZE_VOLATILE }, \
     SUBTARGET_SWITCHES \
     /* Default switches */ \
     { "",				 TARGET_DEFAULT }, \
@@ -321,12 +319,6 @@ extern char * reg_names[];
 									     \
     m88k_cpu = (TARGET_88000 ? CPU_M88000				     \
 		: (TARGET_88100 ? CPU_M88100 : CPU_M88110));		     \
-									     \
-    if (! TARGET_88100 && (target_flags & MASK_SERIALIZE) == 0)		     \
-      target_flags |= MASK_SERIALIZE_VOLATILE;				     \
-									     \
-    if ((target_flags & MASK_NO_SERIALIZE_VOLATILE) != 0)		     \
-      target_flags &= ~MASK_SERIALIZE_VOLATILE;				     \
 									     \
     if (TARGET_BIG_PIC)							     \
       flag_pic = 2;							     \
