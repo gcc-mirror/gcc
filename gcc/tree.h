@@ -2080,9 +2080,7 @@ extern size_t tree_size			PARAMS ((tree));
 
 extern tree make_node			PARAMS ((enum tree_code));
 
-/* Make a copy of a node, with all the same contents except
-   for TREE_PERMANENT.  (The copy is permanent
-   iff nodes being made now are permanent.)  */
+/* Make a copy of a node, with all the same contents.  */
 
 extern tree copy_node			PARAMS ((tree));
 
