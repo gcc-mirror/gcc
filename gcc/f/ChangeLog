@@ -1,3 +1,8 @@
+1999-02-25  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi: Clarify/index lack of run-time allocation for
+	concatenation.
+  
 1999-02-25  Andreas Jaeger  <aj@arthur.rhein-neckar.de>
 
 	* f/intdoc.in: Add missing `,' after cross references.
