@@ -1,3 +1,8 @@
+2003-01-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9437
+	* g++.dg/template/unify4.C: New test.
+
 2003-01-28  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.c-torture/execute/20030128-1.c: New test.

@@ -1,5 +1,8 @@
 2003-01-28  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/9437
+	* pt.c (unify): Don't unify '*T' with 'U C::*'.
+
 	PR c++/3902
 	* parser.c (cp_parser_decl_specifier_seq): Cannot have constructor
 	inside a declarator.
