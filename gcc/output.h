@@ -1,6 +1,6 @@
 /* Declarations for insn-output.c.  These functions are defined in recog.c,
    final.c, and varasm.c.
-   Copyright (C) 1987, 1991, 1994, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1994, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -359,6 +359,11 @@ extern int current_function_has_nonlocal_label;
 /* Nonzero if function being compiled contains nested functions.  */
 
 extern int current_function_contains_functions;
+
+/* Nonzero if the function being compiled has the address of its
+   labels taken. */
+
+extern int current_function_addresses_labels;
 
 /* Nonzero if the current function returns a pointer type */
 
