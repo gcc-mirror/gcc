@@ -1646,12 +1646,14 @@ output_toc (file, x, labelno)
 
   ASM_OUTPUT_INTERNAL_LABEL (file, "LC", labelno);
 
-  /* Handle FP constants specially.  */
+  /* Handle FP constants specially.  Note that if we have a minimal
+     TOC, things we put here aren't actually in the TOC, so we can allow
+     FP constants.  */
   if (GET_CODE (x) == CONST_DOUBLE
       && GET_MODE (x) == DFmode
       && TARGET_FLOAT_FORMAT == HOST_FLOAT_FORMAT
       && BITS_PER_WORD == HOST_BITS_PER_INT
-      && TARGET_FP_IN_TOC)
+      && ! (TARGET_NO_FP_IN_TOC && ! TARGET_MINIMAL_TOC))
     {
       if (TARGET_MINIMAL_TOC)
 	fprintf (file, "\t.long %d\n\t.long %d\n",
@@ -1663,7 +1665,7 @@ output_toc (file, x, labelno)
       return;
     }
   else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == SFmode
-	   && TARGET_FP_IN_TOC)
+	   && ! (TARGET_NO_FP_IN_TOC && ! TARGET_MINIMAL_TOC))
     {
       rtx val = operand_subword (x, 0, 0, SFmode);
 
