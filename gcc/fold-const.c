@@ -5645,20 +5645,25 @@ fold (expr)
 		  return pedantic_non_lvalue (convert (type, arg1));
 		case LE_EXPR:
 		case LT_EXPR:
-		  /* In C++ a ?: expression can be an lvalue, so we can't
-		     do this; we would lose the distinction between
-		     LT and LE.  */
-		  if (pedantic_lvalues)
-		    return pedantic_non_lvalue
-		      (convert (type, (fold (build (MIN_EXPR, comp_type,
-						    comp_op0, comp_op1)))));
+		  /* In C++ a ?: expression can be an lvalue, so put the
+		     operand which will be used if they are equal first
+		     so that we can convert this back to the 
+		     corresponding COND_EXPR.  */
+		  return pedantic_non_lvalue
+		    (convert (type, (fold (build (MIN_EXPR, comp_type,
+						  (comp_code == LE_EXPR
+						   ? comp_op0 : comp_op1),
+						  (comp_code == LE_EXPR
+						   ? comp_op1 : comp_op0))))));
 		  break;
 		case GE_EXPR:
 		case GT_EXPR:
-		  if (pedantic_lvalues)
-		    return pedantic_non_lvalue
-		      (convert (type, fold (build (MAX_EXPR, comp_type,
-						   comp_op0, comp_op1))));
+		  return pedantic_non_lvalue
+		    (convert (type, fold (build (MAX_EXPR, comp_type,
+						 (comp_code == GE_EXPR
+						  ? comp_op0 : comp_op1),
+						 (comp_code == GE_EXPR
+						  ? comp_op1 : comp_op0)))));
 		  break;
 		default:
 		  abort ();
