@@ -2651,9 +2651,19 @@
   "*
 {
   if (GET_MODE (operands[0]) == DFmode)
-    return \"fmpyadd,dbl %1,%2,%0,%4,%3\";
+    {
+      if (rtx_equal_p (operands[5], operands[3])
+	return \"fmpyadd,dbl %1,%2,%0,%4,%3\";
+      else
+	return \"fmpyadd,dbl %1,%2,%0,%5,%3\";
+    }
   else
-    return \"fmpyadd,sgl %1,%2,%0,%4,%3\";
+    {
+      if (rtx_equal_p (operands[5], operands[3])
+	return \"fmpyadd,sgl %1,%2,%0,%4,%3\";
+      else
+	return \"fmpyadd,sgl %1,%2,%0,%5,%3\";
+    }
 }")
 
 
@@ -2668,9 +2678,19 @@
   "*
 {
   if (GET_MODE (operands[0]) == DFmode)
-    return \"fmpyadd,dbl %1,%2,%0,%4,%3\";
+    {
+      if (rtx_equal_p (operands[3], operands[5]))
+	return \"fmpyadd,dbl %1,%2,%0,%4,%3\";
+      else
+	return \"fmpyadd,dbl %1,%2,%0,%5,%3\";
+    }
   else
-    return \"fmpyadd,sgl %1,%2,%0,%4,%3\";
+    {
+      if (rtx_equal_p (operands[3], operands[5]))
+	return \"fmpyadd,sgl %1,%2,%0,%4,%3\";
+      else
+	return \"fmpyadd,sgl %1,%2,%0,%5,%3\";
+    }
 }")
 
 ;; Note fsub subtracts the second operand from the first while fmpysub
