@@ -1855,6 +1855,8 @@ get_class_reference (ident)
     {
       tree params;
 
+      add_class_reference (CLASS_NAME (ident));
+
       params = build_tree_list (NULLT,
 				my_build_string (IDENTIFIER_LENGTH (ident) + 1,
 						 IDENTIFIER_POINTER (ident)));
