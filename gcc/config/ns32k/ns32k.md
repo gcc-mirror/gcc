@@ -1861,7 +1861,7 @@
     return \"adjspb %$-4\";
 }")
 
-;; The extsd/extd isntructions have the problem that they always access
+;; The exts/ext instructions have the problem that they always access
 ;; 32 bits even if the bitfield is smaller. For example the instruction
 ;; 	extsd 7(r1),r0,2,5
 ;; would read not only at address 7(r1) but also at 8(r1) to 10(r1).
@@ -1876,14 +1876,17 @@
 ;;	extsd	7(r1),r0,2,5	5 bytes
 ;; takes about 21 cycles.
 ;;
-;; So lets forget about extsd/extd on the 532.
+;; The inss/ins instructions suffer from the same problem.
+;;
+;; A machine specific option (-mbitfield/-mnobitfield) is used
+;; to allow/disallow the use of these instructions.
 
 (define_insn ""
   [(set (match_operand:SI 0 "general_operand" "=g<")
 	(zero_extract:SI (match_operand:SI 1 "register_operand" "g")
 			 (match_operand:SI 2 "const_int_operand" "i")
 			 (match_operand:SI 3 "general_operand" "rK")))]
-  "! TARGET_32532"
+  "TARGET_BITFIELD"
   "*
 { if (GET_CODE (operands[3]) == CONST_INT)
     return \"extsd %1,%0,%3,%2\";
@@ -1895,7 +1898,7 @@
 	(zero_extract:SI (match_operand:QI 1 "general_operand" "g")
 			 (match_operand:SI 2 "const_int_operand" "i")
 			 (match_operand:SI 3 "general_operand" "rK")))]
-  "! TARGET_32532"
+  "TARGET_BITFIELD"
   "*
 { if (GET_CODE (operands[3]) == CONST_INT)
     return \"extsd %1,%0,%3,%2\";
@@ -1907,7 +1910,7 @@
 			 (match_operand:SI 1 "const_int_operand" "i")
 			 (match_operand:SI 2 "general_operand" "rn"))
 	(match_operand:SI 3 "general_operand" "rm"))]
-  ""
+  "TARGET_BITFIELD"
   "*
 { if (GET_CODE (operands[2]) == CONST_INT)
     {
@@ -1932,7 +1935,7 @@
 			 (match_operand:SI 1 "const_int_operand" "i")
 			 (match_operand:SI 2 "general_operand" "rK"))
 	(match_operand:SI 3 "general_operand" "rm"))]
-  ""
+  "TARGET_BITFIELD"
   "*
 { if (GET_CODE (operands[2]) == CONST_INT)
     if (INTVAL (operands[1]) <= 8)
@@ -1949,7 +1952,7 @@
 			 (match_operand:SI 1 "const_int_operand" "i")
 			 (match_operand:SI 2 "general_operand" "rK"))
 	(match_operand:SI 3 "general_operand" "rm"))]
-  ""
+  "TARGET_BITFIELD"
   "*
 { if (GET_CODE (operands[2]) == CONST_INT)
     if (INTVAL (operands[1]) <= 8)
