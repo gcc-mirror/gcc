@@ -49,11 +49,6 @@ public final class FileDescriptor
     fd = open (path, mode);
   }
 
-  public FileDescriptor ()
-  {
-    fd = -1;
-  }
-
   native int open (String path, int mode) throws FileNotFoundException;
   native void write (int b) throws IOException;
   native void write (byte[] b, int offset, int len)
@@ -84,6 +79,10 @@ public final class FileDescriptor
     fd = desc;
   }
 
-  // System's notion of file descriptor.
-  private int fd;
+  // System's notion of file descriptor.  It might seem redundant to
+  // initialize this given that it is reassigned in the constructors.
+  // However, this is necessary because if open() throws an exception
+  // we want to make sure this has the value -1.  This is the most
+  // efficient way to accomplish that.
+  private int fd = -1;
 }

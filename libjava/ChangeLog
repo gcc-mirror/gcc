@@ -1,3 +1,8 @@
+2000-12-24  Jeff Sturm  <jeff.sturm@commerceone.com>
+
+	* java/io/FileDescriptor.java: Initialize fd to -1.
+	Remove default constructor.
+
 2000-12-23  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* java/lang/mprec.h: Change C9X reference to refer to C99.
