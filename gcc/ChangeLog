@@ -13,9 +13,6 @@
 	* tree.h (tree): Define a GC'd vector.
 	* lamba-code.c (lambda_loop): Likewise.
 	* value-prof.h (histogram_value): Likewise.
-	* cp/cp-tree.h (tree_pair_s): Likewise.
-	* cp/name-lookup.h (cxx_saved_binding, cp_class_binding): Likewise.
-	* cp/semantics.c (deferred_access): Likewise.
 
 2004-09-08  Nathan Sidwell  <nathan@codesourcery.com>
 

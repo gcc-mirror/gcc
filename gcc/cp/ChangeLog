@@ -1,3 +1,9 @@
+2004-09-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (tree_pair_s): Define a GC'd vector.
+	* name-lookup.h (cxx_saved_binding, cp_class_binding): Likewise.
+	* semantics.c (deferred_access): Likewise.
+
 2004-09-06  Daniel Jacobowitz  <dan@debian.org>
 
 	* semantics.c (expand_body): Assert that we are not nested.
