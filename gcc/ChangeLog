@@ -1,3 +1,8 @@
+2004-11-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* emit-rtl.c (classify_insn): Make it static.
+	* rtl.h: Remove the corresponding prototype.
+
 2004-11-19  Ben Elliston  <bje@au.ibm.com>
 
 	* dwarf2asm.h (dw2_asm_output_pcel): Stub out with #if 0.
