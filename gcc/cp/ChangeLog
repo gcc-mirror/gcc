@@ -1,3 +1,7 @@
+2003-08-19  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cp-lang.c (LANG_HOOKS_INITIALIZE_DIAGNOSTICS): Fix spelling.
+
 2003-08-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/11957
