@@ -5785,6 +5785,7 @@ set_block_num (insn, bb)
      and NOTE_INSN_BASIC_BLOCK
    - check that all insns are in the basic blocks 
    (except the switch handling code, barriers and notes)
+   - check that all returns are followed by barriers
 
    In future it can be extended check a lot of other stuff as well
    (reachability of basic blocks, life information, etc. etc.).  */
@@ -5987,6 +5988,12 @@ verify_flow_info ()
 	      fatal_insn ("Insn outside basic block", x);
 	    }
 	}
+
+      if (GET_RTX_CLASS (GET_CODE (x)) == 'i'
+	  && GET_CODE (x) == JUMP_INSN
+	  && returnjump_p (x)
+	  && ! (NEXT_INSN (x) && GET_CODE (NEXT_INSN (x)) == BARRIER))
+	    fatal_insn ("Return not followed by barrier", x);
 
       x = NEXT_INSN (x);
     }
@@ -7758,8 +7765,19 @@ reorder_basic_blocks ()
 	  BASIC_BLOCK (j) = tempbb;
 	}
     }
-      
-  NEXT_INSN (BASIC_BLOCK (n_basic_blocks - 1)->end) = last_insn;
+     
+    {
+      rtx xafter = skip_insns_between_block (BASIC_BLOCK (n_basic_blocks - 1),
+					     REORDER_SKIP_AFTER);
+      if (xafter)
+	NEXT_INSN (xafter) = last_insn;
+      else
+	abort();
+    }
+
+#ifdef ENABLE_CHECKING
+  verify_flow_info ();
+#endif
 
   for (i = 0; i < n_basic_blocks - 1; i++)
     {
