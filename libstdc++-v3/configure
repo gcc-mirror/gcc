@@ -59011,23 +59011,26 @@ done
 
   fi
 
+
+    if test $enable_symvers = no; then
+      enable_abi_check=no
+    else
+      case "$host" in
+        *-*-cygwin*)
+          enable_abi_check=no ;;
+        *)
+          enable_abi_check=yes ;;
+      esac
+    fi
+  else
+    # Only build this as native, since automake does not understand
+    # CXX_FOR_BUILD.
+    enable_abi_check=no
   fi
 
   # Export file names for ABI checking.
   baseline_dir="$glibcxx_srcdir/config/abi/${abi_baseline_pair}\$(MULTISUBDIR)"
 
-
-  # Determine if checking the ABI is desirable.
-  if test $enable_symvers = no || test $is_hosted = no; then
-    enable_abi_check=no
-  else
-    case "$host" in
-      *-*-cygwin*)
-        enable_abi_check=no ;;
-      *)
-        enable_abi_check=yes ;;
-    esac
-  fi
 
 
 
