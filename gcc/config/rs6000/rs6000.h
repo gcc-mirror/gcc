@@ -353,6 +353,17 @@ extern int target_flags;
 
 #define BRANCH_COST 3
 
+/* A C statement (sans semicolon) to update the integer variable COST
+   based on the relationship between INSN that is dependent on
+   DEP_INSN through the dependence LINK.  The default is to make no
+   adjustment to COST.  On the RS/6000, ignore the cost of anti- and
+   output-dependencies.  In fact, output dependencies on the CR do have
+   a cost, but it is probably not worthwhile to track it.  */
+
+#define ADJUST_COST(INSN,LINK,DEP_INSN,COST)				\
+  if (REG_NOTE_KIND (LINK) != 0)					\
+    (COST) = 0; /* Anti or output dependence.  */
+
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
 
