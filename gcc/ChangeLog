@@ -1,9 +1,11 @@
 Fri Oct 17 17:13:42 1997  David S. Miller  <davem@tanya.rutgers.edu>
 
 	* sparc/linux64.h (LINK_SPEC): Dynamic linker is ld-linux64.so.2.
-	* sparc/sparc.c (dwarf2out_cfi_label): Extern no longer needed.
 	* sparc/sparc.h (FUNCTION_PROFILER): Fix format string when
 	TARGET_MEDANY.
+	* sparc/sparc.c (dwarf2out_cfi_label): Extern no longer needed.
+	(output_double_int): Output DI mode values correctly when
+	HOST_BITS_PER_WIDE_INT is 64.
 
 Fri Oct 17 13:39:56 1997  Doug Evans  <dje@canuck.cygnus.com>
 
