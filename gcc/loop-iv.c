@@ -660,7 +660,7 @@ get_biv_step_1 (rtx insn, rtx reg,
 		enum rtx_code *extend, enum machine_mode outer_mode,
 		rtx *outer_step)
 {
-  rtx set, lhs, rhs, op0 = NULL_RTX, op1 = NULL_RTX;
+  rtx set, rhs, op0 = NULL_RTX, op1 = NULL_RTX;
   rtx next, nextr, def_insn, tmp;
   enum rtx_code code;
 
@@ -670,7 +670,6 @@ get_biv_step_1 (rtx insn, rtx reg,
     rhs = XEXP (rhs, 0);
   else
     rhs = SET_SRC (set);
-  lhs = SET_DEST (set);
 
   code = GET_CODE (rhs);
   switch (code)
