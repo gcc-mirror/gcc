@@ -939,7 +939,24 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 		  else
 		    alt_cost += copy_cost (op, mode, classes[j], 1);
 		}
+	      else if (GET_CODE (ops[j]) != REG
+		       || REGNO (ops[j]) < FIRST_PSEUDO_REGISTER)
+		{
+		  /* This op is a pseudo but the one it matches is not.  */
+		  
+		  /* If we can't put the other operand into a register, this
+		     alternative can't be used.  */
 
+		  if (classes[j] == NO_REGS)
+		    alt_fail = 1;
+
+		  /* Otherwise, add to the cost of this alternative the cost
+		     to copy the other operand to the register used for this
+		     operand.  */
+
+		  else
+		    alt_cost += copy_cost (ops[j], mode, classes[j], 1);
+		}
 	      else
 		{
 		  /* The costs of this operand are the same as that of the
