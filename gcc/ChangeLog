@@ -1,3 +1,8 @@
+Wed Oct  7 14:40:43 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* c-pragma.c (insert_pack_attributes): Do not insert
+	attributes unless #pragma pack(push,<n>) is in effect.
+
 Wed Oct  7 12:10:46 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* expr.c (emit_group_store): Handle a PARALLEL destination.
