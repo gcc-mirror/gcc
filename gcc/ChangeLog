@@ -1,5 +1,10 @@
 2000-09-24  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-common.c (check_format_info): Warn for a wide character string
+	used as a non-wide format argument.
+
+2000-09-24  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* builtins.def (BUILT_IN_LLABS): Add.
 	* builtins.c (expand_builtin): Also abort on BUILT_IN_LLABS.
 	* c-common.c (c_common_nodes_builtins): Create builtin functions
