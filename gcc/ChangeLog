@@ -1,3 +1,10 @@
+2003-01-15  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* som.h (SUPPORTS_WEAK, SUPPORTS_ONE_ONLY, MAKE_DECL_ONE_ONLY,
+	ASM_WEAKEN_LABEL, GTHREAD_USE_WEAK): Define.
+	* pa.h (TARGET_SOM_SDEF): Define.
+	* pa-hpux11.h (TARGET_SOM_SDEF): Define.
+
 2003-01-16  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.c (expand_prologue): Use push/pop to 

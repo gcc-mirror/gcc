@@ -1,5 +1,5 @@
 /* Definitions for SOM assembler support.
-   Copyright (C) 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -371,3 +371,52 @@ do {						\
 /* Aggregates with a single float or double field should be passed and
    returned in the general registers.  */
 #define MEMBER_TYPE_FORCES_BLK(FIELD, MODE) (MODE==SFmode || MODE==DFmode)
+
+/* If GAS supports weak, we can support weak when we have working linker
+   support for secondary definitions and are generating code for GAS.  */
+#ifdef HAVE_GAS_WEAK
+#define SUPPORTS_WEAK (TARGET_SOM_SDEF && TARGET_GAS)
+#else
+#define SUPPORTS_WEAK 0
+#endif
+
+/* We can support one only if we support weak.  */
+#define SUPPORTS_ONE_ONLY SUPPORTS_WEAK
+
+/* Use weak (secondary definitions) to make one only declarations.  */
+#define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
+
+/* This is how we tell the assembler that a symbol is weak.  The SOM
+   weak implementation uses the secondary definition (sdef) flag.
+
+   The behavior of sdef symbols is similar to ELF weak symbols in that
+   multiple definitions can occur without incurring a link error.
+   However, they differ in the following ways:
+     1) Undefined sdef symbols are not allowed.
+     2) The linker searches for undefined sdef symbols and will load an
+	archive library member to resolve an undefined sdef symbol.
+     3) The exported symbol from a shared library is a primary symbol
+        rather than a sdef symbol.  Thus, more care is needed in the
+	ordering of libraries.
+
+   It appears that the linker discards extra copies of "weak" functions
+   when linking shared libraries, independent of whether or not they
+   are in their own section.  In linking final executables, -Wl,-O can
+   be used to remove dead procedures.  Thus, support for named sections
+   is not needed and in previous testing caused problems with various
+   HP tools.  */
+#define ASM_WEAKEN_LABEL(FILE,NAME) \
+  do { fputs ("\t.weak\t", FILE);				\
+       assemble_name (FILE, NAME);				\
+       fputc ('\n', FILE);					\
+       if (! FUNCTION_NAME_P (NAME))				\
+	 {							\
+	   fputs ("\t.EXPORT ", FILE);				\
+	   assemble_name (FILE, NAME);				\
+	   fputs (",DATA\n", FILE);				\
+	 }							\
+  } while (0)
+
+/* We can't handle weak aliases, and therefore can't support pragma weak.
+   Suppress the use of pragma weak in gthr-dce.h and gthr-posix.h.  */
+#define GTHREAD_USE_WEAK 0

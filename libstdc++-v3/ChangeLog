@@ -1,3 +1,8 @@
+2003-01-15  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* config/os/hpux/os_defines.h (_GLIBCPP_GTHREAD_USE_WEAK): Define for
+	__hppa__.
+
 2003-01-14  Jeffrey D. Oldham  <oldham@codesourcery.com>
 
 	Further conform g++'s __vmi_class_type_info to the C++ ABI
