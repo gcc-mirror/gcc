@@ -1728,7 +1728,6 @@ emit_register_classes ()
   tree init_decl;
   tree t;
 
-  start_sequence ();
   init_decl = build_decl (FUNCTION_DECL, init_name, init_type);
   DECL_ASSEMBLER_NAME (init_decl) = init_name;
   TREE_STATIC (init_decl) = 1;

@@ -1,3 +1,31 @@
+Wed Aug 18 13:17:15 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (emit_register_class): Removed unnecessary call to
+ 	start_sequence.
+	* parse.y (labeled_block_contains_loop_p): Removed unused local
+ 	variable.
+
+Tue Aug 17 22:51:44 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+        * parse.y (java_refold): Added prototype.
+
+Tue Aug 17 21:48:41 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+        * parse.y (BINOP_COMPOUND_CANDIDATES): New macro.
+        (java_stabilize_reference): Removed unnecessary `else'.
+        (java_complete_lhs): Set flag to remember boolean. Call
+        java_refold. Added comments.
+        (java_decl_equiv): New function.
+        (binop_compound_p): Likewise.
+        (java_refold): Likewise.
+        (patch_unaryop): Striped static field access assigned to decl and
+        op. Changed promotion scheme for ++/-- operators.
+        (search_loop): New function.
+        (labeled_block_contains_loop_p): Likewise.
+        (patch_loop_statement): Call labeled_block_contains_loop_p. Added
+        comment.
+        (patch_bc_statement): Call search_loop. Fixed comment.
+
 1999-08-14  Anthony Green  <green@cygnus.com>
 
 	* expr.c (java_lang_expand_expr): Mark static array data as
