@@ -31,9 +31,6 @@ Boston, MA 02111-1307, USA.  */
 #undef  POSIX
 #define POSIX
 
-#undef  DONT_DECLARE_SYS_SIGLIST
-#define DONT_DECLARE_SYS_SIGLIST
-
 /* We do have one, but I'd like to use the one come with gcc since
    we have been doing that for a long time with USG defined.  H.J. */
 #define NO_STAB_H

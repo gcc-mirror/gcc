@@ -56,9 +56,6 @@ extern char *alloca ();
 #define ONLY_INT_FIELDS
 #endif
 
-/* Solaris has a different declaration of sys_siglist than collect uses.  */
-#define DONT_DECLARE_SYS_SIGLIST
-
 /* We have STRERROR */
 #define HAVE_STRERROR
 

@@ -1,3 +1,13 @@
+Mon Sep  1 08:29:46 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* collect2.c: Change DONT_DECLARE_SYS_SIGLIST to SYS_SIGLIST_DECLARED.
+	* mips-tfile.c: Likewise.
+	* gcc.texi: DONT_DECLARE_SYS_SIGLIST: Remove docs.
+	* xm-linux.h (DONT_DECLARE_SYS_SIGLIST): Delete definition.
+	* xm-freebsd.h, xm-bsd386.h, xm-sysv4.h, xm-sol2.h: Likewise.
+	* configure.in: Check for sys_siglist declaration.
+	* configure, config.in: Rebuilt.
+
 Mon Sep  1 08:04:07 1997  Joel Sherrill (joel@OARcorp.com)
 
 	* i386/go32-rtems.h, i386/rtems.h, i960/rtems.h, 

@@ -14,9 +14,3 @@
 /* Univel, at least, has a small ARG_MAX.  Defining this is harmless
    except for causing extra stat calls in the driver program.  */
 #define SMALL_ARG_MAX
-
-/* We have _sys_siglist, but the declaration in <signal.h> conflicts with
-   the declarations in collect2.c and mips-tfile.c, so disable the declarations
-   in those files.  */
-
-#define DONT_DECLARE_SYS_SIGLIST
