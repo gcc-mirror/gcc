@@ -2002,7 +2002,12 @@ rs6000_emit_set_long_const (dest, c1, c2)
     }
   else
     {
-      HOST_WIDE_INT d1, d2, d3, d4;
+      HOST_WIDE_INT d1, d2, d2_s, d3, d4;
+
+      /* This function is called by rs6000_emit_allocate_stack after reload 
+	 with a dest of r0.  r0 is an invalid register for addsi.  Use an addi 
+	 and a shift instead.  */
+      int regnum = REGNO (dest);
 
   /* Decompose the entire word */
 #if HOST_BITS_PER_WIDE_INT >= 64
@@ -2011,6 +2016,7 @@ rs6000_emit_set_long_const (dest, c1, c2)
       d1 = ((c1 & 0xffff) ^ 0x8000) - 0x8000;
       c1 -= d1;
       d2 = ((c1 & 0xffffffff) ^ 0x80000000) - 0x80000000;
+      d2_s = d2 >> 16;
       c1 = (c1 - d2) >> 32;
       d3 = ((c1 & 0xffff) ^ 0x8000) - 0x8000;
       c1 -= d3;
@@ -2021,6 +2027,7 @@ rs6000_emit_set_long_const (dest, c1, c2)
       d1 = ((c1 & 0xffff) ^ 0x8000) - 0x8000;
       c1 -= d1;
       d2 = ((c1 & 0xffffffff) ^ 0x80000000) - 0x80000000;
+      d2_s = d2 >> 16;
       if (c1 != d2)
 	abort ();
       c2 += (d2 < 0);
@@ -2039,18 +2046,40 @@ rs6000_emit_set_long_const (dest, c1, c2)
 	    emit_move_insn (dest,
 			    gen_rtx_PLUS (DImode, dest, GEN_INT (d3)));
 	}
-      else
+      else if (d3 != 0)
 	emit_move_insn (dest, GEN_INT (d3));
 
       /* Shift it into place */
       if (d3 != 0 || d4 != 0)
-	emit_move_insn (dest, gen_rtx_ASHIFT (DImode, dest, GEN_INT (32)));
+ 	if (regnum == 0 && d2 != 0) 
+ 	  emit_move_insn (dest, gen_rtx_ASHIFT (DImode, dest, GEN_INT (16)));
+ 	else 
+	  emit_move_insn (dest, gen_rtx_ASHIFT (DImode, dest, GEN_INT (32)));
 
       /* Add in the low bits.  */
       if (d2 != 0)
-	emit_move_insn (dest, gen_rtx_PLUS (DImode, dest, GEN_INT (d2)));
+	{
+	  if (d3 != 0 || d4 != 0)
+	    {
+	      if (regnum == 0)
+		{
+		  emit_move_insn (dest, gen_rtx_PLUS (DImode, dest, 
+						      GEN_INT (d2_s)));
+		  emit_move_insn (dest, gen_rtx_ASHIFT (DImode, dest,  
+							GEN_INT (16)));
+		}
+	      else
+		emit_move_insn (dest, gen_rtx_PLUS (DImode, dest, 
+						    GEN_INT (d2)));
+	    }
+	  else
+	    emit_move_insn (dest, GEN_INT (d2));
+	}
       if (d1 != 0)
-	emit_move_insn (dest, gen_rtx_PLUS (DImode, dest, GEN_INT (d1)));
+	if (d2 != 0 || d3 != 0 || d4 != 0)
+	  emit_move_insn (dest, gen_rtx_PLUS (DImode, dest, GEN_INT (d1)));
+	else
+	  emit_move_insn (dest, GEN_INT (d1));
     }
 
   return dest;

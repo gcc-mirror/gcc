@@ -19,6 +19,11 @@
 	* tree.h: Document new use of TREE_ADDRESSABLE.
 	(expand_expr_stmt_value): Declare.
 
+2002-01-01  Tom Rix  <trix@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_set_long_const): Fix for use by
+	rs6000_emit_allocate_stack.
+
 2002-01-01  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* configure.in: Prepend ${srcdir}/config/${cpu_type}/ instead of
