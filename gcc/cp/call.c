@@ -51,7 +51,6 @@ static int compare_qual PROTO((tree, tree));
 static int compare_ics PROTO((tree, tree));
 static tree build_over_call PROTO((tree, tree, tree, int));
 static tree convert_default_arg PROTO((tree, tree));
-static void enforce_access PROTO((tree, tree));
 static tree convert_like PROTO((tree, tree));
 static void op_error PROTO((enum tree_code, enum tree_code, tree, tree,
 			    tree, char *));
@@ -2949,26 +2948,26 @@ build_op_delete_call (code, addr, size, flags)
   return error_mark_node;
 }
 
-/* If the current scope isn't allowed to access FUNCTION along
+/* If the current scope isn't allowed to access DECL along
    BASETYPE_PATH, give an error.  */
 
-static void
-enforce_access (basetype_path, function)
-     tree basetype_path, function;
+void
+enforce_access (basetype_path, decl)
+     tree basetype_path, decl;
 {
-  tree access = compute_access (basetype_path, function);
+  tree access = compute_access (basetype_path, decl);
 
   if (access == access_private_node)
     {
-      cp_error_at ("`%+#D' is %s", function, 
-		   TREE_PRIVATE (function) ? "private"
+      cp_error_at ("`%+#D' is %s", decl, 
+		   TREE_PRIVATE (decl) ? "private"
 		   : "from private base class");
       error ("within this context");
     }
   else if (access == access_protected_node)
     {
-      cp_error_at ("`%+#D' %s", function,
-		   TREE_PROTECTED (function) ? "is protected"
+      cp_error_at ("`%+#D' %s", decl,
+		   TREE_PROTECTED (decl) ? "is protected"
 		   : "has protected accessibility");
       error ("within this context");
     }

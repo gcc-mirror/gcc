@@ -1,3 +1,10 @@
+Wed Mar 25 16:10:50 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* cp-tree.h (enforce_access): Declare.
+	* call.c (enforce_access): Make it extern, not static.
+	* class.c (alter_access): Use enforce_access; modify code for ISO
+	compliance, rather than ARM rules.
+
 Wed Mar 25 12:10:45 1998  Kriang Lerdsuwanakij  <lerdsuwa@scf.usc.edu>
 
 	* cp-tree.h: Fix typo.

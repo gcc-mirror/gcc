@@ -2085,6 +2085,7 @@ extern tree build_op_new_call			PROTO((enum tree_code, tree, tree, int));
 extern tree build_op_delete_call		PROTO((enum tree_code, tree, tree, int));
 extern int can_convert				PROTO((tree, tree));
 extern int can_convert_arg			PROTO((tree, tree, tree));
+extern void enforce_access                      PROTO((tree, tree));
 
 /* in class.c */
 extern tree build_vbase_path			PROTO((enum tree_code, tree, tree, tree, int));
