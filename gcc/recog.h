@@ -209,6 +209,8 @@ struct insn_operand_data
   enum machine_mode mode;
 
   char strict_low;
+
+  char eliminable;
 };
 
 /* Legal values for insn_data.output_format.  Indicate what type of data
