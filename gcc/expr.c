@@ -187,7 +187,7 @@ static rtx result_vector	PROTO((int, rtx));
 static rtx expand_builtin_apply_args PROTO((void));
 static rtx expand_builtin_apply	PROTO((rtx, rtx, rtx));
 static void expand_builtin_return PROTO((rtx));
-static rtx expand_increment	PROTO((tree, int));
+static rtx expand_increment	PROTO((tree, int, int));
 void bc_expand_increment	PROTO((struct increment_operator *, tree));
 tree bc_runtime_type_code 	PROTO((tree));
 rtx bc_allocate_local		PROTO((int, int));
@@ -3601,7 +3601,7 @@ store_constructor (exp, target, cleared)
 
 		  expand_increment (build (PREINCREMENT_EXPR,
 					   TREE_TYPE (index),
-					   index, integer_one_node), 0);
+					   index, integer_one_node), 0, 0);
 		  expand_end_loop ();
 		  emit_label (loop_end);
 
@@ -6763,12 +6763,12 @@ expand_expr (exp, target, tmode, modifier)
 
     case PREINCREMENT_EXPR:
     case PREDECREMENT_EXPR:
-      return expand_increment (exp, 0);
+      return expand_increment (exp, 0, ignore);
 
     case POSTINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
       /* Faster to treat as pre-increment if result is not used.  */
-      return expand_increment (exp, ! ignore);
+      return expand_increment (exp, ! ignore, ignore);
 
     case ADDR_EXPR:
       /* If nonzero, TEMP will be set to the address of something that might
@@ -9210,9 +9210,9 @@ expand_builtin_return (result)
    POST is 1 for postinc/decrements and 0 for preinc/decrements.  */
 
 static rtx
-expand_increment (exp, post)
+expand_increment (exp, post, ignore)
      register tree exp;
-     int post;
+     int post, ignore;
 {
   register rtx op0, op1;
   register rtx temp, value;
@@ -9343,7 +9343,7 @@ expand_increment (exp, post)
 	  incremented = TREE_OPERAND (incremented, 0);
 	}
 
-      temp = expand_assignment (incremented, newexp, ! post, 0);
+      temp = expand_assignment (incremented, newexp, ! post && ! ignore , 0);
       return post ? op0 : temp;
     }
 
