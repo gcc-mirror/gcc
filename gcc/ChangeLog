@@ -1,3 +1,7 @@
+2004-03-18  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* mklibgcc.in: Remove obsolete MAYBE_USE_COLLECT2.
+
 2004-03-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* convert.c (convert_to_real): Add more math builtins.
