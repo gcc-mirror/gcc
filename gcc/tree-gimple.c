@@ -443,7 +443,7 @@ void
 recalculate_side_effects (tree t)
 {
   enum tree_code code = TREE_CODE (t);
-  int fro = first_rtl_op (code);
+  int fro = TREE_CODE_LENGTH (code);
   int i;
 
   switch (TREE_CODE_CLASS (code))

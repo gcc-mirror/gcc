@@ -1734,19 +1734,6 @@ skip_simple_arithmetic (tree expr)
   return inner;
 }
 
-/* Returns the index of the first non-tree operand for CODE, or the number
-   of operands if all are trees.  */
-
-int
-first_rtl_op (enum tree_code code)
-{
-  switch (code)
-    {
-    default:
-      return TREE_CODE_LENGTH (code);
-    }
-}
-
 /* Return which tree structure is used by T.  */
 
 enum tree_node_structure_enum
@@ -1845,7 +1832,7 @@ contains_placeholder_p (tree exp)
 	  break;
 	}
 
-      switch (first_rtl_op (code))
+      switch (TREE_CODE_LENGTH (code))
 	{
 	case 1:
 	  return CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 0));
@@ -2012,7 +1999,7 @@ substitute_in_expr (tree exp, tree f, tree r)
       case tcc_comparison:
       case tcc_expression:
       case tcc_reference:
-	switch (first_rtl_op (code))
+	switch (TREE_CODE_LENGTH (code))
 	  {
 	  case 0:
 	    return exp;
@@ -2132,7 +2119,7 @@ substitute_placeholder_in_expr (tree exp, tree obj)
       case tcc_expression:
       case tcc_reference:
       case tcc_statement:
-	switch (first_rtl_op (code))
+	switch (TREE_CODE_LENGTH (code))
 	  {
 	  case 0:
 	    return exp;
@@ -2508,7 +2495,7 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
   TREE_COMPLEXITY (t) = 0;
   TREE_OPERAND (t, 0) = node;
   TREE_BLOCK (t) = NULL_TREE;
-  if (node && !TYPE_P (node) && first_rtl_op (code) != 0)
+  if (node && !TYPE_P (node) && TREE_CODE_LENGTH (code) != 0)
     {
       TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (node);
       TREE_READONLY (t) = TREE_READONLY (node);
@@ -2593,7 +2580,7 @@ build2_stat (enum tree_code code, tree tt, tree arg0, tree arg1 MEM_STAT_DECL)
      result based on those same flags for the arguments.  But if the
      arguments aren't really even `tree' expressions, we shouldn't be trying
      to do this.  */
-  fro = first_rtl_op (code);
+  fro = TREE_CODE_LENGTH (code);
 
   /* Expressions without side effects may be constant if their
      arguments are as well.  */
@@ -2630,7 +2617,7 @@ build3_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
   t = make_node_stat (code PASS_MEM_STAT);
   TREE_TYPE (t) = tt;
 
-  fro = first_rtl_op (code);
+  fro = TREE_CODE_LENGTH (code);
 
   side_effects = TREE_SIDE_EFFECTS (t);
 
@@ -2679,7 +2666,7 @@ build4_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
   t = make_node_stat (code PASS_MEM_STAT);
   TREE_TYPE (t) = tt;
 
-  fro = first_rtl_op (code);
+  fro = TREE_CODE_LENGTH (code);
 
   side_effects = TREE_SIDE_EFFECTS (t);
 
@@ -4196,7 +4183,7 @@ iterative_hash_expr (tree t, hashval_t val)
 	      val = iterative_hash_hashval_t (two, val);
 	    }
 	  else
-	    for (i = first_rtl_op (code) - 1; i >= 0; --i)
+	    for (i = TREE_CODE_LENGTH (code) - 1; i >= 0; --i)
 	      val = iterative_hash_expr (TREE_OPERAND (t, i), val);
 	}
       return val;

@@ -593,7 +593,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 
       /* Some nodes contain rtx's, not trees,
 	 after a certain point.  Print the rtx's as rtx's.  */
-      first_rtl = first_rtl_op (TREE_CODE (node));
+      first_rtl = TREE_CODE_LENGTH (TREE_CODE (node));
 
       for (i = 0; i < len; i++)
 	{

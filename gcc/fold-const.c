@@ -3550,7 +3550,7 @@ make_range (tree exp, int *pin_p, tree *plow, tree *phigh)
 
       if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code)))
 	{
-	  if (first_rtl_op (code) > 0)
+	  if (TREE_CODE_LENGTH (code) > 0)
 	    arg0 = TREE_OPERAND (exp, 0);
 	  if (TREE_CODE_CLASS (code) == tcc_comparison
 	      || TREE_CODE_CLASS (code) == tcc_unary
@@ -6277,7 +6277,7 @@ fold (tree expr)
     }
   else if (IS_EXPR_CODE_CLASS (kind))
     {
-      int len = first_rtl_op (code);
+      int len = TREE_CODE_LENGTH (code);
       int i;
       for (i = 0; i < len; i++)
 	{
@@ -9418,7 +9418,7 @@ fold_checksum_tree (tree expr, struct md5_ctx *ctx, htab_t ht)
     case tcc_unary:
     case tcc_binary:
     case tcc_statement:
-      len = first_rtl_op (code);
+      len = TREE_CODE_LENGTH (code);
       for (i = 0; i < len; ++i)
 	fold_checksum_tree (TREE_OPERAND (expr, i), ctx, ht);
       break;

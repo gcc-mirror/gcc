@@ -1,3 +1,7 @@
+2004-12-07  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* pt.c: Replace a use of first_rtl_op with TREE_CODE_LENGTH.
+
 2004-12-07  Roger Sayle  <roger@eyesopen.com>
 
 	* name-lookup.c (leave_scope): We only need to update

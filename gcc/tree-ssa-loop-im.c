@@ -283,7 +283,7 @@ outermost_invariant_loop_expr (tree expr, struct loop *loop)
       && class != tcc_comparison)
     return NULL;
 
-  nops = first_rtl_op (TREE_CODE (expr));
+  nops = TREE_CODE_LENGTH (TREE_CODE (expr));
   for (i = 0; i < nops; i++)
     {
       aloop = outermost_invariant_loop_expr (TREE_OPERAND (expr, i), loop);
@@ -743,7 +743,7 @@ force_move_till_expr (tree expr, struct loop *orig_loop, struct loop *loop)
       && class != tcc_comparison)
     return;
 
-  nops = first_rtl_op (TREE_CODE (expr));
+  nops = TREE_CODE_LENGTH (TREE_CODE (expr));
   for (i = 0; i < nops; i++)
     force_move_till_expr (TREE_OPERAND (expr, i), orig_loop, loop);
 }
