@@ -1,3 +1,8 @@
+2004-08-03  Frank Ch. Eigler  <fche@redhat.com>
+
+	* mf-runtime.c (compare_uintptr_t): Remove function.  Inline
+	simplified contents in all former callers.
+
 2004-07-27  Ulrich Weigand  <weigand@informatik.uni-erlangen.de>
 
 	* mf-runtime.c (__mf_fini): Set mudflap_mode to mode_nop in
