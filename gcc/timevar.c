@@ -21,6 +21,7 @@
 
 #include "config.h"
 #include "system.h"
+#include "intl.h"
 
 #ifdef HAVE_SYS_TIMES_H
 # include <sys/times.h>
