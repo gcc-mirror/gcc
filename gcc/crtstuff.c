@@ -119,9 +119,6 @@ typedef void (*func_ptr) (void);
 
 #include "gbl-ctors.h"
 
-#ifndef ON_EXIT
-#define ON_EXIT(a, b)
-#endif
 #define STATIC
 
 #endif /* OBJECT_FORMAT_ELF */
@@ -262,7 +259,7 @@ __do_global_ctors_aux (void)	/* prologue goes in .init section */
 #endif
   asm (TEXT_SECTION_ASM_OP);	/* don't put epilogue and body in .init */
   DO_GLOBAL_CTORS_BODY;
-  ON_EXIT (__do_global_dtors, 0);
+  atexit (__do_global_dtors);
 }
 
 #endif /* OBJECT_FORMAT_ELF */
@@ -421,7 +418,7 @@ __do_global_ctors_aux (void)	/* prologue goes in .text section */
 {
   asm (INIT_SECTION_ASM_OP);
   DO_GLOBAL_CTORS_BODY;
-  ON_EXIT (__do_global_dtors, 0);
+  atexit (__do_global_dtors);
 }				/* epilogue and body go in .init section */
 
 #ifdef FORCE_INIT_SECTION_ALIGN
