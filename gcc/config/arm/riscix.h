@@ -122,6 +122,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include "arm/aout.h"
 
+/* The RISCiX assembler does not understand .set */
+#undef SET_ASM_OP
+
 /* Override CPP_SPEC, there's no point handling endianness (and probably
    not much point handling apcs_pc), and we want to add the right #defines
    when using the include files.  */
