@@ -1,3 +1,7 @@
+1998-06-27  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (install): Remove superfluous /include.
+
 1998-06-26  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* config.shared (FLAGS_TO_PASS): Add gcc_version_trigger.
