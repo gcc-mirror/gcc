@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-options "-Wconversion" } 
 // Test that we resolve this case as mandated by the standard, but also
 // warn about it.  We choose op char* not because it is a member of B --
 // the standard says that all conversion ops are treated as coming from
