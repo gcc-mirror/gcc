@@ -1109,6 +1109,10 @@ constant_call_address_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
+  if (GET_CODE (op) == CONST
+      && GET_CODE (XEXP (op, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT)
+    op = XEXP (XEXP (op, 0), 0);
   return GET_CODE (op) == SYMBOL_REF;
 }
 
