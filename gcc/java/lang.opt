@@ -18,28 +18,12 @@
 ; Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 ; 02111-1307, USA.
 
-
-; This file is processed by the script opts.sh.  It is a database of
-; command line options, with each record separated by a blank line,
-; and each field appearing on its own line.  The first field is the
-; command-line switch with the leading "-" removed.  All options
-; beginning with "f" or "W" are implicitly assumed to take a "no-"
-; form; this form should not be listed.  If you do not want this
-; negative form and you want it to be automatically rejected, add
-; RejectNegative to the second field.
-
-; The second field should contain "Java".  If the switch takes an
-; argument, then you should also specify "Joined" and/or "Separate" to
-; indicate where the argument can appear.
-
-; Comments can appear on their own line anwhere in the file, preceded
-; by a semicolon.  Whitespace is permitted before the semicolon.
-
-; For each switch XXX below, an enumeration constant is created by the
-; script opts.sh spelt OPT_XXX, but with all non-alphanumeric
-; characters replaced with an underscore.
+; See c.opt for a description of this file's format.
 
 ; Please try to keep this file in ASCII collating order.
+
+Language
+Java
 
 I
 Java Joined

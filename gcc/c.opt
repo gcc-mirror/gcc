@@ -29,10 +29,10 @@
 ; RejectNegative to the second field.
 
 ; The second field is a space-separated list of which parts of the
-; compiler recognize the switch.  Current valid entries are "C",
-; "ObjC", "C++" and "ObjC++".  If the switch takes an argument, then
-; you should also specify "Joined" and/or "Separate" to indicate where
-; the argument can appear.
+; compiler recognize the switch, as declared by "Language" entries.
+; If the switch takes an argument, then you should also specify
+; "Joined" and/or "Separate" to indicate where the argument can
+; appear.
 
 ; Comments can appear on their own line anwhere in the file, preceded
 ; by a semicolon.  Whitespace is permitted before the semicolon.
@@ -42,6 +42,18 @@
 ; characters replaced with an underscore.
 
 ; Please try to keep this file in ASCII collating order.
+
+Language
+C
+
+Language
+ObjC
+
+Language
+C++
+
+Language
+ObjC++
 
 -help
 C ObjC C++ ObjC++

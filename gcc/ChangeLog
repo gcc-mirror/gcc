@@ -1,3 +1,13 @@
+2003-06-15  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-opts.c (lang_flags): Update for new spelling of flags.
+	(write_langs): Similarly.
+	* c.opt: Specify languages.
+	* opts.h: Remove languages.
+	* opts.sh: Recognise front-end defined languages.
+doc:
+	* sourcebuild.texi: Update.
+
 2003-06-15  Andreas Jaeger  <aj@suse.de>
 
 	* alloc-pool.c: Convert to ISO C90 prototypes.

@@ -1,3 +1,7 @@
+Sun Jun 15 15:56:51 2003  Neil Booth  <neil@daikokuya.co.uk>
+
+	* lang.opt: Declare F77.
+
 Sat Jun 14 18:13:00 2003  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* com.c (stor_parm_decls): Adjust init_function_start call.
