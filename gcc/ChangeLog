@@ -1,3 +1,8 @@
+2004-09-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/cris/cris.h: Preserve the original spelling in a
+	quote.
+
 2004-09-18 Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (nonzero_vars_stack, vrp_variables_stack): New
