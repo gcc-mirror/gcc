@@ -1,3 +1,7 @@
+2004-08-13  Daniel Berlin  <dberlin@dberlin.org>
+
+	* Makefile.in (BOOT_CFLAGS): Remove accidental addition of -dU.
+
 2004-08-13  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.md (cbranch define_delay) Use cond_delay_slot for
