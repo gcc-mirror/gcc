@@ -74,7 +74,7 @@ init_expmed ()
 
   free_point = (char *) oballoc (0);
 
-  zero_cost = rtx_cost (const0_rtx);
+  zero_cost = rtx_cost (const0_rtx, 0);
   add_cost = rtx_cost (gen_rtx (PLUS, word_mode, reg, reg), SET);
 
   shift_insn = emit_insn (gen_rtx (SET, VOIDmode, reg,
