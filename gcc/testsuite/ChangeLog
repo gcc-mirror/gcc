@@ -1,3 +1,8 @@
+2004-12-20  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/19080
+	* gcc.c-torture/compile/pr19080.c: New test.
+
 2004-12-20  Steven Bosscher  <stevenb@suse.de>
 
 	* gcc.dg/20041219-1.c: New test.
