@@ -5194,6 +5194,17 @@ can figure out the other form by either removing @samp{no-} or adding
 it.
 
 @table @code
+@item -fexceptions
+@item -fno-exceptions
+Enable exception handling, and generate extra code needed to propagate
+exceptions.  If you do not specify this option, GNU CC enables it by
+default for languages like C++ that normally require exception handling,
+and disabled for languages like C that do not normally require it.
+However, when compiling C code that needs to interoperate properly with
+exception handlers written in C++, you may need to enable this option.
+You may also wish to disable this option is you are compiling older C++
+programs that don't use exception handling.
+
 @item -fpcc-struct-return
 Return ``short'' @code{struct} and @code{union} values in memory like
 longer ones, rather than in registers.  This convention is less
