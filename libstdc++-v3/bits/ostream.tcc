@@ -196,7 +196,7 @@ namespace std {
 	    ios_base::fmtflags __fmt = this->flags() & ios_base::basefield;
 	    if (__fmt & ios_base::oct || __fmt & ios_base::hex)
 	      __f = _M_fnumput->put(*this, *this, this->fill(), 
-				    static_cast<unsigned long long>(__n)).failed();
+			       static_cast<unsigned long long>(__n)).failed();
 	    else
 	      __f = _M_fnumput->put(*this, *this, this->fill(), __n).failed();
 
@@ -585,36 +585,46 @@ namespace std {
 
   template<typename _CharT, typename _Traits>
     basic_ostream<_CharT, _Traits>&
-    operator<<(basic_ostream<_CharT, _Traits>& __out, const char* /*__s*/)
+    operator<<(basic_ostream<_CharT, _Traits>& __out, const char* __s)
     {
-#if 0
-      typedef basic_ostream<_CharT, _Traits>   		__ostream_type;
-      typedef typename _Traits::state_type              __state_type;
-      typedef codecvt<char, _CharT, __state_type>       __codecvt_type;
-      typedef typename __ostream_type::char_type	__char_type;
-
+      typedef basic_ostream<_CharT, _Traits> __ostream_type;
+#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+// 167.  Improper use of traits_type::length()
+      typedef char_traits<char>		     __ctraits_type;
+#endif
       __ostream_type::sentry __cerb(__out);
       if (__cerb)
 	{
-	  const __codecvt_type* __fcvt = &use_facet<__codecvt_type>(__out.getloc());
+	  size_t __clen = __ctraits_type::length(__s);
+	  _CharT __ws[__clen + 1];
+	  for (size_t  __i = 0; __i <= __clen; ++__i)
+	    __ws[__i] = __out.widen(__s[__i]);
+	  _CharT* __str = __ws;
+	  
 	  try {
-	    streamsize __n = char_traits<char>::length(__s);
-	    __char_type __conv[__n];
-	    __state_type __state_cur;
-	    __char_type __pbuf[__n];	      
-	    __char_type* __pend;
-	    char* __send;
-	    __fcvt->out(__state_cur, 
-			__pbuf, __pbuf + __n,
-			const_cast<const __char_type*&>(__pend),
-			const_cast<char*>(__s), 
-			const_cast<char*>(__s + __n),
-			__send);
-	    __out.write(__pbuf, __n);
+	    streamsize __len = static_cast<streamsize>(__clen);
+	    streamsize __w = __out.width();
+	    _CharT __pads[__w];
+
+	    if (__w > __len)
+	      {
+		_S_pad_char(__out, __pads, __ws, __w, __len);
+		__str = __pads;
+		__len = __w;
+	      }
+	    __out.write(__str, __len);
+	    __out.width(0);
 	  }
-#endif
-	  return __out;
+	  catch(exception& __fail){
+	    // 27.6.1.2.1 Common requirements.
+	    // Turn this on without causing an ios::failure to be thrown.
+	    __out.setstate(ios_base::badbit);
+	    if ((__out.exceptions() & ios_base::badbit) != 0)
+	      throw;
+	  }
 	}
+      return __out;
+    }
 
   // Partial specializationss
   template<class _Traits>

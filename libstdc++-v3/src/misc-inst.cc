@@ -123,9 +123,6 @@ namespace std {
   template ostream& operator<<(ostream&, const char*);
   template ostream& operator<<(ostream&, const unsigned char*);
   template ostream& operator<<(ostream&, const signed char*);
-  // template ostream& operator<<(ostream&, _Setfill<char>);
-  // template ostream& operator<<(ostream&, _Setw);
-  // template _Setfill<char> setfill(char);
 #ifdef _GLIBCPP_USE_WCHAR_T
   template class basic_ostream<wchar_t>;
   template wostream& endl(wostream&);
@@ -135,9 +132,6 @@ namespace std {
   template wostream& operator<<(wostream&, char);
   template wostream& operator<<(wostream&, const wchar_t*);
   template wostream& operator<<(wostream&, const char*);
-  // template wostream& operator<<(wostream&, _Setfill<wchar_t>);
-  // template wostream& operator<<(wostream&, _Setw);
-  // template _Setfill<wchar_t> setfill(wchar_t);
 #endif
   
 
