@@ -3276,7 +3276,8 @@ prepare_float_lib_cmp (px, py, pcomparison, pmode, punsignedp)
      int *punsignedp;
 {
   enum rtx_code comparison = *pcomparison;
-  rtx x = *px, y = *py;
+  rtx x = *px = protect_from_queue (*px, 0);
+  rtx y = *py = protect_from_queue (*py, 0);
   enum machine_mode mode = GET_MODE (x);
   rtx libfunc = 0;
   rtx result;
