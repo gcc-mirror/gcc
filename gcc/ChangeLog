@@ -1,3 +1,12 @@
+2000-07-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/arm/arm.md ("call_value"): removed constraints.
+	Constraints are ignored in expanders.
+	(*call_value_reg): split =rf into various constraints.
+	(*call_value_mem): same
+	(*call_value_symbol): same
+	(*sibcall_value_insn): same
+
 2000-07-28  Philipp Thomas  <pthomas@suse.de>
 
 	* install.texi (--enable-nls): Change the description of the NLS
