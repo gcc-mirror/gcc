@@ -20,6 +20,8 @@
 	
 Thu May 17 11:53:49 2001  Jeffrey A Law  (law@cygnus.com)
 
+	* pa.c (hppa_init_pic_save): No longer update last_parm_insn.
+
 	* except.c (sjlj_emit_function_enter): Call assemble_external_libcall
 	for eh_personality_libfunc.
 

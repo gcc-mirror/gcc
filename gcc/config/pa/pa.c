@@ -3358,8 +3358,7 @@ void hppa_init_pic_save ()
 
   /* Emit the insn at the beginning of the function after the prologue.  */
   push_topmost_sequence ();
-  last_parm_insn =
-    emit_insn_after (insn, last_parm_insn ? last_parm_insn : get_insns ());
+  emit_insn_after (insn, last_parm_insn ? last_parm_insn : get_insns ());
   pop_topmost_sequence ();
 }
 
