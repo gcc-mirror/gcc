@@ -9,6 +9,7 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 package java.io;
+import gnu.gcj.convert.UnicodeToBytes;
 
 /**
  * @author Tom Tromey <tromey@cygnus.com>
@@ -22,6 +23,10 @@ package java.io;
 
 public class PrintStream extends FilterOutputStream
 {
+  /* Notice the implementation is quite similar to OutputStreamWriter.
+   * This leads to some minor duplication, because neither inherits
+   * from the other, and we want to maximize performance. */
+
   public boolean checkError ()
   {
     return error;
@@ -51,15 +56,15 @@ public class PrintStream extends FilterOutputStream
       }
   }
 
-  private final void print (String str, boolean check_term)
+  private synchronized void print (String str, boolean println)
   {
     try
       {
-	write(str.getBytes());
-	if (check_term
-	    && auto_flush
-	    && str.indexOf(line_separator) != -1)
-	  flush ();
+        writeChars(str, 0, str.length());
+	if (println)
+	  writeChars(line_separator, 0, line_separator.length);
+	if (auto_flush)
+	  flush();
       }
     catch (IOException e)
       {
@@ -67,122 +72,177 @@ public class PrintStream extends FilterOutputStream
       }
   }
 
+  private synchronized void print (char[] chars, int pos, int len,
+				   boolean println)
+  {
+    try
+      {
+        writeChars(chars, pos, len);
+	if (println)
+	  writeChars(line_separator, 0, line_separator.length);
+	if (auto_flush)
+	  flush();
+      }
+    catch (IOException e)
+      {
+	setError ();
+      }
+  }
+
+  /** Writes characters through to the inferior BufferedOutputStream. */
+  private void writeChars(char[] buf, int offset, int count)
+    throws IOException
+  {
+    while (count > 0)
+      {
+	// We must flush if out.count == out.buf.length.
+	// It is probably a good idea to flush if out.buf is almost full.
+	// This test is an approximation for "almost full".
+	if (out.count + count >= out.buf.length)
+	  {
+	    out.flush();
+	    if (out.count != 0)
+	      throw new IOException("unable to flush output byte buffer");
+	  }
+	converter.setOutput(out.buf, out.count);
+	int converted = converter.write(buf, offset, count);
+	offset += converted;
+	count -= converted;
+	out.count = converter.count;
+      }
+  }
+
+  private void writeChars(String str, int offset, int count)
+    throws IOException
+  {
+    while (count > 0)
+      {
+	// We must flush if out.count == out.buf.length.
+	// It is probably a good idea to flush if out.buf is almost full.
+	// This test is an approximation for "almost full".
+	if (out.count + count >= out.buf.length)
+	  {
+	    out.flush();
+	    if (out.count != 0)
+	      throw new IOException("unable to flush output byte buffer");
+	  }
+	converter.setOutput(out.buf, out.count);
+	int converted = converter.write(str, offset, count, work);
+	offset += converted;
+	count -= converted;
+	out.count = converter.count;
+      }
+  }
+
   public void print (boolean bool)
   {
-    print (String.valueOf(bool), false);
+    print(String.valueOf(bool), false);
   }
 
   public void print (int inum)
   {
-    print (String.valueOf(inum), false);
+    print(String.valueOf(inum), false);
   }
 
   public void print (long lnum)
   {
-    print (String.valueOf(lnum), false);
+    print(String.valueOf(lnum), false);
   }
 
   public void print (float fnum)
   {
-    print (String.valueOf(fnum), false);
+    print(String.valueOf(fnum), false);
   }
 
   public void print (double dnum)
   {
-    print (String.valueOf(dnum), false);
+    print(String.valueOf(dnum), false);
   }
 
   public void print (Object obj)
   {
-    print (String.valueOf(obj), false);
+    print(obj == null ? "null" : obj.toString(), false);
   }
 
   public void print (String str)
   {
-    print (str == null ? "null" : str, true);
+    print(str == null ? "null" : str, false);
   }
 
-  public void print (char ch)
+  public synchronized void print (char ch)
   {
-    print (String.valueOf(ch), true);
+    work[0] = ch;
+    print(work, 0, 1, false);
   }
 
   public void print (char[] charArray)
   {
-    print (String.valueOf(charArray), true);
+    print(charArray, 0, charArray.length, false);
   }
 
   public void println ()
   {
-    print (line_separator, false);
-    if (auto_flush)
-      flush ();
+    print(line_separator, 0, line_separator.length, false);
   }
 
   public void println (boolean bool)
   {
-    print (String.valueOf(bool), false);
-    println ();
+    print(String.valueOf(bool), true);
   }
 
   public void println (int inum)
   {
-    print (String.valueOf(inum), false);
-    println ();
+    print(String.valueOf(inum), true);
   }
 
   public void println (long lnum)
   {
-    print (String.valueOf(lnum), false);
-    println ();
+    print(String.valueOf(lnum), true);
   }
 
   public void println (float fnum)
   {
-    print (String.valueOf(fnum), false);
-    println ();
+    print(String.valueOf(fnum), true);
   }
 
   public void println (double dnum)
   {
-    print (String.valueOf(dnum), false);
-    println ();
+    print(String.valueOf(dnum), true);
   }
 
   public void println (Object obj)
   {
-    print (String.valueOf(obj), false);
-    println ();
+    print(obj == null ? "null" : obj.toString(), true);
   }
 
   public void println (String str)
   {
-    print (str == null ? "null" : str, false);
+    print (str == null ? "null" : str, true);
     println ();
   }
 
-  public void println (char ch)
+  public synchronized void println (char ch)
   {
-    print (String.valueOf(ch), false);
-    println ();
+    work[0] = ch;
+    print(work, 0, 1, true);
   }
 
   public void println (char[] charArray)
   {
-    print (String.valueOf(charArray), false);
-    println ();
+    print(charArray, 0, charArray.length, true);
   }
 
   public PrintStream (OutputStream out)
   {
-    super (out);
-    error = false;
-    auto_flush = false;
+    this(out, false);
   }
 
   public PrintStream (OutputStream out, boolean af)
   {
-    super (out);
+    super ((this.out = (out instanceof BufferedOutputStream
+			 ? (BufferedOutputStream) out
+			 : new BufferedOutputStream(out, 250))));
+    converter = UnicodeToBytes.getDefaultEncoder();
     error = false;
     auto_flush = af;
   }
@@ -197,7 +257,6 @@ public class PrintStream extends FilterOutputStream
     try
       {
 	out.write(oneByte);
-	// JCL says to do this.  I think it is wrong.  FIXME.
 	if (auto_flush && oneByte == '\n')
 	  out.flush();
       }
@@ -212,10 +271,6 @@ public class PrintStream extends FilterOutputStream
     try
       {
 	out.write(buffer, offset, count);
-	// FIXME: JCL says to flush.  But elsewhere the JCL says to
-	// use write to write the stringified form of an object, and
-	// only to flush if that string contains the line separator.
-	// How to resolve the contradiction?
 	if (auto_flush)
 	  out.flush();
       }
@@ -225,12 +280,17 @@ public class PrintStream extends FilterOutputStream
       }
   }
 
+  BufferedOutputStream out;
+  UnicodeToBytes converter;
+
+  char[] work = new char[100];
+
   // True if error occurred.
   private boolean error;
   // True if auto-flush.
   private boolean auto_flush;
 
   // Line separator string.
-  private static final String line_separator
-    = System.getProperty("line.separator");
+  private static final char[] line_separator
+    = System.getProperty("line.separator").toCharArray();
 }

@@ -44,9 +44,9 @@ public class InputStreamReader extends Reader
 
   private InputStreamReader(InputStream in, BytesToUnicode decoder)
   {
-    super(in);
-    this.in = in instanceof BufferedInputStream  ? (BufferedInputStream) in
-      : new BufferedInputStream(in, 250);
+    super((this.in = (in instanceof BufferedInputStream
+		      ? (BufferedInputStream) in
+		      : new BufferedInputStream(in, 250))));
     converter = decoder;
     converter.setInput(this.in.buf, 0, 0);
   }
