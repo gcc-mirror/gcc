@@ -1,3 +1,7 @@
+2000-11-25  Neil Booth  <neilb@earthling.net>
+
+	* gcc.dg/cpp/include2.c: Update test to be locale independent.
+
 2000-11-25  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.c-torture/compile/20001123-2.c: New.
