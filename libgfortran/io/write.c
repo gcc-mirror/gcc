@@ -875,12 +875,10 @@ write_char (char c)
 
 
 /* write_logical()-- Write a list-directed logical value */
-/* Default logical output should be L2
-  according to DEC fortran Manual. */
+
 static void
 write_logical (const char *source, int length)
 {
-  write_char (' ');
   write_char (extract_int (source, length) ? 'T' : 'F');
 }
 
@@ -893,9 +891,32 @@ write_integer (const char *source, int length)
   char *p;
   const char *q;
   int digits;
-  int width = 12;
+  int width;
 
   q = itoa (extract_int (source, length));
+
+  switch (length)
+    {
+    case 1:
+      width = 4;
+      break;
+
+    case 2:
+      width = 6;
+      break;
+
+    case 4:
+      width = 11;
+      break;
+
+    case 8:
+      width = 20;
+      break;
+
+    default:
+      width = 0;
+      break;
+    }
 
   digits = strlen (q);
 
@@ -1039,6 +1060,7 @@ list_formatted_write (bt type, void *p, int len)
     {
       g.first_item = 0;
       char_flag = 0;
+      write_char (' ');
     }
   else
     {
