@@ -1,3 +1,9 @@
+Wed Aug  4 01:08:44 1999  Jeffrey A Law  (law@cygnus.com)
+
+        * flow.c (delete_unreachable_blocks): Do not call merge_blocks
+        or tidy_fallthru_edge if the last insn in the block is not
+        an unconditional jump or a simple conditional jump.
+
 Tue Aug  3 03:51:20 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* cse.c (cse_insn): Fix dumb thinko in last change.
