@@ -28,6 +28,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "prefix.h"
 #include "intl.h"
 #include "version.h"
+#include "mkdeps.h"
 
 /* Predefined symbols, built-in macros, and the default include path. */
 
@@ -74,23 +75,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #ifndef REGISTER_PREFIX
 #define REGISTER_PREFIX ""
 #endif
-
-/* Suffix for object files, and known input-file extensions. */
-static const char * const known_suffixes[] =
-{
-  ".c",  ".C",   ".s",   ".S",   ".m",
-  ".cc", ".cxx", ".cpp", ".cp",  ".c++",
-  NULL
-};
-
-#ifndef OBJECT_SUFFIX
-# ifdef VMS
-#  define OBJECT_SUFFIX ".obj"
-# else
-#  define OBJECT_SUFFIX ".o"
-# endif
-#endif
-
 
 /* This is the default list of directories to search for include files.
    It may be overridden by the various -I and -ixxx options.
@@ -296,29 +280,6 @@ path_include (pfile, pend, list, path)
   while (1);
 }
 
-/* Find the base name of a (partial) pathname FNAME.
-   Returns a pointer into the string passed in.
-   Accepts Unix (/-separated) paths on all systems,
-   DOS and VMS paths on those systems.  */
-static char *
-base_name (fname)
-     const char *fname;
-{
-  char *s = (char *)fname;
-  char *p;
-#if defined (HAVE_DOS_BASED_FILE_SYSTEM)
-  if (ISALPHA (s[0]) && s[1] == ':') s += 2;
-  if ((p = rindex (s, '\\'))) s = p + 1;
-#elif defined VMS
-  if ((p = rindex (s, ':'))) s = p + 1; /* Skip device.  */
-  if ((p = rindex (s, ']'))) s = p + 1; /* Skip directory.  */
-  if ((p = rindex (s, '>'))) s = p + 1; /* Skip alternate (int'n'l) dir.  */
-#endif
-  if ((p = rindex (s, '/'))) s = p + 1;
-  return s;
-}
-     
-
 /* Append DIR to include path PATH.  DIR must be permanently allocated
    and writable. */
 static void
@@ -442,13 +403,6 @@ cpp_cleanup (pfile)
       pfile->token_buffer = NULL;
     }
 
-  if (pfile->deps_buffer)
-    {
-      free (pfile->deps_buffer);
-      pfile->deps_buffer = NULL;
-      pfile->deps_allocated_size = 0;
-    }
-
   if (pfile->input_buffer)
     {
       free (pfile->input_buffer);
@@ -456,6 +410,9 @@ cpp_cleanup (pfile)
       pfile->input_buffer = pfile->input_speccase = NULL;
       pfile->input_buffer_len = 0;
     }
+
+  if (pfile->deps)
+    deps_free (pfile->deps);
 
   while (pfile->if_stack)
     {
@@ -470,10 +427,8 @@ cpp_cleanup (pfile)
       while (imp)
 	{
 	  struct include_hash *next = imp->next;
-#if 0
-	  /* This gets freed elsewhere - I think. */
-	  free (imp->name);
-#endif
+
+	  free ((PTR) imp->name);
 	  free (imp);
 	  imp = next;
 	}
@@ -610,51 +565,18 @@ initialize_dependency_output (pfile)
       opts->print_deps_append = 1;
     }
 
+  pfile->deps = deps_init ();
+
   /* Print the expected object file name as the target of this Make-rule.  */
-  pfile->deps_allocated_size = 200;
-  pfile->deps_buffer = (char *) xmalloc (pfile->deps_allocated_size);
-  pfile->deps_buffer[0] = 0;
-  pfile->deps_size = 0;
-  pfile->deps_column = 0;
-
   if (opts->deps_target)
-    deps_output (pfile, opts->deps_target, ':');
+    deps_add_target (pfile->deps, opts->deps_target);
   else if (*opts->in_fname == 0)
-    deps_output (pfile, "-", ':');
+    deps_add_target (pfile->deps, "-");
   else
-    {
-      char *p, *q, *r;
-      int len, x;
+    deps_calc_target (pfile->deps, opts->in_fname);
 
-      /* Discard all directory prefixes from filename.  */
-      q = base_name (opts->in_fname);
-
-      /* Copy remainder to mungable area.  */
-      len = strlen (q);
-      p = (char *) alloca (len + 8);
-      strcpy (p, q);
-
-      /* Output P, but remove known suffixes.  */
-      q = p + len;
-      /* Point to the filename suffix.  */
-      r = strrchr (p, '.');
-      if (r)
-	/* Compare against the known suffixes.  */
-	for (x = 0; known_suffixes[x]; x++)
-	  if (strncmp (known_suffixes[x], r, q - r) == 0)
-	    {
-	      /* Make q point to the bit we're going to overwrite
-		 with an object suffix.  */
-	      q = r;
-	      break;
-	    }
-
-      /* Supply our own suffix.  */
-      strcpy (q, OBJECT_SUFFIX);
-
-      deps_output (pfile, p, ':');
-      deps_output (pfile, opts->in_fname, ' ');
-    }
+  if (opts->in_fname)
+    deps_add_dep (pfile->deps, opts->in_fname);
 }
 
 /* And another subroutine.  This one sets up the standard include path.  */
@@ -923,29 +845,25 @@ cpp_finish (pfile)
     cpp_ice (pfile, "buffers still stacked in cpp_finish");
   cpp_pop_buffer (pfile);
 
-  if (opts->print_deps)
+  /* Don't write the deps file if preprocessing has failed.  */
+  if (opts->print_deps && pfile->errors == 0)
     {
       /* Stream on which to print the dependency information.  */
       FILE *deps_stream = 0;
 
-      /* Don't actually write the deps file if compilation has failed.  */
-      if (pfile->errors == 0)
-	{
-	  const char *deps_mode = opts->print_deps_append ? "a" : "w";
-	  if (opts->deps_file == 0)
-	    deps_stream = stdout;
-	  else if ((deps_stream = fopen (opts->deps_file, deps_mode)) == 0)
-	    cpp_notice_from_errno (pfile, opts->deps_file);
+      const char *deps_mode = opts->print_deps_append ? "a" : "w";
+      if (opts->deps_file == 0)
+	deps_stream = stdout;
+      else if ((deps_stream = fopen (opts->deps_file, deps_mode)) == 0)
+	cpp_notice_from_errno (pfile, opts->deps_file);
 
-	  if (deps_stream)
+      if (deps_stream)
+	{
+	  deps_write (pfile->deps, deps_stream, 72);
+	  if (opts->deps_file)
 	    {
-	      fputs (pfile->deps_buffer, deps_stream);
-	      putc ('\n', deps_stream);
-	      if (opts->deps_file)
-		{
-		  if (ferror (deps_stream) || fclose (deps_stream) != 0)
-		    cpp_fatal (pfile, "I/O error on output");
-		}
+	      if (ferror (deps_stream) || fclose (deps_stream) != 0)
+		cpp_fatal (pfile, "I/O error on output");
 	    }
 	}
     }

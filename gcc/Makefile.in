@@ -2021,7 +2021,8 @@ cccp.o: cccp.c $(CONFIG_H) intl.h pcp.h version.c config.status system.h \
 	  -c `echo $(srcdir)/cccp.c | sed 's,^\./,,'`
 
 LIBCPP_OBJS =	cpplib.o cpphash.o cpperror.o cppexp.o cppfiles.o \
-		cppinit.o cppulp.o prefix.o version.o mbchar.o @extra_cpp_objs@
+		cppinit.o cppulp.o mkdeps.o \
+		prefix.o version.o mbchar.o @extra_cpp_objs@
 
 # All the other archives built/used by this makefile are for targets.  This
 # one is strictly for the host.
@@ -2038,17 +2039,19 @@ cppmain$(exeext): cppmain.o intl.o libcpp.a $(LIBDEPS)
 cppmain.o: cppmain.c $(CONFIG_H) cpplib.h intl.h system.h
 
 cppulp.o:  cppulp.c  $(CONFIG_H) system.h output.h
-cpplib.o:  cpplib.c  $(CONFIG_H) cpplib.h intl.h system.h cpphash.h
+cpplib.o:  cpplib.c  $(CONFIG_H) cpplib.h intl.h system.h cpphash.h mkdeps.h
 cpphash.o: cpphash.c $(CONFIG_H) cpplib.h intl.h system.h cpphash.h version.h
 cpperror.o: cpperror.c $(CONFIG_H) cpplib.h intl.h system.h
 cppexp.o:   cppexp.c   $(CONFIG_H) cpplib.h intl.h system.h
 cppfiles.o: cppfiles.c $(CONFIG_H) cpplib.h intl.h system.h
 
 cppinit.o:  cppinit.c $(CONFIG_H) cpplib.h intl.h system.h \
-		cpphash.h prefix.h output.h Makefile version.h
+		cpphash.h prefix.h output.h Makefile version.h mkdeps.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(PREPROCESSOR_DEFINES) \
 	  -c `echo $(srcdir)/cppinit.c | sed 's,^\./,,'`
+
+mkdeps.o: mkdeps.c $(CONFIG_H) system.h mkdeps.h
 
 # Note for the stamp targets, we run the program `true' instead of
 # having an empty command (nothing following the semicolon).

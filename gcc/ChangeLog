@@ -1,5 +1,27 @@
 2000-03-04  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* mkdeps.c, mkdeps.h: New files.
+	* po/POTFILES.in: Add them.
+	* Makefile.in (LIBCPP_OBJS): Add mkdeps.o.
+	(cpplib.o, cppinit.o): Depend on mkdeps.h.
+	(mkdeps.o): New target.
+
+	* cppfiles.c: Delete deps_output.
+	* cppinit.c: Include mkdeps.h.  Delete known_suffixes,
+	OBJECT_SUFFIX, and base_name.
+	(cpp_cleanup): Use deps_free.  Free ihash->name when clearing
+	the include hash.
+	(initialize_dependency_output): Use deps_init,
+	deps_add_target, deps_calc_target, and deps_add_dep.  Remove
+	all the unnecessary string bashing.
+	(cpp_finish): Use deps_write.  Remove an unnecessary nesting
+	level.
+	* cpplib.c (do_include): Use deps_add_dep.
+	* cpplib.h (struct cpp_reader): Replace deps_buffer,
+	deps_allocated_size, deps_size, deps_column members with
+	single pointer to a struct deps.  Delete prototype of
+	deps_output.
+
 	* cppinit.c: Fix thinko in previous patch.
 
 Sat Mar  4 11:32:30 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
