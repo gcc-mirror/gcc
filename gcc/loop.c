@@ -91,15 +91,6 @@ int *loop_can_insert_bct;
 
 int *loop_used_count_register;
 
-/* For each loop, remember its unrolling factor (if at all).
-   contents of the array:
-   0/1: not unrolled.
-   -1: completely unrolled - no further instrumentation is needed.
-   >1: holds the exact amount of unrolling.  */
-
-int *loop_unroll_factor;
-int *loop_unroll_iter;
-
 /* loop parameters for arithmetic loops. These loops have a loop variable
    which is initialized to loop_start_value, incremented in each iteration
    by "loop_increment".  At the end of the iteration the loop variable is
@@ -111,6 +102,13 @@ rtx *loop_start_value;
 enum rtx_code *loop_comparison_code;
 #endif  /* HAIFA */
 
+/* For each loop, keep track of its unrolling factor.
+   Potential values:
+      0: unrolled
+      1: not unrolled.
+     -1: completely unrolled
+     >0: holds the unroll exact factor.  */
+int *loop_unroll_factor;
 
 /* Indexed by loop number, contains a nonzero value if the "loop" isn't
    really a loop (an insn outside the loop branches into it).  */
@@ -431,6 +429,12 @@ loop_optimize (f, dumpfile)
   loop_number_exit_labels = (rtx *) alloca (max_loop_num * sizeof (rtx));
   loop_number_exit_count = (int *) alloca (max_loop_num * sizeof (int));
 
+  /* This is initialized by the unrolling code, so we go ahead
+     and clear them just in case we are not performing loop
+     unrolling.  */
+  loop_unroll_factor = (int *) alloca (max_loop_num *sizeof (int));
+  bzero ((char *) loop_unroll_factor, max_loop_num * sizeof (int));
+
 #ifdef HAIFA
   /* Allocate for BCT optimization */
   loop_can_insert_bct = (int *) alloca (max_loop_num * sizeof (int));
@@ -438,12 +442,6 @@ loop_optimize (f, dumpfile)
 
   loop_used_count_register = (int *) alloca (max_loop_num * sizeof (int));
   bzero ((char *) loop_used_count_register, max_loop_num * sizeof (int));
-
-  loop_unroll_factor = (int *) alloca (max_loop_num *sizeof (int));
-  bzero ((char *) loop_unroll_factor, max_loop_num * sizeof (int));
-
-  loop_unroll_iter = (int *) alloca (max_loop_num *sizeof (int));
-  bzero ((char *) loop_unroll_iter, max_loop_num * sizeof (int));
 
   loop_increment = (rtx *) alloca (max_loop_num * sizeof (rtx));
   loop_comparison_value = (rtx *) alloca (max_loop_num * sizeof (rtx));
@@ -7277,12 +7275,9 @@ insert_bct (loop_start, loop_end)
     return;
   }
 
-  /* make sure that the loop was not fully unrolled.  */
-  if (loop_unroll_factor[loop_num] == -1){
-    if (loop_dump_stream)
-      fprintf (loop_dump_stream, "insert_bct %d: was completely unrolled\n", loop_num);
+  /* It's impossible to instrument a competely unrolled loop.  */
+  if (loop_unroll_factor [loop_num] == -1)
     return;
-  }
 
   /* make sure that the last loop insn is a conditional jump .
      This check is repeated from analyze_loop_iterations (),
@@ -7296,8 +7291,8 @@ insert_bct (loop_start, loop_end)
   }
 
   /* fix increment in case loop was unrolled.  */
-  if (loop_unroll_factor[loop_num] > 1)
-    increment = GEN_INT ( INTVAL (increment) * loop_unroll_factor[loop_num] );
+  if (loop_unroll_factor [loop_num] > 1)
+    increment = GEN_INT ( INTVAL (increment) * loop_unroll_factor [loop_num] );
 
   /* determine properties and directions of the loop */
   increment_direction = (INTVAL (increment) > 0) ? 1:-1;
