@@ -8632,6 +8632,7 @@ sparc_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
      instruction scheduling worth while.  Note that use_thunk calls
      assemble_start_function and assemble_end_function.  */
   insn = get_insns ();
+  insn_locators_initialize ();
   shorten_branches (insn);
   final_start_function (insn, file, 1);
   final (insn, file, 1, 0);
