@@ -308,14 +308,13 @@ static void reg_dies (int, enum machine_mode, struct insn_chain *);
 
 static void allocate_bb_info (void);
 static void free_bb_info (void);
-static void check_earlyclobber (rtx);
+static bool check_earlyclobber (rtx);
 static bool regclass_intersect (enum reg_class, enum reg_class);
 static void mark_reg_use_for_earlyclobber_1 (rtx *, void *);
 static int mark_reg_use_for_earlyclobber (rtx *, void *);
 static void calculate_local_reg_bb_info (void);
 static void set_up_bb_rts_numbers (void);
 static int rpost_cmp (const void *, const void *);
-static bool modify_bb_reg_pav (basic_block, basic_block, bool);
 static void calculate_reg_pav (void);
 static void modify_reg_pav (void);
 static void make_accurate_live_analysis (void);
@@ -2011,9 +2010,10 @@ struct bb_info
   /* Registers correspondingly killed (clobbered) and defined but not
      killed afterward in the basic block.  */
   bitmap killed, avloc;
-  /* Registers partially available correspondingly at the start and
-     end of the basic block.  */
-  bitmap pavin, pavout;
+  /* Registers partially available and living (in other words whose
+     values were calclualted and used) correspondingly at the start
+     and end of the basic block.  */
+  bitmap live_pavin, live_pavout;
 };
 
 /* Macros for accessing data flow information of basic blocks.  */
@@ -2022,8 +2022,8 @@ struct bb_info
 #define BB_INFO_BY_INDEX(N) BB_INFO (BASIC_BLOCK(N))
 
 /* The function allocates the info structures of each basic block.  It
-   also initialized PAVIN and PAVOUT as if all hard registers were
-   partially available.  */
+   also initialized LIVE_PAVIN and LIVE_PAVOUT as if all hard
+   registers were partially available.  */
 
 static void
 allocate_bb_info (void)
@@ -2043,10 +2043,10 @@ allocate_bb_info (void)
       bb_info->earlyclobber = BITMAP_XMALLOC ();
       bb_info->avloc = BITMAP_XMALLOC ();
       bb_info->killed = BITMAP_XMALLOC ();
-      bb_info->pavin = BITMAP_XMALLOC ();
-      bb_info->pavout = BITMAP_XMALLOC ();
-      bitmap_copy (bb_info->pavin, init);
-      bitmap_copy (bb_info->pavout, init);
+      bb_info->live_pavin = BITMAP_XMALLOC ();
+      bb_info->live_pavout = BITMAP_XMALLOC ();
+      bitmap_copy (bb_info->live_pavin, init);
+      bitmap_copy (bb_info->live_pavout, init);
     }
   BITMAP_XFREE (init);
 }
@@ -2062,8 +2062,8 @@ free_bb_info (void)
   FOR_EACH_BB (bb)
     {
       bb_info = BB_INFO (bb);
-      BITMAP_XFREE (bb_info->pavout);
-      BITMAP_XFREE (bb_info->pavin);
+      BITMAP_XFREE (bb_info->live_pavout);
+      BITMAP_XFREE (bb_info->live_pavin);
       BITMAP_XFREE (bb_info->killed);
       BITMAP_XFREE (bb_info->avloc);
       BITMAP_XFREE (bb_info->earlyclobber);
@@ -2101,13 +2101,15 @@ mark_reg_change (rtx reg, rtx setter, void *data)
 
 static varray_type earlyclobber_regclass;
 
-/* The function stores classes of registers which could be early
-   clobbered in INSN.  */
+/* This function finds and stores register classes that could be early
+   clobbered in INSN.  If any earlyclobber classes are found, the function
+   returns TRUE, in all other cases it returns FALSE.  */
 
-static void
+static bool
 check_earlyclobber (rtx insn)
 {
   int opno;
+  bool found = false;
 
   extract_insn (insn);
 
@@ -2148,6 +2150,7 @@ check_earlyclobber (rtx insn)
 	    case ',':
 	      if (amp_p && class != NO_REGS)
 		{
+		  found = true;
 		  for (i = VARRAY_ACTIVE_SIZE (earlyclobber_regclass) - 1;
 		       i >= 0; i--)
 		    if (VARRAY_INT (earlyclobber_regclass, i) == (int) class)
@@ -2173,6 +2176,8 @@ check_earlyclobber (rtx insn)
 	  p += CONSTRAINT_LEN (c, p);
 	}
     }
+
+  return found;
 }
 
 /* The function returns true if register classes C1 and C2 intersect.  */
@@ -2193,7 +2198,8 @@ regclass_intersect (enum reg_class c1, enum reg_class c2)
 
 /* The function checks that pseudo-register *X has a class
    intersecting with the class of pseudo-register could be early
-   clobbered in the same insn.  */
+   clobbered in the same insn.
+   This function is a no-op if earlyclobber_regclass is empty.  */
 
 static int
 mark_reg_use_for_earlyclobber (rtx *x, void *data ATTRIBUTE_UNUSED)
@@ -2251,8 +2257,8 @@ calculate_local_reg_bb_info (void)
 	if (INSN_P (insn))
 	  {
 	    note_stores (PATTERN (insn), mark_reg_change, bb);
-	    check_earlyclobber (insn);
-	    note_uses (&PATTERN (insn), mark_reg_use_for_earlyclobber_1, bb);
+	    if (check_earlyclobber (insn))
+	      note_uses (&PATTERN (insn), mark_reg_use_for_earlyclobber_1, bb);
 	  }
     }
 }
@@ -2283,40 +2289,23 @@ rpost_cmp (const void *bb1, const void *bb2)
   return BB_INFO (b2)->rts_number - BB_INFO (b1)->rts_number;
 }
 
-/* The function calculates partial availability of registers.  The
-   function calculates partial availability at the end of basic block
-   BB by propagating partial availability at end of predecessor basic
-   block PRED.  The function returns true if the partial availability
-   at the end of BB has been changed or if CHANGED_P.  We have the
-   following equations:
+/* Temporary bitmap used for live_pavin, live_pavout calculation.  */
+static bitmap temp_bitmap;
 
-     bb.pavin = empty for entry block | union (pavout of predecessors)
-     bb.pavout = union (bb.pavin - b.killed, bb.avloc)  */
+/* The function calculates partial register availability according to
+   the following equations:
 
-static bool
-modify_bb_reg_pav (basic_block bb, basic_block pred, bool changed_p)
-{
-  struct bb_info *bb_info;
-  bitmap bb_pavin, bb_pavout;
-
-  bb_info = BB_INFO (bb);
-  bb_pavin = bb_info->pavin;
-  bb_pavout = bb_info->pavout;
-  if (pred->index != ENTRY_BLOCK)
-    bitmap_ior_into (bb_pavin, BB_INFO (pred)->pavout);
-  changed_p |= bitmap_ior_and_compl (bb_pavout, bb_info->avloc,
-				     bb_pavin, bb_info->killed);
-  return changed_p;
-}
-
-/* The function calculates partial register availability.  */
+     bb.live_pavin
+       = empty for entry block
+         | union (live_pavout of predecessors) & global_live_at_start
+     bb.live_pavout = union (bb.live_pavin - bb.killed, bb.avloc)
+                      & global_live_at_end  */
 
 static void
 calculate_reg_pav (void)
 {
   basic_block bb, succ;
   edge e;
-  bool changed_p;
   int i, nel;
   varray_type bbs, new_bbs, temp;
   basic_block *bb_array;
@@ -2324,6 +2313,7 @@ calculate_reg_pav (void)
 
   VARRAY_BB_INIT (bbs, n_basic_blocks, "basic blocks");
   VARRAY_BB_INIT (new_bbs, n_basic_blocks, "basic blocks for the next iter.");
+  temp_bitmap = BITMAP_XMALLOC ();
   FOR_EACH_BB (bb)
     {
       VARRAY_PUSH_BB (bbs, bb);
@@ -2338,21 +2328,38 @@ calculate_reg_pav (void)
       for (i = 0; i < nel; i++)
 	{
 	  edge_iterator ei;
-
+	  struct bb_info *bb_info;
+	  bitmap bb_live_pavin, bb_live_pavout;
+	      
 	  bb = bb_array [i];
-	  changed_p = 0;
+	  bb_info = BB_INFO (bb);
+	  bb_live_pavin = bb_info->live_pavin;
+	  bb_live_pavout = bb_info->live_pavout;
 	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    changed_p = modify_bb_reg_pav (bb, e->src, changed_p);
-	  if (changed_p)
-	    FOR_EACH_EDGE (e, ei, bb->succs)
-	      {
-		succ = e->dest;
-		if (succ->index != EXIT_BLOCK && !TEST_BIT (wset, succ->index))
-		  {
-		    SET_BIT (wset, succ->index);
-		    VARRAY_PUSH_BB (new_bbs, succ);
-		  }
-	      }
+	    {
+	      basic_block pred = e->src;
+
+	      if (pred->index != ENTRY_BLOCK)
+		bitmap_ior_into (bb_live_pavin, BB_INFO (pred)->live_pavout);
+	    }
+	  bitmap_and_into (bb_live_pavin, bb->global_live_at_start);
+	  bitmap_ior_and_compl (temp_bitmap, bb_info->avloc,
+				bb_live_pavin, bb_info->killed);
+	  bitmap_and_into (temp_bitmap, bb->global_live_at_end);
+	  if (! bitmap_equal_p (temp_bitmap, bb_live_pavout))
+	    {
+	      bitmap_copy (bb_live_pavout, temp_bitmap);
+	      FOR_EACH_EDGE (e, ei, bb->succs)
+		{
+		  succ = e->dest;
+		  if (succ->index != EXIT_BLOCK
+		      && !TEST_BIT (wset, succ->index))
+		    {
+		      SET_BIT (wset, succ->index);
+		      VARRAY_PUSH_BB (new_bbs, succ);
+		    }
+		}
+	    }
 	}
       temp = bbs;
       bbs = new_bbs;
@@ -2360,6 +2367,7 @@ calculate_reg_pav (void)
       VARRAY_POP_ALL (new_bbs);
     }
   sbitmap_free (wset);
+  BITMAP_XFREE (temp_bitmap);
 }
 
 /* The function modifies partial availability information for two
@@ -2402,14 +2410,14 @@ modify_reg_pav (void)
 	 insn if the pseudo-register is used first time in given BB
 	 and not lived at the BB start.  To prevent this we don't
 	 change life information for such pseudo-registers.  */
-      bitmap_ior_into (bb_info->pavin, bb_info->earlyclobber);
+      bitmap_ior_into (bb_info->live_pavin, bb_info->earlyclobber);
 #ifdef STACK_REGS
       /* We can not use the same stack register for uninitialized
 	 pseudo-register and another living pseudo-register because if the
 	 uninitialized pseudo-register dies, subsequent pass reg-stack
 	 will be confused (it will believe that the other register
 	 dies).  */
-      bitmap_ior_into (bb_info->pavin, stack_regs);
+      bitmap_ior_into (bb_info->live_pavin, stack_regs);
 #endif
     }
 #ifdef STACK_REGS
@@ -2419,10 +2427,25 @@ modify_reg_pav (void)
 
 /* The following function makes live information more accurate by
    modifying global_live_at_start and global_live_at_end of basic
-   blocks.  After the function call a register lives at a program
-   point only if it is initialized on a path from CFG entry to the
-   program point.  The standard GCC life analysis permits registers to
-   live uninitialized.  */
+   blocks.
+
+   The standard GCC life analysis permits registers to live
+   uninitialized, for example:
+
+       R is never used
+       .....
+       Loop:
+         R is defined
+       ...
+       R is used.
+
+   With normal life_analysis, R would be live before "Loop:".
+   The result is that R causes many interferences that do not
+   serve any purpose.
+
+   After the function call a register lives at a program point
+   only if it is initialized on a path from CFG entry to the
+   program point.  */
 
 static void
 make_accurate_live_analysis (void)
@@ -2441,8 +2464,8 @@ make_accurate_live_analysis (void)
     {
       bb_info = BB_INFO (bb);
       
-      bitmap_and_into (bb->global_live_at_start, bb_info->pavin);
-      bitmap_and_into (bb->global_live_at_end, bb_info->pavout);
+      bitmap_and_into (bb->global_live_at_start, bb_info->live_pavin);
+      bitmap_and_into (bb->global_live_at_end, bb_info->live_pavout);
     }
   free_bb_info ();
 }
