@@ -1,7 +1,8 @@
 /* m68kelf support, derived from m68kv4.h */
 
 /* Target definitions for GNU compiler for mc680x0 running System V.4
-   Copyright (C) 1991, 1993, 2000, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 2000, 2002, 2003, 2004
+   Free Software Foundation, Inc.
 
    Written by Ron Guilmette (rfg@netcom.com) and Fred Fish (fnf@cygnus.com).
 
@@ -137,8 +138,8 @@ do {								\
 /* Register in which address to store a structure value is passed to a
    function.  The default in m68k.h is a1.  For m68k/SVR4 it is a0.  */
 
-#undef STRUCT_VALUE_REGNUM
-#define STRUCT_VALUE_REGNUM 8
+#undef M68K_STRUCT_VALUE_REGNUM
+#define M68K_STRUCT_VALUE_REGNUM 8
 
 #define ASM_COMMENT_START "|"
 

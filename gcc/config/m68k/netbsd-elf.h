@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    for m68k (including m68010) NetBSD platforms using the
    ELF object format.
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Wasabi Systems. Inc.
 
    This file is derived from <m68k/m68kv4.h>, <m68k/m68kelf.h>,
@@ -273,8 +273,8 @@ while (0)
 /* Register in which address to store a structure value is passed to a
    function.  The default in m68k.h is a1.  For m68k/SVR4 it is a0. */
 
-#undef STRUCT_VALUE_REGNUM
-#define STRUCT_VALUE_REGNUM 8
+#undef M68K_STRUCT_VALUE_REGNUM
+#define M68K_STRUCT_VALUE_REGNUM 8
 
 
 /* Register in which static-chain is passed to a function.  The

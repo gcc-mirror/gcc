@@ -1,5 +1,18 @@
 2004-01-28  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/m68k/m68k.c (TARGET_PROMOTE_PROTOTYPES): New.
+	(TARGET_STRUCT_VALUE_RTX): Likewise.
+	(m68k_struct_value_rtx): Likewise.
+	* config/m68k/m68k.h (STRUCT_VALUE_REGNUM): Rename to
+	STRUCT_VALUE_REGNUM.
+	(PROMOTE_PROTOTYPES): Remove.
+	* config/m68k/m68kelf.h (STRUCT_VALUE_REGNUM): Rename to
+	STRUCT_VALUE_REGNUM.
+	* config/m68k/m68kv4.h (STRUCT_VALUE_REGNUM): Likewise.
+	* config/m68k/netbsd-elf.h (STRUCT_VALUE_REGNUM): Likewise.
+
+2004-01-28  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/stormy16/stormy16.c
 	(TARGET_BUILD_BUILTIN_VA_LIST_TYPE): Rename to
 	TARGET_BUILD_BUILTIN_VA_LIST.

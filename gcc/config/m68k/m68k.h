@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    Sun 68000/68020 version.
    Copyright (C) 1987, 1988, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -587,7 +587,7 @@ extern int target_flags;
 
 /* Register in which address to store a structure value
    is passed to a function.  */
-#define STRUCT_VALUE_REGNUM 9
+#define M68K_STRUCT_VALUE_REGNUM 9
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.
@@ -1368,9 +1368,6 @@ __transfer_from_trampoline ()					\
    and some other value for true.  This is the value stored for true.  */
 
 #define STORE_FLAG_VALUE (-1)
-
-/* When a prototype says `char' or `short', really pass an `int'.  */
-#define PROMOTE_PROTOTYPES 1
 
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
