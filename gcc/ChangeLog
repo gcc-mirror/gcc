@@ -1,3 +1,9 @@
+2002-05-26  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	* config/avr/avr.c (avr_asm_only_p): New variable.
+	(avr_override_options): Set it here if AVR1.
+	(asm_file_start): Test it here, report an error if set.
+
 2002-05-26  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* alias.c: Fix formatting.
