@@ -1,5 +1,8 @@
 Wed Sep  8 23:53:22 1999  Richard Henderson  <rth@cygnus.com>
 
+	* except.c (find_all_handler_type_matches): Free the list if
+	we found no matches.
+
 	* combine.c (SUBST): Break out to a real function do_SUBST.
 	(SUBST_INT): Likewise.
 	* gcse.c (free_pre_mem): Free `temp_bitmap'.
