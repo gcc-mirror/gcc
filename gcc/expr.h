@@ -527,7 +527,6 @@ extern unsigned int case_values_threshold (void);
 /* extern HOST_WIDE_INT get_varargs_alias_set (void); */
 /* extern HOST_WIDE_INT get_frame_alias_set (void); */
 /* extern void record_base_value (unsigned int, rtx, int); */
-/* extern void record_alias_subset (HOST_WIDE_INT, HOST_WIDE_INT); */
 /* extern HOST_WIDE_INT new_alias_set (void); */
 /* extern int can_address_p (tree); */
 
