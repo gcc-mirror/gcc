@@ -2439,7 +2439,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	  converted = 1;
 	  resultcode = xresultcode;
 
-	  if (extra_warnings)
+	  if (warn_sign_compare)
 	    {
 	      int op0_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op0));
 	      int op1_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op1));
