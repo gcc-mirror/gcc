@@ -143,7 +143,7 @@ suitable_for_tail_opt_p (void)
     {
       tree var = VARRAY_TREE (referenced_vars, i);
 
-      if (!TREE_STATIC (var)
+      if (!(TREE_STATIC (var) || DECL_EXTERNAL (var))
 	  && var_ann (var)->mem_tag_kind == NOT_A_TAG
 	  && is_call_clobbered (var))
 	return false;
