@@ -1948,6 +1948,7 @@ sjlj_find_directly_reachable_regions (lp_info)
   for (insn = get_insns (); insn ; insn = NEXT_INSN (insn))
     {
       struct eh_region *region;
+      enum reachable_code rc;
       tree type_thrown;
       rtx note;
 
@@ -1969,11 +1970,14 @@ sjlj_find_directly_reachable_regions (lp_info)
 
       /* Find the first containing region that might handle the exception.
 	 That's the landing pad to which we will transfer control.  */
+      rc = RNL_NOT_CAUGHT;
       for (; region; region = region->outer)
-	if (reachable_next_level (region, type_thrown, 0) != RNL_NOT_CAUGHT)
-	  break;
-
-      if (region)
+	{
+	  rc = reachable_next_level (region, type_thrown, 0);
+	  if (rc != RNL_NOT_CAUGHT)
+	    break;
+	}
+      if (rc == RNL_MAYBE_CAUGHT || rc == RNL_CAUGHT)
 	{
 	  lp_info[region->region_number].directly_reachable = 1;
 	  found_one = true;
@@ -2020,8 +2024,7 @@ sjlj_assign_call_site_values (dispatch_label, lp_info)
 
   index = 0;
   for (i = cfun->eh->last_region_number; i > 0; --i)
-    if (lp_info[i].directly_reachable
-	&& lp_info[i].action_index >= 0)
+    if (lp_info[i].directly_reachable)
       lp_info[i].dispatch_index = index++;
 
   /* Finally: assign call-site values.  If dwarf2 terms, this would be
@@ -2302,8 +2305,7 @@ sjlj_emit_dispatch_table (dispatch_label, lp_info)
   first_reachable = 0;
   for (i = cfun->eh->last_region_number; i > 0; --i)
     {
-      if (! lp_info[i].directly_reachable
-	  || lp_info[i].action_index < 0)
+      if (! lp_info[i].directly_reachable)
 	continue;
 
       if (! first_reachable)

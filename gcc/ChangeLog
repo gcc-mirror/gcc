@@ -1,3 +1,10 @@
+2001-12-11  Richard Henderson  <rth@redhat.com>
+
+	* except.c (sjlj_find_directly_reachable_regions): Don't
+	consider RNL_BLOCKED a directly reachable region.
+	(sjlj_assign_call_site_values): Trust directly_reachable.
+	(sjlj_emit_dispatch_table): Likewise.
+
 2001-12-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-common.c (combine_strings): Complain if concatenating
@@ -322,13 +329,13 @@ doc:
 
 	2001-07-11  Richard Sandiford  <rsandifo@redhat.com>,
 	H.J. Lu  <hjl@gnu.org>
-        * mips.md (call_internal1): Use CONSTANT_ADDRESS_P to check for
-        constant addresses.
-        (call_internal2): Likewise.
-        (call_value_internal1): Likewise.
-        (call_value_internal2): Likewise.
-        (call_value_multiple_internal1): Likewise.
-        (call_value_multiple_internal2): Likewise.
+	* mips.md (call_internal1): Use CONSTANT_ADDRESS_P to check for
+	constant addresses.
+	(call_internal2): Likewise.
+	(call_value_internal1): Likewise.
+	(call_value_internal2): Likewise.
+	(call_value_multiple_internal1): Likewise.
+	(call_value_multiple_internal2): Likewise.
 
 	* config/mips/mips.c (save_restore_insns): Remove GP from the
 	restore registers mask early instead of special casing it inside
@@ -506,13 +513,13 @@ doc:
 
 2001-10-26  Christopher Faylor  <cgf@redhat.com>
 
-        * config/i386/cygwin.h: Search target specfic include directory, if
-        appropriate.
+	* config/i386/cygwin.h: Search target specfic include directory, if
+	appropriate.
 
 2001-10-24  Christopher Faylor  <cgf@redhat.com>
 
-        * config/i386/cygwin.h: Use proper path for mingw crt files when
-        -mno-cygwin.
+	* config/i386/cygwin.h: Use proper path for mingw crt files when
+	-mno-cygwin.
 
 2001-10-23  Release Manager
 
