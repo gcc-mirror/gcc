@@ -27,7 +27,7 @@ public:
   // destructor
   virtual ~type_info ();
     
-  bool before (const type_info& arg);
+  bool before (const type_info& arg) const;
   const char* name () const
     { return _name; }
   bool operator== (const type_info& arg) const;
