@@ -255,7 +255,8 @@ named_section (decl, name)
 
   if (in_section != in_named || strcmp (name, in_named_name))
     {
-      in_named_name = name;
+      in_named_name = obstack_alloc (&permanent_obstack, strlen (name) + 1);
+      strcpy (in_named_name, name);
       in_section = in_named;
     
 #ifdef ASM_OUTPUT_SECTION_NAME
@@ -349,6 +350,29 @@ void
 function_section (decl)
      tree decl;
 {
+
+#ifdef ASM_OUTPUT_SECTION_NAME
+  /* If we are placing functions into their own sections, and this
+     function doesn't already have a section specified, set it now.  */
+  if (flag_function_sections
+      && decl != NULL_TREE
+      && DECL_SECTION_NAME (decl) == NULL_TREE)
+    {
+      int len;
+      char *string;
+
+      len = IDENTIFIER_LENGTH (DECL_ASSEMBLER_NAME (decl)) + 1;
+      string = alloca (len);
+      strcpy (string, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+
+      /* Strip off any encoding in fnname.  */
+      STRIP_NAME_ENCODING (string, string);
+
+      /* Set DECL_SECTION_NAME.  */
+      DECL_SECTION_NAME (decl) = build_string (len, string);
+    }
+#endif
+
   if (decl != NULL_TREE
       && DECL_SECTION_NAME (decl) != NULL_TREE)
     named_section (decl, (char *) 0);

@@ -438,6 +438,27 @@ abspath (rel_filename)
 }
 #endif /* 0 */
 
+static int scope_labelno = 0;
+static void
+dbxout_function_end ()
+{
+  char lscope_label_name[100];
+  /* Convert Ltext into the appropriate format for local labels in case
+     the system doesn't insert underscores in front of user generated
+     labels.  */
+  ASM_GENERATE_INTERNAL_LABEL (lscope_label_name, "Lscope", scope_labelno);
+  ASM_OUTPUT_INTERNAL_LABEL (asmfile, "Lscope", scope_labelno);
+  scope_labelno++;
+
+  /* By convention, GCC will mark the end of a function with an N_FUN
+     symbol and an empty string.  */
+  fprintf (asmfile, "%s \"\",%d,0,0,", ASM_STABS_OP, N_FUN);
+  assemble_name (asmfile, lscope_label_name);
+  fputc ('-', asmfile);
+  assemble_name (asmfile, XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));
+  fprintf (asmfile, "-1\n");
+}
+
 /* At the beginning of compilation, start writing the symbol table.
    Initialize `typevec' and output the standard data types of C.  */
 
@@ -2669,6 +2690,10 @@ dbxout_function (decl)
   dbxout_block (DECL_INITIAL (decl), 0, DECL_ARGUMENTS (decl));
 #ifdef DBX_OUTPUT_FUNCTION_END
   DBX_OUTPUT_FUNCTION_END (asmfile, decl);
+#endif
+#ifdef ASM_OUTPUT_SECTION_NAME
+  if (flag_function_sections && use_gnu_debug_info_extensions)
+    dbxout_function_end ();
 #endif
 }
 #endif /* DBX_DEBUGGING_INFO */
