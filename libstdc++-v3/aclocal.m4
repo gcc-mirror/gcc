@@ -1361,33 +1361,6 @@ AC_DEFUN(GLIBCXX_ENABLE_HOSTED, [
 
 
 dnl
-dnl Check for libunwind exception handling support.  If enabled, then
-dnl we assume that the _Unwind_* functions that make up the Unwind ABI
-dnl (_Unwind_RaiseException, _Unwind_Resume, etc.) are defined by
-dnl libunwind instead of libgcc, and that libstdc++ has a dependency
-dnl on libunwind as well as libgcc.
-dnl
-dnl --enable-libunwind-exceptions forces the use of libunwind.
-dnl --disable-libunwind-exceptions assumes there is no libunwind.
-dnl
-dnl Substs:
-dnl  LIBUNWIND_FLAG
-dnl
-AC_DEFUN(GLIBCXX_ENABLE_LIBUNWIND_EXCEPTIONS, [
-  AC_MSG_CHECKING([for use of libunwind])
-  GLIBCXX_ENABLE(libunwind-exceptions,no,,
-    [force use of libunwind for exceptions])
-  AC_MSG_RESULT($use_libunwind_exceptions)
-  if test $enable_libunwind_exceptions = yes; then
-    LIBUNWIND_FLAG="-lunwind"
-  else
-    LIBUNWIND_FLAG=""
-  fi
-  AC_SUBST(LIBUNWIND_FLAG)
-])
-
-
-dnl
 dnl Check for template specializations for the 'long long' type extension.
 dnl The result determines only whether 'long long' I/O is enabled; things
 dnl like numeric_limits<> specializations are always available.

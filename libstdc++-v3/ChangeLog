@@ -1,3 +1,14 @@
+2003-12-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/13296
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBUNWIND_EXCEPTIONS): Remove.
+	* aclocal.m4: Regenerate.
+	* configure.ac: Remove call to GLIBCXX_ENABLE_LIBUNWIND_EXCEPTIONS.
+	* conigure: Regenerate.
+	* src/Makefile.am (libstdc___la_LDFLAGS): Remove LIBUNWIND_FLAGS.
+	* src/Makefile.in: Regenerate.
+	* docs/html/17_intro/configury.html: Modify.
+	
 2003-12-09  Paolo Carlini  <pcaelini@suse.de>
 	
 	* include/bits/demangle.h (struct implementation_details):
@@ -5757,7 +5768,8 @@
 
 2003-04-09  Benjamin Kosnik  <bkoz@redhat.com>
 
-	Reshuffle 27_io testsuite.  * testsuite/27_io/filebuf.cc,
+	Reshuffle 27_io testsuite.  
+	* testsuite/27_io/filebuf.cc,
 	filebuf_members-1.tst, filebuf_members-1.txt, filebuf_members.cc,
 	filebuf_virtuals-1.tst, filebuf_virtuals-1.txt,
 	filebuf_virtuals-2.tst, filebuf_virtuals-3.tst,

@@ -141,8 +141,7 @@ libstdc___la_LIBADD = \
 libstdc___la_DEPENDENCIES = ${version_dep} $(libstdc___la_LIBADD)
 
 libstdc___la_LDFLAGS = \
-	-version-info $(libtool_VERSION) ${version_arg} \
-	-lm $(LIBUNWIND_FLAG)
+	-version-info $(libtool_VERSION) ${version_arg} -lm 
 
 
 # Use special rules for the deprecated source files so that they find

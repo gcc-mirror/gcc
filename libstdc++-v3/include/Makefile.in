@@ -108,7 +108,6 @@ LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBSUPCXX_PICFLAGS = @LIBSUPCXX_PICFLAGS@
 LIBTOOL = @LIBTOOL@
-LIBUNWIND_FLAG = @LIBUNWIND_FLAG@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 MAINT = @MAINT@
@@ -525,9 +524,9 @@ debug_headers = \
 # For --enable-cheaders=c_std
 @GLIBCXX_C_HEADERS_C_STD_TRUE@c_base_headers_extra = ${c_base_srcdir}/cmath.tcc
 @GLIBCXX_C_HEADERS_C_STD_FALSE@c_base_headers_extra = 
+@GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE@c_compatibility_headers_extra = 
 
 @GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE@c_compatibility_headers_extra = ${c_compatibility_headers}
-@GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE@c_compatibility_headers_extra = 
 
 host_srcdir = ${glibcxx_srcdir}/$(OS_INC_SRCDIR)
 host_builddir = ./${host_alias}/bits
