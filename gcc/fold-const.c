@@ -4985,9 +4985,7 @@ fold_mathfn_compare (enum built_in_function fcode, enum tree_code code,
 {
   REAL_VALUE_TYPE c;
 
-  if (fcode == BUILT_IN_SQRT
-      || fcode == BUILT_IN_SQRTF
-      || fcode == BUILT_IN_SQRTL)
+  if (BUILTIN_SQRT_P (fcode))
     {
       tree arg = TREE_VALUE (TREE_OPERAND (arg0, 1));
       enum machine_mode mode = TYPE_MODE (TREE_TYPE (arg0));
@@ -6425,9 +6423,7 @@ fold (tree expr)
 	      enum built_in_function fcode1 = builtin_mathfn_code (arg1);
 
 	      /* Optimizations of sqrt(...)*sqrt(...).  */
-	      if ((fcode0 == BUILT_IN_SQRT && fcode1 == BUILT_IN_SQRT)
-		  || (fcode0 == BUILT_IN_SQRTF && fcode1 == BUILT_IN_SQRTF)
-		  || (fcode0 == BUILT_IN_SQRTL && fcode1 == BUILT_IN_SQRTL))
+	      if (fcode0 == fcode1 && BUILTIN_SQRT_P (fcode0))
 		{
 		  tree sqrtfn, arg, arglist;
 		  tree arg00 = TREE_VALUE (TREE_OPERAND (arg0, 1));
@@ -6446,19 +6442,7 @@ fold (tree expr)
 		}
 
 	      /* Optimize expN(x)*expN(y) as expN(x+y).  */
-	      if (fcode0 == fcode1
-		  && (fcode0 == BUILT_IN_EXP
-		      || fcode0 == BUILT_IN_EXPF
-		      || fcode0 == BUILT_IN_EXPL
-		      || fcode0 == BUILT_IN_EXP2
-		      || fcode0 == BUILT_IN_EXP2F
-		      || fcode0 == BUILT_IN_EXP2L
-		      || fcode0 == BUILT_IN_EXP10
-		      || fcode0 == BUILT_IN_EXP10F
-		      || fcode0 == BUILT_IN_EXP10L
-		      || fcode0 == BUILT_IN_POW10
-		      || fcode0 == BUILT_IN_POW10F
-		      || fcode0 == BUILT_IN_POW10L))
+	      if (fcode0 == fcode1 && BUILTIN_EXPONENT_P (fcode0))
 		{
 		  tree expfn = TREE_OPERAND (TREE_OPERAND (arg0, 0), 0);
 		  tree arg = build (PLUS_EXPR, type,
@@ -6791,18 +6775,7 @@ fold (tree expr)
 	{
 	  enum built_in_function fcode = builtin_mathfn_code (arg1);
 	  /* Optimize x/expN(y) into x*expN(-y).  */
-	  if (fcode == BUILT_IN_EXP
-	      || fcode == BUILT_IN_EXPF
-	      || fcode == BUILT_IN_EXPL
-	      || fcode == BUILT_IN_EXP2
-	      || fcode == BUILT_IN_EXP2F
-	      || fcode == BUILT_IN_EXP2L
-	      || fcode == BUILT_IN_EXP10
-	      || fcode == BUILT_IN_EXP10F
-	      || fcode == BUILT_IN_EXP10L
-	      || fcode == BUILT_IN_POW10
-	      || fcode == BUILT_IN_POW10F
-	      || fcode == BUILT_IN_POW10L)
+	  if (BUILTIN_EXPONENT_P (fcode))
 	    {
 	      tree expfn = TREE_OPERAND (TREE_OPERAND (arg1, 0), 0);
 	      tree arg = build1 (NEGATE_EXPR, type,
