@@ -628,6 +628,26 @@
   [(set_attr "length" "4")
    (set_attr "type" "fpcc")])
 
+;; The following two patterns are optimization placeholders.  In almost
+;; all cases, the user of the condition code will be simplified and the
+;; original condition code setting insn should be eliminated.
+
+(define_insn "*setccfp0"
+  [(set (reg:CCFP 0)
+	(const_int 0))]
+  "! TARGET_SOFT_FLOAT"
+  "fcmp,dbl,!= %%fr0,%%fr0"
+  [(set_attr "length" "4")
+   (set_attr "type" "fpcc")])
+
+(define_insn "*setccfp1"
+  [(set (reg:CCFP 0)
+	(const_int 1))]
+  "! TARGET_SOFT_FLOAT"
+  "fcmp,dbl,= %%fr0,%%fr0"
+  [(set_attr "length" "4")
+   (set_attr "type" "fpcc")])
+
 ;; scc insns.
 
 (define_expand "seq"
