@@ -728,15 +728,16 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		      (TYPE_SIZE (TREE_TYPE (TYPE_FIELDS (gnu_type)))))))
 	  gnu_expr = convert (gnu_type, gnu_expr);
 
-	/* See if this is a renaming.  If this is a constant renaming,
-	   treat it as a normal variable whose initial value is what
-	   is being renamed.  We cannot do this if the type is
-	   unconstrained or class-wide.
+	/* See if this is a renaming.  If this is a constant renaming, treat
+	   it as a normal variable whose initial value is what is being
+	   renamed.  We cannot do this if the type is unconstrained or
+	   class-wide.
 
 	   Otherwise, if what we are renaming is a reference, we can simply
-	   return a stabilized version of that reference, after forcing
-	   any SAVE_EXPRs to be evaluated.  But, if this is at global level,
-	   we can only do this if we know no SAVE_EXPRs will be made.
+	   return a stabilized version of that reference, after forcing any
+	   SAVE_EXPRs to be evaluated.  But, if this is at global level, we
+	   can only do this if we know no SAVE_EXPRs will be made.
+
 	   Otherwise, make this into a constant pointer to the object we are
 	   to rename.  */
 
@@ -761,8 +762,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
                 && !Is_Array_Type (Etype (gnat_entity)))
 	      ;
 
-	    /* If this is a declaration or reference, we can just use that
-	       declaration or reference as this entity.  */
+	    /* If this is a declaration or reference that we can stabilize,
+	       just use that declaration or reference as this entity unless
+	       the latter has to be materialized.  */
 	    else if ((DECL_P (gnu_expr)
 		      || TREE_CODE_CLASS (TREE_CODE (gnu_expr)) == 'r')
 		     && ! Materialize_Entity (gnat_entity)
@@ -775,12 +777,33 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		saved = 1;
 		break;
 	      }
+	    /* Otherwise, make this into a constant pointer to the object we
+	       are to rename.
+
+	       Stabilize it if we are not at the global level since in this
+	       case the renaming evaluation may directly dereference the
+	       initial value we make here instead of the pointer we will
+	       assign it to.  We don't want variables in the expression to be
+	       evaluated every time the renaming is used, since the value of
+	       these variables may change in between.
+
+	       If we are at the global level and the value is not constant,
+	       create_var_decl generates a mere elaboration assignment and
+	       does not attach the initial expression to the declaration.
+	       There is no possible direct initial-value dereference then.  */
 	    else
 	      {
 		inner_const_flag = TREE_READONLY (gnu_expr);
 		const_flag = 1;
 		gnu_type = build_reference_type (gnu_type);
 		gnu_expr = build_unary_op (ADDR_EXPR, gnu_type, gnu_expr);
+
+		if (! global_bindings_p ())
+		  {
+		    gnu_expr = gnat_stabilize_reference (gnu_expr, 1);
+		    add_stmt (gnu_expr);
+		  }
+
 		gnu_size = 0;
 		used_by_ref = 1;
 	      }
@@ -999,17 +1022,20 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   with the symbol we need to export in addition.  Don't use the
 	   Interface_Name if there is an address clause (see CD30005).  */
 	if (! Is_VMS_Exception (gnat_entity)
-	    &&
-	    ((Present (Interface_Name (gnat_entity))
-	      && No (Address_Clause (gnat_entity)))
-	     ||
-	     (Is_Public (gnat_entity)
-	      && (! Is_Imported (gnat_entity) || Is_Exported (gnat_entity)))))
+	    && ((Present (Interface_Name (gnat_entity))
+		 && No (Address_Clause (gnat_entity)))
+		|| (Is_Public (gnat_entity)
+		    && (! Is_Imported (gnat_entity)
+			|| Is_Exported (gnat_entity)))))
 	  gnu_ext_name = create_concat_name (gnat_entity, 0);
 
 	if (const_flag)
-	  gnu_type = build_qualified_type (gnu_type, (TYPE_QUALS (gnu_type)
-						      | TYPE_QUAL_CONST));
+	  {
+	    gnu_type = build_qualified_type (gnu_type, (TYPE_QUALS (gnu_type)
+							| TYPE_QUAL_CONST));
+	    if (gnu_expr)
+	      gnu_expr = convert (gnu_type, gnu_expr);
+	  }
 
 	/* If this is constant initialized to a static constant and the
 	   object has an aggregrate type, force it to be statically

@@ -230,6 +230,7 @@ gnat_pushlevel ()
     BLOCK_SUPERCONTEXT (newlevel->block) = current_binding_level->block;
 
   BLOCK_VARS (newlevel->block) = BLOCK_SUBBLOCKS (newlevel->block) = NULL_TREE;
+  TREE_USED (newlevel->block) = 1;
 
   /* Add this level to the front of the chain (stack) of levels that are
      active.  */
@@ -362,7 +363,7 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	      && DECL_ARTIFICIAL (TYPE_NAME (TREE_TYPE (decl)))
 	      && ! DECL_ARTIFICIAL (decl))))
     TYPE_NAME (TREE_TYPE (decl)) = decl;
-  
+
   if (TREE_CODE (decl) != CONST_DECL)
     rest_of_decl_compilation (decl, NULL, global_bindings_p (), 0);
 }
@@ -403,9 +404,6 @@ gnat_init_decl_processing (void)
 		 Empty);
   gnat_pushdecl (build_decl (TYPE_DECL, get_identifier ("long integer"),
 			     long_integer_type_node),
-		 Empty);
-  gnat_pushdecl (build_decl (TYPE_DECL, get_identifier ("void"),
-			     void_type_node),
 		 Empty);
 
   ptr_void_type_node = build_pointer_type (void_type_node);
@@ -463,6 +461,13 @@ gnat_install_builtins ()
   ftype = build_function_type (integer_type_node, tmp);
   gnat_define_builtin ("__builtin_memcmp", ftype, BUILT_IN_MEMCMP,
 		       "memcmp", false);
+
+  tmp = tree_cons (NULL_TREE, size_type_node, void_list_node);
+  tmp = tree_cons (NULL_TREE, integer_type_node, tmp);
+  tmp = tree_cons (NULL_TREE, ptr_void_type_node, tmp);
+  ftype = build_function_type (integer_type_node, tmp);
+  gnat_define_builtin ("__builtin_memset", ftype, BUILT_IN_MEMSET,
+		       "memset", false);
 
   tmp = tree_cons (NULL_TREE, integer_type_node, void_list_node);
   ftype = build_function_type (integer_type_node, tmp);
@@ -2827,10 +2832,8 @@ convert (tree type, tree expr)
       return expr;
 
     case STRING_CST:
-    case CONSTRUCTOR:
       /* If we are converting a STRING_CST to another constrained array type,
-	 just make a new one in the proper type.  Likewise for
-	 CONSTRUCTOR if the alias sets are the same.  */
+	 just make a new one in the proper type.  */
       if (code == ecode && AGGREGATE_TYPE_P (etype)
 	  && ! (TREE_CODE (TYPE_SIZE (etype)) == INTEGER_CST
 		&& TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
@@ -2841,21 +2844,6 @@ convert (tree type, tree expr)
 	  TREE_TYPE (expr) = type;
 	  return expr;
 	}
-      break;
-
-    case COMPONENT_REF:
-      /* If we are converting between two aggregate types of the same
-	 kind, size, mode, and alignment, just make a new COMPONENT_REF.
-	 This avoid unneeded conversions which makes reference computations
-	 more complex.  */
-      if (code == ecode && TYPE_MODE (type) == TYPE_MODE (etype)
-	  && AGGREGATE_TYPE_P (type) && AGGREGATE_TYPE_P (etype)
-	  && TYPE_ALIGN (type) == TYPE_ALIGN (etype)
-	  && operand_equal_p (TYPE_SIZE (type), TYPE_SIZE (etype), 0)
-	  && get_alias_set (type) == get_alias_set (etype))
-	return build (COMPONENT_REF, type, TREE_OPERAND (expr, 0),
-		      TREE_OPERAND (expr, 1), NULL_TREE);
-
       break;
 
     case UNCONSTRAINED_ARRAY_REF:
