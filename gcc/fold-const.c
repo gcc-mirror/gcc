@@ -2023,7 +2023,6 @@ non_lvalue (tree x)
   case ARRAY_REF:
   case ARRAY_RANGE_REF:
   case BIT_FIELD_REF:
-  case BUFFER_REF:
   case OBJ_TYPE_REF:
 
   case REALPART_EXPR:

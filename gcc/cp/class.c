@@ -6053,7 +6053,6 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
     case CONVERT_EXPR:
     case SAVE_EXPR:
     case CONSTRUCTOR:
-    case BUFFER_REF:
       abort ();
       return error_mark_node;
 

@@ -372,9 +372,6 @@ DEFTREECODE (BIT_FIELD_REF, "bit_field_ref", 'r', 3)
 /* C unary `*' or Pascal `^'.  One operand, an expression for a pointer.  */
 DEFTREECODE (INDIRECT_REF, "indirect_ref", 'r', 1)
 
-/* Pascal `^` on a file.  One operand, an expression for the file.  */
-DEFTREECODE (BUFFER_REF, "buffer_ref", 'r', 1)
-
 /* Array indexing.
    Operand 0 is the array; operand 1 is a (single) array index.
    Operand 2, if present, is a copy of TYPE_MIN_VALUE of the index.
@@ -693,10 +690,6 @@ DEFTREECODE (UNEQ_EXPR, "uneq_expr", '<', 2)
 /* This is the reverse of uneq_expr.  */
 DEFTREECODE (LTGT_EXPR, "ltgt_expr", '<', 2)
 
-/* Operations for Pascal sets.  Not used now.  */
-DEFTREECODE (IN_EXPR, "in_expr", '2', 2)
-DEFTREECODE (SET_LE_EXPR, "set_le_expr", '<', 2)
-DEFTREECODE (CARD_EXPR, "card_expr", '1', 1)
 DEFTREECODE (RANGE_EXPR, "range_expr", '2', 2)
 
 /* Represents a conversion of type of a value.

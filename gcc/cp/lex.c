@@ -150,7 +150,6 @@ init_operators (void)
   operator_name_info [(int) ABS_EXPR].name = "abs";
   operator_name_info [(int) TRUTH_AND_EXPR].name = "strict &&";
   operator_name_info [(int) TRUTH_OR_EXPR].name = "strict ||";
-  operator_name_info [(int) IN_EXPR].name = "in";
   operator_name_info [(int) RANGE_EXPR].name = "...";
   operator_name_info [(int) CONVERT_EXPR].name = "+";
 
