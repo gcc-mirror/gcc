@@ -1,3 +1,7 @@
+2004-08-12  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* include/Makefile.in: Regenerate
+
 2004-07-06  Andrew Pinski  <apinski@apple.com>
 
 	* os-dep.c (GC_task_self): Declare as static
