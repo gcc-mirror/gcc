@@ -1,3 +1,14 @@
+2004-10-21  Ramana Radhakrishnan  <ramana.radhakrishnan@codito.com>
+
+	* config/arc/lib1funcs.asm (___umulsidi3): Correct usage of flags.
+
+	PR target/17317
+	* config/arc/arc.h (REGNO_OK_FOR_BASE_P,REGNO_OK_FOR_INDEX_P,
+	REG_OK_FOR_BASE, REG_OK_FOR_INDEX): Consider blink(r31) as a valid
+	base and index register for loads.
+
+	* config/arc/t-arc: Fix multilib handling.
+
 2004-10-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/17684

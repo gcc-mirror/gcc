@@ -463,9 +463,9 @@ extern enum reg_class arc_regno_reg_class[FIRST_PSEUDO_REGISTER];
    Since they use reg_renumber, they are safe only once reg_renumber
    has been allocated, which happens in local-alloc.c.  */
 #define REGNO_OK_FOR_BASE_P(REGNO) \
-((REGNO) < 29 || (unsigned) reg_renumber[REGNO] < 29)
+((REGNO) < 32 || (unsigned) reg_renumber[REGNO] < 32)
 #define REGNO_OK_FOR_INDEX_P(REGNO) \
-((REGNO) < 29 || (unsigned) reg_renumber[REGNO] < 29)
+((REGNO) < 32 || (unsigned) reg_renumber[REGNO] < 32)
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
@@ -900,11 +900,11 @@ do { \
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_INDEX_P(X) \
-((unsigned) REGNO (X) - 29 >= FIRST_PSEUDO_REGISTER - 29)
+((unsigned) REGNO (X) - 32 >= FIRST_PSEUDO_REGISTER - 32)
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_BASE_P(X) \
-((unsigned) REGNO (X) - 29 >= FIRST_PSEUDO_REGISTER - 29)
+((unsigned) REGNO (X) - 32 >= FIRST_PSEUDO_REGISTER - 32)
 
 #else
 
