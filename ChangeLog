@@ -1,6 +1,6 @@
 2001-02-05  Mark Mitchell  <mark@codesourcery.com>
 
-	* ltcf-c.sh: Add support for --no-undefined under GNU/Linux.
+	* ltcf-c.sh: Add support for -no-undefined under GNU/Linux.
 	* ltcf-cxx.sh: Likewise.
 
 	* config.if: Assume enable_libstdcxx_v3 is defined.
