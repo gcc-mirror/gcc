@@ -1,3 +1,8 @@
+Fri Sep  1 10:59:47 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* flow.c (init_propagate_block_info): Don't mark frame dead at end
+	of function if returns wiht stack pointer depressed.
+
 2000-09-01  Andrew Haley  <aph@redhat.com>
 
         * dwarf2out.c (stack_adjust_offset): New function.
