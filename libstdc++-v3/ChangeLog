@@ -6,6 +6,23 @@
 
 	* bits/std_complex.h: Fix parens. Format.
 	
+2000-07-03  scott snyder  <snyder@fnal.gov>
+
+        * bits/locale_facets.tcc (_M_extract): Only figure out the base
+        from the input if base == 0.
+        * testsuite/27_io/istream_extractor_arith.cc: Test reading a
+        number with a leading `0' in hex mode.
+
+	* shadow/bits/std_cmath.h: Fix typo in _GLIBCPP_HAVE_CEILL test.
+
+        * mkinclosure: Change `==' to `=' in test.
+
+2000-07-03  Chip Salzenberg  <chip@valinux.com>
+
+        * src/Makefile.am (libio_headers): _G_config.h is found in srcdir,
+        not builddir.
+        * src/Makefile.in: Regenerate.
+
 2000-07-01  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 	    Ulrich Drepper  <drepper@purist.soma.redhat.com>
 
