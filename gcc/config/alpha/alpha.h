@@ -1278,8 +1278,11 @@ extern char *current_function_name;
 
 /* Define this if the tablejump instruction expects the table
    to contain offsets from the address of the table.
-   Do not define this if the table should contain absolute addresses.  */
-/* #define CASE_VECTOR_PC_RELATIVE */
+   Do not define this if the table should contain absolute addresses.
+   On the Alpha, the table is really GP-relative, not relative to the PC
+   of the table, but we pretend that it is PC-relative; this should be OK,
+   but we hsould try to find some better way sometime.  */
+#define CASE_VECTOR_PC_RELATIVE
 
 /* Specify the tree operation to be used to convert reals to integers.  */
 #define IMPLICIT_FIX_EXPR FIX_ROUND_EXPR
@@ -1711,15 +1714,15 @@ literal_section ()						\
 #define ASM_OUTPUT_BYTE(FILE,VALUE)  \
   fprintf (FILE, "\t.byte 0x%x\n", (VALUE) & 0xff)
 
-/* This is how to output an element of a case-vector that is absolute.  */
-
-#define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
-  fprintf (FILE, "\t.gprel32 $%d\n", (VALUE) + 32)
-
-/* This is how to output an element of a case-vector that is relative.
+/* This is how to output an element of a case-vector that is absolute.
    (Alpha does not use such vectors, but we must define this macro anyway.)  */
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)  abort ()
+#define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE) abort ()
+
+/* This is how to output an element of a case-vector that is relative.  */
+
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL) \
+  fprintf (FILE, "\t.gprel32 $%d\n", (VALUE) + 32)
 
 /* This is how to output an assembler line
    that says to advance the location counter
