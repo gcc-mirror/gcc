@@ -653,7 +653,8 @@ static struct user_specs *user_specs_head, *user_specs_tail;
   || !strcmp (STR, "imacros") || !strcmp (STR, "aux-info") \
   || !strcmp (STR, "idirafter") || !strcmp (STR, "iprefix") \
   || !strcmp (STR, "iwithprefix") || !strcmp (STR, "iwithprefixbefore") \
-  || !strcmp (STR, "isystem") || !strcmp (STR, "specs"))
+  || !strcmp (STR, "isystem") || !strcmp (STR, "specs") \
+  || !strcmp (STR, "MF") || !strcmp (STR, "MT"))
 
 #ifndef WORD_SWITCH_TAKES_ARG
 #define WORD_SWITCH_TAKES_ARG(STR) DEFAULT_WORD_SWITCH_TAKES_ARG (STR)
