@@ -4914,10 +4914,16 @@ ix86_compute_frame_layout (frame)
   frame->nregs = ix86_nsaved_regs ();
   total_size = size;
 
-  if (!optimize_size && !reload_completed)
+  /* During reload iteration the amount of registers saved can change.
+     Recompute the value as needed.  Do not recompute when amount of registers
+     didn't change as reload does mutiple calls to the function and does not
+     expect the decision to change within single iteration.  */
+  if (!optimize_size
+      && cfun->machine->use_fast_prologue_epilogue_nregs != frame->nregs)
     {
       int count = frame->nregs;
 
+      cfun->machine->use_fast_prologue_epilogue_nregs = count;
       /* The fast prologue uses move instead of push to save registers.  This
          is significantly longer, but also executes faster as modern hardware
          can execute the moves in parallel, but can't do that for push/pop.
@@ -11784,7 +11790,10 @@ ix86_expand_call (retval, fnaddr, callarg1, callarg2, pop, sibcall)
 static struct machine_function *
 ix86_init_machine_status ()
 {
-  return ggc_alloc_cleared (sizeof (struct machine_function));
+  struct machine_function *f;
+
+  f = ggc_alloc_cleared (sizeof (struct machine_function));
+  f->use_fast_prologue_epilogue_nregs = -1;
 }
 
 /* Return a MEM corresponding to a stack slot with mode MODE.

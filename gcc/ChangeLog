@@ -1,3 +1,10 @@
+Fri Mar 21 23:12:33 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_compute_frame_layout): Recompute fast prologues
+	only when amount of saved regs changed.
+	(ix86_init_machine_status): Initialize use_fast_prologue_epilgoue_nregs.
+	* i386.h (machine_function): New fields use_fast_prologue_epilgoue_nregs.
+
 Fri Mar 21 22:44:33 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR inline-asm/7916
