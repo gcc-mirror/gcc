@@ -1,0 +1,12 @@
+      LOGICAL TF(5)
+      CHARACTER*60 LINE
+      NAMELIST /LIST/ TF,TT,FF,XYZ
+      DATA TF /5*.FALSE./
+      DATA LINE /'&LIST,TF=.T.,.F.,.T.,FF=33.,TT=23.,XYZ=-1234.55,/'/
+      OPEN(1,STATUS='SCRATCH')
+      WRITE(1,*) LINE
+      REWIND(1)
+      READ(1,LIST)
+      CLOSE(1)
+      IF (TF(5)) CALL ABORT
+      END
