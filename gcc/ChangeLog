@@ -1,5 +1,12 @@
 2004-11-09  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* tree-phinodes.c (phi_reverse): New.
+	* tree-cfg.c (tree_make_forwarder_block, tree_duplicate_bb):
+	Use it.
+	* tree-flow.h: Add a prototype for phi_reverse.
+
+2004-11-09  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* tree-ssa-loop-ivopts.c: Fix a comment typo.
 
 2004-11-09  James A. Morrison  <phython@gcc.gnu.org>

@@ -491,6 +491,21 @@ remove_all_phi_nodes_for (bitmap vars)
     }
 }
 
+/* Reverse the order of PHI nodes in the chain PHI.
+   Return the new head of the chain (old last PHI node).  */
+
+tree
+phi_reverse (tree phi)
+{
+  tree prev = NULL_TREE, next;
+  for (; phi; phi = next)
+    {
+      next = PHI_CHAIN (phi);
+      PHI_CHAIN (phi) = prev;
+      prev = phi;
+    }
+  return prev;
+}
 
 #include "gt-tree-phinodes.h"
 
