@@ -256,6 +256,10 @@ end ifobjc
 		}
 	| extdefs
 		{
+		  /* In case there were missing closebraces,
+		     get us back to the global binding level.  */
+		  while (! global_bindings_p ())
+		    poplevel (0, 0, 0);
 ifobjc
 		  objc_finish ();
 end ifobjc
