@@ -3389,13 +3389,10 @@ duplicate_decls (newdecl, olddecl)
 		if (1 == simple_cst_equal (TREE_PURPOSE (t1),
 					   TREE_PURPOSE (t2)))
 		  {
-		    if (pedantic)
-		      {
-			pedwarn ("default argument given for parameter %d of `%#D'",
-				    i, newdecl);
-			cp_pedwarn_at ("after previous specification in `%#D'",
-				       olddecl);
-		      }
+		    pedwarn ("default argument given for parameter %d of `%#D'",
+			     i, newdecl);
+		    cp_pedwarn_at ("after previous specification in `%#D'",
+			           olddecl);
 		  }
 		else
 		  {
