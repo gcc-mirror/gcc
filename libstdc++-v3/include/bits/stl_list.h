@@ -489,8 +489,9 @@ namespace std
      *  @param  first  An input iterator.
      *  @param  last  An input iterator.
      * 
-     *  Create a %list consisting of copies of the elements from [first,last).
-     *  This is linear in N (where N is distance(first,last)).
+     *  Create a %list consisting of copies of the elements from
+     *  [@a first,@a last).  This is linear in N (where N is
+     *  distance(@a first,@a last)).
      *
      *  @if maint
      *  We don't need any dispatching tricks here, because insert does all of
@@ -539,7 +540,7 @@ namespace std
      *  @param  last   An input iterator.
      *
      *  This function fills a %list with copies of the elements in the
-     *  range [first,last).
+     *  range [@a first,@a last).
      *
      *  Note that the assignment completely changes the %list and that the
      *  resulting %list's size is the same as the number of elements assigned.
@@ -780,8 +781,9 @@ namespace std
      *  @param  first  An input iterator.
      *  @param  last   An input iterator.
      *
-     *  This function will insert copies of the data in the range [first,last)
-     *  into the %list before the location specified by @a pos.
+     *  This function will insert copies of the data in the range
+     *  [@a first,@a last) into the %list before the location specified by @a
+     *  position.
      *
      *  Due to the nature of a %list this operation can be done in constant
      *  time, and does not invalidate iterators and references.
@@ -822,7 +824,7 @@ namespace std
      *  @return  An iterator pointing to the element pointed to by @a last
      *           prior to erasing (or end()).
      *
-     *  This function will erase the elements in the range [first,last) and
+     *  This function will erase the elements in the range @a [first,last) and
      *  shorten the %list accordingly.
      *
      *  Due to the nature of a %list this operation can be done in constant
@@ -863,7 +865,12 @@ namespace std
   
     // [23.2.2.4] list operations
     /**
-     *  @doctodo
+     *  @brief  Insert contents of another %list.
+     *  @param  position  Iterator referencing the element to insert before.
+     *  @param  x  Source list.
+     *
+     *  The elements of @a x are inserted in constant time in front of the
+     *  element referenced by @a position.  @a x becomes an empty list.
     */
     void
     splice(iterator __position, list& __x)
@@ -873,7 +880,13 @@ namespace std
     }
   
     /**
-     *  @doctodo
+     *  @brief  Insert element from another %list.
+     *  @param  position  Iterator referencing the element to insert before.
+     *  @param  x  Source list.
+     *  @param  i  Iterator referencing the element to move.
+     *
+     *  Removes the element in list @a x referenced by @a i and inserts it into the
+     *  current list before @a position.
     */
     void
     splice(iterator __position, list&, iterator __i)
@@ -885,8 +898,17 @@ namespace std
     }
   
     /**
-     *  @doctodo
-    */
+     *  @brief  Insert range from another %list.
+     *  @param  position  Iterator referencing the element to insert before.
+     *  @param  x  Source list.
+     *  @param  first  Iterator referencing the start of range in x.
+     *  @param  last  Iterator referencing the end of range in x.
+     *
+     *  Removes elements in the range [first,last) and inserts them before
+     *  @a position in constant time.
+     *
+     *  Undefined if @a position is in [first,last).
+   */
     void
     splice(iterator __position, list&, iterator __first, iterator __last)
     {
@@ -895,58 +917,107 @@ namespace std
     }
   
     /**
-     *  @doctodo
+     *  @brief  Remove all elements equal to value.
+     *  @param  value  The value to remove.
+     *
+     *  Removes every element in the list equal to @a value.  Remaining
+     *  elements stay in list order.  Note that this function only erases the
+     *  elements, and that if the elements themselves are pointers, the
+     *  pointed-to memory is not touched in any way.  Managing the pointer is
+     *  the user's responsibilty.
     */
     void
     remove(const _Tp& __value);
   
     /**
-     *  @doctodo
+     *  @brief  Remove all elements satisfying a predicate.
+     *  @param  Predicate  Unary predicate function or object.
+     *
+     *  Removes every element in the list for which the predicate returns
+     *  true.  Remaining elements stay in list order.  Note that this function
+     *  only erases the elements, and that if the elements themselves are
+     *  pointers, the pointed-to memory is not touched in any way.  Managing
+     *  the pointer is the user's responsibilty.
     */
     template<typename _Predicate>
       void
       remove_if(_Predicate);
   
     /**
-     *  @doctodo
+     *  @brief  Remove consecutive duplicate elements.
+     *
+     *  For each consecutive set of elements with the same value, remove all
+     *  but the first one.  Remaining elements stay in list order.  Note that
+     *  this function only erases the elements, and that if the elements
+     *  themselves are pointers, the pointed-to memory is not touched in any
+     *  way.  Managing the pointer is the user's responsibilty.
     */
     void
     unique();
   
     /**
-     *  @doctodo
+     *  @brief  Remove consecutive elements satisfying a predicate.
+     *  @param  BinaryPredicate  Binary predicate function or object.
+     *
+     *  For each consecutive set of elements [first,last) that satisfy
+     *  predicate(first,i) where i is an iterator in [first,last), remove all
+     *  but the first one.  Remaining elements stay in list order.  Note that
+     *  this function only erases the elements, and that if the elements
+     *  themselves are pointers, the pointed-to memory is not touched in any
+     *  way.  Managing the pointer is the user's responsibilty.
     */
     template<typename _BinaryPredicate>
       void
       unique(_BinaryPredicate);
   
     /**
-     *  @doctodo
+     *  @brief  Merge sorted lists.
+     *  @param  x  Sorted list to merge.
+     *
+     *  Assumes that both @a x and this list are sorted according to
+     *  operator<().  Merges elements of @a x into this list in sorted order,
+     *  leaving @a x empty when complete.  Elements in this list precede
+     *  elements in @a x that are equal.
     */
     void
     merge(list& __x);
   
     /**
-     *  @doctodo
+     *  @brief  Merge sorted lists according to comparison function.
+     *  @param  x  Sorted list to merge.
+     *  @param  StrictWeakOrdering  Comparison function definining sort order.
+     *
+     *  Assumes that both @a x and this list are sorted according to
+     *  StrictWeakOrdering.  Merges elements of @a x into this list in sorted
+     *  order, leaving @a x empty when complete.  Elements in this list precede
+     *  elements in @a x that are equivalent according to StrictWeakOrdering().
     */
     template<typename _StrictWeakOrdering>
       void
       merge(list&, _StrictWeakOrdering);
   
     /**
-     *  @doctodo
+     *  @brief  Reverse the elements in list.
+     *
+     *  Reverse the order of elements in the list in linear time.
     */
     void
     reverse() { __List_base_reverse(&this->_M_node); }
   
     /**
-     *  @doctodo
+     *  @brief  Sort the elements.
+     *
+     *  Sorts the elements of this list in NlogN time.  Equivalent elements
+     *  remain in list order.
     */
     void
     sort();
   
     /**
-     *  @doctodo
+     *  @brief  Sort the elements according to comparison function.
+     *
+     *  Sorts the elements of this list in NlogN time.  Equivalent elements
+     *  remain in list order.
     */
     template<typename _StrictWeakOrdering>
       void
