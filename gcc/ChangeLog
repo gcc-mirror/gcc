@@ -1,3 +1,7 @@
+Fri Apr 20 12:24:50 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* config/pa/som.h (NM_FLAGS): Define.
+
 2001-04-20  Bernd Schmidt  <bernds@redhat.com>
 
 	* ia64.h (MD_SCHED_REORDER, MD_SCHED_REORDER2): Pass CLOCK to called
