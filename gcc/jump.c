@@ -1192,8 +1192,10 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	     TEMP4 to the earliest insn used to find the condition.  */
 
 	  if ((BRANCH_COST >= 2
-#if defined (HAVE_incscc) || defined (HAVE_decscc)
+#ifdef HAVE_incscc
 	       || HAVE_incscc
+#endif
+#ifdef HAVE_decscc
 	       || HAVE_decscc
 #endif
 	      )
