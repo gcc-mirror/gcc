@@ -1,3 +1,8 @@
+2000-11-26  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* libI77/Version.c, libF77/Version.c, libU77/Version.c:
+	Designate version as (experimental) instead of (prerelease)
+
 2000-11-15  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* libI77/configure.in: See if `mkstemp' is available.
