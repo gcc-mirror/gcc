@@ -44,6 +44,10 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 public final class Naming {
+  /**
+   * This class isn't intended to be instantiated.
+   */
+  private Naming() {}
 
 /**
  * Looks for the remote object that is associated with the named service.

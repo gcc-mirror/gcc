@@ -60,6 +60,11 @@ import java.nio.charset.CharsetEncoder;
 public final class Channels
 {
   /**
+   * This class isn't intended to be instantiated.
+   */
+  private Channels() {}
+
+  /**
    * Constructs a stream that reads bytes from the given channel.
    */
   public static InputStream newInputStream(ReadableByteChannel ch)

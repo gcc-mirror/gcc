@@ -85,6 +85,7 @@ h.setFormatter(h.getFormatter());</pre>
    * supposed to provide a Formatter, but this is what the specification
    * says.
    */
+  protected Handler()
   {
     level = Level.ALL;
   }

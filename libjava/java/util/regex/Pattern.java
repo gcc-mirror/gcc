@@ -50,7 +50,7 @@ import java.util.ArrayList;
  *
  * @since 1.4
  */
-public class Pattern implements Serializable
+public final class Pattern implements Serializable
 {
   private static final long serialVersionUID = 5073258162644648461L;
   

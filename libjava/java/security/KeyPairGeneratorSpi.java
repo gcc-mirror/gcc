@@ -92,18 +92,11 @@ public abstract class KeyPairGeneratorSpi
   public abstract KeyPair generateKeyPair();
 
   /**
-     Returns a clone of this class.
-
-     If cloning is not supported, then by default the class throws a
-     CloneNotSupportedException.  The MessageDigestSpi provider
-     implementation has to overload this class in order to be
-     cloneable.
+   * We override clone here to make it accessible for use by
+   * DummyKeyPairGenerator.
    */
-  public Object clone() throws CloneNotSupportedException
+  protected Object clone() throws CloneNotSupportedException
   {
-    if (this instanceof Cloneable)
-      return super.clone();
-    else
-      throw new CloneNotSupportedException();
+    return super.clone();
   }
 }

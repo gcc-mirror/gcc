@@ -50,6 +50,10 @@ import java.rmi.server.RMISocketFactory;
 import java.rmi.server.RemoteRef;
 
 public final class LocateRegistry {
+  /**
+   * This class isn't intended to be instantiated.
+   */
+  private LocateRegistry() {}
 
 public static Registry getRegistry() throws RemoteException {
 	return (getRegistry("localhost", Registry.REGISTRY_PORT));
