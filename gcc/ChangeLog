@@ -1,3 +1,8 @@
+Thu Nov 13 12:53:44 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* mips.h (GO_IF_LEGITIMATE_ADDRESS): Delete code swapping xplus0 and
+	xplus1 when xplus0 is not a register.
+
 Thu Nov 13 11:41:42 1997  Jeffrey A Law  (law@cygnus.com)
 
         * m68k/x-next (OTHER_FIXINCLUDES_DIRS): Include /NextDeveloper/Headers.
