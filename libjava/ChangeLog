@@ -1,3 +1,14 @@
+2002-10-24  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natRuntime.cc (_Jv_SetDLLSearchPath): New function.
+	(_Jv_FindSymbolInExecutable): Removed argument name.
+	(insertSystemProperties): Call _Jv_SetDLLSearchPath if
+	java.library.path is set.
+
+	* gij.cc (help): Document --showversion.
+	(version): Don't exit.
+	(main): Handle --showversion.  Exit if --version given.
+
 2002-10-23  Tom Tromey  <tromey@redhat.com>
 
 	* jni.cc (_Jv_JNI_AllocObject): Removed old FIXME comment.
