@@ -1627,7 +1627,8 @@ split_edge (edge_in)
   bb->pred = edge_in;
   bb->succ = edge_out;
   bb->count = edge_in->count;
-  /* ??? Set bb->frequency.  */
+  bb->frequency = (edge_in->probability * edge_in->src->frequency
+		   / REG_BR_PROB_BASE);
 
   edge_in->dest = bb;
   edge_in->flags &= ~EDGE_CRITICAL;
@@ -4857,7 +4858,8 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 		     register twice if it is modified, but that is correct.  */
 		  REG_N_SETS (i) += 1;
 		  REG_N_REFS (i) += 1;
-		  REG_FREQ (i) += (optimize_size ? 1 : pbi->bb->loop_depth + 1);
+		  REG_FREQ (i) += (optimize_size || !pbi->bb->frequency
+				   ? 1 : pbi->bb->frequency);
 
 	          /* The insns where a reg is live are normally counted
 		     elsewhere, but we want the count to include the insn
@@ -5524,7 +5526,8 @@ attempt_auto_inc (pbi, inc, insn, mem, incr, incr_reg)
       /* Count an extra reference to the reg.  When a reg is
 	 incremented, spilling it is worse, so we want to make
 	 that less likely.  */
-      REG_FREQ (regno) += (optimize_size ? 1 : pbi->bb->loop_depth + 1);
+      REG_FREQ (regno) += (optimize_size || !phi->bb->frequency
+		           ? 1 : pbi->bb->frequency);
 
       /* Count the increment as a setting of the register,
 	 even though it isn't a SET in rtl.  */
@@ -5690,7 +5693,7 @@ mark_used_reg (pbi, reg, cond, insn)
 
 	  /* Count (weighted) number of uses of each reg.  */
 	  REG_FREQ (regno_first)
-	    += (optimize_size ? 1 : pbi->bb->loop_depth + 1);
+	    += (optimize_size || !pbi->bb->frequency ? 1 : pbi->bb->frequency);
 	  REG_N_REFS (regno_first)++;
 	}
     }
@@ -6112,7 +6115,8 @@ try_pre_increment_1 (pbi, insn)
 	 so we want to make that less likely.  */
       if (regno >= FIRST_PSEUDO_REGISTER)
 	{
-	  REG_FREQ (regno) += (optimize_size ? 1 : pbi->bb->loop_depth + 1);
+	  REG_FREQ (regno) += (optimize_size || !phi->bb->frequency
+			       ? 1 : pbi->bb->frequency);
 	  REG_N_SETS (regno)++;
 	}
 

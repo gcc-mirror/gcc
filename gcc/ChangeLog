@@ -1,3 +1,16 @@
+Sat Jun 23 01:23:59 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* flow.c (mark_set_1, attempt_auto_inc, mark_used_reg,
+	try_pre_increment_1): compute REG_FREQ using bb->frequency.
+
+	* regclass.c (loop_cost): Kill.
+	(frequency): New global variable.
+	(record_operand_costs): Replace loop_cost by frequency.
+	(scan_one_insn): Likewise.
+	(regclass): Likewise; set frequency according to bb->frequency.
+
+	* flow.c (split_edge): Set frequency.
+
 Sat Jun 23 01:16:42 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (block_info_def): Add nvisited.
