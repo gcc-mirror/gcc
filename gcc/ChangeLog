@@ -1,3 +1,10 @@
+Wed Nov  4 21:37:46 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* rtl.h (flow2_completed): Declare.
+	* flow.c (flow2_completed): Definition.
+	* toplev.c (rest_of_compilation): Set and clear flow2_completed
+	as necessary.
+
 Wed Nov  4 19:15:37 1998  "Melissa O'Neill" <oneill@cs.sfu.ca>
 
 	* Makefile.in (libcpp.a): Ranlib libcpp.a
