@@ -1,3 +1,7 @@
+Wed Dec  9 23:55:11 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c: Update some comments.
+
 Wed Dec  9 15:29:26 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* objc/objc-act.c (cpp_initialized): Removed.
