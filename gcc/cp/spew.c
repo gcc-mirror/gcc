@@ -246,6 +246,13 @@ tree got_scope;
 tree got_object;
 
 int
+peekyylex()
+{
+  scan_tokens (0);
+  return nth_token (0)->yychar;
+}
+
+int
 yylex()
 {
   struct token tmp_token;

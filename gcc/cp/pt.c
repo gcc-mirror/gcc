@@ -43,7 +43,6 @@ Boston, MA 02111-1307, USA.  */
 #include "defaults.h"
 
 extern struct obstack permanent_obstack;
-extern tree grokdeclarator ();
 
 extern int lineno;
 extern char *input_filename;
@@ -102,7 +101,7 @@ process_template_parm (list, next)
       my_friendly_assert (TREE_CODE (TREE_PURPOSE (parm)) == TREE_LIST, 260);
       /* is a const-param */
       parm = grokdeclarator (TREE_VALUE (parm), TREE_PURPOSE (parm),
-			     PARM, 0, NULL_TREE);
+			     PARM, 0, NULL_TREE, NULL_TREE);
       /* A template parameter is not modifiable.  */
       TREE_READONLY (parm) = 1;
       if (IS_AGGR_TYPE (TREE_TYPE (parm)))
@@ -239,7 +238,7 @@ end_template_decl (d1, d2, is_class, defn)
 	  my_friendly_assert (code == BIT_NOT_EXPR
 		  || code == OP_IDENTIFIER
 		  || code == SCOPE_REF, 264);
-	  d2 = grokdeclarator (d2, NULL_TREE, MEMFUNCDEF, 0, NULL_TREE);
+	  d2 = grokdeclarator (d2, NULL_TREE, MEMFUNCDEF, 0, NULL_TREE, NULL_TREE);
 	  decl = build_lang_decl (TEMPLATE_DECL, DECL_NAME (d2),
 				  TREE_TYPE (d2));
 	  DECL_TEMPLATE_RESULT (decl) = d2;
@@ -407,12 +406,6 @@ coerce_template_parms (parms, arglist, in_decl)
 	}
       if (is_type)
 	val = groktypename (arg);
-      else if (TREE_CODE (arg) == STRING_CST)
-	{
-	  cp_error ("string literal %E is not a valid template argument", arg);
-	  error ("because it is the address of an object with static linkage");
-	  val = error_mark_node;
-	}
       else
 	{
 	  tree t = tsubst (TREE_TYPE (parm), &TREE_VEC_ELT (vec, 0),
@@ -431,14 +424,41 @@ coerce_template_parms (parms, arglist, in_decl)
 			arg);
 	      val = error_mark_node;
 	    }
-	  else if (TREE_CODE (val) == ADDR_EXPR)
+	  else if (POINTER_TYPE_P (TREE_TYPE (val))
+		   && ! integer_zerop (val)
+		   && TREE_CODE (TREE_TYPE (TREE_TYPE (val))) != OFFSET_TYPE
+		   && TREE_CODE (TREE_TYPE (TREE_TYPE (val))) != METHOD_TYPE)
 	    {
-	      tree a = TREE_OPERAND (val, 0);
-	      if ((TREE_CODE (a) == VAR_DECL
-		   || TREE_CODE (a) == FUNCTION_DECL)
-		  && ! DECL_PUBLIC (a))
+	      t = val;
+	      STRIP_NOPS (t);
+	      if (TREE_CODE (t) == ADDR_EXPR)
 		{
-		  cp_error ("address of non-extern `%E' cannot be used as template argument", a);
+		  tree a = TREE_OPERAND (t, 0);
+		  STRIP_NOPS (a);
+		  if (TREE_CODE (a) == STRING_CST)
+		    {
+		      cp_error ("string literal %E is not a valid template argument", a);
+		      error ("because it is the address of an object with static linkage");
+		      val = error_mark_node;
+		    }
+		  else if (TREE_CODE (a) != VAR_DECL
+			   && TREE_CODE (a) != FUNCTION_DECL)
+		    goto bad;
+		  else if (! DECL_PUBLIC (a))
+		    {
+		      cp_error ("address of non-extern `%E' cannot be used as template argument", a);
+		      val = error_mark_node;
+		    }
+		}
+	      else
+		{
+		bad:
+		  cp_error ("`%E' is not a valid template argument", t);
+		  error ("it must be %s%s with external linkage",
+			 TREE_CODE (TREE_TYPE (val)) == POINTER_TYPE
+			 ? "a pointer to " : "",
+			 TREE_CODE (TREE_TYPE (TREE_TYPE (val))) == FUNCTION_TYPE
+			 ? "a function" : "an object");
 		  val = error_mark_node;
 		}
 	    }
@@ -1714,11 +1734,9 @@ instantiate_template (tmpl, targ_ptr)
   if (TREE_CODE (TREE_TYPE (DECL_RESULT (tmpl))) == METHOD_TYPE
       && DECL_STATIC_FUNCTION_P (fndecl))
     {
-      tree olddecl = DECL_RESULT (tmpl);
       revert_static_member_fn (&DECL_RESULT (tmpl), NULL, NULL);
       /* Chop off the this pointer that grokclassfn so kindly added
 	 for us (it didn't know yet if the fn was static or not).  */
-      DECL_ARGUMENTS (olddecl) = TREE_CHAIN (DECL_ARGUMENTS (olddecl));
       DECL_ARGUMENTS (fndecl) = TREE_CHAIN (DECL_ARGUMENTS (fndecl));
     }
      
@@ -1726,7 +1744,7 @@ instantiate_template (tmpl, targ_ptr)
 
   /* If we have a preexisting version of this function, don't expand
      the template version, use the other instead.  */
-  if (TREE_STATIC (fndecl))
+  if (TREE_STATIC (fndecl) || DECL_TEMPLATE_SPECIALIZATION (fndecl))
     {
       SET_DECL_TEMPLATE_SPECIALIZATION (fndecl);
       p = (struct pending_inline *)0;
@@ -1888,12 +1906,13 @@ overload_template_name (id, classlevel)
 #endif
 }
 
+extern struct pending_input *to_be_restored;
+
 /* NAME is the IDENTIFIER value of a PRE_PARSED_CLASS_DECL. */
 void
 end_template_instantiation (name)
      tree name;
 {
-  extern struct pending_input *to_be_restored;
   tree t, decl;
 
   processing_template_defn--;
@@ -2502,7 +2521,8 @@ void
 do_function_instantiation (declspecs, declarator, storage)
      tree declspecs, declarator, storage;
 {
-  tree decl = grokdeclarator (declarator, declspecs, NORMAL, 0, 0);
+  tree decl = grokdeclarator (declarator, declspecs, NORMAL, 0,
+			      NULL_TREE, NULL_TREE);
   tree name;
   tree fn;
   tree result = NULL_TREE;

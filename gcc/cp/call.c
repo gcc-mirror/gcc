@@ -156,6 +156,55 @@ convert_harshness (type, parmtype, parm)
   if (coder == ERROR_MARK)
     return EVIL_RETURN (h);
 
+  if (codel == REFERENCE_TYPE)
+    {
+      tree ttl, ttr;
+      int constp = parm ? TREE_READONLY (parm) : TYPE_READONLY (parmtype);
+      int volatilep = (parm ? TREE_THIS_VOLATILE (parm)
+		       : TYPE_VOLATILE (parmtype));
+      register tree intype = TYPE_MAIN_VARIANT (parmtype);
+      register enum tree_code form = TREE_CODE (intype);
+      int penalty = 0;
+
+      ttl = TREE_TYPE (type);
+
+      /* Only allow const reference binding if we were given a parm to deal
+         with, since it isn't really a conversion.  This is a hack to
+         prevent build_type_conversion from finding this conversion, but
+         still allow overloading to find it.  */
+      if (! lvalue && ! (parm && TYPE_READONLY (ttl)))
+	return EVIL_RETURN (h);
+
+      if (TYPE_READONLY (ttl) < constp
+	  || TYPE_VOLATILE (ttl) < volatilep)
+	return EVIL_RETURN (h);
+
+      /* When passing a non-const argument into a const reference, dig it a
+	 little, so a non-const reference is preferred over this one.  */
+      penalty = ((TYPE_READONLY (ttl) > constp)
+		 + (TYPE_VOLATILE (ttl) > volatilep));
+
+      ttl = TYPE_MAIN_VARIANT (ttl);
+
+      if (form == OFFSET_TYPE)
+	{
+	  intype = TREE_TYPE (intype);
+	  form = TREE_CODE (intype);
+	}
+
+      ttr = intype;
+
+      /* Maybe handle conversion to base here?  */
+
+      h = convert_harshness (ttl, ttr, NULL_TREE);
+      if (penalty && h.code == 0)
+	{
+	  h.code = QUAL_CODE;
+	  h.int_penalty = penalty;
+	}
+      return h;
+    }
+
   if (codel == POINTER_TYPE && fntype_p (parmtype))
     {
       tree p1, p2;
@@ -198,7 +247,7 @@ convert_harshness (type, parmtype, parm)
 
       /* We allow the default conversion between function type
 	 and pointer-to-function type for free.  */
-      if (type == parmtype)
+      if (comptypes (type, parmtype, 1))
 	return h;
 
       if (pedantic)
@@ -421,10 +470,21 @@ convert_harshness (type, parmtype, parm)
     }
 
   /* Convert arrays which have not previously been converted.  */
+#if 0
   if (codel == ARRAY_TYPE)
     codel = POINTER_TYPE;
+#endif
   if (coder == ARRAY_TYPE)
-    coder = POINTER_TYPE;
+    {
+      coder = POINTER_TYPE;
+      if (parm)
+	{
+	  parm = decay_conversion (parm);
+	  parmtype = TREE_TYPE (parm);
+	}
+      else
+	parmtype = build_pointer_type (TREE_TYPE (parmtype));
+    }
 
   /* Conversions among pointers */
   if (codel == POINTER_TYPE && coder == POINTER_TYPE)
@@ -462,7 +522,7 @@ convert_harshness (type, parmtype, parm)
 	      ttr = unsigned_type (ttr);
 	      penalty = 10;
 	    }
-	  if (comp_target_types (ttl, ttr, 0) <= 0)
+	  if (comp_target_types (type, parmtype, 1) <= 0)
 	    return EVIL_RETURN (h);
 	}
 #else
@@ -559,54 +619,6 @@ convert_harshness (type, parmtype, parm)
       && IS_SIGNATURE_POINTER (type) && IS_SIGNATURE (TREE_TYPE (parmtype)))
     return ZERO_RETURN (h);
 
-  if (codel == REFERENCE_TYPE)
-    {
-      tree ttl, ttr;
-      int constp = parm ? TREE_READONLY (parm) : TYPE_READONLY (parmtype);
-      int volatilep = (parm ? TREE_THIS_VOLATILE (parm)
-		       : TYPE_VOLATILE (parmtype));
-      register tree intype = TYPE_MAIN_VARIANT (parmtype);
-      register enum tree_code form = TREE_CODE (intype);
-      int penalty = 0;
-
-      ttl = TREE_TYPE (type);
-
-      /* Only allow const reference binding if we were given a parm to deal
-         with, since it isn't really a conversion.  This is a hack to
-         prevent build_type_conversion from finding this conversion, but
-         still allow overloading to find it.  */
-      if (! lvalue && ! (parm && TYPE_READONLY (ttl)))
-	return EVIL_RETURN (h);
-
-      if (TYPE_READONLY (ttl) < constp
-	  || TYPE_VOLATILE (ttl) < volatilep)
-	return EVIL_RETURN (h);
-
-      /* When passing a non-const argument into a const reference, dig it a
-	 little, so a non-const reference is preferred over this one.  */
-      penalty = ((TYPE_READONLY (ttl) > constp)
-		 + (TYPE_VOLATILE (ttl) > volatilep));
-
-      ttl = TYPE_MAIN_VARIANT (ttl);
-
-      if (form == OFFSET_TYPE)
-	{
-	  intype = TREE_TYPE (intype);
-	  form = TREE_CODE (intype);
-	}
-
-      ttr = intype;
-
-      /* Maybe handle conversion to base here?  */
-
-      h = convert_harshness (ttl, ttr, NULL_TREE);
-      if (penalty && h.code == 0)
-	{
-	  h.code = QUAL_CODE;
-	  h.int_penalty = penalty;
-	}
-      return h;
-    }
   if (codel == RECORD_TYPE && coder == RECORD_TYPE)
     {
       int b_or_d = get_base_distance (type, parmtype, 0, 0);
@@ -624,6 +636,9 @@ convert_harshness (type, parmtype, parm)
     }
   return EVIL_RETURN (h);
 }
+
+/* A clone of build_type_conversion for checking user-defined conversions in
+   overload resolution.  */
 
 int
 user_harshness (type, parmtype, parm)
@@ -1766,7 +1781,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	{
 	  basetype = SIGNATURE_TYPE (basetype);
 	  instance_ptr = build_optr_ref (instance);
-	  instance_ptr = convert (TYPE_POINTER_TO (basetype), instance_ptr);
+	  instance_ptr = convert (build_pointer_type (basetype), instance_ptr);
 	  basetype_path = TYPE_BINFO (basetype);
 	}
       else
@@ -1788,7 +1803,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	 within the scope of this function.  */
       if (!(flags & LOOKUP_NONVIRTUAL) && TYPE_VIRTUAL_P (basetype))
 	need_vtbl = maybe_needed;
-      instance_ptr = build1 (ADDR_EXPR, TYPE_POINTER_TO (basetype), instance);
+      instance_ptr = build1 (ADDR_EXPR, build_pointer_type (basetype), instance);
     }
   else
     {
@@ -1883,7 +1898,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	    basetype = inst_ptr_basetype;
 	  else
 	    {
-	      instance_ptr = convert (TYPE_POINTER_TO (basetype), instance_ptr);
+	      instance_ptr = convert (build_pointer_type (basetype), instance_ptr);
 	      if (instance_ptr == error_mark_node)
 		return error_mark_node;
 	    }
@@ -1999,40 +2014,11 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	  parmtypes = tree_cons (NULL_TREE, integer_type_node, parmtypes);
 	}
 
-      if (flag_this_is_variable > 0)
-	{
-	  constp = 0;
-	  volatilep = 0;
-	  instance_ptr = build_int_2 (0, 0);
-	  TREE_TYPE (instance_ptr) = TYPE_POINTER_TO (basetype);
-	  parms = tree_cons (NULL_TREE, instance_ptr, parms);
-	}
-      else
-	{
-	  constp = 0;
-	  volatilep = 0;
-	  instance_ptr = build_new (NULL_TREE, basetype, void_type_node, 0);
-	  if (instance_ptr == error_mark_node)
-	    return error_mark_node;
-	  instance_ptr = save_expr (instance_ptr);
-	  TREE_CALLS_NEW (instance_ptr) = 1;
-	  instance = build_indirect_ref (instance_ptr, NULL_PTR);
-
-#if 0
-	  /* This breaks initialization of a reference from a new
-             expression of a different type.  And it doesn't appear to
-             serve its original purpose any more, either.  jason 10/12/94 */
-	  /* If it's a default argument initialized from a ctor, what we get
-	     from instance_ptr will match the arglist for the FUNCTION_DECL
-	     of the constructor.  */
-	  if (parms && TREE_CODE (TREE_VALUE (parms)) == CALL_EXPR
-	      && TREE_OPERAND (TREE_VALUE (parms), 1)
-	      && TREE_CALLS_NEW (TREE_VALUE (TREE_OPERAND (TREE_VALUE (parms), 1))))
-	    parms = build_tree_list (NULL_TREE, instance_ptr);
-	  else
-#endif
-	    parms = tree_cons (NULL_TREE, instance_ptr, parms);
-	}
+      constp = 0;
+      volatilep = 0;
+      instance_ptr = build_int_2 (0, 0);
+      TREE_TYPE (instance_ptr) = build_pointer_type (basetype);
+      parms = tree_cons (NULL_TREE, instance_ptr, parms);
     }
 
   parmtypes = tree_cons (NULL_TREE, TREE_TYPE (instance_ptr), parmtypes);
@@ -2385,9 +2371,10 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	      else if (ever_seen > 1)
 		{
 		  TREE_CHAIN (last) = void_list_node;
-		  cp_error ("no matching function for call to `%T::%D (%A)'",
-			    TREE_TYPE (TREE_TYPE (instance_ptr)),
-			    name, TREE_CHAIN (parmtypes));
+		  cp_error ("no matching function for call to `%T::%D (%A)%V'",
+			    TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (instance_ptr))),
+			    name, TREE_CHAIN (parmtypes),
+			    TREE_TYPE (TREE_TYPE (instance_ptr)));
 		  TREE_CHAIN (last) = NULL_TREE;
 		  print_candidates (found_fns);
 		}
@@ -2486,7 +2473,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 
   if (pedantic && DECL_THIS_INLINE (function) && ! DECL_ARTIFICIAL (function)
        && ! DECL_INITIAL (function) && ! DECL_PENDING_INLINE_INFO (function))
-    cp_pedwarn ("inline function `%#D' called before definition", function);
+    cp_warning ("inline function `%#D' called before definition", function);
 
   fntype = TREE_TYPE (function);
   if (TREE_CODE (fntype) == POINTER_TYPE)

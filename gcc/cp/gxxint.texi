@@ -924,28 +924,46 @@ will never be a problem.
 @node Templates, Access Control, Coding Conventions, Top
 @section Templates
 
-g++ uses the simple approach to instantiating templates: it blindly
-generates the code for each instantiation as needed.  For class
-templates, g++ pushes the template parameters into the namespace for the
-duration of the instantiation; for function templates, it's a simple
-search and replace.
-
-This approach does not support any of the template definition-time error
-checking that is being bandied about by X3J16.  It makes no attempt to deal
-with name binding in a consistent way.
-
-Instantiation of a class template is triggered by the use of a template
-class anywhere but in a straight declaration like @code{class A<int>}.
-This is wrong; in fact, it should not be triggered by typedefs or
-declarations of pointers.  Now that explicit instantiation is supported,
-this misfeature is not necessary.
-
-Important functions:
+A template is represented by a @code{TEMPLATE_DECL}.  The specific
+fields used are:
 
 @table @code
-@item instantiate_class_template
-This function 
+@item DECL_TEMPLATE_RESULT
+The generic decl on which instantiations are based.  This looks just
+like any other decl.
+
+@item DECL_TEMPLATE_PARMS
+The parameters to this template.
 @end table
+
+The generic decl is parsed as much like any other decl as possible,
+given the parameterization.  The template decl is not built up until the
+generic decl has been completed.  For template classes, a template decl
+is generated for each member function and static data member, as well.
+
+Template members of template classes are represented by a TEMPLATE_DECL
+for the class' parameters around another TEMPLATE_DECL for the member's
+parameters.
+
+All declarations that are instantiations or specializations of templates
+refer to their template and parameters through DECL_TEMPLATE_INFO.
+
+How should I handle parsing member functions with the proper param
+decls?  Set them up again or try to use the same ones?  Currently we do
+the former.  We can probably do this without any extra machinery in
+store_pending_inline, by deducing the parameters from the decl in
+do_pending_inlines.  PRE_PARSED_TEMPLATE_DECL?
+
+If a base is a parm, we can't check anything about it.  If a base is not
+a parm, we need to check it for name binding.  Do finish_base_struct if
+no bases are parameterized (only if none, including indirect, are
+parms).  Nah, don't bother trying to do any of this until instantiation
+-- we only need to do name binding in advance.
+
+Always set up method vec and fields, inc. synthesized methods.  Really?
+We can't know the types of the copy folks, or whether we need a
+destructor, or can have a default ctor, until we know our bases and
+fields.  Otherwise, we can assume and fix ourselves later.  Hopefully.
 
 @node Access Control, Error Reporting, Templates, Top
 @section Access Control
@@ -1194,63 +1212,218 @@ the object was thrown.  This is so that there is always someplace for
 the exception object, and nothing can overwrite it, once we start
 throwing.  The only bad part, is that the stack remains large.
 
+The below points out some things that work in g++'s exception handling.
+
+All completely constructed temps and local variables are cleaned up in
+all unwinded scopes.  Completely constructed parts of partially
+constructed objects are cleaned up.  This includes partially built
+arrays.  Exception specifications are now handled.
+
 The below points out some flaws in g++'s exception handling, as it now
 stands.
 
 Only exact type matching or reference matching of throw types works when
 -fno-rtti is used.  Only works on a SPARC (like Suns), i386, arm and
-rs6000 machines.  Partial support is also in for alpha, hppa, m68k and
-mips machines, but a stack unwinder called __unwind_function has to be
-written, and added to libgcc2 for them.  See below for details on
-__unwind_function.  All completely constructed temps and local variables
-are cleaned up in all unwinded scopes.  Completed parts of partially
-constructed objects are cleaned up with the exception that partially
-built arrays are not cleaned up as required.  Don't expect exception
-handling to work right if you optimize, in fact the compiler will
-probably core dump.  If two EH regions are the exact same size, the
-backend cannot tell which one is first.  It punts by picking the last
-one, if they tie.  This is usually right.  We really should stick in a
-nop, if they are the same size.
+rs6000 machines.  Partial support is in for all other machines, but a
+stack unwinder called __unwind_function has to be written, and added to
+libgcc2 for them.  See below for details on __unwind_function.  Don't
+expect exception handling to work right if you optimize, in fact the
+compiler will probably core dump.  RTL_EXPRs for EH cond variables for
+&& and || exprs should probably be wrapped in UNSAVE_EXPRs, and
+RTL_EXPRs tweaked so that they can be unsaved, and the UNSAVE_EXPR code
+should be in the backend, or alternatively, UNSAVE_EXPR should be ripped
+out and exactly one finalization allowed to be expanded by the backend.
+I talked with kenner about this, and we have to allow multiple
+expansions.
 
-When we invoke the copy constructor for an exception object because it
-is passed by value, and if we take a hit (exception) inside the copy
-constructor someplace, where do we go?  I have tentatively chosen to
-not catch throws by the outer block at the same unwind level, if one
-exists, but rather to allow the frame to unwind into the next series of
-handlers, if any.  If this is the wrong way to do it, we will need to
-protect the rest of the handler in some fashion.  Maybe just changing
-the handler's handler to protect the whole series of handlers is the
-right way to go.  This part is wrong.  We should call terminate if an
-exception is thrown while doing things like trying to copy the exception
-object.
+We only do pointer conversions on exception matching a la 15.3 p2 case
+3: `A handler with type T, const T, T&, or const T& is a match for a
+throw-expression with an object of type E if [3]T is a pointer type and
+E is a pointer type that can be converted to T by a standard pointer
+conversion (_conv.ptr_) not involving conversions to pointers to private
+or protected base classes.' when -frtti is given.
 
-Exception specifications are handled syntax wise, but not semantic wise.
-build_exception_variant should sort the incoming list, so that is
+We don't call delete on new expressions that die because the ctor threw
+an exception.  See except/18 for a test case.
+
+15.2 para 13: The exception being handled should be rethrown if control
+reaches the end of a handler of the function-try-block of a constructor
+or destructor, right now, it is not.
+
+15.2 para 12: If a return statement appears in a handler of
+function-try-block of a constructor, the program is ill-formed, but this
+isn't diagnosed.
+
+15.2 para 11: If the handlers of a function-try-block contain a jump
+into the body of a constructor or destructor, the program is ill-formed,
+but this isn't diagnosed.
+
+15.2 para 9: Check that the fully constructed base classes and members
+of an object are destroyed before entering the handler of a
+function-try-block of a constructor or destructor for that object.
+
+build_exception_variant should sort the incoming list, so that it
 implements set compares, not exact list equality.  Type smashing should
 smash exception specifications using set union.
 
-Thrown objects are allocated on the heap, in the usual way, but they are
-never deleted.  They should be deleted by the catch clauses.  If one
-runs out of heap space, throwing an object will probably never work.
-This could be relaxed some by passing an __in_chrg parameter to track
-who has control over the exception object.
+Thrown objects are usually allocated on the heap, in the usual way, but
+they are never deleted.  They should be deleted by the catch clauses.
+If one runs out of heap space, throwing an object will probably never
+work.  This could be relaxed some by passing an __in_chrg parameter to
+track who has control over the exception object.  Thrown objects are not
+allocated on the heap when they are pointer to object types.
 
 When the backend returns a value, it can create new exception regions
 that need protecting.  The new region should rethrow the object in
 context of the last associated cleanup that ran to completion.
 
+The structure of the code that is generated for C++ exception handling
+code is shown below:
+
+@example
+Ln:					throw value;
+        copy value onto heap
+        jump throw (Ln, id, address of copy of value on heap)
+
+                                        try {
++Lstart:	the start of the main EH region
+|...						...
++Lend:		the end of the main EH region
+                                        } catch (T o) {
+						...1
+                                        }
+Lresume:
+        nop	used to make sure there is something before
+                the next region ends, if there is one
+...                                     ...
+
+        jump Ldone
+[
+Lmainhandler:    handler for the region Lstart-Lend
+	cleanup
+] zero or more, depending upon automatic vars with dtors
++Lpartial:
+|        jump Lover
++Lhere:
+        rethrow (Lhere, same id, same obj);
+Lterm:		handler for the region Lpartial-Lhere
+        call terminate
+Lover:
+[
+ [
+        call throw_type_match
+        if (eq) {
+ ] these lines disappear when there is no catch condition
++Lsregion2:
+|	...1
+|	jump Lresume
+|Lhandler:	handler for the region Lsregion2-Leregion2
+|	rethrow (Lresume, same id, same obj);
++Leregion2
+        }
+] there are zero or more of these sections, depending upon how many
+  catch clauses there are
+----------------------------- expand_end_all_catch --------------------------
+                here we have fallen off the end of all catch
+                clauses, so we rethrow to outer
+        rethrow (Lresume, same id, same obj);
+----------------------------- expand_end_all_catch --------------------------
+[
+L1:     maybe throw routine
+] depending upon if we have expanded it or not
+Ldone:
+        ret
+
+start_all_catch emits labels: Lresume, 
+
+#end example
+
 The __unwind_function takes a pointer to the throw handler, and is
 expected to pop the stack frame that was built to call it, as well as
-the frame underneath and then jump to the throw handler.  It must not
-change the three registers allocated for the pointer to the exception
-object, the pointer to the type descriptor that identifies the type of
-the exception object, and the pointer to the code that threw.  On hppa,
-these are %r5, %r6, %r7.  On m68k these are a2, a3, a4.  On mips they
-are s0, s1, s2.  On Alpha these are $9, $10, $11.  It takes about a day
-to write this routine, if someone wants to volunteer to write this
-routine for any architecture, exception support for that architecture
-will be added to g++.  Please send in those code donations.
+the frame underneath and then jump to the throw handler.  It must
+restore all registers to their proper values as well as all other
+machine state as determined by the context in which we are unwinding
+into.  The way I normally start is to compile:
 
+        void *g;
+        foo(void* a) { g = a; }
+
+with -S, and change the thing that alters the PC (return, or ret
+usually) to not alter the PC, making sure to leave all other semantics
+(like adjusting the stack pointer, or frame pointers) in.  After that,
+replicate the prologue once more at the end, again, changing the PC
+altering instructions, and finally, at the very end, jump to `g'.
+
+It takes about a week to write this routine, if someone wants to
+volunteer to write this routine for any architecture, exception support
+for that architecture will be added to g++.  Please send in those code
+donations.  One other thing that needs to be done, is to double check
+that __builtin_return_address (0) works.
+
+@subsection Specific Targets
+
+For the alpha, the __unwind_function will be something resembling:
+
+@example
+void
+__unwind_function(void *ptr)
+@{
+  /* First frame */
+  asm ("ldq $15, 8($30)"); /* get the saved frame ptr; 15 is fp, 30 is sp */
+  asm ("bis $15, $15, $30"); /* reload sp with the fp we found */
+
+  /* Second frame */
+  asm ("ldq $15, 8($30)"); /* fp */
+  asm ("bis $15, $15, $30"); /* reload sp with the fp we found */
+
+  /* Return */
+  asm ("ret $31, ($16), 1"); /* return to PTR, stored in a0 */
+@}
+@end example
+
+@noindent
+However, there are a few problems preventing it from working.  First of
+all, the gcc-internal function @code{__builtin_return_address} needs to
+work given an argument of 0 for the alpha.  As it stands as of August
+30th, 1995, the code for @code{BUILT_IN_RETURN_ADDRESS} in @file{expr.c}
+will definitely not work on the alpha.  Instead, we need to define
+the macros @code{DYNAMIC_CHAIN_ADDRESS} (maybe),
+@code{RETURN_ADDR_IN_PREVIOUS_FRAME}, and definitely need a new
+definition for @code{RETURN_ADDR_RTX}.
+
+In addition (and more importantly), we need a way to reliably find the
+frame pointer on the alpha.  The use of the value 8 above to restore the
+frame pointer (register 15) is incorrect.  On many systems, the frame
+pointer is consistently offset to a specific point on the stack.  On the
+alpha, however, the frame pointer is pushed last.  First the return
+address is stored, then any other registers are saved (e.g., @code{s0}),
+and finally the frame pointer is put in place.  So @code{fp} could have
+an offset of 8, but if the calling function saved any registers at all,
+they add to the offset.
+
+The only places the frame size is noted are with the @samp{.frame}
+directive, for use by the debugger and the OSF exception handling model
+(useless to us), and in the initial computation of the new value for
+@code{sp}, the stack pointer.  For example, the function may start with:
+
+@example
+lda $30,-32($30)
+.frame $15,32,$26,0
+@end example 
+
+@noindent
+The 32 above is exactly the value we need.  With this, we can be sure
+that the frame pointer is stored 8 bytes less---in this case, at 24(sp)).
+The drawback is that there is no way that I (Brendan) have found to let
+us discover the size of a previous frame @emph{inside} the definition
+of @code{__unwind_function}.
+
+So to accomplish exception handling support on the alpha, we need two
+things: first, a way to figure out where the frame pointer was stored,
+and second, a functional @code{__builtin_return_address} implementation
+for except.c to be able to use it.
+
+@subsection Backend Exception Support
 
 The backend must be extended to fully support exceptions.  Right now
 there are a few hooks into the alpha exception handling backend that
@@ -1284,6 +1457,78 @@ semantics.
 
 The above is not meant to be exhaustive, but does include all things I
 have thought of so far.  I am sure other limitations exist.
+
+Below are some notes on the migration of the exception handling code
+backend from the C++ frontend to the backend.
+
+NOTEs are to be used to denote the start of an exception region, and the
+end of the region.  I presume that the interface used to generate these
+notes in the backend would be two functions, start_exception_region and
+end_exception_region (or something like that).  The frontends are
+required to call them in pairs.  When marking the end of a region, an
+argument can be passed to indicate the handler for the marked region.
+This can be passed in many ways, currently a tree is used.  Another
+possibility would be insns for the handler, or a label that denotes a
+handler.  I have a feeling insns might be the the best way to pass it.
+Semantics are, if an exception is thrown inside the region, control is
+transfered unconditionally to the handler.  If control passes through
+the handler, then the backend is to rethrow the exception, in the
+context of the end of the original region.  The handler is protected by
+the conventional mechanisms; it is the frontend's responsibility to
+protect the handler, if special semantics are required.
+
+This is a very low level view, and it would be nice is the backend
+supported a somewhat higher level view in addition to this view.  This
+higher level could include source line number, name of the source file,
+name of the language that threw the exception and possibly the name of
+the exception.  Kenner may want to rope you into doing more than just
+the basics required by C++.  You will have to resolve this.  He may want
+you to do support for non-local gotos, first scan for exception handler,
+if none is found, allow the debugger to be entered, without any cleanups
+being done.  To do this, the backend would have to know the difference
+between a cleanup-rethrower, and a real handler, if would also have to
+have a way to know if a handler `matches' a thrown exception, and this
+is frontend specific.
+
+The UNSAVE_EXPR tree code has to be migrated to the backend.  Exprs such
+as TARGET_EXPRs, WITH_CLEANUP_EXPRs, CALL_EXPRs and RTL_EXPRs have to be
+changed to support unsaving.  This is meant to be a complete list.
+SAVE_EXPRs can be unsaved already.  expand_decl_cleanup should be
+changed to unsave it's argument, if needed.  See
+cp/tree.c:cp_expand_decl_cleanup, unsave_expr_now, unsave_expr, and
+cp/expr.c:cplus_expand_expr(case UNSAVE_EXPR:) for the UNSAVE_EXPR code.
+Now, as to why...  because kenner already tripped over the exact same
+problem in Ada, we talked about it, he didn't like any of the solution,
+but yet, didn't like no solution either.  He was willing to live with
+the drawbacks of this solution.  The drawback is unsave_expr_now.  It
+should have a callback into the frontend, to allow the unsaveing of
+frontend special codes.  The callback goes in, inplace of the call to
+my_friendly_abort.
+
+The stack unwinder is one of the hardest parts to do.  It is highly
+machine dependent.  The form that kenner seems to like was a couple of
+macros, that would do the machine dependent grunt work.  One preexisting
+function that might be of some use is __builtin_return_address ().  One
+macro he seemed to want was __builtin_return_address, and the other
+would do the hard work of fixing up the registers, adjusting the stack
+pointer, frame pointer, arg pointer and so on.
+
+The eh archive (~mrs/eh) might be good reading for understanding the Ada
+perspective, and some of kenners mindset, and a detailed explanation
+(Message-Id: <9308301130.AA10543@vlsi1.ultra.nyu.edu>) of the concepts
+involved.
+
+Here is a guide to existing backend type code.  It is all in
+cp/except.c.  Check out do_unwind, and expand_builtin_throw for current
+code on how to figure out what handler matches an exception,
+emit_exception_table for code on emitting the PC range table that is
+built during compilation, expand_exception_blocks for code that emits
+all the handlers at the end of a functions, end_protect to mark the end
+of an exception region, start_protect to mark the start of an exception
+region, lang_interim_eh is the master hook used by the backend into the
+EH backend that now exists in the frontend, and expand_internal_throw to
+raise an exception.
+
 
 @node Free Store, Concept Index, Exception Handling, Top
 @section Free Store

@@ -729,7 +729,7 @@ expand_virtual_init (binfo, decl)
   vtbl = BINFO_VTABLE (binfo_value (DECL_FIELD_CONTEXT (CLASSTYPE_VFIELD (type)), binfo));
   assemble_external (vtbl);
   TREE_USED (vtbl) = 1;
-  vtbl = build1 (ADDR_EXPR, TYPE_POINTER_TO (TREE_TYPE (vtbl)), vtbl);
+  vtbl = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (vtbl)), vtbl);
   decl = convert_pointer_to_real (vtype_binfo, decl);
   vtbl_ptr = build_vfield_ref (build_indirect_ref (decl, NULL_PTR), vtype);
   if (vtbl_ptr == error_mark_node)
@@ -1075,6 +1075,8 @@ expand_member_init (exp, name, init)
    INIT comes in two flavors: it is either a value which
    is to be stored in EXP, or it is a parameter list
    to go to a constructor, which will operate on EXP.
+   If INIT is not a parameter list for a constructor, then set
+   LOOKUP_ONLYCONVERTING.
    If FLAGS is LOOKUP_ONLYCONVERTING then it is the = init form of
    the initializer, if FLAGS is 0, then it is the (init) form.
    If `init' is a CONSTRUCTOR, then we emit a warning message,
@@ -1113,19 +1115,23 @@ expand_aggr_init (exp, init, alias_this, flags)
 {
   tree type = TREE_TYPE (exp);
   int was_const = TREE_READONLY (exp);
+  int was_volatile = TREE_THIS_VOLATILE (exp);
 
   if (init == error_mark_node)
     return;
 
   TREE_READONLY (exp) = 0;
+  TREE_THIS_VOLATILE (exp) = 0;
+
+  if (init && TREE_CODE (init) != TREE_LIST)
+    flags |= LOOKUP_ONLYCONVERTING;
 
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
       /* Must arrange to initialize each element of EXP
 	 from elements of INIT.  */
-      int was_const_elts = TYPE_READONLY (TREE_TYPE (type));
       tree itype = init ? TREE_TYPE (init) : NULL_TREE;
-      if (was_const_elts)
+      if (TYPE_READONLY (TREE_TYPE (type)) || TYPE_VOLATILE (TREE_TYPE (type)))
 	{
 	  TREE_TYPE (exp) = TYPE_MAIN_VARIANT (type);
 	  if (init)
@@ -1151,6 +1157,7 @@ expand_aggr_init (exp, init, alias_this, flags)
       expand_vec_init (exp, exp, array_type_nelts (type), init,
 		       init && comptypes (TREE_TYPE (init), TREE_TYPE (exp), 1));
       TREE_READONLY (exp) = was_const;
+      TREE_THIS_VOLATILE (exp) = was_volatile;
       TREE_TYPE (exp) = type;
       if (init)
 	TREE_TYPE (init) = itype;
@@ -1172,6 +1179,7 @@ expand_aggr_init (exp, init, alias_this, flags)
   expand_aggr_init_1 (TYPE_BINFO (type), exp, exp,
 		      init, alias_this, LOOKUP_NORMAL|flags);
   TREE_READONLY (exp) = was_const;
+  TREE_THIS_VOLATILE (exp) = was_volatile;
 }
 
 static void
@@ -1229,6 +1237,8 @@ expand_default_init (binfo, true_exp, exp, type, init, alias_this, flags)
     }
   else
     {
+      if (flags & LOOKUP_ONLYCONVERTING)
+	flags |= LOOKUP_NO_CONVERSION;
       rval = build_method_call (exp, constructor_name_full (type),
 				parms, binfo, flags);
 
@@ -1786,12 +1796,12 @@ build_member_call (cname, name, parmlist)
   if (dont_use_this)
     {
       basetype_path = TYPE_BINFO (type);
-      decl = build1 (NOP_EXPR, TYPE_POINTER_TO (type), error_mark_node);
+      decl = build1 (NOP_EXPR, build_pointer_type (type), error_mark_node);
     }
   else if (current_class_decl == 0)
     {
       dont_use_this = 1;
-      decl = build1 (NOP_EXPR, TYPE_POINTER_TO (type), error_mark_node);
+      decl = build1 (NOP_EXPR, build_pointer_type (type), error_mark_node);
     }
   else
     {
@@ -2192,7 +2202,8 @@ resolve_offset_ref (exp)
     {
       if (TREE_ADDRESSABLE (member) == 0)
 	{
-	  cp_error_at ("member `%D' is non-static in static member function context", member);
+	  cp_error_at ("member `%D' is non-static but referenced as a static member",
+		       member);
 	  error ("at this point in file");
 	  TREE_ADDRESSABLE (member) = 1;
 	}
@@ -3037,7 +3048,7 @@ build_new (placement, decl, init, use_global_new)
   if (! use_global_new && TYPE_LANG_SPECIFIC (true_type)
       && (TYPE_GETS_NEW (true_type) & (1 << has_array)))
     rval = build_opfncall (code, LOOKUP_NORMAL,
-			   TYPE_POINTER_TO (true_type), size, placement);
+			   build_pointer_type (true_type), size, placement);
   else if (placement)
     {
       rval = build_opfncall (code, LOOKUP_GLOBAL|LOOKUP_COMPLAIN,
@@ -3064,9 +3075,9 @@ build_new (placement, decl, init, use_global_new)
       /* See comment above as to why this is disabled.  */
       if (alignment)
 	{
-	  rval = build (PLUS_EXPR, TYPE_POINTER_TO (true_type), rval,
+	  rval = build (PLUS_EXPR, build_pointer_type (true_type), rval,
 			alignment);
-	  rval = build (BIT_AND_EXPR, TYPE_POINTER_TO (true_type),
+	  rval = build (BIT_AND_EXPR, build_pointer_type (true_type),
 			rval, build1 (BIT_NOT_EXPR, integer_type_node,
 				      alignment));
 	}
@@ -3100,7 +3111,7 @@ build_new (placement, decl, init, use_global_new)
       rval = convert (string_type_node, rval); /* lets not add void* and ints */
       rval = save_expr (build_binary_op (PLUS_EXPR, rval, extra, 1));
       /* Store header info.  */
-      cookie = build_indirect_ref (build (MINUS_EXPR, TYPE_POINTER_TO (BI_header_type),
+      cookie = build_indirect_ref (build (MINUS_EXPR, build_pointer_type (BI_header_type),
 					  rval, extra), NULL_PTR);
       exp1 = build (MODIFY_EXPR, void_type_node,
 		    build_component_ref (cookie, nc_nelts_field_id, 0, 0),
@@ -3187,8 +3198,13 @@ build_new (placement, decl, init, use_global_new)
 
 	  /* In case of static initialization, SAVE_EXPR is good enough.  */
 	  rval = save_expr (rval);
-	  init = copy_to_permanent (init);
 	  rval = copy_to_permanent (rval);
+	  init = copy_to_permanent (init);
+	  init = expand_vec_init (decl, rval,
+				  build_binary_op (MINUS_EXPR, nelts,
+						   integer_one_node, 1),
+				  init, 0);
+	  init = copy_to_permanent (init);
 	  static_aggregates = perm_tree_cons (init, rval, static_aggregates);
 	}
       else
@@ -3306,6 +3322,174 @@ build_new (placement, decl, init, use_global_new)
   return rval;
 }
 
+static tree
+build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
+		    use_global_delete)
+     tree base, maxindex, type;
+     tree auto_delete_vec, auto_delete;
+     int use_global_delete;
+{
+  tree virtual_size;
+  tree ptype = build_pointer_type (type);
+  tree size_exp = size_in_bytes (type);
+
+  /* Temporary variables used by the loop.  */
+  tree tbase, tbase_init;
+
+  /* This is the body of the loop that implements the deletion of a
+     single element, and moves temp variables to next elements.  */
+  tree body;
+
+  /* This is the LOOP_EXPR that governs the deletion of the elements.  */
+  tree loop;
+
+  /* This is the thing that governs what to do after the loop has run.  */
+  tree deallocate_expr = 0;
+
+  /* This is the BIND_EXPR which holds the outermost iterator of the
+     loop.  It is convenient to set this variable up and test it before
+     executing any other code in the loop.
+     This is also the containing expression returned by this function.  */
+  tree controller = NULL_TREE;
+
+  /* This is the BLOCK to record the symbol binding for debugging.  */
+  tree block;
+
+  if (! IS_AGGR_TYPE (type) || ! TYPE_NEEDS_DESTRUCTOR (type))
+    {
+      loop = integer_zero_node;
+      goto no_destructor;
+    }
+
+  /* The below is short by BI_header_size */
+  virtual_size = fold (size_binop (MULT_EXPR, size_exp, maxindex));
+
+  tbase = build_decl (VAR_DECL, NULL_TREE, ptype);
+  tbase_init = build_modify_expr (tbase, NOP_EXPR,
+				  fold (build (PLUS_EXPR, ptype,
+					       base,
+					       virtual_size)));
+  DECL_REGISTER (tbase) = 1;
+  controller = build (BIND_EXPR, void_type_node, tbase, 0, 0);
+  TREE_SIDE_EFFECTS (controller) = 1;
+  block = build_block (tbase, 0, 0, 0, 0);
+  add_block_current_level (block);
+
+  if (auto_delete != integer_zero_node
+      && auto_delete != integer_two_node)
+    {
+      tree base_tbd = convert (ptype,
+			       build_binary_op (MINUS_EXPR,
+						convert (ptr_type_node, base),
+						BI_header_size,
+						1));
+      /* This is the real size */
+      virtual_size = size_binop (PLUS_EXPR, virtual_size, BI_header_size);
+      body = build_tree_list (NULL_TREE,
+			      build_x_delete (ptype, base_tbd,
+					      2 | use_global_delete,
+					      virtual_size));
+      body = build (COND_EXPR, void_type_node,
+		    build (BIT_AND_EXPR, integer_type_node,
+			   auto_delete, integer_one_node),
+		    body, integer_zero_node);
+    }
+  else
+    body = NULL_TREE;
+
+  body = tree_cons (NULL_TREE,
+		    build_delete (ptype, tbase, auto_delete,
+				  LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 1),
+		    body);
+
+  body = tree_cons (NULL_TREE,
+		    build_modify_expr (tbase, NOP_EXPR, build (MINUS_EXPR, ptype, tbase, size_exp)),
+		    body);
+
+  body = tree_cons (NULL_TREE,
+		    build (EXIT_EXPR, void_type_node,
+			   build (EQ_EXPR, boolean_type_node, base, tbase)),
+		    body);
+
+  loop = build (LOOP_EXPR, void_type_node, build_compound_expr (body));
+
+  loop = tree_cons (NULL_TREE, tbase_init,
+		    tree_cons (NULL_TREE, loop, NULL_TREE));
+  loop = build_compound_expr (loop);
+
+ no_destructor:
+  /* If the delete flag is one, or anything else with the low bit set,
+     delete the storage.  */
+  if (auto_delete_vec == integer_zero_node
+      || auto_delete_vec == integer_two_node)
+    deallocate_expr = integer_zero_node;
+  else
+    {
+      tree base_tbd;
+
+      /* The below is short by BI_header_size */
+      virtual_size = fold (size_binop (MULT_EXPR, size_exp, maxindex));
+
+      if (! TYPE_VEC_NEW_USES_COOKIE (type))
+	/* no header */
+	base_tbd = base;
+      else
+	{
+	  base_tbd = convert (ptype,
+			      build_binary_op (MINUS_EXPR,
+					       convert (string_type_node, base),
+					       BI_header_size,
+					       1));
+	  /* True size with header. */
+	  virtual_size = size_binop (PLUS_EXPR, virtual_size, BI_header_size);
+	}
+      deallocate_expr = build_x_delete (ptype, base_tbd,
+					2 | use_global_delete,
+					virtual_size);
+      if (auto_delete_vec != integer_one_node)
+	deallocate_expr = build (COND_EXPR, void_type_node,
+				 build (BIT_AND_EXPR, integer_type_node,
+					auto_delete_vec, integer_one_node),
+				 deallocate_expr, integer_zero_node);
+    }
+
+  if (loop && deallocate_expr != integer_zero_node)
+    {
+      body = tree_cons (NULL_TREE, loop,
+			tree_cons (NULL_TREE, deallocate_expr, NULL_TREE));
+      body = build_compound_expr (body);
+    }
+  else
+    body = loop;
+
+  /* Outermost wrapper: If pointer is null, punt.  */
+  body = build (COND_EXPR, void_type_node,
+		build (NE_EXPR, boolean_type_node, base, integer_zero_node),
+		body, integer_zero_node);
+  body = build1 (NOP_EXPR, void_type_node, body);
+
+  if (controller)
+    {
+      TREE_OPERAND (controller, 1) = body;
+      return controller;
+    }
+  else
+    return convert (void_type_node, body);
+}
+
+/* Build a tree to cleanup partially built arrays.
+   BASE is that starting address of the array.
+   COUNT is the count of objects that have been built, that need destroying.
+   TYPE is the type of elements in the array.  */
+static tree
+build_array_eh_cleanup (base, count, type)
+     tree base, count, type;
+{
+  tree expr = build_vec_delete_1 (base, count, type, integer_two_node,
+				  integer_zero_node, 0);
+  return expr;
+}
+
 /* `expand_vec_init' performs initialization of a vector of aggregate
    types.
 
@@ -3350,12 +3534,12 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 
   /* Set to zero in case size is <= 0.  Optimizer will delete this if
      it is not needed.  */
-  rval = get_temp_regvar (TYPE_POINTER_TO (type),
-			  convert (TYPE_POINTER_TO (type), null_pointer_node));
+  rval = get_temp_regvar (build_pointer_type (type),
+			  convert (build_pointer_type (type), null_pointer_node));
   base = default_conversion (base);
-  base = convert (TYPE_POINTER_TO (type), base);
+  base = convert (build_pointer_type (type), base);
   expand_assignment (rval, base, 0, 0);
-  base = get_temp_regvar (TYPE_POINTER_TO (type), base);
+  base = get_temp_regvar (build_pointer_type (type), base);
 
   if (init != NULL_TREE
       && TREE_CODE (init) == CONSTRUCTOR
@@ -3364,7 +3548,7 @@ expand_vec_init (decl, base, maxindex, init, from_array)
       /* Initialization of array from {...}.  */
       tree elts = CONSTRUCTOR_ELTS (init);
       tree baseref = build1 (INDIRECT_REF, type, base);
-      tree baseinc = build (PLUS_EXPR, TYPE_POINTER_TO (type), base, size);
+      tree baseinc = build (PLUS_EXPR, build_pointer_type (type), base, size);
       int host_i = TREE_INT_CST_LOW (maxindex);
 
       if (IS_AGGR_TYPE (type))
@@ -3441,6 +3625,8 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 
       expand_start_cond (build (GE_EXPR, boolean_type_node,
 				iterator, integer_zero_node), 0);
+      if (TYPE_NEEDS_DESTRUCTOR (type))
+	start_protect ();
       expand_start_loop_continue_elsewhere (1);
 
       if (from_array)
@@ -3466,18 +3652,18 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 	{
 	  if (init != 0)
 	    sorry ("cannot initialize multi-dimensional array with initializer");
-	  expand_vec_init (decl, build1 (NOP_EXPR, TYPE_POINTER_TO (TREE_TYPE (type)), base),
+	  expand_vec_init (decl, build1 (NOP_EXPR, build_pointer_type (TREE_TYPE (type)), base),
 			   array_type_nelts (type), 0, 0);
 	}
       else
 	expand_aggr_init (build1 (INDIRECT_REF, type, base), init, 0, 0);
 
       expand_assignment (base,
-			 build (PLUS_EXPR, TYPE_POINTER_TO (type), base, size),
+			 build (PLUS_EXPR, build_pointer_type (type), base, size),
 			 0, 0);
       if (base2)
 	expand_assignment (base2,
-			   build (PLUS_EXPR, TYPE_POINTER_TO (type), base2, size), 0, 0);
+			   build (PLUS_EXPR, build_pointer_type (type), base2, size), 0, 0);
       expand_loop_continue_here ();
       expand_exit_loop_if_false (0, build (NE_EXPR, boolean_type_node,
 					   build (PREDECREMENT_EXPR, integer_type_node, iterator, integer_one_node), minus_one));
@@ -3489,6 +3675,13 @@ expand_vec_init (decl, base, maxindex, init, from_array)
 	    use_variable (DECL_RTL (base2));
 	}
       expand_end_loop ();
+      if (TYPE_NEEDS_DESTRUCTOR (type))
+	end_protect (build_array_eh_cleanup (rval,
+					     build_binary_op (MINUS_EXPR,
+							      maxindex,
+							      iterator,
+							      1),
+					     type));
       expand_end_cond ();
       if (obey_regdecls)
 	use_variable (DECL_RTL (iterator));
@@ -3848,7 +4041,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	  else
 	    this_auto_delete = integer_zero_node;
 
-	  expr = build_delete (TYPE_POINTER_TO (BINFO_TYPE (base_binfo)), addr,
+	  expr = build_delete (build_pointer_type (BINFO_TYPE (base_binfo)), addr,
 			       this_auto_delete, flags, 0);
 	  exprstmt = tree_cons (NULL_TREE, expr, exprstmt);
 	}
@@ -3862,10 +4055,10 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	    continue;
 
 	  /* May be zero offset if other baseclasses are virtual.  */
-	  expr = fold (build (PLUS_EXPR, TYPE_POINTER_TO (BINFO_TYPE (base_binfo)),
+	  expr = fold (build (PLUS_EXPR, build_pointer_type (BINFO_TYPE (base_binfo)),
 			      addr, BINFO_OFFSET (base_binfo)));
 
-	  expr = build_delete (TYPE_POINTER_TO (BINFO_TYPE (base_binfo)), expr,
+	  expr = build_delete (build_pointer_type (BINFO_TYPE (base_binfo)), expr,
 			       integer_zero_node,
 			       flags, 0);
 
@@ -3906,7 +4099,7 @@ build_vbase_delete (type, decl)
 
   while (vbases)
     {
-      tree this_addr = convert_force (TYPE_POINTER_TO (BINFO_TYPE (vbases)),
+      tree this_addr = convert_force (build_pointer_type (BINFO_TYPE (vbases)),
 				      addr, 0);
       result = tree_cons (NULL_TREE,
 			  build_delete (TREE_TYPE (this_addr), this_addr,
@@ -3941,34 +4134,12 @@ build_vec_delete (base, maxindex, elt_size, auto_delete_vec, auto_delete,
      tree auto_delete_vec, auto_delete;
      int use_global_delete;
 {
-  tree ptype, type, virtual_size;
-
-  /* Temporary variables used by the loop.  */
-  tree tbase, size_exp, tbase_init;
-
-  /* This is the body of the loop that implements the deletion of a
-     single element, and moves temp variables to next elements.  */
-  tree body;
-
-  /* This is the LOOP_EXPR that governs the deletion of the elements.  */
-  tree loop;
-
-  /* This is the thing that governs what to do after the loop has run.  */
-  tree deallocate_expr = 0;
-
-  /* This is the BIND_EXPR which holds the outermost iterator of the
-     loop.  It is convenient to set this variable up and test it before
-     executing any other code in the loop.
-     This is also the containing expression returned by this function.  */
-  tree controller = NULL_TREE;
-
-  /* This is the BLOCK to record the symbol binding for debugging.  */
-  tree block;
+  tree type;
 
   if (TREE_CODE (base) == OFFSET_REF)
     base = resolve_offset_ref (base);
 
-  ptype = TREE_TYPE (base);
+  type = TREE_TYPE (base);
 
   base = stabilize_reference (base);
 
@@ -3976,23 +4147,23 @@ build_vec_delete (base, maxindex, elt_size, auto_delete_vec, auto_delete,
   if (TREE_SIDE_EFFECTS (base))
     base = save_expr (base);
 
-  if (TREE_CODE (ptype) == POINTER_TYPE)
+  if (TREE_CODE (type) == POINTER_TYPE)
     {
       /* Step back one from start of vector, and read dimension.  */
-      tree cookie_addr = build (MINUS_EXPR, TYPE_POINTER_TO (BI_header_type),
+      tree cookie_addr = build (MINUS_EXPR, build_pointer_type (BI_header_type),
 				base, BI_header_size);
       tree cookie = build_indirect_ref (cookie_addr, NULL_PTR);
       maxindex = build_component_ref (cookie, nc_nelts_field_id, 0, 0);
       do
-	ptype = TREE_TYPE (ptype);
-      while (TREE_CODE (ptype) == ARRAY_TYPE);
+	type = TREE_TYPE (type);
+      while (TREE_CODE (type) == ARRAY_TYPE);
     }
-  else if (TREE_CODE (ptype) == ARRAY_TYPE)
+  else if (TREE_CODE (type) == ARRAY_TYPE)
     {
       /* get the total number of things in the array, maxindex is a bad name */
-      maxindex = array_type_nelts_total (ptype);
-      while (TREE_CODE (ptype) == ARRAY_TYPE)
-	ptype = TREE_TYPE (ptype);
+      maxindex = array_type_nelts_total (type);
+      while (TREE_CODE (type) == ARRAY_TYPE)
+	type = TREE_TYPE (type);
       base = build_unary_op (ADDR_EXPR, base, 1);
     }
   else
@@ -4000,129 +4171,7 @@ build_vec_delete (base, maxindex, elt_size, auto_delete_vec, auto_delete,
       error ("type to vector delete is neither pointer or array type");
       return error_mark_node;
     }
-  type = ptype;
-  ptype = TYPE_POINTER_TO (type);
 
-  size_exp = size_in_bytes (type);
-
-  if (! IS_AGGR_TYPE (type) || ! TYPE_NEEDS_DESTRUCTOR (type))
-    {
-      loop = integer_zero_node;
-      goto no_destructor;
-    }
-
-  /* The below is short by BI_header_size */
-  virtual_size = fold (size_binop (MULT_EXPR, size_exp, maxindex));
-
-  tbase = build_decl (VAR_DECL, NULL_TREE, ptype);
-  tbase_init = build_modify_expr (tbase, NOP_EXPR,
-				  fold (build (PLUS_EXPR, ptype,
-					       base,
-					       virtual_size)));
-  DECL_REGISTER (tbase) = 1;
-  controller = build (BIND_EXPR, void_type_node, tbase, 0, 0);
-  TREE_SIDE_EFFECTS (controller) = 1;
-  block = build_block (tbase, 0, 0, 0, 0);
-  add_block_current_level (block);
-
-  if (auto_delete != integer_zero_node
-      && auto_delete != integer_two_node)
-    {
-      tree base_tbd = convert (ptype,
-			       build_binary_op (MINUS_EXPR,
-						convert (ptr_type_node, base),
-						BI_header_size,
-						1));
-      /* This is the real size */
-      virtual_size = size_binop (PLUS_EXPR, virtual_size, BI_header_size);
-      body = build_tree_list (NULL_TREE,
-			      build_x_delete (ptype, base_tbd,
-					      2 | use_global_delete,
-					      virtual_size));
-      body = build (COND_EXPR, void_type_node,
-		    build (BIT_AND_EXPR, integer_type_node,
-			   auto_delete, integer_one_node),
-		    body, integer_zero_node);
-    }
-  else
-    body = NULL_TREE;
-
-  body = tree_cons (NULL_TREE,
-		    build_delete (ptype, tbase, auto_delete,
-				  LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 1),
-		    body);
-
-  body = tree_cons (NULL_TREE,
-		    build_modify_expr (tbase, NOP_EXPR, build (MINUS_EXPR, ptype, tbase, size_exp)),
-		    body);
-
-  body = tree_cons (NULL_TREE,
-		    build (EXIT_EXPR, void_type_node,
-			   build (EQ_EXPR, boolean_type_node, base, tbase)),
-		    body);
-
-  loop = build (LOOP_EXPR, void_type_node, build_compound_expr (body));
-
-  loop = tree_cons (NULL_TREE, tbase_init,
-		    tree_cons (NULL_TREE, loop, NULL_TREE));
-  loop = build_compound_expr (loop);
-
- no_destructor:
-  /* If the delete flag is one, or anything else with the low bit set,
-     delete the storage.  */
-  if (auto_delete_vec == integer_zero_node
-      || auto_delete_vec == integer_two_node)
-    deallocate_expr = integer_zero_node;
-  else
-    {
-      tree base_tbd;
-
-      /* The below is short by BI_header_size */
-      virtual_size = fold (size_binop (MULT_EXPR, size_exp, maxindex));
-
-      if (! TYPE_VEC_NEW_USES_COOKIE (type))
-	/* no header */
-	base_tbd = base;
-      else
-	{
-	  base_tbd = convert (ptype,
-			      build_binary_op (MINUS_EXPR,
-					       convert (string_type_node, base),
-					       BI_header_size,
-					       1));
-	  /* True size with header. */
-	  virtual_size = size_binop (PLUS_EXPR, virtual_size, BI_header_size);
-	}
-      deallocate_expr = build_x_delete (ptype, base_tbd,
-					2 | use_global_delete,
-					virtual_size);
-      if (auto_delete_vec != integer_one_node)
-	deallocate_expr = build (COND_EXPR, void_type_node,
-				 build (BIT_AND_EXPR, integer_type_node,
-					auto_delete_vec, integer_one_node),
-				 deallocate_expr, integer_zero_node);
-    }
-
-  if (loop && deallocate_expr != integer_zero_node)
-    {
-      body = tree_cons (NULL_TREE, loop,
-			tree_cons (NULL_TREE, deallocate_expr, NULL_TREE));
-      body = build_compound_expr (body);
-    }
-  else
-    body = loop;
-
-  /* Outermost wrapper: If pointer is null, punt.  */
-  body = build (COND_EXPR, void_type_node,
-		build (NE_EXPR, boolean_type_node, base, integer_zero_node),
-		body, integer_zero_node);
-  body = build1 (NOP_EXPR, void_type_node, body);
-
-  if (controller)
-    {
-      TREE_OPERAND (controller, 1) = body;
-      return controller;
-    }
-  else
-    return convert (void_type_node, body);
+  return build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
+			     use_global_delete);
 }

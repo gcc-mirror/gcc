@@ -548,9 +548,9 @@ struct binding_level
     /* The binding level which this one is contained in (inherits from).  */
     struct binding_level *level_chain;
 
-    /* Number of decls in `names' that have incomplete 
+    /* List of decls in `names' that have incomplete
        structure or union types.  */
-    unsigned int n_incomplete;
+    tree incomplete;
 
     /* List of VAR_DECLS saved from a previous for statement.
        These would be dead in ANSI-conforming code, but might
@@ -1488,7 +1488,7 @@ print_binding_level (lvl)
   fprintf (stderr, " blocks=");
   fprintf (stderr, HOST_PTR_PRINTF, lvl->blocks);
   fprintf (stderr, " n_incomplete=%d parm_flag=%d keep=%d",
-	   lvl->n_incomplete, lvl->parm_flag, lvl->keep);
+	   list_length (lvl->incomplete), lvl->parm_flag, lvl->keep);
   if (lvl->tag_transparent)
     fprintf (stderr, " tag-transparent");
   if (lvl->more_cleanups_ok)
@@ -2138,6 +2138,7 @@ pushtag (name, type, globalize)
 		  d = make_type_decl (name, type);
 #else
 		  d = build_decl (TYPE_DECL, name, type);
+		  DECL_ASSEMBLER_NAME (d) = current_namespace_id (DECL_ASSEMBLER_NAME (d));
 #endif
 		  SET_DECL_ARTIFICIAL (d);
 #ifdef DWARF_DEBUGGING_INFO
@@ -2806,9 +2807,9 @@ duplicate_decls (newdecl, olddecl)
 	{
 	  tree ctype = NULL_TREE;
 	  ctype = DECL_CLASS_CONTEXT (newdecl);
-	  TREE_TYPE (newdecl) = build_exception_variant (ctype, newtype,
+	  TREE_TYPE (newdecl) = build_exception_variant (newtype,
 							 TYPE_RAISES_EXCEPTIONS (TREE_TYPE (newdecl)));
-	  TREE_TYPE (olddecl) = build_exception_variant (ctype, newtype,
+	  TREE_TYPE (olddecl) = build_exception_variant (newtype,
 							 TYPE_RAISES_EXCEPTIONS (oldtype));
 
 	  if (! compexcepttypes (TREE_TYPE (newdecl), TREE_TYPE (olddecl), 0))
@@ -3172,6 +3173,8 @@ pushdecl (x)
 #endif
 	      if (TREE_CODE (t) == TYPE_DECL)
 		SET_IDENTIFIER_TYPE_VALUE (name, TREE_TYPE (t));
+	      else if (TREE_CODE (t) == FUNCTION_DECL)
+		check_default_args (t);
 
 	      return t;
 	    }
@@ -3395,6 +3398,7 @@ pushdecl (x)
 	      if (oldlocal != NULL_TREE && TREE_CODE (oldlocal) == PARM_DECL)
 		warnstring = "declaration of `%s' shadows a parameter";
 	      else if (IDENTIFIER_CLASS_VALUE (name) != NULL_TREE
+		       && current_class_decl
 		       && !TREE_STATIC (name))
 		warnstring = "declaration of `%s' shadows a member of `this'";
 	      else if (oldlocal != NULL_TREE)
@@ -3408,43 +3412,17 @@ pushdecl (x)
 	}
 
       if (TREE_CODE (x) == FUNCTION_DECL)
-	{
-	  /* This is probably the wrong place to check this, but it has to
-             come after the call to duplicate_decls.  */
-	  tree arg = TYPE_ARG_TYPES (TREE_TYPE (x));
-	  int saw_def = 0, i = 1;
-	  for (; arg && arg != void_list_node; arg = TREE_CHAIN (arg), ++i)
-	    {
-	      if (TREE_PURPOSE (arg))
-		saw_def = 1;
-	      else if (saw_def)
-		{
-		  cp_error ("default argument missing for parameter %d of `%#D'",
-			    i, x);
-		  break;
-		}
-	    }
-	}
+	check_default_args (x);
 
       /* Keep count of variables in this level with incomplete type.  */
-      if (TREE_CODE (x) != TEMPLATE_DECL
-	  && TYPE_SIZE (TREE_TYPE (x)) == NULL_TREE
-	  && PROMOTES_TO_AGGR_TYPE (TREE_TYPE (x), ARRAY_TYPE))
-	{
-	  if (++b->n_incomplete == 0)
-	    error ("too many incomplete variables at this point");
-	}
-
-      /* Keep count of variables in this level with incomplete type.  */
-      /* RTTI TD entries are created while defining the type_info.  */
       if (TREE_CODE (x) == VAR_DECL
 	  && TREE_TYPE (x) != error_mark_node
-	  && TYPE_LANG_SPECIFIC (TREE_TYPE (x))
-	  && TYPE_BEING_DEFINED (TREE_TYPE (x)))
-	{
-	  if (++b->n_incomplete == 0)
-	    error ("too many incomplete variables at this point");
-	}
+	  && ((TYPE_SIZE (TREE_TYPE (x)) == NULL_TREE
+	       && PROMOTES_TO_AGGR_TYPE (TREE_TYPE (x), ARRAY_TYPE))
+	      /* RTTI TD entries are created while defining the type_info.  */
+	      || (TYPE_LANG_SPECIFIC (TREE_TYPE (x))
+		  && TYPE_BEING_DEFINED (TREE_TYPE (x)))))
+	b->incomplete = tree_cons (NULL_TREE, x, b->incomplete);
     }
 
   /* Put decls on list in reverse order.
@@ -5428,11 +5406,11 @@ init_decl_processing ()
       __i_desc_type_node = make_lang_type (RECORD_TYPE);
       __m_desc_type_node = make_lang_type (RECORD_TYPE);
       __t_desc_array_type =
-	build_array_type (TYPE_POINTER_TO (__t_desc_type_node), NULL_TREE);
+	build_array_type (build_pointer_type (__t_desc_type_node), NULL_TREE);
       __i_desc_array_type =
-	build_array_type (TYPE_POINTER_TO (__i_desc_type_node), NULL_TREE);
+	build_array_type (build_pointer_type (__i_desc_type_node), NULL_TREE);
       __m_desc_array_type =
-	build_array_type (TYPE_POINTER_TO (__m_desc_type_node), NULL_TREE);
+	build_array_type (build_pointer_type (__m_desc_type_node), NULL_TREE);
 
       fields[0] = build_lang_field_decl (FIELD_DECL, get_identifier ("name"),
 					 string_type_node);
@@ -5442,7 +5420,7 @@ init_decl_processing ()
 					 unsigned_type_node);
       fields[3] = build_lang_field_decl (FIELD_DECL,
 					 get_identifier ("points_to"),
-					 TYPE_POINTER_TO (__t_desc_type_node));
+					 build_pointer_type (__t_desc_type_node));
       fields[4] = build_lang_field_decl (FIELD_DECL,
 					 get_identifier ("ivars_count"),
 					 integer_type_node);
@@ -5476,7 +5454,7 @@ init_decl_processing ()
       fields[1] = build_lang_field_decl (FIELD_DECL, get_identifier ("offset"),
 					 integer_type_node);
       fields[2] = build_lang_field_decl (FIELD_DECL, get_identifier ("type"),
-					 TYPE_POINTER_TO (__t_desc_type_node));
+					 build_pointer_type (__t_desc_type_node));
       finish_builtin_type (__i_desc_type_node, "__i_desc", fields, 2,
 			   integer_type_node);
 
@@ -5500,9 +5478,9 @@ init_decl_processing ()
       fields[1] = build_lang_field_decl (FIELD_DECL, get_identifier ("vindex"),
 					 integer_type_node);
       fields[2] = build_lang_field_decl (FIELD_DECL, get_identifier ("vcontext"),
-					 TYPE_POINTER_TO (__t_desc_type_node));
+					 build_pointer_type (__t_desc_type_node));
       fields[3] = build_lang_field_decl (FIELD_DECL, get_identifier ("return_type"),
-					 TYPE_POINTER_TO (__t_desc_type_node));
+					 build_pointer_type (__t_desc_type_node));
       fields[4] = build_lang_field_decl (FIELD_DECL, get_identifier ("address"),
 					 build_pointer_type (default_function_type));
       fields[5] = build_lang_field_decl (FIELD_DECL, get_identifier ("parm_count"),
@@ -5510,7 +5488,7 @@ init_decl_processing ()
       fields[6] = build_lang_field_decl (FIELD_DECL, get_identifier ("required_parms"),
 					 short_integer_type_node);
       fields[7] = build_lang_field_decl (FIELD_DECL, get_identifier ("parm_types"),
-					 build_pointer_type (build_array_type (TYPE_POINTER_TO (__t_desc_type_node), NULL_TREE)));
+					 build_pointer_type (build_array_type (build_pointer_type (__t_desc_type_node), NULL_TREE)));
       finish_builtin_type (__m_desc_type_node, "__m_desc", fields, 7,
 			   integer_type_node);
     }
@@ -5751,7 +5729,7 @@ shadow_tag (declspecs)
       if (TYPE_FIELDS (t))
 	{
 	  tree decl = grokdeclarator (NULL_TREE, declspecs, NORMAL, 0,
-				      NULL_TREE);
+				      NULL_TREE, NULL_TREE);
 	  finish_anon_union (decl);
 	}
       else
@@ -5792,7 +5770,7 @@ groktypename (typename)
     return typename;
   return grokdeclarator (TREE_VALUE (typename),
 			 TREE_PURPOSE (typename),
-			 TYPENAME, 0, NULL_TREE);
+			 TYPENAME, 0, NULL_TREE, NULL_TREE);
 }
 
 /* Decode a declarator in an ordinary declaration or data definition.
@@ -5836,7 +5814,8 @@ start_decl (declarator, declspecs, initialized, raises)
       used_extern_spec = 1;
     }
 
-  decl = grokdeclarator (declarator, declspecs, NORMAL, initialized, raises);
+  decl = grokdeclarator (declarator, declspecs, NORMAL, initialized, raises,
+			 NULL_TREE);
   if (decl == NULL_TREE || decl == void_type_node)
     return NULL_TREE;
 
@@ -6011,13 +5990,25 @@ start_decl (declarator, declspecs, initialized, raises)
 	  else if (duplicate_decls (decl, field))
 	    decl = field;
 	}
-      
-      /* If it was not explicitly declared `extern',
-	 revoke any previous claims of DECL_EXTERNAL.  */
-      if (DECL_THIS_EXTERN (decl) == 0)
-	DECL_EXTERNAL (decl) = 0;
+      else
+	{
+	  tree field = check_classfn (context, NULL_TREE, decl);
+	  if (field && duplicate_decls (decl, field))
+	    decl = field;
+	}
+
+      /* cp_finish_decl sets DECL_EXTERNAL if DECL_IN_AGGR_P is set.  */
       if (DECL_LANG_SPECIFIC (decl))
 	DECL_IN_AGGR_P (decl) = 0;
+      if (DECL_USE_TEMPLATE (decl) || CLASSTYPE_USE_TEMPLATE (context))
+	SET_DECL_TEMPLATE_SPECIALIZATION (decl);
+
+      /* Stupid stupid stupid stupid  (jason 7/21/95) */
+      if (pedantic && DECL_EXTERNAL (decl)
+	  && ! DECL_TEMPLATE_SPECIALIZATION (decl))
+	cp_pedwarn ("declaration of `%#D' outside of class is not definition",
+		    decl);
+
       pushclass (context, 2);
     }
 
@@ -6164,7 +6155,7 @@ make_temporary_for_reference (decl, ctor_call, init, cleanupp)
     }
 
   TREE_TYPE (tmp_addr) = build_pointer_type (target_type);
-  DECL_INITIAL (decl) = convert (TYPE_POINTER_TO (target_type), tmp_addr);
+  DECL_INITIAL (decl) = convert (build_pointer_type (target_type), tmp_addr);
   TREE_TYPE (DECL_INITIAL (decl)) = type;
   if (TYPE_NEEDS_CONSTRUCTING (target_type))
     {
@@ -6272,7 +6263,7 @@ grok_reference_init (decl, type, init, cleanupp)
 	      if (TREE_CODE (tmp) == TARGET_EXPR)
 		{
 		  *cleanupp = build_delete
-		    (TYPE_POINTER_TO (subtype),
+		    (build_pointer_type (subtype),
 		     build_unary_op (ADDR_EXPR, TREE_OPERAND (tmp, 0), 0),
 		     integer_two_node, LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 0);
 		  TREE_OPERAND (tmp, 2) = error_mark_node;
@@ -6515,7 +6506,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	    init = digest_init (type, init, (tree *) 0);
 	  else if (TREE_CODE (init) == CONSTRUCTOR)
 	    {
-	      if (TYPE_NEEDS_CONSTRUCTING (type))
+	      if (TYPE_NON_AGGREGATE_CLASS (type))
 		{
 		  cp_error ("`%D' must be initialized by constructor, not by `{...}'",
 			    decl);
@@ -6524,47 +6515,6 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	      else
 		goto dont_use_constructor;
 	    }
-#if 0
-	  /* fix this in `build_functional_cast' instead.
-	     Here's the trigger code:
-
-		struct ostream
-		{
-		  ostream ();
-		  ostream (int, char *);
-		  ostream (char *);
-		  operator char *();
-		  ostream (void *);
-		  operator void *();
-		  operator << (int);
-		};
-		int buf_size = 1024;
-		static char buf[buf_size];
-		const char *debug(int i) {
-		  char *b = &buf[0];
-		  ostream o = ostream(buf_size, b);
-		  o << i;
-		  return buf;
-		}
-		*/
-
-	  else if (TREE_CODE (init) == TARGET_EXPR
-		   && TREE_CODE (TREE_OPERAND (init, 1) == NEW_EXPR))
-	    {
-	      /* User wrote something like `foo x = foo (args)'  */
-	      my_friendly_assert (TREE_CODE (TREE_OPERAND (init, 0)) == VAR_DECL, 150);
-	      my_friendly_assert (DECL_NAME (TREE_OPERAND (init, 0)) == NULL_TREE, 151);
-
-	      /* User wrote exactly `foo x = foo (args)'  */
-	      if (TYPE_MAIN_VARIANT (type) == TREE_TYPE (init))
-		{
-		  init = build (CALL_EXPR, TREE_TYPE (init),
-				TREE_OPERAND (TREE_OPERAND (init, 1), 0),
-				TREE_OPERAND (TREE_OPERAND (init, 1), 1), 0);
-		  TREE_SIDE_EFFECTS (init) = 1;
-		}
-	    }
-#endif
 	}
       else
 	{
@@ -6859,11 +6809,9 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       else if (TREE_STATIC (decl) && type != error_mark_node)
 	{
 	  /* Cleanups for static variables are handled by `finish_file'.  */
-	  if (TYPE_NEEDS_CONSTRUCTING (type) || init != NULL_TREE)
+	  if (TYPE_NEEDS_CONSTRUCTING (type) || init != NULL_TREE
+	      || TYPE_NEEDS_DESTRUCTOR (type))
 	    expand_static_init (decl, init);
-	  else if (TYPE_NEEDS_DESTRUCTOR (type))
-	    static_aggregates = perm_tree_cons (NULL_TREE, decl,
-						static_aggregates);
 
 	  /* Make entry in appropriate vector.  */
 	  if (flag_gc && type_needs_gc_entry (type))
@@ -6898,7 +6846,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 		{
 		  /* XXX: Why don't we use decl here?  */
 		  /* Ans: Because it was already expanded? */
-		  if (! expand_decl_cleanup (NULL_TREE, cleanup))
+		  if (! cp_expand_decl_cleanup (NULL_TREE, cleanup))
 		    cp_error ("parser lost in parsing declaration of `%D'",
 			      decl);
 		  /* Cleanup used up here.  */
@@ -6928,7 +6876,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	      /* Store the cleanup, if there was one.  */
 	      if (cleanup)
 		{
-		  if (! expand_decl_cleanup (decl, cleanup))
+		  if (! cp_expand_decl_cleanup (decl, cleanup))
 		    cp_error ("parser lost in parsing declaration of `%D'",
 			      decl);
 		}
@@ -6942,7 +6890,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	 due to initialization of qualified member variable.
 	 I.e., Foo::x = 10;  */
       {
-	tree context = DECL_CONTEXT (decl);
+	tree context = DECL_REAL_CONTEXT (decl);
 	if (context
 	    && TREE_CODE_CLASS (TREE_CODE (context)) == 't'
 	    && (TREE_CODE (decl) == VAR_DECL
@@ -7036,13 +6984,14 @@ expand_static_init (decl, init)
       old_cleanups = cleanups_this_call;
       expand_assignment (temp, integer_one_node, 0, 0);
       if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl))
-	  || TREE_CODE (init) == TREE_LIST)
+	  || (init && TREE_CODE (init) == TREE_LIST))
 	{
 	  expand_aggr_init (decl, init, 0, 0);
 	  do_pending_stack_adjust ();
 	}
-      else
+      else if (init)
 	expand_assignment (decl, init, 0, 0);
+
       /* Cleanup any temporaries needed for the initial value.  */
       expand_cleanups_to (old_cleanups);
       expand_end_cond ();
@@ -7200,12 +7149,12 @@ bad_specifiers (object, type, virtualp, quals, inlinep, friendp, raises)
    not look, and -1 if we should not call `grokclassfn' at all.  */
 static tree
 grokfndecl (ctype, type, declarator, virtualp, flags, quals,
-	    raises, check, publicp, inlinep)
+	    raises, attrlist, check, publicp, inlinep)
      tree ctype, type;
      tree declarator;
      int virtualp;
      enum overload_flags flags;
-     tree quals, raises;
+     tree quals, raises, attrlist;
      int check, publicp, inlinep;
 {
   tree cname, decl;
@@ -7219,7 +7168,7 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
 
   if (raises)
     {
-      type = build_exception_variant (ctype, type, raises);
+      type = build_exception_variant (type, raises);
       raises = TYPE_RAISES_EXCEPTIONS (type);
     }
   decl = build_lang_decl (FUNCTION_DECL, declarator, type);
@@ -7340,6 +7289,10 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
 	      /* avoid creating circularities.  */
 	      DECL_CHAIN (decl) = NULL_TREE;
 	    }
+
+	  if (attrlist)
+	    cplus_decl_attributes (decl, TREE_PURPOSE (attrlist),
+				   TREE_VALUE (attrlist));
 	  make_decl_rtl (decl, NULL_PTR, 1);
 	}
 
@@ -7390,7 +7343,7 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
 		      type = build_cplus_method_type (base_variant, TREE_TYPE (type), argtypes);
 		      if (raises)
 			{
-			  type = build_exception_variant (ctype, type, raises);
+			  type = build_exception_variant (type, raises);
 			  raises = TYPE_RAISES_EXCEPTIONS (type);
 			}
 		      TREE_TYPE (decl) = type;
@@ -7500,6 +7453,7 @@ build_ptrmemfunc_type (type)
   push_obstacks (TYPE_OBSTACK (type), TYPE_OBSTACK (type));
 
   u = make_lang_type (UNION_TYPE);
+  IS_AGGR_TYPE (u) = 0;
   fields[0] = build_lang_field_decl (FIELD_DECL, pfn_identifier, type);
   fields[1] = build_lang_field_decl (FIELD_DECL, delta2_identifier,
 				     delta_type_node);
@@ -7592,12 +7546,12 @@ build_ptrmemfunc_type (type)
 enum return_types { return_normal, return_ctor, return_dtor, return_conversion };
 
 tree
-grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
+grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrlist)
      tree declspecs;
      tree declarator;
      enum decl_context decl_context;
      int initialized;
-     tree raises;
+     tree raises, attrlist;
 {
   RID_BIT_TYPE specbits;
   int nclasses = 0;
@@ -8034,7 +7988,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
       if (return_type == return_dtor)
 	type = void_type_node;
       else if (return_type == return_ctor)
-	type = TYPE_POINTER_TO (ctor_return_type);
+	type = build_pointer_type (ctor_return_type);
       else if (return_type == return_conversion)
 	type = ctor_return_type;
       else if (current_class_type
@@ -8077,7 +8031,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
   else if (return_type == return_ctor)
     {
       error ("return type specification for constructor invalid");
-      type = TYPE_POINTER_TO (ctor_return_type);
+      type = build_pointer_type (ctor_return_type);
     }
   else if (return_type == return_conversion)
     {
@@ -8244,16 +8198,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	  error ("non-object member `%s' cannot be declared `mutable'", name);
 	  RIDBIT_RESET (RID_MUTABLE, specbits);
 	}
-      else if (constp)
-	{
-	  error ("const `%s' cannot be declared `mutable'", name);
-	  RIDBIT_RESET (RID_MUTABLE, specbits);
-	}
-      else if (staticp)
-	{
-	  error ("static `%s' cannot be declared `mutable'", name);
-	  RIDBIT_RESET (RID_MUTABLE, specbits);
-	}
 #if 0
       if (RIDBIT_SETP (RID_TYPEDEF, specbits))
 	{
@@ -8400,7 +8344,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	    SIGNATURE_GROKKING_TYPEDEF (current_class_type) = 1;
   
 	  loc_typedecl =
-	    grokdeclarator (declarator, declspecs, FIELD, 0, NULL_TREE);
+	    grokdeclarator (declarator, declspecs, FIELD, 0, NULL_TREE, NULL_TREE);
 
 	  if (previous_declspec)
 	    TREE_CHAIN (previous_declspec) = scanner;
@@ -8819,7 +8763,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		      if (RIDBIT_ANY_SET (tmp_bits))
 			error ("return value type specifier for constructor ignored");
 		    }
-		    type = TYPE_POINTER_TO (ctype);
+		    type = build_pointer_type (ctype);
 		    if (decl_context == FIELD &&
 			IS_SIGNATURE (current_class_type))
 		      {
@@ -9234,6 +9178,20 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 
   /* If this is declaring a typedef name, return a TYPE_DECL.  */
 
+  if (RIDBIT_SETP (RID_MUTABLE, specbits))
+    {
+      if (constp)
+	{
+	  error ("const `%s' cannot be declared `mutable'", name);
+	  RIDBIT_RESET (RID_MUTABLE, specbits);
+	}
+      else if (staticp)
+	{
+	  error ("static `%s' cannot be declared `mutable'", name);
+	  RIDBIT_RESET (RID_MUTABLE, specbits);
+	}
+    }
+
   if (RIDBIT_SETP (RID_TYPEDEF, specbits))
     {
       tree decl;
@@ -9524,8 +9482,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		       || RIDBIT_SETP (RID_EXTERN, specbits)
 		       || ! (funcdef_flag < 0 || inlinep));
 	    decl = grokfndecl (ctype, type, declarator,
-			       virtualp, flags, quals,
-			       raises, friendp ? -1 : 0, publicp, inlinep);
+			       virtualp, flags, quals, raises, attrlist,
+			       friendp ? -1 : 0, publicp, inlinep);
 	    if (decl == NULL_TREE)
 	      return NULL_TREE;
 	    decl = build_decl_attribute_variant (decl, decl_machine_attr);
@@ -9540,8 +9498,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	    /* All method decls are public, so tell grokfndecl to set
 	       TREE_PUBLIC, also.  */
 	    decl = grokfndecl (ctype, type, declarator,
-			       virtualp, flags, quals,
-			       raises, friendp ? -1 : 0, 1, 0);
+			       virtualp, flags, quals, raises, attrlist,
+			       friendp ? -1 : 0, 1, 0);
 	    if (decl == NULL_TREE)
 	      return NULL_TREE;
 	  }
@@ -9634,6 +9592,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 
 	    if (staticp || (constp && initialized))
 	      {
+		/* ANSI C++ Apr '95 wp 9.2 */
+		if (staticp && declarator == current_class_name)
+		  cp_pedwarn ("ANSI C++ forbids static member `%D' with same name as enclosing class",
+			      declarator);
+
 		/* C++ allows static class members.
 		   All other work for this is done by grokfield.
 		   This VAR_DECL is built by build_lang_field_decl.
@@ -9715,8 +9678,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		       && !RIDBIT_SETP (RID_INLINE, specbits)));
 
 	decl = grokfndecl (ctype, type, original_name,
-			   virtualp, flags, quals,
-			   raises,
+			   virtualp, flags, quals, raises, attrlist,
 			   processing_template_decl ? 0 : friendp ? 2 : 1,
 			   publicp, inlinep);
 	if (decl == NULL_TREE)
@@ -9789,8 +9751,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	    DECL_CONTEXT (decl) = ctype;
 	    if (staticp == 1)
 	      {
-	        cp_error ("static member `%D' re-declared as static",
-			  decl);
+	        cp_pedwarn ("static member `%D' re-declared as static", decl);
 	        staticp = 0;
 		RIDBIT_RESET (RID_STATIC, specbits);
 	      }
@@ -9799,10 +9760,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		cp_error ("static member `%D' declared `register'", decl);
 		RIDBIT_RESET (RID_REGISTER, specbits);
 	      }
-	    if (RIDBIT_SETP (RID_EXTERN, specbits))
+	    if (RIDBIT_SETP (RID_EXTERN, specbits) && pedantic)
 	      {
-	        cp_error ("cannot explicitly declare member `%#D' to have extern linkage",
-			  decl);
+	        cp_pedwarn ("cannot explicitly declare member `%#D' to have extern linkage",
+			    decl);
 		RIDBIT_RESET (RID_EXTERN, specbits);
 	      }
 	  }
@@ -10005,7 +9966,8 @@ grokparms (first_parm, funcdef_flag)
 		  /* @@ May need to fetch out a `raises' here.  */
 		  decl = grokdeclarator (TREE_VALUE (decl),
 					 TREE_PURPOSE (decl),
-					 PARM, init != NULL_TREE, NULL_TREE);
+					 PARM, init != NULL_TREE,
+					 NULL_TREE, NULL_TREE);
 		  if (! decl)
 		    continue;
 		  type = TREE_TYPE (decl);
@@ -11130,8 +11092,8 @@ grok_enum_decls (type, decl)
    @@ something we had previously.  */
 
 int
-start_function (declspecs, declarator, raises, pre_parsed_p)
-     tree declarator, declspecs, raises;
+start_function (declspecs, declarator, raises, attrs, pre_parsed_p)
+     tree declspecs, declarator, raises, attrs;
      int pre_parsed_p;
 {
   tree decl1, olddecl;
@@ -11162,6 +11124,7 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
   protect_list = NULL_TREE;
   current_base_init_list = NULL_TREE;
   current_member_init_list = NULL_TREE;
+  ctor_label = dtor_label = NULL_TREE;
 
   clear_temp_name ();
 
@@ -11236,7 +11199,8 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
     }
   else
     {
-      decl1 = grokdeclarator (declarator, declspecs, FUNCDEF, 1, raises);
+      decl1 = grokdeclarator (declarator, declspecs, FUNCDEF, 1, raises,
+			      NULL_TREE);
       /* If the declarator is not suitable for a function definition,
 	 cause a syntax error.  */
       if (decl1 == NULL_TREE || TREE_CODE (decl1) != FUNCTION_DECL) return 0;
@@ -11311,7 +11275,10 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
 	TREE_TYPE (decl1)
 	  = build_function_type (void_type_node,
 				 TYPE_ARG_TYPES (TREE_TYPE (decl1)));
-      DECL_RESULT (decl1) = build_decl (RESULT_DECL, 0, TREE_TYPE (fntype));
+      DECL_RESULT (decl1)
+	= build_decl (RESULT_DECL, 0, TYPE_MAIN_VARIANT (TREE_TYPE (fntype)));
+      TREE_READONLY (DECL_RESULT (decl1)) = TYPE_READONLY (TREE_TYPE (fntype));
+      TREE_THIS_VOLATILE (DECL_RESULT (decl1)) = TYPE_VOLATILE (TREE_TYPE (fntype));
     }
 
   if (TYPE_LANG_SPECIFIC (TREE_TYPE (fntype))
@@ -11445,6 +11412,8 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
 
   GNU_xref_function (decl1, current_function_parms);
 
+  if (attrs)
+    cplus_decl_attributes (decl1, NULL_TREE, attrs);
   make_function_rtl (decl1);
 
   /* Allocate further tree nodes temporarily during compilation
@@ -11465,9 +11434,15 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
 	restype = integer_type_node;
     }
   if (DECL_RESULT (decl1) == NULL_TREE)
-    DECL_RESULT (decl1) = build_decl (RESULT_DECL, 0, restype);
+    {
+      DECL_RESULT (decl1)
+	= build_decl (RESULT_DECL, 0, TYPE_MAIN_VARIANT (restype));
+      TREE_READONLY (DECL_RESULT (decl1)) = TYPE_READONLY (restype);
+      TREE_THIS_VOLATILE (DECL_RESULT (decl1)) = TYPE_VOLATILE (restype);
+    }
 
-  if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (decl1)))
+  if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (decl1))
+      && DECL_LANGUAGE (decl1) == lang_cplusplus)
     {
       dtor_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
       ctor_label = NULL_TREE;
@@ -11487,6 +11462,30 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
   return 1;
 }
 
+void
+expand_start_early_try_stmts ()
+{
+  rtx insns;
+  start_sequence ();
+  expand_start_try_stmts ();
+  insns = get_insns ();
+  end_sequence ();
+  store_in_parms (insns);
+}
+
+void
+store_in_parms (insns)
+     rtx insns;
+{
+  rtx last_parm_insn;
+
+  last_parm_insn = get_first_nonparm_insn ();
+  if (last_parm_insn == NULL_RTX)
+    emit_insns (insns);
+  else
+    emit_insns_before (insns, previous_insn (last_parm_insn));
+}
+
 /* Store the parameter declarations into the current function declaration.
    This is called after parsing the parameter declarations, before
    digesting the body of the function.
@@ -11576,7 +11575,7 @@ store_parm_decls ()
 	      if (cleanup)
 		{
 		  expand_decl (parm);
-		  if (! expand_decl_cleanup (parm, cleanup))
+		  if (! cp_expand_decl_cleanup (parm, cleanup))
 		    cp_error ("parser lost in parsing declaration of `%D'",
 			      parm);
 		  parms_have_cleanups = 1;
@@ -11626,7 +11625,7 @@ store_parm_decls ()
   if (flag_gc)
     {
       maybe_gc_cleanup = build_tree_list (NULL_TREE, error_mark_node);
-      if (! expand_decl_cleanup (NULL_TREE, maybe_gc_cleanup))
+      if (! cp_expand_decl_cleanup (NULL_TREE, maybe_gc_cleanup))
 	cp_error ("parser lost in parsing declaration of `%D'", fndecl);
     }
 
@@ -11647,6 +11646,26 @@ store_parm_decls ()
       if (flag_rtti)
 	output_builtin_tdesc_entries ();
 #endif
+    }
+
+  /* Take care of exception handling things. */
+  if (flag_handle_exceptions)
+    {
+      rtx insns;
+      start_sequence ();
+
+      /* Mark the start of a stack unwinder if we need one.  */
+      start_eh_unwinder ();
+
+      /* Do the starting of the exception specifications, if we have any.  */
+      if (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)))
+	expand_start_eh_spec ();
+
+      insns = get_insns ();
+      end_sequence ();
+
+      if (insns)
+	store_in_parms (insns);
     }
 }
 
@@ -11722,7 +11741,7 @@ finish_function (lineno, call_poplevel, nested)
 {
   register tree fndecl = current_function_decl;
   tree fntype, ctype = NULL_TREE;
-  rtx head, last_parm_insn, mark;
+  rtx last_parm_insn, insns;
   /* Label to use if this function is supposed to return a value.  */
   tree no_return_label = NULL_TREE;
   tree decls = NULL_TREE;
@@ -11784,12 +11803,9 @@ finish_function (lineno, call_poplevel, nested)
 
 	  /* If this destructor is empty, then we don't need to check
 	     whether `this' is NULL in some cases.  */
-	  mark = get_last_insn ();
-	  last_parm_insn = get_first_nonparm_insn ();
-
 	  if ((flag_this_is_variable & 1) == 0)
 	    ok_to_optimize_dtor = 1;
-	  else if (mark == last_parm_insn)
+	  else if (get_last_insn () == get_first_nonparm_insn ())
 	    ok_to_optimize_dtor
 	      = (n_baseclasses == 0
 		 || (n_baseclasses == 1
@@ -11854,8 +11870,8 @@ finish_function (lineno, call_poplevel, nested)
 		{
 		  if (TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (vbases)))
 		    {
-		      tree ptr = convert_pointer_to_vbase (vbases, current_class_decl);
-		      expand_expr_stmt (build_delete (TYPE_POINTER_TO (BINFO_TYPE (vbases)),
+		      tree ptr = convert_pointer_to_vbase (BINFO_TYPE (vbases), current_class_decl);
+		      expand_expr_stmt (build_delete (build_pointer_type (BINFO_TYPE (vbases)),
 						      ptr, integer_zero_node,
 						      LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR|LOOKUP_HAS_IN_CHARGE, 0));
 		    }
@@ -11879,7 +11895,7 @@ finish_function (lineno, call_poplevel, nested)
 	exprstmt =
 	  build_method_call
 	    (build_indirect_ref
-	     (build1 (NOP_EXPR, TYPE_POINTER_TO (current_class_type),
+	     (build1 (NOP_EXPR, build_pointer_type (current_class_type),
 		      error_mark_node),
 	      NULL_PTR),
 	     ansi_opname[(int) DELETE_EXPR],
@@ -11907,12 +11923,8 @@ finish_function (lineno, call_poplevel, nested)
 
       /* Back to the top of destructor.  */
       /* Dont execute destructor code if `this' is NULL.  */
-      mark = get_last_insn ();
-      last_parm_insn = get_first_nonparm_insn ();
-      if (last_parm_insn == NULL_RTX)
-	last_parm_insn = mark;
-      else
-	last_parm_insn = previous_insn (last_parm_insn);
+
+      start_sequence ();
 
       /* Make all virtual function table pointers in non-virtual base
 	 classes point to CURRENT_CLASS_TYPE's virtual function
@@ -11926,8 +11938,18 @@ finish_function (lineno, call_poplevel, nested)
 				  current_class_decl, integer_zero_node, 1);
 	  expand_start_cond (cond, 0);
 	}
-      if (mark != get_last_insn ())
-	reorder_insns (next_insn (mark), get_last_insn (), last_parm_insn);
+
+      insns = get_insns ();
+      end_sequence ();
+
+      last_parm_insn = get_first_nonparm_insn ();
+      if (last_parm_insn == NULL_RTX)
+	last_parm_insn = get_last_insn ();
+      else
+	last_parm_insn = previous_insn (last_parm_insn);
+
+      emit_insns_after (insns, last_parm_insn);
+
       if (! ok_to_optimize_dtor)
 	expand_end_cond ();
     }
@@ -11981,11 +12003,7 @@ finish_function (lineno, call_poplevel, nested)
 
       CLASSTYPE_ABSTRACT_VIRTUALS (current_class_type) = abstract_virtuals;
 
-      /* must keep the first insn safe.  */
-      head = get_insns ();
-
-      /* this note will come up to the top with us.  */
-      mark = get_last_insn ();
+      start_sequence ();
 
       if (flag_this_is_variable > 0)
 	{
@@ -12008,6 +12026,9 @@ finish_function (lineno, call_poplevel, nested)
 	  base_init_expr = NULL_TREE;
 	}
 
+      insns = get_insns ();
+      end_sequence ();
+
       /* This is where the body of the constructor begins.
 	 If there were no insns in this function body, then the
 	 last_parm_insn is also the last insn.
@@ -12016,12 +12037,11 @@ finish_function (lineno, call_poplevel, nested)
 	 we don't hold on to it (across emit_base_init).  */
       last_parm_insn = get_first_nonparm_insn ();
       if (last_parm_insn == NULL_RTX)
-	last_parm_insn = mark;
+	last_parm_insn = get_last_insn ();
       else
 	last_parm_insn = previous_insn (last_parm_insn);
 
-      if (mark != get_last_insn ())
-	reorder_insns (next_insn (mark), get_last_insn (), last_parm_insn);
+      emit_insns_after (insns, last_parm_insn);
 
       end_protect_partials ();
 
@@ -12118,7 +12138,7 @@ finish_function (lineno, call_poplevel, nested)
   expand_function_end (input_filename, lineno, 1);
 
   if (flag_handle_exceptions)
-    expand_exception_blocks();
+    expand_exception_blocks ();
 
   /* This must come after expand_function_end because cleanups might
      have declarations (from inline functions) that need to go into
@@ -12259,7 +12279,8 @@ tree
 start_method (declspecs, declarator, raises)
      tree declarator, declspecs, raises;
 {
-  tree fndecl = grokdeclarator (declarator, declspecs, MEMFUNCDEF, 0, raises);
+  tree fndecl = grokdeclarator (declarator, declspecs, MEMFUNCDEF, 0, raises,
+				NULL_TREE);
 
   /* Something too ugly to handle.  */
   if (fndecl == NULL_TREE)
@@ -12430,46 +12451,43 @@ void
 hack_incomplete_structures (type)
      tree type;
 {
-  tree decl;
+  tree *list;
 
-  if (current_binding_level->n_incomplete == 0)
+  if (current_binding_level->incomplete == NULL_TREE)
     return;
 
   if (!type) /* Don't do this for class templates.  */
     return;
 
-  for (decl = current_binding_level->names; decl; decl = TREE_CHAIN (decl))
-    if (TREE_TYPE (decl) == type
-	|| (TREE_TYPE (decl)
-	    && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
-	    && TREE_TYPE (TREE_TYPE (decl)) == type))
-      {
-	if (TREE_CODE (decl) == TYPE_DECL)
-	  layout_type (TREE_TYPE (decl));
-	else
-	  {
-	    int toplevel = toplevel_bindings_p ();
-	    if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
-		&& TREE_TYPE (TREE_TYPE (decl)) == type)
-	      layout_type (TREE_TYPE (decl));
-	    layout_decl (decl, 0);
-	    rest_of_decl_compilation (decl, NULL_PTR, toplevel, 0);
-	    if (! toplevel)
-	      {
-		tree cleanup;
-		expand_decl (decl);
-		cleanup = maybe_build_cleanup (decl);
-		expand_decl_init (decl);
-		if (! expand_decl_cleanup (decl, cleanup))
-		  cp_error ("parser lost in parsing declaration of `%D'",
-			    decl);
-	      }
-	  }
-	/*
-	my_friendly_assert (current_binding_level->n_incomplete > 0, 164);
-	*/
-	--current_binding_level->n_incomplete;
-      }
+  for (list = &current_binding_level->incomplete; *list; )
+    {
+      tree decl = TREE_VALUE (*list);
+      if (decl && TREE_TYPE (decl) == type
+	  || (TREE_TYPE (decl)
+	      && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
+	      && TREE_TYPE (TREE_TYPE (decl)) == type))
+	{
+	  int toplevel = toplevel_bindings_p ();
+	  if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
+	      && TREE_TYPE (TREE_TYPE (decl)) == type)
+	    layout_type (TREE_TYPE (decl));
+	  layout_decl (decl, 0);
+	  rest_of_decl_compilation (decl, NULL_PTR, toplevel, 0);
+	  if (! toplevel)
+	    {
+	      tree cleanup;
+	      expand_decl (decl);
+	      cleanup = maybe_build_cleanup (decl);
+	      expand_decl_init (decl);
+	      if (! cp_expand_decl_cleanup (decl, cleanup))
+		cp_error ("parser lost in parsing declaration of `%D'",
+			  decl);
+	    }
+	  *list = TREE_CHAIN (*list);
+	}
+      else
+	list = &TREE_CHAIN (*list);
+    }
 }
 
 /* Nonzero if presently building a cleanup.  Needed because
@@ -12620,13 +12638,20 @@ revert_static_member_fn (decl, fn, argtypes)
   tree function = fn ? *fn : TREE_TYPE (*decl);
   tree args = argtypes ? *argtypes : TYPE_ARG_TYPES (function);
 
+  if (TYPE_READONLY (TREE_TYPE (TREE_VALUE (args))))
+    cp_error ("static member function `%#D' declared const", *decl);
+  if (TYPE_VOLATILE (TREE_TYPE (TREE_VALUE (args))))
+    cp_error ("static member function `%#D' declared volatile", *decl);
+
   args = TREE_CHAIN (args);
   tmp = build_function_type (TREE_TYPE (function), args);
   tmp = build_type_variant (tmp, TYPE_READONLY (function),
 			    TYPE_VOLATILE (function));
-  tmp = build_exception_variant (TYPE_METHOD_BASETYPE (function), tmp,
+  tmp = build_exception_variant (tmp,
 				 TYPE_RAISES_EXCEPTIONS (function));
   TREE_TYPE (*decl) = tmp;
+  if (DECL_ARGUMENTS (*decl))
+    DECL_ARGUMENTS (*decl) = TREE_CHAIN (DECL_ARGUMENTS (*decl));
   DECL_STATIC_FUNCTION_P (*decl) = 1;
   if (fn)
     *fn = tmp;

@@ -9,13 +9,9 @@ __asm, GCC_ASM_KEYWORD, NORID
 __asm__, GCC_ASM_KEYWORD, NORID
 __attribute, ATTRIBUTE, NORID
 __attribute__, ATTRIBUTE, NORID
-__classof, CLASSOF, NORID
-__classof__, CLASSOF, NORID
 __const, TYPE_QUAL, RID_CONST
 __const__, TYPE_QUAL, RID_CONST
 __extension__, EXTENSION, NORID
-__headof, HEADOF, NORID
-__headof__, HEADOF, NORID
 __inline, SCSPEC, RID_INLINE
 __inline__, SCSPEC, RID_INLINE
 __label__, LABEL, NORID
@@ -40,7 +36,6 @@ case, CASE, NORID,
 catch, CATCH, NORID,
 char, TYPESPEC, RID_CHAR,
 class, AGGR, RID_CLASS,
-classof, CLASSOF, NORID,
 compl, '~', NORID,
 const, TYPE_QUAL, RID_CONST,
 const_cast, CONST_CAST, NORID,
@@ -59,7 +54,6 @@ float, TYPESPEC, RID_FLOAT,
 for, FOR, NORID,
 friend, SCSPEC, RID_FRIEND,
 goto, GOTO, NORID,
-headof, HEADOF, NORID,
 if, IF, NORID,
 inline, SCSPEC, RID_INLINE,
 int, TYPESPEC, RID_INT,

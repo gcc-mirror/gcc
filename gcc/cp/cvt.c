@@ -180,6 +180,15 @@ cp_convert_to_pointer (type, expr)
 	    return error_mark_node;
 	}
 
+      if (TREE_CODE (TREE_TYPE (intype)) == METHOD_TYPE
+	  || (TREE_CODE (type) == POINTER_TYPE
+	      && TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE))
+	{
+	  cp_error ("cannot convert `%E' from type `%T' to type `%T'",
+		    expr, intype, type);
+	  return error_mark_node;
+	}
+
       return build1 (NOP_EXPR, type, expr);
     }
 
@@ -904,7 +913,7 @@ convert_to_aggr (type, expr, msgp, protect)
 
   /* The type of the first argument will be filled in inside the loop.  */
   parmlist = tree_cons (NULL_TREE, integer_zero_node, parmlist);
-  parmtypes = tree_cons (NULL_TREE, TYPE_POINTER_TO (basetype), parmtypes);
+  parmtypes = tree_cons (NULL_TREE, build_pointer_type (basetype), parmtypes);
 
 #if 0
   method_name = build_decl_overload (name, parmtypes, 1);
@@ -1164,32 +1173,6 @@ convert_pointer_to (binfo, expr)
       type = binfo;
   return convert_pointer_to_real (type, expr);
 }
-
-/* Same as above, but don't abort if we get an "ambiguous" baseclass.
-   There's only one virtual baseclass we are looking for, and once
-   we find one such virtual baseclass, we have found them all.  */
-
-tree
-convert_pointer_to_vbase (binfo, expr)
-     tree binfo;
-     tree expr;
-{
-  tree intype = TREE_TYPE (TREE_TYPE (expr));
-  tree binfos = TYPE_BINFO_BASETYPES (intype);
-  int i;
-
-  for (i = TREE_VEC_LENGTH (binfos)-1; i >= 0; i--)
-    {
-      tree basetype = BINFO_TYPE (TREE_VEC_ELT (binfos, i));
-      if (BINFO_TYPE (binfo) == basetype)
-	return convert_pointer_to (binfo, expr);
-      if (binfo_member (BINFO_TYPE (binfo), CLASSTYPE_VBASECLASSES (basetype)))
-	return convert_pointer_to_vbase (binfo, convert_pointer_to (basetype, expr));
-    }
-  my_friendly_abort (6);
-  /* NOTREACHED */
-  return NULL_TREE;
-}
 
 /* Conversion...
 
@@ -1374,44 +1357,7 @@ cp_convert (type, expr, convtype, flags)
 	return conversion;
       else if (ctor)
 	{
-	  if (current_function_decl)
-	    /* We can't pass 1 to the with_cleanup_p arg here, because that
-	       screws up passing classes by value.  */
-	    ctor = build_cplus_new (type, ctor, 0);
-	  else
-	    {
-	      register tree parm = TREE_OPERAND (ctor, 1);
-
-	      /* Initializers for static variables and parameters
-		 have to handle doing the initialization and
-		 cleanup themselves.  */
-	      my_friendly_assert (TREE_CODE (ctor) == CALL_EXPR, 322);
-#if 0
-	      /* The following assertion fails in cases where we
-		 are initializing a static member variable of a
-		 particular instance of a template class with a
-		 call to a constructor of the given instance, as
-		 in:
-		 
-		 TMPL<int> object = TMPL<int>();
-		 
-		 Curiously, the assertion does not fail if we do
-		 the same thing for a static member of a
-		 non-template class, as in:
-		 
-		 T object = T();
-		 
-		 I can't see why we should care here whether or not
-		 the initializer expression involves a call to
-		 `new', so for the time being, it seems best to
-		 just avoid doing this assertion.  */
-	      my_friendly_assert (TREE_CALLS_NEW (TREE_VALUE (parm)),
-				  323);
-#endif
-	      TREE_VALUE (parm) = NULL_TREE;
-	      ctor = build_indirect_ref (ctor, NULL_PTR);
-	      TREE_HAS_CONSTRUCTOR (ctor) = 1;
-	    }
+	  ctor = build_cplus_new (type, ctor, 0);
 	  return ctor;
 	}
     }
@@ -1524,7 +1470,14 @@ build_type_conversion_1 (xtype, basetype, expr, typename, for_sure)
 
    If (FOR_SURE & 1) is non-zero, then we allow this type conversion
    to take place immediately.  Otherwise, we build a SAVE_EXPR
-   which can be evaluated if the results are ever needed.  */
+   which can be evaluated if the results are ever needed.
+
+   Changes to this functions should be mirrored in user_harshness.
+
+   FIXME: Ambiguity checking is wrong.  Should choose one by the implicit
+   object parameter, or by the second standard conversion sequence if
+   that doesn't do it.  This will probably wait for an overloading rewrite.
+   (jason 8/9/95)  */
 
 tree
 build_type_conversion (code, xtype, expr, for_sure)
@@ -1604,10 +1557,9 @@ build_expr_type_conversion (desires, expr, complain)
   tree winner = NULL_TREE;
 
   if (TREE_CODE (basetype) == OFFSET_TYPE)
-    {
-      expr = resolve_offset_ref (expr);
-      basetype = TREE_TYPE (expr);
-    }
+    expr = resolve_offset_ref (expr);
+  expr = convert_from_reference (expr);
+  basetype = TREE_TYPE (expr);
 
   if (! IS_AGGR_TYPE (basetype))
     switch (TREE_CODE (basetype))
@@ -1641,11 +1593,16 @@ build_expr_type_conversion (desires, expr, complain)
   for (conv = lookup_conversions (basetype); conv; conv = TREE_CHAIN (conv))
     {
       int win = 0;
+      tree candidate;
 
       if (winner && TREE_PURPOSE (winner) == TREE_PURPOSE (conv))
 	continue;
 
-      switch (TREE_CODE (TREE_VALUE (conv)))
+      candidate = TREE_VALUE (conv);
+      if (TREE_CODE (candidate) == REFERENCE_TYPE)
+	candidate = TREE_TYPE (candidate);
+
+      switch (TREE_CODE (candidate))
 	{
 	case BOOLEAN_TYPE:
 	case INTEGER_TYPE:
@@ -1817,8 +1774,13 @@ tree
 type_promotes_to (type)
      tree type;
 {
-  int constp = TYPE_READONLY (type);
-  int volatilep = TYPE_VOLATILE (type);
+  int constp, volatilep;
+
+  if (type == error_mark_node)
+    return error_mark_node;
+
+  constp = TYPE_READONLY (type);
+  volatilep = TYPE_VOLATILE (type);
   type = TYPE_MAIN_VARIANT (type);
 
   /* bool always promotes to int (not unsigned), even if it's the same

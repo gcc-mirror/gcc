@@ -35,6 +35,7 @@ typedef char* cp_printer ();
 #define O op_as_string
 #define P parm_as_string
 #define T type_as_string
+#define V cv_as_string
 
 #define _ (cp_printer *) 0
 cp_printer * cp_printers[256] =
@@ -45,7 +46,7 @@ cp_printer * cp_printers[256] =
   _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, /* 0x20 */
   _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, /* 0x30 */
   _, A, _, C, D, E, _, _, _, _, _, _, L, _, _, O, /* 0x40 */
-  P, _, _, _, T, _, _, _, _, _, _, _, _, _, _, _, /* 0x50 */
+  P, _, _, _, T, _, V, _, _, _, _, _, _, _, _, _, /* 0x50 */
   _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, /* 0x60 */
   _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, /* 0x70 */
 };
@@ -56,6 +57,7 @@ cp_printer * cp_printers[256] =
 #undef O
 #undef P
 #undef T
+#undef V
 #undef _
 
 #define obstack_chunk_alloc xmalloc
@@ -269,7 +271,7 @@ dump_aggr_type (t, v)
   
   name = TYPE_NAME (t);
 
-  if (DECL_CONTEXT (name))
+  if (name && DECL_CONTEXT (name))
     {
       /* FUNCTION_DECL or RECORD_TYPE */
       dump_decl (DECL_CONTEXT (name), 0);
@@ -277,10 +279,10 @@ dump_aggr_type (t, v)
     }
 
   /* kludge around weird behavior on g++.brendan/line1.C */
-  if (TREE_CODE (name) != IDENTIFIER_NODE)
+  if (name && TREE_CODE (name) != IDENTIFIER_NODE)
     name = DECL_NAME (name);
 
-  if (ANON_AGGRNAME_P (name))
+  if (name == 0 || ANON_AGGRNAME_P (name))
     {
       OB_PUTS ("{anonymous");
       if (!v)
@@ -512,6 +514,9 @@ ident_fndecl (t)
 {
   tree n = lookup_name (t, 0);
 
+  if (n == NULL_TREE)
+    return NULL_TREE;
+
   if (TREE_CODE (n) == FUNCTION_DECL)
     return n;
   else if (TREE_CODE (n) == TREE_LIST
@@ -643,26 +648,30 @@ dump_decl (t, v)
       /* These special cases are duplicated here so that other functions
 	 can feed identifiers to cp_error and get them demangled properly. */
     case IDENTIFIER_NODE:
-      if (DESTRUCTOR_NAME_P (t))
-	{
-	  OB_PUTC ('~');
-	  dump_decl (DECL_NAME (ident_fndecl (t)), 0);
-	}
-      else if (IDENTIFIER_TYPENAME_P (t))
-	{
-	  OB_PUTS ("operator ");
-	  /* Not exactly IDENTIFIER_TYPE_VALUE.  */
-	  dump_type (TREE_TYPE (t), 0);
-	  break;
-	}
-      else if (IDENTIFIER_OPNAME_P (t))
-	{
-	  char *name_string = operator_name_string (t);
-	  OB_PUTS ("operator ");
-	  OB_PUTCP (name_string);
-	}
-      else
-	OB_PUTID (t);
+      { tree f;
+	if (DESTRUCTOR_NAME_P (t)
+	    && (f = ident_fndecl (t))
+	    && DECL_LANGUAGE (f) == lang_cplusplus)
+	  {
+	    OB_PUTC ('~');
+	    dump_decl (DECL_NAME (f), 0);
+	  }
+	else if (IDENTIFIER_TYPENAME_P (t))
+	  {
+	    OB_PUTS ("operator ");
+	    /* Not exactly IDENTIFIER_TYPE_VALUE.  */
+	    dump_type (TREE_TYPE (t), 0);
+	    break;
+	  }
+	else if (IDENTIFIER_OPNAME_P (t))
+	  {
+	    char *name_string = operator_name_string (t);
+	    OB_PUTS ("operator ");
+	    OB_PUTCP (name_string);
+	  }
+	else
+	  OB_PUTID (t);
+      }
       break;
 
     case FUNCTION_DECL:
@@ -785,7 +794,7 @@ dump_function_decl (t, v)
 	parmtypes = TREE_CHAIN (parmtypes);
     }
 
-  if (DESTRUCTOR_NAME_P (name))
+  if (DESTRUCTOR_NAME_P (name) && DECL_LANGUAGE (t) == lang_cplusplus)
     parmtypes = TREE_CHAIN (parmtypes);
   
   dump_function_name (t);
@@ -824,7 +833,8 @@ dump_function_name (t)
 
   /* There ought to be a better way to find out whether or not something is
      a destructor.  */
-  if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (t)))
+  if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (t))
+      && DECL_LANGUAGE (t) == lang_cplusplus)
     {
       OB_PUTC ('~');
       dump_decl (name, 0);
@@ -1455,4 +1465,18 @@ args_as_string (p, v)
     return "...";
 
   return type_as_string (p, v);
+}
+
+char *
+cv_as_string (p, v)
+     tree p;
+     int v;
+{
+  OB_INIT ();
+
+  dump_readonly_or_volatile (p, before);
+
+  OB_FINISH ();
+
+  return (char *)obstack_base (&scratch_obstack);
 }
