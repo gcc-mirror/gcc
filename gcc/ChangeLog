@@ -1,3 +1,18 @@
+2004-05-12  Paolo Bonzini  <bonzini@gnu.org>
+
+	Replace several arrays with a struct of arrays.
+        * combine.c (struct reg_stat): New.
+        (init_reg_last_arrays): Renamed to...
+        (init_reg_last): ...this.  Callers adjusted.
+        (reg_stat): New.
+        (combine_instructions): Allocate it and use it.
+        (reg_last_death, reg_last_set, reg_last_set_value,
+        reg_last_set_label, reg_last_set_table_tick,
+        reg_last_set_invalid, reg_nonzero_bits, reg_sign_bit_copies,
+        reg_last_set_mode, reg_last_set_nonzero_bits,
+        reg_last_set_sign_bit_copies): Replace throughout
+        with items of reg_stat.
+
 2004-05-11  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR optimization/15100
