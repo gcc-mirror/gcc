@@ -77,16 +77,3 @@ Boston, MA 02111-1307, USA.  */
 
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_DWARF2_ASM | MASK_BIG_ENDIAN)
-
-/* We need this macro to output DWARF2 information correctly.  The macro
-   is defined in dwarf2out.c, but it will not do section relative offsets
-   which messes up our ability to debug using gdb.  */
-
-#undef ASM_OUTPUT_DWARF_OFFSET
-#define ASM_OUTPUT_DWARF_OFFSET(FILE,LABEL)				\
- do {									\
-	fprintf ((FILE), "\t%s\t", UNALIGNED_OFFSET_ASM_OP);		\
-	fprintf ((FILE), "@secrel(");                                   \
-	assemble_name (FILE, LABEL);					\
-	fprintf ((FILE), ")");                                          \
-  } while (0)

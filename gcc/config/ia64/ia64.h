@@ -2518,21 +2518,6 @@ do {									\
 /* An rtx used to mask the return address found via RETURN_ADDR_RTX, so that it
    does not contain any extraneous set bits in it.  */
 /* #define MASK_RETURN_ADDR */
-
-/* Define this macro to 0 if your target supports DWARF 2 frame unwind
-   information, but it does not yet work with exception handling.  Otherwise,
-   if your target supports this information (if it defines
-   `INCOMING_RETURN_ADDR_RTX' and either `UNALIGNED_INT_ASM_OP' or
-   `OBJECT_FORMAT_ELF'), GCC will provide a default definition of 1.
-
-   If this macro is defined to 1, the DWARF 2 unwinder will be the default
-   exception handling mechanism; otherwise, setjmp/longjmp will be used by
-   default.
-
-   If this macro is defined to anything, the DWARF 2 unwinder will be used
-   instead of inline unwinders and __unwind_function in the non-setjmp case.  */
-/* #define DWARF2_UNWIND_INFO */
-
 
 /* Assembler Commands for Alignment.  */
 
@@ -2632,12 +2617,31 @@ do {									\
    add brackets around the label.  */
 
 #define ASM_OUTPUT_DEBUG_LABEL(FILE, PREFIX, NUM) \
-  do							\
-    {							\
-      fprintf (FILE, "[.%s%d:]\n", PREFIX, NUM);	\
-    }							\
-  while (0)
+  fprintf (FILE, "[.%s%d:]\n", PREFIX, NUM)
 
+/* Use section-relative relocations for debugging offsets.  Unlike other
+   targets that fake this by putting the section VMA at 0, IA-64 has 
+   proper relocations for them.  */
+#define ASM_OUTPUT_DWARF_OFFSET(FILE, SIZE, LABEL)	\
+  do {							\
+    fputs (((SIZE) == 4 ? UNALIGNED_INT_ASM_OP		\
+	    : (SIZE) == 8 ? UNALIGNED_DOUBLE_INT_ASM_OP	\
+	    : (abort (), "")), FILE);			\
+    fputs ("@secrel(", FILE);				\
+    assemble_name (FILE, LABEL);			\
+    fputc (')', FILE);					\
+  } while (0)
+
+/* Emit a PC-relative relocation.  */
+#define ASM_OUTPUT_DWARF_PCREL(FILE, SIZE, LABEL)	\
+  do {							\
+    fputs (((SIZE) == 4 ? UNALIGNED_INT_ASM_OP		\
+	    : (SIZE) == 8 ? UNALIGNED_DOUBLE_INT_ASM_OP	\
+	    : (abort (), "")), FILE);			\
+    fputs ("@pcrel(", FILE);				\
+    assemble_name (FILE, LABEL);			\
+    fputc (')', FILE);					\
+  } while (0)
 
 /* Cross Compilation and Floating Point.  */
 
