@@ -1,5 +1,5 @@
 /* Definitions for ARM running Linux-based GNU systems using ELF
-   Copyright (C) 1993, 1994, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Philip Blundell <philb@gnu.org>
 
 This file is part of GNU CC.
