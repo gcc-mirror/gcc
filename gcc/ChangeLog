@@ -1,3 +1,11 @@
+2000-10-06  Richard Henderson  <rth@cygnus.com>
+
+	* function.c (diddle_return_value): Examine
+	current_function_return_rtx instead of the DECL_RESULT.
+	(expand_function_end): Handle reloading DECL_RESULT from memory
+	into a hard register.  Query promote_mode for sign of mismatched
+	modes.
+
 2000-10-06  Vladimir Makarov  <vmakarov@touchme.toronto.redhat.com>
 
 	* haifa-sched.c (schedule_insns): Fix typo in freeing
