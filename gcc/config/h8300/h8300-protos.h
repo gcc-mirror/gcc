@@ -104,6 +104,8 @@ extern int h8300_current_function_interrupt_function_p (void);
 extern int h8300_initial_elimination_offset (int, int);
 extern int h8300_regs_ok_for_stm (int, rtx[]);
 extern int h8300_hard_regno_rename_ok (unsigned int, unsigned int);
+extern int h8300_hard_regno_nregs (int, enum machine_mode);
+extern int h8300_hard_regno_mode_ok (int, enum machine_mode);
 
 struct cpp_reader;
 extern void h8300_pr_interrupt (struct cpp_reader *);

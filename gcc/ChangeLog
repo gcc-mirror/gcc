@@ -1,3 +1,13 @@
+2004-02-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300-protos.h: Add prototypes for
+	h8300_hard_regno_nregs and h8300_hard_regno_mode_ok.
+	* config/h8300/h8300.c (h8300_hard_regno_nregs): New.
+	(h8300_hard_regno_mode_ok): Likewise.
+	* config/h8300/h8300.h (HARD_REGNO_NREGS): Call
+	h8300_hard_regno_nregs().
+	(HARD_REGNO_MODE_OK): Call h8300_hard_regno_mode_ok().
+
 2004-02-18  Per Bothner  <per@bothner.com>
 
 	* cpphash.h (struct cpp_buffer):  Restore return_at_eof field.  This
