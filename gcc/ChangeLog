@@ -1,3 +1,8 @@
+2002-12-13  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.c (output_millicode_call): Correct typo.
+	(output_call): Likewise.
+
 Fri Dec 13 21:07:18 2002  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mn10300/mn10300.c (print_operand) <case N>: Check
