@@ -181,9 +181,8 @@ $!'f$verify(0)
 $	endif
 $!
 $compile_cc1:
-$if (DO_CC1 + DO_CC1PLUS) .ne.0
+$if (DO_CC1 + DO_CC1OBJ) .ne.0
 $	then
-$write sys$output "testing"
 $if (f$search("C-PARSE.Y") .eqs. "") then goto yes_yfiles
 $if (f$cvtime(f$file_attributes("C-PARSE.IN","RDT")).gts. -
  	    f$cvtime(f$file_attributes("C-PARSE.Y","RDT")))  -
@@ -193,8 +192,8 @@ $if (f$cvtime(f$file_attributes("C-PARSE.IN","RDT")).gts. -
  	    f$cvtime(f$file_attributes("OBJC-PARSE.Y","RDT")))  -
 		then goto yes_yfiles
 $GOTO no_yfiles
-$echo "Now processing c-parse.in to generate c-parse.y and objc-parse.y."
 $yes_yfiles:
+$echo "Now processing c-parse.in to generate c-parse.y and objc-parse.y."
 $ edit/tpu/nojournal/nosection/nodisplay/command=sys$input
 !
 !     Read c-parse.in, write c-parse.y and objc-parse.y, depending on
