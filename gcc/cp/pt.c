@@ -101,6 +101,7 @@ static tree build_template_decl PROTO((tree, tree));
 static int mark_template_parm PROTO((tree, void *));
 static tree tsubst_friend_function PROTO((tree, tree));
 static tree get_bindings_real PROTO((tree, tree, tree, int));
+static int template_decl_level PROTO((tree));
 
 /* Do any processing required when DECL (a member template declaration
    using TEMPLATE_PARAMETERS as its innermost parameter list) is
@@ -5578,7 +5579,7 @@ type_unification_real (tparms, targs, parms, args, subr,
 
 /* Returns the level of DECL, which declares a template parameter.  */
 
-static int
+int
 template_decl_level (decl)
      tree decl;
 {
