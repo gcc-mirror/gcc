@@ -34,47 +34,48 @@
 
 //
 // This file provides some compile-time information about various types.
-// These informations were designed, on purpose, to be constant-expressions
+// These representations were designed, on purpose, to be constant-expressions
 // and not types as found in <stl/bits/type_traits.h>.  In particular, they
 // can be used in control structures and the optimizer hopefully will do
 // the obvious thing.
 //
 // Why integral expressions, and not functions nor types?
-// Firstly, these compile-time information entities are used as
-// template-arguments so function return values won't work.  We
-// need compile-time entities.  We're left with types and constant
-// integral expressions.
-// Secondly, from the point of view of ease of use type-based compile-time
+// Firstly, these compile-time entities are used as template-arguments
+// so function return values won't work:  We need compile-time entities.
+// We're left with types and constant  integral expressions.
+// Secondly, from the point of view of ease of use, type-based compile-time
 // information is -not- *that* convenient.  On has to write lots of
 // overloaded functions and to hope that the compiler will select the right
 // one. As a net effect, the overall structure isn't very clear at first
 // glance.
-// Thirdly, partial ordering and overload resolution (of template functions)
-// is very costly in terms of compiler-resource.  It is a Good Thing to
+// Thirdly, partial ordering and overload resolution (of function templates)
+// is highly costly in terms of compiler-resource.  It is a Good Thing to
 // keep these resource consumption as least as possible.
+//
+// See valarray_array.h for a case use.
 //
 // -- Gaby (dosreis@cmla.ens-cachan.fr) 2000-03-06.
 //
 
-namespace std {
-
+namespace std
+{
   template<typename _Tp>
-  struct __is_void
-  {
-    enum
+    struct __is_void
     {
-      _M_type = 0
+      enum
+      {
+        _M_type = 0
+      };
     };
-  };
 
   template<>
-  struct __is_void<void>
-  {
-    enum
+    struct __is_void<void>
     {
-      _M_type = 1
+      enum
+      {
+        _M_type = 1
+      };
     };
-  };
 
   //
   // Integer types
@@ -292,10 +293,3 @@ namespace std {
 
 
 #endif //_CPP_BITS_CPP_TYPE_TRAITS_H
-
-
-
-
-
-
-
