@@ -397,16 +397,20 @@ announce_snapshot() {
   TEXT_DATE=`date --date=$DATE +%B\ %d,\ %Y`
   cd ~ftp/pub/gcc/snapshots
   sed -e "s%@DATE@%$DATE%g" \
-     -e "s%@LAST_DATE@%$LAST_DATE%g" \
+    -e "s%@TEXT_DATE@%$TEXT_DATE%g" \
+    -e "s%@LAST_DATE@%$LAST_DATE%g" \
     -e "s%@BRANCH@%${BRANCH}%g" \
     -e "s%@RELEASE@%${RELEASE}%g" \
-    -e "s%@TEXT_DATE@%$TEXT_DATE%g" < ~/scripts/snapshot-README > $$
+    -e "s%@EXPORT@%${EXPORTTAG} ${EXPORTDATE}%g" \
+    ~/scripts/snapshot-README > $$
   mv $$ ${RELEASE}/README
   sed -e "s%@DATE@%$DATE%g" \
-     -e "s%@LAST_DATE@%$LAST_DATE%g" \
+    -e "s%@TEXT_DATE@%$TEXT_DATE%g" \
+    -e "s%@LAST_DATE@%$LAST_DATE%g" \
     -e "s%@BRANCH@%${BRANCH}%g" \
     -e "s%@RELEASE@%${RELEASE}%g" \
-    -e "s%@TEXT_DATE@%$TEXT_DATE%g" < ~/scripts/snapshot-index.html > $$
+    -e "s%@EXPORT@%${EXPORTTAG} ${EXPORTDATE}%g" \
+    ~/scripts/snapshot-index.html > $$
   mv $$ ${RELEASE}/index.html
 
   touch LATEST-IS-${BRANCH}-${DATE}

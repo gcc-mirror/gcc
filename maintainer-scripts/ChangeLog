@@ -1,3 +1,9 @@
+2003-09-22  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gcc_release (announce_snapshot): Restructure processing
+	of snapshot-README and snapshot-index.html and add a new
+	substitution for @EXPORT@.
+
 2003-08-24  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* gcc_release (build_sources): Create/update the LAST_UPDATED file
