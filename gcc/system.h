@@ -564,7 +564,7 @@ extern void abort PARAMS ((void));
 #endif 
 
 /* Enumerated bitfields are safe to use unless we've been explictly told
- * otherwise or if they are signed. */
+   otherwise or if they are signed. */
  
 #define USE_ENUM_BITFIELDS (__GNUC__ || (!ONLY_INT_FIELDS && ENUM_BITFIELDS_ARE_UNSIGNED))
 
