@@ -1,3 +1,8 @@
+2001-05-14  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* decl.c (duplicate_decls): Suppress warning about duplicate
+        decls if the first decl is a friend.
+
 2001-05-12  Zack Weinberg  <zackw@stanford.edu>
 
 	* except.c (choose_personality_routine): Export.  Add
