@@ -1,5 +1,5 @@
 /* Exception handling and frame unwind runtime interface routines.
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -191,7 +191,7 @@ read_encoded_value_with_base (unsigned char encoding, _Unwind_Ptr base,
       signed s8 __attribute__ ((mode (DI)));
     } __attribute__((__packed__));
 
-  union unaligned *u = (union unaligned *) p;
+  const union unaligned *u = (const union unaligned *) p;
   _Unwind_Internal_Ptr result;
 
   if (encoding == DW_EH_PE_aligned)
