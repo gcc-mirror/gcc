@@ -1,3 +1,8 @@
+2004-03-20  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/InetAddress.java
+	(getLocalHostname): Added javadoc.
+
 2004-03-19  Per Bothner  <per@bothner.com>
 
 	* configure.in: FILE variable  overrides FLATFORM when linking
