@@ -1,6 +1,6 @@
 /* Prototypes for exported functions defined in m68hc11.c
    Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
-   Contributed by Stephane Carrez (stcarrez@worldnet.fr)
+   Contributed by Stephane Carrez (stcarrez@nerim.fr)
 
 This file is part of GNU CC.
 
@@ -21,6 +21,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 extern int m68hc11_override_options PARAMS((void));
+extern int m68hc11_optimization_options PARAMS((int,int));
 extern void m68hc11_conditional_register_usage PARAMS((void));
 extern int hard_regno_mode_ok PARAMS((int, enum machine_mode));
 
