@@ -1,5 +1,5 @@
 /* Utility to update paths from internal to external forms.
-   Copyright (C) 1997 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -76,6 +76,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "gansidecl.h"
 
+static char *std_prefix = PREFIX;
+
 static char *get_key_value	PROTO((char *));
 static char *translate_name	PROTO((char *));
 static char *concat		PVPROTO((char *, ...));
@@ -93,16 +95,20 @@ get_key_value (key)
      char *key;
 {
   char *prefix = 0;
+  char *temp = 0;
 
 #ifdef _WIN32
   prefix = lookup_key (key);
 #endif
 
   if (prefix == 0)
-    prefix = getenv (concat (key, "_ROOT", NULL_PTR));
+    prefix = getenv (temp = concat (key, "_ROOT", NULL_PTR));
 
   if (prefix == 0)
-    prefix = PREFIX;
+    prefix = std_prefix;
+
+  if (temp)
+    free (temp);
 
   return prefix;
 }
@@ -259,7 +265,7 @@ translate_name (name)
     {
       prefix = get_key_value (key);
       if (prefix == 0)
-	prefix = PREFIX;
+	prefix = std_prefix;
     }
   else
     {
@@ -289,12 +295,12 @@ update_path (path, key)
      char *path;
      char *key;
 {
-  if (! strncmp (path, PREFIX, strlen (PREFIX)) && key != 0)
+  if (! strncmp (path, std_prefix, strlen (std_prefix)) && key != 0)
     {
       if (key[0] != '$')
 	key = concat ("@", key, NULL_PTR);
 
-      path = concat (key, &path[strlen (PREFIX)], NULL_PTR);
+      path = concat (key, &path[strlen (std_prefix)], NULL_PTR);
 
       while (path[0] == '@' || path[0] == '$')
 	path = translate_name (path);
@@ -314,4 +320,13 @@ update_path (path, key)
 #endif
 
   return path;
+}
+
+/* Reset the standard prefix */
+void
+set_std_prefix (prefix, len)
+     char *prefix;
+     int len;
+{
+  std_prefix = save_string (prefix, len);
 }

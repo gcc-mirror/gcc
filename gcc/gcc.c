@@ -51,6 +51,7 @@ extern int pexecute PROTO ((const char *, char * const *, const char *,
 			    const char *, char **, char **, int));
 extern int pwait PROTO ((int, int *, int));
 extern char *update_path PROTO((char *, char *));
+extern void set_std_prefix PROTO((char *, int));
 /* Flag arguments to pexecute.  */
 #define PEXECUTE_FIRST   1
 #define PEXECUTE_LAST    2
@@ -2378,6 +2379,20 @@ process_command (argc, argv)
 
   if (gcc_exec_prefix)
     {
+      int len = strlen (gcc_exec_prefix);
+      if (len > sizeof ("/lib/gcc-lib/")-1
+	  && (gcc_exec_prefix[len-1] == '/'
+	      || gcc_exec_prefix[len-1] == DIR_SEPARATOR))
+	{
+	  temp = gcc_exec_prefix + len - sizeof ("/lib/gcc-lib/") + 1;
+	  if ((*temp == '/' || *temp == DIR_SEPARATOR)
+	      && strncmp (temp+1, "lib", 3) == 0
+	      && (temp[4] == '/' || temp[4] == DIR_SEPARATOR)
+	      && strncmp (temp+5, "gcc-lib", 7) == 0)
+	    len -= sizeof ("/lib/gcc-lib/") - 1;
+	}
+
+      set_std_prefix (gcc_exec_prefix, len);
       add_prefix (&exec_prefixes, gcc_exec_prefix, "GCC", 0, 0, NULL_PTR);
       add_prefix (&startfile_prefixes, gcc_exec_prefix, "GCC", 0, 0, NULL_PTR);
     }
