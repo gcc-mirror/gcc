@@ -574,7 +574,7 @@ c_decode_option (p)
     warn_missing_prototypes = 0;
   else if (!strcmp (p, "-Wredundant-decls"))
     warn_redundant_decls = 1;
-  else if (!strcmp (p, "-Wnoredundant-decls"))
+  else if (!strcmp (p, "-Wno-redundant-decls"))
     warn_redundant_decls = 0;
   else if (!strcmp (p, "-Wnested-externs"))
     warn_nested_externs = 1;
@@ -1369,8 +1369,9 @@ duplicate_decls (newdecl, olddecl)
 	{
 	  /* Since the type is OLDDECL's, make OLDDECL's size go with.  */
 	  DECL_SIZE (newdecl) = DECL_SIZE (olddecl);
-	  if (DECL_ALIGN (olddecl) > DECL_ALIGN (newdecl))
-	    DECL_ALIGN (newdecl) = DECL_ALIGN (olddecl);
+	  if (TREE_CODE (olddecl) != FUNCTION_DECL)
+	    if (DECL_ALIGN (olddecl) > DECL_ALIGN (newdecl))
+	      DECL_ALIGN (newdecl) = DECL_ALIGN (olddecl);
 	}
 
       /* Merge the type qualifiers.  */
@@ -2562,10 +2563,7 @@ init_decl_processing ()
       builtin_function ("strcmp", int_ftype_string_string, BUILT_IN_STRCMP, 0);
       builtin_function ("strcpy", string_ftype_ptr_ptr, BUILT_IN_STRCPY, 0);
       builtin_function ("strlen", sizet_ftype_string, BUILT_IN_STRLEN, 0);
-#if 0 /* No good, since open-coded implementation fails to set errno.
-	 The ANSI committee made a real mistake in specifying math fns.  */
       builtin_function ("sqrt", double_ftype_double, BUILT_IN_FSQRT, 0);
-#endif
     }
 
 #if 0
@@ -3601,7 +3599,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		      error ("size of array `%s' is negative", name);
 		      size = integer_one_node;
 		    }
-		  itype = build_index_type (build_int_2 (TREE_INT_CST_LOW (size) - 1, 0));
+		  itype = build_index_type (size_binop (MINUS_EXPR, size,
+							size_one_node));
 		}
 	      else
 		{
@@ -4532,8 +4531,13 @@ finish_struct (t, fieldlist)
 	    }
 	}
       else
-	/* Non-bit-fields are aligned for their type.  */
-	DECL_ALIGN (x) = MAX (DECL_ALIGN (x), TYPE_ALIGN (TREE_TYPE (x)));
+	{
+	  int min_align = (DECL_PACKED (x) ? BITS_PER_UNIT
+			   : TYPE_ALIGN (TREE_TYPE (x)));
+	  /* Non-bit-fields are aligned for their type, except packed
+	     fields which require only BITS_PER_UNIT alignment.  */
+	  DECL_ALIGN (x) = MAX (DECL_ALIGN (x), min_align);
+	}
     }
 
   /* Now DECL_INITIAL is null on all members.  */
@@ -4819,7 +4823,8 @@ finish_enum (enumtype, values)
       {
 	TREE_TYPE (TREE_PURPOSE (pair)) = enumtype;
 	DECL_SIZE (TREE_PURPOSE (pair)) = TYPE_SIZE (enumtype);
-	DECL_ALIGN (TREE_PURPOSE (pair)) = TYPE_ALIGN (enumtype);
+	if (TREE_CODE (TREE_PURPOSE (pair)) != FUNCTION_DECL)
+	  DECL_ALIGN (TREE_PURPOSE (pair)) = TYPE_ALIGN (enumtype);
       }
 
   /* Replace the decl nodes in VALUES with their names.  */
@@ -5289,27 +5294,33 @@ store_parm_decls ()
 		}
 	      /* Type for passing arg must be consistent
 		 with that declared for the arg.  */
-	      if (! comptypes (DECL_ARG_TYPE (parm), TREE_VALUE (type))
-		  /* If -traditional, allow `unsigned int' instead of `int'
-		     in the prototype.  */
-		  && (! (flag_traditional
-			 && DECL_ARG_TYPE (parm) == integer_type_node
-			 && TREE_VALUE (type) == unsigned_type_node)))
+	      if (! comptypes (DECL_ARG_TYPE (parm), TREE_VALUE (type)))
 		{
-		  error ("argument `%s' doesn't match function prototype",
-			 IDENTIFIER_POINTER (DECL_NAME (parm)));
-		  if (DECL_ARG_TYPE (parm) == integer_type_node
-		      && TREE_VALUE (type) == TREE_TYPE (parm))
+		  if (TREE_TYPE (parm) == TREE_VALUE (type))
 		    {
-		      error ("a formal parameter type that promotes to `int'");
-		      error ("can match only `int' in the prototype");
+		      /* Adjust argument to match prototype.  E.g. a previous
+			 `int foo(float);' prototype causes
+			 `int foo(x) float x; {...}' to be treated like
+			 `int foo(float x) {...}'.  This is particularly
+			 useful for argument types like uid_t.  */
+		      DECL_ARG_TYPE (parm) = TREE_TYPE (parm);
+#ifdef PROMOTE_PROTOTYPES
+		      if (TREE_CODE (TREE_TYPE (parm)) == INTEGER_TYPE
+			  && TYPE_PRECISION (TREE_TYPE (parm))
+			  < TYPE_PRECISION (integer_type_node))
+			DECL_ARG_TYPE (parm) = integer_type_node;
+#endif
+		      if (pedantic)
+			warning ("promoted argument `%s' doesn't match prototype",
+				 IDENTIFIER_POINTER (DECL_NAME (parm)));
 		    }
-		  if (DECL_ARG_TYPE (parm) == double_type_node
-		      && TREE_VALUE (type) == TREE_TYPE (parm))
-		    {
-		      error ("a formal parameter type that promotes to `double'");
-		      error ("can match only `double' in the prototype");
-		    }
+		  /* If -traditional, allow `int' argument to match
+		     `unsigned' prototype.  */
+		  else if (! (flag_traditional
+			      && TREE_TYPE (parm) == integer_type_node
+			      && TREE_VALUE (type) == unsigned_type_node))
+		    error ("argument `%s' doesn't match prototype",
+			   IDENTIFIER_POINTER (DECL_NAME (parm)));
 		}
 	    }
 	  TYPE_ACTUAL_ARG_TYPES (TREE_TYPE (fndecl)) = 0;
@@ -5652,6 +5663,9 @@ push_c_function_context ()
 {
   struct c_function *p
     = (struct c_function *) xmalloc (sizeof (struct c_function));
+
+  if (pedantic)
+    pedwarn ("ANSI C forbids nested functions");
 
   push_function_context ();
 
