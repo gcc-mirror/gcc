@@ -966,9 +966,9 @@ sdbout.o : sdbout.c $(CONFIG_H) $(TREE_H) $(RTL_H) gsyms.h flags.h \
 dwarfout.o : dwarfout.c $(CONFIG_H) $(TREE_H) $(RTL_H) dwarf.h flags.h \
    insn-config.h reload.h output.h defaults.h
 xcoffout.o : xcoffout.c $(CONFIG_H) $(TREE_H) $(RTL_H) xcoffout.h flags.h
-emit-rtl.o : emit-rtl.c $(CONFIG_H) $(RTL_H) flags.h gvarargs.h function.h  \
-   regs.h insn-config.h insn-codes.h real.h expr.h bytecode.h bc-opcode.h \
-   bc-typecd.h bc-typecd.def bc-optab.h bc-emit.h bc-opname.h
+emit-rtl.o : emit-rtl.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h gvarargs.h \
+   function.h regs.h insn-config.h insn-codes.h real.h expr.h bytecode.h \
+   bc-opcode.h bc-typecd.h bc-typecd.def bc-optab.h bc-emit.h bc-opname.h
 real.o : real.c $(CONFIG_H) $(TREE_H)
 getpwd.o : getpwd.c $(CONFIG_H)
 
