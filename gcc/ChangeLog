@@ -1,3 +1,8 @@
+2000-08-14  Richard Henderson  <rth@cygnus.com>
+
+	* expr.c (emit_group_load): Don't force constants into registers.
+	Special case source already in the correct mode.
+
 2000-08-14  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* configure.in: Accept *-*-linux* not just *-*-linux-gnu*.
