@@ -239,6 +239,12 @@
 #include "pushback.h"
 #include "compress.h"
 
+/* Some systems have mkdir that takes a single argument.  */
+#ifdef MKDIR_TAKES_ONE_ARG
+# define mkdir(a,b) mkdir(a)
+#endif
+
+
 #ifdef WORDS_BIGENDIAN
 
 #define L2BI(l) ((l & 0xff000000) >> 24) | \
