@@ -42,18 +42,6 @@ extern void m68hc11_function_arg_advance PARAMS((CUMULATIVE_ARGS*,
 #endif
 
 #ifdef RTX_CODE
-extern rtx m68hc11_compare_op0;
-extern rtx m68hc11_compare_op1;
-extern GTY(()) rtx m68hc11_soft_tmp_reg;
-extern GTY(()) rtx ix_reg;
-extern GTY(()) rtx iy_reg;
-extern GTY(()) rtx d_reg;
-extern GTY(()) rtx da_reg;
-extern GTY(()) rtx stack_push_word;
-extern GTY(()) rtx stack_pop_word;
-extern GTY(()) rtx z_reg;
-extern GTY(()) rtx z_reg_qi;
-
 extern void m68hc11_initialize_trampoline PARAMS((rtx, rtx, rtx));
 
 extern rtx m68hc11_expand_compare_and_branch PARAMS((enum rtx_code,
