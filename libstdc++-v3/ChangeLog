@@ -1,3 +1,8 @@
+2004-03-19  Michael Eager  <eager@mvista.com>
+
+	* config/cpu/mips/atomicity.h:  Prevent reg loads between LL and
+	SC instructions.
+
 2004-03-19  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/22_locale/num_get/get/char/11.cc: Remove redundant
