@@ -1,3 +1,19 @@
+2004-01-21  Caroline Tice <ctice@apple.com>
+
+	* config/i386/i386.md (fix_truncxfdi2): Add clause to clobber 
+	flags register.
+	(fix_truncdfdi2): Likewise.
+	(fix_truncsfdi2): Likewise.
+	(*fix_truncdi_1): Likewise.
+	(fix_truncxfsi2): Likewise.
+	(fix_truncdfsi2): Likewise.
+	(fix_truncsfsi2): Likewise.
+	(*fix_truncsi_1): Likewise.
+	(fix_truncxfhi2): Likewise.
+	(fix_truncdfhi2): Likewise.
+	(fix_truncsfhi2): Likewise.
+	(*fix_trunchi_1): Likewise.
+	
 2004-01-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* alias.c, basic-block.h, c-common.c, c-common.h,
