@@ -3084,61 +3084,66 @@ output_asm_insn (const char *template, rtx *operands)
 	else if (ISALPHA (*p))
 	  {
 	    int letter = *p++;
-	    c = atoi (p);
+	    unsigned long opnum;
+	    char *endptr;
+	    
+	    opnum = strtoul (p, &endptr, 10);
 
-	    if (! ISDIGIT (*p))
-	      output_operand_lossage ("operand number missing after %%-letter");
-	    else if (this_is_asm_operands
-		     && (c < 0 || (unsigned int) c >= insn_noperands))
+	    if (endptr == p)
+	      output_operand_lossage ("operand number missing "
+				      "after %%-letter");
+	    else if (this_is_asm_operands && opnum >= insn_noperands)
 	      output_operand_lossage ("operand number out of range");
 	    else if (letter == 'l')
-	      output_asm_label (operands[c]);
+	      output_asm_label (operands[opnum]);
 	    else if (letter == 'a')
-	      output_address (operands[c]);
+	      output_address (operands[opnum]);
 	    else if (letter == 'c')
 	      {
-		if (CONSTANT_ADDRESS_P (operands[c]))
-		  output_addr_const (asm_out_file, operands[c]);
+		if (CONSTANT_ADDRESS_P (operands[opnum]))
+		  output_addr_const (asm_out_file, operands[opnum]);
 		else
-		  output_operand (operands[c], 'c');
+		  output_operand (operands[opnum], 'c');
 	      }
 	    else if (letter == 'n')
 	      {
-		if (GET_CODE (operands[c]) == CONST_INT)
+		if (GET_CODE (operands[opnum]) == CONST_INT)
 		  fprintf (asm_out_file, HOST_WIDE_INT_PRINT_DEC,
-			   - INTVAL (operands[c]));
+			   - INTVAL (operands[opnum]));
 		else
 		  {
 		    putc ('-', asm_out_file);
-		    output_addr_const (asm_out_file, operands[c]);
+		    output_addr_const (asm_out_file, operands[opnum]);
 		  }
 	      }
 	    else
-	      output_operand (operands[c], letter);
+	      output_operand (operands[opnum], letter);
 
-	    if (!opoutput[c])
+	    if (!opoutput[opnum])
 	      oporder[ops++] = c;
-	    opoutput[c] = 1;
+	    opoutput[opnum] = 1;
 
-	    while (ISDIGIT (c = *p))
-	      p++;
+	    p = endptr;
+	    c = *p;
 	  }
 	/* % followed by a digit outputs an operand the default way.  */
 	else if (ISDIGIT (*p))
 	  {
-	    c = atoi (p);
-	    if (this_is_asm_operands
-		&& (c < 0 || (unsigned int) c >= insn_noperands))
+	    unsigned long opnum;
+	    char *endptr;
+	    
+	    opnum = strtoul (p, &endptr, 10);
+	    if (this_is_asm_operands && opnum >= insn_noperands)
 	      output_operand_lossage ("operand number out of range");
 	    else
-	      output_operand (operands[c], 0);
+	      output_operand (operands[opnum], 0);
 
-	    if (!opoutput[c])
+	    if (!opoutput[opnum])
 	      oporder[ops++] = c;
-	    opoutput[c] = 1;
+	    opoutput[opnum] = 1;
 
-	    while (ISDIGIT (c = *p))
-	      p++;
+	    p = endptr;
+	    c = *p;
 	  }
 	/* % followed by punctuation: output something for that
 	   punctuation character alone, with no operand.
