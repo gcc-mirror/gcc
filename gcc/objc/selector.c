@@ -146,6 +146,29 @@ sel_get_typed_uid (const char *name, const char *types)
   return 0;
 }
 
+/* Return selector representing name; prefer a selector with non-NULL type */
+SEL
+sel_get_any_typed_uid (const char *name)
+{
+  struct objc_list *l;
+  sidx i;
+  SEL s;
+
+  i = (sidx) hash_value_for_key (__objc_selector_hash, name);
+  if (i == 0)
+    return 0;
+
+  for (l = (struct objc_list*)sarray_get (__objc_selector_array, i);
+       l; l = l->tail)
+    {
+      s = (SEL) l->head;
+      if (s->sel_types)
+	return s;
+    }
+
+  return s;
+}
+
 /* return selector representing name */
 SEL
 sel_get_any_uid (const char *name)
