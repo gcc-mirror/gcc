@@ -730,6 +730,7 @@ extern rtx operand_subword		PROTO((rtx, int, int, enum machine_mode));
 extern rtx operand_subword_force	PROTO((rtx, int, enum machine_mode));
 extern int subreg_lowpart_p		PROTO((rtx));
 extern rtx make_safe_from		PROTO((rtx, rtx));
+extern rtx convert_memory_address	PROTO((enum machine_mode, rtx));
 extern rtx memory_address		PROTO((enum machine_mode, rtx));
 extern rtx get_insns			PROTO((void));
 extern rtx get_last_insn		PROTO((void));
