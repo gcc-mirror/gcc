@@ -1,3 +1,7 @@
+Tue Sep  2 16:34:31 1997  Doug Evans  <dje@canuck.cygnus.com>
+
+	* lib/gcc-dg.exp (gcc-dg-test): Fix typos setting compile_type.
+
 Thu Jul 31 12:17:24 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/920501-9.c: Fix to work on targets with
