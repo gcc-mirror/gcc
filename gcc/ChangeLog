@@ -1,3 +1,22 @@
+2000-02-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* defaults.h (ASM_OUTPUT_ASCII): Constify a char*.
+
+	* flow.c (get_common_dest, chain_reorder_blocks, make_reorder_chain,
+	fixup_reorder_chain, skip_insns_between_block): Add static prototypes.
+	(life_analysis): Wrap variable `i' with macro ELIMINABLE_REGS.
+
+	* haifa-sched.c (rank_for_schedule): Don't cast away const-ness.
+
+	* integrate.c (compare_blocks, find_block): Likewise.
+
+	* rtl.c (fatal_with_file_and_line): Add ATTRIBUTE_PRINTF_2.
+
+	* rtl.h (set_file_and_line_for_stmt): Constify a char*.
+
+	* stmt.c (stmt_status, set_file_and_line_for_stmt,
+	expand_asm_operands): Likewise.
+
 Mon Feb 21 17:06:27 2000  Jason Eckhardt  <jle@cygnus.com>
 
 	* predict.c (estimate_probability): Added the pointer heuristic to

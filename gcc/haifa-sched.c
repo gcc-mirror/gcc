@@ -3978,8 +3978,8 @@ rank_for_schedule (x, y)
      const PTR x;
      const PTR y;
 {
-  rtx tmp = *(rtx *)y;
-  rtx tmp2 = *(rtx *)x;
+  rtx tmp = *(const rtx *)y;
+  rtx tmp2 = *(const rtx *)x;
   rtx link;
   int tmp_class, tmp2_class, depend_count1, depend_count2;
   int val, priority_val, spec_val, prob_val, weight_val;

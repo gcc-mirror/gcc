@@ -258,7 +258,7 @@ const char * const reg_note_name[] = { "", "REG_DEAD", "REG_INC", "REG_EQUIV", "
 			  "REG_EH_RETHROW", "REG_SAVE_NOTE" };
 
 static void fatal_with_file_and_line PARAMS ((FILE *, const char *, ...))
-  ATTRIBUTE_NORETURN;
+  ATTRIBUTE_PRINTF_2 ATTRIBUTE_NORETURN;
 static void fatal_expected_char PARAMS ((FILE *, int, int)) ATTRIBUTE_NORETURN;
 static void read_name		PARAMS ((char *, FILE *));
 static const char *trim_filename PARAMS ((const char *));
