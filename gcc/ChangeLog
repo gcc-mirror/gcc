@@ -1,3 +1,12 @@
+2004-07-28  Matt Austern  <austern@apple.com>
+
+	* config/darwin.c (darwin_one_byte_bool): New global variable.
+	* config/darwin.h (darwin_one_byte_bool): Declare.
+	(SUBTARGET_OPTIONS): Define macro.  (for -mone-byte-bool flag.)
+	* config/rs6000/darwin.h (BOOL_TYPE_SIZE): Conditionalize on
+	value of darwin_one_byte_bool.
+	* doc/invoke.texi: Document -mone-byte-bool flag.
+	
 2004-07-28  Eric Christopher  <echristo@redhat.com>
 
 	* c-common.c (c_common_unsafe_for_reeval): Delete.
