@@ -1,3 +1,9 @@
+2004-10-18  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* configure.ac (powerpc-*-darwin*): Require assembler to support
+	.machine directive.
+	* configure: Regenerate.
+
 2004-10-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* reload1.c (ior_hard_reg_set): Remove.
