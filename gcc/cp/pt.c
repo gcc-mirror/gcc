@@ -1461,6 +1461,12 @@ tsubst (t, args, nargs, in_decl)
 	r = build_decl (PARM_DECL, DECL_NAME (t), type);
 	DECL_INITIAL (r) = TREE_TYPE (r);
 	DECL_ARTIFICIAL (r) = DECL_ARTIFICIAL (t);
+#ifdef PROMOTE_PROTOTYPES
+	if ((TREE_CODE (type) == INTEGER_TYPE
+	     || TREE_CODE (type) == ENUMERAL_TYPE)
+	    && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
+	  DECL_ARG_TYPE (r) = integer_type_node;
+#endif
 	if (TREE_CHAIN (t))
 	  TREE_CHAIN (r) = tsubst (TREE_CHAIN (t), args, nargs, TREE_CHAIN (t));
 	return r;
