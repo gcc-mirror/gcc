@@ -72,7 +72,8 @@ typedef struct {
 } fix_entry_t;
 
 #define FIXUP_TABLE \
-  _FT_( "no_double_slash", double_slash_fix )
+  _FT_( "no_double_slash",  double_slash_fix ) \
+  _FT_( "else_endif_label", else_endif_label_fix )
 
 
 #define FIX_PROC_HEAD( fix ) \
@@ -180,6 +181,184 @@ FIX_PROC_HEAD( double_slash_fix )
   fclose (stdout);;
 }
 
+
+FIX_PROC_HEAD( else_endif_label_fix )
+{
+  static const char label_pat[] = "^[ \t]*#[ \t]*(else|endif)";
+  static regex_t label_re;
+
+  char ch;
+  char* pz_next = (char*)NULL;
+  regmatch_t match[2];
+
+  re_set_syntax (RE_SYNTAX_EGREP);
+  (void)re_compile_pattern (label_pat, sizeof (label_pat)-1,
+                            &label_re);
+
+  for (;;) /* entire file */
+    {
+      /*
+        See if we need to advance to the next candidate directive
+        If the scanning pointer passes over the end of the directive,
+        then the directive is inside a comment */
+      if (pz_next < text)
+        {
+          if (regexec (&label_re, text, 2, match, 0) != 0)
+            {
+              fputs( text, stdout );
+              break;
+            }
+
+          pz_next = text + match[0].rm_eo;
+        }
+
+      /*
+        IF the scan pointer has not reached the directive end, ... */
+      if (pz_next > text)
+        {
+          /*
+            Advance the scanning pointer.  If we are at the start
+            of a quoted string or a comment, then skip the entire unit */
+          ch = *text;
+
+          switch (ch)
+            {
+            case '/':
+              /*
+                Skip comments */
+              if (text[1] == '*')
+                {
+                  char* pz = strstr( text+2, "*/" );
+                  if (pz == (char*)NULL)
+                    {
+                      fputs( text, stdout );
+                      return;
+                    }
+                  pz += 2;
+                  fwrite( text, 1, (pz - text), stdout );
+                  text = pz;
+                  continue;
+                }
+              putc( ch, stdout );
+              text++;
+              break;
+
+            case '"':
+            case '\'':
+              text = print_quote( ch, text+1 );
+              break;
+
+            default:
+              putc( ch, stdout );
+              text++;
+            } /* switch (ch) */
+          continue;
+        } /* if (still shy of directive end) */
+
+      /*
+         The scanning pointer (text) has reached the end of the current
+         directive under test.  Check for bogons here.  */
+      for (;;) /* bogon check */
+        {
+          char ch = *(text++);
+          if (isspace (ch))
+            {
+              putc( ch, stdout );
+              if (ch == '\n')
+                {
+                  /*
+                    It is clean.  No bogons on this directive */
+                  pz_next = (char*)NULL; /* force a new regex search */
+                  goto dont_fix_bogon;
+                }
+              continue;
+            }
+
+          switch (ch)
+            {
+            case NUL:
+              return;
+
+            case '\\':
+              /*
+                Skip escaped newlines.  Otherwise, we have a bogon */
+              if (*text != '\n') {
+                text--;
+                goto fix_the_bogon;
+              }
+
+              /*
+                Emit the escaped newline and keep scanning for possible junk */
+              putc( '\\', stdout );
+              putc( '\n', stdout );
+              text++;
+              break;
+
+            case '/':
+              /*
+                Skip comments.  Otherwise, we have a bogon */
+              if (*text == '*')
+                {
+                  text--;
+                  pz_next = strstr( text+2, "*/" );
+                  if (pz_next == (char*)NULL)
+                    {
+                      putc( '\n', stdout );
+                      return;
+                    }
+                  pz_next += 2;
+                  fwrite( text, 1, (pz_next - text), stdout );
+                  text = pz_next;
+                  break;
+                }
+
+              /*
+                FIXME:  if this is a C++ file, then a double slash comment
+                is allowed to follow the directive.  */
+
+              /* FALLTHROUGH */
+
+            default:
+              /*
+                GOTTA BE A BOGON */
+              text--;
+              goto fix_the_bogon;
+            } /* switch (ch) */
+        } /* for (bogon check loop) */
+
+    fix_the_bogon:
+      /*
+        `text' points to the start of the bogus data */
+      for (;;)
+        {
+          /*
+            NOT an escaped newline.  Find the end of line that
+            is not preceeded by an escape character:  */
+          pz_next = strchr( text, '\n' );
+          if (pz_next == (char*)NULL)
+            {
+              putc( '\n', stdout );
+              return;
+            }
+
+          if (pz_next[-1] != '\\')
+            {
+              text = pz_next;
+              pz_next = (char*)NULL; /* force a new regex search */
+              break;
+            }
+
+          /*
+            The newline was escaped.  We gotta keep going.  */
+          text = pz_next + 1;
+        }
+
+    dont_fix_bogon:;
+    } /* for (entire file) loop */
+
+  return;
+}
+
 /* = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
      test for fix selector
@@ -206,11 +385,12 @@ apply_fix( fixname, filname )
       if (strcmp (pfe->fix_name, fixname) == 0)
         break;
       if (--ct <= 0)
-	{
-	  fprintf (stderr, "fixincludes error:  the `%s' fix is unknown\n",
-		   fixname );
-	  exit (3);
-	}
+        {
+          fprintf (stderr, "fixincludes error:  the `%s' fix is unknown\n",
+                   fixname );
+          exit (3);
+        }
+      pfe++;
     }
 
   buf = load_file_data (stdin);

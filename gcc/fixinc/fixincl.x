@@ -994,30 +994,19 @@ tSCC zEnd_Else_LabelName[] =
 #define apzEnd_Else_LabelMachs (const char**)NULL
 
 /*
- *  content selection pattern - do fix if pattern found
+ *  perform the C function call test
  */
-tSCC zEnd_Else_LabelSelect0[] =
-       "^[ \t]*#[ \t]*(else|endif)[ \t]+([!-.0-z\\{\\|\\}\\~]|/[^\\*])";
+tSCC zEnd_Else_LabelFTst0[] = "else_endif_label";
 
 #define    END_ELSE_LABEL_TEST_CT  1
-#define    END_ELSE_LABEL_RE_CT    1
+#define    END_ELSE_LABEL_RE_CT    0
 tTestDesc aEnd_Else_LabelTests[] = {
-  { TT_EGREP,    zEnd_Else_LabelSelect0, (regex_t*)NULL }, };
+  { TT_FUNCTION, zEnd_Else_LabelFTst0,   0 /* unused */ }, };
 
 /*
  *  Fix Command Arguments for End_Else_Label
  */
-const char* apzEnd_Else_LabelPatch[] = { "sed",
-    "-e", ":loop\n\
-/\\\\$/N\n\
-s/\\\\$/\\\\+++fixinc_eol+++/\n\
-/\\\\$/b loop\n\
-s/\\\\+++fixinc_eol+++/\\\\/g\n\
-s%^\\([ \t]*#[ \t]*else\\)[ \t][ \t]*/[^*].*%\\1%\n\
-s%^\\([ \t]*#[ \t]*else\\)[ \t][ \t]*[^/ \t].*%\\1%\n\
-s%^\\([ \t]*#[ \t]*endif\\)[ \t][ \t]*/[^*].*%\\1%\n\
-s%^\\([ \t]*#[ \t]*endif\\)[ \t][ \t]*\\*[^/].*%\\1%\n\
-s%^\\([ \t]*#[ \t]*endif\\)[ \t][ \t]*[^/* \t].*%\\1%",
+const char* apzEnd_Else_LabelPatch[] = {"else_endif_label",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -4042,7 +4031,7 @@ extern char *\tsprintf();\\\n\
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          75
+#define REGEX_COUNT          74
 #define MACH_LIST_SIZE_LIMIT 154
 #define FIX_COUNT            107
 
@@ -4179,7 +4168,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zEnd_Else_LabelName,    zEnd_Else_LabelList,
      apzEnd_Else_LabelMachs, (regex_t*)NULL,
-     END_ELSE_LABEL_TEST_CT, FD_MACH_ONLY,
+     END_ELSE_LABEL_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aEnd_Else_LabelTests,   apzEnd_Else_LabelPatch },
 
   {  zHp_InlineName,    zHp_InlineList,
