@@ -1,3 +1,12 @@
+Thu Sep 23 13:55:21 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* invoke.texi: Document -fdelete-null-pointer-checks
+	* toplev.c (flag_delete_null_pointer_checks): New.
+	(f_options): Add entry for -fdelete-null-pointer-checks.
+	(rest_of_compilation): Conditionalize null pointer check
+	elimination on flag_delete_null_pointer_checks.
+	(main): If -O2 or greater, enable -fdelete-null-pointer-checks
+
 1999-09-23 10:56 -0700  Zack Weinberg  <zack@bitmover.com>
 
 	* iso646.h, stdarg.h, stdbool.h, stddef.h, varargs.h: Add

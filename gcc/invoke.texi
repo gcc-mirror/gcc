@@ -153,7 +153,7 @@ in the following sections.
 -falign-functions=@var{n}  -falign-labels=@var{n}  -falign-loops=@var{n} 
 -falign-jumps=@var{n}  -fbranch-probabilities  
 -fcaller-saves  -fcse-follow-jumps  -fcse-skip-blocks
--fdelayed-branch   -fexpensive-optimizations
+-fdelayed-branch  -fdelete-null-pointer-checks -fexpensive-optimizations
 -ffast-math  -ffloat-store  -fforce-addr  -fforce-mem -fno-math-errno
 -fdata-sections  -ffunction-sections  -fgcse 
 -finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions
@@ -2458,6 +2458,14 @@ Run the loop optimizer twice.
 @item -fgcse
 Perform a global common subexpression elimination pass.
 This pass also performs global constant and copy propagation.
+
+@item -fdelete-null-pointer-checks
+Use global dataflow analysis to identify and eliminate useless null
+pointer checks.  Programs which rely on NULL pointer dereferences @emph{not}
+halting the program may not work properly with this option.  Use
+-fno-delete-null-pointer-checks to disable this optimizing for programs
+which depend on that behavior.
+
 
 @item -fexpensive-optimizations
 Perform a number of minor optimizations that are relatively expensive.
