@@ -277,7 +277,7 @@ for machine in $build $host $target; do
 		fixincludes=Makefile.in
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		gas=yes gnu_ld=yes
- 		if [[ x$thread_file = x ]]; then
+ 		if [[ x$enable_threads = xyes ]]; then
  			thread_file='posix'
  		fi
 		;;
@@ -1468,7 +1468,7 @@ for machine in $build $host $target; do
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		extra_headers=math-68881.h
 		gnu_ld=yes
-		if [[ x$thread_file = x ]]; then
+		if [[ x$enable_threads = xyes ]]; then
 			thread_file='posix'
 		fi
 		;;
@@ -2147,7 +2147,7 @@ for machine in $build $host $target; do
 		fixincludes=Makefile.in
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		extra_headers=ppc-asm.h
-		if [[ x$thread_file = x ]]; then
+		if [[ x$enable_threads = xyes ]]; then
 			thread_file='posix'
 		fi
 		;;
@@ -2325,7 +2325,7 @@ for machine in $build $host $target; do
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		broken_install=yes
 		gnu_ld=yes
- 		if [[ x$thread_file = x ]]; then
+ 		if [[ x$enable_threads = xyes ]]; then
  			thread_file='posix'
  		fi
 		;;
