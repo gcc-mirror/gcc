@@ -177,7 +177,7 @@ public final class InetAddress
     byte[] address = aton(host);
     if (address != null)
       return new InetAddress(address, null);
-    InetAddress iaddr = new InetAddress(null, null);
+    InetAddress iaddr = new InetAddress(null, host);
     lookup(host, iaddr, false);
     return iaddr;
   }
@@ -243,7 +243,8 @@ public final class InetAddress
       {
 	try
 	  {
-	    localhost = getByName(hostname);
+	    localhost = new InetAddress(null, null);
+	    lookup(hostname, localhost, false);
 	  }
 	catch (Exception ex)
 	  {
