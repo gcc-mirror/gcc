@@ -2756,6 +2756,18 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
   if (mode == VOIDmode)
     mode = GET_MODE (op0);
 
+  /* If one operand is constant, make it the second one.  Only do this
+     if the other operand is not constant as well.  */
+
+  if ((CONSTANT_P (op0) && ! CONSTANT_P (op1))
+      || (GET_CODE (op0) == CONST_INT && GET_CODE (op1) != CONST_INT))
+    {
+      tem = op0;
+      op0 = op1;
+      op1 = tem;
+      code = swap_condition (code);
+    }
+
   /* For some comparisons with 1 and -1, we can convert this to 
      comparisons with zero.  This will often produce more opportunities for
      store-flag insns. */
@@ -2851,11 +2863,12 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 		: normalizep == -1 ? constm1_rtx
 		: const_true_rtx);
 
-      /* Comparison operands could have been swapped;
-	 so get the new comprison code.
-	 Note that GET_CODE gives us either the original code
-	 or the result of swap_condition.  */
-      icode = setcc_gen_code[(int) GET_CODE (comparison)];
+      /* If the code of COMPARISON doesn't match CODE, something is
+	 wrong; we can no longer be sure that we have the operation.  
+	 We could handle this case, but it should not happen.  */
+
+      if (GET_CODE (comparison) != code)
+	abort ();
 
       /* Get a reference to the target in the proper mode for this insn.  */
       compare_mode = insn_operand_mode[(int) icode][0];
