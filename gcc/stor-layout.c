@@ -1767,12 +1767,10 @@ unsigned int
 get_mode_alignment (mode)
      enum machine_mode mode;
 {
-  unsigned alignment = GET_MODE_UNIT_SIZE (mode);
+  unsigned int alignment = GET_MODE_UNIT_SIZE (mode) * BITS_PER_UNIT;
   
   /* Extract the LSB of the size.  */
   alignment = alignment & -alignment;
-  
-  alignment *= BITS_PER_UNIT;
 
   alignment = MIN (BIGGEST_ALIGNMENT, MAX (1, alignment));
   return alignment;

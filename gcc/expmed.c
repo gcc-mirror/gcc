@@ -947,7 +947,7 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
    TMODE is the mode the caller would like the value to have;
    but the value may be returned with type MODE instead.
 
-   ALIGN is the alignment that STR_RTX is known to have, measured in bytes.
+   ALIGN is the alignment that STR_RTX is known to have.
    TOTAL_SIZE is the size in bytes of the containing structure,
    or -1 if varying.
 
@@ -1068,7 +1068,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
        || (GET_CODE (op0) == MEM
 	   && (! SLOW_UNALIGNED_ACCESS (mode, align)
 	       || (offset * BITS_PER_UNIT % bitsize == 0
-		   && align * BITS_PER_UNIT % bitsize == 0))))
+		   && align % bitsize == 0))))
       && ((bitsize >= BITS_PER_WORD && bitsize == GET_MODE_BITSIZE (mode)
 	   && bitpos % BITS_PER_WORD == 0)
 	  || (mode_for_size (bitsize, GET_MODE_CLASS (tmode), 0) != BLKmode
@@ -1144,9 +1144,8 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	  rtx result_part
 	    = extract_bit_field (op0, MIN (BITS_PER_WORD,
 					   bitsize - i * BITS_PER_WORD),
-				 bitnum + bit_offset,
-				 1, target_part, mode, word_mode,
-				 align, total_size);
+				 bitnum + bit_offset, 1, target_part, mode,
+				 word_mode, align, total_size);
 
 	  if (target_part == 0)
 	    abort ();
@@ -1262,15 +1261,14 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 		  if (GET_MODE (xop0) == BLKmode
 		      || (GET_MODE_SIZE (GET_MODE (op0))
 			  > GET_MODE_SIZE (maxmode)))
-		    bestmode = get_best_mode (bitsize, bitnum,
-					      align * BITS_PER_UNIT, maxmode,
+		    bestmode = get_best_mode (bitsize, bitnum, align, maxmode,
 					      MEM_VOLATILE_P (xop0));
 		  else
 		    bestmode = GET_MODE (xop0);
 
 		  if (bestmode == VOIDmode
 		      || (SLOW_UNALIGNED_ACCESS (bestmode, align)
-			  && GET_MODE_SIZE (bestmode) > align))
+			  && GET_MODE_BITSIZE (bestmode) > align))
 		    goto extzv_loses;
 
 		  /* Compute offset as multiple of this unit,
@@ -1400,15 +1398,14 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 		  if (GET_MODE (xop0) == BLKmode
 		      || (GET_MODE_SIZE (GET_MODE (op0))
 			  > GET_MODE_SIZE (maxmode)))
-		    bestmode = get_best_mode (bitsize, bitnum,
-					      align * BITS_PER_UNIT, maxmode,
+		    bestmode = get_best_mode (bitsize, bitnum, align, maxmode,
 					      MEM_VOLATILE_P (xop0));
 		  else
 		    bestmode = GET_MODE (xop0);
 
 		  if (bestmode == VOIDmode
 		      || (SLOW_UNALIGNED_ACCESS (bestmode, align)
-			  && GET_MODE_SIZE (bestmode) > align))
+			  && GET_MODE_BITSIZE (bestmode) > align))
 		    goto extv_loses;
 
 		  /* Compute offset as multiple of this unit,
@@ -1538,7 +1535,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
    and return TARGET, but this is not guaranteed.
    If TARGET is not used, create a pseudo-reg of mode TMODE for the value.
 
-   ALIGN is the alignment that STR_RTX is known to have, measured in bytes.  */
+   ALIGN is the alignment that STR_RTX is known to have.  */
 
 static rtx
 extract_fixed_bit_field (tmode, op0, offset, bitsize, bitpos,
@@ -1565,8 +1562,8 @@ extract_fixed_bit_field (tmode, op0, offset, bitsize, bitpos,
 	 includes the entire field.  If such a mode would be larger than
 	 a word, we won't be doing the extraction the normal way.  */
 
-      mode = get_best_mode (bitsize, bitpos + offset * BITS_PER_UNIT,
-			    align * BITS_PER_UNIT, word_mode,
+      mode = get_best_mode (bitsize, bitpos + offset * BITS_PER_UNIT, align,
+			    word_mode,
 			    GET_CODE (op0) == MEM && MEM_VOLATILE_P (op0));
 
       if (mode == VOIDmode)
@@ -1759,8 +1756,8 @@ lshift_value (mode, value, bitpos, bitsize)
    BITSIZE is the field width; BITPOS, position of its first bit, in the word.
    UNSIGNEDP is 1 if should zero-extend the contents; else sign-extend.
 
-   ALIGN is the known alignment of OP0, measured in bytes.
-   This is also the size of the memory objects to be used.  */
+   ALIGN is the known alignment of OP0.  This is also the size of the
+   memory objects to be used.  */
 
 static rtx
 extract_split_bit_field (op0, bitsize, bitpos, unsignedp, align)
@@ -1779,7 +1776,7 @@ extract_split_bit_field (op0, bitsize, bitpos, unsignedp, align)
   if (GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
     unit = BITS_PER_WORD;
   else
-    unit = MIN (align * BITS_PER_UNIT, BITS_PER_WORD);
+    unit = MIN (align, BITS_PER_WORD);
 
   while (bitsdone < bitsize)
     {

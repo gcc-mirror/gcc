@@ -362,7 +362,7 @@ chill_expand_expr (exp, target, tmode, modifier)
 		if (temp == target || target == NULL_RTX)
 		  return temp;
 		emit_block_move (target, temp, expr_size (exp0),
-				 TYPE_ALIGN (TREE_TYPE(exp0)) / BITS_PER_UNIT);
+				 TYPE_ALIGN (TREE_TYPE(exp0)));
 		return target;
 	      }
 	    else

@@ -2725,7 +2725,7 @@ expand_value_return (val)
 #endif
       if (GET_CODE (return_reg) == PARALLEL)
 	emit_group_load (return_reg, val, int_size_in_bytes (type),
-			 TYPE_ALIGN (type) / BITS_PER_UNIT);
+			 TYPE_ALIGN (type));
       else
 	emit_move_insn (return_reg, val);
     }
@@ -3014,11 +3014,9 @@ expand_return (retval)
 	  store_bit_field (dst, bitsize, xbitpos % BITS_PER_WORD, word_mode,
 			   extract_bit_field (src, bitsize,
 					      bitpos % BITS_PER_WORD, 1,
-					      NULL_RTX, word_mode,
-					      word_mode,
-					      bitsize / BITS_PER_UNIT,
-					      BITS_PER_WORD),
-			   bitsize / BITS_PER_UNIT, BITS_PER_WORD);
+					      NULL_RTX, word_mode, word_mode,
+					      bitsize, BITS_PER_WORD),
+			   bitsize, BITS_PER_WORD);
 	}
 
       /* Find the smallest integer mode large enough to hold the

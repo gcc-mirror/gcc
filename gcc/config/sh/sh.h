@@ -1183,7 +1183,7 @@ extern int current_function_anonymous_args;
 
 #define MOVE_BY_PIECES_P(SIZE, ALIGN)  (move_by_pieces_ninsns (SIZE, ALIGN) \
                                         < (TARGET_SMALLCODE ? 2 :           \
-                                           ((ALIGN >= 4) ? 16 : 2)))
+                                           ((ALIGN >= 32) ? 16 : 2)))
 
 /* Macros to check register numbers against specific register classes.  */
 

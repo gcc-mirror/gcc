@@ -2916,6 +2916,7 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align,
   rtx x = *px, y = *py;
   int unsignedp = *punsignedp;
   enum mode_class class;
+  rtx opalign ATTRIBUTE_UNUSED = GEN_INT (align / BITS_PER_UNIT);;
 
   class = GET_MODE_CLASS (mode);
 
@@ -2932,10 +2933,12 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align,
 
   /* If we are inside an appropriately-short loop and one operand is an
      expensive constant, force it into a register.  */
-  if (CONSTANT_P (x) && preserve_subexpressions_p () && rtx_cost (x, COMPARE) > 2)
+  if (CONSTANT_P (x) && preserve_subexpressions_p ()
+      && rtx_cost (x, COMPARE) > 2)
     x = force_reg (mode, x);
 
-  if (CONSTANT_P (y) && preserve_subexpressions_p () && rtx_cost (y, COMPARE) > 2)
+  if (CONSTANT_P (y) && preserve_subexpressions_p ()
+      && rtx_cost (y, COMPARE) > 2)
     y = force_reg (mode, y);
 
 #ifdef HAVE_cc0
@@ -2970,7 +2973,7 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align,
 	{
 	  result_mode = insn_data[(int) CODE_FOR_cmpstrqi].operand[0].mode;
 	  result = gen_reg_rtx (result_mode);
-	  emit_insn (gen_cmpstrqi (result, x, y, size, GEN_INT (align)));
+	  emit_insn (gen_cmpstrqi (result, x, y, size, opalign));
 	}
       else
 #endif
@@ -2981,7 +2984,7 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align,
 	{
 	  result_mode = insn_data[(int) CODE_FOR_cmpstrhi].operand[0].mode;
 	  result = gen_reg_rtx (result_mode);
-	  emit_insn (gen_cmpstrhi (result, x, y, size, GEN_INT (align)));
+	  emit_insn (gen_cmpstrhi (result, x, y, size, opalign));
 	}
       else
 #endif
@@ -2993,7 +2996,7 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align,
 	  size = protect_from_queue (size, 0);
 	  emit_insn (gen_cmpstrsi (result, x, y,
 				   convert_to_mode (SImode, size, 1),
-				   GEN_INT (align)));
+				   opalign));
 	}
       else
 #endif
@@ -3190,7 +3193,7 @@ emit_cmp_and_jump_insns (x, y, comparison, size, mode, unsignedp, align, label)
      rtx size;
      enum machine_mode mode;
      int unsignedp;
-     int align;
+     unsigned int align;
      rtx label;
 {
   rtx op0;
@@ -3227,6 +3230,7 @@ emit_cmp_and_jump_insns (x, y, comparison, size, mode, unsignedp, align, label)
 }
 
 /* Like emit_cmp_and_jump_insns, but generate only the comparison.  */
+
 void
 emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
      rtx x, y;
@@ -3234,7 +3238,7 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
      rtx size;
      enum machine_mode mode;
      int unsignedp;
-     int align;
+     unsigned int align;
 {
   emit_cmp_and_jump_insns (x, y, comparison, size, mode, unsignedp, align, 0);
 }

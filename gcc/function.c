@@ -3027,7 +3027,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
 		  start_sequence ();
 		  store_bit_field (sub, size_x, 0, GET_MODE (x),
 				   val, GET_MODE_SIZE (GET_MODE (sub)),
-				   GET_MODE_SIZE (GET_MODE (sub)));
+				   GET_MODE_ALIGNMENT (GET_MODE (sub)));
 
 		  /* Make sure to unshare any shared rtl that store_bit_field
 		     might have created.  */
@@ -4339,8 +4339,8 @@ assign_parms (fndecl)
 	      if (GET_CODE (entry_parm) == PARALLEL)
 		emit_group_store (validize_mem (stack_parm), entry_parm,
 				  int_size_in_bytes (TREE_TYPE (parm)),
-				  (TYPE_ALIGN (TREE_TYPE (parm))
-				   / BITS_PER_UNIT));
+				  TYPE_ALIGN (TREE_TYPE (parm)));
+				  
 	      else
 		move_block_from_reg (REGNO (entry_parm),
 				     validize_mem (stack_parm), nregs,
@@ -4498,8 +4498,7 @@ assign_parms (fndecl)
 	      if (GET_CODE (entry_parm) == PARALLEL)
 		emit_group_store (validize_mem (stack_parm), entry_parm,
 				  int_size_in_bytes (TREE_TYPE (parm)),
-				  (TYPE_ALIGN (TREE_TYPE (parm))
-				   / BITS_PER_UNIT));
+				  TYPE_ALIGN (TREE_TYPE (parm)));
 	      else
 		move_block_from_reg (REGNO (entry_parm),
 				     validize_mem (stack_parm),

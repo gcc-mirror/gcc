@@ -1,3 +1,7 @@
+Thu Mar 30 06:32:51 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (chill_expand_expr): Pass bit alignment to emit_block_move.
+
 Sat Mar 25 09:12:10 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* actions.c (check_missing_cases): BYTES_NEEDED is HOST_WIDE_INT.

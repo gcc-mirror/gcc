@@ -856,11 +856,11 @@ save_fixed_argument_area (reg_parm_stack_space, argblock,
       if (save_mode == BLKmode)
 	{
 	  save_area = assign_stack_temp (BLKmode, num_to_save, 0);
-	  /* Cannot use emit_block_move here because it can be done by a library
-	     call which in turn gets into this place again and deadly infinite
-	     recursion happens.  */
+	  /* Cannot use emit_block_move here because it can be done by a
+	     library call which in turn gets into this place again and deadly
+	     infinite recursion happens.  */
 	  move_by_pieces (validize_mem (save_area), stack_area, num_to_save,
-			  PARM_BOUNDARY / BITS_PER_UNIT);
+			  PARM_BOUNDARY);
 	}
       else
 	{
@@ -900,8 +900,7 @@ restore_fixed_argument_area (save_area, argblock, high_to_save, low_to_save)
        call which in turn gets into this place again and deadly infinite
        recursion happens.  */
     move_by_pieces (stack_area, validize_mem (save_area),
-		    high_to_save - low_to_save + 1,
-		    PARM_BOUNDARY / BITS_PER_UNIT);
+		    high_to_save - low_to_save + 1, PARM_BOUNDARY);
 }
 #endif
 	  
@@ -968,12 +967,10 @@ store_unaligned_arguments_into_pseudos (args, num_actuals)
 
 	    bytes -= bitsize / BITS_PER_UNIT;
 	    store_bit_field (reg, bitsize, big_endian_correction, word_mode,
-			     extract_bit_field (word, bitsize, 0, 1,
-						NULL_RTX, word_mode,
-						word_mode,
-						bitalign / BITS_PER_UNIT,
+			     extract_bit_field (word, bitsize, 0, 1, NULL_RTX,
+						word_mode, word_mode, bitalign,
 						BITS_PER_WORD),
-			     bitalign / BITS_PER_UNIT, BITS_PER_WORD);
+			     bitalign, BITS_PER_WORD);
 	  }
       }
 }
@@ -1656,12 +1653,9 @@ load_register_parameters (args, num_actuals, call_fusage)
 	     locations.  The Irix 6 ABI has examples of this.  */
 
 	  if (GET_CODE (reg) == PARALLEL)
-	    {
-	      emit_group_load (reg, args[i].value,
-			       int_size_in_bytes (TREE_TYPE (args[i].tree_value)),
-			       (TYPE_ALIGN (TREE_TYPE (args[i].tree_value))
-				/ BITS_PER_UNIT));
-	    }
+	    emit_group_load (reg, args[i].value,
+			     int_size_in_bytes (TREE_TYPE (args[i].tree_value)),
+			     TYPE_ALIGN (TREE_TYPE (args[i].tree_value)));
 
 	  /* If simple case, just do move.  If normal partial, store_one_arg
 	     has already loaded the register for us.  In all other cases,
@@ -2911,7 +2905,8 @@ expand_call (exp, target, ignore)
 
 	  if (! rtx_equal_p (target, valreg))
 	    emit_group_store (target, valreg, bytes,
-			      TYPE_ALIGN (TREE_TYPE (exp)) / BITS_PER_UNIT);
+			      TYPE_ALIGN (TREE_TYPE (exp)));
+
 	  /* We can not support sibling calls for this case.  */
 	  sibcall_failure = 1;
 	}
@@ -2992,7 +2987,7 @@ expand_call (exp, target, ignore)
 		  emit_block_move (stack_area,
 				   validize_mem (args[i].save_area),
 				   GEN_INT (args[i].size.constant),
-				   PARM_BOUNDARY / BITS_PER_UNIT);
+				   PARM_BOUNDARY);
 		sibcall_failure = 1;
 	      }
 
@@ -3474,8 +3469,7 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
 	    {
 	      save_area = assign_stack_temp (BLKmode, num_to_save, 0);
 	      emit_block_move (validize_mem (save_area), stack_area,
-			       GEN_INT (num_to_save),
-			       PARM_BOUNDARY / BITS_PER_UNIT);
+			       GEN_INT (num_to_save), PARM_BOUNDARY);
 	    }
 	  else
 	    {
@@ -3540,6 +3534,7 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
 		  emit_move_insn (argvec[argnum].save_area, stack_area);
 		}
 	    }
+
 	  emit_push_insn (val, mode, NULL_TREE, NULL_RTX, 0, partial, reg, 0,
 			  argblock, GEN_INT (argvec[argnum].offset.constant),
 			  reg_parm_stack_space, ARGS_SIZE_RTX (alignment_pad));
@@ -3684,7 +3679,7 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
 	  else
 	    emit_block_move (stack_area, validize_mem (save_area),
 			     GEN_INT (high_to_save - low_to_save + 1),
-				 PARM_BOUNDARY / BITS_PER_UNIT);
+			     PARM_BOUNDARY);
 	}
 #endif
 	      
@@ -3922,7 +3917,7 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size,
 		  preserve_temp_slots (arg->save_area);
 		  emit_block_move (validize_mem (arg->save_area), stack_area,
 				   GEN_INT (arg->size.constant),
-				   PARM_BOUNDARY / BITS_PER_UNIT);
+				   PARM_BOUNDARY);
 		}
 	      else
 		{
@@ -4084,8 +4079,8 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size,
 	}
 
       emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), size_rtx,
-		      TYPE_ALIGN (TREE_TYPE (pval)) / BITS_PER_UNIT, partial,
-		      reg, excess, argblock, ARGS_SIZE_RTX (arg->offset),
+		      TYPE_ALIGN (TREE_TYPE (pval)), partial, reg, excess,
+		      argblock, ARGS_SIZE_RTX (arg->offset),
 		      reg_parm_stack_space,
 		      ARGS_SIZE_RTX (arg->alignment_pad));
     }
