@@ -5,6 +5,11 @@ Tue Aug 18 12:40:27 1998  Richard Henderson  <rth@cygnus.com>
 
 Tue Aug 18 10:33:30 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* expr.c (emit_block_move): Do not call memcpy as a libcall
+	instead build up a CALL_EXPR and call it like any other
+	function.
+	(clear_storage): Similarly for memset.
+
 	* regmove.c (fixup_match_2): Do not call reg_overlap_mentioned_p
 	on notes.
 
