@@ -221,6 +221,9 @@ string_index (GFC_INTEGER_4 slen, const char * str, GFC_INTEGER_4 sslen,
   if (sslen == 0)
     return 1;
 
+  if (sslen > slen)
+    return 0;
+
   if (!back)
     {
       last = slen + 1 - sslen;
