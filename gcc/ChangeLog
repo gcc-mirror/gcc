@@ -1,3 +1,8 @@
+2003-06-18  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR bootstrap/4068
+	* config/i386/liunx.h: Don't include sys/ucontext.h for glibc 2.0.
+
 2003-06-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (TARGET_INITIALIZER and friends): Move
