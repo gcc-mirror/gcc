@@ -39,6 +39,34 @@ void GC_print_sig_mask()
 
 #endif
 
+/* Remove the signals that we want to allow in thread stopping 	*/
+/* handler from a set.						*/
+void GC_remove_allowed_signals(sigset_t *set)
+{
+#   ifdef NO_SIGNALS
+      if (sigdelset(set, SIGINT) != 0
+	  || sigdelset(set, SIGQUIT) != 0
+	  || sigdelset(set, SIGABRT) != 0
+	  || sigdelset(set, SIGTERM) != 0) {
+        ABORT("sigdelset() failed");
+      }
+#   endif
+
+#   ifdef MPROTECT_VDB
+      /* Handlers write to the thread structure, which is in the heap,	*/
+      /* and hence can trigger a protection fault.			*/
+      if (sigdelset(set, SIGSEGV) != 0
+#	  ifdef SIGBUS
+	    || sigdelset(set, SIGBUS) != 0
+# 	  endif
+	  ) {
+        ABORT("sigdelset() failed");
+      }
+#   endif
+}
+
+static sigset_t suspend_handler_mask;
+
 word GC_stop_count;	/* Incremented at the beginning of GC_stop_world. */
 
 #ifdef GC_OSF1_THREADS
@@ -78,7 +106,6 @@ void GC_suspend_handler(int sig)
     int dummy;
     pthread_t my_thread = pthread_self();
     GC_thread me;
-    sigset_t mask;
 #   ifdef PARALLEL_MARK
 	word my_mark_no = GC_mark_no;
 	/* Marker can't proceed until we acknowledge.  Thus this is	*/
@@ -125,17 +152,9 @@ void GC_suspend_handler(int sig)
     /* this thread a SIG_THR_RESTART signal.			*/
     /* SIG_THR_RESTART should be masked at this point.  Thus there	*/
     /* is no race.						*/
-    if (sigfillset(&mask) != 0) ABORT("sigfillset() failed");
-    if (sigdelset(&mask, SIG_THR_RESTART) != 0) ABORT("sigdelset() failed");
-#   ifdef NO_SIGNALS
-      if (sigdelset(&mask, SIGINT) != 0) ABORT("sigdelset() failed");
-      if (sigdelset(&mask, SIGQUIT) != 0) ABORT("sigdelset() failed");
-      if (sigdelset(&mask, SIGTERM) != 0) ABORT("sigdelset() failed");
-      if (sigdelset(&mask, SIGABRT) != 0) ABORT("sigdelset() failed");
-#   endif
     do {
 	    me->stop_info.signal = 0;
-	    sigsuspend(&mask);             /* Wait for signal */
+	    sigsuspend(&suspend_handler_mask);        /* Wait for signal */
     } while (me->stop_info.signal != SIG_THR_RESTART);
     /* If the RESTART signal gets lost, we can still lose.  That should be  */
     /* less likely than losing the SUSPEND signal, since we don't do much   */
@@ -186,6 +205,7 @@ void GC_restart_handler(int sig)
 /* world is stopped.  Should not fail if it isn't.			*/
 void GC_push_all_stacks()
 {
+    GC_bool found_me = FALSE;
     int i;
     GC_thread p;
     ptr_t lo, hi;
@@ -206,6 +226,7 @@ void GC_push_all_stacks()
 #  	    else
  	        lo = GC_approx_sp();
 #           endif
+	    found_me = TRUE;
 	    IF_IA64(bs_hi = (ptr_t)GC_save_regs_in_stack();)
 	} else {
 	    lo = p -> stop_info.stack_ptr;
@@ -232,6 +253,11 @@ void GC_push_all_stacks()
           GC_push_all_stack(lo, hi);
 #	endif
 #	ifdef IA64
+#         if DEBUG_THREADS
+            GC_printf3("Reg stack for thread 0x%lx = [%lx,%lx)\n",
+    	        (unsigned long) p -> id,
+		(unsigned long) bs_lo, (unsigned long) bs_hi);
+#	  endif
           if (pthread_equal(p -> id, me)) {
 	    GC_push_all_eager(bs_lo, bs_hi);
 	  } else {
@@ -240,6 +266,8 @@ void GC_push_all_stacks()
 #	endif
       }
     }
+    if (!found_me && !GC_in_thread_creation)
+      ABORT("Collecting from unknown thread.");
 }
 
 /* There seems to be a very rare thread stopping problem.  To help us  */
@@ -408,16 +436,9 @@ void GC_stop_init() {
     if (sigfillset(&act.sa_mask) != 0) {
     	ABORT("sigfillset() failed");
     }
-#   ifdef NO_SIGNALS
-      if (sigdelset(&act.sa_mask, SIGINT) != 0
-	  || sigdelset(&act.sa_mask, SIGQUIT != 0)
-	  || sigdelset(&act.sa_mask, SIGABRT != 0)
-	  || sigdelset(&act.sa_mask, SIGTERM != 0)) {
-        ABORT("sigdelset() failed");
-      }
-#   endif
-
-    /* SIG_THR_RESTART is unmasked by the handler when necessary. 	*/
+    GC_remove_allowed_signals(&act.sa_mask);
+    /* SIG_THR_RESTART is set in the resulting mask.		*/
+    /* It is unmasked by the handler when necessary. 		*/
     act.sa_handler = GC_suspend_handler;
     if (sigaction(SIG_SUSPEND, &act, NULL) != 0) {
     	ABORT("Cannot set SIG_SUSPEND handler");
@@ -427,6 +448,12 @@ void GC_stop_init() {
     if (sigaction(SIG_THR_RESTART, &act, NULL) != 0) {
     	ABORT("Cannot set SIG_THR_RESTART handler");
     }
+
+    /* Inititialize suspend_handler_mask. It excludes SIG_THR_RESTART. */
+      if (sigfillset(&suspend_handler_mask) != 0) ABORT("sigfillset() failed");
+      GC_remove_allowed_signals(&suspend_handler_mask);
+      if (sigdelset(&suspend_handler_mask, SIG_THR_RESTART) != 0)
+	  ABORT("sigdelset() failed");
 
     /* Check for GC_RETRY_SIGNALS.	*/
       if (0 != GETENV("GC_RETRY_SIGNALS")) {

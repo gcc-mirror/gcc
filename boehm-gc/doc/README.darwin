@@ -1,5 +1,5 @@
-Darwin/MacOSX Support - July 22, 2003
-====================================
+Darwin/MacOSX Support - December 16, 2003
+=========================================
 
 Important Usage Notes
 =====================
@@ -15,7 +15,7 @@ run and perhaps called GC_malloc(), create an initialization routine
 for each library to call GC_init():
 
 #include <gc/gc.h>
-void my_library_init() { GC_init(); }
+extern "C" void my_library_init() { GC_init(); }
 
 Compile this code into a my_library_init.o, and link it into your
 dylib. When you link the dylib, pass the -init argument with
@@ -34,6 +34,12 @@ work reliably with workarounds for a few possible bugs in place however
 these workaround may not work correctly in all cases. There may also
 be additional problems that I have not found. 
 
+Thread-local GC allocation will not work with threads that are not
+created using the GC-provided override of pthread_create(). Threads
+created without the GC-provided pthread_create() do not have the
+necessary data structures in the GC to store this data. 
+
+
 Implementation Information
 ==========================
 Darwin/MacOSX support is nearly complete. Thread support is reliable on 
@@ -42,11 +48,27 @@ Darwin versions (MacOSX 10.1). Shared library support had also been
 added and the gc can be run from a shared library. There is currently only
 support for Darwin/PPC although adding x86 support should be trivial.
 
-Thread support is implemented in terms of mach thread_suspend and 
+Thread support is implemented in terms of mach thread_suspend and
 thread_resume calls. These provide a very clean interface to thread
 suspension. This implementation doesn't rely on pthread_kill so the
-code works on Darwin < 6.0 (MacOSX 10.1). All the code to stop the
-world is located in darwin_stop_world.c.
+code works on Darwin < 6.0 (MacOSX 10.1). All the code to stop and
+start the world is located in darwin_stop_world.c.
+
+Since not all uses of the GC enable clients to override pthread_create()
+before threads have been created, the code for stopping the world has
+been rewritten to look for threads using Mach kernel calls. Each
+thread identified in this way is suspended and resumed as above. In
+addition, since Mach kernel threads do not contain pointers to their
+stacks, a stack-walking function has been written to find the stack
+limits. Given an initial stack pointer (for the current thread, a
+pointer to a stack-allocated local variable will do; for a non-active
+thread, we grab the value of register 1 (on PowerPC)), it
+will walk the PPC Mach-O-ABI compliant stack chain until it reaches the
+top of the stack. This appears to work correctly for GCC-compiled C,
+C++, Objective-C, and Objective-C++ code, as well as for Java
+programs that use JNI. If you run code that does not follow the stack
+layout or stack pointer conventions laid out in the PPC Mach-O ABI,
+then this will likely crash the garbage collector. 
 
 The original incremental collector support unfortunatelly no longer works
 on recent Darwin versions. It also relied on some undocumented kernel

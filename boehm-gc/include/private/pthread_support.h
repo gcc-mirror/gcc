@@ -93,5 +93,10 @@ GC_thread GC_lookup_thread(pthread_t id);
 
 void GC_stop_init();
 
+extern GC_bool GC_in_thread_creation;
+	/* We may currently be in thread creation or destruction.	*/
+	/* Only set to TRUE while allocation lock is held.		*/
+	/* When set, it is OK to run GC from unknown thread.		*/
+
 #endif /* GC_PTHREADS && !GC_SOLARIS_THREADS.... etc */
 #endif /* GC_PTHREAD_SUPPORT_H */

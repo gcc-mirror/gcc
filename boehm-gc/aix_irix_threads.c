@@ -422,12 +422,7 @@ void GC_thr_init()
     struct sigaction act;
 
     if (GC_thr_initialized) return;
-#if 0
-    /* unfortunately, GC_init_inner calls us without the lock, so
-     * this assertion is not always true. */
-    /* Why doesn't GC_init_inner hold the lock? - HB		*/
     GC_ASSERT(I_HOLD_LOCK());
-#endif
     GC_thr_initialized = TRUE;
 #ifndef GC_AIX_THREADS
     (void) sigaction(SIG_SUSPEND, 0, &act);
