@@ -1,3 +1,10 @@
+2004-06-25  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+	Andrew Vaught <andyv@firstinter.net>
+
+	PR fortran/15190
+	* decl.c (gfc_match_type_spec), io.c (match_io), parse.c
+	(decode_statement): Enforce required space in free-form.
+
 2004-06-21  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* f95-lang.c (LANG_HOOKS_GIMPLE_BEFORE_INLINING): Deleted.

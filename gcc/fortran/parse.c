@@ -177,7 +177,7 @@ decode_statement (void)
 
     case 'b':
       match ("backspace", gfc_match_backspace, ST_BACKSPACE);
-      match ("block data", gfc_match_block_data, ST_BLOCK_DATA);
+      match ("block data% ", gfc_match_block_data, ST_BLOCK_DATA);
       break;
 
     case 'c':
@@ -206,7 +206,7 @@ decode_statement (void)
       if (gfc_match_end (&st) == MATCH_YES)
 	return st;
 
-      match ("entry", gfc_match_entry, ST_ENTRY);
+      match ("entry% ", gfc_match_entry, ST_ENTRY);
       match ("equivalence", gfc_match_equivalence, ST_EQUIVALENCE);
       match ("external", gfc_match_external, ST_ATTR_DECL);
       break;
@@ -229,7 +229,7 @@ decode_statement (void)
       break;
 
     case 'm':
-      match ("module% procedure", gfc_match_modproc, ST_MODULE_PROC);
+      match ("module% procedure% ", gfc_match_modproc, ST_MODULE_PROC);
       match ("module", gfc_match_module, ST_MODULE);
       break;
 
@@ -273,7 +273,7 @@ decode_statement (void)
       break;
 
     case 'u':
-      match ("use", gfc_match_use, ST_USE);
+      match ("use% ", gfc_match_use, ST_USE);
       break;
 
     case 'w':

@@ -884,6 +884,7 @@ gfc_match_type_spec (gfc_typespec * ts, int kind_flag)
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_symbol *sym;
   match m;
+  int c;
 
   gfc_clear_ts (ts);
 
@@ -961,6 +962,14 @@ get_kind:
      optional kind specifier.  MATCH_NO is actually OK at this point.  */
   if (kind_flag == 0)
     return MATCH_YES;
+
+  if (gfc_current_form == FORM_FREE)
+    {
+      c = gfc_peek_char();
+      if (!gfc_is_whitespace(c) && c != '*' && c != '('
+         && c != ':' && c != ',')
+       return MATCH_NO;
+    }
 
   m = gfc_match_kind_spec (ts);
   if (m == MATCH_NO && ts->type != BT_CHARACTER)
