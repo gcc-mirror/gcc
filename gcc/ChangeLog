@@ -1,3 +1,11 @@
+Mon Nov 15 22:45:39 CET 1999  Jan Hubicka  <hubicka@freesoft.cz>
+	* i386.md (divmodsi4): Rewrite to expander.
+	(*divmodsi4_nocltd): New.
+	(*divmodsi4_cltd): New.
+	(divmodsi4 splitter): Handle the case when input comes in edx.
+	(udivmodhi4): Do not use constraints in exander.
+	(ashrsi3_31): Conditionize by TARGET_USE_CLTD.
+
 1999-11-17  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* dwarf2out.c (push_decl_scope): Still use decl_scope_depth - 1
