@@ -5699,6 +5699,17 @@ make_typename_type (context, name, complain)
 	    {
 	      if (DECL_ARTIFICIAL (t) || !(complain & tf_keep_type_decl))
 		t = TREE_TYPE (t);
+	      if (IMPLICIT_TYPENAME_P (t))
+		{
+		  /* Lookup found an implicit typename that we had
+		     injected into the current scope. Doing things
+		     properly would have located the exact same type,
+		     so there is no error here.  We must remove the
+		     implicitness so that we do not warn about it.  */
+		  t = copy_node (t);
+		  TREE_TYPE (t) = NULL_TREE;
+		}
+	      
 	      return t;
 	    }
 	}
