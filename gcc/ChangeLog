@@ -1,3 +1,10 @@
+2003-01-09  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.h (PREDICATE_CODES): Add ADDRESSOF for predicates
+	that match register_operands.
+	* config/mips/mips.c (reg_or_0_operand, true_reg_or_0_operand): Make
+	register_operand the default case.
+
 2003-01-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR c/8032

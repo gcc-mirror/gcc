@@ -780,15 +780,9 @@ reg_or_0_operand (op, mode)
 	return 0;
       return op == CONST0_RTX (mode);
 
-    case REG:
-    case SUBREG:
-      return register_operand (op, mode);
-
     default:
-      break;
+      return register_operand (op, mode);
     }
-
-  return 0;
 }
 
 /* Return truth value of whether OP is a register or the constant 0,
@@ -807,15 +801,9 @@ true_reg_or_0_operand (op, mode)
     case CONST_DOUBLE:
       return op == CONST0_RTX (mode);
 
-    case REG:
-    case SUBREG:
-      return register_operand (op, mode);
-
     default:
-      break;
+      return register_operand (op, mode);
     }
-
-  return 0;
 }
 
 /* Return truth value if a CONST_DOUBLE is ok to be a legitimate constant.  */
