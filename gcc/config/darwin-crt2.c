@@ -1,5 +1,5 @@
 /* KeyMgr backwards-compatibility support for Darwin.
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -33,6 +33,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "tconfig.h"
 #include "tsystem.h"
+
+/* This file doesn't do anything useful on non-powerpc targets, since they
+   don't have backwards compatibility anyway.  */
+
+#ifdef __ppc__
 
 /* Homemade decls substituting for getsect.h and dyld.h, so cross
    compilation works.  */
@@ -149,3 +154,5 @@ __darwin_gcc3_preregister_frame_info (void)
   _dyld_register_func_for_add_image (darwin_unwind_dyld_add_image_hook);
   _dyld_register_func_for_remove_image (darwin_unwind_dyld_remove_image_hook);
 }
+
+#endif  /* __ppc__ */
