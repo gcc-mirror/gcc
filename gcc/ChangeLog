@@ -1,3 +1,8 @@
+2004-02-07  Josef Zlomek  <zlomekj@suse.cz>
+
+	* var-tracking.c (vt_add_function_parameters): Surround checkings by
+	#ifdef ENABLE_CHECKING and #endif.
+
 2004-02-07  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (negate_expr_p, negate_expr): Optimize -(A+B) into

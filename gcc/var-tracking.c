@@ -2386,8 +2386,10 @@ vt_add_function_parameters (void)
       if (!decl)
 	continue;
 
+#ifdef ENABLE_CHECKING
       if (parm != decl)
 	abort ();
+#endif
 
       incoming = eliminate_regs (incoming, 0, NULL_RTX);
       if (!frame_pointer_needed && GET_CODE (incoming) == MEM)
@@ -2397,8 +2399,10 @@ vt_add_function_parameters (void)
 
       if (GET_CODE (incoming) == REG)
 	{
+#ifdef ENABLE_CHECKING
 	  if (REGNO (incoming) >= FIRST_PSEUDO_REGISTER)
 	    abort ();
+#endif
 	  attrs_list_insert (&in->regs[REGNO (incoming)],
 			     parm, offset, incoming);
 	  attrs_list_insert (&out->regs[REGNO (incoming)],
