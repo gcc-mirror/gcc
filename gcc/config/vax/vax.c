@@ -521,7 +521,10 @@ vax_rtx_cost (x)
 	  c = 10;		/* 3-4 on VAX 9000, 20-28 on VAX 2 */
 	  break;
 	default:
-	  abort ();
+	  /* Careful, init_expmed generates arbitrary rtx and
+	     computes costs, so we can't abort.  */
+	  c = 1000;
+	  break;
 	}
       break;
     case UDIV:
