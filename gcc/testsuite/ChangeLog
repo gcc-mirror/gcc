@@ -1,3 +1,7 @@
+2000-07-15  Michael Meissner  <meissner@redhat.com>
+
+	* gcc.c-torture/execute/20000715-1.c: New test.
+
 2000-07-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20000707-1.c: New test.
