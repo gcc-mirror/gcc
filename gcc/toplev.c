@@ -3398,9 +3398,11 @@ rest_of_compilation (decl)
      the copy, but the original is unchanged.  */
 
   if (saved_block_tree != 0)
-    DECL_INITIAL (decl) = saved_block_tree;
-  if (saved_arguments != 0)
-    DECL_ARGUMENTS (decl) = saved_arguments;
+    {
+      DECL_INITIAL (decl) = saved_block_tree;
+      DECL_ARGUMENTS (decl) = saved_arguments;
+      DECL_ABSTRACT_ORIGIN (decl) = NULL_TREE;
+    }
 
   reload_completed = 0;
 
