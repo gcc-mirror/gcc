@@ -2720,6 +2720,8 @@ __clear_cache (char *beg, char *end)
 
 #ifdef WINNT
 
+#ifndef __CYGWIN32__
+
 long getpagesize()
 {
 #ifdef _ALPHA_
@@ -2728,6 +2730,8 @@ long getpagesize()
   return 4096;
 #endif
 }
+
+#endif
 
 #ifdef i386
 extern int VirtualProtect (char *, int, int, int *) __attribute__((stdcall));
