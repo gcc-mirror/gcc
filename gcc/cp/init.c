@@ -1,5 +1,5 @@
 /* Handle initialization things in C++.
-   Copyright (C) 1987, 1989, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -1090,7 +1090,7 @@ expand_member_init (exp, name, init)
    If FLAGS is LOOKUP_ONLYCONVERTING then it is the = init form of
    the initializer, if FLAGS is 0, then it is the (init) form.
    If `init' is a CONSTRUCTOR, then we emit a warning message,
-   explaining that such initializations are illegal.
+   explaining that such initializations are invalid.
 
    ALIAS_THIS is nonzero iff we are initializing something which is
    essentially an alias for C_C_D.  In this case, the base constructor
@@ -1363,7 +1363,7 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 
 	  if (init_type == type && TREE_CODE (init) == CALL_EXPR
 #if 0
-	      /* It is legal to directly initialize from a CALL_EXPR
+	      /* It is valid to directly initialize from a CALL_EXPR
 		 without going through X(X&), apparently.  */
 	      && ! TYPE_GETS_INIT_REF (type)
 #endif

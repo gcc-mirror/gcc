@@ -1,5 +1,5 @@
 /* Language-level data type conversion for GNU C++.
-   Copyright (C) 1987, 1988, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993, 1995 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -707,7 +707,7 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	 by San Diego WP section 5.2.9 paragraph 12, though perhaps it
 	 should be done directly (jason).  (int &)ri ---> *(int*)&ri */
 
-      /* B* bp; A& ar = (A&)bp; is legal, but it's probably not what they
+      /* B* bp; A& ar = (A&)bp; is valid, but it's probably not what they
          meant.  */
       if (form == POINTER_TYPE
 	  && (comptypes (TREE_TYPE (intype), type, -1)))
