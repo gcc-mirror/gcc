@@ -5423,14 +5423,20 @@ fold (tree expr)
 	  if (op == 0)
 	    continue;		/* Valid for CALL_EXPR, at least.  */
 
-	  if (kind == '<' || code == RSHIFT_EXPR)
-	    {
-	      /* Signedness matters here.  Perhaps we can refine this
-		 later.  */
-	      STRIP_SIGN_NOPS (op);
-	    }
+	  /* Strip any conversions that don't change the mode.  This is
+	     safe for every expression, except for a comparison expression
+	     because its signedness is derived from its operands.  So, in
+	     the latter case, only strip conversions that don't change the
+	     signedness.
+
+	     Note that this is done as an internal manipulation within the
+	     constant folder, in order to find the simplest representation
+	     of the arguments so that their form can be studied.  In any
+	     cases, the appropriate type conversions should be put back in
+	     the tree that will get out of the constant folder.  */
+	  if (kind == '<')
+	    STRIP_SIGN_NOPS (op);
 	  else
-	    /* Strip any conversions that don't change the mode.  */
 	    STRIP_NOPS (op);
 
 	  if (TREE_CODE (op) == COMPLEX_CST)
