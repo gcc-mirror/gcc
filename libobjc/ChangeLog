@@ -1,3 +1,8 @@
+2004-07-22  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* thr.c (__objc_thread_detach_function): Do not mark as volatile
+	but instead use the attribute noreturn.
+
 2004-06-28  Zack Weinberg  <zack@codesourcery.com>
 
 	* encoding.c: Rename target_flags with a #define to avoid
