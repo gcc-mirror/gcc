@@ -28280,15 +28280,15 @@ all-stage2-gcc: configure-stage2-gcc
 	$(STAGE_HOST_EXPORTS)  \
 	cd gcc && \
 	$(MAKE) $(GCC_FLAGS_TO_PASS)  \
-		CC="$${CC}" CC_FOR_BUILD="${CC_FOR_BUILD}" \
+		CC="$${CC}" CC_FOR_BUILD="$${CC_FOR_BUILD}" \
 		STAGE_PREFIX=$$r/stage1-gcc/  \
 		$(POSTSTAGE1_FLAGS_TO_PASS) && $(STAMP) ../all-stage2-gcc
 
 
 
 
-.PHONY: new-bootstrap2
-new-bootstrap2:
+.PHONY: bootstrap2
+bootstrap2:
 	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) stage2-bubble  \
 	  stage2-start all stage2-end 
 
@@ -28373,7 +28373,7 @@ all-stage3-gcc: configure-stage3-gcc
 	$(STAGE_HOST_EXPORTS)  \
 	cd gcc && \
 	$(MAKE) $(GCC_FLAGS_TO_PASS)  \
-		CC="$${CC}" CC_FOR_BUILD="${CC_FOR_BUILD}" \
+		CC="$${CC}" CC_FOR_BUILD="$${CC_FOR_BUILD}" \
 		STAGE_PREFIX=$$r/stage2-gcc/  \
 		$(POSTSTAGE1_FLAGS_TO_PASS) && $(STAMP) ../all-stage3-gcc
 
@@ -28488,7 +28488,7 @@ all-stage4-gcc: configure-stage4-gcc
 	$(STAGE_HOST_EXPORTS)  \
 	cd gcc && \
 	$(MAKE) $(GCC_FLAGS_TO_PASS)  \
-		CC="$${CC}" CC_FOR_BUILD="${CC_FOR_BUILD}" \
+		CC="$${CC}" CC_FOR_BUILD="$${CC_FOR_BUILD}" \
 		STAGE_PREFIX=$$r/stage3-gcc/  \
 		$(POSTSTAGE1_FLAGS_TO_PASS) && $(STAMP) ../all-stage4-gcc
 
