@@ -34,181 +34,14 @@
 
 using namespace __cxxabiv1;
 
-
-
-// ??? These ought to go somewhere else dwarf2 or dwarf2eh related.
-
-// Pointer encodings.
-#define DW_EH_PE_absptr         0x00
-#define DW_EH_PE_omit           0xff
-
-#define DW_EH_PE_uleb128        0x01
-#define DW_EH_PE_udata2         0x02
-#define DW_EH_PE_udata4         0x03
-#define DW_EH_PE_udata8         0x04
-#define DW_EH_PE_sleb128        0x09
-#define DW_EH_PE_sdata2         0x0A
-#define DW_EH_PE_sdata4         0x0B
-#define DW_EH_PE_sdata8         0x0C
-#define DW_EH_PE_signed         0x08
-
-#define DW_EH_PE_pcrel          0x10
-#define DW_EH_PE_textrel        0x20
-#define DW_EH_PE_datarel        0x30
-#define DW_EH_PE_funcrel        0x40
-
-static unsigned int
-size_of_encoded_value (unsigned char encoding)
-{
-  switch (encoding & 0x07)
-    {
-    case DW_EH_PE_absptr:
-      return sizeof (void *);
-    case DW_EH_PE_udata2:
-      return 2;
-    case DW_EH_PE_udata4:
-      return 4;
-    case DW_EH_PE_udata8:
-      return 8;
-    }
-  abort ();
-}
-
-static const unsigned char *
-read_encoded_value (_Unwind_Context *context, unsigned char encoding,
-		    const unsigned char *p, _Unwind_Ptr *val)
-{
-  union unaligned
-    {
-      void *ptr;
-      unsigned u2 __attribute__ ((mode (HI)));
-      unsigned u4 __attribute__ ((mode (SI)));
-      unsigned u8 __attribute__ ((mode (DI)));
-      signed s2 __attribute__ ((mode (HI)));
-      signed s4 __attribute__ ((mode (SI)));
-      signed s8 __attribute__ ((mode (DI)));
-    } __attribute__((__packed__));
-
-  union unaligned *u = (union unaligned *) p;
-  _Unwind_Ptr result;
-
-  switch (encoding & 0x0f)
-    {
-    case DW_EH_PE_absptr:
-      result = (_Unwind_Ptr) u->ptr;
-      p += sizeof (void *);
-      break;
-
-    case DW_EH_PE_uleb128:
-      {
-	unsigned int shift = 0;
-	unsigned char byte;
-
-	result = 0;
-	do
-	  {
-	    byte = *p++;
-	    result |= (_Unwind_Ptr)(byte & 0x7f) << shift;
-	    shift += 7;
-	  }
-	while (byte & 0x80);
-      }
-      break;
-
-    case DW_EH_PE_sleb128:
-      {
-	unsigned int shift = 0;
-	unsigned char byte;
-
-	result = 0;
-	do
-	  {
-	    byte = *p++;
-	    result |= (_Unwind_Ptr)(byte & 0x7f) << shift;
-	    shift += 7;
-	  }
-	while (byte & 0x80);
-
-	if (shift < 8 * sizeof(result) && (byte & 0x40) != 0)
-	  result |= -(1L << shift);
-      }
-      break;
-
-    case DW_EH_PE_udata2:
-      result = u->u2;
-      p += 2;
-      break;
-    case DW_EH_PE_udata4:
-      result = u->u4;
-      p += 4;
-      break;
-    case DW_EH_PE_udata8:
-      result = u->u8;
-      p += 8;
-      break;
-
-    case DW_EH_PE_sdata2:
-      result = u->s2;
-      p += 2;
-      break;
-    case DW_EH_PE_sdata4:
-      result = u->s4;
-      p += 4;
-      break;
-    case DW_EH_PE_sdata8:
-      result = u->s8;
-      p += 8;
-      break;
-
-    default:
-      abort ();
-    }
-
-  if (result != 0)
-    switch (encoding & 0xf0)
-      {
-      case DW_EH_PE_absptr:
-	break;
-
-      case DW_EH_PE_pcrel:
-	// Define as relative to the beginning of the pointer.
-	result += (_Unwind_Ptr) u;
-	break;
-
-      case DW_EH_PE_textrel:
-      case DW_EH_PE_datarel:
-	// FIXME.
-	abort ();
-
-      case DW_EH_PE_funcrel:
-	result += _Unwind_GetRegionStart (context);
-	break;
-
-      default:
-	abort ();
-      }
-
-  *val = result;
-  return p;
-}
-
-static inline const unsigned char *
-read_uleb128 (const unsigned char *p, _Unwind_Ptr *val)
-{
-  return read_encoded_value (0, DW_EH_PE_uleb128, p, val);
-}
-
-static inline const unsigned char *
-read_sleb128 (const unsigned char *p, _Unwind_Ptr *val)
-{
-  return read_encoded_value (0, DW_EH_PE_sleb128, p, val);
-}
+#include "unwind-pe.h"
 
 
 struct lsda_header_info
 {
   _Unwind_Ptr Start;
   _Unwind_Ptr LPStart;
+  _Unwind_Ptr ttype_base;
   const unsigned char *TType;
   const unsigned char *action_table;
   unsigned char ttype_encoding;
@@ -251,19 +84,20 @@ parse_lsda_header (_Unwind_Context *context, const unsigned char *p,
 }
 
 static const std::type_info *
-get_ttype_entry (_Unwind_Context *context, lsda_header_info *info, long i)
+get_ttype_entry (lsda_header_info *info, long i)
 {
   _Unwind_Ptr ptr;
 
   i *= size_of_encoded_value (info->ttype_encoding);
-  read_encoded_value (context, info->ttype_encoding, info->TType - i, &ptr);
+  read_encoded_value_with_base (info->ttype_encoding, info->ttype_base,
+				info->TType - i, &ptr);
 
   return reinterpret_cast<const std::type_info *>(ptr);
 }
 
 static bool
-check_exception_spec (_Unwind_Context *context, lsda_header_info *info,
-		      const std::type_info *throw_type, long filter_value)
+check_exception_spec (lsda_header_info *info, const std::type_info *throw_type,
+		      long filter_value)
 {
   const unsigned char *e = info->TType - filter_value - 1;
 
@@ -281,7 +115,7 @@ check_exception_spec (_Unwind_Context *context, lsda_header_info *info,
         return false;
 
       // Match a ttype entry.
-      catch_type = get_ttype_entry (context, info, tmp);
+      catch_type = get_ttype_entry (info, tmp);
       if (catch_type->__do_catch (throw_type, &dummy, 1))
 	return true;
     }
@@ -344,6 +178,7 @@ PERSONALITY_FUNCTION (int version,
 
   // Parse the LSDA header.
   p = parse_lsda_header (context, language_specific_data, &info);
+  info.ttype_base = base_of_encoded_value (info.ttype_encoding, context);
   ip = _Unwind_GetIP (context) - 1;
   landing_pad = 0;
   action_record = 0;
@@ -458,7 +293,7 @@ PERSONALITY_FUNCTION (int version,
 	  else if (ar_filter > 0)
 	    {
 	      // Positive filter values are handlers.
-	      catch_type = get_ttype_entry (context, &info, ar_filter);
+	      catch_type = get_ttype_entry (&info, ar_filter);
 	      adjusted_ptr = xh + 1;
 
 	      // Null catch type is a catch-all handler.  We can catch
@@ -494,8 +329,7 @@ PERSONALITY_FUNCTION (int version,
 	      // see we can't match because there's no __cxa_exception
 	      // object to stuff bits in for __cxa_call_unexpected to use.
 	      if (throw_type
-		  && ! check_exception_spec (context, &info, throw_type,
-					     ar_filter))
+		  && ! check_exception_spec (&info, throw_type, ar_filter))
 		{
 		  saw_handler = true;
 		  break;
@@ -547,6 +381,15 @@ PERSONALITY_FUNCTION (int version,
       __terminate (xh->terminateHandler);
     }
 
+  // Cache the TType base value for __cxa_call_unexpected, as we won't
+  // have an _Unwind_Context then.
+  if (handler_switch_value < 0)
+    {
+      parse_lsda_header (context, xh->languageSpecificData, &info);
+      xh->catchTemp = (void *) base_of_encoded_value (info.ttype_encoding,
+						      context);
+    }
+
   _Unwind_SetGR (context, __builtin_eh_return_data_regno (0),
 		 (_Unwind_Ptr) &xh->unwindHeader);
   _Unwind_SetGR (context, __builtin_eh_return_data_regno (1),
@@ -582,15 +425,16 @@ __cxa_call_unexpected (_Unwind_Exception *exc_obj)
     // We don't quite have enough stuff cached; re-parse the LSDA.
     lsda_header_info info;
     parse_lsda_header (0, xh->languageSpecificData, &info);
+    info.ttype_base = (_Unwind_Ptr) xh->catchTemp;
 
     // If this new exception meets the exception spec, allow it.
-    if (check_exception_spec (0, &info, new_xh->exceptionType,
+    if (check_exception_spec (&info, new_xh->exceptionType,
 			      xh->handlerSwitchValue))
       throw;
 
     // If the exception spec allows std::bad_exception, throw that.
     const std::type_info &bad_exc = typeid (std::bad_exception);
-    if (check_exception_spec (0, &info, &bad_exc, xh->handlerSwitchValue))
+    if (check_exception_spec (&info, &bad_exc, xh->handlerSwitchValue))
       throw std::bad_exception ();
 
     // Otherwise, die.
