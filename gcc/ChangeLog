@@ -1,5 +1,8 @@
 2003-04-14  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* stor-layout.c (layout_type, case ARRAY_TYPE): Add missing code to
+	handle "superflat arrays" in Ada.
+
 	* integrate.c (expand_inline_function): Don't inline if would
 	lose /u on a BLKmode TARGET.
 

@@ -1740,6 +1740,15 @@ layout_type (type)
 		  element_size = integer_one_node;
 	      }
 
+	    /* If neither bound is a constant and sizetype is signed, make
+	       sure the size is never negative.  We should really do this
+	       if *either* bound is non-constant, but this is the best
+	       compromise between C and Ada.  */
+	    if (! TREE_UNSIGNED (sizetype)
+		&& TREE_CODE (TYPE_MIN_VALUE (index)) != INTEGER_CST
+		&& TREE_CODE (TYPE_MAX_VALUE (index)) != INTEGER_CST)
+	      length = size_binop (MAX_EXPR, length, size_zero_node);
+
 	    TYPE_SIZE (type) = size_binop (MULT_EXPR, element_size,
 					   convert (bitsizetype, length));
 
