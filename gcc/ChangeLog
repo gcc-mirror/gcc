@@ -1218,6 +1218,33 @@
 
 2004-08-30  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* alias.c (mems_in_disjoint_alias_sets_p, record_alias_subset,
+	record_set, rtx_equal_for_memref_p, init_alias_analysis): Use
+	gcc_assert and gcc_unreachable instead of abort.
+	* alloc-pool.c (abort, fancy_abort): Remove.
+	(create_alloc_pool, free_alloc_pool, pool_alloc, pool_free): Use
+	gcc_assert or gcc_unreachable.
+	* attribs.c (init_attributes, decl_attributes): Likewise.
+	* bb-reorder.c (FREE, find_traces_1_round, copy_bb,
+	mark_bb_for_unlikely_executed_section,
+	add_labels_and_missing_jumps, fix_crossing_conditional_branches,
+	fix_crossing_unconditional_branches):  Likewise.
+	* bitmap.c (bitmap_first_set_bit, bitmap_last_set_bit,
+	bitmap_operation):  Likewise.
+	* bt-load.c (insn_sets_btr_p, augment_live_range,
+	move_btr_def):  Likewise.
+	* builtins.c (c_readstr, expand_builtin_longjmp, apply_args_size,
+	apply_result_size, expand_builtin_apply, expand_builtin_mathfn,
+	expand_builtin_mathfn_2, expand_builtin_mathfn_3,
+	builtin_memcpy_read_str, expand_movstr, expand_builtin_stpcpy,
+	expand_builtin_memcmp, expand_builtin_args_info,
+	std_gimplify_va_arg_expr, expand_builtin_unop,
+	expand_builtin_fputs, expand_builtin_profile_func,
+	expand_builtin_fork_or_exec, fold_builtin_bitop,
+	fold_builtin_classify, fold_builtin_fputs): Likewise.
+
+2004-08-30  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* gcov-io.c (GCOV_CHECK): Use gcc_assert when available.
 	* gcov.c (abort): Remove undef.
 
