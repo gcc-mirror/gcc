@@ -1,3 +1,9 @@
+2003-06-23  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.def: Introduce flags_to_pass.
+	* Makefile.tpl: Generate BASE_FLAGS_TO_PASS using it.
+	* Makefile.in: Regenerate.
+
 2003-06-23  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* configure.in (noconfigdirs) <cris-*-*>: Disable target-newlib
