@@ -216,7 +216,7 @@ finish_file (void)
 int
 c_types_compatible_p (tree x, tree y)
 {
-    return comptypes (TYPE_MAIN_VARIANT (x), TYPE_MAIN_VARIANT (y), 0);
+    return comptypes (TYPE_MAIN_VARIANT (x), TYPE_MAIN_VARIANT (y));
 }
 static void
 c_initialize_diagnostics (diagnostic_context *context)

@@ -214,14 +214,9 @@ extern bool c_warn_unused_global_decl (tree);
 
 /* in c-typeck.c */
 
-/* For use with comptypes.  */
-enum {
-  COMPARE_STRICT = 0
-};
-
 extern tree require_complete_type (tree);
 extern int same_translation_unit_p (tree, tree);
-extern int comptypes (tree, tree, int);
+extern int comptypes (tree, tree);
 extern tree c_size_in_bytes (tree);
 extern bool c_mark_addressable (tree);
 extern void c_incomplete_type_error (tree, tree);
