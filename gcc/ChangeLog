@@ -1,3 +1,8 @@
+21-09-2001  Richard Earnshaw  (reanrsha@arm.com)
+
+	* cfgcleanup.c (flow_find_cross_jump): Delete any REG_EQUAL notes
+	that would be invalid after a merge.
+
 Fri Sep 21 14:24:29 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* basic-block.h (flow_delete_insn, flow_delete_insn_chain): Kill.
