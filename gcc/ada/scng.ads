@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -90,6 +90,10 @@ package Scng is
    procedure Set_End_Of_Line_As_Token (Value : Boolean);
    --  Indicate if End_Of_Line is a token or not.
    --  By default, End_Of_Line is not a token.
+
+   procedure Set_Comment_As_Token (Value : Boolean);
+   --  Indicate if a comment is a token or not.
+   --  By default, a comment is not a token.
 
    function Set_Start_Column return Column_Number;
    --  This routine is called with Scan_Ptr pointing to the first character

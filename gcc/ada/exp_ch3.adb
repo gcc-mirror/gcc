@@ -56,6 +56,7 @@ with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Stand;    use Stand;
+with Stringt;  use Stringt;
 with Snames;   use Snames;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
@@ -1032,13 +1033,14 @@ package body Exp_Ch3 is
    --  end;
 
    function Build_Initialization_Call
-     (Loc          : Source_Ptr;
-      Id_Ref       : Node_Id;
-      Typ          : Entity_Id;
-      In_Init_Proc : Boolean := False;
-      Enclos_Type  : Entity_Id := Empty;
-      Discr_Map    : Elist_Id := New_Elmt_List)
-      return         List_Id
+     (Loc               : Source_Ptr;
+      Id_Ref            : Node_Id;
+      Typ               : Entity_Id;
+      In_Init_Proc      : Boolean := False;
+      Enclos_Type       : Entity_Id := Empty;
+      Discr_Map         : Elist_Id := New_Elmt_List;
+      With_Default_Init : Boolean := False)
+      return              List_Id
    is
       First_Arg      : Node_Id;
       Args           : List_Id;
@@ -1076,7 +1078,6 @@ package body Exp_Ch3 is
       --  honest. Actually it isn't quite type honest, because there can be
       --  conflicts of views in the private type case. That is why we set
       --  Conversion_OK in the conversion node.
-
       if (Is_Record_Type (Typ)
            or else Is_Array_Type (Typ)
            or else Is_Private_Type (Typ))
@@ -1110,12 +1111,28 @@ package body Exp_Ch3 is
 
          Append_To (Args, Make_Identifier (Loc, Name_uChain));
 
-         Decls := Build_Task_Image_Decls (Loc, Id_Ref, Enclos_Type);
-         Decl  := Last (Decls);
+         --  Ada0Y (AI-287): In case of default initialized components
+         --  with tasks, we generate a null string actual parameter.
+         --  This is just a workaround that must be improved later???
 
-         Append_To (Args,
-           New_Occurrence_Of (Defining_Identifier (Decl), Loc));
-         Append_List (Decls, Res);
+         if With_Default_Init then
+            declare
+               S           : String_Id;
+               Null_String : Node_Id;
+            begin
+               Start_String;
+               S := End_String;
+               Null_String := Make_String_Literal (Loc, Strval => S);
+               Append_To (Args, Null_String);
+            end;
+         else
+            Decls := Build_Task_Image_Decls (Loc, Id_Ref, Enclos_Type);
+            Decl  := Last (Decls);
+
+            Append_To (Args,
+              New_Occurrence_Of (Defining_Identifier (Decl), Loc));
+            Append_List (Decls, Res);
+         end if;
 
       else
          Decls := No_List;
@@ -1202,7 +1219,22 @@ package body Exp_Ch3 is
                end if;
             end if;
 
-            Append_To (Args, Arg);
+            --  Ada0Y (AI-287) In case of default initialized components, we
+            --  need to generate the corresponding selected component node
+            --  to access the discriminant value. In other cases this is not
+            --  required because we are inside the init proc and we use the
+            --  corresponding formal.
+
+            if With_Default_Init
+              and then Nkind (Id_Ref) = N_Selected_Component
+            then
+               Append_To (Args,
+                 Make_Selected_Component (Loc,
+                   Prefix => New_Copy_Tree (Prefix (Id_Ref)),
+                   Selector_Name => Arg));
+            else
+               Append_To (Args, Arg);
+            end if;
 
             Next_Discriminant (Discr);
          end loop;

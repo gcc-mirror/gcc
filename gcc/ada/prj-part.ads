@@ -34,13 +34,15 @@ package Prj.Part is
      (Project                : out Project_Node_Id;
       Project_File_Name      : String;
       Always_Errout_Finalize : Boolean;
-      Packages_To_Check      : String_List_Access := All_Packages);
+      Packages_To_Check      : String_List_Access := All_Packages;
+      Store_Comments         : Boolean := False);
    --  Parse project file and all its imported project files and create a tree.
    --  Return the node for the project (or Empty_Node if parsing failed). If
    --  Always_Errout_Finalize is True, Errout.Finalize is called in all cases,
    --  Otherwise, Errout.Finalize is only called if there are errors (but not
    --  if there are only warnings). Packages_To_Check indicates the packages
    --  where any unknown attribute produces an error. For other packages, an
-   --  unknown attribute produces a warning.
+   --  unknown attribute produces a warning. When Store_Comments is True,
+   --  comments are stored in the parse tree.
 
 end Prj.Part;

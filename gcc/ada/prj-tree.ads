@@ -30,8 +30,8 @@ with GNAT.HTable;
 
 with Prj.Attr; use Prj.Attr;
 with Prj.Com;  use Prj.Com;
+with Table;    use Table;
 with Types;    use Types;
-with Table;
 
 package Prj.Tree is
 
@@ -79,7 +79,9 @@ package Prj.Tree is
       N_External_Value,
       N_Attribute_Reference,
       N_Case_Construction,
-      N_Case_Item);
+      N_Case_Item,
+      N_Comment_Zones,
+      N_Comment);
    --  Each node in the tree is of a Project_Node_Kind
    --  For the signification of the fields in each node of a
    --  Project_Node_Kind, look at package Tree_Private_Part.
@@ -90,8 +92,7 @@ package Prj.Tree is
 
    function Default_Project_Node
      (Of_Kind       : Project_Node_Kind;
-      And_Expr_Kind : Variable_Kind := Undefined)
-      return          Project_Node_Id;
+      And_Expr_Kind : Variable_Kind := Undefined) return Project_Node_Id;
    --  Returns a Project_Node_Record with the specified Kind and
    --  Expr_Kind; all the other components have default nil values.
 
@@ -100,10 +101,84 @@ package Prj.Tree is
 
    function Imported_Or_Extended_Project_Of
      (Project   : Project_Node_Id;
-      With_Name : Name_Id)
-      return      Project_Node_Id;
+      With_Name : Name_Id) return Project_Node_Id;
    --  Return the node of a project imported or extended by project Project and
    --  whose name is With_Name. Return Empty_Node if there is no such project.
+
+   --------------
+   -- Comments --
+   --------------
+
+   type Comment_State is private;
+   --  A type to store the values of several global variables related to
+   --  comments.
+
+   procedure Save (S : out Comment_State);
+   --  Save in variable S the comment state. Called before scanning a new
+   --  project file.
+
+   procedure Restore (S : in Comment_State);
+   --  Restore the comment state to a previously saved value. Called after
+   --  scanning a project file.
+
+   procedure Reset_State;
+   --  Set the comment state to its initial value. Called before scanning a
+   --  new project file.
+
+   function There_Are_Unkept_Comments return Boolean;
+   --  Indicates that some of the comments in a project file could not be
+   --  stored in the parse tree.
+
+   procedure Set_Previous_Line_Node (To : Project_Node_Id);
+   --  Indicate the node on the previous line. If there are comments
+   --  immediately following this line, then they should be associated with
+   --  this node.
+
+   procedure Set_Previous_End_Node (To : Project_Node_Id);
+   --  Indicate that on the previous line the "end" belongs to node To.
+   --  If there are comments immediately following this "end" line, they
+   --  should be associated with this node.
+
+   procedure Set_End_Of_Line (To : Project_Node_Id);
+   --  Indicate the node on the current line. If there is an end of line
+   --  comment, then it should be associated with this node.
+
+   procedure Set_Next_End_Node (To : Project_Node_Id);
+   --  Put node To on the top of the end node stack. When an "end" line
+   --  is found with this node on the top of the end node stack, the comments,
+   --  if any, immediately preceding this "end" line will be associated with
+   --  this node.
+
+   procedure Remove_Next_End_Node;
+   --  Remove the top of the end node stack.
+
+   ------------------------
+   -- Comment Processing --
+   ------------------------
+
+   type Comment_Data is record
+      Value                     : Name_Id := No_Name;
+      Follows_Empty_Line        : Boolean := False;
+      Is_Followed_By_Empty_Line : Boolean := False;
+   end record;
+
+   package Comments is new Table.Table
+     (Table_Component_Type => Comment_Data,
+      Table_Index_Type     => Natural,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 10,
+      Table_Increment      => 100,
+      Table_Name           => "Prj.Tree.Comments");
+   --  A table to store the comments that may be stored is the tree
+
+   procedure Scan;
+   --  Scan the tokens and accumulate comments.
+
+   type Comment_Location is
+     (Before, After, Before_End, After_End, End_Of_Line);
+
+   procedure Add_Comments (To : Project_Node_Id; Where : Comment_Location);
+   --  Add comments to this node.
 
    ----------------------
    -- Access Functions --
@@ -125,6 +200,39 @@ package Prj.Tree is
    pragma Inline (Location_Of);
    --  Valid for all non empty nodes
 
+   function First_Comment_After
+     (Node : Project_Node_Id) return Project_Node_Id;
+   --  Valid only for N_Comment_Zones nodes
+
+   function First_Comment_After_End
+     (Node : Project_Node_Id) return Project_Node_Id;
+   --  Valid only for N_Comment_Zones nodes
+
+   function First_Comment_Before
+     (Node : Project_Node_Id) return Project_Node_Id;
+   --  Valid only for N_Comment_Zones nodes
+
+   function First_Comment_Before_End
+     (Node : Project_Node_Id) return Project_Node_Id;
+   --  Valid only for N_Comment_Zones nodes
+
+   function Next_Comment (Node : Project_Node_Id) return Project_Node_Id;
+   --  Valid only for N_Comment nodes
+
+   function End_Of_Line_Comment (Node : Project_Node_Id) return Name_Id;
+   --  Valid only for non empty nodes
+
+   function Follows_Empty_Line (Node : Project_Node_Id) return Boolean;
+   --  Valid only for N_Comment nodes
+
+   function Is_Followed_By_Empty_Line (Node : Project_Node_Id) return Boolean;
+   --  Valid only for N_Comment nodes
+
+   function Project_File_Includes_Unkept_Comments
+     (Node : Project_Node_Id)
+      return Boolean;
+   --  Valid only for N_Project nodes
+
    function Directory_Of (Node : Project_Node_Id) return Name_Id;
    pragma Inline (Directory_Of);
    --  Only valid for N_Project nodes.
@@ -140,14 +248,12 @@ package Prj.Tree is
    --  Only valid for N_Project
 
    function First_Variable_Of
-     (Node  : Project_Node_Id)
-      return  Variable_Node_Id;
+     (Node : Project_Node_Id) return Variable_Node_Id;
    pragma Inline (First_Variable_Of);
    --  Only valid for N_Project or N_Package_Declaration nodes
 
    function First_Package_Of
-     (Node  : Project_Node_Id)
-      return  Package_Declaration_Id;
+     (Node : Project_Node_Id) return Package_Declaration_Id;
    pragma Inline (First_Package_Of);
    --  Only valid for N_Project nodes
 
@@ -155,123 +261,105 @@ package Prj.Tree is
    pragma Inline (Package_Id_Of);
    --  Only valid for N_Package_Declaration nodes
 
-   function Path_Name_Of (Node  : Project_Node_Id) return Name_Id;
+   function Path_Name_Of (Node : Project_Node_Id) return Name_Id;
    pragma Inline (Path_Name_Of);
    --  Only valid for N_Project and N_With_Clause nodes.
 
-   function String_Value_Of (Node  : Project_Node_Id) return Name_Id;
+   function String_Value_Of (Node : Project_Node_Id) return Name_Id;
    pragma Inline (String_Value_Of);
-   --  Only valid for N_With_Clause or N_Literal_String nodes.
+   --  Only valid for N_With_Clause, N_Literal_String nodes or N_Comment
 
    function First_With_Clause_Of
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (First_With_Clause_Of);
    --  Only valid for N_Project nodes
 
    function Project_Declaration_Of
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (Project_Declaration_Of);
    --  Only valid for N_Project nodes
 
    function Extending_Project_Of
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (Extending_Project_Of);
    --  Only valid for N_Project_Declaration nodes
 
    function First_String_Type_Of
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (First_String_Type_Of);
    --  Only valid for N_Project nodes
 
    function Extended_Project_Path_Of
-     (Node  : Project_Node_Id)
-      return  Name_Id;
+     (Node : Project_Node_Id) return Name_Id;
    pragma Inline (Extended_Project_Path_Of);
    --  Only valid for N_With_Clause nodes
 
    function Project_Node_Of
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (Project_Node_Of);
    --  Only valid for N_With_Clause, N_Variable_Reference and
    --  N_Attribute_Reference nodes.
 
    function Non_Limited_Project_Node_Of
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (Non_Limited_Project_Node_Of);
    --  Only valid for N_With_Clause nodes. Returns Empty_Node for limited
    --  imported project files, otherwise returns the same result as
    --  Project_Node_Of.
 
    function Next_With_Clause_Of
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (Next_With_Clause_Of);
    --  Only valid for N_With_Clause nodes
 
    function First_Declarative_Item_Of
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (First_Declarative_Item_Of);
    --  Only valid for N_With_Clause nodes
 
    function Extended_Project_Of
-     (Node  : Project_Node_Id)
-      return Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (Extended_Project_Of);
    --  Only valid for N_Project_Declaration nodes
 
    function Current_Item_Node
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (Current_Item_Node);
    --  Only valid for N_Declarative_Item nodes
 
    function Next_Declarative_Item
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (Next_Declarative_Item);
    --  Only valid for N_Declarative_Item node
 
    function Project_Of_Renamed_Package_Of
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (Project_Of_Renamed_Package_Of);
    --  Only valid for N_Package_Declaration nodes.
    --  May return Empty_Node.
 
    function Next_Package_In_Project
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (Next_Package_In_Project);
    --  Only valid for N_Package_Declaration nodes
 
    function First_Literal_String
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (First_Literal_String);
    --  Only valid for N_String_Type_Declaration nodes
 
    function Next_String_Type
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (Next_String_Type);
    --  Only valid for N_String_Type_Declaration nodes
 
    function Next_Literal_String
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (Next_Literal_String);
    --  Only valid for N_Literal_String nodes
 
    function Expression_Of
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (Expression_Of);
    --  Only valid for N_Attribute_Declaration, N_Typed_Variable_Declaration
    --  or N_Variable_Declaration nodes
@@ -290,104 +378,88 @@ package Prj.Tree is
 
    function Value_Is_Valid
      (For_Typed_Variable : Project_Node_Id;
-      Value              : Name_Id)
-      return               Boolean;
+      Value              : Name_Id) return Boolean;
    pragma Inline (Value_Is_Valid);
    --  Only valid for N_Typed_Variable_Declaration. Returns True if Value is
    --  in the list of allowed strings for For_Typed_Variable. False otherwise.
 
    function Associative_Array_Index_Of
-     (Node  : Project_Node_Id)
-      return  Name_Id;
+     (Node : Project_Node_Id) return Name_Id;
    pragma Inline (Associative_Array_Index_Of);
    --  Only valid for N_Attribute_Declaration and N_Attribute_Reference.
    --  Returns No_String for non associative array attributes.
 
    function Next_Variable
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (Next_Variable);
    --  Only valid for N_Typed_Variable_Declaration or N_Variable_Declaration
    --  nodes.
 
    function First_Term
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (First_Term);
    --  Only valid for N_Expression nodes
 
    function Next_Expression_In_List
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (Next_Expression_In_List);
    --  Only valid for N_Expression nodes
 
    function Current_Term
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (Current_Term);
    --  Only valid for N_Term nodes
 
    function Next_Term
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (Next_Term);
    --  Only valid for N_Term nodes
 
    function First_Expression_In_List
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (First_Expression_In_List);
    --  Only valid for N_Literal_String_List nodes
 
    function Package_Node_Of
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (Package_Node_Of);
    --  Only valid for N_Variable_Reference or N_Attribute_Reference nodes.
    --  May return Empty_Node.
 
    function String_Type_Of
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (String_Type_Of);
    --  Only valid for N_Variable_Reference or N_Typed_Variable_Declaration
    --  nodes.
 
    function External_Reference_Of
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (External_Reference_Of);
    --  Only valid for N_External_Value nodes
 
    function External_Default_Of
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (External_Default_Of);
    --  Only valid for N_External_Value nodes
 
    function Case_Variable_Reference_Of
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (Case_Variable_Reference_Of);
    --  Only valid for N_Case_Construction nodes
 
    function First_Case_Item_Of
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (First_Case_Item_Of);
    --  Only valid for N_Case_Construction nodes
 
    function First_Choice_Of
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (First_Choice_Of);
    --  Return the first choice in a N_Case_Item, or Empty_Node if
    --  this is when others.
 
    function Next_Case_Item
-     (Node  : Project_Node_Id)
-      return  Project_Node_Id;
+     (Node : Project_Node_Id) return Project_Node_Id;
    pragma Inline (Next_Case_Item);
    --  Only valid for N_Case_Item nodes
 
@@ -418,6 +490,35 @@ package Prj.Tree is
      (Node : Project_Node_Id;
       To   : Source_Ptr);
    pragma Inline (Set_Location_Of);
+
+   procedure Set_First_Comment_After
+     (Node : Project_Node_Id;
+      To   : Project_Node_Id);
+   pragma Inline (Set_First_Comment_After);
+
+   procedure Set_First_Comment_After_End
+     (Node : Project_Node_Id;
+      To   : Project_Node_Id);
+   pragma Inline (Set_First_Comment_After_End);
+
+   procedure Set_First_Comment_Before
+     (Node : Project_Node_Id;
+      To   : Project_Node_Id);
+   pragma Inline (Set_First_Comment_Before);
+
+   procedure Set_First_Comment_Before_End
+     (Node : Project_Node_Id;
+      To   : Project_Node_Id);
+   pragma Inline (Set_First_Comment_Before_End);
+
+   procedure Set_Next_Comment
+     (Node : Project_Node_Id;
+      To   : Project_Node_Id);
+   pragma Inline (Set_Next_Comment);
+
+   procedure Set_Project_File_Includes_Unkept_Comments
+     (Node : Project_Node_Id;
+      To   : Boolean);
 
    procedure Set_Directory_Of
      (Node : Project_Node_Id;
@@ -687,14 +788,32 @@ package Prj.Tree is
          Field3 : Project_Node_Id := Empty_Node;
          --  See below the meaning for each Project_Node_Kind
 
-         Case_Insensitive : Boolean := False;
-         --  This flag is significant only for N_Attribute_Declaration and
-         --  N_Atribute_Reference. It indicates for an associative array
-         --  attribute, that the index is case insensitive.
+         Flag1 : Boolean := False;
+         --  This flag is significant only for:
+         --    N_Attribute_Declaration and N_Atribute_Reference
+         --      It indicates for an associative array attribute, that the
+         --      index is case insensitive.
+         --    N_Comment - it indicates that the comment is preceded by an
+         --                empty line.
+         --    N_Project - it indicates that there are comments in the project
+         --                source that cannot be kept in the tree.
+         --    N_Project_Declaration
+         --              - it indixates that there are unkept comment in the
+         --                project.
 
-         Extending_All : Boolean := False;
-         --  This flag is significant only for N_Project. It indicates that
-         --  the project "extends all" another project.
+         Flag2 : Boolean := False;
+         --  This flag is significant only for:
+         --    N_Project - it indicates that the project "extends all" another
+         --                project.
+         --    N_Comment - it indicates that the comment is followed by an
+         --                empty line.
+
+         Comments : Project_Node_Id := Empty_Node;
+         --  For nodes other that N_Comment_Zones or N_Comment, designates the
+         --  comment zones associated with the node.
+         --  for N_Comment_Zones, designates the comment after the "end" of
+         --  the construct.
+         --  For N_Comment, designates the next comment, if any.
 
       end record;
 
@@ -862,7 +981,7 @@ package Prj.Tree is
       --    --  Field3:    not used
       --    --  Value:     not used
 
-      --    N_Case_Item);
+      --    N_Case_Item
       --    --  Name:      not used
       --    --  Path_Name: not used
       --    --  Expr_Kind: not used
@@ -871,6 +990,28 @@ package Prj.Tree is
       --    --  Field2:    first declarative item
       --    --  Field3:    next case item
       --    --  Value:     not used
+
+      --    N_Comment_zones
+      --    --  Name:      not used
+      --    --  Path_Name: not used
+      --    --  Expr_Kind: not used
+      --    --  Field1:    comment before the construct
+      --    --  Field2:    comment after the construct
+      --    --  Field3:    comment before the "end" of the construct
+      --    --  Value:     end of line comment
+      --    --  Comments:  comment after the "end" of the construct
+
+      --    N_Comment
+      --    --  Name:      not used
+      --    --  Path_Name: not used
+      --    --  Expr_Kind: not used
+      --    --  Field1:    not used
+      --    --  Field2:    not used
+      --    --  Field3:    not used
+      --    --  Value:     comment
+      --    --  Flag1:     comment is preceded by an empty line
+      --    --  Flag2:     comment is followed by an empty line
+      --    --  Comments:  next comment
 
       package Project_Nodes is
          new Table.Table (Table_Component_Type => Project_Node_Record,
@@ -910,5 +1051,21 @@ package Prj.Tree is
       --  its name.
 
    end Tree_Private_Part;
+
+private
+   type Comment_Array is array (Positive range <>) of Comment_Data;
+   type Comments_Ptr is access Comment_Array;
+
+   type Comment_State is record
+      End_Of_Line_Node   : Project_Node_Id := Empty_Node;
+
+      Previous_Line_Node : Project_Node_Id := Empty_Node;
+
+      Previous_End_Node  : Project_Node_Id := Empty_Node;
+
+      Unkept_Comments    : Boolean := False;
+
+      Comments           : Comments_Ptr := null;
+   end record;
 
 end Prj.Tree;

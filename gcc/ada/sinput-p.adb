@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,7 +24,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Prj;         use Prj;
 with Prj.Err;
 with Sinput.C;
 
@@ -97,7 +96,7 @@ package body Sinput.P is
         or else Token = Tok_Private
         or else (Token not in Token_Class_Cunit and then Token /= Tok_EOF)
       loop
-         Scan;
+         Prj.Err.Scanner.Scan;
       end loop;
 
       return Token = Tok_Separate;

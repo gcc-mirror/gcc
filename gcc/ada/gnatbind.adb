@@ -471,7 +471,7 @@ begin
 
       --  Add System.Standard_Library to list to ensure that these files are
       --  included in the bind, even if not directly referenced from Ada code
-      --  This is suppressed if the configurable run-time requests it.
+      --  This is suppressed if the appropriate targparm switch is set.
 
       if not Suppress_Standard_Library_On_Target then
          Name_Buffer (1 .. 12) := "s-stalib.ali";

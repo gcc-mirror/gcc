@@ -29,6 +29,7 @@ with Checks;   use Checks;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
+with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
 with Itypes;   use Itypes;
@@ -334,7 +335,7 @@ package body Sem_Aggr is
    --
    --    Typ is the context type in which N occurs.
    --
-   --  This routine creates an implicit array subtype whose bouds are
+   --  This routine creates an implicit array subtype whose bounds are
    --  those defined by the aggregate. When this routine is invoked
    --  Resolve_Array_Aggregate has already processed aggregate N. Thus the
    --  Aggregate_Bounds of each sub-aggregate, is an N_Range node giving the
@@ -961,6 +962,8 @@ package body Sem_Aggr is
             --  N_Parameter_Association which itself appears only if there is a
             --  formal parameter. Consequently we also need to test for
             --  N_Procedure_Call_Statement or N_Function_Call.
+
+            Set_Etype (N, Aggr_Typ);  --  may be overridden later on.
 
             if Is_Constrained (Typ) and then
               (Pkind = N_Assignment_Statement      or else
@@ -1641,9 +1644,27 @@ package body Sem_Aggr is
                   end if;
                end loop;
 
-               if not
-                 Resolve_Aggr_Expr
-                   (Expression (Assoc), Single_Elmt => Single_Choice)
+               --  Ada0Y (AI-287): In case of default initialized component
+               --  we delay the resolution to the expansion phase
+
+               if Box_Present (Assoc) then
+
+                  --  Ada0Y (AI-287): In case of default initialization of a
+                  --  component the expander will generate calls to the
+                  --  corresponding initialization subprogram.
+
+                  if Present (Base_Init_Proc (Etype (Component_Typ)))
+                    or else Has_Task (Base_Type (Component_Typ))
+                  then
+                     null;
+                  else
+                     Error_Msg_N
+                       ("(Ada 0Y): no value supplied for this component",
+                        Assoc);
+                  end if;
+
+               elsif not Resolve_Aggr_Expr (Expression (Assoc),
+                                            Single_Elmt => Single_Choice)
                then
                   return Failure;
                end if;
@@ -1764,8 +1785,26 @@ package body Sem_Aggr is
 
          if Others_Present then
             Assoc := Last (Component_Associations (N));
-            if not Resolve_Aggr_Expr (Expression (Assoc),
-                                      Single_Elmt => False)
+
+            --  Ada0Y (AI-287): In case of default initialized component
+            --  we delay the resolution to the expansion phase.
+
+            if Box_Present (Assoc) then
+
+               --  Ada0Y (AI-287): In case of default initialization of a
+               --  component the expander will generate calls to the
+               --  corresponding initialization subprogram.
+
+               if Present (Base_Init_Proc (Etype (Component_Typ))) then
+                  null;
+               else
+                  Error_Msg_N
+                    ("(Ada 0Y): no value supplied for these components",
+                     Assoc);
+               end if;
+
+            elsif not Resolve_Aggr_Expr (Expression (Assoc),
+                                         Single_Elmt => False)
             then
                return Failure;
             end if;

@@ -152,7 +152,7 @@ begin
 
       function State (Int : Interrupt_ID) return Character;
       pragma Import (C, State, "__gnat_get_interrupt_state");
-      --  Get interrupt state.  Defined in a-init.c
+      --  Get interrupt state. Defined in a-init.c
       --  The input argument is the interrupt number,
       --  and the result is one of the following:
 
@@ -178,9 +178,9 @@ begin
       act.sa_flags := SA_SIGINFO;
 
       --  Setting SA_SIGINFO asks the kernel to pass more than just the signal
-      --  number argument to the handler when it is called.  The set of extra
+      --  number argument to the handler when it is called. The set of extra
       --  parameters typically includes a pointer to a structure describing
-      --  the interrupted context.  Although the Notify_Exception handler does
+      --  the interrupted context. Although the Notify_Exception handler does
       --  not use this information, it is actually required for the GCC/ZCX
       --  exception propagation scheme because on some targets (at least
       --  alpha-tru64), the structure contents are not even filled when this

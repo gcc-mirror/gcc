@@ -6246,6 +6246,7 @@ package body Sem_Ch3 is
       if (Is_Limited_Type (T)
            or else Is_Limited_Composite (T))
         and then not In_Instance
+        and then not In_Inlined_Body
       then
          --  Ada0Y (AI-287): Relax the strictness of the front-end in case of
          --  limited aggregates and extension aggregates.
@@ -8438,18 +8439,6 @@ package body Sem_Ch3 is
 
       Init_Size_Align (Implicit_Base);
 
-      --  Complete entity for first subtype
-
-      Set_Ekind          (T, E_Decimal_Fixed_Point_Subtype);
-      Set_Etype          (T, Implicit_Base);
-      Set_Size_Info      (T, Implicit_Base);
-      Set_First_Rep_Item (T, First_Rep_Item (Implicit_Base));
-      Set_Digits_Value   (T, Digs_Val);
-      Set_Delta_Value    (T, Delta_Val);
-      Set_Small_Value    (T, Delta_Val);
-      Set_Scale_Value    (T, Scale_Val);
-      Set_Is_Constrained (T);
-
       --  If there are bounds given in the declaration use them as the
       --  bounds of the first named subtype.
 
@@ -8491,6 +8480,18 @@ package body Sem_Ch3 is
       else
          Set_Fixed_Range (T, Loc, -Bound_Val, Bound_Val);
       end if;
+
+      --  Complete entity for first subtype
+
+      Set_Ekind          (T, E_Decimal_Fixed_Point_Subtype);
+      Set_Etype          (T, Implicit_Base);
+      Set_Size_Info      (T, Implicit_Base);
+      Set_First_Rep_Item (T, First_Rep_Item (Implicit_Base));
+      Set_Digits_Value   (T, Digs_Val);
+      Set_Delta_Value    (T, Delta_Val);
+      Set_Small_Value    (T, Delta_Val);
+      Set_Scale_Value    (T, Scale_Val);
+      Set_Is_Constrained (T);
 
    end Decimal_Fixed_Point_Type_Declaration;
 

@@ -322,12 +322,6 @@ package Targparm is
    --
    --    The variable __gnat_exit_status is generated within the binder file
    --    instead of being imported from the run-time library.
-   --
-   --    No -Ldir switches are added for the linker step
-   --
-   --    No standard switches are added after user file entries to the
-   --    linker line. All such switches must be explicit. In other words
-   --    the option -nostdlib is implicit with a configurable run-time.
 
    Suppress_Standard_Library_On_Target : Boolean;
    --  If this flag is True, then the standard library is not included by

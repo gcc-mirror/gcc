@@ -52,13 +52,14 @@ package Exp_Ch3 is
    --  and the discriminant checking functions are inserted after this node.
 
    function Build_Initialization_Call
-     (Loc          : Source_Ptr;
-      Id_Ref       : Node_Id;
-      Typ          : Entity_Id;
-      In_Init_Proc : Boolean := False;
-      Enclos_Type  : Entity_Id := Empty;
-      Discr_Map    : Elist_Id := New_Elmt_List)
-      return         List_Id;
+     (Loc               : Source_Ptr;
+      Id_Ref            : Node_Id;
+      Typ               : Entity_Id;
+      In_Init_Proc      : Boolean := False;
+      Enclos_Type       : Entity_Id := Empty;
+      Discr_Map         : Elist_Id := New_Elmt_List;
+      With_Default_Init : Boolean := False)
+      return              List_Id;
    --  Builds a call to the initialization procedure of the Id entity. Id_Ref
    --  is either a new reference to Id (for record fields), or an indexed
    --  component (for array elements). Loc is the source location for the
@@ -76,6 +77,10 @@ package Exp_Ch3 is
    --  entry families bounded by discriminants, protected type discriminants
    --  can appear within expressions in array bounds (not as stand-alone
    --  identifiers) and a general replacement is necessary.
+   --
+   --  Ada0Y (AI-287): With_Default_Init is used to indicate that the initia-
+   --  lization call corresponds to a default initialized component of an
+   --  aggregate.
 
    procedure Freeze_Type (N : Node_Id);
    --  This procedure executes the freezing actions associated with the given

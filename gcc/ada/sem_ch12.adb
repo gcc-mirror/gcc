@@ -1466,7 +1466,10 @@ package body Sem_Ch12 is
       end if;
 
       if K = E_Generic_In_Parameter then
-         if Is_Limited_Type (T) then
+
+         --  Ada0Y (AI-287): Limited aggregates allowed in generic formals
+
+         if not Extensions_Allowed and then Is_Limited_Type (T) then
             Error_Msg_N
               ("generic formal of mode IN must not be of limited type", N);
             Explain_Limited_Type (T, N);

@@ -27,8 +27,8 @@
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 
 with Hostparm;
-with Namet;     use Namet;
-with Output;    use Output;
+with Namet;    use Namet;
+with Output;   use Output;
 with Snames;
 
 package body Prj.PP is
@@ -47,7 +47,6 @@ package body Prj.PP is
    procedure Indicate_Tested (Kind : Project_Node_Kind);
    --  Set the corresponding component of array Not_Tested to False.
    --  Only called by pragmas Debug.
-   --
 
    ---------------------
    -- Indicate_Tested --
@@ -98,9 +97,13 @@ package body Prj.PP is
       procedure Write_Line (S : String);
       --  Outputs S followed by a new line
 
-      procedure Write_String (S : String);
+      procedure Write_String (S : String; Truncated : Boolean := False);
       --  Outputs S using Write_Str, starting a new line if line would
-      --  become too long.
+      --  become too long, when Truncated = False.
+      --  When Truncated = True, only the part of the string that can fit on
+      --  the line is output.
+
+      procedure Write_End_Of_Line_Comment (Node : Project_Node_Id);
 
       Write_Char : Write_Char_Ap := Output.Write_Char'Access;
       Write_Eol  : Write_Eol_Ap  := Output.Write_Eol'Access;
@@ -246,6 +249,21 @@ package body Prj.PP is
          end if;
       end Write_Empty_Line;
 
+      -------------------------------
+      -- Write_End_Of_Line_Comment --
+      -------------------------------
+
+      procedure Write_End_Of_Line_Comment (Node : Project_Node_Id) is
+         Value : Name_Id := End_Of_Line_Comment (Node);
+      begin
+         if Value /= No_Name then
+            Write_String (" --");
+            Write_String (Get_Name_String (Value), Truncated => True);
+         end if;
+
+         Write_Line ("");
+      end Write_End_Of_Line_Comment;
+
       ----------------
       -- Write_Line --
       ----------------
@@ -262,18 +280,24 @@ package body Prj.PP is
       -- Write_String --
       ------------------
 
-      procedure Write_String (S : String) is
+      procedure Write_String (S : String; Truncated : Boolean := False) is
+         Length : Natural := S'Length;
       begin
          --  If the string would not fit on the line,
          --  start a new line.
 
-         if Column + S'Length > Max_Line_Length then
-            Write_Eol.all;
-            Column := 0;
+         if Column + Length > Max_Line_Length then
+            if Truncated then
+               Length := Max_Line_Length - Column;
+
+            else
+               Write_Eol.all;
+               Column := 0;
+            end if;
          end if;
 
-         Write_Str (S);
-         Column := Column + S'Length;
+         Write_Str (S (S'First .. S'First + Length - 1));
+         Column := Column + Length;
       end Write_String;
 
       -----------
@@ -296,6 +320,7 @@ package body Prj.PP is
                      Write_Empty_Line (Always => True);
                   end if;
 
+                  Print (First_Comment_Before (Node), Indent);
                   Start_Line (Indent);
                   Write_String ("project ");
                   Output_Name (Name_Of (Node));
@@ -307,21 +332,26 @@ package body Prj.PP is
                      Output_String (Extended_Project_Path_Of (Node));
                   end if;
 
-                  Write_Line (" is");
+                  Write_String (" is");
+                  Write_End_Of_Line_Comment (Node);
+                  Print (First_Comment_After (Node), Indent + Increment);
                   Write_Empty_Line (Always => True);
 
                   --  Output all of the declarations in the project
 
                   Print (Project_Declaration_Of (Node), Indent);
+                  Print (First_Comment_Before_End (Node), Indent + Increment);
                   Start_Line (Indent);
                   Write_String ("end ");
                   Output_Name (Name_Of (Node));
                   Write_Line (";");
+                  Print (First_Comment_After_End (Node), Indent);
 
                when N_With_Clause =>
                   pragma Debug (Indicate_Tested (N_With_Clause));
 
                   if Name_Of (Node) /= No_Name then
+                     Print (First_Comment_Before (Node), Indent);
                      Start_Line (Indent);
 
                      if Non_Limited_Project_Node_Of (Node) = Empty_Node then
@@ -330,7 +360,9 @@ package body Prj.PP is
 
                      Write_String ("with ");
                      Output_String (String_Value_Of (Node));
-                     Write_Line (";");
+                     Write_String (";");
+                     Write_End_Of_Line_Comment (Node);
+                     Print (First_Comment_After (Node), Indent);
                   end if;
 
                   Print (Next_With_Clause_Of (Node), Indent);
@@ -352,6 +384,7 @@ package body Prj.PP is
                when N_Package_Declaration =>
                   pragma Debug (Indicate_Tested (N_Package_Declaration));
                   Write_Empty_Line (Always => True);
+                  Print (First_Comment_Before (Node), Indent);
                   Start_Line (Indent);
                   Write_String ("package ");
                   Output_Name (Name_Of (Node));
@@ -362,10 +395,14 @@ package body Prj.PP is
                        (Name_Of (Project_Of_Renamed_Package_Of (Node)));
                      Write_String (".");
                      Output_Name (Name_Of (Node));
-                     Write_Line (";");
+                     Write_String (";");
+                     Write_End_Of_Line_Comment (Node);
+                     Print (First_Comment_After_End (Node), Indent);
 
                   else
-                     Write_Line (" is");
+                     Write_String (" is");
+                     Write_End_Of_Line_Comment (Node);
+                     Print (First_Comment_After (Node), Indent + Increment);
 
                      if First_Declarative_Item_Of (Node) /= Empty_Node then
                         Print
@@ -373,15 +410,19 @@ package body Prj.PP is
                            Indent + Increment);
                      end if;
 
+                     Print (First_Comment_Before_End (Node),
+                            Indent + Increment);
                      Start_Line (Indent);
                      Write_String ("end ");
                      Output_Name (Name_Of (Node));
                      Write_Line (";");
+                     Print (First_Comment_After_End (Node), Indent);
                      Write_Empty_Line;
                   end if;
 
                when N_String_Type_Declaration =>
                   pragma Debug (Indicate_Tested (N_String_Type_Declaration));
+                  Print (First_Comment_Before (Node), Indent);
                   Start_Line (Indent);
                   Write_String ("type ");
                   Output_Name (Name_Of (Node));
@@ -404,7 +445,9 @@ package body Prj.PP is
                      end loop;
                   end;
 
-                  Write_Line (");");
+                  Write_String (");");
+                  Write_End_Of_Line_Comment (Node);
+                  Print (First_Comment_After (Node), Indent);
 
                when N_Literal_String =>
                   pragma Debug (Indicate_Tested (N_Literal_String));
@@ -412,6 +455,7 @@ package body Prj.PP is
 
                when N_Attribute_Declaration =>
                   pragma Debug (Indicate_Tested (N_Attribute_Declaration));
+                  Print (First_Comment_Before (Node), Indent);
                   Start_Line (Indent);
                   Write_String ("for ");
                   Output_Attribute_Name (Name_Of (Node));
@@ -424,26 +468,34 @@ package body Prj.PP is
 
                   Write_String (" use ");
                   Print (Expression_Of (Node), Indent);
-                  Write_Line (";");
+                  Write_String (";");
+                  Write_End_Of_Line_Comment (Node);
+                  Print (First_Comment_After (Node), Indent);
 
                when N_Typed_Variable_Declaration =>
                   pragma Debug
                     (Indicate_Tested (N_Typed_Variable_Declaration));
+                  Print (First_Comment_Before (Node), Indent);
                   Start_Line (Indent);
                   Output_Name (Name_Of (Node));
                   Write_String (" : ");
                   Output_Name (Name_Of (String_Type_Of (Node)));
                   Write_String (" := ");
                   Print (Expression_Of (Node), Indent);
-                  Write_Line (";");
+                  Write_String (";");
+                  Write_End_Of_Line_Comment (Node);
+                  Print (First_Comment_After (Node), Indent);
 
                when N_Variable_Declaration =>
                   pragma Debug (Indicate_Tested (N_Variable_Declaration));
+                  Print (First_Comment_Before (Node), Indent);
                   Start_Line (Indent);
                   Output_Name (Name_Of (Node));
                   Write_String (" := ");
                   Print (Expression_Of (Node), Indent);
-                  Write_Line (";");
+                  Write_String (";");
+                  Write_End_Of_Line_Comment (Node);
+                  Print (First_Comment_After (Node), Indent);
 
                when N_Expression =>
                   pragma Debug (Indicate_Tested (N_Expression));
@@ -566,10 +618,13 @@ package body Prj.PP is
 
                      if Is_Non_Empty then
                         Write_Empty_Line;
+                        Print (First_Comment_Before (Node), Indent);
                         Start_Line (Indent);
                         Write_String ("case ");
                         Print (Case_Variable_Reference_Of (Node), Indent);
-                        Write_Line (" is");
+                        Write_String (" is");
+                        Write_End_Of_Line_Comment (Node);
+                        Print (First_Comment_After (Node), Indent + Increment);
 
                         declare
                            Case_Item : Project_Node_Id :=
@@ -584,8 +639,11 @@ package body Prj.PP is
                            end loop;
                         end;
 
+                        Print (First_Comment_Before_End (Node),
+                               Indent + Increment);
                         Start_Line (Indent);
                         Write_Line ("end case;");
+                        Print (First_Comment_After_End (Node), Indent);
                      end if;
                   end;
 
@@ -596,6 +654,7 @@ package body Prj.PP is
                     or else not Eliminate_Empty_Case_Constructions
                   then
                      Write_Empty_Line;
+                     Print (First_Comment_Before (Node), Indent);
                      Start_Line (Indent);
                      Write_String ("when ");
 
@@ -618,7 +677,9 @@ package body Prj.PP is
                         end;
                      end if;
 
-                     Write_Line (" =>");
+                     Write_String (" =>");
+                     Write_End_Of_Line_Comment (Node);
+                     Print (First_Comment_After (Node), Indent + Increment);
 
                      declare
                         First : constant Project_Node_Id :=
@@ -626,13 +687,39 @@ package body Prj.PP is
 
                      begin
                         if First = Empty_Node then
-                           Write_Eol.all;
+                           Write_Empty_Line;
 
                         else
                            Print (First, Indent + Increment);
                         end if;
                      end;
                   end if;
+
+               when N_Comment_Zones =>
+
+               --  Nothing to do, because it will not be processed directly
+
+                  null;
+
+               when N_Comment =>
+                  pragma Debug (Indicate_Tested (N_Comment));
+
+                  if Follows_Empty_Line (Node) then
+                     Write_Empty_Line;
+                  end if;
+
+                  Start_Line (Indent);
+                  Write_String ("--");
+                  Write_String
+                    (Get_Name_String (String_Value_Of (Node)),
+                     Truncated => True);
+                  Write_Line ("");
+
+                  if Is_Followed_By_Empty_Line (Node) then
+                     Write_Empty_Line;
+                  end if;
+
+                  Print (Next_Comment (Node), Indent);
             end case;
          end if;
       end Print;
@@ -674,7 +761,7 @@ package body Prj.PP is
       Output.Write_Line ("Project_Node_Kinds not tested:");
 
       for Kind in Project_Node_Kind loop
-         if Not_Tested (Kind) then
+         if Kind /= N_Comment_Zones and then Not_Tested (Kind) then
             Output.Write_Str ("   ");
             Output.Write_Line (Project_Node_Kind'Image (Kind));
          end if;

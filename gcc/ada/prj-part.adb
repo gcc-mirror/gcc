@@ -81,6 +81,7 @@ package body Prj.Part is
       Path         : Name_Id;
       Location     : Source_Ptr;
       Limited_With : Boolean;
+      Node         : Project_Node_Id;
       Next         : With_Id;
    end record;
    --  Information about an imported project, to be put in table Withs below
@@ -426,7 +427,8 @@ package body Prj.Part is
      (Project                : out Project_Node_Id;
       Project_File_Name      : String;
       Always_Errout_Finalize : Boolean;
-      Packages_To_Check      : String_List_Access := All_Packages)
+      Packages_To_Check      : String_List_Access := All_Packages;
+      Store_Comments         : Boolean := False)
    is
       Current_Directory : constant String := Get_Current_Dir;
 
@@ -451,6 +453,8 @@ package body Prj.Part is
 
       begin
          Prj.Err.Initialize;
+         Prj.Err.Scanner.Set_Comment_As_Token (Store_Comments);
+         Prj.Err.Scanner.Set_End_Of_Line_As_Token (Store_Comments);
 
          --  Parse the main project file
 
@@ -578,6 +582,8 @@ package body Prj.Part is
 
       Current_With : With_Record;
 
+      Current_With_Node : Project_Node_Id := Empty_Node;
+
    begin
       --  Assume no context clause
 
@@ -588,6 +594,7 @@ package body Prj.Part is
       --  or we have exhausted the with clauses.
 
       while Token = Tok_With or else Token = Tok_Limited loop
+         Current_With_Node := Default_Project_Node (Of_Kind => N_With_Clause);
          Limited_With := Token = Tok_Limited;
 
          if Limited_With then
@@ -612,6 +619,7 @@ package body Prj.Part is
               (Path         => Token_Name,
                Location     => Token_Ptr,
                Limited_With => Limited_With,
+               Node         => Current_With_Node,
                Next         => No_With);
 
             Withs.Increment_Last;
@@ -629,6 +637,8 @@ package body Prj.Part is
             Scan;
 
             if Token = Tok_Semicolon then
+               Set_End_Of_Line (Current_With_Node);
+               Set_Previous_Line_Node (Current_With_Node);
 
                --  End of (possibly multiple) with clause;
 
@@ -639,6 +649,9 @@ package body Prj.Part is
                Error_Msg ("expected comma or semi colon", Token_Ptr);
                exit Comma_Loop;
             end if;
+
+            Current_With_Node :=
+              Default_Project_Node (Of_Kind => N_With_Clause);
          end loop Comma_Loop;
       end loop With_Loop;
    end Pre_Parse_Context_Clause;
@@ -714,13 +727,11 @@ package body Prj.Part is
 
                   --  First with clause of the context clause
 
-                  Current_Project := Default_Project_Node
-                                           (Of_Kind => N_With_Clause);
+                  Current_Project := Current_With.Node;
                   Imported_Projects := Current_Project;
 
                else
-                  Next_Project := Default_Project_Node
-                                        (Of_Kind => N_With_Clause);
+                  Next_Project := Current_With.Node;
                   Set_Next_With_Clause_Of (Current_Project, Next_Project);
                   Current_Project := Next_Project;
                end if;
@@ -829,6 +840,8 @@ package body Prj.Part is
 
       use Tree_Private_Part;
 
+      Project_Comment_State : Tree.Comment_State;
+
    begin
       declare
          Normed : String := Normalize_Pathname (Path_Name);
@@ -867,6 +880,8 @@ package body Prj.Part is
             return;
          end if;
       end loop;
+
+      --  Put the new path name on the stack
 
       Project_Stack.Increment_Last;
       Project_Stack.Table (Project_Stack.Last).Name := Canonical_Path_Name;
@@ -933,6 +948,7 @@ package body Prj.Part is
 
       Save_Project_Scan_State (Project_Scan_State);
       Source_Index := Load_Project_File (Path_Name);
+      Tree.Save (Project_Comment_State);
 
       --  if we cannot find it, we stop
 
@@ -943,6 +959,7 @@ package body Prj.Part is
       end if;
 
       Prj.Err.Scanner.Initialize_Scanner (Types.No_Unit, Source_Index);
+      Tree.Reset_State;
       Scan;
 
       if Name_From_Path = No_Name then
@@ -962,16 +979,16 @@ package body Prj.Part is
          Write_Eol;
       end if;
 
+      --  Is there any imported project?
+
+      Pre_Parse_Context_Clause (First_With);
+
       Project_Directory := Immediate_Directory_Of (Normed_Path_Name);
       Project := Default_Project_Node (Of_Kind => N_Project);
       Project_Stack.Table (Project_Stack.Last).Id := Project;
       Set_Directory_Of (Project, Project_Directory);
       Set_Path_Name_Of (Project, Normed_Path_Name);
       Set_Location_Of (Project, Token_Ptr);
-
-      --  Is there any imported project?
-
-      Pre_Parse_Context_Clause (First_With);
 
       Expect (Tok_Project, "PROJECT");
 
@@ -1276,6 +1293,9 @@ package body Prj.Part is
       end if;
 
       Expect (Tok_Is, "IS");
+      Set_End_Of_Line (Project);
+      Set_Previous_Line_Node (Project);
+      Set_Next_End_Node (Project);
 
       declare
          Project_Declaration : Project_Node_Id := Empty_Node;
@@ -1296,6 +1316,7 @@ package body Prj.Part is
       end;
 
       Expect (Tok_End, "END");
+      Remove_Next_End_Node;
 
       --  Skip "end" if present
 
@@ -1353,6 +1374,7 @@ package body Prj.Part is
       --  source.
 
       if Token = Tok_Semicolon then
+         Set_Previous_End_Node (Project);
          Scan;
 
          if Token /= Tok_EOF then
@@ -1368,6 +1390,15 @@ package body Prj.Part is
       --  And remove the project from the project stack
 
       Project_Stack.Decrement_Last;
+
+      --  Indicate if there are unkept comments
+
+      Tree.Set_Project_File_Includes_Unkept_Comments
+        (Node => Project, To => Tree.There_Are_Unkept_Comments);
+
+      --  And restore the comment state that was saved
+
+      Tree.Restore (Project_Comment_State);
    end Parse_Single_Project;
 
    -----------------------
