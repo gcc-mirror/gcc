@@ -1,5 +1,5 @@
 /* Analyze RTL for C-Compiler
-   Copyright (C) 1987, 88, 91, 92, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 92, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -428,8 +428,8 @@ reg_set_between_p (reg, from_insn, to_insn)
 static rtx reg_set_reg;
 static int reg_set_flag;
 
-void
-reg_set_p_1 (x)
+static void
+reg_set_p_1 (x, pat)
      rtx x;
 {
   /* We don't want to return 1 if X is a MEM that contains a register
