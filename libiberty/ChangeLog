@@ -166,6 +166,8 @@ Fri Dec 18 16:11:43 EST 1998  Andrew MacLeod  <amacleod@cygnus.com>
 	(snarf_numeric_literal): Make first arg 'const char **' in order
 	to match usage.
 
+Mon Dec 14 09:55:50 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* choose-temp.c: Don't check IN_GCC anymore.
 
 	* floatformat.c (floatformat_from_double): Use `const', not `CONST'.
