@@ -28,7 +28,7 @@
 #ifdef RTX_CODE
 
 #ifdef TREE_CODE
-extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, int, int);
+extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, int, int, int);
 extern void rs6000_va_start (tree, rtx);
 #endif /* TREE_CODE */
 

@@ -710,7 +710,7 @@ extern const enum reg_class reg_class_from_letter[];
 
    On MCore, the offset always starts at 0: the first parm reg is always
    the same reg.  */
-#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT)  \
+#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
   ((CUM) = 0)
 
 /* Update the data in CUM to advance over an argument

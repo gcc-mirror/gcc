@@ -989,7 +989,7 @@ struct cum_args {int regs;};
 
 /* The regs member is an integer, the number of arguments got into
    registers so far.  */
-#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL)	  \
+#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL, N_NAMED_ARGS) \
  ((CUM).regs = 0)
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)		\

@@ -864,7 +864,7 @@ default_pass_by_ref (tree gnu_type)
 {
   CUMULATIVE_ARGS cum;
 
-  INIT_CUMULATIVE_ARGS (cum, NULL_TREE, NULL_RTX, 0);
+  INIT_CUMULATIVE_ARGS (cum, NULL_TREE, NULL_RTX, 0, 2);
 
   /* We pass aggregates by reference if they are sufficiently large.  The
      choice of constant here is somewhat arbitrary.  We also pass by

@@ -685,7 +685,7 @@ typedef struct s390_arg_structure
 }
 CUMULATIVE_ARGS;
 
-#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, NN) \
+#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, NN, N_NAMED_ARGS) \
   ((CUM).gprs=0, (CUM).fprs=0)
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)                    \

@@ -1350,7 +1350,7 @@ typedef struct ia64_args
 /* A C statement (sans semicolon) for initializing the variable CUM for the
    state at the beginning of the argument list.  */
 
-#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT) \
+#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
 do {									\
   (CUM).words = 0;							\
   (CUM).int_regs = 0;							\

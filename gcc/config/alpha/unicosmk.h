@@ -176,7 +176,7 @@ typedef struct {
    function whose data type is FNTYPE.  For a library call, FNTYPE is 0.  */
 
 #undef INIT_CUMULATIVE_ARGS
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT)	\
+#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
   do { (CUM).num_args = 0;					\
        (CUM).num_arg_words = 0;					\
        (CUM).num_reg_words = 0;					\

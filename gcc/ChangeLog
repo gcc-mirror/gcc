@@ -1,5 +1,36 @@
 2004-03-09  Alan Modra  <amodra@bigpond.net.au>
 
+	* doc/tm.texi (INIT_CUMULATIVE_ARGS): Update doco.
+	* calls.c (expand_call): Pass n_named_args to INIT_CUMULATIVE_ARGS.
+	(emit_library_call_value_1): Likewise pass nargs.
+	* expr.c (block_move_libcall_safe_for_call_parm): Pass 3 here.
+	* function.c (assign_parms): Pass -1 to INIT_CUMULATIVE_ARGS.
+	* config/rs6000/rs6000.c (init_cumulative_args): Use n_named_args
+	parameter instead of scanning TYPE_ARGS_TYPES to count args.
+	* config/rs6000/rs6000-protos.h (init_cumulative_args): Update
+	prototype.
+	* config/rs6000/rs6000.h (INIT_CUMULATIVE_ARGS): Pass extra arg.
+	(INIT_CUMULATIVE_INCOMING_ARGS): Set extra arg to 1000.
+	(INIT_CUMULATIVE_LIBCALL_ARGS): Set extra arg to 0.
+	* config/sh/sh.c (sh_output_mi_thunk): Pass 1 as n_named_args to
+	INIT_CUMULATIVE_ARGS.
+	* config/alpha/alpha.h (INIT_CUMULATIVE_ARGS): Update.
+	* config/alpha/unicosmk.h, config/alpha/vms.h, config/arc/arc.h,
+	config/arm/arm.h, config/avr/avr.h, config/c4x/c4x.h,
+	config/cris/cris.h, config/d30v/d30v.h, config/dsp16xx/dsp16xx.h,
+	config/fr30/fr30.h, config/frv/frv.h, config/h8300/h8300.h,
+	config/i370/i370.h, config/i386/i386.h, config/i860/i860.h,
+	config/i960/i960.h, config/ia64/ia64.h, config/ip2k/ip2k.h,
+	config/iq2000/iq2000.c, config/iq2000/iq2000.h, config/m32r/m32r.h,
+	config/m68hc11/m68hc11.h, config/m68k/m68k.h, config/mcore/mcore.h,
+	config/mips/mips.h, config/mmix/mmix.h, config/mn10300/mn10300.h,
+	config/ns32k/ns32k.h, config/pa/pa.h, config/pdp11/pdp11.h,
+	config/s390/s390.h, config/sh/sh.h, config/sparc/sparc.h,
+	config/stormy16/stormy16.h, config/v850/v850.h, config/vax/vax.h,
+	config/xtensa/xtensa.h: Likewise.
+
+2004-03-09  Alan Modra  <amodra@bigpond.net.au>
+
 	PR debug/11983
 	* dwarf2out.c (enum dw_val_class): Rename dw_val_class_float to
 	dw_val_class_vec.  Replace use throughout file.

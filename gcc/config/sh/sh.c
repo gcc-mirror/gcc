@@ -8957,7 +8957,7 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
      SH that it's best to do this completely machine independently.
      "this" is passed as first argument, unless a structure return pointer 
      comes first, in which case "this" comes second.  */
-  INIT_CUMULATIVE_ARGS (cum, funtype, NULL_RTX, 0);
+  INIT_CUMULATIVE_ARGS (cum, funtype, NULL_RTX, 0, 1);
 #ifndef PCC_STATIC_STRUCT_RETURN
   if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function)), function))
     structure_value_byref = 1;

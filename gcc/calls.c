@@ -2404,14 +2404,6 @@ expand_call (tree exp, rtx target, int ignore)
   for (p = actparms, num_actuals = 0; p; p = TREE_CHAIN (p))
     num_actuals++;
 
-  /* Start updating where the next arg would go.
-
-     On some machines (such as the PA) indirect calls have a different
-     calling convention than normal calls.  The last argument in
-     INIT_CUMULATIVE_ARGS tells the backend if this is an indirect call
-     or not.  */
-  INIT_CUMULATIVE_ARGS (args_so_far, funtype, NULL_RTX, fndecl);
-
   /* Compute number of named args.
      Normally, don't include the last named arg if anonymous args follow.
      We do include the last named arg if
@@ -2442,6 +2434,14 @@ expand_call (tree exp, rtx target, int ignore)
   else
     /* If we know nothing, treat all args as named.  */
     n_named_args = num_actuals;
+
+  /* Start updating where the next arg would go.
+
+     On some machines (such as the PA) indirect calls have a different
+     calling convention than normal calls.  The last argument in
+     INIT_CUMULATIVE_ARGS tells the backend if this is an indirect call
+     or not.  */
+  INIT_CUMULATIVE_ARGS (args_so_far, funtype, NULL_RTX, fndecl, n_named_args);
 
   /* Make a vector to hold all the information about each arg.  */
   args = alloca (num_actuals * sizeof (struct arg_data));
@@ -3787,7 +3787,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 #ifdef INIT_CUMULATIVE_LIBCALL_ARGS
   INIT_CUMULATIVE_LIBCALL_ARGS (args_so_far, outmode, fun);
 #else
-  INIT_CUMULATIVE_ARGS (args_so_far, NULL_TREE, fun, 0);
+  INIT_CUMULATIVE_ARGS (args_so_far, NULL_TREE, fun, 0, nargs);
 #endif
 
   args_size.constant = 0;

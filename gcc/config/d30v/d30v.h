@@ -1216,7 +1216,7 @@ typedef struct d30v_stack {
    being processed.  Thus, each time this macro is called, either LIBNAME or
    FNTYPE is nonzero, but never both of them at once.  */
 
-#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL) \
+#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL, N_NAMED_ARGS) \
   d30v_init_cumulative_args (&CUM, FNTYPE, LIBNAME, FNDECL, FALSE)
 
 /* Like `INIT_CUMULATIVE_ARGS' but overrides it for the purposes of finding the

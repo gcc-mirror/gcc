@@ -441,7 +441,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 
    On the VAX, the offset starts at 0.  */
 
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT)	\
+#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
  ((CUM) = 0)
 
 /* Update the data in CUM to advance over an argument

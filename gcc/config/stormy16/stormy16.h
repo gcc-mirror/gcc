@@ -435,7 +435,8 @@ enum reg_class
    of arguments that have been passed in registers so far.  */
 #define CUMULATIVE_ARGS int
 
-#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT) (CUM) = 0
+#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
+  (CUM) = 0
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
   ((CUM) = xstormy16_function_arg_advance (CUM, MODE, TYPE, NAMED))
