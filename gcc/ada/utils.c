@@ -740,6 +740,8 @@ finish_record_type (tree record_type, tree fieldlist, bool has_rep,
   tree ada_size = bitsize_zero_node;
   tree size = bitsize_zero_node;
   bool var_size = false;
+  bool had_size = TYPE_SIZE (record_type) != 0;
+  bool had_size_unit = TYPE_SIZE_UNIT (record_type) != 0;
   tree field;
 
   TYPE_FIELDS (record_type) = fieldlist;
@@ -757,11 +759,12 @@ finish_record_type (tree record_type, tree fieldlist, bool has_rep,
     {
       TYPE_ALIGN (record_type) = MAX (BITS_PER_UNIT, TYPE_ALIGN (record_type));
       TYPE_MODE (record_type) = BLKmode;
-      if (!TYPE_SIZE (record_type))
-	{
-	  TYPE_SIZE (record_type) = bitsize_zero_node;
+
+      if (!had_size_unit)
 	  TYPE_SIZE_UNIT (record_type) = size_zero_node;
-	}
+
+      if (!had_size)
+	TYPE_SIZE (record_type) = bitsize_zero_node;
       /* For all-repped records with a size specified, lay the QUAL_UNION_TYPE
 	 out just like a UNION_TYPE, since the size will be fixed.  */
       else if (code == QUAL_UNION_TYPE)
@@ -881,18 +884,14 @@ finish_record_type (tree record_type, tree fieldlist, bool has_rep,
 
   if (has_rep)
     {
-      if (!(TREE_CODE (record_type) == RECORD_TYPE
-	    && TYPE_IS_PADDING_P (record_type)
-	    && CONTAINS_PLACEHOLDER_P (size)))
-	{
-	  tree size_unit
-	    = convert (sizetype, size_binop (CEIL_DIV_EXPR, size,
-					     bitsize_unit_node));
-	  TYPE_SIZE (record_type) = round_up (size, TYPE_ALIGN (record_type));
-	  TYPE_SIZE_UNIT (record_type)
-	    = round_up (size_unit,
-			TYPE_ALIGN (record_type) / BITS_PER_UNIT);
-	}
+      tree size_unit
+	= (had_size_unit ? TYPE_SIZE_UNIT (record_type)
+	   : convert (sizetype, size_binop (CEIL_DIV_EXPR, size,
+					    bitsize_unit_node)));
+
+      TYPE_SIZE (record_type) = round_up (size, TYPE_ALIGN (record_type));
+      TYPE_SIZE_UNIT (record_type)
+	= round_up (size_unit, TYPE_ALIGN (record_type) / BITS_PER_UNIT);
 
       compute_record_mode (record_type);
     }
@@ -1339,6 +1338,13 @@ create_var_decl (tree var_name, tree asm_name, tree type, tree var_init,
       || (type_annotate_only && var_init && !TREE_CONSTANT (var_init)))
     var_init = NULL_TREE;
 
+  /* Ada doesn't feature Fortran-like COMMON variables so we shouldn't
+     try to fiddle with DECL_COMMON.  However, on platforms that don't
+     support global BSS sections, uninitialized global variables would
+     go in DATA instead, thus increasing the size of the executable.  */
+#if !defined(ASM_OUTPUT_BSS) && !defined(ASM_OUTPUT_ALIGNED_BSS)
+  DECL_COMMON   (var_decl) = !flag_no_common;
+#endif
   DECL_INITIAL  (var_decl) = var_init;
   TREE_READONLY (var_decl) = const_flag;
   DECL_EXTERNAL (var_decl) = extern_flag;
@@ -1376,7 +1382,8 @@ create_var_decl (tree var_name, tree asm_name, tree type, tree var_init,
    this field is in a record type with a "pragma pack".  If SIZE is nonzero
    it is the specified size for this field.  If POS is nonzero, it is the bit
    position.  If ADDRESSABLE is nonzero, it means we are allowed to take
-   the address of this field for aliasing purposes.  */
+   the address of this field for aliasing purposes. If it is negative, we
+   should not make a bitfield, which is used by make_aligning_type.   */
 
 tree
 create_field_decl (tree field_name, tree field_type, tree record_type,
@@ -1410,13 +1417,13 @@ create_field_decl (tree field_name, tree field_type, tree record_type,
         size = round_up (size, BITS_PER_UNIT);
     }
 
-  /* Make a bitfield if a size is specified for two reasons: first if the size
-     differs from the natural size.  Second, if the alignment is insufficient.
-     There are a number of ways the latter can be true.
+  /* If we may, according to ADDRESSABLE, make a bitfield if a size is
+     specified for two reasons: first if the size differs from the natural
+     size.  Second, if the alignment is insufficient.  There are a number of
+     ways the latter can be true.
 
      We never make a bitfield if the type of the field has a nonconstant size,
-     or if it is claimed to be addressable, because no such entity requiring
-     bitfield operations should reach here.
+     because no such entity requiring bitfield operations should reach here.
 
      We do *preventively* make a bitfield when there might be the need for it
      but we don't have all the necessary information to decide, as is the case
@@ -1424,15 +1431,13 @@ create_field_decl (tree field_name, tree field_type, tree record_type,
 
      We also don't look at STRICT_ALIGNMENT here, and rely on later processing
      in layout_decl or finish_record_type to clear the bit_field indication if
-     it is in fact not needed. */
-  if (size && TREE_CODE (size) == INTEGER_CST
+     it is in fact not needed.  */
+  if (addressable >= 0
+      && size
+      && TREE_CODE (size) == INTEGER_CST
       && TREE_CODE (TYPE_SIZE (field_type)) == INTEGER_CST
-      && !addressable
       && (!operand_equal_p (TYPE_SIZE (field_type), size, 0)
-	  || (pos
-	      && !value_zerop (size_binop (TRUNC_MOD_EXPR, pos,
-					   bitsize_int (TYPE_ALIGN
-							(field_type)))))
+	  || (pos && !value_factor_p (pos, TYPE_ALIGN (field_type)))
 	  || packed
 	  || (TYPE_ALIGN (record_type) != 0
 	      && TYPE_ALIGN (record_type) < TYPE_ALIGN (field_type))))
@@ -1588,6 +1593,7 @@ process_attributes (tree decl, struct attrib *attr_list)
 	    DECL_SECTION_NAME (decl)
 	      = build_string (IDENTIFIER_LENGTH (attr_list->name),
 			      IDENTIFIER_POINTER (attr_list->name));
+	    DECL_COMMON (decl) = 0;
 	  }
 	else
 	  post_error ("?section attributes are not supported for this target",

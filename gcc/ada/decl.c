@@ -4618,7 +4618,6 @@ make_aligning_type (tree type, int align, tree size)
   /* The bit position is obtained by "and"ing the alignment minus 1
      with the two's complement of the address and  multiplying
      by the number of bits per unit.  Do all this in sizetype.  */
-
   pos = size_binop (MULT_EXPR,
 		    convert (bitsizetype,
 			     size_binop (BIT_AND_EXPR,
@@ -4628,9 +4627,13 @@ make_aligning_type (tree type, int align, tree size)
 						    - 1))),
 		    bitsize_unit_node);
 
-  field = create_field_decl (get_identifier ("F"), type, record_type,
-			     1, size, pos, 1);
-  DECL_BIT_FIELD (field) = 0;
+  /* Create the field, with -1 as the 'addressable' indication to avoid the
+     creation of a bitfield.  We don't need one, it would have damaging
+     consequences on the alignment computation, and create_field_decl would
+     make one without this special argument, for instance because of the
+     complex position expression.  */
+  field = create_field_decl (get_identifier ("F"), type, record_type, 1, size,
+			     pos, -1);
 
   finish_record_type (record_type, field, true, false);
   TYPE_ALIGN (record_type) = BIGGEST_ALIGNMENT;
@@ -4822,9 +4825,10 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   DECL_INTERNAL_P (field) = 1;
   TYPE_SIZE (record) = size ? size : orig_size;
   TYPE_SIZE_UNIT (record)
-    = convert (sizetype,
-	       size_binop (CEIL_DIV_EXPR, TYPE_SIZE (record),
-			   bitsize_unit_node));
+    = (size ? convert (sizetype,
+		       size_binop (CEIL_DIV_EXPR, size, bitsize_unit_node))
+       : TYPE_SIZE_UNIT (type));
+
   TYPE_ALIGN (record) = align;
   TYPE_IS_PADDING_P (record) = 1;
   TYPE_VOLATILE (record)
