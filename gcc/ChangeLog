@@ -1,3 +1,8 @@
+2000-04-05  Chris Demetriou  <cgd@netbsd.org>
+
+	* mips.h (MASK_DEBUG_A, MASK_DEBUG_B, MASK_DEBUG_C): Zero the
+	remaining non-zero debugging masks.
+
 Wed Apr  5 09:44:07 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* basic-block.h (verify_flow_info): Declare.

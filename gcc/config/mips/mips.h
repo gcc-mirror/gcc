@@ -217,9 +217,9 @@ extern void		sbss_section PARAMS ((void));
 
 					/* Debug switches, not documented */
 #define MASK_DEBUG	0		/* Eliminate version # in .s file */
-#define MASK_DEBUG_A	0x40000000	/* don't allow <label>($reg) addrs */
-#define MASK_DEBUG_B	0x20000000	/* GO_IF_LEGITIMATE_ADDRESS debug */
-#define MASK_DEBUG_C	0x10000000	/* don't expand seq, etc. */
+#define MASK_DEBUG_A	0x0		/* don't allow <label>($reg) addrs */
+#define MASK_DEBUG_B	0x0		/* GO_IF_LEGITIMATE_ADDRESS debug */
+#define MASK_DEBUG_C	0x0		/* don't expand seq, etc. */
 #define MASK_DEBUG_D	0		/* don't do define_split's */
 #define MASK_DEBUG_E	0		/* function_arg debug */
 #define MASK_DEBUG_F	0
