@@ -1,3 +1,7 @@
+2001-03-27  Alan Modra  <alan@linuxcare.com.au>
+
+	* gcc.c-torture/compile/20010327-1.c: New test.
+
 2001-03-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/friend12.C: New test.

@@ -4675,6 +4675,8 @@ digest_init (type, init, require_constant, constructor_constant)
   if (TREE_CODE (init) == NON_LVALUE_EXPR)
     inside_init = TREE_OPERAND (init, 0);
 
+  inside_init = fold (inside_init);
+
   /* Initialization of an array of chars from a string constant
      optionally enclosed in braces.  */
 
