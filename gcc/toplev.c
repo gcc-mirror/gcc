@@ -1259,21 +1259,21 @@ floor_log2_wide (unsigned HOST_WIDE_INT x)
   int t=0;
   if (x == 0)
     return -1;
-  if (sizeof (HOST_WIDE_INT)*8 > 64)
-    if (x >= (unsigned HOST_WIDE_INT)(1 << (t+64)))
+  if (sizeof (HOST_WIDE_INT) * 8 > 64)
+    if (x >= (unsigned HOST_WIDE_INT) 1 << (t + 64))
       t += 64;
-  if (sizeof (HOST_WIDE_INT)*8 > 32)
-    if (x >= (unsigned HOST_WIDE_INT)(1 << (t+32)))
+  if (sizeof (HOST_WIDE_INT) * 8 > 32)
+    if (x >= ((unsigned HOST_WIDE_INT) 1) << (t + 32))
       t += 32;
-  if (x >= (unsigned HOST_WIDE_INT)(1 << (t+16)))
+  if (x >= ((unsigned HOST_WIDE_INT) 1) << (t + 16))
     t += 16;
-  if (x >= (unsigned HOST_WIDE_INT)(1 << (t+8)))
+  if (x >= ((unsigned HOST_WIDE_INT) 1) << (t + 8))
     t += 8;
-  if (x >= (unsigned HOST_WIDE_INT)(1 << (t+4)))
+  if (x >= ((unsigned HOST_WIDE_INT) 1) << (t + 4))
     t += 4;
-  if (x >= (unsigned HOST_WIDE_INT)(1 << (t+2)))
+  if (x >= ((unsigned HOST_WIDE_INT) 1) << (t + 2))
     t += 2;
-  if (x >= (unsigned HOST_WIDE_INT)(1 << (t+1)))
+  if (x >= ((unsigned HOST_WIDE_INT) 1) << (t + 1))
     t += 1;
   return t;
 }
