@@ -1,3 +1,7 @@
+1999-04-20  Anthony Green  <green@cygnus.com>
+
+	* java/io/PrintStream.java (println): Remove extra println.
+
 1999-04-19  Anthony Green  <green@cygnus.com>
 
 	* Makefile.in: Rebuilt.
