@@ -738,6 +738,8 @@ enum node_type {
  T_SIZE_TYPE,   /* `__SIZE_TYPE__' */
  T_PTRDIFF_TYPE,   /* `__PTRDIFF_TYPE__' */
  T_WCHAR_TYPE,   /* `__WCHAR_TYPE__' */
+ T_USER_LABEL_PREFIX_TYPE, /* `__USER_LABEL_PREFIX__' */
+ T_REGISTER_PREFIX_TYPE,   /* `__REGISTER_PREFIX__' */
  T_TIME,	/* `__TIME__' */
  T_CONST,	/* Constant value, used by `__STDC__' */
  T_MACRO,	/* macro defined by `#define' */
@@ -803,6 +805,18 @@ static char *predefs = "";
 
 #ifndef WCHAR_TYPE
 #define WCHAR_TYPE "int"
+#endif
+
+/* The string value for __USER_LABEL_PREFIX__ */
+
+#ifndef USER_LABEL_PREFIX
+#define USER_LABEL_PREFIX ""
+#endif
+
+/* The string value for __REGISTER_PREFIX__ */
+
+#ifndef REGISTER_PREFIX
+#define REGISTER_PREFIX ""
 #endif
 
 /* In the definition of a #assert name, this structure forms
@@ -3620,6 +3634,16 @@ special_symbol (hp, op)
   case T_WCHAR_TYPE:
     buf = (char *) alloca (3 + strlen (WCHAR_TYPE));
     sprintf (buf, "%s", WCHAR_TYPE);
+    break;
+
+  case T_USER_LABEL_PREFIX_TYPE:
+    buf = (char *) alloca (3 + strlen (USER_LABEL_PREFIX));
+    sprintf (buf, "%s", USER_LABEL_PREFIX);
+    break;
+
+  case T_REGISTER_PREFIX_TYPE:
+    buf = (char *) alloca (3 + strlen (REGISTER_PREFIX));
+    sprintf (buf, "%s", REGISTER_PREFIX);
     break;
 
   case T_CONST:
@@ -8380,6 +8404,8 @@ initialize_builtins (inp, outp)
   install ("__PTRDIFF_TYPE__ ", -1, T_PTRDIFF_TYPE, 0, 0, -1);
 #endif
   install ("__WCHAR_TYPE__", -1, T_WCHAR_TYPE, 0, 0, -1);
+  install ("__USER_LABEL_PREFIX__", -1, T_USER_LABEL_PREFIX_TYPE, 0, 0, -1);
+  install ("__REGISTER_PREFIX__", -1, T_REGISTER_PREFIX_TYPE, 0, 0, -1);
   install ("__TIME__", -1, T_TIME, 0, 0, -1);
   if (!traditional)
     install ("__STDC__", -1, T_CONST, STDC_VALUE, 0, -1);
