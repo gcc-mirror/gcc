@@ -1,3 +1,7 @@
+2000-12-06  Rodney Brown  <RodneyBrown@mynd.com>
+
+	* getopt.h obstack.h: Standarize copyright statement.
+
 2000-12-04  Richard Henderson  <rth@redhat.com>
 
 	* demangle.h: Change "new_abi" to "v3" everywhere.
