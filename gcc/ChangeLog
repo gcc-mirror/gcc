@@ -1,5 +1,14 @@
 2003-07-14  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (inside_function): Delete.
+	(file_in_function_warning, ignore_line_number): Delete.
+	(mips_output_filename): Don't warn about changing filenames within
+	a function.
+	(mips_output_lineno): Update accordingly.
+	(mips_output_function_prologue): Don't reset the deleted variables.
+	* config/mips/mips.h (inside_function): Delete.
+	(file_in_function_warning, ignore_line_number): Delete.
+
 	* config/mips/elf.h (OBJECT_FORMAT_COFF, EXTENDED_COFF): Remove undefs.
 	* config/mips/elf64.h: Likewise.
 	* config/mips/openbsd.h: Likewise.
