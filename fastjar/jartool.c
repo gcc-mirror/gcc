@@ -17,9 +17,37 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-/* $Id: jartool.c,v 1.2 2000/12/13 18:11:57 tromey Exp $
+/* $Id: jartool.c,v 1.3 2000/12/14 18:45:35 ghazi Exp $
 
    $Log: jartool.c,v $
+   Revision 1.3  2000/12/14 18:45:35  ghazi
+   Warning fixes:
+
+   	* compress.c: Include stdlib.h and compress.h.
+   	(rcsid): Delete.
+   	(report_str_error): Make static.
+   	(ez_inflate_str): Delete unused variable.  Add parens in if-stmt.
+   	(hrd_inflate_str): Likewise.
+
+   	* compress.h (init_compression, end_compression, init_inflation,
+   	end_inflation): Prototype void arguments.
+
+   	* dostime.c (rcsid): Delete.
+
+   	* jargrep.c: Include ctype.h, stdlib.h, zlib.h and compress.h.
+   	Make functions static.  Cast ctype function argument to `unsigned
+   	char'.  Add parens in if-stmts.  Constify.
+   	(Usage): Change into a macro.
+   	(jargrep): Remove unused parameter.
+
+   	* jartool.c: Constify.  Add parens in if-stmts.  Align
+   	signed/unsigned char pointers in functions calls using casts.
+   	(rcsid): Delete.
+   	(list_jar): Fix printf format specifier.
+   	(usage): Chop long string into bits.  Reformat.
+
+   	* pushback.c (rcsid): Delete.
+
    Revision 1.2  2000/12/13 18:11:57  tromey
    	* jartool.c (extract_jar): Use strchr, not index.
 
@@ -133,7 +161,9 @@
 
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
-#else
+#endif
+
+#ifndef MAXPATHLEN
 #define MAXPATHLEN 1024
 #endif
 
