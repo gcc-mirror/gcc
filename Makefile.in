@@ -1,6 +1,6 @@
 #
 # Makefile for directory with subdirs to build.
-#   Copyright (C) 1990, 91, 92, 93, 94, 95, 96, 1997 Free Software Foundation
+#   Copyright (C) 1990, 91, 92, 93, 94, 95, 96, 97, 1998 Free Software Foundation
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -344,8 +344,6 @@ BASE_FLAGS_TO_PASS = \
 	"MAKE=$(MAKE)" \
 	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
-	"PICFLAG=$(PICFLAG)" \
-	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" \
 	"RANLIB_FOR_TARGET=$(RANLIB_FOR_TARGET)" \
 	"SHELL=$(SHELL)" \
 	"EXPECT=$(EXPECT)" \
@@ -402,7 +400,6 @@ EXTRA_TARGET_FLAGS = \
 	'LIBCFLAGS=$$(LIBCFLAGS_FOR_TARGET)' \
 	'LIBCXXFLAGS=$$(LIBCXXFLAGS_FOR_TARGET)' \
 	'NM=$$(NM_FOR_TARGET)' \
-	'PICFLAG=$$(PICFLAG_FOR_TARGET)' \
 	'RANLIB=$$(RANLIB_FOR_TARGET)' \
 	'WINDRES=$$(WINDRES_FOR_TARGET)'
 
