@@ -291,8 +291,10 @@ static void internal_mcount(selfpc, frompcindex)
 
 	if(!already_setup) {
           extern char etext[];
+	  extern char _start[];
+	  extern char _init[];
 	  already_setup = 1;
-	  monstartup(0, (char *)etext);
+	  monstartup(_start < _init ? _start : _init, etext);
 #ifdef USE_ONEXIT
 	  on_exit(_mcleanup, 0);
 #else
