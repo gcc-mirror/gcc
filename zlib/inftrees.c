@@ -1,5 +1,5 @@
 /* inftrees.c -- generate Huffman trees for efficient decoding
- * Copyright (C) 1995-1998 Mark Adler
+ * Copyright (C) 1995-2002 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h 
  */
 
@@ -11,7 +11,7 @@
 #endif
 
 const char inflate_copyright[] =
-   " inflate 1.1.3 Copyright 1995-1998 Mark Adler ";
+   " inflate 1.1.4 Copyright 1995-2002 Mark Adler ";
 /*
   If you use the zlib library in a product, an acknowledgment is welcome
   in the documentation of your product. If for some reason you cannot
@@ -104,8 +104,7 @@ uIntf *v;               /* working area: values in order of bit length */
 /* Given a list of code lengths and a maximum table size, make a set of
    tables to decode that set of codes.  Return Z_OK on success, Z_BUF_ERROR
    if the given code set is incomplete (the tables are still built in this
-   case), Z_DATA_ERROR if the input is invalid (an over-subscribed set of
-   lengths), or Z_MEM_ERROR if not enough memory. */
+   case), or Z_DATA_ERROR if the input is invalid. */
 {
 
   uInt a;                       /* counter for codes of length k */
@@ -231,7 +230,7 @@ uIntf *v;               /* working area: values in order of bit length */
 
         /* allocate new table */
         if (*hn + z > MANY)     /* (note: doesn't matter for fixed) */
-          return Z_MEM_ERROR;   /* not enough memory */
+          return Z_DATA_ERROR;  /* overflow of MANY */
         u[h] = q = hp + *hn;
         *hn += z;
 
