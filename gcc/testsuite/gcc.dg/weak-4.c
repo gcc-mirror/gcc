@@ -8,17 +8,17 @@
 /* { dg-final { if [string match h8300-*-hms $target_triplet ] {return} } } */
 /* { dg-final { if [string match i?86-pc-cygwin $target_triplet ] {return} } } */
 /* { dg-final { if [string match *-*-coff $target_triplet ] {return} } } */
-/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]vfoo1a" } } */
-/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]vfoo1b" } } */
-/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]vfoo1c" } } */
-/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]vfoo1d" } } */
-/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]vfoo1e" } } */
-/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]vfoo1f" } } */
-/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]vfoo1g" } } */
-/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]vfoo1h" } } */
-/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]vfoo1i" } } */
-/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]vfoo1j" } } */
-/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]vfoo1k" } } */
+/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1a" } } */
+/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1b" } } */
+/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1c" } } */
+/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1d" } } */
+/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1e" } } */
+/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1f" } } */
+/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1g" } } */
+/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1h" } } */
+/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1i" } } */
+/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1j" } } */
+/* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1k" } } */
 
 /* test variable addresses with #pragma weak */
 
