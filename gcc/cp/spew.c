@@ -47,7 +47,6 @@ struct token  {
 };
 
 static int do_aggr PROTO((void));
-static int probe_obstack PROTO((struct obstack *, tree, unsigned int));
 static void scan_tokens PROTO((unsigned int));
 
 #ifdef SPEW_DEBUG
@@ -196,30 +195,6 @@ scan_tokens (n)
 	    }
 	}
     }
-}
-
-/* Like _obstack_allocated_p, but stop after checking NLEVELS chunks.  */
-
-static int
-probe_obstack (h, obj, nlevels)
-     struct obstack *h;
-     tree obj;
-     unsigned int nlevels;
-{
-  register struct _obstack_chunk*  lp;	/* below addr of any objects in this chunk */
-  register struct _obstack_chunk*  plp;	/* point to previous chunk if any */
-
-  lp = (h)->chunk;
-  /* We use >= rather than > since the object cannot be exactly at
-     the beginning of the chunk but might be an empty object exactly
-     at the end of an adjacent chunk.  */
-  for (; nlevels != 0 && lp != 0 && ((tree)lp >= obj || (tree)lp->limit < obj);
-       nlevels -= 1)
-    {
-      plp = lp->prev;
-      lp = plp;      
-    }
-  return nlevels != 0 && lp != 0;
 }
 
 /* from lex.c: */

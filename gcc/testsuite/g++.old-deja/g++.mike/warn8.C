@@ -10,10 +10,10 @@ void test() {
   bool (foo::* pmf)() = &foo::test;
   bool (*pf)() = func;
 
-  if (A.test) ;			// WARNING - 
+  if (A.test) ;			// ERROR - 
   if (func) ;			// WARNING - 
-  if (bool(A.test)) ;		// WARNING - 
-  if (bool(func)) ;
+  if (bool(A.test)) ;		// ERROR - 
+  if (bool(func)) ;             // WARNING - 
   if (pmf) ;
   if (pf) ;
 }

@@ -3414,12 +3414,8 @@ duplicate_decls (newdecl, olddecl)
       if (DECL_SECTION_NAME (newdecl) == NULL_TREE)
 	DECL_SECTION_NAME (newdecl) = DECL_SECTION_NAME (olddecl);
 
-      /* Keep the old rtl since we can safely use it, unless it's the
-	 call to abort() used for abstract virtuals.  */
-      if ((DECL_LANG_SPECIFIC (olddecl)
-	   && !DECL_ABSTRACT_VIRTUAL_P (olddecl))
-	  || DECL_RTL (olddecl) != DECL_RTL (abort_fndecl))
-	DECL_RTL (newdecl) = DECL_RTL (olddecl);
+      /* Keep the old rtl since we can safely use it.  */
+      DECL_RTL (newdecl) = DECL_RTL (olddecl);
 
       pop_obstacks ();
     }
