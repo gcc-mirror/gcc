@@ -132,6 +132,9 @@ treelang.all.cross:
 treelang.start.encap:
 treelang.rest.encap:
 
+treelang.tags: force
+	cd $(srcdir)/treelang; etags *.y *.l *.c *.h
+
 .phony:treelang.info
 treelang.info: $(srcdir)/treelang/treelang.info
 

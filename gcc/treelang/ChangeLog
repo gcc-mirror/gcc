@@ -1,3 +1,7 @@
+2003-03-04  Tom Tromey  <tromey@redhat.com>
+
+	* Make-lang.in (treelang.tags): New target.
+
 2003-03-01  Tim Josling  <tej@melbpc.org.au>
 
         Name clashes with rtl.h fixed.
