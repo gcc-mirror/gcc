@@ -4481,8 +4481,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	if (TREE_CODE (type) == ARRAY_TYPE)
 	  {
 	    /* Transfer const-ness of array into that of type pointed to.  */
-	    type = build_pointer_type
-		    (c_build_type_variant (TREE_TYPE (type), constp, volatilep));
+	    type = TREE_TYPE (type);
+	    if (constp || volatilep)
+	      type = c_build_type_variant (type, constp, volatilep);
+	    type = build_pointer_type (type);
 	    volatilep = constp = 0;
 	    size_varies = 0;
 	  }
@@ -4490,7 +4492,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  {
 	    if (pedantic && (constp || volatilep))
 	      pedwarn ("ANSI C forbids const or volatile function types");
-	    type = build_pointer_type (c_build_type_variant (type, constp, volatilep));
+	    if (constp || volatilep)
+	      type = c_build_type_variant (type, constp, volatilep);
+	    type = build_pointer_type (type);
 	    volatilep = constp = 0;
 	  }
 
