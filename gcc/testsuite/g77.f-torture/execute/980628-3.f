@@ -1,28 +1,3 @@
-Return-Path: owner-egcs-patches@cygnus.com Sun
-Received: from cygnus.com (runyon.cygnus.com [205.180.230.5]) by hurl.cygnus.com with ESMTP (8.7.1/8.7.1) id NAA10299 for <law@hurl.cygnus.com>; Sun, 28 Jun 1998 13:57:57 -0600 (MDT)
-Received: (from majordom@localhost)
-	by runyon.cygnus.com (8.8.7-cygnus/8.8.7) id KAA00196;
-	Sun, 28 Jun 1998 10:30:03 -0700 (PDT)
-Received: from mescaline.gnu.org (mescaline.gnu.org [158.121.106.21])
-	by runyon.cygnus.com (8.8.7-cygnus/8.8.7) with ESMTP id KAA00177
-	for <egcs-patches@cygnus.com>; Sun, 28 Jun 1998 10:30:00 -0700 (PDT)
-Received: from melange.gnu.org by mescaline.gnu.org (8.8.5/8.6.12GNU) with ESMTP id NAA19196 for <egcs-patches@cygnus.com>; Sun, 28 Jun 1998 13:30:18 -0400
-Received: (burley@localhost) by melange.gnu.org (8.8.5/8.6.12GNU) id NAA11244; Sun, 28 Jun 1998 13:29:59 -0400 (EDT)
-Date: Sun, 28 Jun 1998 13:29:59 -0400 (EDT)
-Message-Id: <199806281729.NAA11244@melange.gnu.org>
-From: Craig Burley <burley@gnu.org>
-To: egcs-patches@cygnus.com
-Subject: New test (4th of 4) for g77 test suite
-Sender: owner-egcs-patches@cygnus.com
-Precedence: bulk
-
-Jeff, could you add this as:
-
-  egcs/gcc/testsuite/g77.f-torture/execute/980628-3.f
-
-        tq vm, (burley)
-
-
 * g77 0.5.23 and previous had bugs involving too little space
 * allocated for EQUIVALENCE and COMMON areas needing initial
 * padding to meet alignment requirements of the system.
