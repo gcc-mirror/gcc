@@ -1,3 +1,7 @@
+2000-11-17  Richard Henderson  <rth@redhat.com>
+
+	* fixinc/mkfixinc.sh: Don't disable fixincludes for any linux*.
+
 2000-11-17  Jim Wilson  <wilson@redhat.com>
 
 	* config/ia64/ia64.c (emit_insn_group_barriers, case CALL_INSN): 
