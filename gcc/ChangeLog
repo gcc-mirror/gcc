@@ -1,3 +1,7 @@
+2001-04-08  Philip Blundell  <philb@gnu.org>
+
+	* config/arm/arm.h (ASM_OUTPUT_LABELREF): Use asm_fprintf.
+
 2001-04-08  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpperror.c (print_location): Don't special case <stdin>.
