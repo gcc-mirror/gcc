@@ -326,7 +326,8 @@ create_tmp_var_raw (tree type, const char *prefix)
   new_type = build_type_variant (type, 0, 0);
   TYPE_ATTRIBUTES (new_type) = TYPE_ATTRIBUTES (type);
 
-  tmp_var = build_decl (VAR_DECL, create_tmp_var_name (prefix), type);
+  tmp_var = build_decl (VAR_DECL, prefix ? create_tmp_var_name (prefix) : NULL,
+			type);
 
   /* The variable was declared by the compiler.  */
   DECL_ARTIFICIAL (tmp_var) = 1;
