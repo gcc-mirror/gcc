@@ -1,3 +1,10 @@
+Fri Nov  6 20:15:19 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
+
+	* reload1.c (emit_reload_insns):  When rewriting the SET_DEST of a
+	previous insn to store directly into our reload register, make sure
+	that if the source of the previous insn is a reload register, its
+	spill_reg_store and spill_reg_stored_to values are cleared.
+
 Fri Nov  6 16:35:10 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.md (floatunssidf2_internal splitter): Use base register

@@ -6774,6 +6774,18 @@ emit_reload_insns (chain)
 		{
 		  /* Store into the reload register instead of the pseudo.  */
 		  SET_DEST (PATTERN (temp)) = reloadreg;
+
+		  /* If the previous insn is an output reload, the source is
+		     a reload register, and its spill_reg_store entry will
+		     contain the previous destination.  This is now
+		     invalid.  */
+		  if (GET_CODE (SET_SRC (PATTERN (temp))) == REG
+		      && REGNO (SET_SRC (PATTERN (temp))) < FIRST_PSEUDO_REGISTER)
+		    {
+		      spill_reg_store[REGNO (SET_SRC (PATTERN (temp)))] = 0;
+		      spill_reg_stored_to[REGNO (SET_SRC (PATTERN (temp)))] = 0;
+		    }
+
 		  /* If these are the only uses of the pseudo reg,
 		     pretend for GDB it lives in the reload reg we used.  */
 		  if (REG_N_DEATHS (REGNO (old)) == 1
