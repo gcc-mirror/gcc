@@ -9711,6 +9711,11 @@ parameters, as C++ demands.  This feature has been removed, except where
 it is required for backwards compatibility @xref{Backwards Compatibility}.
 @end table
 
+G++ allows a virtual function returning @samp{void *} to be overridden
+by one returning a different pointer type.  This extension to the
+covariant return type rules is now deprecated and will be removed from a
+future version.
+
 The named return value extension has been deprecated, and is now
 removed from G++.
 

@@ -1,3 +1,9 @@
+2004-11-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/18064
+	* doc/extend.texi (Deprecated Features): Deprecate G++ covariant
+	extension.
+
 2004-10-16  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/17672

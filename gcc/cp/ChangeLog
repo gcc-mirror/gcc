@@ -1,3 +1,8 @@
+2004-11-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/18064
+	* search.c (check_final_overrider): Deprecate gnu covariant extension.
+
 2004-10-31  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Convert diagnostics to use quoting flag q 9/n

@@ -1830,6 +1830,12 @@ check_final_overrider (tree overrider, tree basefn)
 	  over_return = non_reference (TREE_TYPE (over_type));
 	  if (CLASS_TYPE_P (over_return))
 	    fail = 2;
+	  else
+	    {
+	      cp_warning_at ("deprecated covariant return type for %q#D",
+			     overrider);
+	      cp_warning_at ("  overriding %q#D", basefn);
+	    }
 	}
       else
 	fail = 2;
