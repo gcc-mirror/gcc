@@ -22,6 +22,9 @@
  */
 #undef STACK_DIRECTION
 
+/* Define if you have the ANSI C header files.  */
+#undef STDC_HEADERS
+
 /* Define this if you want runtime debugging enabled.  */
 #undef DEBUG
 
@@ -66,6 +69,12 @@
 
 /* Define if you have the `localtime_r' function.  */
 #undef HAVE_LOCALTIME_R
+
+/* Define to `int' if `ssize_t' is not defined.  */
+#undef ssize_t
+
+/* Define to `struct in_addr' if `in_addr_t' is not defined.  */
+#undef in_addr_t
 
 /* Define if inet6 structures are defined in netinet/in.h.  */
 #undef HAVE_INET6

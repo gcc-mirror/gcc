@@ -1,5 +1,9 @@
 1999-08-21  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* configure.in: Check types ssize_t and in_addr_t.
+	* acconfig.h: Undefine them.
+	* configure, include/config.h.in: Rebuilt.
+
 	* java/lang/natSystem.cc (getpwuid_adaptor): New overloaded
 	function that detects the signature of getpwuid_r.
 	(init_properties): Use it.
