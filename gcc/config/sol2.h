@@ -66,7 +66,7 @@ Boston, MA 02111-1307, USA.  */
 	/* For C++ we need to add some additional macro	\
 	   definitions required by the C++ standard	\
 	   library.  */					\
-	if (c_language == clk_cplusplus)		\
+	if (c_dialect_cxx ())				\
 	  {						\
 	    builtin_define ("_XOPEN_SOURCE=500");	\
 	    builtin_define ("_LARGEFILE_SOURCE=1");	\

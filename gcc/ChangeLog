@@ -1,3 +1,11 @@
+2003-07-01  Neil Booth  <neil@daikokuya.co.uk>
+
+	* config/sol2.h, config/alpha/alpha.h, config/alpha/linux.h,
+	config/i386/i386-interix.h, config/ia64/hpux.h, config/mips/iris6.h,
+	config/mips/linux.h, config/mips/mips.h, config/pa/pa-hpux.h,
+	config/pa/pa-hpux10.h, config/pa/pa-hpux11.h, config/pa/pa-pro-end.h,
+	config/pa/pa.h, config/pa/rtems.h: Use c_dialect_ macros.
+
 2003-07-01  Andreas Jaeger  <aj@suse.de>
 
 	* final.c: Convert prototypes to ISO C90.

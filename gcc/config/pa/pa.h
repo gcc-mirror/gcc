@@ -388,8 +388,7 @@ do {								\
 	builtin_define_std ("hp800");				\
 	builtin_define_std ("hp9000");				\
 	builtin_define_std ("hp9k8");				\
-	if (c_language != clk_cplusplus				\
-	    && !flag_iso)					\
+	if (!c_dialect_cxx () && !flag_iso)			\
 	  builtin_define ("hppa");				\
 	builtin_define_std ("spectrum");			\
 	builtin_define_std ("unix");				\

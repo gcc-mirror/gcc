@@ -29,8 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
-	if (c_language != clk_cplusplus		\
-	    && !flag_iso)			\
+	if (!c_dialect_cxx () && !flag_iso)	\
 	  {					\
 	    builtin_define ("hppa");		\
 	    builtin_define_std ("PWB");		\
