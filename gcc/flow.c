@@ -284,6 +284,9 @@ static int_list_ptr add_int_list_node   PROTO ((int_list_block **,
 						int_list **, int));
 static void init_regset_vector		PROTO ((regset *, int,
 						struct obstack *));
+static void count_reg_sets_1		PROTO ((rtx));
+static void count_reg_sets		PROTO ((rtx));
+static void count_reg_references	PROTO ((rtx));
 
 /* Find basic blocks of the current function.
    F is the first insn of the function and NREGS the number of register numbers
@@ -3996,4 +3999,282 @@ compute_dominators (dominators, post_dominators, s_preds, s_succs)
     }
 
   free (temp_bitmap);
+}
+
+/* Count for a single SET rtx, X.  */
+
+static void
+count_reg_sets_1 (x)
+     rtx x;
+{
+  register int regno;
+  register rtx reg = SET_DEST (x);
+
+  /* Find the register that's set/clobbered.  */
+  while (GET_CODE (reg) == SUBREG || GET_CODE (reg) == ZERO_EXTRACT
+	 || GET_CODE (reg) == SIGN_EXTRACT
+	 || GET_CODE (reg) == STRICT_LOW_PART)
+    reg = XEXP (reg, 0);
+
+  if (GET_CODE (reg) == REG)
+    {
+      regno = REGNO (reg);
+      if (regno >= FIRST_PSEUDO_REGISTER)
+	{
+	  /* Count (weighted) references, stores, etc.  This counts a
+	     register twice if it is modified, but that is correct.  */
+	  REG_N_SETS (regno)++;
+
+	  REG_N_REFS (regno) += loop_depth;
+	}
+    }
+}
+
+/* Increment REG_N_SETS for each SET or CLOBBER found in X; also increment
+   REG_N_REFS by the current loop depth for each SET or CLOBBER found.  */
+
+static void
+count_reg_sets  (x)
+     rtx x;
+{
+  register RTX_CODE code = GET_CODE (x);
+
+  if (code == SET || code == CLOBBER)
+    count_reg_sets_1 (x);
+  else if (code == PARALLEL)
+    {
+      register int i;
+      for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
+	{
+	  code = GET_CODE (XVECEXP (x, 0, i));
+	  if (code == SET || code == CLOBBER)
+	    count_reg_sets_1 (XVECEXP (x, 0, i));
+	}
+    }
+}
+
+/* Increment REG_N_REFS by the current loop depth each register reference
+   found in X.  */
+
+static void
+count_reg_references (x)
+     rtx x;
+{
+  register RTX_CODE code;
+  register int regno;
+  int i;
+
+ retry:
+  code = GET_CODE (x);
+  switch (code)
+    {
+    case LABEL_REF:
+    case SYMBOL_REF:
+    case CONST_INT:
+    case CONST:
+    case CONST_DOUBLE:
+    case PC:
+    case ADDR_VEC:
+    case ADDR_DIFF_VEC:
+    case ASM_INPUT:
+      return;
+
+#ifdef HAVE_cc0
+    case CC0:
+      return;
+#endif
+
+    case CLOBBER:
+      /* If we are clobbering a MEM, mark any registers inside the address
+	 as being used.  */
+      if (GET_CODE (XEXP (x, 0)) == MEM)
+	count_reg_references (XEXP (XEXP (x, 0), 0));
+      return;
+
+    case SUBREG:
+      /* While we're here, optimize this case.  */
+      x = SUBREG_REG (x);
+
+      /* In case the SUBREG is not of a register, don't optimize */
+      if (GET_CODE (x) != REG)
+	{
+	  count_reg_references (x);
+	  return;
+	}
+
+      /* ... fall through ...  */
+
+    case REG:
+      if (REGNO (x) >= FIRST_PSEUDO_REGISTER)
+	REG_N_REFS (REGNO (x)) += loop_depth;
+      return;
+
+    case SET:
+      {
+	register rtx testreg = SET_DEST (x);
+	int mark_dest = 0;
+
+	/* If storing into MEM, don't show it as being used.  But do
+	   show the address as being used.  */
+	if (GET_CODE (testreg) == MEM)
+	  {
+	    count_reg_references (XEXP (testreg, 0));
+	    count_reg_references (SET_SRC (x));
+	    return;
+	  }
+	    
+	/* Storing in STRICT_LOW_PART is like storing in a reg
+	   in that this SET might be dead, so ignore it in TESTREG.
+	   but in some other ways it is like using the reg.
+
+	   Storing in a SUBREG or a bit field is like storing the entire
+	   register in that if the register's value is not used
+	   then this SET is not needed.  */
+	while (GET_CODE (testreg) == STRICT_LOW_PART
+	       || GET_CODE (testreg) == ZERO_EXTRACT
+	       || GET_CODE (testreg) == SIGN_EXTRACT
+	       || GET_CODE (testreg) == SUBREG)
+	  {
+	    /* Modifying a single register in an alternate mode
+	       does not use any of the old value.  But these other
+	       ways of storing in a register do use the old value.  */
+	    if (GET_CODE (testreg) == SUBREG
+		&& !(REG_SIZE (SUBREG_REG (testreg)) > REG_SIZE (testreg)))
+	      ;
+	    else
+	      mark_dest = 1;
+
+	    testreg = XEXP (testreg, 0);
+	  }
+
+	/* If this is a store into a register,
+	   recursively scan the value being stored.  */
+
+	if (GET_CODE (testreg) == REG)
+	  {
+	    count_reg_references (SET_SRC (x));
+	    if (mark_dest)
+	      count_reg_references (SET_DEST (x));
+	    return;
+	  }
+      }
+      break;
+
+    default:
+      break;
+    }
+
+  /* Recursively scan the operands of this expression.  */
+
+  {
+    register char *fmt = GET_RTX_FORMAT (code);
+    register int i;
+    
+    for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+      {
+	if (fmt[i] == 'e')
+	  {
+	    /* Tail recursive case: save a function call level.  */
+	    if (i == 0)
+	      {
+		x = XEXP (x, 0);
+		goto retry;
+	      }
+	    count_reg_references (XEXP (x, i));
+	  }
+	else if (fmt[i] == 'E')
+	  {
+	    register int j;
+	    for (j = 0; j < XVECLEN (x, i); j++)
+	      count_reg_references (XVECEXP (x, i, j));
+	  }
+      }
+  }
+}
+
+/* Recompute register set/reference counts immediately prior to register
+   allocation.
+
+   This avoids problems with set/reference counts changing to/from values
+   which have special meanings to the register allocators.
+
+   Additionally, the reference counts are the primary component used by the
+   register allocators to prioritize pseudos for allocation to hard regs.
+   More accurate reference counts generally lead to better register allocation.
+
+   It might be worthwhile to update REG_LIVE_LENGTH, REG_BASIC_BLOCK and
+   possibly other information which is used by the register allocators.  */
+
+int
+recompute_reg_usage (f)
+     rtx f;
+{
+  rtx insn;
+  int i, max_reg;
+
+  /* Clear out the old data.  */
+  max_reg = max_reg_num ();
+  for (i = FIRST_PSEUDO_REGISTER; i < max_reg; i++)
+    {
+      REG_N_SETS (i) = 0;
+      REG_N_REFS (i) = 0;
+    }
+
+  /* Scan each insn in the chain and count how many times each register is
+     set/used.  */
+  loop_depth = 1;
+  for (insn = f; insn; insn = NEXT_INSN (insn))
+    {
+      /* Keep track of loop depth.  */
+      if (GET_CODE (insn) == NOTE)
+	{
+	  /* Look for loop boundaries.  */
+	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
+	    loop_depth--;
+	  else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
+	    loop_depth++;
+
+	  /* If we have LOOP_DEPTH == 0, there has been a bookkeeping error. 
+	     Abort now rather than setting register status incorrectly.  */
+	  if (loop_depth == 0)
+	    abort ();
+	}
+      else if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	{
+	  rtx links;
+
+	  /* This call will increment REG_N_SETS for each SET or CLOBBER
+	     of a register in INSN.  It will also increment REG_N_REFS
+	     by the loop depth for each set of a register in INSN.  */
+	  count_reg_sets (PATTERN (insn));
+
+	  /* count_reg_sets does not detect autoincrement address modes, so
+	     detect them here by looking at the notes attached to INSN.  */
+	  for (links = REG_NOTES (insn); links; links = XEXP (links, 1))
+	    {
+	      if (REG_NOTE_KIND (links) == REG_INC)
+		/* Count (weighted) references, stores, etc.  This counts a
+		   register twice if it is modified, but that is correct.  */
+		REG_N_SETS (REGNO (XEXP (links, 0)))++;
+	    }
+
+	  /* This call will increment REG_N_REFS by the current loop depth for
+	     each reference to a register in INSN.  */
+	  count_reg_references (PATTERN (insn));
+
+	  /* count_reg_references will not include counts for arguments to
+	     function calls, so detect them here by examining the
+	     CALL_INSN_FUNCTION_USAGE data.  */
+	  if (GET_CODE (insn) == CALL_INSN)
+	    {
+	      rtx note;
+
+	      for (note = CALL_INSN_FUNCTION_USAGE (insn);
+		   note;
+		   note = XEXP (note, 1))
+		if (GET_CODE (XEXP (note, 0)) == USE)
+		  count_reg_references (SET_DEST (XEXP (note, 0)));
+	    }
+	}
+    }
 }
