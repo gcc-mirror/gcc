@@ -1,3 +1,13 @@
+1998-10-26  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (convert_arguments): Don't handle pmf references 
+	specially.
+
+	* init.c (build_member_call): Don't try to convert to the base type
+	if it's ambiguous.
+
+	* typeck2.c (check_for_new_type): Don't depend on pedantic.
+
 1998-10-25  Mark Mitchell  <mark@markmitchell.com>
 
 	* decl.c (grokdeclarator): Set DECL_NONCONVERTING_P for all
