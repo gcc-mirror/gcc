@@ -9159,7 +9159,12 @@ reload_cse_move2add (first)
 		 to
 				  (set (REGX) (CONST_INT A))
 				  ...
-				  (set (REGX) (plus (REGX) (CONST_INT B-A)))  */
+				  (set (REGX) (plus (REGX) (CONST_INT B-A)))
+		 or
+				  (set (REGX) (CONST_INT A))
+				  ...
+				  (set (STRICT_LOW_PART (REGX)) (CONST_INT B))
+	      */
 
 	      if (GET_CODE (src) == CONST_INT && reg_base_reg[regno] < 0)
 		{
@@ -9179,6 +9184,36 @@ reload_cse_move2add (first)
 			   && have_add2_insn (reg, new_src))
 		    success = validate_change (insn, &PATTERN (insn),
 					       gen_add2_insn (reg, new_src), 0);
+		  else
+		    {
+		      enum machine_mode narrow_mode;
+		      for (narrow_mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+			   narrow_mode != GET_MODE (reg);
+			   narrow_mode = GET_MODE_WIDER_MODE (narrow_mode))
+			{
+			  if (have_insn_for (STRICT_LOW_PART, narrow_mode)
+			      && ((reg_offset[regno]
+				   & ~GET_MODE_MASK (narrow_mode))
+				  == (INTVAL (src)
+				      & ~GET_MODE_MASK (narrow_mode))))
+			    {
+			      rtx narrow_reg = gen_rtx_REG (narrow_mode,
+							    REGNO (reg));
+			      rtx narrow_src =
+				GEN_INT (trunc_int_for_mode (INTVAL (src),
+							     narrow_mode));
+			      rtx new_set =
+				gen_rtx_SET (VOIDmode,
+					     gen_rtx_STRICT_LOW_PART (VOIDmode,
+								      narrow_reg),
+					     narrow_src);
+			      success = validate_change (insn, &PATTERN (insn),
+							 new_set, 0);
+			      if (success)
+				break;
+			    }
+			}
+		    }
 		  reg_set_luid[regno] = move2add_luid;
 		  reg_mode[regno] = GET_MODE (reg);
 		  reg_offset[regno] = INTVAL (src);
