@@ -4063,7 +4063,11 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
       {
 	tree addr;
 
-	if (TREE_CODE (arg) != COMPONENT_REF)
+	if (TREE_CODE (arg) != COMPONENT_REF
+	    /* Inside a template, we are processing a non-dependent
+	       expression so we can just form an ADDR_EXPR with the
+	       correct type.  */
+	    || processing_template_decl)
 	  addr = build_address (arg);
 	else if (TREE_CODE (TREE_OPERAND (arg, 1)) == BASELINK)
 	  {

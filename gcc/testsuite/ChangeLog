@@ -1,5 +1,14 @@
 2004-05-23  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/15044
+	* g++.dg/template/error12.C: New test.
+
+	PR c++/15317
+	* g++.dg/ext/attrib14.C: New test.
+
+	PR c++/15329
+	* g++.dg/template/ptrmem9.C: New test.
+
 	PR c++/15165
 	* g++.dg/template/crash19.C: New test.
 

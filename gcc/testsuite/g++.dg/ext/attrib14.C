@@ -1,13 +1,9 @@
-// PR c++/13170
-// The bogus attribute is ignored, but was in TYPE_ATTRIBUTES during
-// parsing of the class, causing some variants to have it and some not.
+// PR c++/15317
 
-struct __attribute__((bogus)) A
+struct A
 {
-    virtual ~A();
-    void foo(const A&);
-    void bar(const A&);
-};				// { dg-warning "ignored" "" }
+  A(char);
+};
+A::A(__attribute__((unused)) char i2)
+{}
 
-void A::foo(const A&)   {}
-void A::bar(const A& a) { foo(a); }

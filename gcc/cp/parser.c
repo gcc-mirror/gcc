@@ -6570,8 +6570,8 @@ cp_parser_simple_declaration (cp_parser* parser,
 
    GNU Extension:
 
-   decl-specifier-seq:
-     decl-specifier-seq [opt] attributes
+   decl-specifier:
+     attributes
 
    Returns a TREE_LIST, giving the decl-specifiers in the order they
    appear in the source code.  The TREE_VALUE of each node is the
@@ -12014,7 +12014,8 @@ cp_parser_class_head (cp_parser* parser,
 
   pop_deferring_access_checks ();
 
-  cp_parser_check_for_invalid_template_id (parser, id);
+  if (id)
+    cp_parser_check_for_invalid_template_id (parser, id);
 
   /* If it's not a `:' or a `{' then we can't really be looking at a
      class-head, since a class-head only appears as part of a
@@ -14061,6 +14062,10 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
     {
       if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_PAREN)
 	  && cp_lexer_next_token_is_not (parser->lexer, CPP_ELLIPSIS)
+	  /* A parameter declaration begins with a decl-specifier,
+	     which is either the "attribute" keyword, a storage class
+	     specifier, or (usually) a type-specifier.  */
+	  && !cp_lexer_next_token_is_keyword (parser->lexer, RID_ATTRIBUTE)
 	  && !cp_parser_storage_class_specifier_opt (parser))
 	{
 	  tree type;
