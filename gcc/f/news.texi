@@ -636,7 +636,7 @@ when @code{libf2c} (now @code{libg2c}) is a shared library.
 @item
 @command{g77} no longer installs the @file{f77} command
 and @file{f77.1} man page
-in the @file{/usr} or @file{/usr/local} heirarchy,
+in the @file{/usr} or @file{/usr/local} hierarchy,
 even if the @file{f77-install-ok} file exists
 in the source or build directory.
 See the installation documentation for more information.
@@ -646,7 +646,7 @@ See the installation documentation for more information.
 @item
 @command{g77} no longer installs the @file{libf2c.a} library
 and @file{f2c.h} include file
-in the @file{/usr} or @file{/usr/local} heirarchy,
+in the @file{/usr} or @file{/usr/local} hierarchy,
 even if the @file{f2c-install-ok} or @file{f2c-exists-ok} files exist
 in the source or build directory.
 See the installation documentation for more information.
@@ -657,7 +657,7 @@ See the installation documentation for more information.
 The @file{libf2c.a} library produced by @command{g77} has been
 renamed to @file{libg2c.a}.
 It is installed only in the @command{gcc} ``private''
-directory heirarchy, @file{gcc-lib}.
+directory hierarchy, @file{gcc-lib}.
 This allows system administrators and users to choose which
 version of the @code{libf2c} library from @code{netlib} they
 wish to use on a case-by-case basis.
@@ -669,7 +669,7 @@ See the installation documentation for more information.
 The @file{f2c.h} include (header) file produced by @command{g77}
 has been renamed to @file{g2c.h}.
 It is installed only in the @command{gcc} ``private''
-directory heirarchy, @file{gcc-lib}.
+directory hierarchy, @file{gcc-lib}.
 This allows system administrators and users to choose which
 version of the include file from @code{netlib} they
 wish to use on a case-by-case basis.
@@ -965,7 +965,7 @@ no longer crash @command{g77}.
 @item
 @command{g77} no longer installs the @file{f77} command
 and @file{f77.1} man page
-in the @file{/usr} or @file{/usr/local} heirarchy,
+in the @file{/usr} or @file{/usr/local} hierarchy,
 even if the @file{f77-install-ok} file exists
 in the source or build directory.
 See the installation documentation for more information.
@@ -975,7 +975,7 @@ See the installation documentation for more information.
 @item
 @command{g77} no longer installs the @file{libf2c.a} library
 and @file{f2c.h} include file
-in the @file{/usr} or @file{/usr/local} heirarchy,
+in the @file{/usr} or @file{/usr/local} hierarchy,
 even if the @file{f2c-install-ok} or @file{f2c-exists-ok} files exist
 in the source or build directory.
 See the installation documentation for more information.
@@ -986,7 +986,7 @@ See the installation documentation for more information.
 The @file{libf2c.a} library produced by @command{g77} has been
 renamed to @file{libg2c.a}.
 It is installed only in the @command{gcc} ``private''
-directory heirarchy, @file{gcc-lib}.
+directory hierarchy, @file{gcc-lib}.
 This allows system administrators and users to choose which
 version of the @code{libf2c} library from @code{netlib} they
 wish to use on a case-by-case basis.
@@ -998,7 +998,7 @@ See the installation documentation for more information.
 The @file{f2c.h} include (header) file produced by @command{g77}
 has been renamed to @file{g2c.h}.
 It is installed only in the @command{gcc} ``private''
-directory heirarchy, @file{gcc-lib}.
+directory hierarchy, @file{gcc-lib}.
 This allows system administrators and users to choose which
 version of the include file from @code{netlib} they
 wish to use on a case-by-case basis.
@@ -1452,7 +1452,7 @@ option).
 
 @ifclear USERVISONLY
 @item
-Fix a compiler crash that occured when an
+Fix a compiler crash that occurred when an
 integer division by a constant zero is detected.
 Instead, when the @option{-W} option is specified,
 the @command{gcc} back end issues a warning about such a case.
@@ -2459,7 +2459,7 @@ it has been given an initial value via @code{DATA}, for example.
 
 @item
 Introduce an Info version of @command{g77} documentation, which
-supercedes @file{gcc/f/CREDITS}, @file{gcc/f/DOC}, and
+supersedes @file{gcc/f/CREDITS}, @file{gcc/f/DOC}, and
 @file{gcc/f/PROJECTS}.
 These files will be removed in a future release.
 The files @file{gcc/f/BUGS}, @file{gcc/f/INSTALL}, and
