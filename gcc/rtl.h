@@ -1401,6 +1401,7 @@ extern int insn_dependent_p		PARAMS ((rtx, rtx));
 extern int reg_set_p			PARAMS ((rtx, rtx));
 extern rtx single_set_2			PARAMS ((rtx, rtx));
 extern int multiple_sets		PARAMS ((rtx));
+extern int set_noop_p			PARAMS ((rtx));
 extern rtx find_last_value		PARAMS ((rtx, rtx *, rtx, int));
 extern int refers_to_regno_p		PARAMS ((unsigned int, unsigned int,
 						 rtx, rtx *));

@@ -956,15 +956,7 @@ delete_noop_moves (f)
 	  /* Detect and delete no-op move instructions
 	     resulting from not allocating a parameter in a register.  */
 
-	  if (GET_CODE (body) == SET
-	      && (SET_DEST (body) == SET_SRC (body)
-		  || (GET_CODE (SET_DEST (body)) == MEM
-		      && GET_CODE (SET_SRC (body)) == MEM
-		      && rtx_equal_p (SET_SRC (body), SET_DEST (body))))
-	      && ! (GET_CODE (SET_DEST (body)) == MEM
-		    && MEM_VOLATILE_P (SET_DEST (body)))
-	      && ! (GET_CODE (SET_SRC (body)) == MEM
-		    && MEM_VOLATILE_P (SET_SRC (body))))
+	  if (GET_CODE (body) == SET && set_noop_p (body))
 	    delete_computation (insn);
 
 	  /* Detect and ignore no-op move instructions
@@ -1073,16 +1065,6 @@ delete_noop_moves (f)
 	      if (i < 0)
 		delete_insn (insn);
 	    }
-	  /* Also delete insns to store bit fields if they are no-ops.  */
-	  /* Not worth the hair to detect this in the big-endian case.  */
-	  else if (! BYTES_BIG_ENDIAN
-		   && GET_CODE (body) == SET
-		   && GET_CODE (SET_DEST (body)) == ZERO_EXTRACT
-		   && XEXP (SET_DEST (body), 2) == const0_rtx
-		   && XEXP (SET_DEST (body), 0) == SET_SRC (body)
-		   && ! (GET_CODE (SET_SRC (body)) == MEM
-			 && MEM_VOLATILE_P (SET_SRC (body))))
-	    delete_insn (insn);
 	}
       insn = next;
     }

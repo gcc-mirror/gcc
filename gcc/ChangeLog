@@ -1,3 +1,13 @@
+Wed Apr  4 00:45:38 EDT 2001  John Wehle  (john@feith.com)
+
+	* rtl.h (set_noop_p): Declare.
+	* flow.c (set_noop_p): Move from here ...
+	* rtlanal.c (set_noop_p): ... to here and enhance.
+	* cse.c (delete_trivially_dead_insns): Use it.
+	* gcse.c (hash_scan_set): Likewise.
+	* jump.c (delete_noop_moves): Likewise.
+	* recog.c (split_all_insns): Likewise.
+
 2001-04-04  Alan Modra  <alan@linuxcare.com.au>
 
 	* dwarf2out.c (dwarf2out_frame_debug_expr): Support adjusting

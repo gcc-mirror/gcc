@@ -2882,7 +2882,7 @@ split_all_insns (upd_life)
 	     break the code that handles REG_NO_CONFLICT blocks.  */
 
 	  else if ((set = single_set (insn)) != NULL
-		   && rtx_equal_p (SET_SRC (set), SET_DEST (set)))
+		   && set_noop_p (set))
 	    {
 	      /* Nops get in the way while scheduling, so delete them
 		 now if register allocation has already been done.  It

@@ -980,6 +980,42 @@ multiple_sets (insn)
   return 0;
 }
 
+/* Return nonzero if the destination of SET equals the source
+   and there are no side effects.  */
+
+int
+set_noop_p (set)
+     rtx set;
+{
+  rtx src = SET_SRC (set);
+  rtx dst = SET_DEST (set);
+
+  if (side_effects_p (src) || side_effects_p (dst))
+    return 0;
+
+  if (GET_CODE (dst) == MEM && GET_CODE (src) == MEM)
+    return rtx_equal_p (dst, src);
+
+  if (GET_CODE (dst) == SIGN_EXTRACT
+      || GET_CODE (dst) == ZERO_EXTRACT)
+    return rtx_equal_p (XEXP (dst, 0), src)
+	   && ! BYTES_BIG_ENDIAN && XEXP (dst, 2) == const0_rtx;
+
+  if (GET_CODE (dst) == STRICT_LOW_PART)
+    dst = XEXP (dst, 0);
+
+  if (GET_CODE (src) == SUBREG && GET_CODE (dst) == SUBREG)
+    {
+      if (SUBREG_BYTE (src) != SUBREG_BYTE (dst))
+	return 0;
+      src = SUBREG_REG (src);
+      dst = SUBREG_REG (dst);
+    }
+
+  return (GET_CODE (src) == REG && GET_CODE (dst) == REG
+	  && REGNO (src) == REGNO (dst));
+}
+
 /* Return the last thing that X was assigned from before *PINSN.  If VALID_TO
    is not NULL_RTX then verify that the object is not modified up to VALID_TO.
    If the object was modified, if we hit a partial assignment to X, or hit a

@@ -386,7 +386,6 @@ static void tidy_fallthru_edges		PARAMS ((void));
 static int verify_wide_reg_1		PARAMS ((rtx *, void *));
 static void verify_wide_reg		PARAMS ((int, rtx, rtx));
 static void verify_local_live_at_start	PARAMS ((regset, basic_block));
-static int set_noop_p			PARAMS ((rtx));
 static int noop_move_p			PARAMS ((rtx));
 static void delete_noop_moves		PARAMS ((rtx));
 static void notice_stack_pointer_modification_1 PARAMS ((rtx, rtx, void *));
@@ -3075,27 +3074,6 @@ free_basic_block_vars (keep_head_end_p)
       EXIT_BLOCK_PTR->aux = NULL;
       EXIT_BLOCK_PTR->global_live_at_start = NULL;
     }
-}
-
-/* Return nonzero if the destination of SET equals the source.  */
-
-static int
-set_noop_p (set)
-     rtx set;
-{
-  rtx src = SET_SRC (set);
-  rtx dst = SET_DEST (set);
-
-  if (GET_CODE (src) == SUBREG && GET_CODE (dst) == SUBREG)
-    {
-      if (SUBREG_BYTE (src) != SUBREG_BYTE (dst))
-	return 0;
-      src = SUBREG_REG (src);
-      dst = SUBREG_REG (dst);
-    }
-
-  return (GET_CODE (src) == REG && GET_CODE (dst) == REG
-	  && REGNO (src) == REGNO (dst));
 }
 
 /* Return nonzero if an insn consists only of SETs, each of which only sets a
