@@ -1,3 +1,12 @@
+2003-08-10  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/10530
+	* pt.c (dependent_type_p_r): A dependent template-id is a class
+	type with dependent template arguments, or a bound template
+	template parameter.
+	(type_dependent_expression_p): A template function decl cannot
+	have a dependent context.
+
 2003-08-07  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/5767

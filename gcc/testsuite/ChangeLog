@@ -1,3 +1,8 @@
+2003-08-10  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/10530
+	* g++.dg/template/dependent-name2.C: New test.
+
 2003-08-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* g++.dg/parse/crash11.C: Put the dg options in comments.
