@@ -4339,8 +4339,13 @@ store_constructor_field (target, bitsize, bitpos,
 			    plus_constant (XEXP (target, 0),
 					   bitpos / BITS_PER_UNIT));
 
+
+      /* Show the alignment may no longer be what it was and update the alias
+	 set, if required.  */
+      align = MIN (align, bitpos & - bitpos);
       if (GET_CODE (target) == MEM)
 	MEM_ALIAS_SET (target) = alias_set;
+
       store_constructor (exp, target, align, cleared, bitsize / BITS_PER_UNIT);
     }
   else

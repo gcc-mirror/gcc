@@ -1,3 +1,8 @@
+Tue Jan  2 10:47:38 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.
+
+	* expr.c (store_constructor_field): Update ALIGN before calling
+	store_constructor.
+
 2001-01-02  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* config/mips/mips.c (function_arg): Don't pass NULL_TREE to
