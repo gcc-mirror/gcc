@@ -4667,18 +4667,24 @@ build_over_call (struct z_candidate *cand, int flags)
 	{
 	  /* We must only copy the non-tail padding parts. Use
 	     CLASSTYPE_AS_BASE for the bitwise copy.  */
-	  tree to_as_base, arg_as_base, base_ptr_type;
+	  tree to_ptr, arg_ptr, to_as_base, arg_as_base, base_ptr_type;
+	  tree save_to;
 
-	  to = save_expr (to);
+	  to_ptr = save_expr (build_unary_op (ADDR_EXPR, to, 0));
+	  arg_ptr = build_unary_op (ADDR_EXPR, arg, 0);
+
 	  base_ptr_type = build_pointer_type (as_base);
-	  to_as_base = build_indirect_ref
-	    (build_nop (base_ptr_type, build_unary_op (ADDR_EXPR, to, 0)), 0);
-	  arg_as_base = build_indirect_ref
-	    (build_nop (base_ptr_type, build_unary_op (ADDR_EXPR, arg, 0)), 0);
-	  
+	  to_as_base = build_nop (base_ptr_type, to_ptr);
+	  to_as_base = build_indirect_ref (to_as_base, 0);
+	  arg_as_base = build_nop (base_ptr_type, arg_ptr);
+	  arg_as_base = build_indirect_ref (arg_as_base, 0);
+
+	  save_to = build_indirect_ref (to_ptr, 0);
+
 	  val = build (MODIFY_EXPR, as_base, to_as_base, arg_as_base);
-	  val = build (COMPOUND_EXPR, type, convert_to_void (val, NULL), to);
-	  TREE_USED (val) = 1;
+	  val = convert_to_void (val, NULL);
+	  val = build (COMPOUND_EXPR, type, val, save_to);
+	  TREE_NO_UNUSED_WARNING (val) = 1;
 	}
       
       return val;
