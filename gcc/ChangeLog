@@ -1,3 +1,13 @@
+2002-09-05  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_expand_plus_operand): Do not require
+	double-word scratch register.
+	config/s390/s390.md ("reload_indi", "reload_insi"): Adapt.
+
+	("*tmqi_ext", "*tmdi_mem", "*tmsi_mem", "*tmhi_mem", "*tmqi_mem", 
+	"*cli"): Replace s_operand by memory_operand.
+	("cmpstrdi", "cmpstrsi"): Replace s_operand by general_operand.
+
 2002-09-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (asm_file_start): Add a missing

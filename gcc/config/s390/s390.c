@@ -1365,22 +1365,13 @@ s390_plus_operand (op, mode)
    SCRATCH may be used as scratch register.  */
 
 void
-s390_expand_plus_operand (target, src, scratch_in)
+s390_expand_plus_operand (target, src, scratch)
      register rtx target;
      register rtx src;
-     register rtx scratch_in;
+     register rtx scratch;
 {
-  rtx sum1, sum2, scratch;
+  rtx sum1, sum2;
   struct s390_address ad;
-
-  /* ??? reload apparently does not ensure that the scratch register
-     and the target do not overlap.  We absolutely require this to be
-     the case, however.  Therefore the reload_in[sd]i patterns ask for
-     a double-sized scratch register, and if one part happens to be
-     equal to the target, we use the other one.  */
-  scratch = gen_rtx_REG (Pmode, REGNO (scratch_in));
-  if (rtx_equal_p (scratch, target))
-    scratch = gen_rtx_REG (Pmode, REGNO (scratch_in) + 1);
 
   /* src must be a PLUS; get its two operands.  */
   if (GET_CODE (src) != PLUS || GET_MODE (src) != Pmode)
@@ -1391,61 +1382,42 @@ s390_expand_plus_operand (target, src, scratch_in)
      float registers occur in an address.  */
   sum1 = find_replacement (&XEXP (src, 0));
   sum2 = find_replacement (&XEXP (src, 1));
-
-  /* Accept already strictly valid addresses.  */
   src = gen_rtx_PLUS (Pmode, sum1, sum2);
-  if (s390_decompose_address (src, &ad)
-      && (!ad.base || REG_OK_FOR_BASE_STRICT_P (ad.base))
-      && (!ad.indx || REG_OK_FOR_INDEX_STRICT_P (ad.indx)))
-    {
-      src = legitimize_la_operand (src);
-      emit_insn (gen_rtx_SET (VOIDmode, target, src));
-      return;
-    }
 
-  /* If one of the two operands is equal to the target,
-     make it the first one.  If one is a constant, make
-     it the second one.  */
-  if (rtx_equal_p (target, sum2)
-      || GET_CODE (sum1) == CONST_INT)
+  /* If the address is already strictly valid, there's nothing to do.  */
+  if (!s390_decompose_address (src, &ad)
+      || (ad.base && !REG_OK_FOR_BASE_STRICT_P (ad.base))
+      || (ad.indx && !REG_OK_FOR_INDEX_STRICT_P (ad.indx)))
     {
-      rtx tem = sum2;
-      sum2 = sum1;
-      sum1 = tem;
-    }
+      /* Otherwise, one of the operands cannot be an address register;
+         we reload its value into the scratch register.  */
+      if (true_regnum (sum1) < 1 || true_regnum (sum1) > 15)
+	{
+	  emit_move_insn (scratch, sum1);
+	  sum1 = scratch;
+	}
+      if (true_regnum (sum2) < 1 || true_regnum (sum2) > 15)
+	{
+	  emit_move_insn (scratch, sum2);
+	  sum2 = scratch;
+	}
 
-  /* If the first operand is not an address register,
-     we reload it into the target.  */
-  if (true_regnum (sum1) < 1 || true_regnum (sum1) > 15)
-    {
-      emit_move_insn (target, sum1);
-      sum1 = target;
-    }
+      /* According to the way these invalid addresses are generated
+         in reload.c, it should never happen (at least on s390) that
+         *neither* of the PLUS components, after find_replacements
+         was applied, is an address register.  */
+      if (sum1 == scratch && sum2 == scratch)
+	{
+	  debug_rtx (src);
+	  abort ();
+	}
 
-  /* Likewise for the second operand.  However, take
-     care not to clobber the target if we already used
-     it for the first operand.  Use the scratch instead.
-     Also, allow an immediate offset if it is in range.  */
-  if ((true_regnum (sum2) < 1 || true_regnum (sum2) > 15)
-      && !(GET_CODE (sum2) == CONST_INT
-           && INTVAL (sum2) >= 0 && INTVAL (sum2) < 4096))
-    {
-      if (!rtx_equal_p (target, sum1))
-        {
-          emit_move_insn (target, sum2);
-          sum2 = target;
-        }
-      else
-        {
-          emit_move_insn (scratch, sum2);
-          sum2 = scratch;
-        }
+      src = gen_rtx_PLUS (Pmode, sum1, sum2);
     }
 
   /* Emit the LOAD ADDRESS pattern.  Note that reload of PLUS
      is only ever performed on addresses, so we can mark the
      sum as legitimate for LA in any case.  */
-  src = gen_rtx_PLUS (Pmode, sum1, sum2);
   src = legitimize_la_operand (src);
   emit_insn (gen_rtx_SET (VOIDmode, target, src));
 }
