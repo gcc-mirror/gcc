@@ -1722,12 +1722,10 @@ chill_similar (mode1, mode2, chain)
 
     default:
       ;
-#if 0
       /* Need to handle row modes, instance modes,
 	 association modes, access modes, text modes,
 	 duration modes, absolute time modes, structure modes,
 	 parameterized structure modes */
-#endif
     }
   return 1;
 }
@@ -1809,9 +1807,9 @@ chill_l_equivalent (mode1, mode2, chain)
     return 0;
   if (TYPE_READONLY (mode1) != TYPE_READONLY (mode2))
     return 0;
-#if 0
+/*
   ... other conditions ...;
-#endif
+ */
   return 1;
 }
 
@@ -1837,9 +1835,9 @@ chill_read_compatible (modeM, modeN)
 	{
 	  return chill_l_equivalent (TREE_TYPE (modeM), TREE_TYPE (modeN), 0);
 	}
-#if 0
+/*
       ...;
-#endif
+*/
     }
   return 1;
 }
@@ -1889,13 +1887,12 @@ chill_compatible (expr, mode)
     case CH_REFERENCE_CLASS:
       if (!CH_IS_REFERENCE_MODE (mode))
 	return 0;
-#if 0
-      /* FIXME! */
+/* FIXME!
       if (class.mode is a row mode)
 	...;
       else if (class.mode is not a static mode)
-	return 0; /* is this possible? FIXME */
-#endif
+	return 0; is this possible?
+*/
       return !CH_IS_BOUND_REFERENCE_MODE(mode)
 	|| CH_READ_COMPATIBLE (TREE_TYPE (mode), class.mode);
     }

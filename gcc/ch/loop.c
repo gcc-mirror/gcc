@@ -131,7 +131,7 @@ typedef struct loop {
 
 static LOOP *loopstack = (LOOP *)0;
 
-#if 0
+/*
 
 Here is a CHILL DO FOR statement:
 
@@ -147,10 +147,10 @@ following works:
           FOR i := (i+1) TO (i+10) DO
 
 To prevent changes to the start/end/step expressions from
-effecting the loop''s termination, and to make the loop end-check
+effecting the loop's termination, and to make the loop end-check
 as simple as possible, we evaluate the step expression into
 a temporary and compute a hidden iteration count before entering 
-the loop''s body.  User code cannot effect the counter, and the
+the loop's body.  User code cannot effect the counter, and the
 end-loop check simply decrements the counter and checks for zero.
 
 The whole phrase FOR iter := ... TO end_exp can be repeated
@@ -160,7 +160,7 @@ is discussed later.
 The loop counter calculations need careful design since a loop
 from MININT TO MAXINT must work, in the precision of integers.
 
-Here''s how it works, in C:
+Here's how it works, in C:
 
         0) The DO ... OD loop is simply a block with 
            its own scope.  
@@ -195,7 +195,7 @@ Here''s how it works, in C:
                 start_temp = start_exp
                 end_temp = end_exp
 		if (end_exp < start_exp) goto end_loop
-                /* following line is all unsigned arithmetic */
+                // following line is all unsigned arithmetic
 		iter_var = (end_exp - start_exp) / step_exp
                 user_var = start_temp
 	   loop_top:
@@ -218,7 +218,7 @@ Here''s how it works, in C:
                 start_temp = start_exp
                 end_temp = end_exp
 		if (end_exp > start_exp) goto end_loop
-                /* following line is all unsigned arithmetic */
+                // following line is all unsigned arithmetic
 		iter_var = (start_exp - end_exp) / step_exp
                 user_var = start_temp
 	   loop_top:
@@ -234,9 +234,9 @@ Here''s how it works, in C:
 	pop scope
 
 
-        5) The range loop, which iterates over a mode''s possible
+        5) The range loop, which iterates over a mode's possible
            values, works just like the above step loops, but with
-           the start and end values taken from the mode''s lower
+           the start and end values taken from the mode's lower
            and upper domain values.
 
 
@@ -249,7 +249,7 @@ Here''s how it works, in C:
              loc_ptr_temp as pointer to a composite base type
         
                if array is varying
-                   iter_var = array''s length field
+                   iter_var = array's length field
                else
                    iter_var = sizeof array / sizeof base_type
 	       loc_ptr_temp = &of highest or lowest indexable entry
@@ -290,20 +290,20 @@ Here''s how it works, in C:
 	pop scope
 
 
-So, here''s the general DO FOR schema, as implemented here:
+So, here's the general DO FOR schema, as implemented here:
 
-        expand_start_loop   -- start the loop''s control scope
+        expand_start_loop   -- start the loop's control scope
         -- start scope for synthesized loop variables
         declare_temps       -- create, initialize temporary variables
         maybe_skip_loop     -- skip loop if end conditions unsatisfiable
         initialize_iter_var -- initialize the iteration counter
-                            -- initialize user''s loop variable
+                            -- initialize user's loop variable
         expand_start_loop   -- generate top-of-loop label
         top_loop_end_check  -- generate while code and/or
                                powerset find-a-bit function call
         .
         .
-        .  user''s loop body code
+        .  user's loop body code
         .
         .
         bottom_loop_end_check  -- exit if counter has become zero
@@ -322,7 +322,7 @@ the 'increment_temps' step must increment all temporaries
        "the actions statement list in a do action, including any
        loop counter and while control".  This means that an exp-
        ression in a WHILE control can include references to the
-       loop counters created for the loop''s exclusive use.  
+       loop counters created for the loop's exclusive use.  
        Example:
 
              DCL a (1:10) INT;
@@ -331,9 +331,9 @@ the 'increment_temps' step must increment all temporaries
              ...
              OD;
        The 'j' referenced in the while is the loc-identity 'j'
-       created inside the loop''s scope, and NOT the 'j' declared
+       created inside the loop's scope, and NOT the 'j' declared
        before the loop.
-#endif
+*/
 
 /*
  * The following routines are called directly by the

@@ -1086,9 +1086,7 @@ convert (type, expr)
 	  error ("initializer is not an array or string mode");
 	  return error_mark_node;
 	}
-#if 0
-      FIXME check that nentries will fit in type;
-#endif
+      /* FIXME check that nentries will fit in type; */
       if (!integer_zerop (needed_padding))
 	{
 	  tree padding, padding_type, padding_range;

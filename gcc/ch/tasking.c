@@ -1218,19 +1218,19 @@ build_instance_type ()
   pointer_to_instance = build_chill_pointer_type (instance_type_node);
 }
 
-#if 0
+/*
  *
  * The tasking message descriptor looks like this C structure:
  *
  * typedef struct
  *   {
- *     short *sc;                 /* ptr to code integer */
- *     int    data_len;           /* length of signal/buffer data msg */
- *     void  *data;               /* ptr to signal/buffer data */
+ *     short *sc;                 // ptr to code integer
+ *     int    data_len;           // length of signal/buffer data msg
+ *     void  *data;               // ptr to signal/buffer data
  *   } SignalDescr;
  *
  *
-#endif
+ */
 
 static void
 build_tasking_message_type ()
@@ -1486,7 +1486,7 @@ expand_send_signal (sigmsgbuffer, optroutinginfo, optsendto,
 		  tree_cons (NULL_TREE, linenumber, NULL_TREE)))))))));
 }
 
-#if 0
+/*
  * The following code builds a RECEIVE CASE action, which actually
  * has 2 different functionalities:
  *
@@ -1512,16 +1512,16 @@ expand_send_signal (sigmsgbuffer, optroutinginfo, optsendto,
  *        STOP;
  *      ESAC;
  *
- * Because we don''t know until we get to the ESAC how
+ * Because we don't know until we get to the ESAC how
  * many signals need processing, we generate the following
  * C-equivalent code:
  *
- * /* define the codes for the signals */
+ * // define the codes for the signals
  * static short __tmp_advance_code;
  * static short __tmp_terminate_code;
  * static short __tmp_sig1_code;
  *
- * /* define the types of the signals */
+ * // define the types of the signals
  * typedef struct
  *  {
  *     char fld0;
@@ -1536,7 +1536,7 @@ expand_send_signal (sigmsgbuffer, optroutinginfo, optsendto,
  * static short count;
  * static char char_code;
  *
- * {               /* start a new symbol context */
+ * {               // start a new symbol context
  *   int    number_of_sigs;
  *   short *sig_code [];
  *   void  *sigdatabuf;
@@ -1554,22 +1554,22 @@ expand_send_signal (sigmsgbuffer, optroutinginfo, optsendto,
  *                                 &instance_loc);
  *   if (sigcode == __tmp_advance_code)
  *     {
- *       /* code for advance alternative's action_statement_list */
+ *       // code for advance alternative's action_statement_list
  *       count++;
  *     }
  *   else if (sigcode == __tmp_terminate_code)
  *     {
- *        /* copy signal's data to where they belong,
- *           with range-check, if enabled */
+ *        // copy signal's data to where they belong,
+ *           with range-check, if enabled
  *        char_code = ((__tmp_terminate_struct *)sigdatabuf)->fld0;
  *
- *       /* code for terminate alternative's action_statement_list */
+ *       // code for terminate alternative's action_statement_list
  *        __send_signal (sig1 ..... );
  *        goto __workloop_end;
  *     }
  *   else
  *     {
- *        /* code here for the ELSE action_statement_list */
+ *        // code here for the ELSE action_statement_list
  *        __stop_process ();
  *     }
  *   goto __rc_done;
@@ -1586,7 +1586,7 @@ expand_send_signal (sigmsgbuffer, optroutinginfo, optsendto,
  *   goto __rcdoit;
  *
  * __rc_done: ;
- * }               /* end the new symbol context */
+ * }               // end the new symbol context
  * __workloop_end: ;
  *
  *
@@ -1612,7 +1612,7 @@ expand_send_signal (sigmsgbuffer, optroutinginfo, optsendto,
  *          STOP;
  *      ESAC;
  *
- * Because we don''t know until we get to the ESAC how
+ * Because we don't know until we get to the ESAC how
  * many buffers need processing, we generate the following
  * C-equivalent code:
  *
@@ -1630,7 +1630,7 @@ expand_send_signal (sigmsgbuffer, optroutinginfo, optsendto,
  * static short count;
  *
  * workloop:
- * {                     /* start a new symbol context */
+ * {                     // start a new symbol context
  *   int     number_of_sigs;
  *   void   *sig_code [];
  *   void   *sigdatabuf;
@@ -1684,10 +1684,10 @@ expand_send_signal (sigmsgbuffer, optroutinginfo, optsendto,
  *   goto __rcdoit;
  *
  *  __rc_done;
- * }          /* end of symbol context */
+ * }          // end of symbol context
  * __workloop_end:
  *
-#endif
+ */
 
 struct rc_state_type
 {
@@ -2381,7 +2381,7 @@ void expand_continue_event (evloc)
           tree_cons (NULL_TREE, linenumber, NULL_TREE)))));
 }
 
-#if 0
+/*
  * The following code builds a DELAY CASE statement,
  * which looks like this in CHILL:
  *
@@ -2394,12 +2394,12 @@ void expand_continue_event (evloc)
  *      (ev2, ev3): count2 +:= 1;
  *    ESAC; 
  *
- * Because we don''t know until we get to the ESAC how
+ * Because we don't know until we get to the ESAC how
  * many events need processing, we generate the following
  * C-equivalent code:
  *
  *
- * {               /* start a new symbol context */
+ * {               // start a new symbol context
  *   typedef struct
  *   {
  *      void           *p;
@@ -2419,12 +2419,12 @@ void expand_continue_event (evloc)
  *                                    linenumber);
  *   if (whatevent == &ev1)
  *     {
- *       /* code for ev1 alternative's action_statement_list */
+ *       // code for ev1 alternative's action_statement_list
  *       count1 += 1;
  *     }
  *   else if (whatevent == &ev2 || whatevent == &ev3)
  *     {
- *       /* code for ev2 and ev3 alternative's action_statement_list */
+ *       // code for ev2 and ev3 alternative's action_statement_list
  *       count2 += 1;
  *     }
  *   goto __dl_done;
@@ -2440,9 +2440,9 @@ void expand_continue_event (evloc)
  *
  * __dl_done: 
  *   ;
- * }               /* end the new symbol context */
+ * }               // end the new symbol context
  *
-#endif
+ */
 
 struct dl_state_type
 {
@@ -2708,7 +2708,7 @@ gen_dldoit:
   free(dl_state);
 }
 
-#if 0
+/*
  * The following code builds a simple delay statement,
  * which looks like this in CHILL:
  *
@@ -2729,16 +2729,15 @@ gen_dldoit:
  *
  * static short __tmp_ev1_code;
  * 
- * {  /* start a new symbol context */
+ * {  // start a new symbol context
  *
  *   Descr __delay_array[1] = { { ev1, 5 } };
  *
  *   __delay_event (1, &__delay_array, 7, NULL,
  *		    filename, linenumber);
  *
- * } /* end of symbol scope */
+ * } // end of symbol scope
  */
-#endif
 void
 build_delay_action (event, optpriority)
 	tree event, optpriority;

@@ -1,3 +1,10 @@
+2001-10-29  Zack Weinberg  <zack@codesourcery.com>
+
+	* convert.c, inout.c, loop.c, nloop.c, tasking.c, timing.c,
+	typeck.c: Use /* */ for all commentary, not #if 0 ... #endif.
+	Change the nested comments this creates to // notation.
+	Un-double apostrophes.
+
 Sat Sep 22 09:15:08 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Make-lang.in (cc1chill): Add attribs.o.
