@@ -4889,6 +4889,11 @@ The following functions are made available by including
 @option{-mabi=altivec}.  The functions implement the functionality
 described in Motorola's AltiVec Programming Interface Manual.
 
+@emph{Note:} Only the @code{<altivec.h>} interface is supported.
+Internally, GCC uses built-in functions to achieve the functionality in
+the aforementioned header file, but they are not supported and are
+subject to change without notice.
+
 @smallexample
 vector signed char vec_abs (vector signed char, vector signed char);
 vector signed short vec_abs (vector signed short, vector signed short);
