@@ -30,6 +30,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "insn-attr.h"
 #include "sched-int.h"
 
+#ifdef INSN_SCHEDULING
 /* target_units bitmask has 1 for each unit in the cpu.  It should be
    possible to compute this variable from the machine description.
    But currently it is computed by examining the insn list.  Since
@@ -927,3 +928,4 @@ visualize_free ()
 {
   free (visual_tbl);
 }
+#endif
