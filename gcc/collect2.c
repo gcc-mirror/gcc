@@ -2480,9 +2480,9 @@ scan_libraries (const char *prog_name)
     }
 
   /* Parent context from here on.  */
-  int_handler  = (void (*) (int))) signal (SIGINT,  SIG_IGN;
+  int_handler  = (void (*) (int)) signal (SIGINT,  SIG_IGN);
 #ifdef SIGQUIT
-  quit_handler = (void (*) (int))) signal (SIGQUIT, SIG_IGN;
+  quit_handler = (void (*) (int)) signal (SIGQUIT, SIG_IGN);
 #endif
 
   if (close (pipe_fd[1]) < 0)
