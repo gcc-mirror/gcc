@@ -1,3 +1,8 @@
+2003-09-18  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* except.c (output_function_exception_table): Adjust last change
+	to handle TYPE of INTEGER_CST.
+
 2003-09-18  Mark Mitchell  <mark@codesourcery.com>
 
 	PR target/11184
