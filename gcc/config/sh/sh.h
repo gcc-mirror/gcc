@@ -48,7 +48,7 @@ extern int code_for_indirect_jump_scratch;
 %{m3e:-D__SH3E__} \
 %{m4-single-only:-D__SH4_SINGLE_ONLY__} \
 %{m4-single:-D__SH4_SINGLE__} \
-%{m4-nofpu:-D__sh3__} \
+%{m4-nofpu:-D__sh3__ -D__SH4_NOFPU__} \
 %{m4:-D__SH4__} \
 %{!m1:%{!m2:%{!m3:%{!m3e:%{!m4:%{!m4-single:%{!m4-single-only:%{!m4-nofpu:-D__sh1__}}}}}}}} \
 %{mnomacsave:-D__NOMACSAVE__} \

@@ -1,3 +1,9 @@
+2000-09-15  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	* config/sh/sh.h (CPP_SPEC): For -m4-nofpu, define __SH4_NOFPU__.
+	* config/sh/lib1funcs.asm (movstr_i4): Also compile if __SH4_NOFPU__
+	is defined.
+
 Fri 15-Sep-2000 06:49:07 BST  Neil Booth  <NeilB@earthling.net>
 
 	* cpplex.c (ON_REST_ARG): Correct the test.
