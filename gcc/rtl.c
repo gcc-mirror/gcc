@@ -1,5 +1,5 @@
 /* Allocate and read RTL for GNU C Compiler.
-   Copyright (C) 1987, 1988, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -699,7 +699,6 @@ read_rtx (infile)
 	{
 	  int saw_paren = 0;
 	  register char *stringbuf;
-	  int stringbufsize;
 
 	  c = read_skip_spaces (infile);
 	  if (c == '(')
