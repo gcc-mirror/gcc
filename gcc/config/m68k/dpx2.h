@@ -1,9 +1,24 @@
-/*
-   dpx2.h - Bull DPX/2 200 and 300 systems (m68k, SysVr3).
+/* Definitions of target machine for GNU compiler.  
+   Bull DPX/2 200 and 300 systems (m68k, SysVr3).
+   Copyright (C) 1987, 1993, 1994 Free Software Foundation, Inc.
+   Contributed by Frederic Pierresteguy (F.Pierresteguy@frcl.bull.fr).
 
-   Contributed by Frederic Pierresteguy.
-   Bug reports to F.Pierresteguy@frcl.bull.fr.
- */
+This file is part of GNU CC.
+
+GNU CC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU CC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU CC; see the file COPYING.  If not, write to
+the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+
 
 #ifndef USE_GAS
 #define MOTOROLA	   /* Use Motorola syntax rather than "MIT" */
@@ -64,6 +79,9 @@
  */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT 3
+
+/* The native assembler doesn't support fmovecr.  */
+#define NO_ASM_FMOVECR
 
 #undef EXTRA_SECTIONS
 #undef EXTRA_SECTION_FUNCTIONS
