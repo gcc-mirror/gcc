@@ -1511,7 +1511,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 					    / BITS_PER_UNIT));
 #endif /* READONLY_DATA_SECTION */
 #else /* JUMP_TABLES_IN_TEXT_SECTION */
-	      text_section ();
+	      function_section (current_function_decl);
 #endif /* JUMP_TABLES_IN_TEXT_SECTION */
 #ifdef ASM_OUTPUT_CASE_LABEL
 	      ASM_OUTPUT_CASE_LABEL (file, "L", CODE_LABEL_NUMBER (insn),
@@ -1600,7 +1600,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 				 insn);
 #endif
 
-	    text_section ();
+	    function_section (current_function_decl);
 
 	    break;
 	  }

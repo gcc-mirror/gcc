@@ -4923,7 +4923,7 @@ dwarfout_begin_block (blocknum)
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
-  text_section ();
+  function_section (current_function_decl);
   sprintf (label, BLOCK_BEGIN_LABEL_FMT, blocknum);
   ASM_OUTPUT_LABEL (asm_out_file, label);
 }
@@ -4937,7 +4937,7 @@ dwarfout_end_block (blocknum)
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
-  text_section ();
+  function_section (current_function_decl);
   sprintf (label, BLOCK_END_LABEL_FMT, blocknum);
   ASM_OUTPUT_LABEL (asm_out_file, label);
 }
@@ -4953,7 +4953,7 @@ dwarfout_label (insn)
     {
       char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
-      text_section ();
+      function_section (current_function_decl);
       sprintf (label, INSN_LABEL_FMT, current_funcdef_number,
 				      (unsigned) INSN_UID (insn));
       ASM_OUTPUT_LABEL (asm_out_file, label);
@@ -4969,7 +4969,7 @@ dwarfout_begin_function ()
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
-  text_section ();
+  function_section (current_function_decl);
   sprintf (label, BODY_BEGIN_LABEL_FMT, current_funcdef_number);
   ASM_OUTPUT_LABEL (asm_out_file, label);
 }
@@ -4982,7 +4982,7 @@ dwarfout_end_function ()
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
-  text_section ();
+  function_section (current_function_decl);
   sprintf (label, BODY_END_LABEL_FMT, current_funcdef_number);
   ASM_OUTPUT_LABEL (asm_out_file, label);
 }
@@ -5156,7 +5156,7 @@ dwarfout_line (filename, line)
       static unsigned prev_file_entry_num = (unsigned) -1;
       register unsigned this_file_entry_num = lookup_filename (filename);
 
-      text_section ();
+      function_section (current_function_decl);
       sprintf (label, LINE_CODE_LABEL_FMT, ++last_line_entry_num);
       ASM_OUTPUT_LABEL (asm_out_file, label);
 

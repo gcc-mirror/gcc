@@ -244,6 +244,23 @@ named_section (decl, name)
 #endif
     }
 }
+
+/* Switch to the section for function DECL.
+
+   If DECL is NULL_TREE, switch to the text section.
+   ??? It's not clear that we will ever be passed NULL_TREE, but it's
+   safer to handle it.  */
+
+void
+function_section (decl)
+     tree decl;
+{
+  if (decl != NULL_TREE
+      && DECL_SECTION_NAME (decl) != NULL_TREE)
+    named_section (decl, (char *) 0);
+ else
+   text_section ();
+}
 
 /* Create the rtl to represent a function, for a function definition.
    DECL is a FUNCTION_DECL node which describes which function.
@@ -733,10 +750,7 @@ assemble_start_function (decl, fnname)
 
   output_constant_pool (fnname, decl);
 
-  if (IN_NAMED_SECTION (decl))
-    named_section (decl, NULL);
-  else
-    text_section ();
+  function_section (decl);
 
   /* Tell assembler to move to target machine's alignment for functions.  */
   align = floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT);
