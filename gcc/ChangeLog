@@ -1,5 +1,11 @@
 2004-07-29  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
+	* tree-ssa-loop-im.c (force_move_till_expr, force_move_till):
+	Take orig_loop argument and pass it to set_level.
+	(schedule_sm): Pass the correct orig_loop to force_move_till.
+
+2004-07-29  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
 	* cfgloop.c (update_latch_info): Update dominator of the new block.
 	(canonicalize_loop_headers, flow_loops_find): Do not free dominance
 	info.

@@ -710,10 +710,10 @@ may_move_till (tree ref, tree *index, void *data)
 }
 
 /* Forces statements definining (invariant) SSA names in expression EXPR to be
-   moved out of the LOOP.  */
+   moved out of the LOOP.  ORIG_LOOP is the loop in that EXPR is used.  */
 
 static void
-force_move_till_expr (tree expr, struct loop *loop)
+force_move_till_expr (tree expr, struct loop *orig_loop, struct loop *loop)
 {
   char class = TREE_CODE_CLASS (TREE_CODE (expr));
   unsigned i, nops;
@@ -724,7 +724,7 @@ force_move_till_expr (tree expr, struct loop *loop)
       if (IS_EMPTY_STMT (stmt))
 	return;
 
-      set_level (stmt, bb_for_stmt (stmt)->loop_father, loop);
+      set_level (stmt, orig_loop, loop);
       return;
     }
 
@@ -736,24 +736,32 @@ force_move_till_expr (tree expr, struct loop *loop)
 
   nops = first_rtl_op (TREE_CODE (expr));
   for (i = 0; i < nops; i++)
-    force_move_till_expr (TREE_OPERAND (expr, i), loop);
+    force_move_till_expr (TREE_OPERAND (expr, i), orig_loop, loop);
 }
 
 /* Forces statement defining invariants in REF (and *INDEX) to be moved out of
-   the loop passed in DATA.  Callback for for_each_index.  */
+   the LOOP.  The reference REF is used in the loop ORIG_LOOP.  Callback for
+   for_each_index.  */
+
+struct fmt_data
+{
+  struct loop *loop;
+  struct loop *orig_loop;
+};
 
 static bool
 force_move_till (tree ref, tree *index, void *data)
 {
   tree stmt;
+  struct fmt_data *fmt_data = data;
 
   if (TREE_CODE (ref) == ARRAY_REF)
     {
       tree step = array_ref_element_size (ref);
       tree lbound = array_ref_low_bound (ref);
 
-      force_move_till_expr (step, data);
-      force_move_till_expr (lbound, data);
+      force_move_till_expr (step, fmt_data->orig_loop, fmt_data->loop);
+      force_move_till_expr (lbound, fmt_data->orig_loop, fmt_data->loop);
     }
 
   if (TREE_CODE (*index) != SSA_NAME)
@@ -763,7 +771,7 @@ force_move_till (tree ref, tree *index, void *data)
   if (IS_EMPTY_STMT (stmt))
     return true;
 
-  set_level (stmt, bb_for_stmt (stmt)->loop_father, data);
+  set_level (stmt, fmt_data->orig_loop, fmt_data->loop);
 
   return true;
 }
@@ -977,10 +985,13 @@ schedule_sm (struct loop *loop, edge *exits, unsigned n_exits, tree ref,
   tree tmp_var;
   unsigned i;
   tree load, store;
+  struct fmt_data fmt_data;
 
   tmp_var = make_rename_temp (TREE_TYPE (ref), "lsm_tmp");
 
-  for_each_index (&ref, force_move_till, loop);
+  fmt_data.loop = loop;
+  fmt_data.orig_loop = loop;
+  for_each_index (&ref, force_move_till, &fmt_data);
 
   rewrite_mem_refs (tmp_var, mem_refs);
   for (aref = mem_refs; aref; aref = aref->next)
