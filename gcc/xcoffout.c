@@ -485,6 +485,9 @@ xcoffout_declare_function (file, decl, name)
      file and/or at the wrong line number.  */
   xcoffout_source_file (file, DECL_SOURCE_FILE (decl), 0);
   dbxout_symbol (decl, 0);
+
+  /* .function NAME, TOP, MAPPING, TYPE, SIZE
+     16 and 044 are placeholders for backwards compatibility */
   fprintf (file, "\t.function .%s,.%s,16,044,FE..%s-.%s\n", n, n, n, n);
 }
 
