@@ -242,25 +242,11 @@ char *glevel_to_string	__proto((glevel_t));
 char *lang_to_string	__proto((lang_t));
 char *type_to_string	__proto((AUXU *, int));
 
-/* Library routines with prototypes.  */
-#if !defined(NO_LIB_PROTOTYPE) && !defined(_OSF_SOURCE) && !defined(_STDIO_H_)
-extern void	perror	__proto((const char *));
-extern char    *strcpy	__proto((char *, const char *));
-extern int	strlen	__proto((const char *));
-extern int	open	__proto((const char *, int, ...));
-#endif
-
-extern int	read	__proto((int, PTR_T, size_t));
-extern int	write	__proto((int, CPTR_T, size_t));
-extern int	close	__proto((int));
-extern off_t	lseek	__proto((int, off_t, int));
 extern PTR_T	malloc	__proto((size_t));
 extern PTR_T	calloc	__proto((size_t, size_t));
 extern PTR_T	realloc	__proto((PTR_T, size_t));
 extern void	free	__proto((PTR_T));
-extern void	exit	__proto((int));
 extern char    *ctime	__proto((time_t *));
-extern int	getopt	__proto((int, char **, const char *));
 
 extern char *optarg;
 extern int   optind;

@@ -55,7 +55,8 @@ enum delay_type {
 
 /* Which processor to schedule for.  Since there is no difference between
    a R2000 and R3000 in terms of the scheduler, we collapse them into
-   just an R3000.  */
+   just an R3000.  The elements of the enumeration must match exactly
+   the cpu attribute in the mips.md machine description.  */
 
 enum processor_type {
   PROCESSOR_DEFAULT,
@@ -63,6 +64,9 @@ enum processor_type {
   PROCESSOR_R6000,
   PROCESSOR_R4000
 };
+
+/* Recast the cpu class to be the cpu attribute.  */
+#define mips_cpu_attr ((enum attr_cpu)mips_cpu)
 
 /* Which type of block move to do (whether or not the last store is
    split out so it can fill a branch delay slot).  */
@@ -170,6 +174,8 @@ extern void		text_section ();
 
 #ifndef HALF_PIC_P
 #define HALF_PIC_P() 0
+#define HALF_PIC_NUMBER_PTRS 0
+#define HALF_PIC_NUMBER_REFS 0
 #define HALF_PIC_ENCODE(DECL)
 #define HALF_PIC_DECLARE(NAME)
 #define HALF_PIC_INIT()	error ("half-pic init called on systems that don't support it.")
@@ -420,7 +426,7 @@ while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define MIPS_VERSION "[AL 1.1, MM 17]"
+#define MIPS_VERSION "[AL 1.1, MM 18]"
 
 #ifndef MACHINE_TYPE
 #define MACHINE_TYPE "BSD Mips"
