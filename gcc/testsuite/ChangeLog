@@ -1,3 +1,19 @@
+2000-03-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.warn/impint.C: New test.
+	* g++.old-deja/g++.martin/sts_vectini.C: Add -w option.
+	* g++.old-deja/g++.pt/explicit10.C: Specify -w option.
+	* g++.old-deja/g++.pt/explicit12.C: Likewise.
+	* g++.old-deja/g++.pt/explicit13.C: Likewise.
+	* g++.old-deja/g++.pt/explicit17.C: Likewise.
+	* g++.old-deja/g++.pt/explicit18.C: Likewise.
+	* g++.old-deja/g++.pt/explicit19.C: Likewise.
+	* g++.old-deja/g++.pt/explicit23.C: Likewise.
+	* g++.old-deja/g++.pt/explicit31.C: Likewise.
+	* g++.old-deja/g++.pt/explicit35.C: Likewise.
+	* g++.old-deja/g++.pt/explicit6.C: Likewise.
+	* g++.old-deja/g++.pt/memclass7.C: Likewise.
+
 2000-03-01  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.dg/cpp-redef.c: New test.

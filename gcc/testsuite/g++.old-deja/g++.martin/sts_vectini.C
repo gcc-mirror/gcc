@@ -1,4 +1,4 @@
-// Special g++ Options: -O2
+// Special g++ Options: -O2 -w
 // egcs-bugs 1999-02-22 14:24 Stefan Schwarzer
 // sts@ica1.uni-stuttgart.de
 // optimizer problem in egcs <= 1.1.1

@@ -1,3 +1,4 @@
+// Special g++ Options: -ansi -pedantic-errors -w
 struct S 
 {
   template <class U>

@@ -1,5 +1,6 @@
 // Build don't link:
 // GROUPS passed templates
+// Special g++ Options: -ansi -pedantic-errors -w
 template <class T, class U>
 void foo(U u, T t);
 
