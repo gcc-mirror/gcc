@@ -1,3 +1,8 @@
+2004-09-22  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/6182:
+	* mauve-libgcj: Enable java.lang.Character tests.
+
 2004-09-22  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* Makefile.am (lib_org_ietf_jgss_la_DEPENDENCIES): Add missing

@@ -14,10 +14,6 @@ JDBC2.0
 # This a problem when running Mauve "standalone".
 !java.lang.reflect.Array.newInstance
 
-# Character.unicode seems to be very broken (the test)
-# Does not give meaningfull test results at the moment.
-!java.lang.Character.unicode
-
 # These are almost certainly buggy test cases.
 # The behaviour of the garbarge collector cannot be predicted.
 # Note the . at the end so we do test java.lang.reflect
