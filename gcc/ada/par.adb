@@ -1318,9 +1318,9 @@ begin
                end if;
             end;
 
-            --  Here if we are not skipping a file in multiple unit per file
-            --  mode. Parse the unit that we are interested in. Note that in
-            --  check syntax mode we are interested in all units in the file.
+         --  Here if we are not skipping a file in multiple unit per file
+         --  mode. Parse the unit that we are interested in. Note that in
+         --  check syntax mode we are interested in all units in the file.
 
          else
             declare
@@ -1355,25 +1355,38 @@ begin
 
                      Name := Uname (Uname'First .. Uname'Last - 2);
 
-                     if (Name = "ada"                    or else
-                         Name = "calendar"               or else
-                         Name = "interfaces"             or else
-                         Name = "system"                 or else
-                         Name = "machine_code"           or else
-                         Name = "unchecked_conversion"   or else
-                         Name = "unchecked_deallocation"
-                           or else (Name'Length > 4
-                                     and then
-                                       Name (Name'First .. Name'First + 3) =
-                                                                 "ada.")
-                           or else (Name'Length > 11
-                                     and then
-                                       Name (Name'First .. Name'First + 10) =
-                                                                 "interfaces.")
-                           or else (Name'Length > 7
-                                     and then
-                                       Name (Name'First .. Name'First + 6) =
-                                                                 "system."))
+                     if Name = "ada"                    or else
+                        Name = "calendar"               or else
+                        Name = "interfaces"             or else
+                        Name = "system"                 or else
+                        Name = "machine_code"           or else
+                        Name = "unchecked_conversion"   or else
+                        Name = "unchecked_deallocation"
+                     then
+                        Error_Msg
+                          ("language defined units may not be recompiled",
+                           Sloc (Unit (Comp_Unit_Node)));
+
+                     elsif Name'Length > 4
+                       and then
+                         Name (Name'First .. Name'First + 3) = "ada."
+                     then
+                        Error_Msg
+                          ("descendents of package Ada " &
+                             "may not be compiled",
+                           Sloc (Unit (Comp_Unit_Node)));
+
+                     elsif Name'Length > 11
+                       and then
+                         Name (Name'First .. Name'First + 10) = "interfaces."
+                     then
+                        Error_Msg
+                          ("descendents of package Interfaces " &
+                             "may not be compiled",
+                           Sloc (Unit (Comp_Unit_Node)));
+
+                     elsif Name'Length > 7
+                       and then Name (Name'First .. Name'First + 6) = "system."
                        and then Name /= "system.rpc"
                        and then
                          (Name'Length < 11
@@ -1381,7 +1394,8 @@ begin
                                                                  "system.rpc.")
                      then
                         Error_Msg
-                          ("language defined units may not be recompiled",
+                          ("descendents of package System " &
+                             "may not be compiled",
                            Sloc (Unit (Comp_Unit_Node)));
                      end if;
                   end;
