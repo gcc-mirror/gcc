@@ -198,7 +198,6 @@ init_output_buffer (buffer, prefix, maximum_length)
   output_set_prefix (buffer, prefix);
   
   buffer->cursor = NULL;
-  buffer->format_args = NULL;
 }
 
 /* Reinitialize BUFFER.  */
@@ -209,7 +208,6 @@ output_clear (buffer)
   obstack_free (&buffer->obstack, obstack_base (&buffer->obstack));
   buffer->line_length = 0;
   buffer->cursor = NULL;
-  buffer->format_args = NULL;
 }
 
 /* Finishes to construct a NULL-terminated character string representing
@@ -493,7 +491,7 @@ output_printf VPARAMS ((struct output_buffer *buffer, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  buffer->format_args = ap;
+  va_copy (buffer->format_args, ap);
   output_notice (buffer, msgid);
   va_end (buffer->format_args);
 }
@@ -510,17 +508,15 @@ line_wrapper_printf VPARAMS ((FILE *file, const char *msgid, ...))
   const char *msgid;
 #endif
   output_buffer buffer;
-  va_list ap;
   
-  VA_START (ap, msgid);
+  init_output_buffer (&buffer, NULL, output_maximum_width);
+  VA_START (buffer.format_args, msgid);
 
 #ifndef ANSI_PROTOTYPES
-  file = va_arg (ap, FILE *);
-  msgid = va_arg (ap, const char *);
+  file = va_arg (buffer.format_args, FILE *);
+  msgid = va_arg (buffer.format_args, const char *);
 #endif  
 
-  init_output_buffer (&buffer, NULL, output_maximum_width);
-  buffer.format_args = ap;
   output_notice (&buffer, msgid);
   output_flush_on (&buffer, file);
 
@@ -538,9 +534,9 @@ vline_wrapper_message_with_location (file, line, warn, msgid, ap)
 {
   output_buffer buffer;
   
-  init_output_buffer
-    (&buffer, build_location_prefix (file, line, warn), output_maximum_width);
-  buffer.format_args = ap;
+  init_output_buffer (&buffer, build_location_prefix (file, line, warn),
+		      output_maximum_width);
+  va_copy (buffer.format_args, ap);
   output_notice (&buffer, msgid);
   output_flush_on (&buffer, stderr);
 
@@ -681,9 +677,9 @@ v_message_with_decl (decl, warn, msgid, ap)
     {
       if (doing_line_wrapping ())
         {
-          buffer.format_args = ap;
+	  va_copy (buffer.format_args, ap);
           output_notice (&buffer, p);
-          ap = buffer.format_args;
+          va_copy (ap, buffer.format_args);
         }
       else
         vfprintf (stderr, p, ap);
