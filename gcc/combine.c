@@ -5933,7 +5933,8 @@ force_to_mode (x, mode, mask, reg, just_select)
 			      << INTVAL (XEXP (XEXP (x, 0), 1)));
 	  temp = gen_binary (GET_CODE (x), GET_MODE (x),
 			     XEXP (XEXP (x, 0), 0), temp);
-	  x = gen_binary (LSHIFTRT, GET_MODE (x), temp, XEXP (x, 1));
+	  x = gen_binary (LSHIFTRT, GET_MODE (x), temp,
+			  XEXP (XEXP (x, 0), 1));
 	  return force_to_mode (x, mode, mask, reg, next_select);
 	}
 
