@@ -3894,11 +3894,11 @@ static void
 init_libfuncs (optable, first_mode, last_mode, opname, suffix)
     register optab optable;
     register char *opname;
-    register enum machine_mode first_mode;
-    register enum machine_mode last_mode;
+    register int first_mode;
+    register int last_mode;
     register char suffix;
 {
-  register enum machine_mode mode;
+  register int mode;
   register unsigned opname_len = strlen (opname);
 
   for (mode = first_mode; (int) mode <= (int) last_mode;
