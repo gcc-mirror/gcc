@@ -1,3 +1,8 @@
+Mon Mar 29 15:11:10 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* invoke.texi (Code Gen Options): Attempt to clarify
+	-fcheck-memory-usage.  Minor edits to -fprefix-function-name.
+
 Mon Mar 29 20:52:47 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (maybe_eliminate_biv): For libcalls that set a giv, skip to
