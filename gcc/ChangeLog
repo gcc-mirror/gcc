@@ -1,3 +1,9 @@
+Fri Mar  2 12:18:13 2001  Christopher Faylor <cgf@cygnus.com>
+
+	* cppinit.c (append_include_chain): Mark "after" include file name list
+	as a system directory.
+	* cpp.texi: Document new behavior.
+
 Fri Mar  2 11:59:43 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* ifcvt.c (noce_operand_ok): Handle properly unarry operations.
