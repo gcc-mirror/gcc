@@ -2,7 +2,7 @@
 
 struct gorf {
   int stuff;
-  void snarf();
+  void snarf();			// ERROR - 
 };
 
 template <class T> void gorf::snarf() { return; }  // ERROR - 
