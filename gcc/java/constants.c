@@ -368,9 +368,12 @@ int
 alloc_class_constant (clas)
      tree clas;
 {
-
+  tree class_name = build_internal_class_name (clas);
+  
   return alloc_name_constant (CONSTANT_Class,
-			      build_internal_class_name (clas));
+			      (unmangle_classname 
+			       (IDENTIFIER_POINTER(class_name),
+				IDENTIFIER_LENGTH(class_name))));
 }
 
 /* Return a reference to the data array of the current constant pool. */

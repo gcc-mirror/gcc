@@ -1,3 +1,16 @@
+1999-02-17  Andrew Haley  <aph@cygnus.com>
+
+	* class.c (build_utf8_ref): Back out broken patch which was
+        intended to to output signatures using '.' as a separator.
+
+        * class.c (make_class_data): Output signatures using '.' as a
+        separator, rather than '/'.
+        (mangled_classname): Likewise.
+        (make_field_value): Likewise.
+        (make_method_value): Likewise.
+        * constants.c (alloc_class_constant): Likewise.
+        * expr.c (build_invokeinterface): Likewise.
+
 Thu Feb 11 21:25:51 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
  
  	* parse.y (valid_builtin_assignconv_identity_widening_p): Got rid
