@@ -1,3 +1,7 @@
+2000-08-25  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* error.c (cp_tree_printer): Rework.
+
 2000-08-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* Make-lang.in (CXX_LIB2FUNCS): Remove cp-demangle.o and
