@@ -3599,7 +3599,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	  if (((GET_CODE (op0) == NOT && rtx_equal_p (XEXP (op0, 0), op1))
 	       || (GET_CODE (op1) == NOT && rtx_equal_p (XEXP (op1, 0), op0)))
 	      && ! side_effects_p (op0)
-	      && mode == CCmode)
+	      && mode != CCmode)
 	    return constm1_rtx;
 	  break;
 
@@ -3610,7 +3610,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	      && (INTVAL (op1) & GET_MODE_MASK (mode)) == GET_MODE_MASK (mode))
 	    return gen_rtx (NOT, mode, op0);
 	  if (op0 == op1 && ! side_effects_p (op0)
-	      && mode == CCmode)
+	      && mode != CCmode)
 	    return const0_rtx;
 	  break;
 
@@ -3621,12 +3621,13 @@ simplify_binary_operation (code, mode, op0, op1)
 	      && (INTVAL (op1) & GET_MODE_MASK (mode)) == GET_MODE_MASK (mode))
 	    return op0;
 	  if (op0 == op1 && ! side_effects_p (op0)
-	      && mode == CCmode)
+	      && mode != CCmode)
 	    return op0;
 	  /* A & (~A) -> 0 */
 	  if (((GET_CODE (op0) == NOT && rtx_equal_p (XEXP (op0, 0), op1))
 	       || (GET_CODE (op1) == NOT && rtx_equal_p (XEXP (op1, 0), op0)))
-	      && ! side_effects_p (op0))
+	      && ! side_effects_p (op0)
+	      && mode != CCmode)
 	    return const0_rtx;
 	  break;
 
