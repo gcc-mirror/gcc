@@ -1,3 +1,9 @@
+1998-06-19  Jim Wilson  <wilson@cygnus.com>
+
+	* loop.h (struct induction): Clarify comment for unrolled field.
+	* unroll.c (find_splittable_givs): Move set of unrolled field
+	after address validity check.
+
 Fri Jun 19 18:38:04 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* config/fp-bit.c (INLINE): Only define if not already defined.

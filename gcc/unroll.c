@@ -2907,7 +2907,6 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 
 		  rtx tem = gen_reg_rtx (v->mode);
 		  record_base_value (REGNO (tem), v->add_val, 0);
-		  v->unrolled = 1;
 
 		  /* If the address giv has a constant in its new_reg value,
 		     then this constant can be pulled out and put in value,
@@ -2960,6 +2959,10 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		      continue;
 		    }
 		  
+		  /* We set this after the address check, to guarantee that
+		     the register will be initialized.  */
+		  v->unrolled = 1;
+
 		  /* To initialize the new register, just move the value of
 		     new_reg into it.  This is not guaranteed to give a valid
 		     instruction on machines with complex addressing modes.
