@@ -1535,16 +1535,19 @@ output_prolog (file, size)
 	asm_fprintf (file, "\t{stu|stwu} 1,%d(1)\n", - total_size);
       else
 	{
-	  asm_fprintf (file, "\t{cau|addis} 0,0,%d\n\t{oril|ori} 0,0,%d\n",
+	  asm_fprintf (file, "\t{cau 0,0,%d|lis 0,%d}\n\t{oril 0,0,%d|li 0,%d}\n",
 		   (total_size >> 16) & 0xffff, total_size & 0xffff);
-	  asm_fprintf (file, "\t{sf|subfc} 12,0,1\n");
-	  asm_fprintf (file, "\t{st|stw} 1,0(12)\n\t{oril|ori} 1,12,0\n");
+	  if (TARGET_POWERPC)
+	    asm_fprintf (file, "\tsubf 12,0,1\n");
+	  else
+	    asm_fprintf (file, "\t{sf|subfc} 12,0,1\n");
+	  asm_fprintf (file, "\t{st|stw} 1,0(12)\n\tmr 1,12\n");
 	}
     }
 
   /* Set frame pointer, if needed.  */
   if (frame_pointer_needed)
-    asm_fprintf (file, "\t{oril|ori} 31,1,0\n");
+    asm_fprintf (file, "\tmr 31,1\n");
 
   /* If TARGET_MINIMAL_TOC, and the constant pool is needed, then load the
      TOC_TABLE address into register 30.  */
@@ -1589,7 +1592,7 @@ output_epilog (file, size)
 	  || total_size > 32767)
 	asm_fprintf (file, "\t{l|lwz} 1,0(1)\n");
       else if (must_push)
-	asm_fprintf (file, "\t{ai|addic} 1,1,%d\n", total_size);
+	asm_fprintf (file, "\t{cal 1,%d(1)|addi 1,1,%d}\n", total_size);
 
       /* Get the old lr if we saved it.  */
       if (regs_ever_live[65])
