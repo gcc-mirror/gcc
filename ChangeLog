@@ -1,3 +1,9 @@
+2002-08-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.in (GCC_FOR_TARGET): Prepend STAGE_CC_WRAPPER.
+	* configure.in (CC_FOR_TARGET, GCJ_FOR_TARGET, CXX_FOR_TARGET,
+	CXX_FOR_TARGET_FOR_RECURSIVE_MAKE): Likewise.
+
 2002-08-16  Aldy Hernandez  <aldyh@redhat.com>
 
 	* MAINTAINERS: Add self to rs6000 vector extensions.
