@@ -1,3 +1,10 @@
+Sat Oct 25 12:20:58 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* mn10300.h (TARGET_SWITCHES): Add -mmult-bug and -mno-mult-bug.
+	(TARGET_MULT_BUG): Define.
+	(TARGET_DEFAULT): Default to TARGET_MULT_BUG.
+	* mn10300.md (mulsi3): Handle TARGET_MULT_BUG.
+
 Fri Oct 24 17:40:34 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* mn10200.c (indirect_memory_operand): Delete unused function.
