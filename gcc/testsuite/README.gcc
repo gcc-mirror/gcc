@@ -33,21 +33,12 @@ Current messages are:
 EXEC: program being executed (so compiler path and args are recorded)
 STAT: intermediate pass/fail statistics
 
-DO NOT PUT NON-PORTABLE TESTCASES IN gcc.c-torture.
-
-ANY TARGET SPECIFIC TESTCASE MUST HAVE APPROPRIATE CODE TO PREVENT IT FROM
-CAUSING A `FAILURE' ON UNSUPPORTED PLATFORMS.
-
 Test scripts must ignore the compiler messages "path prefix never used"
 and "linker input file unused".  Don't let their appearance cause a testcase
 to fail.  See lib/dg.exp for the exact regsub to use.
 
 If you're unclear about which directory a testcase should be installed in,
 ask gcc-local.
-
-Always use abort() for runtime failures, and exit(0) for success.
-The testing harness is set up to watch for these and do something appropriate
-(when necessary) for target boards.
 
 Have the text of a fail message be the same as that for pass.
 IE: have
@@ -68,4 +59,29 @@ not
 This lets test-tool (which drives the nightly tests) do a better job
 at tracking which tests have digressed or been fixed.
 
-Add more notes here.
+DO NOT PUT NON-PORTABLE TESTCASES IN gcc.c-torture.
+
+ANY TARGET SPECIFIC TESTCASE MUST HAVE APPROPRIATE CODE TO PREVENT IT FROM
+CAUSING A `FAILURE' ON UNSUPPORTED PLATFORMS.
+
+The "torture" tests are meant to be generic tests that can run on any
+target.  So you have to be careful about endianness, assumptions about
+sizes of datatypes, etc etc.
+
+For tests that merely need to compile, put them in the "compile" directory.
+
+For tests which should give an error, put them in the "noncompile" directory
+and update noncompile.exp appropriately (see examples in noncompile.exp).
+
+For IEEE FP specific tests, put them in execute/ieee.
+
+For execution tests, put them in execute.
+
+Always use abort() for runtime failures, and exit(0) for success.
+The testing harness is set up to watch for these and do something appropriate
+(when necessary) for target boards.
+
+If a test does not fit into the torture framework, use the dg framework.
+
+
+
