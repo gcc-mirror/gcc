@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.71.2.2 2001/02/19 20:19:06 bkoz Exp $
+## $Id: Makefile.am,v 1.71.2.3 2001/02/28 06:45:36 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -343,9 +343,11 @@ AM_CXXFLAGS = \
 LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) \
 	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
 
-# 3) We have a problem when building the shared libstdc++ object if
-# the rules automake generates would be used.  We cannot allow CXX to
-# be used in libtool since this would add -lstdc++ to the link line
-# which of course is problematic at this point.
-CXXLINK = $(LIBTOOL) --mode=link "$(CC)" \
+# 3) We'd have a problem when building the shared libstdc++ object if
+# the rules automake generates would be used.  We cannot allow g++ to
+# be used since this would add -lstdc++ to the link line which of
+# course is problematic at this point.  So, we get the top-level
+# directory to configure libstdc++-v3 to use gcc as the C++
+# compilation driver.
+CXXLINK = $(LIBTOOL) --tag CXX --mode=link $(CXX) \
 	  @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
