@@ -1560,14 +1560,16 @@ __bb_init_func (struct bb *blocks)
 #endif /* not BLOCK_PROFILER_CODE */
 #endif /* L_bb */
 
-/* frills for C++ */
+/* Default free-store management functions for C++, per sections 12.5 and
+   17.3.3 of the Working Paper. */
 
 #ifdef L_op_new
-typedef void (*vfp)(void);
+/* operator new (size_t), described in 17.3.3.5.  This function is used by
+   C++ programs to allocate a block of memory to hold a single object. */
 
+typedef void (*vfp)(void);
 extern vfp __new_handler;
 
-/* void * operator new (size_t sz) */
 void *
 __builtin_new (size_t sz)
 {
@@ -1587,7 +1589,23 @@ __builtin_new (size_t sz)
 }
 #endif /* L_op_new */
 
+#ifdef L_op_vec_new
+/* void * operator new [] (size_t), described in 17.3.3.6.  This function
+   is used by C++ programs to allocate a block of memory for an array.  */
+
+extern void * __builtin_new (size_t);
+
+void *
+__builtin_vec_new (size_t sz)
+{
+  return __builtin_new (sz);
+}
+#endif /* L_op_vec_new */
+
 #ifdef L_new_handler
+/* set_new_handler (fvoid_t *) and the default new handler, described in
+   17.3.3.2 and 17.3.3.5.  These functions define the result of a failure
+   to allocate the amount of memory requested from operator new or new []. */
 
 #ifndef inhibit_libc
 /* This gets us __GNU_LIBRARY__.  */
@@ -1602,15 +1620,12 @@ __builtin_new (size_t sz)
 #endif /* inhibit_libc */
 
 typedef void (*vfp)(void);
-
-extern void *__builtin_new (size_t);
-static void __default_new_handler (void);
+void __default_new_handler (void);
 
 vfp __new_handler = __default_new_handler;
 
 vfp
-__set_new_handler (handler)
-     vfp handler;
+set_new_handler (vfp handler)
 {
   vfp prev_handler;
 
@@ -1620,16 +1635,9 @@ __set_new_handler (handler)
   return prev_handler;
 }
 
-vfp
-set_new_handler (handler)
-     vfp handler;
-{
-  return __set_new_handler (handler);
-}
-
 #define MESSAGE "Virtual memory exceeded in `new'\n"
 
-static void
+void
 __default_new_handler ()
 {
   /* don't use fprintf (stderr, ...) because it may need to call malloc.  */
@@ -1643,7 +1651,10 @@ __default_new_handler ()
 #endif
 
 #ifdef L_op_delete
-/* void operator delete (void *ptr) */
+/* operator delete (void *), described in 17.3.3.3.  This function is used
+   by C++ programs to return to the free store a block of memory allocated
+   as a single object. */
+
 void
 __builtin_delete (void *ptr)
 {
@@ -1651,6 +1662,22 @@ __builtin_delete (void *ptr)
     free (ptr);
 }
 #endif
+
+#ifdef L_op_vec_delete
+/* operator delete [] (void *), described in 17.3.3.4.  This function is
+   used by C++ programs to return to the free store a block of memory
+   allocated as an array. */
+
+extern void __builtin_delete (void *);
+
+void
+__builtin_vec_delete (void *ptr)
+{
+  __builtin_delete (ptr);
+}
+#endif
+
+/* End of C++ free-store management functions */
 
 #ifdef L_shtab
 unsigned int __shtab[] = {
