@@ -176,7 +176,9 @@ Create long file names for included source files.  For example, if the
 header file @file{x.h} contains code, and was included in the file
 @file{a.c}, then running @command{gcov} on the file @file{a.c} will produce
 an output file called @file{a.c##x.h.gcov} instead of @file{x.h.gcov}.
-This can be useful if @file{x.h} is included in multiple source files.
+This can be useful if @file{x.h} is included in multiple source
+files. If you uses the @samp{-p} option, both the including and
+included file names will be complete path names.
 
 @item -p
 @itemx --preserve-paths
@@ -195,8 +197,8 @@ Output summaries for each function in addition to the file level summary.
 @itemx --object-directory @var{directory}
 @itemx --object-file @var{file}
 Specify either the directory containing the gcov data files, or the
-object path name. The @file{.bb}, @file{.bbg}, and
-@file{.da} data files are searched for using this option. If a directory
+object path name. The @file{.gcno}, and
+@file{.gcda} data files are searched for using this option. If a directory
 is specified, the data files are in that directory and named after the
 source file name, without its extension. If a file is specified here,
 the data files are named after that file, without its extension. If this
@@ -215,9 +217,13 @@ the source files. @command{gcov} produces files called
 @file{@var{mangledname}.gcov} in the current directory. These contain 
 the coverage information of the source file they correspond to. 
 One @file{.gcov} file is produced for each source file containing code, 
-which was compiled to produce the data files. The @file{.gcov} files 
-contain the ':' separated fields along with program source code. The 
-format is
+which was compiled to produce the data files. The @var{mangledname} part
+of the output file name is usually simply the source file name, but can
+be something more complicated if the @samp{-l} or @samp{-p} options are
+given. Refer to those options for details.
+
+The @file{.gcov} files contain the ':' separated fields along with
+program source code. The format is
 
 @smallexample
 @var{execution_count}:@var{line_number}:@var{source line text}
@@ -264,8 +270,8 @@ Here is a sample:
 
 @smallexample
         -:    0:Source:tmp.c
-        -:    0:Graph:tmp.bbg
-        -:    0:Data:tmp.da
+        -:    0:Graph:tmp.gcno
+        -:    0:Data:tmp.gcda
         -:    0:Runs:1
         -:    0:Programs:1
         -:    1:#include <stdio.h>
@@ -293,8 +299,8 @@ counts, and the output looks like this:
 
 @smallexample
         -:    0:Source:tmp.c
-        -:    0:Graph:tmp.bbg
-        -:    0:Data:tmp.da
+        -:    0:Graph:tmp.gcno
+        -:    0:Data:tmp.gcda
         -:    0:Runs:1
         -:    0:Programs:1
         -:    1:#include <stdio.h>
@@ -353,8 +359,8 @@ Here is a sample of a resulting @file{tmp.c.gcov} file:
 
 @smallexample
         -:    0:Source:tmp.c
-        -:    0:Graph:tmp.bbg
-        -:    0:Data:tmp.da
+        -:    0:Graph:tmp.gcno
+        -:    0:Data:tmp.gcda
         -:    0:Runs:1
         -:    0:Programs:1
         -:    1:#include <stdio.h>
@@ -464,18 +470,18 @@ many times the result was 1.
 
 @command{gcov} uses two files for profiling.  The names of these files
 are derived from the original @emph{object} file by substituting the
-file suffix with either @file{.bbg}, or @file{.da}.  All of these files
+file suffix with either @file{.gcno}, or @file{.gcda}.  All of these files
 are placed in the same directory as the object file, and contain data
 stored in a platform-independent format.
 
-The @file{.bbg} files is generated when the source file is compiled with
+The @file{.gcno} file is generated when the source file is compiled with
 the GCC @option{-ftest-coverage} option.  It contains information to
 reconstruct the basic block graphs and assign source line numbers to
 blocks.
 
-The @file{.da} file is generated when a program containing object files
+The @file{.gcda} file is generated when a program containing object files
 built with the GCC @option{-fprofile-arcs} option is executed.  A
-separate @file{.da} file is created for each object file compiled with
+separate @file{.gcda} file is created for each object file compiled with
 this option. It contains arc transition counts, and some summary
 information.
 
