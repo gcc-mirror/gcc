@@ -821,39 +821,6 @@ finalize_pic ()
   emit_insn (gen_rtx (USE, VOIDmode, pic_offset_table_rtx));
 }
 
-/* For the SPARC, REG and REG+CONST is cost 0, REG+REG is cost 1,
-   and addresses involving symbolic constants are cost 2.
-
-   We make REG+REG slightly more expensive because it might keep
-   a register live for longer than we might like.
-
-   PIC addresses are very expensive.
-
-   It is no coincidence that this has the same structure
-   as GO_IF_LEGITIMATE_ADDRESS.  */
-int
-sparc_address_cost (X)
-     rtx X;
-{
-#if 0
-  /* Handled before calling here.  */
-  if (GET_CODE (X) == REG)
-    { return 1; }
-#endif
-  if (GET_CODE (X) == PLUS)
-    {
-      if (GET_CODE (XEXP (X, 0)) == REG
-	  && GET_CODE (XEXP (X, 1)) == REG)
-	return 2;
-      return 1;
-    }
-  else if (GET_CODE (X) == LO_SUM)
-    return 1;
-  else if (GET_CODE (X) == HIGH)
-    return 2;
-  return 4;
-}
-
 /* Emit insns to move operands[1] into operands[0].
 
    Return 1 if we have written out everything that needs to be done to
