@@ -2005,6 +2005,56 @@ expand_call (exp, target, ignore)
        If they refer to the same register, this move will be a no-op, except
        when function inlining is being done.  */
     emit_move_insn (target, valreg);
+  else if (TYPE_MODE (TREE_TYPE (exp)) == BLKmode)
+    {
+      /* Some machines (the PA for example) want to return all small
+	 structures in registers regardless of the structure's alignment.
+	 
+	 Deal with them explicitly by copying from the return registers
+	 into the target MEM locations.  */
+      int bytes = int_size_in_bytes (TREE_TYPE (exp));
+      int n_regs = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+      int i;
+      enum machine_mode tmpmode;
+      
+      if (target == 0)
+	target = assign_stack_temp (BLKmode, bytes, 0);
+      MEM_IN_STRUCT_P (target) = AGGREGATE_TYPE_P (TREE_TYPE (exp));
+
+      /* We could probably emit more efficient code for machines
+	 which do not use strict alignment, but it doesn't seem
+	 worth the effort at the current time.  */
+      for (i = 0; i < n_regs; i++)
+	{
+	  rtx src = operand_subword_force (valreg, i, BLKmode);
+	  rtx dst = operand_subword (target, i, 1, BLKmode);
+	  int bitsize = MIN (TYPE_ALIGN (TREE_TYPE (exp)), BITS_PER_WORD);
+	  int bitpos, big_endian_correction = 0;
+	  
+	  /* Should never happen.  */
+	  if (src == NULL || dst == NULL)
+	    abort ();
+	  
+	  if (BYTES_BIG_ENDIAN && bytes < UNITS_PER_WORD)
+	    big_endian_correction
+	      = (BITS_PER_WORD - (bytes * BITS_PER_UNIT));
+	  
+	  for (bitpos = 0;
+	       bitpos < BITS_PER_WORD && bytes > 0;
+	       bitpos += bitsize, bytes -= bitsize / BITS_PER_UNIT)
+	    {
+	      int xbitpos = bitpos + big_endian_correction;
+	      
+	      store_bit_field (dst, bitsize, xbitpos, word_mode,
+			       extract_bit_field (src, bitsize, bitpos, 1,
+						  NULL_RTX, word_mode,
+						  word_mode,
+						  bitsize / BITS_PER_UNIT,
+						  BITS_PER_WORD),
+			       bitsize / BITS_PER_UNIT, BITS_PER_WORD);
+	    }
+	}
+    }
   else
     target = copy_to_reg (valreg);
 
@@ -2012,6 +2062,7 @@ expand_call (exp, target, ignore)
   /* If we promoted this return value, make the proper SUBREG.  TARGET
      might be const0_rtx here, so be careful.  */
   if (GET_CODE (target) == REG
+      && TYPE_MODE (TREE_TYPE (exp)) != BLKmode
       && GET_MODE (target) != TYPE_MODE (TREE_TYPE (exp)))
     {
       tree type = TREE_TYPE (exp);
