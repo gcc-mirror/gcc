@@ -1,3 +1,10 @@
+Wed Mar 17 18:20:24 1999  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/sparc.h (TARGET_SWITCHES, TARGET_OPTIONS):
+	Add descriptions.
+	* config/sparc/sp64-elf.h (SUBTARGET_SWITCHES): Likewise.
+	* config/sparc/splet.h (SUBTARGET_SWITCHES): Likewise.
+
 Wed Mar 17 14:51:19 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.h (HARD_REGNO_MODE_OK): Allow only 4 and 8 byte unit modes
