@@ -1,3 +1,9 @@
+2002-10-17  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/alpha/alpha.c (alpha_initialize_trampoline): Use
+	tramp, not addr, to pass the trampoline address to
+	__enable_execute_stack.
+
 Thu Oct 17 18:40:47 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* mmintrin.h: Guard by __MMX__
