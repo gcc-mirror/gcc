@@ -1,3 +1,8 @@
+2000-03-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* integrate.c (function_cannot_inline_p): Do inline functions that
+	return `void'.
+
 Sun Mar 26 11:37:55 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* stor-layout.c (layout_type, set_sizetype): early_type_list is

@@ -186,7 +186,8 @@ function_cannot_inline_p (fndecl)
     return N_("inline functions not supported for this return value type");
 
   /* We can't inline functions that return structures of varying size.  */
-  if (int_size_in_bytes (TREE_TYPE (TREE_TYPE (fndecl))) < 0)
+  if (TREE_CODE (TREE_TYPE (TREE_TYPE (fndecl))) != VOID_TYPE
+      && int_size_in_bytes (TREE_TYPE (TREE_TYPE (fndecl))) < 0)
     return N_("function with varying-size return value cannot be inline");
 
   /* Cannot inline a function with a varying size argument or one that
