@@ -123,7 +123,6 @@ tree alloc_stmt_list (void);
 void free_stmt_list (tree);
 tree force_labels_r (tree *, int *, void *);
 enum gimplify_status gimplify_va_arg_expr (tree *, tree *, tree *);
-tree std_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 
 /* In tree-nested.c.  */
 extern void lower_nested_functions (tree);
