@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime selector related functions
-   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
@@ -312,7 +312,7 @@ __sel_register_typed_name (const char *name, const char *types,
 	j->sel_types = (const char*)types;
       else {
 	j->sel_types = (char *) objc_malloc(strlen(types)+1);
-	strcpy(j->sel_types, types);
+	strcpy((char *)j->sel_types, types);
       }
       l = (struct objc_list*)sarray_get (__objc_selector_array, i);
     }
@@ -331,7 +331,7 @@ __sel_register_typed_name (const char *name, const char *types,
 	j->sel_types = (const char*)types;
       else {
 	j->sel_types = (char *) objc_malloc(strlen(types)+1);
-	strcpy(j->sel_types, types);
+	strcpy((char *)j->sel_types, types);
       }
       l = 0;
     }
@@ -341,14 +341,14 @@ __sel_register_typed_name (const char *name, const char *types,
   
   {
     int is_new = (l == 0);
-    char *new_name;
+    const char *new_name;
 
     /* Can we use the pointer or must copy name?  Don't copy if NULL */
     if ((is_const) || (name == 0))
       new_name = name;
     else {
       new_name = (char *) objc_malloc(strlen(name)+1);
-      strcpy(new_name, name);
+      strcpy((char *)new_name, name);
     }
 
     l = list_cons ((void*)j, l);
