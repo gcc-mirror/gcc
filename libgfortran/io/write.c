@@ -674,7 +674,7 @@ static void
 write_float (fnode *f, const char *source, int len)
 {
   double n;
-  int nb =0, res;
+  int nb =0, res, save_scale_factor;
   char * p, fin;
   fnode *f2 = NULL;
 
@@ -723,8 +723,10 @@ write_float (fnode *f, const char *source, int len)
     }
   else
     {
+      save_scale_factor = g.scale_factor;
       f2 = calculate_G_format(f, n, len, &nb);
       output_float (f2, n, len);
+      g.scale_factor = save_scale_factor;
       if (f2 != NULL)
         free_mem(f2);
 
