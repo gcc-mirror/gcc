@@ -1,9 +1,6 @@
 /* Definitions of target machine for GNU compiler, for Intel 860.
-   Copyright (C) 1989, 1991, 1993 Free Software Foundation, Inc.
-
-   Written by Richard Stallman (rms@ai.mit.edu).
-
-   Hacked substantially by Ron Guilmette (rfg@netcom.com) to cater to
+   Copyright (C) 1989, 1991, 1993, 1995 Free Software Foundation, Inc.
+   Hacked substantially by Ron Guilmette (rfg@segfault.us.com) to cater to
    the whims of the System V Release 4 assembler.
 
 This file is part of GNU CC.
@@ -415,11 +412,12 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 /* Value is the number of bytes of arguments automatically
    popped when returning from a subroutine call.
+   FUNDECL is the declaration node of the function (as a tree),
    FUNTYPE is the data type of the function (as a tree),
    or for a library call it is an identifier node for the subroutine name.
    SIZE is the number of bytes of arguments passed on the stack.  */
 
-#define RETURN_POPS_ARGS(FUNTYPE,SIZE) 0
+#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) 0
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).

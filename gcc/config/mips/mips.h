@@ -1800,6 +1800,8 @@ extern struct mips_frame_info current_frame_info;
    if the function pops no arguments and the caller must therefore
    pop them all after the function returns.
 
+   FUNDECL is the declaration node of the function (as a tree).
+
    FUNTYPE is a C variable whose value is a tree node that
    describes the function in question.  Normally it is a node of
    type `FUNCTION_TYPE' that describes the data type of the function.
@@ -1819,7 +1821,7 @@ extern struct mips_frame_info current_frame_info;
    argument popping will always be the responsibility of the
    calling function.  */
 
-#define RETURN_POPS_ARGS(FUNTYPE, SIZE) 0
+#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) 0
 
 
 /* Symbolic macros for the registers used to return integer and floating

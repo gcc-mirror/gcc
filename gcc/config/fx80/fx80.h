@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Alliant FX version.
-   Copyright (C) 1989, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1994, 1995 Free Software Foundation, Inc.
    Adapted from m68k.h by Paul Petersen (petersen@uicsrd.csrd.uiuc.edu)
    and Joe Weening (weening@gang-of-four.stanford.edu).
 
@@ -431,6 +431,7 @@ extern enum reg_class regno_reg_class[];
 
 /* Value is the number of bytes of arguments automatically
    popped when returning from a subroutine call.
+   FUNDECL is the declaration node of the function (as a tree),
    FUNTYPE is the data type of the function (as a tree),
    or for a library call it is an identifier node for the subroutine name.
    SIZE is the number of bytes of arguments passed on the stack. 
@@ -440,7 +441,7 @@ extern enum reg_class regno_reg_class[];
    could add to the pending stack adjustment the size of the argument
    descriptors that are pushed after the arguments.  */
 
-#define RETURN_POPS_ARGS(FUNTYPE,SIZE) (SIZE)
+#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) (SIZE)
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).

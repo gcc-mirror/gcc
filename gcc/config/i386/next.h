@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Intel x86 CPU running NeXTSTEP
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -214,7 +214,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    rely on the callee to pop it.  */
 
 #undef	RETURN_POPS_ARGS
-#define RETURN_POPS_ARGS(FUNTYPE,SIZE) 				\
+#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) 				\
   (TREE_CODE (FUNTYPE) == IDENTIFIER_NODE			\
    ? 0								\
    : (TARGET_RTD						\

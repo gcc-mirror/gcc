@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  Elxsi version.
-   Copyright (C) 1987, 1988, 1992 Free Software Foundation, Inc.
-   This port, done by Mike Stump <mrs@cygnus.com> in 1988, and is the first
+   Copyright (C) 1987, 1988, 1992, 1995 Free Software Foundation, Inc.
+   This port, done by Mike Stump <mrs@cygnus.com> in 1988, is the first
    64 bit port of GNU CC.
    Based upon the VAX port.
 
@@ -302,12 +302,13 @@ enum reg_class { NO_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 /* Value is 1 if returning from a function call automatically
    pops the arguments described by the number-of-args field in the call.
+   FUNDECL is the declaration node of the function (as a tree),
    FUNTYPE is the data type of the function (as a tree),
    or for a library call it is an identifier node for the subroutine name.
 
    On the Vax, the RET insn always pops all the args for any function.  */
 
-#define RETURN_POPS_ARGS(FUNTYPE,SIZE) (SIZE)
+#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) (SIZE)
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  AT&T we32000 version.
-   Copyright (C) 1991, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by John Wehle (john@feith1.uucp)
 
 This file is part of GNU CC.
@@ -304,10 +304,11 @@ enum reg_class { NO_REGS, GENERAL_REGS,
 
 /* Value is 1 if returning from a function call automatically
    pops the arguments described by the number-of-args field in the call.
+   FUNDECL is the declaration node of the function (as a tree),
    FUNTYPE is the data type of the function (as a tree),
    or for a library call it is an identifier node for the subroutine name. */
 
-#define RETURN_POPS_ARGS(FUNTYPE,SIZE) (SIZE)
+#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) (SIZE)
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).

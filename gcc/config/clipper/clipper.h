@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Clipper version.
-   Copyright (C) 1987, 1988, 1991, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 93, 94, 1995 Free Software Foundation, Inc.
    Contributed by Holger Teutsch (holger@hotbso.rhein-main.de)
 
 This file is part of GNU CC.
@@ -379,11 +379,12 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS, LIM_REG_CLASSES};
 
 /* Value is the number of bytes of arguments automatically
    popped when returning from a subroutine call.
+   FUNDECL is the declaration node of the function (as a tree),
    FUNTYPE is the data type of the function (as a tree),
    or for a library call it is an identifier node for the subroutine name.
    SIZE is the number of bytes of arguments passed on the stack. */
 
-#define RETURN_POPS_ARGS(FUNTYPE,SIZE) 0
+#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) 0
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).

@@ -1,7 +1,5 @@
-/* Definitions of target machine for GNU compiler, 
-   for Hitachi Super-H.
-   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
-
+/* Definitions of target machine for GNU compiler for Hitachi Super-H.
+   Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com)
 
 This file is part of GNU CC.
@@ -20,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-
+
 /* Run-time Target Specification.  */
 #define TARGET_SH
 
@@ -639,13 +637,14 @@ extern enum reg_class reg_class_from_letter[];
 
 /* Value is the number of byte of arguments automatically
    popped when returning from a subroutine call.
+   FUNDECL is the declaration node of the function (as a tree),
    FUNTYPE is the data type of the function (as a tree),
    or for a library call it is an identifier node for the subroutine name.
    SIZE is the number of bytes of arguments passed on the stack.
 
    On the SH, the caller does not pop any of its arguments that were passed
    on the stack.  */
-#define RETURN_POPS_ARGS(FUNTYPE, SIZE)  0
+#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE)  0
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).

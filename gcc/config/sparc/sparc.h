@@ -1177,11 +1177,12 @@ extern char leaf_reg_remap[];
 
 /* Value is the number of bytes of arguments automatically
    popped when returning from a subroutine call.
+   FUNDECL is the declaration node of the function (as a tree),
    FUNTYPE is the data type of the function (as a tree),
    or for a library call it is an identifier node for the subroutine name.
    SIZE is the number of bytes of arguments passed on the stack.  */
 
-#define RETURN_POPS_ARGS(FUNTYPE,SIZE) 0
+#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) 0
 
 /* Some subroutine macros specific to this machine.
    When !TARGET_FPU, put float return values in the general registers,

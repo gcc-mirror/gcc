@@ -761,6 +761,7 @@ extern enum reg_class regno_reg_class[];
 
 /* Value is the number of byte of arguments automatically
    popped when returning from a subroutine call.
+   FUNDECL is the declaration node of the function (as a tree),
    FUNTYPE is the data type of the function (as a tree),
    or for a library call it is an identifier node for the subroutine name.
    SIZE is the number of bytes of arguments passed on the stack.
@@ -774,7 +775,7 @@ extern enum reg_class regno_reg_class[];
    standard Unix calling sequences.  If the option is not selected,
    the caller must always pop the args.  */
 
-#define RETURN_POPS_ARGS(FUNTYPE,SIZE)   \
+#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE)   \
   ((TARGET_RTD && TREE_CODE (FUNTYPE) != IDENTIFIER_NODE	\
     && (TYPE_ARG_TYPES (FUNTYPE) == 0				\
 	|| (TREE_VALUE (tree_last (TYPE_ARG_TYPES (FUNTYPE)))	\
