@@ -4175,7 +4175,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	    {
 	      /* Type qualifiers on a function return type are normally
 		 permitted by the standard but have no effect, so give a
-		 warning at -W.  Qualifiers on a void return type have
+		 warning at -Wextra.  Qualifiers on a void return type have
 		 meaning as a GNU extension, and are banned on function
 		 definitions in ISO C.  FIXME: strictly we shouldn't
 		 pedwarn for qualified void return types except on function
@@ -6544,7 +6544,7 @@ c_expand_body (fndecl, nested_p, can_defer_p)
   if (nested_p)
     ggc_pop_context ();
 
-  /* With just -W, complain only if function returns both with
+  /* With just -Wextra, complain only if function returns both with
      and without a value.  */
   if (extra_warnings
       && current_function_returns_value

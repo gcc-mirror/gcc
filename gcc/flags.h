@@ -86,7 +86,8 @@ extern int inhibit_warnings;
 
 extern int warn_system_headers;
 
-/* Do print extra warnings (such as for uninitialized variables).  -W.  */
+/* Do print extra warnings (such as for uninitialized variables).
+   -W/-Wextra.  */
 
 extern int extra_warnings;
 

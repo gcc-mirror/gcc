@@ -212,7 +212,7 @@ in the following sections.
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
 @gccoptlist{
 -fsyntax-only  -pedantic  -pedantic-errors @gol
--w  -W  -Wall -Waggregate-return @gol
+-w  -Wextra  -Wall  -Waggregate-return @gol
 -Wcast-align  -Wcast-qual  -Wchar-subscripts  -Wcomment @gol
 -Wconversion  -Wno-deprecated-declarations @gol
 -Wdisabled-optimization  -Wno-div-by-zero  -Werror @gol
@@ -950,7 +950,7 @@ Print (on the standard output) a description of the command line options
 understood by @command{gcc}.  If the @option{-v} option is also specified
 then @option{--help} will also be passed on to the various processes
 invoked by @command{gcc}, so that they can display the command line options
-they accept.  If the @option{-W} option is also specified then command
+they accept.  If the @option{-Wextra} option is also specified then command
 line options which have no documentation associated with them will also
 be displayed.
 
@@ -2288,8 +2288,8 @@ To suppress this warning cast the expression to @samp{void}.
 All the above @option{-Wunused} options combined.
 
 In order to get a warning about an unused function parameter, you must
-either specify @samp{-W -Wunused} or separately specify
-@option{-Wunused-parameter}.
+either specify @samp{-Wextra -Wunused} (note that @samp{-Wall} implies
+@samp{-Wunused}), or separately specify @option{-Wunused-parameter}.
 
 @item -Wuninitialized
 @opindex Wuninitialized
@@ -2402,9 +2402,12 @@ in some cases, and there is no simple way to modify the code to suppress
 the warning.
 
 @table @gcctabopt
-@item -W
+@item -Wextra
 @opindex W
-Print extra warning messages for these events:
+@opindex Wextra
+(This option used to be called @option{-W}.  The older name is still
+supported, but the newer name is more descriptive.)  Print extra warning
+messages for these events:
 
 @itemize @bullet
 @item
@@ -2431,7 +2434,7 @@ For example, an expression such as @samp{x[i,j]} will cause a warning,
 but @samp{x[(void)i,j]} will not.
 
 @item
-An unsigned value is compared against zero with @samp{<} or @samp{<=}.
+An unsigned value is compared against zero with @samp{<} or @samp{>=}.
 
 @item
 A comparison like @samp{x<=y<=z} appears; this is equivalent to
@@ -2459,17 +2462,6 @@ incorrect result when the signed value is converted to unsigned.
 (But don't warn if @option{-Wno-sign-compare} is also specified.)
 
 @item
-An aggregate has a partly bracketed initializer.
-For example, the following code would evoke such a warning,
-because braces are missing around the initializer for @code{x.h}:
-
-@smallexample
-struct s @{ int f, g; @};
-struct t @{ struct s h; int i; @};
-struct t x = @{ 1, 2, 3 @};
-@end smallexample
-
-@item
 An aggregate has an initializer which does not initialize all members.
 For example, the following code would cause such a warning, because
 @code{x.h} would be implicitly initialized to zero:
@@ -2478,6 +2470,47 @@ For example, the following code would cause such a warning, because
 struct s @{ int f, g, h; @};
 struct s x = @{ 3, 4 @};
 @end smallexample
+
+@item
+A function parameter is declared without a type specifier in K&R-style
+functions:
+
+@smallexample
+void foo(bar) @{ @}
+@end smallexample
+
+@item
+An empty body occurs in an @samp{if} or @samp{else} statement.
+
+@item
+A pointer is compared against integer zero with @samp{<}, @samp{<=},
+@samp{>}, or @samp{>=}.
+
+@item
+A variable might be changed by @samp{longjmp} or @samp{vfork}.
+
+@item
+Any of several floating-point events that often indicate errors, such as
+overflow, underflow, loss of precision, etc.
+
+@item @r{(C++ only)}
+An enumerator and a non-enumerator both appear in a conditional expression.
+
+@item @r{(C++ only)}
+A non-static reference or non-static @samp{const} member appears in a
+class without constructors.
+
+@item @r{(C++ only)}
+Ambiguous virtual bases.
+
+@item @r{(C++ only)}
+Subscripting an array which has been declared @samp{register}.
+
+@item @r{(C++ only)}
+Taking the address of a variable which has been declared @samp{register}.
+
+@item @r{(C++ only)}
+A base class is not initialized in a derived class' copy constrcutor.
 @end itemize
 
 @item -Wno-div-by-zero
@@ -2678,8 +2711,8 @@ casts like @code{(unsigned) -1}.
 @cindex signed and unsigned values, comparison warning
 Warn when a comparison between signed and unsigned values could produce
 an incorrect result when the signed value is converted to unsigned.
-This warning is also enabled by @option{-W}; to get the other warnings
-of @option{-W} without this warning, use @samp{-W -Wno-sign-compare}.
+This warning is also enabled by @option{-Wextra}; to get the other warnings
+of @option{-Wextra} without this warning, use @samp{-Wextra -Wno-sign-compare}.
 
 @item -Waggregate-return
 @opindex Waggregate-return

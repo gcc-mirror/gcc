@@ -2148,7 +2148,7 @@ expand_expr_stmt_value (exp, want_value, maybe_last)
   if (want_value == -1)
     want_value = expr_stmts_for_value != 0;
 
-  /* If -W, warn about statements with no side effects,
+  /* If -Wextra, warn about statements with no side effects,
      except for an explicit cast to void (e.g. for assert()), and
      except for last statement in ({...}) where they may be useful.  */
   if (! want_value
