@@ -986,6 +986,33 @@ rtl_check_failed_type2 (r, n, c1, c2, file, line, func)
   fancy_abort (file, line, func);
 }
 
+void
+rtl_check_failed_code1 (r, code, file, line, func)
+    rtx r;
+    enum rtx_code code;
+    const char *file;
+    int line;
+    const char *func;
+{
+  error ("RTL check: expected code `%s', have `%s'",
+ 	 GET_RTX_NAME (code), GET_RTX_NAME (GET_CODE (r)));
+  fancy_abort (file, line, func);
+}
+
+void
+rtl_check_failed_code2 (r, code1, code2, file, line, func)
+    rtx r;
+    enum rtx_code code1, code2;
+    const char *file;
+    int line;
+    const char *func;
+{
+  error ("RTL check: expected code `%s' or `%s', have `%s'",
+ 	 GET_RTX_NAME (code1), GET_RTX_NAME (code2),
+	 GET_RTX_NAME (GET_CODE (r)));
+  fancy_abort (file, line, func);
+}
+
 /* XXX Maybe print the vector?  */
 void
 rtvec_check_failed_bounds (r, n, file, line, func)

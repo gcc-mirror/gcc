@@ -1495,18 +1495,16 @@ find_regno_fusage (insn, code, regno)
     return 0;
 
   for (link = CALL_INSN_FUNCTION_USAGE (insn); link; link = XEXP (link, 1))
-   {
-    register int regnote;
-    register rtx op;
+    {
+      register int regnote;
+      register rtx op, reg;
 
-    if (GET_CODE (op = XEXP (link, 0)) == code
-	&& GET_CODE (SET_DEST (op)) == REG
-	&& (regnote = REGNO (SET_DEST (op))) <= regno
-	&& regnote
-		+ HARD_REGNO_NREGS (regnote, GET_MODE (SET_DEST (op)))
-	    > regno)
-      return 1;
-   }
+      if (GET_CODE (op = XEXP (link, 0)) == code
+	  && GET_CODE (reg = XEXP (op, 0)) == REG
+	  && (regnote = REGNO (reg)) <= regno
+	  && regnote + HARD_REGNO_NREGS (regnote, GET_MODE (reg)) > regno)
+	return 1;
+    }
 
   return 0;
 }
