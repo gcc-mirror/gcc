@@ -1,3 +1,8 @@
+2004-09-17  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* doc/invoke.texi: Remove stray explanation on
+	-freduce-all-givs and -fmove-all-movables.
+
 2004-09-17  James Morrison  <phython@gcc.gnu.org>
 
 	* doc/cfg.texi: Use @smallexample.
