@@ -1,3 +1,18 @@
+2000-08-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* dependence.c (dependence_string, direction_string,
+	dump_one_node, dump_node_dependence): Hide unused identifiers.
+	(get_low_bound, normalize_coefficients): Match definition to
+	static prototype.
+	(get_one_coefficient): Initialize variables `value0_is_idx' and
+	`value1_is_idx'.
+	(ziv_test, gcd_test): Mark parameters with ATTRIBUTE_UNUSED.
+	(ziv_test): Delete variable `idx', use parameter `sub' instead.
+	(direction_merge): Avoid automatic aggregate initialization.
+	(have_dependence_p): Use `src' not `dest' to set `src_idx'.
+	Initialize variables `dest_idx' and `src_idx'.
+	(end_dependence_analysis): Avoid C89 style function definition.
+
 2000-08-24  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (time_char_table): Don't allow width with %F.

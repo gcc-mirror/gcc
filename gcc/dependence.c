@@ -59,12 +59,14 @@ Boston, MA 02111-1307, USA.  */
 */
 
 enum dependence_type {flow, anti, output, none};
+#if 0
 static const char * dependence_string [] = {"flow", "anti", "output", "none"};
-
+#endif
 enum direction_type {lt, le, eq, gt, ge, star, independent, undef};
+#if 0
 static const char * direction_string [] = {"<", "<=", "=", ">", ">=", "*",
 					   "INDEPENDENT", "UNDEFINED"};
-
+#endif
 enum def_use_type {def, use, init_def_use};
 
 enum du_status_type {seen, unseen};
@@ -208,8 +210,10 @@ static int find_gcd PARAMS ((int, int));
 static void merge_dependencies PARAMS ((enum direction_type[][MAX_SUBSCRIPTS],
 					int[][MAX_SUBSCRIPTS], int, int));
 static void dump_array_ref PARAMS ((tree));
+#if 0
 static void dump_one_node PARAMS ((def_use*, varray_type*));
 static void dump_node_dependence PARAMS ((void));
+#endif
 int search_dependence PARAMS ((tree));
 void remember_dest_for_dependence PARAMS ((tree));
 int have_dependence_p PARAMS ((rtx, rtx, enum direction_type[], int[]));
@@ -533,7 +537,7 @@ find_induction_variable (init_node, cond_node, incr_node, loop_def)
 
 /* Return the low bound for induction VARIABLE in NODE */
 
-int
+static int
 get_low_bound (node, variable)
      tree node;
      char *variable;
@@ -909,7 +913,7 @@ get_one_coefficient (node, coefficients, du, type)
     }
   else if (tree_op == MULT_EXPR)
     {
-      int value0, value1, value0_is_idx, value1_is_idx;
+      int value0, value1, value0_is_idx = 0, value1_is_idx = 0;
 
       value0 = get_one_coefficient (TREE_OPERAND (node, 0), coefficients, du,
 				    &tree_op_code);
@@ -931,7 +935,7 @@ get_one_coefficient (node, coefficients, du, type)
 
 /* Adjust the COEFFICIENTS as if loop LOOP_PTR were normalized to start at 0. */
 
-void
+static void
 normalize_coefficients (coefficients, loop_ptr, count)
      subscript coefficients [MAX_SUBSCRIPTS];
      loop *loop_ptr;
@@ -1047,15 +1051,13 @@ ziv_test (icoefficients, ocoefficients, direction, distance, loop_ptr, sub)
      subscript icoefficients [MAX_SUBSCRIPTS];
      subscript ocoefficients [MAX_SUBSCRIPTS];
      enum direction_type direction[MAX_SUBSCRIPTS][MAX_SUBSCRIPTS];
-     int distance[MAX_SUBSCRIPTS][MAX_SUBSCRIPTS];
+     int distance[MAX_SUBSCRIPTS][MAX_SUBSCRIPTS] ATTRIBUTE_UNUSED;
      loop *loop_ptr;
      int sub;
 {
-  int idx;
-
   if (ocoefficients[sub].offset !=
       icoefficients[sub].offset)
-    direction[loop_ptr->depth][idx] = independent;
+    direction[loop_ptr->depth][sub] = independent;
 }
 
 /* Determine the DIRECTION and DISTANCE dependency for subscript SUB of
@@ -1148,7 +1150,7 @@ gcd_test (icoefficients, ocoefficients, direction, distance, loop_ptr, sub)
      subscript icoefficients [MAX_SUBSCRIPTS];
      subscript ocoefficients [MAX_SUBSCRIPTS];
      enum direction_type direction[MAX_SUBSCRIPTS][MAX_SUBSCRIPTS];
-     int distance[MAX_SUBSCRIPTS][MAX_SUBSCRIPTS];
+     int distance[MAX_SUBSCRIPTS][MAX_SUBSCRIPTS] ATTRIBUTE_UNUSED;
      loop *loop_ptr;
      int sub;
 {
@@ -1222,7 +1224,7 @@ merge_dependencies (direction, distance, loop_count, subscript_count)
   int i, j;
   int sign;
 
-  enum direction_type direction_merge [8][8] = 
+  static const enum direction_type direction_merge [8][8] = 
   {{lt, le, le, star, star, lt, independent, lt},
    {le, le, le, star, star, le, independent, le},
    {le, le, eq, ge, ge, eq, independent, eq},
@@ -1292,6 +1294,7 @@ dump_array_ref (node)
 
 /* Dump def/use DU. */
 
+#if 0
 static void
 dump_one_node (du, seen)
      def_use *du;
@@ -1359,6 +1362,7 @@ dump_node_dependence (void)
     }
   VARRAY_FREE (seen);
 }
+#endif
 
 /* Return the index into 'dep_chain' if there is a dependency for destination
    dest_to_remember (set by remember_dest_for_dependence) and source node.
@@ -1420,7 +1424,7 @@ have_dependence_p (dest_rtx, src_rtx, direction, distance)
      enum direction_type direction[MAX_SUBSCRIPTS];
      int distance[MAX_SUBSCRIPTS];
 {
-  int dest_idx, src_idx;
+  int dest_idx = 0, src_idx = 0;
   rtx dest, src;
   dependence *dep_ptr;
 
@@ -1432,7 +1436,7 @@ have_dependence_p (dest_rtx, src_rtx, direction, distance)
   if (GET_CODE (SET_SRC (PATTERN (src_rtx))) == MEM)
     {
       src = SET_SRC (PATTERN (src_rtx));
-      src_idx = MEM_DEPENDENCY (dest) - 1;
+      src_idx = MEM_DEPENDENCY (src) - 1;
     }
   if (dest_idx >= 0 || src_idx >= 0)
     return 0;
@@ -1453,7 +1457,7 @@ have_dependence_p (dest_rtx, src_rtx, direction, distance)
 /* Cleanup when dependency analysis is complete. */
 
 void
-end_dependence_analysis (void)
+end_dependence_analysis ()
 {
   VARRAY_FREE (dep_chain);
 }
