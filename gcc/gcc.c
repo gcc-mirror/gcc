@@ -356,6 +356,8 @@ proper position among the other output files.  */
 
 /* This spec is used for telling cpp whether char is signed or not.  */
 #ifndef SIGNED_CHAR_SPEC
+/* Use #if rather than ?:
+   because MIPS C compiler rejects like ?: in initializers.  */
 #if DEFAULT_SIGNED_CHAR
 #define SIGNED_CHAR_SPEC "%{funsigned-char:-D__CHAR_UNSIGNED__}"
 #else
