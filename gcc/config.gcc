@@ -679,7 +679,7 @@ cris-*-elf | cris-*-none)
 	gas=yes
 	;;
 cris-*-linux*)
-	tm_file="elfos.h svr4.h linux.h ${tm_file} cris/linux.h"
+	tm_file="elfos.h svr4.h ${tm_file} linux.h cris/linux.h"
 	tmake_file="cris/t-cris t-slibgcc-elf-ver cris/t-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	case x${enable_threads} in
