@@ -1,5 +1,5 @@
 /* Optimize by combining instructions for GNU compiler.
-   Copyright (C) 1987, 88, 92-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -6052,8 +6052,11 @@ force_to_mode (x, mode, mask, reg, just_select)
 
   /* If this is a CALL or ASM_OPERANDS, don't do anything.  Some of the
      code below will do the wrong thing since the mode of such an
-     expression is VOIDmode.  */
-  if (code == CALL || code == ASM_OPERANDS)
+     expression is VOIDmode. 
+
+     Also do nothing if X is a CLOBBER; this can happen if X was
+     the return value from a call to gen_lowpart_for_combine.  */
+  if (code == CALL || code == ASM_OPERANDS || code == CLOBBER)
     return x;
 
   /* We want to perform the operation is its present mode unless we know
