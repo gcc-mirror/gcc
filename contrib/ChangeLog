@@ -1,3 +1,7 @@
+2001-06-14  Albert Chin-A-Young  <china@thewrittenword.com>
+
+        * contrib/gcc_update: Fix timestamp on gcc/f/intdoc.texi.
+
 2001-06-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* gennews: Set TERM to vt100 for Lynx.
