@@ -3784,10 +3784,9 @@ store_expr (exp, target, want_value)
 				       copy_size_rtx, NULL_RTX, 0,
 				       OPTAB_LIB_WIDEN);
 
-		  emit_cmp_insn (size, const0_rtx, LT, NULL_RTX,
-				 GET_MODE (size), 0, 0);
 		  label = gen_label_rtx ();
-		  emit_jump_insn (gen_blt (label));
+		  emit_cmp_and_jump_insns (size, const0_rtx, LT, NULL_RTX,
+					   GET_MODE (size), 0, 0, label);
 		}
 
 	      if (size != const0_rtx)
@@ -6653,17 +6652,15 @@ expand_expr (exp, target, tmode, modifier)
 	if (! (GET_CODE (index_val) == CONST_INT
 	       && GET_CODE (lo_r) == CONST_INT))
 	  {
-	    emit_cmp_insn (index_val, lo_r, LT, NULL_RTX,
-			   GET_MODE (index_val), iunsignedp, 0);
-	    emit_jump_insn (gen_blt (op1));
+	    emit_cmp_and_jump_insns (index_val, lo_r, LT, NULL_RTX,
+				     GET_MODE (index_val), iunsignedp, 0, op1);
 	  }
 
 	if (! (GET_CODE (index_val) == CONST_INT
 	       && GET_CODE (hi_r) == CONST_INT))
 	  {
-	    emit_cmp_insn (index_val, hi_r, GT, NULL_RTX,
-			   GET_MODE (index_val), iunsignedp, 0);
-	    emit_jump_insn (gen_bgt (op1));
+	    emit_cmp_and_jump_insns (index_val, hi_r, GT, NULL_RTX,
+				     GET_MODE (index_val), iunsignedp, 0, op1);
 	  }
 
 	/* Calculate the element number of bit zero in the first word
@@ -7361,9 +7358,8 @@ expand_expr (exp, target, tmode, modifier)
 	    temp = copy_to_reg (temp);
 
 	  op1 = gen_label_rtx ();
-	  emit_cmp_insn (temp, const0_rtx, EQ, NULL_RTX,
-			 GET_MODE (temp), unsignedp, 0);
-	  emit_jump_insn (gen_beq (op1));
+	  emit_cmp_and_jump_insns (temp, const0_rtx, EQ, NULL_RTX,
+				   GET_MODE (temp), unsignedp, 0, op1);
 	  emit_move_insn (temp, const1_rtx);
 	  emit_label (op1);
 	  return temp;
@@ -8709,8 +8705,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
 	  /* Test the result; if it is NaN, set errno=EDOM because
 	     the argument was not in the domain.  */
-	  emit_cmp_insn (target, target, EQ, 0, GET_MODE (target), 0, 0);
-	  emit_jump_insn (gen_beq (lab1));
+	  emit_cmp_and_jump_insns (target, target, EQ, 0, GET_MODE (target),
+				   0, 0, lab1);
 
 #ifdef TARGET_EDOM
 	  {
@@ -11562,8 +11558,8 @@ do_tablejump (index, mode, range, table_label, default_label)
      or equal to the minimum value of the range and less than or equal to
      the maximum value of the range.  */
 
-  emit_cmp_insn (index, range, GTU, NULL_RTX, mode, 1, 0);
-  emit_jump_insn (gen_bgtu (default_label));
+  emit_cmp_and_jump_insns (index, range, GTU, NULL_RTX, mode, 1,
+			   0, default_label);
 
   /* If index is in range, it must fit in Pmode.
      Convert to Pmode so we can index with it.  */

@@ -1714,12 +1714,12 @@ expand_expr_stmt (exp)
 	  rtx lab = gen_label_rtx ();
 	  
 	  /* Compare the value with itself to reference it.  */
-	  emit_cmp_insn (last_expr_value, last_expr_value, EQ,
-			 expand_expr (TYPE_SIZE (last_expr_type),
-				      NULL_RTX, VOIDmode, 0),
-			 BLKmode, 0,
-			 TYPE_ALIGN (last_expr_type) / BITS_PER_UNIT);
-	  emit_jump_insn ((*bcc_gen_fctn[(int) EQ]) (lab));
+	  emit_cmp_and_jump_insns (last_expr_value, last_expr_value, EQ,
+				   expand_expr (TYPE_SIZE (last_expr_type),
+						NULL_RTX, VOIDmode, 0),
+				   BLKmode, 0,
+				   TYPE_ALIGN (last_expr_type) / BITS_PER_UNIT,
+				   lab);
 	  emit_label (lab);
 	}
     }
@@ -5188,8 +5188,8 @@ expand_end_case (orig_index)
 				      index_expr, minval);
 		  minval = integer_zero_node;
 		  index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
-		  emit_cmp_insn (rangertx, index, LTU, NULL_RTX, omode, 1, 0);
-		  emit_jump_insn (gen_bltu (default_label));
+		  emit_cmp_and_jump_insns (rangertx, index, LTU, NULL_RTX,
+					   omode, 1, 0, default_label);
 		  /* Now we can safely truncate.  */
 		  index = convert_to_mode (index_mode, index, 0);
 		}
@@ -5358,8 +5358,8 @@ do_jump_if_equal (op1, op2, label, unsignedp)
       enum machine_mode mode = GET_MODE (op1);
       if (mode == VOIDmode)
 	mode = GET_MODE (op2);
-      emit_cmp_insn (op1, op2, EQ, NULL_RTX, mode, unsignedp, 0);
-      emit_jump_insn (gen_beq (label));
+      emit_cmp_and_jump_insns (op1, op2, EQ, NULL_RTX, mode, unsignedp,
+			       0, label);
     }
 }
 
@@ -5768,10 +5768,6 @@ emit_case_nodes (index, node, default_label, index_type)
   /* If INDEX has an unsigned type, we must make unsigned branches.  */
   int unsignedp = TREE_UNSIGNED (index_type);
   typedef rtx rtx_fn ();
-  rtx_fn *gen_bgt_pat = unsignedp ? gen_bgtu : gen_bgt;
-  rtx_fn *gen_bge_pat = unsignedp ? gen_bgeu : gen_bge;
-  rtx_fn *gen_blt_pat = unsignedp ? gen_bltu : gen_blt;
-  rtx_fn *gen_ble_pat = unsignedp ? gen_bleu : gen_ble;
   enum machine_mode mode = GET_MODE (index);
 
   /* See if our parents have already tested everything for us.
@@ -5797,20 +5793,19 @@ emit_case_nodes (index, node, default_label, index_type)
 
 	  if (node_is_bounded (node->right, index_type))
 	    {
-	      emit_cmp_insn (index, expand_expr (node->high, NULL_RTX,
-						 VOIDmode, 0),
-			     GT, NULL_RTX, mode, unsignedp, 0);
-
-	      emit_jump_insn ((*gen_bgt_pat) (label_rtx (node->right->code_label)));
+	      emit_cmp_and_jump_insns (index, expand_expr (node->high, NULL_RTX,
+							   VOIDmode, 0),
+				        GT, NULL_RTX, mode, unsignedp, 0,
+					label_rtx (node->right->code_label));
 	      emit_case_nodes (index, node->left, default_label, index_type);
 	    }
 
 	  else if (node_is_bounded (node->left, index_type))
 	    {
-	      emit_cmp_insn (index, expand_expr (node->high, NULL_RTX,
-						 VOIDmode, 0),
-			     LT, NULL_RTX, mode, unsignedp, 0);
-	      emit_jump_insn ((*gen_blt_pat) (label_rtx (node->left->code_label)));
+	      emit_cmp_and_jump_insns (index, expand_expr (node->high, NULL_RTX,
+							   VOIDmode, 0),
+				       LT, NULL_RTX, mode, unsignedp, 0,
+				       label_rtx (node->left->code_label));
 	      emit_case_nodes (index, node->right, default_label, index_type);
 	    }
 
@@ -5823,10 +5818,10 @@ emit_case_nodes (index, node, default_label, index_type)
 		= build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
 
 	      /* See if the value is on the right.  */
-	      emit_cmp_insn (index, expand_expr (node->high, NULL_RTX,
-						 VOIDmode, 0),
-			     GT, NULL_RTX, mode, unsignedp, 0);
-	      emit_jump_insn ((*gen_bgt_pat) (label_rtx (test_label)));
+	      emit_cmp_and_jump_insns (index, expand_expr (node->high, NULL_RTX,
+							   VOIDmode, 0),
+				       GT, NULL_RTX, mode, unsignedp, 0,
+				       label_rtx (test_label));
 
 	      /* Value must be on the left.
 		 Handle the left-hand subtree.  */
@@ -5854,10 +5849,11 @@ emit_case_nodes (index, node, default_label, index_type)
 	    {
 	      if (!node_has_low_bound (node, index_type))
 		{
-		  emit_cmp_insn (index, expand_expr (node->high, NULL_RTX,
-						     VOIDmode, 0),
-				 LT, NULL_RTX, mode, unsignedp, 0);
-		  emit_jump_insn ((*gen_blt_pat) (default_label));
+		  emit_cmp_and_jump_insns (index, expand_expr (node->high,
+							       NULL_RTX,
+							       VOIDmode, 0),
+					   LT, NULL_RTX, mode, unsignedp, 0,
+					   default_label);
 		}
 
 	      emit_case_nodes (index, node->right, default_label, index_type);
@@ -5894,10 +5890,11 @@ emit_case_nodes (index, node, default_label, index_type)
 	    {
 	      if (!node_has_high_bound (node, index_type))
 		{
-		  emit_cmp_insn (index, expand_expr (node->high, NULL_RTX,
-						     VOIDmode, 0),
-				 GT, NULL_RTX, mode, unsignedp, 0);
-		  emit_jump_insn ((*gen_bgt_pat) (default_label));
+		  emit_cmp_and_jump_insns (index, expand_expr (node->high,
+							       NULL_RTX,
+							       VOIDmode, 0),
+					   GT, NULL_RTX, mode, unsignedp, 0,
+					   default_label);
 		}
 
 	      emit_case_nodes (index, node->left, default_label, index_type);
@@ -5927,28 +5924,32 @@ emit_case_nodes (index, node, default_label, index_type)
 	     then handle the two subtrees.  */
 	  tree test_label = 0;
 
-	  emit_cmp_insn (index, expand_expr (node->high, NULL_RTX,
-					     VOIDmode, 0),
-			 GT, NULL_RTX, mode, unsignedp, 0);
 
 	  if (node_is_bounded (node->right, index_type))
 	    /* Right hand node is fully bounded so we can eliminate any
 	       testing and branch directly to the target code.  */
-	    emit_jump_insn ((*gen_bgt_pat) (label_rtx (node->right->code_label)));
+	    emit_cmp_and_jump_insns (index, expand_expr (node->high, NULL_RTX,
+							 VOIDmode, 0),
+				     GT, NULL_RTX, mode, unsignedp, 0,
+				     label_rtx (node->right->code_label));
 	  else
 	    {
 	      /* Right hand node requires testing.
 		 Branch to a label where we will handle it later.  */
 
 	      test_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-	      emit_jump_insn ((*gen_bgt_pat) (label_rtx (test_label)));
+	      emit_cmp_and_jump_insns (index, expand_expr (node->high, NULL_RTX,
+							   VOIDmode, 0),
+				       GT, NULL_RTX, mode, unsignedp, 0,
+				       label_rtx (test_label));
 	    }
 
 	  /* Value belongs to this node or to the left-hand subtree.  */
 
-	  emit_cmp_insn (index, expand_expr (node->low, NULL_RTX, VOIDmode, 0),
-			 GE, NULL_RTX, mode, unsignedp, 0);
-	  emit_jump_insn ((*gen_bge_pat) (label_rtx (node->code_label)));
+	  emit_cmp_and_jump_insns (index, expand_expr (node->low, NULL_RTX,
+						       VOIDmode, 0),
+				   GE, NULL_RTX, mode, unsignedp, 0,
+				   label_rtx (node->code_label));
 
 	  /* Handle the left-hand subtree.  */
 	  emit_case_nodes (index, node->left, default_label, index_type);
@@ -5972,18 +5973,18 @@ emit_case_nodes (index, node, default_label, index_type)
 	     if they are possible.  */
 	  if (!node_has_low_bound (node, index_type))
 	    {
-	      emit_cmp_insn (index, expand_expr (node->low, NULL_RTX,
-						 VOIDmode, 0),
-			     LT, NULL_RTX, mode, unsignedp, 0);
-	      emit_jump_insn ((*gen_blt_pat) (default_label));
+	      emit_cmp_and_jump_insns (index, expand_expr (node->low, NULL_RTX,
+							   VOIDmode, 0),
+				       LT, NULL_RTX, mode, unsignedp, 0,
+				       default_label);
 	    }
 
 	  /* Value belongs to this node or to the right-hand subtree.  */
 
-	  emit_cmp_insn (index, expand_expr (node->high, NULL_RTX,
-					     VOIDmode, 0),
-			 LE, NULL_RTX, mode, unsignedp, 0);
-	  emit_jump_insn ((*gen_ble_pat) (label_rtx (node->code_label)));
+	  emit_cmp_and_jump_insns (index, expand_expr (node->high, NULL_RTX,
+						       VOIDmode, 0),
+				   LE, NULL_RTX, mode, unsignedp, 0,
+				   label_rtx (node->code_label));
 
 	  emit_case_nodes (index, node->right, default_label, index_type);
 	}
@@ -5994,17 +5995,18 @@ emit_case_nodes (index, node, default_label, index_type)
 	     if they are possible.  */
 	  if (!node_has_high_bound (node, index_type))
 	    {
-	      emit_cmp_insn (index, expand_expr (node->high, NULL_RTX,
-						 VOIDmode, 0),
-			     GT, NULL_RTX, mode, unsignedp, 0);
-	      emit_jump_insn ((*gen_bgt_pat) (default_label));
+	      emit_cmp_and_jump_insns (index, expand_expr (node->high, NULL_RTX,
+							   VOIDmode, 0),
+				       GT, NULL_RTX, mode, unsignedp, 0,
+				       default_label);
 	    }
 
 	  /* Value belongs to this node or to the left-hand subtree.  */
 
-	  emit_cmp_insn (index, expand_expr (node->low, NULL_RTX, VOIDmode, 0),
-			 GE, NULL_RTX, mode, unsignedp, 0);
-	  emit_jump_insn ((*gen_bge_pat) (label_rtx (node->code_label)));
+	  emit_cmp_and_jump_insns (index, expand_expr (node->low, NULL_RTX,
+						       VOIDmode, 0),
+				   GE, NULL_RTX, mode, unsignedp, 0,
+				   label_rtx (node->code_label));
 
 	  emit_case_nodes (index, node->left, default_label, index_type);
 	}
@@ -6017,18 +6019,18 @@ emit_case_nodes (index, node, default_label, index_type)
 
 	  if (!node_has_high_bound (node, index_type))
 	    {
-	      emit_cmp_insn (index, expand_expr (node->high, NULL_RTX,
-						 VOIDmode, 0),
-			     GT, NULL_RTX, mode, unsignedp, 0);
-	      emit_jump_insn ((*gen_bgt_pat) (default_label));
+	      emit_cmp_and_jump_insns (index, expand_expr (node->high, NULL_RTX,
+							   VOIDmode, 0),
+				       GT, NULL_RTX, mode, unsignedp, 0,
+				       default_label);
 	    }
 
 	  if (!node_has_low_bound (node, index_type))
 	    {
-	      emit_cmp_insn (index, expand_expr (node->low, NULL_RTX,
-						 VOIDmode, 0),
-			     LT, NULL_RTX, mode, unsignedp, 0);
-	      emit_jump_insn ((*gen_blt_pat) (default_label));
+	      emit_cmp_and_jump_insns (index, expand_expr (node->low, NULL_RTX,
+							   VOIDmode, 0),
+				       LT, NULL_RTX, mode, unsignedp, 0,
+				       default_label);
 	    }
 
 	  emit_jump (label_rtx (node->code_label));

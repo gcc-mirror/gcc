@@ -2941,16 +2941,18 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
    constant and Y is not a constant, then the comparison is swapped to
    ensure that the comparison RTL has the canonical form.
 
+   UNSIGNEDP nonzero says that X and Y are unsigned; this matters if they
+   need to be widened by emit_cmp_insn.  UNSIGNEDP is also used to select
+   the proper branch condition code.
+
+   If X and Y have mode BLKmode, then SIZE specifies the size of both X and Y,
+   and ALIGN specifies the known shared alignment of X and Y. 
+
    MODE is the mode of the inputs (in case they are const_int).
-   UNSIGNEDP nonzero says that X and Y are unsigned;
-   this matters if they need to be widened.
 
-   If they have mode BLKmode, then SIZE specifies the size of both X and Y,
-   and ALIGN specifies the known shared alignment of X and Y.
-
-   COMPARISON is the rtl operator to compare with (EQ, NE, GT, etc.).
-   It is ignored for fixed-point and block comparisons;
-   it is used only for floating-point comparisons.  */
+   COMPARISON is the rtl operator to compare with (EQ, NE, GT, etc.).  It will
+   be passed unchanged to emit_cmp_insn, then potentially converted into an
+   unsigned variant based on UNSIGNEDP to select a proper jump instruction.  */
 
 void
 emit_cmp_and_jump_insns (x, y, comparison, size, mode, unsignedp, align, label)
@@ -2978,6 +2980,9 @@ emit_cmp_and_jump_insns (x, y, comparison, size, mode, unsignedp, align, label)
       op1 = y;
     }
   emit_cmp_insn (op0, op1, comparison, size, mode, unsignedp, align);
+
+  if (unsignedp)
+    comparison = unsigned_condition (comparison);
   emit_jump_insn ((*bcc_gen_fctn[(int) comparison]) (label));
 }
 
@@ -3701,8 +3706,8 @@ expand_float (to, from, unsignedp)
 	 correct its value by 2**bitwidth.  */
 
       do_pending_stack_adjust ();
-      emit_cmp_insn (from, const0_rtx, GE, NULL_RTX, GET_MODE (from), 0, 0);
-      emit_jump_insn (gen_bge (label));
+      emit_cmp_and_jump_insns (from, const0_rtx, GE, NULL_RTX, GET_MODE (from),
+			        0, 0, label);
 
       /* On SCO 3.2.1, ldexp rejects values outside [0.5, 1).
 	 Rather than setting up a dconst_dot_5, let's hope SCO
@@ -3909,8 +3914,8 @@ expand_fix (to, from, unsignedp)
 
 	  /* See if we need to do the subtraction.  */
 	  do_pending_stack_adjust ();
-	  emit_cmp_insn (from, limit, GE, NULL_RTX, GET_MODE (from), 0, 0);
-	  emit_jump_insn (gen_bge (lab1));
+	  emit_cmp_and_jump_insns (from, limit, GE, NULL_RTX, GET_MODE (from),
+				   0, 0, lab1);
 
 	  /* If not, do the signed "fix" and branch around fixup code.  */
 	  expand_fix (to, from, 0);
