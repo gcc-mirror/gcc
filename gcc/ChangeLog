@@ -1,3 +1,9 @@
+2005-03-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (struct_value_alias_set): New global variable.
+	(sparc_override_options): Initialize it.
+	(sparc_struct_value_rtx): Set it on the MEM to be returned.
+
 2005-03-13  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/predicates.md (mem_or_easy_const_operand): Delete.
