@@ -3464,7 +3464,8 @@ extern int type_num_arguments (tree);
 extern bool associative_tree_code (enum tree_code);
 extern bool commutative_tree_code (enum tree_code);
 extern tree get_case_label (tree);
-
+extern tree upper_bound_in_type (tree, tree);
+extern tree lower_bound_in_type (tree, tree);
 
 /* In stmt.c */
 

@@ -1,3 +1,14 @@
+2004-11-14  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/18431
+	* fold-const.c (associate_trees): Do not produce x + 0.
+	(fold_widened_comparison, fold_sign_changed_comparison): New functions.
+	(fold): Use them.
+	* tree-ssa-loop-niter.c (upper_bound_in_type, lower_bound_in_type):
+	Moved ...
+	* tree.c (upper_bound_in_type, lower_bound_in_type): Here.
+	* tree.h (upper_bound_in_type, lower_bound_in_type): Declare.
+
 2004-11-14  Eric Botcazou <ebotcazou@libertysurf.fr>
 
 	* doc/rtl.texi (SUBREG): Adjust BYTENUM value.
