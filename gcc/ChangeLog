@@ -1,3 +1,7 @@
+2002-10-24  Igor Shevlyakov <igor@microunity.com>
+
+        * varasm.c (struct rtx_const): Array size 16 for V16QImode.
+
 2002-10-24  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (x86_output_mi_thunk): Fix x86_64 pic jump.
