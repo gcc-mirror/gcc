@@ -1,3 +1,12 @@
+2001-12-29  Richard Henderson  <rth@redhat.com>
+
+	* loop.c (prescan_loop): Set has_multiple_exit_targets for exception
+	edges.  Rearrange jump interpretation code to use pc_set.
+	(check_dbra_loop): Examine has_multiple_exit_targets not exit_count.
+
+	* sched-deps.c (sched_analyze_insn): Set scheduling barrier for
+	all insns that can throw, not just if flag_non_call_exceptions.
+
 2001-12-29  Stan Shebs  <shebs@apple.com>
 
 	* objc/objc-act.c (STRING_OBJECT_CLASS_NAME): Remove.
