@@ -46,7 +46,7 @@ static tree convert_for_assignment PARAMS ((tree, tree, const char *, tree,
 					  int));
 static tree pointer_int_sum PARAMS ((enum tree_code, tree, tree));
 static tree rationalize_conditional_expr PARAMS ((enum tree_code, tree));
-static int comp_target_parms PARAMS ((tree, tree, int));
+static int comp_target_parms PARAMS ((tree, tree));
 static int comp_ptr_ttypes_real PARAMS ((tree, tree, int));
 static int comp_ptr_ttypes_const PARAMS ((tree, tree));
 static int comp_ptr_ttypes_reinterpret PARAMS ((tree, tree));
@@ -1251,7 +1251,7 @@ comp_target_types (ttl, ttr, nptrs)
 	  argsr = TREE_CHAIN (argsr);
 	}
 
-	switch (comp_target_parms (argsl, argsr, 1))
+	switch (comp_target_parms (argsl, argsr))
 	  {
 	  case 0:
 	    return 0;
@@ -1472,9 +1472,8 @@ compparms (parms1, parms2)
    (jason 17 Apr 1997)  */
 
 static int
-comp_target_parms (parms1, parms2, strict)
+comp_target_parms (parms1, parms2)
      tree parms1, parms2;
-     int strict;
 {
   register tree t1 = parms1, t2 = parms2;
   int warn_contravariance = 0;
@@ -1504,13 +1503,7 @@ comp_target_parms (parms1, parms2, strict)
       /* If one parmlist is shorter than the other,
 	 they fail to match, unless STRICT is <= 0.  */
       if (t1 == 0 || t2 == 0)
-	{
-	  if (strict > 0)
-	    return 0;
-	  if (strict < 0)
-	    return 1 + warn_contravariance;
-	  return ((t1 && TREE_PURPOSE (t1)) + warn_contravariance);
-	}
+	return 0;
       p1 = TREE_VALUE (t1);
       p2 = TREE_VALUE (t2);
       if (same_type_p (p1, p2))
@@ -1523,11 +1516,6 @@ comp_target_parms (parms1, parms2, strict)
 	  || (TREE_CODE (p1) == REFERENCE_TYPE
 	      && TREE_CODE (p2) == REFERENCE_TYPE))
 	{
-	  if (strict <= 0
-	      && (TYPE_MAIN_VARIANT (TREE_TYPE (p1))
-		  == TYPE_MAIN_VARIANT (TREE_TYPE (p2))))
-	    continue;
-
 	  /* The following is wrong for contravariance,
 	     but many programs depend on it.  */
 	  if (TREE_TYPE (p1) == void_type_node)
@@ -1550,8 +1538,7 @@ comp_target_parms (parms1, parms2, strict)
 	      warn_contravariance = 1;
 	      continue;
 	    }
-	  if (strict != 0)
-	    return 0;
+	  return 0;
 	}
     }
   return warn_contravariance ? -1 : 1;

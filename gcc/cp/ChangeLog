@@ -1,3 +1,8 @@
+2000-07-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* typeck.c (comp_target_parms): Remove obsolete parameter.
+	(comp_target_types): Adjust.
+
 2000-07-17  Jason Merrill  <jason@redhat.com>
 
 	* typeck.c (mark_addressable): Never set TREE_USED.
