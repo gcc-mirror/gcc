@@ -323,7 +323,7 @@ do_friend (ctype, declarator, decl, parmdecls, attrlist,
     }
 
   if (TREE_CODE (decl) != FUNCTION_DECL)
-    my_friendly_abort (990513);
+    abort ();
 
   is_friend_template = PROCESSING_REAL_TEMPLATE_DECL_P ();
 

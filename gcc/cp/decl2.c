@@ -1653,7 +1653,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
       DECL_IN_AGGR_P (value) = 1;
       return value;
     }
-  my_friendly_abort (21);
+  abort ();
   /* NOTREACHED */
   return NULL_TREE;
 }
@@ -2383,7 +2383,7 @@ output_vtable_inherit (vars)
       parent_rtx = XEXP (DECL_RTL (parent), 0);  /* strip the mem ref  */
     }
   else
-    my_friendly_abort (980826);
+    abort ();
 
   assemble_vtable_inherit (child_rtx, parent_rtx);
 }
@@ -2833,7 +2833,7 @@ start_static_storage_duration_function ()
       /* Overflow occurred.  That means there are at least 4 billion
 	 initialization functions.  */
       sorry ("too many initialization functions required");
-      my_friendly_abort (19990430);
+      abort ();
     }
 
   /* Create the parameters.  */
@@ -3804,7 +3804,7 @@ build_expr_from_tree (t)
 	return build_x_compound_expr
 	  (build_expr_from_tree (TREE_OPERAND (t, 0)));
       else
-	my_friendly_abort (42);
+	abort ();
 
     case METHOD_CALL_EXPR:
       if (TREE_CODE (TREE_OPERAND (t, 0)) == SCOPE_REF)
@@ -4022,7 +4022,7 @@ finish_decl_parsing (decl)
     case TEMPLATE_ID_EXPR:
       return decl;
     default:
-      my_friendly_abort (5);
+      abort ();
       return NULL_TREE;
     }
 }
@@ -4670,7 +4670,7 @@ arg_assoc_type (k, type)
 	return 0;
       /* else fall through */
     default:
-      my_friendly_abort (390);
+      abort ();
     }
   return 0;
 }
@@ -4865,7 +4865,7 @@ validate_nonmember_using_decl (decl, scope, name)
       return NULL_TREE;
     }
   else
-    my_friendly_abort (382);
+    abort ();
   if (DECL_P (*name))
     *name = DECL_NAME (*name);
   /* Make a USING_DECL. */

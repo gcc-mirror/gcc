@@ -159,7 +159,7 @@ hack_identifier (value, name)
 	      fndecl = TREE_VALUE (fields);
 	      my_friendly_assert (TREE_CODE (fndecl) == FUNCTION_DECL, 251);
 	      /* I could not trigger this code. MvL */
-	      my_friendly_abort (980325);
+	      abort ();
 #ifdef DEAD
 	      if (DECL_CHAIN (fndecl) == NULL_TREE)
 		{
@@ -1020,7 +1020,7 @@ implicitly_declare_fn (kind, type, const_p)
       break;
     }
     default:
-      my_friendly_abort (59);
+      abort ();
     }
 
   TREE_PARMLIST (args) = 1;

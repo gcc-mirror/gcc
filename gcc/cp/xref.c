@@ -376,7 +376,7 @@ GNU_xref_decl (fndecl,decl)
       else if (TREE_CODE (DECL_RESULT (decl)) == VAR_DECL)
 	cls = "VARTEMP";
       else
-	my_friendly_abort (358);
+	abort ();
       uselin = TRUE;
     }
   else cls = "UNKNOWN";

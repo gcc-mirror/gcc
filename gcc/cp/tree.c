@@ -127,7 +127,7 @@ lvalue_p_1 (ref, treat_class_rvalues_as_lvalues)
 
       /* A currently unresolved scope ref.  */
     case SCOPE_REF:
-      my_friendly_abort (103);
+      abort ();
     case OFFSET_REF:
       if (TREE_CODE (TREE_OPERAND (ref, 1)) == FUNCTION_DECL)
 	return clk_ordinary;
@@ -896,7 +896,7 @@ count_functions (t)
       return i;
     }
 
-  my_friendly_abort (359);
+  abort ();
   return 0;
 }
 
@@ -1049,7 +1049,7 @@ lang_printable_name (decl, v)
       if (ring_counter == PRINT_RING_SIZE)
 	ring_counter = 0;
       if (decl_ring[ring_counter] == current_function_decl)
-	my_friendly_abort (106);
+	abort ();
     }
 
   if (print_ring[ring_counter])
@@ -1155,7 +1155,7 @@ verify_stmt_tree_r (tp, walk_subtrees, data)
   /* If this statement is already present in the hash table, then
      there is a circularity in the statement tree.  */
   if (htab_find (*statements, t))
-    my_friendly_abort (20000727);
+    abort ();
   
   slot = htab_find_slot (*statements, t, INSERT);
   *slot = t;
@@ -1480,7 +1480,7 @@ get_type_decl (t)
   if (t == error_mark_node)
     return t;
   
-  my_friendly_abort (42);
+  abort ();
 
   /* Stop compiler from complaining control reaches end of non-void function.  */
   return 0;

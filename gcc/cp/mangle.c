@@ -361,7 +361,7 @@ add_substitution (node)
 	    || (TYPE_P (node) 
 		&& TYPE_P (candidate) 
 		&& same_type_p (node, candidate)))
-	  my_friendly_abort (20000524);
+	  abort ();
       }
   }
 #endif /* ENABLE_CHECKING */
@@ -779,7 +779,7 @@ write_unscoped_name (decl)
 	   || TREE_CODE (context) == FUNCTION_DECL)
     write_unqualified_name (decl);
   else 
-    my_friendly_abort (20000521);
+    abort ();
 }
 
 /* <unscoped-template-name> ::= <unscoped-name>
@@ -923,7 +923,7 @@ write_template_prefix (node)
     template = CLASSTYPE_TI_TEMPLATE (type);
   else
     /* Oops, not a template.  */
-    my_friendly_abort (20000524);
+    abort ();
 
   /* For a member template, though, the template name for the
      innermost name must have all the outer template levels
@@ -1185,7 +1185,7 @@ write_special_name_constructor (ctor)
   else if (DECL_BASE_CONSTRUCTOR_P (ctor))
     write_string ("C2");
   else
-    my_friendly_abort (20001115);
+    abort ();
 }
 
 /* Handle destructor productions of non-terminal <special-name>.
@@ -1214,7 +1214,7 @@ write_special_name_destructor (dtor)
   else if (DECL_BASE_DESTRUCTOR_P (dtor))
     write_string ("D2");
   else
-    my_friendly_abort (20001115);
+    abort ();
 }
 
 /* Return the discriminator for ENTITY appearing inside
@@ -1445,7 +1445,7 @@ write_type (type)
 	  break;
 
 	default:
-	  my_friendly_abort (20000409);
+	  abort ();
 	}
     }
 
@@ -1558,7 +1558,7 @@ write_builtin_type (type)
 	      tree t = type_for_mode (TYPE_MODE (type), TREE_UNSIGNED (type));
 	      if (type == t)
 		/* Couldn't find this type.  */
-		my_friendly_abort (20000408);
+		abort ();
 	      type = t;
 	      goto iagain;
 	    }
@@ -1575,11 +1575,11 @@ write_builtin_type (type)
       else if (type == long_double_type_node)
 	write_char ('e');
       else
-	my_friendly_abort (20000409);
+	abort ();
       break;
 
     default:
-      my_friendly_abort (20000509);
+      abort ();
     }
 }
 
@@ -1877,7 +1877,7 @@ write_template_arg_literal (value)
 	  else if (value == boolean_true_node)
 	    write_unsigned_number (1);
 	  else 
-	    my_friendly_abort (20000412);
+	    abort ();
 	}
       else
 	write_integer_cst (value);
@@ -1902,7 +1902,7 @@ write_template_arg_literal (value)
 #endif
     }
   else
-    my_friendly_abort (20000412);
+    abort ();
 
   write_char ('E');
 }
@@ -2069,7 +2069,7 @@ write_template_param (parm)
       break;
 
     default:
-      my_friendly_abort (20000523);
+      abort ();
     }
 
   write_char ('T');
@@ -2477,6 +2477,6 @@ write_java_integer_type_codes (type)
   else if (type == java_boolean_type_node)
     write_char ('b');
   else
-    my_friendly_abort (20001207);
+    abort ();
 }
 

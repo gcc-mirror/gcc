@@ -1,3 +1,10 @@
+2002-01-23  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	* call.c, class.c, decl.c, decl2.c, error.c, expr.c, friend.c, 
+	init.c, lex.c, mangle.c, method.c, pt.c, repo.c, rtti.c, search.c, 
+	semantics.c, spew.c, tree.c, typeck.c, typeck2.c, xref.c: 
+	Change my_fancy_abort() to abort().
+
 2002-01-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/5453

@@ -1414,7 +1414,7 @@ lookup_member (xbasetype, name, protect, want_type)
 			  980827);
     }
   else
-    my_friendly_abort (97);
+    abort ();
 
   complete_type (type);
 

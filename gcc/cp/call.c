@@ -206,7 +206,7 @@ check_dtor_name (basetype, name)
   else if (DECL_CLASS_TEMPLATE_P (name))
     return 0;
   else
-    my_friendly_abort (980605);
+    abort ();
 
   if (name && TYPE_MAIN_VARIANT (basetype) == TYPE_MAIN_VARIANT (name))
     return 1;
@@ -423,7 +423,7 @@ build_call (function, parms)
 	  || !strncmp (IDENTIFIER_POINTER (DECL_NAME (decl)), "__", 2))
 	mark_used (decl);
       else
-	my_friendly_abort (990125);
+	abort ();
     }
 
   /* Don't pass empty class objects by value.  This is useful
@@ -1932,7 +1932,7 @@ add_builtin_candidate (candidates, code, code2, fnname, type1, type2,
 	  return candidates;
 
 	default:
-	  my_friendly_abort (367);
+	  abort ();
 	}
       type1 = build_reference_type (type1);
       break;
@@ -1976,7 +1976,7 @@ add_builtin_candidate (candidates, code, code2, fnname, type1, type2,
       return candidates;
 
     default:
-      my_friendly_abort (367);
+      abort ();
     }
 
   /* If we're dealing with two pointer types or two enumeral types,
@@ -3260,7 +3260,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
     case VEC_DELETE_EXPR:
     case DELETE_EXPR:
       /* Use build_op_new_call and build_op_delete_call instead. */
-      my_friendly_abort (981018);
+      abort ();
 
     case CALL_EXPR:
       return build_object_call (arg1, arg2);
@@ -3565,7 +3565,7 @@ builtin:
       return NULL_TREE;
 
     default:
-      my_friendly_abort (367);
+      abort ();
       return NULL_TREE;
     }
 }
@@ -4447,7 +4447,7 @@ in_charge_arg_for_name (name)
 
   /* This function should only be called with one of the names listed
      above.  */
-  my_friendly_abort (20000411);
+  abort ();
   return NULL_TREE;
 }
 
@@ -5152,7 +5152,7 @@ source_type (t)
 	  || TREE_CODE (t) == IDENTITY_CONV)
 	return TREE_TYPE (t);
     }
-  my_friendly_abort (1823);
+  abort ();
 }
 
 /* Note a warning about preferring WINNER to LOSER.  We do this by storing
@@ -5236,7 +5236,7 @@ joust (cand1, cand2, warn)
 	  --len;
 	}
       else
-	my_friendly_abort (42);
+	abort ();
     }
 
   for (i = 0; i < len; ++i)

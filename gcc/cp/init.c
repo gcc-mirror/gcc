@@ -1737,7 +1737,7 @@ build_offset_ref (type, name)
   /* static class functions too.  */
   if (TREE_CODE (t) == FUNCTION_DECL
       && TREE_CODE (TREE_TYPE (t)) == FUNCTION_TYPE)
-    my_friendly_abort (53);
+    abort ();
 
   /* In member functions, the form `type::name' is no longer
      equivalent to `this->type::name', at least not until
@@ -1887,7 +1887,7 @@ resolve_offset_ref (exp)
     {
       return get_member_function_from_ptrfunc (&addr, member);
     }
-  my_friendly_abort (56);
+  abort ();
   /* NOTREACHED */
   return NULL_TREE;
 }
@@ -1976,7 +1976,7 @@ build_new (placement, decl, init, use_global_new)
       nelts = integer_one_node;
 
       if (absdcl && TREE_CODE (absdcl) == CALL_EXPR)
-	my_friendly_abort (215);
+	abort ();
       while (absdcl && TREE_CODE (absdcl) == INDIRECT_REF)
 	{
 	  last_absdcl = absdcl;
@@ -2952,7 +2952,7 @@ build_vec_init (base, init, from_array)
 	  else if (from)
 	    elt_init = build_modify_expr (to, NOP_EXPR, from);
 	  else
-	    my_friendly_abort (57);
+	    abort ();
 	}
       else if (TREE_CODE (type) == ARRAY_TYPE)
 	{
@@ -3075,7 +3075,7 @@ build_dtor_call (exp, dtor_kind, flags)
       break;
 
     default:
-      my_friendly_abort (20000524);
+      abort ();
     }
   return build_method_call (exp, name, NULL_TREE, NULL_TREE, flags);
 }
