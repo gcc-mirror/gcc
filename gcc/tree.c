@@ -2985,6 +2985,24 @@ tree_int_cst_lt (t1, t2)
   return INT_CST_LT_UNSIGNED (t1, t2);
 }
 
+/* Return an indication of the sign of the integer constant T.
+   The return value is -1 if T < 0, 0 if T == 0, and 1 if T > 0.
+   Note that -1 will never be returned it T's type is unsigned.  */
+
+int
+tree_int_cst_sgn (t)
+     tree t;
+{
+  if (TREE_INT_CST_LOW (t) == 0 && TREE_INT_CST_HIGH (t) == 0)
+    return 0;
+  else if (TREE_UNSIGNED (TREE_TYPE (t)))
+    return 1;
+  else if (TREE_INT_CST_HIGH (t) < 0)
+    return -1;
+  else
+    return 1;
+}
+
 /* Compare two constructor-element-type constants.  */
 int
 simple_cst_list_equal (l1, l2)
