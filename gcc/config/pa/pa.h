@@ -71,13 +71,6 @@ enum cmp_type				/* comparison type */
     flag_omit_frame_pointer = 1;				\
 }
 
-/* These compiler options take an argument.  We ignore -target for now.  */
-
-#define WORD_SWITCH_TAKES_ARG(STR)			\
- (!strcmp (STR, "Tdata") || !strcmp (STR, "include")	\
-  || !strcmp (STR, "imacros") || !strcmp (STR, "target")\
-  || !strcmp (STR, "aux-info"))
-
 /* Names to predefine in the preprocessor for this target machine.  */
 
 #define CPP_PREDEFINES "-Dhppa -Dhp9000s800 -D__hp9000s800 -Dhp9k8 -Dunix -D_HPUX_SOURCE -Dhp9000 -Dhp800 -Dspectrum -DREVARGV"
