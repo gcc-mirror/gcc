@@ -1,3 +1,11 @@
+2003-10-11  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* expr.c: Follow spelling conventions.
+	* final.c: Likewise.
+	* optabs.c: Likewise.
+	* sched-deps.c: Likewise.
+	* sdbout.c: Likewise.
+
 Sat Oct 11 12:24:23 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* varasm.c (notice_global_symbol):  Fix handling of variables; avoid

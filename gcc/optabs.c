@@ -4950,7 +4950,7 @@ init_convert_optab (enum rtx_code code)
 /* Initialize the libfunc fields of an entire group of entries in some
    optab.  Each entry is set equal to a string consisting of a leading
    pair of underscores followed by a generic operation name followed by
-   a mode name (downshifted to lower case) followed by a single character
+   a mode name (downshifted to lowercase) followed by a single character
    representing the number of operands for the given operation (which is
    usually one of the characters '2', '3', or '4').
 

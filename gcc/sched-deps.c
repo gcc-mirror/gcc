@@ -1424,7 +1424,7 @@ free_deps (struct deps *deps)
   free_INSN_LIST_list (&deps->last_pending_memory_flush);
 
   /* Without the EXECUTE_IF_SET, this loop is executed max_reg * nr_regions
-     times.  For a test case with 42000 regs and 8000 small basic blocks,
+     times.  For a testcase with 42000 regs and 8000 small basic blocks,
      this loop accounted for nearly 60% (84 sec) of the total -O2 runtime.  */
   EXECUTE_IF_SET_IN_REG_SET (&deps->reg_last_in_use, 0, i,
     {
