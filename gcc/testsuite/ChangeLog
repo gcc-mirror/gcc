@@ -1,5 +1,9 @@
 2004-12-04  Richard Henderson  <rth@redhat.com>
 
+	* gcc.dg/tree-ssa/loop-5.c: Use long instead of int.
+
+2004-12-04  Richard Henderson  <rth@redhat.com>
+
 	* lib/target-supports.exp (check_gc_sections_available): Disable
 	for alpha and ia64.
 
