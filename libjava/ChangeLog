@@ -1,5 +1,29 @@
 2001-02-17  Mark Wielaard <mark@klomp.org>
 
+	Remerge with Classpath
+	(changes by Bryce McKinlay  <bryce@albatross.co.nz>)
+	* java/io/DataInputStream.java (readBoolean): Use convertToBoolean().
+	(readByte): Use convertToByte().
+	(readChar): Use convertToChar().
+	(readInt): Use convertToInt().
+	(readLong): Use convertToLong().
+	(readShort): Use convertToShort().
+	(readUnsignedByte): Use convertToUnsignedByte().
+	(readUnsignedShort): Use convertToUnsignedShort().
+	(readUTF): Use convertToUTF().
+
+	(convertToBoolean): Resurrected.
+	(convertToByte): Ditto.
+	(convertToChar): Ditto.
+	(convertToInt): Ditto.
+	(convertToLong): Ditto.
+	(convertToShort): Ditto.
+	(convertToUnsignedByte): Ditto.
+	(convertToUnsignedShort): Ditto.
+	(convertToUTF): Ditto.
+
+2001-02-17  Mark Wielaard <mark@klomp.org>
+
 	* HACKING: new file
 
 2001-02-17  Mark Wielaard <mark@klomp.org>
