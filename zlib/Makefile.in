@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -96,12 +96,9 @@ MULTIDIRS =
 MULTISUBDIR = 
 MULTIDO = true
 MULTICLEAN = true
-@USE_LIBDIR_TRUE@toolexeclibdir = \
-@USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexeclibdir = \
-@USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexecdir = \
-@USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
+@USE_LIBDIR_TRUE@toolexeclibdir = @USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexeclibdir = @USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexecdir = @USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
 
 ZLIB_SOURCES = adler32.c compress.c crc32.c deflate.c deflate.h \
 gzio.c infblock.c infblock.h infcodes.c infcodes.h inffast.c inffast.h \
@@ -109,18 +106,10 @@ inffixed.h inflate.c inftrees.c inftrees.h infutil.c infutil.h trees.c \
 trees.h uncompr.c zconf.h zlib.h zutil.c zutil.h
 
 
-@TARGET_LIBRARY_TRUE@toolexeclib_LTLIBRARIES = \
-@TARGET_LIBRARY_TRUE@@target_all@
-@TARGET_LIBRARY_TRUE@EXTRA_LTLIBRARIES = \
-@TARGET_LIBRARY_TRUE@libzgcj.la
-@TARGET_LIBRARY_TRUE@libzgcj_la_SOURCES = \
-@TARGET_LIBRARY_TRUE@$(ZLIB_SOURCES)
-@TARGET_LIBRARY_TRUE@libzgcj_la_LDFLAGS = \
-@TARGET_LIBRARY_TRUE@-version-info 0:0:0 -rpath $(toolexeclibdir)
-@TARGET_LIBRARY_FALSE@toolexeclib_LIBRARIES = \
-@TARGET_LIBRARY_FALSE@libz.a
-@TARGET_LIBRARY_FALSE@libz_a_SOURCES = \
-@TARGET_LIBRARY_FALSE@$(ZLIB_SOURCES)
+@TARGET_LIBRARY_TRUE@noinst_LTLIBRARIES = @TARGET_LIBRARY_TRUE@libzgcj_convenience.la
+@TARGET_LIBRARY_TRUE@libzgcj_convenience_la_SOURCES = @TARGET_LIBRARY_TRUE@$(ZLIB_SOURCES)
+@TARGET_LIBRARY_FALSE@toolexeclib_LIBRARIES = @TARGET_LIBRARY_FALSE@libz.a
+@TARGET_LIBRARY_FALSE@libz_a_SOURCES = @TARGET_LIBRARY_FALSE@$(ZLIB_SOURCES)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
@@ -181,13 +170,15 @@ libz_a_LIBADD =
 @TARGET_LIBRARY_FALSE@inftrees.$(OBJEXT) infutil.$(OBJEXT) \
 @TARGET_LIBRARY_FALSE@trees.$(OBJEXT) uncompr.$(OBJEXT) zutil.$(OBJEXT)
 AR = ar
-LTLIBRARIES =  $(toolexeclib_LTLIBRARIES)
+LTLIBRARIES =  $(noinst_LTLIBRARIES)
 
-libzgcj_la_LIBADD = 
-@TARGET_LIBRARY_TRUE@libzgcj_la_OBJECTS =  adler32.lo compress.lo \
-@TARGET_LIBRARY_TRUE@crc32.lo deflate.lo gzio.lo infblock.lo \
-@TARGET_LIBRARY_TRUE@infcodes.lo inffast.lo inflate.lo inftrees.lo \
-@TARGET_LIBRARY_TRUE@infutil.lo trees.lo uncompr.lo zutil.lo
+libzgcj_convenience_la_LDFLAGS = 
+libzgcj_convenience_la_LIBADD = 
+@TARGET_LIBRARY_TRUE@libzgcj_convenience_la_OBJECTS =  adler32.lo \
+@TARGET_LIBRARY_TRUE@compress.lo crc32.lo deflate.lo gzio.lo \
+@TARGET_LIBRARY_TRUE@infblock.lo infcodes.lo inffast.lo inflate.lo \
+@TARGET_LIBRARY_TRUE@inftrees.lo infutil.lo trees.lo uncompr.lo \
+@TARGET_LIBRARY_TRUE@zutil.lo
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -199,10 +190,10 @@ aclocal.m4 configure configure.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
-SOURCES = $(libz_a_SOURCES) $(libzgcj_la_SOURCES)
-OBJECTS = $(libz_a_OBJECTS) $(libzgcj_la_OBJECTS)
+SOURCES = $(libz_a_SOURCES) $(libzgcj_convenience_la_SOURCES)
+OBJECTS = $(libz_a_OBJECTS) $(libzgcj_convenience_la_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -303,33 +294,17 @@ libz.a: $(libz_a_OBJECTS) $(libz_a_DEPENDENCIES)
 	$(AR) cru libz.a $(libz_a_OBJECTS) $(libz_a_LIBADD)
 	$(RANLIB) libz.a
 
-mostlyclean-toolexeclibLTLIBRARIES:
+mostlyclean-noinstLTLIBRARIES:
 
-clean-toolexeclibLTLIBRARIES:
-	-test -z "$(toolexeclib_LTLIBRARIES)" || rm -f $(toolexeclib_LTLIBRARIES)
+clean-noinstLTLIBRARIES:
+	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
 
-distclean-toolexeclibLTLIBRARIES:
+distclean-noinstLTLIBRARIES:
 
-maintainer-clean-toolexeclibLTLIBRARIES:
+maintainer-clean-noinstLTLIBRARIES:
 
-install-toolexeclibLTLIBRARIES: $(toolexeclib_LTLIBRARIES)
-	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(toolexeclibdir)
-	@list='$(toolexeclib_LTLIBRARIES)'; for p in $$list; do \
-	  if test -f $$p; then \
-	    echo "$(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(toolexeclibdir)/$$p"; \
-	    $(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(toolexeclibdir)/$$p; \
-	  else :; fi; \
-	done
-
-uninstall-toolexeclibLTLIBRARIES:
-	@$(NORMAL_UNINSTALL)
-	list='$(toolexeclib_LTLIBRARIES)'; for p in $$list; do \
-	  $(LIBTOOL)  --mode=uninstall rm -f $(DESTDIR)$(toolexeclibdir)/$$p; \
-	done
-
-libzgcj.la: $(libzgcj_la_OBJECTS) $(libzgcj_la_DEPENDENCIES)
-	$(LINK)  $(libzgcj_la_LDFLAGS) $(libzgcj_la_OBJECTS) $(libzgcj_la_LIBADD) $(LIBS)
+libzgcj_convenience.la: $(libzgcj_convenience_la_OBJECTS) $(libzgcj_convenience_la_DEPENDENCIES)
+	$(LINK)  $(libzgcj_convenience_la_LDFLAGS) $(libzgcj_convenience_la_OBJECTS) $(libzgcj_convenience_la_LIBADD) $(LIBS)
 
 tags: TAGS
 
@@ -401,7 +376,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
@@ -418,8 +393,7 @@ installcheck-am:
 installcheck: installcheck-am
 install-info-am: 
 install-info: install-info-am
-install-exec-am: install-toolexeclibLIBRARIES \
-		install-toolexeclibLTLIBRARIES
+install-exec-am: install-toolexeclibLIBRARIES
 install-exec: install-exec-am
 
 install-data-am:
@@ -428,16 +402,14 @@ install-data: install-data-am
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 install: install-am
-uninstall-am: uninstall-toolexeclibLIBRARIES \
-		uninstall-toolexeclibLTLIBRARIES
+uninstall-am: uninstall-toolexeclibLIBRARIES
 uninstall: uninstall-am
 all-am: Makefile $(LIBRARIES) $(LTLIBRARIES)
 all-redirect: all-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
 installdirs:
-	$(mkinstalldirs)  $(DESTDIR)$(toolexeclibdir) \
-		$(DESTDIR)$(toolexeclibdir)
+	$(mkinstalldirs)  $(DESTDIR)$(toolexeclibdir)
 
 
 mostlyclean-generic:
@@ -450,19 +422,19 @@ distclean-generic:
 
 maintainer-clean-generic:
 mostlyclean-am:  mostlyclean-toolexeclibLIBRARIES mostlyclean-compile \
-		mostlyclean-libtool mostlyclean-toolexeclibLTLIBRARIES \
+		mostlyclean-libtool mostlyclean-noinstLTLIBRARIES \
 		mostlyclean-tags mostlyclean-generic
 
 mostlyclean: mostlyclean-am
 
 clean-am:  clean-toolexeclibLIBRARIES clean-compile clean-libtool \
-		clean-toolexeclibLTLIBRARIES clean-tags clean-generic \
+		clean-noinstLTLIBRARIES clean-tags clean-generic \
 		mostlyclean-am
 
 clean: clean-am
 
 distclean-am:  distclean-toolexeclibLIBRARIES distclean-compile \
-		distclean-libtool distclean-toolexeclibLTLIBRARIES \
+		distclean-libtool distclean-noinstLTLIBRARIES \
 		distclean-tags distclean-generic clean-am
 	-rm -f libtool
 
@@ -471,7 +443,7 @@ distclean: distclean-am
 
 maintainer-clean-am:  maintainer-clean-toolexeclibLIBRARIES \
 		maintainer-clean-compile maintainer-clean-libtool \
-		maintainer-clean-toolexeclibLTLIBRARIES \
+		maintainer-clean-noinstLTLIBRARIES \
 		maintainer-clean-tags maintainer-clean-generic \
 		distclean-am
 	@echo "This command is intended for maintainers to use;"
@@ -485,17 +457,15 @@ clean-toolexeclibLIBRARIES maintainer-clean-toolexeclibLIBRARIES \
 uninstall-toolexeclibLIBRARIES install-toolexeclibLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile mostlyclean-libtool distclean-libtool \
-clean-libtool maintainer-clean-libtool \
-mostlyclean-toolexeclibLTLIBRARIES distclean-toolexeclibLTLIBRARIES \
-clean-toolexeclibLTLIBRARIES maintainer-clean-toolexeclibLTLIBRARIES \
-uninstall-toolexeclibLTLIBRARIES install-toolexeclibLTLIBRARIES tags \
-mostlyclean-tags distclean-tags clean-tags maintainer-clean-tags \
-distdir info-am info dvi-am dvi check check-am installcheck-am \
-installcheck install-info-am install-info install-exec-am install-exec \
-install-data-am install-data install-am install uninstall-am uninstall \
-all-redirect all-am all installdirs mostlyclean-generic \
-distclean-generic clean-generic maintainer-clean-generic clean \
-mostlyclean distclean maintainer-clean
+clean-libtool maintainer-clean-libtool mostlyclean-noinstLTLIBRARIES \
+distclean-noinstLTLIBRARIES clean-noinstLTLIBRARIES \
+maintainer-clean-noinstLTLIBRARIES tags mostlyclean-tags distclean-tags \
+clean-tags maintainer-clean-tags distdir info-am info dvi-am dvi check \
+check-am installcheck-am installcheck install-info-am install-info \
+install-exec-am install-exec install-data-am install-data install-am \
+install uninstall-am uninstall all-redirect all-am all installdirs \
+mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
 # Multilib support.

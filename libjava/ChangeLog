@@ -1,3 +1,13 @@
+2002-03-17  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	Build a single libgcj.so, without separate gc and zlib libraries.
+	* configure.in: Use convenience libraries for boehm-gc and zlib. Set
+	SYS_ZLIBS if system zlib is used.
+	* configure: Rebuilt.
+	* Makefile.am: Use boehm-gc and zlib convenience libraries.
+	* Makefile.in: Rebuilt.
+	* libtool-version: Increment .so version number.
+
 2002-03-16  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* Makefile.am: Use empty -classpath flag in addition to -bootclasspath.
