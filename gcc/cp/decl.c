@@ -6550,7 +6550,7 @@ cp_make_fname_decl (id, name, type_dep)
           (build_qualified_type (char_type_node, TYPE_QUAL_CONST),
 	   domain);
 
-  decl = build_lang_decl (VAR_DECL, id, type);
+  decl = build_decl (VAR_DECL, id, type);
   TREE_STATIC (decl) = 1;
   TREE_READONLY (decl) = 1;
   DECL_SOURCE_LINE (decl) = 0;
@@ -8924,9 +8924,9 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
       else
 	context = NULL_TREE;
 
-      if (processing_template_decl)
-	/* If we're in a template, we need DECL_LANG_SPECIFIC so that
-	   we can call push_template_decl.  */
+      if (processing_template_decl && context)
+	/* For global variables, declared in a template, we need the
+	   full lang_decl.  */
 	decl = build_lang_decl (VAR_DECL, declarator, type);
       else
 	decl = build_decl (VAR_DECL, declarator, type);
@@ -10917,14 +10917,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  decl = build_lang_decl (TYPE_DECL, declarator, type);
 	}
       else
-	{
-	  /* Make sure this typedef lives as long as its type,
-	     since it might be used as a template parameter. */
-	  if (processing_template_decl)
-	    decl = build_lang_decl (TYPE_DECL, declarator, type);
-	  else
-	    decl = build_decl (TYPE_DECL, declarator, type);
-	}
+	decl = build_decl (TYPE_DECL, declarator, type);
 
       /* If the user declares "typedef struct {...} foo" then the
 	 struct will have an anonymous name.  Fill that name in now.

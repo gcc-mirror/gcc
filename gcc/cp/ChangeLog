@@ -1,3 +1,25 @@
+2000-04-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (lang_decl): Remove pretty_function_p.
+	(DECL_PRETTY_FUNCTION_P): Use TREE_LANG_FLAG_0, not a bit in the
+	language-specific node.
+	* decl.c (cp_make_fname_decl): Use build_decl, not
+	build_lang_decl, to build the variables.
+	(grokvardecl): Don't call build_lang_decl for local variables in
+	templates.
+	(grokdeclarator): Don't call build_lang_decl for local type
+	declarations in templates.
+	* lex.c (retrofit_lang_decl): Use ggc_alloc_obj to allocated
+	zero'd memory, rather than calling memset.
+	* pt.c: Include hashtab.h.
+	(local_specializations): New variable.
+	(retrieve_local_specialization): Use it.
+	(register_local_specialization): Likewise.
+	(tsubst_decl): Don't assume local variables have
+	DECL_LANG_SPECIFIC.
+	(instantiate_decl): Set up local_specializations.
+	* Makefile.in (HTAB_H): New variable.
+
 2000-04-23  Richard Henderson  <rth@cygnus.com>
 
 	* typeck.c (c_expand_asm_operands): Restore the original

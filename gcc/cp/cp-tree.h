@@ -43,6 +43,7 @@ Boston, MA 02111-1307, USA.  */
       AGGR_INIT_VIA_CTOR_P (in AGGR_INIT_EXPR)
       SCOPE_BEGIN_P (in SCOPE_STMT)
       CTOR_BEGIN_P (in CTOR_STMT)
+      DECL_PRETTY_FUNCTION_P (in VAR_DECL)
    1: IDENTIFIER_VIRTUAL_P.
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -1866,7 +1867,7 @@ struct lang_decl_flags
   unsigned static_function : 1;
   unsigned pure_virtual : 1;
   unsigned has_in_charge_parm_p : 1;
-  unsigned pretty_function_p : 1;
+  unsigned bitfield : 1;
 
   unsigned mutable_flag : 1;
   unsigned deferred : 1;
@@ -1876,12 +1877,11 @@ struct lang_decl_flags
   unsigned not_really_extern : 1;
   unsigned needs_final_overrider : 1;
 
-  unsigned bitfield : 1;
   unsigned defined_in_class : 1;
   unsigned pending_inline_p : 1;
   unsigned global_ctor_p : 1;
   unsigned global_dtor_p : 1;
-  unsigned dummy : 3;
+  unsigned dummy : 4;
 
   tree context;
 
@@ -2106,7 +2106,7 @@ struct lang_decl
 /* Nonzero if this DECL is the __PRETTY_FUNCTION__ variable in a
    template function.  */
 #define DECL_PRETTY_FUNCTION_P(NODE) \
-  (DECL_LANG_SPECIFIC(NODE)->decl_flags.pretty_function_p)
+  (TREE_LANG_FLAG_0 (NODE))
 
 /* The _TYPE context in which this _DECL appears.  This field holds the
    class where a virtual function instance is actually defined. */

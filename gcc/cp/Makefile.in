@@ -210,6 +210,7 @@ PARSE_H = $(srcdir)/parse.h
 PARSE_C = $(srcdir)/parse.c
 EXPR_H = $(srcdir)/../expr.h ../insn-codes.h
 GGC_H = $(srcdir)/../ggc.h $(srcdir)/../varray.h
+HTAB_H = $(srcdir)/../../include/hashtab.h
 
 parse.o : $(PARSE_C) $(CXX_TREE_H) $(srcdir)/../flags.h lex.h \
 	$(srcdir)/../except.h $(srcdir)/../output.h $(srcdir)/../system.h \
@@ -295,7 +296,7 @@ xref.o : xref.c $(CXX_TREE_H) $(srcdir)/../input.h \
   $(srcdir)/../toplev.h
 pt.o : pt.c $(CXX_TREE_H) decl.h $(PARSE_H) lex.h \
   $(srcdir)/../toplev.h $(GGC_H) $(RTL_H) \
-  $(srcdir)/../except.h
+  $(srcdir)/../except.h $(HTAB_H)
 error.o : error.c $(CXX_TREE_H) \
   $(srcdir)/../toplev.h
 errfn.o : errfn.c $(CXX_TREE_H) \
