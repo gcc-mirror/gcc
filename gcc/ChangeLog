@@ -1,5 +1,7 @@
 2002-03-11  Douglas B Rupp  <rupp@gnat.com>
 
+	* config/alpha/xm-vms.h (__UNIX_FWRITE): Define.
+
 	* config/alpha/alpha.c (alpha_sa_size, VMS): Don't reserve space
 	for FP, already done later.
 
