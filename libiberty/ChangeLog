@@ -1,3 +1,8 @@
+2000-07-20  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* cplus-dem.c (demangle_fund_type): Make 'dec' an unsigned int,
+	and print it with %u.
+
 2000-07-17  Hans-Peter Nilsson  <hp@axis.com>
 
 	* testsuite/regress-demangle (failed test): Show result and
