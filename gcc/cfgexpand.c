@@ -35,10 +35,159 @@ Boston, MA 02111-1307, USA.  */
 #include "tree-pass.h"
 #include "except.h"
 #include "flags.h"
+
+
+/* A subroutine of expand_gimple_basic_block.  Expand one COND_EXPR.
+   Returns a new basic block if we've terminated the current basic
+   block and created a new one.  */
+
+static basic_block
+expand_gimple_cond_expr (basic_block bb, tree stmt)
+{
+  basic_block new_bb, dest;
+  edge new_edge;
+  edge true_edge;
+  edge false_edge;
+  tree pred = COND_EXPR_COND (stmt);
+  tree then_exp = COND_EXPR_THEN (stmt);
+  tree else_exp = COND_EXPR_ELSE (stmt);
+  rtx last;
+
+  extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
+  if (EXPR_LOCUS (stmt))
+    {
+      emit_line_note (*(EXPR_LOCUS (stmt)));
+      record_block_change (TREE_BLOCK (stmt));
+    }
+
+  /* These flags have no purpose in RTL land.  */
+  true_edge->flags &= ~EDGE_TRUE_VALUE;
+  false_edge->flags &= ~EDGE_FALSE_VALUE;
+
+  /* We can either have a pure conditional jump with one fallthru edge or
+     two-way jump that needs to be decomposed into two basic blocks.  */
+  if (TREE_CODE (then_exp) == GOTO_EXPR && IS_EMPTY_STMT (else_exp))
+    {
+      jumpif (pred, label_rtx (GOTO_DESTINATION (then_exp)));
+      return NULL;
+    }
+  if (TREE_CODE (else_exp) == GOTO_EXPR && IS_EMPTY_STMT (then_exp))
+    {
+      jumpifnot (pred, label_rtx (GOTO_DESTINATION (else_exp)));
+      return NULL;
+    }
+  if (TREE_CODE (then_exp) != GOTO_EXPR || TREE_CODE (else_exp) != GOTO_EXPR)
+    abort ();
+
+  jumpif (pred, label_rtx (GOTO_DESTINATION (then_exp)));
+  last = get_last_insn ();
+  expand_expr (else_exp, const0_rtx, VOIDmode, 0);
+
+  BB_END (bb) = last;
+  if (BARRIER_P (BB_END (bb)))
+    BB_END (bb) = PREV_INSN (BB_END (bb));
+  update_bb_for_insn (bb);
+
+  new_bb = create_basic_block (NEXT_INSN (last), get_last_insn (), bb);
+  dest = false_edge->dest;
+  redirect_edge_succ (false_edge, new_bb);
+  false_edge->flags |= EDGE_FALLTHRU;
+  new_bb->count = false_edge->count;
+  new_bb->frequency = EDGE_FREQUENCY (false_edge);
+  new_edge = make_edge (new_bb, dest, 0);
+  new_edge->probability = REG_BR_PROB_BASE;
+  new_edge->count = new_bb->count;
+  if (BARRIER_P (BB_END (new_bb)))
+    BB_END (new_bb) = PREV_INSN (BB_END (new_bb));
+  update_bb_for_insn (new_bb);
+
+  if (dump_file)
+    {
+      dump_bb (bb, dump_file, 0);
+      dump_bb (new_bb, dump_file, 0);
+    }
+
+  return new_bb;
+}
+
+/* A subroutine of expand_gimple_basic_block.  Expand one CALL_EXPR
+   that has CALL_EXPR_TAILCALL set.  Returns a new basic block if we've
+   terminated the current basic block and created a new one.  */
+
+static basic_block
+expand_gimple_tailcall (basic_block bb, tree stmt)
+{
+  rtx last = get_last_insn ();
+
+  expand_expr_stmt (stmt);
+
+  for (last = NEXT_INSN (last); last; last = NEXT_INSN (last))
+    {
+      if (CALL_P (last) && SIBLING_CALL_P (last))
+	{
+	  edge e;
+	  int probability = 0;
+	  gcov_type count = 0;
+
+	  do_pending_stack_adjust ();
+	  e = bb->succ;
+	  while (e)
+	    {
+	      edge next = e->succ_next;
+
+	      if (!(e->flags & (EDGE_ABNORMAL | EDGE_EH)))
+		{
+		  if (e->dest != EXIT_BLOCK_PTR)
+		    {
+		      e->dest->count -= e->count;
+		      e->dest->frequency -= EDGE_FREQUENCY (e);
+		      if (e->dest->count < 0)
+		        e->dest->count = 0;
+		      if (e->dest->frequency < 0)
+		        e->dest->frequency = 0;
+		    }
+		  count += e->count;
+		  probability += e->probability;
+		  remove_edge (e);
+		}
+
+	      e = next;
+	    }
+
+	  /* This is somewhat ugly: the call_expr expander often emits
+	     instructions after the sibcall (to perform the function
+	     return).  These confuse the find_sub_basic_blocks code,
+	     so we need to get rid of these.  */
+	  last = NEXT_INSN (last);
+	  if (!BARRIER_P (last))
+	    abort ();
+	  while (NEXT_INSN (last))
+	    {
+	      /* For instance an sqrt builtin expander expands if with
+		 sibcall in the then and label for `else`.  */
+	      if (LABEL_P (NEXT_INSN (last)))
+		break;
+	      delete_insn (NEXT_INSN (last));
+	    }
+	  e = make_edge (bb, EXIT_BLOCK_PTR, EDGE_ABNORMAL | EDGE_SIBCALL);
+	  e->probability += probability;
+	  e->count += count;
+	  BB_END (bb) = last;
+	  update_bb_for_insn (bb);
+	  if (NEXT_INSN (last))
+	    bb = create_basic_block (NEXT_INSN (last), get_last_insn (), bb);
+	  else
+	    return bb;
+	}
+    }
+
+  return NULL;
+}
+
 /* Expand basic block BB from GIMPLE trees to RTL.  */
 
 static basic_block
-expand_block (basic_block bb, FILE * dump_file)
+expand_gimple_basic_block (basic_block bb, FILE * dump_file)
 {
   block_stmt_iterator bsi = bsi_start (bb);
   tree stmt = NULL;
@@ -94,157 +243,26 @@ expand_block (basic_block bb, FILE * dump_file)
   for (; !bsi_end_p (bsi); bsi_next (&bsi))
     {
       tree stmt = bsi_stmt (bsi);
-
-      last = get_last_insn ();
+      basic_block new_bb = NULL;
 
       if (!stmt)
 	continue;
 
       /* Expand this statement, then evaluate the resulting RTL and
 	 fixup the CFG accordingly.  */
-      switch (TREE_CODE (stmt))
+      if (TREE_CODE (stmt) == COND_EXPR)
+	new_bb = expand_gimple_cond_expr (bb, stmt);
+      else
 	{
-	case COND_EXPR:
-	  {
-	    basic_block new_bb, dest;
-	    edge new_edge;
-	    edge true_edge;
-	    edge false_edge;
-	    tree pred = COND_EXPR_COND (stmt);
-	    tree then_exp = COND_EXPR_THEN (stmt);
-	    tree else_exp = COND_EXPR_ELSE (stmt);
-	    rtx last = get_last_insn ();
-
-	    extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
-	    if (EXPR_LOCUS (stmt))
-	      {
-		emit_line_note (*(EXPR_LOCUS (stmt)));
-		record_block_change (TREE_BLOCK (stmt));
-	      }
-
-	    /* These flags have no purpose in RTL land.  */
-	    true_edge->flags &= ~EDGE_TRUE_VALUE;
-	    false_edge->flags &= ~EDGE_FALSE_VALUE;
-
-	    /* We can either have a pure conditional jump with one fallthru
-	       edge or two-way jump that needs to be decomposed into two
-	       basic blocks.  */
-	    if (TREE_CODE (then_exp) == GOTO_EXPR
-		&& TREE_CODE (else_exp) == NOP_EXPR)
-	      {
-		jumpif (pred, label_rtx (GOTO_DESTINATION (then_exp)));
-		break;
-	      }
-	    if (TREE_CODE (else_exp) == GOTO_EXPR
-		&& TREE_CODE (then_exp) == NOP_EXPR)
-	      {
-		jumpifnot (pred, label_rtx (GOTO_DESTINATION (else_exp)));
-		break;
-	      }
-	    if (TREE_CODE (then_exp) != GOTO_EXPR
-		|| TREE_CODE (else_exp) != GOTO_EXPR)
-	      abort ();
-
-	    jumpif (pred, label_rtx (GOTO_DESTINATION (then_exp)));
-	    last = get_last_insn ();
-	    expand_expr (else_exp, const0_rtx, VOIDmode, 0);
-
-	    BB_END (bb) = last;
-	    if (BARRIER_P (BB_END (bb)))
-	      BB_END (bb) = PREV_INSN (BB_END (bb));
-	    update_bb_for_insn (bb);
-
-	    new_bb = create_basic_block (NEXT_INSN (last), get_last_insn (), bb);
-	    dest = false_edge->dest;
-	    redirect_edge_succ (false_edge, new_bb);
-	    false_edge->flags |= EDGE_FALLTHRU;
-	    new_bb->count = false_edge->count;
-	    new_bb->frequency = EDGE_FREQUENCY (false_edge);
-	    new_edge = make_edge (new_bb, dest, 0);
-	    new_edge->probability = REG_BR_PROB_BASE;
-	    new_edge->count = new_bb->count;
-	    if (BARRIER_P (BB_END (new_bb)))
-	      BB_END (new_bb) = PREV_INSN (BB_END (new_bb));
-	    update_bb_for_insn (new_bb);
-
-	    if (dump_file)
-	      {
-		dump_bb (bb, dump_file, 0);
-		dump_bb (new_bb, dump_file, 0);
-	      }
-	    return new_bb;
-	  }
-
-	/* Update after expansion of sibling call.  */
-	case CALL_EXPR:
-	case MODIFY_EXPR:
-	case RETURN_EXPR:
-          expand_expr_stmt (stmt);
-	  for (last = NEXT_INSN (last); last; last = NEXT_INSN (last))
-	    {
-	      if (CALL_P (last) && SIBLING_CALL_P (last))
-		{
-		  edge e;
-		  int probability = 0;
-		  gcov_type count = 0;
-
-		  do_pending_stack_adjust ();
-		  e = bb->succ;
-		  while (e)
-		    {
-		      edge next = e->succ_next;
-
-		      if (!(e->flags & (EDGE_ABNORMAL | EDGE_EH)))
-			{
-			  if (e->dest != EXIT_BLOCK_PTR)
-			    {
-			      e->dest->count -= e->count;
-			      e->dest->frequency -= EDGE_FREQUENCY (e);
-			      if (e->dest->count < 0)
-			        e->dest->count = 0;
-			      if (e->dest->frequency < 0)
-			        e->dest->frequency = 0;
-			    }
-			  count += e->count;
-			  probability += e->probability;
-			  remove_edge (e);
-			}
-
-		      e = next;
-		    }
-
-		  /* This is somewhat ugly:  the call_expr expander often emits instructions
-		     after the sibcall (to perform the function return).  These confuse the 
-		     find_sub_basic_blocks code, so we need to get rid of these.  */
-		  last = NEXT_INSN (last);
-		  if (!BARRIER_P (last))
-		    abort ();
-		  while (NEXT_INSN (last))
-		    {
-		      /* For instance an sqrt builtin expander expands if with
-			 sibcall in the then and label for `else`.  */
-		      if (LABEL_P (NEXT_INSN (last)))
-			break;
-		      delete_insn (NEXT_INSN (last));
-		    }
-		  e = make_edge (bb, EXIT_BLOCK_PTR,
-				     EDGE_ABNORMAL | EDGE_SIBCALL);
-		  e->probability += probability;
-		  e->count += count;
-		  BB_END (bb) = last;
-		  update_bb_for_insn (bb);
-		  if (NEXT_INSN (last))
-		    bb = create_basic_block (NEXT_INSN (last), get_last_insn (), bb);
-		  else
-		    return bb;
-		}
-	    }
-	  break;
-
-	default:
-          expand_expr_stmt (stmt);
-	  break;
+	  tree call = get_call_expr_in (stmt);
+	  if (call && CALL_EXPR_TAILCALL (call))
+	    new_bb = expand_gimple_tailcall (bb, stmt);
+	  else
+	    expand_expr_stmt (stmt);
 	}
+
+      if (new_bb)
+	return new_bb;
     }
 
   do_pending_stack_adjust ();
@@ -261,6 +279,7 @@ expand_block (basic_block bb, FILE * dump_file)
   if (dump_file)
     dump_bb (bb, dump_file, 0);
   update_bb_for_insn (bb);
+
   return bb;
 }
 
@@ -332,7 +351,8 @@ construct_exit_block (void)
     return;
   while (NEXT_INSN (head) && NOTE_P (NEXT_INSN (head)))
     head = NEXT_INSN (head);
-  exit_block = create_basic_block (NEXT_INSN (head), end, EXIT_BLOCK_PTR->prev_bb);
+  exit_block = create_basic_block (NEXT_INSN (head), end,
+				   EXIT_BLOCK_PTR->prev_bb);
   exit_block->frequency = EXIT_BLOCK_PTR->frequency;
   exit_block->count = EXIT_BLOCK_PTR->count;
   for (e = EXIT_BLOCK_PTR->pred; e; e = next)
@@ -408,7 +428,7 @@ tree_expand_cfg (void)
   init_block = construct_init_block ();
 
   FOR_BB_BETWEEN (bb, init_block->next_bb, EXIT_BLOCK_PTR, next_bb)
-    bb = expand_block (bb, dump_file);
+    bb = expand_gimple_basic_block (bb, dump_file);
 
   construct_exit_block ();
 
@@ -448,4 +468,3 @@ struct tree_opt_pass pass_expand =
   0,                                    /* todo_flags_start */
   0                                     /* todo_flags_finish */
 };
-
