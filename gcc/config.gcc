@@ -921,7 +921,7 @@ hppa*64*-*-hpux11*)
 	tmake_file="pa/t-pa64 pa/t-pa-hpux"
 	xmake_file="pa/x-ada"
 	target_cpu_default="(MASK_PA_11|MASK_PA_20|MASK_GAS)"
-
+	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
 	if test x$gnu_ld = xyes
 	then
 		target_cpu_default="${target_cpu_default}|MASK_GNU_LD"
@@ -934,7 +934,6 @@ hppa*64*-*-hpux11*)
 #		tmake_file="${tmake_file} pa/t-dce-thr"
 #	fi
 	install_headers_dir=install-headers-cpio
-	use_collect2=yes
 	;;
 hppa1.1-*-hpux11* | hppa2*-*-hpux11*)
 	target_cpu_default="MASK_PA_11"

@@ -1,3 +1,26 @@
+2002-01-04  John David Anglin  <dave.anglin@nrc.ca>
+
+	* config.gcc (hppa*64*-*-hpux11*): Define extra_parts.  Don't use
+	collect2.
+	* pa-hpux11.h (LDD_SUFFIX, PARSE_LDD_OUTPUT): Undefine.
+	(HAS_INIT_SECTION, LD_INIT_SWITCH, LD_FINI_SWITCH): Define.
+	* pa64-hpux.h (HP_INIT_ARRAY_SECTION_ASM_OP,
+	GNU_INIT_ARRAY_SECTION_ASM_OP, HP_FINI_ARRAY_SECTION_ASM_OP,
+	GNU_FINI_ARRAY_SECTION_ASM_OP): Define.
+	(CTORS_SECTION_ASM_OP, DTORS_SECTION_ASM_OP): Define when not using
+	elfos.h.
+	(EH_FRAME_IN_DATA_SECTION): Delete define.
+	(HAS_INIT_SECTION, LD_INIT_SWITCH, LD_FINI_SWITCH): Undefine.
+	(STARTFILE_SPEC): Use crtbegin.o.
+	(ENDFILE_SPEC): Use crtend.o.
+	(INIT_SECTION_ASM_OP, FINI_SECTION_ASM_OP, CRT_CALL_STATIC_FUNCTION,
+	SUPPORTS_INIT_PRIORITY, PA_CXA_FINALIZE_STUB, PA_INIT_FINI_HACK,
+	PA_INIT_FRAME_DUMMY_ASM_OP, PA_JV_REGISTERCLASSES_STUB,
+	DTOR_LIST_BEGIN): Define.
+	* pa.c (TARGET_ASM_CONSTRUCTOR): Define.
+	(pa_asm_out_constructor, pa_asm_out_destructor): New functions.
+	* som.h (SUPPORTS_INIT_PRIORITY): Delete define.
+
 2002-12-31  Larin Hennessy  <larin@science.oregonstate.edu>
 
 	* fixinc/fixinc.svr4: Remove references to i860, Sony NewsOS, and spur.
