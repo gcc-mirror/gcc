@@ -175,6 +175,8 @@ static void destroy_local_static PROTO((tree));
 static void destroy_local_var PROTO((tree));
 static void finish_constructor_body PROTO((void));
 static void finish_destructor_body PROTO((void));
+static tree compute_array_index_type PROTO((tree, tree));
+static tree create_array_type_for_decl PROTO((tree, tree, tree));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PROTO((void));
@@ -8755,6 +8757,195 @@ check_static_variable_definition (decl, type)
   return 0;
 }
 
+/* Given the SIZE (i.e., number of elements) in an array, compute an
+   appropriate index type for the array.  If non-NULL, NAME is the
+   name of the thing being declared.  */
+
+static tree
+compute_array_index_type (name, size)
+     tree name;
+     tree size;
+{
+  tree itype;
+
+  /* The size might be the result of a cast. */
+  STRIP_TYPE_NOPS (size);
+
+  /* It might be a const variable or enumeration constant.  */
+  if (TREE_READONLY_DECL_P (size))
+    size = decl_constant_value (size);
+
+  /* If this involves a template parameter, it will be a constant at
+     instantiation time, but we don't know what the value is yet.
+     Even if no template parameters are involved, we may an expression
+     that is not a constant; we don't even simplify `1 + 2' when
+     processing a template.  */
+  if (processing_template_decl)
+    {
+      /* Resolve a qualified reference to an enumerator or static
+	 const data member of ours.  */
+      if (TREE_CODE (size) == SCOPE_REF
+	  && TREE_OPERAND (size, 0) == current_class_type)
+	{
+	  tree t = lookup_field (current_class_type,
+				 TREE_OPERAND (size, 1), 0, 0);
+	  if (t)
+	    size = t;
+	}
+
+      return build_index_type (build_min (MINUS_EXPR, sizetype,
+					  size, integer_one_node));
+    }
+
+  /* The array bound must be an integer type.  */
+  if (TREE_CODE (TREE_TYPE (size)) != INTEGER_TYPE
+      && TREE_CODE (TREE_TYPE (size)) != ENUMERAL_TYPE
+      && TREE_CODE (TREE_TYPE (size)) != BOOLEAN_TYPE)
+    {
+      cp_error ("size of array `%D' has non-integer type", name);
+      size = integer_one_node;
+    }
+
+  /* Normally, the array-bound will be a constant.  */
+  if (TREE_CONSTANT (size))
+    {
+      /* Check to see if the array bound overflowed.  Make that an
+	 error, no matter how generous we're being.  */
+      int old_flag_pedantic_errors = flag_pedantic_errors;
+      int old_pedantic = pedantic;
+      pedantic = flag_pedantic_errors = 1;
+      constant_expression_warning (size);
+      pedantic = old_pedantic;
+      flag_pedantic_errors = old_flag_pedantic_errors;
+
+      /* An array must have a positive number of elements.  */
+      if (INT_CST_LT (size, integer_zero_node))
+	{
+	  cp_error ("size of array `%D' is negative", name);
+	  size = integer_one_node;
+	}
+      /* Except that an extension we allow zero-sized arrays.  We
+	 always allow them in system headers because glibc uses 
+	 them.  */
+      else if (integer_zerop (size) && pedantic && !in_system_header)
+	cp_pedwarn ("ANSI C++ forbids zero-size array `%D'", name);
+    }
+
+  /* Compute the index of the largest element in the array.  It is
+     one less than the number of elements in the array.  */
+  itype
+    = fold (build_binary_op (MINUS_EXPR,
+			     cp_convert (ssizetype, size),
+			     cp_convert (ssizetype,
+					 integer_one_node)));
+  
+  /* Check for variable-sized arrays.  We allow such things as an
+     extension, even though they are not allowed in ANSI/ISO C++.  */
+  if (!TREE_CONSTANT (itype))
+    {
+      if (pedantic)
+	{
+	  if (name)
+	    cp_pedwarn ("ANSI C++ forbids variable-size array `%D'",
+			name);
+	  else
+	    cp_pedwarn ("ANSI C++ forbids variable-size array");
+	}
+
+      /* Create a variable-sized array index type.  */
+      itype = variable_size (itype);
+    }
+  /* Make sure that there was no overflow when creating to a signed
+     index type.  (For example, on a 32-bit machine, an array with
+     size 2^32 - 1 is too big.)  */
+  else if (TREE_OVERFLOW (itype))
+    {
+      error ("overflow in array dimension");
+      TREE_OVERFLOW (itype) = 0;
+    }
+  
+  /* Create and return the appropriate index type.  */
+  return build_index_type (itype);
+}
+
+/* Returns an ARRAY_TYPE for an array with SIZE elements of the
+   indicated TYPE.  If non-NULL, NAME is the NAME of the declaration
+   with this type.  */
+
+static tree
+create_array_type_for_decl (name, type, size)
+     tree name;
+     tree type;
+     tree size;
+{
+  tree itype = NULL_TREE;
+  const char* error_msg;
+
+  /* If things have already gone awry, bail now.  */
+  if (type == error_mark_node || size == error_mark_node)
+    return error_mark_node;
+
+  /* Assume that everything will go OK.  */
+  error_msg = NULL;
+
+  /* There are some types which cannot be array elements.  */
+  switch (TREE_CODE (type))
+    {
+    case VOID_TYPE:
+      error_msg = "array of void";
+      break;
+
+    case FUNCTION_TYPE:
+      error_msg = "array of functions";
+      break;
+
+    case REFERENCE_TYPE:
+      error_msg = "array of references";
+      break;
+
+    case OFFSET_TYPE:
+      error_msg = "array of data members";
+      break;
+
+    case METHOD_TYPE:
+      error_msg = "array of function members";
+      break;
+
+    default:
+      break;
+    }
+
+  /* If something went wrong, issue an error-message and return.  */
+  if (error_msg)
+    {
+      if (name)
+	cp_error ("declaration of `%D' as %s", name, error_msg);
+      else
+	cp_error ("creating %s", error_msg);
+
+      return error_mark_node;
+    }
+
+  /* [dcl.array]
+     
+     The constant expressions that specify the bounds of the arrays
+     can be omitted only for the first member of the sequence.  */
+  if (TREE_CODE (type) == ARRAY_TYPE && !TYPE_DOMAIN (type))
+    {
+      cp_error ("declaration of `%D' as multidimensional array",
+		name);
+      cp_error ("must have bounds for all dimensions except the first");
+
+      return error_mark_node;
+    }
+
+  /* Figure out the index type for the array.  */
+  if (size)
+    itype = compute_array_index_type (name, size);
+
+  return build_cplus_array_type (type, itype);
+}
+
 /* Given declspecs and a declarator,
    determine the name and type of the object declared
    and construct a ..._DECL node for it.
@@ -9759,166 +9950,18 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	case ARRAY_REF:
 	  {
-	    register tree itype = NULL_TREE;
-	    register tree size = TREE_OPERAND (declarator, 1);
-	    /* The index is a signed object `sizetype' bits wide.  */
-	    tree index_type = signed_type (sizetype);
+	    register tree size;
 
-	    declarator = TREE_OPERAND (declarator, 0);
-
-	    /* Check for some types that there cannot be arrays of.  */
-
-	    if (TREE_CODE (type) == VOID_TYPE)
-	      {
-		cp_error ("declaration of `%D' as array of voids", dname);
-		type = error_mark_node;
-	      }
-
-	    if (TREE_CODE (type) == FUNCTION_TYPE)
-	      {
-		cp_error ("declaration of `%D' as array of functions", dname);
-		type = error_mark_node;
-	      }
-
-	    /* ARM $8.4.3: Since you can't have a pointer to a reference,
-	       you can't have arrays of references.  If we allowed them,
-	       then we'd be saying x[i] is valid for an array x, but
-	       then you'd have to ask: what does `*(x + i)' mean?  */
-	    if (TREE_CODE (type) == REFERENCE_TYPE)
-	      {
-		if (decl_context == TYPENAME)
-		  cp_error ("cannot make arrays of references");
-		else
-		  cp_error ("declaration of `%D' as array of references",
-			    dname);
-		type = error_mark_node;
-	      }
-
-	    if (TREE_CODE (type) == OFFSET_TYPE)
-	      {
-		  cp_error ("declaration of `%D' as array of data members",
-			    dname);
-		type = error_mark_node;
-	      }
-
-	    if (TREE_CODE (type) == METHOD_TYPE)
-	      {
-		cp_error ("declaration of `%D' as array of function members",
-			  dname);
-		type = error_mark_node;
-	      }
-
-	    if (size == error_mark_node)
-	      type = error_mark_node;
-	    else if (TREE_CODE (type) == ARRAY_TYPE && !TYPE_DOMAIN (type))
-	      {
-		/* [dcl.array]
-
-		   the constant expressions that specify the bounds of
-		   the arrays can be omitted only for the first member
-		   of the sequence.  */
-		cp_error ("declaration of `%D' as multidimensional array",
-			  dname);
-		cp_error ("must have bounds for all dimensions except the first");
-		type = error_mark_node;
-	      }
-
-	    if (type == error_mark_node)
-	      continue;
+	    size = TREE_OPERAND (declarator, 1);
 
 	    /* VC++ spells a zero-sized array with [].  */
 	    if (size == NULL_TREE && decl_context == FIELD && !	staticp
 		&& ! RIDBIT_SETP (RID_TYPEDEF, specbits))
 	      size = integer_zero_node;
 
-	    if (size)
-	      {
-		/* Might be a cast. */
-		if (TREE_CODE (size) == NOP_EXPR
-		    && TREE_TYPE (size) == TREE_TYPE (TREE_OPERAND (size, 0)))
-		  size = TREE_OPERAND (size, 0);
-		if (TREE_READONLY_DECL_P (size))
-		  size = decl_constant_value (size);
+	    declarator = TREE_OPERAND (declarator, 0);
 
-		/* If this involves a template parameter, it will be a
-		   constant at instantiation time, but we don't know
-		   what the value is yet.  Even if no template
-		   parameters are involved, we may an expression that
-		   is not a constant; we don't even simplify `1 + 2'
-		   when processing a template.  */
-		if (processing_template_decl)
-		  {
-		    /* Resolve a qualified reference to an enumerator or
-		       static const data member of ours.  */
-		    if (TREE_CODE (size) == SCOPE_REF
-			&& TREE_OPERAND (size, 0) == current_class_type)
-		      {
-			tree t = lookup_field (current_class_type,
-					       TREE_OPERAND (size, 1), 0, 0);
-			if (t)
-			  size = t;
-		      }
-
-		    itype = build_index_type (build_min
-		      (MINUS_EXPR, sizetype, size, integer_one_node));
-		    goto dont_grok_size;
-		  }
-
-		if (TREE_CODE (TREE_TYPE (size)) != INTEGER_TYPE
-		    && TREE_CODE (TREE_TYPE (size)) != ENUMERAL_TYPE
-		    && TREE_CODE (TREE_TYPE (size)) != BOOLEAN_TYPE)
-		  {
-		    cp_error ("size of array `%D' has non-integer type",
-			      dname);
-		    size = integer_one_node;
-		  }
-		if (pedantic && !in_system_header && integer_zerop (size))
-		  cp_pedwarn ("ANSI C++ forbids zero-size array `%D'", dname);
-		if (TREE_CONSTANT (size))
-		  {
-		    int old_flag_pedantic_errors = flag_pedantic_errors;
-		    int old_pedantic = pedantic;
-		    pedantic = flag_pedantic_errors = 1;
-		    /* Always give overflow errors on array subscripts.  */
-		    constant_expression_warning (size);
-		    pedantic = old_pedantic;
-		    flag_pedantic_errors = old_flag_pedantic_errors;
-		    if (INT_CST_LT (size, integer_zero_node))
-		      {
-			cp_error ("size of array `%D' is negative", dname);
-			size = integer_one_node;
-		      }
-		  }
-		else
-		  {
-		    if (pedantic)
-		      {
-			if (dname)
-			  cp_pedwarn ("ANSI C++ forbids variable-size array `%D'",
-				      dname);
-			else
-			  cp_pedwarn ("ANSI C++ forbids variable-size array");
-		      }
-		  }
-
-		itype
-		  = fold (build_binary_op (MINUS_EXPR,
-					   cp_convert (index_type, size),
-					   cp_convert (index_type,
-						       integer_one_node)));
-		if (! TREE_CONSTANT (itype))
-		  itype = variable_size (itype);
-		else if (TREE_OVERFLOW (itype))
-		  {
-		    error ("overflow in array dimension");
-		    TREE_OVERFLOW (itype) = 0;
-		  }
-
-		itype = build_index_type (itype);
-	      }
-
-	  dont_grok_size:
-	    type = build_cplus_array_type (type, itype);
+	    type = create_array_type_for_decl (dname, type, size);
 	    ctype = NULL_TREE;
 	  }
 	  break;

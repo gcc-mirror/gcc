@@ -2267,7 +2267,6 @@ expand_stmt (t)
 	case DECL_STMT:
 	  {
 	    tree decl;
-	    int i = suspend_momentary ();
 
 	    emit_line_note (input_filename, lineno);
 	    decl = DECL_STMT_DECL (t);
@@ -2290,8 +2289,6 @@ expand_stmt (t)
 	      }
 	    else if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
 	      make_rtl_for_local_static (decl);
-
-	    resume_momentary (i);
 	  }
 	  break;
 
