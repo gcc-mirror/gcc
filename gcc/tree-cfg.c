@@ -58,29 +58,32 @@ static const int initial_cfg_capacity = 20;
    building of the CFG in code with lots of gotos.  */
 static GTY(()) varray_type label_to_block_map;
 
-/* This hash table allows us to efficiently lookup the one and only one
-   CASE_LABEL_EXPR which contains the LABEL_DECL for the target block
-   of one or more case statements.  Efficient access to this node
-   allows us to efficiently update the case vector in response to
-   edge redirections and similar operations. 
+/* This hash table allows us to efficiently lookup all CASE_LABEL_EXPRs
+   which use a particular edge.  The CASE_LABEL_EXPRs are chained together
+   via their TREE_CHAIN field, which we clear after we're done with the
+   hash table to prevent problems with duplication of SWITCH_EXPRs.
 
-   Right now this is only used to set up case label leaders.  In the
-   future we hope to make this table more persistent and use it to
-   more efficiently update case labels.  */
+   Access to this list of CASE_LABEL_EXPRs allows us to efficiently
+   update the case vector in response to edge redirections.
 
-struct edge_to_case_leader_elt
+   Right now this table is set up and torn down at key points in the
+   compilation process.  It would be nice if we could make the table
+   more persistent.  The key is getting notification of changes to
+   the CFG (particularly edge removal, creation and redirection).  */
+
+struct edge_to_cases_elt
 {
   /* The edge itself.  Necessary for hashing and equality tests.  */
   edge e;
 
-  /* The "leader" for all the CASE_LABEL_EXPRs which transfer control
-     to E->dest.  When we change the destination of E, we will need to
-     update the CASE_LEADER_OR_LABEL of this CASE_LABEL_EXPR (and no
-     others).  */
-  tree case_label;
+  /* The case labels associated with this edge.  We link these up via
+     their TREE_CHAIN field, then we wipe out the TREE_CHAIN fields
+     when we destroy the hash table.  This prevents problems when copying
+     SWITCH_EXPRs.  */
+  tree case_labels;
 };
 
-static htab_t edge_to_case_leader;
+static htab_t edge_to_cases;
 
 /* CFG statistics.  */
 struct cfg_stats_d
@@ -601,27 +604,78 @@ make_cond_expr_edges (basic_block bb)
   make_edge (bb, else_bb, EDGE_FALSE_VALUE);
 }
 
-/* Hashing routine for EDGE_TO_CASE_LEADER.  */
+/* Hashing routine for EDGE_TO_CASES.  */
 
 static hashval_t
-edge_to_case_leader_hash (const void *p)
+edge_to_cases_hash (const void *p)
 {
-  edge e = ((struct edge_to_case_leader_elt *)p)->e;
+  edge e = ((struct edge_to_cases_elt *)p)->e;
 
   /* Hash on the edge itself (which is a pointer).  */
   return htab_hash_pointer (e);
 }
 
-/* Equality routine for EDGE_TO_CASE_LEADER, edges are unique, so testing
+/* Equality routine for EDGE_TO_CASES, edges are unique, so testing
    for equality is just a pointer comparison.  */
 
 static int
-edge_to_case_leader_eq (const void *p1, const void *p2)
+edge_to_cases_eq (const void *p1, const void *p2)
 {
-  edge e1 = ((struct edge_to_case_leader_elt *)p1)->e;
-  edge e2 = ((struct edge_to_case_leader_elt *)p2)->e;
+  edge e1 = ((struct edge_to_cases_elt *)p1)->e;
+  edge e2 = ((struct edge_to_cases_elt *)p2)->e;
 
   return e1 == e2;
+}
+
+/* Called for each element in the hash table (P) as we delete the
+   edge to cases hash table.
+
+   Clear all the TREE_CHAINs to prevent problems with copying of 
+   SWITCH_EXPRs and structure sharing rules, then free the hash table
+   element.  */
+
+static void
+edge_to_cases_cleanup (void *p)
+{
+  struct edge_to_cases_elt *elt = p;
+  tree t, next;
+
+  for (t = elt->case_labels; t; t = next)
+    {
+      next = TREE_CHAIN (t);
+      TREE_CHAIN (t) = NULL;
+    }
+  free (p);
+}
+
+/* Start recording information mapping edges to case labels.  */
+
+static void
+start_recording_case_labels (void)
+{
+  gcc_assert (edge_to_cases == NULL);
+
+  edge_to_cases = htab_create (37,
+			       edge_to_cases_hash,
+			       edge_to_cases_eq,
+			       edge_to_cases_cleanup);
+}
+
+/* Return nonzero if we are recording information for case labels.  */
+
+static bool
+recording_case_labels_p (void)
+{
+  return (edge_to_cases != NULL);
+}
+
+/* Stop recording information mapping edges to case labels and
+   remove any information we have recorded.  */
+static void
+end_recording_case_labels (void)
+{
+  htab_delete (edge_to_cases);
+  edge_to_cases = NULL;
 }
 
 /* Record that CASE_LABEL (a CASE_LABEL_EXPR) references edge E.  */
@@ -629,16 +683,16 @@ edge_to_case_leader_eq (const void *p1, const void *p2)
 static void
 record_switch_edge (edge e, tree case_label)
 {
-  struct edge_to_case_leader_elt *elt;
+  struct edge_to_cases_elt *elt;
   void **slot;
 
   /* Build a hash table element so we can see if E is already
      in the table.  */
-  elt = xmalloc (sizeof (struct edge_to_case_leader_elt));
+  elt = xmalloc (sizeof (struct edge_to_cases_elt));
   elt->e = e;
-  elt->case_label = case_label;
+  elt->case_labels = case_label;
 
-  slot = htab_find_slot (edge_to_case_leader, elt, INSERT);
+  slot = htab_find_slot (edge_to_cases, elt, INSERT);
 
   if (*slot == NULL)
     {
@@ -652,70 +706,56 @@ record_switch_edge (edge e, tree case_label)
       free (elt);
 
       /* Get the entry stored in the hash table.  */
-      elt = (struct edge_to_case_leader_elt *) *slot;
+      elt = (struct edge_to_cases_elt *) *slot;
 
-      /* Make ELT->case_label the leader for CASE_LABEL.  */
-      CASE_LEADER_OR_LABEL (case_label) = elt->case_label;
+      /* Add it to the chain of CASE_LABEL_EXPRs referencing E.  */
+      TREE_CHAIN (case_label) = elt->case_labels;
+      elt->case_labels = case_label;
     }
 }
 
-/* Subroutine of get_case_leader_for_edge; returns the case leader for the
-   chain of CASE_LABEL_EXPRs associated with E using a hash table lookup.  */
+/* If we are inside a {start,end}_recording_cases block, then return
+   a chain of CASE_LABEL_EXPRs from T which reference E.
+
+   Otherwise return NULL.  */
 
 static tree
-get_case_leader_for_edge_hash (edge e)
+get_cases_for_edge (edge e, tree t)
 {
-  struct edge_to_case_leader_elt elt, *elt_p;
+  struct edge_to_cases_elt elt, *elt_p;
   void **slot;
+  size_t i, n;
+  tree vec;
 
+  /* If we are not recording cases, then we do not have CASE_LABEL_EXPR
+     chains available.  Return NULL so the caller can detect this case.  */
+  if (!recording_case_labels_p ())
+    return NULL;
+  
+restart:
   elt.e = e;
-  elt.case_label = NULL;
-  slot = htab_find_slot (edge_to_case_leader, &elt, NO_INSERT);
+  elt.case_labels = NULL;
+  slot = htab_find_slot (edge_to_cases, &elt, NO_INSERT);
 
   if (slot)
     {
-      tree t;
-
-      elt_p = (struct edge_to_case_leader_elt *)*slot;
-      t = elt_p->case_label;
-
-      while (TREE_CODE (CASE_LEADER_OR_LABEL (t)) == CASE_LABEL_EXPR)
-	t = CASE_LEADER_OR_LABEL (t);
-      return t;
+      elt_p = (struct edge_to_cases_elt *)*slot;
+      return elt_p->case_labels;
     }
 
-  return NULL;
-}
+  /* If we did not find E in the hash table, then this must be the first
+     time we have been queried for information about E & T.  Add all the
+     elements from T to the hash table then perform the query again.  */
 
-/* Given an edge E, return the case leader for the chain of CASE_LABEL_EXPRs
-   which use E.  */
-
-static tree
-get_case_leader_for_edge (edge e)
-{
-  tree vec, stmt;
-  size_t i, n;
-
-  /* If we have a hash table, then use it as it's significantly faster.  */
-  if (edge_to_case_leader)
-    return get_case_leader_for_edge_hash (e);
-
-  /* No hash table.  We have to walk the case vector.  */
-  stmt = bsi_stmt (bsi_last (e->src));
-  vec = SWITCH_LABELS (stmt);
+  vec = SWITCH_LABELS (t);
   n = TREE_VEC_LENGTH (vec);
-
   for (i = 0; i < n; i++)
     {
-      tree elt = TREE_VEC_ELT (vec, i);
-      tree t = CASE_LEADER_OR_LABEL (elt);
-
-      if (TREE_CODE (t) == LABEL_DECL
-	  && label_to_block (t) == e->dest)
-	return elt;
+      tree lab = CASE_LABEL (TREE_VEC_ELT (vec, i));
+      basic_block label_bb = label_to_block (lab);
+      record_switch_edge (find_edge (e->src, label_bb), TREE_VEC_ELT (vec, i));
     }
-
-  abort ();
+  goto restart;
 }
 
 /* Create the edges for a SWITCH_EXPR starting at block BB.
@@ -732,22 +772,12 @@ make_switch_expr_edges (basic_block bb)
   vec = SWITCH_LABELS (entry);
   n = TREE_VEC_LENGTH (vec);
 
-  edge_to_case_leader
-    = htab_create (n, edge_to_case_leader_hash, edge_to_case_leader_eq, free);
-
   for (i = 0; i < n; ++i)
     {
       tree lab = CASE_LABEL (TREE_VEC_ELT (vec, i));
       basic_block label_bb = label_to_block (lab);
-      edge e = make_edge (bb, label_bb, 0);
-
-      if (!e)
-	e = find_edge (bb, label_bb);
-
-      record_switch_edge (e, TREE_VEC_ELT (vec, i));
+      make_edge (bb, label_bb, 0);
     }
-  htab_delete (edge_to_case_leader);
-  edge_to_case_leader = NULL;
 }
 
 
@@ -869,7 +899,13 @@ cleanup_tree_cfg (void)
 
   retval = cleanup_control_flow ();
   retval |= delete_unreachable_blocks ();
+
+  /* thread_jumps can redirect edges out of SWITCH_EXPRs, which can get
+     expensive.  So we want to enable recording of edge to CASE_LABEL_EXPR
+     mappings around the call to thread_jumps.  */
+  start_recording_case_labels ();
   retval |= thread_jumps ();
+  end_recording_case_labels ();
 
 #ifdef ENABLE_CHECKING
   if (retval)
@@ -1019,7 +1055,7 @@ cleanup_dead_labels (void)
 	      {
 		tree elt = TREE_VEC_ELT (vec, i);
 		tree label = main_block_label (CASE_LABEL (elt));
-		CASE_LEADER_OR_LABEL (elt) = label;
+		CASE_LABEL (elt) = label;
 	      }
 	    break;
 	  }
@@ -4281,30 +4317,47 @@ tree_redirect_edge_and_branch (edge e, basic_block dest)
 
     case SWITCH_EXPR:
       {
-	edge e2;
+        tree cases = get_cases_for_edge (e, stmt);
+	edge e2 = find_edge (e->src, dest);
 
-        /* We need to update the LABEL_DECL in the switch vector to
-	   reflect the edge redirection.
-
-	   There is precisely one CASE_LABEL_EXPR in the switch vector
-	   which needs updating.  Either its label needs to be updated
-	   or it needs to be directed to a new case leader.  */
-	e2 = find_edge (e->src, dest);
-	if (e2)
+	/* If we have a list of cases associated with E, then use it
+	   as it's a lot faster than walking the entire case vector.  */
+	if (cases)
 	  {
-	    /* In this case we need to change the case leader for the
-	       current leader of E to be the case leader for E2.  */
-	    tree e_leader = get_case_leader_for_edge (e);
-	    tree e2_leader = get_case_leader_for_edge (e2);
-	    CASE_LEADER_OR_LABEL (e_leader) = e2_leader;
+	    tree last, first;
+
+	    first = cases;
+	    while (cases)
+	      {
+		last = cases;
+		CASE_LABEL (cases) = label;
+		cases = TREE_CHAIN (cases);
+	      }
+
+	    /* If there was already an edge in the CFG, then we need
+	       to move all the cases associated with E to E2.  */
+	    if (e2)
+	      {
+		tree cases2 = get_cases_for_edge (e2, stmt);
+
+		TREE_CHAIN (last) = TREE_CHAIN (cases2);
+		TREE_CHAIN (cases2) = first;
+	      }
 	  }
 	else
 	  {
-	    /* No edge exists from E->src to DEST, so we will simply
-	       change E->dest.  The case leader does not change, but
-	       the LABEL_DECL for the leader does change.  */
-	    CASE_LEADER_OR_LABEL (get_case_leader_for_edge (e)) = label;
+	    tree vec = SWITCH_LABELS (stmt);
+	    size_t i, n = TREE_VEC_LENGTH (vec);
+
+	    for (i = 0; i < n; i++)
+	      {
+		tree elt = TREE_VEC_ELT (vec, i);
+
+		if (label_to_block (CASE_LABEL (elt)) == e->dest)
+		  CASE_LABEL (elt) = label;
+	      }
 	  }
+
 	break;
       }
 
@@ -5320,6 +5373,10 @@ split_critical_edges (void)
   edge e;
   edge_iterator ei;
 
+  /* split_edge can redirect edges out of SWITCH_EXPRs, which can get
+     expensive.  So we want to enable recording of edge to CASE_LABEL_EXPR
+     mappings around the calls to split_edge.  */
+  start_recording_case_labels ();
   FOR_ALL_BB (bb)
     {
       FOR_EACH_EDGE (e, ei, bb->succs)
@@ -5328,6 +5385,7 @@ split_critical_edges (void)
 	    split_edge (e);
 	  }
     }
+  end_recording_case_labels ();
 }
 
 struct tree_opt_pass pass_split_crit_edges = 
