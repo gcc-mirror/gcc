@@ -22,6 +22,7 @@
 
 // { dg-do run }
 // { dg-options "-finput-charset=ISO8859-1" }
+// { dg-require-iconv "ISO8859-1" }
 
 #include <locale>
 #include <testsuite_hooks.h>

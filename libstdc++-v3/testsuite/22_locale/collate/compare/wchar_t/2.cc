@@ -20,6 +20,7 @@
 
 // { dg-do run }
 // { dg-options "-finput-charset=ISO8859-1" }
+// { dg-require-iconv "ISO8859-1" }
 
 // 22.2.4.1.1 collate members
 

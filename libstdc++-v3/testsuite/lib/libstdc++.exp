@@ -47,6 +47,7 @@ proc load_gcc_lib { filename } {
 load_lib dg.exp
 load_lib libgloss.exp
 # compiler routines, then ours
+load_gcc_lib target-supports.exp
 load_lib prune.exp
 load_lib dg-options.exp
 
