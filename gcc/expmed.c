@@ -847,6 +847,10 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
       offset += SUBREG_WORD (op0);
       op0 = SUBREG_REG (op0);
     }
+
+  /* ??? We currently assume TARGET is at least as big as BITSIZE.
+     If that's wrong, the solution is to test for it and set TARGET to 0
+     if needed.  */
   
   /* If OP0 is a register, BITPOS must count within a word.
      But as we have it, it counts within whatever size OP0 now has.
@@ -909,7 +913,11 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	{
 	  /* If I is 0, use the low-order word in both field and target;
 	     if I is 1, use the next to lowest word; and so on.  */
-	  int wordnum = (WORDS_BIG_ENDIAN ? nwords - i - 1 : i);
+	  /* Word number in TARGET to use.  */
+	  int wordnum = (WORDS_BIG_ENDIAN
+			 ? GET_MODE_SIZE (GET_MODE (target)) / UNITS_PER_WORD - i - 1
+			 : i);
+	  /* Offset from start of field in OP0.  */
 	  int bit_offset = (WORDS_BIG_ENDIAN
 			    ? MAX (0, bitsize - (i + 1) * BITS_PER_WORD)
 			    : i * BITS_PER_WORD);
@@ -929,7 +937,24 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	}
 
       if (unsignedp)
-	return target;
+	{
+	  /* Unless we've filled TARGET, the upper regs in a multi-reg value
+	     need to be zero'd out.  */
+	  if (GET_MODE_SIZE (GET_MODE (target)) > nwords * UNITS_PER_WORD)
+	    {
+	      int i,total_words;
+
+	      total_words = GET_MODE_SIZE (GET_MODE (target)) / UNITS_PER_WORD;
+	      for (i = nwords; i < total_words; i++)
+		{
+		  int wordnum = WORDS_BIG_ENDIAN ? total_words - i - 1 : i;
+		  rtx target_part = operand_subword (target, wordnum, 1, VOIDmode);
+		  emit_move_insn (target_part, const0_rtx);
+		}
+	    }
+	  return target;
+	}
+
       /* Signed bit field: sign-extend with two arithmetic shifts.  */
       target = expand_shift (LSHIFT_EXPR, mode, target,
 			     build_int_2 (GET_MODE_BITSIZE (mode) - bitsize, 0),
@@ -1424,7 +1449,8 @@ extract_fixed_bit_field (tmode, op0, offset, bitsize, bitpos,
 /* Return a constant integer (CONST_INT or CONST_DOUBLE) mask value
    of mode MODE with BITSIZE ones followed by BITPOS zeros, or the
    complement of that if COMPLEMENT.  The mask is truncated if
-   necessary to the width of mode MODE.  */
+   necessary to the width of mode MODE.  The mask is zero-extended if
+   BITSIZE+BITPOS is too small for MODE.  */
 
 static rtx
 mask_rtx (mode, bitpos, bitsize, complement)
