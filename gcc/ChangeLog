@@ -20,9 +20,6 @@
 	BUILT_IN_FWRITE_UNLOCKED, BUILT_IN_VFPRINTF, BUILT_IN_VFSCANF): Use
 	the above *FILEPTR* types instead of *PTR*.
 
-	* decl.c (duplicate_decls): Handle fileptr_type_node arguments
-	specially.
-
 2004-06-09  Daniel Berlin <dberlin@dberlin.org>
 
 	* tree-ssa.c (verify_ssa): Verify that vdefs/makes_aliased_stores 

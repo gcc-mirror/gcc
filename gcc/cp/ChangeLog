@@ -1,3 +1,9 @@
+2004-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/14791
+	* decl.c (duplicate_decls): Handle fileptr_type_node arguments
+	specially.
+
 2004-06-09  Mark Mitchell  <mark@codesourcery.com>
 
 	Revert:
