@@ -1037,10 +1037,6 @@ do { char dstr[30];					\
 
 #define DWARF2_ASM_LINE_DEBUG_INFO 1
 
-/* We need to prepend underscores.  */
-#define ASM_OUTPUT_DWARF2_ADDR_CONST(FILE,ADDR) \
-  fprintf ((FILE), "\t%s\t_%s", UNALIGNED_WORD_ASM_OP, (ADDR))
-  
 #define DBX_REGISTER_NUMBER(REGNO) REGNO
 
 /* GDB always assumes the current function's frame begins at the value
