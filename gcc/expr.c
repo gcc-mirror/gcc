@@ -6157,6 +6157,13 @@ expand_expr (exp, target, tmode, modifier)
       if (TREE_CODE (type) == UNION_TYPE)
 	{
 	  tree valtype = TREE_TYPE (TREE_OPERAND (exp, 0));
+
+	  /* If both input and output are BLKmode, this conversion
+	     isn't actually doing anything.  */
+	  if (mode == BLKmode && TYPE_MODE (valtype) == BLKmode)
+	    return expand_expr (TREE_OPERAND (exp, 0), target, tmode,
+				modifier);
+
 	  if (target == 0)
 	    {
 	      if (mode != BLKmode)
