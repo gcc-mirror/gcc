@@ -168,7 +168,7 @@ stamp-r5: stamp-r4
 stamp-r6: stamp-r5
 	: try it without tags, case-insensitive, with case perversions
 	./rdbz -E 1000 -0 -p '0 b 1' dbase2
-	tr '[A-M][n-z]' '[a-m][N-Z]' <dbase2 >dbase.ick
+	tr 'ABCDEFGHIJKLMnopqrstuvwxyz' 'abcdefghijklmNOPQRSTUVWXYZ' <dbase2 >dbase.ick
 	./rdbz -E 1000 -x dbase2 dbase.ick >dbase.temp
 	cmp dbase.used dbase.temp
 	rm -f dbase.temp dbase.ick
