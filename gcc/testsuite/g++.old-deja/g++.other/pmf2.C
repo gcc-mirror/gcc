@@ -14,5 +14,5 @@ S * pf;
 void
 f()
 {
-	pmf = & pf->f; // ERROR - not a valid pmf expression - XFAIL *-*-*
+	pmf = & pf->f; // ERROR - not a valid pmf expression
 }

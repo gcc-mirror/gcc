@@ -21,7 +21,7 @@ struct0 *ptr;
 
 void global_function_0 ()
 {
-  fmp = &ptr->function_member;	// ERROR - missed by g++, warned by cfront, XFAIL *-*-*
+  fmp = &ptr->function_member;	// ERROR - 
   //dmp = &ptr->data_member;	//  caught by g++, missed by cfront
 }
 

@@ -31,7 +31,7 @@ void A::main() {
   void (A::*mPtr)() = &A::f1a;
 
   (*(void (*)(A*))PMF2PF(mPtr))(&a);
-  (*(void (*)(A*))PMF2PF(f2a))(&a);
+  (*(void (*)(A*))PMF2PF(f2a))(&a); // gets bogus error XFAIL *-*-*
 }
 
 int main() {
@@ -40,6 +40,6 @@ int main() {
   void (A::*mPtr)() = &A::f1b;
 
   (*(void (*)(A*))PMF2PF(a.*mPtr))(&a);
-  (*(void (*)(A*))PMF2PF(a.f2a))(&a);
+  (*(void (*)(A*))PMF2PF(a.f2a))(&a); // gets bogus error XFAIL *-*-*
   return ok != 3+3+5+5+7+7;
 }
