@@ -1,0 +1,29 @@
+INSTALL=cp
+
+# The svr4 reference port for the i860 contains an alloca.o routine
+# in /usr/ucblib/libucb.a, but we can't just try to get that by
+# setting CLIB to /usr/ucblib/libucb.a because (unfortunately)
+# there are a lot of other routines in libucb.a which are supposed
+# to be the Berkeley versions of library routines normally found in
+# libc.a and many of these Berkeley versions are badly broken.  Thus,
+# if we try to link programs with libucb.a before libc.a, those
+# programs tend to crash.
+
+# More importantly, the alloca() routine supplied in early versions
+# of svr4 for the i860 (in /usr/ucblib/libucb.a) is broken, so we
+# should NOT try to use it anyway.
+
+ALLOCA=alloca.o
+
+# We build all stages *without* shared libraries because that may make
+# debugging the compiler easier (until there is a GDB which supports
+# both Dwarf *and* svr4 shared libraries).
+
+# Note that the native C compiler for the svr4 reference port on the
+# i860 recognizes a special -gg option.  Using that option causes *full*
+# Dwarf debugging information to be generated, whereas using only -g
+# causes only limited Dwarf debugging information to be generated.
+# (This is an undocumented feature of that compiler.)
+
+CCLIBFLAGS=-Bstatic -dn -gg
+GCC_CFLAGS=-static -g -O2 -B./
