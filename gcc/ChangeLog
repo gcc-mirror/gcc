@@ -1,3 +1,7 @@
+2004-12-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* doc/trouble.texi (Non-bugs): Clarify empty loop removal.
+
 2004-12-08  Uros Bizjak  <uros@kss-loka.si>
 
 	* config/i386/i386.c (output_387_binary_op,

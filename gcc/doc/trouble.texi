@@ -1217,13 +1217,34 @@ to have a delay, so deleting them will not make real programs run any
 faster.
 
 However, the rationale here is that optimization of a nonempty loop
-cannot produce an empty one, which holds for C but is not always the
-case for C++.
+cannot produce an empty one. This held for carefully written C compiled
+with less powerful optimizers but is not always the case for carefully
+written C++ or with more powerful optimizers.
 
 @opindex funroll-loops
-Moreover, with @option{-funroll-loops} small ``empty'' loops are already
-removed, so the current behavior is both sub-optimal and inconsistent
-and will change in the future.
+Thus GCC will remove operations from loops whenever it can determine
+those operations are not externally visible (apart from the time taken
+to execute them, of course).  As GCC improves, it will remove the loop
+itself.  Indeed, with @option{-funroll-loops} small loops can already be
+removed, so leaving an empty non-unrolled loop is both sub-optimal and
+inconsistent.
+
+Be aware of this when performing timing tests, for instance the
+following loop can be completely removed, provided
+@code{some_expression} can provably not change any global state.
+
+@smallexample
+@{
+   int sum = 0;
+   int ix;
+
+   for (ix = 0; ix != 10000; ix++)
+      sum += some_expression;
+@}
+@end smallexample
+
+Even though @code{sum} is accumulated in the loop, no use is made of
+that summation, so the accumulation can be removed.
 
 @item
 Making side effects happen in the same order as in some other compiler.
