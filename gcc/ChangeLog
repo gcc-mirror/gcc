@@ -1,3 +1,9 @@
+2003-09-03  Mostafa Hagog  <mustafa@il.ibm.com>
+
+	* gcse.c (replace_one_set): New function.
+	(pre_insert_copy_insn): Change the order of copying
+	to make copy propagation discover additional PRE opportunities.
+
 2003-09-03  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/11700.
