@@ -1728,6 +1728,24 @@ do {									    \
    `-fno-common' is passed, otherwise `ASM_OUTPUT_COMMON' will be
    used.  */
 
+/* Define the pseudo-ops used to switch to the .ctors and .dtors sections.
+   There are no shared libraries on this target, and these sections are
+   placed in the read-only program memory, so they are not writable.  */
+
+#undef CTORS_SECTION_ASM_OP
+#define CTORS_SECTION_ASM_OP "\t.section .ctors,\"a\",@progbits"
+
+#undef DTORS_SECTION_ASM_OP
+#define DTORS_SECTION_ASM_OP "\t.section .dtors,\"a\",@progbits"
+
+#define TARGET_ASM_CONSTRUCTOR avr_asm_out_ctor
+/* If defined, a function that outputs assembler code to arrange to
+   call the function referenced by SYMBOL at initialization time.  */
+
+#define TARGET_ASM_DESTRUCTOR avr_asm_out_dtor
+/* This is like `TARGET_ASM_CONSTRUCTOR' but used for termination
+   functions rather than initialization functions.  */
+
 #define EXTRA_SECTIONS in_progmem
 /* A list of names for sections other than the standard two, which are
    `in_text' and `in_data'.  You need not define this macro on a
@@ -2587,6 +2605,9 @@ extern int avr_case_values_threshold;
 
    If this macro is not defined, a default is provided that loads the
    standard C library from the usual place.  See `gcc.c'.  */
+
+#define LIBSTDCXX "-lgcc"
+/* No libstdc++ for now.  Empty string doesn't work.  */
 
 #define LIBGCC_SPEC \
   "%{!mmcu=at90s1*:%{!mmcu=attiny1*:%{!mmcu=attiny28: -lgcc }}}"

@@ -637,11 +637,19 @@ __epilogue_restores__:
 #endif /* defined (L_epilogue) */
 
 #ifdef L_exit
-	.weak	_exit
+	.section .fini9,"ax",@progbits
+	.global _exit
 	.func	_exit
 _exit:
-	rjmp	_exit
-.endfunc
+	.weak	exit
+exit:
+
+	/* Code from .fini8 ... .fini1 sections inserted by ld script.  */
+
+	.section .fini0,"ax",@progbits
+__stop_program:
+	rjmp	__stop_program
+	.endfunc
 #endif /* defined (L_exit) */
 
 #ifdef L_cleanup
@@ -658,6 +666,8 @@ _cleanup:
 __tablejump2__:
 	lsl	r30
 	rol	r31
+	.global __tablejump__
+__tablejump__:
 #if defined (__AVR_ENHANCED__)
 	lpm	__tmp_reg__, Z+
 	lpm	r31, Z
@@ -665,12 +675,104 @@ __tablejump2__:
 	ijmp
 #else
 	lpm
+	adiw	r30, 1
 	push	r0
-	inc	r30	; table is word aligned, no carry to high byte
 	lpm
 	push	r0
 	ret
 #endif
-.endfunc
+	.endfunc
 #endif /* defined (L_tablejump) */
+
+/* __do_copy_data is only necessary if there is anything in .data section.
+   Does not use RAMPZ - crt*.o provides a replacement for >64K devices.  */
+
+#ifdef L_copy_data
+	.section .init4,"ax",@progbits
+	.global __do_copy_data
+__do_copy_data:
+	ldi	r17, hi8(__data_end)
+	ldi	r26, lo8(__data_start)
+	ldi	r27, hi8(__data_start)
+	ldi	r30, lo8(__data_load_start)
+	ldi	r31, hi8(__data_load_start)
+	rjmp	.do_copy_data_start
+.do_copy_data_loop:
+#if defined (__AVR_ENHANCED__)
+	lpm	r0, Z+
+#else
+	lpm
+	adiw	r30, 1
+#endif
+	st	X+, r0
+.do_copy_data_start:
+	cpi	r26, lo8(__data_end)
+	cpc	r27, r17
+	brne	.do_copy_data_loop
+#endif /* L_copy_data */
+
+/* __do_clear_bss is only necessary if there is anything in .bss section.  */
+
+#ifdef L_clear_bss
+	.section .init4,"ax",@progbits
+	.global __do_clear_bss
+__do_clear_bss:
+	ldi	r17, hi8(__bss_end)
+	ldi	r26, lo8(__bss_start)
+	ldi	r27, hi8(__bss_start)
+	rjmp	.do_clear_bss_start
+.do_clear_bss_loop:
+	st	X+, __zero_reg__
+.do_clear_bss_start:
+	cpi	r26, lo8(__bss_end)
+	cpc	r27, r17
+	brne	.do_clear_bss_loop
+#endif /* L_clear_bss */
+
+/* __do_global_ctors and __do_global_dtors are only necessary
+   if there are any constructors/destructors.  */
+
+#if defined (__AVR_MEGA__)
+#define XCALL call
+#else
+#define XCALL rcall
+#endif
+
+#ifdef L_ctors
+	.section .init6,"ax",@progbits
+	.global	__do_global_ctors
+__do_global_ctors:
+	ldi	r17, hi8(__ctors_start)
+	ldi	r28, lo8(__ctors_end)
+	ldi	r29, hi8(__ctors_end)
+	rjmp	.do_global_ctors_start
+.do_global_ctors_loop:
+	sbiw	r28, 2
+	mov_h	r31, r29
+	mov_l	r30, r28
+	XCALL	__tablejump__
+.do_global_ctors_start:
+	cpi	r28, lo8(__ctors_start)
+	cpc	r29, r17
+	brne	.do_global_ctors_loop
+#endif /* L_ctors */
+
+#ifdef L_dtors
+	.section .fini6,"ax",@progbits
+	.global	__do_global_dtors
+__do_global_dtors:
+	ldi	r17, hi8(__dtors_end)
+	ldi	r28, lo8(__dtors_start)
+	ldi	r29, hi8(__dtors_start)
+	rjmp	.do_global_dtors_start
+.do_global_dtors_loop:
+	mov_h	r31, r29
+	mov_l	r30, r28
+	XCALL	__tablejump__
+	adiw	r28, 2
+.do_global_dtors_start:
+	cpi	r28, lo8(__dtors_end)
+	cpc	r29, r17
+	brne	.do_global_dtors_loop
+#endif /* L_dtors */
 
