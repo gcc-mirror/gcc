@@ -1,3 +1,8 @@
+2002-03-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-demangle.c: Add libgcc exception to cp-demangle.c copyright
+	notice.
+
 2002-03-11  Douglas B Rupp  <rupp@gnat.com>
 
 	* xatexit.c [VMS]: Include stdlib.h and unixlib.h.
