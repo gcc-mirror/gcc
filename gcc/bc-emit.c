@@ -1,5 +1,5 @@
 /* Output bytecodes for GNU C-compiler.
-   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -977,16 +977,4 @@ bc_emit_trampoline (callinfo)
 
   seg_defsym (bytecode, mylab);
   return sym_lookup (mylab)->name;
-}
-
-
-/* Simple strdup */
-char *
-bc_xstrdup (str)
-     char *str;
-{
-  char *tmp = xmalloc (strlen (str) + 1);
-
-  strcpy (tmp, str);
-  return tmp;
 }
