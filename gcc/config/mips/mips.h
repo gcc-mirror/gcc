@@ -108,6 +108,7 @@ extern enum processor_type mips_cpu;	/* which cpu are we scheduling for */
 extern int mips_isa;			/* architectural level */
 extern char *mips_cpu_string;		/* for -mcpu=<xxx> */
 extern char *mips_isa_string;		/* for -mips{1,2,3} */
+extern enum attr_abicalls mips_abicalls;/* for svr4 abi pic calls */
 extern int dslots_load_total;		/* total # load related delay slots */
 extern int dslots_load_filled;		/* # filled load delay slots */
 extern int dslots_jump_total;		/* total # jump related delay slots */
@@ -1247,6 +1248,8 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
    files to allocate such a register (if necessary).  */
 #define PIC_OFFSET_TABLE_REGNUM (GP_REG_FIRST + 28)
 
+#define PIC_FUNCTION_ADDR_REGNUM (GP_REG_FIRST + 25)
+
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.
@@ -1512,7 +1515,9 @@ extern enum reg_class mips_char_to_class[];
    If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
    first local allocated.  Otherwise, it is the offset to the BEGINNING
    of the first local allocated.  */
-#define STARTING_FRAME_OFFSET current_function_outgoing_args_size
+#define STARTING_FRAME_OFFSET						\
+  (current_function_outgoing_args_size					\
+   + (TARGET_ABICALLS ? MIPS_STACK_ALIGN (UNITS_PER_WORD) : 0))
 
 /* Offset from the stack pointer register to an item dynamically
    allocated on the stack, e.g., by `alloca'.
