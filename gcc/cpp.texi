@@ -3596,16 +3596,31 @@ activities.
 
 @item -imacros @var{file}
 @findex -imacros
-Process @var{file} as input, discarding the resulting output, before
-processing the regular input file.  Because the output generated from
-@var{file} is discarded, the only effect of @samp{-imacros @var{file}}
-is to make the macros defined in @var{file} available for use in the
-main input.
+Process @var{file} as input and discard the resulting output.
+
+This has all the effects of @code{#include "file"} appearing on the
+first line of the main source file, such as generating dependencies and
+being listed with the @samp{-H} option, except that no output is
+generated, and that the first directory searched for @var{file} is the
+preprocessor's working directory @emph{instead of} the directory
+containing the main source file.  If not found there, it is searched for
+in the remainder of the @code{#include "..."} search chain as normal.
+
+Because the output is discarded, the main effect of @samp{-imacros
+@var{file}} is to make the macros defined in @var{file} available for
+use in the main input.
 
 @item -include @var{file}
 @findex -include
-Process @var{file} as input, and include all the resulting output,
-before processing the regular input file.  
+Process @var{file} as input, and include all the resulting output.
+
+This has all the effects of @code{#include "file"} appearing on the
+first line of the main source file, such as generating dependencies and
+being listed with the @samp{-H} option, except that the first directory
+searched for @var{file} is the preprocessor's working directory
+@emph{instead of} the directory containing the main source file.  If not
+found there, it is searched for in the remainder of the @code{#include
+"..."}  search chain as normal.
 
 @item -idirafter @var{dir}
 @findex -idirafter

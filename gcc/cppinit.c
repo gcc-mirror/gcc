@@ -885,8 +885,15 @@ do_includes (pfile, p, scan)
 	 use the #include "" search path if cpp_read_file fails.  */
       if (CPP_OPTION (pfile, preprocessed))
 	cpp_error (pfile, "-include and -imacros cannot be used with -fpreprocessed");
-      else if (_cpp_read_file (pfile, p->arg) && scan)
-	cpp_scan_buffer_nooutput (pfile, 0);
+      else
+	{
+	  cpp_token header;
+	  header.type = CPP_STRING;
+	  header.val.str.text = (const unsigned char *) p->arg;
+	  header.val.str.len = strlen (p->arg);
+	  if (_cpp_execute_include (pfile, &header, IT_CMDLINE) && scan)
+	    cpp_scan_buffer_nooutput (pfile, 0);
+	}
       q = p->next;
       free (p);
       p = q;
