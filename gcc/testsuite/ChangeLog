@@ -1,3 +1,7 @@
+Mon Mar  3 20:42:04 2003  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* gcc.dg/sh-relax.c: New SH-only test.
+
 2003-03-03  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.c-torture/compile/20010327-1.c: Back out last change.  Add

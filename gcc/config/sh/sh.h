@@ -359,9 +359,21 @@ extern int target_flags;
   { "subtarget_link_emul_suffix", SUBTARGET_LINK_EMUL_SUFFIX },	\
   { "subtarget_link_spec", SUBTARGET_LINK_SPEC },		\
   { "subtarget_asm_endian_spec", SUBTARGET_ASM_ENDIAN_SPEC },	\
+  { "subtarget_asm_relax_spec", SUBTARGET_ASM_RELAX_SPEC },	\
+  { "subtarget_asm_isa_spec", SUBTARGET_ASM_ISA_SPEC },	\
   SUBTARGET_EXTRA_SPECS
 
-#define ASM_SPEC  "%(subtarget_asm_endian_spec) %{mrelax:-relax}"
+#if TARGET_CPU_DEFAULT & HARD_SH4_BIT
+#define SUBTARGET_ASM_RELAX_SPEC "%{!m[1235]*:-isa=sh4}"
+#else
+#define SUBTARGET_ASM_RELAX_SPEC "%{m4*:-isa=sh4}"
+#endif
+
+#define SH_ASM_SPEC \
+ "%(subtarget_asm_endian_spec) %{mrelax:-relax %(subtarget_asm_relax_spec)}\
+%(subtarget_asm_isa_spec)"
+
+#define ASM_SPEC SH_ASM_SPEC
 
 #ifndef SUBTARGET_ASM_ENDIAN_SPEC
 #if TARGET_ENDIAN_DEFAULT == LITTLE_ENDIAN_BIT
@@ -370,6 +382,8 @@ extern int target_flags;
 #define SUBTARGET_ASM_ENDIAN_SPEC "%{ml:-little} %{!ml:-big}"
 #endif
 #endif
+
+#define SUBTARGET_ASM_ISA_SPEC ""
 
 #define LINK_EMUL_PREFIX "sh%{ml:l}"
 
