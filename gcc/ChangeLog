@@ -1,5 +1,8 @@
 2003-10-13  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.in: Remove unnecessary test.
+	* configure: Regenerate.
+
 	* configure.in: Fix grammatical error.  Move UWIN host error to...
 	* config.host: Here.
 	* configure: Regenerate.
