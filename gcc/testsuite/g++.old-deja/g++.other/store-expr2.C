@@ -1,4 +1,5 @@
 // { dg-do run { target i?86-*-* } }
+// { dg-forbid-option "-m64" }
 // { dg-options "-mtune=i686 -O2" }
 class G {};
 

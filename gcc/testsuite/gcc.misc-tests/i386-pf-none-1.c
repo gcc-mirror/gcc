@@ -2,6 +2,7 @@
    that do not support those instructions.  */
 
 /* { dg-do compile { target i?86-*-* } } */
+/* { dg-forbid-option "-m64" } */
 
 extern void exit (int);
 

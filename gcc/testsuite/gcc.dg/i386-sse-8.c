@@ -4,6 +4,7 @@
 /* { dg-do compile } */
 /* { dg-options "" } */
 /* { dg-options "-march=pentium3" { target i?86-*-* } } */
+/* { dg-forbid-option "-m64" { target i?86-*-* } } */
 
 int main() 
 { 

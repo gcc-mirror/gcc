@@ -5,6 +5,7 @@
 /* { dg-do link } */
 /* { dg-options "-O2 -ftls-model=initial-exec" } */
 /* { dg-options "-O2 -ftls-model=initial-exec -march=i686" { target i?86-*-* } } */
+/* { dg-forbid-option "-m64" { target i?86-*-* } } */
 
 __thread int thr;
 

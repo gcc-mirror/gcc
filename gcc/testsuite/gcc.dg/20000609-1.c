@@ -1,5 +1,6 @@
 /* { dg-do run { target i?86-*-* } } */
 /* { dg-options "-O1 -ffast-math -march=i686" } */
+/* { dg-forbid-option "-m64" } */
 
 /* Sanity check for fp_jcc_* with TARGET_CMOVE.  */
 
