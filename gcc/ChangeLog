@@ -1,3 +1,13 @@
+2004-02-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-objc-common.c (): Fix a typo in a warning.
+	* cse.c (preferrable): Change to preferable. Update all of its
+	callers.
+	* genautomata.c (ainsn): Change
+	first_ainsn_with_given_equialence_num to
+	first_ainsn_with_given_equivalence_num.  Update all of its
+	references.
+
 2004-02-08  Jan Hubicka  <jh@suse.cz>
 
 	* schedule-ebb.c (schedule_ebbs): Do not allocate reg life data.

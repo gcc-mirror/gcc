@@ -1209,7 +1209,7 @@ struct ainsn
   ainsn_t next_equiv_class_insn;
   /* The following field value is nonzero if the insn declaration is
      the first insn declaration with given equivalence number.  */
-  char first_ainsn_with_given_equialence_num;
+  char first_ainsn_with_given_equivalence_num;
   /* The following field is number of class of equivalence of insns.
      It is necessary because many insns may be equivalent with the
      point of view of pipeline hazards.  */
@@ -6610,7 +6610,7 @@ set_insn_equiv_classes (automaton_t automaton)
         first_insn = ainsn;
         if (!first_insn->first_insn_with_same_reservs)
 	  abort ();
-        first_insn->first_ainsn_with_given_equialence_num = 1;
+        first_insn->first_ainsn_with_given_equivalence_num = 1;
         curr_insn = first_insn;
         do
           {
@@ -7673,7 +7673,7 @@ out_state_arcs_num (state_t state)
     {
       if (arc->insn == NULL)
 	abort ();
-      if (arc->insn->first_ainsn_with_given_equialence_num)
+      if (arc->insn->first_ainsn_with_given_equivalence_num)
         result++;
     }
   return result;
@@ -7756,7 +7756,7 @@ output_trans_table (automaton_t automaton)
         {
           if (arc->insn == NULL)
 	    abort ();
-          if (arc->insn->first_ainsn_with_given_equialence_num)
+          if (arc->insn->first_ainsn_with_given_equivalence_num)
             add_vect_el (&transition_vect, arc->insn,
                          arc->to_state->order_state_num);
         }
@@ -7805,7 +7805,7 @@ output_state_alts_table (automaton_t automaton)
         {
           if (arc->insn == NULL)
 	    abort ();
-          if (arc->insn->first_ainsn_with_given_equialence_num)
+          if (arc->insn->first_ainsn_with_given_equivalence_num)
             add_vect_el (&state_alts_vect, arc->insn, arc->state_alts);
         }
       add_vect (automaton->state_alts_table, (*state_ptr)->order_state_num,
@@ -7914,7 +7914,7 @@ output_min_issue_delay_table (automaton_t automaton)
     VLA_HWINT (min_issue_delay_vect, i) = 0;
   automaton->max_min_delay = 0;
   for (ainsn = automaton->ainsn_list; ainsn != NULL; ainsn = ainsn->next_ainsn)
-    if (ainsn->first_ainsn_with_given_equialence_num)
+    if (ainsn->first_ainsn_with_given_equivalence_num)
       {
 	for (state_ptr = VLA_PTR_BEGIN (output_states_vect);
 	     state_ptr <= (state_t *) VLA_PTR_LAST (output_states_vect);
@@ -9117,7 +9117,7 @@ output_automaton_units (automaton_t automaton)
   int there_is_an_automaton_unit;
   int i;
 
-  fprintf (output_description_file, "\n  Coresponding units:\n");
+  fprintf (output_description_file, "\n  Corresponding units:\n");
   fprintf (output_description_file, "    ");
   curr_line_length = 4;
   there_is_an_automaton_unit = 0;
