@@ -10,7 +10,7 @@ extern void exit (int);
 
 int foo (void)
 {
-  static int bar (int x)
+  int bar (int x)
   {
     return x + 3;
   }

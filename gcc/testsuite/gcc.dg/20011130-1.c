@@ -9,7 +9,7 @@
 
 static int __attribute__((unused)) foo (int x)
 {
-  static inline int bar (int x)
+  inline int bar (int x)
     {
       int y;
       y = x;

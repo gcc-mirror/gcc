@@ -2,7 +2,7 @@
 
 main ()
 {
-  static double f (int x, ...)
+  double f (int x, ...)
     {
       va_list args;
       double a;

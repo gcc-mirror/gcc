@@ -23,7 +23,7 @@ trashQueryResult(Widget w, Boolean delete, caddr_t call_data)
 
   extern Cursor busy, left_ptr;
   extern String cwd;
-      	static void freeReturnStruct(void);
+      	extern void freeReturnStruct(void);
   String rmstring;
   int status;
   XedwListReturnStruct *tmp;
@@ -58,7 +58,7 @@ copyQueryResult(Widget w, Boolean copy, caddr_t call_data)
   extern void destroy_button_dialog();
   extern void changestate(Boolean);
   extern Cursor busy, left_ptr;
-  static void freeReturnStruct(void);
+  extern void freeReturnStruct(void);
   int execute(String, String, String, Boolean);
   extern String cwd;
   String copystring;
