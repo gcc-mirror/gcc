@@ -188,13 +188,13 @@ check_bool2_init (code, exp0, exp1, before, when_false, when_true)
       INTERSECT (before, when_false_0, when_false_1);
       UNION (when_false, when_false, before);
     }
-  else if (code == BIT_AND_EXPR)
+  else if (code == BIT_AND_EXPR || code == TRUTH_AND_EXPR)
     {
       UNION (when_true, when_true_0, when_true_1);
       INTERSECT (when_false, when_false_0, when_false_1);
       UNION (when_false, when_false, before);
     }
-  else /* if (code == BIT_IOR_EXPR) */
+  else /* if (code == BIT_IOR_EXPR || code == TRUTH_OR_EXPR) */
     {
       UNION (when_false, when_false_0, when_false_1);
       INTERSECT (when_true, when_true_0, when_true_1);
@@ -263,12 +263,15 @@ check_bool_init (exp, before, when_false, when_true)
 
     case BIT_AND_EXPR:
     case BIT_IOR_EXPR:
+    case TRUTH_AND_EXPR:
+    case TRUTH_OR_EXPR:
     case EQ_EXPR:
       check_bool2_init (TREE_CODE (exp),
 			TREE_OPERAND (exp, 0), TREE_OPERAND (exp, 1),
 			before, when_false, when_true);
       return;
 
+    case TRUTH_XOR_EXPR:
     case BIT_XOR_EXPR:
     case NE_EXPR:
       /* Just like EQ_EXPR, but switch when_true and when_false. */
@@ -592,6 +595,9 @@ check_init (exp, before)
       break;
     case UNARY_PLUS_EXPR:
     case NEGATE_EXPR:
+    case TRUTH_AND_EXPR:
+    case TRUTH_OR_EXPR:
+    case TRUTH_XOR_EXPR:
     case TRUTH_NOT_EXPR:
     case BIT_NOT_EXPR:
     case CONVERT_EXPR:
