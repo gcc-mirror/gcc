@@ -36,7 +36,6 @@
   // Data for classic_table().
   const ctype_base::mask* ctype<char>::_S_ctable;
 
-  ctype<char>::ctype(const mask* __tab
   ctype<char>::ctype(__c_locale, const mask* __table, bool __del, 
 		     size_t __refs)
   : __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
