@@ -1471,6 +1471,9 @@ Fortran source code that should not be preprocessed.
 Such source code cannot contain any preprocessor directives, such
 as @code{#include}, @code{#define}, @code{#if}, and so on.
 
+You can force @samp{.f} files to be preprocessed by @samp{cpp} by using
+@samp{-x f77-cpp-input}, @ref{LEX}.
+
 @cindex preprocessor
 @cindex C preprocessor
 @cindex cpp preprocessor
@@ -1491,10 +1494,15 @@ preprocessor directive must be used instead.
 @cindex Ratfor preprocessor
 @cindex programs, ratfor
 @cindex .r filename suffix
+@pindex ratfor
 @item @var{file}.r
 Ratfor source code, which must be preprocessed by the @code{ratfor}
-command, which is available separately (as it is not yet part of
-the GNU Fortran distribution).
+command, which is available separately (as it is not yet part of the GNU
+Fortran distribution).
+One version in Fortran, adapted for use with @code{g77}, is at
+@uref{ftp://members.aol.com/n8tm/rat7.uue} (of uncertain copyright
+status).  Another, public domain version in C is at
+@uref{http://sepwww.stanford.edu/sep/prof/ratfor.shar.2}.
 @end table
 
 UNIX users typically use the @file{@var{file}.f} and @file{@var{file}.F}
@@ -2667,8 +2675,8 @@ but not in code like:
       d = (b + c) * e
 @end smallexample
 
-@xref{Floating point precision} for another, potentially better way of
-controlling the precision.
+For another, potentially better, way of controlling the precision
+@ref{Floating point precision}.
 
 @cindex -fforce-mem option
 @cindex options, -fforce-mem
@@ -4161,7 +4169,10 @@ by GNU Fortran.
 @cindex textbooks
 (If you need a text on Fortran,
 a few freely available electronic references have pointers from
-@uref{http://www.fortran.com/fortran/Books/}.)
+@uref{http://www.fortran.com/fortran/Books/}.  There is a `cooperative
+net project', @cite{User Notes on Fortran Programming} at
+@uref{ftp://vms.huji.ac.il/fortran/} and mirrors elsewhere; some of this
+material might not apply specifically to @code{g77}.)
 
 Part of what defines a particular implementation of a Fortran
 system, such as @code{g77}, is the particular characteristics
@@ -5592,6 +5603,11 @@ and @samp{0123456789ABCDEFabcdef}, respectively.
 (The value for @samp{A} (and @samp{a}) is 10, for @samp{B} and @samp{b}
 is 11, and so on.)
 
+A prefix-radix constant, such as @samp{Z'ABCD'}, can optionally be
+treated as typeless.  @xref{Fortran Dialect Options,, Options
+Controlling Fortran Dialect}, for information on the
+@samp{-ftypeless-boz} option.
+
 Typeless constants have values that depend on the context in which
 they are used.
 
@@ -6548,7 +6564,7 @@ and definable by, invocation of the intrinsic (a combination of
 the requirements of @code{INTENT(IN)} and @code{INTENT(OUT)}.
 
 @item
-@xref{Kind Notation} for explanation of @code{KIND}.
+@xref{Kind Notation}, for an explanation of @code{KIND}.
 @end itemize
 
 @ifinfo
@@ -6645,11 +6661,11 @@ they are documented elsewhere.
 for information on additional fixed source form lexical issues.  In
 addition, the free source form is supported through the
 @cindex @samp{-ffree-form}
-@samp{-ffree-form} option.  @xref{Fortran 90} for other Fortran 90
-features be turned on by the
+@samp{-ffree-form} option.  Other Fortran 90 features can be turned on
+by the
 @cindex @samp{-ff90}
-@samp{-ff90} option.  @xref{Table of Intrinsic Functions} for
-information on the Fortran 90 intrinsics available.
+@samp{-ff90} option, @ref{Fortran 90}.  For information on the Fortran
+90 intrinsics available @ref{Table of Intrinsic Functions}.
 
 @table @asis
 @item Automatic arrays in procedures
@@ -13410,6 +13426,7 @@ the bug in the current version of GNU Fortran.
 @cindex preprocessor
 @cindex cpp program
 @cindex programs, cpp
+@pindex cpp
 A complete input file that will reproduce the bug.
 If the bug is in the compiler proper (@file{f771}) and
 you are using the C preprocessor, run your
@@ -14832,6 +14849,12 @@ from @samp{.for} to @samp{.fpp}.
 @code{g77} compiles files with such names @emph{with}
 preprocessing.
 
+@pindex cpp
+@cindex preprocessor
+@cindex cpp program
+@cindex programs, cpp
+@cindex @samp{-x f77-cpp-input} option
+@cindex options, @samp{-x f77-cpp-input}
 Or, learn how to use @code{gcc}'s @samp{-x} option to specify
 the language @samp{f77-cpp-input} for Fortran files that
 require preprocessing.
