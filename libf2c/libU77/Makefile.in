@@ -46,7 +46,7 @@ ALL_CFLAGS = -I. -I$(srcdir) -I$(G2C_H_DIR)/libI77 -I$(F2C_H_DIR)/libI77 -I$(G2C
 
 # This could probably be done more elegantly, but it's currently
 # just for running the u77-test test.
-G77DIR = ../../../
+G77DIR = ../../../gcc/
 
 .SUFFIXES:
 .SUFFIXES: .c .o
@@ -63,7 +63,7 @@ OBJS =  VersionU.o gerror_.o perror_.o ierrno_.o itime_.o time_.o \
 	bes.o dbes.o \
 	chdir_.o chmod_.o lnblnk_.o hostnm_.o rename_.o fgetc_.o fputc_.o \
         umask_.o sys_clock_.o date_.o second_.o flush1_.o mclock_.o \
-	alarm_.o
+	alarm_.o datetime_.o
 SRCS =  Version.c gerror_.c perror_.c ierrno_.c itime_.c time_.c \
 	unlink_.c fnum_.c getpid_.c getuid_.c getgid_.c kill_.c rand_.c \
 	srand_.c irand_.c sleep_.c idate_.c ctime_.c etime_.c \
@@ -73,7 +73,7 @@ SRCS =  Version.c gerror_.c perror_.c ierrno_.c itime_.c time_.c \
 	bes.c dbes.c \
 	chdir_.c chmod_.c lnblnk_.c hostnm_.c rename_.c fgetc_.c fputc_.c \
 	umask_.c sys_clock_.c date_.c second_.c flush1_.c mclock_.c \
-	alarm_.c
+	alarm_.c datetime_.c
 
 all: $(OBJS)
 
@@ -136,12 +136,13 @@ umask_.o: umask_.c
 flush1_.o: flush1_.c
 mclock_.o: mclock_.c
 alarm_.o: alarm_.c
+datetime_.o: datetime_.c
 
 lint:
 	lint $(ALL_CFLAGS) $(SRCS)
 
 check:
-	-$(G77DIR)g77 -B$(G77DIR) -L.. -g $(srcdir)/u77-test.f $(lib) && ./a.out
+	-$(G77DIR)g77 -B$(G77DIR) -ff90-intrinsics-enable -L.. -g $(srcdir)/u77-test.f $(lib) && ./a.out
 	rm -f a.out
 
 .PHONY: lint check all
