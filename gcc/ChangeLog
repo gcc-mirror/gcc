@@ -1,3 +1,7 @@
+Mon Oct 11 20:18:41 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* genoutput.c: Include toplev.h.
+
 Mon Oct 11 18:56:14 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* config/sparc/liteelf.h (INIT_SECTION_ASM_OP, FINI_SECTION_ASM_OP):
