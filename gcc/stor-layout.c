@@ -706,8 +706,7 @@ layout_type (type)
 
     case OFFSET_TYPE:
       TYPE_SIZE (type) = size_int (POINTER_SIZE);
-      TYPE_MODE (type) = mode_for_size (POINTER_SIZE,
-					GET_MODE_CLASS (Pmode), 0);
+      TYPE_MODE (type) = ptr_mode;
       break;
 
     case FUNCTION_TYPE:
@@ -718,8 +717,7 @@ layout_type (type)
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-      TYPE_MODE (type) = mode_for_size (POINTER_SIZE,
-					GET_MODE_CLASS (Pmode), 0);
+      TYPE_MODE (type) = ptr_mode;
       TYPE_SIZE (type) = size_int (POINTER_SIZE);
       TREE_UNSIGNED (type) = 1;
       TYPE_PRECISION (type) = POINTER_SIZE;
