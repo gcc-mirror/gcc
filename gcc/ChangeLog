@@ -1,3 +1,8 @@
+Thu Jan 22 23:43:38 1998  Per Bothner  <bothner@cygnus.com>
+
+	* dwarfout.c (byte_size_attribute):  Simplify and fix - don't need
+	special (and incomplete) handling for Chill arrays.
+
 Fri Jan 23 00:27:23 1998  John Carr  <jfc@mit.edu>
 
 	* toplev.c (get_run_time): Call sysconf(_SC_CLK_TCK), when available,
