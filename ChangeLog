@@ -1,3 +1,8 @@
+2003-07-09  Bob Wilson  <bob.wilson@acm.org>
+
+	* configure.in: Add ${libgcj} to noconfigdirs for xtensa-*-* targets.
+	* configure: Regenerate.
+
 2003-07-07  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.tpl (configure-gcc): Depend on maybe-configure-intl.
