@@ -789,10 +789,11 @@ dump_decl (t, v)
 		if (defval)
 		  {
 		    OB_PUTS (" = ");
-		    if (TREE_CODE (arg) == TYPE_DECL)
+		    if (TREE_CODE (arg) == TYPE_DECL
+			|| TREE_CODE (arg) == TEMPLATE_DECL)
 		      dump_type (defval, 1);
 		    else
-		      dump_decl (defval, 1);
+		      dump_expr (defval, 1);
 		  }
 		
 		OB_PUTC2 (',', ' ');

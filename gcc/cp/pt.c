@@ -1744,36 +1744,14 @@ coerce_template_parms (parms, arglist, in_decl,
       return error_mark_node;
     }
 
-  if (arglist && TREE_CODE (arglist) == TREE_VEC)
-    {
-      if (nargs == nparms)
-	vec = copy_node (arglist);
-      else
-	{
-	  /* We arrive here when a template with some default arguments
-	     is used as template template argument.  */
-	  is_tmpl_parm = 1;
-	  vec = make_tree_vec (nparms);
-	  for (i = 0; i < nparms; i++)
-	    {
-	      tree arg;
-	      
-	      if (i < nargs)
-	      arg = TREE_VEC_ELT (arglist, i);
-	      else if (TREE_CODE (TREE_VALUE (TREE_VEC_ELT (parms, i)))
-		       == TYPE_DECL)
-		arg = tsubst (TREE_PURPOSE (TREE_VEC_ELT (parms, i)),
-			      vec, i, in_decl);
-	      else
-		arg = tsubst_expr (TREE_PURPOSE (TREE_VEC_ELT (parms, i)),
-				   vec, i, in_decl);
-	      
-	      TREE_VEC_ELT (vec, i) = arg;
-	    }
-	}
-    }
+  if (arglist && TREE_CODE (arglist) == TREE_VEC && nargs == nparms)
+    vec = copy_node (arglist);
   else
     {
+      /* We can arrive here with arglist being a TREE_VEC when a 
+	 template with some default arguments is used as template 
+	 template argument.  */
+      is_tmpl_parm = TREE_CODE (arglist) == TREE_VEC;
       vec = make_tree_vec (nparms);
 
       for (i = 0; i < nparms; i++)
@@ -1790,6 +1768,12 @@ coerce_template_parms (parms, arglist, in_decl,
 		lost++;
 	      else
 		arg = TREE_VALUE (arg);
+	    }
+	  else if (is_tmpl_parm && i < nargs)
+	    {
+	      arg = TREE_VEC_ELT (arglist, i);
+	      if (arg == error_mark_node)
+		lost++;
 	    }
 	  else if (TREE_PURPOSE (parm) == NULL_TREE)
 	    {
@@ -1846,20 +1830,29 @@ coerce_template_parms (parms, arglist, in_decl,
 	  arg = TREE_VALUE (arg);
 	}
 
-      /* Check if it is a class template.  */
+      requires_tmpl_type = TREE_CODE (parm) == TEMPLATE_DECL;
+      requires_type = TREE_CODE (parm) == TYPE_DECL
+		      || requires_tmpl_type;
+
+      /* Check if it is a class template.  If REQUIRES_TMPL_TYPE is true,
+	 we also accept implicitly created TYPE_DECL as a valid argument.  */
       is_tmpl_type = (TREE_CODE (arg) == TEMPLATE_DECL
 		      && TREE_CODE (DECL_TEMPLATE_RESULT (arg)) == TYPE_DECL)
 		     || (TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM
-			 && !CLASSTYPE_TEMPLATE_INFO (arg));
+			 && !CLASSTYPE_TEMPLATE_INFO (arg))
+		     || (TREE_CODE (arg) == RECORD_TYPE
+		         && CLASSTYPE_TEMPLATE_INFO (arg)
+		         && TREE_CODE (TYPE_NAME (arg)) == TYPE_DECL
+			 && DECL_ARTIFICIAL (TYPE_NAME (arg))
+			 && requires_tmpl_type);
       if (is_tmpl_type && TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM)
 	arg = TYPE_STUB_DECL (arg);
+      else if (is_tmpl_type && TREE_CODE (arg) == RECORD_TYPE)
+	arg = CLASSTYPE_TI_TEMPLATE (arg);
       
-      requires_tmpl_type = TREE_CODE (parm) == TEMPLATE_DECL;
       is_type = TREE_CODE_CLASS (TREE_CODE (arg)) == 't'
 		|| is_tmpl_type
 		|| (is_tmpl_parm && TREE_CODE (arg) == TYPE_DECL);
-      requires_type = TREE_CODE (parm) == TYPE_DECL
-		      || requires_tmpl_type;
 
       if (requires_type && ! is_type && TREE_CODE (arg) == SCOPE_REF
 	  && TREE_CODE (TREE_OPERAND (arg, 0)) == TEMPLATE_TYPE_PARM)
@@ -1896,7 +1889,7 @@ coerce_template_parms (parms, arglist, in_decl,
 	  if (in_decl)
 	    {
 	      cp_error ("type/value mismatch at argument %d in template parameter list for `%D'",
-			i, in_decl);
+			i + 1, in_decl);
 	      if (is_tmpl_type)
 		cp_error ("  expected a type, got `%T'", DECL_NAME (arg));
 	      else

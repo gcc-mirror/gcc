@@ -1,3 +1,18 @@
+Tue Feb  3 22:04:01 1998  Kriang Lerdsuwanakij  <lerdsuwa@scf.usc.edu>
+
+	* error.c (dump_decl): Fix type of default arguments for template
+	template parameters and nontype template parameters.
+	* parse.y (template_parm): Handle invalid default template 
+	template arguments here.
+
+	* parse.y (template_parm): Use template_arg instead of PTYPENAME 
+	for default template template argument.
+	* pt.c (coerce_template_parms): Merge default template argument 
+	codes.  Can treat RECORD_TYPE as template name if it is implicitly
+	created.  Fix argument index in error message.
+	* typeck.c (comptypes): Merge template argument comparison codes in 
+	TEMPLATE_TEMPLATE_PARM and RECORD_TYPE.
+
 Tue Jan  6 01:42:44 1998  Mumit Khan <khan@xraylith.wisc.edu>
 
 	* lex.c (file_name_nondirectory): Also check for '/'.
