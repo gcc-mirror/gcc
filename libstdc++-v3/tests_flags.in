@@ -108,7 +108,7 @@ case ${query} in
                 -I${SRC_DIR}/include/std  -I${SRC_DIR}/include/$C_DIR
 	        -I${SRC_DIR}/libsupc++ -I${SRC_DIR}/libio 
 		-I${SRC_DIR}/testsuite"
-      if test x@xcompiling@ == x1; then
+      if test x@xcompiling@ = x1; then
         INCLUDES="${INCLUDES} -I${SRC_DIR}/../newlib/libc/include"
       fi
       ;;
