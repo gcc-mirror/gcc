@@ -1624,7 +1624,9 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel)
   while (insn)
     {
       rtx next = NEXT_INSN (insn);
+      rtx set, prev, prev_set;
       rtx note;
+
       if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	{
 	  /* If this is a CLOBBER of VAR, delete it.
@@ -1650,14 +1652,22 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel)
 	    }
 
 	  /* The insn to load VAR from a home in the arglist
-	     is now a no-op.  When we see it, just delete it.  */
+	     is now a no-op.  When we see it, just delete it.
+	     Similarly if this is storing VAR from a register from which
+	     it was loaded in the previous insn.  This will occur
+	     when an ADDRESSOF was made for an arglist slot.  */
 	  else if (toplevel
-		   && GET_CODE (PATTERN (insn)) == SET
-		   && SET_DEST (PATTERN (insn)) == var
+		   && (set = single_set (insn)) != 0
+		   && SET_DEST (set) == var
 		   /* If this represents the result of an insn group,
 		      don't delete the insn.  */
 		   && find_reg_note (insn, REG_RETVAL, NULL_RTX) == 0
-		   && rtx_equal_p (SET_SRC (PATTERN (insn)), var))
+		   && (rtx_equal_p (SET_SRC (set), var)
+		       || (GET_CODE (SET_SRC (set)) == REG
+			   && (prev = prev_nonnote_insn (insn)) != 0
+			   && (prev_set = single_set (prev)) != 0
+			   && SET_DEST (prev_set) == SET_SRC (set)
+			   && rtx_equal_p (SET_SRC (prev_set), var))))
 	    {
 	      /* In unoptimized compilation, we shouldn't call delete_insn
 		 except in jump.c doing warnings.  */
