@@ -806,7 +806,6 @@ extern const enum reg_class reg_class_from_letter[];
    On the MCore, allow anything but a double.  */
 #define LEGITIMATE_CONSTANT_P(X) (GET_CODE(X) != CONST_DOUBLE)
 
-#define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
    We have two alternate definitions for each of them.

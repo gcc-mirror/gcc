@@ -1,3 +1,16 @@
+2004-03-07  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* defaults.h (LEGITIMIZE_ADDRESS): Provide a default
+	definition.
+	* config/arc/arc.h, config/fr30/fr30.h, config/frv/frv.h,
+	config/h8300/h8300.h, config/ia64/ia64.h,
+	config/mcore/mcore.h, config/mmix/mmix.h,
+	config/ns32k/ns32k.h, config/pdp11/pdp11.h,
+	config/stormy16/stormy16.h, config/v850/v850.h,
+	config/vax/vax.h (LEGITIMIZE_ADDRESS): Remove.
+	* doc/tm.texi (LEGITIMIZE_ADDRESS): Mention the default
+	definition.
+
 2004-03-07  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold) <IOR_EXPR>: Fold x | x as x.

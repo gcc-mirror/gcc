@@ -703,4 +703,8 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define SHIFT_COUNT_TRUNCATED 0
 #endif
 
+#ifndef LEGITIMIZE_ADDRESS
+#define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */

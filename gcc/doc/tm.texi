@@ -4914,7 +4914,7 @@ should assign @var{x} (which will always be a C variable) a new value.
 
 It is not necessary for this macro to come up with a legitimate
 address.  The compiler has standard ways of doing so in all cases.  In
-fact, it is safe for this macro to do nothing.  But often a
+fact, it is safe to omit this macro.  But often a
 machine-dependent strategy can generate better code.
 @end defmac
 
