@@ -16,15 +16,18 @@
 
 // keywords: user-defined type conversion operators, void type, explicit casts
 
+// 8/3/2000 (nathan): The std allows you to define such an op, but
+// it will never be called. [class.conv.fct]. Make it an unconditional warning.
+
 struct struct0 {
 
-  operator void ();		// ERROR - operator void
+  operator void ();		// WARNING - operator void
 };
 
 int exit_status = 1;
 
 struct0::operator void ()
-{				// ERROR - operator void
+{
   exit_status = 0;
 }
 
