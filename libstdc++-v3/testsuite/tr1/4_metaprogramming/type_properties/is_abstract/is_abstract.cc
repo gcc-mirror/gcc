@@ -1,6 +1,6 @@
-// 2004-12-16  Paolo Carlini  <pcarlini@suse.de>
+// 2005-01-28  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,7 +18,7 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 4.5.1 Primary type categories
+// 4.5.3 Type properties
 
 #include <tr1/type_traits>
 #include <testsuite_hooks.h>
@@ -27,23 +27,19 @@
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  using std::tr1::is_function;
+  using std::tr1::is_abstract;
   using namespace __gnu_test;
 
   // Positive tests.
-  VERIFY( (test_category<is_function, int (int)>(true)) );
-  VERIFY( (test_category<is_function, ClassType (ClassType)>(true)) );
-  VERIFY( (test_category<is_function, float (int, float, int[], int&)>(true)) );
+  VERIFY( (test_category<is_abstract, AbstractClass>(true)) );
 
   // Negative tests.
-  VERIFY( (test_category<is_function, int&>(false)) );
-  VERIFY( (test_category<is_function, void>(false)) );
-  VERIFY( (test_category<is_function, const void>(false)) );
-
-  VERIFY( (test_category<is_function, AbstractClass>(false)) );
+  VERIFY( (test_category<is_abstract, void>(false)) );
+  VERIFY( (test_category<is_abstract, int (int)>(false)) );
+  VERIFY( (test_category<is_abstract, int&>(false)) );
   
   // Sanity check.
-  VERIFY( (test_category<is_function, ClassType>(false)) );
+  VERIFY( (test_category<is_abstract, ClassType>(false)) );  
 }
 
 int main()
