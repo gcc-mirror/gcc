@@ -1,3 +1,8 @@
+Sun Jul 12 13:08:14 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* collect2.c (main): Use "-x c" instead of "-lang-c" for force the
+	compiler into C mode.
+
 Sun Jul 12 01:27:05 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cplus-dem.c (demangle_nested_args): Return a value.

@@ -930,7 +930,7 @@ main (argc, argv)
   char **object_lst	= (char **) xcalloc (sizeof (char *), argc);
   char **object		= object_lst;
   int first_file;
-  int num_c_args	= argc+8;
+  int num_c_args	= argc+9;
 
 #ifdef DEBUG
   debug = 1;
@@ -1137,7 +1137,8 @@ main (argc, argv)
 #endif
   ldout = make_temp_file (".ld");
   *c_ptr++ = c_file_name;
-  *c_ptr++ = "-lang-c";
+  *c_ptr++ = "-x";
+  *c_ptr++ = "c";
   *c_ptr++ = "-c";
   *c_ptr++ = "-o";
   *c_ptr++ = o_file;
