@@ -2118,10 +2118,29 @@ expand_abs (mode, op0, target, unsignedp, safe)
   if (temp != 0)
     return temp;
 
+  /* If we have a MAX insn, we can do this as MAX (x, -x).  */
+  if (smax_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
+    {
+      rtx last = get_last_insn ();
+
+      temp = expand_unop (mode, neg_optab, op0, NULL_RTX, 0);
+      if (temp != 0)
+	temp = expand_binop (mode, smax_optab, op0, temp, target, 0,
+			     OPTAB_WIDEN);
+
+      if (temp != 0)
+	return temp;
+
+      delete_insns_since (last);
+    }
+
   /* If this machine has expensive jumps, we can do integer absolute
      value of X as (((signed) x >> (W-1)) ^ x) - ((signed) x >> (W-1)),
-     where W is the width of MODE.  */
+     where W is the width of MODE.  But don't do this if the machine has
+     conditional arithmetic since the branches will be converted into
+     a conditional negation insn.  */
 
+#ifndef HAVE_conditional_arithmetic
   if (GET_MODE_CLASS (mode) == MODE_INT && BRANCH_COST >= 2)
     {
       rtx extended = expand_shift (RSHIFT_EXPR, mode, op0,
@@ -2137,6 +2156,7 @@ expand_abs (mode, op0, target, unsignedp, safe)
       if (temp != 0)
 	return temp;
     }
+#endif
 
   /* If that does not win, use conditional jump and negate.  */
 
