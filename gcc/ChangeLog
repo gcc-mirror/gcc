@@ -1,3 +1,28 @@
+1999-01-22  Michael Meissner  <meissner@cygnus.com>
+
+	* rs6000.h (CR0_REGNO_P): New macro to test if cr0.
+	(CR_REGNO_NOT_CR0_P): New macro to test if cr, but not cr0.
+	(PREDICATE_CODES): Add cc_reg_not_cr0_operand.
+	(cc_reg_not_cr0_operand): Add declaration.
+
+	* rs6000.c (cc_reg_not_cr0_operand): Return true if register is a
+	pseudo register, or a control register that is not CR0.
+
+	* rs6000.md (all combiner patterns building . instructions): For
+	all `.' instructions that do something and set cr0, add an
+	alternative that does the operation, and then sets a different
+	flag, in order to avoid using the costly mcrf instruction and also
+	allow cr0 to be clobbered in asm statements.  Also fix a few
+	patterns that used the wrong register.
+
+	* rs6000.h (rs6000_cpu_select): Make string, names be const char *.
+	(rs6000_debug_name): Make const char *, not char *.
+
+	* sysv4.h (rs6000_{abi,sdata}_name): Make const char *.
+	
+	* rs6000.c (rs6000_{debug,abi,sdata}_name): Make const char *.
+	(rs6000_select): Use const char * in casts.
+
 Fri Jan 22 07:43:01 1999  Jeffrey A Law  (law@cygnus.com)
 	
 	* Makefile.in (gcc_tooldir): Move before first reference.

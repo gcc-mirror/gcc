@@ -54,10 +54,10 @@ extern int profile_block_flag;
 enum processor_type rs6000_cpu;
 struct rs6000_cpu_select rs6000_select[3] =
 {
-  /* switch	name,			tune	arch */
-  { (char *)0,	"--with-cpu=",		1,	1 },
-  { (char *)0,	"-mcpu=",		1,	1 },
-  { (char *)0,	"-mtune=",		1,	0 },
+  /* switch		name,			tune	arch */
+  { (const char *)0,	"--with-cpu=",		1,	1 },
+  { (const char *)0,	"-mcpu=",		1,	1 },
+  { (const char *)0,	"-mtune=",		1,	0 },
 };
 
 /* Set to non-zero by "fix" operation to indicate that itrunc and
@@ -84,13 +84,13 @@ int rs6000_pic_labelno;
 int rs6000_pic_func_labelno;
 
 /* Which abi to adhere to */
-char *rs6000_abi_name = RS6000_ABI_NAME;
+const char *rs6000_abi_name = RS6000_ABI_NAME;
 
 /* Semantics of the small data area */
 enum rs6000_sdata_type rs6000_sdata = SDATA_DATA;
 
 /* Which small data model to use */
-char *rs6000_sdata_name = (char *)0;
+const char *rs6000_sdata_name = (char *)0;
 #endif
 
 /* Whether a System V.4 varargs area was created.  */
@@ -105,7 +105,7 @@ int rs6000_fpmem_offset;
 int rs6000_fpmem_size;
 
 /* Debug flags */
-char *rs6000_debug_name;
+const char *rs6000_debug_name;
 int rs6000_debug_stack;		/* debug stack applications */
 int rs6000_debug_arg;		/* debug argument handling */
 
@@ -557,6 +557,20 @@ cc_reg_operand (op, mode)
 	  && (GET_CODE (op) != REG
 	      || REGNO (op) >= FIRST_PSEUDO_REGISTER
 	      || CR_REGNO_P (REGNO (op))));
+}
+
+/* Returns 1 if OP is either a pseudo-register or a register denoting a
+   CR field that isn't CR0.  */
+
+int
+cc_reg_not_cr0_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  return (register_operand (op, mode)
+	  && (GET_CODE (op) != REG
+	      || REGNO (op) >= FIRST_PSEUDO_REGISTER
+	      || CR_REGNO_NOT_CR0_P (REGNO (op))));
 }
 
 /* Returns 1 if OP is either a constant integer valid for a D-field or a
