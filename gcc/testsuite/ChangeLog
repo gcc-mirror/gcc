@@ -1,5 +1,8 @@
 2003-09-08  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/11786
+	* g++.dg/lookup/koenig2.C: New test.
+
 	PR c++/5296
 	* g++.dg/rtti/typeid2.C: New test.
 

@@ -1534,8 +1534,9 @@ finish_stmt_expr (tree rtl_expr, bool has_no_scope)
 }
 
 /* Perform Koenig lookup.  FN is the postfix-expression representing
-   the call; ARGS are the arguments to the call.  Returns the
-   functions to be considered by overload resolution.  */
+   the function (or functions) to call; ARGS are the arguments to the
+   call.  Returns the functions to be considered by overload
+   resolution.  */
 
 tree
 perform_koenig_lookup (tree fn, tree args)
