@@ -97,7 +97,7 @@ extern enum cmodel sparc_cmodel;
 #define TARGET_CM_MEDANY    (sparc_cmodel == CM_MEDANY)
 #define TARGET_CM_EMBMEDANY (sparc_cmodel == CM_EMBMEDANY)
 
-#define SPARC_DEFAULT_CMODEL CM_MEDLOW
+#define SPARC_DEFAULT_CMODEL CM_32
 
 /* This is call-clobbered in the normal ABI, but is reserved in the
    home grown (aka upward compatible) embedded ABI.  */
@@ -1077,10 +1077,10 @@ do								\
       }								\
     if (profile_block_flag)					\
       {								\
-	/* %g1 and %g2 must be fixed, because BLOCK_PROFILER	\
-	    uses them.  */					\
+	/* %g1 and %g2 (sparc32) resp. %g4 (sparc64) must be	\
+	   fixed, because BLOCK_PROFILER uses them.  */		\
 	fixed_regs[1] = 1;					\
-	fixed_regs[2] = 1;					\
+	fixed_regs[TARGET_ARCH64 ? 4 : 2] = 1;			\
       }								\
   }								\
 while (0)
@@ -1985,7 +1985,7 @@ LFLGNN"ID":"					\
 #define MACHINE_STATE_SAVE(ID)			\
   unsigned long ms_flags, ms_saveret;		\
   asm volatile(					\
-	"mov %%g2,%1\n\				\
+	"mov %%g4,%1\n\
 	rd %%ccr,%0"				\
 	: "=r"(ms_flags), "=r"(ms_saveret));
 
@@ -2066,9 +2066,9 @@ LFLGRET"ID":\n\
 #define MACHINE_STATE_RESTORE(ID)				\
   asm volatile (						\
 	"wr %0,0,%%ccr\n\
-	mov %1,%%g2"						\
+	mov %1,%%g4"						\
 	: : "r"(ms_flags), "r"(ms_saveret)			\
-	: "cc", "g2");
+	: "cc", "g4");
 
 #endif
 

@@ -215,6 +215,7 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_EPILOGUE + MASK_FPU + MASK_V8PLUS)
 
+#if TARGET_ARCH32
 /* Override MACHINE_STATE_{SAVE,RESTORE} because we have special
    traps available which can get and set the condition codes
    reliably.  */
@@ -233,4 +234,4 @@ Boston, MA 02111-1307, USA.  */
 	       "ta	0x21\n\t"			\
 	       : /* no outputs */			\
 	       : "r" (ms_flags), "r" (ms_saveret));
-
+#endif /* sparc32 */
