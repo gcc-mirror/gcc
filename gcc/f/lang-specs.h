@@ -1,5 +1,5 @@
 /* lang-specs.h file for Fortran
-   Copyright (C) 1995, 1996, 1997, 1999, 2000, 2002
+   Copyright (C) 1995, 1996, 1997, 1999, 2000, 2002, 2003
    Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
@@ -29,7 +29,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
   {".fpp", "@f77-cpp-input", 0},
   {".FPP", "@f77-cpp-input", 0},
   {"@f77-cpp-input",
-   "cc1 -E -traditional-cpp -D_LANGUAGE_FORTRAN %<f* %(cpp_options) \
+   "cc1 -E -traditional-cpp -D_LANGUAGE_FORTRAN %(cpp_options) \
         %{E|M|MM:%(cpp_debug_options)}\
         %{!M:%{!MM:%{!E: %|.f |\n\
     f771 %|.f %(cc1_options) %{I*} %{!fsyntax-only:%(invoke_as)}}}}", 0},
