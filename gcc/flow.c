@@ -2004,7 +2004,8 @@ mark_set_1 (needed, dead, x, insn, significant)
 			<< ((regno + i) % REGSET_ELT_BITS))) == 0)
 		  REG_NOTES (insn)
 		    = gen_rtx (EXPR_LIST, REG_UNUSED,
-			       gen_rtx (REG, word_mode, regno + i),
+			       gen_rtx (REG, reg_raw_mode[regno + i],
+					regno + i),
 			       REG_NOTES (insn));
 	    }
 	}
@@ -2390,7 +2391,8 @@ mark_used_regs (needed, live, x, final, insn)
 			  && ! dead_or_set_regno_p (insn, regno + i))
 			REG_NOTES (insn)
 			  = gen_rtx (EXPR_LIST, REG_DEAD,
-				     gen_rtx (REG, word_mode, regno + i),
+				     gen_rtx (REG, reg_raw_mode[regno + i],
+					      regno + i),
 				     REG_NOTES (insn));
 		  }
 	      }
