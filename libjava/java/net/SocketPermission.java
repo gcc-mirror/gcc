@@ -147,9 +147,6 @@ public final class SocketPermission extends Permission
    */
   public boolean equals(Object obj)
   {
-    if (obj == null)
-      return (false);
-
     if (!(obj instanceof SocketPermission))
       return (false);
 
