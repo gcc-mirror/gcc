@@ -1,3 +1,7 @@
+Sat Sep  5 23:55:15 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* news.texi: Tweaks from Craig.
+
 Tue Sep  1 10:00:21 1998  Craig Burley  <burley@gnu.org>
 
 	* bugs.texi, g77.1, g77.texi, intdoc.in, news.texi: Doc updates

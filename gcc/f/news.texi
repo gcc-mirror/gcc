@@ -125,6 +125,10 @@ no longer elicit spurious diagnostics from @code{g77},
 even on systems with pointers having
 different sizes than integers.
 
+This bug is not known to have existed in any
+recent version of @code{gcc}.
+It was introduced in an early release of @code{egcs}.
+
 @item
 Valid combinations of @code{EXTERNAL},
 passing that external as a dummy argument
