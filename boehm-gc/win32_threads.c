@@ -527,6 +527,8 @@ DWORD WINAPI main_thread_start(LPVOID arg)
 
 LONG WINAPI GC_write_fault_handler(struct _EXCEPTION_POINTERS *exc_info);
 
+#ifdef GC_DLL
+
 /*
  * This isn't generally safe, since DllMain is not premptible.
  * If another thread holds the lock while this runs we're in trouble.
@@ -634,6 +636,8 @@ BOOL WINAPI DllMain(HINSTANCE inst, ULONG reason, LPVOID reserved)
   }
   return TRUE;
 }
+
+#   endif /* GC_DLL */
 
 # endif /* !MSWINCE */
 
