@@ -4516,7 +4516,7 @@ assemble_alias (tree decl, tree target)
 
   /* Allow aliases to aliases.  */
   if (TREE_CODE (decl) == FUNCTION_DECL)
-    cgraph_node (decl);
+    cgraph_node (decl)->alias = true;
   else
     cgraph_varpool_node (decl)->alias = true;
 
