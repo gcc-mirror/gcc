@@ -1920,8 +1920,15 @@ rest_of_decl_compilation (tree decl,
 	make_decl_rtl (decl, asmspec);
 
       /* Don't output anything when a tentative file-scope definition
-	 is seen.  But at end of compilation, do output code for them.  */
-      if ((at_end || !DECL_DEFER_OUTPUT (decl)) && !DECL_EXTERNAL (decl))
+	 is seen.  But at end of compilation, do output code for them.
+
+	 We do output all variables when unit-at-a-time is active and rely on
+	 callgraph code to defer them except for forward declarations
+	 (see gcc.c-torture/compile/920624-1.c) */
+      if ((at_end
+	   || !DECL_DEFER_OUTPUT (decl)
+	   || (flag_unit_at_a_time && DECL_INITIAL (decl)))
+	  && !DECL_EXTERNAL (decl))
 	{
 	  if (flag_unit_at_a_time && !cgraph_global_info_ready
 	      && TREE_CODE (decl) != FUNCTION_DECL && top_level)
