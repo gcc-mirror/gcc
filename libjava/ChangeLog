@@ -1,5 +1,10 @@
 2003-10-02  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/ByteBufferHelper.java:
+	Rewrote all methods by suggestions from Eric Blake.
+
+2003-10-02  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/URL.java
 	(DEFAULT_SEARCH_PATH): New static variable.
 	(ph_cache): Made it a HashMap.
