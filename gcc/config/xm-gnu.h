@@ -23,7 +23,6 @@ Boston, MA 02111-1307, USA.  */
    instead $xm_file should be CPU/xm-gnu.h, which should include both
    CPU/xm-CPU.h and this file xm-gnu.h.  */
 
-#define HAVE_STRERROR		/* GNU has strerror.  */
 #define POSIX			/* GNU complies to POSIX.1.  */
 
 #ifndef inhibit_libc

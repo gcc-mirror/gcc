@@ -306,11 +306,7 @@ extern char *version_string;
 #ifndef VMS
 #ifndef HAVE_STRERROR
 extern int sys_nerr;
-#if defined(bsd4_4)
-extern const char *const sys_errlist[];
-#else
 extern char *sys_errlist[];
-#endif
 #else	/* HAVE_STRERROR */
 char *strerror ();
 #endif

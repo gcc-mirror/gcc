@@ -1,5 +1,24 @@
 Mon Sep  1 08:29:46 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* cccp.c (sys_errlist): Remove special 4.4bsd declaration.
+	* collect2.c (sys_errlist): Likewise.
+	* cpplib.c (sys_errlist): Likewise.
+	* gcc.c (sys_errlist): Likewise.
+	* protoize (sys_errlist): Likewise.
+	* configure.in: Check for strerror.
+	* xm-freebsd.h (HAVE_STRERROR): Remove definition.
+	* xm-gnu.h (HAVE_STRERROR): Likewise.
+	* xm-linux.h (HAVE_STRERROR): Likewise.
+	* xm-netbsd.h (HAVE_STRERROR): Likewise.
+	* xm-bsd386.h (HAVE_STRERROR): Likewise.
+	* xm-cygwin32.h (HAVE_STRERROR): Likewise.
+	* xm-dos.h (HAVE_STRERROR): Likewise.
+	* xm-mingw32.h (HAVE_STRERROR): Likewise.
+	* xm-pa.h (HAVE_STRERROR): Likewise.
+	* xm-papro.h (HAVE_STRERROR): Likewise.
+	* xm-sysv4.h (HAVE_STRERROR): Likewise.
+	* configure, config.in: Rebuilt.
+
 	* Makefile.in: Add several missing "else true" clauses.
 
 	* collect2.c: Change DONT_DECLARE_SYS_SIGLIST to SYS_SIGLIST_DECLARED.
