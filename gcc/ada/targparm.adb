@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -520,7 +520,9 @@ package body Targparm is
          if P >= Source_Last then
             Set_Standard_Error;
             Write_Line ("fatal error, system.ads not formatted correctly");
+            Write_Line ("unexpected end of file");
             Set_Standard_Output;
+            raise Unrecoverable_Error;
          end if;
       end loop Line_Loop;
 
