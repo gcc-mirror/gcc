@@ -1,3 +1,8 @@
+2004-01-29  Paolo Carlini  <pcarlini@suse.de>
+
+	* Reverting Sylvain Pion's patch to libstdc++/10783, backported
+	from mainline: probably not safe for the ABI.
+
 2004-01-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR libstdc++/13462
