@@ -64,8 +64,8 @@ import java.io.ObjectOutputStream;
  * @author      Jon Zeppieri
  * @author	Warren Levy
  * @author      Bryce McKinlay
- * @version     $Revision: 1.6 $
- * @modified    $Id: Hashtable.java,v 1.6 2000/08/19 18:19:42 green Exp $
+ * @version     $Revision: 1.7 $
+ * @modified    $Id: Hashtable.java,v 1.7 2000/12/11 03:47:47 bryce Exp $
  */
 public class Hashtable extends Dictionary 
   implements Map, Cloneable, Serializable
@@ -724,8 +724,8 @@ public class Hashtable extends Dictionary
    * as per the Javasoft spec.
    *
    * @author       Jon Zeppieri
-   * @version      $Revision: 1.8 $
-   * @modified     $Id: HashMap.java,v 1.8 2000/10/26 10:19:00 bryce Exp $
+   * @version      $Revision: 1.7 $
+   * @modified     $Id: Hashtable.java,v 1.7 2000/12/11 03:47:47 bryce Exp $
    */
   class HashIterator implements Iterator
   {
@@ -829,8 +829,8 @@ public class Hashtable extends Dictionary
    * hashtable during enumeration causes indeterminate results.  Don't do it!
    *
    * @author       Jon Zeppieri
-   * @version      $Revision: 1.6 $
-   * @modified $Id: Hashtable.java,v 1.6 2000/08/19 18:19:42 green Exp $ */
+   * @version      $Revision: 1.7 $
+   * @modified $Id: Hashtable.java,v 1.7 2000/12/11 03:47:47 bryce Exp $ */
   class Enumerator implements Enumeration
   {
     static final int KEYS = 0;
@@ -862,7 +862,7 @@ public class Hashtable extends Dictionary
       if (count >= size)
         throw new NoSuchElementException();
       count++;
-      HashMap.Entry e;
+      HashMap.Entry e = null;
       if (last != null)
         e = last.next;
 
